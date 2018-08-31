@@ -1,0 +1,200 @@
+program MHD1D_shock
+
+!A 'CLASSICAL HYDRODYNAMIC' SOLVER (WAVES PROPAGATED THRU SOURCE TERMS) 
+!FOR THE IDEAL MHD EQUATIONS IN 1.66 DIMENSIONS.  M. ZETTERGREN, T. SYMONS
+
+use advec
+implicit none
+
+integer, parameter :: outunit=42,method=1
+integer, parameter :: npts=1001                                         !hard-coded for SND problem
+real(8), parameter :: tcfl=0.75
+real(8), parameter :: pi=3.14
+real(8), parameter :: amu=1.67e-27, kb=1.38e-23, gammap=5.0/3.0, mu0=4.0*pi*1e-7
+real(8), parameter :: stride=2e3
+
+real(8), dimension(npts) :: dx1i
+real(8), dimension(-1:npts+2) :: x1
+real(8), dimension(-1:npts+2) :: rhom,rhou1,rhou2,rhou3,B1,B2,B3,rhoeps,u1,u2,u3
+real(8), dimension(npts+1) :: x1i,v1i
+real(8), dimension(0:npts+2) :: dx1
+integer :: lx1,it,ix1
+real(8) :: t=0,dt=1e-6,dtout=5,tdur=55,xi=2
+real(8) :: toutnext
+
+real(8), dimension(npts) :: Q,p,grad1B1u3,rhoepshalf,sourceterm,du1full,grad1u1,vA,vsnd   !'work' arrays
+real(8) :: Ti=8000                             !linear wave params
+
+
+
+!GRID CONSTRUCTION
+x1=[ (ix1*stride, ix1=-2,npts+1) ]
+lx1=size(x1)-4                             !exclude ghost cells in count
+dx1=x1(0:lx1+2)-x1(-1:lx1+1)                !backward diffs
+x1i(1:lx1+1)=0.5*(x1(0:lx1)+x1(1:lx1+1))    !interface data
+dx1i=x1i(2:lx1+1)-x1i(1:lx1)
+
+
+!PREP OUTPUT FILE
+open(outunit,file='MHD1D.dat',status='replace')
+write(outunit,*) lx1
+call writearray(outunit,x1)
+
+
+!INITIAL CONDITIONS
+rhom=1e9*amu
+rhou1=0
+rhou2=0
+rhou3=0
+B1=0
+B2=50e-9*exp(-(x1-1000e3)**2/(50e3)**2)
+B3=0
+rhoeps=rhom*kb*Ti/amu/(gammap-1)
+
+u1=rhou1/rhom
+u2=rhou2/rhom
+u3=rhou3/rhom
+
+
+!MAIN LOOP
+toutnext=dtout
+do while (t<tdur)
+  !ART. VISCOSITY DIFFS OF U1
+!  du1full=rhou1(2:lx1+1)/rhom(2:lx1+1)-rhou1(0:lx1-1)/rhom(0:lx1-1)
+  du1full=u1(2:lx1+1)-u1(0:lx1-1)
+  
+
+  !TIME STEP DETERMINATION
+  vA=sqrt((B1(1:lx1)**2+B2(1:lx1)**2+B3(1:lx1)**2)/mu0/rhom(1:lx1))
+  p=rhoeps(1:lx1)*(gammap-1)
+  vsnd=sqrt(gammap*p/rhom(1:lx1))
+  dt=tcfl*minval(dx1i/(vA+vsnd+abs(u1(1:lx1))))
+  t=t+dt                                        !time after this step
+  write(*,*) 'Time:  ',t,'  Time step:  ',dt, &
+               '  Alfven speed:  ',maxval(vA/1e3), &
+               '  sound speed:  ',maxval(vsnd/1e3), &
+               '  matter speed:  ',maxval(abs(u1(1:lx1))/1e3)
+
+
+  !BOUNDARY CONDITIONS
+  rhom(-1:0)=rhom(1)
+  rhom(lx1+1:lx1+2)=rhom(lx1)
+  rhou1(-1:0)=rhou1(1)
+  rhou1(lx1+1:lx1+2)=rhou1(lx1)
+  rhou2(-1:0)=rhou2(1)
+  rhou2(lx1+1:lx1+2)=rhou2(lx1)
+  rhou3(-1:0)=rhou3(1)
+  rhou3(lx1+1:lx1+2)=rhou3(lx1)
+  B2(-1:0)=B2(1)
+  B2(lx1+1:lx1+2)=B2(lx1)    
+  B3(-1:0)=B3(1)
+  B3(lx1+1:lx1+2)=B3(lx1)   
+  rhoeps(-1:0)=rhoeps(1)
+  rhoeps(lx1+1:lx1+2)=rhoeps(lx1)
+
+
+  !ADVECTION SUBSTEP
+  v1i(:)=0.5*(rhou1(0:lx1)/rhom(0:lx1)+rhou1(1:lx1+1)/rhom(1:lx1+1))    !CELL INTERFACE SPEEDS (LEFT WALL OF ITH CELL)
+
+  rhom=advec1D_MC(rhom,v1i,dt,dx1,dx1i)
+  rhou1=advec1D_MC(rhou1,v1i,dt,dx1,dx1i)
+  rhou2=advec1D_MC(rhou2,v1i,dt,dx1,dx1i)
+  rhou3=advec1D_MC(rhou3,v1i,dt,dx1,dx1i)
+  B2=advec1D_MC(B2,v1i,dt,dx1,dx1i)
+  B3=advec1D_MC(B3,v1i,dt,dx1,dx1i)
+  rhoeps=advec1D_MC(rhoeps,v1i,dt,dx1,dx1i)
+
+
+  !VON NEUMANN-RICHTMYER ARTIFICIAL VISCOSITY ('CLEANS UP' SOLUTIONS
+  !WITH STRONG SHOCKS) [POTTER, 1970; STONE ET AL 1992]
+  Q=0.25*xi**2*(min(du1full,0.0))**2*rhom(1:lx1)
+
+
+  !SOURCE TERMS FOR 1-COMP OF MOMENTUM
+  p=rhoeps(1:lx1)*(gammap-1)+(B1(1:lx1)**2+B2(1:lx1)**2+B3(1:lx1)**2)/2/mu0+Q
+  rhou1(1:lx1)=rhou1(1:lx1)+dt*(-1*derivative(p,dx1(1:lx1)))
+!  rhou1(1:lx1)=rhou1(1:lx1)+dt*(1/mu0*B1(1:lx1)*derivative(B1(1:lx1),dx1(1:lx1)))
+
+
+  !SOURCE TERMS FOR 2-COMP OF MOMENTUM
+  rhou2(1:lx1)=rhou2(1:lx1)+dt*(1/mu0*B1(1:lx1)*derivative(B2(1:lx1),dx1(1:lx1)))
+    
+    
+  !SOURCE TERMS FOR 3-COMP OF MOMENTUM
+  rhou3(1:lx1)=rhou3(1:lx1)+dt*(1/mu0*B1(1:lx1)*derivative(B3(1:lx1),dx1(1:lx1)))
+
+
+  !PARTIALLY UPDATED FLOWS FROM MOMENTA
+  u1=rhou1/rhom
+  u2=rhou2/rhom
+  u3=rhou3/rhom
+
+
+  !SOURCE TERMS FOR X-COMP OF B-FIELD
+  B2(1:lx1)=B2(1:lx1)+dt*derivative(B1(1:lx1)*u2(1:lx1),dx1(1:lx1))        
+    
+    
+  !SOURCE TERMS FOR Y-COMP OF B-FIELD
+  grad1B1u3=derivative(B1(1:lx1)*u3(1:lx1),dx1(1:lx1))
+  grad1B1u3(1)=(B1(2)*u3(2)-B1(0)*u3(0))/(dx1(2)+dx1(1))
+  grad1B1u3(lx1)=(B1(lx1+1)*u3(lx1+1)-B1(lx1-1)*u3(lx1-1))/(dx1(lx1+1)+dx1(lx1))
+  B3(1:lx1)=B3(1:lx1)+dt*grad1B1u3 
+
+
+  !SOURCE TERMS FOR INTERNAL ENERGY (RK2 STEPPING)
+  p=rhoeps(1:lx1)*(gammap-1)+Q
+  grad1u1=derivative(u1(1:lx1),dx1(1:lx1))
+  sourceterm=-p*grad1u1
+  rhoepshalf=rhoeps(1:lx1)+dt/2*sourceterm
+  p=rhoepshalf*(gammap-1)+Q
+  sourceterm=-p*grad1u1
+  rhoeps(1:lx1)=rhoeps(1:lx1)+dt*sourceterm
+
+
+  !OUTPUT
+  if (t>toutnext) then
+    write(outunit,*) t
+    call writearray(outunit,rhom/amu)
+    call writearray(outunit,u1)
+    call writearray(outunit,u2)
+    call writearray(outunit,u3)
+    call writearray(outunit,B1)
+    call writearray(outunit,B2)
+    call writearray(outunit,B3)
+    call writearray(outunit,rhoeps*(gammap-1))
+    toutnext=toutnext+dtout
+  end if
+end do
+
+close(outunit)
+
+
+contains
+
+  subroutine writearray(fileunit,array)
+    integer, intent(in) :: fileunit
+    real(8), dimension(:), intent(in) :: array
+    
+    integer :: k
+
+    do k=1,size(array)
+      write(fileunit,*) array(k)
+    end do
+  end subroutine writearray
+
+
+  function derivative(f,dx)
+    real(8), dimension(:), intent(in) :: dx  !presumed backward diffs.
+    real(8), dimension(:), intent(in) :: f
+    
+    integer :: lx
+    real(8), dimension(1:size(f)) :: derivative
+
+    lx=size(f)
+    derivative(1)=(f(2)-f(1))/dx(2)
+    derivative(2:lx-1)=(f(3:lx)-f(1:lx-2))/(dx(3:lx)+dx(2:lx-1))
+    derivative(lx)=(f(lx)-f(lx-1))/dx(lx)
+
+  end function derivative
+
+end program MHD1D_shock
