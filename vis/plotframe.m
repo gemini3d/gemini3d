@@ -148,8 +148,10 @@ end
 
 %LOAD THE FRAME NEAREST TO THE REQUESTED TIME
 autoload=1;
-[ne,v1,Ti,Te,J1,v2,v3,J2,J3,mlatsrc,mlonsrc,filename,Phitop] = loadframe(direc,UTsecnow,ymdnow,UTsec0,ymd0,autoload,flagoutput,mloc,xg);
+[ne,mlatsrc,mlonsrc,v1,Ti,Te,J1,v2,v3,J2,J3,filename,Phitop]= loadframe(direc,UTsecnow,ymdnow,UTsec0,ymd0,autoload,flagoutput,mloc,xg);
 
+size(ne)
+xg
 
 %MAKE THE PLOTS (WHERE APPROPRIATE)
 if (xg.lx(2)~=1 & xg.lx(3)~=1 | lt>16)    %3D simulation or a very long 2D simulation - do separate plots for each time frame

@@ -110,7 +110,7 @@ parmp2=parmp2(:,inds,:);
 
 yp=(yp+meanphi)*180/pi;
 [yp,inds]=sort(yp);
-parmp=parmp(inds,:,:);
+%parmp=parmp(inds,:,:);
 parmp2=parmp2(inds,:,:);
 
 

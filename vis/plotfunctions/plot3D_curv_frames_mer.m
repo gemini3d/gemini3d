@@ -56,9 +56,9 @@ x=(xg.theta-meantheta);   %this is a mag colat. coordinate and is only used for 
 y=(xg.phi-meanphi);       %mag. lon coordinate
 z=xg.alt/1e3;
 %lxp=500;
-lxp=1500;
+lxp=3000;
 lyp=500;
-lzp=500;
+lzp=1000;
 minx=min(x(:));
 maxx=max(x(:));
 miny=min(y(:));
@@ -181,7 +181,7 @@ parmp2=parmp2(:,inds,:);
 
 yp=(yp+meanphi)*180/pi;
 [yp,inds]=sort(yp);
-parmp=parmp(inds,:,:);
+%parmp=parmp(inds,:,:);
 parmp2=parmp2(inds,:,:);
 parmp3=parmp3(inds,:,:);
 
@@ -253,6 +253,7 @@ hold off;
 set(h,'alphadata',~isnan(parmp2(:,:,2)'));
 set(gca,'FontSize',FS);
 axis xy;
+%axis equal;
 axis tight;
 colormap(parula(256));
 caxis(caxlims)
