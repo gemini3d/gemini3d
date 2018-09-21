@@ -118,6 +118,7 @@ FC=ifort cmake -DMETIS_ROOT=~/fortran-libs/metis ..
     ```
 If the problem persists try changing the number to 100. 
 4)  There are potentially some issues with the way the stability condition is evaluated, i.e. it is computed before the perp. drifts are solved so it is possible when using input data to overrun this especially if your target CFL number is > 0.8 or so.  Some code has been added as of 8/20/2018 to throttle how much dt is allowed to change between time steps and this seems to completely fix this issue, but theoretically it may still happen.  
+5)  Occassionally one will see edge artifacts in either the field -aligned currents or other parameters for non-periodic in x3 solves.  This may be related to the divergence calculations needed for the parallel current (under EFL formulation) and for compression calculations in the multifluid module, but this needs to be investigated further...
 
 
 ## Development roadmap
