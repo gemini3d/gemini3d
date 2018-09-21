@@ -64,6 +64,7 @@ real(8), dimension(:,:,:), allocatable :: proj_e1ephi,proj_e2ephi,proj_e3ephi
 real(8), dimension(:,:,:), allocatable :: Jx,Jy,Jz
 real(8), dimension(:,:,:), allocatable :: Rx,Ry,Rz,Rcubed
 real(8), dimension(:,:,:), allocatable :: integrand,integrandavg
+real(8), dimension(:,:,:), allocatable :: alt
 real(8), dimension(:), allocatable :: Br,Btheta,Bphi
 real(8), dimension(:), allocatable :: Brall,Bthetaall,Bphiall
 integer :: ix1,ix2,ix3
@@ -198,6 +199,8 @@ end if
 allocate(proj_e1er(lx1,lx2,lx3),proj_e2er(lx1,lx2,lx3),proj_e3er(lx1,lx2,lx3))
 allocate(proj_e1etheta(lx1,lx2,lx3),proj_e2etheta(lx1,lx2,lx3),proj_e3etheta(lx1,lx2,lx3))
 allocate(proj_e1ephi(lx1,lx2,lx3),proj_e2ephi(lx1,lx2,lx3),proj_e3ephi(lx1,lx2,lx3))
+allocate(alt(lx1,lx2,lx2))
+alt(:,:,:)=x%alt
 proj_e1er(:,:,:)=sum(x%e1*x%er,4)
 proj_e2er(:,:,:)=sum(x%e2*x%er,4)
 proj_e3er(:,:,:)=sum(x%e3*x%er,4)
@@ -240,9 +243,17 @@ do while (t<tdur)
 
 
   !FORCE PARALLEL CURRENTS TO ZERO BELOW 80KM
-  where (x%alt<75d3)
+  where (alt<75d3)
     J1=0d0
   end where
+
+
+  !DEAL WITH THE WEIRD EDGE ARTIFACTS THAT WE GET IN THE PARALLEL CURRENT
+  !SOMETIMES
+  if (myid==lid-1) then
+    J1(:,:,lx3-1)=J1(:,:,lx3-2)
+    J1(:,:,lx3)=J1(:,:,lx3-2)
+  end if
 
 
   !ROTATE MAGNETIC FIELDS INTO VERTICAL,SOUTH,EAST COMPONENTS
