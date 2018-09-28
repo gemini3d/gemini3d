@@ -568,15 +568,32 @@ The most commonly used coordinate system for GEMINI is a dipole coordinate syste
 \begin{equation}
 x_1 = q; \quad x_2 = p; \quad x_3 = \phi
 \end{equation}
-with the $q,p,\phi$ coordinates defined as in \citet{Huba:2000} in terms of spherical coordinates (measured from the center of Earth's tilted dipole).  
+with the $q,p,\phi$ coordinates defined as in \citet{Huba:2000}, and $\phi$ being the same coordinate as used in a spherical system.  In terms of spherical coordinates (measured from the center of Earth's tilted dipole) and Cartesian coordinates:  
 \begin{eqnarray}
-q &=& \frac{R_e^2}{r^2} \cos \theta \\
-p &=& \frac{r}{R_e} \frac{1}{\sin^2 \theta} \\
+q &=& \frac{R_e^2}{r^2} \cos \theta = \frac{R_e^2 z}{\left( x^2+y^2+z^2\right)^{3/2}}\\
+p &=& \frac{r}{R_e} \frac{1}{\sin^2 \theta} = \frac{\left( x^2+y^2+z^2\right)^{3/2}}{R_e \left( x^2 + y^2 \right) } \\
+\phi &=& \tan^{-1} \left( \frac{y}{x} \right)
 \end{eqnarray}
 Inverting $q,p$ coordinates to obtain $r,\theta$ is accomplished by solving the relations:
 \begin{eqnarray}
 q^2 \left( \frac{r}{R_e}\right)^4 + \frac{1}{p} \left( \frac{r}{R_e}\right)  &=& 1 \\
 \cos \theta &=& q \frac{r^2}{R_e^2}
+\end{eqnarray}
+From these transformations, the basis vectors and metric for dipole coordinates can be derived.  The contravariant basis vectors are defined in terms of contravariant differentials $d x^i$ as:
+\begin{equation}
+\boldsymbol{\varepsilon}^i = \frac{\partial x^i}{\partial x} \hat{\mathbf{e}}_x + \frac{\partial x^i}{\partial y} \hat{\mathbf{e}}_y + \frac{\partial x^i}{\partial z} \hat{\mathbf{e}}_z
+\end{equation}
+The necessary derivative for these calculations may be computed from the dipole coordinates as functions of the cartesian coordinates $x,y,z$ and are given by:  
+\begin{eqnarray}
+\frac{\partial x^1}{\partial x} &=& \frac{\partial q}{\partial x} = \\
+\frac{\partial x^1}{\partial y} &=& \frac{\partial q}{\partial y} = \\
+\frac{\partial x^1}{\partial z} &=& \frac{\partial q}{\partial z} = \\
+\frac{\partial x^2}{\partial x} &=& \frac{\partial p}{\partial x} = \\
+\frac{\partial x^2}{\partial y} &=& \frac{\partial p}{\partial y} = \\
+\frac{\partial x^2}{\partial z} &=& \frac{\partial p}{\partial z} = \\
+\frac{\partial x^3}{\partial x} &=& \frac{\partial \phi}{\partial x} = \\
+\frac{\partial x^3}{\partial y} &=& \frac{\partial \phi}{\partial y} = \\
+\frac{\partial x^3}{\partial z} &=& \frac{\partial \phi}{\partial z} = \\
 \end{eqnarray}
 
 The corresponding metric factors (needed for derivatives and intergrals) are given by \citep{Huba:2000}:  
