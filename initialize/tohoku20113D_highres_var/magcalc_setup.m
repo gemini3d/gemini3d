@@ -2,7 +2,8 @@
 %simname='chile20153D_0.5_medres/';
 simname='tohoku20113D_highres_var/';
 %simname='tohoku20112D_3Dtest/'
-basedir='~/zettergmdata/simulations/'
+%basedir='~/zettergmdata/simulations/'
+basedir='/scratch/zettergm/simulations/'
 direc=[basedir,simname];
 system(['mkdir ',direc,'/magplots']);    %store output plots with the simulation data
 
@@ -17,7 +18,7 @@ addpath ../../script_utils;
 
 
 %SIMULATION META-DATA
-[ymd0,UTsec0,tdur,dtout,flagoutput,mloc]=readconfig([direc,'/inputs/config.dat']);
+[ymd0,UTsec0,tdur,dtout,flagoutput,mloc]=readconfig([direc,'/inputs/config.ini']);
 
 
 %TABULATE THE SOURCE LOCATION
@@ -34,7 +35,7 @@ dang=5;
 %WE ALSO NEED TO LOAD THE GRID FILE
 if (~exist('xg','var'))
   fprintf('Reading grid...\n');
-  xg=readgrid([direc,'/']);
+  xg=readgrid([direc,'/inputs/']);
   lx1=xg.lx(1); lx2=xg.lx(2); lx3=xg.lx(3);
   lh=lx1;   %possibly obviated in this version - need to check
   if (lx3==1)
@@ -80,7 +81,7 @@ r=6370e3*ones(ltheta,lphi);                          %use ground level for altit
 [phi,theta]=meshgrid(phi,theta);
 
 %CREATE AN INPUT FILE OF FIELD POINTS
-fid=fopen('~/zettergmdata/simulations/input/tohoku20113D_highres_var/magfieldpoints.dat','w');
+fid=fopen([basedir,'/input/tohoku20113D_highres_var/magfieldpoints.dat'],'w');
 fwrite(fid,numel(theta),'integer*4');
 fwrite(fid,r(:),'real*8');
 fwrite(fid,theta(:),'real*8');

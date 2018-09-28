@@ -199,7 +199,7 @@ end if
 allocate(proj_e1er(lx1,lx2,lx3),proj_e2er(lx1,lx2,lx3),proj_e3er(lx1,lx2,lx3))
 allocate(proj_e1etheta(lx1,lx2,lx3),proj_e2etheta(lx1,lx2,lx3),proj_e3etheta(lx1,lx2,lx3))
 allocate(proj_e1ephi(lx1,lx2,lx3),proj_e2ephi(lx1,lx2,lx3),proj_e3ephi(lx1,lx2,lx3))
-allocate(alt(lx1,lx2,lx2))
+allocate(alt(lx1,lx2,lx3))
 alt(:,:,:)=x%alt
 proj_e1er(:,:,:)=sum(x%e1*x%er,4)
 proj_e2er(:,:,:)=sum(x%e2*x%er,4)
@@ -243,6 +243,7 @@ do while (t<tdur)
 
 
   !FORCE PARALLEL CURRENTS TO ZERO BELOW 80KM
+  if(myid==0) write(*,*) 'Nullifying low altitude currents...'
   where (alt<75d3)
     J1=0d0
   end where
@@ -250,9 +251,15 @@ do while (t<tdur)
 
   !DEAL WITH THE WEIRD EDGE ARTIFACTS THAT WE GET IN THE PARALLEL CURRENT
   !SOMETIMES
+  if(myid==0) write(*,*) 'Fixing potential edge artifacts...'
   if (myid==lid-1) then
-    J1(:,:,lx3-1)=J1(:,:,lx3-2)
-    J1(:,:,lx3)=J1(:,:,lx3-2)
+    if (lx3>2) then    !do a ZOH
+      J1(:,:,lx3-1)=J1(:,:,lx3-2)
+      J1(:,:,lx3)=J1(:,:,lx3-2)
+    else
+      J1(:,:,lx3-1)=0d0
+      J1(:,:,lx3)=0d0
+    end if
   end if
 
 
