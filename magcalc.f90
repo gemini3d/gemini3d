@@ -261,6 +261,15 @@ do while (t<tdur)
       J1(:,:,lx3)=0d0
     end if
   end if
+  if (myid==0) then
+    if (lx3>2) then    !do a ZOH
+      J1(:,:,1)=J1(:,:,3)
+      J1(:,:,2)=J1(:,:,3)
+    else
+      J1(:,:,1)=0d0
+      J1(:,:,2)=0d0
+    end if
+  end if
 
 
   !ROTATE MAGNETIC FIELDS INTO VERTICAL,SOUTH,EAST COMPONENTS
