@@ -110,7 +110,7 @@ write(*,*) 'magcalc.f90 --> Process:  ',myid,' of:  ',lid-1,' online...'
 !READ CONFIG FILE FROM OUTPUT DIRECTORY
 call get_command_argument(1,argv)
 outdir=trim(argv)
-infile=outdir//'/inputs/config.dat'
+infile=outdir//'/inputs/config.ini'
 !infile = trim(argv)
 if (myid==0) then
   write(*,*) 'Simulation data directory:  ',outdir
