@@ -155,7 +155,7 @@ These are projects in progress involved GEMINI, you are encouraged to email M. Z
 * Resolved potential solutions - decimate parallel grid down to Farley mapping scale for perp resolution then so the solve on that coarse grid then interpolate back up to original grid.  I've had luck with MUMPS solves in reasonable time up to 300 x 300 x 15 grid points which is probably enough to do something interesting with appropriate periodic and lagrangian grids (moving at E x B).  
 * Diamagnetic drift and perpendicular ambipolar fields - necessary for the smallest scales, e.g. less than 100 m
 * Inclusion of suprathermal electron transport model for better specification of currents and ionization rates (G. Grubbs)
-
+* Need to add option for true coordinates to be used in the computations of magnetic perturbations (instead of flattened-out spherical)
 
 ## Standard and style
 

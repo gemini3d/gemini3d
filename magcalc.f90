@@ -201,7 +201,7 @@ allocate(proj_e1etheta(lx1,lx2,lx3),proj_e2etheta(lx1,lx2,lx3),proj_e3etheta(lx1
 allocate(proj_e1ephi(lx1,lx2,lx3),proj_e2ephi(lx1,lx2,lx3),proj_e3ephi(lx1,lx2,lx3))
 allocate(alt(lx1,lx2,lx3))
 alt(:,:,:)=x%alt
-proj_e1er(:,:,:)=sum(x%e1*x%er,4)
+proj_e1er(:,:,:)=sum(x%e1*x%er,4)    !fourth dimension of unit vectors is the 3 Cartesian components of each vector
 proj_e2er(:,:,:)=sum(x%e2*x%er,4)
 proj_e3er(:,:,:)=sum(x%e3*x%er,4)
 proj_e1etheta(:,:,:)=sum(x%e1*x%etheta,4)
