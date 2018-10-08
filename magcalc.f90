@@ -170,7 +170,7 @@ allocate(xp(lx1,lx2,lx3),yp(lx1,lx2,lx3),zp(lx1,lx2,lx3))
 xp(:,:,:)=x%alt(:,:,:)+Re                               !radial distance from Earth's center
 !yp(:,:,:)=xp(:,:,:)*x%theta(:,:,:)                      !southward distance (in the direction of the theta spherical coordinate)
 !zp(:,:,:)=xp(:,:,:)*sin(x%theta(:,:,:))*x%phi(:,:,:)    !eastward distance
-yp(:,:,:)=rmean*x%theta(:,:,:)
+yp(:,:,:)=rmean*x%theta(:,:,:)    !the integrations are being treated as Cartesian so flatten out the local spherical coordinates into cartesian, as well
 zp(:,:,:)=rmean*sin(thetamean)*x%phi(:,:,:)
 
 
