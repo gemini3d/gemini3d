@@ -28,23 +28,23 @@ contains
 
     character(*), intent(in) :: infile
     integer, dimension(3), intent(out):: ymd
-    real(8), intent(out) :: UTsec0
-    real(8), intent(out) :: tdur
-    real(8), intent(out) :: dtout
-    real(8), dimension(3), intent(out) :: activ
-    real(8), intent(out) :: tcfl
-    real(8), intent(out) :: Teinf
+    real(wp), intent(out) :: UTsec0
+    real(wp), intent(out) :: tdur
+    real(wp), intent(out) :: dtout
+    real(wp), dimension(3), intent(out) :: activ
+    real(wp), intent(out) :: tcfl
+    real(wp), intent(out) :: Teinf
     integer, intent(out) :: potsolve, flagperiodic, flagoutput, flagcap 
     integer, intent(out) :: flagdneu
     integer, intent(out) :: interptype
-    real(8), intent(out) :: sourcemlat,sourcemlon
-    real(8), intent(out) :: dtneu
-    real(8), intent(out) :: drhon,dzn
+    real(wp), intent(out) :: sourcemlat,sourcemlon
+    real(wp), intent(out) :: dtneu
+    real(wp), intent(out) :: drhon,dzn
     integer, intent(out) :: flagprecfile
-    real(8), intent(out) :: dtprec
+    real(wp), intent(out) :: dtprec
     character(:), allocatable, intent(out) :: indatsize,indatgrid, sourcedir, precdir, E0dir
     integer, intent(out) :: flagE0file
-    real(8), intent(out) :: dtE0
+    real(wp), intent(out) :: dtE0
 
 
     character(256) :: buf
@@ -224,10 +224,10 @@ contains
     !-------VARIABLES MUST BE DECLARED AS ALLOCATABLE, INTENT(INOUT)
     !------------------------------------------------------------
 
-    real(8), dimension(-1:), intent(in) :: x1, x2, x3all
+    real(wp), dimension(-1:), intent(in) :: x1, x2, x3all
     character(*), intent(in) :: indatsize,indatgrid
 
-    real(8), dimension(-1:,-1:,-1:,:), intent(out) :: ns,vs1,Ts
+    real(wp), dimension(-1:,-1:,-1:,:), intent(out) :: ns,vs1,Ts
 
  
     if (myid==0) then
@@ -267,19 +267,19 @@ contains
     !-------LENGTHS.
     !------------------------------------------------------------
     
-    real(8), dimension(-1:), intent(in) :: x1, x2, x3all
+    real(wp), dimension(-1:), intent(in) :: x1, x2, x3all
     character(*), intent(in) :: indatsize,indatgrid
-    real(8), dimension(-1:,-1:,-1:,:), intent(out) :: ns,vs1,Ts    
+    real(wp), dimension(-1:,-1:,-1:,:), intent(out) :: ns,vs1,Ts    
 
     integer :: lx1,lx2,lx3,lx3all,isp
     
-    real(8), dimension(-1:size(x1,1)-2,-1:size(x2,1)-2,-1:size(x3all,1)-2,1:lsp) :: nsall,vs1all,Tsall
-    real(8), dimension(:,:,:,:), allocatable :: statetmp
+    real(wp), dimension(-1:size(x1,1)-2,-1:size(x2,1)-2,-1:size(x3all,1)-2,1:lsp) :: nsall,vs1all,Tsall
+    real(wp), dimension(:,:,:,:), allocatable :: statetmp
     integer :: lx1in,lx2in,lx3in,u
-    real(8) :: tin
-    real(8), dimension(3) :: ymdtmp
+    real(wp) :: tin
+    real(wp), dimension(3) :: ymdtmp
     
-    real(8) :: tstart,tfin    
+    real(wp) :: tstart,tfin    
 
     !SYSTEM SIZES
     lx1=size(ns,1)-4
@@ -361,8 +361,8 @@ contains
     character(*), intent(in) :: outdir
     integer, intent(in) :: flagoutput
     integer, dimension(3), intent(in) :: ymd
-    real(8), intent(in) :: UTsec
-    real(8), dimension(:,:,:), intent(out) :: J1,J2,J3
+    real(wp), intent(in) :: UTsec
+    real(wp), dimension(:,:,:), intent(out) :: J1,J2,J3
 
 
     if (myid==0) then
@@ -386,15 +386,15 @@ contains
     character(*), intent(in) :: outdir
     integer, intent(in) :: flagoutput
     integer, dimension(3), intent(in) :: ymd
-    real(8), intent(in) :: UTsec
-    real(8), dimension(:,:,:), intent(out) :: J1,J2,J3
+    real(wp), intent(in) :: UTsec
+    real(wp), dimension(:,:,:), intent(out) :: J1,J2,J3
 
-    real(8), dimension(:,:,:), allocatable :: tmparray3D
-    real(8), dimension(:,:,:,:), allocatable :: tmparray4D
+    real(wp), dimension(:,:,:), allocatable :: tmparray3D
+    real(wp), dimension(:,:,:,:), allocatable :: tmparray4D
     character(:), allocatable :: filenamefull
-    real(8), dimension(:,:,:), allocatable :: J1all,J2all,J3all
-    real(8), dimension(:,:,:), allocatable :: tmpswap
-    real(8) :: tmpdate
+    real(wp), dimension(:,:,:), allocatable :: J1all,J2all,J3all
+    real(wp), dimension(:,:,:), allocatable :: tmpswap
+    real(wp) :: tmpdate
     integer :: u
 
 
@@ -477,7 +477,7 @@ contains
     !-------WORKER INPUT FUNCTIONS FOR GETTING CURRENT DENSITIES
     !------------------------------------------------------------
 
-    real(8), dimension(:,:,:), intent(out) :: J1,J2,J3
+    real(wp), dimension(:,:,:), intent(out) :: J1,J2,J3
 
 
     !ALL WE HAVE TO DO IS WAIT TO RECEIVE OUR PIECE OF DATA FROM ROOT
@@ -500,11 +500,11 @@ contains
     integer, intent(in) :: flagoutput
 
     integer, dimension(3), intent(in) :: ymd
-    real(8), intent(in) :: UTsec
-    real(8), dimension(-1:,-1:,-1:,:), intent(in) :: vs2,vs3,ns,vs1,Ts
+    real(wp), intent(in) :: UTsec
+    real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: vs2,vs3,ns,vs1,Ts
 
-    real(8), dimension(:,:,:), allocatable, intent(inout) :: Phiall     !these jokers may not be allocated, but this is allowed as of f2003
-    real(8), dimension(:,:,:), intent(in) :: J1,J2,J3
+    real(wp), dimension(:,:,:), allocatable, intent(inout) :: Phiall     !these jokers may not be allocated, but this is allowed as of f2003
+    real(wp), dimension(:,:,:), intent(in) :: J1,J2,J3
 
 
     if (myid/=0) then
@@ -523,11 +523,11 @@ contains
     !-------STATE VARS ARE EXPECTED TO INCLUDE GHOST CELLS
     !------------------------------------------------------------
   
-    real(8), dimension(-1:,-1:,-1:,:), intent(in) :: vs2,vs3,ns,vs1,Ts     
-    real(8), dimension(:,:,:), intent(in) :: J1,J2,J3
+    real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: vs2,vs3,ns,vs1,Ts     
+    real(wp), dimension(:,:,:), intent(in) :: J1,J2,J3
 
     integer :: lx1,lx2,lx3,lx3all,isp
-    real(8), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: v2avg,v3avg
+    real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: v2avg,v3avg
 
 
     !SYSTEM SIZES (W/O GHOST CELLS)
@@ -571,21 +571,21 @@ contains
     integer, intent(in) :: flagoutput
 
     integer, dimension(3), intent(in) :: ymd
-    real(8), intent(in) :: UTsec
-    real(8), dimension(-1:,-1:,-1:,:), intent(in) :: vs2,vs3,ns,vs1,Ts    
+    real(wp), intent(in) :: UTsec
+    real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: vs2,vs3,ns,vs1,Ts    
     
-    real(8), dimension(:,:,:), intent(in) :: Phiall
-    real(8), dimension(:,:,:), intent(in) :: J1,J2,J3
+    real(wp), dimension(:,:,:), intent(in) :: Phiall
+    real(wp), dimension(:,:,:), intent(in) :: J1,J2,J3
  
     integer :: lx1,lx2,lx3,lx3all,isp, u
-    real(8), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: v2avg,v3avg
-    real(8), dimension(-1:size(Phiall,1)+2,-1:size(Phiall,2)+2,-1:size(Phiall,3)+2,1:lsp) :: nsall,vs1all,Tsall
-    real(8), dimension(1:size(Phiall,1),1:size(Phiall,2),1:size(Phiall,3)) :: v2avgall,v3avgall,v1avgall,Tavgall,neall,Teall
-    real(8), dimension(1:size(Phiall,1),1:size(Phiall,2),1:size(Phiall,3)) :: J1all,J2all,J3all
+    real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: v2avg,v3avg
+    real(wp), dimension(-1:size(Phiall,1)+2,-1:size(Phiall,2)+2,-1:size(Phiall,3)+2,1:lsp) :: nsall,vs1all,Tsall
+    real(wp), dimension(1:size(Phiall,1),1:size(Phiall,2),1:size(Phiall,3)) :: v2avgall,v3avgall,v1avgall,Tavgall,neall,Teall
+    real(wp), dimension(1:size(Phiall,1),1:size(Phiall,2),1:size(Phiall,3)) :: J1all,J2all,J3all
     character(:), allocatable :: filenamefull
     integer(8) :: recordlength   !can be 8 byte with compiler flag -frecord-marker=8
 
-    real(8), dimension(:,:,:), allocatable :: permarray,tmparray    !permuted variables to be allocated for 2D output  
+    real(wp), dimension(:,:,:), allocatable :: permarray,tmparray    !permuted variables to be allocated for 2D output  
 
  
     !SYSTEM SIZES
@@ -744,8 +744,8 @@ contains
 
     character(*), intent(in) :: outdir
     integer, dimension(3), intent(in) :: ymd
-    real(8), intent(in) :: UTsec
-    real(8), dimension(:), intent(in)  :: Br,Btheta,Bphi
+    real(wp), intent(in) :: UTsec
+    real(wp), dimension(:), intent(in)  :: Br,Btheta,Bphi
 
     character(:), allocatable :: outdir_composite
     character(:), allocatable :: filenamefull
@@ -773,7 +773,7 @@ contains
 
     character(*), intent(in) :: outdir
     integer, dimension(3), intent(in) :: ymd
-    real(8), intent(in) :: UTsec
+    real(wp), intent(in) :: UTsec
     character(:), allocatable :: date_filename
 
     integer :: ldigits,idigits

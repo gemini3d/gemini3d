@@ -21,12 +21,12 @@ implicit none
 
 !VARIABLES READ IN FROM CONFIG.DAT FILE
 integer, dimension(3) :: ymd    !year,month,day of simulation
-real(8) :: UTsec      !UT (s)
-real(8) :: UTsec0     !UT start time of simulation (s)
-real(8) :: tdur       !duration of simulation
-real(8), dimension(3) :: activ    !f10.7a,f10.7,ap
-real(8) :: tcfl                       !target CFL number
-real(8) :: Teinf                      !exospheric temperature
+real(wp) :: UTsec      !UT (s)
+real(wp) :: UTsec0     !UT start time of simulation (s)
+real(wp) :: tdur       !duration of simulation
+real(wp), dimension(3) :: activ    !f10.7a,f10.7,ap
+real(wp) :: tcfl                       !target CFL number
+real(wp) :: Teinf                      !exospheric temperature
 integer :: potsolve                   !what type of potential solve 
 integer :: flagperiodic               !toggles whether or not the grid is treated as periodic in the x3 dimension (affects some of the message passing)
 integer :: flagoutput                 !what type of output to do (1 - everything; 2 - avg'd parms.; 3 - ne only)
@@ -43,49 +43,49 @@ integer :: u
 type(curvmesh) :: x    !structure containg grid locations, finite differences, etc.:  see grid module for details
 
 !STATE VARIABLES
-real(8), dimension(:,:,:), allocatable :: J1,J2,J3      !electrodynamic state variables
+real(wp), dimension(:,:,:), allocatable :: J1,J2,J3      !electrodynamic state variables
 
 !TEMPORAL VARIABLES
-real(8) :: t=0d0,dt      !time from beginning of simulation (s) and time step (s)
-real(8) :: tout,dtout    !time for next output and time between outputs
-real(8) :: tstart,tfin   !temp. vars. for measuring performance of code blocks
+real(wp) :: t=0d0,dt      !time from beginning of simulation (s) and time step (s)
+real(wp) :: tout,dtout    !time for next output and time between outputs
+real(wp) :: tstart,tfin   !temp. vars. for measuring performance of code blocks
 integer :: it,isp        !time and species loop indices
 
 !WORK ARRAYS
 integer :: flag2D
-real(8), dimension(:,:,:), allocatable :: xp,yp,zp     !source coordinates computed from simulation sub-grid
-real(8), dimension(:), allocatable  :: xf,yf,zf        !field point coordinates (flat list)
-real(8), dimension(:), allocatable :: r,theta,phi
-real(8), dimension(:,:,:), allocatable :: dV
+real(wp), dimension(:,:,:), allocatable :: xp,yp,zp     !source coordinates computed from simulation sub-grid
+real(wp), dimension(:), allocatable  :: xf,yf,zf        !field point coordinates (flat list)
+real(wp), dimension(:), allocatable :: r,theta,phi
+real(wp), dimension(:,:,:), allocatable :: dV
 integer :: ipoints,lpoints    !size of field point arrays
-real(8), dimension(:,:,:), allocatable :: proj_e1er,proj_e2er,proj_e3er
-real(8), dimension(:,:,:), allocatable :: proj_e1etheta,proj_e2etheta,proj_e3etheta
-real(8), dimension(:,:,:), allocatable :: proj_e1ephi,proj_e2ephi,proj_e3ephi
-real(8), dimension(:,:,:), allocatable :: Jx,Jy,Jz
-real(8), dimension(:,:,:), allocatable :: Rx,Ry,Rz,Rcubed
-real(8), dimension(:,:,:), allocatable :: integrand,integrandavg
-real(8), dimension(:,:,:), allocatable :: alt
-real(8), dimension(:), allocatable :: Br,Btheta,Bphi
-real(8), dimension(:), allocatable :: Brall,Bthetaall,Bphiall
+real(wp), dimension(:,:,:), allocatable :: proj_e1er,proj_e2er,proj_e3er
+real(wp), dimension(:,:,:), allocatable :: proj_e1etheta,proj_e2etheta,proj_e3etheta
+real(wp), dimension(:,:,:), allocatable :: proj_e1ephi,proj_e2ephi,proj_e3ephi
+real(wp), dimension(:,:,:), allocatable :: Jx,Jy,Jz
+real(wp), dimension(:,:,:), allocatable :: Rx,Ry,Rz,Rcubed
+real(wp), dimension(:,:,:), allocatable :: integrand,integrandavg
+real(wp), dimension(:,:,:), allocatable :: alt
+real(wp), dimension(:), allocatable :: Br,Btheta,Bphi
+real(wp), dimension(:), allocatable :: Brall,Bthetaall,Bphiall
 integer :: ix1,ix2,ix3
-real(8) :: rmean,thetamean
+real(wp) :: rmean,thetamean
 
 !NEUTRAL PERTURBATION VARIABLES (UNUSED)
 integer :: flagdneu                  !toggles neutral perturbations (0 - none; 1 - file-based neutral inputs)
 integer :: interptype                !toggles whether the neutral input data are interpreted (0 - Cartesian; 1 - axisymmetric)
-real(8) :: drhon,dzn                 !finite differences for the neutral input data in the horizontal and vertical directions
-real(8) :: sourcemlat,sourcemlon     !mag. lat./long for the neutral source location
+real(wp) :: drhon,dzn                 !finite differences for the neutral input data in the horizontal and vertical directions
+real(wp) :: sourcemlat,sourcemlon     !mag. lat./long for the neutral source location
 character(:), allocatable :: sourcedir          !directory where neutral input data are located
-real(8) :: dtneu                     !time interval [s] in between neutral inputs
+real(wp) :: dtneu                     !time interval [s] in between neutral inputs
 
 !PRECIPITATION FILE INPUT VARIABLES (UNUSED)
 integer :: flagprecfile              ! flag toggling precipitation file input (0 - no; 1 - yes)
-real(8) :: dtprec                    ! time interval between precip. inputs
+real(wp) :: dtprec                    ! time interval between precip. inputs
 character(:), allocatable :: precdir ! directory containing precip. input files
 
 !ELECTRIC FIELD FILE INPUT VARIABLES (UNUSED)
 integer :: flagE0file                ! flag toggling electric field (potential BCs) file input (0 - no; 1 - yes)
-real(8) :: dtE0                      ! time interval between electric field file inputs
+real(wp) :: dtE0                      ! time interval between electric field file inputs
 character(:), allocatable :: E0dir   ! directory containing electric field file input data
 
 !FOR HANDLING INPUT

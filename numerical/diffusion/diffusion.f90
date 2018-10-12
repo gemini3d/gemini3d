@@ -3,9 +3,9 @@ module diffusion
 !------ NOTE THAT SOME OLDER BACKWARD EULER ROUTINES HAVE BEEN RETAINED IN CASE
 !------ THEY ARE NEEDED FOR FUTURE WORK
 
-use phys_consts, only: kB,lsp,gammas,mindensdiv, wp
+use phys_consts, only: kB,lsp,gammas,mindensdiv,wp
 use grid, only : curvmesh,gridflag             !sizes are not imported in case we want to do subgrid diffusion
-use f95_lapack, only: gbsv=>la_gbsv,gtsv=>la_gtsv !banded and tridiagonal solvers
+!use f95_lapack, only: gbsv=>la_gbsv,gtsv=>la_gtsv !banded and tridiagonal solvers
 implicit none
 
 interface TRBDF23D
@@ -27,17 +27,17 @@ contains
 
     integer, intent(in) :: isp
     type(curvmesh), intent(in) :: x
-    real(8), dimension(:,:,:), intent(in) :: lambda,betacoeff
+    real(wp), dimension(:,:,:), intent(in) :: lambda,betacoeff
 
-    real(8), dimension(-1:,-1:,-1:), intent(in) :: ns
-    real(8), dimension(-1:,-1:,-1:), intent(inout) :: T
-    real(8), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4), &
+    real(wp), dimension(-1:,-1:,-1:), intent(in) :: ns
+    real(wp), dimension(-1:,-1:,-1:), intent(inout) :: T
+    real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4), &
              intent(out) :: A,B,C,D,E
 
-    real(8), dimension(:,:,:), intent(in) :: Tn
-    real(8), intent(in) :: Teinf
+    real(wp), dimension(:,:,:), intent(in) :: Tn
+    real(wp), intent(in) :: Teinf
 
-    real(8) :: Tn0
+    real(wp) :: Tn0
 
     integer :: lx1,lx2,lx3,ix2,ix3
 
@@ -439,6 +439,48 @@ contains
     call gbsv(M,backEuler1D,kl=2)
 
   end function backEuler1D
+
+  !------ SOURCE ADAPTED FROM LAPACK95 (Barker et al., 2001) --------
+  subroutine gbsv(A,B,KL,IPIV,INFO)
+    real(wp), dimension(:,:), intent(inout) :: A
+    real(wp), dimension(:), intent(inout) :: B
+    integer, intent(in), optional :: KL
+    integer, dimension(:), intent(out), optional, target :: IPIV
+    integer, intent(out), optional :: INFO
+    integer :: LINFO, ISTAT, ISTAT1, SIPIV, LDA, N, NRHS, LKL, KU
+    integer, dimension(:), pointer :: LPIV
+    intrinsic size, present
+
+    LINFO = 0; ISTAT = 0;
+    LDA = size(A,1); N = size(A,2); NRHS = 1;
+
+    if ( present(KL) ) then
+      LKL = KL
+    else
+      LKL = (LDA-1)/3
+    end if
+
+    if ( present(IPIV) ) then
+      SIPIV = size(IPIV)
+    else
+      SIPIV = N
+    end if
+
+    if ( present(IPIV) ) then
+      LPIV => IPIV
+    else
+      allocate(LPIV(N))
+    end if
+
+    if ( ISTAT == 0 ) then
+      KU = LDA - 2*LKL - 1
+      call dgbsv(N,LKL,KU,NRHS,A,LDA,LPIV,B,N,LINFO)
+    end if
+
+    if ( .NOT.present(IPIV) ) then
+      deallocate(LPIV)
+    end if
+  end subroutine gbsv
 
 
 end module diffusion

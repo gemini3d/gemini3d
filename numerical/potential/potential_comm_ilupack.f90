@@ -26,18 +26,18 @@ interface
   subroutine potentialBCs3D(t,sig0all,x1,x2,x3all,dx2,dx3all,Vminx1,Vmaxx1, &
                       Vminx2,Vmaxx2,Vminx3,Vmaxx3,E01all,E02all,E03all,flagdirich)
 
-    real(8), intent(in) :: t
-    real(8), dimension(:,:,:), intent(in) ::  sig0all
-    real(8), dimension(-1:), intent(in) :: x1
-    real(8), dimension(-1:), intent(in) :: x2
-    real(8), dimension(-1:), intent(in) :: x3all
-    real(8), dimension(0:), intent(in) :: dx2
-    real(8), dimension(0:), intent(in) :: dx3all
+    real(wp), intent(in) :: t
+    real(wp), dimension(:,:,:), intent(in) ::  sig0all
+    real(wp), dimension(-1:), intent(in) :: x1
+    real(wp), dimension(-1:), intent(in) :: x2
+    real(wp), dimension(-1:), intent(in) :: x3all
+    real(wp), dimension(0:), intent(in) :: dx2
+    real(wp), dimension(0:), intent(in) :: dx3all
 
-    real(8), dimension(:,:), intent(out) :: Vminx1,Vmaxx1
-    real(8), dimension(:,:), intent(out) :: Vminx2,Vmaxx2
-    real(8), dimension(:,:), intent(out) :: Vminx3,Vmaxx3
-    real(8), dimension(:,:,:), intent(out) :: E01all,E02all,E03all
+    real(wp), dimension(:,:), intent(out) :: Vminx1,Vmaxx1
+    real(wp), dimension(:,:), intent(out) :: Vminx2,Vmaxx2
+    real(wp), dimension(:,:), intent(out) :: Vminx3,Vmaxx3
+    real(wp), dimension(:,:,:), intent(out) :: E01all,E02all,E03all
     integer(8), intent(out) :: flagdirich
 
   end subroutine potentialBCs3D
@@ -72,38 +72,38 @@ contains
     !------------------------------------------------------------
 
     integer, intent(in) :: it
-    real(8), intent(in) :: t,dt
+    real(wp), intent(in) :: t,dt
 
-    real(8), dimension(:,:,:,:), intent(in) :: nn
-    real(8), dimension(:,:,:), intent(in) :: Tn
-    real(8), dimension(-1:,-1:,-1:,:), intent(in) :: ns,Ts,vs1
-    real(8), dimension(-1:,-1:,-1:), intent(in) :: B1
+    real(wp), dimension(:,:,:,:), intent(in) :: nn
+    real(wp), dimension(:,:,:), intent(in) :: Tn
+    real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns,Ts,vs1
+    real(wp), dimension(-1:,-1:,-1:), intent(in) :: B1
 
-    real(8), dimension(-1:,-1:,-1:,:), intent(inout) ::  vs2,vs3
+    real(wp), dimension(-1:,-1:,-1:,:), intent(inout) ::  vs2,vs3
 
-    real(8), dimension(-1:), intent(in) :: x1
-    real(8), dimension(-1:), intent(in) :: x2
-    real(8), dimension(-1:), intent(in) :: x3all   !workers actually are assumed to have a copy of grid all variable, otherwise and allocatable is needed here
-    real(8), dimension(0:), intent(in) :: dx1
-    real(8), dimension(:), intent(in) :: dx1i
-    real(8), dimension(0:), intent(in) :: dx2
-    real(8), dimension(:), intent(in) :: dx2i
-    real(8), dimension(0:), intent(in) :: dx3
-    real(8), dimension(:), intent(in) :: dx3i
-    real(8), dimension(0:), intent(in) :: dx3all
-    real(8), dimension(:), intent(in) :: dx3iall
+    real(wp), dimension(-1:), intent(in) :: x1
+    real(wp), dimension(-1:), intent(in) :: x2
+    real(wp), dimension(-1:), intent(in) :: x3all   !workers actually are assumed to have a copy of grid all variable, otherwise and allocatable is needed here
+    real(wp), dimension(0:), intent(in) :: dx1
+    real(wp), dimension(:), intent(in) :: dx1i
+    real(wp), dimension(0:), intent(in) :: dx2
+    real(wp), dimension(:), intent(in) :: dx2i
+    real(wp), dimension(0:), intent(in) :: dx3
+    real(wp), dimension(:), intent(in) :: dx3i
+    real(wp), dimension(0:), intent(in) :: dx3all
+    real(wp), dimension(:), intent(in) :: dx3iall
 
     integer, intent(in) :: potsolve
 
-    real(8), dimension(:,:,:), intent(out) :: E1,E2,E3,J1,J2,J3
-    real(8), dimension(:,:,:), allocatable, intent(inout) :: E1all,E2all,E3all
-    real(8), dimension(:,:,:), allocatable, intent(inout) :: J1all,J2all,J3all
-    real(8), dimension(:,:,:), allocatable, intent(inout) :: Phiall
+    real(wp), dimension(:,:,:), intent(out) :: E1,E2,E3,J1,J2,J3
+    real(wp), dimension(:,:,:), allocatable, intent(inout) :: E1all,E2all,E3all
+    real(wp), dimension(:,:,:), allocatable, intent(inout) :: J1all,J2all,J3all
+    real(wp), dimension(:,:,:), allocatable, intent(inout) :: Phiall
 
-    real(8), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: sig0,sigP,sigH
-    real(8), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,lsp) :: muP,muH
-    real(8), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: incap
-    real(8) :: tstart,tfin
+    real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: sig0,sigP,sigH
+    real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,lsp) :: muP,muH
+    real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: incap
+    real(wp) :: tstart,tfin
 
     integer :: lx1,lx2,lx3,isp
 
@@ -176,28 +176,28 @@ contains
     !------------------------------------------------------------
 
     integer, intent(in) :: it
-    real(8), intent(in) :: t,dt
+    real(wp), intent(in) :: t,dt
 
-    real(8), dimension(:,:,:,:), intent(in) :: nn
-    real(8), dimension(:,:,:), intent(in) :: Tn
-    real(8), dimension(-1:,-1:,-1:,:), intent(in) :: ns,Ts,vs1
-    real(8), dimension(-1:,-1:,-1:), intent(in) :: B1
+    real(wp), dimension(:,:,:,:), intent(in) :: nn
+    real(wp), dimension(:,:,:), intent(in) :: Tn
+    real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns,Ts,vs1
+    real(wp), dimension(-1:,-1:,-1:), intent(in) :: B1
 
-    real(8), dimension(-1:,-1:,-1:,:), intent(inout) ::  vs2,vs3
+    real(wp), dimension(-1:,-1:,-1:,:), intent(inout) ::  vs2,vs3
 
     type(curvmesh), intent(in) :: x
 
     integer, intent(in) :: potsolve
 
-    real(8), dimension(:,:,:), intent(out) :: E1,E2,E3,J1,J2,J3
-    real(8), dimension(:,:,:), allocatable, intent(inout) :: E1all,E2all,E3all
-    real(8), dimension(:,:,:), allocatable, intent(inout) :: J1all,J2all,J3all
-    real(8), dimension(:,:,:), allocatable, intent(inout) :: Phiall
+    real(wp), dimension(:,:,:), intent(out) :: E1,E2,E3,J1,J2,J3
+    real(wp), dimension(:,:,:), allocatable, intent(inout) :: E1all,E2all,E3all
+    real(wp), dimension(:,:,:), allocatable, intent(inout) :: J1all,J2all,J3all
+    real(wp), dimension(:,:,:), allocatable, intent(inout) :: Phiall
 
-    real(8), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: sig0,sigP,sigH
-    real(8), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,lsp) :: muP,muH
-    real(8), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: incap
-    real(8) :: tstart,tfin
+    real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: sig0,sigP,sigH
+    real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,lsp) :: muP,muH
+    real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: incap
+    real(wp) :: tstart,tfin
 
     integer :: lx1,lx2,lx3,isp
 
@@ -262,52 +262,52 @@ contains
     !------------------------------------------------------------
 
     integer, intent(in) :: it    !note that the makefile and ilupack insist that the default integer type is 8...
-    real(8), intent(in) :: t,dt
-    real(8), dimension(:,:,:), intent(in) ::  sig0,sigP,sigH
-    real(8), dimension(:,:,:), intent(in) ::  incap
-    real(8), dimension(-1:,-1:,-1:,:), intent(in) ::  vs2,vs3
+    real(wp), intent(in) :: t,dt
+    real(wp), dimension(:,:,:), intent(in) ::  sig0,sigP,sigH
+    real(wp), dimension(:,:,:), intent(in) ::  incap
+    real(wp), dimension(-1:,-1:,-1:,:), intent(in) ::  vs2,vs3
 
-    real(8), dimension(-1:), intent(in) :: x1
-    real(8), dimension(-1:), intent(in) :: x2
-    real(8), dimension(-1:), intent(in) :: x3all
-    real(8), dimension(0:), intent(in) :: dx1
-    real(8), dimension(:), intent(in) :: dx1i
-    real(8), dimension(0:), intent(in) :: dx2
-    real(8), dimension(:), intent(in) :: dx2i
-    real(8), dimension(0:), intent(in) :: dx3
-    real(8), dimension(:), intent(in) :: dx3i
-    real(8), dimension(0:), intent(in) :: dx3all
-    real(8), dimension(:), intent(in) :: dx3iall
+    real(wp), dimension(-1:), intent(in) :: x1
+    real(wp), dimension(-1:), intent(in) :: x2
+    real(wp), dimension(-1:), intent(in) :: x3all
+    real(wp), dimension(0:), intent(in) :: dx1
+    real(wp), dimension(:), intent(in) :: dx1i
+    real(wp), dimension(0:), intent(in) :: dx2
+    real(wp), dimension(:), intent(in) :: dx2i
+    real(wp), dimension(0:), intent(in) :: dx3
+    real(wp), dimension(:), intent(in) :: dx3i
+    real(wp), dimension(0:), intent(in) :: dx3all
+    real(wp), dimension(:), intent(in) :: dx3iall
 
     integer, intent(in) :: potsolve
 
-    real(8), dimension(:,:,:), intent(out) :: E1,E2,E3,J1,J2,J3
-    real(8), dimension(:,:,:), intent(inout) :: E1all,E2all,E3all
-    real(8), dimension(:,:,:), intent(out) :: J1all,J2all,J3all   
-    real(8), dimension(:,:,:), intent(inout) :: Phiall   !not good form, but I'm lazy
+    real(wp), dimension(:,:,:), intent(out) :: E1,E2,E3,J1,J2,J3
+    real(wp), dimension(:,:,:), intent(inout) :: E1all,E2all,E3all
+    real(wp), dimension(:,:,:), intent(out) :: J1all,J2all,J3all   
+    real(wp), dimension(:,:,:), intent(inout) :: Phiall   !not good form, but I'm lazy
 
-    real(8), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: v2,v3
+    real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: v2,v3
 
-    real(8), dimension(1:size(E1all,1),1:size(E1all,2),1:size(E1all,3)) :: sig0all,sigPall,sigHall   !really prefer sizes set by intent(in) vars.
-    real(8), dimension(1:size(E1all,1),1:size(E1all,2),1:size(E1all,3)) :: incapall
-    real(8), dimension(1:size(E1all,1),1:size(E1all,2),1:size(E1all,3)) :: J1polall,J2polall,J3polall
-    real(8), dimension(1:size(E1all,1),1:size(E1all,2),1:size(E1all,3)) :: grad2E,grad3E    !more work arrays for pol. curr.
-    real(8), dimension(1:size(E1all,1),1:size(E1all,2),1:size(E1all,3)) :: E1prevall,E2prevall,E3prevall
-    real(8), dimension(1:size(E1all,1),1:size(E1all,2),1:size(E1all,3)) :: DE2Dt,DE3Dt
+    real(wp), dimension(1:size(E1all,1),1:size(E1all,2),1:size(E1all,3)) :: sig0all,sigPall,sigHall   !really prefer sizes set by intent(in) vars.
+    real(wp), dimension(1:size(E1all,1),1:size(E1all,2),1:size(E1all,3)) :: incapall
+    real(wp), dimension(1:size(E1all,1),1:size(E1all,2),1:size(E1all,3)) :: J1polall,J2polall,J3polall
+    real(wp), dimension(1:size(E1all,1),1:size(E1all,2),1:size(E1all,3)) :: grad2E,grad3E    !more work arrays for pol. curr.
+    real(wp), dimension(1:size(E1all,1),1:size(E1all,2),1:size(E1all,3)) :: E1prevall,E2prevall,E3prevall
+    real(wp), dimension(1:size(E1all,1),1:size(E1all,2),1:size(E1all,3)) :: DE2Dt,DE3Dt
 
-    real(8), dimension(1:size(E1all,1),1:size(E1all,2),1:size(E1all,3)) :: srcterm
-    real(8), dimension(1:size(E1all,2),1:size(E1all,3)) :: Vminx1,Vmaxx1
-    real(8), dimension(1:size(E1all,1),1:size(E1all,3)) :: Vminx2,Vmaxx2
-    real(8), dimension(1:size(E1all,1),1:size(E1all,2)) :: Vminx3,Vmaxx3
+    real(wp), dimension(1:size(E1all,1),1:size(E1all,2),1:size(E1all,3)) :: srcterm
+    real(wp), dimension(1:size(E1all,2),1:size(E1all,3)) :: Vminx1,Vmaxx1
+    real(wp), dimension(1:size(E1all,1),1:size(E1all,3)) :: Vminx2,Vmaxx2
+    real(wp), dimension(1:size(E1all,1),1:size(E1all,2)) :: Vminx3,Vmaxx3
     integer(8) :: flagdirich    !ilupack expects 8-byte integers with the compile flags presently used
 
-    real(8), dimension(1:size(E1all,1),1:size(E1all,2),1:size(E1all,3)) :: v2all,v3all   !stores drift velocs. for pol. current
-    real(8), dimension(1:size(E1all,1),1:size(E1all,2),1:size(E1all,3)) :: E01all,E02all,E03all
-    real(8), dimension(1:size(E1all,1),1:size(E1all,2),1:size(E1all,3)) :: DE2Dtall,DE3Dtall   !pol. drift
+    real(wp), dimension(1:size(E1all,1),1:size(E1all,2),1:size(E1all,3)) :: v2all,v3all   !stores drift velocs. for pol. current
+    real(wp), dimension(1:size(E1all,1),1:size(E1all,2),1:size(E1all,3)) :: E01all,E02all,E03all
+    real(wp), dimension(1:size(E1all,1),1:size(E1all,2),1:size(E1all,3)) :: DE2Dtall,DE3Dtall   !pol. drift
 
     integer :: ix2,ix3,lx1,lx2,lx3,lx3all
 
-    real(8) :: dVmaxx1,dE02all,dE03all
+    real(wp) :: dVmaxx1,dE02all,dE03all
 
     integer :: iid,islstart,islfin
  
@@ -481,42 +481,42 @@ contains
     !------------------------------------------------------------
 
     integer, intent(in) :: it    !note that the makefile and ilupack insist that the default integer type is 8...
-    real(8), intent(in) :: t,dt
-    real(8), dimension(:,:,:), intent(in) ::  sig0,sigP,sigH
-    real(8), dimension(:,:,:), intent(in) ::  incap
-    real(8), dimension(-1:,-1:,-1:,:), intent(in) ::  vs2,vs3
+    real(wp), intent(in) :: t,dt
+    real(wp), dimension(:,:,:), intent(in) ::  sig0,sigP,sigH
+    real(wp), dimension(:,:,:), intent(in) ::  incap
+    real(wp), dimension(-1:,-1:,-1:,:), intent(in) ::  vs2,vs3
 
     type(curvmesh), intent(in) :: x
 
     integer, intent(in) :: potsolve
 
-    real(8), dimension(:,:,:), intent(out) :: E1,E2,E3,J1,J2,J3
-    real(8), dimension(:,:,:), intent(inout) :: E1all,E2all,E3all
-    real(8), dimension(:,:,:), intent(out) :: J1all,J2all,J3all   
-    real(8), dimension(:,:,:), intent(inout) :: Phiall   !not good form, but I'm lazy
+    real(wp), dimension(:,:,:), intent(out) :: E1,E2,E3,J1,J2,J3
+    real(wp), dimension(:,:,:), intent(inout) :: E1all,E2all,E3all
+    real(wp), dimension(:,:,:), intent(out) :: J1all,J2all,J3all   
+    real(wp), dimension(:,:,:), intent(inout) :: Phiall   !not good form, but I'm lazy
 
-    real(8), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: v2,v3
+    real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: v2,v3
 
-    real(8), dimension(1:size(E1all,1),1:size(E1all,2),1:size(E1all,3)) :: sig0all,sigPall,sigHall   !really prefer sizes set by intent(in) vars.
-    real(8), dimension(1:size(E1all,1),1:size(E1all,2),1:size(E1all,3)) :: incapall
-    real(8), dimension(1:size(E1all,1),1:size(E1all,2),1:size(E1all,3)) :: J1polall,J2polall,J3polall
-    real(8), dimension(1:size(E1all,1),1:size(E1all,2),1:size(E1all,3)) :: grad2E,grad3E    !more work arrays for pol. curr.
-    real(8), dimension(1:size(E1all,1),1:size(E1all,2),1:size(E1all,3)) :: E1prevall,E2prevall,E3prevall
-    real(8), dimension(1:size(E1all,1),1:size(E1all,2),1:size(E1all,3)) :: DE2Dt,DE3Dt
+    real(wp), dimension(1:size(E1all,1),1:size(E1all,2),1:size(E1all,3)) :: sig0all,sigPall,sigHall   !really prefer sizes set by intent(in) vars.
+    real(wp), dimension(1:size(E1all,1),1:size(E1all,2),1:size(E1all,3)) :: incapall
+    real(wp), dimension(1:size(E1all,1),1:size(E1all,2),1:size(E1all,3)) :: J1polall,J2polall,J3polall
+    real(wp), dimension(1:size(E1all,1),1:size(E1all,2),1:size(E1all,3)) :: grad2E,grad3E    !more work arrays for pol. curr.
+    real(wp), dimension(1:size(E1all,1),1:size(E1all,2),1:size(E1all,3)) :: E1prevall,E2prevall,E3prevall
+    real(wp), dimension(1:size(E1all,1),1:size(E1all,2),1:size(E1all,3)) :: DE2Dt,DE3Dt
 
-    real(8), dimension(1:size(E1all,1),1:size(E1all,2),1:size(E1all,3)) :: srcterm
-    real(8), dimension(1:size(E1all,2),1:size(E1all,3)) :: Vminx1,Vmaxx1
-    real(8), dimension(1:size(E1all,1),1:size(E1all,3)) :: Vminx2,Vmaxx2
-    real(8), dimension(1:size(E1all,1),1:size(E1all,2)) :: Vminx3,Vmaxx3
+    real(wp), dimension(1:size(E1all,1),1:size(E1all,2),1:size(E1all,3)) :: srcterm
+    real(wp), dimension(1:size(E1all,2),1:size(E1all,3)) :: Vminx1,Vmaxx1
+    real(wp), dimension(1:size(E1all,1),1:size(E1all,3)) :: Vminx2,Vmaxx2
+    real(wp), dimension(1:size(E1all,1),1:size(E1all,2)) :: Vminx3,Vmaxx3
     integer(8) :: flagdirich    !ilupack expects 8-byte integers with the compile flags presently used
 
-    real(8), dimension(1:size(E1all,1),1:size(E1all,2),1:size(E1all,3)) :: v2all,v3all   !stores drift velocs. for pol. current
-    real(8), dimension(1:size(E1all,1),1:size(E1all,2),1:size(E1all,3)) :: E01all,E02all,E03all
-    real(8), dimension(1:size(E1all,1),1:size(E1all,2),1:size(E1all,3)) :: DE2Dtall,DE3Dtall   !pol. drift
+    real(wp), dimension(1:size(E1all,1),1:size(E1all,2),1:size(E1all,3)) :: v2all,v3all   !stores drift velocs. for pol. current
+    real(wp), dimension(1:size(E1all,1),1:size(E1all,2),1:size(E1all,3)) :: E01all,E02all,E03all
+    real(wp), dimension(1:size(E1all,1),1:size(E1all,2),1:size(E1all,3)) :: DE2Dtall,DE3Dtall   !pol. drift
 
     integer :: ix2,ix3,lx1,lx2,lx3,lx3all
 
-    real(8) :: dVmaxx1,dE02all,dE03all
+    real(wp) :: dVmaxx1,dE02all,dE03all
 
     integer :: iid,islstart,islfin
  
@@ -662,15 +662,15 @@ contains
     !-------WORKER MPI COMMUNICATION ROUTINE FOR POTENTIAL SOLN.
     !------------------------------------------------------------
   
-    real(8), dimension(:,:,:), intent(in) ::  sig0,sigP,sigH
-    real(8), dimension(:,:,:), intent(in) ::  incap
-    real(8), dimension(-1:,-1:,-1:,:), intent(in) ::  vs2,vs3
+    real(wp), dimension(:,:,:), intent(in) ::  sig0,sigP,sigH
+    real(wp), dimension(:,:,:), intent(in) ::  incap
+    real(wp), dimension(-1:,-1:,-1:,:), intent(in) ::  vs2,vs3
 
     integer, intent(in) :: potsolve
 
-    real(8), dimension(:,:,:), intent(out) :: E1,E2,E3,J1,J2,J3
+    real(wp), dimension(:,:,:), intent(out) :: E1,E2,E3,J1,J2,J3
 
-    real(8), dimension(1:size(sigP,1),1:size(sigP,2),1:size(sigP,3)) :: vEB    !send vars need to be contiguous in memory
+    real(wp), dimension(1:size(sigP,1),1:size(sigP,2),1:size(sigP,3)) :: vEB    !send vars need to be contiguous in memory
     
     integer :: lx1,lx2,lx3
     

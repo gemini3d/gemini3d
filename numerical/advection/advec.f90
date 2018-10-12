@@ -14,15 +14,15 @@ contains
     !-------Note that it is done on a per species basis
 
     integer, intent(in) :: isp
-    real(8), dimension(-1:,-1:,-1:,:), intent(inout) :: ns,rhovs1,vs1,vs2,vs3,rhoes
+    real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: ns,rhovs1,vs1,vs2,vs3,rhoes
 
-    real(8), dimension(1:size(vs1,1)-3,1:size(vs1,2)-4,1:size(vs1,3)-4), intent(out) :: v1i   !why is size specified here???
-    real(8), dimension(1:size(vs1,1)-4,1:size(vs1,2)-3,1:size(vs1,3)-4), intent(out) :: v2i
-    real(8), dimension(1:size(vs1,1)-4,1:size(vs1,2)-4,1:size(vs1,3)-3), intent(out) :: v3i
+    real(wp), dimension(1:size(vs1,1)-3,1:size(vs1,2)-4,1:size(vs1,3)-4), intent(out) :: v1i   !why is size specified here???
+    real(wp), dimension(1:size(vs1,1)-4,1:size(vs1,2)-3,1:size(vs1,3)-4), intent(out) :: v2i
+    real(wp), dimension(1:size(vs1,1)-4,1:size(vs1,2)-4,1:size(vs1,3)-3), intent(out) :: v3i
 
-    real(8), parameter :: vellim=2000.0
-!    real(8), parameter :: vellim=0.0
-    real(8) :: coeff
+    real(wp), parameter :: vellim=2000.0
+!    real(wp), parameter :: vellim=0.0
+    real(wp) :: coeff
     integer :: ix2,ix3,lx1,lx2,lx3
 
     lx1=size(vs1,1)-4
@@ -119,26 +119,26 @@ contains
 
 
   function advec3D_MC(f,v1i,v2i,v3i,dt,dx1,dx1i,dx2,dx2i,dx3,dx3i)
-    real(8), dimension(-1:,-1:,-1:), intent(in) :: f    !f includes ghost cells
-    real(8), dimension(:,:,:), intent(in) :: v1i
-    real(8), dimension(0:), intent(in) :: dx1       !ith backward difference
-    real(8), dimension(:), intent(in) :: dx1i
-    real(8), dimension(:,:,:), intent(in) :: v2i
-    real(8), dimension(0:), intent(in) :: dx2
-    real(8), dimension(:), intent(in) :: dx2i
-    real(8), dimension(:,:,:), intent(in) :: v3i
-    real(8), dimension(0:), intent(in) :: dx3
-    real(8), dimension(:), intent(in) :: dx3i
-    real(8), intent(in) :: dt
+    real(wp), dimension(-1:,-1:,-1:), intent(in) :: f    !f includes ghost cells
+    real(wp), dimension(:,:,:), intent(in) :: v1i
+    real(wp), dimension(0:), intent(in) :: dx1       !ith backward difference
+    real(wp), dimension(:), intent(in) :: dx1i
+    real(wp), dimension(:,:,:), intent(in) :: v2i
+    real(wp), dimension(0:), intent(in) :: dx2
+    real(wp), dimension(:), intent(in) :: dx2i
+    real(wp), dimension(:,:,:), intent(in) :: v3i
+    real(wp), dimension(0:), intent(in) :: dx3
+    real(wp), dimension(:), intent(in) :: dx3i
+    real(wp), intent(in) :: dt
 
     integer :: ix1,ix2,ix3,lx1,lx2,lx3
-    real(8), dimension(-1:size(f,1)-2) :: fx1slice
-    real(8), dimension(1:size(f,1)-3) :: v1slice    
-    real(8), dimension(-1:size(f,2)-2) :: fx2slice
-    real(8), dimension(1:size(f,2)-3) :: v2slice
-    real(8), dimension(-1:size(f,3)-2) :: fx3slice
-    real(8), dimension(1:size(f,3)-3) :: v3slice
-    real(8), dimension(-1:size(f,1)-2,-1:size(f,2)-2,-1:size(f,3)-2) :: advec3D_MC
+    real(wp), dimension(-1:size(f,1)-2) :: fx1slice
+    real(wp), dimension(1:size(f,1)-3) :: v1slice    
+    real(wp), dimension(-1:size(f,2)-2) :: fx2slice
+    real(wp), dimension(1:size(f,2)-3) :: v2slice
+    real(wp), dimension(-1:size(f,3)-2) :: fx3slice
+    real(wp), dimension(1:size(f,3)-3) :: v3slice
+    real(wp), dimension(-1:size(f,1)-2,-1:size(f,2)-2,-1:size(f,3)-2) :: advec3D_MC
 
     lx1=size(f,1)-4
     lx2=size(f,2)-4
@@ -185,21 +185,21 @@ contains
 
 
   function advec2D_MC(f,v1i,v2i,dt,dx1,dx1i,dx2,dx2i)
-    real(8), dimension(-1:,-1:), intent(in) :: f    !f includes ghost cells
-    real(8), dimension(:,:), intent(in) :: v1i
-    real(8), dimension(0:), intent(in) :: dx1       !ith backward difference
-    real(8), dimension(:), intent(in) :: dx1i
-    real(8), dimension(:,:), intent(in) :: v2i
-    real(8), dimension(0:), intent(in) :: dx2
-    real(8), dimension(:), intent(in) :: dx2i
-    real(8), intent(in) :: dt
+    real(wp), dimension(-1:,-1:), intent(in) :: f    !f includes ghost cells
+    real(wp), dimension(:,:), intent(in) :: v1i
+    real(wp), dimension(0:), intent(in) :: dx1       !ith backward difference
+    real(wp), dimension(:), intent(in) :: dx1i
+    real(wp), dimension(:,:), intent(in) :: v2i
+    real(wp), dimension(0:), intent(in) :: dx2
+    real(wp), dimension(:), intent(in) :: dx2i
+    real(wp), intent(in) :: dt
 
     integer :: ix1,ix2,lx1,lx2
-    real(8), dimension(-1:size(f,1)-2) :: fx1slice
-    real(8), dimension(1:size(f,1)-3) :: v1slice    
-    real(8), dimension(-1:size(f,2)-2) :: fx2slice
-    real(8), dimension(1:size(f,2)-3) :: v2slice
-    real(8), dimension(-1:size(f,1)-2,-1:size(f,2)-2) :: advec2D_MC
+    real(wp), dimension(-1:size(f,1)-2) :: fx1slice
+    real(wp), dimension(1:size(f,1)-3) :: v1slice    
+    real(wp), dimension(-1:size(f,2)-2) :: fx2slice
+    real(wp), dimension(1:size(f,2)-3) :: v2slice
+    real(wp), dimension(-1:size(f,1)-2,-1:size(f,2)-2) :: advec2D_MC
 
     lx1=size(f,1)-4
     lx2=size(f,2)-4
@@ -228,17 +228,17 @@ contains
 
 
   function advec1D_MC(f,v1i,dt,dx1,dx1i)
-    real(8), dimension(-1:), intent(in) :: f    !f includes ghost cells
-    real(8), dimension(:), intent(in) :: v1i
-    real(8), dimension(0:), intent(in) :: dx1   !ith backward difference
-    real(8), dimension(:), intent(in) :: dx1i
-    real(8), intent(in) :: dt
+    real(wp), dimension(-1:), intent(in) :: f    !f includes ghost cells
+    real(wp), dimension(:), intent(in) :: v1i
+    real(wp), dimension(0:), intent(in) :: dx1   !ith backward difference
+    real(wp), dimension(:), intent(in) :: dx1i
+    real(wp), intent(in) :: dt
     
     integer :: ix1,lx1
-    real(8), dimension(size(v1i)) :: phi
-    real(8), dimension(0:size(v1i)) :: slope         !slopes only need through first layer of ghosts
-    real(8) :: lslope,rslope,cslope
-    real(8), dimension(-1:size(f)-2) :: advec1D_MC
+    real(wp), dimension(size(v1i)) :: phi
+    real(wp), dimension(0:size(v1i)) :: slope         !slopes only need through first layer of ghosts
+    real(wp) :: lslope,rslope,cslope
+    real(wp), dimension(-1:size(f)-2) :: advec1D_MC
 
 
     lx1=size(f)-4
@@ -276,8 +276,8 @@ contains
 
 
 
-  real(8) function minmod(a,b)
-    real(8), intent(in) :: a,b
+  real(wp) function minmod(a,b)
+    real(wp), intent(in) :: a,b
 
     if (a*b <= 0.) then
       minmod=0.
@@ -291,15 +291,15 @@ contains
 
 
   function advec1D_DC(f,v1i,dt,dx1,dx1i)
-    real(8), dimension(0:), intent(in) :: dx1   !ith backward difference
-    real(8), dimension(:), intent(in) :: dx1i
-    real(8), dimension(-1:), intent(in) :: f
-    real(8), dimension(:), intent(in) :: v1i
-    real(8), intent(in) :: dt
+    real(wp), dimension(0:), intent(in) :: dx1   !ith backward difference
+    real(wp), dimension(:), intent(in) :: dx1i
+    real(wp), dimension(-1:), intent(in) :: f
+    real(wp), dimension(:), intent(in) :: v1i
+    real(wp), intent(in) :: dt
     
     integer :: ix1,lx1
-    real(8), dimension(size(v1i)) :: phi
-    real(8), dimension(-1:size(f)-2) :: advec1D_DC
+    real(wp), dimension(size(v1i)) :: phi
+    real(wp), dimension(-1:size(f)-2) :: advec1D_DC
 
 
     lx1=size(f)-4 !size of main grid excluding ghost cells  

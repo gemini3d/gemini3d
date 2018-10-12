@@ -2,7 +2,6 @@ module grid
 use, intrinsic:: iso_fortran_env, only: stderr=>error_unit
 use phys_consts, only: Gconst,Me,Re,wp
 use mpimod
-use mpi
 
 implicit none
 
@@ -19,37 +18,37 @@ integer :: flagswap    !have the x2 and x3 dimensions been swapped?
 
 type :: curvmesh
   !CURVILINEAR VARIABLES AND DIFFS.
-  real(8), dimension(:), allocatable :: x1
-  real(8), dimension(:), allocatable :: x1i
-  real(8), dimension(:), pointer :: dx1    !because sub arrays need to be assigned to aliases in calculus module program units
-  real(8), dimension(:), allocatable :: dx1i
+  real(wp), dimension(:), allocatable :: x1
+  real(wp), dimension(:), allocatable :: x1i
+  real(wp), dimension(:), pointer :: dx1    !because sub arrays need to be assigned to aliases in calculus module program units
+  real(wp), dimension(:), allocatable :: dx1i
 
-  real(8), dimension(:), allocatable :: x2
-  real(8), dimension(:), allocatable :: x2i
-  real(8), dimension(:), pointer :: dx2
-  real(8), dimension(:), allocatable :: dx2i
+  real(wp), dimension(:), allocatable :: x2
+  real(wp), dimension(:), allocatable :: x2i
+  real(wp), dimension(:), pointer :: dx2
+  real(wp), dimension(:), allocatable :: dx2i
 
-  real(8), dimension(:), allocatable :: x3
-  real(8), dimension(:), allocatable :: x3i
-  real(8), dimension(:), pointer :: dx3
-  real(8), dimension(:), allocatable :: dx3i
+  real(wp), dimension(:), allocatable :: x3
+  real(wp), dimension(:), allocatable :: x3i
+  real(wp), dimension(:), pointer :: dx3
+  real(wp), dimension(:), allocatable :: dx3i
 
-  real(8), dimension(:), allocatable :: x3all
-  real(8), dimension(:), allocatable  :: x3iall
-  real(8), dimension(:), pointer :: dx3all
-  real(8), dimension(:), allocatable  :: dx3iall
+  real(wp), dimension(:), allocatable :: x3all
+  real(wp), dimension(:), allocatable  :: x3iall
+  real(wp), dimension(:), pointer :: dx3all
+  real(wp), dimension(:), allocatable  :: dx3iall
 
   !METRIC FACTORS
-  real(8), dimension(:,:,:), pointer :: h1,h2,h3            !these are the cell-centered metric coefficients
-  real(8), dimension(:,:,:), allocatable :: h1x1i,h2x1i,h3x1i   !metric factors at x1 cell interfaces; dimension 1 has size lx1+1
-  real(8), dimension(:,:,:), allocatable :: h1x2i,h2x2i,h3x2i   !metric factors at x2 interfaces; dim. 2 has lx2+1
-  real(8), dimension(:,:,:), allocatable :: h1x3i,h2x3i,h3x3i   !metric factors at x3 interfaces; dim. 3 has lx3+1
+  real(wp), dimension(:,:,:), pointer :: h1,h2,h3            !these are the cell-centered metric coefficients
+  real(wp), dimension(:,:,:), allocatable :: h1x1i,h2x1i,h3x1i   !metric factors at x1 cell interfaces; dimension 1 has size lx1+1
+  real(wp), dimension(:,:,:), allocatable :: h1x2i,h2x2i,h3x2i   !metric factors at x2 interfaces; dim. 2 has lx2+1
+  real(wp), dimension(:,:,:), allocatable :: h1x3i,h2x3i,h3x3i   !metric factors at x3 interfaces; dim. 3 has lx3+1
 
   !ROOT ONLY FULL GRID METRIC FACTORS (WORKERS WILL NOT ALLOCATE) - CANDIDATE FOR ELIMINATION???
-  real(8), dimension(:,:,:), pointer :: h1all,h2all,h3all
-  real(8), dimension(:,:,:), allocatable :: h1x1iall,h2x1iall,h3x1iall   !dimension 1 has size lx1+1
-  real(8), dimension(:,:,:), allocatable :: h1x2iall,h2x2iall,h3x2iall   !dim. 2 has lx2+1
-  real(8), dimension(:,:,:), allocatable :: h1x3iall,h2x3iall,h3x3iall   !dim. 3 has lx3all+1
+  real(wp), dimension(:,:,:), pointer :: h1all,h2all,h3all
+  real(wp), dimension(:,:,:), allocatable :: h1x1iall,h2x1iall,h3x1iall   !dimension 1 has size lx1+1
+  real(wp), dimension(:,:,:), allocatable :: h1x2iall,h2x2iall,h3x2iall   !dim. 2 has lx2+1
+  real(wp), dimension(:,:,:), allocatable :: h1x3iall,h2x3iall,h3x3iall   !dim. 3 has lx3all+1
 
   !SHALL WE ALSO PRECOMPUTE SOME OF THE PRODUCTS FOR ADVECTION?
 
@@ -57,29 +56,29 @@ type :: curvmesh
   integer :: lx1,lx2,lx3,lx3all    !for program units that may not be able to access module globals
 
   !UNIT VECTORS - NO ONE NEEDS A FULL GRID COPY OF THESE, I BELIEVE
-  real(8), dimension(:,:,:,:), allocatable :: e1,e2,e3     !unit vectors in curvilinear space (in cartesian components)
-  real(8), dimension(:,:,:,:), allocatable :: er,etheta,ephi    !spherical unit vectors (in cartesian components)
+  real(wp), dimension(:,:,:,:), allocatable :: e1,e2,e3     !unit vectors in curvilinear space (in cartesian components)
+  real(wp), dimension(:,:,:,:), allocatable :: er,etheta,ephi    !spherical unit vectors (in cartesian components)
 
   !GEOMAGNETIC GRID DATA
-  real(8), dimension(:,:,:), allocatable :: r,theta,phi    !may be used in the interpolation of neutral perturbations
+  real(wp), dimension(:,:,:), allocatable :: r,theta,phi    !may be used in the interpolation of neutral perturbations
 
   !FULL-GRID GEOMAGNETIC INFORMATION - USED BY ROOT IN INTERPOLATING ELECTRIC FIELD FILE INPUT
-  real(8), dimension(:,:,:), allocatable :: rall,thetaall,phiall
+  real(wp), dimension(:,:,:), allocatable :: rall,thetaall,phiall
 
   !GEOGRAPHIC DATA
-  real(8), dimension(:,:,:), allocatable :: glat,glon,alt
+  real(wp), dimension(:,:,:), allocatable :: glat,glon,alt
 
   !MAGNETIC FIELD - THIS IS  PART OF THE GRID SINCE THE COORDINATE SYSTEM USED IS BASED ON THE MAGNETIC FIELD
-  real(8), dimension(:,:,:), allocatable :: Bmag
-  real(8), dimension(:,:), allocatable :: I
+  real(wp), dimension(:,:,:), allocatable :: Bmag
+  real(wp), dimension(:,:), allocatable :: I
 
   !DEFINE POINTS TO EXCLUDE FROM NUMERICAL SOLVES?
-  real(8), dimension(:,:,:), allocatable :: nullpts   !this could be a logical but I'm going to treat it as real*8
+  real(wp), dimension(:,:,:), allocatable :: nullpts   !this could be a logical but I'm going to treat it as real*8
   integer :: lnull                                    !length of null point index array
   integer, dimension(:,:), allocatable :: inull
 
   !DIFFERENTIAL LENGTH ELEMENTS NEEDED TO COMPUTE COURANT NUMBERS
-  real(8), dimension(:,:,:), allocatable :: dl1i,dl2i,dl3i
+  real(wp), dimension(:,:,:), allocatable :: dl1i,dl2i,dl3i
 
   !A FLAG FOR INDICATING WHETHER OR NOT PERIODIC
   integer :: flagper
@@ -147,19 +146,19 @@ contains
     integer lx1g,lx2g,lx3allg,iid,ix1,ix2,ix3,icount,icomp!,itell
 
     !NOTE THAT HAVING THESE ARE LOCAL (TEMPORARY) VARS. PREVENTS ROOT FROM WRITING ENTIRE GRID TO FILE AT SOME LATER POINT...
-    real(8), dimension(:,:,:), allocatable :: g1all,g2all,g3all   !to temporarily store input data to be distributed
-    real(8), dimension(:,:,:), allocatable :: altall,glatall,glonall
-    real(8), dimension(:,:,:), allocatable :: rall,thetaall,phiall
-    real(8), dimension(:,:,:), allocatable :: Bmagall
-    real(8), dimension(:,:), allocatable :: Incall
-    real(8), dimension(:,:,:), allocatable :: nullptsall
-    real(8), dimension(:,:,:,:), allocatable :: e1all,e2all,e3all,erall,ethetaall,ephiall    !might be best to have a tmp vector array...
-    real(8), dimension(:,:,:), allocatable :: mpisendbuf
-    real(8), dimension(:,:,:), allocatable :: mpirecvbuf
-    real(8), dimension(:,:,:), allocatable :: tmpdx
-    real(8), dimension(:,:,:), allocatable :: htmp
-    real(8), dimension(:,:), allocatable :: htmp2D
-    real(8), dimension(:,:,:,:), allocatable :: htmp4D
+    real(wp), dimension(:,:,:), allocatable :: g1all,g2all,g3all   !to temporarily store input data to be distributed
+    real(wp), dimension(:,:,:), allocatable :: altall,glatall,glonall
+    real(wp), dimension(:,:,:), allocatable :: rall,thetaall,phiall
+    real(wp), dimension(:,:,:), allocatable :: Bmagall
+    real(wp), dimension(:,:), allocatable :: Incall
+    real(wp), dimension(:,:,:), allocatable :: nullptsall
+    real(wp), dimension(:,:,:,:), allocatable :: e1all,e2all,e3all,erall,ethetaall,ephiall    !might be best to have a tmp vector array...
+    real(wp), dimension(:,:,:), allocatable :: mpisendbuf
+    real(wp), dimension(:,:,:), allocatable :: mpirecvbuf
+    real(wp), dimension(:,:,:), allocatable :: tmpdx
+    real(wp), dimension(:,:,:), allocatable :: htmp
+    real(wp), dimension(:,:), allocatable :: htmp2D
+    real(wp), dimension(:,:,:,:), allocatable :: htmp4D
     
     logical exists
 
@@ -652,8 +651,8 @@ contains
     type(curvmesh), intent(inout) :: x
 
     integer :: ix1,ix2,ix3,icount,icomp
-    real(8), dimension(:,:,:), allocatable :: mpirecvbuf
-    real(8), dimension(:,:,:), allocatable :: tmpdx
+    real(wp), dimension(:,:,:), allocatable :: mpirecvbuf
+    real(wp), dimension(:,:,:), allocatable :: tmpdx
 
 
     !GET ROOTS MESSAGE WITH THE SIZE OF THE GRID WE ARE TO RECEIVE
@@ -891,7 +890,7 @@ contains
     !-------THEY ARE PASSED INTO THIS ROUTINE.
     !------------------------------------------------------------
 
-    real(8), dimension(:,:,:), intent(in) :: alt
+    real(wp), dimension(:,:,:), intent(in) :: alt
 
     allocate(g1(lx1,lx2,lx3),g2(lx1,lx2,lx3),g3(lx1,lx2,lx3))
 

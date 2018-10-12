@@ -8,7 +8,6 @@ CURRDIR = $(shell pwd)
 HOMEDIR = $(HOME)/zettergmdata/
 LAPACK77 = $(HOMEDIR)/lib/lapack-3.5.0/liblapack.a
 BLAS     = $(HOMEDIR)/lib/BLAS/libblas.a
-LAPACK95 = $(HOMEDIR)/lib/LAPACK95/lapack95.a
 TMG = $(HOMEDIR)/lib/lapack-3.5.0/libtmglib.a
 MUMPS = $(MUMPSDIR)/lib/libdmumps.a $(MUMPSDIR)/lib/libmumps_common.a  -L$(MUMPSDIR)/PORD/lib/ -lpord
 
@@ -16,8 +15,6 @@ OBJDIR = ./objects/
 MUMPSDIR=$(HOMEDIR)/lib/MUMPS_4.10.0/
 SCALADIR=$(HOMEDIR)/lib/scalapack-2.0.2/
 BLACSDIR=$(HOMEDIR)/lib/BLACS/
-BLASDIR=$(HOMEDIR)/lib/BLAS/
-ILUDIR=$(HOMEDIR)/lib/ilupackV2.4_GNU64_long_MUMPS/
 
 LIBBLACS=$(BLACSDIR)/LIB/blacs_MPI-LINUX-0.a $(BLACSDIR)/LIB/blacsF77init_MPI-LINUX-0.a
 
@@ -38,7 +35,7 @@ gemini_mumps: $(OBJDIR)advec_mpi.o $(OBJDIR)diffusion.o $(OBJDIR)ionization.o $(
 	$(OBJDIR)calculus.o $(OBJDIR)gemini.o $(OBJDIR)msis00_gfortran.o $(OBJDIR)potentialBCs_mumps.o $(OBJDIR)precipBCs_mod.o \
 	$(OBJDIR)temporal.o $(OBJDIR)collisions.o $(OBJDIR)io.o $(OBJDIR)neutral.o $(OBJDIR)potential_comm_mumps.o $(OBJDIR)sources.o  \
 	$(OBJDIR)mpimod.o $(OBJDIR)multifluid.o $(OBJDIR)grid.o $(OBJDIR)interpolation.o
-	$(FL) -o gemini_mumps $(OBJDIR)interpolation.o $(OBJDIR)grid.o $(OBJDIR)multifluid.o $(OBJDIR)mpimod.o $(OBJDIR)advec_mpi.o $(OBJDIR)diffusion.o $(OBJDIR)ionization.o $(OBJDIR)phys_consts.o $(OBJDIR)potential_mumps.o $(OBJDIR)calculus.o $(OBJDIR)gemini.o $(OBJDIR)msis00_gfortran.o $(OBJDIR)potentialBCs_mumps.o $(OBJDIR)precipBCs_mod.o $(OBJDIR)temporal.o $(OBJDIR)collisions.o $(OBJDIR)io.o $(OBJDIR)neutral.o $(OBJDIR)potential_comm_mumps.o $(OBJDIR)sources.o $(MUMPS)  $(SCALADIR)/libscalapack.a $(LIBBLACS) $(LAPACK95) $(TMG) $(LAPACK77) $(BLAS) -L/usr/local/lib/ -lmpi -lpthread -L/usr/local/lib/ -L/usr/lib/x86_64-linux-gnu/
+	$(FL) -o gemini_mumps $(OBJDIR)interpolation.o $(OBJDIR)grid.o $(OBJDIR)multifluid.o $(OBJDIR)mpimod.o $(OBJDIR)advec_mpi.o $(OBJDIR)diffusion.o $(OBJDIR)ionization.o $(OBJDIR)phys_consts.o $(OBJDIR)potential_mumps.o $(OBJDIR)calculus.o $(OBJDIR)gemini.o $(OBJDIR)msis00_gfortran.o $(OBJDIR)potentialBCs_mumps.o $(OBJDIR)precipBCs_mod.o $(OBJDIR)temporal.o $(OBJDIR)collisions.o $(OBJDIR)io.o $(OBJDIR)neutral.o $(OBJDIR)potential_comm_mumps.o $(OBJDIR)sources.o $(MUMPS) $(SCALADIR)/libscalapack.a $(LIBBLACS) $(TMG) $(LAPACK77) $(BLAS) -L/usr/local/lib/ -lmpi -lpthread -L/usr/local/lib/ -L/usr/lib/x86_64-linux-gnu/
 
 
 magcalc: $(OBJDIR)mpimod.o $(OBJDIR)phys_consts.o $(OBJDIR)grid.o $(OBJDIR)io.o $(OBJDIR)magcalc.o $(OBJDIR)temporal.o
@@ -87,7 +84,7 @@ $(OBJDIR)temporal.o: ./temporal/temporal.f90 $(OBJDIR)phys_consts.o $(OBJDIR)mpi
 	$(FC) -c $(OPTIM2) ./temporal/temporal.f90 -o $(OBJDIR)/temporal.o -J$(OBJDIR)
 
 $(OBJDIR)diffusion.o: ./numerical/diffusion/diffusion.f90 $(OBJDIR)phys_consts.o $(OBJDIR)grid.o
-	$(FC) -c $(OPTIM2) ./numerical/diffusion/diffusion.f90 -I$(HOMEDIR)/lib/LAPACK95/lapack95_modules/ -o $(OBJDIR)/diffusion.o -J$(OBJDIR)
+	$(FC) -c $(OPTIM2) ./numerical/diffusion/diffusion.f90 -o $(OBJDIR)/diffusion.o -J$(OBJDIR)
 
 $(OBJDIR)mpimod.o: ./numerical/mpimod/mpimod.f90 $(OBJDIR)phys_consts.o
 	$(FC) -c $(OPTIM2) $^ -o $@ -J$(OBJDIR)

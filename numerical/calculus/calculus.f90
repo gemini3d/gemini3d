@@ -49,12 +49,12 @@ contains
     !-------THEY ARE PASSED INTO THIS ROUTINE.
     !------------------------------------------------------------
 
-    real(8), dimension(:,:,:), intent(in) :: f,P,L
-    real(8), intent(in) :: dt
+    real(wp), dimension(:,:,:), intent(in) :: f,P,L
+    real(wp), intent(in) :: dt
 
-    real(8), dimension(size(f,1),size(f,2),size(f,3)) :: Ldt,expL
+    real(wp), dimension(size(f,1),size(f,2),size(f,3)) :: Ldt,expL
 
-    real(8), dimension(size(f,1),size(f,2),size(f,3)) :: ETD_uncoupled
+    real(wp), dimension(size(f,1),size(f,2),size(f,3)) :: ETD_uncoupled
 
     Ldt=L*dt
     expL=exp(-1d0*Ldt)
@@ -88,18 +88,18 @@ contains
     !-------SHOULD BE USED FOR THE METRIC FACTORS...
     !------------------------------------------------------------
 
-    real(8), dimension(:,:,:), intent(in) :: f
+    real(wp), dimension(:,:,:), intent(in) :: f
     type(curvmesh), intent(in) :: x
     integer, intent(in) :: lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3    !upper and lower bounds on the mesh indices for this derivative
 
     integer :: ix2,ix3,lx1,lx2,lx3
 
-!    real(8), dimension(1:size(f,1),1:size(f,2),1:size(f,3)) :: h1,h2,h3   !local references to the metric factors to be used in the derivative
-!    real(8), dimension(1:size(f,1)) :: dx1    !local reference to the backward difference
-    real(8), dimension(:,:,:), pointer :: h1   !local references to the metric factors to be used in the derivative
-    real(8), dimension(:), pointer :: dx1    !local reference to the backward difference
+!    real(wp), dimension(1:size(f,1),1:size(f,2),1:size(f,3)) :: h1,h2,h3   !local references to the metric factors to be used in the derivative
+!    real(wp), dimension(1:size(f,1)) :: dx1    !local reference to the backward difference
+    real(wp), dimension(:,:,:), pointer :: h1   !local references to the metric factors to be used in the derivative
+    real(wp), dimension(:), pointer :: dx1    !local reference to the backward difference
 
-    real(8), dimension(1:size(f,1),1:size(f,2),1:size(f,3)) :: grad3D1_curv
+    real(wp), dimension(1:size(f,1),1:size(f,2),1:size(f,3)) :: grad3D1_curv
 
 
     lx1=size(f,1)
@@ -148,16 +148,16 @@ contains
     !-------THEY ARE PASSED INTO THIS ROUTINE
     !------------------------------------------------------------
 
-    real(8), dimension(:,:,:), intent(in) :: f
+    real(wp), dimension(:,:,:), intent(in) :: f
     type(curvmesh), intent(in) :: x
     integer, intent(in) :: lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3
 
     integer :: ix1,ix3,lx1,lx2,lx3
 
-    real(8), dimension(:,:,:), pointer :: h2   !local references to the metric factors to be used in the derivative
-    real(8), dimension(:), pointer :: dx2    !local reference to the backward difference
+    real(wp), dimension(:,:,:), pointer :: h2   !local references to the metric factors to be used in the derivative
+    real(wp), dimension(:), pointer :: dx2    !local reference to the backward difference
 
-    real(8), dimension(1:size(f,1),1:size(f,2),1:size(f,3)) :: grad3D2_curv
+    real(wp), dimension(1:size(f,1),1:size(f,2),1:size(f,3)) :: grad3D2_curv
 
 
     lx1=size(f,1)
@@ -212,16 +212,16 @@ contains
     !-------DERIVATIVE.
     !------------------------------------------------------------
 
-    real(8), dimension(:,:,:), intent(in) :: f
+    real(wp), dimension(:,:,:), intent(in) :: f
     type(curvmesh), intent(in) :: x 
     integer, intent(in) :: lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3
 
     integer :: ix1,ix2,lx1,lx2,lx3
 
-    real(8), dimension(:,:,:), pointer :: h3   !local references to the metric factors to be used in the derivative
-    real(8), dimension(:), pointer :: dx3    !local reference to the backward difference
+    real(wp), dimension(:,:,:), pointer :: h3   !local references to the metric factors to be used in the derivative
+    real(wp), dimension(:), pointer :: dx3    !local reference to the backward difference
 
-    real(8), dimension(1:size(f,1),1:size(f,2),1:size(f,3)) :: grad3D3_curv
+    real(wp), dimension(1:size(f,1),1:size(f,2),1:size(f,3)) :: grad3D3_curv
 
 
     lx1=size(f,1)
@@ -277,18 +277,18 @@ contains
     !-------DERIVATIVE.
     !------------------------------------------------------------
 
-    real(8), dimension(:,:,:), intent(in) :: f1,f2,f3
+    real(wp), dimension(:,:,:), intent(in) :: f1,f2,f3
     type(curvmesh), intent(in) :: x
     integer, intent(in) :: lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3
 
     integer :: ix1,ix2,ix3,lx1,lx2,lx3
 
-    real(8), dimension(:,:,:), pointer :: h1,h2,h3   !local references to the metric factors to be used in the derivative
-    real(8), dimension(:), pointer :: dx1    
-    real(8), dimension(:), pointer :: dx2
-    real(8), dimension(:), pointer :: dx3    !local reference to the backward difference
+    real(wp), dimension(:,:,:), pointer :: h1,h2,h3   !local references to the metric factors to be used in the derivative
+    real(wp), dimension(:), pointer :: dx1    
+    real(wp), dimension(:), pointer :: dx2
+    real(wp), dimension(:), pointer :: dx3    !local reference to the backward difference
 
-    real(8), dimension(1:size(f1,1),1:size(f1,2),1:size(f1,3)) :: div3D_curv
+    real(wp), dimension(1:size(f1,1),1:size(f1,2),1:size(f1,3)) :: div3D_curv
 
 
     lx1=size(f1,1)
@@ -387,13 +387,13 @@ contains
     !-------THEY ARE PASSED INTO THIS ROUTINE
     !------------------------------------------------------------
 
-    real(8), dimension(:,:), intent(in) :: f
+    real(wp), dimension(:,:), intent(in) :: f
     type(curvmesh), intent(in) :: x
     integer, intent(in) :: lbnd,ubnd
 
     integer :: ix2,lx1,lx2
 
-    real(8), dimension(1:size(f,1),1:size(f,2)) :: grad2D1_curv
+    real(wp), dimension(1:size(f,1),1:size(f,2)) :: grad2D1_curv
 
     lx1=size(f,1)
     lx2=size(f,2)
@@ -416,13 +416,13 @@ contains
     !-------THEY ARE PASSED INTO THIS ROUTINE
     !------------------------------------------------------------
 
-    real(8), dimension(:,:), intent(in) :: f
+    real(wp), dimension(:,:), intent(in) :: f
     type(curvmesh), intent(in) :: x
     integer, intent(in) :: lbnd,ubnd
 
     integer :: ix2,lx1,lx2
 
-    real(8), dimension(1:size(f,1),1:size(f,2)) :: grad2D1_curv_alt
+    real(wp), dimension(1:size(f,1),1:size(f,2)) :: grad2D1_curv_alt
 
     lx1=size(f,1)
     lx2=size(f,2)
@@ -445,13 +445,13 @@ contains
     !-------THEY ARE PASSED INTO THIS ROUTINE
     !------------------------------------------------------------
     
-    real(8), dimension(:,:), intent(in) :: f
+    real(wp), dimension(:,:), intent(in) :: f
     type(curvmesh), intent(in) :: x
     integer, intent(in) :: lbnd,ubnd
 
     integer :: ix1,lx1,lx2
 
-    real(8), dimension(1:size(f,1),1:size(f,2)) :: grad2D2_curv
+    real(wp), dimension(1:size(f,1),1:size(f,2)) :: grad2D2_curv
     
     lx1=size(f,1)
     lx2=size(f,2)
@@ -480,13 +480,13 @@ contains
     !-------SHOULD BE USED FOR THE DERIVATIVE.
     !------------------------------------------------------------
 
-    real(8), dimension(:,:), intent(in) :: f
+    real(wp), dimension(:,:), intent(in) :: f
     type(curvmesh), intent(in) :: x
     integer, intent(in) :: lbnd,ubnd
 
     integer :: ix1,lx1,lx3
 
-    real(8), dimension(1:size(f,1),1:size(f,2)) :: grad2D3_curv
+    real(wp), dimension(1:size(f,1),1:size(f,2)) :: grad2D3_curv
 
     lx1=size(f,1)    !this is really the 2-dimension for a flattened array
     lx3=size(f,2)
@@ -520,12 +520,12 @@ contains
     !-------THAT THE FUNCTION BEING INTEGRATED
     !------------------------------------------------------------
 
-    real(8), dimension(:,:,:), intent(in) :: f
+    real(wp), dimension(:,:,:), intent(in) :: f
     type(curvmesh), intent(in) :: x
     integer, intent(in) :: lbnd,ubnd    !no upper bound used, but could be for error checking
 
     integer :: ix1,lx1
-    real(8), dimension(1:size(f,1),1:size(f,2),1:size(f,3)) :: integral3D1_curv
+    real(wp), dimension(1:size(f,1),1:size(f,2),1:size(f,3)) :: integral3D1_curv
 
     lx1=size(f,1)
 
@@ -549,12 +549,12 @@ contains
     !-------RATHER THAN FROM THE MIN VALUE TO A FIXED POINT.
     !------------------------------------------------------------
 
-    real(8), dimension(:,:,:), intent(in) :: f
+    real(wp), dimension(:,:,:), intent(in) :: f
     type(curvmesh), intent(in) :: x
     integer, intent(in) :: lbnd,ubnd    !no upper bound used, but could be for error checking
 
     integer :: ix1,lx1
-    real(8), dimension(1:size(f,1),1:size(f,2),1:size(f,3)) :: integral3D1_curv_alt
+    real(wp), dimension(1:size(f,1),1:size(f,2),1:size(f,3)) :: integral3D1_curv_alt
 
     lx1=size(f,1)
 
@@ -573,12 +573,12 @@ contains
     !-------THEY ARE PASSED INTO THIS ROUTINE
     !------------------------------------------------------------
 
-    real(8), dimension(:,:), intent(in) :: f
+    real(wp), dimension(:,:), intent(in) :: f
     type(curvmesh), intent(in) :: x
     integer, intent(in) :: lbnd,ubnd
 
     integer :: ix1,lx1
-    real(8), dimension(1:size(f,1),1:size(f,2)) :: integral2D1_curv
+    real(wp), dimension(1:size(f,1),1:size(f,2)) :: integral2D1_curv
 
     lx1=size(f,1)
 
@@ -599,12 +599,12 @@ contains
     !-------THIS VERSION INTEGRATES WRT X2
     !------------------------------------------------------------
 
-    real(8), dimension(:,:), intent(in) :: f
+    real(wp), dimension(:,:), intent(in) :: f
     type(curvmesh), intent(in) :: x
     integer, intent(in) :: lbnd,ubnd
 
     integer :: ix2,lx2
-    real(8), dimension(1:size(f,1),1:size(f,2)) :: integral2D1_curv_alt
+    real(wp), dimension(1:size(f,1),1:size(f,2)) :: integral2D1_curv_alt
 
     lx2=size(f,1)
 
@@ -623,12 +623,12 @@ contains
     !-------THEY ARE PASSED INTO THIS ROUTINE
     !------------------------------------------------------------
 
-    real(8), dimension(:,:), intent(in) :: f
+    real(wp), dimension(:,:), intent(in) :: f
     type(curvmesh), intent(in) :: x
     integer, intent(in) :: lbnd,ubnd
 
     integer :: ix2,lx2
-    real(8), dimension(1:size(f,1),1:size(f,2)) :: integral2D2_curv
+    real(wp), dimension(1:size(f,1),1:size(f,2)) :: integral2D2_curv
 
     lx2=size(f,2)
 
@@ -651,12 +651,12 @@ contains
     !-------ENTIRE GRID (X3ALL).
     !------------------------------------------------------------
 
-    real(8), dimension(:,:), intent(in) :: f
+    real(wp), dimension(:,:), intent(in) :: f
     type(curvmesh), intent(in) :: x
     integer, intent(in) :: lbnd,ubnd
 
     integer :: ix3,lx3
-    real(8), dimension(1:size(f,1),1:size(f,2)) :: integral2D2_curv_alt
+    real(wp), dimension(1:size(f,1),1:size(f,2)) :: integral2D2_curv_alt
 
     lx3=size(f,2)
 
@@ -682,13 +682,13 @@ contains
     !-------THIS FUNCTION IS ONLY VALID WITH CARTESIAN GRIDS.
     !------------------------------------------------------------
 
-    real(8), dimension(:,:,:), intent(in) :: f
+    real(wp), dimension(:,:,:), intent(in) :: f
     type(curvmesh), intent(in) :: x
     integer, intent(in) :: lbnd,ubnd
 
     integer :: ix1,ix2,lx1,lx2,lx3
 
-    real(8), dimension(1:size(f,1),1:size(f,2),1:size(f,3)) :: grad3D3_curv_periodic
+    real(wp), dimension(1:size(f,1),1:size(f,2),1:size(f,3)) :: grad3D3_curv_periodic
 
 
     lx1=size(f,1)
@@ -736,13 +736,13 @@ contains
     !-------THIS FUNCTION IS ONLY VALID WITH CARTESIAN GRIDS.
     !------------------------------------------------------------
 
-    real(8), dimension(:,:), intent(in) :: f
+    real(wp), dimension(:,:), intent(in) :: f
     type(curvmesh), intent(in) :: x
     integer, intent(in) :: lbnd,ubnd
 
     integer :: ix1,lx1,lx3
 
-    real(8), dimension(1:size(f,1),1:size(f,2)) :: grad2D3_curv_periodic
+    real(wp), dimension(1:size(f,1),1:size(f,2)) :: grad2D3_curv_periodic
 
     lx1=size(f,1)    !this is really the 2-dimension for a flattened array
     lx3=size(f,2)
@@ -774,10 +774,10 @@ contains
     !------------------------------------------------------------
 
 
-    real(8), dimension(:,:,:), intent(in) :: alt,H
-    real(8), intent(in) :: nmax,alt0
+    real(wp), dimension(:,:,:), intent(in) :: alt,H
+    real(wp), intent(in) :: nmax,alt0
 
-    real(8), dimension(1:size(alt,1),1:size(alt,2),1:size(alt,3)) :: chapman_a
+    real(wp), dimension(1:size(alt,1),1:size(alt,2),1:size(alt,3)) :: chapman_a
 
     chapman_a=nmax*exp(0.5d0*(1d0-(alt-alt0)/H-exp(-(alt-alt0)/H)))
 
@@ -799,14 +799,14 @@ contains
     !-------THE F1 COMPONENT AND DIFF COULD BE OMITTED.
     !------------------------------------------------------------
 
-    real(8), dimension(:,:,:), intent(in) :: f1,f2,f3
-    real(8), dimension(1:size(f1,1)), intent(in) :: dx1
-    real(8), dimension(1:size(f1,2)), intent(in) :: dx2
-    real(8), dimension(1:size(f1,3)), intent(in) :: dx3
+    real(wp), dimension(:,:,:), intent(in) :: f1,f2,f3
+    real(wp), dimension(1:size(f1,1)), intent(in) :: dx1
+    real(wp), dimension(1:size(f1,2)), intent(in) :: dx2
+    real(wp), dimension(1:size(f1,3)), intent(in) :: dx3
 
     integer :: ix1,ix2,ix3,lx1,lx2,lx3
 
-    real(8), dimension(1:size(f1,1),1:size(f1,2),1:size(f1,3)) :: curl3D1
+    real(wp), dimension(1:size(f1,1),1:size(f1,2),1:size(f1,3)) :: curl3D1
 
     lx1=size(f1,1)
     lx2=size(f1,2)
@@ -850,14 +850,14 @@ contains
     !-------ARE THE SIGNS RIGHT?
     !------------------------------------------------------------
 
-    real(8), dimension(:,:,:), intent(in) :: f1,f2,f3
-    real(8), dimension(1:size(f1,1)), intent(in) :: dx1
-    real(8), dimension(1:size(f1,2)), intent(in) :: dx2
-    real(8), dimension(1:size(f1,3)), intent(in) :: dx3
+    real(wp), dimension(:,:,:), intent(in) :: f1,f2,f3
+    real(wp), dimension(1:size(f1,1)), intent(in) :: dx1
+    real(wp), dimension(1:size(f1,2)), intent(in) :: dx2
+    real(wp), dimension(1:size(f1,3)), intent(in) :: dx3
 
     integer :: ix1,ix2,ix3,lx1,lx2,lx3
 
-    real(8), dimension(1:size(f1,1),1:size(f1,2),1:size(f1,3)) :: curl3D2
+    real(wp), dimension(1:size(f1,1),1:size(f1,2),1:size(f1,3)) :: curl3D2
 
     lx1=size(f1,1)
     lx2=size(f1,2)
@@ -896,14 +896,14 @@ contains
     !-------THE F3 COMPONENT AND DIFF COULD BE OMITTED.
     !------------------------------------------------------------
 
-    real(8), dimension(:,:,:), intent(in) :: f1,f2,f3
-    real(8), dimension(1:size(f1,1)), intent(in) :: dx1
-    real(8), dimension(1:size(f1,2)), intent(in) :: dx2
-    real(8), dimension(1:size(f1,3)), intent(in) :: dx3
+    real(wp), dimension(:,:,:), intent(in) :: f1,f2,f3
+    real(wp), dimension(1:size(f1,1)), intent(in) :: dx1
+    real(wp), dimension(1:size(f1,2)), intent(in) :: dx2
+    real(wp), dimension(1:size(f1,3)), intent(in) :: dx3
 
     integer :: ix1,ix2,ix3,lx1,lx2,lx3
 
-    real(8), dimension(1:size(f1,1),1:size(f1,2),1:size(f1,3)) :: curl3D3
+    real(wp), dimension(1:size(f1,1),1:size(f1,2),1:size(f1,3)) :: curl3D3
 
     lx1=size(f1,1)
     lx2=size(f1,2)

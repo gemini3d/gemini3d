@@ -8,23 +8,23 @@ implicit none
 
 integer, parameter :: outunit=42,method=1
 integer, parameter :: npts=2001                                         !hard-coded for SAW problem
-real(8), parameter :: tcfl=0.75
-real(8), parameter :: pi=3.14
-real(8), parameter :: amu=1.67e-27, kb=1.38e-23, gammap=5.0/3.0, mu0=4.0*pi*1e-7
-real(8), parameter :: stride=10e3
+real(wp), parameter :: tcfl=0.75
+real(wp), parameter :: pi=3.14
+real(wp), parameter :: amu=1.67e-27, kb=1.38e-23, gammap=5.0/3.0, mu0=4.0*pi*1e-7
+real(wp), parameter :: stride=10e3
 
-real(8), dimension(npts) :: dx1i
-real(8), dimension(-1:npts+2) :: x1
-real(8), dimension(-1:npts+2) :: rhom,rhou1,rhou2,rhou3,B1,B2,B3,rhoeps,u1,u2,u3
-real(8), dimension(npts+1) :: x1i,v1i
-real(8), dimension(0:npts+2) :: dx1
+real(wp), dimension(npts) :: dx1i
+real(wp), dimension(-1:npts+2) :: x1
+real(wp), dimension(-1:npts+2) :: rhom,rhou1,rhou2,rhou3,B1,B2,B3,rhoeps,u1,u2,u3
+real(wp), dimension(npts+1) :: x1i,v1i
+real(wp), dimension(0:npts+2) :: dx1
 integer :: lx1,it,ix1
-real(8) :: t=0,dt=1e-6,dtout=5,tdur=300,xi=2
-real(8) :: toutnext
+real(wp) :: t=0,dt=1e-6,dtout=5,tdur=300,xi=2
+real(wp) :: toutnext
 
-real(8), dimension(npts) :: Q,p,grad1B1u3,rhoepshalf,sourceterm,du1full,grad1u1,vA,vsnd   !'work' arrays
-real(8) :: sinwt,sinwt2                                                                   !'work' vars
-real(8) :: u31,B10,rhom0,vA0,B31,omega0,T0,tfwhm,tdel,Ti=8000                             !linear wave params
+real(wp), dimension(npts) :: Q,p,grad1B1u3,rhoepshalf,sourceterm,du1full,grad1u1,vA,vsnd   !'work' arrays
+real(wp) :: sinwt,sinwt2                                                                   !'work' vars
+real(wp) :: u31,B10,rhom0,vA0,B31,omega0,T0,tfwhm,tdel,Ti=8000                             !linear wave params
 
 
 
@@ -189,7 +189,7 @@ contains
 
   subroutine writearray(fileunit,array)
     integer, intent(in) :: fileunit
-    real(8), dimension(:), intent(in) :: array
+    real(wp), dimension(:), intent(in) :: array
     
     integer :: k
 
@@ -200,11 +200,11 @@ contains
 
 
   function derivative(f,dx)
-    real(8), dimension(:), intent(in) :: dx  !presumed backward diffs.
-    real(8), dimension(:), intent(in) :: f
+    real(wp), dimension(:), intent(in) :: dx  !presumed backward diffs.
+    real(wp), dimension(:), intent(in) :: f
     
     integer :: lx
-    real(8), dimension(1:size(f)) :: derivative
+    real(wp), dimension(1:size(f)) :: derivative
 
     lx=size(f)
     derivative(1)=(f(2)-f(1))/dx(2)

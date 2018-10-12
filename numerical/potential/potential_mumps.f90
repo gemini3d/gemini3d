@@ -7,7 +7,7 @@ module potential_mumps
 
 use calculus, only: grad3d1, grad3d2, grad3d3, grad2d1_curv_alt, grad2d3_curv, grad2d3_curv_periodic
 use grid, only: curvmesh, gridflag
-use mpi
+use mpimod
 
 implicit none
 
@@ -29,31 +29,31 @@ contains
     !-------GRID POINTS.
     !------------------------------------------------------------
 
-    real(8), dimension(:,:,:), intent(in) :: srcterm,sig0,sigP,sigH
-    real(8), dimension(:,:), intent(in) :: Vminx1,Vmaxx1
-    real(8), dimension(:,:), intent(in) :: Vminx2,Vmaxx2
-    real(8), dimension(:,:), intent(in) :: Vminx3,Vmaxx3
+    real(wp), dimension(:,:,:), intent(in) :: srcterm,sig0,sigP,sigH
+    real(wp), dimension(:,:), intent(in) :: Vminx1,Vmaxx1
+    real(wp), dimension(:,:), intent(in) :: Vminx2,Vmaxx2
+    real(wp), dimension(:,:), intent(in) :: Vminx3,Vmaxx3
     type(curvmesh), intent(in) :: x
     integer, intent(in) :: flagdirich
     logical, intent(in) :: perflag
     integer, intent(in) :: it
 
-    real(8), dimension(1:size(srcterm,1),1:size(srcterm,2),1:size(srcterm,3)) :: gradsigP2,gradsigP3
-    real(8), dimension(1:size(srcterm,1),1:size(srcterm,2),1:size(srcterm,3)) :: gradsigH2,gradsigH3
-    real(8), dimension(1:size(srcterm,1),1:size(srcterm,2),1:size(srcterm,3)) :: gradsig01
-    real(8), dimension(1:size(srcterm,1),1:size(srcterm,2),1:size(srcterm,3)) :: Ac,Bc,Cc,Dc,Ec,Fc
+    real(wp), dimension(1:size(srcterm,1),1:size(srcterm,2),1:size(srcterm,3)) :: gradsigP2,gradsigP3
+    real(wp), dimension(1:size(srcterm,1),1:size(srcterm,2),1:size(srcterm,3)) :: gradsigH2,gradsigH3
+    real(wp), dimension(1:size(srcterm,1),1:size(srcterm,2),1:size(srcterm,3)) :: gradsig01
+    real(wp), dimension(1:size(srcterm,1),1:size(srcterm,2),1:size(srcterm,3)) :: Ac,Bc,Cc,Dc,Ec,Fc
 
     integer :: ix1,ix2,ix3,lx1,lx2,lx3
     integer :: lPhi,lent
     integer :: iPhi,ient
     integer, dimension(:), allocatable :: ir,ic
-    real(8), dimension(:), allocatable :: M
-    real(8), dimension(:), allocatable :: b
-    real(8) :: tstart,tfin
+    real(wp), dimension(:), allocatable :: M
+    real(wp), dimension(:), allocatable :: b
+    real(wp) :: tstart,tfin
     type (DMUMPS_STRUC) mumps_par
     integer :: myid, ierr
 
-    real(8), dimension(size(srcterm,1),size(srcterm,2),size(srcterm,3)) :: elliptic3D_curv
+    real(wp), dimension(size(srcterm,1),size(srcterm,2),size(srcterm,3)) :: elliptic3D_curv
 
 
 
@@ -292,35 +292,35 @@ contains
     !-------BE USED HERE!!!
     !------------------------------------------------------------
 
-    real(8), dimension(:,:), intent(in) :: srcterm,SigP2,SigP3,SigH,Cm,v2,v3    !ZZZ - THESE WILL NEED TO BE MODIFIED CONDUCTIVITIES, AND WE'LL NEED THREE OF THEM
-    real(8), dimension(:), intent(in) :: Vminx2,Vmaxx2
-    real(8), dimension(:), intent(in) :: Vminx3,Vmaxx3
-    real(8), intent(in) :: dt
+    real(wp), dimension(:,:), intent(in) :: srcterm,SigP2,SigP3,SigH,Cm,v2,v3    !ZZZ - THESE WILL NEED TO BE MODIFIED CONDUCTIVITIES, AND WE'LL NEED THREE OF THEM
+    real(wp), dimension(:), intent(in) :: Vminx2,Vmaxx2
+    real(wp), dimension(:), intent(in) :: Vminx3,Vmaxx3
+    real(wp), intent(in) :: dt
     type(curvmesh), intent(in) :: x
-    real(8), dimension(:,:), intent(in) :: Phi0 
+    real(wp), dimension(:,:), intent(in) :: Phi0 
     logical, intent(in) :: perflag
     integer, intent(in) :: it
 
-    real(8), dimension(1:size(SigP2,1),1:size(SigP2,2)) :: SigPh2    !I'm too lazy to recode these as SigP2h2, etc.
-    real(8), dimension(1:size(SigP2,1),1:size(SigP2,2)) :: SigPh3
-!    real(8), dimension(1:size(SigP2,1),1:size(SigP2,2)) :: SigHh2
-!    real(8), dimension(1:size(SigP2,1),1:size(SigP2,2)) :: SigHh3
-    real(8), dimension(1:size(SigP2,1),1:size(SigP2,2)) :: Cmh2
-    real(8), dimension(1:size(SigP2,1),1:size(SigP2,2)) :: Cmh3
-    real(8), dimension(1:size(SigP2,1),1:size(SigP2,2)) :: gradSigH2,gradSigH3
+    real(wp), dimension(1:size(SigP2,1),1:size(SigP2,2)) :: SigPh2    !I'm too lazy to recode these as SigP2h2, etc.
+    real(wp), dimension(1:size(SigP2,1),1:size(SigP2,2)) :: SigPh3
+!    real(wp), dimension(1:size(SigP2,1),1:size(SigP2,2)) :: SigHh2
+!    real(wp), dimension(1:size(SigP2,1),1:size(SigP2,2)) :: SigHh3
+    real(wp), dimension(1:size(SigP2,1),1:size(SigP2,2)) :: Cmh2
+    real(wp), dimension(1:size(SigP2,1),1:size(SigP2,2)) :: Cmh3
+    real(wp), dimension(1:size(SigP2,1),1:size(SigP2,2)) :: gradSigH2,gradSigH3
 
-    real(8) :: coeff    !coefficient for calculating polarization terms
+    real(wp) :: coeff    !coefficient for calculating polarization terms
     integer :: ix2,ix3,lx2,lx3    !this overwrites the 
     integer :: lPhi,lent
     integer :: iPhi,ient
     integer, dimension(:), allocatable :: ir,ic
-    real(8), dimension(:), allocatable :: M
-    real(8), dimension(:), allocatable :: b
-    real(8) :: tstart,tfin
+    real(wp), dimension(:), allocatable :: M
+    real(wp), dimension(:), allocatable :: b
+    real(wp) :: tstart,tfin
     type(DMUMPS_STRUC) mumps_par
     integer :: myid, ierr
 
-    real(8), dimension(size(SigP2,1),size(SigP2,2)) :: elliptic2D_pol_conv_curv
+    real(wp), dimension(size(SigP2,1),size(SigP2,2)) :: elliptic2D_pol_conv_curv
 
 
     call MPI_COMM_RANK(MPI_COMM_WORLD, myid, ierr)
@@ -778,39 +778,39 @@ contains
     !-------THIS FUNCTION WORKS ON A PERIODIC MESH BY USING A CIRCULANT MATRIX
     !------------------------------------------------------------
 
-    real(8), dimension(:,:), intent(in) :: srcterm,SigP,SigH,Cm,v2,v3
-    real(8), dimension(:), intent(in) :: Vminx2,Vmaxx2
-    real(8), dimension(:), intent(in) :: Vminx3,Vmaxx3
-    real(8), intent(in) :: dt
+    real(wp), dimension(:,:), intent(in) :: srcterm,SigP,SigH,Cm,v2,v3
+    real(wp), dimension(:), intent(in) :: Vminx2,Vmaxx2
+    real(wp), dimension(:), intent(in) :: Vminx3,Vmaxx3
+    real(wp), intent(in) :: dt
     type(curvmesh), intent(in) :: x
-    real(8), dimension(:,:), intent(in) :: Phi0 
+    real(wp), dimension(:,:), intent(in) :: Phi0 
     logical, intent(in) :: perflag
     integer, intent(in) :: it
 
-    real(8), dimension(1:size(SigP,1),1:size(SigP,2)) :: SigPh2
-    real(8), dimension(1:size(SigP,1),1:size(SigP,2)) :: SigPh3
-!    real(8), dimension(1:size(SigP,1),1:size(SigP,2)) :: SigHh2
-!    real(8), dimension(1:size(SigP,1),1:size(SigP,2)) :: SigHh3
-    real(8), dimension(1:size(SigP,1),1:size(SigP,2)) :: Cmh2
-    real(8), dimension(1:size(SigP,1),1:size(SigP,2)) :: Cmh3
-    real(8), dimension(1:size(SigP,1),1:size(SigP,2)+1) :: gradSigH2,gradSigH3
+    real(wp), dimension(1:size(SigP,1),1:size(SigP,2)) :: SigPh2
+    real(wp), dimension(1:size(SigP,1),1:size(SigP,2)) :: SigPh3
+!    real(wp), dimension(1:size(SigP,1),1:size(SigP,2)) :: SigHh2
+!    real(wp), dimension(1:size(SigP,1),1:size(SigP,2)) :: SigHh3
+    real(wp), dimension(1:size(SigP,1),1:size(SigP,2)) :: Cmh2
+    real(wp), dimension(1:size(SigP,1),1:size(SigP,2)) :: Cmh3
+    real(wp), dimension(1:size(SigP,1),1:size(SigP,2)+1) :: gradSigH2,gradSigH3
 
-    real(8) :: coeff    !coefficient for calculating polarization terms
+    real(wp) :: coeff    !coefficient for calculating polarization terms
     integer :: ix2,ix3,lx2,lx3    !this overwrites the values stored in the grid module, which is fine, but perhaps redundant
     integer :: lPhi,lent
     integer :: iPhi,ient
     integer, dimension(:), allocatable :: ir,ic
-    real(8), dimension(:), allocatable :: M
-    real(8), dimension(:), allocatable :: b
-    real(8) :: tstart,tfin
+    real(wp), dimension(:), allocatable :: M
+    real(wp), dimension(:), allocatable :: b
+    real(wp) :: tstart,tfin
     type(DMUMPS_STRUC) mumps_par
     integer :: myid, ierr
 
     integer :: lcount,ix2tmp,ix3tmp
 
-    real(8), dimension(size(SigP,1),size(SigP,2)+1) :: tmpresults
+    real(wp), dimension(size(SigP,1),size(SigP,2)+1) :: tmpresults
 
-    real(8), dimension(size(SigP,1),size(SigP,2)) :: elliptic2D_pol_conv_curv_periodic2
+    real(wp), dimension(size(SigP,1),size(SigP,2)) :: elliptic2D_pol_conv_curv_periodic2
 
 
     call MPI_COMM_RANK(MPI_COMM_WORLD, myid, ierr)    !is this obviated by the mpi module variables???
@@ -1300,28 +1300,28 @@ contains
     !-------IS ALWAYS ASSUMED TO BE DIRICHLET.  
     !------------------------------------------------------------
 
-    real(8), dimension(:,:,:), intent(in) :: srcterm,sig0,sigP   !arrays passed in will still have full rank 3
-    real(8), dimension(:,:), intent(in) :: Vminx1,Vmaxx1
-    real(8), dimension(:,:), intent(in) :: Vminx3,Vmaxx3
+    real(wp), dimension(:,:,:), intent(in) :: srcterm,sig0,sigP   !arrays passed in will still have full rank 3
+    real(wp), dimension(:,:), intent(in) :: Vminx1,Vmaxx1
+    real(wp), dimension(:,:), intent(in) :: Vminx3,Vmaxx3
     type(curvmesh), intent(in) :: x
     integer, intent(in) :: flagdirich
     logical, intent(in) :: perflag
     integer, intent(in) :: it
 
-    real(8), dimension(1:size(sig0,1),1:size(sig0,3)) :: sig0h1
-    real(8), dimension(1:size(sigP,1),1:size(sigP,3)) :: sigPh3
+    real(wp), dimension(1:size(sig0,1),1:size(sig0,3)) :: sig0h1
+    real(wp), dimension(1:size(sigP,1),1:size(sigP,3)) :: sigPh3
 
     integer :: ix1,ix3,lx1,lx3
     integer :: lPhi,lent
     integer :: iPhi,ient
     integer, dimension(:), allocatable :: ir,ic
-    real(8), dimension(:), allocatable :: M
-    real(8), dimension(:), allocatable :: b
-    real(8) :: tstart,tfin
+    real(wp), dimension(:), allocatable :: M
+    real(wp), dimension(:), allocatable :: b
+    real(wp) :: tstart,tfin
     type (DMUMPS_STRUC) mumps_par
     integer :: myid, ierr
 
-    real(8), dimension(size(sig0,1),1,size(sig0,3)) :: elliptic2D_nonint_curv
+    real(wp), dimension(size(sig0,1),1,size(sig0,3)) :: elliptic2D_nonint_curv
 
 
     call MPI_COMM_RANK(MPI_COMM_WORLD, myid, ierr)
@@ -1554,23 +1554,23 @@ contains
     !-------BE USED BY SOME OF THE UNIT TEST PROGRAMS, BUT I FORGET...
     !------------------------------------------------------------
 
-    real(8), dimension(:,:), intent(in) :: rho
-    real(8), dimension(:), intent(in) :: Vminx1,Vmaxx1
-    real(8), dimension(:), intent(in) :: Vminx2,Vmaxx2
-    real(8), intent(in) :: dx1
-!    real(8), dimension(:), intent(in) :: dx2
+    real(wp), dimension(:,:), intent(in) :: rho
+    real(wp), dimension(:), intent(in) :: Vminx1,Vmaxx1
+    real(wp), dimension(:), intent(in) :: Vminx2,Vmaxx2
+    real(wp), intent(in) :: dx1
+!    real(wp), dimension(:), intent(in) :: dx2
     logical, intent(in) :: perflag
 
     integer :: ix1,ix2,lx1,lx2
     integer :: lPhi, lent
     integer :: iPhi,ient
     integer, dimension(:), allocatable :: ir,ic
-    real(8), dimension(:), allocatable :: M
-    real(8), dimension(:), allocatable :: b
-    real(8) :: tstart,tfin
+    real(wp), dimension(:), allocatable :: M
+    real(wp), dimension(:), allocatable :: b
+    real(wp) :: tstart,tfin
     type (DMUMPS_STRUC) mumps_par
     integer :: myid, ierr
-    real(8), dimension(size(rho,1),size(rho,2)) :: poisson2D
+    real(wp), dimension(size(rho,1),size(rho,2)) :: poisson2D
 
 
     call MPI_COMM_RANK(MPI_COMM_WORLD, myid, ierr)

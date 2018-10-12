@@ -13,22 +13,22 @@ contains
     !-------IMPLEMENTATION IS A PURELY STATIC SOLUTION.
     !------------------------------------------------------------
 
-    real(8), dimension(:,:,:), intent(in) :: srcterm,sig0,sigP,sigH,Phi0
-    real(8), dimension(:,:), intent(in) :: Vminx1,Vmaxx1
-    real(8), dimension(:,:), intent(in) :: Vminx2,Vmaxx2
-    real(8), dimension(:,:), intent(in) :: Vminx3,Vmaxx3
-    real(8), dimension(0:), intent(in) :: dx1
-    real(8), dimension(:), intent(in) :: dx1i
-    real(8), dimension(0:), intent(in) :: dx2
-    real(8), dimension(:), intent(in) :: dx2i
-    real(8), dimension(0:), intent(in) :: dx3
-    real(8), dimension(:), intent(in) :: dx3i
+    real(wp), dimension(:,:,:), intent(in) :: srcterm,sig0,sigP,sigH,Phi0
+    real(wp), dimension(:,:), intent(in) :: Vminx1,Vmaxx1
+    real(wp), dimension(:,:), intent(in) :: Vminx2,Vmaxx2
+    real(wp), dimension(:,:), intent(in) :: Vminx3,Vmaxx3
+    real(wp), dimension(0:), intent(in) :: dx1
+    real(wp), dimension(:), intent(in) :: dx1i
+    real(wp), dimension(0:), intent(in) :: dx2
+    real(wp), dimension(:), intent(in) :: dx2i
+    real(wp), dimension(0:), intent(in) :: dx3
+    real(wp), dimension(:), intent(in) :: dx3i
     integer(8), intent(in) :: flagdirich
 
-    real(8), dimension(1:size(srcterm,1),1:size(srcterm,2),1:size(srcterm,3)) :: gradsigP2,gradsigP3
-    real(8), dimension(1:size(srcterm,1),1:size(srcterm,2),1:size(srcterm,3)) :: gradsigH2,gradsigH3
-    real(8), dimension(1:size(srcterm,1),1:size(srcterm,2),1:size(srcterm,3)) :: gradsig01
-    real(8), dimension(1:size(srcterm,1),1:size(srcterm,2),1:size(srcterm,3)) :: Ac,Bc,Cc,Dc,Ec,Fc
+    real(wp), dimension(1:size(srcterm,1),1:size(srcterm,2),1:size(srcterm,3)) :: gradsigP2,gradsigP3
+    real(wp), dimension(1:size(srcterm,1),1:size(srcterm,2),1:size(srcterm,3)) :: gradsigH2,gradsigH3
+    real(wp), dimension(1:size(srcterm,1),1:size(srcterm,2),1:size(srcterm,3)) :: gradsig01
+    real(wp), dimension(1:size(srcterm,1),1:size(srcterm,2),1:size(srcterm,3)) :: Ac,Bc,Cc,Dc,Ec,Fc
 
     !EXTERNAL ILUPACK ROUTINES
     integer, external :: dgnlamgfactor,dgnlamgsolver,dgnlamgnnz
@@ -39,7 +39,7 @@ contains
     integer :: matching,maxit,lfil,lfilS,nrestart,ierr,mixedprecision
     integer, dimension(:), allocatable :: ind
     character(20) :: ordering
-    real(8) :: droptol,droptolS,condest,restol,elbow
+    real(wp) :: droptol,droptolS,condest,restol,elbow
 
     !Variables that cover the and pass the C-pointers
     integer(8) :: param,PREC
@@ -49,15 +49,15 @@ contains
     integer :: ik,ient,lk,lent
     integer, dimension(:), allocatable :: ir_ptr
     integer, dimension(:), allocatable :: ic
-    real(8), dimension(:), allocatable :: M
-    real(8), dimension(:), allocatable :: b
+    real(wp), dimension(:), allocatable :: M
+    real(wp), dimension(:), allocatable :: b
     integer, dimension(:), allocatable :: ir_ptr_copy
     integer, dimension(:), allocatable :: ic_copy
-    real(8), dimension(:), allocatable :: M_copy
-    real(8), dimension(:), allocatable :: b_copy
-    real(8), dimension(:), allocatable :: sol
+    real(wp), dimension(:), allocatable :: M_copy
+    real(wp), dimension(:), allocatable :: b_copy
+    real(wp), dimension(:), allocatable :: sol
 
-    real(8), dimension(size(srcterm,1),size(srcterm,2),size(srcterm,3)) :: elliptic3D
+    real(wp), dimension(size(srcterm,1),size(srcterm,2),size(srcterm,3)) :: elliptic3D
 
 
     !SYSTEM SIZES AND ALLOCATION FOR COMPRESSED ROW STORAGE
@@ -408,26 +408,26 @@ contains
     !-------ALWAYS USE DIRICHLET CONDITIONS.
     !------------------------------------------------------------
 
-    real(8), dimension(:,:,:), intent(in) :: srcterm,sig0,sigP,sigH,Phi0,cm,v2,v3
-    real(8), dimension(:,:), intent(in) :: Vminx1,Vmaxx1
-    real(8), dimension(:,:), intent(in) :: Vminx2,Vmaxx2
-    real(8), dimension(:,:), intent(in) :: Vminx3,Vmaxx3
-    real(8), intent(in) :: dt
-    real(8), dimension(0:), intent(in) :: dx1
-    real(8), dimension(:), intent(in) :: dx1i
-    real(8), dimension(0:), intent(in) :: dx2
-    real(8), dimension(:), intent(in) :: dx2i
-    real(8), dimension(0:), intent(in) :: dx3
-    real(8), dimension(:), intent(in) :: dx3i
+    real(wp), dimension(:,:,:), intent(in) :: srcterm,sig0,sigP,sigH,Phi0,cm,v2,v3
+    real(wp), dimension(:,:), intent(in) :: Vminx1,Vmaxx1
+    real(wp), dimension(:,:), intent(in) :: Vminx2,Vmaxx2
+    real(wp), dimension(:,:), intent(in) :: Vminx3,Vmaxx3
+    real(wp), intent(in) :: dt
+    real(wp), dimension(0:), intent(in) :: dx1
+    real(wp), dimension(:), intent(in) :: dx1i
+    real(wp), dimension(0:), intent(in) :: dx2
+    real(wp), dimension(:), intent(in) :: dx2i
+    real(wp), dimension(0:), intent(in) :: dx3
+    real(wp), dimension(:), intent(in) :: dx3i
     integer(8), intent(in) :: flagdirich
 
-    real(8), dimension(1:size(srcterm,1),1:size(srcterm,2),1:size(srcterm,3)) :: gradsigP2,gradsigP3
-    real(8), dimension(1:size(srcterm,1),1:size(srcterm,2),1:size(srcterm,3)) :: gradsigH2,gradsigH3
-    real(8), dimension(1:size(srcterm,1),1:size(srcterm,2),1:size(srcterm,3)) :: gradsig01
-    real(8), dimension(1:size(srcterm,1),1:size(srcterm,2),1:size(srcterm,3)) :: cmh2,cmh3
-    real(8), dimension(1:size(srcterm,1),1:size(srcterm,2),1:size(srcterm,3)) :: Ac,Bc,Cc,Dc,Ec,Fc
+    real(wp), dimension(1:size(srcterm,1),1:size(srcterm,2),1:size(srcterm,3)) :: gradsigP2,gradsigP3
+    real(wp), dimension(1:size(srcterm,1),1:size(srcterm,2),1:size(srcterm,3)) :: gradsigH2,gradsigH3
+    real(wp), dimension(1:size(srcterm,1),1:size(srcterm,2),1:size(srcterm,3)) :: gradsig01
+    real(wp), dimension(1:size(srcterm,1),1:size(srcterm,2),1:size(srcterm,3)) :: cmh2,cmh3
+    real(wp), dimension(1:size(srcterm,1),1:size(srcterm,2),1:size(srcterm,3)) :: Ac,Bc,Cc,Dc,Ec,Fc
 
-    real(8) :: coeff
+    real(wp) :: coeff
 
     !EXTERNAL ILUPACK ROUTINES
     integer, external :: dgnlamgfactor,dgnlamgsolver,dgnlamgnnz
@@ -438,7 +438,7 @@ contains
     integer :: matching,maxit,lfil,lfilS,nrestart,ierr,mixedprecision
     integer, dimension(:), allocatable :: ind
     character(20) :: ordering
-    real(8) :: droptol,droptolS,condest,restol,elbow
+    real(wp) :: droptol,droptolS,condest,restol,elbow
 
     !Variables that cover the and pass the C-pointers
     integer(8) :: param,PREC
@@ -448,15 +448,15 @@ contains
     integer :: ik,ient,lk,lent
     integer, dimension(:), allocatable :: ir_ptr
     integer, dimension(:), allocatable :: ic
-    real(8), dimension(:), allocatable :: M
-    real(8), dimension(:), allocatable :: b
+    real(wp), dimension(:), allocatable :: M
+    real(wp), dimension(:), allocatable :: b
     integer, dimension(:), allocatable :: ir_ptr_copy
     integer, dimension(:), allocatable :: ic_copy
-    real(8), dimension(:), allocatable :: M_copy
-    real(8), dimension(:), allocatable :: b_copy
-    real(8), dimension(:), allocatable :: sol
+    real(wp), dimension(:), allocatable :: M_copy
+    real(wp), dimension(:), allocatable :: b_copy
+    real(wp), dimension(:), allocatable :: sol
 
-    real(8), dimension(size(srcterm,1),size(srcterm,2),size(srcterm,3)) :: elliptic3D_pol_conv
+    real(wp), dimension(size(srcterm,1),size(srcterm,2),size(srcterm,3)) :: elliptic3D_pol_conv
 
 
     !SYSTEM SIZES AND ALLOCATION FOR COMPRESSED ROW STORAGE

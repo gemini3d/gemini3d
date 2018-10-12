@@ -23,12 +23,12 @@ implicit none
 
 !VARIABLES READ IN FROM CONFIG.INI FILE
 integer, dimension(3) :: ymd    !year,month,day of simulation
-real(8) :: UTsec      !UT (s)
-real(8) :: UTsec0     !UT start time of simulation (s)
-real(8) :: tdur       !duration of simulation
-real(8), dimension(3) :: activ    !f10.7a,f10.7,ap
-real(8) :: tcfl                       !target CFL number
-real(8) :: Teinf                      !exospheric temperature
+real(wp) :: UTsec      !UT (s)
+real(wp) :: UTsec0     !UT start time of simulation (s)
+real(wp) :: tdur       !duration of simulation
+real(wp), dimension(3) :: activ    !f10.7a,f10.7,ap
+real(wp) :: tcfl                       !target CFL number
+real(wp) :: Teinf                      !exospheric temperature
 integer :: potsolve                   !what type of potential solve 
 integer :: flagperiodic               !toggles whether or not the grid is treated as periodic in the x3 dimension (affects some of the message passing)
 integer :: flagoutput                 !what type of output to do (1 - everything; 2 - avg'd parms.; 3 - ne only)
@@ -43,39 +43,39 @@ character(:), allocatable :: indatsize,indatgrid    !grid size and data filename
 type(curvmesh) :: x    !structure containg grid locations, finite differences, etc.:  see grid module for details
 
 !STATE VARIABLES
-real(8), dimension(:,:,:,:), allocatable :: ns,vs1,vs2,vs3,Ts    !fluid state variables
-real(8), dimension(:,:,:), allocatable :: E1,E2,E3,J1,J2,J3      !electrodynamic state variables
-real(8), dimension(:,:,:), allocatable :: rhov2,rhov3,B1,B2,B3   !inductive state vars. (for future use - except for B1 which is used for the background field)
-real(8), dimension(:,:,:), allocatable :: rhom,v1,v2,v3          !inductive auxiliary
-real(8), dimension(:,:,:,:), allocatable :: nn                   !neutral density array
-real(8), dimension(:,:,:), allocatable :: Tn,vn1,vn2,vn3         !neutral temperature and velocities
-real(8), dimension(:,:,:), allocatable :: Phiall                 !full-grid potential solution.  To store previous time step value
+real(wp), dimension(:,:,:,:), allocatable :: ns,vs1,vs2,vs3,Ts    !fluid state variables
+real(wp), dimension(:,:,:), allocatable :: E1,E2,E3,J1,J2,J3      !electrodynamic state variables
+real(wp), dimension(:,:,:), allocatable :: rhov2,rhov3,B1,B2,B3   !inductive state vars. (for future use - except for B1 which is used for the background field)
+real(wp), dimension(:,:,:), allocatable :: rhom,v1,v2,v3          !inductive auxiliary
+real(wp), dimension(:,:,:,:), allocatable :: nn                   !neutral density array
+real(wp), dimension(:,:,:), allocatable :: Tn,vn1,vn2,vn3         !neutral temperature and velocities
+real(wp), dimension(:,:,:), allocatable :: Phiall                 !full-grid potential solution.  To store previous time step value
 
 !TEMPORAL VARIABLES
-real(8) :: t=0d0,dt,dtprev      !time from beginning of simulation (s) and time step (s)
-real(8) :: tout,dtout    !time for next output and time between outputs
-real(8) :: tstart,tfin   !temp. vars. for measuring performance of code blocks
+real(wp) :: t=0d0,dt,dtprev      !time from beginning of simulation (s) and time step (s)
+real(wp) :: tout,dtout    !time for next output and time between outputs
+real(wp) :: tstart,tfin   !temp. vars. for measuring performance of code blocks
 integer :: it,isp        !time and species loop indices
 
 !WORK ARRAYS
-real(8), allocatable :: dl1,dl2,dl3     !these are grid distances in [m] used to compute Courant numbers
+real(wp), allocatable :: dl1,dl2,dl3     !these are grid distances in [m] used to compute Courant numbers
 
 !NEUTRAL PERTURBATION VARIABLES
 integer :: flagdneu                  !toggles neutral perturbations (0 - none; 1 - file-based neutral inputs)
 integer :: interptype                !toggles whether the neutral input data are interpreted (0 - Cartesian; 1 - axisymmetric)
-real(8) :: drhon,dzn                 !finite differences for the neutral input data in the horizontal and vertical directions
-real(8) :: sourcemlat,sourcemlon     !mag. lat./long for the neutral source location
+real(wp) :: drhon,dzn                 !finite differences for the neutral input data in the horizontal and vertical directions
+real(wp) :: sourcemlat,sourcemlon     !mag. lat./long for the neutral source location
 character(:), allocatable :: sourcedir          !directory where neutral input data are located
-real(8) :: dtneu                     !time interval [s] in between neutral inputs
+real(wp) :: dtneu                     !time interval [s] in between neutral inputs
 
 !PRECIPITATION FILE INPUT VARIABLES
 integer :: flagprecfile              ! flag toggling precipitation file input (0 - no; 1 - yes)
-real(8) :: dtprec                    ! time interval between precip. inputs
+real(wp) :: dtprec                    ! time interval between precip. inputs
 character(:), allocatable :: precdir ! directory containing precip. input files
 
 !ELECTRIC FIELD FILE INPUT VARIABLES
 integer :: flagE0file                ! flag toggling electric field (potential BCs) file input (0 - no; 1 - yes)
-real(8) :: dtE0                      ! time interval between electric field file inputs
+real(wp) :: dtE0                      ! time interval between electric field file inputs
 character(:), allocatable :: E0dir   ! directory containing electric field file input data
 
 integer :: argc

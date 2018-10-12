@@ -16,30 +16,30 @@ contains
     !-------SOLVE POISSONS'S EQUATION IN 2D USING MUMPS
     !------------------------------------------------------------
 
-    real(8), dimension(:,:), intent(in) :: srcterm,SigP,SigH
-    real(8), dimension(:), intent(in) :: Vminx2,Vmaxx2
-    real(8), dimension(:), intent(in) :: Vminx3,Vmaxx3
-    real(8), dimension(0:), intent(in) :: dx2
-    real(8), dimension(:), intent(in) :: dx2i
-    real(8), dimension(0:), intent(in) :: dx3
-    real(8), dimension(:), intent(in) :: dx3i
+    real(wp), dimension(:,:), intent(in) :: srcterm,SigP,SigH
+    real(wp), dimension(:), intent(in) :: Vminx2,Vmaxx2
+    real(wp), dimension(:), intent(in) :: Vminx3,Vmaxx3
+    real(wp), dimension(0:), intent(in) :: dx2
+    real(wp), dimension(:), intent(in) :: dx2i
+    real(wp), dimension(0:), intent(in) :: dx3
+    real(wp), dimension(:), intent(in) :: dx3i
     logical, intent(in) :: perflag
 
-    real(8), dimension(1:size(SigP,1),1:size(SigP,2)) :: SigPh2
-    real(8), dimension(1:size(SigP,1),1:size(SigP,2)) :: SigPh3
-    real(8), dimension(1:size(SigP,1),1:size(SigP,2)) :: gradSigH2,gradSigH3
+    real(wp), dimension(1:size(SigP,1),1:size(SigP,2)) :: SigPh2
+    real(wp), dimension(1:size(SigP,1),1:size(SigP,2)) :: SigPh3
+    real(wp), dimension(1:size(SigP,1),1:size(SigP,2)) :: gradSigH2,gradSigH3
 
     integer :: ix2,ix3,lx2,lx3
     integer :: lPhi,lent
     integer :: iPhi,ient
     integer, dimension(:), allocatable :: ir,ic
-    real(8), dimension(:), allocatable :: M
-    real(8), dimension(:), allocatable :: b
-    real(8) :: tstart,tfin
+    real(wp), dimension(:), allocatable :: M
+    real(wp), dimension(:), allocatable :: b
+    real(wp) :: tstart,tfin
     type (DMUMPS_STRUC) mumps_par
     integer :: myid, ierr
 
-    real(8), dimension(size(SigP,1),size(SigP,2)) :: elliptic2D
+    real(wp), dimension(size(SigP,1),size(SigP,2)) :: elliptic2D
 
 
     call MPI_COMM_RANK(MPI_COMM_WORLD, myid, ierr)
@@ -200,23 +200,23 @@ contains
     !-------SOLVE POISSONS'S EQUATION IN 2D USING MUMPS
     !------------------------------------------------------------
 
-    real(8), dimension(:,:), intent(in) :: rho
-    real(8), dimension(:), intent(in) :: Vminx1,Vmaxx1
-    real(8), dimension(:), intent(in) :: Vminx2,Vmaxx2
-    real(8), intent(in) :: dx1
-!    real(8), dimension(:), intent(in) :: dx2
+    real(wp), dimension(:,:), intent(in) :: rho
+    real(wp), dimension(:), intent(in) :: Vminx1,Vmaxx1
+    real(wp), dimension(:), intent(in) :: Vminx2,Vmaxx2
+    real(wp), intent(in) :: dx1
+!    real(wp), dimension(:), intent(in) :: dx2
     logical, intent(in) :: perflag
 
     integer :: ix1,ix2,lx1,lx2
     integer :: lPhi, lent
     integer :: iPhi,ient
     integer, dimension(:), allocatable :: ir,ic
-    real(8), dimension(:), allocatable :: M
-    real(8), dimension(:), allocatable :: b
-    real(8) :: tstart,tfin
+    real(wp), dimension(:), allocatable :: M
+    real(wp), dimension(:), allocatable :: b
+    real(wp) :: tstart,tfin
     type (DMUMPS_STRUC) mumps_par
     integer :: myid, ierr
-    real(8), dimension(size(rho,1),size(rho,2)) :: poisson2D
+    real(wp), dimension(size(rho,1),size(rho,2)) :: poisson2D
 
 
     call MPI_COMM_RANK(MPI_COMM_WORLD, myid, ierr)
