@@ -62,7 +62,7 @@ $(OBJDIR)calculus.o: ./numerical/calculus/calculus.f90 $(OBJDIR)grid.o
 $(OBJDIR)interpolation.o: ./numerical/interpolation/interpolation.f90 $(OBJDIR)phys_consts.o
 	$(FC) -c $(OPTIM2) ./numerical/interpolation/interpolation.f90 -o $(OBJDIR)/interpolation.o -J$(OBJDIR)
 
-$(OBJDIR)msis00_gfortran.o: ./neutral/neutral.f90
+$(OBJDIR)msis00_gfortran.o: ./neutral/msis00/msis00_gfortran.f
 	$(FC) -c $(OPTIM2) $(OPTIONS) ./neutral/msis00/msis00_gfortran.f -o $(OBJDIR)/msis00_gfortran.o -J$(OBJDIR)
 
 $(OBJDIR)neutral.o: ./neutral/neutral.f90 $(OBJDIR)phys_consts.o $(OBJDIR)msis00_gfortran.o $(OBJDIR)temporal.o $(OBJDIR)interpolation.o $(OBJDIR)mpimod.o $(OBJDIR)io.o

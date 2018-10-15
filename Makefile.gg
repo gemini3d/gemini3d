@@ -71,7 +71,7 @@ $(OBJDIR)phys_consts.o: ./numerical/constants/phys_consts.f90
 $(OBJDIR)grid.o: ./numerical/grid/grid.f90 $(OBJDIR)mpimod.o $(OBJDIR)phys_consts.o
 	$(FC) -c $(OPTIM) ./numerical/grid/grid.f90 -o $(OBJDIR)/grid.o -J$(OBJDIR)
 
-$(OBJDIR)calculus.o: ./numerical/calculus/calculus.f90 $(OBJDIR)grid.o
+$(OBJDIR)calculus.o: ./numerical/calculus/calculus.f90 $(OBJDIR)phys_consts.o $(OBJDIR)grid.o
 	$(FC) -c $(OPTIM) ./numerical/calculus/calculus.f90 -o $(OBJDIR)/calculus.o -J$(OBJDIR)
 
 $(OBJDIR)msis00_gfortran.o: ./neutral/msis00/msis00_gfortran.f

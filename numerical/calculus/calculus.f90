@@ -4,6 +4,7 @@ module calculus
 
 
 !SIZES USED IN ALL DERIVATIVE PROCEDURES ARE STORED IN GRID MODULE
+use phys_consts, only: wp
 use grid, only : curvmesh         !we do not want the full-grid sizes (lx1,lx2,lx3) in scope since we routinely need to do subgrid derivatives
 implicit none
 
