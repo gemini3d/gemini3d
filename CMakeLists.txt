@@ -2,6 +2,8 @@ cmake_minimum_required (VERSION 3.3)
 project(gemini3d Fortran C)
 enable_testing()
 
+cmake_policy(SET CMP0074 NEW)
+
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR})
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/Modules/)
 

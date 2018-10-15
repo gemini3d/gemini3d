@@ -2,6 +2,8 @@ cmake_minimum_required (VERSION 3.0)
 project(gem-num Fortran)
 enable_testing()
 
+cmake_policy(SET CMP0074 NEW)
+
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/../cmake/Modules/)
 # Lapack95
 list(APPEND LAPACK95_ROOT ${PROJECT_SOURCE_DIR}/../../fortran-libs/LAPACK95)

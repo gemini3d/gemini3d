@@ -24,31 +24,20 @@ GEMINI3D should be run in a cluster environment or using a "large" multicore wor
 
 
 ## Quick start
-Ubuntu is in general the easiest OS to build on (for any program).  However, most HPCs are CentOS, and the build for such a system is covered below.
-
+This method is tested on CentOS and Ubuntu.
 This test runs a short demo, taking about 2-5 minutes on a typical Mac / Linux laptop, from scratch. 
 
-These steps are common:
 
-1. get LAPACK95 (and other libraries that may not exist from your system repos). 
-   Alternatively use the `build_gfortran.sh` or `build_intel.sh` from the `fortran-libs` repo:
+1. get GEMINI code and install prereqs
    ```sh
    cd ~
-   git clone https://github.com/scivision/fortran-libs
-   cd fortran-libs/LAPACK95
-   make double -C SRC
+   git clone https://github.com/mattzett/gemini
+   cd gemini
    ```
-2. get Gemini 3D code and install prereqs
+2. Get the 2D test data from [Google Drive](https://drive.google.com/drive/u/2/folders/1ZhYYWvC4Y215B_7umnajzap9J0-JU2Nn) 
+3. compile and run GEMINI demo: 
    ```sh
-   cd ~
-   git clone https://github.com/mattzett/gemini3d
-   cd gemini3d
-   ```
-3. Get the 2D test data from [Google Drive](https://drive.google.com/drive/u/2/folders/1ZhYYWvC4Y215B_7umnajzap9J0-JU2Nn) 
-4. Install prerequisites as in the Linux-distro specific sections below
-5. compile and run Gemini3D demo: 
-   ```sh
-   cd ~/gemini3d/objects
+   cd ~/gemini/objects
 
    cmake ..
    
@@ -56,6 +45,19 @@ These steps are common:
 
    ctest -V
    ```
+   
+#### Build tips
+
+* If CMake version too old, use [cmake_setup.sh](https://github.com/scivision/pybashutils/blob/master/cmake_setup.sh). This does NOT use `sudo`.
+* If missing prereqs, try the `./install_prereqs.sh` script.
+* If need to build libraries from source (e.g. because you don't have `sudo`) try `build_gfortran.sh` or `build_intel.sh` from the `fortran-libs` repo:
+  ```sh
+  cd ~
+  git clone https://github.com/scivision/fortran-libs
+  cd fortran-libs/LAPACK95
+  make double -C SRC
+  ```
+
 
 ### self-tests
 GEMINI has self tests that compare the output from a "known" test problem to a reference output.  So running:
@@ -85,7 +87,7 @@ or consider Linuxbrew.
 
 
 ### CentOS
-This is for CentOS 6.4, using "modules" for more recent libraries.
+This is for CentOS 7, using "modules" for more recent libraries.
 For the unavailable modules, 
 [compile them yourself](https://github.com/scivision/fortran-libs)
 ```sh
@@ -108,7 +110,7 @@ Alternatively for Intel Fortran:
 FC=ifort cmake -DMETIS_ROOT=~/fortran-libs/metis ..
 ```
 
-## Known limitations and issues of GEMINI3D
+## Known limitations and issues of GEMINI
 
 1)  Generating equilibrium conditions can be a bit tricky with curvilinear grids.  A low-res run can be done, but it will not necessary interpolate properly onto a finer grid due to some issue with the way the grids are made with ghost cells etc.  A workaround is to use a slightly narrower (x2) grid in the high-res run (quarter of a degree seems to work most of the time).
 2)  Magnetic field calculations on an open 2D grid do not appear completely consistent with MATLAB model prototype results; although there are quite close.  This may have been related to sign errors in the FAC calculations - these tests should be retried at some point.  
