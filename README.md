@@ -6,12 +6,12 @@ The current version of the code uses generalized orthogonal curvilinear coordina
 
 GEMINI3D has been tested using gfortran &ge; 6 (Fortran 2018 code) and 
 
-* OpenMPI 2.1
+* OpenMPI 2.1 - 3.1
 * MUMPS 5.1
 * LAPACK95 3.0
 * SCALAPACK 2.0
 
-Generally, the git master branch has the current development version and is the best place to start, while more thoroughly-tested releases happen occasionally.
+Generally, the Git `master` branch has the current development version and is the best place to start, while more thoroughly-tested releases happen occasionally.
 
 ## License
 
@@ -34,7 +34,7 @@ This test runs a short demo, taking about 2-5 minutes on a typical Mac / Linux l
    git clone https://github.com/mattzett/gemini
    cd gemini
    ```
-2. Get the 2D test data from [Google Drive](https://drive.google.com/drive/u/2/folders/1ZhYYWvC4Y215B_7umnajzap9J0-JU2Nn) 
+2. Get the 2D test data: [![Zenodo DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1463093.svg)](https://doi.org/10.5281/zenodo.1463093)
 3. compile and run GEMINI demo: 
    ```sh
    cd ~/gemini/objects

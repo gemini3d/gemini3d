@@ -1,13 +1,18 @@
-cmake_minimum_required (VERSION 3.0)
+cmake_minimum_required (VERSION 3.7)
 project(gem-num Fortran)
 enable_testing()
 
 cmake_policy(SET CMP0074 NEW)
 
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/../cmake/Modules/)
-# Lapack95
+## Lapack95
 list(APPEND LAPACK95_ROOT ${PROJECT_SOURCE_DIR}/../../fortran-libs/LAPACK95)
-find_package(LAPACK95 REQUIRED)
+find_package(LAPACK95)
+if(NOT LAPACK95_FOUND)
+  find_package(LAPACK REQUIRED)
+  add_library(f95_lapack ${PROJECT_SOURCE_DIR}/../vendor/lapack95/gbsv.f90)
+  set(LAPACK95_LIBRARIES f95_lapack ${LAPACK_LIBRARIES})
+endif()
 
 #include_directories(${CMAKE_SOURCE_DIR}/objects)
 
@@ -50,10 +55,20 @@ add_executable(test_diffusion1D diffusion/test_diffusion1D.f90)
 target_link_libraries(test_diffusion1D diffusion const)
 
 add_test(NAME diffusion1D COMMAND test_diffusion1D)
+set_tests_properties(diffusion1D PROPERTIES
+                     TIMEOUT 5
+                     FIXTURES_SETUP GemDiff)
 
 find_package(Octave)
 if (OCTAVE_MAJOR_VERSION GREATER_EQUAL 4)
-add_test(NAME OctaveDiffusion1D COMMAND octave-cli -q --eval "test_diffusion1D('${CMAKE_CURRENT_BINARY_DIR}/test_diffusion1d.dat')"
-          WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/diffusion)
+
+add_test(NAME OctaveDiffusion1D 
+         COMMAND octave-cli -q --eval "test_diffusion1D('${CMAKE_CURRENT_BINARY_DIR}/test_diffusion1d.dat')"
+         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/diffusion)
+
+set_tests_properties(OctaveDiffusion1D  PROPERTIES
+                     TIMEOUT 5
+                     FIXTURES_REQUIRED GemDiff)
+          
 endif()
 

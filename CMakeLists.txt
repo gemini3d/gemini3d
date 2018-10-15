@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.3)
+cmake_minimum_required (VERSION 3.7)
 project(gemini3d Fortran C)
 enable_testing()
 
@@ -80,7 +80,7 @@ target_compile_options(msis PRIVATE -w -fno-implicit-none)
 
 add_subdirectory(numerical)
 
-add_library(io io/io.f90 io/initial_conditions/statevarICs.f90)
+add_library(io io/io.f90)# io/initial_conditions/statevarICs.f90)
 target_link_libraries(io PRIVATE const mpimod grid calculus)
 
 add_library(temporal temporal/temporal.f90)
@@ -126,19 +126,28 @@ add_executable(gemini gemini.f90)
 target_link_libraries(gemini PRIVATE mpimod io neutral precipBCs temporal multifluid 
                       potentialBCs potential_comm_mumps const ${MPI_Fortran_LIBRARIES})
 target_include_directories(gemini PRIVATE ${MUMPS_INCLUDE_DIRS} ${MPI_Fortran_INCLUDE_DIRS})
+
+# -- test main exe ---
+set(INDIR ${CMAKE_CURRENT_SOURCE_DIR}/simulations/2Dtest_files/2Dtest_output)
+set(OUTDIR ${CMAKE_CURRENT_BINARY_DIR}/test2d)
+
+add_test(NAME RunGemini-2D 
+         COMMAND mpirun ./gemini ${CMAKE_SOURCE_DIR}/initialize/2Dtest/config.ini ${OUTDIR} 
+         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+set_tests_properties(RunGemini-2D PROPERTIES 
+                     TIMEOUT 900  # test should complete in 10-15 minutes on ~ 2015 vintage laptop
+                     FIXTURES_SETUP GemMain)
+                     
+
 # ----- evaluate output accuracy vs. reference from Matt's HPC
 find_package(Octave)
 if (OCTAVE_MAJOR_VERSION GREATER_EQUAL 4)
-  set(INDIR ${CMAKE_CURRENT_SOURCE_DIR}/simulations/2Dtest_files/2Dtest_output)
-  set(OUTDIR ${CMAKE_CURRENT_BINARY_DIR}/test2d)
 
-  add_test(NAME RunGemini-2D 
-             COMMAND mpirun ./gemini initialize/2Dtest/config.ini ${OUTDIR} 
-             WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
-  set_tests_properties(RunGemini-2D PROPERTIES TIMEOUT 900)  # test should complete in 10-15 minutes on ~ 2015 vintage laptop
-  
-  add_test(NAME ReferenceCompare 
-          COMMAND octave-cli -q --eval "compare_all('${OUTDIR}','${INDIR}')"
-          WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+add_test(NAME ReferenceCompare 
+         COMMAND octave-cli -q --eval "compare_all('${OUTDIR}','${INDIR}')"
+         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+set_tests_properties(ReferenceCompare PROPERTIES
+                     TIMEOUT 5
+                     FIXTURES_REQUIRED GemMain)
 
 endif()

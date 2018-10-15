@@ -1,4 +1,6 @@
-function [ymd,UTsec,tdur,dtout,flagoutput,mloc]=readconfig(filename)
+function [ymd,UTsec,tdur,dtout,flagoutput,mloc] = readconfig(filename)
+
+  validateattributes(filename, {'char'}, {'vector'})
   
   if ~exist(filename,'file'), error([filename,' does not exist']), end
     
@@ -88,6 +90,8 @@ function [ymd,UTsec,tdur,dtout,flagoutput,mloc]=readconfig(filename)
   else
     mloc=[];
   end
+  
+  fclose(fid);
 
   %There's more in the input file, but we don't use it in the data processing
 end

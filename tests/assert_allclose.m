@@ -16,16 +16,34 @@ function ok = assert_allclose(actual, desired, rtol, atol, err_msg,notclose,verb
 %
 % if "actual" is within atol OR rtol of "desired", no error is emitted.
   narginchk(2,7)
+  validateattributes(actual, {'numeric'}, {'nonempty'})
+  validateattributes(desired, {'numeric'}, {'nonempty'})
+  if nargin < 3 || isempty(rtol)
+    rtol=1e-8;
+  else
+    validateattributes(rtol, {'numeric'}, {'scalar'})
+  end
+  if nargin < 4 || isempty(atol)
+    atol = 1e-9;
+  else
+    validateattributes(atol, {'numeric'}, {'scalar'})
+  end
+  if nargin < 5
+    err_msg='';
+  else
+    validateattributes(err_msg, {'char'}, {'vector'})
+  end
+  if nargin < 6
+    notclose=false;
+  else
+    validateattributes(notclose, {'boolean'}, {'scalar'})
+  end
+  if nargin<7
+    verbose = false;
+  else
+    validateattributes(verbose, {'boolean'}, {'scalar'})
+  end
 
-  if nargin < 7, verbose=false; end
-  if nargin < 6, notclose=false; end
-  if nargin < 5, err_msg=''; end
-  if nargin < 4 || isempty(atol), atol=0; end
-  if nargin < 3 || isempty(rtol), rtol=1e-8; end
-  
-  assert(isscalar(rtol))
-  assert(isscalar(atol))
-  
   actual = actual(:);
   desired = desired(:);
   

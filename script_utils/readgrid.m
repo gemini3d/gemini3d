@@ -6,6 +6,7 @@ function xgf=readgrid(inID)
 %-----NOT YET IMPLEMENTED AS OF 9/15/2016)
 %--------------------------------------------------------
 
+validateattributes(inID, {'char'}, {'vector'})
 
   filename=[inID,filesep,'simsize.dat'];
 

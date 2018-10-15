@@ -1,5 +1,8 @@
 function [ymdnew,UTsecnew]=dateinc(dt,ymd,UTsec)
 
+validateattributes(ymd, {'numeric'}, {'vector', 'numel', 3})
+validateattributes(UTsec, {'numeric'}, {'scalar'})
+
 day=ymd(3); month=ymd(2); year=ymd(1);
 
 UTsecnew=UTsec+dt;
