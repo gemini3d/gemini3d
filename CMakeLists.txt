@@ -127,8 +127,14 @@ target_link_libraries(gemini PRIVATE mpimod io neutral precipBCs temporal multif
                       potentialBCs potential_comm_mumps const ${MPI_Fortran_LIBRARIES})
 target_include_directories(gemini PRIVATE ${MUMPS_INCLUDE_DIRS} ${MPI_Fortran_INCLUDE_DIRS})
 
+
+#--------magnetic field calculation executable---------------
+add_executable(magcalc magcalc.f90)
+target_link_libraries(magcalc mpimod const grid io temporal)
+
+
 # -- test main exe ---
-set(INDIR $ENV{HOME}/sim/gemini/2Dtest_files/2Dtest_output)
+set(INDIR $ENV{HOME}/zettergmdata/testdata/2Dtest_files/2Dtest_output)
 set(OUTDIR ${CMAKE_CURRENT_BINARY_DIR}/test2d)
 
 add_test(NAME RunGemini-2D 
@@ -159,7 +165,7 @@ add_test(NAME MatlabCompare
          COMMAND matlab -nojvm -r "compare_all('${OUTDIR}','${INDIR}'); exit"
          WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 set_tests_properties(MatlabCompare PROPERTIES
-                     TIMEOUT 15)
+                     TIMEOUT 30)
                      #FIXTURES_REQUIRED GemMain)
 
 endif()

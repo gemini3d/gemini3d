@@ -5,6 +5,28 @@ module potential_mumps
 ! - IF ONE REALLY WANTED TO CLEAN THIS UP IT MIGHT BE MORE EFFICIENT TO USE HARWELL-BOEING FORMAT
 !   FOR MATRICES...
 
+!SOME SUPERFLUOUS ARGUMENTS THAT ARE LEFT IN TO MAINTAIN UNIFORMITY ACROSS CALLS
+!/home/zettergm/zettergmdata/GEMINI/numerical/potential/potential_mumps.f90:1291:0:
+!warning: unused parameter ‘vminx1’ [-Wunused-parameter]
+!   function
+!elliptic2D_nonint_curv(srcterm,sig0,sigP,Vminx1,Vmaxx1,Vminx3,Vmaxx3,x,flagdirich,perflag,it)
+! ^
+!/home/zettergm/zettergmdata/GEMINI/numerical/potential/potential_mumps.f90:764:0:
+!warning: unused parameter ‘vminx3’ [-Wunused-parameter]
+!   function
+!elliptic2D_pol_conv_curv_periodic2(srcterm,SigP,SigH,Cm,v2,v3,Vminx2,Vmaxx2,Vminx3,Vmaxx3,dt,x,Phi0,perflag,it)
+! ^
+!/home/zettergm/zettergmdata/GEMINI/numerical/potential/potential_mumps.f90:764:0:
+!warning: unused parameter ‘vmaxx3’ [-Wunused-parameter]
+!/home/zettergm/zettergmdata/GEMINI/numerical/potential/potential_mumps.f90:22:0:
+!warning: unused parameter ‘vminx1’ [-Wunused-parameter]
+!   function
+!elliptic3D_curv(srcterm,sig0,sigP,sigH,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3,Vmaxx3,
+!&
+! ^
+
+
+
 use calculus, only: grad3d1, grad3d2, grad3d3, grad2d1_curv_alt, grad2d3_curv, grad2d3_curv_periodic
 use grid, only: curvmesh, gridflag
 use mpi

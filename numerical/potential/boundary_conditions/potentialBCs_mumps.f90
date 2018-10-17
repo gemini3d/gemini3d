@@ -755,841 +755,841 @@ contains
   end subroutine potentialBCs2D
 
 
-  subroutine potentialBCs2D_KHI(t,sig0all,x,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3, &
-                                          Vmaxx3,E01all,E02all,E03all,flagdirich)
-
-    real(8), intent(in) :: t
-    real(8), dimension(:,:,:), intent(in) ::  sig0all
-    type(curvmesh), intent(in) :: x
-
-    real(8), dimension(:,:), intent(out) :: Vminx1,Vmaxx1
-    real(8), dimension(:,:), intent(out) :: Vminx2,Vmaxx2
-    real(8), dimension(:,:), intent(out) :: Vminx3,Vmaxx3
-    real(8), dimension(:,:,:), intent(out) :: E01all,E02all,E03all
-    integer, intent(out) :: flagdirich
-
-    real(8), dimension(1:size(Vmaxx1,1),1:size(Vmaxx1,2)) :: Emaxx1    !pseudo-electric field
-
-    real(8) :: Phipk
-    integer :: ix1,ix2,ix3    !grid sizes are borrow from grid module
-    integer :: im
-!    integer, parameter :: lmodes=8
-    real(8) :: phase
-    real(8), dimension(1:lx2) :: x3dev    !a little bit surprise we can use grid mod lx2 var as size...
-    real(8) :: meanx2,sigx2,meanx3,sigx3,meant,sigt,sigcurv,x30amp,varc    !for setting background field
-
-    real(8), dimension(1:size(E01all,1),1:size(E01all,2),1:size(E01all,3)) ::  vel3    !x3 component of initial drift velocity
-    real(8), dimension(1:size(E01all,2),1:size(E01all,3)) :: E2slab,Phislab
-
-    real(8), parameter :: v0=500d0
-    real(8), parameter :: vn=500d0, voffset=100d0
-    real(8), parameter :: B1val=-50000d-9    !must match grid structure avg. value
-
-
-    !CALCULATE/SET TOP BOUNDARY CONDITIONS
-    meanx3=0d0
-    sigx3=60d3
-    meanx2=0d0
-    sigx2=0.5d3
-    meant=900d0
-    sigt=450d0
-    sigcurv=450d3
-    x30amp=0.1d3    !original successful runs used 2d3, but it was very pronounced...
-    varc=0d0
-    Phipk=120d-3    !pk electric field, 100d-3 works well
-
-
-    !NO CURRENT THROUGH THE TOP BOUNDARY
-    flagdirich=0
-    Vmaxx1=0d0
-
-
-    !CONVERT FAC INTO POTENTIAL DERIVATIVE
-    write(*,*) 'At time:  ',t,'  Max current set to be:  ',maxval(pack(Vmaxx1,.true.))
-
-
-    !BOTTOM BOUNDARY IS ALWAYS ZERO CURRENT - SIDES ARE JUST GROUNDED
-    Vminx1=0d0
-    Vminx3=0d0     !these are actually not used if periodic is selected (and it should be for this type of simulation)
-    Vmaxx3=0d0     !also not used if we plan to do a simulation that includes perdiodic boundary conditions which are specified through the input config.dat file
-
-
-    !THE FOLLOWING LINES DUPLICATE CODE FROM THE ICS SUBROUTINE BELOW
-    !FILL IN VELOCITY FIELD (X3 COMP)
-    do ix3=1,lx3all
-      do ix1=1,lx1
-        vel3(ix1,:,ix3)=-v0*tanh(x%x2(1:lx2)/sigx2)+vn+voffset
-      end do
-    end do
-
-
-    !CONVERT TO ELECTRIC FIELD
-    E2slab=vel3(1,:,:)*B1val
-
-
-    !INTEGRATE TO PRODUCE A POTENTIAL OVER GRID
-    Phislab=integral2D1_curv_alt(E2slab,x,1,lx2)
-    do ix1=1,lx1
-      Vmaxx2(ix1,:)=Phislab(lx2,:)
-      Vminx2(ix1,:)=Phislab(1,:)
-    end do
-
-
-   
-    !COMPUTE SOURCE/FORCING TERMS FROM BACKGROUND FIELDS, ETC.
-    E01all=0d0
-    E02all=0d0
-    E03all=0d0
-
-
-  end subroutine potentialBCs2D_KHI
-
-
-  subroutine potentialBCs2D_GDI(t,sig0all,x,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3, &
-                                          Vmaxx3,E01all,E02all,E03all,flagdirich)
-
-    real(8), intent(in) :: t
-    real(8), dimension(:,:,:), intent(in) ::  sig0all
-    type(curvmesh), intent(in) :: x
-
-    real(8), dimension(:,:), intent(out) :: Vminx1,Vmaxx1
-    real(8), dimension(:,:), intent(out) :: Vminx2,Vmaxx2
-    real(8), dimension(:,:), intent(out) :: Vminx3,Vmaxx3
-    real(8), dimension(:,:,:), intent(out) :: E01all,E02all,E03all
-    integer, intent(out) :: flagdirich
-
-    real(8), dimension(1:size(Vmaxx1,1),1:size(Vmaxx1,2)) :: Emaxx1    !pseudo-electric field
-
-    real(8) :: Phipk
-    integer :: ix1,ix2,ix3    !grid sizes are borrow from grid module
-    integer :: im
-!    integer, parameter :: lmodes=8
-    real(8) :: phase
-    real(8), dimension(1:lx2) :: x3dev    !a little bit surprise we can use grid mod lx2 var as size...
-    real(8) :: meanx2,sigx2,meanx3,sigx3,meant,sigt,sigcurv,x30amp,varc    !for setting background field
-
-
-    !SIZES
-!    lx1=size(sig0all,1)
-!    lx2=size(sig0all,2)
-!    lx3all=size(sig0all,3)
-
-
-    !CALCULATE/SET TOP BOUNDARY CONDITIONS
-    meanx3=0d0
-    sigx3=60d3
-    meanx2=0d0
-    sigx2=50d3
-    meant=900d0
-    sigt=450d0
-    sigcurv=450d3
-    x30amp=0.1d3    !original successful runs used 2d3, but it was very pronounced...
-    varc=0d0
-
-    Phipk=120d-3    !pk electric field, 100d-3 works well
-
-
-    !NO CURRENT THROUGH THE TOP BOUNDARY
-    flagdirich=0
-    Vmaxx1=0d0
-
-
-    !CONVERT FAC INTO POTENTIAL DERIVATIVE
-    write(*,*) 'At time:  ',t,'  Max current set to be:  ',maxval(pack(Vmaxx1,.true.))
-
-
-    !BOTTOM BOUNDARY IS ALWAYS ZERO CURRENT - SIDES ARE JUST GROUNDED
-    Vminx1=0d0
-    Vminx2=0d0
-    Vmaxx2=0d0
-    Vminx3=0d0
-    Vmaxx3=0d0
-
-    
-    !COMPUTE SOURCE/FORCING TERMS FROM BACKGROUND FIELDS, ETC.
-    E01all=0d0
-    E02all=0d0
-    E03all=-25e-3
-
-  end subroutine potentialBCs2D_GDI
-
-
-  subroutine potentialBCs2D_3DPCarc2(t,sig0all,x, &
-                   Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3,Vmaxx3,E01all,E02all,E03all,flagdirich)
-
-    !------------------------------------------------------------
-    !-------POPULATES TOP BOUNDARY CONDITIONS FOR POTENTIAL AND
-    !-------SOURCE TERMS FROM BACKGROUND FIELDS, ETC.  THIS 
-    !-------PARTICULAR IMPLEMENTATION USES DIRICHLET CONDITIONS
-    !------------------------------------------------------------
-
-    use phys_consts
-
-    implicit none
-    real(8), intent(in) :: t
-    real(8), dimension(:,:,:), intent(in) ::  sig0all
-    type(curvmesh), intent(in) :: x
-
-    real(8), dimension(:,:), intent(out), target :: Vminx1,Vmaxx1
-    real(8), dimension(:,:), intent(out) :: Vminx2,Vmaxx2
-    real(8), dimension(:,:), intent(out) :: Vminx3,Vmaxx3
-    real(8), dimension(:,:,:), intent(out) :: E01all,E02all,E03all
-    integer, intent(out) :: flagdirich
-
-    real(8) :: Jpk
-    integer :: ix1,ix2,ix3,lx1,lx2,lx3all
-    real(8) :: meanx2,sigx2,meanx3,sigx3,meant,sigt,sigcurv,x30amp,varc,x2enve    !for setting background field
-
-    real(8), dimension(:,:), pointer :: Vtopalt,Vbotalt
-
-
-    !SIZES
-    lx1=size(sig0all,1)
-    lx2=size(sig0all,2)
-    lx3all=size(sig0all,3)
-
-
-    !SET POINTERS FOR THIS TYPE OF GRID
-    if (gridflag/=2) then
-      write(*,*) '!!!Using inverted boundary conditions...'
-      Vtopalt=>Vminx1
-      Vbotalt=>Vmaxx1
-    else
-      write(*,*) '!!!Using non-inverted boundary conditions...'
-      Vtopalt=>Vmaxx1
-      Vbotalt=>Vminx1
-    end if
-
-
-    !CALCULATE/SET TOP BOUNDARY CONDITIONS
-    flagdirich=0
-
-    sigx2=150d3
-    meanx2=0d0
-    sigx3=25d3
-    meant=120d0
-    sigt=60d0
-    sigcurv=450d3
-    x30amp=0d3
-    varc=200d0
-    Jpk=0.875d-6
-
-
-    if (t<43200d0) then
-      do ix3=1,lx3all
-        do ix2=1,lx2
-          meanx3=-varc*meant+varc*t
-          Vtopalt(ix2,ix3)=(Jpk*exp(-(x%x3all(ix3)-(-sigx3+meanx3+x30amp*cos(2d0*pi/(sigx2/2d0)*x%x2(ix2)) ))**2/2d0/sigx3**2)- &
-                          Jpk*exp(-(x%x3all(ix3)-(sigx3+meanx3+x30amp*cos(2d0*pi/(sigx2/2d0)*x%x2(ix2)) ))**2/2d0/sigx3**2) )* &
-                              exp(-(x%x2(ix2)-meanx2)**4/2d0/sigx2**4)*exp(-(t-meant)**2/2d0/sigt**2)
-        end do
-      end do
-    else
-      Vtopalt=0d0
-    end if
-
-
-    !CONVERT FAC INTO POTENTIAL DERIVATIVE
-    write(*,*) 'Max FAC set to be:  ',maxval(pack(Vtopalt,.true.))
-
-
-    !BOTTOM BOUNDARY IS ALWAYS ZERO CURRENT - SIDES ARE EQUIPOTENTIAL WITH TOP EDGE
-    Vbotalt=0d0
-    Vminx2=0d0
-    Vmaxx2=0d0
-    Vminx3=0d0
-    Vmaxx3=0d0
-
-
-    !COMPUTE SOURCE/FORCING TERMS FROM BACKGROUND FIELDS, ETC.
-    E01all=0d0
-    E02all=10d-3
-    E03all=0d0
-
-  end subroutine potentialBCs2D_3DPCarc2
-
-
-  subroutine potentialBCs2D_3DPCarc(t,sig0all,x, &
-                   Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3,Vmaxx3,E01all,E02all,E03all,flagdirich)
-
-    !------------------------------------------------------------
-    !-------POPULATES TOP BOUNDARY CONDITIONS FOR POTENTIAL AND
-    !-------SOURCE TERMS FROM BACKGROUND FIELDS, ETC.  THIS 
-    !-------PARTICULAR IMPLEMENTATION USES DIRICHLET CONDITIONS
-    !------------------------------------------------------------
-
-    use phys_consts
-
-    implicit none
-    real(8), intent(in) :: t
-    real(8), dimension(:,:,:), intent(in) ::  sig0all
-    type(curvmesh), intent(in) :: x
-
-    real(8), dimension(:,:), intent(out), target :: Vminx1,Vmaxx1
-    real(8), dimension(:,:), intent(out) :: Vminx2,Vmaxx2
-    real(8), dimension(:,:), intent(out) :: Vminx3,Vmaxx3
-    real(8), dimension(:,:,:), intent(out) :: E01all,E02all,E03all
-    integer, intent(out) :: flagdirich
-
-    real(8) :: Jpk
-    integer :: ix1,ix2,ix3,lx1,lx2,lx3all
-    real(8) :: meanx2,sigx2,meanx3,sigx3,meant,sigt,sigcurv,x30amp,varc,x2enve    !for setting background field
-
-    real(8), dimension(:,:), pointer :: Vtopalt,Vbotalt
-
-
-    !SIZES
-    lx1=size(sig0all,1)
-    lx2=size(sig0all,2)
-    lx3all=size(sig0all,3)
-
-
-    !SET POINTERS FOR THIS TYPE OF GRID
-    if (gridflag/=2) then
-      Vtopalt=>Vminx1
-      Vbotalt=>Vmaxx1
-    else
-      Vtopalt=>Vmaxx1
-      Vbotalt=>Vminx1
-    end if
-
-
-    !CALCULATE/SET TOP BOUNDARY CONDITIONS
-    flagdirich=0
-
-    sigx2=150d3
-    meanx2=0d0
-    sigx3=25d3
-    meant=900d0
-    sigt=450d0
-    sigcurv=450d3
-    x30amp=0d3
-    varc=200d0
-    Jpk=0.875d-6
-
-
-    if (t<43200d0) then
-      do ix3=1,lx3all
-        do ix2=1,lx2
-          meanx3=-varc*meant+varc*t
-          Vtopalt(ix2,ix3)=(Jpk*exp(-(x%x3all(ix3)-(-sigx3+meanx3+x30amp*cos(2d0*pi/(sigx2/2d0)*x%x2(ix2)) ))**2/2d0/sigx3**2)- &
-                          Jpk*exp(-(x%x3all(ix3)-(sigx3+meanx3+x30amp*cos(2d0*pi/(sigx2/2d0)*x%x2(ix2)) ))**2/2d0/sigx3**2) )* &
-                              exp(-(x%x2(ix2)-meanx2)**4/2d0/sigx2**4)*exp(-(t-meant)**2/2d0/sigt**2)
-        end do
-      end do
-    else
-      Vtopalt=0d0
-    end if
-
-
-    !CONVERT FAC INTO POTENTIAL DERIVATIVE
-    write(*,*) 'Max FAC set to be:  ',maxval(pack(Vtopalt,.true.))
-
-
-    !BOTTOM BOUNDARY IS ALWAYS ZERO CURRENT - SIDES ARE EQUIPOTENTIAL WITH TOP EDGE
-    Vbotalt=0d0
-    Vminx2=0d0
-    Vmaxx2=0d0
-    Vminx3=0d0
-    Vmaxx3=0d0
-
-
-    !COMPUTE SOURCE/FORCING TERMS FROM BACKGROUND FIELDS, ETC.
-    E01all=0d0
-    E02all=10d-3
-    E03all=0d0
-
-  end subroutine potentialBCs2D_3DPCarc
-
-
-  subroutine potentialBCs2D_curved_closed(t,sig0all,x,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3, &
-                                          Vmaxx3,E01all,E02all,E03all,flagdirich)
-
-    !THIS IS A SIMPLE GAUSSIAN POTENTIAL PERTURBATION (IN X1,X2,X3 SPAE)
-
-    real(8), intent(in) :: t
-    real(8), dimension(:,:,:), intent(in) ::  sig0all
-    type(curvmesh), intent(in) :: x
-
-    real(8), dimension(:,:), intent(out), target :: Vminx1,Vmaxx1
-    real(8), dimension(:,:), intent(out) :: Vminx2,Vmaxx2
-    real(8), dimension(:,:), intent(out) :: Vminx3,Vmaxx3
-    real(8), dimension(:,:,:), intent(out) :: E01all,E02all,E03all
-    integer, intent(out) :: flagdirich
-
-    real(8), dimension(1:size(Vmaxx1,1),1:size(Vmaxx1,2)) :: Emaxx1    !pseudo-electric field
-
-    real(8) :: Phipk
-    integer :: ix1,ix2,ix3    !grid sizes are borrow from grid module
-    integer :: im
-!    integer, parameter :: lmodes=8
-    real(8) :: phase
-    real(8), dimension(1:lx2) :: x3dev    !a little bit surprise we can use grid mod lx2 var as size...
-    real(8) :: meanx2,sigx2,meanx3,sigx3,meant,sigt,sigcurv,x30amp,varc    !for setting background field
-
-    real(8), dimension(:,:), pointer :: Vtopalt,Vbotalt
-
-
-    !CALCULATE/SET TOP BOUNDARY CONDITIONS
-    sigx2=1d0/20d0*(x%x2(lx2)-x%x2(1))
-    meanx2=0.5d0*(x%x2(1)+x%x2(lx2))
-    sigx3=1d0/20d0*(x%x3all(lx3all)-x%x3all(1))    !this requires that all workers have a copy of x3all!!!!
-    meanx3=0.5d0*(x%x3all(1)+x%x3all(lx3all))
-
-    if (gridflag/=2) then
-      Vtopalt=>Vminx1
-      Vbotalt=>Vmaxx1
-    else
-      Vtopalt=>Vmaxx1
-      Vbotalt=>Vminx1
-    end if
-
-    Phipk=0d0      !pk current density
-    flagdirich=0    !Neumann conditions
-    do ix3=1,lx3all
-      do ix2=1,lx2
-        Vtopalt(ix2,ix3)=0d0
-      end do
-    end do
-
-
-    !SOME USER INFO
-    write(*,*) 'At time:  ',t,'  Max FAC set to be:  ',maxval(pack(abs(Vtopalt),.true.))
-
-
-    !BOTTOM BOUNDARY IS ALWAYS ZERO CURRENT - SIDES ARE JUST GROUNDED
-    Vbotalt=0d0   !since we need to have no current through bottom boundary
-    Vminx2=0d0
-    Vmaxx2=0d0
-    Vminx3=0d0
-    Vmaxx3=0d0
-
-
-    !COMPUTE SOURCE/FORCING TERMS FROM BACKGROUND FIELDS, ETC.
-    E01all=0d0
-    E02all=0d0
-    E03all=0d0
-
-  end subroutine potentialBCs2D_curved_closed
-
-
-  subroutine potentialBCs2D_zeroends3D(t,sig0all,x,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3, &
-                                          Vmaxx3,E01all,E02all,E03all,flagdirich)
-
-    !THIS IS A SIMPLE GAUSSIAN POTENTIAL PERTURBATION (IN X1,X2,X3 SPAE)
-
-    real(8), intent(in) :: t
-    real(8), dimension(:,:,:), intent(in) ::  sig0all
-    type(curvmesh), intent(in) :: x
-
-    real(8), dimension(:,:), intent(out), target :: Vminx1,Vmaxx1
-    real(8), dimension(:,:), intent(out) :: Vminx2,Vmaxx2
-    real(8), dimension(:,:), intent(out) :: Vminx3,Vmaxx3
-    real(8), dimension(:,:,:), intent(out) :: E01all,E02all,E03all
-    integer, intent(out) :: flagdirich
-
-    real(8), dimension(1:size(Vmaxx1,1),1:size(Vmaxx1,2)) :: Emaxx1    !pseudo-electric field
-
-    real(8) :: Phipk
-    integer :: ix1,ix2,ix3    !grid sizes are borrow from grid module
-    integer :: im
-!    integer, parameter :: lmodes=8
-    real(8) :: phase
-    real(8), dimension(1:lx2) :: x3dev    !a little bit surprise we can use grid mod lx2 var as size...
-    real(8) :: meanx2,sigx2,meanx3,sigx3,meant,sigt,sigcurv,x30amp,varc    !for setting background field
-
-    real(8), dimension(:,:), pointer :: Vtopalt,Vbotalt
-
-
-    !CALCULATE/SET TOP BOUNDARY CONDITIONS
-    sigx2=1d0/20d0*(x%x2(lx2)-x%x2(1))
-    meanx2=0.5d0*(x%x2(1)+x%x2(lx2))
-    sigx3=1d0/20d0*(x%x3all(lx3all)-x%x3all(1))    !this requires that all workers have a copy of x3all!!!!
-    meanx3=0.5d0*(x%x3all(1)+x%x3all(lx3all))
-
-    if (gridflag/=2) then
-      Vtopalt=>Vminx1
-      Vbotalt=>Vmaxx1
-    else
-      Vtopalt=>Vmaxx1
-      Vbotalt=>Vminx1
-    end if
-
-    Phipk=0d0      !pk current density
-    flagdirich=0    !Neumann conditions
-
-    if (t>1d0) then
-      do ix3=1,lx3all
-        do ix2=1,lx2
-          Vtopalt(ix2,ix3)=Phipk*(exp(-(x%x3all(ix3)-meanx3-sigx3)**2/2d0/sigx3**2)* &
-                                 exp(-(x%x2(ix2)-meanx2)**2/2d0/sigx2**2) - &
-                                 exp(-(x%x3all(ix3)-meanx3+sigx3)**2/2d0/sigx3**2)* &
-                                 exp(-(x%x2(ix2)-meanx2)**2/2d0/sigx2**2))       !note that program always assumes the potential BC for Dirichlet conditions to be stored in Vmaxx1
-        end do
-      end do
-    else
-      do ix3=1,lx3all
-        do ix2=1,lx2
-          Vtopalt(ix2,ix3)=0d0
-        end do
-      end do
-    end if
-
-
-    !SOME USER INFO
-    write(*,*) 'At time:  ',t,'  Max FAC set to be:  ',maxval(pack(abs(Vtopalt),.true.))
-
-
-    !BOTTOM BOUNDARY IS ALWAYS ZERO CURRENT - SIDES ARE JUST GROUNDED
-    Vbotalt=0d0   !since we need to have no current through bottom boundary
-    Vminx2=0d0
-    Vmaxx2=0d0
-    Vminx3=0d0
-    Vmaxx3=0d0
-
-
-    !COMPUTE SOURCE/FORCING TERMS FROM BACKGROUND FIELDS, ETC.
-    E01all=0d0
-    E02all=0d0
-    E03all=0d0
-
-  end subroutine potentialBCs2D_zeroends3D
-
-
-  subroutine potentialBCs2D_zeropotends(t,sig0all,x,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3, &
-                                          Vmaxx3,E01all,E02all,E03all,flagdirich)
-
-    !THIS IS A SIMPLE GAUSSIAN POTENTIAL PERTURBATION (IN X1,X2,X3 SPAE)
-
-    real(8), intent(in) :: t
-    real(8), dimension(:,:,:), intent(in) ::  sig0all
-    type(curvmesh), intent(in) :: x
-
-    real(8), dimension(:,:), intent(out) :: Vminx1,Vmaxx1
-    real(8), dimension(:,:), intent(out) :: Vminx2,Vmaxx2
-    real(8), dimension(:,:), intent(out) :: Vminx3,Vmaxx3
-    real(8), dimension(:,:,:), intent(out) :: E01all,E02all,E03all
-    integer, intent(out) :: flagdirich
-
-    real(8), dimension(1:size(Vmaxx1,1),1:size(Vmaxx1,2)) :: Emaxx1    !pseudo-electric field
-
-    real(8) :: Phipk
-    integer :: ix1,ix2,ix3    !grid sizes are borrow from grid module
-    integer :: im
-!    integer, parameter :: lmodes=8
-    real(8) :: phase
-    real(8), dimension(1:lx2) :: x3dev    !a little bit surprise we can use grid mod lx2 var as size...
-    real(8) :: meanx2,sigx2,meanx3,sigx3,meant,sigt,sigcurv,x30amp,varc    !for setting background field
-
-
-    !CALCULATE/SET TOP BOUNDARY CONDITIONS
-    sigx2=1d0/10d0*(x%x2(lx2)-x%x2(1))
-    meanx2=0.5d0*(x%x2(1)+x%x2(lx2))
-    sigx3=1d0/10d0*(x%x3all(lx3all)-x%x3all(1))    !this requires that all workers have a copy of x3all!!!!
-    meanx3=0.5d0*(x%x3all(1)+x%x3all(lx3all))
-
-    !Phipk=0.20d4    !pk potential, ?????  works well
-    Phipk=0d0
-    flagdirich=1
-
-    if (t>1d0) then
-      do ix3=1,lx3all
-        do ix2=1,lx2
-          Vmaxx1(ix2,ix3)=Phipk*exp(-(x%x3all(ix3)-meanx3)**2/2d0/sigx3**2)* &
-                                 exp(-(x%x2(ix2)-meanx2)**2/2d0/sigx2**2)       !note that program always assumes the potential BC for Dirichlet conditions to be stored in Vmaxx1
-        end do
-      end do
-    else
-      do ix3=1,lx3all
-        do ix2=1,lx2
-          Vmaxx1(ix2,ix3)=0d0
-        end do
-      end do
-    end if
-
-
-    !SOME USER INFO
-    write(*,*) 'At time:  ',t,'  Max potential set to be:  ',maxval(pack(abs(Vmaxx1),.true.))
-
-
-    !BOTTOM BOUNDARY IS ALWAYS ZERO CURRENT - SIDES ARE JUST GROUNDED
-    Vminx1=Vmaxx1   !since we are using Dirichlet conditions, we assume EFL
-    Vminx2=0d0
-    Vmaxx2=0d0
-    Vminx3=0d0
-    Vmaxx3=0d0
-
-    
-    !COMPUTE SOURCE/FORCING TERMS FROM BACKGROUND FIELDS, ETC.
-    E01all=0d0
-    E02all=0d0
-    E03all=0d0
-
-  end subroutine potentialBCs2D_zeropotends
-
-
-  subroutine potentialBCs2D_Neumann(t,sig0all,x,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3, &
-                                          Vmaxx3,E01all,E02all,E03all,flagdirich)
-
-    !THIS IS A SIMPLE GAUSSIAN POTENTIAL PERTURBATION (IN X1,X2,X3 SPAE)
-
-    real(8), intent(in) :: t
-    real(8), dimension(:,:,:), intent(in) ::  sig0all
-    type(curvmesh), intent(in) :: x
-
-    real(8), dimension(:,:), intent(out), target :: Vminx1,Vmaxx1
-    real(8), dimension(:,:), intent(out) :: Vminx2,Vmaxx2
-    real(8), dimension(:,:), intent(out) :: Vminx3,Vmaxx3
-    real(8), dimension(:,:,:), intent(out) :: E01all,E02all,E03all
-    integer, intent(out) :: flagdirich
-
-    real(8), dimension(1:size(Vmaxx1,1),1:size(Vmaxx1,2)) :: Emaxx1    !pseudo-electric field
-
-    real(8) :: Phipk
-    integer :: ix1,ix2,ix3    !grid sizes are borrow from grid module
-    integer :: im
-!    integer, parameter :: lmodes=8
-    real(8) :: phase
-    real(8), dimension(1:lx2) :: x3dev    !a little bit surprise we can use grid mod lx2 var as size...
-    real(8) :: meanx2,sigx2,meanx3,sigx3,meant,sigt,sigcurv,x30amp,varc    !for setting background field
-
-    real(8), dimension(:,:), pointer :: Vtopalt,Vbotalt
-
-
-    !CALCULATE/SET TOP BOUNDARY CONDITIONS
-    sigx2=1d0/20d0*(x%x2(lx2)-x%x2(1))
-    meanx2=0.5d0*(x%x2(1)+x%x2(lx2))
-    sigx3=1d0/20d0*(x%x3all(lx3all)-x%x3all(1))    !this requires that all workers have a copy of x3all!!!!
-    meanx3=0.5d0*(x%x3all(1)+x%x3all(lx3all))
-
-    if (gridflag/=2) then
-      Vtopalt=>Vminx1
-      Vbotalt=>Vmaxx1
-    else
-      Vtopalt=>Vmaxx1
-      Vbotalt=>Vminx1
-    end if
-
-    Phipk=5d-6      !pk current density
-    flagdirich=0    !Neumann conditions
-
-    if (t>1d0) then
-      do ix3=1,lx3all
-        do ix2=1,lx2
-          Vtopalt(ix2,ix3)=Phipk*(exp(-(x%x3all(ix3)-meanx3-sigx3)**2/2d0/sigx3**2)* &
-                                 exp(-(x%x2(ix2)-meanx2)**2/2d0/sigx2**2) - &
-                                 exp(-(x%x3all(ix3)-meanx3+sigx3)**2/2d0/sigx3**2)* &
-                                 exp(-(x%x2(ix2)-meanx2)**2/2d0/sigx2**2))       !note that program always assumes the potential BC for Dirichlet conditions to be stored in Vmaxx1
-        end do
-      end do
-    else
-      do ix3=1,lx3all
-        do ix2=1,lx2
-          Vtopalt(ix2,ix3)=0d0
-        end do
-      end do
-    end if
-
-
-    !SOME USER INFO
-    write(*,*) 'At time:  ',t,'  Max FAC set to be:  ',maxval(pack(abs(Vtopalt),.true.))
-
-
-    !BOTTOM BOUNDARY IS ALWAYS ZERO CURRENT - SIDES ARE JUST GROUNDED
-    Vbotalt=0d0   !since we need to have no current through bottom boundary
-    Vminx2=0d0
-    Vmaxx2=0d0
-    Vminx3=0d0
-    Vmaxx3=0d0
-
-
-    !COMPUTE SOURCE/FORCING TERMS FROM BACKGROUND FIELDS, ETC.
-    E01all=0d0
-    E02all=0d0
-    E03all=0d0
-
-  end subroutine potentialBCs2D_Neumann
-
-
-  subroutine potentialBCs2D_Dirichlet(t,sig0all,x,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3, &
-                                          Vmaxx3,E01all,E02all,E03all,flagdirich)
-
-    !THIS IS A SIMPLE GAUSSIAN POTENTIAL PERTURBATION (IN X1,X2,X3 SPAE)
-
-    real(8), intent(in) :: t
-    real(8), dimension(:,:,:), intent(in) ::  sig0all
-    type(curvmesh), intent(in) :: x
-
-    real(8), dimension(:,:), intent(out) :: Vminx1,Vmaxx1
-    real(8), dimension(:,:), intent(out) :: Vminx2,Vmaxx2
-    real(8), dimension(:,:), intent(out) :: Vminx3,Vmaxx3
-    real(8), dimension(:,:,:), intent(out) :: E01all,E02all,E03all
-    integer, intent(out) :: flagdirich
-
-    real(8), dimension(1:size(Vmaxx1,1),1:size(Vmaxx1,2)) :: Emaxx1    !pseudo-electric field
-
-    real(8) :: Phipk
-    integer :: ix1,ix2,ix3    !grid sizes are borrow from grid module
-    integer :: im
-!    integer, parameter :: lmodes=8
-    real(8) :: phase
-    real(8), dimension(1:lx2) :: x3dev    !a little bit surprise we can use grid mod lx2 var as size...
-    real(8) :: meanx2,sigx2,meanx3,sigx3,meant,sigt,sigcurv,x30amp,varc    !for setting background field
-
-
-    !CALCULATE/SET TOP BOUNDARY CONDITIONS
-    sigx2=1d0/10d0*(x%x2(lx2)-x%x2(1))
-    meanx2=0.5d0*(x%x2(1)+x%x2(lx2))
-    sigx3=1d0/10d0*(x%x3all(lx3all)-x%x3all(1))    !this requires that all workers have a copy of x3all!!!!
-    meanx3=0.5d0*(x%x3all(1)+x%x3all(lx3all))
-
-    Phipk=0.20d4    !pk potential, ?????  works well
-    flagdirich=1
-
-    if (t>1d0) then
-      do ix3=1,lx3all
-        do ix2=1,lx2
-          Vmaxx1(ix2,ix3)=Phipk*exp(-(x%x3all(ix3)-meanx3)**2/2d0/sigx3**2)* &
-                                 exp(-(x%x2(ix2)-meanx2)**2/2d0/sigx2**2)       !note that program always assumes the potential BC for Dirichlet conditions to be stored in Vmaxx1
-        end do
-      end do
-    else
-      do ix3=1,lx3all
-        do ix2=1,lx2
-          Vmaxx1(ix2,ix3)=0d0
-        end do
-      end do
-    end if
-
-
-    !SOME USER INFO
-    write(*,*) 'At time:  ',t,'  Max potential set to be:  ',maxval(pack(abs(Vmaxx1),.true.))
-
-
-    !BOTTOM BOUNDARY IS ALWAYS ZERO CURRENT - SIDES ARE JUST GROUNDED
-    Vminx1=Vmaxx1   !since we are using Dirichlet conditions, we assume EFL
-    Vminx2=0d0
-    Vmaxx2=0d0
-    Vminx3=0d0
-    Vmaxx3=0d0
-
-    
-    !COMPUTE SOURCE/FORCING TERMS FROM BACKGROUND FIELDS, ETC.
-    E01all=0d0
-    E02all=0d0
-    E03all=0d0
-
-  end subroutine potentialBCs2D_Dirichlet
-
-
-  subroutine potentialBCs2D_GDIcav(t,sig0all,x,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3, &
-                                          Vmaxx3,E01all,E02all,E03all,flagdirich)
-
-    !THIS WAS USED FOR MY CAVITY-GDI GRL PAPER
-
-    real(8), intent(in) :: t
-    real(8), dimension(:,:,:), intent(in) ::  sig0all
-    type(curvmesh), intent(in) :: x
-
-    real(8), dimension(:,:), intent(out) :: Vminx1,Vmaxx1
-    real(8), dimension(:,:), intent(out) :: Vminx2,Vmaxx2
-    real(8), dimension(:,:), intent(out) :: Vminx3,Vmaxx3
-    real(8), dimension(:,:,:), intent(out) :: E01all,E02all,E03all
-    integer, intent(out) :: flagdirich
-
-    real(8), dimension(1:size(Vmaxx1,1),1:size(Vmaxx1,2)) :: Emaxx1    !pseudo-electric field
-
-    real(8) :: Phipk
-    integer :: ix1,ix2,ix3    !grid sizes are borrow from grid module
-    integer :: im
-    integer, parameter :: lmodes=8
-    real(8) :: phase
-    real(8), dimension(1:lx2) :: x3dev    !a little bit surprise we can use grid mod lx2 var as size...
-    real(8) :: meanx2,sigx2,meanx3,sigx3,meant,sigt,sigcurv,x30amp,varc    !for setting background field
-
-
-    !SIZES
-!    lx1=size(sig0all,1)
-!    lx2=size(sig0all,2)
-!    lx3all=size(sig0all,3)
-
-
-    !CALCULATE/SET TOP BOUNDARY CONDITIONS
-!    meanx3=-320d3    !for 1000km x3 simulation
-!    meanx3=-653d3    !for 1666km x3 simulation
-!    meanx3=-280d3
-!    meanx3=-300d3
-    meanx3=0d0
-!    sigx3=40d3
-!    sigx3=80d3
+!  subroutine potentialBCs2D_KHI(t,sig0all,x,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3, &
+!                                          Vmaxx3,E01all,E02all,E03all,flagdirich)
+!
+!    real(8), intent(in) :: t
+!    real(8), dimension(:,:,:), intent(in) ::  sig0all
+!    type(curvmesh), intent(in) :: x
+!
+!    real(8), dimension(:,:), intent(out) :: Vminx1,Vmaxx1
+!    real(8), dimension(:,:), intent(out) :: Vminx2,Vmaxx2
+!    real(8), dimension(:,:), intent(out) :: Vminx3,Vmaxx3
+!    real(8), dimension(:,:,:), intent(out) :: E01all,E02all,E03all
+!    integer, intent(out) :: flagdirich
+!
+!    real(8), dimension(1:size(Vmaxx1,1),1:size(Vmaxx1,2)) :: Emaxx1    !pseudo-electric field
+!
+!    real(8) :: Phipk
+!    integer :: ix1,ix2,ix3    !grid sizes are borrow from grid module
+!    integer :: im
+!!    integer, parameter :: lmodes=8
+!    real(8) :: phase
+!    real(8), dimension(1:lx2) :: x3dev    !a little bit surprise we can use grid mod lx2 var as size...
+!    real(8) :: meanx2,sigx2,meanx3,sigx3,meant,sigt,sigcurv,x30amp,varc    !for setting background field
+!
+!    real(8), dimension(1:size(E01all,1),1:size(E01all,2),1:size(E01all,3)) ::  vel3    !x3 component of initial drift velocity
+!    real(8), dimension(1:size(E01all,2),1:size(E01all,3)) :: E2slab,Phislab
+!
+!    real(8), parameter :: v0=500d0
+!    real(8), parameter :: vn=500d0, voffset=100d0
+!    real(8), parameter :: B1val=-50000d-9    !must match grid structure avg. value
+!
+!
+!    !CALCULATE/SET TOP BOUNDARY CONDITIONS
+!    meanx3=0d0
 !    sigx3=60d3
-    sigx3=60d3
-    meanx2=0d0
-    sigx2=50d3
-    meant=900d0
-    sigt=450d0
-    sigcurv=450d3
-    x30amp=0.1d3    !original successful runs used 2d3, but it was very pronounced...
-    varc=0d0
-
-    Phipk=120d-3    !pk electric field, 100d-3 works well
-
-
-    if (t<90d0) then
-      flagdirich=1
-
-      call random_seed()   !default initialization everytime we are called so we get the same (recomputed) phase each time
-      x3dev=0d0
-      do im=1,lmodes    !comment out if no seed for instability
-        call random_number(phase)
-        phase=phase*2*pi
-        x3dev=x3dev+x30amp*cos(2d0*pi/(4d0*sigx2/real(im,8))*x%x2(1:lx2)+phase)   !center line for patch edge
-      end do
-
-      do ix3=1,lx3all
-        do ix2=1,lx2
-!          Emaxx1(ix2,ix3)=Phipk*exp(-(x3all(ix3)-meanx3-x3dev(ix2))**10/2d0/sigx3**10)* &
-!                                exp(-(x2(ix2)-meanx2)**6/2d0/(4d0*sigx2)**6)
-          Emaxx1(ix2,ix3)=Phipk*exp(-(x%x3all(ix3)-meanx3-x3dev(ix2))**10/2d0/sigx3**10)* &
-                                exp(-(x%x2(ix2)-meanx2)**4/2d0/(4d0*sigx2)**4)
-        end do
-      end do
-
-      Vmaxx1=integral2D2_curv_alt(Emaxx1,x,1,lx3all)   !integrate then modulate to avoid edge effects
-      do ix3=1,lx3all
-        do ix2=1,lx2      
-          Vmaxx1(ix2,ix3)=Vmaxx1(ix2,ix3)*exp(-(x%x3all(ix3)-meanx3)**2/2d0/(3d0*sigx3)**2)
-        end do
-      end do
-    else
-      flagdirich=0
-
-      Vmaxx1=0d0
-    end if
-
-
-    !CONVERT FAC INTO POTENTIAL DERIVATIVE
-    write(*,*) 'At time:  ',t,'  Max potential set to be:  ',maxval(pack(Vmaxx1,.true.))
-
-
-    !BOTTOM BOUNDARY IS ALWAYS ZERO CURRENT - SIDES ARE JUST GROUNDED
-    Vminx1=0d0
-    Vminx2=0d0
-    Vmaxx2=0d0
-    Vminx3=0d0
-    Vmaxx3=0d0
-
-    
-    !COMPUTE SOURCE/FORCING TERMS FROM BACKGROUND FIELDS, ETC.
-    E01all=0d0
-    if (t<90d0) then
-      E02all=0d0
-    else
-!      E02all=25d-3
-      E02all=-25d-3
-    end if
-    E03all=0d0
-
-  end subroutine potentialBCs2D_GDIcav
-
+!    meanx2=0d0
+!    sigx2=0.5d3
+!    meant=900d0
+!    sigt=450d0
+!    sigcurv=450d3
+!    x30amp=0.1d3    !original successful runs used 2d3, but it was very pronounced...
+!    varc=0d0
+!    Phipk=120d-3    !pk electric field, 100d-3 works well
+!
+!
+!    !NO CURRENT THROUGH THE TOP BOUNDARY
+!    flagdirich=0
+!    Vmaxx1=0d0
+!
+!
+!    !CONVERT FAC INTO POTENTIAL DERIVATIVE
+!    write(*,*) 'At time:  ',t,'  Max current set to be:  ',maxval(pack(Vmaxx1,.true.))
+!
+!
+!    !BOTTOM BOUNDARY IS ALWAYS ZERO CURRENT - SIDES ARE JUST GROUNDED
+!    Vminx1=0d0
+!    Vminx3=0d0     !these are actually not used if periodic is selected (and it should be for this type of simulation)
+!    Vmaxx3=0d0     !also not used if we plan to do a simulation that includes perdiodic boundary conditions which are specified through the input config.dat file
+!
+!
+!    !THE FOLLOWING LINES DUPLICATE CODE FROM THE ICS SUBROUTINE BELOW
+!    !FILL IN VELOCITY FIELD (X3 COMP)
+!    do ix3=1,lx3all
+!      do ix1=1,lx1
+!        vel3(ix1,:,ix3)=-v0*tanh(x%x2(1:lx2)/sigx2)+vn+voffset
+!      end do
+!    end do
+!
+!
+!    !CONVERT TO ELECTRIC FIELD
+!    E2slab=vel3(1,:,:)*B1val
+!
+!
+!    !INTEGRATE TO PRODUCE A POTENTIAL OVER GRID
+!    Phislab=integral2D1_curv_alt(E2slab,x,1,lx2)
+!    do ix1=1,lx1
+!      Vmaxx2(ix1,:)=Phislab(lx2,:)
+!      Vminx2(ix1,:)=Phislab(1,:)
+!    end do
+!
+!
+!   
+!    !COMPUTE SOURCE/FORCING TERMS FROM BACKGROUND FIELDS, ETC.
+!    E01all=0d0
+!    E02all=0d0
+!    E03all=0d0
+!
+!
+!  end subroutine potentialBCs2D_KHI
+!
+!
+!  subroutine potentialBCs2D_GDI(t,sig0all,x,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3, &
+!                                          Vmaxx3,E01all,E02all,E03all,flagdirich)
+!
+!    real(8), intent(in) :: t
+!    real(8), dimension(:,:,:), intent(in) ::  sig0all
+!    type(curvmesh), intent(in) :: x
+!
+!    real(8), dimension(:,:), intent(out) :: Vminx1,Vmaxx1
+!    real(8), dimension(:,:), intent(out) :: Vminx2,Vmaxx2
+!    real(8), dimension(:,:), intent(out) :: Vminx3,Vmaxx3
+!    real(8), dimension(:,:,:), intent(out) :: E01all,E02all,E03all
+!    integer, intent(out) :: flagdirich
+!
+!    real(8), dimension(1:size(Vmaxx1,1),1:size(Vmaxx1,2)) :: Emaxx1    !pseudo-electric field
+!
+!    real(8) :: Phipk
+!    integer :: ix1,ix2,ix3    !grid sizes are borrow from grid module
+!    integer :: im
+!!    integer, parameter :: lmodes=8
+!    real(8) :: phase
+!    real(8), dimension(1:lx2) :: x3dev    !a little bit surprise we can use grid mod lx2 var as size...
+!    real(8) :: meanx2,sigx2,meanx3,sigx3,meant,sigt,sigcurv,x30amp,varc    !for setting background field
+!
+!
+!    !SIZES
+!!    lx1=size(sig0all,1)
+!!    lx2=size(sig0all,2)
+!!    lx3all=size(sig0all,3)
+!
+!
+!    !CALCULATE/SET TOP BOUNDARY CONDITIONS
+!    meanx3=0d0
+!    sigx3=60d3
+!    meanx2=0d0
+!    sigx2=50d3
+!    meant=900d0
+!    sigt=450d0
+!    sigcurv=450d3
+!    x30amp=0.1d3    !original successful runs used 2d3, but it was very pronounced...
+!    varc=0d0
+!
+!    Phipk=120d-3    !pk electric field, 100d-3 works well
+!
+!
+!    !NO CURRENT THROUGH THE TOP BOUNDARY
+!    flagdirich=0
+!    Vmaxx1=0d0
+!
+!
+!    !CONVERT FAC INTO POTENTIAL DERIVATIVE
+!    write(*,*) 'At time:  ',t,'  Max current set to be:  ',maxval(pack(Vmaxx1,.true.))
+!
+!
+!    !BOTTOM BOUNDARY IS ALWAYS ZERO CURRENT - SIDES ARE JUST GROUNDED
+!    Vminx1=0d0
+!    Vminx2=0d0
+!    Vmaxx2=0d0
+!    Vminx3=0d0
+!    Vmaxx3=0d0
+!
+!    
+!    !COMPUTE SOURCE/FORCING TERMS FROM BACKGROUND FIELDS, ETC.
+!    E01all=0d0
+!    E02all=0d0
+!    E03all=-25e-3
+!
+!  end subroutine potentialBCs2D_GDI
+!
+!
+!  subroutine potentialBCs2D_3DPCarc2(t,sig0all,x, &
+!                   Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3,Vmaxx3,E01all,E02all,E03all,flagdirich)
+!
+!    !------------------------------------------------------------
+!    !-------POPULATES TOP BOUNDARY CONDITIONS FOR POTENTIAL AND
+!    !-------SOURCE TERMS FROM BACKGROUND FIELDS, ETC.  THIS 
+!    !-------PARTICULAR IMPLEMENTATION USES DIRICHLET CONDITIONS
+!    !------------------------------------------------------------
+!
+!    use phys_consts
+!
+!    implicit none
+!    real(8), intent(in) :: t
+!    real(8), dimension(:,:,:), intent(in) ::  sig0all
+!    type(curvmesh), intent(in) :: x
+!
+!    real(8), dimension(:,:), intent(out), target :: Vminx1,Vmaxx1
+!    real(8), dimension(:,:), intent(out) :: Vminx2,Vmaxx2
+!    real(8), dimension(:,:), intent(out) :: Vminx3,Vmaxx3
+!    real(8), dimension(:,:,:), intent(out) :: E01all,E02all,E03all
+!    integer, intent(out) :: flagdirich
+!
+!    real(8) :: Jpk
+!    integer :: ix1,ix2,ix3,lx1,lx2,lx3all
+!    real(8) :: meanx2,sigx2,meanx3,sigx3,meant,sigt,sigcurv,x30amp,varc,x2enve    !for setting background field
+!
+!    real(8), dimension(:,:), pointer :: Vtopalt,Vbotalt
+!
+!
+!    !SIZES
+!    lx1=size(sig0all,1)
+!    lx2=size(sig0all,2)
+!    lx3all=size(sig0all,3)
+!
+!
+!    !SET POINTERS FOR THIS TYPE OF GRID
+!    if (gridflag/=2) then
+!      write(*,*) '!!!Using inverted boundary conditions...'
+!      Vtopalt=>Vminx1
+!      Vbotalt=>Vmaxx1
+!    else
+!      write(*,*) '!!!Using non-inverted boundary conditions...'
+!      Vtopalt=>Vmaxx1
+!      Vbotalt=>Vminx1
+!    end if
+!
+!
+!    !CALCULATE/SET TOP BOUNDARY CONDITIONS
+!    flagdirich=0
+!
+!    sigx2=150d3
+!    meanx2=0d0
+!    sigx3=25d3
+!    meant=120d0
+!    sigt=60d0
+!    sigcurv=450d3
+!    x30amp=0d3
+!    varc=200d0
+!    Jpk=0.875d-6
+!
+!
+!    if (t<43200d0) then
+!      do ix3=1,lx3all
+!        do ix2=1,lx2
+!          meanx3=-varc*meant+varc*t
+!          Vtopalt(ix2,ix3)=(Jpk*exp(-(x%x3all(ix3)-(-sigx3+meanx3+x30amp*cos(2d0*pi/(sigx2/2d0)*x%x2(ix2)) ))**2/2d0/sigx3**2)- &
+!                          Jpk*exp(-(x%x3all(ix3)-(sigx3+meanx3+x30amp*cos(2d0*pi/(sigx2/2d0)*x%x2(ix2)) ))**2/2d0/sigx3**2) )* &
+!                              exp(-(x%x2(ix2)-meanx2)**4/2d0/sigx2**4)*exp(-(t-meant)**2/2d0/sigt**2)
+!        end do
+!      end do
+!    else
+!      Vtopalt=0d0
+!    end if
+!
+!
+!    !CONVERT FAC INTO POTENTIAL DERIVATIVE
+!    write(*,*) 'Max FAC set to be:  ',maxval(pack(Vtopalt,.true.))
+!
+!
+!    !BOTTOM BOUNDARY IS ALWAYS ZERO CURRENT - SIDES ARE EQUIPOTENTIAL WITH TOP EDGE
+!    Vbotalt=0d0
+!    Vminx2=0d0
+!    Vmaxx2=0d0
+!    Vminx3=0d0
+!    Vmaxx3=0d0
+!
+!
+!    !COMPUTE SOURCE/FORCING TERMS FROM BACKGROUND FIELDS, ETC.
+!    E01all=0d0
+!    E02all=10d-3
+!    E03all=0d0
+!
+!  end subroutine potentialBCs2D_3DPCarc2
+!
+!
+!  subroutine potentialBCs2D_3DPCarc(t,sig0all,x, &
+!                   Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3,Vmaxx3,E01all,E02all,E03all,flagdirich)
+!
+!    !------------------------------------------------------------
+!    !-------POPULATES TOP BOUNDARY CONDITIONS FOR POTENTIAL AND
+!    !-------SOURCE TERMS FROM BACKGROUND FIELDS, ETC.  THIS 
+!    !-------PARTICULAR IMPLEMENTATION USES DIRICHLET CONDITIONS
+!    !------------------------------------------------------------
+!
+!    use phys_consts
+!
+!    implicit none
+!    real(8), intent(in) :: t
+!    real(8), dimension(:,:,:), intent(in) ::  sig0all
+!    type(curvmesh), intent(in) :: x
+!
+!    real(8), dimension(:,:), intent(out), target :: Vminx1,Vmaxx1
+!    real(8), dimension(:,:), intent(out) :: Vminx2,Vmaxx2
+!    real(8), dimension(:,:), intent(out) :: Vminx3,Vmaxx3
+!    real(8), dimension(:,:,:), intent(out) :: E01all,E02all,E03all
+!    integer, intent(out) :: flagdirich
+!
+!    real(8) :: Jpk
+!    integer :: ix1,ix2,ix3,lx1,lx2,lx3all
+!    real(8) :: meanx2,sigx2,meanx3,sigx3,meant,sigt,sigcurv,x30amp,varc,x2enve    !for setting background field
+!
+!    real(8), dimension(:,:), pointer :: Vtopalt,Vbotalt
+!
+!
+!    !SIZES
+!    lx1=size(sig0all,1)
+!    lx2=size(sig0all,2)
+!    lx3all=size(sig0all,3)
+!
+!
+!    !SET POINTERS FOR THIS TYPE OF GRID
+!    if (gridflag/=2) then
+!      Vtopalt=>Vminx1
+!      Vbotalt=>Vmaxx1
+!    else
+!      Vtopalt=>Vmaxx1
+!      Vbotalt=>Vminx1
+!    end if
+!
+!
+!    !CALCULATE/SET TOP BOUNDARY CONDITIONS
+!    flagdirich=0
+!
+!    sigx2=150d3
+!    meanx2=0d0
+!    sigx3=25d3
+!    meant=900d0
+!    sigt=450d0
+!    sigcurv=450d3
+!    x30amp=0d3
+!    varc=200d0
+!    Jpk=0.875d-6
+!
+!
+!    if (t<43200d0) then
+!      do ix3=1,lx3all
+!        do ix2=1,lx2
+!          meanx3=-varc*meant+varc*t
+!          Vtopalt(ix2,ix3)=(Jpk*exp(-(x%x3all(ix3)-(-sigx3+meanx3+x30amp*cos(2d0*pi/(sigx2/2d0)*x%x2(ix2)) ))**2/2d0/sigx3**2)- &
+!                          Jpk*exp(-(x%x3all(ix3)-(sigx3+meanx3+x30amp*cos(2d0*pi/(sigx2/2d0)*x%x2(ix2)) ))**2/2d0/sigx3**2) )* &
+!                              exp(-(x%x2(ix2)-meanx2)**4/2d0/sigx2**4)*exp(-(t-meant)**2/2d0/sigt**2)
+!        end do
+!      end do
+!    else
+!      Vtopalt=0d0
+!    end if
+!
+!
+!    !CONVERT FAC INTO POTENTIAL DERIVATIVE
+!    write(*,*) 'Max FAC set to be:  ',maxval(pack(Vtopalt,.true.))
+!
+!
+!    !BOTTOM BOUNDARY IS ALWAYS ZERO CURRENT - SIDES ARE EQUIPOTENTIAL WITH TOP EDGE
+!    Vbotalt=0d0
+!    Vminx2=0d0
+!    Vmaxx2=0d0
+!    Vminx3=0d0
+!    Vmaxx3=0d0
+!
+!
+!    !COMPUTE SOURCE/FORCING TERMS FROM BACKGROUND FIELDS, ETC.
+!    E01all=0d0
+!    E02all=10d-3
+!    E03all=0d0
+!
+!  end subroutine potentialBCs2D_3DPCarc
+!
+!
+!  subroutine potentialBCs2D_curved_closed(t,sig0all,x,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3, &
+!                                          Vmaxx3,E01all,E02all,E03all,flagdirich)
+!
+!    !THIS IS A SIMPLE GAUSSIAN POTENTIAL PERTURBATION (IN X1,X2,X3 SPAE)
+!
+!    real(8), intent(in) :: t
+!    real(8), dimension(:,:,:), intent(in) ::  sig0all
+!    type(curvmesh), intent(in) :: x
+!
+!    real(8), dimension(:,:), intent(out), target :: Vminx1,Vmaxx1
+!    real(8), dimension(:,:), intent(out) :: Vminx2,Vmaxx2
+!    real(8), dimension(:,:), intent(out) :: Vminx3,Vmaxx3
+!    real(8), dimension(:,:,:), intent(out) :: E01all,E02all,E03all
+!    integer, intent(out) :: flagdirich
+!
+!    real(8), dimension(1:size(Vmaxx1,1),1:size(Vmaxx1,2)) :: Emaxx1    !pseudo-electric field
+!
+!    real(8) :: Phipk
+!    integer :: ix1,ix2,ix3    !grid sizes are borrow from grid module
+!    integer :: im
+!!    integer, parameter :: lmodes=8
+!    real(8) :: phase
+!    real(8), dimension(1:lx2) :: x3dev    !a little bit surprise we can use grid mod lx2 var as size...
+!    real(8) :: meanx2,sigx2,meanx3,sigx3,meant,sigt,sigcurv,x30amp,varc    !for setting background field
+!
+!    real(8), dimension(:,:), pointer :: Vtopalt,Vbotalt
+!
+!
+!    !CALCULATE/SET TOP BOUNDARY CONDITIONS
+!    sigx2=1d0/20d0*(x%x2(lx2)-x%x2(1))
+!    meanx2=0.5d0*(x%x2(1)+x%x2(lx2))
+!    sigx3=1d0/20d0*(x%x3all(lx3all)-x%x3all(1))    !this requires that all workers have a copy of x3all!!!!
+!    meanx3=0.5d0*(x%x3all(1)+x%x3all(lx3all))
+!
+!    if (gridflag/=2) then
+!      Vtopalt=>Vminx1
+!      Vbotalt=>Vmaxx1
+!    else
+!      Vtopalt=>Vmaxx1
+!      Vbotalt=>Vminx1
+!    end if
+!
+!    Phipk=0d0      !pk current density
+!    flagdirich=0    !Neumann conditions
+!    do ix3=1,lx3all
+!      do ix2=1,lx2
+!        Vtopalt(ix2,ix3)=0d0
+!      end do
+!    end do
+!
+!
+!    !SOME USER INFO
+!    write(*,*) 'At time:  ',t,'  Max FAC set to be:  ',maxval(pack(abs(Vtopalt),.true.))
+!
+!
+!    !BOTTOM BOUNDARY IS ALWAYS ZERO CURRENT - SIDES ARE JUST GROUNDED
+!    Vbotalt=0d0   !since we need to have no current through bottom boundary
+!    Vminx2=0d0
+!    Vmaxx2=0d0
+!    Vminx3=0d0
+!    Vmaxx3=0d0
+!
+!
+!    !COMPUTE SOURCE/FORCING TERMS FROM BACKGROUND FIELDS, ETC.
+!    E01all=0d0
+!    E02all=0d0
+!    E03all=0d0
+!
+!  end subroutine potentialBCs2D_curved_closed
+!
+!
+!  subroutine potentialBCs2D_zeroends3D(t,sig0all,x,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3, &
+!                                          Vmaxx3,E01all,E02all,E03all,flagdirich)
+!
+!    !THIS IS A SIMPLE GAUSSIAN POTENTIAL PERTURBATION (IN X1,X2,X3 SPAE)
+!
+!    real(8), intent(in) :: t
+!    real(8), dimension(:,:,:), intent(in) ::  sig0all
+!    type(curvmesh), intent(in) :: x
+!
+!    real(8), dimension(:,:), intent(out), target :: Vminx1,Vmaxx1
+!    real(8), dimension(:,:), intent(out) :: Vminx2,Vmaxx2
+!    real(8), dimension(:,:), intent(out) :: Vminx3,Vmaxx3
+!    real(8), dimension(:,:,:), intent(out) :: E01all,E02all,E03all
+!    integer, intent(out) :: flagdirich
+!
+!    real(8), dimension(1:size(Vmaxx1,1),1:size(Vmaxx1,2)) :: Emaxx1    !pseudo-electric field
+!
+!    real(8) :: Phipk
+!    integer :: ix1,ix2,ix3    !grid sizes are borrow from grid module
+!    integer :: im
+!!    integer, parameter :: lmodes=8
+!    real(8) :: phase
+!    real(8), dimension(1:lx2) :: x3dev    !a little bit surprise we can use grid mod lx2 var as size...
+!    real(8) :: meanx2,sigx2,meanx3,sigx3,meant,sigt,sigcurv,x30amp,varc    !for setting background field
+!
+!    real(8), dimension(:,:), pointer :: Vtopalt,Vbotalt
+!
+!
+!    !CALCULATE/SET TOP BOUNDARY CONDITIONS
+!    sigx2=1d0/20d0*(x%x2(lx2)-x%x2(1))
+!    meanx2=0.5d0*(x%x2(1)+x%x2(lx2))
+!    sigx3=1d0/20d0*(x%x3all(lx3all)-x%x3all(1))    !this requires that all workers have a copy of x3all!!!!
+!    meanx3=0.5d0*(x%x3all(1)+x%x3all(lx3all))
+!
+!    if (gridflag/=2) then
+!      Vtopalt=>Vminx1
+!      Vbotalt=>Vmaxx1
+!    else
+!      Vtopalt=>Vmaxx1
+!      Vbotalt=>Vminx1
+!    end if
+!
+!    Phipk=0d0      !pk current density
+!    flagdirich=0    !Neumann conditions
+!
+!    if (t>1d0) then
+!      do ix3=1,lx3all
+!        do ix2=1,lx2
+!          Vtopalt(ix2,ix3)=Phipk*(exp(-(x%x3all(ix3)-meanx3-sigx3)**2/2d0/sigx3**2)* &
+!                                 exp(-(x%x2(ix2)-meanx2)**2/2d0/sigx2**2) - &
+!                                 exp(-(x%x3all(ix3)-meanx3+sigx3)**2/2d0/sigx3**2)* &
+!                                 exp(-(x%x2(ix2)-meanx2)**2/2d0/sigx2**2))       !note that program always assumes the potential BC for Dirichlet conditions to be stored in Vmaxx1
+!        end do
+!      end do
+!    else
+!      do ix3=1,lx3all
+!        do ix2=1,lx2
+!          Vtopalt(ix2,ix3)=0d0
+!        end do
+!      end do
+!    end if
+!
+!
+!    !SOME USER INFO
+!    write(*,*) 'At time:  ',t,'  Max FAC set to be:  ',maxval(pack(abs(Vtopalt),.true.))
+!
+!
+!    !BOTTOM BOUNDARY IS ALWAYS ZERO CURRENT - SIDES ARE JUST GROUNDED
+!    Vbotalt=0d0   !since we need to have no current through bottom boundary
+!    Vminx2=0d0
+!    Vmaxx2=0d0
+!    Vminx3=0d0
+!    Vmaxx3=0d0
+!
+!
+!    !COMPUTE SOURCE/FORCING TERMS FROM BACKGROUND FIELDS, ETC.
+!    E01all=0d0
+!    E02all=0d0
+!    E03all=0d0
+!
+!  end subroutine potentialBCs2D_zeroends3D
+!
+!
+!  subroutine potentialBCs2D_zeropotends(t,sig0all,x,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3, &
+!                                          Vmaxx3,E01all,E02all,E03all,flagdirich)
+!
+!    !THIS IS A SIMPLE GAUSSIAN POTENTIAL PERTURBATION (IN X1,X2,X3 SPAE)
+!
+!    real(8), intent(in) :: t
+!    real(8), dimension(:,:,:), intent(in) ::  sig0all
+!    type(curvmesh), intent(in) :: x
+!
+!    real(8), dimension(:,:), intent(out) :: Vminx1,Vmaxx1
+!    real(8), dimension(:,:), intent(out) :: Vminx2,Vmaxx2
+!    real(8), dimension(:,:), intent(out) :: Vminx3,Vmaxx3
+!    real(8), dimension(:,:,:), intent(out) :: E01all,E02all,E03all
+!    integer, intent(out) :: flagdirich
+!
+!    real(8), dimension(1:size(Vmaxx1,1),1:size(Vmaxx1,2)) :: Emaxx1    !pseudo-electric field
+!
+!    real(8) :: Phipk
+!    integer :: ix1,ix2,ix3    !grid sizes are borrow from grid module
+!    integer :: im
+!!    integer, parameter :: lmodes=8
+!    real(8) :: phase
+!    real(8), dimension(1:lx2) :: x3dev    !a little bit surprise we can use grid mod lx2 var as size...
+!    real(8) :: meanx2,sigx2,meanx3,sigx3,meant,sigt,sigcurv,x30amp,varc    !for setting background field
+!
+!
+!    !CALCULATE/SET TOP BOUNDARY CONDITIONS
+!    sigx2=1d0/10d0*(x%x2(lx2)-x%x2(1))
+!    meanx2=0.5d0*(x%x2(1)+x%x2(lx2))
+!    sigx3=1d0/10d0*(x%x3all(lx3all)-x%x3all(1))    !this requires that all workers have a copy of x3all!!!!
+!    meanx3=0.5d0*(x%x3all(1)+x%x3all(lx3all))
+!
+!    !Phipk=0.20d4    !pk potential, ?????  works well
+!    Phipk=0d0
+!    flagdirich=1
+!
+!    if (t>1d0) then
+!      do ix3=1,lx3all
+!        do ix2=1,lx2
+!          Vmaxx1(ix2,ix3)=Phipk*exp(-(x%x3all(ix3)-meanx3)**2/2d0/sigx3**2)* &
+!                                 exp(-(x%x2(ix2)-meanx2)**2/2d0/sigx2**2)       !note that program always assumes the potential BC for Dirichlet conditions to be stored in Vmaxx1
+!        end do
+!      end do
+!    else
+!      do ix3=1,lx3all
+!        do ix2=1,lx2
+!          Vmaxx1(ix2,ix3)=0d0
+!        end do
+!      end do
+!    end if
+!
+!
+!    !SOME USER INFO
+!    write(*,*) 'At time:  ',t,'  Max potential set to be:  ',maxval(pack(abs(Vmaxx1),.true.))
+!
+!
+!    !BOTTOM BOUNDARY IS ALWAYS ZERO CURRENT - SIDES ARE JUST GROUNDED
+!    Vminx1=Vmaxx1   !since we are using Dirichlet conditions, we assume EFL
+!    Vminx2=0d0
+!    Vmaxx2=0d0
+!    Vminx3=0d0
+!    Vmaxx3=0d0
+!
+!    
+!    !COMPUTE SOURCE/FORCING TERMS FROM BACKGROUND FIELDS, ETC.
+!    E01all=0d0
+!    E02all=0d0
+!    E03all=0d0
+!
+!  end subroutine potentialBCs2D_zeropotends
+!
+!
+!  subroutine potentialBCs2D_Neumann(t,sig0all,x,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3, &
+!                                          Vmaxx3,E01all,E02all,E03all,flagdirich)
+!
+!    !THIS IS A SIMPLE GAUSSIAN POTENTIAL PERTURBATION (IN X1,X2,X3 SPAE)
+!
+!    real(8), intent(in) :: t
+!    real(8), dimension(:,:,:), intent(in) ::  sig0all
+!    type(curvmesh), intent(in) :: x
+!
+!    real(8), dimension(:,:), intent(out), target :: Vminx1,Vmaxx1
+!    real(8), dimension(:,:), intent(out) :: Vminx2,Vmaxx2
+!    real(8), dimension(:,:), intent(out) :: Vminx3,Vmaxx3
+!    real(8), dimension(:,:,:), intent(out) :: E01all,E02all,E03all
+!    integer, intent(out) :: flagdirich
+!
+!    real(8), dimension(1:size(Vmaxx1,1),1:size(Vmaxx1,2)) :: Emaxx1    !pseudo-electric field
+!
+!    real(8) :: Phipk
+!    integer :: ix1,ix2,ix3    !grid sizes are borrow from grid module
+!    integer :: im
+!!    integer, parameter :: lmodes=8
+!    real(8) :: phase
+!    real(8), dimension(1:lx2) :: x3dev    !a little bit surprise we can use grid mod lx2 var as size...
+!    real(8) :: meanx2,sigx2,meanx3,sigx3,meant,sigt,sigcurv,x30amp,varc    !for setting background field
+!
+!    real(8), dimension(:,:), pointer :: Vtopalt,Vbotalt
+!
+!
+!    !CALCULATE/SET TOP BOUNDARY CONDITIONS
+!    sigx2=1d0/20d0*(x%x2(lx2)-x%x2(1))
+!    meanx2=0.5d0*(x%x2(1)+x%x2(lx2))
+!    sigx3=1d0/20d0*(x%x3all(lx3all)-x%x3all(1))    !this requires that all workers have a copy of x3all!!!!
+!    meanx3=0.5d0*(x%x3all(1)+x%x3all(lx3all))
+!
+!    if (gridflag/=2) then
+!      Vtopalt=>Vminx1
+!      Vbotalt=>Vmaxx1
+!    else
+!      Vtopalt=>Vmaxx1
+!      Vbotalt=>Vminx1
+!    end if
+!
+!    Phipk=5d-6      !pk current density
+!    flagdirich=0    !Neumann conditions
+!
+!    if (t>1d0) then
+!      do ix3=1,lx3all
+!        do ix2=1,lx2
+!          Vtopalt(ix2,ix3)=Phipk*(exp(-(x%x3all(ix3)-meanx3-sigx3)**2/2d0/sigx3**2)* &
+!                                 exp(-(x%x2(ix2)-meanx2)**2/2d0/sigx2**2) - &
+!                                 exp(-(x%x3all(ix3)-meanx3+sigx3)**2/2d0/sigx3**2)* &
+!                                 exp(-(x%x2(ix2)-meanx2)**2/2d0/sigx2**2))       !note that program always assumes the potential BC for Dirichlet conditions to be stored in Vmaxx1
+!        end do
+!      end do
+!    else
+!      do ix3=1,lx3all
+!        do ix2=1,lx2
+!          Vtopalt(ix2,ix3)=0d0
+!        end do
+!      end do
+!    end if
+!
+!
+!    !SOME USER INFO
+!    write(*,*) 'At time:  ',t,'  Max FAC set to be:  ',maxval(pack(abs(Vtopalt),.true.))
+!
+!
+!    !BOTTOM BOUNDARY IS ALWAYS ZERO CURRENT - SIDES ARE JUST GROUNDED
+!    Vbotalt=0d0   !since we need to have no current through bottom boundary
+!    Vminx2=0d0
+!    Vmaxx2=0d0
+!    Vminx3=0d0
+!    Vmaxx3=0d0
+!
+!
+!    !COMPUTE SOURCE/FORCING TERMS FROM BACKGROUND FIELDS, ETC.
+!    E01all=0d0
+!    E02all=0d0
+!    E03all=0d0
+!
+!  end subroutine potentialBCs2D_Neumann
+!
+!
+!  subroutine potentialBCs2D_Dirichlet(t,sig0all,x,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3, &
+!                                          Vmaxx3,E01all,E02all,E03all,flagdirich)
+!
+!    !THIS IS A SIMPLE GAUSSIAN POTENTIAL PERTURBATION (IN X1,X2,X3 SPAE)
+!
+!    real(8), intent(in) :: t
+!    real(8), dimension(:,:,:), intent(in) ::  sig0all
+!    type(curvmesh), intent(in) :: x
+!
+!    real(8), dimension(:,:), intent(out) :: Vminx1,Vmaxx1
+!    real(8), dimension(:,:), intent(out) :: Vminx2,Vmaxx2
+!    real(8), dimension(:,:), intent(out) :: Vminx3,Vmaxx3
+!    real(8), dimension(:,:,:), intent(out) :: E01all,E02all,E03all
+!    integer, intent(out) :: flagdirich
+!
+!    real(8), dimension(1:size(Vmaxx1,1),1:size(Vmaxx1,2)) :: Emaxx1    !pseudo-electric field
+!
+!    real(8) :: Phipk
+!    integer :: ix1,ix2,ix3    !grid sizes are borrow from grid module
+!    integer :: im
+!!    integer, parameter :: lmodes=8
+!    real(8) :: phase
+!    real(8), dimension(1:lx2) :: x3dev    !a little bit surprise we can use grid mod lx2 var as size...
+!    real(8) :: meanx2,sigx2,meanx3,sigx3,meant,sigt,sigcurv,x30amp,varc    !for setting background field
+!
+!
+!    !CALCULATE/SET TOP BOUNDARY CONDITIONS
+!    sigx2=1d0/10d0*(x%x2(lx2)-x%x2(1))
+!    meanx2=0.5d0*(x%x2(1)+x%x2(lx2))
+!    sigx3=1d0/10d0*(x%x3all(lx3all)-x%x3all(1))    !this requires that all workers have a copy of x3all!!!!
+!    meanx3=0.5d0*(x%x3all(1)+x%x3all(lx3all))
+!
+!    Phipk=0.20d4    !pk potential, ?????  works well
+!    flagdirich=1
+!
+!    if (t>1d0) then
+!      do ix3=1,lx3all
+!        do ix2=1,lx2
+!          Vmaxx1(ix2,ix3)=Phipk*exp(-(x%x3all(ix3)-meanx3)**2/2d0/sigx3**2)* &
+!                                 exp(-(x%x2(ix2)-meanx2)**2/2d0/sigx2**2)       !note that program always assumes the potential BC for Dirichlet conditions to be stored in Vmaxx1
+!        end do
+!      end do
+!    else
+!      do ix3=1,lx3all
+!        do ix2=1,lx2
+!          Vmaxx1(ix2,ix3)=0d0
+!        end do
+!      end do
+!    end if
+!
+!
+!    !SOME USER INFO
+!    write(*,*) 'At time:  ',t,'  Max potential set to be:  ',maxval(pack(abs(Vmaxx1),.true.))
+!
+!
+!    !BOTTOM BOUNDARY IS ALWAYS ZERO CURRENT - SIDES ARE JUST GROUNDED
+!    Vminx1=Vmaxx1   !since we are using Dirichlet conditions, we assume EFL
+!    Vminx2=0d0
+!    Vmaxx2=0d0
+!    Vminx3=0d0
+!    Vmaxx3=0d0
+!
+!    
+!    !COMPUTE SOURCE/FORCING TERMS FROM BACKGROUND FIELDS, ETC.
+!    E01all=0d0
+!    E02all=0d0
+!    E03all=0d0
+!
+!  end subroutine potentialBCs2D_Dirichlet
+!
+!
+!  subroutine potentialBCs2D_GDIcav(t,sig0all,x,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3, &
+!                                          Vmaxx3,E01all,E02all,E03all,flagdirich)
+!
+!    !THIS WAS USED FOR MY CAVITY-GDI GRL PAPER
+!
+!    real(8), intent(in) :: t
+!    real(8), dimension(:,:,:), intent(in) ::  sig0all
+!    type(curvmesh), intent(in) :: x
+!
+!    real(8), dimension(:,:), intent(out) :: Vminx1,Vmaxx1
+!    real(8), dimension(:,:), intent(out) :: Vminx2,Vmaxx2
+!    real(8), dimension(:,:), intent(out) :: Vminx3,Vmaxx3
+!    real(8), dimension(:,:,:), intent(out) :: E01all,E02all,E03all
+!    integer, intent(out) :: flagdirich
+!
+!    real(8), dimension(1:size(Vmaxx1,1),1:size(Vmaxx1,2)) :: Emaxx1    !pseudo-electric field
+!
+!    real(8) :: Phipk
+!    integer :: ix1,ix2,ix3    !grid sizes are borrow from grid module
+!    integer :: im
+!    integer, parameter :: lmodes=8
+!    real(8) :: phase
+!    real(8), dimension(1:lx2) :: x3dev    !a little bit surprise we can use grid mod lx2 var as size...
+!    real(8) :: meanx2,sigx2,meanx3,sigx3,meant,sigt,sigcurv,x30amp,varc    !for setting background field
+!
+!
+!    !SIZES
+!!    lx1=size(sig0all,1)
+!!    lx2=size(sig0all,2)
+!!    lx3all=size(sig0all,3)
+!
+!
+!    !CALCULATE/SET TOP BOUNDARY CONDITIONS
+!!    meanx3=-320d3    !for 1000km x3 simulation
+!!    meanx3=-653d3    !for 1666km x3 simulation
+!!    meanx3=-280d3
+!!    meanx3=-300d3
+!    meanx3=0d0
+!!    sigx3=40d3
+!!    sigx3=80d3
+!!    sigx3=60d3
+!    sigx3=60d3
+!    meanx2=0d0
+!    sigx2=50d3
+!    meant=900d0
+!    sigt=450d0
+!    sigcurv=450d3
+!    x30amp=0.1d3    !original successful runs used 2d3, but it was very pronounced...
+!    varc=0d0
+!
+!    Phipk=120d-3    !pk electric field, 100d-3 works well
+!
+!
+!    if (t<90d0) then
+!      flagdirich=1
+!
+!      call random_seed()   !default initialization everytime we are called so we get the same (recomputed) phase each time
+!      x3dev=0d0
+!      do im=1,lmodes    !comment out if no seed for instability
+!        call random_number(phase)
+!        phase=phase*2*pi
+!        x3dev=x3dev+x30amp*cos(2d0*pi/(4d0*sigx2/real(im,8))*x%x2(1:lx2)+phase)   !center line for patch edge
+!      end do
+!
+!      do ix3=1,lx3all
+!        do ix2=1,lx2
+!!          Emaxx1(ix2,ix3)=Phipk*exp(-(x3all(ix3)-meanx3-x3dev(ix2))**10/2d0/sigx3**10)* &
+!!                                exp(-(x2(ix2)-meanx2)**6/2d0/(4d0*sigx2)**6)
+!          Emaxx1(ix2,ix3)=Phipk*exp(-(x%x3all(ix3)-meanx3-x3dev(ix2))**10/2d0/sigx3**10)* &
+!                                exp(-(x%x2(ix2)-meanx2)**4/2d0/(4d0*sigx2)**4)
+!        end do
+!      end do
+!
+!      Vmaxx1=integral2D2_curv_alt(Emaxx1,x,1,lx3all)   !integrate then modulate to avoid edge effects
+!      do ix3=1,lx3all
+!        do ix2=1,lx2      
+!          Vmaxx1(ix2,ix3)=Vmaxx1(ix2,ix3)*exp(-(x%x3all(ix3)-meanx3)**2/2d0/(3d0*sigx3)**2)
+!        end do
+!      end do
+!    else
+!      flagdirich=0
+!
+!      Vmaxx1=0d0
+!    end if
+!
+!
+!    !CONVERT FAC INTO POTENTIAL DERIVATIVE
+!    write(*,*) 'At time:  ',t,'  Max potential set to be:  ',maxval(pack(Vmaxx1,.true.))
+!
+!
+!    !BOTTOM BOUNDARY IS ALWAYS ZERO CURRENT - SIDES ARE JUST GROUNDED
+!    Vminx1=0d0
+!    Vminx2=0d0
+!    Vmaxx2=0d0
+!    Vminx3=0d0
+!    Vmaxx3=0d0
+!
+!    
+!    !COMPUTE SOURCE/FORCING TERMS FROM BACKGROUND FIELDS, ETC.
+!    E01all=0d0
+!    if (t<90d0) then
+!      E02all=0d0
+!    else
+!!      E02all=25d-3
+!      E02all=-25d-3
+!    end if
+!    E03all=0d0
+!
+!  end subroutine potentialBCs2D_GDIcav
+!
 end module potentialBCs_mumps

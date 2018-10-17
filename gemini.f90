@@ -137,7 +137,7 @@ end if
 
 
 !LOAD ICS AND DISTRIBUTE TO WORKERS (REQUIRES GRAVITY FOR INITIAL GUESSING)
-call input_plasma(x%x1,x%x2,x%x3all,indatsize,indatgrid,ns,vs1,Ts)
+call input_plasma(x%x1,x%x2,x%x3all,indatsize,ns,vs1,Ts)
 
 
 !ROOT/WORKERS WILL ASSUME THAT THE MAGNETIC FIELDS AND PERP FLOWS START AT ZERO
@@ -195,8 +195,8 @@ do while (t<tdur)
   if (flagdneu==1) then
     call cpu_time(tstart)
     if (it==1) then    !this triggers the code to load the neutral frame correspdonding ot the beginning time of the simulation
-      if (myid==0) write(*,*) '!!!Attempting initial load of neutral dynamics files!!!  This is a workaround & 
-                                  that fixes the restart code...',t-dt
+      if (myid==0) write(*,*) '!!!Attempting initial load of neutral dynamics files!!!  &
+                              This is a workaround that fixes the restart code...',t-dt
       call neutral_perturb(interptype,dt,dtneu,t-dtneu,ymd,UTsec-dtneu,sourcedir,drhon,dzn, &
                                   sourcemlat,sourcemlon,x,nn,Tn,vn1,vn2,vn3)
     end if
