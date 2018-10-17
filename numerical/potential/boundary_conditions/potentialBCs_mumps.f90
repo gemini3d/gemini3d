@@ -161,11 +161,13 @@ contains
         read(inunit) Vminx1p,Vmaxx1p    !background fields and top/bottom boundar conditions
         read(inunit) Vminx2pslice,Vmaxx2pslice    !these ohly used for 3D simulations
         read(inunit) Vminx3pslice,Vmaxx3pslice
-      else      !just set everything to zero
-        write(*,*) 'Bad input file, setting everything to some default value...'
-        flagdirich=1    !to short-circuit solve...
-        E0xp=0d0; E0yp=0d0; Vminx1p=0d0; Vmaxx1p=0d0;
-        Vminx2pslice=0d0; Vmaxx2pslice=0d0; Vminx3pslice=0d0; Vmaxx3pslice=0d0;
+      else      
+        error stop 'Bad input file, cannot proceed'  ! per MZ Oct. 2018
+        !just set everything to zero
+        !write(*,*) 'Bad input file, setting everything to some default value...'
+        !flagdirich=1    !to short-circuit solve...
+        !E0xp=0d0; E0yp=0d0; Vminx1p=0d0; Vmaxx1p=0d0;
+        !Vminx2pslice=0d0; Vmaxx2pslice=0d0; Vminx3pslice=0d0; Vmaxx3pslice=0d0;
       end if
       close(inunit)
 

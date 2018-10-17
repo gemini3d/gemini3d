@@ -54,7 +54,7 @@ fprintf('Reloading input file...\n');
 
 %CHECK WHETHER WE NEED TO RELOAD THE GRID (WHICH CAN BE TIME CONSUMING)
 if (~exist('xg','var'))
-  fprintf('Reloading grid...\n');
+  disp('Reloading grid...')
   xg = readgrid([direc,filesep,'inputs',filesep]);
 end
 
@@ -80,7 +80,7 @@ end
 
 
 % COMPUTE SOURUCE LOCATION IN MCOORDS
-if (~isempty(mloc))
+if ~isempty(mloc)
  mlat=mloc(1);
  mlon=mloc(2);
 else
@@ -147,8 +147,7 @@ end
 
 
 %LOAD THE FRAME NEAREST TO THE REQUESTED TIME
-autoload=1;
-[ne,mlatsrc,mlonsrc,v1,Ti,Te,J1,v2,v3,J2,J3,filename,Phitop]= loadframe(direc,UTsecnow,ymdnow,UTsec0,ymd0,autoload,flagoutput,mloc,xg);
+[ne,mlatsrc,mlonsrc,v1,Ti,Te,J1,v2,v3,J2,J3,filename,Phitop]= loadframe(direc,UTsecnow,ymdnow,UTsec0,ymd0,mloc,xg);
 
 size(ne)
 xg

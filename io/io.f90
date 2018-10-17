@@ -160,38 +160,43 @@ contains
     integer :: ierr
 
     !MAKE A COPY OF THE INPUT DATA IN THE OUTPUT DIRECTORY (MAYBE SHOULD COPY SOURCE CODE TOO???)
-    call execute_command_line('mkdir -p '//outdir//'/inputs', exitstat=ierr)
+    call execute_command_line('mkdir -pv '//outdir//'/inputs', exitstat=ierr)
     if (ierr /= 0) error stop 'error creating output directory' 
 
     call execute_command_line('cp -rv '//infile//' '//outdir//'/inputs/', exitstat=ierr)
-    call execute_command_line('cp -rv '//indatsize//' '//outdir//'inputs/', exitstat=ierr)
-    call execute_command_line('cp -rv '//indatgrid//' '//outdir//'inputs/', exitstat=ierr)
-    call execute_command_line('cp -rv '//indatfile//' '//outdir//'inputs/', exitstat=ierr)
+    if (ierr /= 0) error stop 'error copying input parameters to output directory' 
+    call execute_command_line('cp -rv '//indatsize//' '//outdir//'/inputs/', exitstat=ierr)
+    if (ierr /= 0) error stop 'error copying input parameters to output directory' 
+    call execute_command_line('cp -rv '//indatgrid//' '//outdir//'/inputs/', exitstat=ierr)
+    if (ierr /= 0) error stop 'error copying input parameters to output directory' 
+    call execute_command_line('cp -rv '//indatfile//' '//outdir//'/inputs/', exitstat=ierr)
     if (ierr /= 0) error stop 'error copying input parameters to output directory' 
 
     !MAKE COPIES OF THE INPUT DATA, AS APPROPRIATE
     if (flagdneu/=0) then
-      call execute_command_line('mkdir '//outdir//'/inputs/neutral_inputs')
+      call execute_command_line('mkdir -pv '//outdir//'/inputs/neutral_inputs')
       call execute_command_line('cp -rv '//sourcedir//'/* '//outdir//'/inputs/neutral_inputs/', exitstat=ierr)
     end if
-    if (ierr /= 0) error stop 'error copying input source parameters to output directory' 
+    if (ierr /= 0) error stop 'error copying neutral input parameters to output directory' 
 
     if (flagprecfile/=0) then
-      call execute_command_line('mkdir '//outdir//'/inputs/prec_inputs')
+      call execute_command_line('mkdir -pv '//outdir//'/inputs/prec_inputs')
       call execute_command_line('cp -rv '//precdir//'/* '//outdir//'/inputs/prec_inputs/', exitstat=ierr)
     end if
     if (ierr /= 0) error stop 'error copying input precipitation parameters to output directory' 
     
     if (flagE0file/=0) then
-      call execute_command_line('mkdir '//outdir//'/inputs/Efield_inputs')
+      call execute_command_line('mkdir -pv '//outdir//'/inputs/Efield_inputs')
       call execute_command_line('cp -rv '//E0dir//'/* '//outdir//'/inputs/Efield_inputs/', exitstat=ierr)
     end if
     if (ierr /= 0) error stop 'error copying input energy parameters to output directory' 
 
-    !NOW STORE THE VERIONS/COMMIT IDENTIFIER IN A FILE IN THE OUTPUT DIRECTORY
-    call execute_command_line('mkdir -p '//outdir//'/inputs/source', exitstat=ierr)
-    call execute_command_line('cp -rv ./* '//outdir//'inputs/source/', exitstat=ierr)
-    if (ierr /= 0) error stop 'error creating input source parameter output directory' 
+    !NOW STORE THE VERSIONS/COMMIT IDENTIFIER IN A FILE IN THE OUTPUT DIRECTORY
+    ! this can break on POSIX due to copying files in endless loop, commended out - MH
+    !call execute_command_line('mkdir -pv '//outdir//'/inputs/source/', exitstat=ierr)
+    !if (ierr /= 0) error stop 'error creating input source parameter output directory'
+    !call execute_command_line('cp -rv ./* '//outdir//'/inputs/source/', exitstat=ierr)
+    !if (ierr /= 0) error stop 'error creating input source parameter output directory' 
     
     call execute_command_line('git rev-parse --short HEAD > '//outdir//'/gitrev.log')
 

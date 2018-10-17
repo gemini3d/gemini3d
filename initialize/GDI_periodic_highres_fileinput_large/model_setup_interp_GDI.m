@@ -17,7 +17,7 @@ addpath ../../vis;
 
 
 %RUN THE GRID GENERATION CODE
-if (~exist('xg'))
+if ~exist('xg', 'var')
   xg=makegrid_cart_3D_lowresx1(xdist,lxp,ydist,lyp,I,glat,glon);
 end
 lx1=xg.lx(1); lx2=xg.lx(2); lx3=xg.lx(3);
@@ -44,8 +44,7 @@ direc=ID;
 
 
 %LOAD THE FRAME
-autoload=0;
-[ne,v1,Ti,Te,J1,v2,v3,J2,J3,mlatsrc,mlonsrc,filename,Phitop,ns,vs1,Ts] = loadframe(direc,UTsecend,ymdend,UTsec0,ymd0,autoload,flagoutput,mloc,xgin);
+[ne,v1,Ti,Te,J1,v2,v3,J2,J3,mlatsrc,mlonsrc,filename,Phitop,ns,vs1,Ts] = loadframe(direc,UTsecend,ymdend,UTsec0,ymd0, mloc,xgin);
 lsp=size(ns,4);
 rmpath ../vis/
 

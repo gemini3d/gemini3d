@@ -18,4 +18,5 @@ cd objects
 cmake -DMPI_Fortran_COMPILER=$FC ..
 )
 
-make -C objects
+cmake --build objects
+

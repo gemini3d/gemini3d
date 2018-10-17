@@ -23,7 +23,7 @@
 % ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 % POSSIBILITY OF SUCH DAMAGE.
 
-function cm_data=fake_parula(m)
+function cm_data=parula(m)
 
 cm = [[0.2081, 0.1663, 0.5292], 
     [0.2116238095, 0.1897809524, 0.5776761905], 

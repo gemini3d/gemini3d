@@ -1,5 +1,9 @@
 function strlab=datelab(ymd,UTsec)
 
+narginchk(2,2)
+validateattributes(ymd, {'numeric'}, {'vector', 'positive', 'numel', 3}, mfilename, 'year month day', 1)
+validateattributes(UTsec, {'numeric'}, {'scalar', 'positive'}, mfilename, 'UTC second', 2)
+
 
 %SECONDS
 if UTsec==86400

@@ -1,5 +1,10 @@
 function [ymdnew,UTsecnew]=dateinc(dt,ymd,UTsec)
 
+narginchk(3,3)
+validateattributes(dt, {'numeric'}, {'scalar', 'positive'}, mfilename, 'time step', 1)
+validateattributes(ymd, {'numeric'}, {'vector', 'positive', 'numel', 3}, mfilename, 'year month day', 2)
+validateattributes(UTsec, {'numeric'}, {'scalar', 'positive'}, mfilename, 'UTC second', 3)
+
 day=ymd(3); month=ymd(2); year=ymd(1);
 
 UTsecnew=UTsec+dt;

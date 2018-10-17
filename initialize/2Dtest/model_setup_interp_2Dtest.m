@@ -44,8 +44,7 @@ direc=ID;
 %LOAD THE FRAME
 addpath ../../vis;
 %loadframe3Dcurv;
-autoload=0;
-[ne,v1,Ti,Te,J1,v2,v3,J2,J3,mlatsrc,mlonsrc,filename,Phitop,ns,vs1,Ts] = loadframe(direc,UTsecend,ymdend,UTsec0,ymd0,autoload,flagoutput,mloc,xgin);
+[ne,v1,Ti,Te,J1,v2,v3,J2,J3,mlatsrc,mlonsrc,filename,Phitop,ns,vs1,Ts] = loadframe(direc,UTsecend,ymdend,UTsec0,ymd0,mloc,xgin);
 lsp=size(ns,4);
 rmpath ../../vis/;
 

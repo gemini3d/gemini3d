@@ -5,7 +5,7 @@ module diffusion
 
 use phys_consts, only: kB,lsp,gammas,mindensdiv, wp
 use grid, only : curvmesh,gridflag             !sizes are not imported in case we want to do subgrid diffusion
-use f95_lapack, only: gbsv=>la_gbsv,gtsv=>la_gtsv !banded and tridiagonal solvers
+use f95_lapack, only: gbsv=>la_gbsv !,gtsv=>la_gtsv !banded and tridiagonal solvers
 implicit none
 
 interface TRBDF23D
