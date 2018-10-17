@@ -82,7 +82,8 @@ find_path(Scotch_INCLUDE_DIR
 if (Scotch_INCLUDE_DIR)
   set(Scotch_INCLUDE_DIRS ${Scotch_INCLUDE_DIR})
 else()
-  message(FATAL_ERROR "could not find scotch.h")
+  message(WARNING "could not find scotch.h")
+  return()
 endif()
 
 # Looking for lib

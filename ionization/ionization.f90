@@ -197,7 +197,7 @@ contains
     end where
     do isp=1,lsp-1
       phototmp=photoionization(:,:,:,isp)
-      where (x%nullpts==1)
+      where (x%nullpts>0.9 .and. x%nullpts<1.1)
         phototmp=0d0
       end where
       photoionization(:,:,:,isp)=phototmp

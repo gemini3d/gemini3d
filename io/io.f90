@@ -221,7 +221,7 @@ contains
   end subroutine create_outdir_mag
 
 
-  subroutine input_plasma(x1,x2,x3all,indatsize,indatgrid,ns,vs1,Ts)
+  subroutine input_plasma(x1,x2,x3all,indatsize,ns,vs1,Ts)
 
     !------------------------------------------------------------
     !-------A BASIC WRAPPER FOR THE ROOT AND WORKER INPUT FUNCTIONS
@@ -230,15 +230,15 @@ contains
     !------------------------------------------------------------
 
     real(8), dimension(-1:), intent(in) :: x1, x2, x3all
-    character(*), intent(in) :: indatsize,indatgrid
+    character(*), intent(in) :: indatsize
 
     real(8), dimension(-1:,-1:,-1:,:), intent(out) :: ns,vs1,Ts
 
  
     if (myid==0) then
       !ROOT FINDS/CALCULATES INITIAL CONDITIONS AND SENDS TO WORKERS
-      print *, 'Assembling initial condition on root using '//indatsize//' '//indatgrid
-      call input_root_mpi(x1,x2,x3all,indatsize,indatgrid,ns,vs1,Ts)
+      print *, 'Assembling initial condition on root using '//indatsize//' '//indatfile
+      call input_root_mpi(x1,x2,x3all,indatsize,ns,vs1,Ts)
     else
       !WORKERS RECEIVE THE IC DATA FROM ROOT
       call input_workers_mpi(ns,vs1,Ts)
@@ -262,7 +262,7 @@ contains
   end subroutine input_workers_mpi
   
   
-  subroutine input_root_mpi(x1,x2,x3all,indatsize,indatgrid,ns,vs1,Ts)
+  subroutine input_root_mpi(x1,x2,x3all,indatsize,ns,vs1,Ts)
  
     !------------------------------------------------------------
     !-------READ INPUT FROM FILE AND DISTRIBUTE TO WORKERS.  
@@ -273,7 +273,7 @@ contains
     !------------------------------------------------------------
     
     real(8), dimension(-1:), intent(in) :: x1, x2, x3all
-    character(*), intent(in) :: indatsize,indatgrid
+    character(*), intent(in) :: indatsize
     real(8), dimension(-1:,-1:,-1:,:), intent(out) :: ns,vs1,Ts    
 
     integer :: lx1,lx2,lx3,lx3all,isp
@@ -308,8 +308,8 @@ contains
     end if
 
     if (.not. (lx1==lx1in .and. lx2==lx2in .and. lx3all==lx3in)) then
-      error stop '!!!The input data must be the same size as the grid which you are running the simulation on & 
-                   - use a script to interpolate up/down to the simulation grid'
+      error stop '!!!The input data must be the same size as the grid which you are running & 
+                 the simulation on; use a script to interpolate up/down to the simulation grid'
     end if
 
     open(newunit=u,file=indatfile,status='old',form='unformatted', access='stream', action='read')

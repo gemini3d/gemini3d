@@ -1,5 +1,16 @@
 module temporal
 
+!DO NOT FIX THESE WARNINGS - THEY ARE FOR UNUSED VARIABLES THAT MAY BE LEVERAGED
+!IN LATER RELEASES
+!/home/zettergm/zettergmdata/GEMINI/temporal/temporal.f90:65:0: warning: unused
+!parameter ‘ns’ [-Wunused-parameter]
+!   pure subroutine
+!dt_calc(tcfl,ns,Ts,vs1,vs2,vs3,B1,B2,B3,dx1i,dx2i,dx3i,potsolve,cour1,cour2,cour3,dt) ^
+!/home/zettergm/zettergmdata/GEMINI/temporal/temporal.f90:65:0: warning: unused parameter ‘b1’ [-Wunused-parameter]
+!/home/zettergm/zettergmdata/GEMINI/temporal/temporal.f90:65:0: warning: unused parameter ‘b2’ [-Wunused-parameter]
+!/home/zettergm/zettergmdata/GEMINI/temporal/temporal.f90:65:0: warning: unused parameter ‘b3’ [-Wunused-parameter]
+!/home/zettergm/zettergmdata/GEMINI/temporal/temporal.f90:65:0: warning: unused parameter ‘potsolve’ [-Wunused-parameter]
+
 use phys_consts, only:  kB,mu0,ms,lsp,pi
 use mpimod
 use mpi

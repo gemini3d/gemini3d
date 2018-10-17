@@ -7,7 +7,7 @@ program magcalc
 !------CODE.  
 !----------------------------------------------------------
 
-use phys_consts, only : lnchem,pi,mu0
+use phys_consts, only : pi,mu0
 use grid
 use temporal, only : dateinc
 use io, only : read_configfile,input_plasma_currents,create_outdir_mag,output_magfields
@@ -145,6 +145,7 @@ end if
 
 !ALLOCATE ARRAYS (AT THIS POINT ALL SIZES ARE SET FOR EACH PROCESS SUBGRID)
 allocate(J1(lx1,lx2,lx3),J2(lx1,lx2,lx3),J3(lx1,lx2,lx3))
+allocate(Jx(lx1,lx2,lx3),Jy(lx1,lx2,lx3),Jz(lx1,lx2,lx3))
 
 
 !NOW DEAL WITH THE UNMPRIMED COORDINATES
@@ -388,6 +389,7 @@ end do
 
 !DEALLOCATE MAIN PROGRAM DATA
 deallocate(J1,J2,J3)
+deallocate(Jx,Jy,Jz)
 deallocate(xp,yp,zp)
 deallocate(xf,yf,zf)
 deallocate(dV)

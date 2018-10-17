@@ -106,7 +106,7 @@ contains
 
     !READ IN THE GRID DATA
     if(myid==0) then
-      call read_grid_root(indatsize,indatgrid,flagperiodic,x)
+      call read_grid_root(indatsize,indatgrid,x)
     else
       call read_grid_workers(x)
     end if
@@ -133,7 +133,7 @@ contains
   end subroutine read_grid
 
 
-  subroutine read_grid_root(indatsize,indatgrid,flagperiodic,x)
+  subroutine read_grid_root(indatsize,indatgrid,x)
 
     !------------------------------------------------------------
     !--------SOME CODE DUPLICATION WITH WORKER VERSION - CAN WE
@@ -141,7 +141,6 @@ contains
     !------------------------------------------------------------
 
     character(*), intent(in) :: indatsize,indatgrid
-    integer, intent(in) :: flagperiodic
     type(curvmesh), intent(inout) :: x    !does this need to be inout?  I think if anything in unallocated, it does...
 
     integer lx1g,lx2g,lx3allg,iid,ix1,ix2,ix3,icount,icomp!,itell
