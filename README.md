@@ -11,6 +11,9 @@ GEMINI3D has been tested using gfortran &ge; 6 (Fortran 2018 code) and
 * LAPACK95 3.0
 * SCALAPACK 2.0
 
+Analysis of data files using included *.m scripts requires:
+* GNU Octave &ge; 4.0 (or Matlab)
+
 Generally, the Git `master` branch has the current development version and is the best place to start, while more thoroughly-tested releases happen occasionally.
 
 ## License
@@ -34,7 +37,7 @@ This test runs a short demo, taking about 2-5 minutes on a typical Mac / Linux l
    git clone https://github.com/mattzett/gemini
    cd gemini
    ```
-2. Get the 2D test data: [![Zenodo DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1463093.svg)](https://doi.org/10.5281/zenodo.1463093)
+2. Get the 2D test data: [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1464915.svg)](https://doi.org/10.5281/zenodo.1464915)
 3. compile and run GEMINI demo: 
    ```sh
    cd ~/gemini/objects
