@@ -4,7 +4,7 @@ thetactr=pi/2-mlatctr*pi/180;
 phictr=mlonctr*pi/180;
 
 
-%ADD PATHS FOR FUNCTIONS
+%% ADD PATHS FOR FUNCTIONS
 addpath ../../script_utils;
 addpath ../../setup/gridgen;
 addpath ../../setup;
@@ -52,9 +52,8 @@ direc=ID;
 [ymdend,UTsecend]=dateinc(tdur,ymd0,UTsec0);
 
 
-%LOAD THE FRAME
-autoload=0;
-[ne,v1,Ti,Te,J1,v2,v3,J2,J3,mlatsrc,mlonsrc,filename,Phitop,ns,vs1,Ts] = loadframe(direc,UTsecend,ymdend,UTsec0,ymd0,autoload,flagoutput,mloc,xgin);
+%% LOAD THE FRAME
+[ne,v1,Ti,Te,J1,v2,v3,J2,J3,mlatsrc,mlonsrc,filename,Phitop,ns,vs1,Ts] = loadframe(direc,UTsecend,ymdend,UTsec0,ymd0, mloc,xgin);
 lsp=size(ns,4);
 rmpath ../vis/
 

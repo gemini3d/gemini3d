@@ -16,32 +16,32 @@ function ok = assert_allclose(actual, desired, rtol, atol, err_msg,notclose,verb
 %
 % if "actual" is within atol OR rtol of "desired", no error is emitted.
   narginchk(2,7)
-  validateattributes(actual, {'numeric'}, {'nonempty'})
-  validateattributes(desired, {'numeric'}, {'nonempty'})
+  validateattributes(actual, {'numeric'}, {'nonempty'}, mfilename, 'measured values', 1)
+  validateattributes(desired, {'numeric'}, {'nonempty'}, mfilename, 'desired reference values', 2)
   if nargin < 3 || isempty(rtol)
     rtol=1e-8;
   else
-    validateattributes(rtol, {'numeric'}, {'scalar'})
+    validateattributes(rtol, {'numeric'}, {'scalar', 'nonnegative'}, mfilename, 'relative tolerance', 3)
   end
   if nargin < 4 || isempty(atol)
     atol = 1e-9;
   else
-    validateattributes(atol, {'numeric'}, {'scalar'})
+    validateattributes(atol, {'numeric'}, {'scalar', 'nonnegative'}, mfilename, 'absolute tolerance', 4)
   end
   if nargin < 5
     err_msg='';
   else
-    validateattributes(err_msg, {'char'}, {'vector'})
+    validateattributes(err_msg, {'char'}, {'vector'}, mfilename, 'error message text', 5)
   end
   if nargin < 6
     notclose=false;
   else
-    validateattributes(notclose, {'boolean'}, {'scalar'})
+    validateattributes(notclose, {'logical'}, {'scalar'}, mfilename, 'check values not too close', 6)
   end
   if nargin<7
     verbose = false;
   else
-    validateattributes(verbose, {'boolean'}, {'scalar'})
+    validateattributes(verbose, {'logical'}, {'scalar'}, mfilename, 'verbose output', 7)
   end
 
   actual = actual(:);

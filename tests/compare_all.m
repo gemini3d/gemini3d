@@ -14,9 +14,9 @@ function compare_all(dir1, dir2)
  
   % ==== Haswell Ubuntu 18.04 vs. itself on various git revs
   
-  
-validateattributes(dir1, {'char'}, {'vector'})
-validateattributes(dir2, {'char'}, {'vector'})
+narginchk(2,2)
+validateattributes(dir1, {'char'}, {'vector'}, mfilename,'directory to compare',1)
+validateattributes(dir2, {'char'}, {'vector'}, mfilename,'directory to compare',2)
   
 rtol=1e-6; rtolN=1e-3; rtolT=1e-4; rtolJ=0.1; rtolV=rtol; 
 atol=1e-9;                        atolJ=atol; atolV=atol;    
@@ -38,8 +38,8 @@ ymd=ymd0;
 UTsec=UTsec0;
   
 for it=1:Nt 
-  [neA,v1A,TiA,TeA,J1A,v2A,v3A,J2A,J3A] = loadframe(dir1,UTsec,ymd,UTsec0,ymd0,true, flagoutput,mloc,xg);
-  [neB,v1B,TiB,TeB,J1B,v2B,v3B,J2B,J3B] = loadframe(dir2,UTsec,ymd,UTsec0,ymd0,true, flagoutput,mloc,xg);
+  [neA,v1A,TiA,TeA,J1A,v2A,v3A,J2A,J3A] = loadframe(dir1,UTsec,ymd,UTsec0,ymd0,mloc,xg);
+  [neB,v1B,TiB,TeB,J1B,v2B,v3B,J2B,J3B] = loadframe(dir2,UTsec,ymd,UTsec0,ymd0,mloc,xg);
   
   assert_allclose(neA,neB,rtolN,atol,["Ne accuracy, time #",int2str(it)])
   

@@ -58,8 +58,7 @@ clear xgin;
 
 
 %LOAD THE FRAME
-autoload=0;
-[ne,v1,Ti,Te,J1,v2,v3,J2,J3,mlatsrc,mlonsrc,filename,ns,vs1,Ts] = loadframe(direc,UTsec,ymd,UTsec0,ymd0,autoload)
+[ne,v1,Ti,Te,J1,v2,v3,J2,J3,mlatsrc,mlonsrc,filename,ns,vs1,Ts] = loadframe(direc,UTsec,ymd,UTsec0,ymd0)
 lsp=size(ns,4);
 rmpath ../vis/
 
