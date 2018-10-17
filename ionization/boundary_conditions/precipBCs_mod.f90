@@ -143,9 +143,11 @@ contains
         if (ios==0) then    !successful read
           print *, 'Successfully located input file...'
           read(u) Qp,E0p
-        else      !just set everything to zero
-          write(stderr,*) 'Bad input file '//precfn//' setting everything to some default value...'
-          Qp=0d0; E0p=100d0;
+        else      
+          error stop 'Bad input file: '//precfn   ! made error stop per MZ, Oct 2018
+          !just set everything to zero
+          !write(stderr,*) 'Bad input file '//precfn//' setting everything to some default value...'
+          !Qp=0d0; E0p=100d0;
         end if
         close(u)
 
