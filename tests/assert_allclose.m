@@ -1,5 +1,5 @@
-function ok = assert_allclose(actual, desired, rtol, atol, err_msg,notclose,verbose)
-% ok = assert_allclose(actual, desired, rtol, atol)
+function testok = assert_allclose(actual, desired, rtol, atol, err_msg,warnonly,notclose,verbose)
+% testok = assert_allclose(actual, desired, rtol, atol)
 %
 % Inputs
 % ------
@@ -8,42 +8,57 @@ function ok = assert_allclose(actual, desired, rtol, atol, err_msg,notclose,verb
 %
 % Output
 % ------
-% ok: logical TRUE if "actual" is close enough to "desired"
+% testok: logical TRUE if "actual" is close enough to "desired"
 %
 % based on numpy.testing.assert_allclose
 % https://github.com/numpy/numpy/blob/v1.13.0/numpy/core/numeric.py#L2522
 % for Matlab and GNU Octave
 %
 % if "actual" is within atol OR rtol of "desired", no error is emitted.
-  narginchk(2,7)
-  validateattributes(actual, {'numeric'}, {'nonempty'}, mfilename, 'measured values', 1)
-  validateattributes(desired, {'numeric'}, {'nonempty'}, mfilename, 'desired reference values', 2)
+
+addpath([fileparts(mfilename('fullpath')),'/../script_utils'])
+
+  narginchk(2,8)
+  validateattr(actual, {'numeric'}, {'nonempty'}, mfilename, 'measured values', 1)
+  validateattr(desired, {'numeric'}, {'nonempty'}, mfilename, 'desired reference values', 2)
   if nargin < 3 || isempty(rtol)
     rtol=1e-8;
   else
-    validateattributes(rtol, {'numeric'}, {'scalar', 'nonnegative'}, mfilename, 'relative tolerance', 3)
+    validateattr(rtol, {'numeric'}, {'scalar', 'nonnegative'}, mfilename, 'relative tolerance', 3)
   end
   if nargin < 4 || isempty(atol)
     atol = 1e-9;
   else
-    validateattributes(atol, {'numeric'}, {'scalar', 'nonnegative'}, mfilename, 'absolute tolerance', 4)
+    validateattr(atol, {'numeric'}, {'scalar', 'nonnegative'}, mfilename, 'absolute tolerance', 4)
   end
   if nargin < 5
     err_msg='';
   else
-    validateattributes(err_msg, {'char'}, {'vector'}, mfilename, 'error message text', 5)
+    validateattr(err_msg, {'char'}, {'vector'}, mfilename, 'error message text', 5)
   end
   if nargin < 6
+    warnonly=false;
+  else
+    validateattr(warnonly, {'logical'}, {'scalar'}, mfilename, 'warn instead of error', 6)
+  end
+  if nargin < 7
     notclose=false;
   else
-    validateattributes(notclose, {'logical'}, {'scalar'}, mfilename, 'check values not too close', 6)
+    validateattr(notclose, {'logical'}, {'scalar'}, mfilename, 'check values not too close', 7)
   end
-  if nargin<7
+  if nargin < 8
     verbose = false;
   else
-    validateattributes(verbose, {'logical'}, {'scalar'}, mfilename, 'verbose output', 7)
+    validateattr(verbose, {'logical'}, {'scalar'}, mfilename, 'verbose output', 8)
   end
-
+  
+  if warnonly
+    efunc = @warning;
+  else
+    efunc = @error;
+  end
+  
+%% compare
   actual = actual(:);
   desired = desired(:);
   
@@ -69,8 +84,10 @@ function ok = assert_allclose(actual, desired, rtol, atol, err_msg,notclose,verb
       disp(['desired:    ',num2str(desired(i))])
     end
 
-    error(['AssertionError: ',err_msg,' ',num2str(Nfail/numel(desired)*100,'%.2f'),'% failed accuracy. maximum error magnitude ',num2str(bigbad),' Actual: ',num2str(actual(i)),' Desired: ',num2str(desired(i)),' atol: ',num2str(atol),' rtol: ',num2str(rtol)])
+    efunc(['AssertionError: ',err_msg,' ',num2str(Nfail/numel(desired)*100,'%.2f'),'% failed accuracy. maximum error magnitude ',num2str(bigbad),' Actual: ',num2str(actual(i)),' Desired: ',num2str(desired(i)),' atol: ',num2str(atol),' rtol: ',num2str(rtol)])
   end
+  
+if nargout==0, clear('testok'), end
 
 end
 

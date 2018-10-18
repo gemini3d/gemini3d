@@ -1,18 +1,18 @@
 function xg = plotall(direc, saveplots, plotfun, xg)
 
 narginchk(1,3)
-validateattributes(direc, {'char'}, {'vector'}, mfilename, 'path to data', 1)
+validateattr(direc, {'char'}, {'vector'}, mfilename, 'path to data', 1)
 if nargin<2, saveplots=false; end
-validateattributes(saveplots, {'logical'}, {'scalar'}, mfilename)
+validateattr(saveplots, {'logical'}, {'scalar'}, mfilename)
 if nargin<3
   plotfun=[]; 
 else
-  validateattributes(plotfun, {'function_handle'}, {'scalar'}, mfilename, 'plotting function handle', 3)
+  validateattr(plotfun, {'function_handle'}, {'scalar'}, mfilename, 'plotting function handle', 3)
 end
 if nargin<4
   xg=[]; 
 else
-  validateattributes(xg, {'struct'}, {'scalar'}, mfilename, 'grid structure', 4)
+  validateattr(xg, {'struct'}, {'scalar'}, mfilename, 'grid structure', 4)
 end
 
 %SET THE CAXIS LIMITS FOR THE PLOTS

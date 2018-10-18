@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.7)
+cmake_minimum_required (VERSION 3.11)
 project(gem-num Fortran)
 enable_testing()
 
@@ -11,6 +11,7 @@ find_package(LAPACK95)
 if(NOT LAPACK95_FOUND)
   find_package(LAPACK REQUIRED)
   add_library(f95_lapack ${PROJECT_SOURCE_DIR}/../vendor/lapack95/gbsv.f90)
+  target_link_libraries(f95_lapack PRIVATE const)
   set(LAPACK95_LIBRARIES f95_lapack ${LAPACK_LIBRARIES})
 endif()
 
@@ -39,7 +40,7 @@ target_link_libraries(calculus PRIVATE grid)
 
 
 # ----- diffusion
-add_library(diffusion)
+add_library(diffusion)  # CMake >= 3.11
 if(${CMAKE_Fortran_COMPILER_ID} STREQUAL Intel)
   target_sources(diffusion PRIVATE diffusion/diffusion_MKL.f90)
 else()
