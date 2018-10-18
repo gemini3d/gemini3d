@@ -441,7 +441,6 @@ contains
       read(u) tmparray4D
       read(u) tmparray4D
       read(u) tmparray4D
-      read(u) tmparray4D
       deallocate(tmparray4D)
     end if
 

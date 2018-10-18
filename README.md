@@ -176,13 +176,17 @@ GEMINI3D is Fortran 2018 compliant and uses two-space indents throughout (to acc
 
 for example:  
 
-    mpirun -np 4 ./gemini_mumps ./initialize/2Dtest/config.ini ~/simulations/2Dtest/
+    mpirun -np 4 ./gemini ./initialize/2Dtest/config.ini ~/simulations/2Dtest/
 
 Note that the output *base* directory must already exist (‘simulations’ in previous example).  The source code consists of about ten module source files encapsulating various functionalities used in the model.  A diagram all of the modules and their function is shown in figure 1; a list of module dependencies can also be found in the Makefile source.
 
 ![Figure 1](doc/figure1.png)
 
 <!-- ![Figure 2](doc/figure2.png) -->
+
+Note that there is also a utility that can compute magnetic fields from the currents calculated by GEMINI.  This can be run by:
+
+	mpirun -np 4 ./magcalc ~/zettergmdata/simulations/3Dtest/ ~/zettergmdata/simulations/input/3Dtest/magfieldpoints.dat
 
 
 ## Verifying GEMINI build
