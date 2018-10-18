@@ -2,7 +2,6 @@ module grid
 use, intrinsic:: iso_fortran_env, only: stderr=>error_unit
 use phys_consts, only: Gconst,Me,Re,wp
 use mpimod
-use mpi
 
 implicit none
 

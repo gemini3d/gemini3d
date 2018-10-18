@@ -1,7 +1,7 @@
 function [t,ns,Ts,vs1,J1,J2,J3,v2,v3,Phitop]=readdata(lxs,filename)
 
 narginchk(2,2)
-validateattributes(filename, {'char'}, {'vector'}, mfilename, 'data filename', 2)
+validateattr(filename, {'char'}, {'vector'}, mfilename, 'data filename', 2)
 
 
 %--------------------------------------------------------

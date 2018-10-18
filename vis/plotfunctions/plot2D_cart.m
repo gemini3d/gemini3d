@@ -1,21 +1,21 @@
 function h=plot2D_cart(ymd,UTsec,xg,parm,parmlbl,caxlims,sourceloc,ha)
 
 narginchk(4,8)
-validateattributes(ymd, {'numeric'}, {'vector', 'numel', 3}, mfilename, 'year month day', 1)
-validateattributes(UTsec, {'numeric'}, {'scalar'}, mfilename, 'UTC second', 2)
-validateattributes(xg, {'struct'}, {'scalar'}, mfilename, 'grid structure', 3)
-validateattributes(parm, {'numeric'}, {'2d'}, mfilename)
+validateattr(ymd, {'numeric'}, {'vector', 'numel', 3}, mfilename, 'year month day', 1)
+validateattr(UTsec, {'numeric'}, {'scalar'}, mfilename, 'UTC second', 2)
+validateattr(xg, {'struct'}, {'scalar'}, mfilename, 'grid structure', 3)
+validateattr(parm, {'numeric'}, {'2d'}, mfilename)
 if nargin<5, parmlbl=''; end
-validateattributes(parmlbl, {'char'}, {'vector'}, mfilename, 'parameter label', 5)
+validateattr(parmlbl, {'char'}, {'vector'}, mfilename, 'parameter label', 5)
 if nargin<6
   caxlims=[];
 else
-  validateattributes(caxlims, {'numeric'}, {'vector', 'numel', 2}, mfilename, 'plot intensity (min, max)', 6)
+  validateattr(caxlims, {'numeric'}, {'vector', 'numel', 2}, mfilename, 'plot intensity (min, max)', 6)
 end
 if nargin<7  || isempty(sourceloc) % leave || for validate
   sourceloc = [];
 else
-  validateattributes(sourceloc, {'numeric'}, {'vector', 'numel', 2}, mfilename, 'source magnetic coordinates', 7)
+  validateattr(sourceloc, {'numeric'}, {'vector', 'numel', 2}, mfilename, 'source magnetic coordinates', 7)
 end
 if nargin<8 || isempty(ha)
   clf, h=gcf; ha=gca; 
