@@ -4,15 +4,41 @@ The GEMINI model (*G*eospace *E*nvironment *M*odel of *I*on-*N*eutral *I*nteract
 
 The current version of the code uses generalized orthogonal curvilinear coordinates and has been tested with dipole and Cartesian coordinates.
 
-GEMINI3D has been tested using gfortran &ge; 6 (Fortran 2018 code) and 
+We have prioritized ease of setup/install across a wide variety of computing systems.
+Please open a [GitHub Issue](https://github.com/mattzett/gemini/issues) if you experience difficulty.
+
+## Prerequisites
+
+The CMake build system is the powerful and easy to use for large Fortran projects.
+In general a recent CMake version is beneficial for Fortran builds.
+CMake &ge; 3.11 is required, and easily installed without sudo on:
+
+* Linux: use [cmake_setup.sh](https://github.com/scivision/cmake-utils)
+* MacOS: `brew install cmake`
+* [Windows](https://cmake.org/download)
+
+### Compilers
+
+MPI is woven throughout GEMINI3D so compiler wrappers `mpifort` or `mpiifort` can be often used.
+
+* gfortran 4.8 - 7.3
+* Intel `ifort`
+
+### Libraries
+
+used / tested versions include:
 
 * OpenMPI 2.1 - 3.1
 * MUMPS 5.1
-* LAPACK95 3.0
 * SCALAPACK 2.0
+* LAPACK95 3.0  (optional)
 
-Analysis of data files using included *.m scripts requires:
-* GNU Octave &ge; 4.0 (or Matlab)
+### data file analysis
+
+GEMINI3D `*.m` scripts require EITHER:
+
+* GNU Octave &ge; 4.0
+* Matlab &ge; R2007b
 
 Generally, the Git `master` branch has the current development version and is the best place to start, while more thoroughly-tested releases happen occasionally.
 
@@ -51,7 +77,7 @@ This test runs a short demo, taking about 2-5 minutes on a typical Mac / Linux l
    
 #### Build tips
 
-* If CMake version too old, use [cmake_setup.sh](https://github.com/scivision/pybashutils/blob/master/cmake_setup.sh). This does NOT use `sudo`.
+* If CMake version too old, use [cmake_setup.sh](https://github.com/scivision/cmake-utils). This does NOT use `sudo`.
 * If missing prereqs, try the `./install_prereqs.sh` script.
 * If need to build libraries from source (e.g. because you don't have `sudo`) try `build_gfortran.sh` or `build_intel.sh` from the `fortran-libs` repo:
   ```sh

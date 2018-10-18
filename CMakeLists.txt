@@ -2,7 +2,14 @@ cmake_minimum_required (VERSION 3.7)
 project(gemini3d Fortran C)
 enable_testing()
 
-cmake_policy(SET CMP0074 NEW)
+# Test data directories
+set(TEST_REFERENCE_DIR $ENV{HOME}/sim/gemini/2Dtest_files/2Dtest_output)
+set(TEST_OUTDIR ${CMAKE_CURRENT_BINARY_DIR}/test2d)
+
+
+if(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.12.0")  # quotes are needed!
+  cmake_policy(SET CMP0074 NEW)
+endif()
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR})
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/Modules/)
@@ -26,7 +33,7 @@ if(${CMAKE_Fortran_COMPILER_ID} STREQUAL Intel)
   add_compile_options(-warn nounused -traceback -fp-stack-check)
 elseif(${CMAKE_Fortran_COMPILER_ID} STREQUAL GNU)
   # -fdefault-real-8  after literals are fixed to "e" or "wp"
-  add_compile_options(-mtune=native -fimplicit-none -Wall -Wpedantic -Wextra -Warray-bounds -fexceptions -fbacktrace -Wno-unused-dummy-argument -Wno-unused-variable -Wno-unused-function)
+  add_compile_options(-mtune=native -fimplicit-none -Wall -Wpedantic -Wextra -fexceptions -fbacktrace -Wno-unused-dummy-argument -Wno-unused-variable -Wno-unused-function)
 # -fstack-protector
 # -ffpe-trap=invalid,zero,overflow)#,underflow)
 elseif(${CMAKE_Fortran_COMPILER_ID} STREQUAL PGI)
@@ -128,14 +135,12 @@ target_link_libraries(gemini PRIVATE mpimod io neutral precipBCs temporal multif
 target_include_directories(gemini PRIVATE ${MUMPS_INCLUDE_DIRS} ${MPI_Fortran_INCLUDE_DIRS})
 
 # -- test main exe ---
-set(INDIR $ENV{HOME}/sim/gemini/2Dtest_files/2Dtest_output)
-set(OUTDIR ${CMAKE_CURRENT_BINARY_DIR}/test2d)
 
 add_test(NAME RunGemini-2D 
-         COMMAND mpirun ./gemini ${CMAKE_SOURCE_DIR}/initialize/2Dtest/config.ini ${OUTDIR} 
+         COMMAND mpirun ./gemini ${CMAKE_SOURCE_DIR}/initialize/2Dtest/config.ini ${TESTOUTDIR} 
          WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 set_tests_properties(RunGemini-2D PROPERTIES 
-                     TIMEOUT 900  # test should complete in 10-15 minutes on ~ 2015 vintage laptop
+                     TIMEOUT 900  # test should complete in under 15 minutes on ~ 2014 dual-core laptop
                      FIXTURES_SETUP GemMain)
                      
 
@@ -144,7 +149,7 @@ find_package(Octave)
 if (OCTAVE_MAJOR_VERSION GREATER_EQUAL 4)
 
 add_test(NAME ReferenceCompare 
-         COMMAND octave-cli -q --eval "compare_all('${OUTDIR}','${INDIR}')"
+         COMMAND octave-cli -q --eval "compare_all('${TESTOUTDIR}','${TEST_REFERENCE_DIR}')"
          WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 set_tests_properties(ReferenceCompare PROPERTIES
                      TIMEOUT 5)
@@ -156,7 +161,7 @@ endif()
 find_package(Matlab COMPONENTS MAIN_PROGRAM)
 if (Matlab_FOUND)
 add_test(NAME MatlabCompare 
-         COMMAND matlab -nojvm -r "compare_all('${OUTDIR}','${INDIR}'); exit"
+         COMMAND matlab -nojvm -r "compare_all('${TESTOUTDIR}','${TEST_REFERENCE_DIR}'); exit"
          WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 set_tests_properties(MatlabCompare PROPERTIES
                      TIMEOUT 15)

@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.7)
+cmake_minimum_required (VERSION 3.11)
 project(gem-num Fortran)
 enable_testing()
 
@@ -39,7 +39,7 @@ target_link_libraries(calculus PRIVATE grid)
 
 
 # ----- diffusion
-add_library(diffusion)
+add_library(diffusion)  # CMake >= 3.11
 if(${CMAKE_Fortran_COMPILER_ID} STREQUAL Intel)
   target_sources(diffusion PRIVATE diffusion/diffusion_MKL.f90)
 else()
