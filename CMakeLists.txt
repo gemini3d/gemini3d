@@ -138,10 +138,10 @@ target_include_directories(gemini PRIVATE ${MUMPS_INCLUDE_DIRS} ${MPI_Fortran_IN
 
 # -- test main exe ---
 
-add_test(NAME RunGemini-2D 
+add_test(NAME Gemini2D 
          COMMAND mpirun -np 4 ./gemini ${CMAKE_SOURCE_DIR}/initialize/2Dtest/config.ini ${TEST_OUTDIR} 
          WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
-set_tests_properties(RunGemini-2D PROPERTIES 
+set_tests_properties(Gemini2D PROPERTIES 
                      TIMEOUT 900  # test should complete in under 15 minutes on ~ 2014 dual-core laptop
                      FIXTURES_SETUP GemMain)
                      

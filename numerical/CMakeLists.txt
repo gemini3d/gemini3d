@@ -11,6 +11,7 @@ find_package(LAPACK95)
 if(NOT LAPACK95_FOUND)
   find_package(LAPACK REQUIRED)
   add_library(f95_lapack ${PROJECT_SOURCE_DIR}/../vendor/lapack95/gbsv.f90)
+  target_link_libraries(f95_lapack PRIVATE const)
   set(LAPACK95_LIBRARIES f95_lapack ${LAPACK_LIBRARIES})
 endif()
 
