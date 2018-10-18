@@ -59,8 +59,8 @@ contains
     real(8), dimension(:,:,:), intent(out) :: E01all,E02all,E03all
     integer, intent(out) :: flagdirich
 
-    character(512) :: filename 
-    integer, parameter :: inunit=48
+    character(:), allocatable :: fn1, fn2, fn3
+    integer :: inunit
 
     real(8) :: UTsectmp
     integer, dimension(3) :: ymdtmp
@@ -89,12 +89,12 @@ contains
         ymdnext=ymdprev
         UTsecnext=UTsecprev
 
-        write(filename,*) trim(adjustl(E0dir)),'/simsize.dat'
-        write(*,*) 'Inputting electric field data size from file:  ',trim(adjustl(filename))
-        open(inunit,file=trim(adjustl(filename)),status='old',form='unformatted',access='stream')
+        fn1 = trim(E0dir) // '/simsize.dat'
+        print *, 'Inputting electric field data size from file:  ',fn1
+        open(newunit=inunit,file=fn1,status='old',form='unformatted',access='stream')
         read(inunit) llon,llat
         close(inunit)
-        write(*,*) 'Electric field data has llon,llat size:  ',llon,llat
+        print *, 'Electric field data has llon,llat size:  ',llon,llat
         allocate(mlonp(llon),mlatp(llat))    !bit of code duplication with worker code block below...
 
 
@@ -108,13 +108,13 @@ contains
 
 
         !NOW READ THE GRID
-        write(filename,*) trim(adjustl(E0dir)),'/simgrid.dat'
-        write(*,*) 'Inputting electric field grid from file:  ',trim(adjustl(filename))
-        open(inunit,file=trim(adjustl(filename)),status='old',form='unformatted',access='stream')
+        fn2 = E0dir // '/simgrid.dat'
+        print *, 'Inputting electric field grid from file:  ',fn2
+        open(newunit=inunit,file=fn2,status='old',form='unformatted',access='stream')
         read(inunit) mlonp,mlatp
         close(inunit)
-        write(*,*) 'Electric field data has mlon,mlat extent:  ',minval(mlonp(:)),maxval(mlonp(:)),minval(mlatp(:)), &
-                                                                maxval(mlatp(:))
+        print *, 'Electric field data has mlon,mlat extent:', &
+                  minval(mlonp(:)), maxval(mlonp(:)), minval(mlatp(:)), maxval(mlatp(:))
 
         !SPACE TO STORE INPUT DATA
         allocate(E0xp(llon,llat),E0yp(llon,llat))
@@ -122,9 +122,10 @@ contains
         allocate(Vminx2pslice(llat),Vmaxx2pslice(llat))
         allocate(Vminx3pslice(llon),Vmaxx3pslice(llon))
         allocate(E0xiprev(lx2,lx3all),E0xinext(lx2,lx3all),E0yiprev(lx2,lx3all),E0yinext(lx2,lx3all))
-        allocate(Vminx1iprev(lx2,lx3all),Vminx1inext(lx2,lx3all),Vmaxx1iprev(lx2,lx3all),Vmaxx1inext(lx2,lx3all))
-        allocate(Vminx2isprev(lx3all),Vminx2isnext(lx3all),Vmaxx2isprev(lx3all),Vmaxx2isnext(lx3all))
-        allocate(Vminx3isprev(lx2),Vminx3isnext(lx2),Vmaxx3isprev(lx2),Vmaxx3isnext(lx2))
+        allocate(Vminx1iprev(lx2,lx3all),Vminx1inext(lx2,lx3all), &
+                 Vmaxx1iprev(lx2,lx3all),Vmaxx1inext(lx2,lx3all), &
+                 Vminx2isprev(lx3all),Vminx2isnext(lx3all),Vmaxx2isprev(lx3all),Vmaxx2isnext(lx3all), &
+                 Vminx3isprev(lx2),Vminx3isnext(lx2),Vmaxx3isprev(lx2),Vmaxx3isnext(lx2))
 
         E0xiprev=0d0; E0yiprev=0d0; E0xinext=0d0; E0yinext=0d0;     !these need to be initialized so that something sensible happens at the beginning
         Vminx1iprev=0d0; Vmaxx1iprev=0d0; Vminx1inext=0d0; Vmaxx1inext=0d0;
@@ -148,13 +149,13 @@ contains
 
       !GRID INFORMATION EXISTS AT THIS POINT SO START READING IN PRECIP DATA
       !read in the data from file
-      write(*,*) 'tprev,tnow,tnext:  ',tprev,t+dt/2d0,tnext
+      print *,'tprev,tnow,tnext:  ',tprev,t+dt/2d0,tnext
       ymdtmp=ymdnext
       UTsectmp=UTsecnext
       call dateinc(dtE0,ymdtmp,UTsectmp)    !get the date for "next" params
-      filename=date_filename(E0dir,ymdtmp,UTsectmp)     !form the standard data filename
-      write(*,*) 'Pulling electric field data from file:  ',trim(adjustl(filename))
-      open(inunit,file=trim(adjustl(filename)),status='old',form='unformatted',access='stream',iostat=ios)
+      fn3=date_filename(E0dir,ymdtmp,UTsectmp)     !form the standard data filename
+      print *, 'Pulling electric field data from file:  ',fn3
+      open(newunit=inunit, file=fn3, status='old',form='unformatted',access='stream',iostat=ios)
       if (ios==0) then    !successful read
         read(inunit) flagdirich_double
         read(inunit) E0xp,E0yp

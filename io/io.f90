@@ -748,12 +748,11 @@ contains
     !------------------------------------------------------------
 
     character(*), intent(in) :: outdir
-    integer, dimension(3), intent(in) :: ymd
+    integer, intent(in) :: ymd(3)
     real(8), intent(in) :: UTsec
     real(8), dimension(:), intent(in)  :: Br,Btheta,Bphi
 
-    character(:), allocatable :: outdir_composite
-    character(:), allocatable :: filenamefull
+    character(:), allocatable :: outdir_composite, filenamefull
     integer :: u
 
 
@@ -770,14 +769,14 @@ contains
   end subroutine output_magfields
 
 
-  function date_filename(outdir,ymd,UTsec)
+  pure function date_filename(outdir,ymd,UTsec)
 
     !------------------------------------------------------------
     !-------GENERATE A FILENAME STRING OUT OF A GIVEN DATE/TIME
     !------------------------------------------------------------
 
     character(*), intent(in) :: outdir
-    integer, dimension(3), intent(in) :: ymd
+    integer, intent(in) :: ymd(3)
     real(8), intent(in) :: UTsec
     character(:), allocatable :: date_filename
 
@@ -810,7 +809,7 @@ contains
       write(tmpchar2,*) '0',trim(tmpchar)
       tmpchar=adjustl(tmpchar2)
     end if
-    !write is dumb and doesn't recognize previous trims...  I hate string manipulation...
+    !write is dumb and dofilenameesn't recognize previous trims...  I hate string manipulation...
     write(tmpfilename,*) trim(tmpchar),'_',trim(filename)
     tmpfilename=adjustl(tmpfilename)
     filename=tmpfilename(1:256)

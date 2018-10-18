@@ -75,6 +75,11 @@ This test runs a short demo, taking about 2-5 minutes on a typical Mac / Linux l
    ctest -V
    ```
    
+#### MUMPS verbosity
+MUMPS initialization ICNTL flags are set in `numerical/potential/potential_mumps.f90`.
+ICNTL 1-4 concern print output unit and verbosity level, see MUMPS 
+[User Manual](http://mumps.enseeiht.fr/index.php?page=doc)
+   
 #### Build tips
 
 * If CMake version too old, use [cmake_setup.sh](https://github.com/scivision/cmake-utils). This does NOT use `sudo`.

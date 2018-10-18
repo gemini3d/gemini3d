@@ -87,7 +87,7 @@ target_compile_options(msis PRIVATE -w -fno-implicit-none)
 
 add_subdirectory(numerical)
 
-add_library(io io/io.f90)# io/initial_conditions/statevarICs.f90)
+add_library(io io/io.f90)
 target_link_libraries(io PRIVATE const mpimod grid calculus)
 
 add_library(temporal temporal/temporal.f90)
@@ -110,6 +110,7 @@ target_link_libraries(advec PRIVATE const mpimod grid)
 add_library(sources sources/sources.f90)
 target_link_libraries(sources PRIVATE collision grid calculus)
 
+# --- MUMPS stuff
 add_library(potential_mumps numerical/potential/potential_mumps.f90)
 target_link_libraries(potential_mumps PRIVATE grid calculus ${MUMPS_LIBRARIES} ${MPI_Fortran_LIBRARIES})
 target_include_directories(potential_mumps PRIVATE ${MUMPS_INCLUDE_DIRS} ${MPI_Fortran_INCLUDE_DIRS})
@@ -121,6 +122,7 @@ add_library(potentialBCs numerical/potential/boundary_conditions/potentialBCs_mu
 target_link_libraries(potentialBCs PRIVATE grid calculus io const ${MUMPS_LIBRARIES} ${SCALAPACK_LIBRARIES} ${LAPACK_LIBRARIES} ${BLAS_LIBRARIES})
 target_include_directories(potentialBCs PRIVATE ${MUMPS_INCLUDE_DIRS})
 
+# ---
 add_library(precipBCs ionization/boundary_conditions/precipBCs_mod.f90)
 target_link_libraries(precipBCs PRIVATE const grid io interp temporal)
 
@@ -137,7 +139,7 @@ target_include_directories(gemini PRIVATE ${MUMPS_INCLUDE_DIRS} ${MPI_Fortran_IN
 # -- test main exe ---
 
 add_test(NAME RunGemini-2D 
-         COMMAND mpirun -np 4 ./gemini ${CMAKE_SOURCE_DIR}/initialize/2Dtest/config.ini ${TESTOUTDIR} 
+         COMMAND mpirun -np 4 ./gemini ${CMAKE_SOURCE_DIR}/initialize/2Dtest/config.ini ${TEST_OUTDIR} 
          WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 set_tests_properties(RunGemini-2D PROPERTIES 
                      TIMEOUT 900  # test should complete in under 15 minutes on ~ 2014 dual-core laptop
@@ -149,7 +151,7 @@ find_package(Octave)
 if (OCTAVE_MAJOR_VERSION GREATER_EQUAL 4)
 
 add_test(NAME ReferenceCompare 
-         COMMAND octave-cli -q --eval "compare_all('${TESTOUTDIR}','${TEST_REFERENCE_DIR}')"
+         COMMAND octave-cli -q --eval "compare_all('${TEST_OUTDIR}','${TEST_REFERENCE_DIR}')"
          WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 set_tests_properties(ReferenceCompare PROPERTIES
                      TIMEOUT 5)
@@ -161,7 +163,7 @@ endif()
 find_package(Matlab COMPONENTS MAIN_PROGRAM)
 if (Matlab_FOUND)
 add_test(NAME MatlabCompare 
-         COMMAND matlab -nojvm -r "compare_all('${TESTOUTDIR}','${TEST_REFERENCE_DIR}'); exit"
+         COMMAND matlab -nojvm -r "compare_all('${TEST_OUTDIR}','${TEST_REFERENCE_DIR}'); exit"
          WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 set_tests_properties(MatlabCompare PROPERTIES
                      TIMEOUT 30)  # Matlab with a lot of toolboxes takes ~ 15 seconds just to start

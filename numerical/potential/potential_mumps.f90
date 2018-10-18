@@ -4,7 +4,7 @@ module potential_mumps
 !NOTES:  
 ! - IF ONE REALLY WANTED TO CLEAN THIS UP IT MIGHT BE MORE EFFICIENT TO USE HARWELL-BOEING FORMAT
 !   FOR MATRICES...
-
+use, intrinsic:: iso_fortran_env, only: stderr=>error_unit, stdout=>output_unit
 use calculus, only: grad3d1, grad3d2, grad3d3, grad2d1_curv_alt, grad2d3_curv, grad2d3_curv_periodic
 use grid, only: curvmesh, gridflag
 use mpi
@@ -215,7 +215,13 @@ contains
     write(*,*) 'Number of entries used:  ',ient-1
 
 
-    !FIRE UP MUMPS
+    ! INIT MUMPS
+    ! MUMPS 4.10 disregarded ICNTL(4)
+    mumps_par%ICNTL(1) = stderr   ! error msg stream
+    mumps_par%ICNTL(2) = stdout   ! stats and warning stream
+    mumps_par%ICNTL(3) = 0  ! global information verbosity  0 = off
+    mumps_par%ICNTL(4) = 1  ! 1: error only   2: errors, warnings, stats.
+    
     mumps_par%COMM = MPI_COMM_WORLD
     mumps_par%JOB = -1
     mumps_par%SYM = 0
