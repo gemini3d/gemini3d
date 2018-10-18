@@ -308,8 +308,8 @@ contains
     end if
 
     if (.not. (lx1==lx1in .and. lx2==lx2in .and. lx3all==lx3in)) then
-      error stop '!!!The input data must be the same size as the grid which you are running the simulation on & 
-                   - use a script to interpolate up/down to the simulation grid'
+      error stop '!!!The input data must be the same size as the grid which you are running the simulation on' // & 
+           '- use a script to interpolate up/down to the simulation grid'
     end if
 
     open(newunit=u,file=indatfile,status='old',form='unformatted', access='stream', action='read')
