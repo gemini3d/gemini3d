@@ -3,7 +3,7 @@ project(gemini3d Fortran C)
 enable_testing()
 
 # Test data directories
-set(TEST_REFERENCE_DIR $ENV{HOME}/sim/gemini/2Dtest_files/2Dtest_output)
+set(TEST_REFERENCE_DIR $ENV{HOME}/sim/gemini/test2d/2Dtest_output)
 set(TEST_OUTDIR ${CMAKE_CURRENT_BINARY_DIR}/test2d)
 
 
@@ -163,7 +163,7 @@ endif()
 find_package(Matlab COMPONENTS MAIN_PROGRAM)
 if (Matlab_FOUND)
 add_test(NAME MatlabCompare 
-         COMMAND matlab -nojvm -r "compare_all('${TEST_OUTDIR}','${TEST_REFERENCE_DIR}'); exit"
+         COMMAND matlab -nojvm -r "exit(compare_all('${TEST_OUTDIR}','${TEST_REFERENCE_DIR}'))"
          WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 set_tests_properties(MatlabCompare PROPERTIES
                      TIMEOUT 30)  # Matlab with a lot of toolboxes takes ~ 15 seconds just to start

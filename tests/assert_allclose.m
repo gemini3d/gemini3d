@@ -1,5 +1,5 @@
-function ok = assert_allclose(actual, desired, rtol, atol, err_msg,warnonly,notclose,verbose)
-% ok = assert_allclose(actual, desired, rtol, atol)
+function testok = assert_allclose(actual, desired, rtol, atol, err_msg,warnonly,notclose,verbose)
+% testok = assert_allclose(actual, desired, rtol, atol)
 %
 % Inputs
 % ------
@@ -8,13 +8,14 @@ function ok = assert_allclose(actual, desired, rtol, atol, err_msg,warnonly,notc
 %
 % Output
 % ------
-% ok: logical TRUE if "actual" is close enough to "desired"
+% testok: logical TRUE if "actual" is close enough to "desired"
 %
 % based on numpy.testing.assert_allclose
 % https://github.com/numpy/numpy/blob/v1.13.0/numpy/core/numeric.py#L2522
 % for Matlab and GNU Octave
 %
 % if "actual" is within atol OR rtol of "desired", no error is emitted.
+
   narginchk(2,8)
   validateattributes(actual, {'numeric'}, {'nonempty'}, mfilename, 'measured values', 1)
   validateattributes(desired, {'numeric'}, {'nonempty'}, mfilename, 'desired reference values', 2)
@@ -83,6 +84,8 @@ function ok = assert_allclose(actual, desired, rtol, atol, err_msg,warnonly,notc
 
     efunc(['AssertionError: ',err_msg,' ',num2str(Nfail/numel(desired)*100,'%.2f'),'% failed accuracy. maximum error magnitude ',num2str(bigbad),' Actual: ',num2str(actual(i)),' Desired: ',num2str(desired(i)),' atol: ',num2str(atol),' rtol: ',num2str(rtol)])
   end
+  
+if nargout==0, clear('testok'), end
 
 end
 
