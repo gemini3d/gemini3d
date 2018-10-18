@@ -33,7 +33,7 @@ if(${CMAKE_Fortran_COMPILER_ID} STREQUAL Intel)
   add_compile_options(-warn nounused -traceback -fp-stack-check)
 elseif(${CMAKE_Fortran_COMPILER_ID} STREQUAL GNU)
   # -fdefault-real-8  after literals are fixed to "e" or "wp"
-  add_compile_options(-mtune=native -fimplicit-none -Wall -Wpedantic -Wextra -fexceptions -fbacktrace -Wno-unused-dummy-argument -Wno-unused-variable -Wno-unused-function)
+  add_compile_options(-mtune=native -fimplicit-none -Wall -Wpedantic -Wextra -fexceptions -fbacktrace -Wno-unused-dummy-argument -Wno-unused-variable -Wno-unused-function -I/opt/local/lib/)
 # -fstack-protector
 # -ffpe-trap=invalid,zero,overflow)#,underflow)
 elseif(${CMAKE_Fortran_COMPILER_ID} STREQUAL PGI)

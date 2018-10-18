@@ -1,5 +1,9 @@
 function xg = plotall(direc, saveplots, plotfun, xg)
 
+cwd = fileparts(mfilename('fullpath'));
+addpath([cwd, filesep, 'plotfunctions'])
+addpath([cwd, filesep, '..', filesep, 'script_utils'])
+
 narginchk(1,3)
 validateattr(direc, {'char'}, {'vector'}, mfilename, 'path to data', 1)
 if nargin<2, saveplots=false; end
@@ -43,11 +47,6 @@ if saveplots
     mkdir([direc, filesep, dlist{i}]);
   end
 end
-
-cwd = fileparts(mfilename('fullpath'));
-
-addpath([cwd, filesep, 'plotfunctions'])
-addpath([cwd, filesep, '..', filesep, 'script_utils'])
 
 %%READ IN THE SIMULATION INFORMATION
 [ymd0,UTsec0,tdur,dtout,flagoutput,mloc]=readconfig([direc,filesep,'inputs', filesep, 'config.ini']);
