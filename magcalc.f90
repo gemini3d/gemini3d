@@ -67,6 +67,10 @@ real(8), dimension(:,:,:), allocatable :: integrand,integrandavg
 real(8), dimension(:,:,:), allocatable :: alt
 real(8), dimension(:), allocatable :: Br,Btheta,Bphi
 real(8), dimension(:), allocatable :: Brall,Bthetaall,Bphiall
+real(8), dimension(:,:), allocatable :: Jxend,Jyend,Jzend,Rxend,Ryend,Rzend,Rcubedend,dVend
+real(8), dimension(:,:), allocatable :: integrandend
+real(8), dimension(:,:), allocatable :: integrandavgend
+
 integer :: ix1,ix2,ix3
 real(8) :: rmean,thetamean
 
@@ -177,6 +181,9 @@ zp(:,:,:)=rmean*sin(thetamean)*x%phi(:,:,:)
 
 !COMPUTE A SOURCE DIFFERENTIAL VOLUME FOR INTEGRALS
 allocate(dV(lx1,lx2,lx3))
+allocate(dVend(lx1,lx2),Jxend(lx1,lx2),Jyend(lx1,lx2),Jzend(lx1,lx2))
+allocate(Rxend(lx1,lx2),Ryend(lx1,lx2),Rzend(lx1,lx2),Rcubedend(lx1,lx2))
+allocate(integrandend(lx1,lx2),integrandavgend(lx1-1,max(lx2-1,1)))
 if (flag2D/=1) then   !3D differential volume
   do ix3=1,lx3
     do ix2=1,lx2
@@ -194,6 +201,11 @@ else         !plane geometry assumption
     end do
   end do
 end if
+
+
+!GET END VOLUMES SO THE INTEGRALS ARE 'COMPLETE'
+call halo_end(dV,dVend,tagdV)    !need to define the differential volume on the edge of this x3-slab in 
+!write(*,*) 'dVend:  ',minval(dVend),maxval(dVend)
 
 
 !COMPUTE NEEDED PROJECTIONS
@@ -280,7 +292,13 @@ do while (t<tdur)
   Jx=J1*proj_e1er+J2*proj_e2er+J3*proj_e3er                 !vertical
   Jy=J1*proj_e1etheta+J2*proj_e2etheta+J3*proj_e3etheta     !south
   Jz=J1*proj_e1ephi+J2*proj_e2ephi+J3*proj_e3ephi           !east
-!  write(*,*) ' Currents min/max:  ',maxval(abs(Jx)),maxval(abs(Jy)),maxval(abs(Jz))
+
+
+  !GATHER THE END DATA SO WE DON'T LEAVE OUT A POINT IN THE INTEGRATION
+  call halo_end(Jx,Jxend,tagJx)
+  call halo_end(Jy,Jyend,tagJy)
+  call halo_end(Jz,Jzend,tagJz)
+!  write(*,*) 'Currents:  ',minval(Jxend),maxval(Jxend),minval(Jyend),maxval(Jyend),minval(Jzend),maxval(Jzend)
 
 
   !COMPUTE MAGNETIC FIELDS
@@ -294,56 +312,87 @@ do while (t<tdur)
     Rx(:,:,:)=xf(ipoints)-xp(:,:,:)
     Ry(:,:,:)=yf(ipoints)-yp(:,:,:)
     Rz(:,:,:)=zf(ipoints)-zp(:,:,:)
-!    write(*,*)  'min/max distances:  ',maxval(abs(Rx)),maxval(abs(Ry)),maxval(abs(Rz))
-!    write(*,*) mu0,pi
+    call halo_end(Rx,Rxend,tagRx)
+    call halo_end(Ry,Ryend,tagRy)
+    call halo_end(Rz,Rzend,tagRz)
+!    write(*,*) 'Currents:  ',minval(Rxend),maxval(Rxend),minval(Ryend),maxval(Ryend),minval(Rzend),maxval(Rzend)
+
 
     if (flag2D/=1) then
       Rcubed(:,:,:)=(Rx**2+Ry**2+Rz**2)**(3d0/2d0)   !this really is R**3
+      call halo_end(Rcubed,Rcubedend,tagRcubed)
+      if(myid==lid-1) Rcubedend=1d0     !avoids div by zero on the end
+!      write(*,*) 'R3:  ',minval(Rcubedend),maxval(Rcubedend)
 
       !Bx calculation
       integrand(:,:,:)=mu0/4d0/pi*(Jy*Rz-Jz*Ry)/Rcubed
+      integrandend(:,:)=mu0/4d0/pi*(Jyend*Rzend-Jzend*Ryend)/Rcubedend
       integrandavg(:,:,:)=1d0/8d0*( integrand(1:lx1-1,1:lx2-1,1:lx3-1) + integrand(2:lx1,1:lx2-1,1:lx3-1) + &
                            integrand(1:lx1-1,2:lx2,1:lx3-1) + integrand(2:lx1,2:lx2,1:lx3-1) + &
                            integrand(1:lx1-1,1:lx2-1,2:lx3) + integrand(2:lx1,1:lx2-1,2:lx3) + &
                            integrand(1:lx1-1,2:lx2,2:lx3) + integrand(2:lx1,2:lx2,2:lx3) )
-      Br(ipoints)=sum(integrandavg*dV(2:lx1,2:lx2,2:lx3))    !without dim= input it just sums everything which is what we want
+      integrandavgend(:,:)=1d0/8d0*( integrand(1:lx1-1,1:lx2-1,lx3) + integrand(2:lx1,1:lx2-1,lx3) + &
+                           integrand(1:lx1-1,2:lx2,lx3) + integrand(2:lx1,2:lx2,lx3) + &
+                           integrandend(1:lx1-1,1:lx2-1) + integrandend(2:lx1,1:lx2-1) + &
+                           integrandend(1:lx1-1,2:lx2) + integrandend(2:lx1,2:lx2) )
+      Br(ipoints)=sum(integrandavg*dV(2:lx1,2:lx2,2:lx3))+sum(integrandavgend*dVend(2:lx1,2:lx2))    !without dim= input it just sums everything which is what we want
 
       !By
       integrand(:,:,:)=-mu0/4d0/pi*(Jx*Rz-Jz*Rx)/Rcubed
+      integrandend(:,:)=-mu0/4d0/pi*(Jxend*Rzend-Jzend*Rxend)/Rcubedend
       integrandavg(:,:,:)=1d0/8d0*( integrand(1:lx1-1,1:lx2-1,1:lx3-1) + integrand(2:lx1,1:lx2-1,1:lx3-1) + &
                            integrand(1:lx1-1,2:lx2,1:lx3-1) + integrand(2:lx1,2:lx2,1:lx3-1) + &
                            integrand(1:lx1-1,1:lx2-1,2:lx3) + integrand(2:lx1,1:lx2-1,2:lx3) + &
                            integrand(1:lx1-1,2:lx2,2:lx3) + integrand(2:lx1,2:lx2,2:lx3) )
-      Btheta(ipoints)=sum(integrandavg*dV(2:lx1,2:lx2,2:lx3))    !without dim= input it just sums everything which is what we want
+      integrandavgend(:,:)=1d0/8d0*( integrand(1:lx1-1,1:lx2-1,lx3) + integrand(2:lx1,1:lx2-1,lx3) + &
+                           integrand(1:lx1-1,2:lx2,lx3) + integrand(2:lx1,2:lx2,lx3) + &
+                           integrandend(1:lx1-1,1:lx2-1) + integrandend(2:lx1,1:lx2-1) + &
+                           integrandend(1:lx1-1,2:lx2) + integrandend(2:lx1,2:lx2) )
+      Btheta(ipoints)=sum(integrandavg*dV(2:lx1,2:lx2,2:lx3))+sum(integrandavgend*dVend(2:lx1,2:lx2))    !without dim= input it just sums everything which is what we want
 
 
       !Bz
       integrand(:,:,:)=mu0/4d0/pi*(Jx*Ry-Jy*Rx)/Rcubed
+      integrandend(:,:)=mu0/4d0/pi*(Jxend*Ryend-Jyend*Rxend)/Rcubedend
       integrandavg(:,:,:)=1d0/8d0*( integrand(1:lx1-1,1:lx2-1,1:lx3-1) + integrand(2:lx1,1:lx2-1,1:lx3-1) + &
                            integrand(1:lx1-1,2:lx2,1:lx3-1) + integrand(2:lx1,2:lx2,1:lx3-1) + &
                            integrand(1:lx1-1,1:lx2-1,2:lx3) + integrand(2:lx1,1:lx2-1,2:lx3) + &
                            integrand(1:lx1-1,2:lx2,2:lx3) + integrand(2:lx1,2:lx2,2:lx3) )
-      Bphi(ipoints)=sum(integrandavg*dV(2:lx1,2:lx2,2:lx3))    !without dim= input it just sums everything which is what we want
+      integrandavgend(:,:)=1d0/8d0*( integrand(1:lx1-1,1:lx2-1,lx3) + integrand(2:lx1,1:lx2-1,lx3) + &
+                           integrand(1:lx1-1,2:lx2,lx3) + integrand(2:lx1,2:lx2,lx3) + &
+                           integrandend(1:lx1-1,1:lx2-1) + integrandend(2:lx1,1:lx2-1) + &
+                           integrandend(1:lx1-1,2:lx2) + integrandend(2:lx1,2:lx2) )
+      Bphi(ipoints)=sum(integrandavg*dV(2:lx1,2:lx2,2:lx3))+sum(integrandavgend*dVend(2:lx1,2:lx2))    !without dim= input it just sums everything which is what we want
     else
       Rcubed(:,:,:)=Rx**2+Ry**2    !not really R**3 in 2D, just the denominator of the integrand
+      call halo_end(Rcubed,Rcubedend,tagRcubed)
 
       !Bx
       integrand(:,:,:)=mu0/4d0/pi*(-2d0*Jz*Ry)/Rcubed
+      integrandend(:,:)=mu0/4d0/pi*(-2d0*Jzend*Ryend)/Rcubedend
       integrandavg(:,:,:)=1d0/4d0*( integrand(1:lx1-1,:,1:lx3-1) + integrand(2:lx1,:,1:lx3-1) + &
-                           integrand(1:lx1-1,:,2:lx2) + integrand(2:lx1,:,2:lx3) )
-      Br(ipoints)=sum(integrandavg*dV(2:lx1,:,2:lx3))    !without dim= input it just sums everything which is what we want
+                           integrand(1:lx1-1,:,2:lx3) + integrand(2:lx1,:,2:lx3) )
+      integrandavgend(:,:)=1d0/4d0*( integrand(1:lx1-1,:,lx3) + integrand(2:lx1,:,lx3) + &
+                           integrandend(1:lx1-1,:) + integrandend(2:lx1,:) )
+      Br(ipoints)=sum(integrandavg*dV(2:lx1,:,2:lx3))+sum(integrandavgend*dVend(2:lx1,:))    !without dim= input it just sums everything which is what we want
 
       !By
       integrand(:,:,:)=mu0/4/pi*(2*Jz*Rx)/Rcubed
+      integrandend(:,:)=mu0/4/pi*(2*Jzend*Rxend)/Rcubedend
       integrandavg(:,:,:)=1d0/4d0*( integrand(1:lx1-1,:,1:lx3-1) + integrand(2:lx1,:,1:lx3-1) + &
-                           integrand(1:lx1-1,:,2:lx2) + integrand(2:lx1,:,2:lx3) )
-      Btheta(ipoints)=sum(integrandavg*dV(2:lx1,:,2:lx3))    !without dim= input it just sums everything which is what we want
+                           integrand(1:lx1-1,:,2:lx3) + integrand(2:lx1,:,2:lx3) )
+      integrandavgend(:,:)=1d0/4d0*( integrand(1:lx1-1,:,lx3) + integrand(2:lx1,:,lx3) + &
+                           integrandend(1:lx1-1,:) + integrandend(2:lx1,:) )
+      Btheta(ipoints)=sum(integrandavg*dV(2:lx1,:,2:lx3))+sum(integrandavgend*dVend(2:lx1,:))    !without dim= input it just sums everything which is what we want
 
       !Bz
       integrand(:,:,:)=mu0/4d0/pi*2d0*(Jx*Ry-Jy*Rx)/Rcubed
+      integrandend(:,:)=mu0/4d0/pi*2d0*(Jxend*Ryend-Jyend*Rxend)/Rcubedend
       integrandavg(:,:,:)=1d0/4d0*( integrand(1:lx1-1,:,1:lx3-1) + integrand(2:lx1,:,1:lx3-1) + &
-                           integrand(1:lx1-1,:,2:lx2) + integrand(2:lx1,:,2:lx3) )
-      Bphi(ipoints)=sum(integrandavg*dV(2:lx1,:,2:lx3))    !without dim= input it just sums everything which is what we want
+                           integrand(1:lx1-1,:,2:lx3) + integrand(2:lx1,:,2:lx3) )
+      integrandavgend(:,:)=1d0/4d0*( integrand(1:lx1-1,:,lx3) + integrand(2:lx1,:,lx3) + &
+                           integrandend(1:lx1-1,:) + integrandend(2:lx1,:) )
+      Bphi(ipoints)=sum(integrandavg*dV(2:lx1,:,2:lx3))+sum(integrandavgend*dVend(2:lx1,:))    !without dim= input it just sums everything which is what we want
     end if
   end do
 
@@ -400,7 +449,8 @@ deallocate(proj_e1ephi,proj_e2ephi,proj_e3ephi)
 deallocate(Rcubed)
 deallocate(integrand,integrandavg)
 deallocate(Br,Btheta,Bphi)
-
+deallocate(dVend,Jxend,Jyend,Jzend,Rxend,Ryend,Rzend)
+deallocate(integrandend,integrandavgend)
 
 !SHUT DOWN MPI
 call mpibreakdown()

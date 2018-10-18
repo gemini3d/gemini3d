@@ -4,15 +4,41 @@ The GEMINI model (*G*eospace *E*nvironment *M*odel of *I*on-*N*eutral *I*nteract
 
 The current version of the code uses generalized orthogonal curvilinear coordinates and has been tested with dipole and Cartesian coordinates.
 
-GEMINI3D has been tested using gfortran &ge; 6 (Fortran 2018 code) and 
+We have prioritized ease of setup/install across a wide variety of computing systems.
+Please open a [GitHub Issue](https://github.com/mattzett/gemini/issues) if you experience difficulty.
+
+## Prerequisites
+
+The CMake build system is the powerful and easy to use for large Fortran projects.
+In general a recent CMake version is beneficial for Fortran builds.
+CMake &ge; 3.11 is required, and easily installed without sudo on:
+
+* Linux: use [cmake_setup.sh](https://github.com/scivision/cmake-utils)
+* MacOS: `brew install cmake`
+* [Windows](https://cmake.org/download)
+
+### Compilers
+
+MPI is woven throughout GEMINI3D so compiler wrappers `mpifort` or `mpiifort` can be often used.
+
+* gfortran &ge; 4.6  (Gfortran &ge; 6 recommended)
+* Intel `ifort`
+
+### Libraries
+
+used / tested versions include:
 
 * OpenMPI 2.1 - 3.1
 * MUMPS 5.1
-* LAPACK95 3.0
 * SCALAPACK 2.0
+* LAPACK95 3.0  (optional)
 
-Analysis of data files using included *.m scripts requires:
-* GNU Octave &ge; 4.0 (or Matlab)
+### data file analysis
+
+GEMINI3D `*.m` scripts require EITHER:
+
+* GNU Octave &ge; 4.0
+* Matlab &ge; R2007b
 
 Generally, the Git `master` branch has the current development version and is the best place to start, while more thoroughly-tested releases happen occasionally.
 
@@ -49,10 +75,18 @@ This test runs a short demo, taking about 2-5 minutes on a typical Mac / Linux l
    ctest -V
    ```
    
+#### MUMPS verbosity
+MUMPS initialization ICNTL flags are set in `numerical/potential/potential_mumps.f90`.
+ICNTL 1-4 concern print output unit and verbosity level, see MUMPS 
+[User Manual](http://mumps.enseeiht.fr/index.php?page=doc)
+   
 #### Build tips
 
-* If CMake version too old, use [cmake_setup.sh](https://github.com/scivision/pybashutils/blob/master/cmake_setup.sh). This does NOT use `sudo`.
-* If missing prereqs, try the `./install_prereqs.sh` script.
+* If CMake version too old, use [cmake_setup.sh](https://github.com/scivision/cmake-utils). This does NOT use `sudo`.
+
+Libaries:
+
+* If you have `sudo` access, try the `./install_prereqs.sh` script
 * If need to build libraries from source (e.g. because you don't have `sudo`) try `build_gfortran.sh` or `build_intel.sh` from the `fortran-libs` repo:
   ```sh
   cd ~
@@ -65,16 +99,16 @@ This test runs a short demo, taking about 2-5 minutes on a typical Mac / Linux l
 ### self-tests
 GEMINI has self tests that compare the output from a "known" test problem to a reference output.  So running:
 ```sh
-make test
+ctest -V
 ```
 
 1. executes 
    ```sh
    ./gemini initialize/2Dtest/config.ini /tmp/2d
    ```
-2. uses GNU Octave (free lightweight Matlab clone) to compare with reference output using `tests/compare_all.m`:
+2. uses GNU Octave (or Matlab) compares with reference output using `tests/compare_all.m`:
    ```matlab
-   compare_all(YourOutputDirectory, '../simulations/2Dtest_files/2Dtest_output')
+   compare_all(YourOutputDirectory, '~/sim/gemini/2Dtest_files/2Dtest_output')
    ```
 
 ### Ubuntu
@@ -138,9 +172,6 @@ Code duplication:
 * Cleanup of BCs interpolation source files
 * Axisymmetric and Cartesian interpolations should be combined (much code-sharing)
 
-Research needed:  
-* What's up with unallocated filenamefull in output\_root\_mpi???  f2003 feature that autoallocates strings???
-
 Other development-related comments:
 * There may be a performance boost by using the Fortran 2008 `contiguous` attribute on the `pointer` arrays where right now it is manually repacked--`contiguous` means we DON'T repack manually, the compiler will repack IF and ONLY IF it needs too.  We may get a performance boost by eliminating manual repacking and using `real, contiguous, pointer` instead. [Reference](https://modelingguru.nasa.gov/servlet/JiveServlet/previewBody/1527-102-1-2631/N1729-4.pdf) page 7.
 
@@ -152,6 +183,7 @@ Other development-related comments:
 * Possibly merge in P. Inchin's EIA changes (with appropriate flags)
 * HDF5 file input and output
 * Option to run the code in a single precision mode - would help with memory limited systems although it's not clear how this would impact numerics (I've never tested my methods in single precision)
+* Add 3Dtest to ctest
 
 ### Plans for adding physics:
 
@@ -176,13 +208,17 @@ GEMINI3D is Fortran 2018 compliant and uses two-space indents throughout (to acc
 
 for example:  
 
-    mpirun -np 4 ./gemini_mumps ./initialize/2Dtest/config.ini ~/simulations/2Dtest/
+    mpirun -np 4 ./gemini ./initialize/2Dtest/config.ini ~/simulations/2Dtest/
 
 Note that the output *base* directory must already exist (‘simulations’ in previous example).  The source code consists of about ten module source files encapsulating various functionalities used in the model.  A diagram all of the modules and their function is shown in figure 1; a list of module dependencies can also be found in the Makefile source.
 
 ![Figure 1](doc/figure1.png)
 
 <!-- ![Figure 2](doc/figure2.png) -->
+
+Note that there is also a utility that can compute magnetic fields from the currents calculated by GEMINI.  This can be run by:
+
+	mpirun -np 4 ./magcalc ~/zettergmdata/simulations/3Dtest/ ~/zettergmdata/simulations/input/3Dtest/magfieldpoints.dat
 
 
 ## Verifying GEMINI build

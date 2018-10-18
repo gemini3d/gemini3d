@@ -3,6 +3,7 @@ module io
 !HANDLES INPUT AND OUTPUT OF PLASMA STATE PARAMETERS (NOT GRID INPUTS)
 use, intrinsic :: iso_fortran_env, only: stderr=>error_unit
 use phys_consts, only : kB,ms,pi,lsp, wp
+use fsutils, only: expanduser
 use calculus
 use mpimod
 use grid, only : gridflag,flagswap,lx1,lx2,lx3,lx3all
@@ -64,12 +65,12 @@ contains
     read(u,*) flagperiodic
     read(u,*) flagoutput
     read(u,*) flagcap
-    read(u,'(a256)') buf  !apparently format specifier needed, else it reads just one character
-    indatsize = trim(buf)
+    read(u,'(a256)') buf  ! format specifier needed, else it reads just one character
+    indatsize = expanduser(buf)
     read(u,'(a256)') buf
-    indatgrid = trim(buf)
+    indatgrid = expanduser(buf)
     read(u,'(a256)') buf
-    indatfile = trim(buf)
+    indatfile = expanduser(buf)
 
     !PRINT SOME DIAGNOSIC INFO FROM ROOT
     if (myid==0) then
@@ -92,7 +93,7 @@ contains
       read(u,*) dtneu
       read(u,*) drhon,dzn
       read(u,'(A256)') buf
-      sourcedir=trim(adjustl(buf))
+      sourcedir = expanduser(buf)
       if (myid ==0) then
         print *, 'Neutral disturbance mlat,mlon:  ',sourcemlat,sourcemlon
         print *, 'Neutral disturbance cadence (s):  ',dtneu
@@ -113,7 +114,7 @@ contains
       read(u,*) dtprec
 
       read(u,'(A256)') buf
-      precdir = trim(adjustl(buf))  ! NOTE: Need adjustl() since trim() is only for TRAILING spaces
+      precdir = expanduser(buf)
       
       if (myid==0) then
         print '(A,F10.3)', 'Precipitation file input cadence (s):  ',dtprec
@@ -130,7 +131,7 @@ contains
       read(u,*) dtE0
     
       read(u,'(a256)') buf
-      E0dir = trim(buf)
+      E0dir = expanduser(buf)
     
       if (myid==0) then
         print *, 'Electric field file input cadence (s):  ',dtE0
@@ -214,9 +215,9 @@ contains
 
 
     !NOTE HERE THAT WE INTERPRET OUTDIR AS THE BASE DIRECTORY CONTAINING SIMULATION OUTPUT
-    call execute_command_line('mkdir '//outdir//'/magfields/')
-    call execute_command_line('mkdir '//outdir//'/magfields/input/')
-    call execute_command_line('cp '//fieldpointfile//' '//outdir//'/magfields/input/magfieldpoints.dat')
+    call execute_command_line('mkdir -pv '//outdir//'/magfields/')
+    call execute_command_line('mkdir -pv '//outdir//'/magfields/input/')
+    call execute_command_line('cp -v '//fieldpointfile//' '//outdir//'/magfields/input/magfieldpoints.dat')
 
   end subroutine create_outdir_mag
 
@@ -308,8 +309,8 @@ contains
     end if
 
     if (.not. (lx1==lx1in .and. lx2==lx2in .and. lx3all==lx3in)) then
-      error stop '!!!The input data must be the same size as the grid which you are running & 
-                 the simulation on; use a script to interpolate up/down to the simulation grid'
+      error stop '!!!The input data must be the same size as the grid which you are running the simulation on' // & 
+           '- use a script to interpolate up/down to the simulation grid'
     end if
 
     open(newunit=u,file=indatfile,status='old',form='unformatted', access='stream', action='read')
@@ -438,7 +439,6 @@ contains
     else    !full output parameters are in the output files
       write(*,*) '  Reading in files containing full plasma parameters of size:  ',lx1*lx2*lx3all*lsp
       allocate(tmparray4D(lx1,lx2,lx3all,lsp))
-      read(u) tmparray4D
       read(u) tmparray4D
       read(u) tmparray4D
       read(u) tmparray4D
@@ -748,12 +748,11 @@ contains
     !------------------------------------------------------------
 
     character(*), intent(in) :: outdir
-    integer, dimension(3), intent(in) :: ymd
+    integer, intent(in) :: ymd(3)
     real(8), intent(in) :: UTsec
     real(8), dimension(:), intent(in)  :: Br,Btheta,Bphi
 
-    character(:), allocatable :: outdir_composite
-    character(:), allocatable :: filenamefull
+    character(:), allocatable :: outdir_composite, filenamefull
     integer :: u
 
 
@@ -770,70 +769,29 @@ contains
   end subroutine output_magfields
 
 
-  function date_filename(outdir,ymd,UTsec)
+  pure function date_filename(outdir,ymd,UTsec)
 
     !------------------------------------------------------------
     !-------GENERATE A FILENAME STRING OUT OF A GIVEN DATE/TIME
     !------------------------------------------------------------
 
     character(*), intent(in) :: outdir
-    integer, dimension(3), intent(in) :: ymd
+    integer, intent(in) :: ymd(3)
     real(8), intent(in) :: UTsec
     character(:), allocatable :: date_filename
 
-    integer :: ldigits,idigits
-    character(256) :: filename,tmpchar,tmpchar2
-    character(512) :: tmpfilename,filenamefull
+    character(16) :: ssec
+    character(9) :: symd
 
 
-    !FORM OUTPUT FILENAME BASED ON DATE AND TIME (this was unbelievably squirrely to work out)
-    write(filename,'(f12.6,a4)') UTsec,'.dat'    !file name that has 6 decimal points on time stamp
-    filename=adjustl(filename)                   !slam the chars. to the left and remove trailing blanks
-    ldigits=5                                    !pad the filename with the appropriate number zero characters
-    if (UTsec<1d0) then
-      idigits=1
-    else
-      idigits=floor(log10(UTsec))+1
-    end if
-    tmpchar=filename
-    do while(idigits<ldigits)
-      write(tmpchar2,*) '0',trim(tmpchar)
-      tmpchar=adjustl(tmpchar2)      
-      idigits=idigits+1
-    end do
-    filename=tmpchar
+    ! UTC second (float, 0.0 .. 86400) 
+    write(ssec,'(f12.6,a4)') UTsec,'.dat'    !file name that has 6 decimal points on time stamp
 
-    !day
-    write(tmpchar,*) ymd(3)
-    tmpchar=adjustl(tmpchar)
-    if (ymd(3)<10) then
-      write(tmpchar2,*) '0',trim(tmpchar)
-      tmpchar=adjustl(tmpchar2)
-    end if
-    !write is dumb and doesn't recognize previous trims...  I hate string manipulation...
-    write(tmpfilename,*) trim(tmpchar),'_',trim(filename)
-    tmpfilename=adjustl(tmpfilename)
-    filename=tmpfilename(1:256)
-
-    !month
-    write(tmpchar,*) ymd(2)
-    tmpchar=adjustl(tmpchar)
-    if (ymd(2)<10) then
-      write(tmpchar2,*) '0',trim(tmpchar)
-      tmpchar=adjustl(tmpchar2)
-    end if
-    write(tmpfilename,*) trim(tmpchar),trim(filename)
-    tmpfilename=adjustl(tmpfilename)
-    filename=tmpfilename(1:256)
-
-    !year
-    write(tmpchar,*) ymd(1)
-    tmpchar=adjustl(tmpchar)
-    write(tmpfilename,*) trim(tmpchar),trim(filename)
-    tmpfilename=adjustl(tmpfilename)
-    filename=tmpfilename(1:256)
-    write(filenamefull,*) outdir,'/',trim(filename)
-    date_filename=trim(adjustl(filenamefull))
+    ! year_month_day
+    write(symd,'(i4,2i0.2,a1)') ymd, '_'
+    
+    ! assemble
+    date_filename = outdir // '/' // symd // ssec
 
   end function date_filename
 
