@@ -1,18 +1,18 @@
 function [ne,mlatsrc,mlonsrc,v1,Ti,Te,J1,v2,v3,J2,J3,filename,Phitop,ns,vs1,Ts] = loadframe(direc,UTsec,ymd,UTsec0,ymd0,mloc,xg)
 
 narginchk(5, 7)
-validateattributes(direc, {'char'}, {'vector'}, mfilename, 'data directory', 1)
-validateattributes(UTsec, {'numeric'}, {'vector'}, mfilename, 'UTC second', 2)
-validateattributes(ymd, {'numeric'}, {'vector', 'numel', 3}, mfilename, 'year month day', 3)
-validateattributes(UTsec, {'numeric'}, {'scalar'}, mfilename, 'UTC second', 4)
-validateattributes(ymd0, {'numeric'}, {'vector', 'numel', 3}, mfilename, 'year month day', 5)
+validateattr(direc, {'char'}, {'vector'}, mfilename, 'data directory', 1)
+validateattr(UTsec, {'numeric'}, {'vector'}, mfilename, 'UTC second', 2)
+validateattr(ymd, {'numeric'}, {'vector', 'numel', 3}, mfilename, 'year month day', 3)
+validateattr(UTsec, {'numeric'}, {'scalar'}, mfilename, 'UTC second', 4)
+validateattr(ymd0, {'numeric'}, {'vector', 'numel', 3}, mfilename, 'year month day', 5)
 if nargin>=6 && ~isempty(mloc)
-  validateattributes(mloc, {'numeric'}, {'vector', 'numel', 2}, mfilename, 'magnetic coordinates', 6)
+  validateattr(mloc, {'numeric'}, {'vector', 'numel', 2}, mfilename, 'magnetic coordinates', 6)
 end
 if nargin<7
   xg = [];
 else
-  validateattributes(xg, {'struct'}, {'scalar'}, mfilename, 'grid structure', 7)
+  validateattr(xg, {'struct'}, {'scalar'}, mfilename, 'grid structure', 7)
 end
 %% PATH TO PLOTTING FUNCTIONS AND SHARED SCRIPT UTILITIES
 addpath('../script_utils')

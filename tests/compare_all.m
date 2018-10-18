@@ -9,12 +9,14 @@ function ok = compare_all(dir1, dir2)
 % vi,v2,v3=1 m/s
 % J1,J2,J3 = 1e-9 
 
+addpath([fileparts(mfilename('fullpath')),'/../script_utils'])
+
 narginchk(2,2)
-validateattributes(dir1, {'char'}, {'vector'}, mfilename,'directory to compare',1)
-validateattributes(dir2, {'char'}, {'vector'}, mfilename,'directory to compare',2)
+validateattr(dir1, {'char'}, {'vector'}, mfilename,'directory to compare',1)
+validateattr(dir2, {'char'}, {'vector'}, mfilename,'directory to compare',2)
   
 rtol=1e-5; rtolN=rtol; rtolT=rtol; rtolJ=rtol; rtolV=rtol; 
-atol=1e-9; atolN=1e6;  atolT=1;    atolJ=1e-9;   atolV=1;    
+atol=1e-9; atolN=1e6;  atolT=1;    atolJ=1e-9;   atolV=1;
 
 cwd = fileparts(mfilename('fullpath'));
     
