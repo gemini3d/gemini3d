@@ -78,7 +78,10 @@ This test runs a short demo, taking about 2-5 minutes on a typical Mac / Linux l
 #### Build tips
 
 * If CMake version too old, use [cmake_setup.sh](https://github.com/scivision/cmake-utils). This does NOT use `sudo`.
-* If missing prereqs, try the `./install_prereqs.sh` script.
+
+Libaries:
+
+* If you have `sudo` access, try the `./install_prereqs.sh` script
 * If need to build libraries from source (e.g. because you don't have `sudo`) try `build_gfortran.sh` or `build_intel.sh` from the `fortran-libs` repo:
   ```sh
   cd ~
