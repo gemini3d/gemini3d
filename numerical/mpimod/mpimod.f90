@@ -6,12 +6,14 @@ module mpimod
 ! it is more clear what the structure of the input arrays should be. 
 
 use phys_consts, only : lsp   !code needs to know how many species are being used.
-use mpi, only: mpi_init, mpi_comm_world, mpi_double_precision, mpi_status_size, mpi_status_ignore
+use mpi, only: mpi_init, mpi_comm_world, &
+               mpi_integer, mpi_double_precision, mpi_sum, &
+               mpi_status_size, mpi_status_ignore
 
 implicit none
 
 private :: lsp
-private :: mpi_init, mpi_comm_world, mpi_double_precision, mpi_status_size, mpi_status_ignore
+private :: mpi_init, mpi_status_size
 
 !NOW A LIST OF TAGS SO THESE DO NOT NEED TO BE EMBEDDED IN EACH SUBROUTINE
 integer, parameter :: tagns=2,tagvs1=3,tagTs=4    !root/workers input routines.  also output routines for root/worker

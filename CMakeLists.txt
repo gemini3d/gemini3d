@@ -21,7 +21,7 @@ set(LIB_DIR ${PROJECT_SOURCE_DIR}/../fortran-libs) # for self-compiled libraries
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
   add_compile_options(-g -O0)
 else()
-  add_compile_options(-O3)
+  add_compile_options(-g -O3)
 endif()
 
 ## ------- Compiler options
@@ -87,7 +87,7 @@ target_compile_options(msis PRIVATE -w -fno-implicit-none)
 
 add_subdirectory(numerical)
 
-add_library(io io/io.f90)
+add_library(io io/io.f90 io/expanduser.f90)
 target_link_libraries(io PRIVATE const mpimod grid calculus)
 
 add_library(temporal temporal/temporal.f90)

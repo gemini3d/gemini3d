@@ -3,6 +3,7 @@ module io
 !HANDLES INPUT AND OUTPUT OF PLASMA STATE PARAMETERS (NOT GRID INPUTS)
 use, intrinsic :: iso_fortran_env, only: stderr=>error_unit
 use phys_consts, only : kB,ms,pi,lsp, wp
+use fsutils, only: expanduser
 use calculus
 use mpimod
 use grid, only : gridflag,flagswap,lx1,lx2,lx3,lx3all
@@ -64,12 +65,12 @@ contains
     read(u,*) flagperiodic
     read(u,*) flagoutput
     read(u,*) flagcap
-    read(u,'(a256)') buf  !apparently format specifier needed, else it reads just one character
-    indatsize = trim(buf)
+    read(u,'(a256)') buf  ! format specifier needed, else it reads just one character
+    indatsize = expanduser(buf)
     read(u,'(a256)') buf
-    indatgrid = trim(buf)
+    indatgrid = expanduser(buf)
     read(u,'(a256)') buf
-    indatfile = trim(buf)
+    indatfile = expanduser(buf)
 
     !PRINT SOME DIAGNOSIC INFO FROM ROOT
     if (myid==0) then
@@ -92,7 +93,7 @@ contains
       read(u,*) dtneu
       read(u,*) drhon,dzn
       read(u,'(A256)') buf
-      sourcedir=trim(adjustl(buf))
+      sourcedir = expanduser(buf)
       if (myid ==0) then
         print *, 'Neutral disturbance mlat,mlon:  ',sourcemlat,sourcemlon
         print *, 'Neutral disturbance cadence (s):  ',dtneu
@@ -113,7 +114,7 @@ contains
       read(u,*) dtprec
 
       read(u,'(A256)') buf
-      precdir = trim(adjustl(buf))  ! NOTE: Need adjustl() since trim() is only for TRAILING spaces
+      precdir = expanduser(buf)
       
       if (myid==0) then
         print '(A,F10.3)', 'Precipitation file input cadence (s):  ',dtprec
@@ -130,7 +131,7 @@ contains
       read(u,*) dtE0
     
       read(u,'(a256)') buf
-      E0dir = trim(buf)
+      E0dir = expanduser(buf)
     
       if (myid==0) then
         print *, 'Electric field file input cadence (s):  ',dtE0
@@ -214,9 +215,9 @@ contains
 
 
     !NOTE HERE THAT WE INTERPRET OUTDIR AS THE BASE DIRECTORY CONTAINING SIMULATION OUTPUT
-    call execute_command_line('mkdir '//outdir//'/magfields/')
-    call execute_command_line('mkdir '//outdir//'/magfields/input/')
-    call execute_command_line('cp '//fieldpointfile//' '//outdir//'/magfields/input/magfieldpoints.dat')
+    call execute_command_line('mkdir -pv '//outdir//'/magfields/')
+    call execute_command_line('mkdir -pv '//outdir//'/magfields/input/')
+    call execute_command_line('cp -v '//fieldpointfile//' '//outdir//'/magfields/input/magfieldpoints.dat')
 
   end subroutine create_outdir_mag
 

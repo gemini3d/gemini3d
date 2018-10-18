@@ -37,8 +37,9 @@ real(8), private :: flagdirich_double
 contains
 
 
-  subroutine potentialBCs2D_fileinput(dt,dtE0,t,ymd,UTsec,E0dir,x,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3, &
-                                          Vmaxx3,E01all,E02all,E03all,flagdirich)
+  subroutine potentialBCs2D_fileinput(dt,dtE0,t,ymd,UTsec,E0dir,&
+                                      x,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3, &
+                                      Vmaxx3,E01all,E02all,E03all,flagdirich)
 
     !A FILE INPUT BASED BOUNDARY CONDITIONS FOR ELECTRIC POTENTIAL OR
     !FIELD-ALIGNED CURRENT.  NOTE THAT THIS IS ONLY CALLED BY THE ROOT
