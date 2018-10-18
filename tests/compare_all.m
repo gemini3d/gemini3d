@@ -18,8 +18,8 @@ narginchk(2,2)
 validateattributes(dir1, {'char'}, {'vector'}, mfilename,'directory to compare',1)
 validateattributes(dir2, {'char'}, {'vector'}, mfilename,'directory to compare',2)
   
-rtol=1e-6; rtolN=1e-3; rtolT=1e-4; rtolJ=0.1; rtolV=rtol; 
-atol=1e-9;                        atolJ=atol; atolV=atol;    
+rtol=1e-6; rtolN=rtol; rtolT=rtol; rtolJ=rtol; rtolV=rtol; 
+atol=1e-9; atolN=1e6;  atolT=1;    atolJ=1;   atolV=1;    
 
 cwd = fileparts(mfilename('fullpath'));
     
@@ -41,7 +41,7 @@ for it=1:Nt
   [neA,v1A,TiA,TeA,J1A,v2A,v3A,J2A,J3A] = loadframe(dir1,UTsec,ymd,UTsec0,ymd0,mloc,xg);
   [neB,v1B,TiB,TeB,J1B,v2B,v3B,J2B,J3B] = loadframe(dir2,UTsec,ymd,UTsec0,ymd0,mloc,xg);
   
-  assert_allclose(neA,neB,rtolN,atol,['Ne accuracy, time #',int2str(it)])
+  assert_allclose(neA,neB,rtolN,atolN,['Ne accuracy, time #',int2str(it)])
   
   if false
     assert_allclose(v1A,v1B,rtolV,atolV,['V1 accuracy, time #',int2str(it)])
@@ -50,9 +50,9 @@ for it=1:Nt
   assert_allclose(v3A,v3B,rtolV,atolV,['V3 accuracy, time #',int2str(it)])
   
   if false
-    assert_allclose(TiA,TiB,rtolT,atol,['Ti accuracy, time #',int2str(it)])
+    assert_allclose(TiA,TiB,rtolT,atolT,['Ti accuracy, time #',int2str(it)])
   end
-  assert_allclose(TeA,TeB,rtolT,atol,['Te accuracy, time #',int2str(it)])
+  assert_allclose(TeA,TeB,rtolT,atolT,['Te accuracy, time #',int2str(it)])
   
   assert_allclose(J1A,J1B,rtolJ,atolJ,['J1 accuracy, time #',int2str(it)])
   assert_allclose(J2A,J2B,rtolJ,atolJ,['J2 accuracy, time #',int2str(it)])
