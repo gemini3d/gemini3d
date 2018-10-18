@@ -21,7 +21,7 @@ CMake &ge; 3.11 is required, and easily installed without sudo on:
 
 MPI is woven throughout GEMINI3D so compiler wrappers `mpifort` or `mpiifort` can be often used.
 
-* gfortran 4.8 - 7.3
+* gfortran &ge; 4.6  (Gfortran &ge; 6 recommended)
 * Intel `ifort`
 
 ### Libraries
@@ -94,16 +94,16 @@ Libaries:
 ### self-tests
 GEMINI has self tests that compare the output from a "known" test problem to a reference output.  So running:
 ```sh
-make test
+ctest -V
 ```
 
 1. executes 
    ```sh
    ./gemini initialize/2Dtest/config.ini /tmp/2d
    ```
-2. uses GNU Octave (free lightweight Matlab clone) to compare with reference output using `tests/compare_all.m`:
+2. uses GNU Octave (or Matlab) compares with reference output using `tests/compare_all.m`:
    ```matlab
-   compare_all(YourOutputDirectory, '../simulations/2Dtest_files/2Dtest_output')
+   compare_all(YourOutputDirectory, '~/sim/gemini/2Dtest_files/2Dtest_output')
    ```
 
 ### Ubuntu
