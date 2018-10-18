@@ -172,9 +172,6 @@ Code duplication:
 * Cleanup of BCs interpolation source files
 * Axisymmetric and Cartesian interpolations should be combined (much code-sharing)
 
-Research needed:  
-* What's up with unallocated filenamefull in output\_root\_mpi???  f2003 feature that autoallocates strings???
-
 Other development-related comments:
 * There may be a performance boost by using the Fortran 2008 `contiguous` attribute on the `pointer` arrays where right now it is manually repacked--`contiguous` means we DON'T repack manually, the compiler will repack IF and ONLY IF it needs too.  We may get a performance boost by eliminating manual repacking and using `real, contiguous, pointer` instead. [Reference](https://modelingguru.nasa.gov/servlet/JiveServlet/previewBody/1527-102-1-2631/N1729-4.pdf) page 7.
 
@@ -186,6 +183,7 @@ Other development-related comments:
 * Possibly merge in P. Inchin's EIA changes (with appropriate flags)
 * HDF5 file input and output
 * Option to run the code in a single precision mode - would help with memory limited systems although it's not clear how this would impact numerics (I've never tested my methods in single precision)
+* Add 3Dtest to ctest
 
 ### Plans for adding physics:
 
