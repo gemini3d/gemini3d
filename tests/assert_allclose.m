@@ -1,4 +1,4 @@
-function ok = assert_allclose(actual, desired, rtol, atol, err_msg,notclose,verbose)
+function ok = assert_allclose(actual, desired, rtol, atol, err_msg,warnonly,notclose,verbose)
 % ok = assert_allclose(actual, desired, rtol, atol)
 %
 % Inputs
@@ -15,7 +15,7 @@ function ok = assert_allclose(actual, desired, rtol, atol, err_msg,notclose,verb
 % for Matlab and GNU Octave
 %
 % if "actual" is within atol OR rtol of "desired", no error is emitted.
-  narginchk(2,7)
+  narginchk(2,8)
   validateattributes(actual, {'numeric'}, {'nonempty'}, mfilename, 'measured values', 1)
   validateattributes(desired, {'numeric'}, {'nonempty'}, mfilename, 'desired reference values', 2)
   if nargin < 3 || isempty(rtol)
@@ -34,16 +34,28 @@ function ok = assert_allclose(actual, desired, rtol, atol, err_msg,notclose,verb
     validateattributes(err_msg, {'char'}, {'vector'}, mfilename, 'error message text', 5)
   end
   if nargin < 6
+    warnonly=false;
+  else
+    validateattributes(warnonly, {'logical'}, {'scalar'}, mfilename, 'warn instead of error', 6)
+  end
+  if nargin < 7
     notclose=false;
   else
-    validateattributes(notclose, {'logical'}, {'scalar'}, mfilename, 'check values not too close', 6)
+    validateattributes(notclose, {'logical'}, {'scalar'}, mfilename, 'check values not too close', 7)
   end
-  if nargin<7
+  if nargin < 8
     verbose = false;
   else
-    validateattributes(verbose, {'logical'}, {'scalar'}, mfilename, 'verbose output', 7)
+    validateattributes(verbose, {'logical'}, {'scalar'}, mfilename, 'verbose output', 8)
   end
-
+  
+  if warnonly
+    efunc = @warning;
+  else
+    efunc = @error;
+  end
+  
+%% compare
   actual = actual(:);
   desired = desired(:);
   
@@ -69,7 +81,7 @@ function ok = assert_allclose(actual, desired, rtol, atol, err_msg,notclose,verb
       disp(['desired:    ',num2str(desired(i))])
     end
 
-    error(['AssertionError: ',err_msg,' ',num2str(Nfail/numel(desired)*100,'%.2f'),'% failed accuracy. maximum error magnitude ',num2str(bigbad),' Actual: ',num2str(actual(i)),' Desired: ',num2str(desired(i)),' atol: ',num2str(atol),' rtol: ',num2str(rtol)])
+    efunc(['AssertionError: ',err_msg,' ',num2str(Nfail/numel(desired)*100,'%.2f'),'% failed accuracy. maximum error magnitude ',num2str(bigbad),' Actual: ',num2str(actual(i)),' Desired: ',num2str(desired(i)),' atol: ',num2str(atol),' rtol: ',num2str(rtol)])
   end
 
 end
