@@ -1,5 +1,9 @@
 function [t,ns,Ts,vs1,J1,J2,J3,v2,v3,Phitop]=readdata(lxs,filename)
 
+narginchk(2,2)
+validateattr(filename, {'char'}, {'vector'}, mfilename, 'data filename', 2)
+
+
 %--------------------------------------------------------
 %-----READ DATA FROM AN OUTPUT FILE WRITTEN BY FORTRAN 
 %-----CODE
@@ -10,7 +14,7 @@ t=fread(fid,1,'real*8');
 
 ns=fread(fid,prod(lxs)*lsp,'real*8');
 ns=reshape(ns,[lxs,lsp]);
-fprintf('READDATA --> Loaded densities...\n');
+disp('READDATA --> Loaded densities...');
 
 vs1=fread(fid,prod(lxs)*lsp,'real*8');
 vs1=reshape(vs1,[lxs,lsp]);

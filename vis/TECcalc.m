@@ -3,7 +3,7 @@ simname='tohoku20113D_highres_long/';
 simname_control='tohoku20113D_highres_long_control/';
 basedir='~/zettergmdata/simulations/';
 direc=[basedir,simname];
-system(['mkdir ',direc,'/TECplots']);    %store output plots with the simulation data
+mkdir([direc, filesep, 'TECplots']);    %store output plots with the simulation data
 
 
 %PATH TO UTILITIES
@@ -16,7 +16,7 @@ addpath ../script_utils;
 
 %WE ALSO NEED TO LOAD THE GRID FILE (UNLESS IT ALREADY EXISTS IN THE WORKSPACE)
 if (~exist('xg','var'))
-  fprintf('Reading grid...\n');
+  disp('Reading grid...')
   xg=readgrid([direc,'/inputs/']);
   lx1=xg.lx(1); lx2=xg.lx(2); lx3=xg.lx(3);
   lh=lx1;   %possibly obviated in this version - need to check
@@ -26,7 +26,6 @@ if (~exist('xg','var'))
     flag2D=0;
   end
 end
-fprintf('Grid loaded...\n');
 
 
 %DEFINE A CENTER AND REGION OF INTEREST
@@ -120,7 +119,6 @@ vTEC=[];
 vTEC_control=[];
 dvTEC=[];
 simdate_series=[];
-autoload=0;
 for it=1:length(times)
     %LOAD DIST. FILE
     direc=[basedir,simname];
@@ -138,7 +136,7 @@ for it=1:length(times)
 %      error('Bad output option...')
 %    end
 %    loadframe_wrapper;
-    [ne] = loadframe(direc,UTsec,ymd,UTsec0,ymd0,autoload,flagoutput,mloc,xg);
+    [ne] = loadframe(direc,UTsec,ymd,UTsec0,ymd0,mloc,xg);
     simdate=[ymd,UTsec/3600,0,0];    %create a datevec for matlab
 
 

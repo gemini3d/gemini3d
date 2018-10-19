@@ -1,6 +1,22 @@
 function h=plot2D_cart(ymd,UTsec,xg,parm,parmlbl,caxlims,sourceloc,ha)
 
-narginchk(7,8)
+narginchk(4,8)
+validateattr(ymd, {'numeric'}, {'vector', 'numel', 3}, mfilename, 'year month day', 1)
+validateattr(UTsec, {'numeric'}, {'scalar'}, mfilename, 'UTC second', 2)
+validateattr(xg, {'struct'}, {'scalar'}, mfilename, 'grid structure', 3)
+validateattr(parm, {'numeric'}, {'2d'}, mfilename)
+if nargin<5, parmlbl=''; end
+validateattr(parmlbl, {'char'}, {'vector'}, mfilename, 'parameter label', 5)
+if nargin<6
+  caxlims=[];
+else
+  validateattr(caxlims, {'numeric'}, {'vector', 'numel', 2}, mfilename, 'plot intensity (min, max)', 6)
+end
+if nargin<7  || isempty(sourceloc) % leave || for validate
+  sourceloc = [];
+else
+  validateattr(sourceloc, {'numeric'}, {'vector', 'numel', 2}, mfilename, 'source magnetic coordinates', 7)
+end
 if nargin<8 || isempty(ha)
   clf, h=gcf; ha=gca; 
 else
@@ -16,7 +32,7 @@ t=UTsec/3600;
 
 
 %SOURCE LOCATION
-if (~isempty(sourceloc))
+if ~isempty(sourceloc)
   sourcemlat=sourceloc(1);
   sourcemlon=sourceloc(2);
 else
@@ -112,42 +128,46 @@ FS=8;
 %MAKE THE PLOT!
 if (xg.lx(3)==1)
   hi=imagesc(ha,xp/1e3,zp,parmp);
-  hold('on')
+  hold(ha, 'on')
   plot(ha,[minxp,maxxp],[altref,altref],'w--','LineWidth',2);
-  if (~isempty(sourcemlat))
+  if ~isempty(sourcemlat)
     plot(ha,sourcemlat,0,'r^','MarkerSize',12,'LineWidth',2);
   end
-  hold('off')
-  try % not yet in Octave 4.2
+  hold(ha, 'off')
+  try % not yet in Octave 4.4.1
     set(hi,'alphadata',~isnan(parmp))
   end
   set(ha,'FontSize',FS)
-  axis('xy')
-  axis('square')
-  colormap(parula(256))
-  caxis(caxlims)
-  c=colorbar;
-  xlabel(c,parmlbl);
-  xlabel('eastward dist. (km)');
-  ylabel('altitude (km)');
+  axis(ha, 'xy')
+  axis(ha, 'square')
+  colormap(ha, parula(256))
+  if ~isempty(caxlims)
+    caxis(ha, caxlims)
+  end
+  c=colorbar(ha);
+  xlabel(c,parmlbl)
+  xlabel(ha, 'eastward dist. (km)')
+  ylabel(ha, 'altitude (km)')
 elseif (xg.lx(2)==1)
   hi=imagesc(ha,yp/1e3,zp,parmp3);
-  hold('on')
+  hold(ha, 'on')
   %plot([minyp,maxyp],[altref,altref],'w--','LineWidth',2);
   if (~isempty(sourcemlat))
-    plot(sourcemlat,0,'r^','MarkerSize',12,'LineWidth',2);
+    plot(ha, sourcemlat,0,'r^','MarkerSize',12,'LineWidth',2);
   end
-  hold('off')
+  hold(ha, 'off')
   set(hi,'alphadata',~isnan(parmp3));
   set(ha,'FontSize',FS);
-  axis('xy')
-  axis('square')
-  colormap(parula(256));
-  caxis(caxlims)
-  c=colorbar;
-  xlabel(c,parmlbl);
-  xlabel('northward dist. (km)')
-  ylabel('altitude (km)')
+  axis(ha, 'xy')
+  axis(ha, 'square')
+  colormap(ha, parula(256));
+  if ~isempty(caxlims)
+    caxis(ha, caxlims)
+  end
+  c=colorbar(ha);
+  xlabel(c,parmlbl)
+  xlabel(ha, 'northward dist. (km)')
+  ylabel(ha, 'altitude (km)')
 end
 
 

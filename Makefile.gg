@@ -3,17 +3,17 @@
 FC=mpifort #compiler
 FL=mpifort #linker
 
-#OPTS = -g -Wall -Wextra -Warray-temporaries -Wconversion -fimplicit-none -ffree-line-length-0 -fcheck=all -finit-real=nan -fbacktrace -std=f2008
+#OPTS = -g -Wall -Wextra -Warray-temporaries -Wconversion -fmax-errors=10 -fimplicit-none -ffree-line-length-0 -fcheck=all -finit-real=nan -fbacktrace -std=f2008
 
 LIBDIR = $(HOME)/source/
 MUMPSDIR = $(LIBDIR)/MUMPS_5.1.1/
-LAPACKDIR = $(LIBDIR)/lapack-build/
+LAPACKDIR = $(LIBDIR)/lapack-3.8.0/
 SCALADIR = $(LIBDIR)/scalapack-2.0.2/
-BLASDIR = $(LIBDIR)/lapack-build/
+BLASDIR = $(LIBDIR)/lapack-3.8.0/
 
 #Linear Algebra Libraries
-LLAPACK = -L$(LAPACKDIR)/lib -llapack
-LBLAS = -L$(BLASDIR)/lib -lblas
+LLAPACK = -L$(LAPACKDIR) -llapack
+LBLAS = -L$(BLASDIR) -lrefblas
 LSCALA = -L$(SCALADIR) -lscalapack
 
 #Matrix ordering libraries
@@ -41,7 +41,7 @@ IMUMPS = -I$(MUMPSDIR)/include
 #Gemini object output
 OBJDIR = ./objects/
 
-OPTIM = -O3 -fmax-errors=10 $(OPTS)
+OPTIM = -O3 $(OPTS)
 
 OBJS = $(OBJDIR)advec_mpi.o $(OBJDIR)diffusion.o $(OBJDIR)ionization.o $(OBJDIR)phys_consts.o $(OBJDIR)potential_mumps.o \
 	$(OBJDIR)calculus.o $(OBJDIR)gemini.o $(OBJDIR)msis00_gfortran.o $(OBJDIR)potentialBCs_mumps.o $(OBJDIR)precipBCs_mod.o \

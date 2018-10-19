@@ -1,7 +1,8 @@
 addpath ../script_utils;
 
 %SIMULATIONS LOCAITONS
-simname='tohoku20113D_highres_var/';
+%simname='tohoku20113D_highres_var/';
+simname='3Dtest/';
 basedir='~/zettergmdata/simulations/'
 direc=[basedir,simname];
 system(['mkdir ',direc,'/Brplots']);
@@ -12,13 +13,13 @@ system(['mkdir ',direc,'/Bphiplots']);
 system(['mkdir ',direc,'/Bphiplots_eps']);
 
 %SIMULATION META-DATA
-[ymd0,UTsec0,tdur,dtout,flagoutput,mloc]=readconfig([direc,'/inputs/config.dat']);
+[ymd0,UTsec0,tdur,dtout,flagoutput,mloc]=readconfig([direc,'/inputs/config.ini']);
 times=UTsec0:dtout:UTsec0+tdur;
 lt=numel(times);
 
 
 %LOAD/CONSTRUCT THE FIELD POINT GRID
-basemagdir=[direc,'magfields.10x10/'];
+basemagdir=[direc,'magfields/'];
 fid=fopen([basemagdir,'/input/magfieldpoints.dat'],'r');    %needs some way to know what the input file is, maybe force fortran code to use this filename...
 lpoints=fread(fid,1,'integer*4');
 r=fread(fid,lpoints,'real*8');
@@ -117,14 +118,21 @@ save([direc,'/magfields_fort.mat'],'simdate_series','mlat','mlon','Brt','Bthetat
 %
 
 %SIMULATION META-DATA
-[ymd0,UTsec0,tdur,dtout,flagoutput,mloc]=readconfig([direc,'/inputs/config.dat']);
+[ymd0,UTsec0,tdur,dtout,flagoutput,mloc]=readconfig([direc,'/inputs/config.ini']);
 
 
-%TABULATE THE SOURCE LOCATION
-mlatsrc=mloc(1);
-mlonsrc=mloc(2);
-thdist=pi/2-mlatsrc*pi/180;    %zenith angle of source location
-phidist=mlonsrc*pi/180;
+%TABULATE THE SOURCE OR GRID CENTER LOCATION
+if (~isempty(mloc))
+  mlatsrc=mloc(1);
+  mlonsrc=mloc(2);
+  thdist=pi/2-mlatsrc*pi/180;    %zenith angle of source location
+  phidist=mlonsrc*pi/180;
+else
+  thdist=mean(theta(:));
+  phidist=mean(phi(:));
+  mlatsrc=90-thdist*180/pi;
+  mlonsrc=phidist*180/pi;
+end
 
 
 %SETUP FIGURE

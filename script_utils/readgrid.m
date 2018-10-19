@@ -6,6 +6,8 @@ function xgf=readgrid(inID)
 %-----NOT YET IMPLEMENTED AS OF 9/15/2016)
 %--------------------------------------------------------
 
+narginchk(1,1)
+validateattr(inID, {'char'}, {'vector'}, mfilename, 'grid directory', 1)
 
   filename=[inID,filesep,'simsize.dat'];
 
