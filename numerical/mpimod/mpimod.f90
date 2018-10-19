@@ -56,6 +56,7 @@ integer, parameter :: tagE01=76,tagE02=77,tagE03=78,tagVminx1=79,tagVmaxx1=80
 
 !THESE ARE USED IN MAGCALC.F90 PROGRAM
 integer, parameter :: tagBr=81,tagBtheta=82, tagBphi=83
+integer, parameter :: tagdV=84,tagJx=85,tagJy=86,tagRx=87,tagRy=88,tagRz=89,tagRcubed=90,tagJz=91
 
 !VARIABLES REUSED BY ALL WORKERS AND USING MODULES
 integer, protected :: myid,lid    !no external procedure should mess with these (but they need to be able to read them)
@@ -212,6 +213,63 @@ contains
     call mpi_waitall(4,requests,statuses,ierr)
 
   end subroutine halo
+
+
+  subroutine halo_end(param,paramend,tag)
+
+    !------------------------------------------------------------
+    !-------GENERIC HALOING ROUTINE WHICH PASSES THE BEGINNING OF THE
+    !-------SLAB TO ITS LEFTWARD (IN X3) NEIGHBOR SO THAT X3 INTEGRATIONS
+    !-------CAN BE DONE PROPERLY 
+    !-------
+    !-------THIS VERSION USES ASYNC COMM WITHOUT SWITCH STATEMENTS.  IT
+    !-------ALSO ASSUMES THAT THE ARRAYS INVOLVED DO HAVE GHOST CELLS
+    !------------------------------------------------------------
+
+    real(8), dimension(:,:,:), intent(inout) :: param
+    real(8), dimension(:,:), intent(out) :: paramend
+    integer, intent(in) :: tag
+
+    integer :: lx1,lx2,lx3,ihalo
+    integer :: idleft,idright
+
+    integer, dimension(2) :: requests
+    integer, dimension(MPI_STATUS_SIZE,4) :: statuses
+    integer :: tmpreq
+
+    real(8) :: tstart,tfin
+
+    lx1=size(param,1)
+    lx2=size(param,2)
+    lx3=size(param,3)
+
+
+    !IDENTIFY MY NEIGHBORS, I NEED TO GET DATA FROM BEGINNING OF RIGHT (FOR MY
+    !END) AND SEND MY BEGINNING DATA TO THE LEFT (FOR THEIR END)
+    idleft=myid-1
+    idright=myid+1
+
+
+    !SCREEN FOR GLOBAL BOUNDARIES, ASSUME PERIODIC (MUST BE OVERWRITTEN LATER IF
+    !YOU ARE USING ANOTHER TYPE OF BOUNDARY
+    if (idleft==-1) then
+      idleft=lid-1
+    end if
+    if (idright==lid) then
+      idright=0
+    end if
+
+
+    call mpi_isend(param(:,:,1),lx1*lx2,MPI_DOUBLE_PRECISION,idleft,tag,MPI_COMM_WORLD,tmpreq,ierr)
+    requests(1)=tmpreq
+    call mpi_irecv(paramend,lx1*lx2,MPI_DOUBLE_PRECISION,idright,tag,MPI_COMM_WORLD,tmpreq,ierr)
+    requests(2)=tmpreq
+
+    call mpi_waitall(2,requests,statuses,ierr)
+
+    if (myid==lid-1) paramend=0d0    !zero out the data at the end of the grid
+
+  end subroutine halo_end
 
 
 !   LEAVE THIS IN FOR FUTURE DEV. - HALOS AN ARRAY THAT IS SPLIT ALONG THE 2 AND

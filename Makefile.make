@@ -1,11 +1,11 @@
 #BY DEFAULT ONLY MAKE THE MAIN GEMINI PROGRAM (MOST PEOPLE WILL NOT CARE ABOUT COMPUTING MAGNETIC FIELDS
 .DEFAULT_GOAL := gemini_mumps
 
-FC=mpif90
-FL=mpif90
+FC=mpifort
+FL=mpifort
 
 CURRDIR = $(shell pwd)
-HOMEDIR = $(HOME)/zettergmdata/
+HOMEDIR = $(HOME)/
 LAPACK77 = $(HOMEDIR)/lib/lapack-3.5.0/liblapack.a
 BLAS     = $(HOMEDIR)/lib/BLAS/libblas.a
 LAPACK95 = $(HOMEDIR)/lib/LAPACK95/lapack95.a

@@ -198,7 +198,9 @@ if (~isempty(sourcemlat))
   plot(sourcemlat,0,'r^','MarkerSize',12,'LineWidth',2);
 end
 hold off;
-set(h,'alphadata',~isnan(parmp));
+try
+  set(h,'alphadata',~isnan(parmp));
+end
 set(gca,'FontSize',FS);
 axis xy;
 axis square;
@@ -209,50 +211,7 @@ xlabel(c,parmlbl);
 xlabel('eastward dist. (km)');
 ylabel('altitude (km)');
 
-subplot(132);
-h=imagesc(xp/1e3,yp/1e3,parmp2(:,:,2));
-hold on;
-if (~isempty(sourcemlat))
-  plot([minxp,maxxp],[sourcemlon,sourcemlon],'w--','LineWidth',2);
-  plot(sourcemlat,sourcemlon,'r^','MarkerSize',12,'LineWidth',2);
-end
-hold off;
-set(h,'alphadata',~isnan(parmp2(:,:,2)));
-set(gca,'FontSize',FS);
-axis xy;
-axis square;
-%axis tight;
-colormap(parula(256));
-caxis(caxlims)
-c=colorbar;
-xlabel(c,parmlbl);
-ylabel('northward dist. (km)');
-xlabel('eastward dist. (km)');
 
-subplot(133);
-h=imagesc(yp/1e3,zp,parmp3);
-hold on;
-%plot([minyp,maxyp],[altref,altref],'w--','LineWidth',2);
-if (~isempty(sourcemlat))
-  plot(sourcemlat,0,'r^','MarkerSize',12,'LineWidth',2);
-end
-hold off;
-set(h,'alphadata',~isnan(parmp3));
-set(gca,'FontSize',FS);
-axis xy;
-axis square;
-axis tight;
-colormap(parula(256));
-caxis(caxlims)
-c=colorbar;
-xlabel(c,parmlbl);
-xlabel('northward dist. (km)');
-ylabel('altitude (km)');
-
-
-
-%CONSTRUCT A STRING FOR THE TIME AND DATE
-subplot(131);
 UThrs=floor(t);
 UTmin=floor((t-UThrs)*60);
 UTsec=floor((t-UThrs-UTmin/60)*3600);
@@ -275,4 +234,75 @@ strval=sprintf('%s \n %s',[num2str(dmy(2)),'/',num2str(dmy(1)),'/',num2str(dmy(3
 %text(xp(round(lxp/10)),zp(lzp-round(lzp/7.5)),strval,'FontSize',16,'Color',[0.5 0.5 0.5],'FontWeight','bold');
 title(strval);
 
+
+subplot(132);
+h=imagesc(xp/1e3,yp/1e3,parmp2(:,:,2));
+hold on;
+if (~isempty(sourcemlat))
+  plot([minxp,maxxp],[sourcemlon,sourcemlon],'w--','LineWidth',2);
+  plot(sourcemlat,sourcemlon,'r^','MarkerSize',12,'LineWidth',2);
+end
+hold off;
+try
+  set(h,'alphadata',~isnan(parmp2(:,:,2)));
+end
+set(gca,'FontSize',FS);
+axis xy;
+axis square;
+%axis tight;
+colormap(parula(256));
+caxis(caxlims)
+c=colorbar;
+xlabel(c,parmlbl);
+ylabel('northward dist. (km)');
+xlabel('eastward dist. (km)');
+
+subplot(133);
+h=imagesc(yp/1e3,zp,parmp3);
+hold on;
+%plot([minyp,maxyp],[altref,altref],'w--','LineWidth',2);
+if (~isempty(sourcemlat))
+  plot(sourcemlat,0,'r^','MarkerSize',12,'LineWidth',2);
+end
+hold off;
+try
+  set(h,'alphadata',~isnan(parmp3));
+end
+set(gca,'FontSize',FS);
+axis xy;
+axis square;
+axis tight;
+colormap(parula(256));
+caxis(caxlims)
+c=colorbar;
+xlabel(c,parmlbl);
+xlabel('northward dist. (km)');
+ylabel('altitude (km)');
+
+
+%
+%%CONSTRUCT A STRING FOR THE TIME AND DATE
+%subplot(131);
+%UThrs=floor(t);
+%UTmin=floor((t-UThrs)*60);
+%UTsec=floor((t-UThrs-UTmin/60)*3600);
+%UThrsstr=num2str(UThrs);
+%UTminstr=num2str(UTmin);
+%if (numel(UTminstr)==1)
+%  UTminstr=['0',UTminstr];
+%end
+%UTsecstr=num2str(UTsec);
+%if (numel(UTsecstr)==1)
+%  UTsecstr=['0',UTsecstr];
+%end
+%
+%timestr=[UThrsstr,':',UTminstr,':',UTsecstr];
+%%strval=sprintf('%s \n %s',[num2str(dmy(1)),'/',num2str(dmy(2)),'/',num2str(dmy(3))], ...
+%%    [num2str(t),' UT']);
+%strval=sprintf('%s \n %s',[num2str(dmy(2)),'/',num2str(dmy(1)),'/',num2str(dmy(3))], ...
+%    [timestr,' UT']);
+%%text(xp(round(lxp/10)),zp(lzp-round(lzp/7.5)),strval,'FontSize',18,'Color',[0.66 0.66 0.66],'FontWeight','bold');
+%%text(xp(round(lxp/10)),zp(lzp-round(lzp/7.5)),strval,'FontSize',16,'Color',[0.5 0.5 0.5],'FontWeight','bold');
+%title(strval);
+%
 end

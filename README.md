@@ -172,9 +172,6 @@ Code duplication:
 * Cleanup of BCs interpolation source files
 * Axisymmetric and Cartesian interpolations should be combined (much code-sharing)
 
-Research needed:  
-* What's up with unallocated filenamefull in output\_root\_mpi???  f2003 feature that autoallocates strings???
-
 Other development-related comments:
 * There may be a performance boost by using the Fortran 2008 `contiguous` attribute on the `pointer` arrays where right now it is manually repacked--`contiguous` means we DON'T repack manually, the compiler will repack IF and ONLY IF it needs too.  We may get a performance boost by eliminating manual repacking and using `real, contiguous, pointer` instead. [Reference](https://modelingguru.nasa.gov/servlet/JiveServlet/previewBody/1527-102-1-2631/N1729-4.pdf) page 7.
 
@@ -186,6 +183,7 @@ Other development-related comments:
 * Possibly merge in P. Inchin's EIA changes (with appropriate flags)
 * HDF5 file input and output
 * Option to run the code in a single precision mode - would help with memory limited systems although it's not clear how this would impact numerics (I've never tested my methods in single precision)
+* Add 3Dtest to ctest
 
 ### Plans for adding physics:
 
@@ -194,7 +192,7 @@ These are projects in progress involved GEMINI, you are encouraged to email M. Z
 * Resolved potential solutions - decimate parallel grid down to Farley mapping scale for perp resolution then so the solve on that coarse grid then interpolate back up to original grid.  I've had luck with MUMPS solves in reasonable time up to 300 x 300 x 15 grid points which is probably enough to do something interesting with appropriate periodic and lagrangian grids (moving at E x B).  
 * Diamagnetic drift and perpendicular ambipolar fields - necessary for the smallest scales, e.g. less than 100 m
 * Inclusion of suprathermal electron transport model for better specification of currents and ionization rates (G. Grubbs)
-
+* Need to add option for true coordinates to be used in the computations of magnetic perturbations (instead of flattened-out spherical)
 
 ## Standard and style
 
@@ -210,13 +208,17 @@ GEMINI3D is Fortran 2018 compliant and uses two-space indents throughout (to acc
 
 for example:  
 
-    mpirun -np 4 ./gemini_mumps ./initialize/2Dtest/config.ini ~/simulations/2Dtest/
+    mpirun -np 4 ./gemini ./initialize/2Dtest/config.ini ~/simulations/2Dtest/
 
 Note that the output *base* directory must already exist (‘simulations’ in previous example).  The source code consists of about ten module source files encapsulating various functionalities used in the model.  A diagram all of the modules and their function is shown in figure 1; a list of module dependencies can also be found in the Makefile source.
 
 ![Figure 1](doc/figure1.png)
 
 <!-- ![Figure 2](doc/figure2.png) -->
+
+Note that there is also a utility that can compute magnetic fields from the currents calculated by GEMINI.  This can be run by:
+
+	mpirun -np 4 ./magcalc ~/zettergmdata/simulations/3Dtest/ ~/zettergmdata/simulations/input/3Dtest/magfieldpoints.dat
 
 
 ## Verifying GEMINI build
