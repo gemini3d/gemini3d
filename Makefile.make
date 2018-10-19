@@ -5,7 +5,7 @@ FC=mpifort
 FL=mpifort
 
 CURRDIR = $(shell pwd)
-HOMEDIR = $(HOME)/
+HOMEDIR = $(HOME)/zettergmdata/
 LAPACK77 = $(HOMEDIR)/lib/lapack-3.5.0/liblapack.a
 BLAS     = $(HOMEDIR)/lib/BLAS/libblas.a
 LAPACK95 = $(HOMEDIR)/lib/LAPACK95/lapack95.a
@@ -37,12 +37,13 @@ all: gemini_mumps magcalc eq
 gemini_mumps: $(OBJDIR)advec_mpi.o $(OBJDIR)diffusion.o $(OBJDIR)ionization.o $(OBJDIR)phys_consts.o $(OBJDIR)potential_mumps.o \
 	$(OBJDIR)calculus.o $(OBJDIR)gemini.o $(OBJDIR)msis00_gfortran.o $(OBJDIR)potentialBCs_mumps.o $(OBJDIR)precipBCs_mod.o \
 	$(OBJDIR)temporal.o $(OBJDIR)collisions.o $(OBJDIR)io.o $(OBJDIR)neutral.o $(OBJDIR)potential_comm_mumps.o $(OBJDIR)sources.o  \
-	$(OBJDIR)mpimod.o $(OBJDIR)multifluid.o $(OBJDIR)grid.o $(OBJDIR)interpolation.o
-	$(FL) -o gemini_mumps $(OBJDIR)interpolation.o $(OBJDIR)grid.o $(OBJDIR)multifluid.o $(OBJDIR)mpimod.o $(OBJDIR)advec_mpi.o $(OBJDIR)diffusion.o $(OBJDIR)ionization.o $(OBJDIR)phys_consts.o $(OBJDIR)potential_mumps.o $(OBJDIR)calculus.o $(OBJDIR)gemini.o $(OBJDIR)msis00_gfortran.o $(OBJDIR)potentialBCs_mumps.o $(OBJDIR)precipBCs_mod.o $(OBJDIR)temporal.o $(OBJDIR)collisions.o $(OBJDIR)io.o $(OBJDIR)neutral.o $(OBJDIR)potential_comm_mumps.o $(OBJDIR)sources.o $(MUMPS)  $(SCALADIR)/libscalapack.a $(LIBBLACS) $(LAPACK95) $(TMG) $(LAPACK77) $(BLAS) -L/usr/local/lib/ -lmpi -lpthread -L/usr/local/lib/ -L/usr/lib/x86_64-linux-gnu/
+	$(OBJDIR)mpimod.o $(OBJDIR)multifluid.o $(OBJDIR)grid.o $(OBJDIR)interpolation.o $(OBJDIR)expanduser.o
+	$(FL) -o gemini_mumps $(OBJDIR)expanduser.o $(OBJDIR)interpolation.o $(OBJDIR)grid.o $(OBJDIR)multifluid.o $(OBJDIR)mpimod.o $(OBJDIR)advec_mpi.o $(OBJDIR)diffusion.o $(OBJDIR)ionization.o $(OBJDIR)phys_consts.o $(OBJDIR)potential_mumps.o $(OBJDIR)calculus.o $(OBJDIR)gemini.o $(OBJDIR)msis00_gfortran.o $(OBJDIR)potentialBCs_mumps.o $(OBJDIR)precipBCs_mod.o $(OBJDIR)temporal.o $(OBJDIR)collisions.o $(OBJDIR)io.o $(OBJDIR)neutral.o $(OBJDIR)potential_comm_mumps.o $(OBJDIR)sources.o $(MUMPS)  $(SCALADIR)/libscalapack.a $(LIBBLACS) $(LAPACK95) $(TMG) $(LAPACK77) $(BLAS) -L/usr/local/lib/ -lmpi -lpthread -L/usr/local/lib/ -L/usr/lib/x86_64-linux-gnu/
 
 
-magcalc: $(OBJDIR)mpimod.o $(OBJDIR)phys_consts.o $(OBJDIR)grid.o $(OBJDIR)io.o $(OBJDIR)magcalc.o $(OBJDIR)temporal.o
-	$(FL) -o magcalc $(OBJDIR)mpimod.o $(OBJDIR)phys_consts.o $(OBJDIR)grid.o $(OBJDIR)io.o $(OBJDIR)magcalc.o $(OBJDIR)temporal.o
+magcalc: $(OBJDIR)mpimod.o $(OBJDIR)phys_consts.o $(OBJDIR)grid.o $(OBJDIR)io.o $(OBJDIR)magcalc.o $(OBJDIR)temporal.o \
+	$(OBJDIR)expanduser.o
+	$(FL) -o magcalc $(OBJDIR)expanduser.o $(OBJDIR)mpimod.o $(OBJDIR)phys_consts.o $(OBJDIR)grid.o $(OBJDIR)io.o $(OBJDIR)magcalc.o $(OBJDIR)temporal.o
 
 eq: $(OBJDIR)msis00_gfortran.o $(OBJDIR)call_msis_gfortran.o
 	$(FL) -o ./setup/msis $(OBJDIR)msis00_gfortran.o $(OBJDIR)call_msis_gfortran.o
@@ -95,8 +96,11 @@ $(OBJDIR)mpimod.o: ./numerical/mpimod/mpimod.f90 $(OBJDIR)phys_consts.o
 $(OBJDIR)advec_mpi.o: ./numerical/advection/advec_mpi.f90 $(OBJDIR)phys_consts.o $(OBJDIR)mpimod.o $(OBJDIR)grid.o
 	$(FC) -c $(OPTIM2) ./numerical/advection/advec_mpi.f90  -o $(OBJDIR)/advec_mpi.o -J$(OBJDIR)
 
-$(OBJDIR)io.o: ./io/io.f90 $(OBJDIR)phys_consts.o $(OBJDIR)mpimod.o $(OBJDIR)calculus.o $(OBJDIR)grid.o
+$(OBJDIR)io.o: ./io/io.f90 $(OBJDIR)phys_consts.o $(OBJDIR)mpimod.o $(OBJDIR)calculus.o $(OBJDIR)grid.o $(OBJDIR)expanduser.o
 	$(FC) -c $(OPTIM2) ./io/io.f90  -o $(OBJDIR)/io.o -J$(OBJDIR)
+
+$(OBJDIR)expanduser.o: ./io/expanduser.f90
+	$(FC) -c $(OPTIM2) ./io/expanduser.f90  -o $(OBJDIR)/expanduser.o -J$(OBJDIR)
 
 $(OBJDIR)potential_mumps.o:  ./numerical/potential/potential_mumps.f90 $(OBJDIR)calculus.o
 	$(FC) -c $(OPTIM2) ./numerical/potential/potential_mumps.f90 -o $(OBJDIR)/potential_mumps.o -I$(MUMPSDIR) -I$(MUMPSDIR)/include -I/usr/local/include -J$(OBJDIR)
