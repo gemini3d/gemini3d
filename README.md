@@ -184,6 +184,7 @@ Other development-related comments:
 * HDF5 file input and output
 * Option to run the code in a single precision mode - would help with memory limited systems although it's not clear how this would impact numerics (I've never tested my methods in single precision)
 * Add 3Dtest to ctest
+* Add a script that runs a complete sequences of and example from generating ICs, to running the disturbance simulation.
 
 ### Plans for adding physics:
 
