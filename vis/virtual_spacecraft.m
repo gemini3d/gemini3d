@@ -46,18 +46,28 @@ datemod=datemod0:dtout/86400:datemod0+tdur/86400;
 
 
 %DEFINE SOME SORT OF SATELLITE ORB.
+%Use a common time bases for all satellites (facilitates processes without having to reread files too much)
 lorb=100;    %number of times series for satellite orbit
 UTsat=linspace(min(times),max(times),lorb);
 ymdsat=repmat(ymd0,[lorb,1]);
 datevecsat=[ymdsat,UTsat(:)/3600,zeros(lorb,1),zeros(lorb,1)];
 datesat=datenum(datevecsat);
 
-thetasat=linspace(min(xg.theta(:)),max(xg.theta(:)),lorb);
-phisat=linspace(min(xg.phi(:)),max(xg.phi(:)),lorb);
-[glatsat,glonsat]=geomag2geog(thetasat,phisat);
-%glatsat=linspace(min(xg.glat(:)),max(xg.glat(:)),lorb);
-%glonsat=linspace(min(xg.glon(:)),max(xg.glon(:)),lorb);
-altsat=linspace(100e3,600e3,lorb);
+%Individual orbit alt,lon,lat
+lsat=2;    %number of satellites
+thetasat(:,1)=linspace(min(xg.theta(:)),max(xg.theta(:)),lorb);
+phisat(:,1)=linspace(min(xg.phi(:)),max(xg.phi(:)),lorb);
+altsat(:,1)=linspace(100e3,600e3,lorb);
+thetasat(:,2)=flipud(thetasat(:,1));
+phisat(:,2)=flipud(phisat(:,1));
+altsat(:,2)=flipud(altsat(:,1));
+glatsat=zeros(lorb,lsat);
+glonsat=zeros(lorb,lsat);
+for isat=1:lsat
+  [glatsattmp,glonsattmp]=geomag2geog(thetasat(:,isat),phisat(:,isat));
+  glatsat(:,isat)=glatsattmp(:);
+  glonsat(:,isat)=glonsattmp(:);
+end
 
 
 %MAIN LOOP OVER ORBIT SEGMENTS
@@ -72,15 +82,15 @@ J2prev=[]; J2next=[];
 J3prev=[]; J3next=[];
 v2prev=[]; v2next=[];
 v3prev=[]; v3next=[];
-nesat=zeros(1,lorb);
-visat=zeros(1,lorb);
-Tisat=zeros(1,lorb);
-Tesat=zeros(1,lorb);
-J1sat=zeros(1,lorb);
-J2sat=zeros(1,lorb);
-J3sat=zeros(1,lorb);
-v2sat=zeros(1,lorb);
-v3sat=zeros(1,lorb);
+nesat=zeros(lorb,lsat);
+visat=zeros(lorb,lsat);
+Tisat=zeros(lorb,lsat);
+Tesat=zeros(lorb,lsat);
+J1sat=zeros(lorb,lsat);
+J2sat=zeros(lorb,lsat);
+J3sat=zeros(lorb,lsat);
+v2sat=zeros(lorb,lsat);
+v3sat=zeros(lorb,lsat);
 for iorb=1:lorb
   datenow=datesat(iorb);
 
@@ -114,7 +124,7 @@ for iorb=1:lorb
       datevecmodprev=datevec(datemodprev);
       ymd=datevecmodprev(1:3);
       UTsec=datevecmodprev(4)*3600+datevecmodprev(5)*60+datevecmodprev(6);
-      UTsec=round(UTsec);    %some accuracy problems...  this is fishy...
+      UTsec=round(UTsec);    %some accuracy problems...  this is fishy and an infuriating kludge that needs to be fixed...
       [ne,mlatsrc,mlonsrc,v1,Ti,Te,J1,v2,v3,J2,J3,filename,Phitop]=loadframe(direc,UTsec,ymd,UTsec0,ymd0,mloc,xg);
       neprev=ne; viprev=v1; Tiprev=Ti; Teprev=Te;
       J1prev=J1; J2prev=J2; J3prev=J3; v2prev=v2; v3prev=v3;
@@ -135,38 +145,41 @@ for iorb=1:lorb
     end
   end
 
+
     %INTERPOLATIONS
-    [x1sat,x2sat,x3sat]=geog2UEN(altsat(iorb),glonsat(iorb),glatsat(iorb),thetactr,phictr);
-    fprintf('Starting interpolations...\n')
-    nesatprev=interp3(X2,X1,X3,neprev,x2sat,x1sat,x3sat)
-    visatprev=interp3(X2,X1,X3,viprev,x2sat,x1sat,x3sat)
-    Tisatprev=interp3(X2,X1,X3,Tiprev,x2sat,x1sat,x3sat)
-    Tesatprev=interp3(X2,X1,X3,Teprev,x2sat,x1sat,x3sat)
-    J1satprev=interp3(X2,X1,X3,J1prev,x2sat,x1sat,x3sat)
-    J2satprev=interp3(X2,X1,X3,J2prev,x2sat,x1sat,x3sat)
-    J3satprev=interp3(X2,X1,X3,J3prev,x2sat,x1sat,x3sat)
-    v2satprev=interp3(X2,X1,X3,v2prev,x2sat,x1sat,x3sat)
-    v3satprev=interp3(X2,X1,X3,v3prev,x2sat,x1sat,x3sat)
-
-    nesatnext=interp3(X2,X1,X3,nenext,x2sat,x1sat,x3sat)
-    visatnext=interp3(X2,X1,X3,vinext,x2sat,x1sat,x3sat)
-    Tisatnext=interp3(X2,X1,X3,Tinext,x2sat,x1sat,x3sat)
-    Tesatnext=interp3(X2,X1,X3,Tenext,x2sat,x1sat,x3sat)
-    J1satnext=interp3(X2,X1,X3,J1next,x2sat,x1sat,x3sat)
-    J2satnext=interp3(X2,X1,X3,J2next,x2sat,x1sat,x3sat)
-    J3satnext=interp3(X2,X1,X3,J3next,x2sat,x1sat,x3sat)
-    v2satnext=interp3(X2,X1,X3,v2next,x2sat,x1sat,x3sat)
-    v3satnext=interp3(X2,X1,X3,v3next,x2sat,x1sat,x3sat)
-
-    nesat(iorb)=nesatprev+(nesatnext-nesatprev)/(datemodnext-datemodprev)*(datenow-datemodprev);
-    visat(iorb)=visatprev+(visatnext-visatprev)/(datemodnext-datemodprev)*(datenow-datemodprev);
-    Tisat(iorb)=Tisatprev+(Tisatnext-Tisatprev)/(datemodnext-datemodprev)*(datenow-datemodprev);
-    Tesat(iorb)=Tesatprev+(Tesatnext-Tesatprev)/(datemodnext-datemodprev)*(datenow-datemodprev);
-    J1sat(iorb)=J1satprev+(J1satnext-J1satprev)/(datemodnext-datemodprev)*(datenow-datemodprev);
-    J2sat(iorb)=J2satprev+(J2satnext-J2satprev)/(datemodnext-datemodprev)*(datenow-datemodprev);
-    J3sat(iorb)=J3satprev+(J3satnext-J3satprev)/(datemodnext-datemodprev)*(datenow-datemodprev);
-    v2sat(iorb)=v2satprev+(v2satnext-v2satprev)/(datemodnext-datemodprev)*(datenow-datemodprev);
-    v3sat(iorb)=v3satprev+(v3satnext-v3satprev)/(datemodnext-datemodprev)*(datenow-datemodprev);
+    for isat=1:lsat
+      [x1sat,x2sat,x3sat]=geog2UEN(altsat(iorb,isat),glonsat(iorb,isat),glatsat(iorb,isat),thetactr,phictr);
+      fprintf('Starting interpolations for satellite:  %d\n',isat);
+      nesatprev=interp3(X2,X1,X3,neprev,x2sat,x1sat,x3sat);
+      visatprev=interp3(X2,X1,X3,viprev,x2sat,x1sat,x3sat);
+      Tisatprev=interp3(X2,X1,X3,Tiprev,x2sat,x1sat,x3sat);
+      Tesatprev=interp3(X2,X1,X3,Teprev,x2sat,x1sat,x3sat);
+      J1satprev=interp3(X2,X1,X3,J1prev,x2sat,x1sat,x3sat);
+      J2satprev=interp3(X2,X1,X3,J2prev,x2sat,x1sat,x3sat);
+      J3satprev=interp3(X2,X1,X3,J3prev,x2sat,x1sat,x3sat);
+      v2satprev=interp3(X2,X1,X3,v2prev,x2sat,x1sat,x3sat);
+      v3satprev=interp3(X2,X1,X3,v3prev,x2sat,x1sat,x3sat);
+  
+      nesatnext=interp3(X2,X1,X3,nenext,x2sat,x1sat,x3sat);
+      visatnext=interp3(X2,X1,X3,vinext,x2sat,x1sat,x3sat);
+      Tisatnext=interp3(X2,X1,X3,Tinext,x2sat,x1sat,x3sat);
+      Tesatnext=interp3(X2,X1,X3,Tenext,x2sat,x1sat,x3sat);
+      J1satnext=interp3(X2,X1,X3,J1next,x2sat,x1sat,x3sat);
+      J2satnext=interp3(X2,X1,X3,J2next,x2sat,x1sat,x3sat);
+      J3satnext=interp3(X2,X1,X3,J3next,x2sat,x1sat,x3sat);
+      v2satnext=interp3(X2,X1,X3,v2next,x2sat,x1sat,x3sat);
+      v3satnext=interp3(X2,X1,X3,v3next,x2sat,x1sat,x3sat);
+  
+      nesat(iorb,isat)=nesatprev+(nesatnext-nesatprev)/(datemodnext-datemodprev)*(datenow-datemodprev);
+      visat(iorb,isat)=visatprev+(visatnext-visatprev)/(datemodnext-datemodprev)*(datenow-datemodprev);
+      Tisat(iorb,isat)=Tisatprev+(Tisatnext-Tisatprev)/(datemodnext-datemodprev)*(datenow-datemodprev);
+      Tesat(iorb,isat)=Tesatprev+(Tesatnext-Tesatprev)/(datemodnext-datemodprev)*(datenow-datemodprev);
+      J1sat(iorb,isat)=J1satprev+(J1satnext-J1satprev)/(datemodnext-datemodprev)*(datenow-datemodprev);
+      J2sat(iorb,isat)=J2satprev+(J2satnext-J2satprev)/(datemodnext-datemodprev)*(datenow-datemodprev);
+      J3sat(iorb,isat)=J3satprev+(J3satnext-J3satprev)/(datemodnext-datemodprev)*(datenow-datemodprev);
+      v2sat(iorb,isat)=v2satprev+(v2satnext-v2satprev)/(datemodnext-datemodprev)*(datenow-datemodprev);
+      v3sat(iorb,isat)=v3satprev+(v3satnext-v3satprev)/(datemodnext-datemodprev)*(datenow-datemodprev);
+    end
 end
 
 rmpath ../script_utils;
