@@ -47,12 +47,32 @@ datemod=datemod0:dtout/86400:datemod0+tdur/86400;
 
 %DEFINE SOME SORT OF SATELLITE ORB.
 %Use a common time bases for all satellites (facilitates processes without having to reread files too much)
-lorb=100;    %number of times series for satellite orbit
+lorb=3000;    %number of times series for satellite orbit
 UTsat=linspace(min(times),max(times),lorb);
 ymdsat=repmat(ymd0,[lorb,1]);
 datevecsat=[ymdsat,UTsat(:)/3600,zeros(lorb,1),zeros(lorb,1)];
 datesat=datenum(datevecsat);
 
+%THIS IS A TEST FOR AETHER
+vsp=7e3;                %spacecraft velocity
+toffset=linspace(0,180,12);      %spacecraft separations in seconds
+ltoffset=numel(toffset);
+lsat=ltoffset;
+ysp0=min(xg.x3(:));     %spacecraft reference point is the end of the grid in N-S
+ysp=zeros(lorb,ltoffset);
+for itoffset=1:ltoffset
+  ysp(:,itoffset)=ysp0+vsp*((datesat-datesat(1))*86400-toffset(itoffset));
+end
+xsp=zeros(lorb,ltoffset);
+zsp=500e3*ones(lorb,ltoffset);
+[altsat,glonsat,glatsat]=UEN2geog(zsp,xsp,ysp,thetactr,phictr);
+
+
+%ATTEMPT TO COMPUTE FOR VARIOUS SPACECRAFT IN PARALLEL
+parpool(floor(lsat/2));
+
+%THIS IS A BASIC TWO SATELLITE TEST
+%{
 %Individual orbit alt,lon,lat
 lsat=2;    %number of satellites
 thetasat(:,1)=linspace(min(xg.theta(:)),max(xg.theta(:)),lorb);
@@ -68,7 +88,7 @@ for isat=1:lsat
   glatsat(:,isat)=glatsattmp(:);
   glonsat(:,isat)=glonsattmp(:);
 end
-
+%}
 
 %MAIN LOOP OVER ORBIT SEGMENTS
 datebufprev=datemod0;
@@ -147,7 +167,7 @@ for iorb=1:lorb
 
 
     %INTERPOLATIONS
-    for isat=1:lsat
+    parfor isat=1:lsat
       [x1sat,x2sat,x3sat]=geog2UEN(altsat(iorb,isat),glonsat(iorb,isat),glatsat(iorb,isat),thetactr,phictr);
       fprintf('Starting interpolations for satellite:  %d\n',isat);
       nesatprev=interp3(X2,X1,X3,neprev,x2sat,x1sat,x3sat);
@@ -170,16 +190,25 @@ for iorb=1:lorb
       v2satnext=interp3(X2,X1,X3,v2next,x2sat,x1sat,x3sat);
       v3satnext=interp3(X2,X1,X3,v3next,x2sat,x1sat,x3sat);
   
-      nesat(iorb,isat)=nesatprev+(nesatnext-nesatprev)/(datemodnext-datemodprev)*(datenow-datemodprev);
-      visat(iorb,isat)=visatprev+(visatnext-visatprev)/(datemodnext-datemodprev)*(datenow-datemodprev);
-      Tisat(iorb,isat)=Tisatprev+(Tisatnext-Tisatprev)/(datemodnext-datemodprev)*(datenow-datemodprev);
-      Tesat(iorb,isat)=Tesatprev+(Tesatnext-Tesatprev)/(datemodnext-datemodprev)*(datenow-datemodprev);
-      J1sat(iorb,isat)=J1satprev+(J1satnext-J1satprev)/(datemodnext-datemodprev)*(datenow-datemodprev);
-      J2sat(iorb,isat)=J2satprev+(J2satnext-J2satprev)/(datemodnext-datemodprev)*(datenow-datemodprev);
-      J3sat(iorb,isat)=J3satprev+(J3satnext-J3satprev)/(datemodnext-datemodprev)*(datenow-datemodprev);
-      v2sat(iorb,isat)=v2satprev+(v2satnext-v2satprev)/(datemodnext-datemodprev)*(datenow-datemodprev);
-      v3sat(iorb,isat)=v3satprev+(v3satnext-v3satprev)/(datemodnext-datemodprev)*(datenow-datemodprev);
+      nesattmp(isat)=nesatprev+(nesatnext-nesatprev)/(datemodnext-datemodprev)*(datenow-datemodprev);
+      visattmp(isat)=visatprev+(visatnext-visatprev)/(datemodnext-datemodprev)*(datenow-datemodprev);
+      Tisattmp(isat)=Tisatprev+(Tisatnext-Tisatprev)/(datemodnext-datemodprev)*(datenow-datemodprev);
+      Tesattmp(isat)=Tesatprev+(Tesatnext-Tesatprev)/(datemodnext-datemodprev)*(datenow-datemodprev);
+      J1sattmp(isat)=J1satprev+(J1satnext-J1satprev)/(datemodnext-datemodprev)*(datenow-datemodprev);
+      J2sattmp(isat)=J2satprev+(J2satnext-J2satprev)/(datemodnext-datemodprev)*(datenow-datemodprev);
+      J3sattmp(isat)=J3satprev+(J3satnext-J3satprev)/(datemodnext-datemodprev)*(datenow-datemodprev);
+      v2sattmp(isat)=v2satprev+(v2satnext-v2satprev)/(datemodnext-datemodprev)*(datenow-datemodprev);
+      v3sattmp(isat)=v3satprev+(v3satnext-v3satprev)/(datemodnext-datemodprev)*(datenow-datemodprev);
     end
+    nesat(iorb,:)=nesattmp(:)';
+    visat(iorb,:)=visattmp(:)';
+    Tisat(iorb,:)=Tisattmp(:)';
+    Tesat(iorb,:)=Tesattmp(:)';
+    J1sat(iorb,:)=J1sattmp(:)';
+    J2sat(iorb,:)=J2sattmp(:)';
+    J3sat(iorb,:)=J3sattmp(:)';
+    v2sat(iorb,:)=v2sattmp(:)';
+    v3sat(iorb,:)=v3sattmp(:)';
 end
 
 rmpath ../script_utils;
