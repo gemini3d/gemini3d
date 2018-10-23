@@ -3,7 +3,7 @@ project(gemini3d Fortran C)
 enable_testing()
 
 # Test data directories
-set(TEST_REFERENCE_DIR $ENV{HOME}/zettergmdata/testdata/2Dtest_files/2Dtest_output)
+set(TEST_REFERENCE_DIR ${PROJECT_SOURCE_DIR}/../simulations/2Dtest_files/2Dtest_output)
 set(TEST_OUTDIR ${CMAKE_CURRENT_BINARY_DIR}/test2d)
 
 
@@ -14,7 +14,7 @@ endif()
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR})
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/Modules/)
 
-set(LIB_DIR ${PROJECT_SOURCE_DIR}/../fortran-libs) # for self-compiled libraries (future: git submodule of gemini3d)
+set(LIB_DIR ${PROJECT_SOURCE_DIR}/../fortran-libs) # for self-compiled libraries
 
 ## ----- release or debug?
 
