@@ -19,7 +19,10 @@ CMake &ge; 3.11 is required, and easily installed without sudo on:
 
 ### Compilers
 
-MPI is woven throughout GEMINI3D so compiler wrappers `mpifort` or `mpiifort` can be often used.
+MPI and Fortran 2003/2008 techniques are woven throughout GEMINI3D.
+Compiler wrappers `mpifort` or `mpiifort` can be used.
+A Fortran 2008 compliant compiler is needed.
+For now, we avoid using Fortran 2018 code to allow for easier use on CentOS with their old compilers.
 
 * gfortran &ge; 4.6  (Gfortran &ge; 6 recommended)
 * Intel `ifort`
@@ -75,6 +78,11 @@ This test runs a short demo, taking about 2-5 minutes on a typical Mac / Linux l
    ctest -V
    ```
    
+### input directory
+The example `config.ini` in `initialize/` look for input grid data in `../simulations`.
+Please don't edit those example `.ini` file paths, instead use softlinks `ln -s` to point somewhere else if needed.
+`config.ini` you create yourself can be in `initialize/` because that directory is in `.gitignore` and will not be tracked by Git.
+   
 #### MUMPS verbosity
 MUMPS initialization ICNTL flags are set in `numerical/potential/potential_mumps.f90`.
 ICNTL 1-4 concern print output unit and verbosity level, see MUMPS 
@@ -84,7 +92,7 @@ ICNTL 1-4 concern print output unit and verbosity level, see MUMPS
 
 * If CMake version too old, use [cmake_setup.sh](https://github.com/scivision/cmake-utils). This does NOT use `sudo`.
 
-Libaries:
+Libraries:
 
 * If you have `sudo` access, try the `./install_prereqs.sh` script
 * If need to build libraries from source (e.g. because you don't have `sudo`) try `build_gfortran.sh` or `build_intel.sh` from the `fortran-libs` repo:
@@ -108,10 +116,12 @@ ctest -V
    ```
 2. uses GNU Octave (or Matlab) compares with reference output using `tests/compare_all.m`:
    ```matlab
-   compare_all(YourOutputDirectory, '~/sim/gemini/2Dtest_files/2Dtest_output')
+   compare_all(/tmp/2d, '../simulations/2Dtest_files/2Dtest_output')
    ```
+   
+### OS-specific tips
 
-### Ubuntu
+#### Ubuntu
 Tested on Ubuntu 18.04 / 16.04.
 
 If you have sudo (admin) access:
@@ -123,7 +133,7 @@ Otherwise, ask your IT admin to install the libraries or
 or consider Linuxbrew.
 
 
-### CentOS
+#### CentOS
 This is for CentOS 7, using "modules" for more recent libraries.
 For the unavailable modules, 
 [compile them yourself](https://github.com/scivision/fortran-libs)
@@ -149,15 +159,15 @@ FC=ifort cmake -DMETIS_ROOT=~/fortran-libs/metis ..
 
 ## Known limitations and issues of GEMINI
 
-1)  Generating equilibrium conditions can be a bit tricky with curvilinear grids.  A low-res run can be done, but it will not necessary interpolate properly onto a finer grid due to some issue with the way the grids are made with ghost cells etc.  A workaround is to use a slightly narrower (x2) grid in the high-res run (quarter of a degree seems to work most of the time).
-2)  Magnetic field calculations on an open 2D grid do not appear completely consistent with MATLAB model prototype results; although there are quite close.  This may have been related to sign errors in the FAC calculations - these tests should be retried at some point.  
-3)  Occasionally MUMPS will throw an error because it underestimated the amount of memory needed for a solve.  If this happens a workaround is to uncomment (or add) this line of code to the potential solver being used for your simulations:
-    ```fortran
-    mumps_par%ICNTL(14)=50
-    ```
-If the problem persists try changing the number to 100. 
-4)  There are potentially some issues with the way the stability condition is evaluated, i.e. it is computed before the perp. drifts are solved so it is possible when using input data to overrun this especially if your target CFL number is > 0.8 or so.  Some code has been added as of 8/20/2018 to throttle how much dt is allowed to change between time steps and this seems to completely fix this issue, but theoretically it may still happen.  
-5)  Occassionally one will see edge artifacts in either the field -aligned currents or other parameters for non-periodic in x3 solves.  This may be related to the divergence calculations needed for the parallel current (under EFL formulation) and for compression calculations in the multifluid module, but this needs to be investigated further...
+1. Generating equilibrium conditions can be a bit tricky with curvilinear grids.  A low-res run can be done, but it will not necessary interpolate properly onto a finer grid due to some issue with the way the grids are made with ghost cells etc.  A workaround is to use a slightly narrower (x2) grid in the high-res run (quarter of a degree seems to work most of the time).
+2. Magnetic field calculations on an open 2D grid do not appear completely consistent with MATLAB model prototype results; although there are quite close.  This may have been related to sign errors in the FAC calculations - these tests should be retried at some point.  
+3. Occasionally MUMPS will throw an error because it underestimated the amount of memory needed for a solve.  If this happens a workaround is to uncomment (or add) this line of code to the potential solver being used for your simulations:
+  ```fortran
+  mumps_par%ICNTL(14)=50
+  ```
+  If the problem persists try changing the number to 100. 
+4. There are potentially some issues with the way the stability condition is evaluated, i.e. it is computed before the perp. drifts are solved so it is possible when using input data to overrun this especially if your target CFL number is &gt; 0.8 or so.  Some code has been added as of 8/20/2018 to throttle how much dt is allowed to change between time steps and this seems to completely fix this issue, but theoretically it may still happen.  
+5. Occasionally one will see edge artifacts in either the field -aligned currents or other parameters for non-periodic in x3 solves.  This may be related to the divergence calculations needed for the parallel current (under EFL formulation) and for compression calculations in the multifluid module, but this needs to be investigated further...
 
 
 ## Development roadmap
@@ -189,28 +199,29 @@ Other development-related comments:
 
 These are projects in progress involved GEMINI, you are encouraged to email M. Zettergren for more info if you have interest in using or collaborating on these so that we can efficiently combine efforts and avoid duplicative work.
 
-* Resolved potential solutions - decimate parallel grid down to Farley mapping scale for perp resolution then so the solve on that coarse grid then interpolate back up to original grid.  I've had luck with MUMPS solves in reasonable time up to 300 x 300 x 15 grid points which is probably enough to do something interesting with appropriate periodic and lagrangian grids (moving at E x B).  
+* Resolved potential solutions - decimate parallel grid down to Farley mapping scale for perp resolution then so the solve on that coarse grid then interpolate back up to original grid.  I've had luck with MUMPS solves in reasonable time up to 300 x 300 x 15 grid points which is probably enough to do something interesting with appropriate periodic and Lagrangian grids (moving at E x B).  
 * Diamagnetic drift and perpendicular ambipolar fields - necessary for the smallest scales, e.g. less than 100 m
 * Inclusion of suprathermal electron transport model for better specification of currents and ionization rates (G. Grubbs)
 * Need to add option for true coordinates to be used in the computations of magnetic perturbations (instead of flattened-out spherical)
 
 ## Standard and style
 
-GEMINI3D is Fortran 2018 compliant and uses two-space indents throughout (to accommodate the many, deeply nested loops).  If you modify the source code and plan to push back to the repository please *do not* use tabs.
+GEMINI3D is Fortran 2008 compliant and uses two-space indents throughout (to accommodate the many, deeply nested loops).  If you modify the source code and plan to push back to the repository please *do not* use tabs.
 
 
 
 ## To build and run GEMINI3D:
 
     make clean
-    make all
-    mpirun -np <number of processors>  ./gemini_mumps <input config file> <output directory>
+    make
+    mpirun -np <number of processors>  ./gemini <input config file> <output directory>
 
 for example:  
 
-    mpirun -np 4 ./gemini ./initialize/2Dtest/config.ini ~/simulations/2Dtest/
+    mpirun -np 4 ./gemini initialize/2Dtest/config.ini ../simulations/2Dtest/
 
-Note that the output *base* directory must already exist (‘simulations’ in previous example).  The source code consists of about ten module source files encapsulating various functionalities used in the model.  A diagram all of the modules and their function is shown in figure 1; a list of module dependencies can also be found in the Makefile source.
+Note that the output *base* directory must already exist (`../simulations` in previous example).  The source code consists of about ten module source files encapsulating various functionalities used in the model.  A diagram all of the modules and their function is shown in figure 1; a list of module dependencies can also be found in the Makefile source.
+
 
 ![Figure 1](doc/figure1.png)
 
@@ -218,7 +229,7 @@ Note that the output *base* directory must already exist (‘simulations’ in p
 
 Note that there is also a utility that can compute magnetic fields from the currents calculated by GEMINI.  This can be run by:
 
-	mpirun -np 4 ./magcalc ~/zettergmdata/simulations/3Dtest/ ~/zettergmdata/simulations/input/3Dtest/magfieldpoints.dat
+	mpirun -np 4 ./magcalc ../simulations/3Dtest/ ../simulations/input/3Dtest/magfieldpoints.dat
 
 
 ## Verifying GEMINI build
@@ -243,21 +254,21 @@ Each simulation needs an input file that specifies location of initial condition
 1800.0                                !tdur:  duration of simulation in seconds
 15.0                                  !dtout: how often (s) to do output
 109.0,109.0,5.0                       !activ:  f107a,f107,Ap (81 day averaged f10.7, daily f10.7, and average Ap index)
-0.9                                   !tcfl:  target cfl number (dimensionless - must be < 1d0 to insure stability)
+0.9                                   !tcfl:  target cfl number (dimensionless - must be less than 1.0 to insure stability)
 1500.0                                !Teinf:  exospheric electron temperature, K (only used in open-grid simulations)
 0                             	  !potsolve:  are we solving potential? (0=no; 1=-yes)
 0                                     !flagperiodic:  do we interpret the grid as being periodic in the x3-direction?  (0=no; 1=yes)
 2                                     !flagoutput:  what type of output do we do?  (2=ISR-like species-averaged plasma parameters; 3=electron density only; anything else nonzero=full output)
 0                                     !flagcapacitance:  include inertial capacitance? (0=no; 1=yes; 2=yes+m'spheric contribution)
-../zettergmdata/simulations/input/chile20153D_0.5_medhighres/chile20153D_0.5_medhighres_simsize.dat
-../zettergmdata/simulations/input/chile20153D_0.5_medhighres/chile20153D_0.5_medhighres_simgrid.dat
-../zettergmdata/simulations/input/chile20153D_0.5_medhighres/chile20153D_0.5_medhighres_ICs.dat
+../simulations/input/chile20153D_0.5_medhighres/chile20153D_0.5_medhighres_simsize.dat
+../simulations/input/chile20153D_0.5_medhighres/chile20153D_0.5_medhighres_simgrid.dat
+../simulations/input/chile20153D_0.5_medhighres/chile20153D_0.5_medhighres_ICs.dat
 1                                     !are we applying neutral perturbations? (0=no; 1=yes).  If 0, the next five entries are skipped while reading this input file
 1                                     !how doe we interpret the input neutral file geometry?  (0=Cartesian; anything else=axisymmetric)
 -20.5706d0,359.4048d0                 !source mlat,mlon of disturbance (degrees magnetic lat,lon)
 4d0                                   !time step between neutral input files
 2d3,2d3                               !spatial resolutions in radial and vertical directions
-../zettergmdata/simulations/chile2015_neutrals/
+../simulations/chile2015_neutrals/
 1                                     !flagprecfileinput:  for precipitation file input (0=no; 1=yes).  If 0, then next two entries of input file are skipped
 1.0                                   !dtprec:  time (s) between precipitation input files
 ../simulations/isinglass_precipitation/
@@ -290,7 +301,7 @@ An alternative is to use the file input option, which needs to be set up using M
 
 ## Running one of the premade examples:
 
-Several different examples are included with the source code; although initial conditions for each must be generated by the user by running a corresponding equilibrium simulations which generates balanced initial conditions for a given date, time, etc.  These equilibrium runs generally are started with a made-up initial condition so there is a lot of initial settling before a sensible ionospheric state is achieved.  To account for this one usually needs to run for about 24 hours of simulation time to insure a set of state parameters that are a good representation of the ionosphere..  Each of these examples has its own initial and boundary conditions generation scripts which are stored in the appropriately named directories in the ./initialize/ directory, along with a config.ini file need as input to the simulation.  The generation scripts must be run in order to produce input grids and initial conditions for each simulation.
+Several different examples are included with the source code; although initial conditions for each must be generated by the user by running a corresponding equilibrium simulations which generates balanced initial conditions for a given date, time, etc.  These equilibrium runs generally are started with a made-up initial condition so there is a lot of initial settling before a sensible ionospheric state is achieved.  To account for this one usually needs to run for about 24 hours of simulation time to insure a set of state parameters that are a good representation of the ionosphere..  Each of these examples has its own initial and boundary conditions generation scripts which are stored in the appropriately named directories in the `initialize/` directory, along with a `config.ini` file as input to the simulation.  The generation scripts must be run in order to produce input grids and initial conditions for each simulation.
 
 The examples are labeled:
 
@@ -302,7 +313,7 @@ The examples are labeled:
 * nepal20152D_eq - eq simulation for the 2D nepal earthquake simulation
 * 2Dtest_eq - eq simulation for 2D test case that can be run quickly to verify the code is working correctly.
 * tohoku20113D_medres - A medium resolution simulation in 3D of the 2011 Tohoku earthquake.
-* nepal20152D_highres - A high resolution simulation in 2D for the 2015 Nepal eartquake.
+* nepal20152D_highres - A high resolution simulation in 2D for the 2015 Nepal earthquake.
 * tohoku20112D_highres - A 2D, high resolution simulation for the 2011 Tohoku earthquake.
 * ARCS - 
 * ISINGLASS - an example using model input derived from observations from the ISINGLASS sounding rocket campaign.  This example illustrates how to drive the model with data inputs.

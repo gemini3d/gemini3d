@@ -3,6 +3,7 @@ CMakeCache.txt
 test_*
 
 gemini
+initialize/
 simulations/
 objects/
 *.DS_Store
