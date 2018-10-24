@@ -118,74 +118,93 @@ else
 end
 h.f10=figure('name','Ne');%, 'position', [.1, .1, .5, .5], 'units', 'normalized');
 %% main figure loop
+
+% NOTE: keep figure() calls in case plotfcn misses a graphics handle, and
+% for Octave...
+
 for it=1:lt
     [ne,mlatsrc,mlonsrc,v1,Ti,Te,J1,v2,v3,J2,J3,filename,Phitop] = loadframe(direc, UTsec, ymd, UTsec0, ymd0, mloc, xg);
     disp([filename, ' => ', func2str(plotfun)])
 
     %% Electron number density, 'position', [.1, .1, .5, .5], 'units', 'normalized'
-    if ~isempty(h.f9) || lt>16    % 3D simulation or a very long 2D simulation - do separate plots for each time frame
+    if ~isempty(h.f9) || lt > 16    % 3D simulation or a very long 2D simulation - do separate plots for each time frame
         if it==1, disp('long 2D or 3D simulation...'), end
-%        plotfun(ymd,UTsec,xg,log10(ne(:,:,:)),'log_{10} n_e (m^{-3})',nelim,[mlatsrc,mlonsrc],h10);
+        
+        clf(h.f10), figure(h.f10)
         plotfun(ymd,UTsec,xg, ne, 'n_e (m^{-3})',nelim,[mlatsrc,mlonsrc],h.f10);
         
         if flagoutput~=3
-            plotfun(ymd,UTsec,xg,v1(:,:,:),'v_1 (m/s)',v1lim,[mlatsrc,mlonsrc],h.f1);
-            
-            plotfun(ymd,UTsec,xg,Ti(:,:,:),'T_i (K)',Tilim,[mlatsrc,mlonsrc],h.f2);
-            
-            plotfun(ymd,UTsec,xg,Te(:,:,:),'T_e (K)',Telim,[mlatsrc,mlonsrc],h.f3);
-            
-            plotfun(ymd,UTsec,xg,J1(:,:,:)*1e6,'J_1 (uA/m^2)',J1lim,[mlatsrc,mlonsrc],h.f4);
-            
-            plotfun(ymd,UTsec,xg,v2(:,:,:),'v_2 (m/s)',v2lim,[mlatsrc,mlonsrc],h.f5);
-            
-            plotfun(ymd,UTsec,xg,v3(:,:,:),'v_3 (m/s)',v3lim,[mlatsrc,mlonsrc],h.f6);
-            
-            plotfun(ymd,UTsec,xg,J2(:,:,:)*1e6,'J_2 (uA/m^2)',J2lim,[mlatsrc,mlonsrc],h.f7);
-            
-            plotfun(ymd,UTsec,xg,J3(:,:,:)*1e6,'J_3 (uA/m^2)',J3lim,[mlatsrc,mlonsrc],h.f8);
+            clf(h.f1), figure(h.f1)
+            plotfun(ymd,UTsec,xg,v1,'v_1 (m/s)',v1lim,[mlatsrc,mlonsrc],h.f1);
+            clf(h.f2), figure(h.f2)
+            plotfun(ymd,UTsec,xg,Ti,'T_i (K)',Tilim,[mlatsrc,mlonsrc],h.f2);
+            clf(h.f3), figure(h.f3)
+            plotfun(ymd,UTsec,xg,Te,'T_e (K)',Telim,[mlatsrc,mlonsrc],h.f3);
+            clf(h.f4), figure(h.f4)
+            plotfun(ymd,UTsec,xg,J1*1e6,'J_1 (uA/m^2)',J1lim,[mlatsrc,mlonsrc],h.f4);
+            clf(h.f5), figure(h.f5)
+            plotfun(ymd,UTsec,xg,v2,'v_2 (m/s)',v2lim,[mlatsrc,mlonsrc],h.f5);
+            clf(h.f6), figure(h.f6)
+            plotfun(ymd,UTsec,xg,v3,'v_3 (m/s)',v3lim,[mlatsrc,mlonsrc],h.f6);
+            clf(h.f7), figure(h.f7)
+            plotfun(ymd,UTsec,xg,J2*1e6,'J_2 (uA/m^2)',J2lim,[mlatsrc,mlonsrc],h.f7);
+            clf(h.f8), figure(h.f8)
+            plotfun(ymd,UTsec,xg,J3*1e6,'J_3 (uA/m^2)',J3lim,[mlatsrc,mlonsrc],h.f8);
             
             if ~isempty(h.f9)
+                clf(h.f9), figure(h.f9)
                 h9a = axes('parent', h.f9);
                 imagesc(Phitop, 'parent', h9a)
                 colorbar;
             end
         end
+        
         if saveplots   % for 3D or long 2D plots print and output file every time step
-            dosave(flagoutput, direc, filename, h)
+          dosave(flagoutput, direc, filename, h)
         end
     else    %short 2D simulation - put the entire time series in a single plot
         if it==1, disp('short 2D simulations...'), end
+        
+        figure(h.f10)
         ha = subplot(Nsp,Nsp,it,'parent',h.f10);
         nelim =  [9 11.3];
         plotfun(ymd,UTsec,xg,log10(ne), 'log_{10} n_e (m^{-3})',nelim,[mlatsrc,mlonsrc],ha);
         
         if flagoutput~=3
+            figure(h.f1)
             ha = subplot(Nsp,Nsp,it,'parent',h.f1);
             plotfun(ymd,UTsec,xg,v1(:,:,:),'v_1 (m/s)',v1lim,[mlatsrc,mlonsrc],ha);
             
+            figure(h.f2)
             ha = subplot(Nsp,Nsp,it,'parent',h.f2);
             plotfun(ymd,UTsec,xg,Ti(:,:,:),'T_i (K)',Tilim,[mlatsrc,mlonsrc],ha);
             
+            figure(h.f3)
             ha = subplot(Nsp,Nsp,it,'parent',h.f3);
             plotfun(ymd,UTsec,xg,Te(:,:,:),'T_e (K)',Telim,[mlatsrc,mlonsrc],ha);
             
+            figure(h.f4)
             ha = subplot(Nsp,Nsp,it,'parent',h.f4);
             plotfun(ymd,UTsec,xg,J1(:,:,:)*1e6,'J_1 (uA/m^2)',J1lim,[mlatsrc,mlonsrc],ha);
             
+            figure(h.f5)
             ha = subplot(Nsp,Nsp,it,'parent',h.f5);
             plotfun(ymd,UTsec,xg,v2(:,:,:),'v_2 (m/s)',v2lim,[mlatsrc,mlonsrc],ha);
             
+            figure(h.f6)
             ha = subplot(Nsp,Nsp,it,'parent',h.f6);
             plotfun(ymd,UTsec,xg,v3(:,:,:),'v_3 (m/s)',v3lim,[mlatsrc,mlonsrc],ha);
             
+            figure(h.f7)
             ha = subplot(Nsp,Nsp,it,'parent',h.f7);
             plotfun(ymd,UTsec,xg,J2(:,:,:)*1e6,'J_2 (uA/m^2)',J2lim,[mlatsrc,mlonsrc],ha);
             
+            figure(h.f8)
             ha = subplot(Nsp,Nsp,it,'parent',h.f8);
             plotfun(ymd,UTsec,xg,J3(:,:,:)*1e6,'J_3 (uA/m^2)',J3lim,[mlatsrc,mlonsrc],ha);
             
             if ~isempty(h.f9)
+                figure(h.f9)
                 ha = subplot(Nsp,Nsp,it,'parent',h.f9);
                 imagesc(Phitop, 'parent', ha)
                 colorbar;

@@ -18,9 +18,14 @@ else
   validateattr(sourceloc, {'numeric'}, {'vector', 'numel', 2}, mfilename, 'source magnetic coordinates', 7)
 end
 if nargin<8 || isempty(ha)
-  clf, h=gcf; ha=gca; 
+  clf, h=gcf; ha=axes('parent', h); 
 else
   h = ancestor(ha,'figure');
+  try
+    axes(ha)
+  catch
+    ha = axes('parent', h);
+  end
 end
 
 %set(h,'PaperPosition',[0 0 11 4.5]);
@@ -127,11 +132,11 @@ FS=8;
 
 %MAKE THE PLOT!
 if (xg.lx(3)==1)
-  hi=imagesc(ha,xp/1e3,zp,parmp);
+  hi=imagesc(xp/1e3, zp,parmp, 'parent', ha);
   hold(ha, 'on')
-  plot(ha,[minxp,maxxp],[altref,altref],'w--','LineWidth',2);
+  plot(ha, [minxp,maxxp],[altref,altref],'w--','LineWidth',2);
   if ~isempty(sourcemlat)
-    plot(ha,sourcemlat,0,'r^','MarkerSize',12,'LineWidth',2);
+    plot(ha, sourcemlat,0,'r^','MarkerSize',12,'LineWidth',2);
   end
   hold(ha, 'off')
   try % not yet in Octave 4.4.1
@@ -149,7 +154,7 @@ if (xg.lx(3)==1)
   xlabel(ha, 'eastward dist. (km)')
   ylabel(ha, 'altitude (km)')
 elseif (xg.lx(2)==1)
-  hi=imagesc(ha,yp/1e3,zp,parmp3);
+  hi=imagesc(yp/1e3,zp,parmp3, 'parent', ha);
   hold(ha, 'on')
   %plot([minyp,maxyp],[altref,altref],'w--','LineWidth',2);
   if (~isempty(sourcemlat))
@@ -192,6 +197,6 @@ strval=sprintf('%s \n %s',[num2str(dmy(2)),'/',num2str(dmy(1)),'/',num2str(dmy(3
     [timestr,' UT']);
 %text(xp(round(lxp/10)),zp(lzp-round(lzp/7.5)),strval,'FontSize',18,'Color',[0.66 0.66 0.66],'FontWeight','bold');
 %text(xp(round(lxp/10)),zp(lzp-round(lzp/7.5)),strval,'FontSize',16,'Color',[0.5 0.5 0.5],'FontWeight','bold');
-title(strval)
+title(ha, strval)
 
 end
