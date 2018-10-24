@@ -5,7 +5,7 @@ module mpimod
 ! - Need to consider overloading routines as send_ghost and send_noghost so that
 ! it is more clear what the structure of the input arrays should be. 
 
-use phys_consts, only : lsp   !code needs to know how many species are being used.
+use phys_consts, only : lsp, wp   !code needs to know how many species are being used.
 use mpi, only: mpi_init, mpi_comm_world, &
                mpi_integer, mpi_double_precision, mpi_sum, &
                mpi_status_size, mpi_status_ignore
