@@ -3,7 +3,7 @@ project(gemini3d Fortran C)
 enable_testing()
 
 # Test data directories
-set(TEST_REFERENCE_DIR ${PROJECT_SOURCE_DIR}/../simulations/2Dtest_files/2Dtest_output)
+set(TEST_REFERENCE_DIR ${PROJECT_SOURCE_DIR}/../simulations/zenodo2D)
 set(TEST_OUTDIR ${CMAKE_CURRENT_BINARY_DIR}/test2d)
 
 
