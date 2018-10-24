@@ -13,7 +13,6 @@ module temporal
 
 use phys_consts, only:  kB,mu0,ms,lsp,pi
 use mpimod
-use mpi
 use grid, only:  curvmesh
 
 implicit none
@@ -23,16 +22,16 @@ contains
 
   subroutine dt_comm(t,tout,tcfl,ns,Ts,vs1,vs2,vs3,B1,B2,B3,x,potsolve,dt)
 
-    real(8), intent(in) :: t,tout,tcfl
-    real(8), dimension(-1:,-1:,-1:,:), intent(in) :: ns,Ts,vs1,vs2,vs3
-    real(8),  dimension(-1:,-1:,-1:), intent(in) :: B1,B2,B3
+    real(wp), intent(in) :: t,tout,tcfl
+    real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns,Ts,vs1,vs2,vs3
+    real(wp),  dimension(-1:,-1:,-1:), intent(in) :: B1,B2,B3
     type(curvmesh), intent(in) :: x
     integer, intent(in) :: potsolve
-    real(8), intent(out) :: dt
+    real(wp), intent(out) :: dt
 
-    real(8), dimension(lsp) :: cour1,cour2,cour3
+    real(wp), dimension(lsp) :: cour1,cour2,cour3
     integer :: iid,isp
-    real(8) :: dttmp
+    real(wp) :: dttmp
 
 
     call dt_calc(tcfl,ns,Ts,vs1,vs2,vs3,B1,B2,B3,x%dl1i,x%dl2i,x%dl3i,potsolve,cour1,cour2,cour3,dt)
@@ -83,19 +82,19 @@ contains
     !------------------------------------------------------------
 
 
-    real(8), intent(in) :: tcfl
-    real(8), dimension(-1:,-1:,-1:,:), intent(in) :: ns,Ts,vs1,vs2,vs3
-    real(8),  dimension(-1:,-1:,-1:), intent(in) :: B1,B2,B3
-    real(8), dimension(:,:,:), intent(in) :: dx1i
-    real(8), dimension(:,:,:), intent(in) :: dx2i
-    real(8), dimension(:,:,:), intent(in) :: dx3i
+    real(wp), intent(in) :: tcfl
+    real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns,Ts,vs1,vs2,vs3
+    real(wp),  dimension(-1:,-1:,-1:), intent(in) :: B1,B2,B3
+    real(wp), dimension(:,:,:), intent(in) :: dx1i
+    real(wp), dimension(:,:,:), intent(in) :: dx2i
+    real(wp), dimension(:,:,:), intent(in) :: dx3i
     integer, intent(in) :: potsolve
-    real(8), dimension(lsp), intent(out) :: cour1,cour2,cour3
-    real(8), intent(out) :: dt
+    real(wp), dimension(lsp), intent(out) :: cour1,cour2,cour3
+    real(wp), intent(out) :: dt
 
-    real(8), dimension(lsp) :: gridrate1,gridrate2,gridrate3
-    real(8) :: vsnd
-    real(8) :: rhom,Bmag,vA
+    real(wp), dimension(lsp) :: gridrate1,gridrate2,gridrate3
+    real(wp) :: vsnd
+    real(wp) :: rhom,Bmag,vA
     integer :: lx1,lx2,lx3,ix1,ix2,ix3,isp
 
     lx1=size(Ts,1)-4
@@ -167,9 +166,9 @@ contains
 
   subroutine dateinc(dt,ymd,UTsec)
 
-    real(8), intent(in) :: dt
+    real(wp), intent(in) :: dt
     integer, dimension(3), intent(inout) :: ymd
-    real(8), intent(inout) :: UTsec
+    real(wp), intent(inout) :: UTsec
 
     integer :: year,month,day
     integer :: monthinc          !let's us know whether we incremented the month
@@ -242,13 +241,13 @@ contains
     !------------------------------------------------------------
 
     integer, dimension(3), intent(in) :: ymd
-    real(8), intent(in) :: UTsec
-    real(8), dimension(:,:,:), intent(in) :: glat,glon
+    real(wp), intent(in) :: UTsec
+    real(wp), dimension(:,:,:), intent(in) :: glat,glon
 
-    real(8), dimension(size(glat,1),size(glat,2),size(glat,3)) :: sza
+    real(wp), dimension(size(glat,1),size(glat,2),size(glat,3)) :: sza
 
-    real(8) :: doy,soldecrad
-    real(8), dimension(size(glat,1),size(glat,2),size(glat,3)) :: lonrad,LThrs,latrad,hrang
+    real(wp) :: doy,soldecrad
+    real(wp), dimension(size(glat,1),size(glat,2),size(glat,3)) :: lonrad,LThrs,latrad,hrang
 
 
     !SOLAR DECLINATION ANGLE

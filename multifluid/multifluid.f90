@@ -25,47 +25,47 @@ contains
     !------ BY TIME STEP DT.
     !------------------------------------------------------------ 
 
-    real(8), dimension(-1:,-1:,-1:,:), intent(inout) ::  ns,vs1,Ts
-    real(8), dimension(-1:,-1:,-1:,:), intent(inout) ::  vs2,vs3
-    real(8), dimension(:,:,:), intent(in) :: J1       !needed for thermal conduction in electron population
-    real(8), dimension(:,:,:), intent(inout) :: E1    !will have ambipolar field added into it in this procedure...
+    real(wp), dimension(-1:,-1:,-1:,:), intent(inout) ::  ns,vs1,Ts
+    real(wp), dimension(-1:,-1:,-1:,:), intent(inout) ::  vs2,vs3
+    real(wp), dimension(:,:,:), intent(in) :: J1       !needed for thermal conduction in electron population
+    real(wp), dimension(:,:,:), intent(inout) :: E1    !will have ambipolar field added into it in this procedure...
 
-    real(8), intent(in) :: Teinf,t,dt
+    real(wp), intent(in) :: Teinf,t,dt
 
     type(curvmesh), intent(in) :: x                   !grid structure variable
 
-    real(8), dimension(:,:,:,:), intent(in) :: nn
-    real(8), dimension(:,:,:), intent(in) :: vn1,vn2,vn3,Tn
-    real(8), intent(in) :: f107,f107a
+    real(wp), dimension(:,:,:,:), intent(in) :: nn
+    real(wp), dimension(:,:,:), intent(in) :: vn1,vn2,vn3,Tn
+    real(wp), intent(in) :: f107,f107a
     integer, dimension(3), intent(in) :: ymd
-    real(8), intent(in) :: UTsec
+    real(wp), intent(in) :: UTsec
 
     integer, intent(in) :: flagprecfile
-    real(8), intent(in) :: dtprec
+    real(wp), intent(in) :: dtprec
     character(*), intent(in) :: precdir
 
     integer :: isp
-    real(8) :: tstart,tfin
+    real(wp) :: tstart,tfin
 
-    real(8), dimension(-1:size(ns,1)-2,-1:size(ns,2)-2,-1:size(ns,3)-2,size(ns,4)) ::  rhovs1,rhoes
-    real(8), dimension(-1:size(ns,1)-2,-1:size(ns,2)-2,-1:size(ns,3)-2) :: param
-    real(8), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: A,B,C,D,E,paramtrim,rhoeshalf,lambda,beta,chrgflux
-    real(8), dimension(0:size(ns,1)-3,0:size(ns,2)-3,0:size(ns,3)-3) :: divvs
-    real(8), dimension(1:size(vs1,1)-3,1:size(vs1,2)-4,1:size(vs1,3)-4) :: v1i
-    real(8), dimension(1:size(vs1,1)-4,1:size(vs1,2)-3,1:size(vs1,3)-4) :: v2i
-    real(8), dimension(1:size(vs1,1)-4,1:size(vs1,2)-4,1:size(vs1,3)-3) :: v3i
+    real(wp), dimension(-1:size(ns,1)-2,-1:size(ns,2)-2,-1:size(ns,3)-2,size(ns,4)) ::  rhovs1,rhoes
+    real(wp), dimension(-1:size(ns,1)-2,-1:size(ns,2)-2,-1:size(ns,3)-2) :: param
+    real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: A,B,C,D,E,paramtrim,rhoeshalf,lambda,beta,chrgflux
+    real(wp), dimension(0:size(ns,1)-3,0:size(ns,2)-3,0:size(ns,3)-3) :: divvs
+    real(wp), dimension(1:size(vs1,1)-3,1:size(vs1,2)-4,1:size(vs1,3)-4) :: v1i
+    real(wp), dimension(1:size(vs1,1)-4,1:size(vs1,2)-3,1:size(vs1,3)-4) :: v2i
+    real(wp), dimension(1:size(vs1,1)-4,1:size(vs1,2)-4,1:size(vs1,3)-3) :: v3i
 
-    real(8), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,size(ns,4)) :: Pr,Lo
-    real(8), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,size(ns,4)-1) :: Prprecip,Prpreciptmp
-    real(8), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: Qeprecip
-    real(8), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: chi
-    real(8), dimension(1:size(ns,2)-4,1:size(ns,3)-4,lprec) :: W0,PhiWmWm2
+    real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,size(ns,4)) :: Pr,Lo
+    real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,size(ns,4)-1) :: Prprecip,Prpreciptmp
+    real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: Qeprecip
+    real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: chi
+    real(wp), dimension(1:size(ns,2)-4,1:size(ns,3)-4,lprec) :: W0,PhiWmWm2
 
     integer :: iprec
-    real(8), dimension(1:size(vs1,1)-3,1:size(vs1,2)-4,1:size(vs1,3)-4) :: v1iupdate    !temp interface velocities for art. viscosity
-    real(8), dimension(1:size(vs1,1)-4,1:size(vs1,2)-4,1:size(vs1,3)-4) :: dv1iupdate    !interface diffs. for art. visc.
-    real(8), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,size(ns,4)) :: Q
-    real(8), parameter :: xicon=3d0    !decent value for closed field-line grids extending to high altitudes.  
+    real(wp), dimension(1:size(vs1,1)-3,1:size(vs1,2)-4,1:size(vs1,3)-4) :: v1iupdate    !temp interface velocities for art. viscosity
+    real(wp), dimension(1:size(vs1,1)-4,1:size(vs1,2)-4,1:size(vs1,3)-4) :: dv1iupdate    !interface diffs. for art. visc.
+    real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,size(ns,4)) :: Q
+    real(wp), parameter :: xicon=3d0    !decent value for closed field-line grids extending to high altitudes.  
 
 
     !CALCULATE THE INTERNAL ENERGY AND MOMENTUM FLUX DENSITIES (ADVECTION AND SOURCE SOLUTIONS ARE DONE IN THESE VARIABLES)
@@ -298,9 +298,9 @@ contains
 
     type(curvmesh), intent(in) :: x
     integer, intent(in) :: paramflag
-    real(8), dimension(-1:,-1:,-1:,:), intent(inout) :: param     !note that this is 4D and is meant to include ghost cells
+    real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: param     !note that this is 4D and is meant to include ghost cells
 
-    real(8), dimension(-1:size(param,1)-2,-1:size(param,2)-2,-1:size(param,3)-2,lsp) :: paramnew
+    real(wp), dimension(-1:size(param,1)-2,-1:size(param,2)-2,-1:size(param,3)-2,lsp) :: paramnew
     integer :: isp,ix1,ix2,ix3,iinull,ix1beg,ix1end
 
 

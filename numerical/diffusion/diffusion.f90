@@ -27,17 +27,17 @@ contains
 
     integer, intent(in) :: isp
     type(curvmesh), intent(in) :: x
-    real(8), dimension(:,:,:), intent(in) :: lambda,betacoeff
+    real(wp), dimension(:,:,:), intent(in) :: lambda,betacoeff
 
-    real(8), dimension(-1:,-1:,-1:), intent(in) :: ns
-    real(8), dimension(-1:,-1:,-1:), intent(inout) :: T
-    real(8), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4), &
+    real(wp), dimension(-1:,-1:,-1:), intent(in) :: ns
+    real(wp), dimension(-1:,-1:,-1:), intent(inout) :: T
+    real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4), &
              intent(out) :: A,B,C,D,E
 
-    real(8), dimension(:,:,:), intent(in) :: Tn
-    real(8), intent(in) :: Teinf
+    real(wp), dimension(:,:,:), intent(in) :: Tn
+    real(wp), intent(in) :: Teinf
 
-    real(8) :: Tn0
+    real(wp) :: Tn0
 
     integer :: lx1,lx2,lx3,ix2,ix3
 

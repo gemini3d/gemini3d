@@ -19,7 +19,6 @@ use potential_mumps, only : elliptic3D_curv, &
                             elliptic_workers
 
 use mpimod
-use mpi
 implicit none
 
 
@@ -56,37 +55,37 @@ contains
     !------------------------------------------------------------
 
     integer, intent(in) :: it
-    real(8), intent(in) :: t,dt
+    real(wp), intent(in) :: t,dt
 
-    real(8), dimension(:,:,:,:), intent(in) :: nn
-    real(8), dimension(:,:,:), intent(in) :: vn2,vn3,Tn
-    real(8), intent(in) :: sourcemlat
-    real(8), dimension(-1:,-1:,-1:,:), intent(in) :: ns,Ts,vs1
-    real(8), dimension(-1:,-1:,-1:), intent(in) :: B1
-    real(8), dimension(-1:,-1:,-1:,:), intent(inout) ::  vs2,vs3
+    real(wp), dimension(:,:,:,:), intent(in) :: nn
+    real(wp), dimension(:,:,:), intent(in) :: vn2,vn3,Tn
+    real(wp), intent(in) :: sourcemlat
+    real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns,Ts,vs1
+    real(wp), dimension(-1:,-1:,-1:), intent(in) :: B1
+    real(wp), dimension(-1:,-1:,-1:,:), intent(inout) ::  vs2,vs3
 
     type(curvmesh), intent(in) :: x
 
     integer, intent(in) :: potsolve
     integer, intent(in) :: flagcap
 
-    real(8), dimension(:,:,:), intent(out) :: E1,E2,E3,J1,J2,J3
-    real(8), dimension(:,:,:), allocatable, intent(inout) :: Phiall     !inout since it may not be allocated or deallocated in this procedure
+    real(wp), dimension(:,:,:), intent(out) :: E1,E2,E3,J1,J2,J3
+    real(wp), dimension(:,:,:), allocatable, intent(inout) :: Phiall     !inout since it may not be allocated or deallocated in this procedure
 
     integer, intent(in) :: flagE0file
-    real(8), intent(in) :: dtE0
+    real(wp), intent(in) :: dtE0
     character(*), intent(in) :: E0dir
     integer, dimension(3), intent(in) :: ymd
-    real(8), intent(in) :: UTsec
+    real(wp), intent(in) :: UTsec
 
-    real(8), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: sig0,sigP,sigH
-    real(8), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,1:size(ns,4)) :: muP,muH,muPvn,muHvn
-    real(8), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: incap
-    real(8) :: tstart,tfin 
+    real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: sig0,sigP,sigH
+    real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,1:size(ns,4)) :: muP,muH,muPvn,muHvn
+    real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: incap
+    real(wp) :: tstart,tfin 
 
     integer :: lx1,lx2,lx3,isp
     integer :: ix1,ix2,ix3,iinull
-    real(8) :: minh1,maxh1,minh2,maxh2,minh3,maxh3
+    real(wp) :: minh1,maxh1,minh2,maxh2,minh3,maxh3
 
 
     !SIZES
@@ -188,77 +187,77 @@ contains
     !------------------------------------------------------------
 
     integer, intent(in) :: it
-    real(8), intent(in) :: t,dt
-    real(8), dimension(:,:,:), intent(in) ::  sig0,sigP,sigH
-    real(8), dimension(:,:,:), intent(in) ::  incap
-    real(8), dimension(-1:,-1:,-1:,:), intent(in) ::  vs2,vs3    
-    real(8), dimension(:,:,:), intent(in) ::  vn2,vn3
-    real(8), intent(in) :: sourcemlat
-    real(8), dimension(-1:,-1:,-1:), intent(in) ::  B1
+    real(wp), intent(in) :: t,dt
+    real(wp), dimension(:,:,:), intent(in) ::  sig0,sigP,sigH
+    real(wp), dimension(:,:,:), intent(in) ::  incap
+    real(wp), dimension(-1:,-1:,-1:,:), intent(in) ::  vs2,vs3    
+    real(wp), dimension(:,:,:), intent(in) ::  vn2,vn3
+    real(wp), intent(in) :: sourcemlat
+    real(wp), dimension(-1:,-1:,-1:), intent(in) ::  B1
 
     type(curvmesh), intent(in) :: x
 
     integer, intent(in) :: potsolve
 
-    real(8), dimension(:,:,:), intent(out) :: E1,E2,E3,J1,J2,J3
-    real(8), dimension(:,:,:), intent(inout) :: Phiall   !not good form, but I'm lazy...  Forgot what I meant by this...
+    real(wp), dimension(:,:,:), intent(out) :: E1,E2,E3,J1,J2,J3
+    real(wp), dimension(:,:,:), intent(inout) :: Phiall   !not good form, but I'm lazy...  Forgot what I meant by this...
 
     integer, intent(in) :: flagE0file
-    real(8), intent(in) :: dtE0
+    real(wp), intent(in) :: dtE0
     character(*), intent(in) :: E0dir
     integer, dimension(3), intent(in) :: ymd
-    real(8), intent(in) :: UTsec
+    real(wp), intent(in) :: UTsec
 
-    real(8), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: v2,v3 
+    real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: v2,v3 
 
-    real(8), dimension(1:size(Phiall,1),1:size(Phiall,2),1:size(Phiall,3)) :: srctermall
-    real(8), dimension(1:size(Phiall,2),1:size(Phiall,3)), target :: Vminx1,Vmaxx1     !allow pointer aliases for these vars.
-    real(8), dimension(1:size(Phiall,2),1:size(Phiall,3)) :: Vminx1buf,Vmaxx1buf
-    real(8), dimension(1:size(Phiall,1),1:size(Phiall,3)) :: Vminx2,Vmaxx2
-    real(8), dimension(1:size(Phiall,1),1:size(Phiall,2)) :: Vminx3,Vmaxx3
+    real(wp), dimension(1:size(Phiall,1),1:size(Phiall,2),1:size(Phiall,3)) :: srctermall
+    real(wp), dimension(1:size(Phiall,2),1:size(Phiall,3)), target :: Vminx1,Vmaxx1     !allow pointer aliases for these vars.
+    real(wp), dimension(1:size(Phiall,2),1:size(Phiall,3)) :: Vminx1buf,Vmaxx1buf
+    real(wp), dimension(1:size(Phiall,1),1:size(Phiall,3)) :: Vminx2,Vmaxx2
+    real(wp), dimension(1:size(Phiall,1),1:size(Phiall,2)) :: Vminx3,Vmaxx3
     integer :: flagdirich
 
-    real(8), dimension(1:size(Phiall,2),1:size(Phiall,3)) :: v2slaball,v3slaball   !stores drift velocs. for pol. current
+    real(wp), dimension(1:size(Phiall,2),1:size(Phiall,3)) :: v2slaball,v3slaball   !stores drift velocs. for pol. current
 
- !   real(8), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: paramtrim    !to hold trimmed magnetic field
+ !   real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: paramtrim    !to hold trimmed magnetic field
 
-    real(8), dimension(1:size(Phiall,1),1:size(Phiall,2),1:size(Phiall,3)) :: E01all,E02all,E03all    !background fields
- !   real(8), dimension(1:size(Phiall,1),1:size(Phiall,2),1:size(Phiall,3)) :: divJperpall2,divJperpall3,divJperpall   !more work arrays
+    real(wp), dimension(1:size(Phiall,1),1:size(Phiall,2),1:size(Phiall,3)) :: E01all,E02all,E03all    !background fields
+ !   real(wp), dimension(1:size(Phiall,1),1:size(Phiall,2),1:size(Phiall,3)) :: divJperpall2,divJperpall3,divJperpall   !more work arrays
 
-    real(8), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: integrand,sigintegral    !general work array for doing integrals
+    real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: integrand,sigintegral    !general work array for doing integrals
 
-    real(8), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: grad2E,grad3E    !more work arrays for pol. curr.
-    real(8), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: DE2Dt,DE3Dt   !pol. drift
-    real(8), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: J1pol,J2pol,J3pol
+    real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: grad2E,grad3E    !more work arrays for pol. curr.
+    real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: DE2Dt,DE3Dt   !pol. drift
+    real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: J1pol,J2pol,J3pol
 
-    real(8), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: E01,E02,E03   !distributed background fields
-    real(8), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: srcterm,divJperp
-    real(8), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: E1prev,E2prev,E3prev
-    real(8), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: Phi
+    real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: E01,E02,E03   !distributed background fields
+    real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: srcterm,divJperp
+    real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: E1prev,E2prev,E3prev
+    real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: Phi
 
-    real(8), dimension(1:size(E1,2),1:size(E1,3)) :: SigPint2,SigPint3,SigHint,incapint,srctermint
-    real(8), dimension(1:size(Phiall,2),1:size(Phiall,3)) :: SigPint2all,SigPint3all,SigHintall,incapintall,srctermintall
+    real(wp), dimension(1:size(E1,2),1:size(E1,3)) :: SigPint2,SigPint3,SigHint,incapint,srctermint
+    real(wp), dimension(1:size(Phiall,2),1:size(Phiall,3)) :: SigPint2all,SigPint3all,SigHintall,incapintall,srctermintall
 
-    real(8), dimension(1:size(Phiall,2),1:size(Phiall,3)) :: Phislab,Phislab0
+    real(wp), dimension(1:size(Phiall,2),1:size(Phiall,3)) :: Phislab,Phislab0
 
-    real(8), dimension(0:size(E1,1)+1,0:size(E1,2)+1,0:size(E1,3)+1) :: divtmp    !one extra grid point on either end to facilitate derivatives
-    real(8), dimension(-1:size(E1,1)+2,-1:size(E1,2)+2,-1:size(E1,3)+2) :: J1halo,J2halo,J3halo    !haloing assumes existence of two ghost cells
+    real(wp), dimension(0:size(E1,1)+1,0:size(E1,2)+1,0:size(E1,3)+1) :: divtmp    !one extra grid point on either end to facilitate derivatives
+    real(wp), dimension(-1:size(E1,1)+2,-1:size(E1,2)+2,-1:size(E1,3)+2) :: J1halo,J2halo,J3halo    !haloing assumes existence of two ghost cells
 
-    real(8), dimension(1:size(Phiall,1),1:size(Phiall,2),1:size(Phiall,3)) :: sig0scaledall,sigPscaledall,sigHscaledall
-    real(8), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: sig0scaled,sigPscaled,sigHscaled
+    real(wp), dimension(1:size(Phiall,1),1:size(Phiall,2),1:size(Phiall,3)) :: sig0scaledall,sigPscaledall,sigHscaledall
+    real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: sig0scaled,sigPscaled,sigHscaled
 
     logical :: perflag    !MUMPS stuff
 
-    real(8), dimension(1:size(Phiall,3)) :: Vminx2slice,Vmaxx2slice
-    real(8), dimension(1:size(Phiall,2)) :: Vminx3slice,Vmaxx3slice
-    real(8), dimension(1:size(E1,2),1:size(E1,3)) :: Vminx1slab,Vmaxx1slab
-    real(8), dimension(1:size(E1,2),1:size(E1,3)) :: v2slab,v3slab
+    real(wp), dimension(1:size(Phiall,3)) :: Vminx2slice,Vmaxx2slice
+    real(wp), dimension(1:size(Phiall,2)) :: Vminx3slice,Vmaxx3slice
+    real(wp), dimension(1:size(E1,2),1:size(E1,3)) :: Vminx1slab,Vmaxx1slab
+    real(wp), dimension(1:size(E1,2),1:size(E1,3)) :: v2slab,v3slab
 
     integer :: iid
     integer :: ix1,ix2,ix3,lx1,lx2,lx3,lx3all
     integer :: idleft,idright
 
-    real(8) :: tstart,tfin
+    real(wp) :: tstart,tfin
 
 
     !SIZES - PERHAPS SHOULD BE TAKEN FROM GRID MODULE INSTEAD OF RECOMPUTED?
@@ -864,51 +863,51 @@ contains
 
     integer, intent(in) :: it
     real(wp), intent(in) :: t,dt
-    real(8), dimension(:,:,:), intent(in) ::  sig0,sigP,sigH
-    real(8), dimension(:,:,:), intent(in) ::  incap
-    real(8), dimension(-1:,-1:,-1:,:), intent(in) ::  vs2,vs3    
-    real(8), dimension(:,:,:), intent(in) ::  vn2,vn3
-    real(8), intent(in) :: sourcemlat
-    real(8), dimension(-1:,-1:,-1:), intent(in) ::  B1
+    real(wp), dimension(:,:,:), intent(in) ::  sig0,sigP,sigH
+    real(wp), dimension(:,:,:), intent(in) ::  incap
+    real(wp), dimension(-1:,-1:,-1:,:), intent(in) ::  vs2,vs3    
+    real(wp), dimension(:,:,:), intent(in) ::  vn2,vn3
+    real(wp), intent(in) :: sourcemlat
+    real(wp), dimension(-1:,-1:,-1:), intent(in) ::  B1
 
     type(curvmesh), intent(in) :: x
 
     integer, intent(in) :: potsolve
 
-    real(8), dimension(:,:,:), intent(out) :: E1,E2,E3,J1,J2,J3
+    real(wp), dimension(:,:,:), intent(out) :: E1,E2,E3,J1,J2,J3
 
     integer :: flagdirich
 
-    real(8), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: paramtrim    !to hold trimmed magnetic field
+    real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: paramtrim    !to hold trimmed magnetic field
 
-    real(8), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: grad2E,grad3E    !more work arrays for pol. curr.
-    real(8), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: DE2Dt,DE3Dt   !pol. drift
-    real(8), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: J1pol,J2pol,J3pol
+    real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: grad2E,grad3E    !more work arrays for pol. curr.
+    real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: DE2Dt,DE3Dt   !pol. drift
+    real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: J1pol,J2pol,J3pol
 
-    real(8), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: E01,E02,E03   !distributed background fields
-    real(8), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: srcterm,divJperp
-    real(8), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: E1prev,E2prev,E3prev
-    real(8), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: Phi
+    real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: E01,E02,E03   !distributed background fields
+    real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: srcterm,divJperp
+    real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: E1prev,E2prev,E3prev
+    real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: Phi
 
-    real(8), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: integrand,sigintegral    !general work array for doing integrals
-    real(8), dimension(1:size(E1,2),1:size(E1,3)) :: SigPint2,SigPint3,SigHint,incapint,srctermint
+    real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: integrand,sigintegral    !general work array for doing integrals
+    real(wp), dimension(1:size(E1,2),1:size(E1,3)) :: SigPint2,SigPint3,SigHint,incapint,srctermint
 
-    real(8), dimension(0:size(E1,1)+1,0:size(E1,2)+1,0:size(E1,3)+1) :: divtmp    !one extra grid point on either end to facilitate derivatives
-    real(8), dimension(-1:size(E1,1)+2,-1:size(E1,2)+2,-1:size(E1,3)+2) :: J1halo,J2halo,J3halo    !haloing assumes existence of two ghost cells
+    real(wp), dimension(0:size(E1,1)+1,0:size(E1,2)+1,0:size(E1,3)+1) :: divtmp    !one extra grid point on either end to facilitate derivatives
+    real(wp), dimension(-1:size(E1,1)+2,-1:size(E1,2)+2,-1:size(E1,3)+2) :: J1halo,J2halo,J3halo    !haloing assumes existence of two ghost cells
 
-    real(8), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: sig0scaled,sigPscaled,sigHscaled
+    real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: sig0scaled,sigPscaled,sigHscaled
 
     logical :: perflag    !MUMPS stuff
 
-    real(8), dimension(1:size(E1,2),1:size(E1,3)) :: Vminx1slab,Vmaxx1slab
+    real(wp), dimension(1:size(E1,2),1:size(E1,3)) :: Vminx1slab,Vmaxx1slab
 
-    real(8), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: v2,v3
-    real(8), dimension(1:size(E1,2),1:size(E1,3)) :: v2slab,v3slab
+    real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: v2,v3
+    real(wp), dimension(1:size(E1,2),1:size(E1,3)) :: v2slab,v3slab
 
     integer :: ix1,ix2,ix3,lx1,lx2,lx3,lx3all
     integer :: idleft,idright
 
-    real(8) :: tstart,tfin
+    real(wp) :: tstart,tfin
 
 
     !SIZES - PERHAPS SHOULD BE TAKEN FROM GRID MODULE INSTEAD OF RECOMPUTED?

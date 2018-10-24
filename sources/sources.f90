@@ -21,13 +21,13 @@ contains
     !-------PARAMETER ARGUMENTS (AND GRID STUFF) SHOULD INCLUDE GHOST CELLS
     !------------------------------------------------------------
 
-    real(8), dimension(:,:,:,:), intent(in) :: nn
-    real(8), dimension(:,:,:), intent(in) :: vn1,vn2,vn3,Tn
-    real(8), dimension(-1:,-1:,-1:,:), intent(in) :: ns,vs1,vs2,vs3,Ts
+    real(wp), dimension(:,:,:,:), intent(in) :: nn
+    real(wp), dimension(:,:,:), intent(in) :: vn1,vn2,vn3,Tn
+    real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns,vs1,vs2,vs3,Ts
 
-    real(8), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4,lsp), intent(out) :: Pr,Lo
+    real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4,lsp), intent(out) :: Pr,Lo
 
-    real(8), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: betanow,kreac,Teff,Te,dv2
+    real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: betanow,kreac,Teff,Te,dv2
     integer :: lx1,lx2,lx3
 
     lx1=size(ns,1)-4
@@ -322,22 +322,22 @@ contains
     !-------GRADIENT.
     !------------------------------------------------------------
 
-    real(8), dimension(:,:,:,:), intent(in) :: nn
-    real(8), dimension(:,:,:), intent(in) :: vn1,Tn
-    real(8), dimension(-1:,-1:,-1:,:), intent(in) :: ns,vs1,vs2,vs3,Ts
-    real(8), dimension(:,:,:), intent(in) :: E1
-    real(8), dimension(:,:,:,:), intent(in) :: Q
+    real(wp), dimension(:,:,:,:), intent(in) :: nn
+    real(wp), dimension(:,:,:), intent(in) :: vn1,Tn
+    real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns,vs1,vs2,vs3,Ts
+    real(wp), dimension(:,:,:), intent(in) :: E1
+    real(wp), dimension(:,:,:,:), intent(in) :: Q
     type(curvmesh), intent(in) :: x
 
-    real(8), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4,lsp), intent(out) :: Pr,Lo
+    real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4,lsp), intent(out) :: Pr,Lo
 
     integer :: lx1,lx2,lx3,isp,isp2
-    real(8), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: nu,Phisj,Psisj
-    real(8), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: pressure,gradlp1,Epol1,gradQ
-    real(8), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: h1h2h3
-    real(8), dimension(0:size(Ts,1)-3,size(Ts,2)-4,size(Ts,3)-4) :: tmpderiv
-    real(8), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: dh2dx1,dh3dx1,geom
-    real(8), dimension(size(E1,1),size(E1,2),size(E1,3)) :: E1filt
+    real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: nu,Phisj,Psisj
+    real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: pressure,gradlp1,Epol1,gradQ
+    real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: h1h2h3
+    real(wp), dimension(0:size(Ts,1)-3,size(Ts,2)-4,size(Ts,3)-4) :: tmpderiv
+    real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: dh2dx1,dh3dx1,geom
+    real(wp), dimension(size(E1,1),size(E1,2),size(E1,3)) :: E1filt
 
     integer :: ix1,ix2,ix3
 
@@ -432,16 +432,16 @@ contains
     !-------PARAMETER ARGUMENTS SHOULD INCLUDE GHOST CELLS
     !------------------------------------------------------------
 
-    real(8), dimension(:,:,:,:), intent(in) :: nn
-    real(8), dimension(:,:,:), intent(in) :: vn1,vn2,vn3,Tn
-    real(8), dimension(-1:,-1:,-1:,:), intent(in) :: ns,vs1,vs2,vs3,Ts
+    real(wp), dimension(:,:,:,:), intent(in) :: nn
+    real(wp), dimension(:,:,:), intent(in) :: vn1,vn2,vn3,Tn
+    real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns,vs1,vs2,vs3,Ts
 
-    real(8), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4,lsp), intent(out) :: Pr,Lo
+    real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4,lsp), intent(out) :: Pr,Lo
 
     integer :: ix1,ix2,ix3,lx1,lx2,lx3,isp,isp2
-    real(8), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: nu,Phisj,Psisj
-    real(8), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: fact,iePT,ieLT,f,g    !work arrays
-    real(8) :: sfact
+    real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: nu,Phisj,Psisj
+    real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: fact,iePT,ieLT,f,g    !work arrays
+    real(wp) :: sfact
 
     lx1=size(Ts,1)-4
     lx2=size(Ts,2)-4
@@ -534,9 +534,9 @@ contains
 
     integer, intent(in) :: isp
     integer, intent(in) :: flagperiodic
-    real(8), dimension(-1:,-1:,-1:,:), intent(inout) :: vs1,vs2,vs3
+    real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: vs1,vs2,vs3
 
-    real(8), dimension(-1:size(vs1,1)-2,-1:size(vs1,2)-2,-1:size(vs1,3)-2) :: param
+    real(wp), dimension(-1:size(vs1,1)-2,-1:size(vs1,2)-2,-1:size(vs1,3)-2) :: param
     integer :: lx1,lx2,lx3
     integer :: idleft,idright
 

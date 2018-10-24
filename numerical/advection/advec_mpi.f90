@@ -27,21 +27,21 @@ contains
 
     integer, intent(in) :: isp
     integer, intent(in) :: flagperiodic
-    real(8), dimension(-1:,-1:,-1:,:), intent(inout) :: ns,rhovs1,vs1,vs2,vs3,rhoes
+    real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: ns,rhovs1,vs1,vs2,vs3,rhoes
 
-    real(8), dimension(1:size(vs1,1)-3,1:size(vs1,2)-4,1:size(vs1,3)-4), intent(out) :: v1i
-    real(8), dimension(1:size(vs1,1)-4,1:size(vs1,2)-3,1:size(vs1,3)-4), intent(out) :: v2i
-    real(8), dimension(1:size(vs1,1)-4,1:size(vs1,2)-4,1:size(vs1,3)-3), intent(out) :: v3i
+    real(wp), dimension(1:size(vs1,1)-3,1:size(vs1,2)-4,1:size(vs1,3)-4), intent(out) :: v1i
+    real(wp), dimension(1:size(vs1,1)-4,1:size(vs1,2)-3,1:size(vs1,3)-4), intent(out) :: v2i
+    real(wp), dimension(1:size(vs1,1)-4,1:size(vs1,2)-4,1:size(vs1,3)-3), intent(out) :: v3i
 
-    real(8), parameter :: vellim=2000.0
-!    real(8), parameter :: vellim=0.0
-    real(8) :: coeff
+    real(wp), parameter :: vellim=2000.0
+!    real(wp), parameter :: vellim=0.0
+    real(wp) :: coeff
     integer :: ix2,ix3,lx1,lx2,lx3
 
     integer :: idleft,idright
-    real(8), dimension(-1:size(vs3,1)-2,-1:size(vs3,2)-2,-1:size(vs3,3)-2) :: param,param2,param3,param4
+    real(wp), dimension(-1:size(vs3,1)-2,-1:size(vs3,2)-2,-1:size(vs3,3)-2) :: param,param2,param3,param4
 
-    real(8) :: tstart,tfin
+    real(wp) :: tstart,tfin
 
     lx1=size(vs1,1)-4
     lx2=size(vs1,2)-4
@@ -194,34 +194,34 @@ contains
     !-------conditions should be updated after x3,x2 sweeps.  I'm
     !-------really to lazy to deal with this now...
 
-    real(8), dimension(-1:,-1:,-1:), intent(in) :: f    !f includes ghost cells
-    real(8), dimension(:,:,:), intent(in) :: v1i
-    real(8), dimension(:,:,:), intent(in) :: v2i
-    real(8), dimension(:,:,:), intent(in) :: v3i
-    real(8), intent(in) :: dt
+    real(wp), dimension(-1:,-1:,-1:), intent(in) :: f    !f includes ghost cells
+    real(wp), dimension(:,:,:), intent(in) :: v1i
+    real(wp), dimension(:,:,:), intent(in) :: v2i
+    real(wp), dimension(:,:,:), intent(in) :: v3i
+    real(wp), intent(in) :: dt
     type(curvmesh), intent(in) :: x
     integer, intent(in) :: frank    !f's rank so that we know which metric coeffs to use.
 
     integer :: ix1,ix2,ix3,lx1,lx2,lx3
-    real(8), dimension(-1:size(f,1)-2) :: fx1slice
-    real(8), dimension(1:size(f,1)-3) :: v1slice    
-    real(8), dimension(-1:size(f,1)-2) :: h11x1slice    !includes ghost cells
-    real(8), dimension(1:size(f,1)-3) :: h12ix1slice    !just includes interface info
-    real(8), dimension(1:size(f,1)-3) :: h1ix1slice
+    real(wp), dimension(-1:size(f,1)-2) :: fx1slice
+    real(wp), dimension(1:size(f,1)-3) :: v1slice    
+    real(wp), dimension(-1:size(f,1)-2) :: h11x1slice    !includes ghost cells
+    real(wp), dimension(1:size(f,1)-3) :: h12ix1slice    !just includes interface info
+    real(wp), dimension(1:size(f,1)-3) :: h1ix1slice
 
-    real(8), dimension(-1:size(f,2)-2) :: fx2slice
-    real(8), dimension(1:size(f,2)-3) :: v2slice
-    real(8), dimension(-1:size(f,2)-2) :: h21x2slice    !includes ghost cells
-    real(8), dimension(1:size(f,2)-3) :: h22ix2slice    !just includes interface info
-    real(8), dimension(1:size(f,2)-3) :: h2ix2slice
+    real(wp), dimension(-1:size(f,2)-2) :: fx2slice
+    real(wp), dimension(1:size(f,2)-3) :: v2slice
+    real(wp), dimension(-1:size(f,2)-2) :: h21x2slice    !includes ghost cells
+    real(wp), dimension(1:size(f,2)-3) :: h22ix2slice    !just includes interface info
+    real(wp), dimension(1:size(f,2)-3) :: h2ix2slice
 
-    real(8), dimension(-1:size(f,3)-2) :: fx3slice
-    real(8), dimension(1:size(f,3)-3) :: v3slice
-    real(8), dimension(-1:size(f,3)-2) :: h31x3slice    !includes ghost cells
-    real(8), dimension(1:size(f,3)-3) :: h32ix3slice    !just includes interface info
-    real(8), dimension(1:size(f,3)-3) :: h3ix3slice
+    real(wp), dimension(-1:size(f,3)-2) :: fx3slice
+    real(wp), dimension(1:size(f,3)-3) :: v3slice
+    real(wp), dimension(-1:size(f,3)-2) :: h31x3slice    !includes ghost cells
+    real(wp), dimension(1:size(f,3)-3) :: h32ix3slice    !just includes interface info
+    real(wp), dimension(1:size(f,3)-3) :: h3ix3slice
 
-    real(8), dimension(-1:size(f,1)-2,-1:size(f,2)-2,-1:size(f,3)-2) :: advec3D_MC_mpi_curv
+    real(wp), dimension(-1:size(f,1)-2,-1:size(f,2)-2,-1:size(f,3)-2) :: advec3D_MC_mpi_curv
 
 
     lx1=size(f,1)-4
@@ -300,20 +300,20 @@ contains
     !-----IT WILL BE THE SAME AS THE CARTESIAN PROCEDURE.
     !----------------------------------------------------------------
 
-    real(8), dimension(-1:), intent(in) :: f    !f includes ghost cells
-    real(8), dimension(:), intent(in) :: v1i
-    real(8), intent(in) :: dt
-    real(8), dimension(0:), intent(in) :: dx1   !ith backward difference
-    real(8), dimension(:), intent(in) :: dx1i   !interface-based differences - does not include any ghost cell
-    real(8), dimension(-1:), intent(in) :: ha1    !cell-centered metric factor product 1; includes ghost cells
-    real(8), dimension(:), intent(in) :: ha2i   !cell interface metric factor product 2
-    real(8), dimension(:), intent(in) :: h1i    !cell interface metric factor for dimension being advected
+    real(wp), dimension(-1:), intent(in) :: f    !f includes ghost cells
+    real(wp), dimension(:), intent(in) :: v1i
+    real(wp), intent(in) :: dt
+    real(wp), dimension(0:), intent(in) :: dx1   !ith backward difference
+    real(wp), dimension(:), intent(in) :: dx1i   !interface-based differences - does not include any ghost cell
+    real(wp), dimension(-1:), intent(in) :: ha1    !cell-centered metric factor product 1; includes ghost cells
+    real(wp), dimension(:), intent(in) :: ha2i   !cell interface metric factor product 2
+    real(wp), dimension(:), intent(in) :: h1i    !cell interface metric factor for dimension being advected
 
     integer :: ix1,lx1                          !overwrite grid module lx1 in this function's scope, since it gets called for x1,x2,x3
-    real(8), dimension(size(v1i)) :: phi
-    real(8), dimension(0:size(v1i)) :: slope         !slopes only need through first layer of ghosts
-    real(8) :: lslope,rslope,cslope
-    real(8), dimension(-1:size(f)-2) :: advec1D_MC_curv
+    real(wp), dimension(size(v1i)) :: phi
+    real(wp), dimension(0:size(v1i)) :: slope         !slopes only need through first layer of ghosts
+    real(wp) :: lslope,rslope,cslope
+    real(wp), dimension(-1:size(f)-2) :: advec1D_MC_curv
 
 
     lx1=size(f)-4     !we don't know what dimension this is so we actually do need to compute it
@@ -350,8 +350,8 @@ contains
   end function advec1D_MC_curv
 
   function minmod(a,b)
-    real(8), intent(in) :: a,b
-    real(8) :: minmod
+    real(wp), intent(in) :: a,b
+    real(wp) :: minmod
 
     if (a*b <= 0d0) then
       minmod=0d0

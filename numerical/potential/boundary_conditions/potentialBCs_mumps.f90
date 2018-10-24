@@ -10,29 +10,29 @@ use temporal, only : dateinc
 implicit none
 
 !ALL OF THE FOLLOWING MODULE-SCOPE ARRAYS ARE USED FOR INTERPOLATING PRECIPITATION INPUT FILES (IF USED)
-real(8), dimension(:), allocatable, private :: mlonp
-real(8), dimension(:), allocatable, private :: mlatp    !coordinates of electric field data
+real(wp), dimension(:), allocatable, private :: mlonp
+real(wp), dimension(:), allocatable, private :: mlatp    !coordinates of electric field data
 integer, private :: llon,llat
 
-real(8), dimension(:,:), allocatable, private :: E0xp,E0yp    !x (lon.) and y (lat.) components of the electric field
-real(8), dimension(:,:), allocatable, private :: Vminx1p,Vmaxx1p
-real(8), dimension(:), allocatable, private :: Vminx2pslice,Vmaxx2pslice    !only slices because field lines (x1-dimension) should be equipotentials
-real(8), dimension(:), allocatable, private :: Vminx3pslice,Vmaxx3pslice
-real(8), dimension(:), allocatable, private :: Edatp    !needed when a 1D interpolation is to be done, i.e. when there is 1D sourde data
+real(wp), dimension(:,:), allocatable, private :: E0xp,E0yp    !x (lon.) and y (lat.) components of the electric field
+real(wp), dimension(:,:), allocatable, private :: Vminx1p,Vmaxx1p
+real(wp), dimension(:), allocatable, private :: Vminx2pslice,Vmaxx2pslice    !only slices because field lines (x1-dimension) should be equipotentials
+real(wp), dimension(:), allocatable, private :: Vminx3pslice,Vmaxx3pslice
+real(wp), dimension(:), allocatable, private :: Edatp    !needed when a 1D interpolation is to be done, i.e. when there is 1D sourde data
 
-real(8), dimension(:), allocatable, private :: mloni    !flat list of mlat,mlon locations on grid that we need to interpolate onto
-real(8), dimension(:), allocatable, private :: mlati
+real(wp), dimension(:), allocatable, private :: mloni    !flat list of mlat,mlon locations on grid that we need to interpolate onto
+real(wp), dimension(:), allocatable, private :: mlati
 
-real(8), dimension(:,:), allocatable, private :: E0xiprev,E0xinext,E0yiprev,E0yinext    !fields interpolated spatially
-real(8), dimension(:,:), allocatable, private :: Vminx1iprev,Vminx1inext,Vmaxx1iprev,Vmaxx1inext
-real(8), dimension(:), allocatable, private :: Vminx2isprev,Vminx2isnext,Vmaxx2isprev,Vmaxx2isnext
-real(8), dimension(:), allocatable, private :: Vminx3isprev,Vminx3isnext,Vmaxx3isprev,Vmaxx3isnext
+real(wp), dimension(:,:), allocatable, private :: E0xiprev,E0xinext,E0yiprev,E0yinext    !fields interpolated spatially
+real(wp), dimension(:,:), allocatable, private :: Vminx1iprev,Vminx1inext,Vmaxx1iprev,Vmaxx1inext
+real(wp), dimension(:), allocatable, private :: Vminx2isprev,Vminx2isnext,Vmaxx2isprev,Vmaxx2isnext
+real(wp), dimension(:), allocatable, private :: Vminx3isprev,Vminx3isnext,Vmaxx3isprev,Vmaxx3isnext
 
 integer, dimension(3), private :: ymdprev,ymdnext   !dates for interpolated data
-real(8), private :: UTsecprev,UTsecnext
-real(8), private :: tprev,tnext
+real(wp), private :: UTsecprev,UTsecnext
+real(wp), private :: tprev,tnext
 
-real(8), private :: flagdirich_double
+real(wp), private :: flagdirich_double
 
 contains
 
@@ -45,35 +45,35 @@ contains
     !FIELD-ALIGNED CURRENT.  NOTE THAT THIS IS ONLY CALLED BY THE ROOT
     !PROCESS!!!
 
-    real(8), intent(in) :: dt
-    real(8), intent(in) :: dtE0    !cadence at which we are reading in the E0 files
-    real(8), intent(in) :: t
+    real(wp), intent(in) :: dt
+    real(wp), intent(in) :: dtE0    !cadence at which we are reading in the E0 files
+    real(wp), intent(in) :: t
     integer, dimension(3), intent(in) :: ymd    !date for which we wish to calculate perturbations
-    real(8), intent(in) :: UTsec
+    real(wp), intent(in) :: UTsec
     character(*), intent(in) :: E0dir       !directory where data are kept
 
     type(curvmesh), intent(in) :: x
 
-    real(8), dimension(:,:), intent(out), target :: Vminx1,Vmaxx1
-    real(8), dimension(:,:), intent(out) :: Vminx2,Vmaxx2
-    real(8), dimension(:,:), intent(out) :: Vminx3,Vmaxx3
-    real(8), dimension(:,:,:), intent(out) :: E01all,E02all,E03all
+    real(wp), dimension(:,:), intent(out), target :: Vminx1,Vmaxx1
+    real(wp), dimension(:,:), intent(out) :: Vminx2,Vmaxx2
+    real(wp), dimension(:,:), intent(out) :: Vminx3,Vmaxx3
+    real(wp), dimension(:,:,:), intent(out) :: E01all,E02all,E03all
     integer, intent(out) :: flagdirich
 
     character(:), allocatable :: fn1, fn2, fn3
     integer :: inunit
 
-    real(8) :: UTsectmp
+    real(wp) :: UTsectmp
     integer, dimension(3) :: ymdtmp
 
-    real(8), dimension(lx2*lx3all) :: parami
-    real(8), dimension(lx2,lx3all) :: parami2D
-    real(8), dimension(lx2) :: parami2    !interpolated parameter with size of lx2
-    real(8), dimension(lx3all) :: parami3
-    real(8), dimension(lx2,lx3all) :: E0xinow,E0yinow,Vminx1inow,Vmaxx1inow
-    real(8), dimension(lx3all) :: Vminx2isnow,Vmaxx2isnow
-    real(8), dimension(lx2) :: Vminx3isnow,Vmaxx3isnow
-    real(8) :: slope
+    real(wp), dimension(lx2*lx3all) :: parami
+    real(wp), dimension(lx2,lx3all) :: parami2D
+    real(wp), dimension(lx2) :: parami2    !interpolated parameter with size of lx2
+    real(wp), dimension(lx3all) :: parami3
+    real(wp), dimension(lx2,lx3all) :: E0xinow,E0yinow,Vminx1inow,Vmaxx1inow
+    real(wp), dimension(lx3all) :: Vminx2isnow,Vmaxx2isnow
+    real(wp), dimension(lx2) :: Vminx3isnow,Vmaxx3isnow
+    real(wp) :: slope
 
     integer :: ix1,ix2,ix3,iid,iflat,ios    !grid sizes are borrowed from grid module
 
@@ -427,31 +427,31 @@ contains
 !    !FIELD-ALIGNED CURRENT.  NOTE THAT THIS IS ONLY CALLED BY THE ROOT
 !    !PROCESS!!!
 !
-!    real(8), intent(in) :: dt
-!    real(8), intent(in) :: dtE0    !cadence at which we are reading in the E0 files
-!    real(8), intent(in) :: t
+!    real(wp), intent(in) :: dt
+!    real(wp), intent(in) :: dtE0    !cadence at which we are reading in the E0 files
+!    real(wp), intent(in) :: t
 !    integer, dimension(3), intent(in) :: ymd    !date for which we wish to calculate perturbations
-!    real(8), intent(in) :: UTsec
+!    real(wp), intent(in) :: UTsec
 !    character(*), intent(in) :: E0dir       !directory where data is kept
 !
-!    real(8), dimension(:,:,:), intent(in) ::  sig0all
+!    real(wp), dimension(:,:,:), intent(in) ::  sig0all
 !    type(curvmesh), intent(in) :: x
 !
-!    real(8), dimension(:,:), intent(out), target :: Vminx1,Vmaxx1
-!    real(8), dimension(:,:), intent(out) :: Vminx2,Vmaxx2
-!    real(8), dimension(:,:), intent(out) :: Vminx3,Vmaxx3
-!    real(8), dimension(:,:,:), intent(out) :: E01all,E02all,E03all
+!    real(wp), dimension(:,:), intent(out), target :: Vminx1,Vmaxx1
+!    real(wp), dimension(:,:), intent(out) :: Vminx2,Vmaxx2
+!    real(wp), dimension(:,:), intent(out) :: Vminx3,Vmaxx3
+!    real(wp), dimension(:,:,:), intent(out) :: E01all,E02all,E03all
 !    integer, intent(out) :: flagdirich
 !
 !    character(512) :: filename 
 !    integer, parameter :: inunit=48
 !
-!    real(8) :: UTsectmp
+!    real(wp) :: UTsectmp
 !    integer, dimension(3) :: ymdtmp
 !
-!    real(8), dimension(lx2*lx3all) :: parami
-!    real(8), dimension(lx2,lx3all) :: slope,E0xinow,E0yinow    !these are for each worker
-!    real(8), dimension(:,:), allocatable :: E0xinowall,E0yinowall    !full grid copies for root to assemble
+!    real(wp), dimension(lx2*lx3all) :: parami
+!    real(wp), dimension(lx2,lx3all) :: slope,E0xinow,E0yinow    !these are for each worker
+!    real(wp), dimension(:,:), allocatable :: E0xinowall,E0yinowall    !full grid copies for root to assemble
 !
 !    integer :: ix1,ix2,ix3,iid,iflat,ios    !grid sizes are borrowed from grid module
 !
@@ -692,26 +692,26 @@ contains
 
     !THIS IS A SIMPLE GAUSSIAN POTENTIAL PERTURBATION (IN X1,X2,X3 SPAE)
 
-    real(8), intent(in) :: t
+    real(wp), intent(in) :: t
     type(curvmesh), intent(in) :: x
 
-    real(8), dimension(:,:), intent(out), target :: Vminx1,Vmaxx1
-    real(8), dimension(:,:), intent(out) :: Vminx2,Vmaxx2
-    real(8), dimension(:,:), intent(out) :: Vminx3,Vmaxx3
-    real(8), dimension(:,:,:), intent(out) :: E01all,E02all,E03all
+    real(wp), dimension(:,:), intent(out), target :: Vminx1,Vmaxx1
+    real(wp), dimension(:,:), intent(out) :: Vminx2,Vmaxx2
+    real(wp), dimension(:,:), intent(out) :: Vminx3,Vmaxx3
+    real(wp), dimension(:,:,:), intent(out) :: E01all,E02all,E03all
     integer, intent(out) :: flagdirich
 
-    real(8), dimension(1:size(Vmaxx1,1),1:size(Vmaxx1,2)) :: Emaxx1    !pseudo-electric field
+    real(wp), dimension(1:size(Vmaxx1,1),1:size(Vmaxx1,2)) :: Emaxx1    !pseudo-electric field
 
-    real(8) :: Phipk
+    real(wp) :: Phipk
     integer :: ix1,ix2,ix3    !grid sizes are borrow from grid module
     integer :: im
 !    integer, parameter :: lmodes=8
-    real(8) :: phase
-    real(8), dimension(1:lx2) :: x3dev    !a little bit surprise we can use grid mod lx2 var as size...
-    real(8) :: meanx2,sigx2,meanx3,sigx3,meant,sigt,sigcurv,x30amp,varc    !for setting background field
+    real(wp) :: phase
+    real(wp), dimension(1:lx2) :: x3dev    !a little bit surprise we can use grid mod lx2 var as size...
+    real(wp) :: meanx2,sigx2,meanx3,sigx3,meant,sigt,sigcurv,x30amp,varc    !for setting background field
 
-    real(8), dimension(:,:), pointer :: Vtopalt,Vbotalt
+    real(wp), dimension(:,:), pointer :: Vtopalt,Vbotalt
 
 
     !CALCULATE/SET TOP BOUNDARY CONDITIONS
@@ -760,32 +760,32 @@ contains
 !  subroutine potentialBCs2D_KHI(t,sig0all,x,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3, &
 !                                          Vmaxx3,E01all,E02all,E03all,flagdirich)
 !
-!    real(8), intent(in) :: t
-!    real(8), dimension(:,:,:), intent(in) ::  sig0all
+!    real(wp), intent(in) :: t
+!    real(wp), dimension(:,:,:), intent(in) ::  sig0all
 !    type(curvmesh), intent(in) :: x
 !
-!    real(8), dimension(:,:), intent(out) :: Vminx1,Vmaxx1
-!    real(8), dimension(:,:), intent(out) :: Vminx2,Vmaxx2
-!    real(8), dimension(:,:), intent(out) :: Vminx3,Vmaxx3
-!    real(8), dimension(:,:,:), intent(out) :: E01all,E02all,E03all
+!    real(wp), dimension(:,:), intent(out) :: Vminx1,Vmaxx1
+!    real(wp), dimension(:,:), intent(out) :: Vminx2,Vmaxx2
+!    real(wp), dimension(:,:), intent(out) :: Vminx3,Vmaxx3
+!    real(wp), dimension(:,:,:), intent(out) :: E01all,E02all,E03all
 !    integer, intent(out) :: flagdirich
 !
-!    real(8), dimension(1:size(Vmaxx1,1),1:size(Vmaxx1,2)) :: Emaxx1    !pseudo-electric field
+!    real(wp), dimension(1:size(Vmaxx1,1),1:size(Vmaxx1,2)) :: Emaxx1    !pseudo-electric field
 !
-!    real(8) :: Phipk
+!    real(wp) :: Phipk
 !    integer :: ix1,ix2,ix3    !grid sizes are borrow from grid module
 !    integer :: im
 !!    integer, parameter :: lmodes=8
-!    real(8) :: phase
-!    real(8), dimension(1:lx2) :: x3dev    !a little bit surprise we can use grid mod lx2 var as size...
-!    real(8) :: meanx2,sigx2,meanx3,sigx3,meant,sigt,sigcurv,x30amp,varc    !for setting background field
+!    real(wp) :: phase
+!    real(wp), dimension(1:lx2) :: x3dev    !a little bit surprise we can use grid mod lx2 var as size...
+!    real(wp) :: meanx2,sigx2,meanx3,sigx3,meant,sigt,sigcurv,x30amp,varc    !for setting background field
 !
-!    real(8), dimension(1:size(E01all,1),1:size(E01all,2),1:size(E01all,3)) ::  vel3    !x3 component of initial drift velocity
-!    real(8), dimension(1:size(E01all,2),1:size(E01all,3)) :: E2slab,Phislab
+!    real(wp), dimension(1:size(E01all,1),1:size(E01all,2),1:size(E01all,3)) ::  vel3    !x3 component of initial drift velocity
+!    real(wp), dimension(1:size(E01all,2),1:size(E01all,3)) :: E2slab,Phislab
 !
-!    real(8), parameter :: v0=500d0
-!    real(8), parameter :: vn=500d0, voffset=100d0
-!    real(8), parameter :: B1val=-50000d-9    !must match grid structure avg. value
+!    real(wp), parameter :: v0=500d0
+!    real(wp), parameter :: vn=500d0, voffset=100d0
+!    real(wp), parameter :: B1val=-50000d-9    !must match grid structure avg. value
 !
 !
 !    !CALCULATE/SET TOP BOUNDARY CONDITIONS
@@ -850,25 +850,25 @@ contains
 !  subroutine potentialBCs2D_GDI(t,sig0all,x,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3, &
 !                                          Vmaxx3,E01all,E02all,E03all,flagdirich)
 !
-!    real(8), intent(in) :: t
-!    real(8), dimension(:,:,:), intent(in) ::  sig0all
+!    real(wp), intent(in) :: t
+!    real(wp), dimension(:,:,:), intent(in) ::  sig0all
 !    type(curvmesh), intent(in) :: x
 !
-!    real(8), dimension(:,:), intent(out) :: Vminx1,Vmaxx1
-!    real(8), dimension(:,:), intent(out) :: Vminx2,Vmaxx2
-!    real(8), dimension(:,:), intent(out) :: Vminx3,Vmaxx3
-!    real(8), dimension(:,:,:), intent(out) :: E01all,E02all,E03all
+!    real(wp), dimension(:,:), intent(out) :: Vminx1,Vmaxx1
+!    real(wp), dimension(:,:), intent(out) :: Vminx2,Vmaxx2
+!    real(wp), dimension(:,:), intent(out) :: Vminx3,Vmaxx3
+!    real(wp), dimension(:,:,:), intent(out) :: E01all,E02all,E03all
 !    integer, intent(out) :: flagdirich
 !
-!    real(8), dimension(1:size(Vmaxx1,1),1:size(Vmaxx1,2)) :: Emaxx1    !pseudo-electric field
+!    real(wp), dimension(1:size(Vmaxx1,1),1:size(Vmaxx1,2)) :: Emaxx1    !pseudo-electric field
 !
-!    real(8) :: Phipk
+!    real(wp) :: Phipk
 !    integer :: ix1,ix2,ix3    !grid sizes are borrow from grid module
 !    integer :: im
 !!    integer, parameter :: lmodes=8
-!    real(8) :: phase
-!    real(8), dimension(1:lx2) :: x3dev    !a little bit surprise we can use grid mod lx2 var as size...
-!    real(8) :: meanx2,sigx2,meanx3,sigx3,meant,sigt,sigcurv,x30amp,varc    !for setting background field
+!    real(wp) :: phase
+!    real(wp), dimension(1:lx2) :: x3dev    !a little bit surprise we can use grid mod lx2 var as size...
+!    real(wp) :: meanx2,sigx2,meanx3,sigx3,meant,sigt,sigcurv,x30amp,varc    !for setting background field
 !
 !
 !    !SIZES
@@ -928,21 +928,21 @@ contains
 !    use phys_consts
 !
 !    implicit none
-!    real(8), intent(in) :: t
-!    real(8), dimension(:,:,:), intent(in) ::  sig0all
+!    real(wp), intent(in) :: t
+!    real(wp), dimension(:,:,:), intent(in) ::  sig0all
 !    type(curvmesh), intent(in) :: x
 !
-!    real(8), dimension(:,:), intent(out), target :: Vminx1,Vmaxx1
-!    real(8), dimension(:,:), intent(out) :: Vminx2,Vmaxx2
-!    real(8), dimension(:,:), intent(out) :: Vminx3,Vmaxx3
-!    real(8), dimension(:,:,:), intent(out) :: E01all,E02all,E03all
+!    real(wp), dimension(:,:), intent(out), target :: Vminx1,Vmaxx1
+!    real(wp), dimension(:,:), intent(out) :: Vminx2,Vmaxx2
+!    real(wp), dimension(:,:), intent(out) :: Vminx3,Vmaxx3
+!    real(wp), dimension(:,:,:), intent(out) :: E01all,E02all,E03all
 !    integer, intent(out) :: flagdirich
 !
-!    real(8) :: Jpk
+!    real(wp) :: Jpk
 !    integer :: ix1,ix2,ix3,lx1,lx2,lx3all
-!    real(8) :: meanx2,sigx2,meanx3,sigx3,meant,sigt,sigcurv,x30amp,varc,x2enve    !for setting background field
+!    real(wp) :: meanx2,sigx2,meanx3,sigx3,meant,sigt,sigcurv,x30amp,varc,x2enve    !for setting background field
 !
-!    real(8), dimension(:,:), pointer :: Vtopalt,Vbotalt
+!    real(wp), dimension(:,:), pointer :: Vtopalt,Vbotalt
 !
 !
 !    !SIZES
@@ -1023,21 +1023,21 @@ contains
 !    use phys_consts
 !
 !    implicit none
-!    real(8), intent(in) :: t
-!    real(8), dimension(:,:,:), intent(in) ::  sig0all
+!    real(wp), intent(in) :: t
+!    real(wp), dimension(:,:,:), intent(in) ::  sig0all
 !    type(curvmesh), intent(in) :: x
 !
-!    real(8), dimension(:,:), intent(out), target :: Vminx1,Vmaxx1
-!    real(8), dimension(:,:), intent(out) :: Vminx2,Vmaxx2
-!    real(8), dimension(:,:), intent(out) :: Vminx3,Vmaxx3
-!    real(8), dimension(:,:,:), intent(out) :: E01all,E02all,E03all
+!    real(wp), dimension(:,:), intent(out), target :: Vminx1,Vmaxx1
+!    real(wp), dimension(:,:), intent(out) :: Vminx2,Vmaxx2
+!    real(wp), dimension(:,:), intent(out) :: Vminx3,Vmaxx3
+!    real(wp), dimension(:,:,:), intent(out) :: E01all,E02all,E03all
 !    integer, intent(out) :: flagdirich
 !
-!    real(8) :: Jpk
+!    real(wp) :: Jpk
 !    integer :: ix1,ix2,ix3,lx1,lx2,lx3all
-!    real(8) :: meanx2,sigx2,meanx3,sigx3,meant,sigt,sigcurv,x30amp,varc,x2enve    !for setting background field
+!    real(wp) :: meanx2,sigx2,meanx3,sigx3,meant,sigt,sigcurv,x30amp,varc,x2enve    !for setting background field
 !
-!    real(8), dimension(:,:), pointer :: Vtopalt,Vbotalt
+!    real(wp), dimension(:,:), pointer :: Vtopalt,Vbotalt
 !
 !
 !    !SIZES
@@ -1109,27 +1109,27 @@ contains
 !
 !    !THIS IS A SIMPLE GAUSSIAN POTENTIAL PERTURBATION (IN X1,X2,X3 SPAE)
 !
-!    real(8), intent(in) :: t
-!    real(8), dimension(:,:,:), intent(in) ::  sig0all
+!    real(wp), intent(in) :: t
+!    real(wp), dimension(:,:,:), intent(in) ::  sig0all
 !    type(curvmesh), intent(in) :: x
 !
-!    real(8), dimension(:,:), intent(out), target :: Vminx1,Vmaxx1
-!    real(8), dimension(:,:), intent(out) :: Vminx2,Vmaxx2
-!    real(8), dimension(:,:), intent(out) :: Vminx3,Vmaxx3
-!    real(8), dimension(:,:,:), intent(out) :: E01all,E02all,E03all
+!    real(wp), dimension(:,:), intent(out), target :: Vminx1,Vmaxx1
+!    real(wp), dimension(:,:), intent(out) :: Vminx2,Vmaxx2
+!    real(wp), dimension(:,:), intent(out) :: Vminx3,Vmaxx3
+!    real(wp), dimension(:,:,:), intent(out) :: E01all,E02all,E03all
 !    integer, intent(out) :: flagdirich
 !
-!    real(8), dimension(1:size(Vmaxx1,1),1:size(Vmaxx1,2)) :: Emaxx1    !pseudo-electric field
+!    real(wp), dimension(1:size(Vmaxx1,1),1:size(Vmaxx1,2)) :: Emaxx1    !pseudo-electric field
 !
-!    real(8) :: Phipk
+!    real(wp) :: Phipk
 !    integer :: ix1,ix2,ix3    !grid sizes are borrow from grid module
 !    integer :: im
 !!    integer, parameter :: lmodes=8
-!    real(8) :: phase
-!    real(8), dimension(1:lx2) :: x3dev    !a little bit surprise we can use grid mod lx2 var as size...
-!    real(8) :: meanx2,sigx2,meanx3,sigx3,meant,sigt,sigcurv,x30amp,varc    !for setting background field
+!    real(wp) :: phase
+!    real(wp), dimension(1:lx2) :: x3dev    !a little bit surprise we can use grid mod lx2 var as size...
+!    real(wp) :: meanx2,sigx2,meanx3,sigx3,meant,sigt,sigcurv,x30amp,varc    !for setting background field
 !
-!    real(8), dimension(:,:), pointer :: Vtopalt,Vbotalt
+!    real(wp), dimension(:,:), pointer :: Vtopalt,Vbotalt
 !
 !
 !    !CALCULATE/SET TOP BOUNDARY CONDITIONS
@@ -1180,27 +1180,27 @@ contains
 !
 !    !THIS IS A SIMPLE GAUSSIAN POTENTIAL PERTURBATION (IN X1,X2,X3 SPAE)
 !
-!    real(8), intent(in) :: t
-!    real(8), dimension(:,:,:), intent(in) ::  sig0all
+!    real(wp), intent(in) :: t
+!    real(wp), dimension(:,:,:), intent(in) ::  sig0all
 !    type(curvmesh), intent(in) :: x
 !
-!    real(8), dimension(:,:), intent(out), target :: Vminx1,Vmaxx1
-!    real(8), dimension(:,:), intent(out) :: Vminx2,Vmaxx2
-!    real(8), dimension(:,:), intent(out) :: Vminx3,Vmaxx3
-!    real(8), dimension(:,:,:), intent(out) :: E01all,E02all,E03all
+!    real(wp), dimension(:,:), intent(out), target :: Vminx1,Vmaxx1
+!    real(wp), dimension(:,:), intent(out) :: Vminx2,Vmaxx2
+!    real(wp), dimension(:,:), intent(out) :: Vminx3,Vmaxx3
+!    real(wp), dimension(:,:,:), intent(out) :: E01all,E02all,E03all
 !    integer, intent(out) :: flagdirich
 !
-!    real(8), dimension(1:size(Vmaxx1,1),1:size(Vmaxx1,2)) :: Emaxx1    !pseudo-electric field
+!    real(wp), dimension(1:size(Vmaxx1,1),1:size(Vmaxx1,2)) :: Emaxx1    !pseudo-electric field
 !
-!    real(8) :: Phipk
+!    real(wp) :: Phipk
 !    integer :: ix1,ix2,ix3    !grid sizes are borrow from grid module
 !    integer :: im
 !!    integer, parameter :: lmodes=8
-!    real(8) :: phase
-!    real(8), dimension(1:lx2) :: x3dev    !a little bit surprise we can use grid mod lx2 var as size...
-!    real(8) :: meanx2,sigx2,meanx3,sigx3,meant,sigt,sigcurv,x30amp,varc    !for setting background field
+!    real(wp) :: phase
+!    real(wp), dimension(1:lx2) :: x3dev    !a little bit surprise we can use grid mod lx2 var as size...
+!    real(wp) :: meanx2,sigx2,meanx3,sigx3,meant,sigt,sigcurv,x30amp,varc    !for setting background field
 !
-!    real(8), dimension(:,:), pointer :: Vtopalt,Vbotalt
+!    real(wp), dimension(:,:), pointer :: Vtopalt,Vbotalt
 !
 !
 !    !CALCULATE/SET TOP BOUNDARY CONDITIONS
@@ -1263,25 +1263,25 @@ contains
 !
 !    !THIS IS A SIMPLE GAUSSIAN POTENTIAL PERTURBATION (IN X1,X2,X3 SPAE)
 !
-!    real(8), intent(in) :: t
-!    real(8), dimension(:,:,:), intent(in) ::  sig0all
+!    real(wp), intent(in) :: t
+!    real(wp), dimension(:,:,:), intent(in) ::  sig0all
 !    type(curvmesh), intent(in) :: x
 !
-!    real(8), dimension(:,:), intent(out) :: Vminx1,Vmaxx1
-!    real(8), dimension(:,:), intent(out) :: Vminx2,Vmaxx2
-!    real(8), dimension(:,:), intent(out) :: Vminx3,Vmaxx3
-!    real(8), dimension(:,:,:), intent(out) :: E01all,E02all,E03all
+!    real(wp), dimension(:,:), intent(out) :: Vminx1,Vmaxx1
+!    real(wp), dimension(:,:), intent(out) :: Vminx2,Vmaxx2
+!    real(wp), dimension(:,:), intent(out) :: Vminx3,Vmaxx3
+!    real(wp), dimension(:,:,:), intent(out) :: E01all,E02all,E03all
 !    integer, intent(out) :: flagdirich
 !
-!    real(8), dimension(1:size(Vmaxx1,1),1:size(Vmaxx1,2)) :: Emaxx1    !pseudo-electric field
+!    real(wp), dimension(1:size(Vmaxx1,1),1:size(Vmaxx1,2)) :: Emaxx1    !pseudo-electric field
 !
-!    real(8) :: Phipk
+!    real(wp) :: Phipk
 !    integer :: ix1,ix2,ix3    !grid sizes are borrow from grid module
 !    integer :: im
 !!    integer, parameter :: lmodes=8
-!    real(8) :: phase
-!    real(8), dimension(1:lx2) :: x3dev    !a little bit surprise we can use grid mod lx2 var as size...
-!    real(8) :: meanx2,sigx2,meanx3,sigx3,meant,sigt,sigcurv,x30amp,varc    !for setting background field
+!    real(wp) :: phase
+!    real(wp), dimension(1:lx2) :: x3dev    !a little bit surprise we can use grid mod lx2 var as size...
+!    real(wp) :: meanx2,sigx2,meanx3,sigx3,meant,sigt,sigcurv,x30amp,varc    !for setting background field
 !
 !
 !    !CALCULATE/SET TOP BOUNDARY CONDITIONS
@@ -1335,27 +1335,27 @@ contains
 !
 !    !THIS IS A SIMPLE GAUSSIAN POTENTIAL PERTURBATION (IN X1,X2,X3 SPAE)
 !
-!    real(8), intent(in) :: t
-!    real(8), dimension(:,:,:), intent(in) ::  sig0all
+!    real(wp), intent(in) :: t
+!    real(wp), dimension(:,:,:), intent(in) ::  sig0all
 !    type(curvmesh), intent(in) :: x
 !
-!    real(8), dimension(:,:), intent(out), target :: Vminx1,Vmaxx1
-!    real(8), dimension(:,:), intent(out) :: Vminx2,Vmaxx2
-!    real(8), dimension(:,:), intent(out) :: Vminx3,Vmaxx3
-!    real(8), dimension(:,:,:), intent(out) :: E01all,E02all,E03all
+!    real(wp), dimension(:,:), intent(out), target :: Vminx1,Vmaxx1
+!    real(wp), dimension(:,:), intent(out) :: Vminx2,Vmaxx2
+!    real(wp), dimension(:,:), intent(out) :: Vminx3,Vmaxx3
+!    real(wp), dimension(:,:,:), intent(out) :: E01all,E02all,E03all
 !    integer, intent(out) :: flagdirich
 !
-!    real(8), dimension(1:size(Vmaxx1,1),1:size(Vmaxx1,2)) :: Emaxx1    !pseudo-electric field
+!    real(wp), dimension(1:size(Vmaxx1,1),1:size(Vmaxx1,2)) :: Emaxx1    !pseudo-electric field
 !
-!    real(8) :: Phipk
+!    real(wp) :: Phipk
 !    integer :: ix1,ix2,ix3    !grid sizes are borrow from grid module
 !    integer :: im
 !!    integer, parameter :: lmodes=8
-!    real(8) :: phase
-!    real(8), dimension(1:lx2) :: x3dev    !a little bit surprise we can use grid mod lx2 var as size...
-!    real(8) :: meanx2,sigx2,meanx3,sigx3,meant,sigt,sigcurv,x30amp,varc    !for setting background field
+!    real(wp) :: phase
+!    real(wp), dimension(1:lx2) :: x3dev    !a little bit surprise we can use grid mod lx2 var as size...
+!    real(wp) :: meanx2,sigx2,meanx3,sigx3,meant,sigt,sigcurv,x30amp,varc    !for setting background field
 !
-!    real(8), dimension(:,:), pointer :: Vtopalt,Vbotalt
+!    real(wp), dimension(:,:), pointer :: Vtopalt,Vbotalt
 !
 !
 !    !CALCULATE/SET TOP BOUNDARY CONDITIONS
@@ -1418,25 +1418,25 @@ contains
 !
 !    !THIS IS A SIMPLE GAUSSIAN POTENTIAL PERTURBATION (IN X1,X2,X3 SPAE)
 !
-!    real(8), intent(in) :: t
-!    real(8), dimension(:,:,:), intent(in) ::  sig0all
+!    real(wp), intent(in) :: t
+!    real(wp), dimension(:,:,:), intent(in) ::  sig0all
 !    type(curvmesh), intent(in) :: x
 !
-!    real(8), dimension(:,:), intent(out) :: Vminx1,Vmaxx1
-!    real(8), dimension(:,:), intent(out) :: Vminx2,Vmaxx2
-!    real(8), dimension(:,:), intent(out) :: Vminx3,Vmaxx3
-!    real(8), dimension(:,:,:), intent(out) :: E01all,E02all,E03all
+!    real(wp), dimension(:,:), intent(out) :: Vminx1,Vmaxx1
+!    real(wp), dimension(:,:), intent(out) :: Vminx2,Vmaxx2
+!    real(wp), dimension(:,:), intent(out) :: Vminx3,Vmaxx3
+!    real(wp), dimension(:,:,:), intent(out) :: E01all,E02all,E03all
 !    integer, intent(out) :: flagdirich
 !
-!    real(8), dimension(1:size(Vmaxx1,1),1:size(Vmaxx1,2)) :: Emaxx1    !pseudo-electric field
+!    real(wp), dimension(1:size(Vmaxx1,1),1:size(Vmaxx1,2)) :: Emaxx1    !pseudo-electric field
 !
-!    real(8) :: Phipk
+!    real(wp) :: Phipk
 !    integer :: ix1,ix2,ix3    !grid sizes are borrow from grid module
 !    integer :: im
 !!    integer, parameter :: lmodes=8
-!    real(8) :: phase
-!    real(8), dimension(1:lx2) :: x3dev    !a little bit surprise we can use grid mod lx2 var as size...
-!    real(8) :: meanx2,sigx2,meanx3,sigx3,meant,sigt,sigcurv,x30amp,varc    !for setting background field
+!    real(wp) :: phase
+!    real(wp), dimension(1:lx2) :: x3dev    !a little bit surprise we can use grid mod lx2 var as size...
+!    real(wp) :: meanx2,sigx2,meanx3,sigx3,meant,sigt,sigcurv,x30amp,varc    !for setting background field
 !
 !
 !    !CALCULATE/SET TOP BOUNDARY CONDITIONS
@@ -1489,25 +1489,25 @@ contains
 !
 !    !THIS WAS USED FOR MY CAVITY-GDI GRL PAPER
 !
-!    real(8), intent(in) :: t
-!    real(8), dimension(:,:,:), intent(in) ::  sig0all
+!    real(wp), intent(in) :: t
+!    real(wp), dimension(:,:,:), intent(in) ::  sig0all
 !    type(curvmesh), intent(in) :: x
 !
-!    real(8), dimension(:,:), intent(out) :: Vminx1,Vmaxx1
-!    real(8), dimension(:,:), intent(out) :: Vminx2,Vmaxx2
-!    real(8), dimension(:,:), intent(out) :: Vminx3,Vmaxx3
-!    real(8), dimension(:,:,:), intent(out) :: E01all,E02all,E03all
+!    real(wp), dimension(:,:), intent(out) :: Vminx1,Vmaxx1
+!    real(wp), dimension(:,:), intent(out) :: Vminx2,Vmaxx2
+!    real(wp), dimension(:,:), intent(out) :: Vminx3,Vmaxx3
+!    real(wp), dimension(:,:,:), intent(out) :: E01all,E02all,E03all
 !    integer, intent(out) :: flagdirich
 !
-!    real(8), dimension(1:size(Vmaxx1,1),1:size(Vmaxx1,2)) :: Emaxx1    !pseudo-electric field
+!    real(wp), dimension(1:size(Vmaxx1,1),1:size(Vmaxx1,2)) :: Emaxx1    !pseudo-electric field
 !
-!    real(8) :: Phipk
+!    real(wp) :: Phipk
 !    integer :: ix1,ix2,ix3    !grid sizes are borrow from grid module
 !    integer :: im
 !    integer, parameter :: lmodes=8
-!    real(8) :: phase
-!    real(8), dimension(1:lx2) :: x3dev    !a little bit surprise we can use grid mod lx2 var as size...
-!    real(8) :: meanx2,sigx2,meanx3,sigx3,meant,sigt,sigcurv,x30amp,varc    !for setting background field
+!    real(wp) :: phase
+!    real(wp), dimension(1:lx2) :: x3dev    !a little bit surprise we can use grid mod lx2 var as size...
+!    real(wp) :: meanx2,sigx2,meanx3,sigx3,meant,sigt,sigcurv,x30amp,varc    !for setting background field
 !
 !
 !    !SIZES

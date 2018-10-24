@@ -28,23 +28,23 @@ contains
     !------------------------------------------------------------
 
     type(curvmesh), intent(in) :: x
-    real(8), dimension(:,:,:,:), intent(in) :: nn
-    real(8), dimension(:,:,:), intent(in) :: Tn
-    real(8), dimension(:,:,:), intent(in) :: chi
-    real(8), intent(in) :: f107,f107a
+    real(wp), dimension(:,:,:,:), intent(in) :: nn
+    real(wp), dimension(:,:,:), intent(in) :: Tn
+    real(wp), dimension(:,:,:), intent(in) :: chi
+    real(wp), intent(in) :: f107,f107a
 
     integer, parameter :: ll=22     !number of wavelength bins
     integer :: il,isp
-    real(8), dimension(ll) :: lambda1,lambda2,fref,Aeuv,sigmaO,sigmaN2,sigmaO2
-    real(8), dimension(ll) :: brN2i,brN2di,brO2i,brO2di,pepiO,pepiN2i,pepiN2di,pepiO2i,pepiO2di
-    real(8), dimension(ll) :: Iinf
-    real(8), dimension(size(nn,1),size(nn,2),size(nn,3)) :: g,bigX,y,Chfn
-    real(8), dimension(size(nn,1),size(nn,2),size(nn,3)) :: nOcol,nN2col,nO2col
-    real(8), dimension(size(nn,1),size(nn,2),size(nn,3)) :: phototmp
-    real(8) :: gavg,H,Tninf
-    real(8), dimension(size(nn,1),size(nn,2),size(nn,3),ll) :: Iflux
+    real(wp), dimension(ll) :: lambda1,lambda2,fref,Aeuv,sigmaO,sigmaN2,sigmaO2
+    real(wp), dimension(ll) :: brN2i,brN2di,brO2i,brO2di,pepiO,pepiN2i,pepiN2di,pepiO2i,pepiO2di
+    real(wp), dimension(ll) :: Iinf
+    real(wp), dimension(size(nn,1),size(nn,2),size(nn,3)) :: g,bigX,y,Chfn
+    real(wp), dimension(size(nn,1),size(nn,2),size(nn,3)) :: nOcol,nN2col,nO2col
+    real(wp), dimension(size(nn,1),size(nn,2),size(nn,3)) :: phototmp
+    real(wp) :: gavg,H,Tninf
+    real(wp), dimension(size(nn,1),size(nn,2),size(nn,3),ll) :: Iflux
 
-    real(8), dimension(size(nn,1),size(nn,2),size(nn,3),lsp-1) :: photoionization    !don't need a separate rate for electrons
+    real(wp), dimension(size(nn,1),size(nn,2),size(nn,3),lsp-1) :: photoionization    !don't need a separate rate for electrons
 
 
     !WAVELENGTH BIN BEGINNING AND END (THIS IDEALLY WOULD BE DATA STATEMENTS OR SOME KIND OF STRUCTURE THAT DOESN'T GET REASSIGNED AT EVERY CALL).  Actually all of these array assignments are static...
@@ -213,20 +213,20 @@ contains
     !-------METHOD.
     !------------------------------------------------------------
 
-    real(8), dimension(:,:), intent(in) :: W0,PhiWmWm2
+    real(wp), dimension(:,:), intent(in) :: W0,PhiWmWm2
 
-    real(8), dimension(:,:,:,:), intent(in) :: nn
-    real(8), dimension(:,:,:), intent(in) :: alt,Tn
+    real(wp), dimension(:,:,:,:), intent(in) :: nn
+    real(wp), dimension(:,:,:), intent(in) :: alt,Tn
 
-    real(8) :: W0keV,PhiW,alt0,deps,massden0
-    real(8), dimension(1:size(nn,1)) :: H,massden,y,f,meanmass
-    real(8), dimension(8) :: C
+    real(wp) :: W0keV,PhiW,alt0,deps,massden0
+    real(wp), dimension(1:size(nn,1)) :: H,massden,y,f,meanmass
+    real(wp), dimension(8) :: C
 
     integer :: ix1,ix2,ix3,lx1,lx2,lx3,ii,ij,li,lj
 
-    real(8), dimension(1:size(nn,1),1:size(nn,2),1:size(nn,3)) :: Ptot,PO,PN2,PO2
+    real(wp), dimension(1:size(nn,1),1:size(nn,2),1:size(nn,3)) :: Ptot,PO,PN2,PO2
 
-    real(8), dimension(1:size(nn,1),1:size(nn,2),1:size(nn,3),lsp-1) :: ionrate_fang08
+    real(wp), dimension(1:size(nn,1),1:size(nn,2),1:size(nn,3),lsp-1) :: ionrate_fang08
    
 
     lx1=size(nn,1)
@@ -322,15 +322,15 @@ contains
     !-------GHOST CELLS.
     !------------------------------------------------------------
 
-    real(8), dimension(:,:,:,:), intent(in) :: nn
-    real(8), dimension(:,:,:), intent(in) :: Tn
-    real(8), dimension(1:size(nn,1),1:size(nn,2),1:size(nn,3),lsp-1), intent(in) :: ionrate
-    real(8), dimension(-1:,-1:,-1:,:), intent(in) :: ns    !includes ghost cells
+    real(wp), dimension(:,:,:,:), intent(in) :: nn
+    real(wp), dimension(:,:,:), intent(in) :: Tn
+    real(wp), dimension(1:size(nn,1),1:size(nn,2),1:size(nn,3),lsp-1), intent(in) :: ionrate
+    real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns    !includes ghost cells
 
-    real(8), dimension(1:size(nn,1),1:size(nn,2),1:size(nn,3)) :: totionrate,R,avgenergy
+    real(wp), dimension(1:size(nn,1),1:size(nn,2),1:size(nn,3)) :: totionrate,R,avgenergy
     integer :: lx1,lx2,lx3
 
-    real(8), dimension(1:size(nn,1),1:size(nn,2),1:size(nn,3)) :: eheating
+    real(wp), dimension(1:size(nn,1),1:size(nn,2),1:size(nn,3)) :: eheating
 
     lx1=size(nn,1)
     lx2=size(nn,2)

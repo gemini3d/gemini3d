@@ -6,26 +6,25 @@ module precipBCs_mod
   use io, only : date_filename
   use temporal, only : dateinc
   use mpimod
-  use mpi, only: mpi_integer, mpi_comm_world, mpi_double_precision, mpi_status_ignore
 
 implicit none
 
 !ALL OF THE FOLLOWING MODULE-SCOPE ARRAYS ARE USED FOR INTERPOLATING PRECIPITATION INPUT FILES (IF USED)
 real(wp), dimension(:), allocatable, private :: mlonp
-real(8), dimension(:), allocatable, private :: mlatp    !coordinates of precipitation data
+real(wp), dimension(:), allocatable, private :: mlatp    !coordinates of precipitation data
 integer, private :: llon,llat
 
-real(8), dimension(:,:), allocatable, private :: Qp,E0p    !total energy flux and char. energy of input data
-real(8), dimension(:), allocatable, private :: precdatp    !needed when a 1D interpolation is to be done, i.e. when there is 1D sourde data
+real(wp), dimension(:,:), allocatable, private :: Qp,E0p    !total energy flux and char. energy of input data
+real(wp), dimension(:), allocatable, private :: precdatp    !needed when a 1D interpolation is to be done, i.e. when there is 1D sourde data
 
-real(8), dimension(:), allocatable, private :: mloni    !flat list of mlat,mlon locations on grid that we need to interpolate onto
-real(8), dimension(:), allocatable, private :: mlati
+real(wp), dimension(:), allocatable, private :: mloni    !flat list of mlat,mlon locations on grid that we need to interpolate onto
+real(wp), dimension(:), allocatable, private :: mlati
 
-real(8), dimension(:,:), allocatable, private :: Qiprev,E0iprev,Qinext,E0inext    !interpolated in space energy flux and char. en.
+real(wp), dimension(:,:), allocatable, private :: Qiprev,E0iprev,Qinext,E0inext    !interpolated in space energy flux and char. en.
 
 integer, dimension(3), private :: ymdprev,ymdnext   !dates for interpolated data
-real(8), private :: UTsecprev,UTsecnext
-real(8), private :: tprev,tnext
+real(wp), private :: UTsecprev,UTsecnext
+real(wp), private :: tprev,tnext
 
 
 contains
@@ -33,11 +32,11 @@ contains
 
   subroutine precipBCs_fileinput(dt,dtprec,t,ymd,UTsec,precdir,x,W0,PhiWmWm2)
 
-    real(8), intent(in) :: dt,dtprec
-    real(8), intent(in) :: t
+    real(wp), intent(in) :: dt,dtprec
+    real(wp), intent(in) :: t
     integer, dimension(3), intent(in) :: ymd    !date for which we wish to calculate perturbations
-    real(8), intent(in) :: UTsec
-    real(8), dimension(:,:,:), intent(out) :: W0,PhiWmWm2    !last dimension is the number of particle populations
+    real(wp), intent(in) :: UTsec
+    real(wp), dimension(:,:,:), intent(out) :: W0,PhiWmWm2    !last dimension is the number of particle populations
 
     character(*), intent(in) :: precdir       !directory where neutral simulation data is kept
     type(curvmesh) :: x
@@ -47,12 +46,12 @@ contains
     integer :: ios, u
     integer :: iid,iflat,ix2,ix3
 
-    real(8) :: UTsectmp
+    real(wp) :: UTsectmp
     integer, dimension(3) :: ymdtmp
 
-    real(8), dimension(lx2*lx3) :: parami
-    real(8), dimension(lx2,lx3) :: slope,Qinow,E0inow
-    real(8) :: W0pk,PhiWpk
+    real(wp), dimension(lx2*lx3) :: parami
+    real(wp), dimension(lx2,lx3) :: slope,Qinow,E0inow
+    real(wp) :: W0pk,PhiWpk
 
 
     if(t+dt/2d0>=tnext) then    !need to load a new file
@@ -285,12 +284,12 @@ contains
     !-------GHOST CELLS
     !------------------------------------------------------------
 
-    real(8), intent(in) :: t
+    real(wp), intent(in) :: t
     type(curvmesh), intent(in) :: x
-    real(8), dimension(:,:,:), intent(out) :: W0,PhiWmWm2
+    real(wp), dimension(:,:,:), intent(out) :: W0,PhiWmWm2
 
-    real(8) :: W0pk,PhiWpk,meanW0x3,meanPhiWx3,sigW0x3,sigPhiWx3
-    real(8) :: sigx2,meanx3,sigx3,x30amp,varc,meanx2,x2enve,sigt,meant
+    real(wp) :: W0pk,PhiWpk,meanW0x3,meanPhiWx3,sigW0x3,sigPhiWx3
+    real(wp) :: sigx2,meanx3,sigx3,x30amp,varc,meanx2,x2enve,sigt,meant
     integer :: ix2,ix3,iprec,lx2,lx3,lprec
 
     
@@ -358,12 +357,12 @@ contains
 !    !-------GHOST CELLS
 !    !------------------------------------------------------------
 !
-!    real(8), intent(in) :: t
+!    real(wp), intent(in) :: t
 !    type(curvmesh), intent(in) :: x
-!    real(8), dimension(:,:,:), intent(out) :: W0,PhiWmWm2
+!    real(wp), dimension(:,:,:), intent(out) :: W0,PhiWmWm2
 !
-!    real(8) :: W0pk,PhiWpk,meanW0x3,meanPhiWx3,sigW0x3,sigPhiWx3
-!    real(8) :: sigx2,meanx3,sigx3,x30amp,varc,meanx2,x2enve,sigt,meant
+!    real(wp) :: W0pk,PhiWpk,meanW0x3,meanPhiWx3,sigW0x3,sigPhiWx3
+!    real(wp) :: sigx2,meanx3,sigx3,x30amp,varc,meanx2,x2enve,sigt,meant
 !    integer :: ix2,ix3,iprec,lx2,lx3,lprec
 !
 !    
@@ -430,12 +429,12 @@ contains
 !    !-------GHOST CELLS
 !    !------------------------------------------------------------
 !
-!    real(8), intent(in) :: t
+!    real(wp), intent(in) :: t
 !    type(curvmesh), intent(in) :: x
-!    real(8), dimension(:,:,:), intent(out) :: W0,PhiWmWm2
+!    real(wp), dimension(:,:,:), intent(out) :: W0,PhiWmWm2
 !
-!    real(8) :: W0pk,PhiWpk,meanW0x3,meanPhiWx3,sigW0x3,sigPhiWx3
-!    real(8) :: sigx2,meanx3,sigx3,x30amp,varc,meanx2,x2enve,sigt,meant
+!    real(wp) :: W0pk,PhiWpk,meanW0x3,meanPhiWx3,sigW0x3,sigPhiWx3
+!    real(wp) :: sigx2,meanx3,sigx3,x30amp,varc,meanx2,x2enve,sigt,meant
 !    integer :: ix2,ix3,iprec,lprec
 !
 !    
@@ -493,12 +492,12 @@ contains
 !    !-------GHOST CELLS
 !    !------------------------------------------------------------
 !
-!    real(8), intent(in) :: t
+!    real(wp), intent(in) :: t
 !    type(curvmesh), intent(in) :: x
-!    real(8), dimension(:,:,:), intent(out) :: W0,PhiWmWm2
+!    real(wp), dimension(:,:,:), intent(out) :: W0,PhiWmWm2
 !
-!    real(8) :: W0pk,PhiWpk,meanW0x3,meanPhiWx3,sigW0x3,sigPhiWx3
-!    real(8) :: sigx2,meanx3,sigx3,x30amp,varc,meanx2,x2enve,sigt,meant
+!    real(wp) :: W0pk,PhiWpk,meanW0x3,meanPhiWx3,sigW0x3,sigPhiWx3
+!    real(wp) :: sigx2,meanx3,sigx3,x30amp,varc,meanx2,x2enve,sigt,meant
 !    integer :: ix2,ix3,iprec,lprec
 !
 !    

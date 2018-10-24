@@ -5,49 +5,48 @@ use temporal, only : doy_calc,dateinc
 use grid, only: curvmesh, lx1, lx2, lx3, clear_unitvecs
 use interpolation, only : interp2
 use mpimod
-use mpi
 use io, only : date_filename
 implicit none
 
 
 !ALL ARRAYS THAT FOLLOW ARE USED WHEN INCLUDING NEUTRAL PERTURBATIONS FROM ANOTHER MODEL
 !ARRAYS TO STORE THE NEUTRAL GRID INFORMATION
-real(8), dimension(:), allocatable, private :: rhon    !as long as the neutral module is in scope these persist and do not require a "save"; this variable only used by the axisymmetric interpolation
-real(8), dimension(:), allocatable, private :: yn    !this variable only used in cartesian interpolation
-real(8), dimension(:), allocatable, private :: zn
+real(wp), dimension(:), allocatable, private :: rhon    !as long as the neutral module is in scope these persist and do not require a "save"; this variable only used by the axisymmetric interpolation
+real(wp), dimension(:), allocatable, private :: yn    !this variable only used in cartesian interpolation
+real(wp), dimension(:), allocatable, private :: zn
 integer, private :: lrhon,lzn,lyn
 
 
 !STORAGE FOR NEUTRAL SIMULATION DATA.  THESE ARE INCLUDED AS MODULE VARIATIONS TO AVOID HAVING TO REALLOCATE AND DEALLOCIATE EACH TIME WE NEED TO INTERP
-real(8), dimension(:,:), allocatable, private :: dnO,dnN2,dnO2,dvnrho,dvnz,dTn    !assumed axisymmetric, so only 2D
+real(wp), dimension(:,:), allocatable, private :: dnO,dnN2,dnO2,dvnrho,dvnz,dTn    !assumed axisymmetric, so only 2D
 
 
 !ARRAYS TO STORE NEUTRAL DATA THAT HAS BEEN INTERPOLATED
-real(8), dimension(:,:,:), allocatable, private :: dnOiprev,dnN2iprev,dnO2iprev,dvnrhoiprev,dvnziprev,dTniprev, &
+real(wp), dimension(:,:,:), allocatable, private :: dnOiprev,dnN2iprev,dnO2iprev,dvnrhoiprev,dvnziprev,dTniprev, &
                                                    dvn1iprev,dvn2iprev,dvn3iprev
-real(8), private :: tprev
+real(wp), private :: tprev
 integer, dimension(3), private :: ymdprev    !denoted time corresponding to "prev" interpolated data
-real(8), private :: UTsecprev
-real(8), dimension(:,:,:), allocatable, private :: dnOinext,dnN2inext,dnO2inext,dvnrhoinext,dvnzinext, &
+real(wp), private :: UTsecprev
+real(wp), dimension(:,:,:), allocatable, private :: dnOinext,dnN2inext,dnO2inext,dvnrhoinext,dvnzinext, &
                                                    dTninext,dvn1inext,dvn2inext,dvn3inext
-real(8), private :: tnext
+real(wp), private :: tnext
 integer, dimension(3), private :: ymdnext
-real(8), private :: UTsecnext
+real(wp), private :: UTsecnext
 
 
 !SPACE TO STORE PROJECTION FACTORS
-real(8), dimension(:,:,:), allocatable, private :: proj_erhop_e1,proj_ezp_e1,proj_erhop_e2,proj_ezp_e2,proj_erhop_e3,proj_ezp_e3    !these projections are used in the axisymmetric interpolation
-real(8), dimension(:,:,:), allocatable, private :: proj_eyp_e1,proj_eyp_e2,proj_eyp_e3    !these are for Cartesian projections
+real(wp), dimension(:,:,:), allocatable, private :: proj_erhop_e1,proj_ezp_e1,proj_erhop_e2,proj_ezp_e2,proj_erhop_e3,proj_ezp_e3    !these projections are used in the axisymmetric interpolation
+real(wp), dimension(:,:,:), allocatable, private :: proj_eyp_e1,proj_eyp_e2,proj_eyp_e3    !these are for Cartesian projections
 
 
 !PLASMA GRID ZI AND RHOI LOCATIONS FOR INTERPOLATIONS
-real(8), dimension(:), allocatable, private :: zi,yi,rhoi    !this is to be a flat listing of sites on the, rhoi only used in axisymmetric and yi only in cartesian
+real(wp), dimension(:), allocatable, private :: zi,yi,rhoi    !this is to be a flat listing of sites on the, rhoi only used in axisymmetric and yi only in cartesian
 
 
 !BASE MSIS ATMOSPHERIC STATE ON WHICH TO APPLY PERTURBATIONS
-real(8), dimension(:,:,:,:), allocatable, protected :: nnmsis
-real(8), dimension(:,:,:), allocatable, protected :: Tnmsis
-real(8), dimension(:,:,:), allocatable, protected :: vn1base,vn2base,vn3base
+real(wp), dimension(:,:,:,:), allocatable, protected :: nnmsis
+real(wp), dimension(:,:,:), allocatable, protected :: Tnmsis
+real(wp), dimension(:,:,:), allocatable, protected :: vn1base,vn2base,vn3base
 
 contains
 
@@ -60,12 +59,12 @@ contains
     !------------------------------------------------------------
 
     integer, dimension(3) :: ymd
-    real(8) :: UTsecd
-    real(8), dimension(:,:,:), intent(in) :: glat,glon,alt
-    real(8), dimension(3) :: activ
+    real(wp) :: UTsecd
+    real(wp), dimension(:,:,:), intent(in) :: glat,glon,alt
+    real(wp), dimension(3) :: activ
 
-    real(8), dimension(1:size(alt,1),1:size(alt,2),1:size(alt,3),lnchem), intent(out) :: nn
-    real(8), dimension(1:size(alt,1),1:size(alt,2),1:size(alt,3)), intent(out) :: Tn
+    real(wp), dimension(1:size(alt,1),1:size(alt,2),1:size(alt,3),lnchem), intent(out) :: nn
+    real(wp), dimension(1:size(alt,1),1:size(alt,2),1:size(alt,3)), intent(out) :: Tn
 
     integer :: ix1,ix2,ix3,lx1,lx2,lx3
 
@@ -75,8 +74,8 @@ contains
     real :: altnow,latnow,lonnow
     real :: d(9),t(2)
 
- !   real(8), dimension(1:size(alt,1),1:size(alt,2),1:size(alt,3)) :: nnow
-!    real(8), dimension(1:size(alt,1),1:size(alt,2),1:size(alt,3)) :: altalt    !an alternate altitude variable which fixes below ground values to 1km
+ !   real(wp), dimension(1:size(alt,1),1:size(alt,2),1:size(alt,3)) :: nnow
+!    real(wp), dimension(1:size(alt,1),1:size(alt,2),1:size(alt,3)) :: altalt    !an alternate altitude variable which fixes below ground values to 1km
 
 
     lx1=size(alt,1)
@@ -142,17 +141,17 @@ contains
   subroutine neutral_perturb(interptype,dt,dtneu,t,ymd,UTsec,neudir,drhon,dzn,meanlat,meanlong,x,nn,Tn,vn1,vn2,vn3)
 
     integer, intent(in) :: interptype
-    real(8), intent(in) :: dt,dtneu
-    real(8), intent(in) :: t
+    real(wp), intent(in) :: dt,dtneu
+    real(wp), intent(in) :: t
     integer, dimension(3), intent(in) :: ymd    !date for which we wish to calculate perturbations
-    real(8), intent(in) :: UTsec
-    real(8), intent(in) :: drhon,dzn         !neutral grid spacing
-    real(8), intent(in) :: meanlat, meanlong    !neutral source center location
+    real(wp), intent(in) :: UTsec
+    real(wp), intent(in) :: drhon,dzn         !neutral grid spacing
+    real(wp), intent(in) :: meanlat, meanlong    !neutral source center location
     character(*), intent(in) :: neudir       !directory where neutral simulation data is kept
 
     type(curvmesh), intent(inout) :: x         !grid structure  (inout becuase we want to be able to deallocate unit vectors once we are done with them)
-    real(8), dimension(:,:,:,:), intent(out) :: nn   !neutral params interpolated to plasma grid at requested time
-    real(8), dimension(:,:,:), intent(out) :: Tn,vn1,vn2,vn3
+    real(wp), dimension(:,:,:,:), intent(out) :: nn   !neutral params interpolated to plasma grid at requested time
+    real(wp), dimension(:,:,:), intent(out) :: Tn,vn1,vn2,vn3
 
     if (interptype==0) then    !cartesian interpolation drho inputs (radial distance) will be interpreted as dy (horizontal distance)
       call neutral_perturb_cart(dt,dtneu,t,ymd,UTsec,neudir,drhon,dzn,meanlat,meanlong,x,nn,Tn,vn1,vn2,vn3)
@@ -175,33 +174,33 @@ contains
     !-------CYLINDRICAL COORDINATES.
     !------------------------------------------------------------
 
-    real(8), intent(in) :: dt,dtneu
-    real(8), intent(in) :: t
+    real(wp), intent(in) :: dt,dtneu
+    real(wp), intent(in) :: t
     integer, dimension(3), intent(in) :: ymd    !date for which we wish to calculate perturbations
-    real(8), intent(in) :: UTsec
-    real(8), intent(in) :: drhon,dzn         !neutral grid spacing
-    real(8), intent(in) :: meanlat, meanlong    !neutral source center location
+    real(wp), intent(in) :: UTsec
+    real(wp), intent(in) :: drhon,dzn         !neutral grid spacing
+    real(wp), intent(in) :: meanlat, meanlong    !neutral source center location
     character(*), intent(in) :: neudir       !directory where neutral simulation data is kept
 
     type(curvmesh), intent(inout) :: x         !grid structure  (inout becuase we want to be able to deallocate unit vectors once we are done with them)
-    real(8), dimension(:,:,:,:), intent(out) :: nn   !neutral params interpolated to plasma grid at requested time
-    real(8), dimension(:,:,:), intent(out) :: Tn,vn1,vn2,vn3
+    real(wp), dimension(:,:,:,:), intent(out) :: nn   !neutral params interpolated to plasma grid at requested time
+    real(wp), dimension(:,:,:), intent(out) :: Tn,vn1,vn2,vn3
 
     integer, parameter :: inunit=46          !file handle for various input files
     character(512) :: filename               !space to store filenames, note size must be 512 to be consistent with our date_ffilename functinos
-    real(8) :: theta1,phi1,theta2,phi2,gammarads,theta3,phi3,gamma1,gamma2,phip
-    real(8) :: xp,yp
-    real(8), dimension(3) :: erhop,ezp,tmpvec
+    real(wp) :: theta1,phi1,theta2,phi2,gammarads,theta3,phi3,gamma1,gamma2,phip
+    real(wp) :: xp,yp
+    real(wp), dimension(3) :: erhop,ezp,tmpvec
 
-    real(8) :: tmpsca
+    real(wp) :: tmpsca
 
     integer :: ix1,ix2,ix3,irhon,izn,iid
-    real(8), dimension(size(nn,1),size(nn,2),size(nn,3)) :: zimat,rhoimat
+    real(wp), dimension(size(nn,1),size(nn,2),size(nn,3)) :: zimat,rhoimat
     integer, dimension(3) :: ymdtmp
-    real(8) :: UTsectmp
-    real(8), dimension(size(nn,1)*size(nn,2)*size(nn,3)) :: parami
-    real(8) :: slope
-    real(8), dimension(size(nn,1),size(nn,2),size(nn,3)) :: dnOinow,dnN2inow,dnO2inow,dTninow,dvn1inow,dvn2inow,dvn3inow    !current time step perturbations (centered in time)
+    real(wp) :: UTsectmp
+    real(wp), dimension(size(nn,1)*size(nn,2)*size(nn,3)) :: parami
+    real(wp) :: slope
+    real(wp), dimension(size(nn,1),size(nn,2),size(nn,3)) :: dnOinow,dnN2inow,dnO2inow,dTninow,dvn1inow,dvn2inow,dvn3inow    !current time step perturbations (centered in time)
 
      integer(4) :: flaginit    !a flag that is set during the first call to read in data
 
@@ -559,34 +558,34 @@ contains
     !-------CARTESIAN COORDINATES.
     !------------------------------------------------------------
 
-    real(8), intent(in) :: dt,dtneu
-    real(8), intent(in) :: t
+    real(wp), intent(in) :: dt,dtneu
+    real(wp), intent(in) :: t
     integer, dimension(3), intent(in) :: ymd    !date for which we wish to calculate perturbations
-    real(8), intent(in) :: UTsec
-    real(8), intent(in) :: dyn,dzn         !neutral grid spacing
-    real(8), intent(in) :: meanlat, meanlong    !neutral source center location
+    real(wp), intent(in) :: UTsec
+    real(wp), intent(in) :: dyn,dzn         !neutral grid spacing
+    real(wp), intent(in) :: meanlat, meanlong    !neutral source center location
     character(*), intent(in) :: neudir       !directory where neutral simulation data is kept
 
     type(curvmesh), intent(inout) :: x         !grid structure  (inout becuase we want to be able to deallocate unit vectors once we are done with them)
-    real(8), dimension(:,:,:,:), intent(out) :: nn   !neutral params interpolated to plasma grid at requested time
-    real(8), dimension(:,:,:), intent(out) :: Tn,vn1,vn2,vn3
+    real(wp), dimension(:,:,:,:), intent(out) :: nn   !neutral params interpolated to plasma grid at requested time
+    real(wp), dimension(:,:,:), intent(out) :: Tn,vn1,vn2,vn3
 
     integer, parameter :: inunit=46          !file handle for various input files
     character(512) :: filename               !space to store filenames, note size must be 512 to be consistent with our date_ffilename functinos
-    real(8) :: theta1,phi1,theta2,phi2,gammarads,theta3,phi3,gamma1,gamma2,phip
-    real(8) :: xp,yp
-    real(8), dimension(3) :: erhop,ezp,eyp,tmpvec
+    real(wp) :: theta1,phi1,theta2,phi2,gammarads,theta3,phi3,gamma1,gamma2,phip
+    real(wp) :: xp,yp
+    real(wp), dimension(3) :: erhop,ezp,eyp,tmpvec
 
-    real(8) :: tmpsca
-    real(8) :: meanyn
+    real(wp) :: tmpsca
+    real(wp) :: meanyn
 
     integer :: ix1,ix2,ix3,iyn,izn,iid
-    real(8), dimension(size(nn,1),size(nn,2),size(nn,3)) :: zimat,rhoimat,yimat
+    real(wp), dimension(size(nn,1),size(nn,2),size(nn,3)) :: zimat,rhoimat,yimat
     integer, dimension(3) :: ymdtmp
-    real(8) :: UTsectmp
-    real(8), dimension(size(nn,1)*size(nn,2)*size(nn,3)) :: parami
-    real(8) :: slope
-    real(8), dimension(size(nn,1),size(nn,2),size(nn,3)) :: dnOinow,dnN2inow,dnO2inow,dTninow,dvn1inow,dvn2inow,dvn3inow    !current time step perturbations (centered in time)
+    real(wp) :: UTsectmp
+    real(wp), dimension(size(nn,1)*size(nn,2)*size(nn,3)) :: parami
+    real(wp) :: slope
+    real(wp), dimension(size(nn,1),size(nn,2),size(nn,3)) :: dnOinow,dnN2inow,dnO2inow,dTninow,dvn1inow,dvn2inow,dvn3inow    !current time step perturbations (centered in time)
 
 
     !CHECK WHETHER WE NEED TO LOAD A NEW FILE

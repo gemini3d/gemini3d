@@ -163,7 +163,7 @@ contains
     !-------THIS VERSION USES ASYNC COMM WITHOUT SWITCH STATEMENTS
     !------------------------------------------------------------
 
-    real(8), dimension(-1:,-1:,-1:), intent(inout) :: param
+    real(wp), dimension(-1:,-1:,-1:), intent(inout) :: param
     integer, intent(in) :: lhalo    !number of surrounding grid points to halo with (1 or 2 only)
     integer, intent(in) :: tag
 
@@ -174,7 +174,7 @@ contains
     integer, dimension(MPI_STATUS_SIZE,4) :: statuses
     integer :: tmpreq
 
-    real(8) :: tstart,tfin
+    real(wp) :: tstart,tfin
 
     lx1=size(param,1)-4
     lx2=size(param,2)-4
@@ -296,7 +296,7 @@ contains
 !    !-------AND THAT PASSING NEEDS TO BE DONE IN X2 AND X3
 !    !------------------------------------------------------------
 !
-!    real(8), dimension(-1:,-1:,-1:), intent(inout) :: param
+!    real(wp), dimension(-1:,-1:,-1:), intent(inout) :: param
 !    integer, intent(in) :: lhalo    !number of surrounding grid points to halo with (probably 1 or 2)
 !    integer, intent(in) :: tag
 !
@@ -308,7 +308,7 @@ contains
 !    integer, dimension(MPI_STATUS_SIZE,4) :: statuses
 !    integer :: tmpreq
 !
-!    real(8) :: tstart,tfin
+!    real(wp) :: tstart,tfin
 !
 !    lx1=size(param,1)-4
 !    lx2=size(param,2)-4
@@ -416,9 +416,9 @@ contains
     !-------ANY GHOST CELLS!!!!
     !------------------------------------------------------------
 
-    real(8), dimension(:,:), intent(in) :: paramtrim
+    real(wp), dimension(:,:), intent(in) :: paramtrim
     integer, intent(in) :: tag
-    real(8), dimension(:,:), intent(out) :: paramtrimall
+    real(wp), dimension(:,:), intent(out) :: paramtrimall
 
     integer :: lx1,lx2,lx3,isp,lsp
     integer :: iid,islstart,islfin
@@ -455,9 +455,9 @@ contains
     !-------ANY GHOST CELLS!!!!
     !------------------------------------------------------------
 
-    real(8), dimension(:,:,:), intent(in) :: paramtrim
+    real(wp), dimension(:,:,:), intent(in) :: paramtrim
     integer, intent(in) :: tag
-    real(8), dimension(:,:,:), intent(out) :: paramtrimall
+    real(wp), dimension(:,:,:), intent(out) :: paramtrimall
 
     integer :: lx1,lx2,lx3,isp,lsp
     integer :: iid,islstart,islfin
@@ -495,9 +495,9 @@ contains
     !-------GHOST CELLS!
     !------------------------------------------------------------
 
-    real(8), dimension(-1:,-1:,-1:,:), intent(in) :: param
+    real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: param
     integer, intent(in) :: tag
-    real(8), dimension(-1:,-1:,-1:,:), intent(out) :: paramall
+    real(wp), dimension(-1:,-1:,-1:,:), intent(out) :: paramall
 
     integer :: lx1,lx2,lx3,isp
     integer :: iid,islstart,islfin
@@ -541,7 +541,7 @@ contains
     !-------ANY GHOST CELLS!!!!
     !------------------------------------------------------------
 
-    real(8), dimension(:,:), intent(in) :: paramtrim
+    real(wp), dimension(:,:), intent(in) :: paramtrim
     integer, intent(in) :: tag
 
     integer :: lx2,lx3
@@ -568,7 +568,7 @@ contains
     !-------ANY GHOST CELLS!!!!
     !------------------------------------------------------------
 
-    real(8), dimension(:,:,:), intent(in) :: paramtrim
+    real(wp), dimension(:,:,:), intent(in) :: paramtrim
     integer, intent(in) :: tag
 
     integer :: lx1,lx2,lx3
@@ -596,7 +596,7 @@ contains
     !-------GHOST CELLS!
     !------------------------------------------------------------
 
-    real(8), dimension(-1:,-1:,-1:,:), intent(in) :: param
+    real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: param
     integer, intent(in) :: tag
 
     integer :: lx1,lx2,lx3,isp
@@ -626,9 +626,9 @@ contains
     !-------THIS VERSION WORKS ON 1D ARRAYS
     !------------------------------------------------------------
 
-    real(8), dimension(-1:), intent(in) :: paramall
+    real(wp), dimension(-1:), intent(in) :: paramall
     integer, intent(in) :: tag
-    real(8), dimension(-1:), intent(out) :: param
+    real(wp), dimension(-1:), intent(out) :: param
 
     integer :: lx,lxall     !local sizes
     integer :: iid,islstart,islfin
@@ -662,9 +662,9 @@ contains
     !-------GHOST CELLS!
     !------------------------------------------------------------
 
-    real(8), dimension(:,:), intent(in) :: paramtrimall
+    real(wp), dimension(:,:), intent(in) :: paramtrimall
     integer, intent(in) :: tag
-    real(8), dimension(:,:), intent(out) :: paramtrim
+    real(wp), dimension(:,:), intent(out) :: paramtrim
 
     integer :: lx2,lx3
     integer :: iid,islstart,islfin
@@ -706,9 +706,9 @@ contains
     !-------THE SLAB CALCULATIONS FOR WORKERS WILL BE OFF.
     !------------------------------------------------------------
 
-    real(8), dimension(:,:,:), intent(in) :: paramtrimall
+    real(wp), dimension(:,:,:), intent(in) :: paramtrimall
     integer, intent(in) :: tag
-    real(8), dimension(:,:,:), intent(out) :: paramtrim
+    real(wp), dimension(:,:,:), intent(out) :: paramtrim
 
     integer :: lx1,lx2,lx3
     integer :: iid,islstart,islfin
@@ -747,9 +747,9 @@ contains
     !-------GHOST CELLS, BUT ARE X3 INTERFACE QUANITTIES
     !------------------------------------------------------------
 
-    real(8), dimension(:,:,:), intent(in) :: paramtrimall
+    real(wp), dimension(:,:,:), intent(in) :: paramtrimall
     integer, intent(in) :: tag
-    real(8), dimension(:,:,:), intent(out) :: paramtrim
+    real(wp), dimension(:,:,:), intent(out) :: paramtrim
 
     integer :: lx1,lx2,lx3
     integer :: iid,islstart,islfin
@@ -787,9 +787,9 @@ contains
     !-------THIS VERSION WORKS ON 3D ARRAYS WHICH INCLUDE GHOST CELLS
     !------------------------------------------------------------
 
-    real(8), dimension(-1:,-1:,-1:), intent(in) :: paramall
+    real(wp), dimension(-1:,-1:,-1:), intent(in) :: paramall
     integer, intent(in) :: tag
-    real(8), dimension(-1:,-1:,-1:), intent(out) :: param
+    real(wp), dimension(-1:,-1:,-1:), intent(out) :: param
 
     integer :: lx1,lx2,lx3
     integer :: iid,islstart,islfin
@@ -828,9 +828,9 @@ contains
     !-------GHOST CELLS!
     !------------------------------------------------------------
 
-    real(8), dimension(-1:,-1:,-1:,:), intent(in) :: paramall
+    real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: paramall
     integer, intent(in) :: tag
-    real(8), dimension(-1:,-1:,-1:,:), intent(out) :: param
+    real(wp), dimension(-1:,-1:,-1:,:), intent(out) :: param
 
     integer :: lx1,lx2,lx3,isp
     integer :: iid,islstart,islfin
@@ -869,7 +869,7 @@ contains
     !-------GHOST CELLS!
     !------------------------------------------------------------
 
-    real(8), dimension(-1:), intent(out) :: param
+    real(wp), dimension(-1:), intent(out) :: param
     integer, intent(in) :: tag
 
     integer :: lx
@@ -897,7 +897,7 @@ contains
     !-------GHOST CELLS!
     !------------------------------------------------------------
 
-    real(8), dimension(:,:), intent(out) :: paramtrim
+    real(wp), dimension(:,:), intent(out) :: paramtrim
     integer, intent(in) :: tag
 
     integer :: lx2,lx3
@@ -927,7 +927,7 @@ contains
     !-------GHOST CELLS!
     !------------------------------------------------------------
 
-    real(8), dimension(:,:,:), intent(out) :: paramtrim
+    real(wp), dimension(:,:,:), intent(out) :: paramtrim
     integer, intent(in) :: tag
 
     integer :: lx1,lx2,lx3
@@ -958,7 +958,7 @@ contains
     !-------GHOST CELLS!
     !------------------------------------------------------------
 
-    real(8), dimension(:,:,:), intent(out) :: paramtrim
+    real(wp), dimension(:,:,:), intent(out) :: paramtrim
     integer, intent(in) :: tag
 
     integer :: lx1,lx2,lx3
@@ -989,7 +989,7 @@ contains
     !-------GHOST CELLS!
     !------------------------------------------------------------
 
-    real(8), dimension(-1:,-1:,-1:), intent(out) :: param
+    real(wp), dimension(-1:,-1:,-1:), intent(out) :: param
     integer, intent(in) :: tag
 
     integer :: lx1,lx2,lx3
@@ -1020,7 +1020,7 @@ contains
     !-------GHOST CELLS!
     !------------------------------------------------------------
 
-    real(8), dimension(-1:,-1:,-1:,:), intent(out) :: param
+    real(wp), dimension(-1:,-1:,-1:,:), intent(out) :: param
     integer, intent(in) :: tag
 
     integer :: lx1,lx2,lx3,isp
