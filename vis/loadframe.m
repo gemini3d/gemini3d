@@ -1,5 +1,8 @@
 function [ne,mlatsrc,mlonsrc,v1,Ti,Te,J1,v2,v3,J2,J3,filename,Phitop,ns,vs1,Ts] = loadframe(direc,UTsec,ymd,UTsec0,ymd0,mloc,xg)
 
+cwd = fileparts(mfilename('fullpath'));
+addpath([cwd,'/../script_utils'])
+
 narginchk(5, 7)
 validateattr(direc, {'char'}, {'vector'}, mfilename, 'data directory', 1)
 validateattr(UTsec, {'numeric'}, {'vector'}, mfilename, 'UTC second', 2)
@@ -15,7 +18,7 @@ else
   validateattr(xg, {'struct'}, {'scalar'}, mfilename, 'grid structure', 7)
 end
 %% PATH TO PLOTTING FUNCTIONS AND SHARED SCRIPT UTILITIES
-addpath('../script_utils')
+
 
 %% READ IN THE SIMULATION INFORMATION IF IT HAS NOT ALREADY BEEN PROVIDED
 [ymd0,UTsec0,tdur,dtout,flagoutput,mloc]=readconfig([direc,'/inputs/config.ini']);
@@ -24,7 +27,6 @@ addpath('../script_utils')
 if isempty(xg)
   xg = readgrid([direc,'/inputs/']);
 end
-
 
 %% SET MAGNETIC LATITUDE AND LONGITUDE OF THE SOURCE
 if ~isempty(mloc)

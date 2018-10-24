@@ -39,10 +39,7 @@ J3lim=[-10 10];
 % store output plots with the simulation data
 if saveplots
   dlist = {'nplots', 'v1plots', 'v2plots', 'v3plots', 'J1plots',...
-           'Tiplots', 'Teplots', 'J2plots', 'J3plots', 'Phiplots', ...
-           'nplots_eps', 'v1plots_eps', 'v2plots_eps', 'v3plots_eps', ...
-           'J1plots_eps', 'Tiplots_eps', 'Teplots_eps', 'J2plots_eps', 'J3plots_eps', ...
-           'Phiplots_eps'};
+           'Tiplots', 'Teplots', 'J2plots', 'J3plots', 'Phiplots'};
   for i=1:length(dlist)
     mkdir([direc, filesep, dlist{i}]);
   end
@@ -106,139 +103,91 @@ Nsp = ceil(sqrt(length(times)));    %number of subplots (if used)
 ymd=ymd0;
 UTsec=UTsec0;
 %% initialize figure sets
-h1=figure('name','V1');
-h2=figure('name','Ti');
-h3=figure('name','Te');
-h4=figure('name','J1');
-h5=figure('name','V2');
-h6=figure('name','V3');
-h7=figure('name','J2');
-h8=figure('name','J3');
-if (xg.lx(2)~=1 && xg.lx(3)~=1)
-  h9=figure('name','phiTop');
+h.f1=figure('name','V1');
+h.f2=figure('name','Ti');
+h.f3=figure('name','Te');
+h.f4=figure('name','J1');
+h.f5=figure('name','V2');
+h.f6=figure('name','V3');
+h.f7=figure('name','J2');
+h.f8=figure('name','J3');
+if xg.lx(2)>1 && xg.lx(3)>1 % a 3-D simulation
+  h.f9=figure('name','phiTop');
+else
+  h.f9 = [];
 end
-h10=figure('name','Ne');
+h.f10=figure('name','Ne');%, 'position', [.1, .1, .5, .5], 'units', 'normalized');
 %% main figure loop
 for it=1:lt
     [ne,mlatsrc,mlonsrc,v1,Ti,Te,J1,v2,v3,J2,J3,filename,Phitop] = loadframe(direc, UTsec, ymd, UTsec0, ymd0, mloc, xg);
     disp([filename, ' => ', func2str(plotfun)])
-    
 
-    
-    %% Electron number density
-    if xg.lx(2)~=1 && xg.lx(3)~=1 || lt>16    %3D simulation or a very long 2D simulation - do separate plots for each time frame
-        disp('long 2D or 3D simulation...');
-        h10=figure(h10);
+    %% Electron number density, 'position', [.1, .1, .5, .5], 'units', 'normalized'
+    if ~isempty(h.f9) || lt>16    % 3D simulation or a very long 2D simulation - do separate plots for each time frame
+        if it==1, disp('long 2D or 3D simulation...'), end
 %        plotfun(ymd,UTsec,xg,log10(ne(:,:,:)),'log_{10} n_e (m^{-3})',nelim,[mlatsrc,mlonsrc],h10);
-        plotfun(ymd,UTsec,xg, ne(:,:,:),'n_e (m^{-3})',nelim,[mlatsrc,mlonsrc],h10);
+        plotfun(ymd,UTsec,xg, ne, 'n_e (m^{-3})',nelim,[mlatsrc,mlonsrc],h.f10);
         
         if flagoutput~=3
-            h1=figure(h1);
-            plotfun(ymd,UTsec,xg,v1(:,:,:),'v_1 (m/s)',v1lim,[mlatsrc,mlonsrc],h1);
+            plotfun(ymd,UTsec,xg,v1(:,:,:),'v_1 (m/s)',v1lim,[mlatsrc,mlonsrc],h.f1);
             
-            h2=figure(h2);
-            plotfun(ymd,UTsec,xg,Ti(:,:,:),'T_i (K)',Tilim,[mlatsrc,mlonsrc],h2);
+            plotfun(ymd,UTsec,xg,Ti(:,:,:),'T_i (K)',Tilim,[mlatsrc,mlonsrc],h.f2);
             
-            h3=figure(h3);
-            plotfun(ymd,UTsec,xg,Te(:,:,:),'T_e (K)',Telim,[mlatsrc,mlonsrc],h3);
+            plotfun(ymd,UTsec,xg,Te(:,:,:),'T_e (K)',Telim,[mlatsrc,mlonsrc],h.f3);
             
-            h4=figure(h4);
-            plotfun(ymd,UTsec,xg,J1(:,:,:)*1e6,'J_1 (uA/m^2)',J1lim,[mlatsrc,mlonsrc],h4);
+            plotfun(ymd,UTsec,xg,J1(:,:,:)*1e6,'J_1 (uA/m^2)',J1lim,[mlatsrc,mlonsrc],h.f4);
             
-            h5=figure(h5);
-            plotfun(ymd,UTsec,xg,v2(:,:,:),'v_2 (m/s)',v2lim,[mlatsrc,mlonsrc],h5);
+            plotfun(ymd,UTsec,xg,v2(:,:,:),'v_2 (m/s)',v2lim,[mlatsrc,mlonsrc],h.f5);
             
-            h6=figure(h6);
-            plotfun(ymd,UTsec,xg,v3(:,:,:),'v_3 (m/s)',v3lim,[mlatsrc,mlonsrc],h6);
+            plotfun(ymd,UTsec,xg,v3(:,:,:),'v_3 (m/s)',v3lim,[mlatsrc,mlonsrc],h.f6);
             
-            h7=figure(h7);
-            plotfun(ymd,UTsec,xg,J2(:,:,:)*1e6,'J_2 (uA/m^2)',J2lim,[mlatsrc,mlonsrc],h7);
+            plotfun(ymd,UTsec,xg,J2(:,:,:)*1e6,'J_2 (uA/m^2)',J2lim,[mlatsrc,mlonsrc],h.f7);
             
-            h8=figure(h8);
-            plotfun(ymd,UTsec,xg,J3(:,:,:)*1e6,'J_3 (uA/m^2)',J3lim,[mlatsrc,mlonsrc],h8);
+            plotfun(ymd,UTsec,xg,J3(:,:,:)*1e6,'J_3 (uA/m^2)',J3lim,[mlatsrc,mlonsrc],h.f8);
             
-            if xg.lx(2)~=1 && xg.lx(3)~=1
-                h9=figure(h9);
-                h9a=gca;
-                imagesc(h9a,Phitop)
+            if ~isempty(h.f9)
+                h9a = axes('parent', h.f9);
+                imagesc(Phitop, 'parent', h9a)
                 colorbar;
             end
         end
         if saveplots   % for 3D or long 2D plots print and output file every time step
-            if flagoutput~=3
-                print(h1,'-dpng',[direc,'/v1plots/',filename,'.png'],'-r300')
-                print(h2,'-dpng',[direc,'/Tiplots/',filename,'.png'],'-r300')
-                print(h3,'-dpng',[direc,'/Teplots/',filename,'.png'],'-r300')
-                print(h4,'-dpng',[direc,'/J1plots/',filename,'.png'],'-r300')
-                print(h5,'-dpng',[direc,'/v2plots/',filename,'.png'],'-r300')
-                print(h6,'-dpng',[direc,'/v3plots/',filename,'.png'],'-r300')
-                print(h7,'-dpng',[direc,'/J2plots/',filename,'.png'],'-r300')
-                print(h8,'-dpng',[direc,'/J3plots/',filename,'.png'],'-r300')
-                if xg.lx(2)~=1 && xg.lx(3)~=1
-                    print(h9,'-dpng',[direc,'/Phiplots/',filename,'.png'],'-r300')
-                end
-            end
-            print(h10,'-dpng',[direc,'/nplots/',filename,'.png'],'-r300')
-
-            if flagoutput~=3     %now make .eps prints of the plots
-                print(h1,'-depsc2',[direc,'/v1plots_eps/',filename,'.eps'])
-                print(h2,'-depsc2',[direc,'/Tiplots_eps/',filename,'.eps'])
-                print(h3,'-depsc2',[direc,'/Teplots_eps/',filename,'.eps'])
-                print(h4,'-depsc2',[direc,'/J1plots_eps/',filename,'.eps'])
-                print(h5,'-depsc2',[direc,'/v2plots_eps/',filename,'.eps'])
-                print(h6,'-depsc2',[direc,'/v3plots_eps/',filename,'.eps'])
-                print(h7,'-depsc2',[direc,'/J2plots_eps/',filename,'.eps'])
-                print(h8,'-depsc2',[direc,'/J3plots_eps/',filename,'.eps'])
-                if xg.lx(2)~=1 && xg.lx(3)~=1
-                    print(h9,'-depsc2',[direc,'/Phiplots_eps/',filename,'.eps'])
-                end
-            end
-            print(h10,'-depsc2',[direc,'/nplots_eps/',filename,'.eps'])
+            dosave(flagoutput, direc, filename, h)
         end
     else    %short 2D simulation - put the entire time series in a single plot
-        disp('short 2D simulations...')
-        h10=figure(h10);
-        ha = subplot(Nsp,Nsp,it,'parent',h10);
+        if it==1, disp('short 2D simulations...'), end
+        ha = subplot(Nsp,Nsp,it,'parent',h.f10);
         nelim =  [9 11.3];
-        plotfun(ymd,UTsec,xg,log10(ne(:,:,:)),'log_{10} n_e (m^{-3})',nelim,[mlatsrc,mlonsrc],ha);
+        plotfun(ymd,UTsec,xg,log10(ne), 'log_{10} n_e (m^{-3})',nelim,[mlatsrc,mlonsrc],ha);
         
         if flagoutput~=3
-            h1=figure(h1);
-            ha = subplot(Nsp,Nsp,it,'parent',h1);
+            ha = subplot(Nsp,Nsp,it,'parent',h.f1);
             plotfun(ymd,UTsec,xg,v1(:,:,:),'v_1 (m/s)',v1lim,[mlatsrc,mlonsrc],ha);
             
-            h2=figure(h2);
-            ha = subplot(Nsp,Nsp,it,'parent',h2);
+            ha = subplot(Nsp,Nsp,it,'parent',h.f2);
             plotfun(ymd,UTsec,xg,Ti(:,:,:),'T_i (K)',Tilim,[mlatsrc,mlonsrc],ha);
             
-            h3=figure(h3);
-            ha = subplot(Nsp,Nsp,it,'parent',h3);
+            ha = subplot(Nsp,Nsp,it,'parent',h.f3);
             plotfun(ymd,UTsec,xg,Te(:,:,:),'T_e (K)',Telim,[mlatsrc,mlonsrc],ha);
             
-            h4=figure(h4);
-            ha = subplot(Nsp,Nsp,it,'parent',h4);
+            ha = subplot(Nsp,Nsp,it,'parent',h.f4);
             plotfun(ymd,UTsec,xg,J1(:,:,:)*1e6,'J_1 (uA/m^2)',J1lim,[mlatsrc,mlonsrc],ha);
             
-            h5=figure(h5);
-            ha = subplot(Nsp,Nsp,it,'parent',h5);
+            ha = subplot(Nsp,Nsp,it,'parent',h.f5);
             plotfun(ymd,UTsec,xg,v2(:,:,:),'v_2 (m/s)',v2lim,[mlatsrc,mlonsrc],ha);
             
-            h6=figure(h6);
-            ha = subplot(Nsp,Nsp,it,'parent',h6);
+            ha = subplot(Nsp,Nsp,it,'parent',h.f6);
             plotfun(ymd,UTsec,xg,v3(:,:,:),'v_3 (m/s)',v3lim,[mlatsrc,mlonsrc],ha);
             
-            h7=figure(h7);
-            ha = subplot(Nsp,Nsp,it,'parent',h7);
+            ha = subplot(Nsp,Nsp,it,'parent',h.f7);
             plotfun(ymd,UTsec,xg,J2(:,:,:)*1e6,'J_2 (uA/m^2)',J2lim,[mlatsrc,mlonsrc],ha);
             
-            h8=figure(h8);
-            ha = subplot(Nsp,Nsp,it,'parent',h8);
+            ha = subplot(Nsp,Nsp,it,'parent',h.f8);
             plotfun(ymd,UTsec,xg,J3(:,:,:)*1e6,'J_3 (uA/m^2)',J3lim,[mlatsrc,mlonsrc],ha);
             
-            if xg.lx(2)~=1 && xg.lx(3)~=1
-                h9=figure(h9);
-                ha = subplot(Nsp,Nsp,it,'parent',h9);
-                imagesc(ha,Phitop)
+            if ~isempty(h.f9)
+                ha = subplot(Nsp,Nsp,it,'parent',h.f9);
+                imagesc(Phitop, 'parent', ha)
                 colorbar;
             end
         end
@@ -248,37 +197,44 @@ for it=1:lt
 end % for
     
     if saveplots && (xg.lx(2)==1 && xg.lx(3)==1 || lt<=16)    %save the short 2D sim plots
-        if flagoutput~=3
-            print(h1,'-dpng',[direc,'/v1plots/',filename,'.png'],'-r300')
-            print(h2,'-dpng',[direc,'/Tiplots/',filename,'.png'],'-r300')
-            print(h3,'-dpng',[direc,'/Teplots/',filename,'.png'],'-r300')
-            print(h4,'-dpng',[direc,'/J1plots/',filename,'.png'],'-r300')
-            print(h5,'-dpng',[direc,'/v2plots/',filename,'.png'],'-r300')
-            print(h6,'-dpng',[direc,'/v3plots/',filename,'.png'],'-r300')
-            print(h7,'-dpng',[direc,'/J2plots/',filename,'.png'],'-r300')
-            print(h8,'-dpng',[direc,'/J3plots/',filename,'.png'],'-r300')
-            if xg.lx(2)~=1 && xg.lx(3)~=1
-                print(h9,'-dpng',[direc,'/Phiplots/',filename,'.png'],'-r300')
-            end
-        end
-        print(h10,'-dpng',[direc,'/nplots/',filename,'.png'],'-r300')
-
-        if flagoutput~=3     %now make .eps prints of the plots
-            print(h1,'-depsc2',[direc,'/v1plots_eps/',filename,'.eps'])
-            print(h2,'-depsc2',[direc,'/Tiplots_eps/',filename,'.eps'])
-            print(h3,'-depsc2',[direc,'/Teplots_eps/',filename,'.eps'])
-            print(h4,'-depsc2',[direc,'/J1plots_eps/',filename,'.eps'])
-            print(h5,'-depsc2',[direc,'/v2plots_eps/',filename,'.eps'])
-            print(h6,'-depsc2',[direc,'/v3plots_eps/',filename,'.eps'])
-            print(h7,'-depsc2',[direc,'/J2plots_eps/',filename,'.eps'])
-            print(h8,'-depsc2',[direc,'/J3plots_eps/',filename,'.eps'])
-            if xg.lx(2)~=1 && xg.lx(3)~=1
-                print(h9,'-depsc2',[direc,'/Phiplots_eps/',filename,'.eps'])
-            end
-        end
-        print(h10,'-depsc2',[direc,'/nplots_eps/',filename,'.eps'])
+        dosave(flagoutput, direc, filename, h)
     end
     
 if nargout==0, clear('xg'), end
     
 end % function
+
+
+function dosave(flagoutput, direc, filename, h)
+
+if flagoutput~=3
+    print(h.f1,'-dpng',[direc,'/v1plots/',filename,'.png'],'-r300')
+    print(h.f2,'-dpng',[direc,'/Tiplots/',filename,'.png'],'-r300')
+    print(h.f3,'-dpng',[direc,'/Teplots/',filename,'.png'],'-r300')
+    print(h.f4,'-dpng',[direc,'/J1plots/',filename,'.png'],'-r300')
+    print(h.f5,'-dpng',[direc,'/v2plots/',filename,'.png'],'-r300')
+    print(h.f6,'-dpng',[direc,'/v3plots/',filename,'.png'],'-r300')
+    print(h.f7,'-dpng',[direc,'/J2plots/',filename,'.png'],'-r300')
+    print(h.f8,'-dpng',[direc,'/J3plots/',filename,'.png'],'-r300')
+    if ~isempty(h.f9)
+        print(h.f9,'-dpng',[direc,'/Phiplots/',filename,'.png'],'-r300')
+    end
+end
+print(h.f10,'-dpng',[direc,'/nplots/',filename,'.png'],'-r300')
+
+if flagoutput~=3     %now make .eps prints of the plots
+    print(h.f1,'-depsc2',[direc,'/v1plots/',filename,'.eps'])
+    print(h.f2,'-depsc2',[direc,'/Tiplots/',filename,'.eps'])
+    print(h.f3,'-depsc2',[direc,'/Teplots/',filename,'.eps'])
+    print(h.f4,'-depsc2',[direc,'/J1plots/',filename,'.eps'])
+    print(h.f5,'-depsc2',[direc,'/v2plots/',filename,'.eps'])
+    print(h.f6,'-depsc2',[direc,'/v3plots/',filename,'.eps'])
+    print(h.f7,'-depsc2',[direc,'/J2plots/',filename,'.eps'])
+    print(h.f8,'-depsc2',[direc,'/J3plots/',filename,'.eps'])
+    if ~isempty(h.f9)
+        print(h.f9,'-depsc2',[direc,'/Phiplots/',filename,'.eps'])
+    end
+end
+print(h.f10,'-depsc2',[direc,'/nplots/',filename,'.eps'])
+
+end
