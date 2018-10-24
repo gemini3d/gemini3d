@@ -1,3 +1,4 @@
+*.orig
 CMakeFiles/
 CMakeCache.txt
 test_*
