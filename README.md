@@ -66,7 +66,7 @@ This test runs a short demo, taking about 2-5 minutes on a typical Mac / Linux l
    git clone https://github.com/mattzett/gemini
    cd gemini
    ```
-2. Get the 2D test data: [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1464915.svg)](https://doi.org/10.5281/zenodo.1464915)
+2. Get the 2D test data: [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1470073.svg)](https://doi.org/10.5281/zenodo.1470073)
 3. compile and run GEMINI demo: 
    ```sh
    cd ~/gemini/objects
