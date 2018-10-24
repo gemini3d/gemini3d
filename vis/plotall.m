@@ -6,8 +6,9 @@ addpath([cwd, filesep, '..', filesep, 'script_utils'])
 
 narginchk(1,3)
 validateattr(direc, {'char'}, {'vector'}, mfilename, 'path to data', 1)
-if nargin<2, saveplots=false; end
-validateattr(saveplots, {'logical'}, {'scalar'}, mfilename)
+
+if nargin<2, saveplots={}; end  % 'png', 'eps' or {'png', 'eps'}
+
 if nargin<3
   plotfun=[]; 
 else
@@ -105,20 +106,22 @@ Rsp = ceil(lt/Csp);
 ymd=ymd0;
 UTsec=UTsec0;
 %% initialize figure sets
-h.f1=figure('name','V1');
-h.f2=figure('name','Ti');
-h.f3=figure('name','Te');
-h.f4=figure('name','J1');
-h.f5=figure('name','V2');
-h.f6=figure('name','V3');
-h.f7=figure('name','J2');
-h.f8=figure('name','J3');
+h.f1=figure('name','V1', 'units', 'normalized', 'position', [.1, .1, .5, .5]);
+h.f2=figure('name','Ti', 'units', 'normalized', 'position', [.1, .1, .5, .5]);
+h.f3=figure('name','Te', 'units', 'normalized', 'position', [.1, .1, .5, .5]);
+h.f4=figure('name','J1', 'units', 'normalized', 'position', [.1, .1, .5, .5]);
+h.f5=figure('name','V2', 'units', 'normalized', 'position', [.1, .1, .5, .5]);
+h.f6=figure('name','V3', 'units', 'normalized', 'position', [.1, .1, .5, .5]);
+h.f7=figure('name','J2', 'units', 'normalized', 'position', [.1, .1, .5, .5]);
+h.f8=figure('name','J3', 'units', 'normalized', 'position', [.1, .1, .5, .5]);
 if xg.lx(2)>1 && xg.lx(3)>1 % a 3-D simulation
-  h.f9=figure('name','phiTop');
+  h.f9=figure('name','phiTop', 'units', 'normalized', 'position', [.1, .1, .5, .5]);
 else
   h.f9 = [];
 end
-h.f10=figure('name','Ne');%, 'position', [.1, .1, .5, .5], 'units', 'normalized');
+h.f10=figure('name','Ne', 'units', 'normalized', 'position', [.1, .1, .5, .5]);
+
+lotsplots =  ~isempty(h.f9) || lt > 16
 %% main figure loop
 
 % NOTE: keep figure() calls in case plotfcn misses a graphics handle, and
@@ -129,7 +132,7 @@ for it=1:lt
     disp([filename, ' => ', func2str(plotfun)])
 
     %% Electron number density, 'position', [.1, .1, .5, .5], 'units', 'normalized'
-    if ~isempty(h.f9) || lt > 16    % 3D simulation or a very long 2D simulation - do separate plots for each time frame
+    if lotsplots   % 3D simulation or a very long 2D simulation - do separate plots for each time frame
         if it==1, disp('long 2D or 3D simulation...'), end
         
         clf(h.f10), figure(h.f10)
@@ -161,9 +164,9 @@ for it=1:lt
             end
         end
         
-        if saveplots   % for 3D or long 2D plots print and output file every time step
-          dosave(flagoutput, direc, filename, h)
-        end
+        % for 3D or long 2D plots print and output file every time step
+        dosave(flagoutput, direc, filename, saveplots, h)
+
     else    %short 2D simulation - put the entire time series in a single plot
         if it==1, disp('short 2D simulations...'), end
         
@@ -217,8 +220,8 @@ for it=1:lt
     [ymd,UTsec]=dateinc(dtout,ymd,UTsec);
 end % for
     
-    if saveplots && (xg.lx(2)==1 && xg.lx(3)==1 || lt<=16)    %save the short 2D sim plots
-        dosave(flagoutput, direc, filename, h)
+    if ~lotsplots    %save the short 2D sim plots
+        dosave(flagoutput, direc, filename, saveplots, h)
     end
     
 if nargout==0, clear('xg'), end
@@ -226,36 +229,47 @@ if nargout==0, clear('xg'), end
 end % function
 
 
-function dosave(flagoutput, direc, filename, h)
+function dosave(flagoutput, direc, filename, fmt, h)
 
-if flagoutput~=3
-    print(h.f1,'-dpng',[direc,'/v1plots/',filename,'.png'],'-r300')
-    print(h.f2,'-dpng',[direc,'/Tiplots/',filename,'.png'],'-r300')
-    print(h.f3,'-dpng',[direc,'/Teplots/',filename,'.png'],'-r300')
-    print(h.f4,'-dpng',[direc,'/J1plots/',filename,'.png'],'-r300')
-    print(h.f5,'-dpng',[direc,'/v2plots/',filename,'.png'],'-r300')
-    print(h.f6,'-dpng',[direc,'/v3plots/',filename,'.png'],'-r300')
-    print(h.f7,'-dpng',[direc,'/J2plots/',filename,'.png'],'-r300')
-    print(h.f8,'-dpng',[direc,'/J3plots/',filename,'.png'],'-r300')
-    if ~isempty(h.f9)
-        print(h.f9,'-dpng',[direc,'/Phiplots/',filename,'.png'],'-r300')
-    end
-end
-print(h.f10,'-dpng',[direc,'/nplots/',filename,'.png'],'-r300')
+narginchk(5,5)
+validateattr(flagoutput, {'numeric'}, {'scalar'}, mfilename)
+validateattr(direc, {'char'}, {'vector'}, mfilename)
+validateattr(filename, {'char'}, {'vector'}, mfilename)
 
-if flagoutput~=3     %now make .eps prints of the plots
-    print(h.f1,'-depsc2',[direc,'/v1plots/',filename,'.eps'])
-    print(h.f2,'-depsc2',[direc,'/Tiplots/',filename,'.eps'])
-    print(h.f3,'-depsc2',[direc,'/Teplots/',filename,'.eps'])
-    print(h.f4,'-depsc2',[direc,'/J1plots/',filename,'.eps'])
-    print(h.f5,'-depsc2',[direc,'/v2plots/',filename,'.eps'])
-    print(h.f6,'-depsc2',[direc,'/v3plots/',filename,'.eps'])
-    print(h.f7,'-depsc2',[direc,'/J2plots/',filename,'.eps'])
-    print(h.f8,'-depsc2',[direc,'/J3plots/',filename,'.eps'])
-    if ~isempty(h.f9)
-        print(h.f9,'-depsc2',[direc,'/Phiplots/',filename,'.eps'])
+disp(['writing plots to ',direc])
+
+if any(strcmpi(fmt, 'png'))
+    if flagoutput~=3
+        print(h.f1,'-dpng',[direc,'/v1plots/',filename,'.png'],'-r300')
+        print(h.f2,'-dpng',[direc,'/Tiplots/',filename,'.png'],'-r300')
+        print(h.f3,'-dpng',[direc,'/Teplots/',filename,'.png'],'-r300')
+        print(h.f4,'-dpng',[direc,'/J1plots/',filename,'.png'],'-r300')
+        print(h.f5,'-dpng',[direc,'/v2plots/',filename,'.png'],'-r300')
+        print(h.f6,'-dpng',[direc,'/v3plots/',filename,'.png'],'-r300')
+        print(h.f7,'-dpng',[direc,'/J2plots/',filename,'.png'],'-r300')
+        print(h.f8,'-dpng',[direc,'/J3plots/',filename,'.png'],'-r300')
+        if ~isempty(h.f9)
+            print(h.f9,'-dpng',[direc,'/Phiplots/',filename,'.png'],'-r300')
+        end
     end
+    print(h.f10,'-dpng',[direc,'/nplots/',filename,'.png'],'-r300')
 end
-print(h.f10,'-depsc2',[direc,'/nplots/',filename,'.eps'])
+
+if any(strcmpi(fmt, 'eps'))
+    if flagoutput~=3     %now make .eps prints of the plots
+        print(h.f1,'-depsc2',[direc,'/v1plots/',filename,'.eps'])
+        print(h.f2,'-depsc2',[direc,'/Tiplots/',filename,'.eps'])
+        print(h.f3,'-depsc2',[direc,'/Teplots/',filename,'.eps'])
+        print(h.f4,'-depsc2',[direc,'/J1plots/',filename,'.eps'])
+        print(h.f5,'-depsc2',[direc,'/v2plots/',filename,'.eps'])
+        print(h.f6,'-depsc2',[direc,'/v3plots/',filename,'.eps'])
+        print(h.f7,'-depsc2',[direc,'/J2plots/',filename,'.eps'])
+        print(h.f8,'-depsc2',[direc,'/J3plots/',filename,'.eps'])
+        if ~isempty(h.f9)
+            print(h.f9,'-depsc2',[direc,'/Phiplots/',filename,'.eps'])
+        end
+    end
+    print(h.f10,'-depsc2',[direc,'/nplots/',filename,'.eps'])
+end
 
 end
