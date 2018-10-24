@@ -9,6 +9,8 @@ function ok = compare_all(dir1, dir2)
 % vi,v2,v3=1 m/s
 % J1,J2,J3 = 1e-9 
 
+try
+
 cwd = fileparts(mfilename('fullpath'));
 addpath([cwd,filesep,'..',filesep,'script_utils'])
 addpath([cwd, filesep, '..', filesep, 'vis'])
@@ -84,6 +86,13 @@ if ok
   exit(ok)
 else
   disp(['OK: Gemini output comparison of ',int2str(Nt),' time steps.'])
+end
+
+catch excp
+% try catch is necessary for Matlab in case of filename error, etc. to avoid false negative
+disp(excp.message)
+exit(1)
+
 end
 
 end % function
