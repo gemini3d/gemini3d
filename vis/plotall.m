@@ -38,7 +38,7 @@ J3lim=[-10 10];
 
 %% MAKE DIRECTORIES FOR OUTPUT FILES
 % store output plots with the simulation data
-if saveplots
+if ~isempty(saveplots)
   dlist = {'nplots', 'v1plots', 'v2plots', 'v3plots', 'J1plots',...
            'Tiplots', 'Teplots', 'J2plots', 'J3plots', 'Phiplots'};
   for i=1:length(dlist)
@@ -121,7 +121,7 @@ else
 end
 h.f10=figure('name','Ne', 'units', 'normalized', 'position', [.1, .1, .5, .5]);
 
-lotsplots =  ~isempty(h.f9) || lt > 16
+lotsplots = ~isempty(h.f9) || lt > 16;
 %% main figure loop
 
 % NOTE: keep figure() calls in case plotfcn misses a graphics handle, and
