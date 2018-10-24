@@ -99,7 +99,9 @@ end
 times=UTsec0:dtout:UTsec0+tdur;
 lt=numel(times);
 
-Nsp = ceil(sqrt(length(times)));    %number of subplots (if used)
+Csp = ceil(sqrt(lt));
+Rsp = ceil(lt/Csp);
+
 ymd=ymd0;
 UTsec=UTsec0;
 %% initialize figure sets
@@ -166,46 +168,46 @@ for it=1:lt
         if it==1, disp('short 2D simulations...'), end
         
         figure(h.f10)
-        ha = subplot(Nsp,Nsp,it,'parent',h.f10);
+        ha = subplot(Rsp, Csp,it,'parent',h.f10);
         nelim =  [9 11.3];
         plotfun(ymd,UTsec,xg,log10(ne), 'log_{10} n_e (m^{-3})',nelim,[mlatsrc,mlonsrc],ha);
         
         if flagoutput~=3
             figure(h.f1)
-            ha = subplot(Nsp,Nsp,it,'parent',h.f1);
+            ha = subplot(Rsp, Csp,it,'parent',h.f1);
             plotfun(ymd,UTsec,xg,v1(:,:,:),'v_1 (m/s)',v1lim,[mlatsrc,mlonsrc],ha);
             
             figure(h.f2)
-            ha = subplot(Nsp,Nsp,it,'parent',h.f2);
+            ha = subplot(Rsp, Csp,it,'parent',h.f2);
             plotfun(ymd,UTsec,xg,Ti(:,:,:),'T_i (K)',Tilim,[mlatsrc,mlonsrc],ha);
             
             figure(h.f3)
-            ha = subplot(Nsp,Nsp,it,'parent',h.f3);
+            ha = subplot(Rsp, Csp,it,'parent',h.f3);
             plotfun(ymd,UTsec,xg,Te(:,:,:),'T_e (K)',Telim,[mlatsrc,mlonsrc],ha);
             
             figure(h.f4)
-            ha = subplot(Nsp,Nsp,it,'parent',h.f4);
+            ha = subplot(Rsp, Csp,it,'parent',h.f4);
             plotfun(ymd,UTsec,xg,J1(:,:,:)*1e6,'J_1 (uA/m^2)',J1lim,[mlatsrc,mlonsrc],ha);
             
             figure(h.f5)
-            ha = subplot(Nsp,Nsp,it,'parent',h.f5);
+            ha = subplot(Rsp, Csp,it,'parent',h.f5);
             plotfun(ymd,UTsec,xg,v2(:,:,:),'v_2 (m/s)',v2lim,[mlatsrc,mlonsrc],ha);
             
             figure(h.f6)
-            ha = subplot(Nsp,Nsp,it,'parent',h.f6);
+            ha = subplot(Rsp, Csp,it,'parent',h.f6);
             plotfun(ymd,UTsec,xg,v3(:,:,:),'v_3 (m/s)',v3lim,[mlatsrc,mlonsrc],ha);
             
             figure(h.f7)
-            ha = subplot(Nsp,Nsp,it,'parent',h.f7);
+            ha = subplot(Rsp, Csp,it,'parent',h.f7);
             plotfun(ymd,UTsec,xg,J2(:,:,:)*1e6,'J_2 (uA/m^2)',J2lim,[mlatsrc,mlonsrc],ha);
             
             figure(h.f8)
-            ha = subplot(Nsp,Nsp,it,'parent',h.f8);
+            ha = subplot(Rsp, Csp,it,'parent',h.f8);
             plotfun(ymd,UTsec,xg,J3(:,:,:)*1e6,'J_3 (uA/m^2)',J3lim,[mlatsrc,mlonsrc],ha);
             
             if ~isempty(h.f9)
                 figure(h.f9)
-                ha = subplot(Nsp,Nsp,it,'parent',h.f9);
+                ha = subplot(Rsp, Csp,it,'parent',h.f9);
                 imagesc(Phitop, 'parent', ha)
                 colorbar;
             end
