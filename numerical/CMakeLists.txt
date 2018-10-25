@@ -2,7 +2,9 @@ cmake_minimum_required (VERSION 3.11)
 project(gem-num Fortran)
 enable_testing()
 
-cmake_policy(SET CMP0074 NEW)
+if(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.12.0")  # quotes are needed!
+  cmake_policy(SET CMP0074 NEW)
+endif()
 
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/../cmake/Modules/)
 ## Lapack95

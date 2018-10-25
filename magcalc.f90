@@ -101,9 +101,8 @@ character(256) :: argv
 !----------------------------------------------------------
 
 argc = command_argument_count()
-if (argc < 2) error stop 'magcalc.f90 --> must specify .ini file to configure simulation and location of &
-                          output data from simulation (i.e. plasma parameters and fields) and &
-                          and input field point file'
+if (argc < 2) error stop 'magcalc.f90 --> must specify .ini file to configure simulation and location of'// &
+        'output data from simulation (i.e. plasma parameters and fields) and input field point file'
 
 
 !INITIALIZE MESSING PASSING VARIABLES, IDS ETC.

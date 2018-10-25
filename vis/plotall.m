@@ -236,9 +236,9 @@ validateattr(flagoutput, {'numeric'}, {'scalar'}, mfilename)
 validateattr(direc, {'char'}, {'vector'}, mfilename)
 validateattr(filename, {'char'}, {'vector'}, mfilename)
 
-disp(['writing plots to ',direc])
-
 if any(strcmpi(fmt, 'png'))
+    disp(['writing png plots to ',direc])
+
     if flagoutput~=3
         print(h.f1,'-dpng',[direc,'/v1plots/',filename,'.png'],'-r300')
         print(h.f2,'-dpng',[direc,'/Tiplots/',filename,'.png'],'-r300')
@@ -256,6 +256,8 @@ if any(strcmpi(fmt, 'png'))
 end
 
 if any(strcmpi(fmt, 'eps'))
+    disp(['writing eps plots to ',direc])
+
     if flagoutput~=3     %now make .eps prints of the plots
         print(h.f1,'-depsc2',[direc,'/v1plots/',filename,'.eps'])
         print(h.f2,'-depsc2',[direc,'/Tiplots/',filename,'.eps'])

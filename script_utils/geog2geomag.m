@@ -1,4 +1,7 @@
 function [thetat,phit]=geog2geomag(lat,lon)
+
+validateattr(lat, {'numeric'}, {'vector'}, mfilename)
+validateattr(lon, {'numeric'}, {'vector'}, mfilename)
   
   thetan=11*pi/180;
   phin=289*pi/180;

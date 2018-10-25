@@ -1,4 +1,7 @@
 #!/bin/sh
+
+# consider using ffmpeg, it's simpler than this.
+
 #mencoder "mf://$1/*.png" -mf fps=$3 -o $2 -ovc lavc -lavcopts vcodec=msmpeg4v2:vbitrate=9600
 #mencoder "mf://$1/*.png" -mf fps=$3 -o $2 -ovc lavc -lavcopts vcodec=msmpeg4v2
 #mencoder mf://*.png -mf w=800:h=600:fps=25:type=png -ovc raw -oac copy -o output.avi

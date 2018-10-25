@@ -1,29 +1,14 @@
-% Copyright (c) 2016, Ander Biguri
-% All rights reserved.
-
-% Redistribution and use in source and binary forms, with or without
-% modification, are permitted provided that the following conditions are
-% met:
-
-% * Redistributions of source code must retain the above copyright
-% notice, this list of conditions and the following disclaimer.
-% * Redistributions in binary form must reproduce the above copyright
-% notice, this list of conditions and the following disclaimer in
-% the documentation and/or other materials provided with the distribution
-
-% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-% IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-% ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-% LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-% POSSIBILITY OF SUCH DAMAGE.
-
 function cm_data=parula(m)
+%%  parula Blue-green-orange-yellow color map
+% parula(M) returns an M-by-3 matrix containing a colormap. 
+
+cwd = fileparts(mfilename('fullpath'));
+addpath([cwd, filesep, '..', filesep, 'script_utils'])
+
+if ~isoctave
+   cm_data = builtin('parula','m');
+   return
+end
 
 cm = [[0.2081, 0.1663, 0.5292], 
     [0.2116238095, 0.1897809524, 0.5776761905], 
@@ -99,3 +84,28 @@ else
 end % if
 
 end % function
+
+% Copyright (c) 2016, Ander Biguri
+% All rights reserved.
+
+% Redistribution and use in source and binary forms, with or without
+% modification, are permitted provided that the following conditions are
+% met:
+
+% * Redistributions of source code must retain the above copyright
+% notice, this list of conditions and the following disclaimer.
+% * Redistributions in binary form must reproduce the above copyright
+% notice, this list of conditions and the following disclaimer in
+% the documentation and/or other materials provided with the distribution
+
+% THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+% AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+% IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+% ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+% LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+% CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+% SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+% INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+% CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+% ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+% POSSIBILITY OF SUCH DAMAGE.
