@@ -1,5 +1,5 @@
-# - Try to find MUMPS
-# https://cmake.org/cmake/help/v3.11/manual/cmake-developer.7.html#find-modules
+# - Try to find MUMPS  http://mumps.enseeiht.fr/
+# https://cmake.org/cmake/help/latest/manual/cmake-developer.7.html#find-modules
 
 #.rst:
 # FindMUMPS
@@ -22,12 +22,14 @@ if(${CMAKE_Fortran_COMPILER_ID} STREQUAL Intel)
 else()
   find_package(LAPACK)
   if (NOT LAPACK_FOUND)
+    message(WARNING "Skipping MUMPS because required LAPACK was not found.")
     return()
   endif()
 
   # ----- MPI
   find_package(MPI COMPONENTS Fortran)
   if (NOT MPI_FOUND)
+    message(WARNING "Skipping MUMPS because required MPI was not found.")
     return()
   endif()
 endif()
@@ -37,11 +39,11 @@ add_compile_options(${MPI_Fortran_COMPILE_OPTIONS})
 include_directories(${MPI_Fortran_INCLUDE_DIRS})
 
 #-- METIS
-find_package(METIS)
+find_package(METIS QUIET)
 #-- Scotch
-find_package(Scotch COMPONENTS ESMUMPS)
+find_package(Scotch QUIET COMPONENTS ESMUMPS)
 #-- Scalapack
-find_package(SCALAPACK)
+find_package(SCALAPACK QUIET)
 #-------------------------
 
 
@@ -51,26 +53,28 @@ pkg_check_modules(PC_MUMPS QUIET MUMPS)
 
 find_path(MUMPS_INCLUDE_DIR
           NAMES mumps_compat.h
-          PATHS ${PC_MUMPS_INCLUDE_DIRS}
+          PATHS ${PC_MUMPS_INCLUDE_DIRS} ${LD_LIBRARY_PATH}
           PATH_SUFFIXES MUMPS include
           HINTS ${MUMPS_ROOT})
 
 find_library(MUMPS_COMMON
              NAMES mumps_common
-             PATHS ${PC_MUMPS_LIBRARY_DIRS}
+             PATHS ${PC_MUMPS_LIBRARY_DIRS} ${LD_LIBRARY_PATH}
              PATH_SUFFIXES MUMPS lib
              HINTS ${MUMPS_ROOT})
 
 find_library(PORD 
-              NAMES pord 
-              PATH_SUFFIXES MUMPS lib
-              HINTS ${MUMPS_ROOT})
+             NAMES pord 
+             PATHS ${LD_LIBRARY_PATH}
+             PATH_SUFFIXES MUMPS lib
+             HINTS ${MUMPS_ROOT})
         
 unset(MUMPS_LIBRARIES)
 
 FOREACH(comp ${MUMPS_FIND_COMPONENTS})
   find_library(MUMPS_${comp}_lib
               NAMES ${comp}mumps 
+              PATHS ${LD_LIBRARY_PATH}
               PATH_SUFFIXES MUMPS lib
               HINTS ${MUMPS_ROOT})
   
@@ -79,7 +83,11 @@ FOREACH(comp ${MUMPS_FIND_COMPONENTS})
     list(APPEND MUMPS_LIBRARIES ${MUMPS_${comp}_lib})
     mark_as_advanced(MUMPS_${comp}_lib)
   else()
-      message(FATAL_ERROR "did not find" ${MUMPS_${comp}_lib})
+      if(MUMPS_FIND_REQUIRED)
+        message(FATAL_ERROR "did not find" ${MUMPS_${comp}_lib})
+      else()
+        message(WARNING "did not find" ${MUMPS_${comp}_lib})
+      endif()
   endif()
 ENDFOREACH()
 
