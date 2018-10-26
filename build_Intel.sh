@@ -18,5 +18,5 @@ export FC=mpiifort
 cmake -DMUMPS_ROOT=$MUMPS_ROOT ..
 )
 
-cmake --build objects
+cmake --build objects -j
 
