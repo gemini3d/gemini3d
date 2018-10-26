@@ -9,12 +9,11 @@
 (
 # this temporarily disables Intel compiler (if installed) from messing up your gfortran environment.
 MKLROOT=
-FC=/usr/bin/mpif90.openmpi
 
 rm -r objects/*  # need this one-time in case different compiler e.g. ifort was previously used.
 cd objects
 
-cmake -DMPI_Fortran_COMPILER=$FC ..
+FC=/usr/bin/mpif90.openmpi cmake ..
 )
 
 cmake --build objects -j

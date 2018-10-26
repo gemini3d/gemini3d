@@ -77,6 +77,8 @@ This test runs a short demo, taking about 2-5 minutes on a typical Mac / Linux l
 
    ctest -V
    ```
+
+If you get errors about libraries not found or it's using the wrong compiler, see the `build_.sh` scripts for examples of how to easily tell CMake to use customer library and compiler locations.
    
 ### input directory
 The example `config.ini` in `initialize/` look for input grid data in `../simulations`.

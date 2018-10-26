@@ -13,9 +13,7 @@ FC=mpiifort CC=mpiicc make d -s -C $MUMPS_ROOT -j2
 rm -r objects/* # one-time, if you build for Gfortran previously
 cd objects
 
-export FC=mpiifort
-
-cmake -DMUMPS_ROOT=$MUMPS_ROOT ..
+FC=mpiifort cmake -DMUMPS_ROOT=$MUMPS_ROOT ..
 )
 
 cmake --build objects -j
