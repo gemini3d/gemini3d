@@ -16,20 +16,6 @@
 #  OCTAVE_OCT_FILE_DIR         - object files that will be dynamically loaded
 #  OCTAVE_OCT_LIB_DIR          - oct libraries
 #  OCTAVE_ROOT_DIR             - octave prefix
-#
-# The macro octave_add_oct allows to create compiled modules.
-# octave_add_oct ( target_name
-#         [SOURCES] source1 [source2 ...]
-#         [LINK_LIBRARIES  lib1 [lib2 ...]]
-#         [EXTENSION ext]
-# )
-#
-# To install it, you can the use the variable OCTAVE_OCT_FILE_DIR as follow:
-#  file ( RELATIVE_PATH PKG_OCTAVE_OCT_FILE_DIR ${OCTAVE_ROOT_DIR} ${OCTAVE_OCT_FILE_DIR} )                   
-#  install (
-#    TARGETS target_name
-#    DESTINATION ${PKG_OCTAVE_OCT_FILE_DIR}
-#  ) 
 
 #=============================================================================
 # Copyright 2013, Julien Schueller
@@ -66,7 +52,7 @@ find_program( OCTAVE_CONFIG_EXECUTABLE
 
 if ( OCTAVE_CONFIG_EXECUTABLE )
 
-  execute_process ( COMMAND ${OCTAVE_CONFIG_EXECUTABLE} -p PREFIX
+  execute_process ( COMMAND ${OCTAVE_CONFIG_EXECUTABLE} -p OCTAVE_HOME
                     OUTPUT_VARIABLE OCTAVE_ROOT_DIR
                     OUTPUT_STRIP_TRAILING_WHITESPACE )        
                     
@@ -126,47 +112,18 @@ if (OCTAVE_CRUFT_LIBRARY)
   list ( APPEND OCTAVE_LIBRARIES ${OCTAVE_CRUFT_LIBRARY} ) 
 endif()
 
-find_path ( OCTAVE_INCLUDE_DIR 
-            NAMES mex.h
-            HINTS ${OCTAVE_INCLUDE_PATHS}
+find_path(OCTAVE_INCLUDE_DIR 
+          NAMES mex.h
+          HINTS ${OCTAVE_INCLUDE_PATHS}
           )
     
-set ( OCTAVE_INCLUDE_DIRS ${OCTAVE_INCLUDE_DIR} )
-
-macro ( octave_add_oct FUNCTIONNAME )
-  set ( _CMD SOURCES )
-  set ( _SOURCES )
-  set ( _LINK_LIBRARIES )
-  set ( _EXTENSION )
-  set ( _OCT_EXTENSION oct )
-  foreach ( _ARG ${ARGN})
-    if ( ${_ARG} MATCHES SOURCES )
-      set ( _CMD SOURCES )
-    elseif ( ${_ARG} MATCHES LINK_LIBRARIES  )
-      set ( _CMD LINK_LIBRARIES  )
-    elseif ( ${_ARG} MATCHES EXTENSION )
-      set ( _CMD EXTENSION )
-    else ()
-      if ( ${_CMD} MATCHES SOURCES )
-        list ( APPEND _SOURCES "${_ARG}" )
-      elseif ( ${_CMD} MATCHES LINK_LIBRARIES  )
-        list ( APPEND _LINK_LIBRARIES "${_ARG}" )
-      elseif ( ${_CMD} MATCHES EXTENSION )
-        set ( _OCT_EXTENSION ${_ARG} )
-      endif ()
-    endif ()
-  endforeach ()
-  add_library ( ${FUNCTIONNAME} SHARED ${_SOURCES} )
-  target_link_libraries ( ${FUNCTIONNAME} ${OCTAVE_LIBRARIES} ${_LINK_LIBRARIES} )
-  set_target_properties ( ${FUNCTIONNAME} PROPERTIES
-    PREFIX ""
-    SUFFIX  ".${_OCT_EXTENSION}"
-  )
-endmacro ()
+set (OCTAVE_INCLUDE_DIRS ${OCTAVE_INCLUDE_DIR})
 
 # handle REQUIRED and QUIET options
 include ( FindPackageHandleStandardArgs )
-find_package_handle_standard_args (Octave REQUIRED_VARS OCTAVE_EXECUTABLE OCTAVE_ROOT_DIR OCTAVE_INCLUDE_DIRS OCTAVE_LIBRARIES VERSION_VAR OCTAVE_VERSION_STRING )
+find_package_handle_standard_args(Octave 
+  REQUIRED_VARS OCTAVE_EXECUTABLE OCTAVE_ROOT_DIR OCTAVE_INCLUDE_DIRS OCTAVE_LIBRARIES 
+  VERSION_VAR OCTAVE_VERSION_STRING)
 
 mark_as_advanced (
   OCTAVE_OCT_FILE_DIR

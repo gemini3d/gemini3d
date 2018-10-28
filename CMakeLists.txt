@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.7)
+cmake_minimum_required (VERSION 3.11)
 project(gemini3d Fortran C)
 enable_testing()
 
@@ -18,8 +18,8 @@ include(${PROJECT_SOURCE_DIR}/cmake/libraries.cmake)
 # --- Build Gemini
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/numerical)
 
-add_library(msis neutral/msis00/msis00_gfortran.f)
-target_compile_options(msis PRIVATE -w -fno-implicit-none)
+add_library(msis vendor/msis00/msis00_gfortran.f)
+target_compile_options(msis PRIVATE -std=legacy -w -fno-implicit-none)
 
 add_subdirectory(numerical)
 

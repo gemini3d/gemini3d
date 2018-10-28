@@ -56,11 +56,11 @@ contains
       v1i(lx1+1,:,:)=vs1(lx1,1:lx2,1:lx3,isp)   !lowest alt on grid.
     else if (gridflag==1) then
       v1i(lx1+1,:,:)=vs1(lx1,1:lx2,1:lx3,isp)   !lowest alt on grid.
-      v1i(1,:,:)=min(v1i(2,1:lx2,1:lx3),0d0)    !highest alt; interesting that this is not vs1...   
+      v1i(1,:,:) = min(v1i(2,1:lx2,1:lx3), 0._wp)    !highest alt; interesting that this is not vs1...   
     else
-      v1i(1,:,:)=vs1(1,1:lx2,1:lx3,isp)
+      v1i(1,:,:) = vs1(1,1:lx2,1:lx3,isp)
 !!    v1i(lx1+1,:,:)=v1i(lx1,:,:)    !avoids issues with top boundary velocity spikes which may arise
-      v1i(lx1+1,:,:)=max(v1i(lx1,1:lx2,1:lx3),0.0)    !interesting that this is not vs1...
+      v1i(lx1+1,:,:) = max(v1i(lx1,1:lx2,1:lx3),0._wp)    !interesting that this is not vs1...
     end if  
 
     v2i(:,1,:)=vs2(1:lx1,1,1:lx3,isp)

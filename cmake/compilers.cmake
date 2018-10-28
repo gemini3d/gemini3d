@@ -1,24 +1,29 @@
-## ----- release or debug?
-
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
   add_compile_options(-g -O0)
 else()
   add_compile_options(-g -O3)
 endif()
 
-## ------- Compiler options
 if(${CMAKE_Fortran_COMPILER_ID} STREQUAL Intel)
   # -r8  after literals are fixed to "e" or "wp"
   if(CMAKE_BUILD_TYPE STREQUAL Debug)
-     add_compile_options(-debug extended -check all -heap-arrays)
+    add_compile_options(-debug extended -check all -heap-arrays -fp-stack-check)
   endif()
-  add_compile_options(-warn nounused -traceback -fp-stack-check)
+  add_compile_options(-warn nounused -traceback)
 elseif(${CMAKE_Fortran_COMPILER_ID} STREQUAL GNU)
   # -fdefault-real-8  after literals are fixed to "e" or "wp"
-  add_compile_options(-mtune=native -fimplicit-none)
+  add_compile_options(-march=native -fimplicit-none)
   
-  if(${CMAKE_Fortran_COMPILER_VERSION} VERSION_GREATER_EQUAL 6)
-    add_compile_options(-Wall -Wpedantic -Wextra -fexceptions -fbacktrace -Wno-unused-dummy-argument -Wno-unused-variable -Wno-unused-function)
+  if(CMAKE_BUILD_TYPE STREQUAL Debug)
+    add_compile_options(-fcheck=all -Werror=array-bounds)
+  else()
+    add_compile_options(-Wno-unused-dummy-argument -Wno-unused-variable -Wno-unused-function)
+  endif()
+  
+  if(${CMAKE_Fortran_COMPILER_VERSION} VERSION_LESS 4.8)
+    message(WARNING "tested with gfortran >= 4.8. You have " ${CMAKE_Fortran_COMPILER_VERSION})
+  elseif(${CMAKE_Fortran_COMPILER_VERSION} VERSION_GREATER_EQUAL 7)
+    add_compile_options(-Wall -Wpedantic -Wextra -std=f2008)
   endif()
 # -fstack-protector
 # -ffpe-trap=invalid,zero,overflow)#,underflow)
@@ -27,4 +32,6 @@ elseif(${CMAKE_Fortran_COMPILER_ID} STREQUAL PGI)
 elseif(${CMAKE_Fortran_COMPILER_ID} STREQUAL Flang) 
   add_compile_options(-Mallocatable=03)
   link_libraries(-static-flang-libs)
+elseif(${CMAKE_Fortran_COMPILER_ID} STREQUAL NAG)
+  add_compile_options(-u -C=all)
 endif()
