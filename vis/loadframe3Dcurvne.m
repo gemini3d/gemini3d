@@ -1,27 +1,20 @@
 function ne = loadframe3Dcurvne(direc, filename)
 
-%SIMULATION SIZE
-fid=fopen([direc,'/inputs/simsize.dat'],'r');
-lxs=fread(fid,3,'integer*4');
-lxs=lxs(:)';
-fclose(fid);
+validateattributes(direc, {'char'}, {'vector'}, mfilename, 'data directory', 1)
+validateattributes(direc, {'char'}, {'vector'}, mfilename, 'data filename', 2)
+%% SIMULATION SIZE
+lxs = simsize(direc);
+disp(['sim grid dimensions: ',num2str(lxs)])
+%% SIMULATION RESULTS
+fsimres = [direc,filesep,filename];
+assert(exist(fsimres,'file')==2, [fsimres,' does not exist'])
 
-
-%SIMULATION GRID FILE (NOTE THAT THIS IS NOT THE ENTIRE THING - THAT NEEDS
-%TO BE DONE WITH READGRID.M.  WE NEED THIS HERE TO DO MESHGRIDS
-lsp=7;
-
-%THESE ARE THE SIMULATIONS RESULTS
-fid=fopen([direc,filename],'r');
-%t=fread(fid,1,'real*8');     %this is for just UT seconds
-simdate=zeros(1,6);    %datevec-style array
-simdatetmp=fread(fid,4,'real*8');
-simdate(1:4)=simdatetmp;
+fid=fopen(fsimres,'r');
+simdt(fid);
 
 ns=fread(fid,prod(lxs),'real*8');
-ns=reshape(ns,[lxs]);
+ns=reshape(ns, lxs);
 fprintf('Loaded densities...\n');
-
 
 fclose(fid);
 

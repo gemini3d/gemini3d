@@ -1,74 +1,33 @@
 function [ne,v1,Ti,Te,J1,v2,v3,J2,J3,ns,vs1,Ts,Phitop] = loadframe3Dcurv(direc, filename)
 
-%SIMULATION SIZE
-fsimsize = [direc,filesep,'/inputs/simsize.dat'];    %note that the input grid is now just stored in inputs/
-if ~exist(fsimsize,'file'), error([fsimsize,' does not exist']), end
-   
-fid=fopen(fsimsize,'r');
-lxs=fread(fid,3,'integer*4');
-lxs=lxs(:)';
-fclose(fid);
-
-disp(['sim grid dimensions: ',num2str(lxs)])
-
-%SIMULATION GRID FILE (NOTE THAT THIS IS NOT THE ENTIRE THING - THAT NEEDS
-%TO BE DONE WITH READGRID.M.  WE NEED THIS HERE TO DO MESHGRIDS
+validateattributes(direc, {'char'}, {'vector'}, mfilename, 'data directory', 1)
+validateattributes(direc, {'char'}, {'vector'}, mfilename, 'data filename', 2)
+%% SIMULATION SIZE
 lsp=7;
-
-fsimgrid = [direc,filesep,'/inputs/simgrid.dat'];
-if ~exist(fsimgrid,'file'), error([fsimgrid,' does not exist']), end
-fid=fopen(fsimgrid,'r');
-x1=fread(fid,lxs(1),'real*8');
-x1=x1(:)';
-x2=fread(fid,lxs(2),'real*8');
-x2=x2(:)';
-x3=fread(fid,lxs(3),'real*8');
-x3=x3(:)';
-fclose(fid);
-
-
-%THESE ARE THE SIMULATIONS RESULTS
+lxs = simsize(direc);
+disp(['sim grid dimensions: ',num2str(lxs)])
+%% SIMULATION RESULTS
 fsimres = [direc,filesep,filename];
-if ~exist(fsimres,'file'), error([fsimres,' does not exist']), end
+assert(exist(fsimres,'file')==2, [fsimres,' does not exist'])
+
 fid=fopen(fsimres,'r');
-%t=fread(fid,1,'real*8');     %this is for just UT seconds
-simdate=zeros(1,6);    %datevec-style array
-simdatetmp=fread(fid,4,'real*8');
-simdate(1:4)=simdatetmp;
-
-ns=fread(fid,prod(lxs)*lsp,'real*8');
-ns=reshape(ns,[lxs,lsp]);
-fprintf('Loaded densities...\n');
-
-vs1=fread(fid,prod(lxs)*lsp,'real*8');
-vs1=reshape(vs1,[lxs,lsp]);
+simdt(fid);
+%% load densities
+ns = read4D(fid, lsp, lsx);
+%% load Vparallel
+vs1 = read4D(fid, lsp, lsx);
 v1=sum(ns(:,:,:,1:6).*vs1(:,:,:,1:6),4)./ns(:,:,:,lsp);
-fprintf('Loaded parallel velocities...\n');
-
-Ts=fread(fid,prod(lxs)*lsp,'real*8');
-Ts=reshape(Ts,[lxs,lsp]);
-fprintf('Loaded temperatures...\n');
-
-J1=fread(fid,lxs(1)*lxs(2)*lxs(3),'real*8');
-J1=reshape(J1,[lxs(1),lxs(2),lxs(3)]);
-
-J2=fread(fid,lxs(1)*lxs(2)*lxs(3),'real*8');
-J2=reshape(J2,[lxs(1),lxs(2),lxs(3)]);
-
-J3=fread(fid,lxs(1)*lxs(2)*lxs(3),'real*8');
-J3=reshape(J3,[lxs(1),lxs(2),lxs(3)]);
-fprintf('Loaded current density...\n');
-
-v2=fread(fid,lxs(1)*lxs(2)*lxs(3),'real*8');
-v2=reshape(v2,[lxs(1),lxs(2),lxs(3)]);
-
-v3=fread(fid,lxs(1)*lxs(2)*lxs(3),'real*8');
-v3=reshape(v3,[lxs(1),lxs(2),lxs(3)]);
-fprintf('Loaded perpendicular drifts...\n');
-
-Phitop=fread(fid,lxs(2)*lxs(3),'real*8');
-Phitop=reshape(Phitop,[lxs(2),lxs(3)]);
-fprintf('Loaded topside potential pattern...\n');
+%% load temperatures
+Ts = read4D(fid, lsp, lsx);
+%% load current densities
+J1 = read3D(fid, lxs);
+J2 = read3D(fid, lxs);
+J3 = read3D(fid, lxs);
+%% load Vperp
+v2 = read3D(fid, lxs);
+v3 = read3D(fid, lxs);
+%% load topside potential
+Phitop = read2D(fid, lxs);
 
 fclose(fid);
 
@@ -81,15 +40,15 @@ fclose(fid);
 %}
 
 
-%REORGANIZE ACCORDING TO MATLABS CONCEPT OF A 2D or 3D DATA SET
+%% REORGANIZE ACCORDING TO MATLABS CONCEPT OF A 2D or 3D DATA SET
 if (lxs(2) == 1)    %a 2D simulations was done
-  Jpar=squeeze(J1);
-  Jperp2=squeeze(J3);
+  %Jpar=squeeze(J1);
+ % Jperp2=squeeze(J3);
   ne=squeeze(ns(:,:,:,lsp));
-  p=ns(:,:,:,1)./ns(:,:,:,lsp);
-  p=squeeze(p);
-  vi=squeeze(v1);
-  vi2=squeeze(v2);
+  %p=ns(:,:,:,1)./ns(:,:,:,lsp);
+  %p=squeeze(p);
+  %vi=squeeze(v1);
+  %vi2=squeeze(v2);
 %  vi3=permute(v3,[3,2,1]);
   Ti=sum(ns(:,:,:,1:6).*Ts(:,:,:,1:6),4)./ns(:,:,:,lsp);
   Ti=squeeze(Ti);
@@ -112,15 +71,15 @@ else    %full 3D run
 %
 %  [X2,X3,X1]=meshgrid(x2,x3,x1);
 
-  Jpar=J1(:,:,:);
-  Jperp2=J2(:,:,:);
-  Jperp3=J3(:,:,:);
+  %Jpar=J1(:,:,:);
+  %Jperp2=J2(:,:,:);
+  %Jperp3=J3(:,:,:);
   ne=ns(:,:,:,lsp);
-  p=ns(:,:,:,1)./ns(:,:,:,lsp);
-  p=p;
-  vi=v1;
-  vi2=v2;
-  vi3=v3;
+  %p=ns(:,:,:,1)./ns(:,:,:,lsp);
+  %p=p;
+  %vi=v1;
+  %vi2=v2;
+  %vi3=v3;
   Ti=sum(ns(:,:,:,1:6).*Ts(:,:,:,1:6),4)./ns(:,:,:,lsp);
   Te=Ts(:,:,:,lsp);
 end

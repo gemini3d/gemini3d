@@ -1,4 +1,4 @@
-function xg = plotall(direc, saveplots, plotfun, xg)
+function xg = plotall(direc, saveplots, xg)
 
 cwd = fileparts(mfilename('fullpath'));
 addpath([cwd, filesep, 'plotfunctions'])
@@ -10,11 +10,6 @@ validateattr(direc, {'char'}, {'vector'}, mfilename, 'path to data', 1)
 if nargin<2, saveplots={}; end  % 'png', 'eps' or {'png', 'eps'}
 
 if nargin<3
-  plotfun=[]; 
-else
-  validateattr(plotfun, {'function_handle'}, {'scalar'}, mfilename, 'plotting function handle', 3)
-end
-if nargin<4
   xg=[]; 
 else
   validateattr(xg, {'struct'}, {'scalar'}, mfilename, 'grid structure', 4)
@@ -55,18 +50,6 @@ if isempty(xg)
   xg = readgrid([direc,filesep,'inputs',filesep]);
 end
 
-
-%CUSTOM FUNCTINO TO PLOT WITH
-%%plotfun=@plot2D_curv;
-%%plotfun=@plot2D_cart;
-%%plotfun=@plot2D_curv_north;
-%%plotfun=@plot2D_curv_south;
-%%plotfun=@plot3D_curv_frames;
-%%plotfun=@plot3D_cart_frames;
-%plotfun=@plot3D_curv_frames_long;
-%%plotfun=@plot3D_cart_frames_long_ENU;
-
-
 %% DEFINE THE PLOTTING FUNCTION BASED ON THE TYPE OF GRID USED
 
 minh1=min(xg.h1(:));
@@ -84,9 +67,8 @@ else     %cartesian grid
     plotfun=@plot2D_cart;
   end 
 end
-
-
 %% COMPUTE SOURUCE LOCATION IN MCOORDS
+%{
 if ~isempty(mloc)
  mlat=mloc(1);
  mlon=mloc(2);
@@ -94,8 +76,7 @@ else
  mlat=[];
  mlon=[];
 end
-
-
+%}
 %% TIMES OF INTEREST
 times=UTsec0:dtout:UTsec0+tdur;
 lt=numel(times);

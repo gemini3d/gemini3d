@@ -12,21 +12,18 @@ validateattr(ymd0, {'numeric'}, {'vector', 'numel', 3}, mfilename, 'year month d
 if nargin>=6 && ~isempty(mloc)
   validateattr(mloc, {'numeric'}, {'vector', 'numel', 2}, mfilename, 'magnetic coordinates', 6)
 end
-if nargin<7
-  xg = [];
-else
-  validateattr(xg, {'struct'}, {'scalar'}, mfilename, 'grid structure', 7)
-end
-%% PATH TO PLOTTING FUNCTIONS AND SHARED SCRIPT UTILITIES
-
-
+%if nargin<7
+%  xg = [];
+%else
+%  validateattr(xg, {'struct'}, {'scalar'}, mfilename, 'grid structure', 7)
+%end
 %% READ IN THE SIMULATION INFORMATION IF IT HAS NOT ALREADY BEEN PROVIDED
 [ymd0,UTsec0,tdur,dtout,flagoutput,mloc]=readconfig([direc,'/inputs/config.ini']);
 
 %% CHECK WHETHER WE NEED TO RELOAD THE GRID (WHICH CAN BE TIME CONSUMING)
-if isempty(xg)
-  xg = readgrid([direc,'/inputs/']);
-end
+%if isempty(xg)
+%  xg = readgrid([direc,'/inputs/']);
+%end
 
 %% SET MAGNETIC LATITUDE AND LONGITUDE OF THE SOURCE
 if ~isempty(mloc)

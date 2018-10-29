@@ -90,10 +90,19 @@ end
 
 catch excp
 % try catch is necessary for Matlab in case of filename error, etc. to avoid false negative
-disp(excp.message)
-exit(1)
-
+  if isoctave
+    rethrow(excp)
+  else
+    if usejava('desktop')  % interactive
+      rethrow(excp)
+    else  % -nodesktop or -nojvm
+      disp(excp.message)
+      exit(1)
+    end
+  end
 end
+
+if nargout==0, clear('ok'), end
 
 end % function
 

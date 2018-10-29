@@ -77,3 +77,5 @@ target_link_libraries(magcalc PRIVATE mpimod const grid io temporal)
 
 # --- self-tests
 include(${PROJECT_SOURCE_DIR}/cmake/test2D.cmake)
+
+include(${PROJECT_SOURCE_DIR}/cmake/test3D.cmake)
