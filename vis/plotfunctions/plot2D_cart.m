@@ -4,7 +4,7 @@ narginchk(4,8)
 validateattr(ymd, {'numeric'}, {'vector', 'numel', 3}, mfilename, 'year month day', 1)
 validateattr(UTsec, {'numeric'}, {'scalar'}, mfilename, 'UTC second', 2)
 validateattr(xg, {'struct'}, {'scalar'}, mfilename, 'grid structure', 3)
-validateattr(parm, {'numeric'}, {'2d'}, mfilename)
+validateattr(parm, {'numeric'}, {'real'}, mfilename, 'parameter to plot',4)
 if nargin<5, parmlbl=''; end
 validateattr(parmlbl, {'char'}, {'vector'}, mfilename, 'parameter label', 5)
 if nargin<6
@@ -31,18 +31,13 @@ end
 %set(h,'PaperPosition',[0 0 11 4.5]);
 
 
-%REORGANIZE INPUT
-dmy = flip(ymd);
-t=UTsec/3600;
-
-
 %SOURCE LOCATION
 if ~isempty(sourceloc)
   sourcemlat=sourceloc(1);
-  sourcemlon=sourceloc(2);
+  %sourcemlon=sourceloc(2);
 else
   sourcemlat=[];
-  sourcemlon=[];
+  %sourcemlon=[];
 end
 
 
@@ -55,13 +50,13 @@ Re=6370e3;
 
 
 %JUST PICK AN X3 LOCATION FOR THE MERIDIONAL SLICE PLOT, AND AN ALTITUDE FOR THE LAT./LON. SLICE
-ix3=floor(lx3/2);
+%ix3=floor(lx3/2);
 altref=300;
 
 
 %SIZE OF PLOT GRID THAT WE ARE INTERPOLATING ONTO
 meantheta=mean(xg.theta(:));
-meanphi=mean(xg.phi(:));
+%meanphi=mean(xg.phi(:));
 y=-1*(xg.theta-meantheta);   %this is a mag colat. coordinate and is only used for defining grid in linspaces below, runs backward from north distance, hence the negative sign
 %x=(xg.phi-meanphi);       %mag. lon coordinate, pos. eastward
 x=xg.x2/Re/sin(meantheta);
@@ -95,7 +90,7 @@ elseif (xg.lx(2)==1)     %alt./lat. slice
   x1plot=Z3(:);   %upward distance
   x3plot=Y3(:)*Re;     %northward distance;
 
-  ix2=floor(lx2/2);
+  %ix2=floor(lx2/2);
   parmtmp=parm(:,:);     %so north dist, east dist., alt.
   parmp3=interp2(xg.x3(inds3),xg.x1(inds1),parmtmp,x3plot,x1plot);
   parmp3=reshape(parmp3,[lzp,lyp]);    %slice expects the first dim. to be "y"
@@ -121,10 +116,10 @@ end
 %COMPUTE SOME BOUNDS FOR THE PLOTTING
 minxp=min(xp(:));
 maxxp=max(xp(:));
-minyp=min(yp(:));
-maxyp=max(yp(:));
-minzp=min(zp(:));
-maxzp=max(zp(:));
+%minyp=min(yp(:));
+%maxyp=max(yp(:));
+%minzp=min(zp(:));
+%maxzp=max(zp(:));
 
 
 %GLOBAL PLOT COMMANDS
@@ -175,28 +170,10 @@ elseif (xg.lx(2)==1)
   ylabel(ha, 'altitude (km)')
 end
 
-
-%CONSTRUCT A STRING FOR THE TIME AND DATE
-UThrs=floor(t);
-UTmin=floor((t-UThrs)*60);
-UTsec=floor((t-UThrs-UTmin/60)*3600);
-UThrsstr=num2str(UThrs);
-UTminstr=num2str(UTmin);
-if (numel(UTminstr)==1)
-  UTminstr=['0',UTminstr];
-end
-UTsecstr=num2str(UTsec);
-if (numel(UTsecstr)==1)
-  UTsecstr=['0',UTsecstr];
-end
-
-timestr=[UThrsstr,':',UTminstr,':',UTsecstr];
-%strval=sprintf('%s \n %s',[num2str(dmy(1)),'/',num2str(dmy(2)),'/',num2str(dmy(3))], ...
-%    [num2str(t),' UT']);
-strval=sprintf('%s \n %s',[num2str(dmy(2)),'/',num2str(dmy(1)),'/',num2str(dmy(3))], ...
-    [timestr,' UT']);
+t = datenum(ymd(1), ymd(2), ymd(3), 0, 0, UTsec);
+ttxt = {datestr(t,1), [datestr(t,13),' UT']};
 %text(xp(round(lxp/10)),zp(lzp-round(lzp/7.5)),strval,'FontSize',18,'Color',[0.66 0.66 0.66],'FontWeight','bold');
 %text(xp(round(lxp/10)),zp(lzp-round(lzp/7.5)),strval,'FontSize',16,'Color',[0.5 0.5 0.5],'FontWeight','bold');
-title(ha, strval)
+title(ha, ttxt)
 
 end
