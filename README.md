@@ -22,7 +22,7 @@ CMake &ge; 3.12 is required, and easily installed *without* sudo/admin on:
 MPI and Fortran 2003/2008 techniques are woven throughout GEMINI3D.
 Compiler wrappers `mpifort` or `mpiifort` can be used.
 A Fortran 2008 compliant compiler is needed.
-For now, we avoid using Fortran 2018 code to allow for easier use on CentOS with their old compilers.
+Fortran 2018 is required to use optional HDF5 capabilities.
 
 * gfortran &ge; 4.6  (Gfortran &ge; 6 recommended)
 * Intel `ifort`
@@ -174,7 +174,7 @@ FC=ifort cmake -DMETIS_ROOT=~/fortran-libs/metis ..
 
 ## To do list
 
-See [./TODO.md](TODO.md).
+See [TODO.md](./TODO.md).
 
 ## Standard and style
 
