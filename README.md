@@ -172,40 +172,9 @@ FC=ifort cmake -DMETIS_ROOT=~/fortran-libs/metis ..
 5. Occasionally one will see edge artifacts in either the field -aligned currents or other parameters for non-periodic in x3 solves.  This may be related to the divergence calculations needed for the parallel current (under EFL formulation) and for compression calculations in the multifluid module, but this needs to be investigated further...
 
 
-## Development roadmap
+## To do list
 
-### To do list
-
-### Future Code refactoring
-
-Code duplication:
-* Fair bit of code repetition in top-level electric field and precipitation interpolation routines
-* Code duplication in electrodynamics module (haloing part should be written as a subroutine)
-* Cleanup of BCs interpolation source files
-* Axisymmetric and Cartesian interpolations should be combined (much code-sharing)
-
-Other development-related comments:
-* There may be a performance boost by using the Fortran 2008 `contiguous` attribute on the `pointer` arrays where right now it is manually repacked--`contiguous` means we DON'T repack manually, the compiler will repack IF and ONLY IF it needs too.  We may get a performance boost by eliminating manual repacking and using `real, contiguous, pointer` instead. [Reference](https://modelingguru.nasa.gov/servlet/JiveServlet/previewBody/1527-102-1-2631/N1729-4.pdf) page 7.
-
-### Feature requests
-* (SOMEWHAT IMPORTANT) Parallel domain decomposition in x2 *and* x3 - this is a big task that is likely to be left aside until I can renew funding.  It's also questionable how useful it is at this point where my typical runs are 32-256 cores (although undoubtedly it may become useful for runs with thousands of cores).  I've found good speedup even dividing the x3 dimension into slabs 2 grid points wide; although that means passing essentially all the grid data around via mpi, the large number of operations per slab means that the effective overhead here is not too much to prevent this from being useful.  
-* GLOW functionality merged into curvilinear branch
-* (SOMEWHAT IMPORTANT) Periodically updating background neutral atmosphere - should really be done for simulations more than a few hours long but will affect performance
-* (EFFICIENCY) Exclusion of null points from field aligned advection, thermal conduction, and source terms - could improve performance
-* Possibly merge in P. Inchin's EIA changes (with appropriate flags)
-* HDF5 file input and output
-* Option to run the code in a single precision mode - would help with memory limited systems although it's not clear how this would impact numerics (I've never tested my methods in single precision)
-* Add 3Dtest to ctest
-* Add a script that runs a complete sequences of and example from generating ICs, to running the disturbance simulation.
-
-### Plans for adding physics:
-
-These are projects in progress involved GEMINI, you are encouraged to email M. Zettergren for more info if you have interest in using or collaborating on these so that we can efficiently combine efforts and avoid duplicative work.
-
-* Resolved potential solutions - decimate parallel grid down to Farley mapping scale for perp resolution then so the solve on that coarse grid then interpolate back up to original grid.  I've had luck with MUMPS solves in reasonable time up to 300 x 300 x 15 grid points which is probably enough to do something interesting with appropriate periodic and Lagrangian grids (moving at E x B).  
-* Diamagnetic drift and perpendicular ambipolar fields - necessary for the smallest scales, e.g. less than 100 m
-* Inclusion of suprathermal electron transport model for better specification of currents and ionization rates (G. Grubbs)
-* Need to add option for true coordinates to be used in the computations of magnetic perturbations (instead of flattened-out spherical)
+See [./TODO.md].
 
 ## Standard and style
 
