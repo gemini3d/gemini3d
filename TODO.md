@@ -41,7 +41,4 @@ These are projects in progress involved GEMINI, you are encouraged to email M. Z
 
 ## Interfaces with other models
 * (VERY IMPORTANT) Ability to use GLOW to compute ionization and heating rates, as well as brightnesses of various bands of interest.  This brings up a lot of questions about how GLOW will function on a closed field-line grid; we may need to talk to Stan about this.  
-* Better documentation of and code for scripts linking in the MAGIC neutral perturbations (J. Snively)
-* Include scripts for linking to SIGMA scintillation model (K. Deshpande)
-* Scripts and interface for generating initial conditions from global model output (or from globally run GEMINI)
 
