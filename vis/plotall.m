@@ -109,7 +109,7 @@ lotsplots = ~isempty(h.f9) || lt > 16;
 % for Octave...
 
 for it=1:lt
-    [ne,mlatsrc,mlonsrc,v1,Ti,Te,J1,v2,v3,J2,J3,filename,Phitop] = loadframe(direc, UTsec, ymd, UTsec0, ymd0, mloc, xg);
+    [ne,mlatsrc,mlonsrc,xg,v1,Ti,Te,J1,v2,v3,J2,J3,filename,Phitop] = loadframe(direc, UTsec, ymd, UTsec0, ymd0, mloc, xg);
     disp([filename, ' => ', func2str(plotfun)])
 
     %% Electron number density, 'position', [.1, .1, .5, .5], 'units', 'normalized'

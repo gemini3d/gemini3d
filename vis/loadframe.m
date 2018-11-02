@@ -24,9 +24,9 @@ end
 
 
 % READ IN THE SIMULATION INFORMATION IF IT HAS NOT ALREADY BEEN PROVIDED
-if (~exist('UTsec0','var') | ~exist('ymd0','var'))
+%if (~exist('UTsec0','var') | ~exist('ymd0','var'))
   [ymd0,UTsec0,tdur,dtout,flagoutput,mloc]=readconfig([direc,'/inputs/config.ini']);
-end
+%end
 
 
 % CHECK WHETHER WE NEED TO RELOAD THE GRID (WHICH CAN BE TIME CONSUMING)
