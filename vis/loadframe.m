@@ -1,19 +1,28 @@
-function [ne,mlatsrc,mlonsrc,xg,v1,Ti,Te,J1,v2,v3,J2,J3,filename,Phitop,ns,vs1,Ts] = loadframe(direc,UTsec,ymd,UTsec0,ymd0,mloc,xg)
+function [ne,mlatsrc,mlonsrc,xg,v1,Ti,Te,J1,v2,v3,J2,J3,filename,Phitop,ns,vs1,Ts] = loadframe(direc,ymd,UTsec,ymd0,UTsec0,tdur,dtout,flagoutput,mloc,xg)
 
 cwd = fileparts(mfilename('fullpath'));
 addpath([cwd,'/../script_utils'])
 
-narginchk(3,7)
+narginchk(3,10)
 validateattr(direc, {'char'}, {'vector'}, mfilename, 'data directory', 1)
 validateattr(UTsec, {'numeric'}, {'vector'}, mfilename, 'UTC second', 2)
 validateattr(ymd, {'numeric'}, {'vector', 'numel', 3}, mfilename, 'year month day', 3)
 if nargin>=4
-  validateattr(UTsec0, {'numeric'}, {'scalar'}, mfilename, 'UTC second', 4)
+  validateattr(ymd0, {'numeric'}, {'vector', 'numel', 3}, mfilename, 'year month day', 4)
 end
 if nargin>=5
-  validateattr(ymd0, {'numeric'}, {'vector', 'numel', 3}, mfilename, 'year month day', 5)
+  validateattr(UTsec0, {'numeric'}, {'scalar'}, mfilename, 'UTC second', 5)
 end
-if nargin>=6 && ~isempty(mloc)
+if nargin>=6
+  validateattr(tdur,{'numeric'},{'scalar'},mfilename,'simulation duration',6)
+end
+if nargin>=7
+  validateattr(dtout,{'numeric'},{'scalar'},mfilename,'output time step',7)
+end
+if nargin>=8
+  validateattr(flagoutput,{'numeric'},{'scalar'},mfilename,'output flag',8)
+end
+if nargin>=9 && ~isempty(mloc)
   validateattr(mloc, {'numeric'}, {'vector', 'numel', 2}, mfilename, 'magnetic coordinates', 6)
 end
 %if nargin<7
@@ -24,9 +33,10 @@ end
 
 
 % READ IN THE SIMULATION INFORMATION IF IT HAS NOT ALREADY BEEN PROVIDED
-%if (~exist('UTsec0','var') | ~exist('ymd0','var'))
+if (~exist('UTsec0','var') | ~exist('ymd0','var') | ~exist('mloc','var') | ~exist('tdur','var') ...
+     | ~exist('dtout','var') | ~exist('flagoutput','var') | ~exist('mloc','var') )
   [ymd0,UTsec0,tdur,dtout,flagoutput,mloc]=readconfig([direc,'/inputs/config.ini']);
-%end
+end
 
 
 % CHECK WHETHER WE NEED TO RELOAD THE GRID (WHICH CAN BE TIME CONSUMING)
@@ -48,10 +58,7 @@ end
 %% LOAD DIST. FILE
 filestr=datelab(ymd,UTsec);
 if ymd(1)==ymd0(1) && ymd(2)==ymd0(2) && ymd(3)==ymd0(3) && UTsec==UTsec0    %tack on the decimal part
-%  filename=[filestr,'.000001.dat']
   filestr(end)='1';
-%else
-%  filename=[filestr,'.000000.dat']
 end
 filename=[filestr,'.dat'];
 

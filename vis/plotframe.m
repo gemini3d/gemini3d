@@ -59,7 +59,7 @@ if (~exist('xg','var'))
 end
 
 
-%% DEFINE THE PLOTTING FUNCTION BASED ON THE TYPE OF GRID USED
+% DEFINE THE PLOTTING FUNCTION BASED ON THE TYPE OF GRID USED
 if (~exist('plotfun','var') | isempty(plotfun))
   minh1=min(xg.h1(:));
   maxh1=max(xg.h1(:));
@@ -89,7 +89,7 @@ else
 end
 
 
-%% TIMES OF INTEREST
+% TIMES OF INTEREST
 times=UTsec0:dtout:UTsec0+tdur;
 lt=numel(times);
 
@@ -122,7 +122,6 @@ UTsecprev=UTsec0;
 ymdnext=ymd0;
 UTsecnext=UTsec0;
 it=1;
-%while((ymdnext(1)<=ymd(1) & ymdnext(2)<=ymd(2) & ymdnext(3)<=ymd(3) & UTsecnext<UTsec))    %increment next date until it's great than target date
 while(datenum([ymdnext,UTsecnext/3600,0,0])<datenum([ymd,UTsec/3600,0,0]) & datenum([ymdnext,UTsecnext/3600,0,0])<datenum([ymdend,UTsecend/3600,0,0]))
   ymdprev=ymdnext;
   UTsecprev=UTsecnext;
@@ -136,21 +135,11 @@ else    %closer to previous frame
   ymdnow=ymdprev;
   UTsecnow=UTsecprev;
 end
-%UTsec
-%UTsecprev
-%UTsecnow
-%UTsecnext
-%ymd
-%ymdprev
-%ymdnow
-%ymdnext
 
 
 %LOAD THE FRAME NEAREST TO THE REQUESTED TIME
-[ne,mlatsrc,mlonsrc,v1,Ti,Te,J1,v2,v3,J2,J3,filename,Phitop]= loadframe(direc,UTsecnow,ymdnow,UTsec0,ymd0,mloc,xg);
+[ne,mlatsrc,mlonsrc,xg,v1,Ti,Te,J1,v2,v3,J2,J3,filename,Phitop,ns,vs1,Ts] = loadframe(direc,ymd,UTsec,ymd0,UTsec0,tdur,dtout,flagoutput,mloc,xg);
 
-size(ne)
-xg
 
 %MAKE THE PLOTS (WHERE APPROPRIATE)
 if (xg.lx(2)~=1 & xg.lx(3)~=1 | lt>16)    %3D simulation or a very long 2D simulation - do separate plots for each time frame
