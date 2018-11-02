@@ -1,14 +1,18 @@
-function [ne,mlatsrc,mlonsrc,v1,Ti,Te,J1,v2,v3,J2,J3,filename,Phitop,ns,vs1,Ts] = loadframe(direc,UTsec,ymd,UTsec0,ymd0,mloc,xg)
+function [ne,mlatsrc,mlonsrc,xg,v1,Ti,Te,J1,v2,v3,J2,J3,filename,Phitop,ns,vs1,Ts] = loadframe(direc,UTsec,ymd,UTsec0,ymd0,mloc,xg)
 
 cwd = fileparts(mfilename('fullpath'));
 addpath([cwd,'/../script_utils'])
 
-narginchk(5, 7)
+narginchk(3,7)
 validateattr(direc, {'char'}, {'vector'}, mfilename, 'data directory', 1)
 validateattr(UTsec, {'numeric'}, {'vector'}, mfilename, 'UTC second', 2)
 validateattr(ymd, {'numeric'}, {'vector', 'numel', 3}, mfilename, 'year month day', 3)
-validateattr(UTsec, {'numeric'}, {'scalar'}, mfilename, 'UTC second', 4)
-validateattr(ymd0, {'numeric'}, {'vector', 'numel', 3}, mfilename, 'year month day', 5)
+if nargin>=4
+  validateattr(UTsec0, {'numeric'}, {'scalar'}, mfilename, 'UTC second', 4)
+end
+if nargin>=5
+  validateattr(ymd0, {'numeric'}, {'vector', 'numel', 3}, mfilename, 'year month day', 5)
+end
 if nargin>=6 && ~isempty(mloc)
   validateattr(mloc, {'numeric'}, {'vector', 'numel', 2}, mfilename, 'magnetic coordinates', 6)
 end
@@ -17,13 +21,19 @@ end
 %else
 %  validateattr(xg, {'struct'}, {'scalar'}, mfilename, 'grid structure', 7)
 %end
-%% READ IN THE SIMULATION INFORMATION IF IT HAS NOT ALREADY BEEN PROVIDED
-[ymd0,UTsec0,tdur,dtout,flagoutput,mloc]=readconfig([direc,'/inputs/config.ini']);
 
-%% CHECK WHETHER WE NEED TO RELOAD THE GRID (WHICH CAN BE TIME CONSUMING)
-%if isempty(xg)
-%  xg = readgrid([direc,'/inputs/']);
-%end
+
+% READ IN THE SIMULATION INFORMATION IF IT HAS NOT ALREADY BEEN PROVIDED
+if (~exist('UTsec0','var') | ~exist('ymd0','var'))
+  [ymd0,UTsec0,tdur,dtout,flagoutput,mloc]=readconfig([direc,'/inputs/config.ini']);
+end
+
+
+% CHECK WHETHER WE NEED TO RELOAD THE GRID (WHICH CAN BE TIME CONSUMING)
+if ~exist('xg','var')
+  xg = readgrid([direc,'/inputs/']);
+end
+
 
 %% SET MAGNETIC LATITUDE AND LONGITUDE OF THE SOURCE
 if ~isempty(mloc)
