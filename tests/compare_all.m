@@ -89,16 +89,11 @@ else
 end
 
 catch excp
-% try catch is necessary for Matlab in case of filename error, etc. to avoid false negative
-  if isoctave
+  if isoctave || usejava('desktop')  % interactive
     rethrow(excp)
-  else
-    if usejava('desktop')  % interactive
-      rethrow(excp)
-    else  % -nodesktop or -nojvm
-      disp(excp.message)
-      exit(1)
-    end
+  else  % -nodesktop or -nojvm
+    disp(excp.message)
+    exit(1)
   end
 end
 
