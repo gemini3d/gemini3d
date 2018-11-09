@@ -86,7 +86,7 @@ end
 
 
 %WRITE OUT THE GRID
-outdir='~/zettergmdata/simulations/input/2Dtest/';
+outdir='../../../simulations/input/2Dtest/';
 if (~(exist(outdir,'dir')==7))
   mkdir(outdir);
 end

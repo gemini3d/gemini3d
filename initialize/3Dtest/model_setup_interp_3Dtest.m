@@ -8,10 +8,13 @@ glon=212.95;
 gridflag=0;
 I=90;
 
+
 %ADD PATHS FOR FUNCTIONS
-addpath ../../script_utils;
-addpath ../../setup;
-addpath ../../setup/gridgen;
+cwd = fileparts(mfilename('fullpath'));
+addpath([cwd, filesep, '..', filesep,'..',filesep,'script_utils']);
+addpath([cwd, filesep, '..', filesep,'..',filesep,'setup']);
+addpath([cwd, filesep, '..', filesep,'..',filesep,'setup',filesep,'gridgen'])
+addpath([cwd, filesep, '..', filesep,'..',filesep,'vis']);
 
 
 %RUN THE GRID GENERATION CODE
@@ -27,13 +30,12 @@ simid='3Dtest'
 
 %ALTERNATIVELY WE MAY WANT TO READ IN AN EXISTING OUTPUT FILE AND DO SOME INTERPOLATION ONTO A NEW GRID
 fprintf('Reading in source file...\n');
-ID='~/zettergmdata/simulations/3Dtest_eq/'
+ID='../../../simulations/3Dtest_eq/'
 
 
 %READ IN THE SIMULATION INFORMATION
 [ymd0,UTsec0,tdur,dtout,flagoutput,mloc]=readconfig([ID,'/inputs/config.ini']);
 xgin=readgrid([ID,'/inputs/']);
-addpath ../vis/
 direc=ID;
 
 
@@ -42,10 +44,9 @@ direc=ID;
 
 
 %LOAD THE FRAME
-addpath ../../vis;
-[ne,v1,Ti,Te,J1,v2,v3,J2,J3,mlatsrc,mlonsrc,filename,Phitop,ns,vs1,Ts] = loadframe(direc,UTsecend,ymdend,UTsec0,ymd0, mloc,xgin);
+[ne,mlatsrc,mlonsrc,xg,v1,Ti,Te,J1,v2,v3,J2,J3,filename,Phitop,ns,vs1,Ts]= ...
+    loadframe(direc,ymdend,UTsecend,ymd0,UTsec0,tdur,dtout,flagoutput,mloc,xg);lsp=size(ns,4);
 lsp=size(ns,4);
-rmpath ../../vis/;
 
 
 %DO THE INTERPOLATION
@@ -85,14 +86,11 @@ end
 
 
 %WRITE OUT THE GRID
-outdir='~/zettergmdata/simulations/input/3Dtest/';
-writegrid(xg,outdir);    %just put it in pwd for now
+outdir='../../../simulations/input/2Dtest/';
+if (~(exist(outdir,'dir')==7))
+  mkdir(outdir);
+end
+writegrid(xg,outdir);
 dmy=[ymdend(3),ymdend(2),ymdend(1)];
 writedata(dmy,UTsecend,nsi,vs1i,Tsi,outdir,simid);
-
-
-%RESET PATHS
-rmpath ../../script_utils;
-rmpath ../../setup;
-rmpath ../../setup/gridgen;
 
