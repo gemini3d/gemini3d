@@ -1,3 +1,4 @@
+
 *.orig
 CMakeFiles/
 CMakeCache.txt
@@ -20,4 +21,4 @@ objects/
 gemini_mumps
 magcalc
 *~
-msis
+msis_setup
