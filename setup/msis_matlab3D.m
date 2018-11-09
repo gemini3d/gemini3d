@@ -58,26 +58,13 @@ fwrite(fid,lz,'integer*4');
 fwrite(fid,glat,'real*4');
 fwrite(fid,glon,'real*4');
 fwrite(fid,alt,'real*4');
-
-%{
-fprintf(fid,'%d %d\n',iyd,sec);
-fprintf(fid,'%f %f\n',f107a,f107);
-fprintf(fid,'%f %f\n',ap,ap3);
-fprintf(fid,'%d\n',lz);
-for iz=1:lz
-    fprintf(fid,'%f %f %f\n',glat(iz),glon(iz),alt(iz));
-end
-%}
 fclose(fid);
-
 %% CALL MSIS AND READ IN RESULTING BINARY FILE
 fout = tempname;
 disp(['MSIS00 input: ', fin])
 disp(['MSIS00 output: ', fout])
 
-system_command=[exe,' ',fin,' ',fout];
-
-[status, msg] = system(system_command);   %output written to file
+[status, msg] = system([exe,' ',fin,' ',fout]);   %output written to file
 if status~=0, error(['msis setup failed: ',msg]), end
 
 fid=fopen(fout,'r');
