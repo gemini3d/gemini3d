@@ -71,7 +71,7 @@ end
 filename=['msisinput_',num2str(pid),'.dat'];
 
 
-%CREATE AND INPUT FILE FOR FORTRAN PROGRAM (BINARY WOULD BE FASTER!!!)
+%CREATE AND INPUT FILE FOR FORTRAN PROGRAM
 fid=fopen([exeloc,filename],'w');
 fwrite(fid,iyd,'integer*4');
 fwrite(fid,sec,'integer*4');
@@ -110,12 +110,14 @@ end
 %CALL MSIS AND READ IN RESULTING BINARY FILE
 fprintf('MSIS00 using binary file output');
 filename2=['msisoutput_',num2str(pid),'.dat'];
-[flg,datchar]=system([exeloc,'msis ',exeloc,filename,' ',exeloc,filename2]);   %output written to file
+system_command=[exeloc,'msis ',exeloc,filename,' ',exeloc,filename2];
+[flg,datchar]=system(system_command);   %output written to file
 fid=fopen([exeloc,filename2],'r');
 msisdat=fread(fid,lz*11,'real*4=>real*8');
 msisdat=reshape(msisdat,[11 lz]);
 msisdat=msisdat';
 fclose(fid);
+
 
 %GARBAGE CLEANUP
 system(['rm ',exeloc,filename]);
