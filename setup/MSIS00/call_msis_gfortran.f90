@@ -8,7 +8,8 @@ real, allocatable :: glat(:),glon(:),alt(:)
 character(256) :: infile,outfile
 
 !read in msis inputs
-call getarg(1, infile)
+call get_command_argument(1,infile)
+!call getarg(1, infile)
 !open(unit=42,file=infile)
 
 !time date etc.
@@ -48,7 +49,8 @@ close(42)
  call meters(.true.)
 
 !output file
-call getarg(2,outfile)
+!call getarg(2,outfile)
+call get_command_argument(2,outfile)
 open(unit=43,file=outfile,status='replace',form='unformatted',access='stream')    !use binary to reduce file size and read times
 
 !call to msis routine

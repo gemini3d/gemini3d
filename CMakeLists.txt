@@ -18,8 +18,8 @@ include(${PROJECT_SOURCE_DIR}/cmake/libraries.cmake)
 # --- Build Gemini
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/numerical)
 
-add_library(msis vendor/msis00/msis00_gfortran.f)
-target_compile_options(msis PRIVATE -std=legacy -w -fno-implicit-none)
+add_library(msislib vendor/msis00/msis00_gfortran.f)
+target_compile_options(msislib PRIVATE -std=legacy -w -fno-implicit-none)
 
 add_subdirectory(numerical)
 
@@ -31,7 +31,7 @@ target_link_libraries(temporal PRIVATE const mpimod grid ${MPI_Fortran_LIBRARIES
 target_include_directories(temporal PRIVATE ${MPI_Fortran_INCLUDE_DIRS})
 
 add_library(neutral neutral/neutral.f90)
-target_link_libraries(neutral PUBLIC interp io msis temporal ${MPI_Fortran_LIBRARIES})
+target_link_libraries(neutral PUBLIC interp io msislib temporal ${MPI_Fortran_LIBRARIES})
 target_include_directories(neutral PUBLIC ${MPI_Fortran_INCLUDE_DIRS}) #PUBLIC for ionization with ifort
 
 add_library(ionization ionization/ionization.f90)
@@ -65,6 +65,7 @@ target_link_libraries(precipBCs PRIVATE const grid io interp temporal)
 add_library(multifluid multifluid/multifluid.f90)
 target_link_libraries(multifluid PRIVATE precipBCs mpimod grid ionization sources advec diffusion)
 
+
 # --- Main GEMINI executable
 add_executable(gemini gemini.f90)
 target_link_libraries(gemini PRIVATE mpimod io neutral precipBCs temporal multifluid 
@@ -74,6 +75,12 @@ target_link_libraries(gemini PRIVATE mpimod io neutral precipBCs temporal multif
 #--------magnetic field calculation executable---------------
 add_executable(magcalc magcalc.f90)
 target_link_libraries(magcalc PRIVATE mpimod const grid io temporal)
+
+
+#--------this executable (msis) is needed when you are setting up an equilibrium simulation---------------
+add_executable(setup/msis setup/MSIS00/call_msis_gfortran.f90)
+target_link_libraries(setup/msis PUBLIC msislib)
+
 
 # --- self-tests
 include(${PROJECT_SOURCE_DIR}/cmake/test2D.cmake)
