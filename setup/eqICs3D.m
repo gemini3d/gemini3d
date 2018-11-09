@@ -20,7 +20,7 @@ if abs(xg.r(1,1,1)-xg.r(xg.lx(1),1,1))<1         %closed dipole grid
     g=max(g,1);
     for ix3=1:lx3
       for ix2=1:lx2
-        [tmp,ialt]=min(abs(g(:,ix2,ix3)-1));
+        [~,ialt]=min(abs(g(:,ix2,ix3)-1));
         if ialt~=lalt
             g(ialt:lalt,ix2,ix3)=1;
         end
@@ -168,7 +168,7 @@ for ix3=1:lx3
         end
         n0=ns(iref,ix2,ix3,6);
     else
-        [tmp,iref]=max(alt(:,ix2,ix3));
+        [~,iref]=max(alt(:,ix2,ix3));
         n0=1e6;
     end
     ns(inds1,ix2,ix3,6)=chapmana(z,n0,alt(iref,ix2,ix3),mean(Hf));
