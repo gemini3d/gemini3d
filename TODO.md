@@ -2,6 +2,10 @@
 
 This file is intended to document development priorities for the GEMINI project.  
 
+## Things that need to be checked
+
+* J3 is a bit weird in 2D test (changes direction unexpectedly), and needs to be checked
+
 
 ## Future Code refactoring
 

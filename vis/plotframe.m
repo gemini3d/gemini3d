@@ -1,8 +1,8 @@
-function xg = plotframe(direc,ymd,UTsec,saveplots,plotfun,xg)
+function xg = plotframe(direc,ymd,UTsec,saveplots,plotfun,xg,h)
 
 
 %%CHECK ARGS AND SET SOME DEFAULT VALUES ON OPTIONAL ARGS
-narginchk(3,6)
+narginchk(3,7)
 if nargin<4
   saveplots={}  % 'png', 'eps' or {'png', 'eps'}
 end
@@ -12,6 +12,28 @@ end
 if nargin<6
   xg=[];         %code will attempt to reload the grid
 end
+if nargin<7
+  %Csp = ceil(sqrt(lt));
+  %Rsp = ceil(lt/Csp);
+  
+  h.f1=figure('name','V1', 'units', 'normalized', 'position', [.1, .1, .5, .5]);
+  h.f2=figure('name','Ti', 'units', 'normalized', 'position', [.1, .1, .5, .5]);
+  h.f3=figure('name','Te', 'units', 'normalized', 'position', [.1, .1, .5, .5]);
+  h.f4=figure('name','J1', 'units', 'normalized', 'position', [.1, .1, .5, .5]);
+  h.f5=figure('name','V2', 'units', 'normalized', 'position', [.1, .1, .5, .5]);
+  h.f6=figure('name','V3', 'units', 'normalized', 'position', [.1, .1, .5, .5]);
+  h.f7=figure('name','J2', 'units', 'normalized', 'position', [.1, .1, .5, .5]);
+  h.f8=figure('name','J3', 'units', 'normalized', 'position', [.1, .1, .5, .5]);
+  if xg.lx(2)>1 && xg.lx(3)>1 % a 3-D simulation
+    h.f9=figure('name','phiTop', 'units', 'normalized', 'position', [.1, .1, .5, .5]);
+  else
+    h.f9 = [];
+  end
+  h.f10=figure('name','Ne', 'units', 'normalized', 'position', [.1, .1, .5, .5]);
+  
+  %lotsplots = ~isempty(h.f9) || lt > 16;
+end
+lotsplots=true;   %@scivision may want to fix this...
 
 
 %%NEED TO ADD SOME CODE TO VALIDATE THE INPUT DATA...
@@ -34,7 +56,11 @@ if ~isempty(saveplots)
   dlist = {'nplots', 'v1plots', 'v2plots', 'v3plots', 'J1plots',...
            'Tiplots', 'Teplots', 'J2plots', 'J3plots', 'Phiplots'};
   for i=1:length(dlist)
-    mkdir([direc, filesep, dlist{i}]);
+    output_dir=[direc, filesep, dlist{i}];
+    if ~(exist(output_dir,'dir')==7)
+      disp('Creating output plot dir...');
+      mkdir(output_dir);
+    end
   end
 end
 
@@ -82,8 +108,9 @@ lt=numel(times);
 
 
 %%INITIALIZE FIGURE SETS
-Csp = ceil(sqrt(lt));
-Rsp = ceil(lt/Csp);
+%{
+%Csp = ceil(sqrt(lt));
+%Rsp = ceil(lt/Csp);
 
 h.f1=figure('name','V1', 'units', 'normalized', 'position', [.1, .1, .5, .5]);
 h.f2=figure('name','Ti', 'units', 'normalized', 'position', [.1, .1, .5, .5]);
@@ -102,6 +129,7 @@ h.f10=figure('name','Ne', 'units', 'normalized', 'position', [.1, .1, .5, .5]);
 
 %lotsplots = ~isempty(h.f9) || lt > 16;
 lotsplots=true;
+%}
 
 
 %%DETERMINE OUTPUT TIME NEAREST TO THAT REQUESTED
