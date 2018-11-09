@@ -15,11 +15,9 @@ include(cmake/compilers.cmake)
 
 include(cmake/libraries.cmake)
 
-include(cmake/msis.cmake)
+add_subdirectory(vendor/msis00)
 
 # --- Build Gemini
-
-
 add_subdirectory(numerical)
 
 add_library(io io/io.f90 io/expanduser.f90)
