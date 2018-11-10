@@ -37,9 +37,6 @@ nme=2e11;
 %WRITE THE GRID AND INITIAL CONDITIONS
 simlabel='3Dtest_eq'
 outdir='../../../simulations/input/2Dtest_eq/';
-if (~(exist(outdir,'dir')==7))
-  mkdir(outdir);
-end
 writegrid(xg,outdir);
 time=UT*3600;   %doesn't matter for input files
 writedata(dmy,time,ns,vsx1,Ts,outdir,simlabel);
