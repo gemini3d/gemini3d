@@ -21,7 +21,6 @@ addpath([cwd, filesep, '..', filesep,'..',filesep,'vis']);
 if (~exist('xg'))
   xg=makegrid_cart_3D(xdist,lxp,ydist,lyp,I,glat,glon);
 end
-lx1=xg.lx(1); lx2=xg.lx(2); lx3=xg.lx(3);
 
 
 %IDENTIFICATION FOR THE NEW SIMULATION THAT IS TO BE DONE
@@ -54,9 +53,6 @@ direc=ID;
 
 %WRITE OUT THE GRID
 outdir='../../../simulations/input/2Dtest/';
-if (~(exist(outdir,'dir')==7))
-  mkdir(outdir);
-end
 writegrid(xg,outdir);
 dmy=[ymdend(3),ymdend(2),ymdend(1)];
 writedata(dmy,UTsecend,nsi,vs1i,Tsi,outdir,simid);
