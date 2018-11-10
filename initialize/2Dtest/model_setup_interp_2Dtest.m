@@ -22,37 +22,7 @@ if (~exist('xg'))
   xg=makegrid_cart_3D(xdist,lxp,ydist,lyp,I,glat,glon);
 end
 
-
-%IDENTIFICATION FOR THE NEW SIMULATION THAT IS TO BE DONE
-simid='2Dtest'
-
-
-%ALTERNATIVELY WE MAY WANT TO READ IN AN EXISTING OUTPUT FILE AND DO SOME INTERPOLATION ONTO A NEW GRID
-fprintf('Reading in source file...\n');
-ID='../../../simulations/2Dtest_eq/'
-
-
-%READ IN THE SIMULATION INFORMATION
-[ymd0,UTsec0,tdur,dtout,flagoutput,mloc]=readconfig([ID,'/inputs/config.ini']);
-xgin=readgrid([ID,'/inputs/']);
-
-
-%FIND THE DATE OF THE END FRAME OF THE SIMULATION (PRESUMABLY THIS WILL BE THE STARTING POITN FOR ANOTEHR)
-[ymdend,UTsecend]=dateinc(tdur,ymd0,UTsec0);
-
-
-%LOAD THE FRAME
-direc=ID;
-[ne,mlatsrc,mlonsrc,xg,v1,Ti,Te,J1,v2,v3,J2,J3,filename,Phitop,ns,vs1,Ts]= ...
-    loadframe(direc,ymdend,UTsecend,ymd0,UTsec0,tdur,dtout,flagoutput,mloc,xg);
-
-
-%DO THE INTERPOLATION
-[nsi,vs1i,Tsi]=model_resample(xgin,ns,vs1,Ts,xg);
-
-
-%WRITE OUT THE GRID
-outdir='../../../simulations/input/2Dtest/';
-writegrid(xg,outdir);
-dmy=[ymdend(3),ymdend(2),ymdend(1)];
-writedata(dmy,UTsecend,nsi,vs1i,Tsi,outdir,simid);
+eqdir='../../../simulations/2Dtest_eq/';
+distdir='../../../simulations/2Dtest/';
+simID='2Dtest';
+[nsi,vs1i,Tsi,xgin,ns,vs1,Ts]=eq2dist(eqdir,distdir,simID,xg);
