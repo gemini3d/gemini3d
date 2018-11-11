@@ -15,22 +15,25 @@ set(TEST_2D_OUTDIR ${CMAKE_CURRENT_BINARY_DIR}/test2d)
 if(NOT EXISTS ${TEST_2D_DIR})
   if(NOT EXISTS ${TEST_2D_ARCHIVE})
     file(DOWNLOAD ${TEST_2D_URL} ${TEST_2D_ARCHIVE} 
-         SHOW_PROGRESS)
+         SHOW_PROGRESS
+		 EXPECTED_HASH MD5=7463818a6e96ae8f5fff07dba2e3cdb8)
   endif()
   
-  add_custom_command(TARGET gemini
-                     POST_BUILD
-                     COMMAND ${CMAKE_COMMAND} -E tar -xf ${TEST_2D_ARCHIVE} 
-                     WORKING_DIRECTORY ${TEST_REF_ROOT}
-                     DEPENDS ${TEST_2D_ARCHIVE}
-                     COMMENT "Unzipping 2D test files")
+  execute_process(COMMAND ${CMAKE_COMMAND} -E tar -xf ${TEST_2D_ARCHIVE} 
+                  WORKING_DIRECTORY ${TEST_REF_ROOT})
 endif()
 
 
 # --- test main exe
+cmake_host_system_information(RESULT PHYSRAM QUERY AVAILABLE_PHYSICAL_MEMORY)
+if(${PHYSRAM} LESS 16000)
+  set(NTEST 2)
+else()
+  set(NTEST 4)
+endif()
 
 add_test(NAME Gemini2D 
-         COMMAND mpirun -np 4 ./gemini ${CMAKE_SOURCE_DIR}/initialize/2Dtest/config.ini ${TEST_2D_OUTDIR} 
+         COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${NTEST} ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/gemini ${CMAKE_SOURCE_DIR}/initialize/2Dtest/config.ini ${TEST_2D_OUTDIR} 
          WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 set_tests_properties(Gemini2D PROPERTIES 
                      TIMEOUT 900  # test should complete in under 15 minutes on ~ 2014 dual-core laptop
@@ -51,7 +54,7 @@ set_tests_properties(Compare2D PROPERTIES
 endif()
 
 # --- check that *.m syntax is Matlab compatible
-find_package(Matlab COMPONENTS MAIN_PROGRAM)
+find_package(Matlab QUIET COMPONENTS MAIN_PROGRAM)
 if (Matlab_FOUND)
 add_test(NAME MatlabCompare2D
          COMMAND matlab -nojvm -r "exit(compare_all('${TEST_2D_OUTDIR}','${TEST_2D_DIR}'))"

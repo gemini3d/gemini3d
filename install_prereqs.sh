@@ -13,11 +13,11 @@ linux*)
      yum install epel-release
      yum install pkg-config gcc-gfortran g++ cmake make 
      yum install MUMPS-openmpi-devel lapack-devel scalapack-openmpi-devel blacs-openmpi-devel openmpi-devel libmetis-devel libscotch-devel ptscotch-openmpi-devel atlas-devel
-     yum install octave octave-devel
+     yum install octave
   else
     apt install pkg-config gfortran g++ cmake make 
     apt install libmumps-dev liblapack-dev libscalapack-mpi-dev libblacs-mpi-dev libopenmpi-dev libmetis-dev libscotch-dev libptscotch-dev libatlas-base-dev 
-    apt install octave liboctave-dev
+    apt install --no-install-recommends octave
   fi
   ;;
 darwin*)
@@ -29,7 +29,9 @@ darwin*)
   brew install mumps;
   ;;
 cygwin*)
-  echo "please install prereqs via Cygwin setup.exe" 
+  echo "please install prereqs via Cygwin setup.exe"
+  echo "gcc-fortran make liblapack-devel libopenmpi-devel octave"
+  echo "then use https://github.com/scivision/fortran-libs to get all other prereqs"
   ;;
 esac
 

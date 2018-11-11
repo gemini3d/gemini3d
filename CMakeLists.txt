@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.11)
+cmake_minimum_required(VERSION 3.11)
 project(gemini3d Fortran C)
 enable_testing()
 
@@ -85,6 +85,6 @@ target_link_libraries(magcalc PRIVATE mpimod const grid io temporal)
 target_include_directories(magcalc PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/numerical)
 
 # --- self-tests
-include(${PROJECT_SOURCE_DIR}/cmake/test2D.cmake)
-
-include(${PROJECT_SOURCE_DIR}/cmake/test3D.cmake)
+s
+include(cmake/test2d.cmake)
+include(cmake/test3d.cmake)

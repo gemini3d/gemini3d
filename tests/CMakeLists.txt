@@ -1,10 +1,9 @@
-cmake_minimum_required (VERSION 3.0)
+cmake_minimum_required (VERSION 3.6)
 project(test_gem Fortran C)
-
-list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/../cmake/Modules/)
 enable_testing()
 
  
+list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/../cmake/Modules/)
 #------------ MPI
 
 find_package(MPI REQUIRED COMPONENTS Fortran)
