@@ -85,6 +85,5 @@ target_link_libraries(magcalc PRIVATE mpimod const grid io temporal)
 target_include_directories(magcalc PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/numerical)
 
 # --- self-tests
-s
 include(cmake/test2d.cmake)
 include(cmake/test3d.cmake)
