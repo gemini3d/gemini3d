@@ -46,7 +46,7 @@ find_package(Octave)
 if (OCTAVE_MAJOR_VERSION GREATER_EQUAL 4)
 
 add_test(NAME Compare3D 
-         COMMAND octave-cli -q --eval "compare_all('${TEST_3D_OUTDIR}','${TEST_3D_DIR}')"
+         COMMAND ${OCTAVE_EXECUTABLE} -q --eval "compare_all('${TEST_3D_OUTDIR}','${TEST_3D_DIR}')"
          WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
          
 set_tests_properties(Compare3D PROPERTIES
@@ -58,7 +58,7 @@ endif()
 find_package(Matlab QUIET COMPONENTS MAIN_PROGRAM)
 if (Matlab_FOUND)
 add_test(NAME MatlabCompare3D
-         COMMAND matlab -nojvm -r "exit(compare_all('${TEST_3D_OUTDIR}','${TEST_3D_DIR}'))"
+         COMMAND ${Matlab_MAIN_PROGRAM} -nojvm -r "exit(compare_all('${TEST_3D_OUTDIR}','${TEST_3D_DIR}'))"
          WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
          
 set_tests_properties(MatlabCompare3D PROPERTIES

@@ -5,31 +5,32 @@ addpath([cwd,'/../script_utils'])
 
 narginchk(3,10)
 validateattr(direc, {'char'}, {'vector'}, mfilename, 'data directory', 1)
-validateattr(UTsec, {'numeric'}, {'vector'}, mfilename, 'UTC second', 2)
-validateattr(ymd, {'numeric'}, {'vector', 'numel', 3}, mfilename, 'year month day', 3)
+validateattr(ymd, {'numeric'}, {'vector', 'numel', 3}, mfilename, 'year month day', 2)
+validateattr(UTsec, {'numeric'}, {'vector'}, mfilename, 'UTC second', 3)
+
 if nargin>=4
   validateattr(ymd0, {'numeric'}, {'vector', 'numel', 3}, mfilename, 'year month day', 4)
 end
 if nargin>=5
   validateattr(UTsec0, {'numeric'}, {'scalar'}, mfilename, 'UTC second', 5)
 end
-if nargin>=6
+
+if nargin>=6 && ~isempty(tdur)
   validateattr(tdur,{'numeric'},{'scalar'},mfilename,'simulation duration',6)
 end
-if nargin>=7
+if nargin>=7 && ~isempty(dtout)
   validateattr(dtout,{'numeric'},{'scalar'},mfilename,'output time step',7)
 end
-if nargin>=8
+
+if nargin>=8 && ~isempty(flagoutput)
   validateattr(flagoutput,{'numeric'},{'scalar'},mfilename,'output flag',8)
 end
 if nargin>=9 && ~isempty(mloc)
-  validateattr(mloc, {'numeric'}, {'vector', 'numel', 2}, mfilename, 'magnetic coordinates', 6)
+  validateattr(mloc, {'numeric'}, {'vector', 'numel', 2}, mfilename, 'magnetic coordinates', 9)
 end
-%if nargin<7
-%  xg = [];
-%else
-%  validateattr(xg, {'struct'}, {'scalar'}, mfilename, 'grid structure', 7)
-%end
+if nargin>=10 && ~isempty(xg)
+  validateattr(xg, {'struct'}, {'scalar'}, mfilename, 'grid structure', 10)
+end
 
 
 % READ IN THE SIMULATION INFORMATION IF IT HAS NOT ALREADY BEEN PROVIDED
@@ -40,13 +41,13 @@ end
 
 
 % CHECK WHETHER WE NEED TO RELOAD THE GRID (WHICH CAN BE TIME CONSUMING)
-if ~exist('xg','var')
+if nargout >= 4 && ~exist('xg','var')
   xg = readgrid([direc,'/inputs/']);
 end
 
 
 %% SET MAGNETIC LATITUDE AND LONGITUDE OF THE SOURCE
-if ~isempty(mloc)
+if nargout >= 2 && ~isempty(mloc)
   mlatsrc=mloc(1);
   mlonsrc=mloc(2);
 else
