@@ -11,9 +11,9 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/Modules/)
 
 set(LIB_DIR ${PROJECT_SOURCE_DIR}/../fortran-libs) # for self-compiled libraries
 
-include(cmake/compilers.cmake)
+include(${PROJECT_SOURCE_DIR}/cmake/compilers.cmake)
 
-include(cmake/libraries.cmake)
+include(${PROJECT_SOURCE_DIR}/cmake/libraries.cmake)
 
 add_subdirectory(vendor/msis00)
 
@@ -85,5 +85,5 @@ target_link_libraries(magcalc PRIVATE mpimod const grid io temporal)
 target_include_directories(magcalc PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/numerical)
 
 # --- self-tests
-include(cmake/test2d.cmake)
-include(cmake/test3d.cmake)
+include(${PROJECT_SOURCE_DIR}/cmake/test2d.cmake)
+include(${PROJECT_SOURCE_DIR}/cmake/test3d.cmake)
