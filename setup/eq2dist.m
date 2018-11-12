@@ -34,7 +34,7 @@ function [nsi,vs1i,Tsi,xgin,ns,vs1,Ts]=eq2dist(eqdir,distdir,simID,xg)
 
  
   %WRITE OUT THE GRID
-  outdir='../../../simulations/input/2Dtest/';
+  outdir=['../../../simulations/input/',simID];
   writegrid(xg,distdir);
   dmy=[ymdend(3),ymdend(2),ymdend(1)];
   writedata(dmy,UTsecend,nsi,vs1i,Tsi,outdir,simID);
