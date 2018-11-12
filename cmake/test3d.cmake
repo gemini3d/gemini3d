@@ -25,10 +25,9 @@ endif()
 
 
 # --- test main exe
-
 cmake_host_system_information(RESULT PHYSRAM QUERY AVAILABLE_PHYSICAL_MEMORY)
-if(${PHYSRAM} LESS 8000)
-  set(NTEST 2)
+if(${PHYSRAM} LESS 1000)
+  set(NTEST 1)
 else()
   set(NTEST 4)
 endif()
