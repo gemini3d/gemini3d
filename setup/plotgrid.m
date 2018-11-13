@@ -187,8 +187,8 @@ else    %plotting is done lon,lat,alt with plot3
     z=squeeze(alt(end,end,ix3:xg.lx(3)));
     plotfun(x,y,z,altlinestyle,'LineWidth',LW);
     
-    xlabel('magnetic longitude (deg.)');
-    ylabel('magnetic latitude (deg.)');
+    xlabel('magnetic latitude (deg.)');
+    ylabel('magnetic longitude (deg.)');
     zlabel('altitidue (km)');    
 end
 
