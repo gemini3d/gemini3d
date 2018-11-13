@@ -1,6 +1,10 @@
 function ha=plotgrid(xg,flagsource,sourcelat,sourcelong,neugridtype,zmin,zmax,rhomax)
 
 
+%IF YOU DON'T HAVE THE MAPPING TOOLBOX LAT. AND LON ARE GOING TO BE
+%SWITCHED ON THE PLOTS...  NEED SOME CODE TO CHECK AND FIX THIS EVENTUALLY
+
+
 %% INPUT COORDS NEED TO BE CONVERTED TO MAGNETIC
 [sourcetheta,sourcephi]=geog2geomag(sourcelat,sourcelong);
 sourcemlat=90-sourcetheta*180/pi;
@@ -14,11 +18,13 @@ end
 
 %% SET UP A MAP PLOT IF MAPPING TOOLBOX EXISTS
 figure; hold on;
-if (license('test','Map_Toolbox'))
+flagmapping=license('test','Map_Toolbox');
+if (flagmapping)
   ha=gca;
   axesm('MapProjection','Mercator','MapLatLimit',[-(abs(sourcemlat)+30),abs(sourcemlat)+30],'MapLonLimit',[sourcemlonplot-40,sourcemlonplot+40])
   plotfun=@plot3m;
 else
+  ha=gca;
   plotfun=@plot3;   %no mapping toolbox so we'll do normal plots - the annoying thing is that these should be lon,lat,alt
 end
 
@@ -42,76 +48,151 @@ end
 LW=2;
 altlinestyle=':';    %line style for the "back" of the grid
 
-h=plotfun(mlat(:,1,1),mlon(:,1,1),alt(:,1,1),'LineWidth',LW);
-plotfun(mlat(:,1,end),mlon(:,1,end),alt(:,1,end),altlinestyle,'LineWidth',LW);
-plotfun(mlat(:,end,1),mlon(:,end,1),alt(:,end,1),'LineWidth',LW);
-h=plotfun(mlat(:,end,end),mlon(:,end,end),alt(:,end,end),altlinestyle,'LineWidth',LW);
-linecolor=h.Color;
+if (flagmapping)    %plots are done lat,lon,alt for plot3m
+    h=plotfun(mlat(:,1,1),mlon(:,1,1),alt(:,1,1),'LineWidth',LW);
+    plotfun(mlat(:,1,end),mlon(:,1,end),alt(:,1,end),altlinestyle,'LineWidth',LW);
+    plotfun(mlat(:,end,1),mlon(:,end,1),alt(:,end,1),'LineWidth',LW);
+    h=plotfun(mlat(:,end,end),mlon(:,end,end),alt(:,end,end),altlinestyle,'LineWidth',LW);
+    linecolor=h.Color;
+    
+    x=squeeze(mlat(1,:,1));
+    y=squeeze(mlon(1,:,1));
+    z=squeeze(alt(1,:,1));
+    plotfun(x,y,z,'LineWidth',LW);
+    
+    x=squeeze(mlat(1,:,end));
+    y=squeeze(mlon(1,:,end));
+    z=squeeze(alt(1,:,end));
+    plotfun(x,y,z,altlinestyle,'LineWidth',LW);
+    
+    x=squeeze(mlat(end,:,1));
+    y=squeeze(mlon(end,:,1));
+    z=squeeze(alt(end,:,1));
+    plotfun(x,y,z,'LineWidth',LW);
+    
+    x=squeeze(mlat(end,:,end));
+    y=squeeze(mlon(end,:,end));
+    z=squeeze(alt(end,:,end));
+    plotfun(x,y,z,altlinestyle,'LineWidth',LW);
+    
+    ix3=floor(xg.lx(3)/2);
+    x=squeeze(mlat(1,1,1:ix3));
+    y=squeeze(mlon(1,1,1:ix3));
+    z=squeeze(alt(1,1,1:ix3));
+    plotfun(x,y,z,'LineWidth',LW);
+    
+    x=squeeze(mlat(1,1,ix3:xg.lx(3)));
+    y=squeeze(mlon(1,1,ix3:xg.lx(3)));
+    z=squeeze(alt(1,1,ix3:xg.lx(3)));
+    plotfun(x,y,z,altlinestyle,'LineWidth',LW);
+    
+    x=squeeze(mlat(1,end,1:ix3));
+    y=squeeze(mlon(1,end,1:ix3));
+    z=squeeze(alt(1,end,1:ix3));
+    plotfun(x,y,z,'LineWidth',LW);
+    
+    x=squeeze(mlat(1,end,ix3:xg.lx(3)));
+    y=squeeze(mlon(1,end,ix3:xg.lx(3)));
+    z=squeeze(alt(1,end,ix3:xg.lx(3)));
+    plotfun(x,y,z,altlinestyle,'LineWidth',LW);
+    
+    x=squeeze(mlat(end,1,1:ix3));
+    y=squeeze(mlon(end,1,1:ix3));
+    z=squeeze(alt(end,1,1:ix3));
+    plotfun(x,y,z,'LineWidth',LW);
+    
+    x=squeeze(mlat(end,1,ix3:xg.lx(3)));
+    y=squeeze(mlon(end,1,ix3:xg.lx(3)));
+    z=squeeze(alt(end,1,ix3:xg.lx(3)));
+    plotfun(x,y,z,altlinestyle,'LineWidth',LW);
+    
+    x=squeeze(mlat(end,end,1:ix3));
+    y=squeeze(mlon(end,end,1:ix3));
+    z=squeeze(alt(end,end,1:ix3));
+    plotfun(x,y,z,'LineWidth',LW);
+    
+    x=squeeze(mlat(end,end,ix3:xg.lx(3)));
+    y=squeeze(mlon(end,end,ix3:xg.lx(3)));
+    z=squeeze(alt(end,end,ix3:xg.lx(3)));
+    plotfun(x,y,z,altlinestyle,'LineWidth',LW);
+    
+    xlabel('magnetic longitude (deg.)');
+    ylabel('magnetic latitude (deg.)');
+    zlabel('altitidue (km)');
+else    %plotting is done lon,lat,alt with plot3
+    h=plotfun(mlon(:,1,1),mlat(:,1,1),alt(:,1,1),'LineWidth',LW);
+    plotfun(mlon(:,1,end),mlat(:,1,end),alt(:,1,end),altlinestyle,'LineWidth',LW);
+    plotfun(mlon(:,end,1),mlat(:,end,1),alt(:,end,1),'LineWidth',LW);
+    h=plotfun(mlon(:,end,end),mlat(:,end,end),alt(:,end,end),altlinestyle,'LineWidth',LW);
+    linecolor=h.Color;
+    
+    x=squeeze(mlon(1,:,1));
+    y=squeeze(mlat(1,:,1));
+    z=squeeze(alt(1,:,1));
+    plotfun(x,y,z,'LineWidth',LW);
+    
+    x=squeeze(mlon(1,:,end));
+    y=squeeze(mlat(1,:,end));
+    z=squeeze(alt(1,:,end));
+    plotfun(x,y,z,altlinestyle,'LineWidth',LW);
+    
+    x=squeeze(mlon(end,:,1));
+    y=squeeze(mlat(end,:,1));
+    z=squeeze(alt(end,:,1));
+    plotfun(x,y,z,'LineWidth',LW);
+    
+    x=squeeze(mlon(end,:,end));
+    y=squeeze(mlat(end,:,end));
+    z=squeeze(alt(end,:,end));
+    plotfun(x,y,z,altlinestyle,'LineWidth',LW);
+    
+    ix3=floor(xg.lx(3)/2);
+    x=squeeze(mlon(1,1,1:ix3));
+    y=squeeze(mlat(1,1,1:ix3));
+    z=squeeze(alt(1,1,1:ix3));
+    plotfun(x,y,z,'LineWidth',LW);
+    
+    x=squeeze(mlon(1,1,ix3:xg.lx(3)));
+    y=squeeze(mlat(1,1,ix3:xg.lx(3)));
+    z=squeeze(alt(1,1,ix3:xg.lx(3)));
+    plotfun(x,y,z,altlinestyle,'LineWidth',LW);
+    
+    x=squeeze(mlon(1,end,1:ix3));
+    y=squeeze(mlat(1,end,1:ix3));
+    z=squeeze(alt(1,end,1:ix3));
+    plotfun(x,y,z,'LineWidth',LW);
+    
+    x=squeeze(mlon(1,end,ix3:xg.lx(3)));
+    y=squeeze(mlat(1,end,ix3:xg.lx(3)));
+    z=squeeze(alt(1,end,ix3:xg.lx(3)));
+    plotfun(x,y,z,altlinestyle,'LineWidth',LW);
+    
+    x=squeeze(mlon(end,1,1:ix3));
+    y=squeeze(mlat(end,1,1:ix3));
+    z=squeeze(alt(end,1,1:ix3));
+    plotfun(x,y,z,'LineWidth',LW);
+    
+    x=squeeze(mlon(end,1,ix3:xg.lx(3)));
+    y=squeeze(mlat(end,1,ix3:xg.lx(3)));
+    z=squeeze(alt(end,1,ix3:xg.lx(3)));
+    plotfun(x,y,z,altlinestyle,'LineWidth',LW);
+    
+    x=squeeze(mlon(end,end,1:ix3));
+    y=squeeze(mlat(end,end,1:ix3));
+    z=squeeze(alt(end,end,1:ix3));
+    plotfun(x,y,z,'LineWidth',LW);
+    
+    x=squeeze(mlon(end,end,ix3:xg.lx(3)));
+    y=squeeze(mlat(end,end,ix3:xg.lx(3)));
+    z=squeeze(alt(end,end,ix3:xg.lx(3)));
+    plotfun(x,y,z,altlinestyle,'LineWidth',LW);
+    
+    xlabel('magnetic longitude (deg.)');
+    ylabel('magnetic latitude (deg.)');
+    zlabel('altitidue (km)');    
+end
 
-x=squeeze(mlat(1,:,1));
-y=squeeze(mlon(1,:,1));
-z=squeeze(alt(1,:,1));
-plotfun(x,y,z,'LineWidth',LW);
 
-x=squeeze(mlat(1,:,end));
-y=squeeze(mlon(1,:,end));
-z=squeeze(alt(1,:,end));
-plotfun(x,y,z,altlinestyle,'LineWidth',LW);
-
-x=squeeze(mlat(end,:,1));
-y=squeeze(mlon(end,:,1));
-z=squeeze(alt(end,:,1));
-plotfun(x,y,z,'LineWidth',LW);
-
-x=squeeze(mlat(end,:,end));
-y=squeeze(mlon(end,:,end));
-z=squeeze(alt(end,:,end));
-plotfun(x,y,z,altlinestyle,'LineWidth',LW);
-
-ix3=floor(xg.lx(3)/2);
-x=squeeze(mlat(1,1,1:ix3));
-y=squeeze(mlon(1,1,1:ix3));
-z=squeeze(alt(1,1,1:ix3));
-plotfun(x,y,z,'LineWidth',LW);
-
-x=squeeze(mlat(1,1,ix3:xg.lx(3)));
-y=squeeze(mlon(1,1,ix3:xg.lx(3)));
-z=squeeze(alt(1,1,ix3:xg.lx(3)));
-plotfun(x,y,z,altlinestyle,'LineWidth',LW);
-
-x=squeeze(mlat(1,end,1:ix3));
-y=squeeze(mlon(1,end,1:ix3));
-z=squeeze(alt(1,end,1:ix3));
-plotfun(x,y,z,'LineWidth',LW);
-
-x=squeeze(mlat(1,end,ix3:xg.lx(3)));
-y=squeeze(mlon(1,end,ix3:xg.lx(3)));
-z=squeeze(alt(1,end,ix3:xg.lx(3)));
-plotfun(x,y,z,altlinestyle,'LineWidth',LW);
-
-x=squeeze(mlat(end,1,1:ix3));
-y=squeeze(mlon(end,1,1:ix3));
-z=squeeze(alt(end,1,1:ix3));
-plotfun(x,y,z,'LineWidth',LW);
-
-x=squeeze(mlat(end,1,ix3:xg.lx(3)));
-y=squeeze(mlon(end,1,ix3:xg.lx(3)));
-z=squeeze(alt(end,1,ix3:xg.lx(3)));
-plotfun(x,y,z,altlinestyle,'LineWidth',LW);
-
-x=squeeze(mlat(end,end,1:ix3));
-y=squeeze(mlon(end,end,1:ix3));
-z=squeeze(alt(end,end,1:ix3));
-plotfun(x,y,z,'LineWidth',LW);
-
-x=squeeze(mlat(end,end,ix3:xg.lx(3)));
-y=squeeze(mlon(end,end,ix3:xg.lx(3)));
-z=squeeze(alt(end,end,ix3:xg.lx(3)));
-plotfun(x,y,z,altlinestyle,'LineWidth',LW);
-
-xlabel('magnetic longitude (deg.)');
-ylabel('magnetic latitude (deg.)');
-zlabel('altitidue (km)');
 
 h=gca;     %now go back and make all lines the same color...
 lline=numel(h.Children);
@@ -234,7 +315,7 @@ plot3(squeeze(MLATn(end,end,:)),squeeze(MLONn(end,end,:)),squeeze(Zn(end,end,:))
 
 
 %% ADD MAPPED COASTLINES TO PLOT - DONE LAST TO MAKE SOME OF THE GRID LINE PLOTTING CODE CLEANER
-if (license('test','Map_Toolbox'))
+if (flagmapping)
   hold on;
   ax=axis;
   load coastlines;
