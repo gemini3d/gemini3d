@@ -375,6 +375,9 @@ else
     axis tight;
 end %if
 
+
+
+%% OLD/EXTRA CODE THAT I'M LOATH TO PART WITH (MZ)
 % %MAKE A MOVIE OF THE GRID ROTATING
 % direc='~/Downloads/gridplot/';
 % system(['mkdir ',direc])

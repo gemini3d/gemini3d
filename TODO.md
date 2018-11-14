@@ -6,8 +6,11 @@ This file is intended to document development priorities for the GEMINI project.
 ## Things that need to be checked
 
 * J3 is a bit weird in 2D test (changes direction unexpectedly), and needs to be checked
-* Need to get rid of homebrew interpolate and intrap in eqICs3D.m
-* Cmake needs to build msis executable needed for doing eqICs3D.m
+<!-- * Need to get rid of homebrew interpolate and intrap in eqICs3D.m -->
+<!-- * Cmake needs to build msis executable needed for doing eqICs3D.m -->
+* Scripts for gridding model output
+* Finish grid plotting adjustments
+ 
 
 ## Future Code refactoring
 
