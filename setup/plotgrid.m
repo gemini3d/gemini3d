@@ -1,10 +1,6 @@
 function ha=plotgrid(xg,flagsource,sourcelat,sourcelong,neugridtype,zmin,zmax,rhomax)
 
 
-%IF YOU DON'T HAVE THE MAPPING TOOLBOX LAT. AND LON ARE GOING TO BE
-%SWITCHED ON THE PLOTS...  NEED SOME CODE TO CHECK AND FIX THIS EVENTUALLY
-
-
 %% INPUT COORDS NEED TO BE CONVERTED TO MAGNETIC
 [sourcetheta,sourcephi]=geog2geomag(sourcelat,sourcelong);
 sourcemlat=90-sourcetheta*180/pi;
@@ -16,16 +12,22 @@ else
 end
 
 
-%% SET UP A MAP PLOT IF MAPPING TOOLBOX EXISTS
-figure; hold on;
+%% SET UP A MAP PLOT IF MAPPING TOOLBOX EXISTS, DETECT WHETHER WE HAVE A 2D OR 3D GRID TO PLOT
 flagmapping=license('test','Map_Toolbox');
-if (flagmapping)
-  ha=gca;
-  axesm('MapProjection','Mercator','MapLatLimit',[-(abs(sourcemlat)+30),abs(sourcemlat)+30],'MapLonLimit',[sourcemlonplot-40,sourcemlonplot+40])
-  plotfun=@plot3m;
+if (xg.lx(2)==1 || xg.lx(3)==1)    %the grid is 2D
+    flag2D=true;
 else
-  ha=gca;
-  plotfun=@plot3;   %no mapping toolbox so we'll do normal plots - the annoying thing is that these should be lon,lat,alt
+    figure; 
+    hold on;
+    flag2D=false;
+    if (flagmapping)
+        ha=gca;
+        axesm('MapProjection','Mercator','MapLatLimit',[-(abs(sourcemlat)+30),abs(sourcemlat)+30],'MapLonLimit',[sourcemlonplot-40,sourcemlonplot+40])
+        plotfun=@plot3m;
+    else
+        ha=gca;
+        plotfun=@plot3;   %no mapping toolbox so we'll do normal plots - the annoying thing is that these should be lon,lat,alt so all the plots statements have to be switched
+    end
 end
 
 
@@ -48,228 +50,259 @@ end
 LW=2;
 altlinestyle=':';    %line style for the "back" of the grid
 
-if (flagmapping)    %plots are done lat,lon,alt for plot3m
-    h=plotfun(mlat(:,1,1),mlon(:,1,1),alt(:,1,1),'LineWidth',LW);
-    plotfun(mlat(:,1,end),mlon(:,1,end),alt(:,1,end),altlinestyle,'LineWidth',LW);
-    plotfun(mlat(:,end,1),mlon(:,end,1),alt(:,end,1),'LineWidth',LW);
-    h=plotfun(mlat(:,end,end),mlon(:,end,end),alt(:,end,end),altlinestyle,'LineWidth',LW);
-    linecolor=h.Color;
+if (flag2D)    %2D grid, don't use a map to plot and show things in polar coordinates (maybe)
+    thref=pi/2;
     
-    x=squeeze(mlat(1,:,1));
-    y=squeeze(mlon(1,:,1));
-    z=squeeze(alt(1,:,1));
-    plotfun(x,y,z,'LineWidth',LW);
-    
-    x=squeeze(mlat(1,:,end));
-    y=squeeze(mlon(1,:,end));
-    z=squeeze(alt(1,:,end));
-    plotfun(x,y,z,altlinestyle,'LineWidth',LW);
-    
-    x=squeeze(mlat(end,:,1));
-    y=squeeze(mlon(end,:,1));
-    z=squeeze(alt(end,:,1));
-    plotfun(x,y,z,'LineWidth',LW);
-    
-    x=squeeze(mlat(end,:,end));
-    y=squeeze(mlon(end,:,end));
-    z=squeeze(alt(end,:,end));
-    plotfun(x,y,z,altlinestyle,'LineWidth',LW);
-    
-    ix3=floor(xg.lx(3)/2);
-    x=squeeze(mlat(1,1,1:ix3));
-    y=squeeze(mlon(1,1,1:ix3));
-    z=squeeze(alt(1,1,1:ix3));
-    plotfun(x,y,z,'LineWidth',LW);
-    
-    x=squeeze(mlat(1,1,ix3:xg.lx(3)));
-    y=squeeze(mlon(1,1,ix3:xg.lx(3)));
-    z=squeeze(alt(1,1,ix3:xg.lx(3)));
-    plotfun(x,y,z,altlinestyle,'LineWidth',LW);
-    
-    x=squeeze(mlat(1,end,1:ix3));
-    y=squeeze(mlon(1,end,1:ix3));
-    z=squeeze(alt(1,end,1:ix3));
-    plotfun(x,y,z,'LineWidth',LW);
-    
-    x=squeeze(mlat(1,end,ix3:xg.lx(3)));
-    y=squeeze(mlon(1,end,ix3:xg.lx(3)));
-    z=squeeze(alt(1,end,ix3:xg.lx(3)));
-    plotfun(x,y,z,altlinestyle,'LineWidth',LW);
-    
-    x=squeeze(mlat(end,1,1:ix3));
-    y=squeeze(mlon(end,1,1:ix3));
-    z=squeeze(alt(end,1,1:ix3));
-    plotfun(x,y,z,'LineWidth',LW);
-    
-    x=squeeze(mlat(end,1,ix3:xg.lx(3)));
-    y=squeeze(mlon(end,1,ix3:xg.lx(3)));
-    z=squeeze(alt(end,1,ix3:xg.lx(3)));
-    plotfun(x,y,z,altlinestyle,'LineWidth',LW);
-    
-    x=squeeze(mlat(end,end,1:ix3));
-    y=squeeze(mlon(end,end,1:ix3));
-    z=squeeze(alt(end,end,1:ix3));
-    plotfun(x,y,z,'LineWidth',LW);
-    
-    x=squeeze(mlat(end,end,ix3:xg.lx(3)));
-    y=squeeze(mlon(end,end,ix3:xg.lx(3)));
-    z=squeeze(alt(end,end,ix3:xg.lx(3)));
-    plotfun(x,y,z,altlinestyle,'LineWidth',LW);
-    
-    xlabel('magnetic longitude (deg.)');
-    ylabel('magnetic latitude (deg.)');
-    zlabel('altitidue (km)');
-else    %plotting is done lon,lat,alt with plot3
-    h=plotfun(mlon(:,1,1),mlat(:,1,1),alt(:,1,1),'LineWidth',LW);
-    plotfun(mlon(:,1,end),mlat(:,1,end),alt(:,1,end),altlinestyle,'LineWidth',LW);
-    plotfun(mlon(:,end,1),mlat(:,end,1),alt(:,end,1),'LineWidth',LW);
-    h=plotfun(mlon(:,end,end),mlat(:,end,end),alt(:,end,end),altlinestyle,'LineWidth',LW);
-    linecolor=h.Color;
-    
-    x=squeeze(mlon(1,:,1));
-    y=squeeze(mlat(1,:,1));
-    z=squeeze(alt(1,:,1));
-    plotfun(x,y,z,'LineWidth',LW);
-    
-    x=squeeze(mlon(1,:,end));
-    y=squeeze(mlat(1,:,end));
-    z=squeeze(alt(1,:,end));
-    plotfun(x,y,z,altlinestyle,'LineWidth',LW);
-    
-    x=squeeze(mlon(end,:,1));
-    y=squeeze(mlat(end,:,1));
-    z=squeeze(alt(end,:,1));
-    plotfun(x,y,z,'LineWidth',LW);
-    
-    x=squeeze(mlon(end,:,end));
-    y=squeeze(mlat(end,:,end));
-    z=squeeze(alt(end,:,end));
-    plotfun(x,y,z,altlinestyle,'LineWidth',LW);
-    
-    ix3=floor(xg.lx(3)/2);
-    x=squeeze(mlon(1,1,1:ix3));
-    y=squeeze(mlat(1,1,1:ix3));
-    z=squeeze(alt(1,1,1:ix3));
-    plotfun(x,y,z,'LineWidth',LW);
-    
-    x=squeeze(mlon(1,1,ix3:xg.lx(3)));
-    y=squeeze(mlat(1,1,ix3:xg.lx(3)));
-    z=squeeze(alt(1,1,ix3:xg.lx(3)));
-    plotfun(x,y,z,altlinestyle,'LineWidth',LW);
-    
-    x=squeeze(mlon(1,end,1:ix3));
-    y=squeeze(mlat(1,end,1:ix3));
-    z=squeeze(alt(1,end,1:ix3));
-    plotfun(x,y,z,'LineWidth',LW);
-    
-    x=squeeze(mlon(1,end,ix3:xg.lx(3)));
-    y=squeeze(mlat(1,end,ix3:xg.lx(3)));
-    z=squeeze(alt(1,end,ix3:xg.lx(3)));
-    plotfun(x,y,z,altlinestyle,'LineWidth',LW);
-    
-    x=squeeze(mlon(end,1,1:ix3));
-    y=squeeze(mlat(end,1,1:ix3));
-    z=squeeze(alt(end,1,1:ix3));
-    plotfun(x,y,z,'LineWidth',LW);
-    
-    x=squeeze(mlon(end,1,ix3:xg.lx(3)));
-    y=squeeze(mlat(end,1,ix3:xg.lx(3)));
-    z=squeeze(alt(end,1,ix3:xg.lx(3)));
-    plotfun(x,y,z,altlinestyle,'LineWidth',LW);
-    
-    x=squeeze(mlon(end,end,1:ix3));
-    y=squeeze(mlat(end,end,1:ix3));
-    z=squeeze(alt(end,end,1:ix3));
-    plotfun(x,y,z,'LineWidth',LW);
-    
-    x=squeeze(mlon(end,end,ix3:xg.lx(3)));
-    y=squeeze(mlat(end,end,ix3:xg.lx(3)));
-    z=squeeze(alt(end,end,ix3:xg.lx(3)));
-    plotfun(x,y,z,altlinestyle,'LineWidth',LW);
-    
-    xlabel('magnetic latitude (deg.)');
-    ylabel('magnetic longitude (deg.)');
-    zlabel('altitidue (km)');    
-end
-
-
-
-h=gca;     %now go back and make all lines the same color...
-lline=numel(h.Children);
-for iline=1:16    %the last three children are the surface and text label objects
-    h.Children(iline).Color=[0 0 0];
-end
-
-
-%% PLOT THE NEUTRAL SOURCE LOCATION, IF REQUESTED
-if (flagsource~=0)
+    h=polar(thref-xg.theta(:,end),xg.r(:,end)/1e3);
+    set(h,'LineWidth',LW,'Color',[0 0 0]);
     hold on;
-    plotfun(sourcemlat,sourcemlonplot,0,'ro','MarkerSize',16);
-    
-    
-    %NOW CREATE A NEUTRAL GRID AND OVERPLOT IT
-    %zmin=0;
-    %%zmax=750;    %most earthquakes
-    %zmax=660;    %Moore, OK
-    lz=750;
-    rhomin=0;
-    %%rhomax=750;    %most earthquakes
-    %rhomax=1800;    %Moore, OK
-    lrho=750;
-    zn=linspace(zmin,zmax,lz);
-    rhon=linspace(rhomin,rhomax,lrho);
-    rn=6370+zn;    %geocentric distance (in km)
-    
-    drho=rhomax-rhomin;                                                  %radius of circle, in kilometers, describing perp. directions of axisymmetric model
-    xn=linspace(-1*drho,drho,100);                                       %N-S distance spanned by neutral model ("fake" number of grid points used here)
-    dthetan=(max(xn(:))-min(xn(:)))/rn(1);                               %equivalent theta coordinates of the neutral mesh (used in the plot of grid)
-    thetan=linspace(sourcetheta-dthetan/2,sourcetheta+dthetan/2,100);    %theta coordinates of N-S distance specified
-    phinhalf1=sourcephi+sqrt((dthetan/2)^2-(thetan-sourcetheta).^2);
-    phinhalf2=sourcephi-sqrt((dthetan/2)^2-(thetan-sourcetheta).^2);
-    mlatn=90-thetan*180/pi;
-    mlonnhalf1=phinhalf1*180/pi;
-    mlonnhalf2=phinhalf2*180/pi;
-    linemlon=sourcephi*ones(size(zn))*180/pi;
-    
-    
-    %CORRECT THE MLONS TOO CLOSE TO EDGE OF GRID
-    if (360-sourcemlon<20)
-        inds=find(mlonnhalf1>180);
-        mlonnhalf1(inds)=mlonnhalf1(inds)-360;
-        inds=find(mlonnhalf2>180);
-        mlonnhalf2(inds)=mlonnhalf2(inds)-360;
-        linemlon=linemlon-360;
+    h=polar(thref-xg.theta(:,1),xg.r(:,1)/1e3);
+    set(h,'LineWidth',LW,'Color',[0 0 0]);
+    h=polar(thref-xg.theta(1,:),xg.r(1,:)/1e3);
+    set(h,'LineWidth',LW,'Color',[0 0 0]);
+    h=polar(thref-xg.theta(end,:),xg.r(end,:)/1e3);
+    set(h,'LineWidth',LW,'Color',[0 0 0]);
+    ha=h;
+else    %this is a 3D grid and we can plot it on a map if the user has the appropriate toolbox(es)
+    if (flagmapping)    %plots are done lat,lon,alt for plot3m
+        h=plotfun(mlat(:,1,1),mlon(:,1,1),alt(:,1,1),'LineWidth',LW);
+        plotfun(mlat(:,1,end),mlon(:,1,end),alt(:,1,end),altlinestyle,'LineWidth',LW);
+        plotfun(mlat(:,end,1),mlon(:,end,1),alt(:,end,1),'LineWidth',LW);
+        h=plotfun(mlat(:,end,end),mlon(:,end,end),alt(:,end,end),altlinestyle,'LineWidth',LW);
+        linecolor=h.Color;
+        
+        x=squeeze(mlat(1,:,1));
+        y=squeeze(mlon(1,:,1));
+        z=squeeze(alt(1,:,1));
+        plotfun(x,y,z,'LineWidth',LW);
+        
+        x=squeeze(mlat(1,:,end));
+        y=squeeze(mlon(1,:,end));
+        z=squeeze(alt(1,:,end));
+        plotfun(x,y,z,altlinestyle,'LineWidth',LW);
+        
+        x=squeeze(mlat(end,:,1));
+        y=squeeze(mlon(end,:,1));
+        z=squeeze(alt(end,:,1));
+        plotfun(x,y,z,'LineWidth',LW);
+        
+        x=squeeze(mlat(end,:,end));
+        y=squeeze(mlon(end,:,end));
+        z=squeeze(alt(end,:,end));
+        plotfun(x,y,z,altlinestyle,'LineWidth',LW);
+        
+        ix3=floor(xg.lx(3)/2);
+        x=squeeze(mlat(1,1,1:ix3));
+        y=squeeze(mlon(1,1,1:ix3));
+        z=squeeze(alt(1,1,1:ix3));
+        plotfun(x,y,z,'LineWidth',LW);
+        
+        x=squeeze(mlat(1,1,ix3:xg.lx(3)));
+        y=squeeze(mlon(1,1,ix3:xg.lx(3)));
+        z=squeeze(alt(1,1,ix3:xg.lx(3)));
+        plotfun(x,y,z,altlinestyle,'LineWidth',LW);
+        
+        x=squeeze(mlat(1,end,1:ix3));
+        y=squeeze(mlon(1,end,1:ix3));
+        z=squeeze(alt(1,end,1:ix3));
+        plotfun(x,y,z,'LineWidth',LW);
+        
+        x=squeeze(mlat(1,end,ix3:xg.lx(3)));
+        y=squeeze(mlon(1,end,ix3:xg.lx(3)));
+        z=squeeze(alt(1,end,ix3:xg.lx(3)));
+        plotfun(x,y,z,altlinestyle,'LineWidth',LW);
+        
+        x=squeeze(mlat(end,1,1:ix3));
+        y=squeeze(mlon(end,1,1:ix3));
+        z=squeeze(alt(end,1,1:ix3));
+        plotfun(x,y,z,'LineWidth',LW);
+        
+        x=squeeze(mlat(end,1,ix3:xg.lx(3)));
+        y=squeeze(mlon(end,1,ix3:xg.lx(3)));
+        z=squeeze(alt(end,1,ix3:xg.lx(3)));
+        plotfun(x,y,z,altlinestyle,'LineWidth',LW);
+        
+        x=squeeze(mlat(end,end,1:ix3));
+        y=squeeze(mlon(end,end,1:ix3));
+        z=squeeze(alt(end,end,1:ix3));
+        plotfun(x,y,z,'LineWidth',LW);
+        
+        x=squeeze(mlat(end,end,ix3:xg.lx(3)));
+        y=squeeze(mlon(end,end,ix3:xg.lx(3)));
+        z=squeeze(alt(end,end,ix3:xg.lx(3)));
+        plotfun(x,y,z,altlinestyle,'LineWidth',LW);
+        
+        xlabel('magnetic longitude (deg.)');
+        ylabel('magnetic latitude (deg.)');
+        zlabel('altitidue (km)');
+    else    %plotting is done lon,lat,alt with plot3
+        h=plotfun(mlon(:,1,1),mlat(:,1,1),alt(:,1,1),'LineWidth',LW);
+        plotfun(mlon(:,1,end),mlat(:,1,end),alt(:,1,end),altlinestyle,'LineWidth',LW);
+        plotfun(mlon(:,end,1),mlat(:,end,1),alt(:,end,1),'LineWidth',LW);
+        h=plotfun(mlon(:,end,end),mlat(:,end,end),alt(:,end,end),altlinestyle,'LineWidth',LW);
+        linecolor=h.Color;
+        
+        x=squeeze(mlon(1,:,1));
+        y=squeeze(mlat(1,:,1));
+        z=squeeze(alt(1,:,1));
+        plotfun(x,y,z,'LineWidth',LW);
+        
+        x=squeeze(mlon(1,:,end));
+        y=squeeze(mlat(1,:,end));
+        z=squeeze(alt(1,:,end));
+        plotfun(x,y,z,altlinestyle,'LineWidth',LW);
+        
+        x=squeeze(mlon(end,:,1));
+        y=squeeze(mlat(end,:,1));
+        z=squeeze(alt(end,:,1));
+        plotfun(x,y,z,'LineWidth',LW);
+        
+        x=squeeze(mlon(end,:,end));
+        y=squeeze(mlat(end,:,end));
+        z=squeeze(alt(end,:,end));
+        plotfun(x,y,z,altlinestyle,'LineWidth',LW);
+        
+        ix3=floor(xg.lx(3)/2);
+        x=squeeze(mlon(1,1,1:ix3));
+        y=squeeze(mlat(1,1,1:ix3));
+        z=squeeze(alt(1,1,1:ix3));
+        plotfun(x,y,z,'LineWidth',LW);
+        
+        x=squeeze(mlon(1,1,ix3:xg.lx(3)));
+        y=squeeze(mlat(1,1,ix3:xg.lx(3)));
+        z=squeeze(alt(1,1,ix3:xg.lx(3)));
+        plotfun(x,y,z,altlinestyle,'LineWidth',LW);
+        
+        x=squeeze(mlon(1,end,1:ix3));
+        y=squeeze(mlat(1,end,1:ix3));
+        z=squeeze(alt(1,end,1:ix3));
+        plotfun(x,y,z,'LineWidth',LW);
+        
+        x=squeeze(mlon(1,end,ix3:xg.lx(3)));
+        y=squeeze(mlat(1,end,ix3:xg.lx(3)));
+        z=squeeze(alt(1,end,ix3:xg.lx(3)));
+        plotfun(x,y,z,altlinestyle,'LineWidth',LW);
+        
+        x=squeeze(mlon(end,1,1:ix3));
+        y=squeeze(mlat(end,1,1:ix3));
+        z=squeeze(alt(end,1,1:ix3));
+        plotfun(x,y,z,'LineWidth',LW);
+        
+        x=squeeze(mlon(end,1,ix3:xg.lx(3)));
+        y=squeeze(mlat(end,1,ix3:xg.lx(3)));
+        z=squeeze(alt(end,1,ix3:xg.lx(3)));
+        plotfun(x,y,z,altlinestyle,'LineWidth',LW);
+        
+        x=squeeze(mlon(end,end,1:ix3));
+        y=squeeze(mlat(end,end,1:ix3));
+        z=squeeze(alt(end,end,1:ix3));
+        plotfun(x,y,z,'LineWidth',LW);
+        
+        x=squeeze(mlon(end,end,ix3:xg.lx(3)));
+        y=squeeze(mlat(end,end,ix3:xg.lx(3)));
+        z=squeeze(alt(end,end,ix3:xg.lx(3)));
+        plotfun(x,y,z,altlinestyle,'LineWidth',LW);
+        
+        xlabel('magnetic latitude (deg.)');
+        ylabel('magnetic longitude (deg.)');
+        zlabel('altitidue (km)');
     end
-    
-    
-    
-    %PLOT THE NEUTRAL GRID
-    hold on;
-    zn=zn/altscale;
-    plotfun(mlatn,real(mlonnhalf1),zn(1)*ones(size(mlatn)),altlinestyle,'LineWidth',LW);
-    plotfun(mlatn,real(mlonnhalf2),zn(1)*ones(size(mlatn)),'LineWidth',LW);
-    plotfun(mlatn,real(mlonnhalf1),zn(end)*ones(size(mlatn)),altlinestyle,'LineWidth',LW);
-    plotfun(mlatn,real(mlonnhalf2),zn(end)*ones(size(mlatn)),'LineWidth',LW);
-    plotfun(min(mlatn)*ones(size(zn)),linemlon,zn,'LineWidth',LW);
-    plotfun(max(mlatn)*ones(size(zn)),linemlon,zn,'LineWidth',LW);
-    hold off;
-    
-    
-    %GO BACK AND MAKE ALL NEUTRAL GRID LINES THE SAME COLOR
-    h=gca;
+    h=gca;     %now go back and make all lines the same color...
     lline=numel(h.Children);
-    for iline=1:6    %the line objects for each axis are added in a "stack" fashion (last in first out)
-        h.Children(iline).Color=linecolor;
+    for iline=1:16    %the last three children are the surface and text label objects
+        h.Children(iline).Color=[0 0 0];
     end
-end
+end %if
 
 
-%CLEAN UP FONT SIZES, ETC.
+%% PLOT THE NEUTRAL SOURCE LOCATION, IF REQUESTED, right now this assumes axisymmetric
+if (flag2D)
+    if (flagsource~=0)
+        %Create a 2D neutral grid, all distances in km here
+        lz=750;
+        zn=linspace(zmin,zmax,lz)';
+        lrho=750;
+        rhomin=0;    %assume origin is included in the neutral simulation
+        drho=rhomax-rhomin;
+        xn=linspace(-1*drho,drho,lrho);
+        rn=zn+6370;
+        dtheta=(max(xn(:))-min(xn(:)))/rn(1);
+        thetan=linspace(sourcetheta-dtheta/2,sourcetheta+dtheta/2,lrho);
+        [THETAn,Rn]=meshgrid(thetan,rn);
+        
+        %Now plot the neutral grid
+        h=polar(thref-THETAn(:,end),Rn(:,end),altlinestyle);
+        set(h,'LineWidth',LW);
+        h=polar(thref-THETAn(:,1),Rn(:,1),altlinestyle);
+        set(h,'LineWidth',LW);
+        h=polar(thref-THETAn(1,:),Rn(1,:),altlinestyle);
+        set(h,'LineWidth',LW);
+        h=polar(thref-THETAn(end,:),Rn(end,:),altlinestyle);
+        set(h,'LineWidth',LW);
+    end
+else
+    if (flagsource~=0)
+        plotfun(sourcemlat,sourcemlonplot,0,'ro','MarkerSize',16);       
+        
+        %Create a neutral grid, all distance in km here
+        %zmin=0;
+        %%zmax=750;    %most earthquakes
+        %zmax=660;    %Moore, OK
+        lz=750;
+        rhomin=0;
+        %%rhomax=750;    %most earthquakes
+        %rhomax=1800;    %Moore, OK
+        lrho=750;
+        zn=linspace(zmin,zmax,lz);
+        rhon=linspace(rhomin,rhomax,lrho);
+        rn=6370+zn;    %geocentric distance (in km)
+        
+        drho=rhomax-rhomin;                                                  %radius of circle, in kilometers, describing perp. directions of axisymmetric model
+        xn=linspace(-1*drho,drho,100);                                       %N-S distance spanned by neutral model ("fake" number of grid points used here)
+        dthetan=(max(xn(:))-min(xn(:)))/rn(1);                               %equivalent theta coordinates of the neutral mesh (used in the plot of grid)
+        thetan=linspace(sourcetheta-dthetan/2,sourcetheta+dthetan/2,100);    %theta coordinates of N-S distance specified
+        phinhalf1=sourcephi+sqrt((dthetan/2)^2-(thetan-sourcetheta).^2);
+        phinhalf2=sourcephi-sqrt((dthetan/2)^2-(thetan-sourcetheta).^2);
+        mlatn=90-thetan*180/pi;
+        mlonnhalf1=phinhalf1*180/pi;
+        mlonnhalf2=phinhalf2*180/pi;
+        linemlon=sourcephi*ones(size(zn))*180/pi;      
+        
+        %Do mlon correction to wrap around
+        if (360-sourcemlon<20)
+            inds=find(mlonnhalf1>180);
+            mlonnhalf1(inds)=mlonnhalf1(inds)-360;
+            inds=find(mlonnhalf2>180);
+            mlonnhalf2(inds)=mlonnhalf2(inds)-360;
+            linemlon=linemlon-360;
+        end       
+        
+        %plot the 3D neutral grid
+        hold on;
+        zn=zn/altscale;
+        plotfun(mlatn,real(mlonnhalf1),zn(1)*ones(size(mlatn)),altlinestyle,'LineWidth',LW);
+        plotfun(mlatn,real(mlonnhalf2),zn(1)*ones(size(mlatn)),'LineWidth',LW);
+        plotfun(mlatn,real(mlonnhalf1),zn(end)*ones(size(mlatn)),altlinestyle,'LineWidth',LW);
+        plotfun(mlatn,real(mlonnhalf2),zn(end)*ones(size(mlatn)),'LineWidth',LW);
+        plotfun(min(mlatn)*ones(size(zn)),linemlon,zn,'LineWidth',LW);
+        plotfun(max(mlatn)*ones(size(zn)),linemlon,zn,'LineWidth',LW);
+        hold off;       
+        
+        %Make all grid lines the same color
+        h=gca;
+        lline=numel(h.Children);
+        for iline=1:6    %the line objects for each axis are added in a "stack" fashion (last in first out)
+            h.Children(iline).Color=linecolor;
+        end
+    end
+end %if
+
+
+%% CLEAN UP FONT SIZES, ETC.
 FS=12;
 set(gca,'FontSize',FS);
 grid on;
 set(gca,'LineWidth',LW-0.5)
-view(1,2);
 
 
 %CARTESIAN NEUTRAL GRID
@@ -315,26 +348,32 @@ plot3(squeeze(MLATn(end,end,:)),squeeze(MLONn(end,end,:)),squeeze(Zn(end,end,:))
 
 
 %% ADD MAPPED COASTLINES TO PLOT - DONE LAST TO MAKE SOME OF THE GRID LINE PLOTTING CODE CLEANER
-if (flagmapping)
-  hold on;
-  ax=axis;
-  load coastlines;
-  [thetacoast,phicoast]=geog2geomag(coastlat,coastlon);
-  mlatcoast=90-thetacoast*180/pi;
-  mloncoast=phicoast*180/pi;
-  
-  if (360-sourcemlon<20)
-    inds=find(mloncoast>180);
-    mloncoast(inds)=mloncoast(inds)-360;
-  end
-  
-  plotfun(mlatcoast,mloncoast,zeros(size(mlatcoast)),'b-','LineWidth',0.5);
-  setm(gca,'MeridianLabel','on','ParallelLabel','on','MLineLocation',10,'PLineLocation',10,'MLabelLocation',10,'PLabelLocation',10);
-  hold off;
-end
-view(270,35);
-axis tight;
-
+if (flag2D)
+    terr_theta=linspace(0,2*pi,100);
+    terr_r=6370*ones(size(terr_theta));
+    h=polar(terr_theta,terr_r,'c:');
+    set(h,'LineWidth',LW);
+else
+    if (flagmapping)
+        hold on;
+        ax=axis;
+        load coastlines;
+        [thetacoast,phicoast]=geog2geomag(coastlat,coastlon);
+        mlatcoast=90-thetacoast*180/pi;
+        mloncoast=phicoast*180/pi;
+        
+        if (360-sourcemlon<20)
+            inds=find(mloncoast>180);
+            mloncoast(inds)=mloncoast(inds)-360;
+        end
+        
+        plotfun(mlatcoast,mloncoast,zeros(size(mlatcoast)),'b-','LineWidth',0.5);
+        setm(gca,'MeridianLabel','on','ParallelLabel','on','MLineLocation',10,'PLineLocation',10,'MLabelLocation',10,'PLabelLocation',10);
+        hold off;
+    end
+    view(270,35);
+    axis tight;
+end %if
 
 % %MAKE A MOVIE OF THE GRID ROTATING
 % direc='~/Downloads/gridplot/';
