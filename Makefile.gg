@@ -88,7 +88,8 @@ $(OBJDIR)precipBCs_mod.o: ./ionization/boundary_conditions/precipBCs_mod.f90 $(O
 	$(OBJDIR)mpimod.o $(OBJDIR)phys_consts.o $(OBJDIR)temporal.o
 	$(FC) -c $(OPTIM) ./ionization/boundary_conditions/precipBCs_mod.f90 -o $(OBJDIR)/precipBCs_mod.o -J$(OBJDIR)
 
-$(OBJDIR)ionization.o: ./ionization/ionization.f90 $(OBJDIR)phys_consts.o $(OBJDIR)calculus.o $(OBJDIR)grid.o $(OBJDIR)neutral.o
+$(OBJDIR)ionization.o: ./ionization/ionization.f90 $(OBJDIR)phys_consts.o $(OBJDIR)calculus.o $(OBJDIR)grid.o $(OBJDIR)neutral.o \
+	$(OBJDIR)temporal.o
 	$(FC) -c $(OPTIM) ./ionization/ionization.f90 -o $(OBJDIR)/ionization.o -J$(OBJDIR)
 
 $(OBJDIR)collisions.o: ./collisions/collisions.f90 $(OBJDIR)phys_consts.o
@@ -128,8 +129,12 @@ $(OBJDIR)potential_comm_mumps.o: ./numerical/potential/potential_comm_mumps.f90 
 	$(FC) -c $(OPTIM) ./numerical/potential/potential_comm_mumps.f90 -o $(OBJDIR)/potential_comm_mumps.o -J$(OBJDIR)
 
 $(OBJDIR)gemini.o: gemini.f90 $(OBJDIR)phys_consts.o $(OBJDIR)potential_comm_mumps.o $(OBJDIR)temporal.o $(OBJDIR)neutral.o \
-        $(OBJDIR)io.o $(OBJDIR)mpimod.o $(OBJDIR)multifluid.o $(OBJDIR)grid.o $(OBJDIR)precipBCs_mod.o $(OBJDIR)potentialBCs_mumps.o
+        $(OBJDIR)io.o $(OBJDIR)mpimod.o $(OBJDIR)multifluid.o $(OBJDIR)grid.o $(OBJDIR)precipBCs_mod.o $(OBJDIR)potentialBCs_mumps.o \
+	$(OBJDIR)glow_run.o
 	$(FC) -c $(OPTIM) gemini.f90 -o $(OBJDIR)/gemini.o -J$(OBJDIR)
 
 $(OBJDIR)magcalc.o: ./magcalc.f90 $(OBJDIR)phys_consts.o $(OBJDIR)grid.o $(OBJDIR)temporal.o $(OBJDIR)io.o $(OBJDIR)mpimod.o 
 	$(FC) -c $(OPTIM) magcalc.f90 -o $(OBJDIR)/magcalc.o -J$(OBJDIR)
+
+$(OBJDIR)glow_run.o: ./ionization/glow_run.f90
+	$(FC) -c $(OPTIM) ./ionization/glow_run.f90 -o $(OBJDIR)/glow_run.o -J$(OBJDIR)

@@ -4,11 +4,11 @@ program gemini
 !------THIS IS THE MAIN PROGRAM FOR GEMINI3D
 !----------------------------------------------------------
 
-use phys_consts, only : lnchem
+use phys_consts, only : lnchem, lwave
 use grid
 use temporal, only : dt_comm,dateinc
 use neutral, only : neutral_atmos,make_dneu,neutral_perturb,clear_dneu
-use io, only : read_configfile,input_plasma,create_outdir,output_plasma
+use io, only : read_configfile,input_plasma,create_outdir,output_plasma,create_outdir_aur,output_aur
 use potential_comm,only : electrodynamics
 use multifluid, only : fluid_adv
 use mpimod
@@ -50,6 +50,7 @@ real(wp), dimension(:,:,:), allocatable :: rhom,v1,v2,v3          !inductive aux
 real(wp), dimension(:,:,:,:), allocatable :: nn                   !neutral density array
 real(wp), dimension(:,:,:), allocatable :: Tn,vn1,vn2,vn3         !neutral temperature and velocities
 real(wp), dimension(:,:,:), allocatable :: Phiall                 !full-grid potential solution.  To store previous time step value
+real(wp), dimension(:,:,:), allocatable :: iver                   !integrated volume emission rate of aurora calculated by GLOW
 
 !TEMPORAL VARIABLES
 real(wp) :: t=0._wp,dt=1e-6_wp,dtprev      !time from beginning of simulation (s) and time step (s)
@@ -78,6 +79,13 @@ integer :: flagE0file                ! flag toggling electric field (potential B
 real(wp) :: dtE0                      ! time interval between electric field file inputs
 character(:), allocatable :: E0dir   ! directory containing electric field file input data
 
+!GLOW MODULE INPUT VARIABLES
+integer :: flagglow                     !flag toggling GLOW module run (include aurora) (0 - no; 1 - yes)
+real(wp) :: dtglow                      !time interval between GLOW runs (s)
+real(wp) :: dtglowout                   !time interval between GLOW auroral outputs (s)
+real(wp) :: tglowout                    !time for next GLOW output
+
+!FOR HANDLING OUTPUT
 integer :: argc
 character(256) :: argv
 !----------------------------------------------------------
@@ -98,7 +106,7 @@ infile = trim(argv)
 
 call read_configfile(infile, ymd,UTsec0,tdur,dtout,activ,tcfl,Teinf,potsolve,flagperiodic,flagoutput,flagcap, &
                      indatsize,indatgrid,flagdneu,interptype,sourcemlat,sourcemlon,dtneu,drhon,dzn,sourcedir,flagprecfile, &
-                     dtprec,precdir,flagE0file,dtE0,E0dir)
+                     dtprec,precdir,flagE0file,dtE0,E0dir,flagglow,dtglow,dtglowout)
 
 !LOAD UP THE GRID STRUCTURE/MODULE VARS. FOR THIS SIMULATION
 call read_grid(indatsize,indatgrid,flagperiodic,x)     !read in a previously generated grid from filenames listed in input file
@@ -114,6 +122,7 @@ outdir = trim(argv)
 
 if (myid==0) then
   call create_outdir(outdir,infile,indatsize,indatgrid,flagdneu,sourcedir,flagprecfile,precdir,flagE0file,E0dir)
+  if (flagglow/=0) call create_outdir_aur(outdir)
 end if
 
 
@@ -135,6 +144,10 @@ if (myid==0) then
   allocate(Phiall(lx1,lx2,lx3all))
 end if
 
+!ALLOCATE MEMORY FOR AURORAL EMISSIONS, IF CALCULATED
+if (flagglow/=0) then
+  allocate(iver(lx2,lx3,lwave))
+end if
 
 !LOAD ICS AND DISTRIBUTE TO WORKERS (REQUIRES GRAVITY FOR INITIAL GUESSING)
 call input_plasma(x%x1,x%x2,x%x3all,indatsize,ns,vs1,Ts)
@@ -158,13 +171,17 @@ end if
 E1=0d0; E2=0d0; E3=0d0;
 vs2=0d0; vs3=0d0;
 
+!INITIALIZE AURORAL EMISSION MAP
+if(flagglow/=0) then
+  iver=0.0_wp
+end if
 
 !MAIN LOOP
-UTsec=UTsec0; it=1; t=0d0; tout=t;
+UTsec=UTsec0; it=1; t=0d0; tout=t; tglowout=t;
 do while (t<tdur)
   !TIME STEP CALCULATION
   dtprev=dt
-  call dt_comm(t,tout,tcfl,ns,Ts,vs1,vs2,vs3,B1,B2,B3,x,potsolve,dt)
+  call dt_comm(t,tout,tglowout,flagglow,tcfl,ns,Ts,vs1,vs2,vs3,B1,B2,B3,x,potsolve,dt)
   if (it>1) then
     if(dt/dtprev > 10d0) then     !throttle how quickly we allow dt to increase
       dt=10d0*dtprev
@@ -220,8 +237,8 @@ do while (t<tdur)
 
   !UPDATE THE FLUID VARIABLES
   call cpu_time(tstart)
-  call fluid_adv(ns,vs1,Ts,vs2,vs3,J1,E1,Teinf,t,dt,x,nn,vn1,vn2,vn3,Tn,activ(2),activ(1),ymd,UTsec, &
-                 flagprecfile,dtprec,precdir)
+  call fluid_adv(ns,vs1,Ts,vs2,vs3,J1,E1,Teinf,t,dt,x,nn,vn1,vn2,vn3,Tn,iver,activ(2),activ(1),ymd,UTsec, &
+                 flagprecfile,dtprec,precdir,flagglow,dtglow)
   call cpu_time(tfin)
   if (myid==0) then
     write(*,*) 'Multifluid total solve time:  ',tfin-tstart
@@ -245,10 +262,21 @@ do while (t<tdur)
     call output_plasma(outdir,flagoutput,ymd,UTsec,vs2,vs3,ns,vs1,Ts,Phiall,J1,J2,J3)
     call cpu_time(tfin)
     if (myid==0) then
-      write(*,*) 'Output done for time step:  ',t,' in cpu_time of:  ',tfin-tstart
+      write(*,*) 'Plasma output done for time step:  ',t,' in cpu_time of:  ',tfin-tstart
     end if
     
     tout=tout+dtout
+  end if
+
+  !GLOW OUTPUT
+  if ((flagglow/=0).and.(abs(t-tglowout) < 1d-5)) then !same as plasma output
+    call cpu_time(tstart)
+    call output_aur(outdir,flagglow,ymd,UTsec,iver)
+    call cpu_time(tfin)
+    if (myid==0) then
+      write(*,*) 'Auroral output done for time step:  ',t,' in cpu_time of: ',tfin-tstart
+    end if
+    tglowout=tglowout+dtglowout
   end if
 end do
 
@@ -262,6 +290,9 @@ if (myid==0) then
   deallocate(Phiall)
 end if
 
+if (flagglow/=0) then
+  deallocate(iver)
+end if
 
 !DEALLOCATE MODULE VARIABLES (MAY HAPPEN AUTOMATICALLY IN F2003???)
 call clear_grid(x)

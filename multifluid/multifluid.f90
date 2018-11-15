@@ -1,6 +1,6 @@
 module multifluid
 
-use phys_consts, only : gammas,kB,ms,mindensdiv,mindens,mindensnull
+use phys_consts, only : wp,gammas,kB,ms,mindensdiv,mindens,mindensnull
 use mpimod
 use grid
 use ionization
@@ -14,11 +14,13 @@ implicit none
 
 integer, parameter :: lprec=2    !number of precipitating electron populations
 
+real(wp), allocatable, dimension(:,:,:,:) :: PrPrecipG
+real(wp), allocatable, dimension(:,:,:) :: QePrecipG, iverG
 
 contains
 
-  subroutine fluid_adv(ns,vs1,Ts,vs2,vs3,J1,E1,Teinf,t,dt,x,nn,vn1,vn2,vn3,Tn,f107,f107a,ymd,UTsec, &
-                       flagprecfile,dtprec,precdir)    !J1 needed for heat conduction; E1 for momentum equation
+  subroutine fluid_adv(ns,vs1,Ts,vs2,vs3,J1,E1,Teinf,t,dt,x,nn,vn1,vn2,vn3,Tn,iver,f107,f107a,ymd,UTsec, &
+                       flagprecfile,dtprec,precdir,flagglow,dtglow)    !J1 needed for heat conduction; E1 for momentum equation
 
     !------------------------------------------------------------
     !-------THIS SUBROUTINE ADVANCES ALL OF THE FLUID VARIABLES 
@@ -43,6 +45,9 @@ contains
     integer, intent(in) :: flagprecfile
     real(wp), intent(in) :: dtprec
     character(*), intent(in) :: precdir
+    integer, intent(in) :: flagglow
+    real(wp), intent(in) :: dtglow
+    real(wp), dimension(:,:,:), intent(out) :: iver
 
     integer :: isp
     real(wp) :: tstart,tfin
@@ -57,7 +62,7 @@ contains
 
     real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,size(ns,4)) :: Pr,Lo
     real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,size(ns,4)-1) :: Prprecip,Prpreciptmp
-    real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: Qeprecip
+    real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: Qeprecip,Qepreciptmp
     real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: chi
     real(wp), dimension(1:size(ns,2)-4,1:size(ns,3)-4,lprec) :: W0,PhiWmWm2
 
@@ -67,6 +72,19 @@ contains
     real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,size(ns,4)) :: Q
     real(wp), parameter :: xicon=3d0    !decent value for closed field-line grids extending to high altitudes.  
 
+    !MAKING SURE THESE ARRAYS ARE ALWAYS IN SCOPE
+    if ((flagglow/=0).and.(.NOT.allocated(PrprecipG))) then
+      allocate(PrprecipG(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,size(ns,4)-1))
+      PrprecipG(:,:,:,:)=0.0_wp
+    end if
+    if ((flagglow/=0).and.(.NOT.allocated(QeprecipG))) then
+      allocate(QeprecipG(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4))
+      QeprecipG(:,:,:)=0.0_wp
+    end if
+    if ((flagglow/=0).and.(.NOT.allocated(iverG))) then
+      allocate(iverG(size(iver,1),size(iver,2),size(iver,3)))
+      iverG(:,:,:)=0.0_wp
+    end if
 
     !CALCULATE THE INTERNAL ENERGY AND MOMENTUM FLUX DENSITIES (ADVECTION AND SOURCE SOLUTIONS ARE DONE IN THESE VARIABLES)
     do isp=1,lsp
@@ -183,18 +201,44 @@ contains
   
     !STIFF/BALANCED ENERGY SOURCES
     call cpu_time(tstart)
-    Prprecip=0._wp
+    Prprecip=0.0_wp
+    Qeprecip=0.0_wp
+    Prpreciptmp=0.0_wp
+    Qepreciptmp=0.0_wp
     if (gridflag/=0) then
-      do iprec=1,lprec    !loop over the different populations of precipitation (2 here?), accumulating production rates
-        Prpreciptmp=ionrate_fang08(W0(:,:,iprec),PhiWmWm2(:,:,iprec),x%alt,nn,Tn)    !calculation based on Fang et al [2008]
-        Prprecip=Prprecip+Prpreciptmp
-      end do
+      if(flagglow==0) then !RUN FANG APPROXIMATION
+        do iprec=1,lprec    !loop over the different populations of precipitation (2 here?), accumulating production rates
+          Prpreciptmp=ionrate_fang08(W0(:,:,iprec),PhiWmWm2(:,:,iprec),x%alt,nn,Tn)    !calculation based on Fang et al [2008]
+          Prprecip=Prprecip+Prpreciptmp
+        end do
+        Prprecip=max(Prprecip,1d-5)
+        Qeprecip=eheating(nn,Tn,Prprecip,ns)
+      else      !GLOW USED, AURORA PRODUCED
+        if (int(t/dtglow)/=int((t+dt)/dtglow).OR.t<0.1_wp) then
+          PrprecipG=0.0_wp; QeprecipG=0.0_wp; iverG=0.0_wp;
+          PrprecipG=ionrate_glow98(W0,PhiWmWm2,ymd,UTsec,f107,f107a,x%glat(1,:,:),x%glon(1,:,:),x%alt,nn,Tn,ns,Ts,QeprecipG,iverG)
+          PrprecipG=max(PrprecipG,1d-5)
+        end if
+        Prprecip=PrprecipG
+        Qeprecip=QeprecipG
+        iver=iverG
+      end if
     else    !do not compute impact ionization on a closed mesh (presumably there is no source of energetic electrons at these lats.)
       if (myid==0) then
         write(*,*) 'Looks like we have a closed grid, so skipping impact ionization for time step:  ',t
       end if
     end if
 
+    if (myid==0) then
+      write(*,*) 'Min/max root electron impact ionization production rates for time:  ',t,' :  ', & 
+        minval(Prprecip), maxval(Prprecip)
+    end if
+
+    if ((flagglow/=0).and.(myid==0)) then
+      write(*,*) 'Min/max 427.8 nm emission column-integrated intensity for time:  ',t,' :  ', &
+        minval(iver(:,:,2)), maxval(iver(:,:,2))
+    end if
+  
     !now add in photoionization sources
     chi=sza(ymd,UTsec,x%glat,x%glon)
     if (myid==0) then
@@ -203,13 +247,15 @@ contains
     end if
     Prpreciptmp=photoionization(x,nn,Tn,chi,f107,f107a)
     if (myid==0) then
-      write(*,*) 'Min/max root production rates for time:  ',t,' :  ',minval(pack(Prpreciptmp,.true.)), &
-                  maxval(pack(Prpreciptmp,.true.))
+      write(*,*) 'Min/max root photoionization production rates for time:  ',t,' :  ',minval(Prpreciptmp), &
+                  maxval(Prpreciptmp)
     end if
-    Prprecip=Prprecip+Prpreciptmp
-    Prprecip=max(Prprecip,1e-5_wp)    !enforce some minimum production rate to preserve conditioning for species that rely on constant production, some testing should probably be done to see what the best choice is...
+    Prpreciptmp=max(Prpreciptmp,1d-5)    !enforce minimum production rate to preserve conditioning for species that rely on constant production, testing should probably be done to see what the best choice is...
+    Qepreciptmp=eheating(nn,Tn,Prpreciptmp,ns)   !thermal electron heating rate from Swartz and Nisbet, (1978)
 
-    Qeprecip=eheating(nn,Tn,Prprecip,ns)   !thermal electron heating rate from Swartz and Nisbet, (1978)
+    !photoion ionrate and heating calculated seperately, added together with ionrate and heating from Fang or GLOW
+    Prprecip=Prprecip+Prpreciptmp
+    Qeprecip=Qeprecip+Qepreciptmp
   
     call srcsEnergy(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,Pr,Lo)
     do isp=1,lsp

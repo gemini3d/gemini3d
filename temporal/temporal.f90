@@ -23,13 +23,13 @@ public :: dateinc, doy_calc, sza, dt_comm
 contains
 
 
-  subroutine dt_comm(t,tout,tcfl,ns,Ts,vs1,vs2,vs3,B1,B2,B3,x,potsolve,dt)
+  subroutine dt_comm(t,tout,tglowout,flagglow,tcfl,ns,Ts,vs1,vs2,vs3,B1,B2,B3,x,potsolve,dt)
 
-    real(wp), intent(in) :: t,tout,tcfl
+    real(wp), intent(in) :: t,tout,tglowout,tcfl
     real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns,Ts,vs1,vs2,vs3
     real(wp),  dimension(-1:,-1:,-1:), intent(in) :: B1,B2,B3
     type(curvmesh), intent(in) :: x
-    integer, intent(in) :: potsolve
+    integer, intent(in) :: flagglow,potsolve
     real(wp), intent(out) :: dt
 
     real(wp), dimension(lsp) :: cour1,cour2,cour3
@@ -52,6 +52,11 @@ contains
       end do
   
       !CHECK WHETHER WE'D OVERSTEP OUR TARGET OUTPUT TIME
+      !GLOW OUTPUT HAS PRIORITY SINCE IT WILL OUTPUT MORE OFTEN
+      if ((flagglow/=0).and.(t+dt>tglowout)) then
+        dt=tglowout-t
+      end if
+
       if (t+dt>tout) then
         dt=tout-t
       end if
