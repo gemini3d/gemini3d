@@ -1,4 +1,4 @@
-function [nsi,vs1i,Tsi,xgin,ns,vs1,Ts]=eq2dist(eqdir,distdir,simID,xg)
+function [nsi,vs1i,Tsi,xgin,ns,vs1,Ts]=eq2dist(eqdir,simID,xg)
 
   %READ IN THE SIMULATION INFORMATION
   [ymd0,UTsec0,tdur,dtout,flagoutput,mloc]=readconfig([eqdir,'/inputs/config.ini']);
@@ -34,8 +34,8 @@ function [nsi,vs1i,Tsi,xgin,ns,vs1,Ts]=eq2dist(eqdir,distdir,simID,xg)
 
  
   %WRITE OUT THE GRID
-  outdir=['../../../simulations/input/',simID];
-  writegrid(xg,distdir);
+  outdir=[eqdir,'../input/',simID];
+  writegrid(xg,outdir);
   dmy=[ymdend(3),ymdend(2),ymdend(1)];
   writedata(dmy,UTsecend,nsi,vs1i,Tsi,outdir,simID);
 

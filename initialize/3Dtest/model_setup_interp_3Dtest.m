@@ -25,6 +25,5 @@ end
 
 %PRODUCE AND IC FROM EQ SIMULATION
 eqdir='../../../simulations/3Dtest_eq/';
-distdir='../../../simulations/3Dtest/';
 simID='3Dtest';
-[nsi,vs1i,Tsi,xgin,ns,vs1,Ts]=eq2dist(eqdir,distdir,simID,xg);
+[nsi,vs1i,Tsi,xgin,ns,vs1,Ts]=eq2dist(eqdir,simID,xg);

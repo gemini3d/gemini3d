@@ -11,6 +11,7 @@ This file is intended to document development priorities for the GEMINI project.
 * Scripts for gridding model output
 * Finish grid plotting adjustments
 * Need to have a means for plot color axes to be adjustable.
+* refactor the precip and Efield generation scripts
  
 
 ## Future Code refactoring

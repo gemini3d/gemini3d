@@ -23,6 +23,5 @@ if (~exist('xg'))
 end
 
 eqdir='../../../simulations/2Dtest_eq/';
-distdir='../../../simulations/2Dtest/';
 simID='2Dtest';
-[nsi,vs1i,Tsi,xgin,ns,vs1,Ts]=eq2dist(eqdir,distdir,simID,xg);
+[nsi,vs1i,Tsi,xgin,ns,vs1,Ts]=eq2dist(eqdir,simID,xg);
