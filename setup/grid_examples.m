@@ -1,9 +1,9 @@
-%ADD PATHS TO THE GRID GENERATION SCRIPTS
+%% ADD PATHS TO THE GRID GENERATION SCRIPTS
 addpath ./gridgen;
 addpath ../script_utils;
 
 
-%MOORE, OK GRID (FULL)
+%% MOORE, OK GRID (FULL)
 dtheta=25;
 dphi=35;
 lp=125;
@@ -29,8 +29,13 @@ rhomax=1800;
 % sourcelat=glat;
 % sourcelong=glon;
 
+%% FOR USERS INFO CONVERT SOURCE LOCATION TO GEOMAG
+[sourcetheta,sourcephi]=geog2geomag(sourcelat,sourcelong);
+sourcemlat=90-sourcetheta*180/pi;
+sourcemlon=sourcephi*180/pi;
 
-%RUN THE GRID GENERATION CODE
+
+%% RUN THE GRID GENERATION CODE
 if (~exist('xg'))
     xg=makegrid_tilteddipole_3D(dtheta,dphi,lp,lq,lphi,altmin,glat,glon,gridflag);   
 %    xg=makegrid_tilteddipole_nonuniform_3D(dtheta,dphi,lp,lq,lphi,altmin,glat,glon,gridflag);   
@@ -42,7 +47,7 @@ end
 ha=plotgrid(xg,flagsource,sourcelat,sourcelong,neugridtype,zmin,zmax,rhomax);
 
 
-%RETURN PATH VARIABLES TO NORMAL
+%% RETURN PATH VARIABLES TO NORMAL
 rmpath ./gridgen;
 rmpath ../script_utils;
 

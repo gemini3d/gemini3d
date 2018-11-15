@@ -10,6 +10,7 @@ This file is intended to document development priorities for the GEMINI project.
 <!-- * Cmake needs to build msis executable needed for doing eqICs3D.m -->
 * Scripts for gridding model output
 * Finish grid plotting adjustments
+* Need to have a means for plot color axes to be adjustable.
  
 
 ## Future Code refactoring

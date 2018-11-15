@@ -40,15 +40,15 @@ lotsplots=true;   %@scivision may want to fix this...
 
 
 %%SET THE CAXIS LIMITS FOR THE PLOTS - really needs to be user provided somehow...
-nelim =  [0 1.9e12];
+nelim =  [0 6e11];
 v1lim = [-400 400];
 Tilim = [100 3000];
 Telim = [100 3000];
-J1lim = [-0.1 0.1];
+J1lim = [-25 25];
 v2lim = [-10 10];
 v3lim = [-10 10];
-J2lim = [-0.1 0.1];
-J3lim=[-0.25 0.25];
+J2lim = [-10 10];
+J3lim=[-10 10];
 
 
 %%MAKE DIRECTORIES FOR OUTPUT FILES
