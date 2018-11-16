@@ -292,7 +292,7 @@ else     %full 3D grid
             rhomin=0;
             zn=linspace(zmin,zmax,lpts);
             drho=rhomax-rhomin;
-            xn=linspace(-drho/2,drho/2,lpts);
+            xn=linspace(-drho,drho,lpts);
             yn=xn;              %arbitrarily let the y-extent be the same as x (our defs. of x,y left-handed here)
             rn=zn+6370;         %convert altitude to geocentric distance
             
