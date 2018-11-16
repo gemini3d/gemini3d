@@ -40,6 +40,8 @@ lotsplots=true;   %@scivision may want to fix this...
 
 
 %%SET THE CAXIS LIMITS FOR THE PLOTS - really needs to be user provided somehow...
+flagcaxlims=false;
+%{
 nelim =  [0 6e11];
 v1lim = [-400 400];
 Tilim = [100 3000];
@@ -49,6 +51,7 @@ v2lim = [-10 10];
 v3lim = [-10 10];
 J2lim = [-10 10];
 J3lim=[-10 10];
+%}
 
 
 %%MAKE DIRECTORIES FOR OUTPUT FILES
@@ -158,13 +161,33 @@ else    %closer to previous frame
 end
 
 
-%%LOAD THE FRAME NEAREST TO THE REQUESTED TIME
+%% LOAD THE FRAME NEAREST TO THE REQUESTED TIME
 [ne,mlatsrc,mlonsrc,xg,v1,Ti,Te,J1,v2,v3,J2,J3,filename,Phitop,ns,vs1,Ts] = loadframe(direc,ymd,UTsec,ymd0,UTsec0,tdur,dtout,flagoutput,mloc,xg);
 disp([filename, ' => ', func2str(plotfun)])
 
 
-%%MAKE THE PLOTS (WHERE APPROPRIATE)
-%% Electron number density, 'position', [.1, .1, .5, .5], 'units', 'normalized'
+%% UNTIL WE PROVIDE A WAY FOR THE USER TO SPECIFY COLOR AXES, JUST TRY TO SET THEM AUTOMATICALLY
+if (~flagcaxlims)
+  nelim =  [min(ne(:)), max(ne(:))];
+  v1mod=max(abs(v1(:)));
+  v1lim = [-v1mod, v1mod];
+  Tilim = [0, max(Ti(:))];
+  Telim = [0, max(Te(:))];
+  J1mod=max(abs(J1(:)));
+  J1lim = [-J1mod, J1mod];
+  v2mod=max(abs(v2(:)));
+  v2lim = [-v2mod, v2mod];
+  v3mod=max(abs(v3(:)));
+  v3lim = [-v3mod, v3mod];
+  J2mod=max(abs(J2(:)));
+  J2lim = [-J2mod, J2mod];
+  J3mod=max(abs(J3(:)));
+  J3lim=[-J3mod, J3mod];
+end
+
+
+%% MAKE THE PLOTS (WHERE APPROPRIATE)
+%Electron number density, 'position', [.1, .1, .5, .5], 'units', 'normalized'
 if lotsplots   % 3D simulation or a very long 2D simulation - do separate plots for each time frame
     if it==1, disp('long 2D or 3D simulation...'), end
     
@@ -179,15 +202,15 @@ if lotsplots   % 3D simulation or a very long 2D simulation - do separate plots 
         clf(h.f3), figure(h.f3)
         plotfun(ymd,UTsec,xg,Te,'T_e (K)',Telim,[mlatsrc,mlonsrc],h.f3);
         clf(h.f4), figure(h.f4)
-        plotfun(ymd,UTsec,xg,J1*1e6,'J_1 (uA/m^2)',J1lim,[mlatsrc,mlonsrc],h.f4);
+        plotfun(ymd,UTsec,xg,J1,'J_1 (A/m^2)',J1lim,[mlatsrc,mlonsrc],h.f4);
         clf(h.f5), figure(h.f5)
         plotfun(ymd,UTsec,xg,v2,'v_2 (m/s)',v2lim,[mlatsrc,mlonsrc],h.f5);
         clf(h.f6), figure(h.f6)
         plotfun(ymd,UTsec,xg,v3,'v_3 (m/s)',v3lim,[mlatsrc,mlonsrc],h.f6);
         clf(h.f7), figure(h.f7)
-        plotfun(ymd,UTsec,xg,J2*1e6,'J_2 (uA/m^2)',J2lim,[mlatsrc,mlonsrc],h.f7);
+        plotfun(ymd,UTsec,xg,J2,'J_2 (A/m^2)',J2lim,[mlatsrc,mlonsrc],h.f7);
         clf(h.f8), figure(h.f8)
-        plotfun(ymd,UTsec,xg,J3*1e6,'J_3 (uA/m^2)',J3lim,[mlatsrc,mlonsrc],h.f8);
+        plotfun(ymd,UTsec,xg,J3,'J_3 (A/m^2)',J3lim,[mlatsrc,mlonsrc],h.f8);
         
         if ~isempty(h.f9)
             clf(h.f9), figure(h.f9)
@@ -224,7 +247,7 @@ else    %short 2D simulation - put the entire time series in a single plot
         
         figure(h.f4)
         ha = subplot(Rsp, Csp,it,'parent',h.f4);
-        plotfun(ymd,UTsec,xg,J1(:,:,:)*1e6,'J_1 (uA/m^2)',J1lim,[mlatsrc,mlonsrc],ha);
+        plotfun(ymd,UTsec,xg,J1(:,:,:),'J_1 (A/m^2)',J1lim,[mlatsrc,mlonsrc],ha);
         
         figure(h.f5)
         ha = subplot(Rsp, Csp,it,'parent',h.f5);
@@ -236,11 +259,11 @@ else    %short 2D simulation - put the entire time series in a single plot
         
         figure(h.f7)
         ha = subplot(Rsp, Csp,it,'parent',h.f7);
-        plotfun(ymd,UTsec,xg,J2(:,:,:)*1e6,'J_2 (uA/m^2)',J2lim,[mlatsrc,mlonsrc],ha);
+        plotfun(ymd,UTsec,xg,J2(:,:,:),'J_2 (A/m^2)',J2lim,[mlatsrc,mlonsrc],ha);
         
         figure(h.f8)
         ha = subplot(Rsp, Csp,it,'parent',h.f8);
-        plotfun(ymd,UTsec,xg,J3(:,:,:)*1e6,'J_3 (uA/m^2)',J3lim,[mlatsrc,mlonsrc],ha);
+        plotfun(ymd,UTsec,xg,J3(:,:,:),'J_3 (A/m^2)',J3lim,[mlatsrc,mlonsrc],ha);
         
         if ~isempty(h.f9)
             figure(h.f9)

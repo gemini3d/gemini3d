@@ -8,8 +8,8 @@ This file is intended to document development priorities for the GEMINI project.
 * J3 is a bit weird in 2D test (changes direction unexpectedly), and needs to be checked
 <!-- * Need to get rid of homebrew interpolate and intrap in eqICs3D.m -->
 <!-- * Cmake needs to build msis executable needed for doing eqICs3D.m -->
-* Finish grid plotting adjustments
-* Need to have a means for plot color axes to be adjustable.
+<!-- * Finish grid plotting adjustments -->
+* Work on some means for plot color axes to be adjustable.
 * refactor the precip and Efield generation scripts
  
 
