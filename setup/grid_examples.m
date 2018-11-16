@@ -20,7 +20,7 @@ flagsource=1;
 %MOORE OK
 sourcelat=35.3;
 sourcelong=360-97.7;
-neugridtype=0;
+neugridtype=0;            %1 = Cartesian neutral grid, anything else - axisymmetric
 zmin=0;
 zmax=660;
 rhomax=1800;
@@ -28,6 +28,7 @@ rhomax=1800;
 % % NO SOURCE SPECIFIED, SET TO CENTER OF GRID
 % sourcelat=glat;
 % sourcelong=glon;
+
 
 %% FOR USERS INFO CONVERT SOURCE LOCATION TO GEOMAG
 [sourcetheta,sourcephi]=geog2geomag(sourcelat,sourcelong);
