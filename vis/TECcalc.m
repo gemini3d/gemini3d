@@ -1,8 +1,11 @@
 %SIMULATIONS LOCAITONS
-simname='tohoku20113D_highres_long/';
-simname_control='tohoku20113D_highres_long_control/';
+%simname='tohoku20113D_highres_long/';
+%simname_control='tohoku20113D_highres_long_control/';
+simname='mooreOK3D/';
+simname_control='mooreOK3D_control/';
 basedir='~/zettergmdata/simulations/';
 direc=[basedir,simname];
+direc_control=[basedir,simname_control];
 mkdir([direc, filesep, 'TECplots']);    %store output plots with the simulation data
 
 
@@ -11,7 +14,7 @@ addpath ../script_utils;
 
 
 %READ IN THE SIMULATION INFORMATION
-[ymd0,UTsec0,tdur,dtout,flagoutput,mloc]=readconfig([direc,'/inputs/config.dat']);
+[ymd0,UTsec0,tdur,dtout,flagoutput,mloc]=readconfig([direc,'/inputs/config.ini']);
 
 
 %WE ALSO NEED TO LOAD THE GRID FILE (UNLESS IT ALREADY EXISTS IN THE WORKSPACE)
@@ -121,22 +124,7 @@ dvTEC=[];
 simdate_series=[];
 for it=1:length(times)
     %LOAD DIST. FILE
-    direc=[basedir,simname];
-%    filestr=datelab(ymd,UTsec)
-%    if (it ~= 1)      %tack on the decimal part
-%      filename=[filestr,'.000000.dat']
-%    else
-%      filename=[filestr,'.000001.dat']
-%    end
-%    if (flagoutput==1)
-%      loadframe3Dcurv;      %note that p from this script is ion composition
-%    elseif (flagoutput==2)
-%      loadframe3Dcurvavg;
-%    else
-%      error('Bad output option...')
-%    end
-%    loadframe_wrapper;
-    [ne] = loadframe(direc,UTsec,ymd,UTsec0,ymd0,mloc,xg);
+    [ne]=loadframe(direc,ymd,UTsec,ymd0,UTsec0,tdur,dtout,flagoutput,mloc,xg);
     simdate=[ymd,UTsec/3600,0,0];    %create a datevec for matlab
 
 
@@ -167,17 +155,7 @@ for it=1:length(times)
 
 
     %LOAD CONTROL SIMULATION
-%    direc=['~/simulations/',simname_control]
-    direc=[basedir,simname_control];
-%    if (flagoutput==1)
-%      loadframe3Dcurv;      %note that p from this script is ion composition
-%    elseif (flagoutput==2)
-%      loadframe3Dcurvavg;
-%    else
-%      error('Bad output option...')
-%    end
-%    loadframe_wrapper;
-    [ne] = loadframe(direc,UTsec,ymd,UTsec0,ymd0,autoload,flagoutput,mloc,xg);
+    [ne]=loadframe(direc_control,ymd,UTsec,ymd0,UTsec0,tdur,dtout,flagoutput,mloc,xg);
 
 
     %DEFINE A MESHGRID BASED ON CONTROL SIMULATION OUTPUT AND DO INTERPOLATION

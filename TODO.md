@@ -3,7 +3,7 @@
 This file is intended to document development priorities for the GEMINI project.  
 
 
-## Things that need to be checked
+## Things that need to be checked or otherwise dealt with
 
 * J3 is a bit weird in 2D test (changes direction unexpectedly), and needs to be checked
 <!-- * Need to get rid of homebrew interpolate and intrap in eqICs3D.m -->
@@ -12,7 +12,9 @@ This file is intended to document development priorities for the GEMINI project.
 * Finish grid plotting adjustments
 * Need to have a means for plot color axes to be adjustable.
 * refactor the precip and Efield generation scripts
- 
+* Redo the way magcalc and magplot deal with file names and locations
+* magplot needs some way to know what the grid dimensions are so the user doesn't have to manually input 
+
 
 ## Future Code refactoring
 
