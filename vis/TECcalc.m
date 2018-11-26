@@ -236,7 +236,9 @@ for it=1:length(times)
       set(gca,'FontSize',FS);
       axis xy;
       axis tight;
-      caxis([-0.25,0.25]);
+      caxlim=max(max(abs(dvTEC(:,:,it))));
+      caxlim=max(caxlim,0.01);
+      caxis([-1*caxlim, caxlim]);
 %      caxis([-4,4]);
       c=colorbar
       set(c,'FontSize',FS)
@@ -266,7 +268,7 @@ if (flag2D)
   axis xy;
   datetick;
   axis tight;
-  caxis([-0.25,0.25]);
+  caxis([-max(max(abs(dvTEC(:,:)))), max(max(abs(dvTEC(:,:))))]);
   c=colorbar
   set(c,'FontSize',FS)
   xlabel(c,'\Delta vTEC (TECU)')
