@@ -42,10 +42,10 @@ set_tests_properties(Gemini2D PROPERTIES
 
 # --- evaluate output accuracy vs. reference from Matt's HPC
 find_package(Octave)
-if (OCTAVE_MAJOR_VERSION GREATER_EQUAL 4)
+if (Octave_MAJOR_VERSION GREATER_EQUAL 4)
 
 add_test(NAME Compare2D 
-         COMMAND ${OCTAVE_EXECUTABLE} -q --eval "compare_all('${TEST_2D_OUTDIR}','${TEST_2D_DIR}')"
+         COMMAND ${Octave_EXECUTABLE} -q --eval "compare_all('${TEST_2D_OUTDIR}','${TEST_2D_DIR}')"
          WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
          
 set_tests_properties(Compare2D PROPERTIES

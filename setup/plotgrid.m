@@ -240,61 +240,96 @@ if (flag2D)
         h=polar(thref-THETAn(end,:),Rn(end,:),altlinestyle);
         set(h,'LineWidth',LW);
     end
-else
-    if (flagsource~=0)
-        plotfun(sourcemlat,sourcemlonplot,0,'ro','MarkerSize',16);       
+else     %full 3D grid
+    if (flagsource~=0)    %plot the neutral source and grid
+        plotfun(sourcemlat,sourcemlonplot,0,'ro','MarkerSize',16);    %put down a marker where the neutral source will be centered   
+        lpts=100;                                                     %this is only number of points for the lines to be drawn
         
-        %Create a neutral grid, all distance in km here
-        %zmin=0;
-        %%zmax=750;    %most earthquakes
-        %zmax=660;    %Moore, OK
-        lz=750;
-        rhomin=0;
-        %%rhomax=750;    %most earthquakes
-        %rhomax=1800;    %Moore, OK
-        lrho=750;
-        zn=linspace(zmin,zmax,lz);
-        rhon=linspace(rhomin,rhomax,lrho);
-        rn=6370+zn;    %geocentric distance (in km)
-        
-        drho=rhomax-rhomin;                                                  %radius of circle, in kilometers, describing perp. directions of axisymmetric model
-        xn=linspace(-1*drho,drho,100);                                       %N-S distance spanned by neutral model ("fake" number of grid points used here)
-        dthetan=(max(xn(:))-min(xn(:)))/rn(1);                               %equivalent theta coordinates of the neutral mesh (used in the plot of grid)
-        thetan=linspace(sourcetheta-dthetan/2,sourcetheta+dthetan/2,100);    %theta coordinates of N-S distance specified
-        phinhalf1=sourcephi+sqrt((dthetan/2)^2-(thetan-sourcetheta).^2);
-        phinhalf2=sourcephi-sqrt((dthetan/2)^2-(thetan-sourcetheta).^2);
-        mlatn=90-thetan*180/pi;
-        mlonnhalf1=phinhalf1*180/pi;
-        mlonnhalf2=phinhalf2*180/pi;
-        linemlon=sourcephi*ones(size(zn))*180/pi;      
-        
-        %Do mlon correction to wrap around
-        if (360-sourcemlon<20)
-            inds=find(mlonnhalf1>180);
-            mlonnhalf1(inds)=mlonnhalf1(inds)-360;
-            inds=find(mlonnhalf2>180);
-            mlonnhalf2(inds)=mlonnhalf2(inds)-360;
-            linemlon=linemlon-360;
-        end       
-        
-        %plot the 3D neutral grid
-        hold on;
-        zn=zn/altscale;
-        plotfun(mlatn,real(mlonnhalf1),zn(1)*ones(size(mlatn)),altlinestyle,'LineWidth',LW);
-        plotfun(mlatn,real(mlonnhalf2),zn(1)*ones(size(mlatn)),'LineWidth',LW);
-        plotfun(mlatn,real(mlonnhalf1),zn(end)*ones(size(mlatn)),altlinestyle,'LineWidth',LW);
-        plotfun(mlatn,real(mlonnhalf2),zn(end)*ones(size(mlatn)),'LineWidth',LW);
-        plotfun(min(mlatn)*ones(size(zn)),linemlon,zn,'LineWidth',LW);
-        plotfun(max(mlatn)*ones(size(zn)),linemlon,zn,'LineWidth',LW);
-        hold off;       
-        
-        %Make all grid lines the same color
-        h=gca;
-        lline=numel(h.Children);
-        for iline=1:6    %the line objects for each axis are added in a "stack" fashion (last in first out)
-            h.Children(iline).Color=linecolor;
-        end
-    end
+        if (neugridtype~=1)    %interpret neutral grid as axisymmtric
+            %Create a neutral grid, all distance in km here
+            rhomin=0;
+            zn=linspace(zmin,zmax,lpts);
+            rn=6370+zn;    %geocentric distance (in km)
+            
+            drho=rhomax-rhomin;                                                  %radius of circle, in kilometers, describing perp. directions of axisymmetric model
+            xn=linspace(-1*drho,drho,lpts);                                       %N-S distance spanned by neutral model ("fake" number of grid points used here)
+            dthetan=(max(xn(:))-min(xn(:)))/rn(1);                               %equivalent theta coordinates of the neutral mesh (used in the plot of grid)
+            thetan=linspace(sourcetheta-dthetan/2,sourcetheta+dthetan/2,lpts);    %theta coordinates of N-S distance specified
+            phinhalf1=sourcephi+sqrt((dthetan/2)^2-(thetan-sourcetheta).^2);
+            phinhalf2=sourcephi-sqrt((dthetan/2)^2-(thetan-sourcetheta).^2);
+            mlatn=90-thetan*180/pi;
+            mlonnhalf1=phinhalf1*180/pi;
+            mlonnhalf2=phinhalf2*180/pi;
+            linemlon=sourcephi*ones(size(zn))*180/pi;
+            
+            %Do mlon correction to wrap around
+            if (360-sourcemlon<20)
+                inds=find(mlonnhalf1>180);
+                mlonnhalf1(inds)=mlonnhalf1(inds)-360;
+                inds=find(mlonnhalf2>180);
+                mlonnhalf2(inds)=mlonnhalf2(inds)-360;
+                linemlon=linemlon-360;
+            end
+            
+            %plot the 3D neutral grid
+            hold on;
+            zn=zn/altscale;
+            plotfun(mlatn,real(mlonnhalf1),zn(1)*ones(size(mlatn)),altlinestyle,'LineWidth',LW);
+            plotfun(mlatn,real(mlonnhalf2),zn(1)*ones(size(mlatn)),'LineWidth',LW);
+            plotfun(mlatn,real(mlonnhalf1),zn(end)*ones(size(mlatn)),altlinestyle,'LineWidth',LW);
+            plotfun(mlatn,real(mlonnhalf2),zn(end)*ones(size(mlatn)),'LineWidth',LW);
+            plotfun(min(mlatn)*ones(size(zn)),linemlon,zn,'LineWidth',LW);
+            plotfun(max(mlatn)*ones(size(zn)),linemlon,zn,'LineWidth',LW);
+            hold off;
+            
+            %Make all grid lines the same color
+            h=gca;
+            lline=numel(h.Children);
+            for iline=1:6    %the line objects for each axis are added in a "stack" fashion (last in first out)
+                h.Children(iline).Color=linecolor;
+            end
+        else    %we have a Cartesian input neutral grid
+            rhomin=0;
+            zn=linspace(zmin,zmax,lpts);
+            drho=rhomax-rhomin;
+            xn=linspace(-drho,drho,lpts);
+            yn=xn;              %arbitrarily let the y-extent be the same as x (our defs. of x,y left-handed here)
+            rn=zn+6370;         %convert altitude to geocentric distance
+            
+            dtheta=(max(xn(:))-min(xn(:)))/rn(1);    %equivalent theta coordinates of the neutral mesh
+            dphi=(max(yn(:))-min(yn(:)))/rn(1)/sin(sourcetheta);
+            thetan=linspace(sourcetheta-dtheta/2,sourcetheta+dtheta/2,lpts);
+            phin=linspace(sourcephi-dphi/2,sourcephi+dphi/2,lpts);
+            [THETAn,PHIn,Rn]=meshgrid(thetan,phin,rn);
+            
+            MLATn=90-THETAn*180/pi;
+            MLONn=PHIn*180/pi;
+            Zn=(Rn-6370);
+            Zn=Zn/altscale;     %must scale this if it is going on a map plot
+            
+            hold on;
+            plotfun(MLATn(:,end,1),MLONn(:,end,1),Zn(:,end,1),'LineWidth',LW);
+            h=plotfun(MLATn(:,end,end),MLONn(:,end,end),Zn(:,end,end),'LineWidth',LW);
+            linecolor=h.Color;    %grab the color of the second line
+            plotfun(MLATn(:,1,1),MLONn(:,1,1),Zn(:,1,1),'LineWidth',LW);
+            plotfun(MLATn(:,1,end),MLONn(:,1,end),Zn(:,1,end),'LineWidth',LW);
+            plotfun(squeeze(MLATn(1,:,1)),squeeze(MLONn(1,:,1)),squeeze(Zn(1,:,1)),'LineWidth',LW);
+            plotfun(squeeze(MLATn(1,:,end)),squeeze(MLONn(1,:,end)),squeeze(Zn(1,:,end)),'LineWidth',LW);
+            plotfun(squeeze(MLATn(end,:,1)),squeeze(MLONn(end,:,1)),squeeze(Zn(end,:,1)),altlinestyle,'LineWidth',LW);
+            plotfun(squeeze(MLATn(end,:,end)),squeeze(MLONn(end,:,end)),squeeze(Zn(end,:,end)),altlinestyle,'LineWidth',LW);
+            plotfun(squeeze(MLATn(1,1,:)),squeeze(MLONn(1,1,:)),squeeze(Zn(1,1,:)),'LineWidth',LW);
+            plotfun(squeeze(MLATn(1,end,:)),squeeze(MLONn(1,end,:)),squeeze(Zn(1,end,:)),'LineWidth',LW);
+            plotfun(squeeze(MLATn(end,1,:)),squeeze(MLONn(end,1,:)),squeeze(Zn(end,1,:)),altlinestyle,'LineWidth',LW);
+            plotfun(squeeze(MLATn(end,end,:)),squeeze(MLONn(end,end,:)),squeeze(Zn(end,end,:)),altlinestyle,'LineWidth',LW);
+            
+            %Make all grid lines the same color
+            h=gca;
+            lline=numel(h.Children);
+            for iline=1:12    %the line objects for each axis are added in a "stack" fashion (last in first out)
+                h.Children(iline).Color=linecolor;
+            end
+        end %if
+    end %if
 end %if
 
 
@@ -305,50 +340,8 @@ grid on;
 set(gca,'LineWidth',LW-0.5)
 
 
-%CARTESIAN NEUTRAL GRID
-%{
-dz=72e3;
-drho=72e3;
-
-lz=9;
-lrho=6;
-
-zn=linspace(0,lz*dz,lz)';
-rhon=linspace(0,lrho*drho,lrho);
-xn=[-1*fliplr(rhon),rhon(2:lrho)];
-lx=numel(xn);
-yn=xn;          %all based off of axisymmetric model
-rn=zn+6370e3;   %convert altitude to geocentric distance
-
-dtheta=(max(xn(:))-min(xn(:)))/rn(1);    %equivalent theta coordinates of the neutral mesh
-dphi=(max(yn(:))-min(yn(:)))/rn(1);      %should be a sin(theta) there?
-thetan=linspace(meanth-dtheta/2,meanth+dtheta/2,2*lx-1);    %fudge this to make it look good.
-phin=linspace(meanphi-dphi/2,meanphi+dphi/2,2*lx-1);
-[THETAn,PHIn,Rn]=meshgrid(thetan,phin,rn);
-
-MLATn=90-THETAn*180/pi;
-MLONn=PHIn*180/pi;
-Zn=(Rn-6370e3)/1e3;
-
-hold on;
-plot3(MLATn(:,end,1),MLONn(:,end,1),Zn(:,end,1),'LineWidth',LW);
-h=plot3(MLATn(:,end,end),MLONn(:,end,end),Zn(:,end,end),'LineWidth',LW);
-linecolor=h.Color;    %grab the color of the second line
-plot3(MLATn(:,1,1),MLONn(:,1,1),Zn(:,1,1),'LineWidth',LW);
-plot3(MLATn(:,1,end),MLONn(:,1,end),Zn(:,1,end),'LineWidth',LW);
-plot3(squeeze(MLATn(1,:,1)),squeeze(MLONn(1,:,1)),squeeze(Zn(1,:,1)),'LineWidth',LW);
-plot3(squeeze(MLATn(1,:,end)),squeeze(MLONn(1,:,end)),squeeze(Zn(1,:,end)),'LineWidth',LW);
-plot3(squeeze(MLATn(end,:,1)),squeeze(MLONn(end,:,1)),squeeze(Zn(end,:,1)),altlinestyle,'LineWidth',LW);
-plot3(squeeze(MLATn(end,:,end)),squeeze(MLONn(end,:,end)),squeeze(Zn(end,:,end)),altlinestyle,'LineWidth',LW);
-plot3(squeeze(MLATn(1,1,:)),squeeze(MLONn(1,1,:)),squeeze(Zn(1,1,:)),'LineWidth',LW);
-plot3(squeeze(MLATn(1,end,:)),squeeze(MLONn(1,end,:)),squeeze(Zn(1,end,:)),'LineWidth',LW);
-plot3(squeeze(MLATn(end,1,:)),squeeze(MLONn(end,1,:)),squeeze(Zn(end,1,:)),altlinestyle,'LineWidth',LW);
-plot3(squeeze(MLATn(end,end,:)),squeeze(MLONn(end,end,:)),squeeze(Zn(end,end,:)),altlinestyle,'LineWidth',LW);
-%}
-
-
 %% ADD MAPPED COASTLINES TO PLOT - DONE LAST TO MAKE SOME OF THE GRID LINE PLOTTING CODE CLEANER
-if (flag2D)
+if (flag2D)    %for 2D just plot Earth's surface for reference
     terr_theta=linspace(0,2*pi,100);
     terr_r=6370*ones(size(terr_theta));
     h=polar(terr_theta,terr_r,'c:');

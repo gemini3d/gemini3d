@@ -1,143 +1,163 @@
-# - Find Octave
-# GNU Octave is a high-level interpreted language, primarily intended for numerical computations.
-# available at http://www.gnu.org/software/octave/
-#
-# This module defines: 
-#  OCTAVE_EXECUTABLE           - octave interpreter
-#  OCTAVE_INCLUDE_DIRS         - include path for mex.h, mexproto.h
-#  OCTAVE_LIBRARIES            - required libraries: octinterp, octave, cruft
-#  OCTAVE_OCTINTERP_LIBRARY    - path to the library octinterp
-#  OCTAVE_OCTAVE_LIBRARY       - path to the library octave
-#  OCTAVE_CRUFT_LIBRARY        - path to the library cruft
-#  OCTAVE_VERSION_STRING       - octave version string
-#  OCTAVE_MAJOR_VERSION        - major version
-#  OCTAVE_MINOR_VERSION        - minor version
-#  OCTAVE_PATCH_VERSION        - patch version
-#  OCTAVE_OCT_FILE_DIR         - object files that will be dynamically loaded
-#  OCTAVE_OCT_LIB_DIR          - oct libraries
-#  OCTAVE_ROOT_DIR             - octave prefix
-
-#=============================================================================
+# Distributed under the OSI-approved BSD 3-Clause License.
 # Copyright 2013, Julien Schueller
-# All rights reserved.
-# 
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are met: 
-# 
-# 1. Redistributions of source code must retain the above copyright notice, this
-#    list of conditions and the following disclaimer. 
-# 2. Redistributions in binary form must reproduce the above copyright notice,
-#    this list of conditions and the following disclaimer in the documentation
-#    and/or other materials provided with the distribution. 
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-# WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-# DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
-# ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-# (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-# ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-# SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+# Copyright 2018, Michael Hirsch, Ph.D.
 
-# The views and conclusions contained in the software and documentation are those
-# of the authors and should not be interpreted as representing official policies, 
-# either expressed or implied, of the FreeBSD Project.
-#=============================================================================
+#[=======================================================================[.rst:
+FindOctave
+----------
 
-find_program( OCTAVE_CONFIG_EXECUTABLE
-              NAMES octave-config 
+Finds GNU Octave and provides Octave tools, libraries and compilers to CMake.
+
+This packages primary purposes are
+
+* find the Octave exectuable to be able to run unit tests on ``.m`` code
+* to run specific commands in Octave
+* to retrieve various information from Octave (versions)
+
+Module Input Variables
+^^^^^^^^^^^^^^^^^^^^^^
+
+Users or projects may set the following variables to configure the module
+behaviour:
+
+:variable:`Octave_ROOT_DIR`
+  the root of the Octave installation.
+
+Variables defined by the module
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Result variables
+""""""""""""""""
+
+``Octave_FOUND``
+  ``TRUE`` if the Octave installation is found, ``FALSE`` otherwise.
+``Octave_EXECUTABLE``
+  Octave interpreter
+``Octave_INCLUDE_DIRS``
+  include path for mex.h
+``Octave_LIBRARIES``
+  octinterp, octave, cruft
+``Octave_OCTINTERP_LIBRARY``
+  path to the library octinterp
+``Octave_OCTAVE_LIBRARY``
+  path to the liboctave
+``Octave_CRUFT_LIBRARY``
+  path to the libcruft
+``Octave_VERSION``
+  Octave version string
+``Octave_MAJOR_VERSION``
+  major version
+``Octave_MINOR_VERSION``
+  minor version
+``Octave_PATCH_VERSION``
+  patch version
+``Octave_OCT_FILE_DIR``
+  object files that will be dynamically loaded
+``Octave_OCT_LIB_DIR``
+  oct libraries
+``Octave_ROOT_DIR``
+  octave prefix
+#]=======================================================================]
+
+
+find_program(Octave_CONFIG_EXECUTABLE
+             NAMES octave-config
+             HINTS ${Octave_ROOT_DIR})
+
+if(Octave_CONFIG_EXECUTABLE)
+
+  execute_process(COMMAND ${Octave_CONFIG_EXECUTABLE} -p OCTAVE_HOME
+                  OUTPUT_VARIABLE Octave_ROOT_DIR
+                  OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+  execute_process(COMMAND ${Octave_CONFIG_EXECUTABLE} -p BINDIR
+                  OUTPUT_VARIABLE Octave_BIN_PATHS
+                  OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+  execute_process(COMMAND ${Octave_CONFIG_EXECUTABLE} -p OCTINCLUDEDIR
+                  OUTPUT_VARIABLE Octave_INCLUDE_PATHS
+                  OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+  execute_process(COMMAND ${Octave_CONFIG_EXECUTABLE} -p OCTLIBDIR
+                  OUTPUT_VARIABLE Octave_LIBRARIES_PATHS
+                  OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+  execute_process(COMMAND ${Octave_CONFIG_EXECUTABLE} -p OCTFILEDIR
+                  OUTPUT_VARIABLE Octave_OCT_FILE_DIR
+                  OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+  execute_process(COMMAND ${Octave_CONFIG_EXECUTABLE} -p OCTLIBDIR
+                  OUTPUT_VARIABLE Octave_OCT_LIB_DIR
+                  OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+  find_program(Octave_EXECUTABLE
+               NAMES octave
+               HINTS ${Octave_BIN_PATHS}
+              )
+
+  find_library(Octave_OCTINTERP_LIBRARY
+             NAMES octinterp liboctinterp
+             HINTS ${Octave_LIBRARIES_PATHS}
+            )
+  find_library(Octave_OCTAVE_LIBRARY
+               NAMES octave liboctave
+               HINTS ${Octave_LIBRARIES_PATHS}
+              )
+  find_library(Octave_CRUFT_LIBRARY
+               NAMES cruft libcruft
+               HINTS ${Octave_LIBRARIES_PATHS}
+              )
+
+  set(Octave_LIBRARIES ${Octave_OCTINTERP_LIBRARY})
+  list(APPEND Octave_LIBRARIES ${Octave_OCTAVE_LIBRARY})
+  if (Octave_CRUFT_LIBRARY)
+    list(APPEND Octave_LIBRARIES ${Octave_CRUFT_LIBRARY})
+  endif()
+
+  find_path(Octave_INCLUDE_DIR
+            NAMES mex.h
+            HINTS ${Octave_INCLUDE_PATHS}
             )
 
-if ( OCTAVE_CONFIG_EXECUTABLE )
-
-  execute_process ( COMMAND ${OCTAVE_CONFIG_EXECUTABLE} -p OCTAVE_HOME
-                    OUTPUT_VARIABLE OCTAVE_ROOT_DIR
-                    OUTPUT_STRIP_TRAILING_WHITESPACE )        
-                    
-  execute_process ( COMMAND ${OCTAVE_CONFIG_EXECUTABLE} -p BINDIR
-                    OUTPUT_VARIABLE OCTAVE_BIN_PATHS
-                    OUTPUT_STRIP_TRAILING_WHITESPACE )        
-                    
-  execute_process ( COMMAND ${OCTAVE_CONFIG_EXECUTABLE} -p OCTINCLUDEDIR
-                    OUTPUT_VARIABLE OCTAVE_INCLUDE_PATHS
-                    OUTPUT_STRIP_TRAILING_WHITESPACE )                
-                    
-  execute_process ( COMMAND ${OCTAVE_CONFIG_EXECUTABLE} -p OCTLIBDIR
-                    OUTPUT_VARIABLE OCTAVE_LIBRARIES_PATHS
-                    OUTPUT_STRIP_TRAILING_WHITESPACE )                
-              
-  execute_process ( COMMAND ${OCTAVE_CONFIG_EXECUTABLE} -p OCTFILEDIR
-                    OUTPUT_VARIABLE OCTAVE_OCT_FILE_DIR
-                    OUTPUT_STRIP_TRAILING_WHITESPACE )
-                              
-  execute_process ( COMMAND ${OCTAVE_CONFIG_EXECUTABLE} -p OCTLIBDIR
-                    OUTPUT_VARIABLE OCTAVE_OCT_LIB_DIR
-                    OUTPUT_STRIP_TRAILING_WHITESPACE )
-                    
-  execute_process ( COMMAND ${OCTAVE_CONFIG_EXECUTABLE} -v
-                    OUTPUT_VARIABLE OCTAVE_VERSION_STRING
-                    OUTPUT_STRIP_TRAILING_WHITESPACE )    
-                    
-  if ( OCTAVE_VERSION_STRING )                 
-    string ( REGEX REPLACE "([0-9]+)\\..*" "\\1" OCTAVE_MAJOR_VERSION ${OCTAVE_VERSION_STRING} )
-    string ( REGEX REPLACE "[0-9]+\\.([0-9]+).*" "\\1" OCTAVE_MINOR_VERSION ${OCTAVE_VERSION_STRING} )
-    string ( REGEX REPLACE "[0-9]+\\.[0-9]+\\.([0-9]+).*" "\\1" OCTAVE_PATCH_VERSION ${OCTAVE_VERSION_STRING} )               
-  endif ()                  
-endif ()
-
-
-find_program( OCTAVE_EXECUTABLE
-              HINTS ${OCTAVE_BIN_PATHS}
-              NAMES octave
-            )
-
-find_library( OCTAVE_OCTINTERP_LIBRARY
-              NAMES octinterp liboctinterp
-              HINTS ${OCTAVE_LIBRARIES_PATHS}
-            )
-find_library( OCTAVE_OCTAVE_LIBRARY
-              NAMES octave liboctave
-              HINTS ${OCTAVE_LIBRARIES_PATHS} 
-            )
-find_library( OCTAVE_CRUFT_LIBRARY
-              NAMES cruft libcruft
-              HINTS ${OCTAVE_LIBRARIES_PATHS}
-            )
-    
-set ( OCTAVE_LIBRARIES ${OCTAVE_OCTINTERP_LIBRARY} )
-list ( APPEND OCTAVE_LIBRARIES ${OCTAVE_OCTAVE_LIBRARY} ) 
-if (OCTAVE_CRUFT_LIBRARY)
-  list ( APPEND OCTAVE_LIBRARIES ${OCTAVE_CRUFT_LIBRARY} ) 
+  set(Octave_INCLUDE_DIRS ${Octave_INCLUDE_DIR})
+else()
+  find_program(Octave_EXECUTABLE
+               NAMES octave
+               HINTS ${Octave_ROOT_DIR})
 endif()
 
-find_path(OCTAVE_INCLUDE_DIR 
-          NAMES mex.h
-          HINTS ${OCTAVE_INCLUDE_PATHS}
-          )
-    
-set (OCTAVE_INCLUDE_DIRS ${OCTAVE_INCLUDE_DIR})
 
-# handle REQUIRED and QUIET options
-include ( FindPackageHandleStandardArgs )
-find_package_handle_standard_args(Octave 
-  REQUIRED_VARS OCTAVE_EXECUTABLE OCTAVE_ROOT_DIR 
-  VERSION_VAR OCTAVE_VERSION_STRING)
 
-mark_as_advanced (
-  OCTAVE_OCT_FILE_DIR
-  OCTAVE_OCT_LIB_DIR
-  OCTAVE_OCTINTERP_LIBRARY
-  OCTAVE_OCTAVE_LIBRARY
-  OCTAVE_CRUFT_LIBRARY
-  OCTAVE_LIBRARIES
-  OCTAVE_INCLUDE_DIR
-  OCTAVE_INCLUDE_DIRS
-  OCTAVE_ROOT_DIR
-  OCTAVE_VERSION_STRING
-  OCTAVE_MAJOR_VERSION
-  OCTAVE_MINOR_VERSION
-  OCTAVE_PATCH_VERSION
+execute_process(COMMAND ${Octave_EXECUTABLE} -v
+                OUTPUT_VARIABLE Octave_VERSION
+                OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+if(Octave_VERSION)
+  string(REGEX REPLACE "GNU Octave, version ([0-9])\\.[0-9]+\\.[0-9]+.*" "\\1" Octave_MAJOR_VERSION ${Octave_VERSION})
+  string(REGEX REPLACE "GNU Octave, version [0-9]\\.([0-9]+)\\.[0-9]+.*" "\\1" Octave_MINOR_VERSION ${Octave_VERSION})
+  string(REGEX REPLACE "GNU Octave, version [0-9]\\.[0-9]+\\.([0-9]+).*" "\\1" Octave_PATCH_VERSION ${Octave_VERSION})
+
+  set(Octave_VERSION ${Octave_MAJOR_VERSION}.${Octave_MINOR_VERSION}.${Octave_PATCH_VERSION})
+endif()
+
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(Octave
+  REQUIRED_VARS Octave_EXECUTABLE
+  VERSION_VAR Octave_VERSION
+  HANDLE_COMPONENTS)
+
+mark_as_advanced(
+  Octave_OCT_FILE_DIR
+  Octave_OCT_LIB_DIR
+  Octave_OCTINTERP_LIBRARY
+  Octave_OCTAVE_LIBRARY
+  Octave_CRUFT_LIBRARY
+  Octave_LIBRARIES
+  Octave_INCLUDE_DIR
+  Octave_INCLUDE_DIRS
+  Octave_ROOT_DIR
+  Octave_VERSION
+  Octave_MAJOR_VERSION
+  Octave_MINOR_VERSION
+  Octave_PATCH_VERSION
 )
-
