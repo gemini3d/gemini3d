@@ -13,6 +13,8 @@ This file is intended to document development priorities for the GEMINI project.
 * refactor the precip and Efield generation scripts
 * Redo the way magcalc and magplot deal with file names and locations
 * magplot needs some way to know what the grid dimensions are so the user doesn't have to manually input 
+* Fix restart code for precipitation and electric field input files (need to be primed like the neutral input)
+* run + plot script...
 
 
 ## Future Code refactoring
