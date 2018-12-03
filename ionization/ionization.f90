@@ -376,7 +376,7 @@ contains
 
     !zero flux should really be check per field line
     if ( maxval(pack(PhiWmWm2,.true.)) > 0.0_wp) then   !only compute rates if nonzero flux given
-      date_doy = ymd(1)*1000+doy_calc(ymd)
+      date_doy = mod(ymd(1),100)*1000+doy_calc(ymd)
 
       do ix3=1,lx3
         do ix2=1,lx2
