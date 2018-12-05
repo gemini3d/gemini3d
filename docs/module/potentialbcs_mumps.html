@@ -1,0 +1,2630 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+   
+   <meta name="description" content="GEMINI3D is a modular ionospheric model that incorporates kinetic models such as Fang, GLOW.">
+    
+    <meta name="author" content="Matthew Zettergren
+Guy Grubbs
+Michael Hirsch" >
+    <link rel="icon" href="../favicon.png">
+
+    <title>potentialBCs_mumps &ndash; GEMINI3D</title>
+
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+    <link href="../css/pygments.css" rel="stylesheet">
+    <link href="../css/font-awesome.min.css" rel="stylesheet">
+    <link href="../css/local.css" rel="stylesheet">
+    
+    
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    
+    <script src="../js/jquery-2.1.3.min.js"></script>
+    <script src="../js/svg-pan-zoom.min.js"></script>
+
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="../index.html">GEMINI3D </a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+        
+            <li class="dropdown hidden-xs visible-sm visible-md hidden-lg">
+              <a href="#" class="dropdown-toggle"
+              data-toggle="dropdown" role="button"
+              aria-haspopup="true"
+     aria-expanded="false">Contents <span class="caret"></span></a>
+        <ul class="dropdown-menu">
+          
+              
+            <li><a href="../lists/files.html">Source Files</a></li>
+        
+        
+        
+            <li><a href="../lists/modules.html">Modules</a></li>
+        
+            
+                                
+            <li><a href="../lists/procedures.html">Procedures</a></li>
+        
+               
+            <li><a href="../lists/types.html">Derived Types</a></li>
+        
+        
+            <li><a href="../lists/programs.html">Programs</a></li>
+        
+            </ul>
+            </li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/files.html">Source Files</a></li>
+
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/modules.html">Modules</a></li>
+
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/procedures.html">Procedures</a></li>
+
+                             
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/types.html">Derived Types</a></li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/programs.html">Programs</a></li>
+
+          </ul>
+        
+        </div><!--/.nav-collapse -->
+      </div>
+    </nav>
+
+    <div class="container">
+    
+  
+  <div class="row">
+    <h1>potentialBCs_mumps 
+    <small>Module</small>
+    
+    </h1>
+    
+<div class="row">
+  <div class="col-lg-12">
+<div class="well well-sm">
+  <ul class="list-inline" style="margin-bottom:0px;display:inline">
+     
+     
+     
+     
+    
+    
+     <li><i class="fa fa-list-ol"></i>
+       <a data-toggle="tooltip"
+    data-placement="bottom" data-html="true"
+    title=" 4.9% of total for modules and submodules.">364 statements</a>
+     </li> 
+     
+     
+     
+    <li><i class="fa fa-code"></i><a href="../src/potentialBCs_mumps.f90"> Source File</a></li>
+     
+     
+  </ul>
+  <ol class="breadcrumb in-well text-right">
+  
+    
+     <li><a href='../sourcefile/potentialbcs_mumps.f90.html'>potentialBCs_mumps.f90</a></li>
+    
+  
+     <li class="active">potentialBCs_mumps</li>
+  </ol>
+</div>
+</div>
+</div>
+<script>
+  $(function () {
+  $('[data-toggle="tooltip"]').tooltip()
+  })
+</script>
+
+  </div>
+  
+  <div class="row">
+    <div class="col-md-3 hidden-xs hidden-sm visible-md visible-lg">
+    
+<div id="sidebar">
+  
+<h3>Contents</h3>
+ 
+
+
+
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#vars-0">Variables</a></h3></div>
+  <div id="vars-0" class="panel-collapse collapse">
+    <div class="list-group">
+      
+      <a class="list-group-item" href="../module/potentialbcs_mumps.html#variable-mlonp">mlonp</a>
+      
+      <a class="list-group-item" href="../module/potentialbcs_mumps.html#variable-mlatp">mlatp</a>
+      
+      <a class="list-group-item" href="../module/potentialbcs_mumps.html#variable-llon">llon</a>
+      
+      <a class="list-group-item" href="../module/potentialbcs_mumps.html#variable-llat">llat</a>
+      
+      <a class="list-group-item" href="../module/potentialbcs_mumps.html#variable-e0xp">E0xp</a>
+      
+      <a class="list-group-item" href="../module/potentialbcs_mumps.html#variable-e0yp">E0yp</a>
+      
+      <a class="list-group-item" href="../module/potentialbcs_mumps.html#variable-vminx1p">Vminx1p</a>
+      
+      <a class="list-group-item" href="../module/potentialbcs_mumps.html#variable-vmaxx1p">Vmaxx1p</a>
+      
+      <a class="list-group-item" href="../module/potentialbcs_mumps.html#variable-vminx2pslice">Vminx2pslice</a>
+      
+      <a class="list-group-item" href="../module/potentialbcs_mumps.html#variable-vmaxx2pslice">Vmaxx2pslice</a>
+      
+      <a class="list-group-item" href="../module/potentialbcs_mumps.html#variable-vminx3pslice">Vminx3pslice</a>
+      
+      <a class="list-group-item" href="../module/potentialbcs_mumps.html#variable-vmaxx3pslice">Vmaxx3pslice</a>
+      
+      <a class="list-group-item" href="../module/potentialbcs_mumps.html#variable-edatp">Edatp</a>
+      
+      <a class="list-group-item" href="../module/potentialbcs_mumps.html#variable-mloni">mloni</a>
+      
+      <a class="list-group-item" href="../module/potentialbcs_mumps.html#variable-mlati">mlati</a>
+      
+      <a class="list-group-item" href="../module/potentialbcs_mumps.html#variable-e0xiprev">E0xiprev</a>
+      
+      <a class="list-group-item" href="../module/potentialbcs_mumps.html#variable-e0xinext">E0xinext</a>
+      
+      <a class="list-group-item" href="../module/potentialbcs_mumps.html#variable-e0yiprev">E0yiprev</a>
+      
+      <a class="list-group-item" href="../module/potentialbcs_mumps.html#variable-e0yinext">E0yinext</a>
+      
+      <a class="list-group-item" href="../module/potentialbcs_mumps.html#variable-vminx1iprev">Vminx1iprev</a>
+      
+      <a class="list-group-item" href="../module/potentialbcs_mumps.html#variable-vminx1inext">Vminx1inext</a>
+      
+      <a class="list-group-item" href="../module/potentialbcs_mumps.html#variable-vmaxx1iprev">Vmaxx1iprev</a>
+      
+      <a class="list-group-item" href="../module/potentialbcs_mumps.html#variable-vmaxx1inext">Vmaxx1inext</a>
+      
+      <a class="list-group-item" href="../module/potentialbcs_mumps.html#variable-vminx2isprev">Vminx2isprev</a>
+      
+      <a class="list-group-item" href="../module/potentialbcs_mumps.html#variable-vminx2isnext">Vminx2isnext</a>
+      
+      <a class="list-group-item" href="../module/potentialbcs_mumps.html#variable-vmaxx2isprev">Vmaxx2isprev</a>
+      
+      <a class="list-group-item" href="../module/potentialbcs_mumps.html#variable-vmaxx2isnext">Vmaxx2isnext</a>
+      
+      <a class="list-group-item" href="../module/potentialbcs_mumps.html#variable-vminx3isprev">Vminx3isprev</a>
+      
+      <a class="list-group-item" href="../module/potentialbcs_mumps.html#variable-vminx3isnext">Vminx3isnext</a>
+      
+      <a class="list-group-item" href="../module/potentialbcs_mumps.html#variable-vmaxx3isprev">Vmaxx3isprev</a>
+      
+      <a class="list-group-item" href="../module/potentialbcs_mumps.html#variable-vmaxx3isnext">Vmaxx3isnext</a>
+      
+      <a class="list-group-item" href="../module/potentialbcs_mumps.html#variable-ymdprev~2">ymdprev</a>
+      
+      <a class="list-group-item" href="../module/potentialbcs_mumps.html#variable-ymdnext~2">ymdnext</a>
+      
+      <a class="list-group-item" href="../module/potentialbcs_mumps.html#variable-utsecprev~2">UTsecprev</a>
+      
+      <a class="list-group-item" href="../module/potentialbcs_mumps.html#variable-utsecnext~2">UTsecnext</a>
+      
+      <a class="list-group-item" href="../module/potentialbcs_mumps.html#variable-tprev~2">tprev</a>
+      
+      <a class="list-group-item" href="../module/potentialbcs_mumps.html#variable-tnext~2">tnext</a>
+      
+      <a class="list-group-item" href="../module/potentialbcs_mumps.html#variable-flagdirich_double">flagdirich_double</a>
+      
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#subs-0">Subroutines</a></h3></div>
+  <div class="list-group">
+    <div id="subs-0" class="panel-collapse collapse">
+      
+      <a class="list-group-item" href="../module/potentialbcs_mumps.html#proc-potentialbcs2d_fileinput">potentialBCs2D_fileinput</a>
+      
+      <a class="list-group-item" href="../module/potentialbcs_mumps.html#proc-clear_potential_fileinput">clear_potential_fileinput</a>
+      
+      <a class="list-group-item" href="../module/potentialbcs_mumps.html#proc-potentialbcs2d">potentialBCs2D</a>
+      
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+</div>
+
+    </div>
+    
+    <div class="col-md-9" id='text'>
+    <div class="codehilite"><pre><span></span>    if (myid==0) then    !root process
+
+
+
+
+
+
+
+
+
+      !MESSAGE WORKERS WITH GRID INFO
+      do iid=1,lid-1
+        call mpi_send(llon,1,MPI_INTEGER,iid,tagllon,MPI_COMM_WORLD,ierr)
+        call mpi_send(llat,1,MPI_INTEGER,iid,tagllat,MPI_COMM_WORLD,ierr)
+      end do
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      !NOW SEND THE GRID DATA
+      do iid=1,lid-1
+        call mpi_send(mlonp,llon,mpi_realprec,iid,tagmlon,MPI_COMM_WORLD,ierr)    !I think it&#39;s okya for these to have the same tag as for the precipitation, but perhaps should be fixed for clarity in the future...
+        call mpi_send(mlatp,llat,mpi_realprec,iid,tagmlat,MPI_COMM_WORLD,ierr)
+      end do
+    else    !workers
+      call mpi_recv(llon,1,MPI_INTEGER,0,tagllon,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+      call mpi_recv(llat,1,MPI_INTEGER,0,tagllat,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+      allocate(mlonp(llon),mlatp(llat))
+
+      call mpi_recv(mlonp,llon,mpi_realprec,0,tagmlon,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+      call mpi_recv(mlatp,llat,mpi_realprec,0,tagmlat,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+    end if
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  if (myid==0) then    !only root reads file data
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    !send a full copy of the data to all of the workers
+    do iid=1,lid-1
+      write(*,*) &#39;Sending to worker:  &#39;,iid
+      call mpi_send(E0xp,llon*llat,mpi_realprec,iid,tagE0xp,MPI_COMM_WORLD,ierr)
+      call mpi_send(E0yp,llon*llat,mpi_realprec,iid,tagE0yp,MPI_COMM_WORLD,ierr)
+    end do
+  else     !workers receive data from root
+    write(*,*) &#39;Worker;  &#39;,myid,&#39; receiving...&#39;
+    call mpi_recv(E0xp,llon*llat,mpi_realprec,0,tagE0xp,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+    call mpi_recv(E0yp,llon*llat,mpi_realprec,0,tagE0yp,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+  end if
+
+
+
+  if (myid==0) then
+
+  end if
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  end if
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+if (myid==lid/2) then
+
+
+
+  write(*,*) &#39;Min/max values for Qiprev:  &#39;,minval(pack(Qiprev,.true.)),maxval(pack(Qiprev,.true.))
+  write(*,*) &#39;Min/max values for E0prev:  &#39;,minval(pack(E0iprev,.true.)),maxval(pack(E0iprev,.true.))
+  write(*,*) &#39;Min/max values for Qinext:  &#39;,minval(pack(Qinext,.true.)),maxval(pack(Qinext,.true.))
+  write(*,*) &#39;Min/max values for E0next:  &#39;,minval(pack(E0inext,.true.)),maxval(pack(E0inext,.true.))
+end if
+
+
+
+if (myid==0) then
+  allocate(E0xinowall(lx2,lx3all),E0yinowall(lx2,lx3all))
+
+  !Receive a copy of everyone&#39;s data
+  call gather_recv(E0xinow,tagE0xi,E0xinowall)
+  call gather_recv(E0yinow,tagE0yi,E0yinowall)
+
+
+
+
+
+
+
+
+
+
+
+  deallocate(E0xinowall,E0yinowall)
+else   !workers send their interpolated data to root
+  call gather_send(E0xinow,tagE0xi)
+  call gather_send(E0yinow,tagE0yi)
+end if
+
+
+
+
+integer, parameter :: lmodes=8
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+integer, parameter :: lmodes=8
+
+
+
+
+
+
+lx1=size(sig0all,1)
+lx2=size(sig0all,2)
+lx3all=size(sig0all,3)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+integer, parameter :: lmodes=8
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+integer, parameter :: lmodes=8
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+integer, parameter :: lmodes=8
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+integer, parameter :: lmodes=8
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+integer, parameter :: lmodes=8
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+lx1=size(sig0all,1)
+lx2=size(sig0all,2)
+lx3all=size(sig0all,3)
+
+
+
+meanx3=-320d3    !for 1000km x3 simulation
+meanx3=-653d3    !for 1666km x3 simulation
+meanx3=-280d3
+meanx3=-300d3
+
+sigx3=40d3
+sigx3=80d3
+sigx3=60d3
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      Emaxx1(ix2,ix3)=Phipk*exp(-(x3all(ix3)-meanx3-x3dev(ix2))**10/2d0/sigx3**10)* &amp;
+                            exp(-(x2(ix2)-meanx2)**6/2d0/(4d0*sigx2)**6)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  E02all=25d-3
+</pre></div>
+      <br>
+    
+  
+    <div class="panel panel-default">
+      <div class="panel-heading">
+  <h3 class="panel-title">Uses</h3>
+      </div>
+      <ul class="list-group">
+      
+      <li class="list-group-item">
+  <ul class="list-inline">
+    
+    <li><a href='../module/grid.html'>grid</a></li>
+    
+    <li><a href='../module/phys_consts.html'>phys_consts</a></li>
+    
+    <li><a href='../module/calculus.html'>calculus</a></li>
+    
+    <li><a href='../module/interpolation.html'>interpolation</a></li>
+    
+    <li><a href='../module/io.html'>io</a></li>
+    
+    <li><a href='../module/temporal.html'>temporal</a></li>
+    
+  </ul>
+      </li>
+      
+      
+      
+      </ul>
+    </div>
+    
+
+    
+    
+
+    <br>
+
+    <section class="visible-xs visible-sm hidden-md">
+      
+<h3>Contents</h3>
+ 
+
+
+
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#vars-1">Variables</a></h3></div>
+  <div id="vars-1" class="panel-collapse collapse">
+    <div class="list-group">
+      
+      <a class="list-group-item" href="../module/potentialbcs_mumps.html#variable-mlonp">mlonp</a>
+      
+      <a class="list-group-item" href="../module/potentialbcs_mumps.html#variable-mlatp">mlatp</a>
+      
+      <a class="list-group-item" href="../module/potentialbcs_mumps.html#variable-llon">llon</a>
+      
+      <a class="list-group-item" href="../module/potentialbcs_mumps.html#variable-llat">llat</a>
+      
+      <a class="list-group-item" href="../module/potentialbcs_mumps.html#variable-e0xp">E0xp</a>
+      
+      <a class="list-group-item" href="../module/potentialbcs_mumps.html#variable-e0yp">E0yp</a>
+      
+      <a class="list-group-item" href="../module/potentialbcs_mumps.html#variable-vminx1p">Vminx1p</a>
+      
+      <a class="list-group-item" href="../module/potentialbcs_mumps.html#variable-vmaxx1p">Vmaxx1p</a>
+      
+      <a class="list-group-item" href="../module/potentialbcs_mumps.html#variable-vminx2pslice">Vminx2pslice</a>
+      
+      <a class="list-group-item" href="../module/potentialbcs_mumps.html#variable-vmaxx2pslice">Vmaxx2pslice</a>
+      
+      <a class="list-group-item" href="../module/potentialbcs_mumps.html#variable-vminx3pslice">Vminx3pslice</a>
+      
+      <a class="list-group-item" href="../module/potentialbcs_mumps.html#variable-vmaxx3pslice">Vmaxx3pslice</a>
+      
+      <a class="list-group-item" href="../module/potentialbcs_mumps.html#variable-edatp">Edatp</a>
+      
+      <a class="list-group-item" href="../module/potentialbcs_mumps.html#variable-mloni">mloni</a>
+      
+      <a class="list-group-item" href="../module/potentialbcs_mumps.html#variable-mlati">mlati</a>
+      
+      <a class="list-group-item" href="../module/potentialbcs_mumps.html#variable-e0xiprev">E0xiprev</a>
+      
+      <a class="list-group-item" href="../module/potentialbcs_mumps.html#variable-e0xinext">E0xinext</a>
+      
+      <a class="list-group-item" href="../module/potentialbcs_mumps.html#variable-e0yiprev">E0yiprev</a>
+      
+      <a class="list-group-item" href="../module/potentialbcs_mumps.html#variable-e0yinext">E0yinext</a>
+      
+      <a class="list-group-item" href="../module/potentialbcs_mumps.html#variable-vminx1iprev">Vminx1iprev</a>
+      
+      <a class="list-group-item" href="../module/potentialbcs_mumps.html#variable-vminx1inext">Vminx1inext</a>
+      
+      <a class="list-group-item" href="../module/potentialbcs_mumps.html#variable-vmaxx1iprev">Vmaxx1iprev</a>
+      
+      <a class="list-group-item" href="../module/potentialbcs_mumps.html#variable-vmaxx1inext">Vmaxx1inext</a>
+      
+      <a class="list-group-item" href="../module/potentialbcs_mumps.html#variable-vminx2isprev">Vminx2isprev</a>
+      
+      <a class="list-group-item" href="../module/potentialbcs_mumps.html#variable-vminx2isnext">Vminx2isnext</a>
+      
+      <a class="list-group-item" href="../module/potentialbcs_mumps.html#variable-vmaxx2isprev">Vmaxx2isprev</a>
+      
+      <a class="list-group-item" href="../module/potentialbcs_mumps.html#variable-vmaxx2isnext">Vmaxx2isnext</a>
+      
+      <a class="list-group-item" href="../module/potentialbcs_mumps.html#variable-vminx3isprev">Vminx3isprev</a>
+      
+      <a class="list-group-item" href="../module/potentialbcs_mumps.html#variable-vminx3isnext">Vminx3isnext</a>
+      
+      <a class="list-group-item" href="../module/potentialbcs_mumps.html#variable-vmaxx3isprev">Vmaxx3isprev</a>
+      
+      <a class="list-group-item" href="../module/potentialbcs_mumps.html#variable-vmaxx3isnext">Vmaxx3isnext</a>
+      
+      <a class="list-group-item" href="../module/potentialbcs_mumps.html#variable-ymdprev~2">ymdprev</a>
+      
+      <a class="list-group-item" href="../module/potentialbcs_mumps.html#variable-ymdnext~2">ymdnext</a>
+      
+      <a class="list-group-item" href="../module/potentialbcs_mumps.html#variable-utsecprev~2">UTsecprev</a>
+      
+      <a class="list-group-item" href="../module/potentialbcs_mumps.html#variable-utsecnext~2">UTsecnext</a>
+      
+      <a class="list-group-item" href="../module/potentialbcs_mumps.html#variable-tprev~2">tprev</a>
+      
+      <a class="list-group-item" href="../module/potentialbcs_mumps.html#variable-tnext~2">tnext</a>
+      
+      <a class="list-group-item" href="../module/potentialbcs_mumps.html#variable-flagdirich_double">flagdirich_double</a>
+      
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#subs-1">Subroutines</a></h3></div>
+  <div class="list-group">
+    <div id="subs-1" class="panel-collapse collapse">
+      
+      <a class="list-group-item" href="../module/potentialbcs_mumps.html#proc-potentialbcs2d_fileinput">potentialBCs2D_fileinput</a>
+      
+      <a class="list-group-item" href="../module/potentialbcs_mumps.html#proc-clear_potential_fileinput">clear_potential_fileinput</a>
+      
+      <a class="list-group-item" href="../module/potentialbcs_mumps.html#proc-potentialbcs2d">potentialBCs2D</a>
+      
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+    </section>
+    <br class="visible-xs visible-sm hidden-md">
+
+    
+
+    
+    <section>
+    <h2>Variables</h2>
+    
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th><th>Visibility</th>
+
+<th>Attributes</th><th></th><th>Name</th><th></th><th>Initial</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-mlonp"></span>real(kind=wp),</td>
+  
+  <td>private,</td>
+  <td>dimension(:), allocatable</td><td>::</td>
+  <td><strong>mlonp</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-mlatp"></span>real(kind=wp),</td>
+  
+  <td>private,</td>
+  <td>dimension(:), allocatable</td><td>::</td>
+  <td><strong>mlatp</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-llon"></span>integer,</td>
+  
+  <td>private</td>
+  <td></td><td>::</td>
+  <td><strong>llon</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-llat"></span>integer,</td>
+  
+  <td>private</td>
+  <td></td><td>::</td>
+  <td><strong>llat</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-e0xp"></span>real(kind=wp),</td>
+  
+  <td>private,</td>
+  <td>dimension(:,:), allocatable</td><td>::</td>
+  <td><strong>E0xp</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-e0yp"></span>real(kind=wp),</td>
+  
+  <td>private,</td>
+  <td>dimension(:,:), allocatable</td><td>::</td>
+  <td><strong>E0yp</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-vminx1p"></span>real(kind=wp),</td>
+  
+  <td>private,</td>
+  <td>dimension(:,:), allocatable</td><td>::</td>
+  <td><strong>Vminx1p</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-vmaxx1p"></span>real(kind=wp),</td>
+  
+  <td>private,</td>
+  <td>dimension(:,:), allocatable</td><td>::</td>
+  <td><strong>Vmaxx1p</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-vminx2pslice"></span>real(kind=wp),</td>
+  
+  <td>private,</td>
+  <td>dimension(:), allocatable</td><td>::</td>
+  <td><strong>Vminx2pslice</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-vmaxx2pslice"></span>real(kind=wp),</td>
+  
+  <td>private,</td>
+  <td>dimension(:), allocatable</td><td>::</td>
+  <td><strong>Vmaxx2pslice</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-vminx3pslice"></span>real(kind=wp),</td>
+  
+  <td>private,</td>
+  <td>dimension(:), allocatable</td><td>::</td>
+  <td><strong>Vminx3pslice</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-vmaxx3pslice"></span>real(kind=wp),</td>
+  
+  <td>private,</td>
+  <td>dimension(:), allocatable</td><td>::</td>
+  <td><strong>Vmaxx3pslice</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-edatp"></span>real(kind=wp),</td>
+  
+  <td>private,</td>
+  <td>dimension(:), allocatable</td><td>::</td>
+  <td><strong>Edatp</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-mloni"></span>real(kind=wp),</td>
+  
+  <td>private,</td>
+  <td>dimension(:), allocatable</td><td>::</td>
+  <td><strong>mloni</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-mlati"></span>real(kind=wp),</td>
+  
+  <td>private,</td>
+  <td>dimension(:), allocatable</td><td>::</td>
+  <td><strong>mlati</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-e0xiprev"></span>real(kind=wp),</td>
+  
+  <td>private,</td>
+  <td>dimension(:,:), allocatable</td><td>::</td>
+  <td><strong>E0xiprev</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-e0xinext"></span>real(kind=wp),</td>
+  
+  <td>private,</td>
+  <td>dimension(:,:), allocatable</td><td>::</td>
+  <td><strong>E0xinext</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-e0yiprev"></span>real(kind=wp),</td>
+  
+  <td>private,</td>
+  <td>dimension(:,:), allocatable</td><td>::</td>
+  <td><strong>E0yiprev</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-e0yinext"></span>real(kind=wp),</td>
+  
+  <td>private,</td>
+  <td>dimension(:,:), allocatable</td><td>::</td>
+  <td><strong>E0yinext</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-vminx1iprev"></span>real(kind=wp),</td>
+  
+  <td>private,</td>
+  <td>dimension(:,:), allocatable</td><td>::</td>
+  <td><strong>Vminx1iprev</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-vminx1inext"></span>real(kind=wp),</td>
+  
+  <td>private,</td>
+  <td>dimension(:,:), allocatable</td><td>::</td>
+  <td><strong>Vminx1inext</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-vmaxx1iprev"></span>real(kind=wp),</td>
+  
+  <td>private,</td>
+  <td>dimension(:,:), allocatable</td><td>::</td>
+  <td><strong>Vmaxx1iprev</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-vmaxx1inext"></span>real(kind=wp),</td>
+  
+  <td>private,</td>
+  <td>dimension(:,:), allocatable</td><td>::</td>
+  <td><strong>Vmaxx1inext</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-vminx2isprev"></span>real(kind=wp),</td>
+  
+  <td>private,</td>
+  <td>dimension(:), allocatable</td><td>::</td>
+  <td><strong>Vminx2isprev</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-vminx2isnext"></span>real(kind=wp),</td>
+  
+  <td>private,</td>
+  <td>dimension(:), allocatable</td><td>::</td>
+  <td><strong>Vminx2isnext</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-vmaxx2isprev"></span>real(kind=wp),</td>
+  
+  <td>private,</td>
+  <td>dimension(:), allocatable</td><td>::</td>
+  <td><strong>Vmaxx2isprev</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-vmaxx2isnext"></span>real(kind=wp),</td>
+  
+  <td>private,</td>
+  <td>dimension(:), allocatable</td><td>::</td>
+  <td><strong>Vmaxx2isnext</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-vminx3isprev"></span>real(kind=wp),</td>
+  
+  <td>private,</td>
+  <td>dimension(:), allocatable</td><td>::</td>
+  <td><strong>Vminx3isprev</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-vminx3isnext"></span>real(kind=wp),</td>
+  
+  <td>private,</td>
+  <td>dimension(:), allocatable</td><td>::</td>
+  <td><strong>Vminx3isnext</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-vmaxx3isprev"></span>real(kind=wp),</td>
+  
+  <td>private,</td>
+  <td>dimension(:), allocatable</td><td>::</td>
+  <td><strong>Vmaxx3isprev</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-vmaxx3isnext"></span>real(kind=wp),</td>
+  
+  <td>private,</td>
+  <td>dimension(:), allocatable</td><td>::</td>
+  <td><strong>Vmaxx3isnext</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-ymdprev~2"></span>integer,</td>
+  
+  <td>private,</td>
+  <td>dimension(3)</td><td>::</td>
+  <td><strong>ymdprev</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-ymdnext~2"></span>integer,</td>
+  
+  <td>private,</td>
+  <td>dimension(3)</td><td>::</td>
+  <td><strong>ymdnext</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-utsecprev~2"></span>real(kind=wp),</td>
+  
+  <td>private</td>
+  <td></td><td>::</td>
+  <td><strong>UTsecprev</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-utsecnext~2"></span>real(kind=wp),</td>
+  
+  <td>private</td>
+  <td></td><td>::</td>
+  <td><strong>UTsecnext</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-tprev~2"></span>real(kind=wp),</td>
+  
+  <td>private</td>
+  <td></td><td>::</td>
+  <td><strong>tprev</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-tnext~2"></span>real(kind=wp),</td>
+  
+  <td>private</td>
+  <td></td><td>::</td>
+  <td><strong>tnext</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-flagdirich_double"></span>real(kind=wp),</td>
+  
+  <td>private</td>
+  <td></td><td>::</td>
+  <td><strong>flagdirich_double</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+    </section>
+    <br>
+    
+    
+    
+    
+    
+
+    
+    
+    
+    
+    
+
+    
+    <section>
+    <h2>Subroutines</h2>
+    
+    
+  <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-potentialbcs2d_fileinput"></span><h3>
+public subroutine <a href='../proc/potentialbcs2d_fileinput.html'>potentialBCs2D_fileinput</a>(dt, dtE0, t, ymd, UTsec, E0dir, x, Vminx1, Vmaxx1, Vminx2, Vmaxx2, Vminx3, Vmaxx3, E01all, E02all, E03all, flagdirich)
+    
+    
+   
+</h3></div>
+  <div class="panel-body">
+       
+    
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>dt</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>dtE0</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>t</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer,</td>
+  <td>intent(in),</td>
+  <td></td>
+  
+  <td>dimension(3)</td><td>::</td>
+  <td><strong>ymd</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>UTsec</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>character(len=*),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>E0dir</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>type(<a href='../type/curvmesh.html'>curvmesh</a>),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>x</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(out),</td>
+  <td></td>
+  
+  <td>dimension(:,:), target</td><td>::</td>
+  <td><strong>Vminx1</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(out),</td>
+  <td></td>
+  
+  <td>dimension(:,:), target</td><td>::</td>
+  <td><strong>Vmaxx1</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(out),</td>
+  <td></td>
+  
+  <td>dimension(:,:)</td><td>::</td>
+  <td><strong>Vminx2</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(out),</td>
+  <td></td>
+  
+  <td>dimension(:,:)</td><td>::</td>
+  <td><strong>Vmaxx2</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(out),</td>
+  <td></td>
+  
+  <td>dimension(:,:)</td><td>::</td>
+  <td><strong>Vminx3</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(out),</td>
+  <td></td>
+  
+  <td>dimension(:,:)</td><td>::</td>
+  <td><strong>Vmaxx3</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(out),</td>
+  <td></td>
+  
+  <td>dimension(:,:,:)</td><td>::</td>
+  <td><strong>E01all</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(out),</td>
+  <td></td>
+  
+  <td>dimension(:,:,:)</td><td>::</td>
+  <td><strong>E02all</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(out),</td>
+  <td></td>
+  
+  <td>dimension(:,:,:)</td><td>::</td>
+  <td><strong>E03all</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer,</td>
+  <td>intent(out)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>flagdirich</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  </div>
+  </div>
+
+    
+    
+  <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-clear_potential_fileinput"></span><h3>
+public subroutine <a href='../proc/clear_potential_fileinput.html'>clear_potential_fileinput</a>()
+    
+    
+   
+</h3></div>
+  <div class="panel-body">
+       
+    
+    
+    <h4>Arguments</h4>
+    
+      <em>None</em>
+    
+    
+
+  </div>
+  </div>
+
+    
+    
+  <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-potentialbcs2d"></span><h3>
+public subroutine <a href='../proc/potentialbcs2d.html'>potentialBCs2D</a>(t, x, Vminx1, Vmaxx1, Vminx2, Vmaxx2, Vminx3, Vmaxx3, E01all, E02all, E03all, flagdirich)
+    
+    
+   
+</h3></div>
+  <div class="panel-body">
+       
+    
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>t</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>type(<a href='../type/curvmesh.html'>curvmesh</a>),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>x</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(out),</td>
+  <td></td>
+  
+  <td>dimension(:,:), target</td><td>::</td>
+  <td><strong>Vminx1</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(out),</td>
+  <td></td>
+  
+  <td>dimension(:,:), target</td><td>::</td>
+  <td><strong>Vmaxx1</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(out),</td>
+  <td></td>
+  
+  <td>dimension(:,:)</td><td>::</td>
+  <td><strong>Vminx2</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(out),</td>
+  <td></td>
+  
+  <td>dimension(:,:)</td><td>::</td>
+  <td><strong>Vmaxx2</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(out),</td>
+  <td></td>
+  
+  <td>dimension(:,:)</td><td>::</td>
+  <td><strong>Vminx3</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(out),</td>
+  <td></td>
+  
+  <td>dimension(:,:)</td><td>::</td>
+  <td><strong>Vmaxx3</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(out),</td>
+  <td></td>
+  
+  <td>dimension(:,:,:)</td><td>::</td>
+  <td><strong>E01all</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(out),</td>
+  <td></td>
+  
+  <td>dimension(:,:,:)</td><td>::</td>
+  <td><strong>E02all</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(out),</td>
+  <td></td>
+  
+  <td>dimension(:,:,:)</td><td>::</td>
+  <td><strong>E03all</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer,</td>
+  <td>intent(out)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>flagdirich</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  </div>
+  </div>
+
+    
+    </section>    
+    <br>
+    
+    
+    
+    </div>
+  </div>
+
+  
+    <hr>    
+    </div> <!-- /container -->
+    <footer>
+      <div class="container">
+      <div class="row">
+        <div class="col-xs-6 col-md-4"><p>&copy; 2018 <a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/80x15.png" /></a>
+                                          </p></div>
+        <div class="col-xs-6 col-md-4 col-md-push-4">
+          <p class="text-right">
+            Documentation generated by 
+            <a href="https://github.com/cmacmackin/ford">FORD</a>
+            
+          </p>
+        </div>
+        <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> GEMINI3D was developed by Matthew Zettergren
+Guy Grubbs
+Michael Hirsch</p></div>
+      </div>
+      <br>
+      </div> <!-- /container -->    
+    </footer>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+<!--
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+-->
+    <script src="../js/bootstrap.min.js"></script>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <script src="../js/ie10-viewport-bug-workaround.js"></script>
+
+    <!-- MathJax JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } },
+        jax: ['input/TeX','input/MathML','output/HTML-CSS'],
+        extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']
+      });
+    </script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    
+    
+  </body>
+</html>

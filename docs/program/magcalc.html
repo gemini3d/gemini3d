@@ -1,0 +1,2122 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+   
+   <meta name="description" content="GEMINI3D is a modular ionospheric model that incorporates kinetic models such as Fang, GLOW.">
+    
+    <meta name="author" content="Matthew Zettergren
+Guy Grubbs
+Michael Hirsch" >
+    <link rel="icon" href="../favicon.png">
+
+    <title>magcalc &ndash; GEMINI3D</title>
+
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+    <link href="../css/pygments.css" rel="stylesheet">
+    <link href="../css/font-awesome.min.css" rel="stylesheet">
+    <link href="../css/local.css" rel="stylesheet">
+    
+    
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    
+    <script src="../js/jquery-2.1.3.min.js"></script>
+    <script src="../js/svg-pan-zoom.min.js"></script>
+
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="../index.html">GEMINI3D </a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+        
+            <li class="dropdown hidden-xs visible-sm visible-md hidden-lg">
+              <a href="#" class="dropdown-toggle"
+              data-toggle="dropdown" role="button"
+              aria-haspopup="true"
+     aria-expanded="false">Contents <span class="caret"></span></a>
+        <ul class="dropdown-menu">
+          
+              
+            <li><a href="../lists/files.html">Source Files</a></li>
+        
+        
+        
+            <li><a href="../lists/modules.html">Modules</a></li>
+        
+            
+                                
+            <li><a href="../lists/procedures.html">Procedures</a></li>
+        
+               
+            <li><a href="../lists/types.html">Derived Types</a></li>
+        
+        
+            <li><a href="../lists/programs.html">Programs</a></li>
+        
+            </ul>
+            </li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/files.html">Source Files</a></li>
+
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/modules.html">Modules</a></li>
+
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/procedures.html">Procedures</a></li>
+
+                             
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/types.html">Derived Types</a></li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/programs.html">Programs</a></li>
+
+          </ul>
+        
+        </div><!--/.nav-collapse -->
+      </div>
+    </nav>
+
+    <div class="container">
+    
+  
+  <div class="row">
+    <h1>magcalc
+    <small>Program</small>
+    
+    </h1>
+    
+<div class="row">
+  <div class="col-lg-12">
+<div class="well well-sm">
+  <ul class="list-inline" style="margin-bottom:0px;display:inline">
+     
+     
+     
+     
+    
+    
+     <li><i class="fa fa-list-ol"></i>
+       <a data-toggle="tooltip"
+    data-placement="bottom" data-html="true"
+    title="27.3% of total for programs.">285 statements</a>
+     </li> 
+     
+     
+     
+    <li><i class="fa fa-code"></i><a href="../src/magcalc.f90"> Source File</a></li>
+     
+     
+  </ul>
+  <ol class="breadcrumb in-well text-right">
+  
+    
+     <li><a href='../sourcefile/magcalc.f90.html'>magcalc.f90</a></li>
+    
+  
+     <li class="active">magcalc</li>
+  </ol>
+</div>
+</div>
+</div>
+<script>
+  $(function () {
+  $('[data-toggle="tooltip"]').tooltip()
+  })
+</script>
+
+  </div>
+  
+  <div class="row">
+    <div class="col-md-3 hidden-xs hidden-sm visible-md visible-lg">
+    
+<div id="sidebar">
+  
+<h3>Contents</h3>
+ 
+
+
+
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#vars-0">Variables</a></h3></div>
+  <div id="vars-0" class="panel-collapse collapse">
+    <div class="list-group">
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-ymd~21">ymd</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-utsec~18">UTsec</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-utsec0~3">UTsec0</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-tdur~3">tdur</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-activ~4">activ</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-tcfl~5">tcfl</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-teinf~5">Teinf</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-potsolve~13">potsolve</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-flagperiodic~6">flagperiodic</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-flagoutput~7">flagoutput</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-flagcap~5">flagcap</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-infile~4">infile</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-outdir~10">outdir</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-indatsize~8">indatsize</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-indatgrid~6">indatgrid</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-fieldpointfile~2">fieldpointfile</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-u~3">u</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-x~48">x</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-j1~18">J1</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-j2~16">J2</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-j3~16">J3</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-t~19">t</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-dt~31">dt</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-tout~3">tout</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-dtout~3">dtout</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-tstart~2">tstart</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-tfin~2">tfin</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-it~13">it</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-isp~9">isp</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-flag2d">flag2D</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-xp">xp</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-yp">yp</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-zp">zp</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-xf">xf</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-yf">yf</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-zf">zf</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-r~2">r</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-theta~2">theta</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-phi~2">phi</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-dv">dV</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-ipoints">ipoints</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-lpoints">lpoints</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-proj_e1er">proj_e1er</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-proj_e2er">proj_e2er</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-proj_e3er">proj_e3er</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-proj_e1etheta">proj_e1etheta</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-proj_e2etheta">proj_e2etheta</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-proj_e3etheta">proj_e3etheta</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-proj_e1ephi">proj_e1ephi</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-proj_e2ephi">proj_e2ephi</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-proj_e3ephi">proj_e3ephi</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-jx">Jx</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-jy">Jy</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-jz">Jz</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-rx">Rx</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-ry">Ry</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-rz">Rz</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-rcubed">Rcubed</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-integrand">integrand</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-integrandavg">integrandavg</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-alt~6">alt</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-br~2">Br</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-btheta~2">Btheta</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-bphi~2">Bphi</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-brall">Brall</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-bthetaall">Bthetaall</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-bphiall">Bphiall</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-jxend">Jxend</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-jyend">Jyend</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-jzend">Jzend</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-rxend">Rxend</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-ryend">Ryend</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-rzend">Rzend</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-rcubedend">Rcubedend</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-dvend">dVend</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-integrandend">integrandend</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-integrandavgend">integrandavgend</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-ix1">ix1</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-ix2">ix2</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-ix3">ix3</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-rmean">rmean</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-thetamean">thetamean</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-flagdneu~4">flagdneu</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-interptype~4">interptype</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-drhon~5">drhon</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-dzn~6">dzn</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-sourcemlat~6">sourcemlat</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-sourcemlon~3">sourcemlon</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-sourcedir~4">sourcedir</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-dtneu~6">dtneu</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-flagprecfile~5">flagprecfile</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-dtprec~5">dtprec</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-precdir~6">precdir</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-flage0file~6">flagE0file</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-dte0~6">dtE0</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-e0dir~7">E0dir</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-argc~2">argc</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-argv~2">argv</a>
+      
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</div>
+
+    </div>
+    
+    <div class="col-md-9" id='text'>
+    
+  
+    <div class="panel panel-default">
+      <div class="panel-heading">
+  <h3 class="panel-title">Uses</h3>
+      </div>
+      <ul class="list-group">
+      
+      <li class="list-group-item">
+  <ul class="list-inline">
+    
+    <li><a href='../module/phys_consts.html'>phys_consts</a></li>
+    
+    <li><a href='../module/grid.html'>grid</a></li>
+    
+    <li><a href='../module/temporal.html'>temporal</a></li>
+    
+    <li><a href='../module/io.html'>io</a></li>
+    
+    <li><a href='../module/mpimod.html'>mpimod</a></li>
+    
+  </ul>
+      </li>
+      
+      
+      
+      </ul>
+    </div>
+    
+
+    
+    
+    
+
+     <section class="visible-xs visible-sm hidden-md">
+       
+<h3>Contents</h3>
+ 
+
+
+
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#vars-1">Variables</a></h3></div>
+  <div id="vars-1" class="panel-collapse collapse">
+    <div class="list-group">
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-ymd~21">ymd</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-utsec~18">UTsec</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-utsec0~3">UTsec0</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-tdur~3">tdur</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-activ~4">activ</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-tcfl~5">tcfl</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-teinf~5">Teinf</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-potsolve~13">potsolve</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-flagperiodic~6">flagperiodic</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-flagoutput~7">flagoutput</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-flagcap~5">flagcap</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-infile~4">infile</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-outdir~10">outdir</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-indatsize~8">indatsize</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-indatgrid~6">indatgrid</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-fieldpointfile~2">fieldpointfile</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-u~3">u</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-x~48">x</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-j1~18">J1</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-j2~16">J2</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-j3~16">J3</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-t~19">t</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-dt~31">dt</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-tout~3">tout</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-dtout~3">dtout</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-tstart~2">tstart</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-tfin~2">tfin</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-it~13">it</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-isp~9">isp</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-flag2d">flag2D</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-xp">xp</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-yp">yp</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-zp">zp</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-xf">xf</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-yf">yf</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-zf">zf</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-r~2">r</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-theta~2">theta</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-phi~2">phi</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-dv">dV</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-ipoints">ipoints</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-lpoints">lpoints</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-proj_e1er">proj_e1er</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-proj_e2er">proj_e2er</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-proj_e3er">proj_e3er</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-proj_e1etheta">proj_e1etheta</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-proj_e2etheta">proj_e2etheta</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-proj_e3etheta">proj_e3etheta</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-proj_e1ephi">proj_e1ephi</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-proj_e2ephi">proj_e2ephi</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-proj_e3ephi">proj_e3ephi</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-jx">Jx</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-jy">Jy</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-jz">Jz</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-rx">Rx</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-ry">Ry</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-rz">Rz</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-rcubed">Rcubed</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-integrand">integrand</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-integrandavg">integrandavg</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-alt~6">alt</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-br~2">Br</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-btheta~2">Btheta</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-bphi~2">Bphi</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-brall">Brall</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-bthetaall">Bthetaall</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-bphiall">Bphiall</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-jxend">Jxend</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-jyend">Jyend</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-jzend">Jzend</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-rxend">Rxend</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-ryend">Ryend</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-rzend">Rzend</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-rcubedend">Rcubedend</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-dvend">dVend</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-integrandend">integrandend</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-integrandavgend">integrandavgend</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-ix1">ix1</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-ix2">ix2</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-ix3">ix3</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-rmean">rmean</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-thetamean">thetamean</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-flagdneu~4">flagdneu</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-interptype~4">interptype</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-drhon~5">drhon</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-dzn~6">dzn</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-sourcemlat~6">sourcemlat</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-sourcemlon~3">sourcemlon</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-sourcedir~4">sourcedir</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-dtneu~6">dtneu</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-flagprecfile~5">flagprecfile</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-dtprec~5">dtprec</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-precdir~6">precdir</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-flage0file~6">flagE0file</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-dte0~6">dtE0</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-e0dir~7">E0dir</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-argc~2">argc</a>
+      
+      <a class="list-group-item" href="../program/magcalc.html#variable-argv~2">argv</a>
+      
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+     </section>
+     <br class="visible-xs visible-sm hidden-md">
+
+     
+
+    
+    <section>
+    <h2>Variables</h2>
+    
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+
+<th>Attributes</th><th></th><th>Name</th><th></th><th>Initial</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-ymd~21"></span>integer,</td>
+  
+  
+  <td>dimension(3)</td><td>::</td>
+  <td><strong>ymd</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-utsec~18"></span>real(kind=wp)</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>UTsec</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-utsec0~3"></span>real(kind=wp)</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>UTsec0</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-tdur~3"></span>real(kind=wp)</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>tdur</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-activ~4"></span>real(kind=wp),</td>
+  
+  
+  <td>dimension(3)</td><td>::</td>
+  <td><strong>activ</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-tcfl~5"></span>real(kind=wp)</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>tcfl</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-teinf~5"></span>real(kind=wp)</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>Teinf</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-potsolve~13"></span>integer</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>potsolve</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-flagperiodic~6"></span>integer</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>flagperiodic</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-flagoutput~7"></span>integer</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>flagoutput</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-flagcap~5"></span>integer</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>flagcap</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-infile~4"></span>character(len=:),</td>
+  
+  
+  <td>allocatable</td><td>::</td>
+  <td><strong>infile</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-outdir~10"></span>character(len=:),</td>
+  
+  
+  <td>allocatable</td><td>::</td>
+  <td><strong>outdir</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-indatsize~8"></span>character(len=:),</td>
+  
+  
+  <td>allocatable</td><td>::</td>
+  <td><strong>indatsize</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-indatgrid~6"></span>character(len=:),</td>
+  
+  
+  <td>allocatable</td><td>::</td>
+  <td><strong>indatgrid</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-fieldpointfile~2"></span>character(len=:),</td>
+  
+  
+  <td>allocatable</td><td>::</td>
+  <td><strong>fieldpointfile</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-u~3"></span>integer</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>u</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-x~48"></span>type(<a href='../type/curvmesh.html'>curvmesh</a>)</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>x</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-j1~18"></span>real(kind=wp),</td>
+  
+  
+  <td>dimension(:,:,:), allocatable</td><td>::</td>
+  <td><strong>J1</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-j2~16"></span>real(kind=wp),</td>
+  
+  
+  <td>dimension(:,:,:), allocatable</td><td>::</td>
+  <td><strong>J2</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-j3~16"></span>real(kind=wp),</td>
+  
+  
+  <td>dimension(:,:,:), allocatable</td><td>::</td>
+  <td><strong>J3</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-t~19"></span>real(kind=wp)</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>t</strong></td><td> =</td><td>0d0</td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-dt~31"></span>real(kind=wp)</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>dt</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-tout~3"></span>real(kind=wp)</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>tout</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-dtout~3"></span>real(kind=wp)</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>dtout</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-tstart~2"></span>real(kind=wp)</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>tstart</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-tfin~2"></span>real(kind=wp)</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>tfin</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-it~13"></span>integer</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>it</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-isp~9"></span>integer</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>isp</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-flag2d"></span>integer</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>flag2D</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-xp"></span>real(kind=wp),</td>
+  
+  
+  <td>dimension(:,:,:), allocatable</td><td>::</td>
+  <td><strong>xp</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-yp"></span>real(kind=wp),</td>
+  
+  
+  <td>dimension(:,:,:), allocatable</td><td>::</td>
+  <td><strong>yp</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-zp"></span>real(kind=wp),</td>
+  
+  
+  <td>dimension(:,:,:), allocatable</td><td>::</td>
+  <td><strong>zp</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-xf"></span>real(kind=wp),</td>
+  
+  
+  <td>dimension(:), allocatable</td><td>::</td>
+  <td><strong>xf</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-yf"></span>real(kind=wp),</td>
+  
+  
+  <td>dimension(:), allocatable</td><td>::</td>
+  <td><strong>yf</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-zf"></span>real(kind=wp),</td>
+  
+  
+  <td>dimension(:), allocatable</td><td>::</td>
+  <td><strong>zf</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-r~2"></span>real(kind=wp),</td>
+  
+  
+  <td>dimension(:), allocatable</td><td>::</td>
+  <td><strong>r</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-theta~2"></span>real(kind=wp),</td>
+  
+  
+  <td>dimension(:), allocatable</td><td>::</td>
+  <td><strong>theta</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-phi~2"></span>real(kind=wp),</td>
+  
+  
+  <td>dimension(:), allocatable</td><td>::</td>
+  <td><strong>phi</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-dv"></span>real(kind=wp),</td>
+  
+  
+  <td>dimension(:,:,:), allocatable</td><td>::</td>
+  <td><strong>dV</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-ipoints"></span>integer</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>ipoints</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-lpoints"></span>integer</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>lpoints</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-proj_e1er"></span>real(kind=wp),</td>
+  
+  
+  <td>dimension(:,:,:), allocatable</td><td>::</td>
+  <td><strong>proj_e1er</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-proj_e2er"></span>real(kind=wp),</td>
+  
+  
+  <td>dimension(:,:,:), allocatable</td><td>::</td>
+  <td><strong>proj_e2er</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-proj_e3er"></span>real(kind=wp),</td>
+  
+  
+  <td>dimension(:,:,:), allocatable</td><td>::</td>
+  <td><strong>proj_e3er</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-proj_e1etheta"></span>real(kind=wp),</td>
+  
+  
+  <td>dimension(:,:,:), allocatable</td><td>::</td>
+  <td><strong>proj_e1etheta</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-proj_e2etheta"></span>real(kind=wp),</td>
+  
+  
+  <td>dimension(:,:,:), allocatable</td><td>::</td>
+  <td><strong>proj_e2etheta</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-proj_e3etheta"></span>real(kind=wp),</td>
+  
+  
+  <td>dimension(:,:,:), allocatable</td><td>::</td>
+  <td><strong>proj_e3etheta</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-proj_e1ephi"></span>real(kind=wp),</td>
+  
+  
+  <td>dimension(:,:,:), allocatable</td><td>::</td>
+  <td><strong>proj_e1ephi</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-proj_e2ephi"></span>real(kind=wp),</td>
+  
+  
+  <td>dimension(:,:,:), allocatable</td><td>::</td>
+  <td><strong>proj_e2ephi</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-proj_e3ephi"></span>real(kind=wp),</td>
+  
+  
+  <td>dimension(:,:,:), allocatable</td><td>::</td>
+  <td><strong>proj_e3ephi</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-jx"></span>real(kind=wp),</td>
+  
+  
+  <td>dimension(:,:,:), allocatable</td><td>::</td>
+  <td><strong>Jx</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-jy"></span>real(kind=wp),</td>
+  
+  
+  <td>dimension(:,:,:), allocatable</td><td>::</td>
+  <td><strong>Jy</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-jz"></span>real(kind=wp),</td>
+  
+  
+  <td>dimension(:,:,:), allocatable</td><td>::</td>
+  <td><strong>Jz</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-rx"></span>real(kind=wp),</td>
+  
+  
+  <td>dimension(:,:,:), allocatable</td><td>::</td>
+  <td><strong>Rx</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-ry"></span>real(kind=wp),</td>
+  
+  
+  <td>dimension(:,:,:), allocatable</td><td>::</td>
+  <td><strong>Ry</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-rz"></span>real(kind=wp),</td>
+  
+  
+  <td>dimension(:,:,:), allocatable</td><td>::</td>
+  <td><strong>Rz</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-rcubed"></span>real(kind=wp),</td>
+  
+  
+  <td>dimension(:,:,:), allocatable</td><td>::</td>
+  <td><strong>Rcubed</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-integrand"></span>real(kind=wp),</td>
+  
+  
+  <td>dimension(:,:,:), allocatable</td><td>::</td>
+  <td><strong>integrand</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-integrandavg"></span>real(kind=wp),</td>
+  
+  
+  <td>dimension(:,:,:), allocatable</td><td>::</td>
+  <td><strong>integrandavg</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-alt~6"></span>real(kind=wp),</td>
+  
+  
+  <td>dimension(:,:,:), allocatable</td><td>::</td>
+  <td><strong>alt</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-br~2"></span>real(kind=wp),</td>
+  
+  
+  <td>dimension(:), allocatable</td><td>::</td>
+  <td><strong>Br</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-btheta~2"></span>real(kind=wp),</td>
+  
+  
+  <td>dimension(:), allocatable</td><td>::</td>
+  <td><strong>Btheta</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-bphi~2"></span>real(kind=wp),</td>
+  
+  
+  <td>dimension(:), allocatable</td><td>::</td>
+  <td><strong>Bphi</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-brall"></span>real(kind=wp),</td>
+  
+  
+  <td>dimension(:), allocatable</td><td>::</td>
+  <td><strong>Brall</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-bthetaall"></span>real(kind=wp),</td>
+  
+  
+  <td>dimension(:), allocatable</td><td>::</td>
+  <td><strong>Bthetaall</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-bphiall"></span>real(kind=wp),</td>
+  
+  
+  <td>dimension(:), allocatable</td><td>::</td>
+  <td><strong>Bphiall</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-jxend"></span>real(kind=wp),</td>
+  
+  
+  <td>dimension(:,:), allocatable</td><td>::</td>
+  <td><strong>Jxend</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-jyend"></span>real(kind=wp),</td>
+  
+  
+  <td>dimension(:,:), allocatable</td><td>::</td>
+  <td><strong>Jyend</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-jzend"></span>real(kind=wp),</td>
+  
+  
+  <td>dimension(:,:), allocatable</td><td>::</td>
+  <td><strong>Jzend</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-rxend"></span>real(kind=wp),</td>
+  
+  
+  <td>dimension(:,:), allocatable</td><td>::</td>
+  <td><strong>Rxend</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-ryend"></span>real(kind=wp),</td>
+  
+  
+  <td>dimension(:,:), allocatable</td><td>::</td>
+  <td><strong>Ryend</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-rzend"></span>real(kind=wp),</td>
+  
+  
+  <td>dimension(:,:), allocatable</td><td>::</td>
+  <td><strong>Rzend</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-rcubedend"></span>real(kind=wp),</td>
+  
+  
+  <td>dimension(:,:), allocatable</td><td>::</td>
+  <td><strong>Rcubedend</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-dvend"></span>real(kind=wp),</td>
+  
+  
+  <td>dimension(:,:), allocatable</td><td>::</td>
+  <td><strong>dVend</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-integrandend"></span>real(kind=wp),</td>
+  
+  
+  <td>dimension(:,:), allocatable</td><td>::</td>
+  <td><strong>integrandend</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-integrandavgend"></span>real(kind=wp),</td>
+  
+  
+  <td>dimension(:,:), allocatable</td><td>::</td>
+  <td><strong>integrandavgend</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-ix1"></span>integer</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>ix1</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-ix2"></span>integer</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>ix2</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-ix3"></span>integer</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>ix3</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-rmean"></span>real(kind=wp)</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>rmean</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-thetamean"></span>real(kind=wp)</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>thetamean</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-flagdneu~4"></span>integer</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>flagdneu</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-interptype~4"></span>integer</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>interptype</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-drhon~5"></span>real(kind=wp)</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>drhon</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-dzn~6"></span>real(kind=wp)</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>dzn</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-sourcemlat~6"></span>real(kind=wp)</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>sourcemlat</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-sourcemlon~3"></span>real(kind=wp)</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>sourcemlon</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-sourcedir~4"></span>character(len=:),</td>
+  
+  
+  <td>allocatable</td><td>::</td>
+  <td><strong>sourcedir</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-dtneu~6"></span>real(kind=wp)</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>dtneu</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-flagprecfile~5"></span>integer</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>flagprecfile</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-dtprec~5"></span>real(kind=wp)</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>dtprec</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-precdir~6"></span>character(len=:),</td>
+  
+  
+  <td>allocatable</td><td>::</td>
+  <td><strong>precdir</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-flage0file~6"></span>integer</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>flagE0file</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-dte0~6"></span>real(kind=wp)</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>dtE0</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-e0dir~7"></span>character(len=:),</td>
+  
+  
+  <td>allocatable</td><td>::</td>
+  <td><strong>E0dir</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-argc~2"></span>integer</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>argc</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-argv~2"></span>character(len=256)</td>
+  
+  
+  <td></td><td>::</td>
+  <td><strong>argv</strong></td><td></td><td></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+    </section>
+    <br>
+    
+    
+    
+    
+    
+    
+    
+
+    
+    
+    
+
+
+    
+    
+    
+    
+    </div>
+  </div>
+
+  
+    <hr>    
+    </div> <!-- /container -->
+    <footer>
+      <div class="container">
+      <div class="row">
+        <div class="col-xs-6 col-md-4"><p>&copy; 2018 <a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/80x15.png" /></a>
+                                          </p></div>
+        <div class="col-xs-6 col-md-4 col-md-push-4">
+          <p class="text-right">
+            Documentation generated by 
+            <a href="https://github.com/cmacmackin/ford">FORD</a>
+            
+          </p>
+        </div>
+        <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> GEMINI3D was developed by Matthew Zettergren
+Guy Grubbs
+Michael Hirsch</p></div>
+      </div>
+      <br>
+      </div> <!-- /container -->    
+    </footer>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+<!--
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+-->
+    <script src="../js/bootstrap.min.js"></script>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <script src="../js/ie10-viewport-bug-workaround.js"></script>
+
+    <!-- MathJax JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } },
+        jax: ['input/TeX','input/MathML','output/HTML-CSS'],
+        extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']
+      });
+    </script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    
+    
+  </body>
+</html>

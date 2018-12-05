@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+   
+   <meta name="description" content="GEMINI3D is a modular ionospheric model that incorporates kinetic models such as Fang, GLOW.">
+    
+    <meta name="author" content="Matthew Zettergren
+Guy Grubbs
+Michael Hirsch" >
+    <link rel="icon" href="../favicon.png">
+
+    <title>gemini.f90 &ndash; GEMINI3D</title>
+
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+    <link href="../css/pygments.css" rel="stylesheet">
+    <link href="../css/font-awesome.min.css" rel="stylesheet">
+    <link href="../css/local.css" rel="stylesheet">
+    
+    
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    
+    <script src="../js/jquery-2.1.3.min.js"></script>
+    <script src="../js/svg-pan-zoom.min.js"></script>
+
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="../index.html">GEMINI3D </a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+        
+            <li class="dropdown hidden-xs visible-sm visible-md hidden-lg">
+              <a href="#" class="dropdown-toggle"
+              data-toggle="dropdown" role="button"
+              aria-haspopup="true"
+     aria-expanded="false">Contents <span class="caret"></span></a>
+        <ul class="dropdown-menu">
+          
+              
+            <li><a href="../lists/files.html">Source Files</a></li>
+        
+        
+        
+            <li><a href="../lists/modules.html">Modules</a></li>
+        
+            
+                                
+            <li><a href="../lists/procedures.html">Procedures</a></li>
+        
+               
+            <li><a href="../lists/types.html">Derived Types</a></li>
+        
+        
+            <li><a href="../lists/programs.html">Programs</a></li>
+        
+            </ul>
+            </li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/files.html">Source Files</a></li>
+
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/modules.html">Modules</a></li>
+
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/procedures.html">Procedures</a></li>
+
+                             
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/types.html">Derived Types</a></li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/programs.html">Programs</a></li>
+
+          </ul>
+        
+        </div><!--/.nav-collapse -->
+      </div>
+    </nav>
+
+    <div class="container">
+    
+  
+  <div class="row">
+    <h1>gemini.f90
+    <small>Source File</small>
+    
+    </h1>
+    
+<div class="row">
+  <div class="col-lg-12">
+<div class="well well-sm">
+  <ul class="list-inline" style="margin-bottom:0px;display:inline">
+     
+     
+     
+     
+    
+    
+     <li><i class="fa fa-list-ol"></i>
+       <a data-toggle="tooltip"
+    data-placement="bottom" data-html="true"
+    title=" 2.0% of total for source files.">173 statements</a>
+     </li> 
+     
+     
+     
+    <li><i class="fa fa-code"></i><a href="../src/gemini.f90"> Source File</a></li>
+     
+     
+  </ul>
+  <ol class="breadcrumb in-well text-right">
+  
+    
+  
+     <li class="active">gemini.f90</li>
+  </ol>
+</div>
+</div>
+</div>
+<script>
+  $(function () {
+  $('[data-toggle="tooltip"]').tooltip()
+  })
+</script>
+
+  </div>
+  <div class="row">
+    <div class="col-md-3 hidden-xs hidden-sm visible-md visible-lg">
+    
+<div id="sidebar">
+  
+<h3>Contents</h3>
+ 
+
+
+
+
+
+
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#progs-0">Programs</a></h3></div>
+  <div id="progs-0" class="panel-collapse collapse">
+    <div class="list-group">
+      
+      <a class="list-group-item" href="../program/gemini.html">gemini</a>
+      
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
+  <div class="list-group">
+    <a class="list-group-item" href="../sourcefile/gemini.f90.html#src">gemini.f90</a>
+  </div>
+</div>
+
+
+
+</div>
+
+    </div>
+    <div class="col-md-9" id='text'>
+      
+      <br>
+    
+      
+      
+
+    <section class="visible-xs visible-sm hidden-md">
+      
+<h3>Contents</h3>
+ 
+
+
+
+
+
+
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#progs-1">Programs</a></h3></div>
+  <div id="progs-1" class="panel-collapse collapse">
+    <div class="list-group">
+      
+      <a class="list-group-item" href="../program/gemini.html">gemini</a>
+      
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
+  <div class="list-group">
+    <a class="list-group-item" href="../sourcefile/gemini.f90.html#src">gemini.f90</a>
+  </div>
+</div>
+
+
+
+    </section>
+    <br class="visible-xs visible-sm hidden-md">
+
+    <section>
+      <h2><span class="anchor" id="src"></span>Source Code</h2>
+    <div class="hl"><pre><span></span><a name="ln-1"></a><span class="k">program </span><span class="n">gemini</span>
+<a name="ln-2"></a>
+<a name="ln-3"></a><span class="c">!----------------------------------------------------------</span>
+<a name="ln-4"></a><span class="c">!------THIS IS THE MAIN PROGRAM FOR GEMINI3D</span>
+<a name="ln-5"></a><span class="c">!----------------------------------------------------------</span>
+<a name="ln-6"></a>
+<a name="ln-7"></a><span class="k">use </span><span class="n">phys_consts</span><span class="p">,</span> <span class="n">only</span> <span class="p">:</span> <span class="n">lnchem</span>
+<a name="ln-8"></a><span class="k">use </span><span class="n">grid</span>
+<a name="ln-9"></a><span class="k">use </span><span class="n">temporal</span><span class="p">,</span> <span class="n">only</span> <span class="p">:</span> <span class="n">dt_comm</span><span class="p">,</span><span class="n">dateinc</span>
+<a name="ln-10"></a><span class="k">use </span><span class="n">neutral</span><span class="p">,</span> <span class="n">only</span> <span class="p">:</span> <span class="n">neutral_atmos</span><span class="p">,</span><span class="n">make_dneu</span><span class="p">,</span><span class="n">neutral_perturb</span><span class="p">,</span><span class="n">clear_dneu</span>
+<a name="ln-11"></a><span class="k">use </span><span class="n">io</span><span class="p">,</span> <span class="n">only</span> <span class="p">:</span> <span class="n">read_configfile</span><span class="p">,</span><span class="n">input_plasma</span><span class="p">,</span><span class="n">create_outdir</span><span class="p">,</span><span class="n">output_plasma</span>
+<a name="ln-12"></a><span class="k">use </span><span class="n">potential_comm</span><span class="p">,</span><span class="n">only</span> <span class="p">:</span> <span class="n">electrodynamics</span>
+<a name="ln-13"></a><span class="k">use </span><span class="n">multifluid</span><span class="p">,</span> <span class="n">only</span> <span class="p">:</span> <span class="n">fluid_adv</span>
+<a name="ln-14"></a><span class="k">use </span><span class="n">mpimod</span>
+<a name="ln-15"></a><span class="k">use </span><span class="n">precipBCs_mod</span>
+<a name="ln-16"></a><span class="k">use </span><span class="n">potentialBCs_mumps</span>
+<a name="ln-17"></a>
+<a name="ln-18"></a><span class="k">implicit none</span>
+<a name="ln-19"></a>
+<a name="ln-20"></a><span class="c">!----------------------------------------------------------</span>
+<a name="ln-21"></a><span class="c">!------VARIABLE DECLARATIONS</span>
+<a name="ln-22"></a><span class="c">!----------------------------------------------------------</span>
+<a name="ln-23"></a>
+<a name="ln-24"></a><span class="c">!VARIABLES READ IN FROM CONFIG.INI FILE</span>
+<a name="ln-25"></a><span class="kt">integer</span><span class="p">,</span> <span class="k">dimension</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="kd">::</span> <span class="n">ymd</span>    <span class="c">!year,month,day of simulation</span>
+<a name="ln-26"></a><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">)</span> <span class="kd">::</span> <span class="n">UTsec</span>      <span class="c">!UT (s)</span>
+<a name="ln-27"></a><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">)</span> <span class="kd">::</span> <span class="n">UTsec0</span>     <span class="c">!UT start time of simulation (s)</span>
+<a name="ln-28"></a><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">)</span> <span class="kd">::</span> <span class="n">tdur</span>       <span class="c">!duration of simulation</span>
+<a name="ln-29"></a><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span> <span class="k">dimension</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="kd">::</span> <span class="n">activ</span>    <span class="c">!f10.7a,f10.7,ap</span>
+<a name="ln-30"></a><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">)</span> <span class="kd">::</span> <span class="n">tcfl</span>                       <span class="c">!target CFL number</span>
+<a name="ln-31"></a><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">)</span> <span class="kd">::</span> <span class="n">Teinf</span>                      <span class="c">!exospheric temperature</span>
+<a name="ln-32"></a><span class="kt">integer</span> <span class="kd">::</span> <span class="n">potsolve</span>                   <span class="c">!what type of potential solve </span>
+<a name="ln-33"></a><span class="kt">integer</span> <span class="kd">::</span> <span class="n">flagperiodic</span>               <span class="c">!toggles whether or not the grid is treated as periodic in the x3 dimension (affects some of the message passing)</span>
+<a name="ln-34"></a><span class="kt">integer</span> <span class="kd">::</span> <span class="n">flagoutput</span>                 <span class="c">!what type of output to do (1 - everything; 2 - avg&#39;d parms.; 3 - ne only)</span>
+<a name="ln-35"></a><span class="kt">integer</span> <span class="kd">::</span> <span class="n">flagcap</span>                    <span class="c">!internal capacitance?</span>
+<a name="ln-36"></a>
+<a name="ln-37"></a><span class="c">!INPUT AND OUTPUT FILES</span>
+<a name="ln-38"></a><span class="kt">character</span><span class="p">(:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">infile</span>    <span class="c">!command line argument input file</span>
+<a name="ln-39"></a><span class="kt">character</span><span class="p">(:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">outdir</span>    <span class="c">!&quot; &quot; output directory</span>
+<a name="ln-40"></a><span class="kt">character</span><span class="p">(:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">indatsize</span><span class="p">,</span><span class="n">indatgrid</span>    <span class="c">!grid size and data filenames</span>
+<a name="ln-41"></a>
+<a name="ln-42"></a><span class="c">!GRID STRUCTURE</span>
+<a name="ln-43"></a><span class="k">type</span><span class="p">(</span><span class="n">curvmesh</span><span class="p">)</span> <span class="kd">::</span> <span class="n">x</span>    <span class="c">!structure containg grid locations, finite differences, etc.:  see grid module for details</span>
+<a name="ln-44"></a>
+<a name="ln-45"></a><span class="c">!STATE VARIABLES</span>
+<a name="ln-46"></a><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span> <span class="k">dimension</span><span class="p">(:,:,:,:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">ns</span><span class="p">,</span><span class="n">vs1</span><span class="p">,</span><span class="n">vs2</span><span class="p">,</span><span class="n">vs3</span><span class="p">,</span><span class="n">Ts</span>    <span class="c">!fluid state variables</span>
+<a name="ln-47"></a><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span> <span class="k">dimension</span><span class="p">(:,:,:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">E1</span><span class="p">,</span><span class="n">E2</span><span class="p">,</span><span class="n">E3</span><span class="p">,</span><span class="n">J1</span><span class="p">,</span><span class="n">J2</span><span class="p">,</span><span class="n">J3</span>      <span class="c">!electrodynamic state variables</span>
+<a name="ln-48"></a><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span> <span class="k">dimension</span><span class="p">(:,:,:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">rhov2</span><span class="p">,</span><span class="n">rhov3</span><span class="p">,</span><span class="n">B1</span><span class="p">,</span><span class="n">B2</span><span class="p">,</span><span class="n">B3</span>   <span class="c">!inductive state vars. (for future use - except for B1 which is used for the background field)</span>
+<a name="ln-49"></a><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span> <span class="k">dimension</span><span class="p">(:,:,:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">rhom</span><span class="p">,</span><span class="n">v1</span><span class="p">,</span><span class="n">v2</span><span class="p">,</span><span class="n">v3</span>          <span class="c">!inductive auxiliary</span>
+<a name="ln-50"></a><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span> <span class="k">dimension</span><span class="p">(:,:,:,:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">nn</span>                   <span class="c">!neutral density array</span>
+<a name="ln-51"></a><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span> <span class="k">dimension</span><span class="p">(:,:,:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">Tn</span><span class="p">,</span><span class="n">vn1</span><span class="p">,</span><span class="n">vn2</span><span class="p">,</span><span class="n">vn3</span>         <span class="c">!neutral temperature and velocities</span>
+<a name="ln-52"></a><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span> <span class="k">dimension</span><span class="p">(:,:,:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">Phiall</span>                 <span class="c">!full-grid potential solution.  To store previous time step value</span>
+<a name="ln-53"></a>
+<a name="ln-54"></a><span class="c">!TEMPORAL VARIABLES</span>
+<a name="ln-55"></a><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">)</span> <span class="kd">::</span> <span class="n">t</span><span class="o">=</span><span class="mi">0</span><span class="n">d0</span><span class="p">,</span><span class="n">dt</span><span class="p">,</span><span class="n">dtprev</span>      <span class="c">!time from beginning of simulation (s) and time step (s)</span>
+<a name="ln-56"></a><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">)</span> <span class="kd">::</span> <span class="n">tout</span><span class="p">,</span><span class="n">dtout</span>    <span class="c">!time for next output and time between outputs</span>
+<a name="ln-57"></a><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">)</span> <span class="kd">::</span> <span class="n">tstart</span><span class="p">,</span><span class="n">tfin</span>   <span class="c">!temp. vars. for measuring performance of code blocks</span>
+<a name="ln-58"></a><span class="kt">integer</span> <span class="kd">::</span> <span class="n">it</span><span class="p">,</span><span class="n">isp</span>        <span class="c">!time and species loop indices</span>
+<a name="ln-59"></a>
+<a name="ln-60"></a><span class="c">!WORK ARRAYS</span>
+<a name="ln-61"></a><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">dl1</span><span class="p">,</span><span class="n">dl2</span><span class="p">,</span><span class="n">dl3</span>     <span class="c">!these are grid distances in [m] used to compute Courant numbers</span>
+<a name="ln-62"></a>
+<a name="ln-63"></a><span class="c">!NEUTRAL PERTURBATION VARIABLES</span>
+<a name="ln-64"></a><span class="kt">integer</span> <span class="kd">::</span> <span class="n">flagdneu</span>                  <span class="c">!toggles neutral perturbations (0 - none; 1 - file-based neutral inputs)</span>
+<a name="ln-65"></a><span class="kt">integer</span> <span class="kd">::</span> <span class="n">interptype</span>                <span class="c">!toggles whether the neutral input data are interpreted (0 - Cartesian; 1 - axisymmetric)</span>
+<a name="ln-66"></a><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">)</span> <span class="kd">::</span> <span class="n">drhon</span><span class="p">,</span><span class="n">dzn</span>                 <span class="c">!finite differences for the neutral input data in the horizontal and vertical directions</span>
+<a name="ln-67"></a><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">)</span> <span class="kd">::</span> <span class="n">sourcemlat</span><span class="p">,</span><span class="n">sourcemlon</span>     <span class="c">!mag. lat./long for the neutral source location</span>
+<a name="ln-68"></a><span class="kt">character</span><span class="p">(:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">sourcedir</span>          <span class="c">!directory where neutral input data are located</span>
+<a name="ln-69"></a><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">)</span> <span class="kd">::</span> <span class="n">dtneu</span>                     <span class="c">!time interval [s] in between neutral inputs</span>
+<a name="ln-70"></a>
+<a name="ln-71"></a><span class="c">!PRECIPITATION FILE INPUT VARIABLES</span>
+<a name="ln-72"></a><span class="kt">integer</span> <span class="kd">::</span> <span class="n">flagprecfile</span>              <span class="c">! flag toggling precipitation file input (0 - no; 1 - yes)</span>
+<a name="ln-73"></a><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">)</span> <span class="kd">::</span> <span class="n">dtprec</span>                    <span class="c">! time interval between precip. inputs</span>
+<a name="ln-74"></a><span class="kt">character</span><span class="p">(:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">precdir</span> <span class="c">! directory containing precip. input files</span>
+<a name="ln-75"></a>
+<a name="ln-76"></a><span class="c">!ELECTRIC FIELD FILE INPUT VARIABLES</span>
+<a name="ln-77"></a><span class="kt">integer</span> <span class="kd">::</span> <span class="n">flagE0file</span>                <span class="c">! flag toggling electric field (potential BCs) file input (0 - no; 1 - yes)</span>
+<a name="ln-78"></a><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">)</span> <span class="kd">::</span> <span class="n">dtE0</span>                      <span class="c">! time interval between electric field file inputs</span>
+<a name="ln-79"></a><span class="kt">character</span><span class="p">(:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">E0dir</span>   <span class="c">! directory containing electric field file input data</span>
+<a name="ln-80"></a>
+<a name="ln-81"></a><span class="kt">integer</span> <span class="kd">::</span> <span class="n">argc</span>
+<a name="ln-82"></a><span class="kt">character</span><span class="p">(</span><span class="mi">256</span><span class="p">)</span> <span class="kd">::</span> <span class="n">argv</span>
+<a name="ln-83"></a><span class="c">!----------------------------------------------------------</span>
+<a name="ln-84"></a><span class="c">!------MAIN PROGRAM</span>
+<a name="ln-85"></a><span class="c">!----------------------------------------------------------</span>
+<a name="ln-86"></a>
+<a name="ln-87"></a><span class="n">argc</span> <span class="o">=</span> <span class="nb">command_argument_count</span><span class="p">()</span>
+<a name="ln-88"></a><span class="k">if</span> <span class="p">(</span><span class="n">argc</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">)</span> <span class="n">error</span> <span class="k">stop</span> <span class="s1">&#39;must specify .ini file to configure simulation and output directory&#39;</span>
+<a name="ln-89"></a>
+<a name="ln-90"></a><span class="c">!INITIALIZE MESSING PASSING VARIABLES, IDS ETC.</span>
+<a name="ln-91"></a><span class="k">call </span><span class="n">mpisetup</span><span class="p">()</span>
+<a name="ln-92"></a><span class="k">write</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="o">*</span><span class="p">)</span> <span class="s1">&#39;Process:  &#39;</span><span class="p">,</span><span class="n">myid</span><span class="p">,</span><span class="s1">&#39; of:  &#39;</span><span class="p">,</span><span class="n">lid</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="s1">&#39; online...&#39;</span>
+<a name="ln-93"></a>
+<a name="ln-94"></a>
+<a name="ln-95"></a><span class="c">!READ FILE INPUT</span>
+<a name="ln-96"></a><span class="k">call </span><span class="nb">get_command_argument</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">argv</span><span class="p">)</span>
+<a name="ln-97"></a><span class="n">infile</span> <span class="o">=</span> <span class="nb">trim</span><span class="p">(</span><span class="n">argv</span><span class="p">)</span>
+<a name="ln-98"></a>
+<a name="ln-99"></a><span class="k">call </span><span class="n">read_configfile</span><span class="p">(</span><span class="n">infile</span><span class="p">,</span> <span class="n">ymd</span><span class="p">,</span><span class="n">UTsec0</span><span class="p">,</span><span class="n">tdur</span><span class="p">,</span><span class="n">dtout</span><span class="p">,</span><span class="n">activ</span><span class="p">,</span><span class="n">tcfl</span><span class="p">,</span><span class="n">Teinf</span><span class="p">,</span><span class="n">potsolve</span><span class="p">,</span><span class="n">flagperiodic</span><span class="p">,</span><span class="n">flagoutput</span><span class="p">,</span><span class="n">flagcap</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-100"></a>                     <span class="n">indatsize</span><span class="p">,</span><span class="n">indatgrid</span><span class="p">,</span><span class="n">flagdneu</span><span class="p">,</span><span class="n">interptype</span><span class="p">,</span><span class="n">sourcemlat</span><span class="p">,</span><span class="n">sourcemlon</span><span class="p">,</span><span class="n">dtneu</span><span class="p">,</span><span class="n">drhon</span><span class="p">,</span><span class="n">dzn</span><span class="p">,</span><span class="n">sourcedir</span><span class="p">,</span><span class="n">flagprecfile</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-101"></a>                     <span class="n">dtprec</span><span class="p">,</span><span class="n">precdir</span><span class="p">,</span><span class="n">flagE0file</span><span class="p">,</span><span class="n">dtE0</span><span class="p">,</span><span class="n">E0dir</span><span class="p">)</span>
+<a name="ln-102"></a>
+<a name="ln-103"></a><span class="c">!LOAD UP THE GRID STRUCTURE/MODULE VARS. FOR THIS SIMULATION</span>
+<a name="ln-104"></a><span class="k">call </span><span class="n">read_grid</span><span class="p">(</span><span class="n">indatsize</span><span class="p">,</span><span class="n">indatgrid</span><span class="p">,</span><span class="n">flagperiodic</span><span class="p">,</span><span class="n">x</span><span class="p">)</span>     <span class="c">!read in a previously generated grid from filenames listed in input file</span>
+<a name="ln-105"></a>
+<a name="ln-106"></a>
+<a name="ln-107"></a><span class="c">!!ESTABLISH A PROCESS GRID, IF NEEDED - LEAVE HERE FOR FUTURE IMPLEMENTATIONS OF X2,X3 PARALLELIZATION</span>
+<a name="ln-108"></a><span class="c">!call mpigrid(lx2,lx3all)</span>
+<a name="ln-109"></a>
+<a name="ln-110"></a>
+<a name="ln-111"></a><span class="c">!CREATE/PREP OUTPUT DIRECTORY AND OUTPUT SIMULATION SIZE AND GRID DATA; ONLY THE ROOT PROCESS WRITES OUTPUT DATA</span>
+<a name="ln-112"></a><span class="k">call </span><span class="nb">get_command_argument</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="n">argv</span><span class="p">)</span>
+<a name="ln-113"></a><span class="n">outdir</span> <span class="o">=</span> <span class="nb">trim</span><span class="p">(</span><span class="n">argv</span><span class="p">)</span>
+<a name="ln-114"></a>
+<a name="ln-115"></a><span class="k">if</span> <span class="p">(</span><span class="n">myid</span><span class="o">==</span><span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-116"></a><span class="k">  call </span><span class="n">create_outdir</span><span class="p">(</span><span class="n">outdir</span><span class="p">,</span><span class="n">infile</span><span class="p">,</span><span class="n">indatsize</span><span class="p">,</span><span class="n">indatgrid</span><span class="p">,</span><span class="n">flagdneu</span><span class="p">,</span><span class="n">sourcedir</span><span class="p">,</span><span class="n">flagprecfile</span><span class="p">,</span><span class="n">precdir</span><span class="p">,</span><span class="n">flagE0file</span><span class="p">,</span><span class="n">E0dir</span><span class="p">)</span>
+<a name="ln-117"></a><span class="k">end if</span>
+<a name="ln-118"></a>
+<a name="ln-119"></a>
+<a name="ln-120"></a><span class="c">!ALLOCATE ARRAYS (AT THIS POINT ALL SIZES ARE SET FOR EACH PROCESS SUBGRID)</span>
+<a name="ln-121"></a><span class="k">allocate</span><span class="p">(</span><span class="n">ns</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="n">lx1</span><span class="o">+</span><span class="mi">2</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="n">lx2</span><span class="o">+</span><span class="mi">2</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="n">lx3</span><span class="o">+</span><span class="mi">2</span><span class="p">,</span><span class="n">lsp</span><span class="p">),</span><span class="n">vs1</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="n">lx1</span><span class="o">+</span><span class="mi">2</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="n">lx2</span><span class="o">+</span><span class="mi">2</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="n">lx3</span><span class="o">+</span><span class="mi">2</span><span class="p">,</span><span class="n">lsp</span><span class="p">),</span><span class="n">vs2</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="n">lx1</span><span class="o">+</span><span class="mi">2</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="n">lx2</span><span class="o">+</span><span class="mi">2</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="n">lx3</span><span class="o">+</span><span class="mi">2</span><span class="p">,</span><span class="n">lsp</span><span class="p">),</span> <span class="p">&amp;</span>
+<a name="ln-122"></a>  <span class="n">vs3</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="n">lx1</span><span class="o">+</span><span class="mi">2</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="n">lx2</span><span class="o">+</span><span class="mi">2</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="n">lx3</span><span class="o">+</span><span class="mi">2</span><span class="p">,</span><span class="n">lsp</span><span class="p">),</span> <span class="n">Ts</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="n">lx1</span><span class="o">+</span><span class="mi">2</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="n">lx2</span><span class="o">+</span><span class="mi">2</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="n">lx3</span><span class="o">+</span><span class="mi">2</span><span class="p">,</span><span class="n">lsp</span><span class="p">))</span>
+<a name="ln-123"></a><span class="k">allocate</span><span class="p">(</span><span class="n">rhov2</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="n">lx1</span><span class="o">+</span><span class="mi">2</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="n">lx2</span><span class="o">+</span><span class="mi">2</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="n">lx3</span><span class="o">+</span><span class="mi">2</span><span class="p">),</span><span class="n">rhov3</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="n">lx1</span><span class="o">+</span><span class="mi">2</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="n">lx2</span><span class="o">+</span><span class="mi">2</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="n">lx3</span><span class="o">+</span><span class="mi">2</span><span class="p">),</span><span class="n">B1</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="n">lx1</span><span class="o">+</span><span class="mi">2</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="n">lx2</span><span class="o">+</span><span class="mi">2</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="n">lx3</span><span class="o">+</span><span class="mi">2</span><span class="p">),</span> <span class="p">&amp;</span>
+<a name="ln-124"></a>         <span class="n">B2</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="n">lx1</span><span class="o">+</span><span class="mi">2</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="n">lx2</span><span class="o">+</span><span class="mi">2</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="n">lx3</span><span class="o">+</span><span class="mi">2</span><span class="p">),</span><span class="n">B3</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="n">lx1</span><span class="o">+</span><span class="mi">2</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="n">lx2</span><span class="o">+</span><span class="mi">2</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="n">lx3</span><span class="o">+</span><span class="mi">2</span><span class="p">))</span>
+<a name="ln-125"></a><span class="k">allocate</span><span class="p">(</span><span class="n">v1</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="n">lx1</span><span class="o">+</span><span class="mi">2</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="n">lx2</span><span class="o">+</span><span class="mi">2</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="n">lx3</span><span class="o">+</span><span class="mi">2</span><span class="p">),</span><span class="n">v2</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="n">lx1</span><span class="o">+</span><span class="mi">2</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="n">lx2</span><span class="o">+</span><span class="mi">2</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="n">lx3</span><span class="o">+</span><span class="mi">2</span><span class="p">),</span> <span class="p">&amp;</span>
+<a name="ln-126"></a>         <span class="n">v3</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="n">lx1</span><span class="o">+</span><span class="mi">2</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="n">lx2</span><span class="o">+</span><span class="mi">2</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="n">lx3</span><span class="o">+</span><span class="mi">2</span><span class="p">),</span><span class="n">rhom</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="n">lx1</span><span class="o">+</span><span class="mi">2</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="n">lx2</span><span class="o">+</span><span class="mi">2</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="n">lx3</span><span class="o">+</span><span class="mi">2</span><span class="p">))</span>
+<a name="ln-127"></a><span class="k">allocate</span><span class="p">(</span><span class="n">E1</span><span class="p">(</span><span class="n">lx1</span><span class="p">,</span><span class="n">lx2</span><span class="p">,</span><span class="n">lx3</span><span class="p">),</span><span class="n">E2</span><span class="p">(</span><span class="n">lx1</span><span class="p">,</span><span class="n">lx2</span><span class="p">,</span><span class="n">lx3</span><span class="p">),</span><span class="n">E3</span><span class="p">(</span><span class="n">lx1</span><span class="p">,</span><span class="n">lx2</span><span class="p">,</span><span class="n">lx3</span><span class="p">),</span><span class="n">J1</span><span class="p">(</span><span class="n">lx1</span><span class="p">,</span><span class="n">lx2</span><span class="p">,</span><span class="n">lx3</span><span class="p">),</span><span class="n">J2</span><span class="p">(</span><span class="n">lx1</span><span class="p">,</span><span class="n">lx2</span><span class="p">,</span><span class="n">lx3</span><span class="p">),</span><span class="n">J3</span><span class="p">(</span><span class="n">lx1</span><span class="p">,</span><span class="n">lx2</span><span class="p">,</span><span class="n">lx3</span><span class="p">))</span>
+<a name="ln-128"></a><span class="k">allocate</span><span class="p">(</span><span class="n">nn</span><span class="p">(</span><span class="n">lx1</span><span class="p">,</span><span class="n">lx2</span><span class="p">,</span><span class="n">lx3</span><span class="p">,</span><span class="n">lnchem</span><span class="p">),</span><span class="n">Tn</span><span class="p">(</span><span class="n">lx1</span><span class="p">,</span><span class="n">lx2</span><span class="p">,</span><span class="n">lx3</span><span class="p">),</span><span class="n">vn1</span><span class="p">(</span><span class="n">lx1</span><span class="p">,</span><span class="n">lx2</span><span class="p">,</span><span class="n">lx3</span><span class="p">),</span> <span class="n">vn2</span><span class="p">(</span><span class="n">lx1</span><span class="p">,</span><span class="n">lx2</span><span class="p">,</span><span class="n">lx3</span><span class="p">),</span><span class="n">vn3</span><span class="p">(</span><span class="n">lx1</span><span class="p">,</span><span class="n">lx2</span><span class="p">,</span><span class="n">lx3</span><span class="p">))</span>
+<a name="ln-129"></a><span class="k">call </span><span class="n">make_dneu</span><span class="p">()</span>    <span class="c">!allocate space for neutral perturbations in case they are used with this run</span>
+<a name="ln-130"></a><span class="k">call </span><span class="n">make_precip_fileinput</span><span class="p">()</span>
+<a name="ln-131"></a>
+<a name="ln-132"></a>
+<a name="ln-133"></a><span class="c">!ALLOCATE MEMORY FOR ROOT TO STORE CERTAIN VARS. OVER ENTIRE GRID</span>
+<a name="ln-134"></a><span class="k">if</span> <span class="p">(</span><span class="n">myid</span><span class="o">==</span><span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-135"></a><span class="k">  allocate</span><span class="p">(</span><span class="n">Phiall</span><span class="p">(</span><span class="n">lx1</span><span class="p">,</span><span class="n">lx2</span><span class="p">,</span><span class="n">lx3all</span><span class="p">))</span>
+<a name="ln-136"></a><span class="k">end if</span>
+<a name="ln-137"></a>
+<a name="ln-138"></a>
+<a name="ln-139"></a><span class="c">!LOAD ICS AND DISTRIBUTE TO WORKERS (REQUIRES GRAVITY FOR INITIAL GUESSING)</span>
+<a name="ln-140"></a><span class="k">call </span><span class="n">input_plasma</span><span class="p">(</span><span class="n">x</span><span class="p">%</span><span class="n">x1</span><span class="p">,</span><span class="n">x</span><span class="p">%</span><span class="n">x2</span><span class="p">,</span><span class="n">x</span><span class="p">%</span><span class="n">x3all</span><span class="p">,</span><span class="n">indatsize</span><span class="p">,</span><span class="n">ns</span><span class="p">,</span><span class="n">vs1</span><span class="p">,</span><span class="n">Ts</span><span class="p">)</span>
+<a name="ln-141"></a>
+<a name="ln-142"></a>
+<a name="ln-143"></a><span class="c">!ROOT/WORKERS WILL ASSUME THAT THE MAGNETIC FIELDS AND PERP FLOWS START AT ZERO</span>
+<a name="ln-144"></a><span class="c">!THIS KEEPS US FROM HAVING TO HAVE FULL-GRID ARRAYS FOR THESE STATE VARS (EXCEPT</span>
+<a name="ln-145"></a><span class="c">!FOR IN OUTPUT FNS.).  IF A SIMULATIONS IS DONE WITH INTERTIAL CAPACITANCE THERE</span>
+<a name="ln-146"></a><span class="c">!WILL BE A FINITE AMOUNT OF TIME FOR THE FLOWS TO &#39;START UP&#39;, BUT THIS SHOULDN&#39;T</span>
+<a name="ln-147"></a><span class="c">!BE TOO MUCH OF AN ISSUE.  WE ALSO NEED TO SET THE BACKGROUND MAGNETIC FIELD STATE </span>
+<a name="ln-148"></a><span class="c">!VARIABLE HERE TO WHATEVER IS SPECIFIED IN THE GRID STRUCTURE (THESE MUST BE CONSISTENT)</span>
+<a name="ln-149"></a><span class="n">rhov2</span><span class="o">=</span><span class="mi">0</span><span class="n">d0</span><span class="p">;</span> <span class="n">rhov3</span><span class="o">=</span><span class="mi">0</span><span class="n">d0</span><span class="p">;</span> <span class="n">v2</span><span class="o">=</span><span class="mi">0</span><span class="n">d0</span><span class="p">;</span> <span class="n">v3</span><span class="o">=</span><span class="mi">0</span><span class="n">d0</span><span class="p">;</span>
+<a name="ln-150"></a><span class="n">B2</span><span class="o">=</span><span class="mi">0</span><span class="n">d0</span><span class="p">;</span> <span class="n">B3</span><span class="o">=</span><span class="mi">0</span><span class="n">d0</span><span class="p">;</span>
+<a name="ln-151"></a><span class="n">B1</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">lx1</span><span class="p">,</span><span class="mi">1</span><span class="p">:</span><span class="n">lx2</span><span class="p">,</span><span class="mi">1</span><span class="p">:</span><span class="n">lx3</span><span class="p">)</span><span class="o">=</span><span class="n">x</span><span class="p">%</span><span class="n">Bmag</span>      <span class="c">!this assumes that the grid is defined s.t. the x1 direction corresponds to the magnetic field direction (hence zero B2 and B3).</span>
+<a name="ln-152"></a> 
+<a name="ln-153"></a>
+<a name="ln-154"></a><span class="c">!INITIALIZE ELECTRODYNAMIC QUANTITIES FOR POLARIZATION CURRENT</span>
+<a name="ln-155"></a><span class="k">if</span> <span class="p">(</span><span class="n">myid</span><span class="o">==</span><span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-156"></a><span class="k">  </span><span class="n">Phiall</span><span class="o">=</span><span class="mi">0</span><span class="n">d0</span>     <span class="c">!only root store entire potential array</span>
+<a name="ln-157"></a><span class="k">end if   </span>
+<a name="ln-158"></a><span class="n">E1</span><span class="o">=</span><span class="mi">0</span><span class="n">d0</span><span class="p">;</span> <span class="n">E2</span><span class="o">=</span><span class="mi">0</span><span class="n">d0</span><span class="p">;</span> <span class="n">E3</span><span class="o">=</span><span class="mi">0</span><span class="n">d0</span><span class="p">;</span>
+<a name="ln-159"></a><span class="n">vs2</span><span class="o">=</span><span class="mi">0</span><span class="n">d0</span><span class="p">;</span> <span class="n">vs3</span><span class="o">=</span><span class="mi">0</span><span class="n">d0</span><span class="p">;</span>
+<a name="ln-160"></a>
+<a name="ln-161"></a>
+<a name="ln-162"></a><span class="c">!MAIN LOOP</span>
+<a name="ln-163"></a><span class="n">UTsec</span><span class="o">=</span><span class="n">UTsec0</span><span class="p">;</span> <span class="n">it</span><span class="o">=</span><span class="mi">1</span><span class="p">;</span> <span class="n">t</span><span class="o">=</span><span class="mi">0</span><span class="n">d0</span><span class="p">;</span> <span class="n">tout</span><span class="o">=</span><span class="n">t</span><span class="p">;</span>
+<a name="ln-164"></a><span class="k">do while</span> <span class="p">(</span><span class="n">t</span><span class="o">&lt;</span><span class="n">tdur</span><span class="p">)</span>
+<a name="ln-165"></a>  <span class="c">!TIME STEP CALCULATION</span>
+<a name="ln-166"></a>  <span class="n">dtprev</span><span class="o">=</span><span class="n">dt</span>
+<a name="ln-167"></a>  <span class="k">call </span><span class="n">dt_comm</span><span class="p">(</span><span class="n">t</span><span class="p">,</span><span class="n">tout</span><span class="p">,</span><span class="n">tcfl</span><span class="p">,</span><span class="n">ns</span><span class="p">,</span><span class="n">Ts</span><span class="p">,</span><span class="n">vs1</span><span class="p">,</span><span class="n">vs2</span><span class="p">,</span><span class="n">vs3</span><span class="p">,</span><span class="n">B1</span><span class="p">,</span><span class="n">B2</span><span class="p">,</span><span class="n">B3</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="n">potsolve</span><span class="p">,</span><span class="n">dt</span><span class="p">)</span>
+<a name="ln-168"></a>  <span class="k">if</span> <span class="p">(</span><span class="n">it</span><span class="o">&gt;</span><span class="mi">1</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-169"></a><span class="k">    if</span><span class="p">(</span><span class="n">dt</span><span class="o">/</span><span class="n">dtprev</span> <span class="o">&gt;</span> <span class="mi">10</span><span class="n">d0</span><span class="p">)</span> <span class="k">then</span>     <span class="c">!throttle how quickly we allow dt to increase</span>
+<a name="ln-170"></a>      <span class="n">dt</span><span class="o">=</span><span class="mi">10</span><span class="n">d0</span><span class="o">*</span><span class="n">dtprev</span>
+<a name="ln-171"></a>      <span class="k">if</span> <span class="p">(</span><span class="n">myid</span><span class="o">==</span><span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-172"></a><span class="k">        write</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="o">*</span><span class="p">)</span> <span class="s1">&#39;Throttling dt to:  &#39;</span><span class="p">,</span><span class="n">dt</span>
+<a name="ln-173"></a>      <span class="k">end if</span>
+<a name="ln-174"></a><span class="k">    end if</span>
+<a name="ln-175"></a><span class="k">  end if</span>
+<a name="ln-176"></a>
+<a name="ln-177"></a>
+<a name="ln-178"></a>  <span class="c">!COMPUTE BACKGROUND NEUTRAL ATMOSPHERE USING MSIS00.  PRESENTLY THIS ONLY GETS CALLED</span>
+<a name="ln-179"></a>  <span class="c">!ON THE FIRST TIME STEP DUE TO A NEED TO KEEP A CONSTANT BACKGROUND (I.E. ONE NOT VARYING</span>
+<a name="ln-180"></a>  <span class="c">!IN TIME) FOR SOME SIMULATIONS USING NEUTRAL INPUT.  REALISTICALLY THIS NEEDS TO BE </span>
+<a name="ln-181"></a>  <span class="c">!RECALLED EVERY SO OFTEN (MAYBE EVERY 10-15 MINS)</span>
+<a name="ln-182"></a>  <span class="k">if</span> <span class="p">(</span><span class="n">it</span><span class="o">==</span><span class="mi">1</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-183"></a><span class="k">    call </span><span class="nb">cpu_time</span><span class="p">(</span><span class="n">tstart</span><span class="p">)</span>
+<a name="ln-184"></a>    <span class="k">call </span><span class="n">neutral_atmos</span><span class="p">(</span><span class="n">ymd</span><span class="p">,</span><span class="n">UTsec</span><span class="p">,</span><span class="n">x</span><span class="p">%</span><span class="n">glat</span><span class="p">,</span><span class="n">x</span><span class="p">%</span><span class="n">glon</span><span class="p">,</span><span class="n">x</span><span class="p">%</span><span class="n">alt</span><span class="p">,</span><span class="n">activ</span><span class="p">,</span><span class="n">nn</span><span class="p">,</span><span class="n">Tn</span><span class="p">)</span>
+<a name="ln-185"></a>    <span class="n">vn1</span><span class="o">=</span><span class="mi">0</span><span class="n">d0</span><span class="p">;</span> <span class="n">vn2</span><span class="o">=</span><span class="mi">0</span><span class="n">d0</span><span class="p">;</span> <span class="n">vn3</span><span class="o">=</span><span class="mi">0</span><span class="n">d0</span>     <span class="c">!hard-code these to zero for the first time step</span>
+<a name="ln-186"></a>    <span class="k">call </span><span class="nb">cpu_time</span><span class="p">(</span><span class="n">tfin</span><span class="p">)</span>
+<a name="ln-187"></a>
+<a name="ln-188"></a>    <span class="k">if</span> <span class="p">(</span><span class="n">myid</span><span class="o">==</span><span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-189"></a><span class="k">      write</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="o">*</span><span class="p">)</span> <span class="s1">&#39;Neutral background calculated in time:  &#39;</span><span class="p">,</span><span class="n">tfin</span><span class="o">-</span><span class="n">tstart</span>
+<a name="ln-190"></a>    <span class="k">end if</span>
+<a name="ln-191"></a><span class="k">  end if</span>
+<a name="ln-192"></a>
+<a name="ln-193"></a>
+<a name="ln-194"></a>  <span class="c">!GET NEUTRAL PERTURBATIONS FROM ANOTHER MODEL</span>
+<a name="ln-195"></a>  <span class="k">if</span> <span class="p">(</span><span class="n">flagdneu</span><span class="o">==</span><span class="mi">1</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-196"></a><span class="k">    call </span><span class="nb">cpu_time</span><span class="p">(</span><span class="n">tstart</span><span class="p">)</span>
+<a name="ln-197"></a>    <span class="k">if</span> <span class="p">(</span><span class="n">it</span><span class="o">==</span><span class="mi">1</span><span class="p">)</span> <span class="k">then</span>    <span class="c">!this triggers the code to load the neutral frame correspdonding ot the beginning time of the simulation</span>
+<a name="ln-198"></a>      <span class="k">if</span> <span class="p">(</span><span class="n">myid</span><span class="o">==</span><span class="mi">0</span><span class="p">)</span> <span class="k">write</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="o">*</span><span class="p">)</span> <span class="s1">&#39;!!!Attempting initial load of neutral dynamics files!!!&#39;</span> <span class="o">//</span> <span class="p">&amp;</span>
+<a name="ln-199"></a>                              <span class="s1">&#39; This is a workaround that fixes the restart code...&#39;</span><span class="p">,</span><span class="n">t</span><span class="o">-</span><span class="n">dt</span>
+<a name="ln-200"></a>      <span class="k">call </span><span class="n">neutral_perturb</span><span class="p">(</span><span class="n">interptype</span><span class="p">,</span><span class="n">dt</span><span class="p">,</span><span class="n">dtneu</span><span class="p">,</span><span class="n">t</span><span class="o">-</span><span class="n">dtneu</span><span class="p">,</span><span class="n">ymd</span><span class="p">,</span><span class="n">UTsec</span><span class="o">-</span><span class="n">dtneu</span><span class="p">,</span><span class="n">sourcedir</span><span class="p">,</span><span class="n">drhon</span><span class="p">,</span><span class="n">dzn</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-201"></a>                                  <span class="n">sourcemlat</span><span class="p">,</span><span class="n">sourcemlon</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="n">nn</span><span class="p">,</span><span class="n">Tn</span><span class="p">,</span><span class="n">vn1</span><span class="p">,</span><span class="n">vn2</span><span class="p">,</span><span class="n">vn3</span><span class="p">)</span>
+<a name="ln-202"></a>    <span class="k">end if</span>
+<a name="ln-203"></a><span class="k">    call </span><span class="n">neutral_perturb</span><span class="p">(</span><span class="n">interptype</span><span class="p">,</span><span class="n">dt</span><span class="p">,</span><span class="n">dtneu</span><span class="p">,</span><span class="n">t</span><span class="p">,</span><span class="n">ymd</span><span class="p">,</span><span class="n">UTsec</span><span class="p">,</span><span class="n">sourcedir</span><span class="p">,</span><span class="n">drhon</span><span class="p">,</span><span class="n">dzn</span><span class="p">,</span><span class="n">sourcemlat</span><span class="p">,</span><span class="n">sourcemlon</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="n">nn</span><span class="p">,</span><span class="n">Tn</span><span class="p">,</span><span class="n">vn1</span><span class="p">,</span><span class="n">vn2</span><span class="p">,</span><span class="n">vn3</span><span class="p">)</span>
+<a name="ln-204"></a>    <span class="k">call </span><span class="nb">cpu_time</span><span class="p">(</span><span class="n">tfin</span><span class="p">)</span>
+<a name="ln-205"></a>    <span class="k">if</span> <span class="p">(</span><span class="n">myid</span><span class="o">==</span><span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-206"></a><span class="k">      write</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="o">*</span><span class="p">)</span> <span class="s1">&#39;Neutral perturbations calculated in time:  &#39;</span><span class="p">,</span><span class="n">tfin</span><span class="o">-</span><span class="n">tstart</span>
+<a name="ln-207"></a>    <span class="k">end if</span>
+<a name="ln-208"></a><span class="k">  end if</span>
+<a name="ln-209"></a>
+<a name="ln-210"></a>  <span class="c">!POTENTIAL SOLUTION</span>
+<a name="ln-211"></a>  <span class="k">call </span><span class="nb">cpu_time</span><span class="p">(</span><span class="n">tstart</span><span class="p">)</span>
+<a name="ln-212"></a>  <span class="k">call </span><span class="n">electrodynamics</span><span class="p">(</span><span class="n">it</span><span class="p">,</span><span class="n">t</span><span class="p">,</span><span class="n">dt</span><span class="p">,</span><span class="n">nn</span><span class="p">,</span><span class="n">vn2</span><span class="p">,</span><span class="n">vn3</span><span class="p">,</span><span class="n">Tn</span><span class="p">,</span><span class="n">sourcemlat</span><span class="p">,</span><span class="n">ns</span><span class="p">,</span><span class="n">Ts</span><span class="p">,</span><span class="n">vs1</span><span class="p">,</span><span class="n">B1</span><span class="p">,</span><span class="n">vs2</span><span class="p">,</span><span class="n">vs3</span><span class="p">,</span><span class="n">x</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-213"></a>                        <span class="n">potsolve</span><span class="p">,</span><span class="n">flagcap</span><span class="p">,</span><span class="n">E1</span><span class="p">,</span><span class="n">E2</span><span class="p">,</span><span class="n">E3</span><span class="p">,</span><span class="n">J1</span><span class="p">,</span><span class="n">J2</span><span class="p">,</span><span class="n">J3</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-214"></a>                        <span class="n">Phiall</span><span class="p">,</span><span class="n">flagE0file</span><span class="p">,</span><span class="n">dtE0</span><span class="p">,</span><span class="n">E0dir</span><span class="p">,</span><span class="n">ymd</span><span class="p">,</span><span class="n">UTsec</span><span class="p">)</span>
+<a name="ln-215"></a>  <span class="k">call </span><span class="nb">cpu_time</span><span class="p">(</span><span class="n">tfin</span><span class="p">)</span>
+<a name="ln-216"></a>  <span class="k">if</span> <span class="p">(</span><span class="n">myid</span><span class="o">==</span><span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-217"></a><span class="k">    write</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="o">*</span><span class="p">)</span> <span class="s1">&#39;Electrodynamics total solve time:  &#39;</span><span class="p">,</span><span class="n">tfin</span><span class="o">-</span><span class="n">tstart</span>
+<a name="ln-218"></a>  <span class="k">end if</span>
+<a name="ln-219"></a>
+<a name="ln-220"></a>
+<a name="ln-221"></a>  <span class="c">!UPDATE THE FLUID VARIABLES</span>
+<a name="ln-222"></a>  <span class="k">call </span><span class="nb">cpu_time</span><span class="p">(</span><span class="n">tstart</span><span class="p">)</span>
+<a name="ln-223"></a>  <span class="k">call </span><span class="n">fluid_adv</span><span class="p">(</span><span class="n">ns</span><span class="p">,</span><span class="n">vs1</span><span class="p">,</span><span class="n">Ts</span><span class="p">,</span><span class="n">vs2</span><span class="p">,</span><span class="n">vs3</span><span class="p">,</span><span class="n">J1</span><span class="p">,</span><span class="n">E1</span><span class="p">,</span><span class="n">Teinf</span><span class="p">,</span><span class="n">t</span><span class="p">,</span><span class="n">dt</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="n">nn</span><span class="p">,</span><span class="n">vn1</span><span class="p">,</span><span class="n">vn2</span><span class="p">,</span><span class="n">vn3</span><span class="p">,</span><span class="n">Tn</span><span class="p">,</span><span class="n">activ</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span><span class="n">activ</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span><span class="n">ymd</span><span class="p">,</span><span class="n">UTsec</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-224"></a>                 <span class="n">flagprecfile</span><span class="p">,</span><span class="n">dtprec</span><span class="p">,</span><span class="n">precdir</span><span class="p">)</span>
+<a name="ln-225"></a>  <span class="k">call </span><span class="nb">cpu_time</span><span class="p">(</span><span class="n">tfin</span><span class="p">)</span>
+<a name="ln-226"></a>  <span class="k">if</span> <span class="p">(</span><span class="n">myid</span><span class="o">==</span><span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-227"></a><span class="k">    write</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="o">*</span><span class="p">)</span> <span class="s1">&#39;Multifluid total solve time:  &#39;</span><span class="p">,</span><span class="n">tfin</span><span class="o">-</span><span class="n">tstart</span>
+<a name="ln-228"></a>  <span class="k">end if</span>
+<a name="ln-229"></a>
+<a name="ln-230"></a>
+<a name="ln-231"></a>  <span class="c">!NOW OUR SOLUTION IS FULLY UPDATED SO UPDATE TIME VARIABLES TO MATCH...</span>
+<a name="ln-232"></a>  <span class="n">it</span><span class="o">=</span><span class="n">it</span><span class="o">+</span><span class="mi">1</span><span class="p">;</span> <span class="n">t</span><span class="o">=</span><span class="n">t</span><span class="o">+</span><span class="n">dt</span><span class="p">;</span>
+<a name="ln-233"></a>  <span class="k">if</span> <span class="p">(</span><span class="n">myid</span><span class="o">==</span><span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-234"></a><span class="k">    write</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="o">*</span><span class="p">)</span> <span class="s1">&#39;Moving on to time step (in sec):  &#39;</span><span class="p">,</span><span class="n">t</span><span class="p">,</span><span class="s1">&#39;; end time of simulation:  &#39;</span><span class="p">,</span><span class="n">tdur</span>
+<a name="ln-235"></a>  <span class="k">end if</span>
+<a name="ln-236"></a><span class="k">  call </span><span class="n">dateinc</span><span class="p">(</span><span class="n">dt</span><span class="p">,</span><span class="n">ymd</span><span class="p">,</span><span class="n">UTsec</span><span class="p">)</span>
+<a name="ln-237"></a>  <span class="k">if</span> <span class="p">(</span><span class="n">myid</span><span class="o">==</span><span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-238"></a><span class="k">    write</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="o">*</span><span class="p">)</span> <span class="s1">&#39;Current date&#39;</span><span class="p">,</span><span class="n">ymd</span><span class="p">,</span><span class="s1">&#39;Current UT time:  &#39;</span><span class="p">,</span><span class="n">UTsec</span>
+<a name="ln-239"></a>  <span class="k">end if</span>
+<a name="ln-240"></a>
+<a name="ln-241"></a>
+<a name="ln-242"></a>  <span class="c">!OUTPUT</span>
+<a name="ln-243"></a>  <span class="k">if</span> <span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">t</span><span class="o">-</span><span class="n">tout</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="n">d</span><span class="o">-</span><span class="mi">5</span><span class="p">)</span> <span class="k">then</span>   <span class="c">!close enough to warrant an output now...</span>
+<a name="ln-244"></a>    <span class="k">call </span><span class="nb">cpu_time</span><span class="p">(</span><span class="n">tstart</span><span class="p">)</span>
+<a name="ln-245"></a>    <span class="k">call </span><span class="n">output_plasma</span><span class="p">(</span><span class="n">outdir</span><span class="p">,</span><span class="n">flagoutput</span><span class="p">,</span><span class="n">ymd</span><span class="p">,</span><span class="n">UTsec</span><span class="p">,</span><span class="n">vs2</span><span class="p">,</span><span class="n">vs3</span><span class="p">,</span><span class="n">ns</span><span class="p">,</span><span class="n">vs1</span><span class="p">,</span><span class="n">Ts</span><span class="p">,</span><span class="n">Phiall</span><span class="p">,</span><span class="n">J1</span><span class="p">,</span><span class="n">J2</span><span class="p">,</span><span class="n">J3</span><span class="p">)</span>
+<a name="ln-246"></a>    <span class="k">call </span><span class="nb">cpu_time</span><span class="p">(</span><span class="n">tfin</span><span class="p">)</span>
+<a name="ln-247"></a>    <span class="k">if</span> <span class="p">(</span><span class="n">myid</span><span class="o">==</span><span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-248"></a><span class="k">      write</span><span class="p">(</span><span class="o">*</span><span class="p">,</span><span class="o">*</span><span class="p">)</span> <span class="s1">&#39;Output done for time step:  &#39;</span><span class="p">,</span><span class="n">t</span><span class="p">,</span><span class="s1">&#39; in cpu_time of:  &#39;</span><span class="p">,</span><span class="n">tfin</span><span class="o">-</span><span class="n">tstart</span>
+<a name="ln-249"></a>    <span class="k">end if</span>
+<a name="ln-250"></a><span class="k">    </span>
+<a name="ln-251"></a><span class="k">    </span><span class="n">tout</span><span class="o">=</span><span class="n">tout</span><span class="o">+</span><span class="n">dtout</span>
+<a name="ln-252"></a>  <span class="k">end if</span>
+<a name="ln-253"></a><span class="k">end do</span>
+<a name="ln-254"></a>
+<a name="ln-255"></a>
+<a name="ln-256"></a><span class="c">!DEALLOCATE MAIN PROGRAM DATA</span>
+<a name="ln-257"></a><span class="k">deallocate</span><span class="p">(</span><span class="n">ns</span><span class="p">,</span><span class="n">vs1</span><span class="p">,</span><span class="n">vs2</span><span class="p">,</span><span class="n">vs3</span><span class="p">,</span><span class="n">Ts</span><span class="p">)</span>
+<a name="ln-258"></a><span class="k">deallocate</span><span class="p">(</span><span class="n">E1</span><span class="p">,</span><span class="n">E2</span><span class="p">,</span><span class="n">E3</span><span class="p">,</span><span class="n">J1</span><span class="p">,</span><span class="n">J2</span><span class="p">,</span><span class="n">J3</span><span class="p">)</span>
+<a name="ln-259"></a><span class="k">deallocate</span><span class="p">(</span><span class="n">nn</span><span class="p">,</span><span class="n">Tn</span><span class="p">,</span><span class="n">vn1</span><span class="p">,</span><span class="n">vn2</span><span class="p">,</span><span class="n">vn3</span><span class="p">)</span>
+<a name="ln-260"></a>
+<a name="ln-261"></a><span class="k">if</span> <span class="p">(</span><span class="n">myid</span><span class="o">==</span><span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-262"></a><span class="k">  deallocate</span><span class="p">(</span><span class="n">Phiall</span><span class="p">)</span>
+<a name="ln-263"></a><span class="k">end if</span>
+<a name="ln-264"></a>
+<a name="ln-265"></a>
+<a name="ln-266"></a><span class="c">!DEALLOCATE MODULE VARIABLES (MAY HAPPEN AUTOMATICALLY IN F2003???)</span>
+<a name="ln-267"></a><span class="k">call </span><span class="n">clear_grid</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<a name="ln-268"></a><span class="k">call </span><span class="n">clear_dneu</span><span class="p">()</span>
+<a name="ln-269"></a><span class="k">call </span><span class="n">clear_precip_fileinput</span><span class="p">()</span>
+<a name="ln-270"></a><span class="k">call </span><span class="n">clear_potential_fileinput</span><span class="p">()</span>
+<a name="ln-271"></a>
+<a name="ln-272"></a>
+<a name="ln-273"></a><span class="c">!SHUT DOWN MPI</span>
+<a name="ln-274"></a><span class="k">call </span><span class="n">mpibreakdown</span><span class="p">()</span>
+<a name="ln-275"></a>
+<a name="ln-276"></a><span class="k">end program </span><span class="n">gemini</span>
+</pre></div>
+
+    </section>
+    </div>
+  </div>
+
+  
+    <hr>    
+    </div> <!-- /container -->
+    <footer>
+      <div class="container">
+      <div class="row">
+        <div class="col-xs-6 col-md-4"><p>&copy; 2018 <a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/80x15.png" /></a>
+                                          </p></div>
+        <div class="col-xs-6 col-md-4 col-md-push-4">
+          <p class="text-right">
+            Documentation generated by 
+            <a href="https://github.com/cmacmackin/ford">FORD</a>
+            
+          </p>
+        </div>
+        <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> GEMINI3D was developed by Matthew Zettergren
+Guy Grubbs
+Michael Hirsch</p></div>
+      </div>
+      <br>
+      </div> <!-- /container -->    
+    </footer>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+<!--
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+-->
+    <script src="../js/bootstrap.min.js"></script>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <script src="../js/ie10-viewport-bug-workaround.js"></script>
+
+    <!-- MathJax JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } },
+        jax: ['input/TeX','input/MathML','output/HTML-CSS'],
+        extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']
+      });
+    </script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    
+    
+  </body>
+</html>

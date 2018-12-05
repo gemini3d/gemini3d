@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+   
+   <meta name="description" content="GEMINI3D is a modular ionospheric model that incorporates kinetic models such as Fang, GLOW.">
+    
+    <meta name="author" content="Matthew Zettergren
+Guy Grubbs
+Michael Hirsch" >
+    <link rel="icon" href="../favicon.png">
+
+    <title>test_diffusion1D.f90 &ndash; GEMINI3D</title>
+
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+    <link href="../css/pygments.css" rel="stylesheet">
+    <link href="../css/font-awesome.min.css" rel="stylesheet">
+    <link href="../css/local.css" rel="stylesheet">
+    
+    
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    
+    <script src="../js/jquery-2.1.3.min.js"></script>
+    <script src="../js/svg-pan-zoom.min.js"></script>
+
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="../index.html">GEMINI3D </a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+        
+            <li class="dropdown hidden-xs visible-sm visible-md hidden-lg">
+              <a href="#" class="dropdown-toggle"
+              data-toggle="dropdown" role="button"
+              aria-haspopup="true"
+     aria-expanded="false">Contents <span class="caret"></span></a>
+        <ul class="dropdown-menu">
+          
+              
+            <li><a href="../lists/files.html">Source Files</a></li>
+        
+        
+        
+            <li><a href="../lists/modules.html">Modules</a></li>
+        
+            
+                                
+            <li><a href="../lists/procedures.html">Procedures</a></li>
+        
+               
+            <li><a href="../lists/types.html">Derived Types</a></li>
+        
+        
+            <li><a href="../lists/programs.html">Programs</a></li>
+        
+            </ul>
+            </li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/files.html">Source Files</a></li>
+
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/modules.html">Modules</a></li>
+
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/procedures.html">Procedures</a></li>
+
+                             
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/types.html">Derived Types</a></li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/programs.html">Programs</a></li>
+
+          </ul>
+        
+        </div><!--/.nav-collapse -->
+      </div>
+    </nav>
+
+    <div class="container">
+    
+  
+  <div class="row">
+    <h1>test_diffusion1D.f90
+    <small>Source File</small>
+    
+    </h1>
+    
+<div class="row">
+  <div class="col-lg-12">
+<div class="well well-sm">
+  <ul class="list-inline" style="margin-bottom:0px;display:inline">
+     
+     
+     
+     
+    
+    
+     <li><i class="fa fa-list-ol"></i>
+       <a data-toggle="tooltip"
+    data-placement="bottom" data-html="true"
+    title=" 0.7% of total for source files.">60 statements</a>
+     </li> 
+     
+     
+     
+    <li><i class="fa fa-code"></i><a href="../src/test_diffusion1D.f90"> Source File</a></li>
+     
+     
+  </ul>
+  <ol class="breadcrumb in-well text-right">
+  
+    
+  
+     <li class="active">test_diffusion1D.f90</li>
+  </ol>
+</div>
+</div>
+</div>
+<script>
+  $(function () {
+  $('[data-toggle="tooltip"]').tooltip()
+  })
+</script>
+
+  </div>
+  <div class="row">
+    <div class="col-md-3 hidden-xs hidden-sm visible-md visible-lg">
+    
+<div id="sidebar">
+  
+<h3>Contents</h3>
+ 
+
+
+
+
+
+
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#progs-0">Programs</a></h3></div>
+  <div id="progs-0" class="panel-collapse collapse">
+    <div class="list-group">
+      
+      <a class="list-group-item" href="../program/test_diffusion1d.html">test_diffusion1D</a>
+      
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
+  <div class="list-group">
+    <a class="list-group-item" href="../sourcefile/test_diffusion1d.f90.html#src">test_diffusion1D.f90</a>
+  </div>
+</div>
+
+
+
+</div>
+
+    </div>
+    <div class="col-md-9" id='text'>
+      
+      <br>
+    
+      
+      
+
+    <section class="visible-xs visible-sm hidden-md">
+      
+<h3>Contents</h3>
+ 
+
+
+
+
+
+
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#progs-1">Programs</a></h3></div>
+  <div id="progs-1" class="panel-collapse collapse">
+    <div class="list-group">
+      
+      <a class="list-group-item" href="../program/test_diffusion1d.html">test_diffusion1D</a>
+      
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
+  <div class="list-group">
+    <a class="list-group-item" href="../sourcefile/test_diffusion1d.f90.html#src">test_diffusion1D.f90</a>
+  </div>
+</div>
+
+
+
+    </section>
+    <br class="visible-xs visible-sm hidden-md">
+
+    <section>
+      <h2><span class="anchor" id="src"></span>Source Code</h2>
+    <div class="hl"><pre><span></span><a name="ln-1"></a><span class="k">program </span><span class="n">test_diffusion1D</span>
+<a name="ln-2"></a>
+<a name="ln-3"></a><span class="c">!------------------------------------------------------------</span>
+<a name="ln-4"></a><span class="c">!-------SOLVE HEAT EQUATION IN 1D</span>
+<a name="ln-5"></a><span class="c">!------------------------------------------------------------</span>
+<a name="ln-6"></a><span class="k">use </span><span class="n">phys_consts</span><span class="p">,</span> <span class="n">only</span><span class="p">:</span> <span class="n">wp</span>
+<a name="ln-7"></a><span class="k">use </span><span class="n">diffusion</span>
+<a name="ln-8"></a><span class="k">implicit none</span>
+<a name="ln-9"></a>
+<a name="ln-10"></a><span class="kt">integer</span><span class="p">,</span> <span class="k">parameter</span> <span class="kd">::</span> <span class="n">npts</span><span class="o">=</span><span class="mi">25</span><span class="p">,</span><span class="n">lt</span><span class="o">=</span><span class="mi">100</span>
+<a name="ln-11"></a><span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">),</span> <span class="k">parameter</span> <span class="kd">::</span> <span class="n">outfn</span><span class="o">=</span><span class="s1">&#39;test_diffusion1d.dat&#39;</span>
+<a name="ln-12"></a>
+<a name="ln-13"></a><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span> <span class="k">dimension</span><span class="p">(</span><span class="n">npts</span><span class="p">)</span> <span class="kd">::</span> <span class="n">v1</span><span class="p">,</span><span class="n">dx1i</span>
+<a name="ln-14"></a><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span> <span class="k">dimension</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="n">npts</span><span class="o">+</span><span class="mi">2</span><span class="p">)</span> <span class="kd">::</span> <span class="n">x1</span><span class="p">,</span><span class="n">Ts</span>
+<a name="ln-15"></a><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span> <span class="k">dimension</span><span class="p">(</span><span class="n">npts</span><span class="p">)</span> <span class="kd">::</span> <span class="n">lambda</span><span class="p">,</span><span class="n">A</span><span class="p">,</span><span class="n">B</span><span class="p">,</span><span class="n">C</span><span class="p">,</span><span class="n">D</span><span class="p">,</span><span class="n">E</span>
+<a name="ln-16"></a><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span> <span class="k">dimension</span><span class="p">(</span><span class="n">npts</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="kd">::</span> <span class="n">x1i</span>
+<a name="ln-17"></a><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span> <span class="k">dimension</span><span class="p">(</span><span class="mi">0</span><span class="p">:</span><span class="n">npts</span><span class="o">+</span><span class="mi">2</span><span class="p">)</span> <span class="kd">::</span> <span class="n">dx1</span>
+<a name="ln-18"></a><span class="kt">integer</span> <span class="kd">::</span> <span class="n">lx1</span><span class="p">,</span><span class="n">it</span><span class="p">,</span><span class="n">ix1</span><span class="p">,</span><span class="n">u</span>
+<a name="ln-19"></a><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">)</span> <span class="kd">::</span> <span class="n">t</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">dt</span>
+<a name="ln-20"></a><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">)</span> <span class="kd">::</span> <span class="n">Tsminx1</span><span class="p">,</span><span class="n">Tsmaxx1</span>
+<a name="ln-21"></a>
+<a name="ln-22"></a>
+<a name="ln-23"></a><span class="c">!include ghost cell locations</span>
+<a name="ln-24"></a><span class="n">x1</span><span class="o">=</span><span class="p">[</span> <span class="p">(</span><span class="nb">dble</span><span class="p">(</span><span class="n">ix1</span><span class="p">)</span><span class="o">/</span><span class="nb">dble</span><span class="p">(</span><span class="n">npts</span><span class="p">),</span> <span class="n">ix1</span><span class="o">=-</span><span class="mi">2</span><span class="p">,</span><span class="n">npts</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="p">]</span>
+<a name="ln-25"></a><span class="c">!x1=[ (ix1, ix1=-2,npts+1) ]</span>
+<a name="ln-26"></a><span class="n">lx1</span><span class="o">=</span><span class="n">npts</span>   <span class="c">!exclude ghost cells in count</span>
+<a name="ln-27"></a>
+<a name="ln-28"></a>  <span class="k">print</span> <span class="o">*</span><span class="p">,</span><span class="s1">&#39;writing &#39;</span><span class="p">,</span><span class="n">outfn</span>
+<a name="ln-29"></a><span class="k">open</span><span class="p">(</span><span class="n">newunit</span><span class="o">=</span><span class="n">u</span><span class="p">,</span><span class="k">file</span><span class="o">=</span><span class="n">outfn</span><span class="p">,</span><span class="n">status</span><span class="o">=</span><span class="s1">&#39;replace&#39;</span><span class="p">)</span>
+<a name="ln-30"></a><span class="k">write</span><span class="p">(</span><span class="n">u</span><span class="p">,</span><span class="o">*</span><span class="p">)</span> <span class="n">lt</span>
+<a name="ln-31"></a><span class="k">write</span><span class="p">(</span><span class="n">u</span><span class="p">,</span><span class="o">*</span><span class="p">)</span> <span class="n">lx1</span>
+<a name="ln-32"></a><span class="k">call </span><span class="n">writearray</span><span class="p">(</span><span class="n">u</span><span class="p">,</span><span class="n">x1</span><span class="p">)</span>
+<a name="ln-33"></a>
+<a name="ln-34"></a>
+<a name="ln-35"></a><span class="c">!IC&#39;s</span>
+<a name="ln-36"></a><span class="n">Ts</span><span class="p">(:)</span><span class="o">=</span><span class="mf">0.0</span>
+<a name="ln-37"></a><span class="n">Ts</span><span class="p">(</span><span class="mi">11</span><span class="p">:</span><span class="mi">15</span><span class="p">)</span><span class="o">=</span><span class="mf">1.0</span>
+<a name="ln-38"></a><span class="n">lambda</span><span class="p">(:)</span><span class="o">=</span><span class="mf">1.0</span>
+<a name="ln-39"></a>
+<a name="ln-40"></a><span class="c">!backward diffs</span>
+<a name="ln-41"></a><span class="n">dx1</span><span class="o">=</span><span class="n">x1</span><span class="p">(</span><span class="mi">0</span><span class="p">:</span><span class="n">lx1</span><span class="o">+</span><span class="mi">2</span><span class="p">)</span><span class="o">-</span><span class="n">x1</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="n">lx1</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+<a name="ln-42"></a>
+<a name="ln-43"></a>
+<a name="ln-44"></a><span class="c">!interface data</span>
+<a name="ln-45"></a><span class="n">x1i</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">lx1</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">=</span><span class="mf">0.5</span><span class="o">*</span><span class="p">(</span><span class="n">x1</span><span class="p">(</span><span class="mi">0</span><span class="p">:</span><span class="n">lx1</span><span class="p">)</span><span class="o">+</span><span class="n">x1</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">lx1</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span>
+<a name="ln-46"></a><span class="n">dx1i</span><span class="o">=</span><span class="n">x1i</span><span class="p">(</span><span class="mi">2</span><span class="p">:</span><span class="n">lx1</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">-</span><span class="n">x1i</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">lx1</span><span class="p">)</span>
+<a name="ln-47"></a>
+<a name="ln-48"></a>
+<a name="ln-49"></a><span class="c">!typical diffusion time</span>
+<a name="ln-50"></a><span class="c">!dt=0.1*maxval(dx1)**2/maxval(lambda)</span>
+<a name="ln-51"></a><span class="n">dt</span><span class="o">=</span><span class="mf">0.04</span><span class="o">/</span><span class="n">lt</span>
+<a name="ln-52"></a>
+<a name="ln-53"></a>
+<a name="ln-54"></a><span class="k">do </span><span class="n">it</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">lt</span>
+<a name="ln-55"></a>  <span class="c">!time step</span>
+<a name="ln-56"></a>  <span class="n">t</span><span class="o">=</span><span class="n">t</span><span class="o">+</span><span class="n">dt</span>
+<a name="ln-57"></a>
+<a name="ln-58"></a>  <span class="c">!boundary values</span>
+<a name="ln-59"></a>  <span class="n">Tsminx1</span><span class="o">=</span><span class="mf">0.0</span>
+<a name="ln-60"></a>  <span class="n">Tsmaxx1</span><span class="o">=</span><span class="mf">0.0</span>
+<a name="ln-61"></a>
+<a name="ln-62"></a>  <span class="c">!diffuse</span>
+<a name="ln-63"></a>  <span class="n">A</span><span class="p">(:)</span><span class="o">=</span><span class="mf">0.0</span>
+<a name="ln-64"></a>  <span class="n">B</span><span class="p">(:)</span><span class="o">=</span><span class="mf">0.0</span>
+<a name="ln-65"></a>  <span class="n">C</span><span class="p">(:)</span><span class="o">=</span><span class="mf">1.0</span>
+<a name="ln-66"></a>  <span class="n">D</span><span class="p">(:)</span><span class="o">=</span><span class="n">lambda</span><span class="p">(:)</span>
+<a name="ln-67"></a>  <span class="n">E</span><span class="p">(:)</span><span class="o">=</span><span class="mf">0.0</span>
+<a name="ln-68"></a>  <span class="n">Ts</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">lx1</span><span class="p">)</span><span class="o">=</span><span class="n">backEuler1D</span><span class="p">(</span><span class="n">Ts</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">lx1</span><span class="p">),</span><span class="n">A</span><span class="p">,</span><span class="n">B</span><span class="p">,</span><span class="n">C</span><span class="p">,</span><span class="n">D</span><span class="p">,</span><span class="n">E</span><span class="p">,</span><span class="n">Tsminx1</span><span class="p">,</span><span class="n">Tsmaxx1</span><span class="p">,</span><span class="n">dt</span><span class="p">,</span><span class="n">dx1</span><span class="p">,</span><span class="n">dx1i</span><span class="p">)</span>
+<a name="ln-69"></a>
+<a name="ln-70"></a>  <span class="c">!output</span>
+<a name="ln-71"></a>  <span class="k">write</span><span class="p">(</span><span class="n">u</span><span class="p">,</span><span class="o">*</span><span class="p">)</span> <span class="n">t</span>
+<a name="ln-72"></a>  <span class="k">call </span><span class="n">writearray</span><span class="p">(</span><span class="n">u</span><span class="p">,</span><span class="n">Ts</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">lx1</span><span class="p">))</span>
+<a name="ln-73"></a><span class="k">end do</span>
+<a name="ln-74"></a>
+<a name="ln-75"></a><span class="k"> close</span><span class="p">(</span><span class="n">u</span><span class="p">)</span>
+<a name="ln-76"></a>
+<a name="ln-77"></a>
+<a name="ln-78"></a><span class="k">contains</span>
+<a name="ln-79"></a>
+<a name="ln-80"></a><span class="k">  subroutine </span><span class="n">writearray</span><span class="p">(</span><span class="n">u</span><span class="p">,</span><span class="k">array</span><span class="p">)</span>
+<a name="ln-81"></a>    <span class="kt">integer</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">u</span>
+<a name="ln-82"></a>    <span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span> <span class="k">dimension</span><span class="p">(:),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="k">array</span>
+<a name="ln-83"></a><span class="k">    </span>
+<a name="ln-84"></a><span class="k">    </span><span class="kt">integer</span> <span class="kd">::</span> <span class="n">k</span>
+<a name="ln-85"></a>
+<a name="ln-86"></a>    <span class="k">do </span><span class="n">k</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="k">array</span><span class="p">)</span>
+<a name="ln-87"></a>      <span class="k">write</span><span class="p">(</span><span class="n">u</span><span class="p">,</span><span class="o">*</span><span class="p">)</span> <span class="k">array</span><span class="p">(</span><span class="n">k</span><span class="p">)</span>
+<a name="ln-88"></a>    <span class="k">end do</span>
+<a name="ln-89"></a><span class="k">  end subroutine </span><span class="n">writearray</span>
+<a name="ln-90"></a>
+<a name="ln-91"></a>
+<a name="ln-92"></a>  <span class="k">subroutine </span><span class="n">write2Darray</span><span class="p">(</span><span class="n">u</span><span class="p">,</span><span class="k">array</span><span class="p">)</span>
+<a name="ln-93"></a>    <span class="kt">integer</span><span class="p">,</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">u</span>
+<a name="ln-94"></a>    <span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span> <span class="k">dimension</span><span class="p">(:,:),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="k">array</span>
+<a name="ln-95"></a><span class="k">    </span>
+<a name="ln-96"></a><span class="k">    </span><span class="kt">integer</span> <span class="kd">::</span> <span class="n">k1</span><span class="p">,</span><span class="n">k2</span>
+<a name="ln-97"></a>
+<a name="ln-98"></a>    <span class="k">do </span><span class="n">k1</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="k">array</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+<a name="ln-99"></a>      <span class="k">write</span><span class="p">(</span><span class="n">u</span><span class="p">,</span><span class="s1">&#39;(f8.0)&#39;</span><span class="p">)</span> <span class="p">(</span><span class="k">array</span><span class="p">(</span><span class="n">k1</span><span class="p">,</span><span class="n">k2</span><span class="p">),</span> <span class="n">k2</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="p">(</span><span class="k">array</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span>
+<a name="ln-100"></a>    <span class="k">end do</span>
+<a name="ln-101"></a><span class="k">  end subroutine </span><span class="n">write2Darray</span>
+<a name="ln-102"></a>
+<a name="ln-103"></a>
+<a name="ln-104"></a><span class="k">end program </span><span class="n">test_diffusion1D</span>
+</pre></div>
+
+    </section>
+    </div>
+  </div>
+
+  
+    <hr>    
+    </div> <!-- /container -->
+    <footer>
+      <div class="container">
+      <div class="row">
+        <div class="col-xs-6 col-md-4"><p>&copy; 2018 <a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/80x15.png" /></a>
+                                          </p></div>
+        <div class="col-xs-6 col-md-4 col-md-push-4">
+          <p class="text-right">
+            Documentation generated by 
+            <a href="https://github.com/cmacmackin/ford">FORD</a>
+            
+          </p>
+        </div>
+        <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> GEMINI3D was developed by Matthew Zettergren
+Guy Grubbs
+Michael Hirsch</p></div>
+      </div>
+      <br>
+      </div> <!-- /container -->    
+    </footer>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+<!--
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+-->
+    <script src="../js/bootstrap.min.js"></script>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <script src="../js/ie10-viewport-bug-workaround.js"></script>
+
+    <!-- MathJax JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } },
+        jax: ['input/TeX','input/MathML','output/HTML-CSS'],
+        extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']
+      });
+    </script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    
+    
+  </body>
+</html>
