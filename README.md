@@ -18,7 +18,7 @@ The CMake build system is used to manage the large number of dependencies and ex
 CMake &ge; 3.11 is required.
 If needed, CMake is easily installed *without* sudo/admin on:
 
-* Linux: use [cmake_setup.sh](https://github.com/scivision/cmake-utils)
+* Linux: use [cmake_setup.sh](https://github.com/scivision/cmake-utils/blob/master/cmake_setup.sh)
 * MacOS: `brew install cmake`
 * [Windows](https://cmake.org/download)
 
@@ -95,17 +95,18 @@ This test runs a short demo, taking about 2-5 minutes on a typical Mac / Linux l
    cd ~
    git clone https://github.com/mattzett/gemini
    cd gemini
-   ```
-2. Get the 2D test data: [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.1470073.svg)](https://doi.org/10.5281/zenodo.1470073)
-3. compile and run GEMINI demo: 
+2. Generate Makefile and auto-download test reference data  
    ```sh
-   cd ~/gemini/objects
+   cd objects
 
    cmake ..
-   
-   cmake --build .
-
-   ctest -V
+3. compile
+   ```sh
+   make -j
+   ```
+4. run GEMINI demo:
+   ```
+   ctest --output-on-failure
    ```
 
 If you get errors about libraries not found or it's using the wrong compiler, see the `build_.sh` scripts for examples of how to easily tell CMake to use custom library and compiler locations.
@@ -139,7 +140,7 @@ Libraries:
 ### self-tests
 GEMINI has self tests that compare the output from a "known" test problem to a reference output.  So running:
 ```sh
-ctest -V
+ctest --output-on-failure
 ```
 
 1. executes 
@@ -172,7 +173,7 @@ For the unavailable modules,
 ```sh
 module load git cmake mumps scalapack openmpi lapack metis
 
-module load gcc/6.2.0
+module load gcc
 export CC=gcc CXX=g++ FC=gfortran
 ```
 
@@ -181,12 +182,12 @@ Try to compile gemini as above, then
 
 Example:
 ```sh
-cmake -DSCALAPACK_ROOT=~/fortran-libs/scalapack -DMETIS_ROOT=/share/pkg/metis/5.1.0/install ..
+cmake -DSCALAPACK_ROOT=../fortran-libs/scalapack -DMETIS_ROOT=/share/pkg/metis/5.1.0/install ..
 ```
 
 Alternatively for Intel Fortran:
 ```sh
-FC=ifort cmake -DMETIS_ROOT=~/fortran-libs/metis ..
+FC=ifort cmake -DMETIS_ROOT=../fortran-libs/metis ..
 ```
 
 ## Known limitations and issues of GEMINI
@@ -217,7 +218,7 @@ GEMINI is Fortran 2008 compliant and uses two-space indents throughout (to accom
 ```sh
 cd objects
 cmake ..
-make
+make -j
 
 mpirun -np <number of processors>  ./gemini <input config file> <output directory>
 ```
@@ -256,29 +257,29 @@ make
 
 * run all self tests:
   ```sh
-  ctest -V
+  ctest --output-on-failure
   ```
 
 Select particular tests using `ctest -R <regexp>`. 
 
 * run 2D tests:
   ```sh
-  ctest -R 2D -V
+  ctest -R 2D --output-on-failure
   ```
 * run 3D tests:
   ```sh
-  ctest -R 3D -V
+  ctest -R 3D --output-on-failure
   ```
 
 Exclude particular tests using `ctest -E <regexp>`.
 
 * run all except 2D tests:
   ```sh
-  ctest -E 2D -V
+  ctest -E 2D --output-on-failure
   ```
 * run all except 3D tests:
   ```sh
-  ctest -E 3D -V
+  ctest -E 3D --output-on-failure
   ```
 
 Full debugging and testing is enabled by:
@@ -287,7 +288,7 @@ cmake -DCMAKE_BUILD_TYPE=Debug ..
 
 make
 
-ctest -V
+ctest --output-on-failure
 ```
 
 ## Input file format
