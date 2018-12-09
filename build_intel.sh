@@ -6,15 +6,19 @@
 . $MKLROOT/../bin/compilervars.sh intel64
 . $MKLROOT/bin/mklvars.sh intel64 ilp64
 #------ MUMPS rebuild ----------------------------------------------------------------------
-FC=mpiifort CC=mpiicc make d -s -C $MUMPS_ROOT -j2
+#FC=mpiifort CC=mpiicc make d -s -C $MUMPS_ROOT -j -l2
 
 #----- gemini -------------
 (
 rm -r objects/* # one-time, if you build for Gfortran previously
 cd objects
 
-FC=mpiifort cmake -DMUMPS_ROOT=$MUMPS_ROOT ..
+# some systems don't have mpiifort for Intel
+# use ifort as mpif90 get partially picked-up as GNU
+FC=ifort CC=icc cmake -DLIB_DIR=../../flibs-intel ..
+
 )
 
+# Requires CMake 3.12
 cmake --build objects -j
 

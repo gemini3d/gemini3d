@@ -3,6 +3,20 @@
 This file is intended to document development priorities for the GEMINI project.  
 
 
+## Things that need to be checked or otherwise dealt with
+
+* J3 is a bit weird in 2D test (changes direction unexpectedly), and needs to be checked
+<!-- * Need to get rid of homebrew interpolate and intrap in eqICs3D.m -->
+<!-- * Cmake needs to build msis executable needed for doing eqICs3D.m -->
+<!-- * Finish grid plotting adjustments -->
+* Work on some means for plot color axes to be adjustable.
+* refactor the precip and Efield generation scripts
+* Redo the way magcalc and magplot deal with file names and locations
+* magplot needs some way to know what the grid dimensions are so the user doesn't have to manually input 
+* Fix restart code for precipitation and electric field input files (need to be primed like the neutral input)
+* run + plot script...
+
+
 ## Future Code refactoring
 
 * Fair bit of code repetition in top-level electric field and precipitation interpolation routines
@@ -41,7 +55,4 @@ These are projects in progress involved GEMINI, you are encouraged to email M. Z
 
 ## Interfaces with other models
 * (VERY IMPORTANT) Ability to use GLOW to compute ionization and heating rates, as well as brightnesses of various bands of interest.  This brings up a lot of questions about how GLOW will function on a closed field-line grid; we may need to talk to Stan about this.  
-* Better documentation of and code for scripts linking in the MAGIC neutral perturbations (J. Snively)
-* Include scripts for linking to SIGMA scintillation model (K. Deshpande)
-* Scripts and interface for generating initial conditions from global model output (or from globally run GEMINI)
 

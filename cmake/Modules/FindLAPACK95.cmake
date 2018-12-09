@@ -14,17 +14,18 @@
 #   LAPACK95_FOUND    - True if the system has the LAPACK95 library
 #   LAPACK95_VERSION  - The version of the LAPACK95 library which was found
 
-if(${CMAKE_Fortran_COMPILER_ID} STREQUAL Intel)
+if(CMAKE_Fortran_COMPILER_ID STREQUAL Intel)
 
   find_path(LAPACK95_INCLUDE_DIR 
             NAMES lapack95.mod
-            HINTS $ENV{MKLROOT}/include 
-                  $ENV{MKLROOT}/include/intel64/lp64)
+            PATHS $ENV{MKLROOT}/include 
+                  $ENV{MKLROOT}/include/intel64/lp64
+            NO_DEFAULT_PATH)
           
   foreach(slib mkl_blas95_lp64 mkl_lapack95_lp64 mkl_intel_lp64 mkl_sequential mkl_core)
     find_library(LAPACK95_${slib}_LIBRARY
              NAMES ${slib}
-             HINTS $ENV{MKLROOT}/lib
+             PATHS $ENV{MKLROOT}/lib
                    $ENV{MKLROOT}/lib/intel64
                    $ENV{INTEL}/mkl/lib/intel64
              NO_DEFAULT_PATH)
@@ -38,40 +39,28 @@ if(${CMAKE_Fortran_COMPILER_ID} STREQUAL Intel)
   list(APPEND LAPACK95_LIBRARY pthread dl m)
 
 else()
+  set(BLA_F95 ON)
   find_package(LAPACK REQUIRED)
-
-
-  find_package(PkgConfig)
-  pkg_check_modules(PC_LAPACK95 QUIET LAPACK95)
-
 
   find_library(LAPACK95_LIBRARY
                NAMES lapack95.a
-               PATHS ${PC_LAPACK95_LIBRARY_DIRS}
-               PATH_SUFFIXES LAPACK95
-               HINTS ${LAPACK95_ROOT})
+               PATH_SUFFIXES LAPACK95)
 
   find_path(LAPACK95_INCLUDE_DIR
             NAMES f95_lapack.mod
-            PATHS ${PC_LAPACK95_INCLUDE_DIRS}
-            PATH_SUFFIXES LAPACK95 lapack95_modules
-            HINTS ${LAPACK95_ROOT})
-
-  set(LAPACK95_VERSION ${PC_LAPACK95_VERSION})
+            PATH_SUFFIXES LAPACK95 lapack95_modules)
 
 endif()
 
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(LAPACK95
-    FOUND_VAR LAPACK95_FOUND
-    REQUIRED_VARS LAPACK95_LIBRARY LAPACK95_INCLUDE_DIR
-    VERSION_VAR LAPACK95_VERSION)
+REQUIRED_VARS LAPACK95_LIBRARY LAPACK95_INCLUDE_DIR
+VERSION_VAR LAPACK95_VERSION)
 
 if(LAPACK95_FOUND)
   set(LAPACK95_LIBRARIES ${LAPACK95_LIBRARY} ${LAPACK_LIBRARIES})  # MUST be in this order!
   set(LAPACK95_INCLUDE_DIRS ${LAPACK95_INCLUDE_DIR} ${LAPACK_INCLUDE_DIRS})
-  set(LAPACK95_DEFINITIONS  ${PC_LAPACK95_CFLAGS_OTHER})
 endif()
 
 mark_as_advanced(LAPACK95_INCLUDE_DIR LAPACK95_LIBRARY)

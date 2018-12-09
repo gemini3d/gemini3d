@@ -35,7 +35,7 @@ if (MKL_INCLUDE_DIRS AND MKL_LIBRARIES AND MKL_INTERFACE_LIBRARY AND
 endif()
 
 # MPI
-if(${CMAKE_Fortran_COMPILER_ID} STREQUAL Intel)
+if(CMAKE_Fortran_COMPILER_ID STREQUAL Intel)
   if(MPI IN_LIST MKL_FIND_COMPONENTS)
     unset(MPI_Fortran_LIBRARIES)
     unset(MPI_Fortran_INCLUDE_DIRS)
@@ -47,15 +47,15 @@ if(${CMAKE_Fortran_COMPILER_ID} STREQUAL Intel)
               PATH_SUFFIXES include)
     if(MPI_Fortran_INCLUDE_DIR)
       set(MPI_Fortran_INCLUDE_DIRS ${MPI_Fortran_INCLUDE_DIR})
-      
+
       FOREACH(comp mkl_intel_lp64 mkl_intel_thread mkl_core iomp5)
         find_library(MKL_${comp}_lib
                 NAMES ${comp}
                 PATHS $ENV{MKLROOT}/../compiler/
-                      $ENV{MKLROOT}         
+                      $ENV{MKLROOT}
                 HINTS ${MKLROOT}
                 PATH_SUFFIXES lib/intel64 lib/intel64_lin)
-    
+
         if(MKL_${comp}_lib)
           list(APPEND MPI_Fortran_LIBRARIES ${MKL_${comp}_lib})
           mark_as_advanced(MKL_${comp}_lib)
@@ -63,7 +63,7 @@ if(${CMAKE_Fortran_COMPILER_ID} STREQUAL Intel)
             message(FATAL_ERROR "did not find " ${MKL_${comp}_lib})
         endif()
       ENDFOREACH()
-     
+
       list(APPEND MPI_Fortran_LIBRARIES pthread dl m)
       message(STATUS "Intel MKL MPI: include: " ${MPI_Fortran_INCLUDE_DIRS} "libraries: "  ${MPI_Fortran_LIBRARIES})
     endif(MPI_Fortran_INCLUDE_DIR)
@@ -92,8 +92,8 @@ endif()
 
 # include
 
-find_path(MKL_INCLUDE_DIR 
-          NAMES mkl.h 
+find_path(MKL_INCLUDE_DIR
+          NAMES mkl.h
           HINTS $ENV{MKLROOT}/include)
 
 
@@ -150,12 +150,12 @@ endif()
 # Handle the QUIETLY and REQUIRED arguments and set MKL_FOUND to TRUE if
 # all listed variables are TRUE.
 INCLUDE(FindPackageHandleStandardArgs)
-FIND_PACKAGE_HANDLE_STANDARD_ARGS(MKL DEFAULT_MSG 
-                MKL_LIBRARIES 
-                MKL_INCLUDE_DIRS 
-                MKL_INTERFACE_LIBRARY 
-                MKL_SEQUENTIAL_LAYER_LIBRARY 
+FIND_PACKAGE_HANDLE_STANDARD_ARGS(MKL DEFAULT_MSG
+                MKL_LIBRARIES
+                MKL_INCLUDE_DIRS
+                MKL_INTERFACE_LIBRARY
+                MKL_SEQUENTIAL_LAYER_LIBRARY
                 MKL_CORE_LIBRARY)
 
-MARK_AS_ADVANCED(MKL_INCLUDE_DIRS MKL_LIBRARIES 
+MARK_AS_ADVANCED(MKL_INCLUDE_DIRS MKL_LIBRARIES
                 MKL_INTERFACE_LIBRARY MKL_SEQUENTIAL_LAYER_LIBRARY MKL_CORE_LIBRARY)

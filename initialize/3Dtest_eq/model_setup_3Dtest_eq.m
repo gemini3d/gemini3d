@@ -9,10 +9,12 @@
  I=90;
 
 
-%ADD PATHS TO SCRIPT UTILS (hopefully this catches the fact that the makegrids need access to geomag conversion functions
-addpath ../../script_utils;
-addpath ../../setup;
-addpath ../../setup/gridgen;
+%ADD PATHS FOR FUNCTIONS
+cwd = fileparts(mfilename('fullpath'));
+addpath([cwd, filesep, '..', filesep,'..',filesep,'script_utils']);
+addpath([cwd, filesep, '..', filesep,'..',filesep,'setup']);
+addpath([cwd, filesep, '..', filesep,'..',filesep,'setup',filesep,'gridgen'])
+addpath([cwd, filesep, '..', filesep,'..',filesep,'vis']);
 
 
 %MATLAB GRID GENERATION
@@ -33,15 +35,8 @@ nme=2e11;
 
 
 %WRITE THE GRID AND INITIAL CONDITIONS
-outdir='~/zettergmdata/simulations/input/3Dtest_eq/'
 simlabel='3Dtest_eq'
+outdir='../../../simulations/input/2Dtest_eq/';
 writegrid(xg,outdir);
 time=UT*3600;   %doesn't matter for input files
 writedata(dmy,time,ns,vsx1,Ts,outdir,simlabel);
-
-
-%RESET PATH
-rmpath ../../script_utils;
-rmpath ../../setup;
-rmpath ../../setup/gridgen;
-

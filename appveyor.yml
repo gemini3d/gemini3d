@@ -1,0 +1,15 @@
+image:
+- ubuntu1804
+
+clone_depth: 3
+
+build: off
+
+install:
+- cd bin
+- cmake ..
+
+- cmake --build .
+
+test_script: ctest -R 2D --output-on-failure
+

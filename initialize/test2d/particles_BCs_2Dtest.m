@@ -4,10 +4,10 @@ addpath ../../script_utils;
 
 %REFERENCE GRID TO USE
 direcconfig='./'
-direcgrid='~/zettergmdata/simulations/input/2Dtest/'
+direcgrid='../simulations/input/test2d/'
 
 %CREATE SOME SPACE FOR OUTPUT FILES
-outdir='~/zettergmdata/simulations/input/2Dtest_particles/';
+outdir='../simulations/input/test2d_particles/';
 system(['mkdir ',outdir]);
 system(['rm ',outdir,'/*']);
 
@@ -70,6 +70,7 @@ mlatmean=mean(mlat);
 
 %WIDTH OF THE DISTURBANCE
 mlatsig=1/4*(mlatmax-mlatmin);
+mlatsig=max(mlatsig,0.01);    %can't let this go to zero...
 mlonsig=1/4*(mlonmax-mlonmin);
 
 
@@ -135,7 +136,7 @@ end
 Qit=zeros(llon,llat,lt);
 E0it=zeros(llon,llat,lt);
 for it=1:lt
-   Qit(:,:,it)=10*exp(-(MLON-mlonmean).^2/2*mlonsig^2).*exp(-(MLAT-mlatmean).^2/2*mlatsig^2);         %mW/m^2
+   Qit(:,:,it)=10*exp(-(MLON-mlonmean).^2/(2*mlonsig^2)).*exp(-(MLAT-mlatmean).^2/(2*mlatsig^2));         %mW/m^2
 %  Qit(:,:,it)=5;
   E0it(:,:,it)=5e3;%*ones(llon,llat);     %eV
 end

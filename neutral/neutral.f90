@@ -236,9 +236,9 @@ contains
         allocate(dnO(lzn,lrhon),dnN2(lzn,lrhon),dnO2(lzn,lrhon),dvnrho(lzn,lrhon),dvnz(lzn,lrhon),dTn(lzn,lrhon))
  
         !Define a grid
-        rhon=[ ((real(irhon,8)-1d0)*drhon, irhon=1,lrhon) ]
+        rhon=[ ((real(irhon,8)-1._wp)*drhon, irhon=1,lrhon) ]
 !        rhon=rhon+0.5d0*drhon       !to convert to cell-centered (can lead to some interpolation artifacts, for reasons that are unclear - need to revisit)
-        zn=[ ((real(izn,8)-1d0)*dzn, izn=1,lzn) ]
+        zn=[ ((real(izn,8)-1._wp)*dzn, izn=1,lzn) ]
 !        zn=zn+0.5d0*dzn             !cell-center
         if (myid==0) then
           write(*,*) 'Creating neutral grid with rho,z extent:  ',minval(rhon),maxval(rhon),minval(zn),maxval(zn)
@@ -279,10 +279,10 @@ contains
 
               !COMPUTE DISTANCES
               gammarads=cos(theta1)*cos(theta2)+sin(theta1)*sin(theta2)*cos(phi1-phi2)     !this is actually cos(gamma)
-              if (gammarads>1d0) then     !handles weird precision issues in 2D
-                gammarads=1d0
-              else if (gammarads<-1d0) then
-                gammarads=-1d0
+              if (gammarads>1._wp) then     !handles weird precision issues in 2D
+                gammarads=1._wp
+              else if (gammarads<-1._wp) then
+                gammarads=-1._wp
               end if
               gammarads=acos(gammarads)                     !angle between source location annd field point (in radians)
               rhoimat(ix1,ix2,ix3)=Re*gammarads    !rho here interpreted as the arc-length defined by angle between epicenter and ``field point''
@@ -291,18 +291,18 @@ contains
               theta3=theta2
               phi3=phi1
               gamma1=cos(theta2)*cos(theta3)+sin(theta2)*sin(theta3)*cos(phi2-phi3)
-              if (gamma1>1d0) then     !handles weird precision issues in 2D
-                gamma1=1d0
-              else if (gamma1<-1d0) then
-                gamma1=-1d0
+              if (gamma1>1._wp) then     !handles weird precision issues in 2D
+                gamma1=1._wp
+              else if (gamma1<-1._wp) then
+                gamma1=-1._wp
               end if
               gamma1=acos(gamma1)
 
               gamma2=cos(theta1)*cos(theta3)+sin(theta1)*sin(theta3)*cos(phi1-phi3)
-              if (gamma2>1d0) then     !handles weird precision issues in 2D
-                gamma2=1d0
-              else if (gamma2<-1d0) then
-                gamma2=-1d0
+              if (gamma2>1._wp) then     !handles weird precision issues in 2D
+                gamma2=1._wp
+              else if (gamma2<-1._wp) then
+                gamma2=-1._wp
               end if
               gamma2=acos(gamma2)
               xp=Re*gamma1
@@ -311,17 +311,17 @@ contains
 
               !COMPUTE COORDIANTES FROM DISTANCES
               if (theta3>theta1) then       !place distances in correct quadrant, here field point (theta3=theta2) is is SOUTHward of source point (theta1), whreas yp is distance northward so throw in a negative sign
-                yp=-1d0*yp            !do we want an abs here to be safe
+                yp=-1._wp*yp            !do we want an abs here to be safe
               end if
               if (phi2<phi3) then     !assume we aren't doing a global grid otherwise need to check for wrapping, here field point (phi2) less than soure point (phi3=phi1)
-                xp=-1d0*xp
+                xp=-1._wp*xp
               end if
               phip=atan2(yp,xp)
 
 
               !PROJECTIONS FROM NEUTURAL GRID VECTORS TO PLASMA GRID VECTORS
               !projection factors for mapping from axisymmetric to dipole (go ahead and compute projections so we don't have to do it repeatedly as sim runs
-              erhop=cos(phip)*x%e3(ix1,ix2,ix3,:)+(-1d0)*sin(phip)*x%etheta(ix1,ix2,ix3,:)     !unit vector for azimuth (referenced from epicenter - not geocenter!!!) in cartesian geocentric-geomagnetic coords.
+              erhop=cos(phip)*x%e3(ix1,ix2,ix3,:)+(-1._wp)*sin(phip)*x%etheta(ix1,ix2,ix3,:)     !unit vector for azimuth (referenced from epicenter - not geocenter!!!) in cartesian geocentric-geomagnetic coords.
               ezp=x%er(ix1,ix2,ix3,:)
 
               tmpvec=erhop*x%e1(ix1,ix2,ix3,:)
@@ -391,21 +391,21 @@ contains
 
         !send a full copy of the data to all of the workers
         do iid=1,lid-1
-          call mpi_send(dnO,lrhon*lzn,MPI_DOUBLE_PRECISION,iid,tagdnO,MPI_COMM_WORLD,ierr)
-          call mpi_send(dnN2,lrhon*lzn,MPI_DOUBLE_PRECISION,iid,tagdnN2,MPI_COMM_WORLD,ierr)
-          call mpi_send(dnO2,lrhon*lzn,MPI_DOUBLE_PRECISION,iid,tagdnO2,MPI_COMM_WORLD,ierr)
-          call mpi_send(dTn,lrhon*lzn,MPI_DOUBLE_PRECISION,iid,tagdTn,MPI_COMM_WORLD,ierr)
-          call mpi_send(dvnrho,lrhon*lzn,MPI_DOUBLE_PRECISION,iid,tagdvnrho,MPI_COMM_WORLD,ierr)
-          call mpi_send(dvnz,lrhon*lzn,MPI_DOUBLE_PRECISION,iid,tagdvnz,MPI_COMM_WORLD,ierr)
+          call mpi_send(dnO,lrhon*lzn,mpi_realprec,iid,tagdnO,MPI_COMM_WORLD,ierr)
+          call mpi_send(dnN2,lrhon*lzn,mpi_realprec,iid,tagdnN2,MPI_COMM_WORLD,ierr)
+          call mpi_send(dnO2,lrhon*lzn,mpi_realprec,iid,tagdnO2,MPI_COMM_WORLD,ierr)
+          call mpi_send(dTn,lrhon*lzn,mpi_realprec,iid,tagdTn,MPI_COMM_WORLD,ierr)
+          call mpi_send(dvnrho,lrhon*lzn,mpi_realprec,iid,tagdvnrho,MPI_COMM_WORLD,ierr)
+          call mpi_send(dvnz,lrhon*lzn,mpi_realprec,iid,tagdvnz,MPI_COMM_WORLD,ierr)
         end do
       else     !workers
         !receive a full copy of the data from root
-        call mpi_recv(dnO,lrhon*lzn,MPI_DOUBLE_PRECISION,0,tagdnO,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-        call mpi_recv(dnN2,lrhon*lzn,MPI_DOUBLE_PRECISION,0,tagdnN2,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-        call mpi_recv(dnO2,lrhon*lzn,MPI_DOUBLE_PRECISION,0,tagdnO2,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-        call mpi_recv(dTn,lrhon*lzn,MPI_DOUBLE_PRECISION,0,tagdTn,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-        call mpi_recv(dvnrho,lrhon*lzn,MPI_DOUBLE_PRECISION,0,tagdvnrho,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-        call mpi_recv(dvnz,lrhon*lzn,MPI_DOUBLE_PRECISION,0,tagdvnz,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+        call mpi_recv(dnO,lrhon*lzn,mpi_realprec,0,tagdnO,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+        call mpi_recv(dnN2,lrhon*lzn,mpi_realprec,0,tagdnN2,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+        call mpi_recv(dnO2,lrhon*lzn,mpi_realprec,0,tagdnO2,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+        call mpi_recv(dTn,lrhon*lzn,mpi_realprec,0,tagdTn,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+        call mpi_recv(dvnrho,lrhon*lzn,mpi_realprec,0,tagdvnrho,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+        call mpi_recv(dvnz,lrhon*lzn,mpi_realprec,0,tagdvnz,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
       end if
 
 
@@ -533,11 +533,11 @@ contains
     nn(:,:,:,1)=nnmsis(:,:,:,1)+dnOinow
     nn(:,:,:,2)=nnmsis(:,:,:,2)+dnN2inow
     nn(:,:,:,3)=nnmsis(:,:,:,3)+dnO2inow 
-    nn(:,:,:,1)=max(nn(:,:,:,1),1d0)
-    nn(:,:,:,2)=max(nn(:,:,:,2),1d0)
-    nn(:,:,:,3)=max(nn(:,:,:,3),1d0)
+    nn(:,:,:,1)=max(nn(:,:,:,1),1._wp)
+    nn(:,:,:,2)=max(nn(:,:,:,2),1._wp)
+    nn(:,:,:,3)=max(nn(:,:,:,3),1._wp)
     Tn=Tnmsis+dTninow
-    Tn=max(Tn,50d0)
+    Tn=max(Tn,50._wp)
     vn1=vn1base+dvn1inow
     vn2=vn2base+dvn2inow
     vn3=vn3base+dvn3inow
@@ -619,11 +619,11 @@ contains
         allocate(dnO(lzn,lyn),dnN2(lzn,lyn),dnO2(lzn,lyn),dvnrho(lzn,lyn),dvnz(lzn,lyn),dTn(lzn,lyn))
  
         !Define a grid
-        yn=[ ((real(iyn,8)-1d0)*dyn, iyn=1,lyn) ]
+        yn=[ ((real(iyn,8)-1._wp)*dyn, iyn=1,lyn) ]
         meanyn=sum(yn,1)/size(yn,1)
         yn=yn-meanyn     !the neutral grid should be centered on zero for a cartesian interpolation
 !        rhon=rhon+0.5d0*drhon       !to convert to cell-centered (can lead to some interpolation artifacts...
-        zn=[ ((real(izn,8)-1d0)*dzn, izn=1,lzn) ]
+        zn=[ ((real(izn,8)-1._wp)*dzn, izn=1,lzn) ]
 !        zn=zn+0.5d0*dzn             !cell-center
         if (myid==0) then
           write(*,*) 'Creating neutral grid with y,z extent:  ',minval(yn),maxval(yn),minval(zn),maxval(zn)
@@ -655,10 +655,10 @@ contains
 
               !COMPUTE DISTANCES
               gammarads=cos(theta1)*cos(theta2)+sin(theta1)*sin(theta2)*cos(phi1-phi2)     !this is actually cos(gamma)
-              if (gammarads>1d0) then     !handles weird precision issues in 2D
-                gammarads=1d0
-              else if (gammarads<-1d0) then
-                gammarads=-1d0
+              if (gammarads>1._wp) then     !handles weird precision issues in 2D
+                gammarads=1._wp
+              else if (gammarads<-1._wp) then
+                gammarads=-1._wp
               end if
               gammarads=acos(gammarads)                     !angle between source location annd field point (in radians)
               rhoimat(ix1,ix2,ix3)=Re*gammarads    !rho here interpreted as the arc-length defined by angle between epicenter and ``field point''
@@ -667,18 +667,18 @@ contains
               theta3=theta2
               phi3=phi1
               gamma1=cos(theta2)*cos(theta3)+sin(theta2)*sin(theta3)*cos(phi2-phi3)
-              if (gamma1>1d0) then     !handles weird precision issues in 2D
-                gamma1=1d0
-              else if (gamma1<-1d0) then
-                gamma1=-1d0
+              if (gamma1>1._wp) then     !handles weird precision issues in 2D
+                gamma1=1._wp
+              else if (gamma1<-1._wp) then
+                gamma1=-1._wp
               end if
               gamma1=acos(gamma1)
 
               gamma2=cos(theta1)*cos(theta3)+sin(theta1)*sin(theta3)*cos(phi1-phi3)
-              if (gamma2>1d0) then     !handles weird precision issues in 2D
-                gamma2=1d0
-              else if (gamma2<-1d0) then
-                gamma2=-1d0
+              if (gamma2>1._wp) then     !handles weird precision issues in 2D
+                gamma2=1._wp
+              else if (gamma2<-1._wp) then
+                gamma2=-1._wp
               end if
               gamma2=acos(gamma2)
               xp=Re*gamma1
@@ -687,10 +687,10 @@ contains
 
               !COMPUTE COORDIANTES FROM DISTANCES
               if (theta3>theta1) then       !place distances in correct quadrant, here field point (theta3=theta2) is is SOUTHward of source point (theta1), whreas yp is distance northward so throw in a negative sign
-                yp=-1d0*yp            !do we want an abs here to be safe
+                yp=-1._wp*yp            !do we want an abs here to be safe
               end if
               if (phi2<phi3) then     !assume we aren't doing a global grid otherwise need to check for wrapping, here field point (phi2) less than soure point (phi3=phi1)
-                xp=-1d0*xp
+                xp=-1._wp*xp
               end if
               phip=atan2(yp,xp)
 
@@ -702,7 +702,7 @@ contains
               !PROJECTIONS FROM NEUTURAL GRID VECTORS TO PLASMA GRID VECTORS
               !projection factors for mapping from axisymmetric to dipole (go ahead and compute projections so we don't have to do it repeatedly as sim runs
               ezp=x%er(ix1,ix2,ix3,:)
-              eyp=-1d0*x%etheta(ix1,ix2,ix3,:)
+              eyp=-1._wp*x%etheta(ix1,ix2,ix3,:)
 
               tmpvec=eyp*x%e1(ix1,ix2,ix3,:)
               tmpsca=sum(tmpvec)
@@ -770,21 +770,21 @@ contains
 
         !send a full copy of the data to all of the workers
         do iid=1,lid-1
-          call mpi_send(dnO,lyn*lzn,MPI_DOUBLE_PRECISION,iid,tagdnO,MPI_COMM_WORLD,ierr)
-          call mpi_send(dnN2,lyn*lzn,MPI_DOUBLE_PRECISION,iid,tagdnN2,MPI_COMM_WORLD,ierr)
-          call mpi_send(dnO2,lyn*lzn,MPI_DOUBLE_PRECISION,iid,tagdnO2,MPI_COMM_WORLD,ierr)
-          call mpi_send(dTn,lyn*lzn,MPI_DOUBLE_PRECISION,iid,tagdTn,MPI_COMM_WORLD,ierr)
-          call mpi_send(dvnrho,lyn*lzn,MPI_DOUBLE_PRECISION,iid,tagdvnrho,MPI_COMM_WORLD,ierr)
-          call mpi_send(dvnz,lyn*lzn,MPI_DOUBLE_PRECISION,iid,tagdvnz,MPI_COMM_WORLD,ierr)
+          call mpi_send(dnO,lyn*lzn,mpi_realprec,iid,tagdnO,MPI_COMM_WORLD,ierr)
+          call mpi_send(dnN2,lyn*lzn,mpi_realprec,iid,tagdnN2,MPI_COMM_WORLD,ierr)
+          call mpi_send(dnO2,lyn*lzn,mpi_realprec,iid,tagdnO2,MPI_COMM_WORLD,ierr)
+          call mpi_send(dTn,lyn*lzn,mpi_realprec,iid,tagdTn,MPI_COMM_WORLD,ierr)
+          call mpi_send(dvnrho,lyn*lzn,mpi_realprec,iid,tagdvnrho,MPI_COMM_WORLD,ierr)
+          call mpi_send(dvnz,lyn*lzn,mpi_realprec,iid,tagdvnz,MPI_COMM_WORLD,ierr)
         end do
       else     !workers
         !receive a full copy of the data from root
-        call mpi_recv(dnO,lyn*lzn,MPI_DOUBLE_PRECISION,0,tagdnO,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-        call mpi_recv(dnN2,lyn*lzn,MPI_DOUBLE_PRECISION,0,tagdnN2,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-        call mpi_recv(dnO2,lyn*lzn,MPI_DOUBLE_PRECISION,0,tagdnO2,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-        call mpi_recv(dTn,lyn*lzn,MPI_DOUBLE_PRECISION,0,tagdTn,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-        call mpi_recv(dvnrho,lyn*lzn,MPI_DOUBLE_PRECISION,0,tagdvnrho,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-        call mpi_recv(dvnz,lyn*lzn,MPI_DOUBLE_PRECISION,0,tagdvnz,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+        call mpi_recv(dnO,lyn*lzn,mpi_realprec,0,tagdnO,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+        call mpi_recv(dnN2,lyn*lzn,mpi_realprec,0,tagdnN2,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+        call mpi_recv(dnO2,lyn*lzn,mpi_realprec,0,tagdnO2,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+        call mpi_recv(dTn,lyn*lzn,mpi_realprec,0,tagdTn,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+        call mpi_recv(dvnrho,lyn*lzn,mpi_realprec,0,tagdvnrho,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+        call mpi_recv(dvnz,lyn*lzn,mpi_realprec,0,tagdvnz,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
       end if
 
 
@@ -912,11 +912,11 @@ contains
     nn(:,:,:,1)=nnmsis(:,:,:,1)+dnOinow
     nn(:,:,:,2)=nnmsis(:,:,:,2)+dnN2inow
     nn(:,:,:,3)=nnmsis(:,:,:,3)+dnO2inow 
-    nn(:,:,:,1)=max(nn(:,:,:,1),1d0)
-    nn(:,:,:,2)=max(nn(:,:,:,2),1d0)
-    nn(:,:,:,3)=max(nn(:,:,:,3),1d0)
+    nn(:,:,:,1)=max(nn(:,:,:,1),1._wp)
+    nn(:,:,:,2)=max(nn(:,:,:,2),1._wp)
+    nn(:,:,:,3)=max(nn(:,:,:,3),1._wp)
     Tn=Tnmsis+dTninow
-    Tn=max(Tn,50d0)
+    Tn=max(Tn,50._wp)
     vn1=vn1base+dvn1inow
     vn2=vn2base+dvn2inow
     vn3=vn3base+dvn3inow

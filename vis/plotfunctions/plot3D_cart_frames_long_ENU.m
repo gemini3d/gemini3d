@@ -205,7 +205,7 @@ set(gca,'FontSize',FS);
 axis xy;
 axis square;
 colormap(parula(256));
-caxis(caxlims)
+caxis(caxlims);
 c=colorbar;
 xlabel(c,parmlbl);
 xlabel('eastward dist. (km)');
@@ -251,7 +251,7 @@ axis xy;
 axis square;
 %axis tight;
 colormap(parula(256));
-caxis(caxlims)
+caxis(caxlims);
 c=colorbar;
 xlabel(c,parmlbl);
 ylabel('northward dist. (km)');
@@ -273,7 +273,7 @@ axis xy;
 axis square;
 axis tight;
 colormap(parula(256));
-caxis(caxlims)
+caxis(caxlims);
 c=colorbar;
 xlabel(c,parmlbl);
 xlabel('northward dist. (km)');

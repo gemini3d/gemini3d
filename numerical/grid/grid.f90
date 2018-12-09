@@ -1,7 +1,12 @@
 module grid
 use, intrinsic:: iso_fortran_env, only: stderr=>error_unit
 use phys_consts, only: Gconst,Me,Re,wp
-use mpimod
+use mpimod, only: myid, lid, &
+  tagx1, tagx2, tagx3, tagtheta, tagr, tagphi, tagnull, taglx1, taglx2, taglx3, taglx3all, taginc, &
+  tagh1, tagh2, tagh3, tagglat, tagglon, tageunit1, tageunit2, tageunit3, tagetheta, tager, &
+  tagalt, tagbmag, tagephi, &
+  mpi_realprec, mpi_integer, mpi_comm_world, mpi_status_ignore, ierr, &
+  bcast_recv, bcast_send, bcast_recv3d_ghost, bcast_send3d_ghost, bcast_recv3d_x3i, bcast_send3d_x3i
 
 implicit none
 
@@ -464,15 +469,15 @@ contains
 
     !SEND FULL X1 AND X2 GRIDS TO EACH WORKER (ONLY X3-DIM. IS INVOLVED IN THE MPI
     do iid=1,lid-1
-      call mpi_send(x%x1,lx1+4,MPI_DOUBLE_PRECISION,iid,tagx1,MPI_COMM_WORLD,ierr)
-      call mpi_send(x%x2,lx2+4,MPI_DOUBLE_PRECISION,iid,tagx2,MPI_COMM_WORLD,ierr)
-      call mpi_send(x%x3all,lx3all+4,MPI_DOUBLE_PRECISION,iid,tagx3,MPI_COMM_WORLD,ierr)    !workers may need a copy of this, e.g. for boudnary conditiosn
-      call mpi_send(x%dx1,lx1+3,MPI_DOUBLE_PRECISION,iid,tagx1,MPI_COMM_WORLD,ierr)
-      call mpi_send(x%dx2,lx2+3,MPI_DOUBLE_PRECISION,iid,tagx2,MPI_COMM_WORLD,ierr)
-      call mpi_send(x%x1i,lx1+1,MPI_DOUBLE_PRECISION,iid,tagx1,MPI_COMM_WORLD,ierr)
-      call mpi_send(x%x2i,lx2+1,MPI_DOUBLE_PRECISION,iid,tagx2,MPI_COMM_WORLD,ierr)
-      call mpi_send(x%dx1i,lx1,MPI_DOUBLE_PRECISION,iid,tagx1,MPI_COMM_WORLD,ierr)
-      call mpi_send(x%dx2i,lx2,MPI_DOUBLE_PRECISION,iid,tagx2,MPI_COMM_WORLD,ierr)
+      call mpi_send(x%x1,lx1+4,mpi_realprec,iid,tagx1,MPI_COMM_WORLD,ierr)
+      call mpi_send(x%x2,lx2+4,mpi_realprec,iid,tagx2,MPI_COMM_WORLD,ierr)
+      call mpi_send(x%x3all,lx3all+4,mpi_realprec,iid,tagx3,MPI_COMM_WORLD,ierr)    !workers may need a copy of this, e.g. for boudnary conditiosn
+      call mpi_send(x%dx1,lx1+3,mpi_realprec,iid,tagx1,MPI_COMM_WORLD,ierr)
+      call mpi_send(x%dx2,lx2+3,mpi_realprec,iid,tagx2,MPI_COMM_WORLD,ierr)
+      call mpi_send(x%x1i,lx1+1,mpi_realprec,iid,tagx1,MPI_COMM_WORLD,ierr)
+      call mpi_send(x%x2i,lx2+1,mpi_realprec,iid,tagx2,MPI_COMM_WORLD,ierr)
+      call mpi_send(x%dx1i,lx1,mpi_realprec,iid,tagx1,MPI_COMM_WORLD,ierr)
+      call mpi_send(x%dx2i,lx2,mpi_realprec,iid,tagx2,MPI_COMM_WORLD,ierr)
     end do
     write(*,*) 'Done sending common variables to workers...'
 
@@ -695,15 +700,15 @@ contains
 
 
     !RECEIVE GRID DATA FROM ROOT
-    call mpi_recv(x%x1,lx1+4,MPI_DOUBLE_PRECISION,0,tagx1,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-    call mpi_recv(x%x2,lx2+4,MPI_DOUBLE_PRECISION,0,tagx2,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-    call mpi_recv(x%x3all,lx3all+4,MPI_DOUBLE_PRECISION,0,tagx3,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-    call mpi_recv(x%dx1,lx1+3,MPI_DOUBLE_PRECISION,0,tagx1,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-    call mpi_recv(x%dx2,lx2+3,MPI_DOUBLE_PRECISION,0,tagx2,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-    call mpi_recv(x%x1i,lx1+1,MPI_DOUBLE_PRECISION,0,tagx1,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-    call mpi_recv(x%x2i,lx2+1,MPI_DOUBLE_PRECISION,0,tagx2,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-    call mpi_recv(x%dx1i,lx1,MPI_DOUBLE_PRECISION,0,tagx1,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-    call mpi_recv(x%dx2i,lx2,MPI_DOUBLE_PRECISION,0,tagx2,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+    call mpi_recv(x%x1,lx1+4,mpi_realprec,0,tagx1,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+    call mpi_recv(x%x2,lx2+4,mpi_realprec,0,tagx2,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+    call mpi_recv(x%x3all,lx3all+4,mpi_realprec,0,tagx3,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+    call mpi_recv(x%dx1,lx1+3,mpi_realprec,0,tagx1,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+    call mpi_recv(x%dx2,lx2+3,mpi_realprec,0,tagx2,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+    call mpi_recv(x%x1i,lx1+1,mpi_realprec,0,tagx1,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+    call mpi_recv(x%x2i,lx2+1,mpi_realprec,0,tagx2,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+    call mpi_recv(x%dx1i,lx1,mpi_realprec,0,tagx1,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+    call mpi_recv(x%dx2i,lx2,mpi_realprec,0,tagx2,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
 
     call bcast_recv(x%x3,tagx3)
 

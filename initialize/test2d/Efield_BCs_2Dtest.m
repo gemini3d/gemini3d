@@ -3,11 +3,11 @@ addpath ../../script_utils;
 
 %REFERENCE GRID TO USE
 direcconfig='./'
-direcgrid='~/zettergmdata/simulations/input/2Dtest/'
+direcgrid='../simulations/input/test2d/'
 
 
 %OUTPUT FILE LOCATION
-outdir='~/zettergmdata/simulations/input/2Dtest_fields/';
+outdir='../simulations/input/test2d_fields/';
 system(['mkdir ',outdir]);
 
 

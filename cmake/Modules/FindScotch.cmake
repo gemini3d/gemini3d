@@ -29,7 +29,6 @@
 # The user can give specific paths where to find the libraries adding cmake
 # options at configure (ex: cmake .. -DScotch_ROOT=path/to/scotch):
 #  Scotch_ROOT             - Where to find the base directory of scotch
-#  Scotch_INCLUDE_DIR          - Where to find the header files
 #  Scotch_LIBRARY_DIR          - Where to find the library files
 # The module can also look for the following environment variables if paths
 # are not given as cmake variable: Scotch_ROOT
@@ -62,29 +61,13 @@ if(Scotch_FIND_COMPONENTS)
   endforeach()
 endif()
 
-# Scotch may depend on Threads, try to find it
-if (NOT Threads_FOUND)
-  if (Scotch_FIND_REQUIRED)
-    find_package(Threads REQUIRED)
-  else()
-    find_package(Threads)
-  endif()
-endif()
 
 # Looking for include
 # -------------------
 
 find_path(Scotch_INCLUDE_DIR
-  NAMES scotch.h
-  HINTS ${Scotch_ROOT} ${Scotch_INCLUDE_DIR}
-  PATH_SUFFIXES include include/scotch)
-
-if (Scotch_INCLUDE_DIR)
-  set(Scotch_INCLUDE_DIRS ${Scotch_INCLUDE_DIR})
-else()
-  message(WARNING "could not find scotch.h")
-  return()
-endif()
+          NAMES scotch.h
+          PATH_SUFFIXES include include/scotch)
 
 # Looking for lib
 # ---------------
@@ -126,12 +109,14 @@ endforeach()
 list(APPEND Scotch_LIBRARY_DIRS ${CMAKE_THREAD_LIBS_INIT})
 list(REMOVE_DUPLICATES Scotch_LIBRARY_DIRS)
 
-mark_as_advanced(Scotch_ROOT Scotch_INCLUDE_DIR)
 
 # check that SCOTCH has been found
 # ---------------------------------
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(Scotch 
-          FOUND_VAR Scotch_FOUND
-          REQUIRED_VARS Scotch_LIBRARIES Scotch_INCLUDE_DIRS)
+find_package_handle_standard_args(Scotch
+          REQUIRED_VARS Scotch_LIBRARIES Scotch_INCLUDE_DIR)
+
+set(Scotch_INCLUDE_DIRS ${Scotch_INCLUDE_DIR})
+
+mark_as_advanced(Scotch_ROOT Scotch_INCLUDE_DIR)
 

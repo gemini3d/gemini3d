@@ -3,7 +3,8 @@ function ok = compare_all(dir1, dir2)
   % the absolute and relative tolerance account for slight IEEE-754 based differences,
   % including non-associativity of floating-point arithmetic.
   % these parameters are a bit arbitrary.
-  
+
+% per MZ Oct 17, 2018:
 % Ti,Te=1 K
 % ne=1e6 m-3
 % vi,v2,v3=1 m/s
@@ -23,9 +24,7 @@ rtol=1e-5; rtolN=rtol; rtolT=rtol; rtolJ=rtol; rtolV=rtol;
 atol=1e-9; atolN=1e6;  atolT=1;    atolJ=1e-9;   atolV=1;
 
 %% READ IN THE SIMULATION INFORMATION
-[ymd0,UTsec0,tdur,dtout,~,mloc] = readconfig([dir1,filesep,'inputs/config.ini']);
-%% load grid
-xg=readgrid([dir1,filesep,'inputs',filesep]);
+[ymd0,UTsec0,tdur,dtout] = readconfig([dir1,filesep,'inputs/config.ini']);
 %% TIMES OF INTEREST
 times=UTsec0:dtout:UTsec0+tdur;
 Nt = length(times);
@@ -38,8 +37,8 @@ ok = false;
   
 for it=1:Nt 
   st = ['UTsec ', num2str(times(it))];
-  [neA,v1A,TiA,TeA,J1A,v2A,v3A,J2A,J3A] = loadframe(dir1,UTsec,ymd,UTsec0,ymd0,mloc,xg);
-  [neB,v1B,TiB,TeB,J1B,v2B,v3B,J2B,J3B] = loadframe(dir2,UTsec,ymd,UTsec0,ymd0,mloc,xg);
+  [neA,~,~,~,v1A,TiA,TeA,J1A,v2A,v3A,J2A,J3A] = loadframe(dir1,ymd,UTsec,ymd0,UTsec0);
+  [neB,~,~,~,v1B,TiB,TeB,J1B,v2B,v3B,J2B,J3B] = loadframe(dir2,ymd,UTsec,ymd0,UTsec0);
   
   ok = ok + ~assert_allclose(neA,neB,rtolN,atolN,['Ne ',st], true);
   

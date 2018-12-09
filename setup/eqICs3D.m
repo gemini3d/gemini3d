@@ -20,7 +20,7 @@ if abs(xg.r(1,1,1)-xg.r(xg.lx(1),1,1))<1         %closed dipole grid
     g=max(g,1);
     for ix3=1:lx3
       for ix2=1:lx2
-        [tmp,ialt]=min(abs(g(:,ix2,ix3)-1));
+        [~,ialt]=min(abs(g(:,ix2,ix3)-1));
         if ialt~=lalt
             g(ialt:lalt,ix2,ix3)=1;
         end
@@ -70,7 +70,8 @@ for ix3=1:lx3
         z=[z0f; z];
         integrand=[1./H(iord)];
         integrand=[integrand; integrand(lz)];
-        redheight=intrap(integrand,z);
+%        redheight=intrap(integrand,z);
+        redheight=cumtrapz(z,integrand);
         netop=n0*exp(-redheight);
         nesort=zeros(lz,1);
         for iz=1:lz
@@ -88,7 +89,8 @@ for ix3=1:lx3
         [altsort,iord]=sort(alt(:,ix2,ix3));
         nsort=ns(:,ix2,ix3,1);
         nsort=nsort(iord);
-        n0=interpolate(nsort,altsort,zref,'lin','lin');
+%        n0=interpolate(nsort,altsort,zref,'lin','lin');
+        n0=interp1(altsort,nsort,zref);
         %     [tmp,iref]=min(abs(alt(:,ix2,ix3)-900e3));
         %     if xg.r(1,1)>xg.r(2,1)
         %         inds0=1:iref;
@@ -105,7 +107,9 @@ for ix3=1:lx3
         z=[zref; z];
         integrand=[1./H(iord)];
         integrand=[integrand; integrand(lz)];
-        redheight=intrap(integrand,z);
+%        redheight=intrap(integrand,z);
+        redheight=cumtrapz(z,integrand);
+        redheight=redheight(2:end);
         n1top=n0*exp(-redheight);
         n1sort=zeros(lz,1);
         for iz=1:lz
@@ -140,7 +144,9 @@ for ix3=1:lx3
         z=[z; 2*z(lz)-z(lz-1)];
         integrand=[1./H(iord)];
         integrand=[integrand; integrand(lz)];
-        redheight=intrap(integrand,z);
+%        redheight=intrap(integrand,z);
+        redheight=cumtrapz(z,integrand);
+        redheight=redheight(2:end);
         nmolctop=n0*exp(-redheight);
         nmolcsort=zeros(lz,1);
         for iz=1:lz
@@ -162,7 +168,7 @@ for ix3=1:lx3
         end
         n0=ns(iref,ix2,ix3,6);
     else
-        [tmp,iref]=max(alt(:,ix2,ix3));
+        [~,iref]=max(alt(:,ix2,ix3));
         n0=1e6;
     end
     ns(inds1,ix2,ix3,6)=chapmana(z,n0,alt(iref,ix2,ix3),mean(Hf));

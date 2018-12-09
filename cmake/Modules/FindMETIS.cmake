@@ -1,49 +1,40 @@
-# - Try to find METIS (not ParMETIS) library
-# https://cmake.org/cmake/help/v3.11/manual/cmake-developer.7.html#find-modules
+# Distributed under the OSI-approved BSD 3-Clause License.  See accompanying
+# file Copyright.txt or https://cmake.org/licensing for details.
 
-#.rst:
-# FindMETIS
-# -------
-# Michael Hirsch, Ph.D.
-#
-# Finds the METIS library
-#
-# This will define the following variables::
-#
-#   METIS_FOUND    - True if the system has the METIS library
-#   METIS_VERSION  - The version of the METIS library which was found
+#[=======================================================================[.rst:
+FindMETIS
+-------
+Michael Hirsch, Ph.D.
 
-find_package(PkgConfig)
-pkg_check_modules(PC_METIS QUIET METIS)
+Finds the METIS library
+
+Result Variables
+^^^^^^^^^^^^^^^^
+
+METIS_LIBRARIES
+  libraries to be linked
+
+METIS_INCLUDE_DIRS
+  dirs to be included
+
+#]=======================================================================]
 
 
 find_library(METIS_LIBRARY
              NAMES metis
-             PATHS ${PC_METIS_LIBRARY_DIRS}
-             PATH_SUFFIXES METIS lib libmetis build/Linux-x86_64/libmetis
-             HINTS ${METIS_ROOT})
+             PATH_SUFFIXES METIS lib libmetis build/Linux-x86_64/libmetis)
 
 find_path(METIS_INCLUDE_DIR
           NAMES metis.h
-          PATHS ${PC_METIS_INCLUDE_DIRS}
-          PATH_SUFFIXES METIS include
-          HINTS ${METIS_ROOT})
-
-set(METIS_VERSION ${PC_METIS_VERSION})
+          PATH_SUFFIXES METIS include)
 
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(METIS
-    FOUND_VAR METIS_FOUND
-    REQUIRED_VARS METIS_LIBRARY METIS_INCLUDE_DIR
-    VERSION_VAR METIS_VERSION)
+    REQUIRED_VARS METIS_LIBRARY METIS_INCLUDE_DIR)
 
-if(METIS_FOUND)
-  set(METIS_LIBRARIES ${METIS_LIBRARY})
-  set(METIS_INCLUDE_DIRS ${METIS_INCLUDE_DIR})
-  set(METIS_DEFINITIONS  ${PC_METIS_CFLAGS_OTHER})
-endif()
-
+set(METIS_LIBRARIES ${METIS_LIBRARY})
+set(METIS_INCLUDE_DIRS ${METIS_INCLUDE_DIR})
 
 mark_as_advanced(METIS_INCLUDE_DIR METIS_LIBRARY)
 

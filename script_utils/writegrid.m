@@ -1,4 +1,3 @@
-%function writegrid(xg,outdir,outID)
 function writegrid(xg,outdir)
 
 %--------------------------------------------------------
@@ -7,13 +6,18 @@ function writegrid(xg,outdir)
 %-----FORTRAN CODE BUT POSSIBLY USEFUL FOR PLOTTING)
 %--------------------------------------------------------
  
-%  filename=[outdir,'/',outID,'_simsize.dat'];
+  %% MAKE THE OUTPUT DIRECTORY IF IT DOESN'T EXIST AND NOTIFY USER
+  if (~(exist(outdir,'dir')==7))
+    mkdir(outdir);
+    disp(['Note that directory:  ',outdir,' needed to be created for grid file...']);
+  end
+
+
   filename=[outdir,'/simsize.dat'];
   fid=fopen(filename,'w');
   fwrite(fid,xg.lx,'integer*4');
   fclose(fid);
   
-%  fid=fopen([outdir,'/',outID,'_simgrid.dat'],'w');
   fid=fopen([outdir,'/simgrid.dat'],'w');
   
   fwrite(fid,xg.x1,'real*8');    %coordinate values

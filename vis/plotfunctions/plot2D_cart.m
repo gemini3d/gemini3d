@@ -18,14 +18,15 @@ else
   validateattr(sourceloc, {'numeric'}, {'vector', 'numel', 2}, mfilename, 'source magnetic coordinates', 7)
 end
 if nargin<8 || isempty(ha)
-  clf, h=gcf; ha=axes('parent', h); 
+  clf, h=gcf; ha=axes('parent',h);
 else
-  h = ancestor(ha,'figure');
-  try
-    axes(ha)
-  catch
-    ha = axes('parent', h);
-  end
+%  h = ancestor(ha,'figure');
+%  try
+%    axes(ha)
+%  catch
+%    ha = axes('parent', h);
+%  end
+  ha=gca;
 end
 
 %set(h,'PaperPosition',[0 0 11 4.5]);
@@ -59,7 +60,7 @@ meantheta=mean(xg.theta(:));
 %meanphi=mean(xg.phi(:));
 y=-1*(xg.theta-meantheta);   %this is a mag colat. coordinate and is only used for defining grid in linspaces below, runs backward from north distance, hence the negative sign
 %x=(xg.phi-meanphi);       %mag. lon coordinate, pos. eastward
-x=xg.x2/Re/sin(meantheta);
+x=xg.x2(inds2)/Re/sin(meantheta);
 z=xg.alt/1e3;
 lxp=500;
 lyp=500;
@@ -127,7 +128,9 @@ FS=8;
 
 %MAKE THE PLOT!
 if (xg.lx(3)==1)
-  hi=imagesc(xp/1e3, zp,parmp, 'parent', ha);
+%  hi=imagesc(xp/1e3, zp,parmp, 'parent', ha);
+  imagesc(ha,xp/1e3,zp,parmp);
+  hi=ha;
   hold(ha, 'on')
   plot(ha, [minxp,maxxp],[altref,altref],'w--','LineWidth',2);
   if ~isempty(sourcemlat)
@@ -149,7 +152,9 @@ if (xg.lx(3)==1)
   xlabel(ha, 'eastward dist. (km)')
   ylabel(ha, 'altitude (km)')
 elseif (xg.lx(2)==1)
-  hi=imagesc(yp/1e3,zp,parmp3, 'parent', ha);
+%  hi=imagesc(yp/1e3,zp,parmp3, 'parent', ha);
+  imagesc(ha,yp/1e3,zp,parmp3);
+  hi=ha;
   hold(ha, 'on')
   %plot([minyp,maxyp],[altref,altref],'w--','LineWidth',2);
   if (~isempty(sourcemlat))

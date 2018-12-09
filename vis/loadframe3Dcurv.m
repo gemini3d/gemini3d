@@ -13,12 +13,12 @@ assert(exist(fsimres,'file')==2, [fsimres,' does not exist'])
 fid=fopen(fsimres,'r');
 simdt(fid);
 %% load densities
-ns = read4D(fid, lsp, lsx);
+ns = read4D(fid, lsp, lxs);
 %% load Vparallel
-vs1 = read4D(fid, lsp, lsx);
+vs1 = read4D(fid, lsp, lxs);
 v1=sum(ns(:,:,:,1:6).*vs1(:,:,:,1:6),4)./ns(:,:,:,lsp);
 %% load temperatures
-Ts = read4D(fid, lsp, lsx);
+Ts = read4D(fid, lsp, lxs);
 %% load current densities
 J1 = read3D(fid, lxs);
 J2 = read3D(fid, lxs);

@@ -1,12 +1,16 @@
 # https://github.com/certik/hermes/blob/master/hermes_common/cmake/FindSCALAPACK.cmake
 # ScaLAPACK and BLACS
 
+
 unset(SCALAPACK_LIBRARY)
 
-if(${CMAKE_Fortran_COMPILER_ID} STREQUAL Intel)
+if(CMAKE_Fortran_COMPILER_ID STREQUAL Intel)
+
+  find_package(Threads QUIET REQUIRED)
+
   # FIXME: this would be for threaded
   # mkl_scalapack_lp64 mkl_intel_lp64 mkl_intel_thread mkl_core mkl_blacs_intelmpi_lp64 iomp5
-  
+
   # this is for sequential:
   foreach(slib mkl_scalapack_lp64 mkl_intel_lp64 mkl_sequential mkl_core mkl_blacs_intelmpi_lp64)
     find_library(SCALAPACK_${slib}_LIBRARY
@@ -22,9 +26,9 @@ if(${CMAKE_Fortran_COMPILER_ID} STREQUAL Intel)
     list(APPEND SCALAPACK_LIBRARY ${SCALAPACK_${slib}_LIBRARY})
     mark_as_advanced(SCALAPACK_${slib}_LIBRARY)
   endforeach()
-  list(APPEND SCALAPACK_LIBRARY pthread dl m)
+  list(APPEND SCALAPACK_LIBRARY ${CMAKE_THREAD_LIBS_INIT} ${CMAKE_DL_LIBS} m)
 else()
-  find_package(PkgConfig)
+  find_package(PkgConfig QUIET)
   pkg_check_modules(PC_SCALAPACK QUIET SCALAPACK)
 
 
@@ -65,10 +69,9 @@ else()
   set(SCALAPACK_DEFINITIONS  ${PC_SCALAPACK_CFLAGS_OTHER})
 endif()
 #=================================================
-# Report the found libraries, quit with fatal error if any required library has not been found.
+
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(SCALAPACK
-    FOUND_VAR SCALAPACK_FOUND
     REQUIRED_VARS SCALAPACK_LIBRARY   # don't put BLACS_LIBRARY REQUIRED_VARS because it might be in libscalapack.a
     VERSION_VAR SCALAPACK_VERSION)
 

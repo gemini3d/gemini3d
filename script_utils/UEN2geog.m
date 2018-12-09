@@ -1,8 +1,7 @@
 function [alt,glon,glat]=geog2UEN(z,x,y,thetactr,phictr)
 
-%DISTANCE EW AND NS (FROM ENU (or UEN in our case - cyclic permuted) COORD. SYSTEM) NEED TO BE CONVERTED TO DIPOLE SPHERICAL AND THEN
-%GLAT/GLONG - BASICALLY HERE WE ARE MAPPING THE CARTESIAN GRID ONTO THE
-%SURFACE OF A SPHERE THEN CONVERTING TO GEOGRAPHIC.
+%This converts magnetic up, north, east coordinates into geographic
+%coordinates.
 
 %UPWARD DISTANCE
 Re=6370e3;

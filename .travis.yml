@@ -1,14 +1,10 @@
 language: c
 group: travis_latest
+dist: xenial
 
 git:
   depth: 3
   quiet: true
-
-os:
-- linux
-#- osx
-#- windows
 
 env: FC=gfortran
 
@@ -17,25 +13,19 @@ addons:
 #    sources: ubuntu-toolchain-r-test
     packages: ['gfortran','liblapack-dev','libmumps-dev','libopenmpi-dev','octave','liboctave-dev']
 
-before_install:
-- if [[ $TRAVIS_OS_NAME == osx ]]; then
-  brew update > /dev/null;
-  brew install gcc || brew link --overwrite gcc;
-  brew install lapack openblas open-mpi scalapack > /dev/null;
-  export FC=gfortran;
-# MUMPS works as below, but takes 10 minutes to build on Travis-CI
-#      brew tap dpo/openblas;
-#      brew tap-pin dpo/openblas;
-#      brew options mumps;
-#      brew install mumps;
-  fi
-# takes 15 minutes to setup on Travis for Linux.    
-#  - if [[ $TRAVIS_OS_NAME == linux ]]; then
-#      export HOMEBREW_FORCE_VENDOR_RUBY=1;
-#      sh -c "$(curl -fsSL https://raw.githubusercontent.com/Linuxbrew/install/master/install.sh)";
-#      export PATH="/home/travis/.linuxbrew/bin:$PATH";
-#      brew install gcc opencoarrays;
-#    fi
+matrix:
+  include: 
+  - os: linux
+# works on osx, but takes 10 minutes to build on Travis-CI
+#  - os: osx
+#    - brew install gcc
+#    - brew install lapack openblas open-mpi scalapack
+#    - brew tap dpo/openblas
+#    - brew tap-pin dpo/openblas
+#    - brew options mumps
+#    - brew install mumps
+#  - os: windows
+
     
 install:
 - cd $TRAVIS_BUILD_DIR/tests/bin

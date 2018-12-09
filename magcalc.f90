@@ -403,9 +403,9 @@ do while (t<tdur)
   if (myid ==0) then
     write(*,*) 'Attempting reduction of magnetic field...'
   end if
-  call mpi_reduce(Br,Brall,lpoints,MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,ierr)
-  call mpi_reduce(Btheta,Bthetaall,lpoints,MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,ierr)
-  call mpi_reduce(Bphi,Bphiall,lpoints,MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,ierr)
+  call mpi_reduce(Br,Brall,lpoints,mpi_realprec,MPI_SUM,0,MPI_COMM_WORLD,ierr)
+  call mpi_reduce(Btheta,Bthetaall,lpoints,mpi_realprec,MPI_SUM,0,MPI_COMM_WORLD,ierr)
+  call mpi_reduce(Bphi,Bphiall,lpoints,mpi_realprec,MPI_SUM,0,MPI_COMM_WORLD,ierr)
   if (myid == 0) then
     write(*,*) 'magcalc.f90 --> Reduced magnetic field...'
     write(*,*) '  --> Min/max values of reduced field',minval(Brall),maxval(Brall),minval(Bthetaall),maxval(Bthetaall), &

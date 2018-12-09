@@ -1,10 +1,17 @@
 !------ ADAPTED FROM LAPACK_95 by Guy Grubbs --------
-module f95_lapack
-use phys_consts, only: wp
+module lapack95
+use, intrinsic :: iso_fortran_env, only: real32, real64
 implicit none
+
+#if REALBITS==32
+integer, parameter :: wp=real32
+#elif REALBITS==64
+integer, parameter :: wp=real64
+#endif
+
 contains
 
-subroutine la_gbsv(A,B,KL,IPIV,INFO)
+subroutine gbsv(A,B,KL,IPIV,INFO)
   real(wp), dimension(:,:), intent(inout) :: A
   real(wp), dimension(:), intent(inout) :: B
   integer, intent(in), optional :: KL
@@ -37,12 +44,17 @@ subroutine la_gbsv(A,B,KL,IPIV,INFO)
 
   if ( ISTAT == 0 ) then
     KU = LDA - 2*LKL - 1
+    
+#if REALBITS==32
+    call sgbsv(N,LKL,KU,NRHS,A,LDA,LPIV,B,N,LINFO)
+#elif REALBITS==64
     call dgbsv(N,LKL,KU,NRHS,A,LDA,LPIV,B,N,LINFO)
+#endif
   end if
 
   if ( .NOT.present(IPIV) ) then
     deallocate(LPIV)
   end if
-end subroutine la_gbsv
+end subroutine gbsv
 
-end module f95_lapack
+end module lapack95

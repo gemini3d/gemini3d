@@ -5,7 +5,7 @@ FC=mpifort
 FL=mpifort
 
 CURRDIR = $(shell pwd)
-HOMEDIR = $(HOME)/zettergmdata/
+HOMEDIR = $(HOME)
 LAPACK77 = $(HOMEDIR)/lib/lapack-3.5.0/liblapack.a
 BLAS     = $(HOMEDIR)/lib/BLAS/libblas.a
 LAPACK95 = $(HOMEDIR)/lib/LAPACK95/lapack95.a
@@ -67,7 +67,7 @@ $(OBJDIR)interpolation.o: ./numerical/interpolation/interpolation.f90 $(OBJDIR)p
 	$(FC) -c $(OPTIM2) ./numerical/interpolation/interpolation.f90 -o $(OBJDIR)/interpolation.o -J$(OBJDIR)
 
 $(OBJDIR)msis00_gfortran.o: ./neutral/neutral.f90
-	$(FC) -c $(OPTIM2) $(OPTIONS) ./neutral/msis00/msis00_gfortran.f -o $(OBJDIR)/msis00_gfortran.o -J$(OBJDIR)
+	$(FC) -c $(OPTIM2) $(OPTIONS) ./vendor/msis00/msis00_gfortran.f -o $(OBJDIR)/msis00_gfortran.o -J$(OBJDIR)
 
 $(OBJDIR)neutral.o: ./neutral/neutral.f90 $(OBJDIR)phys_consts.o $(OBJDIR)msis00_gfortran.o $(OBJDIR)temporal.o $(OBJDIR)interpolation.o $(OBJDIR)mpimod.o $(OBJDIR)io.o
 	$(FC) -c $(OPTIM2) ./neutral/neutral.f90 -o $(OBJDIR)/neutral.o -J$(OBJDIR)

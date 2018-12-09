@@ -1,6 +1,5 @@
 function [ymd,UTsec,tdur,dtout,flagoutput,mloc] = readconfig(filename)
 
-  narginchk(1,1)
   validateattr(filename, {'char'}, {'vector'}, mfilename, 'configuration filename', 1)
   
   assert(exist(filename,'file')==2, [filename,' does not exist'])

@@ -1,8 +1,11 @@
 %SIMULATIONS LOCAITONS
-simname='tohoku20113D_highres_long/';
-simname_control='tohoku20113D_highres_long_control/';
+%simname='tohoku20113D_highres_long/';
+%simname_control='tohoku20113D_highres_long_control/';
+simname='mooreOK3D/';
+simname_control='mooreOK3D_control/';
 basedir='~/zettergmdata/simulations/';
 direc=[basedir,simname];
+direc_control=[basedir,simname_control];
 mkdir([direc, filesep, 'TECplots']);    %store output plots with the simulation data
 
 
@@ -11,7 +14,7 @@ addpath ../script_utils;
 
 
 %READ IN THE SIMULATION INFORMATION
-[ymd0,UTsec0,tdur,dtout,flagoutput,mloc]=readconfig([direc,'/inputs/config.dat']);
+[ymd0,UTsec0,tdur,dtout,flagoutput,mloc]=readconfig([direc,'/inputs/config.ini']);
 
 
 %WE ALSO NEED TO LOAD THE GRID FILE (UNLESS IT ALREADY EXISTS IN THE WORKSPACE)
@@ -41,7 +44,8 @@ phidist=mlonsrc*pi/180;
 
 
 %ANGULAR RANGE TO COVER FOR TEC CALCULATIONS
-dang=3.5;
+%dang=3.5;
+dang=10;
 %dang=90;
 
 
@@ -51,11 +55,11 @@ times=UTsec0:dtout:UTsec0+tdur;
 
 %NEW (PLOT) GRID SIZE IN R,TH
 Re=6370e3;
-%lth=250;
-lth=1500;
+%lth=500;
+lth=750;
 %lr=250;
-lr=500;
-lphi=250;
+lr=300;
+lphi=750;
 
 
 %DEFINE A GRID FOR THE INTERPOLATION
@@ -121,22 +125,7 @@ dvTEC=[];
 simdate_series=[];
 for it=1:length(times)
     %LOAD DIST. FILE
-    direc=[basedir,simname];
-%    filestr=datelab(ymd,UTsec)
-%    if (it ~= 1)      %tack on the decimal part
-%      filename=[filestr,'.000000.dat']
-%    else
-%      filename=[filestr,'.000001.dat']
-%    end
-%    if (flagoutput==1)
-%      loadframe3Dcurv;      %note that p from this script is ion composition
-%    elseif (flagoutput==2)
-%      loadframe3Dcurvavg;
-%    else
-%      error('Bad output option...')
-%    end
-%    loadframe_wrapper;
-    [ne] = loadframe(direc,UTsec,ymd,UTsec0,ymd0,mloc,xg);
+    [ne]=loadframe(direc,ymd,UTsec,ymd0,UTsec0,tdur,dtout,flagoutput,mloc,xg);
     simdate=[ymd,UTsec/3600,0,0];    %create a datevec for matlab
 
 
@@ -167,17 +156,7 @@ for it=1:length(times)
 
 
     %LOAD CONTROL SIMULATION
-%    direc=['~/simulations/',simname_control]
-    direc=[basedir,simname_control];
-%    if (flagoutput==1)
-%      loadframe3Dcurv;      %note that p from this script is ion composition
-%    elseif (flagoutput==2)
-%      loadframe3Dcurvavg;
-%    else
-%      error('Bad output option...')
-%    end
-%    loadframe_wrapper;
-    [ne] = loadframe(direc,UTsec,ymd,UTsec0,ymd0,autoload,flagoutput,mloc,xg);
+    [ne]=loadframe(direc_control,ymd,UTsec,ymd0,UTsec0,tdur,dtout,flagoutput,mloc,xg);
 
 
     %DEFINE A MESHGRID BASED ON CONTROL SIMULATION OUTPUT AND DO INTERPOLATION
@@ -258,7 +237,9 @@ for it=1:length(times)
       set(gca,'FontSize',FS);
       axis xy;
       axis tight;
-      caxis([-0.25,0.25]);
+      caxlim=max(max(abs(dvTEC(:,:,it))));
+      caxlim=max(caxlim,0.01);
+      caxis([-1*caxlim, caxlim]);
 %      caxis([-4,4]);
       c=colorbar
       set(c,'FontSize',FS)
@@ -288,7 +269,7 @@ if (flag2D)
   axis xy;
   datetick;
   axis tight;
-  caxis([-0.25,0.25]);
+  caxis([-max(max(abs(dvTEC(:,:)))), max(max(abs(dvTEC(:,:))))]);
   c=colorbar
   set(c,'FontSize',FS)
   xlabel(c,'\Delta vTEC (TECU)')

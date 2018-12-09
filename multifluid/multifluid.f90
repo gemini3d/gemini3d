@@ -71,13 +71,13 @@ contains
     !CALCULATE THE INTERNAL ENERGY AND MOMENTUM FLUX DENSITIES (ADVECTION AND SOURCE SOLUTIONS ARE DONE IN THESE VARIABLES)
     do isp=1,lsp
       rhovs1(:,:,:,isp)=ns(:,:,:,isp)*ms(isp)*vs1(:,:,:,isp)
-      rhoes(:,:,:,isp)=ns(:,:,:,isp)*kB*Ts(:,:,:,isp)/(gammas(isp)-1d0)
+      rhoes(:,:,:,isp)=ns(:,:,:,isp)*kB*Ts(:,:,:,isp)/(gammas(isp)-1._wp)
     end do
 
 
     !ADVECTION SUBSTEP (CONSERVED VARIABLES SHOULD BE UPDATED BEFORE ENTERING)
     call cpu_time(tstart)
-    chrgflux=0d0
+    chrgflux=0._wp
     do isp=1,lsp
       call advec_prep_mpi(isp,x%flagper,ns,rhovs1,vs1,vs2,vs3,rhoes,v1i,v2i,v3i)    !role-agnostic communcation pattern (all-to-neighbors)
 
@@ -94,8 +94,8 @@ contains
         chrgflux=chrgflux+ns(1:lx1,1:lx2,1:lx3,isp)*qs(isp)*vs1(1:lx1,1:lx2,1:lx3,isp)
       else
         ns(:,:,:,lsp)=sum(ns(:,:,:,1:lsp-1),4)
-  !      vs1(1:lx1,1:lx2,1:lx3,lsp)=1d0/ns(1:lx1,1:lx2,1:lx3,lsp)/qs(lsp)*(J1-chrgflux)   !density floor needed???
-        vs1(1:lx1,1:lx2,1:lx3,lsp)=-1d0/max(ns(1:lx1,1:lx2,1:lx3,lsp),mindensdiv)/qs(lsp)*chrgflux   !really not strictly correct, should include current density
+  !      vs1(1:lx1,1:lx2,1:lx3,lsp)=1._wp/ns(1:lx1,1:lx2,1:lx3,lsp)/qs(lsp)*(J1-chrgflux)   !density floor needed???
+        vs1(1:lx1,1:lx2,1:lx3,lsp)=-1._wp/max(ns(1:lx1,1:lx2,1:lx3,lsp),mindensdiv)/qs(lsp)*chrgflux   !really not strictly correct, should include current density
       end if
   
       param=rhoes(:,:,:,isp)
@@ -118,9 +118,9 @@ contains
     do isp=1,lsp-1
       v1iupdate(1:lx1+1,:,:)=0.5d0*(vs1(0:lx1,1:lx2,1:lx3,isp)+vs1(1:lx1+1,1:lx2,1:lx3,isp))    !compute an updated interface velocity (only in x1-direction)
       dv1iupdate=v1iupdate(2:lx1+1,:,:)-v1iupdate(1:lx1,:,:)
-      Q(:,:,:,isp)=ns(1:lx1,1:lx2,1:lx3,isp)*ms(isp)*0.25d0*xicon**2*(min(dv1iupdate,0d0))**2   !note that viscosity does not have/need ghost cells
+      Q(:,:,:,isp)=ns(1:lx1,1:lx2,1:lx3,isp)*ms(isp)*0.25d0*xicon**2*(min(dv1iupdate,0._wp))**2   !note that viscosity does not have/need ghost cells
     end do
-    Q(:,:,:,lsp)=0d0
+    Q(:,:,:,lsp)=0._wp
  
   
     !NONSTIFF/NONBALANCE INTERNAL ENERGY SOURCES (RK2 INTEGRATION) 
@@ -131,13 +131,13 @@ contains
       divvs=div3D(vs1(0:lx1+1,0:lx2+1,0:lx3+1,isp),vs2(0:lx1+1,0:lx2+1,0:lx3+1,isp), &
                  vs3(0:lx1+1,0:lx2+1,0:lx3+1,isp),x,0,lx1+1,0,lx2+1,0,lx3+1)    !diff with one set of ghost cells to preserve second order accuracy over the grid
       paramtrim=rhoes(1:lx1,1:lx2,1:lx3,isp)
-      rhoeshalf=paramtrim-dt/2d0*(paramtrim*(gammas(isp)-1d0)+Q(:,:,:,isp))*divvs(1:lx1,1:lx2,1:lx3) !t+dt/2 value of internal energy, use only interior points of divvs for second order accuracy
+      rhoeshalf=paramtrim-dt/2d0*(paramtrim*(gammas(isp)-1._wp)+Q(:,:,:,isp))*divvs(1:lx1,1:lx2,1:lx3) !t+dt/2 value of internal energy, use only interior points of divvs for second order accuracy
   
-      paramtrim=paramtrim-dt*(rhoeshalf*(gammas(isp)-1d0)+Q(:,:,:,isp))*divvs(1:lx1,1:lx2,1:lx3)
+      paramtrim=paramtrim-dt*(rhoeshalf*(gammas(isp)-1._wp)+Q(:,:,:,isp))*divvs(1:lx1,1:lx2,1:lx3)
       rhoes(1:lx1,1:lx2,1:lx3,isp)=paramtrim
   
-      Ts(:,:,:,isp)=(gammas(isp)-1d0)/kB*rhoes(:,:,:,isp)/max(ns(:,:,:,isp),mindensdiv)
-      Ts(:,:,:,isp)=max(Ts(:,:,:,isp),100d0)
+      Ts(:,:,:,isp)=(gammas(isp)-1._wp)/kB*rhoes(:,:,:,isp)/max(ns(:,:,:,isp),mindensdiv)
+      Ts(:,:,:,isp)=max(Ts(:,:,:,isp),100._wp)
     end do
     call cpu_time(tfin)
     if (myid==0) then
@@ -159,7 +159,7 @@ contains
 !      param=backEuler3D(param,A,B,C,D,E,dt,dx1,dx1i)    !1st order method, likely deprecated but needs to be kept here for debug purposes, perhaps?
       param=TRBDF23D(param,A,B,C,D,E,dt,x)
       Ts(:,:,:,isp)=param
-      Ts(:,:,:,isp)=max(Ts(:,:,:,isp),100d0) 
+      Ts(:,:,:,isp)=max(Ts(:,:,:,isp),100._wp) 
     end do
     call cpu_time(tfin)
     if (myid==0) then
@@ -170,7 +170,7 @@ contains
     !ZZZ - CLEAN TEMPERATURE BEFORE CONVERTING TO INTERNAL ENERGY
     call clean_param(x,3,Ts)
     do isp=1,lsp
-      rhoes(:,:,:,isp)=ns(:,:,:,isp)*kB*Ts(:,:,:,isp)/(gammas(isp)-1d0)
+      rhoes(:,:,:,isp)=ns(:,:,:,isp)*kB*Ts(:,:,:,isp)/(gammas(isp)-1._wp)
     end do
 
 
@@ -183,7 +183,7 @@ contains
   
     !STIFF/BALANCED ENERGY SOURCES
     call cpu_time(tstart)
-    Prprecip=0d0
+    Prprecip=0._wp
     if (gridflag/=0) then
       do iprec=1,lprec    !loop over the different populations of precipitation (2 here?), accumulating production rates
         Prpreciptmp=ionrate_fang08(W0(:,:,iprec),PhiWmWm2(:,:,iprec),x%alt,nn,Tn)    !calculation based on Fang et al [2008]
@@ -199,7 +199,7 @@ contains
     chi=sza(ymd,UTsec,x%glat,x%glon)
     if (myid==0) then
       write(*,*) 'Computing photoionization for time:  ',t,' using sza range of (root only):  ', &
-                  minval(chi)*180d0/pi,maxval(chi)*180d0/pi
+                  minval(chi)*180._wp/pi,maxval(chi)*180._wp/pi
     end if
     Prpreciptmp=photoionization(x,nn,Tn,chi,f107,f107a)
     if (myid==0) then
@@ -207,7 +207,7 @@ contains
                   maxval(pack(Prpreciptmp,.true.))
     end if
     Prprecip=Prprecip+Prpreciptmp
-    Prprecip=max(Prprecip,1d-5)    !enforce some minimum production rate to preserve conditioning for species that rely on constant production, some testing should probably be done to see what the best choice is...
+    Prprecip=max(Prprecip,1e-5_wp)    !enforce some minimum production rate to preserve conditioning for species that rely on constant production, some testing should probably be done to see what the best choice is...
 
     Qeprecip=eheating(nn,Tn,Prprecip,ns)   !thermal electron heating rate from Swartz and Nisbet, (1978)
   
@@ -220,8 +220,8 @@ contains
       paramtrim=ETD_uncoupled(paramtrim,Pr(:,:,:,isp),Lo(:,:,:,isp),dt)
       rhoes(1:lx1,1:lx2,1:lx3,isp)=paramtrim
   
-      Ts(:,:,:,isp)=(gammas(isp)-1d0)/kB*rhoes(:,:,:,isp)/max(ns(:,:,:,isp),mindensdiv)
-      Ts(:,:,:,isp)=max(Ts(:,:,:,isp),100d0)
+      Ts(:,:,:,isp)=(gammas(isp)-1._wp)/kB*rhoes(:,:,:,isp)/max(ns(:,:,:,isp),mindensdiv)
+      Ts(:,:,:,isp)=max(Ts(:,:,:,isp),100._wp)
     end do
     call cpu_time(tfin)
     if (myid==0) then
@@ -250,12 +250,12 @@ contains
 
 
     !ELECTRON VELOCITY SOLUTION
-    chrgflux=0d0
+    chrgflux=0._wp
     do isp=1,lsp-1
       chrgflux=chrgflux+ns(1:lx1,1:lx2,1:lx3,isp)*qs(isp)*vs1(1:lx1,1:lx2,1:lx3,isp)
     end do
-  !  vs1(1:lx1,1:lx2,1:lx3,lsp)=1d0/max(ns(1:lx1,1:lx2,1:lx3,lsp),mindensdiv)/qs(lsp)*(J1-chrgflux)   !density floor needed???
-    vs1(1:lx1,1:lx2,1:lx3,lsp)=-1d0/max(ns(1:lx1,1:lx2,1:lx3,lsp),mindensdiv)/qs(lsp)*chrgflux    !don't bother with FAC contribution...
+  !  vs1(1:lx1,1:lx2,1:lx3,lsp)=1._wp/max(ns(1:lx1,1:lx2,1:lx3,lsp),mindensdiv)/qs(lsp)*(J1-chrgflux)   !density floor needed???
+    vs1(1:lx1,1:lx2,1:lx3,lsp)=-1._wp/max(ns(1:lx1,1:lx2,1:lx3,lsp),mindensdiv)/qs(lsp)*chrgflux    !don't bother with FAC contribution...
 
 
     !CLEAN VELOCITY
@@ -335,7 +335,7 @@ contains
             ix2=x%inull(iinull,2)
             ix3=x%inull(iinull,3)
 
-            param(ix1,ix2,ix3,isp)=0d0
+            param(ix1,ix2,ix3,isp)=0._wp
           end do
         end do
 
@@ -361,7 +361,7 @@ contains
           end do
         end do
       case (3)    !temperature
-        param=max(param,100d0)     !temperature floor
+        param=max(param,100._wp)     !temperature floor
 
         do isp=1,lsp       !set null cells to some value
           do iinull=1,x%lnull
@@ -369,7 +369,7 @@ contains
             ix2=x%inull(iinull,2)
             ix3=x%inull(iinull,3)
       
-            param(ix1,ix2,ix3,isp)=100d0
+            param(ix1,ix2,ix3,isp)=100._wp
           end do
         end do 
       case default    !do nothing...

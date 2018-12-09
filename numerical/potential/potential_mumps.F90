@@ -27,16 +27,24 @@ module potential_mumps
 
 use, intrinsic:: iso_fortran_env, only: stderr=>error_unit, stdout=>output_unit
 
+use phys_consts, only: wp
 use calculus, only: grad3d1, grad3d2, grad3d3, grad2d1_curv_alt, grad2d3_curv, grad2d3_curv_periodic
 use grid, only: curvmesh, gridflag
 use mpimod
 
 implicit none
 
+private
+
+#if REALBITS==32
+include 'smumps_struc.h'
+#elif REALBITS==64
 include 'dmumps_struc.h'
+#endif
 
 integer, dimension(:), pointer, protected, save :: mumps_perm   !cached permutation, unclear whether save is necessary...
 
+public :: elliptic3d_curv, elliptic2d_pol_conv_curv, elliptic2d_pol_conv_curv_periodic2, elliptic2d_nonint_curv, elliptic_workers
 
 contains
 
@@ -72,7 +80,13 @@ contains
     real(wp), dimension(:), allocatable :: M
     real(wp), dimension(:), allocatable :: b
     real(wp) :: tstart,tfin
-    type (DMUMPS_STRUC) mumps_par
+
+#if REALBITS==32
+type (SMUMPS_STRUC) mumps_par
+#elif REALBITS==64
+type (DMUMPS_STRUC) mumps_par
+#endif
+    
     integer :: myid, ierr
 
     real(wp), dimension(size(srcterm,1),size(srcterm,2),size(srcterm,3)) :: elliptic3D_curv
@@ -100,12 +114,12 @@ contains
 
       allocate(ir(lent),ic(lent),M(lent),b(lPhi))
 
-      write(*,*) 'MUMPS will attempt a solve of size:  ',lx1,lx2,lx3
-      write(*,*) 'Total unknowns and nonzero entries in matrix:  ',lPhi,lent
+      print *, 'MUMPS will attempt a solve of size:  ',lx1,lx2,lx3
+      print *, 'Total unknowns and nonzero entries in matrix:  ',lPhi,lent
 
 
       !COMPUTE AUXILIARY COEFFICIENTS
-      write(*,*) 'Prepping coefficients for elliptic equation...'    
+      print *, 'Prepping coefficients for elliptic equation...'    
       gradsig01=grad3D1(sig0,x,1,lx1,1,lx2,1,lx3)
       gradsigP2=grad3D2(sigP,x,1,lx1,1,lx2,1,lx3)
       gradsigP3=grad3D3(sigP,x,1,lx1,1,lx2,1,lx3)
@@ -234,7 +248,7 @@ contains
       end do
       end do
     end if
-    write(*,*) 'Number of entries used:  ',ient-1
+    print *, 'Number of entries used:  ',ient-1
 
 
     ! INIT MUMPS
@@ -248,7 +262,13 @@ contains
     mumps_par%JOB = -1
     mumps_par%SYM = 0
     mumps_par%PAR = 1
-    call DMUMPS(mumps_par)
+    
+#if REALBITS==32
+call SMUMPS(mumps_par)
+#elif REALBITS==64
+call DMUMPS(mumps_par)
+#endif
+    
 
 
     !LOAD OUR PROBLEM
@@ -275,14 +295,18 @@ contains
 
     !SOLVE (ALL WORKERS NEED TO SEE THIS CALL)
     mumps_par%JOB = 6
-    call DMUMPS(mumps_par)
+#if REALBITS==32
+call SMUMPS(mumps_par)
+#elif REALBITS==64
+call DMUMPS(mumps_par)
+#endif
 
 
     !STORE PERMUTATION USED, SAVE RESULTS, CLEAN UP MUMPS ARRAYS
     !(can save ~25% execution time and improves scaling with openmpi
     ! ~25% more going from 1-2 processors)
     if ( mumps_par%MYID==0 ) then
-      write(*,*) 'Now organizing results...'
+      print *, 'Now organizing results...'
 
       if (perflag .and. it==1) then
         allocate(mumps_perm(mumps_par%N))     !we don't have a corresponding deallocate statement
@@ -291,7 +315,7 @@ contains
 
       elliptic3D_curv=reshape(mumps_par%RHS,[lx1,lx2,lx3])
 
-      write(*,*) 'Now attempting deallocations...'
+      print *, 'Now attempting deallocations...'
 
       deallocate( mumps_par%IRN )
       deallocate( mumps_par%JCN )
@@ -300,7 +324,11 @@ contains
     end if
 
     mumps_par%JOB = -2
-    call DMUMPS(mumps_par)
+#if REALBITS==32
+call SMUMPS(mumps_par)
+#elif REALBITS==64
+call DMUMPS(mumps_par)
+#endif
 
   end function elliptic3D_curv
 
@@ -345,7 +373,13 @@ contains
     real(wp), dimension(:), allocatable :: M
     real(wp), dimension(:), allocatable :: b
     real(wp) :: tstart,tfin
-    type(DMUMPS_STRUC) mumps_par
+
+#if REALBITS==32
+type (SMUMPS_STRUC) mumps_par
+#elif REALBITS==64
+type (DMUMPS_STRUC) mumps_par
+#endif
+
     integer :: myid, ierr
 
     real(wp), dimension(size(SigP2,1),size(SigP2,2)) :: elliptic2D_pol_conv_curv
@@ -363,8 +397,8 @@ contains
       lent=17*(lx2-2)*(lx3-2)+2*lx2+2*(lx3-2)-3*2*(lx2-2)-3*2*(lx3-2)    !interior+boundary-x3_adj-x2_adj.  Note that are 3 sets of entries for each adjacent point
       allocate(ir(lent),ic(lent),M(lent),b(lPhi))
 
-      write(*,*) 'MUMPS will attempt a solve of size:  ',lx2,lx3
-      write(*,*) 'Total unknowns and nonzero entries in matrix:  ',lPhi,lent
+      print *, 'MUMPS will attempt a solve of size:  ',lx2,lx3
+      print *, 'Total unknowns and nonzero entries in matrix:  ',lPhi,lent
 
 
       !PREP INPUT DATA FOR SOLUTION OF SYSTEM
@@ -722,13 +756,17 @@ contains
 
     !FIRE UP MUMPS
     if (myid == 0) then
-      write(*,*) 'Filled ',ient-1,' matrix entries.  Initializing MUMPS...'
+      print *, 'Filled ',ient-1,' matrix entries.  Initializing MUMPS...'
     end if
     mumps_par%COMM = MPI_COMM_WORLD
     mumps_par%JOB = -1
     mumps_par%SYM = 0
     mumps_par%PAR = 1
-    call DMUMPS(mumps_par)
+#if REALBITS==32
+call SMUMPS(mumps_par)
+#elif REALBITS==64
+call DMUMPS(mumps_par)
+#endif
 
 
     !LOAD OUR PROBLEM
@@ -759,14 +797,18 @@ contains
 
     !SOLVE (ALL WORKERS NEED TO SEE THIS CALL)
     mumps_par%JOB = 6
-    call DMUMPS(mumps_par)
+#if REALBITS==32
+call SMUMPS(mumps_par)
+#elif REALBITS==64
+call DMUMPS(mumps_par)
+#endif
 
 
     !STORE PERMUTATION USED, SAVE RESULTS, CLEAN UP MUMPS ARRAYS
     !(can save ~25% execution time and improves scaling with openmpi
     ! ~25% more going from 1-2 processors)
     if ( mumps_par%MYID==0 ) then
-      write(*,*) 'Now organizing results...'
+      print *, 'Now organizing results...'
 
       if (perflag .and. it==1) then
         allocate(mumps_perm(mumps_par%N))     !we don't have a corresponding deallocate statement
@@ -775,7 +817,7 @@ contains
 
       elliptic2D_pol_conv_curv=reshape(mumps_par%RHS,[lx2,lx3])
 
-      write(*,*) 'Now attempting deallocations...'
+      print *, 'Now attempting deallocations...'
 
       deallocate( mumps_par%IRN )
       deallocate( mumps_par%JCN )
@@ -784,7 +826,11 @@ contains
     end if
 
     mumps_par%JOB = -2
-    call DMUMPS(mumps_par)
+#if REALBITS==32
+call SMUMPS(mumps_par)
+#elif REALBITS==64
+call DMUMPS(mumps_par)
+#endif
 
   end function elliptic2D_pol_conv_curv
 
@@ -831,7 +877,13 @@ contains
     real(wp), dimension(:), allocatable :: M
     real(wp), dimension(:), allocatable :: b
     real(wp) :: tstart,tfin
-    type(DMUMPS_STRUC) mumps_par
+
+#if REALBITS==32
+type (SMUMPS_STRUC) mumps_par
+#elif REALBITS==64
+type (DMUMPS_STRUC) mumps_par
+#endif
+
     integer :: myid, ierr
 
     integer :: lcount,ix2tmp,ix3tmp
@@ -855,8 +907,8 @@ contains
       lent=17*(lx2-2)*(lx3-2)+2*(lx3)+17*2*(lx2-2)-3*2*lx3    !true interior with x3 boundaries which are not treated as interior in periodic solves  + add x2 boundaries (note that these are now size lx3+1) + x3 edge cells (treated here as interior) - x2_adj (x2 is not periodici, two sets of three points each, note again the larger x3 size as compared to aperiodic solutions).
       allocate(ir(lent),ic(lent),M(lent),b(lPhi))
 
-      write(*,*) 'MUMPS will attempt a solve of size:  ',lx2,lx3
-      write(*,*) 'Total unknowns and nonzero entries in matrix:  ',lPhi,lent
+      print *, 'MUMPS will attempt a solve of size:  ',lx2,lx3
+      print *, 'Total unknowns and nonzero entries in matrix:  ',lPhi,lent
 
 
       !NOTE THAT THESE NEED TO BE PERIODIC IN X3
@@ -883,7 +935,7 @@ contains
       !-------GUIDE).
       !------------------------------------------------------------
 
-      write(*,*) 'Loading up matrix entries...'
+      print *, 'Loading up matrix entries...'
 
       !LOAD UP MATRIX ELEMENTS
       lcount=0
@@ -1245,8 +1297,8 @@ contains
 
     !FIRE UP MUMPS
     if (myid == 0) then
-      write(*,*)  'Debug count:  ',lcount
-      write(*,*) 'Filled ',ient-1,' out of ',lent,' matrix entries for solving ',iPhi,' of ',lPhi, &
+      print *,  'Debug count:  ',lcount
+      print *, 'Filled ',ient-1,' out of ',lent,' matrix entries for solving ',iPhi,' of ',lPhi, &
                    ' unknowns.  Initializing MUMPS...'
       if (ient-1 /= lent) then
         error stop 'Incorrect number of matrix entries filled in potential solve!!!'
@@ -1256,7 +1308,11 @@ contains
     mumps_par%JOB = -1
     mumps_par%SYM = 0
     mumps_par%PAR = 1
-    call DMUMPS(mumps_par)
+#if REALBITS==32
+call SMUMPS(mumps_par)
+#elif REALBITS==64
+call DMUMPS(mumps_par)
+#endif
 
 
     !LOAD OUR PROBLEM
@@ -1283,14 +1339,18 @@ contains
 
     !SOLVE (ALL WORKERS NEED TO SEE THIS CALL)
     mumps_par%JOB = 6
-    call DMUMPS(mumps_par)
+#if REALBITS==32
+call SMUMPS(mumps_par)
+#elif REALBITS==64
+call DMUMPS(mumps_par)
+#endif
 
 
     !STORE PERMUTATION USED, SAVE RESULTS, CLEAN UP MUMPS ARRAYS
     !(can save ~25% execution time and improves scaling with openmpi
     ! ~25% more going from 1-2 processors)
     if ( mumps_par%MYID==0 ) then
-      write(*,*) 'Now organizing results...'
+      print *, 'Now organizing results...'
 
       if (perflag .and. it==1) then
         allocate(mumps_perm(mumps_par%N))     !we don't have a corresponding deallocate statement
@@ -1302,7 +1362,7 @@ contains
       tmpresults=reshape(mumps_par%RHS,[lx2,lx3])
       elliptic2D_pol_conv_curv_periodic2=tmpresults(1:lx2,1:lx3)    !sort of superfluous now that hte solve size is the same as the grid
 
-      write(*,*) 'Now attempting deallocations...'
+      print *, 'Now attempting deallocations...'
 
       deallocate( mumps_par%IRN )
       deallocate( mumps_par%JCN )
@@ -1311,7 +1371,11 @@ contains
     end if
 
     mumps_par%JOB = -2
-    call DMUMPS(mumps_par)
+#if REALBITS==32
+call SMUMPS(mumps_par)
+#elif REALBITS==64
+call DMUMPS(mumps_par)
+#endif
 
   end function elliptic2D_pol_conv_curv_periodic2
 
@@ -1346,7 +1410,13 @@ contains
     real(wp), dimension(:), allocatable :: M
     real(wp), dimension(:), allocatable :: b
     real(wp) :: tstart,tfin
-    type (DMUMPS_STRUC) mumps_par
+    
+#if REALBITS==32
+type (SMUMPS_STRUC) mumps_par
+#elif REALBITS==64
+type (DMUMPS_STRUC) mumps_par
+#endif
+
     integer :: myid, ierr
 
     real(wp), dimension(size(sig0,1),1,size(sig0,3)) :: elliptic2D_nonint_curv
@@ -1368,8 +1438,8 @@ contains
       end if
       allocate(ir(lent),ic(lent),M(lent),b(lPhi))
 
-      write(*,*) 'MUMPS will attempt a solve of size:  ',lx1,lx3
-      write(*,*) 'Total unknowns and nonzero entries in matrix:  ',lPhi,lent
+      print *, 'MUMPS will attempt a solve of size:  ',lx1,lx3
+      print *, 'Total unknowns and nonzero entries in matrix:  ',lPhi,lent
 
 
       !AVERAGE CONDUCTANCES TO THE GRID INTERFACE POINTS
@@ -1503,7 +1573,7 @@ contains
         end do
       end do
     end if
-    write(*,*) 'Number of entries used:  ',ient-1
+    print *, 'Number of entries used:  ',ient-1
 
 
     !FIRE UP MUMPS
@@ -1511,7 +1581,11 @@ contains
     mumps_par%JOB = -1
     mumps_par%SYM = 0
     mumps_par%PAR = 1
-    call DMUMPS(mumps_par)
+#if REALBITS==32
+call SMUMPS(mumps_par)
+#elif REALBITS==64
+call DMUMPS(mumps_par)
+#endif
 
 
     !LOAD OUR PROBLEM
@@ -1529,7 +1603,7 @@ contains
       deallocate(ir,ic,M,b)     !clear memory before solve begins!!!
 
       if (perflag .and. it/=1) then       !used cached permutation
-        write(*,*) 'Using a previously stored permutation'
+        print *, 'Using a previously stored permutation'
         allocate(mumps_par%PERM_IN(mumps_par%N))
         mumps_par%PERM_IN=mumps_perm
         mumps_par%ICNTL(7)=1
@@ -1543,7 +1617,11 @@ contains
 
     !SOLVE (ALL WORKERS NEED TO SEE THIS CALL)
     mumps_par%JOB = 6
-    call DMUMPS(mumps_par)
+#if REALBITS==32
+call SMUMPS(mumps_par)
+#elif REALBITS==64
+call DMUMPS(mumps_par)
+#endif
 
 
     !STORE PERMUTATION USED, SAVE RESULTS, CLEAN UP MUMPS ARRAYS
@@ -1551,17 +1629,17 @@ contains
     ! ~25% more going from 1-2 processors).  WOW - this halves execution
     ! time on some big 2048*2048 solves!!!
     if ( mumps_par%MYID==0 ) then
-      write(*,*) 'Now organizing results...'
+      print *, 'Now organizing results...'
 
       if (perflag .and. it==1) then
-        write(*,*) 'Storing ordering for future time step use...'
+        print *, 'Storing ordering for future time step use...'
         allocate(mumps_perm(mumps_par%N))     !we don't have a corresponding deallocate statement
         mumps_perm=mumps_par%SYM_PERM
       end if
 
       elliptic2D_nonint_curv=reshape(mumps_par%RHS,[lx1,1,lx3])
 
-      write(*,*) 'Now attempting deallocations...'
+      print *, 'Now attempting deallocations...'
 
       deallocate( mumps_par%IRN )
       deallocate( mumps_par%JCN )
@@ -1570,7 +1648,11 @@ contains
     end if
 
     mumps_par%JOB = -2
-    call DMUMPS(mumps_par)
+#if REALBITS==32
+call SMUMPS(mumps_par)
+#elif REALBITS==64
+call DMUMPS(mumps_par)
+#endif
 
   end function elliptic2D_nonint_curv
 
@@ -1596,7 +1678,13 @@ contains
     real(wp), dimension(:), allocatable :: M
     real(wp), dimension(:), allocatable :: b
     real(wp) :: tstart,tfin
-    type (DMUMPS_STRUC) mumps_par
+    
+#if REALBITS==32
+type (SMUMPS_STRUC) mumps_par
+#elif REALBITS==64
+type (DMUMPS_STRUC) mumps_par
+#endif
+
     integer :: myid, ierr
     real(wp), dimension(size(rho,1),size(rho,2)) :: poisson2D
 
@@ -1692,7 +1780,11 @@ contains
     mumps_par%JOB = -1
     mumps_par%SYM = 0
     mumps_par%PAR = 1
-    call DMUMPS(mumps_par)
+#if REALBITS==32
+call SMUMPS(mumps_par)
+#elif REALBITS==64
+call DMUMPS(mumps_par)
+#endif
 
 
     !LOAD OUR PROBLEM (ROOT ONLY)
@@ -1720,9 +1812,13 @@ contains
     !SOLVE OUR PROBLEM (ALL WORKERS NEED TO SEE THIS CALL)
     mumps_par%JOB = 6
     call cpu_time(tstart)
-    call DMUMPS(mumps_par)
+#if REALBITS==32
+call SMUMPS(mumps_par)
+#elif REALBITS==64
+call DMUMPS(mumps_par)
+#endif
     call cpu_time(tfin)
-    write(*,*) 'Solve took ',tfin-tstart,' seconds...'
+    print *, 'Solve took ',tfin-tstart,' seconds...'
 
 
     !STORE PERMUTATION USED, SAVE RESULTS, CLEAN UP MUMPS ARRAYS
@@ -1739,7 +1835,11 @@ contains
     end if
 
     mumps_par%JOB = -2
-    call DMUMPS(mumps_par)
+#if REALBITS==32
+call SMUMPS(mumps_par)
+#elif REALBITS==64
+call DMUMPS(mumps_par)
+#endif
 
   end function poisson2D
 
@@ -1749,7 +1849,12 @@ contains
     !------------------------------------------------------------
     !-------A FN. THAT ALLOWS WORKERS TO ENTER MUMPS SOLVES
     !------------------------------------------------------------
-    type(DMUMPS_STRUC) mumps_par
+#if REALBITS==32
+type (SMUMPS_STRUC) mumps_par
+#elif REALBITS==64
+type (DMUMPS_STRUC) mumps_par
+#endif
+
     integer :: myid, ierr
 
 
@@ -1761,7 +1866,11 @@ contains
     mumps_par%JOB = -1
     mumps_par%SYM = 0
     mumps_par%PAR = 1
-    call DMUMPS(mumps_par)
+#if REALBITS==32
+call SMUMPS(mumps_par)
+#elif REALBITS==64
+call DMUMPS(mumps_par)
+#endif
 
 
     !ROOT WILL LOAD OUR PROBLEM
@@ -1769,12 +1878,20 @@ contains
 
     !SOLVE (ALL WORKERS NEED TO SEE THIS CALL)
     mumps_par%JOB = 6
-    call DMUMPS(mumps_par)
+#if REALBITS==32
+call SMUMPS(mumps_par)
+#elif REALBITS==64
+call DMUMPS(mumps_par)
+#endif
 
 
     !DEALLOCATE STRUCTURES USED BY WORKERS DURING SOLVE
     mumps_par%JOB = -2
-    call DMUMPS(mumps_par)
+#if REALBITS==32
+call SMUMPS(mumps_par)
+#elif REALBITS==64
+call DMUMPS(mumps_par)
+#endif
 
   end subroutine elliptic_workers
 

@@ -330,17 +330,17 @@ contains
 !      islstart=iid*lx3+1
 !      islfin=islstart+lx3-1
 !
-!      call mpi_recv(sigPall(:,:,islstart:islfin),lx1*lx2*lx3,MPI_DOUBLE_PRECISION, &
+!      call mpi_recv(sigPall(:,:,islstart:islfin),lx1*lx2*lx3,mpi_realprec, &
 !                    iid,tagsigP,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-!      call mpi_recv(sigHall(:,:,islstart:islfin),lx1*lx2*lx3,MPI_DOUBLE_PRECISION, &
+!      call mpi_recv(sigHall(:,:,islstart:islfin),lx1*lx2*lx3,mpi_realprec, &
 !                    iid,tagsigH,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-!      call mpi_recv(sig0all(:,:,islstart:islfin),lx1*lx2*lx3,MPI_DOUBLE_PRECISION, &
+!      call mpi_recv(sig0all(:,:,islstart:islfin),lx1*lx2*lx3,mpi_realprec, &
 !                    iid,tagsig0,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-!      call mpi_recv(incapall(:,:,islstart:islfin),lx1*lx2*lx3,MPI_DOUBLE_PRECISION, &
+!      call mpi_recv(incapall(:,:,islstart:islfin),lx1*lx2*lx3,mpi_realprec, &
 !                    iid,tagincap,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-!      call mpi_recv(v2all(:,:,islstart:islfin),lx1*lx2*lx3,MPI_DOUBLE_PRECISION, &
+!      call mpi_recv(v2all(:,:,islstart:islfin),lx1*lx2*lx3,mpi_realprec, &
 !                    iid,tagv2pol,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-!      call mpi_recv(v3all(:,:,islstart:islfin),lx1*lx2*lx3,MPI_DOUBLE_PRECISION, &
+!      call mpi_recv(v3all(:,:,islstart:islfin),lx1*lx2*lx3,mpi_realprec, &
 !                    iid,tagv3pol,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
 !    end do
     !GATHER WORKER CONDUCTIVITY VALUES

@@ -11,11 +11,14 @@ module temporal
 !/home/zettergm/zettergmdata/GEMINI/temporal/temporal.f90:65:0: warning: unused parameter ‘b3’ [-Wunused-parameter]
 !/home/zettergm/zettergmdata/GEMINI/temporal/temporal.f90:65:0: warning: unused parameter ‘potsolve’ [-Wunused-parameter]
 
-use phys_consts, only:  kB,mu0,ms,lsp,pi
-use mpimod
+use phys_consts, only:  kB,mu0,ms,lsp,pi, wp
+use mpimod, only: mpi_realprec,tagdt,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr, lid, myid
 use grid, only:  curvmesh
 
 implicit none
+
+private
+public :: dateinc, doy_calc, sza, dt_comm
 
 contains
 
@@ -36,12 +39,12 @@ contains
 
     call dt_calc(tcfl,ns,Ts,vs1,vs2,vs3,B1,B2,B3,x%dl1i,x%dl2i,x%dl3i,potsolve,cour1,cour2,cour3,dt)
     if (myid/=0) then
-      call mpi_send(dt,1,MPI_DOUBLE_PRECISION,0,tagdt,MPI_COMM_WORLD,ierr)   !send what I think dt should be
-      call mpi_recv(dt,1,MPI_DOUBLE_PRECISION,0,tagdt,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)   !receive roots decision   
+      call mpi_send(dt,1,mpi_realprec,0,tagdt,MPI_COMM_WORLD,ierr)   !send what I think dt should be
+      call mpi_recv(dt,1,mpi_realprec,0,tagdt,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)   !receive roots decision   
     else
       !FIGURE OUT GLOBAL DT REQUIRED FOR STABILITY
       do iid=1,lid-1
-        call mpi_recv(dttmp,1,MPI_DOUBLE_PRECISION,iid,tagdt,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+        call mpi_recv(dttmp,1,mpi_realprec,iid,tagdt,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
   
         if (dttmp < dt) then
           dt=dttmp
@@ -54,11 +57,11 @@ contains
       end if
   
       !DON'T ALLOW ZERO DT
-      dt=max(dt,1d-6)
+      dt=max(dt, 1e-6_wp)
   
       !SEND GLOBAL DT TO ALL WORKERS
       do iid=1,lid-1
-        call mpi_send(dt,1,MPI_DOUBLE_PRECISION,iid,tagdt,MPI_COMM_WORLD,ierr)
+        call mpi_send(dt,1,mpi_realprec,iid,tagdt,MPI_COMM_WORLD,ierr)
       end do
   
       write(*,*) 'dt figured to be:  ',dt
@@ -101,9 +104,9 @@ contains
     lx2=size(Ts,2)-4
     lx3=size(Ts,3)-4
 
-    gridrate1=0d0
-    gridrate2=0d0
-    gridrate3=0d0
+    gridrate1=0._wp
+    gridrate2=0._wp
+    gridrate3=0._wp
 
 
     !EVALUATE TIME STEP AGAINST LOCAL SOUND SPEED AND ADVECTION
@@ -112,9 +115,9 @@ contains
         do ix2=1,lx2
           do ix1=1,lx1
             if (isp<lsp) then
-              vsnd=sqrt(kB*Ts(ix1,ix2,ix3,isp)/ms(isp)+5d0/3d0*kB*Ts(ix1,ix2,ix3,lsp)/ms(isp))
+              vsnd=sqrt(kB*Ts(ix1,ix2,ix3,isp)/ms(isp)+5._wp/3._wp*kB*Ts(ix1,ix2,ix3,lsp)/ms(isp))
             else
-              vsnd=0d0
+              vsnd=0._wp
             end if
 
             gridrate1(isp)=max((vsnd+abs(vs1(ix1,ix2,ix3,isp)))/dx1i(ix1,ix2,ix3),gridrate1(isp))
@@ -133,7 +136,7 @@ contains
 !      do ix3=1,lx3
 !        do ix2=1,lx2
 !          do ix1=1,lx1
-!            rhom=0d0
+!            rhom=0._wp
 !            do isp=1,lsp
 !              rhom=rhom+ms(isp)*ns(ix1,ix2,ix3,isp)
 !            end do
@@ -153,11 +156,11 @@ contains
 
 
     !ENFORCE A MINIMUM VALUE FOR THE GRIDRATE (WHICH IS CFL/DT, GRID POINTS PER SECOND)
-    gridrate1=max(gridrate1,1d-10)
-    gridrate2=max(gridrate2,1d-10)
-    gridrate3=max(gridrate3,1d-10)
+    gridrate1=max(gridrate1, 1e-10_wp)
+    gridrate2=max(gridrate2, 1e-10_wp)
+    gridrate3=max(gridrate3, 1e-10_wp)
 
-    dt=tcfl*min(minval(1d0/gridrate1),minval(1d0/gridrate2),minval(1d0/gridrate3))
+    dt=tcfl*min(minval(1._wp/gridrate1),minval(1._wp/gridrate2),minval(1._wp/gridrate3))
     cour1=dt*gridrate1
     cour2=dt*gridrate2
     cour3=dt*gridrate3
@@ -178,8 +181,8 @@ contains
 
 
     UTsec=UTsec+dt
-    if (UTsec>=86400d0) then
-      UTsec=mod(UTsec,86400d0)
+    if (UTsec>=86400._wp) then
+      UTsec=mod(UTsec,86400._wp)
       day=day+1          !roll the day over
 
       select case(month)     !check whether the month needs to be rolled over
@@ -234,44 +237,42 @@ contains
   end function doy_calc
 
 
-  function sza(ymd,UTsec,glat,glon)   !computes sza in radians
+pure function sza(ymd,UTsec,glat,glon)   
+!! computes sza in radians
+!! CALCULATE SOLAR ZENITH ANGLE OVER A GIVEN GET OF LAT/LON
 
-    !------------------------------------------------------------
-    !-------CALCULATE SOLAR ZENITH ANGLE OVER A GIVEN GET OF LAT/LON
-    !------------------------------------------------------------
+integer, dimension(3), intent(in) :: ymd
+real(wp), intent(in) :: UTsec
+real(wp), dimension(:,:,:), intent(in) :: glat,glon
 
-    integer, dimension(3), intent(in) :: ymd
-    real(wp), intent(in) :: UTsec
-    real(wp), dimension(:,:,:), intent(in) :: glat,glon
+real(wp), dimension(size(glat,1),size(glat,2),size(glat,3)) :: sza
 
-    real(wp), dimension(size(glat,1),size(glat,2),size(glat,3)) :: sza
-
-    real(wp) :: doy,soldecrad
-    real(wp), dimension(size(glat,1),size(glat,2),size(glat,3)) :: lonrad,LThrs,latrad,hrang
+real(wp) :: doy,soldecrad
+real(wp), dimension(size(glat,1),size(glat,2),size(glat,3)) :: lonrad,LThrs,latrad,hrang
 
 
-    !SOLAR DECLINATION ANGLE
-    doy=doy_calc(ymd)
-    soldecrad=-23.44d0*cos(2d0*pi/365d0*(doy+10d0))*pi/180d0;
+!> SOLAR DECLINATION ANGLE
+doy=doy_calc(ymd)
+soldecrad=-23.44_wp*cos(2._wp*pi/365._wp*(doy+10._wp))*pi/180._wp;
 
 
-    !HOUR ANGLE
-    lonrad=glon*pi/180d0
-    where (lonrad>pi)
-      lonrad=lonrad-2d0*pi
-    end where
-    where (lonrad<-2d0*pi)
-      lonrad=lonrad+2d0*pi
-    end where
-    LThrs=UTsec/3600d0+lonrad/(pi/12d0)
-    hrang=(12d0-LThrs)*(pi/12d0)
+!> HOUR ANGLE
+lonrad=glon*pi/180._wp
+where (lonrad>pi)
+  lonrad=lonrad-2._wp*pi
+end where
+where (lonrad<-2._wp*pi)
+  lonrad=lonrad+2._wp*pi
+end where
+LThrs=UTsec/3600._wp+lonrad/(pi/12._wp)
+hrang=(12._wp-LThrs)*(pi/12._wp)
 
 
-    !SOLAR ZENITH ANGLE
-    latrad=glat*pi/180d0
-    sza=acos(sin(soldecrad)*sin(latrad)+cos(soldecrad)*cos(latrad)*cos(hrang))
+!> SOLAR ZENITH ANGLE
+latrad=glat*pi/180._wp
+sza=acos(sin(soldecrad)*sin(latrad)+cos(soldecrad)*cos(latrad)*cos(hrang))
 
-  end function sza
+end function sza
 
 end module temporal
 

@@ -520,16 +520,16 @@ contains
 !
 !!          !NOW SEND THE GRID DATA
 !!          do iid=1,lid-1
-!!            call mpi_send(mlonp,llon,MPI_DOUBLE_PRECISION,iid,tagmlon,MPI_COMM_WORLD,ierr)    !I think it's okya for these to have the same tag as for the precipitation, but perhaps should be fixed for clarity in the future...
-!!            call mpi_send(mlatp,llat,MPI_DOUBLE_PRECISION,iid,tagmlat,MPI_COMM_WORLD,ierr)
+!!            call mpi_send(mlonp,llon,mpi_realprec,iid,tagmlon,MPI_COMM_WORLD,ierr)    !I think it's okya for these to have the same tag as for the precipitation, but perhaps should be fixed for clarity in the future...
+!!            call mpi_send(mlatp,llat,mpi_realprec,iid,tagmlat,MPI_COMM_WORLD,ierr)
 !!          end do
 !!        else    !workers
 !!          call mpi_recv(llon,1,MPI_INTEGER,0,tagllon,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
 !!          call mpi_recv(llat,1,MPI_INTEGER,0,tagllat,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
 !!          allocate(mlonp(llon),mlatp(llat)) 
 !!
-!!          call mpi_recv(mlonp,llon,MPI_DOUBLE_PRECISION,0,tagmlon,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-!!          call mpi_recv(mlatp,llat,MPI_DOUBLE_PRECISION,0,tagmlat,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+!!          call mpi_recv(mlonp,llon,mpi_realprec,0,tagmlon,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+!!          call mpi_recv(mlatp,llat,mpi_realprec,0,tagmlat,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
 !!        end if
 !
 !        !SPACE TO STORE INPUT DATA
@@ -576,13 +576,13 @@ contains
 !!        !send a full copy of the data to all of the workers
 !!        do iid=1,lid-1
 !!          write(*,*) 'Sending to worker:  ',iid
-!!          call mpi_send(E0xp,llon*llat,MPI_DOUBLE_PRECISION,iid,tagE0xp,MPI_COMM_WORLD,ierr)
-!!          call mpi_send(E0yp,llon*llat,MPI_DOUBLE_PRECISION,iid,tagE0yp,MPI_COMM_WORLD,ierr)
+!!          call mpi_send(E0xp,llon*llat,mpi_realprec,iid,tagE0xp,MPI_COMM_WORLD,ierr)
+!!          call mpi_send(E0yp,llon*llat,mpi_realprec,iid,tagE0yp,MPI_COMM_WORLD,ierr)
 !!        end do
 !!      else     !workers receive data from root
 !!        write(*,*) 'Worker;  ',myid,' receiving...'
-!!        call mpi_recv(E0xp,llon*llat,MPI_DOUBLE_PRECISION,0,tagE0xp,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-!!        call mpi_recv(E0yp,llon*llat,MPI_DOUBLE_PRECISION,0,tagE0yp,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+!!        call mpi_recv(E0xp,llon*llat,mpi_realprec,0,tagE0xp,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+!!        call mpi_recv(E0yp,llon*llat,mpi_realprec,0,tagE0yp,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
 !!      end if
 !
 !

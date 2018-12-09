@@ -1,6 +1,6 @@
 %SIMULATIONS LOCAITONS
-simname='3Dtest/';
-basedir='~/zettergmdata/simulations/'
+simname='test3d/';
+basedir='../simulations/'
 direc=[basedir,simname];
 
 

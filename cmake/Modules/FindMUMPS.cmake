@@ -1,127 +1,70 @@
-# - Try to find MUMPS  http://mumps.enseeiht.fr/
-# https://cmake.org/cmake/help/latest/manual/cmake-developer.7.html#find-modules
+# Distributed under the OSI-approved BSD 3-Clause License.  See accompanying
+# file Copyright.txt or https://cmake.org/licensing for details.
 
-#.rst:
-# FindMUMPS
-# -------
-#
-# Finds the MUMPS library
-#
-# This will define the following variables::
-#
-#   MUMPS_FOUND    - True if the system has the MUMPS library
-#   MUMPS_VERSION  - The version of the MUMPS library which was found
-#   MUMPS_LIBRARIES - the libraries to be linked
-#   MUMPS_INCLUDE_DIRS - dirs to be included
-#
-# Inputs:
-#  COMPONENTS  s d c z   list one or more
+#[=======================================================================[.rst:
+FindMUMPS
+---------
 
-if(${CMAKE_Fortran_COMPILER_ID} STREQUAL Intel)
-  find_package(MKL COMPONENTS MPI)
-else()
-  find_package(LAPACK)
-  if (NOT LAPACK_FOUND)
-    message(WARNING "Skipping MUMPS because required LAPACK was not found.")
-    return()
-  endif()
+Finds the MUMPS library
 
-  # ----- MPI
-  find_package(MPI COMPONENTS Fortran)
-  if (NOT MPI_FOUND)
-    message(WARNING "Skipping MUMPS because required MPI was not found.")
-    return()
-  endif()
-endif()
+COMPONENTS
+  s d c z   list one or more. Defaults to ``d``.
 
-find_package(Threads REQUIRED)
-add_compile_options(${MPI_Fortran_COMPILE_OPTIONS})
-include_directories(${MPI_Fortran_INCLUDE_DIRS})
+Result Variables
+^^^^^^^^^^^^^^^^
 
-#-- METIS
-find_package(METIS QUIET)
-#-- Scotch
-find_package(Scotch QUIET COMPONENTS ESMUMPS)
-#-- Scalapack
-find_package(SCALAPACK QUIET)
-#-------------------------
+MUMPS_LIBRARIES
+  libraries to be linked
 
+MUMPS_INCLUDE_DIRS
+  dirs to be included
 
-find_package(PkgConfig)
-pkg_check_modules(PC_MUMPS QUIET MUMPS)
+#]=======================================================================]
 
+set(CMAKE_INSTALL_DEFAULT_COMPONENT_NAME d)
 
 find_path(MUMPS_INCLUDE_DIR
           NAMES mumps_compat.h
-          PATHS ${PC_MUMPS_INCLUDE_DIRS} ${LD_LIBRARY_PATH}
-          PATH_SUFFIXES MUMPS include
-          HINTS ${MUMPS_ROOT})
+          PATH_SUFFIXES MUMPS include)
 
 find_library(MUMPS_COMMON
              NAMES mumps_common
-             PATHS ${PC_MUMPS_LIBRARY_DIRS} ${LD_LIBRARY_PATH}
-             PATH_SUFFIXES MUMPS lib
-             HINTS ${MUMPS_ROOT})
+             PATH_SUFFIXES MUMPS lib)
 
-find_library(PORD 
-             NAMES pord 
-             PATHS ${LD_LIBRARY_PATH}
-             PATH_SUFFIXES MUMPS lib
-             HINTS ${MUMPS_ROOT})
-        
-unset(MUMPS_LIBRARIES)
+find_library(PORD
+             NAMES pord
+             PATH_SUFFIXES MUMPS lib)
+
 
 FOREACH(comp ${MUMPS_FIND_COMPONENTS})
   find_library(MUMPS_${comp}_lib
-              NAMES ${comp}mumps 
-              PATHS ${LD_LIBRARY_PATH}
-              PATH_SUFFIXES MUMPS lib
-              HINTS ${MUMPS_ROOT})
-  
-#  message(STATUS "MUMPS finding " ${comp}mumps " in " MUMPS_${thiscomp})
-  if(MUMPS_${comp}_lib)
-    list(APPEND MUMPS_LIBRARIES ${MUMPS_${comp}_lib})
-    mark_as_advanced(MUMPS_${comp}_lib)
-  else()
-      if(MUMPS_FIND_REQUIRED)
-        message(FATAL_ERROR "did not find" ${MUMPS_${comp}_lib})
-      else()
-        message(WARNING "did not find" ${MUMPS_${comp}_lib})
-      endif()
-  endif()
+              NAMES ${comp}mumps
+              PATH_SUFFIXES MUMPS lib)
+
+  list(APPEND MUMPS_LIBRARY ${MUMPS_${comp}_lib})
+  mark_as_advanced(MUMPS_${comp}_lib)
 ENDFOREACH()
 
 
-set(MUMPS_VERSION ${PC_MUMPS_VERSION})
-
-list(APPEND MUMPS_LIBRARIES ${MUMPS_COMMON} ${PORD})
-
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(MUMPS
-    FOUND_VAR MUMPS_FOUND
-    REQUIRED_VARS MUMPS_LIBRARIES MUMPS_INCLUDE_DIR
-    VERSION_VAR MUMPS_VERSION)
+find_package_handle_standard_args(
+MUMPS
+REQUIRED_VARS MUMPS_LIBRARY MUMPS_COMMON PORD MUMPS_INCLUDE_DIR
+VERSION_VAR MUMPS_VERSION)
 
 # in this order!
-set(MUMPS_INCLUDE_DIRS ${MUMPS_INCLUDE_DIR} )
+list(APPEND MUMPS_LIBRARIES ${MUMPS_LIBRARY} ${MUMPS_COMMON} ${PORD})
+set(MUMPS_INCLUDE_DIRS ${MUMPS_INCLUDE_DIR})
 
-if(METIS_FOUND)
-  list(APPEND MUMPS_LIBRARIES ${METIS_LIBRARIES})
-endif()
-if(Scotch_FOUND)
-  list(APPEND MUMPS_LIBRARIES ${Scotch_LIBRARIES})
-  list(APPEND MUMPS_INCLUDE_DIRS  ${Scotch_INCLUDE_DIRS})
-endif()
-if(SCALAPACK_FOUND)
-  list(APPEND MUMPS_LIBRARIES ${SCALAPACK_LIBRARIES})
-  list(APPEND MUMPS_INCLUDE_DIRS ${SCALAPACK_INCLUDE_DIRS})
-endif()
+#if(NOT TARGET MUMPS::MUMPS)
+#  add_library(MUMPS::MUMPS UNKNOWN IMPORTED)
+#  set_target_properties(MUMPS::MUMPS PROPERTIES
+#                        INTERFACE_LINK_LIBRARIES ${MUMPS_LIBRARIES}
+#                        INTERFACE_INCLUDE_DIRECTORIES ${MUMPS_INCLUDE_DIRS}
+#                       )
+#endif()
 
-list(APPEND MUMPS_LIBRARIES ${LAPACK_LIBRARIES} ${MPI_Fortran_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT}) 
-
-list(APPEND MUMPS_INCLUDE_DIRS ${LAPACK_INCLUDE_DIRS}  ${MPI_Fortran_INCLUDE_PATH})
-
-set(MUMPS_DEFINITIONS  ${PC_MUMPS_CFLAGS_OTHER})
-
-mark_as_advanced(MUMPS_INCLUDE_DIR MUMPS_LIBRARY)
+mark_as_advanced(
+MUMPS_INCLUDE_DIR
+MUMPS_LIBRARY)
 

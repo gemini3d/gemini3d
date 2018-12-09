@@ -3,10 +3,10 @@ addpath ../../script_utils;
 
 %REFERENCE GRID TO USE
 direcconfig='./'
-direcgrid='~/zettergmdata/simulations/input/3Dtest/'
+direcgrid='../simulations/input/test3d/'
 
 %CREATE SOME SPACE FOR OUTPUT FILES
-outdir='~/zettergmdata/simulations/input/3Dtest_particles/';
+outdir='../simulations/input/test3d_particles/';
 system(['mkdir ',outdir]);
 system(['rm ',outdir,'/*']);
 
