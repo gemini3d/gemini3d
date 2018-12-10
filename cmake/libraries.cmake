@@ -2,7 +2,14 @@
 # https://software.intel.com/en-us/articles/intel-mkl-link-line-advisor
 # if not finding Intel/MKL, be sure C language is enabled in CMakeLists.txt
 if(USEMKL OR CMAKE_Fortran_COMPILER_ID STREQUAL Intel)
+  if(NOT DEFINED ENV{MKLROOT})
+    message(FATAL_ERROR "MKLROOT must be defined")
+  endif()
+  
+  add_link_options(-Wl,--no-as-needed)
+
   set(BLA_VENDOR Intel10_64lp_seq)
+  include_directories($ENV{MKLROOT}/include)
 endif()
 
 
@@ -15,7 +22,7 @@ find_package(LAPACK QUIET)  # sets LAPACK95_FOUND, LAPACK95_LIBRARIES
 
 # Lapack
 set(BLA_F95 OFF)
-find_package(BLAS)
+find_package(BLAS REQUIRED)
 find_package(LAPACK REQUIRED)
 
 
