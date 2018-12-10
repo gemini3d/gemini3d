@@ -1,10 +1,8 @@
-cmake_minimum_required (VERSION 3.9)  # 3.9: MPI::MPI_Fortran
+cmake_minimum_required (VERSION 3.12)  # 3.9: MPI::MPI_Fortran 3.12 for find_ROOT
 project(gem-num Fortran)
 enable_testing()
 
-if(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.12.0")  # quotes are needed!
-  cmake_policy(SET CMP0074 NEW)
-endif()
+cmake_policy(SET CMP0074 NEW)
 
 get_directory_property(hasParent PARENT_DIRECTORY)
 if(NOT hasParent)

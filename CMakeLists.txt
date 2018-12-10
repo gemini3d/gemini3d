@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.11)   # 3.9: MPI::MPI_Fortran  3.11 for FindLapack bug
+cmake_minimum_required(VERSION 3.12)   # 3.9: MPI::MPI_Fortran  3.11 for FindLapack bug   3.12 for find_ROOT
 project(gemini3d Fortran C)  # MUST include C language for Intel / MKL to work
 enable_testing()
 
@@ -8,9 +8,7 @@ endif()
 
 option(USEMKL "Use Intel MKL with your compiler")
 
-if(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.12.0")  # quotes are needed!
-  cmake_policy(SET CMP0074 NEW)
-endif()
+cmake_policy(SET CMP0074 NEW)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR})
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/Modules/)
