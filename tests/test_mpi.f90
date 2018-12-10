@@ -7,7 +7,7 @@ implicit none
 integer :: ierr, mrank, msize, vlen
 character(MPI_MAX_LIBRARY_VERSION_STRING) :: version  ! allocatable not ok
 
-print *,compiler_version()
+print *,compiler_version(), compiler_options()
 
 call MPI_INIT(ierr)
 call MPI_COMM_RANK(MPI_COMM_WORLD, mrank, ierr)

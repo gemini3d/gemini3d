@@ -1,18 +1,18 @@
-cmake_minimum_required (VERSION 3.11)  # 3.9: MPI::MPI_Fortran, 3.11: Lapack
+cmake_minimum_required (VERSION 3.13)  
+# 3.9: MPI::MPI_Fortran, 3.11: Lapack,  3.12 find_ROOT, 3.13 add_link_options
 project(test_gem Fortran)
 enable_testing()
 
-if(NOT realbits)
-  set(realbits 64)
+get_directory_property(hasParent PARENT_DIRECTORY)
+if(NOT hasParent)
+  if(NOT realbits)
+    set(realbits 64)
+  endif()
+
+  list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/../cmake/Modules/)
+  include(../cmake/compilers.cmake)
+  include(../cmake/libraries.cmake)
 endif()
-
-
-if(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.12.0")  # quotes are needed!
-  cmake_policy(SET CMP0074 NEW)
-endif()
-
-list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/../cmake/Modules/)
-
 
 find_package(MPI REQUIRED COMPONENTS Fortran)
 

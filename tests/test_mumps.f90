@@ -1,6 +1,6 @@
 PROGRAM MUMPS_TEST
 use mpi, only: mpi_init, mpi_finalize, mpi_comm_world
-use, intrinsic :: iso_fortran_env, only: stderr=>error_unit, i64=>int64
+use, intrinsic :: iso_fortran_env, only: stderr=>error_unit, i64=>int64, compiler_version, compiler_options
 
 IMPLICIT NONE
 
@@ -8,6 +8,8 @@ INCLUDE 'dmumps_struc.h'
 TYPE (DMUMPS_STRUC) :: mumps_par
 INTEGER :: IERR
 INTEGER(i64) :: I8
+
+print *,compiler_version(), compiler_options()
 
 CALL MPI_INIT(IERR)
 ! Define a communicator for the package.

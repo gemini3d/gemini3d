@@ -1,3 +1,5 @@
+cmake_policy(SET CMP0074 NEW)
+
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
   add_compile_options(-g -O0)
 else()
@@ -5,7 +7,10 @@ else()
 endif()
 
 if(CMAKE_Fortran_COMPILER_ID STREQUAL Intel)
-  # -r8  after literals are fixed to "e" or "wp"
+  add_compile_options(-qopenmp)  # undefined reference to `omp_get_max_threads'
+  add_link_options(-parallel) # undefined reference to `__kmpc_begin'
+
+
   if(CMAKE_BUILD_TYPE STREQUAL Debug)
     add_compile_options(-debug extended -check all -heap-arrays -fp-stack-check)
   endif()

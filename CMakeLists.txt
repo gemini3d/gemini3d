@@ -1,4 +1,5 @@
-cmake_minimum_required(VERSION 3.12)   # 3.9: MPI::MPI_Fortran  3.11 for FindLapack bug   3.12 for find_ROOT
+cmake_minimum_required(VERSION 3.13)   
+# 3.9: MPI::MPI_Fortran  3.11 for FindLapack bug   3.12 for find_ROOT, 3.13 add_link_options
 project(gemini3d Fortran C)  # MUST include C language for Intel / MKL to work
 enable_testing()
 
@@ -8,15 +9,17 @@ endif()
 
 option(USEMKL "Use Intel MKL with your compiler")
 
-cmake_policy(SET CMP0074 NEW)
-
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR})
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/Modules/)
 
 include(${PROJECT_SOURCE_DIR}/cmake/compilers.cmake)
 include(${PROJECT_SOURCE_DIR}/cmake/libraries.cmake)
 include(${PROJECT_SOURCE_DIR}/cmake/mumps.cmake)
 include(${PROJECT_SOURCE_DIR}/cmake/utils.cmake)
+
+# --- pretests, to help catch missing libs 
+add_subdirectory(tests)
+
+# --- vendor libraries
 
 add_subdirectory(vendor/msis00)
 
@@ -87,12 +90,15 @@ target_link_libraries(gemini PRIVATE mpimod io neutral precipBCs
 #  MPI::MPI_Fortran)
 target_include_directories(gemini PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/numerical
     ${MUMPS_INCLUDE_DIRS})
+set_target_properties(gemini PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR})
 
 #--------magnetic field calculation executable---------------
 add_executable(magcalc magcalc.f90)
 target_link_libraries(magcalc PRIVATE mpimod const grid io temporal)
 target_include_directories(magcalc PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/numerical)
+set_target_properties(magcalc PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR})
 
 # --- self-tests
 include(${PROJECT_SOURCE_DIR}/cmake/test2d.cmake)
 include(${PROJECT_SOURCE_DIR}/cmake/test3d.cmake)
+
