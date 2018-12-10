@@ -1,8 +1,6 @@
 cmake_minimum_required (VERSION 3.1)
 project(MSIS_setup Fortran)
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../../)
-
 # because of old coding practice, disable vendored MSIS compiler warnings
 add_library(msis msis00_gfortran.f)
 
@@ -21,6 +19,6 @@ elseif(CMAKE_Fortran_COMPILER_ID STREQUAL NAG)
 endif()
 # --- for setting up an equilibrium simulation --
 
-add_executable(msis_setup ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/setup/MSIS00/call_msis_gfortran.f90)
+add_executable(msis_setup ${CMAKE_CURRENT_SOURCE_DIR}/../../setup/MSIS00/call_msis_gfortran.f90)
 target_link_libraries(msis_setup PRIVATE msis)
-
+set_target_properties(msis_setup PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../../)
