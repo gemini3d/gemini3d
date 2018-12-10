@@ -277,7 +277,7 @@ real(wp), dimension(-1:,-1:,-1:,:), intent(out) :: ns,vs1,Ts
 
 integer :: lx1,lx2,lx3,lx3all,isp
 
-real(wp), dimension(-1:size(x1,1)-2,-1:size(x2,1)-2,-1:size(x3all,1)-2,1:lsp) :: nsall,vs1all,Tsall
+real(wp), dimension(-1:size(x1,1)-2,-1:size(x2,1)-2,-1:size(x3all,1)-2,1:lsp) :: nsall, vs1all, Tsall
 real(wp), dimension(:,:,:,:), allocatable :: statetmp
 integer :: lx1in,lx2in,lx3in,u
 real(wp) :: tin
@@ -335,15 +335,15 @@ close(u)
 print *, 'Done gathering input...'
 
 
-!USER SUPPLIED FUNCTION TO TAKE A REFERENCE PROFILE AND CREATE INITIAL CONDITIONS FOR ENTIRE GRID.  ASSUMING THAT THE
-!INPUT DATA ARE EXACTLY THE CORRECT SIZE (AS IS THE CASE WITH FILE INPUT) THIS IS NOW SUPERFLUOUS
+!> USER SUPPLIED FUNCTION TO TAKE A REFERENCE PROFILE AND CREATE INITIAL CONDITIONS FOR ENTIRE GRID.  
+!> ASSUMING THAT THE INPUT DATA ARE EXACTLY THE CORRECT SIZE (AS IS THE CASE WITH FILE INPUT) THIS IS NOW SUPERFLUOUS
 print *, 'Done setting initial conditions...'
-print *, 'Min/max input density:  ',minval(pack(nsall(:,:,:,7),.true.)),maxval(pack(nsall(:,:,:,7),.true.))
-print *, 'Min/max input velocity:  ',minval(pack(vs1all(:,:,:,:),.true.)),maxval(pack(vs1all(:,:,:,:),.true.))
-print *, 'Min/max input temperature:  ',minval(pack(Tsall(:,:,:,:),.true.)),maxval(pack(Tsall(:,:,:,:),.true.))
+print *, 'Min/max input density:  ', minval(pack(nsall(:,:,:,7),.true.)), maxval(pack(nsall(:,:,:,7),.true.))
+print *, 'Min/max input velocity:  ', minval(pack(vs1all(:,:,:,:),.true.)),maxval(pack(vs1all(:,:,:,:),.true.))
+print *, 'Min/max input temperature:  ', minval(pack(Tsall(:,:,:,:),.true.)),maxval(pack(Tsall(:,:,:,:),.true.))
 
 
-!ROOT BROADCASTS IC DATA TO WORKERS
+!> ROOT BROADCASTS IC DATA TO WORKERS
 call cpu_time(tstart)
 call bcast_send(nsall,tagns,ns)
 call bcast_send(vs1all,tagvs1,vs1)

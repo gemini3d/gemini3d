@@ -25,7 +25,7 @@ cd objects
 
 # some systems don't have mpiifort for Intel
 # use ifort as mpif90 get partially picked-up as GNU
-cmake -DUSEMKL=yes -DLIB_DIR=$HOME/flibs-intel ..
+cmake -DCMAKE_BUILD_TYPE=Debug -DUSEMKL=yes -DLIB_DIR=$HOME/flibs-intel ..
 
 )
 

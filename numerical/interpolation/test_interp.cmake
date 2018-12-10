@@ -1,11 +1,10 @@
-add_executable(test_interp1 testinterp1.f90)
+add_executable(test_interp1 interpolation/testinterp1.f90)
 target_link_libraries(test_interp1 interp)
 
-
-add_executable(test_interp2 testinterp2.f90)
+add_executable(test_interp2 interpolation/testinterp2.f90)
 target_link_libraries(test_interp2 interp)
 
-add_test(NAME Interp1D COMMAND test_interp1) 
+add_test(NAME Interp1D COMMAND test_interp1)
 
 add_test(NAME Interp2D COMMAND test_interp2)
 set_tests_properties(Interp2D PROPERTIES

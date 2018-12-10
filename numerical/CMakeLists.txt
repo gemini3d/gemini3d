@@ -23,7 +23,7 @@ target_link_libraries(interp PRIVATE const)
 
 
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
-  include(test_interp.cmake)
+  include(interpolation/test_interp.cmake)
 endif()
 
 

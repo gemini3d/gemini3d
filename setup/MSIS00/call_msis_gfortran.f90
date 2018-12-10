@@ -12,13 +12,14 @@ real(sp), allocatable :: glat(:),glon(:),alt(:)
 character(256) :: buf
 character(:), allocatable :: infile,outfile
 
-!read in msis inputs
+!> read in msis inputs
 if (command_argument_count() /= 2) error stop 'must specify input and output filenames'
 
 call get_command_argument(1,buf)
 infile = trim(buf)
 
-open(newunit=u,file=infile,status='old',form='unformatted',access='stream', action='read')    !use binary to reduce file size and read times
+open(newunit=u,file=infile,status='old',form='unformatted',access='stream', action='read')    
+!! use binary to reduce file size and read times
 
 read(u) iyd
 read(u) sec
@@ -36,21 +37,21 @@ read(u) glat,glon,alt
 
  close(u)
 
-! --- Run MSIS
+!> Run MSIS
 ap(1:7)=apday
 ap(2)=ap3
 
-!switch to mksa units
+!> switch to mksa units
 call meters(.true.)
 
-!output file
+!> output file
 call get_command_argument(2, buf)
 outfile = trim(buf)
 
 open(newunit=u,file=outfile,status='replace',form='unformatted',access='stream', action='write')
-!use binary to reduce file size and read times
+  !! use binary to reduce file size and read times
 
-!call to msis routine
+!> call to msis routine
 do iz=1,lz
   stl = sec/3600. + glon(iz)/15.
   call gtd7(iyd,sec,alt(iz),glat(iz),glon(iz),stl,f107a,f107,ap,mass,d,t)

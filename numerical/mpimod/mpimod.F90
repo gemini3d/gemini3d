@@ -710,7 +710,7 @@ lx2=size(paramtrim,2)
 lx3=size(paramtrim,3)
 
 
-!ROOT BROADCASTS IC DATA TO WORKERS
+!> ROOT BROADCASTS IC DATA TO WORKERS
 do iid=1,lid-1
   islstart=iid*lx3+1
   islfin=islstart+lx3-1
@@ -720,7 +720,7 @@ do iid=1,lid-1
 end do
 
 
-!ROOT TAKES A SLAB OF DATA
+!> ROOT TAKES A SLAB OF DATA
 paramtrim=paramtrimall(:,:,1:lx3)
 
 end subroutine bcast_send3D
@@ -768,15 +768,12 @@ end subroutine bcast_send3D_x3i
 
 
 subroutine bcast_send3D_ghost(paramall,tag,param)
-
-!------------------------------------------------------------
-!-------THIS SUBROUTINE BROADCASTS DATA FROM A FULL GRID ARRAY
-!-------ON ROOT PROCESS TO ALL WORKERS' SUB-GRID ARRAYS.
-!-------
-!-------SUBROUTINE IS TO BE CALLED BY ROOT TO DO A BROADCAST
-!-------
-!-------THIS VERSION WORKS ON 3D ARRAYS WHICH INCLUDE GHOST CELLS
-!------------------------------------------------------------
+!! THIS SUBROUTINE BROADCASTS DATA FROM A FULL GRID ARRAY
+!!ON ROOT PROCESS TO ALL WORKERS' SUB-GRID ARRAYS.
+!!
+!! SUBROUTINE IS TO BE CALLED BY ROOT TO DO A BROADCAST
+!!
+!! THIS VERSION WORKS ON 3D ARRAYS WHICH INCLUDE GHOST CELLS
 
 real(wp), dimension(-1:,-1:,-1:), intent(in) :: paramall
 integer, intent(in) :: tag
@@ -785,13 +782,13 @@ real(wp), dimension(-1:,-1:,-1:), intent(out) :: param
 integer :: lx1,lx2,lx3
 integer :: iid,islstart,islfin
 
-
-lx1=size(param,1)-4    !note here that param has ghost cells
+!> note here that param has ghost cells
+lx1=size(param,1)-4    
 lx2=size(param,2)-4
 lx3=size(param,3)-4
 
 
-!ROOT BROADCASTS IC DATA TO WORKERS
+!> ROOT BROADCASTS IC DATA TO WORKERS
 do iid=1,lid-1
   islstart=iid*lx3+1
   islfin=islstart+lx3-1
@@ -801,23 +798,20 @@ do iid=1,lid-1
 end do
 
 
-!ROOT TAKES A SLAB OF DATA
+!> ROOT TAKES A SLAB OF DATA
 param=paramall(:,:,-1:lx3+2)
 
 end subroutine bcast_send3D_ghost
 
 
 subroutine bcast_send4D(paramall,tag,param)
-
-!------------------------------------------------------------
-!-------THIS SUBROUTINE BROADCASTS DATA FROM A FULL GRID ARRAY
-!-------ON ROOT PROCESS TO ALL WORKERS' SUB-GRID ARRAYS.
-!-------
-!-------SUBROUTINE IS TO BE CALLED BY ROOT TO DO A BROADCAST
-!-------
-!-------THIS VERSION WORKS ON 4D ARRAYS WHICH INCLUDE
-!-------GHOST CELLS!
-!------------------------------------------------------------
+!! THIS SUBROUTINE BROADCASTS DATA FROM A FULL GRID ARRAY
+!! ON ROOT PROCESS TO ALL WORKERS' SUB-GRID ARRAYS.
+!!
+!! SUBROUTINE IS TO BE CALLED BY ROOT TO DO A BROADCAST
+!!
+!! THIS VERSION WORKS ON 4D ARRAYS WHICH INCLUDE
+!! GHOST CELLS!
 
 real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: paramall
 integer, intent(in) :: tag
@@ -832,9 +826,10 @@ lx2=size(param,2)-4
 lx3=size(param,3)-4
 
 
-!ROOT BROADCASTS IC DATA TO WORKERS
+!> ROOT BROADCASTS IC DATA TO WORKERS
 do isp=1,lsp
-  param(:,:,:,isp)=paramall(:,:,-1:lx3,isp)    !roots part of the data
+  param(:,:,:,isp)=paramall(:,:,-1:lx3,isp)    
+    !! roots part of the data
 
   do iid=1,lid-1
     islstart=iid*lx3+1
@@ -849,16 +844,13 @@ end subroutine bcast_send4D
 
 
 subroutine bcast_recv1D(param,tag)
-
-!------------------------------------------------------------
-!-------THIS SUBROUTINE RECEIVES BROADCAST DATA FROM A FULL 
-!-------GRID ARRAY ON ROOT PROCESS TO WORKERS' SUB-GRID ARRAYS. 
-!-------
-!-------SUBROUTINE IS TO BE CALLED BY WORKERS TO DO A BROADCAST
-!-------
-!-------THIS VERSION WORKS ON 1D ARRAYS WHICH DO NOT INCLUDE
-!-------GHOST CELLS!
-!------------------------------------------------------------
+!! THIS SUBROUTINE RECEIVES BROADCAST DATA FROM A FULL 
+!! GRID ARRAY ON ROOT PROCESS TO WORKERS' SUB-GRID ARRAYS. 
+!!
+!! SUBROUTINE IS TO BE CALLED BY WORKERS TO DO A BROADCAST
+!!
+!! THIS VERSION WORKS ON 1D ARRAYS WHICH DO NOT INCLUDE
+!! GHOST CELLS!
 
 real(wp), dimension(-1:), intent(out) :: param
 integer, intent(in) :: tag
@@ -869,24 +861,21 @@ integer :: iid
 
 lx=size(param,1)-4
 
-!WORKERS RECEIVE THE IC DATA FROM ROOT
+!> WORKERS RECEIVE THE IC DATA FROM ROOT
 call mpi_recv(param,(lx+4), &
-               mpi_realprec,0,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+  mpi_realprec,0,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
 
 end subroutine bcast_recv1D
 
 
 subroutine bcast_recv2D(paramtrim,tag)
-
-!------------------------------------------------------------
-!-------THIS SUBROUTINE RECEIVES BROADCAST DATA FROM A FULL 
-!-------GRID ARRAY ON ROOT PROCESS TO WORKERS' SUB-GRID ARRAYS. 
-!-------
-!-------SUBROUTINE IS TO BE CALLED BY WORKERS TO DO A BROADCAST
-!-------
-!-------THIS VERSION WORKS ON 3D ARRAYS WHICH DO NOT INCLUDE
-!-------GHOST CELLS!
-!------------------------------------------------------------
+!! THIS SUBROUTINE RECEIVES BROADCAST DATA FROM A FULL 
+!! GRID ARRAY ON ROOT PROCESS TO WORKERS' SUB-GRID ARRAYS. 
+!!
+!! SUBROUTINE IS TO BE CALLED BY WORKERS TO DO A BROADCAST
+!!
+!! THIS VERSION WORKS ON 3D ARRAYS WHICH DO NOT INCLUDE
+!! GHOST CELLS!
 
 real(wp), dimension(:,:), intent(out) :: paramtrim
 integer, intent(in) :: tag
@@ -899,24 +888,21 @@ lx2=size(paramtrim,1)
 lx3=size(paramtrim,2)
 
 
-!WORKERS RECEIVE THE IC DATA FROM ROOT
+!> WORKERS RECEIVE THE IC DATA FROM ROOT
 call mpi_recv(paramtrim,lx2*lx3, &
-               mpi_realprec,0,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+  mpi_realprec,0,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
 
 end subroutine bcast_recv2D
 
 
 subroutine bcast_recv3D(paramtrim,tag)
-
-!------------------------------------------------------------
-!-------THIS SUBROUTINE RECEIVES BROADCAST DATA FROM A FULL 
-!-------GRID ARRAY ON ROOT PROCESS TO WORKERS' SUB-GRID ARRAYS. 
-!-------
-!-------SUBROUTINE IS TO BE CALLED BY WORKERS TO DO A BROADCAST
-!-------
-!-------THIS VERSION WORKS ON 3D ARRAYS WHICH DO NOT INCLUDE
-!-------GHOST CELLS!
-!------------------------------------------------------------
+!! THIS SUBROUTINE RECEIVES BROADCAST DATA FROM A FULL 
+!! GRID ARRAY ON ROOT PROCESS TO WORKERS' SUB-GRID ARRAYS. 
+!!
+!! SUBROUTINE IS TO BE CALLED BY WORKERS TO DO A BROADCAST
+!!
+!! THIS VERSION WORKS ON 3D ARRAYS WHICH DO NOT INCLUDE
+!! GHOST CELLS!
 
 real(wp), dimension(:,:,:), intent(out) :: paramtrim
 integer, intent(in) :: tag
@@ -924,13 +910,13 @@ integer, intent(in) :: tag
 integer :: lx1,lx2,lx3
 integer :: iid
 
-
-lx1=size(paramtrim,1)    !note here that paramtrim does not have ghost cells
+!> note here that paramtrim does not have ghost cells
+lx1=size(paramtrim,1)    
 lx2=size(paramtrim,2)
 lx3=size(paramtrim,3)
 
 
-!WORKERS RECEIVE THE IC DATA FROM ROOT
+!> WORKERS RECEIVE THE IC DATA FROM ROOT
 call mpi_recv(paramtrim,lx1*lx2*lx3, &
                mpi_realprec,0,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
 
@@ -938,16 +924,13 @@ end subroutine bcast_recv3D
 
 
 subroutine bcast_recv3D_x3i(paramtrim,tag)
-
-!------------------------------------------------------------
-!-------THIS SUBROUTINE RECEIVES BROADCAST DATA FROM A FULL 
-!-------GRID ARRAY ON ROOT PROCESS TO WORKERS' SUB-GRID ARRAYS. 
-!-------
-!-------SUBROUTINE IS TO BE CALLED BY WORKERS TO DO A BROADCAST
-!-------
-!-------THIS VERSION WORKS ON 3D ARRAYS WHICH DO NOT INCLUDE
-!-------GHOST CELLS!
-!------------------------------------------------------------
+!! THIS SUBROUTINE RECEIVES BROADCAST DATA FROM A FULL 
+!! GRID ARRAY ON ROOT PROCESS TO WORKERS' SUB-GRID ARRAYS. 
+!!
+!! SUBROUTINE IS TO BE CALLED BY WORKERS TO DO A BROADCAST
+!!
+!! THIS VERSION WORKS ON 3D ARRAYS WHICH DO NOT INCLUDE
+!! GHOST CELLS!
 
 real(wp), dimension(:,:,:), intent(out) :: paramtrim
 integer, intent(in) :: tag
@@ -955,13 +938,13 @@ integer, intent(in) :: tag
 integer :: lx1,lx2,lx3
 integer :: iid
 
-
-lx1=size(paramtrim,1)    !note here that paramtrim does not have ghost cells
+!>note here that paramtrim does not have ghost cells
+lx1=size(paramtrim,1)    
 lx2=size(paramtrim,2)
-lx3=size(paramtrim,3)-1    !this is an x3i quantity
+lx3=size(paramtrim,3)-1    
+  !! `lx3` is an x3i quantity
 
-
-!WORKERS RECEIVE THE IC DATA FROM ROOT
+!> WORKERS RECEIVE THE IC DATA FROM ROOT
 call mpi_recv(paramtrim,lx1*lx2*(lx3+1), &
                mpi_realprec,0,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
 
@@ -969,16 +952,13 @@ end subroutine bcast_recv3D_x3i
 
 
 subroutine bcast_recv3D_ghost(param,tag)
-
-!------------------------------------------------------------
-!-------THIS SUBROUTINE RECEIVES BROADCAST DATA FROM A FULL 
-!-------GRID ARRAY ON ROOT PROCESS TO WORKERS' SUB-GRID ARRAYS. 
-!-------
-!-------SUBROUTINE IS TO BE CALLED BY WORKERS TO DO A BROADCAST
-!-------
-!-------THIS VERSION WORKS ON 3D ARRAYS WHICH DO NOT INCLUDE
-!-------GHOST CELLS!
-!------------------------------------------------------------
+!! THIS SUBROUTINE RECEIVES BROADCAST DATA FROM A FULL 
+!! GRID ARRAY ON ROOT PROCESS TO WORKERS' SUB-GRID ARRAYS. 
+!!
+!! SUBROUTINE IS TO BE CALLED BY WORKERS TO DO A BROADCAST
+!!
+!! THIS VERSION WORKS ON 3D ARRAYS WHICH DO NOT INCLUDE
+!! GHOST CELLS!
 
 real(wp), dimension(-1:,-1:,-1:), intent(out) :: param
 integer, intent(in) :: tag
@@ -986,13 +966,13 @@ integer, intent(in) :: tag
 integer :: lx1,lx2,lx3
 integer :: iid
 
-
-lx1=size(param,1)-4    !note here that param has ghost cells
+!> note here that param has ghost cells
+lx1=size(param,1)-4    
 lx2=size(param,2)-4
 lx3=size(param,3)-4
 
 
-!WORKERS RECEIVE THE IC DATA FROM ROOT
+!> WORKERS RECEIVE THE IC DATA FROM ROOT
 call mpi_recv(param,(lx1+4)*(lx2+4)*(lx3+4), &
                mpi_realprec,0,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
 
@@ -1000,10 +980,8 @@ end subroutine bcast_recv3D_ghost
 
 
 subroutine bcast_recv4D(param,tag)
-
-!------------------------------------------------------------
-!-------THIS SUBROUTINE RECEIVES BROADCAST DATA FROM A FULL 
-!-------GRID ARRAY ON ROOT PROCESS TO WORKERS' SUB-GRID ARRAYS. 
+!! THIS SUBROUTINE RECEIVES BROADCAST DATA FROM A FULL 
+!! GRID ARRAY ON ROOT PROCESS TO WORKERS' SUB-GRID ARRAYS. 
 !-------
 !-------SUBROUTINE IS TO BE CALLED BY WORKERS TO DO A BROADCAST
 !-------
@@ -1015,7 +993,6 @@ real(wp), dimension(-1:,-1:,-1:,:), intent(out) :: param
 integer, intent(in) :: tag
 
 integer :: lx1,lx2,lx3,isp
-
 
 lx1=size(param,1)-4
 lx2=size(param,2)-4
