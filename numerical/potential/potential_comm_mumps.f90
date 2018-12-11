@@ -116,9 +116,9 @@ contains
     call cpu_time(tfin)
     if (myid==0) then
       if (flagcap/=0) then
-        write(*,*) 'Conductivities and capacitance for time step:  ',t,' took ',tfin-tstart,' seconds...'
+        print *, 'Conductivities and capacitance for time step:  ',t,' took ',tfin-tstart,' seconds...'
       else
-        write(*,*) 'Conductivities for time step:  ',t,' took ',tfin-tstart,' seconds...'
+        print *, 'Conductivities for time step:  ',t,' took ',tfin-tstart,' seconds...'
       end if
     end if
 
@@ -157,8 +157,8 @@ contains
       call cpu_time(tfin)
   
       if (myid==0) then
-        write(*,*) 'Potential solution for time step:  ',t,' took ',tfin-tstart,' seconds...'
-        write(*,*) 'Min and max root drift values:  ',minval(pack(vs2,.true.)),maxval(pack(vs2,.true.)), &
+        print *, 'Potential solution for time step:  ',t,' took ',tfin-tstart,' seconds...'
+        print *, 'Min and max root drift values:  ',minval(pack(vs2,.true.)),maxval(pack(vs2,.true.)), &
                                                   minval(pack(vs3,.true.)),maxval(pack(vs3,.true.))
       end if
 
@@ -283,7 +283,7 @@ contains
                           E01all,E02all,E03all,flagdirich)     !user needs to manually swap x2 and x3 in this function.
     end if
     call cpu_time(tfin)
-    write(*,*) 'Root has computed BCs in time:  ',tfin-tstart
+    print *, 'Root has computed BCs in time:  ',tfin-tstart
     !R-------
 
 
@@ -291,7 +291,7 @@ contains
     do iid=1,lid-1    !communicate intent for solve to workers so they know whether or not to call mumps fn.
       call mpi_send(flagdirich,1,MPI_INTEGER,iid,tagflagdirich,MPI_COMM_WORLD,ierr)
     end do
-    write(*,*) 'Root has communicated type of solve to workers:  ',flagdirich
+    print *, 'Root has communicated type of solve to workers:  ',flagdirich
     !R--------
 
 
@@ -359,7 +359,7 @@ contains
     divtmp=div3D(J1halo(0:lx1+1,0:lx2+1,0:lx3+1),J2halo(0:lx1+1,0:lx2+1,0:lx3+1), &
                  J3halo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
     srcterm=divtmp(1:lx1,1:lx2,1:lx3)
-    write(*,*) 'Root has computed background field source terms...',minval(pack(srcterm,.true.)), &
+    print *, 'Root has computed background field source terms...',minval(pack(srcterm,.true.)), &
                    maxval(pack(srcterm,.true.))
     !-------
 
@@ -416,7 +416,7 @@ contains
     divtmp=div3D(J1halo(0:lx1+1,0:lx2+1,0:lx3+1),J2halo(0:lx1+1,0:lx2+1,0:lx3+1), &
                  J3halo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
     srcterm=srcterm+divtmp(1:lx1,1:lx2,1:lx3)
-    write(*,*) 'Root has computed wind source terms...',minval(pack(srcterm,.true.)), &
+    print *, 'Root has computed wind source terms...',minval(pack(srcterm,.true.)), &
                    maxval(pack(srcterm,.true.))
     !-------
 
@@ -426,7 +426,7 @@ contains
     !-----DECIDE BASED ON THE SIZE OF THE X2 DIMENSION
     if (lx2/=1) then    !either field-resolved 3D or integrated 2D solve for 3D domain
       if (potsolve == 1) then    !2D, field-integrated solve
-        write(*,*) 'Beginning field-integrated solve...'
+        print *, 'Beginning field-integrated solve...'
 
 
         !-------
@@ -450,7 +450,7 @@ contains
 
         !PRODUCE A FIELD-INTEGRATED SOURCE TERM
         if (flagdirich /= 1) then   !Neumann conditions; incorporate a source term and execute the solve
-          write(*,*) 'Using FAC boundary condition...'
+          print *, 'Using FAC boundary condition...'
           !-------
           integrand=x%h1(1:lx1,1:lx2,1:lx3)*x%h2(1:lx1,1:lx2,1:lx3)*x%h3(1:lx1,1:lx2,1:lx3)*srcterm
           sigintegral=integral3D1(integrand,x,1,lx1)
@@ -480,30 +480,30 @@ contains
           Vminx3slice=Vminx3(lx1,:)
           Vmaxx3slice=Vmaxx3(lx1,:)
           Phislab0=Phiall(lx1,:,:)    !root already possess the fullgrid potential from prior solves...
-          write(*,*) 'Root is calling MUMPS...'
+          print *, 'Root is calling MUMPS...'
           !R-------
 
           !R------ EXECUTE THE MUMPS SOLVE FOR FIELD-INT
           call cpu_time(tstart)
           if (x%flagper==0) then     !nonperiodic mesh
-            write(*,*) '!!!User selected aperiodic solve...'
+            print *, '!!!User selected aperiodic solve...'
             Phislab=elliptic2D_pol_conv_curv(srctermintall,SigPint2all,SigPint3all,SigHintall,incapintall,v2slaball,v3slaball, &
                                      Vminx2slice,Vmaxx2slice,Vminx3slice,Vmaxx3slice, &
                                      dt,x,Phislab0,perflag,it)    !note tha this solver is only valid for cartesian meshes, unless the inertial capacitance is set to zero
           else
-            write(*,*) '!!!User selected periodic solve...'
+            print *, '!!!User selected periodic solve...'
             Phislab=elliptic2D_pol_conv_curv_periodic2(srctermintall,SigPint2all,SigHintall,incapintall,v2slaball,v3slaball, &    !note that either sigPint2 or 3 will work since this must be cartesian...
                                        Vminx2slice,Vmaxx2slice,Vminx3slice,Vmaxx3slice, &
                                        dt,x,Phislab0,perflag,it)
           end if
           call cpu_time(tfin)
-          write(*,*) 'Root received results from MUMPS which took time:  ',tfin-tstart
+          print *, 'Root received results from MUMPS which took time:  ',tfin-tstart
           !R-------
 
         else     !Dirichlet conditions - since this is field integrated we just copy BCs specified by user to other locations along field line
           !R------
           Phislab=Vmaxx1   !potential is whatever user specifies, since we assume equipotential field lines, it doesn't really matter whether we use Vmaxx1 or Vminx1.  Note however, tha thte boundary conditions subroutines should explicitly set these to be equal with Dirichlet conditions, for consistency.
-          write(*,*) 'Dirichlet conditions selected with field-integrated solve. Copying BCs along x1-direction...'
+          print *, 'Dirichlet conditions selected with field-integrated solve. Copying BCs along x1-direction...'
           !R------
         end if
 
@@ -525,13 +525,13 @@ contains
         call gather_recv(srcterm,tagsrc,srctermall)
 
         !R------
-        write(*,*) '!Beginning field-resolved 3D solve (could take a very long time)...'
+        print *, '!Beginning field-resolved 3D solve (could take a very long time)...'
         Phiall=elliptic3D_curv(srctermall,sig0scaledall,sigPscaledall,sigHscaledall,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3,Vmaxx3, &
                           x,flagdirich,perflag,it)
         !R------
       end if
     else   !lx1=1 so do a field-resolved 2D solve over x1,x3
-      write(*,*) 'Beginning field-resolved 2D solve...  Type;  ',flagdirich
+      print *, 'Beginning field-resolved 2D solve...  Type;  ',flagdirich
 
 
       !-------
@@ -557,7 +557,7 @@ contains
       Phiall=elliptic2D_nonint_curv(srctermall,sig0scaledall,sigPscaledall,Vminx1,Vmaxx1,Vminx3,Vmaxx3, &
                         x,flagdirich,perflag,it)
     end if
-    write(*,*) 'MUMPS time:  ',tfin-tstart
+    print *, 'MUMPS time:  ',tfin-tstart
     !!!!!!!!!
 
 
@@ -608,11 +608,11 @@ contains
 
     !R-------
     !JUST TO JUDGE THE IMPACT OF MI COUPLING
-    write(*,*) 'Max integrated inertial capacitance:  ',maxval(pack(incapint,.true.))
-    write(*,*) 'Max integrated Pedersen conductance (includes metric factors):  ',maxval(pack(SigPint2,.true.))
-    write(*,*) 'Max integrated Hall conductance (includes metric factors):  ',minval(pack(SigHint,.true.)), &
+    print *, 'Max integrated inertial capacitance:  ',maxval(pack(incapint,.true.))
+    print *, 'Max integrated Pedersen conductance (includes metric factors):  ',maxval(pack(SigPint2,.true.))
+    print *, 'Max integrated Hall conductance (includes metric factors):  ',minval(pack(SigHint,.true.)), &
                                                                              maxval(pack(SigHint,.true.))
-    write(*,*) 'Max E2,3 BG and response values are:  ',maxval(pack(abs(E02),.true.)), &
+    print *, 'Max E2,3 BG and response values are:  ',maxval(pack(abs(E02),.true.)), &
                maxval(pack(abs(E03),.true.)),maxval(pack(abs(E2),.true.)),maxval(pack(abs(E3),.true.))
     !R-------
 
@@ -757,20 +757,20 @@ contains
                    J3halo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
       divJperp=x%h1(1:lx1,1:lx2,1:lx3)*x%h2(1:lx1,1:lx2,1:lx3)*x%h3(1:lx1,1:lx2,1:lx3)*divtmp(1:lx1,1:lx2,1:lx3)
       if (flagdirich /= 1) then     !Neumann conditions, this is boundary location-agnostic since both bottom and top FACs are known - they have to  be loaded into VVmaxx1 and Vminx1
-        write(*,*) 'Nuemann boundaries, integrated from highest altitude down to preserve accuracy...'
+        print *, 'Nuemann boundaries, integrated from highest altitude down to preserve accuracy...'
         if (gridflag==0) then     !closed dipole grid, really would be best off integrating from the source hemisphere
-          write(*,*)  'Closed dipole grid; integration starting in source hemisphere (if applicable)...', &
+          print *,  'Closed dipole grid; integration starting in source hemisphere (if applicable)...', &
                          minval(pack(Vmaxx1slab,.true.)), &
                          maxval(pack(Vmaxx1slab,.true.))
           if (sourcemlat>=0d0) then    !integrate from northern hemisphere
-            write(*,*) 'Source is in northern hemisphere (or there is no source)...'
+            print *, 'Source is in northern hemisphere (or there is no source)...'
             J1=integral3D1_curv_alt(divJperp,x,1,lx1)    !int divperp of BG current, go from maxval(x1) to location of interest
             do ix1=1,lx1
               J1(ix1,:,:)=1d0/x%h2(ix1,1:lx2,1:lx3)/x%h3(ix1,1:lx2,1:lx3)* &
                                (x%h2(1,1:lx2,1:lx3)*x%h3(1,1:lx2,1:lx3)*Vmaxx1slab+J1(ix1,:,:))
             end do
           else
-            write(*,*) 'Source in southern hemisphere...'
+            print *, 'Source in southern hemisphere...'
             J1=integral3D1(divJperp,x,1,lx1)    !int divperp of BG current starting from minx1
             do ix1=1,lx1
               J1(ix1,:,:)=1d0/x%h2(ix1,1:lx2,1:lx3)/x%h3(ix1,1:lx2,1:lx3)* &
@@ -778,7 +778,7 @@ contains
             end do
           end if
         elseif (gridflag==1) then    !this would be an inverted grid, this max altitude corresponds to the min value of x1
-          write(*,*)  'Inverted grid; integration starting at min x1 (highest alt. or southern hemisphere)...', &
+          print *,  'Inverted grid; integration starting at min x1 (highest alt. or southern hemisphere)...', &
                          minval(pack(Vminx1slab,.true.)), & 
                          maxval(pack(Vminx1slab,.true.))
           J1=integral3D1(divJperp,x,1,lx1)    !int divperp of BG current
@@ -787,7 +787,7 @@ contains
                              (x%h2(1,1:lx2,1:lx3)*x%h3(1,1:lx2,1:lx3)*Vminx1slab-J1(ix1,:,:))
           end do
         else        !minx1 is at teh bottom of the grid to integrate from max x1
-          write(*,*)  'Non-inverted grid; integration starting at max x1...', minval(pack(Vmaxx1slab,.true.)), &
+          print *,  'Non-inverted grid; integration starting at max x1...', minval(pack(Vmaxx1slab,.true.)), &
                          maxval(pack(Vmaxx1slab,.true.))
           J1=integral3D1_curv_alt(divJperp,x,1,lx1)    !int divperp of BG current, go from maxval(x1) to location of interest
           do ix1=1,lx1
@@ -797,14 +797,14 @@ contains
         end if
       else      !Dirichlet conditions - we need to integrate from the ***lowest altitude*** (where FAC is known to be zero, note this is not necessarilty the logical bottom of the grid), upwards (to where it isn't)
         if (gridflag/=2) then    !inverted grid (logical top is the lowest altitude)
-          write(*,*) 'Inverted grid detected - integrating logical top downward to compute FAC...'
+          print *, 'Inverted grid detected - integrating logical top downward to compute FAC...'
           J1=integral3D1_curv_alt(divJperp,x,1,lx1)    !int divperp of BG current
           do ix1=1,lx1
             J1(ix1,:,:)=1d0/x%h2(ix1,1:lx2,1:lx3)/x%h3(ix1,1:lx2,1:lx3)* &
                              (J1(ix1,:,:))    !FAC AT TOP ASSUMED TO BE ZERO
           end do
         else      !non-inverted grid (logical bottom is the lowest altitude - so integrate normy)
-          write(*,*) 'Non-inverted grid detected - integrating logical bottom to top to compute FAC...'
+          print *, 'Non-inverted grid detected - integrating logical bottom to top to compute FAC...'
           J1=integral3D1(divJperp,x,1,lx1)    !int divperp of BG current
           do ix1=1,lx1
             J1(ix1,:,:)=1d0/x%h2(ix1,1:lx2,1:lx3)/x%h3(ix1,1:lx2,1:lx3)* &
@@ -829,12 +829,12 @@ contains
 
 
     !R-------
-    write(*,*) 'Max topside FAC (abs. val.) computed to be:  ',maxval(pack(abs(J1(1,:,:)),.true.))    !ZZZ - this rey needsz to be current at the "top"
-    write(*,*) 'Max polarization J2,3 (abs. val.) computed to be:  ',maxval(pack(abs(J2pol),.true.)), &
+    print *, 'Max topside FAC (abs. val.) computed to be:  ',maxval(pack(abs(J1(1,:,:)),.true.))    !ZZZ - this rey needsz to be current at the "top"
+    print *, 'Max polarization J2,3 (abs. val.) computed to be:  ',maxval(pack(abs(J2pol),.true.)), &
                  maxval(pack(abs(J3pol),.true.))
-    write(*,*) 'Max conduction J2,3 (abs. val.) computed to be:  ',maxval(pack(abs(J2),.true.)), &
+    print *, 'Max conduction J2,3 (abs. val.) computed to be:  ',maxval(pack(abs(J2),.true.)), &
                  maxval(pack(abs(J3),.true.))
-    write(*,*) 'Max conduction J1 (abs. val.) computed to be:  ',maxval(pack(abs(J1),.true.))
+    print *, 'Max conduction J1 (abs. val.) computed to be:  ',maxval(pack(abs(J1),.true.))
     !R-------
 
 
@@ -1135,7 +1135,7 @@ contains
 
       call elliptic_workers()
     end if
-!    write(*,*) 'MUMPS time:  ',tfin-tstart
+!    print *, 'MUMPS time:  ',tfin-tstart
     !!!!!!!!!
 
 
@@ -1322,17 +1322,17 @@ contains
       divJperp=x%h1(1:lx1,1:lx2,1:lx3)*x%h2(1:lx1,1:lx2,1:lx3)*x%h3(1:lx1,1:lx2,1:lx3)*divtmp(1:lx1,1:lx2,1:lx3)
       if (flagdirich /= 1) then     !Neumann conditions, this is boundary location-agnostic since both bottom and top FACs are known - they have to  be loaded into VVmaxx1 and Vminx1.  For numerical purposes we prefer to integrate from the location of nonzero current (usually highest altitude in open grid).  
         if (gridflag==0) then     !closed dipole grid, really would be best off integrating from the source hemisphere
-!          write(*,*)  'Closed dipole grid; integration starting at max x1...', minval(pack(Vmaxx1slab,.true.)), &
+!          print *,  'Closed dipole grid; integration starting at max x1...', minval(pack(Vmaxx1slab,.true.)), &
 !                         maxval(pack(Vmaxx1slab,.true.))
           if (sourcemlat>=0d0) then    !integrate from northern hemisphere
-!            write(*,*) 'Source is in northern hemisphere (or there is no source)...'
+!            print *, 'Source is in northern hemisphere (or there is no source)...'
             J1=integral3D1_curv_alt(divJperp,x,1,lx1)    !int divperp of BG current, go from maxval(x1) to location of interest
             do ix1=1,lx1
               J1(ix1,:,:)=1d0/x%h2(ix1,1:lx2,1:lx3)/x%h3(ix1,1:lx2,1:lx3)* &
                                (x%h2(1,1:lx2,1:lx3)*x%h3(1,1:lx2,1:lx3)*Vmaxx1slab+J1(ix1,:,:))
             end do
           else
-!            write(*,*) 'Source in southern hemisphere...'
+!            print *, 'Source in southern hemisphere...'
             J1=integral3D1(divJperp,x,1,lx1)    !int divperp of BG current
             do ix1=1,lx1
               J1(ix1,:,:)=1d0/x%h2(ix1,1:lx2,1:lx3)/x%h3(ix1,1:lx2,1:lx3)* &
@@ -1340,7 +1340,7 @@ contains
             end do
           end if
         elseif (gridflag==1) then    !this would be an inverted grid, this max altitude corresponds to the min value of x1
-!          write(*,*)  'Inverted grid; integration starting at min x1...',minval(pack(Vminx1slab,.true.)), &
+!          print *,  'Inverted grid; integration starting at min x1...',minval(pack(Vminx1slab,.true.)), &
 !                         maxval(pack(Vminx1slab,.true.))
           J1=integral3D1(divJperp,x,1,lx1)    !int divperp of BG current
           do ix1=1,lx1  
@@ -1348,7 +1348,7 @@ contains
                              (x%h2(1,1:lx2,1:lx3)*x%h3(1,1:lx2,1:lx3)*Vminx1slab-J1(ix1,:,:))
           end do
         else        !minx1 is at teh bottom of the grid to integrate from max x1
-!          write(*,*)  'Non-inverted grid; integration starting at max x1...', minval(pack(Vmaxx1slab,.true.)), &
+!          print *,  'Non-inverted grid; integration starting at max x1...', minval(pack(Vmaxx1slab,.true.)), &
 !                         maxval(pack(Vmaxx1slab,.true.))
           J1=integral3D1_curv_alt(divJperp,x,1,lx1)    !int divperp of BG current, go from maxval(x1) to location of interest
           do ix1=1,lx1
@@ -1361,14 +1361,14 @@ contains
 !        end if
       else      !Dirichlet conditions - we need to integrate from the ***lowest altitude*** (where FAC is known to be zero, note this is not necessarilty the logical bottom of the grid), upwards (to where it isn't)
         if (gridflag/=2) then    !inverted grid (logical top is the lowest altitude)
-!          write(*,*) 'Inverted grid detected - integrating logical top downward to compute FAC...'
+!          print *, 'Inverted grid detected - integrating logical top downward to compute FAC...'
           J1=integral3D1_curv_alt(divJperp,x,1,lx1)    !int divperp of BG current
           do ix1=1,lx1
             J1(ix1,:,:)=1d0/x%h2(ix1,1:lx2,1:lx3)/x%h3(ix1,1:lx2,1:lx3)* &
                              (J1(ix1,:,:))    !FAC AT TOP ASSUMED TO BE ZERO
           end do
         else      !non-inverted grid (logical bottom is the lowest altitude - so integrate normy)
-!          write(*,*) 'Non-inverted grid detected - integrating logical bottom to top to compute FAC...'
+!          print *, 'Non-inverted grid detected - integrating logical bottom to top to compute FAC...'
           J1=integral3D1(divJperp,x,1,lx1)    !int divperp of BG current
           do ix1=1,lx1
             J1(ix1,:,:)=1d0/x%h2(ix1,1:lx2,1:lx3)/x%h3(ix1,1:lx2,1:lx3)* &
