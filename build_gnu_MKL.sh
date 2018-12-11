@@ -14,7 +14,11 @@
 rm -r objects/*  # need this one-time in case different compiler e.g. ifort was previously used.
 cd objects
 
-FC=/usr/bin/mpif90.openmpi cmake -DUSEMKL=yes -DLIB_DIR=~/flibs-gnu-mkl ..
+OPTS="-DUSEMKL=yes -DLIB_DIR=~/flibs-gnu-mkl"
+
+[[ $1 == "-d" ]] && OPTS="-DCMAKE_BUILD_TYPE=Debug $OPTS"
+
+FC=/usr/bin/mpif90 cmake $OPTS ..
 
 )
 
