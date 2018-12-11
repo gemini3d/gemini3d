@@ -828,7 +828,7 @@ lx3=size(param,3)-4
 
 !> ROOT BROADCASTS IC DATA TO WORKERS
 do isp=1,lsp
-  param(:,:,:,isp)=paramall(:,:,-1:lx3,isp)    
+  param(:,:,:,isp)=paramall(:,:,-1:lx3+2,isp)
     !! roots part of the data
 
   do iid=1,lid-1

@@ -5,7 +5,7 @@ project(MSIS_setup Fortran)
 add_library(msis msis00_gfortran.f)
 
 if(CMAKE_Fortran_COMPILER_ID STREQUAL GNU)
-  target_compile_options(msis PRIVATE -std=legacy -w -fno-implicit-none)
+  target_compile_options(msis PRIVATE -std=legacy -w -fno-implicit-none -Wno-array-bounds -fcheck=no-all)
 elseif(CMAKE_Fortran_COMPILER_ID STREQUAL Intel)
   target_compile_options(msis PRIVATE -nowarn)
 elseif(CMAKE_Fortran_COMPILER_ID STREQUAL Cray)

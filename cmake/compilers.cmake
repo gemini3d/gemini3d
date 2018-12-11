@@ -22,7 +22,7 @@ elseif(CMAKE_Fortran_COMPILER_ID STREQUAL GNU)
   add_compile_options(-Wall -Wpedantic -Wextra)
   
   if(CMAKE_BUILD_TYPE STREQUAL Debug)
-    add_compile_options(-fcheck=all -Werror=array-bounds)
+    add_compile_options(-fcheck=all)
     # add_compile_options(-ffpe-trap=invalid,zero,overflow)#,underflow)
   else()
     add_compile_options(-Wno-unused-dummy-argument -Wno-unused-variable -Wno-unused-function)
