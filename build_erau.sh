@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # This is for Matt's machine, so he can use the older libraries he's been working with for some time.
 
@@ -7,7 +7,8 @@ cd objects
 
 cmake -DMUMPS_ROOT=~/lib/MUMPS_4.10.0 \
       -DSCALAPACK_ROOT=~/lib/scalapack-2.0.2 \
+      -DCMAKE_BUILD_TYPE=Debug \
       ..
       
-cmake --build .
+cmake --build . -j
 )
