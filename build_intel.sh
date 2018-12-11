@@ -1,5 +1,7 @@
 #!/bin/bash
-# prereqs -- you'll need these in your current runtime shell as well to successfully run the program.
+#
+# "-d" option makes this a Debug build
+#
 # *** for subsequent builds, you can just type "make" in the objects/ directory ***
 # (I keep a second Terminal tab for this purpose)
 # I.e. copy and paste them or put in ~/.bashrc
@@ -25,7 +27,11 @@ cd objects
 
 # some systems don't have mpiifort for Intel
 # use ifort as mpif90 get partially picked-up as GNU
-cmake -DCMAKE_BUILD_TYPE=Debug -DUSEMKL=yes -DLIB_DIR=$HOME/flibs-intel ..
+OPTS="-DUSEMKL=yes -DLIB_DIR=$HOME/flibs-intel"
+
+[[ $1 == "-d" ]] && OPTS="-DCMAKE_BUILD_TYPE=Debug $OPTS"
+
+cmake $OPTS ..
 
 )
 

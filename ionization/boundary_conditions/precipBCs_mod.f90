@@ -52,6 +52,8 @@ contains
     real(wp), dimension(lx2*lx3) :: parami
     real(wp), dimension(lx2,lx3) :: slope,Qinow,E0inow
     real(wp) :: W0pk,PhiWpk
+    
+    UTsectmp = 0._wp
 
 
     if(t+dt/2d0>=tnext) then    !need to load a new file

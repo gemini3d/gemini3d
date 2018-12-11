@@ -52,7 +52,7 @@ real(wp), dimension(:,:,:), allocatable :: Tn,vn1,vn2,vn3         !neutral tempe
 real(wp), dimension(:,:,:), allocatable :: Phiall                 !full-grid potential solution.  To store previous time step value
 
 !TEMPORAL VARIABLES
-real(wp) :: t=0d0,dt,dtprev      !time from beginning of simulation (s) and time step (s)
+real(wp) :: t=0._wp,dt=1e-6_wp,dtprev      !time from beginning of simulation (s) and time step (s)
 real(wp) :: tout,dtout    !time for next output and time between outputs
 real(wp) :: tstart,tfin   !temp. vars. for measuring performance of code blocks
 integer :: it,isp        !time and species loop indices
