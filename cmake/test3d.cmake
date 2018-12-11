@@ -14,6 +14,5 @@ download_testfiles(${zenodoHash}
 run_gemini_test(Gemini3D ${TESTDIR} 900)
     
 # --- evaluate output accuracy vs. reference from Matt's HPC
-octave_compare(Compare3D ${TESTDIR} ${REFDIR}/${REFNAME})
+compare_gemini_output(Compare3D ${TESTDIR} ${REFDIR}/${REFNAME})
 
-matlab_compare(MatlabCompare3D ${TESTDIR} ${REFDIR}/${REFNAME})

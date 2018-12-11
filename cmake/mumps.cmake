@@ -29,7 +29,7 @@ endif()
 
 if(NOT SCALAPACK_Found)
   find_package(SCALAPACK REQUIRED)
-  find_package(LAPACK REQUIRED)
+  find_package(LAPACK QUIET REQUIRED)
 endif()
 
 find_package(MUMPS REQUIRED COMPONENTS ${mumpscomp})

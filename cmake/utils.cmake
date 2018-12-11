@@ -24,21 +24,47 @@ endif()
 endfunction()
 
 
-function(check_ram NTEST)
+function(check_ram)
 
 cmake_host_system_information(RESULT PHYSRAM QUERY AVAILABLE_PHYSICAL_MEMORY)
 if(${PHYSRAM} LESS 1000)
   set(NTEST 1 PARENT_SCOPE)
 else()
-  set(NTEST 4 PARENT_SCOPE)
+  set(NTEST ${MPIEXEC_MAX_NUMPROCS} PARENT_SCOPE)
 endif()
 
-endfunction()
+endfunction(check_ram)
+
+
+function(check_octave_source_runs code)
+
+# imported target doesn't work with CMake 3.13
+execute_process(COMMAND ${Octave_EXECUTABLE} --eval ${code}
+  ERROR_QUIET
+  RESULT_VARIABLE ok
+  TIMEOUT 5)
+
+set(OctaveOK ${ok} PARENT_SCOPE)
+
+endfunction(check_octave_source_runs)
+
+
+function(check_matlab_source_runs code)
+
+execute_process(COMMAND ${Matlab_MAIN_PROGRAM} -nojvm -r ${code}
+  ERROR_QUIET
+  OUTPUT_QUIET
+  RESULT_VARIABLE ok
+  TIMEOUT 60)  # Matlab takes a long time to start with lots of toolboxes
+
+set(MatlabOK ${ok} PARENT_SCOPE)
+
+endfunction(check_matlab_source_runs)
 
 
 function(run_gemini_test TESTNAME TESTDIR TIMEOUT)
 
-check_ram(NTEST)
+check_ram()
 
 add_test(NAME ${TESTNAME}
          COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${NTEST} ${CMAKE_SOURCE_DIR}/gemini ${CMAKE_SOURCE_DIR}/initialize/${TESTDIR}/config.ini ${CMAKE_CURRENT_BINARY_DIR}/${TESTDIR}
@@ -51,43 +77,46 @@ endfunction()
 
 function(octave_compare TESTNAME OUTDIR REFDIR)
 
-find_package(Octave COMPONENTS Interpreter)
+add_test(NAME ${TESTNAME}
+         COMMAND Octave::Interpreter --eval "exit(compare_all('${CMAKE_CURRENT_BINARY_DIR}/${OUTDIR}','${CMAKE_CURRENT_SOURCE_DIR}/${REFDIR}'))"
+         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 
-if(Octave_Interpreter_FOUND)
-
-  add_test(NAME ${TESTNAME}
-           COMMAND Octave::Interpreter -q --eval "compare_all('${CMAKE_CURRENT_BINARY_DIR}/${OUTDIR}','${CMAKE_CURRENT_SOURCE_DIR}/${REFDIR}')"
-           WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
-
-  set_tests_properties(${TESTNAME} PROPERTIES TIMEOUT 30)
-
-endif()
+set_tests_properties(${TESTNAME} PROPERTIES TIMEOUT 30)
 
 endfunction()
 
 
 function(matlab_compare TESTNAME OUTDIR REFDIR)
 
-find_package(Matlab QUIET COMPONENTS MAIN_PROGRAM)
-
-if (Matlab_MAIN_PROGRAM_FOUND)
 add_test(NAME ${TESTNAME}
          COMMAND ${Matlab_MAIN_PROGRAM} -nojvm -r "exit(compare_all('${CMAKE_CURRENT_BINARY_DIR}/${OUTDIR}','${CMAKE_CURRENT_SOURCE_DIR}/${REFDIR}'))"
          WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 
 set_tests_properties(${TESTNAME} PROPERTIES TIMEOUT 60)  # Matlab with a lot of toolboxes takes ~ 15 seconds just to start
 
-endif()
-
 endfunction()
 
 
 function(compare_gemini_output TESTNAME TESTDIR REFDIR)
 
-octave_compare(Compare2D ${TESTDIR} ${REFDIR})
+if(NOT DEFINED OctaveOK)
+  find_package(Octave COMPONENTS Interpreter)
+  check_octave_source_runs("exit(exist('validateattributes'))")
+endif()
 
-matlab_compare(MatlabCompare2D ${TESTDIR} ${REFDIR})
+if(OctaveOK)
+  octave_compare(${TESTNAME} ${TESTDIR} ${REFDIR})
+else()
+  if(NOT DEFINED MatlabOK)
+    find_package(Matlab QUIET COMPONENTS MAIN_PROGRAM)
+    check_matlab_source_runs("exit(exist('validateattributes'))")
+  endif()
 
-
+  if (MatlabOK)
+    matlab_compare(Matlab${TESTNAME} ${TESTDIR} ${REFDIR})
+  else()
+    message(WARNING "Neither Matlab or Octave was found, cannot run full self-test")
+  endif()
+endif()
 
 endfunction()

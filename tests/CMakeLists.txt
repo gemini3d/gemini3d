@@ -12,6 +12,7 @@ if(NOT hasParent)
   list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/../cmake/Modules/)
   include(../cmake/compilers.cmake)
   include(../cmake/libraries.cmake)
+  include(${PROJECT_SOURCE_DIR}/../cmake/mumps.cmake)
 endif()
 
 find_package(MPI REQUIRED COMPONENTS Fortran)
@@ -22,7 +23,6 @@ add_test(NAME MPIexist COMMAND testmpi)
   
 set_tests_properties(MPIexist PROPERTIES TIMEOUT 5)
 #---------------
-include(${PROJECT_SOURCE_DIR}/../cmake/mumps.cmake)
 
 
 add_executable(testmumps test_mumps.f90)

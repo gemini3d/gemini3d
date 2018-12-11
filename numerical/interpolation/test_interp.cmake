@@ -12,11 +12,11 @@ set_tests_properties(Interp2D PROPERTIES
                      FIXTURES_SETUP GemInterp) 
 
 
-find_package(Octave)
-if (OCTAVE_MAJOR_VERSION GREATER_EQUAL 4)
+find_package(Octave COMPONENTS Interpreter)
+if (Octave_Interpreter_FOUND)
 
 add_test(NAME OctaveInterp 
-         COMMAND octave-cli -q --eval "testinterp('${CMAKE_CURRENT_BINARY_DIR}/output2D.dat')"
+         COMMAND Octave::Interpreter --eval "testinterp('${CMAKE_CURRENT_BINARY_DIR}/output2D.dat')"
          WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
          
 
