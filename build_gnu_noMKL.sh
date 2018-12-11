@@ -13,7 +13,7 @@ MKLROOT=
 rm -r objects/*  # need this one-time in case different compiler e.g. ifort was previously used.
 cd objects
 
-FC=/usr/bin/mpif90.openmpi cmake ..
+FC=/usr/bin/mpif90.openmpi cmake -DCMAKE_BUILD_TYPE=Debug ..
 
 )
 
