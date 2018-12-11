@@ -11,8 +11,8 @@ if(LIB_DIR OR USEMKL OR CMAKE_Fortran_COMPILER_ID STREQUAL Intel)
   set(METIS_ROOT ${LIB_DIR}/metis)
   set(Scotch_ROOT ${LIB_DIR}/scotch)
 
-  find_package(METIS REQUIRED)
-  find_package(Scotch COMPONENTS ESMUMPS REQUIRED)
+#  find_package(METIS REQUIRED)
+#  find_package(Scotch COMPONENTS ESMUMPS REQUIRED)
   find_package(SCALAPACK REQUIRED)
 
   set(MUMPS_ROOT ${LIB_DIR}/MUMPS)
