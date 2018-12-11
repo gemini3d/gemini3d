@@ -16,8 +16,7 @@ linux*)
      yum install octave
   else
     apt update
-    apt install gfortran g++ make  # repo cmake is often too old
-    apt install libssl-dev unzip  # needed BEFORE building CMake
+    apt install gfortran make
     apt install libmumps-dev liblapack-dev libscalapack-mpi-dev libblacs-mpi-dev libopenmpi-dev libmetis-dev libscotch-dev libptscotch-dev libatlas-base-dev 
     apt install --no-install-recommends octave
   fi
