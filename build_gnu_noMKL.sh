@@ -13,17 +13,13 @@
 MKLROOT=
 LD_LIBRARY_PATH=
 
-(
-
-rm -r objects/*  # need this one-time in case different compiler e.g. ifort was previously used.
-cd objects
-
 [[ $1 == "-d" ]] && OPTS="-DCMAKE_BUILD_TYPE=Debug"
 
-FC=/usr/bin/mpif90 cmake $OPTS ..
+export FC=/usr/bin/mpif90
 
-)
+rm -r objects/*  # need this one-time in case different compiler e.g. ifort was previously used.
 
-# Requires CMake 3.12
+cmake $OPTS -B objects .
+
 cmake --build objects -j
 
