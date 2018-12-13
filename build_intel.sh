@@ -1,6 +1,7 @@
 #!/bin/bash
 #
 # "-d" option makes this a Debug build
+# "-t" option makes this a Trace build (dump certain variables to disk)
 #
 # *** for subsequent builds, you can just type "make" in the objects/ directory ***
 # (I keep a second Terminal tab for this purpose)
@@ -27,6 +28,7 @@ rm -r objects/* # one-time, if you build for Gfortran previously
 OPTS="-DUSEMKL=yes -DLIB_DIR=$HOME/flibs-intel"
 
 [[ $1 == "-d" ]] && OPTS="-DCMAKE_BUILD_TYPE=Debug $OPTS"
+[[ $1 == "-t" ]] && OPTS="-DTRACE:BOOL=on $OPTS"
 
 cmake $OPTS -B objects .
 
