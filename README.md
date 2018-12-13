@@ -15,7 +15,7 @@ Generally, the Git `master` branch has the current development version and is th
 ## Prerequisites
 
 The CMake build system is used to manage the large number of dependencies and external libraries needed to compile GEMINI.  
-CMake &ge; 3.11 is required.
+CMake &ge; 3.13 is required.
 If needed, CMake is easily installed *without* sudo/admin on:
 
 * Linux: use [cmake_setup.sh](https://github.com/scivision/cmake-utils/blob/master/cmake_setup.sh)
