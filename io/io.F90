@@ -321,10 +321,11 @@ if (flagswap/=1) then
   read(u) Tsall(1:lx1,1:lx2,1:lx3all,1:lsp)
 else
   allocate(statetmp(lx1,lx3all,lx2,lsp))
+  !print *, shape(statetmp),shape(nsall)
+
   read(u) statetmp
-  
-  print *, shape(statetmp),shape(nsall)
   nsall(1:lx1,1:lx2,1:lx3all,1:lsp)=reshape(statetmp,[lx1,lx2,lx3all,lsp],order=[1,3,2,4])
+
   read(u) statetmp
   vs1all(1:lx1,1:lx2,1:lx3all,1:lsp)=reshape(statetmp,[lx1,lx2,lx3all,lsp],order=[1,3,2,4])
 
