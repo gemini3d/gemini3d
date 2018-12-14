@@ -350,15 +350,15 @@ print *, 'Done setting initial conditions...'
 !> dump loaded arrays for debugging
 #ifdef TRACE
 open(newunit=utrace, form='unformatted', access='stream', file='nsall.raw8', status='replace', action='write')
-    write(utrace,*) nsall
+    write(utrace) nsall
  close(utrace)
 
 open(newunit=utrace, form='unformatted', access='stream', file='vs1all.raw8', status='replace', action='write')
-    write(utrace,*) vs1all
+    write(utrace) vs1all
  close(utrace)
 
 open(newunit=utrace, form='unformatted', access='stream', file='Tsall.raw8', status='replace', action='write')
-    write(utrace,*) Tsall
+    write(utrace) Tsall
  close(utrace)
 
 #endif
