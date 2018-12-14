@@ -8,6 +8,7 @@ if(NOT realbits)
 endif()
 
 option(USEMKL "Use Intel MKL with your compiler")
+option(TRACE "dump variables to disk at certain locations in program" off)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/Modules/)
 
@@ -26,8 +27,9 @@ add_subdirectory(vendor/msis00)
 # --- Build Gemini
 add_subdirectory(numerical)
 
-add_library(io io/io.f90 io/expanduser.f90)
+add_library(io io/io.F90 io/expanduser.f90)
 target_link_libraries(io PRIVATE const mpimod grid calculus)
+target_compile_definitions(io PRIVATE TRACE=${TRACE})
 target_include_directories(io PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/numerical)
 
 add_library(temporal temporal/temporal.f90)

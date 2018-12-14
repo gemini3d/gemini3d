@@ -1,6 +1,7 @@
 module io
 !! HANDLES INPUT AND OUTPUT OF PLASMA STATE PARAMETERS (NOT GRID INPUTS)
 use, intrinsic :: iso_fortran_env, only: stderr=>error_unit, compiler_version, compiler_options
+use, intrinsic :: ieee_arithmetic, only: ieee_is_nan
 use phys_consts, only : kB,ms,pi,lsp, wp
 use fsutils, only: expanduser
 use calculus
@@ -279,7 +280,7 @@ integer :: lx1,lx2,lx3,lx3all,isp
 
 real(wp), dimension(-1:size(x1,1)-2,-1:size(x2,1)-2,-1:size(x3all,1)-2,1:lsp) :: nsall, vs1all, Tsall
 real(wp), dimension(:,:,:,:), allocatable :: statetmp
-integer :: lx1in,lx2in,lx3in,u
+integer :: lx1in,lx2in,lx3in,u, utrace
 real(wp) :: tin
 real(wp), dimension(3) :: ymdtmp
 
@@ -320,10 +321,11 @@ if (flagswap/=1) then
   read(u) Tsall(1:lx1,1:lx2,1:lx3all,1:lsp)
 else
   allocate(statetmp(lx1,lx3all,lx2,lsp))
+  !print *, shape(statetmp),shape(nsall)
+
   read(u) statetmp
-  
-  print *, shape(statetmp),shape(nsall)
   nsall(1:lx1,1:lx2,1:lx3all,1:lsp)=reshape(statetmp,[lx1,lx2,lx3all,lsp],order=[1,3,2,4])
+
   read(u) statetmp
   vs1all(1:lx1,1:lx2,1:lx3all,1:lsp)=reshape(statetmp,[lx1,lx2,lx3all,lsp],order=[1,3,2,4])
 
@@ -332,12 +334,31 @@ else
   deallocate(statetmp)
 end if
 close(u)
+
+if (any(ieee_is_nan(Tsall))) error stop 'NaN in Tsall'
 print *, 'Done gathering input...'
 
 
 !> USER SUPPLIED FUNCTION TO TAKE A REFERENCE PROFILE AND CREATE INITIAL CONDITIONS FOR ENTIRE GRID.  
 !> ASSUMING THAT THE INPUT DATA ARE EXACTLY THE CORRECT SIZE (AS IS THE CASE WITH FILE INPUT) THIS IS NOW SUPERFLUOUS
 print *, 'Done setting initial conditions...'
+
+
+#ifdef TRACE
+open(newunit=utrace, form='formatted', file='nsall.asc', status='unknown', action='write')
+    write(utrace,*) nsall
+ close(utrace)
+
+open(newunit=utrace, form='formatted', file='vs1all.asc', status='unknown', action='write')
+    write(utrace,*) vs1all
+ close(utrace)
+
+open(newunit=utrace, form='formatted', file='Tsall.asc', status='unknown', action='write')
+    write(utrace,*) Tsall
+ close(utrace)
+
+#endif
+
 print *, 'Min/max input density:  ', minval(pack(nsall(:,:,:,7),.true.)), maxval(pack(nsall(:,:,:,7),.true.))
 print *, 'Min/max input velocity:  ', minval(pack(vs1all(:,:,:,:),.true.)), maxval(pack(vs1all(:,:,:,:),.true.))
 print *, 'Min/max input temperature:  ', minval(pack(Tsall(:,:,:,:),.true.)), maxval(pack(Tsall(:,:,:,:),.true.))

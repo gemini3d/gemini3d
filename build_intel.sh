@@ -1,6 +1,7 @@
 #!/bin/bash
 #
 # "-d" option makes this a Debug build
+# "-t" option makes this a Trace build (dump certain variables to disk)
 #
 # *** for subsequent builds, you can just type "make" in the objects/ directory ***
 # (I keep a second Terminal tab for this purpose)
@@ -18,23 +19,18 @@
 export FC=$MKLROOT/../mpi/intel64/bin/mpiifort
 export CC=$MKLROOT/../mpi/intel64/bin/mpiicc
 export CXX=icpc
-# ------ temporary environment follows
-(
 
 rm -r objects/* # one-time, if you build for Gfortran previously
 
-cd objects
 
 # some systems don't have mpiifort for Intel
 # use ifort as mpif90 get partially picked-up as GNU
 OPTS="-DUSEMKL=yes -DLIB_DIR=$HOME/flibs-intel"
 
 [[ $1 == "-d" ]] && OPTS="-DCMAKE_BUILD_TYPE=Debug $OPTS"
+[[ $1 == "-t" ]] && OPTS="-DTRACE:BOOL=on $OPTS"
 
-cmake $OPTS ..
+cmake $OPTS -B objects .
 
-)
-
-# Requires CMake 3.12
 cmake --build objects -j
 

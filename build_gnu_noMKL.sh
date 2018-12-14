@@ -1,6 +1,7 @@
 #!/bin/bash
 #
 # "-d" option makes this a Debug build
+# "-t" option makes this a Trace build (dump certain variables to disk)
 #
 # this convenience script initally (one-time) setups up Gemini for gfortran
 # *** for subsequent builds, you can just type "make" in the objects/ directory ***
@@ -13,17 +14,14 @@
 MKLROOT=
 LD_LIBRARY_PATH=
 
-(
+[[ $1 == "-d" ]] && OPTS="-DCMAKE_BUILD_TYPE=Debug"
+[[ $1 == "-t" ]] && OPTS="-DTRACE:BOOL=on $OPTS"
+
+export FC=/usr/bin/mpif90
 
 rm -r objects/*  # need this one-time in case different compiler e.g. ifort was previously used.
-cd objects
 
-[[ $1 == "-d" ]] && OPTS="-DCMAKE_BUILD_TYPE=Debug"
+cmake $OPTS -B objects .
 
-FC=/usr/bin/mpif90 cmake $OPTS ..
-
-)
-
-# Requires CMake 3.12
 cmake --build objects -j
 
