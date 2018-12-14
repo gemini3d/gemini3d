@@ -1,3 +1,5 @@
+__pycache__/
+
 Testing/
 .mypy_cache/
 *.dat

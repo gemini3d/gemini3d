@@ -335,6 +335,9 @@ else
 end if
 close(u)
 
+
+if (any(ieee_is_nan(nsall))) error stop 'NaN in nsall'
+if (any(ieee_is_nan(vs1all))) error stop 'NaN in vs1all'
 if (any(ieee_is_nan(Tsall))) error stop 'NaN in Tsall'
 print *, 'Done gathering input...'
 
@@ -344,16 +347,17 @@ print *, 'Done gathering input...'
 print *, 'Done setting initial conditions...'
 
 
+!> dump loaded arrays for debugging
 #ifdef TRACE
-open(newunit=utrace, form='formatted', file='nsall.asc', status='unknown', action='write')
+open(newunit=utrace, form='unformatted', access='stream', file='nsall.raw8', status='replace', action='write')
     write(utrace,*) nsall
  close(utrace)
 
-open(newunit=utrace, form='formatted', file='vs1all.asc', status='unknown', action='write')
+open(newunit=utrace, form='unformatted', access='stream', file='vs1all.raw8', status='replace', action='write')
     write(utrace,*) vs1all
  close(utrace)
 
-open(newunit=utrace, form='formatted', file='Tsall.asc', status='unknown', action='write')
+open(newunit=utrace, form='unformatted', access='stream', file='Tsall.raw8', status='replace', action='write')
     write(utrace,*) Tsall
  close(utrace)
 
