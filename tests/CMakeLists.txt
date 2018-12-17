@@ -26,8 +26,9 @@ set_tests_properties(MPIexist PROPERTIES TIMEOUT 5)
 
 
 add_executable(testmumps test_mumps.f90)
+target_include_directories(testmumps PRIVATE ${MUMPS_INCLUDE_DIRS})
 target_link_libraries(testmumps PRIVATE
-                     MUMPS::MUMPS
+                     ${MUMPS_LIBRARIES}
                      MPI::MPI_Fortran)
 add_test(NAME MUMPS
   COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${MPIEXEC_MAX_NUMPROCS} ${CMAKE_CURRENT_BINARY_DIR}/testmumps

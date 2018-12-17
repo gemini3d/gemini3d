@@ -10,6 +10,8 @@
 # MUMPS is provided for Gfortran by:
 # apt install libmumps-dev
 
+OPTS="-DUSEMKL=no -DLIB_DIR=$HOME/flibs-gnu-nomkl"
+
 # this temporarily disables Intel compiler (if installed) from messing up your gfortran environment.
 MKLROOT=
 LD_LIBRARY_PATH=

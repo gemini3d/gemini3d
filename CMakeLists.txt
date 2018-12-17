@@ -55,10 +55,10 @@ target_include_directories(sources PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/numerical
 # --- MUMPS stuff
 add_library(potential_mumps numerical/potential/potential_mumps.F90)
 target_link_libraries(potential_mumps PRIVATE const grid calculus
-       MUMPS::MUMPS
+       ${MUMPS_LIBRARIES}
        MPI::MPI_Fortran)
 target_compile_definitions(potential_mumps PRIVATE REALBITS=${realbits})
-target_include_directories(potential_mumps PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/numerical)
+target_include_directories(potential_mumps PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/numerical ${MUMPS_INCLUDE_DIRS})
 
 add_library(potential_comm_mumps numerical/potential/potential_comm_mumps.f90)
 target_link_libraries(potential_comm_mumps PRIVATE potential_mumps potentialBCs collision calculus grid const)
@@ -66,10 +66,11 @@ target_include_directories(potential_comm_mumps PRIVATE ${CMAKE_CURRENT_BINARY_D
 
 add_library(potentialBCs numerical/potential/boundary_conditions/potentialBCs_mumps.f90)
 target_link_libraries(potentialBCs PRIVATE temporal grid calculus interp io const
-    MUMPS::MUMPS
+    ${MUMPS_LIBRARIES}
 #    ${BLAS_LIBRARIES}
     MPI::MPI_Fortran)
-target_include_directories(potentialBCs PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/numerical)
+target_include_directories(potentialBCs PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/numerical 
+  ${MUMPS_INCLUDE_DIRS})
 
 # --- other libs
 add_library(precipBCs ionization/boundary_conditions/precipBCs_mod.f90)
@@ -85,8 +86,7 @@ target_include_directories(multifluid PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/numeri
 add_executable(gemini gemini.f90)
 target_link_libraries(gemini PRIVATE mpimod io neutral precipBCs
   temporal multifluid
-  potentialBCs potential_comm_mumps const
-  MUMPS::MUMPS)
+  potentialBCs potential_comm_mumps const)
 #  MPI::MPI_Fortran)
 target_include_directories(gemini PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/numerical)
 set_target_properties(gemini PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR})

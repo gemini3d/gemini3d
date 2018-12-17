@@ -66,7 +66,7 @@ if(MUMPS_FOUND)
   if(NOT TARGET MUMPS::MUMPS)
     add_library(MUMPS::MUMPS UNKNOWN IMPORTED)
     set_target_properties(MUMPS::MUMPS PROPERTIES
-                        IMPORTED_LOCATION ${MUMPS_LIBRARIES}
+                        IMPORTED_LOCATION ${MUMPS_LIBRARY}
                         INTERFACE_INCLUDE_DIRECTORIES ${MUMPS_INCLUDE_DIRS})
   endif()
 endif()
