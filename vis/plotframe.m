@@ -26,6 +26,8 @@ end
 
 lotsplots=true;   %@scivision may want to fix this...
 
+direc = expanduser(direc);  % for mkdir on Octave.
+
 %% NEED TO ADD SOME CODE TO VALIDATE THE INPUT DATA...
 
 
@@ -48,11 +50,7 @@ if ~isempty(saveplots)
   dlist = {'nplots', 'v1plots', 'v2plots', 'v3plots', 'J1plots',...
            'Tiplots', 'Teplots', 'J2plots', 'J3plots', 'Phiplots'};
   for i=1:length(dlist)
-    output_dir=[direc, filesep, dlist{i}];
-    if ~(exist(output_dir,'dir')==7)
-      disp('Creating output plot dir...');
-      mkdir(output_dir);
-    end
+    mkdir([direc, filesep, dlist{i}]);
   end
 end
 

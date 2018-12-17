@@ -11,7 +11,7 @@ env: FC=gfortran
 addons:
   apt:
 #    sources: ubuntu-toolchain-r-test
-    packages: ['gfortran','liblapack-dev','libmumps-dev','libopenmpi-dev','octave','liboctave-dev']
+    packages: ['gfortran','liblapack-dev','libmumps-dev','libopenmpi-dev','octave']
 
 matrix:
   include: 
@@ -28,8 +28,8 @@ matrix:
 
     
 install:
-- cd $TRAVIS_BUILD_DIR/tests/bin
+- cd $TRAVIS_BUILD_DIR/objects
 - cmake ..
 - cmake --build .
   
-script: ctest -V
+script: ctest --output-on-failure
