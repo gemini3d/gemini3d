@@ -286,7 +286,12 @@ real(wp), dimension(3) :: ymdtmp
 
 real(wp) :: tstart,tfin    
 
-!SYSTEM SIZES
+!> so that random values (including NaN) don't show up in Ghost cells
+nsall = 0._wp
+vs1all= 0._wp
+Tsall = 0._wp
+
+!> SYSTEM SIZES
 lx1=size(ns,1)-4
 lx2=size(ns,2)-4
 lx3=size(ns,3)-4
