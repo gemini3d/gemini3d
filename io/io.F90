@@ -368,9 +368,9 @@ open(newunit=utrace, form='unformatted', access='stream', file='Tsall.raw8', sta
 
 #endif
 
-print *, 'Min/max input density:  ', minval(pack(nsall(:,:,:,7),.true.)), maxval(pack(nsall(:,:,:,7),.true.))
-print *, 'Min/max input velocity:  ', minval(pack(vs1all(:,:,:,:),.true.)), maxval(pack(vs1all(:,:,:,:),.true.))
-print *, 'Min/max input temperature:  ', minval(pack(Tsall(:,:,:,:),.true.)), maxval(pack(Tsall(:,:,:,:),.true.))
+print *, 'Min/max input density:  ',     minval(nsall(:,:,:,7)),  maxval(nsall(:,:,:,7))
+print *, 'Min/max input velocity:  ',    minval(vs1all(:,:,:,:)), maxval(vs1all(:,:,:,:))
+print *, 'Min/max input temperature:  ', minval(Tsall(:,:,:,:)),  maxval(Tsall(:,:,:,:))
 
 
 !> ROOT BROADCASTS IC DATA TO WORKERS
