@@ -15,10 +15,12 @@ endif()
 
 add_library(const constants/phys_consts.F90)
 target_compile_definitions(const PRIVATE REALBITS=${realbits})
+target_compile_options(const PRIVATE ${FFLAGS})
 # set_target_properties(const PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_SOURCE_DIR}/objects)
 
 add_library(interp interpolation/interpolation.f90)
 target_link_libraries(interp PRIVATE const)
+target_compile_options(interp PRIVATE ${FFLAGS})
 # set_target_properties(interp PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_SOURCE_DIR}/objects)
 
 
@@ -30,20 +32,24 @@ endif()
 add_library(mpimod mpimod/mpimod.F90)
 target_link_libraries(mpimod PRIVATE const MPI::MPI_Fortran)
 target_compile_definitions(mpimod PRIVATE REALBITS=${realbits})
+target_compile_options(mpimod PRIVATE ${FFLAGS})
 # set_target_properties(mpimod PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_SOURCE_DIR}/objects)
 
 add_library(grid grid/grid.f90)
 target_link_libraries(grid PUBLIC const mpimod MPI::MPI_Fortran) # PUBLIC necessary for ifort, even with MPI target
+target_compile_options(grid PRIVATE ${FFLAGS})
 # set_target_properties(grid PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_SOURCE_DIR}/objects)
 
 add_library(calculus calculus/calculus.f90)
 target_link_libraries(calculus PRIVATE grid)
+target_compile_options(calculus PRIVATE ${FFLAGS})
 # set_target_properties(calculus PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_SOURCE_DIR}/objects)
 
 
 # ----- diffusion
 add_library(diffusion diffusion/diffusion.F90)
 target_link_libraries(diffusion PRIVATE grid)
+target_compile_options(diffusion PRIVATE ${FFLAGS})
 if(LAPACK95_FOUND)
   target_link_libraries(diffusion PRIVATE ${LAPACK95_LIBRARIES})
   target_include_directories(diffusion PRIVATE ${LAPACK95_INCLUDE_DIRS})
@@ -62,5 +68,6 @@ endif()
 
 add_library(advec advection/advec_mpi.f90)
 target_link_libraries(advec PRIVATE const mpimod grid)
+target_compile_options(advec PRIVATE ${FFLAGS})
 # set_target_properties(advec PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_SOURCE_DIR}/objects)
 

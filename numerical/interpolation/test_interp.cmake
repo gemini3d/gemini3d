@@ -1,8 +1,12 @@
 add_executable(test_interp1 interpolation/testinterp1.f90)
 target_link_libraries(test_interp1 interp)
+target_compile_options(test_interp1 PRIVATE ${FFLAGS})
+
 
 add_executable(test_interp2 interpolation/testinterp2.f90)
 target_link_libraries(test_interp2 interp)
+target_compile_options(test_interp2 PRIVATE ${FFLAGS})
+
 
 add_test(NAME Interp1D COMMAND test_interp1)
 

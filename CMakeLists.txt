@@ -31,26 +31,32 @@ add_library(io io/io.F90 io/expanduser.f90)
 target_link_libraries(io PRIVATE const mpimod grid calculus)
 target_compile_definitions(io PRIVATE TRACE=${TRACE})
 target_include_directories(io PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/numerical)
+target_compile_options(io PRIVATE ${FFLAGS})
 
 add_library(temporal temporal/temporal.f90)
 target_link_libraries(temporal PRIVATE const mpimod grid MPI::MPI_Fortran)
 target_include_directories(temporal PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/numerical)
+target_compile_options(temporal PRIVATE ${FFLAGS})
 
 add_library(neutral neutral/neutral.f90)
 target_link_libraries(neutral PUBLIC interp io msis temporal MPI::MPI_Fortran)
 target_include_directories(neutral PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/numerical)
+target_compile_options(neutral PRIVATE ${FFLAGS})
 
 add_library(ionization ionization/ionization.f90)
 target_link_libraries(ionization PRIVATE neutral)
 target_include_directories(ionization PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/numerical)
+target_compile_options(ionization PRIVATE ${FFLAGS})
 
 add_library(collision collisions/collisions.f90)
 target_link_libraries(collision PRIVATE const)
 target_include_directories(collision PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/numerical)
+target_compile_options(collision PRIVATE ${FFLAGS})
 
 add_library(sources sources/sources.f90)
 target_link_libraries(sources PRIVATE collision grid calculus)
 target_include_directories(sources PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/numerical)
+target_compile_options(sources PRIVATE ${FFLAGS})
 
 # --- MUMPS stuff
 add_library(potential_mumps numerical/potential/potential_mumps.F90)
@@ -59,10 +65,12 @@ target_link_libraries(potential_mumps PRIVATE const grid calculus
        MPI::MPI_Fortran)
 target_compile_definitions(potential_mumps PRIVATE REALBITS=${realbits})
 target_include_directories(potential_mumps PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/numerical ${MUMPS_INCLUDE_DIRS})
+target_compile_options(potential_mumps PRIVATE ${FFLAGS})
 
 add_library(potential_comm_mumps numerical/potential/potential_comm_mumps.f90)
 target_link_libraries(potential_comm_mumps PRIVATE potential_mumps potentialBCs collision calculus grid const)
 target_include_directories(potential_comm_mumps PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/numerical)
+target_compile_options(potential_comm_mumps PRIVATE ${FFLAGS})
 
 add_library(potentialBCs numerical/potential/boundary_conditions/potentialBCs_mumps.f90)
 target_link_libraries(potentialBCs PRIVATE temporal grid calculus interp io const
@@ -71,15 +79,18 @@ target_link_libraries(potentialBCs PRIVATE temporal grid calculus interp io cons
     MPI::MPI_Fortran)
 target_include_directories(potentialBCs PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/numerical 
   ${MUMPS_INCLUDE_DIRS})
+  target_compile_options(potentialBCs PRIVATE ${FFLAGS})
 
 # --- other libs
 add_library(precipBCs ionization/boundary_conditions/precipBCs_mod.f90)
 target_link_libraries(precipBCs PRIVATE const grid io interp temporal)
 target_include_directories(precipBCs PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/numerical)
+target_compile_options(precipBCs PRIVATE ${FFLAGS})
 
 add_library(multifluid multifluid/multifluid.f90)
 target_link_libraries(multifluid PRIVATE precipBCs mpimod grid ionization sources advec diffusion)
 target_include_directories(multifluid PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/numerical)
+target_compile_options(multifluid PRIVATE ${FFLAGS})
 
 
 # --- Main GEMINI executable
@@ -90,12 +101,14 @@ target_link_libraries(gemini PRIVATE mpimod io neutral precipBCs
 #  MPI::MPI_Fortran)
 target_include_directories(gemini PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/numerical)
 set_target_properties(gemini PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR})
+target_compile_options(gemini PRIVATE ${FFLAGS})
 
 #--------magnetic field calculation executable---------------
 add_executable(magcalc magcalc.f90)
 target_link_libraries(magcalc PRIVATE mpimod const grid io temporal)
 target_include_directories(magcalc PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/numerical)
 set_target_properties(magcalc PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR})
+target_compile_options(magcalc PRIVATE ${FFLAGS})
 
 # --- self-tests
 include(${PROJECT_SOURCE_DIR}/cmake/test2d.cmake)
