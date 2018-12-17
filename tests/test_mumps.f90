@@ -71,12 +71,12 @@ IF ( mumps_par%MYID == 0 ) THEN
 
 open(newunit=u, file='input_simpletest_real', form='formatted', status='old', action='read')
 READ(u,*) mumps_par%N
-READ(u,*) mumps_par%NNZ
-ALLOCATE( mumps_par%IRN ( mumps_par%NNZ ) )
-ALLOCATE( mumps_par%JCN ( mumps_par%NNZ ) )
-ALLOCATE( mumps_par%A( mumps_par%NNZ ) )
+READ(u,*) mumps_par%NZ  ! NNZ for MUMPS > 5.1.0
+ALLOCATE( mumps_par%IRN ( mumps_par%NZ ) )
+ALLOCATE( mumps_par%JCN ( mumps_par%NZ ) )
+ALLOCATE( mumps_par%A( mumps_par%NZ ) )
 ALLOCATE( mumps_par%RHS ( mumps_par%N  ) )
-DO I8 = 1, mumps_par%NNZ
+DO I8 = 1, mumps_par%NZ
   READ(u,*) mumps_par%IRN(I8),mumps_par%JCN(I8), mumps_par%A(I8)
 END DO
 DO I = 1, mumps_par%N

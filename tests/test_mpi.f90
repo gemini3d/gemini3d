@@ -1,6 +1,7 @@
 program mpiTypes
 use, intrinsic :: iso_fortran_env
-use mpi_f08
+use mpi_f08, only: mpi_init, mpi_comm_rank, mpi_comm_world, mpi_comm_size, mpi_finalize, mpi_get_library_version, &
+mpi_real8, mpi_real, mpi_max_library_version_string
 
 implicit none
 
