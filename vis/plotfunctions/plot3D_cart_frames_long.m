@@ -1,5 +1,5 @@
 function h=plot3D_cart_frames(ymd,UTsec,xg,parm,parmlbl,caxlims,sourceloc)
-
+narginchk(6,7)
 %CLEAR AND SET FIGURE HANDLES
 clf;
 h=gcf;

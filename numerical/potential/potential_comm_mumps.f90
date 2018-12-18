@@ -100,12 +100,12 @@ contains
     if (flagcap/=0) then
       call capacitance(ns,B1,flagcap,incap)
       if (it==1) then     !check that we don't have an unsupported grid type for doing capacitance
-        minh1=minval(pack(x%h1,.true.))
-        maxh1=maxval(pack(x%h1,.true.))
-        minh2=minval(pack(x%h2,.true.))
-        maxh2=maxval(pack(x%h2,.true.))
-        minh3=minval(pack(x%h3,.true.))    !is it okay for a worker to bail on a process???
-        maxh3=maxval(pack(x%h3,.true.))
+        minh1=minval(x%h1)
+        maxh1=maxval(x%h1)
+        minh2=minval(x%h2)
+        maxh2=maxval(x%h2)
+        minh3=minval(x%h3)    !is it okay for a worker to bail on a process???
+        maxh3=maxval(x%h3)
         if (minh1<0.99d0 .or. maxh1>1.01d0 .or. minh2<0.99d0 .or. maxh2>1.01d0 .or. minh3<0.99d0 .or. maxh3>1.01d0) then
           error stop 'Capacitance is being calculated for possibly unsupported grid type. Please check input file settings.'
         end if
@@ -158,8 +158,7 @@ contains
   
       if (myid==0) then
         print *, 'Potential solution for time step:  ',t,' took ',tfin-tstart,' seconds...'
-        print *, 'Min and max root drift values:  ',minval(pack(vs2,.true.)),maxval(pack(vs2,.true.)), &
-                                                  minval(pack(vs3,.true.)),maxval(pack(vs3,.true.))
+        print *, 'Min and max root drift values:  ',minval(vs2),maxval(vs2), minval(vs3),maxval(vs3)
       end if
 
     else if (potsolve == 2) then  !inductive form of model, could this be subcycled to speed things up?
@@ -359,8 +358,7 @@ contains
     divtmp=div3D(J1halo(0:lx1+1,0:lx2+1,0:lx3+1),J2halo(0:lx1+1,0:lx2+1,0:lx3+1), &
                  J3halo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
     srcterm=divtmp(1:lx1,1:lx2,1:lx3)
-    print *, 'Root has computed background field source terms...',minval(pack(srcterm,.true.)), &
-                   maxval(pack(srcterm,.true.))
+    print *, 'Root has computed background field source terms...',minval(srcterm), maxval(srcterm)
     !-------
 
 
@@ -416,8 +414,7 @@ contains
     divtmp=div3D(J1halo(0:lx1+1,0:lx2+1,0:lx3+1),J2halo(0:lx1+1,0:lx2+1,0:lx3+1), &
                  J3halo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
     srcterm=srcterm+divtmp(1:lx1,1:lx2,1:lx3)
-    print *, 'Root has computed wind source terms...',minval(pack(srcterm,.true.)), &
-                   maxval(pack(srcterm,.true.))
+    print *, 'Root has computed wind source terms...',minval(srcterm),  maxval(srcterm)
     !-------
 
 
@@ -429,8 +426,7 @@ contains
         print *, 'Beginning field-integrated solve...'
 
 
-        !-------
-        !INTEGRATE CONDUCTANCES AND CAPACITANCES FOR SOLVER COEFFICIENTS 
+        !> INTEGRATE CONDUCTANCES AND CAPACITANCES FOR SOLVER COEFFICIENTS 
         integrand=sigP*x%h1(1:lx1,1:lx2,1:lx3)*x%h3(1:lx1,1:lx2,1:lx3)/x%h2(1:lx1,1:lx2,1:lx3)
         sigintegral=integral3D1(integrand,x,1,lx1)    !no haloing required for a field-line integration
         SigPint2=sigintegral(lx1,:,:)
@@ -448,7 +444,7 @@ contains
         !-------
 
 
-        !PRODUCE A FIELD-INTEGRATED SOURCE TERM
+        !> PRODUCE A FIELD-INTEGRATED SOURCE TERM
         if (flagdirich /= 1) then   !Neumann conditions; incorporate a source term and execute the solve
           print *, 'Using FAC boundary condition...'
           !-------
@@ -608,12 +604,11 @@ contains
 
     !R-------
     !JUST TO JUDGE THE IMPACT OF MI COUPLING
-    print *, 'Max integrated inertial capacitance:  ',maxval(pack(incapint,.true.))
-    print *, 'Max integrated Pedersen conductance (includes metric factors):  ',maxval(pack(SigPint2,.true.))
-    print *, 'Max integrated Hall conductance (includes metric factors):  ',minval(pack(SigHint,.true.)), &
-                                                                             maxval(pack(SigHint,.true.))
-    print *, 'Max E2,3 BG and response values are:  ',maxval(pack(abs(E02),.true.)), &
-               maxval(pack(abs(E03),.true.)),maxval(pack(abs(E2),.true.)),maxval(pack(abs(E3),.true.))
+    print *, 'Max integrated inertial capacitance:  ',maxval(incapint)
+    print *, 'Max integrated Pedersen conductance (includes metric factors):  ',maxval(SigPint2)
+    print *, 'Max integrated Hall conductance (includes metric factors):  ',minval(SigHint), maxval(SigHint)
+    print *, 'Max E2,3 BG and response values are:  ',maxval(E02), maxval(E03),maxval(E2),maxval(E3)
+    print *, 'Min E2,3 BG and response values are:  ',minval(E02), minval(E03),minval(E2),minval(E3)
     !R-------
 
 
@@ -626,7 +621,7 @@ contains
 
     !--------
     !COMPUTE TIME DERIVATIVE NEEDED FOR POLARIZATION CURRENT.  ONLY DO THIS IF WE HAVE SPECIFIC NONZERO INERTIAL CAPACITANCE
-    if (maxval(pack(incap,.true.)) > 1d-6) then
+    if (maxval(incap) > 1d-6) then
       grad2E=grad3D2(E2,x,1,lx1,1,lx2,1,lx3)
 !      grad3E=grad3D3(E2,x,1,lx1,1,lx2,1,lx3)
 
@@ -760,8 +755,8 @@ contains
         print *, 'Nuemann boundaries, integrated from highest altitude down to preserve accuracy...'
         if (gridflag==0) then     !closed dipole grid, really would be best off integrating from the source hemisphere
           print *,  'Closed dipole grid; integration starting in source hemisphere (if applicable)...', &
-                         minval(pack(Vmaxx1slab,.true.)), &
-                         maxval(pack(Vmaxx1slab,.true.))
+                         minval(Vmaxx1slab), &
+                         maxval(Vmaxx1slab)
           if (sourcemlat>=0d0) then    !integrate from northern hemisphere
             print *, 'Source is in northern hemisphere (or there is no source)...'
             J1=integral3D1_curv_alt(divJperp,x,1,lx1)    !int divperp of BG current, go from maxval(x1) to location of interest
@@ -779,16 +774,15 @@ contains
           end if
         elseif (gridflag==1) then    !this would be an inverted grid, this max altitude corresponds to the min value of x1
           print *,  'Inverted grid; integration starting at min x1 (highest alt. or southern hemisphere)...', &
-                         minval(pack(Vminx1slab,.true.)), & 
-                         maxval(pack(Vminx1slab,.true.))
+                         minval(Vminx1slab), & 
+                         maxval(Vminx1slab)
           J1=integral3D1(divJperp,x,1,lx1)    !int divperp of BG current
           do ix1=1,lx1
             J1(ix1,:,:)=1d0/x%h2(ix1,1:lx2,1:lx3)/x%h3(ix1,1:lx2,1:lx3)* &
                              (x%h2(1,1:lx2,1:lx3)*x%h3(1,1:lx2,1:lx3)*Vminx1slab-J1(ix1,:,:))
           end do
         else        !minx1 is at teh bottom of the grid to integrate from max x1
-          print *,  'Non-inverted grid; integration starting at max x1...', minval(pack(Vmaxx1slab,.true.)), &
-                         maxval(pack(Vmaxx1slab,.true.))
+          print *,  'Non-inverted grid; integration starting at max x1...', minval(Vmaxx1slab), maxval(Vmaxx1slab)
           J1=integral3D1_curv_alt(divJperp,x,1,lx1)    !int divperp of BG current, go from maxval(x1) to location of interest
           do ix1=1,lx1
             J1(ix1,:,:)=1d0/x%h2(ix1,1:lx2,1:lx3)/x%h3(ix1,1:lx2,1:lx3)* &
@@ -829,12 +823,17 @@ contains
 
 
     !R-------
-    print *, 'Max topside FAC (abs. val.) computed to be:  ',maxval(pack(abs(J1(1,:,:)),.true.))    !ZZZ - this rey needsz to be current at the "top"
-    print *, 'Max polarization J2,3 (abs. val.) computed to be:  ',maxval(pack(abs(J2pol),.true.)), &
-                 maxval(pack(abs(J3pol),.true.))
-    print *, 'Max conduction J2,3 (abs. val.) computed to be:  ',maxval(pack(abs(J2),.true.)), &
-                 maxval(pack(abs(J3),.true.))
-    print *, 'Max conduction J1 (abs. val.) computed to be:  ',maxval(pack(abs(J1),.true.))
+    print *, 'Max topside FAC (abs. val.) computed to be:  ',maxval(abs(J1(1,:,:)))    !ZZZ - this rey needsz to be current at the "top"
+    print *, 'Max polarization J2,3 (abs. val.) computed to be:  ',maxval(abs(J2pol)), &
+                 maxval(abs(J3pol))
+!    print *, 'Max conduction J2,3 (abs. val.) computed to be:  ',maxval(abs(J2)), &
+!                 maxval(abs(J3))
+    print *, 'Max conduction J2,3  computed to be:  ',maxval(J2), &
+                 maxval(J3)
+    print *, 'Min conduction J2,3  computed to be:  ',minval(J2), &
+                 minval(J3)
+    print *, 'Max conduction J1 (abs. val.) computed to be:  ',maxval(abs(J1))
+    print *, 'flagswap:  ',flagswap
     !R-------
 
 
@@ -1181,6 +1180,18 @@ contains
     Phi=-1d0*Phi   !put things back for later use
     !--------
 
+
+!    !R-------
+!    !JUST TO JUDGE THE IMPACT OF MI COUPLING
+!    print *, 'Max integrated inertial capacitance:  ',maxval(incapint)
+!    print *, 'Max integrated Pedersen conductance (includes metric factors):  ',maxval(SigPint2)
+!    print *, 'Max integrated Hall conductance (includes metric factors):  ',minval(SigHint), maxval(SigHint)
+!!    print *, 'Max E2,3 BG and response values are:  ',maxval(abs(E02)), maxval(abs(E03)), maxval(abs(E2)),maxval(abs(E3))
+!    print *, 'Max E2,3 BG and response values are:  ',maxval(E02), maxval(E03),maxval(E2),maxval(E3)
+!    print *, 'Min E2,3 BG and response values are:  ',minval(E02), minval(E03),minval(E2),minval(E3)
+!    !R-------
+
+
     !--------
     !ADD IN BACKGROUND FIELDS BEFORE DISTRIBUTING TO WORKERS
     E2=E2+E02
@@ -1190,7 +1201,7 @@ contains
 
     !--------
     !COMPUTE TIME DERIVATIVE NEEDED FOR POLARIZATION CURRENT.  ONLY DO THIS IF WE HAVE SPECIFIC NONZERO INERTIAL CAPACITANCE
-    if (maxval(pack(incap,.true.)) > 1d-6) then
+    if (maxval(incap) > 1d-6) then
       grad2E=grad3D2(E2,x,1,lx1,1,lx2,1,lx3)
 !      grad3E=grad3D3(E2,x,1,lx1,1,lx2,1,lx3)
 
@@ -1322,8 +1333,8 @@ contains
       divJperp=x%h1(1:lx1,1:lx2,1:lx3)*x%h2(1:lx1,1:lx2,1:lx3)*x%h3(1:lx1,1:lx2,1:lx3)*divtmp(1:lx1,1:lx2,1:lx3)
       if (flagdirich /= 1) then     !Neumann conditions, this is boundary location-agnostic since both bottom and top FACs are known - they have to  be loaded into VVmaxx1 and Vminx1.  For numerical purposes we prefer to integrate from the location of nonzero current (usually highest altitude in open grid).  
         if (gridflag==0) then     !closed dipole grid, really would be best off integrating from the source hemisphere
-!          print *,  'Closed dipole grid; integration starting at max x1...', minval(pack(Vmaxx1slab,.true.)), &
-!                         maxval(pack(Vmaxx1slab,.true.))
+!          print *,  'Closed dipole grid; integration starting at max x1...', minval(Vmaxx1slab), &
+!                         maxval(Vmaxx1slab)
           if (sourcemlat>=0d0) then    !integrate from northern hemisphere
 !            print *, 'Source is in northern hemisphere (or there is no source)...'
             J1=integral3D1_curv_alt(divJperp,x,1,lx1)    !int divperp of BG current, go from maxval(x1) to location of interest
@@ -1340,16 +1351,14 @@ contains
             end do
           end if
         elseif (gridflag==1) then    !this would be an inverted grid, this max altitude corresponds to the min value of x1
-!          print *,  'Inverted grid; integration starting at min x1...',minval(pack(Vminx1slab,.true.)), &
-!                         maxval(pack(Vminx1slab,.true.))
+!          print *,  'Inverted grid; integration starting at min x1...',minval(Vminx1slab), maxval(Vminx1slab)
           J1=integral3D1(divJperp,x,1,lx1)    !int divperp of BG current
           do ix1=1,lx1  
             J1(ix1,:,:)=1d0/x%h2(ix1,1:lx2,1:lx3)/x%h3(ix1,1:lx2,1:lx3)* &
                              (x%h2(1,1:lx2,1:lx3)*x%h3(1,1:lx2,1:lx3)*Vminx1slab-J1(ix1,:,:))
           end do
         else        !minx1 is at teh bottom of the grid to integrate from max x1
-!          print *,  'Non-inverted grid; integration starting at max x1...', minval(pack(Vmaxx1slab,.true.)), &
-!                         maxval(pack(Vmaxx1slab,.true.))
+!          print *,  'Non-inverted grid; integration starting at max x1...', minval(Vmaxx1slab),  maxval(Vmaxx1slab)
           J1=integral3D1_curv_alt(divJperp,x,1,lx1)    !int divperp of BG current, go from maxval(x1) to location of interest
           do ix1=1,lx1
             J1(ix1,:,:)=1d0/x%h2(ix1,1:lx2,1:lx3)/x%h3(ix1,1:lx2,1:lx3)* &
@@ -1390,6 +1399,16 @@ contains
 
     end if
     !!!!!!!!!
+
+
+!    !R-------
+!    print *, 'Max topside FAC (abs. val.) computed to be:  ',maxval(abs(J1(1,:,:)))    !ZZZ - this rey needsz to be current at the "top"
+!    print *, 'Max polarization J2,3 (abs. val.) computed to be:  ',maxval(abs(J2pol)),  maxval(abs(J3pol))
+!    print *, 'Max conduction J2,3  computed to be:  ',maxval(J2), maxval(J3)
+!    print *, 'Min conduction J2,3  computed to be:  ',minval(J2),  minval(J3)
+!    print *, 'Max conduction J1 (abs. val.) computed to be:  ',maxval(abs(J1))
+!    print *, 'flagswap:  ',flagswap
+!    !R-------
 
 
     !-------

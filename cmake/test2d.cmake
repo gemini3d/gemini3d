@@ -2,8 +2,8 @@
 set(TESTDIR test2d)
 set(REFNAME zenodo2d)
 set(REFDIR ../simulations)
-set(zenodoHash c577e5b9a9b6e0d8506b1798181cf230)
-set(zenodoNumber 1975078)
+set(zenodoHash 5bd1bce1a465ccec5af813f8b7959ec8)
+set(zenodoNumber 2394322)
 # --- ensure reference data is available for self-test
 download_testfiles(${zenodoHash}
                    ${zenodoNumber}

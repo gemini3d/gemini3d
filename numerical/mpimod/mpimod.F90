@@ -67,6 +67,9 @@ integer, parameter :: tagE01=76,tagE02=77,tagE03=78,tagVminx1=79,tagVmaxx1=80
 integer, parameter :: tagBr=81,tagBtheta=82, tagBphi=83
 integer, parameter :: tagdV=84,tagJx=85,tagJy=86,tagRx=87,tagRy=88,tagRz=89,tagRcubed=90,tagJz=91
 
+!> FOR COMMUNICATING IF THE GRID DIMENSIONS HAVE BEEN SWAPPED
+integer, parameter :: tagswap=92
+
 !> VARIABLES REUSED BY ALL WORKERS AND USING MODULES
 integer, protected :: myid,lid    
 !! no external procedure should mess with these (but they need to be able to read them)

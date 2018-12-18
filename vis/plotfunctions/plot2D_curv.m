@@ -1,5 +1,5 @@
-function h = plot2D_curv(ymd,UTsec,xg,parm,parmlbl,caxlims,sourceloc,ha)
-narginchk(7,8)
+function h = plot2D_curv(ymd,UTsec,xg,parm,parmlbl,caxlims,sourceloc,ha, cmap)
+narginchk(7,9)
 
 if nargin<8 || isempty(ha)
   clf, h=gcf; ha=gca; 
@@ -7,6 +7,9 @@ else
   h = ancestor(ha,'figure');
 end
 %set(h,'PaperPosition',[0 0 11 4.5]);
+if nargin<9 || isempty(cmap)
+  cmap = parula(256);
+end
 
 
 %SOURCE LOCATION (SHOULD PROBABLY BE AN INPUT)
@@ -158,12 +161,12 @@ hold off;
 set(hi,'alphadata',~isnan(parmp));
 set(ha,'FontSize',FS)
 axis('xy')
-colormap(parula(256))
+colormap(cmap)
 caxis(caxlims)
 c=colorbar();
-xlabel(c,parmlbl);
-xlabel('magnetic latitude (deg.)');
-ylabel('altitude (km)');
+xlabel(c,parmlbl)
+xlabel('magnetic latitude (deg.)')
+ylabel('altitude (km)')
 
 
 %{
@@ -177,12 +180,12 @@ set(hi,'alphadata',~isnan(parmp2(:,:,2)));
 set(gca,'FontSize',FS);
 axis xy;
 axis tight;
-colormap(parula(256));
+colormap(cmap)
 caxis(caxlims)
 c=colorbar;
-xlabel(c,parmlbl);
-xlabel('magnetic latitude (deg.)');
-ylabel('magnetic longitude (deg.)');
+xlabel(c,parmlbl)
+xlabel('magnetic latitude (deg.)')
+ylabel('magnetic longitude (deg.)')
 %}
 
 

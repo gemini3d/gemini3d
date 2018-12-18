@@ -1,4 +1,4 @@
-[![Build status](https://ci.appveyor.com/api/projects/status/5l4mxpfgu6bie9e8?svg=true)](https://ci.appveyor.com/project/scivision/gemini)
+[![Build Status](https://www.travis-ci.com/mattzett/GEMINI.svg?branch=master)](https://www.travis-ci.com/mattzett/GEMINI)
 
 # GEMINI
 

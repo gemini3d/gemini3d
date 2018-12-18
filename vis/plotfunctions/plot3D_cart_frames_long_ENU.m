@@ -1,5 +1,6 @@
 function h=plot3D_cart_frames_long_ENU(ymd,UTsec,xg,parm,parmlbl,caxlims,sourceloc,h)
 
+narginchk(6,8)
 %CLEAR AND SET FIGURE HANDLES
 if (nargin<8)
     clf;

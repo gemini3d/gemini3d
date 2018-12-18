@@ -1,5 +1,6 @@
 function h=plot3D_curv_frames_long(ymd,UTsec,xg,parm,parmlbl,caxlims,sourceloc,h)
 
+narginchk(6,8)
 %CLEAR AND SET FIGURE HANDLES
 %clf;
 %h=gcf;

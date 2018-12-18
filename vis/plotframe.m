@@ -24,6 +24,11 @@ if nargin<7 || isempty(h)
   h = plotinit(xg);
 end
 
+Ncmap = parula(256);
+Tcmap = parula(256);
+Vcmap = bwr();
+Jcmap = bwr();
+
 lotsplots=true;   %@scivision may want to fix this...
 
 direc = expanduser(direc);  % for mkdir on Octave.
@@ -147,25 +152,25 @@ end
 if lotsplots   % 3D simulation or a very long 2D simulation - do separate plots for each time frame
   
     clf(h.f10), figure(h.f10)
-    plotfun(ymd,UTsec,xg, ne, 'n_e (m^{-3})',nelim,[mlatsrc,mlonsrc],h.f10);
+    plotfun(ymd,UTsec,xg, ne, 'n_e (m^{-3})',nelim,[mlatsrc,mlonsrc],h.f10, Ncmap);
     
     if flagoutput~=3
         clf(h.f1), figure(h.f1)
-        plotfun(ymd,UTsec,xg,v1,'v_1 (m/s)',v1lim,[mlatsrc,mlonsrc],h.f1);
+        plotfun(ymd,UTsec,xg,v1,'v_1 (m/s)',v1lim,[mlatsrc,mlonsrc], h.f1, Vcmap);
         clf(h.f2), figure(h.f2)
-        plotfun(ymd,UTsec,xg,Ti,'T_i (K)',Tilim,[mlatsrc,mlonsrc],h.f2);
+        plotfun(ymd,UTsec,xg,Ti,'T_i (K)',Tilim,[mlatsrc,mlonsrc], h.f2, Tcmap);
         clf(h.f3), figure(h.f3)
-        plotfun(ymd,UTsec,xg,Te,'T_e (K)',Telim,[mlatsrc,mlonsrc],h.f3);
+        plotfun(ymd,UTsec,xg,Te,'T_e (K)',Telim,[mlatsrc,mlonsrc], h.f3, Tcmap);
         clf(h.f4), figure(h.f4)
-        plotfun(ymd,UTsec,xg,J1,'J_1 (A/m^2)',J1lim,[mlatsrc,mlonsrc],h.f4);
+        plotfun(ymd,UTsec,xg,J1,'J_1 (A/m^2)',J1lim,[mlatsrc,mlonsrc],h.f4, Jcmap);
         clf(h.f5), figure(h.f5)
-        plotfun(ymd,UTsec,xg,v2,'v_2 (m/s)',v2lim,[mlatsrc,mlonsrc],h.f5);
+        plotfun(ymd,UTsec,xg,v2,'v_2 (m/s)',v2lim,[mlatsrc,mlonsrc],h.f5, Vcmap);
         clf(h.f6), figure(h.f6)
-        plotfun(ymd,UTsec,xg,v3,'v_3 (m/s)',v3lim,[mlatsrc,mlonsrc],h.f6);
+        plotfun(ymd,UTsec,xg,v3,'v_3 (m/s)',v3lim,[mlatsrc,mlonsrc],h.f6, Vcmap);
         clf(h.f7), figure(h.f7)
-        plotfun(ymd,UTsec,xg,J2,'J_2 (A/m^2)',J2lim,[mlatsrc,mlonsrc],h.f7);
+        plotfun(ymd,UTsec,xg,J2,'J_2 (A/m^2)',J2lim,[mlatsrc,mlonsrc],h.f7, Jcmap);
         clf(h.f8), figure(h.f8)
-        plotfun(ymd,UTsec,xg,J3,'J_3 (A/m^2)',J3lim,[mlatsrc,mlonsrc],h.f8);
+        plotfun(ymd,UTsec,xg,J3,'J_3 (A/m^2)',J3lim,[mlatsrc,mlonsrc],h.f8, Jcmap);
         
         if ~isempty(h.f9)
             clf(h.f9), figure(h.f9)
@@ -178,7 +183,6 @@ if lotsplots   % 3D simulation or a very long 2D simulation - do separate plots 
     % for 3D or long 2D plots print and output file every time step
     dosave(flagoutput, direc, filename, saveplots, h)
 
-%{
 else    %short 2D simulation - put the entire time series in a single plot
   
     figure(h.f10)
@@ -226,15 +230,13 @@ else    %short 2D simulation - put the entire time series in a single plot
             colorbar;
         end
     end
-%}
 
 end
 
-%{
 if ~lotsplots    %save the short 2D sim plots
     dosave(flagoutput, direc, filename, saveplots, h)
 end
-%}
+
   
 end % function plotframe
 

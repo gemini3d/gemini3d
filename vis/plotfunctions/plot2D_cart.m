@@ -1,6 +1,6 @@
-function h=plot2D_cart(ymd,UTsec,xg,parm,parmlbl,caxlims,sourceloc,ha)
+function h=plot2D_cart(ymd,UTsec,xg,parm,parmlbl,caxlims,sourceloc,ha, cmap)
 
-narginchk(4,8)
+narginchk(4,9)
 validateattr(ymd, {'numeric'}, {'vector', 'numel', 3}, mfilename, 'year month day', 1)
 validateattr(UTsec, {'numeric'}, {'scalar'}, mfilename, 'UTC second', 2)
 validateattr(xg, {'struct'}, {'scalar'}, mfilename, 'grid structure', 3)
@@ -27,6 +27,9 @@ else
 %    ha = axes('parent', h);
 %  end
   ha=gca;
+end
+if nargin<9 || isempty(cmap)
+  cmap = parula(256);
 end
 
 %set(h,'PaperPosition',[0 0 11 4.5]);
@@ -143,7 +146,7 @@ if (xg.lx(3)==1)
   set(ha,'FontSize',FS)
   axis(ha, 'xy')
   axis(ha, 'square')
-  colormap(ha, parula(256))
+  colormap(ha, cmap)
   if ~isempty(caxlims)
     caxis(ha, caxlims)
   end
@@ -165,7 +168,7 @@ elseif (xg.lx(2)==1)
   set(ha,'FontSize',FS);
   axis(ha, 'xy')
   axis(ha, 'square')
-  colormap(ha, parula(256));
+  colormap(ha, cmap);
   if ~isempty(caxlims)
     caxis(ha, caxlims)
   end

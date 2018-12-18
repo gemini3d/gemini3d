@@ -32,4 +32,4 @@ install:
 - cmake ..
 - cmake --build .
   
-script: ctest --output-on-failure
+script: ctest -R 2D --output-on-failure

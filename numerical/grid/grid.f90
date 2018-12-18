@@ -4,7 +4,7 @@ use phys_consts, only: Gconst,Me,Re,wp
 use mpimod, only: myid, lid, &
   tagx1, tagx2, tagx3, tagtheta, tagr, tagphi, tagnull, taglx1, taglx2, taglx3, taglx3all, taginc, &
   tagh1, tagh2, tagh3, tagglat, tagglon, tageunit1, tageunit2, tageunit3, tagetheta, tager, &
-  tagalt, tagbmag, tagephi, &
+  tagalt, tagbmag, tagephi, tagswap, &
   mpi_realprec, mpi_integer, mpi_comm_world, mpi_status_ignore, ierr, &
   bcast_recv, bcast_send, bcast_recv3d_ghost, bcast_send3d_ghost, bcast_recv3d_x3i, bcast_send3d_x3i
 
@@ -185,12 +185,12 @@ contains
     lx1=x%lx1; lx2=x%lx2; lx3all=x%lx3all;
     lx3=lx3all/lid     !note the integer division here
     x%lx3=lx3
-    write(*,*) 'Grid has size:  ',lx1,lx2,lx3all
+    print *, 'Grid has size:  ',lx1,lx2,lx3all
 
 
     !ADJUST THE SIZES OF THE VARIABLES IF LX3ALL==1, SO THAT THE ALLOCATIONS ARE THE CORRECT SIZE
     if (lx3all==1) then
-      write(*,*) 'Detected a 2D run request...  swapping x2 an x3 sizes to maintain parallelization.'
+      print *, 'Detected a 2D run request...  swapping x2 an x3 sizes to maintain parallelization.'
       lx3all=lx2; x%lx3all=lx2;
       lx2=1; x%lx2=1;
       lx3=lx3all/lid
@@ -219,6 +219,12 @@ contains
       call mpi_send(lx2,1,MPI_INTEGER,iid,taglx2,MPI_COMM_WORLD,ierr)
       call mpi_send(lx3,1,MPI_INTEGER,iid,taglx3,MPI_COMM_WORLD,ierr)
       call mpi_send(lx3all,1,MPI_INTEGER,iid,taglx3all,MPI_COMM_WORLD,ierr)    !not clear whether workers actually need the x3all variable, hopefully not, but they definitely need to know the full grid size for the derivative functions
+    end do
+
+
+    !TELL WORKERS IF WE'VE SWAPPED DIMENSIONS
+    do iid=1,lid-1
+      call mpi_send(flagswap,1,MPI_INTEGER,iid,tagswap,MPI_COMM_WORLD,ierr)
     end do
 
 
@@ -314,7 +320,7 @@ contains
 
       x%rall=rall; x%thetaall=thetaall; x%phiall=phiall;
     else     !this is apparently a 2D grid, so the x2 and x3 dimensions have been/need to be swapped
-      write(*,*) 'Detected a 2D grid, so will permute the dimensions of the input'
+      print *, 'Detected a 2D grid, so will permute the dimensions of the input'
 
       !Note there that the fortran arrays are the correct size, but the input data are not!!!  This means tmp variable and permutes...
       read(inunit) x%x1,x%x1i,x%dx1,x%dx1i                !x1 untouched
@@ -460,7 +466,7 @@ contains
       x%rall=rall; x%thetaall=thetaall; x%phiall=phiall;
     end if
     close(inunit)
-    write(*,*) 'Done reading in grid data...'
+    print *, 'Done reading in grid data...'
 
 
     !ALLOCATE SPACE FOR ROOTS SUBGRID GRAVITATIONAL FIELD
@@ -479,7 +485,7 @@ contains
       call mpi_send(x%dx1i,lx1,mpi_realprec,iid,tagx1,MPI_COMM_WORLD,ierr)
       call mpi_send(x%dx2i,lx2,mpi_realprec,iid,tagx2,MPI_COMM_WORLD,ierr)
     end do
-    write(*,*) 'Done sending common variables to workers...'
+    print *, 'Done sending common variables to workers...'
 
 
     !NOW SEND THE INFO THAT DEPENDS ON X3 SLAB SIZE
@@ -568,7 +574,7 @@ contains
     call bcast_send(rall,tagr,x%r)
     call bcast_send(thetaall,tagtheta,x%theta)
     call bcast_send(phiall,tagphi,x%phi)
-    write(*,*)  'Done sending slabbed variables to workers...'
+    print *,  'Done sending slabbed variables to workers...'
 
 
     !COUNT THE NUMBER OF NULL GRID POINTS AND GENERATE A LIST OF NULL INDICES FOR LATER USE
@@ -595,7 +601,7 @@ contains
         end do
       end do
     end do
-    write(*,*) 'Done computing null grid points...  Process:  ',myid,' has:  ',x%lnull
+    print *, 'Done computing null grid points...  Process:  ',myid,' has:  ',x%lnull
 
 
     !COMPUTE DIFFERENTIAL DISTANCES ALONG EACH DIRECTION (TO BE USED IN TIME STEP DETERMINATION...
@@ -632,7 +638,7 @@ contains
 !    write(outunit) Incall
 !    write(outunit) nullptsall
 !    close(outunit)
-!    write(*,*) 'Done creating copy of grid...'
+!    print *, 'Done creating copy of grid...'
 !    
 
 !
@@ -666,6 +672,10 @@ contains
     call mpi_recv(lx3all,1,MPI_INTEGER,0,taglx3all,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
     x%lx1=lx1; x%lx2=lx2; x%lx3all=lx3all;
     x%lx3=lx3
+
+
+    !ROOT NEEDS TO TELL US WHETHER WE'VE SWAPPED DIMENSIONS SINCE THIS AFFECTS HOW CURRENTS ARE COMPUTED
+    call mpi_recv(flagswap,1,MPI_INTEGER,0,tagswap,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
 
 
     !ALLOCATE SPACE FOR MY SLAB OF DATA
@@ -812,7 +822,7 @@ contains
         end do
       end do
     end do
-    write(*,*) 'Done computing null grid points...  Process:  ',myid,' has:  ',x%lnull
+    print *, 'Done computing null grid points...  Process:  ',myid,' has:  ',x%lnull
 
 
     !COMPUTE DIFFERENTIAL DISTANCES ALONG EACH DIRECTION
