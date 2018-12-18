@@ -6,12 +6,12 @@ git:
   depth: 3
   quiet: true
 
-env: FC=gfortran
+env: FC=gfortran-6
 
 addons:
   apt:
-#    sources: ubuntu-toolchain-r-test
-    packages: ['gfortran','liblapack-dev','libmumps-dev','libopenmpi-dev','octave']
+    sources: ubuntu-toolchain-r-test
+    packages: ['gfortran-6','liblapack-dev','libmumps-dev','libopenmpi-dev','octave']
 
 matrix:
   include: 
