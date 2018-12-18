@@ -10,7 +10,7 @@
 # MUMPS is provided for Gfortran by:
 # apt install libmumps-dev
 
-OPTS="-DUSEMKL=no -DLIB_DIR=$HOME/flibs-gnu-nomkl"
+OPTS="-DSCALAPACK_ROOT=~/flibs-gnu-nomkl/scalapack -DMUMPS_ROOT=~/flibs-gnu-nomkl/MUMPS"
 
 # this temporarily disables Intel compiler (if installed) from messing up your gfortran environment.
 MKLROOT=

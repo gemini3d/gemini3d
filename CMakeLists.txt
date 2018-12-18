@@ -7,7 +7,6 @@ if(NOT realbits)
   set(realbits 64)
 endif()
 
-option(USEMKL "Use Intel MKL with your compiler")
 option(TRACE "dump variables to disk at certain locations in program" off)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/Modules/)

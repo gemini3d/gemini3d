@@ -25,7 +25,7 @@ rm -r objects/* # one-time, if you build for Gfortran previously
 
 # some systems don't have mpiifort for Intel
 # use ifort as mpif90 get partially picked-up as GNU
-OPTS="-DUSEMKL=yes -DLIB_DIR=$HOME/flibs-intel"
+OPTS="-DMUMPS_ROOT=~/flibs-intel/MUMPS"
 
 [[ $1 == "-d" ]] && OPTS="-DCMAKE_BUILD_TYPE=Debug $OPTS"
 [[ $1 == "-t" ]] && OPTS="-DTRACE:BOOL=on $OPTS"

@@ -18,8 +18,9 @@ NOTE: J3 sign (+ / -) is currently being debugged. Contact authors before doing 
 ## Prerequisites
 
 The CMake build system is used to manage the large number of dependencies and external libraries needed to compile GEMINI.  
-CMake &ge; 3.13 is required.
-If needed, CMake is easily installed *without* sudo/admin on:
+CMake &ge; 3.12 is required in general.
+Some advanced features require CMake &ge; 3.13.
+If needed, CMake is easily installed in a minute *without* sudo/admin on:
 
 * Linux: use [cmake_setup.sh](https://github.com/scivision/cmake-utils/blob/master/cmake_setup.sh)
 * MacOS: `brew install cmake`
@@ -131,12 +132,13 @@ ICNTL 1-4 concern print output unit and verbosity level, see MUMPS
 Libraries:
 
 * If you have `sudo` access, try the `./install_prereqs.sh` script
-* If need to build libraries from source (e.g. because you don't have `sudo`) try `build_gfortran.sh` or `build_intel.sh` from the `fortran-libs` repo:
+* If need to build libraries from source (e.g. because you don't have `sudo`) try `build_gnu_noMKL.sh` or `build_intel.sh` from the `fortran-libs` repo:
   ```sh
-  cd ~
-  git clone https://github.com/scivision/fortran-libs
-  cd fortran-libs/LAPACK95
-  make double -C SRC
+  git clone https://github.com/scivision/fortran-libs ~/flibs-nomkl
+  
+  cd ~/flibs-nomkl
+  
+  ./build_gnu_noMKL.sh
   ```
 
 
@@ -185,12 +187,7 @@ Try to compile gemini as above, then
 
 Example:
 ```sh
-cmake -DSCALAPACK_ROOT=../fortran-libs/scalapack -DMETIS_ROOT=/share/pkg/metis/5.1.0/install ..
-```
-
-Alternatively for Intel Fortran:
-```sh
-FC=ifort cmake -DMETIS_ROOT=../fortran-libs/metis ..
+cmake -DSCALAPACK_ROOT=~/flibs-nomkl/scalapack -DMUMPS_ROOT=~/flibs-nomkl/MUMPS ..
 ```
 
 ## Known limitations and issues of GEMINI

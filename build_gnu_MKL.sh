@@ -3,9 +3,10 @@
 # *** for subsequent builds, you can just type "make" in the objects/ directory ***
 # (I keep a second Terminal tab for this purpose)
 
-OPTS="-DUSEMKL=yes -DLIB_DIR=~/flibs-gnu-mkl"
+OPTS="-DMUMPS_ROOT=~/flibs-gnu-mkl/MUMPS"
 
 [[ $1 == "-d" ]] && OPTS="-DCMAKE_BUILD_TYPE=Debug $OPTS"
+[[ $1 == "-t" ]] && OPTS="-DTRACE:BOOL=on $OPTS"
 
 # if MKLROOT is not defined, try a default value
 [[ -v MKLROOT ]] || export MKLROOT=$HOME/intel/compilers_and_libraries/linux/mkl/
