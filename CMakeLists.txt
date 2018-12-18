@@ -1,5 +1,5 @@
-cmake_minimum_required(VERSION 3.13)   
-# 3.9: MPI::MPI_Fortran  3.11 for FindLapack bug   3.12 for find_ROOT, 3.13 add_link_options
+cmake_minimum_required(VERSION 3.12)   
+# 3.9: MPI::MPI_Fortran  3.11 for FindLapack bug   3.12 for find_ROOT
 project(gemini3d Fortran C)  # MUST include C language for Intel / MKL to work
 enable_testing()
 

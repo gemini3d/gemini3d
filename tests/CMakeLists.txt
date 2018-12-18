@@ -1,5 +1,5 @@
-cmake_minimum_required (VERSION 3.13)  
-# 3.9: MPI::MPI_Fortran, 3.11: Lapack,  3.12 find_ROOT, 3.13 add_link_options
+cmake_minimum_required (VERSION 3.12)  
+# 3.9: MPI::MPI_Fortran, 3.11: Lapack,  3.12 find_ROOT
 project(test_gem Fortran)
 enable_testing()
 
