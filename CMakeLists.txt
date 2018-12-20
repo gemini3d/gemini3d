@@ -8,6 +8,8 @@ if(NOT realbits)
 endif()
 
 option(TRACE "dump variables to disk at certain locations in program" off)
+option(USEGLOW "use NCAR GLOW instead of Fang")
+
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/Modules/)
 
 include(${PROJECT_SOURCE_DIR}/cmake/compilers.cmake)
@@ -21,7 +23,20 @@ add_subdirectory(tests)
 # --- vendor libraries
 add_subdirectory(vendor/msis00)
 
-# --- Build Gemini
+# --- GEMINI
+add_library(ionization ionization/ionization.f90)
+target_link_libraries(ionization PRIVATE neutral const)
+target_include_directories(ionization PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/numerical)
+if(USEGLOW)
+  include(${PROJECT_SOURCE_DIR}/cmake/glow.cmake)
+
+  target_sources(ionization PRIVATE ionization/glow_run.f90)
+  target_link_libraries(ionization PRIVATE cglow)
+  target_include_directories(ionization PRIVATE ${ncarglow_BINARY_DIR})
+else()
+  target_sources(ionization PRIVATE ionization/glow_dummy.f90)
+endif(USEGLOW)
+
 add_subdirectory(numerical)
 
 add_library(io io/io.F90 io/expanduser.f90)
@@ -40,7 +55,7 @@ target_link_libraries(neutral PUBLIC interp io msis temporal MPI::MPI_Fortran)
 target_include_directories(neutral PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/numerical)
 target_compile_options(neutral PRIVATE ${FFLAGS})
 
-include(cmake/glow.cmake)
+
 
 add_library(collision collisions/collisions.f90)
 target_link_libraries(collision PRIVATE const)

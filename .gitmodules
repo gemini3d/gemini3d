@@ -1,3 +1,0 @@
-[submodule "ionization/glow"]
-	path = ionization/glow
-	url = https://github.com/NCAR/GLOW.git

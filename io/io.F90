@@ -1,7 +1,7 @@
 module io
 !! HANDLES INPUT AND OUTPUT OF PLASMA STATE PARAMETERS (NOT GRID INPUTS)
 use, intrinsic :: iso_fortran_env, only: stderr=>error_unit, compiler_version, compiler_options
-use, intrinsic :: ieee_arithmetic, only: ieee_is_nan
+use, intrinsic :: ieee_arithmetic, only: ieee_is_nan, ieee_value, ieee_quiet_nan
 use phys_consts, only : kB,ms,pi,lsp,wp,lwave
 use fsutils, only: expanduser
 use calculus
@@ -9,11 +9,9 @@ use mpimod
 use grid, only : gridflag,flagswap,lx1,lx2,lx3,lx3all
 implicit none
 
-
 !> NONE OF THESE VARIABLES SHOULD BE ACCESSED BY PROCEDURES OUTSIDE THIS MODULE
 character(:), allocatable, private :: indatfile                    
 !! initial condition data files from input configuration file
-
 
 contains
 
@@ -49,7 +47,9 @@ real(wp), intent(out) :: dtglow, dtglowout
 
 character(256) :: buf
 integer :: u
+real(wp) :: NaN
 
+NaN = ieee_value(0._wp, ieee_quiet_nan)
 
 !> READ CONFIG.DAT FILE FOR THIS SIMULATION
 open(newunit=u, file=infile, status='old', action='read')
@@ -157,8 +157,8 @@ if (flagglow==1) then
     print *, 'GLOW auroral emission output cadence (s): ', dtglowout
   end if
 else
-  dtglow=0._wp
-  dtglowout=0._wp
+  dtglow=NaN
+  dtglowout=NaN
 end if
 
 close(u)

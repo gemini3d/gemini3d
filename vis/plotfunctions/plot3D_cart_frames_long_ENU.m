@@ -1,14 +1,24 @@
-function h=plot3D_cart_frames_long_ENU(ymd,UTsec,xg,parm,parmlbl,caxlims,sourceloc,h)
+function h=plot3D_cart_frames_long_ENU(ymd,UTsec,xg,parm,parmlbl,caxlims,sourceloc,ha, cmap)
 
-narginchk(6,8)
-%CLEAR AND SET FIGURE HANDLES
-if (nargin<8)
-    clf;
-    h=gcf;
+narginchk(6,9)
+
+if nargin<7  || isempty(sourceloc) % leave || for validate
+  sourceloc = [];
+else
+  validateattr(sourceloc, {'numeric'}, {'vector', 'numel', 2}, mfilename, 'source magnetic coordinates', 7)
 end
-set(h,'PaperPosition',[0 0 11 4.5]);    
+if nargin<8 || isempty(ha)
+  ha = axes('parent', figure);
+end
+if nargin<9 || isempty(cmap)
+  cmap = parula(256);
+end   
 
-
+try
+  axes(ha)
+catch
+  ha = axes('parent', ha);
+end
 %REORGANIZE INPUT
 dmy(1)=ymd(3);
 dmy(2)=ymd(2);
@@ -191,26 +201,26 @@ maxzp=max(zp(:));
 FS=8;
 
 %MAKE THE PLOT!
-subplot(131);
-h=imagesc(xp/1e3,zp,parmp);
-hold on;
-plot([minxp,maxxp],[altref,altref],'w--','LineWidth',2);
+ha=subplot(1,3,1);
+h=imagesc(ha,xp/1e3,zp,parmp);
+hold(ha,'on')
+plot(ha,[minxp,maxxp],[altref,altref],'w--','LineWidth',2);
 if (~isempty(sourcemlat))
-  plot(sourcemlat,0,'r^','MarkerSize',12,'LineWidth',2);
+  plot(ha,sourcemlat,0,'r^','MarkerSize',12,'LineWidth',2);
 end
-hold off;
+hold(ha,'off')
 try
   set(h,'alphadata',~isnan(parmp));
 end
-set(gca,'FontSize',FS);
-axis xy;
+set(ha,'FontSize',FS);
+axis(ha,'xy')
 axis square;
-colormap(parula(256));
-caxis(caxlims);
-c=colorbar;
+colormap(ha,cmap)
+caxis(ha,caxlims);
+c=colorbar(ha);
 xlabel(c,parmlbl);
-xlabel('eastward dist. (km)');
-ylabel('altitude (km)');
+xlabel(ha,'eastward dist. (km)');
+ylabel(ha,'altitude (km)');
 
 
 UThrs=floor(t);
@@ -233,52 +243,52 @@ strval=sprintf('%s \n %s',[num2str(dmy(2)),'/',num2str(dmy(1)),'/',num2str(dmy(3
     [timestr,' UT']);
 %text(xp(round(lxp/10)),zp(lzp-round(lzp/7.5)),strval,'FontSize',18,'Color',[0.66 0.66 0.66],'FontWeight','bold');
 %text(xp(round(lxp/10)),zp(lzp-round(lzp/7.5)),strval,'FontSize',16,'Color',[0.5 0.5 0.5],'FontWeight','bold');
-title(strval);
+title(ha,strval);
 
 
-subplot(132);
-h=imagesc(xp/1e3,yp/1e3,parmp2(:,:,2));
-hold on;
+ha=subplot(1,3,2);
+h=imagesc(ha,xp/1e3,yp/1e3,parmp2(:,:,2));
+hold(ha,'on')
 if (~isempty(sourcemlat))
-  plot([minxp,maxxp],[sourcemlon,sourcemlon],'w--','LineWidth',2);
-  plot(sourcemlat,sourcemlon,'r^','MarkerSize',12,'LineWidth',2);
+  plot(ha,[minxp,maxxp],[sourcemlon,sourcemlon],'w--','LineWidth',2);
+  plot(ha,sourcemlat,sourcemlon,'r^','MarkerSize',12,'LineWidth',2);
 end
-hold off;
+hold(ha,'off')
 try
   set(h,'alphadata',~isnan(parmp2(:,:,2)));
 end
-set(gca,'FontSize',FS);
-axis xy;
+set(ha,'FontSize',FS);
+axis(ha,'xy')
 axis square;
 %axis tight;
-colormap(parula(256));
-caxis(caxlims);
-c=colorbar;
+colormap(ha,cmap)
+caxis(ha,caxlims);
+c=colorbar(ha);
 xlabel(c,parmlbl);
-ylabel('northward dist. (km)');
-xlabel('eastward dist. (km)');
+ylabel(ha,'northward dist. (km)');
+xlabel(ha,'eastward dist. (km)');
 
-subplot(133);
-h=imagesc(yp/1e3,zp,parmp3);
-hold on;
+ha=subplot(1,3,3);
+h=imagesc(ha,yp/1e3,zp,parmp3);
+hold(ha,'on')
 %plot([minyp,maxyp],[altref,altref],'w--','LineWidth',2);
 if (~isempty(sourcemlat))
-  plot(sourcemlat,0,'r^','MarkerSize',12,'LineWidth',2);
+  plot(ha,sourcemlat,0,'r^','MarkerSize',12,'LineWidth',2);
 end
-hold off;
+hold(ha,'off')
 try
   set(h,'alphadata',~isnan(parmp3));
 end
-set(gca,'FontSize',FS);
-axis xy;
+set(ha,'FontSize',FS);
+axis(ha,'xy')
 axis square;
 axis tight;
-colormap(parula(256));
-caxis(caxlims);
-c=colorbar;
+colormap(ha,cmap)
+caxis(ha,caxlims);
+c=colorbar(ha);
 xlabel(c,parmlbl);
-xlabel('northward dist. (km)');
-ylabel('altitude (km)');
+xlabel(ha,'northward dist. (km)');
+ylabel(ha,'altitude (km)');
 
 
 %

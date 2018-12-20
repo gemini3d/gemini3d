@@ -8,8 +8,11 @@ set(firstfile 20130220_18000.000001.dat)
 # --- ensure reference data is available for self-test
 download_testfiles(${zenodoHash} ${zenodoNumber} ${REFNAME} ${PROJECT_SOURCE_DIR}/${REFDIR})
 
-# --- test main exe
+# --- test GEMINI
 run_gemini_test(Gemini2D ${TESTDIR} 900)
+
+# --- test GEMINI + GLOW
+run_gemini_test(GlowGemini2D ${TESTDIR}_glow 900)
 
 # --- evaluate output accuracy vs. reference from Matt's HPC
 compare_gemini_output(Compare2D ${TESTDIR} ${REFDIR}/${REFNAME} ${firstfile})

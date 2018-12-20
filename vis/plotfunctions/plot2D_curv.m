@@ -1,14 +1,23 @@
 function h = plot2D_curv(ymd,UTsec,xg,parm,parmlbl,caxlims,sourceloc,ha, cmap)
 narginchk(7,9)
 
-if nargin<8 || isempty(ha)
-  clf, h=gcf; ha=gca; 
-else
-  h = ancestor(ha,'figure');
+try
+  axes(ha)
+catch
+  ha = axes('parent', ha);
 end
 %set(h,'PaperPosition',[0 0 11 4.5]);
+if nargin<8 || isempty(ha)
+  ha = axes('parent', figure);
+end
 if nargin<9 || isempty(cmap)
   cmap = parula(256);
+end   
+
+try
+  axes(ha)
+catch
+  ha = axes('parent', ha);
 end
 
 
@@ -154,19 +163,19 @@ FS=12;
 %MAKE THE PLOT!
 %subplot(121);
 hi=imagesc(ha,xp,zp,parmp);
-hold on;
-plot([minxp,maxxp],[altref,altref],'w--','LineWidth',2);
-plot(sourcemlat,0,'r^','MarkerSize',8,'LineWidth',2);
-hold off;
+hold(ha,'on')
+plot(ha,[minxp,maxxp],[altref,altref],'w--','LineWidth',2);
+plot(ha,sourcemlat,0,'r^','MarkerSize',8,'LineWidth',2);
+hold(ha,'off')
 set(hi,'alphadata',~isnan(parmp));
 set(ha,'FontSize',FS)
-axis('xy')
-colormap(cmap)
-caxis(caxlims)
-c=colorbar();
+axis(ha,'xy')
+colormap(ha,cmap)
+caxis(ha,caxlims)
+c=colorbar(ha);
 xlabel(c,parmlbl)
-xlabel('magnetic latitude (deg.)')
-ylabel('altitude (km)')
+xlabel(ha,'magnetic latitude (deg.)')
+ylabel(ha,'altitude (km)')
 
 
 %{
@@ -209,6 +218,6 @@ strval=sprintf('%s \n %s',[num2str(ymd(2)),'/',num2str(ymd(3)),'/',num2str(ymd(1
     [timestr,' UT']);
 %text(xp(round(lxp/10)),zp(lzp-round(lzp/7.5)),strval,'FontSize',18,'Color',[0.66 0.66 0.66],'FontWeight','bold');
 %text(xp(round(lxp/10)),zp(lzp-round(lzp/7.5)),strval,'FontSize',16,'Color',[0.5 0.5 0.5],'FontWeight','bold');
-title(strval);
+title(ha,strval);
 
 end % function

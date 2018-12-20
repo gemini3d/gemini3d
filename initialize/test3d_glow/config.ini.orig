@@ -9,15 +9,19 @@
 0
 2
 0
-../simulations/zenodo2d/inputs/simsize.dat
-../simulations/zenodo2d/inputs/simgrid.dat
-../simulations/zenodo2d/inputs/2Dtest_lowres_ICs.dat
+../simulations/zenodo3d/inputs/simsize.dat
+../simulations/zenodo3d/inputs/simgrid.dat
+../simulations/zenodo3d/inputs/3Dtest_ICs.dat
 0
 1
 5.0
-../simulations/zenodo2d/inputs/prec_inputs/
+../simulations/zenodo3d/inputs/prec_inputs/
 1
 1.0
-../simulations/zenodo2d/inputs/Efield_inputs/
-0
-
+../simulations/zenodo3d/inputs/Efield_inputs/
+<<<<<<< HEAD:initialize/test3d/config.ini
+=======
+1
+5.0
+5.0
+>>>>>>> Fixed idate conversion passed to GLOW module.:initialize/3Dtest/config.ini

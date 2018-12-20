@@ -1,9 +1,23 @@
-function h=plot3D_cart_frames(ymd,UTsec,xg,parm,parmlbl,caxlims,sourceloc)
-narginchk(6,7)
-%CLEAR AND SET FIGURE HANDLES
-clf;
-h=gcf;
-set(h,'PaperPosition',[0 0 11 4.5]);
+function h=plot3D_cart_frames(ymd,UTsec,xg,parm,parmlbl,caxlims,sourceloc,ha, cmap)
+narginchk(6,8)
+
+if nargin<7  || isempty(sourceloc) % leave || for validate
+  sourceloc = [];
+else
+  validateattr(sourceloc, {'numeric'}, {'vector', 'numel', 2}, mfilename, 'source magnetic coordinates', 7)
+end
+if nargin<8 || isempty(ha)
+  ha = axes('parent', figure);
+end
+if nargin<9 || isempty(cmap)
+  cmap = parula(256);
+end   
+
+try
+  axes(ha)
+catch
+  ha = axes('parent', ha);
+end
 
 
 %REORGANIZE INPUT
@@ -188,66 +202,66 @@ maxzp=max(zp(:));
 FS=12;
 
 %MAKE THE PLOT!
-subplot(131);
-h=imagesc(xp,zp,parmp);
-hold on;
-plot([minxp,maxxp],[altref,altref],'w--','LineWidth',2);
+ha=subplot(1,3,1);
+h=imagesc(ha,xp,zp,parmp);
+hold(ha,'on')
+plot(ha,[minxp,maxxp],[altref,altref],'w--','LineWidth',2);
 if (~isempty(sourcemlat))
-  plot(sourcemlat,0,'r^','MarkerSize',12,'LineWidth',2);
+  plot(ha,sourcemlat,0,'r^','MarkerSize',12,'LineWidth',2);
 end
-hold off;
+hold(ha,'off')
 set(h,'alphadata',~isnan(parmp));
-set(gca,'FontSize',FS);
-axis xy;
-colormap(parula(256));
-caxis(caxlims)
-c=colorbar;
+set(ha,'FontSize',FS)
+axis(ha,'xy')
+colormap(ha,cmap)
+caxis(ha,caxlims)
+c=colorbar(ha);
 xlabel(c,parmlbl);
-xlabel('magnetic longitude (deg.)');
-ylabel('altitude (km)');
+xlabel(ha,'magnetic longitude (deg.)');
+ylabel(ha,'altitude (km)');
 
 
-subplot(132);
-h=imagesc(xp,yp,parmp2(:,:,2));
-hold on;
+ha=subplot(1,3,2);
+h=imagesc(ha,xp,yp,parmp2(:,:,2));
+hold(ha,'on')
 if (~isempty(sourcemlat))
-  plot([minxp,maxxp],[sourcemlon,sourcemlon],'w--','LineWidth',2);
-  plot(sourcemlat,sourcemlon,'r^','MarkerSize',12,'LineWidth',2);
+  plot(ha,[minxp,maxxp],[sourcemlon,sourcemlon],'w--','LineWidth',2);
+  plot(ha,sourcemlat,sourcemlon,'r^','MarkerSize',12,'LineWidth',2);
 end
-hold off;
+hold(ha,'off')
 set(h,'alphadata',~isnan(parmp2(:,:,2)));
-set(gca,'FontSize',FS);
-axis xy;
-axis tight;
-colormap(parula(256));
-caxis(caxlims)
-c=colorbar;
+set(ha,'FontSize',FS);
+axis(ha,'xy')
+aaxis(ha,'tight')
+colormap(ha,cmap)
+caxis(ha,caxlims)
+c=colorbar(ha);
 xlabel(c,parmlbl);
-ylabel('magnetic latitude (deg.)');
-xlabel('magnetic longitude (deg.)');
+ylabel(ha,'magnetic latitude (deg.)');
+xlabel(ha,'magnetic longitude (deg.)');
 
-subplot(133);
-h=imagesc(yp,zp,parmp3);
-hold on;
+ha=subplot(1,3,3);)
+h=imagesc(ha,yp,zp,parmp3);
+hold(ha,'on')
 %plot([minyp,maxyp],[altref,altref],'w--','LineWidth',2);
 if (~isempty(sourcemlat))
-  plot(sourcemlat,0,'r^','MarkerSize',12,'LineWidth',2);
+  plot(ha,sourcemlat,0,'r^','MarkerSize',12,'LineWidth',2);
 end
-hold off;
-set(h,'alphadata',~isnan(parmp3));
-set(gca,'FontSize',FS);
-axis xy;
-colormap(parula(256));
-caxis(caxlims)
-c=colorbar;
+hold(ha,'off')
+set(h,'alphadata',~isnan(parmp3))
+set(ha,'FontSize',FS)
+axis(ha,'xy')
+colormap(ha,cmap)
+caxis(ha,caxlims)
+c=colorbar(hax);
 xlabel(c,parmlbl);
-xlabel('magnetic latitude (deg.)');
-ylabel('altitude (km)');
+xlabel(ha,'magnetic latitude (deg.)')
+ylabel(ha,'altitude (km)')
 
 
 
 %CONSTRUCT A STRING FOR THE TIME AND DATE
-subplot(131);
+subplot(131,ha)
 UThrs=floor(t);
 UTmin=floor((t-UThrs)*60);
 UTsec=floor((t-UThrs-UTmin/60)*3600);
