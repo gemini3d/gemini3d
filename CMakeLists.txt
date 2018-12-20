@@ -20,7 +20,6 @@ include(${PROJECT_SOURCE_DIR}/cmake/utils.cmake)
 add_subdirectory(tests)
 
 # --- vendor libraries
-
 add_subdirectory(vendor/msis00)
 
 # --- Build Gemini

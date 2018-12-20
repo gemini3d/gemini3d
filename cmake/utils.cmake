@@ -1,10 +1,12 @@
 
 function(download_testfiles HASH REFNUM REFNAME ROOT)
+# FetchContent is too aggressive, it deletes the output directory before extracting--could delete wrong directory causing data loss. 
+# So use this more specific but safe method.
 
 set(ARCHIVE ${REFNAME}.zip)
 set(URL https://zenodo.org/record/${REFNUM}/files/${REFNAME}.zip?download=1)
 
-# --- ensure 2D reference data is available for self-test
+# --- ensure reference data is available for self-test
 if(NOT EXISTS ${ROOT}/${REFNAME})
 
   if(EXISTS ${ROOT}/${ARCHIVE})
@@ -13,8 +15,8 @@ if(NOT EXISTS ${ROOT}/${REFNAME})
 
   if(NOT EXISTS ${ROOT}/${ARCHIVE} OR NOT FHASH STREQUAL HASH)
     file(DOWNLOAD ${URL} ${ROOT}/${ARCHIVE}
-         SHOW_PROGRESS
-		 EXPECTED_HASH MD5=${HASH})
+      SHOW_PROGRESS
+		  EXPECTED_HASH MD5=${HASH})
   endif()
 
   execute_process(COMMAND ${CMAKE_COMMAND} -E tar -xf ${ARCHIVE}
@@ -27,6 +29,7 @@ endfunction()
 function(check_ram)
 
 cmake_host_system_information(RESULT PHYSRAM QUERY AVAILABLE_PHYSICAL_MEMORY)
+
 if(${PHYSRAM} LESS 1000)
   set(NTEST 1 PARENT_SCOPE)
 else()
@@ -52,8 +55,7 @@ endfunction(check_octave_source_runs)
 function(check_matlab_source_runs code)
 
 execute_process(COMMAND ${Matlab_MAIN_PROGRAM} -nojvm -r ${code}
-  ERROR_QUIET
-  OUTPUT_QUIET
+  ERROR_QUIET OUTPUT_QUIET
   RESULT_VARIABLE ok
   TIMEOUT 60)  # Matlab takes a long time to start with lots of toolboxes
 
@@ -67,37 +69,44 @@ function(run_gemini_test TESTNAME TESTDIR TIMEOUT)
 check_ram()
 
 add_test(NAME ${TESTNAME}
-         COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${NTEST} ${CMAKE_SOURCE_DIR}/gemini ${CMAKE_SOURCE_DIR}/initialize/${TESTDIR}/config.ini ${CMAKE_CURRENT_BINARY_DIR}/${TESTDIR}
-         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+  COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${NTEST} ${CMAKE_SOURCE_DIR}/gemini ${CMAKE_SOURCE_DIR}/initialize/${TESTDIR}/config.ini ${CMAKE_CURRENT_BINARY_DIR}/${TESTDIR}
+  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
 set_tests_properties(${TESTNAME} PROPERTIES TIMEOUT ${TIMEOUT})
 
 endfunction()
 
 
-function(octave_compare TESTNAME OUTDIR REFDIR)
+function(octave_compare TESTNAME OUTDIR REFDIR REQFILE)
 
 add_test(NAME ${TESTNAME}
-         COMMAND Octave::Interpreter --eval "exit(compare_all('${CMAKE_CURRENT_BINARY_DIR}/${OUTDIR}','${CMAKE_CURRENT_SOURCE_DIR}/${REFDIR}'))"
-         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+  COMMAND Octave::Interpreter --eval "exit(compare_all('${CMAKE_CURRENT_BINARY_DIR}/${OUTDIR}','${CMAKE_CURRENT_SOURCE_DIR}/${REFDIR}'))"
+  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 
-set_tests_properties(${TESTNAME} PROPERTIES TIMEOUT 30)
+set_tests_properties(${TESTNAME} PROPERTIES 
+  TIMEOUT 30
+  REQUIRED_FILES ${CMAKE_CURRENT_BINARY_DIR}/${OUTDIR}/${REQFILE}
+)
 
 endfunction()
 
 
-function(matlab_compare TESTNAME OUTDIR REFDIR)
+function(matlab_compare TESTNAME OUTDIR REFDIR REQFILE)
 
 add_test(NAME ${TESTNAME}
-         COMMAND ${Matlab_MAIN_PROGRAM} -nojvm -r "exit(compare_all('${CMAKE_CURRENT_BINARY_DIR}/${OUTDIR}','${CMAKE_CURRENT_SOURCE_DIR}/${REFDIR}'))"
-         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+  COMMAND ${Matlab_MAIN_PROGRAM} -nojvm -r "exit(compare_all('${CMAKE_CURRENT_BINARY_DIR}/${OUTDIR}','${CMAKE_CURRENT_SOURCE_DIR}/${REFDIR}'))"
+  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 
-set_tests_properties(${TESTNAME} PROPERTIES TIMEOUT 60)  # Matlab with a lot of toolboxes takes ~ 15 seconds just to start
+set_tests_properties(${TESTNAME} PROPERTIES 
+  TIMEOUT 60
+  REQUIRED_FILES ${CMAKE_CURRENT_BINARY_DIR}/${OUTDIR}/${REQFILE}
+) 
+# Matlab with a lot of toolboxes takes ~ 15 seconds just to start
 
 endfunction()
 
 
-function(compare_gemini_output TESTNAME TESTDIR REFDIR)
+function(compare_gemini_output TESTNAME TESTDIR REFDIR REQFILE)
 
 if(NOT DEFINED OctaveOK)
   find_package(Octave COMPONENTS Interpreter)
@@ -105,7 +114,7 @@ if(NOT DEFINED OctaveOK)
 endif()
 
 if(OctaveOK)
-  octave_compare(${TESTNAME} ${TESTDIR} ${REFDIR})
+  octave_compare(${TESTNAME} ${TESTDIR} ${REFDIR} ${REQFILE})
 else()
   if(NOT DEFINED MatlabOK)
     find_package(Matlab QUIET COMPONENTS MAIN_PROGRAM)
@@ -113,7 +122,7 @@ else()
   endif()
 
   if (MatlabOK)
-    matlab_compare(Matlab${TESTNAME} ${TESTDIR} ${REFDIR})
+    matlab_compare(Matlab${TESTNAME} ${TESTDIR} ${REFDIR} ${REQFILE})
   else()
     message(WARNING "Neither Matlab or Octave was found, cannot run full self-test")
   endif()
