@@ -27,6 +27,15 @@ endfunction()
 
 
 function(check_ram)
+# Cygwin does not correctly report memory or CPU resources to CMake_Host_system_info
+
+if(CYGWIN)
+  include(ProcessorCount)
+  ProcessorCount(NCORES)
+  math(EXPR NCORES "${NCORES}/2")
+  set(NTEST ${NCORES} PARENT_SCOPE)
+  return()
+endif()
 
 cmake_host_system_information(RESULT PHYSRAM QUERY AVAILABLE_PHYSICAL_MEMORY)
 
