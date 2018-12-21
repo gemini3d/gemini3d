@@ -1,13 +1,28 @@
 module ionization
 
-use phys_consts, only: elchrg, lsp, kb, mn, re, pi, wp
+use phys_consts, only: elchrg, lsp, kb, mn, re, pi, wp, lwave
 use calculus, only: chapman_a
 use neutral, only : Tnmsis       !we need the unperturbed msis temperatures to apply the simply chapman theory used by this module
 use grid, only : curvmesh,lx1,lx2,lx3,g1,g2,g3
+use temporal, only: doy_calc
 
 implicit none
 
-!GROSS; IS THERE A BETTER WAY TO DO THIS?
+interface
+module subroutine glow_run(W0,PhiWmWm2,date_doy,UTsec,xf107,xf107a,xlat,xlon,alt,nn,Tn,ns,Ts,&
+  ionrate,eheating,iver)
+  
+real(wp), dimension(:), intent(in) :: W0,PhiWmWm2,alt,Tn
+real(wp), dimension(:,:), intent(in) :: nn,ns,Ts
+real(wp), dimension(:,:), intent(out) :: ionrate
+real(wp), dimension(:), intent(out) :: eheating, iver
+real(wp), intent(in) :: UTsec, xlat, xlon, xf107, xf107a
+integer, intent(in) :: date_doy
+
+end subroutine glow_run
+end interface
+
+! FIXME: THERE *IS* A BETTER WAY TO DO THIS
 real(wp), dimension(8,4) :: Pijcoeff
 data Pijcoeff(1,:) /3.49979d-1, -6.18200d-2, -4.08124d-2, 1.65414d-2/
 data Pijcoeff(2,:) /5.85425d-1, -5.00793d-2, 5.69309d-2, -4.02491d-3/
@@ -237,7 +252,7 @@ contains
     lj=size(Pijcoeff,2)
 
     !zero flux should really be check per field line
-    if ( maxval(pack(PhiWmWm2,.true.)) > 0d0) then   !only compute rates if nonzero flux given
+    if ( maxval(PhiWmWm2) > 0._wp) then   !only compute rates if nonzero flux given
       !IONIZATION RATES ARE COMPUTED ON A PER-PROFILE BASIS
       deps=35d-3    !keV, kinetic energy lost per ion-electron pair produced
       do ix3=1,lx3
@@ -343,5 +358,64 @@ contains
     eheating=elchrg*avgenergy*totionrate
 
   end function eheating
+
+  function ionrate_glow98(W0,PhiWmWm2,ymd,UTsec,f107,f107a,glat,glon,alt,nn,Tn,ns,Ts,eheating,iver)
+    
+    !------------------------------------------------------------
+    !-------COMPUTE IONIZATION RATES USING GLOW MODEL RUN AT EACH
+    !-------X,Y METHOD.
+    !------------------------------------------------------------
+
+    real(wp), dimension(:,:,:), intent(in) :: W0,PhiWmWm2
+
+    integer, dimension(3), intent(in) :: ymd
+    real(wp), intent(in) :: UTsec, f107, f107a
+    real(wp), dimension(:,:), intent(in) :: glat,glon
+
+    real(wp), dimension(:,:,:,:), intent(in) :: nn
+    real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns,Ts
+    real(wp), dimension(:,:,:), intent(in) :: alt,Tn
+
+    real(wp), dimension(1:size(nn,1),1:size(nn,2),1:size(nn,3)), intent(out) :: eheating
+    real(wp), dimension(1:size(nn,2),1:size(nn,3),lwave), intent(out) :: iver
+
+    real(wp), dimension(1:size(nn,1),1:size(nn,2),1:size(nn,3),lsp-1) :: ionrate_glow98
+ 
+    integer :: ix2,ix3,lx1,lx2,lx3,date_doy
+
+    lx1=size(nn,1)
+    lx2=size(nn,2)
+    lx3=size(nn,3)
+
+    !zero flux should really be check per field line
+    if ( maxval(PhiWmWm2) > 0.0_wp) then   !only compute rates if nonzero flux given
+      date_doy = mod(ymd(1),100)*1000+doy_calc(ymd)
+
+      do ix3=1,lx3
+        do ix2=1,lx2
+          !W0eV=W0(ix2,ix3) !Eo in eV at upper x,y locations (z,x,y) normally
+         
+          if ( maxval(PhiWmWm2(ix2,ix3,:)) <= 0.0_wp) then
+            ionrate_glow98(:,ix2,ix3,:)=0.0_wp
+            eheating(:,ix2,ix3)=0.0_wp
+            iver(ix2,ix3,:)=0.0_wp
+          else
+            !Run GLOW here with the input parameters to obtain production rates
+            !GLOW outputs ion production rates in 1/cm^3/s
+            call glow_run(W0(ix2,ix3,:),PhiWmWm2(ix2,ix3,:),date_doy,UTsec,f107,f107a,glat(ix2,ix3), &
+            glon(ix2,ix3),alt(:,ix2,ix3),nn(:,ix2,ix3,:),Tn(:,ix2,ix3),ns(1:lx1,ix2,ix3,:), &
+            Ts(1:lx1,ix2,ix3,:),ionrate_glow98(:,ix2,ix3,:),eheating(:,ix2,ix3),iver(ix2,ix3,:))
+            !write(*,*) 'glow called, max precip: ', maxval(ionrate_glow98(:,ix2,ix3,:))
+          end if
+        end do !Y coordinate loop
+      end do !X coordinate loop
+      eheating=eheating*elchrg
+    else
+      ionrate_glow98(:,:,:,:)=0.0_wp !No Q for incoming electrons, no electron impact
+      eheating(:,:,:)=0.0_wp
+      iver(:,:,:)=0.0_wp
+    end if
+
+  end function ionrate_glow98
 
 end module ionization

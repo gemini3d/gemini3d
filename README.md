@@ -13,8 +13,6 @@ We have prioritized ease of setup/install across a wide variety of computing sys
 Generally, the Git `master` branch has the current development version and is the best place to start, while more thoroughly-tested releases happen occasionally.  Specific commits corresponding to published results will also be noted, where appropriate, in the corresponding journal article.  
 
 
-NOTE: J3 sign (+ / -) is currently being debugged. Contact authors before doing J3 analyses.
-
 ## Prerequisites
 
 The CMake build system is used to manage the large number of dependencies and external libraries needed to compile GEMINI.  
@@ -49,6 +47,7 @@ Tested versions include:
 * MUMPS 4.10, 5.1
 * SCALAPACK 2.0
 * LAPACK95 3.0  (optional)
+* NCAR GLOW (optional)   enabled by `cmake -DUSEGLOW=yes ..` option
 
 ### postprocessing and visualization of model output
 

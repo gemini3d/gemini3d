@@ -86,15 +86,8 @@ type (SMUMPS_STRUC) mumps_par
 #elif REALBITS==64
 type (DMUMPS_STRUC) mumps_par
 #endif
-    
-    integer :: myid, ierr
 
     real(wp), dimension(size(srcterm,1),size(srcterm,2),size(srcterm,3)) :: elliptic3D_curv
-
-
-
-    call MPI_COMM_RANK(MPI_COMM_WORLD, myid, ierr)
-
 
     !ONLY ROOT NEEDS TO ASSEMBLE THE MATRIX
     if (myid==0) then
@@ -272,7 +265,7 @@ call DMUMPS(mumps_par)
 
 
     !LOAD OUR PROBLEM
-    if ( mumps_par%MYID==0 ) then
+    if ( myid==0 ) then
       mumps_par%N=lPhi
       mumps_par%NZ=lent
       allocate( mumps_par%IRN ( mumps_par%NZ ) )
@@ -305,7 +298,7 @@ call DMUMPS(mumps_par)
     !STORE PERMUTATION USED, SAVE RESULTS, CLEAN UP MUMPS ARRAYS
     !(can save ~25% execution time and improves scaling with openmpi
     ! ~25% more going from 1-2 processors)
-    if ( mumps_par%MYID==0 ) then
+    if ( myid==0 ) then
       print *, 'Now organizing results...'
 
       if (perflag .and. it==1) then
@@ -373,19 +366,13 @@ call DMUMPS(mumps_par)
     real(wp), dimension(:), allocatable :: M
     real(wp), dimension(:), allocatable :: b
     real(wp) :: tstart,tfin
-
 #if REALBITS==32
 type (SMUMPS_STRUC) mumps_par
 #elif REALBITS==64
 type (DMUMPS_STRUC) mumps_par
 #endif
 
-    integer :: myid, ierr
-
     real(wp), dimension(size(SigP2,1),size(SigP2,2)) :: elliptic2D_pol_conv_curv
-
-
-    call MPI_COMM_RANK(MPI_COMM_WORLD, myid, ierr)
 
 
     !ONLY ROOT NEEDS TO ASSEMBLE THE MATRIX
@@ -770,7 +757,7 @@ call DMUMPS(mumps_par)
 
 
     !LOAD OUR PROBLEM
-    if ( mumps_par%MYID==0 ) then
+    if ( myid==0 ) then
       mumps_par%N=lPhi
       mumps_par%NZ=lent
       allocate( mumps_par%IRN ( mumps_par%NZ ) )
@@ -807,7 +794,7 @@ call DMUMPS(mumps_par)
     !STORE PERMUTATION USED, SAVE RESULTS, CLEAN UP MUMPS ARRAYS
     !(can save ~25% execution time and improves scaling with openmpi
     ! ~25% more going from 1-2 processors)
-    if ( mumps_par%MYID==0 ) then
+    if ( myid==0 ) then
       print *, 'Now organizing results...'
 
       if (perflag .and. it==1) then
@@ -877,23 +864,17 @@ call DMUMPS(mumps_par)
     real(wp), dimension(:), allocatable :: M
     real(wp), dimension(:), allocatable :: b
     real(wp) :: tstart,tfin
-
 #if REALBITS==32
 type (SMUMPS_STRUC) mumps_par
 #elif REALBITS==64
 type (DMUMPS_STRUC) mumps_par
 #endif
 
-    integer :: myid, ierr
-
     integer :: lcount,ix2tmp,ix3tmp
 
     real(wp), dimension(size(SigP,1),size(SigP,2)+1) :: tmpresults
 
     real(wp), dimension(size(SigP,1),size(SigP,2)) :: elliptic2D_pol_conv_curv_periodic2
-
-
-    call MPI_COMM_RANK(MPI_COMM_WORLD, myid, ierr)    !is this obviated by the mpi module variables???
 
 
     !ONLY ROOT NEEDS TO ASSEMBLE THE MATRIX
@@ -1316,7 +1297,7 @@ call DMUMPS(mumps_par)
 
 
     !LOAD OUR PROBLEM
-    if ( mumps_par%MYID==0 ) then
+    if ( myid==0 ) then
       mumps_par%N=lPhi
       mumps_par%NZ=lent
       allocate( mumps_par%IRN ( mumps_par%NZ ) )
@@ -1349,7 +1330,7 @@ call DMUMPS(mumps_par)
     !STORE PERMUTATION USED, SAVE RESULTS, CLEAN UP MUMPS ARRAYS
     !(can save ~25% execution time and improves scaling with openmpi
     ! ~25% more going from 1-2 processors)
-    if ( mumps_par%MYID==0 ) then
+    if ( myid==0 ) then
       print *, 'Now organizing results...'
 
       if (perflag .and. it==1) then
@@ -1417,12 +1398,7 @@ type (SMUMPS_STRUC) mumps_par
 type (DMUMPS_STRUC) mumps_par
 #endif
 
-    integer :: myid, ierr
-
     real(wp), dimension(size(sig0,1),1,size(sig0,3)) :: elliptic2D_nonint_curv
-
-
-    call MPI_COMM_RANK(MPI_COMM_WORLD, myid, ierr)
 
 
     !ONLY ROOT NEEDS TO ASSEMBLE THE MATRIX
@@ -1589,7 +1565,7 @@ call DMUMPS(mumps_par)
 
 
     !LOAD OUR PROBLEM
-    if ( mumps_par%MYID==0 ) then
+    if ( myid==0 ) then
       mumps_par%N=lPhi
       mumps_par%NZ=lent
       allocate( mumps_par%IRN ( mumps_par%NZ ) )
@@ -1628,7 +1604,7 @@ call DMUMPS(mumps_par)
     !(can save ~25% execution time and improves scaling with openmpi
     ! ~25% more going from 1-2 processors).  WOW - this halves execution
     ! time on some big 2048*2048 solves!!!
-    if ( mumps_par%MYID==0 ) then
+    if ( myid==0 ) then
       print *, 'Now organizing results...'
 
       if (perflag .and. it==1) then
@@ -1684,12 +1660,8 @@ type (SMUMPS_STRUC) mumps_par
 #elif REALBITS==64
 type (DMUMPS_STRUC) mumps_par
 #endif
-
-    integer :: myid, ierr
     real(wp), dimension(size(rho,1),size(rho,2)) :: poisson2D
 
-
-    call MPI_COMM_RANK(MPI_COMM_WORLD, myid, ierr)
 
     if (myid==0) then
     !------------------------------------------------------------
@@ -1788,7 +1760,7 @@ call DMUMPS(mumps_par)
 
 
     !LOAD OUR PROBLEM (ROOT ONLY)
-    if ( mumps_par%MYID .eq. 0 ) then
+    if ( myid == 0 ) then
       mumps_par%N=lPhi
       mumps_par%NZ=lent
       allocate( mumps_par%IRN ( mumps_par%NZ ) )
@@ -1824,7 +1796,7 @@ call DMUMPS(mumps_par)
     !STORE PERMUTATION USED, SAVE RESULTS, CLEAN UP MUMPS ARRAYS
     !(can save ~25% execution time and improves scaling with openmpi
     ! ~25% more going from 1-2 processors)
-    if ( mumps_par%MYID .eq. 0 ) then
+    if ( myid == 0 ) then
       mumps_perm=mumps_par%SYM_PERM
       poisson2D=reshape(mumps_par%RHS/dx1**2,[lx1,lx2])
 
@@ -1854,11 +1826,6 @@ type (SMUMPS_STRUC) mumps_par
 #elif REALBITS==64
 type (DMUMPS_STRUC) mumps_par
 #endif
-
-    integer :: myid, ierr
-
-
-    call MPI_COMM_RANK(MPI_COMM_WORLD, myid, ierr)
 
 
     !FIRE UP MUMPS

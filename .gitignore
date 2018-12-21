@@ -2,14 +2,12 @@ __pycache__/
 
 Testing/
 .mypy_cache/
+
+*.exe
 *.dat
 *.orig
 CMakeFiles/
 CMakeCache.txt
-test_mpi
-test_diffusion1D
-test_interp1
-test_interp2
 
 gemini
 initialize/

@@ -8,6 +8,7 @@ if(NOT realbits)
 endif()
 
 option(TRACE "dump variables to disk at certain locations in program" off)
+option(USEGLOW "use NCAR GLOW instead of Fang")
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/Modules/)
 
@@ -22,7 +23,20 @@ add_subdirectory(tests)
 # --- vendor libraries
 add_subdirectory(vendor/msis00)
 
-# --- Build Gemini
+# --- GEMINI
+add_library(ionization ionization/ionization.f90)
+target_link_libraries(ionization PRIVATE neutral const)
+target_include_directories(ionization PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/numerical)
+if(USEGLOW)
+  include(${PROJECT_SOURCE_DIR}/cmake/glow.cmake)
+
+  target_sources(ionization PRIVATE ionization/glow_run.f90)
+  target_link_libraries(ionization PRIVATE cglow)
+  target_include_directories(ionization PRIVATE ${ncarglow_BINARY_DIR})
+else()
+  target_sources(ionization PRIVATE ionization/glow_dummy.f90)
+endif(USEGLOW)
+
 add_subdirectory(numerical)
 
 add_library(io io/io.F90 io/expanduser.f90)
@@ -41,10 +55,7 @@ target_link_libraries(neutral PUBLIC interp io msis temporal MPI::MPI_Fortran)
 target_include_directories(neutral PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/numerical)
 target_compile_options(neutral PRIVATE ${FFLAGS})
 
-add_library(ionization ionization/ionization.f90)
-target_link_libraries(ionization PRIVATE neutral)
-target_include_directories(ionization PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/numerical)
-target_compile_options(ionization PRIVATE ${FFLAGS})
+
 
 add_library(collision collisions/collisions.f90)
 target_link_libraries(collision PRIVATE const)
@@ -90,7 +101,6 @@ target_link_libraries(multifluid PRIVATE precipBCs mpimod grid ionization source
 target_include_directories(multifluid PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/numerical)
 target_compile_options(multifluid PRIVATE ${FFLAGS})
 
-
 # --- Main GEMINI executable
 add_executable(gemini gemini.f90)
 target_link_libraries(gemini PRIVATE mpimod io neutral precipBCs
@@ -100,6 +110,7 @@ target_link_libraries(gemini PRIVATE mpimod io neutral precipBCs
 target_include_directories(gemini PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/numerical)
 set_target_properties(gemini PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR})
 target_compile_options(gemini PRIVATE ${FFLAGS})
+
 
 #--------magnetic field calculation executable---------------
 add_executable(magcalc magcalc.f90)

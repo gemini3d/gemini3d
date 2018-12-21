@@ -70,6 +70,9 @@ integer, parameter :: tagdV=84,tagJx=85,tagJy=86,tagRx=87,tagRy=88,tagRz=89,tagR
 !> FOR COMMUNICATING IF THE GRID DIMENSIONS HAVE BEEN SWAPPED
 integer, parameter :: tagswap=92
 
+!> AURORAL TAG(S)
+integer, parameter :: tagAur=95
+
 !> VARIABLES REUSED BY ALL WORKERS AND USING MODULES
 integer, protected :: myid,lid    
 !! no external procedure should mess with these (but they need to be able to read them)

@@ -57,6 +57,23 @@ integer, parameter :: ln=4, lnchem=6
 real(wp),parameter :: mn(ln)=[16.0_wp,28.0_wp,32.0_wp,1.0_wp]*amu      
   !! mass of neutral species
 
+!AURORAL DATA
+integer, parameter :: lwave=15 !spectral auroral lines tracked in GLOWv0.982
+real(wp), parameter :: wavelengths(lwave)=[3371.0_wp, &
+                                        4278.0_wp, &
+                                        5200.0_wp, &
+                                        5577.0_wp, &
+                                        6300.0_wp, &
+                                        7320.0_wp, &
+                                        10400.0_wp, &
+                                        3644.0_wp, &
+                                        7774.0_wp, &
+                                        8446.0_wp, &
+                                        3276.0_wp, &
+                                        1700.0_wp, & !this is N2(A) LBH
+                                        1356.0_wp, &
+                                        1493.0_wp, &
+                                        1304.0_wp] !wavelength of each auroral line, housekeeping
 
 !> HOUSEKEEPING PARAMETERS
 real(wp), parameter :: mindens     = 1.0e-100_wp

@@ -18,18 +18,16 @@ else
   validateattr(sourceloc, {'numeric'}, {'vector', 'numel', 2}, mfilename, 'source magnetic coordinates', 7)
 end
 if nargin<8 || isempty(ha)
-  clf, h=gcf; ha=axes('parent',h);
-else
-%  h = ancestor(ha,'figure');
-%  try
-%    axes(ha)
-%  catch
-%    ha = axes('parent', h);
-%  end
-  ha=gca;
+  ha = axes('parent', figure);
 end
 if nargin<9 || isempty(cmap)
   cmap = parula(256);
+end   
+
+try
+  axes(ha)
+catch
+  ha = axes('parent', ha);
 end
 
 %set(h,'PaperPosition',[0 0 11 4.5]);

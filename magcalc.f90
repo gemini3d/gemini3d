@@ -92,6 +92,11 @@ integer :: flagE0file                ! flag toggling electric field (potential B
 real(wp) :: dtE0                      ! time interval between electric field file inputs
 character(:), allocatable :: E0dir   ! directory containing electric field file input data
 
+!GLOW MODULE INPUT VARIABLES
+integer :: flagglow                     !flag toggling GLOW module run (include aurora) (0 - no; 1 - yes)
+real(wp) :: dtglow                      !time interval between GLOW runs (s)
+real(wp) :: dtglowout                   !time interval between GLOW auroral outputs (s)
+
 !FOR HANDLING INPUT
 integer :: argc
 character(256) :: argv
@@ -121,7 +126,7 @@ if (myid==0) then
 end if
 call read_configfile(infile,ymd,UTsec0,tdur,dtout,activ,tcfl,Teinf,potsolve,flagperiodic,flagoutput,flagcap, &
                      indatsize,indatgrid,flagdneu,interptype,sourcemlat,sourcemlon,dtneu,drhon,dzn,sourcedir,flagprecfile, &
-                     dtprec,precdir,flagE0file,dtE0,E0dir)
+                     dtprec,precdir,flagE0file,dtE0,E0dir,flagglow,dtglow,dtglowout)
 
 
 !LOAD UP THE GRID STRUCTURE/MODULE VARS. FOR THIS SIMULATION - THIS ALSO PERMUTES DIMENSIONS OF 2D GRID, IF NEEDED
