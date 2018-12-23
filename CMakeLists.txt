@@ -120,6 +120,10 @@ set_target_properties(magcalc PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE
 target_compile_options(magcalc PRIVATE ${FFLAGS})
 
 # --- self-tests
-include(${PROJECT_SOURCE_DIR}/cmake/test2d.cmake)
-include(${PROJECT_SOURCE_DIR}/cmake/test3d.cmake)
-
+if(USEGLOW)
+  include(${PROJECT_SOURCE_DIR}/cmake/test2d_glow.cmake)
+  include(${PROJECT_SOURCE_DIR}/cmake/test3d_glow.cmake)
+else()
+  include(${PROJECT_SOURCE_DIR}/cmake/test2d.cmake)
+  include(${PROJECT_SOURCE_DIR}/cmake/test3d.cmake)
+endif()
