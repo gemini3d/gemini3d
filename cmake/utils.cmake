@@ -84,6 +84,7 @@ add_test(NAME ${TESTNAME}
 set_tests_properties(${TESTNAME} PROPERTIES 
   TIMEOUT ${TIMEOUT}
   REQUIRED_FILES ${CMAKE_SOURCE_DIR}/initialize/${TESTDIR}/config.ini
+  FIXTURES_REQUIRED MPIMUMPS
 )
 
 endfunction()
