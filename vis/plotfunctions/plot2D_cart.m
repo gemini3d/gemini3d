@@ -1,4 +1,4 @@
-function h=plot2D_cart(ymd,UTsec,xg,parm,parmlbl,caxlims,sourceloc,ha, cmap)
+function plot2D_cart(ymd,UTsec,xg,parm,parmlbl,caxlims,sourceloc,ha, cmap)
 
 narginchk(4,9)
 validateattr(ymd, {'numeric'}, {'vector', 'numel', 3}, mfilename, 'year month day', 1)
@@ -24,11 +24,7 @@ if nargin<9 || isempty(cmap)
   cmap = parula(256);
 end   
 
-try
-  axes(ha)
-catch
-  ha = axes('parent', ha);
-end
+ha = axes(ha);
 
 %set(h,'PaperPosition',[0 0 11 4.5]);
 
@@ -178,8 +174,9 @@ end
 
 t = datenum(ymd(1), ymd(2), ymd(3), 0, 0, UTsec);
 ttxt = {datestr(t,1), [datestr(t,13),' UT']};
+title(ha, ttxt)
 %text(xp(round(lxp/10)),zp(lzp-round(lzp/7.5)),strval,'FontSize',18,'Color',[0.66 0.66 0.66],'FontWeight','bold');
 %text(xp(round(lxp/10)),zp(lzp-round(lzp/7.5)),strval,'FontSize',16,'Color',[0.5 0.5 0.5],'FontWeight','bold');
-title(ha, ttxt)
+
 
 end

@@ -1,4 +1,5 @@
-function h=plot3D_cart_frames(ymd,UTsec,xg,parm,parmlbl,caxlims,sourceloc,ha, cmap)
+function plot3D_cart_frames_long(ymd,UTsec,xg,parm,parmlbl,caxlims,sourceloc,hf, cmap)
+
 narginchk(6,8)
 
 if nargin<7  || isempty(sourceloc) % leave || for validate
@@ -6,24 +7,16 @@ if nargin<7  || isempty(sourceloc) % leave || for validate
 else
   validateattr(sourceloc, {'numeric'}, {'vector', 'numel', 2}, mfilename, 'source magnetic coordinates', 7)
 end
-if nargin<8 || isempty(ha)
-  ha = axes('parent', figure);
+if nargin<8 || isempty(hf)
+  hf = figure();
 end
 if nargin<9 || isempty(cmap)
   cmap = parula(256);
 end   
 
-try
-  axes(ha)
-catch
-  ha = axes('parent', ha);
-end
 
 
 %REORGANIZE INPUT
-dmy(1)=ymd(3);
-dmy(2)=ymd(2);
-dmy(3)=ymd(1);
 t=UTsec/3600;
 
 
@@ -191,10 +184,10 @@ parmp2=parmp2(:,inds,:);
 %COMPUTE SOME BOUNDS FOR THE PLOTTING
 minxp=min(xp(:));
 maxxp=max(xp(:));
-minyp=min(yp(:));
-maxyp=max(yp(:));
-minzp=min(zp(:));
-maxzp=max(zp(:));
+%minyp=min(yp(:));
+%maxyp=max(yp(:));
+%minzp=min(zp(:));
+%maxzp=max(zp(:));
 
 
 %NOW THAT WE'VE SORTED, WE NEED TO REGENERATE THE MESHGRID
@@ -202,16 +195,13 @@ maxzp=max(zp(:));
 FS=12;
 
 %MAKE THE PLOT!
-ha=subplot(1,3,1);
+ha=subplot(1,3,1, 'parent', hf, 'nextplot', 'add', 'FontSize',FS);
 h=imagesc(ha,xp,zp,parmp);
-hold(ha,'on')
 plot(ha,[minxp,maxxp],[altref,altref],'w--','LineWidth',2);
 if (~isempty(sourcemlat))
   plot(ha,sourcemlat,0,'r^','MarkerSize',12,'LineWidth',2);
 end
-hold(ha,'off')
 set(h,'alphadata',~isnan(parmp));
-set(ha,'FontSize',FS)
 axis(ha,'xy')
 colormap(ha,cmap)
 caxis(ha,caxlims)
@@ -221,16 +211,13 @@ xlabel(ha,'magnetic longitude (deg.)');
 ylabel(ha,'altitude (km)');
 
 
-ha=subplot(1,3,2);
+ha=subplot(1,3,2, 'parent', hf, 'nextplot', 'add', 'FontSize',FS);
 h=imagesc(ha,xp,yp,parmp2(:,:,2));
-hold(ha,'on')
 if (~isempty(sourcemlat))
   plot(ha,[minxp,maxxp],[sourcemlon,sourcemlon],'w--','LineWidth',2);
   plot(ha,sourcemlat,sourcemlon,'r^','MarkerSize',12,'LineWidth',2);
 end
-hold(ha,'off')
 set(h,'alphadata',~isnan(parmp2(:,:,2)));
-set(ha,'FontSize',FS);
 axis(ha,'xy')
 aaxis(ha,'tight')
 colormap(ha,cmap)
@@ -240,16 +227,13 @@ xlabel(c,parmlbl);
 ylabel(ha,'magnetic latitude (deg.)');
 xlabel(ha,'magnetic longitude (deg.)');
 
-ha=subplot(1,3,3);)
+ha=subplot(1,3,3, 'parent', hf, 'nextplot', 'add', 'FontSize',FS);
 h=imagesc(ha,yp,zp,parmp3);
-hold(ha,'on')
 %plot([minyp,maxyp],[altref,altref],'w--','LineWidth',2);
 if (~isempty(sourcemlat))
   plot(ha,sourcemlat,0,'r^','MarkerSize',12,'LineWidth',2);
 end
-hold(ha,'off')
 set(h,'alphadata',~isnan(parmp3))
-set(ha,'FontSize',FS)
 axis(ha,'xy')
 colormap(ha,cmap)
 caxis(ha,caxlims)
@@ -261,27 +245,16 @@ ylabel(ha,'altitude (km)')
 
 
 %CONSTRUCT A STRING FOR THE TIME AND DATE
-subplot(131,ha)
+ha = subplot(1,3,1);
 UThrs=floor(t);
 UTmin=floor((t-UThrs)*60);
 UTsec=floor((t-UThrs-UTmin/60)*3600);
-UThrsstr=num2str(UThrs);
-UTminstr=num2str(UTmin);
-if (numel(UTminstr)==1)
-  UTminstr=['0',UTminstr];
-end
-UTsecstr=num2str(UTsec);
-if (numel(UTsecstr)==1)
-  UTsecstr=['0',UTsecstr];
-end
 
-timestr=[UThrsstr,':',UTminstr,':',UTsecstr];
-%strval=sprintf('%s \n %s',[num2str(dmy(1)),'/',num2str(dmy(2)),'/',num2str(dmy(3))], ...
-%    [num2str(t),' UT']);
-strval=sprintf('%s \n %s',[num2str(dmy(2)),'/',num2str(dmy(1)),'/',num2str(dmy(3))], ...
-    [timestr,' UT']);
+
+t = datenum(ymd(1), ymd(2), ymd(3), 0, 0, UTsec);
+ttxt = {datestr(t,1), [datestr(t,13),' UT']};
+title(ha, ttxt)
 %text(xp(round(lxp/10)),zp(lzp-round(lzp/7.5)),strval,'FontSize',18,'Color',[0.66 0.66 0.66],'FontWeight','bold');
 %text(xp(round(lxp/10)),zp(lzp-round(lzp/7.5)),strval,'FontSize',16,'Color',[0.5 0.5 0.5],'FontWeight','bold');
-title(strval);
 
 end

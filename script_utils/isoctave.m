@@ -1,3 +1,4 @@
+%!assert(islogical(isoctave))
 function isoct = isoctave()
 persistent oct;
 

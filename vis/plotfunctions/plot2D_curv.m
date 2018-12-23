@@ -1,12 +1,12 @@
-function h = plot2D_curv(ymd,UTsec,xg,parm,parmlbl,caxlims,sourceloc,ha, cmap)
-narginchk(7,9)
+function plot2D_curv(ymd,UTsec,xg,parm,parmlbl,caxlims,sourceloc,ha, cmap)
 
-try
-  axes(ha)
-catch
-  ha = axes('parent', ha);
+narginchk(6,9)
+
+if nargin<7  || isempty(sourceloc) % leave || for validate
+  sourceloc = [];
+else
+  validateattributes(sourceloc, {'numeric'}, {'vector', 'numel', 2}, mfilename, 'source magnetic coordinates', 7)
 end
-%set(h,'PaperPosition',[0 0 11 4.5]);
 if nargin<8 || isempty(ha)
   ha = axes('parent', figure);
 end
@@ -14,23 +14,19 @@ if nargin<9 || isempty(cmap)
   cmap = parula(256);
 end   
 
-try
-  axes(ha)
-catch
-  ha = axes('parent', ha);
-end
+ha = axes(ha);
 
 
 %SOURCE LOCATION (SHOULD PROBABLY BE AN INPUT)
 sourcemlat=sourceloc(1);
-sourcemlon=sourceloc(2);
+%sourcemlon=sourceloc(2);
 
 
 %SIZE OF SIMULATION
-lx1=xg.lx(1); lx2=xg.lx(2); lx3=xg.lx(3);
+lx1=xg.lx(1); lx2=xg.lx(2); %lx3=xg.lx(3);
 inds1=3:lx1+2;
 inds2=3:lx2+2;
-inds3=3:lx3+2;
+%inds3=3:lx3+2;
 Re=6370e3;
 
 
@@ -43,23 +39,23 @@ t=UTsec;
 
 %SIZE OF PLOT GRID THAT WE ARE INTERPOLATING ONTO
 meantheta=mean(xg.theta(:));
-meanphi=mean(xg.phi(:));
+%meanphi=mean(xg.phi(:));
 %meanphi=xg.x3(inds3(1));     %dont' forget that x3 has ghost cells!!!
 x=(xg.theta-meantheta);   %this is a mag colat. coordinate and is only used for defining grid in linspaces below
-y=(xg.phi-meanphi);       %mag. lon coordinate
+%y=(xg.phi-meanphi);       %mag. lon coordinate
 z=xg.alt/1e3;
 lxp=1500;
-lyp=500;
+%lyp=500;
 lzp=1500;
 minx=min(x(:));
 maxx=max(x(:));
-miny=min(y(:));
-maxy=max(y(:));
+%miny=min(y(:));
+%maxy=max(y(:));
 %minz=min(z(:));
 minz=0;
 maxz=max(z(:));
 xp=linspace(minx,maxx,lxp);
-yp=linspace(miny,maxy,lyp);
+%yp=linspace(miny,maxy,lyp);
 zp=linspace(minz,maxz,lzp)';
 
 %{
@@ -150,10 +146,10 @@ parmp=parmp(inds,:,:);
 %COMPUTE SOME BOUNDS FOR THE PLOTTING
 minxp=min(xp(:));
 maxxp=max(xp(:));
-minyp=min(yp(:));
-maxyp=max(yp(:));
-minzp=min(zp(:));
-maxzp=max(zp(:));
+%minyp=min(yp(:));
+%maxyp=max(yp(:));
+%minzp=min(zp(:));
+%maxzp=max(zp(:));
 
 
 %NOW THAT WE'VE SORTED, WE NEED TO REGENERATE THE MESHGRID
@@ -203,21 +199,11 @@ ylabel('magnetic longitude (deg.)')
 UThrs=floor(t/3600);
 UTmin=floor((t/3600-UThrs)*60);
 UTsec=floor((t/3600-UThrs-UTmin/60)*3600);
-UThrsstr=num2str(UThrs);
-UTminstr=num2str(UTmin);
-if (numel(UTminstr)==1)
-  UTminstr=['0',UTminstr];
-end
-UTsecstr=num2str(UTsec);
-if (numel(UTsecstr)==1)
-  UTsecstr=['0',UTsecstr];
-end
 
-timestr=[UThrsstr,':',UTminstr,':',UTsecstr];
-strval=sprintf('%s \n %s',[num2str(ymd(2)),'/',num2str(ymd(3)),'/',num2str(ymd(1))], ...
-    [timestr,' UT']);
+t = datenum(ymd(1), ymd(2), ymd(3), 0, 0, UTsec);
+ttxt = {datestr(t,1), [datestr(t,13),' UT']};
+title(ha, ttxt)
 %text(xp(round(lxp/10)),zp(lzp-round(lzp/7.5)),strval,'FontSize',18,'Color',[0.66 0.66 0.66],'FontWeight','bold');
 %text(xp(round(lxp/10)),zp(lzp-round(lzp/7.5)),strval,'FontSize',16,'Color',[0.5 0.5 0.5],'FontWeight','bold');
-title(ha,strval);
 
 end % function

@@ -9,7 +9,7 @@ addpath([cwd, filesep, '..', filesep, 'script_utils'])
 narginchk(3,7)
 validateattributes(direc, {'char'}, {'vector'}, mfilename, 'path to data', 1)
 validateattributes(ymd, {'numeric'}, {'vector','numel',3}, mfilename, 'year, month, day', 2)
-validateattributes(UTsec, {'numeric'}, {'vector'}, mfilename, 'UTC second', 3)
+validateattributes(UTsec, {'numeric'}, {'scalar'}, mfilename, 'UTC second', 3)
 
 if nargin<4
   saveplots={}  % 'png', 'eps' or {'png', 'eps'}
@@ -21,7 +21,7 @@ if nargin<6
   xg=[];         %code will attempt to reload the grid
 end
 if nargin<7 || isempty(h)
-  h = plotinit(xg);
+  h = plotinit(xg,'off');
 end
 
 Ncmap = parula(256);
@@ -70,38 +70,14 @@ if isempty(xg)
   xg = readgrid([direc,filesep,'inputs',filesep]);
 end
 
+plotfun = grid2plotfun(plotfun, xg);
 
-%% DEFINE THE PLOTTING FUNCTION BASED ON THE TYPE OF GRID USED
-if isempty(plotfun)
-  minh1=min(xg.h1(:));
-  maxh1=max(xg.h1(:));
-  if (abs(minh1-1)>1e-4 || abs(maxh1-1)>1e-4)    %curvilinear grid
-    if (xg.lx(2)>1 && xg.lx(3)>1)
-      plotfun=@plot3D_curv_frames_long;
-    else
-      plotfun=@plot2D_curv;
-    end
-  else     %cartesian grid
-    if (xg.lx(2)>1 && xg.lx(3)>1)
-      plotfun=@plot3D_cart_frames_long_ENU;
-    else
-      plotfun=@plot2D_cart;
-    end 
-  end
-end
-
-
-%%TIMES OF INTEREST FOR THE SIMULATION
-%times = UTsec0:dtout:UTsec0+tdur;
-%Nt = numel(times);
-
-
-%%DETERMINE OUTPUT TIME NEAREST TO THAT REQUESTED
+%% DETERMINE OUTPUT TIME NEAREST TO THAT REQUESTED
 tnow = UTsec0+tdur;    %not date corrected, but doesn't really matter
 [ymdend,UTsecend]=dateinc(tdur,ymd0,UTsec0);
 
 
-%%LOCATE TIME NEAREST TO THE REQUESTED DATE
+%% LOCATE TIME NEAREST TO THE REQUESTED DATE
 ymdprev=ymd0;
 UTsecprev=UTsec0;
 ymdnext=ymd0;
@@ -237,6 +213,8 @@ if ~lotsplots    %save the short 2D sim plots
     dosave(flagoutput, direc, filename, saveplots, h)
 end
 
+%% Don't print
+if nargout==0, clear('xg'), end
   
 end % function plotframe
 

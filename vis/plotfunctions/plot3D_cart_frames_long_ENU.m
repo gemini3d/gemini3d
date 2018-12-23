@@ -1,30 +1,20 @@
-function h=plot3D_cart_frames_long_ENU(ymd,UTsec,xg,parm,parmlbl,caxlims,sourceloc,ha, cmap)
+function plot3D_cart_frames_long_ENU(ymd,UTsec,xg,parm,parmlbl,caxlims,sourceloc,hf, cmap)
 
 narginchk(6,9)
 
-if nargin<7  || isempty(sourceloc) % leave || for validate
+if nargin<7 || isempty(sourceloc) % leave || for validate
   sourceloc = [];
 else
   validateattr(sourceloc, {'numeric'}, {'vector', 'numel', 2}, mfilename, 'source magnetic coordinates', 7)
 end
-if nargin<8 || isempty(ha)
-  ha = axes('parent', figure);
+if nargin<8 || isempty(hf)
+  hf = figure();
 end
 if nargin<9 || isempty(cmap)
   cmap = parula(256);
 end   
 
-try
-  axes(ha)
-catch
-  ha = axes('parent', ha);
-end
-%REORGANIZE INPUT
-dmy(1)=ymd(3);
-dmy(2)=ymd(2);
-dmy(3)=ymd(1);
 t=UTsec/3600;
-
 
 %SOURCE LOCATION (SHOULD PROBABLY BE AN INPUT)
 if (~isempty(sourceloc))
@@ -51,7 +41,7 @@ altref=105;
 
 %SIZE OF PLOT GRID THAT WE ARE INTERPOLATING ONTO
 meantheta=mean(xg.theta(:));
-meanphi=mean(xg.phi(:));
+%meanphi=mean(xg.phi(:));
 y=-1*(xg.theta-meantheta);   %this is a mag colat. coordinate and is only used for defining grid in linspaces below, runs backward from north distance, hence the negative sign
 %x=(xg.phi-meanphi);       %mag. lon coordinate, pos. eastward
 x=xg.x2/Re/sin(meantheta);
@@ -67,7 +57,7 @@ minz=min(z(:));
 maxz=max(z(:));
 xp=linspace(minx,maxx,lxp);     %eastward distance (rads.)
 yp=linspace(miny,maxy,lyp);     %should be interpreted as northward distance (in rads.).  Irrespective of ordering of xg.theta, this will be monotonic increasing!!!
-zp=linspace(minz,maxz,lzp)';     %altitude (meters)
+zp=linspace(minz,maxz,lzp)';     %altitude (kilometers)
 
 %{
 %ix1s=floor(lx1/2):lx1;    %only valide for a grid which is symmetric aboutu magnetic equator... (I think)
@@ -175,13 +165,13 @@ parmp3=reshape(parmp3,[lzp,lyp]);    %slice expects the first dim. to be "y"
 %CONVERT ANGULAR COORDINATES TO MLAT,MLON
 %%yp=90-(yp+meantheta)*180/pi;     %convert northward distance (in rads.) to magnetic latitude
 %yp=(yp+(pi/2-meantheta))*180/pi;
-yp=yp*Re;
+yp=yp*Re/1e3; %(km)
 [yp,inds]=sort(yp);
 parmp2=parmp2(inds,:,:);
 parmp3=parmp3(:,inds);
 
 %xp=(xp+meanphi)*180/pi;
-xp=xp*Re*sin(meantheta);    %eastward ground distance
+xp=xp*Re*sin(meantheta)/1e3;    %eastward ground distance (km)
 [xp,inds]=sort(xp);
 parmp=parmp(:,inds,:);
 parmp2=parmp2(:,inds,:);
@@ -190,31 +180,29 @@ parmp2=parmp2(:,inds,:);
 %COMPUTE SOME BOUNDS FOR THE PLOTTING
 minxp=min(xp(:));
 maxxp=max(xp(:));
-minyp=min(yp(:));
-maxyp=max(yp(:));
-minzp=min(zp(:));
-maxzp=max(zp(:));
+%minyp=min(yp(:));
+%maxyp=max(yp(:));
+%minzp=min(zp(:));
+%maxzp=max(zp(:));
 
 
 %NOW THAT WE'VE SORTED, WE NEED TO REGENERATE THE MESHGRID
 %[XP,YP,ZP]=meshgrid(xp,yp,zp);
 FS=8;
 
-%MAKE THE PLOT!
-ha=subplot(1,3,1);
-h=imagesc(ha,xp/1e3,zp,parmp);
-hold(ha,'on')
+%% left plot
+ha = subplot(1,3,1, 'parent',hf, 'nextplot','add','FontSize',FS);
+h = imagesc(ha,xp,zp,parmp);
 plot(ha,[minxp,maxxp],[altref,altref],'w--','LineWidth',2);
-if (~isempty(sourcemlat))
+if ~isempty(sourcemlat)
   plot(ha,sourcemlat,0,'r^','MarkerSize',12,'LineWidth',2);
 end
-hold(ha,'off')
 try
   set(h,'alphadata',~isnan(parmp));
 end
-set(ha,'FontSize',FS);
 axis(ha,'xy')
-axis square;
+axis(ha,'square')
+axis(ha,'tight')
 colormap(ha,cmap)
 caxis(ha,caxlims);
 c=colorbar(ha);
@@ -226,41 +214,27 @@ ylabel(ha,'altitude (km)');
 UThrs=floor(t);
 UTmin=floor((t-UThrs)*60);
 UTsec=floor((t-UThrs-UTmin/60)*3600);
-UThrsstr=num2str(UThrs);
-UTminstr=num2str(UTmin);
-if (numel(UTminstr)==1)
-  UTminstr=['0',UTminstr];
-end
-UTsecstr=num2str(UTsec);
-if (numel(UTsecstr)==1)
-  UTsecstr=['0',UTsecstr];
-end
 
-timestr=[UThrsstr,':',UTminstr,':',UTsecstr];
-%strval=sprintf('%s \n %s',[num2str(dmy(1)),'/',num2str(dmy(2)),'/',num2str(dmy(3))], ...
-%    [num2str(t),' UT']);
-strval=sprintf('%s \n %s',[num2str(dmy(2)),'/',num2str(dmy(1)),'/',num2str(dmy(3))], ...
-    [timestr,' UT']);
+
+t = datenum(ymd(1), ymd(2), ymd(3), 0, 0, UTsec);
+ttxt = {datestr(t,1), [datestr(t,13),' UT']};
+title(ha, ttxt)
 %text(xp(round(lxp/10)),zp(lzp-round(lzp/7.5)),strval,'FontSize',18,'Color',[0.66 0.66 0.66],'FontWeight','bold');
 %text(xp(round(lxp/10)),zp(lzp-round(lzp/7.5)),strval,'FontSize',16,'Color',[0.5 0.5 0.5],'FontWeight','bold');
-title(ha,strval);
 
-
-ha=subplot(1,3,2);
-h=imagesc(ha,xp/1e3,yp/1e3,parmp2(:,:,2));
-hold(ha,'on')
-if (~isempty(sourcemlat))
+%% middle plot
+ha=subplot(1,3,2, 'parent', hf, 'nextplot','add','FontSize',FS);
+h=imagesc(ha,xp,yp,parmp2(:,:,2));
+if ~isempty(sourcemlat)
   plot(ha,[minxp,maxxp],[sourcemlon,sourcemlon],'w--','LineWidth',2);
   plot(ha,sourcemlat,sourcemlon,'r^','MarkerSize',12,'LineWidth',2);
 end
-hold(ha,'off')
 try
   set(h,'alphadata',~isnan(parmp2(:,:,2)));
 end
-set(ha,'FontSize',FS);
 axis(ha,'xy')
-axis square;
-%axis tight;
+axis(ha, 'square')
+axis(ha, 'tight')
 colormap(ha,cmap)
 caxis(ha,caxlims);
 c=colorbar(ha);
@@ -268,21 +242,19 @@ xlabel(c,parmlbl);
 ylabel(ha,'northward dist. (km)');
 xlabel(ha,'eastward dist. (km)');
 
-ha=subplot(1,3,3);
-h=imagesc(ha,yp/1e3,zp,parmp3);
-hold(ha,'on')
+%% right plot
+ha=subplot(1,3,3, 'parent', hf, 'nextplot','add','FontSize',FS);
+h=imagesc(ha,yp,zp,parmp3);
 %plot([minyp,maxyp],[altref,altref],'w--','LineWidth',2);
 if (~isempty(sourcemlat))
   plot(ha,sourcemlat,0,'r^','MarkerSize',12,'LineWidth',2);
 end
-hold(ha,'off')
 try
   set(h,'alphadata',~isnan(parmp3));
 end
-set(ha,'FontSize',FS);
 axis(ha,'xy')
-axis square;
-axis tight;
+axis(ha, 'square')
+axis(ha, 'tight')
 colormap(ha,cmap)
 caxis(ha,caxlims);
 c=colorbar(ha);
@@ -290,30 +262,4 @@ xlabel(c,parmlbl);
 xlabel(ha,'northward dist. (km)');
 ylabel(ha,'altitude (km)');
 
-
-%
-%%CONSTRUCT A STRING FOR THE TIME AND DATE
-%subplot(131);
-%UThrs=floor(t);
-%UTmin=floor((t-UThrs)*60);
-%UTsec=floor((t-UThrs-UTmin/60)*3600);
-%UThrsstr=num2str(UThrs);
-%UTminstr=num2str(UTmin);
-%if (numel(UTminstr)==1)
-%  UTminstr=['0',UTminstr];
-%end
-%UTsecstr=num2str(UTsec);
-%if (numel(UTsecstr)==1)
-%  UTsecstr=['0',UTsecstr];
-%end
-%
-%timestr=[UThrsstr,':',UTminstr,':',UTsecstr];
-%%strval=sprintf('%s \n %s',[num2str(dmy(1)),'/',num2str(dmy(2)),'/',num2str(dmy(3))], ...
-%%    [num2str(t),' UT']);
-%strval=sprintf('%s \n %s',[num2str(dmy(2)),'/',num2str(dmy(1)),'/',num2str(dmy(3))], ...
-%    [timestr,' UT']);
-%%text(xp(round(lxp/10)),zp(lzp-round(lzp/7.5)),strval,'FontSize',18,'Color',[0.66 0.66 0.66],'FontWeight','bold');
-%%text(xp(round(lxp/10)),zp(lzp-round(lzp/7.5)),strval,'FontSize',16,'Color',[0.5 0.5 0.5],'FontWeight','bold');
-%title(strval);
-%
 end

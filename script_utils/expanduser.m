@@ -1,3 +1,4 @@
+%!assert(ischar(expanduser('~')))
 function expanded = expanduser(p)
 %%
 % For now, handles only a leading tilde, does not currently handle specifying ~otheruser
@@ -11,7 +12,7 @@ function expanded = expanduser(p)
 % ans = C:\joespc/Downloads/foo
 %
 % Useful for Matlab functions like h5read() and some Computer Vision toolbox functions
-% that can't handle ~ and Matlab does not consider it a bug per conversations with 
+% that can't handle ~ and Matlab does not consider it a bug per conversations with
 % Mathworks staff
 %
 % Michael Hirsch
@@ -33,7 +34,7 @@ end %if
 
 if isempty(home)
     warning('empty HOME environment variable, returning unmodified path')
-    expanded =p;
+    expanded = p;
     return
 end %if
 %% now let's look at your path, does it have a leading tilde?
@@ -46,10 +47,10 @@ if ~isempty(p) && ischar(p) && size(p,1) == 1
             warning('the ~otheruser case is not handled yet')
             expanded = p;
     else
-        expanded = p; 
+        expanded = p;
     end %if
 else
-    warning('i only handle non-array strings for now') %TODO: consider cellfun()
+    warning('i only handle non-array strings for now') %FIXME: consider cellfun()
     expanded = p;
 end %if
 
