@@ -15,8 +15,21 @@ if(NOT EXISTS ${ROOT}/${REFNAME})
 
   if(NOT EXISTS ${ROOT}/${ARCHIVE} OR NOT FHASH STREQUAL HASH)
     file(DOWNLOAD ${URL} ${ROOT}/${ARCHIVE}
-      SHOW_PROGRESS
-		  EXPECTED_HASH MD5=${HASH})
+      SHOW_PROGRESS)
+	  # don't check hash during download in case of failure, so it doesn't stop using rest of program.
+
+	file(MD5 ${ROOT}/${ARCHIVE} FHASH)
+
+	# try 2nd time using curl
+	if(NOT FHASH STREQUAL HASH)
+	  execute_process(COMMAND curl -L --url ${URL} -o ${ARCHIVE} WORKING_DIRECTORY ${ROOT})
+	endif()
+
+	file(MD5 ${ROOT}/${ARCHIVE} FHASH)
+	# have user manually download
+	if(NOT FHASH STREQUAL HASH)
+	  message(WARNING "Self-tests may not work. Reference data did not match hash ${HASH} \n Download ${URL}  to  ${ARCHIVE} \n")
+	endif()
   endif()
 
   execute_process(COMMAND ${CMAKE_COMMAND} -E tar -xf ${ARCHIVE}
