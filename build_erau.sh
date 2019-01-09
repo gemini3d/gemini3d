@@ -6,7 +6,7 @@
 
 #OPTS="-DMUMPS_ROOT=~/lib/MUMPS_4.10.0 -DSCALAPACK_ROOT=~/lib/scalapack-2.0.2"
 #OPTS="-DUSEGLOW=yes -DUSEHDF=no"
-OPTS="-DSCALAPACK_ROOT=/usr/lib64/openmpi/lib/ -DMUMPS_ROOT=/usr/lib64/openmpi/lib/ -DMUMPS_INCLUDE_DIR=/usr/include/openmpi-x86_64/"
+#OPTS="-DSCALAPACK_ROOT=/usr/lib64/openmpi/lib/ -DMUMPS_ROOT=/usr/lib64/openmpi/lib/ -DMUMPS_INCLUDE_DIR=/usr/include/openmpi-x86_64/"
 
 [[ $1 == "-d" ]] && OPTS="-DCMAKE_BUILD_TYPE=Debug"
 [[ $1 == "-t" ]] && OPTS="-DTRACE:BOOL=on $OPTS"
