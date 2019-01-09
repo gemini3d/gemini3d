@@ -211,9 +211,9 @@ xlabel(ha,'eastward dist. (km)');
 ylabel(ha,'altitude (km)');
 
 
-UThrs=floor(t);
-UTmin=floor((t-UThrs)*60);
-UTsec=floor((t-UThrs-UTmin/60)*3600);
+%UThrs=floor(t);
+%UTmin=floor((t-UThrs)*60);
+%UTsec=floor((t-UThrs-UTmin/60)*3600);
 
 
 t = datenum(ymd(1), ymd(2), ymd(3), 0, 0, UTsec);
