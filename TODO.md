@@ -25,6 +25,7 @@ This file is intended to document development priorities for the GEMINI project.
 * Axisymmetric and Cartesian interpolations should be combined (much code-sharing)
 * Remove the array permuting form the fortran code and do this from the MATLAB/octave scripts.  These scripts should provide a permutation array for the dimensions to the fortran code (e.g. [1,2,3] or [3,1,2], which are even, or [1,3,2] which is odd), which then knows if the coordinate system is right-handed or left-handed so it can adjust the cross products accordingly.
 * Boundary condition modules for the electrodynamics and precipitation should be removed in favor of submodules of the electrodynamics and ionization modules.  If we do this are we breaking backwards compatibility with older compilers?  Do we even care?
+* MSISmatlab is a mess, uses dmy instead of ymd and UThrs instead of UTsec - not sure what this will affect is we change...
 
 
 ## Coding style and standards issues

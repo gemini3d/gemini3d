@@ -1,4 +1,4 @@
-function [ymd,UTsec,tdur,dtout,flagoutput,mloc] = readconfig(filename)
+function [ymd,UTsec,tdur,dtout,flagoutput,mloc,activ] = readconfig(filename)
 
   validateattr(filename, {'char'}, {'vector'}, mfilename, 'configuration filename', 1)
   
@@ -29,11 +29,13 @@ function [ymd,UTsec,tdur,dtout,flagoutput,mloc] = readconfig(filename)
   [datatrim,remainder]=strtok(data,' ');
   dtout=str2num(datatrim);
 
-  %Strip out the junk
-%  data=fgetl(fid);
+  %f10.7 and geomag indices (used in msis)
   data=fgetl(fid);
-%  data=fgetl(fid);
-%  data=fgetl(fid);
+  [datatrim,remainder]=strtok(data,' ');
+  [f107a,remainder]=strtok(datatrim,',');
+  [f107,remainder]=strtok(remainder,',');
+  [ap,remainder]=strtok(remainder,',');    %should not find delimiter..
+  activ=[str2num(f107a),str2num(f107),str2num(ap)];
 
   %CFL number
   data=fgetl(fid);
