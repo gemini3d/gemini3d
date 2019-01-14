@@ -8,7 +8,7 @@
 #OPTS="-DUSEGLOW=yes -DUSEHDF=no"
 #OPTS="-DSCALAPACK_ROOT=/usr/lib64/openmpi/lib/ -DMUMPS_ROOT=/usr/lib64/openmpi/lib/ -DMUMPS_INCLUDE_DIR=/usr/include/openmpi-x86_64/"
 
-[[ $1 == "-d" ]] && OPTS="-DCMAKE_BUILD_TYPE=Debug"
+[[ $1 == "-d" ]] && OPTS="-DCMAKE_BUILD_TYPE=Debug $OPTS"
 [[ $1 == "-t" ]] && OPTS="-DTRACE:BOOL=on $OPTS"
 
 MKLROOT=

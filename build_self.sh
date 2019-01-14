@@ -10,10 +10,13 @@
 # MUMPS is provided for Gfortran by:
 # apt install libmumps-dev
 
-#OPTS="-DMPI_ROOT=$HOME/.local/openmpi-3.1-gcc7 $OPTS"
-#OPTS="-DLAPACK_ROOT=$HOME/.local/lapack-gcc7 $OPTS"
-#OPTS="-DSCALAPACK_ROOT=$HOME/.local/scalapack-gcc7 $OPTS"
-#OPTS="-DMUMPS_ROOT=$HOME/.local/MUMPS-gcc7 $OPTS"
+OPTS="-DMPI_ROOT=$HOME/.local/openmpi-3.1-gcc7 $OPTS"
+OPTS="-DLAPACK_ROOT=$HOME/.local/lapack-gcc7 $OPTS"
+OPTS="-DSCALAPACK_ROOT=$HOME/.local/scalapack-gcc7 $OPTS"
+OPTS="-DMUMPS_ROOT=$HOME/.local/mumps-gcc7 $OPTS"
+
+export FC=$HOME/.local/openmpi-3.1-gcc7/bin/mpif90
+export CC=$HOME/.local/openmpi-3.1-gcc7/bin/mpicc
 
 # this temporarily disables Intel compiler (if installed) from messing up your gfortran environment.
 MKLROOT=
@@ -21,8 +24,6 @@ LD_LIBRARY_PATH=
 
 [[ $1 == "-d" ]] && OPTS="-DCMAKE_BUILD_TYPE=Debug $OPTS"
 [[ $1 == "-t" ]] && OPTS="-DTRACE:BOOL=on $OPTS"
-
-export FC=mpif90
 
 rm -rf objects/*  # need this one-time in case different compiler e.g. ifort was previously used.
 

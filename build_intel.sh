@@ -20,12 +20,12 @@ export FC=$MKLROOT/../mpi/intel64/bin/mpiifort
 export CC=$MKLROOT/../mpi/intel64/bin/mpiicc
 export CXX=icpc
 
-rm -r objects/* # one-time, if you build for Gfortran previously
+rm -rf objects/* # one-time, if you build for Gfortran previously
 
 
 # some systems don't have mpiifort for Intel
 # use ifort as mpif90 get partially picked-up as GNU
-OPTS="-DMUMPS_ROOT=~/flibs-intel/MUMPS"
+OPTS="-DMUMPS_ROOT=$HOME/flibs-intel/MUMPS"
 
 [[ $1 == "-d" ]] && OPTS="-DCMAKE_BUILD_TYPE=Debug $OPTS"
 [[ $1 == "-t" ]] && OPTS="-DTRACE:BOOL=on $OPTS"

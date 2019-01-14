@@ -13,14 +13,7 @@ if(DEFINED ENV{MKLROOT})
   #include_directories($ENV{MKLROOT}/include)
 endif()
 
-
-# Lapack95 - do this BEFORE regular Lapack!
-set(BLA_F95 ON)
-find_package(LAPACK QUIET)  # sets LAPACK95_FOUND, LAPACK95_LIBRARIES
-
 # Lapack
-set(BLA_F95 OFF)
-#find_package(BLAS REQUIRED)
 find_package(LAPACK REQUIRED)
 
 # MPI
