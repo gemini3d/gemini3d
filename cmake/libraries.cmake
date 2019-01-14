@@ -9,12 +9,12 @@ if(DEFINED ENV{MKLROOT})
   endif()
 #  add_link_options(-Wl,--no-as-needed)
 
-  set(BLA_VENDOR Intel10_64lp_seq)
   #include_directories($ENV{MKLROOT}/include)
+  
+  find_package(LAPACK REQUIRED COMPONENTS IntelPar)
+else()
+  find_package(LAPACK REQUIRED)
 endif()
-
-# Lapack
-find_package(LAPACK REQUIRED)
 
 # MPI
 find_package(MPI REQUIRED COMPONENTS Fortran)

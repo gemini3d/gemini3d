@@ -7,7 +7,7 @@ else()
 endif()
 
 if(CMAKE_Fortran_COMPILER_ID STREQUAL Intel)
-  list(APPEND FFLAGS -traceback -check bounds)
+  list(APPEND FFLAGS -traceback -implicitnone)
   list(APPEND FFLAGS -qopenmp)  # undefined reference to `omp_get_max_threads'
   
   cmake_policy(VERSION 3.13)

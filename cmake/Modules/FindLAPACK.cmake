@@ -27,8 +27,18 @@ set(BLAS_LIBRARY ${LAPACK_LIB} PARENT_SCOPE)
 
 endfunction()
 
-if(USEMKL OR CMAKE_Fortran_COMPILER_ID STREQUAL Intel)
+if(IntelPar IN_LIST LAPACK_FIND_COMPONENTS)
   mkl_libs(mkl_intel_lp64 mkl_intel_thread mkl_core iomp5)
+  
+  if(LAPACK_LIBRARY)
+    set(LAPACK_IntelPar_FOUND true)
+  endif()
+elseif(IntelSeq IN_LIST LAPACK_FIND_COMPONENTS)
+  mkl_libs(mkl_intel_lp64 mkl_sequential mkl_core)
+  
+  if(LAPACK_LIBRARY)
+    set(LAPACK_IntelSeq_FOUND true)
+  endif()
 else()
   find_library(LAPACK_LIBRARY
     NAMES lapack)
@@ -40,9 +50,10 @@ endif()
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(
   LAPACK
-  REQUIRED_VARS LAPACK_LIBRARY BLAS_LIBRARY)
+  REQUIRED_VARS LAPACK_LIBRARY BLAS_LIBRARY
+  HANDLE_COMPONENTS)
 
-if(SCALAPACK_FOUND)
+if(LAPACK_FOUND)
   set(LAPACK_LIBRARIES ${LAPACK_LIBRARY} ${BLAS_LIBRARY})
 endif()
 

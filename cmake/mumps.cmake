@@ -24,7 +24,7 @@ endif()
 
 # SCALAPACK always needed for MUMPS
 if(CMAKE_Fortran_COMPILER_ID STREQUAL Intel)
-  find_package(SCALAPACK REQUIRED COMPONENTS IntelSeq)
+  find_package(SCALAPACK REQUIRED COMPONENTS IntelPar)
 elseif(DEFINED ENV{MKLROOT})
   find_package(SCALAPACK REQUIRED COMPONENTS MKL)
 else()
@@ -40,9 +40,6 @@ elseif(realbits EQUAL 32)
 else()
   message(FATAL_ERROR "MUMPS has only real32, real64")
 endif()
-
-find_package(LAPACK REQUIRED)
-
 
 find_package(MUMPS REQUIRED COMPONENTS ${mumpscomp})
 list(APPEND MUMPS_LIBRARIES ${SCALAPACK_LIBRARIES})
