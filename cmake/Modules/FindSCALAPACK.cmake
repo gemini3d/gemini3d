@@ -1,8 +1,6 @@
 # https://github.com/certik/hermes/blob/master/hermes_common/cmake/FindSCALAPACK.cmake
 # ScaLAPACK and BLACS
 
-# USEMKL: Using MKL with GNU or other compiler
-
 cmake_policy(VERSION 3.3)
 
 unset(SCALAPACK_LIBRARY)
@@ -14,13 +12,14 @@ if(NOT SCALAPACK_FIND_COMPONENTS)
 endif()
 
 function(mkl_scala)
+# https://software.intel.com/en-us/articles/intel-mkl-link-line-advisor
 
 foreach(s ${ARGV})
   find_library(SCALAPACK_${s}_LIBRARY
            NAMES ${s}
            PATHS $ENV{MKLROOT}/lib
                  $ENV{MKLROOT}/lib/intel64
-                 $ENV{INTEL}/mkl/lib/intel64
+                 $ENV{MKLROOT}/../compiler/lib/intel64
            NO_DEFAULT_PATH)
   if(NOT SCALAPACK_${s}_LIBRARY)
     message(FATAL_ERROR "NOT FOUND: " ${s})
