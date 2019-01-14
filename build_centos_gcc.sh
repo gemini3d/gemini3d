@@ -9,7 +9,7 @@
 
 #OPTS="-DMPI_ROOT=$HOME/.local/openmpi-3.1-gcc7 $OPTS"
 #OPTS="-DLAPACK_ROOT=$HOME/.local/lapack-gcc7 $OPTS"
-OPTS="-DSCALAPACK_ROOT=$HOME/flibs-gnu-nomkl/scalapack $OPTS"
+OPTS="-DSCALAPACK_ROOT=$HOME/flibs-gnu-nomkl/scalapack/build $OPTS"
 OPTS="-DMUMPS_ROOT=$HOME/flibs-gnu-nomkl/MUMPS $OPTS"
 
 # this temporarily disables Intel compiler (if installed) from messing up your gfortran environment.
@@ -22,6 +22,8 @@ LD_LIBRARY_PATH=
 export FC=mpif90
 
 rm -rf objects/*  # need this one-time in case different compiler e.g. ifort was previously used.
+
+echo "cmake $OPTS"
 
 cmake $OPTS -B objects .
 
