@@ -15,9 +15,9 @@ if(CMAKE_Fortran_COMPILER_ID STREQUAL Intel)
 
 
   if(CMAKE_BUILD_TYPE STREQUAL Debug)
-    list(APPEND FFLAGS -check all)
+    #list(APPEND FFLAGS -check all)
     #list(APPEND FFLAGS -debug extended -check all -heap-arrays -fpe0 -fp-stack-check)
-    #list(APPEND FFLAGS -check bounds)
+    list(APPEND FFLAGS -check bounds)
   endif()
   
   list(APPEND FFLAGS -warn nounused -traceback -diag-disable 5268)
