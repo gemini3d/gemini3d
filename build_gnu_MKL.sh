@@ -3,6 +3,10 @@
 # *** for subsequent builds, you can just type "make" in the objects/ directory ***
 # (I keep a second Terminal tab for this purpose)
 
+set -e
+
+cmake --version
+
 OPTS="-DMUMPS_ROOT=$HOME/flibs-gnu-mkl/MUMPS"
 
 [[ $1 == "-d" ]] && OPTS="-DCMAKE_BUILD_TYPE=Debug $OPTS"
@@ -18,7 +22,7 @@ export FC=/usr/bin/mpif90
 
 rm -rf objects/*  # need this one-time in case different compiler e.g. ifort was previously used.
 
-cmake $OPTS -B objects .
+cmake $OPTS -B objects -S .
 
 cmake --build objects -j
 

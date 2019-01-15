@@ -15,11 +15,14 @@ interface TRBDF23D
   module procedure TRBDF23D_curv
 end interface TRBDF23D
 
+private
+public :: trbdf23d, diffusion_prep, backeuler1d
+
 
 contains
 
 
-subroutine diffusion_prep(isp,x,lambda,betacoeff,ns,T,A,B,C,D,E,Tn,Teinf)
+pure subroutine diffusion_prep(isp,x,lambda,betacoeff,ns,T,A,B,C,D,E,Tn,Teinf)
 !! COMPUTE COEFFICIENTS IN DIFFUSION EQUATIONS AND LOAD UP GHOST CELLS
 !!
 !! Note: done on a per species basis. This is never called over the full grid
@@ -222,7 +225,7 @@ TR(ix1)=Ts(ix1)/(dt/2d0)+E(ix1) &
 
 
 !> INTERIOR GRID POINTS
-forall (ix1=3:lx1-2)
+do concurrent (ix1=3:lx1-2)
   M(ll+5,ix1-2)=0.0                                               !ix1-2 grid point, sub-diag.
   M(ll+4,ix1-1)=-1*C(ix1)*Dh(ix1)/x%dx1i(ix1)/x%dx1(ix1)/2d0 &        !ix1-1
              +B(ix1)/(x%dx1(ix1+1)+x%dx1(ix1))/2d0
@@ -238,7 +241,7 @@ forall (ix1=3:lx1-2)
     -(-A(ix1)/2d0+C(ix1)*Dh(ix1+1)/x%dx1i(ix1)/x%dx1(ix1+1)/2d0+C(ix1)*Dh(ix1)/x%dx1i(ix1)/x%dx1(ix1)/2d0)*Ts(ix1) &
     -M(ll+2,ix1+1)*Ts(ix1+1) &
     -M(ll+1,ix1+2)*Ts(ix1+2)
-end forall
+end do
 
 
 !> LAST INTERIOR GRID POINT
@@ -299,7 +302,7 @@ TRBDF21D_curv(ix1)=E(ix1) &
 
 
 !> INTERIOR GRID POINTS
-forall (ix1=3:lx1-2)
+do concurrent (ix1=3:lx1-2)
   M(ll+5,ix1-2)=0.0                                               !ix1-2 grid point, sub-diag.
   M(ll+4,ix1-1)=-1*C(ix1)*Dh(ix1)/x%dx1i(ix1)/x%dx1(ix1) &        !ix1-1
              +B(ix1)/(x%dx1(ix1+1)+x%dx1(ix1))
@@ -312,7 +315,7 @@ forall (ix1=3:lx1-2)
   TRBDF21D_curv(ix1)=E(ix1) &
     -1._wp/3._wp*Ts(ix1)/(dt/3._wp) &
     +4._wp/3._wp*TR(ix1)/(dt/3._wp)
-end forall
+end do
 
 
 !LAST INTERIOR GRID POINT
@@ -398,7 +401,7 @@ M(ll+1,ix1+2)=0.0
 
 
 !> INTERIOR GRID POINTS
-forall (ix1=3:lx1-2)
+do concurrent (ix1=3:lx1-2)
   M(ll+5,ix1-2)=0.0                                               !ix1-2 grid point, sub-diag.
   M(ll+4,ix1-1)=-1*C(ix1)*Dh(ix1)/dx1i(ix1)/dx1(ix1) &            !ix1-1
              +B(ix1)/(dx1(ix1+1)+dx1(ix1))
@@ -408,7 +411,7 @@ forall (ix1=3:lx1-2)
   M(ll+2,ix1+1)=-1*C(ix1)*Dh(ix1+1)/dx1i(ix1)/dx1(ix1+1) &        !ix1+1, super-diag.
            -1*B(ix1)/(dx1(ix1+1)+dx1(ix1))
   M(ll+1,ix1+2)=0.0                                               !ix1+2 grid point
-end forall
+end do
 
 
 !> LAST INTERIOR GRID POINT

@@ -1,8 +1,9 @@
 module potentialBCs_mumps
 
+use mpi, only: mpi_integer, mpi_comm_world, mpi_status_ignore
+
 use grid, only: curvmesh, lx1, lx2, lx3all, gridflag
-use phys_consts
-use calculus
+use phys_consts, only: wp, pi
 use interpolation, only : interp1,interp2
 use io, only : date_filename
 use timeutils, only : dateinc

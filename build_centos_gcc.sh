@@ -7,6 +7,10 @@
 # *** for subsequent builds, you can just type "make" in the objects/ directory ***
 # (I keep a second Terminal tab for this purpose)
 
+set -e
+
+cmake --version
+
 #OPTS="-DMPI_ROOT=$HOME/.local/openmpi-3.1-gcc7 $OPTS"
 #OPTS="-DLAPACK_ROOT=$HOME/.local/lapack-gcc7 $OPTS"
 OPTS="-DSCALAPACK_ROOT=$HOME/flibs-gnu-nomkl/scalapack/build $OPTS"
@@ -20,12 +24,13 @@ LD_LIBRARY_PATH=
 [[ $1 == "-t" ]] && OPTS="-DTRACE:BOOL=on $OPTS"
 
 export FC=mpif90
+export CC=mpicc
 
 rm -rf objects/*  # need this one-time in case different compiler e.g. ifort was previously used.
 
 echo "cmake $OPTS"
 
-cmake $OPTS -B objects .
+cmake $OPTS -B objects -S .
 
 cmake --build objects -j
 

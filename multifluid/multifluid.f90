@@ -1,14 +1,15 @@
 module multifluid
 
-use phys_consts, only : wp,gammas,kB,ms,mindensdiv,mindens,mindensnull
-use mpimod
-use grid
+use phys_consts, only : wp,pi,qs,lsp,gammas,kB,ms,mindensdiv,mindens,mindensnull
+use grid, only: curvmesh, lx1, lx2, lx3, gridflag
+use mpimod, only: myid
 use ionization, only: ionrate_glow98, ionrate_fang08, eheating, photoionization
-use sources
-use calculus
-use advec_mpi
-use diffusion
-use precipBCs_mod
+use collisions, only:  thermal_conduct
+use sources, only: rk2_prep_mpi, srcsenergy, srcsmomentum, srcscontinuity
+use calculus, only: etd_uncoupled, div3d
+use advec_mpi, only: advec3d_mc_mpi, advec_prep_mpi
+use diffusion, only:  trbdf23d, diffusion_prep
+use precipBCs_mod, only: precipBCs_fileinput, precipBCs
 use timeutils, only : sza
 
 implicit none

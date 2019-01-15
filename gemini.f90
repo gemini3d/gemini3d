@@ -4,8 +4,8 @@ program gemini
 !------THIS IS THE MAIN PROGRAM FOR GEMINI3D
 !----------------------------------------------------------
 
-use phys_consts, only : lnchem, lwave
-use grid
+use phys_consts, only : lnchem, lwave, lsp
+use grid, only: read_grid, clear_grid, lx3
 use temporal, only : dt_comm
 use timeutils, only: dateinc
 use neutral, only : neutral_atmos,make_dneu,neutral_perturb,clear_dneu
@@ -13,7 +13,7 @@ use io, only : read_configfile,input_plasma,create_outdir,output_plasma,create_o
 use potential_comm,only : electrodynamics
 use multifluid, only : fluid_adv
 use mpimod
-use precipBCs_mod
+use precipBCs_mod, only: make_precip_fileinput, clear_precip_fileinput
 use potentialBCs_mumps
 
 implicit none

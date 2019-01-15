@@ -1,5 +1,8 @@
 module precipBCs_mod
 use, intrinsic:: iso_fortran_env, only: stderr=>error_unit
+
+use mpi, only: mpi_integer, mpi_comm_world, mpi_status_ignore
+
 use phys_consts, only: pi,wp
 use grid, only : curvmesh,lx1,lx2,lx3,lx3all
 use interpolation, only : interp1,interp2
@@ -8,6 +11,8 @@ use timeutils, only : dateinc
 use mpimod
 
 implicit none
+
+private
 
 !ALL OF THE FOLLOWING MODULE-SCOPE ARRAYS ARE USED FOR INTERPOLATING PRECIPITATION INPUT FILES (IF USED)
 real(wp), dimension(:), allocatable, private :: mlonp
@@ -26,6 +31,8 @@ integer, dimension(3), private :: ymdprev,ymdnext   !dates for interpolated data
 real(wp), private :: UTsecprev,UTsecnext
 real(wp), private :: tprev,tnext
 
+
+public :: make_precip_fileinput, clear_precip_fileinput, precipBCs_fileinput, precipBCs
 
 contains
 
@@ -258,11 +265,11 @@ end subroutine precipBCs_fileinput
 
 subroutine make_precip_fileinput()
 
-
 !INITIALIZE SOME MODULE TIMING VARIABLES
 tprev=0d0; tnext=0d0
 
 end subroutine make_precip_fileinput
+
 
 subroutine clear_precip_fileinput()
 

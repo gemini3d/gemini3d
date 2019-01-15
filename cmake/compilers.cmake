@@ -20,8 +20,11 @@ if(CMAKE_Fortran_COMPILER_ID STREQUAL Intel)
     #list(APPEND FFLAGS -check bounds)
   endif()
   
-  list(APPEND FFLAGS -warn nounused -traceback -stand f08 
-    -diag-disable 5268)
+  list(APPEND FFLAGS -warn nounused -traceback -diag-disable 5268)
+
+  if (CMAKE_Fortran_COMPILER_VERSION VERSION_GREATER_EQUAL 19)
+    list(APPEND FFLAGS -stand f18)
+  endif()
 
 elseif(CMAKE_Fortran_COMPILER_ID STREQUAL GNU)
   # -fdefault-real-8  after literals are fixed to "e" or "wp"
@@ -35,9 +38,7 @@ elseif(CMAKE_Fortran_COMPILER_ID STREQUAL GNU)
     list(APPEND FFLAGS -Wno-unused-dummy-argument -Wno-unused-variable -Wno-unused-function)
   endif()
 
-  if(CMAKE_Fortran_COMPILER_VERSION VERSION_GREATER_EQUAL 6)
-     list(APPEND FFLAGS -std=f2008)
-  elseif(CMAKE_Fortran_COMPILER_VERSION VERSION_GREATER_EQUAL 8)
+  if(CMAKE_Fortran_COMPILER_VERSION VERSION_GREATER_EQUAL 8)
      list(APPEND FFLAGS -std=f2018)
   endif()
 

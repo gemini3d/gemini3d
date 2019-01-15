@@ -8,6 +8,10 @@
 #OPTS="-DUSEGLOW=yes -DUSEHDF=no"
 #OPTS="-DSCALAPACK_ROOT=/usr/lib64/openmpi/lib/ -DMUMPS_ROOT=/usr/lib64/openmpi/lib/ -DMUMPS_INCLUDE_DIR=/usr/include/openmpi-x86_64/"
 
+set -e
+
+cmake --version
+
 [[ $1 == "-d" ]] && OPTS="-DCMAKE_BUILD_TYPE=Debug $OPTS"
 [[ $1 == "-t" ]] && OPTS="-DTRACE:BOOL=on $OPTS"
 
@@ -19,7 +23,7 @@ export CC=gcc
 
 rm -rf objects/*  # need this one-time in case different compiler e.g. ifort was previously used.
 
-cmake $OPTS -B objects .
+cmake $OPTS -B objects -S .
 
 cmake --build objects -j
 

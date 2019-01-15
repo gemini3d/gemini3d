@@ -102,7 +102,7 @@ target_include_directories(precipBCs PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/numeric
 target_compile_options(precipBCs PRIVATE ${FFLAGS})
 
 add_library(multifluid multifluid/multifluid.f90)
-target_link_libraries(multifluid PRIVATE precipBCs mpimod grid ionization sources advec diffusion)
+target_link_libraries(multifluid PRIVATE precipBCs mpimod grid ionization sources collision advec diffusion)
 target_include_directories(multifluid PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/numerical)
 target_compile_options(multifluid PRIVATE ${FFLAGS})
 

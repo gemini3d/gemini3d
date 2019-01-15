@@ -14,7 +14,7 @@ set -e
 
 cmake --version
 
-[[ -z ${MKLROOT+x} ]] && export MKLROOT=$HOME/intel/compilers_and_libraries/linux/mkl/
+[[ -z ${MKLROOT+x} ]] && { echo 'MKLROOT must be set to use Intel compilers'; exit 1; }
 
 # bash >= 4.2, centos 7 has bash 4.1
 #[[ -v MKLROOT ]] || export MKLROOT=$HOME/intel/compilers_and_libraries/linux/mkl/
@@ -22,9 +22,9 @@ cmake --version
 . $MKLROOT/../bin/compilervars.sh intel64
 . $MKLROOT/bin/mklvars.sh intel64 ilp64
 
-# DO NOT change to mpif90 or mpicc as that would use GNU compilers!!!
-export FC=$MKLROOT/../mpi/intel64/bin/mpiifort
-export CC=$MKLROOT/../mpi/intel64/bin/mpiicc
+# some HPC installations have non-standard paths and names. Watch the beginning of the CMake output to be sure your Intel compiler is picked.
+export FC=mpifort
+export CC=mpicc
 export CXX=icpc
 
 rm -rf objects/* # one-time, if you build for Gfortran previously

@@ -1,13 +1,18 @@
 module neutral
 use, intrinsic:: iso_fortran_env, only: sp => real32
-use phys_consts
+
+use mpi, only: mpi_integer, mpi_comm_world, mpi_status_ignore
+
+use phys_consts, only: wp, lnchem, pi, re
 use timeutils, only : doy_calc,dateinc
 use grid, only: curvmesh, lx1, lx2, lx3, clear_unitvecs
 use interpolation, only : interp2
-use mpimod
+use mpimod, only: myid, lid, taglrho, ierr, taglz, mpi_realprec, tagdno, tagdnn2, tagdno2, tagdtn, tagdvnrho, tagdvnz, tagly
 use io, only : date_filename
 
 implicit none
+
+private
 
 
 !! ALL ARRAYS THAT FOLLOW ARE USED WHEN INCLUDING NEUTRAL PERTURBATIONS FROM ANOTHER MODEL
@@ -56,6 +61,8 @@ real(wp), dimension(:), allocatable, private :: zi,yi,rhoi    !this is to be a f
 real(wp), dimension(:,:,:,:), allocatable, protected :: nnmsis
 real(wp), dimension(:,:,:), allocatable, protected :: Tnmsis
 real(wp), dimension(:,:,:), allocatable, protected :: vn1base,vn2base,vn3base
+
+public :: Tnmsis, neutral_atmos, make_dneu, clear_dneu, neutral_perturb
 
 contains
 

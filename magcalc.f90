@@ -2,8 +2,10 @@
 !! FROM OUTPUT FROM A SIMULATIONS DONE BY GEMINI3D.  
 !! THIS PROGRAM VERY MUCH MIRRORS THE SETUP OF THE MAIN GEMINI.F90 CODE.  
 
-use phys_consts, only : pi,mu0
-use grid
+use mpi, only: mpi_sum, mpi_comm_world
+
+use phys_consts, only : pi,mu0, wp, re
+use grid, only : curvmesh, lx1, lx2, lx3, read_grid, clear_grid
 use timeutils, only : dateinc
 use io, only : read_configfile,input_plasma_currents,create_outdir_mag,output_magfields
 use mpimod
@@ -101,7 +103,7 @@ if (argc < 2) error stop 'magcalc.f90 --> must specify .ini file to configure si
 
 !! INITIALIZE MESSING PASSING VARIABLES, IDS ETC.
 call mpisetup()
-write(*,*) 'magcalc.f90 --> Process:  ',myid,' of:  ',lid-1,' online...'
+print *, 'magcalc.f90 --> Process:  ',myid,' of:  ',lid-1,' online...'
 
 
 !READ CONFIG FILE FROM OUTPUT DIRECTORY
@@ -110,8 +112,8 @@ outdir=trim(argv)
 infile=outdir//'/inputs/config.ini'
 !infile = trim(argv)
 if (myid==0) then
-  write(*,*) 'Simulation data directory:  ',outdir
-  write(*,*) 'Input config file:  ',infile
+  print *, 'Simulation data directory:  ',outdir
+  print *, 'Input config file:  ',infile
 end if
 call read_configfile(infile,ymd,UTsec0,tdur,dtout,activ,tcfl,Teinf,potsolve,flagperiodic,flagoutput,flagcap, &
                      indatsize,indatgrid,flagdneu,interptype,sourcemlat,sourcemlon,dtneu,drhon,dzn,sourcedir,flagprecfile, &
@@ -148,10 +150,10 @@ allocate(Jx(lx1,lx2,lx3),Jy(lx1,lx2,lx3),Jz(lx1,lx2,lx3))
 !NOW DEAL WITH THE UNMPRIMED COORDINATES
 open(newunit=u,file=fieldpointfile,form='unformatted',access='stream',action='read')
 read(u) lpoints    !size of coordinates for field points
-if (myid==0) write(*,*) 'magcalc.f90 --> Number of field points:  ',lpoints
+if (myid==0) print *, 'magcalc.f90 --> Number of field points:  ',lpoints
 allocate(r(lpoints),theta(lpoints),phi(lpoints))
 read(u) r,theta,phi
-if (myid==0) write(*,*) 'magcalc.f90 --> Range of r,theta,phi',minval(r),maxval(r),minval(theta), &
+if (myid==0) print *, 'magcalc.f90 --> Range of r,theta,phi',minval(r),maxval(r),minval(theta), &
                            maxval(theta),minval(phi),maxval(phi)
 rmean=sum(r)/size(r)
 thetamean=sum(theta)/size(theta)
@@ -198,7 +200,7 @@ end if
 
 !GET END VOLUMES SO THE INTEGRALS ARE 'COMPLETE'
 call halo_end(dV,dVend,tagdV)    !need to define the differential volume on the edge of this x3-slab in 
-!write(*,*) 'dVend:  ',minval(dVend),maxval(dVend)
+!print *, 'dVend:  ',minval(dVend),maxval(dVend)
 
 
 !COMPUTE NEEDED PROJECTIONS
@@ -249,7 +251,7 @@ do while (t<tdur)
 
 
   !FORCE PARALLEL CURRENTS TO ZERO BELOW 80KM
-  if(myid==0) write(*,*) 'Nullifying low altitude currents...'
+  if(myid==0) print *, 'Nullifying low altitude currents...'
   where (alt<75d3)
     J1=0d0
   end where
@@ -257,7 +259,7 @@ do while (t<tdur)
 
   !DEAL WITH THE WEIRD EDGE ARTIFACTS THAT WE GET IN THE PARALLEL CURRENT
   !SOMETIMES
-  if(myid==0) write(*,*) 'Fixing potential edge artifacts...'
+  if(myid==0) print *, 'Fixing potential edge artifacts...'
   if (myid==lid-1) then
     if (lx3>2) then    !do a ZOH
       J1(:,:,lx3-1)=J1(:,:,lx3-2)
@@ -280,7 +282,7 @@ do while (t<tdur)
 
   !ROTATE MAGNETIC FIELDS INTO VERTICAL,SOUTH,EAST COMPONENTS
   if (myid==0) then
-    write(*,*) 'magcalc.f90 --> Rotating currents into geomagnetic coordinates...'
+    print *, 'magcalc.f90 --> Rotating currents into geomagnetic coordinates...'
   end if
   Jx=J1*proj_e1er+J2*proj_e2er+J3*proj_e3er                 !vertical
   Jy=J1*proj_e1etheta+J2*proj_e2etheta+J3*proj_e3etheta     !south
@@ -291,14 +293,14 @@ do while (t<tdur)
   call halo_end(Jx,Jxend,tagJx)
   call halo_end(Jy,Jyend,tagJy)
   call halo_end(Jz,Jzend,tagJz)
-!  write(*,*) 'Currents:  ',minval(Jxend),maxval(Jxend),minval(Jyend),maxval(Jyend),minval(Jzend),maxval(Jzend)
+!  print *, 'Currents:  ',minval(Jxend),maxval(Jxend),minval(Jyend),maxval(Jyend),minval(Jzend),maxval(Jzend)
 
 
   !COMPUTE MAGNETIC FIELDS
   do ipoints=1,lpoints
     if (myid == 0) then
-      write(*,*) 'magcalc.f90 --> Computing magnetic field for field point:  ',ipoints,' out of:  ',lpoints
-      write(*,*) '            --> ...for time:  ',ymd,UTsec
+      print *, 'magcalc.f90 --> Computing magnetic field for field point:  ',ipoints,' out of:  ',lpoints
+      print *, '            --> ...for time:  ',ymd,UTsec
     end if
 
 
@@ -308,14 +310,14 @@ do while (t<tdur)
     call halo_end(Rx,Rxend,tagRx)
     call halo_end(Ry,Ryend,tagRy)
     call halo_end(Rz,Rzend,tagRz)
-!    write(*,*) 'Currents:  ',minval(Rxend),maxval(Rxend),minval(Ryend),maxval(Ryend),minval(Rzend),maxval(Rzend)
+!    print *, 'Currents:  ',minval(Rxend),maxval(Rxend),minval(Ryend),maxval(Ryend),minval(Rzend),maxval(Rzend)
 
 
     if (flag2D/=1) then
       Rcubed(:,:,:)=(Rx**2+Ry**2+Rz**2)**(3d0/2d0)   !this really is R**3
       call halo_end(Rcubed,Rcubedend,tagRcubed)
       if(myid==lid-1) Rcubedend=1d0     !avoids div by zero on the end
-!      write(*,*) 'R3:  ',minval(Rcubedend),maxval(Rcubedend)
+!      print *, 'R3:  ',minval(Rcubedend),maxval(Rcubedend)
 
       !Bx calculation
       integrand(:,:,:)=mu0/4d0/pi*(Jy*Rz-Jz*Ry)/Rcubed
@@ -389,20 +391,20 @@ do while (t<tdur)
     end if
   end do
 
-!  write(*,*) '  --> Min/max values of field',minval(Br),maxval(Br),minval(Btheta),maxval(Btheta), &
+!  print *, '  --> Min/max values of field',minval(Br),maxval(Br),minval(Btheta),maxval(Btheta), &
 !                                             minval(Bphi),maxval(Bphi)
 
 
   !A REDUCE OPERATION IS NEEDED HERE TO COMBINE MAGNETIC FIELDS (LINEAR SUPERPOSITION) FROM ALL WORKERS
   if (myid ==0) then
-    write(*,*) 'Attempting reduction of magnetic field...'
+    print *, 'Attempting reduction of magnetic field...'
   end if
   call mpi_reduce(Br,Brall,lpoints,mpi_realprec,MPI_SUM,0,MPI_COMM_WORLD,ierr)
   call mpi_reduce(Btheta,Bthetaall,lpoints,mpi_realprec,MPI_SUM,0,MPI_COMM_WORLD,ierr)
   call mpi_reduce(Bphi,Bphiall,lpoints,mpi_realprec,MPI_SUM,0,MPI_COMM_WORLD,ierr)
   if (myid == 0) then
-    write(*,*) 'magcalc.f90 --> Reduced magnetic field...'
-    write(*,*) '  --> Min/max values of reduced field',minval(Brall),maxval(Brall),minval(Bthetaall),maxval(Bthetaall), &
+    print *, 'magcalc.f90 --> Reduced magnetic field...'
+    print *, '  --> Min/max values of reduced field',minval(Brall),maxval(Brall),minval(Bthetaall),maxval(Bthetaall), &
                                                minval(Bphiall),maxval(Bphiall)
   end if
 
@@ -412,7 +414,7 @@ do while (t<tdur)
     call cpu_time(tstart)
     call output_magfields(outdir,ymd,UTsec,Brall,Bthetaall,Bphiall)   !mag field data already reduced so just root needs to output
     call cpu_time(tfin)
-    write(*,*) 'magcalc.f90 --> Output done for time step:  ',t,' in cpu_time of:  ',tfin-tstart
+    print *, 'magcalc.f90 --> Output done for time step:  ',t,' in cpu_time of:  ',tfin-tstart
   end if
   tout=tout+dtout
 
@@ -420,11 +422,11 @@ do while (t<tdur)
   !NOW OUR SOLUTION IS FULLY UPDATED SO UPDATE TIME VARIABLES TO MATCH...
   it=it+1; t=t+dt;
   if (myid==0) then
-    write(*,*) 'magcalc.f90 --> Moving on to time step (in sec):  ',t,'; end time of simulation:  ',tdur
+    print *, 'magcalc.f90 --> Moving on to time step (in sec):  ',t,'; end time of simulation:  ',tdur
   end if
   call dateinc(dt,ymd,UTsec)
   if (myid==0) then
-    write(*,*) 'magcalc.f90 --> Current date',ymd,'Current UT time:  ',UTsec
+    print *, 'magcalc.f90 --> Current date',ymd,'Current UT time:  ',UTsec
   end if
 end do
 

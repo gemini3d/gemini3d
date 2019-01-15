@@ -11,8 +11,10 @@ module temporal
 !/home/zettergm/zettergmdata/GEMINI/temporal/temporal.f90:65:0: warning: unused parameter ‘b3’ [-Wunused-parameter]
 !/home/zettergm/zettergmdata/GEMINI/temporal/temporal.f90:65:0: warning: unused parameter ‘potsolve’ [-Wunused-parameter]
 
+use mpi, only: MPI_COMM_WORLD,MPI_STATUS_IGNORE
+
 use phys_consts, only:  kB,mu0,ms,lsp,pi, wp
-use mpimod, only: mpi_realprec,tagdt,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr, lid, myid
+use mpimod, only: mpi_realprec,tagdt,ierr, lid, myid
 use grid, only:  curvmesh
 
 implicit none
