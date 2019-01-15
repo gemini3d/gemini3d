@@ -6,7 +6,8 @@ program gemini
 
 use phys_consts, only : lnchem, lwave
 use grid
-use temporal, only : dt_comm,dateinc
+use temporal, only : dt_comm
+use timeutils, only: dateinc
 use neutral, only : neutral_atmos,make_dneu,neutral_perturb,clear_dneu
 use io, only : read_configfile,input_plasma,create_outdir,output_plasma,create_outdir_aur,output_aur
 use potential_comm,only : electrodynamics

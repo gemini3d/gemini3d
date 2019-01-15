@@ -50,8 +50,13 @@ target_link_libraries(temporal PRIVATE const mpimod grid MPI::MPI_Fortran)
 target_include_directories(temporal PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/numerical)
 target_compile_options(temporal PRIVATE ${FFLAGS})
 
+add_library(timeutils temporal/timeutils.f90)
+target_link_libraries(timeutils PRIVATE const)
+target_include_directories(timeutils PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/numerical)
+target_compile_options(timeutils PRIVATE ${FFLAGS})
+
 add_library(neutral neutral/neutral.f90)
-target_link_libraries(neutral PUBLIC interp io msis temporal MPI::MPI_Fortran)
+target_link_libraries(neutral PUBLIC interp io msis timeutils MPI::MPI_Fortran)
 target_include_directories(neutral PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/numerical)
 target_compile_options(neutral PRIVATE ${FFLAGS})
 
@@ -114,7 +119,7 @@ target_compile_options(gemini PRIVATE ${FFLAGS})
 
 #--------magnetic field calculation executable---------------
 add_executable(magcalc magcalc.f90)
-target_link_libraries(magcalc PRIVATE mpimod const grid io temporal)
+target_link_libraries(magcalc PRIVATE mpimod const grid io timeutils)
 target_include_directories(magcalc PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/numerical)
 set_target_properties(magcalc PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR})
 target_compile_options(magcalc PRIVATE ${FFLAGS})

@@ -1,25 +1,16 @@
-program magcalc
-
-!----------------------------------------------------------
-!------THIS IS THE MAIN PROGRAM FOR COMPUTING MAGNETIC FIELDS
-!------FROM OUTPUT FROM A SIMULATIONS DONE BY GEMINI3D.  THIS
-!------PROGRAM VERY MUCH MIRRORS THE SETUP OF THE MAIN GEMINI.F90
-!------CODE.  
-!----------------------------------------------------------
+!! THIS IS THE MAIN PROGRAM FOR COMPUTING MAGNETIC FIELDS
+!! FROM OUTPUT FROM A SIMULATIONS DONE BY GEMINI3D.  
+!! THIS PROGRAM VERY MUCH MIRRORS THE SETUP OF THE MAIN GEMINI.F90 CODE.  
 
 use phys_consts, only : pi,mu0
 use grid
-use temporal, only : dateinc
+use timeutils, only : dateinc
 use io, only : read_configfile,input_plasma_currents,create_outdir_mag,output_magfields
 use mpimod
 
 implicit none
 
-!----------------------------------------------------------
-!------VARIABLE DECLARATIONS
-!----------------------------------------------------------
-
-!VARIABLES READ IN FROM CONFIG.DAT FILE
+!! VARIABLES READ IN FROM CONFIG.DAT FILE
 integer, dimension(3) :: ymd    !year,month,day of simulation
 real(wp) :: UTsec      !UT (s)
 real(wp) :: UTsec0     !UT start time of simulation (s)
@@ -32,14 +23,14 @@ integer :: flagperiodic               !toggles whether or not the grid is treate
 integer :: flagoutput                 !what type of output to do (1 - everything; 2 - avg'd parms.; 3 - ne only)
 integer :: flagcap                    !internal capacitance?
 
-!INPUT AND OUTPUT FILES
+!! INPUT AND OUTPUT FILES
 character(:), allocatable :: infile    !command line argument input file
 character(:), allocatable :: outdir    !" " output directory
 character(:), allocatable :: indatsize,indatgrid    !grid size and data filenames
 character(:), allocatable :: fieldpointfile
 integer :: u
 
-!GRID STRUCTURE
+!! GRID STRUCTURE
 type(curvmesh) :: x    !structure containg grid locations, finite differences, etc.:  see grid module for details
 
 !STATE VARIABLES
@@ -87,30 +78,28 @@ integer :: flagprecfile              ! flag toggling precipitation file input (0
 real(wp) :: dtprec                    ! time interval between precip. inputs
 character(:), allocatable :: precdir ! directory containing precip. input files
 
-!ELECTRIC FIELD FILE INPUT VARIABLES (UNUSED)
-integer :: flagE0file                ! flag toggling electric field (potential BCs) file input (0 - no; 1 - yes)
-real(wp) :: dtE0                      ! time interval between electric field file inputs
-character(:), allocatable :: E0dir   ! directory containing electric field file input data
+!! ELECTRIC FIELD FILE INPUT VARIABLES (UNUSED)
+integer :: flagE0file                !< flag toggling electric field (potential BCs) file input (0 - no; 1 - yes)
+real(wp) :: dtE0                      !< time interval between electric field file inputs
+character(:), allocatable :: E0dir   !< directory containing electric field file input data
 
-!GLOW MODULE INPUT VARIABLES
+!! GLOW MODULE INPUT VARIABLES
 integer :: flagglow                     !flag toggling GLOW module run (include aurora) (0 - no; 1 - yes)
 real(wp) :: dtglow                      !time interval between GLOW runs (s)
 real(wp) :: dtglowout                   !time interval between GLOW auroral outputs (s)
 
-!FOR HANDLING INPUT
+!! FOR HANDLING INPUT
 integer :: argc
 character(256) :: argv
 
-!----------------------------------------------------------
-!------MAIN PROGRAM
-!----------------------------------------------------------
+!! ## MAIN PROGRAM
 
 argc = command_argument_count()
 if (argc < 2) error stop 'magcalc.f90 --> must specify .ini file to configure simulation and location of'// &
         'output data from simulation (i.e. plasma parameters and fields) and input field point file'
 
 
-!INITIALIZE MESSING PASSING VARIABLES, IDS ETC.
+!! INITIALIZE MESSING PASSING VARIABLES, IDS ETC.
 call mpisetup()
 write(*,*) 'magcalc.f90 --> Process:  ',myid,' of:  ',lid-1,' online...'
 
@@ -459,4 +448,4 @@ deallocate(integrandend,integrandavgend)
 !SHUT DOWN MPI
 call mpibreakdown()
 
-end program magcalc
+end program
