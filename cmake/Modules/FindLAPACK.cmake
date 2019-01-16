@@ -44,7 +44,7 @@ else()
     NAMES lapack)
 
   find_library(BLAS_LIBRARY
-    NAMES blas)            
+    NAMES refblas blas) 
 endif()
 
 include(FindPackageHandleStandardArgs)
