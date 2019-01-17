@@ -1,4 +1,4 @@
-function plot3D_cart_frames_long_ENU(ymd,UTsec,xg,parm,parmlbl,caxlims,sourceloc,hf, cmap)
+function plot3D_cart_frames_long_ENU(ymd,UTsec,xg,parm,parmlbl,caxlims,sourceloc,hf,cmap)
 
 narginchk(6,9)
 
@@ -188,11 +188,13 @@ maxxp=max(xp(:));
 
 %NOW THAT WE'VE SORTED, WE NEED TO REGENERATE THE MESHGRID
 %[XP,YP,ZP]=meshgrid(xp,yp,zp);
-FS=8;
+FS=9;
+
 
 %% left plot
 ha = subplot(1,3,1, 'parent',hf, 'nextplot','add','FontSize',FS);
 h = imagesc(ha,xp,zp,parmp);
+hold on;
 plot(ha,[minxp,maxxp],[altref,altref],'w--','LineWidth',2);
 if ~isempty(sourcemlat)
   plot(ha,sourcemlat,0,'r^','MarkerSize',12,'LineWidth',2);
@@ -215,10 +217,10 @@ ylabel(ha,'altitude (km)');
 %UTmin=floor((t-UThrs)*60);
 %UTsec=floor((t-UThrs-UTmin/60)*3600);
 
-
 t = datenum(ymd(1), ymd(2), ymd(3), 0, 0, UTsec);
 ttxt = {datestr(t,1), [datestr(t,13),' UT']};
 title(ha, ttxt)
+
 %text(xp(round(lxp/10)),zp(lzp-round(lzp/7.5)),strval,'FontSize',18,'Color',[0.66 0.66 0.66],'FontWeight','bold');
 %text(xp(round(lxp/10)),zp(lzp-round(lzp/7.5)),strval,'FontSize',16,'Color',[0.5 0.5 0.5],'FontWeight','bold');
 
