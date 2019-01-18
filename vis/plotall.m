@@ -57,7 +57,7 @@ h = plotinit(xg, visible);
 
 if ~isempty(saveplots)
   parfor i = 1:Nt
-    plotframe(direc,ymd(i,:),UTsec(i),saveplots,plotfun, h);
+    plotframe(direc,ymd(i,:),UTsec(i),saveplots,plotfun,xg,h);
   end
 else
    

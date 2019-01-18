@@ -1,4 +1,4 @@
-function xg = plotframe(direc,ymd,UTsec,saveplots,plotfun,xg,h, visible)
+function xg = plotframe(direc,ymd,UTsec,saveplots,plotfun,xg,h,visible)
 
 
 cwd = fileparts(mfilename('fullpath'));
