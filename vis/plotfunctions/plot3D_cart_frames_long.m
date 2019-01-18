@@ -2,48 +2,33 @@ function plot3D_cart_frames_long(ymd,UTsec,xg,parm,parmlbl,caxlims,sourceloc,hf,
 
 narginchk(6,8)
 
-if nargin<7  || isempty(sourceloc) % leave || for validate
-  sourceloc = [];
-else
+if nargin>=7  && ~isempty(sourceloc) 
   validateattr(sourceloc, {'numeric'}, {'vector', 'numel', 2}, mfilename, 'source magnetic coordinates', 7)
+  sourcemlat=sourceloc(1); sourcemlon=sourceloc(2);
 end
+
 if nargin<8 || isempty(hf)
   hf = figure();
 end
+
 if nargin<9 || isempty(cmap)
   cmap = parula(256);
 end   
 
 
-
-%REORGANIZE INPUT
-t=UTsec/3600;
-
-
-%SOURCE LOCATION (SHOULD PROBABLY BE AN INPUT)
-if (~isempty(sourceloc))
-  sourcemlat=sourceloc(1);
-  sourcemlon=sourceloc(2);
-else
-  sourcemlat=[];
-  sourcemlon=[];
-end
-
-
-%SIZE OF SIMULATION
+%% SIZE OF SIMULATION
 lx1=xg.lx(1); lx2=xg.lx(2); lx3=xg.lx(3);
 inds1=3:lx1+2;
 inds2=3:lx2+2;
 inds3=3:lx3+2;
 Re=6370e3;
 
-
-%JUST PICK AN X3 LOCATION FOR THE MERIDIONAL SLICE PLOT, AND AN ALTITUDE FOR THE LAT./LON. SLICE
+%% JUST PICK AN X3 LOCATION FOR THE MERIDIONAL SLICE PLOT, AND AN ALTITUDE FOR THE LAT./LON. SLICE
 ix3=floor(lx3/2);
 altref=110;
 
 
-%SIZE OF PLOT GRID THAT WE ARE INTERPOLATING ONTO
+%% SIZE OF PLOT GRID THAT WE ARE INTERPOLATING ONTO
 meantheta=mean(xg.theta(:));
 meanphi=mean(xg.phi(:));
 y=-1*(xg.theta-meantheta);   %this is a mag colat. coordinate and is only used for defining grid in linspaces below, runs backward from north distance, hence the negative sign
@@ -202,7 +187,8 @@ if (~isempty(sourcemlat))
   plot(ha,sourcemlat,0,'r^','MarkerSize',12,'LineWidth',2);
 end
 set(h,'alphadata',~isnan(parmp));
-axis(ha,'xy')
+
+tight_axis(ha)
 colormap(ha,cmap)
 caxis(ha,caxlims)
 c=colorbar(ha);
@@ -218,8 +204,8 @@ if (~isempty(sourcemlat))
   plot(ha,sourcemlat,sourcemlon,'r^','MarkerSize',12,'LineWidth',2);
 end
 set(h,'alphadata',~isnan(parmp2(:,:,2)));
-axis(ha,'xy')
-aaxis(ha,'tight')
+
+tight_axis(ha)
 colormap(ha,cmap)
 caxis(ha,caxlims)
 c=colorbar(ha);
@@ -234,7 +220,8 @@ if (~isempty(sourcemlat))
   plot(ha,sourcemlat,0,'r^','MarkerSize',12,'LineWidth',2);
 end
 set(h,'alphadata',~isnan(parmp3))
-axis(ha,'xy')
+
+tight_axis(ha)
 colormap(ha,cmap)
 caxis(ha,caxlims)
 c=colorbar(hax);
@@ -243,13 +230,8 @@ xlabel(ha,'magnetic latitude (deg.)')
 ylabel(ha,'altitude (km)')
 
 
-
-%CONSTRUCT A STRING FOR THE TIME AND DATE
+%% CONSTRUCT A STRING FOR THE TIME AND DATE
 ha = subplot(1,3,1);
-UThrs=floor(t);
-UTmin=floor((t-UThrs)*60);
-UTsec=floor((t-UThrs-UTmin/60)*3600);
-
 
 t = datenum(ymd(1), ymd(2), ymd(3), 0, 0, UTsec);
 ttxt = {datestr(t,1), [datestr(t,13),' UT']};

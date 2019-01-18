@@ -1,4 +1,4 @@
-function xg = plotall(direc,saveplots,plotfun,xg)
+function xg = plotall(direc, saveplots, plotfun, xg, visible)
 
 cwd = fileparts(mfilename('fullpath'));
 addpath([cwd, filesep, 'plotfunctions'])
@@ -9,20 +9,30 @@ validateattributes(direc, {'char'}, {'vector'}, mfilename, 'path to data', 1)
 
 if nargin<2, saveplots={}; end  %'png', 'eps' or {'png', 'eps'}
 
-if nargin<3, plotfun=[]; end
+if nargin<3
+  plotfun=[]; 
+else
+  validateattributes(plotfun, {'char', 'function_handle'}, {'nonempty'}, mfilename, 'plotting function',3)
+end
 
 if nargin<4
   xg=[]; 
 else
-  validateattr(xg, {'struct'}, {'scalar'}, mfilename, 'grid structure', 4)
+  validateattributes(xg, {'struct'}, {'scalar'}, mfilename, 'grid structure', 4)
+end
+
+if nargin<5
+  visible = 'on'; 
+else
+  validateattributes(visible, {'char'}, {'vector'}, mfilename, 'plot visibility: on/off', 5)
 end
 
 
-%%NEED TO READ INPUT FILE TO GET DURATION OF SIMULATION AND START TIME
+%% NEED TO READ INPUT FILE TO GET DURATION OF SIMULATION AND START TIME
 [ymd0,UTsec0,tdur,dtout]=readconfig([direc,filesep,'inputs/config.ini']);
 
 
-%%CHECK WHETHER WE NEED TO RELOAD THE GRID (check if one is given because this can take a long time)
+%% CHECK WHETHER WE NEED TO RELOAD THE GRID (check if one is given because this can take a long time)
 if isempty(xg)
   disp('Reloading grid...')
   xg = readgrid([direc,filesep,'inputs',filesep]);
@@ -43,40 +53,20 @@ for i = 2:Nt
   [ymd(i,:), UTsec(i)] = dateinc(dtout, ymd(i-1,:), UTsec(i-1)); %#ok<AGROW>
 end
 
+h = plotinit(xg, visible);
+
 if ~isempty(saveplots)
-  if isoctave
-    for i = 1:Nt
-      cmd = ['octave --eval "plotframe(''',direc,''',[',int2str(ymd(i,:)),'],',num2str(UTsec(i))];
-      
-      if ~isempty(saveplots)
-        cmd = [cmd,",'",saveplots,"')"""]; %#ok<AGROW>
-      else
-        cmd = [cmd,')"']; %#ok<AGROW>
-      end
-      disp(cmd)
-
-      % set to "sync" for debugging
-      system(cmd, false, "async");
-      % don't overload system RAM
-      pause(2)
-      ramfree = memfree();
-      while ramfree < 1e9
-        disp(['waiting for enough RAM to plot, you have MB free: ',num2str(ramfree/1e6,'%7.1f')])
-        pause(10)
-      end
-
-    end
-  else
-    parfor i = 1:Nt
-      plotframe(direc,ymd(i,:),UTsec(i),saveplots,plotfun);
-    end
+  parfor i = 1:Nt
+    plotframe(direc,ymd(i,:),UTsec(i),saveplots,plotfun, h);
   end
 else
-  h = plotinit(xg, 'on');
-  
+   
   for i = 1:Nt
     xg = plotframe(direc,ymd(i,:),UTsec(i),saveplots,plotfun,xg,h);
+    pause
   end
+  
+  
 end % if saveplots
 
 %% Don't print

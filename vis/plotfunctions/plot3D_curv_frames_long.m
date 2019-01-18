@@ -1,6 +1,18 @@
 function h=plot3D_curv_frames_long(ymd,UTsec,xg,parm,parmlbl,caxlims,sourceloc,hf, cmap)
 
-narginchk(6,8)
+narginchk(4,9)
+validateattr(ymd, {'numeric'}, {'vector', 'numel', 3}, mfilename, 'year month day', 1)
+validateattr(UTsec, {'numeric'}, {'scalar'}, mfilename, 'UTC second', 2)
+validateattr(xg, {'struct'}, {'scalar'}, mfilename, 'grid structure', 3)
+validateattr(parm, {'numeric'}, {'real'}, mfilename, 'parameter to plot',4)
+if nargin<5, parmlbl=''; end
+validateattr(parmlbl, {'char'}, {'vector'}, mfilename, 'parameter label', 5)
+
+if nargin<6
+  caxlims=[];
+else
+  validateattr(caxlims, {'numeric'}, {'vector', 'numel', 2}, mfilename, 'plot intensity (min, max)', 6)
+end
 
 if nargin<7  || isempty(sourceloc) % leave || for validate
   sourceloc = [];
@@ -13,10 +25,6 @@ end
 if nargin<9 || isempty(cmap)
   cmap = parula(256);
 end   
-
-
-%REORGANIZE INPUT
-t=UTsec/3600;     %convert to UT hours
 
 
 %SOURCE LOCATION (SHOULD PROBABLY BE AN INPUT)
@@ -200,7 +208,8 @@ if (flagsource)
   plot(ha,sourcemlat,0,'r^','MarkerSize',6,'LineWidth',2);
 end
 set(h,'alphadata',~isnan(parmp));
-axis(ha,'xy')
+
+tight_axis(ha)
 colormap(ha,cmap)
 caxis(ha,caxlims);
 c=colorbar(ha);
@@ -220,8 +229,8 @@ if (flagsource)
 end
 %set(h,'alphadata',~isnan(parmp2(:,:,2)));
 set(h,'alphadata',~isnan(parmp2(:,:,2)'));
-axis(ha,'xy')
-axis(ha,'tight')
+
+tight_axis(ha)
 colormap(ha,cmap)
 caxis(ha,caxlims);
 c=colorbar(ha);
@@ -239,8 +248,8 @@ if (flagsource)
   plot(ha,sourcemlon,0,'r^','MarkerSize',6,'LineWidth',2);
 end
 %set(h,'alphadata',~isnan(squeeze(parmp3(:,2,:))'));
-axis(ha,'xy')
-axis(ha,'tight')
+
+tight_axis(ha)
 colormap(ha,cmap)
 caxis(ha,caxlims);
 c=colorbar(ha);
@@ -251,9 +260,6 @@ ylabel(ha,'altitude (km)');
 
 %CONSTRUCT A STRING FOR THE TIME AND DATE
 ha=subplot(1,3,1);
-UThrs=floor(t);
-UTmin=floor((t-UThrs)*60);
-UTsec=floor((t-UThrs-UTmin/60)*3600);
 
 t = datenum(ymd(1), ymd(2), ymd(3), 0, 0, UTsec);
 ttxt = {datestr(t,1), [datestr(t,13),' UT']};

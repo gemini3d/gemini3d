@@ -9,7 +9,7 @@ end
 if nargin<2
   visible='on';
 else
-  validateattributes(visible, {'char'}, {'vector'}, mfilename, 'figure visibility', 2)
+  validateattributes(visible, {'char'}, {'vector'}, mfilename, 'figure visibility: on/off', 2)
 end
 
 %Csp = ceil(sqrt(Nt));

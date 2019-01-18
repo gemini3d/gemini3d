@@ -1,5 +1,7 @@
 function plotfun = grid2plotfun(plotfun, xg)
 %% DEFINE THE PLOTTING FUNCTION BASED ON THE TYPE OF GRID USED
+%
+% assumes function_handle if not other cases.
 if isempty(plotfun)
   minh1=min(xg.h1(:));
   maxh1=max(xg.h1(:));

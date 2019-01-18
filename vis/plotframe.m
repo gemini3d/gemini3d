@@ -1,4 +1,4 @@
-function xg = plotframe(direc,ymd,UTsec,saveplots,plotfun,xg,h)
+function xg = plotframe(direc,ymd,UTsec,saveplots,plotfun,xg,h, visible)
 
 
 cwd = fileparts(mfilename('fullpath'));
@@ -6,13 +6,13 @@ addpath([cwd, filesep, 'plotfunctions'])
 addpath([cwd, filesep, '..', filesep, 'script_utils'])
 
 %% CHECK ARGS AND SET SOME DEFAULT VALUES ON OPTIONAL ARGS
-narginchk(3,7)
+narginchk(3,8)
 validateattributes(direc, {'char'}, {'vector'}, mfilename, 'path to data', 1)
 validateattributes(ymd, {'numeric'}, {'vector','numel',3}, mfilename, 'year, month, day', 2)
 validateattributes(UTsec, {'numeric'}, {'scalar'}, mfilename, 'UTC second', 3)
 
 if nargin<4
-  saveplots={}  % 'png', 'eps' or {'png', 'eps'}
+  saveplots={};  % 'png', 'eps' or {'png', 'eps'}
 end
 if nargin<5
   plotfun=[];    %code will choose a plotting function if not given
@@ -20,8 +20,11 @@ end
 if nargin<6
   xg=[];         %code will attempt to reload the grid
 end
+
+if nargin<8, visible = 'on'; end
+
 if nargin<7 || isempty(h)
-  h = plotinit(xg,'off');
+  h = plotinit(xg, visible);
 end
 
 Ncmap = parula(256);
@@ -73,13 +76,13 @@ end
 plotfun = grid2plotfun(plotfun, xg);
 
 %% DETERMINE OUTPUT TIME NEAREST TO THAT REQUESTED
-tnow = UTsec0+tdur;    %not date corrected, but doesn't really matter
+%tnow = UTsec0+tdur;    %not date corrected, but doesn't really matter
 [ymdend,UTsecend]=dateinc(tdur,ymd0,UTsec0);
 
 
 %% LOCATE TIME NEAREST TO THE REQUESTED DATE
-ymdprev=ymd0;
-UTsecprev=UTsec0;
+%ymdprev=ymd0;
+%UTsecprev=UTsec0;
 ymdnext=ymd0;
 UTsecnext=UTsec0;
 it=1;
@@ -89,6 +92,7 @@ while(datenum([ymdnext,UTsecnext/3600,0,0])<datenum([ymd,UTsec/3600,0,0]) && dat
   [ymdnext,UTsecnext]=dateinc(dtout,ymdprev,UTsecprev);
   it=it+1;
 end
+%{
 if(UTsecnext-UTsec<=UTsec-UTsecprev)   %we are closer to next frame
   ymdnow=ymdnext;
   UTsecnow=UTsecnext;
@@ -96,7 +100,7 @@ else    %closer to previous frame
   ymdnow=ymdprev;
   UTsecnow=UTsecprev;
 end
-
+%}
 
 %% LOAD THE FRAME NEAREST TO THE REQUESTED TIME
 [ne,mlatsrc,mlonsrc,xg,v1,Ti,Te,J1,v2,v3,J2,J3,filename,Phitop,ns,vs1,Ts] = loadframe(direc,ymd,UTsec,ymd0,UTsec0,tdur,dtout,flagoutput,mloc,xg);

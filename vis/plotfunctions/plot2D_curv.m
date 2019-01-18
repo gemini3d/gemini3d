@@ -1,7 +1,18 @@
 function plot2D_curv(ymd,UTsec,xg,parm,parmlbl,caxlims,sourceloc,ha, cmap)
 
-narginchk(6,9)
+narginchk(4,9)
+validateattr(ymd, {'numeric'}, {'vector', 'numel', 3}, mfilename, 'year month day', 1)
+validateattr(UTsec, {'numeric'}, {'scalar'}, mfilename, 'UTC second', 2)
+validateattr(xg, {'struct'}, {'scalar'}, mfilename, 'grid structure', 3)
+validateattr(parm, {'numeric'}, {'real'}, mfilename, 'parameter to plot',4)
+if nargin<5, parmlbl=''; end
+validateattr(parmlbl, {'char'}, {'vector'}, mfilename, 'parameter label', 5)
 
+if nargin<6
+  caxlims=[];
+else
+  validateattr(caxlims, {'numeric'}, {'vector', 'numel', 2}, mfilename, 'plot intensity (min, max)', 6)
+end
 if nargin<7  || isempty(sourceloc) % leave || for validate
   sourceloc = [];
 else
@@ -34,7 +45,6 @@ Re=6370e3;
 %ix3=floor(lx3/2);
 ix3=1;
 altref=300;
-t=UTsec;
 
 
 %SIZE OF PLOT GRID THAT WE ARE INTERPOLATING ONTO
@@ -165,7 +175,8 @@ plot(ha,sourcemlat,0,'r^','MarkerSize',8,'LineWidth',2);
 hold(ha,'off')
 set(hi,'alphadata',~isnan(parmp));
 set(ha,'FontSize',FS)
-axis(ha,'xy')
+
+tight_axis(ha)
 colormap(ha,cmap)
 caxis(ha,caxlims)
 c=colorbar(ha);
@@ -183,8 +194,8 @@ plot(sourcemlat,sourcemlon,'r^','MarkerSize',12,'LineWidth',2);
 hold off;
 set(hi,'alphadata',~isnan(parmp2(:,:,2)));
 set(gca,'FontSize',FS);
-axis xy;
-axis tight;
+
+tight_axis(gca)
 colormap(cmap)
 caxis(caxlims)
 c=colorbar;
@@ -196,9 +207,6 @@ ylabel('magnetic longitude (deg.)')
 
 %CONSTRUCT A STRING FOR THE TIME AND DATE
 %subplot(121);
-UThrs=floor(t/3600);
-UTmin=floor((t/3600-UThrs)*60);
-UTsec=floor((t/3600-UThrs-UTmin/60)*3600);
 
 t = datenum(ymd(1), ymd(2), ymd(3), 0, 0, UTsec);
 ttxt = {datestr(t,1), [datestr(t,13),' UT']};

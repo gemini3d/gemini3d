@@ -7,6 +7,7 @@ validateattr(xg, {'struct'}, {'scalar'}, mfilename, 'grid structure', 3)
 validateattr(parm, {'numeric'}, {'real'}, mfilename, 'parameter to plot',4)
 if nargin<5, parmlbl=''; end
 validateattr(parmlbl, {'char'}, {'vector'}, mfilename, 'parameter label', 5)
+
 if nargin<6
   caxlims=[];
 else
@@ -138,8 +139,9 @@ if (xg.lx(3)==1)
     set(hi,'alphadata',~isnan(parmp))
   end
   set(ha,'FontSize',FS)
-  axis(ha, 'xy')
-  axis(ha, 'square')
+  
+  tight_axis(ha)
+  
   colormap(ha, cmap)
   if ~isempty(caxlims)
     caxis(ha, caxlims)
@@ -160,8 +162,8 @@ elseif (xg.lx(2)==1)
   hold(ha, 'off')
   set(hi,'alphadata',~isnan(parmp3));
   set(ha,'FontSize',FS);
-  axis(ha, 'xy')
-  axis(ha, 'square')
+  
+  tight_axis(ha)
   colormap(ha, cmap);
   if ~isempty(caxlims)
     caxis(ha, caxlims)
