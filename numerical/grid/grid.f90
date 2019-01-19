@@ -221,7 +221,10 @@ if (lx3*lid/=lx3all) then
   write(stderr,*) lx3all,lid
   error stop 'Number of grid points should be divisible by number of processes (see above numbers).'
 end if
-
+if (lx3<2) then
+  write(stderr,*) lx3
+  error stop 'Simulation requires a mininum of slab size of 2 (see above number).'
+end if
 
 !COMMUNICATE THE GRID SIZE TO THE WORKERS SO THAT THEY CAN ALLOCATE SPACE
 do iid=1,lid-1
