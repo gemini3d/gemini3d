@@ -193,7 +193,7 @@ idleft=myid-1
 idright=myid+1
 
 
-if (.not. (myid==0 .and. idright==lid)) then
+if (.not. (myid==0 .and. idright==lid)) then    !if root is the only worker, do nothing...
   
   !> SCREEN FOR GLOBAL BOUNDARIES, ASSUME PERIODIC.
   !> MUST BE OVERWRITTEN LATER IF YOU ARE USING ANOTHER TYPE OF BOUNDARY
@@ -257,24 +257,28 @@ idleft=myid-1
 idright=myid+1
 
 
-!SCREEN FOR GLOBAL BOUNDARIES, ASSUME PERIODIC (MUST BE OVERWRITTEN LATER IF
-!YOU ARE USING ANOTHER TYPE OF BOUNDARY
-if (idleft==-1) then
-  idleft=lid-1
+if (.not. (myid==0 .and. idright==lid)) then    !if root is the only worker, do nothing...
+  
+  !SCREEN FOR GLOBAL BOUNDARIES, ASSUME PERIODIC (MUST BE OVERWRITTEN LATER IF
+  !YOU ARE USING ANOTHER TYPE OF BOUNDARY
+  if (idleft==-1) then
+    idleft=lid-1
+  end if
+  if (idright==lid) then
+    idright=0
+  end if
+  
+  
+  call mpi_isend(param(:,:,1),lx1*lx2,mpi_realprec,idleft,tag,MPI_COMM_WORLD,tmpreq,ierr)
+  requests(1)=tmpreq
+  call mpi_irecv(paramend,lx1*lx2,mpi_realprec,idright,tag,MPI_COMM_WORLD,tmpreq,ierr)
+  requests(2)=tmpreq
+  
+  call mpi_waitall(2,requests,statuses,ierr)
+  
+  if (myid==lid-1) paramend=0d0    !zero out the data at the end of the grid
+  
 end if
-if (idright==lid) then
-  idright=0
-end if
-
-
-call mpi_isend(param(:,:,1),lx1*lx2,mpi_realprec,idleft,tag,MPI_COMM_WORLD,tmpreq,ierr)
-requests(1)=tmpreq
-call mpi_irecv(paramend,lx1*lx2,mpi_realprec,idright,tag,MPI_COMM_WORLD,tmpreq,ierr)
-requests(2)=tmpreq
-
-call mpi_waitall(2,requests,statuses,ierr)
-
-if (myid==lid-1) paramend=0d0    !zero out the data at the end of the grid
 
 end subroutine halo_end
 

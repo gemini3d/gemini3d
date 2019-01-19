@@ -137,8 +137,7 @@ idleft=myid-1; idright=myid+1
 
 !> PASS X3 BOUNDARY CONDITIONS WITH GENERIC HALOING ROUTINES
 param=vs3(:,:,:,isp)
-call halo(param,1,tagvs3BC)   
-  !! we only need one ghost cell to compute interface velocities
+call halo(param,1,tagvs3BC)     !! we only need one ghost cell to compute interface velocities
 vs3(:,:,:,isp)=param
 
 param2=ns(:,:,:,isp)

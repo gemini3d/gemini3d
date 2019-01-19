@@ -358,7 +358,8 @@ if (x%flagper==0) then
     J1halo(1:lx1,1:lx2,0)=J1halo(1:lx1,1:lx2,1)
     J2halo(1:lx1,1:lx2,0)=J2halo(1:lx1,1:lx2,1)
     J3halo(1:lx1,1:lx2,0)=J3halo(1:lx1,1:lx2,1)
-  elseif (idright==lid) then
+  end if
+  if (idright==lid) then
     J1halo(1:lx1,1:lx2,lx3+1)=J1halo(1:lx1,1:lx2,lx3)
     J2halo(1:lx1,1:lx2,lx3+1)=J2halo(1:lx1,1:lx2,lx3)
     J3halo(1:lx1,1:lx2,lx3+1)=J3halo(1:lx1,1:lx2,lx3)
@@ -414,7 +415,8 @@ if (x%flagper==0) then
     J1halo(1:lx1,1:lx2,0)=J1halo(1:lx1,1:lx2,1)
     J2halo(1:lx1,1:lx2,0)=J2halo(1:lx1,1:lx2,1)
     J3halo(1:lx1,1:lx2,0)=J3halo(1:lx1,1:lx2,1)
-  elseif (idright==lid) then
+  end if
+  if (idright==lid) then
     J1halo(1:lx1,1:lx2,lx3+1)=J1halo(1:lx1,1:lx2,lx3)
     J2halo(1:lx1,1:lx2,lx3+1)=J2halo(1:lx1,1:lx2,lx3)
     J3halo(1:lx1,1:lx2,lx3+1)=J3halo(1:lx1,1:lx2,lx3)
@@ -751,7 +753,8 @@ if (lx2/=1 .and. potsolve ==1) then    !we did a field-integrated solve above
       J1halo(1:lx1,1:lx2,0)=J1halo(1:lx1,1:lx2,1)
       J2halo(1:lx1,1:lx2,0)=J2halo(1:lx1,1:lx2,1)
       J3halo(1:lx1,1:lx2,0)=J3halo(1:lx1,1:lx2,1)
-    elseif (idright==lid) then
+    end if
+    if (idright==lid) then
       J1halo(1:lx1,1:lx2,lx3+1)=J1halo(1:lx1,1:lx2,lx3)
       J2halo(1:lx1,1:lx2,lx3+1)=J2halo(1:lx1,1:lx2,lx3)
       J3halo(1:lx1,1:lx2,lx3+1)=J3halo(1:lx1,1:lx2,lx3)
