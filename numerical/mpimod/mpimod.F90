@@ -193,31 +193,34 @@ idleft=myid-1
 idright=myid+1
 
 
-!> SCREEN FOR GLOBAL BOUNDARIES, ASSUME PERIODIC.
-!> MUST BE OVERWRITTEN LATER IF YOU ARE USING ANOTHER TYPE OF BOUNDARY
-if (idleft==-1) then
-  idleft=lid-1
-!      idleft=MPI_PROC_NULL    !if you wanted to default to aperiodic you could do this...
+if (.not. (myid==0 .and. idright==lid)) then
+  
+  !> SCREEN FOR GLOBAL BOUNDARIES, ASSUME PERIODIC.
+  !> MUST BE OVERWRITTEN LATER IF YOU ARE USING ANOTHER TYPE OF BOUNDARY
+  if (idleft==-1) then
+    idleft=lid-1
+  !      idleft=MPI_PROC_NULL    !if you wanted to default to aperiodic you could do this...
+  end if
+  if (idright==lid) then
+    idright=0
+  !      idright=MPI_PROC_NULL
+  end if
+  
+  call mpi_isend(param(:,:,1:lhalo),(lx1+4)*(lx2+4)*lhalo,mpi_realprec,idleft,tag,MPI_COMM_WORLD,tmpreq,ierr)
+  requests(1)=tmpreq
+  call mpi_isend(param(:,:,lx3+1-lhalo:lx3),(lx1+4)*(lx2+4)*lhalo,mpi_realprec, &
+                    idright,tag,MPI_COMM_WORLD,tmpreq,ierr)
+  requests(2)=tmpreq
+  call mpi_irecv(param(:,:,lx3+1:lx3+lhalo),(lx1+4)*(lx2+4)*lhalo,mpi_realprec,idright, &
+                    tag,MPI_COMM_WORLD,tmpreq,ierr)
+  requests(3)=tmpreq
+  call mpi_irecv(param(:,:,1-lhalo:0),(lx1+4)*(lx2+4)*lhalo,mpi_realprec,idleft, &
+                          tag,MPI_COMM_WORLD,tmpreq,ierr)
+  requests(4)=tmpreq
+  
+  call mpi_waitall(4,requests,statuses,ierr)
+  
 end if
-if (idright==lid) then
-  idright=0
-!      idright=MPI_PROC_NULL
-end if
-
-
-call mpi_isend(param(:,:,1:lhalo),(lx1+4)*(lx2+4)*lhalo,mpi_realprec,idleft,tag,MPI_COMM_WORLD,tmpreq,ierr)
-requests(1)=tmpreq
-call mpi_isend(param(:,:,lx3+1-lhalo:lx3),(lx1+4)*(lx2+4)*lhalo,mpi_realprec, &
-                  idright,tag,MPI_COMM_WORLD,tmpreq,ierr)
-requests(2)=tmpreq
-call mpi_irecv(param(:,:,lx3+1:lx3+lhalo),(lx1+4)*(lx2+4)*lhalo,mpi_realprec,idright, &
-                  tag,MPI_COMM_WORLD,tmpreq,ierr)
-requests(3)=tmpreq
-call mpi_irecv(param(:,:,1-lhalo:0),(lx1+4)*(lx2+4)*lhalo,mpi_realprec,idleft, &
-                        tag,MPI_COMM_WORLD,tmpreq,ierr)
-requests(4)=tmpreq
-
-call mpi_waitall(4,requests,statuses,ierr)
 
 end subroutine halo
 
