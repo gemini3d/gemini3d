@@ -101,6 +101,10 @@ phi=reshape(phi,[1,lx2,1]);
 phi=repmat(phi,[lx1,1,lx3]);
 
 
+%NOW COMPUTE THE GEOGRAPHIC COORDINATES OF EACH GRID POINT
+[glatgrid,glongrid]=geomag2geog(theta,phi);
+
+
 %COMPUTE ECEF CARTESIAN IN CASE THEY ARE NEEDED
 xECEF=r.*sin(theta).*cos(phi);
 yECEF=r.*sin(theta).*sin(phi);
