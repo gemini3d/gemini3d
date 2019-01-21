@@ -1,0 +1,2 @@
+option('HDF', type : 'boolean', value: false, description : 'use HDF5 for IO')
+option('realbits', type : 'string', value : '64', description : 'real bits')
