@@ -1,0 +1,4 @@
+[wrap-git]
+directory = glow
+url = https://github.com/scivision/ncar-glow.git
+revision = 6a46ab9

@@ -107,22 +107,20 @@ target_include_directories(multifluid PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/numeri
 target_compile_options(multifluid PRIVATE ${FFLAGS})
 
 # --- Main GEMINI executable
-add_executable(gemini gemini.f90)
-target_link_libraries(gemini PRIVATE mpimod io neutral precipBCs
+add_executable(gemini.bin gemini.f90)
+target_link_libraries(gemini.bin PRIVATE mpimod io neutral precipBCs
   temporal multifluid
   potentialBCs potential_comm_mumps const)
 #  MPI::MPI_Fortran)
-target_include_directories(gemini PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/numerical)
-set_target_properties(gemini PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR})
-target_compile_options(gemini PRIVATE ${FFLAGS})
+target_include_directories(gemini.bin PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/numerical)
+target_compile_options(gemini.bin PRIVATE ${FFLAGS})
 
 
 #--------magnetic field calculation executable---------------
-add_executable(magcalc magcalc.f90)
-target_link_libraries(magcalc PRIVATE mpimod const grid io timeutils)
-target_include_directories(magcalc PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/numerical)
-set_target_properties(magcalc PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR})
-target_compile_options(magcalc PRIVATE ${FFLAGS})
+add_executable(magcalc.bin magcalc.f90)
+target_link_libraries(magcalc.bin PRIVATE mpimod const grid io timeutils)
+target_include_directories(magcalc.bin PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/numerical)
+target_compile_options(magcalc.bin PRIVATE ${FFLAGS})
 
 # --- self-tests
 if(USEGLOW)

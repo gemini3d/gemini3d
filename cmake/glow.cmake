@@ -4,7 +4,7 @@ include(FetchContent)
 
 FetchContent_Declare(ncarglow
   GIT_REPOSITORY https://github.com/scivision/ncar-glow.git
-  GIT_TAG 72398f3
+  GIT_TAG 6a46ab9
 )
 
 

@@ -1,2 +1,3 @@
 option('HDF', type : 'boolean', value: false, description : 'use HDF5 for IO')
+option('GLOW', type : 'boolean', value: false, description : 'use GLOW instead of Fang')
 option('realbits', type : 'string', value : '64', description : 'real bits')
