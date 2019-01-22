@@ -97,7 +97,7 @@ target_include_directories(potentialBCs PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/nume
 
 # --- other libs
 add_library(precipBCs ionization/boundary_conditions/precipBCs_mod.f90)
-target_link_libraries(precipBCs PRIVATE const grid io interp temporal)
+target_link_libraries(precipBCs PRIVATE const grid io interp temporal timeutils)
 target_include_directories(precipBCs PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/numerical)
 target_compile_options(precipBCs PRIVATE ${FFLAGS})
 
