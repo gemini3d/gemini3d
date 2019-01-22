@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.12)   
+cmake_minimum_required(VERSION 3.12)
 # 3.9: MPI::MPI_Fortran  3.11 for FindLapack bug   3.12 for find_ROOT
 project(gemini3d C Fortran)  # MUST include C language for Intel / MKL to work
 enable_testing()
@@ -17,7 +17,7 @@ include(${PROJECT_SOURCE_DIR}/cmake/libraries.cmake)
 include(${PROJECT_SOURCE_DIR}/cmake/mumps.cmake)
 include(${PROJECT_SOURCE_DIR}/cmake/utils.cmake)
 
-# --- pretests, to help catch missing libs 
+# --- pretests, to help catch missing libs
 add_subdirectory(tests)
 
 # --- vendor libraries
@@ -91,7 +91,7 @@ target_link_libraries(potentialBCs PRIVATE temporal grid calculus interp io cons
     ${MUMPS_LIBRARIES}
 #    ${BLAS_LIBRARIES}
     MPI::MPI_Fortran)
-target_include_directories(potentialBCs PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/numerical 
+target_include_directories(potentialBCs PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/numerical
   ${MUMPS_INCLUDE_DIRS})
   target_compile_options(potentialBCs PRIVATE ${FFLAGS})
 

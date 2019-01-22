@@ -56,7 +56,7 @@ gemini = executable('gemini.bin', 'gemini.f90', 'temporal/temporal.f90', 'numeri
   include_directories: '/usr/include',
   fortran_args: REALBITS)
   
-# -- magcalc ece
+# -- magcalc exe
 
 magcalc = executable('magcalc.bin', 'magcalc.f90',
   link_with : [calculus, neutral, io],

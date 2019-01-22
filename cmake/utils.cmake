@@ -1,6 +1,6 @@
 
 function(download_testfiles HASH REFNUM REFNAME ROOT)
-# FetchContent is too aggressive, it deletes the output directory before extracting--could delete wrong directory causing data loss. 
+# FetchContent is too aggressive, it deletes the output directory before extracting--could delete wrong directory causing data loss.
 # So use this more specific but safe method.
 
 set(ARCHIVE ${REFNAME}.zip)
@@ -42,20 +42,24 @@ endfunction()
 function(check_ram)
 # Cygwin does not correctly report memory or CPU resources to CMake_Host_system_info
 
+if(DEFINED NP)  # if the user manually sets NP at command line, don't override the user.
+  return()
+endif()
+
 if(CYGWIN)
   include(ProcessorCount)
   ProcessorCount(NCORES)
   math(EXPR NCORES "${NCORES}/2")
-  set(NTEST ${NCORES} PARENT_SCOPE)
+  set(NP ${NCORES} PARENT_SCOPE)
   return()
 endif()
 
 cmake_host_system_information(RESULT PHYSRAM QUERY AVAILABLE_PHYSICAL_MEMORY)
 
 if(${PHYSRAM} LESS 1000)
-  set(NTEST 1 PARENT_SCOPE)
+  set(NP 1 PARENT_SCOPE)
 else()
-  set(NTEST ${MPIEXEC_MAX_NUMPROCS} PARENT_SCOPE)
+  set(NP ${MPIEXEC_MAX_NUMPROCS} PARENT_SCOPE)
 endif()
 
 endfunction(check_ram)
@@ -90,11 +94,13 @@ function(run_gemini_test TESTNAME TESTDIR TIMEOUT)
 
 check_ram()
 
+set(TESTNAME ${TESTNAME}-NP${NP})  # for convenience, name with number of processes since this is important for debugging MPI
+
 add_test(NAME ${TESTNAME}
-  COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${NTEST} ${CMAKE_BINARY_DIR}/gemini.bin ${CMAKE_SOURCE_DIR}/initialize/${TESTDIR}/config.ini ${CMAKE_CURRENT_BINARY_DIR}/${TESTDIR}
+  COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${NP} ${CMAKE_BINARY_DIR}/gemini.bin ${CMAKE_SOURCE_DIR}/initialize/${TESTDIR}/config.ini ${CMAKE_CURRENT_BINARY_DIR}/${TESTDIR}
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
-set_tests_properties(${TESTNAME} PROPERTIES 
+set_tests_properties(${TESTNAME} PROPERTIES
   TIMEOUT ${TIMEOUT}
   REQUIRED_FILES ${CMAKE_SOURCE_DIR}/initialize/${TESTDIR}/config.ini
   FIXTURES_REQUIRED MPIMUMPS
@@ -109,7 +115,7 @@ add_test(NAME ${TESTNAME}
   COMMAND Octave::Interpreter --eval "exit(compare_all('${CMAKE_CURRENT_BINARY_DIR}/${OUTDIR}','${CMAKE_CURRENT_SOURCE_DIR}/${REFDIR}'))"
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 
-set_tests_properties(${TESTNAME} PROPERTIES 
+set_tests_properties(${TESTNAME} PROPERTIES
   TIMEOUT 30
   REQUIRED_FILES "${CMAKE_CURRENT_BINARY_DIR}/${OUTDIR}/${REQFILE};${CMAKE_CURRENT_SOURCE_DIR}/${REFDIR}/${REQFILE}"
 )
@@ -123,10 +129,10 @@ add_test(NAME ${TESTNAME}
   COMMAND ${Matlab_MAIN_PROGRAM} -nojvm -r "exit(compare_all('${CMAKE_CURRENT_BINARY_DIR}/${OUTDIR}','${CMAKE_CURRENT_SOURCE_DIR}/${REFDIR}'))"
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 
-set_tests_properties(${TESTNAME} PROPERTIES 
+set_tests_properties(${TESTNAME} PROPERTIES
   TIMEOUT 60
   REQUIRED_FILES "${CMAKE_CURRENT_BINARY_DIR}/${OUTDIR}/${REQFILE};${CMAKE_CURRENT_SOURCE_DIR}/${REFDIR}/${REQFILE}"
-) 
+)
 # Matlab with a lot of toolboxes takes ~ 15 seconds just to start
 
 endfunction()
