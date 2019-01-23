@@ -7,8 +7,11 @@
 #
 # Gemini currently has a bug with Ifort, but once that's fixed, Ifort should work. For now use Gfortran.
 #
-# Flang, PGI and/or NAG support are anticipated soon from vendros, possibly in 2019. 
+# Flang, PGI and/or NAG support are anticipated soon from vendors, possibly in 2019. 
 # Ask if desired.
+
+#
+# for each library, switch "true" to "false" if you don't want it.
 
 set -e  # abort on any error
 set -u  # abort on undefined variable (a common bash goof)
@@ -64,12 +67,29 @@ if true; then
 
 cd $WD
 
-git clone $LAPACKGIT
+git clone --depth 1 $LAPACKGIT
 
 cd lapack
 mkdir build
 cd build
 cmake -DCMAKE_INSTALL_LIBDIR=$LAPACKPREFIX ..
 cmake --build -j . --target install -- -l 2
+
+fi
+
+#===============
+# scalapack
+
+MUMPSGIT=https://github.com/scivision/fortran-libs
+
+if true; then
+
+cd $WD
+
+git clone --depth 1 $MUMPSGIT mumps
+
+cd mumps
+
+./build_self.sh
 
 fi
