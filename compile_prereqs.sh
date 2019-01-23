@@ -3,27 +3,52 @@
 # this script is to help those who must compile everything except the compiler.
 # For example, CentOS < 8 users.
 
-# if using Gfortran, Gfortran >= 6 is REQUIRED (newer versions e.g. Gfortran 7, 8, 9, etc. are recommended for better performance)
+# if using Gfortran, Gfortran >= 6 is REQUIRED
+# Newer Gfortran versions e.g. Gfortran 8, 9, etc. are recommended for better performance.
+# Gfortran 6 is the oldest currently supported version, so stay ahead by using say Gfortran 8 or newer.
 #
 # Gemini currently has a bug with Ifort, but once that's fixed, Ifort should work. For now use Gfortran.
 #
-# Flang, PGI and/or NAG support are anticipated soon from vendors, possibly in 2019. 
+# Flang, PGI and/or NAG support are anticipated soon from vendors, possibly in 2019.
 # Ask if desired.
-
-#
-# for each library, switch "true" to "false" if you don't want it.
 
 set -e  # abort on any error
 set -u  # abort on undefined variable (a common bash goof)
 
-export FC=gfortran
-export CC=gcc
-export CXX=g++
+# ======= user config ====================
+# Arbitrary names/locations
 
-WD=$HOME/libs_gemini  # so you can rebuild later without complete recompilation
-PREFIX=$HOME/.local  # all libraries installed under this directory
+# all libraries installed under $PREFIX/libraryname
+PREFIX=$HOME/.local
+# whatever name you want to name at end of each library directory, arbitrary
+SUFFIX=gcc8
+# working directory, so you can rebuild later without complete recompilation
+WD=$HOME/libs_gemini
 
-[[ $(gfortran -dumpversion) < 6 ]] && { echo "Gfortran >= 6 required"; exit 1; }
+# for each library, switch "true" to "false" if you don't want it.
+BUILDMPI=true
+BUILDLAPACK=true
+BUILDMUMPS=true
+
+# which compilers do you want?
+export FC=gfortran-8
+export CC=gcc-8
+export CXX=g++-8
+
+# ================================================
+# normally don't adjust parameters below this line
+
+# Library parameters
+LAPACKGIT=https://github.com/Reference-LAPACK/lapack
+LAPACKPREFIX=$PREFIX/lapack-$SUFFIX
+
+MPIVERSION=3.1.3  # MPI 4 doesn't currently work with ScalaPack
+MPIFN=openmpi-$MPIVERSION.tar.bz2
+MPIURL=https://download.open-mpi.org/release/open-mpi/v3.1/$MPIFN
+MPISHA1=b3c60e2bdd5a8a8e758fd741f9a5bebb84da5e81
+MPIPREFIX=$PREFIX/openmpi-$MPIVERSION-$SUFFIX
+
+[[ $FC == gfortran && $($FC -dumpversion) < 6 ]] && { echo "Gfortran >= 6 required"; exit 1; }
 
 mkdir -p $WD
 
@@ -31,13 +56,8 @@ mkdir -p $WD
 # OpenMPI 3.1
 # At this time, Scalapack isn't compatible with OpenMPI 4
 # https://www.open-mpi.org/software/ompi/v3.1/
-MPIVERSION=3.1.3
-MPIFN=openmpi-$MPIVERSION.tar.bz2
-MPIURL=https://download.open-mpi.org/release/open-mpi/v3.1/$MPIFN
-MPISHA1=b3c60e2bdd5a8a8e758fd741f9a5bebb84da5e81
-MPIPREFIX=$PREFIX/openmpi-$MPIVERSION-gcc$(gfortran -dumpversion)
 
-if true; then
+if $BUILDMPI; then
 
 cd $WD
 
@@ -50,7 +70,7 @@ cd $WD/openmpi-$MPIVERSION
 
 echo "installing OpenMPI $MPIVERSION to $MPIPREFIX"
 
-./configure --prefix=$MPIPREFIX CC=gcc CXX=g++ FC=gfortran
+./configure --prefix=$MPIPREFIX CC=$CC CXX=$CXX FC=$FC
 
 make -j -l2
 
@@ -60,17 +80,15 @@ fi
 
 #================================================================
 # LAPACK
-LAPACKGIT=https://github.com/Reference-LAPACK/lapack
-LAPACKPREFIX=$PREFIX/lapack-gcc$(gfortran -dumpversion)
 
-if true; then
+if $BUILDLAPACK; then
 
 cd $WD
 
-git clone --depth 1 $LAPACKGIT
+[[ -d lapack ]] && { cd lapack; git pull; cd ..; } || git clone --depth 1 $LAPACKGIT
 
 cd lapack
-mkdir build
+mkdir -p build
 cd build
 cmake -DCMAKE_INSTALL_LIBDIR=$LAPACKPREFIX ..
 cmake --build -j . --target install -- -l 2
@@ -82,14 +100,14 @@ fi
 
 MUMPSGIT=https://github.com/scivision/fortran-libs
 
-if true; then
+if $BUILDMUMPS; then
 
 cd $WD
 
-git clone --depth 1 $MUMPSGIT mumps
+[[ -d mumps ]] && { cd mumps; git pull; cd ..; } || git clone --depth 1 $MUMPSGIT mumps
 
 cd mumps
 
-./build_self.sh
+./build_self.sh $PREFIX $SUFFIX $MPIPREFIX $LAPACKPREFIX
 
 fi

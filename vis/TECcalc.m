@@ -56,10 +56,10 @@ times=UTsec0:dtout:UTsec0+tdur;
 %NEW (PLOT) GRID SIZE IN R,TH
 Re=6370e3;
 %lth=500;
-lth=750;
+lth=1500;
 %lr=250;
 lr=300;
-lphi=750;
+lphi=300;
 
 
 %DEFINE A GRID FOR THE INTERPOLATION
