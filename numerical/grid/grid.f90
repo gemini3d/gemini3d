@@ -3,7 +3,7 @@ use, intrinsic:: iso_fortran_env, only: stderr=>error_unit
 
 use mpi, only: mpi_integer, mpi_comm_world, mpi_status_ignore
 
-use phys_consts, only: Gconst,Me,Re,wp
+use phys_consts, only: Gconst,Me,Re,wp, red, black
 
 use mpimod, only: myid, lid, &
   tagx1, tagx2, tagx3, tagtheta, tagr, tagphi, tagnull, taglx1, taglx2, taglx3, taglx3all, taginc, &
@@ -218,12 +218,15 @@ end if
 
 !JUST BAIL ON THE SIMULATION IF THE X3 SIZE ISN'T VISIBLE BY NUMBER OF PROCESSES
 if (lx3*lid/=lx3all) then
-  write(stderr,*) lx3all,lid
-  error stop 'Number of grid points should be divisible by number of processes (see above numbers).'
+  write(stderr,*) 'Number of grid points', lx3all, &
+    'must be divisible by number of processes',lid
+  error stop 
 end if
 if (lx3<2) then
-  write(stderr,*) lx3
-  error stop 'Simulation requires a mininum of slab size of 2 (see above number).'
+  write(stderr,*) red // '**************************************************************************'
+  write(stderr,*) 'WARNING: simulation with slab size < 2 may give incorrect results with some MPI versions. '
+  write(stderr,*) 'Check results on system with MPI -np >= 2.   here, lx3=',lx3
+  write(stderr,*) '**************************************************************************' // black
 end if
 
 !COMMUNICATE THE GRID SIZE TO THE WORKERS SO THAT THEY CAN ALLOCATE SPACE

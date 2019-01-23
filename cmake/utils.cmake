@@ -78,7 +78,7 @@ elseif(${MPIEXEC_MAX_NUMPROCS} GREATER_EQUAL 4)
 elseif(${MPIEXEC_MAX_NUMPROCS} GREATER_EQUAL 2)
   set(NP 2 PARENT_SCOPE)
 else()
-  message(FATAL_ERROR "Gemini requires at least two MPI processes, you have ${MPIEXEC_MAX_NUMPROCS}")
+  set(NP 1 PARENT_SCOPE)
 endif()
 
 endfunction(num_mpi_processes)
@@ -112,6 +112,10 @@ endfunction(check_matlab_source_runs)
 function(run_gemini_test TESTNAME TESTDIR REFDIR TIMEOUT)
 
 num_mpi_processes(${REFDIR})
+
+if(NP EQUAL 1)
+  message(WARNING "Gemini with less than two MPI processes gives incorrect results on some MPI setups. We urge confirming results on a system with at least two MPI processes.")
+endif()
 
 set(TESTNAME ${TESTNAME}-NP${NP})  # for convenience, name with number of processes since this is important for debugging MPI
 

@@ -13,6 +13,12 @@ integer,parameter :: wp=real64
 integer,parameter :: wp=real128
 #endif
 
+!> colored output text (for Unix-like systems at least). 
+!> It should be compatible across compiler vendors.
+character(5), parameter :: &
+  red = char(27) // '[31m', &
+  black = char(27) // '[0m'
+
 !MATHEMATICAL CONSTANTS
 real(wp), parameter :: pi = 4.0_wp*atan(1.0_wp)
 
