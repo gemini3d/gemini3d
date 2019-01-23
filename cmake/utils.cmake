@@ -1,3 +1,4 @@
+include(${CMAKE_CURRENT_LIST_DIR}/maxfactor.cmake)
 
 function(download_testfiles HASH REFNUM REFNAME ROOT)
 # FetchContent is too aggressive, it deletes the output directory before extracting--could delete wrong directory causing data loss.
@@ -36,33 +37,35 @@ if(NOT EXISTS ${ROOT}/${REFNAME})
                   WORKING_DIRECTORY ${ROOT})
 endif()
 
-endfunction()
+endfunction(download_testfiles)
 
 
-function(check_ram)
-# Cygwin does not correctly report memory or CPU resources to CMake_Host_system_info
+function(num_mpi_processes REFDIR)
 
 if(DEFINED NP)  # if the user manually sets NP at command line, don't override the user.
   return()
 endif()
 
-if(CYGWIN)
-  include(ProcessorCount)
-  ProcessorCount(NCORES)
-  math(EXPR NCORES "${NCORES}/2")
-  set(NP ${NCORES} PARENT_SCOPE)
-  return()
-endif()
+if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.13)
+  set(SIZEFN ${REFDIR}/inputs/simsize.dat)
+  
+  file(READ ${SIZEFN} hex OFFSET 8 LIMIT 4 HEX)
+  math(EXPR halfX3 "0x${hex} / 0x2" OUTPUT_FORMAT DECIMAL)
 
-cmake_host_system_information(RESULT PHYSRAM QUERY AVAILABLE_PHYSICAL_MEMORY)
-
-if(${PHYSRAM} LESS 1000)
-  set(NP 1 PARENT_SCOPE)
+  maxfactor(${halfX3} ${MPIEXEC_MAX_NUMPROCS})
+  
+  #message(STATUS "Gemini test auto-setup with ${MAXFACTOR} MPI processes")
+  
+  set(NP ${MAXFACTOR} PARENT_SCOPE)
+elseif(${MPIEXEC_MAX_NUMPROCS} GREATER_EQUAL 4)
+  set(NP 4 PARENT_SCOPE)
+elseif(${MPIEXEC_MAX_NUMPROCS} GREATER_EQUAL 2)
+  set(NP 2 PARENT_SCOPE)
 else()
-  set(NP ${MPIEXEC_MAX_NUMPROCS} PARENT_SCOPE)
+  message(FATAL_ERROR "Gemini requires at least two MPI processes, you have ${MPIEXEC_MAX_NUMPROCS}")
 endif()
 
-endfunction(check_ram)
+endfunction(num_mpi_processes)
 
 
 function(check_octave_source_runs code)
@@ -90,9 +93,9 @@ set(MatlabOK ${ok} PARENT_SCOPE)
 endfunction(check_matlab_source_runs)
 
 
-function(run_gemini_test TESTNAME TESTDIR TIMEOUT)
+function(run_gemini_test TESTNAME TESTDIR REFDIR TIMEOUT)
 
-check_ram()
+num_mpi_processes(${REFDIR})
 
 set(TESTNAME ${TESTNAME}-NP${NP})  # for convenience, name with number of processes since this is important for debugging MPI
 
@@ -106,7 +109,7 @@ set_tests_properties(${TESTNAME} PROPERTIES
   FIXTURES_REQUIRED MPIMUMPS
 )
 
-endfunction()
+endfunction(run_gemini_test)
 
 
 function(octave_compare TESTNAME OUTDIR REFDIR REQFILE)
@@ -120,7 +123,7 @@ set_tests_properties(${TESTNAME} PROPERTIES
   REQUIRED_FILES "${CMAKE_CURRENT_BINARY_DIR}/${OUTDIR}/${REQFILE};${CMAKE_CURRENT_SOURCE_DIR}/${REFDIR}/${REQFILE}"
 )
 
-endfunction()
+endfunction(octave_compare)
 
 
 function(matlab_compare TESTNAME OUTDIR REFDIR REQFILE)
@@ -135,7 +138,7 @@ set_tests_properties(${TESTNAME} PROPERTIES
 )
 # Matlab with a lot of toolboxes takes ~ 15 seconds just to start
 
-endfunction()
+endfunction(matlab_compare)
 
 
 function(compare_gemini_output TESTNAME TESTDIR REFDIR REQFILE)
@@ -160,4 +163,4 @@ else()
   endif()
 endif()
 
-endfunction()
+endfunction(compare_gemini_output)

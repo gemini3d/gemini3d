@@ -280,12 +280,20 @@ Exclude particular tests using `ctest -E <regexp>`.
   ```sh
   ctest -E 3D --output-on-failure
   ```
+  
+The maximum number of MPI processes is set with `cmake -DNP=`. For example to request 4 MPI processes:
+```sh
+cmake -DNP=4 ..
+make
+ctest
+```
+Otherwise, the default (suggested) CMake generation process automatically sets the maximum number of processes possible based on your CPU core count and grid size.
 
 Full debugging and testing is enabled by:
 ```sh
 cmake -DCMAKE_BUILD_TYPE=Debug ..
 
-make
+cmake --build -j .
 
 ctest --output-on-failure
 ```
