@@ -11,13 +11,13 @@ linux*)
      echo "This script is made for personal laptops/desktops. HPCs using CentOS have system-specific library setup."
      echo "If using gfortran, version >= 6 is required. Try devtoolset-7 if gcc/gfortran is too old on your system."
      yum install epel-release
-     yum install pkg-config gcc-gfortran g++ cmake make 
+     yum install pkg-config gcc-gfortran g++ make 
      yum install MUMPS-openmpi-devel lapack-devel scalapack-openmpi-devel blacs-openmpi-devel openmpi-devel libmetis-devel libscotch-devel ptscotch-openmpi-devel atlas-devel
      yum install octave
   else
     apt update
     apt install gfortran make
-    apt install libmumps-dev liblapack-dev libscalapack-mpi-dev libblacs-mpi-dev libopenmpi-dev libmetis-dev libscotch-dev libptscotch-dev libatlas-base-dev 
+    apt install libmumps-dev liblapack-dev libscalapack-mpi-dev libblacs-mpi-dev libopenmpi-dev openmpi-bin libatlas-base-dev 
     apt install --no-install-recommends octave
   fi
   ;;
