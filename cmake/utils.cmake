@@ -46,15 +46,31 @@ if(DEFINED NP)  # if the user manually sets NP at command line, don't override t
   return()
 endif()
 
-if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.13)
+if(NOT WIN32 AND CMAKE_VERSION VERSION_GREATER_EQUAL 3.13)
   set(SIZEFN ${REFDIR}/inputs/simsize.dat)
   
-  file(READ ${SIZEFN} hex OFFSET 8 LIMIT 4 HEX)
-  math(EXPR halfX3 "0x${hex} / 0x2" OUTPUT_FORMAT DECIMAL)
+  # file(READ ${SIZEFN} hex OFFSET 8 LIMIT 4 HEX) # no, this leaves trailing zeros
+  execute_process(
+    COMMAND od -j4 -N9 -t d4 ${SIZEFN}
+    OUTPUT_VARIABLE raw
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
+  separate_arguments(x2x3 UNIX_COMMAND ${raw})
+  # message(STATUS "x2x3 ${x2x3}")
+  list(GET x2x3 1 x2)
+  list(GET x2x3 2 x3)
+
+  if(x3 EQUAL 1)  # 2D sim
+    set(x3 ${x2})
+  endif()
+
+  #message(STATUS "x2 ${x2} x3 ${x3}")
+  math(EXPR halfX3 "${x3} / 2")
+  #message("halfx3 ${halfX3}")
 
   maxfactor(${halfX3} ${MPIEXEC_MAX_NUMPROCS})
-  
-  #message(STATUS "Gemini test auto-setup with ${MAXFACTOR} MPI processes")
+
+  message(STATUS "Gemini test auto-setup with ${MAXFACTOR} MPI processes")
   
   set(NP ${MAXFACTOR} PARENT_SCOPE)
 elseif(${MPIEXEC_MAX_NUMPROCS} GREATER_EQUAL 4)
