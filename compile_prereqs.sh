@@ -28,6 +28,7 @@ WD=$HOME/libs_gemini-$SUFFIX
 # for each library, switch "true" to "false" if you don't want it.
 BUILDMPI=true
 BUILDLAPACK=true
+BUILDSCALAPACK=true
 BUILDMUMPS=true
 
 # which compilers do you want?
@@ -48,6 +49,12 @@ MPIURL=https://download.open-mpi.org/release/open-mpi/v3.1/$MPIFN
 MPISHA1=b3c60e2bdd5a8a8e758fd741f9a5bebb84da5e81
 MPIPREFIX=$PREFIX/openmpi-$MPIVERSION-$SUFFIX
 
+SCALAPACKGIT=https://github.com/scivision/scalapack
+SCALAPACKPREFIX=$PREFIX/scalapack-$SUFFIX
+
+MUMPSGIT=https://github.com/scivision/mumps
+
+
 [[ $FC == gfortran && $($FC -dumpversion) < 6 ]] && { echo "Gfortran >= 6 required"; exit 1; }
 
 mkdir -p $WD
@@ -57,7 +64,8 @@ mkdir -p $WD
 # At this time, Scalapack isn't compatible with OpenMPI 4
 # https://www.open-mpi.org/software/ompi/v3.1/
 
-if $BUILDMPI; then
+if $BUILDMPI
+then
 
 cd $WD
 
@@ -81,7 +89,8 @@ fi
 #================================================================
 # LAPACK
 
-if $BUILDLAPACK; then
+if $BUILDLAPACK
+then
 
 cd $WD
 
@@ -98,7 +107,23 @@ fi
 #===============
 # scalapack
 
-MUMPSGIT=https://github.com/scivision/fortran-libs
+if $BUILDSCALAPACK
+then
+
+cd $WD
+
+[[ -d scalapack ]] && { cd scalapack; git pull; cd ..; } || git clone --depth 1 $SCALAPACKGIT
+
+cd scalapack/build
+
+cmake -Wno-dev -DCMAKE_INSTALL_PREFIX=$SCALAPACKPREFIX -DMPI_ROOT=$MPIPREFIX -DLAPACK_ROOT=$LAPACKPREFIX ..
+
+cmake --build -j . --target install -- -l 2
+
+fi
+
+#=================
+# MUMPS
 
 if $BUILDMUMPS; then
 
@@ -108,6 +133,6 @@ cd $WD
 
 cd mumps
 
-./build_self.sh $PREFIX $SUFFIX $MPIPREFIX $LAPACKPREFIX
+./build_self.sh $PREFIX $SUFFIX $MPIPREFIX $LAPACKPREFIX $SCALAPACKPREFIX
 
 fi
