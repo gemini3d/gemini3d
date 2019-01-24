@@ -23,7 +23,7 @@ PREFIX=$HOME/.local
 # whatever name you want to name at end of each library directory, arbitrary
 SUFFIX=gcc8
 # working directory, so you can rebuild later without complete recompilation
-WD=$HOME/libs_gemini
+WD=$HOME/libs_gemini-$SUFFIX
 
 # for each library, switch "true" to "false" if you don't want it.
 BUILDMPI=true
