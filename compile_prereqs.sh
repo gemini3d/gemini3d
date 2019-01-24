@@ -21,7 +21,7 @@ set -u  # abort on undefined variable (a common bash goof)
 # all libraries installed under $PREFIX/libraryname
 PREFIX=$HOME/.local
 # whatever name you want to name at end of each library directory, arbitrary
-SUFFIX=gcc8
+SUFFIX=gcc7
 # working directory, so you can rebuild later without complete recompilation
 WD=$HOME/libs_gemini-$SUFFIX
 
@@ -32,9 +32,11 @@ BUILDSCALAPACK=true
 BUILDMUMPS=true
 
 # which compilers do you want?
-export FC=gfortran-8
-export CC=gcc-8
-export CXX=g++-8
+export FC=$(which gfortran)
+export CC=$(which gcc)
+
+echo "FC=$FC"
+echo "CC=$CC"
 
 # ================================================
 # normally don't adjust parameters below this line
@@ -55,7 +57,7 @@ SCALAPACKPREFIX=$PREFIX/scalapack-$SUFFIX
 MUMPSGIT=https://github.com/scivision/mumps
 
 
-[[ $FC == gfortran && $($FC -dumpversion) < 6 ]] && { echo "Gfortran >= 6 required"; exit 1; }
+[[ $($FC -dumpversion) < 6 ]] && { echo "Gfortran >= 6 required"; exit 1; }
 
 mkdir -p $WD
 

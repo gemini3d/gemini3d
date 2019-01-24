@@ -15,6 +15,10 @@ mpi = dependency('mpi', language : 'fortran', required : true)
 mumps = fc.find_library('dmumps', required : true)
 lapack = dependency('lapack', required : true)
 
+if HDF  # see HDF5 branch, not yet fully ready.
+ hdf5 = dependency('hdf5')
+endif
+
 
 calculus = library('calculus', 'numerical/constants/phys_consts.F90', 'numerical/calculus/calculus.f90', 'numerical/grid/grid.f90', 'numerical/mpimod/mpimod.F90', 'numerical/interpolation/interpolation.f90', 'vendor/lapack95/gbsv.F90',
   dependencies : mpi,
@@ -76,5 +80,3 @@ test('gemini 3D', gemini,
   workdir : meson.source_root(),
   timeout : 600,
   is_parallel : false)
-
-#hdf5 = dependency('hdf5')
