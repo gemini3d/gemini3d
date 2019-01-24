@@ -34,9 +34,11 @@ BUILDMUMPS=true
 # which compilers do you want?
 export FC=$(which gfortran)
 export CC=$(which gcc)
+export CXX=$(which g++)
 
 echo "FC=$FC"
 echo "CC=$CC"
+echo "CXX=$CXX"
 
 # ================================================
 # normally don't adjust parameters below this line
