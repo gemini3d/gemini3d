@@ -28,7 +28,11 @@ if(CMAKE_Fortran_COMPILER_ID STREQUAL Intel)
 
 elseif(CMAKE_Fortran_COMPILER_ID STREQUAL GNU)
   # -fdefault-real-8  after literals are fixed to "e" or "wp"
-  list(APPEND FFLAGS -march=native -fimplicit-none)
+  if(NOT CMAKE_Fortran_COMPILER_VERSION VERSION_EQUAL 7.2.0)
+    list(APPEND FFLAGS -march=native)
+  endif()
+  
+  list(APPEND FFLAGS -fimplicit-none)
   list(APPEND FFLAGS -Wall -Wpedantic -Wextra)
 
   if(CMAKE_BUILD_TYPE STREQUAL Debug)
