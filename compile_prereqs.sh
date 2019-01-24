@@ -87,7 +87,8 @@ echo "installing OpenMPI $MPIVERSION to $MPIPREFIX"
 make -j -l2
 
 make install
-
+else
+  MPIPREFIX=$(dirname $(which mpifort))/..
 fi
 
 #================================================================
