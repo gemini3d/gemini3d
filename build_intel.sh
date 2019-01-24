@@ -3,39 +3,40 @@
 # "-d" option makes this a Debug build
 # "-t" option makes this a Trace build (dump certain variables to disk)
 #
+# this convenience script initally (one-time) setups up Gemini for ifort
 # *** for subsequent builds, you can just type "make" in the objects/ directory ***
 # (I keep a second Terminal tab for this purpose)
-# I.e. copy and paste them or put in ~/.bashrc
 
-# --- if you haven't already setup your environment, you will need to do so for future "make" after this script
-
-# if MKLROOT is not defined, try a default value
 set -e
+set -u
 
-cmake --version
+PREFIX=$HOME/.local
+SUFFIX=ifort19
 
-[[ -z ${MKLROOT+x} ]] && export MKLROOT=$HOME/intel/compilers_and_libraries/linux/mkl/
-
-# bash >= 4.2, centos 7 has bash 4.1
-#[[ -v MKLROOT ]] || export MKLROOT=$HOME/intel/compilers_and_libraries/linux/mkl/
-
-. $MKLROOT/../bin/compilervars.sh intel64
-. $MKLROOT/bin/mklvars.sh intel64 ilp64
-
-# DO NOT change to mpif90 or mpicc as that would use GNU compilers!!!
-export FC=$MKLROOT/../mpi/intel64/bin/mpiifort
-export CC=$MKLROOT/../mpi/intel64/bin/mpiicc
-export CXX=icpc
-
-rm -rf objects/* # one-time, if you build for Gfortran previously
+#======================================================
+MPIPREFIX=$MKLROOT/../mpi/intel64
+MUMPSPREFIX=$PREFIX/mumps-$SUFFIX
 
 
 # some systems don't have mpiifort for Intel
-# use ifort as mpif90 get partially picked-up as GNU
-OPTS="-DMUMPS_ROOT=$HOME/flibs-intel/MUMPS"
+export FC=$MPIPREFIX/bin/mpiifort
+export CC=$MPIPREFIX/bin/mpiicc
+export CXX=icpc
+# ============================================================
 
-[[ $1 == "-d" ]] && OPTS="-DCMAKE_BUILD_TYPE=Debug $OPTS"
-[[ $1 == "-t" ]] && OPTS="-DTRACE:BOOL=on $OPTS"
+for d in $MPIPREFIX $MUMPSPREFIX
+do
+  [[ -d $d ]] || { echo "ERROR: $d not found"; exit 1; }
+done
+
+OPTS="-DMUMPS_ROOT=$MUMPSPREFIX ${OPTS:-}"
+
+cmake --version
+
+[[ ${1:-} == "-d" ]] && OPTS="-DCMAKE_BUILD_TYPE=Debug $OPTS"
+[[ ${1:-} == "-t" ]] && OPTS="-DTRACE:BOOL=on $OPTS"
+
+rm -rf objects/*  # need this one-time in case different compiler e.g. ifort was previously used.
 
 cmake $OPTS -B objects -S .
 

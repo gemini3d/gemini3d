@@ -8,27 +8,41 @@
 # (I keep a second Terminal tab for this purpose)
 
 set -e
+set -u
 
-cmake --version
+PREFIX=$HOME/.local
+SUFFIX=gcc7
 
-#OPTS="-DMPI_ROOT=$HOME/.local/openmpi-3.1-gcc7 $OPTS"
-#OPTS="-DLAPACK_ROOT=$HOME/.local/lapack-gcc7 $OPTS"
-OPTS="-DSCALAPACK_ROOT=$HOME/flibs-gnu-nomkl/scalapack/build $OPTS"
-OPTS="-DMUMPS_ROOT=$HOME/flibs-gnu-nomkl/MUMPS $OPTS"
+#======================================================
+MPIPREFIX=/usr/bin
+LAPACKPREFIX=$PREFIX/lapack-$SUFFIX
+SCALAPACKPREFIX=$PREFIX/scalapack-$SUFFIX
+MUMPSPREFIX=$PREFIX/mumps-$SUFFIX
 
+export FC=$MPIPREFIX/bin/mpifort
+export CC=$MPIPREFIX/bin/mpicc
+
+# ============================================================
 # this temporarily disables Intel compiler (if installed) from messing up your gfortran environment.
 MKLROOT=
 LD_LIBRARY_PATH=
 
-[[ $1 == "-d" ]] && OPTS="-DCMAKE_BUILD_TYPE=Debug $OPTS"
-[[ $1 == "-t" ]] && OPTS="-DTRACE:BOOL=on $OPTS"
+for d in $MPIPREFIX $LAPACKPREFIX $SCALAPACKPREFIX $MUMPSPREFIX
+do
+  [[ -d $d ]] || { echo "ERROR: $d not found"; exit 1; }
+done
 
-export FC=mpif90
-export CC=mpicc
+OPTS="-DMPI_ROOT=$MPIPREFIX ${OPTS:-}"
+OPTS="-DLAPACK_ROOT=$LAPACKPREFIX $OPTS"
+OPTS="-DSCALAPACK_ROOT=$SCALAPACKPREFIX $OPTS"
+OPTS="-DMUMPS_ROOT=$MUMPSPREFIX $OPTS"
+
+cmake --version
+
+[[ ${1:-} == "-d" ]] && OPTS="-DCMAKE_BUILD_TYPE=Debug $OPTS"
+[[ ${1:-} == "-t" ]] && OPTS="-DTRACE:BOOL=on $OPTS"
 
 rm -rf objects/*  # need this one-time in case different compiler e.g. ifort was previously used.
-
-echo "cmake $OPTS"
 
 cmake $OPTS -B objects -S .
 

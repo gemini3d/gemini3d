@@ -8,25 +8,39 @@
 # (I keep a second Terminal tab for this purpose)
 
 set -e
+set -u
 
-cmake --version
+PREFIX=$HOME/zettergmdata/lib-gcc7.3
+
+MPIPREFIX=$PREFIX/openmpi-3.1.3
+LAPACKPREFIX=$PREFIX/lapack
+SCALAPACKPREFIX=$PREFIX/fortran-libs/scalapack
+MUMPSPREFIX=$PREFIX/fortran-libs/MUMPS
+
+export FC=$MPIPREFIX/bin/mpifort
+export CC=$MPIPREFIX/bin/mpicc
 
 
-OPTS="-DMPI_ROOT=$HOME/zettergmdata/lib-gcc7.3/openmpi-3.1.3 $OPTS"
-OPTS="-DLAPACK_ROOT=$HOME/zettergmdata/lib-gcc7.3/lapack $OPTS"
-OPTS="-DSCALAPACK_ROOT=$HOME/zettergmdata/lib-gcc7.3/fortran-libs/scalapack $OPTS"
-OPTS="-DMUMPS_ROOT=$HOME/zettergmdata/lib-gcc7.3/fortran-libs/MUMPS $OPTS"
-OPTS="-DNP=10 $OPTS"
-
-export FC=$HOME/zettergmdata/lib-gcc7.3/openmpi-3.1.3/bin/mpifort
-export CC=$HOME/zettergmdata/lib-gcc7.3/openmpi-3.1.3/bin/mpicc
-
+# ============================================================
 # this temporarily disables Intel compiler (if installed) from messing up your gfortran environment.
 MKLROOT=
 LD_LIBRARY_PATH=
 
-[[ $1 == "-d" ]] && OPTS="-DCMAKE_BUILD_TYPE=Debug $OPTS"
-[[ $1 == "-t" ]] && OPTS="-DTRACE:BOOL=on $OPTS"
+for d in $MPIPREFIX $LAPACKPREFIX $SCALAPACKPREFIX $MUMPSPREFIX
+do
+  [[ -d $d ]] || { echo "ERROR: $d not found"; exit 1; }
+done
+
+OPTS="-DMPI_ROOT=$MPIPREFIX ${OPTS:-}"
+OPTS="-DLAPACK_ROOT=$LAPACKPREFIX $OPTS"
+OPTS="-DSCALAPACK_ROOT=$SCALAPACKPREFIX $OPTS"
+OPTS="-DMUMPS_ROOT=$MUMPSPREFIX $OPTS"
+OPTS="-DNP=10 $OPTS"
+
+cmake --version
+
+[[ ${1:-} == "-d" ]] && OPTS="-DCMAKE_BUILD_TYPE=Debug $OPTS"
+[[ ${1:-} == "-t" ]] && OPTS="-DTRACE:BOOL=on $OPTS"
 
 rm -rf objects/*  # need this one-time in case different compiler e.g. ifort was previously used.
 

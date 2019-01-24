@@ -8,26 +8,36 @@
 # (I keep a second Terminal tab for this purpose)
 
 set -e
+set -u
 
-cmake --version
+PREFIX=/cygdrive/c/Users/ggrubbs1/Desktop/lib
 
-#OPTS="-DMPI_ROOT=$HOME/.local/openmpi-3.1-gcc7 $OPTS"
-#OPTS="-DLAPACK_ROOT=$HOME/.local/lapack-gcc7 $OPTS"
-#OPTS="-DSCALAPACK_ROOT=$HOME/.local/scalapack-gcc7 $OPTS"
-#OPTS="-DMUMPS_ROOT=$HOME/.local/MUMPS-gcc7 $OPTS"
 
+#======================================================
+MUMPSPREFIX=$PREFIX/MUMPS_5.1.1
+
+export FC=mpifort
+export CC=mpicc
+
+# ============================================================
 # this temporarily disables Intel compiler (if installed) from messing up your gfortran environment.
 MKLROOT=
 LD_LIBRARY_PATH=
 
-[[ $1 == "-d" ]] && OPTS="-DCMAKE_BUILD_TYPE=Debug $OPTS"
-[[ $1 == "-t" ]] && OPTS="-DTRACE:BOOL=on $OPTS"
+for d in $MUMPSPREFIX
+do
+  [[ -d $d ]] || { echo "ERROR: $d not found"; exit 1; }
+done
 
-export FC=mpif90
+OPTS="-DMUMPS_ROOT=$MUMPSPREFIX ${OPTS:-}"
+
+cmake --version
+
+[[ ${1:-} == "-d" ]] && OPTS="-DCMAKE_BUILD_TYPE=Debug $OPTS"
+[[ ${1:-} == "-t" ]] && OPTS="-DTRACE:BOOL=on $OPTS"
 
 rm -rf objects/*  # need this one-time in case different compiler e.g. ifort was previously used.
 
 cmake $OPTS -B objects -S .
 
 cmake --build objects -j
-
