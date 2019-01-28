@@ -130,7 +130,7 @@ if (xg.lx(3)==1)
   imagesc(ha,xp/1e3,zp,parmp);
   hi=ha;
   hold(ha, 'on')
-  plot(ha, [minxp,maxxp],[altref,altref],'w--','LineWidth',2);
+  plot(ha, [minxp/1e3,maxxp/1e3],[altref,altref],'w--','LineWidth',2);
   if ~isempty(sourcemlat)
     plot(ha, sourcemlat,0,'r^','MarkerSize',12,'LineWidth',2);
   end

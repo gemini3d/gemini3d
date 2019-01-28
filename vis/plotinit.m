@@ -15,8 +15,12 @@ end
 %Csp = ceil(sqrt(Nt));
 %Rsp = ceil(Nt/Csp);
 
-%figpos=[0.1 0.1 0.5 0.5];
-figpos=[0.1 0.1 0.8 0.3];
+if(xg.lx(3)==1 || xg.lx(2)==1)  %2D simulation
+  figpos=[0.1 0.1 0.3 0.3];
+else                            %3D simulation
+  figpos=[0.1 0.1 0.8 0.3];    
+end
+
 
 h.f1=figure('name','V1', 'units', 'normalized', 'position', figpos, 'visible', visible);
 h.f2=figure('name','Ti', 'units', 'normalized', 'position', figpos, 'visible', visible);
