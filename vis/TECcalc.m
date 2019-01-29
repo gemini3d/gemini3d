@@ -1,7 +1,7 @@
 %SIMULATIONS LOCAITONS
 %simname='tohoku20113D_highres_long/';
 %simname_control='tohoku20113D_highres_long_control/';
-simname='mooreOK3D/';
+simname='mooreOK3D_medres/';
 simname_control='mooreOK3D_control/';
 basedir='~/zettergmdata/simulations/';
 direc=[basedir,simname];
@@ -19,15 +19,24 @@ addpath ../script_utils;
 
 %WE ALSO NEED TO LOAD THE GRID FILE (UNLESS IT ALREADY EXISTS IN THE WORKSPACE)
 if (~exist('xg','var'))
-  disp('Reading grid...')
+  disp('Reading dist. grid...')
   xg=readgrid([direc,'/inputs/']);
   lx1=xg.lx(1); lx2=xg.lx(2); lx3=xg.lx(3);
   lh=lx1;   %possibly obviated in this version - need to check
   if (lx3==1)
-    flag2D=1
+    flag2D=1;
   else
     flag2D=0;
   end
+end
+
+
+%ON THE OFF CHANCE THE CONTROL GRID IS DIFFERENT, LOAD IT TOO
+if (~exist('xgc','var'))
+  disp('Reading control grid...')
+  xgc=readgrid([direc_control,'/inputs/']);
+  lx1c=xgc.lx(1); lx2c=xgc.lx(2); lx3c=xgc.lx(3);
+  lhc=lx1c;   %possibly obviated in this version - need to check
 end
 
 
@@ -162,20 +171,20 @@ for it=1:length(times)
     %DEFINE A MESHGRID BASED ON CONTROL SIMULATION OUTPUT AND DO INTERPOLATION
     if (~flag2D)
       fprintf('3D interpolation...\n')
-      x1=xg.x1(3:end-2);
-      x2=xg.x2(3:end-2);
-      x3=xg.x3(3:end-2);
-      [X2,X1,X3]=meshgrid(x2(:),x1(1:lh)',x3(:));   %loadframe overwrites this (sloppy!) so redefine eeach time step
+      x1c=xgc.x1(3:end-2);
+      x2c=xgc.x2(3:end-2);
+      x3c=xgc.x3(3:end-2);
+      [X2c,X1c,X3c]=meshgrid(x2c(:),x1c(1:lhc)',x3c(:));   %loadframe overwrites this (sloppy!) so redefine eeach time step
 
-      neI_control=interp3(X2,X1,X3,ne,pI(:),qI(:),X3I(:));
+      neI_control=interp3(X2c,X1c,X3c,ne,pI(:),qI(:),X3I(:));
     else
       fprintf('2D interpolation...\n')
-      x1=xg.x1(3:end-2);
-      x2=xg.x2(3:end-2);
-      x3=xg.x3(3:end-2);
-      [X2,X1]=meshgrid(x2(:),x1(1:lh)');
+      x1c=xgc.x1(3:end-2);
+      x2c=xgc.x2(3:end-2);
+      x3c=xgc.x3(3:end-2);
+      [X2c,X1c]=meshgrid(x2c(:),x1c(1:lhc)');
 
-      neI_control=interp2(X2,X1,ne,pI(:),qI(:));
+      neI_control=interp2(X2c,X1c,ne,pI(:),qI(:));
     end
 
 
