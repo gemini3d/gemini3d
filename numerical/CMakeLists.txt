@@ -16,12 +16,12 @@ endif()
 add_library(const constants/phys_consts.F90)
 target_compile_definitions(const PRIVATE REALBITS=${realbits})
 target_compile_options(const PRIVATE ${FFLAGS})
-# set_target_properties(const PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_SOURCE_DIR}/objects)
+set_target_properties(const PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR})
 
 add_library(interp interpolation/interpolation.f90)
 target_link_libraries(interp PRIVATE const)
 target_compile_options(interp PRIVATE ${FFLAGS})
-# set_target_properties(interp PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_SOURCE_DIR}/objects)
+set_target_properties(interp PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR})
 
 
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
@@ -33,17 +33,17 @@ add_library(mpimod mpimod/mpimod.F90)
 target_link_libraries(mpimod PRIVATE const MPI::MPI_Fortran)
 target_compile_definitions(mpimod PRIVATE REALBITS=${realbits})
 target_compile_options(mpimod PRIVATE ${FFLAGS})
-# set_target_properties(mpimod PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_SOURCE_DIR}/objects)
+set_target_properties(mpimod PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR})
 
 add_library(grid grid/grid.f90)
 target_link_libraries(grid PUBLIC const mpimod MPI::MPI_Fortran) # PUBLIC necessary for ifort, even with MPI target
 target_compile_options(grid PRIVATE ${FFLAGS})
-# set_target_properties(grid PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_SOURCE_DIR}/objects)
+set_target_properties(grid PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR})
 
 add_library(calculus calculus/calculus.f90)
 target_link_libraries(calculus PRIVATE grid)
 target_compile_options(calculus PRIVATE ${FFLAGS})
-# set_target_properties(calculus PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_SOURCE_DIR}/objects)
+set_target_properties(calculus PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR})
 
 
 # ----- diffusion
@@ -58,16 +58,14 @@ else()
   target_compile_definitions(diffusion PRIVATE REALBITS=${realbits})
   target_link_libraries(diffusion PRIVATE ${LAPACK_LIBRARIES})
 endif()
-# set_target_properties(diffusion PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_SOURCE_DIR}/objects)
+set_target_properties(diffusion PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR})
 
-if(CMAKE_BUILD_TYPE STREQUAL Debug)
-  include(test_diffusion.cmake)
-endif()
+include(test_diffusion.cmake)
 
 # -- more libs
 
 add_library(advec advection/advec_mpi.f90)
 target_link_libraries(advec PRIVATE const mpimod grid)
 target_compile_options(advec PRIVATE ${FFLAGS})
-# set_target_properties(advec PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_SOURCE_DIR}/objects)
+set_target_properties(advec PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR})
 

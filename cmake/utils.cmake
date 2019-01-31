@@ -88,11 +88,11 @@ function(check_octave_source_runs code)
 
 # imported target doesn't work with CMake 3.13
 execute_process(COMMAND ${Octave_EXECUTABLE} --eval ${code}
-  ERROR_QUIET
+  ERROR_QUIET OUTPUT_QUIET
   RESULT_VARIABLE ok
   TIMEOUT 5)
 
-set(OctaveOK ${ok} PARENT_SCOPE)
+set(OctaveOK ${ok} CACHE BOOL "GNU Octave is sufficiently new to run self-tests")
 
 endfunction(check_octave_source_runs)
 
@@ -104,7 +104,7 @@ execute_process(COMMAND ${Matlab_MAIN_PROGRAM} -nojvm -r ${code}
   RESULT_VARIABLE ok
   TIMEOUT 60)  # Matlab takes a long time to start with lots of toolboxes
 
-set(MatlabOK ${ok} PARENT_SCOPE)
+set(MatlabOK ${ok} CACHE BOOL "Matlab is sufficiently new to run self-tests")
 
 endfunction(check_matlab_source_runs)
 
@@ -164,23 +164,26 @@ endfunction(matlab_compare)
 function(compare_gemini_output TESTNAME TESTDIR REFDIR REQFILE)
 
 if(NOT DEFINED OctaveOK)
-  find_package(Octave COMPONENTS Interpreter)
+  find_package(Octave QUIET COMPONENTS Interpreter)
   check_octave_source_runs("exit(exist('validateattributes'))")
 endif()
 
 if(OctaveOK)
   octave_compare(${TESTNAME} ${TESTDIR} ${REFDIR} ${REQFILE})
-else()
-  if(NOT DEFINED MatlabOK)
-    find_package(Matlab QUIET COMPONENTS MAIN_PROGRAM)
-    check_matlab_source_runs("exit(exist('validateattributes'))")
-  endif()
-
-  if (MatlabOK)
-    matlab_compare(Matlab${TESTNAME} ${TESTDIR} ${REFDIR} ${REQFILE})
-  else()
-    message(WARNING "Neither Matlab or Octave was found, cannot run full self-test")
-  endif()
+  return()
 endif()
+
+# --- try Matlab if Octave wasn't available
+if(NOT DEFINED MatlabOK)
+  find_package(Matlab QUIET COMPONENTS MAIN_PROGRAM)
+  check_matlab_source_runs("exit(exist('validateattributes'))")
+endif()
+
+if (MatlabOK)
+  matlab_compare(Matlab${TESTNAME} ${TESTDIR} ${REFDIR} ${REQFILE})
+else()
+  message(WARNING "Neither Matlab or Octave was found, cannot run full self-test")
+endif()
+
 
 endfunction(compare_gemini_output)
