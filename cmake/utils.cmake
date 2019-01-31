@@ -164,7 +164,7 @@ endfunction(matlab_compare)
 function(compare_gemini_output TESTNAME TESTDIR REFDIR REQFILE)
 
 if(NOT DEFINED OctaveOK)
-  find_package(Octave QUIET COMPONENTS Interpreter)
+  find_package(Octave COMPONENTS Interpreter)
   check_octave_source_runs("exit(exist('validateattributes'))")
 endif()
 

@@ -12,7 +12,7 @@ mumps_root = get_option('MUMPS_ROOT')
 add_global_arguments(['-O3'], language : 'fortran')
 fc = meson.get_compiler('fortran')
 if fc.get_id() == 'gcc'
-  add_global_arguments('-Wno-unused-variable', '-Wno-maybe-uninitialized', '-Wno-unused-dummy-argument', '-Wno-unused-function', language : 'fortran')
+  add_global_arguments('-march=native', '-Wno-unused-variable', '-Wno-maybe-uninitialized', '-Wno-unused-dummy-argument', '-Wno-unused-function', language : 'fortran')
   oldflags = ['-std=legacy', '-w']
 else
   oldflags = ['-w']
