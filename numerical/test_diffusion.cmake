@@ -8,8 +8,7 @@ set_tests_properties(diffusion1D PROPERTIES
                      FIXTURES_SETUP GemDiff)
 
 
-find_package(Octave COMPONENTS Interpreter)
-if(Octave_Interpreter_FOUND)
+if(OctaveOK)
 
 add_test(NAME OctaveDiffusion1D 
          COMMAND Octave::Interpreter -q --eval "test_diffusion1D('${CMAKE_CURRENT_BINARY_DIR}/test_diffusion1d.dat')"
