@@ -22,6 +22,8 @@ module load lapack/gcc/64/3.7.0
 module load openmpi/gcc/64/3.1.2
 module load scalapack/openmpi/gcc/64/2.0.2
 
+OPTS="-DNP=4"
+
 #======================================================
 MPIPREFIX=/cm/shared/apps/openmpi/gcc/64/3.1.2/
 LAPACKPREFIX=$PREFIX/lapack-$SUFFIX
@@ -36,24 +38,8 @@ export CC=$MPIPREFIX/bin/mpicc
 MKLROOT=
 LD_LIBRARY_PATH=
 
-for d in $MPIPREFIX $LAPACKPREFIX $SCALAPACKPREFIX $MUMPSPREFIX
-do
-  [[ -d $d ]] || { echo "ERROR: $d not found"; exit 1; }
-done
+# ----- build ! -------
+. script_utils/check.sh
 
-OPTS="-DMPI_ROOT=$MPIPREFIX ${OPTS:-}"
-OPTS="-DLAPACK_ROOT=$LAPACKPREFIX $OPTS"
-OPTS="-DSCALAPACK_ROOT=$SCALAPACKPREFIX $OPTS"
-OPTS="-DMUMPS_ROOT=$MUMPSPREFIX $OPTS"
-OPTS="-DNP=4 $OPTS"
+. script_utils/build.sh
 
-cmake --version
-
-[[ ${1:-} == "-d" ]] && OPTS="-DCMAKE_BUILD_TYPE=Debug $OPTS"
-[[ ${1:-} == "-t" ]] && OPTS="-DTRACE:BOOL=on $OPTS"
-
-rm -rf objects/*  # need this one-time in case different compiler e.g. ifort was previously used.
-
-cmake $OPTS -B objects -S .
-
-cmake --build objects -j

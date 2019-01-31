@@ -1,3 +1,7 @@
 option('HDF', type : 'boolean', value: false, description : 'use HDF5 for IO')
 option('GLOW', type : 'boolean', value: false, description : 'use GLOW instead of Fang')
 option('realbits', type : 'string', value : '64', description : 'real bits')
+option('MPI_ROOT', type : 'string', description : 'root directory of OpenMPI')
+option('LAPACK_ROOT', type : 'string', description : 'root directory of LAPACK')
+option('SCALAPACK_ROOT', type : 'string', description : 'root directory of SCALAPACK')
+option('MUMPS_ROOT', type : 'string', description : 'root directory of MUMPS')

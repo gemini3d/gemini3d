@@ -16,6 +16,7 @@ gemini
 build/
 initialize/
 simulations/
+build/
 objects/
 *.DS_Store
 *.aux

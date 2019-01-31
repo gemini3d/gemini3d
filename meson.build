@@ -4,21 +4,56 @@ project('GEMINI', 'fortran',
 REALBITS = '-DREALBITS='+get_option('realbits')
 GLOW = get_option('GLOW')
 HDF = get_option('HDF')
+mpi_root = get_option('MPI_ROOT')
+lapack_root = get_option('LAPACK_ROOT')
+scalapack_root = get_option('SCALAPACK_ROOT')
+mumps_root = get_option('MUMPS_ROOT')
 
+add_global_arguments(['-O3'], language : 'fortran')
 fc = meson.get_compiler('fortran')
 if fc.get_id() == 'gcc'
-  add_global_arguments('-O3','-Wno-unused-variable', '-Wno-maybe-uninitialized', '-Wno-unused-dummy-argument', '-Wno-unused-function', language : 'fortran')
+  add_global_arguments('-Wno-unused-variable', '-Wno-maybe-uninitialized', '-Wno-unused-dummy-argument', '-Wno-unused-function', language : 'fortran')
+  oldflags = ['-std=legacy', '-w']
+else
+  oldflags = ['-w']
 endif
 
-mpi = dependency('mpi', language : 'fortran', required : true)
-#mumps = dependency('mumps')#s, module_path : 'cmake/Modules')
-mumps = fc.find_library('dmumps', required : true)
-lapack = dependency('lapack', required : true)
+# need find_library to search specific dirs at this time
+if mpi_root == ''
+  mpi = dependency('mpi', language : 'fortran', required : true)
+else
+  message('searching for MPI in ' + mpi_root)
+  mpi = fc.find_library('mpi', required : true, dirs : mpi_root / 'lib')
+endif
+
+mpiret = fc.run('use mpi; end', dependencies : mpi).returncode()
+if mpiret != 0
+  error('MPI does not link properly with compiler')
+endif
+
+if lapack_root == ''
+  lapack = dependency('lapack', required : true)
+else
+  message('searching for LAPACK in ' + lapack_root)
+  lapack = fc.find_library('lapack', required : true, dirs : lapack_root)
+endif
+
+# meson >= 0.50
+# mumps = dependency('MUMPS') module_path : 'cmake/Modules')
+if mumps_root == ''
+  mumpsinc = include_directories('/usr/include')
+  mumpslib = [fc.find_library('dmumps', required : true)]
+else
+  message('searching for MUMPS in ' + mumps_root)
+  mumpsinc = include_directories(mumps_root / 'include')
+  mumpslib = [fc.find_library('dmumps', required : true, dirs : mumps_root / 'lib'),
+              fc.find_library('mumps_common', required : true, dirs : mumps_root / 'lib'),
+              fc.find_library('scalapack', required : true, dirs : scalapack_root / 'lib')]
+endif
 
 if HDF  # see HDF5 branch, not yet fully ready.
  hdf5 = dependency('hdf5')
 endif
-
 
 calculus = library('calculus', 'numerical/constants/phys_consts.F90', 'numerical/calculus/calculus.f90', 'numerical/grid/grid.f90', 'numerical/mpimod/mpimod.F90', 'numerical/interpolation/interpolation.f90', 'vendor/lapack95/gbsv.F90',
   dependencies : mpi,
@@ -29,7 +64,7 @@ io = library('io','io/io.F90', 'io/expanduser.f90',
   fortran_args: REALBITS)
   
 msis = library('msis', 'vendor/msis00/msis00_gfortran.f',
-  fortran_args : '-w')
+  fortran_args : oldflags)
 
 neutral = library('neutral', 'neutral/neutral.f90', 'temporal/timeutils.f90',
   dependencies : mpi,
@@ -56,8 +91,8 @@ gemini = executable('gemini.bin', 'gemini.f90', 'temporal/temporal.f90', 'numeri
 'sources/sources.f90', 'numerical/advection/advec_mpi.f90', 'numerical/diffusion/diffusion.F90',
 
   link_with : [io,calculus, ionization, neutral],
-  dependencies : [mpi, mumps, lapack],
-  include_directories: '/usr/include',
+  dependencies : [mpi, mumpslib, lapack],
+  include_directories : mumpsinc,
   fortran_args: REALBITS)
   
 # -- magcalc exe
@@ -69,14 +104,24 @@ magcalc = executable('magcalc.bin', 'magcalc.f90',
 # --- TESTS ---
 # meson test --wrap="mpirun -np 4"
 
-test('gemini 2D', gemini,
-  args : [meson.source_root() / 'initialize/test2d/config.ini', meson.build_root() / 'test2d'],
+oct = find_program('octave')
+test2d = meson.build_root() / 'test2d'
+test3d = meson.build_root() / 'test3d'
+zenodo2d = meson.source_root() / '../simulations/zenodo2d'
+eval2d = '''--eval compare_all("''' + test2d + '","' + zenodo2d + '")'
+
+test('Gemini2D', gemini,
+  args : [meson.source_root() / 'initialize/test2d/config.ini', test2d],
   workdir : meson.source_root(),
-  timeout : 240,
+  timeout : 90,
   is_parallel : false)
   
-test('gemini 3D', gemini,
-  args : [meson.source_root() / 'initialize/test3d/config.ini', meson.build_root() / 'test2d'],
+test('Gemini3D', gemini,
+  args : [meson.source_root() / 'initialize/test3d/config.ini', test3d],
   workdir : meson.source_root(),
-  timeout : 600,
+  timeout : 180,
   is_parallel : false)
+  
+if oct.found()
+  test('Compare2D', oct, args : ['-q', eval2d])
+endif

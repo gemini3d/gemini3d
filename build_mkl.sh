@@ -7,26 +7,15 @@
 # *** for subsequent builds, you can just type "make" in the objects/ directory ***
 # (I keep a second Terminal tab for this purpose)
 
-set -e
-set -u
-
-PREFIX=/home/ggrubbs1/source
+PREFIX=$HOME/.local
+SUFFIX=gcc8-mkl19
 
 #======================================================
 MPIPREFIX=
-LAPACKPREFIX=$PREFIX/lapack-3.8.0
-SCALAPACKPREFIX=$PREFIX/scalapack-2.0.2
-MUMPSPREFIX=$PREFIX/MUMPS_5.1.1
-
-export FC=~/.local/bin/mpifort
-export CC=~/.local/bin/mpicc
-
-# ============================================================
-# this temporarily disables Intel compiler (if installed) from messing up your gfortran environment.
-MKLROOT=
-LD_LIBRARY_PATH=
+LAPACKPREFIX=
+SCALAPACKPREFIX=
+MUMPSPREFIX=$PREFIX/mumps-$SUFFIX
 
 . script_utils/check.sh
 
 . script_utils/build.sh
-

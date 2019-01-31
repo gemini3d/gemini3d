@@ -3,7 +3,7 @@
 # "-d" option makes this a Debug build
 # "-t" option makes this a Trace build (dump certain variables to disk)
 #
-# This is for Matt's Mac OS laptop which has all libraries installed via macports
+# This is for Mac or Linux computer that uses system libraries (apt install, MacPorts, HomeBrew, LinuxBrew, etc.)
 
 
 MPIPREFIX=

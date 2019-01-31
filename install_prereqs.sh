@@ -2,16 +2,16 @@
 # installs libraries
 # For CentOS HPC systems, consider centos*.sh scripts that use "modules" or "extensions"
 
-set -e 
+set -e
 
 case $OSTYPE in
-linux*) 
-  
+linux*)
+
   if [[ -f /etc/redhat-release ]]; then
      echo "This script is made for personal laptops/desktops. HPCs using CentOS have system-specific library setup."
      echo "If using gfortran, version >= 6 is required. Try devtoolset-7 if gcc/gfortran is too old on your system."
      yum install epel-release
-     yum install pkg-config gcc-gfortran g++ make 
+     yum install pkg-config gcc-gfortran g++ make
      yum install MUMPS-openmpi-devel lapack-devel scalapack-openmpi-devel blacs-openmpi-devel openmpi-devel libmetis-devel libscotch-devel ptscotch-openmpi-devel atlas-devel
      yum install octave
   else
@@ -32,7 +32,7 @@ darwin*)
 cygwin*)
   echo "please install prereqs via Cygwin setup.exe"
   echo "gcc-fortran make liblapack-devel libopenmpi-devel octave"
-  echo "then use https://github.com/scivision/fortran-libs to get all other prereqs"
+  echo "then use ./compile_prereqs.sh to get all other prereqs"
   ;;
 esac
 
