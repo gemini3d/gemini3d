@@ -61,6 +61,8 @@ MUMPSGIT=https://github.com/scivision/mumps
 
 [[ $($FC -dumpversion) < 6 ]] && { echo "Gfortran >= 6 required"; exit 1; }
 
+cmake --version
+
 mkdir -p $WD
 
 #==============================================================
@@ -87,8 +89,7 @@ echo "installing OpenMPI $MPIVERSION to $MPIPREFIX"
 make -j -l2
 
 make install
-else
-  MPIPREFIX=$(dirname $(which mpifort))/..
+
 fi
 
 #================================================================

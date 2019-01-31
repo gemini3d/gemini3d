@@ -14,7 +14,7 @@ PREFIX=$HOME/.local
 SUFFIX=gcc7
 
 #======================================================
-MPIPREFIX=$(dirname $(which mpifort))/..
+MPIPREFIX=$PREFIX/openmpi-3.1.3-$SUFFIX
 LAPACKPREFIX=$PREFIX/lapack-$SUFFIX
 SCALAPACKPREFIX=$PREFIX/scalapack-$SUFFIX
 MUMPSPREFIX=$PREFIX/mumps-$SUFFIX
