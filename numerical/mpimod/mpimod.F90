@@ -122,33 +122,6 @@ subroutine mpisetup()
 end subroutine mpisetup
 
 
-subroutine mpigrid(lx2all,lx3all)
-
-!! THIS SUBROUTINE DEFINES A PROCESS GRID, IF REQUIRED 
-
-integer, intent(in) :: lx2all,lx3all
-
-lid2=1
-lid3=lid
-do while( ((lid3/2)*2==lid3) .and. (lid3-lid2>lid3 .or. lid3-lid2>lid2) .and. &     
-         lx3all/(lid3/2)*(lid3/2)==lx3all .and. lx2all/(lid2*2)*(lid2*2)==lx2all)
-!! must insure that lx3 is divisible by lid3 and lx2 by lid2
-
-  lid3=lid3/2
-  lid2=lid2*2
-end do
-
-
-!THIS PROCESS' LOCATION ON THE GRID
-myid3=myid/lid2
-myid2=myid-myid3*lid2
-
-print *, 'Proposed process grid is x2 by x3 size (in number of processes):  ',lid2,' by ',lid3
-print *, 'Process:  ',myid,' is at location:  ',myid2,myid3,' on the process grid'
-
-end subroutine mpigrid
-
-
 function grid2ID(i2,i3)
 
   !------------------------------------------------------------
@@ -162,6 +135,54 @@ function grid2ID(i2,i3)
   grid2ID=i3*lid2+i2
   
 end function grid2ID
+
+
+function ID2grid(ID)
+
+  !------------------------------------------------------------
+  !-------COMPUTES GRID LOCATION FROM A PROCESS ID
+  !------------------------------------------------------------
+
+  integer, intent(in) :: ID
+  integer, dimension(2) :: ID2grid
+
+  ID2grid(2)=ID/lid2           !x3 index into process grid
+  ID2grid(1)=ID-ID*ID2grid(2)     !x2 index into process grid
+
+end function ID2grid
+
+
+subroutine mpigrid(lx2all,lx3all)
+
+!! THIS SUBROUTINE DEFINES A PROCESS GRID, IF REQUIRED 
+
+integer, intent(in) :: lx2all,lx3all
+
+integer, dimension(2) :: inds
+
+
+lid2=1
+lid3=lid
+do while( ((lid3/2)*2==lid3) .and. (lid3-lid2>lid3 .or. lid3-lid2>lid2) .and. &     
+         lx3all/(lid3/2)*(lid3/2)==lx3all .and. lx2all/(lid2*2)*(lid2*2)==lx2all)
+!! must insure that lx3 is divisible by lid3 and lx2 by lid2
+
+  lid3=lid3/2
+  lid2=lid2*2
+end do
+
+
+!THIS PROCESS' LOCATION ON THE GRID
+!myid3=myid/lid2
+!myid2=myid-myid3*lid2
+inds=ID2grid(myid)
+myid2=inds(1)
+myid3=inds(2)
+
+print *, 'Proposed process grid is x2 by x3 size (in number of processes):  ',lid2,' by ',lid3
+print *, 'Process:  ',myid,' is at location:  ',myid2,myid3,' on the process grid'
+
+end subroutine mpigrid
 
 
 subroutine mpibreakdown()
@@ -573,6 +594,57 @@ do isp=1,lsp
 end do
 
 end subroutine gather_recv4D
+
+
+subroutine gather_recv4D23(param,tag,paramall)
+
+!------------------------------------------------------------
+!-------THIS SUBROUTINE GATHERS DATA FROM ALL WORKERS ONTO
+!-------A FULL-GRID ARRAY ON THE ROOT PROCESS (PRESUMABLY FOR
+!-------OUTPUT OR SOME ELECTRODYNAMIC CALCULATION, PERHAPS.
+!-------
+!-------THIS SUBROUTINE IS TO BE CALLED BY ROOT TO DO GATHER
+!-------
+!-------THIS VERSION WORKS ON 4D ARRAYS WHICH INCLUDE
+!-------GHOST CELLS!
+!------------------------------------------------------------
+
+real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: param
+integer, intent(in) :: tag
+real(wp), dimension(-1:,-1:,-1:,:), intent(out) :: paramall
+
+integer :: lx1,lx2,lx3,isp
+integer :: iid,i2start,i2fin,i3start,i3fin
+integer, dimension(2) :: inds
+integer :: i2,i3
+
+lx1=size(param,1)-4
+lx2=size(param,2)-4
+lx3=size(param,3)-4
+
+
+!Originally the outer loop was over worker number, which cycles the 3rd dimension
+!slower than 4th (backward from what would be most efficient memory access pattern)
+!Since the gathering operation is root-limited probably, I'm guessing it's better
+!to give root an efficient memory access pattern here, but I haven't tested this
+!theory.
+do isp=1,lsp
+  paramall(:,1:lx2,1:lx3,isp)=param(:,1:lx2,1:lx3,isp)    !root records his own piece of the grid into full grid variable
+
+  do iid=1,lid-1
+    inds=ID2grid(iid)   !find the location on the process grid
+    i2=inds(1)
+    i3=inds(2) 
+
+    i3start=iid*lx3+1
+    i3fin=islstart+lx3-1
+
+    call mpi_recv(paramall(:,:,islstart:islfin,isp),(lx1+4)*(lx2+4)*lx3, &
+                  mpi_realprec,iid,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+  end do
+end do
+
+end subroutine gather_recv4D23
 
 
 subroutine gather_send2D(paramtrim,tag)
