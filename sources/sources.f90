@@ -3,7 +3,7 @@ module sources
 use phys_consts, only: wp, lsp, amu, kb, qs, ln, ms, gammas, elchrg, mn
 use grid, only : curvmesh,g1
 use calculus, only : grad3d1
-use mpimod, only: myid, tagvs1bc, tagvs2bc, tagvs3bc, lid, halo
+use mpimod, only: myid, tagvs1bc, tagvs2bc, tagvs3bc, lid, halo23
 use collisions, only:  maxwell_colln, coulomb_colln
 
 implicit none
@@ -564,13 +564,13 @@ idleft=myid-1; idright=myid+1
 !-- global boundary will still have one interior boundary to be haloed.
 !BY DEFAULT THE GLOBAL BOUNDARIES ARE ASSUMED TO BE PERIOIDIC
 param=vs1(:,:,:,isp)
-call halo(param,1,tagvs1BC)
+call halo23(param,1,tagvs1BC)
 vs1(:,:,:,isp)=param
 param=vs2(:,:,:,isp)
-call halo(param,1,tagvs2BC)
+call halo23(param,1,tagvs2BC)
 vs2(:,:,:,isp)=param
 param=vs3(:,:,:,isp)
-call halo(param,1,tagvs3BC)
+call halo23(param,1,tagvs3BC)
 vs3(:,:,:,isp)=param
 
 
