@@ -341,15 +341,15 @@ subroutine halo23(param,lhalo,tag)
     i3=lid3-1               !lid3-1 is the last process in x3 on the process grid
     x3begin=.true.
   end if
-  idleft=(i3-1)*lid2+i2
+  idleft=i3*lid2+i2
 
   i3=myid3+1
   i2=myid2
   if (i3==lid3) then        !global boundary to my right, assume periodic
-    i3=1
+    i3=0
     x3end=.true.
   end if
-  idright=(i3-1)*lid2+i2    !convert the location on process grid into a flat processed ID, The process grid is 
+  idright=i3*lid2+i2    !convert the location on process grid into a flat processed ID, The process grid is 
                             !visualized as lid2,lid3 in terms of index order (e.g. the i2 index cycles more quickly
 
 
@@ -368,11 +368,15 @@ subroutine halo23(param,lhalo,tag)
   i3=myid3
   i2=myid2+1
   if (i2==lid2) then     !global boundary upward, assume periodic
-    i2=1
+    i2=0
     x2end=.true.
   end if
   idup=(i3-1)*lid2+i2    !convert to process ID
 
+
+!  !some debug output
+!  print*, 'Computing neighbors for ID:  ',myid,' at location on the process grid:  ',myid2,myid3
+!  print*, iddown,idup,idleft,idright
 
 
   !ALLOCATE SPACE TO BUFFER MESSAGES (SINCE USING ASYNCHRONOUS MPI COMMANDS), THESE HAVE TO BE ALLOCATED SINCE WE
