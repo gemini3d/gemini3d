@@ -123,8 +123,8 @@ end subroutine mpisetup
 
 
 subroutine mpigrid(lx2all,lx3all)
+
 !! THIS SUBROUTINE DEFINES A PROCESS GRID, IF REQUIRED 
-!! IT IS CURRENTLY NOT USED BUT KEPT HERE FOR FUTURE DEVELOPMENT
 
 integer, intent(in) :: lx2all,lx3all
 
@@ -147,6 +147,21 @@ print *, 'Proposed process grid is x2 by x3 size (in number of processes):  ',li
 print *, 'Process:  ',myid,' is at location:  ',myid2,myid3,' on the process grid'
 
 end subroutine mpigrid
+
+
+function grid2ID(i2,i3)
+
+  !------------------------------------------------------------
+  !-------COMPUTES A PROCESS ID FROM A LOCATION ON THE PROCESS
+  !-------GRID
+  !------------------------------------------------------------
+
+  integer, intent(in) :: i2,i3
+  integer :: grid2ID
+
+  grid2ID=i3*lid2+i2
+  
+end function grid2ID
 
 
 subroutine mpibreakdown()
@@ -341,7 +356,7 @@ subroutine halo23(param,lhalo,tag)
     i3=lid3-1               !lid3-1 is the last process in x3 on the process grid
     x3begin=.true.
   end if
-  idleft=i3*lid2+i2
+  idleft=grid2ID(i2,i3)
 
   i3=myid3+1
   i2=myid2
@@ -349,7 +364,7 @@ subroutine halo23(param,lhalo,tag)
     i3=0
     x3end=.true.
   end if
-  idright=i3*lid2+i2    !convert the location on process grid into a flat processed ID, The process grid is 
+  idright=grid2ID(i2,i3)    !convert the location on process grid into a flat processed ID, The process grid is 
                             !visualized as lid2,lid3 in terms of index order (e.g. the i2 index cycles more quickly
 
 
@@ -363,7 +378,7 @@ subroutine halo23(param,lhalo,tag)
     i2=lid2-1
     x2begin=.true.
   end if
-  iddown=(i3-1)*lid2+i2
+  iddown=grid2ID(i2,i3)
 
   i3=myid3
   i2=myid2+1
@@ -371,7 +386,7 @@ subroutine halo23(param,lhalo,tag)
     i2=0
     x2end=.true.
   end if
-  idup=(i3-1)*lid2+i2    !convert to process ID
+  idup=grid2ID(i2,i3)    !convert to process ID
 
 
 !  !some debug output
