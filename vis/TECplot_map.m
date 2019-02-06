@@ -1,21 +1,21 @@
 addpath ../script_utils;
 
 %SIMULATIONS LOCAITONS
-simname='tohoku20113D_highres_long/';
-basedir='~/zettergmdata/simulations/'
+simname='mooreOK3D_medres/';
+basedir='~/Downloads/'
 direc=[basedir,simname];
 system(['mkdir ',direc,'/TECplots']);    %store output plots with the simulation data
 system(['mkdir ',direc,'/TECplots_eps']);    %store output plots with the simulation data
 
 
 %LOAD THE COMPUTED MAGNETIC FIELD DATA
-load([direc,'/vTEC_hemis.mat']);
+load([direc,'/vTEC.mat']);
 lt=numel(t);
 mlon=mlong;
 
 
 %SIMULATION META-DATA
-[ymd0,UTsec0,tdur,dtout,flagoutput,mloc]=readconfig([direc,'/inputs/config.dat']);
+[ymd0,UTsec0,tdur,dtout,flagoutput,mloc]=readconfig([direc,'/inputs/config.ini']);
 
 
 %TABULATE THE SOURCE LOCATION
@@ -49,6 +49,7 @@ for it=1:lt
     mlonlimplot=[min(mlon)-0.5,max(mlon)+0.5];
     axesm('MapProjection','Mercator','MapLatLimit',mlatlimplot,'MapLonLimit',mlonlimplot);
     param=dvTEC(:,:,it);
+    %param=dvTEC(:,:,it)-dvTEC(:,:,2);   %flat-field dvTEC just in case    
     %imagesc(mlon,mlat,param);
     mlatlim=[min(mlat),max(mlat)];
     mlonlim=[min(mlon),max(mlon)];
@@ -58,7 +59,7 @@ for it=1:lt
     set(gca,'FontSize',FS);
     tightmap;
 %    caxis([-3,3]);
-    caxis([-0.25,0.25]);
+    caxis([-0.5,0.5]);
     c=colorbar
     set(c,'FontSize',FS)
     xlabel(c,'\Delta vTEC (TECU)')

@@ -114,7 +114,7 @@ call read_grid(indatsize,indatgrid,flagperiodic,x)     !read in a previously gen
 
 
 !!ESTABLISH A PROCESS GRID, IF NEEDED - LEAVE HERE FOR FUTURE IMPLEMENTATIONS OF X2,X3 PARALLELIZATION
-!call mpigrid(lx2,lx3all)
+call mpigrid(lx2,lx3all)
 
 
 !CREATE/PREP OUTPUT DIRECTORY AND OUTPUT SIMULATION SIZE AND GRID DATA; ONLY THE ROOT PROCESS WRITES OUTPUT DATA
