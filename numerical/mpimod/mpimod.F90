@@ -132,7 +132,7 @@ function grid2ID(i2,i3)
   integer, intent(in) :: i2,i3
   integer :: grid2ID
 
-  grid2ID=i3*lid2+i2
+  grid2ID=i3*lid2+i2    !this formulat assumes that the first element is (i2,i3)=(0,0)
   
 end function grid2ID
 
@@ -617,6 +617,8 @@ integer :: lx1,lx2,lx3,isp
 integer :: iid,i2start,i2fin,i3start,i3fin
 integer, dimension(2) :: inds
 integer :: i2,i3
+real(wp), dimension(1:size(param,1),1:size(param,2)-4,1:size(param,3)-4) :: paramtmp   !buffer space for mpi receive, includes only x1 ghost cells
+
 
 lx1=size(param,1)-4
 lx2=size(param,2)-4
@@ -631,16 +633,20 @@ lx3=size(param,3)-4
 do isp=1,lsp
   paramall(:,1:lx2,1:lx3,isp)=param(:,1:lx2,1:lx3,isp)    !root records his own piece of the grid into full grid variable
 
-  do iid=1,lid-1
-    inds=ID2grid(iid)   !find the location on the process grid
+  do iid=1,lid-1        !must loop over all processes in the grid
+    inds=ID2grid(iid)   !find the location on the process grid for this particular process ID
     i2=inds(1)
     i3=inds(2) 
 
-    i3start=iid*lx3+1
-    i3fin=islstart+lx3-1
+    call mpi_recv(paramtmp,(lx1+4)*lx2*lx3, &
+                  mpi_realprec,iid,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)    !recieve chunk of data into buffer
 
-    call mpi_recv(paramall(:,:,islstart:islfin,isp),(lx1+4)*(lx2+4)*lx3, &
-                  mpi_realprec,iid,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+
+    i3start=i3*lx3+1   !index (3rd dim) in the full grid variable into which the next chunk of data are to be store
+    i3fin=i3start+lx3-1
+    i2start=i2*lx2+1   !index into 2nd dim of process grid
+    i2fin=i2start+lx2-1
+    paramall(-1:lx1+2,i2start:i2fin,i3start:i3fin,isp)=paramtmp    !note the inclusion of x1 ghost cells
   end do
 end do
 
@@ -730,6 +736,31 @@ do isp=1,lsp
 end do
 
 end subroutine gather_send4D
+
+
+subroutine gather_send4D23(param,tag)
+
+!------------------------------------------------------------
+!-------SENDS DATA ON A 2D PROCESS GRID TO ROOT.
+!------------------------------------------------------------
+
+real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: param
+integer, intent(in) :: tag
+
+integer :: lx1,lx2,lx3,isp
+real(wp), dimension(-1:size(param)-2,1:size(param,2)-4,1:size(param,3)-4) :: paramtmp
+
+
+lx1=size(param,1)-4
+lx2=size(param,2)-4
+lx3=size(param,3)-4
+
+do isp=1,lsp
+  paramtmp=param(-1:lx1+2,1:lx2,1:lx3,isp)
+  call mpi_send(paramtmp,(lx1+4)*lx2*lx3,mpi_realprec,0,tag,MPI_COMM_WORLD,ierr)
+end do
+
+end subroutine gather_send4D23
 
 
 subroutine bcast_send1D(paramall,tag,param)
