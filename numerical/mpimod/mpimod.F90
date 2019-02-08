@@ -633,7 +633,7 @@ lx3=size(param,3)-4
 do isp=1,lsp
   paramall(:,1:lx2,1:lx3,isp)=param(:,1:lx2,1:lx3,isp)    !root records his own piece of the grid into full grid variable
 
-  do iid=1,lid-1        !must loop over all processes in the grid
+  do iid=1,lid-1        !must loop over all processes in the grid, don't enter loop if only root is present
     inds=ID2grid(iid)   !find the location on the process grid for this particular process ID
     i2=inds(1)
     i3=inds(2) 
