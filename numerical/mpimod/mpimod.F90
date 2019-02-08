@@ -229,7 +229,7 @@ call mpi_finalize(ierr)
 end subroutine mpibreakdown
 
 
-subroutine halo(param,lhalo,tag)
+subroutine halo3(param,lhalo,tag)
 !! GENERIC HALOING ROUTINE FOR FILLING GHOST CELLS.  CAN
 !! BE USED TO SET BOUNDARY CONDITIONS OR PREPARE ARRAYS
 !! FOR FINITE DIFFERENCING, ETC.  OBVIOUSLY ARRAYS INCLUDE
@@ -562,13 +562,15 @@ real(wp), dimension(:,:), intent(in) :: paramtrim
 integer, intent(in) :: tag
 real(wp), dimension(:,:), intent(out) :: paramtrimall
 
-integer :: lx1,lx2,lx3,lsp
+integer :: lx1,lx2,lx3,lsp,lx2all,lx3all
 integer :: iid
 integer, dimension(4) :: inds
 real(wp), dimension(1:size(paramtrim,1),1:size(paramtrim,2)) :: paramtmp
 
 lx2=size(paramtrim,1)    !note here that paramtrim does not have ghost cells
 lx3=size(paramtrim,2)
+lx2all=size(paramtrimall,1)
+lx3all=size(paramtrimall,2)
 
 
 !PATCH DATA TOGETHER FOR OUTPUT STARTING WITH ROOT'S SLAB
@@ -637,7 +639,7 @@ real(wp), dimension(:,:,:), intent(in) :: paramtrim
 integer, intent(in) :: tag
 real(wp), dimension(:,:,:), intent(out) :: paramtrimall
 
-integer :: lx1,lx2,lx3
+integer :: lx1,lx2,lx3,lx2all,lx3all
 integer :: iid
 integer, dimension(4) :: inds
 real(wp), dimension(1:size(paramtrim,1),1:size(paramtrim,2),1:size(paramtrim,3)) :: paramtmp   !buffer space for mpi receive, includes only x1 ghost cells
@@ -646,6 +648,8 @@ real(wp), dimension(1:size(paramtrim,1),1:size(paramtrim,2),1:size(paramtrim,3))
 lx1=size(paramtrim,1)
 lx2=size(paramtrim,2)
 lx3=size(paramtrim,3)
+lx2all=size(paramtrimall,2)
+lx3all=size(paramtrimall,3)
 
 
 !Originally the outer loop was over worker number, which cycles the 3rd dimension
@@ -655,7 +659,7 @@ lx3=size(paramtrim,3)
 !theory.
 paramtrimall(:,1:lx2,1:lx3)=paramtrim(:,1:lx2,1:lx3)    !store root's piece of data
 do iid=1,lid-1        !must loop over all processes in the grid, don't enter loop if only root is present
-  call mpi_recv(paramtmp,(lx1+4)*lx2*lx3, &
+  call mpi_recv(paramtmp,lx1*lx2*lx3, &          !note no ghost cells!!!
                 mpi_realprec,iid,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)    !recieve chunk of data into buffer
   inds=slabinds(iid,lx2,lx3)
   paramtrimall(1:lx1,inds(1):inds(2),inds(3):inds(4))=paramtmp    !note the exclusion of the ghost cells
@@ -727,16 +731,17 @@ real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: param
 integer, intent(in) :: tag
 real(wp), dimension(-1:,-1:,-1:,:), intent(out) :: paramall
 
-integer :: lx1,lx2,lx3,isp
+integer :: lx1,lx2,lx3,isp,lx2all,lx3all
 integer :: iid
 integer, dimension(4) :: inds
-real(wp), dimension(1:size(param,1),1:size(param,2)-4,1:size(param,3)-4) :: paramtmp   !buffer space for mpi receive, includes only x1 ghost cells
+real(wp), dimension(-1:size(param,1)-2,1:size(param,2)-4,1:size(param,3)-4) :: paramtmp   !buffer space for mpi receive, includes only x1 ghost cells
 
 
 lx1=size(param,1)-4
 lx2=size(param,2)-4
 lx3=size(param,3)-4
-
+lx2all=size(paramall,2)-4
+lx3all=size(paramall,3)-4
 
 !Originally the outer loop was over worker number, which cycles the 3rd dimension
 !slower than 4th (backward from what would be most efficient memory access pattern)
@@ -744,13 +749,13 @@ lx3=size(param,3)-4
 !to give root an efficient memory access pattern here, but I haven't tested this
 !theory.
 do isp=1,lsp
-  paramall(:,1:lx2,1:lx3,isp)=param(:,1:lx2,1:lx3,isp)    !root records his own piece of the grid into full grid variable
+  paramall(-1:lx1+2,1:lx2,1:lx3,isp)=param(-1:lx1+2,1:lx2,1:lx3,isp)    !root records his own piece of the grid into full grid variable
 
   do iid=1,lid-1        !must loop over all processes in the grid, don't enter loop if only root is present
     call mpi_recv(paramtmp,(lx1+4)*lx2*lx3, &
                   mpi_realprec,iid,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)    !recieve chunk of data into buffer
     inds=slabinds(iid,lx2,lx3)
-    paramall(-1:lx1+2,inds(1):inds(2),inds(3):inds(4),isp)=paramtmp    !note the inclusion of x1 ghost cells
+    paramall(-1:lx1+2,inds(1):inds(2),inds(3):inds(4),isp)=paramtmp(-1:lx1+2,1:lx2,1:lx3)    !note the inclusion of x1 ghost cells
   end do
 end do
 
@@ -902,14 +907,14 @@ end subroutine gather_send4D
 subroutine gather_send4D23(param,tag)
 
 !------------------------------------------------------------
-!-------SENDS DATA ON A 2D PROCESS GRID TO ROOT.
+!-------SENDS 4D DATA ON A 2D PROCESS GRID TO ROOT.
 !------------------------------------------------------------
 
 real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: param
 integer, intent(in) :: tag
 
 integer :: lx1,lx2,lx3,isp
-real(wp), dimension(-1:size(param)-2,1:size(param,2)-4,1:size(param,3)-4) :: paramtmp
+real(wp), dimension(-1:size(param,1)-2,1:size(param,2)-4,1:size(param,3)-4) :: paramtmp
 
 
 lx1=size(param,1)-4
