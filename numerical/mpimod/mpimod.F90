@@ -86,12 +86,19 @@ integer, protected :: lid2,lid3,myid2,myid3
 
 
 !> THESE INTERFACES OVERLOAD THE MPI GATHER,BROADCAST SUBROUTINES FOR ARRAYS OF DIFFERENT RANKS.
+!interface gather_recv
+!  module procedure gather_recv2D, gather_recv3D, gather_recv4D
+!end interface gather_recv
+!
+!interface gather_send
+!  module procedure gather_send2D, gather_send3D, gather_send4D
+!end interface gather_send
 interface gather_recv
-  module procedure gather_recv2D, gather_recv3D, gather_recv4D
+  module procedure gather_recv2D23, gather_recv3D23, gather_recv4D23
 end interface gather_recv
 
 interface gather_send
-  module procedure gather_send2D, gather_send3D, gather_send4D
+  module procedure gather_send2D23, gather_send3D23, gather_send4D23
 end interface gather_send
 
 interface bcast_send
