@@ -102,11 +102,11 @@ interface gather_send
 end interface gather_send
 
 interface bcast_send
-  module procedure bcast_send1D, bcast_send2D23, bcast_send3D23, bcast_send4D
+  module procedure bcast_send1D, bcast_send2D23, bcast_send3D23, bcast_send4D23
 end interface bcast_send
 
 interface bcast_recv
-  module procedure bcast_recv1D, bcast_recv2D23, bcast_recv3D23, bcast_recv4D
+  module procedure bcast_recv1D, bcast_recv2D23, bcast_recv3D23, bcast_recv4D23
 end interface bcast_recv
 
 interface halo    !this is to easily allow me to swap out halo routines while debugging
@@ -1256,6 +1256,45 @@ end do
 end subroutine bcast_send4D
 
 
+subroutine bcast_send4D23(paramall,tag,param)
+!! THIS SUBROUTINE BROADCASTS DATA FROM A FULL GRID ARRAY
+!! ON ROOT PROCESS TO ALL WORKERS' SUB-GRID ARRAYS.
+!!
+!! SUBROUTINE IS TO BE CALLED BY ROOT TO DO A BROADCAST
+!!
+!! THIS VERSION WORKS ON 4D ARRAYS WHICH INCLUDE
+!! GHOST CELLS!
+
+real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: paramall
+integer, intent(in) :: tag
+real(wp), dimension(-1:,-1:,-1:,:), intent(out) :: param
+
+integer :: lx1,lx2,lx3,isp
+integer :: iid,islstart,islfin
+integer, dimension(4) :: inds
+real(wp), dimension(-1:size(param,1)-2,1:size(param,2)-4,1:size(param,3)-4) :: paramtmp
+
+
+lx1=size(param,1)-4
+lx2=size(param,2)-4
+lx3=size(param,3)-4
+
+
+!> ROOT BROADCASTS IC DATA TO WORKERS
+do isp=1,lsp
+  param(:,1:lx2,1:lx3,isp)=paramall(:,1:lx2,1:lx3,isp)    ! roots part of the data
+
+  do iid=1,lid-1
+    inds=slabinds(iid,lx2,lx3)
+    paramtmp=paramall(-1:lx1+2,inds(1):inds(2),inds(3):inds(4),isp)
+    call mpi_send(paramtmp,(lx1+4)*lx2*lx3, &
+               mpi_realprec,iid,tag,MPI_COMM_WORLD,ierr)
+  end do
+end do
+
+end subroutine bcast_send4D23
+
+
 subroutine bcast_recv1D(param,tag)
 !! THIS SUBROUTINE RECEIVES BROADCAST DATA FROM A FULL 
 !! GRID ARRAY ON ROOT PROCESS TO WORKERS' SUB-GRID ARRAYS. 
@@ -1474,5 +1513,36 @@ do isp=1,lsp
 end do
 
 end subroutine bcast_recv4D
+
+
+subroutine bcast_recv4D23(param,tag)
+!! THIS SUBROUTINE RECEIVES BROADCAST DATA FROM A FULL 
+!! GRID ARRAY ON ROOT PROCESS TO WORKERS' SUB-GRID ARRAYS. 
+!-------
+!-------SUBROUTINE IS TO BE CALLED BY WORKERS TO DO A BROADCAST
+!-------
+!-------THIS VERSION WORKS ON 4D ARRAYS WHICH INCLUDE
+!-------GHOST CELLS!
+!------------------------------------------------------------
+
+real(wp), dimension(-1:,-1:,-1:,:), intent(out) :: param
+integer, intent(in) :: tag
+
+integer :: lx1,lx2,lx3,isp
+real(wp), dimension(-1:size(param,1)-2,1:size(param,2)-4,1:size(param,3)-4) :: paramtmp
+
+lx1=size(param,1)-4
+lx2=size(param,2)-4
+lx3=size(param,3)-4
+
+
+!WORKERS RECEIVE THE IC DATA FROM ROOT
+do isp=1,lsp
+  paramtmp=param(-1:lx1+2,1:lx2,1:lx3,isp)
+  call mpi_recv(param(:,:,:,isp),(lx1+4)*lx2*lx3, &
+                 mpi_realprec,0,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+end do
+
+end subroutine bcast_recv4D23
 
 end module mpimod

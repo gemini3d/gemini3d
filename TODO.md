@@ -7,7 +7,8 @@ This file is intended to document development priorities for the GEMINI project.
 * grid.f90 needs to create x2all
 * derivatives must know about x2 division
 * haloing of divs must know about x2 division
-* alias halo functions
+* rewrite custom broadcast and gather ops
+<!--* alias halo functions -->
 
 
 ## Things that need to be checked or otherwise dealt with
