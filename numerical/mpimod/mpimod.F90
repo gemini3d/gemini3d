@@ -102,11 +102,11 @@ interface gather_send
 end interface gather_send
 
 interface bcast_send
-  module procedure bcast_send1D, bcast_send2D23, bcast_send3D23, bcast_send4D23
+  module procedure bcast_send1D3, bcast_send2D23, bcast_send3D23, bcast_send4D23
 end interface bcast_send
 
 interface bcast_recv
-  module procedure bcast_recv1D, bcast_recv2D23, bcast_recv3D23, bcast_recv4D23
+  module procedure bcast_recv1D3, bcast_recv2D23, bcast_recv3D23, bcast_recv4D23
 end interface bcast_recv
 
 interface halo    !this is to easily allow me to swap out halo routines while debugging
@@ -963,6 +963,90 @@ param=paramall(-1:lx+2)
 end subroutine bcast_send1D
 
 
+subroutine bcast_send1D2(paramall,tag,param)
+
+!------------------------------------------------------------
+!-------BROADCASTS MPI DIMENSION VARIABLES TO WORKERS.  NOTE THAT
+!-------WE'VE ELECTED TO NOT USE THE GENERAL BROADCAST ROUTINES FOR
+!-------SINCE THESE OPERATIONS REQUIRE A LOT OF SPECIAL CASING FOR
+!-------THE SIZES OF THE VARIABLES TO BE SENT
+!-------
+!-------SUBROUTINE IS TO BE CALLED BY ROOT TO DO A BROADCAST
+!-------
+!-------THIS VERSION WORKS ON 1D ARRAYS THAT ARE REPRESENTING
+!-------THE X2-DIRECTION
+!------------------------------------------------------------
+
+real(wp), dimension(-1:), intent(in) :: paramall
+integer, intent(in) :: tag
+real(wp), dimension(-1:), intent(out) :: param
+
+integer :: lx,lxall     !local sizes
+integer :: iid,islstart,islfin
+integer, dimension(2) :: indsgrid
+
+lxall=size(paramall,1)-4
+lx=size(param,1)-4
+
+
+do iid=1,lid-1
+  indsgrid=ID2grid(iid)
+  
+!  islstart=iid*lx+1
+!  islfin=islstart+lx-1
+  islstart=indsgrid(1)*lx+1
+  islfin=islstart+lx-1
+
+  call mpi_send(paramall(islstart-2:islfin+2),(lx+4), &
+               mpi_realprec,iid,tag,MPI_COMM_WORLD,ierr)
+end do
+param=paramall(-1:lx+2)
+
+end subroutine bcast_send1D2
+
+
+subroutine bcast_send1D3(paramall,tag,param)
+
+!------------------------------------------------------------
+!-------BROADCASTS MPI DIMENSION VARIABLES TO WORKERS.  NOTE THAT
+!-------WE'VE ELECTED TO NOT USE THE GENERAL BROADCAST ROUTINES FOR
+!-------SINCE THESE OPERATIONS REQUIRE A LOT OF SPECIAL CASING FOR
+!-------THE SIZES OF THE VARIABLES TO BE SENT
+!-------
+!-------SUBROUTINE IS TO BE CALLED BY ROOT TO DO A BROADCAST
+!-------
+!-------THIS VERSION WORKS ON 1D ARRAYS THAT ARE REPRESENTING
+!-------THE X2-DIRECTION
+!------------------------------------------------------------
+
+real(wp), dimension(-1:), intent(in) :: paramall
+integer, intent(in) :: tag
+real(wp), dimension(-1:), intent(out) :: param
+
+integer :: lx,lxall     !local sizes
+integer :: iid,islstart,islfin
+integer, dimension(2) :: indsgrid
+
+lxall=size(paramall,1)-4
+lx=size(param,1)-4
+
+
+do iid=1,lid-1
+  indsgrid=ID2grid(iid)    !compute my location on the process grid
+
+!  islstart=iid*lx+1
+!  islfin=islstart+lx-1
+  islstart=indsgrid(2)*lx+1    !send piece of grid that corresponds to my x3 position
+  islfin=islstart+lx-1
+
+  call mpi_send(paramall(islstart-2:islfin+2),(lx+4), &
+               mpi_realprec,iid,tag,MPI_COMM_WORLD,ierr)
+end do
+param=paramall(-1:lx+2)
+
+end subroutine bcast_send1D3
+
+
 subroutine bcast_send2D(paramtrimall,tag,paramtrim)
 
 !------------------------------------------------------------
@@ -1320,6 +1404,56 @@ call mpi_recv(param,(lx+4), &
 end subroutine bcast_recv1D
 
 
+subroutine bcast_recv1D2(param,tag)
+!! THIS SUBROUTINE RECEIVES BROADCAST DATA FROM A FULL 
+!! GRID ARRAY ON ROOT PROCESS TO WORKERS' SUB-GRID ARRAYS. 
+!!
+!! SUBROUTINE IS TO BE CALLED BY WORKERS TO DO A BROADCAST
+!!
+!! THIS VERSION WORKS ON 1D ARRAYS WHICH DO NOT INCLUDE
+!! GHOST CELLS!
+
+real(wp), dimension(-1:), intent(out) :: param
+integer, intent(in) :: tag
+
+integer :: lx
+integer :: iid
+
+
+lx=size(param,1)-4
+
+!> WORKERS RECEIVE THE IC DATA FROM ROOT
+call mpi_recv(param,(lx+4), &
+  mpi_realprec,0,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+
+end subroutine bcast_recv1D2
+
+
+subroutine bcast_recv1D3(param,tag)
+!! THIS SUBROUTINE RECEIVES BROADCAST DATA FROM A FULL 
+!! GRID ARRAY ON ROOT PROCESS TO WORKERS' SUB-GRID ARRAYS. 
+!!
+!! SUBROUTINE IS TO BE CALLED BY WORKERS TO DO A BROADCAST
+!!
+!! THIS VERSION WORKS ON 1D ARRAYS WHICH DO NOT INCLUDE
+!! GHOST CELLS!
+
+real(wp), dimension(-1:), intent(out) :: param
+integer, intent(in) :: tag
+
+integer :: lx
+integer :: iid
+
+
+lx=size(param,1)-4
+
+!> WORKERS RECEIVE THE IC DATA FROM ROOT
+call mpi_recv(param,(lx+4), &
+  mpi_realprec,0,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+
+end subroutine bcast_recv1D3
+
+
 subroutine bcast_recv2D(paramtrim,tag)
 !! THIS SUBROUTINE RECEIVES BROADCAST DATA FROM A FULL 
 !! GRID ARRAY ON ROOT PROCESS TO WORKERS' SUB-GRID ARRAYS. 
@@ -1538,9 +1672,9 @@ lx3=size(param,3)-4
 
 !WORKERS RECEIVE THE IC DATA FROM ROOT
 do isp=1,lsp
-  paramtmp=param(-1:lx1+2,1:lx2,1:lx3,isp)
-  call mpi_recv(param(:,:,:,isp),(lx1+4)*lx2*lx3, &
+  call mpi_recv(paramtmp,(lx1+4)*lx2*lx3, &
                  mpi_realprec,0,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+  param(-1:lx1+2,1:lx2,1:lx3,isp)=paramtmp(-1:lx1+2,1:lx2,1:lx3)
 end do
 
 end subroutine bcast_recv4D23
