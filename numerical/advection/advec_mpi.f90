@@ -3,7 +3,7 @@ module advec_mpi
 use phys_consts, only: lsp,ms, wp
 use grid, only : curvmesh,gridflag            
   !! do not import grid sizes in case we want do subgrid advection...
-use mpimod, only: myid, lid, tagnsbc, tagrhoesbc, tagrhovs1bc, tagvs3bc, halo23
+use mpimod, only: myid, lid, tagnsbc, tagrhoesbc, tagrhovs1bc, tagvs3bc, halo
 
 implicit none
 private
@@ -137,19 +137,19 @@ idleft=myid-1; idright=myid+1
 
 !> PASS X3 BOUNDARY CONDITIONS WITH GENERIC HALOING ROUTINES
 param=vs3(:,:,:,isp)
-call halo23(param,1,tagvs3BC)     !! we only need one ghost cell to compute interface velocities
+call halo(param,1,tagvs3BC)     !! we only need one ghost cell to compute interface velocities
 vs3(:,:,:,isp)=param
 
 param2=ns(:,:,:,isp)
-call halo23(param2,2,tagnsBC)
+call halo(param2,2,tagnsBC)
 ns(:,:,:,isp)=param2
 
 param3=rhovs1(:,:,:,isp)
-call halo23(param3,2,tagrhovs1BC)
+call halo(param3,2,tagrhovs1BC)
 rhovs1(:,:,:,isp)=param3
 
 param4=rhoes(:,:,:,isp)
-call halo23(param4,2,tagrhoesBC)
+call halo(param4,2,tagrhoesBC)
 rhoes(:,:,:,isp)=param4 
 
 if (flagperiodic==0) then

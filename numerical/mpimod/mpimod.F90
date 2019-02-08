@@ -109,6 +109,9 @@ interface bcast_recv
   module procedure bcast_recv1D, bcast_recv2D, bcast_recv3D, bcast_recv4D
 end interface bcast_recv
 
+interface halo    !this is to easily allow me to swap out halo routines while debugging
+  module procedure halo23
+end interface halo
 
 contains
 
@@ -294,7 +297,7 @@ if (.not. (myid==0 .and. idright==lid)) then    !if root is the only worker, do 
   
 end if
 
-end subroutine halo
+end subroutine halo3
 
 
 subroutine halo_end(param,paramend,tag)

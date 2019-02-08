@@ -346,9 +346,9 @@ J3halo(lx1+1,1:lx2,1:lx3)=J3halo(lx1,1:lx2,1:lx3)
 J3halo(1:lx1,0,1:lx3)=J3halo(1:lx1,1,1:lx3)
 J3halo(1:lx1,lx2+1,1:lx3)=J3halo(1:lx1,lx2,1:lx3)
 
-call halo23(J1halo,1,tagJ1)    !I'm kind of afraid to only halo a single point... 
-call halo23(J2halo,1,tagJ2)
-call halo23(J3halo,1,tagJ3)
+call halo(J1halo,1,tagJ1)    !I'm kind of afraid to only halo a single point... 
+call halo(J2halo,1,tagJ2)
+call halo(J3halo,1,tagJ3)
 
 !ZZZ - NEED TO SET GLOBAL BOUNDARY FOR APPROPRIATE WORKERS USING ZOH EXTRAP. (unless periodic)
 if (x%flagper==0) then
@@ -403,9 +403,9 @@ J3halo(lx1+1,1:lx2,1:lx3)=J3halo(lx1,1:lx2,1:lx3)
 J3halo(1:lx1,0,1:lx3)=J3halo(1:lx1,1,1:lx3)
 J3halo(1:lx1,lx2+1,1:lx3)=J3halo(1:lx1,lx2,1:lx3)
 
-call halo23(J1halo,1,tagJ1)    !I'm kind of afraid to only halo a single point... 
-call halo23(J2halo,1,tagJ2)
-call halo23(J3halo,1,tagJ3)
+call halo(J1halo,1,tagJ1)    !I'm kind of afraid to only halo a single point... 
+call halo(J2halo,1,tagJ2)
+call halo(J3halo,1,tagJ3)
 
 !CHECK AND SET GLOBAL BOUNDARY AFTER HALO OPERATIONS
 if (x%flagper==0) then
@@ -594,7 +594,7 @@ J1halo(0,1:lx2,1:lx3)=J1halo(1,1:lx2,1:lx3)
 J1halo(lx1+1,1:lx2,1:lx3)=J1halo(lx1,1:lx2,1:lx3)
 J1halo(1:lx1,0,1:lx3)=J1halo(1:lx1,1,1:lx3)
 J1halo(1:lx1,lx2+1,1:lx3)=J1halo(1:lx1,lx2,1:lx3)
-call halo23(J1halo,1,tagJ1)
+call halo(J1halo,1,tagJ1)
 
 if (x%flagper==0) then
   idleft=myid-1
@@ -642,7 +642,7 @@ if (maxval(incap) > 1d-6) then
   J1halo(lx1+1,1:lx2,1:lx3)=J1halo(lx1,1:lx2,1:lx3)
   J1halo(1:lx1,0,1:lx3)=J1halo(1:lx1,1,1:lx3)
   J1halo(1:lx1,lx2+1,1:lx3)=J1halo(1:lx1,lx2,1:lx3)
-  call halo23(J1halo,1,tagJ1)    !I'm kind of afraid to only halo a single point... 
+  call halo(J1halo,1,tagJ1)    !I'm kind of afraid to only halo a single point... 
   if (x%flagper==0) then
     idleft=myid-1
     idright=myid+1
@@ -666,7 +666,7 @@ if (maxval(incap) > 1d-6) then
   J1halo(lx1+1,1:lx2,1:lx3)=J1halo(lx1,1:lx2,1:lx3)
   J1halo(1:lx1,0,1:lx3)=J1halo(1:lx1,1,1:lx3)
   J1halo(1:lx1,lx2+1,1:lx3)=J1halo(1:lx1,lx2,1:lx3)
-  call halo23(J1halo,1,tagJ1)    !I'm kind of afraid to only halo a single point... 
+  call halo(J1halo,1,tagJ1)    !I'm kind of afraid to only halo a single point... 
   if (x%flagper==0) then
     idleft=myid-1
     idright=myid+1
@@ -741,9 +741,9 @@ if (lx2/=1 .and. potsolve ==1) then    !we did a field-integrated solve above
   J3halo(1:lx1,0,1:lx3)=J3halo(1:lx1,1,1:lx3)
   J3halo(1:lx1,lx2+1,1:lx3)=J3halo(1:lx1,lx2,1:lx3)
 
-  call halo23(J1halo,1,tagJ1)    !I'm kind of afraid to only halo a single point... 
-  call halo23(J2halo,1,tagJ2)
-  call halo23(J3halo,1,tagJ3)
+  call halo(J1halo,1,tagJ1)    !I'm kind of afraid to only halo a single point... 
+  call halo(J2halo,1,tagJ2)
+  call halo(J3halo,1,tagJ3)
 
   !ZZZ - NEED TO SET GLOBAL BOUNDARIES HERE
   if (x%flagper==0) then
@@ -974,9 +974,9 @@ J3halo(lx1+1,1:lx2,1:lx3)=J3halo(lx1,1:lx2,1:lx3)
 J3halo(1:lx1,0,1:lx3)=J3halo(1:lx1,1,1:lx3)
 J3halo(1:lx1,lx2+1,1:lx3)=J3halo(1:lx1,lx2,1:lx3)
 
-call halo23(J1halo,1,tagJ1)    !I'm kind of afraid to only halo a single point... 
-call halo23(J2halo,1,tagJ2)
-call halo23(J3halo,1,tagJ3)
+call halo(J1halo,1,tagJ1)    !I'm kind of afraid to only halo a single point... 
+call halo(J2halo,1,tagJ2)
+call halo(J3halo,1,tagJ3)
 
 !ZZZ - CHECK FOR AND SET GLOBAL BOUNDARIES
 if (x%flagper==0) then
@@ -1029,9 +1029,9 @@ J3halo(lx1+1,1:lx2,1:lx3)=J3halo(lx1,1:lx2,1:lx3)
 J3halo(1:lx1,0,1:lx3)=J3halo(1:lx1,1,1:lx3)
 J3halo(1:lx1,lx2+1,1:lx3)=J3halo(1:lx1,lx2,1:lx3)
 
-call halo23(J1halo,1,tagJ1)    !I'm kind of afraid to only halo a single point... 
-call halo23(J2halo,1,tagJ2)
-call halo23(J3halo,1,tagJ3)
+call halo(J1halo,1,tagJ1)    !I'm kind of afraid to only halo a single point... 
+call halo(J2halo,1,tagJ2)
+call halo(J3halo,1,tagJ3)
 
 !ZZZ - CHECK FOR AND SET GLOBAL BOUNDARIES
 if (x%flagper==0) then
@@ -1176,7 +1176,7 @@ J1halo(0,1:lx2,1:lx3)=J1halo(1,1:lx2,1:lx3)
 J1halo(lx1+1,1:lx2,1:lx3)=J1halo(lx1,1:lx2,1:lx3)
 J1halo(1:lx1,0,1:lx3)=J1halo(1:lx1,1,1:lx3)
 J1halo(1:lx1,lx2+1,1:lx3)=J1halo(1:lx1,lx2,1:lx3)
-call halo23(J1halo,1,tagJ1)    !I'm kind of afraid to only halo a single point... 
+call halo(J1halo,1,tagJ1)    !I'm kind of afraid to only halo a single point... 
 if (x%flagper==0) then
   idleft=myid-1
   idright=myid+1
@@ -1223,7 +1223,7 @@ if (maxval(incap) > 1d-6) then
   J1halo(lx1+1,1:lx2,1:lx3)=J1halo(lx1,1:lx2,1:lx3)
   J1halo(1:lx1,0,1:lx3)=J1halo(1:lx1,1,1:lx3)
   J1halo(1:lx1,lx2+1,1:lx3)=J1halo(1:lx1,lx2,1:lx3)
-  call halo23(J1halo,1,tagJ1)    !I'm kind of afraid to only halo a single point... 
+  call halo(J1halo,1,tagJ1)    !I'm kind of afraid to only halo a single point... 
   if (x%flagper==0) then
     idleft=myid-1
     idright=myid+1
@@ -1247,7 +1247,7 @@ if (maxval(incap) > 1d-6) then
   J1halo(lx1+1,1:lx2,1:lx3)=J1halo(lx1,1:lx2,1:lx3)
   J1halo(1:lx1,0,1:lx3)=J1halo(1:lx1,1,1:lx3)
   J1halo(1:lx1,lx2+1,1:lx3)=J1halo(1:lx1,lx2,1:lx3)
-  call halo23(J1halo,1,tagJ1)    !I'm kind of afraid to only halo a single point... 
+  call halo(J1halo,1,tagJ1)    !I'm kind of afraid to only halo a single point... 
   if (x%flagper==0) then
     idleft=myid-1
     idright=myid+1
@@ -1322,9 +1322,9 @@ if (lx2/=1 .and. potsolve ==1) then    !we did a field-integrated solve above
   J3halo(1:lx1,0,1:lx3)=J3halo(1:lx1,1,1:lx3)
   J3halo(1:lx1,lx2+1,1:lx3)=J3halo(1:lx1,lx2,1:lx3)
 
-  call halo23(J1halo,1,tagJ1)    !I'm kind of afraid to only halo a single point... 
-  call halo23(J2halo,1,tagJ2)
-  call halo23(J3halo,1,tagJ3)
+  call halo(J1halo,1,tagJ1)    !I'm kind of afraid to only halo a single point... 
+  call halo(J2halo,1,tagJ2)
+  call halo(J3halo,1,tagJ3)
 
   !ZZZ - SET GLOBAL BOUNDARY HERE
   if (x%flagper==0) then
