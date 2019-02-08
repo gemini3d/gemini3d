@@ -146,8 +146,8 @@ function ID2grid(ID)
   integer, intent(in) :: ID
   integer, dimension(2) :: ID2grid
 
-  ID2grid(2)=ID/lid2           !x3 index into process grid
-  ID2grid(1)=ID-ID*ID2grid(2)     !x2 index into process grid
+  ID2grid(2)=ID/lid2                !x3 index into process grid
+  ID2grid(1)=ID-ID2grid(2)*lid2     !x2 index into process grid
 
 end function ID2grid
 

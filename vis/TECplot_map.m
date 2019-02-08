@@ -49,7 +49,7 @@ for it=1:lt
     mlonlimplot=[min(mlon)-0.5,max(mlon)+0.5];
     axesm('MapProjection','Mercator','MapLatLimit',mlatlimplot,'MapLonLimit',mlonlimplot);
     param=dvTEC(:,:,it);
-    %param=dvTEC(:,:,it)-dvTEC(:,:,2);   %flat-field dvTEC just in case    
+    param=dvTEC(:,:,it)-dvTEC(:,:,5);   %flat-field dvTEC just in case    
     %imagesc(mlon,mlat,param);
     mlatlim=[min(mlat),max(mlat)];
     mlonlim=[min(mlon),max(mlon)];
