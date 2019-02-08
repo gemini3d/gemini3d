@@ -513,6 +513,49 @@ end do
 end subroutine gather_recv2D
 
 
+subroutine gather_recv2D23(paramtrim,tag,paramtrimall)
+!! THIS SUBROUTINE GATHERS DATA FROM ALL WORKERS ONTO
+!! A FULL-GRID ARRAY ON THE ROOT PROCESS (PRESUMABLY FOR
+!! OUTPUT OR SOME ELECTRODYNAMIC CALCULATION, PERHAPS.
+!! 
+!! THIS SUBROUTINE IS TO BE CALLED BY ROOT TO DO GATHER
+!! 
+!! THIS VERSION WORKS ON 2D ARRAYS WHICH DO NOT INCLUDE ANY GHOST CELLS!!!!
+
+real(wp), dimension(:,:), intent(in) :: paramtrim
+integer, intent(in) :: tag
+real(wp), dimension(:,:), intent(out) :: paramtrimall
+
+integer :: lx1,lx2,lx3,isp,lsp,i2,i3
+integer :: iid,i2start,i2fin,i3start,i3fin
+integer, dimension(2) :: inds
+real(wp), dimension(1:size(paramtrim,1),1:size(paramtrim,2)) :: paramtmp
+
+lx2=size(paramtrim,1)    !note here that paramtrim does not have ghost cells
+lx3=size(paramtrim,2)
+
+
+!PATCH DATA TOGETHER FOR OUTPUT STARTING WITH ROOT'S SLAB
+paramtrimall(1:lx2,1:lx3)=paramtrim   !copy root's data into full-grid array
+
+do iid=1,lid-1
+  inds=ID2grid(iid)   !find the location on the process grid for this particular process ID
+  i2=inds(1)          !need process grid location in order to know where to put the incoming data
+  i3=inds(2)
+
+  call mpi_recv(paramtmp,lx2*lx3, &
+                mpi_realprec,iid,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+
+  i3start=i3*lx3+1   !index (3rd dim) in the full grid variable into which the next chunk of data are to be store
+  i3fin=i3start+lx3-1
+  i2start=i2*lx2+1   !index into 2nd dim of process grid
+  i2fin=i2start+lx2-1
+  paramtrimall(i2start:i2fin,i3start:i3fin)=paramtmp    !note the exclusion of the ghost cells
+end do
+
+end subroutine gather_recv2D23
+
+
 subroutine gather_recv3D(paramtrim,tag,paramtrimall)
 !! THIS SUBROUTINE GATHERS DATA FROM ALL WORKERS ONTO
 !! A FULL-GRID ARRAY ON THE ROOT PROCESS (PRESUMABLY FOR
@@ -548,6 +591,58 @@ do iid=1,lid-1
 end do
 
 end subroutine gather_recv3D
+
+
+subroutine gather_recv3D23(paramtrim,tag,paramtrimall)
+
+!! THIS SUBROUTINE GATHERS DATA FROM ALL WORKERS ONTO
+!! A FULL-GRID ARRAY ON THE ROOT PROCESS (PRESUMABLY FOR
+!! OUTPUT OR SOME ELECTRODYNAMIC CALCULATION, PERHAPS.
+!! 
+!! THIS SUBROUTINE IS TO BE CALLED BY ROOT TO DO GATHER
+!! 
+!! THIS VERSION WORKS ON 3D ARRAYS WHICH DO NOT INCLUDE
+!! ANY GHOST CELLS!!!!
+!! THIS VERION ALSO WORKS ON A PROCESS GRID
+
+real(wp), dimension(:,:,:), intent(in) :: paramtrim
+integer, intent(in) :: tag
+real(wp), dimension(:,:,:), intent(out) :: paramtrimall
+
+integer :: lx1,lx2,lx3,i2,i3
+integer :: iid,i2start,i2fin,i3start,i3fin
+integer, dimension(2) :: inds
+real(wp), dimension(1:size(paramtrim,1),1:size(paramtrim,2),1:size(paramtrim,3)) :: paramtmp   !buffer space for mpi receive, includes only x1 ghost cells
+
+
+lx1=size(paramtrim,1)
+lx2=size(paramtrim,2)
+lx3=size(paramtrim,3)
+
+
+!Originally the outer loop was over worker number, which cycles the 3rd dimension
+!slower than 4th (backward from what would be most efficient memory access pattern)
+!Since the gathering operation is root-limited probably, I'm guessing it's better
+!to give root an efficient memory access pattern here, but I haven't tested this
+!theory.
+paramtrimall(:,1:lx2,1:lx3)=paramtrim(:,1:lx2,1:lx3)    !store root's piece of data
+do iid=1,lid-1        !must loop over all processes in the grid, don't enter loop if only root is present
+  inds=ID2grid(iid)   !find the location on the process grid for this particular process ID
+  i2=inds(1)          !need process grid location in order to know where to put the incoming data
+  i3=inds(2) 
+
+  call mpi_recv(paramtmp,(lx1+4)*lx2*lx3, &
+                mpi_realprec,iid,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)    !recieve chunk of data into buffer
+
+
+  i3start=i3*lx3+1   !index (3rd dim) in the full grid variable into which the next chunk of data are to be store
+  i3fin=i3start+lx3-1
+  i2start=i2*lx2+1   !index into 2nd dim of process grid
+  i2fin=i2start+lx2-1
+  paramtrimall(1:lx1,i2start:i2fin,i3start:i3fin)=paramtmp    !note the exclusion of the ghost cells
+end do
+
+end subroutine gather_recv3D23
 
 
 subroutine gather_recv4D(param,tag,paramall)
@@ -680,6 +775,34 @@ call mpi_send(paramtrim,lx2*lx3,mpi_realprec,0,tag,MPI_COMM_WORLD,ierr)
 end subroutine gather_send2D
 
 
+subroutine gather_send2D23(paramtrim,tag)
+
+!------------------------------------------------------------
+!-------THIS SUBROUTINE GATHERS DATA FROM ALL WORKERS ONTO
+!-------A FULL-GRID ARRAY ON THE ROOT PROCESS (PRESUMABLY FOR
+!-------OUTPUT OR SOME ELECTRODYNAMIC CALCULATION, PERHAPS.
+!-------
+!-------SUBROUTINE IS TO BE CALLED BY WORKERS TO DO GATHER
+!-------
+!-------THIS VERSION WORKS ON 2D ARRAYS WHICH DO NOT INCLUDE
+!-------ANY GHOST CELLS!!!!
+!-------THIS ROUTINE WORKS ON A PROCESS GRID
+!------------------------------------------------------------
+
+real(wp), dimension(:,:), intent(in) :: paramtrim
+integer, intent(in) :: tag
+
+integer :: lx2,lx3
+
+
+lx2=size(paramtrim,1)    !note here that paramtrim does not have ghost cells
+lx3=size(paramtrim,2)
+
+call mpi_send(paramtrim,lx2*lx3,mpi_realprec,0,tag,MPI_COMM_WORLD,ierr)
+
+end subroutine gather_send2D23
+
+
 subroutine gather_send3D(paramtrim,tag)
 
 !------------------------------------------------------------
@@ -706,6 +829,35 @@ lx3=size(paramtrim,3)
 call mpi_send(paramtrim,lx1*lx2*lx3,mpi_realprec,0,tag,MPI_COMM_WORLD,ierr)
 
 end subroutine gather_send3D
+
+
+subroutine gather_send3D23(paramtrim,tag)
+
+!------------------------------------------------------------
+!-------THIS SUBROUTINE GATHERS DATA FROM ALL WORKERS ONTO
+!-------A FULL-GRID ARRAY ON THE ROOT PROCESS (PRESUMABLY FOR
+!-------OUTPUT OR SOME ELECTRODYNAMIC CALCULATION, PERHAPS.
+!-------
+!-------SUBROUTINE IS TO BE CALLED BY WORKERS TO DO GATHER
+!-------
+!-------THIS VERSION WORKS ON 3D ARRAYS WHICH DO NOT INCLUDE
+!-------ANY GHOST CELLS!!!!
+!-------THIS VERSION WORKS ON A PROCESS GRID
+!------------------------------------------------------------
+
+real(wp), dimension(:,:,:), intent(in) :: paramtrim
+integer, intent(in) :: tag
+
+integer :: lx1,lx2,lx3
+
+
+lx1=size(paramtrim,1)    !note here that paramtrim does not have ghost cells
+lx2=size(paramtrim,2)
+lx3=size(paramtrim,3)
+
+call mpi_send(paramtrim,lx1*lx2*lx3,mpi_realprec,0,tag,MPI_COMM_WORLD,ierr)
+
+end subroutine gather_send3D23
 
 
 subroutine gather_send4D(param,tag)
