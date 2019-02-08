@@ -102,11 +102,11 @@ interface gather_send
 end interface gather_send
 
 interface bcast_send
-  module procedure bcast_send1D, bcast_send2D, bcast_send3D, bcast_send4D
+  module procedure bcast_send1D, bcast_send2D23, bcast_send3D23, bcast_send4D
 end interface bcast_send
 
 interface bcast_recv
-  module procedure bcast_recv1D, bcast_recv2D, bcast_recv3D, bcast_recv4D
+  module procedure bcast_recv1D, bcast_recv2D23, bcast_recv3D23, bcast_recv4D
 end interface bcast_recv
 
 interface halo    !this is to easily allow me to swap out halo routines while debugging
@@ -572,8 +572,6 @@ real(wp), dimension(1:size(paramtrim,1),1:size(paramtrim,2)) :: paramtmp
 
 lx2=size(paramtrim,1)    !note here that paramtrim does not have ghost cells
 lx3=size(paramtrim,2)
-lx2all=size(paramtrimall,1)
-lx3all=size(paramtrimall,2)
 
 
 !PATCH DATA TOGETHER FOR OUTPUT STARTING WITH ROOT'S SLAB
@@ -651,8 +649,6 @@ real(wp), dimension(1:size(paramtrim,1),1:size(paramtrim,2),1:size(paramtrim,3))
 lx1=size(paramtrim,1)
 lx2=size(paramtrim,2)
 lx3=size(paramtrim,3)
-lx2all=size(paramtrimall,2)
-lx3all=size(paramtrimall,3)
 
 
 !Originally the outer loop was over worker number, which cycles the 3rd dimension
@@ -743,8 +739,6 @@ real(wp), dimension(-1:size(param,1)-2,1:size(param,2)-4,1:size(param,3)-4) :: p
 lx1=size(param,1)-4
 lx2=size(param,2)-4
 lx3=size(param,3)-4
-lx2all=size(paramall,2)-4
-lx3all=size(paramall,3)-4
 
 !Originally the outer loop was over worker number, which cycles the 3rd dimension
 !slower than 4th (backward from what would be most efficient memory access pattern)
@@ -1009,6 +1003,51 @@ paramtrim=paramtrimall(:,1:lx3)
 end subroutine bcast_send2D
 
 
+subroutine bcast_send2D23(paramtrimall,tag,paramtrim)
+
+!------------------------------------------------------------
+!-------THIS SUBROUTINE BROADCASTS DATA FROM A FULL GRID ARRAY
+!-------ON ROOT PROCESS TO ALL WORKERS' SUB-GRID ARRAYS.
+!-------
+!-------SUBROUTINE IS TO BE CALLED BY ROOT TO DO A BROADCAST
+!-------
+!-------THIS VERSION WORKS ON 2D ARRAYS WHICH DO NOT INCLUDE
+!-------GHOST CELLS!
+!------------------------------------------------------------
+
+real(wp), dimension(:,:), intent(in) :: paramtrimall
+integer, intent(in) :: tag
+real(wp), dimension(:,:), intent(out) :: paramtrim
+
+integer :: lx2,lx3
+integer :: iid,islstart,islfin
+integer, dimension(4) :: inds
+
+real(wp), dimension(1:size(paramtrim,1),1:size(paramtrim,2)) :: paramtmp
+
+
+lx2=size(paramtrim,1)    !assume this is an array which has been 'flattened' along the 1-dimension
+lx3=size(paramtrim,2)
+
+
+!ROOT BROADCASTS IC DATA TO WORKERS
+do iid=1,lid-1
+!  islstart=iid*lx3+1
+!  islfin=islstart+lx3-1
+  inds=slabinds(iid,lx2,lx3)
+
+  paramtmp=paramtrimall(inds(1):inds(2),inds(3):inds(4))
+  call mpi_send(paramtmp,lx2*lx3, &
+               mpi_realprec,iid,tag,MPI_COMM_WORLD,ierr)
+end do
+
+
+!ROOT TAKES A SLAB OF DATA
+paramtrim(1:lx2,1:lx3)=paramtrimall(1:lx2,1:lx3)
+
+end subroutine bcast_send2D23
+
+
 subroutine bcast_send3D(paramtrimall,tag,paramtrim)
 
 !------------------------------------------------------------
@@ -1052,6 +1091,52 @@ end do
 paramtrim=paramtrimall(:,:,1:lx3)
 
 end subroutine bcast_send3D
+
+
+subroutine bcast_send3D23(paramtrimall,tag,paramtrim)
+
+!------------------------------------------------------------
+!-------THIS SUBROUTINE BROADCASTS DATA FROM A FULL GRID ARRAY
+!-------ON ROOT PROCESS TO ALL WORKERS' SUB-GRID ARRAYS.
+!-------
+!-------SUBROUTINE IS TO BE CALLED BY ROOT TO DO A BROADCAST
+!-------
+!-------THIS VERSION WORKS ON 3D ARRAYS WHICH DO NOT INCLUDE
+!-------GHOST CELLS!
+!-------
+!-------ALSO NOTE THAT IF THE ARRAY SIZE (DIM 3)  DOES NOT CORRESPOND
+!-------TO THE SIZE OF THE SYSTEM IN THE X3-DIRECTION, THEN 
+!-------THE SLAB CALCULATIONS FOR WORKERS WILL BE OFF.
+!------------------------------------------------------------
+
+real(wp), dimension(:,:,:), intent(in) :: paramtrimall
+integer, intent(in) :: tag
+real(wp), dimension(:,:,:), intent(out) :: paramtrim
+
+integer :: lx1,lx2,lx3
+integer :: iid,islstart,islfin
+integer, dimension(4) :: inds
+real(wp), dimension(1:size(paramtrim,1),1:size(paramtrim,2),1:size(paramtrim,3)) :: paramtmp
+
+
+lx1=size(paramtrim,1)    !note here that paramtrim does not have ghost cells
+lx2=size(paramtrim,2)
+lx3=size(paramtrim,3)
+
+
+!> ROOT BROADCASTS IC DATA TO WORKERS
+do iid=1,lid-1
+  inds=slabinds(iid,lx2,lx3)
+  paramtmp=paramtrimall(1:lx1,inds(1):inds(2),inds(3):inds(4))
+  call mpi_send(paramtmp,lx1*lx2*lx3, &
+               mpi_realprec,iid,tag,MPI_COMM_WORLD,ierr)
+end do
+
+
+!> ROOT TAKES A SLAB OF DATA
+paramtrim=paramtrimall(1:lx1,1:lx2,1:lx3)
+
+end subroutine bcast_send3D23
 
 
 subroutine bcast_send3D_x3i(paramtrimall,tag,paramtrim)
@@ -1223,6 +1308,33 @@ call mpi_recv(paramtrim,lx2*lx3, &
 end subroutine bcast_recv2D
 
 
+subroutine bcast_recv2D23(paramtrim,tag)
+!! THIS SUBROUTINE RECEIVES BROADCAST DATA FROM A FULL 
+!! GRID ARRAY ON ROOT PROCESS TO WORKERS' SUB-GRID ARRAYS. 
+!!
+!! SUBROUTINE IS TO BE CALLED BY WORKERS TO DO A BROADCAST
+!!
+!! THIS VERSION WORKS ON 3D ARRAYS WHICH DO NOT INCLUDE
+!! GHOST CELLS!
+
+real(wp), dimension(:,:), intent(out) :: paramtrim
+integer, intent(in) :: tag
+
+integer :: lx2,lx3
+integer :: iid
+
+
+lx2=size(paramtrim,1)
+lx3=size(paramtrim,2)
+
+
+!> WORKERS RECEIVE THE IC DATA FROM ROOT
+call mpi_recv(paramtrim,lx2*lx3, &
+  mpi_realprec,0,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+
+end subroutine bcast_recv2D23
+
+
 subroutine bcast_recv3D(paramtrim,tag)
 !! THIS SUBROUTINE RECEIVES BROADCAST DATA FROM A FULL 
 !! GRID ARRAY ON ROOT PROCESS TO WORKERS' SUB-GRID ARRAYS. 
@@ -1249,6 +1361,34 @@ call mpi_recv(paramtrim,lx1*lx2*lx3, &
                mpi_realprec,0,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
 
 end subroutine bcast_recv3D
+
+
+subroutine bcast_recv3D23(paramtrim,tag)
+!! THIS SUBROUTINE RECEIVES BROADCAST DATA FROM A FULL 
+!! GRID ARRAY ON ROOT PROCESS TO WORKERS' SUB-GRID ARRAYS. 
+!!
+!! SUBROUTINE IS TO BE CALLED BY WORKERS TO DO A BROADCAST
+!!
+!! THIS VERSION WORKS ON 3D ARRAYS WHICH DO NOT INCLUDE
+!! GHOST CELLS!
+
+real(wp), dimension(:,:,:), intent(out) :: paramtrim
+integer, intent(in) :: tag
+
+integer :: lx1,lx2,lx3
+integer :: iid
+
+!> note here that paramtrim does not have ghost cells
+lx1=size(paramtrim,1)   
+lx2=size(paramtrim,2)
+lx3=size(paramtrim,3)
+
+
+!> WORKERS RECEIVE THE IC DATA FROM ROOT
+call mpi_recv(paramtrim,lx1*lx2*lx3, &
+               mpi_realprec,0,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+
+end subroutine bcast_recv3D23
 
 
 subroutine bcast_recv3D_x3i(paramtrim,tag)
