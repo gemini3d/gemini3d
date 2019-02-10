@@ -4,10 +4,10 @@ This file is intended to document development priorities for the GEMINI project.
 
 
 ## Parallel in x2 and x3 changes
-* grid.f90 needs to create x2all
-* derivatives must know about x2 division
-* haloing of divs must know about x2 division
-* rewrite custom broadcast and gather ops
+* grid.f90 needs to create x2all and give x2 to workers
+* derivatives must know about x2 division to decide whether they differentiate over part of the grid or the whole thing...
+* haloing of divs must know about x2 division - as long as haloing is okay, this should be fine
+* rewrite custom broadcast and gather ops to deal with division in x2 and x3
 <!--* alias halo functions -->
 
 

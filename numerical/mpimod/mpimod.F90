@@ -78,7 +78,7 @@ integer, protected :: myid,lid
 !! no external procedure should mess with these (but they need to be able to read them)
 
 integer :: ierr
-!! using procedures need to be able to overwrite this to prevent seg. faults (or something)
+!> using procedures need to be able to overwrite this to prevent seg. faults (or something)
 
 
 !> VARIABLES RELATED TO PROCESS GRID (IF USED)
@@ -86,32 +86,39 @@ integer, protected :: lid2,lid3,myid2,myid3
 
 
 !> THESE INTERFACES OVERLOAD THE MPI GATHER,BROADCAST SUBROUTINES FOR ARRAYS OF DIFFERENT RANKS.
-!interface gather_recv
-!  module procedure gather_recv2D, gather_recv3D, gather_recv4D
-!end interface gather_recv
-!
-!interface gather_send
-!  module procedure gather_send2D, gather_send3D, gather_send4D
-!end interface gather_send
+!> THESE ARE ALSO USEFUL FOR SUBBING IN DIFFERENT SCENARIOS - 1D VS. 2D MPI DIVISIONS ETC. 
 interface gather_recv
-  module procedure gather_recv2D23, gather_recv3D23, gather_recv4D23
+  module procedure gather_recv2D_23, gather_recv3D_23, gather_recv4D_23
 end interface gather_recv
 
 interface gather_send
-  module procedure gather_send2D23, gather_send3D23, gather_send4D23
+  module procedure gather_send2D_23, gather_send3D_23, gather_send4D_23
 end interface gather_send
 
 interface bcast_send
-  module procedure bcast_send1D3, bcast_send2D23, bcast_send3D23, bcast_send4D23
+  module procedure bcast_send1D_23_3, bcast_send2D_23, bcast_send3D_23, bcast_send4D_23
 end interface bcast_send
 
 interface bcast_recv
-  module procedure bcast_recv1D3, bcast_recv2D23, bcast_recv3D23, bcast_recv4D23
+  module procedure bcast_recv1D_23_3, bcast_recv2D_23, bcast_recv3D_23, bcast_recv4D_23
 end interface bcast_recv
 
 interface halo    !this is to easily allow me to swap out halo routines while debugging
-  module procedure halo23
+  module procedure halo_23
 end interface halo
+
+interface bcast_send3D_x3i
+  module procedure bcast_send3D_x3i_3
+end interface bcast_send3D_x3i
+interface bcast_recv3D_x3i
+  module procedure bcast_recv3D_x3i_3
+end interface bcast_recv3D_x3i
+interface bcast_send3D_ghost
+  module procedure bcast_send3D_ghost_3
+end interface bcast_send3D_ghost
+interface bcast_recv3D_ghost
+  module procedure bcast_recv3D_ghost_3
+end interface bcast_recv3D_ghost
 
 contains
 
@@ -232,7 +239,7 @@ call mpi_finalize(ierr)
 end subroutine mpibreakdown
 
 
-subroutine halo3(param,lhalo,tag)
+subroutine halo_3(param,lhalo,tag)
 !! GENERIC HALOING ROUTINE FOR FILLING GHOST CELLS.  CAN
 !! BE USED TO SET BOUNDARY CONDITIONS OR PREPARE ARRAYS
 !! FOR FINITE DIFFERENCING, ETC.  OBVIOUSLY ARRAYS INCLUDE
@@ -297,13 +304,13 @@ if (.not. (myid==0 .and. idright==lid)) then    !if root is the only worker, do 
   
 end if
 
-end subroutine halo3
+end subroutine halo_3
 
 
 subroutine halo_end(param,paramend,tag)
 !! GENERIC HALOING ROUTINE WHICH PASSES THE BEGINNING OF THE
 !! SLAB TO ITS LEFTWARD (IN X3) NEIGHBOR SO THAT X3 INTEGRATIONS
-!! CAN BE DONE PROPERLY 
+!! CAN BE DONE PROPERLY.  PRESENTLY THIS IS JUST USED IN MAGCALC
 !! 
 !! THIS VERSION USES ASYNC COMM WITHOUT SWITCH STATEMENTS.  IT
 !! ALSO ASSUMES THAT THE ARRAYS INVOLVED DO HAVE GHOST CELLS
@@ -360,7 +367,7 @@ end subroutine halo_end
 
 !   LEAVE THIS IN FOR FUTURE DEV. - HALOS AN ARRAY THAT IS SPLIT ALONG THE 2 AND
 !   3 RANKS
-subroutine halo23(param,lhalo,tag)
+subroutine halo_23(param,lhalo,tag)
 
   !------------------------------------------------------------
   !-------GENERIC HALOING ROUTINE FOR FILLING GHOST CELLS.  CAN
@@ -514,10 +521,10 @@ subroutine halo23(param,lhalo,tag)
   deallocate(buffer31,buffer32,buffer33,buffer34)
   deallocate(buffer21,buffer22,buffer23,buffer24) 
 
-end subroutine halo23
+end subroutine halo_23
 
 
-subroutine gather_recv2D(paramtrim,tag,paramtrimall)
+subroutine gather_recv2D_3(paramtrim,tag,paramtrimall)
 !! THIS SUBROUTINE GATHERS DATA FROM ALL WORKERS ONTO
 !! A FULL-GRID ARRAY ON THE ROOT PROCESS (PRESUMABLY FOR
 !! OUTPUT OR SOME ELECTRODYNAMIC CALCULATION, PERHAPS.
@@ -549,10 +556,10 @@ do iid=1,lid-1
                 mpi_realprec,iid,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
 end do
 
-end subroutine gather_recv2D
+end subroutine gather_recv2D_3
 
 
-subroutine gather_recv2D23(paramtrim,tag,paramtrimall)
+subroutine gather_recv2D_23(paramtrim,tag,paramtrimall)
 !! THIS SUBROUTINE GATHERS DATA FROM ALL WORKERS ONTO
 !! A FULL-GRID ARRAY ON THE ROOT PROCESS (PRESUMABLY FOR
 !! OUTPUT OR SOME ELECTRODYNAMIC CALCULATION, PERHAPS.
@@ -584,10 +591,10 @@ do iid=1,lid-1
   paramtrimall(inds(1):inds(2),inds(3):inds(4))=paramtmp    !note the exclusion of the ghost cells
 end do
 
-end subroutine gather_recv2D23
+end subroutine gather_recv2D_23
 
 
-subroutine gather_recv3D(paramtrim,tag,paramtrimall)
+subroutine gather_recv3D_3(paramtrim,tag,paramtrimall)
 !! THIS SUBROUTINE GATHERS DATA FROM ALL WORKERS ONTO
 !! A FULL-GRID ARRAY ON THE ROOT PROCESS (PRESUMABLY FOR
 !! OUTPUT OR SOME ELECTRODYNAMIC CALCULATION, PERHAPS.
@@ -621,10 +628,10 @@ do iid=1,lid-1
                 mpi_realprec,iid,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
 end do
 
-end subroutine gather_recv3D
+end subroutine gather_recv3D_3
 
 
-subroutine gather_recv3D23(paramtrim,tag,paramtrimall)
+subroutine gather_recv3D_23(paramtrim,tag,paramtrimall)
 
 !! THIS SUBROUTINE GATHERS DATA FROM ALL WORKERS ONTO
 !! A FULL-GRID ARRAY ON THE ROOT PROCESS (PRESUMABLY FOR
@@ -664,10 +671,10 @@ do iid=1,lid-1        !must loop over all processes in the grid, don't enter loo
   paramtrimall(1:lx1,inds(1):inds(2),inds(3):inds(4))=paramtmp    !note the exclusion of the ghost cells
 end do
 
-end subroutine gather_recv3D23
+end subroutine gather_recv3D_23
 
 
-subroutine gather_recv4D(param,tag,paramall)
+subroutine gather_recv4D_3(param,tag,paramall)
 
 !------------------------------------------------------------
 !-------THIS SUBROUTINE GATHERS DATA FROM ALL WORKERS ONTO
@@ -710,10 +717,10 @@ do isp=1,lsp
   end do
 end do
 
-end subroutine gather_recv4D
+end subroutine gather_recv4D_3
 
 
-subroutine gather_recv4D23(param,tag,paramall)
+subroutine gather_recv4D_23(param,tag,paramall)
 
 !------------------------------------------------------------
 !-------THIS SUBROUTINE GATHERS DATA FROM ALL WORKERS ONTO
@@ -756,10 +763,10 @@ do isp=1,lsp
   end do
 end do
 
-end subroutine gather_recv4D23
+end subroutine gather_recv4D_23
 
 
-subroutine gather_send2D(paramtrim,tag)
+subroutine gather_send2D_3(paramtrim,tag)
 
 !------------------------------------------------------------
 !-------THIS SUBROUTINE GATHERS DATA FROM ALL WORKERS ONTO
@@ -783,10 +790,10 @@ lx3=size(paramtrim,2)
 
 call mpi_send(paramtrim,lx2*lx3,mpi_realprec,0,tag,MPI_COMM_WORLD,ierr)
 
-end subroutine gather_send2D
+end subroutine gather_send2D_3
 
 
-subroutine gather_send2D23(paramtrim,tag)
+subroutine gather_send2D_23(paramtrim,tag)
 
 !------------------------------------------------------------
 !-------THIS SUBROUTINE GATHERS DATA FROM ALL WORKERS ONTO
@@ -811,10 +818,10 @@ lx3=size(paramtrim,2)
 
 call mpi_send(paramtrim,lx2*lx3,mpi_realprec,0,tag,MPI_COMM_WORLD,ierr)
 
-end subroutine gather_send2D23
+end subroutine gather_send2D_23
 
 
-subroutine gather_send3D(paramtrim,tag)
+subroutine gather_send3D_3(paramtrim,tag)
 
 !------------------------------------------------------------
 !-------THIS SUBROUTINE GATHERS DATA FROM ALL WORKERS ONTO
@@ -839,10 +846,10 @@ lx3=size(paramtrim,3)
 
 call mpi_send(paramtrim,lx1*lx2*lx3,mpi_realprec,0,tag,MPI_COMM_WORLD,ierr)
 
-end subroutine gather_send3D
+end subroutine gather_send3D_3
 
 
-subroutine gather_send3D23(paramtrim,tag)
+subroutine gather_send3D_23(paramtrim,tag)
 
 !------------------------------------------------------------
 !-------THIS SUBROUTINE GATHERS DATA FROM ALL WORKERS ONTO
@@ -868,10 +875,10 @@ lx3=size(paramtrim,3)
 
 call mpi_send(paramtrim,lx1*lx2*lx3,mpi_realprec,0,tag,MPI_COMM_WORLD,ierr)
 
-end subroutine gather_send3D23
+end subroutine gather_send3D_23
 
 
-subroutine gather_send4D(param,tag)
+subroutine gather_send4D_3(param,tag)
 
 !------------------------------------------------------------
 !-------THIS SUBROUTINE GATHERS DATA FROM ALL WORKERS ONTO
@@ -898,10 +905,10 @@ do isp=1,lsp
   call mpi_send(param(:,:,1:lx3,isp),(lx1+4)*(lx2+4)*lx3,mpi_realprec,0,tag,MPI_COMM_WORLD,ierr)
 end do
 
-end subroutine gather_send4D
+end subroutine gather_send4D_3
 
 
-subroutine gather_send4D23(param,tag)
+subroutine gather_send4D_23(param,tag)
 
 !------------------------------------------------------------
 !-------SENDS 4D DATA ON A 2D PROCESS GRID TO ROOT.
@@ -923,10 +930,10 @@ do isp=1,lsp
   call mpi_send(paramtmp,(lx1+4)*lx2*lx3,mpi_realprec,0,tag,MPI_COMM_WORLD,ierr)
 end do
 
-end subroutine gather_send4D23
+end subroutine gather_send4D_23
 
 
-subroutine bcast_send1D(paramall,tag,param)
+subroutine bcast_send1D_3(paramall,tag,param)
 
 !------------------------------------------------------------
 !-------BROADCASTS MPI DIMENSION VARIABLES TO WORKERS.  NOTE THAT
@@ -960,10 +967,10 @@ do iid=1,lid-1
 end do
 param=paramall(-1:lx+2)
 
-end subroutine bcast_send1D
+end subroutine bcast_send1D_3
 
 
-subroutine bcast_send1D2(paramall,tag,param)
+subroutine bcast_send1D_23_2(paramall,tag,param)
 
 !------------------------------------------------------------
 !-------BROADCASTS MPI DIMENSION VARIABLES TO WORKERS.  NOTE THAT
@@ -1002,10 +1009,10 @@ do iid=1,lid-1
 end do
 param=paramall(-1:lx+2)
 
-end subroutine bcast_send1D2
+end subroutine bcast_send1D_23_2
 
 
-subroutine bcast_send1D3(paramall,tag,param)
+subroutine bcast_send1D_23_3(paramall,tag,param)
 
 !------------------------------------------------------------
 !-------BROADCASTS MPI DIMENSION VARIABLES TO WORKERS.  NOTE THAT
@@ -1044,10 +1051,10 @@ do iid=1,lid-1
 end do
 param=paramall(-1:lx+2)
 
-end subroutine bcast_send1D3
+end subroutine bcast_send1D_23_3
 
 
-subroutine bcast_send2D(paramtrimall,tag,paramtrim)
+subroutine bcast_send2D_3(paramtrimall,tag,paramtrim)
 
 !------------------------------------------------------------
 !-------THIS SUBROUTINE BROADCASTS DATA FROM A FULL GRID ARRAY
@@ -1084,10 +1091,10 @@ end do
 !ROOT TAKES A SLAB OF DATA
 paramtrim=paramtrimall(:,1:lx3)
 
-end subroutine bcast_send2D
+end subroutine bcast_send2D_3
 
 
-subroutine bcast_send2D23(paramtrimall,tag,paramtrim)
+subroutine bcast_send2D_23(paramtrimall,tag,paramtrim)
 
 !------------------------------------------------------------
 !-------THIS SUBROUTINE BROADCASTS DATA FROM A FULL GRID ARRAY
@@ -1129,10 +1136,10 @@ end do
 !ROOT TAKES A SLAB OF DATA
 paramtrim(1:lx2,1:lx3)=paramtrimall(1:lx2,1:lx3)
 
-end subroutine bcast_send2D23
+end subroutine bcast_send2D_23
 
 
-subroutine bcast_send3D(paramtrimall,tag,paramtrim)
+subroutine bcast_send3D_3(paramtrimall,tag,paramtrim)
 
 !------------------------------------------------------------
 !-------THIS SUBROUTINE BROADCASTS DATA FROM A FULL GRID ARRAY
@@ -1174,10 +1181,10 @@ end do
 !> ROOT TAKES A SLAB OF DATA
 paramtrim=paramtrimall(:,:,1:lx3)
 
-end subroutine bcast_send3D
+end subroutine bcast_send3D_3
 
 
-subroutine bcast_send3D23(paramtrimall,tag,paramtrim)
+subroutine bcast_send3D_23(paramtrimall,tag,paramtrim)
 
 !------------------------------------------------------------
 !-------THIS SUBROUTINE BROADCASTS DATA FROM A FULL GRID ARRAY
@@ -1220,10 +1227,10 @@ end do
 !> ROOT TAKES A SLAB OF DATA
 paramtrim=paramtrimall(1:lx1,1:lx2,1:lx3)
 
-end subroutine bcast_send3D23
+end subroutine bcast_send3D_23
 
 
-subroutine bcast_send3D_x3i(paramtrimall,tag,paramtrim)
+subroutine bcast_send3D_x3i_3(paramtrimall,tag,paramtrim)
 
 !------------------------------------------------------------
 !-------THIS SUBROUTINE BROADCASTS DATA FROM A FULL GRID ARRAY
@@ -1261,10 +1268,10 @@ end do
 !ROOT TAKES A SLAB OF DATA
 paramtrim=paramtrimall(:,:,1:lx3+1)
 
-end subroutine bcast_send3D_x3i
+end subroutine bcast_send3D_x3i_3
 
 
-subroutine bcast_send3D_ghost(paramall,tag,param)
+subroutine bcast_send3D_ghost_3(paramall,tag,param)
 !! THIS SUBROUTINE BROADCASTS DATA FROM A FULL GRID ARRAY
 !!ON ROOT PROCESS TO ALL WORKERS' SUB-GRID ARRAYS.
 !!
@@ -1298,10 +1305,10 @@ end do
 !> ROOT TAKES A SLAB OF DATA
 param=paramall(:,:,-1:lx3+2)
 
-end subroutine bcast_send3D_ghost
+end subroutine bcast_send3D_ghost_3
 
 
-subroutine bcast_send4D(paramall,tag,param)
+subroutine bcast_send4D_3(paramall,tag,param)
 !! THIS SUBROUTINE BROADCASTS DATA FROM A FULL GRID ARRAY
 !! ON ROOT PROCESS TO ALL WORKERS' SUB-GRID ARRAYS.
 !!
@@ -1337,10 +1344,10 @@ do isp=1,lsp
   end do
 end do
 
-end subroutine bcast_send4D
+end subroutine bcast_send4D_3
 
 
-subroutine bcast_send4D23(paramall,tag,param)
+subroutine bcast_send4D_23(paramall,tag,param)
 !! THIS SUBROUTINE BROADCASTS DATA FROM A FULL GRID ARRAY
 !! ON ROOT PROCESS TO ALL WORKERS' SUB-GRID ARRAYS.
 !!
@@ -1376,10 +1383,10 @@ do isp=1,lsp
   end do
 end do
 
-end subroutine bcast_send4D23
+end subroutine bcast_send4D_23
 
 
-subroutine bcast_recv1D(param,tag)
+subroutine bcast_recv1D_3(param,tag)
 !! THIS SUBROUTINE RECEIVES BROADCAST DATA FROM A FULL 
 !! GRID ARRAY ON ROOT PROCESS TO WORKERS' SUB-GRID ARRAYS. 
 !!
@@ -1401,10 +1408,10 @@ lx=size(param,1)-4
 call mpi_recv(param,(lx+4), &
   mpi_realprec,0,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
 
-end subroutine bcast_recv1D
+end subroutine bcast_recv1D_3
 
 
-subroutine bcast_recv1D2(param,tag)
+subroutine bcast_recv1D_23_2(param,tag)
 !! THIS SUBROUTINE RECEIVES BROADCAST DATA FROM A FULL 
 !! GRID ARRAY ON ROOT PROCESS TO WORKERS' SUB-GRID ARRAYS. 
 !!
@@ -1426,10 +1433,10 @@ lx=size(param,1)-4
 call mpi_recv(param,(lx+4), &
   mpi_realprec,0,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
 
-end subroutine bcast_recv1D2
+end subroutine bcast_recv1D_23_2
 
 
-subroutine bcast_recv1D3(param,tag)
+subroutine bcast_recv1D_23_3(param,tag)
 !! THIS SUBROUTINE RECEIVES BROADCAST DATA FROM A FULL 
 !! GRID ARRAY ON ROOT PROCESS TO WORKERS' SUB-GRID ARRAYS. 
 !!
@@ -1451,10 +1458,10 @@ lx=size(param,1)-4
 call mpi_recv(param,(lx+4), &
   mpi_realprec,0,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
 
-end subroutine bcast_recv1D3
+end subroutine bcast_recv1D_23_3
 
 
-subroutine bcast_recv2D(paramtrim,tag)
+subroutine bcast_recv2D_3(paramtrim,tag)
 !! THIS SUBROUTINE RECEIVES BROADCAST DATA FROM A FULL 
 !! GRID ARRAY ON ROOT PROCESS TO WORKERS' SUB-GRID ARRAYS. 
 !!
@@ -1478,10 +1485,10 @@ lx3=size(paramtrim,2)
 call mpi_recv(paramtrim,lx2*lx3, &
   mpi_realprec,0,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
 
-end subroutine bcast_recv2D
+end subroutine bcast_recv2D_3
 
 
-subroutine bcast_recv2D23(paramtrim,tag)
+subroutine bcast_recv2D_23(paramtrim,tag)
 !! THIS SUBROUTINE RECEIVES BROADCAST DATA FROM A FULL 
 !! GRID ARRAY ON ROOT PROCESS TO WORKERS' SUB-GRID ARRAYS. 
 !!
@@ -1505,10 +1512,10 @@ lx3=size(paramtrim,2)
 call mpi_recv(paramtrim,lx2*lx3, &
   mpi_realprec,0,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
 
-end subroutine bcast_recv2D23
+end subroutine bcast_recv2D_23
 
 
-subroutine bcast_recv3D(paramtrim,tag)
+subroutine bcast_recv3D_3(paramtrim,tag)
 !! THIS SUBROUTINE RECEIVES BROADCAST DATA FROM A FULL 
 !! GRID ARRAY ON ROOT PROCESS TO WORKERS' SUB-GRID ARRAYS. 
 !!
@@ -1533,10 +1540,10 @@ lx3=size(paramtrim,3)
 call mpi_recv(paramtrim,lx1*lx2*lx3, &
                mpi_realprec,0,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
 
-end subroutine bcast_recv3D
+end subroutine bcast_recv3D_3
 
 
-subroutine bcast_recv3D23(paramtrim,tag)
+subroutine bcast_recv3D_23(paramtrim,tag)
 !! THIS SUBROUTINE RECEIVES BROADCAST DATA FROM A FULL 
 !! GRID ARRAY ON ROOT PROCESS TO WORKERS' SUB-GRID ARRAYS. 
 !!
@@ -1561,10 +1568,10 @@ lx3=size(paramtrim,3)
 call mpi_recv(paramtrim,lx1*lx2*lx3, &
                mpi_realprec,0,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
 
-end subroutine bcast_recv3D23
+end subroutine bcast_recv3D_23
 
 
-subroutine bcast_recv3D_x3i(paramtrim,tag)
+subroutine bcast_recv3D_x3i_3(paramtrim,tag)
 !! THIS SUBROUTINE RECEIVES BROADCAST DATA FROM A FULL 
 !! GRID ARRAY ON ROOT PROCESS TO WORKERS' SUB-GRID ARRAYS. 
 !!
@@ -1589,10 +1596,10 @@ lx3=size(paramtrim,3)-1
 call mpi_recv(paramtrim,lx1*lx2*(lx3+1), &
                mpi_realprec,0,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
 
-end subroutine bcast_recv3D_x3i
+end subroutine bcast_recv3D_x3i_3
 
 
-subroutine bcast_recv3D_ghost(param,tag)
+subroutine bcast_recv3D_ghost_3(param,tag)
 !! THIS SUBROUTINE RECEIVES BROADCAST DATA FROM A FULL 
 !! GRID ARRAY ON ROOT PROCESS TO WORKERS' SUB-GRID ARRAYS. 
 !!
@@ -1617,10 +1624,10 @@ lx3=size(param,3)-4
 call mpi_recv(param,(lx1+4)*(lx2+4)*(lx3+4), &
                mpi_realprec,0,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
 
-end subroutine bcast_recv3D_ghost
+end subroutine bcast_recv3D_ghost_3
 
 
-subroutine bcast_recv4D(param,tag)
+subroutine bcast_recv4D_3(param,tag)
 !! THIS SUBROUTINE RECEIVES BROADCAST DATA FROM A FULL 
 !! GRID ARRAY ON ROOT PROCESS TO WORKERS' SUB-GRID ARRAYS. 
 !-------
@@ -1646,10 +1653,10 @@ do isp=1,lsp
                  mpi_realprec,0,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
 end do
 
-end subroutine bcast_recv4D
+end subroutine bcast_recv4D_3
 
 
-subroutine bcast_recv4D23(param,tag)
+subroutine bcast_recv4D_23(param,tag)
 !! THIS SUBROUTINE RECEIVES BROADCAST DATA FROM A FULL 
 !! GRID ARRAY ON ROOT PROCESS TO WORKERS' SUB-GRID ARRAYS. 
 !-------
@@ -1677,6 +1684,6 @@ do isp=1,lsp
   param(-1:lx1+2,1:lx2,1:lx3,isp)=paramtmp(-1:lx1+2,1:lx2,1:lx3)
 end do
 
-end subroutine bcast_recv4D23
+end subroutine bcast_recv4D_23
 
 end module mpimod
