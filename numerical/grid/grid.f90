@@ -537,24 +537,18 @@ do iid=1,lid-1
   call mpi_send(x%x2all,lx2all+4,mpi_realprec,iid,tagx2,MPI_COMM_WORLD,ierr)
   call mpi_send(x%x3all,lx3all+4,mpi_realprec,iid,tagx3,MPI_COMM_WORLD,ierr)    !workers may need a copy of this, e.g. for boudnary conditiosn
   call mpi_send(x%dx1,lx1+3,mpi_realprec,iid,tagx1,MPI_COMM_WORLD,ierr)
-  call mpi_send(x%dx2all,lx2all+3,mpi_realprec,iid,tagx2,MPI_COMM_WORLD,ierr)
   call mpi_send(x%x1i,lx1+1,mpi_realprec,iid,tagx1,MPI_COMM_WORLD,ierr)
-  call mpi_send(x%x2iall,lx2all+1,mpi_realprec,iid,tagx2,MPI_COMM_WORLD,ierr)
   call mpi_send(x%dx1i,lx1,mpi_realprec,iid,tagx1,MPI_COMM_WORLD,ierr)
-  call mpi_send(x%dx2iall,lx2all,mpi_realprec,iid,tagx2,MPI_COMM_WORLD,ierr)
 end do
 print *, 'Done sending common variables to workers...'
 
 
 !NOW SEND THE INFO THAT DEPENDS ON X3 SLAB SIZE
 call bcast_send(x%x3all,tagx3,x%x3)
-
 x%dx3=x%x3(0:lx3+2)-x%x3(-1:lx3+1)     !computing these avoids extra message passing (could be done for other coordinates, as well)
 x%x3i(1:lx3+1)=0.5*(x%x3(0:lx3)+x%x3(1:lx3+1))
 x%dx3i=x%x3i(2:lx3+1)-x%x3i(1:lx3)
 
-
-!MZ - need to have x2 direction dealt with here.  
 call bcast_send(x%x2all,tagx2,x%x2)
 x%dx2=x%x2(0:lx2+2)-x%x2(-1:lx2+1)     !computing these avoids extra message passing (could be done for other coordinates, as well)
 x%x2i(1:lx2+1)=0.5*(x%x2(0:lx2)+x%x2(1:lx2+1))
@@ -579,9 +573,9 @@ call bcast_send(x%h1x1iall,tagh1,x%h1x1i)    !do the weird sizes here (ie. lx1+1
 call bcast_send(x%h2x1iall,tagh2,x%h2x1i)
 call bcast_send(x%h3x1iall,tagh3,x%h3x1i)
 
-call bcast_send(x%h1x2iall,tagh1,x%h1x2i)    !MZ - these now become interface sends, x2i, and need correspoding mpi routines written
-call bcast_send(x%h2x2iall,tagh2,x%h2x2i)
-call bcast_send(x%h3x2iall,tagh3,x%h3x2i)
+call bcast_send3D_x2i(x%h1x2iall,tagh1,x%h1x2i)
+call bcast_send3D_x2i(x%h2x2iall,tagh2,x%h2x2i)
+call bcast_send3D_x2i(x%h3x2iall,tagh3,x%h3x2i)
 
 call bcast_send3D_x3i(x%h1x3iall,tagh1,x%h1x3i)
 call bcast_send3D_x3i(x%h2x3iall,tagh2,x%h2x3i)
@@ -599,7 +593,7 @@ call bcast_send(Bmagall,tagBmag,x%Bmag)
 call bcast_send(Incall,taginc,x%I)
 call bcast_send(nullptsall,tagnull,x%nullpts)
 
-allocate(mpisendbuf(1:lx1,1:lx2,1:lx3all),mpirecvbuf(1:lx1,1:lx2,1:lx3))    !why is buffering used/needed here???
+allocate(mpisendbuf(1:lx1,1:lx2all,1:lx3all),mpirecvbuf(1:lx1,1:lx2,1:lx3))    !why is buffering used/needed here???
 do icomp=1,3
   mpisendbuf=e1all(:,:,:,icomp) 
   call bcast_send(mpisendbuf,tageunit1,mpirecvbuf)
@@ -739,8 +733,10 @@ call mpi_recv(flagswap,1,MPI_INTEGER,0,tagswap,MPI_COMM_WORLD,MPI_STATUS_IGNORE,
 !ALLOCATE SPACE FOR MY SLAB OF DATA
 allocate(x%x1(-1:lx1+2))
 allocate(x%dx1i(lx1),x%x1i(lx1+1),x%dx1(0:lx1+2))
+
 allocate(x%x2(-1:lx2+2))
-allocate(x%dx2i(lx2),x%x2i(lx2+1),x%dx2(0:lx2+2))    !MZ - need an x2all variable like x3 is done below
+allocate(x%dx2i(lx2),x%x2i(lx2+1),x%dx2(0:lx2+2))
+allocate(x%x2all(-1:lx2all+2))
 
 !DETERMINE AND ALLOCATE SPACE NEEDED FOR WORKERS SUBGRIDS
 allocate(x%x3(-1:lx3+2))
@@ -769,22 +765,21 @@ allocate(g1(1:lx1,1:lx2,1:lx3),g2(1:lx1,1:lx2,1:lx3),g3(1:lx1,1:lx2,1:lx3))
 
 !RECEIVE GRID DATA FROM ROOT
 call mpi_recv(x%x1,lx1+4,mpi_realprec,0,tagx1,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-call mpi_recv(x%x2,lx2+4,mpi_realprec,0,tagx2,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)    !MZ - becomes x2all
+call mpi_recv(x%x2all,lx2+4,mpi_realprec,0,tagx2,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
 call mpi_recv(x%x3all,lx3all+4,mpi_realprec,0,tagx3,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
 call mpi_recv(x%dx1,lx1+3,mpi_realprec,0,tagx1,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-call mpi_recv(x%dx2,lx2+3,mpi_realprec,0,tagx2,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
 call mpi_recv(x%x1i,lx1+1,mpi_realprec,0,tagx1,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-call mpi_recv(x%x2i,lx2+1,mpi_realprec,0,tagx2,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
 call mpi_recv(x%dx1i,lx1,mpi_realprec,0,tagx1,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-call mpi_recv(x%dx2i,lx2,mpi_realprec,0,tagx2,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
 
 call bcast_recv(x%x3,tagx3)
-
 x%dx3=x%x3(0:lx3+2)-x%x3(-1:lx3+1)     !computing these avoids extra message passing (could be done for other coordinates, as well)
 x%x3i(1:lx3+1)=0.5*(x%x3(0:lx3)+x%x3(1:lx3+1))
 x%dx3i=x%x3i(2:lx3+1)-x%x3i(1:lx3)
 
-!MZ - need to receive our piece of x2 and computd differences as done for x3 above
+call bcase_recv(x%x2,tagx2)
+x%dx2=x%x2(0:lx2+2)-x%x2(-1:lx2+1)
+x%x2i(1:lx2+1)=0.5*(x%x2(0:lx2)+x%x2(1:lx2+1))
+x%dx2i=x%x2i(2:lx2+1)-x%x2i(1:lx2)
 
 allocate(mpirecvbuf(-1:lx1+2,-1:lx2+2,-1:lx3+2))
 
@@ -801,9 +796,9 @@ call bcast_recv(x%h1x1i,tagh1)
 call bcast_recv(x%h2x1i,tagh2)
 call bcast_recv(x%h3x1i,tagh3)
 
-call bcast_recv(x%h1x2i,tagh1)      !MZ - these now become x2i sends, and need their own routine in mpimod...
-call bcast_recv(x%h2x2i,tagh2)
-call bcast_recv(x%h3x2i,tagh3)
+call bcast_recv3D_x2i(x%h1x2i,tagh1)
+call bcast_recv3D_x2i(x%h2x2i,tagh2)
+call bcast_recv3D_x2i(x%h3x2i,tagh3)
 
 call bcast_recv3D_x3i(x%h1x3i,tagh1)
 call bcast_recv3D_x3i(x%h2x3i,tagh2)
@@ -896,7 +891,6 @@ deallocate(tmpdx)
 end subroutine read_grid_workers
 
 
-!MZ - need to deallocate x2all-type variables...
 subroutine clear_grid(x)
 
 type(curvmesh), intent(inout) :: x
@@ -905,6 +899,7 @@ type(curvmesh), intent(inout) :: x
 !-------DEALLOCATES GRID VARIABLES.  
 !------------------------------------------------------------
 
+deallocate(x%x3all,x%x2all)
 deallocate(x%x1,x%x2,x%x3)
 deallocate(x%dx1i,x%x1i,x%dx1)
 deallocate(x%dx2i,x%x2i,x%dx2)
@@ -924,7 +919,8 @@ deallocate(x%I,x%Bmag,x%nullpts)
 deallocate(x%dl1i,x%dl2i,x%dl3i)
 
 if (myid == 0) then
-  deallocate(x%x3all,x%x3iall)
+  deallocate(x%x2iall,x%dx2all,x%dx2iall)
+  deallocate(x%x3iall,x%dx3all,x%dx3iall)
   deallocate(x%h1all,x%h2all,x%h3all)
   deallocate(x%h1x1iall,x%h2x1iall,x%h3x1iall)
   deallocate(x%h1x2iall,x%h2x2iall,x%h3x2iall)
