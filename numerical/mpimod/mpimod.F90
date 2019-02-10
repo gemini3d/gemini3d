@@ -194,23 +194,26 @@ integer, intent(in) :: lx2all,lx3all
 
 integer, dimension(2) :: inds
 
-
-if (lx3all/lid*lid/=lx3all) then
-  error stop '!!!Grid is not divisible by number of processes - please generate a new one  &
-               & and try again or try a different number of processes...'
+if (lx3all==1 .or. lx2all==1) then    !this is a 2D simulation so the mpi'd dimenions will get swapped to x3
+  lid3=lid         !just divide in x3
+  lid2=1
+else
+  if (lx3all/lid*lid/=lx3all) then
+    error stop '!!!Grid is not divisible by number of processes - please generate a new one  &
+                 & and try again or try a different number of processes...'
+  end if
+  
+  lid2=1
+  lid3=lid
+  do while( ((lid3/2)*2==lid3) .and. (lid3-lid2>lid3 .or. lid3-lid2>lid2) .and. &     
+           lx3all/(lid3/2)*(lid3/2)==lx3all .and. lx2all/(lid2*2)*(lid2*2)==lx2all .and. &
+           lid3/2>1)
+  !! must insure that lx3 is divisible by lid3 and lx2 by lid2 and lid3 must be > 1
+  
+    lid3=lid3/2
+    lid2=lid2*2
+  end do
 end if
-
-lid2=1
-lid3=lid
-do while( ((lid3/2)*2==lid3) .and. (lid3-lid2>lid3 .or. lid3-lid2>lid2) .and. &     
-         lx3all/(lid3/2)*(lid3/2)==lx3all .and. lx2all/(lid2*2)*(lid2*2)==lx2all .and. &
-         lid3/2>1)
-!! must insure that lx3 is divisible by lid3 and lx2 by lid2 and lid3 must be > 1
-
-  lid3=lid3/2
-  lid2=lid2*2
-end do
-
 
 !THIS PROCESS' LOCATION ON THE GRID
 inds=ID2grid(myid)
