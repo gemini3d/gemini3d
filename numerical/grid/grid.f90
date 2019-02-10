@@ -185,17 +185,19 @@ endif
 !DETERMINE THE SIZE OF THE GRID TO BE LOADED
 open(newunit=inunit,file=indatsize,status='old',form='unformatted', &
      access='stream', action='read')
-read(inunit) lx1g,lx2g,lx3allg    !note that these are sizes *including ghost cells*
+read(inunit) lx1g,lx2g,lx3allg    !note that these are sizes *including ghost cells*  !MZ - lx2allg+declaration above
 close(inunit)
 
 
+!MZ must set up lx2all and lx2 here
 !DETERMINE NUMBER OF SLABS AND CORRESPONDING SIZE FOR EACH WORKER 
-!NOTE THAT WE WILL ASSUME THAT THE GRID SIZE IS DIVISIBLE BY NUMBER OF WORKERS FOR NOW...
+!NOTE THAT WE WILL ASSUME THAT THE GRID SIZE IS DIVISIBLE BY NUMBER OF WORKERS AS THIS HAS BEEN CHECKED A FEW LINES BELOW
 x%lx1=lx1g; x%lx2=lx2g; x%lx3all=lx3allg;
-lx1=x%lx1; lx2=x%lx2; lx3all=x%lx3all;
-lx3=lx3all/lid     !note the integer division here
+lx1=x%lx1; lx2=x%lx2; lx3all=x%lx3all;    !define some shortand variables for ease of reference
+lx3=lx3all/lid                            !note the integer division here   !MZ-change to lid3
 x%lx3=lx3
-print *, 'Grid has size:  ',lx1,lx2,lx3all
+print *, 'Grid has size:  ',lx1,lx2,lx3all    !MZ - lx2all
+print *, '    slab size:  ',lx1,lx2,lx3
 
 
 !ADJUST THE SIZES OF THE VARIABLES IF LX3ALL==1, SO THAT THE ALLOCATIONS ARE THE CORRECT SIZE
@@ -224,15 +226,16 @@ if (lx3*lid/=lx3all) then
 end if
 if (lx3<2) then
   write(stderr,*) red // '**************************************************************************'
-  write(stderr,*) 'WARNING: simulation with slab size < 2 may give incorrect results with some MPI versions. '
+  write(stderr,*) 'WARNING/ERROR: simulation with slab size < 2 may give incorrect results with some MPI versions. '
   write(stderr,*) 'Check results on system with MPI -np >= 2.   here, lx3=',lx3
   write(stderr,*) '**************************************************************************' // black
+  error stop
 end if
 
 !COMMUNICATE THE GRID SIZE TO THE WORKERS SO THAT THEY CAN ALLOCATE SPACE
 do iid=1,lid-1
   call mpi_send(lx1,1,MPI_INTEGER,iid,taglx1,MPI_COMM_WORLD,ierr)
-  call mpi_send(lx2,1,MPI_INTEGER,iid,taglx2,MPI_COMM_WORLD,ierr)
+  call mpi_send(lx2,1,MPI_INTEGER,iid,taglx2,MPI_COMM_WORLD,ierr)          !need to also pass the lx2all size to all workers to they know
   call mpi_send(lx3,1,MPI_INTEGER,iid,taglx3,MPI_COMM_WORLD,ierr)
   call mpi_send(lx3all,1,MPI_INTEGER,iid,taglx3all,MPI_COMM_WORLD,ierr)    !not clear whether workers actually need the x3all variable, hopefully not, but they definitely need to know the full grid size for the derivative functions
 end do
@@ -256,6 +259,8 @@ allocate(x%x3all(-1:lx3all+2))
 allocate(x%dx3all(0:lx3all+2))
 allocate(x%x3iall(lx3all+1),x%dx3iall(lx3all))
 
+!MZ - need full grid x2 variables and differntials
+
 allocate(x%h1all(-1:lx1+2,-1:lx2+2,-1:lx3all+2),x%h2all(-1:lx1+2,-1:lx2+2,-1:lx3all+2), &
          x%h3all(-1:lx1+2,-1:lx2+2,-1:lx3all+2))    !do we need the ghost cell values?  Yes the divergence in compression term is computed using one ghost cell in each direction!!!!
 allocate(x%h1x1iall(1:lx1+1,1:lx2,1:lx3all),x%h2x1iall(1:lx1+1,1:lx2,1:lx3all),x%h3x1iall(1:lx1+1,1:lx2,1:lx3all))
@@ -263,6 +268,7 @@ allocate(x%h1x2iall(1:lx1,1:lx2+1,1:lx3all),x%h2x2iall(1:lx1,1:lx2+1,1:lx3all),x
 allocate(x%h1x3iall(1:lx1,1:lx2,1:lx3all+1),x%h2x3iall(1:lx1,1:lx2,1:lx3all+1),x%h3x3iall(1:lx1,1:lx2,1:lx3all+1))
 
 allocate(x%rall(1:lx1,1:lx2,1:lx3all),x%thetaall(1:lx1,1:lx2,1:lx3all),x%phiall(1:lx1,1:lx2,1:lx3all))
+
 
 !DETERMINE AND ALLOCATE SPACE NEEDED FOR ROOT SUBGRIDS (WORKERS USE SIMILAR ALLOCATE STATEMENTS)
 allocate(x%x3(-1:lx3+2))
@@ -289,30 +295,32 @@ allocate(x%er(1:lx1,1:lx2,1:lx3,1:3),x%etheta(1:lx1,1:lx2,1:lx3,1:3),x%ephi(1:lx
 !IF WE HAVE DONE ANY DIMENSION SWAPPING HERE WE NEED TO TAKE THAT INTO ACCOUNT IN THE VARIABLES THAT ARE BEING READ IN
 print *, 'Starting grid input from file: ',indatgrid
 open(newunit=inunit,file=indatgrid,status='old',form='unformatted',access='stream', action='read')
-if (flagswap/=1) then     !normal (i.e. full 3D) grid ordering, or a 2D grid with 1 element naturally in the second dimension
-  read(inunit) x%x1,x%x1i,x%dx1,x%dx1i    !I guess the number of elements is obtained from the size of the arrays??? 
-  read(inunit) x%x2,x%x2i,x%dx2,x%dx2i
+if (flagswap/=1) then                     !normal (i.e. full 3D) grid ordering, or a 2D grid with 1 element naturally in the second dimension
+  read(inunit) x%x1,x%x1i,x%dx1,x%dx1i
+  read(inunit) x%x2,x%x2i,x%dx2,x%dx2i     !MZ - these becomes 'all' variables
   read(inunit) x%x3all,x%x3iall,x%dx3all,x%dx3iall
   read(inunit) x%h1all,x%h2all,x%h3all
   read(inunit) x%h1x1iall,x%h2x1iall,x%h3x1iall
   read(inunit) x%h1x2iall,x%h2x2iall,x%h3x2iall
   read(inunit) x%h1x3iall,x%h2x3iall,x%h3x3iall
 
-  allocate(g1all(lx1,lx2,lx3all),g2all(lx1,lx2,lx3all),g3all(lx1,lx2,lx3all))
+  allocate(g1all(lx1,lx2,lx3all),g2all(lx1,lx2,lx3all),g3all(lx1,lx2,lx3all))    !MZ - lx2all
   read(inunit) g1all,g2all,g3all
 
-  allocate(altall(lx1,lx2,lx3all),glatall(lx1,lx2,lx3all),glonall(lx1,lx2,lx3all))
+  allocate(altall(lx1,lx2,lx3all),glatall(lx1,lx2,lx3all),glonall(lx1,lx2,lx3all))    !MZ - lx2all
   read(inunit) altall,glatall,glonall
 
-  allocate(Bmagall(lx1,lx2,lx3all))
+  allocate(Bmagall(lx1,lx2,lx3all))     !MZ - lx2all
   read(inunit) Bmagall
 
-  allocate(Incall(lx2,lx3all))
+  allocate(Incall(lx2,lx3all))          !MZ - lx2all
   read(inunit) Incall
 
-  allocate(nullptsall(lx1,lx2,lx3all))
+  allocate(nullptsall(lx1,lx2,lx3all))   !MZ - lx2all
   read(inunit) nullptsall
 
+
+  !MZ - remainder require lx2all
   allocate(e1all(lx1,lx2,lx3all,3))
   read(inunit) e1all
   allocate(e2all(lx1,lx2,lx3all,3))
@@ -335,6 +343,7 @@ if (flagswap/=1) then     !normal (i.e. full 3D) grid ordering, or a 2D grid wit
   read(inunit) phiall
 
   x%rall=rall; x%thetaall=thetaall; x%phiall=phiall;
+!MZedit
 else     !this is apparently a 2D grid, so the x2 and x3 dimensions have been/need to be swapped
   print *, 'Detected a 2D grid, so will permute the dimensions of the input'
 
