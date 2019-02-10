@@ -186,7 +186,7 @@ integer, dimension(2) :: inds
 
 
 if (lx3all/lid*lid/=lx3all) then
-  error stop '!!!Grid is not divisible by number of processes'
+  error stop '!!!Grid is not divisible by number of processes - please generate a new one and try again or try a different number of processes...'
 end if
 
 lid2=1

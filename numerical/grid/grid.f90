@@ -285,7 +285,7 @@ allocate(x%dx1i(lx1),x%x1i(lx1+1),x%dx1(0:lx1+2))
 
 !FULL GRID X2 VARIABLE
 allocate(x%x2all(-1:lx2all+2))
-allocate(x%dx2all(0:lx2+2))
+allocate(x%dx2all(0:lx2all+2))
 allocate(x%dx2iall(lx2all),x%x2iall(lx2all+1)
 
 
@@ -294,13 +294,16 @@ allocate(x%x3all(-1:lx3all+2))
 allocate(x%dx3all(0:lx3all+2))
 allocate(x%x3iall(lx3all+1),x%dx3iall(lx3all))
 
-allocate(x%h1all(-1:lx1+2,-1:lx2+2,-1:lx3all+2),x%h2all(-1:lx1+2,-1:lx2+2,-1:lx3all+2), &
-         x%h3all(-1:lx1+2,-1:lx2+2,-1:lx3all+2))    !do we need the ghost cell values?  Yes the divergence in compression term is computed using one ghost cell in each direction!!!!
-allocate(x%h1x1iall(1:lx1+1,1:lx2,1:lx3all),x%h2x1iall(1:lx1+1,1:lx2,1:lx3all),x%h3x1iall(1:lx1+1,1:lx2,1:lx3all))
-allocate(x%h1x2iall(1:lx1,1:lx2+1,1:lx3all),x%h2x2iall(1:lx1,1:lx2+1,1:lx3all),x%h3x2iall(1:lx1,1:lx2+1,1:lx3all))
-allocate(x%h1x3iall(1:lx1,1:lx2,1:lx3all+1),x%h2x3iall(1:lx1,1:lx2,1:lx3all+1),x%h3x3iall(1:lx1,1:lx2,1:lx3all+1))
+allocate(x%h1all(-1:lx1+2,-1:lx2all+2,-1:lx3all+2),x%h2all(-1:lx1+2,-1:lx2all+2,-1:lx3all+2), &
+         x%h3all(-1:lx1+2,-1:lx2all+2,-1:lx3all+2))    !do we need the ghost cell values?  Yes the divergence in compression term is computed using one ghost cell in each direction!!!!
+allocate(x%h1x1iall(1:lx1+1,1:lx2all,1:lx3all),x%h2x1iall(1:lx1+1,1:lx2all,1:lx3all), &
+           x%h3x1iall(1:lx1+1,1:lx2all,1:lx3all))
+allocate(x%h1x2iall(1:lx1,1:lx2all+1,1:lx3all),x%h2x2iall(1:lx1,1:lx2all+1,1:lx3all), &
+           x%h3x2iall(1:lx1,1:lx2all+1,1:lx3all))
+allocate(x%h1x3iall(1:lx1,1:lx2all,1:lx3all+1),x%h2x3iall(1:lx1,1:lx2all,1:lx3all+1), &
+           x%h3x3iall(1:lx1,1:lx2all,1:lx3all+1))
 
-allocate(x%rall(1:lx1,1:lx2,1:lx3all),x%thetaall(1:lx1,1:lx2,1:lx3all),x%phiall(1:lx1,1:lx2,1:lx3all))
+allocate(x%rall(1:lx1,1:lx2all,1:lx3all),x%thetaall(1:lx1,1:lx2all,1:lx3all),x%phiall(1:lx1,1:lx2all,1:lx3all))
 
 
 !DETERMINE AND ALLOCATE SPACE NEEDED FOR ROOT SUBGRIDS (WORKERS USE SIMILAR ALLOCATE STATEMENTS)
@@ -330,49 +333,47 @@ print *, 'Starting grid input from file: ',indatgrid
 open(newunit=inunit,file=indatgrid,status='old',form='unformatted',access='stream', action='read')
 if (flagswap/=1) then                     !normal (i.e. full 3D) grid ordering, or a 2D grid with 1 element naturally in the second dimension
   read(inunit) x%x1,x%x1i,x%dx1,x%dx1i
-  read(inunit) x%x2,x%x2i,x%dx2,x%dx2i     !MZ - these becomes 'all' variables
+  read(inunit) x%x2all,x%x2iall,x%dx2all,x%dx2iall
   read(inunit) x%x3all,x%x3iall,x%dx3all,x%dx3iall
   read(inunit) x%h1all,x%h2all,x%h3all
   read(inunit) x%h1x1iall,x%h2x1iall,x%h3x1iall
   read(inunit) x%h1x2iall,x%h2x2iall,x%h3x2iall
   read(inunit) x%h1x3iall,x%h2x3iall,x%h3x3iall
 
-  allocate(g1all(lx1,lx2,lx3all),g2all(lx1,lx2,lx3all),g3all(lx1,lx2,lx3all))    !MZ - lx2all
+  allocate(g1all(lx1,lx2all,lx3all),g2all(lx1,lx2all,lx3all),g3all(lx1,lx2all,lx3all))
   read(inunit) g1all,g2all,g3all
 
-  allocate(altall(lx1,lx2,lx3all),glatall(lx1,lx2,lx3all),glonall(lx1,lx2,lx3all))    !MZ - lx2all
+  allocate(altall(lx1,lx2all,lx3all),glatall(lx1,lx2all,lx3all),glonall(lx1,lx2all,lx3all))
   read(inunit) altall,glatall,glonall
 
-  allocate(Bmagall(lx1,lx2,lx3all))     !MZ - lx2all
+  allocate(Bmagall(lx1,lx2all,lx3all))
   read(inunit) Bmagall
 
-  allocate(Incall(lx2,lx3all))          !MZ - lx2all
+  allocate(Incall(lx2all,lx3all))
   read(inunit) Incall
 
-  allocate(nullptsall(lx1,lx2,lx3all))   !MZ - lx2all
+  allocate(nullptsall(lx1,lx2all,lx3all))
   read(inunit) nullptsall
 
-
-  !MZ - remainder require lx2all
-  allocate(e1all(lx1,lx2,lx3all,3))
+  allocate(e1all(lx1,lx2all,lx3all,3))
   read(inunit) e1all
-  allocate(e2all(lx1,lx2,lx3all,3))
+  allocate(e2all(lx1,lx2all,lx3all,3))
   read(inunit) e2all
-  allocate(e3all(lx1,lx2,lx3all,3))
+  allocate(e3all(lx1,lx2all,lx3all,3))
   read(inunit) e3all
 
-  allocate(erall(lx1,lx2,lx3all,3))
+  allocate(erall(lx1,lx2all,lx3all,3))
   read(inunit) erall
-  allocate(ethetaall(lx1,lx2,lx3all,3))
+  allocate(ethetaall(lx1,lx2all,lx3all,3))
   read(inunit) ethetaall
-  allocate(ephiall(lx1,lx2,lx3all,3))
+  allocate(ephiall(lx1,lx2all,lx3all,3))
   read(inunit) ephiall
 
-  allocate(rall(lx1,lx2,lx3all))
+  allocate(rall(lx1,lx2all,lx3all))
   read(inunit) rall
-  allocate(thetaall(lx1,lx2,lx3all))
+  allocate(thetaall(lx1,lx2all,lx3all))
   read(inunit) thetaall
-  allocate(phiall(lx1,lx2,lx3all))
+  allocate(phiall(lx1,lx2all,lx3all))
   read(inunit) phiall
 
   x%rall=rall; x%thetaall=thetaall; x%phiall=phiall;
@@ -533,14 +534,14 @@ allocate(g1(1:lx1,1:lx2,1:lx3),g2(1:lx1,1:lx2,1:lx3),g3(1:lx1,1:lx2,1:lx3))
 !SEND FULL X1 AND X2 GRIDS TO EACH WORKER (ONLY X3-DIM. IS INVOLVED IN THE MPI
 do iid=1,lid-1
   call mpi_send(x%x1,lx1+4,mpi_realprec,iid,tagx1,MPI_COMM_WORLD,ierr)
-  call mpi_send(x%x2,lx2+4,mpi_realprec,iid,tagx2,MPI_COMM_WORLD,ierr)          !MZ - needs to be x2all
+  call mpi_send(x%x2all,lx2all+4,mpi_realprec,iid,tagx2,MPI_COMM_WORLD,ierr)
   call mpi_send(x%x3all,lx3all+4,mpi_realprec,iid,tagx3,MPI_COMM_WORLD,ierr)    !workers may need a copy of this, e.g. for boudnary conditiosn
   call mpi_send(x%dx1,lx1+3,mpi_realprec,iid,tagx1,MPI_COMM_WORLD,ierr)
-  call mpi_send(x%dx2,lx2+3,mpi_realprec,iid,tagx2,MPI_COMM_WORLD,ierr)
+  call mpi_send(x%dx2all,lx2all+3,mpi_realprec,iid,tagx2,MPI_COMM_WORLD,ierr)
   call mpi_send(x%x1i,lx1+1,mpi_realprec,iid,tagx1,MPI_COMM_WORLD,ierr)
-  call mpi_send(x%x2i,lx2+1,mpi_realprec,iid,tagx2,MPI_COMM_WORLD,ierr)         !MZ - needs to be all
+  call mpi_send(x%x2iall,lx2all+1,mpi_realprec,iid,tagx2,MPI_COMM_WORLD,ierr)
   call mpi_send(x%dx1i,lx1,mpi_realprec,iid,tagx1,MPI_COMM_WORLD,ierr)
-  call mpi_send(x%dx2i,lx2,mpi_realprec,iid,tagx2,MPI_COMM_WORLD,ierr)          !MZ - 'all'
+  call mpi_send(x%dx2iall,lx2all,mpi_realprec,iid,tagx2,MPI_COMM_WORLD,ierr)
 end do
 print *, 'Done sending common variables to workers...'
 
@@ -552,7 +553,13 @@ x%dx3=x%x3(0:lx3+2)-x%x3(-1:lx3+1)     !computing these avoids extra message pas
 x%x3i(1:lx3+1)=0.5*(x%x3(0:lx3)+x%x3(1:lx3+1))
 x%dx3i=x%x3i(2:lx3+1)-x%x3i(1:lx3)
 
+
 !MZ - need to have x2 direction dealt with here.  
+call bcast_send(x%x2all,tagx2,x%x2)
+x%dx2=x%x2(0:lx2+2)-x%x2(-1:lx2+1)     !computing these avoids extra message passing (could be done for other coordinates, as well)
+x%x2i(1:lx2+1)=0.5*(x%x2(0:lx2)+x%x2(1:lx2+1))
+x%dx2i=x%x2i(2:lx2+1)-x%x2i(1:lx2)
+
 
 allocate(mpisendbuf(-1:lx1+2,-1:lx2+2,-1:lx3all+2),mpirecvbuf(-1:lx1+2,-1:lx2+2,-1:lx3+2))
 
