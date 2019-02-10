@@ -221,49 +221,36 @@ real(wp), dimension(:,:), allocatable :: htmp2D
 real(wp), dimension(:,:,:,:), allocatable :: htmp4D
 
 
+print*, 'Entering read_grid_root', lx1,lx2all,lx3all,lid2,lid3,lx2all/lid2
+
 
 !DETERMINE NUMBER OF SLABS AND CORRESPONDING SIZE FOR EACH WORKER 
 !NOTE THAT WE WILL ASSUME THAT THE GRID SIZE IS DIVISIBLE BY NUMBER OF WORKERS AS THIS HAS BEEN CHECKED A FEW LINES BELOW
 x%lx1=lx1; x%lx2all=lx2all; x%lx3all=lx3all;
-lx2=lx2all/lid2                                 !should divide evenly if generated from mpigrid
-x%lx2=lx2
-lx3=lx3all/lid3
-x%lx3=lx3
-print *, 'Grid slab size:  ',lx1,lx2,lx3
 
 
 !ADJUST THE SIZES OF THE VARIABLES IF LX3ALL==1, SO THAT THE ALLOCATIONS ARE THE CORRECT SIZE
 if (lx3all==1) then
   print *, 'Detected a 2D run request...  swapping x2 an x3 sizes to maintain parallelization.'
   lx3all=lx2all; x%lx3all=lx2all;
-  lx2=1; x%lx2=1;
+  lx2=1
   lx2all=1; x%lx2all=1;
   lx3=lx3all/lid     !use total number of processes since we only divide in one direction here...
-  x%lx3=lx3
   flagswap=1
 else
-  if(lx2==1) then
+  if(lx2all==1) then
     print *, 'Detected a 2D run request...  ***NOT*** swapping x2 an x3 sizes to maintain parallelization.'
+    lx2=1
+    lx3=lx3all/lid
   else
     print *, 'Detected a 3D run requuest...'
+    lx2=lx2all/lid2                                 !should divide evenly if generated from mpigrid
+    lx3=lx3all/lid3
   endif
   flagswap=0
 end if
-
-
-!!JUST BAIL ON THE SIMULATION IF THE X3 SIZE ISN'T VISIBLE BY NUMBER OF PROCESSES   !MZ - possibly superfluous now???
-!if (lx3*lid/=lx3all) then
-!  write(stderr,*) 'Number of grid points', lx3all, &
-!    'must be divisible by number of processes',lid
-!  error stop 
-!end if
-!if (lx3<2) then
-!  write(stderr,*) red // '**************************************************************************'
-!  write(stderr,*) 'WARNING/ERROR: simulation with slab size < 2 may give incorrect results with some MPI versions. '
-!  write(stderr,*) 'Check results on system with MPI -np >= 2.   here, lx3=',lx3
-!  write(stderr,*) '**************************************************************************' // black
-!  error stop
-!end if
+x%lx2=lx2; x%lx3=lx3
+print *, 'Grid slab size:  ',lx1,lx2,lx3
 
 
 !COMMUNICATE THE GRID SIZE TO THE WORKERS SO THAT THEY CAN ALLOCATE SPACE
@@ -384,74 +371,74 @@ else     !this is apparently a 2D grid, so the x2 and x3 dimensions have been/ne
   !Note there that the fortran arrays are the correct size, but the input data are not!!!  This means tmp variable and permutes...
   read(inunit) x%x1,x%x1i,x%dx1,x%dx1i                !x1 untouched
   read(inunit) x%x3all,x%x3iall,x%dx3all,x%dx3iall    !for a 3D grid this is x2, but now considered x3(all)
-  read(inunit) x%x2,x%x2i,x%dx2,x%dx2i                !formerly x3, now x2
+  read(inunit) x%x2all,x%x2iall,x%dx2all,x%dx2iall                !formerly x3, now x2
 
-  allocate(htmp(-1:lx1+2,-1:lx3all+2,-1:lx2+2))    !this stores the input metric factors which are swapped x2/x3 vs. what this simulation will use
+  allocate(htmp(-1:lx1+2,-1:lx3all+2,-1:lx2all+2))    !this stores the input metric factors which are swapped x2/x3 vs. what this simulation will use
   read(inunit) htmp
-  x%h1all=reshape(htmp,[lx1+4,lx2+4,lx3all+4],order=[1,3,2])
+  x%h1all=reshape(htmp,[lx1+4,lx2all+4,lx3all+4],order=[1,3,2])
   read(inunit) htmp        !this would be h3, but with the input structure shape
-  x%h3all=reshape(htmp,[lx1+4,lx2+4,lx3all+4],order=[1,3,2])   !permute the dimensions of the array 3 --> 2, 2 --> 3
+  x%h3all=reshape(htmp,[lx1+4,lx2all+4,lx3all+4],order=[1,3,2])   !permute the dimensions of the array 3 --> 2, 2 --> 3
   read(inunit) htmp        !this would be h3, but with the input structure shape
-  x%h2all=reshape(htmp,[lx1+4,lx2+4,lx3all+4],order=[1,3,2])
+  x%h2all=reshape(htmp,[lx1+4,lx2all+4,lx3all+4],order=[1,3,2])
   deallocate(htmp)
 
-  allocate(htmp(1:lx1+1,1:lx3all,1:lx2))    !input 2 vs. 3 dimensions swapped from this program
+  allocate(htmp(1:lx1+1,1:lx3all,1:lx2all))    !input 2 vs. 3 dimensions swapped from this program
   read(inunit) htmp
-  x%h1x1iall=reshape(htmp,[lx1+1,lx2,lx3all],order=[1,3,2])
+  x%h1x1iall=reshape(htmp,[lx1+1,lx2all,lx3all],order=[1,3,2])
   read(inunit) htmp
-  x%h3x1iall=reshape(htmp,[lx1+1,lx2,lx3all],order=[1,3,2])
+  x%h3x1iall=reshape(htmp,[lx1+1,lx2all,lx3all],order=[1,3,2])
   read(inunit) htmp
-  x%h2x1iall=reshape(htmp,[lx1+1,lx2,lx3all],order=[1,3,2])
+  x%h2x1iall=reshape(htmp,[lx1+1,lx2all,lx3all],order=[1,3,2])
   deallocate(htmp)
 
-  allocate(htmp(1:lx1,1:lx3all+1,1:lx2))
+  allocate(htmp(1:lx1,1:lx3all+1,1:lx2all))
   read(inunit) htmp
-  x%h1x3iall=reshape(htmp,[lx1,lx2,lx3all+1],order=[1,3,2])    !Note also that the x2 interface from teh input file is x3i in this simulation
+  x%h1x3iall=reshape(htmp,[lx1,lx2all,lx3all+1],order=[1,3,2])    !Note also that the x2 interface from teh input file is x3i in this simulation
   read(inunit) htmp
-  x%h3x3iall=reshape(htmp,[lx1,lx2,lx3all+1],order=[1,3,2])
+  x%h3x3iall=reshape(htmp,[lx1,lx2all,lx3all+1],order=[1,3,2])
   read(inunit) htmp
-  x%h2x3iall=reshape(htmp,[lx1,lx2,lx3all+1],order=[1,3,2])
+  x%h2x3iall=reshape(htmp,[lx1,lx2all,lx3all+1],order=[1,3,2])
   deallocate(htmp)
 
-  allocate(htmp(1:lx1,1:lx3all,1:lx2+1))
+  allocate(htmp(1:lx1,1:lx3all,1:lx2all+1))
   read(inunit) htmp
-  x%h1x2iall=reshape(htmp,[lx1,lx2+1,lx3all],order=[1,3,2])
+  x%h1x2iall=reshape(htmp,[lx1,lx2all+1,lx3all],order=[1,3,2])
   read(inunit) htmp
-  x%h3x2iall=reshape(htmp,[lx1,lx2+1,lx3all],order=[1,3,2])
+  x%h3x2iall=reshape(htmp,[lx1,lx2all+1,lx3all],order=[1,3,2])
   read(inunit) htmp
-  x%h2x2iall=reshape(htmp,[lx1,lx2+1,lx3all],order=[1,3,2])
+  x%h2x2iall=reshape(htmp,[lx1,lx2all+1,lx3all],order=[1,3,2])
   deallocate(htmp)
 
-  allocate(g1all(lx1,lx2,lx3all),g2all(lx1,lx2,lx3all),g3all(lx1,lx2,lx3all))
-  allocate(htmp(lx1,lx3all,lx2))
+  allocate(g1all(lx1,lx2all,lx3all),g2all(lx1,lx2all,lx3all),g3all(lx1,lx2all,lx3all))
+  allocate(htmp(lx1,lx3all,lx2all))
   read(inunit) htmp
-  g1all=reshape(htmp,[lx1,lx2,lx3all],order=[1,3,2])
+  g1all=reshape(htmp,[lx1,lx2all,lx3all],order=[1,3,2])
   read(inunit) htmp
-  g3all=reshape(htmp,[lx1,lx2,lx3all],order=[1,3,2])
+  g3all=reshape(htmp,[lx1,lx2all,lx3all],order=[1,3,2])
   read(inunit) htmp
-  g2all=reshape(htmp,[lx1,lx2,lx3all],order=[1,3,2])
+  g2all=reshape(htmp,[lx1,lx2all,lx3all],order=[1,3,2])
   deallocate(htmp)
 
-  allocate(altall(lx1,lx2,lx3all),glatall(lx1,lx2,lx3all),glonall(lx1,lx2,lx3all))
-  allocate(htmp(lx1,lx3all,lx2))
+  allocate(altall(lx1,lx2all,lx3all),glatall(lx1,lx2all,lx3all),glonall(lx1,lx2all,lx3all))
+  allocate(htmp(lx1,lx3all,lx2all))
   read(inunit) htmp
-  altall=reshape(htmp,[lx1,lx2,lx3all],order=[1,3,2])      
+  altall=reshape(htmp,[lx1,lx2all,lx3all],order=[1,3,2])      
   read(inunit) htmp
-  glatall=reshape(htmp,[lx1,lx2,lx3all],order=[1,3,2])
+  glatall=reshape(htmp,[lx1,lx2all,lx3all],order=[1,3,2])
   read(inunit) htmp
-  glonall=reshape(htmp,[lx1,lx2,lx3all],order=[1,3,2])
+  glonall=reshape(htmp,[lx1,lx2all,lx3all],order=[1,3,2])
   deallocate(htmp)
 
-  allocate(Bmagall(lx1,lx2,lx3all))
-  allocate(htmp(lx1,lx3all,lx2))
+  allocate(Bmagall(lx1,lx2all,lx3all))
+  allocate(htmp(lx1,lx3all,lx2all))
   read(inunit) htmp
-  Bmagall=reshape(htmp,[lx1,lx2,lx3all],order=[1,3,2])
+  Bmagall=reshape(htmp,[lx1,lx2all,lx3all],order=[1,3,2])
   deallocate(htmp)
 
-  allocate(Incall(lx2,lx3all))
-  allocate(htmp2D(lx3all,lx2))
+  allocate(Incall(lx2all,lx3all))
+  allocate(htmp2D(lx3all,lx2all))
   read(inunit) htmp2D
-  Incall=reshape(htmp2D,[lx2,lx3all],order=[2,1])
+  Incall=reshape(htmp2D,[lx2all,lx3all],order=[2,1])
   deallocate(htmp2D)
 
 
@@ -471,55 +458,55 @@ else     !this is apparently a 2D grid, so the x2 and x3 dimensions have been/ne
   !allocate(nullptsall(lx1,lx2,lx3all))
   !read(inunit) nullptsall
 
-  allocate(htmp(lx1,lx3all,lx2))
+  allocate(htmp(lx1,lx3all,lx2all))
   read(inunit) htmp
-  nullptsall=reshape(htmp,[lx1,lx2,lx3all],order=[1,3,2])
+  nullptsall=reshape(htmp,[lx1,lx2all,lx3all],order=[1,3,2])
   deallocate(htmp)
 
-  allocate(e1all(lx1,lx2,lx3all,3))
-  allocate(htmp4D(lx1,lx3all,lx2,3))
+  allocate(e1all(lx1,lx2all,lx3all,3))
+  allocate(htmp4D(lx1,lx3all,lx2all,3))
   read(inunit) htmp4D
-  e1all=reshape(htmp4D,[lx1,lx2,lx3all,3],order=[1,3,2,4])
+  e1all=reshape(htmp4D,[lx1,lx2all,lx3all,3],order=[1,3,2,4])
   deallocate(htmp4D)
 
-  allocate(e3all(lx1,lx2,lx3all,3))          !swap the x2/x3 unit vectors
-  allocate(htmp4D(lx1,lx3all,lx2,3))
+  allocate(e3all(lx1,lx2all,lx3all,3))          !swap the x2/x3 unit vectors
+  allocate(htmp4D(lx1,lx3all,lx2all,3))
   read(inunit) htmp4D
-  e3all=reshape(htmp4D,[lx1,lx2,lx3all,3],order=[1,3,2,4])
+  e3all=reshape(htmp4D,[lx1,lx2all,lx3all,3],order=[1,3,2,4])
   deallocate(htmp4D)
 
-  allocate(e2all(lx1,lx2,lx3all,3))
-  allocate(htmp4D(lx1,lx3all,lx2,3))
+  allocate(e2all(lx1,lx2all,lx3all,3))
+  allocate(htmp4D(lx1,lx3all,lx2all,3))
   read(inunit) htmp4D
-  e2all=reshape(htmp4D,[lx1,lx2,lx3all,3],order=[1,3,2,4])
+  e2all=reshape(htmp4D,[lx1,lx2all,lx3all,3],order=[1,3,2,4])
   deallocate(htmp4D)
 
-  allocate(erall(lx1,lx2,lx3all,3))
-  allocate(htmp4D(lx1,lx3all,lx2,3))
+  allocate(erall(lx1,lx2all,lx3all,3))
+  allocate(htmp4D(lx1,lx3all,lx2all,3))
   read(inunit) htmp4D
-  erall=reshape(htmp4D,[lx1,lx2,lx3all,3],order=[1,3,2,4])
+  erall=reshape(htmp4D,[lx1,lx2all,lx3all,3],order=[1,3,2,4])
   deallocate(htmp4D)
 
-  allocate(ethetaall(lx1,lx2,lx3all,3))
-  allocate(htmp4D(lx1,lx3all,lx2,3))
+  allocate(ethetaall(lx1,lx2all,lx3all,3))
+  allocate(htmp4D(lx1,lx3all,lx2all,3))
   read(inunit) htmp4D
-  ethetaall=reshape(htmp4D,[lx1,lx2,lx3all,3],order=[1,3,2,4])
+  ethetaall=reshape(htmp4D,[lx1,lx2all,lx3all,3],order=[1,3,2,4])
   deallocate(htmp4D)
 
-  allocate(ephiall(lx1,lx2,lx3all,3))
-  allocate(htmp4D(lx1,lx3all,lx2,3))
+  allocate(ephiall(lx1,lx2all,lx3all,3))
+  allocate(htmp4D(lx1,lx3all,lx2all,3))
   read(inunit) htmp4D
-  ephiall=reshape(htmp4D,[lx1,lx2,lx3all,3],order=[1,3,2,4])
+  ephiall=reshape(htmp4D,[lx1,lx2all,lx3all,3],order=[1,3,2,4])
   deallocate(htmp4D)
 
-  allocate(rall(lx1,lx2,lx3all),thetaall(lx1,lx2,lx3all),phiall(lx1,lx2,lx3all))
-  allocate(htmp(lx1,lx3all,lx2))
+  allocate(rall(lx1,lx2all,lx3all),thetaall(lx1,lx2all,lx3all),phiall(lx1,lx2all,lx3all))
+  allocate(htmp(lx1,lx3all,lx2all))
   read(inunit) htmp
-  rall=reshape(htmp,[lx1,lx2,lx3all],order=[1,3,2])
+  rall=reshape(htmp,[lx1,lx2all,lx3all],order=[1,3,2])
   read(inunit) htmp
-  thetaall=reshape(htmp,[lx1,lx2,lx3all],order=[1,3,2])
+  thetaall=reshape(htmp,[lx1,lx2all,lx3all],order=[1,3,2])
   read(inunit) htmp
-  phiall=reshape(htmp,[lx1,lx2,lx3all],order=[1,3,2])
+  phiall=reshape(htmp,[lx1,lx2all,lx3all],order=[1,3,2])
   deallocate(htmp)
 
   x%rall=rall; x%thetaall=thetaall; x%phiall=phiall;
@@ -535,8 +522,8 @@ allocate(g1(1:lx1,1:lx2,1:lx3),g2(1:lx1,1:lx2,1:lx3),g3(1:lx1,1:lx2,1:lx3))
 !SEND FULL X1 AND X2 GRIDS TO EACH WORKER (ONLY X3-DIM. IS INVOLVED IN THE MPI
 do iid=1,lid-1
   call mpi_send(x%x1,lx1+4,mpi_realprec,iid,tagx1,MPI_COMM_WORLD,ierr)
-  call mpi_send(x%x2all,lx2all+4,mpi_realprec,iid,tagx2,MPI_COMM_WORLD,ierr)
-  call mpi_send(x%x3all,lx3all+4,mpi_realprec,iid,tagx3,MPI_COMM_WORLD,ierr)    !workers may need a copy of this, e.g. for boudnary conditiosn
+  call mpi_send(x%x2all,lx2all+4,mpi_realprec,iid,tagx2all,MPI_COMM_WORLD,ierr)
+  call mpi_send(x%x3all,lx3all+4,mpi_realprec,iid,tagx3all,MPI_COMM_WORLD,ierr)    !workers may need a copy of this, e.g. for boudnary conditiosn
   call mpi_send(x%dx1,lx1+3,mpi_realprec,iid,tagx1,MPI_COMM_WORLD,ierr)
   call mpi_send(x%x1i,lx1+1,mpi_realprec,iid,tagx1,MPI_COMM_WORLD,ierr)
   call mpi_send(x%dx1i,lx1,mpi_realprec,iid,tagx1,MPI_COMM_WORLD,ierr)
@@ -726,9 +713,19 @@ call mpi_recv(lx2,1,MPI_INTEGER,0,taglx2,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
 call mpi_recv(lx3,1,MPI_INTEGER,0,taglx3,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
 x%lx1=lx1; x%lx2=lx2; x%lx2all=lx2all; x%lx3all=lx3all; x%lx3=lx3
 
+print*, 'workers received slab size', lx2,lx3
 
 !ROOT NEEDS TO TELL US WHETHER WE'VE SWAPPED DIMENSIONS SINCE THIS AFFECTS HOW CURRENTS ARE COMPUTED
 call mpi_recv(flagswap,1,MPI_INTEGER,0,tagswap,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+
+if (flagswap==1) then
+  x%lx3all=lx2all
+  x%lx2all=lx3all
+  lx2all=x%lx2all
+  lx3all=x%lx3all
+end if
+
+print*, 'workers receive flagswap',flagswap,lx2all,lx3all
 
 
 !ALLOCATE SPACE FOR MY SLAB OF DATA
@@ -763,14 +760,18 @@ allocate(x%er(1:lx1,1:lx2,1:lx3,1:3),x%etheta(1:lx1,1:lx2,1:lx3,1:3),x%ephi(1:lx
 !ALLOCATE SPACE FOR WORKER'S GRAVITATIONAL FIELD
 allocate(g1(1:lx1,1:lx2,1:lx3),g2(1:lx1,1:lx2,1:lx3),g3(1:lx1,1:lx2,1:lx3))
 
+print*, 'workers allocated array space'
+
 
 !RECEIVE GRID DATA FROM ROOT
 call mpi_recv(x%x1,lx1+4,mpi_realprec,0,tagx1,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-call mpi_recv(x%x2all,lx2+4,mpi_realprec,0,tagx2,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-call mpi_recv(x%x3all,lx3all+4,mpi_realprec,0,tagx3,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+call mpi_recv(x%x2all,lx2all+4,mpi_realprec,0,tagx2all,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+call mpi_recv(x%x3all,lx3all+4,mpi_realprec,0,tagx3all,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
 call mpi_recv(x%dx1,lx1+3,mpi_realprec,0,tagx1,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
 call mpi_recv(x%x1i,lx1+1,mpi_realprec,0,tagx1,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
 call mpi_recv(x%dx1i,lx1,mpi_realprec,0,tagx1,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+
+print*, 'workers have basic grid spacing info from the root process...'
 
 call bcast_recv(x%x3,tagx3)
 x%dx3=x%x3(0:lx3+2)-x%x3(-1:lx3+1)     !computing these avoids extra message passing (could be done for other coordinates, as well)
@@ -781,6 +782,9 @@ call bcast_recv(x%x2,tagx2)
 x%dx2=x%x2(0:lx2+2)-x%x2(-1:lx2+1)
 x%x2i(1:lx2+1)=0.5*(x%x2(0:lx2)+x%x2(1:lx2+1))
 x%dx2i=x%x2i(2:lx2+1)-x%x2i(1:lx2)
+
+print*, 'grid data exchange complete'
+
 
 allocate(mpirecvbuf(-1:lx1+2,-1:lx2+2,-1:lx3+2))
 
