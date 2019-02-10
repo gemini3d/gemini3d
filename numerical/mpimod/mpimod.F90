@@ -85,6 +85,10 @@ integer :: ierr
 integer, protected :: lid2,lid3,myid2,myid3
 
 
+!> Some explanation as the the naming convention used in this module is in order at this point.
+!> Generally it is:
+!>  <optype>_<send,recv><dims>_<mpi dims>_<optional indicator>
+
 !> THESE INTERFACES OVERLOAD THE MPI GATHER,BROADCAST SUBROUTINES FOR ARRAYS OF DIFFERENT RANKS.
 !> THESE ARE ALSO USEFUL FOR SUBBING IN DIFFERENT SCENARIOS - 1D VS. 2D MPI DIVISIONS ETC. 
 interface gather_recv
@@ -103,10 +107,10 @@ interface bcast_recv
   module procedure bcast_recv1D_23_3, bcast_recv2D_23, bcast_recv3D_23, bcast_recv4D_23
 end interface bcast_recv
 
-interface halo    !this is to easily allow me to swap out halo routines while debugging
+!> THIS ALLOWS EASY SWAPPING OF DIFFERENT ROUTINES FOR 3 VS. 23 DIVISIONS
+interface halo
   module procedure halo_23
 end interface halo
-
 interface bcast_send3D_x3i
   module procedure bcast_send3D_x3i_3
 end interface bcast_send3D_x3i
