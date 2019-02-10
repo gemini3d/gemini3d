@@ -72,9 +72,11 @@ integer, parameter :: tagswap=92
 
 !> FOR SENDING THE FULL X2 GRID SIZE
 integer, parameter :: taglx2all=93
+integer, parameter :: tagx2all=94
+integer, parameter :: tagx3all=95
 
 !> AURORAL TAG(S)
-integer, parameter :: tagAur=95
+integer, parameter :: tagAur=96
 
 !> VARIABLES REUSED BY ALL WORKERS AND USING MODULES
 integer, protected :: myid,lid    
@@ -195,13 +197,13 @@ integer, dimension(2) :: inds
 
 if (lx3all/lid*lid/=lx3all) then
   error stop '!!!Grid is not divisible by number of processes - please generate a new one  &
-                 and try again or try a different number of processes...'
+               & and try again or try a different number of processes...'
 end if
 
 lid2=1
 lid3=lid
 do while( ((lid3/2)*2==lid3) .and. (lid3-lid2>lid3 .or. lid3-lid2>lid2) .and. &     
-         lx3all/(lid3/2)*(lid3/2)==lx3all .and. lx2all/(lid2*2)*(lid2*2)==lx2all .and.
+         lx3all/(lid3/2)*(lid3/2)==lx3all .and. lx2all/(lid2*2)*(lid2*2)==lx2all .and. &
          lid3/2>1)
 !! must insure that lx3 is divisible by lid3 and lx2 by lid2 and lid3 must be > 1
 

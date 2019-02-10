@@ -5,7 +5,7 @@ program gemini
 !----------------------------------------------------------
 
 use phys_consts, only : lnchem, lwave, lsp
-use grid, only: grid_size,read_grid clear_grid,lx1,lx2,lx3,lx2all,lx3all
+use grid, only: grid_size,read_grid,clear_grid,lx1,lx2,lx3,lx2all,lx3all
 use temporal, only : dt_comm
 use timeutils, only: dateinc
 use neutral, only : neutral_atmos,make_dneu,neutral_perturb,clear_dneu

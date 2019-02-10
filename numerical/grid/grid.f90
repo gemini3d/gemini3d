@@ -1,16 +1,17 @@
 module grid
 use, intrinsic:: iso_fortran_env, only: stderr=>error_unit
 
-use mpi, only: mpi_integer, mpi_comm_world, mpi_status_ignore, lid2, lid3, lid
+use mpi, only: mpi_integer, mpi_comm_world, mpi_status_ignore
 
 use phys_consts, only: Gconst,Me,Re,wp, red, black
 
-use mpimod, only: myid, lid, &
+use mpimod, only: myid, lid, lid2, lid3, &
   tagx1, tagx2, tagx3, tagtheta, tagr, tagphi, tagnull, taglx1, taglx2, taglx3, taglx3all, taginc, &
   tagh1, tagh2, tagh3, tagglat, tagglon, tageunit1, tageunit2, tageunit3, tagetheta, tager, &
   tagalt, tagbmag, tagephi, tagswap, &
-  mpi_realprec, ierr, &
-  bcast_recv, bcast_send, bcast_recv3d_ghost, bcast_send3d_ghost, bcast_recv3d_x3i, bcast_send3d_x3i
+  mpi_realprec, ierr, taglx2all, tagx3all, tagx2all, &
+  bcast_recv, bcast_send, bcast_recv3D_ghost, bcast_send3D_ghost, bcast_recv3D_x3i, bcast_send3D_x3i, &
+  bcast_send3D_x2i,bcast_recv3D_x2i
 
 implicit none
 
@@ -101,8 +102,8 @@ type :: curvmesh
 end type curvmesh
 
 
-public :: curvmesh,  lx1,lx2,lx3, lx3all, gridflag, flagswap, clear_unitvecs, g1,g2,g3, &
-  read_grid, clear_grid
+public :: curvmesh,  lx1,lx2,lx3, lx2all, lx3all, gridflag, flagswap, clear_unitvecs, g1,g2,g3, &
+  read_grid, clear_grid, grid_size
 
 contains
 
@@ -130,7 +131,7 @@ if (myid==0) then    !root must physically read the size info and pass to worker
   read(inunit) lx1,lx2all,lx3all    !note that these are sizes *including ghost cells*
   close(inunit)
   do iid=1,lid-1
-    call mpi_send(lx1g,1,MPI_INTEGER,iid,taglx1,MPI_COMM_WORLD,ierr)
+    call mpi_send(lx1,1,MPI_INTEGER,iid,taglx1,MPI_COMM_WORLD,ierr)
     call mpi_send(lx2all,1,MPI_INTEGER,iid,taglx2all,MPI_COMM_WORLD,ierr)
     call mpi_send(lx3all,1,MPI_INTEGER,iid,taglx3all,MPI_COMM_WORLD,ierr)
   end do
@@ -286,7 +287,7 @@ allocate(x%dx1i(lx1),x%x1i(lx1+1),x%dx1(0:lx1+2))
 !FULL GRID X2 VARIABLE
 allocate(x%x2all(-1:lx2all+2))
 allocate(x%dx2all(0:lx2all+2))
-allocate(x%dx2iall(lx2all),x%x2iall(lx2all+1)
+allocate(x%dx2iall(lx2all),x%x2iall(lx2all+1))
 
 
 !FULL-GRID X3-VARIABLE
@@ -776,7 +777,7 @@ x%dx3=x%x3(0:lx3+2)-x%x3(-1:lx3+1)     !computing these avoids extra message pas
 x%x3i(1:lx3+1)=0.5*(x%x3(0:lx3)+x%x3(1:lx3+1))
 x%dx3i=x%x3i(2:lx3+1)-x%x3i(1:lx3)
 
-call bcase_recv(x%x2,tagx2)
+call bcast_recv(x%x2,tagx2)
 x%dx2=x%x2(0:lx2+2)-x%x2(-1:lx2+1)
 x%x2i(1:lx2+1)=0.5*(x%x2(0:lx2)+x%x2(1:lx2+1))
 x%dx2i=x%x2i(2:lx2+1)-x%x2i(1:lx2)
