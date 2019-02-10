@@ -5,7 +5,7 @@ program gemini
 !----------------------------------------------------------
 
 use phys_consts, only : lnchem, lwave, lsp
-use grid, only: read_grid, clear_grid, lx3
+use grid, only: grid_size,read_grid clear_grid,lx1,lx2,lx3,lx2all,lx3all
 use temporal, only : dt_comm
 use timeutils, only: dateinc
 use neutral, only : neutral_atmos,make_dneu,neutral_perturb,clear_dneu
@@ -109,12 +109,13 @@ call read_configfile(infile, ymd,UTsec0,tdur,dtout,activ,tcfl,Teinf,potsolve,fla
                      indatsize,indatgrid,flagdneu,interptype,sourcemlat,sourcemlon,dtneu,drhon,dzn,sourcedir,flagprecfile, &
                      dtprec,precdir,flagE0file,dtE0,E0dir,flagglow,dtglow,dtglowout)
 
+!!CHECK THE GRID SIZE AND ESTABLISH A PROCESS GRID
+call grid_size(indatsize)
+call mpigrid(lx2all,lx3all)    !following grid_size these are in scope
+
+
 !LOAD UP THE GRID STRUCTURE/MODULE VARS. FOR THIS SIMULATION
 call read_grid(indatsize,indatgrid,flagperiodic,x)     !read in a previously generated grid from filenames listed in input file
-
-
-!!ESTABLISH A PROCESS GRID, IF NEEDED - LEAVE HERE FOR FUTURE IMPLEMENTATIONS OF X2,X3 PARALLELIZATION
-call mpigrid(lx2,lx3all)
 
 
 !CREATE/PREP OUTPUT DIRECTORY AND OUTPUT SIMULATION SIZE AND GRID DATA; ONLY THE ROOT PROCESS WRITES OUTPUT DATA

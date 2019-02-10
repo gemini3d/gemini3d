@@ -1,7 +1,7 @@
 module grid
 use, intrinsic:: iso_fortran_env, only: stderr=>error_unit
 
-use mpi, only: mpi_integer, mpi_comm_world, mpi_status_ignore
+use mpi, only: mpi_integer, mpi_comm_world, mpi_status_ignore, lid2, lid3, lid
 
 use phys_consts, only: Gconst,Me,Re,wp, red, black
 
@@ -16,7 +16,7 @@ implicit none
 
 private
 
-integer, protected :: lx1,lx2,lx3,lx3all    !this is a useful shorthand for most program units using this module, occassionally a program unit needs to define its own size in which case an only statement is required when using this module.
+integer, protected :: lx1,lx2,lx3,lx2all,lx3all    !this is a useful shorthand for most program units using this module, occassionally a program unit needs to define its own size in which case an only statement is required when using this module.
 
 integer, private :: inunit, &     ! for grid input file
                     outunit       ! for debugging grid (output file for testing)
@@ -44,6 +44,11 @@ type :: curvmesh
   real(wp), dimension(:), pointer :: dx3
   real(wp), dimension(:), allocatable :: dx3i
 
+  real(wp), dimension(:), allocatable :: x2all
+  real(wp), dimension(:), allocatable  :: x2iall
+  real(wp), dimension(:), pointer :: dx2all
+  real(wp), dimension(:), allocatable  :: dx2iall
+
   real(wp), dimension(:), allocatable :: x3all
   real(wp), dimension(:), allocatable  :: x3iall
   real(wp), dimension(:), pointer :: dx3all
@@ -58,13 +63,13 @@ type :: curvmesh
   !ROOT ONLY FULL GRID METRIC FACTORS (WORKERS WILL NOT ALLOCATE) - CANDIDATE FOR ELIMINATION???
   real(wp), dimension(:,:,:), pointer :: h1all,h2all,h3all
   real(wp), dimension(:,:,:), allocatable :: h1x1iall,h2x1iall,h3x1iall   !dimension 1 has size lx1+1
-  real(wp), dimension(:,:,:), allocatable :: h1x2iall,h2x2iall,h3x2iall   !dim. 2 has lx2+1
+  real(wp), dimension(:,:,:), allocatable :: h1x2iall,h2x2iall,h3x2iall   !dim. 2 has lx2all+1
   real(wp), dimension(:,:,:), allocatable :: h1x3iall,h2x3iall,h3x3iall   !dim. 3 has lx3all+1
 
   !SHALL WE ALSO PRECOMPUTE SOME OF THE PRODUCTS FOR ADVECTION?
 
   !SIZE INFORMATION
-  integer :: lx1,lx2,lx3,lx3all    !for program units that may not be able to access module globals
+  integer :: lx1,lx2,lx3,lx2all,lx3all    !for program units that may not be able to access module globals
 
   !UNIT VECTORS - NO ONE NEEDS A FULL GRID COPY OF THESE, I BELIEVE
   real(wp), dimension(:,:,:,:), allocatable :: e1,e2,e3     !unit vectors in curvilinear space (in cartesian components)
@@ -100,6 +105,44 @@ public :: curvmesh,  lx1,lx2,lx3, lx3all, gridflag, flagswap, clear_unitvecs, g1
   read_grid, clear_grid
 
 contains
+
+
+subroutine grid_size(indatsize)
+
+!! CHECK THE SIZE OF THE GRID TO BE LOADED AND SET SIZES IN THIS MODULE (NOT IN STRUCTURE THOUGH)
+
+character(*), intent(in) :: indatsize
+
+integer :: iid
+logical exists
+
+
+if (myid==0) then    !root must physically read the size info and pass to workers
+  inquire(file=indatsize, exist=exists)
+  if (.not.exists) then
+     write(stderr,*) 'must generate grid with script before running simulation--grid not present: ',indatsize
+     error stop
+  endif
+  
+  !DETERMINE THE SIZE OF THE GRID TO BE LOADED
+  open(newunit=inunit,file=indatsize,status='old',form='unformatted', &
+       access='stream', action='read')
+  read(inunit) lx1,lx2all,lx3all    !note that these are sizes *including ghost cells*
+  close(inunit)
+  do iid=1,lid-1
+    call mpi_send(lx1g,1,MPI_INTEGER,iid,taglx1,MPI_COMM_WORLD,ierr)
+    call mpi_send(lx2all,1,MPI_INTEGER,iid,taglx2all,MPI_COMM_WORLD,ierr)
+    call mpi_send(lx3all,1,MPI_INTEGER,iid,taglx3all,MPI_COMM_WORLD,ierr)
+  end do
+
+  print *, 'Grid has full size:  ',lx1,lx2all,lx3all
+else
+  call mpi_recv(lx1,1,MPI_INTEGER,0,taglx1,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+  call mpi_recv(lx2all,1,MPI_INTEGER,0,taglx2all,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+  call mpi_recv(lx3all,1,MPI_INTEGER,0,taglx3all,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+end if
+
+end subroutine grid_size
 
 
 subroutine read_grid(indatsize,indatgrid,flagperiodic,x)
@@ -152,12 +195,14 @@ subroutine read_grid_root(indatsize,indatgrid,x)
 !------------------------------------------------------------
 !--------SOME CODE DUPLICATION WITH WORKER VERSION - CAN WE
 !--------CREATE A COMMON SUBROUTINE THAT ALLOCATES SOME VARS?
+!--------THE GRID SIZES MUST ALREADY BE DEFINED IN TEH MODULE
+!--------, PROBABLY FROM CALLING GRID_SIZE
 !------------------------------------------------------------
 
 character(*), intent(in) :: indatsize,indatgrid
-type(curvmesh), intent(inout) :: x    !does this need to be inout?  I think if anything in unallocated, it does...
+type(curvmesh), intent(inout) :: x    !does this need to be inout?  I think if anything is unallocated, it does...
 
-integer lx1g,lx2g,lx3allg,iid,ix1,ix2,ix3,icount,icomp!,itell
+integer iid,ix1,ix2,ix3,icount,icomp!,itell
 
 !NOTE THAT HAVING THESE ARE LOCAL (TEMPORARY) VARS. PREVENTS ROOT FROM WRITING ENTIRE GRID TO FILE AT SOME LATER POINT...
 real(wp), dimension(:,:,:), allocatable :: g1all,g2all,g3all   !to temporarily store input data to be distributed
@@ -174,38 +219,25 @@ real(wp), dimension(:,:,:), allocatable :: htmp
 real(wp), dimension(:,:), allocatable :: htmp2D
 real(wp), dimension(:,:,:,:), allocatable :: htmp4D
 
-logical exists
-
-inquire(file=indatsize, exist=exists)
-if (.not.exists) then
-   write(stderr,*) 'must generate grid with script before running simulation--grid not present: ',indatsize
-   error stop 
-endif
-
-!DETERMINE THE SIZE OF THE GRID TO BE LOADED
-open(newunit=inunit,file=indatsize,status='old',form='unformatted', &
-     access='stream', action='read')
-read(inunit) lx1g,lx2g,lx3allg    !note that these are sizes *including ghost cells*  !MZ - lx2allg+declaration above
-close(inunit)
 
 
-!MZ must set up lx2all and lx2 here
 !DETERMINE NUMBER OF SLABS AND CORRESPONDING SIZE FOR EACH WORKER 
 !NOTE THAT WE WILL ASSUME THAT THE GRID SIZE IS DIVISIBLE BY NUMBER OF WORKERS AS THIS HAS BEEN CHECKED A FEW LINES BELOW
-x%lx1=lx1g; x%lx2=lx2g; x%lx3all=lx3allg;
-lx1=x%lx1; lx2=x%lx2; lx3all=x%lx3all;    !define some shortand variables for ease of reference
-lx3=lx3all/lid                            !note the integer division here   !MZ-change to lid3
+x%lx1=lx1; x%lx2all=lx2all; x%lx3all=lx3all;
+lx2=lx2all/lid2                                 !should divide evenly if generated from mpigrid
+x%lx2=lx2
+lx3=lx3all/lid3
 x%lx3=lx3
-print *, 'Grid has size:  ',lx1,lx2,lx3all    !MZ - lx2all
-print *, '    slab size:  ',lx1,lx2,lx3
+print *, 'Grid slab size:  ',lx1,lx2,lx3
 
 
 !ADJUST THE SIZES OF THE VARIABLES IF LX3ALL==1, SO THAT THE ALLOCATIONS ARE THE CORRECT SIZE
 if (lx3all==1) then
   print *, 'Detected a 2D run request...  swapping x2 an x3 sizes to maintain parallelization.'
-  lx3all=lx2; x%lx3all=lx2;
+  lx3all=lx2all; x%lx3all=lx2all;
   lx2=1; x%lx2=1;
-  lx3=lx3all/lid
+  lx2all=1; x%lx2all=1;
+  lx3=lx3all/lid     !use total number of processes since we only divide in one direction here...
   x%lx3=lx3
   flagswap=1
 else
@@ -218,26 +250,25 @@ else
 end if
 
 
-!JUST BAIL ON THE SIMULATION IF THE X3 SIZE ISN'T VISIBLE BY NUMBER OF PROCESSES
-if (lx3*lid/=lx3all) then
-  write(stderr,*) 'Number of grid points', lx3all, &
-    'must be divisible by number of processes',lid
-  error stop 
-end if
-if (lx3<2) then
-  write(stderr,*) red // '**************************************************************************'
-  write(stderr,*) 'WARNING/ERROR: simulation with slab size < 2 may give incorrect results with some MPI versions. '
-  write(stderr,*) 'Check results on system with MPI -np >= 2.   here, lx3=',lx3
-  write(stderr,*) '**************************************************************************' // black
-  error stop
-end if
+!!JUST BAIL ON THE SIMULATION IF THE X3 SIZE ISN'T VISIBLE BY NUMBER OF PROCESSES   !MZ - possibly superfluous now???
+!if (lx3*lid/=lx3all) then
+!  write(stderr,*) 'Number of grid points', lx3all, &
+!    'must be divisible by number of processes',lid
+!  error stop 
+!end if
+!if (lx3<2) then
+!  write(stderr,*) red // '**************************************************************************'
+!  write(stderr,*) 'WARNING/ERROR: simulation with slab size < 2 may give incorrect results with some MPI versions. '
+!  write(stderr,*) 'Check results on system with MPI -np >= 2.   here, lx3=',lx3
+!  write(stderr,*) '**************************************************************************' // black
+!  error stop
+!end if
+
 
 !COMMUNICATE THE GRID SIZE TO THE WORKERS SO THAT THEY CAN ALLOCATE SPACE
 do iid=1,lid-1
-  call mpi_send(lx1,1,MPI_INTEGER,iid,taglx1,MPI_COMM_WORLD,ierr)
   call mpi_send(lx2,1,MPI_INTEGER,iid,taglx2,MPI_COMM_WORLD,ierr)          !need to also pass the lx2all size to all workers to they know
   call mpi_send(lx3,1,MPI_INTEGER,iid,taglx3,MPI_COMM_WORLD,ierr)
-  call mpi_send(lx3all,1,MPI_INTEGER,iid,taglx3all,MPI_COMM_WORLD,ierr)    !not clear whether workers actually need the x3all variable, hopefully not, but they definitely need to know the full grid size for the derivative functions
 end do
 
 
@@ -250,8 +281,12 @@ end do
 !ALLOCATE SPACE FOR ROOTS SLAB OF DATA
 allocate(x%x1(-1:lx1+2))
 allocate(x%dx1i(lx1),x%x1i(lx1+1),x%dx1(0:lx1+2))
-allocate(x%x2(-1:lx2+2))    !MZ - x2 needs to be broken out like x3all immediately below
-allocate(x%dx2i(lx2),x%x2i(lx2+1),x%dx2(0:lx2+2))  !MZ - moved below with dx3, etc.
+
+
+!FULL GRID X2 VARIABLE
+allocate(x%x2all(-1:lx2all+2))
+allocate(x%dx2all(0:lx2+2))
+allocate(x%dx2iall(lx2all),x%x2iall(lx2all+1)
 
 
 !FULL-GRID X3-VARIABLE
@@ -685,12 +720,9 @@ real(wp), dimension(:,:,:), allocatable :: tmpdx
 
 
 !GET ROOTS MESSAGE WITH THE SIZE OF THE GRID WE ARE TO RECEIVE
-call mpi_recv(lx1,1,MPI_INTEGER,0,taglx1,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
 call mpi_recv(lx2,1,MPI_INTEGER,0,taglx2,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
 call mpi_recv(lx3,1,MPI_INTEGER,0,taglx3,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-call mpi_recv(lx3all,1,MPI_INTEGER,0,taglx3all,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-x%lx1=lx1; x%lx2=lx2; x%lx3all=lx3all;
-x%lx3=lx3
+x%lx1=lx1; x%lx2=lx2; x%lx2all=lx2all; x%lx3all=lx3all; x%lx3=lx3
 
 
 !ROOT NEEDS TO TELL US WHETHER WE'VE SWAPPED DIMENSIONS SINCE THIS AFFECTS HOW CURRENTS ARE COMPUTED

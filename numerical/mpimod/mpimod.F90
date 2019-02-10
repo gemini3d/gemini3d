@@ -70,6 +70,9 @@ integer, parameter :: tagdV=84,tagJx=85,tagJy=86,tagRx=87,tagRy=88,tagRz=89,tagR
 !> FOR COMMUNICATING IF THE GRID DIMENSIONS HAVE BEEN SWAPPED
 integer, parameter :: tagswap=92
 
+!> FOR SENDING THE FULL X2 GRID SIZE
+integer, parameter :: taglx2all=93
+
 !> AURORAL TAG(S)
 integer, parameter :: tagAur=95
 
@@ -182,11 +185,16 @@ integer, intent(in) :: lx2all,lx3all
 integer, dimension(2) :: inds
 
 
+if (lx3all/lid*lid/=lx3all) then
+  error stop '!!!Grid is not divisible by number of processes'
+end if
+
 lid2=1
 lid3=lid
 do while( ((lid3/2)*2==lid3) .and. (lid3-lid2>lid3 .or. lid3-lid2>lid2) .and. &     
-         lx3all/(lid3/2)*(lid3/2)==lx3all .and. lx2all/(lid2*2)*(lid2*2)==lx2all)
-!! must insure that lx3 is divisible by lid3 and lx2 by lid2
+         lx3all/(lid3/2)*(lid3/2)==lx3all .and. lx2all/(lid2*2)*(lid2*2)==lx2all .and.
+         lid3/2>1)
+!! must insure that lx3 is divisible by lid3 and lx2 by lid2 and lid3 must be > 1
 
   lid3=lid3/2
   lid2=lid2*2
@@ -194,8 +202,6 @@ end do
 
 
 !THIS PROCESS' LOCATION ON THE GRID
-!myid3=myid/lid2
-!myid2=myid-myid3*lid2
 inds=ID2grid(myid)
 myid2=inds(1)
 myid3=inds(2)
