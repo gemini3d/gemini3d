@@ -699,8 +699,6 @@ x%dl3i=tmpdx*x%h3(1:lx1,1:lx2,1:lx3)
 !DEALLOCATE ANY FULL GRID VARIABLES THAT ARE NO LONGER NEEDED
 deallocate(g1all,g2all,g3all,altall,glatall,glonall,Bmagall,Incall,nullptsall,tmpdx,rall,thetaall,phiall)
 
-error stop 'completed grid load...'
-
 end subroutine read_grid_root
 
 
