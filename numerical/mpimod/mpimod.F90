@@ -105,12 +105,26 @@ interface gather_send
 end interface gather_send
 
 interface bcast_send
-  module procedure bcast_send1D_23_3, bcast_send2D_23, bcast_send3D_23, bcast_send4D_23
+  module procedure bcast_send2D_23, bcast_send3D_23, bcast_send4D_23
 end interface bcast_send
 
 interface bcast_recv
-  module procedure bcast_recv1D_23_3, bcast_recv2D_23, bcast_recv3D_23, bcast_recv4D_23
+  module procedure bcast_recv2D_23, bcast_recv3D_23, bcast_recv4D_23
 end interface bcast_recv
+
+interface bcast_send1D_2
+  module procedure bcast_send1D_23_2
+end interface bcast_send1D_2
+interface bcast_recv1D_2
+  module procedure bcast_recv1D_23_2
+end interface bcast_recv1D_2
+
+interface bcast_send1D_3
+  module procedure bcast_send1D_23_3
+end interface bcast_send1D_3
+interface bcast_recv1D_3
+  module procedure bcast_recv1D_23_3
+end interface bcast_recv1D_3
 
 !> THIS ALLOWS EASY SWAPPING OF DIFFERENT ROUTINES FOR 3 VS. 23 DIVISIONS
 interface halo

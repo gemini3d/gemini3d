@@ -11,7 +11,7 @@ use mpimod, only: myid, lid, lid2, lid3, &
   tagalt, tagbmag, tagephi, tagswap, &
   mpi_realprec, ierr, taglx2all, tagx3all, tagx2all, &
   bcast_recv, bcast_send, bcast_recv3D_ghost, bcast_send3D_ghost, bcast_recv3D_x3i, bcast_send3D_x3i, &
-  bcast_send3D_x2i,bcast_recv3D_x2i
+  bcast_send3D_x2i,bcast_recv3D_x2i, bcast_send1D_2, bcast_recv1D_2, bcast_send1D_3, bcast_recv1D_3
 
 implicit none
 
@@ -298,6 +298,9 @@ allocate(x%rall(1:lx1,1:lx2all,1:lx3all),x%thetaall(1:lx1,1:lx2all,1:lx3all),x%p
 allocate(x%x3(-1:lx3+2))
 allocate(x%dx3i(lx3),x%x3i(lx3+1),x%dx3(0:lx3+2))
 
+allocate(x%x2(-1:lx2+2))
+allocate(x%dx2i(lx2),x%x2i(lx2+1),x%dx2(0:lx2+2))
+
 allocate(x%h1(-1:lx1+2,-1:lx2+2,-1:lx3+2),x%h2(-1:lx1+2,-1:lx2+2,-1:lx3+2),x%h3(-1:lx1+2,-1:lx2+2,-1:lx3+2))
 !    allocate(x%h1(1:lx1,1:lx2,1:lx3),x%h2(1:lx1,1:lx2,1:lx3),x%h3(1:lx1,1:lx2,1:lx3))
 allocate(x%h1x1i(1:lx1+1,1:lx2,1:lx3),x%h2x1i(1:lx1+1,1:lx2,1:lx3),x%h3x1i(1:lx1+1,1:lx2,1:lx3))
@@ -528,22 +531,22 @@ do iid=1,lid-1
   call mpi_send(x%x1i,lx1+1,mpi_realprec,iid,tagx1,MPI_COMM_WORLD,ierr)
   call mpi_send(x%dx1i,lx1,mpi_realprec,iid,tagx1,MPI_COMM_WORLD,ierr)
 end do
-print *, 'Done sending common variables to workers...'
 
 
 !NOW SEND THE INFO THAT DEPENDS ON X3 SLAB SIZE
-call bcast_send(x%x3all,tagx3,x%x3)
+call bcast_send1D_3(x%x3all,tagx3,x%x3)
 x%dx3=x%x3(0:lx3+2)-x%x3(-1:lx3+1)     !computing these avoids extra message passing (could be done for other coordinates, as well)
 x%x3i(1:lx3+1)=0.5*(x%x3(0:lx3)+x%x3(1:lx3+1))
 x%dx3i=x%x3i(2:lx3+1)-x%x3i(1:lx3)
 
-call bcast_send(x%x2all,tagx2,x%x2)
-x%dx2=x%x2(0:lx2+2)-x%x2(-1:lx2+1)     !computing these avoids extra message passing (could be done for other coordinates, as well)
+
+call bcast_send1D_2(x%x2all,tagx2,x%x2)
+x%dx2=x%x2(0:lx2+2)-x%x2(-1:lx2+1)     !computing these avoids extra message passing (could be done for other coordinates
 x%x2i(1:lx2+1)=0.5*(x%x2(0:lx2)+x%x2(1:lx2+1))
 x%dx2i=x%x2i(2:lx2+1)-x%x2i(1:lx2)
 
 
-allocate(mpisendbuf(-1:lx1+2,-1:lx2+2,-1:lx3all+2),mpirecvbuf(-1:lx1+2,-1:lx2+2,-1:lx3+2))
+allocate(mpisendbuf(-1:lx1+2,-1:lx2all+2,-1:lx3all+2),mpirecvbuf(-1:lx1+2,-1:lx2+2,-1:lx3+2))
 
 mpisendbuf=x%h1all    !since metric factors are pointers they are not gauranteed to be contiguous in memory so pack them into a buffer that is...
 call bcast_send3D_ghost(mpisendbuf,tagh1,mpirecvbuf)    !special broadcast subroutine to handle 3D arrays with ghost cells
@@ -696,6 +699,8 @@ x%dl3i=tmpdx*x%h3(1:lx1,1:lx2,1:lx3)
 !DEALLOCATE ANY FULL GRID VARIABLES THAT ARE NO LONGER NEEDED
 deallocate(g1all,g2all,g3all,altall,glatall,glonall,Bmagall,Incall,nullptsall,tmpdx,rall,thetaall,phiall)
 
+error stop 'completed grid load...'
+
 end subroutine read_grid_root
 
 
@@ -713,8 +718,6 @@ call mpi_recv(lx2,1,MPI_INTEGER,0,taglx2,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
 call mpi_recv(lx3,1,MPI_INTEGER,0,taglx3,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
 x%lx1=lx1; x%lx2=lx2; x%lx2all=lx2all; x%lx3all=lx3all; x%lx3=lx3
 
-print*, 'workers received slab size', lx2,lx3
-
 !ROOT NEEDS TO TELL US WHETHER WE'VE SWAPPED DIMENSIONS SINCE THIS AFFECTS HOW CURRENTS ARE COMPUTED
 call mpi_recv(flagswap,1,MPI_INTEGER,0,tagswap,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
 
@@ -724,8 +727,6 @@ if (flagswap==1) then
   lx2all=x%lx2all
   lx3all=x%lx3all
 end if
-
-print*, 'workers receive flagswap',flagswap,lx2all,lx3all
 
 
 !ALLOCATE SPACE FOR MY SLAB OF DATA
@@ -760,8 +761,6 @@ allocate(x%er(1:lx1,1:lx2,1:lx3,1:3),x%etheta(1:lx1,1:lx2,1:lx3,1:3),x%ephi(1:lx
 !ALLOCATE SPACE FOR WORKER'S GRAVITATIONAL FIELD
 allocate(g1(1:lx1,1:lx2,1:lx3),g2(1:lx1,1:lx2,1:lx3),g3(1:lx1,1:lx2,1:lx3))
 
-print*, 'workers allocated array space'
-
 
 !RECEIVE GRID DATA FROM ROOT
 call mpi_recv(x%x1,lx1+4,mpi_realprec,0,tagx1,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
@@ -771,19 +770,19 @@ call mpi_recv(x%dx1,lx1+3,mpi_realprec,0,tagx1,MPI_COMM_WORLD,MPI_STATUS_IGNORE,
 call mpi_recv(x%x1i,lx1+1,mpi_realprec,0,tagx1,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
 call mpi_recv(x%dx1i,lx1,mpi_realprec,0,tagx1,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
 
-print*, 'workers have basic grid spacing info from the root process...'
-
-call bcast_recv(x%x3,tagx3)
-x%dx3=x%x3(0:lx3+2)-x%x3(-1:lx3+1)     !computing these avoids extra message passing (could be done for other coordinates, as well)
+call bcast_recv1D_3(x%x3,tagx3)
+x%dx3=x%x3(0:lx3+2)-x%x3(-1:lx3+1)     !computing these avoids extra message passing (could be done for other coordinates
 x%x3i(1:lx3+1)=0.5*(x%x3(0:lx3)+x%x3(1:lx3+1))
 x%dx3i=x%x3i(2:lx3+1)-x%x3i(1:lx3)
 
-call bcast_recv(x%x2,tagx2)
+
+call bcast_recv1D_2(x%x2,tagx2)
+print*, x%x2all
+print*, shape(x%x2)
+print*, x%x2
 x%dx2=x%x2(0:lx2+2)-x%x2(-1:lx2+1)
 x%x2i(1:lx2+1)=0.5*(x%x2(0:lx2)+x%x2(1:lx2+1))
 x%dx2i=x%x2i(2:lx2+1)-x%x2i(1:lx2)
-
-print*, 'grid data exchange complete'
 
 
 allocate(mpirecvbuf(-1:lx1+2,-1:lx2+2,-1:lx3+2))
