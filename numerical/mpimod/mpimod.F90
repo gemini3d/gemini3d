@@ -78,6 +78,9 @@ integer, parameter :: tagx3all=95
 !> AURORAL TAG(S)
 integer, parameter :: tagAur=96
 
+!> GENERIC PARAMETER (USED BY ADVECTION CODE - HOPEFULLY DOESN'T CREATE PROBLEMS
+integer, parameter :: taggenericparam=97
+
 !> VARIABLES REUSED BY ALL WORKERS AND USING MODULES
 integer, protected :: myid,lid    
 !! no external procedure should mess with these (but they need to be able to read them)

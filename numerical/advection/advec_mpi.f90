@@ -3,7 +3,7 @@ module advec_mpi
 use phys_consts, only: lsp,ms, wp
 use grid, only : curvmesh,gridflag            
   !! do not import grid sizes in case we want do subgrid advection...
-use mpimod, only: myid, lid, tagnsbc, tagrhoesbc, tagrhovs1bc, tagvs3bc, halo
+use mpimod, only: myid, lid, tagnsbc, tagrhoesbc, tagrhovs1bc, tagvs3bc, halo, taggenericparam
 
 implicit none
 private
@@ -294,6 +294,126 @@ if (lx2>1) then
 end if
 
 end function advec3D_MC_mpi_curv_3
+
+
+function advec3D_MC_mpi_curv_23(f,v1i,v2i,v3i,dt,x,frank)
+
+!------------------------------------------------------------
+!-------ADVECT A VARIABLE IN 3D FOR AN MPI SIMULATION
+!------------------------------------------------------------
+!-------It is critical that the mpi'd dimension be advected
+!-------first to avoid having to repass ghost cells between
+!-------workers after 1 and 2 dimension are advected.  
+!-------
+!-------NOTE: also that the ghost cells should really
+!-------be updated after each sweep.  Ie the x2 boundary regions
+!-------should be updated after x3 sweep and the x1 boundary
+!-------conditions should be updated after x3,x2 sweeps.  I'm
+!-------really to lazy to deal with this now...
+
+real(wp), dimension(-1:,-1:,-1:), intent(in) :: f    !f includes ghost cells
+real(wp), dimension(:,:,:), intent(in) :: v1i
+real(wp), dimension(:,:,:), intent(in) :: v2i
+real(wp), dimension(:,:,:), intent(in) :: v3i
+real(wp), intent(in) :: dt
+type(curvmesh), intent(in) :: x
+integer, intent(in) :: frank    !f's rank so that we know which metric coeffs to use.
+
+integer :: ix1,ix2,ix3,lx1,lx2,lx3
+real(wp), dimension(-1:size(f,1)-2) :: fx1slice
+real(wp), dimension(1:size(f,1)-3) :: v1slice    
+real(wp), dimension(-1:size(f,1)-2) :: h11x1slice    !includes ghost cells
+real(wp), dimension(1:size(f,1)-3) :: h12ix1slice    !just includes interface info
+real(wp), dimension(1:size(f,1)-3) :: h1ix1slice
+
+real(wp), dimension(-1:size(f,2)-2) :: fx2slice
+real(wp), dimension(1:size(f,2)-3) :: v2slice
+real(wp), dimension(-1:size(f,2)-2) :: h21x2slice    !includes ghost cells
+real(wp), dimension(1:size(f,2)-3) :: h22ix2slice    !just includes interface info
+real(wp), dimension(1:size(f,2)-3) :: h2ix2slice
+
+real(wp), dimension(-1:size(f,3)-2) :: fx3slice
+real(wp), dimension(1:size(f,3)-3) :: v3slice
+real(wp), dimension(-1:size(f,3)-2) :: h31x3slice    !includes ghost cells
+real(wp), dimension(1:size(f,3)-3) :: h32ix3slice    !just includes interface info
+real(wp), dimension(1:size(f,3)-3) :: h3ix3slice
+
+real(wp), dimension(-1:size(f,1)-2,-1:size(f,2)-2,-1:size(f,3)-2) :: advec3D_MC_mpi_curv_23
+
+
+lx1=size(f,1)-4
+lx2=size(f,2)-4
+lx3=size(f,3)-4
+
+!We are assuming here that the data have been pre-haloed before this function is called.  This must be the case
+!to avoid tearing artifacts...  In the future this should be removed in favor of explicit haloing withint
+!this procedure, which is already required for x2 message passsing.
+
+!x3-sweep
+do ix2=1,lx2
+  do ix1=1,lx1
+    fx3slice=f(ix1,ix2,:)
+    v3slice=v3i(ix1,ix2,:)
+    if (frank==0) then     !advecting a scalar quantity
+      h31x3slice=x%h1(ix1,ix2,:)*x%h2(ix1,ix2,:)*x%h3(ix1,ix2,:)
+      h32ix3slice=x%h1x3i(ix1,ix2,:)*x%h2x3i(ix1,ix2,:)
+    else    !advecting 1-component of a rank 1 tensor
+      h31x3slice=x%h1(ix1,ix2,:)**2*x%h2(ix1,ix2,:)*x%h3(ix1,ix2,:)
+      h32ix3slice=x%h1x3i(ix1,ix2,:)**2*x%h2x3i(ix1,ix2,:)
+    end if
+    h3ix3slice=x%h3x3i(ix1,ix2,:)
+    fx3slice=advec1D_MC_curv(fx3slice,v3slice,dt,x%dx3,x%dx3i,h31x3slice,h32ix3slice,h3ix3slice)
+    advec3D_MC_mpi_curv_23(ix1,ix2,:)=fx3slice
+  end do
+end do
+
+
+!copy x1,x2 boundary conditions to partially updated variable for next sweeps
+advec3D_MC_mpi_curv_23(:,-1:0,:)=f(:,-1:0,:);   
+advec3D_MC_mpi_curv_23(:,lx2+1:lx2+2,:)=f(:,lx2+1:lx2+2,:);
+advec3D_MC_mpi_curv_23(-1:0,:,:)=f(-1:0,:,:);           
+advec3D_MC_mpi_curv_23(lx1+1:lx1+2,:,:)=f(lx1+1:lx1+2,:,:);
+
+!x1-sweep
+do ix3=1,lx3
+  do ix2=1,lx2
+    fx1slice=advec3D_MC_mpi_curv_23(:,ix2,ix3);
+    v1slice=v1i(:,ix2,ix3);
+    h11x1slice=x%h1(:,ix2,ix3)*x%h2(:,ix2,ix3)*x%h3(:,ix2,ix3)
+    h12ix1slice=x%h2x1i(:,ix2,ix3)*x%h3x1i(:,ix2,ix3)
+    h1ix1slice=x%h1x1i(:,ix2,ix3)
+    fx1slice=advec1D_MC_curv(fx1slice,v1slice,dt,x%dx1,x%dx1i,h11x1slice,h12ix1slice,h1ix1slice)
+    advec3D_MC_mpi_curv_23(:,ix2,ix3)=fx1slice;
+  end do
+end do
+
+
+!at this point if we've divided in two dimensions with mpi it is necessary to halo again before
+!the final sweep to avoid tearing artifacts...
+call halo(advec3D_MC_mpi_curv_23,2,taggenericparam)
+
+
+!x2-sweep, if necessary
+if (lx2>1) then
+  do ix3=1,lx3
+    do ix1=1,lx1
+      fx2slice=advec3D_MC_mpi_curv_23(ix1,:,ix3)
+      v2slice=v2i(ix1,:,ix3)
+      if (frank==0) then
+        h21x2slice=x%h1(ix1,:,ix3)*x%h2(ix1,:,ix3)*x%h3(ix1,:,ix3)
+        h22ix2slice=x%h1x2i(ix1,:,ix3)*x%h3x2i(ix1,:,ix3)
+      else
+        h21x2slice=x%h1(ix1,:,ix3)**2*x%h2(ix1,:,ix3)*x%h3(ix1,:,ix3)
+        h22ix2slice=x%h1x2i(ix1,:,ix3)**2*x%h3x2i(ix1,:,ix3)
+      end if
+      h2ix2slice=x%h2x2i(ix1,:,ix3)
+      fx2slice=advec1D_MC_curv(fx2slice,v2slice,dt,x%dx2,x%dx2i,h21x2slice,h22ix2slice,h2ix2slice)
+      advec3D_MC_mpi_curv_23(ix1,:,ix3)=fx2slice
+    end do
+  end do
+end if
+
+end function advec3D_MC_mpi_curv_23
 
 
 function advec1D_MC_curv(f,v1i,dt,dx1,dx1i,ha1,ha2i,h1i)
