@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.12)  
+cmake_minimum_required (VERSION 3.12)
 # 3.9: MPI::MPI_Fortran, 3.11: Lapack, 3.12 for find_ROOT
 project(gem-num Fortran)
 enable_testing()
@@ -29,7 +29,7 @@ if(CMAKE_BUILD_TYPE STREQUAL Debug)
 endif()
 
 
-add_library(mpimod mpimod/mpimod.F90)
+add_library(mpimod mpimod/mpimod.F90 mpimod/mpisend.f90 mpimod/mpirecv.f90 mpimod/mpihalo.f90)
 target_link_libraries(mpimod PRIVATE const MPI::MPI_Fortran)
 target_compile_definitions(mpimod PRIVATE REALBITS=${realbits})
 target_compile_options(mpimod PRIVATE ${FFLAGS})
