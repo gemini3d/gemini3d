@@ -250,11 +250,6 @@ v2i(:,lx2+1,:)=vs2(1:lx1,lx2,1:lx3,isp)
 
 
 !GHOST CELL VALUES FOR DENSITY (these need to be done last to avoid being overwritten by send/recv's!!!)
-ns(:,0,:,isp)=ns(:,1,:,isp)
-ns(:,-1,:,isp)=ns(:,1,:,isp) 
-ns(:,lx2+1,:,isp)=ns(:,lx2,:,isp)
-ns(:,lx2+2,:,isp)=ns(:,lx2,:,isp)
-
 do ix3=1,lx3
   do ix2=1,lx2
     !logical bottom
@@ -271,11 +266,6 @@ end do
 
 
 !FOR X1 MOMENTUM DENSITY
-rhovs1(:,0,:,isp)=rhovs1(:,1,:,isp);
-rhovs1(:,-1,:,isp)=rhovs1(:,1,:,isp);
-rhovs1(:,lx2+1,:,isp)=rhovs1(:,lx2,:,isp);
-rhovs1(:,lx2+2,:,isp)=rhovs1(:,lx2,:,isp);
-
 rhovs1(0,1:lx2,1:lx3,isp)=2d0*v1i(1,:,:)-vs1(1,1:lx2,1:lx3,isp);  !initially these are velocities.  Also loose definition of 'conformable'.  Also corners never get set, but I suppose they aren't really used anyway.
 rhovs1(-1,:,:,isp)=rhovs1(0,:,:,isp)+rhovs1(0,:,:,isp)-vs1(1,:,:,isp);
 rhovs1(lx1+1,1:lx2,1:lx3,isp)=2d0*v1i(lx1+1,:,:)-vs1(lx1,1:lx2,1:lx3,isp);
@@ -286,15 +276,27 @@ rhovs1(lx1+1:lx1+2,:,:,isp)=rhovs1(lx1+1:lx1+2,:,:,isp)*ns(lx1+1:lx1+2,:,:,isp)*
 
 
 !> FOR INTERNAL ENERGY
-rhoes(:,0,:,isp)=rhoes(:,1,:,isp);
-rhoes(:,-1,:,isp)=rhoes(:,1,:,isp);
-rhoes(:,lx2+1,:,isp)=rhoes(:,lx2,:,isp);
-rhoes(:,lx2+2,:,isp)=rhoes(:,lx2,:,isp);
-
 rhoes(0,:,:,isp)=rhoes(1,:,:,isp);
 rhoes(-1,:,:,isp)=rhoes(1,:,:,isp);
 rhoes(lx1+1,:,:,isp)=rhoes(lx1,:,:,isp);
 rhoes(lx1+2,:,:,isp)=rhoes(lx1,:,:,isp);
+
+
+!MZ - collect the x2 boundary conditions here - these are no longer global
+ns(:,0,:,isp)=ns(:,1,:,isp)
+ns(:,-1,:,isp)=ns(:,1,:,isp) 
+ns(:,lx2+1,:,isp)=ns(:,lx2,:,isp)
+ns(:,lx2+2,:,isp)=ns(:,lx2,:,isp)
+
+rhovs1(:,0,:,isp)=rhovs1(:,1,:,isp);
+rhovs1(:,-1,:,isp)=rhovs1(:,1,:,isp);
+rhovs1(:,lx2+1,:,isp)=rhovs1(:,lx2,:,isp);
+rhovs1(:,lx2+2,:,isp)=rhovs1(:,lx2,:,isp);
+
+rhoes(:,0,:,isp)=rhoes(:,1,:,isp);
+rhoes(:,-1,:,isp)=rhoes(:,1,:,isp);
+rhoes(:,lx2+1,:,isp)=rhoes(:,lx2,:,isp);
+rhoes(:,lx2+2,:,isp)=rhoes(:,lx2,:,isp);
 
 
 !> NOW DEAL WITH ADVECTION ALONG X3; FIRST IDENTIFY MY NEIGHBORS
@@ -305,6 +307,8 @@ idleft=myid-1; idright=myid+1
 param=vs3(:,:,:,isp)
 call halo(param,1,tagvs3BC)     !! we only need one ghost cell to compute interface velocities
 vs3(:,:,:,isp)=param
+
+!MZ - NEED TO ALSO PASS THE X2 INTERFACE VELOCITIES.  
 
 !these will now be haloed internal ot the advection routines, viz. all advected quantities are haloed withine advection
 !param2=ns(:,:,:,isp)
