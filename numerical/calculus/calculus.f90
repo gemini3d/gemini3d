@@ -11,20 +11,22 @@ private
 
 !OVERLOAD ALL OF THE CALCULUS ROUTINE TO DEAL WITH THE CURVILINEAR GRID STRUCTURES
 interface grad3D1
-module procedure grad3D1_curv 
+module procedure grad3D1_curv_23
 end interface grad3D1
 
 interface grad3D2
-module procedure grad3D2_curv
+module procedure grad3D2_curv_23
 end interface grad3D2
 
 interface grad3D3
-module procedure grad3D3_curv
+module procedure grad3D3_curv_23
 end interface grad3D3
 
 interface div3D
-module procedure div3D_curv
+module procedure div3D_curv_23
 end interface div3D
+
+!ROUTINES BELOW DO NOT ACCOUNT FOR METRIC FACTORS...  As such they need to really be renamed to avoid confusion (they aren't curvilinear derivatives)
 
 interface grad2D1
 module procedure grad2D1_curv
