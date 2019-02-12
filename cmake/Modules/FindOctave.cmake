@@ -109,17 +109,20 @@ if(Interpreter IN_LIST Octave_FIND_COMPONENTS)
 endif()
 
 if(Octave_EXECUTABLE)
-  execute_process(COMMAND ${Octave_EXECUTABLE} -v
+  execute_process(COMMAND ${Octave_EXECUTABLE} --version
                   OUTPUT_VARIABLE Octave_VERSION
                   ERROR_QUIET
                   OUTPUT_STRIP_TRAILING_WHITESPACE)
 
+  if(Octave_VERSION MATCHES "GNU Octave, version [0-9]+\\.[0-9]+\\.[0-9]+.*")
+    string(REGEX REPLACE "GNU Octave, version ([0-9]+)\\.[0-9]+\\.[0-9]+.*" "\\1" Octave_VERSION_MAJOR ${Octave_VERSION})
+    string(REGEX REPLACE "GNU Octave, version [0-9]+\\.([0-9]+)\\.[0-9]+.*" "\\1" Octave_VERSION_MINOR ${Octave_VERSION})
+    string(REGEX REPLACE "GNU Octave, version [0-9]+\\.[0-9]+\\.([0-9]+).*" "\\1" Octave_VERSION_PATCH ${Octave_VERSION})
 
-  string(REGEX REPLACE "GNU Octave, version ([0-9]+)\\.[0-9]+\\.[0-9]+.*" "\\1" Octave_VERSION_MAJOR ${Octave_VERSION})
-  string(REGEX REPLACE "GNU Octave, version [0-9]+\\.([0-9]+)\\.[0-9]+.*" "\\1" Octave_VERSION_MINOR ${Octave_VERSION})
-  string(REGEX REPLACE "GNU Octave, version [0-9]+\\.[0-9]+\\.([0-9]+).*" "\\1" Octave_VERSION_PATCH ${Octave_VERSION})
-
-  set(Octave_VERSION ${Octave_VERSION_MAJOR}.${Octave_VERSION_MINOR}.${Octave_VERSION_PATCH})
+    set(Octave_VERSION ${Octave_VERSION_MAJOR}.${Octave_VERSION_MINOR}.${Octave_VERSION_PATCH})
+  else()
+    set(Octave_VERSION "unknown")
+  endif()
 
   set(Octave_Interpreter_FOUND true)
 
