@@ -30,7 +30,7 @@ use, intrinsic:: iso_fortran_env, only: stderr=>error_unit, stdout=>output_unit
 use mpi, only: mpi_comm_world
 
 use phys_consts, only: wp
-use calculus, only: grad3d1, grad3d2, grad3d3, grad2d1_curv_alt, grad2d3_curv, grad2d3_curv_periodic
+use calculus, only: grad3D1, grad3D2, grad3D3, grad2D1_curv_alt, grad2D3, grad2D3_curv_periodic
 use grid, only: curvmesh, gridflag
 use mpimod, only: myid
 
@@ -402,7 +402,7 @@ if (myid==0) then
 
   !gradSigH2=grad2D1(SigH,x,1,lx2)   !x2 is now 1st index and x3 is second...  This one appears to be the problem.  This issue here is that grad2D1 automatically uses x%dx1 as the differential element...
   gradSigH2=grad2D1_curv_alt(SigH,x,1,lx2)   !note the alt since we need to use dx2 as differential...  Tricky bug/feature
-  gradSigH3=grad2D3_curv(SigH,x,1,lx3)    !awkward way of handling this special case derivative which uses x3 as the differential to operate on a 2D array.
+  gradSigH3=grad2D3(SigH,x,1,lx3)       !awkward way of handling this special case derivative which uses x3 as the differential to operate on a 2D array.
 
 
   !------------------------------------------------------------
