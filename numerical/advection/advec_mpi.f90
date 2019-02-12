@@ -12,15 +12,19 @@ private
 !> OVERLOAD ADVECTION TO DEAL WITH THE CURVILINEAR GRID/MESH STRUCTURE.
 !> NOTE THAT THE LOWER-LEVEL CALLS ARE DISTINCT, NOT-OVERLOADED PROCEDURES.
 interface advec3D_MC_mpi
-  module procedure advec3D_MC_mpi_curv 
+  module procedure advec3D_MC_mpi_curv_3
 end interface advec3D_MC_mpi
+
+interface advec_prep_mpi
+  module procedure advec_prep_mpi_3
+end interface advec_prep_mpi
 
 public :: advec3d_mc_mpi, advec_prep_mpi
 
 contains
 
 
-subroutine advec_prep_mpi(isp,flagperiodic,ns,rhovs1,vs1,vs2,vs3,rhoes,v1i,v2i,v3i)
+subroutine advec_prep_mpi_3(isp,flagperiodic,ns,rhovs1,vs1,vs2,vs3,rhoes,v1i,v2i,v3i)
 !! COMPUTE INTERFACE VELOCITIES AND LOAD UP GHOST CELLS
 !! FOR FLUID STATE VARIABLES
 !!
@@ -179,10 +183,10 @@ end if
 !> AFTER HALOING CAN COMPUTE THE X3 INTERFACE VELOCITIES NORMALLY
 v3i(:,:,1:lx3+1)=0.5d0*(vs3(1:lx1,1:lx2,0:lx3,isp)+vs3(1:lx1,1:lx2,1:lx3+1,isp))
 
-end subroutine advec_prep_mpi
+end subroutine advec_prep_mpi_3
 
 
-function advec3D_MC_mpi_curv(f,v1i,v2i,v3i,dt,x,frank)
+function advec3D_MC_mpi_curv_3(f,v1i,v2i,v3i,dt,x,frank)
 
 !------------------------------------------------------------
 !-------ADVECT A VARIABLE IN 3D FOR AN MPI SIMULATION
@@ -224,7 +228,7 @@ real(wp), dimension(-1:size(f,3)-2) :: h31x3slice    !includes ghost cells
 real(wp), dimension(1:size(f,3)-3) :: h32ix3slice    !just includes interface info
 real(wp), dimension(1:size(f,3)-3) :: h3ix3slice
 
-real(wp), dimension(-1:size(f,1)-2,-1:size(f,2)-2,-1:size(f,3)-2) :: advec3D_MC_mpi_curv
+real(wp), dimension(-1:size(f,1)-2,-1:size(f,2)-2,-1:size(f,3)-2) :: advec3D_MC_mpi_curv_3
 
 
 lx1=size(f,1)-4
@@ -245,27 +249,27 @@ do ix2=1,lx2
     end if
     h3ix3slice=x%h3x3i(ix1,ix2,:)
     fx3slice=advec1D_MC_curv(fx3slice,v3slice,dt,x%dx3,x%dx3i,h31x3slice,h32ix3slice,h3ix3slice)
-    advec3D_MC_mpi_curv(ix1,ix2,:)=fx3slice
+    advec3D_MC_mpi_curv_3(ix1,ix2,:)=fx3slice
   end do
 end do
 
 
 !copy x1,x2 boundary conditions to partially updated variable for next sweeps
-advec3D_MC_mpi_curv(:,-1:0,:)=f(:,-1:0,:);   
-advec3D_MC_mpi_curv(:,lx2+1:lx2+2,:)=f(:,lx2+1:lx2+2,:);
-advec3D_MC_mpi_curv(-1:0,:,:)=f(-1:0,:,:);           
-advec3D_MC_mpi_curv(lx1+1:lx1+2,:,:)=f(lx1+1:lx1+2,:,:);
+advec3D_MC_mpi_curv_3(:,-1:0,:)=f(:,-1:0,:);   
+advec3D_MC_mpi_curv_3(:,lx2+1:lx2+2,:)=f(:,lx2+1:lx2+2,:);
+advec3D_MC_mpi_curv_3(-1:0,:,:)=f(-1:0,:,:);           
+advec3D_MC_mpi_curv_3(lx1+1:lx1+2,:,:)=f(lx1+1:lx1+2,:,:);
 
 !x1-sweep
 do ix3=1,lx3
   do ix2=1,lx2
-    fx1slice=advec3D_MC_mpi_curv(:,ix2,ix3);
+    fx1slice=advec3D_MC_mpi_curv_3(:,ix2,ix3);
     v1slice=v1i(:,ix2,ix3);
     h11x1slice=x%h1(:,ix2,ix3)*x%h2(:,ix2,ix3)*x%h3(:,ix2,ix3)
     h12ix1slice=x%h2x1i(:,ix2,ix3)*x%h3x1i(:,ix2,ix3)
     h1ix1slice=x%h1x1i(:,ix2,ix3)
     fx1slice=advec1D_MC_curv(fx1slice,v1slice,dt,x%dx1,x%dx1i,h11x1slice,h12ix1slice,h1ix1slice)
-    advec3D_MC_mpi_curv(:,ix2,ix3)=fx1slice;
+    advec3D_MC_mpi_curv_3(:,ix2,ix3)=fx1slice;
   end do
 end do
 
@@ -273,7 +277,7 @@ end do
 if (lx2>1) then
   do ix3=1,lx3
     do ix1=1,lx1
-      fx2slice=advec3D_MC_mpi_curv(ix1,:,ix3)
+      fx2slice=advec3D_MC_mpi_curv_3(ix1,:,ix3)
       v2slice=v2i(ix1,:,ix3)
       if (frank==0) then
         h21x2slice=x%h1(ix1,:,ix3)*x%h2(ix1,:,ix3)*x%h3(ix1,:,ix3)
@@ -284,12 +288,12 @@ if (lx2>1) then
       end if
       h2ix2slice=x%h2x2i(ix1,:,ix3)
       fx2slice=advec1D_MC_curv(fx2slice,v2slice,dt,x%dx2,x%dx2i,h21x2slice,h22ix2slice,h2ix2slice)
-      advec3D_MC_mpi_curv(ix1,:,ix3)=fx2slice
+      advec3D_MC_mpi_curv_3(ix1,:,ix3)=fx2slice
     end do
   end do
 end if
 
-end function advec3D_MC_mpi_curv
+end function advec3D_MC_mpi_curv_3
 
 
 function advec1D_MC_curv(f,v1i,dt,dx1,dx1i,ha1,ha2i,h1i)
