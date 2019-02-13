@@ -594,9 +594,36 @@ E3prev=E3
 !      E20all=grad3D2(-1d0*Phi0all,dx2(1:lx2))    !causes major memory leak. maybe from arithmetic statement argument? Left here as a 'lesson learned' (or is it a gfortran bug...)
 !      E30all=grad3D3(-1d0*Phi0all,dx3all(1:lx3all))
 Phi=-1d0*Phi
-E2=grad3D2(Phi,x,1,lx1,1,lx2,1,lx3)    !no haloing required
+!    E2=grad3D2(Phi,x,1,lx1,1,lx2,1,lx3)    !no haloing required - as of implementation of mpi in x2 and x3, this now must be haloed, as well
 !    E3=grad3D3(Phi,x,1,lx1,1,lx2,1,lx3)    !needs to be haloed
 
+
+!COMPUTE THE 2 COMPONENT OF THE ELECTRIC FIELD
+J1halo(1:lx1,1:lx2,1:lx3)=Phi
+J1halo(0,1:lx2,1:lx3)=J1halo(1,1:lx2,1:lx3)
+J1halo(lx1+1,1:lx2,1:lx3)=J1halo(lx1,1:lx2,1:lx3)
+call halo(J1halo,1,tagJ1,x%flagper)
+
+if (iddown==-1) then
+  J1halo(1:lx1,0,1:lx3)=J1halo(1:lx1,1,1:lx3)
+end if
+if (idup==lid2) then
+  J1halo(1:lx1,lx2+1,1:lx3)=J1halo(1:lx1,lx2,1:lx3)
+end if
+if (.not. x%flagper) then
+  if (idleft==-1) then
+    J1halo(1:lx1,1:lx2,0)=J1halo(1:lx1,1:lx2,1)
+  end if
+  if (idright==lid3) then
+    J1halo(1:lx1,1:lx2,lx3+1)=J1halo(1:lx1,1:lx2,lx3)
+  end if
+end if
+
+divtmp=grad3D2(J1halo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
+E2=divtmp(1:lx1,1:lx2,1:lx3)
+
+
+!COMPUTE THE 3 COMPONENT OF THE ELECTRIC FIELD
 J1halo(1:lx1,1:lx2,1:lx3)=Phi
 J1halo(0,1:lx2,1:lx3)=J1halo(1,1:lx2,1:lx3)
 J1halo(lx1+1,1:lx2,1:lx3)=J1halo(lx1,1:lx2,1:lx3)
@@ -744,18 +771,12 @@ if (lx2/=1 .and. potsolve ==1) then    !we did a field-integrated solve above
 
   J1halo(0,1:lx2,1:lx3)=J1halo(1,1:lx2,1:lx3)
   J1halo(lx1+1,1:lx2,1:lx3)=J1halo(lx1,1:lx2,1:lx3)
-  J1halo(1:lx1,0,1:lx3)=J1halo(1:lx1,1,1:lx3)
-  J1halo(1:lx1,lx2+1,1:lx3)=J1halo(1:lx1,lx2,1:lx3)
 
   J2halo(0,1:lx2,1:lx3)=J2halo(1,1:lx2,1:lx3)
   J2halo(lx1+1,1:lx2,1:lx3)=J2halo(lx1,1:lx2,1:lx3)
-  J2halo(1:lx1,0,1:lx3)=J2halo(1:lx1,1,1:lx3)
-  J2halo(1:lx1,lx2+1,1:lx3)=J2halo(1:lx1,lx2,1:lx3)
 
   J3halo(0,1:lx2,1:lx3)=J3halo(1,1:lx2,1:lx3)
   J3halo(lx1+1,1:lx2,1:lx3)=J3halo(lx1,1:lx2,1:lx3)
-  J3halo(1:lx1,0,1:lx3)=J3halo(1:lx1,1,1:lx3)
-  J3halo(1:lx1,lx2+1,1:lx3)=J3halo(1:lx1,lx2,1:lx3)
 
   call halo(J1halo,1,tagJ1,x%flagper)    !I'm kind of afraid to only halo a single point... 
   call halo(J2halo,1,tagJ2,x%flagper)
@@ -1202,9 +1223,36 @@ E3prev=E3
 !      E20all=grad3D2(-1d0*Phi0all,dx2(1:lx2))    !causes major memory leak. maybe from arithmetic statement argument? Left here as a 'lesson learned' (or is it a gfortran bug...)
 !      E30all=grad3D3(-1d0*Phi0all,dx3all(1:lx3all))
 Phi=-1d0*Phi
-E2=grad3D2(Phi,x,1,lx1,1,lx2,1,lx3)    !no haloing required
+!    E2=grad3D2(Phi,x,1,lx1,1,lx2,1,lx3)    !no haloing required now must also be haloed
 !    E3=grad3D3(Phi,x,1,lx1,1,lx2,1,lx3)    !needs to be haloed
 
+
+!E2 calculations
+J1halo(1:lx1,1:lx2,1:lx3)=Phi
+J1halo(0,1:lx2,1:lx3)=J1halo(1,1:lx2,1:lx3)
+J1halo(lx1+1,1:lx2,1:lx3)=J1halo(lx1,1:lx2,1:lx3)
+call halo(J1halo,1,tagJ1,x%flagper)
+
+if (iddown==-1) then
+  J1halo(1:lx1,0,1:lx3)=J1halo(1:lx1,1,1:lx3)
+end if
+if (idup==lid2) then
+  J1halo(1:lx1,lx2+1,1:lx3)=J1halo(1:lx1,lx2,1:lx3)
+end if
+if (.not. x%flagper) then
+  if (idleft==-1) then
+    J1halo(1:lx1,1:lx2,0)=J1halo(1:lx1,1:lx2,1)
+  end if
+  if (idright==lid3) then
+    J1halo(1:lx1,1:lx2,lx3+1)=J1halo(1:lx1,1:lx2,lx3)
+  end if
+end if
+
+divtmp=grad3D2(J1halo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
+E2=divtmp(1:lx1,1:lx2,1:lx3)
+
+
+!E3 CALCULATIONS
 J1halo(1:lx1,1:lx2,1:lx3)=Phi
 J1halo(0,1:lx2,1:lx3)=J1halo(1,1:lx2,1:lx3)
 J1halo(lx1+1,1:lx2,1:lx3)=J1halo(lx1,1:lx2,1:lx3)
