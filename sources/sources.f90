@@ -3,7 +3,7 @@ module sources
 use phys_consts, only: wp, lsp, amu, kb, qs, ln, ms, gammas, elchrg, mn
 use grid, only : curvmesh,g1
 use calculus, only : grad3d1
-use mpimod, only: myid, tagvs1bc, tagvs2bc, tagvs3bc, lid, halo
+use mpimod, only: myid, tagvs1bc, tagvs2bc, tagvs3bc, lid, halo, myid2,myid3,lid2,lid3
 use collisions, only:  maxwell_colln, coulomb_colln
 
 implicit none
@@ -542,7 +542,8 @@ real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: vs1,vs2,vs3
 
 real(wp), dimension(-1:size(vs1,1)-2,-1:size(vs1,2)-2,-1:size(vs1,3)-2) :: param
 integer :: lx1,lx2,lx3
-integer :: idleft,idright
+integer :: idleft,idright,idup,iddown
+
 
 lx1=size(vs1,1)-4
 lx2=size(vs1,2)-4
@@ -556,9 +557,9 @@ vs2(:,0,:,isp)=vs2(:,1,:,isp)
 vs2(:,lx2+1,:,isp)=vs2(:,lx2,:,isp)
 
 
-!IDENTIFY MY NEIGHBORS
-idleft=myid-1; idright=myid+1
-
+!IDENTIFY MY NEIGHBORS in x2 and x3
+idleft=myid3-1; idright=myid3+1
+iddown=myid2-1; idup=myid2+1
 
 !-- Now halo the interior parts (must happen for every worker since even a worker with a
 !-- global boundary will still have one interior boundary to be haloed.
@@ -574,13 +575,24 @@ call halo(param,1,tagvs3BC,isperiodic)
 vs3(:,:,:,isp)=param
 
 
-!ZERO ORDER HOLD EXTRAPOLATION OF BOUNDARIES - OTHERWISE LEAVE AS PERIODIC IF REQUESTED
+!ZERO ORDER HOLD EXTRAPOLATION OF BOUNDARIES (UNLESS PERIODIC)
+if(iddown==-1) then
+  vs1(:,0,:,isp)=vs1(:,1,:,isp)
+  vs2(:,0,:,isp)=vs2(:,1,:,isp)
+  vs3(:,0,:,isp)=vs3(:,1,:,isp)
+end if
+if(idup==lid2) then
+  vs1(:,lx2+1,:,isp)=vs1(:,lx2,:,isp)
+  vs2(:,lx2+1,:,isp)=vs2(:,lx2,:,isp)
+  vs3(:,lx2+1,:,isp)=vs3(:,lx2,:,isp)
+end if
 if (.not. isperiodic) then
   if (idleft==-1) then    !left x3 boundary
     vs1(:,:,0,isp)=vs1(:,:,1,isp)
     vs2(:,:,0,isp)=vs2(:,:,1,isp)
     vs3(:,:,0,isp)=vs3(:,:,1,isp)
-  elseif (idright==lid) then    !right x3 boundary
+  end if
+  if (idright==lid3) then    !right x3 boundary
     vs1(:,:,lx3+1,isp)=vs1(:,:,lx3,isp)
     vs2(:,:,lx3+1,isp)=vs2(:,:,lx3,isp)
     vs3(:,:,lx3+1,isp)=vs3(:,:,lx3,isp)

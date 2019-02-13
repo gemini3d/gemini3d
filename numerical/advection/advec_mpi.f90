@@ -294,28 +294,26 @@ call halo(param,1,tagvs2BC,isperiodic)     !! we only need one ghost cell to com
 vs2(:,:,:,isp)=param
 
 
-!SET THE GLOBAL X2 BOUNDARY CELLS AND ASSUME HALOING WON'T OVERWRITE
-if (.not. isperiodic) then
-  if (iddown==-1) then
-    vs2(:,0,:,isp)=vs2(:,1,:,isp)
+!SET THE GLOBAL X2 BOUNDARY CELLS AND ASSUME HALOING WON'T OVERWRITE.  THIS DIMENSION IS ASSUMED TO NEVER BE PEREIODIC
+if (iddown==-1) then
+  vs2(:,0,:,isp)=vs2(:,1,:,isp)
 
-    ns(:,0,:,isp)=ns(:,1,:,isp)
-    ns(:,-1,:,isp)=ns(:,1,:,isp) 
-    rhovs1(:,0,:,isp)=rhovs1(:,1,:,isp);
-    rhovs1(:,-1,:,isp)=rhovs1(:,1,:,isp);
-    rhoes(:,0,:,isp)=rhoes(:,1,:,isp);
-    rhoes(:,-1,:,isp)=rhoes(:,1,:,isp);
-  end if
-  if (idup==lid2) then
-    vs2(:,lx2+1,:,isp)=vs2(:,lx2,:,isp)
+  ns(:,0,:,isp)=ns(:,1,:,isp)
+  ns(:,-1,:,isp)=ns(:,1,:,isp) 
+  rhovs1(:,0,:,isp)=rhovs1(:,1,:,isp);
+  rhovs1(:,-1,:,isp)=rhovs1(:,1,:,isp);
+  rhoes(:,0,:,isp)=rhoes(:,1,:,isp);
+  rhoes(:,-1,:,isp)=rhoes(:,1,:,isp);
+end if
+if (idup==lid2) then
+  vs2(:,lx2+1,:,isp)=vs2(:,lx2,:,isp)
 
-    ns(:,lx2+1,:,isp)=ns(:,lx2,:,isp)
-    ns(:,lx2+2,:,isp)=ns(:,lx2,:,isp)
-    rhovs1(:,lx2+1,:,isp)=rhovs1(:,lx2,:,isp);
-    rhovs1(:,lx2+2,:,isp)=rhovs1(:,lx2,:,isp);
-    rhoes(:,lx2+1,:,isp)=rhoes(:,lx2,:,isp);
-    rhoes(:,lx2+2,:,isp)=rhoes(:,lx2,:,isp);
-  end if
+  ns(:,lx2+1,:,isp)=ns(:,lx2,:,isp)
+  ns(:,lx2+2,:,isp)=ns(:,lx2,:,isp)
+  rhovs1(:,lx2+1,:,isp)=rhovs1(:,lx2,:,isp);
+  rhovs1(:,lx2+2,:,isp)=rhovs1(:,lx2,:,isp);
+  rhoes(:,lx2+1,:,isp)=rhoes(:,lx2,:,isp);
+  rhoes(:,lx2+2,:,isp)=rhoes(:,lx2,:,isp);
 end if
 
 
