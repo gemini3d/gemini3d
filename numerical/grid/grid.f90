@@ -221,7 +221,7 @@ real(wp), dimension(:,:), allocatable :: htmp2D
 real(wp), dimension(:,:,:,:), allocatable :: htmp4D
 
 
-print*, 'Entering read_grid_root', lx1,lx2all,lx3all,lid2,lid3,lx2all/lid2
+!print*, 'Entering read_grid_root', lx1,lx2all,lx3all,lid2,lid3,lx2all/lid2
 
 
 !DETERMINE NUMBER OF SLABS AND CORRESPONDING SIZE FOR EACH WORKER 
@@ -775,9 +775,6 @@ x%dx3i=x%x3i(2:lx3+1)-x%x3i(1:lx3)
 
 
 call bcast_recv1D_2(x%x2,tagx2)
-print*, x%x2all
-print*, shape(x%x2)
-print*, x%x2
 x%dx2=x%x2(0:lx2+2)-x%x2(-1:lx2+1)
 x%x2i(1:lx2+1)=0.5*(x%x2(0:lx2)+x%x2(1:lx2+1))
 x%dx2i=x%x2i(2:lx2+1)-x%x2i(1:lx2)

@@ -143,7 +143,7 @@ call make_precip_fileinput()
 
 !ALLOCATE MEMORY FOR ROOT TO STORE CERTAIN VARS. OVER ENTIRE GRID
 if (myid==0) then
-  allocate(Phiall(lx1,lx2,lx3all))
+  allocate(Phiall(lx1,lx2all,lx3all))
 end if
 
 !ALLOCATE MEMORY FOR AURORAL EMISSIONS, IF CALCULATED

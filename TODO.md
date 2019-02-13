@@ -24,12 +24,14 @@ This file is intended to document development priorities for the GEMINI project.
 ## Future Code refactoring
 
 * Fair bit of code repetition in top-level electric field and precipitation interpolation routines
-* Code duplication in electrodynamics module (haloing part should be written as a subroutine)
+* Code duplication in electrodynamics module (haloing part should be written as a subroutine).  This duplication also exists in other places, e.g., in RK2prep
 * Cleanup of BCs interpolation source files
 * Axisymmetric and Cartesian interpolations should be combined (much code-sharing)
 * Remove the array permuting form the fortran code and do this from the MATLAB/octave scripts.  These scripts should provide a permutation array for the dimensions to the fortran code (e.g. [1,2,3] or [3,1,2], which are even, or [1,3,2] which is odd), which then knows if the coordinate system is right-handed or left-handed so it can adjust the cross products accordingly.
 * Boundary condition modules for the electrodynamics and precipitation should be removed in favor of submodules of the electrodynamics and ionization modules.  If we do this are we breaking backwards compatibility with older compilers?  Do we even care?
 * MSISmatlab is a mess, uses dmy instead of ymd and UThrs instead of UTsec - not sure what this will affect is we change...
+* There are now numerous versions of routines correpsonding to message passing in x3 vs. on a x2/x3 process grid.  Somehow the x3 routines need to be kept as they may be faster in some (hopefully unusual) situations.  Michael suggests a submodule...
+* Some modules have now become excessively large, e.g. mpimod and calculus...  These need to be organized and split up
 
 
 ## Coding style and standards issues
