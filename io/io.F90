@@ -350,21 +350,21 @@ open(newunit=u,file=indatfile,status='old',form='unformatted', access='stream', 
 read(u) ymdtmp,tin
 
 if (flagswap/=1) then
-  read(u) nsall(1:lx1,1:lx2,1:lx3all,1:lsp)
-  read(u) vs1all(1:lx1,1:lx2,1:lx3all,1:lsp)
-  read(u) Tsall(1:lx1,1:lx2,1:lx3all,1:lsp)
+  read(u) nsall(1:lx1,1:lx2all,1:lx3all,1:lsp)
+  read(u) vs1all(1:lx1,1:lx2all,1:lx3all,1:lsp)
+  read(u) Tsall(1:lx1,1:lx2all,1:lx3all,1:lsp)
 else
-  allocate(statetmp(lx1,lx3all,lx2,lsp))
+  allocate(statetmp(lx1,lx3all,lx2all,lsp))
   !print *, shape(statetmp),shape(nsall)
 
   read(u) statetmp
-  nsall(1:lx1,1:lx2,1:lx3all,1:lsp)=reshape(statetmp,[lx1,lx2,lx3all,lsp],order=[1,3,2,4])
+  nsall(1:lx1,1:lx2all,1:lx3all,1:lsp)=reshape(statetmp,[lx1,lx2all,lx3all,lsp],order=[1,3,2,4])
 
   read(u) statetmp
-  vs1all(1:lx1,1:lx2,1:lx3all,1:lsp)=reshape(statetmp,[lx1,lx2,lx3all,lsp],order=[1,3,2,4])
+  vs1all(1:lx1,1:lx2all,1:lx3all,1:lsp)=reshape(statetmp,[lx1,lx2all,lx3all,lsp],order=[1,3,2,4])
 
   read(u) statetmp
-  Tsall(1:lx1,1:lx2,1:lx3all,1:lsp)=reshape(statetmp,[lx1,lx2,lx3all,lsp],order=[1,3,2,4])    !permute the dimensions so that 2D runs are parallelized
+  Tsall(1:lx1,1:lx2all,1:lx3all,1:lsp)=reshape(statetmp,[lx1,lx2all,lx3all,lsp],order=[1,3,2,4])    !permute the dimensions so that 2D runs are parallelized
   deallocate(statetmp)
 end if
 close(u)
