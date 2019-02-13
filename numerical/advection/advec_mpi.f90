@@ -17,7 +17,7 @@ interface advec3D_MC_mpi
 end interface advec3D_MC_mpi
 
 interface advec_prep_mpi
-  module procedure advec_prep_mpi_3
+  module procedure advec_prep_mpi_23
 end interface advec_prep_mpi
 
 public :: advec3d_mc_mpi, advec_prep_mpi
