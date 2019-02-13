@@ -527,7 +527,7 @@ Lo(:,:,:,lsp)=Lo(:,:,:,lsp)+ieLT
 end subroutine srcsEnergy
 
 
-subroutine RK2_prep_mpi(isp,flagperiodic,vs1,vs2,vs3)
+subroutine RK2_prep_mpi(isp,isperiodic,vs1,vs2,vs3)
 
 !------------------------------------------------------------
 !-------PASS BOUNDARY CELLS FOR COMPUTING COMPRESSION.  DONE ON
@@ -537,7 +537,7 @@ subroutine RK2_prep_mpi(isp,flagperiodic,vs1,vs2,vs3)
 !------------------------------------------------------------
 
 integer, intent(in) :: isp
-integer, intent(in) :: flagperiodic
+logical, intent(in) :: isperiodic
 real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: vs1,vs2,vs3
 
 real(wp), dimension(-1:size(vs1,1)-2,-1:size(vs1,2)-2,-1:size(vs1,3)-2) :: param
@@ -564,18 +564,18 @@ idleft=myid-1; idright=myid+1
 !-- global boundary will still have one interior boundary to be haloed.
 !BY DEFAULT THE GLOBAL BOUNDARIES ARE ASSUMED TO BE PERIOIDIC
 param=vs1(:,:,:,isp)
-call halo(param,1,tagvs1BC)
+call halo(param,1,tagvs1BC,isperiodic)
 vs1(:,:,:,isp)=param
 param=vs2(:,:,:,isp)
-call halo(param,1,tagvs2BC)
+call halo(param,1,tagvs2BC,isperiodic)
 vs2(:,:,:,isp)=param
 param=vs3(:,:,:,isp)
-call halo(param,1,tagvs3BC)
+call halo(param,1,tagvs3BC,isperiodic)
 vs3(:,:,:,isp)=param
 
 
 !ZERO ORDER HOLD EXTRAPOLATION OF BOUNDARIES - OTHERWISE LEAVE AS PERIODIC IF REQUESTED
-if (flagperiodic==0) then
+if (.not. isperiodic) then
   if (idleft==-1) then    !left x3 boundary
     vs1(:,:,0,isp)=vs1(:,:,1,isp)
     vs2(:,:,0,isp)=vs2(:,:,1,isp)

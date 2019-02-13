@@ -98,7 +98,7 @@ type :: curvmesh
   real(wp), dimension(:,:,:), allocatable :: dl1i,dl2i,dl3i
 
   !A FLAG FOR INDICATING WHETHER OR NOT PERIODIC
-  integer :: flagper
+  logical :: flagper
 end type curvmesh
 
 
@@ -173,9 +173,9 @@ end if
 !FLAG THE GRID AS PERIODIC, IF REQUESTED; IF SO PERIODICITY WILL BE ASSUMED
 !IN THE X3-DIRECTION, NOTE BOTH ROOT AND WORKERS MUST DO THIS!!!
 if (flagperiodic==1) then
-  x%flagper=1
+  x%flagper=.true.
 else
-  x%flagper=0
+  x%flagper=.false.
 end if
 
 
@@ -687,7 +687,7 @@ x%dl3i=tmpdx*x%h3(1:lx1,1:lx2,1:lx3)
 !    print *, 'Done creating copy of grid...'
 !    
 
-!
+
 !    !FLAG THE GRID AS PERIODIC, IF REQUESTED; IF SO PERIODICITY WILL BE ASSUMED IN THE X3-DIRECTION
 !    if (flagperiodic==1) then
 !      x%flagper=1

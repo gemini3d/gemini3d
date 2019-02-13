@@ -2,7 +2,7 @@ module multifluid
 
 use phys_consts, only : wp,pi,qs,lsp,gammas,kB,ms,mindensdiv,mindens,mindensnull
 use grid, only: curvmesh, lx1, lx2, lx3, gridflag
-use mpimod, only: myid
+use mpimod, only: myid,tagns,tagvs1,tagTs
 use ionization, only: ionrate_glow98, ionrate_fang08, eheating, photoionization
 use collisions, only:  thermal_conduct
 use sources, only: rk2_prep_mpi, srcsenergy, srcsmomentum, srcscontinuity
@@ -105,11 +105,13 @@ do isp=1,lsp
 
   if(isp<lsp) then   !electron info found from charge neutrality and current density
     param=ns(:,:,:,isp)
-    param=advec3D_MC_mpi(param,v1i,v2i,v3i,dt,x,0)   !last argument is tensor rank of thing being advected
+!    param=advec3D_MC_mpi(param,v1i,v2i,v3i,dt,x,0)   !last argument is tensor rank of thing being advected
+    param=advec3D_MC_mpi(param,v1i,v2i,v3i,dt,x,0,tagns)   !second to last argument is tensor rank of thing being advected
     ns(:,:,:,isp)=param
 
     param=rhovs1(:,:,:,isp)
-    param=advec3D_MC_mpi(param,v1i,v2i,v3i,dt,x,1)
+!    param=advec3D_MC_mpi(param,v1i,v2i,v3i,dt,x,1)
+    param=advec3D_MC_mpi(param,v1i,v2i,v3i,dt,x,1,tagvs1)
     rhovs1(:,:,:,isp)=param
 
     vs1(:,:,:,isp)=rhovs1(:,:,:,isp)/(ms(isp)*max(ns(:,:,:,isp),mindensdiv))
@@ -121,7 +123,8 @@ do isp=1,lsp
   end if
 
   param=rhoes(:,:,:,isp)
-  param=advec3D_MC_mpi(param,v1i,v2i,v3i,dt,x,0)
+!  param=advec3D_MC_mpi(param,v1i,v2i,v3i,dt,x,0)
+  param=advec3D_MC_mpi(param,v1i,v2i,v3i,dt,x,0,tagTs)
   rhoes(:,:,:,isp)=param
 end do
 call cpu_time(tfin)

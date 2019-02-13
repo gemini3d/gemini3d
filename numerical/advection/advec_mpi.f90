@@ -3,7 +3,8 @@ module advec_mpi
 use phys_consts, only: lsp,ms, wp
 use grid, only : curvmesh,gridflag            
   !! do not import grid sizes in case we want do subgrid advection...
-use mpimod, only: myid, lid, tagnsbc, tagrhoesbc, tagrhovs1bc, tagvs3bc, halo, taggenericparam
+use mpimod, only: myid, lid, myid2, myid3, lid2, lid3, tagnsbc, tagrhoesbc, tagrhovs1bc, tagvs3bc, & 
+                  tagvs2bc, halo
 
 implicit none
 private
@@ -24,7 +25,7 @@ public :: advec3d_mc_mpi, advec_prep_mpi
 contains
 
 
-subroutine advec_prep_mpi_3(isp,flagperiodic,ns,rhovs1,vs1,vs2,vs3,rhoes,v1i,v2i,v3i)
+subroutine advec_prep_mpi_3(isp,isperiodic,ns,rhovs1,vs1,vs2,vs3,rhoes,v1i,v2i,v3i)
 !! COMPUTE INTERFACE VELOCITIES AND LOAD UP GHOST CELLS
 !! FOR FLUID STATE VARIABLES
 !!
@@ -33,7 +34,7 @@ subroutine advec_prep_mpi_3(isp,flagperiodic,ns,rhovs1,vs1,vs2,vs3,rhoes,v1i,v2i
 !! have only one element in the x2 direction...
 
 integer, intent(in) :: isp
-integer, intent(in) :: flagperiodic
+logical, intent(in) :: isperiodic
 real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: ns,rhovs1,vs1,vs2,vs3,rhoes
 
 real(wp), dimension(1:size(vs1,1)-3,1:size(vs1,2)-4,1:size(vs1,3)-4), intent(out) :: v1i
@@ -49,6 +50,7 @@ integer :: idleft,idright
 real(wp), dimension(-1:size(vs3,1)-2,-1:size(vs3,2)-2,-1:size(vs3,3)-2) :: param,param2,param3,param4
 
 real(wp) :: tstart,tfin
+
 
 lx1=size(vs1,1)-4
 lx2=size(vs1,2)-4
@@ -141,22 +143,22 @@ idleft=myid-1; idright=myid+1
 
 !> PASS X3 BOUNDARY CONDITIONS WITH GENERIC HALOING ROUTINES
 param=vs3(:,:,:,isp)
-call halo(param,1,tagvs3BC)     !! we only need one ghost cell to compute interface velocities
+call halo(param,1,tagvs3BC,isperiodic)     !! we only need one ghost cell to compute interface velocities
 vs3(:,:,:,isp)=param
 
 param2=ns(:,:,:,isp)
-call halo(param2,2,tagnsBC)
+call halo(param2,2,tagnsBC,isperiodic)
 ns(:,:,:,isp)=param2
 
 param3=rhovs1(:,:,:,isp)
-call halo(param3,2,tagrhovs1BC)
+call halo(param3,2,tagrhovs1BC,isperiodic)
 rhovs1(:,:,:,isp)=param3
 
 param4=rhoes(:,:,:,isp)
-call halo(param4,2,tagrhoesBC)
+call halo(param4,2,tagrhoesBC,isperiodic)
 rhoes(:,:,:,isp)=param4 
 
-if (flagperiodic==0) then
+if (.not. isperiodic) then
   if (idleft==-1) then    !left side is at global boundary, assume haloing won't overwrite
     vs3(:,:,0,isp)=vs3(:,:,1,isp)    !copy first cell to first ghost (vs3 not advected so only need only ghost)
 
@@ -186,7 +188,7 @@ v3i(:,:,1:lx3+1)=0.5d0*(vs3(1:lx1,1:lx2,0:lx3,isp)+vs3(1:lx1,1:lx2,1:lx3+1,isp))
 end subroutine advec_prep_mpi_3
 
 
-subroutine advec_prep_mpi_23(isp,flagperiodic,ns,rhovs1,vs1,vs2,vs3,rhoes,v1i,v2i,v3i)
+subroutine advec_prep_mpi_23(isp,isperiodic,ns,rhovs1,vs1,vs2,vs3,rhoes,v1i,v2i,v3i)
 !! COMPUTE INTERFACE VELOCITIES AND LOAD UP GHOST CELLS
 !! FOR FLUID STATE VARIABLES
 !!
@@ -195,7 +197,7 @@ subroutine advec_prep_mpi_23(isp,flagperiodic,ns,rhovs1,vs1,vs2,vs3,rhoes,v1i,v2
 !! have only one element in the x2 direction...
 
 integer, intent(in) :: isp
-integer, intent(in) :: flagperiodic
+logical, intent(in) :: isperiodic
 real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: ns,rhovs1,vs1,vs2,vs3,rhoes
 
 real(wp), dimension(1:size(vs1,1)-3,1:size(vs1,2)-4,1:size(vs1,3)-4), intent(out) :: v1i
@@ -207,10 +209,11 @@ real(wp), dimension(1:size(vs1,1)-4,1:size(vs1,2)-4,1:size(vs1,3)-3), intent(out
 real(wp) :: coeff
 integer :: ix2,ix3,lx1,lx2,lx3
 
-integer :: idleft,idright
+integer :: idleft,idright,idup,iddown
 real(wp), dimension(-1:size(vs3,1)-2,-1:size(vs3,2)-2,-1:size(vs3,3)-2) :: param,param2,param3,param4
 
-real(wp) :: tstart,tfin
+real(wp) :: tstart,tfini
+
 
 lx1=size(vs1,1)-4
 lx2=size(vs1,2)-4
@@ -232,9 +235,9 @@ else
   v1i(lx1+1,:,:) = max(v1i(lx1,1:lx2,1:lx3),0._wp)    !interesting that this is not vs1...
 end if  
 
-v2i(:,1,:)=vs2(1:lx1,1,1:lx3,isp)
-v2i(:,2:lx2,:)=0.5*(vs2(1:lx1,1:lx2-1,1:lx3,isp)+vs2(1:lx1,2:lx2,1:lx3,isp))
-v2i(:,lx2+1,:)=vs2(1:lx1,lx2,1:lx3,isp)
+!v2i(:,1,:)=vs2(1:lx1,1,1:lx3,isp)
+!v2i(:,2:lx2,:)=0.5*(vs2(1:lx1,1:lx2-1,1:lx3,isp)+vs2(1:lx1,2:lx2,1:lx3,isp))
+!v2i(:,lx2+1,:)=vs2(1:lx1,lx2,1:lx3,isp)
 
 
 ! THIS TYPE OF LIMITING MAY BE NEEDED FOR VERY HIGH-ALTITUDE SIMULATIONS...
@@ -283,32 +286,48 @@ rhoes(lx1+2,:,:,isp)=rhoes(lx1,:,:,isp);
 
 
 !MZ - collect the x2 boundary conditions here - these are no longer global
-ns(:,0,:,isp)=ns(:,1,:,isp)
-ns(:,-1,:,isp)=ns(:,1,:,isp) 
-ns(:,lx2+1,:,isp)=ns(:,lx2,:,isp)
-ns(:,lx2+2,:,isp)=ns(:,lx2,:,isp)
+iddown=myid2-1; idup=myid2+1
 
-rhovs1(:,0,:,isp)=rhovs1(:,1,:,isp);
-rhovs1(:,-1,:,isp)=rhovs1(:,1,:,isp);
-rhovs1(:,lx2+1,:,isp)=rhovs1(:,lx2,:,isp);
-rhovs1(:,lx2+2,:,isp)=rhovs1(:,lx2,:,isp);
+!NEED TO ALSO PASS THE X2 VELOCITIES SO WE CAN COMPUTE INTERFACE VALUES
+param=vs2(:,:,:,isp)
+call halo(param,1,tagvs2BC,isperiodic)     !! we only need one ghost cell to compute interface velocities
+vs2(:,:,:,isp)=param
 
-rhoes(:,0,:,isp)=rhoes(:,1,:,isp);
-rhoes(:,-1,:,isp)=rhoes(:,1,:,isp);
-rhoes(:,lx2+1,:,isp)=rhoes(:,lx2,:,isp);
-rhoes(:,lx2+2,:,isp)=rhoes(:,lx2,:,isp);
+
+!SET THE GLOBAL X2 BOUNDARY CELLS AND ASSUME HALOING WON'T OVERWRITE
+if (.not. isperiodic) then
+  if (iddown==-1) then
+    vs2(:,0,:,isp)=vs2(:,1,:,isp)
+
+    ns(:,0,:,isp)=ns(:,1,:,isp)
+    ns(:,-1,:,isp)=ns(:,1,:,isp) 
+    rhovs1(:,0,:,isp)=rhovs1(:,1,:,isp);
+    rhovs1(:,-1,:,isp)=rhovs1(:,1,:,isp);
+    rhoes(:,0,:,isp)=rhoes(:,1,:,isp);
+    rhoes(:,-1,:,isp)=rhoes(:,1,:,isp);
+  end if
+  if (idup==lid2) then
+    vs2(:,lx2+1,:,isp)=vs2(:,lx2,:,isp)
+
+    ns(:,lx2+1,:,isp)=ns(:,lx2,:,isp)
+    ns(:,lx2+2,:,isp)=ns(:,lx2,:,isp)
+    rhovs1(:,lx2+1,:,isp)=rhovs1(:,lx2,:,isp);
+    rhovs1(:,lx2+2,:,isp)=rhovs1(:,lx2,:,isp);
+    rhoes(:,lx2+1,:,isp)=rhoes(:,lx2,:,isp);
+    rhoes(:,lx2+2,:,isp)=rhoes(:,lx2,:,isp);
+  end if
+end if
 
 
 !> NOW DEAL WITH ADVECTION ALONG X3; FIRST IDENTIFY MY NEIGHBORS
-idleft=myid-1; idright=myid+1
+idleft=myid3-1; idright=myid3+1
 
 
-!> PASS X3 BOUNDARY CONDITIONS WITH GENERIC HALOING ROUTINES
+!> PASS X3 VELOCITY BOUNDARY CONDITIONS WITH GENERIC HALOING ROUTINES
 param=vs3(:,:,:,isp)
-call halo(param,1,tagvs3BC)     !! we only need one ghost cell to compute interface velocities
+call halo(param,1,tagvs3BC,isperiodic)     !! we only need one ghost cell to compute interface velocities
 vs3(:,:,:,isp)=param
 
-!MZ - NEED TO ALSO PASS THE X2 INTERFACE VELOCITIES.  
 
 !these will now be haloed internal ot the advection routines, viz. all advected quantities are haloed withine advection
 !param2=ns(:,:,:,isp)
@@ -323,7 +342,9 @@ vs3(:,:,:,isp)=param
 !call halo(param4,2,tagrhoesBC)
 !rhoes(:,:,:,isp)=param4 
 
-if (flagperiodic==0) then
+
+!SET THE GLOBAL x3 BOUNDARY CELLS AND ASSUME THAT HALOING WON'T OVERWRITE...
+if (.not. isperiodic) then
   if (idleft==-1) then    !left side is at global boundary, assume haloing won't overwrite
     vs3(:,:,0,isp)=vs3(:,:,1,isp)    !copy first cell to first ghost (vs3 not advected so only need only ghost)
 
@@ -334,7 +355,7 @@ if (flagperiodic==0) then
     rhoes(:,:,0,isp)=rhoes(:,:,1,isp);
     rhoes(:,:,-1,isp)=rhoes(:,:,1,isp);
   end if
-  if (idright==lid) then    !my right boundary is the global boundary, assume haloing won't overwrite
+  if (idright==lid3) then    !my right boundary is the global boundary, assume haloing won't overwrite
     vs3(:,:,lx3+1,isp)=vs3(:,:,lx3,isp)    !copy last cell to first ghost (all that's needed since vs3 not advected)
 
     ns(:,:,lx3+1,isp)=ns(:,:,lx3,isp)
@@ -348,6 +369,7 @@ end if
 
 
 !> AFTER HALOING CAN COMPUTE THE X3 INTERFACE VELOCITIES NORMALLY
+v2i(:,1:lx2+1,:)=0.5d0*(vs2(1:lx1,0:lx2,1:lx3,isp)+vs2(1:lx1,1:lx2+1,1:lx3,isp))
 v3i(:,:,1:lx3+1)=0.5d0*(vs3(1:lx1,1:lx2,0:lx3,isp)+vs3(1:lx1,1:lx2,1:lx3+1,isp))
 
 end subroutine advec_prep_mpi_23
@@ -463,7 +485,7 @@ end if
 end function advec3D_MC_mpi_curv_3
 
 
-function advec3D_MC_mpi_curv_23(f,v1i,v2i,v3i,dt,x,frank)
+function advec3D_MC_mpi_curv_23(f,v1i,v2i,v3i,dt,x,frank,tagf)
 
 !------------------------------------------------------------
 !-------ADVECT A VARIABLE IN 3D FOR AN MPI SIMULATION
@@ -485,6 +507,7 @@ real(wp), dimension(:,:,:), intent(in) :: v3i
 real(wp), intent(in) :: dt
 type(curvmesh), intent(in) :: x
 integer, intent(in) :: frank    !f's rank so that we know which metric coeffs to use.
+integer, intent(in) :: tagf
 
 integer :: ix1,ix2,ix3,lx1,lx2,lx3
 real(wp), dimension(-1:size(f,1)-2) :: fx1slice
@@ -518,7 +541,7 @@ lx3=size(f,3)-4
 
 !we must recopying the boundary conditions after any halo operation (which assumes periodic)
 advec3D_MC_mpi_curv_23=f
-!call halo(advec3D_MC_mpi_curv_23,2,taggenericparam)
+call halo(advec3D_MC_mpi_curv_23,2,tagf,x%flagper)
 
 
 !x3-sweep
@@ -556,7 +579,7 @@ end do
 
 !at this point if we've divided in two dimensions with mpi it is necessary to halo again before
 !the final sweep to avoid tearing artifacts...
-call halo(advec3D_MC_mpi_curv_23,2,taggenericparam)
+call halo(advec3D_MC_mpi_curv_23,2,tagf,x%flagper)
 
 
 !x2-sweep, if necessary

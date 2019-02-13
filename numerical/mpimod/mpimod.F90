@@ -8,7 +8,7 @@ use phys_consts, only : lsp, wp
 
 use mpi, only: mpi_init, mpi_comm_world, &
                mpi_integer,mpi_sum, &
-               mpi_status_size, mpi_status_ignore, &
+               mpi_status_size, mpi_status_ignore, MPI_PROC_NULL, &
 #if REALBITS==32
 mpi_realprec=>mpi_real
 #elif REALBITS==64
@@ -349,6 +349,9 @@ end subroutine halo_3
 
 
 subroutine halo_end(param,paramend,tag)
+
+!MZ - needs to be updated to accommodate x2/x3 division...
+
 !! GENERIC HALOING ROUTINE WHICH PASSES THE BEGINNING OF THE
 !! SLAB TO ITS LEFTWARD (IN X3) NEIGHBOR SO THAT X3 INTEGRATIONS
 !! CAN BE DONE PROPERLY.  PRESENTLY THIS IS JUST USED IN MAGCALC
@@ -408,7 +411,7 @@ end subroutine halo_end
 
 !   LEAVE THIS IN FOR FUTURE DEV. - HALOS AN ARRAY THAT IS SPLIT ALONG THE 2 AND
 !   3 RANKS
-subroutine halo_23(param,lhalo,tag)
+subroutine halo_23(param,lhalo,tag,isperiodic)
 
   !------------------------------------------------------------
   !-------GENERIC HALOING ROUTINE FOR FILLING GHOST CELLS.  CAN
@@ -432,6 +435,7 @@ subroutine halo_23(param,lhalo,tag)
   real(wp), dimension(-1:,-1:,-1:), intent(inout) :: param
   integer, intent(in) :: lhalo    !number of surrounding grid points to halo with (probably 1 or 2)
   integer, intent(in) :: tag
+  logical, intent(in) :: isperiodic
 
   integer :: lx1,lx2,lx3,ihalo
   integer :: idleft,idright,idup,iddown
@@ -465,6 +469,10 @@ subroutine halo_23(param,lhalo,tag)
     x3begin=.true.
   end if
   idleft=grid2ID(i2,i3)
+  if (x3begin .and. .not.(isperiodic)) then     !we are flagged as not wanting periodic boundaries so do nothing (overwrite idleft to send to NULL process
+    idleft=MPI_PROC_NULL
+  end if
+
 
   i3=myid3+1
   i2=myid2
@@ -474,7 +482,9 @@ subroutine halo_23(param,lhalo,tag)
   end if
   idright=grid2ID(i2,i3)    !convert the location on process grid into a flat processed ID, The process grid is 
                             !visualized as lid2,lid3 in terms of index order (e.g. the i2 index cycles more quickly
-
+  if (x3end .and. .not.(isperiodic)) then
+    idright=MPI_PROC_NULL
+  end if
 
   !IDENTIFY MY NEIGHBORING PROCESSES IN X2
   x2begin=.false.
@@ -487,6 +497,9 @@ subroutine halo_23(param,lhalo,tag)
     x2begin=.true.
   end if
   iddown=grid2ID(i2,i3)
+  if (x2begin) then      !never assume periodic in the x2-direction
+    iddown=MPI_PROC_NULL
+  end if
 
   i3=myid3
   i2=myid2+1
@@ -495,7 +508,9 @@ subroutine halo_23(param,lhalo,tag)
     x2end=.true.
   end if
   idup=grid2ID(i2,i3)    !convert to process ID
-
+  if (x2end) then
+    idup=MPI_PROC_NULL
+  end if
 
 !  !some debug output
 !  print*, 'Computing neighbors for ID:  ',myid,' at location on the process grid:  ',myid2,myid3
@@ -511,7 +526,7 @@ subroutine halo_23(param,lhalo,tag)
 
 
   !EXCHANGE MESSAGES IN THE X3-DIRECTION OF THE PROCESS GRID
-  if (.not. (x3begin .and. x3end)) then        !make sure we actually need to pass in this direction
+  if (.not. (x3begin .and. x3end)) then        !make sure we actually need to pass in this direction, viz. we aren't both the beginning and thend
     buffer31=param(-1:lx1+2,1:lx2,1:lhalo)     !x1 ghost cells to be included
     call mpi_isend(buffer31,(lx1+4)*(lx2)*lhalo,mpi_realprec,idleft,tag,MPI_COMM_WORLD,tmpreq,ierr)
     requests(1)=tmpreq
@@ -530,8 +545,13 @@ subroutine halo_23(param,lhalo,tag)
     requests(4)=tmpreq
   
     call mpi_waitall(4,requests,statuses,ierr)
-    param(-1:lx1+2,1:lx2,lx3+1:lx3+lhalo)=buffer33    !can't copy out buffers until we know the messages have been received
-    param(-1:lx1+2,1:lx2,1-lhalo:0)=buffer34
+
+    if (idright/=MPI_PROC_NULL)  then    !only overwrite the cells if we didn't do a null receive
+      param(-1:lx1+2,1:lx2,lx3+1:lx3+lhalo)=buffer33    !can't copy out buffers until we know the messages have been received
+    end if
+    if (idleft/=MPI_PROC_NULL) then
+      param(-1:lx1+2,1:lx2,1-lhalo:0)=buffer34
+    end if
   end if
 
   !EXCHANGE MESSAGES IN THE X2 DIRECTION OF THE PROCESS GRID
@@ -554,8 +574,13 @@ subroutine halo_23(param,lhalo,tag)
     requests(4)=tmpreq
     
     call mpi_waitall(4,requests,statuses,ierr)
-    param(-1:lx1+2,lx2+1:lx2+lhalo,1:lx3)=buffer23    !clear to copy out buffers
-    param(-1:lx1+2,1-lhalo:0,1:lx3)=buffer24
+
+    if (idup/=MPI_PROC_NULL) then
+      param(-1:lx1+2,lx2+1:lx2+lhalo,1:lx3)=buffer23    !clear to copy out buffers
+    end if
+    if (iddown/=MPI_PROC_NULL) then
+      param(-1:lx1+2,1-lhalo:0,1:lx3)=buffer24
+    end if
   end if
 
   !CLEAR OUT BUFFER VARIABLES
