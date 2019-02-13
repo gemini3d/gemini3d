@@ -264,7 +264,7 @@ real(wp), dimension(1:size(E1,2),1:size(E1,3)) :: v2slab,v3slab
 
 integer :: iid
 integer :: ix1,ix2,ix3,lx1,lx2,lx3,lx3all
-integer :: idleft,idright
+integer :: idleft,idright,iddown,idup
 
 real(wp) :: tstart,tfin
 
@@ -333,33 +333,39 @@ J3halo(1:lx1,1:lx2,1:lx3)=J3
 
 J1halo(0,1:lx2,1:lx3)=J1halo(1,1:lx2,1:lx3)
 J1halo(lx1+1,1:lx2,1:lx3)=J1halo(lx1,1:lx2,1:lx3)
-J1halo(1:lx1,0,1:lx3)=J1halo(1:lx1,1,1:lx3)
-J1halo(1:lx1,lx2+1,1:lx3)=J1halo(1:lx1,lx2,1:lx3)
 
 J2halo(0,1:lx2,1:lx3)=J2halo(1,1:lx2,1:lx3)
 J2halo(lx1+1,1:lx2,1:lx3)=J2halo(lx1,1:lx2,1:lx3)
-J2halo(1:lx1,0,1:lx3)=J2halo(1:lx1,1,1:lx3)
-J2halo(1:lx1,lx2+1,1:lx3)=J2halo(1:lx1,lx2,1:lx3)
 
 J3halo(0,1:lx2,1:lx3)=J3halo(1,1:lx2,1:lx3)
 J3halo(lx1+1,1:lx2,1:lx3)=J3halo(lx1,1:lx2,1:lx3)
-J3halo(1:lx1,0,1:lx3)=J3halo(1:lx1,1,1:lx3)
-J3halo(1:lx1,lx2+1,1:lx3)=J3halo(1:lx1,lx2,1:lx3)
 
 call halo(J1halo,1,tagJ1,x%flagper)    !I'm kind of afraid to only halo a single point... 
 call halo(J2halo,1,tagJ2,x%flagper)
 call halo(J3halo,1,tagJ3,x%flagper)
 
 !ZZZ - NEED TO SET GLOBAL BOUNDARY FOR APPROPRIATE WORKERS USING ZOH EXTRAP. (unless periodic)
+idleft=myid3-1
+idright=myid3+1
+iddown=myid2-1
+idup=myid2+1
+if (iddown==-1) then
+  J1halo(1:lx1,0,1:lx3)=J1halo(1:lx1,1,1:lx3)
+  J2halo(1:lx1,0,1:lx3)=J2halo(1:lx1,1,1:lx3)
+  J3halo(1:lx1,0,1:lx3)=J3halo(1:lx1,1,1:lx3)
+end if
+if (idup==lid2) then
+  J1halo(1:lx1,lx2+1,1:lx3)=J1halo(1:lx1,lx2,1:lx3)
+  J2halo(1:lx1,lx2+1,1:lx3)=J2halo(1:lx1,lx2,1:lx3)
+  J3halo(1:lx1,lx2+1,1:lx3)=J3halo(1:lx1,lx2,1:lx3)
+end if
 if (.not. x%flagper) then
-  idleft=myid-1
-  idright=myid+1
   if (idleft==-1) then
     J1halo(1:lx1,1:lx2,0)=J1halo(1:lx1,1:lx2,1)
     J2halo(1:lx1,1:lx2,0)=J2halo(1:lx1,1:lx2,1)
     J3halo(1:lx1,1:lx2,0)=J3halo(1:lx1,1:lx2,1)
   end if
-  if (idright==lid) then
+  if (idright==lid3) then
     J1halo(1:lx1,1:lx2,lx3+1)=J1halo(1:lx1,1:lx2,lx3)
     J2halo(1:lx1,1:lx2,lx3+1)=J2halo(1:lx1,1:lx2,lx3)
     J3halo(1:lx1,1:lx2,lx3+1)=J3halo(1:lx1,1:lx2,lx3)
@@ -390,33 +396,35 @@ J3halo(1:lx1,1:lx2,1:lx3)=J3
 
 J1halo(0,1:lx2,1:lx3)=J1halo(1,1:lx2,1:lx3)
 J1halo(lx1+1,1:lx2,1:lx3)=J1halo(lx1,1:lx2,1:lx3)
-J1halo(1:lx1,0,1:lx3)=J1halo(1:lx1,1,1:lx3)
-J1halo(1:lx1,lx2+1,1:lx3)=J1halo(1:lx1,lx2,1:lx3)
 
 J2halo(0,1:lx2,1:lx3)=J2halo(1,1:lx2,1:lx3)
 J2halo(lx1+1,1:lx2,1:lx3)=J2halo(lx1,1:lx2,1:lx3)
-J2halo(1:lx1,0,1:lx3)=J2halo(1:lx1,1,1:lx3)
-J2halo(1:lx1,lx2+1,1:lx3)=J2halo(1:lx1,lx2,1:lx3)
 
 J3halo(0,1:lx2,1:lx3)=J3halo(1,1:lx2,1:lx3)
 J3halo(lx1+1,1:lx2,1:lx3)=J3halo(lx1,1:lx2,1:lx3)
-J3halo(1:lx1,0,1:lx3)=J3halo(1:lx1,1,1:lx3)
-J3halo(1:lx1,lx2+1,1:lx3)=J3halo(1:lx1,lx2,1:lx3)
 
 call halo(J1halo,1,tagJ1,x%flagper)    !I'm kind of afraid to only halo a single point... 
 call halo(J2halo,1,tagJ2,x%flagper)
 call halo(J3halo,1,tagJ3,x%flagper)
 
 !CHECK AND SET GLOBAL BOUNDARY AFTER HALO OPERATIONS
+if (iddown==-1) then
+  J1halo(1:lx1,0,1:lx3)=J1halo(1:lx1,1,1:lx3)
+  J2halo(1:lx1,0,1:lx3)=J2halo(1:lx1,1,1:lx3)
+  J3halo(1:lx1,0,1:lx3)=J3halo(1:lx1,1,1:lx3)
+end if
+if (idup==lid2) then
+  J1halo(1:lx1,lx2+1,1:lx3)=J1halo(1:lx1,lx2,1:lx3)
+  J2halo(1:lx1,lx2+1,1:lx3)=J2halo(1:lx1,lx2,1:lx3)
+  J3halo(1:lx1,lx2+1,1:lx3)=J3halo(1:lx1,lx2,1:lx3)
+end if
 if (.not. x%flagper) then
-  idleft=myid-1
-  idright=myid+1
   if (idleft==-1) then
     J1halo(1:lx1,1:lx2,0)=J1halo(1:lx1,1:lx2,1)
     J2halo(1:lx1,1:lx2,0)=J2halo(1:lx1,1:lx2,1)
     J3halo(1:lx1,1:lx2,0)=J3halo(1:lx1,1:lx2,1)
   end if
-  if (idright==lid) then
+  if (idright==lid3) then
     J1halo(1:lx1,1:lx2,lx3+1)=J1halo(1:lx1,1:lx2,lx3)
     J2halo(1:lx1,1:lx2,lx3+1)=J2halo(1:lx1,1:lx2,lx3)
     J3halo(1:lx1,1:lx2,lx3+1)=J3halo(1:lx1,1:lx2,lx3)
@@ -592,18 +600,19 @@ E2=grad3D2(Phi,x,1,lx1,1,lx2,1,lx3)    !no haloing required
 J1halo(1:lx1,1:lx2,1:lx3)=Phi
 J1halo(0,1:lx2,1:lx3)=J1halo(1,1:lx2,1:lx3)
 J1halo(lx1+1,1:lx2,1:lx3)=J1halo(lx1,1:lx2,1:lx3)
-J1halo(1:lx1,0,1:lx3)=J1halo(1:lx1,1,1:lx3)
-J1halo(1:lx1,lx2+1,1:lx3)=J1halo(1:lx1,lx2,1:lx3)
 call halo(J1halo,1,tagJ1,x%flagper)
 
+if (iddown==-1) then
+  J1halo(1:lx1,0,1:lx3)=J1halo(1:lx1,1,1:lx3)
+end if
+if (idup==lid2) then
+  J1halo(1:lx1,lx2+1,1:lx3)=J1halo(1:lx1,lx2,1:lx3)
+end if
 if (.not. x%flagper) then
-  idleft=myid-1
-  idright=myid+1
-  !ZZZ - NEED TO CHECK HERE WHETHER PERIODIC DERIVATIVE IS REQUIRED???
   if (idleft==-1) then
     J1halo(1:lx1,1:lx2,0)=J1halo(1:lx1,1:lx2,1)
   end if
-  if (idright==lid) then
+  if (idright==lid3) then
     J1halo(1:lx1,1:lx2,lx3+1)=J1halo(1:lx1,1:lx2,lx3)
   end if
 end if
@@ -640,20 +649,24 @@ if (maxval(incap) > 1d-6) then
   J1halo(1:lx1,1:lx2,1:lx3)=E2
   J1halo(0,1:lx2,1:lx3)=J1halo(1,1:lx2,1:lx3)
   J1halo(lx1+1,1:lx2,1:lx3)=J1halo(lx1,1:lx2,1:lx3)
-  J1halo(1:lx1,0,1:lx3)=J1halo(1:lx1,1,1:lx3)
-  J1halo(1:lx1,lx2+1,1:lx3)=J1halo(1:lx1,lx2,1:lx3)
+
   call halo(J1halo,1,tagJ1,x%flagper)    !I'm kind of afraid to only halo a single point... 
+
+  if (iddown==-1) then
+    J1halo(1:lx1,0,1:lx3)=J1halo(1:lx1,1,1:lx3)
+  end if
+  if (idup==lid2) then
+    J1halo(1:lx1,lx2+1,1:lx3)=J1halo(1:lx1,lx2,1:lx3)
+  end if
   if (.not. x%flagper) then
-    idleft=myid-1
-    idright=myid+1
     if (idleft==-1) then
       J1halo(1:lx1,1:lx2,0)=J1halo(1:lx1,1:lx2,1)
     end if
-    if (idright==lid) then
+    if (idright==lid3) then
       J1halo(1:lx1,1:lx2,lx3+1)=J1halo(1:lx1,1:lx2,lx3)
     end if
   end if
-
+  
   divtmp=grad3D3(J1halo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
   grad3E=divtmp(1:lx1,1:lx2,1:lx3)
 
@@ -664,16 +677,19 @@ if (maxval(incap) > 1d-6) then
   J1halo(1:lx1,1:lx2,1:lx3)=E3
   J1halo(0,1:lx2,1:lx3)=J1halo(1,1:lx2,1:lx3)
   J1halo(lx1+1,1:lx2,1:lx3)=J1halo(lx1,1:lx2,1:lx3)
-  J1halo(1:lx1,0,1:lx3)=J1halo(1:lx1,1,1:lx3)
-  J1halo(1:lx1,lx2+1,1:lx3)=J1halo(1:lx1,lx2,1:lx3)
   call halo(J1halo,1,tagJ1,x%flagper)    !I'm kind of afraid to only halo a single point... 
+
+  if (iddown==-1) then
+    J1halo(1:lx1,0,1:lx3)=J1halo(1:lx1,1,1:lx3)
+  end if
+  if (idup==lid2) then
+    J1halo(1:lx1,lx2+1,1:lx3)=J1halo(1:lx1,lx2,1:lx3)
+  end if
   if (.not. x%flagper) then
-    idleft=myid-1
-    idright=myid+1
     if (idleft==-1) then
       J1halo(1:lx1,1:lx2,0)=J1halo(1:lx1,1:lx2,1)
     end if
-    if (idright==lid) then
+    if (idright==lid3) then
       J1halo(1:lx1,1:lx2,lx3+1)=J1halo(1:lx1,1:lx2,lx3)
     end if
   end if
@@ -746,21 +762,29 @@ if (lx2/=1 .and. potsolve ==1) then    !we did a field-integrated solve above
   call halo(J3halo,1,tagJ3,x%flagper)
 
   !ZZZ - NEED TO SET GLOBAL BOUNDARIES HERE
+  if (iddown==-1) then
+    J1halo(1:lx1,0,1:lx3)=J1halo(1:lx1,1,1:lx3)
+    J2halo(1:lx1,0,1:lx3)=J2halo(1:lx1,1,1:lx3)
+    J3halo(1:lx1,0,1:lx3)=J3halo(1:lx1,1,1:lx3)
+  end if
+  if (idup==lid2) then
+    J1halo(1:lx1,lx2+1,1:lx3)=J1halo(1:lx1,lx2,1:lx3)
+    J2halo(1:lx1,lx2+1,1:lx3)=J2halo(1:lx1,lx2,1:lx3)
+    J3halo(1:lx1,lx2+1,1:lx3)=J3halo(1:lx1,lx2,1:lx3)
+  end if
   if (.not. x%flagper) then
-    idleft=myid-1
-    idright=myid+1
     if (idleft==-1) then
       J1halo(1:lx1,1:lx2,0)=J1halo(1:lx1,1:lx2,1)
       J2halo(1:lx1,1:lx2,0)=J2halo(1:lx1,1:lx2,1)
       J3halo(1:lx1,1:lx2,0)=J3halo(1:lx1,1:lx2,1)
     end if
-    if (idright==lid) then
+    if (idright==lid3) then
       J1halo(1:lx1,1:lx2,lx3+1)=J1halo(1:lx1,1:lx2,lx3)
       J2halo(1:lx1,1:lx2,lx3+1)=J2halo(1:lx1,1:lx2,lx3)
       J3halo(1:lx1,1:lx2,lx3+1)=J3halo(1:lx1,1:lx2,lx3)
     end if
   end if
-
+  
   divtmp=div3D(J1halo(0:lx1+1,0:lx2+1,0:lx3+1),J2halo(0:lx1+1,0:lx2+1,0:lx3+1), &
                J3halo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
   divJperp=x%h1(1:lx1,1:lx2,1:lx3)*x%h2(1:lx1,1:lx2,1:lx3)*x%h3(1:lx1,1:lx2,1:lx3)*divtmp(1:lx1,1:lx2,1:lx3)
@@ -917,7 +941,7 @@ real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: v2,v3
 real(wp), dimension(1:size(E1,2),1:size(E1,3)) :: v2slab,v3slab
 
 integer :: ix1,ix2,ix3,lx1,lx2,lx3,lx3all
-integer :: idleft,idright
+integer :: idleft,idright,iddown,idup
 
 real(wp) :: tstart,tfin
 
@@ -961,32 +985,39 @@ J3halo(1:lx1,1:lx2,1:lx3)=J3
 
 J1halo(0,1:lx2,1:lx3)=J1halo(1,1:lx2,1:lx3)
 J1halo(lx1+1,1:lx2,1:lx3)=J1halo(lx1,1:lx2,1:lx3)
-J1halo(1:lx1,0,1:lx3)=J1halo(1:lx1,1,1:lx3)
-J1halo(1:lx1,lx2+1,1:lx3)=J1halo(1:lx1,lx2,1:lx3)
 
 J2halo(0,1:lx2,1:lx3)=J2halo(1,1:lx2,1:lx3)
 J2halo(lx1+1,1:lx2,1:lx3)=J2halo(lx1,1:lx2,1:lx3)
-J2halo(1:lx1,0,1:lx3)=J2halo(1:lx1,1,1:lx3)
-J2halo(1:lx1,lx2+1,1:lx3)=J2halo(1:lx1,lx2,1:lx3)
 
 J3halo(0,1:lx2,1:lx3)=J3halo(1,1:lx2,1:lx3)
 J3halo(lx1+1,1:lx2,1:lx3)=J3halo(lx1,1:lx2,1:lx3)
-J3halo(1:lx1,0,1:lx3)=J3halo(1:lx1,1,1:lx3)
-J3halo(1:lx1,lx2+1,1:lx3)=J3halo(1:lx1,lx2,1:lx3)
 
 call halo(J1halo,1,tagJ1,x%flagper)    !I'm kind of afraid to only halo a single point... 
 call halo(J2halo,1,tagJ2,x%flagper)
 call halo(J3halo,1,tagJ3,x%flagper)
 
 !ZZZ - CHECK FOR AND SET GLOBAL BOUNDARIES
+idleft=myid3-1
+idright=myid3+1
+iddown=myid2-1
+idup=myid2+1
+if (iddown==-1) then
+  J1halo(1:lx1,0,1:lx3)=J1halo(1:lx1,1,1:lx3)
+  J2halo(1:lx1,0,1:lx3)=J2halo(1:lx1,1,1:lx3)
+  J3halo(1:lx1,0,1:lx3)=J3halo(1:lx1,1,1:lx3)
+end if
+if (idup==lid2) then
+  J1halo(1:lx1,lx2+1,1:lx3)=J1halo(1:lx1,lx2,1:lx3)
+  J2halo(1:lx1,lx2+1,1:lx3)=J2halo(1:lx1,lx2,1:lx3)
+  J3halo(1:lx1,lx2+1,1:lx3)=J3halo(1:lx1,lx2,1:lx3)
+end if
 if (.not. x%flagper) then
-  idleft=myid-1
-  idright=myid+1
   if (idleft==-1) then
     J1halo(1:lx1,1:lx2,0)=J1halo(1:lx1,1:lx2,1)
     J2halo(1:lx1,1:lx2,0)=J2halo(1:lx1,1:lx2,1)
     J3halo(1:lx1,1:lx2,0)=J3halo(1:lx1,1:lx2,1)
-  elseif (idright==lid) then
+  end if
+  if (idright==lid3) then
     J1halo(1:lx1,1:lx2,lx3+1)=J1halo(1:lx1,1:lx2,lx3)
     J2halo(1:lx1,1:lx2,lx3+1)=J2halo(1:lx1,1:lx2,lx3)
     J3halo(1:lx1,1:lx2,lx3+1)=J3halo(1:lx1,1:lx2,lx3)
@@ -1016,32 +1047,35 @@ J3halo(1:lx1,1:lx2,1:lx3)=J3
 
 J1halo(0,1:lx2,1:lx3)=J1halo(1,1:lx2,1:lx3)
 J1halo(lx1+1,1:lx2,1:lx3)=J1halo(lx1,1:lx2,1:lx3)
-J1halo(1:lx1,0,1:lx3)=J1halo(1:lx1,1,1:lx3)
-J1halo(1:lx1,lx2+1,1:lx3)=J1halo(1:lx1,lx2,1:lx3)
 
 J2halo(0,1:lx2,1:lx3)=J2halo(1,1:lx2,1:lx3)
 J2halo(lx1+1,1:lx2,1:lx3)=J2halo(lx1,1:lx2,1:lx3)
-J2halo(1:lx1,0,1:lx3)=J2halo(1:lx1,1,1:lx3)
-J2halo(1:lx1,lx2+1,1:lx3)=J2halo(1:lx1,lx2,1:lx3)
 
 J3halo(0,1:lx2,1:lx3)=J3halo(1,1:lx2,1:lx3)
 J3halo(lx1+1,1:lx2,1:lx3)=J3halo(lx1,1:lx2,1:lx3)
-J3halo(1:lx1,0,1:lx3)=J3halo(1:lx1,1,1:lx3)
-J3halo(1:lx1,lx2+1,1:lx3)=J3halo(1:lx1,lx2,1:lx3)
 
 call halo(J1halo,1,tagJ1,x%flagper)    !I'm kind of afraid to only halo a single point... 
 call halo(J2halo,1,tagJ2,x%flagper)
 call halo(J3halo,1,tagJ3,x%flagper)
 
 !ZZZ - CHECK FOR AND SET GLOBAL BOUNDARIES
+if (iddown==-1) then
+  J1halo(1:lx1,0,1:lx3)=J1halo(1:lx1,1,1:lx3)
+  J2halo(1:lx1,0,1:lx3)=J2halo(1:lx1,1,1:lx3)
+  J3halo(1:lx1,0,1:lx3)=J3halo(1:lx1,1,1:lx3)
+end if
+if (idup==lid2) then
+  J1halo(1:lx1,lx2+1,1:lx3)=J1halo(1:lx1,lx2,1:lx3)
+  J2halo(1:lx1,lx2+1,1:lx3)=J2halo(1:lx1,lx2,1:lx3)
+  J3halo(1:lx1,lx2+1,1:lx3)=J3halo(1:lx1,lx2,1:lx3)
+end if
 if (.not. x%flagper) then
-  idleft=myid-1
-  idright=myid+1
   if (idleft==-1) then
     J1halo(1:lx1,1:lx2,0)=J1halo(1:lx1,1:lx2,1)
     J2halo(1:lx1,1:lx2,0)=J2halo(1:lx1,1:lx2,1)
     J3halo(1:lx1,1:lx2,0)=J3halo(1:lx1,1:lx2,1)
-  elseif (idright==lid) then
+  end if
+  if (idright==lid3) then
     J1halo(1:lx1,1:lx2,lx3+1)=J1halo(1:lx1,1:lx2,lx3)
     J2halo(1:lx1,1:lx2,lx3+1)=J2halo(1:lx1,1:lx2,lx3)
     J3halo(1:lx1,1:lx2,lx3+1)=J3halo(1:lx1,1:lx2,lx3)
@@ -1174,20 +1208,23 @@ E2=grad3D2(Phi,x,1,lx1,1,lx2,1,lx3)    !no haloing required
 J1halo(1:lx1,1:lx2,1:lx3)=Phi
 J1halo(0,1:lx2,1:lx3)=J1halo(1,1:lx2,1:lx3)
 J1halo(lx1+1,1:lx2,1:lx3)=J1halo(lx1,1:lx2,1:lx3)
-J1halo(1:lx1,0,1:lx3)=J1halo(1:lx1,1,1:lx3)
-J1halo(1:lx1,lx2+1,1:lx3)=J1halo(1:lx1,lx2,1:lx3)
 call halo(J1halo,1,tagJ1,x%flagper)    !I'm kind of afraid to only halo a single point... 
+
+if (iddown==-1) then
+  J1halo(1:lx1,0,1:lx3)=J1halo(1:lx1,1,1:lx3)
+end if
+if (idup==lid2) then
+  J1halo(1:lx1,lx2+1,1:lx3)=J1halo(1:lx1,lx2,1:lx3)
+end if
 if (.not. x%flagper) then
-  idleft=myid-1
-  idright=myid+1
   if (idleft==-1) then
     J1halo(1:lx1,1:lx2,0)=J1halo(1:lx1,1:lx2,1)
   end if
-  if (idright==lid) then
+  if (idright==lid3) then
     J1halo(1:lx1,1:lx2,lx3+1)=J1halo(1:lx1,1:lx2,lx3)
   end if
 end if
-
+  
 divtmp=grad3D3(J1halo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
 E3=divtmp(1:lx1,1:lx2,1:lx3)
 Phi=-1d0*Phi   !put things back for later use
@@ -1221,16 +1258,19 @@ if (maxval(incap) > 1d-6) then
   J1halo(1:lx1,1:lx2,1:lx3)=E2
   J1halo(0,1:lx2,1:lx3)=J1halo(1,1:lx2,1:lx3)
   J1halo(lx1+1,1:lx2,1:lx3)=J1halo(lx1,1:lx2,1:lx3)
-  J1halo(1:lx1,0,1:lx3)=J1halo(1:lx1,1,1:lx3)
-  J1halo(1:lx1,lx2+1,1:lx3)=J1halo(1:lx1,lx2,1:lx3)
   call halo(J1halo,1,tagJ1,x%flagper)    !I'm kind of afraid to only halo a single point... 
+
+  if (iddown==-1) then
+    J1halo(1:lx1,0,1:lx3)=J1halo(1:lx1,1,1:lx3)
+  end if
+  if (idup==lid2) then
+    J1halo(1:lx1,lx2+1,1:lx3)=J1halo(1:lx1,lx2,1:lx3)
+  end if
   if (.not. x%flagper) then
-    idleft=myid-1
-    idright=myid+1
     if (idleft==-1) then
       J1halo(1:lx1,1:lx2,0)=J1halo(1:lx1,1:lx2,1)
     end if
-    if (idright==lid) then
+    if (idright==lid3) then
       J1halo(1:lx1,1:lx2,lx3+1)=J1halo(1:lx1,1:lx2,lx3)
     end if
   end if
@@ -1245,16 +1285,19 @@ if (maxval(incap) > 1d-6) then
   J1halo(1:lx1,1:lx2,1:lx3)=E3
   J1halo(0,1:lx2,1:lx3)=J1halo(1,1:lx2,1:lx3)
   J1halo(lx1+1,1:lx2,1:lx3)=J1halo(lx1,1:lx2,1:lx3)
-  J1halo(1:lx1,0,1:lx3)=J1halo(1:lx1,1,1:lx3)
-  J1halo(1:lx1,lx2+1,1:lx3)=J1halo(1:lx1,lx2,1:lx3)
   call halo(J1halo,1,tagJ1,x%flagper)    !I'm kind of afraid to only halo a single point... 
+
+  if (iddown==-1) then
+    J1halo(1:lx1,0,1:lx3)=J1halo(1:lx1,1,1:lx3)
+  end if
+  if (idup==lid2) then
+    J1halo(1:lx1,lx2+1,1:lx3)=J1halo(1:lx1,lx2,1:lx3)
+  end if
   if (.not. x%flagper) then
-    idleft=myid-1
-    idright=myid+1
     if (idleft==-1) then
       J1halo(1:lx1,1:lx2,0)=J1halo(1:lx1,1:lx2,1)
     end if
-    if (idright==lid) then
+    if (idright==lid3) then
       J1halo(1:lx1,1:lx2,lx3+1)=J1halo(1:lx1,1:lx2,lx3)
     end if
   end if
@@ -1309,32 +1352,35 @@ if (lx2/=1 .and. potsolve ==1) then    !we did a field-integrated solve above
 
   J1halo(0,1:lx2,1:lx3)=J1halo(1,1:lx2,1:lx3)
   J1halo(lx1+1,1:lx2,1:lx3)=J1halo(lx1,1:lx2,1:lx3)
-  J1halo(1:lx1,0,1:lx3)=J1halo(1:lx1,1,1:lx3)
-  J1halo(1:lx1,lx2+1,1:lx3)=J1halo(1:lx1,lx2,1:lx3)
 
   J2halo(0,1:lx2,1:lx3)=J2halo(1,1:lx2,1:lx3)
   J2halo(lx1+1,1:lx2,1:lx3)=J2halo(lx1,1:lx2,1:lx3)
-  J2halo(1:lx1,0,1:lx3)=J2halo(1:lx1,1,1:lx3)
-  J2halo(1:lx1,lx2+1,1:lx3)=J2halo(1:lx1,lx2,1:lx3)
 
   J3halo(0,1:lx2,1:lx3)=J3halo(1,1:lx2,1:lx3)
   J3halo(lx1+1,1:lx2,1:lx3)=J3halo(lx1,1:lx2,1:lx3)
-  J3halo(1:lx1,0,1:lx3)=J3halo(1:lx1,1,1:lx3)
-  J3halo(1:lx1,lx2+1,1:lx3)=J3halo(1:lx1,lx2,1:lx3)
 
   call halo(J1halo,1,tagJ1,x%flagper)    !I'm kind of afraid to only halo a single point... 
   call halo(J2halo,1,tagJ2,x%flagper)
   call halo(J3halo,1,tagJ3,x%flagper)
 
   !ZZZ - SET GLOBAL BOUNDARY HERE
+  if (iddown==-1) then
+    J1halo(1:lx1,0,1:lx3)=J1halo(1:lx1,1,1:lx3)
+    J2halo(1:lx1,0,1:lx3)=J2halo(1:lx1,1,1:lx3)
+    J3halo(1:lx1,0,1:lx3)=J3halo(1:lx1,1,1:lx3)
+  end if
+  if (idup==lid2) then
+    J1halo(1:lx1,lx2+1,1:lx3)=J1halo(1:lx1,lx2,1:lx3)
+    J2halo(1:lx1,lx2+1,1:lx3)=J2halo(1:lx1,lx2,1:lx3)
+    J3halo(1:lx1,lx2+1,1:lx3)=J3halo(1:lx1,lx2,1:lx3)
+  end if
   if (.not. x%flagper) then
-    idleft=myid-1
-    idright=myid+1
     if (idleft==-1) then
       J1halo(1:lx1,1:lx2,0)=J1halo(1:lx1,1:lx2,1)
       J2halo(1:lx1,1:lx2,0)=J2halo(1:lx1,1:lx2,1)
       J3halo(1:lx1,1:lx2,0)=J3halo(1:lx1,1:lx2,1)
-    elseif (idright==lid) then
+    end if
+    if (idright==lid3) then
       J1halo(1:lx1,1:lx2,lx3+1)=J1halo(1:lx1,1:lx2,lx3)
       J2halo(1:lx1,1:lx2,lx3+1)=J2halo(1:lx1,1:lx2,lx3)
       J3halo(1:lx1,1:lx2,lx3+1)=J3halo(1:lx1,1:lx2,lx3)

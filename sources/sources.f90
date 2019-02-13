@@ -553,8 +553,6 @@ lx3=size(vs1,3)-4
 !ZOH EXTRAPOLATION OF V1,2 VARIABLES
 vs1(0,:,:,isp)=vs1(1,:,:,isp)
 vs1(lx1+1,:,:,isp)=vs1(lx1,:,:,isp)
-vs2(:,0,:,isp)=vs2(:,1,:,isp)
-vs2(:,lx2+1,:,isp)=vs2(:,lx2,:,isp)
 
 
 !IDENTIFY MY NEIGHBORS in x2 and x3
