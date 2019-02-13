@@ -47,7 +47,7 @@ This file is intended to document development priorities for the GEMINI project.
 * (INITIAL IMPLEMENTATION COMPLETED) Add 3Dtest to ctest
 * Add a script that runs a complete sequences of and example from generating ICs, to running the disturbance simulation.
 * For local simulations it makes sense to have the simulation able to use a Lagrangian frame of reference to reduce the total number of grid points needed.
-* Possibly merge in P. Inchin's EIA changes (with appropriate flags)
+* Mmerge in P. Inchin's EIA changes (with appropriate flags)
 * Add an example or options to run with a global grid, in case that is useful for anyone.  This basically requires a special grid generation script and then the simulation needs to be flagged as periodic in x3 (magnetic longitude).  
 * Ability to run a dipole grid that encapsulates the magnetic poles
 

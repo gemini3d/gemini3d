@@ -2,7 +2,7 @@ module potentialBCs_mumps
 
 use mpi, only: mpi_integer, mpi_comm_world, mpi_status_ignore
 
-use grid, only: curvmesh, lx1, lx2, lx3all, gridflag
+use grid, only: curvmesh, lx1, lx2, lx2all, lx3all, gridflag
 use phys_consts, only: wp, pi
 use interpolation, only : interp1,interp2
 use io, only : date_filename
@@ -11,6 +11,7 @@ use timeutils, only : dateinc
 implicit none
 
 !ALL OF THE FOLLOWING MODULE-SCOPE ARRAYS ARE USED FOR INTERPOLATING PRECIPITATION INPUT FILES (IF USED)
+!It should be noted that all of these will eventually be fullgrid varialbles since only root does this...
 real(wp), dimension(:), allocatable, private :: mlonp
 real(wp), dimension(:), allocatable, private :: mlatp    !coordinates of electric field data
 integer, private :: llon,llat
@@ -67,13 +68,13 @@ integer :: inunit
 real(wp) :: UTsectmp
 integer, dimension(3) :: ymdtmp
 
-real(wp), dimension(lx2*lx3all) :: parami
-real(wp), dimension(lx2,lx3all) :: parami2D
-real(wp), dimension(lx2) :: parami2    !interpolated parameter with size of lx2
+real(wp), dimension(lx2all*lx3all) :: parami
+real(wp), dimension(lx2all,lx3all) :: parami2D
+real(wp), dimension(lx2all) :: parami2    !interpolated parameter with size of lx2
 real(wp), dimension(lx3all) :: parami3
-real(wp), dimension(lx2,lx3all) :: E0xinow,E0yinow,Vminx1inow,Vmaxx1inow
+real(wp), dimension(lx2all,lx3all) :: E0xinow,E0yinow,Vminx1inow,Vmaxx1inow
 real(wp), dimension(lx3all) :: Vminx2isnow,Vmaxx2isnow
-real(wp), dimension(lx2) :: Vminx3isnow,Vmaxx3isnow
+real(wp), dimension(lx2all) :: Vminx3isnow,Vmaxx3isnow
 real(wp) :: slope
 
 integer :: ix1,ix2,ix3,iid,iflat,ios    !grid sizes are borrowed from grid module
@@ -123,11 +124,11 @@ if(t+dt/2d0>=tnext) then    !need to load a new file
     allocate(Vminx1p(llon,llat),Vmaxx1p(llon,llat))
     allocate(Vminx2pslice(llat),Vmaxx2pslice(llat))
     allocate(Vminx3pslice(llon),Vmaxx3pslice(llon))
-    allocate(E0xiprev(lx2,lx3all),E0xinext(lx2,lx3all),E0yiprev(lx2,lx3all),E0yinext(lx2,lx3all))
-    allocate(Vminx1iprev(lx2,lx3all),Vminx1inext(lx2,lx3all), &
-             Vmaxx1iprev(lx2,lx3all),Vmaxx1inext(lx2,lx3all), &
+    allocate(E0xiprev(lx2all,lx3all),E0xinext(lx2all,lx3all),E0yiprev(lx2all,lx3all),E0yinext(lx2all,lx3all))
+    allocate(Vminx1iprev(lx2all,lx3all),Vminx1inext(lx2all,lx3all), &
+             Vmaxx1iprev(lx2all,lx3all),Vmaxx1inext(lx2all,lx3all), &
              Vminx2isprev(lx3all),Vminx2isnext(lx3all),Vmaxx2isprev(lx3all),Vmaxx2isnext(lx3all), &
-             Vminx3isprev(lx2),Vminx3isnext(lx2),Vmaxx3isprev(lx2),Vmaxx3isnext(lx2))
+             Vminx3isprev(lx2all),Vminx3isnext(lx2all),Vmaxx3isprev(lx2all),Vmaxx3isnext(lx2all))
 
     E0xiprev=0d0; E0yiprev=0d0; E0xinext=0d0; E0yinext=0d0;     !these need to be initialized so that something sensible happens at the beginning
     Vminx1iprev=0d0; Vmaxx1iprev=0d0; Vminx1inext=0d0; Vmaxx1inext=0d0;
@@ -136,10 +137,10 @@ if(t+dt/2d0>=tnext) then    !need to load a new file
 
 
     !ALL PROCESSES NEED TO DEFINED THE OPINTS THAT THEY WILL BE INTERPOLATING ONTO
-    allocate(mloni(lx2*lx3all),mlati(lx2*lx3all))
+    allocate(mloni(lx2all*lx3all),mlati(lx2all*lx3all))
     do ix3=1,lx3all
-      do ix2=1,lx2
-        iflat=(ix3-1)*lx2+ix2
+      do ix2=1,lx2all
+        iflat=(ix3-1)*lx2all+ix2
         mlati(iflat)=90d0-x%thetaall(lx1,ix2,ix3)*180d0/pi    !does rool even have this info full grid???
         mloni(iflat)=x%phiall(lx1,ix2,ix3)*180d0/pi
       end do
@@ -189,22 +190,22 @@ if(t+dt/2d0>=tnext) then    !need to load a new file
     Edatp=E0xp(1,:)
     parami=interp1(mlatp,Edatp,mlati)   !will work even for 2D grids, just repeats the data in the lon direction
     E0xiprev=E0xinext
-    E0xinext=reshape(parami,[lx2,lx3all])
+    E0xinext=reshape(parami,[lx2all,lx3all])
 
     Edatp=E0yp(1,:)
     parami=interp1(mlatp,Edatp,mlati)
     E0yiprev=E0yinext
-    E0yinext=reshape(parami,[lx2,lx3all])
+    E0yinext=reshape(parami,[lx2all,lx3all])
 
     Edatp=Vminx1p(1,:)          !both min and max need to be read in from file and interpolated
     parami=interp1(mlatp,Edatp,mlati)
     Vminx1iprev=Vminx1inext
-    Vminx1inext=reshape(parami,[lx2,lx3all])
+    Vminx1inext=reshape(parami,[lx2all,lx3all])
 
     Edatp=Vmaxx1p(1,:)
     parami=interp1(mlatp,Edatp,mlati)
     Vmaxx1iprev=Vmaxx1inext
-    Vmaxx1inext=reshape(parami,[lx2,lx3all])
+    Vmaxx1inext=reshape(parami,[lx2all,lx3all])
 
     !note that for 2D simulations we don't use Vmaxx2p, etc. data read in from the input file - these BC's will be set later
   elseif (llat==1) then
@@ -212,63 +213,63 @@ if(t+dt/2d0>=tnext) then    !need to load a new file
     Edatp=E0xp(:,1)
     parami=interp1(mlonp,Edatp,mloni)
     E0xiprev=E0xinext
-    E0xinext=reshape(parami,[lx2,lx3all])
+    E0xinext=reshape(parami,[lx2all,lx3all])
 
     Edatp=E0yp(:,1)
     parami=interp1(mlonp,Edatp,mloni)
     E0yiprev=E0yinext
-    E0yinext=reshape(parami,[lx2,lx3all])
+    E0yinext=reshape(parami,[lx2all,lx3all])
 
     Edatp=Vminx1p(:,1)
     parami=interp1(mlonp,Edatp,mloni)
     Vminx1iprev=Vminx1inext
-    Vminx1inext=reshape(parami,[lx2,lx3all])
+    Vminx1inext=reshape(parami,[lx2all,lx3all])
 
     Edatp=Vmaxx1p(:,1)
     parami=interp1(mlonp,Edatp,mloni)
     Vmaxx1iprev=Vmaxx1inext
-    Vmaxx1inext=reshape(parami,[lx2,lx3all])
+    Vmaxx1inext=reshape(parami,[lx2all,lx3all])
   else    !source data is 2D
     print *, 'Executing full lat/lon interpolation...'
     parami=interp2(mlonp,mlatp,E0xp,mloni,mlati)     !interp to temp var.
     E0xiprev=E0xinext                       !save new pervious
-    E0xinext=reshape(parami,[lx2,lx3all])    !overwrite next with new interpolated input
+    E0xinext=reshape(parami,[lx2all,lx3all])    !overwrite next with new interpolated input
 
     parami=interp2(mlonp,mlatp,E0yp,mloni,mlati)
     E0yiprev=E0yinext
-    E0yinext=reshape(parami,[lx2,lx3all])
+    E0yinext=reshape(parami,[lx2all,lx3all])
 
     parami=interp2(mlonp,mlatp,Vminx1p,mloni,mlati)
     Vminx1iprev=Vminx1inext
-    Vminx1inext=reshape(parami,[lx2,lx3all])
+    Vminx1inext=reshape(parami,[lx2all,lx3all])
 
     parami=interp2(mlonp,mlatp,Vmaxx1p,mloni,mlati)
     Vmaxx1iprev=Vmaxx1inext
-    Vmaxx1inext=reshape(parami,[lx2,lx3all])
+    Vmaxx1inext=reshape(parami,[lx2all,lx3all])
 
     !We need to interpolate the lateral boundaries in the direction of mlat
     parami=interp1(mlatp,Vminx2pslice,mlati)    !note mlati is a flat list of grid point lats, so need to reshape it
     Vminx2isprev=Vminx2isnext
-    parami2D=reshape(parami,[lx2,lx3all])
+    parami2D=reshape(parami,[lx2all,lx3all])
     parami3=parami2D(1,:)      !data should be constant across mlon, i.e. we're hoping the grid is plaid in mlat and mlon, otherwise not sure what to do here
     Vminx2isnext=parami3
 
     parami=interp1(mlatp,Vmaxx2pslice,mlati)
     Vmaxx2isprev=Vmaxx2isnext
-    parami2D=reshape(parami,[lx2,lx3all])
+    parami2D=reshape(parami,[lx2all,lx3all])
     parami3=parami2D(1,:)      !data should be constant across mlon...
     Vmaxx2isnext=parami3
 
     !now lateral interpolation in mlon
     parami=interp1(mlonp,Vminx3pslice,mloni)
     Vminx3isprev=Vminx3isnext
-    parami2D=reshape(parami,[lx2,lx3all])
+    parami2D=reshape(parami,[lx2all,lx3all])
     parami2=parami2D(:,1)
     Vminx3isnext=parami2
 
     parami=interp1(mlonp,Vmaxx3pslice,mloni)
     Vmaxx3isprev=Vmaxx3isnext
-    parami2D=reshape(parami,[lx2,lx3all])
+    parami2D=reshape(parami,[lx2all,lx3all])
     parami2=parami2D(:,1)
     Vmaxx3isnext=parami2
   end if
@@ -301,7 +302,7 @@ end if
 flagdirich=int(flagdirich_double,4)     !make sure to set solve type every time step, as it does not persiste between function calls
 print *, 'Solve type: ',flagdirich 
 do ix3=1,lx3all
-  do ix2=1,lx2
+  do ix2=1,lx2all
     slope=(E0xinext(ix2,ix3)-E0xiprev(ix2,ix3))/(tnext-tprev)
     E0xinow(ix2,ix3)=E0xiprev(ix2,ix3)+slope*(t+dt/2d0-tprev)
 
@@ -315,7 +316,7 @@ do ix3=1,lx3all
     Vmaxx1inow(ix2,ix3)=Vmaxx1iprev(ix2,ix3)+slope*(t+dt/2d0-tprev)
   end do
 end do
-if (lx2/=1 .and. lx3all/=1) then     !full 3D grid need to also handle lateral boundaries
+if (lx2all/=1 .and. lx3all/=1) then     !full 3D grid need to also handle lateral boundaries
   do ix3=1,lx3all
     slope=(Vminx2isnext(ix3)-Vminx2isprev(ix3))/(tnext-tprev)
     Vminx2isnow(ix3)=Vminx2isprev(ix3)+slope*(t+dt/2-tprev)
@@ -323,7 +324,7 @@ if (lx2/=1 .and. lx3all/=1) then     !full 3D grid need to also handle lateral b
     slope=(Vmaxx2isnext(ix3)-Vmaxx2isprev(ix3))/(tnext-tprev)
     Vmaxx2isnow(ix3)=Vmaxx2isprev(ix3)+slope*(t+dt/2-tprev)
   end do
-  do ix2=1,lx2
+  do ix2=1,lx2all
     slope=(Vminx3isnext(ix2)-Vminx3isprev(ix2))/(tnext-tprev)
     Vminx3isnow(ix2)=Vminx3isprev(ix2)+slope*(t+dt/2-tprev)
 
@@ -350,7 +351,7 @@ end if
 
 !LOAD POTENTIAL SOLVER INPUT ARRAYS
 do ix3=1,lx3all
-  do ix2=1,lx2
+  do ix2=1,lx2all
     do ix1=1,lx1
       E02all(ix1,ix2,ix3)=E0xinow(ix2,ix3)
       E03all(ix1,ix2,ix3)=E0yinow(ix2,ix3)
@@ -358,7 +359,7 @@ do ix3=1,lx3all
   end do
 end do
 do ix3=1,lx3all
-  do ix2=1,lx2
+  do ix2=1,lx2all
     Vminx1(ix2,ix3)=Vminx1inow(ix2,ix3)
     Vmaxx1(ix2,ix3)=Vmaxx1inow(ix2,ix3)
   end do
@@ -368,7 +369,7 @@ end do
 !SET REMAINING BOUNDARY CONDITIONS BASED ON WHAT THE TOP IS.  IF WE HAVE A
 !3D GRID THE SIDES ARE GROUNDED AUTOMATICALLY, WHEREAS FOR 2D THEY ARE SET
 !TO TOP VALUE  IF DIRICHLET AND TO TOP VALUE IF DIRICHLET.
-if (lx2/=1 .and. lx3all/=1) then     !full 3D grid
+if (lx2all/=1 .and. lx3all/=1) then     !full 3D grid
 !      Vminx2=0d0    !This actualy needs to be different for KHI
 !      Vmaxx2=0d0
 !      Vminx3=0d0
@@ -380,7 +381,7 @@ if (lx2/=1 .and. lx3all/=1) then     !full 3D grid
     end do
   end do
 
-  do ix2=1,lx2
+  do ix2=1,lx2all
     do ix1=1,lx1
       Vminx3(ix1,ix2)=Vminx3isnow(ix2)
       Vmaxx3(ix1,ix2)=Vmaxx3isnow(ix2)

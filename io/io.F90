@@ -288,6 +288,13 @@ call bcast_recv(ns,tagns)
 call bcast_recv(vs1,tagvs1)
 call bcast_recv(Ts,tagTs)
 
+
+print*, myid
+print *, 'Min/max input density:  ',     minval(ns(:,:,:,7)),  maxval(ns(:,:,:,7))
+print *, 'Min/max input velocity:  ',    minval(vs1(:,:,:,:)), maxval(vs1(:,:,:,:))
+print *, 'Min/max input temperature:  ', minval(Ts(:,:,:,:)),  maxval(Ts(:,:,:,:))
+
+
 end subroutine input_workers_mpi
 
 
