@@ -604,11 +604,13 @@ J1halo(0,1:lx2,1:lx3)=J1halo(1,1:lx2,1:lx3)
 J1halo(lx1+1,1:lx2,1:lx3)=J1halo(lx1,1:lx2,1:lx3)
 call halo(J1halo,1,tagJ1,x%flagper)
 
-if (iddown==-1) then
-  J1halo(1:lx1,0,1:lx3)=J1halo(1:lx1,1,1:lx3)
-end if
-if (idup==lid2) then
-  J1halo(1:lx1,lx2+1,1:lx3)=J1halo(1:lx1,lx2,1:lx3)
+if (lx2>1) then    !no need to do anything with boundary if we aren't going to differentiate eventually...
+  if (iddown==-1) then
+    J1halo(1:lx1,0,1:lx3)=-1*J1halo(1:lx1,2,1:lx3)+2*J1halo(1:lx1,1,1:lx3)    !this effectively makes the derivative first-order accurate at the edges - needed to pass ctest which was generated with first order edges...
+  end if
+  if (idup==lid2) then
+    J1halo(1:lx1,lx2+1,1:lx3)=2*J1halo(1:lx1,lx2,1:lx3)-J1halo(1:lx1,lx2-1,1:lx3)
+  end if
 end if
 if (.not. x%flagper) then
   if (idleft==-1) then
@@ -1233,11 +1235,13 @@ J1halo(0,1:lx2,1:lx3)=J1halo(1,1:lx2,1:lx3)
 J1halo(lx1+1,1:lx2,1:lx3)=J1halo(lx1,1:lx2,1:lx3)
 call halo(J1halo,1,tagJ1,x%flagper)
 
-if (iddown==-1) then
-  J1halo(1:lx1,0,1:lx3)=J1halo(1:lx1,1,1:lx3)
-end if
-if (idup==lid2) then
-  J1halo(1:lx1,lx2+1,1:lx3)=J1halo(1:lx1,lx2,1:lx3)
+if (lx2>1) then    !no need to do anything with boundary if we aren't going to differentiate eventually...
+  if (iddown==-1) then
+    J1halo(1:lx1,0,1:lx3)=-1*J1halo(1:lx1,2,1:lx3)+2*J1halo(1:lx1,1,1:lx3)
+  end if
+  if (idup==lid2) then
+    J1halo(1:lx1,lx2+1,1:lx3)=2*J1halo(1:lx1,lx2,1:lx3)-J1halo(1:lx1,lx2-1,1:lx3)
+  end if
 end if
 if (.not. x%flagper) then
   if (idleft==-1) then
