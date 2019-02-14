@@ -152,7 +152,7 @@ if (flagglow/=0) then
 end if
 
 !LOAD ICS AND DISTRIBUTE TO WORKERS (REQUIRES GRAVITY FOR INITIAL GUESSING)
-call input_plasma(x%x1,x%x2,x%x3all,indatsize,ns,vs1,Ts)
+call input_plasma(x%x1,x%x2all,x%x3all,indatsize,ns,vs1,Ts)
 
 
 !ROOT/WORKERS WILL ASSUME THAT THE MAGNETIC FIELDS AND PERP FLOWS START AT ZERO

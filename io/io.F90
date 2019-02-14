@@ -299,7 +299,7 @@ call bcast_recv(Ts,tagTs)
 end subroutine input_workers_mpi
 
 
-subroutine input_root_mpi(x1,x2,x3all,indatsize,ns,vs1,Ts)
+subroutine input_root_mpi(x1,x2all,x3all,indatsize,ns,vs1,Ts)
 
 !------------------------------------------------------------
 !-------READ INPUT FROM FILE AND DISTRIBUTE TO WORKERS.  
@@ -309,13 +309,13 @@ subroutine input_root_mpi(x1,x2,x3all,indatsize,ns,vs1,Ts)
 !-------LENGTHS.
 !------------------------------------------------------------
 
-real(wp), dimension(-1:), intent(in) :: x1, x2, x3all
+real(wp), dimension(-1:), intent(in) :: x1, x2all, x3all
 character(*), intent(in) :: indatsize
 real(wp), dimension(-1:,-1:,-1:,:), intent(out) :: ns,vs1,Ts    
 
-integer :: lx1,lx2,lx3,lx3all,isp
+integer :: lx1,lx2,lx3,lx2all,lx3all,isp
 
-real(wp), dimension(-1:size(x1,1)-2,-1:size(x2,1)-2,-1:size(x3all,1)-2,1:lsp) :: nsall, vs1all, Tsall
+real(wp), dimension(-1:size(x1,1)-2,-1:size(x2all,1)-2,-1:size(x3all,1)-2,1:lsp) :: nsall, vs1all, Tsall
 real(wp), dimension(:,:,:,:), allocatable :: statetmp
 integer :: lx1in,lx2in,lx3in,u, utrace
 real(wp) :: tin
@@ -332,7 +332,8 @@ Tsall = 0._wp
 lx1=size(ns,1)-4
 lx2=size(ns,2)-4
 lx3=size(ns,3)-4
-lx3all=size(nsall,3)-4
+lx2all=size(x2all)-4
+lx3all=size(x3all)-4
 
         
 !READ IN FROM FILE, AS OF CURVILINEAR BRANCH THIS IS NOW THE ONLY INPUT
