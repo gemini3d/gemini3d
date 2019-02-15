@@ -654,9 +654,9 @@ Phi=-1d0*Phi   !put things back for later use
 
 !R-------
 !JUST TO JUDGE THE IMPACT OF MI COUPLING
-print *, 'Max integrated inertial capacitance:  ',maxval(incapint)
-print *, 'Max integrated Pedersen conductance (includes metric factors):  ',maxval(SigPint2)
-print *, 'Max integrated Hall conductance (includes metric factors):  ',minval(SigHint), maxval(SigHint)
+print *, 'Max integrated inertial capacitance:  ',maxval(incapintall)
+print *, 'Max integrated Pedersen conductance (includes metric factors):  ',maxval(SigPint2all)
+print *, 'Max integrated Hall conductance (includes metric factors):  ',minval(SigHintall), maxval(SigHintall)
 print *, 'Max E2,3 BG and response values are:  ',maxval(E02), maxval(E03),maxval(E2),maxval(E3)
 print *, 'Min E2,3 BG and response values are:  ',minval(E02), minval(E03),minval(E2),minval(E3)
 !R-------

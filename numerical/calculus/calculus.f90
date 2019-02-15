@@ -882,7 +882,7 @@ lx2=size(f,2)
 
 !ERROR CHECKING TO MAKE SURE DIFFRENCING IS DONE OVER A CONSISTENTLY-SIZED GRID
 if (lx2 /= ubnd-lbnd+1) then
-  error stop '!!!  Inconsistent array and mesh sizes in grad2D2_curv_alt_23.'   !just bail on it and let the user figure it out
+  error stop '!!!  Inconsistent array and mesh sizes in grad2D2_curv_23.'   !just bail on it and let the user figure it out
 end if
 
 
@@ -890,7 +890,7 @@ if (lx2<=x%lx2+4) then     !+4 in case we need to differentiate over ghost cells
   dx2=>x%dx2(lbnd:ubnd)
 else if (lx2<=x%lx2all+4) then     !presumes root or some process that has access to ALL full grid variables (normally only root).
   dx2=>x%dx2all(lbnd:ubnd)
-  print *,   '! Accessing root-only grid information in divergence function grad2D2_curv_alt_23'
+  print *,   '! Accessing root-only grid information in divergence function grad2D2_curv_23'
 else
   error stop '!!!  Array size is larger than full mesh.'
 end if
@@ -976,7 +976,7 @@ lx3=size(f,2)
 
 !ERROR CHECKING TO MAKE SURE DIFFRENCING IS DONE OVER A CONSISTENTLY-SIZED GRID
 if (lx3 /= ubnd-lbnd+1) then
-  error stop '!!!  Inconsistent array and mesh sizes in grad2D2_curv_alt_23.'   !just bail on it and let the user figure it out
+  error stop '!!!  Inconsistent array and mesh sizes in grad2D3_curv_alt_23.'   !just bail on it and let the user figure it out
 end if
 
 
@@ -984,7 +984,7 @@ if (lx3<=x%lx3+4) then     !+4 in case we need to differentiate over ghost cells
   dx3=>x%dx3(lbnd:ubnd)
 else if (lx3<=x%lx3all+4) then     !presumes root or some process that has access to ALL full grid variables (normally only root).
   dx3=>x%dx3all(lbnd:ubnd)
-  print *,   '! Accessing root-only grid information in divergence function grad2D2_curv_alt_23'
+  print *,   '! Accessing root-only grid information in divergence function grad2D3_curv_alt_23'
 else
   error stop '!!!  Array size is larger than full mesh.'
 end if

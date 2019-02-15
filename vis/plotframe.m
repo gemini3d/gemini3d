@@ -21,6 +21,18 @@ if nargin<6
   xg=[];         %code will attempt to reload the grid
 end
 
+
+%% READ IN THE SIMULATION INFORMATION (this is low cost so reread no matter what)
+[ymd0,UTsec0,tdur,dtout,flagoutput,mloc]=readconfig([direc,filesep,'inputs/config.ini']);
+
+
+%% CHECK WHETHER WE NEED TO RELOAD THE GRID (check if one is given because this can take a long time)
+if isempty(xg)
+  disp('Reloading grid...  Provide one as input if you do not want this to happen.')
+  xg = readgrid([direc,filesep,'inputs',filesep]);
+end
+
+
 if nargin<8, visible = 'on'; end
 
 if nargin<7 || isempty(h)
@@ -60,17 +72,6 @@ if ~isempty(saveplots)
   for i=1:length(dlist)
     mkdir([direc, filesep, dlist{i}]);
   end
-end
-
-
-%% READ IN THE SIMULATION INFORMATION (this is low cost so reread no matter what)
-[ymd0,UTsec0,tdur,dtout,flagoutput,mloc]=readconfig([direc,filesep,'inputs/config.ini']);
-
-
-%% CHECK WHETHER WE NEED TO RELOAD THE GRID (check if one is given because this can take a long time)
-if isempty(xg)
-  disp('Reloading grid...  Provide one as input if you do not want this to happen.')
-  xg = readgrid([direc,filesep,'inputs',filesep]);
 end
 
 plotfun = grid2plotfun(plotfun, xg);

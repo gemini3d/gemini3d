@@ -400,9 +400,13 @@ if (myid==0) then
   Cmh3(:,1)=0d0
   Cmh3(:,2:lx3)=0.5d0*(Cm(:,1:lx3-1)+Cm(:,2:lx3))
 
+
+  print*, maxval(Cmh2), maxval(Cmh3)
+
+
   !gradSigH2=grad2D1(SigH,x,1,lx2)   !x2 is now 1st index and x3 is second...  This one appears to be the problem.  This issue here is that grad2D1 automatically uses x%dx1 as the differential element...
   gradSigH2=grad2D1_curv_alt(SigH,x,1,lx2)   !note the alt since we need to use dx2 as differential...  Tricky bug/feature
-  gradSigH3=grad2D3(SigH,x,1,lx3)       !awkward way of handling this special case derivative which uses x3 as the differential to operate on a 2D array.
+  gradSigH3=grad2D3(SigH,x,1,lx3)            !awkward way of handling this special case derivative which uses x3 as the differential to operate on a 2D array.
 
 
   !------------------------------------------------------------
@@ -780,7 +784,7 @@ if ( myid==0 ) then
 
   !may solve some memory allocation issues, uncomment if MUMPS throws errors
   !about not having enough memory
-!      mumps_par%ICNTL(14)=50
+  mumps_par%ICNTL(14)=50
 end if
 
 
@@ -1317,6 +1321,8 @@ if ( myid==0 ) then
     mumps_par%PERM_IN=mumps_perm
     mumps_par%ICNTL(7)=1
   end if
+
+  mumps_par%ICNTL(14)=50
 end if
 
 
