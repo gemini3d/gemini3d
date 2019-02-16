@@ -268,6 +268,8 @@ integer :: idleft,idright,iddown,idup
 
 real(wp) :: tstart,tfin
 
+integer :: utrace
+
 
 !SIZES - PERHAPS SHOULD BE TAKEN FROM GRID MODULE INSTEAD OF RECOMPUTED?
 lx1=size(sig0,1)
@@ -448,6 +450,15 @@ if (lx2/=1) then    !either field-resolved 3D or integrated 2D solve for 3D doma
 
     !> INTEGRATE CONDUCTANCES AND CAPACITANCES FOR SOLVER COEFFICIENTS 
     integrand=sigP*x%h1(1:lx1,1:lx2,1:lx3)*x%h3(1:lx1,1:lx2,1:lx3)/x%h2(1:lx1,1:lx2,1:lx3)
+
+    open(newunit=utrace, form='unformatted', access='stream', file='integrand.raw8', status='replace', action='write')
+    write(utrace) integrand
+    close(utrace)
+    open(newunit=utrace, form='unformatted', access='stream', file='sigP.raw8', status='replace', action='write')
+    write(utrace) sigP
+    close(utrace)
+
+
     sigintegral=integral3D1(integrand,x,1,lx1)    !no haloing required for a field-line integration
     SigPint2=sigintegral(lx1,:,:)
 
@@ -462,6 +473,19 @@ if (lx2/=1) then    !either field-resolved 3D or integrated 2D solve for 3D doma
     sigintegral=integral3D1(incap,x,1,lx1)
     incapint=sigintegral(lx1,:,:)
     !-------
+
+
+  open(newunit=utrace, form='unformatted', access='stream', file='SigP2int.raw8', status='replace', action='write')
+    write(utrace) SigPint2
+      close(utrace)
+        open(newunit=utrace, form='unformatted', access='stream', file='SigP3int.raw8', status='replace', action='write')
+          write(utrace) SigPint3
+            close(utrace)
+              open(newunit=utrace, form='unformatted', access='stream', file='SigHint.raw8', status='replace', action='write')
+                write(utrace) SigHint
+                  close(utrace)
+
+
 
 
     !> PRODUCE A FIELD-INTEGRATED SOURCE TERM
@@ -487,6 +511,17 @@ if (lx2/=1) then    !either field-resolved 3D or integrated 2D solve for 3D doma
       call gather_recv(SigHint,tagSigHint,SigHintall)
       call gather_recv(v2slab,tagv2electro,v2slaball)
       call gather_recv(v3slab,tagv3electro,v3slaball)
+
+
+  open(newunit=utrace, form='unformatted', access='stream', file='SigP2intall.raw8', status='replace', action='write')
+  write(utrace) SigPint2all
+  close(utrace)
+  open(newunit=utrace, form='unformatted', access='stream', file='SigP3intall.raw8', status='replace', action='write')
+  write(utrace) SigPint3all
+  close(utrace)
+  open(newunit=utrace, form='unformatted', access='stream', file='SigHintall.raw8', status='replace', action='write')
+  write(utrace) SigHintall
+  close(utrace)
 
 
       !R------
@@ -968,6 +1003,8 @@ integer :: idleft,idright,iddown,idup
 
 real(wp) :: tstart,tfin
 
+integer :: utrace
+
 
 !SIZES - PERHAPS SHOULD BE TAKEN FROM GRID MODULE INSTEAD OF RECOMPUTED?
 lx1=size(sig0,1)
@@ -1123,6 +1160,13 @@ if (lx2/=1) then    !either field-resolved 3D or integrated 2D solve for 3D doma
     !-------
     !INTEGRATE CONDUCTANCES AND CAPACITANCES FOR SOLVER COEFFICIENTS 
     integrand=sigP*x%h1(1:lx1,1:lx2,1:lx3)*x%h3(1:lx1,1:lx2,1:lx3)/x%h2(1:lx1,1:lx2,1:lx3)
+
+    if (myid==15) then
+      open(newunit=utrace, form='unformatted', access='stream', file='integrand.15.raw8', status='replace', action='write')
+      write(utrace) integrand
+      close(utrace)
+    end if
+
     sigintegral=integral3D1(integrand,x,1,lx1)    !no haloing required for a field-line integration
     SigPint2=sigintegral(lx1,:,:)
 
@@ -1137,6 +1181,19 @@ if (lx2/=1) then    !either field-resolved 3D or integrated 2D solve for 3D doma
     sigintegral=integral3D1(incap,x,1,lx1)
     incapint=sigintegral(lx1,:,:)
     !-------
+
+
+    if (myid==15) then
+      open(newunit=utrace, form='unformatted', access='stream', file='SigP2int.15.raw8', status='replace', action='write')
+      write(utrace) SigPint2
+      close(utrace)
+      open(newunit=utrace, form='unformatted', access='stream', file='SigP3int.15.raw8', status='replace',action='write')
+      write(utrace) SigPint3
+      close(utrace)
+      open(newunit=utrace, form='unformatted', access='stream',file='SigHint.15.raw8', status='replace', action='write')
+      write(utrace) SigHint
+      close(utrace)
+    end if
 
 
     !PRODUCE A FIELD-INTEGRATED SOURCE TERM

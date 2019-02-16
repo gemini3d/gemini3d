@@ -216,7 +216,7 @@ if (ierr /= 0) error stop 'error copying input energy parameters to output direc
 !call execute_command_line('mkdir -pv '//outdir//'/inputs/source/', exitstat=ierr)
 !if (ierr /= 0) error stop 'error creating input source parameter output directory'
 !call execute_command_line('cp -r ./* '//outdir//'/inputs/source/', exitstat=ierr)
-!if (ierr /= 0) error stop 'error creating input source parameter output directory' 
+!f (ierr /= 0) error stop 'error creating input source parameter output directory' 
 
 call gitlog(outdir//'/gitrev.log')
 
