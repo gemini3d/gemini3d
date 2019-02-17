@@ -409,17 +409,22 @@ if (myid==0) then
   gradSigH2=grad2D1_curv_alt(SigH,x,1,lx2)   !note the alt since we need to use dx2 as differential...  Tricky bug/feature
   gradSigH3=grad2D3(SigH,x,1,lx3)            !awkward way of handling this special case derivative which uses x3 as the differential to operate on a 2D array.
 
-
-  open(newunit=utrace, form='unformatted', access='stream', file='SigP2.raw8', status='replace', action='write')
-  write(utrace) SigP2
-  close(utrace)
-  open(newunit=utrace, form='unformatted', access='stream', file='SigP3.raw8', status='replace', action='write')
-  write(utrace) SigP3
-  close(utrace)
-  open(newunit=utrace, form='unformatted', access='stream', file='SigH.raw8', status='replace', action='write')
-  write(utrace) SigH
-  close(utrace)
-
+!
+!  open(newunit=utrace, form='unformatted', access='stream', file='matrixentryinfo.raw8', status='replace', action='write')
+!  write(utrace) gradSigH2
+!  write(utrace) gradSigH3
+!  write(utrace) SigPh2
+!  write(utrace) SigPh3
+!  write(utrace) Cmh2
+!  write(utrace) Cmh3
+!  write(utrace) SigP2
+!  write(utrace) SigP3
+!  write(utrace) SigH
+!  write(utrace) Cm
+!  write(utrace) v2
+!  write(utrace) v3
+!  close(utrace)
+!
 
   !------------------------------------------------------------
   !-------DEFINE A MATRIX USING SPARSE STORAGE (CENTRALIZED

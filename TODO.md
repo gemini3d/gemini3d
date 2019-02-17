@@ -24,7 +24,7 @@ This file is intended to document development priorities for the GEMINI project.
 ## Future Code refactoring
 
 * Fair bit of code repetition in top-level electric field and precipitation interpolation routines
-* Code duplication in electrodynamics module (haloing part should be written as a subroutine).  This duplication also exists in other places, e.g., in RK2prep
+* Code duplication in electrodynamics module (haloing part should be written as a subroutine).  This duplication also exists in other places, e.g., in RK2prep - this has now become a serious readability issue for anyone trying to modify those files
 * Cleanup of BCs interpolation source files
 * Axisymmetric and Cartesian interpolations should be combined (much code-sharing)
 * Remove the array permuting form the fortran code and do this from the MATLAB/octave scripts.  These scripts should provide a permutation array for the dimensions to the fortran code (e.g. [1,2,3] or [3,1,2], which are even, or [1,3,2] which is odd), which then knows if the coordinate system is right-handed or left-handed so it can adjust the cross products accordingly.

@@ -450,15 +450,6 @@ if (lx2/=1) then    !either field-resolved 3D or integrated 2D solve for 3D doma
 
     !> INTEGRATE CONDUCTANCES AND CAPACITANCES FOR SOLVER COEFFICIENTS 
     integrand=sigP*x%h1(1:lx1,1:lx2,1:lx3)*x%h3(1:lx1,1:lx2,1:lx3)/x%h2(1:lx1,1:lx2,1:lx3)
-
-    open(newunit=utrace, form='unformatted', access='stream', file='integrand.raw8', status='replace', action='write')
-    write(utrace) integrand
-    close(utrace)
-    open(newunit=utrace, form='unformatted', access='stream', file='sigP.raw8', status='replace', action='write')
-    write(utrace) sigP
-    close(utrace)
-
-
     sigintegral=integral3D1(integrand,x,1,lx1)    !no haloing required for a field-line integration
     SigPint2=sigintegral(lx1,:,:)
 
@@ -473,19 +464,6 @@ if (lx2/=1) then    !either field-resolved 3D or integrated 2D solve for 3D doma
     sigintegral=integral3D1(incap,x,1,lx1)
     incapint=sigintegral(lx1,:,:)
     !-------
-
-
-  open(newunit=utrace, form='unformatted', access='stream', file='SigP2int.raw8', status='replace', action='write')
-    write(utrace) SigPint2
-      close(utrace)
-        open(newunit=utrace, form='unformatted', access='stream', file='SigP3int.raw8', status='replace', action='write')
-          write(utrace) SigPint3
-            close(utrace)
-              open(newunit=utrace, form='unformatted', access='stream', file='SigHint.raw8', status='replace', action='write')
-                write(utrace) SigHint
-                  close(utrace)
-
-
 
 
     !> PRODUCE A FIELD-INTEGRATED SOURCE TERM
@@ -511,17 +489,6 @@ if (lx2/=1) then    !either field-resolved 3D or integrated 2D solve for 3D doma
       call gather_recv(SigHint,tagSigHint,SigHintall)
       call gather_recv(v2slab,tagv2electro,v2slaball)
       call gather_recv(v3slab,tagv3electro,v3slaball)
-
-
-  open(newunit=utrace, form='unformatted', access='stream', file='SigP2intall.raw8', status='replace', action='write')
-  write(utrace) SigPint2all
-  close(utrace)
-  open(newunit=utrace, form='unformatted', access='stream', file='SigP3intall.raw8', status='replace', action='write')
-  write(utrace) SigPint3all
-  close(utrace)
-  open(newunit=utrace, form='unformatted', access='stream', file='SigHintall.raw8', status='replace', action='write')
-  write(utrace) SigHintall
-  close(utrace)
 
 
       !R------
@@ -642,9 +609,11 @@ call halo(J1halo,1,tagJ1,x%flagper)
 if (lx2>1) then    !no need to do anything with boundary if we aren't going to differentiate eventually...
   if (iddown==-1) then
     J1halo(1:lx1,0,1:lx3)=-1*J1halo(1:lx1,2,1:lx3)+2*J1halo(1:lx1,1,1:lx3)    !this effectively makes the derivative first-order accurate at the edges - needed to pass ctest which was generated with first order edges...
+!     J1halo(1:lx1,0,1:lx3)=J1halo(1:lx1,1,1:lx3)
   end if
   if (idup==lid2) then
     J1halo(1:lx1,lx2+1,1:lx3)=2*J1halo(1:lx1,lx2,1:lx3)-J1halo(1:lx1,lx2-1,1:lx3)
+!     J1halo(1:lx1,lx2+1,1:lx3)=J1halo(1:lx1,lx2,1:lx3)
   end if
 end if
 if (.not. x%flagper) then
@@ -694,8 +663,34 @@ print *, 'Max integrated Pedersen conductance (includes metric factors):  ',maxv
 print *, 'Max integrated Hall conductance (includes metric factors):  ',minval(SigHintall), maxval(SigHintall)
 print *, 'Max E2,3 BG and response values are:  ',maxval(E02), maxval(E03),maxval(E2),maxval(E3)
 print *, 'Min E2,3 BG and response values are:  ',minval(E02), minval(E03),minval(E2),minval(E3)
+print *, 'Min/Max values of potential:  ',minval(Phi),maxval(Phi)
+print *, 'Min/Max values of full grid potential:  ',minval(Phiall),maxval(Phiall)
 !R-------
 
+
+!if (maxval(Phiall)>1d6) then    !this is too large, dump some info to see what is going on...
+!  open(newunit=utrace, form='unformatted', access='stream', file='potentialsolver.raw8', status='replace', action='write')
+!  write(utrace) Phiall
+!  write(utrace) sigPint2all
+!  write(utrace) sigPint3all
+!  write(utrace) sigHintall
+!  write(utrace) incapintall
+!  write(utrace) srctermintall
+!  write(utrace) v2slaball
+!  write(utrace) v3slaball
+!  write(utrace) Phi
+!  write(utrace) E2
+!  write(utrace) E3
+!  write(utrace) Vminx1
+!  write(utrace) Vmaxx1
+!  write(utrace) x%dx2all
+!  write(utrace) x%dx2iall
+!  write(utrace) x%dx3all
+!  write(utrace) x%dx3iall
+!  close(utrace)
+!  error stop 'Something is wrong with potential solution, dumping info to file...'
+!end if
+!
 
 !--------
 !ADD IN BACKGROUND FIELDS BEFORE DISTRIBUTING TO WORKERS
@@ -1013,7 +1008,7 @@ lx3=size(sig0,3)
 
 
 !USE PREVIOUS MUMPS PERMUTATION (OLD CODE? BUT MIGHT BE WORTH REINSTATING?)
-perflag=.false.
+perflag=.true.
 
 
 call mpi_recv(flagdirich,1,MPI_INTEGER,0,tagflagdirich,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
@@ -1160,13 +1155,6 @@ if (lx2/=1) then    !either field-resolved 3D or integrated 2D solve for 3D doma
     !-------
     !INTEGRATE CONDUCTANCES AND CAPACITANCES FOR SOLVER COEFFICIENTS 
     integrand=sigP*x%h1(1:lx1,1:lx2,1:lx3)*x%h3(1:lx1,1:lx2,1:lx3)/x%h2(1:lx1,1:lx2,1:lx3)
-
-    if (myid==15) then
-      open(newunit=utrace, form='unformatted', access='stream', file='integrand.15.raw8', status='replace', action='write')
-      write(utrace) integrand
-      close(utrace)
-    end if
-
     sigintegral=integral3D1(integrand,x,1,lx1)    !no haloing required for a field-line integration
     SigPint2=sigintegral(lx1,:,:)
 
@@ -1181,20 +1169,6 @@ if (lx2/=1) then    !either field-resolved 3D or integrated 2D solve for 3D doma
     sigintegral=integral3D1(incap,x,1,lx1)
     incapint=sigintegral(lx1,:,:)
     !-------
-
-
-    if (myid==15) then
-      open(newunit=utrace, form='unformatted', access='stream', file='SigP2int.15.raw8', status='replace', action='write')
-      write(utrace) SigPint2
-      close(utrace)
-      open(newunit=utrace, form='unformatted', access='stream', file='SigP3int.15.raw8', status='replace',action='write')
-      write(utrace) SigPint3
-      close(utrace)
-      open(newunit=utrace, form='unformatted', access='stream',file='SigHint.15.raw8', status='replace', action='write')
-      write(utrace) SigHint
-      close(utrace)
-    end if
-
 
     !PRODUCE A FIELD-INTEGRATED SOURCE TERM
     if (flagdirich /= 1) then   !Neumann conditions; incorporate a source term and execute the solve
@@ -1293,11 +1267,20 @@ J1halo(lx1+1,1:lx2,1:lx3)=J1halo(lx1,1:lx2,1:lx3)
 call halo(J1halo,1,tagJ1,x%flagper)
 
 if (lx2>1) then    !no need to do anything with boundary if we aren't going to differentiate eventually...
+!  if (iddown==-1) then
+!    J1halo(1:lx1,0,1:lx3)=-1*J1halo(1:lx1,2,1:lx3)+2*J1halo(1:lx1,1,1:lx3)
+!  end if
+!  if (idup==lid2) then
+!    J1halo(1:lx1,lx2+1,1:lx3)=2*J1halo(1:lx1,lx2,1:lx3)-J1halo(1:lx1,lx2-1,1:lx3)
+!  end if
   if (iddown==-1) then
-    J1halo(1:lx1,0,1:lx3)=-1*J1halo(1:lx1,2,1:lx3)+2*J1halo(1:lx1,1,1:lx3)
+    J1halo(1:lx1,0,1:lx3)=-1*J1halo(1:lx1,2,1:lx3)+2*J1halo(1:lx1,1,1:lx3)    !this effectively makes the derivative
+          !    first-order accurate at the edges - needed to pass ctest which was generated with first order edges...
+!    J1halo(1:lx1,0,1:lx3)=J1halo(1:lx1,1,1:lx3)
   end if
   if (idup==lid2) then
     J1halo(1:lx1,lx2+1,1:lx3)=2*J1halo(1:lx1,lx2,1:lx3)-J1halo(1:lx1,lx2-1,1:lx3)
+!    J1halo(1:lx1,lx2+1,1:lx3)=J1halo(1:lx1,lx2,1:lx3)
   end if
 end if
 if (.not. x%flagper) then

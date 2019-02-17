@@ -443,15 +443,15 @@ integer :: ix1,ix2,ix3    !grid sizes are borrow from grid module
 integer :: im
 !    integer, parameter :: lmodes=8
 real(wp) :: phase
-real(wp), dimension(1:lx2) :: x3dev    !< FIXME: little bit surprise we can use grid mod lx2 var as size...
+real(wp), dimension(1:size(Vmaxx1,1)) :: x3dev
 real(wp) :: meanx2,sigx2,meanx3,sigx3,meant,sigt,sigcurv,x30amp,varc    !for setting background field
 
 real(wp), dimension(:,:), pointer :: Vtopalt,Vbotalt
 
 
 !CALCULATE/SET TOP BOUNDARY CONDITIONS
-sigx2=1d0/20d0*(x%x2(lx2)-x%x2(1))
-meanx2=0.5d0*(x%x2(1)+x%x2(lx2))
+sigx2=1d0/20d0*(x%x2all(lx2all)-x%x2all(1))
+meanx2=0.5d0*(x%x2all(1)+x%x2all(lx2all))
 sigx3=1d0/20d0*(x%x3all(lx3all)-x%x3all(1))    !this requires that all workers have a copy of x3all!!!!
 meanx3=0.5d0*(x%x3all(1)+x%x3all(lx3all))
 
@@ -466,7 +466,7 @@ end if
 Phipk=0d0      !pk current density
 flagdirich=0    !Neumann conditions
 do ix3=1,lx3all
-  do ix2=1,lx2
+  do ix2=1,lx2all
     Vtopalt(ix2,ix3)=0d0
   end do
 end do
