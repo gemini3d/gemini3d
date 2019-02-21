@@ -268,6 +268,9 @@ integer :: idleft,idright
 
 real(wp) :: tstart,tfin
 
+integer :: utrace
+
+
 
 !SIZES - PERHAPS SHOULD BE TAKEN FROM GRID MODULE INSTEAD OF RECOMPUTED?
 lx1=size(sig0,1)
@@ -468,7 +471,8 @@ if (lx2/=1) then    !either field-resolved 3D or integrated 2D solve for 3D doma
       !-------
 
 
-      v2slab=vs2(lx1,1:lx2,1:lx3,1); v3slab=vs3(lx1,1:lx2,1:lx3,1);    !need to pick out the ExB drift here (i.e. the drifts from highest altitudes); but this is only valid for Cartesian, so it's okay for the foreseeable future
+      v2=vs2(1:lx1,1:lx2,1:lx3,1); v3=vs3(1:lx1,1:lx2,1:lx3,1);      !must be set since used later by the polarization current calculation
+      v2slab=v2(lx1,1:lx2,1:lx3); v3slab=v3(lx1,1:lx2,1:lx3);    !need to pick out the ExB drift here (i.e. the drifts from highest altitudes); but this is only valid for Cartesian, so it's okay for the foreseeable future
 
 
       !RADD--- ROOT NEEDS TO PICK UP *INTEGRATED* SOURCE TERMS AND COEFFICIENTS FROM WORKERS
@@ -658,6 +662,8 @@ if (maxval(incap) > 1d-6) then
   grad3E=divtmp(1:lx1,1:lx2,1:lx3)
 
   DE2Dt=(E2-E2prev)/dt+v2*grad2E+v3*grad3E
+
+
   grad2E=grad3D2(E3,x,1,lx1,1,lx2,1,lx3)
 !      grad3E=grad3D3(E3,x,1,lx1,1,lx2,1,lx3)
 
@@ -685,6 +691,26 @@ if (maxval(incap) > 1d-6) then
   J1pol=0d0
   J2pol=incap*DE2Dt
   J3pol=incap*DE3Dt
+
+
+!  if (maxval(abs(J2pol))>10 .or. maxval(abs(J3pol))>10) then
+!    open(newunit=utrace, form='unformatted', access='stream', file='Jpol.raw8', status='replace', action='write')
+!    write(utrace) J2pol
+!    write(utrace) J3pol
+!    write(utrace) E2
+!    write(utrace) E3
+!    write(utrace) E2prev
+!    write(utrace) E3prev
+!    write(utrace) grad2E
+!    write(utrace) grad3E
+!    write(utrace) v2
+!    write(utrace) v3
+!    close(utrace)
+!    error stop 'Crazy value for polarization current; bailing out...'
+!  end if
+!
+
+
 else       !pure electrostatic solve was done
   DE2Dt=0d0
   DE3Dt=0d0
@@ -1239,6 +1265,8 @@ if (maxval(incap) > 1d-6) then
   grad3E=divtmp(1:lx1,1:lx2,1:lx3)
 
   DE2Dt=(E2-E2prev)/dt+v2*grad2E+v3*grad3E
+
+
   grad2E=grad3D2(E3,x,1,lx1,1,lx2,1,lx3)
 !      grad3E=grad3D3(E3,x,1,lx1,1,lx2,1,lx3)
 
