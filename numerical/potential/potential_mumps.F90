@@ -874,7 +874,9 @@ type (DMUMPS_STRUC) mumps_par
 
 integer :: lcount,ix2tmp,ix3tmp
 
-real(wp), dimension(size(SigP,1),size(SigP,2)+1) :: tmpresults
+!real(wp), dimension(size(SigP,1),size(SigP,2)+1) :: tmpresults
+
+real(wp), dimension(size(SigP,1),size(SigP,2)) :: tmpresults
 
 real(wp), dimension(size(SigP,1),size(SigP,2)) :: elliptic2D_pol_conv_curv_periodic2
 
@@ -1341,7 +1343,6 @@ if ( myid==0 ) then
   end if
 
  !IF WE HAVE DONE A PERIODIC SOLVE, THE LAST GRID POINT NEEDS TO BE IGNORED WHEN WE RESHAPE THE POTENTIAL ARRAY.
-
   tmpresults=reshape(mumps_par%RHS,[lx2,lx3])
   elliptic2D_pol_conv_curv_periodic2=tmpresults(1:lx2,1:lx3)    !sort of superfluous now that hte solve size is the same as the grid
 
