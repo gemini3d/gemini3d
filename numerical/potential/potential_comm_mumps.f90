@@ -478,7 +478,8 @@ if (lx2/=1) then    !either field-resolved 3D or integrated 2D solve for 3D doma
       !-------
 
 
-      v2slab=vs2(lx1,1:lx2,1:lx3,1); v3slab=vs3(lx1,1:lx2,1:lx3,1);    !need to pick out the ExB drift here (i.e. the drifts from highest altitudes); but this is only valid for Cartesian, so it's okay for the foreseeable future
+      v2=vs2(1:lx1,1:lx2,1:lx3,1); v3=vs3(1:lx1,1:lx2,1:lx3,1);      !must be set since used later by the polarization current calculation
+      v2slab=v2(lx1,1:lx2,1:lx3); v3slab=v3(lx1,1:lx2,1:lx3);    !need to pick out the ExB drift here (i.e. the drifts from highest altitudes); but this is only valid for Cartesian, so it's okay for the foreseeable future
 
 
       !RADD--- ROOT NEEDS TO PICK UP *INTEGRATED* SOURCE TERMS AND COEFFICIENTS FROM WORKERS
@@ -730,6 +731,8 @@ if (maxval(incap) > 1d-6) then
   grad3E=divtmp(1:lx1,1:lx2,1:lx3)
 
   DE2Dt=(E2-E2prev)/dt+v2*grad2E+v3*grad3E
+
+
   grad2E=grad3D2(E3,x,1,lx1,1,lx2,1,lx3)
 !      grad3E=grad3D3(E3,x,1,lx1,1,lx2,1,lx3)
 
@@ -1371,6 +1374,8 @@ if (maxval(incap) > 1d-6) then
   grad3E=divtmp(1:lx1,1:lx2,1:lx3)
 
   DE2Dt=(E2-E2prev)/dt+v2*grad2E+v3*grad3E
+
+
   grad2E=grad3D2(E3,x,1,lx1,1,lx2,1,lx3)
 !      grad3E=grad3D3(E3,x,1,lx1,1,lx2,1,lx3)
 
