@@ -895,7 +895,7 @@ type (DMUMPS_STRUC) mumps_par
 
 integer :: lcount,ix2tmp,ix3tmp
 
-real(wp), dimension(size(SigP,1),size(SigP,2)+1) :: tmpresults
+real(wp), dimension(size(SigP,1),size(SigP,2)) :: tmpresults
 
 real(wp), dimension(size(SigP,1),size(SigP,2)) :: elliptic2D_pol_conv_curv_periodic2
 
