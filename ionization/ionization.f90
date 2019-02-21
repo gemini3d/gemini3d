@@ -38,7 +38,7 @@ data Pijcoeff(8,:) /-1.29566d0, -2.10952d-1, 2.73106d-1,  -2.92752d-2/
 contains
 
 
-pure function photoionization(x,nn,Tn,chi,f107,f107a)
+function photoionization(x,nn,Tn,chi,f107,f107a)
 
 !------------------------------------------------------------
 !-------COMPUTE PHOTOIONIZATION RATES PER SOLOMON ET AL, 2005
@@ -126,6 +126,8 @@ g=sqrt(g1**2+g2**2+g3**2)
 gavg=8d0
 
 Tninf=maxval(Tnmsis)   !set exospheric temperature based on the max value of the background MSIS atmosphere
+
+!both g and Tinf need to be computed as average over the entire grid...
 
 !O COLUMN DENSITY
 H=kB*Tninf/mn(1)/gavg      !scalar scale height
