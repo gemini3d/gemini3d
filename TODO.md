@@ -19,6 +19,7 @@ This file is intended to document development priorities for the GEMINI project.
 * magplot needs some way to know what the grid dimensions are so the user doesn't have to manually input 
 * Fix restart code for precipitation and electric field input files (need to be primed like the neutral input)
 * run + plot script...
+* Right now MATLAB scripts assume you specify the geographic center of the grid *in the nortern hemisphere*
 
 
 ## Future Code refactoring
