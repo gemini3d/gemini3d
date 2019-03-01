@@ -232,6 +232,11 @@ else
   end do
 end if
 
+
+!FORCE THE CODE TO USE 1D PROCESS GRID
+!lid2=1; lid3=lid;
+
+
 !THIS PROCESS' LOCATION ON THE GRID
 inds=ID2grid(myid)
 myid2=inds(1)

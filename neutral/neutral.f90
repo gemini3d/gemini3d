@@ -218,7 +218,9 @@ real(wp), dimension(size(nn,1)*size(nn,2)*size(nn,3)) :: parami
 real(wp) :: slope
 real(wp), dimension(size(nn,1),size(nn,2),size(nn,3)) :: dnOinow,dnN2inow,dnO2inow,dTninow,dvn1inow,dvn2inow,dvn3inow    !current time step perturbations (centered in time)
 
- integer(4) :: flaginit    !a flag that is set during the first call to read in data
+integer(4) :: flaginit    !a flag that is set during the first call to read in data
+
+integer :: utrace
 
 
 !CHECK WHETHER WE NEED TO LOAD A NEW FILE
@@ -453,17 +455,17 @@ if (t+dt/2d0>=tnext .or. t<=0d0) then   !negative time means that we need to loa
   dTniprev=dTninext
   dTninext=reshape(parami,[lx1,lx2,lx3])
 
-
-  !MORE DIAG
-  if (myid==lid/2) then
-    print *, 'Min/max values for dnOi:  ',minval(dnOinext),maxval(dnOinext)
-    print *, 'Min/max values for dnN2i:  ',minval(dnN2inext),maxval(dnN2inext)
-    print *, 'Min/max values for dnO2i:  ',minval(dnO2inext),maxval(dnO2inext)
-    print *, 'Min/max values for dvrhoi:  ',minval(dvnrhoinext),maxval(dvnrhoinext)
-    print *, 'Min/max values for dvnzi:  ',minval(dvnzinext),maxval(dvnzinext)
-    print *, 'Min/max values for dTni:  ',minval(dTninext),maxval(dTninext)
-  end if
-
+!
+!  !MORE DIAG
+!  if (myid==lid/2) then
+!    print *, 'Min/max values for dnOi:  ',minval(dnOinext),maxval(dnOinext)
+!    print *, 'Min/max values for dnN2i:  ',minval(dnN2inext),maxval(dnN2inext)
+!    print *, 'Min/max values for dnO2i:  ',minval(dnO2inext),maxval(dnO2inext)
+!    print *, 'Min/max values for dvrhoi:  ',minval(dvnrhoinext),maxval(dvnrhoinext)
+!    print *, 'Min/max values for dvnzi:  ',minval(dvnzinext),maxval(dvnzinext)
+!    print *, 'Min/max values for dTni:  ',minval(dTninext),maxval(dTninext)
+!  end if
+!
 
   !ROTATE VECTORS INTO X1 X2 DIRECTIONS (Need to include unit vectors with grid structure)
   if (myid==0) then
@@ -534,6 +536,7 @@ end do
 
 !SOME BASIC DIAGNOSTICS
 if (myid==lid/2) then
+  print *, myid
   print *, 'tprev,t,tnext:  ',tprev,t+dt/2d0,tnext
   print *, 'Min/max values for dnOinow:  ',minval(dnOinow),maxval(dnOinow)
   print *, 'Min/max values for dnN2inow:  ',minval(dnN2inow),maxval(dnN2inow)
@@ -558,6 +561,19 @@ vn1=vn1base+dvn1inow
 vn2=vn2base+dvn2inow
 vn3=vn3base+dvn3inow
 
+!
+!if (myid==lid/2) then
+!open(newunit=utrace, form='unformatted', access='stream', file='dneuvars.raw8', status='replace', action='write')
+!  write(utrace) dnOinow
+!  write(utrace) dnN2inow
+!  write(utrace) dnO2inow
+!  write(utrace) dTninow
+!  write(utrace) dvn1inow
+!  write(utrace) dvn2inow
+!  write(utrace) dvn3inow
+!  close(utrace)
+!end if
+!
 end subroutine neutral_perturb_axisymm
 
 
@@ -912,6 +928,7 @@ end do
 
 !SOME BASIC DIAGNOSTICS
 if (myid==lid/2) then
+  print *, myid
   print *, 'tprev,t,tnext:  ',tprev,t+dt/2d0,tnext
   print *, 'Min/max values for dnOinow:  ',minval(dnOinow),maxval(dnOinow)
   print *, 'Min/max values for dnN2inow:  ',minval(dnN2inow),maxval(dnN2inow)

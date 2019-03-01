@@ -76,6 +76,7 @@ real(wp), dimension(1:size(vs1,1)-4,1:size(vs1,2)-4,1:size(vs1,3)-4) :: dv1iupda
 real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,size(ns,4)) :: Q
 real(wp), parameter :: xicon=3d0    !decent value for closed field-line grids extending to high altitudes.  
 
+
 !MAKING SURE THESE ARRAYS ARE ALWAYS IN SCOPE
 if ((flagglow/=0).and.(.NOT.allocated(PrprecipG))) then
   allocate(PrprecipG(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,size(ns,4)-1))
@@ -89,6 +90,7 @@ if ((flagglow/=0).and.(.NOT.allocated(iverG))) then
   allocate(iverG(size(iver,1),size(iver,2),size(iver,3)))
   iverG(:,:,:)=0.0_wp
 end if
+
 
 !CALCULATE THE INTERNAL ENERGY AND MOMENTUM FLUX DENSITIES (ADVECTION AND SOURCE SOLUTIONS ARE DONE IN THESE VARIABLES)
 do isp=1,lsp
@@ -438,6 +440,15 @@ select case (paramflag)
   case default    !do nothing...
     print *,  '!non-standard parameter selected in clean_params...'
 end select
+
+
+!WIPE OUT THE GHOST CELLS, JUST IN CASE - e.g. could impact the divergence computation...
+param(-1:0,:,:,:)=0._wp
+param(lx1+1:lx1+2,:,:,:)=0._wp
+param(:,-1:0,:,:)=0._wp
+param(:,lx2+1:lx2+2,:,:)=0._wp
+param(:,:,-1:0,:)=0._wp
+param(:,:,lx3+1:lx3+2,:)=0._wp
 
 end subroutine clean_param
 

@@ -492,6 +492,13 @@ if (lx2/=1) then    !either field-resolved 3D or integrated 2D solve for 3D doma
       call gather_recv(v3slab,tagv3electro,v3slaball)
 
 
+!     if (t>480) then
+!       open(newunit=utrace, form='unformatted', access='stream', file='scrtermintall.raw8', status='replace', action='write')
+!       write(utrace) srctermintall
+!       close(utrace)
+!       error stop 'DEBUG'
+!     end if
+
       !R------
       !EXECUTE FIELD-INTEGRATED SOLVE
       Vminx2slice=Vminx2(lx1,:)    !slice the boundaries into expected shape
@@ -509,6 +516,7 @@ if (lx2/=1) then    !either field-resolved 3D or integrated 2D solve for 3D doma
         Phislab=elliptic2D_pol_conv_curv(srctermintall,SigPint2all,SigPint3all,SigHintall,incapintall,v2slaball,v3slaball, &
                                  Vminx2slice,Vmaxx2slice,Vminx3slice,Vmaxx3slice, &
                                  dt,x,Phislab0,perflag,it)    !note tha this solver is only valid for cartesian meshes, unless the inertial capacitance is set to zero
+!        Phislab=0d0
       else
         print *, '!!!User selected periodic solve...'
         Phislab=elliptic2D_pol_conv_curv_periodic2(srctermintall,SigPint2all,SigHintall,incapintall,v2slaball,v3slaball, &    !note that either sigPint2 or 3 will work since this must be cartesian...
@@ -1198,6 +1206,7 @@ if (lx2/=1) then    !either field-resolved 3D or integrated 2D solve for 3D doma
 
 
       call elliptic_workers()    !workers do not need any specific info about      proglem.  
+      
 
     else     !Dirichlet conditions - since this is field integrated we just copy BCs specified by user to other locations along field line
 

@@ -128,6 +128,7 @@ gavg=8d0
 Tninf=maxval(Tnmsis)   !set exospheric temperature based on the max value of the background MSIS atmosphere
 
 !both g and Tinf need to be computed as average over the entire grid...
+Tninf=1100d0
 
 !O COLUMN DENSITY
 H=kB*Tninf/mn(1)/gavg      !scalar scale height

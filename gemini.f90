@@ -89,6 +89,8 @@ real(wp) :: tglowout                    !time for next GLOW output
 !FOR HANDLING OUTPUT
 integer :: argc
 character(256) :: argv
+
+integer utrace
 !----------------------------------------------------------
 !------MAIN PROGRAM
 !----------------------------------------------------------
@@ -181,6 +183,20 @@ end if
 !MAIN LOOP
 UTsec=UTsec0; it=1; t=0d0; tout=t; tglowout=t;
 do while (t<tdur)
+
+if (maxval(abs(vs1))>20000) then
+  open(newunit=utrace, form='unformatted', access='stream', file='driftstemps.raw8', status='replace', action='write')
+  write(utrace) vs1
+  write(utrace) Ts
+  write(utrace) ns
+  write(utrace) vn1
+  write(utrace) Tn
+  write(utrace) x%alt
+  close(utrace)
+  error stop 'Exceedingly high values for drift detected...'
+end if
+
+
   !TIME STEP CALCULATION
   dtprev=dt
   call dt_comm(t,tout,tglowout,flagglow,tcfl,ns,Ts,vs1,vs2,vs3,B1,B2,B3,x,potsolve,dt)

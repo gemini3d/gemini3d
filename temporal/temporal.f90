@@ -40,6 +40,8 @@ real(wp) :: dttmp
 
 
 call dt_calc(tcfl,ns,Ts,vs1,vs2,vs3,B1,B2,B3,x%dl1i,x%dl2i,x%dl3i,potsolve,cour1,cour2,cour3,dt)
+print*, 'Process:  ',myid,' wants dt of:  ',dt
+
 if (myid/=0) then
   call mpi_send(dt,1,mpi_realprec,0,tagdt,MPI_COMM_WORLD,ierr)   !send what I think dt should be
   call mpi_recv(dt,1,mpi_realprec,0,tagdt,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)   !receive roots decision   
@@ -53,9 +55,15 @@ else
 
   !CHECK WHETHER WE'D OVERSTEP OUR TARGET OUTPUT TIME
   !GLOW OUTPUT HAS PRIORITY SINCE IT WILL OUTPUT MORE OFTEN
-  if ((flagglow/=0).and.(t+dt>tglowout)) dt=tglowout-t
+  if ((flagglow/=0).and.(t+dt>tglowout)) then 
+    dt=tglowout-t
+    print*, 'GLOW is throttling dt...'
+  end if
 
-  if (t+dt>tout) dt=tout-t
+  if (t+dt>tout) then
+    dt=tout-t
+    print*, 'Slowing down for an output...'
+  end if
 
   !DON'T ALLOW ZERO DT
   dt = max(dt, 1e-6_wp)
