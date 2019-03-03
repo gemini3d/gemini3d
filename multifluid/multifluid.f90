@@ -393,6 +393,15 @@ select case (paramflag)
         end do
       end if
     end do
+
+
+    !SET DENSITY TO SOME HARMLESS VALUE
+    param(-1:0,:,:,:)=mindensdiv
+    param(lx1+1:lx1+2,:,:,:)=mindensdiv
+    param(:,-1:0,:,:)=mindensdiv
+    param(:,lx2+1:lx2+2,:,:)=mindensdiv
+    param(:,:,-1:0,:)=mindensdiv
+    param(:,:,lx3+1:lx3+2,:)=mindensdiv
   case (2)    !velocity
     do isp=1,lsp       !set null cells to zero mometnum
       do iinull=1,x%lnull
@@ -425,6 +434,15 @@ select case (paramflag)
         end do
       end do
     end do
+
+
+    !ZERO OUT THE GHOST CELL VELOCITIES
+    param(-1:0,:,:,:)=0._wp
+    param(lx1+1:lx1+2,:,:,:)=0._wp
+    param(:,-1:0,:,:)=0._wp
+    param(:,lx2+1:lx2+2,:,:)=0._wp
+    param(:,:,-1:0,:)=0._wp
+    param(:,:,lx3+1:lx3+2,:)=0._wp
   case (3)    !temperature
     param=max(param,100._wp)     !temperature floor
 
@@ -437,18 +455,18 @@ select case (paramflag)
         param(ix1,ix2,ix3,isp)=100._wp
       end do
     end do 
+
+
+    !SET TEMPS TO SOME NOMINAL VALUE
+    param(-1:0,:,:,:)=100._wp
+    param(lx1+1:lx1+2,:,:,:)=100._wp
+    param(:,-1:0,:,:)=100._wp
+    param(:,lx2+1:lx2+2,:,:)=100._wp
+    param(:,:,-1:0,:)=100._wp
+    param(:,:,lx3+1:lx3+2,:)=100._wp
   case default    !do nothing...
     print *,  '!non-standard parameter selected in clean_params...'
 end select
-
-
-!WIPE OUT THE GHOST CELLS, JUST IN CASE - e.g. could impact the divergence computation...
-param(-1:0,:,:,:)=0._wp
-param(lx1+1:lx1+2,:,:,:)=0._wp
-param(:,-1:0,:,:)=0._wp
-param(:,lx2+1:lx2+2,:,:)=0._wp
-param(:,:,-1:0,:)=0._wp
-param(:,:,lx3+1:lx3+2,:)=0._wp
 
 end subroutine clean_param
 

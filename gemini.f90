@@ -184,16 +184,17 @@ end if
 UTsec=UTsec0; it=1; t=0d0; tout=t; tglowout=t;
 do while (t<tdur)
 
-if (maxval(abs(vs1))>20000) then
+if (maxval(abs(vs1))>20000 .or. maxval(abs(Ts))>20000) then
   open(newunit=utrace, form='unformatted', access='stream', file='driftstemps.raw8', status='replace', action='write')
   write(utrace) vs1
   write(utrace) Ts
   write(utrace) ns
   write(utrace) vn1
   write(utrace) Tn
+  write(utrace) nn
   write(utrace) x%alt
   close(utrace)
-  error stop 'Exceedingly high values for drift detected...'
+  error stop 'Exceedingly high values for drift or temperature detected...'
 end if
 
 
