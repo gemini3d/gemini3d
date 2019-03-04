@@ -125,10 +125,10 @@ g=sqrt(g1**2+g2**2+g3**2)
 !    gavg=sum(g)/(lx1*lx2*lx3)    !single average value for computing colunn dens.  Interestingly this is a worker average...  Do we need root grav vars. grid mod to prevent tearing?  Should be okay as long as the grid is only sliced along the x3-dimension, BUT it isn't for simulations where arrays get permuted!!!
 gavg=8d0
 
-Tninf=maxval(Tnmsis)   !set exospheric temperature based on the max value of the background MSIS atmosphere
+Tninf=maxval(Tnmsis)   !set exospheric temperature based on the max value of the background MSIS atmosphere; this should really not be a worker average; should be global grid average...
 
 !both g and Tinf need to be computed as average over the entire grid...
-Tninf=1100d0
+!Tninf=1100d0
 
 !O COLUMN DENSITY
 H=kB*Tninf/mn(1)/gavg      !scalar scale height

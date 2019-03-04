@@ -99,7 +99,6 @@ do isp=1,lsp
 end do
 
 
-!if (.false.) then
 !ADVECTION SUBSTEP (CONSERVED VARIABLES SHOULD BE UPDATED BEFORE ENTERING)
 call cpu_time(tstart)
 chrgflux=0._wp
@@ -134,7 +133,6 @@ call cpu_time(tfin)
 if (myid==0) then
   print *, 'Completed advection substep for time step:  ',t,' in cpu_time of:  ',tfin-tstart
 end if
-!end if
 
 
 !CLEAN DENSITY AND VELOCITY - SETS THE NULL CELLS TO SOME SENSIBLE VALUE SO
@@ -152,7 +150,6 @@ end do
 Q(:,:,:,lsp)=0._wp
 
 
-!if (.false.) then
 !NONSTIFF/NONBALANCE INTERNAL ENERGY SOURCES (RK2 INTEGRATION) 
 call cpu_time(tstart)
 do isp=1,lsp
@@ -173,14 +170,12 @@ call cpu_time(tfin)
 if (myid==0) then
   print *, 'Completed compression substep for time step:  ',t,' in cpu_time of:  ',tfin-tstart
 end if
-!end if
 
 
 !CLEAN TEMPERATURE
 call clean_param(x,3,Ts)
 
 
-!if (.false.) then
 !DIFFUSION OF ENERGY
 call cpu_time(tstart)
 do isp=1,lsp
@@ -197,7 +192,6 @@ call cpu_time(tfin)
 if (myid==0) then
   print *, 'Completed energy diffusion substep for time step:  ',t,' in cpu_time of:  ',tfin-tstart
 end if
-!end if
 
 
 !ZZZ - CLEAN TEMPERATURE BEFORE CONVERTING TO INTERNAL ENERGY
@@ -272,7 +266,6 @@ Qepreciptmp=eheating(nn,Tn,Prpreciptmp,ns)   !thermal electron heating rate from
 Prprecip=Prprecip+Prpreciptmp
 Qeprecip=Qeprecip+Qepreciptmp
 
-!if (.false.) then
 call srcsEnergy(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,Pr,Lo)
 do isp=1,lsp
   if (isp==lsp) then
@@ -289,12 +282,10 @@ call cpu_time(tfin)
 if (myid==0) then
   print *, 'Energy sources substep for time step:  ',t,'done in cpu_time of:  ',tfin-tstart
 end if
-!end if
 
 !CLEAN TEMPERATURE
 call clean_param(x,3,Ts)
 
-!if (.false.) then
 !ALL VELOCITY SOURCES
 call cpu_time(tstart)
 call srcsMomentum(nn,vn1,Tn,ns,vs1,vs2,vs3,Ts,E1,Q,x,Pr,Lo)    !added artificial viscosity...
@@ -309,7 +300,6 @@ call cpu_time(tfin)
 if (myid==0) then
   print *, 'Velocity sources substep for time step:  ',t,'done in cpu_time of:  ',tfin-tstart
 end if
-!end if
 
 
 !ELECTRON VELOCITY SOLUTION
@@ -325,7 +315,6 @@ vs1(1:lx1,1:lx2,1:lx3,lsp)=-1._wp/max(ns(1:lx1,1:lx2,1:lx3,lsp),mindensdiv)/qs(l
 call clean_param(x,2,vs1)
 
 
-!if (.false.) then
 !ALL MASS SOURCES
 call cpu_time(tstart)
 call srcsContinuity(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,Pr,Lo)
@@ -339,7 +328,6 @@ call cpu_time(tfin)
 if (myid==0) then
   print *, 'Mass sources substep for time step:  ',t,'done in cpu_time of:  ',tfin-tstart
 end if
-!end if
 
 
 !ELECTRON DENSITY SOLUTION
@@ -435,14 +423,14 @@ select case (paramflag)
       end do
     end do
 
-
-    !ZERO OUT THE GHOST CELL VELOCITIES
-    param(-1:0,:,:,:)=0._wp
-    param(lx1+1:lx1+2,:,:,:)=0._wp
-    param(:,-1:0,:,:)=0._wp
-    param(:,lx2+1:lx2+2,:,:)=0._wp
-    param(:,:,-1:0,:)=0._wp
-    param(:,:,lx3+1:lx3+2,:)=0._wp
+!MZ - for reasons I don't understand, this causes ctest to fail...
+!    !ZERO OUT THE GHOST CELL VELOCITIES
+!    param(-1:0,:,:,:)=0._wp
+!    param(lx1+1:lx1+2,:,:,:)=0._wp
+!    param(:,-1:0,:,:)=0._wp
+!    param(:,lx2+1:lx2+2,:,:)=0._wp
+!    param(:,:,-1:0,:)=0._wp
+!    param(:,:,lx4+1:lx3+2,:)=0._wp
   case (3)    !temperature
     param=max(param,100._wp)     !temperature floor
 
