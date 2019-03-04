@@ -40,7 +40,6 @@ real(wp) :: dttmp
 
 
 call dt_calc(tcfl,ns,Ts,vs1,vs2,vs3,B1,B2,B3,x%dl1i,x%dl2i,x%dl3i,potsolve,cour1,cour2,cour3,dt)
-print*, 'Process:  ',myid,' wants dt of:  ',dt
 
 if (myid/=0) then
   call mpi_send(dt,1,mpi_realprec,0,tagdt,MPI_COMM_WORLD,ierr)   !send what I think dt should be

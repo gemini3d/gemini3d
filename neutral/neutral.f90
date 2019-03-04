@@ -561,19 +561,6 @@ vn1=vn1base+dvn1inow
 vn2=vn2base+dvn2inow
 vn3=vn3base+dvn3inow
 
-!
-!if (myid==lid/2) then
-!open(newunit=utrace, form='unformatted', access='stream', file='dneuvars.raw8', status='replace', action='write')
-!  write(utrace) dnOinow
-!  write(utrace) dnN2inow
-!  write(utrace) dnO2inow
-!  write(utrace) dTninow
-!  write(utrace) dvn1inow
-!  write(utrace) dvn2inow
-!  write(utrace) dvn3inow
-!  close(utrace)
-!end if
-!
 end subroutine neutral_perturb_axisymm
 
 
