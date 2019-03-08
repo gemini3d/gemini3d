@@ -78,8 +78,10 @@ integer, parameter :: tagx3all=95
 !> AURORAL TAG(S)
 integer, parameter :: tagAur=96
 
-!> GENERIC PARAMETER (USED BY ADVECTION CODE - HOPEFULLY DOESN'T CREATE PROBLEMS
-integer, parameter :: taggenericparam=97
+!!> GENERIC PARAMETER (USED BY ADVECTION CODE - HOPEFULLY DOESN'T CREATE PROBLEMS; MZ - probably need to fix???
+!integer, parameter :: taggenericparam=97
+
+integer, parameter :: tagTninf=98
 
 !> VARIABLES REUSED BY ALL WORKERS AND USING MODULES
 integer, protected :: myid,lid    

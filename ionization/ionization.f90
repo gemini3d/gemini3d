@@ -2,9 +2,11 @@ module ionization
 
 use phys_consts, only: elchrg, lsp, kb, mn, re, pi, wp, lwave
 use calculus, only: chapman_a
-use neutral, only : Tnmsis       !we need the unperturbed msis temperatures to apply the simply chapman theory used by this module
-use grid, only : curvmesh,lx1,lx2,lx3,g1,g2,g3
+use neutral, only: Tnmsis       !we need the unperturbed msis temperatures to apply the simply chapman theory used by this module
+use grid, only: curvmesh,lx1,lx2,lx3,g1,g2,g3
 use timeutils, only: doy_calc
+use mpi, only: MPI_COMM_WORLD,MPI_STATUS_IGNORE
+use mpimod, only: myid,ierr,lid,mpi_realprec,tagTninf
 
 implicit none
 private
@@ -60,6 +62,9 @@ real(wp), dimension(size(nn,1),size(nn,2),size(nn,3)) :: nOcol,nN2col,nO2col
 real(wp), dimension(size(nn,1),size(nn,2),size(nn,3)) :: phototmp
 real(wp) :: gavg,H,Tninf
 real(wp), dimension(size(nn,1),size(nn,2),size(nn,3),ll) :: Iflux
+
+real(wp) :: Tninftmp
+integer :: iid
 
 real(wp), dimension(size(nn,1),size(nn,2),size(nn,3),lsp-1) :: photoionization    !don't need a separate rate for electrons
 
@@ -125,10 +130,25 @@ g=sqrt(g1**2+g2**2+g3**2)
 !    gavg=sum(g)/(lx1*lx2*lx3)    !single average value for computing colunn dens.  Interestingly this is a worker average...  Do we need root grav vars. grid mod to prevent tearing?  Should be okay as long as the grid is only sliced along the x3-dimension, BUT it isn't for simulations where arrays get permuted!!!
 gavg=8d0
 
-Tninf=maxval(Tnmsis)   !set exospheric temperature based on the max value of the background MSIS atmosphere; this should really not be a worker average; should be global grid average...
+Tninf=maxval(Tnmsis)   !set exospheric temperature based on the max value of the background MSIS atmosphere; note this is a worker max
 
 !both g and Tinf need to be computed as average over the entire grid...
-!Tninf=1100d0
+if (myid==0) then     !root
+  do iid=1,lid-1
+      call mpi_recv(Tninftmp,1,mpi_realprec,iid,tagTninf,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+      if (Tninf < Tninftmp) Tninf=Tninftmp
+  end do
+
+  do iid=1,lid-1
+    call mpi_send(Tninf,1,mpi_realprec,iid,tagTninf,MPI_COMM_WORLD,ierr)
+  end do  
+
+  print *, 'Exospheric temperature used for photoionization:  ',Tninf
+else                  !workders
+  call mpi_send(Tninf,1,mpi_realprec,0,tagTninf,MPI_COMM_WORLD,ierr)                        !send what I think Tninf should be
+  call mpi_recv(Tninf,1,mpi_realprec,0,tagTninf,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)      !receive roots decision 
+end if
+
 
 !O COLUMN DENSITY
 H=kB*Tninf/mn(1)/gavg      !scalar scale height

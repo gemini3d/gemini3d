@@ -25,7 +25,7 @@ add_subdirectory(vendor/msis00)
 
 # --- GEMINI
 add_library(ionization ionization/ionization.f90)
-target_link_libraries(ionization PRIVATE neutral const)
+target_link_libraries(ionization PRIVATE neutral const mpimod)
 if(USEGLOW)
   include(${PROJECT_SOURCE_DIR}/cmake/glow.cmake)
 
