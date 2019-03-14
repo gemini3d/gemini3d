@@ -34,12 +34,23 @@ Re=6370e3;
 %TD SPHERICAL LOCATION OF REQUESTED CENTER POINT
 [thetatd,phid]=geog2geomag(glat,glon);
 
+
+%SETS THE EDGES OF THE GRID
 thetax2min=thetatd-dtheta/2*pi/180;
 thetax2max=thetatd+dtheta/2*pi/180;
-pmax=(Re+altmin)/Re/sin(thetax2min)^2;	%bottom left grid point p
-qtmp=(Re/(Re+altmin))^2*cos(thetax2min);	%bottom left grid q (also bottom right)
-pmin=sqrt(cos(thetax2max)/sin(thetax2max)^4/qtmp); %bottom right grid p
+if(thetatd<pi/2)   %NH
+  pmax=(Re+altmin)/Re/sin(thetax2min)^2;	%bottom left grid point p
+  qtmp=(Re/(Re+altmin))^2*cos(thetax2min);	%bottom left grid q (also bottom right)
+  pmin=sqrt(cos(thetax2max)/sin(thetax2max)^4/qtmp); %bottom right grid p
+else               %SH
+  pmax=(Re+altmin)/Re/sin(thetax2max)^2;	%bottom left grid point p
+  qtmp=(Re/(Re+altmin))^2*cos(thetax2max);	%bottom left grid q (also bottom right)
+  pmin=sqrt(cos(thetax2max)/sin(thetax2min)^4/qtmp); %bottom right grid p  
+end
 rtmp=fminbnd(@(x) qp2robj(x,qtmp,pmin),0,100*Re);        %bottom right r
+
+
+
 %pmin=(Re+rtmp)/Re/sin(thetax2max)^2;
 %p=linspace(pmin,pmax,lp);
 p=linspace(pmin,pmax,lpp);
@@ -47,19 +58,36 @@ p=linspace(pmin,pmax,lpp);
 %pstride=p(2)-p(1);
 %p=[p(1)-2*pstride,p(1)-pstride,p,p(end)+pstride,p(end)+2*pstride];
 
-if gridflag==0
+if gridflag==0      %open dipole grid
 %    thetamax=thetax2min+pi/180;        %open
 %    thetamax=thetax2min+pi/75;        %open
 %     thetamax=thetamin+pi/50;        %open
 %     thetamax=thetamin+pi/30;        %open
-    thetamax=thetax2min+pi/25;        %open
-else
-    thetamax=pi-thetax2min;           %closed
+   if(thetatd<pi/2)   %northern hemisphere
+     thetamax=thetax2min+pi/25;
+   else
+     thetamax=thetax2max-pi/25;       
+   end
+else                %close dipole grid
+   if(thetatd<pi/2) %NH
+     thetamax=pi-thetax2min;
+   else             %SH
+     thetamax=pi-thetax2max;       
+   end
 end
-rmin=p(end)*Re*sin(thetax2min)^2; %use last field line to get qmin and qmax
-rmax=p(end)*Re*sin(thetamax)^2;
-qmin=cos(thetax2min)*Re^2/rmin^2;
-qmax=cos(thetamax)*Re^2/rmax^2;
+if(thetatd<pi/2)
+  rmin=p(end)*Re*sin(thetax2max)^2; %use last field line to get qmin and qmax
+  rmax=p(end)*Re*sin(thetamax)^2;
+  qmin=cos(thetax2min)*Re^2/rmin^2;
+  qmax=cos(thetamax)*Re^2/rmax^2;
+else
+  rmin=p(end)*Re*sin(thetamax)^2; %use last field line to get qmin and qmax
+  rmax=p(end)*Re*sin(thetax2max)^2;
+  qmin=cos(thetamax)*Re^2/rmin^2;
+  qmax=cos(thetax2max)*Re^2/rmax^2; 
+end
+
+
 %q=linspace(qmin,qmax,lq)';
 q=linspace(qmin,qmax,lqp)';
 q=sort(q);
