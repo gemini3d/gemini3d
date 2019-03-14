@@ -90,6 +90,9 @@ real(wp) :: tglowout                    !time for next GLOW output
 integer :: argc
 character(256) :: argv
 
+!TO CONTROL THROTTLING OF TIME STEP
+real(wp), parameter :: dtscale=2d0
+
 !----------------------------------------------------------
 !------MAIN PROGRAM
 !----------------------------------------------------------
@@ -186,8 +189,8 @@ do while (t<tdur)
   dtprev=dt
   call dt_comm(t,tout,tglowout,flagglow,tcfl,ns,Ts,vs1,vs2,vs3,B1,B2,B3,x,potsolve,dt)
   if (it>1) then
-    if(dt/dtprev > 10d0) then     !throttle how quickly we allow dt to increase
-      dt=10d0*dtprev
+    if(dt/dtprev > dtscale) then     !throttle how quickly we allow dt to increase
+      dt=dtscale*dtprev
       if (myid==0) then
         write(*,*) 'Throttling dt to:  ',dt
       end if

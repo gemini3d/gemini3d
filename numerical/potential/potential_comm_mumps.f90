@@ -104,9 +104,12 @@ lx2=size(ns,2)-4
 lx3=size(ns,3)-4
 
 
+
 !POTENTIAL SOLUTION (IF REQUIRED)
 call cpu_time(tstart)
 call conductivities(nn,Tn,ns,Ts,vs1,B1,sig0,sigP,sigH,muP,muH,muPvn,muHvn)
+
+
 if (flagcap/=0) then
   call capacitance(ns,B1,flagcap,incap)
   if (it==1) then     !check that we don't have an unsupported grid type for doing capacitance
@@ -269,6 +272,7 @@ integer :: idleft,idright,iddown,idup
 real(wp) :: tstart,tfin
 
 integer :: utrace
+
 
 
 !SIZES - PERHAPS SHOULD BE TAKEN FROM GRID MODULE INSTEAD OF RECOMPUTED?

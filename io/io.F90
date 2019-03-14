@@ -382,6 +382,9 @@ close(u)
 if (any(ieee_is_nan(nsall))) error stop 'NaN in nsall'
 if (any(ieee_is_nan(vs1all))) error stop 'NaN in vs1all'
 if (any(ieee_is_nan(Tsall))) error stop 'NaN in Tsall'
+if (any(Tsall<0._wp)) error stop 'negative temperature in Tsall'
+if (any(nsall<0._wp)) error stop 'negative density'
+if (any(vs1all>3d8)) error stop 'drift faster than c'
 print *, 'Done gathering input...'
 
 
