@@ -45,7 +45,7 @@ if(thetatd<pi/2)   %NH
 else               %SH
   pmax=(Re+altmin)/Re/sin(thetax2max)^2;	%bottom left grid point p
   qtmp=(Re/(Re+altmin))^2*cos(thetax2max);	%bottom left grid q (also bottom right)
-  pmin=sqrt(cos(thetax2max)/sin(thetax2min)^4/qtmp); %bottom right grid p  
+  pmin=sqrt(cos(thetax2max)/sin(thetax2min)^4/qtmp); %bottom right grid p, why mixing of max/min here???  
 end
 rtmp=fminbnd(@(x) qp2robj(x,qtmp,pmin),0,100*Re);        %bottom right r
 
@@ -76,7 +76,7 @@ else                %close dipole grid
    end
 end
 if(thetatd<pi/2)
-  rmin=p(end)*Re*sin(thetax2max)^2; %use last field line to get qmin and qmax
+  rmin=p(end)*Re*sin(thetax2min)^2; %use last field line to get qmin and qmax
   rmax=p(end)*Re*sin(thetamax)^2;
   qmin=cos(thetax2min)*Re^2/rmin^2;
   qmax=cos(thetamax)*Re^2/rmax^2;
