@@ -63,5 +63,8 @@ These are projects in progress involved GEMINI, you are encouraged to email M. Z
 
 
 ## Interfaces with other models
-* (VERY IMPORTANT) Ability to use GLOW to compute ionization and heating rates, as well as brightnesses of various bands of interest.  This brings up a lot of questions about how GLOW will function on a closed field-line grid; we may need to talk to Stan about this.  
-
+* DONE!!! (VERY IMPORTANT) Ability to use GLOW to compute ionization and heating rates, as well as brightnesses of various bands of interest.  This brings up a lot of questions about how GLOW will function on a closed field-line grid; we may need to talk to Stan about this.  
+* Pass inclination from GEMINI to GLOW rather than using IGRF in glow while using a dipole in GEMINI
+* Return superthermal current from GLOW in order to calculate the thermal current in GEMINI
+* Inverted grid must be passed to GLOW if running a curvilinear altitude array to GLOW
+* Talk to Stan about how GLOW might be used on closed field lines for GEMINI (not sure if it can be used in this way currently)
