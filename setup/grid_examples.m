@@ -3,27 +3,35 @@ addpath ./gridgen;
 addpath ../script_utils;
 
 
-%% MOORE, OK GRID (FULL)
-dtheta=25;
-dphi=35;
+%% EXAMPLE GRID CENTERED ON LONGYEAR
+dtheta=15;
+dphi=15;
 lp=125;
 lq=250;
 lphi=40;
 altmin=80e3;
-glat=39;
-glon=262.51;
+glat=78;
+glon=15;
 gridflag=0;
-flagsource=1;
+flagsource=0;
+
 
 
 %% GEOGRAPHIC COORDINATES OF NEUTRAL SOURCE (OR GRID CENTER)
-%MOORE OK
-sourcelat=35.3;
-sourcelong=360-97.7;
-neugridtype=0;            %1 = Cartesian neutral grid, anything else - axisymmetric
-zmin=0;
-zmax=660;
-rhomax=1800;
+sourcelat=glat;
+sourcelong=glon;
+neugridtype=[];
+zmin=[];
+zmax=[];
+rhomax=[];
+
+% %MOORE OK
+% sourcelat=35.3;
+% sourcelong=360-97.7;
+% neugridtype=0;            %1 = Cartesian neutral grid, anything else - axisymmetric
+% zmin=0;
+% zmax=660;
+% rhomax=1800;
 
 % % NO SOURCE SPECIFIED, SET TO CENTER OF GRID
 % sourcelat=glat;
@@ -74,6 +82,18 @@ rmpath ../script_utils;
 % sourcelong=360-72.898;
 
 
+
+% %% MOORE, OK GRID (FULL)
+% dtheta=25;
+% dphi=35;
+% lp=125;
+% lq=250;
+% lphi=40;
+% altmin=80e3;
+% glat=39;
+% glon=262.51;
+% gridflag=0;
+% flagsource=1;
 
 % %TOHOKU-LIKE GRID
 % dtheta=7.5;

@@ -859,7 +859,7 @@ real(wp), intent(in) :: UTsec
 real(wp), dimension(:,:,:), intent(in) :: iver
 
 real(wp), dimension(1:lx2,1:lwave,1:lx3) :: ivertmp
-real(wp), dimension(1:lx2,1:lwave,1:lx3all) :: iverall
+real(wp), dimension(1:lx2all,1:lwave,1:lx3all) :: iverall
 
 character(:), allocatable :: outdir_composite, filenamefull
 integer :: u
@@ -876,9 +876,9 @@ print *, '  Output file name (auroral maps):  ',filenamefull
 open(newunit=u,file=filenamefull,status='replace',form='unformatted',access='stream',action='write')
 
 if(flagswap/=1) then
-  write(u) reshape(iverall,[lx2,lx3all,lwave],order=[1,3,2])
+  write(u) reshape(iverall,[lx2all,lx3all,lwave],order=[1,3,2])
 else
-  write(u) reshape(iverall,[lx3all,lwave,lx2],order=[3,2,1])
+  write(u) reshape(iverall,[lx3all,lwave,lx2all],order=[3,2,1])
 end if
 
 close(u)
@@ -888,9 +888,7 @@ end subroutine output_aur_root
 subroutine output_magfields(outdir,ymd,UTsec,Br,Btheta,Bphi)
 
 !------------------------------------------------------------
-!-------A BASIC WRAPPER FOR THE ROOT AND WORKER OUTPUT FUNCTIONS
-!-------BOTH ROOT AND WORKERS CALL THIS PROCEDURE TO GENERATE
-!-------MAGNETIC FIELD OUTPUT FILES,  WE ASSUME THE ROOT PROCESS
+!-------WE ASSUME THE ROOT PROCESS
 !-------HAS ALREADY REDUCED THE MAGNETIC FIELD DATA
 !------------------------------------------------------------
 
