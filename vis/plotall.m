@@ -56,7 +56,6 @@ end
 h = plotinit(xg, visible);
 
 if ~isempty(saveplots)
-  parpool(2)
   parfor i = 1:Nt
     plotframe(direc,ymd(i,:),UTsec(i),saveplots,plotfun,xg,h);
   end
