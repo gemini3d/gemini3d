@@ -1,9 +1,9 @@
 addpath ../script_utils;
 
 %SIMULATIONS LOCAITONS
-simname='tohoku20113D_highres_var/';
-%simname='3Dtest/';
-basedir='~/zettergmdata/simulations/'
+%simname='tohoku20113D_highres_var/';
+simname='test3d_mag_3/';
+basedir='~/simulations/'
 direc=[basedir,simname];
 system(['mkdir ',direc,'/Brplots']);
 system(['mkdir ',direc,'/Brplots_eps']);
@@ -19,8 +19,8 @@ lt=numel(times);
 
 
 %LOAD/CONSTRUCT THE FIELD POINT GRID
-basemagdir=[direc,'magfields.10x10.corrected/'];
-fid=fopen([basemagdir,'/input/magfieldpoints.dat'],'r');    %needs some way to know what the input file is, maybe force fortran code to use this filename...
+basemagdir=[direc];
+fid=fopen([basemagdir,'/inputs/magfieldpoints.dat'],'r');    %needs some way to know what the input file is, maybe force fortran code to use this filename...
 lpoints=fread(fid,1,'integer*4');
 r=fread(fid,lpoints,'real*8');
 theta=fread(fid,lpoints,'real*8');    %by default these are read in as a row vector, AGHHHH!!!!!!!!!
@@ -29,7 +29,7 @@ fclose(fid);
 
 
 %REORGANIZE THE FIELD POINTS (PROBLEM-SPECIFIC)
-ltheta=80;
+ltheta=40;
 lphi=40;
 r=reshape(r(:),[ltheta,lphi]);
 theta=reshape(theta(:),[ltheta,lphi]);
