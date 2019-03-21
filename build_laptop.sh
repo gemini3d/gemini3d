@@ -12,6 +12,8 @@ SCALAPACKPREFIX=
 MUMPSPREFIX=
 
 OPTS=
+#OPTS="-DUSEGLOW=true"
+
 
 . script_utils/check.sh
 
