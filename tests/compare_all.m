@@ -10,6 +10,12 @@ function ok = compare_all(dir1, dir2)
 % vi,v2,v3=1 m/s
 % J1,J2,J3 = 1e-9 
 
+% MZ wants to change what we consider signficant...
+% Ti,Te=5 K
+% ne=1e7 m-3
+% vi,v2,v3=2 m/s
+% J1,J2,J3 = 1e-9
+
 try
 
 cwd = fileparts(mfilename('fullpath'));
@@ -21,7 +27,7 @@ validateattr(dir1, {'char'}, {'vector'}, mfilename,'directory to compare',1)
 validateattr(dir2, {'char'}, {'vector'}, mfilename,'directory to compare',2)
   
 rtol=1e-5; rtolN=rtol; rtolT=rtol; rtolJ=rtol; rtolV=rtol; 
-atol=1e-9; atolN=1e6;  atolT=1;    atolJ=1e-9;   atolV=1;
+atol=1e-8; atolN=1e9;  atolT=100;    atolJ=1e-7;   atolV=50;
 
 %% READ IN THE SIMULATION INFORMATION
 [ymd0,UTsec0,tdur,dtout] = readconfig([dir1,filesep,'inputs/config.ini']);
