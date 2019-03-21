@@ -156,6 +156,10 @@ interface bcast_recv3D_ghost
   module procedure bcast_recv3D_ghost_23
 end interface bcast_recv3D_ghost
 
+interface halo_end
+  module procedure halo_end_3
+end interface halo_end
+
 contains
 
 
@@ -355,7 +359,7 @@ end if
 end subroutine halo_3
 
 
-subroutine halo_end(param,paramend,tag)
+subroutine halo_end_3(param,paramend,tag)
 
 !MZ - needs to be updated to accommodate x2/x3 division...
 
@@ -413,7 +417,7 @@ if (.not. (myid==0 .and. idright==lid)) then    !if root is the only worker, do 
   
 end if
 
-end subroutine halo_end
+end subroutine halo_end_3
 
 
 !   LEAVE THIS IN FOR FUTURE DEV. - HALOS AN ARRAY THAT IS SPLIT ALONG THE 2 AND
@@ -595,6 +599,127 @@ subroutine halo_23(param,lhalo,tag,isperiodic)
   deallocate(buffer21,buffer22,buffer23,buffer24) 
 
 end subroutine halo_23
+
+
+subroutine halo_end_23(param,paramend,paramtop,tag)
+
+  !! GENERIC HALOING ROUTINE WHICH PASSES THE BEGINNING OF THE
+  !! SLAB TO ITS LEFTWARD (IN X3) NEIGHBOR SO THAT X3 INTEGRATIONS
+  !! CAN BE DONE PROPERLY.  PRESENTLY THIS IS JUST USED IN MAGCALC
+  !! 
+  !! THIS VERSION USES ASYNC COMM WITHOUT SWITCH STATEMENTS.  IT
+  !! ALSO ASSUMES THAT THE ARRAYS INVOLVED DO HAVE GHOST CELLS
+  
+  real(wp), dimension(:,:,:), intent(inout) :: param
+  real(wp), dimension(:,:), intent(out) :: paramend
+  real(wp), dimension(:,:), intent(out) :: paramtop
+  integer, intent(in) :: tag
+  
+  integer :: lx1,lx2,lx3,ihalo
+  integer :: idleft,idright,iddown,idup
+  integer :: i2,i3
+  
+  integer, dimension(2) :: requests
+  integer, dimension(MPI_STATUS_SIZE,4) :: statuses
+  integer :: tmpreq
+  
+  real(wp) :: tstart,tfin
+  logical :: x2begin,x2end,x3begin,x3end
+  real(wp), dimension(:,:), allocatable :: buffer
+ 
+ 
+  lx1=size(param,1)
+  lx2=size(param,2)
+  lx3=size(param,3)
+  
+
+  !IDENTIFY MY NEIGHBORS, I NEED TO GET DATA FROM BEGINNING OF RIGHT (FOR MY
+  !END) AND SEND MY BEGINNING DATA TO THE LEFT (FOR THEIR END)
+  !IDENTIFY MY NEIGHBORS IN X3
+  x3begin=.false.
+  x3end=.false.
+
+  i3=myid3-1
+  i2=myid2
+  if (i3==-1) then          !global boundary to my left, assume periodic
+    i3=lid3-1               !lid3-1 is the last process in x3 on the process grid
+    x3begin=.true.
+  end if
+  idleft=grid2ID(i2,i3)
+  if (x3begin) then     !we are flagged as not wanting periodic boundaries so do nothing (overwrite idleft to send to NULL process
+    idleft=MPI_PROC_NULL
+  end if
+
+
+  i3=myid3+1
+  i2=myid2
+  if (i3==lid3) then        !global boundary to my right, assume periodic
+    i3=0
+    x3end=.true.
+  end if
+  idright=grid2ID(i2,i3)    !convert the location on process grid into a flat processed ID, The process grid is 
+                            !visualized as lid2,lid3 in terms of index order (e.g. the i2 index cycles more quickly
+  if (x3end) then
+    idright=MPI_PROC_NULL
+  end if
+
+  !IDENTIFY MY NEIGHBORING PROCESSES IN X2
+  x2begin=.false.
+  x2end=.false.
+
+  i3=myid3
+  i2=myid2-1
+  if (i2==-1) then       !global boundary downward, assume periodic
+    i2=lid2-1
+    x2begin=.true.
+  end if
+  iddown=grid2ID(i2,i3)
+  if (x2begin) then      !never assume periodic in the x2-direction
+    iddown=MPI_PROC_NULL
+  end if
+
+  i3=myid3
+  i2=myid2+1
+  if (i2==lid2) then     !global boundary upward, assume periodic
+    i2=0
+    x2end=.true.
+  end if
+  idup=grid2ID(i2,i3)    !convert to process ID
+  if (x2end) then
+    idup=MPI_PROC_NULL
+  end if
+
+
+  !PASS DATA IN X3 DIRECTION
+  if (.not. (x3begin .and. x3end)) then        !make sure we actually need to pass in this direction, viz. we aren't both the beginning and thend  
+    call mpi_isend(param(:,:,1),lx1*lx2,mpi_realprec,idleft,tag,MPI_COMM_WORLD,tmpreq,ierr)
+    requests(1)=tmpreq
+    call mpi_irecv(paramend,lx1*lx2,mpi_realprec,idright,tag,MPI_COMM_WORLD,tmpreq,ierr)
+    requests(2)=tmpreq
+  
+    call mpi_waitall(2,requests,statuses,ierr)
+  end if
+  
+
+  !PASS DATA IN X3 DIRECTION
+  if (.not. (x2begin .and. x2end)) then
+    allocate(buffer(lx1,lx3))
+    buffer=param(:,1,:)
+    call mpi_isend(buffer,lx1*lx3,mpi_realprec,iddown,tag,MPI_COMM_WORLD,tmpreq,ierr)
+    requests(1)=tmpreq
+    call mpi_irecv(paramtop,lx1*lx3,mpi_realprec,idup,tag,MPI_COMM_WORLD,tmpreq,ierr)
+    requests(2)=tmpreq
+    deallocate(buffer)
+
+    call mpi_waitall(2,requests,statuses,ierr)
+  end if
+
+
+  !ZERO OUT THE ENDS (DO NOT ADD DATA PAST EDGE OF THE GRID
+  if (myid2==lid2-1) paramtop=0d0    !add nothing on the end...
+  if (myid3==lid3-1) paramend=0d0    !zero out the data at the end of the grid
+  
+end subroutine halo_end_23
 
 
 subroutine gather_recv2D_3(paramtrim,tag,paramtrimall)
