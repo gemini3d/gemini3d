@@ -157,7 +157,7 @@ interface bcast_recv3D_ghost
 end interface bcast_recv3D_ghost
 
 interface halo_end
-  module procedure halo_end_3
+  module procedure halo_end_23
 end interface halo_end
 
 contains
