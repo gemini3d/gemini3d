@@ -701,7 +701,7 @@ subroutine halo_end_23(param,paramend,paramtop,tag)
   end if
   
 
-  !PASS DATA IN X3 DIRECTION
+  !PASS DATA IN X2 DIRECTION
   if (.not. (x2begin .and. x2end)) then
     allocate(buffer(lx1,lx3))
     buffer=param(:,1,:)

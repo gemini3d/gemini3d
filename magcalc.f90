@@ -213,7 +213,6 @@ end if
 
 
 !GET END VOLUMES SO THE INTEGRALS ARE 'COMPLETE'
-!call halo_end(dV,dVend,tagdV)    !need to define the differential volume on the edge of this x3-slab in 
 call halo_end(dV,dVend,dVtop,tagdV)    !need to define the differential volume on the edge of this x3-slab in 
 
 
@@ -306,22 +305,10 @@ do while (t<tdur)
   Jz=J1*proj_e1ephi+J2*proj_e2ephi+J3*proj_e3ephi           !east
 
 
-!  print*, 'Min/Max worker x,y,z currents',myid,minval(Jx),maxval(Jx),minval(Jy),maxval(Jy),minval(Jz),maxval(Jz)
-
-
   !GATHER THE END DATA SO WE DON'T LEAVE OUT A POINT IN THE INTEGRATION
-!  call halo_end(Jx,Jxend,tagJx)
-!  call halo_end(Jy,Jyend,tagJy)
-!  call halo_end(Jz,Jzend,tagJz)
-
   call halo_end(Jx,Jxend,Jxtop,tagJx)
   call halo_end(Jy,Jyend,Jytop,tagJy)
   call halo_end(Jz,Jzend,Jztop,tagJz)
-
-
-!  print*, 'Topends:  ',myid,minval(Jxend),maxval(Jxend),minval(Jxtop),maxval(Jxtop)
-!  print*, 'Topends:  ',myid,minval(Jyend),maxval(Jyend),minval(Jytop),maxval(Jytop)
-!  print*, 'Topends:  ',myid,minval(Jzend),maxval(Jzend),minval(Jztop),maxval(Jztop)
 
 
   !COMPUTE MAGNETIC FIELDS
@@ -335,9 +322,6 @@ do while (t<tdur)
     Rx(:,:,:)=xf(ipoints)-xp(:,:,:)
     Ry(:,:,:)=yf(ipoints)-yp(:,:,:)
     Rz(:,:,:)=zf(ipoints)-zp(:,:,:)
-!    call halo_end(Rx,Rxend,tagRx)
-!    call halo_end(Ry,Ryend,tagRy)
-!    call halo_end(Rz,Rzend,tagRz)
     call halo_end(Rx,Rxend,Rxtop,tagRx)
     call halo_end(Ry,Ryend,Rytop,tagRy)
     call halo_end(Rz,Rzend,Rztop,tagRz)
@@ -349,7 +333,7 @@ do while (t<tdur)
       if(myid2==lid2-1) Rcubedtop=1d0
 
 
-      !MAY BE MISSING A CORNER POINT HERE???  OR DOUBLE COUNTING IT???
+      !MAY BE MISSING A CORNER POINT HERE???  NO I THINK IT'S OKAY BASED ON SOME SQUARED I DREW...
 
 
       !Bx calculation
@@ -442,9 +426,6 @@ do while (t<tdur)
       Bphi(ipoints)=sum(integrandavg*dV(2:lx1,:,2:lx3))+sum(integrandavgend*dVend(2:lx1,:))    !without dim= input it just sums everything which is what we want
     end if
   end do
-
-  print *, '  --> Min/max values of field',myid,minval(Br),maxval(Br),minval(Btheta),maxval(Btheta), &
-                                             minval(Bphi),maxval(Bphi)
 
 
   !A REDUCE OPERATION IS NEEDED HERE TO COMBINE MAGNETIC FIELDS (LINEAR SUPERPOSITION) FROM ALL WORKERS
