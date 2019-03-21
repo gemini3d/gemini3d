@@ -2,7 +2,7 @@ addpath ../script_utils;
 
 %SIMULATIONS LOCAITONS
 %simname='tohoku20113D_highres_var/';
-simname='test3d_mag_3/';
+simname='test3d_mag_23/';
 basedir='~/simulations/'
 direc=[basedir,simname];
 system(['mkdir ',direc,'/Brplots']);
@@ -19,8 +19,8 @@ lt=numel(times);
 
 
 %LOAD/CONSTRUCT THE FIELD POINT GRID
-basemagdir=[direc];
-fid=fopen([basemagdir,'/inputs/magfieldpoints.dat'],'r');    %needs some way to know what the input file is, maybe force fortran code to use this filename...
+basemagdir=[direc,'/magfields/'];
+fid=fopen([basemagdir,'/input/magfieldpoints.dat'],'r');    %needs some way to know what the input file is, maybe force fortran code to use this filename...
 lpoints=fread(fid,1,'integer*4');
 r=fread(fid,lpoints,'real*8');
 theta=fread(fid,lpoints,'real*8');    %by default these are read in as a row vector, AGHHHH!!!!!!!!!
