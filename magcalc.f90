@@ -306,6 +306,9 @@ do while (t<tdur)
   Jz=J1*proj_e1ephi+J2*proj_e2ephi+J3*proj_e3ephi           !east
 
 
+!  print*, 'Min/Max worker x,y,z currents',myid,minval(Jx),maxval(Jx),minval(Jy),maxval(Jy),minval(Jz),maxval(Jz)
+
+
   !GATHER THE END DATA SO WE DON'T LEAVE OUT A POINT IN THE INTEGRATION
 !  call halo_end(Jx,Jxend,tagJx)
 !  call halo_end(Jy,Jyend,tagJy)
@@ -314,6 +317,11 @@ do while (t<tdur)
   call halo_end(Jx,Jxend,Jxtop,tagJx)
   call halo_end(Jy,Jyend,Jytop,tagJy)
   call halo_end(Jz,Jzend,Jztop,tagJz)
+
+
+!  print*, 'Topends:  ',myid,minval(Jxend),maxval(Jxend),minval(Jxtop),maxval(Jxtop)
+!  print*, 'Topends:  ',myid,minval(Jyend),maxval(Jyend),minval(Jytop),maxval(Jytop)
+!  print*, 'Topends:  ',myid,minval(Jzend),maxval(Jzend),minval(Jztop),maxval(Jztop)
 
 
   !COMPUTE MAGNETIC FIELDS
@@ -338,7 +346,7 @@ do while (t<tdur)
       Rcubed(:,:,:)=(Rx**2+Ry**2+Rz**2)**(3d0/2d0)   !this really is R**3
       call halo_end(Rcubed,Rcubedend,Rcubedtop,tagRcubed)
       if(myid3==lid3-1) Rcubedend=1d0     !avoids div by zero on the end
-      if(myid2==lid2-1) Rcubedend=1d0
+      if(myid2==lid2-1) Rcubedtop=1d0
 
 
       !MAY BE MISSING A CORNER POINT HERE???  OR DOUBLE COUNTING IT???
@@ -435,8 +443,8 @@ do while (t<tdur)
     end if
   end do
 
-!  print *, '  --> Min/max values of field',minval(Br),maxval(Br),minval(Btheta),maxval(Btheta), &
-!                                             minval(Bphi),maxval(Bphi)
+  print *, '  --> Min/max values of field',myid,minval(Br),maxval(Br),minval(Btheta),maxval(Btheta), &
+                                             minval(Bphi),maxval(Bphi)
 
 
   !A REDUCE OPERATION IS NEEDED HERE TO COMBINE MAGNETIC FIELDS (LINEAR SUPERPOSITION) FROM ALL WORKERS
