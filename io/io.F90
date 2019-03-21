@@ -486,8 +486,8 @@ print *, 'File UThrs:  ',tmpdate
 
 !> LOAD THE DATA
 if (flagoutput==2) then    !the simulation data have only averaged plasma parameters
-  print *, '  Reading in files containing averaged plasma parameters of size:  ',lx1*lx2*lx3all
-  allocate(tmparray3D(lx1,lx2,lx3all))
+  print *, '  Reading in files containing averaged plasma parameters of size:  ',lx1*lx2all*lx3all
+  allocate(tmparray3D(lx1,lx2all,lx3all))
   !MZ:  I've found what I'd consider to be a gfortran bug here.  If I read
   !in a flat array (i.e. a 1D set of data) I hit EOF, according to runtime
   !error, well before I'm actually out of data this happens with a 20GB
@@ -499,8 +499,8 @@ if (flagoutput==2) then    !the simulation data have only averaged plasma parame
   read(u) tmparray3D    !Te
   deallocate(tmparray3D)
 else    !full output parameters are in the output files
-  print *, '  Reading in files containing full plasma parameters of size:  ',lx1*lx2*lx3all*lsp
-  allocate(tmparray4D(lx1,lx2,lx3all,lsp))
+  print *, '  Reading in files containing full plasma parameters of size:  ',lx1*lx2all*lx3all*lsp
+  allocate(tmparray4D(lx1,lx2all,lx3all,lsp))
   read(u) tmparray4D
   read(u) tmparray4D
   read(u) tmparray4D
@@ -510,15 +510,15 @@ end if
 
 !> PERMUTE THE ARRAYS IF NECESSARY
 print *, '  File fast-forward done, now reading currents...'
-allocate(J1all(lx1,lx2,lx3all),J2all(lx1,lx2,lx3all),J3all(lx1,lx2,lx3all))
+allocate(J1all(lx1,lx2all,lx3all),J2all(lx1,lx2all,lx3all),J3all(lx1,lx2all,lx3all))
 if (flagswap==1) then
-  allocate(tmpswap(lx1,lx3all,lx2))
+  allocate(tmpswap(lx1,lx3all,lx2all))
   read(u) tmpswap
-  J1all=reshape(tmpswap,[lx1,lx2,lx3all],order=[1,3,2])
+  J1all=reshape(tmpswap,[lx1,lx2all,lx3all],order=[1,3,2])
   read(u) tmpswap
-  J2all=reshape(tmpswap,[lx1,lx2,lx3all],order=[1,3,2])
+  J2all=reshape(tmpswap,[lx1,lx2all,lx3all],order=[1,3,2])
   read(u) tmpswap
-  J3all=reshape(tmpswap,[lx1,lx2,lx3all],order=[1,3,2])
+  J3all=reshape(tmpswap,[lx1,lx2all,lx3all],order=[1,3,2])
   deallocate(tmpswap)
 else    !no need to permute dimensions for 3D simulations
   read(u) J1all,J2all,J3all
