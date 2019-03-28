@@ -41,7 +41,7 @@ This file is intended to document development priorities for the GEMINI project.
 
 
 ## Feature requests
-* (SOMEWHAT IMPORTANT) Parallel domain decomposition in x2 *and* x3 - this is a big task that is likely to be left aside until I can renew funding.  It's also questionable how useful it is at this point where my typical runs are 32-256 cores (although undoubtedly it may become useful for runs with thousands of cores).  I've found good speedup even dividing the x3 dimension into slabs 2 grid points wide; although that means passing essentially all the grid data around via mpi, the large number of operations per slab means that the effective overhead here is not too much to prevent this from being useful.  However, for simulations that run with GLOW this will massively speed things up...
+* (INITIAL IMPLEMENTATION COMPLETE) Parallel domain decomposition in x2 *and* x3 - this is a big task that is likely to be left aside until I can renew funding.  It's also questionable how useful it is at this point where my typical runs are 32-256 cores (although undoubtedly it may become useful for runs with thousands of cores).  I've found good speedup even dividing the x3 dimension into slabs 2 grid points wide; although that means passing essentially all the grid data around via mpi, the large number of operations per slab means that the effective overhead here is not too much to prevent this from being useful.  However, for simulations that run with GLOW this will massively speed things up...
 * (SOMEWHAT IMPORTANT) Periodically updating background neutral atmosphere - should really be done for simulations more than a few hours long but will affect performance
 * (EFFICIENCY) Exclusion of null points from field aligned advection, thermal conduction, and source terms - could improve performance
 * (INITIAL IMPLEMENTATION COMPLETED) HDF5 file input and output
@@ -68,3 +68,6 @@ These are projects in progress involved GEMINI, you are encouraged to email M. Z
 * Return superthermal current from GLOW in order to calculate the thermal current in GEMINI
 * Inverted grid must be passed to GLOW if running a curvilinear altitude array to GLOW
 * Talk to Stan about how GLOW might be used on closed field lines for GEMINI (not sure if it can be used in this way currently)
+* Have GLOW output VER in order to deal with weird observing geometries.  
+* File input/interpolation for dipole-type grids; need to choose a reference position for mlat/mlon???
+
