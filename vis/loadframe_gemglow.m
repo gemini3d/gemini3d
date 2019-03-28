@@ -2,6 +2,11 @@ direc='~/simulations/ICI2_glow2/'
 flagplot=0;    %whether or not to create plots
 
 
+%array of volume emission rates at each altitude; cm-3 s-1:
+%           3371A, 4278A, 5200A, 5577A, 6300A, 7320A, 10400A, 3466A,
+%           7774A, 8446A, 3726A, LBH, 1356, 1493, 1304; cm-3 s-1
+
+
 %SET PATHS
 cwd = fileparts(mfilename('fullpath'));
 addpath([cwd, filesep, 'plotfunctions'])
@@ -32,13 +37,15 @@ caxlims=[0.0,5.0];
 
 %LOOP OVER FRAMES, SHOULDN'T BE A PROBLEM TO LOAD ALL AT ONCE
 file_list=dir([direc,'*.dat']);
-bFrame = zeros(lx2,lx3);
-for ind = 1:size(file_list,1)
+lt=numel(file_list);
+bFrame = zeros(lx2,lx3,lwave,lt);
+for ind = 1:lt
     filename=file_list(ind).name;
 	fid=fopen([direc,filesep,'aurmaps/',filename],'r');
 	cAur = fread(fid,lx2*lx3*lwave,'real*8');
 	cAur = reshape(cAur,[lx2,lx3,lwave]);
-	bFrame(:,:)=cAur(:,:,2);
+	bFrame(:,:,:,ind)=cAur(:,:,:);
+    fclose(fid);
 	%max(max(bFrame))
     
     if (flagplot)

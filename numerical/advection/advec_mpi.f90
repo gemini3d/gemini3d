@@ -233,13 +233,13 @@ lx3=size(vs1,3)-4
 !COMPUTE INTERFACE VELCOTIES AND APPLY LIMITING, IF NEEDED
 v1i(2:lx1,:,:)=0.5*(vs1(1:lx1-1,1:lx2,1:lx3,isp)+vs1(2:lx1,1:lx2,1:lx3,isp))   !first the interior points
 
-if (gridflag==0) then
+if (gridflag==0) then          !non-inverted
   v1i(1,:,:)=vs1(1,1:lx2,1:lx3,isp)
   v1i(lx1+1,:,:)=vs1(lx1,1:lx2,1:lx3,isp)
-else if (gridflag==1) then
-  v1i(lx1+1,:,:)=vs1(lx1,1:lx2,1:lx3,isp)   !lowest alt on grid.
+else if (gridflag==1) then     !inverted grid (assumes northern hemisphere???)
+  v1i(lx1+1,:,:)=vs1(lx1,1:lx2,1:lx3,isp)        !lowest alt on grid.
   v1i(1,:,:) = min(v1i(2,1:lx2,1:lx3), 0._wp)    !highest alt; interesting that this is not vs1...   
-else
+else                           !closed dipole
   v1i(1,:,:) = vs1(1,1:lx2,1:lx3,isp)
 !!    v1i(lx1+1,:,:)=v1i(lx1,:,:)    !avoids issues with top boundary velocity spikes which may arise
   v1i(lx1+1,:,:) = max(v1i(lx1,1:lx2,1:lx3),0._wp)    !interesting that this is not vs1...
