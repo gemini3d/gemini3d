@@ -1,20 +1,47 @@
 %% ADD PATHS TO THE GRID GENERATION SCRIPTS
 addpath ./gridgen;
 addpath ../script_utils;
+clear;
 
 
-%% EXAMPLE GRID CENTERED ON LONGYEAR
-dtheta=15;
-dphi=15;
-lp=125;
+% %% EXAMPLE GRID CENTERED ON LONGYEAR
+% dtheta=15;
+% dphi=15;
+% lp=125;
+% lq=250;
+% lphi=40;
+% altmin=80e3;
+% glat=78;
+% glon=15;
+% gridflag=0;
+% flagsource=0;
+% iscurv=true;
+
+
+% %EXAMPLE FOR KRISTINA MIDEX MISSION
+% xdist=600e3;    %eastward distance
+% ydist=600e3;    %northward distance
+% lxp=128;
+% lyp=128;
+% glat=67.11;
+% glon=212.95;
+% gridflag=0;
+% I=90;
+% flagsource=0;     %specify no source
+% iscurv=false;
+
+%CHILE 2015 GRID
+dtheta=8;
+dphi=14;
+lp=50;
 lq=250;
-lphi=40;
+lphi=50;
 altmin=80e3;
-glat=78;
-glon=15;
-gridflag=0;
+glat=17.0;
+glon=288.2;
+gridflag=1;
 flagsource=0;
-
+iscurv=true;
 
 
 %% GEOGRAPHIC COORDINATES OF NEUTRAL SOURCE (OR GRID CENTER)
@@ -46,10 +73,13 @@ sourcemlon=sourcephi*180/pi;
 
 %% RUN THE GRID GENERATION CODE
 if (~exist('xg'))
-    xg=makegrid_tilteddipole_3D(dtheta,dphi,lp,lq,lphi,altmin,glat,glon,gridflag);   
+    if(iscurv)
+      xg=makegrid_tilteddipole_3D(dtheta,dphi,lp,lq,lphi,altmin,glat,glon,gridflag);   
 %    xg=makegrid_tilteddipole_nonuniform_3D(dtheta,dphi,lp,lq,lphi,altmin,glat,glon,gridflag);   
 %    xg=makegrid_tilteddipole_nonuniform_oneside_3D(dtheta,dphi,lp,lq,lphi,altmin,glat,glon,gridflag);
-%     xg=makegrid_cart_3D(xdist,lxp,ydist,lyp,I,glat,glon);
+    else
+      xg=makegrid_cart_3D(xdist,lxp,ydist,lyp,I,glat,glon);
+    end
 end
 
 

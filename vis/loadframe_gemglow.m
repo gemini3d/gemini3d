@@ -1,4 +1,4 @@
-direc='~/simulations/ICI2_glow2/'
+direc='~/simulations/ICI2_glow0/'
 flagplot=0;    %whether or not to create plots
 
 
