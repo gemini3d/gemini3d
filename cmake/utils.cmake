@@ -135,7 +135,7 @@ endfunction(run_gemini_test)
 function(octave_compare TESTNAME OUTDIR REFDIR REQFILE)
 
 add_test(NAME ${TESTNAME}
-  COMMAND Octave::Interpreter --eval "exit(compare_all('${CMAKE_CURRENT_BINARY_DIR}/${OUTDIR}','${CMAKE_CURRENT_SOURCE_DIR}/${REFDIR}'))"
+  COMMAND Octave_EXECUTABLE --eval "exit(compare_all('${CMAKE_CURRENT_BINARY_DIR}/${OUTDIR}','${CMAKE_CURRENT_SOURCE_DIR}/${REFDIR}'))"
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 
 set_tests_properties(${TESTNAME} PROPERTIES
@@ -164,7 +164,7 @@ endfunction(matlab_compare)
 function(compare_gemini_output TESTNAME TESTDIR REFDIR REQFILE)
 
 if(NOT DEFINED OctaveOK)
-  find_package(Octave COMPONENTS Interpreter)
+  find_program(Octave_EXECUTABLE octave DOC "GNU Octave >= 4.0")
   check_octave_source_runs("exit(exist('validateattributes'))")
 endif()
 

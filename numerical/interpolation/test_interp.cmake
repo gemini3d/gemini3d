@@ -19,7 +19,7 @@ set_tests_properties(Interp2D PROPERTIES
 if(OctaveOK)
 
 add_test(NAME OctaveInterp 
-         COMMAND Octave::Interpreter --eval "testinterp('${CMAKE_CURRENT_BINARY_DIR}/output2D.dat')"
+         COMMAND Octave_EXECUTABLE --eval "testinterp('${CMAKE_CURRENT_BINARY_DIR}/output2D.dat')"
          WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
          
 

@@ -25,12 +25,9 @@ try %requires Matlab R2014b or newer for following line
     return
 end
 %% if you have old Matlab or Octave
+
 %% what is the home path
-if ispc % windows
-    home = [getenv('HOMEDRIVE'),getenv('HOMEPATH')];
-else %linux,mac
-    home = getenv('HOME');
-end %if
+home = homepath();
 
 if isempty(home)
     warning('empty HOME environment variable, returning unmodified path')
