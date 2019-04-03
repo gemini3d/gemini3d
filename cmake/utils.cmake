@@ -48,7 +48,7 @@ endif()
 
 if(NOT WIN32 AND CMAKE_VERSION VERSION_GREATER_EQUAL 3.13)
   set(SIZEFN ${REFDIR}/inputs/simsize.dat)
-  
+
   # file(READ ${SIZEFN} hex OFFSET 8 LIMIT 4 HEX) # no, this leaves trailing zeros
   execute_process(
     COMMAND od -j4 -N9 -t d4 ${SIZEFN}
@@ -71,7 +71,7 @@ if(NOT WIN32 AND CMAKE_VERSION VERSION_GREATER_EQUAL 3.13)
   maxfactor(${halfX3} ${MPIEXEC_MAX_NUMPROCS})
 
   message(STATUS "Gemini test auto-setup with ${MAXFACTOR} MPI processes")
-  
+
   set(NP ${MAXFACTOR} PARENT_SCOPE)
 elseif(${MPIEXEC_MAX_NUMPROCS} GREATER_EQUAL 4)
   set(NP 4 PARENT_SCOPE)
@@ -164,7 +164,7 @@ endfunction(matlab_compare)
 function(compare_gemini_output TESTNAME TESTDIR REFDIR REQFILE)
 
 if(NOT DEFINED OctaveOK)
-  find_program(Octave_EXECUTABLE octave DOC "GNU Octave >= 4.0")
+  find_program(Octave_EXECUTABLE NAMES octave DOC "GNU Octave >= 4.0")
   check_octave_source_runs("exit(exist('validateattributes'))")
 endif()
 
