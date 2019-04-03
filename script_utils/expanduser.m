@@ -20,7 +20,7 @@ function expanded = expanduser(p)
 % tested with Matlab and Octave on Windows, Cygwin, Linux, and WINE
 %
 %% try python first
-try %requires Matlab R2014b or newer for following line
+try %#ok<TRYNC> %requires Matlab R2014b or newer for following line
     expanded = char(py.os.path.expanduser(p));
     return
 end

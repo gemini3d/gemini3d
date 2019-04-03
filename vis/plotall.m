@@ -45,8 +45,6 @@ times=UTsec0:dtout:UTsec0+tdur;
 Nt=numel(times);
 
 %% MAIN FIGURE LOOP
-% NOTE: keep figure() calls in case plotfcn misses a graphics handle, and
-% for Octave...
 ymd(1,:) = ymd0;
 UTsec(1) = UTsec0;
 for i = 2:Nt
@@ -55,18 +53,22 @@ end
 
 h = plotinit(xg, visible);
 
-if ~isempty(saveplots)
+if ~isempty(saveplots)  % plot and save as fast as possible.
   parfor i = 1:Nt
-    plotframe(direc,ymd(i,:),UTsec(i),saveplots,plotfun,xg,h);
+    plotframe(direc, ymd(i,:), UTsec(ihelp ), saveplots, plotfun, xg, h);
   end
-else
+else  % displaying interactively, not saving
    
   for i = 1:Nt
-    xg = plotframe(direc,ymd(i,:),UTsec(i),saveplots,plotfun,xg,h);
-    pause
+    xg = plotframe(direc, ymd(i,:), UTsec(i), saveplots, plotfun, xg, h);
+    if isoctave && ispc  % FIXME: bug in Octave 5.1.0 on Windows only: https://savannah.gnu.org/bugs/?func=detailitem&item_id=55943
+      disp('press any key to keep plotting')
+      kbhit;
+    else
+      pause
+    end
   end
-  
-  
+
 end % if saveplots
 
 %% Don't print
