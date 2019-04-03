@@ -34,9 +34,10 @@ function [nsi,vs1i,Tsi,xgin,ns,vs1,Ts]=eq2dist(eqdir,simID,xg)
 
  
   %WRITE OUT THE GRID
-  outdir=[eqdir,'../input/',simID];
+  basedir=[eqdir,'../input/'];
+  outdir=[basedir,simID];
   writegrid(xg,outdir);
   dmy=[ymdend(3),ymdend(2),ymdend(1)];
-  writedata(dmy,UTsecend,nsi,vs1i,Tsi,outdir,simID);
+  writedata(dmy,UTsecend,nsi,vs1i,Tsi,outdir,simID);    %this uses the SIMID as both the output directory and as the filename tag...
 
 end %function eq2dist
