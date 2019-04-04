@@ -2,20 +2,21 @@
 
 # GEMINI
 
-The GEMINI model (*G*eospace *E*nvironment *M*odel of *I*on-*N*eutral *I*nteractions) is a three-dimensional ionospheric fluid-electrodynamic model used for various scientific studies including effects of auroras on the terrestrial ionosphere, natural hazard effects on the space environment, and effects of ionospheric fluid instabilities on radio propagation (see references section of this document for details).  The detailed mathematical formulation of GEMINI is included in `doc/`.  
+The GEMINI model (*G*eospace *E*nvironment *M*odel of *I*on-*N*eutral *I*nteractions) is a three-dimensional ionospheric fluid-electrodynamic model used for various scientific studies including effects of auroras on the terrestrial ionosphere, natural hazard effects on the space environment, and effects of ionospheric fluid instabilities on radio propagation (see references section of this document for details).  The detailed mathematical formulation of GEMINI is included in `doc/`.
 
 A subroutine-level set of documentation describing functions of individual program units is given via [source code comments which are rendered as webpages](https://mattzett.github.io/gemini/index.html).
 
 GEMINI uses generalized orthogonal curvilinear coordinates and has been tested with dipole and Cartesian coordinates.
 
-We have prioritized ease of setup/install across a wide variety of computing systems.  Please open a [GitHub Issue](https://github.com/mattzett/gemini/issues) if you experience difficulty building GEMINI.
+We have prioritized ease of setup/install across a wide variety of computing systems.
+Please open a [GitHub Issue](https://github.com/mattzett/gemini/issues) if you experience difficulty building GEMINI.
 
-Generally, the Git `master` branch has the current development version and is the best place to start, while more thoroughly-tested releases happen occasionally.  Specific commits corresponding to published results will also be noted, where appropriate, in the corresponding journal article.  
+Generally, the Git `master` branch has the current development version and is the best place to start, while more thoroughly-tested releases happen occasionally.  Specific commits corresponding to published results will also be noted, where appropriate, in the corresponding journal article.
 
 
 ## Prerequisites
 
-The CMake build system is used to manage the large number of dependencies and external libraries needed to compile GEMINI.  
+The CMake build system is used to manage the large number of dependencies and external libraries needed to compile GEMINI.
 CMake &ge; 3.12 is required in general.
 Some advanced features require CMake &ge; 3.13.
 If needed, CMake is easily installed in a minute *without* sudo/admin on:
@@ -53,10 +54,10 @@ Tested versions include:
 
 GEMINI `*.m` scripts require EITHER:
 
-* GNU Octave &ge; 4.0
+* GNU Octave &ge; 4.0:  Note that GNU Octave plotting is unreliable in general for any program. Matlab is recommended.
 * Matlab &ge; R2007b
 
-Note that only the essential scripts needed to setup a simple example, and plot the results are included in the main GEMINI respository.  A separate repository has been created for more involved examples.  
+Note that only the essential scripts needed to setup a simple example, and plot the results are included in the main GEMINI respository.  A separate repository has been created for more involved examples.
 
 ### Document generation
 
@@ -80,17 +81,17 @@ GEMINI is distributed under the Affero GNU public license (aGPL) version 3+.
 
 ## Suggested hardware
 
-GEMINI can run on hardware ranging from a modest laptop to a high-performance computing (HPC) cluster.  
+GEMINI can run on hardware ranging from a modest laptop to a high-performance computing (HPC) cluster.
 
 For large 3D simulations (more than 20M grid points), GEMINI should be run in a cluster environment or a "large" multicore workstation (e.g. 12 or more cores).  Runtime depends heavily on the grid spacing used, which determines the time step needed to insure stability,  For example we have found that a 20M grid point simulations takes about  4 hours on 72 Xeon E5 cores.  200M grid point simulations can take up to a week on 256 cores.  It has generally been found that acceptable performance requires > 1GB memory per core; moreover, a large amount of storage (hundreds of GB to several TB) is needed to store results from large simulations.
 
-One could run large 2D or very small 3D simulations (not exceeding a few million grid points) on a quad-core workstation, but may take quite a while to complete.  
+One could run large 2D or very small 3D simulations (not exceeding a few million grid points) on a quad-core workstation, but may take quite a while to complete.
 
 
 ## Quick start
 
 This method is tested on CentOS and Ubuntu.
-This test runs a short demo, taking about 2-5 minutes on a typical Mac / Linux laptop, from scratch. 
+This test runs a short demo, taking about 2-5 minutes on a typical Mac / Linux laptop, from scratch.
 
 
 1. get GEMINI code and install prereqs
@@ -98,7 +99,7 @@ This test runs a short demo, taking about 2-5 minutes on a typical Mac / Linux l
    cd ~
    git clone https://github.com/mattzett/gemini
    cd gemini
-2. Generate Makefile and auto-download test reference data  
+2. Generate Makefile and auto-download test reference data
    ```sh
    cd objects
 
@@ -113,17 +114,17 @@ This test runs a short demo, taking about 2-5 minutes on a typical Mac / Linux l
    ```
 
 If you get errors about libraries not found or it's using the wrong compiler, see the `build_.sh` scripts for examples of how to easily tell CMake to use custom library and compiler locations.
-   
+
 ### input directory
 The example `config.ini` in `initialize/` looks for input grid data in `../simulations`.
 If you plan to push back to the repository, please don't edit those example `.ini` file paths, instead use softlinks `ln -s` to point somewhere else if needed.
 Note that any `config.ini` you create yourself in `initialize/` will not be included in the repository since that directory is in `.gitignore` (viz. not tracked by git).
-   
+
 #### MUMPS verbosity
 MUMPS initialization ICNTL flags are set in `numerical/potential/potential_mumps.f90`.
-ICNTL 1-4 concern print output unit and verbosity level, see MUMPS 
+ICNTL 1-4 concern print output unit and verbosity level, see MUMPS
 [User Manual](http://mumps.enseeiht.fr/index.php?page=doc)
-   
+
 #### Build tips
 
 * If the CMake version that ships with your linux or MacOS distribution is too old, use [cmake_setup.sh](https://github.com/scivision/cmake-utils). Note that this script does NOT use `sudo`.
@@ -134,9 +135,9 @@ Libraries:
 * If need to build libraries from source (e.g. because you don't have `sudo`) try `build_gnu_noMKL.sh` or `build_intel.sh` from the `fortran-libs` repo:
   ```sh
   git clone https://github.com/scivision/fortran-libs ~/flibs-nomkl
-  
+
   cd ~/flibs-nomkl
-  
+
   ./build_gnu_noMKL.sh
   ```
 
@@ -147,15 +148,15 @@ GEMINI has self tests that compare the output from a "known" test problem to a r
 ctest --output-on-failure
 ```
 
-1. executes 
+1. executes
    ```sh
-   ./gemini initialize/2Dtest/config.ini /tmp/2d
+   ./gemini.exe initialize/2Dtest/config.ini /tmp/2d
    ```
-2. uses GNU Octave (or Matlab) compares with reference output using `tests/compare_all.m`:
+2. uses GNU Octave (or Matlab) to compare with reference output using `tests/compare_all.m`:
    ```matlab
    compare_all(/tmp/2d, '../simulations/2Dtest_files/2Dtest_output')
    ```
-   
+
 ### OS-specific tips
 
 #### Ubuntu
@@ -165,14 +166,14 @@ If you have sudo (admin) access:
 ```sh
 ./install_prereqs.sh
 ```
-Otherwise, ask your IT admin to install the libraries or 
-[compile them yourself](https://github.com/scivision/fortran-libs) 
+Otherwise, ask your IT admin to install the libraries or
+[compile them yourself](https://github.com/scivision/fortran-libs)
 or consider Linuxbrew.
 
 
 #### CentOS
 This is for CentOS 7, using "modules" for more recent libraries.
-For the unavailable modules, 
+For the unavailable modules,
 [compile them yourself](https://github.com/scivision/fortran-libs)
 ```sh
 module load git cmake mumps scalapack openmpi lapack metis
@@ -181,7 +182,7 @@ module load gcc
 export CC=gcc CXX=g++ FC=gfortran
 ```
 
-Try to compile gemini as above, then 
+Try to compile gemini as above, then
 [build the missing libraries](https://github.com/scivision/fortran-libs).
 
 Example:
@@ -197,7 +198,7 @@ cmake -DSCALAPACK_ROOT=~/flibs-nomkl/scalapack -DMUMPS_ROOT=~/flibs-nomkl/MUMPS 
   ```fortran
   mumps_par%ICNTL(14)=50
   ```
-  If the problem persists try changing the number to 100. 
+  If the problem persists try changing the number to 100.
 4. There are potentially some issues with the way the stability condition is evaluated, i.e. it is computed before the perp. drifts are solved so it is possible when using input data to overrun this especially if your target CFL number is &gt; 0.8 or so.  Some code has been added as of 8/20/2018 to throttle how much dt is allowed to change between time steps and this seems to completely fix this issue, but theoretically it could still happen; however this is probably very unlikely.
 5. Occasionally one will see edge artifacts in either the field -aligned currents or other parameters for non-periodic in x3 solves.  This may be related to the divergence calculations needed for the parallel current (under EFL formulation) and for compression calculations in the multifluid module, but this needs to be investigated further...  This do not appear to affect solutions in the interior of the grid domain and can probably be safely ignored if your region of interest is sufficiently far from the boundary (which is alway good practice anyway).
 
@@ -208,7 +209,7 @@ See [TODO.md](./TODO.md).
 
 ## Standard and style
 
-GEMINI is Fortran 2008 compliant and uses two-space indents throughout (to accommodate the many, deeply nested loops).  Some of our developers are avid VIM users so please do not use tabs if you plan to push back to the repository or merge.  
+GEMINI is Fortran 2008 compliant and uses two-space indents throughout (to accommodate the many, deeply nested loops).  Some of our developers are avid VIM users so please do not use tabs if you plan to push back to the repository or merge.
 
 
 
@@ -219,11 +220,11 @@ cd objects
 cmake ..
 make -j
 
-mpirun -np <number of processors>  ./gemini <input config file> <output directory>
+mpirun -np <number of processors>  ./gemini.exe <input config file> <output directory>
 ```
 for example:
 ```sh
-mpirun -np 4 ./gemini initialize/2Dtest/config.ini ../simulations/2Dtest/
+mpirun -np 4 ./gemini.exe initialize/2Dtest/config.ini ../simulations/2Dtest/
 ```
 Note that the output *base* directory must already exist (`../simulations` in previous example).  The source code consists of about ten module source files encapsulating various functionalities used in the model.  A diagram all of the modules and their function is shown in figure 1; a list of module dependencies can also be found one of the example makefiles included in the repo or in CMakeList.txt.
 
@@ -243,7 +244,7 @@ Note that there is also a utility that can compute magnetic fields from the curr
 ```sh
 mpirun -np 4 ./magcalc ../simulations/3Dtest/ ../simulations/input/3Dtest/magfieldpoints.dat
 ```
-This will compute magnetic fields over a grid at ground level using currents computed from the 3Dtest simulation.  In order to run this program, you will need to create a set of field points at which the magnetic perturbations will be calculated.  For example, this could be a list of ground stations, a regular mesh, or a set of satellite tracks.  
+This will compute magnetic fields over a grid at ground level using currents computed from the 3Dtest simulation.  In order to run this program, you will need to create a set of field points at which the magnetic perturbations will be calculated.  For example, this could be a list of ground stations, a regular mesh, or a set of satellite tracks.
 
 ## Verifying GEMINI build
 
@@ -259,7 +260,7 @@ make
   ctest --output-on-failure
   ```
 
-Select particular tests using `ctest -R <regexp>`. 
+Select particular tests using `ctest -R <regexp>`.
 
 * run 2D tests:
   ```sh
@@ -280,7 +281,7 @@ Exclude particular tests using `ctest -E <regexp>`.
   ```sh
   ctest -E 3D --output-on-failure
   ```
-  
+
 The maximum number of MPI processes is set with `cmake -DNP=`. For example to request 4 MPI processes:
 ```sh
 cmake -DNP=4 ..
@@ -330,10 +331,10 @@ Each simulation needs an input file that specifies location of initial condition
 ../simulations/isinglass_fields/
 ```
 
-A large number of examples (in addition to those included in the main repo) are included in the GEMINI-script repository.  
+A large number of examples (in addition to those included in the main repo) are included in the GEMINI-script repository.
 
 
-## Running with different boundary and initial conditions:  
+## Running with different boundary and initial conditions:
 
 GEMINI requires both initial and boundary conditions to run properly.  Specifically the user must provide a complete initial ionospheric state (density, drift, and temperature for all ionospheric species), along with boundary conditions for the electric potential (in 2D this are the top, bottom, and side potentials; in 3D the topside current density and side wave potentials).  Fluid state variables are given free-flow boundary conditions at the edges of the simulation grid.  The `io` module contains code dealing with input of initial state from file and the `potential_comm` and `potentialBCs_mumps` modules contains contains code dealing with boundary condition input.
 
@@ -341,23 +342,23 @@ There are presently two ways in which the boundary and initial conditions can be
 
 PLEASE NOTE that future releases will use Fortran 2008 `submodule`, likely completely removing the option for subroutine-based initial and boundary conditions.
 
-### Subroutine-based input (*not recommended* and to be deprecated in a future release):  
+### Subroutine-based input (*not recommended* and to be deprecated in a future release):
 
 There are two subroutines that can be modified by the user to provide boundary conditions to the code; these are described below. Note that, if any of these are changed, the code needs to be recompiled.
 
-`./ionization/boundary_conditions/precipBCs_mod.f90` - the function `precipBCs' specifies the pattern of electron precipitation, including characteristic energy and total energy flux, over top of grid.  If the user does not specify an input file for precipitation boundary conditions in `config.ini`, then this subroutine will be called to set the boundary.  
+`./ionization/boundary_conditions/precipBCs_mod.f90` - the function `precipBCs' specifies the pattern of electron precipitation, including characteristic energy and total energy flux, over top of grid.  If the user does not specify an input file for precipitation boundary conditions in `config.ini`, then this subroutine will be called to set the boundary.
 
-`./numerical/potential/boundary_conditions/potentialBCs_mumps.f90` - boundary conditions for the electric potential or field-aligned current.  The type of input that is being used is specified by the flags in the `config.ini` file for the simulation.  This subroutine will only be called if the user has not specified an input file containing boundary conditions.  
+`./numerical/potential/boundary_conditions/potentialBCs_mumps.f90` - boundary conditions for the electric potential or field-aligned current.  The type of input that is being used is specified by the flags in the `config.ini` file for the simulation.  This subroutine will only be called if the user has not specified an input file containing boundary conditions.
 
 By default these subroutines will be used for boundary conditions if file input is not specified in the config.ini input file.  The base GEMINI sets these to be zero potential (or current) and some negligible amount of precipitation.  Note that if you write over these subroutines then the code will use whatever you have put into them if file input is not specified.  This can lead to unintended behavior if ones modifies these and then forgets since the code will continue to use the modifications instead of some baseline.  Because of this issue, and the fact that GEMINI must be rebuilt every time these subroutines are changed, this method of boudnary condition input is going to be removed.
 
 ### File-based input (*recommended*)
 
-An alternative is to use the file input option, which needs to be set up using MATLAB (or other) scripts.  To enable this type of input, the appropriate flags (flagprecfileinput and flagE0fileinput) need to be set in the input `config.ini` file (see Section entitled "Input file format" above).  All examples included in `initialize/` in both the GEMINI and GEMINI-scripts repositories use this method for setting boundary conditions.  Note that the user can specify the boundary condition on a different grid from what the simulation is to be run with; in this case GEMINI will just interpolate the given boundary data onto the current simulation grid.  
+An alternative is to use the file input option, which needs to be set up using MATLAB (or other) scripts.  To enable this type of input, the appropriate flags (flagprecfileinput and flagE0fileinput) need to be set in the input `config.ini` file (see Section entitled "Input file format" above).  All examples included in `initialize/` in both the GEMINI and GEMINI-scripts repositories use this method for setting boundary conditions.  Note that the user can specify the boundary condition on a different grid from what the simulation is to be run with; in this case GEMINI will just interpolate the given boundary data onto the current simulation grid.
 
 ### Initial conditions
 
-GEMINI needs density, drift, and temperature for each species that it simulations over the entire grid for which the simulation is being run as input.  Generally one will use the results of another GEMINI simulation that has been initialized in an arbitrary way but run for a full day to a proper ionospheric equilibrium as this input.  Any equilibrium simulation run this way must use full output (flagoutput=1 in the `config.ini`).  A useful approach for these equilibrium runs is to use a coarser grid so that the simulation completes quickly and then interpolate the results up to fine grid resolution.  An example of an equilibrium setup is given in `./initialize/2Dtest_eq`; note that this basically makes up an initial conditions (using `eqICs.m`) and runs until initial transients have settled.  An example of a script that interpolates the output of an equilibrium run to a finer grid is included with `./initialize/2Dtest`. 
+GEMINI needs density, drift, and temperature for each species that it simulations over the entire grid for which the simulation is being run as input.  Generally one will use the results of another GEMINI simulation that has been initialized in an arbitrary way but run for a full day to a proper ionospheric equilibrium as this input.  Any equilibrium simulation run this way must use full output (flagoutput=1 in the `config.ini`).  A useful approach for these equilibrium runs is to use a coarser grid so that the simulation completes quickly and then interpolate the results up to fine grid resolution.  An example of an equilibrium setup is given in `./initialize/2Dtest_eq`; note that this basically makes up an initial conditions (using `eqICs.m`) and runs until initial transients have settled.  An example of a script that interpolates the output of an equilibrium run to a finer grid is included with `./initialize/2Dtest`.
 
 
 ## Running one of the premade examples:
@@ -367,10 +368,10 @@ Currently the main repo only includes the very basic 2Dtest and 3Dtest examples
 
 ## Creating a simulation
 
-1)  Create initial conditions for equilibrium simulation -  Several examples of equilibrium setups are included in the ./initialize directory; these end with `_eq`.  These are all based off of the general scripts `./setup/model_setup.m` and related scripts.  In general this equilbrium simulation will set the date, location, and geomagnetic conditions for the background ionospheric state for later perturbation simulations.  
+1)  Create initial conditions for equilibrium simulation -  Several examples of equilibrium setups are included in the ./initialize directory; these end with `_eq`.  These are all based off of the general scripts `./setup/model_setup.m` and related scripts.  In general this equilbrium simulation will set the date, location, and geomagnetic conditions for the background ionospheric state for later perturbation simulations.
 2)  Run an equilibrium simulation at low resolution to obtain a background ionosphere.  See examples in ./initialize ending in `_eq`
-3)  Generate a grid - Several examples of grid generation scripts adapted to particular problems are given in the `initialize/` directory of the repo (see list above for an example).  In particular, for 2Dtest and 3Dtest there is a script that reads in an equilbirum simulation, creates a fine resolution mesh, and then interpolates the equilibrium data onto that fine mesh.  
-4)  Interpolate the equilibrium results on to a high resolution grid and create new input files for full resolution - See examples in the ./initialize/ directories not ending in `_eq`.  These are all based off of the general `./setup/model_setup_interp.m` script. 
+3)  Generate a grid - Several examples of grid generation scripts adapted to particular problems are given in the `initialize/` directory of the repo (see list above for an example).  In particular, for 2Dtest and 3Dtest there is a script that reads in an equilbirum simulation, creates a fine resolution mesh, and then interpolates the equilibrium data onto that fine mesh.
+4)  Interpolate the equilibrium results on to a high resolution grid and create new input files for full resolution - See examples in the ./initialize/ directories not ending in `_eq`.  These are all based off of the general `./setup/model_setup_interp.m` script.
 5)  Set up boundary conditions for potential, if required - see section of this document on boundary conditions
 6)  Set up precipitation boundary conditions, if required -  see section of this document on boundary conditions
 7)  Recompile the code with make *only if you are using subroutine based input and boundary conditions* (please note that this functionality will be removed in a later release).  If you are using file-based input then a rebuild is not necessary (this is another benefit of using file-based input)
@@ -384,13 +385,14 @@ The code determines 2D vs. 3D runs by the number of x2 or x3 grid points specifi
 
 ## Loading and plotting output
 
-Either MATLAB or GNU/octave is required to load the output file via scripts in the ./vis directory (these scripts generally work on both 2D and 3D simulation results).  
-The results for an entire simulation can be plotted using either: 
+MATLAB is required to load the output file via scripts in the ./vis directory (these scripts generally work on both 2D and 3D simulation results).
+GNU Octave is not reliable at plotting for any program, and might not work.
+The results for an entire simulation can be plotted using [plotall.m](./vis/plotall.m)
 
-  * `plotall.m`    single thread, slow, easy to use
-  * `plotall.py`   multithreaded, extremely fast, need to have Python installed
+```matlab
+plotall('/tmp/mysim')
+```
 
-(see source code for details). 
 These also illustrates how to read in a sequence of files from a simulation.  This script prints a copy of the output plots into the simulation output directory.  Finer-level output control can be achieve by using the 'plotframe.m' and 'loadframe.m' scripts to plot and load data from individual simulation output frames, respectively.
 
 The particular format of the output files is specified by the user in the input config.ini file.  There are three options:
@@ -400,15 +402,15 @@ The particular format of the output files is specified by the user in the input 
 
 The organization of the data in the MATLAB/octave workspace, after a single frame is loaded (via 'loadframe.m'), is as follows (MKSA units throughout):
 
-### Time variables:  
+### Time variables:
 
 simdate - a six element vector containing year, month, day, UT hour, UT minute, and UT seconds of the present frame
 
-### Grid variables:  
+### Grid variables:
 
 <!--x1,x2,x3 - x1 is altitude (z in plots), x2 is east (x in plots), x3 north (y in plots); the sizes of these variables are stored in lxs by the MATLAB script.-->
 
-structure xg - members xg.x1,2,3 are the position variables, `xg.h*` are the metric factors, `xg.dx*` are the finite differences, 
+structure xg - members xg.x1,2,3 are the position variables, `xg.h*` are the metric factors, `xg.dx*` are the finite differences,
 
 xg.glat,glon are the latitudes and longitudes (degrees geographic) of each grid point, xg.alt is the altitude of each grid point.
 
@@ -420,18 +422,18 @@ The grid structure, by itself, can be read in by the MATLAB function 'readgrid.m
 
 Ts (first three dimensions have size lxs; 4th dimension is species index:  1=O+,2=NO+,3=N2+,4=O2+,5=N+, 6=H+,7=e-)
 
-### Density variable:  
+### Density variable:
 
 ns (same indexing as temperature)
 
-### Drifts:   
+### Drifts:
 
 vs1 (same indexing as temperature)
 
 x2-drift component:  v2 (same for all species, so this is just size lxs and is a 3D array)
 x3-drift component:  v3
 
-### Electromagnetic variables:  
+### Electromagnetic variables:
 
 current density:  J1, J2, J3
 potential:  Phitop (EFL potential)
@@ -441,7 +443,7 @@ Note that the electric field is not included in the output file, but that it can
 
 ## Computing total electron content (TEC)
 
-TEC and magnetic field variations can be calculated as a post-processing step in which the simulation data are read in and interpolated onto a regular geographic grid and then integrated accordingly using scripts in the './vis' directory - see `TECcalc.m`.  An example of how to plot TEC computed by this script is included in `TECplot_map.m` (requires MATLAB mapping toolbox).  
+TEC and magnetic field variations can be calculated as a post-processing step in which the simulation data are read in and interpolated onto a regular geographic grid and then integrated accordingly using scripts in the './vis' directory - see `TECcalc.m`.  An example of how to plot TEC computed by this script is included in `TECplot_map.m` (requires MATLAB mapping toolbox).
 
 
 ## Visualizing magnetic field perturbations computed by magcalc.f90

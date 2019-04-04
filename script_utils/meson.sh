@@ -7,12 +7,9 @@ meson --version
 [[ ${1:-} == "-d" ]] && OPTS="--buildtype=debug $OPTS" || OPTS="--buildtype=release $OPTS"
 [[ ${1:-} == "-t" ]] && OPTS="-DTRACE=on $OPTS"
 
-(cd objects
 
-meson $OPTS ..
+meson $OPTS setup objects
 
 MESONSTAT=$?
 
-# for older version of Meson that didn't yet formally support Fortran submodule
-ninja || ninja
-)
+ninja -C objects

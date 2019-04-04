@@ -64,11 +64,6 @@ else  % displaying interactively, not saving
 
     drawnow % need this here to ensure plots update (race condition)
     disp(''), disp('** press any key to plot next time step, or Ctrl C to stop**')
-    if isoctave % Octave 5.1.0 bug on (Linux and Windows)
-      kbhit;
-    else
-      pause
-    end
     pause
   end
 
