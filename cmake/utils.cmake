@@ -70,8 +70,6 @@ if(NOT WIN32 AND CMAKE_VERSION VERSION_GREATER_EQUAL 3.13)
 
   maxfactor(${halfX3} ${MPIEXEC_MAX_NUMPROCS})
 
-  message(STATUS "Gemini test auto-setup with ${MAXFACTOR} MPI processes")
-
   set(NP ${MAXFACTOR} PARENT_SCOPE)
 elseif(${MPIEXEC_MAX_NUMPROCS} GREATER_EQUAL 4)
   set(NP 4 PARENT_SCOPE)
@@ -86,7 +84,6 @@ endfunction(num_mpi_processes)
 
 function(check_octave_source_runs code)
 
-# imported target doesn't work with CMake 3.13
 execute_process(COMMAND ${Octave_EXECUTABLE} --eval ${code}
   ERROR_QUIET OUTPUT_QUIET
   RESULT_VARIABLE ok
@@ -109,7 +106,7 @@ set(MatlabOK ${ok} CACHE BOOL "Matlab is sufficiently new to run self-tests")
 endfunction(check_matlab_source_runs)
 
 
-function(run_gemini_test TESTNAME TESTDIR REFDIR TIMEOUT)
+function(setup_gemini_test TESTNAME TESTDIR REFDIR TIMEOUT)
 
 num_mpi_processes(${REFDIR})
 
@@ -118,6 +115,8 @@ if(NP EQUAL 1)
 endif()
 
 set(TESTNAME ${TESTNAME}-NP${NP})  # for convenience, name with number of processes since this is important for debugging MPI
+
+message(STATUS "Test ${TESTNAME} uses ${NP} MPI processes")
 
 add_test(NAME ${TESTNAME}
   COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${NP} ${CMAKE_BINARY_DIR}/gemini.bin ${CMAKE_SOURCE_DIR}/initialize/${TESTDIR}/config.ini ${CMAKE_CURRENT_BINARY_DIR}/${TESTDIR}
@@ -129,13 +128,13 @@ set_tests_properties(${TESTNAME} PROPERTIES
   FIXTURES_REQUIRED MPIMUMPS
 )
 
-endfunction(run_gemini_test)
+endfunction(setup_gemini_test)
 
 
 function(octave_compare TESTNAME OUTDIR REFDIR REQFILE)
 
 add_test(NAME ${TESTNAME}
-  COMMAND Octave_EXECUTABLE --eval "exit(compare_all('${CMAKE_CURRENT_BINARY_DIR}/${OUTDIR}','${CMAKE_CURRENT_SOURCE_DIR}/${REFDIR}'))"
+  COMMAND ${Octave_EXECUTABLE} --eval "exit(compare_all('${CMAKE_CURRENT_BINARY_DIR}/${OUTDIR}','${CMAKE_CURRENT_SOURCE_DIR}/${REFDIR}'))"
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 
 set_tests_properties(${TESTNAME} PROPERTIES
@@ -166,6 +165,8 @@ function(compare_gemini_output TESTNAME TESTDIR REFDIR REQFILE)
 if(NOT DEFINED OctaveOK)
   find_program(Octave_EXECUTABLE NAMES octave DOC "GNU Octave >= 4.0")
   check_octave_source_runs("exit(exist('validateattributes'))")
+
+  message(STATUS "Found GNU Octave: ${Octave_EXECUTABLE}")
 endif()
 
 if(OctaveOK)
@@ -184,6 +185,5 @@ if (MatlabOK)
 else()
   message(WARNING "Neither Matlab or Octave was found, cannot run full self-test")
 endif()
-
 
 endfunction(compare_gemini_output)
