@@ -96,18 +96,18 @@ target_link_libraries(multifluid PRIVATE precipBCs mpimod grid ionization source
 target_compile_options(multifluid PRIVATE ${FFLAGS})
 
 # --- Main GEMINI executable
-add_executable(gemini.bin gemini.f90)
-target_link_libraries(gemini.bin PRIVATE mpimod io neutral precipBCs
+add_executable(gemini.exe gemini.f90)
+target_link_libraries(gemini.exe PRIVATE mpimod io neutral precipBCs
   temporal multifluid
   potentialBCs potential_comm_mumps const)
 #  MPI::MPI_Fortran)
-target_compile_options(gemini.bin PRIVATE ${FFLAGS})
+target_compile_options(gemini.exe PRIVATE ${FFLAGS})
 
 
 #--------magnetic field calculation executable---------------
-add_executable(magcalc.bin magcalc.f90)
-target_link_libraries(magcalc.bin PRIVATE mpimod const grid io timeutils)
-target_compile_options(magcalc.bin PRIVATE ${FFLAGS})
+add_executable(magcalc.exe magcalc.f90)
+target_link_libraries(magcalc.exe PRIVATE mpimod const grid io timeutils)
+target_compile_options(magcalc.exe PRIVATE ${FFLAGS})
 
 # --- self-tests
 if(USEGLOW)

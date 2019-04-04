@@ -89,7 +89,7 @@ ionization = library('ionization', ionization_src,
   dependencies : mpi)
 
 # -- gemini exe
-gemini = executable('gemini.bin', 'gemini.f90', 'temporal/temporal.f90', 'numerical/potential/potential_comm_mumps.f90', 'numerical/potential/potential_mumps.F90', 'collisions/collisions.f90', 'numerical/potential/boundary_conditions/potentialBCs_mumps.f90', 'multifluid/multifluid.f90',
+gemini = executable('gemini.exe', 'gemini.f90', 'temporal/temporal.f90', 'numerical/potential/potential_comm_mumps.f90', 'numerical/potential/potential_mumps.F90', 'collisions/collisions.f90', 'numerical/potential/boundary_conditions/potentialBCs_mumps.f90', 'multifluid/multifluid.f90',
 'sources/sources.f90', 'numerical/advection/advec_mpi.f90', 'numerical/diffusion/diffusion.F90',
 
   link_with : [io,calculus, ionization, neutral],
@@ -99,7 +99,7 @@ gemini = executable('gemini.bin', 'gemini.f90', 'temporal/temporal.f90', 'numeri
 
 # -- magcalc exe
 
-magcalc = executable('magcalc.bin', 'magcalc.f90',
+magcalc = executable('magcalc.exe', 'magcalc.f90',
   link_with : [calculus, neutral, io],
   dependencies : mpi)
 
