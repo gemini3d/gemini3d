@@ -1,4 +1,4 @@
-function plot2D_curv(ymd,UTsec,xg,parm,parmlbl,caxlims,sourceloc,ha, cmap)
+function plot2D_curv(ymd,UTsec,xg,parm,parmlbl,caxlims, sourceloc, ha, cmap)
 
 narginchk(4,9)
 validateattr(ymd, {'numeric'}, {'vector', 'numel', 3}, mfilename, 'year month day', 1)
@@ -25,7 +25,12 @@ if nargin<9 || isempty(cmap)
   cmap = parula(256);
 end   
 
-ha = axes(ha);
+
+if isoctave % Octave < 5.0
+  if isfigure(ha), ha = axes('parent', ha); end
+else
+  ha = axes(ha);  % this is fine for Octave >= 5.0 and Matlab
+end
 
 
 %SOURCE LOCATION (SHOULD PROBABLY BE AN INPUT)
@@ -173,7 +178,9 @@ hold(ha,'on')
 plot(ha,[minxp,maxxp],[altref,altref],'w--','LineWidth',2);
 plot(ha,sourcemlat,0,'r^','MarkerSize',8,'LineWidth',2);
 hold(ha,'off')
-set(hi,'alphadata',~isnan(parmp));
+try % octave < 5
+  set(hi,'alphadata',~isnan(parmp));
+end
 set(ha,'FontSize',FS)
 
 tight_axis(ha)
@@ -192,7 +199,9 @@ hold on;
 plot([minxp,maxxp],[sourcemlon,sourcemlon],'w--','LineWidth',2);
 plot(sourcemlat,sourcemlon,'r^','MarkerSize',12,'LineWidth',2);
 hold off;
-set(hi,'alphadata',~isnan(parmp2(:,:,2)));
+try % octave < 5
+  set(hi,'alphadata',~isnan(parmp2(:,:,2)));
+end
 set(gca,'FontSize',FS);
 
 tight_axis(gca)

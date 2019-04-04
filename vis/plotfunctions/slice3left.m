@@ -3,8 +3,8 @@ function slice3left(hf, x, y, dat, P)
 ax = subplot(1,3,1, 'parent', hf, 'nextplot','add','FontSize', P.FS);
 %% image
 hi = imagesc(ax, x, y, dat);
-try
-  set(hi, 'alphadata',~isnan(dat));
+try %#ok<TRYNC>  octave < 5
+  set(hi, 'alphadata', ~isnan(dat));
 end
 %% line annotation
 plot(ax,[P.minxp, P.maxxp],[P.altref, P.altref],'w--','LineWidth',2);
