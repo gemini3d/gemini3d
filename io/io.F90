@@ -914,23 +914,91 @@ close(u)
 end subroutine output_magfields
 
 
-pure function date_filename(outdir,ymd,UTsec)
-!! GENERATE A FILENAME STRING OUT OF A GIVEN DATE/TIME
+!pure function date_filename(outdir,ymd,UTsec)
+!!! GENERATE A FILENAME STRING OUT OF A GIVEN DATE/TIME
+!
+!character(*), intent(in) :: outdir
+!integer, intent(in) :: ymd(3)
+!real(wp), intent(in) :: UTsec
+!character(:), allocatable :: date_filename
+!character(25) :: fn
+!
+!
+!!> UTC second (float, 0.0 .. 86400) 
+!write(fn,'(i4,2i0.2,a1,f12.6,a4)') ymd, '_', UTsec, '.dat'
+!
+!!> assemble
+!date_filename = outdir // '/' // fn
+!
+!end function date_filename
 
-character(*), intent(in) :: outdir
-integer, intent(in) :: ymd(3)
-real(wp), intent(in) :: UTsec
-character(:), allocatable :: date_filename
-character(25) :: fn
+
+  function date_filename(outdir,ymd,UTsec)
+
+    !------------------------------------------------------------
+    !-------GENERATE A FILENAME STRING OUT OF A GIVEN DATE/TIME
+    !------------------------------------------------------------
+
+    character(*), intent(in) :: outdir
+    integer, dimension(3), intent(in) :: ymd
+    real(8), intent(in) :: UTsec
+    character(:), allocatable :: date_filename
+
+    integer :: ldigits,idigits
+    character(256) :: filename,tmpchar,tmpchar2
+    character(512) :: tmpfilename,filenamefull
 
 
-!> UTC second (float, 0.0 .. 86400) 
-write(fn,'(i4,2i0.2,a1,f12.6,a4)') ymd, '_', UTsec, '.dat'
+    !FORM OUTPUT FILENAME BASED ON DATE AND TIME (this was unbelievably squirrely to work out)
+    write(filename,'(f12.6,a4)') UTsec,'.dat'    !file name that has 6 decimal points on time stamp
+    filename=adjustl(filename)                   !slam the chars. to the left and remove trailing blanks
+    ldigits=5                                    !pad the filename with the appropriate number zero characters
+    if (UTsec<1d0) then
+      idigits=1
+    else
+      idigits=floor(log10(UTsec))+1
+    end if
+    tmpchar=filename
+    do while(idigits<ldigits)
+      write(tmpchar2,*) '0',trim(tmpchar)
+      tmpchar=adjustl(tmpchar2)      
+      idigits=idigits+1
+    end do
+    filename=tmpchar
 
-!> assemble
-date_filename = outdir // '/' // fn
+    !day
+    write(tmpchar,*) ymd(3)
+    tmpchar=adjustl(tmpchar)
+    if (ymd(3)<10) then
+      write(tmpchar2,*) '0',trim(tmpchar)
+      tmpchar=adjustl(tmpchar2)
+    end if
+    !write is dumb and doesn't recognize previous trims...  I hate string manipulation...
+    write(tmpfilename,*) trim(tmpchar),'_',trim(filename)
+    tmpfilename=adjustl(tmpfilename)
+    filename=tmpfilename(1:256)
 
-end function date_filename
+    !month
+    write(tmpchar,*) ymd(2)
+    tmpchar=adjustl(tmpchar)
+    if (ymd(2)<10) then
+      write(tmpchar2,*) '0',trim(tmpchar)
+      tmpchar=adjustl(tmpchar2)
+    end if
+    write(tmpfilename,*) trim(tmpchar),trim(filename)
+    tmpfilename=adjustl(tmpfilename)
+    filename=tmpfilename(1:256)
+
+    !year
+    write(tmpchar,*) ymd(1)
+    tmpchar=adjustl(tmpchar)
+    write(tmpfilename,*) trim(tmpchar),trim(filename)
+    tmpfilename=adjustl(tmpfilename)
+    filename=tmpfilename(1:256)
+    write(filenamefull,*) outdir,'/',trim(filename)
+    date_filename=trim(adjustl(filenamefull))
+
+  end function date_filename
 
 
 subroutine gitlog(logpath)
