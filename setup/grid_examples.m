@@ -30,16 +30,30 @@ clear;
 % flagsource=0;     %specify no source
 % iscurv=false;
 
-%CHILE 2015 GRID
-dtheta=8;
-dphi=14;
-lp=50;
-lq=250;
-lphi=50;
+% %CHILE 2015 GRID
+% dtheta=8;
+% dphi=14;
+% lp=50;
+% lq=250;
+% lphi=50;
+% altmin=80e3;
+% glat=17.0;
+% glon=288.2;
+% gridflag=1;
+% flagsource=0;
+% iscurv=true;
+
+
+%SAPs grid
+dtheta=15;
+dphi=75;
+lp=128;
+lq=256;
+lphi=64;
 altmin=80e3;
-glat=17.0;
-glon=288.2;
-gridflag=1;
+glat=45;
+glon=262.51;
+gridflag=0;
 flagsource=0;
 iscurv=true;
 

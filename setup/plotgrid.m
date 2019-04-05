@@ -5,7 +5,9 @@ function ha=plotgrid(xg,flagsource,sourcelat,sourcelong,neugridtype,zmin,zmax,rh
 [sourcetheta,sourcephi]=geog2geomag(sourcelat,sourcelong);
 sourcemlat=90-sourcetheta*180/pi;
 sourcemlon=sourcephi*180/pi;
-if (360-sourcemlon<20)
+mlon=xg.phi*180/pi;
+dmlon=max(mlon(:))-min(mlon(:));
+if (360-sourcemlon<dmlon+20)
     sourcemlonplot=sourcemlon-360;
 else
     sourcemlonplot=sourcemlon;
@@ -22,7 +24,7 @@ else
     flag2D=false;
     if (flagmapping)
         ha=gca;
-        axesm('MapProjection','Mercator','MapLatLimit',[-(abs(sourcemlat)+30),abs(sourcemlat)+30],'MapLonLimit',[sourcemlonplot-40,sourcemlonplot+40])
+        axesm('MapProjection','Mercator','MapLatLimit',[-(abs(sourcemlat)+30),abs(sourcemlat)+30],'MapLonLimit',[sourcemlonplot-dmlon/2-10,sourcemlonplot+dmlon/2+10])
         plotfun=@plot3m;
     else
         ha=gca;
