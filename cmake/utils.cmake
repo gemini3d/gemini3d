@@ -119,7 +119,7 @@ set(TESTNAME ${TESTNAME}-NP${NP})  # for convenience, name with number of proces
 message(STATUS "Test ${TESTNAME} uses ${NP} MPI processes")
 
 add_test(NAME ${TESTNAME}
-  COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${NP} ${CMAKE_BINARY_DIR}/gemini.bin ${CMAKE_SOURCE_DIR}/initialize/${TESTDIR}/config.ini ${CMAKE_CURRENT_BINARY_DIR}/${TESTDIR}
+  COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${NP} ${CMAKE_BINARY_DIR}/gemini.exe ${CMAKE_SOURCE_DIR}/initialize/${TESTDIR}/config.ini ${CMAKE_CURRENT_BINARY_DIR}/${TESTDIR}
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
 set_tests_properties(${TESTNAME} PROPERTIES
