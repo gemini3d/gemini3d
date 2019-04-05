@@ -1,4 +1,5 @@
 project('GEMINI', 'fortran',
+  meson_version: '>=0.50.0',
   default_options : ['default_library=static'])
 
 REALBITS = '-DREALBITS='+get_option('realbits')
@@ -9,10 +10,9 @@ lapack_root = get_option('LAPACK_ROOT')
 scalapack_root = get_option('SCALAPACK_ROOT')
 mumps_root = get_option('MUMPS_ROOT')
 
-add_global_arguments(['-O3'], language : 'fortran')
 fc = meson.get_compiler('fortran')
 if fc.get_id() == 'gcc'
-  add_global_arguments('-march=native', '-Wno-unused-variable', '-Wno-maybe-uninitialized', '-Wno-unused-dummy-argument', '-Wno-unused-function', language : 'fortran')
+  add_global_arguments('-Wno-unused-variable', '-Wno-maybe-uninitialized', '-Wno-unused-dummy-argument', '-Wno-unused-function', language : 'fortran')
   oldflags = ['-std=legacy', '-w']
 else
   oldflags = ['-w']
@@ -26,9 +26,9 @@ else
   mpi = fc.find_library('mpi', required : true, dirs : mpi_root / 'lib')
 endif
 
-mpiret = fc.run('use mpi; end', dependencies : mpi).returncode()
-if mpiret != 0
-  error('MPI does not link properly with compiler')
+mpiret = fc.run('use mpi; end', dependencies : mpi)
+if mpiret.returncode() != 0
+  error('MPI does not link properly: ' + mpiret.stderr() + mpiret.stdout() + mpi_root + ' ' + mpi.name() + ' ' + mpi.version())
 endif
 
 if lapack_root == ''
@@ -61,7 +61,7 @@ calculus = library('calculus', mpi_src, 'numerical/constants/phys_consts.F90', '
   dependencies : mpi,
   fortran_args: REALBITS)
 
-io = library('io','io/io.F90', 'io/expanduser.f90',
+io = library('io','io/io.F90', 'io/expanduser.f90', 'io/formats.f90',
   link_with: calculus,
   fortran_args: REALBITS)
 

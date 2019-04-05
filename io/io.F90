@@ -7,10 +7,12 @@ use fsutils, only: expanduser
 use calculus
 use mpimod
 use grid, only : gridflag,flagswap,lx1,lx2,lx3,lx3all
+use formats, only: date_filename
+
 implicit none
 
 !> NONE OF THESE VARIABLES SHOULD BE ACCESSED BY PROCEDURES OUTSIDE THIS MODULE
-character(:), allocatable, private :: indatfile                    
+character(:), allocatable, private :: indatfile
 !! initial condition data files from input configuration file
 
 contains
@@ -31,7 +33,7 @@ real(wp), intent(out) :: dtout
 real(wp), dimension(3), intent(out) :: activ
 real(wp), intent(out) :: tcfl
 real(wp), intent(out) :: Teinf
-integer, intent(out) :: potsolve, flagperiodic, flagoutput, flagcap 
+integer, intent(out) :: potsolve, flagperiodic, flagoutput, flagcap
 integer, intent(out) :: flagdneu
 integer, intent(out) :: interptype
 real(wp), intent(out) :: sourcemlat,sourcemlon
@@ -64,7 +66,7 @@ read(u,*) potsolve
 read(u,*) flagperiodic
 read(u,*) flagoutput
 read(u,*) flagcap
-read(u,'(a256)') buf  
+read(u,'(a256)') buf
 !! format specifier needed, else it reads just one character
 indatsize = expanduser(buf)
 read(u,'(a256)') buf
@@ -100,7 +102,7 @@ if( flagdneu==1) then
     print *, 'Neutral grid resolution (m):  ',drhon,dzn
     print *, 'Neutral disturbance data files located in directory:  ',sourcedir
   end if
-else                              
+else
 !! just set it to something
   interptype=0
   sourcemlat=0._wp; sourcemlon=0._wp;
@@ -111,18 +113,18 @@ end if
 
 !> PRECIPITATION FILE INPUT INFORMATION
 read(u,*) flagprecfile
-if (flagprecfile==1) then    
+if (flagprecfile==1) then
 !! get the location of the precipitation input files
   read(u,*) dtprec
 
   read(u,'(A256)') buf
   precdir = expanduser(buf)
-  
+
   if (myid==0) then
     print '(A,F10.3)', 'Precipitation file input cadence (s):  ',dtprec
     print *, 'Precipitation file input source directory:  '//precdir
   end if
-else                         
+else
 !! just set results to something
   dtprec=0._wp
   precdir=''
@@ -130,7 +132,7 @@ end if
 
 !> ELECTRIC FIELD FILE INPUT INFORMATION
 read(u,*) flagE0file
-if (flagE0file==1) then    
+if (flagE0file==1) then
 !! get the location of the precipitation input files
   read(u,*) dtE0
 
@@ -181,42 +183,42 @@ integer :: ierr
 
 !MAKE A COPY OF THE INPUT DATA IN THE OUTPUT DIRECTORY (MAYBE SHOULD COPY SOURCE CODE TOO???)
 call execute_command_line('mkdir -pv '//outdir//'/inputs', exitstat=ierr)
-if (ierr /= 0) error stop 'error creating output directory' 
+if (ierr /= 0) error stop 'error creating output directory'
 
 call execute_command_line('cp -r '//infile//' '//outdir//'/inputs/', exitstat=ierr)
-if (ierr /= 0) error stop 'error copying input parameters to output directory' 
+if (ierr /= 0) error stop 'error copying input parameters to output directory'
 call execute_command_line('cp -r '//indatsize//' '//outdir//'/inputs/', exitstat=ierr)
-if (ierr /= 0) error stop 'error copying input parameters to output directory' 
+if (ierr /= 0) error stop 'error copying input parameters to output directory'
 call execute_command_line('cp -r '//indatgrid//' '//outdir//'/inputs/', exitstat=ierr)
-if (ierr /= 0) error stop 'error copying input parameters to output directory' 
+if (ierr /= 0) error stop 'error copying input parameters to output directory'
 call execute_command_line('cp -r '//indatfile//' '//outdir//'/inputs/', exitstat=ierr)
-if (ierr /= 0) error stop 'error copying input parameters to output directory' 
+if (ierr /= 0) error stop 'error copying input parameters to output directory'
 
 !MAKE COPIES OF THE INPUT DATA, AS APPROPRIATE
 if (flagdneu/=0) then
   call execute_command_line('mkdir -pv '//outdir//'/inputs/neutral_inputs')
   call execute_command_line('cp -r '//sourcedir//'/* '//outdir//'/inputs/neutral_inputs/', exitstat=ierr)
 end if
-if (ierr /= 0) error stop 'error copying neutral input parameters to output directory' 
+if (ierr /= 0) error stop 'error copying neutral input parameters to output directory'
 
 if (flagprecfile/=0) then
   call execute_command_line('mkdir -pv '//outdir//'/inputs/prec_inputs')
   call execute_command_line('cp -r '//precdir//'/* '//outdir//'/inputs/prec_inputs/', exitstat=ierr)
 end if
-if (ierr /= 0) error stop 'error copying input precipitation parameters to output directory' 
+if (ierr /= 0) error stop 'error copying input precipitation parameters to output directory'
 
 if (flagE0file/=0) then
   call execute_command_line('mkdir -pv '//outdir//'/inputs/Efield_inputs')
   call execute_command_line('cp -r '//E0dir//'/* '//outdir//'/inputs/Efield_inputs/', exitstat=ierr)
 end if
-if (ierr /= 0) error stop 'error copying input energy parameters to output directory' 
+if (ierr /= 0) error stop 'error copying input energy parameters to output directory'
 
 !NOW STORE THE VERSIONS/COMMIT IDENTIFIER IN A FILE IN THE OUTPUT DIRECTORY
 ! this can break on POSIX due to copying files in endless loop, commended out - MH
 !call execute_command_line('mkdir -pv '//outdir//'/inputs/source/', exitstat=ierr)
 !if (ierr /= 0) error stop 'error creating input source parameter output directory'
 !call execute_command_line('cp -r ./* '//outdir//'/inputs/source/', exitstat=ierr)
-!if (ierr /= 0) error stop 'error creating input source parameter output directory' 
+!if (ierr /= 0) error stop 'error creating input source parameter output directory'
 
 call gitlog(outdir//'/gitrev.log')
 
@@ -282,7 +284,7 @@ subroutine input_workers_mpi(ns,vs1,Ts)
 !-------RECEIVE INITIAL CONDITIONS FROM ROOT PROCESS
 !------------------------------------------------------------
 
-real(wp), dimension(-1:,-1:,-1:,:), intent(out) :: ns,vs1,Ts     
+real(wp), dimension(-1:,-1:,-1:,:), intent(out) :: ns,vs1,Ts
 
 call bcast_recv(ns,tagns)
 call bcast_recv(vs1,tagvs1)
@@ -294,7 +296,7 @@ end subroutine input_workers_mpi
 subroutine input_root_mpi(x1,x2,x3all,indatsize,ns,vs1,Ts)
 
 !------------------------------------------------------------
-!-------READ INPUT FROM FILE AND DISTRIBUTE TO WORKERS.  
+!-------READ INPUT FROM FILE AND DISTRIBUTE TO WORKERS.
 !-------STATE VARS ARE EXPECTED INCLUDE GHOST CELLS.  NOTE ALSO
 !-------THAT RECORD-BASED INPUT IS USED SO NO FILES > 2GB DUE
 !-------TO GFORTRAN BUG WHICH DISALLOWS 8 BYTE INTEGER RECORD
@@ -303,7 +305,7 @@ subroutine input_root_mpi(x1,x2,x3all,indatsize,ns,vs1,Ts)
 
 real(wp), dimension(-1:), intent(in) :: x1, x2, x3all
 character(*), intent(in) :: indatsize
-real(wp), dimension(-1:,-1:,-1:,:), intent(out) :: ns,vs1,Ts    
+real(wp), dimension(-1:,-1:,-1:,:), intent(out) :: ns,vs1,Ts
 
 integer :: lx1,lx2,lx3,lx3all,isp
 
@@ -313,7 +315,7 @@ integer :: lx1in,lx2in,lx3in,u, utrace
 real(wp) :: tin
 real(wp), dimension(3) :: ymdtmp
 
-real(wp) :: tstart,tfin    
+real(wp) :: tstart,tfin
 
 !> so that random values (including NaN) don't show up in Ghost cells
 nsall = 0._wp
@@ -326,7 +328,7 @@ lx2=size(ns,2)-4
 lx3=size(ns,3)-4
 lx3all=size(nsall,3)-4
 
-        
+
 !READ IN FROM FILE, AS OF CURVILINEAR BRANCH THIS IS NOW THE ONLY INPUT
 !OPTION
 open(newunit=u,file=indatsize,status='old',form='unformatted', access='stream', action='read')
@@ -342,7 +344,7 @@ if (flagswap==1) then
 end if
 
 if (.not. (lx1==lx1in .and. lx2==lx2in .and. lx3all==lx3in)) then
-  error stop '!!!The input data must be the same size as the grid which you are running the simulation on' // & 
+  error stop '!!!The input data must be the same size as the grid which you are running the simulation on' // &
        '- use a script to interpolate up/down to the simulation grid'
 end if
 
@@ -376,7 +378,7 @@ if (any(ieee_is_nan(Tsall))) error stop 'NaN in Tsall'
 print *, 'Done gathering input...'
 
 
-!> USER SUPPLIED FUNCTION TO TAKE A REFERENCE PROFILE AND CREATE INITIAL CONDITIONS FOR ENTIRE GRID.  
+!> USER SUPPLIED FUNCTION TO TAKE A REFERENCE PROFILE AND CREATE INITIAL CONDITIONS FOR ENTIRE GRID.
 !> ASSUMING THAT THE INPUT DATA ARE EXACTLY THE CORRECT SIZE (AS IS THE CASE WITH FILE INPUT) THIS IS NOW SUPERFLUOUS
 print *, 'Done setting initial conditions...'
 
@@ -480,7 +482,7 @@ if (flagoutput==2) then    !the simulation data have only averaged plasma parame
   !in a flat array (i.e. a 1D set of data) I hit EOF, according to runtime
   !error, well before I'm actually out of data this happens with a 20GB
   !input file for not for a 3GB input file...  This doesn't happen when I do
-  !the reading with 3D arrays.  
+  !the reading with 3D arrays.
   read(u) tmparray3D    !ne - could be done with some judicious fseeking...
   read(u) tmparray3D    !vi
   read(u) tmparray3D    !Ti
@@ -563,7 +565,7 @@ if (myid/=0) then
   call output_workers_mpi(vs2,vs3,ns,vs1,Ts,J1,J2,J3)
 else
   call output_root_stream_mpi(outdir,flagoutput,ymd,UTsec,vs2,vs3,ns,vs1,Ts,Phiall,J1,J2,J3)    !only option that works with >2GB files
-end if  
+end if
 
 end subroutine output_plasma
 
@@ -571,11 +573,11 @@ end subroutine output_plasma
 subroutine output_workers_mpi(vs2,vs3,ns,vs1,Ts,J1,J2,J3)
 
 !------------------------------------------------------------
-!-------SEND COMPLETE DATA FROM WORKERS TO ROOT PROCESS FOR OUTPUT.  
+!-------SEND COMPLETE DATA FROM WORKERS TO ROOT PROCESS FOR OUTPUT.
 !-------STATE VARS ARE EXPECTED TO INCLUDE GHOST CELLS
 !------------------------------------------------------------
 
-real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: vs2,vs3,ns,vs1,Ts     
+real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: vs2,vs3,ns,vs1,Ts
 real(wp), dimension(:,:,:), intent(in) :: J1,J2,J3
 
 integer :: lx1,lx2,lx3,lx3all,isp
@@ -606,7 +608,7 @@ call gather_send(Ts,tagTs)
 !------- SEND ELECTRODYNAMIC PARAMETERS TO ROOT
 call gather_send(J1,tagJ1)
 call gather_send(J2,tagJ2)
-call gather_send(J3,tagJ3)  
+call gather_send(J3,tagJ3)
 
 end subroutine output_workers_mpi
 
@@ -615,7 +617,7 @@ subroutine output_root_stream_mpi(outdir,flagoutput,ymd,UTsec,vs2,vs3,ns,vs1,Ts,
 
 !------------------------------------------------------------
 !-------COLLECT OUTPUT FROM WORKERS AND WRITE TO A FILE USING
-!-------STREAM I/O.    
+!-------STREAM I/O.
 !-------STATE VARS ARE EXPECTED INCLUDE GHOST CELLS
 !------------------------------------------------------------
 
@@ -624,7 +626,7 @@ integer, intent(in) :: flagoutput
 
 integer, dimension(3), intent(in) :: ymd
 real(wp), intent(in) :: UTsec
-real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: vs2,vs3,ns,vs1,Ts    
+real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: vs2,vs3,ns,vs1,Ts
 
 real(wp), dimension(:,:,:), intent(in) :: Phiall
 real(wp), dimension(:,:,:), intent(in) :: J1,J2,J3
@@ -637,7 +639,7 @@ real(wp), dimension(1:size(Phiall,1),1:size(Phiall,2),1:size(Phiall,3)) :: J1all
 character(:), allocatable :: filenamefull
 integer(8) :: recordlength   !can be 8 byte with compiler flag -frecord-marker=8
 
-real(wp), dimension(:,:,:), allocatable :: permarray,tmparray    !permuted variables to be allocated for 2D output  
+real(wp), dimension(:,:,:), allocatable :: permarray,tmparray    !permuted variables to be allocated for 2D output
 
 
 !SYSTEM SIZES
@@ -654,8 +656,8 @@ v3avg=sum(ns(1:lx1,1:lx2,1:lx3,1:lsp-1)*vs3(1:lx1,1:lx2,1:lx3,1:lsp-1),4)
 v3avg=v3avg/ns(1:lx1,1:lx2,1:lx3,lsp)
 
 
-!GET THE SUBGRID DATA FORM THE WORKERS  
-call gather_recv(v2avg,tagv2,v2avgall) 
+!GET THE SUBGRID DATA FORM THE WORKERS
+call gather_recv(v2avg,tagv2,v2avgall)
 call gather_recv(v3avg,tagv3,v3avgall)
 call gather_recv(ns,tagns,nsall)
 call gather_recv(vs1,tagvs1,vs1all)
@@ -732,7 +734,7 @@ else                 !2D simulation for which arrays were permuted
       write(u) permarray
       permarray=reshape(v2avgall,[lx1,lx3all,lx2],order=[1,3,2])
       write(u) permarray
-      deallocate(permarray) 
+      deallocate(permarray)
     case (3)     !electron density only output
       print *, '!!!NOTE:  Input file has selected electron density only output, make sure this is what you really want!'
       allocate(permarray(lx1,lx3all,lx2))    !temporary work array that has been permuted
@@ -752,7 +754,7 @@ else                 !2D simulation for which arrays were permuted
         tmparray=vs1all(1:lx1,1:lx2,1:lx3all,isp)
         permarray=reshape(tmparray,[lx1,lx3all,lx2],order=[1,3,2])
         write(u) permarray
-      end do 
+      end do
       do isp=1,lsp
         tmparray=Tsall(1:lx1,1:lx2,1:lx3all,isp)
         permarray=reshape(tmparray,[lx1,lx3all,lx2],order=[1,3,2])
@@ -770,7 +772,7 @@ else                 !2D simulation for which arrays were permuted
       write(u) permarray
       deallocate(permarray)
       deallocate(tmparray)
-  end select 
+  end select
 end if
 if (gridflag==1) then
   print *, 'Writing topside boundary conditions for inverted-type grid...'
@@ -814,7 +816,7 @@ end subroutine output_aur
 subroutine output_aur_workers(iver)
 
 !------------------------------------------------------------
-!-------SEND COMPLETE DATA FROM WORKERS TO ROOT PROCESS FOR OUTPUT.  
+!-------SEND COMPLETE DATA FROM WORKERS TO ROOT PROCESS FOR OUTPUT.
 !-------NO GHOST CELLS (I HOPE)
 !------------------------------------------------------------
 
@@ -833,7 +835,7 @@ end subroutine output_aur_workers
 subroutine output_aur_root(outdir,flagglow,ymd,UTsec,iver)
 
 !------------------------------------------------------------
-!-------COLLECT COMPLETE DATA FROM WORKERS AND PROCESS FOR OUTPUT.  
+!-------COLLECT COMPLETE DATA FROM WORKERS AND PROCESS FOR OUTPUT.
 !-------NO GHOST CELLS (I HOPE)
 !------------------------------------------------------------
 
@@ -895,28 +897,9 @@ open(newunit=u,file=filenamefull,status='replace',form='unformatted',access='str
 
 
 !> DUMP THE OUTPUT DATA
-write(u) Br,Btheta,Bphi 
+write(u) Br,Btheta,Bphi
 close(u)
 end subroutine output_magfields
-
-
-pure function date_filename(outdir,ymd,UTsec)
-!! GENERATE A FILENAME STRING OUT OF A GIVEN DATE/TIME
-
-character(*), intent(in) :: outdir
-integer, intent(in) :: ymd(3)
-real(wp), intent(in) :: UTsec
-character(:), allocatable :: date_filename
-character(25) :: fn
-
-
-!> UTC second (float, 0.0 .. 86400) 
-write(fn,'(i4,2i0.2,a1,f12.6,a4)') ymd, '_', UTsec, '.dat'
-
-!> assemble
-date_filename = outdir // '/' // fn
-
-end function date_filename
 
 
 subroutine gitlog(logpath)

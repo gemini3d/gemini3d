@@ -38,7 +38,7 @@ endif(USEGLOW)
 
 add_subdirectory(numerical)
 
-add_library(io io/io.F90 io/expanduser.f90)
+add_library(io io/io.F90 io/expanduser.f90 io/formats.f90)
 target_link_libraries(io PRIVATE const mpimod grid calculus)
 target_compile_definitions(io PRIVATE TRACE=${TRACE})
 target_compile_options(io PRIVATE ${FFLAGS})
@@ -117,3 +117,13 @@ else()
   include(${PROJECT_SOURCE_DIR}/cmake/test2d.cmake)
   include(${PROJECT_SOURCE_DIR}/cmake/test3d.cmake)
 endif()
+
+add_executable(test_formats tests/test_formats.f90)
+target_compile_options(test_formats PRIVATE ${FFLAGS})
+target_link_libraries(test_formats PRIVATE io)
+add_test(NAME DateFormats COMMAND test_formats)
+
+add_executable(test_rollover tests/test_dayrollover.f90)
+target_compile_options(test_rollover PRIVATE ${FFLAGS})
+target_link_libraries(test_rollover PRIVATE timeutils const)
+add_test(NAME DateRollover COMMAND test_rollover)

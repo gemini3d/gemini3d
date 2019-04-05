@@ -15,6 +15,8 @@ if(NOT hasParent)
   include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/mumps.cmake)
 endif()
 
+#----------------
+
 find_package(MPI REQUIRED COMPONENTS Fortran)
 
 add_executable(testmpi test_mpi.f90)

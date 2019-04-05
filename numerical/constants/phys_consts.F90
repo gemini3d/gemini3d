@@ -11,9 +11,11 @@ integer,parameter :: wp=real32
 integer,parameter :: wp=real64
 #elif REALBITS==128
 integer,parameter :: wp=real128
+#else
+integer,parameter :: wp=real64
 #endif
 
-!> colored output text (for Unix-like systems at least). 
+!> colored output text (for Unix-like systems at least).
 !> It should be compatible across compiler vendors.
 character(5), parameter :: &
   red = char(27) // '[31m', &
@@ -32,20 +34,20 @@ real(wp), parameter :: kB=1.38064852e-23_wp, &      !Boltzmann constant
 
 
 !> EARTH-RELATED PARAMETERS
-real(wp), parameter :: Mmag=7.94e22_wp             
+real(wp), parameter :: Mmag=7.94e22_wp
   !! Earth's magnetic moment
-real(wp), parameter :: Re = 6371.0e3_wp            
+real(wp), parameter :: Re = 6371.0e3_wp
   !! Earth Radius [meters]
-real(wp), parameter :: Me = 5.9722e24_wp          
+real(wp), parameter :: Me = 5.9722e24_wp
   !! Earth mass
 
 
 !> ION DATA (need to be doubled?)
 integer, parameter :: lsp=7
   !! number of ion/electron species
-real(wp), parameter :: ms(lsp)=[16.0_wp, 30.0_wp, 28.0_wp, 32.0_wp, 14.0_wp, 1.0_wp, 5.485799090e-4_wp]*amu                
+real(wp), parameter :: ms(lsp)=[16.0_wp, 30.0_wp, 28.0_wp, 32.0_wp, 14.0_wp, 1.0_wp, 5.485799090e-4_wp]*amu
   !! mass of each species
-real(wp), parameter :: qs(lsp)=[1.0_wp,1.0_wp,1.0_wp,1.0_wp,1.0_wp,1.0_wp,-1.0_wp]*elchrg    
+real(wp), parameter :: qs(lsp)=[1.0_wp,1.0_wp,1.0_wp,1.0_wp,1.0_wp,1.0_wp,-1.0_wp]*elchrg
   !! charge of each species
 real(wp), parameter :: gammas(lsp)=[5.0_wp/3.0_wp, &
                                     7.0_wp/5.0_wp, &
@@ -53,14 +55,14 @@ real(wp), parameter :: gammas(lsp)=[5.0_wp/3.0_wp, &
                                     7.0_wp/5.0_wp, &
                                     5.0_wp/3.0_wp, &
                                     5.0_wp/3.0_wp, &
-                                    5.0_wp/3.0_wp]          
+                                    5.0_wp/3.0_wp]
   !! adiabatic index for each speces
 
 
 !> NEUTRAL DATA
-integer, parameter :: ln=4, lnchem=6    
+integer, parameter :: ln=4, lnchem=6
   !! number of neutral densities, and number of neutrals in chem. rxns.
-real(wp),parameter :: mn(ln)=[16.0_wp,28.0_wp,32.0_wp,1.0_wp]*amu      
+real(wp),parameter :: mn(ln)=[16.0_wp,28.0_wp,32.0_wp,1.0_wp]*amu
   !! mass of neutral species
 
 !AURORAL DATA
