@@ -29,7 +29,7 @@ if(CMAKE_BUILD_TYPE STREQUAL Debug)
 endif()
 
 
-add_library(mpimod mpimod/mpimod.F90)
+add_library(mpimod mpimod/mpimod.F90 mpimod/mpihalo.f90 mpimod/mpisend.f90 mpimod/mpirecv.f90)
 target_link_libraries(mpimod PRIVATE const MPI::MPI_Fortran)
 target_compile_definitions(mpimod PRIVATE REALBITS=${realbits})
 target_compile_options(mpimod PRIVATE ${FFLAGS})

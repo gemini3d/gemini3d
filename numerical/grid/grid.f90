@@ -3,7 +3,7 @@ use, intrinsic:: iso_fortran_env, only: stderr=>error_unit
 
 use mpi, only: mpi_integer, mpi_comm_world, mpi_status_ignore
 
-use phys_consts, only: Gconst,Me,Re,wp, red, black
+use phys_consts, only: Gconst,Me,Re,wp,red,black
 
 use mpimod, only: myid, lid, lid2, lid3, &
   tagx1, tagx2, tagx3, tagtheta, tagr, tagphi, tagnull, taglx1, taglx2, taglx3, taglx3all, taginc, &
