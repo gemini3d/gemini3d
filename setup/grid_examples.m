@@ -44,14 +44,28 @@ clear;
 % iscurv=true;
 
 
-%SAPs grid
-dtheta=15;
-dphi=75;
-lp=128;
-lq=256;
-lphi=64;
+% %SAPs grid
+% dtheta=15;
+% dphi=75;
+% lp=128;
+% lq=256;
+% lphi=64;
+% altmin=80e3;
+% glat=45;
+% glon=262.51;
+% gridflag=0;
+% flagsource=0;
+% iscurv=true;
+
+
+%% MSTIDs grid, CONUS
+dtheta=20;
+dphi=30;
+lp=40;
+lq=250;
+lphi=40;
 altmin=80e3;
-glat=45;
+glat=39;
 glon=262.51;
 gridflag=0;
 flagsource=0;
