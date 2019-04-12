@@ -10,14 +10,6 @@ Finds the MUMPS library
 COMPONENTS
   s d c z   list one or more. Defaults to ``d``.
 
-Imported targets
-^^^^^^^^^^^^^^^^
-
-This module defines the following :prop_tgt:`IMPORTED` targets:
-
-MUMPS::MUMPS
-  the Mumps library components requested.
-
 Result Variables
 ^^^^^^^^^^^^^^^^
 
@@ -59,16 +51,9 @@ find_package_handle_standard_args(MUMPS
     REQUIRED_VARS MUMPS_LIBRARY MUMPS_COMMON PORD MUMPS_INCLUDE_DIR)
 
 # in this order!
-list(APPEND MUMPS_LIBRARIES ${MUMPS_LIBRARY} ${MUMPS_COMMON} ${PORD})
-set(MUMPS_INCLUDE_DIRS ${MUMPS_INCLUDE_DIR})
-
 if(MUMPS_FOUND)
-  if(NOT TARGET MUMPS::MUMPS)
-    add_library(MUMPS::MUMPS UNKNOWN IMPORTED)
-    set_target_properties(MUMPS::MUMPS PROPERTIES
-                        IMPORTED_LOCATION ${MUMPS_LIBRARIES}
-                        INTERFACE_INCLUDE_DIRECTORIES ${MUMPS_INCLUDE_DIRS})
-  endif()
+  list(APPEND MUMPS_LIBRARIES ${MUMPS_LIBRARY} ${MUMPS_COMMON} ${PORD})
+  set(MUMPS_INCLUDE_DIRS ${MUMPS_INCLUDE_DIR})
 endif()
 
 mark_as_advanced(
