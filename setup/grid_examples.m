@@ -60,9 +60,9 @@ clear;
 
 %% MSTIDs grid, CONUS
 dtheta=20;
-dphi=30;
-lp=40;
-lq=250;
+dphi=27.5;
+lp=128;
+lq=256;
 lphi=40;
 altmin=80e3;
 glat=39;

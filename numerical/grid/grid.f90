@@ -61,7 +61,7 @@ type :: curvmesh
   real(wp), dimension(:,:,:), allocatable :: h1x2i,h2x2i,h3x2i   !metric factors at x2 interfaces; dim. 2 has lx2+1
   real(wp), dimension(:,:,:), allocatable :: h1x3i,h2x3i,h3x3i   !metric factors at x3 interfaces; dim. 3 has lx3+1
 
-  !ROOT ONLY FULL GRID METRIC FACTORS (WORKERS WILL NOT ALLOCATE) - CANDIDATE FOR ELIMINATION???
+  !ROOT ONLY FULL GRID METRIC FACTORS (WORKERS WILL NOT ALLOCATE)
   real(wp), dimension(:,:,:), pointer :: h1all,h2all,h3all
   real(wp), dimension(:,:,:), allocatable :: h1x1iall,h2x1iall,h3x1iall   !dimension 1 has size lx1+1
   real(wp), dimension(:,:,:), allocatable :: h1x2iall,h2x2iall,h3x2iall   !dim. 2 has lx2all+1

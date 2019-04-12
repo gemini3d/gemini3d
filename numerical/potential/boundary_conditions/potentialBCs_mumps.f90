@@ -3,7 +3,7 @@ module potentialBCs_mumps
 use mpi, only: mpi_integer, mpi_comm_world, mpi_status_ignore
 
 use grid, only: curvmesh, lx1, lx2, lx2all, lx3all, gridflag
-use phys_consts, only: wp, pi
+use phys_consts, only: wp, pi, Re
 use interpolation, only : interp1,interp2
 use io, only : date_filename
 use timeutils, only : dateinc
@@ -35,6 +35,8 @@ real(wp), private :: UTsecprev,UTsecnext
 real(wp), private :: tprev,tnext
 
 real(wp), private :: flagdirich_double
+
+integer, private :: ix1ref,ix2ref,ix3ref     !reference locaiton along field line closest to reference point of input data (300 km alt. at the grid center)
 
 contains
 
@@ -78,6 +80,7 @@ real(wp), dimension(lx2all) :: Vminx3isnow,Vmaxx3isnow
 real(wp) :: slope
 
 integer :: ix1,ix2,ix3,iid,iflat,ios    !grid sizes are borrowed from grid module
+real(wp) :: h2ref,h3ref
 
 
 !COMPUTE SOURCE/FORCING TERMS FROM BACKGROUND FIELDS, ETC.
@@ -136,13 +139,18 @@ if(t+dt/2d0>=tnext) then    !need to load a new file
     Vminx3isprev=0d0; Vmaxx3isprev=0d0; Vminx3isnext=0d0; Vmaxx3isnext=0d0;
 
 
-    !ALL PROCESSES NEED TO DEFINED THE OPINTS THAT THEY WILL BE INTERPOLATING ONTO
+    !ALL PROCESSES NEED TO DEFINE THE POINTS THAT THEY WILL BE INTERPOLATING ONTO
+    ix2ref=lx2all/2                                         !note integer division
+    ix3ref=lx3all/3
+    ix1ref=minloc(abs(x%rall(:,ix2ref,ix3ref)-Re-300d3),1)    !by default the code uses 300km altitude as a reference location, using the center x2,x3 point
     allocate(mloni(lx2all*lx3all),mlati(lx2all*lx3all))
     do ix3=1,lx3all
       do ix2=1,lx2all
         iflat=(ix3-1)*lx2all+ix2
-        mlati(iflat)=90d0-x%thetaall(lx1,ix2,ix3)*180d0/pi    !does rool even have this info full grid???
-        mloni(iflat)=x%phiall(lx1,ix2,ix3)*180d0/pi
+        !mlati(iflat)=90d0-x%thetaall(lx1,ix2,ix3)*180d0/pi
+        !mloni(iflat)=x%phiall(lx1,ix2,ix3)*180d0/pi
+        mlati(iflat)=90d0-x%thetaall(ix1ref,ix2,ix3)*180d0/pi
+        mloni(iflat)=x%phiall(ix1ref,ix2,ix3)*180d0/pi
       end do
     end do
     print *, 'Grid has mlon,mlat range:  ',minval(mloni),maxval(mloni),minval(mlati),maxval(mlati)
@@ -349,15 +357,20 @@ if (llon/=1 .and. llat/=1) then
 end if
 
 
-!LOAD POTENTIAL SOLVER INPUT ARRAYS
+!LOAD POTENTIAL SOLVER INPUT ARRAYS, FIRST MAP THE ELECTRIC FIELDS
 do ix3=1,lx3all
   do ix2=1,lx2all
+    h2ref=x%h2all(ix1ref,ix2,ix3)    !define a reference metric factor for a given field line
+    h3ref=x%h3all(ix1ref,ix2,ix3)
     do ix1=1,lx1
-      E02all(ix1,ix2,ix3)=E0xinow(ix2,ix3)
-      E03all(ix1,ix2,ix3)=E0yinow(ix2,ix3)
+      E02all(ix1,ix2,ix3)=E0xinow(ix2,ix3)*h2ref/x%h2all(ix1,ix2,ix3)
+      E03all(ix1,ix2,ix3)=E0yinow(ix2,ix3)*h3ref/x%h3all(ix1,ix2,ix3)
     end do
   end do
 end do
+
+
+!NOW THE BOUNDARY CONDITIONS
 do ix3=1,lx3all
   do ix2=1,lx2all
     Vminx1(ix2,ix3)=Vminx1inow(ix2,ix3)
