@@ -1,21 +1,21 @@
-program mpiTypes
 use, intrinsic :: iso_fortran_env
-use mpi_f08, only: mpi_init, mpi_comm_rank, mpi_comm_world, mpi_comm_size, mpi_finalize, mpi_get_library_version, &
-mpi_real8, mpi_real, mpi_max_library_version_string
-
+use mpi
 implicit none
 
-integer :: mrank, msize, vlen
+integer :: mrank, msize, vlen, ierr
 character(MPI_MAX_LIBRARY_VERSION_STRING) :: version  ! allocatable not ok
 
 print *,compiler_version(), compiler_options()
 
-call MPI_INIT()
-call MPI_COMM_RANK(MPI_COMM_WORLD, mrank)
-call MPI_COMM_SIZE(MPI_COMM_WORLD, msize)
-call MPI_GET_LIBRARY_VERSION(version, vlen)
+call MPI_INIT(ierr)
+if (ierr /= 0) error stop 'mpi init error'
 
-call MPI_FINALIZE()
+call MPI_COMM_RANK(MPI_COMM_WORLD, mrank, ierr)
+call MPI_COMM_SIZE(MPI_COMM_WORLD, msize, ierr)
+call MPI_GET_LIBRARY_VERSION(version, vlen, ierr)
+
+call MPI_FINALIZE(ierr)
+if (ierr /= 0) error stop 'mpi finalize error'
 
 print '(A,I3,A,I3,A)', 'Image ', mrank, ' / ', msize, ':',version
 

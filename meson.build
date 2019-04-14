@@ -61,7 +61,7 @@ calculus = library('calculus', mpi_src, 'numerical/constants/phys_consts.F90', '
   dependencies : mpi,
   fortran_args: REALBITS)
 
-io = library('io','io/io.F90', 'io/expanduser.f90', 'io/formats.f90',
+io = library('io','io/io.F90', 'io/mkdir.F90', 'io/expanduser.f90', 'io/formats.f90',
   link_with: calculus,
   fortran_args: REALBITS)
 

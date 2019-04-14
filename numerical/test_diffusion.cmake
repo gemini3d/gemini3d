@@ -10,12 +10,12 @@ set_tests_properties(diffusion1D PROPERTIES
 
 if(OctaveOK)
 
-add_test(NAME OctaveDiffusion1D 
-         COMMAND Octave_EXECUTABLE -q --eval "test_diffusion1D('${CMAKE_CURRENT_BINARY_DIR}/test_diffusion1d.dat')"
+add_test(NAME OctaveDiffusion1D
+         COMMAND ${Octave_EXECUTABLE} --eval "test_diffusion1D('${CMAKE_CURRENT_BINARY_DIR}/test_diffusion1d.dat')"
          WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/diffusion)
 
 set_tests_properties(OctaveDiffusion1D  PROPERTIES
                      TIMEOUT 5
                      FIXTURES_REQUIRED GemDiff)
-          
+
 endif()

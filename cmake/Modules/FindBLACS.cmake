@@ -5,17 +5,10 @@
 FindBLACS
 ---------
 
-Finds the BLACSS library
+Finds the OpenMPI BLACS library.
+If you want this via MKL, just use ``find_package(SCALAPACK COMPONENTS IntelPar)``
 
 
-
-Imported targets
-^^^^^^^^^^^^^^^^
-
-This module defines the following :prop_tgt:`IMPORTED` targets:
-
-BLACS::BLACS
-  the BLASC library components requested.
 
 Result Variables
 ^^^^^^^^^^^^^^^^
@@ -30,16 +23,19 @@ BLACS_INCLUDE_DIRS
 
 #]=======================================================================]
 
+find_package(PkgConfig)
+pkg_check_modules(BLACS blacs-openmpi)
+
 find_library(BLACS_LIBRARY
             NAMES blacs blacs-pvm blacs-mpi blacs-openmpi blacsF77init-openmpi blacs-mpich blacs-mpich2 blacs-lam
             PATH_SUFFIXES lib)
 
 
-find_library(BLACS_OPENMPI 
+find_library(BLACS_OPENMPI
             NAMES blacs-openmpi
             PATH_SUFFIXES lib)
 
-find_library(BLACS_CINIT 
+find_library(BLACS_CINIT
             NAMES blacsCinit-openmpi
             PATH_SUFFIXES lib)
 
@@ -48,7 +44,7 @@ list(APPEND BLACS_LIBRARY ${BLACS_OPENMPI} ${BLACS_CINIT})
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(BLACS
-    REQUIRED_VARS BLACS_LIBRARY)  
+    REQUIRED_VARS BLACS_LIBRARY)
 # don't put BLACS_LIBRARY REQUIRED_VARS because it might be in libBLACS.a)
 
 if(BLACS_FOUND)

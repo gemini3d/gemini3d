@@ -7,28 +7,17 @@
 # CentOS 6/7 EPEL: yum install mumps-devel
 # Ubuntu / Debian: apt install libmumps-dev
 
-# Metis
-if(METIS_ROOT)
-  find_package(METIS)
+if(LIB_DIR)
+  set(MUMPS_ROOT ${LIB_DIR}/MUMPS)
 endif()
 
-# Scotch
-if(Scotch_ROOT)
-  find_package(Scotch COMPONENTS ESMUMPS)
-endif()
+find_package(SCALAPACK REQUIRED)
 
-# BLACS
 if(BLACS_ROOT)
   find_package(BLACS)
-endif()
-
-# SCALAPACK always needed for MUMPS
-if(CMAKE_Fortran_COMPILER_ID STREQUAL Intel)
-  find_package(SCALAPACK REQUIRED COMPONENTS IntelPar)
-elseif(DEFINED ENV{MKLROOT})
-  find_package(SCALAPACK REQUIRED COMPONENTS MKL)
-else()
-  find_package(SCALAPACK REQUIRED COMPONENTS OpenMPI)
+  if(BLACS_FOUND)
+    list(APPEND SCALAPACK_LIBRARIES ${BLACS_LIBRARIES})
+  endif()
 endif()
 
 
@@ -37,25 +26,23 @@ if(realbits EQUAL 64)
   set(mumpscomp d)
 elseif(realbits EQUAL 32)
   set(mumpscomp s)
-else()
-  message(FATAL_ERROR "MUMPS has only real32, real64")
 endif()
 
 find_package(MUMPS REQUIRED COMPONENTS ${mumpscomp})
-list(APPEND MUMPS_LIBRARIES ${SCALAPACK_LIBRARIES})
+list(APPEND MUMPS_LIBRARIES ${SCALAPACK_LIBRARIES} ${LAPACK_LIBRARIES})
+list(APPEND MUMPS_INCLUDE_DIRS ${SCALAPACK_INCLUDE_DIRS})
 
-if(BLACS_FOUND)
-  list(APPEND MUMPS_LIBRARIES ${BLACS_LIBRARIES})
-endif()
-  
-if(Scotch_FOUND)  
-  list(APPEND MUMPS_LIBRARIES ${Scotch_LIBRARIES})
-endif()
-
-if(METIS_FOUND)
-  list(APPEND MUMPS_LIBRARIES ${METIS_LIBRARIES})
+#-- optional--normally we use PORD instead.
+if(Scotch_ROOT)
+  find_package(Scotch COMPONENTS ESMUMPS)
+  if(Scotch_FOUND)
+    list(APPEND MUMPS_LIBRARIES ${Scotch_LIBRARIES})
+  endif()
 endif()
 
-if(MUMPS_ROOT)
-  list(APPEND MUMPS_LIBRARIES ${LAPACK_LIBRARIES})
+if(METIS_ROOT)
+  find_package(METIS)
+  if(METIS_FOUND)
+    list(APPEND MUMPS_LIBRARIES ${METIS_LIBRARIES})
+  endif()
 endif()

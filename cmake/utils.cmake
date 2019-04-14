@@ -84,10 +84,19 @@ endfunction(num_mpi_processes)
 
 function(check_octave_source_runs code)
 
-execute_process(COMMAND ${Octave_EXECUTABLE} --eval ${code}
-  ERROR_QUIET OUTPUT_QUIET
-  RESULT_VARIABLE ok
-  TIMEOUT 5)
+if(NOT Octave_EXECUTABLE)
+  set(ok false)
+else()
+  execute_process(COMMAND ${Octave_EXECUTABLE} --eval ${code}
+    ERROR_QUIET OUTPUT_QUIET
+    RESULT_VARIABLE ret
+    TIMEOUT 5)
+  if(ret EQUAL 0)
+    set(ok true)
+  else()
+    set(ok false)
+  endif()
+endif()
 
 set(OctaveOK ${ok} CACHE BOOL "GNU Octave is sufficiently new to run self-tests")
 
@@ -96,10 +105,19 @@ endfunction(check_octave_source_runs)
 
 function(check_matlab_source_runs code)
 
-execute_process(COMMAND ${Matlab_MAIN_PROGRAM} -nojvm -r ${code}
-  ERROR_QUIET OUTPUT_QUIET
-  RESULT_VARIABLE ok
-  TIMEOUT 60)  # Matlab takes a long time to start with lots of toolboxes
+if(NOT Matlab_MAIN_PROGRAM)
+  set(ok false)
+else()
+  execute_process(COMMAND ${Matlab_MAIN_PROGRAM} -nojvm -nosplash -r ${code}
+    ERROR_QUIET OUTPUT_QUIET
+    RESULT_VARIABLE ret
+    TIMEOUT 60)  # Matlab takes a long time to start with lots of toolboxes
+  if(ret EQUAL 0)
+    set(ok true)
+  else()
+    set(ok false)
+  endif()
+endif()
 
 set(MatlabOK ${ok} CACHE BOOL "Matlab is sufficiently new to run self-tests")
 
@@ -163,24 +181,39 @@ endfunction(matlab_compare)
 function(compare_gemini_output TESTNAME TESTDIR REFDIR REQFILE)
 
 if(NOT DEFINED OctaveOK)
-  find_program(Octave_EXECUTABLE NAMES octave DOC "GNU Octave >= 4.0")
-  check_octave_source_runs("exit(exist('validateattributes'))")
+  if(WIN32)
+    if(NOT DEFINED Octave_ROOT)
+      set(Octave_ROOT C:/Octave)
+    endif()
+    file(GLOB _octpath "${Octave_ROOT}/Octave*/mingw64/bin/")
+  endif()
 
-  message(STATUS "Found GNU Octave: ${Octave_EXECUTABLE}")
+  find_program(Octave_EXECUTABLE
+    NAMES octave-cli octave
+    DOC "GNU Octave >= 4.0"
+    PATHS ${Octave_ROOT}
+    HINTS ${_octpath}
+    PATH_SUFFIXES bin)
+
+  # https://octave.sourceforge.io/octave/function/exist.html
+  check_octave_source_runs("exit(assert(exist('validateattributes', 'file')==2))")
 endif()
 
 if(OctaveOK)
+  message(STATUS "Using GNU Octave: ${Octave_EXECUTABLE}")
   octave_compare(${TESTNAME} ${TESTDIR} ${REFDIR} ${REQFILE})
   return()
 endif()
 
 # --- try Matlab if Octave wasn't available
 if(NOT DEFINED MatlabOK)
-  find_package(Matlab QUIET COMPONENTS MAIN_PROGRAM)
-  check_matlab_source_runs("exit(exist('validateattributes'))")
+  find_package(Matlab COMPONENTS MAIN_PROGRAM)
+  # https://www.mathworks.com/help/matlab/ref/exist.html
+  check_matlab_source_runs("exit(assert(exist('validateattributes', 'builtin')==5))")
 endif()
 
 if (MatlabOK)
+  message(STATUS "Using Matlab: ${Matlab_MAIN_PROGRAM}")
   matlab_compare(Matlab${TESTNAME} ${TESTDIR} ${REFDIR} ${REQFILE})
 else()
   message(WARNING "Neither Matlab or Octave was found, cannot run full self-test")

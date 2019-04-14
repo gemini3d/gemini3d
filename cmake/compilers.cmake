@@ -1,29 +1,45 @@
 cmake_policy(SET CMP0074 NEW)
 
-if(CMAKE_BUILD_TYPE STREQUAL Debug)
-  add_compile_options(-g -O0)
-else()
-  add_compile_options(-g -O3)
-endif()
-
 if(CMAKE_Fortran_COMPILER_ID STREQUAL Intel)
-  list(APPEND FFLAGS -traceback -implicitnone)
-  list(APPEND FFLAGS -qopenmp)  # undefined reference to `omp_get_max_threads'
-  
-  cmake_policy(VERSION 3.13)
-  add_link_options(-parallel) # undefined reference to `__kmpc_begin'
 
+  if(WIN32)
+    set(FFLAGS /4Yd /traceback /warn)
+    list(APPEND FFLAGS /Qopenmp)
+  else()
+    set(FFLAGS -implicitnone -traceback -warn)
+    list(APPEND FFLAGS -qopenmp)  # undefined reference to `omp_get_max_threads'
+  endif()
+
+  cmake_policy(VERSION 3.13)
+  if(WIN32)
+    #add_link_options(/Qparallel)
+  else()
+    add_link_options(-parallel) # undefined reference to `__kmpc_begin'
+  endif()
 
   if(CMAKE_BUILD_TYPE STREQUAL Debug)
-    #list(APPEND FFLAGS -check all)
-    #list(APPEND FFLAGS -debug extended -check all -heap-arrays -fpe0 -fp-stack-check)
-    list(APPEND FFLAGS -check bounds)
+    if(WIN32)
+      list(APPEND FFLAGS /check:bounds)
+      list(APPEND FFLAGS /heap-arrays)  # stack overflow even on tiny "Test2D" case without this option
+    else()
+      #list(APPEND FFLAGS -check all)
+      #list(APPEND FFLAGS -debug extended -check all -heap-arrays -fpe0 -fp-stack-check)
+      list(APPEND FFLAGS -check bounds)
+    endif()
   endif()
-  
-  list(APPEND FFLAGS -warn nounused -traceback -diag-disable 5268)
+
+  if(WIN32)
+    list(APPEND FFLAGS /warn:nounused /Qdiag-disable:5268)
+  else()
+    list(APPEND FFLAGS -warn nounused -diag-disable 5268)
+  endif()
 
   if (CMAKE_Fortran_COMPILER_VERSION VERSION_GREATER_EQUAL 19)
-    list(APPEND FFLAGS -stand f18)
+    if(WIN32)
+      list(APPEND FFLAGS /stand:f18)
+    else()
+      list(APPEND FFLAGS -stand f18)
+    endif()
   endif()
 
 elseif(CMAKE_Fortran_COMPILER_ID STREQUAL GNU)
@@ -31,7 +47,7 @@ elseif(CMAKE_Fortran_COMPILER_ID STREQUAL GNU)
   if(NOT CMAKE_Fortran_COMPILER_VERSION VERSION_EQUAL 7.2.0)
     list(APPEND FFLAGS -march=native)
   endif()
-  
+
   list(APPEND FFLAGS -fimplicit-none)
   list(APPEND FFLAGS -Wall -Wpedantic -Wextra)
 
@@ -52,7 +68,7 @@ elseif(CMAKE_Fortran_COMPILER_ID STREQUAL Cray)
 
 elseif(CMAKE_Fortran_COMPILER_ID STREQUAL XL)
 
-elseif(CMAKE_Fortran_COMPILER_ID STREQUAL Flang) 
+elseif(CMAKE_Fortran_COMPILER_ID STREQUAL Flang)
   list(APPEND FFLAGS -Mallocatable=03)
 elseif(CMAKE_Fortran_COMPILER_ID STREQUAL NAG)
   list(APPEND FFLAGS -u -C=all -f2008)

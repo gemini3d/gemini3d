@@ -1,4 +1,3 @@
-program testinterp1
 use phys_consts, only: wp,pi
 use interpolation
 implicit none
@@ -46,4 +45,4 @@ write(u) lx1i,lx2
 write(u) x1i,x2,fi   !since only interpolating in x1
 close(u)
 
-end program testinterp1
+end program

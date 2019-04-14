@@ -2,8 +2,10 @@ module io
 !! HANDLES INPUT AND OUTPUT OF PLASMA STATE PARAMETERS (NOT GRID INPUTS)
 use, intrinsic :: iso_fortran_env, only: stderr=>error_unit, compiler_version, compiler_options
 use, intrinsic :: ieee_arithmetic, only: ieee_is_nan, ieee_value, ieee_quiet_nan
+use, intrinsic :: iso_c_binding, only: c_int
 use phys_consts, only : kB,ms,pi,lsp,wp,lwave
 use fsutils, only: expanduser
+use std_mkdir, only: mkdir, copyfile
 use calculus
 use mpimod
 use grid, only : gridflag,flagswap,lx1,lx2,lx3,lx3all
@@ -179,43 +181,43 @@ character(*), intent(in) :: outdir, & !command line argument output directory
                             indatsize,indatgrid,sourcedir, precdir,E0dir
 integer, intent(in) :: flagdneu, flagprecfile, flagE0file
 
-integer :: ierr
+integer(c_int) :: ierr
 
-!MAKE A COPY OF THE INPUT DATA IN THE OUTPUT DIRECTORY (MAYBE SHOULD COPY SOURCE CODE TOO???)
-call execute_command_line('mkdir -pv '//outdir//'/inputs', exitstat=ierr)
-if (ierr /= 0) error stop 'error creating output directory'
 
-call execute_command_line('cp -r '//infile//' '//outdir//'/inputs/', exitstat=ierr)
+!> MAKE A COPY OF THE INPUT DATA IN THE OUTPUT DIRECTORY
+if (mkdir(outdir//'/inputs') /= 0) error stop 'error creating output directory'
+
+ierr = copyfile(infile, outdir//'/inputs/')
+if (ierr /= 0) error stop 'error copying configuration .ini to output directory'
+ierr = copyfile(indatsize, outdir//'/inputs/')
+if (ierr /= 0) error stop 'error copying input data size file to output directory'
+ierr = copyfile(indatgrid, outdir//'/inputs/')
 if (ierr /= 0) error stop 'error copying input parameters to output directory'
-call execute_command_line('cp -r '//indatsize//' '//outdir//'/inputs/', exitstat=ierr)
-if (ierr /= 0) error stop 'error copying input parameters to output directory'
-call execute_command_line('cp -r '//indatgrid//' '//outdir//'/inputs/', exitstat=ierr)
-if (ierr /= 0) error stop 'error copying input parameters to output directory'
-call execute_command_line('cp -r '//indatfile//' '//outdir//'/inputs/', exitstat=ierr)
+ierr = copyfile(indatfile, outdir//'/inputs/')
 if (ierr /= 0) error stop 'error copying input parameters to output directory'
 
 !MAKE COPIES OF THE INPUT DATA, AS APPROPRIATE
 if (flagdneu/=0) then
-  call execute_command_line('mkdir -pv '//outdir//'/inputs/neutral_inputs')
-  call execute_command_line('cp -r '//sourcedir//'/* '//outdir//'/inputs/neutral_inputs/', exitstat=ierr)
+  ierr = mkdir(outdir//'/inputs/neutral_inputs')
+  ierr = copyfile(sourcedir//'/*', outdir//'/inputs/neutral_inputs/')
 end if
 if (ierr /= 0) error stop 'error copying neutral input parameters to output directory'
 
 if (flagprecfile/=0) then
-  call execute_command_line('mkdir -pv '//outdir//'/inputs/prec_inputs')
-  call execute_command_line('cp -r '//precdir//'/* '//outdir//'/inputs/prec_inputs/', exitstat=ierr)
+  ierr = mkdir(outdir//'/inputs/prec_inputs')
+  ierr = copyfile(precdir//'/*', outdir//'/inputs/prec_inputs/')
 end if
 if (ierr /= 0) error stop 'error copying input precipitation parameters to output directory'
 
 if (flagE0file/=0) then
-  call execute_command_line('mkdir -pv '//outdir//'/inputs/Efield_inputs')
-  call execute_command_line('cp -r '//E0dir//'/* '//outdir//'/inputs/Efield_inputs/', exitstat=ierr)
+  ierr = mkdir(outdir//'/inputs/Efield_inputs')
+  ierr = copyfile(E0dir//'/*', outdir//'/inputs/Efield_inputs/')
 end if
 if (ierr /= 0) error stop 'error copying input energy parameters to output directory'
 
 !NOW STORE THE VERSIONS/COMMIT IDENTIFIER IN A FILE IN THE OUTPUT DIRECTORY
 ! this can break on POSIX due to copying files in endless loop, commended out - MH
-!call execute_command_line('mkdir -pv '//outdir//'/inputs/source/', exitstat=ierr)
+! ierr = mkdir(outdir//'/inputs/source/')
 !if (ierr /= 0) error stop 'error creating input source parameter output directory'
 !call execute_command_line('cp -r ./* '//outdir//'/inputs/source/', exitstat=ierr)
 !if (ierr /= 0) error stop 'error creating input source parameter output directory'
@@ -235,9 +237,9 @@ character(*), intent(in) :: fieldpointfile
 
 
 !NOTE HERE THAT WE INTERPRET OUTDIR AS THE BASE DIRECTORY CONTAINING SIMULATION OUTPUT
-call execute_command_line('mkdir -pv '//outdir//'/magfields/')
-call execute_command_line('mkdir -pv '//outdir//'/magfields/input/')
-call execute_command_line('cp -v '//fieldpointfile//' '//outdir//'/magfields/input/magfieldpoints.dat')
+ierr = mkdir(outdir//'/magfields/')
+ierr = mkdir(outdir//'/magfields/input/')
+ierr = copyfile(fieldpointfile, outdir//'/magfields/input/magfieldpoints.dat')
 
 end subroutine create_outdir_mag
 
@@ -251,7 +253,8 @@ subroutine create_outdir_aur(outdir)
 character(*), intent(in) :: outdir
 
 !NOTE HERE THAT WE INTERPRET OUTDIR AS THE BASE DIRECTORY CONTAINING SIMULATION OUTPUT
-call execute_command_line('mkdir -pv '//outdir//'/aurmaps/')
+ierr = mkdir(outdir//'/aurmaps/')
+if (ierr /= 0) error stop 'could not create auroral map output directory'
 
 end subroutine create_outdir_aur
 

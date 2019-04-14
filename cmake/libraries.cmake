@@ -3,17 +3,14 @@
 
 get_property(languages GLOBAL PROPERTY ENABLED_LANGUAGES)
 
-if(DEFINED ENV{MKLROOT})
+if(USEMKL OR DEFINED ENV{MKLROOT} OR CMAKE_Fortran_COMPILER_ID STREQUAL Intel)
   if(NOT C IN_LIST languages)
-    message(FATAL_ERROR "MKL/Intel requires project to also have C language enabled")
+    enable_language(C)
   endif()
-#  add_link_options(-Wl,--no-as-needed)
 
-  #include_directories($ENV{MKLROOT}/include)
-  
   find_package(LAPACK REQUIRED COMPONENTS IntelPar)
 else()
-  find_package(LAPACK REQUIRED)
+  find_package(LAPACK REQUIRED COMPONENTS Netlib)
 endif()
 
 # MPI

@@ -3,6 +3,11 @@ cmake_minimum_required(VERSION 3.12)
 project(gemini3d C Fortran)  # MUST include C language for Intel / MKL to work
 enable_testing()
 
+if(NOT CMAKE_BUILD_TYPE)
+  # must have FORCE or it won't take effect
+  set(CMAKE_BUILD_TYPE Release CACHE STRING "Debug or Release" FORCE)
+endif()
+
 if(NOT realbits)
   set(realbits 64)
 endif()
@@ -38,7 +43,7 @@ endif(USEGLOW)
 
 add_subdirectory(numerical)
 
-add_library(io io/io.F90 io/expanduser.f90 io/formats.f90)
+add_library(io io/io.F90 io/mkdir.F90 io/expanduser.f90 io/formats.f90)
 target_link_libraries(io PRIVATE const mpimod grid calculus)
 target_compile_definitions(io PRIVATE TRACE=${TRACE})
 target_compile_options(io PRIVATE ${FFLAGS})
