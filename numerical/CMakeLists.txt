@@ -29,11 +29,12 @@ if(CMAKE_BUILD_TYPE STREQUAL Debug)
 endif()
 
 
-add_library(mpimod mpimod/mpimod.F90 mpimod/mpihalo.f90 mpimod/mpisend.f90 mpimod/mpirecv.f90)
+add_library(mpimod mpimod/mpimod.F90 mpimod/mpisend.f90 mpimod/mpirecv.f90 mpimod/mpihalo.f90)
 target_link_libraries(mpimod PRIVATE const MPI::MPI_Fortran)
 target_compile_definitions(mpimod PRIVATE REALBITS=${realbits})
 target_compile_options(mpimod PRIVATE ${FFLAGS})
 set_target_properties(mpimod PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR})
+
 
 add_library(grid grid/grid.f90)
 target_link_libraries(grid PUBLIC const mpimod MPI::MPI_Fortran) # PUBLIC necessary for ifort, even with MPI target

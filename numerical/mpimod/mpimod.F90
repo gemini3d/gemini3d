@@ -347,10 +347,10 @@ real(wp), dimension(-1:,-1:,-1:), intent(out) :: param
 integer, intent(in) :: tag
 end subroutine bcast_recv3D_ghost_23
 
-module subroutine bcast_recv1D_3(param,tag)
+module subroutine bcast_recv1D_old3(param,tag)
 real(wp), dimension(-1:), intent(out) :: param
 integer, intent(in) :: tag
-end subroutine bcast_recv1D_3
+end subroutine bcast_recv1D_old3
 
 module subroutine bcast_recv1D_23_2(param,tag)
 real(wp), dimension(-1:), intent(out) :: param
