@@ -21,13 +21,13 @@ set -u  # abort on undefined variable (a common bash goof)
 # all libraries installed under $PREFIX/libraryname
 PREFIX=$HOME/.local
 # whatever name you want to name at end of each library directory, arbitrary
-SUFFIX=gcc7
+SUFFIX=gcc8
 # working directory, so you can rebuild later without complete recompilation
 WD=$HOME/libs_gemini-$SUFFIX
 
 # for each library, switch "true" to "false" if you don't want it.
-BUILDMPI=true
-BUILDLAPACK=true
+BUILDMPI=false
+BUILDLAPACK=false
 BUILDSCALAPACK=true
 BUILDMUMPS=true
 
@@ -36,12 +36,12 @@ export FC=$(which gfortran)
 export CC=$(which gcc)
 export CXX=$(which g++)
 
+# ================================================
+# normally don't adjust parameters below this line
+
 echo "FC=$FC"
 echo "CC=$CC"
 echo "CXX=$CXX"
-
-# ================================================
-# normally don't adjust parameters below this line
 
 # Library parameters
 LAPACKGIT=https://github.com/Reference-LAPACK/lapack
@@ -57,7 +57,7 @@ SCALAPACKGIT=https://github.com/scivision/scalapack
 SCALAPACKPREFIX=$PREFIX/scalapack-$SUFFIX
 
 MUMPSGIT=https://github.com/scivision/mumps
-
+MUMPSPREFIX=$PREFIX/mumps-$SUFFIX
 
 [[ $($FC -dumpversion) < 6 ]] && { echo "Gfortran >= 6 required"; exit 1; }
 
@@ -86,7 +86,7 @@ echo "installing OpenMPI $MPIVERSION to $MPIPREFIX"
 
 ./configure --prefix=$MPIPREFIX CC=$CC CXX=$CXX FC=$FC
 
-make -j -l2
+make -j -l 4
 
 make install
 
@@ -100,13 +100,13 @@ then
 
 cd $WD
 
-[[ -d lapack ]] && { cd lapack; git pull; cd ..; } || git clone --depth 1 $LAPACKGIT
+[[ -d lapack ]] && { (cd lapack; git pull) } || git clone --depth 1 $LAPACKGIT
 
 cd lapack
 mkdir -p build
-cd build
-cmake -DCMAKE_INSTALL_LIBDIR=$LAPACKPREFIX ..
-cmake --build -j . --target install -- -l 2
+
+cmake -DCMAKE_INSTALL_LIBDIR=$LAPACKPREFIX -B build -S .
+cmake --build build -j --target install -- -l 4
 
 fi
 
@@ -118,13 +118,11 @@ then
 
 cd $WD
 
-[[ -d scalapack ]] && { cd scalapack; git pull; cd ..; } || git clone --depth 1 $SCALAPACKGIT
+[[ -d scalapack ]] && { (cd scalapack; git pull) } || git clone --depth 1 $SCALAPACKGIT
 
-cd scalapack/build
+cmake -DCMAKE_INSTALL_PREFIX=$SCALAPACKPREFIX -DMPI_ROOT=$MPIPREFIX -DLAPACK_ROOT=$LAPACKPREFIX -B scalapack/build -S scalapack
 
-cmake -Wno-dev -DCMAKE_INSTALL_PREFIX=$SCALAPACKPREFIX -DMPI_ROOT=$MPIPREFIX -DLAPACK_ROOT=$LAPACKPREFIX ..
-
-cmake --build -j . --target install -- -l 2
+cmake --build scalapack/build -j --target install -- -l 4
 
 fi
 
@@ -135,10 +133,10 @@ if $BUILDMUMPS; then
 
 cd $WD
 
-[[ -d mumps ]] && { cd mumps; git pull; cd ..; } || git clone --depth 1 $MUMPSGIT mumps
+[[ -d mumps ]] && { (cd mumps; git pull) } || git clone --depth 1 $MUMPSGIT mumps
 
-cd mumps
+cmake -DCMAKE_INSTALL_PREFIX=$MUMPSPREFIX -DSCALAPACK_ROOT=$SCALAPACKPREFIX -DMPI_ROOT=$MPIPREFIX -DLAPACK_ROOT=$LAPACKPREFIX -B mumps/build -S mumps
 
-./build_self.sh $PREFIX $SUFFIX $MPIPREFIX $LAPACKPREFIX $SCALAPACKPREFIX
+cmake --build mumps/build -j --target install -- -l 4
 
 fi

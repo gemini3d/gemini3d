@@ -1,4 +1,6 @@
 cmake_policy(SET CMP0074 NEW)
+cmake_policy(SET CMP0075 NEW)
+cmake_policy(SET CMP0076 NEW)
 
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
   add_compile_options(-g -O0)
