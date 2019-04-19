@@ -89,7 +89,7 @@ tar -xf $WD/$MPIFN -C $WD
 
 echo "installing OpenMPI $MPIVERSION to $MPIPREFIX"
 
-$WD/openmpi-$MPIVERSION/configure --prefix=$MPIPREFIX CC=$CC CXX=$CXX FC=$FC
+(cd $WD/openmpi-$MPIVERSION; ./configure --prefix=$MPIPREFIX CC=$CC CXX=$CXX FC=$FC)
 
 make -C $WD/openmpi-$MPIVERSION -j $LOADLIMIT
 
