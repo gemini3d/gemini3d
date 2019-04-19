@@ -4,7 +4,7 @@
 #[=======================================================================[.rst:
 
 FindSCALAPACK
-----------
+-------------
 
 * Michael Hirsch, Ph.D. www.scivision.dev
 
@@ -93,7 +93,11 @@ endfunction(mkl_scala)
 
 #==== main program
 
-cmake_policy(VERSION 3.3)
+cmake_policy(VERSION 3.7)
+
+if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.12)
+  cmake_policy(set CMP0074 NEW)
+endif()
 
 unset(SCALAPACK_LIBRARY)
 
@@ -205,8 +209,16 @@ if(SCALAPACK_LIBRARY)
   find_package(MPI REQUIRED COMPONENTS Fortran)
   include(CheckFortranFunctionExists)
   set(CMAKE_REQUIRED_INCLUDES ${SCALAPACK_INCLUDE_DIR})
-  set(CMAKE_REQUIRED_LIBRARIES ${SCALAPACK_LIBRARY} MPI::MPI_Fortran)
+  set(CMAKE_REQUIRED_LIBRARIES ${SCALAPACK_LIBRARY} ${BLACS_LIBRARY} MPI::MPI_Fortran)
   check_fortran_function_exists(blacs_gridmap BLACS_OK)
+  if(NOT BLACS_OK)
+    unset(BLACS_OK CACHE)
+    find_package(BLACS)
+    if(BLACS_FOUND)
+      set(CMAKE_REQUIRED_LIBRARIES ${SCALAPACK_LIBRARY} ${BLACS_LIBRARY} MPI::MPI_Fortran)
+      check_fortran_function_exists(blacs_gridmap BLACS_OK)
+    endif()
+  endif()
   check_fortran_function_exists(numroc SCALAPACK_OK)
 endif()
 
