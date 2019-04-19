@@ -42,12 +42,12 @@ find_library(BLACS_CINIT
   NAMES blacsCinit blacsCinit-openmpi
   PATHS ${SCALAPACK_ROOT})
 
-find_library(BLACS_LIBRARY
+find_library(BLACS_LIB
   NAMES blacs blacs-mpi blacs-openmpi
   PATHS ${SCALAPACK_ROOT})
 
-if(NOT BLACS_LIBRARY)
-  return()
+if(BLACS_LIB)
+  list(APPEND BLACS_LIBRARY ${BLACS_LIB})
 endif()
 
 if(BLACS_CINIT)
@@ -69,7 +69,7 @@ endif()
 
 getlibs()
 
-if(BLACS_LIBRARY)
+if(BLACS_LIBRARY AND BLACS_LIB)
   find_package(MPI REQUIRED COMPONENTS Fortran)
   include(CheckFortranFunctionExists)
   set(CMAKE_REQUIRED_LIBRARIES ${BLACS_LIBRARY} MPI::MPI_Fortran)

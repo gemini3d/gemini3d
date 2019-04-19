@@ -208,23 +208,14 @@ if(SCALAPACK_LIBRARY)
   find_package(MPI REQUIRED COMPONENTS Fortran)
   include(CheckFortranFunctionExists)
   set(CMAKE_REQUIRED_INCLUDES ${SCALAPACK_INCLUDE_DIR})
-  set(CMAKE_REQUIRED_LIBRARIES ${SCALAPACK_LIBRARY} ${BLACS_LIBRARY} MPI::MPI_Fortran)
-  check_fortran_function_exists(blacs_gridmap BLACS_OK)
-  if(NOT BLACS_OK)
-    unset(BLACS_OK CACHE)
-    find_package(BLACS)
-    if(BLACS_FOUND)
-      set(CMAKE_REQUIRED_LIBRARIES ${SCALAPACK_LIBRARY} ${BLACS_LIBRARY} MPI::MPI_Fortran)
-      check_fortran_function_exists(blacs_gridmap BLACS_OK)
-    endif()
-  endif()
+  set(CMAKE_REQUIRED_LIBRARIES ${SCALAPACK_LIBRARY} MPI::MPI_Fortran)
   check_fortran_function_exists(numroc SCALAPACK_OK)
 endif()
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(
   SCALAPACK
-  REQUIRED_VARS SCALAPACK_LIBRARY BLACS_OK SCALAPACK_OK
+  REQUIRED_VARS SCALAPACK_LIBRARY SCALAPACK_OK
   HANDLE_COMPONENTS)
 
 if(SCALAPACK_FOUND)
