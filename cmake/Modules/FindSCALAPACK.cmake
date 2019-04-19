@@ -96,11 +96,9 @@ endfunction(mkl_scala)
 cmake_policy(VERSION 3.7)
 
 if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.12)
-  cmake_policy(set CMP0074 NEW)
+  cmake_policy(SET CMP0074 NEW)
+  cmake_policy(SET CMP0075 NEW)
 endif()
-
-unset(SCALAPACK_LIBRARY)
-
 
 if(NOT (OpenMPI IN_LIST SCALAPACK_FIND_COMPONENTS
         OR MPICH IN_LIST SCALAPACK_FIND_COMPONENTS
