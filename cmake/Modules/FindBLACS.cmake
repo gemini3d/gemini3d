@@ -8,15 +8,6 @@ FindBLACS
 Finds the BLACSS library
 
 
-
-Imported targets
-^^^^^^^^^^^^^^^^
-
-This module defines the following :prop_tgt:`IMPORTED` targets:
-
-BLACS::BLACS
-  the BLASC library components requested.
-
 Result Variables
 ^^^^^^^^^^^^^^^^
 
@@ -30,26 +21,61 @@ BLACS_INCLUDE_DIRS
 
 #]=======================================================================]
 
+function(getlibs)
+
+if(MPICH IN_LIST BLACS_FIND_COMPONENTS)
+  find_library(BLACS_LIBRARY
+               NAMES blacs-mpich blacs-mpich2)
+elseif(LAM IN_LIST BLACS_FIND_COMPONENTS)
+  find_library(BLACS_LIBRARY
+               NAMES blacs-lam)
+elseif(PVM IN_LIST BLACS_FIND_COMPONENTS)
+  find_library(BLACS_LIBRARY
+               NAMES blacs-pvm)
+elseif(OpenMPI IN_LIST BLACS_FIND_COMPONENTS)
+
+find_library(BLACS_INIT
+            NAMES blacsF77init blacsF77init-openmpi)
+
 find_library(BLACS_LIBRARY
-            NAMES blacs blacs-pvm blacs-mpi blacs-openmpi blacsF77init-openmpi blacs-mpich blacs-mpich2 blacs-lam
-            PATH_SUFFIXES lib)
+            NAMES blacs blacs-mpi blacs-openmpi)
+
+if(NOT BLACS_LIBRARY)
+  return()
+endif()
+
+if(BLACS_CINIT)
+  list(APPEND BLACS_LIBRARY ${BLACS_CINIT})
+endif
+
+if (BLACS_INIT)
+  list(APPEND BLACS_LIBRARY ${BLACS_INIT})
+endif()
+
+end()
+
+endfunction(getlibs)
 
 
-find_library(BLACS_OPENMPI 
-            NAMES blacs-openmpi
-            PATH_SUFFIXES lib)
+if(NOT DEFINED BLACS_FIND_COMPONENTS)
+  set(BLACS_FIND_COMPONENTS OpenMPI)
+endif()
 
-find_library(BLACS_CINIT 
-            NAMES blacsCinit-openmpi
-            PATH_SUFFIXES lib)
+getlibs()
 
-list(APPEND BLACS_LIBRARY ${BLACS_OPENMPI} ${BLACS_CINIT})
+if(BLACS_LIBRARY)
+  find_package(MPI REQUIRED COMPONENTS Fortran)
+  include(CheckFortranFunctionExists)
+  set(CMAKE_REQUIRED_LIBRARIES ${BLACS_LIBRARY} MPI::MPI_Fortran)
+  check_fortran_function_exists(blacs_gridmap BLACS_OK)
+endif()
 
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(BLACS
-    REQUIRED_VARS BLACS_LIBRARY)  
-# don't put BLACS_LIBRARY REQUIRED_VARS because it might be in libBLACS.a)
+  REQUIRED_VARS BLACS_LIBRARY BLACS_OK
+  HANDLE_COMPONENTS)
+
 
 if(BLACS_FOUND)
   set(BLACS_LIBRARIES ${BLACS_LIBRARY})
