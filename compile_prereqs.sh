@@ -36,6 +36,12 @@ export FC=$(which gfortran)
 export CC=$(which gcc)
 export CXX=$(which g++)
 
+# [optional] if you want to limit build load factor to this (for slow laptops)
+# does NOT impact library performance, just how fast it builds.
+# blank means maximum build speed
+LOADLIMIT=
+# LoADLIMIT="-l 4"
+
 # ================================================
 # normally don't adjust parameters below this line
 
@@ -73,22 +79,19 @@ mkdir -p $WD
 if $BUILDMPI
 then
 
-cd $WD
+[[ -f $WD/$MPIFN ]] || curl -L $MPIURL -o $WD/$MPIFN
 
-[[ -f $MPIFN ]] || curl -L $MPIURL -o $MPIFN
+[[ $(sha1sum $WD/$MPIFN | cut -f1 -d' ') == $MPISHA1 ]] || { echo "checksum not match $WD/$MPIFN"; exit 1; }
 
-[[ $(sha1sum $MPIFN | cut -f1 -d' ') == $MPISHA1 ]] || { echo "checksum not match $MPIFN"; exit 1; }
-
-tar -xf $MPIFN
-cd $WD/openmpi-$MPIVERSION
+tar -xf $WD/$MPIFN -C $WD
 
 echo "installing OpenMPI $MPIVERSION to $MPIPREFIX"
 
-./configure --prefix=$MPIPREFIX CC=$CC CXX=$CXX FC=$FC
+$WD/openmpi-$MPIVERSION/configure --prefix=$MPIPREFIX CC=$CC CXX=$CXX FC=$FC
 
-make -j -l 4
+make -C $WD/openmpi-$MPIVERSION -j $LOADLIMIT
 
-make install
+make -C $WD/openmpi-$MPIVERSION install
 
 fi
 
@@ -98,15 +101,17 @@ fi
 if $BUILDLAPACK
 then
 
-cd $WD
+if [[ -d $WD/lapack ]]
+then
+git -C $WD/lapack pull
+else
+git clone --depth 1 $LAPACKGIT $WD/lapack
+fi
 
-[[ -d lapack ]] && { (cd lapack; git pull) } || git clone --depth 1 $LAPACKGIT
+mkdir $WD/lapack/build
 
-cd lapack
-mkdir -p build
-
-cmake -DCMAKE_INSTALL_LIBDIR=$LAPACKPREFIX -B build -S .
-cmake --build build -j --target install -- -l 4
+cmake -DCMAKE_INSTALL_LIBDIR=$LAPACKPREFIX -B $WD/lapack/build -S $WD/lapack
+cmake --build $WD/lapack/build -j --target install -- $LOADLIMIT
 
 fi
 
@@ -116,27 +121,33 @@ fi
 if $BUILDSCALAPACK
 then
 
-cd $WD
+if [[ -d $WD/scalapack ]]
+then
+git -C $WD/scalapack pull
+else
+git clone --depth 1 $SCALAPACKGIT $WD/scalapack
+fi
 
-[[ -d scalapack ]] && { (cd scalapack; git pull) } || git clone --depth 1 $SCALAPACKGIT
+cmake -DCMAKE_INSTALL_PREFIX=$SCALAPACKPREFIX -DMPI_ROOT=$MPIPREFIX -DLAPACK_ROOT=$LAPACKPREFIX -B $WD/scalapack/build -S $WD/scalapack
 
-cmake -DCMAKE_INSTALL_PREFIX=$SCALAPACKPREFIX -DMPI_ROOT=$MPIPREFIX -DLAPACK_ROOT=$LAPACKPREFIX -B scalapack/build -S scalapack
-
-cmake --build scalapack/build -j --target install -- -l 4
-
+cmake --build $WD/scalapack/build -j --target install -- $LOADLIMIT
 fi
 
 #=================
 # MUMPS
 
-if $BUILDMUMPS; then
+if $BUILDMUMPS
+then
 
-cd $WD
+if [[ -d $WD/mumps ]]
+then
+git -C $WD/mumps pull
+else
+git clone --depth 1 $MUMPSGIT $WD/mumps
+fi
 
-[[ -d mumps ]] && { (cd mumps; git pull) } || git clone --depth 1 $MUMPSGIT mumps
+cmake -DCMAKE_INSTALL_PREFIX=$MUMPSPREFIX -DSCALAPACK_ROOT=$SCALAPACKPREFIX -DMPI_ROOT=$MPIPREFIX -DLAPACK_ROOT=$LAPACKPREFIX -B $WD/mumps/build -S $WD/mumps
 
-cmake -DCMAKE_INSTALL_PREFIX=$MUMPSPREFIX -DSCALAPACK_ROOT=$SCALAPACKPREFIX -DMPI_ROOT=$MPIPREFIX -DLAPACK_ROOT=$LAPACKPREFIX -B mumps/build -S mumps
-
-cmake --build mumps/build -j --target install -- -l 4
+cmake --build $WD/mumps/build -j --target install -- $LOADLIMIT
 
 fi
