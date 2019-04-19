@@ -116,10 +116,11 @@ endif()
 
 message(STATUS "Finding SCALAPACK components: ${SCALAPACK_FIND_COMPONENTS}")
 
-get_property(project_languages GLOBAL PROPERTY ENABLED_LANGUAGES)
-
 find_package(PkgConfig)
 
+if(NOT DEFINED CMAKE_C_COMPILER)
+  enable_language(C)
+endif()
 if(NOT WIN32)
   find_package(Threads)  # not required--for example Flang
 endif()

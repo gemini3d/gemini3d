@@ -10,8 +10,8 @@ if(DEFINED ENV{MKLROOT})
 #  add_link_options(-Wl,--no-as-needed)
 
   #include_directories($ENV{MKLROOT}/include)
-  
-  find_package(LAPACK REQUIRED COMPONENTS IntelPar)
+
+  find_package(LAPACK REQUIRED COMPONENTS MKL)
 else()
   find_package(LAPACK REQUIRED)
 endif()
