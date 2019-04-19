@@ -5,7 +5,9 @@
 set -u
 set -e
 
-for d in $MPIPREFIX $LAPACKPREFIX $SCALAPACKPREFIX $MUMPSPREFIX
+# We omit $MPIPREFIX because many HPC have it installed for the compiler already
+# ditto for $LAPACKPREFIX
+for d in $SCALAPACKPREFIX $MUMPSPREFIX
 do
   [[ -z $d ]] && continue
   [[ -d $d ]] || { echo "ERROR: $d not found"; exit 1; }

@@ -25,9 +25,11 @@ SUFFIX=gcc8
 # working directory, so you can rebuild later without complete recompilation
 WD=$HOME/libs_gemini-$SUFFIX
 
+# true to erase/redo builds
+wipe=false
 # for each library, switch "true" to "false" if you don't want it.
-BUILDMPI=false
-BUILDLAPACK=false
+BUILDMPI=true
+BUILDLAPACK=true
 BUILDSCALAPACK=true
 BUILDMUMPS=true
 
@@ -110,6 +112,12 @@ fi
 
 mkdir $WD/lapack/build
 
+if $wipe
+then
+rm -f $WD/lapack/build/CMakeCache.txt
+rm -r $LAPACKPREFIX/*
+fi
+
 cmake -DCMAKE_INSTALL_LIBDIR=$LAPACKPREFIX -B $WD/lapack/build -S $WD/lapack
 cmake --build $WD/lapack/build -j --target install -- $LOADLIMIT
 
@@ -128,6 +136,12 @@ else
 git clone --depth 1 $SCALAPACKGIT $WD/scalapack
 fi
 
+if $wipe
+then
+rm -f $WD/scalapack/build/CMakeCache.txt
+rm -r $SCALAPACKPREFIX/*
+fi
+
 cmake -DCMAKE_INSTALL_PREFIX=$SCALAPACKPREFIX -DMPI_ROOT=$MPIPREFIX -DLAPACK_ROOT=$LAPACKPREFIX -B $WD/scalapack/build -S $WD/scalapack
 
 cmake --build $WD/scalapack/build -j --target install -- $LOADLIMIT
@@ -144,6 +158,12 @@ then
 git -C $WD/mumps pull
 else
 git clone --depth 1 $MUMPSGIT $WD/mumps
+fi
+
+if $wipe
+then
+rm -f $WD/mumps/build/CMakeCache.txt
+rm -r $MUMPSPREFIX/*
 fi
 
 cmake -DCMAKE_INSTALL_PREFIX=$MUMPSPREFIX -DSCALAPACK_ROOT=$SCALAPACKPREFIX -DMPI_ROOT=$MPIPREFIX -DLAPACK_ROOT=$LAPACKPREFIX -B $WD/mumps/build -S $WD/mumps
