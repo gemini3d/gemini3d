@@ -46,9 +46,9 @@ endif()
 
 if(BLACS_CINIT)
   list(APPEND BLACS_LIBRARY ${BLACS_CINIT})
-endif
+endif()
 
-if (BLACS_INIT)
+if(BLACS_INIT)
   list(APPEND BLACS_LIBRARY ${BLACS_INIT})
 endif()
 
