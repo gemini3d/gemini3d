@@ -35,10 +35,16 @@ elseif(PVM IN_LIST BLACS_FIND_COMPONENTS)
 elseif(OpenMPI IN_LIST BLACS_FIND_COMPONENTS)
 
 find_library(BLACS_INIT
-            NAMES blacsF77init blacsF77init-openmpi)
+  NAMES blacsF77init blacsF77init-openmpi
+  PATHS ${SCALAPACK_ROOT})
+
+find_library(BLACS_CINIT
+  NAMES blacsCinit blacsCinit-openmpi
+  PATHS ${SCALAPACK_ROOT})
 
 find_library(BLACS_LIBRARY
-            NAMES blacs blacs-mpi blacs-openmpi)
+  NAMES blacs blacs-mpi blacs-openmpi
+  PATHS ${SCALAPACK_ROOT})
 
 if(NOT BLACS_LIBRARY)
   return()
@@ -52,7 +58,7 @@ if(BLACS_INIT)
   list(APPEND BLACS_LIBRARY ${BLACS_INIT})
 endif()
 
-end()
+endif()
 
 endfunction(getlibs)
 
