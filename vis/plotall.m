@@ -57,11 +57,11 @@ h = plotinit(xg, visible);
 
 if ~isempty(saveplots)
 	
-  if(isempty(gcp('nocreate')))
-    parpool(4);
-  end
+%  if(isempty(gcp('nocreate')))
+%    parpool(2);
+%  end
       
-  parfor i = 1:Nt
+  for i = 1:Nt
     plotframe(direc,ymd(i,:),UTsec(i),saveplots,plotfun,xg,h);
   end
 else

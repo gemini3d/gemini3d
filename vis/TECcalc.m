@@ -1,8 +1,10 @@
 %SIMULATIONS LOCAITONS
 %simname='tohoku20113D_highres_long/';
 %simname_control='tohoku20113D_highres_long_control/';
-simname='mooreOK3D_medres/';
-simname_control='mooreOK3D_control/';
+%simname='mooreOK3D_medres/';
+%simname_control='mooreOK3D_control/';
+simname='Perkins_profperturb2/'
+simname_control='Perkins_profperturb2_control/'
 basedir='~/zettergmdata/simulations/';
 direc=[basedir,simname];
 direc_control=[basedir,simname_control];
@@ -54,7 +56,7 @@ phidist=mlonsrc*pi/180;
 
 %ANGULAR RANGE TO COVER FOR TEC CALCULATIONS
 %dang=3.5;
-dang=10;
+dang=20;
 %dang=90;
 
 
@@ -247,7 +249,7 @@ for it=1:length(times)
       axis xy;
       axis tight;
       caxlim=max(max(abs(dvTEC(:,:,it))));
-      caxlim=max(caxlim,0.01);
+      caxlim=max(caxlim,0.001);
       caxis([-1*caxlim, caxlim]);
 %      caxis([-4,4]);
       c=colorbar

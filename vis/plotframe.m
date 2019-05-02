@@ -111,7 +111,8 @@ disp([filename, ' => ', func2str(plotfun)])
 %% UNTIL WE PROVIDE A WAY FOR THE USER TO SPECIFY COLOR AXES, JUST TRY TO SET THEM AUTOMATICALLY
 if (~flagcaxlims)
   nelim =  [min(ne(:)), max(ne(:))];
-  v1mod=max(abs(v1(:)));
+%  v1mod=max(abs(v1(:)));
+  v1mod=100;
   v1lim = [-v1mod, v1mod];
   Tilim = [0, max(Ti(:))];
   Telim = [0, max(Te(:))];

@@ -2,7 +2,7 @@ addpath ../script_utils;
 
 %SIMULATIONS LOCAITONS
 simname='mooreOK3D_medres/';
-basedir='~/Downloads/'
+basedir='~/zettergmdata/simulations/'
 direc=[basedir,simname];
 system(['mkdir ',direc,'/TECplots']);    %store output plots with the simulation data
 system(['mkdir ',direc,'/TECplots_eps']);    %store output plots with the simulation data

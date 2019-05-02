@@ -62,7 +62,7 @@ real(wp), dimension(:,:,:,:), allocatable, protected :: nnmsis
 real(wp), dimension(:,:,:), allocatable, protected :: Tnmsis
 real(wp), dimension(:,:,:), allocatable, protected :: vn1base,vn2base,vn3base
 
-public :: Tnmsis, neutral_atmos, make_dneu, clear_dneu, neutral_perturb
+public :: Tnmsis, neutral_atmos, make_dneu, clear_dneu, neutral_perturb,vn1base,vn2base,vn3base
 
 contains
 
@@ -147,7 +147,18 @@ end do
 
 
 !UPDATE THE REFERENCE ATMOSPHERE VALUES
-nnmsis=nn; Tnmsis=Tn; vn1base=0d0; vn2base=0d0; vn3base=0d0;
+nnmsis=nn; Tnmsis=Tn; 
+!vn1base=0d0; vn2base=0d0; vn3base=0d0;
+do ix3=1,lx3
+  do ix2=1,lx2
+    do ix1=1,lx1
+      !vn1base(ix1,ix2,ix3)=-10d0*(0.5d0+0.5d0*tanh((alt(ix1,ix2,ix3)-150d3)/10d3))
+      vn1base(ix1,ix2,ix3)=0d0
+      vn2base(ix1,ix2,ix3)=-100d0*(0.5d0+0.5d0*tanh((alt(ix1,ix2,ix3)-150d3)/10d3))
+      vn3base(ix1,ix2,ix3)=120d0*(0.5d0+0.5d0*tanh((alt(ix1,ix2,ix3)-150d3)/10d3))
+    end do
+  end do
+end do
 
 end subroutine neutral_atmos
 

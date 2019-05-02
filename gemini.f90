@@ -8,7 +8,7 @@ use phys_consts, only : lnchem, lwave, lsp
 use grid, only: grid_size,read_grid,clear_grid,lx1,lx2,lx3,lx2all,lx3all
 use temporal, only : dt_comm
 use timeutils, only: dateinc
-use neutral, only : neutral_atmos,make_dneu,neutral_perturb,clear_dneu
+use neutral, only : neutral_atmos,make_dneu,neutral_perturb,clear_dneu,vn1base,vn2base,vn3base
 use io, only : read_configfile,input_plasma,create_outdir,output_plasma,create_outdir_aur,output_aur
 use potential_comm,only : electrodynamics
 use multifluid, only : fluid_adv
@@ -205,7 +205,7 @@ do while (t<tdur)
   if (it==1) then
     call cpu_time(tstart)
     call neutral_atmos(ymd,UTsec,x%glat,x%glon,x%alt,activ,nn,Tn)
-    vn1=0d0; vn2=0d0; vn3=0d0     !hard-code these to zero for the first time step
+    vn1=vn1base; vn2=vn2base; vn3=vn3base     !hard-code these to zero for the first time step
     call cpu_time(tfin)
 
     if (myid==0) then
