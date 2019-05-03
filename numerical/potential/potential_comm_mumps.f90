@@ -19,7 +19,8 @@ use potential_mumps, only : elliptic3D_curv, &
                             elliptic2D_pol_conv_curv, &
                             elliptic2D_pol_conv_curv_periodic2, &
                             elliptic2D_nonint_curv, &
-                            elliptic_workers
+                            elliptic_workers, &
+                            elliptic2D_pol_conv_curv_periodic_Neu
 
 use mpimod
 
@@ -211,7 +212,8 @@ type(curvmesh), intent(in) :: x
 
 integer, intent(in) :: potsolve
 
-real(wp), dimension(:,:,:), intent(out) :: E1,E2,E3,J1,J2,J3
+real(wp), dimension(:,:,:), intent(out) :: E1,E2,E3
+real(wp), dimension(:,:,:), intent(out) :: J1,J2,J3
 real(wp), dimension(:,:,:), intent(inout) :: Phiall   !not good form, but I'm lazy...  Forgot what I meant by this...
 
 integer, intent(in) :: flagE0file
@@ -266,12 +268,15 @@ real(wp), dimension(1:size(E1,2),1:size(E1,3)) :: Vminx1slab,Vmaxx1slab
 real(wp), dimension(1:size(E1,2),1:size(E1,3)) :: v2slab,v3slab
 
 integer :: iid
-integer :: ix1,ix2,ix3,lx1,lx2,lx3,lx3all
+integer :: ix1,ix2,ix3,lx1,lx2,lx3,lx3all,lx2all
 integer :: idleft,idright,iddown,idup
 
 real(wp) :: tstart,tfin
 
 integer :: utrace
+
+real(wp), dimension(1:size(Phiall,1),1:size(Phiall,2),1:size(Phiall,3)) :: J2prevall
+real(wp), dimension(1:size(Phiall,1),1:size(Phiall,2),1:size(Phiall,3)) :: integrandall,intJ2all
 
 
 
@@ -280,6 +285,7 @@ lx1=size(sig0,1)
 lx2=size(sig0,2)
 lx3=size(sig0,3)
 lx3all=size(Phiall,3)
+lx2all=size(Phiall,2)
 
 
 !USE PREVIOUS MUMPS PERMUTATION (OLD CODE? BUT MIGHT BE WORTH REINSTATING?)
@@ -320,6 +326,9 @@ call bcast_send(E03all,tagE03,E03)
 Vmaxx1buf=Vmaxx1; Vminx1buf=Vminx1;
 call bcast_send(Vminx1buf,tagVminx1,Vminx1slab)
 call bcast_send(Vmaxx1buf,tagVmaxx1,Vmaxx1slab)
+
+!Now pass the x2 current since possibly used as a boundary condition
+call gather_recv(J2,tagJ2,J2prevall)
 
 
 !-------
@@ -496,17 +505,17 @@ if (lx2/=1) then    !either field-resolved 3D or integrated 2D solve for 3D doma
       call gather_recv(v3slab,tagv3electro,v3slaball)
 
 
-!     if (t>480) then
-!       open(newunit=utrace, form='unformatted', access='stream', file='scrtermintall.raw8', status='replace', action='write')
-!       write(utrace) srctermintall
-!       close(utrace)
-!       error stop 'DEBUG'
-!     end if
+
 
       !R------
       !EXECUTE FIELD-INTEGRATED SOLVE
-      Vminx2slice=Vminx2(lx1,:)    !slice the boundaries into expected shape
-      Vmaxx2slice=Vmaxx2(lx1,:)
+      integrandall=x%h1all(1:lx1,1:lx2all,1:lx3all)*J2prevall
+      intJ2all=integral3D1(integrandall,x,1,lx1)    !equivalent surface current for ionosphere
+      Vminx2slice=-1d0*intJ2all(lx1,1,:)/SigPint2all(1,:)                         !this is sigP for going with the x2 electric field
+      Vmaxx2slice=-1d0*intJ2all(lx1,1,:)/SigPint2all(lx2all,:)                    !make the current equal to low-latitude boundary, not that the conductance may change
+      !Vminx2slice=Vminx2(lx1,:)    !slice the boundaries into expected shape
+      !Vmaxx2slice=Vmaxx2(lx1,:)
+      !print*, minval(Vmaxx2slice),maxval(Vmaxx2slice)
       Vminx3slice=Vminx3(lx1,:)
       Vmaxx3slice=Vmaxx3(lx1,:)
       Phislab0=Phiall(lx1,:,:)    !root already possess the fullgrid potential from prior solves...
@@ -523,7 +532,10 @@ if (lx2/=1) then    !either field-resolved 3D or integrated 2D solve for 3D doma
 !        Phislab=0d0
       else
         print *, '!!!User selected periodic solve...'
-        Phislab=elliptic2D_pol_conv_curv_periodic2(srctermintall,SigPint2all,SigHintall,incapintall,v2slaball,v3slaball, &    !note that either sigPint2 or 3 will work since this must be cartesian...
+!        Phislab=elliptic2D_pol_conv_curv_periodic2(srctermintall,SigPint2all,SigHintall,incapintall,v2slaball,v3slaball, &    !note that either sigPint2 or 3 will work since this must be cartesian...
+!                                   Vminx2slice,Vmaxx2slice,Vminx3slice,Vmaxx3slice, &
+!                                   dt,x,Phislab0,perflag,it)
+        Phislab=elliptic2D_pol_conv_curv_periodic_Neu(srctermintall,SigPint2all,SigHintall,incapintall,v2slaball,v3slaball, &
                                    Vminx2slice,Vmaxx2slice,Vminx3slice,Vmaxx3slice, &
                                    dt,x,Phislab0,perflag,it)
       end if
@@ -1037,6 +1049,8 @@ call bcast_recv(E03,tagE03)
 call bcast_recv(Vminx1slab,tagVminx1)
 call bcast_recv(Vmaxx1slab,tagVmaxx1)
 
+!Now pass the x2 current since possibly used as a boundary condition
+call gather_send(J2,tagJ2)
 
 !-------
 !CONDUCTION CURRENT BACKGROUND SOURCE TERMS FOR POTENTIAL EQUATION. MUST COME AFTER CALL TO BC CODE.
