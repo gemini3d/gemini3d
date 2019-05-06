@@ -1,4 +1,3 @@
-PROGRAM MUMPS_TEST
 use mpi, only: mpi_init, mpi_finalize, mpi_comm_world
 use, intrinsic :: iso_fortran_env, only: stderr=>error_unit, i64=>int64, compiler_version, compiler_options
 
@@ -97,8 +96,8 @@ CALL DMUMPS(mumps_par)
 
 IF (mumps_par%INFOG(1) < 0) THEN
   WRITE(stderr,'(A,A,I6,A,I9)') " ERROR: ", &
-  "  mumps_par%INFOG(1)= ", mumps_par%INFOG(1),  "  mumps_par%INFOG(2)= ", mumps_par%INFOG(2) 
-  
+  "  mumps_par%INFOG(1)= ", mumps_par%INFOG(1),  "  mumps_par%INFOG(2)= ", mumps_par%INFOG(2)
+
   error stop
 END IF
 
