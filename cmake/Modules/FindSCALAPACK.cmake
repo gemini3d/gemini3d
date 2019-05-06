@@ -66,13 +66,14 @@ set(_mkl_libs ${ARGV})
 foreach(s ${_mkl_libs})
   find_library(SCALAPACK_${s}_LIBRARY
            NAMES ${s}
-           PATHS ENV MKLROOT ENV TBBROOT
+           PATHS ENV MKLROOT ENV I_MPI_ROOT ENV TBBROOT
            PATH_SUFFIXES
-             lib/intel64
+             lib/intel64 lib/intel64_win
+             intel64/lib/release
              lib/intel64/gcc4.7 ../tbb/lib/intel64/gcc4.7
              lib/intel64/vc_mt ../tbb/lib/intel64/vc_mt
              ../compiler/lib/intel64
-           HINTS ${MKL_LIBRARY_DIRS}
+           HINTS ${MKL_LIBRARY_DIRS} ${MKL_LIBDIR}
            NO_DEFAULT_PATH)
   if(NOT SCALAPACK_${s}_LIBRARY)
     message(WARNING "MKL component not found: " ${s})
@@ -82,18 +83,29 @@ foreach(s ${_mkl_libs})
   list(APPEND SCALAPACK_LIB ${SCALAPACK_${s}_LIBRARY})
 endforeach()
 
-set(SCALAPACK_LIBRARY ${SCALAPACK_LIB} PARENT_SCOPE)
-set(SCALAPACK_INCLUDE_DIR
+
+find_path(SCALAPACK_INCLUDE_DIR
+  NAMES mkl_scalapack.h
+  HINTS ${MKL_INCLUDE_DIRS})
+
+if(NOT SCALAPACK_INCLUDE_DIR)
+  message(WARNING "MKL Include Dir not found")
+  return()
+endif()
+
+list(APPEND SCALAPACK_INCLUDE_DIR
   $ENV{MKLROOT}/include
   $ENV{MKLROOT}/include/intel64/${_mkl_bitflag}lp64
-  ${MKL_INCLUDE_DIRS}
-  PARENT_SCOPE)
+  ${MKL_INCLUDE_DIRS})
+
+set(SCALAPACK_LIBRARY ${SCALAPACK_LIB} PARENT_SCOPE)
+set(SCALAPACK_INCLUDE_DIR ${SCALAPACK_INCLUDE_DIR} PARENT_SCOPE)
 
 endfunction(mkl_scala)
 
 #==== main program
 
-cmake_policy(VERSION 3.7)
+cmake_policy(VERSION 3.11)
 
 if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.12)
   cmake_policy(SET CMP0074 NEW)
@@ -114,13 +126,8 @@ if(NOT (OpenMPI IN_LIST SCALAPACK_FIND_COMPONENTS
   endif()
 endif()
 
-message(STATUS "Finding SCALAPACK components: ${SCALAPACK_FIND_COMPONENTS}")
-
 find_package(PkgConfig)
 
-if(NOT DEFINED CMAKE_C_COMPILER)
-  enable_language(C)
-endif()
 if(NOT WIN32)
   find_package(Threads)  # not required--for example Flang
 endif()
@@ -173,10 +180,6 @@ if(MKL IN_LIST SCALAPACK_FIND_COMPONENTS)
   endif()
 
   if(SCALAPACK_LIBRARY)
-    if(NOT LAPACK_FOUND)
-      find_package(LAPACK COMPONENTS MKL REQUIRED)
-    endif()
-    list(APPEND SCALAPACK_LIBRARY ${LAPACK_LIBRARIES})
     set(SCALAPACK_MKL_FOUND true)
   endif()
 
@@ -186,7 +189,7 @@ elseif(OpenMPI IN_LIST SCALAPACK_FIND_COMPONENTS)
 
   find_library(SCALAPACK_LIBRARY
                NAMES scalapack scalapack-openmpi
-               HINTS ${SCALAPACK_LIBRARY_DIRS})
+               HINTS ${SCALAPACK_LIBRARY_DIRS} ${SCALAPACK_LIBDIR})
 
   if(SCALAPACK_LIBRARY)
     set(SCALAPACK_OpenMPI_FOUND true)
@@ -205,12 +208,26 @@ endif()
 # Finalize
 
 if(SCALAPACK_LIBRARY)
-  find_package(MPI REQUIRED COMPONENTS Fortran)
   include(CheckFortranFunctionExists)
   set(CMAKE_REQUIRED_INCLUDES ${SCALAPACK_INCLUDE_DIR})
+  set(CMAKE_REQUIRED_LIBRARIES ${SCALAPACK_LIBRARY})
+  check_fortran_function_exists(dlamch LAPACK_OK)
+
+  if(NOT LAPACK_OK)
+    find_package(LAPACK REQUIRED)
+    list(APPEND SCALAPACK_LIBRARY ${LAPACK_LIBRARIES})
+  endif()
+
+  find_package(MPI REQUIRED COMPONENTS Fortran)
   set(CMAKE_REQUIRED_LIBRARIES ${SCALAPACK_LIBRARY} MPI::MPI_Fortran)
-  check_fortran_function_exists(numroc SCALAPACK_OK)
+
+# This did not work with MKL on Linux only
+#  check_fortran_function_exists(numroc SCALAPACK_OK)
+
+  include(CheckFortranSourceCompiles)
+  check_fortran_source_compiles("Locq = numroc(1,1,1,1,1); end" SCALAPACK_OK SRC_EXT f90)
 endif()
+
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(

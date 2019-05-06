@@ -7,9 +7,6 @@ if(DEFINED ENV{MKLROOT})
   if(NOT C IN_LIST languages)
     message(FATAL_ERROR "MKL/Intel requires project to also have C language enabled")
   endif()
-#  add_link_options(-Wl,--no-as-needed)
-
-  #include_directories($ENV{MKLROOT}/include)
 
   find_package(LAPACK REQUIRED COMPONENTS MKL)
 else()

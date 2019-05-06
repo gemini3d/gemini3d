@@ -1,6 +1,7 @@
 project('GEMINI', 'fortran',
+  meson_version: '>=0.50.0',
   default_options : ['default_library=static'])
-  
+
 REALBITS = '-DREALBITS='+get_option('realbits')
 GLOW = get_option('GLOW')
 HDF = get_option('HDF')
@@ -9,10 +10,9 @@ lapack_root = get_option('LAPACK_ROOT')
 scalapack_root = get_option('SCALAPACK_ROOT')
 mumps_root = get_option('MUMPS_ROOT')
 
-add_global_arguments(['-O3'], language : 'fortran')
 fc = meson.get_compiler('fortran')
 if fc.get_id() == 'gcc'
-  add_global_arguments('-march=native', '-Wno-unused-variable', '-Wno-maybe-uninitialized', '-Wno-unused-dummy-argument', '-Wno-unused-function', language : 'fortran')
+  add_global_arguments('-Wno-unused-variable', '-Wno-maybe-uninitialized', '-Wno-unused-dummy-argument', '-Wno-unused-function', language : 'fortran')
   oldflags = ['-std=legacy', '-w']
 else
   oldflags = ['-w']
@@ -26,9 +26,9 @@ else
   mpi = fc.find_library('mpi', required : true, dirs : mpi_root / 'lib')
 endif
 
-mpiret = fc.run('use mpi; end', dependencies : mpi).returncode()
-if mpiret != 0
-  error('MPI does not link properly with compiler')
+mpiret = fc.run('use mpi; end', dependencies : mpi)
+if mpiret.returncode() != 0
+  error('MPI does not link properly: ' + mpiret.stderr() + mpiret.stdout() + mpi_root + ' ' + mpi.name() + ' ' + mpi.version())
 endif
 
 if lapack_root == ''
@@ -55,14 +55,16 @@ if HDF  # see HDF5 branch, not yet fully ready.
  hdf5 = dependency('hdf5')
 endif
 
-calculus = library('calculus', 'numerical/constants/phys_consts.F90', 'numerical/calculus/calculus.f90', 'numerical/grid/grid.f90', 'numerical/mpimod/mpimod.F90', 'numerical/interpolation/interpolation.f90', 'vendor/lapack95/gbsv.F90',
+mpi_src = files('numerical/mpimod/mpimod.F90', 'numerical/mpimod/mpisend.f90', 'numerical/mpimod/mpirecv.f90', 'numerical/mpimod/mpihalo.f90')
+
+calculus = library('calculus', mpi_src, 'numerical/constants/phys_consts.F90', 'numerical/calculus/calculus.f90', 'numerical/grid/grid.f90', 'numerical/interpolation/interpolation.f90', 'vendor/lapack95/gbsv.F90',
   dependencies : mpi,
   fortran_args: REALBITS)
 
 io = library('io','io/io.F90', 'io/expanduser.f90',
   link_with: calculus,
   fortran_args: REALBITS)
-  
+
 msis = library('msis', 'vendor/msis00/msis00_gfortran.f',
   fortran_args : oldflags)
 
@@ -94,13 +96,13 @@ gemini = executable('gemini.bin', 'gemini.f90', 'temporal/temporal.f90', 'numeri
   dependencies : [mpi, mumpslib, lapack],
   include_directories : mumpsinc,
   fortran_args: REALBITS)
-  
+
 # -- magcalc exe
 
 magcalc = executable('magcalc.bin', 'magcalc.f90',
   link_with : [calculus, neutral, io],
   dependencies : mpi)
-  
+
 # --- TESTS ---
 # meson test --wrap="mpirun -np 4"
 
@@ -115,13 +117,13 @@ test('Gemini2D', gemini,
   workdir : meson.source_root(),
   timeout : 90,
   is_parallel : false)
-  
+
 test('Gemini3D', gemini,
   args : [meson.source_root() / 'initialize/test3d/config.ini', test3d],
   workdir : meson.source_root(),
   timeout : 180,
   is_parallel : false)
-  
+
 if oct.found()
   test('Compare2D', oct, args : ['-q', eval2d])
 endif

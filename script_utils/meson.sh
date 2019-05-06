@@ -8,7 +8,7 @@ meson --version
 [[ ${1:-} == "-t" ]] && OPTS="-DTRACE=on $OPTS"
 
 
-meson setup -C objects $OPTS ..
+meson $OPTS setup objects
 
 MESONSTAT=$?
 

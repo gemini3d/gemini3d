@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.12)  
+cmake_minimum_required (VERSION 3.12)
 # 3.9: MPI::MPI_Fortran, 3.11: Lapack, 3.12 for find_ROOT
 project(gem-num Fortran)
 enable_testing()
@@ -8,7 +8,7 @@ if(NOT hasParent)
   if(NOT realbits)
     set(realbits 64)
   endif()
-  list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/../cmake/Modules/)
+  list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../cmake/Modules/)
   include(../cmake/compilers.cmake)
   include(../cmake/libraries.cmake)
 endif()
@@ -35,7 +35,6 @@ target_compile_definitions(mpimod PRIVATE REALBITS=${realbits})
 target_compile_options(mpimod PRIVATE ${FFLAGS})
 set_target_properties(mpimod PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR})
 
-
 add_library(grid grid/grid.f90)
 target_link_libraries(grid PUBLIC const mpimod MPI::MPI_Fortran) # PUBLIC necessary for ifort, even with MPI target
 target_compile_options(grid PRIVATE ${FFLAGS})
@@ -49,15 +48,12 @@ set_target_properties(calculus PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_BINAR
 
 # ----- diffusion
 add_library(diffusion diffusion/diffusion.F90)
-target_link_libraries(diffusion PRIVATE grid)
+target_link_libraries(diffusion PRIVATE grid ${LAPACK_LIBRARIES})
 target_compile_options(diffusion PRIVATE ${FFLAGS})
-if(LAPACK95_FOUND)
-  target_link_libraries(diffusion PRIVATE ${LAPACK95_LIBRARIES})
-  target_include_directories(diffusion PRIVATE ${LAPACK95_INCLUDE_DIRS})
-else()
-  target_sources(diffusion PRIVATE ${PROJECT_SOURCE_DIR}/../vendor/lapack95/gbsv.F90)
+target_include_directories(diffusion PRIVATE ${LAPACK_INCLUDE_DIRS})
+if(NOT LAPACK_LAPACK95_FOUND)
+  target_sources(diffusion PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../vendor/lapack95/gbsv.F90)
   target_compile_definitions(diffusion PRIVATE REALBITS=${realbits})
-  target_link_libraries(diffusion PRIVATE ${LAPACK_LIBRARIES})
 endif()
 set_target_properties(diffusion PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR})
 

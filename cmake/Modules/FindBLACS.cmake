@@ -5,7 +5,9 @@
 FindBLACS
 ---------
 
-Finds the BLACSS library
+Finds the OpenMPI BLACS library.
+If you want this via MKL, just use ``find_package(SCALAPACK)``
+
 
 
 Result Variables
@@ -21,7 +23,8 @@ BLACS_INCLUDE_DIRS
 
 #]=======================================================================]
 
-function(getlibs)
+find_package(PkgConfig)
+pkg_check_modules(BLACS blacs-openmpi)
 
 if(MPICH IN_LIST BLACS_FIND_COMPONENTS)
   find_library(BLACS_LIBRARY
@@ -70,9 +73,8 @@ endif()
 getlibs()
 
 if(BLACS_LIBRARY AND BLACS_LIB)
-  find_package(MPI REQUIRED COMPONENTS Fortran)
   include(CheckFortranFunctionExists)
-  set(CMAKE_REQUIRED_LIBRARIES ${BLACS_LIBRARY} MPI::MPI_Fortran)
+  set(CMAKE_REQUIRED_LIBRARIES ${BLACS_LIBRARY})
   check_fortran_function_exists(blacs_gridmap BLACS_OK)
 endif()
 

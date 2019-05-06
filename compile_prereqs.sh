@@ -42,7 +42,7 @@ export CXX=$(which g++)
 # does NOT impact library performance, just how fast it builds.
 # blank means maximum build speed
 LOADLIMIT=
-# LoADLIMIT="-l 4"
+# LOADLIMIT="-l 4"
 
 # ================================================
 # normally don't adjust parameters below this line

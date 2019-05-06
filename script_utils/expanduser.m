@@ -20,17 +20,14 @@ function expanded = expanduser(p)
 % tested with Matlab and Octave on Windows, Cygwin, Linux, and WINE
 %
 %% try python first
-try %requires Matlab R2014b or newer for following line
+try %#ok<TRYNC> %requires Matlab R2014b or newer for following line
     expanded = char(py.os.path.expanduser(p));
     return
 end
 %% if you have old Matlab or Octave
+
 %% what is the home path
-if ispc % windows
-    home = [getenv('HOMEDRIVE'),getenv('HOMEPATH')];
-else %linux,mac
-    home = getenv('HOME');
-end %if
+home = homepath();
 
 if isempty(home)
     warning('empty HOME environment variable, returning unmodified path')

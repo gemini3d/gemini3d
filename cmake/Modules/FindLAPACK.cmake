@@ -88,23 +88,23 @@ pkg_check_modules(LAPACK_ATLAS lapack-atlas)
 find_library(LAPACK_ATLAS
   NAMES ptlapack lapack_atlas lapack
   PATH_SUFFIXES atlas
-  HINTS ${LAPACK_ATLAS_LIBRARY_DIRS})
+  HINTS ${LAPACK_ATLAS_LIBRARY_DIRS} ${LAPACK_ATLAS_LIBDIR})
 
 pkg_check_modules(LAPACK_BLAS blas-atlas)
 
 find_library(BLAS_LIBRARY
   NAMES ptf77blas f77blas blas
   PATH_SUFFIXES atlas
-  HINTS ${LAPACK_BLAS_LIBRARY_DIRS})
+  HINTS ${LAPACK_BLAS_LIBRARY_DIRS} ${LAPACK_BLAS_LIBDIR})
 # === C ===
 find_library(BLAS_C_ATLAS
   NAMES ptcblas cblas
   PATH_SUFFIXES atlas
-  HINTS ${LAPACK_BLAS_LIBRARY_DIRS})
+  HINTS ${LAPACK_BLAS_LIBRARY_DIRS} ${LAPACK_BLAS_LIBDIR})
 
 find_path(LAPACK_INCLUDE_DIR
   NAMES cblas-atlas.h cblas.h clapack.h
-  HINTS ${LAPACK_BLAS_INCLUDE_DIRS})
+  HINTS ${LAPACK_BLAS_INCLUDE_DIRS} ${LAPACK_BLAS_LIBDIR})
 
 #===========
 if(LAPACK_ATLAS AND BLAS_C_ATLAS AND BLAS_LIBRARY AND ATLAS_LIB)
@@ -128,15 +128,16 @@ function(netlib_libs)
 if(LAPACK95 IN_LIST LAPACK_FIND_COMPONENTS)
   find_path(LAPACK95_INCLUDE_DIR
               NAMES f95_lapack.mod
+              PATH_SUFFIXES include
               PATHS ${LAPACK95_ROOT})
 
   find_library(LAPACK95_LIBRARY
                  NAMES lapack95
+                 PATH_SUFFIXES lib
                  PATHS ${LAPACK95_ROOT})
 
   if(LAPACK95_LIBRARY AND LAPACK95_INCLUDE_DIR)
     set(LAPACK_INCLUDE_DIR ${LAPACK95_INCLUDE_DIR})
-    set(LAPACK_LAPACK95_FOUND true PARENT_SCOPE)
     set(LAPACK_LIBRARY ${LAPACK95_LIBRARY})
   else()
     return()
@@ -144,12 +145,10 @@ if(LAPACK95 IN_LIST LAPACK_FIND_COMPONENTS)
 endif()
 
 pkg_check_modules(LAPACK lapack-netlib)
-if(NOT LAPACK_FOUND)
-  pkg_check_modules(LAPACK lapack)  # Netlib on Cygwin and others
-endif()
+# don't use generic pkgconfig names as update-alternatives may be in use
 find_library(LAPACK_LIB
   NAMES lapack
-  HINTS ${LAPACK_LIBRARY_DIRS}
+  HINTS ${LAPACK_LIBRARY_DIRS} ${LAPACK_LIBDIR}
   PATH_SUFFIXES lapack)
 if(LAPACK_LIB)
   list(APPEND LAPACK_LIBRARY ${LAPACK_LIB})
@@ -161,11 +160,11 @@ if(LAPACKE IN_LIST LAPACK_FIND_COMPONENTS)
   pkg_check_modules(LAPACKE lapacke)
   find_library(LAPACKE_LIBRARY
     NAMES lapacke
-    HINTS ${LAPACKE_LIBRARY_DIRS})
+    HINTS ${LAPACKE_LIBRARY_DIRS} ${LAPACKE_LIBDIR})
 
   find_path(LAPACKE_INCLUDE_DIR
     NAMES lapacke.h
-    HINTS ${LAPACKE_INCLUDE_DIRS})
+    HINTS ${LAPACKE_INCLUDE_DIRS} ${LAPACKE_LIBDIR})
 
   if(LAPACKE_LIBRARY AND LAPACKE_INCLUDE_DIR)
     set(LAPACK_LAPACKE_FOUND true PARENT_SCOPE)
@@ -182,16 +181,14 @@ if(LAPACKE IN_LIST LAPACK_FIND_COMPONENTS)
 endif()
 
 pkg_check_modules(BLAS blas-netlib)
-if(NOT BLAS_FOUND)
-  pkg_check_modules(BLAS blas)  # Netlib on Cygwin and others
-endif()
+# don't use generic pkg-config names since update-alternatives may be in use.
 find_library(BLAS_LIBRARY
   NAMES refblas blas
-  HINTS ${BLAS_LIBRARY_DIRS}
+  HINTS ${BLAS_LIBRARY_DIRS} ${BLAS_LIBDIR}
   PATH_SUFFIXES blas)
 
 if(BLAS_LIBRARY)
-  list(APPEND LAPACK_LIBRARY ${LAPACK_LIB} ${BLAS_LIBRARY})
+  list(APPEND LAPACK_LIBRARY ${BLAS_LIBRARY})
   set(LAPACK_Netlib_FOUND true PARENT_SCOPE)
 else()
   return()
@@ -200,6 +197,23 @@ endif()
 if(NOT WIN32)
   list(APPEND LAPACK_LIBRARY ${CMAKE_THREAD_LIBS_INIT})
 endif()
+
+if(LAPACK95_LIBRARY)
+  set(CMAKE_REQUIRED_INCLUDES ${LAPACK_INCLUDE_DIR})
+  set(CMAKE_REQUIRED_LIBRARIES ${LAPACK_LIBRARY})
+  check_fortran_source_compiles("
+    use, intrinsic :: iso_fortran_env, only: wp=>real64
+    use f95_lapack, only: gesvd=>la_gesvd
+    real(wp) :: A(2,2), M(2)
+    call gesvd(A,M)
+    end" _lapack_ok SRC_EXT f90)
+  if(NOT _lapack_ok)
+    return()
+  endif()
+
+  set(LAPACK_LAPACK95_FOUND true PARENT_SCOPE)
+endif()
+
 
 set(LAPACK_LIBRARY ${LAPACK_LIBRARY} PARENT_SCOPE)
 set(LAPACK_INCLUDE_DIR ${LAPACK_INCLUDE_DIR} PARENT_SCOPE)
@@ -212,14 +226,14 @@ function(openblas_libs)
 pkg_check_modules(LAPACK lapack-openblas)
 find_library(LAPACK_LIBRARY
   NAMES lapack
-  HINTS ${LAPACK_LIBRARY_DIRS}
+  HINTS ${LAPACK_LIBRARY_DIRS} ${LAPACK_LIBDIR}
   PATH_SUFFIXES openblas)
 
 
 pkg_check_modules(BLAS blas-openblas)
 find_library(BLAS_LIBRARY
   NAMES openblas blas
-  HINTS ${BLAS_LIBRARY_DIRS}
+  HINTS ${BLAS_LIBRARY_DIRS} ${BLAS_LIBDIR}
   PATH_SUFFIXES openblas)
 
 find_path(LAPACK_INCLUDE_DIR
@@ -263,11 +277,11 @@ foreach(s ${_mkl_libs})
            NAMES ${s}
            PATHS ENV MKLROOT ENV TBBROOT
            PATH_SUFFIXES
-             lib/intel64
+             lib/intel64 lib/intel64_win
              lib/intel64/gcc4.7 ../tbb/lib/intel64/gcc4.7
              lib/intel64/vc_mt ../tbb/lib/intel64/vc_mt
              ../compiler/lib/intel64
-           HINTS ${MKL_LIBRARY_DIRS}
+           HINTS ${MKL_LIBRARY_DIRS} ${MKL_LIBDIR}
            NO_DEFAULT_PATH)
 
   if(NOT LAPACK_${s}_LIBRARY)
@@ -295,8 +309,6 @@ endfunction(find_mkl_libs)
 
 cmake_policy(VERSION 3.3)
 
-unset(LAPACK_LIBRARY)
-
 if(NOT (OpenBLAS IN_LIST LAPACK_FIND_COMPONENTS
   OR Netlib IN_LIST LAPACK_FIND_COMPONENTS
   OR Atlas IN_LIST LAPACK_FIND_COMPONENTS
@@ -314,6 +326,8 @@ get_property(project_languages GLOBAL PROPERTY ENABLED_LANGUAGES)
 
 find_package(PkgConfig)
 
+include(CheckFortranFunctionExists)
+include(CheckFortranSourceCompiles)
 # ==== generic MKL variables ====
 
 if(MKL IN_LIST LAPACK_FIND_COMPONENTS)
@@ -373,7 +387,14 @@ if(MKL IN_LIST LAPACK_FIND_COMPONENTS)
     endif()
 
     if(LAPACK95 IN_LIST LAPACK_FIND_COMPONENTS)
-      set(LAPACK_LAPACK95_FOUND true)
+      set(CMAKE_REQUIRED_INCLUDES ${LAPACK_INCLUDE_DIR})
+      set(CMAKE_REQUIRED_LIBRARIES ${LAPACK_LIBRARY})
+      check_fortran_source_compiles("
+        use lapack95, only: gesvd
+        real :: A(2,2),M(2)
+        call gesvd(A,M)
+        end" LAPACK_LAPACK95_FOUND
+        SRC_EXT f90)
     endif()
 
     if(OpenMP IN_LIST LAPACK_FIND_COMPONENTS)
@@ -405,14 +426,9 @@ set(CMAKE_REQUIRED_LIBRARIES ${LAPACK_LIBRARY})
 
 set(_lapack_ok true)
 if(CMAKE_Fortran_COMPILER AND LAPACK_LIBRARY)
-  include(CheckFortranFunctionExists)
-  if(OpenBLAS IN_LIST LAPACK_FIND_COMPONENTS)
-    set(_blas_func sgemm)
-    set(_lapack_func sgemv)
-  else()
-    set(_blas_func sgemm)
-    set(_lapack_func sgesv)
-  endif()
+  set(_blas_func sgemm)
+  set(_lapack_func sgemv)
+
   check_fortran_function_exists(${_blas_func} BLAS_OK)
   check_fortran_function_exists(${_lapack_func} LAPACK_OK)
   if(NOT (BLAS_OK AND LAPACK_OK))

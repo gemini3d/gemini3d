@@ -94,9 +94,9 @@ else
 end
 
 catch excp
-  if isoctave || usejava('desktop')  % interactive
+  if isinteractive
     rethrow(excp)
-  else  % -nodesktop or -nojvm
+  else  % octave-cli or matlab: -nodesktop, -nojvm, -batch
     disp(excp.message)
     exit(1)
   end

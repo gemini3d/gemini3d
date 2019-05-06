@@ -1,5 +1,7 @@
-cmake_minimum_required(VERSION 3.12)
-# 3.9: MPI::MPI_Fortran  3.11 for FindLapack bug   3.12 for find_ROOT
+cmake_minimum_required(VERSION 3.12)  # 3.12 for find_ROOT
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Release CACHE STRING "Debug or Release" FORCE)
+endif()
 project(gemini3d C Fortran)  # MUST include C language for Intel / MKL to work
 enable_testing()
 

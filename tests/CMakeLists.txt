@@ -1,6 +1,5 @@
-cmake_minimum_required (VERSION 3.12)  
-# 3.9: MPI::MPI_Fortran, 3.11: Lapack,  3.12 find_ROOT
-project(test_gem Fortran)
+cmake_minimum_required (VERSION 3.12) # 3.12 find_ROOT
+project(test_gem C Fortran)
 enable_testing()
 
 get_directory_property(hasParent PARENT_DIRECTORY)
@@ -10,8 +9,8 @@ if(NOT hasParent)
   endif()
 
   list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../cmake/Modules/)
-  include(../cmake/compilers.cmake)
-  include(../cmake/libraries.cmake)
+  include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/compilers.cmake)
+  include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/libraries.cmake)
   include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/mumps.cmake)
 endif()
 
