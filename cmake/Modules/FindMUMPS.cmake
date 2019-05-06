@@ -61,17 +61,14 @@ mumps_libs()
 
 
 if(MUMPS_LIBRARY)
-  set(MUMPS_OK true)
-  include(CheckFortranFunctionExists)
+  include(CheckFortranSourceCompiles)
   set(CMAKE_REQUIRED_INCLUDES ${MUMPS_INCLUDE_DIR})
   set(CMAKE_REQUIRED_LIBRARIES ${MUMPS_LIBRARY})
-  foreach(c ${MUMPS_FIND_COMPONENTS})
-    check_fortran_function_exists(${c}mumps _${c}_ok)
-    if(NOT _${c}_ok)
-      set(MUMPS_OK false)
-      break()
-    endif()
-  endforeach()
+  check_fortran_source_compiles("
+  include 'dmumps_struc.h'
+  type(DMUMPS_STRUC) :: mumps_par
+  end program"
+  MUMPS_OK SRC_EXT f90)
 endif()
 
 include(FindPackageHandleStandardArgs)

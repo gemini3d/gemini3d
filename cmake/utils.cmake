@@ -71,7 +71,7 @@ if(NOT WIN32 AND CMAKE_VERSION VERSION_GREATER_EQUAL 3.13)
   maxfactor(${halfX3} ${MPIEXEC_MAX_NUMPROCS})
 
   message(STATUS "Gemini test auto-setup with ${MAXFACTOR} MPI processes")
-  
+
   set(NP ${MAXFACTOR} PARENT_SCOPE)
 elseif(${MPIEXEC_MAX_NUMPROCS} GREATER_EQUAL 4)
   set(NP 4 PARENT_SCOPE)
@@ -208,13 +208,9 @@ if(OctaveOK)
 endif()
 
 # --- try Matlab if Octave wasn't available
-if(NOT DEFINED MatlabOK)
-  find_package(Matlab COMPONENTS MAIN_PROGRAM)
-  # https://www.mathworks.com/help/matlab/ref/exist.html
-  check_matlab_source_runs("exit(assert(exist('validateattributes', 'builtin')==5))")
-endif()
+find_package(Matlab COMPONENTS MAIN_PROGRAM)
 
-if (MatlabOK)
+if (Matlab_FOUND)
   message(STATUS "Using Matlab: ${Matlab_MAIN_PROGRAM}")
   matlab_compare(Matlab${TESTNAME} ${TESTDIR} ${REFDIR} ${REQFILE})
 else()
