@@ -2,11 +2,15 @@ module io
 !! HANDLES INPUT AND OUTPUT OF PLASMA STATE PARAMETERS (NOT GRID INPUTS)
 use, intrinsic :: iso_fortran_env, only: stderr=>error_unit, compiler_version, compiler_options
 use, intrinsic :: ieee_arithmetic, only: ieee_is_nan, ieee_value, ieee_quiet_nan
+use, intrinsic :: iso_c_binding, only: c_int
 use phys_consts, only : kB,ms,pi,lsp,wp,lwave
 use fsutils, only: expanduser
+use std_mkdir, only: mkdir, copyfile
 use calculus
 use mpimod
-use grid, only : gridflag,flagswap,lx1,lx2,lx3,lx2all,lx3all
+use grid, only : gridflag,flagswap,lx1,lx2,lx3,lx2all, lx3all
+use formats, only: date_filename
+
 implicit none
 
 !> NONE OF THESE VARIABLES SHOULD BE ACCESSED BY PROCEDURES OUTSIDE THIS MODULE
@@ -177,46 +181,48 @@ character(*), intent(in) :: outdir, & !command line argument output directory
                             indatsize,indatgrid,sourcedir, precdir,E0dir
 integer, intent(in) :: flagdneu, flagprecfile, flagE0file
 
-integer :: ierr
+integer(c_int) :: ierr
 
-!MAKE A COPY OF THE INPUT DATA IN THE OUTPUT DIRECTORY (MAYBE SHOULD COPY SOURCE CODE TOO???)
-call execute_command_line('mkdir -pv '//outdir//'/inputs', exitstat=ierr)
-if (ierr /= 0) error stop 'error creating output directory'
 
-call execute_command_line('cp -r '//infile//' '//outdir//'/inputs/', exitstat=ierr)
+!> MAKE A COPY OF THE INPUT DATA IN THE OUTPUT DIRECTORY
+if (mkdir(outdir//'/inputs') /= 0) error stop 'error creating output directory'
+
+ierr = copyfile(infile, outdir//'/inputs/')
+if (ierr /= 0) error stop 'error copying configuration .ini to output directory'
+ierr = copyfile(indatsize, outdir//'/inputs/')
+if (ierr /= 0) error stop 'error copying input data size file to output directory'
+ierr = copyfile(indatgrid, outdir//'/inputs/')
 if (ierr /= 0) error stop 'error copying input parameters to output directory'
-call execute_command_line('cp -r '//indatsize//' '//outdir//'/inputs/', exitstat=ierr)
-if (ierr /= 0) error stop 'error copying input parameters to output directory'
-call execute_command_line('cp -r '//indatgrid//' '//outdir//'/inputs/', exitstat=ierr)
-if (ierr /= 0) error stop 'error copying input parameters to output directory'
-call execute_command_line('cp -r '//indatfile//' '//outdir//'/inputs/', exitstat=ierr)
+ierr = copyfile(indatfile, outdir//'/inputs/')
 if (ierr /= 0) error stop 'error copying input parameters to output directory'
 
-!!MAKE COPIES OF THE INPUT DATA, AS APPROPRIATE
-!if (flagdneu/=0) then
-!  call execute_command_line('mkdir -pv '//outdir//'/inputs/neutral_inputs')
-!  call execute_command_line('cp -r '//sourcedir//'/* '//outdir//'/inputs/neutral_inputs/', exitstat=ierr)
-!end if
-!if (ierr /= 0) error stop 'error copying neutral input parameters to output directory'
-!
-!if (flagprecfile/=0) then
-!  call execute_command_line('mkdir -pv '//outdir//'/inputs/prec_inputs')
-!  call execute_command_line('cp -r '//precdir//'/* '//outdir//'/inputs/prec_inputs/', exitstat=ierr)
-!end if
-!if (ierr /= 0) error stop 'error copying input precipitation parameters to output directory'
-!
-!if (flagE0file/=0) then
-!  call execute_command_line('mkdir -pv '//outdir//'/inputs/Efield_inputs')
-!  call execute_command_line('cp -r '//E0dir//'/* '//outdir//'/inputs/Efield_inputs/', exitstat=ierr)
-!end if
-!if (ierr /= 0) error stop 'error copying input energy parameters to output directory'
+!MAKE COPIES OF THE INPUT DATA, AS APPROPRIATE
+if (.false.) then
+  if (flagdneu/=0) then
+    ierr = mkdir(outdir//'/inputs/neutral_inputs')
+    ierr = copyfile(sourcedir//'/*', outdir//'/inputs/neutral_inputs/')
+  end if
+  if (ierr /= 0) error stop 'error copying neutral input parameters to output directory'
+
+  if (flagprecfile/=0) then
+    ierr = mkdir(outdir//'/inputs/prec_inputs')
+    ierr = copyfile(precdir//'/*', outdir//'/inputs/prec_inputs/')
+  end if
+  if (ierr /= 0) error stop 'error copying input precipitation parameters to output directory'
+
+  if (flagE0file/=0) then
+    ierr = mkdir(outdir//'/inputs/Efield_inputs')
+    ierr = copyfile(E0dir//'/*', outdir//'/inputs/Efield_inputs/')
+  end if
+  if (ierr /= 0) error stop 'error copying input energy parameters to output directory'
+endif
 
 !NOW STORE THE VERSIONS/COMMIT IDENTIFIER IN A FILE IN THE OUTPUT DIRECTORY
 ! this can break on POSIX due to copying files in endless loop, commended out - MH
-!call execute_command_line('mkdir -pv '//outdir//'/inputs/source/', exitstat=ierr)
+! ierr = mkdir(outdir//'/inputs/source/')
 !if (ierr /= 0) error stop 'error creating input source parameter output directory'
 !call execute_command_line('cp -r ./* '//outdir//'/inputs/source/', exitstat=ierr)
-!f (ierr /= 0) error stop 'error creating input source parameter output directory'
+!if (ierr /= 0) error stop 'error creating input source parameter output directory'
 
 call gitlog(outdir//'/gitrev.log')
 
@@ -233,9 +239,9 @@ character(*), intent(in) :: fieldpointfile
 
 
 !NOTE HERE THAT WE INTERPRET OUTDIR AS THE BASE DIRECTORY CONTAINING SIMULATION OUTPUT
-call execute_command_line('mkdir -pv '//outdir//'/magfields/')
-call execute_command_line('mkdir -pv '//outdir//'/magfields/input/')
-call execute_command_line('cp -v '//fieldpointfile//' '//outdir//'/magfields/input/magfieldpoints.dat')
+ierr = mkdir(outdir//'/magfields/')
+ierr = mkdir(outdir//'/magfields/input/')
+ierr = copyfile(fieldpointfile, outdir//'/magfields/input/magfieldpoints.dat')
 
 end subroutine create_outdir_mag
 
@@ -249,7 +255,8 @@ subroutine create_outdir_aur(outdir)
 character(*), intent(in) :: outdir
 
 !NOTE HERE THAT WE INTERPRET OUTDIR AS THE BASE DIRECTORY CONTAINING SIMULATION OUTPUT
-call execute_command_line('mkdir -pv '//outdir//'/aurmaps/')
+ierr = mkdir(outdir//'/aurmaps/')
+if (ierr /= 0) error stop 'could not create auroral map output directory'
 
 end subroutine create_outdir_aur
 
@@ -289,12 +296,12 @@ call bcast_recv(vs1,tagvs1)
 call bcast_recv(Ts,tagTs)
 
 
-
-!print*, myid
-!print *, 'Min/max input density:  ',     minval(ns(:,:,:,7)),  maxval(ns(:,:,:,7))
-!print *, 'Min/max input velocity:  ',    minval(vs1(:,:,:,:)), maxval(vs1(:,:,:,:))
-!print *, 'Min/max input temperature:  ', minval(Ts(:,:,:,:)),  maxval(Ts(:,:,:,:))
-
+if (.false.) then
+  print*, myid
+  print *, 'Min/max input density:  ',     minval(ns(:,:,:,7)),  maxval(ns(:,:,:,7))
+  print *, 'Min/max input velocity:  ',    minval(vs1(:,:,:,:)), maxval(vs1(:,:,:,:))
+  print *, 'Min/max input temperature:  ', minval(Ts(:,:,:,:)),  maxval(Ts(:,:,:,:))
+endif
 
 end subroutine input_workers_mpi
 
@@ -384,7 +391,7 @@ if (any(ieee_is_nan(vs1all))) error stop 'NaN in vs1all'
 if (any(ieee_is_nan(Tsall))) error stop 'NaN in Tsall'
 if (any(Tsall<0._wp)) error stop 'negative temperature in Tsall'
 if (any(nsall<0._wp)) error stop 'negative density'
-if (any(vs1all>3d8)) error stop 'drift faster than c'
+if (any(vs1all>3e8_wp)) error stop 'drift faster than c'
 print *, 'Done gathering input...'
 
 
@@ -912,93 +919,6 @@ open(newunit=u,file=filenamefull,status='replace',form='unformatted',access='str
 write(u) Br,Btheta,Bphi
 close(u)
 end subroutine output_magfields
-
-
-!pure function date_filename(outdir,ymd,UTsec)
-!!! GENERATE A FILENAME STRING OUT OF A GIVEN DATE/TIME
-!
-!character(*), intent(in) :: outdir
-!integer, intent(in) :: ymd(3)
-!real(wp), intent(in) :: UTsec
-!character(:), allocatable :: date_filename
-!character(25) :: fn
-!
-!
-!!> UTC second (float, 0.0 .. 86400)
-!write(fn,'(i4,2i0.2,a1,f12.6,a4)') ymd, '_', UTsec, '.dat'
-!
-!!> assemble
-!date_filename = outdir // '/' // fn
-!
-!end function date_filename
-
-
-  function date_filename(outdir,ymd,UTsec)
-
-    !------------------------------------------------------------
-    !-------GENERATE A FILENAME STRING OUT OF A GIVEN DATE/TIME
-    !------------------------------------------------------------
-
-    character(*), intent(in) :: outdir
-    integer, dimension(3), intent(in) :: ymd
-    real(8), intent(in) :: UTsec
-    character(:), allocatable :: date_filename
-
-    integer :: ldigits,idigits
-    character(256) :: filename,tmpchar,tmpchar2
-    character(512) :: tmpfilename,filenamefull
-
-
-    !FORM OUTPUT FILENAME BASED ON DATE AND TIME (this was unbelievably squirrely to work out)
-    write(filename,'(f12.6,a4)') UTsec,'.dat'    !file name that has 6 decimal points on time stamp
-    filename=adjustl(filename)                   !slam the chars. to the left and remove trailing blanks
-    ldigits=5                                    !pad the filename with the appropriate number zero characters
-    if (UTsec<1d0) then
-      idigits=1
-    else
-      idigits=floor(log10(UTsec))+1
-    end if
-    tmpchar=filename
-    do while(idigits<ldigits)
-      write(tmpchar2,*) '0',trim(tmpchar)
-      tmpchar=adjustl(tmpchar2)
-      idigits=idigits+1
-    end do
-    filename=tmpchar
-
-    !day
-    write(tmpchar,*) ymd(3)
-    tmpchar=adjustl(tmpchar)
-    if (ymd(3)<10) then
-      write(tmpchar2,*) '0',trim(tmpchar)
-      tmpchar=adjustl(tmpchar2)
-    end if
-    !write is dumb and doesn't recognize previous trims...  I hate string manipulation...
-    write(tmpfilename,*) trim(tmpchar),'_',trim(filename)
-    tmpfilename=adjustl(tmpfilename)
-    filename=tmpfilename(1:256)
-
-    !month
-    write(tmpchar,*) ymd(2)
-    tmpchar=adjustl(tmpchar)
-    if (ymd(2)<10) then
-      write(tmpchar2,*) '0',trim(tmpchar)
-      tmpchar=adjustl(tmpchar2)
-    end if
-    write(tmpfilename,*) trim(tmpchar),trim(filename)
-    tmpfilename=adjustl(tmpfilename)
-    filename=tmpfilename(1:256)
-
-    !year
-    write(tmpchar,*) ymd(1)
-    tmpchar=adjustl(tmpchar)
-    write(tmpfilename,*) trim(tmpchar),trim(filename)
-    tmpfilename=adjustl(tmpfilename)
-    filename=tmpfilename(1:256)
-    write(filenamefull,*) outdir,'/',trim(filename)
-    date_filename=trim(adjustl(filenamefull))
-
-  end function date_filename
 
 
 subroutine gitlog(logpath)

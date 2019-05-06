@@ -40,7 +40,7 @@ endif(USEGLOW)
 
 add_subdirectory(numerical)
 
-add_library(io io/io.F90 io/expanduser.f90)
+add_library(io io/io.F90 io/mkdir.F90 io/expanduser.f90 io/formats.f90)
 target_link_libraries(io PRIVATE const mpimod grid calculus)
 target_compile_definitions(io PRIVATE TRACE=${TRACE})
 target_compile_options(io PRIVATE ${FFLAGS})
