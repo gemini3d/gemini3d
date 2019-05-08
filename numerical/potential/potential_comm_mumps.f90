@@ -275,8 +275,11 @@ real(wp) :: tstart,tfin
 
 integer :: utrace
 
+real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: J2prev
 real(wp), dimension(1:size(Phiall,1),1:size(Phiall,2),1:size(Phiall,3)) :: J2prevall
 real(wp), dimension(1:size(Phiall,1),1:size(Phiall,2),1:size(Phiall,3)) :: integrandall,intJ2all
+real(wp), dimension(1:size(E1,2),1:size(E1,3)) :: SigPintstar
+real(wp), dimension(1:size(Phiall,2),1:size(Phiall,3)) :: SigPintstarall
 
 
 
@@ -286,6 +289,10 @@ lx2=size(sig0,2)
 lx3=size(sig0,3)
 lx3all=size(Phiall,3)
 lx2all=size(Phiall,2)
+
+
+!SAVE THE OLD CURRENT
+J2prev=J2
 
 
 !USE PREVIOUS MUMPS PERMUTATION (OLD CODE? BUT MIGHT BE WORTH REINSTATING?)
@@ -327,9 +334,6 @@ Vmaxx1buf=Vmaxx1; Vminx1buf=Vminx1;
 call bcast_send(Vminx1buf,tagVminx1,Vminx1slab)
 call bcast_send(Vmaxx1buf,tagVmaxx1,Vmaxx1slab)
 
-!Now pass the x2 current since possibly used as a boundary condition
-call gather_recv(J2,tagJ2,J2prevall)
-
 
 !-------
 !CONDUCTION CURRENT BACKGROUND SOURCE TERMS FOR POTENTIAL EQUATION. MUST COME AFTER CALL TO BC CODE.
@@ -341,6 +345,9 @@ else
   J2=sigP*E02-sigH*E03    !BG x2 current
   J3=sigH*E02+sigP*E03    !BG x3 current
 end if
+
+J2prev=J2prev-J2     !substract off current from background field
+
 !    srcterm=div3D(J1,J2,J3,x,1,lx1,1,lx2,1,lx3)     !first part of source term so do a straight assignment here
 J1halo(1:lx1,1:lx2,1:lx3)=J1
 J2halo(1:lx1,1:lx2,1:lx3)=J2
@@ -404,6 +411,9 @@ else
   J2=sigP*vn3*B1(1:lx1,1:lx2,1:lx3)+sigH*vn2*B1(1:lx1,1:lx2,1:lx3)     !wind x2 current
   J3=sigH*vn3*B1(1:lx1,1:lx2,1:lx3)-sigP*vn2*B1(1:lx1,1:lx2,1:lx3)     !wind x3 current
 end if
+
+J2prev=J2prev-J2     !subract off wind-driven current
+
 !    divJperp=div3D(J1,J2,J3,x,1,lx1,1,lx2,1,lx3)
 J1halo(1:lx1,1:lx2,1:lx3)=J1
 J2halo(1:lx1,1:lx2,1:lx3)=J2
@@ -470,6 +480,10 @@ if (lx2/=1) then    !either field-resolved 3D or integrated 2D solve for 3D doma
     sigintegral=integral3D1(integrand,x,1,lx1)
     SigPint3=sigintegral(lx1,:,:)
 
+    integrand=sigP*x%h1(1:lx1,1:lx2,1:lx3)/x%h2(1:lx1,1:lx2,1:lx3)
+    sigintegral=integral3D1(integrand,x,1,lx1)
+    SigPintstar=sigintegral(lx1,:,:)
+
     integrand=x%h1(1:lx1,1:lx2,1:lx3)*sigH
     sigintegral=integral3D1(integrand,x,1,lx1)
     SigHint=sigintegral(lx1,:,:)
@@ -504,18 +518,23 @@ if (lx2/=1) then    !either field-resolved 3D or integrated 2D solve for 3D doma
       call gather_recv(v2slab,tagv2electro,v2slaball)
       call gather_recv(v3slab,tagv3electro,v3slaball)
 
+      !Now pass the x2 current since possibly used as a boundary condition
+      call gather_recv(SigPintstar,tagSigPint2,SigPintstarall)
+      call gather_recv(J2prev,tagJ2,J2prevall)
 
 
+      print*, minval(J2prevall),maxval(J2prevall)
+      print*, minval(SigPintstarall),maxval(SigPintstarall)
 
       !R------
       !EXECUTE FIELD-INTEGRATED SOLVE
       integrandall=x%h1all(1:lx1,1:lx2all,1:lx3all)*J2prevall
       intJ2all=integral3D1(integrandall,x,1,lx1)    !equivalent surface current for ionosphere
-      Vminx2slice=-1d0*intJ2all(lx1,1,:)/SigPint2all(1,:)                         !this is sigP for going with the x2 electric field
-      Vmaxx2slice=-1d0*intJ2all(lx1,1,:)/SigPint2all(lx2all,:)                    !make the current equal to low-latitude boundary, not that the conductance may change
+      Vminx2slice=-1d0*intJ2all(lx1,1,:)/SigPintstarall(1,:)                         !this is sigP for going with the x2 electric field
+      Vmaxx2slice=-1d0*intJ2all(lx1,1,:)/SigPintstarall(lx2all,:)                    !make the current equal to low-latitude boundary, not that the conductance may change
       !Vminx2slice=Vminx2(lx1,:)    !slice the boundaries into expected shape
       !Vmaxx2slice=Vmaxx2(lx1,:)
-      !print*, minval(Vmaxx2slice),maxval(Vmaxx2slice)
+      print*, minval(Vmaxx2slice),maxval(Vmaxx2slice)
       Vminx3slice=Vminx3(lx1,:)
       Vmaxx3slice=Vmaxx3(lx1,:)
       Phislab0=Phiall(lx1,:,:)    !root already possess the fullgrid potential from prior solves...
@@ -1027,11 +1046,18 @@ real(wp) :: tstart,tfin
 
 integer :: utrace
 
+real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: J2prev
+real(wp), dimension(1:size(E1,2),1:size(E1,3)) :: SigPintstar
+
 
 !SIZES - PERHAPS SHOULD BE TAKEN FROM GRID MODULE INSTEAD OF RECOMPUTED?
 lx1=size(sig0,1)
 lx2=size(sig0,2)
 lx3=size(sig0,3)
+
+
+!SAVE LAST TIME STEP CURRENT
+J2prev=J2
 
 
 !USE PREVIOUS MUMPS PERMUTATION (OLD CODE? BUT MIGHT BE WORTH REINSTATING?)
@@ -1049,8 +1075,6 @@ call bcast_recv(E03,tagE03)
 call bcast_recv(Vminx1slab,tagVminx1)
 call bcast_recv(Vmaxx1slab,tagVmaxx1)
 
-!Now pass the x2 current since possibly used as a boundary condition
-call gather_send(J2,tagJ2)
 
 !-------
 !CONDUCTION CURRENT BACKGROUND SOURCE TERMS FOR POTENTIAL EQUATION. MUST COME AFTER CALL TO BC CODE.
@@ -1062,6 +1086,9 @@ else
   J2=sigP*E02-sigH*E03    !BG x2 current
   J3=sigH*E02+sigP*E03    !BG x3 current
 end if
+
+J2prev=J2prev-J2    !leave off BG part
+
 !    srcterm=div3D(J1,J2,J3,x,1,lx1,1,lx2,1,lx3)     !first part of source term so do a straight assignment here
 J1halo(1:lx1,1:lx2,1:lx3)=J1
 J2halo(1:lx1,1:lx2,1:lx3)=J2
@@ -1124,6 +1151,9 @@ else
   J2=sigP*vn3*B1(1:lx1,1:lx2,1:lx3)+sigH*vn2*B1(1:lx1,1:lx2,1:lx3)     !wind x2 current
   J3=sigH*vn3*B1(1:lx1,1:lx2,1:lx3)-sigP*vn2*B1(1:lx1,1:lx2,1:lx3)     !wind x3 current
 end if
+
+J2prev=J2prev-J2
+
 !    divJperp=div3D(J1,J2,J3,x,1,lx1,1,lx2,1,lx3)
 J1halo(1:lx1,1:lx2,1:lx3)=J1
 J2halo(1:lx1,1:lx2,1:lx3)=J2
@@ -1191,6 +1221,10 @@ if (lx2/=1) then    !either field-resolved 3D or integrated 2D solve for 3D doma
     sigintegral=integral3D1(integrand,x,1,lx1)
     SigPint3=sigintegral(lx1,:,:)
 
+    integrand=sigP*x%h1(1:lx1,1:lx2,1:lx3)/x%h2(1:lx1,1:lx2,1:lx3)
+    sigintegral=integral3D1(integrand,x,1,lx1)
+    SigPintstar=sigintegral(lx1,:,:)
+
     integrand=x%h1(1:lx1,1:lx2,1:lx3)*sigH
     sigintegral=integral3D1(integrand,x,1,lx1)
     SigHint=sigintegral(lx1,:,:)
@@ -1221,6 +1255,10 @@ if (lx2/=1) then    !either field-resolved 3D or integrated 2D solve for 3D doma
       call gather_send(v2slab,tagv2electro)
       call gather_send(v3slab,tagv3electro)
 !          v2slab=vs2(lx1,1:lx2,1:lx3,1); v3slab=vs3(lx1,1:lx2,1:lx3,1);    !need to pick out the ExB drift here (i.e. the drifts from highest altitudes); but this is only valid for Cartesian, so it's okay for the foreseeable future
+
+     !Now pass the x2 current since possibly used as a boundary condition
+     call gather_send(SigPintstar,tagSigPint2)
+     call gather_send(J2prev,tagJ2)
 
 
       call elliptic_workers()    !workers do not need any specific info about      proglem.  
