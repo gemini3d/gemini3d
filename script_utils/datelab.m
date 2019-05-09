@@ -14,7 +14,7 @@ else
 
     UTstrtmp=num2str(round(UTsec));
     lstr=numel(UTstrtmp);
-    while lstr<5
+    while lstr<5                    %do some zero padding
         UTstr=['0',UTstr];
         lstr=lstr+1;
     end
@@ -25,7 +25,7 @@ end
 %YEAR
 yearstr=num2str(ymdnew(1));
 lstr=numel(yearstr);
-while lstr<4
+while lstr<4                        %zero padding
     yearstr=['0',yearstr];
     lstr=lstr+1;
 end
@@ -34,7 +34,7 @@ end
 %MONTH
 monthstr=num2str(ymdnew(2));
 lstr=numel(monthstr);
-while lstr<2
+while lstr<2                        %zero padding
     monthstr=['0',monthstr];
     lstr=lstr+1;
 end
@@ -43,7 +43,7 @@ end
 %DAY
 daystr=num2str(ymdnew(3));
 lstr=numel(daystr);
-while lstr<2
+while lstr<2                        %padding
     daystr=['0',daystr];
     lstr=lstr+1;
 end

@@ -478,6 +478,7 @@ if (flagoutput==3) error stop '  !!!I need current densities in the output to co
 
 
 !> FORM THE INPUT FILE NAME
+!filenamefull=date_filename(outdir,ymd,UTsec)
 filenamefull=date_filename(outdir,ymd,UTsec)
 print *, 'Input file name for current densities:  ',filenamefull
 open(newunit=u,file=filenamefull,status='old',form='unformatted',access='stream',action='read')
@@ -701,6 +702,7 @@ Teall=Tsall(1:lx1,1:lx2all,1:lx3all,lsp)
 
 
 !FIGURE OUT THE FILENAME
+!filenamefull=date_filename(outdir,ymd,UTsec)
 filenamefull=date_filename(outdir,ymd,UTsec)
 print *, 'Output file name:  ',filenamefull
 
@@ -877,6 +879,7 @@ call gather_recv(ivertmp,tagAur,iverall)
 
 !FORM THE INPUT FILE NAME
 outdir_composite=outdir//'/aurmaps/'
+!filenamefull=date_filename(outdir_composite,ymd,UTsec)
 filenamefull=date_filename(outdir_composite,ymd,UTsec)
 
 print *, '  Output file name (auroral maps):  ',filenamefull
