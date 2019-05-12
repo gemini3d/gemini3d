@@ -1,10 +1,11 @@
 module timeutils
-
-use phys_consts, only: wp, pi
-
+use phys_consts, only: wp
+use, intrinsic :: iso_fortran_env, only: sp=>real32, dp=>real64
 implicit none
 private
 public :: doy_calc, sza, dateinc
+
+real(wp), parameter :: pi = 4._wp*atan(1._wp)
 
 contains
 
@@ -49,26 +50,23 @@ pure function sza(ymd,UTsec,glat,glon)
 integer, dimension(3), intent(in) :: ymd
 real(wp), intent(in) :: UTsec
 real(wp), dimension(:,:,:), intent(in) :: glat,glon
-
 real(wp), dimension(size(glat,1),size(glat,2),size(glat,3)) :: sza
+
+real(wp), parameter :: tau = 2._wp*pi
 
 real(wp) :: doy,soldecrad
 real(wp), dimension(size(glat,1),size(glat,2),size(glat,3)) :: lonrad,LThrs,latrad,hrang
 
 !> SOLAR DECLINATION ANGLE
 doy=doy_calc(ymd)
-soldecrad=-23.44_wp*cos(2._wp*pi/365._wp*(doy+10._wp))*pi/180._wp;
+soldecrad=-23.44_wp*cos(tau/365._wp*(doy+10)) * pi/180
 
 !> HOUR ANGLE
-lonrad=glon*pi/180._wp
-where (lonrad>pi)
-  lonrad=lonrad-2._wp*pi
-end where
-where (lonrad<-2._wp*pi)
-  lonrad=lonrad+2._wp*pi
-end where
+lonrad=glon*pi/180
+lonrad = modulo(lonrad, pi)
+
 LThrs=UTsec/3600._wp+lonrad/(pi/12._wp)
-hrang=(12._wp-LThrs)*(pi/12._wp)
+hrang=(12-LThrs)*(pi/12._wp)
 
 !> SOLAR ZENITH ANGLE
 latrad=glat*pi/180._wp
@@ -92,24 +90,20 @@ integer :: monthinc          !< we incremented the month
 year=ymd(1); month=ymd(2); day=ymd(3);
 
 if ((day < 1) .or. (day > 31)) error stop 'impossible day'
-if (utsec < 0.) error stop 'negative UTsec, simulation should go forward in time only!'
-if (dtsec < 0.) error stop 'negative dtsec, simulation should go forward in time only!'
-if (dtsec > 86400.) error stop 'excessively large dtsec, simulation step should be small enough!'
+if (utsec < 0) error stop 'negative UTsec, simulation should go forward in time only!'
+if (dtsec < 0) error stop 'negative dtsec, simulation should go forward in time only!'
+if (dtsec > 86400) error stop 'excessively large dtsec, simulation step should be small enough!'
 
 UTsec = UTsec + dtsec
-if (UTsec >= 86400._wp) then
+if (UTsec >= 86400) then
   UTsec = modulo(UTsec, 86400._wp)
   day = day+1          !roll the day over
 
 !> month rollover
   if (day > daysmonth(year, month)) then
     day=1
-    monthinc=1
-  else
-    monthinc=0
+    month = month + 1
   end if
-
-  month = month + monthinc
 
   if (month>12) then    !< roll the year over
     month=1
