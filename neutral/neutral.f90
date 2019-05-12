@@ -17,19 +17,19 @@ private
 
 !! ALL ARRAYS THAT FOLLOW ARE USED WHEN INCLUDING NEUTRAL PERTURBATIONS FROM ANOTHER MODEL
 !! ARRAYS TO STORE THE NEUTRAL GRID INFORMATION
-real(wp), dimension(:), allocatable, private :: rhon    
+real(wp), dimension(:), allocatable, private :: rhon
 !! as long as the neutral module is in scope these persist and do not require a "save"; this variable only used by the axisymmetric interpolation
 
-real(wp), dimension(:), allocatable, private :: yn    
+real(wp), dimension(:), allocatable, private :: yn
 !! this variable only used in cartesian interpolation
 
 real(wp), dimension(:), allocatable, private :: zn
 integer, private :: lrhon,lzn,lyn
 
 
-!! STORAGE FOR NEUTRAL SIMULATION DATA.  
+!! STORAGE FOR NEUTRAL SIMULATION DATA.
 !! THESE ARE INCLUDED AS MODULE VARIATIONS TO AVOID HAVING TO REALLOCATE AND DEALLOCIATE EACH TIME WE NEED TO INTERP
-real(wp), dimension(:,:), allocatable, private :: dnO,dnN2,dnO2,dvnrho,dvnz,dTn    
+real(wp), dimension(:,:), allocatable, private :: dnO,dnN2,dnO2,dvnrho,dvnz,dTn
 !! assumed axisymmetric, so only 2D
 
 
@@ -37,7 +37,7 @@ real(wp), dimension(:,:), allocatable, private :: dnO,dnN2,dnO2,dvnrho,dvnz,dTn
 real(wp), dimension(:,:,:), allocatable, private :: dnOiprev,dnN2iprev,dnO2iprev,dvnrhoiprev,dvnziprev,dTniprev, &
                                                    dvn1iprev,dvn2iprev,dvn3iprev
 real(wp), private :: tprev
-integer, dimension(3), private :: ymdprev    
+integer, dimension(3), private :: ymdprev
 !! denoted time corresponding to "prev" interpolated data
 
 real(wp), private :: UTsecprev
@@ -107,7 +107,7 @@ ap3=real(activ(3),sp)
 dom=ymd(3)
 month=ymd(2)
 year=ymd(1)
-doy=doy_calc(ymd)
+doy=doy_calc(year, month, dom)
 yearshort=mod(year,100)
 iyd=yearshort*1000+doy
 sec=floor(UTsecd)
@@ -178,7 +178,7 @@ end if
 end subroutine neutral_perturb
 
 
-!FOR CONSISTENCY I'D LIKE TO STRUCTURE NEUTRAL PERTURB OPERATIONS LIKE GRAVITY IS HANDLED IN THE GRID MODULE, I.E. HAVE AN EXPLICIT CONSTRUCTORS/DESTRUCTOR TYPE ROUTINE THAT HANDLES ALLOCATION AND DEALLOCATION, WHICH WILL CLEAN UP THE NEUTRAL_PERTURB SUBROUTINE, I.E. REMOVE ALLOCATES OF PERSISTENT MODULE VARIABLES.  
+!FOR CONSISTENCY I'D LIKE TO STRUCTURE NEUTRAL PERTURB OPERATIONS LIKE GRAVITY IS HANDLED IN THE GRID MODULE, I.E. HAVE AN EXPLICIT CONSTRUCTORS/DESTRUCTOR TYPE ROUTINE THAT HANDLES ALLOCATION AND DEALLOCATION, WHICH WILL CLEAN UP THE NEUTRAL_PERTURB SUBROUTINE, I.E. REMOVE ALLOCATES OF PERSISTENT MODULE VARIABLES.
 subroutine neutral_perturb_axisymm(dt,dtneu,t,ymd,UTsec,neudir,drhon,dzn,meanlat,meanlong,x,nn,Tn,vn1,vn2,vn3)
 
 !------------------------------------------------------------
@@ -186,7 +186,7 @@ subroutine neutral_perturb_axisymm(dt,dtneu,t,ymd,UTsec,neudir,drhon,dzn,meanlat
 !-------THEM TO MSIS PERTURBATIONS TO GET ABSOLUTE VALUES FOR
 !-------EACH PARAMETER
 !-------
-!-------THIS VERSION ASSUMES THE INPUT NEUTRAL DATA ARE IN 
+!-------THIS VERSION ASSUMES THE INPUT NEUTRAL DATA ARE IN
 !-------CYLINDRICAL COORDINATES.
 !------------------------------------------------------------
 
@@ -262,8 +262,8 @@ if (t+dt/2d0>=tnext .or. t<=0d0) then   !negative time means that we need to loa
       print *, 'Creating neutral grid with rho,z extent:  ',minval(rhon),maxval(rhon),minval(zn),maxval(zn)
     end if
 
-    
-    !neutral source locations specified in input file, here referenced by spherical magnetic coordinates.  
+
+    !neutral source locations specified in input file, here referenced by spherical magnetic coordinates.
     phi1=meanlong*pi/180d0
     theta1=pi/2d0-meanlat*pi/180d0
 
@@ -528,7 +528,7 @@ do ix3=1,lx3
       dvn3inow(ix1,ix2,ix3)=dvn3iprev(ix1,ix2,ix3)+slope*(t+dt/2d0-tprev)
 
       slope=(dTninext(ix1,ix2,ix3)-dTniprev(ix1,ix2,ix3))/(tnext-tprev)
-      dTninow(ix1,ix2,ix3)=dTniprev(ix1,ix2,ix3)+slope*(t+dt/2d0-tprev) 
+      dTninow(ix1,ix2,ix3)=dTniprev(ix1,ix2,ix3)+slope*(t+dt/2d0-tprev)
     end do
   end do
 end do
@@ -551,7 +551,7 @@ end if
 !NOW UPDATE THE PROVIDED NEUTRAL ARRAYS
 nn(:,:,:,1)=nnmsis(:,:,:,1)+dnOinow
 nn(:,:,:,2)=nnmsis(:,:,:,2)+dnN2inow
-nn(:,:,:,3)=nnmsis(:,:,:,3)+dnO2inow 
+nn(:,:,:,3)=nnmsis(:,:,:,3)+dnO2inow
 nn(:,:,:,1)=max(nn(:,:,:,1),1._wp)
 nn(:,:,:,2)=max(nn(:,:,:,2),1._wp)
 nn(:,:,:,3)=max(nn(:,:,:,3),1._wp)
@@ -572,7 +572,7 @@ subroutine neutral_perturb_cart(dt,dtneu,t,ymd,UTsec,neudir,dyn,dzn,meanlat,mean
 !-------THEM TO MSIS PERTURBATIONS TO GET ABSOLUTE VALUES FOR
 !-------EACH PARAMETER.
 !-------
-!-------THIS VERSION ASSUMES THE INPUT NEUTRAL DATA ARE IN 
+!-------THIS VERSION ASSUMES THE INPUT NEUTRAL DATA ARE IN
 !-------CARTESIAN COORDINATES.
 !------------------------------------------------------------
 
@@ -647,7 +647,7 @@ if (t+dt/2d0>=tnext) then
       print *, 'Creating neutral grid with y,z extent:  ',minval(yn),maxval(yn),minval(zn),maxval(zn)
     end if
 
-    
+
     !neutral source locations specified in input file, here referenced by spherical coordinates (magnetic).
     phi1=meanlong*pi/180d0
     theta1=pi/2d0-meanlat*pi/180d0
@@ -907,7 +907,7 @@ do ix3=1,lx3
       dvn3inow(ix1,ix2,ix3)=dvn3iprev(ix1,ix2,ix3)+slope*(t+dt/2d0-tprev)
 
       slope=(dTninext(ix1,ix2,ix3)-dTniprev(ix1,ix2,ix3))/(tnext-tprev)
-      dTninow(ix1,ix2,ix3)=dTniprev(ix1,ix2,ix3)+slope*(t+dt/2d0-tprev) 
+      dTninow(ix1,ix2,ix3)=dTniprev(ix1,ix2,ix3)+slope*(t+dt/2d0-tprev)
     end do
   end do
 end do
@@ -930,7 +930,7 @@ end if
 !NOW UPDATE THE PROVIDED NEUTRAL ARRAYS
 nn(:,:,:,1)=nnmsis(:,:,:,1)+dnOinow
 nn(:,:,:,2)=nnmsis(:,:,:,2)+dnN2inow
-nn(:,:,:,3)=nnmsis(:,:,:,3)+dnO2inow 
+nn(:,:,:,3)=nnmsis(:,:,:,3)+dnO2inow
 nn(:,:,:,1)=max(nn(:,:,:,1),1._wp)
 nn(:,:,:,2)=max(nn(:,:,:,2),1._wp)
 nn(:,:,:,3)=max(nn(:,:,:,3),1._wp)
@@ -999,4 +999,3 @@ end if
 end subroutine clear_dneu
 
 end module neutral
-

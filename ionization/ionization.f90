@@ -15,7 +15,7 @@ public :: ionrate_fang08, ionrate_glow98, eheating, photoionization
 interface
 module subroutine glow_run(W0,PhiWmWm2,date_doy,UTsec,xf107,xf107a,xlat,xlon,alt,nn,Tn,ns,Ts,&
   ionrate,eheating,iver)
-  
+
 real(wp), dimension(:), intent(in) :: W0,PhiWmWm2,alt,Tn
 real(wp), dimension(:,:), intent(in) :: nn,ns,Ts
 real(wp), dimension(:,:), intent(out) :: ionrate
@@ -118,7 +118,7 @@ pepiN2di=[78.674, 18.310, 6.948, 2.295, 1.647, 0.571, 0.146, 0.037, 0.008, &
 pepiO2i=[134.69, 32.212, 13.309, 39.615, 2.834, 1.092, 0.416, 0.189, 0.090, 0.023, &
     0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 pepiO2di=[76.136, 17.944, 6.981, 20.338, 1.437, 0.521, 0.163, 0.052, 0.014, 0.001, &
-    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]   
+    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 
 
 !IRRADIANCE ACCORDING TO [RICHARDS, 1994]
@@ -141,19 +141,19 @@ if (myid==0) then     !root
 
   do iid=1,lid-1
     call mpi_send(Tninf,1,mpi_realprec,iid,tagTninf,MPI_COMM_WORLD,ierr)
-  end do  
+  end do
 
   print *, 'Exospheric temperature used for photoionization:  ',Tninf
 else                  !workders
   call mpi_send(Tninf,1,mpi_realprec,0,tagTninf,MPI_COMM_WORLD,ierr)                        !send what I think Tninf should be
-  call mpi_recv(Tninf,1,mpi_realprec,0,tagTninf,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)      !receive roots decision 
+  call mpi_recv(Tninf,1,mpi_realprec,0,tagTninf,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)      !receive roots decision
 end if
 
 
 !O COLUMN DENSITY
 H=kB*Tninf/mn(1)/gavg      !scalar scale height
 bigX=(x%alt+Re)/H          !a reduced altitude
-y=sqrt(bigX/2d0)*abs(cos(chi)) 
+y=sqrt(bigX/2d0)*abs(cos(chi))
 Chfn=0d0
 where (chi<pi/2d0)    !where does work with array corresponding elements provided they are conformable (e.g. bigX and y in this case)
 !      Chfn=sqrt(pi/2d0*bigX)*exp(y**2)*(1d0-erf(y))    !goodness this creates YUGE errors compared to erfc; left here as a lesson learned
@@ -358,7 +358,7 @@ pure function eheating(nn,Tn,ionrate,ns)
 
 !------------------------------------------------------------
 !-------COMPUTE SWARTZ AND NISBET, (1973) ELECTRON HEATING RATES.
-!-------ION ARRAYS (EXCEPT FOR RATES) ARE EXPECTED TO INCLUDE 
+!-------ION ARRAYS (EXCEPT FOR RATES) ARE EXPECTED TO INCLUDE
 !-------GHOST CELLS.
 !------------------------------------------------------------
 
@@ -415,12 +415,12 @@ lx3=size(nn,3)
 
 !zero flux should really be check per field line
 if ( maxval(PhiWmWm2) > 0.0_wp) then   !only compute rates if nonzero flux given
-  date_doy = mod(ymd(1),100)*1000+doy_calc(ymd)
+  date_doy = mod(ymd(1),100)*1000+doy_calc(ymd(1), ymd(2), ymd(3))
 
   do ix3=1,lx3
     do ix2=1,lx2
       !W0eV=W0(ix2,ix3) !Eo in eV at upper x,y locations (z,x,y) normally
-     
+
       if ( maxval(PhiWmWm2(ix2,ix3,:)) <= 0.0_wp) then
         ionrate_glow98(:,ix2,ix3,:)=0.0_wp
         eheating(:,ix2,ix3)=0.0_wp

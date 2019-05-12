@@ -26,39 +26,39 @@ days = monthdays(month)
 end function daysmonth
 
 
-pure integer function doy_calc(ymd) result(doy)
+elemental integer function doy_calc(year, month, day) result(doy)
 
-integer, intent(in) :: ymd(3)
+integer, intent(in) :: year, month, day
 integer :: i
 
-if ((ymd(3) < 1) .or. (ymd(3) > daysmonth(ymd(1), ymd(2)))) error stop 'impossible day'
+if ((day < 1) .or. (day > daysmonth(year, month))) error stop 'impossible day'
 
 doy = 0
-do i = 1,ymd(2)-1
-  doy = doy + daysmonth(ymd(1), i)
+do i = 1, month-1
+  doy = doy + daysmonth(year, i)
 enddo
 
-doy = doy + ymd(3)
+doy = doy + day
 
 end function doy_calc
 
 
-pure function sza(ymd,UTsec,glat,glon)
+elemental function sza(year, month, day, UTsec,glat,glon)
 !! computes sza in radians
 !! CALCULATE SOLAR ZENITH ANGLE OVER A GIVEN GET OF LAT/LON
 
-integer, dimension(3), intent(in) :: ymd
+integer, intent(in) :: year, month, day
 real(wp), intent(in) :: UTsec
-real(wp), dimension(:,:,:), intent(in) :: glat,glon
-real(wp), dimension(size(glat,1),size(glat,2),size(glat,3)) :: sza
+real(wp), intent(in) :: glat,glon
+real(wp) :: sza
 
 real(wp), parameter :: tau = 2._wp*pi
 
 real(wp) :: doy,soldecrad
-real(wp), dimension(size(glat,1),size(glat,2),size(glat,3)) :: lonrad,LThrs,latrad,hrang
+real(wp) :: lonrad,LThrs,latrad,hrang
 
 !> SOLAR DECLINATION ANGLE
-doy=doy_calc(ymd)
+doy=doy_calc(year, month, day)
 soldecrad=-23.44_wp*cos(tau/365._wp*(doy+10)) * pi/180
 
 !> HOUR ANGLE

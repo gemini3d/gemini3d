@@ -20,7 +20,16 @@ endif
 
 
 fn = utsec2filename([2015,4,13],  345.678911_dp)
+
 if (fn /= '20150413_00345.678911.dat') then
+  write(stderr,*) 'wrong output: '//fn
+  error stop 'mismatch leading zeros'
+endif
+
+
+fn = utsec2filename([2013,2,20],  60._dp)
+
+if (fn /= '20130220_00060.000000.dat') then
   write(stderr,*) 'wrong output: '//fn
   error stop 'mismatch leading zeros'
 endif

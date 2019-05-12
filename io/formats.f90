@@ -78,7 +78,7 @@ end function utsec2filename
     tmpchar=filename
     do while(idigits<ldigits)
       write(tmpchar2,*) '0',trim(tmpchar)
-      tmpchar=adjustl(tmpchar2)      
+      tmpchar=adjustl(tmpchar2)
       idigits=idigits+1
     end do
     filename=tmpchar
