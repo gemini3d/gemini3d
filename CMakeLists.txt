@@ -42,7 +42,7 @@ add_subdirectory(numerical)
 
 add_subdirectory(io)
 add_library(io io/io.F90)
-target_link_libraries(io PRIVATE const mpimod grid calculus fsutils)
+target_link_libraries(io PRIVATE const mpimod grid calculus fsutils logging)
 target_compile_definitions(io PRIVATE TRACE=${TRACE})
 target_compile_options(io PRIVATE ${FFLAGS})
 

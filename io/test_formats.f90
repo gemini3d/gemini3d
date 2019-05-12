@@ -34,21 +34,25 @@ fn = utsec2filename([2013,2,20],  60._dp)
 
 if (fn /= '20130220_00060.000000.dat') then
   write(stderr,*) 'wrong output: '//fn
-  error stop 'mismatch leading zeros'
+  error stop 'mismatch UTsec=60'
 endif
 
 !! Increment time tests
 ymd = [2013,2,20]
-UTsec = 0._dp
+UTsec = 18000._dp
 call dateinc(1e-6_dp, ymd, UTsec)
+fn = utsec2filename(ymd, UTsec)
+if (fn /= '20130220_18000.000001.dat') then
+  write(stderr,*) 'wrong output: '//fn
+  error stop 'mismatch output filename'
+endif
 
 do i = 1,60
   call dateinc(1._dp, ymd, UTsec)
+  ! print *, utsec2filename(ymd, UTsec)
 enddo
-
 fn = utsec2filename(ymd, UTsec)
-
-if (fn /= '20130220_00060.000000.dat') then
+if (fn /= '20130220_18060.000001.dat') then
   write(stderr,*) 'wrong output: '//fn
   error stop 'mismatch leading zeros'
 endif
