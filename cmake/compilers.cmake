@@ -1,6 +1,8 @@
 cmake_policy(SET CMP0074 NEW)
 cmake_policy(SET CMP0075 NEW)
-cmake_policy(SET CMP0076 NEW)
+if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.13)
+  cmake_policy(SET CMP0076 NEW)
+endif()
 
 if(CMAKE_Fortran_COMPILER_ID STREQUAL Intel)
 
