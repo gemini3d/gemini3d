@@ -6,19 +6,19 @@ implicit none
 
 contains
 
-pure function date_filename(outdir,ymd,UTsec)
+pure function date_filename(outdir,ymd,UTsec)  result(filename)
 !! GENERATE A FILENAME STRING OUT OF A GIVEN DATE/TIME
 
 character(*), intent(in) :: outdir
 integer, intent(in) :: ymd(3)
 class(*), intent(in) :: UTsec
-character(:), allocatable :: new_date_filename
+character(:), allocatable :: filename
 
 
 !> assemble
-new_date_filename = outdir // '/' // utsec2filename(ymd, UTsec)
+filename = outdir // '/' // utsec2filename(ymd, UTsec)
 
-end function new_date_filename
+end function date_filename
 
 
 pure character(25) function utsec2filename(ymd, utsec) result(fn)
