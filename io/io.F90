@@ -10,6 +10,7 @@ use calculus
 use mpimod
 use grid, only : gridflag,flagswap,lx1,lx2,lx3,lx2all, lx3all
 use formats, only: date_filename
+! use logging, only: logger
 
 implicit none
 
@@ -703,6 +704,8 @@ Teall=Tsall(1:lx1,1:lx2all,1:lx3all,lsp)
 !FIGURE OUT THE FILENAME
 filenamefull=date_filename(outdir,ymd,UTsec)
 print *, 'Output file name:  ',filenamefull
+! call logger(filenamefull,'filename.log')
+! call logger(UTsec, 'UTsec.log')
 
 
 !SOME DEBUG OUTPUT ON FILE SIZE
@@ -877,6 +880,7 @@ call gather_recv(ivertmp,tagAur,iverall)
 
 !FORM THE INPUT FILE NAME
 outdir_composite=outdir//'/aurmaps/'
+
 filenamefull=date_filename(outdir_composite,ymd,UTsec)
 
 print *, '  Output file name (auroral maps):  ',filenamefull

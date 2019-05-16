@@ -40,8 +40,9 @@ endif(USEGLOW)
 
 add_subdirectory(numerical)
 
-add_library(io io/io.F90 io/mkdir.F90 io/expanduser.f90 io/formats.f90)
-target_link_libraries(io PRIVATE const mpimod grid calculus)
+add_subdirectory(io)
+add_library(io io/io.F90)
+target_link_libraries(io PRIVATE const mpimod grid calculus fsutils logging)
 target_compile_definitions(io PRIVATE TRACE=${TRACE})
 target_compile_options(io PRIVATE ${FFLAGS})
 
@@ -49,15 +50,11 @@ add_library(temporal temporal/temporal.f90)
 target_link_libraries(temporal PRIVATE const mpimod grid MPI::MPI_Fortran)
 target_compile_options(temporal PRIVATE ${FFLAGS})
 
-add_library(timeutils temporal/timeutils.f90)
-target_link_libraries(timeutils PRIVATE const)
-target_compile_options(timeutils PRIVATE ${FFLAGS})
+add_subdirectory(temporal)
 
 add_library(neutral neutral/neutral.f90)
 target_link_libraries(neutral PUBLIC interp io msis timeutils MPI::MPI_Fortran)
 target_compile_options(neutral PRIVATE ${FFLAGS})
-
-
 
 add_library(collision collisions/collisions.f90)
 target_link_libraries(collision PRIVATE const)
@@ -119,13 +116,3 @@ else()
   include(${PROJECT_SOURCE_DIR}/cmake/test2d.cmake)
   include(${PROJECT_SOURCE_DIR}/cmake/test3d.cmake)
 endif()
-
-add_executable(test_formats tests/test_formats.f90)
-target_compile_options(test_formats PRIVATE ${FFLAGS})
-target_link_libraries(test_formats PRIVATE io)
-add_test(NAME DateFormats COMMAND test_formats)
-
-add_executable(test_rollover tests/test_dayrollover.f90)
-target_compile_options(test_rollover PRIVATE ${FFLAGS})
-target_link_libraries(test_rollover PRIVATE timeutils const)
-add_test(NAME DateRollover COMMAND test_rollover)

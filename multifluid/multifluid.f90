@@ -27,9 +27,9 @@ subroutine fluid_adv(ns,vs1,Ts,vs2,vs3,J1,E1,Teinf,t,dt,x,nn,vn1,vn2,vn3,Tn,iver
                    flagprecfile,dtprec,precdir,flagglow,dtglow)    !J1 needed for heat conduction; E1 for momentum equation
 
 !------------------------------------------------------------
-!-------THIS SUBROUTINE ADVANCES ALL OF THE FLUID VARIABLES 
+!-------THIS SUBROUTINE ADVANCES ALL OF THE FLUID VARIABLES
 !------ BY TIME STEP DT.
-!------------------------------------------------------------ 
+!------------------------------------------------------------
 
 real(wp), dimension(-1:,-1:,-1:,:), intent(inout) ::  ns,vs1,Ts
 real(wp), dimension(-1:,-1:,-1:,:), intent(inout) ::  vs2,vs3
@@ -74,7 +74,7 @@ integer :: iprec
 real(wp), dimension(1:size(vs1,1)-3,1:size(vs1,2)-4,1:size(vs1,3)-4) :: v1iupdate    !temp interface velocities for art. viscosity
 real(wp), dimension(1:size(vs1,1)-4,1:size(vs1,2)-4,1:size(vs1,3)-4) :: dv1iupdate    !interface diffs. for art. visc.
 real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,size(ns,4)) :: Q
-real(wp), parameter :: xicon=3d0    !decent value for closed field-line grids extending to high altitudes.  
+real(wp), parameter :: xicon=3d0    !decent value for closed field-line grids extending to high altitudes.
 
 
 !MAKING SURE THESE ARRAYS ARE ALWAYS IN SCOPE
@@ -150,7 +150,7 @@ end do
 Q(:,:,:,lsp)=0._wp
 
 
-!NONSTIFF/NONBALANCE INTERNAL ENERGY SOURCES (RK2 INTEGRATION) 
+!NONSTIFF/NONBALANCE INTERNAL ENERGY SOURCES (RK2 INTEGRATION)
 call cpu_time(tstart)
 do isp=1,lsp
   call RK2_prep_mpi(isp,x%flagper,vs1,vs2,vs3)    !role-agnostic mpi, all-to-neighbor
@@ -186,7 +186,7 @@ do isp=1,lsp
 !      param=backEuler3D(param,A,B,C,D,E,dt,dx1,dx1i)    !1st order method, likely deprecated but needs to be kept here for debug purposes, perhaps?
   param=TRBDF23D(param,A,B,C,D,E,dt,x)
   Ts(:,:,:,isp)=param
-  Ts(:,:,:,isp)=max(Ts(:,:,:,isp),100._wp) 
+  Ts(:,:,:,isp)=max(Ts(:,:,:,isp),100._wp)
 end do
 call cpu_time(tfin)
 if (myid==0) then
@@ -239,7 +239,7 @@ else    !do not compute impact ionization on a closed mesh (presumably there is 
 end if
 
 if (myid==0) then
-  print *, 'Min/max root electron impact ionization production rates for time:  ',t,' :  ', & 
+  print *, 'Min/max root electron impact ionization production rates for time:  ',t,' :  ', &
     minval(Prprecip), maxval(Prprecip)
 end if
 
@@ -249,7 +249,7 @@ if ((flagglow/=0).and.(myid==0)) then
 end if
 
 !now add in photoionization sources
-chi=sza(ymd,UTsec,x%glat,x%glon)
+chi=sza(ymd(1), ymd(2), ymd(3), UTsec,x%glat,x%glon)
 if (myid==0) then
   print *, 'Computing photoionization for time:  ',t,' using sza range of (root only):  ', &
               minval(chi)*180._wp/pi,maxval(chi)*180._wp/pi
@@ -347,7 +347,7 @@ subroutine clean_param(x,paramflag,param)
 !------------------------------------------------------------
 !-------THIS SUBROUTINE ZEROS OUT ALL NULL CELLS AND HANDLES
 !-------POSSIBLE NULL ARTIFACTS AT BOUNDARIES
-!------------------------------------------------------------ 
+!------------------------------------------------------------
 
 type(curvmesh), intent(in) :: x
 integer, intent(in) :: paramflag
@@ -376,7 +376,7 @@ select case (paramflag)
           ix1=x%inull(iinull,1)
           ix2=x%inull(iinull,2)
           ix3=x%inull(iinull,3)
-      
+
           param(ix1,ix2,ix3,isp)=mindensnull
         end do
       end if
@@ -409,13 +409,13 @@ select case (paramflag)
           do while(x%nullpts(ix1beg,ix2,ix3)<0.5d0 .and. ix1beg<lx1)     !find the first non-null index for this field line, need to be careful if no null points exist...
             ix1beg=ix1beg+1
           end do
-      
+
           ix1end=ix1beg
           do while(x%nullpts(ix1end,ix2,ix3)>0.5d0 .and. ix1end<lx1)     !find the first non-null index for this field line
             ix1end=ix1end+1
           end do
 
-          if (ix1beg /= lx1) then    !only do this if we actually have null grid points 
+          if (ix1beg /= lx1) then    !only do this if we actually have null grid points
             param(ix1beg,ix2,ix3,isp)=param(ix1beg+1,ix2,ix3,isp)
             param(ix1end,ix2,ix3,isp)=param(ix1end-1,ix2,ix3,isp)
           end if
@@ -439,10 +439,10 @@ select case (paramflag)
         ix1=x%inull(iinull,1)
         ix2=x%inull(iinull,2)
         ix3=x%inull(iinull,3)
-  
+
         param(ix1,ix2,ix3,isp)=100._wp
       end do
-    end do 
+    end do
 
 
     !SET TEMPS TO SOME NOMINAL VALUE

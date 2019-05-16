@@ -1,10 +1,11 @@
 module timeutils
-
-use phys_consts, only: wp, pi
-
+use phys_consts, only: wp
+use, intrinsic :: iso_fortran_env, only: sp=>real32, dp=>real64
 implicit none
 private
 public :: doy_calc, sza, dateinc
+
+real(wp), parameter :: pi = 4._wp*atan(1._wp)
 
 contains
 
@@ -25,50 +26,47 @@ days = monthdays(month)
 end function daysmonth
 
 
-pure integer function doy_calc(ymd) result(doy)
+elemental integer function doy_calc(year, month, day) result(doy)
 
-integer, intent(in) :: ymd(3)
+integer, intent(in) :: year, month, day
 integer :: i
 
-if ((ymd(3) < 1) .or. (ymd(3) > daysmonth(ymd(1), ymd(2)))) error stop 'impossible day'
+if ((day < 1) .or. (day > daysmonth(year, month))) error stop 'impossible day'
 
 doy = 0
-do i = 1,ymd(2)-1
-  doy = doy + daysmonth(ymd(1), i)
+do i = 1, month-1
+  doy = doy + daysmonth(year, i)
 enddo
 
-doy = doy + ymd(3)
+doy = doy + day
 
 end function doy_calc
 
 
-pure function sza(ymd,UTsec,glat,glon)
+elemental function sza(year, month, day, UTsec,glat,glon)
 !! computes sza in radians
 !! CALCULATE SOLAR ZENITH ANGLE OVER A GIVEN GET OF LAT/LON
 
-integer, dimension(3), intent(in) :: ymd
+integer, intent(in) :: year, month, day
 real(wp), intent(in) :: UTsec
-real(wp), dimension(:,:,:), intent(in) :: glat,glon
+real(wp), intent(in) :: glat,glon
+real(wp) :: sza
 
-real(wp), dimension(size(glat,1),size(glat,2),size(glat,3)) :: sza
+real(wp), parameter :: tau = 2._wp*pi
 
 real(wp) :: doy,soldecrad
-real(wp), dimension(size(glat,1),size(glat,2),size(glat,3)) :: lonrad,LThrs,latrad,hrang
+real(wp) :: lonrad,LThrs,latrad,hrang
 
 !> SOLAR DECLINATION ANGLE
-doy=doy_calc(ymd)
-soldecrad=-23.44_wp*cos(2._wp*pi/365._wp*(doy+10._wp))*pi/180._wp;
+doy=doy_calc(year, month, day)
+soldecrad=-23.44_wp*cos(tau/365._wp*(doy+10)) * pi/180
 
 !> HOUR ANGLE
-lonrad=glon*pi/180._wp
-where (lonrad>pi)
-  lonrad=lonrad-2._wp*pi
-end where
-where (lonrad<-2._wp*pi)
-  lonrad=lonrad+2._wp*pi
-end where
+lonrad=glon*pi/180
+lonrad = modulo(lonrad, pi)
+
 LThrs=UTsec/3600._wp+lonrad/(pi/12._wp)
-hrang=(12._wp-LThrs)*(pi/12._wp)
+hrang=(12-LThrs)*(pi/12._wp)
 
 !> SOLAR ZENITH ANGLE
 latrad=glat*pi/180._wp
@@ -92,24 +90,20 @@ integer :: monthinc          !< we incremented the month
 year=ymd(1); month=ymd(2); day=ymd(3);
 
 if ((day < 1) .or. (day > 31)) error stop 'impossible day'
-if (utsec < 0.) error stop 'negative UTsec, simulation should go forward in time only!'
-if (dtsec < 0.) error stop 'negative dtsec, simulation should go forward in time only!'
-if (dtsec > 86400.) error stop 'excessively large dtsec, simulation step should be small enough!'
+if (utsec < 0) error stop 'negative UTsec, simulation should go forward in time only!'
+if (dtsec < 0) error stop 'negative dtsec, simulation should go forward in time only!'
+if (dtsec > 86400) error stop 'excessively large dtsec, simulation step should be small enough!'
 
 UTsec = UTsec + dtsec
-if (UTsec >= 86400._wp) then
+if (UTsec >= 86400) then
   UTsec = modulo(UTsec, 86400._wp)
   day = day+1          !roll the day over
 
 !> month rollover
   if (day > daysmonth(year, month)) then
     day=1
-    monthinc=1
-  else
-    monthinc=0
+    month = month + 1
   end if
-
-  month = month + monthinc
 
   if (month>12) then    !< roll the year over
     month=1
