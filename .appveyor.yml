@@ -3,13 +3,15 @@ image:
 
 clone_depth: 25
 
-stack: python 3
-
 build: off
 
 init:
 - sh: sudo apt install -yq --no-install-recommends libmumps-dev liblapack-dev libscalapack-mpi-dev libopenmpi-dev openmpi-bin > /dev/null
 
-install: python build.py --no-test
+install: 
+- cmake -B build -S .
+- cmake --build build --parallel
 
-test_script: python build.py
+test_script: 
+- cd build
+- ctest -R 2D --parallel
