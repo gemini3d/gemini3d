@@ -10,6 +10,6 @@ build: off
 init:
 - sh: sudo apt install -yq --no-install-recommends libmumps-dev liblapack-dev libscalapack-mpi-dev libopenmpi-dev openmpi-bin > /dev/null
 
-install: python build.py -notest
+install: python build.py --no-test
 
 test_script: python build.py
