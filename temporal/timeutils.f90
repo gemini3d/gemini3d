@@ -63,7 +63,7 @@ soldecrad=-23.44_wp*cos(tau/365._wp*(doy+10)) * pi/180
 
 !> HOUR ANGLE
 lonrad=glon*pi/180
-lonrad = modulo(lonrad, pi)
+lonrad = modulo(lonrad, 2*pi)
 
 LThrs=UTsec/3600._wp+lonrad/(pi/12._wp)
 hrang=(12-LThrs)*(pi/12._wp)
