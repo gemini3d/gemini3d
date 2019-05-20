@@ -67,8 +67,7 @@ target_compile_options(sources PRIVATE ${FFLAGS})
 # --- MUMPS stuff
 add_library(potential_mumps numerical/potential/potential_mumps.F90)
 target_link_libraries(potential_mumps PRIVATE const grid calculus
-  ${MUMPS_LIBRARIES}
-  MPI::MPI_Fortran)
+  ${MUMPS_LIBRARIES} MPI::MPI_Fortran)
 target_compile_definitions(potential_mumps PRIVATE REALBITS=${realbits})
 target_include_directories(potential_mumps PRIVATE ${MUMPS_INCLUDE_DIRS})
 target_compile_options(potential_mumps PRIVATE ${FFLAGS})
@@ -78,10 +77,8 @@ target_link_libraries(potential_comm_mumps PRIVATE potential_mumps potentialBCs 
 target_compile_options(potential_comm_mumps PRIVATE ${FFLAGS})
 
 add_library(potentialBCs numerical/potential/boundary_conditions/potentialBCs_mumps.f90)
-target_link_libraries(potentialBCs PRIVATE temporal grid calculus interp io const
-    ${MUMPS_LIBRARIES}
-#    ${BLAS_LIBRARIES}
-    MPI::MPI_Fortran)
+target_link_libraries(potentialBCs PRIVATE temporal timeutils grid calculus interp io const
+    ${MUMPS_LIBRARIES} MPI::MPI_Fortran)
 target_include_directories(potentialBCs PRIVATE ${MUMPS_INCLUDE_DIRS})
 target_compile_options(potentialBCs PRIVATE ${FFLAGS})
 

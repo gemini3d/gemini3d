@@ -18,7 +18,7 @@ public ::  rk2_prep_mpi, srcsenergy, srcsmomentum, srcscontinuity
 contains
 
 
-subroutine srcsContinuity(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,Pr,Lo)
+pure subroutine srcsContinuity(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts, Pr, Lo)
 
 !------------------------------------------------------------
 !-------POPULATE SOURCE/LOSS ARRAYS FOR CONTINUITY EQUATION.  ION
@@ -40,7 +40,7 @@ lx3=size(ns,3)-4
 
 Pr=0._wp
 Lo=0._wp
-Te=Ts(1:lx1,1:lx2,1:lx3,lsp)    !used at all???  needs to be checked and removed, if not
+Te=Ts(1:lx1,1:lx2,1:lx3,lsp)    !< Used in calculation of Lo
 dv2=(vs1(1:lx1,1:lx2,1:lx3,1)-vn1)**2+(vs2(1:lx1,1:lx2,1:lx3,1)-vn2)**2+ &
      (vs3(1:lx1,1:lx2,1:lx3,1)-vn3)**2    !gets used several times in this subprogram
 
@@ -221,13 +221,13 @@ Pr(:,:,:,2)=Pr(:,:,:,2)+betanow*ns(1:lx1,1:lx2,1:lx3,3)
 Lo(:,:,:,3)=Lo(:,:,:,3)+betanow
 
 
-!N+ + O2 --> NO+ + O 
+!N+ + O2 --> NO+ + O
 betanow=2.6d-10*nn(:,:,:,3)*1d-6
 Pr(:,:,:,2)=Pr(:,:,:,2)+betanow*ns(1:lx1,1:lx2,1:lx3,5)
 Lo(:,:,:,5)=Lo(:,:,:,5)+betanow
 
 
-!NO+ + e --> N + O 
+!NO+ + e --> N + O
 betanow=4.2d-7*(300._wp/Ts(1:lx1,1:lx2,1:lx3,lsp))**0.85*ns(1:lx1,1:lx2,1:lx3,lsp)*1d-6
 Lo(:,:,:,2)=Lo(:,:,:,2)+betanow
 
@@ -414,7 +414,7 @@ do isp=1,lsp
 
   !GEOMETRIC FACTORS ARISING FROM ADVECTINO OF 1-COMPONENT OF MOMENTUM DENSITY
   geom=(vs2(1:lx1,1:lx2,1:lx3,isp)**2*x%h3(1:lx1,1:lx2,1:lx3)*dh2dx1+ &
-        vs3(1:lx1,1:lx2,1:lx3,isp)**2*x%h2(1:lx1,1:lx2,1:lx3)*dh3dx1)*ns(1:lx1,1:lx2,1:lx3,isp)*ms(isp)/h1h2h3 
+        vs3(1:lx1,1:lx2,1:lx3,isp)**2*x%h2(1:lx1,1:lx2,1:lx3)*dh3dx1)*ns(1:lx1,1:lx2,1:lx3,isp)*ms(isp)/h1h2h3
 
 
   !ACCUMULATED ALL FORCES
@@ -467,7 +467,7 @@ do isp=1,lsp
     fact=2._wp*nu/(ms(isp)+mn(isp2))
     Pr(:,:,:,isp)=Pr(:,:,:,isp)+ns(1:lx1,1:lx2,1:lx3,isp)*ms(isp)*kB/(gammas(isp)-1._wp)*fact*Tn
     Lo(:,:,:,isp)=Lo(:,:,:,isp)+ms(isp)*fact
-   
+
 
     !FRICTION (neglect vn for now)
     fact=fact*mn(isp2)/3d0
