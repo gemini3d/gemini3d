@@ -443,6 +443,32 @@ function ID2grid(ID)
 end function ID2grid
 
 
+subroutine mpi_manualgrid(lx2all,lx3all,lid2in,lid3in)
+
+integer, intent(in) :: lx2all,lx3all
+integer, intent(in) :: lid2in,lid3in
+
+integer, dimension(2) :: inds
+
+
+if (lx2all/lid2in*lid2in/=lx2all) error stop 'user input grid split in x2 will not work'
+
+if (lx3all/lid3in*lid3in/=lx3all) error stop 'user input grid split in x3 will not work'
+
+lid2=lid2in
+lid3=lid3in
+
+!THIS PROCESS' LOCATION ON THE GRID
+inds=ID2grid(myid)
+myid2=inds(1)
+myid3=inds(2)
+
+print *, 'Input process grid is x2 by x3 size (in number of processes):  ',lid2,' by ',lid3
+print *, 'Process:  ',myid,' is at location:  ',myid2,myid3,' on the process grid'
+
+end subroutine mpi_manualgrid
+
+
 subroutine mpigrid(lx2all,lx3all)
 
 !! THIS SUBROUTINE DEFINES A PROCESS GRID, IF REQUIRED 
@@ -450,6 +476,8 @@ subroutine mpigrid(lx2all,lx3all)
 integer, intent(in) :: lx2all,lx3all
 
 integer, dimension(2) :: inds
+logical :: x2div,x3div
+
 
 if (lx3all==1 .or. lx2all==1) then    !this is a 2D simulation so the mpi'd dimenions will get swapped to x3
   lid3=lid         !just divide in x3

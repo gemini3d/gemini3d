@@ -89,6 +89,8 @@ real(wp) :: tglowout                    !time for next GLOW output
 !FOR HANDLING OUTPUT
 integer :: argc
 character(256) :: argv
+integer :: lid2in,lid3in
+
 
 !TO CONTROL THROTTLING OF TIME STEP
 real(wp), parameter :: dtscale=2d0
@@ -115,7 +117,15 @@ call read_configfile(infile, ymd,UTsec0,tdur,dtout,activ,tcfl,Teinf,potsolve,fla
 
 !!CHECK THE GRID SIZE AND ESTABLISH A PROCESS GRID
 call grid_size(indatsize)
-call mpigrid(lx2all,lx3all)    !following grid_size these are in scope
+if (argc>2) then   !user specified process grid
+  call get_command_argument(3,argv)
+  read(argv,*) lid2in
+  call get_command_argument(4,argv)
+  read(argv,*) lid3in
+  call mpi_manualgrid(lx2all,lx3all,lid2in,lid3in)
+else     !try to decide the process grid ourself
+  call mpigrid(lx2all,lx3all)    !following grid_size these are in scope
+end if
 
 
 !LOAD UP THE GRID STRUCTURE/MODULE VARS. FOR THIS SIMULATION

@@ -58,7 +58,7 @@ h = plotinit(xg, visible);
 if ~isempty(saveplots)
 	
   if(isempty(gcp('nocreate')))
-    parpool(1);
+    parpool(2);
   end
       
   parfor i = 1:Nt
