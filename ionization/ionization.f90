@@ -2,7 +2,8 @@ module ionization
 
 use phys_consts, only: elchrg, lsp, kb, mn, re, pi, wp, lwave
 use calculus, only: chapman_a
-use neutral, only: Tnmsis       !we need the unperturbed msis temperatures to apply the simply chapman theory used by this module
+use neutral, only: Tnmsis
+!! we need the unperturbed msis temperatures to apply the simple chapman theory used by this module
 use grid, only: curvmesh,lx1,lx2,lx3,g1,g2,g3
 use timeutils, only: doy_calc
 use mpi, only: MPI_COMM_WORLD,MPI_STATUS_IGNORE
@@ -415,8 +416,9 @@ lx3=size(nn,3)
 
 !zero flux should really be check per field line
 if ( maxval(PhiWmWm2) > 0.0_wp) then   !only compute rates if nonzero flux given
-  date_doy = mod(ymd(1),100)*1000+doy_calc(ymd(1), ymd(2), ymd(3))
 
+  date_doy = modulo(ymd(1), 100)*1000 + doy_calc(ymd(1), ymd(2), ymd(3))
+  !! date in format needed by GLOW (yyddd)
   do ix3=1,lx3
     do ix2=1,lx2
       !W0eV=W0(ix2,ix3) !Eo in eV at upper x,y locations (z,x,y) normally

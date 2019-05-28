@@ -660,7 +660,8 @@ integer(8) :: recordlength   !can be 8 byte with compiler flag -frecord-marker=8
 real(wp), dimension(:,:,:), allocatable :: permarray,tmparray    !permuted variables to be allocated for 2D output
 
 
-!SYSTEM SIZES - should these be pull from the grid module???
+!! SYSTEM SIZES
+! FIXME: should these be pull from the grid module???
 lx1=size(ns,1)-4
 lx2=size(ns,2)-4
 lx3=size(ns,3)-4
