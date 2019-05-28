@@ -7,7 +7,7 @@ use phys_consts, only: wp, lnchem, pi, re
 use timeutils, only : doy_calc,dateinc
 use grid, only: curvmesh, lx1, lx2, lx3, clear_unitvecs
 use interpolation, only : interp2
-use mpimod, only: myid, lid, taglrho, ierr, taglz, mpi_realprec, tagdno, tagdnn2, tagdno2, tagdtn, tagdvnrho, tagdvnz, tagly
+use mpimod, only: myid, lid, taglrho, taglz, mpi_realprec, tagdno, tagdnn2, tagdno2, tagdtn, tagdvnrho, tagdvnz, tagly
 use io, only : date_filename
 
 implicit none
@@ -202,7 +202,7 @@ type(curvmesh), intent(inout) :: x         !grid structure  (inout becuase we wa
 real(wp), dimension(:,:,:,:), intent(out) :: nn   !neutral params interpolated to plasma grid at requested time
 real(wp), dimension(:,:,:), intent(out) :: Tn,vn1,vn2,vn3
 
-integer, parameter :: inunit=46          !file handle for various input files
+integer :: inunit         !file handle for various input files
 character(512) :: filename               !space to store filenames, note size must be 512 to be consistent with our date_ffilename functinos
 real(wp) :: theta1,phi1,theta2,phi2,gammarads,theta3,phi3,gamma1,gamma2,phip
 real(wp) :: xp,yp
@@ -220,7 +220,7 @@ real(wp), dimension(size(nn,1),size(nn,2),size(nn,3)) :: dnOinow,dnN2inow,dnO2in
 
 integer(4) :: flaginit    !a flag that is set during the first call to read in data
 
-integer :: utrace
+integer :: utrace, ierr
 
 
 !CHECK WHETHER WE NEED TO LOAD A NEW FILE
@@ -235,7 +235,7 @@ if (t+dt/2d0>=tnext .or. t<=0d0) then   !negative time means that we need to loa
     if (myid==0) then    !root
       write(filename,*) trim(adjustl(neudir)),'simsize.dat'
       print *, 'Inputting neutral size from file:  ',trim(adjustl(filename))
-      open(inunit,file=trim(adjustl(filename)),status='old',form='unformatted',access='stream')
+      open(newunit=inunit,file=trim(adjustl(filename)),status='old',form='unformatted',access='stream')
       read(inunit) lrhon,lzn
       close(inunit)
       print *, 'Neutral data has lrho,lz size:  ',lrhon,lzn,' with spacing drho,dz',drhon,dzn
@@ -396,7 +396,7 @@ if (t+dt/2d0>=tnext .or. t<=0d0) then   !negative time means that we need to loa
     call dateinc(dtneu,ymdtmp,UTsectmp)    !get the date for "next" params
     filename=date_filename(neudir,ymdtmp,UTsectmp)     !form the standard data filename
     print *, 'Pulling neutral data from file:  ',trim(adjustl(filename))
-    open(inunit,file=trim(adjustl(filename)),status='old',form='unformatted',access='stream')
+    open(newunit=inunit,file=trim(adjustl(filename)),status='old',form='unformatted',access='stream')
     read(inunit) dnO,dnN2,dnO2,dvnrho,dvnz,dTn
     close(inunit)
 
@@ -588,7 +588,7 @@ type(curvmesh), intent(inout) :: x         !grid structure  (inout becuase we wa
 real(wp), dimension(:,:,:,:), intent(out) :: nn   !neutral params interpolated to plasma grid at requested time
 real(wp), dimension(:,:,:), intent(out) :: Tn,vn1,vn2,vn3
 
-integer, parameter :: inunit=46          !file handle for various input files
+integer :: inunit          !file handle for various input files
 character(512) :: filename               !space to store filenames, note size must be 512 to be consistent with our date_ffilename functinos
 real(wp) :: theta1,phi1,theta2,phi2,gammarads,theta3,phi3,gamma1,gamma2,phip
 real(wp) :: xp,yp
@@ -597,7 +597,7 @@ real(wp), dimension(3) :: erhop,ezp,eyp,tmpvec
 real(wp) :: tmpsca
 real(wp) :: meanyn
 
-integer :: ix1,ix2,ix3,iyn,izn,iid
+integer :: ix1,ix2,ix3,iyn,izn,iid, ierr
 real(wp), dimension(size(nn,1),size(nn,2),size(nn,3)) :: zimat,rhoimat,yimat
 integer, dimension(3) :: ymdtmp
 real(wp) :: UTsectmp
@@ -618,7 +618,7 @@ if (t+dt/2d0>=tnext) then
     if (myid==0) then    !root
       write(filename,*) trim(adjustl(neudir)),'simsize.dat'
       print *, 'Inputting neutral size from file:  ',trim(adjustl(filename))
-      open(inunit,file=trim(adjustl(filename)),status='old',form='unformatted',access='stream')
+      open(newunit=inunit,file=trim(adjustl(filename)),status='old',form='unformatted',access='stream')
       read(inunit) lyn,lzn
       close(inunit)
       print *, 'Neutral data has ly,lz size:  ',lyn,lzn,' with spacing dy,dz',dyn,dzn
@@ -631,6 +631,8 @@ if (t+dt/2d0>=tnext) then
       call mpi_recv(lyn,1,MPI_INTEGER,0,tagly,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
       call mpi_recv(lzn,1,MPI_INTEGER,0,taglz,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
     end if
+
+    if (ierr /= 0) error stop 'failed to create neutral grid'
     !Everyone need a copy of the grid
     allocate(yn(lyn),zn(lzn))    !these are module-scope variables
     allocate(rhon(1))    !not used in the axisymmetric code so just initialize to something
@@ -775,7 +777,7 @@ if (t+dt/2d0>=tnext) then
     call dateinc(dtneu,ymdtmp,UTsectmp)    !get the date for "next" params
     filename=date_filename(neudir,ymdtmp,UTsectmp)     !form the standard data filename
     print *, 'Pulling neutral data from file:  ',trim(adjustl(filename))
-    open(inunit,file=trim(adjustl(filename)),status='old',form='unformatted',access='stream')
+    open(newunit=inunit,file=trim(adjustl(filename)),status='old',form='unformatted',access='stream')
     read(inunit) dnO,dnN2,dnO2,dvnrho,dvnz,dTn    !vnrho here interpreted as vny (yes, I'm lazy)
     close(inunit)
 

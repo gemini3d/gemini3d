@@ -7,7 +7,7 @@ use neutral, only: Tnmsis
 use grid, only: curvmesh,lx1,lx2,lx3,g1,g2,g3
 use timeutils, only: doy_calc
 use mpi, only: MPI_COMM_WORLD,MPI_STATUS_IGNORE
-use mpimod, only: myid,ierr,lid,mpi_realprec,tagTninf
+use mpimod, only: myid,lid,mpi_realprec,tagTninf
 
 implicit none
 private
@@ -65,7 +65,7 @@ real(wp) :: gavg,H,Tninf
 real(wp), dimension(size(nn,1),size(nn,2),size(nn,3),ll) :: Iflux
 
 real(wp) :: Tninftmp
-integer :: iid
+integer :: iid, ierr
 
 real(wp), dimension(size(nn,1),size(nn,2),size(nn,3),lsp-1) :: photoionization    !don't need a separate rate for electrons
 
@@ -150,6 +150,7 @@ else                  !workders
   call mpi_recv(Tninf,1,mpi_realprec,0,tagTninf,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)      !receive roots decision
 end if
 
+if (ierr /= 0) error stop 'failed to MPI temperature for ionization'
 
 !O COLUMN DENSITY
 H=kB*Tninf/mn(1)/gavg      !scalar scale height

@@ -21,7 +21,10 @@ use potential_mumps, only : elliptic3D_curv, &
                             elliptic2D_nonint_curv, &
                             elliptic_workers
 
-use mpimod
+use mpimod, only: lid, lid2, lid3, myid, myid2, myid3, tage01, tage02, tage03, tagflagdirich, tagincapint, &
+  tagsrc, tagv2electro, tagv3electro, tagvmaxx1, tagvminx1, tagj1, tagj2, tagj3, tagphi, tagsig0, &
+  tagsigh, tagsighint, tagsigp, tagsigpint2, tagsigpint3, &
+  bcast_send, bcast_recv, gather_recv, gather_send, halo
 
 implicit none
 
@@ -54,13 +57,13 @@ subroutine electrodynamics_curv(it,t,dt,nn,vn2,vn3,Tn,sourcemlat,ns,Ts,vs1,B1,vs
 !------------------------------------------------------------
 !-------THIS IS A WRAPPER FUNCTION FOR THE ELECTRODYANMICS
 !-------PART OF THE MODEL.  BOTH THE ROOT AND WORKER PROCESSES
-!-------CALL THIS SAME SUBROUTINE, WHEN THEN BRANCHES INTO 
+!-------CALL THIS SAME SUBROUTINE, WHEN THEN BRANCHES INTO
 !-------DIFFERENT TASKS FOR EACH AFTER ALL COMPUTE CONDUCTIVITIES
 !-------AND INERTIAL CAPACITANCE.
 !-------
 !-------NOTE THAT THE ALLOCATION STATUS
 !-------OF THE ALL VARIABLES FOR THE WORKERS WILL BE UN-
-!-------ALLOCATED.  SO THIS CODE IS ONLY COMPLIANT WITH 
+!-------ALLOCATED.  SO THIS CODE IS ONLY COMPLIANT WITH
 !-------FORTRAN >= 2003 STANDARDS.
 !------------------------------------------------------------
 
@@ -91,7 +94,7 @@ real(wp), intent(in) :: UTsec
 real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: sig0,sigP,sigH
 real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,1:size(ns,4)) :: muP,muH,muPvn,muHvn
 real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: incap
-real(wp) :: tstart,tfin 
+real(wp) :: tstart,tfin
 
 integer :: lx1,lx2,lx3,isp
 integer :: ix1,ix2,ix3,iinull
@@ -202,7 +205,7 @@ integer, intent(in) :: it
 real(wp), intent(in) :: t,dt
 real(wp), dimension(:,:,:), intent(in) ::  sig0,sigP,sigH
 real(wp), dimension(:,:,:), intent(in) ::  incap
-real(wp), dimension(-1:,-1:,-1:,:), intent(in) ::  vs2,vs3    
+real(wp), dimension(-1:,-1:,-1:,:), intent(in) ::  vs2,vs3
 real(wp), dimension(:,:,:), intent(in) ::  vn2,vn3
 real(wp), intent(in) :: sourcemlat
 real(wp), dimension(-1:,-1:,-1:), intent(in) ::  B1
@@ -220,7 +223,7 @@ character(*), intent(in) :: E0dir
 integer, dimension(3), intent(in) :: ymd
 real(wp), intent(in) :: UTsec
 
-real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: v2,v3 
+real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: v2,v3
 
 real(wp), dimension(1:size(Phiall,1),1:size(Phiall,2),1:size(Phiall,3)) :: srctermall
 real(wp), dimension(1:size(Phiall,2),1:size(Phiall,3)), target :: Vminx1,Vmaxx1     !allow pointer aliases for these vars.
@@ -265,7 +268,7 @@ real(wp), dimension(1:size(Phiall,2)) :: Vminx3slice,Vmaxx3slice
 real(wp), dimension(1:size(E1,2),1:size(E1,3)) :: Vminx1slab,Vmaxx1slab
 real(wp), dimension(1:size(E1,2),1:size(E1,3)) :: v2slab,v3slab
 
-integer :: iid
+integer :: iid, ierr
 integer :: ix1,ix2,ix3,lx1,lx2,lx3,lx3all
 integer :: idleft,idright,iddown,idup
 
@@ -292,7 +295,7 @@ perflag=.true.
 call cpu_time(tstart)
 if (flagE0file==1) then
   call potentialBCs2D_fileinput(dt,dtE0,t,ymd,UTsec,E0dir,x,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3,Vmaxx3, &
-                      E01all,E02all,E03all,flagdirich) 
+                      E01all,E02all,E03all,flagdirich)
 else
   call potentialBCs2D(t,x,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3,Vmaxx3, &
                       E01all,E02all,E03all,flagdirich)     !user needs to manually swap x2 and x3 in this function.
@@ -306,12 +309,13 @@ print *, 'Root has computed BCs in time:  ',tfin-tstart
 do iid=1,lid-1    !communicate intent for solve to workers so they know whether or not to call mumps fn.
   call mpi_send(flagdirich,1,MPI_INTEGER,iid,tagflagdirich,MPI_COMM_WORLD,ierr)
 end do
+if (ierr/=0) error stop 'mpi_send failed to send solve intent'
 print *, 'Root has communicated type of solve to workers:  ',flagdirich
 !R--------
 
 
 !Need to broadcast background fields from root
-!Need to also broadcast x1 boundary conditions for source term calculations.  
+!Need to also broadcast x1 boundary conditions for source term calculations.
 call bcast_send(E01all,tagE01,E01)
 call bcast_send(E02all,tagE02,E02)
 call bcast_send(E03all,tagE03,E03)
@@ -346,7 +350,7 @@ J2halo(lx1+1,1:lx2,1:lx3)=J2halo(lx1,1:lx2,1:lx3)
 J3halo(0,1:lx2,1:lx3)=J3halo(1,1:lx2,1:lx3)
 J3halo(lx1+1,1:lx2,1:lx3)=J3halo(lx1,1:lx2,1:lx3)
 
-call halo(J1halo,1,tagJ1,x%flagper)    !I'm kind of afraid to only halo a single point... 
+call halo(J1halo,1,tagJ1,x%flagper)    !I'm kind of afraid to only halo a single point...
 call halo(J2halo,1,tagJ2,x%flagper)
 call halo(J3halo,1,tagJ3,x%flagper)
 
@@ -389,7 +393,7 @@ print *, 'Root has computed background field source terms...',minval(srcterm), m
 !NEUTRAL WIND SOURCE TERMS FOR POTENTIAL EQUATION, SIMILAR TO ABOVE BLOCK OF CODE
 J1=0d0    !so this div is only perp components
 if (flagswap==1) then
-  J2=-1*sigP*vn3*B1(1:lx1,1:lx2,1:lx3)+sigH*vn2*B1(1:lx1,1:lx2,1:lx3)     !wind x2 current, note that all workers already have a copy of this.  
+  J2=-1*sigP*vn3*B1(1:lx1,1:lx2,1:lx3)+sigH*vn2*B1(1:lx1,1:lx2,1:lx3)     !wind x2 current, note that all workers already have a copy of this.
   J3=sigH*vn3*B1(1:lx1,1:lx2,1:lx3)+sigP*vn2*B1(1:lx1,1:lx2,1:lx3)     !wind x3 current
 else
   J2=sigP*vn3*B1(1:lx1,1:lx2,1:lx3)+sigH*vn2*B1(1:lx1,1:lx2,1:lx3)     !wind x2 current
@@ -409,7 +413,7 @@ J2halo(lx1+1,1:lx2,1:lx3)=J2halo(lx1,1:lx2,1:lx3)
 J3halo(0,1:lx2,1:lx3)=J3halo(1,1:lx2,1:lx3)
 J3halo(lx1+1,1:lx2,1:lx3)=J3halo(lx1,1:lx2,1:lx3)
 
-call halo(J1halo,1,tagJ1,x%flagper)    !I'm kind of afraid to only halo a single point... 
+call halo(J1halo,1,tagJ1,x%flagper)    !I'm kind of afraid to only halo a single point...
 call halo(J2halo,1,tagJ2,x%flagper)
 call halo(J3halo,1,tagJ3,x%flagper)
 
@@ -452,7 +456,7 @@ if (lx2/=1) then    !either field-resolved 3D or integrated 2D solve for 3D doma
     print *, 'Beginning field-integrated solve...'
 
 
-    !> INTEGRATE CONDUCTANCES AND CAPACITANCES FOR SOLVER COEFFICIENTS 
+    !> INTEGRATE CONDUCTANCES AND CAPACITANCES FOR SOLVER COEFFICIENTS
     integrand=sigP*x%h1(1:lx1,1:lx2,1:lx3)*x%h3(1:lx1,1:lx2,1:lx3)/x%h2(1:lx1,1:lx2,1:lx3)
     sigintegral=integral3D1(integrand,x,1,lx1)    !no haloing required for a field-line integration
     SigPint2=sigintegral(lx1,:,:)
@@ -464,7 +468,7 @@ if (lx2/=1) then    !either field-resolved 3D or integrated 2D solve for 3D doma
     integrand=x%h1(1:lx1,1:lx2,1:lx3)*sigH
     sigintegral=integral3D1(integrand,x,1,lx1)
     SigHint=sigintegral(lx1,:,:)
-    
+
     sigintegral=integral3D1(incap,x,1,lx1)
     incapint=sigintegral(lx1,:,:)
     !-------
@@ -722,7 +726,7 @@ if (maxval(incap) > 1d-6) then
   J1halo(0,1:lx2,1:lx3)=J1halo(1,1:lx2,1:lx3)
   J1halo(lx1+1,1:lx2,1:lx3)=J1halo(lx1,1:lx2,1:lx3)
 
-  call halo(J1halo,1,tagJ1,x%flagper)    !I'm kind of afraid to only halo a single point... 
+  call halo(J1halo,1,tagJ1,x%flagper)    !I'm kind of afraid to only halo a single point...
 
   if (iddown==-1) then
     J1halo(1:lx1,0,1:lx3)=J1halo(1:lx1,1,1:lx3)
@@ -738,7 +742,7 @@ if (maxval(incap) > 1d-6) then
       J1halo(1:lx1,1:lx2,lx3+1)=J1halo(1:lx1,1:lx2,lx3)
     end if
   end if
-  
+
   divtmp=grad3D3(J1halo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
   grad3E=divtmp(1:lx1,1:lx2,1:lx3)
 
@@ -751,7 +755,7 @@ if (maxval(incap) > 1d-6) then
   J1halo(1:lx1,1:lx2,1:lx3)=E3
   J1halo(0,1:lx2,1:lx3)=J1halo(1,1:lx2,1:lx3)
   J1halo(lx1+1,1:lx2,1:lx3)=J1halo(lx1,1:lx2,1:lx3)
-  call halo(J1halo,1,tagJ1,x%flagper)    !I'm kind of afraid to only halo a single point... 
+  call halo(J1halo,1,tagJ1,x%flagper)    !I'm kind of afraid to only halo a single point...
 
   if (iddown==-1) then
     J1halo(1:lx1,0,1:lx3)=J1halo(1:lx1,1,1:lx3)
@@ -778,9 +782,9 @@ if (maxval(incap) > 1d-6) then
 else       !pure electrostatic solve was done
   DE2Dt=0d0
   DE3Dt=0d0
-  J1pol=0d0 
+  J1pol=0d0
   J2pol=0d0
-  J3pol=0d0      
+  J3pol=0d0
 end if
 !--------
 
@@ -825,7 +829,7 @@ if (lx2/=1 .and. potsolve ==1) then    !we did a field-integrated solve above
   J3halo(0,1:lx2,1:lx3)=J3halo(1,1:lx2,1:lx3)
   J3halo(lx1+1,1:lx2,1:lx3)=J3halo(lx1,1:lx2,1:lx3)
 
-  call halo(J1halo,1,tagJ1,x%flagper)    !I'm kind of afraid to only halo a single point... 
+  call halo(J1halo,1,tagJ1,x%flagper)    !I'm kind of afraid to only halo a single point...
   call halo(J2halo,1,tagJ2,x%flagper)
   call halo(J3halo,1,tagJ3,x%flagper)
 
@@ -852,7 +856,7 @@ if (lx2/=1 .and. potsolve ==1) then    !we did a field-integrated solve above
       J3halo(1:lx1,1:lx2,lx3+1)=J3halo(1:lx1,1:lx2,lx3)
     end if
   end if
-  
+
   divtmp=div3D(J1halo(0:lx1+1,0:lx2+1,0:lx3+1),J2halo(0:lx1+1,0:lx2+1,0:lx3+1), &
                J3halo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
   divJperp=x%h1(1:lx1,1:lx2,1:lx3)*x%h2(1:lx1,1:lx2,1:lx3)*x%h3(1:lx1,1:lx2,1:lx3)*divtmp(1:lx1,1:lx2,1:lx3)
@@ -879,7 +883,7 @@ if (lx2/=1 .and. potsolve ==1) then    !we did a field-integrated solve above
       end if
     elseif (gridflag==1) then    !this would be an inverted grid, this max altitude corresponds to the min value of x1
       print *,  'Inverted grid; integration starting at min x1 (highest alt. or southern hemisphere)...', &
-                     minval(Vminx1slab), & 
+                     minval(Vminx1slab), &
                      maxval(Vminx1slab)
       J1=integral3D1(divJperp,x,1,lx1)    !int divperp of BG current
       do ix1=1,lx1
@@ -969,7 +973,7 @@ integer, intent(in) :: it
 real(wp), intent(in) :: t,dt
 real(wp), dimension(:,:,:), intent(in) ::  sig0,sigP,sigH
 real(wp), dimension(:,:,:), intent(in) ::  incap
-real(wp), dimension(-1:,-1:,-1:,:), intent(in) ::  vs2,vs3    
+real(wp), dimension(-1:,-1:,-1:,:), intent(in) ::  vs2,vs3
 real(wp), dimension(:,:,:), intent(in) ::  vn2,vn3
 real(wp), intent(in) :: sourcemlat
 real(wp), dimension(-1:,-1:,-1:), intent(in) ::  B1
@@ -1008,7 +1012,7 @@ real(wp), dimension(1:size(E1,2),1:size(E1,3)) :: Vminx1slab,Vmaxx1slab
 real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: v2,v3
 real(wp), dimension(1:size(E1,2),1:size(E1,3)) :: v2slab,v3slab
 
-integer :: ix1,ix2,ix3,lx1,lx2,lx3,lx3all
+integer :: ix1,ix2,ix3,lx1,lx2,lx3,lx3all, ierr
 integer :: idleft,idright,iddown,idup
 
 real(wp) :: tstart,tfin
@@ -1027,10 +1031,10 @@ perflag=.true.
 
 
 call mpi_recv(flagdirich,1,MPI_INTEGER,0,tagflagdirich,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-
+if (ierr /= 0) error stop 'dirich'
 
 !Need to broadcast background fields from root
-!Need to also broadcast x1 boundary conditions for source term calculations.  
+!Need to also broadcast x1 boundary conditions for source term calculations.
 call bcast_recv(E01,tagE01)
 call bcast_recv(E02,tagE02)
 call bcast_recv(E03,tagE03)
@@ -1062,7 +1066,7 @@ J2halo(lx1+1,1:lx2,1:lx3)=J2halo(lx1,1:lx2,1:lx3)
 J3halo(0,1:lx2,1:lx3)=J3halo(1,1:lx2,1:lx3)
 J3halo(lx1+1,1:lx2,1:lx3)=J3halo(lx1,1:lx2,1:lx3)
 
-call halo(J1halo,1,tagJ1,x%flagper)    !I'm kind of afraid to only halo a single point... 
+call halo(J1halo,1,tagJ1,x%flagper)    !I'm kind of afraid to only halo a single point...
 call halo(J2halo,1,tagJ2,x%flagper)
 call halo(J3halo,1,tagJ3,x%flagper)
 
@@ -1104,7 +1108,7 @@ srcterm=divtmp(1:lx1,1:lx2,1:lx3)
 !NEUTRAL WIND SOURCE TERMS FOR POTENTIAL EQUATION, SIMILAR TO ABOVE BLOCK OF CODE
 J1=0d0    !so this div is only perp components
 if (flagswap==1) then
-  J2=-1*sigP*vn3*B1(1:lx1,1:lx2,1:lx3)+sigH*vn2*B1(1:lx1,1:lx2,1:lx3)     !wind x2 current, note that all workers already have a copy of this.  
+  J2=-1*sigP*vn3*B1(1:lx1,1:lx2,1:lx3)+sigH*vn2*B1(1:lx1,1:lx2,1:lx3)     !wind x2 current, note that all workers already have a copy of this.
   J3=sigH*vn3*B1(1:lx1,1:lx2,1:lx3)+sigP*vn2*B1(1:lx1,1:lx2,1:lx3)     !wind x3 current
 else
   J2=sigP*vn3*B1(1:lx1,1:lx2,1:lx3)+sigH*vn2*B1(1:lx1,1:lx2,1:lx3)     !wind x2 current
@@ -1124,7 +1128,7 @@ J2halo(lx1+1,1:lx2,1:lx3)=J2halo(lx1,1:lx2,1:lx3)
 J3halo(0,1:lx2,1:lx3)=J3halo(1,1:lx2,1:lx3)
 J3halo(lx1+1,1:lx2,1:lx3)=J3halo(lx1,1:lx2,1:lx3)
 
-call halo(J1halo,1,tagJ1,x%flagper)    !I'm kind of afraid to only halo a single point... 
+call halo(J1halo,1,tagJ1,x%flagper)    !I'm kind of afraid to only halo a single point...
 call halo(J2halo,1,tagJ2,x%flagper)
 call halo(J3halo,1,tagJ3,x%flagper)
 
@@ -1168,7 +1172,7 @@ srcterm=srcterm+divtmp(1:lx1,1:lx2,1:lx3)
 if (lx2/=1) then    !either field-resolved 3D or integrated 2D solve for 3D domain
   if (potsolve == 1) then    !2D, field-integrated solve
     !-------
-    !INTEGRATE CONDUCTANCES AND CAPACITANCES FOR SOLVER COEFFICIENTS 
+    !INTEGRATE CONDUCTANCES AND CAPACITANCES FOR SOLVER COEFFICIENTS
     integrand=sigP*x%h1(1:lx1,1:lx2,1:lx3)*x%h3(1:lx1,1:lx2,1:lx3)/x%h2(1:lx1,1:lx2,1:lx3)
     sigintegral=integral3D1(integrand,x,1,lx1)    !no haloing required for a field-line integration
     SigPint2=sigintegral(lx1,:,:)
@@ -1180,7 +1184,7 @@ if (lx2/=1) then    !either field-resolved 3D or integrated 2D solve for 3D doma
     integrand=x%h1(1:lx1,1:lx2,1:lx3)*sigH
     sigintegral=integral3D1(integrand,x,1,lx1)
     SigHint=sigintegral(lx1,:,:)
-    
+
     sigintegral=integral3D1(incap,x,1,lx1)
     incapint=sigintegral(lx1,:,:)
     !-------
@@ -1209,8 +1213,8 @@ if (lx2/=1) then    !either field-resolved 3D or integrated 2D solve for 3D doma
 !          v2slab=vs2(lx1,1:lx2,1:lx3,1); v3slab=vs3(lx1,1:lx2,1:lx3,1);    !need to pick out the ExB drift here (i.e. the drifts from highest altitudes); but this is only valid for Cartesian, so it's okay for the foreseeable future
 
 
-      call elliptic_workers()    !workers do not need any specific info about      proglem.  
-      
+      call elliptic_workers()    !workers do not need any specific info about      proglem.
+
 
     else     !Dirichlet conditions - since this is field integrated we just copy BCs specified by user to other locations along field line
 
@@ -1316,7 +1320,7 @@ E2=divtmp(1:lx1,1:lx2,1:lx3)
 J1halo(1:lx1,1:lx2,1:lx3)=Phi
 J1halo(0,1:lx2,1:lx3)=J1halo(1,1:lx2,1:lx3)
 J1halo(lx1+1,1:lx2,1:lx3)=J1halo(lx1,1:lx2,1:lx3)
-call halo(J1halo,1,tagJ1,x%flagper)    !I'm kind of afraid to only halo a single point... 
+call halo(J1halo,1,tagJ1,x%flagper)    !I'm kind of afraid to only halo a single point...
 
 if (iddown==-1) then
   J1halo(1:lx1,0,1:lx3)=J1halo(1:lx1,1,1:lx3)
@@ -1332,7 +1336,7 @@ if (.not. x%flagper) then
     J1halo(1:lx1,1:lx2,lx3+1)=J1halo(1:lx1,1:lx2,lx3)
   end if
 end if
-  
+
 divtmp=grad3D3(J1halo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
 E3=divtmp(1:lx1,1:lx2,1:lx3)
 Phi=-1d0*Phi   !put things back for later use
@@ -1366,7 +1370,7 @@ if (maxval(incap) > 1d-6) then
   J1halo(1:lx1,1:lx2,1:lx3)=E2
   J1halo(0,1:lx2,1:lx3)=J1halo(1,1:lx2,1:lx3)
   J1halo(lx1+1,1:lx2,1:lx3)=J1halo(lx1,1:lx2,1:lx3)
-  call halo(J1halo,1,tagJ1,x%flagper)    !I'm kind of afraid to only halo a single point... 
+  call halo(J1halo,1,tagJ1,x%flagper)    !I'm kind of afraid to only halo a single point...
 
   if (iddown==-1) then
     J1halo(1:lx1,0,1:lx3)=J1halo(1:lx1,1,1:lx3)
@@ -1395,7 +1399,7 @@ if (maxval(incap) > 1d-6) then
   J1halo(1:lx1,1:lx2,1:lx3)=E3
   J1halo(0,1:lx2,1:lx3)=J1halo(1,1:lx2,1:lx3)
   J1halo(lx1+1,1:lx2,1:lx3)=J1halo(lx1,1:lx2,1:lx3)
-  call halo(J1halo,1,tagJ1,x%flagper)    !I'm kind of afraid to only halo a single point... 
+  call halo(J1halo,1,tagJ1,x%flagper)    !I'm kind of afraid to only halo a single point...
 
   if (iddown==-1) then
     J1halo(1:lx1,0,1:lx3)=J1halo(1:lx1,1,1:lx3)
@@ -1422,9 +1426,9 @@ if (maxval(incap) > 1d-6) then
 else       !pure electrostatic solve was done
   DE2Dt=0d0
   DE3Dt=0d0
-  J1pol=0d0 
+  J1pol=0d0
   J2pol=0d0
-  J3pol=0d0      
+  J3pol=0d0
 end if
 !--------
 
@@ -1469,7 +1473,7 @@ if (lx2/=1 .and. potsolve ==1) then    !we did a field-integrated solve above
   J3halo(0,1:lx2,1:lx3)=J3halo(1,1:lx2,1:lx3)
   J3halo(lx1+1,1:lx2,1:lx3)=J3halo(lx1,1:lx2,1:lx3)
 
-  call halo(J1halo,1,tagJ1,x%flagper)    !I'm kind of afraid to only halo a single point... 
+  call halo(J1halo,1,tagJ1,x%flagper)    !I'm kind of afraid to only halo a single point...
   call halo(J2halo,1,tagJ2,x%flagper)
   call halo(J3halo,1,tagJ3,x%flagper)
 
@@ -1500,7 +1504,7 @@ if (lx2/=1 .and. potsolve ==1) then    !we did a field-integrated solve above
   divtmp=div3D(J1halo(0:lx1+1,0:lx2+1,0:lx3+1),J2halo(0:lx1+1,0:lx2+1,0:lx3+1), &
                J3halo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
   divJperp=x%h1(1:lx1,1:lx2,1:lx3)*x%h2(1:lx1,1:lx2,1:lx3)*x%h3(1:lx1,1:lx2,1:lx3)*divtmp(1:lx1,1:lx2,1:lx3)
-  if (flagdirich /= 1) then     !Neumann conditions, this is boundary location-agnostic since both bottom and top FACs are known - they have to  be loaded into VVmaxx1 and Vminx1.  For numerical purposes we prefer to integrate from the location of nonzero current (usually highest altitude in open grid).  
+  if (flagdirich /= 1) then     !Neumann conditions, this is boundary location-agnostic since both bottom and top FACs are known - they have to  be loaded into VVmaxx1 and Vminx1.  For numerical purposes we prefer to integrate from the location of nonzero current (usually highest altitude in open grid).
     if (gridflag==0) then     !closed dipole grid, really would be best off integrating from the source hemisphere
 !          print *,  'Closed dipole grid; integration starting at max x1...', minval(Vmaxx1slab), &
 !                         maxval(Vmaxx1slab)
@@ -1522,7 +1526,7 @@ if (lx2/=1 .and. potsolve ==1) then    !we did a field-integrated solve above
     elseif (gridflag==1) then    !this would be an inverted grid, this max altitude corresponds to the min value of x1
 !          print *,  'Inverted grid; integration starting at min x1...',minval(Vminx1slab), maxval(Vminx1slab)
       J1=integral3D1(divJperp,x,1,lx1)    !int divperp of BG current
-      do ix1=1,lx1  
+      do ix1=1,lx1
         J1(ix1,:,:)=1d0/x%h2(ix1,1:lx2,1:lx3)/x%h3(ix1,1:lx2,1:lx3)* &
                          (x%h2(1,1:lx2,1:lx3)*x%h3(1,1:lx2,1:lx3)*Vminx1slab-J1(ix1,:,:))
       end do

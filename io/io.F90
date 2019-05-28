@@ -237,12 +237,15 @@ subroutine create_outdir_mag(outdir,fieldpointfile)
 
 character(*), intent(in) :: outdir
 character(*), intent(in) :: fieldpointfile
+integer :: ierr
 
 
 !NOTE HERE THAT WE INTERPRET OUTDIR AS THE BASE DIRECTORY CONTAINING SIMULATION OUTPUT
 ierr = mkdir(outdir//'/magfields/')
 ierr = mkdir(outdir//'/magfields/input/')
 ierr = copyfile(fieldpointfile, outdir//'/magfields/input/magfieldpoints.dat')
+
+if (ierr/=0) error stop 'could not create magfields output directory'
 
 end subroutine create_outdir_mag
 
@@ -254,6 +257,8 @@ subroutine create_outdir_aur(outdir)
 !------------------------------------------------------------
 
 character(*), intent(in) :: outdir
+
+integer :: ierr
 
 !NOTE HERE THAT WE INTERPRET OUTDIR AS THE BASE DIRECTORY CONTAINING SIMULATION OUTPUT
 ierr = mkdir(outdir//'/aurmaps/')

@@ -14,7 +14,7 @@ module temporal
 use mpi, only: MPI_COMM_WORLD,MPI_STATUS_IGNORE
 
 use phys_consts, only:  kB,mu0,ms,lsp,pi, wp
-use mpimod, only: mpi_realprec,tagdt,ierr, lid, myid
+use mpimod, only: mpi_realprec, tagdt, lid, myid
 use grid, only:  curvmesh
 
 implicit none
@@ -35,7 +35,7 @@ integer, intent(in) :: flagglow,potsolve
 real(wp), intent(out) :: dt
 
 real(wp), dimension(lsp) :: cour1,cour2,cour3
-integer :: iid,isp
+integer :: iid,isp, ierr
 real(wp) :: dttmp
 
 
@@ -43,7 +43,7 @@ call dt_calc(tcfl,ns,Ts,vs1,vs2,vs3,B1,B2,B3,x%dl1i,x%dl2i,x%dl3i,potsolve,cour1
 
 if (myid/=0) then
   call mpi_send(dt,1,mpi_realprec,0,tagdt,MPI_COMM_WORLD,ierr)   !send what I think dt should be
-  call mpi_recv(dt,1,mpi_realprec,0,tagdt,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)   !receive roots decision   
+  call mpi_recv(dt,1,mpi_realprec,0,tagdt,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)   !receive roots decision
 else
   !FIGURE OUT GLOBAL DT REQUIRED FOR STABILITY
   do iid=1,lid-1
@@ -54,14 +54,14 @@ else
 
   !CHECK WHETHER WE'D OVERSTEP OUR TARGET OUTPUT TIME
   !GLOW OUTPUT HAS PRIORITY SINCE IT WILL OUTPUT MORE OFTEN
-  if ((flagglow/=0).and.(t+dt>tglowout)) then 
+  if ((flagglow/=0).and.(t+dt>tglowout)) then
     dt=tglowout-t
-    print*, 'GLOW is throttling dt...'
+    print *, 'GLOW is throttling dt...'
   end if
 
   if (t+dt>tout) then
     dt=tout-t
-    print*, 'Slowing down for an output...'
+    print *, 'Slowing down for an output...'
   end if
 
   !DON'T ALLOW ZERO DT
@@ -75,7 +75,7 @@ else
   print *, 'dt figured to be:  ',dt
   print *, 'x1,x2,x3 courant numbers (root process only!):  '
   do isp=1,lsp
-    print '(a,f4.2,a,f4.2,a,f4.2)', '    ',cour1(isp),', ',cour2(isp),', ',cour3(isp)    
+    print '(a,f4.2,a,f4.2,a,f4.2)', '    ',cour1(isp),', ',cour2(isp),', ',cour3(isp)
     !! these are roots courant numbers
   end do
   print *, 'Min and max density:  ',minval(pack(ns(:,:,:,7),.true.)),maxval(pack(ns(:,:,:,7),.true.))

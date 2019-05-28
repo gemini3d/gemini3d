@@ -9,7 +9,7 @@ use mpimod, only: myid, lid, lid2, lid3, &
   tagx1, tagx2, tagx3, tagtheta, tagr, tagphi, tagnull, taglx1, taglx2, taglx3, taglx3all, taginc, &
   tagh1, tagh2, tagh3, tagglat, tagglon, tageunit1, tageunit2, tageunit3, tagetheta, tager, &
   tagalt, tagbmag, tagephi, tagswap, &
-  mpi_realprec, ierr, taglx2all, tagx3all, tagx2all, &
+  mpi_realprec, taglx2all, tagx3all, tagx2all, &
   bcast_recv, bcast_send, bcast_recv3D_ghost, bcast_send3D_ghost, bcast_recv3D_x3i, bcast_send3D_x3i, &
   bcast_send3D_x2i,bcast_recv3D_x2i, bcast_send1D_2, bcast_recv1D_2, bcast_send1D_3, bcast_recv1D_3
 
@@ -114,7 +114,7 @@ subroutine grid_size(indatsize)
 
 character(*), intent(in) :: indatsize
 
-integer :: iid
+integer :: iid, ierr
 logical exists
 
 
@@ -124,7 +124,7 @@ if (myid==0) then    !root must physically read the size info and pass to worker
      write(stderr,*) 'must generate grid with script before running simulation--grid not present: ',indatsize
      error stop
   endif
-  
+
   !DETERMINE THE SIZE OF THE GRID TO BE LOADED
   open(newunit=inunit,file=indatsize,status='old',form='unformatted', &
        access='stream', action='read')
@@ -136,11 +136,15 @@ if (myid==0) then    !root must physically read the size info and pass to worker
     call mpi_send(lx3all,1,MPI_INTEGER,iid,taglx3all,MPI_COMM_WORLD,ierr)
   end do
 
+  if (ierr/=0) error stop 'failed mpi_send'
+
   print *, 'Grid has full size:  ',lx1,lx2all,lx3all
 else
   call mpi_recv(lx1,1,MPI_INTEGER,0,taglx1,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
   call mpi_recv(lx2all,1,MPI_INTEGER,0,taglx2all,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
   call mpi_recv(lx3all,1,MPI_INTEGER,0,taglx3all,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+
+  if (ierr/=0) error stop 'failed mpi_recv'
 end if
 
 end subroutine grid_size
@@ -203,7 +207,7 @@ subroutine read_grid_root(indatsize,indatgrid,x)
 character(*), intent(in) :: indatsize,indatgrid
 type(curvmesh), intent(inout) :: x    !does this need to be inout?  I think if anything is unallocated, it does...
 
-integer iid,ix1,ix2,ix3,icount,icomp!,itell
+integer ierr,iid,ix1,ix2,ix3,icount,icomp!,itell
 
 !NOTE THAT HAVING THESE ARE LOCAL (TEMPORARY) VARS. PREVENTS ROOT FROM WRITING ENTIRE GRID TO FILE AT SOME LATER POINT...
 real(wp), dimension(:,:,:), allocatable :: g1all,g2all,g3all   !to temporarily store input data to be distributed
@@ -224,7 +228,7 @@ real(wp), dimension(:,:,:,:), allocatable :: htmp4D
 !print*, 'Entering read_grid_root', lx1,lx2all,lx3all,lid2,lid3,lx2all/lid2
 
 
-!DETERMINE NUMBER OF SLABS AND CORRESPONDING SIZE FOR EACH WORKER 
+!DETERMINE NUMBER OF SLABS AND CORRESPONDING SIZE FOR EACH WORKER
 !NOTE THAT WE WILL ASSUME THAT THE GRID SIZE IS DIVISIBLE BY NUMBER OF WORKERS AS THIS HAS BEEN CHECKED A FEW LINES BELOW
 x%lx1=lx1; x%lx2all=lx2all; x%lx3all=lx3all;
 
@@ -259,6 +263,7 @@ do iid=1,lid-1
   call mpi_send(lx3,1,MPI_INTEGER,iid,taglx3,MPI_COMM_WORLD,ierr)
 end do
 
+if (ierr/=0) error stop 'failed mpi_send grid size'
 
 !TELL WORKERS IF WE'VE SWAPPED DIMENSIONS
 do iid=1,lid-1
@@ -425,7 +430,7 @@ else     !this is apparently a 2D grid, so the x2 and x3 dimensions have been/ne
   allocate(altall(lx1,lx2all,lx3all),glatall(lx1,lx2all,lx3all),glonall(lx1,lx2all,lx3all))
   allocate(htmp(lx1,lx3all,lx2all))
   read(inunit) htmp
-  altall=reshape(htmp,[lx1,lx2all,lx3all],order=[1,3,2])      
+  altall=reshape(htmp,[lx1,lx2all,lx3all],order=[1,3,2])
   read(inunit) htmp
   glatall=reshape(htmp,[lx1,lx2all,lx3all],order=[1,3,2])
   read(inunit) htmp
@@ -456,7 +461,7 @@ else     !this is apparently a 2D grid, so the x2 and x3 dimensions have been/ne
   !allocate(nullptsall(lx1,lx2,lx3all))
   !print *,shape(nullptsall)
   !stop
-  
+
   ! FIXME would be like this, but this doesn't work.
   !allocate(nullptsall(lx1,lx2,lx3all))
   !read(inunit) nullptsall
@@ -586,7 +591,7 @@ call bcast_send(nullptsall,tagnull,x%nullpts)
 
 allocate(mpisendbuf(1:lx1,1:lx2all,1:lx3all),mpirecvbuf(1:lx1,1:lx2,1:lx3))    !why is buffering used/needed here???
 do icomp=1,3
-  mpisendbuf=e1all(:,:,:,icomp) 
+  mpisendbuf=e1all(:,:,:,icomp)
   call bcast_send(mpisendbuf,tageunit1,mpirecvbuf)
   x%e1(:,:,:,icomp)=mpirecvbuf
 end do
@@ -651,7 +656,7 @@ print *, 'Done computing null grid points...  Process:  ',myid,' has:  ',x%lnull
 
 
 !COMPUTE DIFFERENTIAL DISTANCES ALONG EACH DIRECTION (TO BE USED IN TIME STEP DETERMINATION...
-allocate(x%dl1i(1:lx1,1:lx2,1:lx3),x%dl2i(1:lx1,1:lx2,1:lx3),x%dl3i(1:lx1,1:lx2,1:lx3),tmpdx(1:lx1,1:lx2,1:lx3)) 
+allocate(x%dl1i(1:lx1,1:lx2,1:lx3),x%dl2i(1:lx1,1:lx2,1:lx3),x%dl3i(1:lx1,1:lx2,1:lx3),tmpdx(1:lx1,1:lx2,1:lx3))
 
 tmpdx=spread(spread(x%dx1i,2,lx2),3,lx3)
 x%dl1i=tmpdx*x%h1(1:lx1,1:lx2,1:lx3)
@@ -661,7 +666,7 @@ tmpdx=spread(spread(x%dx3i,1,lx1),2,lx2)
 x%dl3i=tmpdx*x%h3(1:lx1,1:lx2,1:lx3)
 
 
-!    !THIS CODE BLOCK HAS ROOT "PARROT" THE GRID TO A FILE FOR DEBUGGING PURPOSES.  
+!    !THIS CODE BLOCK HAS ROOT "PARROT" THE GRID TO A FILE FOR DEBUGGING PURPOSES.
 !    !THIS BLOCK MUST BE HERE DUE TO THE FACT MANY OF HTE ALL-GRID VARIABLES ARE ONLY
 !    !IN SCOPE INSIDE THIS FUNCITON BEFORE THE DEALLOCATE STATEMENT BELOW
 !    open(newunit=outunit,file='testsize.dat',status='replace',form='unformatted', &
@@ -671,7 +676,7 @@ x%dl3i=tmpdx*x%h3(1:lx1,1:lx2,1:lx3)
 !
 !    open(outunit,file='testgrid.dat',status='replace',form='unformatted', &
 !         access='stream')
-!    write(outunit) x%x1,x%x1i,x%dx1,x%dx1i    !I guess the number of elements is obtained from the size of the arrays??? 
+!    write(outunit) x%x1,x%x1i,x%dx1,x%dx1i    !I guess the number of elements is obtained from the size of the arrays???
 !    write(outunit) x%x2,x%x2i,x%dx2,x%dx2i
 !    write(outunit) x%x3all,x%x3iall,x%dx3all,x%dx3iall
 !    write(outunit) x%h1all,x%h2all,x%h3all
@@ -685,7 +690,7 @@ x%dl3i=tmpdx*x%h3(1:lx1,1:lx2,1:lx3)
 !    write(outunit) nullptsall
 !    close(outunit)
 !    print *, 'Done creating copy of grid...'
-!    
+!
 
 
 !    !FLAG THE GRID AS PERIODIC, IF REQUESTED; IF SO PERIODICITY WILL BE ASSUMED IN THE X3-DIRECTION
@@ -706,7 +711,7 @@ subroutine read_grid_workers(x)
 
 type(curvmesh), intent(inout) :: x
 
-integer :: ix1,ix2,ix3,icount,icomp
+integer :: ix1,ix2,ix3,icount,icomp, ierr
 real(wp), dimension(:,:,:), allocatable :: mpirecvbuf
 real(wp), dimension(:,:,:), allocatable :: tmpdx
 
@@ -714,6 +719,8 @@ real(wp), dimension(:,:,:), allocatable :: tmpdx
 !GET ROOTS MESSAGE WITH THE SIZE OF THE GRID WE ARE TO RECEIVE
 call mpi_recv(lx2,1,MPI_INTEGER,0,taglx2,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
 call mpi_recv(lx3,1,MPI_INTEGER,0,taglx3,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+if (ierr/=0) error stop 'failed mpi_recv grid size'
+
 x%lx1=lx1; x%lx2=lx2; x%lx2all=lx2all; x%lx3all=lx3all; x%lx3=lx3
 
 !ROOT NEEDS TO TELL US WHETHER WE'VE SWAPPED DIMENSIONS SINCE THIS AFFECTS HOW CURRENTS ARE COMPUTED
@@ -767,6 +774,8 @@ call mpi_recv(x%x3all,lx3all+4,mpi_realprec,0,tagx3all,MPI_COMM_WORLD,MPI_STATUS
 call mpi_recv(x%dx1,lx1+3,mpi_realprec,0,tagx1,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
 call mpi_recv(x%x1i,lx1+1,mpi_realprec,0,tagx1,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
 call mpi_recv(x%dx1i,lx1,mpi_realprec,0,tagx1,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+
+if (ierr/=0) error stop 'failed mpi_recv grid data from root'
 
 call bcast_recv1D_3(x%x3,tagx3)
 x%dx3=x%x3(0:lx3+2)-x%x3(-1:lx3+1)     !computing these avoids extra message passing (could be done for other coordinates
@@ -895,7 +904,7 @@ subroutine clear_grid(x)
 type(curvmesh), intent(inout) :: x
 
 !------------------------------------------------------------
-!-------DEALLOCATES GRID VARIABLES.  
+!-------DEALLOCATES GRID VARIABLES.
 !------------------------------------------------------------
 
 deallocate(x%x3all,x%x2all)
@@ -950,7 +959,7 @@ end subroutine clear_unitvecs
 subroutine load_grav(alt)
 
 !------------------------------------------------------------
-!-------LOAD UP GRAV. FIELD ARRAY.  IT IS EXPECTED THAT 
+!-------LOAD UP GRAV. FIELD ARRAY.  IT IS EXPECTED THAT
 !-------GHOST CELLS WILL HAVE BEEN TRIMMED FROM ARRAYS BEFORE
 !-------THEY ARE PASSED INTO THIS ROUTINE.
 !------------------------------------------------------------
@@ -965,7 +974,7 @@ end subroutine load_grav
 
 
 subroutine clear_grav()
-!! DEALLOCATE GRAV. FIELD ARRAY. 
+!! DEALLOCATE GRAV. FIELD ARRAY.
 
 deallocate(g1,g2,g3)
 

@@ -1,6 +1,6 @@
 !! THIS IS THE MAIN PROGRAM FOR COMPUTING MAGNETIC FIELDS
-!! FROM OUTPUT FROM A SIMULATIONS DONE BY GEMINI3D.  
-!! THIS PROGRAM VERY MUCH MIRRORS THE SETUP OF THE MAIN GEMINI.F90 CODE.  
+!! FROM OUTPUT FROM A SIMULATIONS DONE BY GEMINI3D.
+!! THIS PROGRAM VERY MUCH MIRRORS THE SETUP OF THE MAIN GEMINI.F90 CODE.
 
 use mpi, only: mpi_sum, mpi_comm_world
 
@@ -8,7 +8,9 @@ use phys_consts, only : pi,mu0, wp, re
 use grid, only : curvmesh, lx1, lx2, lx3, read_grid, clear_grid, lx2all,lx3all,grid_size
 use timeutils, only : dateinc
 use io, only : read_configfile,input_plasma_currents,create_outdir_mag,output_magfields
-use mpimod
+use mpimod, only: mpisetup, mpibreakdown, mpigrid, halo_end, &
+  lid, lid2, lid3, myid, myid2, myid3, mpi_realprec, &
+  tagdv, tagjx, tagjy, tagjz, tagrcubed, tagrx, tagry, tagrz
 
 implicit none
 
@@ -20,7 +22,7 @@ real(wp) :: tdur       !duration of simulation
 real(wp), dimension(3) :: activ    !f10.7a,f10.7,ap
 real(wp) :: tcfl                       !target CFL number
 real(wp) :: Teinf                      !exospheric temperature
-integer :: potsolve                   !what type of potential solve 
+integer :: potsolve                   !what type of potential solve
 integer :: flagperiodic               !toggles whether or not the grid is treated as periodic in the x3 dimension (affects some of the message passing)
 integer :: flagoutput                 !what type of output to do (1 - everything; 2 - avg'd parms.; 3 - ne only)
 integer :: flagcap                    !internal capacitance?
@@ -95,7 +97,7 @@ real(wp) :: dtglow                      !time interval between GLOW runs (s)
 real(wp) :: dtglowout                   !time interval between GLOW auroral outputs (s)
 
 !! FOR HANDLING INPUT
-integer :: argc
+integer :: argc, ierr
 character(256) :: argv
 
 !! ## MAIN PROGRAM
@@ -213,7 +215,7 @@ end if
 
 
 !GET END VOLUMES SO THE INTEGRALS ARE 'COMPLETE'
-call halo_end(dV,dVend,dVtop,tagdV)    !need to define the differential volume on the edge of this x3-slab in 
+call halo_end(dV,dVend,dVtop,tagdV)    !< need to define the differential volume on the edge of this x3-slab in
 
 
 !COMPUTE NEEDED PROJECTIONS
@@ -329,17 +331,17 @@ do while (t<tdur)
     if (flag2D/=1) then
       Rcubed(:,:,:)=(Rx**2+Ry**2+Rz**2)**(3d0/2d0)   !this really is R**3
       call halo_end(Rcubed,Rcubedend,Rcubedtop,tagRcubed)
-      if(myid3==lid3-1) Rcubedend=1d0     !avoids div by zero on the end
-      if(myid2==lid2-1) Rcubedtop=1d0
+      if(myid3==lid3-1) Rcubedend=1     !< avoids div by zero on the end
+      if(myid2==lid2-1) Rcubedtop=1
 
 
-      !MAY BE MISSING A CORNER POINT HERE???  NO I THINK IT'S OKAY BASED ON SOME SQUARED I DREW...
+      !! FIXME: MAY BE MISSING A CORNER POINT HERE???  NO I THINK IT'S OKAY BASED ON SOME SQUARED I DREW...
 
 
       !Bx calculation
-      integrand(:,:,:)=mu0/4d0/pi*(Jy*Rz-Jz*Ry)/Rcubed
-      integrandend(:,:)=mu0/4d0/pi*(Jyend*Rzend-Jzend*Ryend)/Rcubedend
-      integrandtop(:,:)=mu0/4d0/pi*(Jytop*Rztop-Jztop*Rytop)/Rcubedtop
+      integrand(:,:,:)=mu0/4._wp/pi*(Jy*Rz-Jz*Ry)/Rcubed
+      integrandend(:,:)=mu0/4._wp/pi*(Jyend*Rzend-Jzend*Ryend)/Rcubedend
+      integrandtop(:,:)=mu0/4._wp/pi*(Jytop*Rztop-Jztop*Rytop)/Rcubedtop
       integrandavg(:,:,:)=1d0/8d0*( integrand(1:lx1-1,1:lx2-1,1:lx3-1) + integrand(2:lx1,1:lx2-1,1:lx3-1) + &
                            integrand(1:lx1-1,2:lx2,1:lx3-1) + integrand(2:lx1,2:lx2,1:lx3-1) + &
                            integrand(1:lx1-1,1:lx2-1,2:lx3) + integrand(2:lx1,1:lx2-1,2:lx3) + &
@@ -464,7 +466,7 @@ do while (t<tdur)
 end do
 
 
-!DEALLOCATE MAIN PROGRAM DATA
+!! DEALLOCATE MAIN PROGRAM DATA
 deallocate(J1,J2,J3)
 deallocate(Jx,Jy,Jz)
 deallocate(xp,yp,zp)

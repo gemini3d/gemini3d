@@ -1,9 +1,9 @@
 module mpimod
 !! NOTES:
 !! * Need to consider overloading routines as send_ghost and send_noghost so that
-!!   it is more clear what the structure of the input arrays should be. 
+!!   it is more clear what the structure of the input arrays should be.
 
-use phys_consts, only : lsp, wp 
+use phys_consts, only : lsp, wp
 !! code needs to know how many species are being used.
 
 use mpi, only: mpi_init, mpi_comm_world, &
@@ -14,7 +14,7 @@ use mpi, only: mpi_init, mpi_comm_world, &
 mpi_realprec=>mpi_real
 #elif REALBITS==64
 mpi_realprec=>mpi_double_precision
-#endif           
+#endif
 
 implicit none
 
@@ -22,12 +22,12 @@ private :: lsp, wp
 private :: mpi_init, mpi_status_size, mpi_status_ignore, mpi_integer, mpi_sum, mpi_comm_world
 
 !> NOW A LIST OF TAGS SO THESE DO NOT NEED TO BE EMBEDDED IN EACH SUBROUTINE
-integer, parameter :: tagns=2,tagvs1=3,tagTs=4    
+integer, parameter :: tagns=2,tagvs1=3,tagTs=4
 !! root/workers input routines.  also output routines for root/worker
 
-integer, parameter :: tagJ1=6,tagJ2=7,tagJ3=8,tagv2=9,tagv3=10    
+integer, parameter :: tagJ1=6,tagJ2=7,tagJ3=8,tagv2=9,tagv3=10
 !! output root/worker routines, main program, potential_comm
-integer, parameter :: tagvs3BC=100,tagnsBC=101,tagrhovs1BC=102,tagrhoesBC=103    
+integer, parameter :: tagvs3BC=100,tagnsBC=101,tagrhovs1BC=102,tagrhoesBC=103
 !! used in the advection boundary conditions
 integer, parameter :: tagvs1BC=1000,tagvs2BC=1001!,tagvs3BC=1002    !used in the compression solution
 
@@ -85,10 +85,10 @@ integer, parameter :: tagAur=96
 integer, parameter :: tagTninf=98
 
 !> VARIABLES REUSED BY ALL WORKERS AND USING MODULES
-integer, protected :: myid,lid    
+integer, protected :: myid,lid
 !! no external procedure should mess with these (but they need to be able to read them)
 
-integer :: ierr
+integer, private :: ierr
 !> using procedures need to be able to overwrite this to prevent seg. faults (or something)
 
 
@@ -102,7 +102,7 @@ integer, protected :: lid2,lid3,myid2,myid3
 
 !
 !!> THESE INTERFACES OVERLOAD THE MPI GATHER,BROADCAST SUBROUTINES FOR ARRAYS OF DIFFERENT RANKS.
-!!> THESE ARE ALSO USEFUL FOR SUBBING IN DIFFERENT SCENARIOS - 1D VS. 2D MPI DIVISIONS ETC. 
+!!> THESE ARE ALSO USEFUL FOR SUBBING IN DIFFERENT SCENARIOS - 1D VS. 2D MPI DIVISIONS ETC.
 !interface gather_recv
 !  module procedure gather_recv2D_23, gather_recv3D_23, gather_recv4D_23
 !end interface gather_recv
@@ -398,7 +398,7 @@ contains
 
 
 subroutine mpisetup()
-!! INITIALIZES MODULE MPI VARIABLES FOR A WORKER.  
+!! INITIALIZES MODULE MPI VARIABLES FOR A WORKER.
 !! THIS CURRENTLY IS UNUSED AS IT HAS NOT BEEN
 !! FULLY IMPLEMENTED IN THIS VERSINO OF THE CODE.
 
@@ -424,7 +424,7 @@ function grid2ID(i2,i3)
   integer :: grid2ID
 
   grid2ID=i3*lid2+i2    !this formulat assumes that the first element is (i2,i3)=(0,0)
-  
+
 end function grid2ID
 
 
@@ -471,7 +471,7 @@ end subroutine mpi_manualgrid
 
 subroutine mpigrid(lx2all,lx3all)
 
-!! THIS SUBROUTINE DEFINES A PROCESS GRID, IF REQUIRED 
+!! THIS SUBROUTINE DEFINES A PROCESS GRID, IF REQUIRED
 
 integer, intent(in) :: lx2all,lx3all
 
@@ -487,14 +487,14 @@ else
     error stop '!!!Grid is not divisible by number of processes - please generate a new one  &
                  & and try again or try a different number of processes...'
   end if
-  
+
   lid2=1
   lid3=lid
-  do while( ((lid3/2)*2==lid3) .and. (lid3-lid2>lid3 .or. lid3-lid2>lid2) .and. &     
+  do while( ((lid3/2)*2==lid3) .and. (lid3-lid2>lid3 .or. lid3-lid2>lid2) .and. &
            lx3all/(lid3/2)*(lid3/2)==lx3all .and. lx2all/(lid2*2)*(lid2*2)==lx2all .and. &
            lid3/2>1)
   !! must insure that lx3 is divisible by lid3 and lx2 by lid2 and lid3 must be > 1
-  
+
     lid3=lid3/2
     lid2=lid2*2
   end do

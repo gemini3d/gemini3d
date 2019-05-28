@@ -8,7 +8,7 @@ use grid, only : curvmesh,lx1,lx2,lx3,lx3all
 use interpolation, only : interp1,interp2
 use io, only : date_filename
 use timeutils, only : dateinc
-use mpimod
+use mpimod, only: lid, mpi_realprec, myid, tage0p, tagllat, tagllon, tagmlat, tagmlon, tagqp
 
 implicit none
 
@@ -50,7 +50,7 @@ type(curvmesh) :: x
 
 character(512) :: buf
 character(:), allocatable :: sizefn, gridfn, precfn
-integer :: ios, u
+integer :: ios, u, ierr
 integer :: iid,iflat,ix2,ix3
 
 real(wp) :: UTsectmp
@@ -87,7 +87,7 @@ if(t+dt/2d0>=tnext) then    !need to load a new file
       end do
       allocate(mlonp(llon),mlatp(llat))    !bit of code duplication with worker code block below...
 
-
+      if (ierr /= 0) error stop 'mpi_send failed to send grid info'
       !IF WE HAVE SINGLETON DIMENSION THEN ALLOCATE SOME SPACE FOR A TEMP
       !ARRAY FOR INPUTTING INTO INTERP1
       if (llon==1) then
@@ -114,7 +114,7 @@ if(t+dt/2d0>=tnext) then    !need to load a new file
     else    !workers
       call mpi_recv(llon,1,MPI_INTEGER,0,tagllon,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
       call mpi_recv(llat,1,MPI_INTEGER,0,tagllat,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-      allocate(mlonp(llon),mlatp(llat)) 
+      allocate(mlonp(llon),mlatp(llat))
 
       call mpi_recv(mlonp,llon,mpi_realprec,0,tagmlon,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
       call mpi_recv(mlatp,llat,mpi_realprec,0,tagmlat,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
@@ -153,7 +153,7 @@ if(t+dt/2d0>=tnext) then    !need to load a new file
       !just set everything to zero
       !write(stderr,*) 'Bad input file '//precfn//' setting everything to some default value...'
       !Qp=0d0; E0p=100d0;
-      
+
     print *, 'Successfully located input file...'
     read(u) Qp,E0p
     close(u)
@@ -252,8 +252,8 @@ W0pk=3d3
 PhiWpk=1d-5
 do ix3=1,lx3
   do ix2=1,lx2
-    W0(ix2,ix3,1)=W0pk 
-    PhiWmWm2(ix2,ix3,1)=PhiWpk       
+    W0(ix2,ix3,1)=W0pk
+    PhiWmWm2(ix2,ix3,1)=PhiWpk
   end do
 end do
 
@@ -311,8 +311,8 @@ W0pk=3d3
 PhiWpk=1d-3
 do ix3=1,lx3
   do ix2=1,lx2
-    W0(ix2,ix3,1)=W0pk 
-    PhiWmWm2(ix2,ix3,1)=PhiWpk       
+    W0(ix2,ix3,1)=W0pk
+    PhiWmWm2(ix2,ix3,1)=PhiWpk
   end do
 end do
 
