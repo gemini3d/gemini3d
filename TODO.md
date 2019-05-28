@@ -31,7 +31,7 @@ This file is intended to document development priorities for the GEMINI project.
 * Remove the array permuting form the fortran code and do this from the MATLAB/octave scripts.  These scripts should provide a permutation array for the dimensions to the fortran code (e.g. [1,2,3] or [3,1,2], which are even, or [1,3,2] which is odd), which then knows if the coordinate system is right-handed or left-handed so it can adjust the cross products accordingly.
 * Boundary condition modules for the electrodynamics and precipitation should be removed in favor of submodules of the electrodynamics and ionization modules.  If we do this are we breaking backwards compatibility with older compilers?  Do we even care?
 * MSISmatlab is a mess, uses dmy instead of ymd and UThrs instead of UTsec - not sure what this will affect is we change...
-* There are now numerous versions of routines correpsonding to message passing in x3 vs. on a x2/x3 process grid.  Somehow the x3 routines need to be kept as they may be faster in some (hopefully unusual) situations.  Michael suggests a submodule...
+* There are now numerous versions of routines corresponding to message passing in x3 vs. on a x2/x3 process grid.  Somehow the x3 routines need to be kept as they may be faster in some (hopefully unusual) situations.  Michael suggests a submodule...
 * Some modules have now become excessively large, e.g. mpimod and calculus...  These need to be organized and split up
 * Handling of metric factors in the potential solves is sloppy - need to be passing into solver and used to eval. geometric terms there - would be more clear to reader...
 
@@ -49,7 +49,7 @@ This file is intended to document development priorities for the GEMINI project.
 * (INITIAL IMPLEMENTATION COMPLETED) Add 3Dtest to ctest
 * Add a script that runs a complete sequences of and example from generating ICs, to running the disturbance simulation.
 * For local simulations it makes sense to have the simulation able to use a Lagrangian frame of reference to reduce the total number of grid points needed.
-* Mmerge in P. Inchin's EIA changes (with appropriate flags)
+* Merge in P. Inchin's EIA changes (with appropriate flags)
 * Add an example or options to run with a global grid, in case that is useful for anyone.  This basically requires a special grid generation script and then the simulation needs to be flagged as periodic in x3 (magnetic longitude).  
 * Ability to run a dipole grid that encapsulates the magnetic poles
 

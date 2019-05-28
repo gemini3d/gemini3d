@@ -9,7 +9,8 @@ A subroutine-level set of documentation describing functions of individual progr
 
 GEMINI uses generalized orthogonal curvilinear coordinates and has been tested with dipole and Cartesian coordinates.
 
-We have prioritized ease of setup/install across a wide variety of computing systems.  Please open a [GitHub Issue](https://github.com/mattzett/gemini/issues) if you experience difficulty building GEMINI.
+We have prioritized ease of setup/install across a wide variety of computing systems.
+Please open a [GitHub Issue](https://github.com/gemini3d/gemini/issues) if you experience difficulty building GEMINI.
 
 Generally, the Git `master` branch has the current development version and is the best place to start, while more thoroughly-tested releases happen occasionally.  Specific commits corresponding to published results will also be noted, where appropriate, in the corresponding journal article.
 
@@ -47,7 +48,7 @@ Tested versions include:
 
 GEMINI `*.m` scripts require EITHER:
 
-* GNU Octave &ge; 4.0
+* GNU Octave &ge; 4.0:  Note that GNU Octave plotting is unreliable in general for any program. Matlab is recommended.
 * Matlab &ge; R2007b
 
 Note that only the essential scripts needed to setup a simple example, and plot the results are included in the main GEMINI respository.  A separate repository has been created for more involved examples.
@@ -90,7 +91,7 @@ This test runs a short demo, taking about 2-5 minutes on a typical Mac / Linux l
 1. get GEMINI code and install prereqs
    ```sh
    cd ~
-   git clone https://github.com/mattzett/gemini
+   git clone https://github.com/gemini3d/gemini
    cd gemini
 2. Generate Makefile and auto-download test reference data
    ```sh
@@ -126,6 +127,7 @@ Libraries:
 
 * If you have `sudo` access, try the `./install_prereqs.sh` script
 * If need to build libraries from source (e.g. because you don't have `sudo`) try `build_gnu_noMKL.sh` or `build_intel.sh` from the `fortran-libs` repo:
+  
   ```sh
   git clone https://github.com/scivision/fortran-libs ~/flibs-nomkl
 
@@ -137,15 +139,18 @@ Libraries:
 
 ### self-tests
 GEMINI has self tests that compare the output from a "known" test problem to a reference output.  So running:
+
 ```sh
 ctest --output-on-failure
 ```
 
-1. executes
+1. execute
+
    ```sh
-   ./gemini initialize/2Dtest/config.ini /tmp/2d
+   ./gemini.bin initialize/2Dtest/config.ini /tmp/2d
    ```
-2. uses GNU Octave (or Matlab) compares with reference output using `tests/compare_all.m`:
+2. use GNU Octave (or Matlab) to compare with reference output using `tests/compare_all.m`:
+   
    ```matlab
    compare_all(/tmp/2d, '../simulations/2Dtest_files/2Dtest_output')
    ```
@@ -187,8 +192,13 @@ cmake -DSCALAPACK_ROOT=~/flibs-nomkl/scalapack -DMUMPS_ROOT=~/flibs-nomkl/MUMPS 
 
 1. Generating equilibrium conditions can be a bit tricky with curvilinear grids.  A low-res run can be done, but it will not necessary interpolate properly onto a finer grid due to some issue with the way the grids are made with ghost cells etc.  A workaround is to use a slightly narrower (x2) grid in the high-res run (quarter of a degree seems to work most of the time).
 2. Magnetic field calculations on an open 2D grid do not appear completely consistent with MATLAB model prototype results; although there are quite close.  This may have been related to sign errors in the FAC calculations - these tests should be retried at some point.
-3. There are potentially some issues with the way the stability condition is evaluated, i.e. it is computed before the perp. drifts are solved so it is possible when using input data to overrun this especially if your target CFL number is &gt; 0.8 or so.  Some code has been added as of 8/20/2018 to throttle how much dt is allowed to change between time steps and this seems to completely fix this issue, but theoretically it could still happen; however this is probably very unlikely.
-4. Occasionally one will see edge artifacts in either the field -aligned currents or other parameters for non-periodic in x3 solves.  This may be related to the divergence calculations needed for the parallel current (under EFL formulation) and for compression calculations in the multifluid module, but this needs to be investigated further...  This do not appear to affect solutions in the interior of the grid domain and can probably be safely ignored if your region of interest is sufficiently far from the boundary (which is alway good practice anyway).
+3. Occasionally MUMPS will throw an error because it underestimated the amount of memory needed for a solve.  If this happens a workaround is to uncomment (or add) this line of code to the potential solver being used for your simulations:
+  ```fortran
+  mumps_par%ICNTL(14)=50
+  ```
+  If the problem persists try changing the number to 100.
+4. There are potentially some issues with the way the stability condition is evaluated, i.e. it is computed before the perp. drifts are solved so it is possible when using input data to overrun this especially if your target CFL number is &gt; 0.8 or so.  Some code has been added as of 8/20/2018 to throttle how much dt is allowed to change between time steps and this seems to completely fix this issue, but theoretically it could still happen; however this is probably very unlikely.
+5. Occasionally one will see edge artifacts in either the field -aligned currents or other parameters for non-periodic in x3 solves.  This may be related to the divergence calculations needed for the parallel current (under EFL formulation) and for compression calculations in the multifluid module, but this needs to be investigated further...  This do not appear to affect solutions in the interior of the grid domain and can probably be safely ignored if your region of interest is sufficiently far from the boundary (which is alway good practice anyway).
 
 
 ## To do list
@@ -208,11 +218,11 @@ cd objects
 cmake ..
 make -j
 
-mpirun -np <number of processors>  ./gemini <input config file> <output directory>
+mpirun -np <number of processors>  ./gemini.bin <input config file> <output directory>
 ```
 for example:
 ```sh
-mpirun -np 4 ./gemini initialize/2Dtest/config.ini ../simulations/2Dtest/
+mpirun -np 4 ./gemini.bin initialize/2Dtest/config.ini ../simulations/2Dtest/
 ```
 Note that the output *base* directory must already exist (`../simulations` in previous example).  The source code consists of about ten module source files encapsulating various functionalities used in the model.  A diagram all of the modules and their function is shown in figure 1; a list of module dependencies can also be found one of the example makefiles included in the repo or in CMakeList.txt.
 
@@ -373,13 +383,14 @@ The code determines 2D vs. 3D runs by the number of x2 or x3 grid points specifi
 
 ## Loading and plotting output
 
-Either MATLAB or GNU/octave is required to load the output file via scripts in the ./vis directory (these scripts generally work on both 2D and 3D simulation results).
-The results for an entire simulation can be plotted using either:
+MATLAB is required to load the output file via scripts in the ./vis directory (these scripts generally work on both 2D and 3D simulation results).
+GNU Octave is not reliable at plotting for any program, and might not work.
+The results for an entire simulation can be plotted using [plotall.m](./vis/plotall.m)
 
-  * `plotall.m`    single thread, slow, easy to use
-  * `plotall.py`   multithreaded, extremely fast, need to have Python installed
+```matlab
+plotall('/tmp/mysim')
+```
 
-(see source code for details).
 These also illustrates how to read in a sequence of files from a simulation.  This script prints a copy of the output plots into the simulation output directory.  Finer-level output control can be achieve by using the 'plotframe.m' and 'loadframe.m' scripts to plot and load data from individual simulation output frames, respectively.
 
 The particular format of the output files is specified by the user in the input config.ini file.  There are three options:
