@@ -73,7 +73,7 @@ elseif(CMAKE_Fortran_COMPILER_ID STREQUAL Cray)
 elseif(CMAKE_Fortran_COMPILER_ID STREQUAL XL)
 
 elseif(CMAKE_Fortran_COMPILER_ID STREQUAL Flang)
-  list(APPEND FFLAGS -Mallocatable=03)
+
 elseif(CMAKE_Fortran_COMPILER_ID STREQUAL NAG)
   list(APPEND FFLAGS -u -C=all -f2008)
 endif()

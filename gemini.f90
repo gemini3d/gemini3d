@@ -4,17 +4,17 @@ program gemini
 !------THIS IS THE MAIN PROGRAM FOR GEMINI3D
 !----------------------------------------------------------
 
-use phys_consts, only : lnchem, lwave, lsp
-use grid, only: grid_size,read_grid,clear_grid,lx1,lx2,lx3,lx2all,lx3all
+use phys_consts, only : lnchem, lwave, lsp, wp
+use grid, only: curvmesh, grid_size,read_grid,clear_grid,lx1,lx2,lx3,lx2all,lx3all
 use temporal, only : dt_comm
 use timeutils, only: dateinc
 use neutral, only : neutral_atmos,make_dneu,neutral_perturb,clear_dneu
 use io, only : read_configfile,input_plasma,create_outdir,output_plasma,create_outdir_aur,output_aur
 use potential_comm,only : electrodynamics
 use multifluid, only : fluid_adv
-use mpimod
+use mpimod, only : mpisetup, mpibreakdown, mpi_manualgrid, mpigrid, lid, myid
 use precipBCs_mod, only: make_precip_fileinput, clear_precip_fileinput
-use potentialBCs_mumps
+use potentialBCs_mumps, only: clear_potential_fileinput
 
 implicit none
 
@@ -30,7 +30,7 @@ real(wp) :: tdur       !duration of simulation
 real(wp), dimension(3) :: activ    !f10.7a,f10.7,ap
 real(wp) :: tcfl                       !target CFL number
 real(wp) :: Teinf                      !exospheric temperature
-integer :: potsolve                   !what type of potential solve 
+integer :: potsolve                   !what type of potential solve
 integer :: flagperiodic               !toggles whether or not the grid is treated as periodic in the x3 dimension (affects some of the message passing)
 integer :: flagoutput                 !what type of output to do (1 - everything; 2 - avg'd parms.; 3 - ne only)
 integer :: flagcap                    !internal capacitance?
@@ -104,7 +104,7 @@ if (argc < 2) error stop 'must specify .ini file to configure simulation and out
 
 !INITIALIZE MESSING PASSING VARIABLES, IDS ETC.
 call mpisetup()
-write(*,*) 'Process:  ',myid,' of:  ',lid-1,' online...'
+print *, 'Process:  ',myid,' of:  ',lid-1,' online...'
 
 
 !READ FILE INPUT
@@ -173,17 +173,17 @@ call input_plasma(x%x1,x%x2all,x%x3all,indatsize,ns,vs1,Ts)
 !THIS KEEPS US FROM HAVING TO HAVE FULL-GRID ARRAYS FOR THESE STATE VARS (EXCEPT
 !FOR IN OUTPUT FNS.).  IF A SIMULATIONS IS DONE WITH INTERTIAL CAPACITANCE THERE
 !WILL BE A FINITE AMOUNT OF TIME FOR THE FLOWS TO 'START UP', BUT THIS SHOULDN'T
-!BE TOO MUCH OF AN ISSUE.  WE ALSO NEED TO SET THE BACKGROUND MAGNETIC FIELD STATE 
+!BE TOO MUCH OF AN ISSUE.  WE ALSO NEED TO SET THE BACKGROUND MAGNETIC FIELD STATE
 !VARIABLE HERE TO WHATEVER IS SPECIFIED IN THE GRID STRUCTURE (THESE MUST BE CONSISTENT)
 rhov2=0d0; rhov3=0d0; v2=0d0; v3=0d0;
 B2=0d0; B3=0d0;
 B1(1:lx1,1:lx2,1:lx3)=x%Bmag      !this assumes that the grid is defined s.t. the x1 direction corresponds to the magnetic field direction (hence zero B2 and B3).
- 
+
 
 !INITIALIZE ELECTRODYNAMIC QUANTITIES FOR POLARIZATION CURRENT
 if (myid==0) then
   Phiall=0d0     !only root store entire potential array
-end if   
+end if
 E1=0d0; E2=0d0; E3=0d0;
 vs2=0d0; vs3=0d0;
 
@@ -202,7 +202,7 @@ do while (t<tdur)
     if(dt/dtprev > dtscale) then     !throttle how quickly we allow dt to increase
       dt=dtscale*dtprev
       if (myid==0) then
-        write(*,*) 'Throttling dt to:  ',dt
+        print *, 'Throttling dt to:  ',dt
       end if
     end if
   end if
@@ -210,7 +210,7 @@ do while (t<tdur)
 
   !COMPUTE BACKGROUND NEUTRAL ATMOSPHERE USING MSIS00.  PRESENTLY THIS ONLY GETS CALLED
   !ON THE FIRST TIME STEP DUE TO A NEED TO KEEP A CONSTANT BACKGROUND (I.E. ONE NOT VARYING
-  !IN TIME) FOR SOME SIMULATIONS USING NEUTRAL INPUT.  REALISTICALLY THIS NEEDS TO BE 
+  !IN TIME) FOR SOME SIMULATIONS USING NEUTRAL INPUT.  REALISTICALLY THIS NEEDS TO BE
   !RECALLED EVERY SO OFTEN (MAYBE EVERY 10-15 MINS)
   if (it==1) then
     call cpu_time(tstart)
@@ -219,7 +219,7 @@ do while (t<tdur)
     call cpu_time(tfin)
 
     if (myid==0) then
-      write(*,*) 'Neutral background calculated in time:  ',tfin-tstart
+      print *, 'Neutral background calculated in time:  ',tfin-tstart
     end if
   end if
 
@@ -228,7 +228,7 @@ do while (t<tdur)
   if (flagdneu==1) then
     call cpu_time(tstart)
     if (it==1) then    !this triggers the code to load the neutral frame correspdonding ot the beginning time of the simulation
-      if (myid==0) write(*,*) '!!!Attempting initial load of neutral dynamics files!!!' // &
+      if (myid==0) print *, '!!!Attempting initial load of neutral dynamics files!!!' // &
                               ' This is a workaround that fixes the restart code...',t-dt
       call neutral_perturb(interptype,dt,dtneu,t-dtneu,ymd,UTsec-dtneu,sourcedir,drhon,dzn, &
                                   sourcemlat,sourcemlon,x,nn,Tn,vn1,vn2,vn3)
@@ -236,7 +236,7 @@ do while (t<tdur)
     call neutral_perturb(interptype,dt,dtneu,t,ymd,UTsec,sourcedir,drhon,dzn,sourcemlat,sourcemlon,x,nn,Tn,vn1,vn2,vn3)
     call cpu_time(tfin)
     if (myid==0) then
-      write(*,*) 'Neutral perturbations calculated in time:  ',tfin-tstart
+      print *, 'Neutral perturbations calculated in time:  ',tfin-tstart
     end if
   end if
 
@@ -247,7 +247,7 @@ do while (t<tdur)
                         Phiall,flagE0file,dtE0,E0dir,ymd,UTsec)
   call cpu_time(tfin)
   if (myid==0) then
-    write(*,*) 'Electrodynamics total solve time:  ',tfin-tstart
+    print *, 'Electrodynamics total solve time:  ',tfin-tstart
   end if
 
 
@@ -257,18 +257,18 @@ do while (t<tdur)
                  flagprecfile,dtprec,precdir,flagglow,dtglow)
   call cpu_time(tfin)
   if (myid==0) then
-    write(*,*) 'Multifluid total solve time:  ',tfin-tstart
+    print *, 'Multifluid total solve time:  ',tfin-tstart
   end if
 
 
   !NOW OUR SOLUTION IS FULLY UPDATED SO UPDATE TIME VARIABLES TO MATCH...
   it=it+1; t=t+dt;
   if (myid==0) then
-    write(*,*) 'Moving on to time step (in sec):  ',t,'; end time of simulation:  ',tdur
+    print *, 'Moving on to time step (in sec):  ',t,'; end time of simulation:  ',tdur
   end if
   call dateinc(dt,ymd,UTsec)
   if (myid==0) then
-    write(*,*) 'Current date',ymd,'Current UT time:  ',UTsec
+    print *, 'Current date',ymd,'Current UT time:  ',UTsec
   end if
 
 
@@ -278,9 +278,9 @@ do while (t<tdur)
     call output_plasma(outdir,flagoutput,ymd,UTsec,vs2,vs3,ns,vs1,Ts,Phiall,J1,J2,J3)
     call cpu_time(tfin)
     if (myid==0) then
-      write(*,*) 'Plasma output done for time step:  ',t,' in cpu_time of:  ',tfin-tstart
+      print *, 'Plasma output done for time step:  ',t,' in cpu_time of:  ',tfin-tstart
     end if
-    
+
     tout=tout+dtout
   end if
 
@@ -290,7 +290,7 @@ do while (t<tdur)
     call output_aur(outdir,flagglow,ymd,UTsec,iver)
     call cpu_time(tfin)
     if (myid==0) then
-      write(*,*) 'Auroral output done for time step:  ',t,' in cpu_time of: ',tfin-tstart
+      print *, 'Auroral output done for time step:  ',t,' in cpu_time of: ',tfin-tstart
     end if
     tglowout=tglowout+dtglowout
   end if
