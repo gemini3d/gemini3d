@@ -47,7 +47,8 @@ include 'dmumps_struc.h'
 
 integer, dimension(:), pointer, protected, save :: mumps_perm   !cached permutation, unclear whether save is necessary...
 
-public :: elliptic3d_curv, elliptic2d_pol_conv_curv, elliptic2d_pol_conv_curv_periodic2, elliptic2d_nonint_curv, elliptic_workers
+public :: elliptic3d_curv, elliptic3D_decimate, elliptic2d_pol_conv_curv, elliptic2d_pol_conv_curv_periodic2, &
+          elliptic2d_nonint_curv, elliptic_workers
 
 contains
 
@@ -112,6 +113,7 @@ Fc=gradsig01
 
 
 !DEFINE A DECIMATED MESH (THIS IS HARDCODED FOR NOW)
+print*, 'Decimating parallel grid...'
 ldec=11
 allocate(x1dec(-1:ldec+2),dx1dec(0:ldec+2),x1idec(ldec+1),dx1idec(ldec))
 x1dec=1e3*[x%x1(-1),x%x1(0),x%x1(1),81.8_wp,84.2_wp,87.5_wp,93.3_wp,106.0_wp,124.0_wp, &
@@ -122,6 +124,7 @@ dx1idec=x1idec(2:lx1+1)-x1idec(1:lx1)
 
 
 !INTERPOLATE COEFFICIENTS ONTO DECIMATED GRID
+print*, 'Interpolating coefficients...'
 allocate(Acdec(1:ldec,1:lx2,1:lx3),Bcdec(1:ldec,1:lx2,1:lx3),Ccdec(1:ldec,1:lx2,1:lx3), &
          Dcdec(1:ldec,1:lx2,1:lx3),Ecdec(1:ldec,1:lx2,1:lx3),Fcdec(1:ldec,1:lx2,1:lx3))
 do ix2=1,lx2
@@ -137,11 +140,13 @@ end do
 
 
 !CALL CARTESIAN SOLVER ON THE DECIMATED GRID
+print*, 'Calling solve on decimated grid...'
 Phidec=elliptic3D_cart(srcterm,Acdec,Bcdec,Ccdec,Dcdec,Ecdec,Fcdec,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3,Vmaxx3, &
                 dx1dec,dx1idec,x%dx2all,x%dx2iall,x%dx3all,x%dx3iall,flagdirich,perflag,it)
 
 
 !INTERPOLATE BACK UP TO MAIN GRID
+print*, 'Upsampling potential...'
 do ix2=1,lx2
   do ix3=1,lx3
     elliptic3D_decimate(:,ix2,ix3)=interp1(x1dec,Phidec(:,ix2,ix3),x%x1(1:lx1))

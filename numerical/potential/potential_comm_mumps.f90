@@ -16,6 +16,7 @@ use collisions, only: conductivities, capacitance
 use calculus, only: div3d, integral3d1, grad3d1, grad3d2, grad3d3, integral3d1_curv_alt
 use potentialBCs_mumps, only: potentialbcs2D, potentialbcs2D_fileinput
 use potential_mumps, only : elliptic3D_curv, &
+                            elliptic3D_decimate, &
                             elliptic2D_pol_conv_curv, &
                             elliptic2D_pol_conv_curv_periodic2, &
                             elliptic2D_nonint_curv, &
@@ -551,7 +552,18 @@ if (lx2/=1) then    !either field-resolved 3D or integrated 2D solve for 3D doma
 
   else    !resolved 3D solve
     !ZZZ - conductivities need to be properly scaled here...  So does the source term...  Maybe leave as broken for now since I don't really plan to use this code
-
+    print *, 'Beginning field-resolved 3D solve...  Type;  ',flagdirich
+    
+    !-------
+    !PRODUCE SCALED CONDUCTIVITIES TO PASS TO SOLVER, ALSO SCALED SOURCE TERM
+    sig0scaled=x%h2(1:lx1,1:lx2,1:lx3)*x%h3(1:lx1,1:lx2,1:lx3)/x%h1(1:lx1,1:lx2,1:lx3)*sig0
+    if (flagswap==1) then
+      sigPscaled=x%h1(1:lx1,1:lx2,1:lx3)*x%h2(1:lx1,1:lx2,1:lx3)/x%h3(1:lx1,1:lx2,1:lx3)*sigP    !remember to swap 2-->3
+    else
+      sigPscaled=x%h1(1:lx1,1:lx2,1:lx3)*x%h3(1:lx1,1:lx2,1:lx3)/x%h2(1:lx1,1:lx2,1:lx3)*sigP
+    end if
+    srcterm=srcterm*x%h1(1:lx1,1:lx2,1:lx3)*x%h2(1:lx1,1:lx2,1:lx3)*x%h3(1:lx1,1:lx2,1:lx3)
+    
 
     !RADD--- ROOT NEEDS TO PICK UP FIELD-RESOLVED SOURCE TERM AND COEFFICIENTS FROM WORKERS
     call gather_recv(sigPscaled,tagsigP,sigPscaledall)
@@ -561,7 +573,10 @@ if (lx2/=1) then    !either field-resolved 3D or integrated 2D solve for 3D doma
 
     !R------
     print *, '!Beginning field-resolved 3D solve (could take a very long time)...'
-    Phiall=elliptic3D_curv(srctermall,sig0scaledall,sigPscaledall,sigHscaledall,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3,Vmaxx3, &
+    !Phiall=elliptic3D_curv(srctermall,sig0scaledall,sigPscaledall,sigHscaledall,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3,Vmaxx3, &
+    !                  x,flagdirich,perflag,it)
+    Phiall=elliptic3D_decimate(srctermall,sig0scaledall,sigPscaledall,sigHscaledall, & 
+                      Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3,Vmaxx3, &
                       x,flagdirich,perflag,it)
     !R------
   end if
@@ -1223,7 +1238,14 @@ if (lx2/=1) then    !either field-resolved 3D or integrated 2D solve for 3D doma
 !
   else    !resolved 3D solve
     !ZZZ - conductivities need to be properly scaled here...  So does the source term...  Maybe leave as broken for now since I don't really plan to use this code
-
+   !PRODUCE SCALED CONDUCTIVITIES TO PASS TO SOLVER, ALSO SCALED SOURCE TERM
+    sig0scaled=x%h2(1:lx1,1:lx2,1:lx3)*x%h3(1:lx1,1:lx2,1:lx3)/x%h1(1:lx1,1:lx2,1:lx3)*sig0
+    if (flagswap==1) then
+      sigPscaled=x%h1(1:lx1,1:lx2,1:lx3)*x%h2(1:lx1,1:lx2,1:lx3)/x%h3(1:lx1,1:lx2,1:lx3)*sigP    !remember to swap 2-->3
+    else
+      sigPscaled=x%h1(1:lx1,1:lx2,1:lx3)*x%h3(1:lx1,1:lx2,1:lx3)/x%h2(1:lx1,1:lx2,1:lx3)*sigP
+    end if
+    srcterm=srcterm*x%h1(1:lx1,1:lx2,1:lx3)*x%h2(1:lx1,1:lx2,1:lx3)*x%h3(1:lx1,1:lx2,1:lx3)
 
     !RADD--- ROOT NEEDS TO PICK UP FIELD-RESOLVED SOURCE TERM AND COEFFICIENTS FROM WORKERS
     call gather_send(sigPscaled,tagsigP)
