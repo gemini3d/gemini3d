@@ -33,6 +33,7 @@ use phys_consts, only: wp
 use calculus, only: grad3D1, grad3D2, grad3D3, grad2D1_curv_alt, grad2D3, grad2D3_curv_periodic
 use grid, only: curvmesh, gridflag
 use mpimod, only: myid
+use interpolation, only:interp1
 
 implicit none
 
@@ -49,6 +50,369 @@ integer, dimension(:), pointer, protected, save :: mumps_perm   !cached permutat
 public :: elliptic3d_curv, elliptic2d_pol_conv_curv, elliptic2d_pol_conv_curv_periodic2, elliptic2d_nonint_curv, elliptic_workers
 
 contains
+
+
+function elliptic3D_decimate(srcterm,sig0,sigP,sigH,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3,Vmaxx3, &
+                  x,flagdirich,perflag,it)
+
+!------------------------------------------------------------
+!-------SOLVE IONOSPHERIC POTENTIAL EQUATION IN 3D USING MUMPS
+!-------ASSUME THAT WE ARE RESOLVING THE POTENTIAL ALONG THE FIELD
+!-------LINE.  THIS IS MOSTLY INEFFICIENT/UNWORKABLE FOR MORE THAN 1M
+!-------GRID POINTS.
+!------------------------------------------------------------
+
+real(wp), dimension(:,:,:), intent(in) :: srcterm,sig0,sigP,sigH
+real(wp), dimension(:,:), intent(in) :: Vminx1,Vmaxx1
+real(wp), dimension(:,:), intent(in) :: Vminx2,Vmaxx2
+real(wp), dimension(:,:), intent(in) :: Vminx3,Vmaxx3
+type(curvmesh), intent(in) :: x
+integer, intent(in) :: flagdirich
+logical, intent(in) :: perflag
+integer, intent(in) :: it
+
+real(wp), dimension(1:size(srcterm,1),1:size(srcterm,2),1:size(srcterm,3)) :: gradsigP2,gradsigP3
+real(wp), dimension(1:size(srcterm,1),1:size(srcterm,2),1:size(srcterm,3)) :: gradsigH2,gradsigH3
+real(wp), dimension(1:size(srcterm,1),1:size(srcterm,2),1:size(srcterm,3)) :: gradsig01
+real(wp), dimension(1:size(srcterm,1),1:size(srcterm,2),1:size(srcterm,3)) :: Ac,Bc,Cc,Dc,Ec,Fc
+
+integer :: lx1,lx2,lx3,ix1,ix2,ix3
+integer :: ldec
+real(wp), dimension(9,size(srcterm,2),size(srcterm,3)) :: Phidec
+real(wp), dimension(:), allocatable :: x1dec
+real(wp), dimension(:), allocatable :: dx1dec
+real(wp), dimension(:), allocatable :: x1idec
+real(wp), dimension(:), allocatable :: dx1idec
+real(wp), dimension(:,:,:), allocatable :: Acdec,Bcdec,Ccdec,Dcdec,Ecdec,Fcdec
+
+real(wp), dimension(size(srcterm,1),size(srcterm,2),size(srcterm,3)) :: elliptic3D_decimate
+
+
+
+!SYSTEM SIZES
+lx1=size(srcterm,1)    !These will be full grid sizes if called from root (only acceptable thing)
+lx2=size(srcterm,2)
+lx3=size(srcterm,3)
+
+
+!COMPUTE AUXILIARY COEFFICIENTS TO PASS TO CART SOLVER
+print *, 'Prepping coefficients for elliptic equation...'    
+gradsig01=grad3D1(sig0,x,1,lx1,1,lx2,1,lx3)
+gradsigP2=grad3D2(sigP,x,1,lx1,1,lx2,1,lx3)
+gradsigP3=grad3D3(sigP,x,1,lx1,1,lx2,1,lx3)
+gradsigH2=grad3D2(sigH,x,1,lx1,1,lx2,1,lx3)
+gradsigH3=grad3D3(sigH,x,1,lx1,1,lx2,1,lx3)
+
+Ac=sigP
+Bc=sigP
+Cc=sig0; 
+Dc=gradsigP2+gradsigH3
+Ec=gradsigP3-gradsigH2
+Fc=gradsig01
+
+
+!DEFINE A DECIMATED MESH (THIS IS HARDCODED FOR NOW)
+ldec=11
+allocate(x1dec(-1:ldec+2),dx1dec(0:ldec+2),x1idec(ldec+1),dx1idec(ldec))
+x1dec=1e3*[x%x1(-1),x%x1(0),x%x1(1),81.8_wp,84.2_wp,87.5_wp,93.3_wp,106.0_wp,124.0_wp, &
+            144.6_wp,206.7_wp,882.2_wp,x%x1(lx1),x%x1(lx1+1),x%x1(lx1+2)]
+dx1dec=x1dec(0:lx1+2)-x1dec(1:lx1+1)
+x1idec=0.5_wp*(x1dec(0:lx1)+x1dec(1:lx1+1))
+dx1idec=x1idec(2:lx1+1)-x1idec(1:lx1)
+
+
+!INTERPOLATE COEFFICIENTS ONTO DECIMATED GRID
+allocate(Acdec(1:ldec,1:lx2,1:lx3),Bcdec(1:ldec,1:lx2,1:lx3),Ccdec(1:ldec,1:lx2,1:lx3), &
+         Dcdec(1:ldec,1:lx2,1:lx3),Ecdec(1:ldec,1:lx2,1:lx3),Fcdec(1:ldec,1:lx2,1:lx3))
+do ix2=1,lx2
+  do ix3=1,lx3
+    Acdec(:,ix2,ix3)=interp1(x%x1(1:lx1),Ac(:,ix2,ix3),x1dec(1:ldec))
+    Bcdec(:,ix2,ix3)=interp1(x%x1(1:lx1),Bc(:,ix2,ix3),x1dec(1:ldec))
+    Ccdec(:,ix2,ix3)=interp1(x%x1(1:lx1),Cc(:,ix2,ix3),x1dec(1:ldec))
+    Dcdec(:,ix2,ix3)=interp1(x%x1(1:lx1),Dc(:,ix2,ix3),x1dec(1:ldec))
+    Ecdec(:,ix2,ix3)=interp1(x%x1(1:lx1),Ec(:,ix2,ix3),x1dec(1:ldec))
+    Fcdec(:,ix2,ix3)=interp1(x%x1(1:lx1),Fc(:,ix2,ix3),x1dec(1:ldec))
+  end do
+end do
+
+
+!CALL CARTESIAN SOLVER ON THE DECIMATED GRID
+Phidec=elliptic3D_cart(srcterm,Acdec,Bcdec,Ccdec,Dcdec,Ecdec,Fcdec,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3,Vmaxx3, &
+                dx1dec,dx1idec,x%dx2all,x%dx2iall,x%dx3all,x%dx3iall,flagdirich,perflag,it)
+
+
+!INTERPOLATE BACK UP TO MAIN GRID
+do ix2=1,lx2
+  do ix3=1,lx3
+    elliptic3D_decimate(:,ix2,ix3)=interp1(x1dec,Phidec(:,ix2,ix3),x%x1(1:lx1))
+  end do
+end do
+
+end function elliptic3D_decimate
+
+
+function elliptic3D_cart(srcterm,Ac,Bc,Cc,Dc,Ec,Fc,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3,Vmaxx3, &
+                  dx1,dx1i,dx2all,dx2iall,dx3all,dx3iall,flagdirich,perflag,it)
+
+!------------------------------------------------------------
+!-------SOLVE IONOSPHERIC POTENTIAL EQUATION IN 3D USING MUMPS
+!-------ASSUME THAT WE ARE RESOLVING THE POTENTIAL ALONG THE FIELD
+!-------LINE.  THIS IS MOSTLY INEFFICIENT/UNWORKABLE FOR MORE THAN 1M
+!-------GRID POINTS.
+!------------------------------------------------------------
+
+real(wp), dimension(:,:,:), intent(in) :: srcterm,Ac,Bc,Cc,Dc,Ec,Fc
+real(wp), dimension(:,:), intent(in) :: Vminx1,Vmaxx1
+real(wp), dimension(:,:), intent(in) :: Vminx2,Vmaxx2
+real(wp), dimension(:,:), intent(in) :: Vminx3,Vmaxx3
+real(wp), dimension(0:), intent(in) :: dx1         !backweard diffs start at index zero due to ghost cells
+real(wp), dimension(:), intent(in) :: dx1i         !centered diffs do not include any ghost cells
+real(wp), dimension(0:), intent(in) :: dx2all    
+real(wp), dimension(:), intent(in) :: dx2iall
+real(wp), dimension(0:), intent(in) :: dx3all    
+real(wp), dimension(:), intent(in) :: dx3iall
+integer, intent(in) :: flagdirich
+logical, intent(in) :: perflag
+integer, intent(in) :: it
+
+integer :: ix1,ix2,ix3,lx1,lx2,lx3
+integer :: lPhi,lent
+integer :: iPhi,ient
+integer, dimension(:), allocatable :: ir,ic
+real(wp), dimension(:), allocatable :: M
+real(wp), dimension(:), allocatable :: b
+real(wp) :: tstart,tfin
+
+#if REALBITS==32
+type (SMUMPS_STRUC) mumps_par
+#elif REALBITS==64
+type (DMUMPS_STRUC) mumps_par
+#endif
+
+real(wp), dimension(size(srcterm,1),size(srcterm,2),size(srcterm,3)) :: elliptic3D_cart
+
+!ONLY ROOT NEEDS TO ASSEMBLE THE MATRIX
+if (myid==0) then
+  lx1=size(Ac,1)
+  lx2=size(Ac,2)
+  lx3=size(Ac,3)
+  lPhi=lx1*lx2*lx3
+
+  lent=7*(lx1-2)*(lx2-2)*(lx3-2)                                                 !interior entries
+  lent=lent+2*(lx1-2)*(lx2-2)+2*(lx2-2)*(lx3-2)+2*(lx1-2)*(lx3-2)                !6 faces of cube
+  lent=lent+4*(lx1-2)+4*(lx2-2)+4*(lx3-2)                                        !12 edges
+  lent=lent+8                                                                    !8 corners, now we have total nonzero entries
+  lent=lent+lx2*lx3                                                              !entries to deal with Neumann conditions on bottom
+  if (flagdirich==0) then                                                        !more entries if Neumann on top
+    lent=lent+lx2*lx3
+  end if
+
+  allocate(ir(lent),ic(lent),M(lent),b(lPhi))
+
+  print *, 'MUMPS will attempt a solve of size:  ',lx1,lx2,lx3
+  print *, 'Total unknowns and nonzero entries in matrix:  ',lPhi,lent
+
+
+
+  !------------------------------------------------------------
+  !-------DEFINE A MATRIX USING SPARSE STORAGE (CENTRALIZED
+  !-------ASSEMBLED MATRIX INPUT, SEE SECTION 4.5 OF MUMPS USER
+  !-------GUIDE).
+  !------------------------------------------------------------
+  !LOAD UP MATRIX ELEMENTS
+  M(:)=0d0
+  b=pack(srcterm,.true.)           !boundaries overwritten later
+  ient=1
+  do ix3=1,lx3
+    do ix2=1,lx2
+      do ix1=1,lx1
+        iPhi=lx1*lx2*(ix3-1)+lx1*(ix2-1)+ix1     !linear index referencing Phi(ix1,ix3) as a column vector.  Also row of big matrix
+  
+        if (ix1==1) then          !BOTTOM GRID POINTS + CORNER, USE NEUMANN HERE, PRESUMABLY ZERO
+          ir(ient)=iPhi
+          ic(ient)=iPhi
+          M(ient)=-1d0
+          ient=ient+1
+          ir(ient)=iPhi
+          ic(ient)=iPhi+1
+          M(ient)=1d0
+  !            b(iPhi)=Vminx1(ix3)
+          b(iPhi)=0d0    !force bottom current to zero
+          ient=ient+1
+        elseif (ix1==lx1) then    !TOP GRID POINTS + CORNER
+          if (flagdirich/=0) then
+            ir(ient)=iPhi
+            ic(ient)=iPhi
+            M(ient)=1d0
+            b(iPhi)=Vmaxx1(ix2,ix3)
+            ient=ient+1
+          else
+            ir(ient)=iPhi
+            ic(ient)=iPhi-1
+            M(ient)=-1d0/dx1(lx1)
+            ient=ient+1
+            ir(ient)=iPhi
+            ic(ient)=iPhi
+            M(ient)=1d0/dx1(lx1)
+            b(iPhi)=Vmaxx1(ix2,ix3)
+            ient=ient+1
+          end if
+        elseif (ix2==1) then      !LEFT BOUNDARY
+          ir(ient)=iPhi
+          ic(ient)=iPhi
+          M(ient)=1.0   
+          b(iPhi)=Vminx2(ix1,ix3)
+          ient=ient+1
+        elseif (ix2==lx2) then    !RIGHT BOUNDARY
+          ir(ient)=iPhi
+          ic(ient)=iPhi
+          M(ient)=1.0   
+          b(iPhi)=Vmaxx2(ix1,ix3)
+          ient=ient+1
+        elseif (ix3==1) then
+          ir(ient)=iPhi
+          ic(ient)=iPhi  
+          M(ient)=1.0
+          b(iPhi)=Vminx3(ix1,ix2)
+          ient=ient+1
+        elseif (ix3==lx3) then
+          ir(ient)=iPhi
+          ic(ient)=iPhi
+          M(ient)=1.0
+          b(iPhi)=Vmaxx3(ix1,ix2)
+          ient=ient+1
+        else                      !INTERIOR
+          !ix1,ix2,ix3-1 grid point in ix1,ix2,ix3 equation
+          ir(ient)=iPhi
+          ic(ient)=iPhi-lx1*lx2
+          M(ient)=Bc(ix1,ix2,ix3)/dx3all(ix3)/dx3iall(ix3)-Ec(ix1,ix2,ix3)/(dx3all(ix3+1)+dx3all(ix3))
+          ient=ient+1
+  
+          !ix1,ix2-1,ix3
+          ir(ient)=iPhi
+          ic(ient)=iPhi-lx1
+          M(ient)=Ac(ix1,ix2,ix3)/dx2all(ix2)/dx2iall(ix2)-Dc(ix1,ix2,ix3)/(dx2all(ix2+1)+dx2all(ix2))
+          ient=ient+1
+  
+          !ix1-1,ix2,ix3
+          ir(ient)=iPhi
+          ic(ient)=iPhi-1
+          M(ient)=Cc(ix1,ix2,ix3)/dx1(ix1)/dx1i(ix1)-Fc(ix1,ix2,ix3)/(dx1(ix1+1)+dx1(ix1))
+          ient=ient+1
+  
+          !ix1,ix2,ix3
+          ir(ient)=iPhi
+          ic(ient)=iPhi
+          M(ient)=-1d0*Ac(ix1,ix2,ix3)*(1d0/dx2all(ix2+1)/dx2iall(ix2)+1d0/dx2all(ix2)/dx2iall(ix2))- &
+                       Bc(ix1,ix2,ix3)*(1d0/dx3all(ix3+1)/dx3iall(ix3)+1d0/dx3all(ix3)/dx3iall(ix3))- &
+                       Cc(ix1,ix2,ix3)*(1d0/dx1(ix1+1)/dx1i(ix1)+1d0/dx1(ix1)/dx1i(ix1))
+          ient=ient+1
+  
+          !ix1+1,ix2,ix3
+          ir(ient)=iPhi
+          ic(ient)=iPhi+1
+          M(ient)=Cc(ix1,ix2,ix3)/dx1(ix1+1)/dx1i(ix1)+Fc(ix1,ix2,ix3)/(dx1(ix1+1)+dx1(ix1))
+          ient=ient+1
+  
+          !ix1,ix2+1,ix3
+          ir(ient)=iPhi
+          ic(ient)=iPhi+lx1
+          M(ient)=Ac(ix1,ix2,ix3)/dx2all(ix2+1)/dx2iall(ix2)+Dc(ix1,ix2,ix3)/(dx2all(ix2+1)+dx2all(ix2))
+          ient=ient+1
+  
+          !ix1,ix2,ix3+1
+          ir(ient)=iPhi
+          ic(ient)=iPhi+lx1*lx2
+          M(ient)=Bc(ix1,ix2,ix3)/dx3all(ix3+1)/dx3iall(ix3)+Ec(ix1,ix2,ix3)/(dx3all(ix3+1)+dx3all(ix3))
+          ient=ient+1
+        end if
+      end do
+    end do
+  end do
+end if
+print *, 'Number of entries used:  ',ient-1
+
+
+! INIT MUMPS
+! MUMPS 4.10 disregarded ICNTL(4)
+mumps_par%ICNTL(1) = stderr   ! error msg stream
+mumps_par%ICNTL(2) = stdout   ! stats and warning stream
+mumps_par%ICNTL(3) = 0  ! global information verbosity  0 = off
+mumps_par%ICNTL(4) = 1  ! 1: error only   2: errors, warnings, stats.
+
+mumps_par%COMM = MPI_COMM_WORLD
+mumps_par%JOB = -1
+mumps_par%SYM = 0
+mumps_par%PAR = 1
+
+#if REALBITS==32
+call SMUMPS(mumps_par)
+#elif REALBITS==64
+call DMUMPS(mumps_par)
+#endif
+
+
+
+!LOAD OUR PROBLEM
+if ( myid==0 ) then
+  mumps_par%N=lPhi
+  mumps_par%NZ=lent
+  allocate( mumps_par%IRN ( mumps_par%NZ ) )
+  allocate( mumps_par%JCN ( mumps_par%NZ ) )
+  allocate( mumps_par%A( mumps_par%NZ ) )
+  allocate( mumps_par%RHS ( mumps_par%N  ) )
+  mumps_par%IRN=ir
+  mumps_par%JCN=ic
+  mumps_par%A=M
+  mumps_par%RHS=b
+  deallocate(ir,ic,M,b)     !clear memory before solve begins!!!
+
+  if (perflag .and. it/=1) then       !used cached permutation
+    allocate(mumps_par%PERM_IN(mumps_par%N))
+    mumps_par%PERM_IN=mumps_perm
+    mumps_par%ICNTL(7)=1
+  end if
+end if
+
+
+!SOLVE (ALL WORKERS NEED TO SEE THIS CALL)
+mumps_par%JOB = 6
+#if REALBITS==32
+call SMUMPS(mumps_par)
+#elif REALBITS==64
+call DMUMPS(mumps_par)
+#endif
+
+
+!STORE PERMUTATION USED, SAVE RESULTS, CLEAN UP MUMPS ARRAYS
+!(can save ~25% execution time and improves scaling with openmpi
+! ~25% more going from 1-2 processors)
+if ( myid==0 ) then
+  print *, 'Now organizing results...'
+
+  if (perflag .and. it==1) then
+    allocate(mumps_perm(mumps_par%N))     !we don't have a corresponding deallocate statement
+    mumps_perm=mumps_par%SYM_PERM
+  end if
+
+  elliptic3D_cart=reshape(mumps_par%RHS,[lx1,lx2,lx3])
+
+  print *, 'Now attempting deallocations...'
+
+  deallocate( mumps_par%IRN )
+  deallocate( mumps_par%JCN )
+  deallocate( mumps_par%A   )
+  deallocate( mumps_par%RHS )
+end if
+
+mumps_par%JOB = -2
+#if REALBITS==32
+call SMUMPS(mumps_par)
+#elif REALBITS==64
+call DMUMPS(mumps_par)
+#endif
+
+end function elliptic3D_cart
 
 
 function elliptic3D_curv(srcterm,sig0,sigP,sigH,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3,Vmaxx3, &

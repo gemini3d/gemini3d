@@ -71,7 +71,7 @@ target_compile_options(sources PRIVATE ${FFLAGS})
 
 # --- MUMPS stuff
 add_library(potential_mumps numerical/potential/potential_mumps.F90)
-target_link_libraries(potential_mumps PRIVATE const grid calculus
+target_link_libraries(potential_mumps PRIVATE const grid calculus interp
   ${MUMPS_LIBRARIES} MPI::MPI_Fortran)
 target_compile_definitions(potential_mumps PRIVATE REALBITS=${realbits})
 target_include_directories(potential_mumps PRIVATE ${MUMPS_INCLUDE_DIRS})
