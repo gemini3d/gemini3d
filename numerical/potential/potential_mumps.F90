@@ -141,6 +141,7 @@ do ix2=1,lx2
     srctermdec(:,ix2,ix3)=interp1(x%x1(1:lx1),srcterm(:,ix2,ix3),x1dec(1:ldec))
   end do
 end do
+print*, minval(Acdec),maxval(Acdec)
 
 
 !INTERPOLATE BOUNDARY CONDITIONS ONTO DECIMATED GRID
