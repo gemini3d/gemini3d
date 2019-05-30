@@ -88,6 +88,8 @@ real(wp), dimension(:,:), allocatable :: Vminx2dec,Vmaxx2dec
 real(wp), dimension(:,:), allocatable :: Vminx3dec, Vmaxx3dec
 real(wp), dimension(:,:,:), allocatable :: Phidec
 
+real(wp), dimension(1:size(Vminx1,1),1:size(Vminx1,2)) :: Vminx1pot,Vmaxx1pot
+
 real(wp), dimension(size(srcterm,1),size(srcterm,2),size(srcterm,3)) :: elliptic3D_decimate
 
 
@@ -118,11 +120,11 @@ Fc=gradsig01
 print*, 'Decimating parallel grid...'
 ldec=11
 allocate(x1dec(-1:ldec+2),dx1dec(0:ldec+2),x1idec(ldec+1),dx1idec(ldec))
-x1dec=1e3*[x%x1(-1),x%x1(0),x%x1(1),81.8_wp,84.2_wp,87.5_wp,93.3_wp,106.0_wp,124.0_wp, &
-            144.6_wp,206.7_wp,882.2_wp,x%x1(lx1),x%x1(lx1+1),x%x1(lx1+2)]
-dx1dec=x1dec(0:lx1+2)-x1dec(1:lx1+1)
-x1idec=0.5_wp*(x1dec(0:lx1)+x1dec(1:lx1+1))
-dx1idec=x1idec(2:lx1+1)-x1idec(1:lx1)
+x1dec(-1:lx1+2)=[x%x1(-1),x%x1(0),x%x1(1),81.8e3_wp,84.2e3_wp,87.5e3_wp,93.3e3_wp,106.0e3_wp,124.0e3_wp, &
+            144.6e3_wp,206.7e3_wp,882.2e3_wp,x%x1(lx1),x%x1(lx1+1),x%x1(lx1+2)]
+dx1dec(0:ldec+2)=x1dec(0:ldec+2)-x1dec(-1:ldec+1)
+x1idec(1:ldec+1)=0.5_wp*(x1dec(0:ldec)+x1dec(1:ldec+1))
+dx1idec(1:ldec)=x1idec(2:ldec+1)-x1idec(1:ldec)
 
 
 !INTERPOLATE COEFFICIENTS AND SOURCE TERM ONTO DECIMATED GRID
@@ -141,7 +143,6 @@ do ix2=1,lx2
     srctermdec(:,ix2,ix3)=interp1(x%x1(1:lx1),srcterm(:,ix2,ix3),x1dec(1:ldec))
   end do
 end do
-print*, minval(Acdec),maxval(Acdec)
 
 
 !INTERPOLATE BOUNDARY CONDITIONS ONTO DECIMATED GRID
@@ -157,10 +158,65 @@ do ix2=1,lx2
 end do
 
 
+!FOR WHATEVER REASON THE EDGE VALUES GET MESSED UP BY INTERP1
+Acdec(1,:,:)=Ac(1,:,:)
+Acdec(ldec,:,:)=Ac(lx1,:,:)
+Bcdec(1,:,:)=Bc(1,:,:)
+Bcdec(ldec,:,:)=Bc(lx1,:,:)
+Ccdec(1,:,:)=Cc(1,:,:)
+Ccdec(ldec,:,:)=Cc(lx1,:,:)
+Dcdec(1,:,:)=Dc(1,:,:)
+Dcdec(ldec,:,:)=Dc(lx1,:,:)
+Ecdec(1,:,:)=Ec(1,:,:)
+Ecdec(ldec,:,:)=Ec(lx1,:,:)
+Fcdec(1,:,:)=Fc(1,:,:)
+Fcdec(ldec,:,:)=Fc(lx1,:,:)
+Vminx2dec(1,:)=Vminx2(1,:)
+Vminx2dec(ldec,:)=Vminx2(lx1,:)
+Vmaxx2dec(1,:)=Vmaxx2(1,:)
+Vmaxx2dec(ldec,:)=Vmaxx2(lx1,:)
+Vminx3dec(1,:)=Vminx3(1,:)
+Vminx3dec(ldec,:)=Vminx3(lx1,:)
+Vmaxx3dec(1,:)=Vmaxx3(1,:)
+Vmaxx3dec(ldec,:)=Vmaxx3(lx1,:)
+srctermdec(1,:,:)=srcterm(1,:,:)
+srctermdec(ldec,:,:)=srcterm(lx1,:,:)
+
+!
+!print*, minval(Acdec),maxval(Acdec)
+!print*, minval(Ac),maxval(Ac)
+!print*, minval(Bcdec),maxval(Bcdec)
+!print*, minval(Bc),maxval(Bc)
+!print*, minval(Ccdec),maxval(Ccdec)
+!print*, minval(Cc),maxval(Cc)
+!print*, minval(Dcdec),maxval(Dcdec)
+!print*, minval(Dc),maxval(Dc)
+!print*, minval(Ecdec),maxval(Ecdec)
+!print*, minval(Ec),maxval(Ec)
+!print*, minval(Fcdec),maxval(Fcdec)
+!print*, minval(Fc),maxval(Fc)
+!print*, minval(srctermdec),maxval(srctermdec)
+!print*, minval(srcterm),maxval(srcterm)
+!print*, minval(Vminx2dec),maxval(Vminx2dec)
+!print*, minval(Vmaxx2dec),maxval(Vmaxx2dec)
+!print*, minval(Vminx3dec),maxval(Vminx3dec)
+!print*, minval(Vmaxx3dec),maxval(Vmaxx3dec)
+!print*, minval(dx1dec),maxval(dx1dec)
+!print*, minval(dx1idec),maxval(dx1idec)
+!print*, x1dec(-1:ldec+2)
+!print*, dx1dec(0:ldec+2)
+!
+
+!ADJUST THE BOUNDARY CONDITION TO POTENTIAL DERIVATIVE INSTEAD OF CURRENT DENSITY
+Vminx1pot=-1*Vminx1/sig0(1,:,:)
+Vmaxx1pot=-1*Vmaxx1/sig0(lx1,:,:)
+
+
 !CALL CARTESIAN SOLVER ON THE DECIMATED GRID
 print*, 'Calling solve on decimated grid...'
 allocate(Phidec(1:ldec,1:lx2,1:lx3))
-Phidec=elliptic3D_cart(srctermdec,Acdec,Bcdec,Ccdec,Dcdec,Ecdec,Fcdec,Vminx1,Vmaxx1,Vminx2dec,Vmaxx2dec,Vminx3dec,Vmaxx3dec, &
+Phidec=elliptic3D_cart(srctermdec,Acdec,Bcdec,Ccdec,Dcdec,Ecdec,Fcdec,Vminx1pot,Vmaxx1pot, &
+                Vminx2dec,Vmaxx2dec,Vminx3dec,Vmaxx3dec, &
                 dx1dec,dx1idec,x%dx2all,x%dx2iall,x%dx3all,x%dx3iall,flagdirich,perflag,it)
 
 
@@ -171,6 +227,11 @@ do ix2=1,lx2
     elliptic3D_decimate(:,ix2,ix3)=interp1(x1dec,Phidec(:,ix2,ix3),x%x1(1:lx1))
   end do
 end do
+
+
+!AGAIN NEED TO FIX THE EDGES...
+elliptic3D_decimate(1,:,:)=Phidec(1,:,:)
+elliptic3D_decimate(lx1,:,:)=Phidec(ldec,:,:)
 
 
 !CLEAN UP THE ALLOCATED ARRAYS
@@ -402,6 +463,10 @@ if ( myid==0 ) then
     mumps_par%PERM_IN=mumps_perm
     mumps_par%ICNTL(7)=1
   end if
+
+
+  !3D solves very often need better memory relaxation
+  mumps_par%ICNTL(14)=200
 end if
 
 
