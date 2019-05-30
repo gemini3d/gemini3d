@@ -573,8 +573,8 @@ if (lx2/=1) then    !either field-resolved 3D or integrated 2D solve for 3D doma
 
     !R------
     print *, '!Beginning field-resolved 3D solve (could take a very long time)...'
-    !Phiall=elliptic3D_curv(srctermall,sig0scaledall,sigPscaledall,sigHscaledall,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3,Vmaxx3, &
-    !                  x,flagdirich,perflag,it)
+   ! Phiall=elliptic3D_curv(srctermall,sig0scaledall,sigPscaledall,sigHscaledall,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3,Vmaxx3, &
+   !                   x,flagdirich,perflag,it)
     Phiall=elliptic3D_decimate(srctermall,sig0scaledall,sigPscaledall,sigHscaledall, & 
                       Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3,Vmaxx3, &
                       x,flagdirich,perflag,it)

@@ -79,12 +79,14 @@ real(wp), dimension(1:size(srcterm,1),1:size(srcterm,2),1:size(srcterm,3)) :: Ac
 
 integer :: lx1,lx2,lx3,ix1,ix2,ix3
 integer :: ldec
-real(wp), dimension(9,size(srcterm,2),size(srcterm,3)) :: Phidec
 real(wp), dimension(:), allocatable :: x1dec
 real(wp), dimension(:), allocatable :: dx1dec
 real(wp), dimension(:), allocatable :: x1idec
 real(wp), dimension(:), allocatable :: dx1idec
-real(wp), dimension(:,:,:), allocatable :: Acdec,Bcdec,Ccdec,Dcdec,Ecdec,Fcdec
+real(wp), dimension(:,:,:), allocatable :: Acdec,Bcdec,Ccdec,Dcdec,Ecdec,Fcdec,srctermdec
+real(wp), dimension(:,:), allocatable :: Vminx2dec,Vmaxx2dec
+real(wp), dimension(:,:), allocatable :: Vminx3dec, Vmaxx3dec
+real(wp), dimension(:,:,:), allocatable :: Phidec
 
 real(wp), dimension(size(srcterm,1),size(srcterm,2),size(srcterm,3)) :: elliptic3D_decimate
 
@@ -106,7 +108,7 @@ gradsigH3=grad3D3(sigH,x,1,lx1,1,lx2,1,lx3)
 
 Ac=sigP
 Bc=sigP
-Cc=sig0; 
+Cc=sig0
 Dc=gradsigP2+gradsigH3
 Ec=gradsigP3-gradsigH2
 Fc=gradsig01
@@ -123,10 +125,11 @@ x1idec=0.5_wp*(x1dec(0:lx1)+x1dec(1:lx1+1))
 dx1idec=x1idec(2:lx1+1)-x1idec(1:lx1)
 
 
-!INTERPOLATE COEFFICIENTS ONTO DECIMATED GRID
+!INTERPOLATE COEFFICIENTS AND SOURCE TERM ONTO DECIMATED GRID
 print*, 'Interpolating coefficients...'
 allocate(Acdec(1:ldec,1:lx2,1:lx3),Bcdec(1:ldec,1:lx2,1:lx3),Ccdec(1:ldec,1:lx2,1:lx3), &
-         Dcdec(1:ldec,1:lx2,1:lx3),Ecdec(1:ldec,1:lx2,1:lx3),Fcdec(1:ldec,1:lx2,1:lx3))
+         Dcdec(1:ldec,1:lx2,1:lx3),Ecdec(1:ldec,1:lx2,1:lx3),Fcdec(1:ldec,1:lx2,1:lx3), &
+         srctermdec(1:ldec,1:lx2,1:lx3))
 do ix2=1,lx2
   do ix3=1,lx3
     Acdec(:,ix2,ix3)=interp1(x%x1(1:lx1),Ac(:,ix2,ix3),x1dec(1:ldec))
@@ -135,13 +138,28 @@ do ix2=1,lx2
     Dcdec(:,ix2,ix3)=interp1(x%x1(1:lx1),Dc(:,ix2,ix3),x1dec(1:ldec))
     Ecdec(:,ix2,ix3)=interp1(x%x1(1:lx1),Ec(:,ix2,ix3),x1dec(1:ldec))
     Fcdec(:,ix2,ix3)=interp1(x%x1(1:lx1),Fc(:,ix2,ix3),x1dec(1:ldec))
+    srctermdec(:,ix2,ix3)=interp1(x%x1(1:lx1),srcterm(:,ix2,ix3),x1dec(1:ldec))
   end do
+end do
+
+
+!INTERPOLATE BOUNDARY CONDITIONS ONTO DECIMATED GRID
+allocate(Vminx2dec(1:ldec,1:lx3),Vmaxx2dec(1:ldec,1:lx3))
+do ix3=1,lx3
+  Vminx2dec(:,ix3)=interp1(x%x1(1:lx1),Vminx2(:,ix3),x1dec(1:ldec))
+  Vmaxx2dec(:,ix3)=interp1(x%x1(1:lx1),Vmaxx2(:,ix3),x1dec(1:ldec))  
+end do
+allocate(Vminx3dec(1:ldec,1:lx2),Vmaxx3dec(1:ldec,1:lx2))
+do ix2=1,lx2
+  Vminx3dec(:,ix2)=interp1(x%x1(1:lx1),Vminx3(:,ix2),x1dec(1:ldec))
+  Vmaxx3dec(:,ix2)=interp1(x%x1(1:lx1),Vmaxx3(:,ix2),x1dec(1:ldec)) 
 end do
 
 
 !CALL CARTESIAN SOLVER ON THE DECIMATED GRID
 print*, 'Calling solve on decimated grid...'
-Phidec=elliptic3D_cart(srcterm,Acdec,Bcdec,Ccdec,Dcdec,Ecdec,Fcdec,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3,Vmaxx3, &
+allocate(Phidec(1:ldec,1:lx2,1:lx3))
+Phidec=elliptic3D_cart(srctermdec,Acdec,Bcdec,Ccdec,Dcdec,Ecdec,Fcdec,Vminx1,Vmaxx1,Vminx2dec,Vmaxx2dec,Vminx3dec,Vmaxx3dec, &
                 dx1dec,dx1idec,x%dx2all,x%dx2iall,x%dx3all,x%dx3iall,flagdirich,perflag,it)
 
 
@@ -152,6 +170,11 @@ do ix2=1,lx2
     elliptic3D_decimate(:,ix2,ix3)=interp1(x1dec,Phidec(:,ix2,ix3),x%x1(1:lx1))
   end do
 end do
+
+
+!CLEAN UP THE ALLOCATED ARRAYS
+deallocate(srctermdec,Acdec,Bcdec,Ccdec,Dcdec,Ecdec,Fcdec,dx1dec,x1dec,x1idec,dx1idec,Vminx2dec,Vmaxx2dec,Vminx3dec,Vmaxx3dec)
+deallocate(Phidec)
 
 end function elliptic3D_decimate
 
@@ -195,6 +218,7 @@ type (DMUMPS_STRUC) mumps_par
 #endif
 
 real(wp), dimension(size(srcterm,1),size(srcterm,2),size(srcterm,3)) :: elliptic3D_cart
+
 
 !ONLY ROOT NEEDS TO ASSEMBLE THE MATRIX
 if (myid==0) then
