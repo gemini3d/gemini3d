@@ -865,8 +865,10 @@ if (myid==0) then
 
 
   !gradSigH2=grad2D1(SigH,x,1,lx2)   !x2 is now 1st index and x3 is second...  This one appears to be the problem.  This issue here is that grad2D1 automatically uses x%dx1 as the differential element...
-  gradSigH2=grad2D1_curv_alt(SigH,x,1,lx2)   !note the alt since we need to use dx2 as differential...  Tricky bug/feature
-  gradSigH3=grad2D3(SigH,x,1,lx3)            !awkward way of handling this special case derivative which uses x3 as the differential to operate on a 2D array.
+  gradSigH2=grad2D1_curv_alt(SigH,x,1,lx2)
+  !! note the alt since we need to use dx2 as differential...  Tricky bug/feature
+  gradSigH3=grad2D3(SigH,x,1,lx3)
+  !! awkward way of handling this special case derivative which uses x3 as the differential to operate on a 2D array.
 
 !
 !  open(newunit=utrace, form='unformatted', access='stream', file='matrixentryinfo.raw8', status='replace', action='write')

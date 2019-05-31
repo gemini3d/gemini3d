@@ -55,23 +55,20 @@ end
 
 h = plotinit(xg, visible);
 
-if ~isempty(saveplots)
-	
-  if(isempty(gcp('nocreate')))
-    parpool(2);
-  end
-      
+if ~isempty(saveplots)  % plot and save as fast as possible.
   parfor i = 1:Nt
-    plotframe(direc,ymd(i,:),UTsec(i),saveplots,plotfun,xg,h);
+    plotframe(direc, ymd(i,:), UTsec(i), saveplots, plotfun, xg, h);
   end
-else
-   
+else  % displaying interactively, not saving
+
   for i = 1:Nt
-    xg = plotframe(direc,ymd(i,:),UTsec(i),saveplots,plotfun,xg,h);
+    xg = plotframe(direc, ymd(i,:), UTsec(i), saveplots, plotfun, xg, h);
+
+    drawnow % need this here to ensure plots update (race condition)
+    disp(''), disp('** press any key to plot next time step, or Ctrl C to stop**')
     pause
   end
-  
-  
+
 end % if saveplots
 
 %% Don't print

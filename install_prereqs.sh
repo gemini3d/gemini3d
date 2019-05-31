@@ -23,10 +23,8 @@ linux*)
   ;;
 darwin*)
   brew install cmake gcc make lapack scalapack openmpi octave
-# MUMPS is a little more involved, but OK.
+# MUMPS
   brew tap dpo/openblas;
-  brew tap-pin dpo/openblas;
-  brew options mumps;
   brew install mumps;
   ;;
 cygwin*)
