@@ -40,6 +40,7 @@ SRC = Path(__file__).parent.resolve()
 BUILD = SRC / 'build'
 
 LIBPREFIX = '~/lib_gemini_'
+INTELPREFIX = 'intel'
 MUMPSDIR = 'mumps'
 
 
@@ -106,7 +107,7 @@ def cmake_setup(compilers: Dict[str, str],
     if compilers['CC'] == 'cl':
         wopts = ['-G', MSVC, '-A', 'x64']
     elif os.name == 'nt':
-        wopts = ['-G', 'MinGW Makefiles', '-DCMAKE_SH="CMAKE_SH-NOTFOUND']
+        wopts = ['-G', 'MinGW Makefiles', '-DCMAKE_SH=CMAKE_SH-NOTFOUND']
     else:
         wopts = []
 
@@ -237,17 +238,8 @@ def intel_params() -> Tuple[Dict[str, str], List[str]]:
     # %% compiler variables
     compilers = {'FC': 'ifort'}
 
-    # get compiler version
-    if os.name == 'nt':
-        version = '.'
-        # icl and ifort on windows have no version parameter. Takes hacking to get version.
-        # just assume only one ifort version is installed on Windows.
-    else:
-        ret = subprocess.check_output([compilers['FC'], '--version'], universal_newlines=True)
-        version = ret.split[2]
-
     # determine library dir
-    libprefix = Path(LIBPREFIX + 'intel' + version.split('.')[0]).expanduser()
+    libprefix = Path(LIBPREFIX + INTELPREFIX).expanduser()
 
     if os.name == 'nt':
         compilers['CC'] = compilers['CXX'] = 'icl.exe'
