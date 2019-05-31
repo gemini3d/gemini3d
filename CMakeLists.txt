@@ -113,8 +113,12 @@ target_compile_options(magcalc.bin PRIVATE ${FFLAGS})
 # --- self-tests
 if(USEGLOW)
   include(${PROJECT_SOURCE_DIR}/cmake/test2d_glow.cmake)
+  if(NOT ENV{CI})  # save needless downloading
   include(${PROJECT_SOURCE_DIR}/cmake/test3d_glow.cmake)
+  endif()
 else()
   include(${PROJECT_SOURCE_DIR}/cmake/test2d.cmake)
+  if(NOT ENV{CI})
   include(${PROJECT_SOURCE_DIR}/cmake/test3d.cmake)
+  endif()
 endif()

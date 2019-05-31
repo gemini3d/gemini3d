@@ -8,10 +8,10 @@ build: off
 init:
 - sh: sudo apt install -yq --no-install-recommends libmumps-dev liblapack-dev libscalapack-mpi-dev libopenmpi-dev openmpi-bin > /dev/null
 
-install: 
+install:
 - cmake -B build -S .
 - cmake --build build --parallel
 
-test_script: 
+test_script:
 - cd build
-- ctest -R 2D --parallel
+- ctest -R 2D --parallel --output-on-failure

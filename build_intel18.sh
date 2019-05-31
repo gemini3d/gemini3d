@@ -7,8 +7,7 @@
 # *** for subsequent builds, you can just type "make" in the objects/ directory ***
 # (I keep a second Terminal tab for this purpose)
 
-PREFIX=$HOME/.local
-SUFFIX=ifort18
+PREFIX=$HOME/lib_gemini_intel18
 
 FC=mpifort
 CC=mpicc

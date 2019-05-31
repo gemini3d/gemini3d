@@ -7,8 +7,7 @@
 # *** for subsequent builds, you can just type "make" in the objects/ directory ***
 # (I keep a second Terminal tab for this purpose)
 
-PREFIX=$HOME/.local
-SUFFIX=gcc7
+PREFIX=$HOME/lib_gemini_gcc7
 
 # --- local build dirs
 . script_utils/gcc_self.sh

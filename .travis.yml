@@ -1,35 +1,32 @@
-language: c
+language: minimal
 group: travis_latest
 dist: xenial
 
 git:
-  depth: 3
+  depth: 25
   quiet: true
 
-env: FC=gfortran-6
+env: FC=gfortran
 
 addons:
   apt:
     sources: ubuntu-toolchain-r-test
-    packages: ['gfortran-6','liblapack-dev','libmumps-dev','libopenmpi-dev','octave']
+    packages: ['gfortran','liblapack-dev','libmumps-dev','libopenmpi-dev','octave']
 
 matrix:
-  include: 
+  include:
   - os: linux
 # works on osx, but takes 10 minutes to build on Travis-CI
 #  - os: osx
 #    - brew install gcc
 #    - brew install lapack openblas open-mpi scalapack
 #    - brew tap dpo/openblas
-#    - brew tap-pin dpo/openblas
-#    - brew options mumps
 #    - brew install mumps
-#  - os: windows
 
-    
+
 install:
-- cd $TRAVIS_BUILD_DIR/objects
+- cd $TRAVIS_BUILD_DIR/build
 - cmake ..
-- cmake --build .
-  
-script: ctest -R 2D --output-on-failure
+- cmake --build . --parallel
+
+script: ctest -R 2D --parallel --output-on-failure
