@@ -563,6 +563,9 @@ if (lx2/=1) then    !either field-resolved 3D or integrated 2D solve for 3D doma
       sigPscaled=x%h1(1:lx1,1:lx2,1:lx3)*x%h3(1:lx1,1:lx2,1:lx3)/x%h2(1:lx1,1:lx2,1:lx3)*sigP
     end if
     srcterm=srcterm*x%h1(1:lx1,1:lx2,1:lx3)*x%h2(1:lx1,1:lx2,1:lx3)*x%h3(1:lx1,1:lx2,1:lx3)
+
+
+    !ZZZ - Need to compute the Hall term scaling(s) here else will eventually segfault or worse...
     
 
     !RADD--- ROOT NEEDS TO PICK UP FIELD-RESOLVED SOURCE TERM AND COEFFICIENTS FROM WORKERS
