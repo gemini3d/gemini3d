@@ -24,11 +24,6 @@ MUMPSDIR = 'mumps'
 
 BUILDDIR = 'build'
 
-# FC = 'mpifort'  # Intel 18
-FC = 'mpiifort'  # Intel 19
-CC = 'mpiicc'
-CXX = 'mpicxx'
-
 
 # ========= end of user parameters ================
 
@@ -42,10 +37,23 @@ def main(wipe: bool):
     if not os.environ.get('MKLROOT'):
         raise EnvironmentError('must have set MKLROOT by running compilervars.bat or source compilervars.sh before this script.')
 
+    FC = 'mpiifort'  # Intel 19
+    CC = 'mpiicc'
+    CXX = 'mpicxx'
+
     if os.name == 'nt':
         # unlike the plain compilers, the MPI compiler wrappers in Windows require the .bat
         compilers = {'FC': FC + '.bat', 'CC': CC + '.bat', 'CXX': CXX + '.bat'}
     else:
+        if not shutil.which(FC):
+            FC = 'mpifort'
+            if not shutil.which(FC):
+                logging.warning(f'{FC} not found, CMake may fail')
+
+            CC = 'mpicc'
+            if not shutil.which(CC):
+                logging.warning(f'{CC} not found, CMake may fail')
+
         compilers = {'FC': FC, 'CC': CC, 'CXX': CXX}
 
     install_lib = Path(PREFIX).expanduser() / MUMPSDIR
