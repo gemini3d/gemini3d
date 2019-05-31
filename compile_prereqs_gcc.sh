@@ -4,13 +4,11 @@
 # For example, CentOS < 8 users.
 
 # if using Gfortran, Gfortran >= 6 is REQUIRED
+# CMake >= 3.12 required
+
 # Newer Gfortran versions e.g. Gfortran 8, 9, etc. are recommended for better performance.
 # Gfortran 6 is the oldest currently supported version, so stay ahead by using say Gfortran 8 or newer.
-#
-# Gemini currently has a bug with Ifort, but once that's fixed, Ifort should work. For now use Gfortran.
-#
-# Flang, PGI and/or NAG support are anticipated soon from vendors, possibly in 2019.
-# Ask if desired.
+
 
 set -e  # abort on any error
 set -u  # abort on undefined variable (a common bash goof)
@@ -19,10 +17,10 @@ set -u  # abort on undefined variable (a common bash goof)
 # Arbitrary names/locations
 
 # all libraries installed under $PREFIX/libraryname
-PREFIX=$HOME/.local
+PREFIX=$HOME/lib_gemini_gcc8
 
 # working directory, so you can rebuild later without complete recompilation
-WD=$HOME/libs_gemini-gcc8
+WD=/tmp
 
 # true to erase/redo builds
 wipe=false

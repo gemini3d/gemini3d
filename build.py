@@ -39,6 +39,9 @@ MSVC = 'Visual Studio 15 2017'
 SRC = Path(__file__).parent.resolve()
 BUILD = SRC / 'build'
 
+LIBPREFIX = '~/lib_gemini_'
+MUMPSDIR = 'mumps'
+
 
 # %% function
 def do_build(buildsys: str, compilers: Dict[str, str],
@@ -234,13 +237,25 @@ def intel_params() -> Tuple[Dict[str, str], List[str]]:
     # %% compiler variables
     compilers = {'FC': 'ifort'}
 
+    # get compiler version
     if os.name == 'nt':
-        compilers['CC'] = compilers['CXX'] = 'icl'
+        version = '.'
+        # icl and ifort on windows have no version parameter. Takes hacking to get version.
+        # just assume only one ifort version is installed on Windows.
+    else:
+        ret = subprocess.check_output([compilers['FC'], '--version'], universal_newlines=True)
+        version = ret.split[2]
+
+    # determine library dir
+    libprefix = Path(LIBPREFIX + 'intel' + version.split('.')[0]).expanduser()
+
+    if os.name == 'nt':
+        compilers['CC'] = compilers['CXX'] = 'icl.exe'
     else:
         compilers['CC'] = 'icc'
         compilers['CXX'] = 'icpc'
 
-    args: List[str] = []
+    args: List[str] = [f'-DMUMPS_ROOT={libprefix / MUMPSDIR}']
 
     return compilers, args
 
