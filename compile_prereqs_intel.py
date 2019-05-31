@@ -78,12 +78,17 @@ def main(wipe: bool):
 
 
 def update(path: Path):
+    """
+    Use Git to update a local repo, or clone it if not already existing.
+
+    we use cwd= instead of "git -C" for very old Git versions that might be on your HPC.
+    """
     if not GITEXE:
         logging.warning('Git not available, cannot check for library updates')
         return
 
     if path.is_dir():
-        subprocess.check_call([GITEXE, '-C', str(path), 'pull'])
+        subprocess.check_call([GITEXE, 'pull'], cwd=str(path))
     else:
         subprocess.check_call([GITEXE, 'clone', MUMPSGIT, str(path)])
 
