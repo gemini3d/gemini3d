@@ -566,9 +566,6 @@ if (lx2/=1) then    !either field-resolved 3D or integrated 2D solve for 3D doma
     sigHscaled=x%h1(1:lx1,1:lx2,1:lx3)*sigH
 
 
-    !ZZZ - Need to compute the Hall term scaling(s) here else will eventually segfault or worse...
-    
-
     !RADD--- ROOT NEEDS TO PICK UP FIELD-RESOLVED SOURCE TERM AND COEFFICIENTS FROM WORKERS
     call gather_recv(sigPscaled,tagsigP,sigPscaledall)
     call gather_recv(sigHscaled,tagsigH,sigHscaledall)
@@ -579,9 +576,23 @@ if (lx2/=1) then    !either field-resolved 3D or integrated 2D solve for 3D doma
     print *, '!Beginning field-resolved 3D solve (could take a very long time)...'
    ! Phiall=elliptic3D_curv(srctermall,sig0scaledall,sigPscaledall,sigHscaledall,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3,Vmaxx3, &
    !                   x,flagdirich,perflag,it)
-    Phiall=elliptic3D_decimate(srctermall,sig0scaledall,sigPscaledall,sigHscaledall, & 
-                      Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3,Vmaxx3, &
-                      x,flagdirich,perflag,it)
+!    Phiall=elliptic3D_decimate(srctermall,sig0scaledall,sigPscaledall,sigHscaledall, & 
+!                      Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3,Vmaxx3, &
+!                      x,flagdirich,perflag,it)
+    if( maxval(abs(Vminx1))>1e-12_wp .or. maxval(abs(Vmaxx1))>1e-12_wp ) then
+      do iid=1,lid-1
+        call mpi_send(1,1,MPI_INTEGER,iid,tagflagdirich,MPI_COMM_WORLD,ierr)
+      end do
+      Phiall=elliptic3D_decimate(srctermall,sig0scaledall,sigPscaledall,sigHscaledall, & 
+                                 Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3,Vmaxx3, &
+                                 x,flagdirich,perflag,it)
+    else
+      do iid=1,lid-1
+        call mpi_send(0,1,MPI_INTEGER,iid,tagflagdirich,MPI_COMM_WORLD,ierr)
+      end do
+        print*, 'Boundary conditions too small to require solve, setting everything to zero...'
+      Phiall=0e0_wp
+    end if
     !R------
   end if
 else   !lx1=1 so do a field-resolved 2D solve over x1,x3
@@ -703,30 +714,6 @@ print *, 'Min/Max values of potential:  ',minval(Phi),maxval(Phi)
 print *, 'Min/Max values of full grid potential:  ',minval(Phiall),maxval(Phiall)
 !R-------
 
-
-!if (maxval(Phiall)>1d6) then    !this is too large, dump some info to see what is going on...
-!  open(newunit=utrace, form='unformatted', access='stream', file='potentialsolver.raw8', status='replace', action='write')
-!  write(utrace) Phiall
-!  write(utrace) sigPint2all
-!  write(utrace) sigPint3all
-!  write(utrace) sigHintall
-!  write(utrace) incapintall
-!  write(utrace) srctermintall
-!  write(utrace) v2slaball
-!  write(utrace) v3slaball
-!  write(utrace) Phi
-!  write(utrace) E2
-!  write(utrace) E3
-!  write(utrace) Vminx1
-!  write(utrace) Vmaxx1
-!  write(utrace) x%dx2all
-!  write(utrace) x%dx2iall
-!  write(utrace) x%dx3all
-!  write(utrace) x%dx3iall
-!  close(utrace)
-!  error stop 'Something is wrong with potential solution, dumping info to file...'
-!end if
-!
 
 !--------
 !ADD IN BACKGROUND FIELDS BEFORE DISTRIBUTING TO WORKERS
@@ -1037,6 +1024,7 @@ integer :: idleft,idright,iddown,idup
 real(wp) :: tstart,tfin
 
 integer :: utrace
+integer :: flagsolve
 
 
 !SIZES - PERHAPS SHOULD BE TAKEN FROM GRID MODULE INSTEAD OF RECOMPUTED?
@@ -1258,7 +1246,11 @@ if (lx2/=1) then    !either field-resolved 3D or integrated 2D solve for 3D doma
     call gather_send(sig0scaled,tagsig0)
     call gather_send(srcterm,tagsrc)
 
-    call elliptic_workers()
+    call mpi_recv(flagsolve,1,MPI_INTEGER,0,tagflagdirich,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+
+    if (flagsolve/=0) then
+      call elliptic_workers()
+    end if
 
   end if
 else   !lx1=1 so do a field-resolved 2D solve over x1,x3
