@@ -466,7 +466,7 @@ if ( myid==0 ) then
 
 
   !3D solves very often need better memory relaxation
-  mumps_par%ICNTL(14)=200
+  mumps_par%ICNTL(14)=500
 end if
 
 
