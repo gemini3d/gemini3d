@@ -728,7 +728,7 @@ if (maxval(incap) > 1d-6) then
   J1halo(0,1:lx2,1:lx3)=J1halo(1,1:lx2,1:lx3)
   J1halo(lx1+1,1:lx2,1:lx3)=J1halo(lx1,1:lx2,1:lx3)
 
-  call halo(J1halo,1,tagJ1,x%flagper)    !I'm kind of afraid to only halo a single point...
+  call halo(J1halo,1,tagJ1,x%flagper)    !< I'm kind of afraid to only halo a single point...
 
   if (iddown==-1) then
     J1halo(1:lx1,0,1:lx3)=J1halo(1:lx1,1,1:lx3)
@@ -757,7 +757,7 @@ if (maxval(incap) > 1d-6) then
   J1halo(1:lx1,1:lx2,1:lx3)=E3
   J1halo(0,1:lx2,1:lx3)=J1halo(1,1:lx2,1:lx3)
   J1halo(lx1+1,1:lx2,1:lx3)=J1halo(lx1,1:lx2,1:lx3)
-  call halo(J1halo,1,tagJ1,x%flagper)    !I'm kind of afraid to only halo a single point...
+  call halo(J1halo,1,tagJ1,x%flagper)    !< I'm kind of afraid to only halo a single point...
 
   if (iddown==-1) then
     J1halo(1:lx1,0,1:lx3)=J1halo(1:lx1,1,1:lx3)

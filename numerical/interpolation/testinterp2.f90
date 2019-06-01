@@ -1,4 +1,3 @@
-program testinterp2
 use phys_consts, only: wp,pi
 use interpolation
 implicit none
@@ -33,17 +32,17 @@ do ix2=1,lx2
 end do
 
 
-!grid for interpolated data
+!> grid for interpolated data
 x1i=[ ((real(ix1,wp)-1._wp)*stride/(lx1i/lx1), ix1=1,lx1i) ]
 x2i=[ ((real(ix2,wp)-1._wp)*stride/(lx2i/lx2), ix2=1,lx2i) ]
 
 
-!center grid points at zero
+!> center grid points at zero
 x1i=x1i-sum(x1i)/size(x1i,1)
 x2i=x2i-sum(x2i)/size(x2i,1)
 
 
-!try a 2d interpolation
+!> try a 2d interpolation
 !fi=interp2_plaid(x1,x2,f,x1i,x2i)
 do ix2=1,lx2i
   do ix1=1,lx1i
@@ -56,15 +55,17 @@ filist=interp2(x1,x2,f,x1ilist,x2ilist)
 fi=reshape(filist,[lx1i,lx2i])
 
 
-!dump results to a file so we can check things
-open(newunit=u,file='input2D.dat',status='replace',form='unformatted',access='stream')    !has no problem with > 2GB output files
+!> dump results to a file so we can check things
+!> has no problem with > 2GB output files
+open(newunit=u,file='input2D.dat',status='replace',form='unformatted',access='stream')
 write(u) lx1,lx2
 write(u) x1,x2,f
 close(u)
 
-open(newunit=u,file='output2D.dat',status='replace',form='unformatted',access='stream')    !has no problem with > 2GB output files
+!> has no problem with > 2GB output files
+open(newunit=u,file='output2D.dat',status='replace',form='unformatted',access='stream')
 write(u) lx1i,lx2i
 write(u) x1i,x2i,fi   !since only interpolating in x1
 close(u)
 
-end program testinterp2
+end program

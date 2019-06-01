@@ -82,8 +82,8 @@ nNO=4e-1*exp(-3700./Tn).*nO2+5e-7*nO;       %Mitra, 1968
 nH=reshape(msisdat(:,8),lx1,lx2,lx3);
 natm=cat(4,nO,nN2,nO2,Tn,nN,nNO,nH);
 
-system(['rm ',fin]);
-system(['rm ',fout]);
+delete(fin);
+delete(fout);
 
 if nargout==0, clear('natm'), end 
 end

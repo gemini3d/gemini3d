@@ -20,10 +20,9 @@ set -u  # abort on undefined variable (a common bash goof)
 
 # all libraries installed under $PREFIX/libraryname
 PREFIX=$HOME/.local
-# whatever name you want to name at end of each library directory, arbitrary
-SUFFIX=gcc8
+
 # working directory, so you can rebuild later without complete recompilation
-WD=$HOME/libs_gemini-$SUFFIX
+WD=$HOME/libs_gemini-gcc8
 
 # true to erase/redo builds
 wipe=false
@@ -53,19 +52,19 @@ echo "CXX=$CXX"
 
 # Library parameters
 LAPACKGIT=https://github.com/Reference-LAPACK/lapack
-LAPACKPREFIX=$PREFIX/lapack-$SUFFIX
+LAPACKPREFIX=$PREFIX/lapack
 
 MPIVERSION=3.1.3  # MPI 4 doesn't currently work with ScalaPack
 MPIFN=openmpi-$MPIVERSION.tar.bz2
 MPIURL=https://download.open-mpi.org/release/open-mpi/v3.1/$MPIFN
 MPISHA1=b3c60e2bdd5a8a8e758fd741f9a5bebb84da5e81
-MPIPREFIX=$PREFIX/openmpi-$MPIVERSION-$SUFFIX
+MPIPREFIX=$PREFIX/openmpi-$MPIVERSION
 
 SCALAPACKGIT=https://github.com/scivision/scalapack
-SCALAPACKPREFIX=$PREFIX/scalapack-$SUFFIX
+SCALAPACKPREFIX=$PREFIX/scalapack
 
 MUMPSGIT=https://github.com/scivision/mumps
-MUMPSPREFIX=$PREFIX/mumps-$SUFFIX
+MUMPSPREFIX=$PREFIX/mumps
 
 [[ $($FC -dumpversion) < 6 ]] && { echo "Gfortran >= 6 required"; exit 1; }
 

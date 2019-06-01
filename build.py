@@ -70,19 +70,23 @@ def _needs_wipe(fn: Path, wipe: bool) -> bool:
     with fn.open() as f:
         for line in f:
             if line.startswith('CMAKE_C_COMPILER:FILEPATH'):
-                cc = line.split('/')[-1]
+                cc = line.split('/')[-1].strip()  # must have strip() for junk in cache
                 if cc != compilers['CC']:
+                    print('regenerating due to C compiler change:', cc, '=>', compilers['CC'])
                     wipe = True
                     break
             elif line.startswith('CMAKE_GENERATOR:INTERNAL'):
                 gen = line.split('=')[-1]
                 if gen.startswith('Unix') and os.name == 'nt':
+                    print('regenerating due to OS change: Unix => Windows')
                     wipe = True
                     break
                 elif gen.startswith(('MinGW', 'Visual')) and os.name != 'nt':
+                    print('regenerating due to OS change: Windows => Unix')
                     wipe = True
                     break
                 elif gen.startswith('Visual') and compilers['CC'] != 'cl':
+                    print('regenerating due to C compiler change: MSVC =>', compilers['CC'])
                     wipe = True
                     break
 
@@ -148,6 +152,7 @@ def _cmake_test(dotest: bool):
         ret = subprocess.run([CTEST, '--parallel', '--output-on-failure'], cwd=BUILD)
         if ret.returncode:
             raise SystemExit(ret.returncode)
+
 
 def meson_setup(compilers: Dict[str, str],
                 args: List[str],

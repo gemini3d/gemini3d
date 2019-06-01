@@ -9,34 +9,37 @@ use io, only : date_filename
 use timeutils, only : dateinc
 
 implicit none
+private
 
 !ALL OF THE FOLLOWING MODULE-SCOPE ARRAYS ARE USED FOR INTERPOLATING PRECIPITATION INPUT FILES (IF USED)
-!It should be noted that all of these will eventually be fullgrid varialbles since only root does this...
-real(wp), dimension(:), allocatable, private :: mlonp
-real(wp), dimension(:), allocatable, private :: mlatp    !coordinates of electric field data
-integer, private :: llon,llat
+!It should be noted that all of these will eventually be fullgrid variables since only root does this...
+real(wp), dimension(:), allocatable :: mlonp
+real(wp), dimension(:), allocatable :: mlatp    !coordinates of electric field data
+integer :: llon,llat
 
-real(wp), dimension(:,:), allocatable, private :: E0xp,E0yp    !x (lon.) and y (lat.) components of the electric field
-real(wp), dimension(:,:), allocatable, private :: Vminx1p,Vmaxx1p
-real(wp), dimension(:), allocatable, private :: Vminx2pslice,Vmaxx2pslice    !only slices because field lines (x1-dimension) should be equipotentials
-real(wp), dimension(:), allocatable, private :: Vminx3pslice,Vmaxx3pslice
-real(wp), dimension(:), allocatable, private :: Edatp    !needed when a 1D interpolation is to be done, i.e. when there is 1D sourde data
+real(wp), dimension(:,:), allocatable :: E0xp,E0yp    !x (lon.) and y (lat.) components of the electric field
+real(wp), dimension(:,:), allocatable :: Vminx1p,Vmaxx1p
+real(wp), dimension(:), allocatable :: Vminx2pslice,Vmaxx2pslice    !only slices because field lines (x1-dimension) should be equipotentials
+real(wp), dimension(:), allocatable :: Vminx3pslice,Vmaxx3pslice
+real(wp), dimension(:), allocatable :: Edatp    !needed when a 1D interpolation is to be done, i.e. when there is 1D sourde data
 
-real(wp), dimension(:), allocatable, private :: mloni    !flat list of mlat,mlon locations on grid that we need to interpolate onto
-real(wp), dimension(:), allocatable, private :: mlati
+real(wp), dimension(:), allocatable :: mloni    !flat list of mlat,mlon locations on grid that we need to interpolate onto
+real(wp), dimension(:), allocatable :: mlati
 
-real(wp), dimension(:,:), allocatable, private :: E0xiprev,E0xinext,E0yiprev,E0yinext    !fields interpolated spatially
-real(wp), dimension(:,:), allocatable, private :: Vminx1iprev,Vminx1inext,Vmaxx1iprev,Vmaxx1inext
-real(wp), dimension(:), allocatable, private :: Vminx2isprev,Vminx2isnext,Vmaxx2isprev,Vmaxx2isnext
-real(wp), dimension(:), allocatable, private :: Vminx3isprev,Vminx3isnext,Vmaxx3isprev,Vmaxx3isnext
+real(wp), dimension(:,:), allocatable :: E0xiprev,E0xinext,E0yiprev,E0yinext    !fields interpolated spatially
+real(wp), dimension(:,:), allocatable :: Vminx1iprev,Vminx1inext,Vmaxx1iprev,Vmaxx1inext
+real(wp), dimension(:), allocatable :: Vminx2isprev,Vminx2isnext,Vmaxx2isprev,Vmaxx2isnext
+real(wp), dimension(:), allocatable :: Vminx3isprev,Vminx3isnext,Vmaxx3isprev,Vmaxx3isnext
 
-integer, dimension(3), private :: ymdprev,ymdnext   !dates for interpolated data
-real(wp), private :: UTsecprev,UTsecnext
-real(wp), private :: tprev,tnext
+integer, dimension(3) :: ymdprev,ymdnext   !dates for interpolated data
+real(wp) :: UTsecprev,UTsecnext
+real(wp) :: tprev,tnext
 
-real(wp), private :: flagdirich_double
+real(wp) :: flagdirich_double
 
-integer, private :: ix1ref,ix2ref,ix3ref     !reference locaiton along field line closest to reference point of input data (300 km alt. at the grid center)
+integer :: ix1ref,ix2ref,ix3ref     !reference locaiton along field line closest to reference point of input data (300 km alt. at the grid center)
+
+public :: potentialbcs2D, potentialbcs2D_fileinput, clear_potential_fileinput
 
 contains
 
@@ -173,7 +176,7 @@ if(t+dt/2d0>=tnext) then    !need to load a new file
   !flagdirich=1    !to short-circuit solve...
   !E0xp=0d0; E0yp=0d0; Vminx1p=0d0; Vmaxx1p=0d0;
   !Vminx2pslice=0d0; Vmaxx2pslice=0d0; Vminx3pslice=0d0; Vmaxx3pslice=0d0;
-  
+
   read(inunit) flagdirich_double
   read(inunit) E0xp,E0yp
   read(inunit) Vminx1p,Vmaxx1p    !background fields and top/bottom boundar conditions
@@ -286,7 +289,7 @@ if(t+dt/2d0>=tnext) then    !need to load a new file
   print *, 'Min/max values for E0yi:  ',minval(E0yinext),maxval(E0yinext)
   print *, 'Min/max values for Vminx1i:  ',minval(Vminx1inext),maxval(Vminx1inext)
   print *, 'Min/max values for Vmaxx1i:  ',minval(Vmaxx1inext),maxval(Vmaxx1inext)
-  
+
   if (llon/=1 .and. llat/=1) then
     print *, 'Min/max values for Vminx2i:  ',minval(Vminx2isnext),maxval(Vminx2isnext)
     print *, 'Min/max values for Vmaxx2i:  ',minval(Vmaxx2isnext),maxval(Vmaxx2isnext)
@@ -308,7 +311,7 @@ end if
 
 !INTERPOLATE IN TIME (LINEAR)
 flagdirich=int(flagdirich_double,4)     !make sure to set solve type every time step, as it does not persiste between function calls
-print *, 'Solve type: ',flagdirich 
+print *, 'Solve type: ',flagdirich
 do ix3=1,lx3all
   do ix2=1,lx2all
     slope=(E0xinext(ix2,ix3)-E0xiprev(ix2,ix3))/(tnext-tprev)
