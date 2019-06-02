@@ -23,10 +23,6 @@ end
 
 if nargin<8, visible = 'on'; end
 
-if nargin<7 || isempty(h)
-  h = plotinit(xg, visible);
-end
-
 Ncmap = parula(256);
 Tcmap = parula(256);
 Vcmap = bwr();
@@ -71,6 +67,10 @@ end
 if isempty(xg)
   disp('Reloading grid...  Provide one as input if you do not want this to happen.')
   xg = readgrid([direc,filesep,'inputs',filesep]);
+end
+
+if nargin<7 || isempty(h)
+  h = plotinit(xg, visible);
 end
 
 plotfun = grid2plotfun(plotfun, xg);
