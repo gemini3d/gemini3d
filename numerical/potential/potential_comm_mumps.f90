@@ -287,8 +287,8 @@ lx3all=size(Phiall,3)
 
 
 !USE PREVIOUS MUMPS PERMUTATION (OLD CODE? BUT MIGHT BE WORTH REINSTATING?)
-!    perflag=.false.
-perflag=.true.
+    perflag=.false.
+!perflag=.true.
 
 
 !R-------
@@ -525,7 +525,6 @@ if (lx2/=1) then    !either field-resolved 3D or integrated 2D solve for 3D doma
         Phislab=elliptic2D_pol_conv_curv(srctermintall,SigPint2all,SigPint3all,SigHintall,incapintall,v2slaball,v3slaball, &
                                  Vminx2slice,Vmaxx2slice,Vminx3slice,Vmaxx3slice, &
                                  dt,x,Phislab0,perflag,it)    !note tha this solver is only valid for cartesian meshes, unless the inertial capacitance is set to zero
-!        Phislab=0d0
       else
         print *, '!!!User selected periodic solve...'
         Phislab=elliptic2D_pol_conv_curv_periodic2(srctermintall,SigPint2all,SigHintall,incapintall,v2slaball,v3slaball, &    !note that either sigPint2 or 3 will work since this must be cartesian...

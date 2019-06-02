@@ -119,7 +119,7 @@ Fc=gradsig01
 !DEFINE A DECIMATED MESH (THIS IS HARDCODED FOR NOW)
 print*, 'Decimating parallel grid...'
 ldec=11
-allocate(x1dec(-1:ldec+2),dx1dec(0:ldec+2),x1idec(ldec+1),dx1idec(ldec))
+allocate(x1dec(-1:ldec+2),dx1dec(0:ldec+2),x1idec(1:ldec+1),dx1idec(1:ldec))
 x1dec(-1:lx1+2)=[x%x1(-1),x%x1(0),x%x1(1),81.8e3_wp,84.2e3_wp,87.5e3_wp,93.3e3_wp,106.0e3_wp,124.0e3_wp, &
             144.6e3_wp,206.7e3_wp,882.2e3_wp,x%x1(lx1),x%x1(lx1+1),x%x1(lx1+2)]
 dx1dec(0:ldec+2)=x1dec(0:ldec+2)-x1dec(-1:ldec+1)
@@ -224,7 +224,7 @@ Phidec=elliptic3D_cart(srctermdec,Acdec,Bcdec,Ccdec,Dcdec,Ecdec,Fcdec,Vminx1pot,
 print*, 'Upsampling potential...'
 do ix2=1,lx2
   do ix3=1,lx3
-    elliptic3D_decimate(:,ix2,ix3)=interp1(x1dec,Phidec(:,ix2,ix3),x%x1(1:lx1))
+    elliptic3D_decimate(:,ix2,ix3)=interp1(x1dec(1:ldec),Phidec(:,ix2,ix3),x%x1(1:lx1))
   end do
 end do
 
@@ -280,6 +280,27 @@ type (DMUMPS_STRUC) mumps_par
 #endif
 
 real(wp), dimension(size(srcterm,1),size(srcterm,2),size(srcterm,3)) :: elliptic3D_cart
+
+
+print*, shape(srcterm)
+print*, shape(Ac)
+print*, shape(Bc)
+print*, shape(Cc)
+print*, shape(Dc)
+print*, shape(Ec)
+print*, shape(Fc)
+print*, shape(Vminx1)
+print*, shape(Vmaxx1)
+print*, shape(Vminx2)
+print*, shape(Vmaxx2)
+print*, shape(Vminx3)
+print*, shape(Vmaxx3)
+print*, shape(dx1)
+print*, shape(dx1i)
+print*, shape(dx2all)
+print*, shape(dx2iall)
+print*, shape(dx3all)
+print*, shape(dx3iall)
 
 
 !ONLY ROOT NEEDS TO ASSEMBLE THE MATRIX
@@ -426,6 +447,7 @@ print *, 'Number of entries used:  ',ient-1
 
 ! INIT MUMPS
 ! MUMPS 4.10 disregarded ICNTL(4)
+print*, 'Initialize MUMPS...'
 mumps_par%ICNTL(1) = stderr   ! error msg stream
 mumps_par%ICNTL(2) = stdout   ! stats and warning stream
 mumps_par%ICNTL(3) = 0  ! global information verbosity  0 = off
@@ -445,6 +467,7 @@ call DMUMPS(mumps_par)
 
 
 !LOAD OUR PROBLEM
+print*, 'Loading mumps problem...'
 if ( myid==0 ) then
   mumps_par%N=lPhi
   mumps_par%NZ=lent
@@ -458,19 +481,22 @@ if ( myid==0 ) then
   mumps_par%RHS=b
   deallocate(ir,ic,M,b)     !clear memory before solve begins!!!
 
-  if (perflag .and. it/=1) then       !used cached permutation
+  print*, 'Dealing with perumutation',perflag,it
+  if (perflag .and. it/=1) then       !used cached permutation, but only gets tested on first time step
     allocate(mumps_par%PERM_IN(mumps_par%N))
     mumps_par%PERM_IN=mumps_perm
     mumps_par%ICNTL(7)=1
   end if
 
 
+  print*, 'Setting memory relaxation...'
   !3D solves very often need better memory relaxation
   mumps_par%ICNTL(14)=200
 end if
 
 
 !SOLVE (ALL WORKERS NEED TO SEE THIS CALL)
+print*, 'Executing solve...'
 mumps_par%JOB = 6
 #if REALBITS==32
 call SMUMPS(mumps_par)
