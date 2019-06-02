@@ -34,6 +34,7 @@ This file is intended to document development priorities for the GEMINI project.
 * There are now numerous versions of routines corresponding to message passing in x3 vs. on a x2/x3 process grid.  Somehow the x3 routines need to be kept as they may be faster in some (hopefully unusual) situations.  Michael suggests a submodule...
 * Some modules have now become excessively large, e.g. mpimod and calculus...  These need to be organized and split up
 * Handling of metric factors in the potential solves is sloppy - need to be passing into solver and used to eval. geometric terms there - would be more clear to reader...
+* elliptic solvers do not need to check for root vs. workers anymore; is done from calling functions
 
 
 ## Coding style and standards issues
