@@ -281,27 +281,27 @@ type (DMUMPS_STRUC) mumps_par
 
 real(wp), dimension(size(srcterm,1),size(srcterm,2),size(srcterm,3)) :: elliptic3D_cart
 
-
-print*, shape(srcterm)
-print*, shape(Ac)
-print*, shape(Bc)
-print*, shape(Cc)
-print*, shape(Dc)
-print*, shape(Ec)
-print*, shape(Fc)
-print*, shape(Vminx1)
-print*, shape(Vmaxx1)
-print*, shape(Vminx2)
-print*, shape(Vmaxx2)
-print*, shape(Vminx3)
-print*, shape(Vmaxx3)
-print*, shape(dx1)
-print*, shape(dx1i)
-print*, shape(dx2all)
-print*, shape(dx2iall)
-print*, shape(dx3all)
-print*, shape(dx3iall)
-
+!
+!print*, shape(srcterm)
+!print*, shape(Ac)
+!print*, shape(Bc)
+!print*, shape(Cc)
+!print*, shape(Dc)
+!print*, shape(Ec)
+!print*, shape(Fc)
+!print*, shape(Vminx1)
+!print*, shape(Vmaxx1)
+!print*, shape(Vminx2)
+!print*, shape(Vmaxx2)
+!print*, shape(Vminx3)
+!print*, shape(Vmaxx3)
+!print*, shape(dx1)
+!print*, shape(dx1i)
+!print*, shape(dx2all)
+!print*, shape(dx2iall)
+!print*, shape(dx3all)
+!print*, shape(dx3iall)
+!
 
 !ONLY ROOT NEEDS TO ASSEMBLE THE MATRIX
 if (myid==0) then
@@ -491,7 +491,7 @@ if ( myid==0 ) then
 
   print*, 'Setting memory relaxation...'
   !3D solves very often need better memory relaxation
-  mumps_par%ICNTL(14)=200
+  mumps_par%ICNTL(14)=500
 end if
 
 
