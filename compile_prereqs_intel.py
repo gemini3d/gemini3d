@@ -6,14 +6,13 @@ CMake >= 3.12 required
 import subprocess
 import shutil
 import logging
-import os
 from pathlib import Path
 from argparse import ArgumentParser
 
 # ========= user parameters ======================
 
 # all libraries installed under $PREFIX/libraryname
-PREFIX = '~/lib_gemini_intel'
+PREFIX = '~/lib_intel'
 
 # where you keep your Git repos
 WORKDIR = '~/code'
@@ -28,61 +27,15 @@ BUILDDIR = 'build'
 # ========= end of user parameters ================
 
 GITEXE = shutil.which('git')
-CMAKE = shutil.which('cmake')
-if not CMAKE:
-    raise FileNotFoundError('could not find CMake')
 
 
 def main(wipe: bool):
-    if not os.environ.get('MKLROOT'):
-        raise EnvironmentError('must have set MKLROOT by running compilervars.bat or source compilervars.sh before this script.')
-
-    FC = 'mpiifort'  # Intel 19
-    CC = 'mpiicc'
-    CXX = 'mpicxx'
-
-    if os.name == 'nt':
-        # unlike the plain compilers, the MPI compiler wrappers in Windows require the .bat
-        compilers = {'FC': FC + '.bat', 'CC': CC + '.bat', 'CXX': CXX + '.bat'}
-    else:
-        if not shutil.which(FC):
-            FC = 'mpifort'
-            if not shutil.which(FC):
-                logging.warning(f'{FC} not found, CMake may fail')
-
-            CC = 'mpicc'
-            if not shutil.which(CC):
-                logging.warning(f'{CC} not found, CMake may fail')
-
-        compilers = {'FC': FC, 'CC': CC, 'CXX': CXX}
-
     install_lib = Path(PREFIX).expanduser() / MUMPSDIR
     source_lib = Path(WORKDIR).expanduser() / MUMPSDIR
-    build_lib = source_lib / BUILDDIR
 
     update(source_lib)
 
-    cachefile = build_lib / 'CMakeCache.txt'
-
-    if wipe and cachefile.is_file():
-        cachefile.unlink()
-
-    if os.name == 'nt':
-        wopts = ['-G', 'MinGW Makefiles', '-DCMAKE_SH=CMAKE_SH-NOTFOUND']
-    else:
-        wopts = []
-
-    # generate
-    cmd = [CMAKE] + wopts + [f'-DCMAKE_INSTALL_PREFIX={install_lib}',
-                             '-B', str(build_lib), '-S', str(source_lib)]
-    print('\n', ' '.join(cmd), '\n')
-
-    ret = subprocess.run(cmd, env=os.environ.update(compilers))
-    if ret.returncode:
-        raise SystemExit(ret.returncode)
-
-    # build
-    subprocess.check_call([CMAKE, '--build', str(build_lib), '--parallel', '--target', 'install'])
+    subprocess.run(['python', 'build.py', 'intel', '-install', str(install_lib)], cwd=source_lib)
 
 
 def update(path: Path):
