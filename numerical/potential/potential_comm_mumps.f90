@@ -575,9 +575,6 @@ if (lx2/=1) then    !either field-resolved 3D or integrated 2D solve for 3D doma
     print *, '!Beginning field-resolved 3D solve (could take a very long time)...'
    ! Phiall=elliptic3D_curv(srctermall,sig0scaledall,sigPscaledall,sigHscaledall,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3,Vmaxx3, &
    !                   x,flagdirich,perflag,it)
-!    Phiall=elliptic3D_decimate(srctermall,sig0scaledall,sigPscaledall,sigHscaledall, & 
-!                      Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3,Vmaxx3, &
-!                      x,flagdirich,perflag,it)
     if( maxval(abs(Vminx1))>1e-12_wp .or. maxval(abs(Vmaxx1))>1e-12_wp ) then
       do iid=1,lid-1
         call mpi_send(1,1,MPI_INTEGER,iid,tagflagdirich,MPI_COMM_WORLD,ierr)
@@ -957,6 +954,13 @@ J1=J1+J1pol
 J2=J2+J2pol
 J3=J3+J3pol
 !-------
+
+ if (t>11) then
+   open(newunit=utrace, form='unformatted', access='stream',file='Phiall.raw8', status='replace', action='write')
+   write(utrace) Phiall
+   close(utrace)
+   error stop 'DEBUG'
+ end if
 
 end subroutine potential_root_mpi_curv
 
