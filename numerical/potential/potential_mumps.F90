@@ -92,6 +92,8 @@ real(wp), dimension(:,:,:), allocatable :: Phidec
 
 real(wp), dimension(1:size(Vminx1,1),1:size(Vminx1,2)) :: Vminx1pot,Vmaxx1pot
 
+integer :: utrace
+
 real(wp), dimension(size(srcterm,1),size(srcterm,2),size(srcterm,3)) :: elliptic3D_decimate
 
 
@@ -117,6 +119,9 @@ Dc=gradsigP2+gradsigH3
 Ec=gradsigP3-gradsigH2
 Fc=gradsig01
 
+Dc=0e0_wp
+Ec=0e0_wp
+
 
 !DEFINE A DECIMATED MESH (THIS IS HARDCODED FOR NOW)
 print*, 'Decimating parallel grid...'
@@ -124,6 +129,9 @@ ldec=11
 allocate(x1dec(-1:ldec+2),dx1dec(0:ldec+2),x1idec(1:ldec+1),dx1idec(1:ldec))
 x1dec(-1:lx1+2)=[x%x1(-1),x%x1(0),x%x1(1),81.8e3_wp,84.2e3_wp,87.5e3_wp,93.3e3_wp,106.0e3_wp,124.0e3_wp, &
             144.6e3_wp,206.7e3_wp,882.2e3_wp,x%x1(lx1),x%x1(lx1+1),x%x1(lx1+2)]
+!x1dec(-1:lx1+2)=[x%x1(-1),x%x1(0),x%x1(1),81.8e3_wp,84.2e3_wp,87.5e3_wp,93.3e3_wp,106.0e3_wp,124.0e3_wp, &
+!            144.6e3_wp,175e3_wp,206.7e3_wp,250e3_wp,400e3_wp,600e3_wp,882.2e3_wp,x%x1(lx1),x%x1(lx1+1),x%x1(lx1+2)]
+
 dx1dec(0:ldec+2)=x1dec(0:ldec+2)-x1dec(-1:ldec+1)
 x1idec(1:ldec+1)=0.5_wp*(x1dec(0:ldec)+x1dec(1:ldec+1))
 dx1idec(1:ldec)=x1idec(2:ldec+1)-x1idec(1:ldec)
@@ -234,6 +242,12 @@ end do
 !AGAIN NEED TO FIX THE EDGES...
 elliptic3D_decimate(1,:,:)=Phidec(1,:,:)
 elliptic3D_decimate(lx1,:,:)=Phidec(ldec,:,:)
+
+
+   open(newunit=utrace, form='unformatted', access='stream',file='Phidec.raw8',status='replace', action='write')
+   write(utrace) elliptic3D_decimate,Phidec,Ac,Acdec,Bc,Bcdec,Cc,Ccdec,Dc,Dcdec,Ec,Ecdec,Fc,Fcdec,srcterm,srctermdec
+   write(utrace) Vminx1pot,Vmaxx1pot,Vminx2dec,Vmaxx2dec,Vminx3dec,Vmaxx3dec
+   close(utrace)
 
 
 !CLEAN UP THE ALLOCATED ARRAYS
