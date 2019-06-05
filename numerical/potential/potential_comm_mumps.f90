@@ -554,7 +554,8 @@ if (lx2/=1) then    !either field-resolved 3D or integrated 2D solve for 3D doma
     print *, 'Beginning field-resolved 3D solve...  Type;  ',flagdirich
     
     !-------
-    !PRODUCE SCALED CONDUCTIVITIES TO PASS TO SOLVER, ALSO SCALED SOURCE TERM
+    !PRODUCE SCALED CONDUCTIVITIES TO PASS TO SOLVER, ALSO SCALED SOURCE TERM,
+    !need to adopt for curvilinear case...
     sig0scaled=x%h2(1:lx1,1:lx2,1:lx3)*x%h3(1:lx1,1:lx2,1:lx3)/x%h1(1:lx1,1:lx2,1:lx3)*sig0
     if (flagswap==1) then
       sigPscaled=x%h1(1:lx1,1:lx2,1:lx3)*x%h2(1:lx1,1:lx2,1:lx3)/x%h3(1:lx1,1:lx2,1:lx3)*sigP    !remember to swap 2-->3
@@ -570,6 +571,10 @@ if (lx2/=1) then    !either field-resolved 3D or integrated 2D solve for 3D doma
     call gather_recv(sigHscaled,tagsigH,sigHscaledall)
     call gather_recv(sig0scaled,tagsig0,sig0scaledall)
     call gather_recv(srcterm,tagsrc,srctermall)
+
+
+    sigHscaledall=0e0_wp    !ZZZ force to zero for tests.
+
 
     !R------
     print *, '!Beginning field-resolved 3D solve (could take a very long time)...'
