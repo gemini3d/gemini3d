@@ -3,7 +3,7 @@ function [ymdnew,UTsecnew]=dateinc(dt,ymd,UTsec)
 narginchk(3,3)
 validateattr(dt, {'numeric'}, {'scalar', 'positive'}, mfilename, 'time step', 1)
 validateattr(ymd, {'numeric'}, {'vector', 'positive', 'numel', 3}, mfilename, 'year month day', 2)
-validateattr(UTsec, {'numeric'}, {'scalar', 'nonnegatie'}, mfilename, 'UTC second', 3)
+validateattr(UTsec, {'numeric'}, {'scalar', 'nonnegative'}, mfilename, 'UTC second', 3)
 
 day=ymd(3); month=ymd(2); year=ymd(1);
 
