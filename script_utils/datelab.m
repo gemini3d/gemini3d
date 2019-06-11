@@ -2,7 +2,7 @@ function strlab=datelab(ymd,UTsec)
 
 narginchk(2,2)
 validateattr(ymd, {'numeric'}, {'vector', 'positive', 'numel', 3}, mfilename, 'year month day', 1)
-validateattr(UTsec, {'numeric'}, {'scalar', 'positive'}, mfilename, 'UTC second', 2)
+validateattr(UTsec, {'numeric'}, {'scalar', 'nonnegative'}, mfilename, 'UTC second', 2)
 
 
 %SECONDS
