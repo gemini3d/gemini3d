@@ -78,7 +78,7 @@ real(wp), dimension(1:size(srcterm,1),1:size(srcterm,2),1:size(srcterm,3)) :: gr
 real(wp), dimension(1:size(srcterm,1),1:size(srcterm,2),1:size(srcterm,3)) :: Ac,Bc,Cc,Dc,Ec,Fc
 
 integer :: lx1,lx2,lx3,ix1,ix2,ix3
-integer :: ldec
+integer, parameter :: ldec=11
 real(wp), dimension(:), allocatable :: x1dec
 real(wp), dimension(:), allocatable :: dx1dec
 real(wp), dimension(:), allocatable :: x1idec
@@ -117,13 +117,9 @@ Dc=gradsigP2+gradsigH3
 Ec=gradsigP3-gradsigH2
 Fc=gradsig01
 
-Dc=0e0_wp
-Ec=0e0_wp
-
 
 !DEFINE A DECIMATED MESH (THIS IS HARDCODED FOR NOW)
 print*, 'Decimating parallel grid...'
-ldec=11
 allocate(x1dec(-1:ldec+2),dx1dec(0:ldec+2),x1idec(1:ldec+1),dx1idec(1:ldec))
 x1dec(-1:lx1+2)=[x%x1(-1),x%x1(0),x%x1(1),81.8e3_wp,84.2e3_wp,87.5e3_wp,93.3e3_wp,106.0e3_wp,124.0e3_wp, &
             144.6e3_wp,206.7e3_wp,882.2e3_wp,x%x1(lx1),x%x1(lx1+1),x%x1(lx1+2)]
