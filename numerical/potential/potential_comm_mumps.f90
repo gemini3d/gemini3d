@@ -573,9 +573,6 @@ if (lx2/=1) then    !either field-resolved 3D or integrated 2D solve for 3D doma
     call gather_recv(srcterm,tagsrc,srctermall)
 
 
-    sigHscaledall=0e0_wp    !ZZZ force to zero for tests.
-
-
     !R------
     print *, '!Beginning field-resolved 3D solve (could take a very long time)...'
    ! Phiall=elliptic3D_curv(srctermall,sig0scaledall,sigPscaledall,sigHscaledall,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3,Vmaxx3, &
@@ -960,12 +957,12 @@ J2=J2+J2pol
 J3=J3+J3pol
 !-------
 
- if (t>11) then
-   open(newunit=utrace, form='unformatted', access='stream',file='Phiall.raw8', status='replace', action='write')
-   write(utrace) Phiall
-   close(utrace)
-   error stop 'DEBUG'
- end if
+! if (t>11) then
+!   open(newunit=utrace, form='unformatted', access='stream',file='Phiall.raw8', status='replace', action='write')
+!   write(utrace) Phiall
+!   close(utrace)
+!   error stop 'DEBUG'
+! end if
 
 end subroutine potential_root_mpi_curv
 
