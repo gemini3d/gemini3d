@@ -8,7 +8,7 @@ use phys_consts, only : pi,mu0, wp, re
 use grid, only : curvmesh, lx1, lx2, lx3, read_grid, clear_grid, lx2all,lx3all,grid_size
 use timeutils, only : dateinc
 use io, only : read_configfile,input_plasma_currents,create_outdir_mag,output_magfields
-use mpimod, only: mpisetup, mpibreakdown, mpigrid, halo_end, &
+use mpimod, only: mpisetup, mpibreakdown, mpigrid, mpi_manualgrid, halo_end, &
   lid, lid2, lid3, myid, myid2, myid3, mpi_realprec, &
   tagdv, tagjx, tagjy, tagjz, tagrcubed, tagrx, tagry, tagrz
 
@@ -96,6 +96,9 @@ integer :: flagglow                     !flag toggling GLOW module run (include 
 real(wp) :: dtglow                      !time interval between GLOW runs (s)
 real(wp) :: dtglowout                   !time interval between GLOW auroral outputs (s)
 
+!! FOR SPECIFYING THE PROCESS GRID
+integer :: lid2in,lid3in
+
 !! FOR HANDLING INPUT
 integer :: argc, ierr
 character(256) :: argv
@@ -127,8 +130,19 @@ call read_configfile(infile,ymd,UTsec0,tdur,dtout,activ,tcfl,Teinf,potsolve,flag
 
 
 !ESTABLISH A PROCESS GRID
+!call grid_size(indatsize)
+!call mpigrid(lx2all,lx3all)    !following grid_size these are in scope
+!!CHECK THE GRID SIZE AND ESTABLISH A PROCESS GRID
 call grid_size(indatsize)
-call mpigrid(lx2all,lx3all)    !following grid_size these are in scope
+if (argc>2) then   !user specified process grid
+  call get_command_argument(3,argv)
+  read(argv,*) lid2in
+  call get_command_argument(4,argv)
+  read(argv,*) lid3in
+  call mpi_manualgrid(lx2all,lx3all,lid2in,lid3in)
+else     !try to decide the process grid ourself
+  call mpigrid(lx2all,lx3all)    !following grid_size these are in scope
+end if
 
 
 !LOAD UP THE GRID STRUCTURE/MODULE VARS. FOR THIS SIMULATION - THIS ALSO PERMUTES DIMENSIONS OF 2D GRID, IF NEEDED

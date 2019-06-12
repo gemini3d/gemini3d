@@ -1,8 +1,8 @@
 %SIMULATIONS LOCAITONS
 %simname='tohoku20113D_highres_long/';
 %simname_control='tohoku20113D_highres_long_control/';
-simname='mooreOK3D_medres/';
-simname_control='mooreOK3D_control/';
+simname='mooreOK3D_hemis_medres/';
+simname_control='mooreOK3D_hemis_medres_control/';
 basedir='~/zettergmdata/simulations/';
 direc=[basedir,simname];
 direc_control=[basedir,simname_control];
