@@ -199,6 +199,9 @@ yp(:,:,:)=rmean*x%theta(:,:,:)    !the integrations are being treated as Cartesi
 zp(:,:,:)=rmean*sin(thetamean)*x%phi(:,:,:)
 
 
+!print*, myid2,myid3,'--> field point min/max data:  ',minval(xp),maxval(xp),minval(yp),maxval(yp),minval(zp),maxval(zp)
+
+
 !COMPUTE A SOURCE DIFFERENTIAL VOLUME FOR INTEGRALS
 allocate(dV(lx1,lx2,lx3))
 allocate(dVend(lx1,lx2),Jxend(lx1,lx2),Jyend(lx1,lx2),Jzend(lx1,lx2))
@@ -230,6 +233,9 @@ end if
 
 !GET END VOLUMES SO THE INTEGRALS ARE 'COMPLETE'
 call halo_end(dV,dVend,dVtop,tagdV)    !< need to define the differential volume on the edge of this x3-slab in
+
+
+!print*, myid2,myid3,'--> dV vals.',minval(dV),maxval(dV),minval(dVend),maxval(dVend),minval(dVtop),maxval(dVtop)
 
 
 !COMPUTE NEEDED PROJECTIONS
@@ -321,11 +327,19 @@ do while (t<tdur)
   Jz=J1*proj_e1ephi+J2*proj_e2ephi+J3*proj_e3ephi           !east
 
 
+    print *, myid2,myid3,'  --> Min/max values of current',minval(Jx),maxval(Jx),minval(Jy),maxval(Jy), &
+                                               minval(Jz),maxval(Jz)
+
+
   !GATHER THE END DATA SO WE DON'T LEAVE OUT A POINT IN THE INTEGRATION
   call halo_end(Jx,Jxend,Jxtop,tagJx)
   call halo_end(Jy,Jyend,Jytop,tagJy)
   call halo_end(Jz,Jzend,Jztop,tagJz)
 
+    !print *, myid2,myid3,'  --> Min/max values of end current',minval(Jxend),maxval(Jxend),minval(Jyend),maxval(Jyend), &
+    !                                           minval(Jzend),maxval(Jzend)
+    !print *, myid2,myid3,'  --> Min/max values of top current',minval(Jxtop),maxval(Jxtop),minval(Jytop),maxval(Jytop), &
+    !                                           minval(Jztop),maxval(Jztop)
 
   !COMPUTE MAGNETIC FIELDS
   do ipoints=1,lpoints
@@ -344,12 +358,23 @@ do while (t<tdur)
 
     if (flag2D/=1) then
       Rcubed(:,:,:)=(Rx**2+Ry**2+Rz**2)**(3d0/2d0)   !this really is R**3
+      where(Rcubed<1d3)
+        Rcubed=1d3
+      end where
       call halo_end(Rcubed,Rcubedend,Rcubedtop,tagRcubed)
-      if(myid3==lid3-1) Rcubedend=1     !< avoids div by zero on the end
-      if(myid2==lid2-1) Rcubedtop=1
+      if(myid3==lid3-1) Rcubedend=1d3     !< avoids div by zero on the end
+      if(myid2==lid2-1) Rcubedtop=1d3
+      where(Rcubedtop<1d3)
+        Rcubedtop=1d3
+      end where
+      where(Rcubedend<1d3)
+        Rcubedend=1d3
+      end where
 
+      !print*, myid2,myid3,'--> Rcubed:  ',minval(Rcubed),maxval(Rcubed),minval(Rcubedend), &
+      !                                   maxval(Rcubedend),minval(Rcubedtop),minval(Rcubedtop)
 
-      !! FIXME: MAY BE MISSING A CORNER POINT HERE???  NO I THINK IT'S OKAY BASED ON SOME SQUARED I DREW...
+      !! FIXME: MAY BE MISSING A CORNER POINT HERE???  NO I THINK IT'S OKAY BASED ON SOME SQUARES I DREW, haha...
 
 
       !Bx calculation
@@ -411,6 +436,9 @@ do while (t<tdur)
                         sum(integrandavgtop*dVtop(2:lx1,2:lx3))
     else
       Rcubed(:,:,:)=Rx**2+Ry**2    !not really R**3 in 2D, just the denominator of the integrand
+      where(Rcubed<1d3)
+        Rcubed=1d3
+      end where
       call halo_end(Rcubed,Rcubedend,Rcubedtop,tagRcubed)
       !DO WE NEED TO CHECK HERE FOR DIV BY ZERO???  ALSO IN 2D WE KNOW THAT WE ARE ONLY DIVIDED IN THE 3 DIMENSION SO THERE IS NO NEED TO WORRY ABOUT ADDING A 'TOP' ETC.
 
@@ -442,6 +470,8 @@ do while (t<tdur)
       Bphi(ipoints)=sum(integrandavg*dV(2:lx1,:,2:lx3))+sum(integrandavgend*dVend(2:lx1,:))    !without dim= input it just sums everything which is what we want
     end if
   end do
+    !print *, myid2,myid3,'  --> Min/max values of field',minval(Br),maxval(Br),minval(Btheta),maxval(Btheta), &
+    !                                           minval(Bphi),maxval(Bphi)
 
 
   !A REDUCE OPERATION IS NEEDED HERE TO COMBINE MAGNETIC FIELDS (LINEAR SUPERPOSITION) FROM ALL WORKERS
