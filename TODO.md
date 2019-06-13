@@ -10,6 +10,10 @@ This file is intended to document development priorities for the GEMINI project.
 * rewrite custom broadcast and gather ops to deal with division in x2 and x3 - this also requires adding routines to pass x2i quantities
 <!--* alias halo functions -->
 
+## Messy stuff
+
+* mag field points need a separate file size so that it isn't hard coded in scripts...
+
 
 ## Things that need to be checked or otherwise dealt with
 

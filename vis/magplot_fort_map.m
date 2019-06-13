@@ -2,8 +2,9 @@ addpath ../script_utils;
 
 %SIMULATIONS LOCAITONS
 %simname='tohoku20113D_highres_var/';
-simname='test3d_mag_23/';
-basedir='~/simulations/'
+%simname='test3d_mag_23/';
+simname='mooreOK3D_hemis_medres/'
+basedir='~/zettergmdata/simulations/'
 direc=[basedir,simname];
 system(['mkdir ',direc,'/Brplots']);
 system(['mkdir ',direc,'/Brplots_eps']);
@@ -29,8 +30,10 @@ fclose(fid);
 
 
 %REORGANIZE THE FIELD POINTS (PROBLEM-SPECIFIC)
-ltheta=40;
-lphi=40;
+%ltheta=40;
+%lphi=40;
+ltheta=20;
+lphi=20;
 r=reshape(r(:),[ltheta,lphi]);
 theta=reshape(theta(:),[ltheta,lphi]);
 phi=reshape(phi(:),[ltheta,lphi]);
