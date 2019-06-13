@@ -528,6 +528,7 @@ allocate(g1(1:lx1,1:lx2,1:lx3),g2(1:lx1,1:lx2,1:lx3),g3(1:lx1,1:lx2,1:lx3))
 
 
 !SEND FULL X1 AND X2 GRIDS TO EACH WORKER (ONLY X3-DIM. IS INVOLVED IN THE MPI
+print*, 'Exchanging grid spacings...'
 do iid=1,lid-1
   call mpi_send(x%x1,lx1+4,mpi_realprec,iid,tagx1,MPI_COMM_WORLD,ierr)
   call mpi_send(x%x2all,lx2all+4,mpi_realprec,iid,tagx2all,MPI_COMM_WORLD,ierr)
@@ -539,6 +540,7 @@ end do
 
 
 !NOW SEND THE INFO THAT DEPENDS ON X3 SLAB SIZE
+print*, 'Computing subdomain spacing...'
 call bcast_send1D_3(x%x3all,tagx3,x%x3)
 x%dx3=x%x3(0:lx3+2)-x%x3(-1:lx3+1)     !computing these avoids extra message passing (could be done for other coordinates, as well)
 x%x3i(1:lx3+1)=0.5*(x%x3(0:lx3)+x%x3(1:lx3+1))
@@ -551,6 +553,7 @@ x%x2i(1:lx2+1)=0.5*(x%x2(0:lx2)+x%x2(1:lx2+1))
 x%dx2i=x%x2i(2:lx2+1)-x%x2i(1:lx2)
 
 
+print*, 'Dealing with metric factors...'
 allocate(mpisendbuf(-1:lx1+2,-1:lx2all+2,-1:lx3all+2),mpirecvbuf(-1:lx1+2,-1:lx2+2,-1:lx3+2))
 
 mpisendbuf=x%h1all    !since metric factors are pointers they are not gauranteed to be contiguous in memory so pack them into a buffer that is...
@@ -577,6 +580,8 @@ call bcast_send3D_x3i(x%h1x3iall,tagh1,x%h1x3i)
 call bcast_send3D_x3i(x%h2x3iall,tagh2,x%h2x3i)
 call bcast_send3D_x3i(x%h3x3iall,tagh3,x%h3x3i)
 
+
+print*, 'Sending gravity, etc...'
 call bcast_send(g1all,tagh1,g1)
 call bcast_send(g2all,tagh2,g2)
 call bcast_send(g3all,tagh3,g3)
@@ -589,6 +594,7 @@ call bcast_send(Bmagall,tagBmag,x%Bmag)
 call bcast_send(Incall,taginc,x%I)
 call bcast_send(nullptsall,tagnull,x%nullpts)
 
+print*, 'Now sending unit vectors...'
 allocate(mpisendbuf(1:lx1,1:lx2all,1:lx3all),mpirecvbuf(1:lx1,1:lx2,1:lx3))    !why is buffering used/needed here???
 do icomp=1,3
   mpisendbuf=e1all(:,:,:,icomp)

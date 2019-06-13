@@ -457,6 +457,8 @@ if (lx2all/lid2in*lid2in/=lx2all) error stop 'user input grid split in x2 will n
 
 if (lx3all/lid3in*lid3in/=lx3all) error stop 'user input grid split in x3 will not work'
 
+if (lid2in*lid3in/=lid) error stop 'total number of processes not commensurate with x2 and x3 split'
+
 lid2=lid2in
 lid3=lid3in
 

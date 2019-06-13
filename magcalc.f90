@@ -146,6 +146,9 @@ end if
 
 
 !LOAD UP THE GRID STRUCTURE/MODULE VARS. FOR THIS SIMULATION - THIS ALSO PERMUTES DIMENSIONS OF 2D GRID, IF NEEDED
+if (myid==0) then
+  print*, 'Process grid established; reading in full grid file now...'
+end if
 call read_grid(indatsize,indatgrid,flagperiodic,x)     !read in a previously generated grid from filename listed in input file, distribute subgrids to individual workers
 if (lx2==1) then
   flag2D=1    !a 2D simulation was done, which changes how the integrations go...
@@ -163,6 +166,7 @@ fieldpointfile=trim(argv)    !this file contains the field points at which we ar
 
 !SET UP DIRECTORY TO STORE OUTPUT FILES
 if (myid==0) then
+  print*, 'Creating output directory...'
   call create_outdir_mag(outdir,fieldpointfile)
 end if
 
@@ -208,9 +212,10 @@ allocate(dVend(lx1,lx2),Jxend(lx1,lx2),Jyend(lx1,lx2),Jzend(lx1,lx2))
 allocate(Rxend(lx1,lx2),Ryend(lx1,lx2),Rzend(lx1,lx2),Rcubedend(lx1,lx2))
 allocate(integrandend(lx1,lx2),integrandavgend(lx1-1,max(lx2-1,1)))
 
-allocate(dVtop(lx1,lx2),Jxtop(lx1,lx2),Jytop(lx1,lx2),Jztop(lx1,lx2))
-allocate(Rxtop(lx1,lx2),Rytop(lx1,lx2),Rztop(lx1,lx2),Rcubedtop(lx1,lx2))
-allocate(integrandtop(lx1,lx2),integrandavgtop(lx1-1,max(lx2-1,1)))
+!should these be size lx3???
+allocate(dVtop(lx1,lx3),Jxtop(lx1,lx3),Jytop(lx1,lx3),Jztop(lx1,lx3))
+allocate(Rxtop(lx1,lx3),Rytop(lx1,lx3),Rztop(lx1,lx3),Rcubedtop(lx1,lx3))
+allocate(integrandtop(lx1,lx3),integrandavgtop(lx1-1,max(lx3-1,1)))
 
 if (flag2D/=1) then   !3D differential volume
   do ix3=1,lx3
