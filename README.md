@@ -95,15 +95,15 @@ This test runs a short demo, taking about 2-5 minutes on a typical Mac / Linux l
    cd gemini
 2. Generate Makefile and auto-download test reference data
    ```sh
-   cd objects
-
-   cmake ..
+   cmake -B build
 3. compile
    ```sh
-   make -j
+   cmake --build build --parallel
    ```
 4. run GEMINI demo:
    ```
+   cd build
+
    ctest --output-on-failure
    ```
 
