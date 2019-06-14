@@ -20,7 +20,7 @@ lt=numel(times);
 
 
 %LOAD/CONSTRUCT THE FIELD POINT GRID
-basemagdir=[direc,'/magfields/'];
+basemagdir=[direc,'/magfields.500km.line/'];
 fid=fopen([basemagdir,'/input/magfieldpoints.dat'],'r');    %needs some way to know what the input file is, maybe force fortran code to use this filename...
 lpoints=fread(fid,1,'integer*4');
 r=fread(fid,lpoints,'real*8');
@@ -32,8 +32,10 @@ fclose(fid);
 %REORGANIZE THE FIELD POINTS (PROBLEM-SPECIFIC)
 %ltheta=40;
 %lphi=40;
-ltheta=20;
-lphi=20;
+%ltheta=20;
+%lphi=20;
+ltheta=400;
+lphi=1;
 r=reshape(r(:),[ltheta,lphi]);
 theta=reshape(theta(:),[ltheta,lphi]);
 phi=reshape(phi(:),[ltheta,lphi]);

@@ -109,21 +109,30 @@ disp([filename, ' => ', func2str(plotfun)])
 
 %% UNTIL WE PROVIDE A WAY FOR THE USER TO SPECIFY COLOR AXES, JUST TRY TO SET THEM AUTOMATICALLY
 if (~flagcaxlims)
+%  nelim =  [min(ne(:)), max(ne(:))];
+%  v1mod=max(abs(v1(:)));
+%  v1lim = [-v1mod, v1mod];
+%  Tilim = [0, max(Ti(:))];
+%  Telim = [0, max(Te(:))];
+%  J1mod=max(abs(J1(:)));
+%  J1lim = [-J1mod, J1mod];
+%  v2mod=max(abs(v2(:)));
+%  v2lim = [-v2mod, v2mod];
+%  v3mod=max(abs(v3(:)));
+%  v3lim = [-v3mod, v3mod];
+%  J2mod=max(abs(J2(:)));
+%  J2lim = [-J2mod, J2mod];
+%  J3mod=max(abs(J3(:)));
+%  J3lim=[-J3mod, J3mod];
   nelim =  [min(ne(:)), max(ne(:))];
-  v1mod=max(abs(v1(:)));
-  v1lim = [-v1mod, v1mod];
+  v1lim = [NaN,NaN];
   Tilim = [0, max(Ti(:))];
   Telim = [0, max(Te(:))];
-  J1mod=max(abs(J1(:)));
-  J1lim = [-J1mod, J1mod];
-  v2mod=max(abs(v2(:)));
-  v2lim = [-v2mod, v2mod];
-  v3mod=max(abs(v3(:)));
-  v3lim = [-v3mod, v3mod];
-  J2mod=max(abs(J2(:)));
-  J2lim = [-J2mod, J2mod];
-  J3mod=max(abs(J3(:)));
-  J3lim=[-J3mod, J3mod];
+  J1lim = [NaN,NaN];
+  v2lim = [NaN,NaN];
+  v3lim = [NaN,NaN];
+  J2lim = [NaN,NaN];
+  J3lim=[NaN,NaN];
 end
 
 
