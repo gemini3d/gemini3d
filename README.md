@@ -127,7 +127,7 @@ Libraries:
 
 * If you have `sudo` access, try the `./install_prereqs.sh` script
 * If need to build libraries from source (e.g. because you don't have `sudo`) try `build_gnu_noMKL.sh` or `build_intel.sh` from the `fortran-libs` repo:
-  
+
   ```sh
   git clone https://github.com/scivision/fortran-libs ~/flibs-nomkl
 
@@ -144,16 +144,17 @@ GEMINI has self tests that compare the output from a "known" test problem to a r
 ctest --output-on-failure
 ```
 
-1. execute
+Can be manually done from the top-level gemini/ directory by:
 
-   ```sh
-   ./gemini.bin initialize/2Dtest/config.ini /tmp/2d
-   ```
-2. use GNU Octave (or Matlab) to compare with reference output using `tests/compare_all.m`:
-   
-   ```matlab
-   compare_all(/tmp/2d, '../simulations/2Dtest_files/2Dtest_output')
-   ```
+```sh
+mpiexec -np 2 build/gemini.bin initialize/2Dtest/config.ini /tmp/2d
+```
+
+use GNU Octave (or Matlab) to compare with reference output using `tests/compare_all.m`:
+
+```matlab
+compare_all(/tmp/2d, '../simulations/2Dtest_files/2Dtest_output')
+```
 
 ### OS-specific tips
 
@@ -214,16 +215,17 @@ GEMINI is Fortran 2008 compliant and uses two-space indents throughout (to accom
 ## To build and run GEMINI:
 
 ```sh
-cd objects
-cmake ..
-make -j
+cmake -B build
 
-mpirun -np <number of processors>  ./gemini.bin <input config file> <output directory>
+cmake --build build --parallel
+
+mpirun -np <number of processors>  build/gemini.bin <input config file> <output directory>
 ```
 for example:
 ```sh
-mpirun -np 4 ./gemini.bin initialize/2Dtest/config.ini ../simulations/2Dtest/
+mpirun -np 4 build/gemini.bin initialize/2Dtest/config.ini ../simulations/2Dtest/
 ```
+
 Note that the output *base* directory must already exist (`../simulations` in previous example).  The source code consists of about ten module source files encapsulating various functionalities used in the model.  A diagram all of the modules and their function is shown in figure 1; a list of module dependencies can also be found one of the example makefiles included in the repo or in CMakeList.txt.
 
 Two of the log files created are:
@@ -248,9 +250,14 @@ This will compute magnetic fields over a grid at ground level using currents com
 
 Assuming you have built by
 ```sh
-cd objects
-cmake ..
-make
+cmake -B build
+
+cmake --build build --parallel
+```
+
+then change to the build directory to run CTest:
+```sh
+cd build
 ```
 
 * run all self tests:
@@ -280,15 +287,18 @@ Exclude particular tests using `ctest -E <regexp>`.
   ctest -E 3D --output-on-failure
   ```
 
-The maximum number of MPI processes is set with `cmake -DNP=`. For example to request 4 MPI processes:
+The maximum number of MPI processes is set with `cmake -DNP=`.
+For example to request 4 MPI processes from the build/ directory:
 ```sh
 cmake -DNP=4 ..
-make
+
+cmake --build . -j
+
 ctest
 ```
 Otherwise, the default (suggested) CMake generation process automatically sets the maximum number of processes possible based on your CPU core count and grid size.
 
-Full debugging and testing is enabled by:
+Full debugging and testing is enabled from the build/ directory by:
 ```sh
 cmake -DCMAKE_BUILD_TYPE=Debug ..
 
