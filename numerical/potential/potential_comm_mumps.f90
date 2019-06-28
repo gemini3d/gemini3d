@@ -288,8 +288,8 @@ lx3all=size(Phiall,3)
 
 
 !USE PREVIOUS MUMPS PERMUTATION (OLD CODE? BUT MIGHT BE WORTH REINSTATING?)
-    perflag=.false.
-!perflag=.true.
+!    perflag=.false.
+perflag=.true.
 
 
 !R-------
