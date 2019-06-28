@@ -144,11 +144,11 @@ if (potsolve == 1 .or. potsolve == 3) then    !electrostatic solve or electrosta
 
   if (myid/=0) then    !role-specific communication pattern (all-to-root-to-all), workers initiate with sends
      call potential_workers_mpi(it,t,dt,sig0,sigP,sigH,incap,vs2,vs3,vn2,vn3,sourcemlat,B1,x, &
-                            potsolve, &
+                            potsolve,flagcap, &
                             E1,E2,E3,J1,J2,J3)
   else
     call potential_root_mpi(it,t,dt,sig0,sigP,sigH,incap,vs2,vs3,vn2,vn3,sourcemlat,B1,x, &
-                              potsolve, &
+                              potsolve,flagcap, &
                               E1,E2,E3,J1,J2,J3, &
                               Phiall,flagE0file,dtE0,E0dir,ymd,UTsec)
   end if
@@ -189,7 +189,7 @@ end subroutine electrodynamics_curv
 
 
 subroutine potential_root_mpi_curv(it,t,dt,sig0,sigP,sigH,incap,vs2,vs3,vn2,vn3,sourcemlat,B1,x, &
-                            potsolve, &
+                            potsolve,flagcap, &
                             E1,E2,E3,J1,J2,J3, &
                             Phiall,flagE0file,dtE0,E0dir,ymd,UTsec)
 
@@ -214,6 +214,7 @@ real(wp), dimension(-1:,-1:,-1:), intent(in) ::  B1
 type(curvmesh), intent(in) :: x
 
 integer, intent(in) :: potsolve
+integer, intent(in) :: flagcap
 
 real(wp), dimension(:,:,:), intent(out) :: E1,E2,E3,J1,J2,J3
 real(wp), dimension(:,:,:), intent(inout) :: Phiall   !not good form, but I'm lazy...  Forgot what I meant by this...
@@ -722,8 +723,11 @@ E3=E3+E03
 
 !--------
 !COMPUTE TIME DERIVATIVE NEEDED FOR POLARIZATION CURRENT.  ONLY DO THIS IF WE HAVE SPECIFIC NONZERO INERTIAL CAPACITANCE
-if (maxval(incap) > 1d-6) then
-  grad2E=grad3D2(E2,x,1,lx1,1,lx2,1,lx3)
+!if (maxval(incap) > 0._wp) then    !ZZZ this is really bad needs to be a global test rather than having each worker test since there is message passing embedded in here and everyone needs to do the same thing!!!
+if (flagcap/=0) then
+  print*, 'Working on polarization currents...'
+
+  grad2E=grad3D2(E2,x,1,lx1,1,lx2,1,lx3)    !should involve haloing
 !      grad3E=grad3D3(E2,x,1,lx1,1,lx2,1,lx3)
 
   J1halo(1:lx1,1:lx2,1:lx3)=E2
@@ -753,7 +757,7 @@ if (maxval(incap) > 1d-6) then
   DE2Dt=(E2-E2prev)/dt+v2*grad2E+v3*grad3E
 
 
-  grad2E=grad3D2(E3,x,1,lx1,1,lx2,1,lx3)
+  grad2E=grad3D2(E3,x,1,lx1,1,lx2,1,lx3)      !should involve haloing
 !      grad3E=grad3D3(E3,x,1,lx1,1,lx2,1,lx3)
 
   J1halo(1:lx1,1:lx2,1:lx3)=E3
@@ -784,6 +788,7 @@ if (maxval(incap) > 1d-6) then
   J2pol=incap*DE2Dt
   J3pol=incap*DE3Dt
 else       !pure electrostatic solve was done
+  print*, 'Electrostatics used, skipping polarization current...'
   DE2Dt=0d0
   DE3Dt=0d0
   J1pol=0d0
@@ -792,7 +797,8 @@ else       !pure electrostatic solve was done
 end if
 !--------
 
-!-------
+!--------
+print *, 'Working on perp. conduction currents...'
 if (flagswap==1) then
   J2=sigP*E2+sigH*E3    !BG field already added to E above
   J3=-1*sigH*E2+sigP*E3
@@ -815,6 +821,7 @@ end if
 !!!!!!!!
 !NOW DEAL WITH THE PARALLEL FIELDS AND ALL CURRENTS
 if (lx2/=1 .and. potsolve ==1) then    !we did a field-integrated solve above
+  print*, 'Appear to need to differentiate to get J1...'
 
   !-------
   !NOTE THAT A DIRECT E1ALL CALCULATION WILL GIVE ZERO, SO USE INDIRECT METHOD, AS FOLLOWS
@@ -968,7 +975,7 @@ end subroutine potential_root_mpi_curv
 
 
 subroutine potential_workers_mpi(it,t,dt,sig0,sigP,sigH,incap,vs2,vs3,vn2,vn3,sourcemlat,B1,x, &
-                            potsolve, &
+                            potsolve,flagcap, &
                             E1,E2,E3,J1,J2,J3)
 
 !------------------------------------------------------------
@@ -992,6 +999,7 @@ real(wp), dimension(-1:,-1:,-1:), intent(in) ::  B1
 type(curvmesh), intent(in) :: x
 
 integer, intent(in) :: potsolve
+integer, intent(in) :: flagcap
 
 real(wp), dimension(:,:,:), intent(out) :: E1,E2,E3,J1,J2,J3
 
@@ -1387,7 +1395,8 @@ E3=E3+E03
 
 !--------
 !COMPUTE TIME DERIVATIVE NEEDED FOR POLARIZATION CURRENT.  ONLY DO THIS IF WE HAVE SPECIFIC NONZERO INERTIAL CAPACITANCE
-if (maxval(incap) > 1d-6) then
+!if (maxval(incap) > 0._wp) then
+if (flagcap/=0) then
   grad2E=grad3D2(E2,x,1,lx1,1,lx2,1,lx3)
 !      grad3E=grad3D3(E2,x,1,lx1,1,lx2,1,lx3)
 
