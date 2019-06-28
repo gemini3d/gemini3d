@@ -727,9 +727,35 @@ E3=E3+E03
 if (flagcap/=0) then
   print*, 'Working on polarization currents...'
 
-  grad2E=grad3D2(E2,x,1,lx1,1,lx2,1,lx3)    !should involve haloing
-!      grad3E=grad3D3(E2,x,1,lx1,1,lx2,1,lx3)
+!  grad2E=grad3D2(E2,x,1,lx1,1,lx2,1,lx3)    !should involve haloing
 
+  !differentiate in x2 (needs haloing)
+  J1halo(1:lx1,1:lx2,1:lx3)=E2
+  J1halo(0,1:lx2,1:lx3)=J1halo(1,1:lx2,1:lx3)
+  J1halo(lx1+1,1:lx2,1:lx3)=J1halo(lx1,1:lx2,1:lx3)
+
+  call halo(J1halo,1,tagJ1,x%flagper)    !< I'm kind of afraid to only halo a single point...
+
+  if (iddown==-1) then
+    J1halo(1:lx1,0,1:lx3)=J1halo(1:lx1,1,1:lx3)
+  end if
+  if (idup==lid2) then
+    J1halo(1:lx1,lx2+1,1:lx3)=J1halo(1:lx1,lx2,1:lx3)
+  end if
+  if (.not. x%flagper) then
+    if (idleft==-1) then
+      J1halo(1:lx1,1:lx2,0)=J1halo(1:lx1,1:lx2,1)
+    end if
+    if (idright==lid3) then
+      J1halo(1:lx1,1:lx2,lx3+1)=J1halo(1:lx1,1:lx2,lx3)
+    end if
+  end if
+
+  divtmp=grad3D2(J1halo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
+  grad2E=divtmp(1:lx1,1:lx2,1:lx3)
+
+
+  !Now differentiate in the x3 direction
   J1halo(1:lx1,1:lx2,1:lx3)=E2
   J1halo(0,1:lx2,1:lx3)=J1halo(1,1:lx2,1:lx3)
   J1halo(lx1+1,1:lx2,1:lx3)=J1halo(lx1,1:lx2,1:lx3)
@@ -754,12 +780,37 @@ if (flagcap/=0) then
   divtmp=grad3D3(J1halo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
   grad3E=divtmp(1:lx1,1:lx2,1:lx3)
 
+  !total derivative needed to compute the x2 component of the polarization current
   DE2Dt=(E2-E2prev)/dt+v2*grad2E+v3*grad3E
 
 
-  grad2E=grad3D2(E3,x,1,lx1,1,lx2,1,lx3)      !should involve haloing
-!      grad3E=grad3D3(E3,x,1,lx1,1,lx2,1,lx3)
+!  grad2E=grad3D2(E3,x,1,lx1,1,lx2,1,lx3)      !should involve haloing
+  !differentiate in x2
+  J1halo(1:lx1,1:lx2,1:lx3)=E3
+  J1halo(0,1:lx2,1:lx3)=J1halo(1,1:lx2,1:lx3)
+  J1halo(lx1+1,1:lx2,1:lx3)=J1halo(lx1,1:lx2,1:lx3)
+  call halo(J1halo,1,tagJ1,x%flagper)    !< I'm kind of afraid to only halo a single point...
 
+  if (iddown==-1) then
+    J1halo(1:lx1,0,1:lx3)=J1halo(1:lx1,1,1:lx3)
+  end if
+  if (idup==lid2) then
+    J1halo(1:lx1,lx2+1,1:lx3)=J1halo(1:lx1,lx2,1:lx3)
+  end if
+  if (.not. x%flagper) then
+    if (idleft==-1) then
+      J1halo(1:lx1,1:lx2,0)=J1halo(1:lx1,1:lx2,1)
+    end if
+    if (idright==lid3) then
+      J1halo(1:lx1,1:lx2,lx3+1)=J1halo(1:lx1,1:lx2,lx3)
+    end if
+  end if
+
+  divtmp=grad3D2(J1halo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
+  grad2E=divtmp(1:lx1,1:lx2,1:lx3)
+
+
+  !differentiate in x3
   J1halo(1:lx1,1:lx2,1:lx3)=E3
   J1halo(0,1:lx2,1:lx3)=J1halo(1,1:lx2,1:lx3)
   J1halo(lx1+1,1:lx2,1:lx3)=J1halo(lx1,1:lx2,1:lx3)
@@ -783,7 +834,11 @@ if (flagcap/=0) then
   divtmp=grad3D3(J1halo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
   grad3E=divtmp(1:lx1,1:lx2,1:lx3)
 
+  !total derivative needed for x3 component of pol. current
   DE3Dt=(E3-E3prev)/dt+v2*grad2E+v3*grad3E
+
+
+  !convert derivative to current density
   J1pol=0d0
   J2pol=incap*DE2Dt
   J3pol=incap*DE3Dt
@@ -1397,9 +1452,33 @@ E3=E3+E03
 !COMPUTE TIME DERIVATIVE NEEDED FOR POLARIZATION CURRENT.  ONLY DO THIS IF WE HAVE SPECIFIC NONZERO INERTIAL CAPACITANCE
 !if (maxval(incap) > 0._wp) then
 if (flagcap/=0) then
-  grad2E=grad3D2(E2,x,1,lx1,1,lx2,1,lx3)
-!      grad3E=grad3D3(E2,x,1,lx1,1,lx2,1,lx3)
+!  grad2E=grad3D2(E2,x,1,lx1,1,lx2,1,lx3)
+  !differentiate in x2
+  J1halo(1:lx1,1:lx2,1:lx3)=E2
+  J1halo(0,1:lx2,1:lx3)=J1halo(1,1:lx2,1:lx3)
+  J1halo(lx1+1,1:lx2,1:lx3)=J1halo(lx1,1:lx2,1:lx3)
+  call halo(J1halo,1,tagJ1,x%flagper)    !I'm kind of afraid to only halo a single point...
 
+  if (iddown==-1) then
+    J1halo(1:lx1,0,1:lx3)=J1halo(1:lx1,1,1:lx3)
+  end if
+  if (idup==lid2) then
+    J1halo(1:lx1,lx2+1,1:lx3)=J1halo(1:lx1,lx2,1:lx3)
+  end if
+  if (.not. x%flagper) then
+    if (idleft==-1) then
+      J1halo(1:lx1,1:lx2,0)=J1halo(1:lx1,1:lx2,1)
+    end if
+    if (idright==lid3) then
+      J1halo(1:lx1,1:lx2,lx3+1)=J1halo(1:lx1,1:lx2,lx3)
+    end if
+  end if
+
+  divtmp=grad3D2(J1halo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
+  grad2E=divtmp(1:lx1,1:lx2,1:lx3)
+
+
+  !differentiate in x3
   J1halo(1:lx1,1:lx2,1:lx3)=E2
   J1halo(0,1:lx2,1:lx3)=J1halo(1,1:lx2,1:lx3)
   J1halo(lx1+1,1:lx2,1:lx3)=J1halo(lx1,1:lx2,1:lx3)
@@ -1423,12 +1502,38 @@ if (flagcap/=0) then
   divtmp=grad3D3(J1halo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
   grad3E=divtmp(1:lx1,1:lx2,1:lx3)
 
+
+  !compute total derivative in x2
   DE2Dt=(E2-E2prev)/dt+v2*grad2E+v3*grad3E
 
 
-  grad2E=grad3D2(E3,x,1,lx1,1,lx2,1,lx3)
-!      grad3E=grad3D3(E3,x,1,lx1,1,lx2,1,lx3)
+!  grad2E=grad3D2(E3,x,1,lx1,1,lx2,1,lx3)
+  !differentiate in x2
+  J1halo(1:lx1,1:lx2,1:lx3)=E3
+  J1halo(0,1:lx2,1:lx3)=J1halo(1,1:lx2,1:lx3)
+  J1halo(lx1+1,1:lx2,1:lx3)=J1halo(lx1,1:lx2,1:lx3)
+  call halo(J1halo,1,tagJ1,x%flagper)    !I'm kind of afraid to only halo a single point...
 
+  if (iddown==-1) then
+    J1halo(1:lx1,0,1:lx3)=J1halo(1:lx1,1,1:lx3)
+  end if
+  if (idup==lid2) then
+    J1halo(1:lx1,lx2+1,1:lx3)=J1halo(1:lx1,lx2,1:lx3)
+  end if
+  if (.not. x%flagper) then
+    if (idleft==-1) then
+      J1halo(1:lx1,1:lx2,0)=J1halo(1:lx1,1:lx2,1)
+    end if
+    if (idright==lid3) then
+      J1halo(1:lx1,1:lx2,lx3+1)=J1halo(1:lx1,1:lx2,lx3)
+    end if
+  end if
+
+  divtmp=grad3D2(J1halo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
+  grad3E=divtmp(1:lx1,1:lx2,1:lx3)
+
+
+  !differentiate in x3
   J1halo(1:lx1,1:lx2,1:lx3)=E3
   J1halo(0,1:lx2,1:lx3)=J1halo(1,1:lx2,1:lx3)
   J1halo(lx1+1,1:lx2,1:lx3)=J1halo(lx1,1:lx2,1:lx3)
@@ -1452,7 +1557,12 @@ if (flagcap/=0) then
   divtmp=grad3D3(J1halo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
   grad3E=divtmp(1:lx1,1:lx2,1:lx3)
 
+
+  !x3 total derivative
   DE3Dt=(E3-E3prev)/dt+v2*grad2E+v3*grad3E
+
+
+  !convert derivative into polarization current density
   J1pol=0d0
   J2pol=incap*DE2Dt
   J3pol=incap*DE3Dt
