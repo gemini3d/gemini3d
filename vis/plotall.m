@@ -56,10 +56,10 @@ end
 h = plotinit(xg, visible);
 
 if ~isempty(saveplots)  % plot and save as fast as possible.
-  %if(isempty(gcp('nocreate')))
-  %  parpool(2);
-  %end
-  for i = 1:Nt
+  if(isempty(gcp('nocreate')))
+    parpool(2);
+  end
+  parfor i = 1:Nt
     plotframe(direc, ymd(i,:), UTsec(i), saveplots, plotfun, xg, h);
   end
 else  % displaying interactively, not saving
