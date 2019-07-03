@@ -159,15 +159,16 @@ subroutine neutral_perturb(interptype,dt,dtneu,t,ymd,UTsec,neudir,drhon,dzn,mean
 integer, intent(in) :: interptype
 real(wp), intent(in) :: dt,dtneu
 real(wp), intent(in) :: t
-integer, dimension(3), intent(in) :: ymd    !date for which we wish to calculate perturbations
+integer, dimension(3), intent(in) :: ymd     !date for which we wish to calculate perturbations
 real(wp), intent(in) :: UTsec
-real(wp), intent(in) :: drhon,dzn         !neutral grid spacing
+real(wp), intent(in) :: drhon,dzn            !neutral grid spacing
 real(wp), intent(in) :: meanlat, meanlong    !neutral source center location
-character(*), intent(in) :: neudir       !directory where neutral simulation data is kept
+character(*), intent(in) :: neudir           !directory where neutral simulation data is kept
 
-type(curvmesh), intent(inout) :: x         !grid structure  (inout becuase we want to be able to deallocate unit vectors once we are done with them)
+type(curvmesh), intent(inout) :: x                !grid structure  (inout becuase we want to be able to deallocate unit vectors once we are done with them)
 real(wp), dimension(:,:,:,:), intent(out) :: nn   !neutral params interpolated to plasma grid at requested time
 real(wp), dimension(:,:,:), intent(out) :: Tn,vn1,vn2,vn3
+
 
 if (interptype==0) then    !cartesian interpolation drho inputs (radial distance) will be interpreted as dy (horizontal distance)
   call neutral_perturb_cart(dt,dtneu,t,ymd,UTsec,neudir,drhon,dzn,meanlat,meanlong,x,nn,Tn,vn1,vn2,vn3)
@@ -937,12 +938,241 @@ nn(:,:,:,1)=max(nn(:,:,:,1),1._wp)
 nn(:,:,:,2)=max(nn(:,:,:,2),1._wp)
 nn(:,:,:,3)=max(nn(:,:,:,3),1._wp)
 Tn=Tnmsis+dTninow
-Tn=max(Tn,50._wp)
-vn1=vn1base+dvn1inow
-vn2=vn2base+dvn2inow
+Tn=max(Tn,51._wp)
+vn2=vn1base+dvn1inow
+vn3=vn2base+dvn2inow
 vn3=vn3base+dvn3inow
 
 end subroutine neutral_perturb_cart
+
+
+subroutine gridproj_dneu(dhorzn,dzn,meanlat,meanlong,neudir,flagcart,x)
+
+!Read in the grid for the neutral data and project unit vectors into the appropriiate directions.
+!Also allocate module-scope variables for storing neutral perturbations read in from input files.  
+
+real(wp), intent(in) :: dhorzn,dzn           !neutral grid spacing in horizontal "rho or y" and vertical directions
+real(wp), intent(in) :: meanlat, meanlong    !neutral source center location
+character(*), intent(in) :: neudir           !directory where neutral simulation data is kept
+logical, intent(in) :: flagcart              !whether or not the input data are to be interpreted as Cartesian
+type(curvmesh), intent(inout) :: x           !inout to allow deallocation of unit vectors once we are done with them
+
+integer :: lhorzn,lzn
+real(wp) :: meanyn
+
+integer :: inunit          !file handle for various input files
+character(512) :: filename               !space to store filenames, note size must be 512 to be consistent with our date_ffilename functinos
+real(wp) :: theta1,phi1,theta2,phi2,gammarads,theta3,phi3,gamma1,gamma2,phip
+real(wp) :: xp,yp
+real(wp), dimension(3) :: erhop,ezp,eyp,tmpvec
+real(wp) :: tmpsca
+
+integer :: ix1,ix2,ix3,ihorzn,izn,iid,ierr,lid
+real(wp), dimension(x%lx1,x%lx2,x%lx3) :: zimat,rhoimat,yimat
+
+
+!Establish the size of the grid based on input file and distribute to workers
+if (myid==0) then    !root
+  write(filename,*) trim(adjustl(neudir)),'simsize.dat'
+  print *, 'Inputting neutral size from file:  ',trim(adjustl(filename))
+  open(newunit=inunit,file=trim(adjustl(filename)),status='old',form='unformatted',access='stream')
+  read(inunit) lrhon,lzn
+  close(inunit)
+  print *, 'Neutral data has lrho,lz size:  ',lhorzn,lzn,' with spacing drho,dz',dhorzn,dzn
+
+  do iid=1,lid-1
+    call mpi_send(lhorzn,1,MPI_INTEGER,iid,taglrho,MPI_COMM_WORLD,ierr)
+    call mpi_send(lzn,1,MPI_INTEGER,iid,taglz,MPI_COMM_WORLD,ierr)
+  end do
+else                 !workers
+  call mpi_recv(lhorzn,1,MPI_INTEGER,0,taglrho,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+  call mpi_recv(lzn,1,MPI_INTEGER,0,taglz,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+end if
+
+
+!Everyone must allocate space for the grid
+allocate(zn(lzn))    !these are module-scope variables
+if (flagcart) then
+  allocate(rhon(1))
+  allocate(yn(lhorzn))
+else
+  allocate(rhon(lhorzn))
+  allocate(yn(1))    !not used in the axisymmetric code so just initialize to something
+end if
+allocate(dnO(lzn,lrhon),dnN2(lzn,lrhon),dnO2(lzn,lrhon),dvnrho(lzn,lrhon),dvnz(lzn,lrhon),dTn(lzn,lrhon))
+
+
+!Define a grid by assume that the spacing is constant
+if (flagcart) then     !Cartesian neutral simulation
+  yn=[ ((real(ihorzn,8)-1._wp)*dhorzn, ihorzn=1,lhorzn) ]
+  meanyn=sum(yn,1)/size(yn,1)
+  yn=yn-meanyn     !the neutral grid should be centered on zero for a cartesian interpolation
+else
+  rhon=[ ((real(ihorzn,8)-1._wp)*dhorzn, ihorzn=1,lhorzn) ]
+!        rhon=rhon+0.5d0*drhon       !to convert to cell-centered (can lead to some interpolation artifacts, for reasons that are unclear - need to revisit)
+end if
+
+zn=[ ((real(izn,8)-1._wp)*dzn, izn=1,lzn) ]
+!        zn=zn+0.5d0*dzn             !cell-center
+if (myid==0) then
+  print *, 'Creating neutral grid with rho,z extent:  ',minval(rhon),maxval(rhon),minval(zn),maxval(zn)
+end if
+
+
+!Neutral source locations specified in input file, here referenced by spherical magnetic coordinates.
+phi1=meanlong*pi/180d0
+theta1=pi/2d0-meanlat*pi/180d0
+
+
+!Convert plasma simulation grid locations to z,rho values to be used in interoplation.  altitude ~ zi; lat/lon --> rhoi.  Also compute unit vectors and projections
+if (myid==0) then
+  print *, 'Computing alt,radial distance values for plasma grid and completing rotations'
+end if
+zimat=x%alt     !vertical coordinate
+do ix3=1,lx3
+  do ix2=1,lx2
+    do ix1=1,lx1
+!              !INTERPOLATION BASED ON GEOGRAPHIC COORDINATES (CREATES ISSUES IN 2D BUT LEFT HERE IN CASE IT'S USEFUL FOR SOME APPLICATION)
+!              theta2=pi/2d0-x%glat(ix1,ix2,ix3)*pi/180d0    !field point zenith angle
+!              if (lx2/=1) then
+!                phi2=x%glon(ix1,ix2,ix3)*pi/180d0             !field point azimuth, full 3D calculation
+!              else
+!                phi2=phi1                                     !assume the longitude is the samem as the source in 2D, i.e. assume the source epicenter is in the meridian of the grid
+!!                phi2=x%glon(ix1,ix2,ix3)*pi/180d0     !doesn't seem to make any difference
+!              end if
+
+
+      !INTERPOLATION BASED ON GEOMAGNETIC COORDINATES
+      theta2=x%theta(ix1,ix2,ix3)                    !field point zenith angle
+      if (lx2/=1) then
+        phi2=x%phi(ix1,ix2,ix3)                      !field point azimuth, full 3D calculation
+      else
+        phi2=phi1                                    !assume the longitude is the samem as the source in 2D, i.e. assume the source epicenter is in the meridian of the grid
+      end if
+
+
+      !COMPUTE DISTANCES
+      gammarads=cos(theta1)*cos(theta2)+sin(theta1)*sin(theta2)*cos(phi1-phi2)     !this is actually cos(gamma)
+      if (gammarads>1._wp) then     !handles weird precision issues in 2D
+        gammarads=1._wp
+      else if (gammarads<-1._wp) then
+        gammarads=-1._wp
+      end if
+      gammarads=acos(gammarads)                     !angle between source location annd field point (in radians)
+      rhoimat(ix1,ix2,ix3)=Re*gammarads    !rho here interpreted as the arc-length defined by angle between epicenter and ``field point''
+
+      !we need a phi locationi (not spherical phi, but azimuth angle from epicenter), as well, but not for interpolation - just for doing vector rotations
+      theta3=theta2
+      phi3=phi1
+      gamma1=cos(theta2)*cos(theta3)+sin(theta2)*sin(theta3)*cos(phi2-phi3)
+      if (gamma1>1._wp) then     !handles weird precision issues in 2D
+        gamma1=1._wp
+      else if (gamma1<-1._wp) then
+        gamma1=-1._wp
+      end if
+      gamma1=acos(gamma1)
+
+      gamma2=cos(theta1)*cos(theta3)+sin(theta1)*sin(theta3)*cos(phi1-phi3)
+      if (gamma2>1._wp) then     !handles weird precision issues in 2D
+        gamma2=1._wp
+      else if (gamma2<-1._wp) then
+        gamma2=-1._wp
+      end if
+      gamma2=acos(gamma2)
+      xp=Re*gamma1
+      yp=Re*gamma2     !this will likely always be positive, since we are using center of earth as our origin, so this should be interpreted as distance as opposed to displacement
+
+
+      !COMPUTE COORDIANTES FROM DISTANCES
+      if (theta3>theta1) then       !place distances in correct quadrant, here field point (theta3=theta2) is is SOUTHward of source point (theta1), whreas yp is distance northward so throw in a negative sign
+        yp=-1._wp*yp            !do we want an abs here to be safe
+      end if
+      if (phi2<phi3) then     !assume we aren't doing a global grid otherwise need to check for wrapping, here field point (phi2) less than soure point (phi3=phi1)
+        xp=-1._wp*xp
+      end if
+      phip=atan2(yp,xp)
+
+
+      if(flagcart) then
+        yimat(ix1,ix2,ix3)=yp
+      end if
+
+
+      !PROJECTIONS FROM NEUTURAL GRID VECTORS TO PLASMA GRID VECTORS
+      !projection factors for mapping from axisymmetric to dipole (go ahead and compute projections so we don't have to do it repeatedly as sim runs
+      ezp=x%er(ix1,ix2,ix3,:)
+      tmpvec=ezp*x%e2(ix1,ix2,ix3,:)
+      tmpsca=sum(tmpvec)
+      proj_ezp_e2(ix1,ix2,ix3)=tmpsca
+
+      tmpvec=ezp*x%e1(ix1,ix2,ix3,:)
+      tmpsca=sum(tmpvec)
+      proj_ezp_e1(ix1,ix2,ix3)=tmpsca
+
+      tmpvec=ezp*x%e3(ix1,ix2,ix3,:)
+      tmpsca=sum(tmpvec)    !should be zero, but leave it general for now
+      proj_ezp_e3(ix1,ix2,ix3)=tmpsca
+
+      if (flagcart) then
+        eyp=-1._wp*x%etheta(ix1,ix2,ix3,:)
+
+        tmpvec=eyp*x%e1(ix1,ix2,ix3,:)
+        tmpsca=sum(tmpvec)
+        proj_eyp_e1(ix1,ix2,ix3)=tmpsca
+
+        tmpvec=eyp*x%e2(ix1,ix2,ix3,:)
+        tmpsca=sum(tmpvec)
+        proj_eyp_e2(ix1,ix2,ix3)=tmpsca
+
+        tmpvec=eyp*x%e3(ix1,ix2,ix3,:)
+        tmpsca=sum(tmpvec)
+        proj_eyp_e3(ix1,ix2,ix3)=tmpsca
+      else
+        erhop=cos(phip)*x%e3(ix1,ix2,ix3,:)+(-1._wp)*sin(phip)*x%etheta(ix1,ix2,ix3,:)     !unit vector for azimuth (referenced from epicenter - not geocenter!!!) in cartesian geocentric-geomagnetic coords.
+  
+        tmpvec=erhop*x%e1(ix1,ix2,ix3,:)
+        tmpsca=sum(tmpvec)
+        proj_erhop_e1(ix1,ix2,ix3)=tmpsca
+ 
+        tmpvec=erhop*x%e2(ix1,ix2,ix3,:)
+        tmpsca=sum(tmpvec)
+        proj_erhop_e2(ix1,ix2,ix3)=tmpsca
+ 
+        tmpvec=erhop*x%e3(ix1,ix2,ix3,:)
+        tmpsca=sum(tmpvec)
+        proj_erhop_e3(ix1,ix2,ix3)=tmpsca
+      end if
+    end do
+  end do
+end do
+zi=pack(zimat,.true.)     !create a flat list of grid points to be used by interpolation ffunctions
+if (flagcart) then
+  yi=pack(yimat,.true.)
+else
+  rhoi=pack(rhoimat,.true.)
+end if
+
+
+!GRID UNIT VECTORS NO LONGER NEEDED ONCE PROJECTIONS ARE CALCULATED...
+call clear_unitvecs(x)
+
+
+!PRINT OUT SOME BASIC INFO ABOUT THE GRID THAT WE'VE LOADED
+if (myid==0) then
+  if (flagcart) then
+    print *, 'Min/max rhon,zn values',minval(yn),maxval(yn),minval(zn),maxval(zn)
+    print *, 'Min/max rhoi,zi values',minval(yi),maxval(yi),minval(zi),maxval(zi)
+  else
+    print *, 'Min/max rhon,zn values',minval(rhon),maxval(rhon),minval(zn),maxval(zn)
+    print *, 'Min/max rhoi,zi values',minval(rhoi),maxval(rhoi),minval(zi),maxval(zi)
+  end if
+
+  print *, 'Source lat/long:  ',meanlat,meanlong
+  print *, 'Plasma grid lat range:  ',minval(x%glat(:,:,:)),maxval(x%glat(:,:,:))
+  print *, 'Plasma grid lon range:  ',minval(x%glon(:,:,:)),maxval(x%glon(:,:,:))
+end if
+
+end subroutine gridproj_dneu
 
 
 subroutine make_dneu()
