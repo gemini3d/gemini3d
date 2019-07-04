@@ -205,14 +205,15 @@ real(wp), dimension(:,:,:), intent(out) :: Tn,vn1,vn2,vn3
 
 integer :: inunit                        !file handle for various input files
 character(512) :: filename               !space to store filenames, note size must be 512 to be consistent with our date_ffilename functinos
-!real(wp) :: theta1,phi1,theta2,phi2,gammarads,theta3,phi3,gamma1,gamma2,phip
-!real(wp) :: xp,yp
-!real(wp), dimension(3) :: erhop,ezp,tmpvec
-!
-!real(wp) :: tmpsca
+
+real(wp) :: theta1,phi1,theta2,phi2,gammarads,theta3,phi3,gamma1,gamma2,phip
+real(wp) :: xp,yp
+real(wp), dimension(3) :: erhop,ezp,tmpvec
+
+real(wp) :: tmpsca
 
 integer :: ix1,ix2,ix3,irhon,izn,iid
-!real(wp), dimension(size(nn,1),size(nn,2),size(nn,3)) :: zimat,rhoimat
+real(wp), dimension(size(nn,1),size(nn,2),size(nn,3)) :: zimat,rhoimat
 integer, dimension(3) :: ymdtmp
 real(wp) :: UTsectmp
 real(wp), dimension(size(nn,1)*size(nn,2)*size(nn,3)) :: parami
@@ -506,7 +507,7 @@ if (t+dt/2d0>=tnext .or. t<=0d0) then   !negative time means that we need to loa
   tnext=tprev+dtneu
   UTsecnext=UTsectmp
   ymdnext=ymdtmp
-end if
+end if !done loading frame data...
 
 
 !(NOW) DO LINEAR INTERPOLATION IN TIME
@@ -970,7 +971,7 @@ real(wp) :: xp,yp
 real(wp), dimension(3) :: erhop,ezp,eyp,tmpvec
 real(wp) :: tmpsca
 
-integer :: ix1,ix2,ix3,ihorzn,izn,iid,ierr,lid
+integer :: ix1,ix2,ix3,ihorzn,izn,iid,ierr
 real(wp), dimension(x%lx1,x%lx2,x%lx3) :: zimat,rhoimat,yimat
 
 
@@ -979,7 +980,7 @@ if (myid==0) then    !root
   write(filename,*) trim(adjustl(neudir)),'simsize.dat'
   print *, 'Inputting neutral size from file:  ',trim(adjustl(filename))
   open(newunit=inunit,file=trim(adjustl(filename)),status='old',form='unformatted',access='stream')
-  read(inunit) lrhon,lzn
+  read(inunit) lhorzn,lzn
   close(inunit)
   print *, 'Neutral data has lrho,lz size:  ',lhorzn,lzn,' with spacing drho,dz',dhorzn,dzn
 
@@ -998,11 +999,13 @@ allocate(zn(lzn))    !these are module-scope variables
 if (flagcart) then
   allocate(rhon(1))
   allocate(yn(lhorzn))
+  lyn=lhorzn
 else
   allocate(rhon(lhorzn))
   allocate(yn(1))    !not used in the axisymmetric code so just initialize to something
+  lrhon=lhorzn
 end if
-allocate(dnO(lzn,lrhon),dnN2(lzn,lrhon),dnO2(lzn,lrhon),dvnrho(lzn,lrhon),dvnz(lzn,lrhon),dTn(lzn,lrhon))
+allocate(dnO(lzn,lhorzn),dnN2(lzn,lhorzn),dnO2(lzn,lhorzn),dvnrho(lzn,lhorzn),dvnz(lzn,lhorzn),dTn(lzn,lhorzn))
 
 
 !Define a grid by assume that the spacing is constant
@@ -1163,8 +1166,8 @@ call clear_unitvecs(x)
 !PRINT OUT SOME BASIC INFO ABOUT THE GRID THAT WE'VE LOADED
 if (myid==0) then
   if (flagcart) then
-    print *, 'Min/max rhon,zn values',minval(yn),maxval(yn),minval(zn),maxval(zn)
-    print *, 'Min/max rhoi,zi values',minval(yi),maxval(yi),minval(zi),maxval(zi)
+    print *, 'Min/max yn,zn values',minval(yn),maxval(yn),minval(zn),maxval(zn)
+    print *, 'Min/max yi,zi values',minval(yi),maxval(yi),minval(zi),maxval(zi)
   else
     print *, 'Min/max rhon,zn values',minval(rhon),maxval(rhon),minval(zn),maxval(zn)
     print *, 'Min/max rhoi,zi values',minval(rhoi),maxval(rhoi),minval(zi),maxval(zi)
