@@ -206,14 +206,14 @@ real(wp), dimension(:,:,:), intent(out) :: Tn,vn1,vn2,vn3
 integer :: inunit                        !file handle for various input files
 character(512) :: filename               !space to store filenames, note size must be 512 to be consistent with our date_ffilename functinos
 
-real(wp) :: theta1,phi1,theta2,phi2,gammarads,theta3,phi3,gamma1,gamma2,phip
-real(wp) :: xp,yp
-real(wp), dimension(3) :: erhop,ezp,tmpvec
+!real(wp) :: theta1,phi1,theta2,phi2,gammarads,theta3,phi3,gamma1,gamma2,phip
+!real(wp) :: xp,yp
+!real(wp), dimension(3) :: erhop,ezp,tmpvec
 
-real(wp) :: tmpsca
+!real(wp) :: tmpsca
 
-integer :: ix1,ix2,ix3,irhon,izn,iid
-real(wp), dimension(size(nn,1),size(nn,2),size(nn,3)) :: zimat,rhoimat
+integer :: ix1,ix2,ix3,iid!,irhon,izn
+!real(wp), dimension(size(nn,1),size(nn,2),size(nn,3)) :: zimat,rhoimat
 integer, dimension(3) :: ymdtmp
 real(wp) :: UTsectmp
 real(wp), dimension(size(nn,1)*size(nn,2)*size(nn,3)) :: parami
@@ -236,7 +236,7 @@ if (t+dt/2d0>=tnext .or. t<=0d0) then   !negative time means that we need to loa
     UTsecnext=UTsecprev
 
     call gridproj_dneu(drhon,dzn,meanlat,meanlong,neudir,.false.,x)    !set false to denote not Cartesian...
-
+!
 !    if (myid==0) then    !root
 !      write(filename,*) trim(adjustl(neudir)),'simsize.dat'
 !      print *, 'Inputting neutral size from file:  ',trim(adjustl(filename))
@@ -436,6 +436,16 @@ if (t+dt/2d0>=tnext .or. t<=0d0) then   !negative time means that we need to loa
   if (myid==0) then
     print *, 'Initiating spatial interpolations for date:  ',ymdtmp,' ',UTsectmp
   end if
+  if (myid==lid/2) then
+    print*, 'neutral data size:  ',lrhon,lzn,lid
+    print *, 'Min/max values for dnO:  ',minval(dnO),maxval(dnO)
+    print *, 'Min/max values for dnN:  ',minval(dnN2),maxval(dnN2)
+    print *, 'Min/max values for dnO:  ',minval(dnO2),maxval(dnO2)
+    print *, 'Min/max values for dvnrho:  ',minval(dvnrho),maxval(dvnrho)
+    print *, 'Min/max values for dvnz:  ',minval(dvnz),maxval(dvnz)
+    print *, 'Min/max values for dTn:  ',minval(dTn),maxval(dTn)
+    print*, 'coordinate ranges:  ',minval(zn),maxval(zn),minval(rhon),maxval(rhon),minval(zi),maxval(zi),minval(rhoi),maxval(rhoi)
+  end if
   parami=interp2(zn,rhon,dnO,zi,rhoi)     !interp to temp var.
   dnOiprev=dnOinext                       !save new pervious
   dnOinext=reshape(parami,[lx1,lx2,lx3])    !overwrite next with new interpolated input
@@ -460,17 +470,17 @@ if (t+dt/2d0>=tnext .or. t<=0d0) then   !negative time means that we need to loa
   dTniprev=dTninext
   dTninext=reshape(parami,[lx1,lx2,lx3])
 
-!
-!  !MORE DIAG
-!  if (myid==lid/2) then
-!    print *, 'Min/max values for dnOi:  ',minval(dnOinext),maxval(dnOinext)
-!    print *, 'Min/max values for dnN2i:  ',minval(dnN2inext),maxval(dnN2inext)
-!    print *, 'Min/max values for dnO2i:  ',minval(dnO2inext),maxval(dnO2inext)
-!    print *, 'Min/max values for dvrhoi:  ',minval(dvnrhoinext),maxval(dvnrhoinext)
-!    print *, 'Min/max values for dvnzi:  ',minval(dvnzinext),maxval(dvnzinext)
-!    print *, 'Min/max values for dTni:  ',minval(dTninext),maxval(dTninext)
-!  end if
-!
+
+  !MORE DIAG
+  if (myid==lid/2) then
+    print *, 'Min/max values for dnOi:  ',minval(dnOinext),maxval(dnOinext)
+    print *, 'Min/max values for dnN2i:  ',minval(dnN2inext),maxval(dnN2inext)
+    print *, 'Min/max values for dnO2i:  ',minval(dnO2inext),maxval(dnO2inext)
+    print *, 'Min/max values for dvrhoi:  ',minval(dvnrhoinext),maxval(dvnrhoinext)
+    print *, 'Min/max values for dvnzi:  ',minval(dvnzinext),maxval(dvnzinext)
+    print *, 'Min/max values for dTni:  ',minval(dTninext),maxval(dTninext)
+  end if
+
 
   !ROTATE VECTORS INTO X1 X2 DIRECTIONS (Need to include unit vectors with grid structure)
   if (myid==0) then
@@ -961,7 +971,7 @@ character(*), intent(in) :: neudir           !directory where neutral simulation
 logical, intent(in) :: flagcart              !whether or not the input data are to be interpreted as Cartesian
 type(curvmesh), intent(inout) :: x           !inout to allow deallocation of unit vectors once we are done with them
 
-integer :: lhorzn,lzn
+integer :: lhorzn
 real(wp) :: meanyn
 
 integer :: inunit          !file handle for various input files
@@ -994,10 +1004,10 @@ else                 !workers
 end if
 
 
-!Everyone must allocate space for the grid
+!Everyone must allocate space for the grid of input data
 allocate(zn(lzn))    !these are module-scope variables
 if (flagcart) then
-  allocate(rhon(1))
+  allocate(rhon(1))  !not used in Cartesian code so just set to something
   allocate(yn(lhorzn))
   lyn=lhorzn
 else
@@ -1008,20 +1018,22 @@ end if
 allocate(dnO(lzn,lhorzn),dnN2(lzn,lhorzn),dnO2(lzn,lhorzn),dvnrho(lzn,lhorzn),dvnz(lzn,lhorzn),dTn(lzn,lhorzn))
 
 
-!Define a grid by assume that the spacing is constant
+!Define a grid (input data) by assuming that the spacing is constant
 if (flagcart) then     !Cartesian neutral simulation
   yn=[ ((real(ihorzn,8)-1._wp)*dhorzn, ihorzn=1,lhorzn) ]
   meanyn=sum(yn,1)/size(yn,1)
   yn=yn-meanyn     !the neutral grid should be centered on zero for a cartesian interpolation
 else
   rhon=[ ((real(ihorzn,8)-1._wp)*dhorzn, ihorzn=1,lhorzn) ]
-!        rhon=rhon+0.5d0*drhon       !to convert to cell-centered (can lead to some interpolation artifacts, for reasons that are unclear - need to revisit)
 end if
-
 zn=[ ((real(izn,8)-1._wp)*dzn, izn=1,lzn) ]
-!        zn=zn+0.5d0*dzn             !cell-center
+
 if (myid==0) then
-  print *, 'Creating neutral grid with rho,z extent:  ',minval(rhon),maxval(rhon),minval(zn),maxval(zn)
+  if (flagcart) then
+    print *, 'Creating neutral grid with y,z extent:',minval(yn),maxval(yn),minval(zn),maxval(zn)
+  else
+    print *, 'Creating neutral grid with rho,z extent:  ',minval(rhon),maxval(rhon),minval(zn),maxval(zn)
+  end if
 end if
 
 
@@ -1038,16 +1050,6 @@ zimat=x%alt     !vertical coordinate
 do ix3=1,lx3
   do ix2=1,lx2
     do ix1=1,lx1
-!              !INTERPOLATION BASED ON GEOGRAPHIC COORDINATES (CREATES ISSUES IN 2D BUT LEFT HERE IN CASE IT'S USEFUL FOR SOME APPLICATION)
-!              theta2=pi/2d0-x%glat(ix1,ix2,ix3)*pi/180d0    !field point zenith angle
-!              if (lx2/=1) then
-!                phi2=x%glon(ix1,ix2,ix3)*pi/180d0             !field point azimuth, full 3D calculation
-!              else
-!                phi2=phi1                                     !assume the longitude is the samem as the source in 2D, i.e. assume the source epicenter is in the meridian of the grid
-!!                phi2=x%glon(ix1,ix2,ix3)*pi/180d0     !doesn't seem to make any difference
-!              end if
-
-
       !INTERPOLATION BASED ON GEOMAGNETIC COORDINATES
       theta2=x%theta(ix1,ix2,ix3)                    !field point zenith angle
       if (lx2/=1) then
@@ -1151,6 +1153,9 @@ do ix3=1,lx3
     end do
   end do
 end do
+
+
+!Assign values for flat lists of grid points
 zi=pack(zimat,.true.)     !create a flat list of grid points to be used by interpolation ffunctions
 if (flagcart) then
   yi=pack(yimat,.true.)
