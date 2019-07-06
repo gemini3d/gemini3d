@@ -216,7 +216,7 @@ integer :: ix1,ix2,ix3,iid!,irhon,izn
 !real(wp), dimension(size(nn,1),size(nn,2),size(nn,3)) :: zimat,rhoimat
 integer, dimension(3) :: ymdtmp
 real(wp) :: UTsectmp
-real(wp), dimension(size(nn,1)*size(nn,2)*size(nn,3)) :: parami
+!real(wp), dimension(size(nn,1)*size(nn,2)*size(nn,3)) :: parami
 real(wp) :: slope
 real(wp), dimension(size(nn,1),size(nn,2),size(nn,3)) :: dnOinow,dnN2inow,dnO2inow,dTninow,dvn1inow,dvn2inow,dvn3inow    !current time step perturbations (centered in time)
 
@@ -240,128 +240,78 @@ if (t+dt/2d0>=tnext .or. t<=0d0) then   !negative time means that we need to loa
   end if
 
   call read_dneu(tprev,tnext,t,dtneu,dt,neudir,ymdtmp,UTsectmp)
-!  !ALL THE NECESSARY ARRAYS EXIST AT THIS POINT, SO GO AHEAD AND READ IN THE DATA - only root should do this and then distribute to the workers
-!  if (myid==0) then    !root
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1
-!    !read in the data from file
-!    print *, 'tprev,tnow,tnext:  ',tprev,t+dt/2d0,tnext
-!    ymdtmp=ymdnext
-!    UTsectmp=UTsecnext
-!    call dateinc(dtneu,ymdtmp,UTsectmp)    !get the date for "next" params
-!    filename=date_filename(neudir,ymdtmp,UTsectmp)     !form the standard data filename
-!    print *, 'Pulling neutral data from file:  ',trim(adjustl(filename))
-!    open(newunit=inunit,file=trim(adjustl(filename)),status='old',form='unformatted',access='stream')
-!    read(inunit) dnO,dnN2,dnO2,dvnrho,dvnz,dTn
-!    close(inunit)
-!
-!    print *, 'Min/max values for dnO:  ',minval(dnO),maxval(dnO)
-!    print *, 'Min/max values for dnN:  ',minval(dnN2),maxval(dnN2)
-!    print *, 'Min/max values for dnO:  ',minval(dnO2),maxval(dnO2)
-!    print *, 'Min/max values for dvnrho:  ',minval(dvnrho),maxval(dvnrho)
-!    print *, 'Min/max values for dvnz:  ',minval(dvnz),maxval(dvnz)
-!    print *, 'Min/max values for dTn:  ',minval(dTn),maxval(dTn)
-!
-!    !send a full copy of the data to all of the workers
-!    do iid=1,lid-1
-!      call mpi_send(dnO,lrhon*lzn,mpi_realprec,iid,tagdnO,MPI_COMM_WORLD,ierr)
-!      call mpi_send(dnN2,lrhon*lzn,mpi_realprec,iid,tagdnN2,MPI_COMM_WORLD,ierr)
-!      call mpi_send(dnO2,lrhon*lzn,mpi_realprec,iid,tagdnO2,MPI_COMM_WORLD,ierr)
-!      call mpi_send(dTn,lrhon*lzn,mpi_realprec,iid,tagdTn,MPI_COMM_WORLD,ierr)
-!      call mpi_send(dvnrho,lrhon*lzn,mpi_realprec,iid,tagdvnrho,MPI_COMM_WORLD,ierr)
-!      call mpi_send(dvnz,lrhon*lzn,mpi_realprec,iid,tagdvnz,MPI_COMM_WORLD,ierr)
-!    end do
-!  else     !workers
-!    !receive a full copy of the data from root
-!    call mpi_recv(dnO,lrhon*lzn,mpi_realprec,0,tagdnO,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-!    call mpi_recv(dnN2,lrhon*lzn,mpi_realprec,0,tagdnN2,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-!    call mpi_recv(dnO2,lrhon*lzn,mpi_realprec,0,tagdnO2,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-!    call mpi_recv(dTn,lrhon*lzn,mpi_realprec,0,tagdTn,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-!    call mpi_recv(dvnrho,lrhon*lzn,mpi_realprec,0,tagdvnrho,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-!    call mpi_recv(dvnz,lrhon*lzn,mpi_realprec,0,tagdvnz,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-!  end if
-!
-!
-!  !DO SPATIAL INTERPOLATION OF EACH PARAMETER (COULD CONSERVE SOME MEMORY BY NOT STORING DVNRHOIPREV AND DVNRHOINEXT, ETC.)
-!  if (myid==0) then
-!    print *, 'Initiating spatial interpolations for date:  ',ymdtmp,' ',UTsectmp
-!  end if
-!  if (myid==lid/2) then
-!    print*, 'neutral data size:  ',lrhon,lzn,lid
-!    print *, 'Min/max values for dnO:  ',minval(dnO),maxval(dnO)
-!    print *, 'Min/max values for dnN:  ',minval(dnN2),maxval(dnN2)
-!    print *, 'Min/max values for dnO:  ',minval(dnO2),maxval(dnO2)
-!    print *, 'Min/max values for dvnrho:  ',minval(dvnrho),maxval(dvnrho)
-!    print *, 'Min/max values for dvnz:  ',minval(dvnz),maxval(dvnz)
-!    print *, 'Min/max values for dTn:  ',minval(dTn),maxval(dTn)
-!    print*, 'coordinate ranges:  ',minval(zn),maxval(zn),minval(rhon),maxval(rhon),minval(zi),maxval(zi),minval(rhoi),maxval(rhoi)
-!  end if
-!
 
 
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  parami=interp2(zn,rhon,dnO,zi,rhoi)     !interp to temp var.
-  dnOiprev=dnOinext                       !save new pervious
-  dnOinext=reshape(parami,[lx1,lx2,lx3])    !overwrite next with new interpolated input
-
-  parami=interp2(zn,rhon,dnN2,zi,rhoi)
-  dnN2iprev=dnN2inext
-  dnN2inext=reshape(parami,[lx1,lx2,lx3])
-
-  parami=interp2(zn,rhon,dnN2,zi,rhoi)
-  dnO2iprev=dnO2inext
-  dnO2inext=reshape(parami,[lx1,lx2,lx3])
-
-  parami=interp2(zn,rhon,dvnrho,zi,rhoi)
-  dvnrhoiprev=dvnrhoinext
-  dvnrhoinext=reshape(parami,[lx1,lx2,lx3])
-
-  parami=interp2(zn,rhon,dvnz,zi,rhoi)
-  dvnziprev=dvnzinext
-  dvnzinext=reshape(parami,[lx1,lx2,lx3])
-
-  parami=interp2(zn,rhon,dTn,zi,rhoi)
-  dTniprev=dTninext
-  dTninext=reshape(parami,[lx1,lx2,lx3])
-
-
-  !MORE DIAG
-  if (myid==lid/2) then
-    print *, 'Min/max values for dnOi:  ',minval(dnOinext),maxval(dnOinext)
-    print *, 'Min/max values for dnN2i:  ',minval(dnN2inext),maxval(dnN2inext)
-    print *, 'Min/max values for dnO2i:  ',minval(dnO2inext),maxval(dnO2inext)
-    print *, 'Min/max values for dvrhoi:  ',minval(dvnrhoinext),maxval(dvnrhoinext)
-    print *, 'Min/max values for dvnzi:  ',minval(dvnzinext),maxval(dvnzinext)
-    print *, 'Min/max values for dTni:  ',minval(dTninext),maxval(dTninext)
-  end if
-
-
-  !ROTATE VECTORS INTO X1 X2 DIRECTIONS (Need to include unit vectors with grid structure)
   if (myid==0) then
-    print *, 'Rotating vectors for date:  ',ymdtmp,' ',UTsectmp
+    print *, 'Spatial interpolation and rotation of vectors for date:  ',ymdtmp,' ',UTsectmp
   end if
+   
 
-  dvn1iprev=dvn1inext   !save the old data
-  dvn1inext=dvnrhoinext*proj_erhop_e1+dvnzinext*proj_ezp_e1    !apply projection to complete rotation into dipole coordinates
-
-  dvn2iprev=dvn2inext
-  dvn2inext=dvnrhoinext*proj_erhop_e2+dvnzinext*proj_ezp_e2
-
-  dvn3iprev=dvn3inext
-  dvn3inext=dvnrhoinext*proj_erhop_e3+dvnzinext*proj_ezp_e3
-
-
-  !MORE DIAGNOSTICS
-  if (myid==lid/2) then
-    print *, 'Min/max values for dnOi:  ',minval(dnOinext),maxval(dnOinext)
-    print *, 'Min/max values for dnN2i:  ',minval(dnN2inext),maxval(dnN2inext)
-    print *, 'Min/max values for dnO2i:  ',minval(dnO2inext),maxval(dnO2inext)
-    print *, 'Min/max values for dvn1i:  ',minval(dvn1inext),maxval(dvn1inext)
-    print *, 'Min/max values for dvn2i:  ',minval(dvn2inext),maxval(dvn2inext)
-    print *, 'Min/max values for dvn3i:  ',minval(dvn3inext),maxval(dvn3inext)
-    print *, 'Min/max values for dTni:  ',minval(dTninext),maxval(dTninext)
-  end if
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
+  call spaceinterp_dneu()
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!  parami=interp2(zn,rhon,dnO,zi,rhoi)     !interp to temp var.
+!  dnOiprev=dnOinext                       !save new pervious
+!  dnOinext=reshape(parami,[lx1,lx2,lx3])    !overwrite next with new interpolated input
+!
+!  parami=interp2(zn,rhon,dnN2,zi,rhoi)
+!  dnN2iprev=dnN2inext
+!  dnN2inext=reshape(parami,[lx1,lx2,lx3])
+!
+!  parami=interp2(zn,rhon,dnN2,zi,rhoi)
+!  dnO2iprev=dnO2inext
+!  dnO2inext=reshape(parami,[lx1,lx2,lx3])
+!
+!  parami=interp2(zn,rhon,dvnrho,zi,rhoi)
+!  dvnrhoiprev=dvnrhoinext
+!  dvnrhoinext=reshape(parami,[lx1,lx2,lx3])
+!
+!  parami=interp2(zn,rhon,dvnz,zi,rhoi)
+!  dvnziprev=dvnzinext
+!  dvnzinext=reshape(parami,[lx1,lx2,lx3])
+!
+!  parami=interp2(zn,rhon,dTn,zi,rhoi)
+!  dTniprev=dTninext
+!  dTninext=reshape(parami,[lx1,lx2,lx3])
+!
+!
+!  !MORE DIAG
+!  if (myid==lid/2) then
+!    print *, 'Min/max values for dnOi:  ',minval(dnOinext),maxval(dnOinext)
+!    print *, 'Min/max values for dnN2i:  ',minval(dnN2inext),maxval(dnN2inext)
+!    print *, 'Min/max values for dnO2i:  ',minval(dnO2inext),maxval(dnO2inext)
+!    print *, 'Min/max values for dvrhoi:  ',minval(dvnrhoinext),maxval(dvnrhoinext)
+!    print *, 'Min/max values for dvnzi:  ',minval(dvnzinext),maxval(dvnzinext)
+!    print *, 'Min/max values for dTni:  ',minval(dTninext),maxval(dTninext)
+!  end if
+!
+!
+!  !ROTATE VECTORS INTO X1 X2 DIRECTIONS (Need to include unit vectors with grid structure)
+!  if (myid==0) then
+!    print *, 'Rotating vectors for date:  ',ymdtmp,' ',UTsectmp
+!  end if
+!
+!  dvn1iprev=dvn1inext   !save the old data
+!  dvn1inext=dvnrhoinext*proj_erhop_e1+dvnzinext*proj_ezp_e1    !apply projection to complete rotation into dipole coordinates
+!
+!  dvn2iprev=dvn2inext
+!  dvn2inext=dvnrhoinext*proj_erhop_e2+dvnzinext*proj_ezp_e2
+!
+!  dvn3iprev=dvn3inext
+!  dvn3inext=dvnrhoinext*proj_erhop_e3+dvnzinext*proj_ezp_e3
+!
+!
+!  !MORE DIAGNOSTICS
+!  if (myid==lid/2) then
+!    print *, 'Min/max values for dnOi:  ',minval(dnOinext),maxval(dnOinext)
+!    print *, 'Min/max values for dnN2i:  ',minval(dnN2inext),maxval(dnN2inext)
+!    print *, 'Min/max values for dnO2i:  ',minval(dnO2inext),maxval(dnO2inext)
+!    print *, 'Min/max values for dvn1i:  ',minval(dvn1inext),maxval(dvn1inext)
+!    print *, 'Min/max values for dvn2i:  ',minval(dvn2inext),maxval(dvn2inext)
+!    print *, 'Min/max values for dvn3i:  ',minval(dvn3inext),maxval(dvn3inext)
+!    print *, 'Min/max values for dTni:  ',minval(dTninext),maxval(dTninext)
+!  end if
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!
   !UPDATE OUR CONCEPT OF PREVIOUS AND NEXT TIMES
   tprev=tnext
   UTsecprev=UTsecnext
@@ -1105,6 +1055,74 @@ if (myid==lid/2) then
 end if
 
 end subroutine read_dneu
+
+
+subroutine spaceinterp_dneu()
+
+real(wp), dimension(lx1*lx2*lx3) :: parami    !work array for temp storage of interpolated data, note sizes taken from grid module data
+
+
+parami=interp2(zn,rhon,dnO,zi,rhoi)     !interp to temp var.
+dnOiprev=dnOinext                       !save new pervious
+dnOinext=reshape(parami,[lx1,lx2,lx3])    !overwrite next with new interpolated input
+ 
+parami=interp2(zn,rhon,dnN2,zi,rhoi)
+dnN2iprev=dnN2inext
+dnN2inext=reshape(parami,[lx1,lx2,lx3])
+ 
+parami=interp2(zn,rhon,dnN2,zi,rhoi)
+dnO2iprev=dnO2inext
+dnO2inext=reshape(parami,[lx1,lx2,lx3])
+ 
+parami=interp2(zn,rhon,dvnrho,zi,rhoi)
+dvnrhoiprev=dvnrhoinext
+dvnrhoinext=reshape(parami,[lx1,lx2,lx3])
+ 
+parami=interp2(zn,rhon,dvnz,zi,rhoi)
+dvnziprev=dvnzinext
+dvnzinext=reshape(parami,[lx1,lx2,lx3])
+ 
+parami=interp2(zn,rhon,dTn,zi,rhoi)
+dTniprev=dTninext
+dTninext=reshape(parami,[lx1,lx2,lx3])
+ 
+ 
+!MORE DIAG
+if (myid==lid/2) then
+  print *, 'Min/max values for dnOi:  ',minval(dnOinext),maxval(dnOinext)
+  print *, 'Min/max values for dnN2i:  ',minval(dnN2inext),maxval(dnN2inext)
+  print *, 'Min/max values for dnO2i:  ',minval(dnO2inext),maxval(dnO2inext)
+  print *, 'Min/max values for dvrhoi:  ',minval(dvnrhoinext),maxval(dvnrhoinext)
+  print *, 'Min/max values for dvnzi:  ',minval(dvnzinext),maxval(dvnzinext)
+  print *, 'Min/max values for dTni:  ',minval(dTninext),maxval(dTninext)
+end if
+ 
+ 
+!ROTATE VECTORS INTO X1 X2 DIRECTIONS (Need to include unit vectors with grid
+!structure)
+
+dvn1iprev=dvn1inext   !save the old data
+dvn1inext=dvnrhoinext*proj_erhop_e1+dvnzinext*proj_ezp_e1    !apply projection to complete rotation into dipole coordinates
+ 
+dvn2iprev=dvn2inext
+dvn2inext=dvnrhoinext*proj_erhop_e2+dvnzinext*proj_ezp_e2
+ 
+dvn3iprev=dvn3inext
+dvn3inext=dvnrhoinext*proj_erhop_e3+dvnzinext*proj_ezp_e3
+ 
+ 
+!MORE DIAGNOSTICS
+if (myid==lid/2) then
+  print *, 'Min/max values for dnOi:  ',minval(dnOinext),maxval(dnOinext)
+  print *, 'Min/max values for dnN2i:  ',minval(dnN2inext),maxval(dnN2inext)
+  print *, 'Min/max values for dnO2i:  ',minval(dnO2inext),maxval(dnO2inext)
+  print *, 'Min/max values for dvn1i:  ',minval(dvn1inext),maxval(dvn1inext)
+  print *, 'Min/max values for dvn2i:  ',minval(dvn2inext),maxval(dvn2inext)
+  print *, 'Min/max values for dvn3i:  ',minval(dvn3inext),maxval(dvn3inext)
+  print *, 'Min/max values for dTni:  ',minval(dTninext),maxval(dTninext)
+end if
+
+end subroutine spaceinterp_dneu
 
 
 subroutine make_dneu()
