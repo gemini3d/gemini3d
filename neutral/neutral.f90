@@ -217,7 +217,7 @@ integer :: ix1,ix2,ix3,iid!,irhon,izn
 integer, dimension(3) :: ymdtmp
 real(wp) :: UTsectmp
 !real(wp), dimension(size(nn,1)*size(nn,2)*size(nn,3)) :: parami
-real(wp) :: slope
+!real(wp) :: slope
 real(wp), dimension(size(nn,1),size(nn,2),size(nn,3)) :: dnOinow,dnN2inow,dnO2inow,dTninow,dvn1inow,dvn2inow,dvn3inow    !current time step perturbations (centered in time)
 
 integer(4) :: flaginit    !a flag that is set during the first call to read in data
@@ -236,82 +236,19 @@ if (t+dt/2d0>=tnext .or. t<=0d0) then   !negative time means that we need to loa
     ymdnext=ymdprev
     UTsecnext=UTsecprev
 
+    !Create a neutral grid, do some allocations and projections
     call gridproj_dneu(drhon,dzn,meanlat,meanlong,neudir,.false.,x)    !set false to denote not Cartesian...
   end if
 
+  !Read in neutral data from a file
   call read_dneu(tprev,tnext,t,dtneu,dt,neudir,ymdtmp,UTsectmp)
 
-
+  !Spatial interpolatin for the frame we just read in
   if (myid==0) then
     print *, 'Spatial interpolation and rotation of vectors for date:  ',ymdtmp,' ',UTsectmp
   end if
-   
-
   call spaceinterp_dneu()
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!  parami=interp2(zn,rhon,dnO,zi,rhoi)     !interp to temp var.
-!  dnOiprev=dnOinext                       !save new pervious
-!  dnOinext=reshape(parami,[lx1,lx2,lx3])    !overwrite next with new interpolated input
-!
-!  parami=interp2(zn,rhon,dnN2,zi,rhoi)
-!  dnN2iprev=dnN2inext
-!  dnN2inext=reshape(parami,[lx1,lx2,lx3])
-!
-!  parami=interp2(zn,rhon,dnN2,zi,rhoi)
-!  dnO2iprev=dnO2inext
-!  dnO2inext=reshape(parami,[lx1,lx2,lx3])
-!
-!  parami=interp2(zn,rhon,dvnrho,zi,rhoi)
-!  dvnrhoiprev=dvnrhoinext
-!  dvnrhoinext=reshape(parami,[lx1,lx2,lx3])
-!
-!  parami=interp2(zn,rhon,dvnz,zi,rhoi)
-!  dvnziprev=dvnzinext
-!  dvnzinext=reshape(parami,[lx1,lx2,lx3])
-!
-!  parami=interp2(zn,rhon,dTn,zi,rhoi)
-!  dTniprev=dTninext
-!  dTninext=reshape(parami,[lx1,lx2,lx3])
-!
-!
-!  !MORE DIAG
-!  if (myid==lid/2) then
-!    print *, 'Min/max values for dnOi:  ',minval(dnOinext),maxval(dnOinext)
-!    print *, 'Min/max values for dnN2i:  ',minval(dnN2inext),maxval(dnN2inext)
-!    print *, 'Min/max values for dnO2i:  ',minval(dnO2inext),maxval(dnO2inext)
-!    print *, 'Min/max values for dvrhoi:  ',minval(dvnrhoinext),maxval(dvnrhoinext)
-!    print *, 'Min/max values for dvnzi:  ',minval(dvnzinext),maxval(dvnzinext)
-!    print *, 'Min/max values for dTni:  ',minval(dTninext),maxval(dTninext)
-!  end if
-!
-!
-!  !ROTATE VECTORS INTO X1 X2 DIRECTIONS (Need to include unit vectors with grid structure)
-!  if (myid==0) then
-!    print *, 'Rotating vectors for date:  ',ymdtmp,' ',UTsectmp
-!  end if
-!
-!  dvn1iprev=dvn1inext   !save the old data
-!  dvn1inext=dvnrhoinext*proj_erhop_e1+dvnzinext*proj_ezp_e1    !apply projection to complete rotation into dipole coordinates
-!
-!  dvn2iprev=dvn2inext
-!  dvn2inext=dvnrhoinext*proj_erhop_e2+dvnzinext*proj_ezp_e2
-!
-!  dvn3iprev=dvn3inext
-!  dvn3inext=dvnrhoinext*proj_erhop_e3+dvnzinext*proj_ezp_e3
-!
-!
-!  !MORE DIAGNOSTICS
-!  if (myid==lid/2) then
-!    print *, 'Min/max values for dnOi:  ',minval(dnOinext),maxval(dnOinext)
-!    print *, 'Min/max values for dnN2i:  ',minval(dnN2inext),maxval(dnN2inext)
-!    print *, 'Min/max values for dnO2i:  ',minval(dnO2inext),maxval(dnO2inext)
-!    print *, 'Min/max values for dvn1i:  ',minval(dvn1inext),maxval(dvn1inext)
-!    print *, 'Min/max values for dvn2i:  ',minval(dvn2inext),maxval(dvn2inext)
-!    print *, 'Min/max values for dvn3i:  ',minval(dvn3inext),maxval(dvn3inext)
-!    print *, 'Min/max values for dTni:  ',minval(dTninext),maxval(dTninext)
-!  end if
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!
+
   !UPDATE OUR CONCEPT OF PREVIOUS AND NEXT TIMES
   tprev=tnext
   UTsecprev=UTsecnext
@@ -322,50 +259,52 @@ if (t+dt/2d0>=tnext .or. t<=0d0) then   !negative time means that we need to loa
   ymdnext=ymdtmp
 end if !done loading frame data...
 
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!(NOW) DO LINEAR INTERPOLATION IN TIME
-do ix3=1,lx3
-  do ix2=1,lx2
-    do ix1=1,lx1
-      slope=(dnOinext(ix1,ix2,ix3)-dnOiprev(ix1,ix2,ix3))/(tnext-tprev)
-      dnOinow(ix1,ix2,ix3)=dnOiprev(ix1,ix2,ix3)+slope*(t+dt/2d0-tprev)
+call timeinterp_dneu(t,dt,dNOinow,dnN2inow,dnO2inow,dvn1inow,dvn2inow,dvn3inow,dTninow)
 
-      slope=(dnN2inext(ix1,ix2,ix3)-dnN2iprev(ix1,ix2,ix3))/(tnext-tprev)
-      dnN2inow(ix1,ix2,ix3)=dnN2iprev(ix1,ix2,ix3)+slope*(t+dt/2d0-tprev)
-
-      slope=(dnO2inext(ix1,ix2,ix3)-dnO2iprev(ix1,ix2,ix3))/(tnext-tprev)
-      dnO2inow(ix1,ix2,ix3)=dnO2iprev(ix1,ix2,ix3)+slope*(t+dt/2d0-tprev)
-
-      slope=(dvn1inext(ix1,ix2,ix3)-dvn1iprev(ix1,ix2,ix3))/(tnext-tprev)
-      dvn1inow(ix1,ix2,ix3)=dvn1iprev(ix1,ix2,ix3)+slope*(t+dt/2d0-tprev)
-
-      slope=(dvn2inext(ix1,ix2,ix3)-dvn2iprev(ix1,ix2,ix3))/(tnext-tprev)
-      dvn2inow(ix1,ix2,ix3)=dvn2iprev(ix1,ix2,ix3)+slope*(t+dt/2d0-tprev)
-
-      slope=(dvn3inext(ix1,ix2,ix3)-dvn3iprev(ix1,ix2,ix3))/(tnext-tprev)
-      dvn3inow(ix1,ix2,ix3)=dvn3iprev(ix1,ix2,ix3)+slope*(t+dt/2d0-tprev)
-
-      slope=(dTninext(ix1,ix2,ix3)-dTniprev(ix1,ix2,ix3))/(tnext-tprev)
-      dTninow(ix1,ix2,ix3)=dTniprev(ix1,ix2,ix3)+slope*(t+dt/2d0-tprev)
-    end do
-  end do
-end do
-
-
-!SOME BASIC DIAGNOSTICS
-if (myid==lid/2) then
-  print *, myid
-  print *, 'tprev,t,tnext:  ',tprev,t+dt/2d0,tnext
-  print *, 'Min/max values for dnOinow:  ',minval(dnOinow),maxval(dnOinow)
-  print *, 'Min/max values for dnN2inow:  ',minval(dnN2inow),maxval(dnN2inow)
-  print *, 'Min/max values for dnO2inow:  ',minval(dnO2inow),maxval(dnO2inow)
-  print *, 'Min/max values for dvn1inow:  ',minval(dvn1inow),maxval(dvn1inow)
-  print *, 'Min/max values for dvn2inow:  ',minval(dvn2inow),maxval(dvn2inow)
-  print *, 'Min/max values for dvn3inow:  ',minval(dvn3inow),maxval(dvn3inow)
-  print *, 'Min/max values for dTninow:  ',minval(dTninow),maxval(dTninow)
-end if
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
+!!(NOW) DO LINEAR INTERPOLATION IN TIME
+!do ix3=1,lx3
+!  do ix2=1,lx2
+!    do ix1=1,lx1
+!      slope=(dnOinext(ix1,ix2,ix3)-dnOiprev(ix1,ix2,ix3))/(tnext-tprev)
+!      dnOinow(ix1,ix2,ix3)=dnOiprev(ix1,ix2,ix3)+slope*(t+dt/2d0-tprev)
+!
+!      slope=(dnN2inext(ix1,ix2,ix3)-dnN2iprev(ix1,ix2,ix3))/(tnext-tprev)
+!      dnN2inow(ix1,ix2,ix3)=dnN2iprev(ix1,ix2,ix3)+slope*(t+dt/2d0-tprev)
+!
+!      slope=(dnO2inext(ix1,ix2,ix3)-dnO2iprev(ix1,ix2,ix3))/(tnext-tprev)
+!      dnO2inow(ix1,ix2,ix3)=dnO2iprev(ix1,ix2,ix3)+slope*(t+dt/2d0-tprev)
+!
+!      slope=(dvn1inext(ix1,ix2,ix3)-dvn1iprev(ix1,ix2,ix3))/(tnext-tprev)
+!      dvn1inow(ix1,ix2,ix3)=dvn1iprev(ix1,ix2,ix3)+slope*(t+dt/2d0-tprev)
+!
+!      slope=(dvn2inext(ix1,ix2,ix3)-dvn2iprev(ix1,ix2,ix3))/(tnext-tprev)
+!      dvn2inow(ix1,ix2,ix3)=dvn2iprev(ix1,ix2,ix3)+slope*(t+dt/2d0-tprev)
+!
+!      slope=(dvn3inext(ix1,ix2,ix3)-dvn3iprev(ix1,ix2,ix3))/(tnext-tprev)
+!      dvn3inow(ix1,ix2,ix3)=dvn3iprev(ix1,ix2,ix3)+slope*(t+dt/2d0-tprev)
+!
+!      slope=(dTninext(ix1,ix2,ix3)-dTniprev(ix1,ix2,ix3))/(tnext-tprev)
+!      dTninow(ix1,ix2,ix3)=dTniprev(ix1,ix2,ix3)+slope*(t+dt/2d0-tprev)
+!    end do
+!  end do
+!end do
+!
+!
+!!SOME BASIC DIAGNOSTICS
+!if (myid==lid/2) then
+!  print *, myid
+!  print *, 'tprev,t,tnext:  ',tprev,t+dt/2d0,tnext
+!  print *, 'Min/max values for dnOinow:  ',minval(dnOinow),maxval(dnOinow)
+!  print *, 'Min/max values for dnN2inow:  ',minval(dnN2inow),maxval(dnN2inow)
+!  print *, 'Min/max values for dnO2inow:  ',minval(dnO2inow),maxval(dnO2inow)
+!  print *, 'Min/max values for dvn1inow:  ',minval(dvn1inow),maxval(dvn1inow)
+!  print *, 'Min/max values for dvn2inow:  ',minval(dvn2inow),maxval(dvn2inow)
+!  print *, 'Min/max values for dvn3inow:  ',minval(dvn3inow),maxval(dvn3inow)
+!  print *, 'Min/max values for dTninow:  ',minval(dTninow),maxval(dTninow)
+!end if
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!
 !NOW UPDATE THE PROVIDED NEUTRAL ARRAYS
 nn(:,:,:,1)=nnmsis(:,:,:,1)+dnOinow
 nn(:,:,:,2)=nnmsis(:,:,:,2)+dnN2inow
@@ -1123,6 +1062,58 @@ if (myid==lid/2) then
 end if
 
 end subroutine spaceinterp_dneu
+
+
+subroutine timeinterp_dneu(t,dt,dNOinow,dnN2inow,dnO2inow,dvn1inow,dvn2inow,dvn3inow,dTninow)
+
+real(wp), intent(in) :: t,dt
+real(wp), dimension(:,:,:), intent(out) :: dNOinow,dnN2inow,dnO2inow,dvn1inow,dvn2inow,dvn3inow,dTninow
+
+integer :: ix1,ix2,ix3
+real(wp) :: slope
+
+do ix3=1,lx3
+  do ix2=1,lx2
+    do ix1=1,lx1
+      slope=(dnOinext(ix1,ix2,ix3)-dnOiprev(ix1,ix2,ix3))/(tnext-tprev)
+      dnOinow(ix1,ix2,ix3)=dnOiprev(ix1,ix2,ix3)+slope*(t+dt/2.0_wp-tprev)
+
+      slope=(dnN2inext(ix1,ix2,ix3)-dnN2iprev(ix1,ix2,ix3))/(tnext-tprev)
+      dnN2inow(ix1,ix2,ix3)=dnN2iprev(ix1,ix2,ix3)+slope*(t+dt/2.0_wp-tprev)
+
+      slope=(dnO2inext(ix1,ix2,ix3)-dnO2iprev(ix1,ix2,ix3))/(tnext-tprev)
+      dnO2inow(ix1,ix2,ix3)=dnO2iprev(ix1,ix2,ix3)+slope*(t+dt/2.0_wp-tprev)
+
+      slope=(dvn1inext(ix1,ix2,ix3)-dvn1iprev(ix1,ix2,ix3))/(tnext-tprev)
+      dvn1inow(ix1,ix2,ix3)=dvn1iprev(ix1,ix2,ix3)+slope*(t+dt/2.0_wp-tprev)
+
+      slope=(dvn2inext(ix1,ix2,ix3)-dvn2iprev(ix1,ix2,ix3))/(tnext-tprev)
+      dvn2inow(ix1,ix2,ix3)=dvn2iprev(ix1,ix2,ix3)+slope*(t+dt/2.0_wp-tprev)
+
+      slope=(dvn3inext(ix1,ix2,ix3)-dvn3iprev(ix1,ix2,ix3))/(tnext-tprev)
+      dvn3inow(ix1,ix2,ix3)=dvn3iprev(ix1,ix2,ix3)+slope*(t+dt/2.0_wp-tprev)
+
+      slope=(dTninext(ix1,ix2,ix3)-dTniprev(ix1,ix2,ix3))/(tnext-tprev)
+      dTninow(ix1,ix2,ix3)=dTniprev(ix1,ix2,ix3)+slope*(t+dt/2.0_wp-tprev)
+    end do
+  end do
+end do
+
+
+!SOME BASIC DIAGNOSTICS
+if (myid==lid/2) then
+  print *, myid
+  print *, 'tprev,t,tnext:  ',tprev,t+dt/2d0,tnext
+  print *, 'Min/max values for dnOinow:  ',minval(dnOinow),maxval(dnOinow)
+  print *, 'Min/max values for dnN2inow:  ',minval(dnN2inow),maxval(dnN2inow)
+  print *, 'Min/max values for dnO2inow:  ',minval(dnO2inow),maxval(dnO2inow)
+  print *, 'Min/max values for dvn1inow:  ',minval(dvn1inow),maxval(dvn1inow)
+  print *, 'Min/max values for dvn2inow:  ',minval(dvn2inow),maxval(dvn2inow)
+  print *, 'Min/max values for dvn3inow:  ',minval(dvn3inow),maxval(dvn3inow)
+  print *, 'Min/max values for dTninow:  ',minval(dTninow),maxval(dTninow)
+end if
+
+end subroutine timeinterp_dneu
 
 
 subroutine make_dneu()
