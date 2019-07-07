@@ -259,53 +259,10 @@ if (t+dt/2d0>=tnext .or. t<=0d0) then   !negative time means that we need to loa
   ymdnext=ymdtmp
 end if !done loading frame data...
 
+!Interpolation in time
 call timeinterp_dneu(t,dt,dNOinow,dnN2inow,dnO2inow,dvn1inow,dvn2inow,dvn3inow,dTninow)
 
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!!(NOW) DO LINEAR INTERPOLATION IN TIME
-!do ix3=1,lx3
-!  do ix2=1,lx2
-!    do ix1=1,lx1
-!      slope=(dnOinext(ix1,ix2,ix3)-dnOiprev(ix1,ix2,ix3))/(tnext-tprev)
-!      dnOinow(ix1,ix2,ix3)=dnOiprev(ix1,ix2,ix3)+slope*(t+dt/2d0-tprev)
-!
-!      slope=(dnN2inext(ix1,ix2,ix3)-dnN2iprev(ix1,ix2,ix3))/(tnext-tprev)
-!      dnN2inow(ix1,ix2,ix3)=dnN2iprev(ix1,ix2,ix3)+slope*(t+dt/2d0-tprev)
-!
-!      slope=(dnO2inext(ix1,ix2,ix3)-dnO2iprev(ix1,ix2,ix3))/(tnext-tprev)
-!      dnO2inow(ix1,ix2,ix3)=dnO2iprev(ix1,ix2,ix3)+slope*(t+dt/2d0-tprev)
-!
-!      slope=(dvn1inext(ix1,ix2,ix3)-dvn1iprev(ix1,ix2,ix3))/(tnext-tprev)
-!      dvn1inow(ix1,ix2,ix3)=dvn1iprev(ix1,ix2,ix3)+slope*(t+dt/2d0-tprev)
-!
-!      slope=(dvn2inext(ix1,ix2,ix3)-dvn2iprev(ix1,ix2,ix3))/(tnext-tprev)
-!      dvn2inow(ix1,ix2,ix3)=dvn2iprev(ix1,ix2,ix3)+slope*(t+dt/2d0-tprev)
-!
-!      slope=(dvn3inext(ix1,ix2,ix3)-dvn3iprev(ix1,ix2,ix3))/(tnext-tprev)
-!      dvn3inow(ix1,ix2,ix3)=dvn3iprev(ix1,ix2,ix3)+slope*(t+dt/2d0-tprev)
-!
-!      slope=(dTninext(ix1,ix2,ix3)-dTniprev(ix1,ix2,ix3))/(tnext-tprev)
-!      dTninow(ix1,ix2,ix3)=dTniprev(ix1,ix2,ix3)+slope*(t+dt/2d0-tprev)
-!    end do
-!  end do
-!end do
-!
-!
-!!SOME BASIC DIAGNOSTICS
-!if (myid==lid/2) then
-!  print *, myid
-!  print *, 'tprev,t,tnext:  ',tprev,t+dt/2d0,tnext
-!  print *, 'Min/max values for dnOinow:  ',minval(dnOinow),maxval(dnOinow)
-!  print *, 'Min/max values for dnN2inow:  ',minval(dnN2inow),maxval(dnN2inow)
-!  print *, 'Min/max values for dnO2inow:  ',minval(dnO2inow),maxval(dnO2inow)
-!  print *, 'Min/max values for dvn1inow:  ',minval(dvn1inow),maxval(dvn1inow)
-!  print *, 'Min/max values for dvn2inow:  ',minval(dvn2inow),maxval(dvn2inow)
-!  print *, 'Min/max values for dvn3inow:  ',minval(dvn3inow),maxval(dvn3inow)
-!  print *, 'Min/max values for dTninow:  ',minval(dTninow),maxval(dTninow)
-!end if
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!
-!NOW UPDATE THE PROVIDED NEUTRAL ARRAYS
+!Add interpolated perturbations to reference atmosphere arrays
 nn(:,:,:,1)=nnmsis(:,:,:,1)+dnOinow
 nn(:,:,:,2)=nnmsis(:,:,:,2)+dnN2inow
 nn(:,:,:,3)=nnmsis(:,:,:,3)+dnO2inow
