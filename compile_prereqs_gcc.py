@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 """
-Intel Fortran needs only Mumps.
-CMake >= 3.12 required
+Installs prereqs for Gemini program
+CMake >= 3.13 needed in general
 """
 import subprocess
 import shutil
 import logging
 from pathlib import Path
+import pkg_resources
 from argparse import ArgumentParser
 
 # ========= user parameters ======================
@@ -37,9 +38,13 @@ MUMPSDIR = 'mumps'
 # ========= end of user parameters ================
 
 GITEXE = shutil.which('git')
+
 CMAKE = shutil.which('cmake')
 if not CMAKE:
-    raise FileNotFoundError('could not find CMake')
+    raise SystemExit('could not find CMake')
+cmake_ver = subprocess.check_output([CMAKE, '--version'], universal_newlines=True).split('\n')[0].split(' ')[2]
+if pkg_resources.parse_version(cmake_ver) < pkg_resources.parse_version('3.13'):
+    raise SystemExit(f'CMake {cmake_ver} is less than minimum required CMake 3.13')
 
 
 def lapack(wipe: bool):
@@ -55,11 +60,12 @@ def lapack(wipe: bool):
     if wipe and cachefile.is_file():
         cachefile.unlink()
 
-    subprocess.run([CMAKE,
-                    f'-DCMAKE_INSTALL_PREFIX={install_lib}',
-                    '-B', str(build_lib), '-S', str(source_lib)])
+    subprocess.check_call([CMAKE,
+                           f'-DCMAKE_INSTALL_PREFIX={install_lib}',
+                           '-B', str(build_lib), '-S', str(source_lib)])
 
-    subprocess.run([CMAKE, '--build', str(build_lib), '--parallel', '--target', 'install'])
+    subprocess.check_call([CMAKE, '--build', str(build_lib),
+                           '--parallel', '--target', 'install'])
 
 
 def scalapack(wipe: bool):
@@ -73,12 +79,13 @@ def scalapack(wipe: bool):
     if wipe and cachefile.is_file():
         cachefile.unlink()
 
-    subprocess.run([CMAKE,
-                    f'-DCMAKE_INSTALL_PREFIX={install_lib}',
-                    f'-DLAPACK_ROOT={Path(PREFIX).expanduser() / LAPACKDIR}',
-                    '-B', str(build_lib), '-S', str(source_lib)])
+    subprocess.check_call([CMAKE,
+                           f'-DCMAKE_INSTALL_PREFIX={install_lib}',
+                           f'-DLAPACK_ROOT={Path(PREFIX).expanduser() / LAPACKDIR}',
+                           '-B', str(build_lib), '-S', str(source_lib)])
 
-    subprocess.run([CMAKE, '--build', str(build_lib), '--parallel', '--target', 'install'])
+    subprocess.check_call([CMAKE, '--build', str(build_lib),
+                           '--parallel', '--target', 'install'])
 
 
 def mumps(wipe: bool):
@@ -87,7 +94,8 @@ def mumps(wipe: bool):
 
     update(source_lib, MUMPSGIT)
 
-    subprocess.run(['python', 'build.py', 'intel', '-install', str(install_lib)], cwd=source_lib)
+    subprocess.check_call(['python', 'build.py', 'gcc', '-install', str(install_lib)],
+                          cwd=source_lib)
 
 
 def update(path: Path, repo: str):
@@ -108,11 +116,13 @@ def update(path: Path, repo: str):
 
 if __name__ == '__main__':
     p = ArgumentParser()
+    p.add_argument('libs', help='libraries to compile (lapack, scalapack, mumps)', nargs='+')
     p.add_argument('-wipe', help='wipe before completely recompiling libs', action='store_true')
     P = p.parse_args()
 
-    lapack(P.wipe)
-
-    scalapack(P.wipe)
-
-    mumps(P.wipe)
+    if 'lapack' in P.libs:
+        lapack(P.wipe)
+    if 'scalapack' in P.libs:
+        scalapack(P.wipe)
+    if 'mumps' in P.libs:
+        mumps(P.wipe)
