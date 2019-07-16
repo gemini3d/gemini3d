@@ -1,5 +1,5 @@
 project('GEMINI', 'fortran',
-  meson_version: '>=0.50.0',
+  meson_version: '>=0.51.999',
   default_options : ['default_library=static'])
 
 REALBITS = '-DREALBITS='+get_option('realbits')
@@ -38,7 +38,6 @@ else
   lapack = fc.find_library('lapack', required : true, dirs : lapack_root)
 endif
 
-# meson >= 0.50
 # mumps = dependency('MUMPS') module_path : 'cmake/Modules')
 if mumps_root == ''
   mumpsinc = include_directories('/usr/include')
@@ -55,22 +54,26 @@ if HDF  # see HDF5 branch, not yet fully ready.
  hdf5 = dependency('hdf5')
 endif
 
-mpi_src = files('numerical/mpimod/mpimod.F90', 'numerical/mpimod/mpisend.f90', 'numerical/mpimod/mpirecv.f90', 'numerical/mpimod/mpihalo.f90')
+subdir('numerical')
 
-calculus = library('calculus', mpi_src, 'numerical/constants/phys_consts.F90', 'numerical/calculus/calculus.f90', 'numerical/grid/grid.f90', 'numerical/interpolation/interpolation.f90', 'vendor/lapack95/gbsv.F90',
+calculus = library('calculus', 'numerical/calculus/calculus.f90', 'numerical/grid/grid.f90', 'numerical/interpolation/interpolation.f90', 'vendor/lapack95/gbsv.F90',
+  link_with: const,
   dependencies : mpi,
   fortran_args: REALBITS)
 
-io = library('io','io/io.F90', 'io/expanduser.f90',
-  link_with: calculus,
+subdir('temporal')
+subdir('io')
+
+io = library('io','io/io.F90',
+  link_with: [calculus, const, fsutils],
   fortran_args: REALBITS)
 
 msis = library('msis', 'vendor/msis00/msis00_gfortran.f',
   fortran_args : oldflags)
 
-neutral = library('neutral', 'neutral/neutral.f90', 'temporal/timeutils.f90',
+neutral = library('neutral', 'neutral/neutral.f90',
   dependencies : mpi,
-  link_with : [calculus, io, msis])
+  link_with : [calculus, mpi_mod, io, msis, timeutils])
 
 # --- ionization
 ionization_src = files('ionization/ionization.f90', 'ionization/boundary_conditions/precipBCs_mod.f90')
@@ -91,7 +94,6 @@ ionization = library('ionization', ionization_src,
 # -- gemini exe
 gemini = executable('gemini.bin', 'gemini.f90', 'temporal/temporal.f90', 'numerical/potential/potential_comm_mumps.f90', 'numerical/potential/potential_mumps.F90', 'collisions/collisions.f90', 'numerical/potential/boundary_conditions/potentialBCs_mumps.f90', 'multifluid/multifluid.f90',
 'sources/sources.f90', 'numerical/advection/advec_mpi.f90', 'numerical/diffusion/diffusion.F90',
-
   link_with : [io,calculus, ionization, neutral],
   dependencies : [mpi, mumpslib, lapack],
   include_directories : mumpsinc,
@@ -115,13 +117,13 @@ eval2d = '''--eval compare_all("''' + test2d + '","' + zenodo2d + '")'
 test('Gemini2D', gemini,
   args : [meson.source_root() / 'initialize/test2d/config.ini', test2d],
   workdir : meson.source_root(),
-  timeout : 90,
+  timeout : 300,
   is_parallel : false)
 
 test('Gemini3D', gemini,
   args : [meson.source_root() / 'initialize/test3d/config.ini', test3d],
   workdir : meson.source_root(),
-  timeout : 180,
+  timeout : 600,
   is_parallel : false)
 
 if oct.found()

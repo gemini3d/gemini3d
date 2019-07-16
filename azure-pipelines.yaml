@@ -1,8 +1,7 @@
 jobs:
-- job: UbuntuLatest
+- job: UbuntuCMake
   pool:
     vmImage: 'ubuntu-latest'
-
 
   steps:
   - script: |
@@ -23,3 +22,32 @@ jobs:
   - script: ctest -R 2D --parallel --output-on-failure
     workingDirectory: $(Build.BinariesDirectory)
     displayName: 'CTest: 2D'
+
+- job: UbuntuMeson
+  pool:
+    vmImage: 'ubuntu-latest'
+
+  steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '3.6'
+      addToPath: true
+  - script: |
+      sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+      sudo apt update -q
+      sudo apt install -yq --no-install-recommends gfortran-6 liblapack-dev libscalapack-mpi-dev libmumps-dev libopenmpi-dev octave
+    displayName: 'Install Linux prereqs'
+  - script: |
+      git clone https://github.com/mesonbuild/meson
+      pip install -e meson
+      curl -Ls https://github.com/ninja-build/ninja/releases/download/v1.9.0/ninja-linux.zip -o ninja-linux.zip
+      sudo unzip ninja-linux.zip -d /usr/local/bin/
+    displayName: 'setup Meson'
+  - script: |
+      meson setup $BUILD_DIR $SRC_DIR
+      meson test -C $BUILD_DIR --wrap="mpirun -np 2"
+    env:
+      SRC_DIR: $(Build.SourcesDirectory)
+      BUILD_DIR: $(Build.BinariesDirectory)
+      FC: gfortran-6
+    displayName: 'Meson: build and @D test'
