@@ -1,0 +1,25 @@
+jobs:
+- job: UbuntuLatest
+  pool:
+    vmImage: 'ubuntu-latest'
+
+
+  steps:
+  - script: |
+      sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+      sudo apt update -q
+      sudo apt install -yq --no-install-recommends gfortran-6 liblapack-dev libscalapack-mpi-dev libmumps-dev libopenmpi-dev octave
+    displayName: 'Install Linux prereqs'
+  - script: |
+      cmake --version
+      cd $BUILD_DIR
+      cmake $SRC_DIR
+      cmake --build $BUILD_DIR --parallel
+    env:
+      SRC_DIR: $(Build.SourcesDirectory)
+      BUILD_DIR: $(Build.BinariesDirectory)
+      FC: gfortran-6
+    displayName: 'CMake: Configure and Generate'
+  - script: ctest -R 2D --parallel --output-on-failure
+    workingDirectory: $(Build.BinariesDirectory)
+    displayName: 'CTest: 2D'

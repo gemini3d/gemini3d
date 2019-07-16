@@ -6,10 +6,11 @@ clone_depth: 25
 build: off
 
 init:
+- sh: sudo apt update -q > /dev/null
 - sh: sudo apt install -yq --no-install-recommends libmumps-dev liblapack-dev libscalapack-mpi-dev libopenmpi-dev openmpi-bin > /dev/null
 
 install:
-- cmake -B build -S .
+- cmake -B build -S . -DNP=2
 - cmake --build build --parallel
 
 test_script:

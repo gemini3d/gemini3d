@@ -1,3 +1,4 @@
+[![Build Status](https://dev.azure.com/mhirsch0512/Gemini3D/_apis/build/status/gemini3d.GEMINI?branchName=master)](https://dev.azure.com/mhirsch0512/Gemini3D/_build/latest?definitionId=1&branchName=master)
 [![Build Status](https://www.travis-ci.com/gemini3d/GEMINI.svg?branch=master)](https://www.travis-ci.com/gemini3d/GEMINI)
 [![Build status](https://ci.appveyor.com/api/projects/status/795rsncwx6erxm7m?svg=true)](https://ci.appveyor.com/project/scivision/gemini-n1pxl)
 

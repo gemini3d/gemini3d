@@ -1,3 +1,4 @@
+
 language: minimal
 group: travis_latest
 dist: xenial
@@ -6,12 +7,12 @@ git:
   depth: 25
   quiet: true
 
-env: FC=gfortran
+env: FC=gfortran-6
 
 addons:
   apt:
     sources: ubuntu-toolchain-r-test
-    packages: ['gfortran','liblapack-dev','libmumps-dev','libopenmpi-dev','octave']
+    packages: ['gfortran-6','liblapack-dev','libmumps-dev','libopenmpi-dev','octave']
 
 matrix:
   include:
@@ -26,7 +27,7 @@ matrix:
 
 install:
 - cd $TRAVIS_BUILD_DIR/build
-- cmake ..
+- cmake -DNP=2 ..
 - cmake --build . --parallel
 
 script: ctest -R 2D --parallel --output-on-failure
