@@ -2,7 +2,7 @@
 !! It necessarily requires visual inspection, or run from an enclosing program with Regex,
 !! such as a Python program configured to test as desired.
 use, intrinsic:: iso_fortran_env, only: sp=>real32, dp=>real64, stderr=>error_unit
-use formats, only: utsec2filename
+use date_formats, only: utsec2filename
 use timeutils, only: dateinc
 
 implicit none

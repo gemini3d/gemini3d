@@ -9,10 +9,8 @@ public
 integer,parameter :: wp=real32
 #elif REALBITS==64
 integer,parameter :: wp=real64
-#elif REALBITS==128
-integer,parameter :: wp=real128
 #else
-integer,parameter :: wp=real64
+error stop "realbits must be 32 or 64"
 #endif
 
 !> colored output text (for Unix-like systems at least).

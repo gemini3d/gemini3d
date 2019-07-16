@@ -1,6 +1,33 @@
-mpi_mod = library('mpimod',
+mpimod = library('mpimod',
   'mpimod/mpimod.F90', 'mpimod/mpisend.f90', 'mpimod/mpirecv.f90', 'mpimod/mpihalo.f90',
   dependencies: mpi,
+  link_with: const,
   fortran_args: REALBITS)
 
-const = library('const', 'constants/phys_consts.F90')
+grid = library('grid', 'grid/grid.f90',
+  dependencies: mpi,
+  link_with: [const, mpimod])
+
+calculus = library('calculus', 'calculus/calculus.f90', 'interpolation/interpolation.f90',
+  link_with: [const, grid, mpimod],
+  dependencies : mpi,
+  fortran_args: REALBITS)
+
+# FIXME: debug Meson internals
+# mumps = dependency('MUMPS', cmake_module_path : 'cmake/Modules')
+if mumps_root == ''
+  mumpsinc = include_directories('/usr/include')
+  mumpslib = [fc.find_library('dmumps', required : true)]
+else
+  message('searching for MUMPS in ' + mumps_root)
+  mumpsinc = include_directories(mumps_root / 'include')
+  mumpslib = [fc.find_library('dmumps', required : true, dirs : mumps_root / 'lib'),
+              fc.find_library('mumps_common', required : true, dirs : mumps_root / 'lib'),
+              fc.find_library('scalapack', required : true, dirs : scalapack_root / 'lib')]
+endif
+mumps = declare_dependency(include_directories: mumpsinc, dependencies: mumpslib)
+
+potential = library('potential', 'potential/potential_comm_mumps.f90', 'potential/potential_mumps.F90', 'potential/boundary_conditions/potentialBCs_mumps.f90',
+  link_with: [calculus, collisions, fsutils, mpimod, const, grid, timeutils],
+  dependencies: [mpi, mumps],
+  fortran_args: REALBITS)

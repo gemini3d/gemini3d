@@ -1,6 +1,6 @@
 project('GEMINI', 'fortran',
-  meson_version: '>=0.51.999',
-  default_options : ['default_library=static'])
+  meson_version: '>=0.51.2',
+  default_options : ['default_library=static', 'buildtype=release'])
 
 REALBITS = '-DREALBITS='+get_option('realbits')
 GLOW = get_option('GLOW')
@@ -38,94 +38,79 @@ else
   lapack = fc.find_library('lapack', required : true, dirs : lapack_root)
 endif
 
-# mumps = dependency('MUMPS') module_path : 'cmake/Modules')
-if mumps_root == ''
-  mumpsinc = include_directories('/usr/include')
-  mumpslib = [fc.find_library('dmumps', required : true)]
-else
-  message('searching for MUMPS in ' + mumps_root)
-  mumpsinc = include_directories(mumps_root / 'include')
-  mumpslib = [fc.find_library('dmumps', required : true, dirs : mumps_root / 'lib'),
-              fc.find_library('mumps_common', required : true, dirs : mumps_root / 'lib'),
-              fc.find_library('scalapack', required : true, dirs : scalapack_root / 'lib')]
-endif
-
 if HDF  # see HDF5 branch, not yet fully ready.
  hdf5 = dependency('hdf5')
 endif
 
-subdir('numerical')
-
-calculus = library('calculus', 'numerical/calculus/calculus.f90', 'numerical/grid/grid.f90', 'numerical/interpolation/interpolation.f90', 'vendor/lapack95/gbsv.F90',
-  link_with: const,
-  dependencies : mpi,
+#==========================================================
+const = library('const', 'numerical/constants/phys_consts.F90',
   fortran_args: REALBITS)
 
-subdir('temporal')
 subdir('io')
+subdir('temporal')
+subdir('tests')
 
+collisions = library('collisions', 'collisions/collisions.f90',
+  link_with: const)
+
+subdir('numerical')
 io = library('io','io/io.F90',
-  link_with: [calculus, const, fsutils],
-  fortran_args: REALBITS)
+  link_with: [calculus, const, fsutils, grid, mpimod])
 
 msis = library('msis', 'vendor/msis00/msis00_gfortran.f',
   fortran_args : oldflags)
 
 neutral = library('neutral', 'neutral/neutral.f90',
   dependencies : mpi,
-  link_with : [calculus, mpi_mod, io, msis, timeutils])
+  link_with : [const, calculus, mpimod, grid, io, msis, timeutils])
 
-# --- ionization
-ionization_src = files('ionization/ionization.f90', 'ionization/boundary_conditions/precipBCs_mod.f90')
-if GLOW
-  ionization_src += 'ionization/glow_run.f90'
-  glow_proj = subproject('cglow')
-  cglow = glow_proj.get_variable('cglow')
-  ionization_deps = cglow
-else
-  ionization_src += 'ionization/glow_dummy.f90'
-  ionization_deps = []
-endif
-
-ionization = library('ionization', ionization_src,
-  link_with: [ionization_deps, io, calculus, neutral],
-  dependencies : mpi)
+subdir('ionization')
 
 # -- gemini exe
-gemini = executable('gemini.bin', 'gemini.f90', 'temporal/temporal.f90', 'numerical/potential/potential_comm_mumps.f90', 'numerical/potential/potential_mumps.F90', 'collisions/collisions.f90', 'numerical/potential/boundary_conditions/potentialBCs_mumps.f90', 'multifluid/multifluid.f90',
-'sources/sources.f90', 'numerical/advection/advec_mpi.f90', 'numerical/diffusion/diffusion.F90',
-  link_with : [io,calculus, ionization, neutral],
-  dependencies : [mpi, mumpslib, lapack],
-  include_directories : mumpsinc,
+gemini = executable('gemini.bin', 'gemini.f90', 'temporal/temporal.f90', 'multifluid/multifluid.f90',
+'sources/sources.f90', 'numerical/advection/advec_mpi.f90', 'numerical/diffusion/diffusion.F90', 'vendor/lapack95/gbsv.F90',
+  link_with : [io,calculus, collisions, grid, ionization, mpimod, neutral, potential, const, timeutils],
+  dependencies : [mpi, lapack],
   fortran_args: REALBITS)
 
 # -- magcalc exe
 
 magcalc = executable('magcalc.bin', 'magcalc.f90',
-  link_with : [calculus, neutral, io],
+  link_with : [const, calculus, grid, neutral, io, timeutils, mpimod],
   dependencies : mpi)
 
 # --- TESTS ---
-# meson test --wrap="mpirun -np 4"
 
-oct = find_program('octave')
+octave = find_program('octave', required : false)
+mpiexec = find_program('mpiexec', required : true)
+
 test2d = meson.build_root() / 'test2d'
 test3d = meson.build_root() / 'test3d'
 zenodo2d = meson.source_root() / '../simulations/zenodo2d'
-eval2d = '''--eval compare_all("''' + test2d + '","' + zenodo2d + '")'
+zenodo3d = meson.source_root() / '../simulations/zenodo3d'
+eval2d = 'compare_all("' + test2d + '","' + zenodo2d + '")'
+eval3d = 'compare_all("' + test3d + '","' + zenodo3d + '")'
 
-test('Gemini2D', gemini,
-  args : [meson.source_root() / 'initialize/test2d/config.ini', test2d],
+test('Gemini2D', mpiexec,
+  suite : '2d',
+  args : ['-np', '2', gemini, meson.source_root() / 'initialize/test2d/config.ini', test2d],
   workdir : meson.source_root(),
   timeout : 300,
   is_parallel : false)
 
-test('Gemini3D', gemini,
-  args : [meson.source_root() / 'initialize/test3d/config.ini', test3d],
+if octave.found()
+  test('Compare2D', octave, args : ['--eval', eval2d],
+    suite : '2d', timeout: 30, workdir : meson.source_root() / 'tests')
+endif
+
+test('Gemini3D', mpiexec,
+  suite : '3d',
+  args : ['-np', '2', gemini, meson.source_root() / 'initialize/test3d/config.ini', test3d],
   workdir : meson.source_root(),
   timeout : 600,
   is_parallel : false)
 
-if oct.found()
-  test('Compare2D', oct, args : ['-q', eval2d])
+if octave.found()
+  test('Compare3D', octave, args : ['--eval', eval3d],
+    suite : '3d', timeout: 30, workdir : meson.source_root() / 'tests')
 endif

@@ -1,4 +1,4 @@
-module formats
+module date_formats
 
 use, intrinsic :: iso_fortran_env, only: real64, real32, int64
 
@@ -49,4 +49,4 @@ write(fn,'(i4,2I2.2,a17)') ymd(1), ymd(2:), '_' // sec_str // '.dat'
 
 end function utsec2filename
 
-end module formats
+end module date_formats

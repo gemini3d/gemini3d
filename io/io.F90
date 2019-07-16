@@ -9,7 +9,7 @@ use std_mkdir, only: mkdir, copyfile
 use calculus
 use mpimod
 use grid, only : gridflag,flagswap,lx1,lx2,lx3,lx2all, lx3all
-use formats, only: date_filename
+use date_formats, only: date_filename
 ! use logging, only: logger
 
 implicit none

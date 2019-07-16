@@ -7,6 +7,8 @@ implicit none
 integer, parameter :: wp=real32
 #elif REALBITS==64
 integer, parameter :: wp=real64
+#else
+error stop "realbits must be 32 or 64"
 #endif
 
 contains
@@ -44,7 +46,7 @@ subroutine gbsv(A,B,KL,IPIV,INFO)
 
   if ( ISTAT == 0 ) then
     KU = LDA - 2*LKL - 1
-    
+
 #if REALBITS==32
     call sgbsv(N,LKL,KU,NRHS,A,LDA,LPIV,B,N,LINFO)
 #elif REALBITS==64

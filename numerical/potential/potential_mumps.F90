@@ -1,7 +1,7 @@
 module potential_mumps
 
 
-!NOTES:  
+!NOTES:
 ! - IF ONE REALLY WANTED TO CLEAN THIS UP IT MIGHT BE MORE EFFICIENT TO USE HARWELL-BOEING FORMAT
 !   FOR MATRICES...
 
@@ -43,6 +43,8 @@ private
 include 'smumps_struc.h'
 #elif REALBITS==64
 include 'dmumps_struc.h'
+#else
+error stop "realbits must be 32 or 64"
 #endif
 
 integer, dimension(:), pointer, protected, save :: mumps_perm   !cached permutation, unclear whether save is necessary...
@@ -101,7 +103,7 @@ lx3=size(srcterm,3)
 
 
 !COMPUTE AUXILIARY COEFFICIENTS TO PASS TO CART SOLVER
-print *, 'Prepping coefficients for elliptic equation...'    
+print *, 'Prepping coefficients for elliptic equation...'
 gradsig01=grad3D1(sig0,x,1,lx1,1,lx2,1,lx3)
 gradsigP2=grad3D2(sigP,x,1,lx1,1,lx2,1,lx3)
 gradsigP3=grad3D3(sigP,x,1,lx1,1,lx2,1,lx3)
@@ -149,12 +151,12 @@ end do
 allocate(Vminx2dec(1:ldec,1:lx3),Vmaxx2dec(1:ldec,1:lx3))
 do ix3=1,lx3
   Vminx2dec(:,ix3)=interp1(x%x1(1:lx1),Vminx2(:,ix3),x1dec(1:ldec))
-  Vmaxx2dec(:,ix3)=interp1(x%x1(1:lx1),Vmaxx2(:,ix3),x1dec(1:ldec))  
+  Vmaxx2dec(:,ix3)=interp1(x%x1(1:lx1),Vmaxx2(:,ix3),x1dec(1:ldec))
 end do
 allocate(Vminx3dec(1:ldec,1:lx2),Vmaxx3dec(1:ldec,1:lx2))
 do ix2=1,lx2
   Vminx3dec(:,ix2)=interp1(x%x1(1:lx1),Vminx3(:,ix2),x1dec(1:ldec))
-  Vmaxx3dec(:,ix2)=interp1(x%x1(1:lx1),Vmaxx3(:,ix2),x1dec(1:ldec)) 
+  Vmaxx3dec(:,ix2)=interp1(x%x1(1:lx1),Vmaxx3(:,ix2),x1dec(1:ldec))
 end do
 
 
@@ -257,9 +259,9 @@ real(wp), dimension(:,:), intent(in) :: Vminx2,Vmaxx2
 real(wp), dimension(:,:), intent(in) :: Vminx3,Vmaxx3
 real(wp), dimension(0:), intent(in) :: dx1         !backweard diffs start at index zero due to ghost cells
 real(wp), dimension(:), intent(in) :: dx1i         !centered diffs do not include any ghost cells
-real(wp), dimension(0:), intent(in) :: dx2all    
+real(wp), dimension(0:), intent(in) :: dx2all
 real(wp), dimension(:), intent(in) :: dx2iall
-real(wp), dimension(0:), intent(in) :: dx3all    
+real(wp), dimension(0:), intent(in) :: dx3all
 real(wp), dimension(:), intent(in) :: dx3iall
 integer, intent(in) :: flagdirich
 logical, intent(in) :: perflag
@@ -277,6 +279,8 @@ real(wp) :: tstart,tfin
 type (SMUMPS_STRUC) mumps_par
 #elif REALBITS==64
 type (DMUMPS_STRUC) mumps_par
+#else
+error stop "realbits must be 32 or 64"
 #endif
 
 real(wp), dimension(size(srcterm,1),size(srcterm,2),size(srcterm,3)) :: elliptic3D_cart
@@ -318,7 +322,7 @@ if (myid==0) then
     do ix2=1,lx2
       do ix1=1,lx1
         iPhi=lx1*lx2*(ix3-1)+lx1*(ix2-1)+ix1     !linear index referencing Phi(ix1,ix3) as a column vector.  Also row of big matrix
-  
+
         if (ix1==1) then          !BOTTOM GRID POINTS + CORNER, USE NEUMANN HERE, PRESUMABLY ZERO
           ir(ient)=iPhi
           ic(ient)=iPhi
@@ -351,18 +355,18 @@ if (myid==0) then
         elseif (ix2==1) then      !LEFT BOUNDARY
           ir(ient)=iPhi
           ic(ient)=iPhi
-          M(ient)=1.0   
+          M(ient)=1.0
           b(iPhi)=Vminx2(ix1,ix3)
           ient=ient+1
         elseif (ix2==lx2) then    !RIGHT BOUNDARY
           ir(ient)=iPhi
           ic(ient)=iPhi
-          M(ient)=1.0   
+          M(ient)=1.0
           b(iPhi)=Vmaxx2(ix1,ix3)
           ient=ient+1
         elseif (ix3==1) then
           ir(ient)=iPhi
-          ic(ient)=iPhi  
+          ic(ient)=iPhi
           M(ient)=1.0
           b(iPhi)=Vminx3(ix1,ix2)
           ient=ient+1
@@ -378,19 +382,19 @@ if (myid==0) then
           ic(ient)=iPhi-lx1*lx2
           M(ient)=Bc(ix1,ix2,ix3)/dx3all(ix3)/dx3iall(ix3)-Ec(ix1,ix2,ix3)/(dx3all(ix3+1)+dx3all(ix3))
           ient=ient+1
-  
+
           !ix1,ix2-1,ix3
           ir(ient)=iPhi
           ic(ient)=iPhi-lx1
           M(ient)=Ac(ix1,ix2,ix3)/dx2all(ix2)/dx2iall(ix2)-Dc(ix1,ix2,ix3)/(dx2all(ix2+1)+dx2all(ix2))
           ient=ient+1
-  
+
           !ix1-1,ix2,ix3
           ir(ient)=iPhi
           ic(ient)=iPhi-1
           M(ient)=Cc(ix1,ix2,ix3)/dx1(ix1)/dx1i(ix1)-Fc(ix1,ix2,ix3)/(dx1(ix1+1)+dx1(ix1))
           ient=ient+1
-  
+
           !ix1,ix2,ix3
           ir(ient)=iPhi
           ic(ient)=iPhi
@@ -398,19 +402,19 @@ if (myid==0) then
                        Bc(ix1,ix2,ix3)*(1d0/dx3all(ix3+1)/dx3iall(ix3)+1d0/dx3all(ix3)/dx3iall(ix3))- &
                        Cc(ix1,ix2,ix3)*(1d0/dx1(ix1+1)/dx1i(ix1)+1d0/dx1(ix1)/dx1i(ix1))
           ient=ient+1
-  
+
           !ix1+1,ix2,ix3
           ir(ient)=iPhi
           ic(ient)=iPhi+1
           M(ient)=Cc(ix1,ix2,ix3)/dx1(ix1+1)/dx1i(ix1)+Fc(ix1,ix2,ix3)/(dx1(ix1+1)+dx1(ix1))
           ient=ient+1
-  
+
           !ix1,ix2+1,ix3
           ir(ient)=iPhi
           ic(ient)=iPhi+lx1
           M(ient)=Ac(ix1,ix2,ix3)/dx2all(ix2+1)/dx2iall(ix2)+Dc(ix1,ix2,ix3)/(dx2all(ix2+1)+dx2all(ix2))
           ient=ient+1
-  
+
           !ix1,ix2,ix3+1
           ir(ient)=iPhi
           ic(ient)=iPhi+lx1*lx2
@@ -440,6 +444,8 @@ mumps_par%PAR = 1
 call SMUMPS(mumps_par)
 #elif REALBITS==64
 call DMUMPS(mumps_par)
+#else
+error stop "realbits must be 32 or 64"
 #endif
 
 
@@ -476,6 +482,8 @@ mumps_par%JOB = 6
 call SMUMPS(mumps_par)
 #elif REALBITS==64
 call DMUMPS(mumps_par)
+#else
+error stop "realbits must be 32 or 64"
 #endif
 
 
@@ -505,6 +513,8 @@ mumps_par%JOB = -2
 call SMUMPS(mumps_par)
 #elif REALBITS==64
 call DMUMPS(mumps_par)
+#else
+error stop "realbits must be 32 or 64"
 #endif
 
 end function elliptic3D_cart
@@ -546,6 +556,8 @@ real(wp) :: tstart,tfin
 type (SMUMPS_STRUC) mumps_par
 #elif REALBITS==64
 type (DMUMPS_STRUC) mumps_par
+#else
+error stop "realbits must be 32 or 64"
 #endif
 
 real(wp), dimension(size(srcterm,1),size(srcterm,2),size(srcterm,3)) :: elliptic3D_curv
@@ -573,14 +585,14 @@ if (myid==0) then
 
 
   !COMPUTE AUXILIARY COEFFICIENTS
-  print *, 'Prepping coefficients for elliptic equation...'    
+  print *, 'Prepping coefficients for elliptic equation...'
   gradsig01=grad3D1(sig0,x,1,lx1,1,lx2,1,lx3)
   gradsigP2=grad3D2(sigP,x,1,lx1,1,lx2,1,lx3)
   gradsigP3=grad3D3(sigP,x,1,lx1,1,lx2,1,lx3)
   gradsigH2=grad3D2(sigH,x,1,lx1,1,lx2,1,lx3)
   gradsigH3=grad3D3(sigH,x,1,lx1,1,lx2,1,lx3)
 
-  Ac=sigP; Bc=sigP; Cc=sig0; 
+  Ac=sigP; Bc=sigP; Cc=sig0;
   Dc=gradsigP2+gradsigH3
   Ec=gradsigP3-gradsigH2
   Fc=gradsig01
@@ -632,18 +644,18 @@ if (myid==0) then
       elseif (ix2==1) then      !LEFT BOUNDARY
         ir(ient)=iPhi
         ic(ient)=iPhi
-        M(ient)=1.0   
+        M(ient)=1.0
         b(iPhi)=Vminx2(ix1,ix3)
         ient=ient+1
       elseif (ix2==lx2) then    !RIGHT BOUNDARY
         ir(ient)=iPhi
         ic(ient)=iPhi
-        M(ient)=1.0   
+        M(ient)=1.0
         b(iPhi)=Vmaxx2(ix1,ix3)
         ient=ient+1
       elseif (ix3==1) then
         ir(ient)=iPhi
-        ic(ient)=iPhi  
+        ic(ient)=iPhi
         M(ient)=1.0
         b(iPhi)=Vminx3(ix1,ix2)
         ient=ient+1
@@ -721,6 +733,8 @@ mumps_par%PAR = 1
 call SMUMPS(mumps_par)
 #elif REALBITS==64
 call DMUMPS(mumps_par)
+#else
+error stop "realbits must be 32 or 64"
 #endif
 
 
@@ -753,6 +767,8 @@ mumps_par%JOB = 6
 call SMUMPS(mumps_par)
 #elif REALBITS==64
 call DMUMPS(mumps_par)
+#else
+error stop "realbits must be 32 or 64"
 #endif
 
 
@@ -782,6 +798,8 @@ mumps_par%JOB = -2
 call SMUMPS(mumps_par)
 #elif REALBITS==64
 call DMUMPS(mumps_par)
+#else
+error stop "realbits must be 32 or 64"
 #endif
 
 end function elliptic3D_curv
@@ -807,7 +825,7 @@ real(wp), dimension(:), intent(in) :: Vminx2,Vmaxx2
 real(wp), dimension(:), intent(in) :: Vminx3,Vmaxx3
 real(wp), intent(in) :: dt
 type(curvmesh), intent(in) :: x
-real(wp), dimension(:,:), intent(in) :: Phi0 
+real(wp), dimension(:,:), intent(in) :: Phi0
 logical, intent(in) :: perflag
 integer, intent(in) :: it
 
@@ -820,7 +838,7 @@ real(wp), dimension(1:size(SigP2,1),1:size(SigP2,2)) :: Cmh3
 real(wp), dimension(1:size(SigP2,1),1:size(SigP2,2)) :: gradSigH2,gradSigH3
 
 real(wp) :: coeff    !coefficient for calculating polarization terms
-integer :: ix2,ix3,lx2,lx3    !this overwrites the 
+integer :: ix2,ix3,lx2,lx3    !this overwrites the
 integer :: lPhi,lent
 integer :: iPhi,ient
 integer, dimension(:), allocatable :: ir,ic
@@ -834,6 +852,8 @@ integer :: utrace
 type (SMUMPS_STRUC) mumps_par
 #elif REALBITS==64
 type (DMUMPS_STRUC) mumps_par
+#else
+error stop "realbits must be 32 or 64"
 #endif
 
 real(wp), dimension(size(SigP2,1),size(SigP2,2)) :: elliptic2D_pol_conv_curv
@@ -915,7 +935,7 @@ if (myid==0) then
         ient=ient+1
       elseif (ix3==1) then      !LEFT BOUNDARY
         ir(ient)=iPhi
-        ic(ient)=iPhi  
+        ic(ient)=iPhi
         M(ient)=1d0
         b(iPhi)=Vminx3(ix2)
         ient=ient+1
@@ -974,7 +994,7 @@ if (myid==0) then
         coeff=-1d0*Cm(ix2-1,ix3)*v3(ix2-1,ix3)/ &
               ( (x%dx2all(ix2)+x%dx2all(ix2+1))*(x%dx2all(ix2-1)+x%dx2all(ix2))*(x%dx3all(ix3)+x%dx3all(ix3+1)) )
         if (ix2==2) then
-          b(iPhi)=b(iPhi)-coeff*Vminx2(ix3-1)              
+          b(iPhi)=b(iPhi)-coeff*Vminx2(ix3-1)
         else
           ir(ient)=iPhi
           ic(ient)=iPhi-lx2-2
@@ -1012,7 +1032,7 @@ if (myid==0) then
         coeff=-1d0*Cm(ix2+1,ix3)*v3(ix2+1,ix3)/ &
               ( (x%dx2all(ix2+1)+x%dx2all(ix2+2))*(x%dx2all(ix2)+x%dx2all(ix2+1))*(x%dx3all(ix3)+x%dx3all(ix3+1)) )
         if (ix2==lx2-1) then
-          b(iPhi)=b(iPhi)-coeff*Vmaxx2(ix3-1)              
+          b(iPhi)=b(iPhi)-coeff*Vmaxx2(ix3-1)
         else
           ir(ient)=iPhi
           ic(ient)=iPhi-lx2+2
@@ -1026,7 +1046,7 @@ if (myid==0) then
         !ix2-2,ix3 grid point
         coeff=-1d0*Cm(ix2-1,ix3)*v2(ix2-1,ix3)/( (x%dx2all(ix2)+x%dx2all(ix2+1))*(x%dx2all(ix2-1)*x%dx2iall(ix2-1)) )
         if (ix2==2) then
-          b(iPhi)=b(iPhi)-coeff*Vminx2(ix3)              
+          b(iPhi)=b(iPhi)-coeff*Vminx2(ix3)
         else
           ir(ient)=iPhi
           ic(ient)=iPhi-2
@@ -1095,11 +1115,11 @@ if (myid==0) then
 
         coeff=Cmh2(ix2+1,ix3)/(dt*x%dx2iall(ix2)*x%dx2all(ix2+1))
         M(ient)=M(ient)+coeff    !pol. time deriv. terms
-        b(iPhi)=b(iPhi)+coeff*Phi0(ix2+1,ix3)    !BC's and pol. time deriv.  
+        b(iPhi)=b(iPhi)+coeff*Phi0(ix2+1,ix3)    !BC's and pol. time deriv.
 
         coeff=-1d0*Cm(ix2+1,ix3)*v2(ix2+1,ix3)/( (x%dx2all(ix2)+x%dx2all(ix2+1))*(x%dx2all(ix2+2)*x%dx2iall(ix2+1)) )+ &
               (-1d0)*Cm(ix2+1,ix3)*v2(ix2+1,ix3)/( (x%dx2all(ix2)+x%dx2all(ix2+1))*(x%dx2all(ix2+1)*x%dx2iall(ix2+1)) )
-        M(ient)=M(ient)+coeff    !d/dx2( Cm*v2*d^2/dx2^2(Phi) ) term    
+        M(ient)=M(ient)+coeff    !d/dx2( Cm*v2*d^2/dx2^2(Phi) ) term
 
         coeff=-1d0*Cm(ix2,ix3+1)*v2(ix2,ix3+1)/ &
               ( (x%dx3all(ix3)+x%dx3all(ix3+1))*(x%dx3all(ix3+1)+x%dx3all(ix3+2))*(x%dx2all(ix2)+x%dx2all(ix2+1)) )+ &
@@ -1113,7 +1133,7 @@ if (myid==0) then
         !ix2+2,ix3 grid point
         coeff=Cm(ix2+1,ix3)*v2(ix2+1,ix3)/( (x%dx2all(ix2)+x%dx2all(ix2+1))*(x%dx2all(ix2+2)*x%dx2iall(ix2+1)) )
         if (ix2==lx2-1) then
-          b(iPhi)=b(iPhi)-coeff*Vmaxx2(ix3)              
+          b(iPhi)=b(iPhi)-coeff*Vmaxx2(ix3)
         else
           ir(ient)=iPhi
           ic(ient)=iPhi+2
@@ -1128,7 +1148,7 @@ if (myid==0) then
         coeff=Cm(ix2-1,ix3)*v3(ix2-1,ix3)/ &
               ( (x%dx2all(ix2)+x%dx2all(ix2+1))*(x%dx2all(ix2-1)+x%dx2all(ix2))*(x%dx3all(ix3)+x%dx3all(ix3+1)) )
         if (ix2==2) then
-          b(iPhi)=b(iPhi)-coeff*Vminx2(ix3+1)              
+          b(iPhi)=b(iPhi)-coeff*Vminx2(ix3+1)
         else
           ir(ient)=iPhi
           ic(ient)=iPhi+lx2-2
@@ -1147,7 +1167,7 @@ if (myid==0) then
 
         coeff=Cmh3(ix2,ix3+1)/(dt*x%dx3iall(ix3)*x%dx3all(ix3+1))
         M(ient)=M(ient)+coeff    !pol. time deriv.
-        b(iPhi)=b(iPhi)+coeff*Phi0(ix2,ix3+1)    !BC's and pol. time deriv.  
+        b(iPhi)=b(iPhi)+coeff*Phi0(ix2,ix3+1)    !BC's and pol. time deriv.
 
         coeff=-1d0*Cm(ix2,ix3+1)*v3(ix2,ix3+1)/( (x%dx3all(ix3)+x%dx3all(ix3+1))*(x%dx3all(ix3+2)*x%dx3iall(ix3+1)) )+ &
               (-1d0)*Cm(ix2,ix3+1)*v3(ix2,ix3+1)/( (x%dx3all(ix3)+x%dx3all(ix3+1))*(x%dx3all(ix3+1)*x%dx3iall(ix3+1)) )
@@ -1166,7 +1186,7 @@ if (myid==0) then
         coeff=Cm(ix2+1,ix3)*v3(ix2+1,ix3)/ &
               ( (x%dx2all(ix2)+x%dx2all(ix2+1))*(x%dx2all(ix2+1)+x%dx2all(ix2+2))*(x%dx3all(ix3)+x%dx3all(ix3+1)) )
         if (ix2==lx2-1) then
-          b(iPhi)=b(iPhi)-coeff*Vmaxx2(ix3+1)              
+          b(iPhi)=b(iPhi)-coeff*Vmaxx2(ix3+1)
         else
           ir(ient)=iPhi
           ic(ient)=iPhi+lx2+2
@@ -1181,7 +1201,7 @@ if (myid==0) then
         coeff=-1d0*Cm(ix2,ix3+1)*v2(ix2,ix3+1)/ &
               ( (x%dx3all(ix3+1)+x%dx3all(ix3+2))*(x%dx3all(ix3)+x%dx3all(ix3+1))*(x%dx2all(ix2)+x%dx2all(ix2+1)) )
         if (ix3==lx3-1) then
-          b(iPhi)=b(iPhi)-coeff*Vmaxx3(ix2-1)              
+          b(iPhi)=b(iPhi)-coeff*Vmaxx3(ix2-1)
         else
           ir(ient)=iPhi
           ic(ient)=iPhi+2*lx2-1
@@ -1195,7 +1215,7 @@ if (myid==0) then
         !ix2,ix3+2 grid point
         coeff=Cm(ix2,ix3+1)*v3(ix2,ix3+1)/( (x%dx3all(ix3)+x%dx3all(ix3+1))*(x%dx3all(ix3+2)*x%dx3iall(ix3+1)) )
         if (ix3==lx3-1) then
-          b(iPhi)=b(iPhi)-coeff*Vmaxx3(ix2)              
+          b(iPhi)=b(iPhi)-coeff*Vmaxx3(ix2)
         else
           ir(ient)=iPhi
           ic(ient)=iPhi+2*lx2
@@ -1210,7 +1230,7 @@ if (myid==0) then
         coeff=Cm(ix2,ix3+1)*v2(ix2,ix3+1)/ &
               ( (x%dx3all(ix3)+x%dx3all(ix3+1))*(x%dx3all(ix3+1)+x%dx3all(ix3+2))*(x%dx2all(ix2)+x%dx2all(ix2+1)) )
         if (ix3==lx3-1) then
-          b(iPhi)=b(iPhi)-coeff*Vmaxx3(ix2+1)              
+          b(iPhi)=b(iPhi)-coeff*Vmaxx3(ix2+1)
         else
           ir(ient)=iPhi
           ic(ient)=iPhi+2*lx2+1
@@ -1218,7 +1238,7 @@ if (myid==0) then
           M(ient)=coeff    !d/dx3( Cm*v2*d^2/dx3dx2(Phi) )
 
           ient=ient+1
-        end if     
+        end if
       end if
     end do
   end do
@@ -1237,6 +1257,8 @@ mumps_par%PAR = 1
 call SMUMPS(mumps_par)
 #elif REALBITS==64
 call DMUMPS(mumps_par)
+#else
+error stop "realbits must be 32 or 64"
 #endif
 
 
@@ -1272,6 +1294,8 @@ mumps_par%JOB = 6
 call SMUMPS(mumps_par)
 #elif REALBITS==64
 call DMUMPS(mumps_par)
+#else
+error stop "realbits must be 32 or 64"
 #endif
 
 
@@ -1301,6 +1325,8 @@ mumps_par%JOB = -2
 call SMUMPS(mumps_par)
 #elif REALBITS==64
 call DMUMPS(mumps_par)
+#else
+error stop "realbits must be 32 or 64"
 #endif
 
 end function elliptic2D_pol_conv_curv
@@ -1328,7 +1354,7 @@ real(wp), dimension(:), intent(in) :: Vminx2,Vmaxx2
 real(wp), dimension(:), intent(in) :: Vminx3,Vmaxx3
 real(wp), intent(in) :: dt
 type(curvmesh), intent(in) :: x
-real(wp), dimension(:,:), intent(in) :: Phi0 
+real(wp), dimension(:,:), intent(in) :: Phi0
 logical, intent(in) :: perflag
 integer, intent(in) :: it
 
@@ -1348,10 +1374,13 @@ integer, dimension(:), allocatable :: ir,ic
 real(wp), dimension(:), allocatable :: M
 real(wp), dimension(:), allocatable :: b
 real(wp) :: tstart,tfin
+
 #if REALBITS==32
 type (SMUMPS_STRUC) mumps_par
 #elif REALBITS==64
 type (DMUMPS_STRUC) mumps_par
+#else
+error stop "realbits must be 32 or 64"
 #endif
 
 integer :: lcount,ix2tmp,ix3tmp
@@ -1388,7 +1417,7 @@ if (myid==0) then
 
 
 
-  !ZZZ - THESE NEED TO BE CHANGED INTO CIRCULAR/PERIODIC DERIVATIVES FOR THE X3 DIRECTION	
+  !ZZZ - THESE NEED TO BE CHANGED INTO CIRCULAR/PERIODIC DERIVATIVES FOR THE X3 DIRECTION
 
   gradSigH2=grad2D1_curv_alt(SigH,x,1,lx2)   !note the alt since we need to use dx2 as differential...  Tricky bug/feature
   gradSigH3=grad2D3_curv_periodic(SigH,x,1,lx3)    !circular difference
@@ -1608,11 +1637,11 @@ if (myid==0) then
 
         coeff=Cmh2(ix2+1,ix3)/(dt*x%dx2iall(ix2)*x%dx2all(ix2+1))
         M(ient)=M(ient)+coeff    !pol. time deriv. terms
-        b(iPhi)=b(iPhi)+coeff*Phi0(ix2+1,ix3)    !BC's and pol. time deriv.  
+        b(iPhi)=b(iPhi)+coeff*Phi0(ix2+1,ix3)    !BC's and pol. time deriv.
 
         coeff=-1d0*Cm(ix2+1,ix3)*v2(ix2+1,ix3)/( (x%dx2all(ix2)+x%dx2all(ix2+1))*(x%dx2all(ix2+2)*x%dx2iall(ix2+1)) )+ &
               (-1d0)*Cm(ix2+1,ix3)*v2(ix2+1,ix3)/( (x%dx2all(ix2)+x%dx2all(ix2+1))*(x%dx2all(ix2+1)*x%dx2iall(ix2+1)) )
-        M(ient)=M(ient)+coeff    !d/dx2( Cm*v2*d^2/dx2^2(Phi) ) term    
+        M(ient)=M(ient)+coeff    !d/dx2( Cm*v2*d^2/dx2^2(Phi) ) term
 
         coeff=-1d0*Cm(ix2,mod(ix3+1-1,lx3)+1)*v2(ix2,mod(ix3+1-1,lx3)+1)/ &
               ( (x%dx3all(ix3)+x%dx3all(ix3+1))*(x%dx3all(ix3+1)+x%dx3all(ix3+2))*(x%dx2all(ix2)+x%dx2all(ix2+1)) )+ &
@@ -1626,7 +1655,7 @@ if (myid==0) then
         !ix2+2,ix3 grid point
         coeff=Cm(ix2+1,ix3)*v2(ix2+1,ix3)/( (x%dx2all(ix2)+x%dx2all(ix2+1))*(x%dx2all(ix2+2)*x%dx2iall(ix2+1)) )
         if (ix2==lx2-1) then
-          b(iPhi)=b(iPhi)-coeff*Vmaxx2(ix3)   
+          b(iPhi)=b(iPhi)-coeff*Vmaxx2(ix3)
         else
           ir(ient)=iPhi
           ic(ient)=iPhi+2
@@ -1641,7 +1670,7 @@ if (myid==0) then
         coeff=Cm(ix2-1,ix3)*v3(ix2-1,ix3)/ &
               ( (x%dx2all(ix2)+x%dx2all(ix2+1))*(x%dx2all(ix2-1)+x%dx2all(ix2))*(x%dx3all(ix3)+x%dx3all(ix3+1)) )
         if (ix2==2) then
-          b(iPhi)=b(iPhi)-coeff*Vminx2(mod(ix3+1-1,lx3)+1)              
+          b(iPhi)=b(iPhi)-coeff*Vminx2(mod(ix3+1-1,lx3)+1)
         else
           ir(ient)=iPhi
 !              ic(ient)=iPhi+lx2-2
@@ -1667,7 +1696,7 @@ if (myid==0) then
 
         coeff=Cmh3(ix2,mod(ix3+1-1,lx3)+1)/(dt*x%dx3iall(ix3)*x%dx3all(ix3+1))
         M(ient)=M(ient)+coeff    !pol. time deriv.
-        b(iPhi)=b(iPhi)+coeff*Phi0(ix2,mod(ix3+1-1,lx3)+1)    !BC's and pol. time deriv.  
+        b(iPhi)=b(iPhi)+coeff*Phi0(ix2,mod(ix3+1-1,lx3)+1)    !BC's and pol. time deriv.
 
         coeff=-1d0*Cm(ix2,mod(ix3+1-1,lx3)+1)*v3(ix2,mod(ix3+1-1,lx3)+1)/ &
               ( (x%dx3all(ix3)+x%dx3all(ix3+1))*(x%dx3all(ix3+2)*x%dx3iall(mod(ix3+1-1,lx3)+1)) )+ &
@@ -1777,6 +1806,8 @@ mumps_par%PAR = 1
 call SMUMPS(mumps_par)
 #elif REALBITS==64
 call DMUMPS(mumps_par)
+#else
+error stop "realbits must be 32 or 64"
 #endif
 
 
@@ -1810,6 +1841,8 @@ mumps_par%JOB = 6
 call SMUMPS(mumps_par)
 #elif REALBITS==64
 call DMUMPS(mumps_par)
+#else
+error stop "realbits must be 32 or 64"
 #endif
 
 
@@ -1842,6 +1875,8 @@ mumps_par%JOB = -2
 call SMUMPS(mumps_par)
 #elif REALBITS==64
 call DMUMPS(mumps_par)
+#else
+error stop "realbits must be 32 or 64"
 #endif
 
 end function elliptic2D_pol_conv_curv_periodic2
@@ -1856,7 +1891,7 @@ function elliptic2D_nonint_curv(srcterm,sig0,sigP,Vminx1,Vmaxx1,Vminx3,Vmaxx3,x,
 !-------ONE ELEMENT.  LEFT AND RIGHT BOUNDARIES (IN X3) ARE ASSUMED
 !-------TO USE DIRICHLET BOUNARY CONDITIONS, WHILE THE (ALTITUDE)
 !-------TOP CAN BE NEUMANN OR DIRICHLET.  BOTTOM (ALTITUDE)
-!-------IS ALWAYS ASSUMED TO BE DIRICHLET.  
+!-------IS ALWAYS ASSUMED TO BE DIRICHLET.
 !------------------------------------------------------------
 
 real(wp), dimension(:,:,:), intent(in) :: srcterm,sig0,sigP   !arrays passed in will still have full rank 3
@@ -1882,6 +1917,8 @@ real(wp) :: tstart,tfin
 type (SMUMPS_STRUC) mumps_par
 #elif REALBITS==64
 type (DMUMPS_STRUC) mumps_par
+#else
+error stop "realbits must be 32 or 64"
 #endif
 
 real(wp), dimension(size(sig0,1),1,size(sig0,3)) :: elliptic2D_nonint_curv
@@ -1896,7 +1933,7 @@ if (myid==0) then
     lent=5*(lx1-2)*(lx3-2)+2*lx1+2*(lx3-2)+2*lx3    !first +1 for Neumann bottom, second for Neumann top
   else
 !        lent=5*(lx1-2)*(lx3-2)+2*lx1+2*(lx3-2)+1    !first +1 for Neumann bottom
-    lent=5*(lx1-2)*(lx3-2)+2*(lx1-2)+2*lx3+lx3    
+    lent=5*(lx1-2)*(lx3-2)+2*(lx1-2)+2*lx3+lx3
   end if
   allocate(ir(lent),ic(lent),M(lent),b(lPhi))
 
@@ -1940,9 +1977,9 @@ if (myid==0) then
           if (flagdirich/=0) then    !ZZZ - need to check non-inverted???
             ir(ient)=iPhi
             ic(ient)=iPhi
-            M(ient)=1d0 
+            M(ient)=1d0
             b(iPhi)=Vmaxx1(1,ix3)
-            ient=ient+1 
+            ient=ient+1
           else
             ir(ient)=iPhi
             ic(ient)=iPhi-1
@@ -1988,7 +2025,7 @@ if (myid==0) then
         end if
       elseif (ix3==1) then      !LEFT BOUNDARY
         ir(ient)=iPhi
-        ic(ient)=iPhi  
+        ic(ient)=iPhi
         M(ient)=1.0
         b(iPhi)=Vminx3(ix1,1)
         ient=ient+1
@@ -2047,6 +2084,8 @@ mumps_par%PAR = 1
 call SMUMPS(mumps_par)
 #elif REALBITS==64
 call DMUMPS(mumps_par)
+#else
+error stop "realbits must be 32 or 64"
 #endif
 
 
@@ -2083,6 +2122,8 @@ mumps_par%JOB = 6
 call SMUMPS(mumps_par)
 #elif REALBITS==64
 call DMUMPS(mumps_par)
+#else
+error stop "realbits must be 32 or 64"
 #endif
 
 
@@ -2114,6 +2155,8 @@ mumps_par%JOB = -2
 call SMUMPS(mumps_par)
 #elif REALBITS==64
 call DMUMPS(mumps_par)
+#else
+error stop "realbits must be 32 or 64"
 #endif
 
 end function elliptic2D_nonint_curv
@@ -2145,6 +2188,8 @@ real(wp) :: tstart,tfin
 type (SMUMPS_STRUC) mumps_par
 #elif REALBITS==64
 type (DMUMPS_STRUC) mumps_par
+#else
+error stop "realbits must be 32 or 64"
 #endif
 real(wp), dimension(size(rho,1),size(rho,2)) :: poisson2D
 
@@ -2184,7 +2229,7 @@ do ix2=1,lx2
       ient=ient+1
     elseif (ix2==1) then      !LEFT BOUNDARY
       ir(ient)=iPhi
-      ic(ient)=iPhi  
+      ic(ient)=iPhi
       M(ient)=1.0
       b(iPhi)=Vminx2(ix1)
       ient=ient+1
@@ -2242,6 +2287,8 @@ mumps_par%PAR = 1
 call SMUMPS(mumps_par)
 #elif REALBITS==64
 call DMUMPS(mumps_par)
+#else
+error stop "realbits must be 32 or 64"
 #endif
 
 
@@ -2274,6 +2321,8 @@ call cpu_time(tstart)
 call SMUMPS(mumps_par)
 #elif REALBITS==64
 call DMUMPS(mumps_par)
+#else
+error stop "realbits must be 32 or 64"
 #endif
 call cpu_time(tfin)
 print *, 'Solve took ',tfin-tstart,' seconds...'
@@ -2297,6 +2346,8 @@ mumps_par%JOB = -2
 call SMUMPS(mumps_par)
 #elif REALBITS==64
 call DMUMPS(mumps_par)
+#else
+error stop "realbits must be 32 or 64"
 #endif
 
 end function poisson2D
@@ -2311,6 +2362,8 @@ subroutine elliptic_workers()
 type (SMUMPS_STRUC) mumps_par
 #elif REALBITS==64
 type (DMUMPS_STRUC) mumps_par
+#else
+error stop "realbits must be 32 or 64"
 #endif
 
 
@@ -2323,6 +2376,8 @@ mumps_par%PAR = 1
 call SMUMPS(mumps_par)
 #elif REALBITS==64
 call DMUMPS(mumps_par)
+#else
+error stop "realbits must be 32 or 64"
 #endif
 
 
@@ -2335,6 +2390,8 @@ mumps_par%JOB = 6
 call SMUMPS(mumps_par)
 #elif REALBITS==64
 call DMUMPS(mumps_par)
+#else
+error stop "realbits must be 32 or 64"
 #endif
 
 

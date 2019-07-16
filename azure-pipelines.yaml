@@ -45,9 +45,9 @@ jobs:
     displayName: 'setup Meson'
   - script: |
       meson setup $BUILD_DIR $SRC_DIR
-      meson test -C $BUILD_DIR --wrap="mpirun -np 2"
+      meson test -C $BUILD_DIR
     env:
       SRC_DIR: $(Build.SourcesDirectory)
       BUILD_DIR: $(Build.BinariesDirectory)
       FC: gfortran-6
-    displayName: 'Meson: build and @D test'
+    displayName: 'Meson: build and test'
