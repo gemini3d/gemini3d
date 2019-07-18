@@ -10,6 +10,7 @@ def url_retrieve(url: str, outfile: Path, md5sum: str = None, overwrite: bool = 
     # need .resolve() in case intermediate relative dir doesn't exist
     if outfile.is_file() and not overwrite:
         return
+    outfile.parent.mkdir(parents=True, exist_ok=True)
 
     R = requests.get(url, allow_redirects=True)
     if R.status_code != 200:
