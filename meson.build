@@ -103,7 +103,7 @@ run_command('python', 'script_utils/meson_file_download.py',
   zenodo2d_url, zenodo2d_zip, zenodo2d_md5,
   check: true)
 run_command('python', 'script_utils/meson_file_download.py',
-  zenodo3d_url, zenodo2d_zip, zenodo3d_md5,
+  zenodo3d_url, zenodo3d_zip, zenodo3d_md5,
   check: true)
 
 run_command('python', 'script_utils/meson_file_extract.py',
