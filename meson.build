@@ -97,8 +97,6 @@ zenodo3d_zip = zenodo3d_dir/'../zenodo3d.zip'
 eval2d = 'compare_all("' + test2d + '","' + zenodo2d_dir + '")'
 eval3d = 'compare_all("' + test3d + '","' + zenodo3d_dir + '")'
 
-run_command('python', '-c', 'import requests', check: true)
-
 run_command('python', 'script_utils/meson_file_download.py',
   zenodo2d_url, zenodo2d_zip, zenodo2d_md5,
   check: true)
