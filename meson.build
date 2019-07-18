@@ -98,18 +98,18 @@ eval2d = 'compare_all("' + test2d + '","' + zenodo2d_dir + '")'
 eval3d = 'compare_all("' + test3d + '","' + zenodo3d_dir + '")'
 
 run_command('python', 'script_utils/meson_file_download.py',
-  zenodo2d_url, zenodo2d_zip, zenodo2d_md5,
-  check: true)
+  zenodo2d_url, zenodo2d_zip, zenodo2d_md5)
 run_command('python', 'script_utils/meson_file_download.py',
-  zenodo3d_url, zenodo3d_zip, zenodo3d_md5,
-  check: true)
+  zenodo3d_url, zenodo3d_zip, zenodo3d_md5)
 
-run_command('python', 'script_utils/meson_file_extract.py',
-  zenodo2d_zip, zenodo2d_dir,
-  check: true)
-run_command('python', 'script_utils/meson_file_extract.py',
-  zenodo3d_zip, zenodo3d_dir,
-  check: true)
+if run_command('python', 'script_utils/meson_file_extract.py',
+  zenodo2d_zip, zenodo2d_dir).returncode() != 0
+  message('2D test data not available, test will fail')
+endif
+if run_command('python', 'script_utils/meson_file_extract.py',
+  zenodo3d_zip, zenodo3d_dir).returncode() != 0
+  message('3D test data not available, test will fail')
+endif
 
 test('Gemini2D', mpiexec,
   suite : '2d',

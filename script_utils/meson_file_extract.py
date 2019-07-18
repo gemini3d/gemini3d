@@ -11,7 +11,7 @@ def extract_files(zipfn: Path, outpath: Path, overwrite: bool = False):
         return
     zipfn = Path(zipfn).expanduser().resolve()
     with zipfile.ZipFile(zipfn) as z:
-        z.extractall(str(outpath))
+        z.extractall(str(outpath.parent))
 
 
 if __name__ == '__main__':
