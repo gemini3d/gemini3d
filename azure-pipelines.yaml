@@ -39,12 +39,13 @@ jobs:
     displayName: 'Install Linux prereqs'
   - script: |
       git clone https://github.com/mesonbuild/meson
-      pip install -e meson
+      python -m pip install -e meson
       curl -Ls https://github.com/ninja-build/ninja/releases/download/v1.9.0/ninja-linux.zip -o ninja-linux.zip
       sudo unzip ninja-linux.zip -d /usr/local/bin/
     displayName: 'setup Meson'
   - script: |
-      pip install -e .
+      python -m pip install -e $SRC_DIR
+      python script_utils/meson_file_download.py https://zenodo.org/record/2520780/files/zenodo2d.zip?download=1 $(Build.BinariesDirectory)/../simulations/zenodo2d.zip 5bd1bce1a465ccec5af813f8b7959ec8
       meson setup $BUILD_DIR $SRC_DIR
       meson test -C $BUILD_DIR --suite 2d unit
     env:
