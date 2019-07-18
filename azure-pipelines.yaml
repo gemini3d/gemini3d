@@ -52,4 +52,5 @@ jobs:
       FC: gfortran-6
     displayName: 'Meson: build and test'
   - publish: $(Build.BinariesDirectory)/meson-logs/testlog.txt
+    condition: succeededOrFailed()
     artifact: TestLog
