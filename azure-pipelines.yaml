@@ -39,15 +39,19 @@ jobs:
     displayName: 'Install Linux prereqs'
   - script: |
       git clone https://github.com/mesonbuild/meson
-      pip install -e meson
+      python -m pip install -e meson
       curl -Ls https://github.com/ninja-build/ninja/releases/download/v1.9.0/ninja-linux.zip -o ninja-linux.zip
       sudo unzip ninja-linux.zip -d /usr/local/bin/
     displayName: 'setup Meson'
   - script: |
       meson setup $BUILD_DIR $SRC_DIR
-      meson test -C $BUILD_DIR
+      meson test -C $BUILD_DIR --suite unit
+      meson test -C $BUILD_DIR --suite 2d
     env:
       SRC_DIR: $(Build.SourcesDirectory)
       BUILD_DIR: $(Build.BinariesDirectory)
       FC: gfortran-6
-    displayName: 'Meson: build and test'
+    displayName: 'Build and test'
+  - publish: $(Build.BinariesDirectory)/meson-logs/testlog.txt
+    condition: succeededOrFailed()
+    artifact: TestLog
