@@ -45,7 +45,7 @@ jobs:
     displayName: 'setup Meson'
   - script: |
       python -m pip install -e $SRC_DIR
-      python script_utils/meson_file_download.py https://zenodo.org/record/2520780/files/zenodo2d.zip?download=1 $(Build.BinariesDirectory)/../simulations/zenodo2d.zip 5bd1bce1a465ccec5af813f8b7959ec8
+      python script_utils/meson_file_extract.py $SRC_DIR/../simulations/zenodo3d/../zenodo3d.zip $SRC_DIR/../simulations/zenodo3d
       meson setup $BUILD_DIR $SRC_DIR
       meson test -C $BUILD_DIR --suite 2d unit
     env:
