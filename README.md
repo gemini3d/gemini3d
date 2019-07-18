@@ -18,8 +18,29 @@ Generally, the Git `master` branch has the current development version and is th
 
 ## Prerequisites
 
-The CMake build system is used to manage the large number of dependencies and external libraries needed to compile GEMINI.
-If a newer CMake version is needed, CMake is easily installed in a minute *without* sudo/admin on:
+One may use either the CMake or Meson build systems--choose whichever you prefer.
+
+**Meson + Ninja**
+
+Meson uses Ninja (like GNU Make). They may be obtained via:
+
+```sh
+conda install meson
+```
+
+OR
+
+```sh
+python3 -m pip install meson
+```
+
+and [download Ninja](https://github.com/ninja-build/ninja/releases/)
+and put Ninja executable directory on your PATH.
+
+
+**CMake**
+
+CMake is easily installed in a minute *without* sudo/admin on:
 
 * Linux: [cmake_setup.py](https://github.com/scivision/cmake-utils/blob/master/cmake_setup.py)
 * MacOS: `brew install cmake`
@@ -88,25 +109,29 @@ One could run large 2D or very small 3D simulations (not exceeding a few million
 This method is tested on CentOS and Ubuntu.
 This test runs a short demo, taking about 2-5 minutes on a typical Mac / Linux laptop, from scratch.
 
+Get GEMINI code and install prereqs
+```sh
+cd ~
+git clone https://github.com/gemini3d/gemini
+cd gemini
+```
 
-1. get GEMINI code and install prereqs
-   ```sh
-   cd ~
-   git clone https://github.com/gemini3d/gemini
-   cd gemini
-2. Generate Makefile and auto-download test reference data
-   ```sh
-   cmake -B build
-3. compile
-   ```sh
-   cmake --build build --parallel
-   ```
-4. run GEMINI demo:
-   ```
-   cd build
+**Build and test**
 
-   ctest --output-on-failure
-   ```
+```sh
+cmake -B build
+cmake --build build --parallel
+
+cd build
+ctest --output-on-failure
+```
+OR
+```sh
+meson build
+
+meson test -C build
+```
+
 
 If you get errors about libraries not found or it's using the wrong compiler, see the `build_.sh` scripts for examples of how to easily tell CMake to use custom library and compiler locations.
 
@@ -116,6 +141,7 @@ If you plan to push back to the repository, please don't edit those example `.in
 Note that any `config.ini` you create yourself in `initialize/` will not be included in the repository since that directory is in `.gitignore` (viz. not tracked by git).
 
 #### MUMPS verbosity
+
 MUMPS initialization ICNTL flags are set in `numerical/potential/potential_mumps.f90`.
 ICNTL 1-4 concern print output unit and verbosity level, see MUMPS
 [User Manual](http://mumps.enseeiht.fr/index.php?page=doc)
@@ -139,10 +165,15 @@ Libraries:
 
 
 ### self-tests
+
 GEMINI has self tests that compare the output from a "known" test problem to a reference output.  So running:
 
 ```sh
 ctest --output-on-failure
+```
+OR
+```sh
+meson test -C build
 ```
 
 Can be manually done from the top-level gemini/ directory by:
@@ -160,6 +191,7 @@ compare_all(/tmp/2d, '../simulations/2Dtest_files/2Dtest_output')
 ### OS-specific tips
 
 #### Ubuntu
+
 Tested on Ubuntu 18.04 / 16.04.
 
 If you have sudo (admin) access:
