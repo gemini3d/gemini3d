@@ -51,3 +51,5 @@ jobs:
       BUILD_DIR: $(Build.BinariesDirectory)
       FC: gfortran-6
     displayName: 'Meson: build and test'
+  - publish: $(Build.BinariesDirectory)/meson-logs/testlog.txt
+    artifact: TestLog
