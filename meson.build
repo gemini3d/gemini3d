@@ -86,10 +86,30 @@ mpiexec = find_program('mpiexec', required : true)
 
 test2d = meson.build_root() / 'test2d'
 test3d = meson.build_root() / 'test3d'
-zenodo2d = meson.source_root() / '../simulations/zenodo2d'
-zenodo3d = meson.source_root() / '../simulations/zenodo3d'
-eval2d = 'compare_all("' + test2d + '","' + zenodo2d + '")'
-eval3d = 'compare_all("' + test3d + '","' + zenodo3d + '")'
+zenodo2d_url = 'https://zenodo.org/record/2520780/files/zenodo2d.zip?download=1'
+zenodo2d_md5 = '5bd1bce1a465ccec5af813f8b7959ec8'
+zenodo2d_dir = meson.source_root() / '../simulations/zenodo2d'
+zenodo2d_zip = zenodo2d_dir/'../zenodo2d.zip'
+zenodo3d_url = 'https://zenodo.org/record/2520920/files/zenodo3d.zip?download=1'
+zenodo3d_md5 = '225853d43937a70c9ef6726f90666645'
+zenodo3d_dir = meson.source_root() / '../simulations/zenodo3d'
+zenodo3d_zip = zenodo3d_dir/'../zenodo3d.zip'
+eval2d = 'compare_all("' + test2d + '","' + zenodo2d_dir + '")'
+eval3d = 'compare_all("' + test3d + '","' + zenodo3d_dir + '")'
+
+run_command('python', 'script_utils/meson_file_download.py',
+  zenodo2d_url, zenodo2d_zip, zenodo2d_md5,
+  check: true)
+run_command('python', 'script_utils/meson_file_download.py',
+  zenodo3d_url, zenodo2d_zip, zenodo3d_md5,
+  check: true)
+
+run_command('python', 'script_utils/meson_file_extract.py',
+  zenodo2d_zip, zenodo2d_dir,
+  check: true)
+run_command('python', 'script_utils/meson_file_extract.py',
+  zenodo3d_zip, zenodo3d_dir,
+  check: true)
 
 test('Gemini2D', mpiexec,
   suite : '2d',

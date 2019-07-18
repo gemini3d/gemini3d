@@ -45,7 +45,7 @@ jobs:
     displayName: 'setup Meson'
   - script: |
       meson setup $BUILD_DIR $SRC_DIR
-      meson test -C $BUILD_DIR
+      meson test -C $BUILD_DIR --suite 2d unit
     env:
       SRC_DIR: $(Build.SourcesDirectory)
       BUILD_DIR: $(Build.BinariesDirectory)
