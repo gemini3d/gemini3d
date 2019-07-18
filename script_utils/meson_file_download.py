@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 from pathlib import Path
-import requests
+import urllib.request
 import hashlib
 import argparse
 
@@ -12,11 +12,7 @@ def url_retrieve(url: str, outfile: Path, md5sum: str = None, overwrite: bool = 
         return
     outfile.parent.mkdir(parents=True, exist_ok=True)
 
-    R = requests.get(url, allow_redirects=True)
-    if R.status_code != 200:
-        raise ConnectionError('could not download {}\nerror code: {}'.format(url, R.status_code))
-
-    outfile.write_bytes(R.content)
+    urllib.request.urlretrieve(url, str(outfile))
 
     if md5sum:
         if not file_checksum(outfile, md5sum, 'md5'):

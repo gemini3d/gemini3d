@@ -44,7 +44,6 @@ jobs:
       sudo unzip ninja-linux.zip -d /usr/local/bin/
     displayName: 'setup Meson'
   - script: |
-      python -m pip install -e $SRC_DIR
       meson setup $BUILD_DIR $SRC_DIR
       meson test -C $BUILD_DIR --suite 2d unit
     env:
