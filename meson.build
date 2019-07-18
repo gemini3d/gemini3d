@@ -3,7 +3,7 @@ project('GEMINI', 'fortran',
   default_options : ['default_library=static', 'buildtype=release'])
 
 REALBITS = '-DREALBITS='+get_option('realbits')
-GLOW = get_option('GLOW')
+use_glow = get_option('useglow')
 HDF = get_option('HDF')
 mpi_root = get_option('MPI_ROOT')
 lapack_root = get_option('LAPACK_ROOT')
@@ -82,55 +82,69 @@ magcalc = executable('magcalc.bin', 'magcalc.f90',
 # --- TESTS ---
 
 octave = find_program('octave', required : false)
+matlab = find_program('matlab', required : false)
+if matlab.found()
+  octmat = matlab
+  evalbatch = '-batch'
+elif octave.found()
+  octmat = octave
+  evalbatch = '--eval'
+else
+  octmat = []
+  evalbatch = ''
+  message('Neither Matlab or Octave were found, "Compare" tests will fail.')
+endif
 mpiexec = find_program('mpiexec', required : true)
 
-test2d = meson.build_root() / 'test2d'
-test3d = meson.build_root() / 'test3d'
-zenodo2d_url = 'https://zenodo.org/record/2520780/files/zenodo2d.zip?download=1'
-zenodo2d_md5 = '5bd1bce1a465ccec5af813f8b7959ec8'
-zenodo2d_dir = meson.source_root() / '../simulations/zenodo2d'
-zenodo2d_zip = zenodo2d_dir/'../zenodo2d.zip'
-zenodo3d_url = 'https://zenodo.org/record/2520920/files/zenodo3d.zip?download=1'
-zenodo3d_md5 = '225853d43937a70c9ef6726f90666645'
-zenodo3d_dir = meson.source_root() / '../simulations/zenodo3d'
-zenodo3d_zip = zenodo3d_dir/'../zenodo3d.zip'
-eval2d = 'compare_all("' + test2d + '","' + zenodo2d_dir + '")'
-eval3d = 'compare_all("' + test3d + '","' + zenodo3d_dir + '")'
+zenodo = {
+  '2d': {'url': 'https://zenodo.org/record/2520780/files/zenodo2d.zip?download=1',
+         'md5': '5bd1bce1a465ccec5af813f8b7959ec8',
+         'dir': meson.source_root() / '../simulations/zenodo2d',
+         'zip': meson.source_root() / '../simulations/zenodo2d.zip'},
+  '2d_glow': {'url': 'https://zenodo.org/record/2520780/files/zenodo2d_glow.zip?download=1',
+              'md5': 'c5bbbbff3bdde85b6d7e9470bc3751a2',
+              'dir': meson.source_root() / '../simulations/zenodo2d_glow',
+              'zip': meson.source_root() / '../simulations/zenodo2d_glow.zip'},
+  '3d': {'url': 'https://zenodo.org/record/2520920/files/zenodo3d.zip?download=1',
+         'md5': '225853d43937a70c9ef6726f90666645',
+         'dir': meson.source_root() / '../simulations/zenodo3d',
+         'zip': meson.source_root() / '../simulations/zenodo3d.zip'},
+  '3d_glow': {'url': 'https://zenodo.org/record/2520920/files/zenodo3d_glow.zip?download=1',
+              'md5': '2c54bfde8aff0fb72d61115f04c361a7',
+              'dir': meson.source_root() / '../simulations/zenodo3d_glow',
+              'zip': meson.source_root() / '../simulations/zenodo3d_glow.zip'},
+  }
 
-run_command('python', 'script_utils/meson_file_download.py',
-  zenodo2d_url, zenodo2d_zip, zenodo2d_md5)
-run_command('python', 'script_utils/meson_file_download.py',
-  zenodo3d_url, zenodo3d_zip, zenodo3d_md5)
-
-if run_command('python', 'script_utils/meson_file_extract.py',
-  zenodo2d_zip, zenodo2d_dir).returncode() != 0
-  message('2D test data not available, test will fail')
-endif
-if run_command('python', 'script_utils/meson_file_extract.py',
-  zenodo3d_zip, zenodo3d_dir).returncode() != 0
-  message('3D test data not available, test will fail')
+if use_glow
+  test_names = ['2d_glow', '3d_glow']
+else
+  test_names = ['2d', '3d']
 endif
 
-test('Gemini2D', mpiexec,
-  suite : '2d',
-  args : ['-np', '2', gemini, meson.source_root() / 'initialize/test2d/config.ini', test2d],
-  workdir : meson.source_root(),
-  timeout : 300,
-  is_parallel : false)
 
-if octave.found()
-  test('Compare2D', octave, args : ['--eval', eval2d],
-    suite : '2d', timeout: 30, workdir : meson.source_root() / 'tests')
-endif
+foreach i : test_names
 
-test('Gemini3D', mpiexec,
-  suite : '3d',
-  args : ['-np', '2', gemini, meson.source_root() / 'initialize/test3d/config.ini', test3d],
-  workdir : meson.source_root(),
-  timeout : 600,
-  is_parallel : false)
+  run_command('python', 'script_utils/meson_file_download.py',
+    zenodo[i]['url'], zenodo[i]['zip'], zenodo[i]['md5'])
 
-if octave.found()
-  test('Compare3D', octave, args : ['--eval', eval3d],
-    suite : '3d', timeout: 30, workdir : meson.source_root() / 'tests')
-endif
+  if run_command('python', 'script_utils/meson_file_extract.py',
+    zenodo[i]['zip'], zenodo[i]['dir']).returncode() != 0
+    message(i + 'test data not available, test will fail')
+  endif
+
+  test_dir = meson.build_root() / 'test'  + i
+
+  test('Gemini' + i, mpiexec,
+    suite : i,
+    args : ['-np', '2', gemini, meson.source_root() / 'initialize/test' + i / 'config.ini', test_dir],
+    workdir : meson.source_root(),
+    timeout : 300,
+    is_parallel : false)
+
+  if octmat.found()
+    octmat_args = [evalbatch, 'compare_all("' + test_dir + '","' + zenodo[i]['dir'] + '")']
+    test('Compare' + i, octmat, args : octmat_args,
+      suite : i, timeout: 60, workdir : meson.source_root() / 'tests')
+  endif
+
+endforeach

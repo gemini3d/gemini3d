@@ -1,5 +1,6 @@
 ionization_src = files('ionization.f90', 'boundary_conditions/precipBCs_mod.f90')
-if GLOW
+
+if use_glow
   ionization_src += 'glow_run.f90'
   glow_proj = subproject('cglow')
   cglow = glow_proj.get_variable('cglow')
