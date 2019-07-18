@@ -1,27 +1,27 @@
 jobs:
-# - job: UbuntuCMake
-  # pool:
-    # vmImage: 'ubuntu-latest'
+- job: UbuntuCMake
+  pool:
+    vmImage: 'ubuntu-latest'
 
-  # steps:
-  # - script: |
-      # sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
-      # sudo apt update -q
-      # sudo apt install -yq --no-install-recommends gfortran-6 liblapack-dev libscalapack-mpi-dev libmumps-dev libopenmpi-dev octave
-    # displayName: 'Install Linux prereqs'
-  # - script: |
-      # cmake --version
-      # cd $BUILD_DIR
-      # cmake $SRC_DIR
-      # cmake --build $BUILD_DIR --parallel
-    # env:
-      # SRC_DIR: $(Build.SourcesDirectory)
-      # BUILD_DIR: $(Build.BinariesDirectory)
-      # FC: gfortran-6
-    # displayName: 'CMake: Configure and Generate'
-  # - script: ctest -R 2D --parallel --output-on-failure
-    # workingDirectory: $(Build.BinariesDirectory)
-    # displayName: 'CTest: 2D'
+  steps:
+  - script: |
+      sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+      sudo apt update -q
+      sudo apt install -yq --no-install-recommends gfortran-6 liblapack-dev libscalapack-mpi-dev libmumps-dev libopenmpi-dev octave
+    displayName: 'Install Linux prereqs'
+  - script: |
+      cmake --version
+      cd $BUILD_DIR
+      cmake $SRC_DIR
+      cmake --build $BUILD_DIR --parallel
+    env:
+      SRC_DIR: $(Build.SourcesDirectory)
+      BUILD_DIR: $(Build.BinariesDirectory)
+      FC: gfortran-6
+    displayName: 'CMake: Configure and Generate'
+  - script: ctest -R 2D --parallel --output-on-failure
+    workingDirectory: $(Build.BinariesDirectory)
+    displayName: 'CTest: 2D'
 
 - job: UbuntuMeson
   pool:
@@ -32,27 +32,26 @@ jobs:
     inputs:
       versionSpec: '3.6'
       addToPath: true
-  - script: python script_utils/meson_file_download.py https://zenodo.org/record/2520780/files/zenodo2d.zip?download=1 $(Build.BinariesDirectory)/../simulations/zenodo2d.zip 5bd1bce1a465ccec5af813f8b7959ec8
-  # - script: |
-      # sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
-      # sudo apt update -q
-      # sudo apt install -yq --no-install-recommends gfortran-6 liblapack-dev libscalapack-mpi-dev libmumps-dev libopenmpi-dev octave
-    # displayName: 'Install Linux prereqs'
-  # - script: |
-      # git clone https://github.com/mesonbuild/meson
-      # pip install -e meson
-      # curl -Ls https://github.com/ninja-build/ninja/releases/download/v1.9.0/ninja-linux.zip -o ninja-linux.zip
-      # sudo unzip ninja-linux.zip -d /usr/local/bin/
-    # displayName: 'setup Meson'
-  # - script: |
-      # meson setup $BUILD_DIR $SRC_DIR
-      # ninja -C $BUILD_DIR
-      # meson test -C $BUILD_DIR --suite 2d unit
-    # env:
-      # SRC_DIR: $(Build.SourcesDirectory)
-      # BUILD_DIR: $(Build.BinariesDirectory)
-      # FC: gfortran-6
-    # displayName: 'Meson: build and test'
-  # - publish: $(Build.BinariesDirectory)/meson-logs/testlog.txt
-    # condition: succeededOrFailed()
-    # artifact: TestLog
+  - script: |
+      sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+      sudo apt update -q
+      sudo apt install -yq --no-install-recommends gfortran-6 liblapack-dev libscalapack-mpi-dev libmumps-dev libopenmpi-dev octave
+    displayName: 'Install Linux prereqs'
+  - script: |
+      git clone https://github.com/mesonbuild/meson
+      pip install -e meson
+      curl -Ls https://github.com/ninja-build/ninja/releases/download/v1.9.0/ninja-linux.zip -o ninja-linux.zip
+      sudo unzip ninja-linux.zip -d /usr/local/bin/
+    displayName: 'setup Meson'
+  - script: |
+      pip install -e .
+      meson setup $BUILD_DIR $SRC_DIR
+      meson test -C $BUILD_DIR --suite 2d unit
+    env:
+      SRC_DIR: $(Build.SourcesDirectory)
+      BUILD_DIR: $(Build.BinariesDirectory)
+      FC: gfortran-6
+    displayName: 'Build and test'
+  - publish: $(Build.BinariesDirectory)/meson-logs/testlog.txt
+    condition: succeededOrFailed()
+    artifact: TestLog
