@@ -3,8 +3,8 @@
 include(FetchContent)
 
 FetchContent_Declare(ncarglow
-  GIT_REPOSITORY https://github.com/scivision/ncar-glow.git
-  GIT_TAG 6a46ab9
+  GIT_REPOSITORY https://github.com/space-physics/ncar-glow.git
+  GIT_TAG 3f27b4a6cc8
 )
 
 
