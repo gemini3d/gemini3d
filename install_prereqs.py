@@ -31,7 +31,7 @@ def os_release() -> typing.List[str]:
     C = ConfigParser(inline_comment_prefixes=('#', ';'))
     ini = '[all]' + fn.read_text()
     C.read_string(ini)
-    return C['all'].get('ID_LIKE').split()
+    return C['all'].get('ID_LIKE').strip('"').strip("'").split()
 
 
 def get_package_manager(like: typing.List[str] = None) -> str:

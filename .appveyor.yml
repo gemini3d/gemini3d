@@ -7,10 +7,9 @@ clone_depth: 25
 
 build: off
 
-init:
-- python -m pip install meson
-
 install:
+# pip can't be in init, wrong python version
+- python -m pip install meson
 - python install_prereqs.py
 - meson build
 
