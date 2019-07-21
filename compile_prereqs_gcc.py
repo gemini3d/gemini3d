@@ -82,11 +82,19 @@ def scalapack(wipe: bool, prefix: Path):
 def mumps(wipe: bool,  prefix: Path):
     install_lib = Path(prefix).expanduser() / MUMPSDIR
     source_lib = Path(WORKDIR).expanduser() / MUMPSDIR
+    build_lib = source_lib / BUILDDIR
+
+    scalapack_lib = install_lib.parent / SCALAPACKDIR
 
     update(source_lib, MUMPSGIT)
 
-    subprocess.check_call(['python', 'build.py', 'gcc', '-install', str(install_lib)],
-                          cwd=source_lib)
+    subprocess.check_call([CMAKE,
+                           f'-DCMAKE_INSTALL_PREFIX={install_lib}',
+                           f'-DSCALAPACK_ROOT={scalapack_lib}',
+                           '-B', str(build_lib), '-S', str(source_lib)])
+
+    subprocess.check_call([CMAKE, '--build', str(build_lib),
+                           '--parallel', '--target', 'install'])
 
 
 def update(path: Path, repo: str):
