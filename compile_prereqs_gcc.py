@@ -12,20 +12,11 @@ from argparse import ArgumentParser
 
 # ========= user parameters ======================
 
-# all libraries installed under PREFIX/libraryname
-PREFIX = '~/lib_gcc'
-
 # where you keep your Git repos
 WORKDIR = '~/code'
 BUILDDIR = 'build'
 
 # Library parameters
-MPIVERSION = '3.1.3'  # MPI 4 doesn't currently work with ScalaPack
-MPIFN = f'openmpi-{MPIVERSION}.tar.bz2'
-MPIURL = f'https://download.open-mpi.org/release/open-mpi/v3.1/{MPIFN}'
-MPISHA1 = 'b3c60e2bdd5a8a8e758fd741f9a5bebb84da5e81'
-MPIPREFIX = f'{PREFIX}/openmpi-{MPIVERSION}'
-
 LAPACKGIT = 'https://github.com/Reference-LAPACK/lapack'
 LAPACKDIR = 'lapack'
 
@@ -47,8 +38,8 @@ if pkg_resources.parse_version(cmake_ver) < pkg_resources.parse_version('3.13'):
     raise SystemExit(f'CMake {cmake_ver} is less than minimum required CMake 3.13')
 
 
-def lapack(wipe: bool):
-    install_lib = Path(PREFIX).expanduser() / LAPACKDIR
+def lapack(wipe: bool, prefix: Path):
+    install_lib = Path(prefix).expanduser() / LAPACKDIR
     source_lib = Path(WORKDIR).expanduser() / LAPACKDIR
     build_lib = source_lib / BUILDDIR
 
@@ -68,8 +59,8 @@ def lapack(wipe: bool):
                            '--parallel', '--target', 'install'])
 
 
-def scalapack(wipe: bool):
-    install_lib = Path(PREFIX).expanduser() / SCALAPACKDIR
+def scalapack(wipe: bool, prefix: Path):
+    install_lib = Path(prefix).expanduser() / SCALAPACKDIR
     source_lib = Path(WORKDIR).expanduser() / SCALAPACKDIR
     build_lib = source_lib / BUILDDIR
 
@@ -81,15 +72,15 @@ def scalapack(wipe: bool):
 
     subprocess.check_call([CMAKE,
                            f'-DCMAKE_INSTALL_PREFIX={install_lib}',
-                           f'-DLAPACK_ROOT={Path(PREFIX).expanduser() / LAPACKDIR}',
+                           f'-DLAPACK_ROOT={Path(prefix).expanduser() / LAPACKDIR}',
                            '-B', str(build_lib), '-S', str(source_lib)])
 
     subprocess.check_call([CMAKE, '--build', str(build_lib),
                            '--parallel', '--target', 'install'])
 
 
-def mumps(wipe: bool):
-    install_lib = Path(PREFIX).expanduser() / MUMPSDIR
+def mumps(wipe: bool,  prefix: Path):
+    install_lib = Path(prefix).expanduser() / MUMPSDIR
     source_lib = Path(WORKDIR).expanduser() / MUMPSDIR
 
     update(source_lib, MUMPSGIT)
@@ -117,12 +108,13 @@ def update(path: Path, repo: str):
 if __name__ == '__main__':
     p = ArgumentParser()
     p.add_argument('libs', help='libraries to compile (lapack, scalapack, mumps)', nargs='+')
+    p.add_argument('-prefix', help='toplevel path to install libraries under', default='~/lib_gcc')
     p.add_argument('-wipe', help='wipe before completely recompiling libs', action='store_true')
     P = p.parse_args()
 
     if 'lapack' in P.libs:
-        lapack(P.wipe)
+        lapack(P.wipe, P.prefix)
     if 'scalapack' in P.libs:
-        scalapack(P.wipe)
+        scalapack(P.wipe, P.prefix)
     if 'mumps' in P.libs:
-        mumps(P.wipe)
+        mumps(P.wipe, P.prefix)
