@@ -1,18 +1,18 @@
 image:
 - Ubuntu1804
 
+stack: python 3
+
 clone_depth: 25
 
 build: off
 
 init:
-- sh: sudo apt update -q > /dev/null
-- sh: sudo apt install -yq --no-install-recommends libmumps-dev liblapack-dev libscalapack-mpi-dev libopenmpi-dev openmpi-bin > /dev/null
+- python -m pip install meson
 
 install:
-- cmake -B build -S . -DNP=2
-- cmake --build build --parallel
+- python install_prereqs.py
+- meson build
 
 test_script:
-- cd build
-- ctest -R 2D --parallel --output-on-failure
+- meson test -C build

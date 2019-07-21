@@ -152,7 +152,7 @@ ICNTL 1-4 concern print output unit and verbosity level, see MUMPS
 
 Libraries:
 
-* If you have `sudo` access, try the `./install_prereqs.sh` script
+* If you have `sudo` access, try the `python install_prereqs.py` script
 * If need to build libraries from source (e.g. because you don't have `sudo`) try `build_gnu_noMKL.sh` or `build_intel.sh` from the `fortran-libs` repo:
 
   ```sh
@@ -196,7 +196,7 @@ Tested on Ubuntu 18.04 / 16.04.
 
 If you have sudo (admin) access:
 ```sh
-./install_prereqs.sh
+python install_prereqs.sh
 ```
 Otherwise, ask your IT admin to install the libraries or
 [compile them yourself](https://github.com/scivision/fortran-libs)
