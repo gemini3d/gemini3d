@@ -241,7 +241,7 @@ if (t+dt/2d0>=tnext .or. t<=0d0) then   !negative time means that we need to loa
   end if
 
   !Read in neutral data from a file
-  call read_dneu(tprev,tnext,t,dtneu,dt,neudir,ymdtmp,UTsectmp)
+  call read_dneu(tprev,tnext,t,dtneu,dt,neudir,ymdtmp,UTsectmp,.false.)
 
   !Spatial interpolatin for the frame we just read in
   if (myid==0) then
@@ -335,7 +335,7 @@ if (t+dt/2d0>=tnext) then
   end if
 
   !Read in neutral data from a file
-  call read_dneu(tprev,tnext,t,dtneu,dt,neudir,ymdtmp,UTsectmp)
+  call read_dneu(tprev,tnext,t,dtneu,dt,neudir,ymdtmp,UTsectmp,.true.)
 
   !Spatial interpolatin for the frame we just read in
   if (myid==0) then
@@ -598,7 +598,7 @@ end if
 end subroutine gridproj_dneu
 
 
-subroutine read_dneu(tprev,tnext,t,dtneu,dt,neudir,ymdtmp,UTsectmp)
+subroutine read_dneu(tprev,tnext,t,dtneu,dt,neudir,ymdtmp,UTsectmp,flagcart)
 
 ! This subroutine reads in neutral frame data, if necessary and puts the results
 ! in a module-scope variable for later use
@@ -607,10 +607,20 @@ real(wp), intent(in) :: tprev,tnext,t,dtneu,dt        !times of previous input f
 character(*), intent(in) :: neudir                    !directory where neutral simulation data is kept
 integer, dimension(3), intent(out) :: ymdtmp          !storage space for incrementing date without overwriting ymdnext...
 real(wp), intent(out) :: UTsectmp
+logical, intent(in) :: flagcart
 
 integer :: inunit          !file handle for various input files
 integer :: iid,ierr
 character(512) :: filename               !space to store filenames, note size must be 512 to be consistent with our date_ffilename functinos
+integer :: lhorzn                        !number of horizontal grid points
+
+
+if (flagcart) then
+  lhorzn=lyn
+else
+  lhorzn=lrhon
+end if
+
 
 if (myid==0) then    !root
   !read in the data from file
@@ -633,27 +643,27 @@ if (myid==0) then    !root
 
   !send a full copy of the data to all of the workers
   do iid=1,lid-1
-    call mpi_send(dnO,lrhon*lzn,mpi_realprec,iid,tagdnO,MPI_COMM_WORLD,ierr)
-    call mpi_send(dnN2,lrhon*lzn,mpi_realprec,iid,tagdnN2,MPI_COMM_WORLD,ierr)
-    call mpi_send(dnO2,lrhon*lzn,mpi_realprec,iid,tagdnO2,MPI_COMM_WORLD,ierr)
-    call mpi_send(dTn,lrhon*lzn,mpi_realprec,iid,tagdTn,MPI_COMM_WORLD,ierr)
-    call mpi_send(dvnrho,lrhon*lzn,mpi_realprec,iid,tagdvnrho,MPI_COMM_WORLD,ierr)
-    call mpi_send(dvnz,lrhon*lzn,mpi_realprec,iid,tagdvnz,MPI_COMM_WORLD,ierr)
+    call mpi_send(dnO,lhorzn*lzn,mpi_realprec,iid,tagdnO,MPI_COMM_WORLD,ierr)
+    call mpi_send(dnN2,lhorzn*lzn,mpi_realprec,iid,tagdnN2,MPI_COMM_WORLD,ierr)
+    call mpi_send(dnO2,lhorzn*lzn,mpi_realprec,iid,tagdnO2,MPI_COMM_WORLD,ierr)
+    call mpi_send(dTn,lhorzn*lzn,mpi_realprec,iid,tagdTn,MPI_COMM_WORLD,ierr)
+    call mpi_send(dvnrho,lhorzn*lzn,mpi_realprec,iid,tagdvnrho,MPI_COMM_WORLD,ierr)
+    call mpi_send(dvnz,lhorzn*lzn,mpi_realprec,iid,tagdvnz,MPI_COMM_WORLD,ierr)
   end do
 else     !workers
   !receive a full copy of the data from root
-  call mpi_recv(dnO,lrhon*lzn,mpi_realprec,0,tagdnO,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-  call mpi_recv(dnN2,lrhon*lzn,mpi_realprec,0,tagdnN2,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-  call mpi_recv(dnO2,lrhon*lzn,mpi_realprec,0,tagdnO2,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-  call mpi_recv(dTn,lrhon*lzn,mpi_realprec,0,tagdTn,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-  call mpi_recv(dvnrho,lrhon*lzn,mpi_realprec,0,tagdvnrho,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-  call mpi_recv(dvnz,lrhon*lzn,mpi_realprec,0,tagdvnz,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+  call mpi_recv(dnO,lhorzn*lzn,mpi_realprec,0,tagdnO,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+  call mpi_recv(dnN2,lhorzn*lzn,mpi_realprec,0,tagdnN2,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+  call mpi_recv(dnO2,lhorzn*lzn,mpi_realprec,0,tagdnO2,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+  call mpi_recv(dTn,lhorzn*lzn,mpi_realprec,0,tagdTn,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+  call mpi_recv(dvnrho,lhorzn*lzn,mpi_realprec,0,tagdvnrho,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+  call mpi_recv(dvnz,lhorzn*lzn,mpi_realprec,0,tagdvnz,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
 end if
 
 
 !DO SPATIAL INTERPOLATION OF EACH PARAMETER (COULD CONSERVE SOME MEMORY BY NOT STORING DVNRHOIPREV AND DVNRHOINEXT, ETC.)
 if (myid==lid/2) then
-  print*, 'neutral data size:  ',lrhon,lzn,lid
+  print*, 'neutral data size:  ',lhorzn,lzn,lid
   print *, 'Min/max values for dnO:  ',minval(dnO),maxval(dnO)
   print *, 'Min/max values for dnN:  ',minval(dnN2),maxval(dnN2)
   print *, 'Min/max values for dnO:  ',minval(dnO2),maxval(dnO2)
