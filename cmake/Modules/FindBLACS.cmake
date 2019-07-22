@@ -39,6 +39,7 @@ elseif(OpenMPI IN_LIST BLACS_FIND_COMPONENTS)
     NAMES blacsF77init blacsF77init-openmpi
     PATHS ${SCALAPACK_ROOT})
 
+  # this is the only lib that scalapack/blacs/src provides
   find_library(BLACS_CINIT
     NAMES blacsCinit blacsCinit-openmpi
     PATHS ${SCALAPACK_ROOT})
@@ -71,7 +72,7 @@ endif()
 
 getlibs()
 
-if(BLACS_LIBRARY AND BLACS_LIB)
+if(BLACS_LIBRARY)
   include(CheckFortranFunctionExists)
   set(CMAKE_REQUIRED_LIBRARIES ${BLACS_LIBRARY})
   check_fortran_function_exists(blacs_gridmap BLACS_OK)
