@@ -321,7 +321,7 @@ real(wp), dimension(size(nn,1),size(nn,2),size(nn,3)) :: dnOinow,dnN2inow,dnO2in
 
 
 !CHECK WHETHER WE NEED TO LOAD A NEW FILE
-if (t+dt/2d0>=tnext) then
+if (t+dt/2d0>=tnext .or. t<=0d0) then
   !IF FIRST LOAD ATTEMPT CREATE A NEUTRAL GRID AND COMPUTE GRID SITES FOR IONOSPHERIC GRID.  Since this needs an input file, I'm leaving it under this condition here
   if (.not. allocated(zn)) then     !means this is the first tiem we've tried to load neutral simulation data, should we check for a previous neutral file to load???
     !initialize dates
