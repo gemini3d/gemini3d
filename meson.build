@@ -125,7 +125,7 @@ endif
 foreach i : test_names
 
   run_command('python', 'script_utils/meson_file_download.py',
-    zenodo[i]['url'], zenodo[i]['zip'], zenodo[i]['md5'])
+    zenodo[i]['url'], zenodo[i]['zip'], 'md5', zenodo[i]['md5'])
 
   if run_command('python', 'script_utils/meson_file_extract.py',
     zenodo[i]['zip'], zenodo[i]['dir']).returncode() != 0
