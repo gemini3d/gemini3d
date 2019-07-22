@@ -61,13 +61,13 @@ def main(package_manager: str):
                 }
 
         if package_manager == 'yum':
-            if subprocess.run(['sudo', 'yum', 'install'] + pkgs['yum']).returncode:
+            if subprocess.run(['sudo', 'yum', '--assumeyes', 'install'] + pkgs['yum']).returncode:
                 raise SystemExit('This script is made for personal laptops/desktops.\n'
                                  'HPCs using CentOS have system-specific library setup. \n'
                                  'If using gfortran, version >= 6 is required.'
                                  'Try devtoolset-7 if gcc/gfortran is too old on your system.')
         elif package_manager == 'apt':
-            if subprocess.run(['sudo', 'apt', 'install'] + pkgs['apt']).returncode:
+            if subprocess.run(['sudo', 'apt', '--yes', 'install'] + pkgs['apt']).returncode:
                 raise SystemExit('installing prereqs failed.')
     elif sys.platform == 'darwin':
         pkgs = {'brew': ['cmake', 'gcc', 'make', 'ninja', 'lapack', 'scalapack', 'openmpi', 'octave']

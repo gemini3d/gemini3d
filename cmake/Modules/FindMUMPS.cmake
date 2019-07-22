@@ -68,6 +68,11 @@ endfunction(mumps_libs)
 
 cmake_policy(VERSION 3.3)
 
+if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.12)
+  cmake_policy(SET CMP0074 NEW)
+  cmake_policy(SET CMP0075 NEW)
+endif()
+
 if(NOT MUMPS_FIND_COMPONENTS)
   list(APPEND MUMPS_FIND_COMPONENTS d)
 endif()

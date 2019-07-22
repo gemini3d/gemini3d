@@ -88,6 +88,10 @@ def mumps(wipe: bool,  prefix: Path):
 
     update(source_lib, MUMPSGIT)
 
+    cachefile = build_lib / 'CMakeCache.txt'
+    if wipe and cachefile.is_file():
+        cachefile.unlink()
+
     subprocess.check_call([CMAKE,
                            f'-DCMAKE_INSTALL_PREFIX={install_lib}',
                            f'-DSCALAPACK_ROOT={scalapack_lib}',
