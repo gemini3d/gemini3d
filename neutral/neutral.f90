@@ -220,9 +220,9 @@ real(wp) :: UTsectmp
 !real(wp) :: slope
 real(wp), dimension(size(nn,1),size(nn,2),size(nn,3)) :: dnOinow,dnN2inow,dnO2inow,dTninow,dvn1inow,dvn2inow,dvn3inow    !current time step perturbations (centered in time)
 
-integer(4) :: flaginit    !a flag that is set during the first call to read in data
+!integer(4) :: flaginit    !a flag that is set during the first call to read in data
 
-integer :: utrace, ierr
+!integer :: utrace, ierr
 
 
 !CHECK WHETHER WE NEED TO LOAD A NEW FILE
@@ -304,19 +304,19 @@ real(wp), dimension(:,:,:), intent(out) :: Tn,vn1,vn2,vn3
 
 integer :: inunit          !file handle for various input files
 character(512) :: filename               !space to store filenames, note size must be 512 to be consistent with our date_ffilename functinos
-real(wp) :: theta1,phi1,theta2,phi2,gammarads,theta3,phi3,gamma1,gamma2,phip
-real(wp) :: xp,yp
-real(wp), dimension(3) :: erhop,ezp,eyp,tmpvec
+!real(wp) :: theta1,phi1,theta2,phi2,gammarads,theta3,phi3,gamma1,gamma2,phip
+!real(wp) :: xp,yp
+!real(wp), dimension(3) :: erhop,ezp,eyp,tmpvec
 
-real(wp) :: tmpsca
-real(wp) :: meanyn
+!real(wp) :: tmpsca
+!real(wp) :: meanyn
 
-integer :: ix1,ix2,ix3,iyn,izn,iid, ierr
-real(wp), dimension(size(nn,1),size(nn,2),size(nn,3)) :: zimat,rhoimat,yimat
+integer :: ix1,ix2,ix3,iid
+!real(wp), dimension(size(nn,1),size(nn,2),size(nn,3)) :: zimat,rhoimat,yimat
 integer, dimension(3) :: ymdtmp
 real(wp) :: UTsectmp
-real(wp), dimension(size(nn,1)*size(nn,2)*size(nn,3)) :: parami
-real(wp) :: slope
+!real(wp), dimension(size(nn,1)*size(nn,2)*size(nn,3)) :: parami
+!real(wp) :: slope
 real(wp), dimension(size(nn,1),size(nn,2),size(nn,3)) :: dnOinow,dnN2inow,dnO2inow,dTninow,dvn1inow,dvn2inow,dvn3inow    !current time step perturbations (centered in time)
 
 
@@ -329,265 +329,19 @@ if (t+dt/2d0>=tnext) then
     UTsecprev=UTsec
     ymdnext=ymdprev
     UTsecnext=UTsecprev
-    if (myid==0) then    !root
-      write(filename,*) trim(adjustl(neudir)),'simsize.dat'
-      print *, 'Inputting neutral size from file:  ',trim(adjustl(filename))
-      open(newunit=inunit,file=trim(adjustl(filename)),status='old',form='unformatted',access='stream')
-      read(inunit) lyn,lzn
-      close(inunit)
-      print *, 'Neutral data has ly,lz size:  ',lyn,lzn,' with spacing dy,dz',dyn,dzn
 
-      do iid=1,lid-1
-        call mpi_send(lyn,1,MPI_INTEGER,iid,tagly,MPI_COMM_WORLD,ierr)
-        call mpi_send(lzn,1,MPI_INTEGER,iid,taglz,MPI_COMM_WORLD,ierr)
-      end do
-    else     !workers
-      call mpi_recv(lyn,1,MPI_INTEGER,0,tagly,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-      call mpi_recv(lzn,1,MPI_INTEGER,0,taglz,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-    end if
-
-    if (ierr /= 0) error stop 'failed to create neutral grid'
-    !Everyone need a copy of the grid
-    allocate(yn(lyn),zn(lzn))    !these are module-scope variables
-    allocate(rhon(1))    !not used in the axisymmetric code so just initialize to something
-    allocate(dnO(lzn,lyn),dnN2(lzn,lyn),dnO2(lzn,lyn),dvnrho(lzn,lyn),dvnz(lzn,lyn),dTn(lzn,lyn))
-
-    !Define a grid
-    yn=[ ((real(iyn,8)-1._wp)*dyn, iyn=1,lyn) ]
-    meanyn=sum(yn,1)/size(yn,1)
-    yn=yn-meanyn     !the neutral grid should be centered on zero for a cartesian interpolation
-!        rhon=rhon+0.5d0*drhon       !to convert to cell-centered (can lead to some interpolation artifacts...
-    zn=[ ((real(izn,8)-1._wp)*dzn, izn=1,lzn) ]
-!        zn=zn+0.5d0*dzn             !cell-center
-    if (myid==0) then
-      print *, 'Creating neutral grid with y,z extent:  ',minval(yn),maxval(yn),minval(zn),maxval(zn)
-    end if
-
-
-    !neutral source locations specified in input file, here referenced by spherical coordinates (magnetic).
-    phi1=meanlong*pi/180d0
-    theta1=pi/2d0-meanlat*pi/180d0
-
-
-    !convert plasma grid locations to z,y values to be used in interoplation.  altitude ~ zi; north dist. --> yi.  Also compute unit vectors and projections
-    if (myid==0) then
-      print *, 'Computing alt,radial distance values for plasma grid and completing rotations'
-    end if
-    zimat=x%alt     !vertical coordinate
-    do ix3=1,lx3
-      do ix2=1,lx2
-        do ix1=1,lx1
-          !INTERPOLATION BASED ON GEOMAGNETIC COORDINATES
-          theta2=x%theta(ix1,ix2,ix3)                    !field point zenith angle
-          if (lx2/=1) then
-            phi2=x%phi(ix1,ix2,ix3)                      !field point azimuth, full 3D calculation
-          else
-            phi2=phi1                                    !assume the longitude is the samem as the source in 2D, i.e. assume the source epicenter is in the meridian of the grid
-          end if
-
-
-
-          !COMPUTE DISTANCES
-          gammarads=cos(theta1)*cos(theta2)+sin(theta1)*sin(theta2)*cos(phi1-phi2)     !this is actually cos(gamma)
-          if (gammarads>1._wp) then     !handles weird precision issues in 2D
-            gammarads=1._wp
-          else if (gammarads<-1._wp) then
-            gammarads=-1._wp
-          end if
-          gammarads=acos(gammarads)                     !angle between source location annd field point (in radians)
-          rhoimat(ix1,ix2,ix3)=Re*gammarads    !rho here interpreted as the arc-length defined by angle between epicenter and ``field point''
-
-          !we need a phi locationi (not spherical phi, but azimuth angle from epicenter), as well, but not for interpolation - just for doing vector rotations
-          theta3=theta2
-          phi3=phi1
-          gamma1=cos(theta2)*cos(theta3)+sin(theta2)*sin(theta3)*cos(phi2-phi3)
-          if (gamma1>1._wp) then     !handles weird precision issues in 2D
-            gamma1=1._wp
-          else if (gamma1<-1._wp) then
-            gamma1=-1._wp
-          end if
-          gamma1=acos(gamma1)
-
-          gamma2=cos(theta1)*cos(theta3)+sin(theta1)*sin(theta3)*cos(phi1-phi3)
-          if (gamma2>1._wp) then     !handles weird precision issues in 2D
-            gamma2=1._wp
-          else if (gamma2<-1._wp) then
-            gamma2=-1._wp
-          end if
-          gamma2=acos(gamma2)
-          xp=Re*gamma1
-          yp=Re*gamma2     !this will likely always be positive, since we are using center of earth as our origin, so this should be interpreted as distance as opposed to displacement
-
-
-          !COMPUTE COORDIANTES FROM DISTANCES
-          if (theta3>theta1) then       !place distances in correct quadrant, here field point (theta3=theta2) is is SOUTHward of source point (theta1), whreas yp is distance northward so throw in a negative sign
-            yp=-1._wp*yp            !do we want an abs here to be safe
-          end if
-          if (phi2<phi3) then     !assume we aren't doing a global grid otherwise need to check for wrapping, here field point (phi2) less than soure point (phi3=phi1)
-            xp=-1._wp*xp
-          end if
-          phip=atan2(yp,xp)
-
-
-          !STORE CARESIAN DISTANCES, AS WELL
-          yimat(ix1,ix2,ix3)=yp
-
-
-          !PROJECTIONS FROM NEUTURAL GRID VECTORS TO PLASMA GRID VECTORS
-          !projection factors for mapping from axisymmetric to dipole (go ahead and compute projections so we don't have to do it repeatedly as sim runs
-          ezp=x%er(ix1,ix2,ix3,:)
-          eyp=-1._wp*x%etheta(ix1,ix2,ix3,:)
-
-          tmpvec=eyp*x%e1(ix1,ix2,ix3,:)
-          tmpsca=sum(tmpvec)
-          proj_eyp_e1(ix1,ix2,ix3)=tmpsca
-
-          tmpvec=ezp*x%e1(ix1,ix2,ix3,:)
-          tmpsca=sum(tmpvec)
-          proj_ezp_e1(ix1,ix2,ix3)=tmpsca
-
-          tmpvec=eyp*x%e2(ix1,ix2,ix3,:)
-          tmpsca=sum(tmpvec)
-          proj_eyp_e2(ix1,ix2,ix3)=tmpsca
-
-          tmpvec=ezp*x%e2(ix1,ix2,ix3,:)
-          tmpsca=sum(tmpvec)
-          proj_ezp_e2(ix1,ix2,ix3)=tmpsca
-
-          tmpvec=eyp*x%e3(ix1,ix2,ix3,:)
-          tmpsca=sum(tmpvec)
-          proj_eyp_e3(ix1,ix2,ix3)=tmpsca
-
-          tmpvec=ezp*x%e3(ix1,ix2,ix3,:)
-          tmpsca=sum(tmpvec)    !should be zero, but leave it general for now
-          proj_ezp_e3(ix1,ix2,ix3)=tmpsca
-        end do
-      end do
-    end do
-    zi=pack(zimat,.true.)     !create a flat list of grid points to be used by interpolation ffunctions
-    rhoi=pack(rhoimat,.true.)
-    yi=pack(yimat,.true.)
-
-
-    !GRID UNIT VECTORS NO LONGER NEEDED ONCE PROJECTIONS ARE CALCULATED AS THESE CAN TAKE UP A TON OF MEMORY...
-    call clear_unitvecs(x)
-
-    if (myid==0) then
-      print *, 'Min/max yn,zn values',minval(yn),maxval(yn),minval(zn),maxval(zn)
-      print *, 'Min/max yi,zi values',minval(yi),maxval(yi),minval(zi),maxval(zi)
-      print *, 'Source lat/long:  ',meanlat,meanlong
-      print *, 'Plasma grid lat range:  ',minval(x%glat(:,:,:)),maxval(x%glat(:,:,:))
-      print *, 'Plasma grid lon range:  ',minval(x%glon(:,:,:)),maxval(x%glon(:,:,:))
-    end if
+    !Create a neutral grid, do some allocations and projections
+    call gridproj_dneu(dyn,dzn,meanlat,meanlong,neudir,.true.,x)    !set true to denote not Cartesian...
   end if
 
+  !Read in neutral data from a file
+  call read_dneu(tprev,tnext,t,dtneu,dt,neudir,ymdtmp,UTsectmp)
 
-  !ALL THE NECESSARY ARRAYS EXIST AT THIS POINT, SO GO AHEAD AND READ IN THE DATA - only root should do this and then distribute to the workers
-  if (myid==0) then    !root
-    !read in the data from file
-    print *, 'tprev,tnow,tnext:  ',tprev,t+dt/2d0,tnext
-    ymdtmp=ymdnext
-    UTsectmp=UTsecnext
-    call dateinc(dtneu,ymdtmp,UTsectmp)    !get the date for "next" params
-    filename=date_filename(neudir,ymdtmp,UTsectmp)     !form the standard data filename
-    print *, 'Pulling neutral data from file:  ',trim(adjustl(filename))
-    open(newunit=inunit,file=trim(adjustl(filename)),status='old',form='unformatted',access='stream')
-    read(inunit) dnO,dnN2,dnO2,dvnrho,dvnz,dTn    !vnrho here interpreted as vny (yes, I'm lazy)
-    close(inunit)
-
-    print *, 'Min/max values for dnO:  ',minval(dnO),maxval(dnO)
-    print *, 'Min/max values for dnN:  ',minval(dnN2),maxval(dnN2)
-    print *, 'Min/max values for dnO:  ',minval(dnO2),maxval(dnO2)
-    print *, 'Min/max values for dvny:  ',minval(dvnrho),maxval(dvnrho)
-    print *, 'Min/max values for dvnz:  ',minval(dvnz),maxval(dvnz)
-    print *, 'Min/max values for dTn:  ',minval(dTn),maxval(dTn)
-
-    !send a full copy of the data to all of the workers
-    do iid=1,lid-1
-      call mpi_send(dnO,lyn*lzn,mpi_realprec,iid,tagdnO,MPI_COMM_WORLD,ierr)
-      call mpi_send(dnN2,lyn*lzn,mpi_realprec,iid,tagdnN2,MPI_COMM_WORLD,ierr)
-      call mpi_send(dnO2,lyn*lzn,mpi_realprec,iid,tagdnO2,MPI_COMM_WORLD,ierr)
-      call mpi_send(dTn,lyn*lzn,mpi_realprec,iid,tagdTn,MPI_COMM_WORLD,ierr)
-      call mpi_send(dvnrho,lyn*lzn,mpi_realprec,iid,tagdvnrho,MPI_COMM_WORLD,ierr)
-      call mpi_send(dvnz,lyn*lzn,mpi_realprec,iid,tagdvnz,MPI_COMM_WORLD,ierr)
-    end do
-  else     !workers
-    !receive a full copy of the data from root
-    call mpi_recv(dnO,lyn*lzn,mpi_realprec,0,tagdnO,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-    call mpi_recv(dnN2,lyn*lzn,mpi_realprec,0,tagdnN2,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-    call mpi_recv(dnO2,lyn*lzn,mpi_realprec,0,tagdnO2,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-    call mpi_recv(dTn,lyn*lzn,mpi_realprec,0,tagdTn,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-    call mpi_recv(dvnrho,lyn*lzn,mpi_realprec,0,tagdvnrho,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-    call mpi_recv(dvnz,lyn*lzn,mpi_realprec,0,tagdvnz,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-  end if
-
-
-  !DO SPATIAL INTERPOLATION OF EACH PARAMETER (COULD CONSERVE SOME MEMORY BY NOT STORING DVNRHOIPREV AND DVNRHOINEXT, ETC.)
+  !Spatial interpolatin for the frame we just read in
   if (myid==0) then
-    print *, 'Initiating spatial interpolations for date:  ',ymdtmp,' ',UTsectmp
+    print *, 'Spatial interpolation and rotation of vectors for date:  ',ymdtmp,' ',UTsectmp
   end if
-  parami=interp2(zn,yn,dnO,zi,yi)     !interp to temp var.
-  dnOiprev=dnOinext                       !save new pervious
-  dnOinext=reshape(parami,[lx1,lx2,lx3])    !overwrite next with new interpolated input
-
-  parami=interp2(zn,yn,dnN2,zi,yi)
-  dnN2iprev=dnN2inext
-  dnN2inext=reshape(parami,[lx1,lx2,lx3])
-
-  parami=interp2(zn,yn,dnN2,zi,yi)
-  dnO2iprev=dnO2inext
-  dnO2inext=reshape(parami,[lx1,lx2,lx3])
-
-  parami=interp2(zn,yn,dvnrho,zi,yi)
-  dvnrhoiprev=dvnrhoinext    !interpreted as y-component in this (cartesian) function
-  dvnrhoinext=reshape(parami,[lx1,lx2,lx3])
-
-  parami=interp2(zn,yn,dvnz,zi,yi)
-  dvnziprev=dvnzinext
-  dvnzinext=reshape(parami,[lx1,lx2,lx3])
-
-  parami=interp2(zn,yn,dTn,zi,yi)
-  dTniprev=dTninext
-  dTninext=reshape(parami,[lx1,lx2,lx3])
-
-
-  !MORE DIAG
-  if (myid==lid/2) then
-    print *, 'Min/max values for dnOi:  ',minval(dnOinext),maxval(dnOinext)
-    print *, 'Min/max values for dnN2i:  ',minval(dnN2inext),maxval(dnN2inext)
-    print *, 'Min/max values for dnO2i:  ',minval(dnO2inext),maxval(dnO2inext)
-    print *, 'Min/max values for dvyi:  ',minval(dvnrhoinext),maxval(dvnrhoinext)
-    print *, 'Min/max values for dvnzi:  ',minval(dvnzinext),maxval(dvnzinext)
-    print *, 'Min/max values for dTni:  ',minval(dTninext),maxval(dTninext)
-  end if
-
-
-  !ROTATE VECTORS INTO X1 X2 DIRECTIONS (Need to include unit vectors with grid structure)
-  if (myid==0) then
-    print *, 'Rotating vectors for date:  ',ymdtmp,' ',UTsectmp
-  end if
-
-  dvn1iprev=dvn1inext   !save the old data
-  dvn1inext=dvnrhoinext*proj_eyp_e1+dvnzinext*proj_ezp_e1    !apply projection to complete rotation into dipole coordinates; drhoi interpreted here at teh y component (northward)
-
-  dvn2iprev=dvn2inext
-  dvn2inext=dvnrhoinext*proj_eyp_e2+dvnzinext*proj_ezp_e2
-
-  dvn3iprev=dvn3inext
-  dvn3inext=dvnrhoinext*proj_eyp_e3+dvnzinext*proj_ezp_e3
-
-
-  !MORE DIAGNOSTICS
-  if (myid==lid/2) then
-    print *, 'Min/max values for dnOi:  ',minval(dnOinext),maxval(dnOinext)
-    print *, 'Min/max values for dnN2i:  ',minval(dnN2inext),maxval(dnN2inext)
-    print *, 'Min/max values for dnO2i:  ',minval(dnO2inext),maxval(dnO2inext)
-    print *, 'Min/max values for dvn1i:  ',minval(dvn1inext),maxval(dvn1inext)
-    print *, 'Min/max values for dvn2i:  ',minval(dvn2inext),maxval(dvn2inext)
-    print *, 'Min/max values for dvn3i:  ',minval(dvn3inext),maxval(dvn3inext)
-    print *, 'Min/max values for dTni:  ',minval(dTninext),maxval(dTninext)
-  end if
-
+  call spaceinterp_dneu()
 
   !UPDATE OUR CONCEPT OF PREVIOUS AND NEXT TIMES
   tprev=tnext
@@ -599,49 +353,8 @@ if (t+dt/2d0>=tnext) then
   ymdnext=ymdtmp
 end if
 
-
-!(NOW) DO LINEAR INTERPOLATION IN TIME
-do ix3=1,lx3
-  do ix2=1,lx2
-    do ix1=1,lx1
-      slope=(dnOinext(ix1,ix2,ix3)-dnOiprev(ix1,ix2,ix3))/(tnext-tprev)
-      dnOinow(ix1,ix2,ix3)=dnOiprev(ix1,ix2,ix3)+slope*(t+dt/2d0-tprev)
-
-      slope=(dnN2inext(ix1,ix2,ix3)-dnN2iprev(ix1,ix2,ix3))/(tnext-tprev)
-      dnN2inow(ix1,ix2,ix3)=dnN2iprev(ix1,ix2,ix3)+slope*(t+dt/2d0-tprev)
-
-      slope=(dnO2inext(ix1,ix2,ix3)-dnO2iprev(ix1,ix2,ix3))/(tnext-tprev)
-      dnO2inow(ix1,ix2,ix3)=dnO2iprev(ix1,ix2,ix3)+slope*(t+dt/2d0-tprev)
-
-      slope=(dvn1inext(ix1,ix2,ix3)-dvn1iprev(ix1,ix2,ix3))/(tnext-tprev)
-      dvn1inow(ix1,ix2,ix3)=dvn1iprev(ix1,ix2,ix3)+slope*(t+dt/2d0-tprev)
-
-      slope=(dvn2inext(ix1,ix2,ix3)-dvn2iprev(ix1,ix2,ix3))/(tnext-tprev)
-      dvn2inow(ix1,ix2,ix3)=dvn2iprev(ix1,ix2,ix3)+slope*(t+dt/2d0-tprev)
-
-      slope=(dvn3inext(ix1,ix2,ix3)-dvn3iprev(ix1,ix2,ix3))/(tnext-tprev)
-      dvn3inow(ix1,ix2,ix3)=dvn3iprev(ix1,ix2,ix3)+slope*(t+dt/2d0-tprev)
-
-      slope=(dTninext(ix1,ix2,ix3)-dTniprev(ix1,ix2,ix3))/(tnext-tprev)
-      dTninow(ix1,ix2,ix3)=dTniprev(ix1,ix2,ix3)+slope*(t+dt/2d0-tprev)
-    end do
-  end do
-end do
-
-
-!SOME BASIC DIAGNOSTICS
-if (myid==lid/2) then
-  print *, myid
-  print *, 'tprev,t,tnext:  ',tprev,t+dt/2d0,tnext
-  print *, 'Min/max values for dnOinow:  ',minval(dnOinow),maxval(dnOinow)
-  print *, 'Min/max values for dnN2inow:  ',minval(dnN2inow),maxval(dnN2inow)
-  print *, 'Min/max values for dnO2inow:  ',minval(dnO2inow),maxval(dnO2inow)
-  print *, 'Min/max values for dvn1inow:  ',minval(dvn1inow),maxval(dvn1inow)
-  print *, 'Min/max values for dvn2inow:  ',minval(dvn2inow),maxval(dvn2inow)
-  print *, 'Min/max values for dvn3inow:  ',minval(dvn3inow),maxval(dvn3inow)
-  print *, 'Min/max values for dTninow:  ',minval(dTninow),maxval(dTninow)
-end if
-
+!Interpolation in time
+call timeinterp_dneu(t,dt,dNOinow,dnN2inow,dnO2inow,dvn1inow,dvn2inow,dvn3inow,dTninow)
 
 !NOW UPDATE THE PROVIDED NEUTRAL ARRAYS
 nn(:,:,:,1)=nnmsis(:,:,:,1)+dnOinow
