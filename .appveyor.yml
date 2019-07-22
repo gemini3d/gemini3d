@@ -9,7 +9,8 @@ build: off
 
 install:
 # pip can't be in init, wrong python version
-- python -m pip install meson
+- git clone https://github.com/mesonbuild/meson.git ../meson
+- python -m pip install -e ../meson
 - python install_prereqs.py
 - meson build
 

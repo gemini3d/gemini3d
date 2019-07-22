@@ -38,8 +38,8 @@ jobs:
       sudo apt install -yq --no-install-recommends gfortran-6 liblapack-dev libscalapack-mpi-dev libmumps-dev libopenmpi-dev octave
     displayName: 'Install Linux prereqs'
   - script: |
-      git clone https://github.com/mesonbuild/meson
-      python -m pip install -e meson
+      git clone https://github.com/mesonbuild/meson ../meson
+      python -m pip install -e ../meson
       curl -Ls https://github.com/ninja-build/ninja/releases/download/v1.9.0/ninja-linux.zip -o ninja-linux.zip
       sudo unzip ninja-linux.zip -d /usr/local/bin/
     displayName: 'setup Meson'

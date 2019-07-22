@@ -20,8 +20,8 @@ addons:
 #    - brew install mumps
 
 before_install:
-- git clone https://github.com/mesonbuild/meson
-- python -m pip install -e meson
+- git clone https://github.com/mesonbuild/meson ../meson
+- python -m pip install -e ../meson
 - curl -Ls https://github.com/ninja-build/ninja/releases/download/v1.9.0/ninja-linux.zip -o ninja-linux.zip
 - sudo unzip ninja-linux.zip -d /usr/local/bin/
 
