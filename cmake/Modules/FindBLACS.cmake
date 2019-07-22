@@ -62,6 +62,8 @@ elseif(OpenMPI IN_LIST BLACS_FIND_COMPONENTS)
 
 endif()
 
+set(BLACS_LIBRARY ${BLACS_LIBRARY} PARENT_SCOPE)
+
 endfunction(getlibs)
 
 # == main
