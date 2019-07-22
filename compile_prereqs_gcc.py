@@ -10,6 +10,7 @@ from pathlib import Path
 import pkg_resources
 from argparse import ArgumentParser
 import typing
+import sys
 
 # ========= user parameters ======================
 BUILDDIR = 'build'
@@ -56,11 +57,13 @@ def openmpi(wipe: bool, dirs: typing.Dict[str, Path]):
     url_retrieve(MPIURL, MPIFN, ('sha1', MPISHA1))
     extract_tar(MPIFN, source_lib)
 
-    subprocess.check_call(['./configure', f'--prefix={install_lib}',
-                           f'CC={CC}', f'CXX={CXX}', f'FC={FC}'],
-                          cwd=source_lib)
+    nice = ['nice'] if sys.platform == 'linux' else []
+    cmd = nice + ['./configure', f'--prefix={install_lib}', f'CC={CC}', f'CXX={CXX}', f'FC={FC}']
 
-    subprocess.check_call(['make', '-C', str(source_lib), '-j', LOADLIMIT, 'install'])
+    subprocess.check_call(cmd, cwd=source_lib)
+
+    cmd = nice + ['make', '-C', str(source_lib), '-j', LOADLIMIT, 'install']
+    subprocess.check_call(cmd)
 
 
 def lapack(wipe: bool,  dirs: typing.Dict[str, Path]):

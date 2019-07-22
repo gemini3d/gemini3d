@@ -129,7 +129,7 @@ foreach i : test_names
 
   if run_command('python', 'script_utils/meson_file_extract.py',
     zenodo[i]['zip'], zenodo[i]['dir']).returncode() != 0
-    message(i + 'test data not available, test will fail')
+    warning(i + 'test data not available, test will fail')
   endif
 
   test_dir = meson.build_root() / 'test'  + i
