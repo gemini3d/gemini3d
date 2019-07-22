@@ -247,7 +247,7 @@ if (t+dt/2d0>=tnext .or. t<=0d0) then   !negative time means that we need to loa
   if (myid==0) then
     print *, 'Spatial interpolation and rotation of vectors for date:  ',ymdtmp,' ',UTsectmp
   end if
-  call spaceinterp_dneu()
+  call spaceinterp_dneu(.false.)
 
   !UPDATE OUR CONCEPT OF PREVIOUS AND NEXT TIMES
   tprev=tnext
@@ -341,7 +341,7 @@ if (t+dt/2d0>=tnext) then
   if (myid==0) then
     print *, 'Spatial interpolation and rotation of vectors for date:  ',ymdtmp,' ',UTsectmp
   end if
-  call spaceinterp_dneu()
+  call spaceinterp_dneu(.true.)
 
   !UPDATE OUR CONCEPT OF PREVIOUS AND NEXT TIMES
   tprev=tnext
@@ -666,37 +666,63 @@ end if
 end subroutine read_dneu
 
 
-subroutine spaceinterp_dneu()
+subroutine spaceinterp_dneu(flagcart)
 
 !must take into account the type of interpolation that is being done
+logical, intent(in) :: flagcart
 
 real(wp), dimension(lx1*lx2*lx3) :: parami    !work array for temp storage of interpolated data, note sizes taken from grid module data
 
 
-parami=interp2(zn,rhon,dnO,zi,rhoi)     !interp to temp var.
-dnOiprev=dnOinext                       !save new pervious
-dnOinext=reshape(parami,[lx1,lx2,lx3])    !overwrite next with new interpolated input
- 
-parami=interp2(zn,rhon,dnN2,zi,rhoi)
-dnN2iprev=dnN2inext
-dnN2inext=reshape(parami,[lx1,lx2,lx3])
- 
-parami=interp2(zn,rhon,dnN2,zi,rhoi)
-dnO2iprev=dnO2inext
-dnO2inext=reshape(parami,[lx1,lx2,lx3])
- 
-parami=interp2(zn,rhon,dvnrho,zi,rhoi)
-dvnrhoiprev=dvnrhoinext
-dvnrhoinext=reshape(parami,[lx1,lx2,lx3])
- 
-parami=interp2(zn,rhon,dvnz,zi,rhoi)
-dvnziprev=dvnzinext
-dvnzinext=reshape(parami,[lx1,lx2,lx3])
- 
-parami=interp2(zn,rhon,dTn,zi,rhoi)
-dTniprev=dTninext
-dTninext=reshape(parami,[lx1,lx2,lx3])
- 
+if(flagcart) then
+  parami=interp2(zn,yn,dnO,zi,yi)     !interp to temp var.
+  dnOiprev=dnOinext                       !save new pervious
+  dnOinext=reshape(parami,[lx1,lx2,lx3])    !overwrite next with new interpolated input
+
+  parami=interp2(zn,yn,dnN2,zi,yi)
+  dnN2iprev=dnN2inext
+  dnN2inext=reshape(parami,[lx1,lx2,lx3])
+
+  parami=interp2(zn,yn,dnN2,zi,yi)
+  dnO2iprev=dnO2inext
+  dnO2inext=reshape(parami,[lx1,lx2,lx3])
+
+  parami=interp2(zn,yn,dvnrho,zi,yi)
+  dvnrhoiprev=dvnrhoinext    !interpreted as y-component in this (cartesian) function
+  dvnrhoinext=reshape(parami,[lx1,lx2,lx3])
+
+  parami=interp2(zn,yn,dvnz,zi,yi)
+  dvnziprev=dvnzinext
+  dvnzinext=reshape(parami,[lx1,lx2,lx3])
+
+  parami=interp2(zn,yn,dTn,zi,yi)
+  dTniprev=dTninext
+  dTninext=reshape(parami,[lx1,lx2,lx3])
+else
+  parami=interp2(zn,rhon,dnO,zi,rhoi)     !interp to temp var.
+  dnOiprev=dnOinext                       !save new pervious
+  dnOinext=reshape(parami,[lx1,lx2,lx3])    !overwrite next with new interpolated input
+   
+  parami=interp2(zn,rhon,dnN2,zi,rhoi)
+  dnN2iprev=dnN2inext
+  dnN2inext=reshape(parami,[lx1,lx2,lx3])
+   
+  parami=interp2(zn,rhon,dnN2,zi,rhoi)
+  dnO2iprev=dnO2inext
+  dnO2inext=reshape(parami,[lx1,lx2,lx3])
+   
+  parami=interp2(zn,rhon,dvnrho,zi,rhoi)
+  dvnrhoiprev=dvnrhoinext
+  dvnrhoinext=reshape(parami,[lx1,lx2,lx3])
+   
+  parami=interp2(zn,rhon,dvnz,zi,rhoi)
+  dvnziprev=dvnzinext
+  dvnzinext=reshape(parami,[lx1,lx2,lx3])
+   
+  parami=interp2(zn,rhon,dTn,zi,rhoi)
+  dTniprev=dTninext
+  dTninext=reshape(parami,[lx1,lx2,lx3])
+end if
  
 !MORE DIAG
 if (myid==lid/2) then
@@ -711,16 +737,18 @@ end if
  
 !ROTATE VECTORS INTO X1 X2 DIRECTIONS (Need to include unit vectors with grid
 !structure)
-
 dvn1iprev=dvn1inext   !save the old data
-dvn1inext=dvnrhoinext*proj_erhop_e1+dvnzinext*proj_ezp_e1    !apply projection to complete rotation into dipole coordinates
- 
 dvn2iprev=dvn2inext
-dvn2inext=dvnrhoinext*proj_erhop_e2+dvnzinext*proj_ezp_e2
- 
 dvn3iprev=dvn3inext
-dvn3inext=dvnrhoinext*proj_erhop_e3+dvnzinext*proj_ezp_e3
- 
+if(flagcart) then
+  dvn1inext=dvnrhoinext*proj_eyp_e1+dvnzinext*proj_ezp_e1    !apply projection to complete rotation into dipole coordinates; drhoi interpreted here at teh y component (northward)
+  dvn2inext=dvnrhoinext*proj_eyp_e2+dvnzinext*proj_ezp_e2
+  dvn3inext=dvnrhoinext*proj_eyp_e3+dvnzinext*proj_ezp_e3
+else
+  dvn1inext=dvnrhoinext*proj_erhop_e1+dvnzinext*proj_ezp_e1    !apply projection to complete rotation into dipole coordinates
+  dvn2inext=dvnrhoinext*proj_erhop_e2+dvnzinext*proj_ezp_e2
+  dvn3inext=dvnrhoinext*proj_erhop_e3+dvnzinext*proj_ezp_e3
+end if
  
 !MORE DIAGNOSTICS
 if (myid==lid/2) then
