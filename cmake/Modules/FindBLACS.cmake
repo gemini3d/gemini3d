@@ -23,6 +23,8 @@ BLACS_INCLUDE_DIRS
 
 #]=======================================================================]
 
+cmake_policy(VERSION 3.3)
+
 function(getlibs)
 if(MPICH IN_LIST BLACS_FIND_COMPONENTS)
   find_library(BLACS_LIBRARY
@@ -60,7 +62,13 @@ elseif(OpenMPI IN_LIST BLACS_FIND_COMPONENTS)
     list(APPEND BLACS_LIBRARY ${BLACS_INIT})
   endif()
 
+  if(BLACS_LIBRARY)
+    set(BLACS_OpenMPI_FOUND true PARENT_SCOPE)
+  endif()
+else()
+  message(FATAL_ERROR "Must specify desired COMPONENTS for find_package(BLACS)")
 endif()
+
 
 set(BLACS_LIBRARY ${BLACS_LIBRARY} PARENT_SCOPE)
 
@@ -68,22 +76,25 @@ endfunction(getlibs)
 
 # == main
 
-if(NOT DEFINED BLACS_FIND_COMPONENTS)
+if(NOT BLACS_FIND_COMPONENTS)
   set(BLACS_FIND_COMPONENTS OpenMPI)
 endif()
 
 getlibs()
 
+
+
+
 if(BLACS_LIBRARY)
-  include(CheckFortranFunctionExists)
+  include(CheckFortranSourceCompiles)
   set(CMAKE_REQUIRED_LIBRARIES ${BLACS_LIBRARY})
-  check_fortran_function_exists(blacs_gridmap BLACS_OK)
+  check_fortran_source_compiles("integer contxt; CALL BLACS_GET(0, 0, CONTXT); end" BLACS_OK SRC_EXT f90)
 endif()
 
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(BLACS
-  REQUIRED_VARS BLACS_LIBRARY BLACS_OK
+  REQUIRED_VARS BLACS_LIBRARY
   HANDLE_COMPONENTS)
 
 if(BLACS_FOUND)

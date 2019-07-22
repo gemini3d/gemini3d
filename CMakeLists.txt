@@ -100,7 +100,8 @@ target_compile_options(multifluid PRIVATE ${FFLAGS})
 add_executable(gemini.bin gemini.f90)
 target_link_libraries(gemini.bin PRIVATE mpimod io neutral precipBCs
   temporal multifluid
-  potentialBCs potential_comm_mumps const)
+  potentialBCs potential_comm_mumps const
+  ${LAPACK_LIBRARIES})  # necessary for self-compiled
 #  MPI::MPI_Fortran)
 target_compile_options(gemini.bin PRIVATE ${FFLAGS})
 
