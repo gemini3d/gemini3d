@@ -9,17 +9,17 @@
 
 # Metis
 if(METIS_ROOT)
-  find_package(METIS)
+  find_package(METIS REQUIRED)
 endif()
 
 # Scotch
 if(Scotch_ROOT)
-  find_package(Scotch COMPONENTS ESMUMPS)
+  find_package(Scotch REQUIRED COMPONENTS ESMUMPS)
 endif()
 
 # BLACS
 if(BLACS_ROOT)
-  find_package(BLACS)
+  find_package(BLACS REQUIRED)
 endif()
 
 # SCALAPACK always needed for MUMPS
