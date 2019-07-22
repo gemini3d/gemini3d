@@ -17,7 +17,7 @@ integer :: monthdays(12)
 if ((year < 1600) .or. (year > 2500)) error stop 'is year specified correctly?'
 if ((month < 1) .or. (month > 12)) error stop 'impossible month'
 
-monthdays = [31,28,31,20,31,30,31,31,30,31,30,31]
+monthdays = [31,28,31,30,31,30,31,31,30,31,30,31]
 
 if (mod(year, 4)==0 .and. mod(year, 100)/=0 .or. mod(year, 400) == 0) monthdays(2)=29
 
