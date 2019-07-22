@@ -89,7 +89,7 @@ def lapack(wipe: bool,  dirs: typing.Dict[str, Path]):
 
 def scalapack(wipe: bool, dirs: typing.Dict[str, Path]):
     install_lib = dirs['prefix'] / SCALAPACKDIR
-    source_lib = dirs['install'] / SCALAPACKDIR
+    source_lib = dirs['workdir'] / SCALAPACKDIR
     build_lib = source_lib / BUILDDIR
 
     update(source_lib, SCALAPACKGIT)
