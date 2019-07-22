@@ -23,8 +23,10 @@ def url_retrieve(url: str,
         overwrite if file exists
     """
     outfile = Path(outfile).expanduser().resolve()
+    if outfile.is_dir():
+        raise ValueError('Please specify full filepath, including filename')
     # need .resolve() in case intermediate relative dir doesn't exist
-    if outfile.is_file() and not outfile.is_dir() and not overwrite:
+    if outfile.is_file() and not overwrite:
         return
     outfile.parent.mkdir(parents=True, exist_ok=True)
 
@@ -45,7 +47,7 @@ if __name__ == '__main__':
     p = argparse.ArgumentParser()
     p.add_argument('url', help='URL to file download')
     p.add_argument('outfile', help='filename to download to')
-    p.add_argument('-hash', help='expected hash', nargs='2')
+    p.add_argument('-hash', help='expected hash', nargs=2)
     P = p.parse_args()
 
     url_retrieve(P.url, P.outfile, P.hash)

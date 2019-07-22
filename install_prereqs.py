@@ -67,6 +67,8 @@ def main(package_manager: str):
                                  'If using gfortran, version >= 6 is required.'
                                  'Try devtoolset-7 if gcc/gfortran is too old on your system.')
         elif package_manager == 'apt':
+            if subprocess.run(['sudo', 'apt', 'update']).returncode:
+                raise SystemExit('installing prereqs failed.')
             if subprocess.run(['sudo', 'apt', '--yes', 'install'] + pkgs['apt']).returncode:
                 raise SystemExit('installing prereqs failed.')
     elif sys.platform == 'darwin':

@@ -124,12 +124,15 @@ endif
 
 foreach i : test_names
 
-  run_command('python', 'script_utils/meson_file_download.py',
-    zenodo[i]['url'], zenodo[i]['zip'], 'md5', zenodo[i]['md5'])
+  if run_command('python', 'script_utils/meson_file_download.py',
+      zenodo[i]['url'], zenodo[i]['zip'],
+      '-hash', 'md5', zenodo[i]['md5']).returncode() != 0
+    warning(i + 'test data could not be downloaded from ' + zenodo[i]['url'] + ' and so ' + i + ' test will fail.')
+  endif
 
   if run_command('python', 'script_utils/meson_file_extract.py',
     zenodo[i]['zip'], zenodo[i]['dir']).returncode() != 0
-    warning(i + 'test data not available, test will fail')
+    warning(i + 'test data in ' + zenodo[i]['dir'] + ' not available: ' + i + ' test will fail.')
   endif
 
   test_dir = meson.build_root() / 'test'  + i
