@@ -404,7 +404,7 @@ if (myid==0) then    !root
   open(newunit=inunit,file=trim(adjustl(filename)),status='old',form='unformatted',access='stream')
   read(inunit) lhorzn,lzn
   close(inunit)
-  print *, 'Neutral data has lrho,lz size:  ',lhorzn,lzn,' with spacing drho,dz',dhorzn,dzn
+  print *, 'Neutral data has lhorzn,lz size:  ',lhorzn,lzn,' with spacing dhorzn,dz',dhorzn,dzn
 
   do iid=1,lid-1
     call mpi_send(lhorzn,1,MPI_INTEGER,iid,taglrho,MPI_COMM_WORLD,ierr)
