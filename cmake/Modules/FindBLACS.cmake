@@ -23,9 +23,7 @@ BLACS_INCLUDE_DIRS
 
 #]=======================================================================]
 
-find_package(PkgConfig)
-pkg_check_modules(BLACS blacs-openmpi)
-
+function(getlibs)
 if(MPICH IN_LIST BLACS_FIND_COMPONENTS)
   find_library(BLACS_LIBRARY
                NAMES blacs-mpich blacs-mpich2)
@@ -37,34 +35,35 @@ elseif(PVM IN_LIST BLACS_FIND_COMPONENTS)
                NAMES blacs-pvm)
 elseif(OpenMPI IN_LIST BLACS_FIND_COMPONENTS)
 
-find_library(BLACS_INIT
-  NAMES blacsF77init blacsF77init-openmpi
-  PATHS ${SCALAPACK_ROOT})
+  find_library(BLACS_INIT
+    NAMES blacsF77init blacsF77init-openmpi
+    PATHS ${SCALAPACK_ROOT})
 
-find_library(BLACS_CINIT
-  NAMES blacsCinit blacsCinit-openmpi
-  PATHS ${SCALAPACK_ROOT})
+  find_library(BLACS_CINIT
+    NAMES blacsCinit blacsCinit-openmpi
+    PATHS ${SCALAPACK_ROOT})
 
-find_library(BLACS_LIB
-  NAMES blacs blacs-mpi blacs-openmpi
-  PATHS ${SCALAPACK_ROOT})
+  find_library(BLACS_LIB
+    NAMES blacs blacs-mpi blacs-openmpi
+    PATHS ${SCALAPACK_ROOT})
 
-if(BLACS_LIB)
-  list(APPEND BLACS_LIBRARY ${BLACS_LIB})
-endif()
+  if(BLACS_LIB)
+    list(APPEND BLACS_LIBRARY ${BLACS_LIB})
+  endif()
 
-if(BLACS_CINIT)
-  list(APPEND BLACS_LIBRARY ${BLACS_CINIT})
-endif()
+  if(BLACS_CINIT)
+    list(APPEND BLACS_LIBRARY ${BLACS_CINIT})
+  endif()
 
-if(BLACS_INIT)
-  list(APPEND BLACS_LIBRARY ${BLACS_INIT})
-endif()
+  if(BLACS_INIT)
+    list(APPEND BLACS_LIBRARY ${BLACS_INIT})
+  endif()
 
 endif()
 
 endfunction(getlibs)
 
+# == main
 
 if(NOT DEFINED BLACS_FIND_COMPONENTS)
   set(BLACS_FIND_COMPONENTS OpenMPI)
@@ -83,7 +82,6 @@ include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(BLACS
   REQUIRED_VARS BLACS_LIBRARY BLACS_OK
   HANDLE_COMPONENTS)
-
 
 if(BLACS_FOUND)
   set(BLACS_LIBRARIES ${BLACS_LIBRARY})
