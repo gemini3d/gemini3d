@@ -10,6 +10,7 @@ import pkg_resources
 from argparse import ArgumentParser
 import typing
 import sys
+import os
 from functools import lru_cache
 
 # ========= user parameters ======================
@@ -17,16 +18,6 @@ BUILDDIR = 'build'
 LOADLIMIT = '-l 4'
 
 # Library parameters
-FC = shutil.which('gfortran')
-if not FC:
-    raise FileNotFoundError('Gfortran not found')
-CC = shutil.which('gcc')
-if not CC:
-    raise FileNotFoundError('GCC not found')
-CXX = shutil.which('g++')
-if not CXX:
-    raise FileNotFoundError('G++ not found')
-
 MPIVERSION = '3.1.3'  # OpenMPI 4 doesn't seem to work with ScalaPack?
 MPIFN = f'openmpi-{MPIVERSION}.tar.bz2'
 MPIURL = f'https://download.open-mpi.org/release/open-mpi/v3.1/{MPIFN}'
@@ -44,6 +35,18 @@ MUMPSDIR = 'mumps'
 
 # ========= end of user parameters ================
 
+FC = shutil.which('gfortran')
+if not FC:
+    raise FileNotFoundError('Gfortran not found')
+CC = shutil.which('gcc')
+if not CC:
+    raise FileNotFoundError('GCC not found')
+CXX = shutil.which('g++')
+if not CXX:
+    raise FileNotFoundError('G++ not found')
+
+ENV = os.environ.update({'FC': FC, 'CC': CC, 'CXX': CXX})
+
 
 def openmpi(wipe: bool, dirs: typing.Dict[str, Path]):
     from script_utils.meson_file_download import url_retrieve
@@ -58,7 +61,7 @@ def openmpi(wipe: bool, dirs: typing.Dict[str, Path]):
     nice = ['nice'] if sys.platform == 'linux' else []
     cmd = nice + ['./configure', f'--prefix={install_lib}', f'CC={CC}', f'CXX={CXX}', f'FC={FC}']
 
-    subprocess.check_call(cmd, cwd=source_lib)
+    subprocess.check_call(cmd, cwd=source_lib, env=ENV)
 
     cmd = nice + ['make', '-C', str(source_lib), '-j', LOADLIMIT, 'install']
     subprocess.check_call(cmd)
@@ -78,7 +81,8 @@ def lapack(wipe: bool,  dirs: typing.Dict[str, Path]):
 
     subprocess.check_call([cmake,
                            f'-DCMAKE_INSTALL_PREFIX={install_lib}',
-                           '-B', str(build_lib), '-S', str(source_lib)])
+                           '-B', str(build_lib), '-S', str(source_lib)],
+                          env=ENV)
 
     subprocess.check_call([cmake, '--build', str(build_lib),
                            '--parallel', '--target', 'install'])
@@ -99,7 +103,8 @@ def scalapack(wipe: bool, dirs: typing.Dict[str, Path]):
     subprocess.check_call([cmake,
                            f'-DCMAKE_INSTALL_PREFIX={install_lib}',
                            f'-DLAPACK_ROOT={Path(dirs["prefix"]).expanduser() / LAPACKDIR}',
-                           '-B', str(build_lib), '-S', str(source_lib)])
+                           '-B', str(build_lib), '-S', str(source_lib)],
+                          env=ENV)
 
     subprocess.check_call([cmake, '--build', str(build_lib),
                            '--parallel', '--target', 'install'])
@@ -122,7 +127,8 @@ def mumps(wipe: bool, dirs: typing.Dict[str, Path]):
     subprocess.check_call([cmake,
                            f'-DCMAKE_INSTALL_PREFIX={install_lib}',
                            f'-DSCALAPACK_ROOT={scalapack_lib}',
-                           '-B', str(build_lib), '-S', str(source_lib)])
+                           '-B', str(build_lib), '-S', str(source_lib)],
+                          env=ENV)
 
     subprocess.check_call([cmake, '--build', str(build_lib),
                            '--parallel', '--target', 'install'])
