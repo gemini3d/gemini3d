@@ -42,6 +42,8 @@ def mumps(wipe: bool, dirs: typing.Dict[str, Path]):
     subprocess.check_call([cmake, '--build', str(build_lib),
                            '--parallel', '--target', 'install'])
 
+    subprocess.check_call(['ctest', '--parallel', '--output-on-failure'], cwd=str(build_lib))
+
 
 @lru_cache()
 def cmake_minimum_version(min_version: str = None) -> str:
