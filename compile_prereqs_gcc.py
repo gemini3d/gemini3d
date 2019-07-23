@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 """
-Installs prereqs for Gemini program
-CMake >= 3.13 needed in general
+Installs prereqs for Gemini program for Gfortran
 """
 import subprocess
 import shutil
@@ -11,15 +10,23 @@ import pkg_resources
 from argparse import ArgumentParser
 import typing
 import sys
+from functools import lru_cache
 
 # ========= user parameters ======================
 BUILDDIR = 'build'
 LOADLIMIT = '-l 4'
 
 # Library parameters
-FC = 'gfortran'
-CC = 'gcc'
-CXX = 'g++'
+FC = shutil.which('gfortran')
+if not FC:
+    raise FileNotFoundError('Gfortran not found')
+CC = shutil.which('gcc')
+if not CC:
+    raise FileNotFoundError('GCC not found')
+CXX = shutil.which('g++')
+if not CXX:
+    raise FileNotFoundError('G++ not found')
+
 MPIVERSION = '3.1.3'  # OpenMPI 4 doesn't seem to work with ScalaPack?
 MPIFN = f'openmpi-{MPIVERSION}.tar.bz2'
 MPIURL = f'https://download.open-mpi.org/release/open-mpi/v3.1/{MPIFN}'
@@ -36,15 +43,6 @@ MUMPSGIT = 'https://github.com/scivision/mumps'
 MUMPSDIR = 'mumps'
 
 # ========= end of user parameters ================
-
-GITEXE = shutil.which('git')
-
-CMAKE = shutil.which('cmake')
-if not CMAKE:
-    raise SystemExit('could not find CMake')
-cmake_ver = subprocess.check_output([CMAKE, '--version'], universal_newlines=True).split('\n')[0].split(' ')[2]
-if pkg_resources.parse_version(cmake_ver) < pkg_resources.parse_version('3.13'):
-    raise SystemExit(f'CMake {cmake_ver} is less than minimum required CMake 3.13')
 
 
 def openmpi(wipe: bool, dirs: typing.Dict[str, Path]):
@@ -73,17 +71,16 @@ def lapack(wipe: bool,  dirs: typing.Dict[str, Path]):
 
     update(source_lib, LAPACKGIT)
 
-    build_lib.mkdir(exist_ok=True)
-
+    cmake = cmake_minimum_version('3.13')
     cachefile = build_lib / 'CMakeCache.txt'
     if wipe and cachefile.is_file():
         cachefile.unlink()
 
-    subprocess.check_call([CMAKE,
+    subprocess.check_call([cmake,
                            f'-DCMAKE_INSTALL_PREFIX={install_lib}',
                            '-B', str(build_lib), '-S', str(source_lib)])
 
-    subprocess.check_call([CMAKE, '--build', str(build_lib),
+    subprocess.check_call([cmake, '--build', str(build_lib),
                            '--parallel', '--target', 'install'])
 
 
@@ -94,16 +91,17 @@ def scalapack(wipe: bool, dirs: typing.Dict[str, Path]):
 
     update(source_lib, SCALAPACKGIT)
 
+    cmake = cmake_minimum_version('3.13')
     cachefile = build_lib / 'CMakeCache.txt'
     if wipe and cachefile.is_file():
         cachefile.unlink()
 
-    subprocess.check_call([CMAKE,
+    subprocess.check_call([cmake,
                            f'-DCMAKE_INSTALL_PREFIX={install_lib}',
                            f'-DLAPACK_ROOT={Path(dirs["prefix"]).expanduser() / LAPACKDIR}',
                            '-B', str(build_lib), '-S', str(source_lib)])
 
-    subprocess.check_call([CMAKE, '--build', str(build_lib),
+    subprocess.check_call([cmake, '--build', str(build_lib),
                            '--parallel', '--target', 'install'])
 
 
@@ -116,17 +114,37 @@ def mumps(wipe: bool, dirs: typing.Dict[str, Path]):
 
     update(source_lib, MUMPSGIT)
 
+    cmake = cmake_minimum_version('3.13')
     cachefile = build_lib / 'CMakeCache.txt'
     if wipe and cachefile.is_file():
         cachefile.unlink()
 
-    subprocess.check_call([CMAKE,
+    subprocess.check_call([cmake,
                            f'-DCMAKE_INSTALL_PREFIX={install_lib}',
                            f'-DSCALAPACK_ROOT={scalapack_lib}',
                            '-B', str(build_lib), '-S', str(source_lib)])
 
-    subprocess.check_call([CMAKE, '--build', str(build_lib),
+    subprocess.check_call([cmake, '--build', str(build_lib),
                            '--parallel', '--target', 'install'])
+
+
+@lru_cache()
+def cmake_minimum_version(min_version: str = None) -> str:
+    """
+    if CMake is at least minimum version, return path to CMake executable
+    """
+
+    cmake = shutil.which('cmake')
+    if not cmake:
+        raise FileNotFoundError('could not find CMake')
+
+    if not min_version:
+        return cmake
+    cmake_ver = subprocess.check_output([cmake, '--version'], universal_newlines=True).split('\n')[0].split(' ')[2]
+    if pkg_resources.parse_version(cmake_ver) < pkg_resources.parse_version(min_version):
+        raise ValueError(f'CMake {cmake_ver} is less than minimum required {min_version}')
+
+    return cmake
 
 
 def update(path: Path, repo: str):
@@ -135,6 +153,8 @@ def update(path: Path, repo: str):
 
     we use cwd= instead of "git -C" for very old Git versions that might be on your HPC.
     """
+    GITEXE = shutil.which('git')
+
     if not GITEXE:
         logging.warning('Git not available, cannot check for library updates')
         return
