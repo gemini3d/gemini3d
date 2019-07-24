@@ -25,19 +25,19 @@ def solarzenithangle(t, glat, glon, alt_m):
       solar zenith angle [degrees]
     """
 
-    obs = ac.EarthLocation(lat=glat*u.deg, lon=glon*u.deg, height=alt_m*u.m)
-    times = astropy.time.Time(t, scale='ut1')
+    obs = ac.EarthLocation(lat=glat * u.deg, lon=glon * u.deg, height=alt_m * u.m)
+    times = astropy.time.Time(t, scale="ut1")
     sun = ac.get_sun(times)
     sunobs = sun.transform_to(ac.AltAz(obstime=times, location=obs))
 
-    return 90. - sunobs.alt.degree
+    return 90.0 - sunobs.alt.degree
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     p = ArgumentParser()
-    p.add_argument('time', help='UTC')
-    p.add_argument('latlon', nargs=2, type=float)
-    p.add_argument('altitude', help='meters', type=float)
+    p.add_argument("time", help="UTC")
+    p.add_argument("latlon", nargs=2, type=float)
+    p.add_argument("altitude", help="meters", type=float)
     a = p.parse_args()
 
     sza = solarzenithangle(a.time, a.latlon[0], a.latlon[1], a.altitude)

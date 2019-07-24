@@ -29,16 +29,16 @@ def extract_tar(fn: Path, outpath: Path, overwrite: bool = False):
         z.extractall(str(outpath.parent))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     p = argparse.ArgumentParser()
-    p.add_argument('infile', help='compressed file to extract')
-    p.add_argument('outpath', help='path to extract into')
+    p.add_argument("infile", help="compressed file to extract")
+    p.add_argument("outpath", help="path to extract into")
     P = p.parse_args()
 
     infile = Path(P.infile)
-    if infile.suffix.lower() == '.zip':
+    if infile.suffix.lower() == ".zip":
         extract_zip(infile, P.outpath)
-    elif infile.suffix.lower() in ('.tar', '.gz', '.bz2', '.xz'):
+    elif infile.suffix.lower() in (".tar", ".gz", ".bz2", ".xz"):
         extract_tar(infile, P.outpath)
     else:
-        raise ValueError(f'Not sure how to decompress {infile}')
+        raise ValueError(f"Not sure how to decompress {infile}")

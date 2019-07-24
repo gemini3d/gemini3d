@@ -6,10 +6,9 @@ import argparse
 import typing
 
 
-def url_retrieve(url: str,
-                 outfile: Path,
-                 hash: typing.Sequence[str] = None,
-                 overwrite: bool = False):
+def url_retrieve(
+    url: str, outfile: Path, hash: typing.Sequence[str] = None, overwrite: bool = False
+):
     """
     Parameters
     ----------
@@ -24,7 +23,7 @@ def url_retrieve(url: str,
     """
     outfile = Path(outfile).expanduser().resolve()
     if outfile.is_dir():
-        raise ValueError('Please specify full filepath, including filename')
+        raise ValueError("Please specify full filepath, including filename")
     # need .resolve() in case intermediate relative dir doesn't exist
     if outfile.is_file() and not overwrite:
         return
@@ -34,7 +33,7 @@ def url_retrieve(url: str,
 
     if hash:
         if not file_checksum(outfile, hash[0], hash[1]):
-            raise OSError('hash mismatch: Failed to download {}'.format(outfile))
+            raise OSError("hash mismatch: Failed to download {}".format(outfile))
 
 
 def file_checksum(fn: Path, mode: str, hash: str) -> bool:
@@ -43,11 +42,11 @@ def file_checksum(fn: Path, mode: str, hash: str) -> bool:
     return h.hexdigest() == hash
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     p = argparse.ArgumentParser()
-    p.add_argument('url', help='URL to file download')
-    p.add_argument('outfile', help='filename to download to')
-    p.add_argument('-hash', help='expected hash', nargs=2)
+    p.add_argument("url", help="URL to file download")
+    p.add_argument("outfile", help="filename to download to")
+    p.add_argument("-hash", help="expected hash", nargs=2)
     P = p.parse_args()
 
     url_retrieve(P.url, P.outfile, P.hash)

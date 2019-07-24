@@ -37,7 +37,7 @@ nme=2e11;
 %WRITE THE GRID AND INITIAL CONDITIONS
 %ADD PATHS FOR FUNCTIONS
 simlabel='2Dtest_eq'
-outdir='../../../simulations/input/2Dtest_eq/';
+outdir='../../tests/data/input/2Dtest_eq/';
 writegrid(xg,outdir);
 time=UT*3600;   %doesn't matter for input files
 writedata(dmy,time,ns,vsx1,Ts,outdir,simlabel);

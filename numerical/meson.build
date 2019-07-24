@@ -15,12 +15,13 @@ calculus = library('calculus', 'calculus/calculus.f90', 'interpolation/interpola
 
 # FIXME: debug Meson internals
 # mumps = dependency('MUMPS', cmake_module_path : 'cmake/Modules')
+mumps_root = get_option('MUMPS_ROOT')
 if mumps_root == ''
-  mumpsinc = include_directories('/usr/include')
+  mumpsinc = '/usr/include'
   mumpslib = [fc.find_library('dmumps', required : true)]
 else
   message('searching for MUMPS in ' + mumps_root)
-  mumpsinc = include_directories(mumps_root / 'include')
+  mumpsinc = mumps_root / 'include'
   mumpslib = [fc.find_library('dmumps', required : true, dirs : mumps_root / 'lib'),
               fc.find_library('mumps_common', required : true, dirs : mumps_root / 'lib'),
               fc.find_library('scalapack', required : true, dirs : scalapack_root / 'lib')]

@@ -8,7 +8,6 @@ HDF = get_option('HDF')
 mpi_root = get_option('MPI_ROOT')
 lapack_root = get_option('LAPACK_ROOT')
 scalapack_root = get_option('SCALAPACK_ROOT')
-mumps_root = get_option('MUMPS_ROOT')
 
 fc = meson.get_compiler('fortran')
 if fc.get_id() == 'gcc'
@@ -99,20 +98,20 @@ mpiexec = find_program('mpiexec', required : true)
 zenodo = {
   '2d': {'url': 'https://zenodo.org/record/2520780/files/zenodo2d.zip?download=1',
          'md5': '5bd1bce1a465ccec5af813f8b7959ec8',
-         'dir': meson.source_root() / '../simulations/zenodo2d',
-         'zip': meson.source_root() / '../simulations/zenodo2d.zip'},
+         'dir': meson.source_root() / 'tests/data/zenodo2d',
+         'zip': meson.source_root() / 'tests/data/zenodo2d.zip'},
   '2d_glow': {'url': 'https://zenodo.org/record/2520780/files/zenodo2d_glow.zip?download=1',
               'md5': 'c5bbbbff3bdde85b6d7e9470bc3751a2',
-              'dir': meson.source_root() / '../simulations/zenodo2d_glow',
-              'zip': meson.source_root() / '../simulations/zenodo2d_glow.zip'},
+              'dir': meson.source_root() / 'tests/data/zenodo2d_glow',
+              'zip': meson.source_root() / 'tests/data/zenodo2d_glow.zip'},
   '3d': {'url': 'https://zenodo.org/record/2520920/files/zenodo3d.zip?download=1',
          'md5': '225853d43937a70c9ef6726f90666645',
-         'dir': meson.source_root() / '../simulations/zenodo3d',
-         'zip': meson.source_root() / '../simulations/zenodo3d.zip'},
+         'dir': meson.source_root() / 'tests/data/zenodo3d',
+         'zip': meson.source_root() / 'tests/data/zenodo3d.zip'},
   '3d_glow': {'url': 'https://zenodo.org/record/2520920/files/zenodo3d_glow.zip?download=1',
               'md5': '2c54bfde8aff0fb72d61115f04c361a7',
-              'dir': meson.source_root() / '../simulations/zenodo3d_glow',
-              'zip': meson.source_root() / '../simulations/zenodo3d_glow.zip'},
+              'dir': meson.source_root() / 'tests/data/zenodo3d_glow',
+              'zip': meson.source_root() / 'tests/data/zenodo3d_glow.zip'},
   }
 
 if use_glow

@@ -6,18 +6,18 @@ from readdata import loadframe
 
 def plotplasma(dat: dict):
     for k, v in dat.items():
-        if k == 't':
+        if k == "t":
             t = v
             continue
 
         ax = figure().gca()
         ax.pcolormesh(v.squeeze())
-        ax.set_title(f'{k}  {t}')
+        ax.set_title(f"{k}  {t}")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     p = ArgumentParser()
-    p.add_argument('simdir')
+    p.add_argument("simdir")
     p = p.parse_args()
 
     dat = loadframe(p.simdir)

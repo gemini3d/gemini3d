@@ -1,7 +1,7 @@
 # Test parameters (change for each test)
 set(TESTDIR test3d_glow)
 set(REFNAME zenodo3d_glow)
-set(REFDIR ../simulations)
+set(REFDIR tests/data)
 set(zenodoHash 2c54bfde8aff0fb72d61115f04c361a7)
 set(zenodoNumber 2520920)
 set(firstfile 20130220_18000.000001.dat)

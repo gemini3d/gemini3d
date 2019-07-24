@@ -26,6 +26,7 @@ BLACS_INCLUDE_DIRS
 cmake_policy(VERSION 3.3)
 
 function(getlibs)
+
 if(MPICH IN_LIST BLACS_FIND_COMPONENTS)
   find_library(BLACS_LIBRARY
                NAMES blacs-mpich blacs-mpich2)
@@ -81,8 +82,6 @@ if(NOT BLACS_FIND_COMPONENTS)
 endif()
 
 getlibs()
-
-
 
 
 if(BLACS_LIBRARY)
