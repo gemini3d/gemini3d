@@ -1,10 +1,33 @@
 import numpy as np
 from pathlib import Path
-from argparse import ArgumentParser
 from datetime import datetime, timedelta
-from typing import Tuple, Dict, Any
+import typing
 
 LSP = 7
+
+
+def datetime_range(
+    start: datetime, stop: datetime, step: timedelta
+) -> typing.List[datetime]:
+
+    """
+    Generate range of datetime
+
+    Parameters
+    ----------
+    start : datetime
+        start time
+    stop : datetime
+        stop time
+    step : timedelta
+        time step
+
+    Returns
+    -------
+    times : list of datetime
+        times requested
+    """
+    return [start + i * step for i in range((stop - start) // step)]
 
 
 def readsimsize(fn: Path):
@@ -12,9 +35,9 @@ def readsimsize(fn: Path):
         return np.fromfile(f, np.int32, 3)
 
 
-def readdata(P: dict, fn: Path) -> Dict[str, np.ndarray]:
+def readdata(P: typing.Dict[str, typing.Any], fn: Path) -> typing.Dict[str, np.ndarray]:
 
-    dat: Dict[str, np.ndarray] = {}
+    dat: typing.Dict[str, np.ndarray] = {}
 
     with fn.open("rb") as f:
         t = np.fromfile(f, np.float64, 4)
@@ -31,6 +54,9 @@ def readdata(P: dict, fn: Path) -> Dict[str, np.ndarray]:
         dat["J2"] = read3D(f, P["lxs"])
         dat["J3"] = read3D(f, P["lxs"])
 
+        dat["v2"] = read3D(f, P["lxs"])
+        dat["v3"] = read3D(f, P["lxs"])
+
         dat["Phitop"] = read2D(f, P["lxs"])
 
     if P["lxs"][1] == 1 or P["lxs"][2] == 1:
@@ -40,25 +66,25 @@ def readdata(P: dict, fn: Path) -> Dict[str, np.ndarray]:
     return dat
 
 
-def read4D(f, lsp: Tuple[int, int, int], lxs: int) -> np.ndarray:
+def read4D(f, lsp: typing.Tuple[int, int, int], lxs: int) -> np.ndarray:
 
     return np.fromfile(f, np.float64, np.prod(lxs) * lsp).reshape((lxs, lsp), order="F")
 
 
-def read3D(f, lxs: Tuple[int, int, int]) -> np.ndarray:
+def read3D(f, lxs: typing.Tuple[int, int, int]) -> np.ndarray:
 
     return np.fromfile(f, np.float64, np.prod(lxs)).reshape(*lxs, order="F")
 
 
-def read2D(f, lxs: Tuple[int, int]) -> np.ndarray:
+def read2D(f, lxs: typing.Tuple[int, int]) -> np.ndarray:
 
     return np.fromfile(f, np.float64, np.prod(lxs[1:])).reshape(*lxs[1:], order="F")
 
 
-def readconfig(inifn: Path) -> Dict[str, Any]:
-    inifn = Path(inifn).expanduser()
+def readconfig(inifn: Path) -> typing.Dict[str, typing.Any]:
+    inifn = Path(inifn).expanduser().resolve(strict=True)
 
-    P: Dict[str, Any] = {}
+    P: typing.Dict[str, typing.Any] = {}
 
     with inifn.open("r") as f:
         date = list(map(int, f.readline().split()[0].split(",")))[::-1]
@@ -66,9 +92,9 @@ def readconfig(inifn: Path) -> Dict[str, Any]:
 
         P["t0"] = datetime(*date) + timedelta(seconds=sec)  # type: ignore  # mypy bug
 
-        P["tdur"] = float(f.readline().split()[0])
+        P["tdur"] = timedelta(seconds=float(f.readline().split()[0]))
 
-        P["dtout"] = float(f.readline().split()[0])
+        P["dtout"] = timedelta(seconds=float(f.readline().split()[0]))
 
         P["f107a"], P["f107"], P["Ap"] = map(float, f.readline().split()[0].split(","))
 
@@ -83,7 +109,7 @@ def readconfig(inifn: Path) -> Dict[str, Any]:
     return P
 
 
-def loadframe(simdir: Path) -> Dict[str, np.ndarray]:
+def loadframe(simdir: Path, time: datetime) -> typing.Dict[str, np.ndarray]:
     simdir = Path(simdir).expanduser()
 
     P = readconfig(simdir / "inputs/config.ini")
@@ -93,17 +119,12 @@ def loadframe(simdir: Path) -> Dict[str, np.ndarray]:
 
     # %% datfn
 
-    t = P["t0"].timetuple()
-    datfn = simdir / f"{t[0]}{t[1]:02d}{t[2]:02d}_{t[3]*3600+t[4]*60+t[5]}.000001.dat"
+    t = time.timetuple()
+    timename = f"{t[0]}{t[1]:02d}{t[2]:02d}_{t[3]*3600+t[4]*60+t[5]}.000000.dat"
+    datfn = simdir / timename
+    if not datfn.is_file():
+        datfn = datfn.parent / (timename[:-10] + "000001.dat")
 
     dat = readdata(P, datfn)
 
     return dat
-
-
-if __name__ == "__main__":
-    p = ArgumentParser()
-    p.add_argument("simdir")
-    p = p.parse_args()
-
-    dat = loadframe(p.simdir)

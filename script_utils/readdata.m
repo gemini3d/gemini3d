@@ -5,7 +5,7 @@ validateattr(filename, {'char'}, {'vector'}, mfilename, 'data filename', 2)
 
 
 %--------------------------------------------------------
-%-----READ DATA FROM AN OUTPUT FILE WRITTEN BY FORTRAN 
+%-----READ DATA FROM AN OUTPUT FILE WRITTEN BY FORTRAN
 %-----CODE
 %--------------------------------------------------------
 
@@ -14,35 +14,35 @@ t=fread(fid,1,'real*8');
 
 ns=fread(fid,prod(lxs)*lsp,'real*8');
 ns=reshape(ns,[lxs,lsp]);
-disp('READDATA --> Loaded densities...');
+disp('READDATA --> Loaded densities...')
 
 vs1=fread(fid,prod(lxs)*lsp,'real*8');
 vs1=reshape(vs1,[lxs,lsp]);
 v1=sum(ns(:,:,:,1:6).*vs1(:,:,:,1:6),4)./ns(:,:,:,lsp);
-fprintf('READDATA --> Loaded parallel velocities...\n');
+disp('READDATA --> Loaded parallel velocities...')
 
 Ts=fread(fid,prod(lxs)*lsp,'real*8');
 Ts=reshape(Ts,[lxs,lsp]);
-fprintf('READDATA --> Loaded temperatures...\n');
+disp('READDATA --> Loaded temperatures...\n')
 
 if (~feof(fid))   %some files may not have electrodynamic info
     J1=fread(fid,lxs(1)*lxs(2)*lxs(3),'real*8');
     J1=reshape(J1,[lxs(1),lxs(2),lxs(3)]);
-    
+
     J2=fread(fid,lxs(1)*lxs(2)*lxs(3),'real*8');
     J2=reshape(J2,[lxs(1),lxs(2),lxs(3)]);
-    
+
     J3=fread(fid,lxs(1)*lxs(2)*lxs(3),'real*8');
     J3=reshape(J3,[lxs(1),lxs(2),lxs(3)]);
     fprintf('READDATA --> Loaded current density...\n');
-    
+
     v2=fread(fid,lxs(1)*lxs(2)*lxs(3),'real*8');
     v2=reshape(v2,[lxs(1),lxs(2),lxs(3)]);
-    
+
     v3=fread(fid,lxs(1)*lxs(2)*lxs(3),'real*8');
     v3=reshape(v3,[lxs(1),lxs(2),lxs(3)]);
     fprintf('READDATA --> Loaded perpendicular drifts...\n');
-    
+
     Phitop=fread(fid,lxs(2)*lxs(3),'real*8');
     Phitop=reshape(Phitop,[lxs(2),lxs(3)]);
     fprintf('READDATA --> Loaded topside potential pattern...\n');
@@ -72,7 +72,7 @@ if (lxs(2) == 1)    %a 2D simulations was done
     Ti=sum(ns(:,:,:,1:6).*Ts(:,:,:,1:6),4)./ns(:,:,:,lsp);
     Ti=squeeze(Ti);
     Te=squeeze(Ts(:,:,:,lsp));
-    
+
     [X3,X1]=meshgrid(x3,x1);
 else    %full 3D run
     Jpar=permute(J1(:,:,:),[3,2,1]);
@@ -87,7 +87,7 @@ else    %full 3D run
     Ti=sum(ns(:,:,:,1:6).*Ts(:,:,:,1:6),4)./ns(:,:,:,lsp);
     Ti=permute(Ti,[3,2,1]);
     Te=permute(Ts(:,:,:,lsp),[3,2,1]);
-    
+
     [X2,X3,X1]=meshgrid(x2,x3,x1);
 end
 

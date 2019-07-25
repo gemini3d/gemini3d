@@ -1,20 +1,10 @@
 #!/usr/bin/env python
-import oct2py  # pip install oct2py
 from argparse import ArgumentParser
 import concurrent.futures
 from pathlib import Path
 from copy import deepcopy
 import itertools
-
-"""
-Python >= 3.5 required
-
-Oct2Py is thread-safe: https://blink1073.github.io/oct2py/source/info.html#threading
-
-see docs:
-    https://blink1073.github.io/oct2py/source/api.html
-to do things like set path to octave.exe etc.
-"""
+import oct2py
 
 
 def frame(direc: Path, ymd, UTsec, saveplots):

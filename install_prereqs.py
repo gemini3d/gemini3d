@@ -64,24 +64,20 @@ def main(package_manager: str):
                 "epel-release",
                 "pkg-config",
                 "gcc-gfortran",
-                "make",
                 "ninja-build",
                 "MUMPS-openmpi-devel",
                 "lapack-devel",
                 "scalapack-openmpi-devel",
                 "openmpi-devel",
-                "octave",
             ],
             "apt": [
                 "pkg-config",
                 "gfortran",
-                "make",
                 "ninja-build",
                 "libmumps-dev",
                 "liblapack-dev",
                 "libscalapack-mpi-dev",
                 "libopenmpi-dev",
-                "octave",
             ],
         }
 
@@ -103,18 +99,7 @@ def main(package_manager: str):
             ).returncode:
                 raise SystemExit("installing prereqs failed.")
     elif sys.platform == "darwin":
-        pkgs = {
-            "brew": [
-                "cmake",
-                "gcc",
-                "make",
-                "ninja",
-                "lapack",
-                "scalapack",
-                "openmpi",
-                "octave",
-            ]
-        }
+        pkgs = {"brew": ["gcc", "meson", "ninja", "lapack", "scalapack", "openmpi"]}
         if subprocess.run(["brew", "install"] + pkgs["brew"]).returncode:
             raise SystemExit("installing prereqs failed.")
         if subprocess.run(["brew", "tap", "dpo/openblas"]).returncode:
@@ -122,14 +107,7 @@ def main(package_manager: str):
         if subprocess.run(["brew", "install", "mumps"]).returncode:
             raise SystemExit("installing prereqs failed.")
     elif sys.platform == "cygwin":
-        pkgs = [
-            "gcc-fortran",
-            "make",
-            "ninja",
-            "liblapack-devel",
-            "libopenmpi-devel",
-            "octave",
-        ]
+        pkgs = ["gcc-fortran", "meson", "ninja", "liblapack-devel", "libopenmpi-devel"]
         if subprocess.run(["setup-x86_64.exe", "-P"] + pkgs).returncode:
             raise SystemExit("installing prereqs failed.")
 

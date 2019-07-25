@@ -79,21 +79,9 @@ magcalc = executable('magcalc.bin', 'magcalc.f90',
   dependencies : mpi)
 
 # --- TESTS ---
-
-octave = find_program('octave', required : false)
-matlab = find_program('matlab', required : false)
-if matlab.found()
-  octmat = matlab
-  evalbatch = '-batch'
-elif octave.found()
-  octmat = octave
-  evalbatch = '--eval'
-else
-  octmat = []
-  evalbatch = ''
-  message('Neither Matlab or Octave were found, "Compare" tests will fail.')
-endif
-mpiexec = find_program('mpiexec', required : true)
+mpiexec = find_program('mpiexec')
+pymod = import('python')
+python = pymod.find_installation('python3')
 
 zenodo = {
   '2d': {'url': 'https://zenodo.org/record/2520780/files/zenodo2d.zip?download=1',
@@ -123,13 +111,13 @@ endif
 
 foreach i : test_names
 
-  if run_command('python', 'script_utils/meson_file_download.py',
+  if run_command(python, files('script_utils/meson_file_download.py'),
       zenodo[i]['url'], zenodo[i]['zip'],
       '-hash', 'md5', zenodo[i]['md5']).returncode() != 0
     warning(i + 'test data could not be downloaded from ' + zenodo[i]['url'] + ' and so ' + i + ' test will fail.')
   endif
 
-  if run_command('python', 'script_utils/meson_file_extract.py',
+  if run_command(python, files('script_utils/meson_file_extract.py'),
     zenodo[i]['zip'], zenodo[i]['dir']).returncode() != 0
     warning(i + 'test data in ' + zenodo[i]['dir'] + ' not available: ' + i + ' test will fail.')
   endif
@@ -143,10 +131,8 @@ foreach i : test_names
     timeout : 300,
     is_parallel : false)
 
-  if octmat.found()
-    octmat_args = [evalbatch, 'compare_all("' + test_dir + '","' + zenodo[i]['dir'] + '")']
-    test('Compare' + i, octmat, args : octmat_args,
-      suite : i, timeout: 60, workdir : meson.source_root() / 'tests')
-  endif
+  test('Compare' + i, python,
+    args : ['compare_all.py', test_dir, zenodo[i]['dir']],
+    suite : i, timeout: 60, workdir : meson.source_root() / 'tests')
 
 endforeach

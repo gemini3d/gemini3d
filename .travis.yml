@@ -11,7 +11,7 @@ env: FC=gfortran-6
 addons:
   apt:
     sources: ubuntu-toolchain-r-test
-    packages: ['gfortran-6','liblapack-dev','libmumps-dev','libopenmpi-dev','octave']
+    packages: ['gfortran-6','liblapack-dev','libmumps-dev','libopenmpi-dev']
 
 # works on osx, but Azure is faster
 #    - brew install gcc
