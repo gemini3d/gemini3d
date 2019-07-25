@@ -25,6 +25,8 @@ before_install:
 - curl -Ls https://github.com/ninja-build/ninja/releases/download/v1.9.0/ninja-linux.zip -o ninja-linux.zip
 - sudo unzip ninja-linux.zip -d /usr/local/bin/
 
-install: meson build
+install:
+- pip install -e .[tests]
+- meson build
 
 script: meson test -C build --suite unit

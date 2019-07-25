@@ -1,7 +1,7 @@
 image:
 - Ubuntu1804
 
-stack: python 3.7
+stack: python 3.6
 
 clone_depth: 25
 
@@ -13,6 +13,8 @@ install:
 - python -m pip install -e ../meson
 - python install_prereqs.py > /dev/null
 
-before_test: meson build
+before_test:
+- python -m pip install -e .[tests]
+- meson build
 
 test_script: meson test -C build

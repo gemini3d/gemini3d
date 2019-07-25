@@ -9,6 +9,8 @@ jobs:
       sudo apt update -q
       sudo apt install -yq --no-install-recommends gfortran-6 liblapack-dev libscalapack-mpi-dev libmumps-dev libopenmpi-dev
     displayName: 'Install Linux prereqs'
+  - script: python -m pip install -e $(Build.SourcesDirectory)[tests]
+    displayName: 'Install Python dev'
   - script: |
       cmake --version
       cd $BUILD_DIR
@@ -43,6 +45,8 @@ jobs:
       curl -Ls https://github.com/ninja-build/ninja/releases/download/v1.9.0/ninja-linux.zip -o ninja-linux.zip
       sudo unzip ninja-linux.zip -d /usr/local/bin/
     displayName: 'setup Meson'
+  - script: python -m pip install -e $(Build.SourcesDirectory)[tests]
+    displayName: 'Install Python dev'
   - script: |
       meson setup $BUILD_DIR $SRC_DIR
       meson test -C $BUILD_DIR --suite unit

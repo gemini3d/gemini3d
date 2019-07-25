@@ -442,7 +442,7 @@ set(CMAKE_REQUIRED_INCLUDES ${LAPACK_INCLUDE_DIR})
 set(CMAKE_REQUIRED_LIBRARIES ${LAPACK_LIBRARY})
 
 if(CMAKE_Fortran_COMPILER AND LAPACK_LIBRARY)
-  check_fortran_function_exists(dgemm BLAS_OK)
+  check_fortran_function_exists(sgemm BLAS_OK)
   check_fortran_function_exists(sgemv LAPACK_OK)
 
   if(NOT (BLAS_OK AND LAPACK_OK))
