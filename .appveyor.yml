@@ -1,7 +1,7 @@
 image:
 - Ubuntu1804
 
-stack: python 3
+stack: python 3.7
 
 clone_depth: 25
 
@@ -11,8 +11,8 @@ install:
 # pip can't be in init, wrong python version
 - git clone https://github.com/mesonbuild/meson.git ../meson
 - python -m pip install -e ../meson
-- python install_prereqs.py
-- meson build
+- python install_prereqs.py > /dev/null
 
-test_script:
-- meson test -C build
+before_test: meson build
+
+test_script: meson test -C build
