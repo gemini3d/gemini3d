@@ -139,7 +139,7 @@ set(TESTNAME ${TESTNAME}-NP${NP})  # for convenience, name with number of proces
 message(STATUS "Test ${TESTNAME} uses ${NP} MPI processes")
 
 add_test(NAME ${TESTNAME}
-  COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${NP} $<TARGET_FILE:gemini.bin> ${CMAKE_CURRENT_SOURCE_DIR}/initialize/${TESTDIR}/config.ini ${CMAKE_CURRENT_BINARY_DIR}/${TESTDIR}
+  COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${NP} $<TARGET_FILE:gemini.bin> ${CMAKE_SOURCE_DIR}/initialize/${TESTDIR}/config.ini ${CMAKE_CURRENT_BINARY_DIR}/${TESTDIR}
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
 set_tests_properties(${TESTNAME} PROPERTIES
@@ -181,24 +181,8 @@ set_tests_properties(${TESTNAME} PROPERTIES
 endfunction(matlab_compare)
 
 
-function(compare_gemini_output TESTNAME OUTDIR REFDIR REQFILE)
+function(compare_gemini_output TESTNAME TESTDIR REFDIR REQFILE)
 
-#--- Python
-find_package(Python3 COMPONENTS Interpreter)
-if(Python3_FOUND)
-    add_test(NAME ${TESTNAME}
-      COMMAND Python3::Interpreter compare_all.py
-        ${CMAKE_CURRENT_BINARY_DIR}/${OUTDIR} ${CMAKE_CURRENT_SOURCE_DIR}/${REFDIR}
-      WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/tests)
-
-    set_tests_properties(${TESTNAME} PROPERTIES
-      TIMEOUT 30
-      REQUIRED_FILES "${CMAKE_CURRENT_BINARY_DIR}/${OUTDIR}/${REQFILE};${CMAKE_CURRENT_SOURCE_DIR}/${REFDIR}/${REQFILE}")
-else()
-    message(WARNING "Python3 not found, self-test ${TESTNAME} will not work")
-endif()
-
-#--- Octave
 if(NOT DEFINED OctaveOK)
   if(WIN32)
     if(NOT Octave_ROOT)
@@ -219,17 +203,19 @@ if(NOT DEFINED OctaveOK)
 endif()
 
 if(OctaveOK)
-  octave_compare(${TESTNAME}_Octave ${OUTDIR} ${REFDIR} ${REQFILE})
+  message(STATUS "Using GNU Octave: ${Octave_EXECUTABLE}")
+  octave_compare(${TESTNAME} ${TESTDIR} ${REFDIR} ${REQFILE})
+  return()
 endif()
 
-#--- Matlab
-if(NOT DEFINED MatlabOK)
-    find_package(Matlab COMPONENTS MAIN_PROGRAM)
-    check_matlab_source_runs("exit")
-endif()
+# --- try Matlab if Octave wasn't available
+find_package(Matlab COMPONENTS MAIN_PROGRAM)
 
-if (MatlabOK)
-  matlab_compare(${TESTNAME}_Matlab ${TESTDIR} ${REFDIR} ${REQFILE})
+if (Matlab_FOUND)
+  message(STATUS "Using Matlab: ${Matlab_MAIN_PROGRAM}")
+  matlab_compare(Matlab${TESTNAME} ${TESTDIR} ${REFDIR} ${REQFILE})
+else()
+  message(WARNING "Neither Matlab or Octave was found, cannot run full self-test")
 endif()
 
 endfunction(compare_gemini_output)
