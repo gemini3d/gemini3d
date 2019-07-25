@@ -1,28 +1,29 @@
 [![Build Status](https://dev.azure.com/mhirsch0512/Gemini3D/_apis/build/status/gemini3d.GEMINI?branchName=master)](https://dev.azure.com/mhirsch0512/Gemini3D/_build/latest?definitionId=1&branchName=master)
 [![Build Status](https://www.travis-ci.com/gemini3d/GEMINI.svg?branch=master)](https://www.travis-ci.com/gemini3d/GEMINI)
-[![Build status](https://ci.appveyor.com/api/projects/status/795rsncwx6erxm7m?svg=true)](https://ci.appveyor.com/project/scivision/gemini-n1pxl)
 
 # GEMINI
 
 The GEMINI model (*G*eospace *E*nvironment *M*odel of *I*on-*N*eutral *I*nteractions) is a three-dimensional ionospheric fluid-electrodynamic model used for various scientific studies including effects of auroras on the terrestrial ionosphere, natural hazard effects on the space environment, and effects of ionospheric fluid instabilities on radio propagation (see references section of this document for details).  The detailed mathematical formulation of GEMINI is included in `doc/`.
 
-A subroutine-level set of documentation describing functions of individual program units is given via [source code comments which are rendered as webpages](https://mattzett.github.io/gemini/index.html).
+A subroutine-level set of documentation describing functions of individual program units is given via [source code comments which are rendered as webpages](https://gemini3d.github.io/gemini/index.html).
 
 GEMINI uses generalized orthogonal curvilinear coordinates and has been tested with dipole and Cartesian coordinates.
 
 We have prioritized ease of setup/install across a wide variety of computing systems.
-Please open a [GitHub Issue](https://github.com/gemini3d/gemini/issues) if you experience difficulty building GEMINI.
+Please open a
+[GitHub Issue](https://github.com/gemini3d/gemini/issues)
+if you experience difficulty building GEMINI.
 
 Generally, the Git `master` branch has the current development version and is the best place to start, while more thoroughly-tested releases happen occasionally.  Specific commits corresponding to published results will also be noted, where appropriate, in the corresponding journal article.
 
 
 ## Prerequisites
 
-One may use either the CMake or Meson build systems--choose whichever you prefer.
+We primarily use Meson build system, but CMake may be used if desired.
 
-**Meson + Ninja**
+**Meson**
 
-Meson uses Ninja (like GNU Make). They may be obtained via:
+Meson uses Ninja instead of GNU Make. They may be obtained via:
 
 ```sh
 conda install meson
@@ -36,15 +37,6 @@ python3 -m pip install meson
 
 and [download Ninja](https://github.com/ninja-build/ninja/releases/)
 and put Ninja executable directory on your PATH.
-
-
-**CMake**
-
-CMake is easily installed in a minute *without* sudo/admin on:
-
-* Linux: [cmake_setup.py](https://github.com/scivision/cmake-utils/blob/master/cmake_setup.py)
-* MacOS: `brew install cmake`
-* [Windows](https://cmake.org/download)
 
 ### Compilers
 
@@ -64,15 +56,14 @@ Tested versions include:
 * MUMPS 4.10, 5.1
 * SCALAPACK 2.0
 * LAPACK95 3.0  (optional)
-* NCAR GLOW (optional)   enabled by `cmake -DUSEGLOW=yes ..` option
+* NCAR GLOW (optional)   enabled by Meson / CMake `-DUSEGLOW=true` option
 
 ### postprocessing and visualization of model output
 
-GEMINI `*.m` scripts require EITHER:
-
-* GNU Octave &ge; 4.0:  Note that GNU Octave plotting is unreliable in general for any program. Matlab is recommended.
-* Matlab &ge; R2007b
-
+GEMINI is transitioning to Python for interfaces, plotting and analysis.
+The CI tests are primarily focused on the Python code interacting with GEMINI and GEMINI data.
+However, we do retain the Matlab / GNU Octave scripts during this transition period.
+If GNU Octave is used with the .m scripts, GNU Octave version 4.0 or newer is required.
 Note that only the essential scripts needed to setup a simple example, and plot the results are included in the main GEMINI respository.  A separate repository has been created for more involved examples.
 
 ### Document generation
@@ -108,6 +99,8 @@ One could run large 2D or very small 3D simulations (not exceeding a few million
 
 This method is tested on CentOS and Ubuntu.
 This test runs a short demo, taking about 2-5 minutes on a typical Mac / Linux laptop, from scratch.
+It assumes you have Python 3, Meson, Ninja and the appropriate compilers and libraries installed.
+Perhaps consider running `python install_prereqs.py` to get the libraries you need (assuming you have sudo access).
 
 Get GEMINI code and install prereqs
 ```sh
@@ -119,24 +112,27 @@ cd gemini
 **Build and test**
 
 ```sh
-cmake -B build
-cmake --build build --parallel
-
-cd build
-ctest --output-on-failure
-```
-OR
-```sh
-meson build
+meson setup build
 
 meson test -C build
 ```
 
 
-If you get errors about libraries not found or it's using the wrong compiler, see the `build_.sh` scripts for examples of how to easily tell CMake to use custom library and compiler locations.
+If you get errors about libraries not found or it's using the wrong compiler, specify the compilers or libraries like:
+
+```sh
+FC=gfortran-9 CC=gcc-9 meson setup build
+```
+
+and/or
+
+```sh
+meson setup build -DMUMPS_ROOT=../lib_gcc/mumps-5.1.2 -DSCALAPACK_ROOT=../lib_gcc/scalapack
+```
 
 ### input directory
-The example `config.ini` in `initialize/` looks for input grid data in `../simulations`.
+
+The example `config.ini` in `initialize/` looks for input grid data in `tests/data`.
 If you plan to push back to the repository, please don't edit those example `.ini` file paths, instead use softlinks `ln -s` to point somewhere else if needed.
 Note that any `config.ini` you create yourself in `initialize/` will not be included in the repository since that directory is in `.gitignore` (viz. not tracked by git).
 
@@ -147,8 +143,6 @@ ICNTL 1-4 concern print output unit and verbosity level, see MUMPS
 [User Manual](http://mumps.enseeiht.fr/index.php?page=doc)
 
 #### Build tips
-
-* If the CMake version that ships with your linux or MacOS distribution is too old, use [cmake_setup.sh](https://github.com/scivision/cmake-utils). Note that this script does NOT use `sudo`.
 
 Libraries:
 
@@ -166,12 +160,8 @@ Libraries:
 
 ### self-tests
 
-GEMINI has self tests that compare the output from a "known" test problem to a reference output.  So running:
+GEMINI has self tests that compare the output from a "known" test problem to a reference output:
 
-```sh
-ctest --output-on-failure
-```
-OR
 ```sh
 meson test -C build
 ```
@@ -182,10 +172,10 @@ Can be manually done from the top-level gemini/ directory by:
 mpiexec -np 2 build/gemini.bin initialize/2Dtest/config.ini /tmp/2d
 ```
 
-use GNU Octave (or Matlab) to compare with reference output using `tests/compare_all.m`:
+use Python to compare test simulations with reference output data:
 
-```matlab
-compare_all(/tmp/2d, '../simulations/2Dtest_files/2Dtest_output')
+```python
+python tests/compare_all.py /tmp/2d tests/data/zenodo2d
 ```
 
 ### OS-specific tips
@@ -196,7 +186,7 @@ Tested on Ubuntu 18.04 / 16.04.
 
 If you have sudo (admin) access:
 ```sh
-python install_prereqs.sh
+python install_prereqs.py
 ```
 Otherwise, ask your IT admin to install the libraries or
 [compile them yourself](https://github.com/scivision/fortran-libs)
@@ -208,7 +198,7 @@ This is for CentOS 7, using "modules" for more recent libraries.
 For the unavailable modules,
 [compile them yourself](https://github.com/scivision/fortran-libs)
 ```sh
-module load git cmake mumps scalapack openmpi lapack metis
+module load git mumps scalapack openmpi lapack
 
 module load gcc
 export CC=gcc CXX=g++ FC=gfortran
@@ -219,7 +209,7 @@ Try to compile gemini as above, then
 
 Example:
 ```sh
-cmake -DSCALAPACK_ROOT=~/flibs-nomkl/scalapack -DMUMPS_ROOT=~/flibs-nomkl/MUMPS ..
+meson setup build -DSCALAPACK_ROOT=../lib_gcc/scalapack -DMUMPS_ROOT=../lib_gcc/mumps-5.1.2
 ```
 
 ## Known limitations and issues of GEMINI
@@ -245,21 +235,21 @@ GEMINI is Fortran 2008 compliant and uses two-space indents throughout (to accom
 
 
 
-## To build and run GEMINI:
+## Manually set number of MPI processes
 
 ```sh
-cmake -B build
-
-cmake --build build --parallel
-
-mpirun -np <number of processors>  build/gemini.bin <input config file> <output directory>
+mpiexec -np <number of processors>  build/gemini.bin <input config file> <output directory>
 ```
+
 for example:
+
 ```sh
-mpirun -np 4 build/gemini.bin initialize/2Dtest/config.ini ../simulations/2Dtest/
+mpiexec -np 4 build/gemini.bin initialize/2Dtest/config.ini /tmp/2d
 ```
 
-Note that the output *base* directory must already exist (`../simulations` in previous example).  The source code consists of about ten module source files encapsulating various functionalities used in the model.  A diagram all of the modules and their function is shown in figure 1; a list of module dependencies can also be found one of the example makefiles included in the repo or in CMakeList.txt.
+Note that the output *base* directory must already exist (e.g. `/tmp/2d`).
+The source code consists of about ten module source files encapsulating various functionalities used in the model.
+A diagram all of the modules and their function is shown in figure 1; a list of module dependencies can also be found one of the example makefiles included in the repo, CMakeList.txt or meson.build.
 
 Two of the log files created are:
 
@@ -273,76 +263,53 @@ Two of the log files created are:
 
 ##Auxiliary fortran program
 
-Note that there is also a utility that can compute magnetic fields from the currents calculated by GEMINI.  This can be run by:
+Note that there is also a utility that can compute magnetic fields from the currents calculated by GEMINI.
+This can be run by:
+
 ```sh
-mpirun -np 4 ./magcalc ../simulations/3Dtest/ ../simulations/input/3Dtest/magfieldpoints.dat
+mpirun -np 4 ./magcalc /tmp/3d tests/data/test3d/input/magfieldpoints.dat
 ```
+
 This will compute magnetic fields over a grid at ground level using currents computed from the 3Dtest simulation.  In order to run this program, you will need to create a set of field points at which the magnetic perturbations will be calculated.  For example, this could be a list of ground stations, a regular mesh, or a set of satellite tracks.
 
 ## Verifying GEMINI build
 
-Assuming you have built by
-```sh
-cmake -B build
+Assuming you have configured the build by:
 
-cmake --build build --parallel
+```sh
+meson setup build
 ```
 
-then change to the build directory to run CTest:
+compile and run all self-tests by:
+
 ```sh
-cd build
+meson test -C build
 ```
 
-* run all self tests:
+Select particular tests by either specifying individual test names or "suite(s)" of tests like:
+
+* run 2D tests only:
   ```sh
-  ctest --output-on-failure
+  meson test -C build --suite 2d
+  ```
+* run 3D tests only:
+  ```sh
+  meson test -C build --suite 3d
+  ```
+* run only the Python comparison of 2D output:
+  ```sh
+  meson test -C build Compare2d
   ```
 
-Select particular tests using `ctest -R <regexp>`.
+### Number of MPI processes
 
-* run 2D tests:
-  ```sh
-  ctest -R 2D --output-on-failure
-  ```
-* run 3D tests:
-  ```sh
-  ctest -R 3D --output-on-failure
-  ```
-
-Exclude particular tests using `ctest -E <regexp>`.
-
-* run all except 2D tests:
-  ```sh
-  ctest -E 2D --output-on-failure
-  ```
-* run all except 3D tests:
-  ```sh
-  ctest -E 3D --output-on-failure
-  ```
-
-The maximum number of MPI processes is set with `cmake -DNP=`.
-For example to request 4 MPI processes from the build/ directory:
-```sh
-cmake -DNP=4 ..
-
-cmake --build . -j
-
-ctest
-```
-Otherwise, the default (suggested) CMake generation process automatically sets the maximum number of processes possible based on your CPU core count and grid size.
-
-Full debugging and testing is enabled from the build/ directory by:
-```sh
-cmake -DCMAKE_BUILD_TYPE=Debug ..
-
-cmake --build -j .
-
-ctest --output-on-failure
-```
+In general for MPI programs and associated simulations, there may be a minimum number of MPI processes and/or integer multiples that must be met (for example, number of processes must be factor of 4).
+The build system generation process automatically sets the maximum number of processes possible based on your CPU core count and grid size.
 
 ## Input file format
 
 Each simulation needs an input file that specifies location of initial conditions and other pertinent information for the simulation.  A coupled of very basic examples of these are included in the ./initialize directory; each subdirectory is a separate example usage of GEMINI for a particular problem.  The basic template for an input file (config.ini) file follows (please note that most use cases will not have all options activated as this example does).
+
 ```
 16,9,2015                             !dmy:  day,month,year
 82473.0                               !UTsec0:  start time, UT seconds
@@ -484,7 +451,8 @@ Note that the electric field is not included in the output file, but that it can
 
 ## Computing total electron content (TEC)
 
-TEC and magnetic field variations can be calculated as a post-processing step in which the simulation data are read in and interpolated onto a regular geographic grid and then integrated accordingly using scripts in the './vis' directory - see `TECcalc.m`.  An example of how to plot TEC computed by this script is included in `TECplot_map.m` (requires MATLAB mapping toolbox).
+TEC and magnetic field variations can be calculated as a post-processing step in which the simulation data are read in and interpolated onto a regular geographic grid and then integrated accordingly using scripts in the './vis' directory - see `TECcalc.m`.
+An example of how to plot TEC computed by this script is included in `TECplot_map.m` (requires MATLAB mapping toolbox).
 
 
 ## Visualizing magnetic field perturbations computed by magcalc.f90
