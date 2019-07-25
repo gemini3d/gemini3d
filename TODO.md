@@ -17,7 +17,7 @@ This file is intended to document development priorities for the GEMINI project.
 
 ## Messy stuff
 
-* mag field points need a separate file size so that it isn't hard coded in scripts...
+* mag field points need a separate file size so that it isn't hard coded in scripts...  This should be handled similarly to the neutral inputs and precipitaiton/potential boundary inputs...
 
 
 ## Things that need to be checked or otherwise dealt with
@@ -27,6 +27,7 @@ This file is intended to document development priorities for the GEMINI project.
 * Redo the way magcalc and magplot deal with file names and locations
 * magplot needs some way to know what the grid dimensions are so the user doesn't have to manually input 
 * Fix restart code for precipitation and electric field input files (need to be primed like the neutral input)
+* Proper restarting will require reading in an initial potential value, as well - means that the matlab input scripts need to be fixed/updated too...
 * run + plot script...
 * X Right now MATLAB scripts assume you specify the geographic center of the grid *in the nortern hemisphere*
 
@@ -34,13 +35,12 @@ This file is intended to document development priorities for the GEMINI project.
 ## Future Code refactoring
 
 * Fair bit of code repetition in top-level electric field and precipitation interpolation routines
-* Code duplication in electrodynamics module (haloing part should be written as a subroutine).  This duplication also exists in other places, e.g., in RK2prep - this has now become a serious readability issue for anyone trying to modify those files
-* Cleanup of BCs interpolation source files
-* Axisymmetric and Cartesian interpolations should be combined (much code-sharing)
+* X Code duplication in electrodynamics module (haloing part should be written as a subroutine).  This duplication also exists in other places, e.g., in RK2prep - this has now become a serious readability issue for anyone trying to modify those files
+* X Axisymmetric and Cartesian interpolations should be combined (much code-sharing)
 * Remove the array permuting form the fortran code and do this from the MATLAB/octave scripts.  These scripts should provide a permutation array for the dimensions to the fortran code (e.g. [1,2,3] or [3,1,2], which are even, or [1,3,2] which is odd), which then knows if the coordinate system is right-handed or left-handed so it can adjust the cross products accordingly.
 * Boundary condition modules for the electrodynamics and precipitation should be removed in favor of submodules of the electrodynamics and ionization modules.  If we do this are we breaking backwards compatibility with older compilers?  Do we even care?
 * MSISmatlab is a mess, uses dmy instead of ymd and UThrs instead of UTsec - not sure what this will affect is we change...
-* There are now numerous versions of routines corresponding to message passing in x3 vs. on a x2/x3 process grid.  Somehow the x3 routines need to be kept as they may be faster in some (hopefully unusual) situations.  Michael suggests a submodule...
+* X There are now numerous versions of routines corresponding to message passing in x3 vs. on a x2/x3 process grid.  Somehow the x3 routines need to be kept as they may be faster in some (hopefully unusual) situations.  Michael suggests a submodule...
 * Some modules have now become excessively large, e.g. mpimod and calculus...  These need to be organized and split up
 * Handling of metric factors in the potential solves is sloppy - need to be passing into solver and used to eval. geometric terms there - would be more clear to reader...
 * elliptic solvers do not need to check for root vs. workers anymore; is done from calling functions
@@ -54,7 +54,7 @@ This file is intended to document development priorities for the GEMINI project.
 * (INITIAL IMPLEMENTATION COMPLETE) Parallel domain decomposition in x2 *and* x3 - this is a big task that is likely to be left aside until I can renew funding.  It's also questionable how useful it is at this point where my typical runs are 32-256 cores (although undoubtedly it may become useful for runs with thousands of cores).  I've found good speedup even dividing the x3 dimension into slabs 2 grid points wide; although that means passing essentially all the grid data around via mpi, the large number of operations per slab means that the effective overhead here is not too much to prevent this from being useful.  However, for simulations that run with GLOW this will massively speed things up...
 * (SOMEWHAT IMPORTANT) Periodically updating background neutral atmosphere - should really be done for simulations more than a few hours long but will affect performance
 * (EFFICIENCY) Exclusion of null points from field aligned advection, thermal conduction, and source terms - could improve performance
-* (INITIAL IMPLEMENTATION COMPLETED) HDF5 file input and output
+* (INITIAL IMPLEMENTATION STARTED) HDF5 file input and output
 * (INITIAL IMPLEMENTATION COMPLETED) Option to run the code in a single precision mode - would help with memory limited systems although it's not clear how this would impact numerics (I've never tested my methods in single precision)
 * (INITIAL IMPLEMENTATION COMPLETED) Add 3Dtest to ctest
 * Add a script that runs a complete sequences of and example from generating ICs, to running the disturbance simulation.
@@ -79,5 +79,5 @@ These are projects in progress involved GEMINI, you are encouraged to email M. Z
 * Inverted grid must be passed to GLOW if running a curvilinear altitude array to GLOW
 * Talk to Stan about how GLOW might be used on closed field lines for GEMINI (not sure if it can be used in this way currently)
 * Have GLOW output VER in order to deal with weird observing geometries.  
-* File input/interpolation for dipole-type grids; need to choose a reference position for mlat/mlon???
+* File input/interpolation for dipole-type grids; need to choose a reference position for mlat/mlon??? - I think the Perkins examples at least partly try to deal with his...
 

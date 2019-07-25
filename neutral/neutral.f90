@@ -206,23 +206,10 @@ real(wp), dimension(:,:,:), intent(out) :: Tn,vn1,vn2,vn3
 integer :: inunit                        !file handle for various input files
 character(512) :: filename               !space to store filenames, note size must be 512 to be consistent with our date_ffilename functinos
 
-!real(wp) :: theta1,phi1,theta2,phi2,gammarads,theta3,phi3,gamma1,gamma2,phip
-!real(wp) :: xp,yp
-!real(wp), dimension(3) :: erhop,ezp,tmpvec
-
-!real(wp) :: tmpsca
-
 integer :: ix1,ix2,ix3,iid!,irhon,izn
-!real(wp), dimension(size(nn,1),size(nn,2),size(nn,3)) :: zimat,rhoimat
 integer, dimension(3) :: ymdtmp
 real(wp) :: UTsectmp
-!real(wp), dimension(size(nn,1)*size(nn,2)*size(nn,3)) :: parami
-!real(wp) :: slope
 real(wp), dimension(size(nn,1),size(nn,2),size(nn,3)) :: dnOinow,dnN2inow,dnO2inow,dTninow,dvn1inow,dvn2inow,dvn3inow    !current time step perturbations (centered in time)
-
-!integer(4) :: flaginit    !a flag that is set during the first call to read in data
-
-!integer :: utrace, ierr
 
 
 !CHECK WHETHER WE NEED TO LOAD A NEW FILE
@@ -304,19 +291,10 @@ real(wp), dimension(:,:,:), intent(out) :: Tn,vn1,vn2,vn3
 
 integer :: inunit          !file handle for various input files
 character(512) :: filename               !space to store filenames, note size must be 512 to be consistent with our date_ffilename functinos
-!real(wp) :: theta1,phi1,theta2,phi2,gammarads,theta3,phi3,gamma1,gamma2,phip
-!real(wp) :: xp,yp
-!real(wp), dimension(3) :: erhop,ezp,eyp,tmpvec
-
-!real(wp) :: tmpsca
-!real(wp) :: meanyn
 
 integer :: ix1,ix2,ix3,iid
-!real(wp), dimension(size(nn,1),size(nn,2),size(nn,3)) :: zimat,rhoimat,yimat
 integer, dimension(3) :: ymdtmp
 real(wp) :: UTsectmp
-!real(wp), dimension(size(nn,1)*size(nn,2)*size(nn,3)) :: parami
-!real(wp) :: slope
 real(wp), dimension(size(nn,1),size(nn,2),size(nn,3)) :: dnOinow,dnN2inow,dnO2inow,dTninow,dvn1inow,dvn2inow,dvn3inow    !current time step perturbations (centered in time)
 
 
