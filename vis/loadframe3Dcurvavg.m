@@ -15,17 +15,12 @@ assert(exist(fsimres,'file')==2, [fsimres,' does not exist'])
 fid=fopen(fsimres,'r');
 simdt(fid);
 %% Number densities
-ne=fread(fid,prod(lxs),'real*8');
-ne=reshape(ne, lxs);
+ne = read3D(fid, lxs);
 %% Parallel Velocities
-v1=fread(fid,prod(lxs),'real*8');
-v1=reshape(v1,lxs);
+v1 = read3D(fid, lxs);
 %% Temperatures
-Ti=fread(fid,prod(lxs),'real*8');
-Ti=reshape(Ti,lxs);
-
-Te=fread(fid,prod(lxs),'real*8');
-Te=reshape(Te,lxs);
+Ti = read3D(fid, lxs);
+Te = read3D(fid, lxs);
 %% Current densities
 J1 = read3D(fid, lxs);
 J2 = read3D(fid, lxs);

@@ -2,6 +2,8 @@ import numpy as np
 from pathlib import Path
 from datetime import datetime, timedelta
 import typing
+import xarray
+from functools import lru_cache
 
 LSP = 7
 
@@ -30,34 +32,99 @@ def datetime_range(
     return [start + i * step for i in range((stop - start) // step)]
 
 
-def readsimsize(fn: Path):
+@lru_cache()
+def read_simsize(fn: Path) -> np.ndarray:
+    fn = Path(fn).expanduser().resolve(strict=True)
     with fn.open("rb") as f:
         return np.fromfile(f, np.int32, 3)
 
 
-def readdata(P: typing.Dict[str, typing.Any], fn: Path) -> typing.Dict[str, np.ndarray]:
+def readgrid(fn: Path) -> typing.Dict[str, np.ndarray]:
+    lxs = read_simsize(fn.parent / "simsize.dat")
+    lgridghost = (lxs[0] + 4) * (lxs[1] + 4) * (lxs[2] + 4)
+    gridsizeghost = [lxs[0] + 4, lxs[1] + 4, lxs[2] + 4]
 
-    dat: typing.Dict[str, np.ndarray] = {}
+    grid = {}
+    with fn.open("rb") as f:
+        for i in (1, 2, 3):
+            grid[f"x{i}"] = np.fromfile(f, np.float64, lxs[i - 1] + 4)
+            grid[f"x{i}i"] = np.fromfile(f, np.float64, lxs[i - 1] + 1)
+            grid[f"dx{i}b"] = np.fromfile(f, np.float64, lxs[i - 1] + 3)
+            grid[f"dx{i}h"] = np.fromfile(f, np.float64, lxs[i - 1])
+        for i in (1, 2, 3):
+            grid[f"h{i}"] = np.fromfile(f, np.float64, lgridghost).reshape(
+                gridsizeghost
+            )
+
+    return grid
+
+
+def readdata(fn: Path) -> xarray.Dataset:
+
+    P = readconfig(fn.parent / "inputs/config.ini")
+    if P["flagoutput"] == 1:
+        dat = loadframe3d_curv(fn)
+    elif P["flagoutput"] == 2:
+        dat = loadframe3d_curvavg(fn)
+    else:
+        raise NotImplementedError("TODO: need to handle this case, file a bug report.")
+    return dat
+
+
+def loadframe3d_curv(fn: Path) -> xarray.Dataset:
+    P = readconfig(fn.parent / "inputs/config.ini")
+    grid = readgrid(fn.parent / "inputs/simgrid.dat")
+    dat = xarray.Dataset(
+        coords={"x1": grid["x1"][2:-2], "x2": grid["x2"][2:-2], "x3": grid["x3"][2:-2]}
+    )
 
     with fn.open("rb") as f:
         t = np.fromfile(f, np.float64, 4)
-        dat["t"] = datetime(int(t[0]), int(t[1]), int(t[2])) + timedelta(hours=t[3])
+        dat.attrs["time"] = datetime(int(t[0]), int(t[1]), int(t[2])) + timedelta(
+            hours=t[3]
+        )
 
-        dat["ne"] = read3D(f, P["lxs"])
+        ns = read4D(f, LSP, P["lxs"])
+        dat["ne"] = (("x1", "x2", "x3"), ns[:, :, :, LSP - 1].squeeze())
 
-        dat["v1"] = read3D(f, P["lxs"])
+        vs1 = read4D(f, LSP, P["lxs"])
+        dat["v1"] = (
+            ("x1", "x2", "x3"),
+            (ns[:, :, :, :6] * vs1[:, :, :, :6]).sum(axis=3) / ns[:, :, :, LSP - 1],
+        )
 
-        dat["Ti"] = read3D(f, P["lxs"])
-        dat["Te"] = read3D(f, P["lxs"])
+        Ts = read4D(f, LSP, P["lxs"])
+        dat["Ti"] = (
+            ("x1", "x2", "x3"),
+            (ns[:, :, :, :6] * Ts[:, :, :, :6]).sum(axis=3) / ns[:, :, :, LSP - 1],
+        )
+        dat["Te"] = (("x1", "x2", "x3"), Ts[:, :, :, LSP - 1].squeeze())
 
-        dat["J1"] = read3D(f, P["lxs"])
-        dat["J2"] = read3D(f, P["lxs"])
-        dat["J3"] = read3D(f, P["lxs"])
+        for p in ("J1", "J2", "J3", "v2", "v3"):
+            dat[p] = (("x1", "x2", "x3"), read3D(f, P["lxs"]))
 
-        dat["v2"] = read3D(f, P["lxs"])
-        dat["v3"] = read3D(f, P["lxs"])
+        dat["Phitop"] = (("x2", "x3"), read2D(f, P["lxs"]))
 
-        dat["Phitop"] = read2D(f, P["lxs"])
+    return dat
+
+
+def loadframe3d_curvavg(fn: Path) -> xarray.Dataset:
+    P = readconfig(fn.parent / "inputs/config.ini")
+    grid = readgrid(fn.parent / "inputs/simgrid.dat")
+    dat = xarray.Dataset(
+        coords={"x1": grid["x1"][2:-2], "x2": grid["x2"][2:-2], "x3": grid["x3"][2:-2]}
+    )
+
+    with fn.open("rb") as f:
+        t = np.fromfile(f, np.float64, 4)
+        dat.attrs["time"] = datetime(int(t[0]), int(t[1]), int(t[2])) + timedelta(
+            hours=t[3]
+        )
+
+        for p in ("ne", "v1", "Ti", "Te", "J1", "J2", "J3", "v2", "v3"):
+            dat[p] = (("x1", "x2", "x3"), read3D(f, P["lxs"]))
+
+        dat["Phitop"] = (("x2", "x3"), read2D(f, P["lxs"]))
 
     if P["lxs"][1] == 1 or P["lxs"][2] == 1:
         dat["Ti"] = dat["Ti"].squeeze()
@@ -66,9 +133,11 @@ def readdata(P: typing.Dict[str, typing.Any], fn: Path) -> typing.Dict[str, np.n
     return dat
 
 
-def read4D(f, lsp: typing.Tuple[int, int, int], lxs: int) -> np.ndarray:
+def read4D(f, lsp: int, lxs: typing.Tuple[int, int, int]) -> np.ndarray:
 
-    return np.fromfile(f, np.float64, np.prod(lxs) * lsp).reshape((lxs, lsp), order="F")
+    return np.fromfile(f, np.float64, np.prod(lxs) * lsp).reshape(
+        (*lxs, lsp), order="F"
+    )
 
 
 def read3D(f, lxs: typing.Tuple[int, int, int]) -> np.ndarray:
@@ -81,6 +150,7 @@ def read2D(f, lxs: typing.Tuple[int, int]) -> np.ndarray:
     return np.fromfile(f, np.float64, np.prod(lxs[1:])).reshape(*lxs[1:], order="F")
 
 
+@lru_cache()
 def readconfig(inifn: Path) -> typing.Dict[str, typing.Any]:
     inifn = Path(inifn).expanduser().resolve(strict=True)
 
@@ -109,13 +179,13 @@ def readconfig(inifn: Path) -> typing.Dict[str, typing.Any]:
     return P
 
 
-def loadframe(simdir: Path, time: datetime) -> typing.Dict[str, np.ndarray]:
+def loadframe(simdir: Path, time: datetime) -> xarray.Dataset:
     simdir = Path(simdir).expanduser()
 
     P = readconfig(simdir / "inputs/config.ini")
 
     sizefn = simdir / "inputs/simsize.dat"
-    P["lxs"] = readsimsize(sizefn)
+    P["lxs"] = read_simsize(sizefn)
 
     # %% datfn
 
@@ -125,6 +195,6 @@ def loadframe(simdir: Path, time: datetime) -> typing.Dict[str, np.ndarray]:
     if not datfn.is_file():
         datfn = datfn.parent / (timename[:-10] + "000001.dat")
 
-    dat = readdata(P, datfn)
+    dat = readdata(datfn)
 
     return dat

@@ -65,22 +65,22 @@ def compare_all(dir1: Path, dir2: Path):
 
         if not np.allclose(A["ne"], B["ne"], rtolN, atolN, True):
             errs += 1
-            logging.error(f"Ne {st}   {abs(A['ne'] - B['ne']).max():.3e}")
+            logging.error(f"Ne {st}   {abs(A['ne'] - B['ne']).max().item():.3e}")
 
         for k in ("v1", "v2", "v3"):
             if not np.allclose(A[k], B[k], rtolV, atolV, True):
                 errs += 1
-                logging.error(f"{k} {st}   {abs(A[k] - B[k]).max():.3e}")
+                logging.error(f"{k} {st}   {abs(A[k] - B[k]).max().item():.3e}")
 
         for k in ("Ti", "Te"):
             if not np.allclose(A[k], B[k], rtolT, atolT, True):
                 errs += 1
-                logging.error(f"{k} {st}   {abs(A[k] - B[k]).max():.3e}")
+                logging.error(f"{k} {st}   {abs(A[k] - B[k]).max().item():.3e}")
 
         for k in ("J1", "J2", "J3"):
             if not np.allclose(A[k], B[k], rtolJ, atolJ, True):
                 errs += 1
-                logging.error(f"{k} {st}  {abs(A[k] - B[k]).max():.3e}")
+                logging.error(f"{k} {st}  {abs(A[k] - B[k]).max().item():.3e}")
 
         # %% assert time steps have unique output (earth always rotating...)
         if it > 1:
