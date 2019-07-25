@@ -1,11 +1,16 @@
 image:
 - Ubuntu1804
 
-stack: python 3.6
+stack: python 3.7
 
 clone_depth: 25
 
 build: off
+
+init:
+- sh: sudo apt -q update > /dev/null
+- sh: sudo apt -yq install liblzma-dev > /dev/null
+# liblzma-dev is needed by Appveyor Ubuntu1804 to install Python packages in devel mode, even when only using stdlib.
 
 install:
 # pip can't be in init, wrong python version

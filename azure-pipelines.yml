@@ -4,6 +4,10 @@ jobs:
     vmImage: 'ubuntu-latest'
 
   steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '3.6'
+      addToPath: true
   - script: |
       sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
       sudo apt update -q
