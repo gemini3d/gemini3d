@@ -2,12 +2,9 @@ project('GEMINI', 'fortran',
   meson_version: '>=0.51.2',
   default_options : ['default_library=static', 'buildtype=release'])
 
-REALBITS = '-DREALBITS='+get_option('realbits')
+real_bits = '-DREALBITS=' + get_option('realbits')
 use_glow = get_option('useglow')
-HDF = get_option('HDF')
-mpi_root = get_option('MPI_ROOT')
-lapack_root = get_option('LAPACK_ROOT')
-scalapack_root = get_option('SCALAPACK_ROOT')
+use_hdf = get_option('HDF')
 
 fc = meson.get_compiler('fortran')
 if fc.get_id() == 'gcc'
@@ -18,6 +15,7 @@ else
 endif
 
 # need find_library to search specific dirs at this time
+mpi_root = get_option('MPI_ROOT')
 if mpi_root == ''
   mpi = dependency('mpi', language : 'fortran', required : true)
 else
@@ -30,6 +28,7 @@ if mpiret.returncode() != 0
   error('MPI does not link properly: ' + mpiret.stderr() + mpiret.stdout() + mpi_root + ' ' + mpi.name() + ' ' + mpi.version())
 endif
 
+lapack_root = get_option('LAPACK_ROOT')
 if lapack_root == ''
   lapack = dependency('lapack', required : true)
 else
@@ -37,13 +36,13 @@ else
   lapack = fc.find_library('lapack', required : true, dirs : lapack_root)
 endif
 
-if HDF  # see HDF5 branch, not yet fully ready.
+if use_hdf  # see HDF5 branch, not yet fully ready.
  hdf5 = dependency('hdf5')
 endif
 
 #==========================================================
 const = library('const', 'numerical/constants/phys_consts.F90',
-  fortran_args: REALBITS)
+  fortran_args: real_bits)
 
 subdir('io')
 subdir('temporal')
@@ -70,7 +69,7 @@ gemini = executable('gemini.bin', 'gemini.f90', 'temporal/temporal.f90', 'multif
 'sources/sources.f90', 'numerical/advection/advec_mpi.f90', 'numerical/diffusion/diffusion.F90', 'vendor/lapack95/gbsv.F90',
   link_with : [io,calculus, collisions, grid, ionization, mpimod, neutral, potential, const, timeutils],
   dependencies : [mpi, lapack],
-  fortran_args: REALBITS)
+  fortran_args: real_bits)
 
 # -- magcalc exe
 
@@ -109,6 +108,8 @@ else
 endif
 
 
+mpi_np = get_option('NP')
+
 foreach i : test_names
 
   if run_command(python, files('script_utils/meson_file_download.py'),
@@ -124,9 +125,15 @@ foreach i : test_names
 
   test_dir = meson.build_root() / 'test'  + i
 
-  test('Gemini' + i, mpiexec,
+  max_np = run_command(python,
+                       files('script_utils/meson_cpu_count.py'),
+                       files(zenodo[i]['dir']/ 'inputs/simsize.dat'),
+                       mpi_np.to_string()).stdout()
+  testname = 'Gemini' + i + '-NP'+max_np
+  message('Enabled test ' + testname)
+  test(testname, mpiexec,
     suite : i,
-    args : ['-np', '2', gemini, meson.source_root() / 'initialize/test' + i / 'config.ini', test_dir],
+    args : ['-np', max_np, gemini, meson.source_root() / 'initialize/test' + i / 'config.ini', test_dir],
     workdir : meson.source_root(),
     timeout : 300,
     is_parallel : false)

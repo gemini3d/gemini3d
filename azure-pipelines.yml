@@ -63,3 +63,9 @@ jobs:
   - publish: $(Build.BinariesDirectory)/meson-logs/testlog.txt
     condition: succeededOrFailed()
     artifact: TestLog
+
+
+#    - brew install gcc
+#    - brew install lapack openblas open-mpi scalapack
+#    - brew tap dpo/openblas
+#    - brew install mumps
