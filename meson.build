@@ -112,15 +112,30 @@ mpi_np = get_option('NP')
 
 foreach i : test_names
 
-  if run_command(python, files('script_utils/meson_file_download.py'),
-      zenodo[i]['url'], zenodo[i]['zip'],
-      '-hash', 'md5', zenodo[i]['md5']).returncode() != 0
-    warning(i + 'test data could not be downloaded from ' + zenodo[i]['url'] + ' and so ' + i + ' test will fail.')
+  proc = run_command(python, files('script_utils/meson_file_download.py'),
+                     zenodo[i]['url'],
+                     zenodo[i]['zip'],
+                     '-hash', 'md5',
+                     zenodo[i]['md5'])
+  download_ok = true
+  if proc.returncode() != 0
+    warning(i + ' ' + zenodo[i]['zip'] + ' test data could not be downloaded from ' + zenodo[i]['url'] + ' and so ' + i + ' test will fail.')
+    message('stderr: \n' + proc.stderr())
+    message('stdout: \n' + proc.stdout())
+    download_ok = false
   endif
 
-  if run_command(python, files('script_utils/meson_file_extract.py'),
-    zenodo[i]['zip'], zenodo[i]['dir']).returncode() != 0
-    warning(i + 'test data in ' + zenodo[i]['dir'] + ' not available: ' + i + ' test will fail.')
+  if download_ok
+    proc = run_command(python, files('script_utils/meson_file_extract.py'),
+                       zenodo[i]['zip'],
+                       zenodo[i]['dir'])
+    ref_ok = true
+    if proc.returncode() != 0
+      warning(i + 'test data in ' + zenodo[i]['dir'] + ' not available: ' + i + ' test disabled.')
+      message('stderr: \n' + proc.stderr())
+      message('stdout: \n' + proc.stdout())
+      ref_ok=false
+    endif
   endif
 
   test_dir = meson.build_root() / 'test'  + i
@@ -141,8 +156,12 @@ foreach i : test_names
     timeout : 300,
     is_parallel : false)
 
-  test('Compare' + i, python,
-    args : ['compare_all.py', test_dir, zenodo[i]['dir']],
-    suite : i, timeout: 60, workdir : meson.source_root() / 'tests')
+  if ref_ok
+    test('Compare' + i, python,
+      args : ['compare_all.py', test_dir, zenodo[i]['dir']],
+      suite : i, timeout: 60, workdir : meson.source_root() / 'tests')
+  else
+    warning('Compare' + i + ' skipped due to missing reference data in ' + zenodo[i]['dir'])
+  endif
 
 endforeach

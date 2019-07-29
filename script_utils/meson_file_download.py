@@ -25,11 +25,10 @@ def url_retrieve(
     if outfile.is_dir():
         raise ValueError("Please specify full filepath, including filename")
     # need .resolve() in case intermediate relative dir doesn't exist
-    if outfile.is_file() and not overwrite:
-        return
-    outfile.parent.mkdir(parents=True, exist_ok=True)
+    if overwrite or not outfile.is_file():
+        outfile.parent.mkdir(parents=True, exist_ok=True)
 
-    urllib.request.urlretrieve(url, str(outfile))
+        urllib.request.urlretrieve(url, str(outfile))
 
     if hash:
         if not file_checksum(outfile, hash[0], hash[1]):
