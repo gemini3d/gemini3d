@@ -125,10 +125,13 @@ foreach i : test_names
 
   test_dir = meson.build_root() / 'test'  + i
 
-  max_np = run_command(python,
-                       files('script_utils/meson_cpu_count.py'),
-                       files(zenodo[i]['dir']/ 'inputs/simsize.dat'),
-                       mpi_np.to_string()).stdout()
+  if mpi_np == ''
+    max_np = run_command(python,
+                        files('script_utils/meson_cpu_count.py'),
+                        files(zenodo[i]['dir']/ 'inputs/simsize.dat')).stdout()
+  else
+    max_np = mpi_np
+  endif
   testname = 'Gemini' + i + '-NP'+max_np
   message('Enabled test ' + testname)
   test(testname, mpiexec,
