@@ -1,9 +1,15 @@
 #!/usr/bin/env python
+"""
+We use SystemExit as this will not blast the whole traceback to Meson.
+Usually just a terse stderr will suffice and not overwhelm the Meson user.
+"""
 from pathlib import Path
 import urllib.request
+import urllib.error
 import hashlib
 import argparse
 import typing
+import socket
 
 
 def url_retrieve(
@@ -13,7 +19,7 @@ def url_retrieve(
     Parameters
     ----------
     url: str
-        URL to downlaod from
+        URL to download from
     outfile: pathlib.Path
         output filepath (including name)
     hash: tuple of str, str
@@ -27,12 +33,14 @@ def url_retrieve(
     # need .resolve() in case intermediate relative dir doesn't exist
     if overwrite or not outfile.is_file():
         outfile.parent.mkdir(parents=True, exist_ok=True)
-
-        urllib.request.urlretrieve(url, str(outfile))
+        try:
+            urllib.request.urlretrieve(url, str(outfile))
+        except (socket.gaierror, urllib.error.URLError) as err:
+            raise SystemExit('ConnectionError: could not download {} due to {}'.format(url, err))
 
     if hash:
         if not file_checksum(outfile, hash[0], hash[1]):
-            raise OSError("hash mismatch: Failed to download {}".format(outfile))
+            raise SystemExit("HashError: {}".format(outfile))
 
 
 def file_checksum(fn: Path, mode: str, hash: str) -> bool:

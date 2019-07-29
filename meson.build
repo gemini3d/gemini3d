@@ -121,15 +121,14 @@ foreach i : test_names
   if proc.returncode() != 0
     warning(i + ' ' + zenodo[i]['zip'] + ' test data could not be downloaded from ' + zenodo[i]['url'] + ' and so ' + i + ' test will fail.')
     message('stderr: \n' + proc.stderr())
-    message('stdout: \n' + proc.stdout())
     download_ok = false
   endif
 
+  ref_ok = true
   if download_ok
     proc = run_command(python, files('script_utils/meson_file_extract.py'),
                        zenodo[i]['zip'],
                        zenodo[i]['dir'])
-    ref_ok = true
     if proc.returncode() != 0
       warning(i + 'test data in ' + zenodo[i]['dir'] + ' not available: ' + i + ' test disabled.')
       message('stderr: \n' + proc.stderr())
@@ -141,17 +140,20 @@ foreach i : test_names
   test_dir = meson.build_root() / 'test'  + i
 
   if mpi_np == ''
-    max_np = run_command(python,
-                        files('script_utils/meson_cpu_count.py'),
-                        files(zenodo[i]['dir']/ 'inputs/simsize.dat')).stdout()
-  else
-    max_np = mpi_np
+    proc = run_command(python,
+                       files('script_utils/meson_cpu_count.py'),
+                       zenodo[i]['dir']/ 'inputs/simsize.dat')
+    mpi_np = proc.stdout()
+    if proc.returncode() != 0 or mpi_np == ''
+      warning('Unable to auto-compute appropriate number of MPI images, using NP=2')
+      mpi_np = '2'
+    endif
   endif
-  testname = 'Gemini' + i + '-NP'+max_np
+  testname = 'Gemini' + i + '-NP' + mpi_np
   message('Enabled test ' + testname)
   test(testname, mpiexec,
     suite : i,
-    args : ['-np', max_np, gemini, meson.source_root() / 'initialize/test' + i / 'config.ini', test_dir],
+    args : ['-np', mpi_np, gemini, meson.source_root() / 'initialize/test' + i / 'config.ini', test_dir],
     workdir : meson.source_root(),
     timeout : 300,
     is_parallel : false)
