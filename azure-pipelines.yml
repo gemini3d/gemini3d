@@ -16,19 +16,20 @@ jobs:
   - script: |
       python -m pip install cmakeutils
       cmake_setup 3.15.1 --prefix $(HOME)/.local
-      echo '##vso[task.setvariable variable=CMAKE_PATH]$HOME/.local/cmake-3.15.1-Linux-x86_64/bin'
+      echo '##vso[task.setvariable variable=CMAKE_PATH]$(HOME)/.local/cmake-3.15.1-Linux-x86_64/bin'
     displayName: 'Install modern CMake'
   - script: python -m pip install -e $(Build.SourcesDirectory)[tests]
     displayName: 'Install Python dev'
   - script: |
-      $CMAKE_PATH/cmake -B $BUILD_DIR -S $SRC_DIR
-      $CMAKE_PATH/cmake --build $BUILD_DIR --parallel
+      $(CMAKE_PATH)/cmake --version
+      $(CMAKE_PATH)/cmake -B $BUILD_DIR -S $SRC_DIR
+      $(CMAKE_PATH)/cmake --build $BUILD_DIR --parallel
     env:
       SRC_DIR: $(Build.SourcesDirectory)
       BUILD_DIR: $(Build.BinariesDirectory)
       FC: gfortran-6
     displayName: 'CMake: Configure and Generate'
-  - script: $CMAKE_PATH/ctest -R 2D --parallel --output-on-failure
+  - script: $(CMAKE_PATH)/ctest -R 2D --parallel --output-on-failure
     workingDirectory: $(Build.BinariesDirectory)
     displayName: 'CTest: 2D'
 
@@ -89,7 +90,7 @@ jobs:
   - script: python -m pip install -e $(Build.SourcesDirectory)[tests]
     displayName: 'Install Python dev'
   - script: |
-      meson setup -DMUMPS_ROOT=/usr/local/opt/mumps/libexec/ -DSCALAPACK_ROOT=/usr/local/opt/scalapack/ $BUILD_DIR $SRC_DIR
+      meson setup -DMUMPS_ROOT=/usr/local/opt/mumps/libexec/ -DSCALAPACK_ROOT=/usr/local/opt/scalapack/ -DLAPACK_ROOT=/usr/local/opt/lapack/lib/ $BUILD_DIR $SRC_DIR
       meson test -C $BUILD_DIR --suite unit
       meson test -C $BUILD_DIR --suite 2d
     env:
