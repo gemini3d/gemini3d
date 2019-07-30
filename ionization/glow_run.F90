@@ -59,8 +59,9 @@ real, dimension(nbins) :: phitoptmp
 integer :: j
 character(len=1024) :: iri90_dir
 
-data_dir    ='objects/_deps/ncarglow-src/data/'
-iri90_dir   ='objects/_deps/ncarglow-src/data/iri90/'
+data_dir = DATADIR
+iri90_dir = trim(data_dir) // '/iri90/'
+
 
 !! Execute:  Allocate arrays in other modules (formerly in common blocks):
 

@@ -32,16 +32,7 @@ add_subdirectory(vendor/msis00)
 
 # --- GEMINI
 add_library(ionization ionization/ionization.f90)
-target_link_libraries(ionization PRIVATE neutral const mpimod)
-if(USEGLOW)
-  include(${PROJECT_SOURCE_DIR}/cmake/glow.cmake)
-
-  target_sources(ionization PRIVATE ionization/glow_run.f90)
-  target_link_libraries(ionization PRIVATE cglow)
-  target_include_directories(ionization PRIVATE ${ncarglow_BINARY_DIR})
-else()
-  target_sources(ionization PRIVATE ionization/glow_dummy.f90)
-endif(USEGLOW)
+add_subdirectory(ionization)
 
 add_subdirectory(numerical)
 
@@ -88,10 +79,6 @@ target_include_directories(potentialBCs PRIVATE ${MUMPS_INCLUDE_DIRS})
 target_compile_options(potentialBCs PRIVATE ${FFLAGS})
 
 # --- other libs
-add_library(precipBCs ionization/boundary_conditions/precipBCs_mod.f90)
-target_link_libraries(precipBCs PRIVATE const grid io interp temporal timeutils)
-target_compile_options(precipBCs PRIVATE ${FFLAGS})
-
 add_library(multifluid multifluid/multifluid.f90)
 target_link_libraries(multifluid PRIVATE precipBCs mpimod grid ionization sources collision advec diffusion)
 target_compile_options(multifluid PRIVATE ${FFLAGS})

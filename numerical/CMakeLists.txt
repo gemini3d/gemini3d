@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.12)
+cmake_minimum_required(VERSION 3.12)
 # 3.9: MPI::MPI_Fortran, 3.11: Lapack, 3.12 for find_ROOT
 project(gem-num Fortran)
 enable_testing()

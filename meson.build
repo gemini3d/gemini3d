@@ -155,7 +155,7 @@ foreach i : test_names
     suite : i,
     args : ['-np', mpi_np, gemini, meson.source_root() / 'initialize/test' + i / 'config.ini', test_dir],
     workdir : meson.source_root(),
-    timeout : 300,
+    timeout : 900,
     is_parallel : false)
 
   if ref_ok
