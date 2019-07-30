@@ -13,19 +13,22 @@ jobs:
       sudo apt update -q
       sudo apt install -yq --no-install-recommends gfortran-6 liblapack-dev libscalapack-mpi-dev libmumps-dev libopenmpi-dev
     displayName: 'Install Linux prereqs'
+  - script: |
+      python -m pip install cmakeutils
+      cmake_setup 3.15.1 --prefix $(HOME)/.local
+      echo '##vso[task.setvariable variable=CMAKE_PATH]$HOME/.local/cmake-3.15.1-Linux-x86_64/bin'
+    displayName: 'Install modern CMake'
   - script: python -m pip install -e $(Build.SourcesDirectory)[tests]
     displayName: 'Install Python dev'
   - script: |
-      cmake --version
-      cd $BUILD_DIR
-      cmake $SRC_DIR
-      cmake --build $BUILD_DIR --parallel
+      $CMAKE_PATH/cmake -B $BUILD_DIR -S $SRC_DIR
+      $CMAKE_PATH/cmake --build $BUILD_DIR --parallel
     env:
       SRC_DIR: $(Build.SourcesDirectory)
       BUILD_DIR: $(Build.BinariesDirectory)
       FC: gfortran-6
     displayName: 'CMake: Configure and Generate'
-  - script: ctest -R 2D --parallel --output-on-failure
+  - script: $CMAKE_PATH/ctest -R 2D --parallel --output-on-failure
     workingDirectory: $(Build.BinariesDirectory)
     displayName: 'CTest: 2D'
 
@@ -75,7 +78,7 @@ jobs:
       addToPath: true
   - script: |
       brew install ninja
-      brew install gcc lapack openblas open-mpi scalapack
+      brew install gcc lapack openblas open-mpi
       brew tap dpo/openblas
       brew install mumps
     displayName: 'Install library prereqs'
@@ -86,7 +89,7 @@ jobs:
   - script: python -m pip install -e $(Build.SourcesDirectory)[tests]
     displayName: 'Install Python dev'
   - script: |
-      meson setup $BUILD_DIR $SRC_DIR
+      meson setup -DMUMPS_ROOT=/usr/local/opt/mumps/libexec/ -DSCALAPACK_ROOT=/usr/local/opt/scalapack/ $BUILD_DIR $SRC_DIR
       meson test -C $BUILD_DIR --suite unit
       meson test -C $BUILD_DIR --suite 2d
     env:
