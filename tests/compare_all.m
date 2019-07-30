@@ -1,22 +1,20 @@
 function ok = compare_all(dir1, dir2)
-  
-  % the absolute and relative tolerance account for slight IEEE-754 based differences,
-  % including non-associativity of floating-point arithmetic.
-  % these parameters are a bit arbitrary.
+
+% the absolute and relative tolerance account for slight IEEE-754 based differences,
+% including non-associativity of floating-point arithmetic.
+% these parameters are a bit arbitrary.
 
 % per MZ Oct 17, 2018:
 % Ti,Te=1 K
 % ne=1e6 m-3
 % vi,v2,v3=1 m/s
-% J1,J2,J3 = 1e-9 
+% J1,J2,J3 = 1e-9
 
 % MZ wants to change what we consider signficant...
 % Ti,Te=5 K
 % ne=1e7 m-3
 % vi,v2,v3=2 m/s
 % J1,J2,J3 = 1e-9
-
-try
 
 cwd = fileparts(mfilename('fullpath'));
 addpath([cwd,filesep,'..',filesep,'script_utils'])
@@ -25,8 +23,8 @@ addpath([cwd, filesep, '..', filesep, 'vis'])
 narginchk(2,2)
 validateattr(dir1, {'char'}, {'vector'}, mfilename,'directory to compare',1)
 validateattr(dir2, {'char'}, {'vector'}, mfilename,'directory to compare',2)
-  
-rtol=1e-5; rtolN=rtol; rtolT=rtol; rtolJ=rtol; rtolV=rtol; 
+
+rtol=1e-5; rtolN=rtol; rtolT=rtol; rtolJ=rtol; rtolV=rtol;
 atol=1e-8; atolN=1e9;  atolT=100;    atolJ=1e-7;   atolV=50;
 
 %% READ IN THE SIMULATION INFORMATION
@@ -40,29 +38,29 @@ ymd=ymd0;
 UTsec=UTsec0;
 
 ok = false;
-  
-for it=1:Nt 
+
+for it=1:Nt
   st = ['UTsec ', num2str(times(it))];
   [neA,~,~,~,v1A,TiA,TeA,J1A,v2A,v3A,J2A,J3A] = loadframe(dir1,ymd,UTsec,ymd0,UTsec0);
   [neB,~,~,~,v1B,TiB,TeB,J1B,v2B,v3B,J2B,J3B] = loadframe(dir2,ymd,UTsec,ymd0,UTsec0);
-  
+
   ok = ok + ~assert_allclose(neA,neB,rtolN,atolN,['Ne ',st], true);
-  
+
   if false
     ok = ok + ~assert_allclose(v1A,v1B,rtolV,atolV,['V1 ', st], true);
   end
   ok = ok + ~assert_allclose(v2A,v2B,rtolV,atolV,['V2 ', st], true);
   ok = ok + ~assert_allclose(v3A,v3B,rtolV,atolV,['V3 ', st], true);
-  
+
   if false
     ok = ok + ~assert_allclose(TiA,TiB,rtolT,atolT,['Ti ', st], true);
   end
   ok = ok + ~assert_allclose(TeA,TeB,rtolT,atolT,['Te ', st], true);
-  
+
   ok = ok + ~assert_allclose(J1A,J1B,rtolJ,atolJ,['J1 ', st], true);
   ok = ok + ~assert_allclose(J2A,J2B,rtolJ,atolJ,['J2 ', st], true);
   ok = ok + ~assert_allclose(J3A,J3B,rtolJ,atolJ,['J3 ', st], true);
-  
+
   %% assert time steps have unique output (earth always rotating...)
   if it>1
     ok = ok + ~assert_allclose(Ne,neA,rtol,atol,['Ne ', st,' too similar to prior step'],true, true);
@@ -79,30 +77,19 @@ for it=1:Nt
     ok = ok + ~assert_allclose(J2,J2A,rtol,atol,['J2 ', st,' too similar to prior step'],true,true, true);
     ok = ok + ~assert_allclose(J3,J3A,rtol,atol,['J3 ', st,' too similar to prior step'],true,true, true);
   end
-  
+
   Ne = neA; v1=v1A; v2=v2A; v3=v3A; Ti=TiA; Te=TeA; J1=J1A; J2=J2A; J3=J3A;
-  
+
   [ymd,UTsec] = dateinc(dtout,ymd,UTsec);
-  
+
 end
 
-if ok
-  disp([int2str(ok), ' compare errors'])
-  exit(ok)
+if ok ~= 0
+  error([int2str(ok), ' compare errors'])
 else
   disp(['OK: Gemini output comparison of ',int2str(Nt),' time steps.'])
-end
-
-catch excp
-  if isinteractive
-    rethrow(excp)
-  else  % octave-cli or matlab: -nodesktop, -nojvm, -batch
-    disp(excp.message)
-    exit(1)
-  end
 end
 
 if nargout==0, clear('ok'), end
 
 end % function
-

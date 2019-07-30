@@ -93,6 +93,8 @@ magcalc = executable('magcalc.bin', 'magcalc.f90',
 mpiexec = find_program('mpiexec')
 pymod = import('python')
 python = pymod.find_installation('python3')
+matlab = find_program('matlab', required: false)
+octave = find_program('octave', required: false)
 
 zenodo = {
   '2d': {'url': 'https://zenodo.org/record/2520780/files/zenodo2d.zip?download=1',
@@ -158,6 +160,7 @@ foreach k, v : zenodo
       mpi_np = '2'
     endif
   endif
+
   testname = 'Gemini' + k + '-NP' + mpi_np
   message('Enabled test ' + testname)
   test(testname, mpiexec,
@@ -171,6 +174,20 @@ foreach k, v : zenodo
     test('Compare' + k, python,
       args : ['compare_all.py', test_dir, v['dir']],
       suite : k, timeout: 60, workdir : meson.source_root() / 'tests')
+
+    matoctargs = 'compare_all("' + test_dir + '","' + v['dir'] + '")'
+
+    if matlab.found()
+      test('CompareMatlab' + k, matlab,
+        args : ['-batch', matoctargs],
+        suite : k, timeout: 60, workdir : meson.source_root() / 'tests')
+    endif
+
+    if octave.found()
+      test('CompareOctave' + k, octave,
+        args : ['--eval', matoctargs],
+        suite : k, timeout: 60, workdir : meson.source_root() / 'tests')
+    endif
   else
     warning('Compare' + k + ' skipped due to missing reference data in ' + v['dir'])
   endif
