@@ -36,7 +36,9 @@ def url_retrieve(
         try:
             urllib.request.urlretrieve(url, str(outfile))
         except (socket.gaierror, urllib.error.URLError) as err:
-            raise SystemExit('ConnectionError: could not download {} due to {}'.format(url, err))
+            raise SystemExit(
+                "ConnectionError: could not download {} due to {}".format(url, err)
+            )
 
     if hash:
         if not file_checksum(outfile, hash[0], hash[1]):

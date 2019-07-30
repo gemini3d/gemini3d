@@ -1,9 +1,14 @@
+"""
+struct manpage:
+https://docs.python.org/3/library/struct.html#struct-format-strings
+"""
 import numpy as np
 from pathlib import Path
 from datetime import datetime, timedelta
 import typing
 import xarray
 from functools import lru_cache
+import struct
 
 LSP = 7
 
@@ -33,14 +38,12 @@ def datetime_range(
 
 
 @lru_cache()
-def read_simsize(fn: Path) -> np.ndarray:
-    fn = Path(fn).expanduser().resolve(strict=True)
-    with fn.open("rb") as f:
-        return np.fromfile(f, np.int32, 3)
+def get_simsize(fn: Path) -> typing.Tuple[int, int, int]:
+    return struct.unpack("III", Path(fn).expanduser().read_bytes())  # type: ignore
 
 
 def readgrid(fn: Path) -> typing.Dict[str, np.ndarray]:
-    lxs = read_simsize(fn.parent / "simsize.dat")
+    lxs = get_simsize(fn.parent / "simsize.dat")
     lgridghost = (lxs[0] + 4) * (lxs[1] + 4) * (lxs[2] + 4)
     gridsizeghost = [lxs[0] + 4, lxs[1] + 4, lxs[2] + 4]
 
@@ -185,7 +188,7 @@ def loadframe(simdir: Path, time: datetime) -> xarray.Dataset:
     P = readconfig(simdir / "inputs/config.ini")
 
     sizefn = simdir / "inputs/simsize.dat"
-    P["lxs"] = read_simsize(sizefn)
+    P["lxs"] = get_simsize(sizefn)
 
     # %% datfn
 

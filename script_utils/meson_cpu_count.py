@@ -23,12 +23,12 @@ if __name__ == "__main__":
     size = get_simsize(P.fn)
     # print(size)
     if size[2] == 1:  # 2D sim
-        mpi_count = math.gcd(size[1]//2, max_cpu)
+        mpi_count = math.gcd(size[1] // 2, max_cpu)
     else:  # 3D sim
-        mpi_count = math.gcd(size[2]//2, max_cpu)
+        mpi_count = math.gcd(size[2] // 2, max_cpu)
 
     # need at least 2 images for MPI to function for Gemini
     mpi_count = max(mpi_count, 2)
 
     # need end='' or you'll have to .strip() in Meson
-    print(mpi_count, end='')
+    print(mpi_count, end="")
