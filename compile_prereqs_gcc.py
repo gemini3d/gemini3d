@@ -35,6 +35,8 @@ MUMPSDIR = "mumps"
 
 # ========= end of user parameters ================
 
+nice = ["nice"] if sys.platform == "linux" else []
+
 FC = shutil.which("gfortran")
 if not FC:
     raise FileNotFoundError("Gfortran not found")
@@ -58,7 +60,6 @@ def openmpi(wipe: bool, dirs: typing.Dict[str, Path]):
     url_retrieve(MPIURL, MPIFN, ("sha1", MPISHA1))
     extract_tar(MPIFN, source_lib)
 
-    nice = ["nice"] if sys.platform == "linux" else []
     cmd = nice + [
         "./configure",
         f"--prefix={install_lib}",
@@ -86,7 +87,8 @@ def lapack(wipe: bool, dirs: typing.Dict[str, Path]):
         cachefile.unlink()
 
     subprocess.check_call(
-        [
+        nice
+        + [
             cmake,
             f"-DCMAKE_INSTALL_PREFIX={install_lib}",
             "-B",
@@ -98,7 +100,7 @@ def lapack(wipe: bool, dirs: typing.Dict[str, Path]):
     )
 
     subprocess.check_call(
-        [cmake, "--build", str(build_lib), "--parallel", "--target", "install"]
+        nice + [cmake, "--build", str(build_lib), "--parallel", "--target", "install"]
     )
 
 
@@ -115,7 +117,8 @@ def scalapack(wipe: bool, dirs: typing.Dict[str, Path]):
         cachefile.unlink()
 
     subprocess.check_call(
-        [
+        nice
+        + [
             cmake,
             f"-DCMAKE_INSTALL_PREFIX={install_lib}",
             f'-DLAPACK_ROOT={Path(dirs["prefix"]).expanduser() / LAPACKDIR}',
@@ -128,11 +131,11 @@ def scalapack(wipe: bool, dirs: typing.Dict[str, Path]):
     )
 
     subprocess.check_call(
-        [cmake, "--build", str(build_lib), "--parallel", "--target", "install"]
+        nice + [cmake, "--build", str(build_lib), "--parallel", "--target", "install"]
     )
 
     subprocess.check_call(
-        ["ctest", "--parallel", "--output-on-failure"], cwd=str(build_lib)
+        nice + ["ctest", "--parallel", "--output-on-failure"], cwd=str(build_lib)
     )
 
 
@@ -151,7 +154,8 @@ def mumps(wipe: bool, dirs: typing.Dict[str, Path]):
         cachefile.unlink()
 
     subprocess.check_call(
-        [
+        nice
+        + [
             cmake,
             f"-DCMAKE_INSTALL_PREFIX={install_lib}",
             f"-DSCALAPACK_ROOT={scalapack_lib}",
@@ -164,11 +168,11 @@ def mumps(wipe: bool, dirs: typing.Dict[str, Path]):
     )
 
     subprocess.check_call(
-        [cmake, "--build", str(build_lib), "--parallel", "--target", "install"]
+        nice + [cmake, "--build", str(build_lib), "--parallel", "--target", "install"]
     )
 
     subprocess.check_call(
-        ["ctest", "--parallel", "--output-on-failure"], cwd=str(build_lib)
+        nice + ["ctest", "--parallel", "--output-on-failure"], cwd=str(build_lib)
     )
 
 
