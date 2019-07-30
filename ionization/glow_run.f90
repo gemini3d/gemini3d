@@ -20,7 +20,7 @@ logical :: first_call = .true.
 contains
 
 module procedure glow_run
-  
+
 ! This software is part of the GLOW model.  Use is governed by the Open Source
 ! Academic Research License Agreement contained in the file glowlicense.txt.
 ! For more information see the file glow.txt.
@@ -53,9 +53,9 @@ module procedure glow_run
 ! nex     number of ionized/excited species
 ! nw      number of airglow emission wavelengths
 ! nc      number of component production terms for each emission
-  
 
-real, dimension(nbins) :: phitoptmp = 0.0d0
+
+real, dimension(nbins) :: phitoptmp
 integer :: j
 character(len=1024) :: iri90_dir
 
@@ -98,7 +98,7 @@ ap = 5.
 kchem = 4.
 jlocal = 0.
 
-!! Convert densities and altitudes into 
+!! Convert densities and altitudes into
 
 zz(:)  = real(alt(:)*1.0d2,4)
 zo(:)  = real(nn(:,1)/1.0d6,4)
@@ -122,7 +122,7 @@ zxden(5, :) = real(ns(:,3)/1.0d6,4)
 zxden(6, :) = real(ns(:,4)/1.0d6,4)
 zxden(7, :) = real(ns(:,2)/1.0d6,4)
 zxden(8, :) = 0d0
-zxden(9, :) = 0d0 
+zxden(9, :) = 0d0
 zxden(10,:) = 0d0
 zxden(11,:) = 0d0
 zxden(12,:) = 0d0
