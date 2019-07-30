@@ -65,11 +65,23 @@ neutral = library('neutral', 'neutral/neutral.f90',
 subdir('ionization')
 
 # -- gemini exe
-gemini = executable('gemini.bin', 'gemini.f90', 'temporal/temporal.f90', 'multifluid/multifluid.f90',
+gemini_exe = executable('gemini.bin', 'gemini.f90', 'temporal/temporal.f90', 'multifluid/multifluid.f90',
 'sources/sources.f90', 'numerical/advection/advec_mpi.f90', 'numerical/diffusion/diffusion.F90', 'vendor/lapack95/gbsv.F90',
   link_with : [io,calculus, collisions, grid, ionization, mpimod, neutral, potential, const, timeutils],
   dependencies : [mpi, lapack],
   fortran_args: real_bits)
+
+# -- gemini_glow exe
+
+if use_glow
+  gemini_glow_exe = executable('gemini_glow.bin', 'gemini.f90', 'temporal/temporal.f90', 'multifluid/multifluid.f90',
+  'sources/sources.f90', 'numerical/advection/advec_mpi.f90', 'numerical/diffusion/diffusion.F90', 'vendor/lapack95/gbsv.F90',
+    link_with : [io,calculus, collisions, grid, ionization_glow, mpimod, neutral, potential, const, timeutils],
+    dependencies : [mpi, lapack],
+    fortran_args: real_bits)
+else
+  gemini_glow_exe = disabler()
+endif
 
 # -- magcalc exe
 
@@ -86,40 +98,38 @@ zenodo = {
   '2d': {'url': 'https://zenodo.org/record/2520780/files/zenodo2d.zip?download=1',
          'md5': '5bd1bce1a465ccec5af813f8b7959ec8',
          'dir': meson.source_root() / 'tests/data/zenodo2d',
-         'zip': meson.source_root() / 'tests/data/zenodo2d.zip'},
+         'zip': meson.source_root() / 'tests/data/zenodo2d.zip',
+         'exe': gemini_exe},
   '2d_glow': {'url': 'https://zenodo.org/record/2520780/files/zenodo2d_glow.zip?download=1',
               'md5': 'c5bbbbff3bdde85b6d7e9470bc3751a2',
               'dir': meson.source_root() / 'tests/data/zenodo2d_glow',
-              'zip': meson.source_root() / 'tests/data/zenodo2d_glow.zip'},
+              'zip': meson.source_root() / 'tests/data/zenodo2d_glow.zip',
+              'exe': gemini_glow_exe},
   '3d': {'url': 'https://zenodo.org/record/2520920/files/zenodo3d.zip?download=1',
          'md5': '225853d43937a70c9ef6726f90666645',
          'dir': meson.source_root() / 'tests/data/zenodo3d',
-         'zip': meson.source_root() / 'tests/data/zenodo3d.zip'},
+         'zip': meson.source_root() / 'tests/data/zenodo3d.zip',
+         'exe': gemini_exe},
   '3d_glow': {'url': 'https://zenodo.org/record/2520920/files/zenodo3d_glow.zip?download=1',
               'md5': '2c54bfde8aff0fb72d61115f04c361a7',
               'dir': meson.source_root() / 'tests/data/zenodo3d_glow',
-              'zip': meson.source_root() / 'tests/data/zenodo3d_glow.zip'},
+              'zip': meson.source_root() / 'tests/data/zenodo3d_glow.zip',
+              'exe': gemini_glow_exe},
   }
-
-if use_glow
-  test_names = ['2d_glow', '3d_glow']
-else
-  test_names = ['2d', '3d']
-endif
-
 
 mpi_np = get_option('NP')
 
-foreach i : test_names
+foreach k, v : zenodo
+
+  if not use_glow and name.endswith('glow')
+    continue
+  endif
 
   proc = run_command(python, files('script_utils/meson_file_download.py'),
-                     zenodo[i]['url'],
-                     zenodo[i]['zip'],
-                     '-hash', 'md5',
-                     zenodo[i]['md5'])
+                     v['url'], v['zip'], '-hash', 'md5', v['md5'])
   download_ok = true
   if proc.returncode() != 0
-    warning(i + ' ' + zenodo[i]['zip'] + ' test data could not be downloaded from ' + zenodo[i]['url'] + ' and so ' + i + ' test will fail.')
+    warning(k + ' ' + v['zip'] + ' test data could not be downloaded from ' + v['url'] + ' and so ' + k + ' test will fail.')
     message('stderr: \n' + proc.stderr())
     download_ok = false
   endif
@@ -127,43 +137,42 @@ foreach i : test_names
   ref_ok = true
   if download_ok
     proc = run_command(python, files('script_utils/meson_file_extract.py'),
-                       zenodo[i]['zip'],
-                       zenodo[i]['dir'])
+                       v['zip'], v['dir'])
     if proc.returncode() != 0
-      warning(i + 'test data in ' + zenodo[i]['dir'] + ' not available: ' + i + ' test disabled.')
+      warning(k + 'test data in ' + v['dir'] + ' not available: ' + k + ' test disabled.')
       message('stderr: \n' + proc.stderr())
       message('stdout: \n' + proc.stdout())
       ref_ok=false
     endif
   endif
 
-  test_dir = meson.build_root() / 'test'  + i
+  test_dir = meson.build_root() / 'test'  + k
 
   if mpi_np == ''
     proc = run_command(python,
                        files('script_utils/meson_cpu_count.py'),
-                       zenodo[i]['dir']/ 'inputs/simsize.dat')
+                       v['dir']/ 'inputs/simsize.dat')
     mpi_np = proc.stdout()
     if proc.returncode() != 0 or mpi_np == ''
       warning('Unable to auto-compute appropriate number of MPI images, using NP=2')
       mpi_np = '2'
     endif
   endif
-  testname = 'Gemini' + i + '-NP' + mpi_np
+  testname = 'Gemini' + k + '-NP' + mpi_np
   message('Enabled test ' + testname)
   test(testname, mpiexec,
-    suite : i,
-    args : ['-np', mpi_np, gemini, meson.source_root() / 'initialize/test' + i / 'config.ini', test_dir],
+    suite : k,
+    args : ['-np', mpi_np, v['exe'], meson.source_root() / 'initialize/test' + k / 'config.ini', test_dir],
     workdir : meson.source_root(),
     timeout : 900,
     is_parallel : false)
 
   if ref_ok
-    test('Compare' + i, python,
-      args : ['compare_all.py', test_dir, zenodo[i]['dir']],
-      suite : i, timeout: 60, workdir : meson.source_root() / 'tests')
+    test('Compare' + k, python,
+      args : ['compare_all.py', test_dir, v['dir']],
+      suite : k, timeout: 60, workdir : meson.source_root() / 'tests')
   else
-    warning('Compare' + i + ' skipped due to missing reference data in ' + zenodo[i]['dir'])
+    warning('Compare' + k + ' skipped due to missing reference data in ' + v['dir'])
   endif
 
 endforeach
