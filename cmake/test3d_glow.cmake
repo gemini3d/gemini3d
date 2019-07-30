@@ -8,6 +8,6 @@ set(firstfile 20130220_18000.000001.dat)
 # --- ensure reference data is available for self-test
 download_testfiles(${zenodoHash} ${zenodoNumber} ${REFNAME} ${PROJECT_SOURCE_DIR}/${REFDIR})
 
-setup_gemini_test(GeminiGlow3D ${TESTDIR} ${REFDIR}/${REFNAME} 1200)
+setup_gemini_test(Gemini3d_glow ${TESTDIR} ${REFDIR}/${REFNAME} 1200)
 
-compare_gemini_output(CompareGlow3D ${TESTDIR} ${REFDIR}/${REFNAME} ${firstfile})
+compare_gemini_output(Compare3d_glow ${TESTDIR} ${REFDIR}/${REFNAME} ${firstfile})

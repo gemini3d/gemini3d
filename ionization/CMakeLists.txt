@@ -1,20 +1,16 @@
-cmake_policy(SET CMP0079 NEW)
-cmake_policy(SET CMP0076 NEW)
-
+add_library(ionization ionization.f90 glow_dummy.f90)
 target_link_libraries(ionization PRIVATE neutral const mpimod)
 set_target_properties(ionization PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR})
-if(USEGLOW)
+
+if(useglow)
   include(${PROJECT_SOURCE_DIR}/cmake/glow.cmake)
 
-  target_sources(ionization PRIVATE glow_run.F90)
-  target_link_libraries(ionization PRIVATE cglow)
-  target_include_directories(ionization PRIVATE ${ncarglow_BINARY_DIR}/src)
-  target_compile_definitions(ionization PRIVATE
-    DATADIR="build/_deps/ncarglow-src/data/")
-else()
-  target_sources(ionization PRIVATE glow_dummy.f90)
-endif(USEGLOW)
-
+  add_library(ionization_glow ionization.f90 glow_run.F90)
+  target_link_libraries(ionization_glow PRIVATE neutral const mpimod cglow)
+  set_target_properties(ionization_glow PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR})
+  target_include_directories(ionization_glow PRIVATE ${ncarglow_BINARY_DIR}/src)
+  target_compile_definitions(ionization_glow PRIVATE DATADIR="build/_deps/ncarglow-src/data/")
+endif(useglow)
 
 add_library(precipBCs boundary_conditions/precipBCs_mod.f90)
 target_link_libraries(precipBCs PRIVATE const grid io interp temporal timeutils)

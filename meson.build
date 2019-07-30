@@ -123,7 +123,7 @@ mpi_np = get_option('NP')
 
 foreach k, v : zenodo
 
-  if not use_glow and name.endswith('glow')
+  if not use_glow and k.endswith('glow')
     continue
   endif
 

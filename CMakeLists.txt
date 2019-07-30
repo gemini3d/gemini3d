@@ -15,7 +15,7 @@ if(NOT realbits)
 endif()
 
 option(TRACE "dump variables to disk at certain locations in program" off)
-option(USEGLOW "use NCAR GLOW instead of Fang")
+option(useglow "use NCAR GLOW instead of Fang")
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/Modules/)
 
@@ -31,7 +31,6 @@ add_subdirectory(tests)
 add_subdirectory(vendor/msis00)
 
 # --- GEMINI
-add_library(ionization ionization/ionization.f90)
 add_subdirectory(ionization)
 
 add_subdirectory(numerical)
@@ -92,6 +91,19 @@ target_link_libraries(gemini.bin PRIVATE mpimod io neutral precipBCs
 #  MPI::MPI_Fortran)
 target_compile_options(gemini.bin PRIVATE ${FFLAGS})
 
+if(useglow)
+  add_library(multifluid_glow multifluid/multifluid.f90)
+  target_link_libraries(multifluid_glow PRIVATE precipBCs mpimod grid ionization sources collision advec diffusion)
+  target_compile_options(multifluid_glow PRIVATE ${FFLAGS})
+
+  add_executable(gemini_glow.bin gemini.f90)
+  target_link_libraries(gemini_glow.bin PRIVATE mpimod io neutral precipBCs
+    temporal multifluid_glow
+    potentialBCs potential_comm_mumps const
+    ${LAPACK_LIBRARIES})  # necessary for self-compiled
+  #  MPI::MPI_Fortran)
+  target_compile_options(gemini.bin PRIVATE ${FFLAGS})
+endif(useglow)
 
 #--------magnetic field calculation executable---------------
 add_executable(magcalc.bin magcalc.f90)
@@ -99,14 +111,14 @@ target_link_libraries(magcalc.bin PRIVATE mpimod const grid io timeutils)
 target_compile_options(magcalc.bin PRIVATE ${FFLAGS})
 
 # --- self-tests
-if(USEGLOW)
-  include(${PROJECT_SOURCE_DIR}/cmake/test2d_glow.cmake)
-  if(NOT ENV{CI})  # save needless downloading
-  include(${PROJECT_SOURCE_DIR}/cmake/test3d_glow.cmake)
-  endif()
-else()
-  include(${PROJECT_SOURCE_DIR}/cmake/test2d.cmake)
-  if(NOT ENV{CI})
+include(${PROJECT_SOURCE_DIR}/cmake/test2d.cmake)
+if(NOT ENV{CI}) # save needless downloading
   include(${PROJECT_SOURCE_DIR}/cmake/test3d.cmake)
-  endif()
 endif()
+
+if(useglow)
+  include(${PROJECT_SOURCE_DIR}/cmake/test2d_glow.cmake)
+  if(NOT ENV{CI})
+    include(${PROJECT_SOURCE_DIR}/cmake/test3d_glow.cmake)
+  endif()
+endif(useglow)
