@@ -62,10 +62,38 @@ jobs:
     displayName: 'Build and test'
   - publish: $(Build.BinariesDirectory)/meson-logs/testlog.txt
     condition: succeededOrFailed()
-    artifact: TestLog
+    artifact: LinuxMesonTestLog
 
+- job: MacMeson
+  pool:
+    vmImage: 'macOS-latest'
 
-#    - brew install gcc
-#    - brew install lapack openblas open-mpi scalapack
-#    - brew tap dpo/openblas
-#    - brew install mumps
+  steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '3.6'
+      addToPath: true
+  - script: |
+      brew install ninja
+      brew install gcc lapack openblas open-mpi scalapack
+      brew tap dpo/openblas
+      brew install mumps
+    displayName: 'Install library prereqs'
+  - script: |
+      git clone https://github.com/mesonbuild/meson ../meson
+      python -m pip install -e ../meson
+    displayName: 'Install Meson'
+  - script: python -m pip install -e $(Build.SourcesDirectory)[tests]
+    displayName: 'Install Python dev'
+  - script: |
+      meson setup $BUILD_DIR $SRC_DIR
+      meson test -C $BUILD_DIR --suite unit
+      meson test -C $BUILD_DIR --suite 2d
+    env:
+      SRC_DIR: $(Build.SourcesDirectory)
+      BUILD_DIR: $(Build.BinariesDirectory)
+      FC: gfortran
+    displayName: 'Build and test'
+  - publish: $(Build.BinariesDirectory)/meson-logs/testlog.txt
+    condition: succeededOrFailed()
+    artifact: MacMesonTestLog
