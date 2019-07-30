@@ -68,7 +68,7 @@ jobs:
     condition: succeededOrFailed()
     artifact: LinuxMesonTestLog
 
-- job: MacMeson
+- job: MacCMake
   pool:
     vmImage: 'macOS-latest'
 
@@ -78,26 +78,56 @@ jobs:
       versionSpec: '3.6'
       addToPath: true
   - script: |
-      brew install ninja
+      brew install cmake
       brew install gcc lapack openblas open-mpi
       brew tap dpo/openblas
       brew install mumps
     displayName: 'Install library prereqs'
-  - script: |
-      git clone https://github.com/mesonbuild/meson ../meson
-      python -m pip install -e ../meson
-    displayName: 'Install Meson'
   - script: python -m pip install -e $(Build.SourcesDirectory)[tests]
     displayName: 'Install Python dev'
   - script: |
-      meson setup -DMUMPS_ROOT=/usr/local/opt/mumps/libexec/ -DSCALAPACK_ROOT=/usr/local/opt/scalapack/ -DLAPACK_ROOT=/usr/local/opt/lapack/lib/ $BUILD_DIR $SRC_DIR
-      meson test -C $BUILD_DIR --suite unit
-      meson test -C $BUILD_DIR --suite 2d
+      cmake --version
+      cmake -B $BUILD_DIR -S $SRC_DIR -DMUMPS_ROOT=/usr/local/opt/mumps/libexec/ -DSCALAPACK_ROOT=/usr/local/opt/scalapack/ -DLAPACK_ROOT=/usr/local/opt/lapack/lib/
+      cmake --build $BUILD_DIR --parallel
     env:
       SRC_DIR: $(Build.SourcesDirectory)
       BUILD_DIR: $(Build.BinariesDirectory)
       FC: gfortran
-    displayName: 'Build and test'
-  - publish: $(Build.BinariesDirectory)/meson-logs/testlog.txt
-    condition: succeededOrFailed()
-    artifact: MacMesonTestLog
+    displayName: 'CMake: Configure and Generate'
+  - script: ctest -R 2D --parallel --output-on-failure
+    workingDirectory: $(Build.BinariesDirectory)
+    displayName: 'CTest: 2D'
+
+# - job: MacMeson
+  # pool:
+    # vmImage: 'macOS-latest'
+
+  # steps:
+  # - task: UsePythonVersion@0
+    # inputs:
+      # versionSpec: '3.6'
+      # addToPath: true
+  # - script: |
+      # brew install ninja
+      # brew install gcc lapack openblas open-mpi
+      # brew tap dpo/openblas
+      # brew install mumps
+    # displayName: 'Install library prereqs'
+  # - script: |
+      # git clone https://github.com/mesonbuild/meson ../meson
+      # python -m pip install -e ../meson
+    # displayName: 'Install Meson'
+  # - script: python -m pip install -e $(Build.SourcesDirectory)[tests]
+    # displayName: 'Install Python dev'
+  # - script: |
+      # meson setup -DMUMPS_ROOT=/usr/local/opt/mumps/libexec/ -DSCALAPACK_ROOT=/usr/local/opt/scalapack/ -DLAPACK_ROOT=/usr/local/opt/lapack/lib/ $BUILD_DIR $SRC_DIR
+      # meson test -C $BUILD_DIR --suite unit
+      # meson test -C $BUILD_DIR --suite 2d
+    # env:
+      # SRC_DIR: $(Build.SourcesDirectory)
+      # BUILD_DIR: $(Build.BinariesDirectory)
+      # FC: gfortran
+    # displayName: 'Build and test'
+  # - publish: $(Build.BinariesDirectory)/meson-logs/testlog.txt
+    # condition: succeededOrFailed()
+    # artifact: MacMesonTestLog
