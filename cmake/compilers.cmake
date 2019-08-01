@@ -7,10 +7,10 @@ endif()
 if(CMAKE_Fortran_COMPILER_ID STREQUAL Intel)
 
   if(WIN32)
-    set(FFLAGS /4Yd /traceback)
+    set(FFLAGS /warn:declarations /traceback)
     list(APPEND FFLAGS /Qopenmp)
   else()
-    set(FFLAGS -implicitnone -traceback)  # -warn all or -warn gets mixed with -qopenmp with CMake 3.14.2
+    set(FFLAGS -warn declarations -traceback)  # -warn all or -warn gets mixed with -qopenmp with CMake 3.14.2
     list(APPEND FFLAGS -qopenmp)  # undefined reference to `omp_get_max_threads'
   endif()
 

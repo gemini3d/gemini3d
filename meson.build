@@ -7,13 +7,19 @@ use_glow = get_option('useglow')
 use_hdf = get_option('HDF')
 
 fc = meson.get_compiler('fortran')
+# -- compiler options
 if fc.get_id() == 'gcc'
-  add_global_arguments('-Wno-unused-variable', '-Wno-maybe-uninitialized', '-Wno-unused-dummy-argument', '-Wno-unused-function', language : 'fortran')
-  oldflags = ['-std=legacy', '-w']
-else
-  oldflags = ['-w']
+  add_project_arguments('-Wno-unused-variable', '-Wno-maybe-uninitialized', '-Wno-unused-dummy-argument', '-Wno-unused-function',
+  '-fimplicit-none',
+  language : 'fortran')
+  if fc.version().version_compare('>=8.0')
+    add_project_arguments('-std=f2018', language: 'fortran')
+  endif
+elif fc.get_id() == 'intel'
+  add_project_arguments('-stand', 'f18', '-warn declarations', language: 'fortran')
+elif fc.get_id() == 'intel-cl'
+   add_project_arguments('/stand:f18', '/warn:declarations', language: 'fortran')
 endif
-
 # need find_library to search specific dirs at this time
 mpi_root = get_option('MPI_ROOT')
 if mpi_root == ''
@@ -30,10 +36,12 @@ endif
 
 lapack_root = get_option('LAPACK_ROOT')
 if lapack_root == ''
-  lapack = dependency('lapack', required : true)
+  lapack = dependency('lapack')
+  blas = dependency('blas')
 else
-  message('searching for LAPACK in ' + lapack_root)
-  lapack = fc.find_library('lapack', required : true, dirs : lapack_root)
+  message('searching for LAPACK & BLAS in ' + lapack_root)
+  lapack = fc.find_library('lapack', dirs : lapack_root)
+  lapack = fc.find_library('blas', dirs : lapack_root)
 endif
 
 if use_hdf  # see HDF5 branch, not yet fully ready.
@@ -55,8 +63,10 @@ subdir('numerical')
 io = library('io','io/io.F90',
   link_with: [calculus, const, fsutils, grid, mpimod])
 
-msis = library('msis', 'vendor/msis00/msis00_gfortran.f',
-  fortran_args : oldflags)
+subdir('vendor/msis00')
+# --- for setting up an equilibrium simulation --
+executable('msis_setup', 'setup/MSIS00/call_msis_gfortran.f90',
+  link_with: msis)
 
 neutral = library('neutral', 'neutral/neutral.f90',
   dependencies : mpi,
@@ -68,8 +78,9 @@ subdir('ionization')
 gemini_exe = executable('gemini.bin', 'gemini.f90', 'temporal/temporal.f90', 'multifluid/multifluid.f90',
 'sources/sources.f90', 'numerical/advection/advec_mpi.f90', 'numerical/diffusion/diffusion.F90', 'vendor/lapack95/gbsv.F90',
   link_with : [io,calculus, collisions, grid, ionization, mpimod, neutral, potential, const, timeutils],
-  dependencies : [mpi, lapack],
-  fortran_args: real_bits)
+  dependencies : [scalapack, blacs, lapack, blas, mpi],
+  fortran_args: real_bits,
+  install: true)
 
 # -- gemini_glow exe
 
@@ -77,8 +88,9 @@ if use_glow
   gemini_glow_exe = executable('gemini_glow.bin', 'gemini.f90', 'temporal/temporal.f90', 'multifluid/multifluid.f90',
   'sources/sources.f90', 'numerical/advection/advec_mpi.f90', 'numerical/diffusion/diffusion.F90', 'vendor/lapack95/gbsv.F90',
     link_with : [io,calculus, collisions, grid, ionization_glow, mpimod, neutral, potential, const, timeutils],
-    dependencies : [mpi, lapack],
-    fortran_args: real_bits)
+    dependencies : [scalapack, blacs, lapack, blas, mpi],
+    fortran_args: real_bits,
+    install: true)
 else
   gemini_glow_exe = disabler()
 endif
@@ -87,7 +99,8 @@ endif
 
 magcalc = executable('magcalc.bin', 'magcalc.f90',
   link_with : [const, calculus, grid, neutral, io, timeutils, mpimod],
-  dependencies : mpi)
+  dependencies : mpi,
+  install: true)
 
 # --- TESTS ---
 mpiexec = find_program('mpiexec')
