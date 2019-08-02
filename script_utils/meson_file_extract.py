@@ -41,4 +41,4 @@ if __name__ == "__main__":
     elif infile.suffix.lower() in (".tar", ".gz", ".bz2", ".xz"):
         extract_tar(infile, P.outpath)
     else:
-        raise ValueError(f"Not sure how to decompress {infile}")
+        raise ValueError("Not sure how to decompress {}".format(infile))
