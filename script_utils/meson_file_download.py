@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
 We use SystemExit as this will not blast the whole traceback to Meson.
 Usually just a terse stderr will suffice and not overwhelm the Meson user.
