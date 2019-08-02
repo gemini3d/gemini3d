@@ -106,8 +106,15 @@ magcalc = executable('magcalc.bin', 'magcalc.f90',
 mpiexec = find_program('mpiexec')
 pymod = import('python')
 python = pymod.find_installation('python3')
-matlab = find_program('matlab', required: false)
 octave = find_program('octave', required: false)
+
+# no good command-line way to get matlab version in general. CMake uses hacks for this.
+# Matlab is so slow vs. Octave, better to just not have Matlab for now.
+# This check below hangs forever, for example.
+# matlab = find_program('matlab', required: false)
+# if run_command('matlab', '-batch', 'exit').returncode() != 0
+#  matlab = disabler()
+# endif
 
 zenodo = {
   '2d': {'url': 'https://zenodo.org/record/2520780/files/zenodo2d.zip?download=1',
