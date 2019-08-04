@@ -20,14 +20,18 @@ scalapack_root = get_option('SCALAPACK_ROOT')
 
 if mumps_root == ''
   mumpsinc = '/usr/include'
-  mumpslib = [fc.find_library('dmumps', required : true)]
+  mumpslib = fc.find_library('dmumps', required : true)
 else
   message('searching for MUMPS in ' + mumps_root)
   mumpsinc = mumps_root / 'include'
   mumpslib = [fc.find_library('dmumps', required : true, dirs : mumps_root),
               fc.find_library('mumps_common', required : true, dirs : mumps_root)]
 endif
-mumps = declare_dependency(include_directories: mumpsinc, dependencies: mumpslib)
+if mumpslib.found()
+  mumps = declare_dependency(include_directories: mumpsinc, dependencies: mumpslib)
+else
+  mumps = subproject('mumps')
+endif
 
 if scalapack_root == ''
   scalapack = fc.find_library('scalapack-openmpi', required: false)

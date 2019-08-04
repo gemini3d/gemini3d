@@ -1,0 +1,4 @@
+[wrap-git]
+directory = mumps
+url = https://github.com/scivision/mumps.git
+revision = 629423ce6a2

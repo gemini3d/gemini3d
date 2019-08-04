@@ -8,14 +8,14 @@ ${PROJECT_SOURCE_DIR}/tests/data
 setup_gemini_test(
 Gemini2d_fang
 gemini_fang.bin
-test2d
+test2d_fang
 tests/data/zenodo2d
 300
 )
 
 compare_gemini_output(
 Compare2d_fang
-test2d
+test2d_fang
 tests/data/zenodo2d
 20130220_18000.000001.dat
 )

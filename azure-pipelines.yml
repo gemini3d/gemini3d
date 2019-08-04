@@ -68,11 +68,11 @@ stages:
       displayName: 'CMake Configure and Generate'
     - script: $(CMAKE_PATH)/cmake --build build --parallel
       displayName: 'CMake build'
-    - script: $(CMAKE_PATH)/ctest -R 2D --parallel --output-on-failure
+    - script: $(CMAKE_PATH)/ctest -R 2d_fang --parallel --output-on-failure
       workingDirectory: build
-      displayName: 'CTest: 2D Fang'
+      displayName: 'CTest 2D Fang'
     - publish: build/CMakeFiles/CMakeError.log
-      condition: succeededOrFailed()
+      condition: failed()
       artifact: UbuntuCMakeTestLog
 
   - job: UbuntuMeson
@@ -102,12 +102,47 @@ stages:
       env:
         FC: gfortran-6
       displayName: 'Meson configure'
-    - script: |
-        meson test -C build --suite unit
-        meson test -C build --suite 2d
-      displayName: 'Meson build and test'
+    - script: meson test -C build --suite unit
+      displayName: 'Meson build'
+    - script: meson test -C build --suite 2d_fang
+      displayName: 'Meson test 2D Fang'
     - publish: build/meson-logs/testlog.txt
-      condition: succeededOrFailed()
+      condition: failed()
+      artifact: LinuxMesonTestLog
+
+  - job: UbuntuMeson_mumps_subproject
+    pool:
+      vmImage: ubuntu-latest
+
+    steps:
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: '3.7'
+        addToPath: true
+    - script: |
+        sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+        sudo apt update -q
+        sudo apt install -yq --no-install-recommends gfortran-6 liblapack-dev libscalapack-mpi-dev libopenmpi-dev
+      displayName: 'Install Linux prereqs'
+    - script: |
+        git clone https://github.com/mesonbuild/meson ../meson
+        python -m pip install -e ../meson
+        curl -Ls https://github.com/ninja-build/ninja/releases/download/v1.9.0/ninja-linux.zip -o ninja-linux.zip
+        sudo unzip ninja-linux.zip -d /usr/local/bin/
+      displayName: 'setup Meson'
+    - script: python -m pip install -e .[tests]
+      displayName: 'Install Python dev'
+    - script: |
+        meson setup build
+      env:
+        FC: gfortran-6
+      displayName: 'Meson configure'
+    - script: meson test -C build --suite unit
+      displayName: 'Meson build'
+    - script: meson test -C build --suite 2d_fang
+      displayName: 'Meson test 2D Fang'
+    - publish: build/meson-logs/testlog.txt
+      condition: failed()
       artifact: LinuxMesonTestLog
 
   - job: MacCMake
@@ -136,11 +171,11 @@ stages:
       displayName: 'CMake: Configure and Generate'
     - script: cmake --build build --parallel
       displayName: 'CMake build'
-    - script: ctest -R 2D --parallel --output-on-failure
+    - script: ctest -R 2d_fang --parallel --output-on-failure
       workingDirectory: build
-      displayName: 'CTest: 2D'
+      displayName: 'CTest 2D Fang'
     - publish: build/CMakeFiles/CMakeError.log
-      condition: succeededOrFailed()
+      condition: failed()
       artifact: MacCMakeTestLog
 
   - job: MacMeson
@@ -170,10 +205,10 @@ stages:
       env:
         FC: gfortran
       displayName: 'Meson configure'
-    - script: |
-        meson test -C build --suite unit
-        meson test -C build --suite 2d
-      displayName: 'Meson build and test'
+    - script: meson test -C build --suite unit
+      displayName: 'Meson build'
+    - script: meson test -C build --suite 2d_fang
+      displayName: 'Meson test 2D Fang'
     - publish: build/meson-logs/testlog.txt
-      condition: succeededOrFailed()
+      condition: failed()
       artifact: MacMesonTestLog
