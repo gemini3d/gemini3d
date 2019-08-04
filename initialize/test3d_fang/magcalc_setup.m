@@ -12,7 +12,6 @@ addpath ../../script_utils;
 [ymd0,UTsec0,tdur,dtout,flagoutput,mloc]=readconfig([direc,'/inputs/config.ini']);
 
 
-
 %ANGULAR RANGE TO COVER FOR THE CALCLUATIONS (THIS IS FOR THE FIELD POINTS - SOURCE POINTS COVER ENTIRE GRID)
 dang=1.5;
 
@@ -83,5 +82,3 @@ fwrite(fid,numel(theta),'integer*4');
 fwrite(fid,r(:),'real*8');
 fwrite(fid,theta(:),'real*8');
 fwrite(fid,phi(:),'real*8');
-
-

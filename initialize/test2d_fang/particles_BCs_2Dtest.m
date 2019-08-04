@@ -4,7 +4,7 @@ addpath ../../script_utils;
 
 %REFERENCE GRID TO USE
 direcconfig='./'
-direcgrid='../simulations/input/test2d/'
+direcgrid='../tests/data/zenodo2d/'
 
 %CREATE SOME SPACE FOR OUTPUT FILES
 outdir='../simulations/input/test2d_particles/';
@@ -94,7 +94,7 @@ for it=1:lt
   Q(it,:,:)=reshape(Qtmp,[1 llon llat]);
   E0tmp=squeeze(E0dat(it,:,:));
   E0tmp=interp2(glat,gloncorrected,E0tmp,GLAT(:),GLON(:));    %data are plaid in geographic so do the interpolation in that variable
-  E0(it,:,:)=reshape(E0tmp,[1 llon llat]);  
+  E0(it,:,:)=reshape(E0tmp,[1 llon llat]);
 end
 %}
 
@@ -126,7 +126,7 @@ for ilat=1:llat
        Qi=interp1(t,Qhere,outputt);
        E0i=interp1(t,E0here,outputt);
        Qit(ilon,ilat,:)=reshape(Qi,[1 1 ltout]);
-       E0it(ilon,ilat,:)=reshape(E0i,[1 1 ltout]);       
+       E0it(ilon,ilat,:)=reshape(E0i,[1 1 ltout]);
    end
 end
 %}
@@ -176,8 +176,3 @@ end
 
 %ALSO SAVE TO A  MATLAB FILE
 save([outdir,'particles.mat'],'mlon','mlat','Qit','E0it','expdate');
-
-
-%RESTORE PATH
-%rmpath ./restore_idl;
-rmpath ../../script_utils;

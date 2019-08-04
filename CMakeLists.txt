@@ -83,13 +83,13 @@ target_link_libraries(multifluid PRIVATE precipBCs mpimod grid ionization source
 target_compile_options(multifluid PRIVATE ${FFLAGS})
 
 # --- Main GEMINI executable
-add_executable(gemini.bin gemini.f90)
-target_link_libraries(gemini.bin PRIVATE mpimod io neutral precipBCs
+add_executable(gemini_fang.bin gemini.f90)
+target_link_libraries(gemini_fang.bin PRIVATE mpimod io neutral precipBCs
   temporal multifluid
   potentialBCs potential_comm_mumps const
   ${LAPACK_LIBRARIES})  # necessary for self-compiled
 #  MPI::MPI_Fortran)
-target_compile_options(gemini.bin PRIVATE ${FFLAGS})
+target_compile_options(gemini_fang.bin PRIVATE ${FFLAGS})
 
 if(useglow)
   add_library(multifluid_glow multifluid/multifluid.f90)
@@ -102,7 +102,7 @@ if(useglow)
     potentialBCs potential_comm_mumps const
     ${LAPACK_LIBRARIES})  # necessary for self-compiled
   #  MPI::MPI_Fortran)
-  target_compile_options(gemini.bin PRIVATE ${FFLAGS})
+  target_compile_options(gemini_glow.bin PRIVATE ${FFLAGS})
 endif(useglow)
 
 #--------magnetic field calculation executable---------------
@@ -115,10 +115,3 @@ include(${PROJECT_SOURCE_DIR}/cmake/test2d.cmake)
 if(NOT ENV{CI}) # save needless downloading
   include(${PROJECT_SOURCE_DIR}/cmake/test3d.cmake)
 endif()
-
-if(useglow)
-  include(${PROJECT_SOURCE_DIR}/cmake/test2d_glow.cmake)
-  if(NOT ENV{CI})
-    include(${PROJECT_SOURCE_DIR}/cmake/test3d_glow.cmake)
-  endif()
-endif(useglow)

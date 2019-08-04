@@ -3,7 +3,7 @@ addpath ../../script_utils;
 
 %REFERENCE GRID TO USE
 direcconfig='./'
-direcgrid='../simulations/input/test3d/'
+direcgrid='../tests/data/zenodo3d/input'
 
 %CREATE SOME SPACE FOR OUTPUT FILES
 outdir='../simulations/input/test3d_particles/';
@@ -110,7 +110,3 @@ end
 
 %ALSO SAVE TO A  MATLAB FILE
 save([outdir,'particles.mat'],'mlon','mlat','Qit','E0it','expdate');
-
-
-%RESTORE PATH
-rmpath ../../script_utils;

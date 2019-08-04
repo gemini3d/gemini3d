@@ -3,7 +3,7 @@ addpath ../../script_utils;
 
 %REFERENCE GRID TO USE
 direcconfig='./'
-direcgrid='../simulations/input/test3d/'
+direcgrid='../tests/data/zenodo3d/'
 
 
 %OUTPUT FILE LOCATION
@@ -124,18 +124,18 @@ for it=1:lt
     filename=datelab(ymd,UTsec);
     filename=[outdir,filename,'.dat']
     fid=fopen(filename,'w');
-    
+
     %FOR EACH FRAME WRITE A BC TYPE AND THEN OUTPUT BACKGROUND AND BCs
     fwrite(fid,flagdirich,'real*8');
     fwrite(fid,Exit(:,:,it),'real*8');
     fwrite(fid,Eyit(:,:,it),'real*8');
     fwrite(fid,Vminx1it(:,:,it),'real*8');
-    fwrite(fid,Vmaxx1it(:,:,it),'real*8');  
+    fwrite(fid,Vmaxx1it(:,:,it),'real*8');
     fwrite(fid,Vminx2ist(:,it),'real*8');
-    fwrite(fid,Vmaxx2ist(:,it),'real*8'); 
+    fwrite(fid,Vmaxx2ist(:,it),'real*8');
     fwrite(fid,Vminx3ist(:,it),'real*8');
-    fwrite(fid,Vmaxx3ist(:,it),'real*8');     
-   
+    fwrite(fid,Vmaxx3ist(:,it),'real*8');
+
     fclose(fid);
 end
 

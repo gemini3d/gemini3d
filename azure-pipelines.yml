@@ -1,141 +1,179 @@
-jobs:
-- job: UbuntuCMake
-  pool:
-    vmImage: 'ubuntu-latest'
+variables:
+  CI: true
+  cmake_version: 3.15.1
 
-  steps:
-  - task: UsePythonVersion@0
-    inputs:
-      versionSpec: '3.6'
-      addToPath: true
-  - script: |
-      sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
-      sudo apt update -q
-      sudo apt install -yq --no-install-recommends gfortran-6 liblapack-dev libscalapack-mpi-dev libmumps-dev libopenmpi-dev
-    displayName: 'Install Linux prereqs'
-  - script: |
-      python -m pip install cmakeutils
-      cmake_setup 3.15.1 --prefix $(HOME)/.local
-      echo '##vso[task.setvariable variable=CMAKE_PATH]$(HOME)/.local/cmake-3.15.1-Linux-x86_64/bin'
-    displayName: 'Install modern CMake'
-  - script: python -m pip install -e $(Build.SourcesDirectory)[tests]
-    displayName: 'Install Python dev'
-  - script: |
-      $(CMAKE_PATH)/cmake --version
-      $(CMAKE_PATH)/cmake -B $BUILD_DIR -S $SRC_DIR
-      $(CMAKE_PATH)/cmake --build $BUILD_DIR --parallel
-    env:
-      SRC_DIR: $(Build.SourcesDirectory)
-      BUILD_DIR: $(Build.BinariesDirectory)
-      FC: gfortran-6
-    displayName: 'CMake: Configure and Generate'
-  - script: $(CMAKE_PATH)/ctest -R 2D --parallel --output-on-failure
-    workingDirectory: $(Build.BinariesDirectory)
-    displayName: 'CTest: 2D'
-  - publish: $(Build.BinariesDirectory)/CMakeFiles/CMakeError.log
-    condition: succeededOrFailed()
-    artifact: UbuntuCMakeTestLog
+stages:
 
-- job: UbuntuMeson
-  pool:
-    vmImage: 'ubuntu-latest'
+- stage: SyntaxChecks
+  jobs:
 
-  steps:
-  - task: UsePythonVersion@0
-    inputs:
-      versionSpec: '3.6'
-      addToPath: true
-  - script: |
-      sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
-      sudo apt update -q
-      sudo apt install -yq --no-install-recommends gfortran-6 liblapack-dev libscalapack-mpi-dev libmumps-dev libopenmpi-dev
-    displayName: 'Install Linux prereqs'
-  - script: |
-      git clone https://github.com/mesonbuild/meson ../meson
-      python -m pip install -e ../meson
-      curl -Ls https://github.com/ninja-build/ninja/releases/download/v1.9.0/ninja-linux.zip -o ninja-linux.zip
-      sudo unzip ninja-linux.zip -d /usr/local/bin/
-    displayName: 'setup Meson'
-  - script: python -m pip install -e $(Build.SourcesDirectory)[tests]
-    displayName: 'Install Python dev'
-  - script: |
-      meson setup $BUILD_DIR $SRC_DIR
-      meson test -C $BUILD_DIR --suite unit
-      meson test -C $BUILD_DIR --suite 2d
-    env:
-      SRC_DIR: $(Build.SourcesDirectory)
-      BUILD_DIR: $(Build.BinariesDirectory)
-      FC: gfortran-6
-    displayName: 'Build and test'
-  - publish: $(Build.BinariesDirectory)/meson-logs/testlog.txt
-    condition: succeededOrFailed()
-    artifact: LinuxMesonTestLog
+  - job: PEP8_MyPy_Python37
+    pool:
+      vmImage: ubuntu-latest
+    steps:
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: '3.7'
+        addToPath: true
+    - script: pip install -e .[tests,cov]
+      displayName: 'Dev install'
+    - script: flake8
+      displayName: PEP8
+    - script: mypy .
+      displayName: Type Check
 
-- job: MacCMake
-  pool:
-    vmImage: 'macOS-latest'
+  - job: PEP8_MyPy_Python36
+    pool:
+      vmImage: ubuntu-latest
+    steps:
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: '3.6'
+        addToPath: true
+    - script: pip install -e .[tests,cov]
+      displayName: 'Dev install'
+    - script: flake8
+      displayName: PEP8
+    - script: mypy .
+      displayName: Type Check
 
-  steps:
-  - task: UsePythonVersion@0
-    inputs:
-      versionSpec: '3.6'
-      addToPath: true
-  - script: |
-      brew install cmake
-      brew install gcc lapack openblas open-mpi
-      brew tap dpo/openblas
-      brew install mumps
-    displayName: 'Install library prereqs'
-  - script: python -m pip install -e $(Build.SourcesDirectory)[tests]
-    displayName: 'Install Python dev'
-  - script: |
-      cmake --version
-      cmake -B $BUILD_DIR -S $SRC_DIR -DMUMPS_ROOT=/usr/local/opt/mumps/libexec/ -DSCALAPACK_ROOT=/usr/local/opt/scalapack/ -DLAPACK_ROOT=/usr/local/opt/lapack/lib/
-      cmake --build $BUILD_DIR --parallel
-    env:
-      SRC_DIR: $(Build.SourcesDirectory)
-      BUILD_DIR: $(Build.BinariesDirectory)
-      FC: gfortran
-    displayName: 'CMake: Configure and Generate'
-  - script: ctest -R 2D --parallel --output-on-failure
-    workingDirectory: $(Build.BinariesDirectory)
-    displayName: 'CTest: 2D'
-  - publish: $(Build.BinariesDirectory)/CMakeFiles/CMakeError.log
-    condition: succeededOrFailed()
-    artifact: MacCMakeTestLog
+- stage: IntegrationTests
+  jobs:
+  - job: UbuntuCMake
+    pool:
+      vmImage: ubuntu-latest
 
-- job: MacMeson
-  # need to figure out homebrew link of gemini.bin on physical Mac
-  condition: False
-  pool:
-    vmImage: 'macOS-latest'
+    steps:
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: '3.7'
+        addToPath: true
+    - script: |
+        sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+        sudo apt update -q
+        sudo apt install -yq --no-install-recommends gfortran-6 liblapack-dev libscalapack-mpi-dev libmumps-dev libopenmpi-dev
+      displayName: 'Install Linux prereqs'
+    - script: |
+        python -m pip install cmakeutils
+        cmake_setup $(cmake_version) --prefix $(HOME)/.local
+        echo '##vso[task.setvariable variable=CMAKE_PATH]$(HOME)/.local/cmake-$(cmake_version)-Linux-x86_64/bin'
+      displayName: 'Install modern CMake'
+    - script: python -m pip install -e .[tests]
+      displayName: 'Install Python dev'
+    - script: |
+        $(CMAKE_PATH)/cmake --version
+        $(CMAKE_PATH)/cmake -B build
+      env:
+        FC: gfortran-6
+      displayName: 'CMake Configure and Generate'
+    - script: $(CMAKE_PATH)/cmake --build build --parallel
+      displayName: 'CMake build'
+    - script: $(CMAKE_PATH)/ctest -R 2D --parallel --output-on-failure
+      workingDirectory: build
+      displayName: 'CTest: 2D Fang'
+    - publish: build/CMakeFiles/CMakeError.log
+      condition: succeededOrFailed()
+      artifact: UbuntuCMakeTestLog
 
-  steps:
-  - task: UsePythonVersion@0
-    inputs:
-      versionSpec: '3.6'
-      addToPath: true
-  - script: |
-      brew install ninja
-      brew install gcc lapack openblas open-mpi
-      brew tap dpo/openblas
-      brew install mumps
-    displayName: 'Install library prereqs'
-  - script: |
-      git clone https://github.com/mesonbuild/meson ../meson
-      python -m pip install -e ../meson
-    displayName: 'Install Meson'
-  - script: python -m pip install -e $(Build.SourcesDirectory)[tests]
-    displayName: 'Install Python dev'
-  - script: |
-      meson setup -DMUMPS_ROOT=/usr/local/opt/mumps/libexec/ -DSCALAPACK_ROOT=/usr/local/opt/scalapack/ -DLAPACK_ROOT=/usr/local/opt/lapack/lib/ $BUILD_DIR $SRC_DIR
-      meson test -C $BUILD_DIR --suite unit
-      meson test -C $BUILD_DIR --suite 2d
-    env:
-      SRC_DIR: $(Build.SourcesDirectory)
-      BUILD_DIR: $(Build.BinariesDirectory)
-      FC: gfortran
-    displayName: 'Build and test'
-  - publish: $(Build.BinariesDirectory)/meson-logs/testlog.txt
-    condition: succeededOrFailed()
-    artifact: MacMesonTestLog
+  - job: UbuntuMeson
+    pool:
+      vmImage: ubuntu-latest
+
+    steps:
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: '3.7'
+        addToPath: true
+    - script: |
+        sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+        sudo apt update -q
+        sudo apt install -yq --no-install-recommends gfortran-6 liblapack-dev libscalapack-mpi-dev libmumps-dev libopenmpi-dev
+      displayName: 'Install Linux prereqs'
+    - script: |
+        git clone https://github.com/mesonbuild/meson ../meson
+        python -m pip install -e ../meson
+        curl -Ls https://github.com/ninja-build/ninja/releases/download/v1.9.0/ninja-linux.zip -o ninja-linux.zip
+        sudo unzip ninja-linux.zip -d /usr/local/bin/
+      displayName: 'setup Meson'
+    - script: python -m pip install -e .[tests]
+      displayName: 'Install Python dev'
+    - script: |
+        meson setup build
+      env:
+        FC: gfortran-6
+      displayName: 'Meson configure'
+    - script: |
+        meson test -C build --suite unit
+        meson test -C build --suite 2d
+      displayName: 'Meson build and test'
+    - publish: build/meson-logs/testlog.txt
+      condition: succeededOrFailed()
+      artifact: LinuxMesonTestLog
+
+  - job: MacCMake
+    # just for now--takes 5 times longer than Linux, sometimes flaky homebrew download
+    condition: False
+    pool:
+      vmImage: macOS-latest
+
+    steps:
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: '3.7'
+        addToPath: true
+    - script: |
+        brew install cmake
+        brew install gcc lapack openblas open-mpi
+        brew tap dpo/openblas
+        brew install mumps
+      displayName: 'Install library prereqs'
+    - script: python -m pip install -e .[tests]
+      displayName: 'Install Python dev'
+    - script: |
+        cmake -B build -DMUMPS_ROOT=/usr/local/opt/mumps/libexec/ -DSCALAPACK_ROOT=/usr/local/opt/scalapack/ -DLAPACK_ROOT=/usr/local/opt/lapack/lib/
+      env:
+        FC: gfortran
+      displayName: 'CMake: Configure and Generate'
+    - script: cmake --build build --parallel
+      displayName: 'CMake build'
+    - script: ctest -R 2D --parallel --output-on-failure
+      workingDirectory: build
+      displayName: 'CTest: 2D'
+    - publish: build/CMakeFiles/CMakeError.log
+      condition: succeededOrFailed()
+      artifact: MacCMakeTestLog
+
+  - job: MacMeson
+    # need to figure out homebrew link of gemini.bin on physical Mac
+    condition: False
+    pool:
+      vmImage: macOS-latest
+
+    steps:
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: '3.7'
+        addToPath: true
+    - script: |
+        brew install ninja
+        brew install gcc lapack openblas open-mpi
+        brew tap dpo/openblas
+        brew install mumps
+      displayName: 'Install library prereqs'
+    - script: |
+        git clone https://github.com/mesonbuild/meson ../meson
+        python -m pip install -e ../meson
+      displayName: 'Install Meson'
+    - script: python -m pip install -e .[tests]
+      displayName: 'Install Python dev'
+    - script: meson setup build -DMUMPS_ROOT=/usr/local/opt/mumps/libexec/ -DSCALAPACK_ROOT=/usr/local/opt/scalapack/ -DLAPACK_ROOT=/usr/local/opt/lapack/lib/
+      env:
+        FC: gfortran
+      displayName: 'Meson configure'
+    - script: |
+        meson test -C build --suite unit
+        meson test -C build --suite 2d
+      displayName: 'Meson build and test'
+    - publish: build/meson-logs/testlog.txt
+      condition: succeededOrFailed()
+      artifact: MacMesonTestLog

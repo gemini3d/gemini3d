@@ -21,18 +21,13 @@ if(NOT EXISTS ${ROOT}/${REFNAME})
 
 	file(MD5 ${ROOT}/${ARCHIVE} FHASH)
 
-	# try 2nd time using curl
-	if(NOT FHASH STREQUAL HASH)
-	  execute_process(COMMAND curl -L --url ${URL} -o ${ARCHIVE} WORKING_DIRECTORY ${ROOT})
-	endif()
-
-	file(MD5 ${ROOT}/${ARCHIVE} FHASH)
 	# have user manually download
 	if(NOT FHASH STREQUAL HASH)
 	  message(WARNING "Self-tests may not work. Reference data did not match hash ${HASH} \n Download ${URL}  to  ${ARCHIVE} \n")
 	endif()
   endif()
 
+  # extract zip file (os-agnostic)
   execute_process(COMMAND ${CMAKE_COMMAND} -E tar -xf ${ARCHIVE}
                   WORKING_DIRECTORY ${ROOT})
 endif()
@@ -69,8 +64,6 @@ if(NOT WIN32 AND CMAKE_VERSION VERSION_GREATER_EQUAL 3.13)
   #message("halfx3 ${halfX3}")
 
   maxfactor(${halfX3} ${MPIEXEC_MAX_NUMPROCS})
-
-  message(STATUS "Gemini test auto-setup with ${MAXFACTOR} MPI processes")
 
   set(NP ${MAXFACTOR} PARENT_SCOPE)
 elseif(${MPIEXEC_MAX_NUMPROCS} GREATER_EQUAL 4)
@@ -126,7 +119,7 @@ set(MatlabOK ${ok} CACHE BOOL "Matlab is sufficiently new to run self-tests")
 endfunction(check_matlab_source_runs)
 
 
-function(setup_gemini_test TESTNAME TESTDIR REFDIR TIMEOUT)
+function(setup_gemini_test TESTNAME EXE TESTDIR REFDIR TIMEOUT)
 
 num_mpi_processes(${REFDIR})
 
@@ -139,7 +132,7 @@ set(TESTNAME ${TESTNAME}-NP${NP})  # for convenience, name with number of proces
 message(STATUS "Test ${TESTNAME} uses ${NP} MPI processes")
 
 add_test(NAME ${TESTNAME}
-  COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${NP} $<TARGET_FILE:gemini.bin> ${CMAKE_CURRENT_SOURCE_DIR}/initialize/${TESTDIR}/config.ini ${CMAKE_CURRENT_BINARY_DIR}/${TESTDIR}
+  COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${NP} $<TARGET_FILE:${EXE}> ${CMAKE_CURRENT_SOURCE_DIR}/initialize/${TESTDIR}/config.ini ${CMAKE_CURRENT_BINARY_DIR}/${TESTDIR}
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
 set_tests_properties(${TESTNAME} PROPERTIES

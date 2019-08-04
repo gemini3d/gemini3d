@@ -1,11 +1,11 @@
 [![Build Status](https://dev.azure.com/mhirsch0512/Gemini3D/_apis/build/status/gemini3d.GEMINI?branchName=master)](https://dev.azure.com/mhirsch0512/Gemini3D/_build/latest?definitionId=1&branchName=master)
-[![Build Status](https://www.travis-ci.com/gemini3d/GEMINI.svg?branch=master)](https://www.travis-ci.com/gemini3d/GEMINI)
 
 # GEMINI
 
 The GEMINI model (*G*eospace *E*nvironment *M*odel of *I*on-*N*eutral *I*nteractions) is a three-dimensional ionospheric fluid-electrodynamic model used for various scientific studies including effects of auroras on the terrestrial ionosphere, natural hazard effects on the space environment, and effects of ionospheric fluid instabilities on radio propagation (see references section of this document for details).  The detailed mathematical formulation of GEMINI is included in `doc/`.
 
-A subroutine-level set of documentation describing functions of individual program units is given via [source code comments which are rendered as webpages](https://gemini3d.github.io/gemini/index.html).
+A subroutine-level set of documentation describing functions of individual program units is given via source code comments which are
+[rendered as webpages](https://gemini3d.github.io/gemini/index.html).
 
 GEMINI uses generalized orthogonal curvilinear coordinates and has been tested with dipole and Cartesian coordinates.
 
@@ -19,11 +19,12 @@ Generally, the Git `master` branch has the current development version and is th
 
 ## Prerequisites
 
-We primarily use Meson build system, but CMake may be used if desired.
+Meson (recommended) or CMake may be used.
 
 **Meson**
 
-Meson uses Ninja instead of GNU Make. They may be obtained via:
+Meson uses Ninja as a modern, faster replacement for GNU Make.
+They may be obtained via:
 
 ```sh
 conda install meson
@@ -32,17 +33,25 @@ conda install meson
 OR
 
 ```sh
-python3 -m pip install meson
+python3 -m pip install --user meson
 ```
 
 and [download Ninja](https://github.com/ninja-build/ninja/releases/)
 and put Ninja executable directory on your PATH.
 
+Gemini scripts used to load and check data use Python &ge; 3.5.
+These scripts are installed by:
+
+```sh
+python -m pip install --user -e .
+```
+
 ### Compilers
 
-Compiler wrappers `mpifort` or `mpiifort` can be used.  Fortran 2008 `submodule` and other Fortran 2008 throughout GEMINI requires a Fortran 2008 compliant compiler.  Such compilers include:
+The object-oriented Fortran 2008 code used in GEMINI requires a Fortran 2008 compliant compiler.
+Such compilers include:
 
-* gfortran &ge; 6
+* `gfortran` &ge; 6
 * Intel `ifort`: all [currently supported versions](https://software.intel.com/en-us/articles/intel-parallel-studio-xe-supported-and-unsupported-product-versions)
 * Cray `ftn`
 * IBM XL
@@ -53,10 +62,10 @@ Compiler wrappers `mpifort` or `mpiifort` can be used.  Fortran 2008 `submodule`
 Tested versions include:
 
 * OpenMPI 1.10, 2.1 - 4.0
-* MUMPS 4.10, 5.1
+* MUMPS 4.10 - 5.2
 * SCALAPACK 2.0
 * LAPACK95 3.0  (optional)
-* NCAR GLOW (optional)   enabled by Meson / CMake `-DUSEGLOW=true` option
+* NCAR GLOW (optional)   enabled by Meson / CMake `-Duseglow=true` option
 
 ### postprocessing and visualization of model output
 
@@ -69,6 +78,7 @@ Note that only the essential scripts needed to setup a simple example, and plot 
 ### Document generation
 
 The documentation is Markdown-based, using FORD. If source code or documentation edits are made, the documentation is regenerated from the top-level gemini directory by:
+
 ```sh
 ford ford.md
 ```
@@ -102,20 +112,37 @@ This test runs a short demo, taking about 2-5 minutes on a typical Mac / Linux l
 It assumes you have Python 3, Meson, Ninja and the appropriate compilers and libraries installed.
 Perhaps consider running `python install_prereqs.py` to get the libraries you need (assuming you have sudo access).
 
-Get GEMINI code and install prereqs
-```sh
-cd ~
-git clone https://github.com/gemini3d/gemini
-cd gemini
-```
+1. Get GEMINI code and install prereqs
 
-**Build and test**
+    ```sh
+    git clone https://github.com/gemini3d/gemini
 
-```sh
-meson setup build
+    cd gemini
+    ```
+2. install Python data interfaces
 
-meson test -C build
-```
+    ```sh
+    python3 -m pip install --user -e .
+    ```
+3. Build and test
+
+    ```sh
+    meson setup build
+
+    meson test -C build
+    ```
+
+    OR
+
+    ```sh
+    cmake -B build
+
+    cmake --build . --parallel
+
+    cd build
+
+    ctest --output-on-error
+    ```
 
 
 If you get errors about libraries not found or it's using the wrong compiler, specify the compilers or libraries like:
@@ -127,7 +154,7 @@ FC=gfortran-9 CC=gcc-9 meson setup build
 and/or
 
 ```sh
-meson setup build -DMUMPS_ROOT=../lib_gcc/mumps-5.1.2 -DSCALAPACK_ROOT=../lib_gcc/scalapack
+meson setup build -DMUMPS_ROOT=../lib_gcc/mumps-5.2.1 -DSCALAPACK_ROOT=../lib_gcc/scalapack
 ```
 
 ### input directory
@@ -169,7 +196,7 @@ meson test -C build
 Can be manually done from the top-level gemini/ directory by:
 
 ```sh
-mpiexec -np 2 build/gemini.bin initialize/2Dtest/config.ini /tmp/2d
+mpiexec -np 2 build/gemini_fang.bin initialize/2Dtest/config.ini /tmp/2d
 ```
 
 use Python to compare test simulations with reference output data:
@@ -209,7 +236,7 @@ Try to compile gemini as above, then
 
 Example:
 ```sh
-meson setup build -DSCALAPACK_ROOT=../lib_gcc/scalapack -DMUMPS_ROOT=../lib_gcc/mumps-5.1.2
+meson setup build -DSCALAPACK_ROOT=../lib_gcc/scalapack -DMUMPS_ROOT=../lib_gcc/mumps-5.2.1
 ```
 
 ## Known limitations and issues of GEMINI
@@ -238,13 +265,13 @@ GEMINI is Fortran 2008 compliant and uses two-space indents throughout (to accom
 ## Manually set number of MPI processes
 
 ```sh
-mpiexec -np <number of processors>  build/gemini.bin <input config file> <output directory>
+mpiexec -np <number of processors>  build/gemini_fang.bin <input config file> <output directory>
 ```
 
 for example:
 
 ```sh
-mpiexec -np 4 build/gemini.bin initialize/2Dtest/config.ini /tmp/2d
+mpiexec -np 4 build/gemini_fang.bin initialize/2Dtest/config.ini /tmp/2d
 ```
 
 Note that the output *base* directory must already exist (e.g. `/tmp/2d`).

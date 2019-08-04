@@ -75,7 +75,7 @@ neutral = library('neutral', 'neutral/neutral.f90',
 subdir('ionization')
 
 # -- gemini exe
-gemini_exe = executable('gemini.bin', 'gemini.f90', 'temporal/temporal.f90', 'multifluid/multifluid.f90',
+gemini_fang_exe = executable('gemini_fang.bin', 'gemini.f90', 'temporal/temporal.f90', 'multifluid/multifluid.f90',
 'sources/sources.f90', 'numerical/advection/advec_mpi.f90', 'numerical/diffusion/diffusion.F90', 'vendor/lapack95/gbsv.F90',
   link_with : [io,calculus, collisions, grid, ionization, mpimod, neutral, potential, const, timeutils],
   dependencies : [scalapack, blacs, lapack, blas, mpi],
@@ -108,35 +108,36 @@ pymod = import('python')
 python = pymod.find_installation('python3')
 octave = find_program('octave', required: false)
 
-# no good command-line way to get matlab version in general. CMake uses hacks for this.
-# Matlab is so slow vs. Octave, better to just not have Matlab for now.
-# This check below hangs forever, for example.
-# matlab = find_program('matlab', required: false)
-# if run_command('matlab', '-batch', 'exit').returncode() != 0
-#  matlab = disabler()
-# endif
+matlab = find_program('matlab', required: false)
+if run_command(python, 'script_utils/meson_matlab_has_batch.py').returncode() != 0
+  matlab = disabler()
+endif
 
 zenodo = {
-  '2d': {'url': 'https://zenodo.org/record/2520780/files/zenodo2d.zip?download=1',
-         'md5': '5bd1bce1a465ccec5af813f8b7959ec8',
-         'dir': meson.source_root() / 'tests/data/zenodo2d',
-         'zip': meson.source_root() / 'tests/data/zenodo2d.zip',
-         'exe': gemini_exe},
-  '2d_glow': {'url': 'https://zenodo.org/record/2520780/files/zenodo2d_glow.zip?download=1',
-              'md5': 'c5bbbbff3bdde85b6d7e9470bc3751a2',
-              'dir': meson.source_root() / 'tests/data/zenodo2d_glow',
-              'zip': meson.source_root() / 'tests/data/zenodo2d_glow.zip',
-              'exe': gemini_glow_exe},
-  '3d': {'url': 'https://zenodo.org/record/2520920/files/zenodo3d.zip?download=1',
-         'md5': '225853d43937a70c9ef6726f90666645',
-         'dir': meson.source_root() / 'tests/data/zenodo3d',
-         'zip': meson.source_root() / 'tests/data/zenodo3d.zip',
-         'exe': gemini_exe},
-  '3d_glow': {'url': 'https://zenodo.org/record/2520920/files/zenodo3d_glow.zip?download=1',
-              'md5': '2c54bfde8aff0fb72d61115f04c361a7',
-              'dir': meson.source_root() / 'tests/data/zenodo3d_glow',
-              'zip': meson.source_root() / 'tests/data/zenodo3d_glow.zip',
-              'exe': gemini_glow_exe},
+  '2d_fang': {
+    'url': 'https://zenodo.org/record/2520780/files/zenodo2d.zip?download=1',
+    'md5': '5bd1bce1a465ccec5af813f8b7959ec8',
+    'dir': meson.source_root() / 'tests/data/zenodo2d',
+    'zip': meson.source_root() / 'tests/data/zenodo2d.zip',
+    'exe': gemini_fang_exe},
+  '2d_glow': {
+    'url': 'https://zenodo.org/record/2520780/files/zenodo2d_glow.zip?download=1',
+    'md5': 'c5bbbbff3bdde85b6d7e9470bc3751a2',
+    'dir': meson.source_root() / 'tests/data/zenodo2d_glow',
+    'zip': meson.source_root() / 'tests/data/zenodo2d_glow.zip',
+    'exe': gemini_glow_exe},
+  '3d_fang': {
+    'url': 'https://zenodo.org/record/2520920/files/zenodo3d.zip?download=1',
+    'md5': '225853d43937a70c9ef6726f90666645',
+    'dir': meson.source_root() / 'tests/data/zenodo3d',
+    'zip': meson.source_root() / 'tests/data/zenodo3d.zip',
+    'exe': gemini_fang_exe},
+  '3d_glow': {
+     'url': 'https://zenodo.org/record/2520920/files/zenodo3d_glow.zip?download=1',
+     'md5': '2c54bfde8aff0fb72d61115f04c361a7',
+     'dir': meson.source_root() / 'tests/data/zenodo3d_glow',
+     'zip': meson.source_root() / 'tests/data/zenodo3d_glow.zip',
+     'exe': gemini_glow_exe},
   }
 
 mpi_np = get_option('NP')
@@ -187,7 +188,7 @@ foreach k, v : zenodo
     suite : k,
     args : ['-np', mpi_np, v['exe'], meson.source_root() / 'initialize/test' + k / 'config.ini', test_dir],
     workdir : meson.source_root(),
-    timeout : 900,
+    timeout : 1200,
     is_parallel : false)
 
   if ref_ok

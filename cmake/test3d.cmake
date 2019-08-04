@@ -1,14 +1,45 @@
-# Test parameters (change for each test)
-set(TESTDIR test3d)
-set(REFNAME zenodo3d)
-set(REFDIR tests/data)
-set(zenodoHash 225853d43937a70c9ef6726f90666645)
-set(zenodoNumber 2520920)
-set(firstfile 20130220_18000.000001.dat)
-# --- ensure reference data is available for self-test
-download_testfiles(${zenodoHash} ${zenodoNumber} ${REFNAME} ${PROJECT_SOURCE_DIR}/${REFDIR})
+download_testfiles(
+225853d43937a70c9ef6726f90666645
+2520920
+zenodo3d
+${PROJECT_SOURCE_DIR}/tests/data
+)
 
-setup_gemini_test(Gemini3d ${TESTDIR} ${REFDIR}/${REFNAME} 600)
+setup_gemini_test(
+Gemini3d_fang
+gemini_fang.bin
+test3d
+tests/data/zenodo3d
+600
+)
 
-compare_gemini_output(Compare3d ${TESTDIR} ${REFDIR}/${REFNAME} ${firstfile})
+compare_gemini_output(
+Compare3d_fang
+test3d
+tests/data/zenodo3d
+20130220_18000.000001.dat
+)
 
+if(useglow)
+download_testfiles(
+2c54bfde8aff0fb72d61115f04c361a7
+2520920
+zenodo3d_glow
+${PROJECT_SOURCE_DIR}/tests/data
+)
+
+setup_gemini_test(
+Gemini3d_glow
+gemini_glow.bin
+test3d_glow
+tests/data/zenodo3d_glow
+1200
+)
+
+compare_gemini_output(
+Compare3d_glow
+test3d_glow
+tests/data/zenodo3d_glow
+20130220_18000.000001.dat
+)
+endif(useglow)
