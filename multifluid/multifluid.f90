@@ -1,6 +1,6 @@
 module multifluid
 
-use phys_consts, only : wp,pi,qs,lsp,gammas,kB,ms,mindensdiv,mindens,mindensnull
+use phys_consts, only : wp,pi,qs,lsp,gammas,kB,ms,mindensdiv,mindens,mindensnull, debug
 use grid, only: curvmesh, lx1, lx2, lx3, gridflag
 use mpimod, only: myid,tagns,tagvs1,tagTs
 use ionization, only: ionrate_glow98, ionrate_fang08, eheating, photoionization
@@ -131,7 +131,7 @@ do isp=1,lsp
 end do
 call cpu_time(tfin)
 if (myid==0) then
-  print *, 'Completed advection substep for time step:  ',t,' in cpu_time of:  ',tfin-tstart
+  if (debug) print *, 'Completed advection substep for time step:  ',t,' in cpu_time of:  ',tfin-tstart
 end if
 
 
@@ -168,7 +168,7 @@ do isp=1,lsp
 end do
 call cpu_time(tfin)
 if (myid==0) then
-  print *, 'Completed compression substep for time step:  ',t,' in cpu_time of:  ',tfin-tstart
+  if (debug) print *, 'Completed compression substep for time step:  ',t,' in cpu_time of:  ',tfin-tstart
 end if
 
 
@@ -190,7 +190,7 @@ do isp=1,lsp
 end do
 call cpu_time(tfin)
 if (myid==0) then
-  print *, 'Completed energy diffusion substep for time step:  ',t,' in cpu_time of:  ',tfin-tstart
+  if (debug) print *, 'Completed energy diffusion substep for time step:  ',t,' in cpu_time of:  ',tfin-tstart
 end if
 
 
@@ -234,29 +234,29 @@ if (gridflag/=0) then
   end if
 else    !do not compute impact ionization on a closed mesh (presumably there is no source of energetic electrons at these lats.)
   if (myid==0) then
-    print *, 'Looks like we have a closed grid, so skipping impact ionization for time step:  ',t
+    if (debug) print *, 'Looks like we have a closed grid, so skipping impact ionization for time step:  ',t
   end if
 end if
 
 if (myid==0) then
-  print *, 'Min/max root electron impact ionization production rates for time:  ',t,' :  ', &
+  if (debug) print *, 'Min/max root electron impact ionization production rates for time:  ',t,' :  ', &
     minval(Prprecip), maxval(Prprecip)
 end if
 
 if ((flagglow/=0).and.(myid==0)) then
-  print *, 'Min/max 427.8 nm emission column-integrated intensity for time:  ',t,' :  ', &
+  if (debug) print *, 'Min/max 427.8 nm emission column-integrated intensity for time:  ',t,' :  ', &
     minval(iver(:,:,2)), maxval(iver(:,:,2))
 end if
 
 !now add in photoionization sources
 chi=sza(ymd(1), ymd(2), ymd(3), UTsec,x%glat,x%glon)
 if (myid==0) then
-  print *, 'Computing photoionization for time:  ',t,' using sza range of (root only):  ', &
+  if (debug) print *, 'Computing photoionization for time:  ',t,' using sza range of (root only):  ', &
               minval(chi)*180._wp/pi,maxval(chi)*180._wp/pi
 end if
 Prpreciptmp=photoionization(x,nn,Tn,chi,f107,f107a)
 if (myid==0) then
-  print *, 'Min/max root photoionization production rates for time:  ',t,' :  ',minval(Prpreciptmp), &
+  if (debug) print *, 'Min/max root photoionization production rates for time:  ',t,' :  ',minval(Prpreciptmp), &
               maxval(Prpreciptmp)
 end if
 Prpreciptmp=max(Prpreciptmp,1d-5)    !enforce minimum production rate to preserve conditioning for species that rely on constant production, testing should probably be done to see what the best choice is...
@@ -280,7 +280,7 @@ do isp=1,lsp
 end do
 call cpu_time(tfin)
 if (myid==0) then
-  print *, 'Energy sources substep for time step:  ',t,'done in cpu_time of:  ',tfin-tstart
+  if (debug) print *, 'Energy sources substep for time step:  ',t,'done in cpu_time of:  ',tfin-tstart
 end if
 
 !CLEAN TEMPERATURE
@@ -298,7 +298,7 @@ do isp=1,lsp-1
 end do
 call cpu_time(tfin)
 if (myid==0) then
-  print *, 'Velocity sources substep for time step:  ',t,'done in cpu_time of:  ',tfin-tstart
+  if (debug) print *, 'Velocity sources substep for time step:  ',t,'done in cpu_time of:  ',tfin-tstart
 end if
 
 
@@ -326,7 +326,7 @@ do isp=1,lsp-1
 end do
 call cpu_time(tfin)
 if (myid==0) then
-  print *, 'Mass sources substep for time step:  ',t,'done in cpu_time of:  ',tfin-tstart
+  if (debug) print *, 'Mass sources substep for time step:  ',t,'done in cpu_time of:  ',tfin-tstart
 end if
 
 
@@ -453,7 +453,7 @@ select case (paramflag)
     param(:,:,-1:0,:)=100._wp
     param(:,:,lx3+1:lx3+2,:)=100._wp
   case default    !do nothing...
-    print *,  '!non-standard parameter selected in clean_params...'
+    if (debug) print *,  '!non-standard parameter selected in clean_params...'
 end select
 
 end subroutine clean_param

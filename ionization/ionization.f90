@@ -1,6 +1,6 @@
 module ionization
 
-use phys_consts, only: elchrg, lsp, kb, mn, re, pi, wp, lwave
+use phys_consts, only: elchrg, lsp, kb, mn, re, pi, wp, lwave, debug
 use calculus, only: chapman_a
 use neutral, only: Tnmsis
 !! we need the unperturbed msis temperatures to apply the simple chapman theory used by this module
@@ -144,7 +144,7 @@ if (myid==0) then     !root
     call mpi_send(Tninf,1,mpi_realprec,iid,tagTninf,MPI_COMM_WORLD,ierr)
   end do
 
-  print *, 'Exospheric temperature used for photoionization:  ',Tninf
+  if (debug) print *, 'Exospheric temperature used for photoionization:  ',Tninf
 else                  !workders
   call mpi_send(Tninf,1,mpi_realprec,0,tagTninf,MPI_COMM_WORLD,ierr)                        !send what I think Tninf should be
   call mpi_recv(Tninf,1,mpi_realprec,0,tagTninf,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)      !receive roots decision

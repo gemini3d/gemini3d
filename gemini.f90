@@ -4,7 +4,7 @@ program gemini
 !------THIS IS THE MAIN PROGRAM FOR GEMINI3D
 !----------------------------------------------------------
 
-use phys_consts, only : lnchem, lwave, lsp, wp
+use phys_consts, only : lnchem, lwave, lsp, wp, debug
 use grid, only: curvmesh, grid_size,read_grid,clear_grid,lx1,lx2,lx3,lx2all,lx3all
 use temporal, only : dt_comm
 use timeutils, only: dateinc
@@ -117,15 +117,25 @@ call read_configfile(infile, ymd,UTsec0,tdur,dtout,activ,tcfl,Teinf,potsolve,fla
 
 !!CHECK THE GRID SIZE AND ESTABLISH A PROCESS GRID
 call grid_size(indatsize)
-if (argc>2) then   !user specified process grid
-  call get_command_argument(3,argv)
-  read(argv,*) lid2in
-  call get_command_argument(4,argv)
-  read(argv,*) lid3in
-  call mpi_manualgrid(lx2all,lx3all,lid2in,lid3in)
-else     !try to decide the process grid ourself
-  call mpigrid(lx2all,lx3all)    !following grid_size these are in scope
-end if
+
+select case (argc)
+  case (4,5) !user specified process grid
+    call get_command_argument(3,argv)
+    read(argv,*) lid2in
+    call get_command_argument(4,argv)
+    read(argv,*) lid3in
+    call mpi_manualgrid(lx2all,lx3all,lid2in,lid3in)
+    if (argc == 5) then
+      call get_command_argument(5,argv)
+      if (argv == '-d' .or. argv == '-debug')  debug = .true.
+    endif
+  case default
+    if (argc == 3) then
+      call get_command_argument(3,argv)
+      if (argv == '-d' .or. argv == '-debug')  debug = .true.
+    endif
+    call mpigrid(lx2all,lx3all)    !following grid_size these are in scope
+end select
 
 
 !LOAD UP THE GRID STRUCTURE/MODULE VARS. FOR THIS SIMULATION
@@ -235,9 +245,7 @@ do while (t<tdur)
     end if
     call neutral_perturb(interptype,dt,dtneu,t,ymd,UTsec,sourcedir,drhon,dzn,sourcemlat,sourcemlon,x,nn,Tn,vn1,vn2,vn3)
     call cpu_time(tfin)
-    if (myid==0) then
-      print *, 'Neutral perturbations calculated in time:  ',tfin-tstart
-    end if
+    if (myid==0 .and. debug) print *, 'Neutral perturbations calculated in time:  ',tfin-tstart
   end if
 
   !POTENTIAL SOLUTION
@@ -246,9 +254,7 @@ do while (t<tdur)
                         potsolve,flagcap,E1,E2,E3,J1,J2,J3, &
                         Phiall,flagE0file,dtE0,E0dir,ymd,UTsec)
   call cpu_time(tfin)
-  if (myid==0) then
-    print *, 'Electrodynamics total solve time:  ',tfin-tstart
-  end if
+  if (myid==0 .and. debug) print *, 'Electrodynamics total solve time:  ',tfin-tstart
 
 
   !UPDATE THE FLUID VARIABLES
@@ -256,20 +262,14 @@ do while (t<tdur)
   call fluid_adv(ns,vs1,Ts,vs2,vs3,J1,E1,Teinf,t,dt,x,nn,vn1,vn2,vn3,Tn,iver,activ(2),activ(1),ymd,UTsec, &
                  flagprecfile,dtprec,precdir,flagglow,dtglow)
   call cpu_time(tfin)
-  if (myid==0) then
-    print *, 'Multifluid total solve time:  ',tfin-tstart
-  end if
+  if (myid==0 .and. debug) print *, 'Multifluid total solve time:  ',tfin-tstart
 
 
   !NOW OUR SOLUTION IS FULLY UPDATED SO UPDATE TIME VARIABLES TO MATCH...
   it=it+1; t=t+dt;
-  if (myid==0) then
-    print *, 'Moving on to time step (in sec):  ',t,'; end time of simulation:  ',tdur
-  end if
+  if (myid==0 .and. debug) print *, 'Moving on to time step (in sec):  ',t,'; end time of simulation:  ',tdur
   call dateinc(dt,ymd,UTsec)
-  if (myid==0) then
-    print *, 'Current date',ymd,'Current UT time:  ',UTsec
-  end if
+  if (myid==0) print *, 'Current date',ymd,'Current UT time:  ',UTsec
 
 
   !OUTPUT
@@ -277,9 +277,7 @@ do while (t<tdur)
     call cpu_time(tstart)
     call output_plasma(outdir,flagoutput,ymd,UTsec,vs2,vs3,ns,vs1,Ts,Phiall,J1,J2,J3)
     call cpu_time(tfin)
-    if (myid==0) then
-      print *, 'Plasma output done for time step:  ',t,' in cpu_time of:  ',tfin-tstart
-    end if
+    if (myid==0 .and. debug) print *, 'Plasma output done for time step:  ',t,' in cpu_time of:  ',tfin-tstart
 
     tout=tout+dtout
   end if

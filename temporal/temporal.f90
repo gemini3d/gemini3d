@@ -13,7 +13,7 @@ module temporal
 
 use mpi, only: MPI_COMM_WORLD,MPI_STATUS_IGNORE
 
-use phys_consts, only:  kB,mu0,ms,lsp,pi, wp
+use phys_consts, only:  kB,mu0,ms,lsp,pi, wp, debug
 use mpimod, only: mpi_realprec, tagdt, lid, myid
 use grid, only:  curvmesh
 
@@ -61,7 +61,7 @@ else
 
   if (t+dt>tout) then
     dt=tout-t
-    print *, 'Slowing down for an output...'
+    if (debug) print *, 'Slowing down for an output...'
   end if
 
   !DON'T ALLOW ZERO DT
@@ -72,13 +72,15 @@ else
     call mpi_send(dt,1,mpi_realprec,iid,tagdt,MPI_COMM_WORLD,ierr)
   end do
 
-  print *, 'dt figured to be:  ',dt
-  print *, 'x1,x2,x3 courant numbers (root process only!):  '
-  do isp=1,lsp
-    print '(a,f4.2,a,f4.2,a,f4.2)', '    ',cour1(isp),', ',cour2(isp),', ',cour3(isp)
-    !! these are roots courant numbers
-  end do
-  print *, 'Min and max density:  ',minval(pack(ns(:,:,:,7),.true.)),maxval(pack(ns(:,:,:,7),.true.))
+  if (debug) then
+    print *, 'dt figured to be:  ',dt
+    print *, 'x1,x2,x3 courant numbers (root process only!):  '
+    do isp=1,lsp
+      print '(a,f4.2,a,f4.2,a,f4.2)', '    ',cour1(isp),', ',cour2(isp),', ',cour3(isp)
+      !! these are roots courant numbers
+    end do
+    print *, 'Min and max density:  ',minval(pack(ns(:,:,:,7),.true.)),maxval(pack(ns(:,:,:,7),.true.))
+  endif
 end if
 
 end subroutine dt_comm

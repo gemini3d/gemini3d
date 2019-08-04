@@ -29,7 +29,7 @@ use, intrinsic:: iso_fortran_env, only: stderr=>error_unit, stdout=>output_unit
 
 use mpi, only: mpi_comm_world
 
-use phys_consts, only: wp
+use phys_consts, only: wp, debug
 use calculus, only: grad3D1, grad3D2, grad3D3, grad2D1_curv_alt, grad2D3, grad2D3_curv_periodic
 use grid, only: curvmesh, gridflag
 use mpimod, only: myid
@@ -105,7 +105,7 @@ lx3=size(srcterm,3)
 
 
 !COMPUTE AUXILIARY COEFFICIENTS TO PASS TO CART SOLVER
-print *, 'Prepping coefficients for elliptic equation...'
+if (debug) print *, 'Prepping coefficients for elliptic equation...'
 gradsig01=grad3D1(sig0,x,1,lx1,1,lx2,1,lx3)
 gradsigP2=grad3D2(sigP,x,1,lx1,1,lx2,1,lx3)
 gradsigP3=grad3D3(sigP,x,1,lx1,1,lx2,1,lx3)
@@ -121,7 +121,7 @@ Fc=gradsig01
 
 
 !DEFINE A DECIMATED MESH (THIS IS HARDCODED FOR NOW)
-print*, 'Decimating parallel grid...'
+if (debug) print*, 'Decimating parallel grid...'
 allocate(x1dec(-1:ldec+2),dx1dec(0:ldec+2),x1idec(1:ldec+1),dx1idec(1:ldec))
 x1dec(-1:lx1+2)=[x%x1(-1),x%x1(0),x%x1(1),81.8e3_wp,84.2e3_wp,87.5e3_wp,93.3e3_wp,106.0e3_wp,124.0e3_wp, &
             144.6e3_wp,206.7e3_wp,882.2e3_wp,x%x1(lx1),x%x1(lx1+1),x%x1(lx1+2)]
@@ -134,7 +134,7 @@ dx1idec(1:ldec)=x1idec(2:ldec+1)-x1idec(1:ldec)
 
 
 !INTERPOLATE COEFFICIENTS AND SOURCE TERM ONTO DECIMATED GRID
-print*, 'Interpolating coefficients...'
+if (debug) print*, 'Interpolating coefficients...'
 allocate(Acdec(1:ldec,1:lx2,1:lx3),Bcdec(1:ldec,1:lx2,1:lx3),Ccdec(1:ldec,1:lx2,1:lx3), &
          Dcdec(1:ldec,1:lx2,1:lx3),Ecdec(1:ldec,1:lx2,1:lx3),Fcdec(1:ldec,1:lx2,1:lx3), &
          srctermdec(1:ldec,1:lx2,1:lx3))
@@ -219,7 +219,7 @@ Vmaxx1pot=-1*Vmaxx1/sig0(lx1,:,:)
 
 
 !CALL CARTESIAN SOLVER ON THE DECIMATED GRID
-print*, 'Calling solve on decimated grid...'
+if (debug) print*, 'Calling solve on decimated grid...'
 allocate(Phidec(1:ldec,1:lx2,1:lx3))
 Phidec=elliptic3D_cart(srctermdec,Acdec,Bcdec,Ccdec,Dcdec,Ecdec,Fcdec,Vminx1pot,Vmaxx1pot, &
                 Vminx2dec,Vmaxx2dec,Vminx3dec,Vmaxx3dec, &
@@ -227,7 +227,7 @@ Phidec=elliptic3D_cart(srctermdec,Acdec,Bcdec,Ccdec,Dcdec,Ecdec,Fcdec,Vminx1pot,
 
 
 !INTERPOLATE BACK UP TO MAIN GRID
-print*, 'Upsampling potential...'
+if (debug) print*, 'Upsampling potential...'
 do ix2=1,lx2
   do ix3=1,lx3
     elliptic3D_decimate(:,ix2,ix3)=interp1(x1dec(1:ldec),Phidec(:,ix2,ix3),x%x1(1:lx1))
@@ -335,8 +335,8 @@ if (myid==0) then
 
   allocate(ir(lent),ic(lent),M(lent),b(lPhi))
 
-  print *, 'MUMPS will attempt a solve of size:  ',lx1,lx2,lx3
-  print *, 'Total unknowns and nonzero entries in matrix:  ',lPhi,lent
+  if (debug) print *, 'MUMPS will attempt a solve of size:  ',lx1,lx2,lx3
+  if (debug) print *, 'Total unknowns and nonzero entries in matrix:  ',lPhi,lent
 
 
 
@@ -456,7 +456,7 @@ if (myid==0) then
     end do
   end do
 end if
-print *, 'Number of entries used:  ',ient-1
+if (debug) print *, 'Number of entries used:  ',ient-1
 
 
 ! INIT MUMPS
@@ -477,7 +477,7 @@ error stop "realbits must be 32 or 64"
 call quiet_mumps(mumps_par)
 
 !LOAD OUR PROBLEM
-print*, 'Loading mumps problem...'
+if (debug) print*, 'Loading mumps problem...'
 if ( myid==0 ) then
   mumps_par%N=lPhi
   mumps_par%NZ=lent
@@ -491,7 +491,7 @@ if ( myid==0 ) then
   mumps_par%RHS=b
   deallocate(ir,ic,M,b)     !clear memory before solve begins!!!
 
-  print*, 'Dealing with perumutation',perflag,it
+  if (debug) print*, 'Dealing with perumutation',perflag,it
   if (perflag .and. it/=1) then       !used cached permutation, but only gets tested on first time step
     allocate(mumps_par%PERM_IN(mumps_par%N))
     mumps_par%PERM_IN=mumps_perm
@@ -499,14 +499,14 @@ if ( myid==0 ) then
   end if
 
 
-  print*, 'Setting memory relaxation...'
+  if (debug) print*, 'Setting memory relaxation...'
   !3D solves very often need better memory relaxation
   mumps_par%ICNTL(14)=500
 end if
 
 
 !SOLVE (ALL WORKERS NEED TO SEE THIS CALL)
-print*, 'Executing solve...'
+if (debug) print*, 'Executing solve...'
 mumps_par%JOB = 6
 #if REALBITS==32
 call SMUMPS(mumps_par)
@@ -521,7 +521,7 @@ error stop "realbits must be 32 or 64"
 !(can save ~25% execution time and improves scaling with openmpi
 ! ~25% more going from 1-2 processors)
 if ( myid==0 ) then
-  print *, 'Now organizing results...'
+  if (debug) print *, 'Now organizing results...'
 
   if (perflag .and. it==1) then
     allocate(mumps_perm(mumps_par%N))     !we don't have a corresponding deallocate statement
@@ -530,7 +530,7 @@ if ( myid==0 ) then
 
   elliptic3D_cart=reshape(mumps_par%RHS,[lx1,lx2,lx3])
 
-  print *, 'Now attempting deallocations...'
+  if (debug) print *, 'Now attempting deallocations...'
 
   deallocate( mumps_par%IRN )
   deallocate( mumps_par%JCN )
@@ -610,12 +610,12 @@ if (myid==0) then
 
   allocate(ir(lent),ic(lent),M(lent),b(lPhi))
 
-  print *, 'MUMPS will attempt a solve of size:  ',lx1,lx2,lx3
-  print *, 'Total unknowns and nonzero entries in matrix:  ',lPhi,lent
+  if (debug) print *, 'MUMPS will attempt a solve of size:  ',lx1,lx2,lx3
+  if (debug) print *, 'Total unknowns and nonzero entries in matrix:  ',lPhi,lent
 
 
   !COMPUTE AUXILIARY COEFFICIENTS
-  print *, 'Prepping coefficients for elliptic equation...'
+  if (debug) print *, 'Prepping coefficients for elliptic equation...'
   gradsig01=grad3D1(sig0,x,1,lx1,1,lx2,1,lx3)
   gradsigP2=grad3D2(sigP,x,1,lx1,1,lx2,1,lx3)
   gradsigP3=grad3D3(sigP,x,1,lx1,1,lx2,1,lx3)
@@ -744,7 +744,7 @@ if (myid==0) then
   end do
   end do
 end if
-print *, 'Number of entries used:  ',ient-1
+if (debug) print *, 'Number of entries used:  ',ient-1
 
 
 ! INIT MUMPS
@@ -802,7 +802,7 @@ error stop "realbits must be 32 or 64"
 !(can save ~25% execution time and improves scaling with openmpi
 ! ~25% more going from 1-2 processors)
 if ( myid==0 ) then
-  print *, 'Now organizing results...'
+  if (debug) print *, 'Now organizing results...'
 
   if (perflag .and. it==1) then
     allocate(mumps_perm(mumps_par%N))     !we don't have a corresponding deallocate statement
@@ -811,7 +811,7 @@ if ( myid==0 ) then
 
   elliptic3D_curv=reshape(mumps_par%RHS,[lx1,lx2,lx3])
 
-  print *, 'Now attempting deallocations...'
+  if (debug) print *, 'Now attempting deallocations...'
 
   deallocate( mumps_par%IRN )
   deallocate( mumps_par%JCN )
@@ -894,8 +894,8 @@ if (myid==0) then
   lent=17*(lx2-2)*(lx3-2)+2*lx2+2*(lx3-2)-3*2*(lx2-2)-3*2*(lx3-2)    !interior+boundary-x3_adj-x2_adj.  Note that are 3 sets of entries for each adjacent point
   allocate(ir(lent),ic(lent),M(lent),b(lPhi))
 
-  print *, 'MUMPS will attempt a solve of size:  ',lx2,lx3
-  print *, 'Total unknowns and nonzero entries in matrix:  ',lPhi,lent
+  if (debug) print *, 'MUMPS will attempt a solve of size:  ',lx2,lx3
+  if (debug) print *, 'Total unknowns and nonzero entries in matrix:  ',lPhi,lent
 
 
   !PREP INPUT DATA FOR SOLUTION OF SYSTEM
@@ -1273,7 +1273,7 @@ end if
 
 !FIRE UP MUMPS
 if (myid == 0) then
-  print *, 'Filled ',ient-1,' matrix entries.  Initializing MUMPS...'
+  if (debug) print *, 'Filled ',ient-1,' matrix entries.  Initializing MUMPS...'
 end if
 mumps_par%COMM = MPI_COMM_WORLD
 mumps_par%JOB = -1
@@ -1331,7 +1331,7 @@ error stop "realbits must be 32 or 64"
 !(can save ~25% execution time and improves scaling with openmpi
 ! ~25% more going from 1-2 processors)
 if ( myid==0 ) then
-  print *, 'Now organizing results...'
+  if (debug) print *, 'Now organizing results...'
 
   if (perflag .and. it==1) then
     allocate(mumps_perm(mumps_par%N))     !we don't have a corresponding deallocate statement
@@ -1340,7 +1340,7 @@ if ( myid==0 ) then
 
   elliptic2D_pol_conv_curv=reshape(mumps_par%RHS,[lx2,lx3])
 
-  print *, 'Now attempting deallocations...'
+  if (debug) print *, 'Now attempting deallocations...'
 
   deallocate( mumps_par%IRN )
   deallocate( mumps_par%JCN )
@@ -1429,8 +1429,8 @@ if (myid==0) then
   lent=17*(lx2-2)*(lx3-2)+2*(lx3)+17*2*(lx2-2)-3*2*lx3    !true interior with x3 boundaries which are not treated as interior in periodic solves  + add x2 boundaries (note that these are now size lx3+1) + x3 edge cells (treated here as interior) - x2_adj (x2 is not periodici, two sets of three points each, note again the larger x3 size as compared to aperiodic solutions).
   allocate(ir(lent),ic(lent),M(lent),b(lPhi))
 
-  print *, 'MUMPS will attempt a solve of size:  ',lx2,lx3
-  print *, 'Total unknowns and nonzero entries in matrix:  ',lPhi,lent
+  if (debug) print *, 'MUMPS will attempt a solve of size:  ',lx2,lx3
+  if (debug) print *, 'Total unknowns and nonzero entries in matrix:  ',lPhi,lent
 
 
   !NOTE THAT THESE NEED TO BE PERIODIC IN X3
@@ -1457,7 +1457,7 @@ if (myid==0) then
   !-------GUIDE).
   !------------------------------------------------------------
 
-  print *, 'Loading up matrix entries...'
+  if (debug) print *, 'Loading up matrix entries...'
 
   !LOAD UP MATRIX ELEMENTS
   lcount=0
@@ -1819,8 +1819,8 @@ end if
 
 !FIRE UP MUMPS
 if (myid == 0) then
-  print *,  'Debug count:  ',lcount
-  print *, 'Filled ',ient-1,' out of ',lent,' matrix entries for solving ',iPhi,' of ',lPhi, &
+  if (debug) print *,  'Debug count:  ',lcount
+  if (debug) print *, 'Filled ',ient-1,' out of ',lent,' matrix entries for solving ',iPhi,' of ',lPhi, &
                ' unknowns.  Initializing MUMPS...'
   if (ient-1 /= lent) then
     error stop 'Incorrect number of matrix entries filled in potential solve!!!'
@@ -1880,7 +1880,7 @@ error stop "realbits must be 32 or 64"
 !(can save ~25% execution time and improves scaling with openmpi
 ! ~25% more going from 1-2 processors)
 if ( myid==0 ) then
-  print *, 'Now organizing results...'
+  if (debug) print *, 'Now organizing results...'
 
   if (perflag .and. it==1) then
     allocate(mumps_perm(mumps_par%N))     !we don't have a corresponding deallocate statement
@@ -1892,7 +1892,7 @@ if ( myid==0 ) then
   tmpresults=reshape(mumps_par%RHS,[lx2,lx3])
   elliptic2D_pol_conv_curv_periodic2=tmpresults(1:lx2,1:lx3)    !sort of superfluous now that hte solve size is the same as the grid
 
-  print *, 'Now attempting deallocations...'
+  if (debug) print *, 'Now attempting deallocations...'
 
   deallocate( mumps_par%IRN )
   deallocate( mumps_par%JCN )
@@ -1967,8 +1967,8 @@ if (myid==0) then
   end if
   allocate(ir(lent),ic(lent),M(lent),b(lPhi))
 
-  print *, 'MUMPS will attempt a solve of size:  ',lx1,lx3
-  print *, 'Total unknowns and nonzero entries in matrix:  ',lPhi,lent
+  if (debug) print *, 'MUMPS will attempt a solve of size:  ',lx1,lx3
+  if (debug) print *, 'Total unknowns and nonzero entries in matrix:  ',lPhi,lent
 
 
   !AVERAGE CONDUCTANCES TO THE GRID INTERFACE POINTS
@@ -2102,7 +2102,7 @@ if (myid==0) then
     end do
   end do
 end if
-print *, 'Number of entries used:  ',ient-1
+if (debug) print *, 'Number of entries used:  ',ient-1
 
 
 !FIRE UP MUMPS
@@ -2136,7 +2136,7 @@ if ( myid==0 ) then
   deallocate(ir,ic,M,b)     !clear memory before solve begins!!!
 
   if (perflag .and. it/=1) then       !used cached permutation
-    print *, 'Using a previously stored permutation'
+    if (debug) print *, 'Using a previously stored permutation'
     allocate(mumps_par%PERM_IN(mumps_par%N))
     mumps_par%PERM_IN=mumps_perm
     mumps_par%ICNTL(7)=1
@@ -2164,17 +2164,17 @@ error stop "realbits must be 32 or 64"
 ! ~25% more going from 1-2 processors).  WOW - this halves execution
 ! time on some big 2048*2048 solves!!!
 if ( myid==0 ) then
-  print *, 'Now organizing results...'
+  if (debug) print *, 'Now organizing results...'
 
   if (perflag .and. it==1) then
-    print *, 'Storing ordering for future time step use...'
+    if (debug) print *, 'Storing ordering for future time step use...'
     allocate(mumps_perm(mumps_par%N))     !we don't have a corresponding deallocate statement
     mumps_perm=mumps_par%SYM_PERM
   end if
 
   elliptic2D_nonint_curv=reshape(mumps_par%RHS,[lx1,1,lx3])
 
-  print *, 'Now attempting deallocations...'
+  if (debug) print *, 'Now attempting deallocations...'
 
   deallocate( mumps_par%IRN )
   deallocate( mumps_par%JCN )
@@ -2358,7 +2358,7 @@ call DMUMPS(mumps_par)
 error stop "realbits must be 32 or 64"
 #endif
 call cpu_time(tfin)
-print *, 'Solve took ',tfin-tstart,' seconds...'
+if (debug) print *, 'Solve took ',tfin-tstart,' seconds...'
 
 
 !STORE PERMUTATION USED, SAVE RESULTS, CLEAN UP MUMPS ARRAYS

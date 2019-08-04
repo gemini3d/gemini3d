@@ -3,7 +3,7 @@ use, intrinsic:: iso_fortran_env, only: stderr=>error_unit
 
 use mpi, only: mpi_integer, mpi_comm_world, mpi_status_ignore
 
-use phys_consts, only: pi,wp
+use phys_consts, only: pi,wp, debug
 use grid, only : curvmesh,lx1,lx2,lx3,lx3all
 use interpolation, only : interp1,interp2
 use io, only : date_filename
@@ -141,7 +141,7 @@ if(t+dt/2d0>=tnext) then    !need to load a new file
   !GRID INFORMATION EXISTS AT THIS POINT SO START READING IN PRECIP DATA
   if (myid==0) then    !only root reads file data
     !read in the data from file
-    print *, 'tprev,tnow,tnext:  ',tprev,t+dt/2d0,tnext
+    if(debug) print *, 'tprev,tnow,tnext:  ',tprev,t+dt/2d0,tnext
     ymdtmp=ymdnext
     UTsectmp=UTsecnext
     call dateinc(dtprec,ymdtmp,UTsectmp)    !get the date for "next" params
@@ -154,12 +154,12 @@ if(t+dt/2d0>=tnext) then    !need to load a new file
       !write(stderr,*) 'Bad input file '//precfn//' setting everything to some default value...'
       !Qp=0d0; E0p=100d0;
 
-    print *, 'Successfully located input file...'
+    if (debug) print *, 'Successfully located input file...'
     read(u) Qp,E0p
     close(u)
 
-    print *, 'Min/max values for Qp:  ',minval(Qp),maxval(Qp)
-    print *, 'Min/max values for E0p:  ',minval(E0p),maxval(E0p)
+    if (debug) print *, 'Min/max values for Qp:  ',minval(Qp),maxval(Qp)
+    if (debug) print *, 'Min/max values for E0p:  ',minval(E0p),maxval(E0p)
 
     !send a full copy of the data to all of the workers
     do iid=1,lid-1
@@ -174,7 +174,7 @@ if(t+dt/2d0>=tnext) then    !need to load a new file
 
   !ALL WORKERS DO SPATIAL INTERPOLATION
   if (myid==0) then
-    print *, 'Initiating precipitation spatial interpolations for date:  ',ymdtmp,' ',UTsectmp
+    if (debug) print *, 'Initiating precipitation spatial interpolations for date:  ',ymdtmp,' ',UTsectmp
   end if
   if (llon==1) then    !source data has singleton size in the longitude dimension
     precdatp=Qp(1,:)
@@ -206,8 +206,8 @@ if(t+dt/2d0>=tnext) then    !need to load a new file
     E0inext=reshape(parami,[lx2,lx3])
   end if
   if (myid==lid/2) then
-    print *, 'Min/max values for Qi:  ',minval(Qinext),maxval(Qinext)
-    print *, 'Min/max values for E0i:  ',minval(E0inext),maxval(E0inext)
+    if (debug) print *, 'Min/max values for Qi:  ',minval(Qinext),maxval(Qinext)
+    if (debug) print *, 'Min/max values for E0i:  ',minval(E0inext),maxval(E0inext)
   end if
 
 
@@ -235,7 +235,7 @@ end do
 
 
 !SOME BASIC DIAGNOSTICS
-if (myid==lid/2) then
+if (myid==lid/2 .and. debug) then
   print *, 'tprev,t,tnext:  ',tprev,t+dt/2d0,tnext
   print *, 'Min/max values for Qinow:  ',minval(Qinow),maxval(Qinow)
   print *, 'Min/max values for E0inow:  ',minval(E0inow),maxval(E0inow)

@@ -3,7 +3,7 @@ use, intrinsic:: iso_fortran_env, only: sp => real32
 
 use mpi, only: mpi_integer, mpi_comm_world, mpi_status_ignore
 
-use phys_consts, only: wp, lnchem, pi, re
+use phys_consts, only: wp, lnchem, pi, re, debug
 use timeutils, only : doy_calc,dateinc
 use grid, only: curvmesh, lx1, lx2, lx3, clear_unitvecs
 use interpolation, only : interp2
@@ -353,7 +353,7 @@ end subroutine neutral_perturb_cart
 subroutine gridproj_dneu(dhorzn,dzn,meanlat,meanlong,neudir,flagcart,x)
 
 !Read in the grid for the neutral data and project unit vectors into the appropriiate directions.
-!Also allocate module-scope variables for storing neutral perturbations read in from input files.  
+!Also allocate module-scope variables for storing neutral perturbations read in from input files.
 
 real(wp), intent(in) :: dhorzn,dzn           !neutral grid spacing in horizontal "rho or y" and vertical directions
 real(wp), intent(in) :: meanlat, meanlong    !neutral source center location
@@ -527,15 +527,15 @@ do ix3=1,lx3
         proj_eyp_e3(ix1,ix2,ix3)=tmpsca
       else
         erhop=cos(phip)*x%e3(ix1,ix2,ix3,:)+(-1._wp)*sin(phip)*x%etheta(ix1,ix2,ix3,:)     !unit vector for azimuth (referenced from epicenter - not geocenter!!!) in cartesian geocentric-geomagnetic coords.
-  
+
         tmpvec=erhop*x%e1(ix1,ix2,ix3,:)
         tmpsca=sum(tmpvec)
         proj_erhop_e1(ix1,ix2,ix3)=tmpsca
- 
+
         tmpvec=erhop*x%e2(ix1,ix2,ix3,:)
         tmpsca=sum(tmpvec)
         proj_erhop_e2(ix1,ix2,ix3)=tmpsca
- 
+
         tmpvec=erhop*x%e3(ix1,ix2,ix3,:)
         tmpsca=sum(tmpvec)
         proj_erhop_e3(ix1,ix2,ix3)=tmpsca
@@ -602,7 +602,7 @@ end if
 
 if (myid==0) then    !root
   !read in the data from file
-  print *, 'tprev,tnow,tnext:  ',tprev,t+dt/2d0,tnext
+  if(debug) print *, 'tprev,tnow,tnext:  ',tprev,t+dt/2d0,tnext
   ymdtmp=ymdnext
   UTsectmp=UTsecnext
   call dateinc(dtneu,ymdtmp,UTsectmp)    !get the date for "next" params
@@ -612,13 +612,14 @@ if (myid==0) then    !root
   read(inunit) dnO,dnN2,dnO2,dvnrho,dvnz,dTn     !these are module-scope variables
   close(inunit)
 
+  if (debug) then
   print *, 'Min/max values for dnO:  ',minval(dnO),maxval(dnO)
   print *, 'Min/max values for dnN:  ',minval(dnN2),maxval(dnN2)
   print *, 'Min/max values for dnO:  ',minval(dnO2),maxval(dnO2)
   print *, 'Min/max values for dvnrho:  ',minval(dvnrho),maxval(dvnrho)
   print *, 'Min/max values for dvnz:  ',minval(dvnz),maxval(dvnz)
   print *, 'Min/max values for dTn:  ',minval(dTn),maxval(dTn)
-
+  endif
   !send a full copy of the data to all of the workers
   do iid=1,lid-1
     call mpi_send(dnO,lhorzn*lzn,mpi_realprec,iid,tagdnO,MPI_COMM_WORLD,ierr)
@@ -690,28 +691,28 @@ else
   parami=interp2(zn,rhon,dnO,zi,rhoi)     !interp to temp var.
   dnOiprev=dnOinext                       !save new pervious
   dnOinext=reshape(parami,[lx1,lx2,lx3])    !overwrite next with new interpolated input
-   
+
   parami=interp2(zn,rhon,dnN2,zi,rhoi)
   dnN2iprev=dnN2inext
   dnN2inext=reshape(parami,[lx1,lx2,lx3])
-   
+
   parami=interp2(zn,rhon,dnN2,zi,rhoi)
   dnO2iprev=dnO2inext
   dnO2inext=reshape(parami,[lx1,lx2,lx3])
-   
+
   parami=interp2(zn,rhon,dvnrho,zi,rhoi)
   dvnrhoiprev=dvnrhoinext
   dvnrhoinext=reshape(parami,[lx1,lx2,lx3])
-   
+
   parami=interp2(zn,rhon,dvnz,zi,rhoi)
   dvnziprev=dvnzinext
   dvnzinext=reshape(parami,[lx1,lx2,lx3])
-   
+
   parami=interp2(zn,rhon,dTn,zi,rhoi)
   dTniprev=dTninext
   dTninext=reshape(parami,[lx1,lx2,lx3])
 end if
- 
+
 !MORE DIAG
 if (myid==lid/2) then
   print *, 'Min/max values for dnOi:  ',minval(dnOinext),maxval(dnOinext)
@@ -721,8 +722,8 @@ if (myid==lid/2) then
   print *, 'Min/max values for dvnzi:  ',minval(dvnzinext),maxval(dvnzinext)
   print *, 'Min/max values for dTni:  ',minval(dTninext),maxval(dTninext)
 end if
- 
- 
+
+
 !ROTATE VECTORS INTO X1 X2 DIRECTIONS (Need to include unit vectors with grid
 !structure)
 dvn1iprev=dvn1inext   !save the old data
@@ -737,7 +738,7 @@ else
   dvn2inext=dvnrhoinext*proj_erhop_e2+dvnzinext*proj_ezp_e2
   dvn3inext=dvnrhoinext*proj_erhop_e3+dvnzinext*proj_ezp_e3
 end if
- 
+
 !MORE DIAGNOSTICS
 if (myid==lid/2) then
   print *, 'Min/max values for dnOi:  ',minval(dnOinext),maxval(dnOinext)
@@ -789,7 +790,7 @@ end do
 
 
 !SOME BASIC DIAGNOSTICS
-if (myid==lid/2) then
+if (myid==lid/2 .and. debug) then
   print *, myid
   print *, 'tprev,t,tnext:  ',tprev,t+dt/2d0,tnext
   print *, 'Min/max values for dnOinow:  ',minval(dnOinow),maxval(dnOinow)

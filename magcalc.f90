@@ -4,7 +4,7 @@
 
 use mpi, only: mpi_sum, mpi_comm_world
 
-use phys_consts, only : pi,mu0, wp, re
+use phys_consts, only : pi,mu0, wp, re, debug
 use grid, only : curvmesh, lx1, lx2, lx3, read_grid, clear_grid, lx2all,lx3all,grid_size
 use timeutils, only : dateinc
 use io, only : read_configfile,input_plasma_currents,create_outdir_mag,output_magfields
@@ -481,14 +481,14 @@ do while (t<tdur)
 
   !A REDUCE OPERATION IS NEEDED HERE TO COMBINE MAGNETIC FIELDS (LINEAR SUPERPOSITION) FROM ALL WORKERS
   if (myid ==0) then
-    print *, 'Attempting reduction of magnetic field...'
+    if(debug) print *, 'Attempting reduction of magnetic field...'
   end if
   call mpi_reduce(Br,Brall,lpoints,mpi_realprec,MPI_SUM,0,MPI_COMM_WORLD,ierr)
   call mpi_reduce(Btheta,Bthetaall,lpoints,mpi_realprec,MPI_SUM,0,MPI_COMM_WORLD,ierr)
   call mpi_reduce(Bphi,Bphiall,lpoints,mpi_realprec,MPI_SUM,0,MPI_COMM_WORLD,ierr)
   if (myid == 0) then
-    print *, 'magcalc.f90 --> Reduced magnetic field...'
-    print *, '  --> Min/max values of reduced field',minval(Brall),maxval(Brall),minval(Bthetaall),maxval(Bthetaall), &
+    if(debug) print *, 'magcalc.f90 --> Reduced magnetic field...'
+    if(debug) print *, '  --> Min/max values of reduced field',minval(Brall),maxval(Brall),minval(Bthetaall),maxval(Bthetaall), &
                                                minval(Bphiall),maxval(Bphiall)
   end if
 
@@ -498,16 +498,14 @@ do while (t<tdur)
     call cpu_time(tstart)
     call output_magfields(outdir,ymd,UTsec,Brall,Bthetaall,Bphiall)   !mag field data already reduced so just root needs to output
     call cpu_time(tfin)
-    print *, 'magcalc.f90 --> Output done for time step:  ',t,' in cpu_time of:  ',tfin-tstart
+   if(debug) print *, 'magcalc.f90 --> Output done for time step:  ',t,' in cpu_time of:  ',tfin-tstart
   end if
   tout=tout+dtout
 
 
   !NOW OUR SOLUTION IS FULLY UPDATED SO UPDATE TIME VARIABLES TO MATCH...
   it=it+1; t=t+dt;
-  if (myid==0) then
-    print *, 'magcalc.f90 --> Moving on to time step (in sec):  ',t,'; end time of simulation:  ',tdur
-  end if
+  if (myid==0 .and. debug) print *, 'magcalc.f90 --> Moving on to time step (in sec):  ',t,'; end time of simulation:  ',tdur
   call dateinc(dt,ymd,UTsec)
   if (myid==0) then
     print *, 'magcalc.f90 --> Current date',ymd,'Current UT time:  ',UTsec

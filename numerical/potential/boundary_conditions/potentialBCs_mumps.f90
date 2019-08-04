@@ -3,7 +3,7 @@ module potentialBCs_mumps
 use mpi, only: mpi_integer, mpi_comm_world, mpi_status_ignore
 
 use grid, only: curvmesh, lx1, lx2, lx2all, lx3all, gridflag
-use phys_consts, only: wp, pi, Re
+use phys_consts, only: wp, pi, Re, debug
 use interpolation, only : interp1,interp2
 use date_formats, only : date_filename
 use timeutils, only : dateinc
@@ -99,11 +99,11 @@ if(t+dt/2d0>=tnext) then    !need to load a new file
     UTsecnext=UTsecprev
 
     fn1 = trim(E0dir) // '/simsize.dat'
-    print *, 'Inputting electric field data size from file:  ',fn1
+    if (debug) print *, 'Inputting electric field data size from file:  ',fn1
     open(newunit=inunit,file=fn1,status='old',form='unformatted',access='stream')
     read(inunit) llon,llat
     close(inunit)
-    print *, 'Electric field data has llon,llat size:  ',llon,llat
+    if (debug) print *, 'Electric field data has llon,llat size:  ',llon,llat
     allocate(mlonp(llon),mlatp(llat))    !bit of code duplication with worker code block below...
 
 
@@ -118,11 +118,11 @@ if(t+dt/2d0>=tnext) then    !need to load a new file
 
     !NOW READ THE GRID
     fn2 = E0dir // '/simgrid.dat'
-    print *, 'Inputting electric field grid from file:  ',fn2
+    if (debug) print *, 'Inputting electric field grid from file:  ',fn2
     open(newunit=inunit,file=fn2,status='old',form='unformatted',access='stream')
     read(inunit) mlonp,mlatp
     close(inunit)
-    print *, 'Electric field data has mlon,mlat extent:', &
+    if (debug) print *, 'Electric field data has mlon,mlat extent:', &
               minval(mlonp(:)), maxval(mlonp(:)), minval(mlatp(:)), maxval(mlatp(:))
 
     !SPACE TO STORE INPUT DATA
@@ -156,19 +156,19 @@ if(t+dt/2d0>=tnext) then    !need to load a new file
         mloni(iflat)=x%phiall(ix1ref,ix2,ix3)*180d0/pi
       end do
     end do
-    print *, 'Grid has mlon,mlat range:  ',minval(mloni),maxval(mloni),minval(mlati),maxval(mlati)
-    print *, 'Grid has size:  ',iflat
+    if (debug) print *, 'Grid has mlon,mlat range:  ',minval(mloni),maxval(mloni),minval(mlati),maxval(mlati)
+    if (debug) print *, 'Grid has size:  ',iflat
   end if
 
 
   !GRID INFORMATION EXISTS AT THIS POINT SO START READING IN PRECIP DATA
   !read in the data from file
-  print *,'tprev,tnow,tnext:  ',tprev,t+dt/2d0,tnext
+  if (debug) print *,'tprev,tnow,tnext:  ',tprev,t+dt/2d0,tnext
   ymdtmp=ymdnext
   UTsectmp=UTsecnext
   call dateinc(dtE0,ymdtmp,UTsectmp)    !get the date for "next" params
   fn3=date_filename(E0dir,ymdtmp,UTsectmp)     !form the standard data filename
-  print *, 'Pulling electric field data from file:  ',fn3
+  if (debug) print *, 'Pulling electric field data from file:  ',fn3
   open(newunit=inunit, file=fn3, status='old',form='unformatted',access='stream',iostat=ios)
   if (ios/=0) error stop 'Bad input file, cannot proceed'  ! per MZ Oct. 2018
   !just set everything to zero
@@ -184,6 +184,7 @@ if(t+dt/2d0>=tnext) then    !need to load a new file
   read(inunit) Vminx3pslice,Vmaxx3pslice
   close(inunit)
 
+  if (debug) then
   print *, 'Min/max values for E0xp:  ',minval(E0xp),maxval(E0xp)
   print *, 'Min/max values for E0yp:  ',minval(E0yp),maxval(E0yp)
   print *, 'Min/max values for Vminx1p:  ',minval(Vminx1p),maxval(Vminx1p)
@@ -192,12 +193,12 @@ if(t+dt/2d0>=tnext) then    !need to load a new file
   print *, 'Min/max values for Vmaxx2pslice:  ',minval(Vmaxx2pslice),maxval(Vmaxx2pslice)
   print *, 'Min/max values for Vminx3pslice:  ',minval(Vminx3pslice),maxval(Vminx3pslice)
   print *, 'Min/max values for Vmaxx3pslice:  ',minval(Vmaxx3pslice),maxval(Vmaxx3pslice)
-
+  endif
 
   !ALL WORKERS DO SPATIAL INTERPOLATION TO THEIR SPECIFIC GRID SITES
-  print *, 'Initiating electric field boundary condition spatial interpolations for date:  ',ymdtmp,' ',UTsectmp
+  if (debug) print *, 'Initiating electric field boundary condition spatial interpolations for date:  ',ymdtmp,' ',UTsectmp
   if (llon==1) then    !source data has singleton dimension in longitude
-    print *, 'Singleton longitude dimension detected; interpolating in latitude...'
+    if (debug) print *, 'Singleton longitude dimension detected; interpolating in latitude...'
     Edatp=E0xp(1,:)
     parami=interp1(mlatp,Edatp,mlati)   !will work even for 2D grids, just repeats the data in the lon direction
     E0xiprev=E0xinext
@@ -220,7 +221,7 @@ if(t+dt/2d0>=tnext) then    !need to load a new file
 
     !note that for 2D simulations we don't use Vmaxx2p, etc. data read in from the input file - these BC's will be set later
   elseif (llat==1) then
-    print *, 'Singleton latitude dimension detected; interpolating in longitude...'
+    if (debug) print *, 'Singleton latitude dimension detected; interpolating in longitude...'
     Edatp=E0xp(:,1)
     parami=interp1(mlonp,Edatp,mloni)
     E0xiprev=E0xinext
@@ -241,7 +242,7 @@ if(t+dt/2d0>=tnext) then    !need to load a new file
     Vmaxx1iprev=Vmaxx1inext
     Vmaxx1inext=reshape(parami,[lx2all,lx3all])
   else    !source data is 2D
-    print *, 'Executing full lat/lon interpolation...'
+    if (debug) print *, 'Executing full lat/lon interpolation...'
     parami=interp2(mlonp,mlatp,E0xp,mloni,mlati)     !interp to temp var.
     E0xiprev=E0xinext                       !save new pervious
     E0xinext=reshape(parami,[lx2all,lx3all])    !overwrite next with new interpolated input
@@ -285,6 +286,7 @@ if(t+dt/2d0>=tnext) then    !need to load a new file
     Vmaxx3isnext=parami2
   end if
 
+  if (debug) then
   print *, 'Min/max values for E0xi:  ',minval(E0xinext),maxval(E0xinext)
   print *, 'Min/max values for E0yi:  ',minval(E0yinext),maxval(E0yinext)
   print *, 'Min/max values for Vminx1i:  ',minval(Vminx1inext),maxval(Vminx1inext)
@@ -296,6 +298,7 @@ if(t+dt/2d0>=tnext) then    !need to load a new file
     print *, 'Min/max values for Vminx3i:  ',minval(Vminx3isnext),maxval(Vminx3isnext)
     print *, 'Min/max values for Vmaxx3i:  ',minval(Vmaxx3isnext),maxval(Vmaxx3isnext)
   end if
+  endif
 
 
   !UPDATE OUR CONCEPT OF PREVIOUS AND NEXT TIMES
@@ -311,7 +314,7 @@ end if
 
 !INTERPOLATE IN TIME (LINEAR)
 flagdirich=int(flagdirich_double,4)     !make sure to set solve type every time step, as it does not persiste between function calls
-print *, 'Solve type: ',flagdirich
+if (debug) print *, 'Solve type: ',flagdirich
 do ix3=1,lx3all
   do ix2=1,lx2all
     slope=(E0xinext(ix2,ix3)-E0xiprev(ix2,ix3))/(tnext-tprev)
@@ -346,19 +349,20 @@ end if
 
 
 !SOME BASIC DIAGNOSTICS
+if(debug) then
 print *, 'tprev,t,tnext:  ',tprev,t+dt/2d0,tnext
-print *, 'Min/max values for E0xinow:  ',minval(E0xinow),maxval(E0xinow)
-print *, 'Min/max values for E0yinow:  ',minval(E0yinow),maxval(E0yinow)
-print *, 'Min/max values for Vminx1inow:  ',minval(Vminx1inow),maxval(Vminx1inow)
-print *, 'Min/max values for Vmaxx1inow:  ',minval(Vmaxx1inow),maxval(Vmaxx1inow)
+  print *, 'Min/max values for E0xinow:  ',minval(E0xinow),maxval(E0xinow)
+  print *, 'Min/max values for E0yinow:  ',minval(E0yinow),maxval(E0yinow)
+  print *, 'Min/max values for Vminx1inow:  ',minval(Vminx1inow),maxval(Vminx1inow)
+  print *, 'Min/max values for Vmaxx1inow:  ',minval(Vmaxx1inow),maxval(Vmaxx1inow)
 
-if (llon/=1 .and. llat/=1) then
-  print *, 'Min/max values for Vminx2inow:  ',minval(Vminx2isnow),maxval(Vminx2isnow)
-  print *, 'Min/max values for Vmaxx2inow:  ',minval(Vmaxx2isnow),maxval(Vmaxx2isnow)
-  print *, 'Min/max values for Vminx3inow:  ',minval(Vminx3isnow),maxval(Vminx3isnow)
-  print *, 'Min/max values for Vmaxx3inow:  ',minval(Vmaxx3isnow),maxval(Vmaxx3isnow)
-end if
-
+  if (llon/=1 .and. llat/=1) then
+    print *, 'Min/max values for Vminx2inow:  ',minval(Vminx2isnow),maxval(Vminx2isnow)
+    print *, 'Min/max values for Vmaxx2inow:  ',minval(Vmaxx2isnow),maxval(Vmaxx2isnow)
+    print *, 'Min/max values for Vminx3inow:  ',minval(Vminx3isnow),maxval(Vminx3isnow)
+    print *, 'Min/max values for Vmaxx3inow:  ',minval(Vmaxx3isnow),maxval(Vmaxx3isnow)
+  end if
+endif
 
 !LOAD POTENTIAL SOLVER INPUT ARRAYS, FIRST MAP THE ELECTRIC FIELDS
 do ix3=1,lx3all
@@ -489,7 +493,7 @@ end do
 
 
 !SOME USER INFO
-print *, 'At time:  ',t,'  Max FAC set to be:  ',maxval(abs(Vtopalt))
+if (debug) print *, 'At time:  ',t,'  Max FAC set to be:  ',maxval(abs(Vtopalt))
 
 
 !BOTTOM BOUNDARY IS ALWAYS ZERO CURRENT - SIDES ARE JUST GROUNDED
