@@ -74,23 +74,27 @@ neutral = library('neutral', 'neutral/neutral.f90',
 
 subdir('ionization')
 
+gemini_src = files('gemini.f90', 'temporal/temporal.f90', 'multifluid/multifluid.f90',
+'sources/sources.f90', 'numerical/advection/advec_mpi.f90', 'numerical/diffusion/diffusion.F90', 'vendor/lapack95/gbsv.F90')
 # -- gemini exe
-gemini_fang_exe = executable('gemini_fang.bin', 'gemini.f90', 'temporal/temporal.f90', 'multifluid/multifluid.f90',
-'sources/sources.f90', 'numerical/advection/advec_mpi.f90', 'numerical/diffusion/diffusion.F90', 'vendor/lapack95/gbsv.F90',
-  link_with : [io,calculus, collisions, grid, ionization, mpimod, neutral, potential, const, timeutils],
+gemini_fang_exe = executable('gemini_fang.bin',
+  sources: gemini_src,
+  link_with : [io, potential, calculus, collisions, grid, ionization, mpimod, neutral, const, timeutils],
   dependencies : [scalapack, blacs, lapack, blas, mpi],
   fortran_args: real_bits,
-  install: true)
+  install: true,
+  link_language: 'fortran')
 
 # -- gemini_glow exe
 
 if use_glow
-  gemini_glow_exe = executable('gemini_glow.bin', 'gemini.f90', 'temporal/temporal.f90', 'multifluid/multifluid.f90',
-  'sources/sources.f90', 'numerical/advection/advec_mpi.f90', 'numerical/diffusion/diffusion.F90', 'vendor/lapack95/gbsv.F90',
-    link_with : [io,calculus, collisions, grid, ionization_glow, mpimod, neutral, potential, const, timeutils],
+  gemini_glow_exe = executable('gemini_glow.bin',
+    sources: gemini_src,
+    link_with : [io, potential, calculus, collisions, grid, ionization_glow, mpimod, neutral,  const, timeutils],
     dependencies : [scalapack, blacs, lapack, blas, mpi],
     fortran_args: real_bits,
-    install: true)
+    install: true,
+    link_language: 'fortran')
 else
   gemini_glow_exe = disabler()
 endif

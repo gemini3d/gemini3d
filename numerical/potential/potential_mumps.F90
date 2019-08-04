@@ -460,12 +460,6 @@ print *, 'Number of entries used:  ',ient-1
 
 
 ! INIT MUMPS
-! MUMPS 4.10 disregarded ICNTL(4)
-print*, 'Initialize MUMPS...'
-mumps_par%ICNTL(1) = stderr   ! error msg stream
-mumps_par%ICNTL(2) = stdout   ! stats and warning stream
-mumps_par%ICNTL(3) = 0  ! global information verbosity  0 = off
-mumps_par%ICNTL(4) = 1  ! 1: error only   2: errors, warnings, stats.
 
 mumps_par%COMM = MPI_COMM_WORLD
 mumps_par%JOB = -1
@@ -480,7 +474,7 @@ call DMUMPS(mumps_par)
 error stop "realbits must be 32 or 64"
 #endif
 
-
+call quiet_mumps(mumps_par)
 
 !LOAD OUR PROBLEM
 print*, 'Loading mumps problem...'
@@ -754,11 +748,6 @@ print *, 'Number of entries used:  ',ient-1
 
 
 ! INIT MUMPS
-! MUMPS 4.10 disregarded ICNTL(4)
-mumps_par%ICNTL(1) = stderr   ! error msg stream
-mumps_par%ICNTL(2) = stdout   ! stats and warning stream
-mumps_par%ICNTL(3) = 0  ! global information verbosity  0 = off
-mumps_par%ICNTL(4) = 1  ! 1: error only   2: errors, warnings, stats.
 
 mumps_par%COMM = MPI_COMM_WORLD
 mumps_par%JOB = -1
@@ -773,6 +762,7 @@ call DMUMPS(mumps_par)
 error stop "realbits must be 32 or 64"
 #endif
 
+call quiet_mumps(mumps_par)
 
 
 !LOAD OUR PROBLEM
@@ -1296,6 +1286,8 @@ call DMUMPS(mumps_par)
 #else
 error stop "realbits must be 32 or 64"
 #endif
+
+call quiet_mumps(mumps_par)
 
 
 !LOAD OUR PROBLEM
@@ -1846,6 +1838,8 @@ call DMUMPS(mumps_par)
 error stop "realbits must be 32 or 64"
 #endif
 
+call quiet_mumps(mumps_par)
+
 
 !LOAD OUR PROBLEM
 if ( myid==0 ) then
@@ -2124,6 +2118,8 @@ call DMUMPS(mumps_par)
 error stop "realbits must be 32 or 64"
 #endif
 
+call quiet_mumps(mumps_par)
+
 
 !LOAD OUR PROBLEM
 if ( myid==0 ) then
@@ -2327,6 +2323,7 @@ call DMUMPS(mumps_par)
 error stop "realbits must be 32 or 64"
 #endif
 
+call quiet_mumps(mumps_par)
 
 !LOAD OUR PROBLEM (ROOT ONLY)
 if ( myid == 0 ) then
@@ -2389,6 +2386,24 @@ error stop "realbits must be 32 or 64"
 end function poisson2D
 
 
+subroutine quiet_mumps(obj)
+! this must be called AFTER the first mumps call that had job=-1
+#if REALBITS==32
+type (SMUMPS_STRUC), intent(inout) :: obj
+#elif REALBITS==64
+type (DMUMPS_STRUC), intent(inout) :: obj
+#else
+error stop "realbits must be 32 or 64"
+#endif
+
+obj%icntl(1) = stderr  ! error messages
+obj%icntl(2) = stdout !  diagnosic, statistics, and warning messages
+obj%icntl(3) = stdout! ! global info, for the host (myid==0)
+obj%icntl(4) = 1           ! default is 2, this reduces verbosity
+
+end subroutine quiet_mumps
+
+
 subroutine elliptic_workers()
 
 !------------------------------------------------------------
@@ -2415,6 +2430,8 @@ call DMUMPS(mumps_par)
 #else
 error stop "realbits must be 32 or 64"
 #endif
+
+call quiet_mumps(mumps_par)
 
 
 !ROOT WILL LOAD OUR PROBLEM
