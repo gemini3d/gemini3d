@@ -174,15 +174,6 @@ ICNTL 1-4 concern print output unit and verbosity level, see MUMPS
 Libraries:
 
 * If you have `sudo` access, try the `python install_prereqs.py` script
-* If need to build libraries from source (e.g. because you don't have `sudo`) try `build_gnu_noMKL.sh` or `build_intel.sh` from the `fortran-libs` repo:
-
-  ```sh
-  git clone https://github.com/scivision/fortran-libs ~/flibs-nomkl
-
-  cd ~/flibs-nomkl
-
-  ./build_gnu_noMKL.sh
-  ```
 
 
 ### self-tests
@@ -209,7 +200,7 @@ python tests/compare_all.py /tmp/2d tests/data/zenodo2d
 
 #### Ubuntu
 
-Tested on Ubuntu 18.04 / 16.04.
+Tested on Ubuntu 18.04 / 16.04, CentOS 7 and MacOS.
 
 If you have sudo (admin) access:
 ```sh
@@ -221,6 +212,7 @@ or consider Linuxbrew.
 
 
 #### CentOS
+
 This is for CentOS 7, using "modules" for more recent libraries.
 For the unavailable modules,
 [compile them yourself](https://github.com/scivision/fortran-libs)
@@ -259,6 +251,10 @@ See [TODO.md](./TODO.md).
 ## Standard and style
 
 GEMINI is Fortran 2008 compliant and uses two-space indents throughout (to accommodate the many, deeply nested loops).  Some of our developers are avid VIM users so please do not use tabs if you plan to push back to the repository or merge.
+
+## Debug text
+
+The gemini_*.bin command line option `-d` or `-debug` prints a large amount to text to console, perhaps gigabytes worth for medium simulations. By default, only the current simulation time and a few other messages are shown.
 
 
 
