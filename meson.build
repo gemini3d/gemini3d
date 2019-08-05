@@ -37,7 +37,10 @@ endif
 lapack_root = get_option('LAPACK_ROOT')
 if lapack_root == ''
   lapack = dependency('lapack')
-  blas = dependency('blas')
+  blas = dependency('blas', required: false)
+  if not blas.found()  # necessary for some systems incl. CentOS 7
+    blas = fc.find_library('blas')
+  endif
 else
   message('searching for LAPACK & BLAS in ' + lapack_root)
   lapack = fc.find_library('lapack', dirs : lapack_root)

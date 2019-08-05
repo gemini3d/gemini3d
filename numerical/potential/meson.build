@@ -1,8 +1,6 @@
 # FIXME: debug Meson internals
 # mumps = dependency('MUMPS', cmake_module_path : 'cmake/Modules')
 mumps_root = get_option('MUMPS_ROOT')
-scalapack_root = get_option('SCALAPACK_ROOT')
-
 if mumps_root == ''
   mumpsinc = '/usr/include'
   mumpslib = fc.find_library('dmumps', required : false)
@@ -19,10 +17,17 @@ else
   mumps = mumps_proj.get_variable('mumps')
 endif
 
-if scalapack_root == ''
+# dependency('scalapack') not yet working in Meson--cmake->meson bug within Meson, yielding long meson-log.txt
+# scalapack = dependency('scalapack', cmake_module_path : 'cmake/Modules')
+scalapack_root = get_option('SCALAPACK_ROOT')
+if scalapack_root == ''  # system
   scalapack = fc.find_library('scalapack-openmpi', required: false)
   if not scalapack.found()
-    scalapack = fc.find_library('scalapack')
+    scalapack = fc.find_library('scalapack', required: false)
+  endif
+  if not scalapack.found()
+    scalapack_proj = subproject('scalapack')
+    scalapack = declare_dependency(link_with: scalapack_proj.get_variable('scalapack_lib'))
   endif
 else
   message('searching for SCALAPACK in ' + scalapack_root)
