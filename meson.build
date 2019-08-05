@@ -115,9 +115,12 @@ pymod = import('python')
 python = pymod.find_installation('python3')
 octave = find_program('octave', required: false)
 
-matlab = find_program('matlab', required: false)
-if run_command(python, 'script_utils/meson_matlab_has_batch.py').returncode() != 0
-  matlab = disabler()
+matlab = disabler()
+if get_option('usematlab')  # buggy for Matlab < R2019a, may hang "meson setup" silently for two minutes
+  matlab = find_program('matlab', required: false)
+  if run_command(python, 'script_utils/meson_matlab_has_batch.py').returncode() != 0
+    matlab = disabler()
+  endif
 endif
 
 zenodo = {
