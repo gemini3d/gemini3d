@@ -18,10 +18,10 @@ BUILDDIR = "build"
 LOADLIMIT = "-l 4"
 
 # Library parameters
-MPIVERSION = "3.1.3"  # OpenMPI 4 doesn't seem to work with ScalaPack?
+MPIVERSION = "3.1.4"  # OpenMPI 4 doesn't seem to work with ScalaPack?
 MPIFN = f"openmpi-{MPIVERSION}.tar.bz2"
 MPIURL = f"https://download.open-mpi.org/release/open-mpi/v3.1/{MPIFN}"
-MPISHA1 = "b3c60e2bdd5a8a8e758fd741f9a5bebb84da5e81"
+MPISHA1 = "957b5547bc61fd53d08af0713d0eaa5cd6ee3d58"
 MPIDIR = f"openmpi-{MPIVERSION}"
 
 LAPACKGIT = "https://github.com/Reference-LAPACK/lapack"
@@ -247,6 +247,14 @@ if __name__ == "__main__":
     if "lapack" in P.libs:
         lapack(P.wipe, dirs)
     if "scalapack" in P.libs:
-        scalapack(P.wipe, dirs)
+        print(
+            'Scalapack is built seamlessly during "meson build", you do not need to compile here.'
+        )
+        if input('if you still wish to compile scalapack enter "yes": ') == "yes":
+            scalapack(P.wipe, dirs)
     if "mumps" in P.libs:
-        mumps(P.wipe, dirs)
+        print(
+            'Mumps is built seamlessly during "meson build", you do not need to compile here.'
+        )
+        if input('if you still wish to compile Mumps enter "yes": ') == "yes":
+            mumps(P.wipe, dirs)

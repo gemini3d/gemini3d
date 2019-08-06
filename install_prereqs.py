@@ -19,7 +19,7 @@ def os_release() -> typing.List[str]:
 
     returns
     -------
-    'yum' or 'apt'
+    'rhel' or 'debian'
     """
     fn = Path("/etc/os-release")
     if not fn.is_file():
@@ -67,6 +67,7 @@ def main(package_manager: str):
                 "ninja-build",
                 "MUMPS-openmpi-devel",
                 "lapack-devel",
+                "blacs-openmpi-devel",
                 "scalapack-openmpi-devel",
                 "openmpi-devel",
             ],
@@ -76,8 +77,10 @@ def main(package_manager: str):
                 "ninja-build",
                 "libmumps-dev",
                 "liblapack-dev",
+                "libblacs-mpi-dev",
                 "libscalapack-mpi-dev",
                 "libopenmpi-dev",
+                "openmpi-bin",
             ],
         }
 
@@ -99,22 +102,22 @@ def main(package_manager: str):
             ).returncode:
                 raise SystemExit("installing prereqs failed.")
     elif sys.platform == "darwin":
-        pkgs = {"brew": ["gcc", "meson", "ninja", "lapack", "scalapack", "openmpi"]}
+        pkgs = {"brew": ["gcc", "ninja", "lapack", "scalapack", "openmpi"]}
         if subprocess.run(["brew", "install"] + pkgs["brew"]).returncode:
             raise SystemExit("installing prereqs failed.")
-        if subprocess.run(["brew", "tap", "dpo/openblas"]).returncode:
-            raise SystemExit("installing prereqs failed.")
-        if subprocess.run(["brew", "install", "mumps"]).returncode:
-            raise SystemExit("installing prereqs failed.")
+        # if subprocess.run(["brew", "tap", "dpo/openblas"]).returncode:
+        #    raise SystemExit("installing prereqs failed.")
+        # if subprocess.run(["brew", "install", "mumps"]).returncode:
+        #    raise SystemExit("installing prereqs failed.")
     elif sys.platform == "cygwin":
-        pkgs = ["gcc-fortran", "meson", "ninja", "liblapack-devel", "libopenmpi-devel"]
+        pkgs = ["gcc-fortran", "ninja", "liblapack-devel", "libopenmpi-devel"]
         if subprocess.run(["setup-x86_64.exe", "-P"] + pkgs).returncode:
             raise SystemExit("installing prereqs failed.")
 
-        print("use ./compile_prereqs.sh to get Scalapack and Mumps for Cygwin")
+        print("meson will automatically get Scalapack and Mumps during Gemini build")
     elif sys.platform == "win32":
         raise SystemExit(
-            "It is easiest to either use Intel compilers for Windows, or use Windows Subsystem for Linux."
+            "It is easiest to use Intel compilers for Windows, or Windows Subsystem for Linux."
         )
     else:
         raise NotImplementedError(f"unknown platform {sys.platform}")
@@ -128,3 +131,5 @@ if __name__ == "__main__":
     P = p.parse_args()
 
     main(P.package_manager)
+
+    print('If you need "meson" do "python3 -m pip install --user meson"')
