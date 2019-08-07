@@ -14,8 +14,9 @@ if(NOT realbits)
   set(realbits 64)
 endif()
 
-option(TRACE "dump variables to disk at certain locations in program" off)
+option(TRACE "dump variables to disk at certain locations in program" OFF)
 option(useglow "use NCAR GLOW instead of Fang")
+option(usematab "enable Matlab tests, which are slow and duplicate fast Octave tests" OFF)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/Modules/)
 

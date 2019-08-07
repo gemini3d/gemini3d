@@ -175,6 +175,7 @@ endfunction(matlab_compare)
 
 
 function(compare_gemini_output TESTNAME OUTDIR REFDIR REQFILE)
+# This sets up the Compare* tests
 
 #--- Python
 find_package(Python3 COMPONENTS Interpreter)
@@ -216,13 +217,15 @@ if(OctaveOK)
 endif()
 
 #--- Matlab
-if(NOT DEFINED MatlabOK)
-    find_package(Matlab COMPONENTS MAIN_PROGRAM)
-    check_matlab_source_runs("exit")
-endif()
+if(usematlab)
+  if(NOT DEFINED MatlabOK)
+      find_package(Matlab COMPONENTS MAIN_PROGRAM)
+      check_matlab_source_runs("exit")
+  endif()
 
-if (MatlabOK)
-  matlab_compare(${TESTNAME}_Matlab ${TESTDIR} ${REFDIR} ${REQFILE})
+  if(MatlabOK)
+    matlab_compare(${TESTNAME}_Matlab ${TESTDIR} ${REFDIR} ${REQFILE})
+  endif()
 endif()
 
 endfunction(compare_gemini_output)
