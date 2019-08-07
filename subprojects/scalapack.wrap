@@ -1,4 +1,4 @@
 [wrap-git]
 directory = scalapack
 url = https://github.com/scivision/scalapack.git
-revision = 20a3e33
+revision = head

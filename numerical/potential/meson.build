@@ -16,6 +16,11 @@ else
   mumps_proj = subproject('mumps')
   mumps = mumps_proj.get_variable('mumps')
 endif
+if not scalapack.found()
+  scalapack_proj = subproject('scalapack')
+  scalapack = declare_dependency(link_with: scalapack_proj.get_variable('scalapack_lib'))
+endif
+
 
 # dependency('scalapack') not yet working in Meson--cmake->meson bug within Meson, yielding long meson-log.txt
 # scalapack = dependency('scalapack', cmake_module_path : 'cmake/Modules')

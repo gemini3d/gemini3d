@@ -29,22 +29,27 @@ else
   mpi = fc.find_library('mpi', required : true, dirs : mpi_root / 'lib')
 endif
 
-mpiret = fc.run('use mpi; end', dependencies : mpi)
+mpiret = fc.run('use mpi; end', dependencies : mpi, name: 'Fortran MPI')
 if mpiret.returncode() != 0
   error('MPI does not link properly: ' + mpiret.stderr() + mpiret.stdout() + mpi_root + ' ' + mpi.name() + ' ' + mpi.version())
 endif
 
 lapack_root = get_option('LAPACK_ROOT')
 if lapack_root == ''
-  lapack = dependency('lapack')
+  lapack = dependency('lapack', required: false)
   blas = dependency('blas', required: false)
   if not blas.found()  # necessary for some systems incl. CentOS 7
-    blas = fc.find_library('blas')
+    blas = fc.find_library('blas', required: false)
   endif
 else
   message('searching for LAPACK & BLAS in ' + lapack_root)
-  lapack = fc.find_library('lapack', dirs : lapack_root)
-  lapack = fc.find_library('blas', dirs : lapack_root)
+  lapack = fc.find_library('lapack', dirs : lapack_root, required: false)
+  blas = fc.find_library('blas', dirs : lapack_root, required: false)
+endif
+if not lapack.found() or not blas.found()
+  lapack_proj = subproject('lapack')
+  lapack = lapack_proj.get_variable('lapack')
+  blas = lapack_proj.get_variable('blas')
 endif
 
 if use_hdf  # see HDF5 branch, not yet fully ready.
