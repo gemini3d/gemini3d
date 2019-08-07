@@ -6,18 +6,12 @@ git:
   depth: 25
   quiet: true
 
-env: FC=gfortran-6
+env: CC=gcc-6 FC=gfortran-6
 
 addons:
   apt:
     sources: ubuntu-toolchain-r-test
-    packages: ['gfortran-6','liblapack-dev','libmumps-dev','libopenmpi-dev']
-
-# works on osx, but Azure is faster
-#    - brew install gcc
-#    - brew install lapack openblas open-mpi scalapack
-#    - brew tap dpo/openblas
-#    - brew install mumps
+    packages: ['gcc-6', 'gfortran-6','liblapack-dev','libmumps-dev','libopenmpi-dev']
 
 before_install:
 - git clone https://github.com/mesonbuild/meson ../meson
