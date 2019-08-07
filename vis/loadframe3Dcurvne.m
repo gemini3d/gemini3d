@@ -1,7 +1,7 @@
 function ne = loadframe3Dcurvne(direc, filename)
 
-validateattributes(direc, {'char'}, {'vector'}, mfilename, 'data directory', 1)
-validateattributes(direc, {'char'}, {'vector'}, mfilename, 'data filename', 2)
+validateattr(direc, {'char'}, {'vector'}, mfilename, 'data directory', 1)
+validateattr(direc, {'char'}, {'vector'}, mfilename, 'data filename', 2)
 %% SIMULATION SIZE
 lxs = simsize(direc);
 disp(['sim grid dimensions: ',num2str(lxs)])
@@ -23,7 +23,7 @@ fclose(fid);
 if (lxs(2) == 1)    %a 2D simulations was done
   ne=squeeze(ns(:,:,:));
 %  [X3,X1]=meshgrid(x3,x1);
-else    %full 3D run 
+else    %full 3D run
 %  ne=permute(ns(:,:,:),[3,2,1]);
   ne=ns;
 %  [X2,X3,X1]=meshgrid(x2,x3,x1);

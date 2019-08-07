@@ -1,5 +1,5 @@
 variables:
-  CI: true
+  CI: "true"
   cmake_version: 3.15.1
 
 stages:
@@ -51,7 +51,7 @@ stages:
     - script: |
         sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
         sudo apt update -q
-        sudo apt install -yq --no-install-recommends gcc-6 gfortran-6 liblapack-dev libscalapack-mpi-dev libmumps-dev libopenmpi-dev openmpi-bin
+        sudo apt install -yq --no-install-recommends gcc-6 gfortran-6 liblapack-dev libscalapack-mpi-dev libmumps-dev libopenmpi-dev openmpi-bin octave
       displayName: 'Install Linux prereqs'
     - script: |
         python -m pip install cmakeutils
@@ -88,7 +88,7 @@ stages:
     - script: |
         sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
         sudo apt update -q
-        sudo apt install -yq --no-install-recommends gcc-6 gfortran-6 liblapack-dev libscalapack-mpi-dev libmumps-dev libopenmpi-dev openmpi-bin
+        sudo apt install -yq --no-install-recommends gcc-6 gfortran-6 liblapack-dev libscalapack-mpi-dev libmumps-dev libopenmpi-dev openmpi-bin octave
       displayName: 'Install Linux prereqs'
     - script: |
         git clone https://github.com/mesonbuild/meson ../meson

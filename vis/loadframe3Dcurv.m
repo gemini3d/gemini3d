@@ -1,7 +1,7 @@
 function [ne,v1,Ti,Te,J1,v2,v3,J2,J3,ns,vs1,Ts,Phitop] = loadframe3Dcurv(direc, filename)
 
-validateattributes(direc, {'char'}, {'vector'}, mfilename, 'data directory', 1)
-validateattributes(direc, {'char'}, {'vector'}, mfilename, 'data filename', 2)
+validateattr(direc, {'char'}, {'vector'}, mfilename, 'data directory', 1)
+validateattr(direc, {'char'}, {'vector'}, mfilename, 'data filename', 2)
 %% SIMULATION SIZE
 lsp=7;
 lxs = simsize(direc);
@@ -55,7 +55,7 @@ if (lxs(2) == 1)    %a 2D simulations was done
   Te=squeeze(Ts(:,:,:,lsp));
 
 %  [X3,X1]=meshgrid(x3,x1);
-else    %full 3D run 
+else    %full 3D run
 %  Jpar=permute(J1(:,:,:),[3,2,1]);
 %  Jperp2=permute(J2(:,:,:),[3,2,1]);
 %  Jperp3=permute(J3(:,:,:),[3,2,1]);

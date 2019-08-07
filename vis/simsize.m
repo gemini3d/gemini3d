@@ -1,6 +1,6 @@
 function lxs = simsize(direc)
 
-validateattributes(direc, {'char'}, {'vector'}, mfilename, 'data directory', 1)
+validateattr(direc, {'char'}, {'vector'}, mfilename, 'data directory', 1)
 
 fn = [direc,filesep,'inputs', filesep, 'simsize.dat'];
 assert(exist(fn,'file')==2, [fn,' does not exist'])

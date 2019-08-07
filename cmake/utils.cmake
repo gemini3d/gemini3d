@@ -209,7 +209,11 @@ if(NOT DEFINED OctaveOK)
     PATH_SUFFIXES bin)
 
   # https://octave.sourceforge.io/octave/function/exist.html
-  check_octave_source_runs("exit(assert(exist('validateattributes', 'file')==2))")
+  # check_octave_source_runs("exit(assert(exist('validateattributes', 'file')==2))")
+  # we made validateattr() so Octave 3.8 can work for compare_all()
+  if(Octave_EXECUTABLE)
+    set(OctaveOK ${ok} CACHE BOOL "GNU Octave is present, but version not verified.")
+  endif()
 endif()
 
 if(OctaveOK)

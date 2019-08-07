@@ -1,11 +1,11 @@
 function [ne,v1,Ti,Te,J1,v2,v3,J2,J3,Phitop] = loadframe3Dcurvavg(direc, filename)
 
-validateattributes(direc, {'char'}, {'vector'}, mfilename, 'data directory', 1)
-validateattributes(direc, {'char'}, {'vector'}, mfilename, 'data filename', 2)
+validateattr(direc, {'char'}, {'vector'}, mfilename, 'data directory', 1)
+validateattr(direc, {'char'}, {'vector'}, mfilename, 'data filename', 2)
 %% SIMULATION SIZE
 lxs = simsize(direc);
 disp(['sim grid dimensions: ',num2str(lxs)])
-%% SIMULATION GRID FILE 
+%% SIMULATION GRID FILE
 % (NOTE THAT THIS IS NOT THE ENTIRE THING - THAT NEEDS TO BE DONE WITH READGRID.M.  WE NEED THIS HERE TO DO MESHGRIDS
 %[x1, x2, x3] = simaxes(direc);
 %% SIMULATION RESULTS
@@ -60,7 +60,7 @@ elseif (lxs(3)==1)     %a 2D simuluation was done in x1,x2 with internal permuti
   Te=squeeze(Te);
 
   %[X2,X1]=meshgrid(x2,x1);
-else    %full 3D run 
+else    %full 3D run
  % disp('Detected a 3D simulation and organizing data accordingly.')
   %Jpar=permute(J1(:,:,:),[3,2,1]);
   %Jperp2=permute(J2(:,:,:),[3,2,1]);
