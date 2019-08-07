@@ -43,7 +43,7 @@ Gemini scripts used to load and check data use Python &ge; 3.5.
 These scripts are installed by:
 
 ```sh
-python -m pip install --user -e .
+python3 setup.py develop --user
 ```
 
 ### Compilers
@@ -110,7 +110,7 @@ One could run large 2D or very small 3D simulations (not exceeding a few million
 This method is tested on CentOS and Ubuntu.
 This test runs a short demo, taking about 2-5 minutes on a typical Mac / Linux laptop, from scratch.
 It assumes you have Python 3, Meson, Ninja and the appropriate compilers and libraries installed.
-Perhaps consider running `python install_prereqs.py` to get the libraries you need (assuming you have sudo access).
+Perhaps consider running `python3 install_prereqs.py` to get the libraries you need (assuming you have sudo access).
 
 1. Get GEMINI code and install prereqs
 
@@ -122,7 +122,7 @@ Perhaps consider running `python install_prereqs.py` to get the libraries you ne
 2. install Python data interfaces
 
     ```sh
-    python3 -m pip install --user -e .
+    python3 setup.py develop --user
     ```
 3. Build and test
 
@@ -173,7 +173,7 @@ ICNTL 1-4 concern print output unit and verbosity level, see MUMPS
 
 Libraries:
 
-* If you have `sudo` access, try the `python install_prereqs.py` script
+* If you have `sudo` access, try the `python3 install_prereqs.py` script
 
 
 ### self-tests
@@ -193,7 +193,7 @@ mpiexec -np 2 build/gemini_fang.bin initialize/2Dtest/config.ini /tmp/2d
 use Python to compare test simulations with reference output data:
 
 ```python
-python tests/compare_all.py /tmp/2d tests/data/zenodo2d
+python3 tests/compare_all.py /tmp/2d tests/data/zenodo2d
 ```
 
 ### OS-specific tips
@@ -203,8 +203,9 @@ python tests/compare_all.py /tmp/2d tests/data/zenodo2d
 Tested on Ubuntu 18.04 / 16.04, CentOS 7 and MacOS.
 
 If you have sudo (admin) access:
+
 ```sh
-python install_prereqs.py
+python3 install_prereqs.py
 ```
 Otherwise, ask your IT admin to install the libraries or
 [compile them yourself](https://github.com/scivision/fortran-libs)
