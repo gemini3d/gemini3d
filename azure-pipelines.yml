@@ -110,7 +110,7 @@ stages:
       condition: failed()
       artifact: LinuxMesonTestLog
 
-  - job: Meson_mumps_scalapack_subproject
+  - job: subproject_mumps_scalapack_lapack
     pool:
       vmImage: ubuntu-latest
 
@@ -122,7 +122,7 @@ stages:
     - script: |
         sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
         sudo apt update -q
-        sudo apt install -yq --no-install-recommends gfortran-6 liblapack-dev libopenmpi-dev openmpi-bin
+        sudo apt install -yq --no-install-recommends gfortran-6 libopenmpi-dev openmpi-bin
       displayName: 'Install Linux prereqs'
     - script: |
         git clone https://github.com/mesonbuild/meson ../meson

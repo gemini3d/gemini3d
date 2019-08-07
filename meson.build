@@ -1,6 +1,7 @@
 project('GEMINI', 'fortran',
   meson_version: '>=0.51.2',
-  default_options : ['default_library=static', 'buildtype=release'])
+  default_options : ['default_library=static', 'buildtype=release',
+  'libdir=gemini/lib', 'includedir=gemini/include'])
 
 real_bits = '-DREALBITS=' + get_option('realbits')
 use_glow = get_option('useglow')

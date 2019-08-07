@@ -16,10 +16,6 @@ else
   mumps_proj = subproject('mumps')
   mumps = mumps_proj.get_variable('mumps')
 endif
-if not scalapack.found()
-  scalapack_proj = subproject('scalapack')
-  scalapack = declare_dependency(link_with: scalapack_proj.get_variable('scalapack_lib'))
-endif
 
 
 # dependency('scalapack') not yet working in Meson--cmake->meson bug within Meson, yielding long meson-log.txt
@@ -30,13 +26,13 @@ if scalapack_root == ''  # system
   if not scalapack.found()
     scalapack = fc.find_library('scalapack', required: false)
   endif
-  if not scalapack.found()
-    scalapack_proj = subproject('scalapack')
-    scalapack = declare_dependency(link_with: scalapack_proj.get_variable('scalapack_lib'))
-  endif
 else
   message('searching for SCALAPACK in ' + scalapack_root)
   scalapack = fc.find_library('scalapack', dirs : scalapack_root / 'lib')
+endif
+if not scalapack.found()
+  scalapack_proj = subproject('scalapack')
+  scalapack = declare_dependency(link_with: scalapack_proj.get_variable('scalapack_lib'))
 endif
 
 blacs = fc.find_library('blacs-openmpi', required: false)
