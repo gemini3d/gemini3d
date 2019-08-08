@@ -309,7 +309,7 @@ if (t+dt/2d0>=tnext .or. t<=0d0) then
     UTsecnext=UTsecprev
 
     !Create a neutral grid, do some allocations and projections
-    call gridproj_dneu(dyn,dzn,meanlat,meanlong,neudir,.true.,x)    !set true to denote not Cartesian...
+    call gridproj_dneu(dyn,dzn,meanlat,meanlong,neudir,.true.,x)    !set true to denote Cartesian...
   end if
 
   !Read in neutral data from a file
