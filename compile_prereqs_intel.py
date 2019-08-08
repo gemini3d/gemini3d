@@ -30,34 +30,31 @@ ENV = os.environ
 
 
 def mumps(wipe: bool, dirs: typing.Dict[str, Path], buildsys: str):
-    install_lib = dirs["prefix"] / MUMPSDIR
-    source_lib = dirs["workdir"] / MUMPSDIR
-    build_lib = source_lib / BUILDDIR
+    install_dir = dirs["prefix"] / MUMPSDIR
+    source_dir = dirs["workdir"] / MUMPSDIR
+    build_dir = source_dir / BUILDDIR
 
-    update(source_lib, MUMPSGIT)
+    update(source_dir, MUMPSGIT)
 
     if buildsys == "cmake":
-        args = [
-            f"-DCMAKE_INSTALL_PREFIX={install_lib}" "-B",
-            str(build_lib),
-            "-S",
-            str(source_lib),
-        ]
-        cmake_build(args, build_lib, wipe)
+        args = [f"-DCMAKE_INSTALL_PREFIX={install_dir}"]
+        cmake_build(args, source_dir, build_dir, wipe)
     elif buildsys == "meson":
         args = [f"--prefix={dirs['prefix']}"]
-        meson_build(args, build_lib, wipe)
+        meson_build(args, source_dir, build_dir, wipe)
     else:
         raise ValueError(f"unknown build system {buildsys}")
 
 
-def cmake_build(args: typing.List[str], build_dir: Path, wipe: bool):
+def cmake_build(args: typing.List[str], source_dir: Path, build_dir: Path, wipe: bool):
     cmake = cmake_minimum_version("3.13")
     cachefile = build_dir / "CMakeCache.txt"
     if wipe and cachefile.is_file():
         cachefile.unlink()
 
-    subprocess.check_call(nice + [cmake] + args, env=ENV)
+    subprocess.check_call(
+        nice + [cmake] + args + ["-B", str(build_dir), "-S", str(source_dir)], env=ENV
+    )
 
     subprocess.check_call(
         nice + [cmake, "--build", str(build_dir), "--parallel", "--target", "install"]
@@ -68,7 +65,7 @@ def cmake_build(args: typing.List[str], build_dir: Path, wipe: bool):
     )
 
 
-def meson_build(args: typing.List[str], build_dir: Path, wipe: bool):
+def meson_build(args: typing.List[str], source_dir: Path, build_dir: Path, wipe: bool):
     meson = shutil.which("meson")
     if not meson:
         raise FileNotFoundError("Meson not found.")
@@ -76,7 +73,9 @@ def meson_build(args: typing.List[str], build_dir: Path, wipe: bool):
     if wipe and (build_dir / "ninja.build").is_file():
         args.append("--wipe")
 
-    subprocess.check_call(nice + [meson, "setup"] + args + [str(build_dir)], env=ENV)
+    subprocess.check_call(
+        nice + [meson, "setup"] + args + [str(build_dir), str(source_dir)], env=ENV
+    )
 
     for op in ("test", "install"):
         subprocess.check_call(nice + [meson, op, "-C", str(build_dir)])
