@@ -9,6 +9,8 @@ from pathlib import Path
 import pkg_resources
 from argparse import ArgumentParser
 import typing
+import sys
+import os
 from functools import lru_cache
 
 # ========= user parameters ======================
@@ -22,37 +24,62 @@ MUMPSDIR = "mumps"
 
 # ========= end of user parameters ================
 
+nice = ["nice"] if sys.platform == "linux" else []
 
-def mumps(wipe: bool, dirs: typing.Dict[str, Path]):
+ENV = os.environ
+
+
+def mumps(wipe: bool, dirs: typing.Dict[str, Path], buildsys: str):
     install_lib = dirs["prefix"] / MUMPSDIR
     source_lib = dirs["workdir"] / MUMPSDIR
     build_lib = source_lib / BUILDDIR
 
     update(source_lib, MUMPSGIT)
 
-    cmake = cmake_minimum_version("3.13")
-    cachefile = build_lib / "CMakeCache.txt"
-    if wipe and cachefile.is_file():
-        cachefile.unlink()
-
-    subprocess.check_call(
-        [
-            cmake,
-            f"-DCMAKE_INSTALL_PREFIX={install_lib}",
-            "-B",
+    if buildsys == "cmake":
+        args = [
+            f"-DCMAKE_INSTALL_PREFIX={install_lib}" "-B",
             str(build_lib),
             "-S",
             str(source_lib),
         ]
+        cmake_build(args, build_lib, wipe)
+    elif buildsys == "meson":
+        args = [f"--prefix={dirs['prefix']}"]
+        meson_build(args, build_lib, wipe)
+    else:
+        raise ValueError(f"unknown build system {buildsys}")
+
+
+def cmake_build(args: typing.List[str], build_dir: Path, wipe: bool):
+    cmake = cmake_minimum_version("3.13")
+    cachefile = build_dir / "CMakeCache.txt"
+    if wipe and cachefile.is_file():
+        cachefile.unlink()
+
+    subprocess.check_call(nice + [cmake] + args, env=ENV)
+
+    subprocess.check_call(
+        nice + [cmake, "--build", str(build_dir), "--parallel", "--target", "install"]
     )
 
     subprocess.check_call(
-        [cmake, "--build", str(build_lib), "--parallel", "--target", "install"]
+        nice + ["ctest", "--parallel", "--output-on-failure"], cwd=str(build_dir)
     )
 
-    subprocess.check_call(
-        ["ctest", "--parallel", "--output-on-failure"], cwd=str(build_lib)
-    )
+
+def meson_build(args: typing.List[str], build_dir: Path, wipe: bool):
+    meson = shutil.which("meson")
+    if not meson:
+        raise FileNotFoundError("Meson not found.")
+
+    if wipe and (build_dir / "ninja.build").is_file():
+        args.append("--wipe")
+
+    subprocess.check_call(nice + [meson, "setup"] + args + [str(build_dir)], env=ENV)
+
+    for op in ("test", "install"):
+        subprocess.check_call(nice + [meson, op, "-C", str(build_dir)])
 
 
 @lru_cache()
@@ -111,6 +138,9 @@ if __name__ == "__main__":
     p.add_argument(
         "-wipe", help="wipe before completely recompiling libs", action="store_true"
     )
+    p.add_argument(
+        "-b", "--buildsys", help="build system (meson or cmake)", default="meson"
+    )
     P = p.parse_args()
 
     dirs = {
@@ -118,4 +148,4 @@ if __name__ == "__main__":
         "workdir": Path(P.workdir).expanduser().resolve(),
     }
 
-    mumps(P.wipe, dirs)
+    mumps(P.wipe, dirs, P.buildsys)

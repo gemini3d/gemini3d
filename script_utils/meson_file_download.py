@@ -13,7 +13,10 @@ import socket
 
 
 def url_retrieve(
-    url: str, outfile: Path, hash: typing.Sequence[str] = None, overwrite: bool = False
+    url: str,
+    outfile: Path,
+    filehash: typing.Sequence[str] = None,
+    overwrite: bool = False,
 ):
     """
     Parameters
@@ -22,7 +25,7 @@ def url_retrieve(
         URL to download from
     outfile: pathlib.Path
         output filepath (including name)
-    hash: tuple of str, str
+    filehash: tuple of str, str
         hash type (md5, sha1, etc.) and hash
     overwrite: bool
         overwrite if file exists
@@ -40,15 +43,15 @@ def url_retrieve(
                 "ConnectionError: could not download {} due to {}".format(url, err)
             )
 
-    if hash:
-        if not file_checksum(outfile, hash[0], hash[1]):
+    if filehash:
+        if not file_checksum(outfile, filehash[0], filehash[1]):
             raise SystemExit("HashError: {}".format(outfile))
 
 
-def file_checksum(fn: Path, mode: str, hash: str) -> bool:
+def file_checksum(fn: Path, mode: str, filehash: str) -> bool:
     h = hashlib.new(mode)
     h.update(fn.read_bytes())
-    return h.hexdigest() == hash
+    return h.hexdigest() == filehash
 
 
 if __name__ == "__main__":

@@ -101,6 +101,10 @@ def main(package_manager: str):
                 ["sudo", "apt", "--yes", "install"] + pkgs["apt"]
             ).returncode:
                 raise SystemExit("installing prereqs failed.")
+        else:
+            raise ValueError(
+                f"I don't know package manager {package_manager}, try installing the prereqs manually"
+            )
     elif sys.platform == "darwin":
         pkgs = {"brew": ["gcc", "ninja", "lapack", "scalapack", "openmpi"]}
         if subprocess.run(["brew", "install"] + pkgs["brew"]).returncode:

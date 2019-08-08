@@ -24,7 +24,7 @@ MPIURL = f"https://download.open-mpi.org/release/open-mpi/v3.1/{MPIFN}"
 MPISHA1 = "957b5547bc61fd53d08af0713d0eaa5cd6ee3d58"
 MPIDIR = f"openmpi-{MPIVERSION}"
 
-LAPACKGIT = "https://github.com/Reference-LAPACK/lapack"
+LAPACKGIT = "https://github.com/scivision/lapack"
 LAPACKDIR = "lapack"
 
 SCALAPACKGIT = "https://github.com/scivision/scalapack"
@@ -74,106 +74,110 @@ def openmpi(wipe: bool, dirs: typing.Dict[str, Path]):
     subprocess.check_call(cmd)
 
 
-def lapack(wipe: bool, dirs: typing.Dict[str, Path]):
+def lapack(wipe: bool, dirs: typing.Dict[str, Path], buildsys: str):
     install_lib = dirs["prefix"] / LAPACKDIR
     source_lib = dirs["workdir"] / LAPACKDIR
     build_lib = source_lib / BUILDDIR
 
     update(source_lib, LAPACKGIT)
 
-    cmake = cmake_minimum_version("3.13")
-    cachefile = build_lib / "CMakeCache.txt"
-    if wipe and cachefile.is_file():
-        cachefile.unlink()
-
-    subprocess.check_call(
-        nice
-        + [
-            cmake,
+    if buildsys == "cmake":
+        args = [
             f"-DCMAKE_INSTALL_PREFIX={install_lib}",
             "-B",
             str(build_lib),
             "-S",
             str(source_lib),
-        ],
-        env=ENV,
-    )
+        ]
+        cmake_build(args, build_lib, wipe)
+    elif buildsys == "meson":
+        args = [f"--prefix={dirs['prefix']}"]
+        meson_build(args, build_lib, wipe)
+    else:
+        raise ValueError(f"unknown build system {buildsys}")
 
-    subprocess.check_call(
-        nice + [cmake, "--build", str(build_lib), "--parallel", "--target", "install"]
-    )
 
-
-def scalapack(wipe: bool, dirs: typing.Dict[str, Path]):
-    install_lib = dirs["prefix"] / SCALAPACKDIR
+def scalapack(wipe: bool, dirs: typing.Dict[str, Path], buildsys: str):
     source_lib = dirs["workdir"] / SCALAPACKDIR
     build_lib = source_lib / BUILDDIR
 
     update(source_lib, SCALAPACKGIT)
 
-    cmake = cmake_minimum_version("3.13")
-    cachefile = build_lib / "CMakeCache.txt"
-    if wipe and cachefile.is_file():
-        cachefile.unlink()
+    lib_args = [f'-DLAPACK_ROOT={dirs["prefix"] / LAPACKDIR}']
 
-    subprocess.check_call(
-        nice
-        + [
-            cmake,
-            f"-DCMAKE_INSTALL_PREFIX={install_lib}",
-            f'-DLAPACK_ROOT={Path(dirs["prefix"]).expanduser() / LAPACKDIR}',
+    if buildsys == "cmake":
+        args = [
+            f"-DCMAKE_INSTALL_PREFIX={dirs['prefix'] / SCALAPACKDIR}",
             "-B",
             str(build_lib),
             "-S",
             str(source_lib),
-        ],
-        env=ENV,
-    )
+        ]
+        cmake_build(args + lib_args, build_lib, wipe)
+    elif buildsys == "meson":
+        args = [f"--prefix={dirs['prefix']}"]
+        meson_build(args + lib_args, build_lib, wipe)
 
-    subprocess.check_call(
-        nice + [cmake, "--build", str(build_lib), "--parallel", "--target", "install"]
-    )
-
-    subprocess.check_call(
-        nice + ["ctest", "--parallel", "--output-on-failure"], cwd=str(build_lib)
-    )
+    else:
+        raise ValueError(f"unknown build system {buildsys}")
 
 
-def mumps(wipe: bool, dirs: typing.Dict[str, Path]):
+def mumps(wipe: bool, dirs: typing.Dict[str, Path], buildsys: str):
     install_lib = dirs["prefix"] / MUMPSDIR
     source_lib = dirs["workdir"] / MUMPSDIR
     build_lib = source_lib / BUILDDIR
 
-    scalapack_lib = install_lib.parent / SCALAPACKDIR
+    scalapack_lib = dirs["prefix"] / SCALAPACKDIR
+    lapack_lib = dirs["prefix"] / LAPACKDIR
 
     update(source_lib, MUMPSGIT)
 
-    cmake = cmake_minimum_version("3.13")
-    cachefile = build_lib / "CMakeCache.txt"
-    if wipe and cachefile.is_file():
-        cachefile.unlink()
+    lib_args = [f"-DSCALAPACK_ROOT={scalapack_lib}", f"-DLAPACK_ROOT={lapack_lib}"]
 
-    subprocess.check_call(
-        nice
-        + [
-            cmake,
-            f"-DCMAKE_INSTALL_PREFIX={install_lib}",
-            f"-DSCALAPACK_ROOT={scalapack_lib}",
-            "-B",
+    if buildsys == "cmake":
+        args = [
+            f"-DCMAKE_INSTALL_PREFIX={install_lib}" "-B",
             str(build_lib),
             "-S",
             str(source_lib),
-        ],
-        env=ENV,
+        ]
+        cmake_build(args + lib_args, build_lib, wipe)
+    elif buildsys == "meson":
+        args = [f"--prefix={dirs['prefix']}"]
+        meson_build(args + lib_args, build_lib, wipe)
+    else:
+        raise ValueError(f"unknown build system {buildsys}")
+
+
+def cmake_build(args: typing.List[str], build_dir: Path, wipe: bool):
+    cmake = cmake_minimum_version("3.13")
+    cachefile = build_dir / "CMakeCache.txt"
+    if wipe and cachefile.is_file():
+        cachefile.unlink()
+
+    subprocess.check_call(nice + [cmake] + args, env=ENV)
+
+    subprocess.check_call(
+        nice + [cmake, "--build", str(build_dir), "--parallel", "--target", "install"]
     )
 
     subprocess.check_call(
-        nice + [cmake, "--build", str(build_lib), "--parallel", "--target", "install"]
+        nice + ["ctest", "--parallel", "--output-on-failure"], cwd=str(build_dir)
     )
 
-    subprocess.check_call(
-        nice + ["ctest", "--parallel", "--output-on-failure"], cwd=str(build_lib)
-    )
+
+def meson_build(args: typing.List[str], build_dir: Path, wipe: bool):
+    meson = shutil.which("meson")
+    if not meson:
+        raise FileNotFoundError("Meson not found.")
+
+    if wipe and (build_dir / "ninja.build").is_file():
+        args.append("--wipe")
+
+    subprocess.check_call(nice + [meson, "setup"] + args + [str(build_dir)], env=ENV)
+
+    for op in ("test", "install"):
+        subprocess.check_call(nice + [meson, op, "-C", str(build_dir)])
 
 
 @lru_cache()
@@ -235,6 +239,9 @@ if __name__ == "__main__":
     p.add_argument(
         "-wipe", help="wipe before completely recompiling libs", action="store_true"
     )
+    p.add_argument(
+        "-b", "--buildsys", help="build system (meson or cmake)", default="meson"
+    )
     P = p.parse_args()
 
     dirs = {
@@ -245,16 +252,8 @@ if __name__ == "__main__":
     if "openmpi" in P.libs:
         openmpi(P.wipe, dirs)
     if "lapack" in P.libs:
-        lapack(P.wipe, dirs)
+        lapack(P.wipe, dirs, P.buildsys)
     if "scalapack" in P.libs:
-        print(
-            'Scalapack is built seamlessly during "meson build", you do not need to compile here.'
-        )
-        if input('if you still wish to compile scalapack enter "yes": ') == "yes":
-            scalapack(P.wipe, dirs)
+        scalapack(P.wipe, dirs, P.buildsys)
     if "mumps" in P.libs:
-        print(
-            'Mumps is built seamlessly during "meson build", you do not need to compile here.'
-        )
-        if input('if you still wish to compile Mumps enter "yes": ') == "yes":
-            mumps(P.wipe, dirs)
+        mumps(P.wipe, dirs, P.buildsys)
