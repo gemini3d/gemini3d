@@ -30,6 +30,7 @@ This file is intended to document development priorities for the GEMINI project.
 * Proper restarting will require reading in an initial potential value, as well - means that the matlab input scripts need to be fixed/updated too...
 * run + plot script...
 * X Right now MATLAB scripts assume you specify the geographic center of the grid *in the nortern hemisphere*
+* Unit tests for some numerical solvers (elliptic, advection, diffusion, etc.)
 
 
 ## Future Code refactoring
@@ -41,9 +42,10 @@ This file is intended to document development priorities for the GEMINI project.
 * Boundary condition modules for the electrodynamics and precipitation should be removed in favor of submodules of the electrodynamics and ionization modules.  If we do this are we breaking backwards compatibility with older compilers?  Do we even care?
 * MSISmatlab is a mess, uses dmy instead of ymd and UThrs instead of UTsec - not sure what this will affect is we change...
 * X There are now numerous versions of routines corresponding to message passing in x3 vs. on a x2/x3 process grid.  Somehow the x3 routines need to be kept as they may be faster in some (hopefully unusual) situations.  Michael suggests a submodule...
-* Some modules have now become excessively large, e.g. mpimod and calculus...  These need to be organized and split up
+* X Some modules have now become excessively large, e.g. mpimod and calculus...  These need to be organized and split up
 * Handling of metric factors in the potential solves is sloppy - need to be passing into solver and used to eval. geometric terms there - would be more clear to reader...
 * elliptic solvers do not need to check for root vs. workers anymore; is done from calling functions
+* X Clean up neutral interpolation code...
 
 
 ## Coding style and standards issues
