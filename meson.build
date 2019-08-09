@@ -129,6 +129,8 @@ if get_option('usematlab')  # buggy for Matlab < R2019a, may hang "meson setup" 
   endif
 endif
 
+is_ci = run_command(python, 'script_utils/meson_get_environment_variable.py', 'CI').stdout().to_lower() == 'true'
+
 zenodo = {
   '2d_fang': {
     'url': 'https://zenodo.org/record/2520780/files/zenodo2d.zip?download=1',
@@ -161,6 +163,11 @@ mpi_np = get_option('NP')
 foreach k, v : zenodo
 
   if not use_glow and k.endswith('glow')
+    continue
+  endif
+
+  if is_ci and k.startswith('3d')
+    # save download / CPU on CI
     continue
   endif
 
