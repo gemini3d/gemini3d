@@ -203,7 +203,7 @@ if(NOT DEFINED OctaveOK)
 
   find_program(Octave_EXECUTABLE
     NAMES octave-cli octave
-    DOC "GNU Octave >= 4.0"
+    DOC "GNU Octave"
     PATHS ${Octave_ROOT}
     HINTS ${_octpath}
     PATH_SUFFIXES bin)
@@ -212,7 +212,8 @@ if(NOT DEFINED OctaveOK)
   # check_octave_source_runs("exit(assert(exist('validateattributes', 'file')==2))")
   # we made validateattr() so Octave 3.8 can work for compare_all()
   if(Octave_EXECUTABLE)
-    set(OctaveOK ${ok} CACHE BOOL "GNU Octave is present, but version not verified.")
+    message(STATUS "Using GNU Octave ${Octave_EXECUTABLE} for testing")
+    set(OctaveOK true CACHE BOOL "GNU Octave is present.")
   endif()
 endif()
 
@@ -221,15 +222,13 @@ if(OctaveOK)
 endif()
 
 #--- Matlab
-if(usematlab)
-  if(NOT DEFINED MatlabOK)
-      find_package(Matlab COMPONENTS MAIN_PROGRAM)
-      check_matlab_source_runs("exit")
-  endif()
+if(usematlab AND NOT DEFINED MatlabOK)
+  find_package(Matlab COMPONENTS MAIN_PROGRAM)
+  check_matlab_source_runs("exit")
+endif()
 
-  if(MatlabOK)
-    matlab_compare(${TESTNAME}_Matlab ${TESTDIR} ${REFDIR} ${REQFILE})
-  endif()
+if(MatlabOK)
+  matlab_compare(${TESTNAME}_Matlab ${TESTDIR} ${REFDIR} ${REQFILE})
 endif()
 
 endfunction(compare_gemini_output)
