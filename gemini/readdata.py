@@ -6,9 +6,9 @@ import numpy as np
 from pathlib import Path
 from datetime import datetime, timedelta
 import typing
-import xarray
 from functools import lru_cache
 import struct
+import xarray
 
 LSP = 7
 
@@ -136,19 +136,25 @@ def loadframe3d_curvavg(fn: Path) -> xarray.Dataset:
     return dat
 
 
-def read4D(f, lsp: int, lxs: typing.Tuple[int, int, int]) -> np.ndarray:
+def read4D(f, lsp: int, lxs: typing.Sequence[int]) -> np.ndarray:
+    if not len(lxs) == 3:
+        raise ValueError(f"lxs must have 3 elements, you have lxs={lxs}")
 
     return np.fromfile(f, np.float64, np.prod(lxs) * lsp).reshape(
         (*lxs, lsp), order="F"
     )
 
 
-def read3D(f, lxs: typing.Tuple[int, int, int]) -> np.ndarray:
+def read3D(f, lxs: typing.Sequence[int]) -> np.ndarray:
+    if not len(lxs) == 3:
+        raise ValueError(f"lxs must have 3 elements, you have lxs={lxs}")
 
     return np.fromfile(f, np.float64, np.prod(lxs)).reshape(*lxs, order="F")
 
 
-def read2D(f, lxs: typing.Tuple[int, int]) -> np.ndarray:
+def read2D(f, lxs: typing.Sequence[int]) -> np.ndarray:
+    if not len(lxs) == 3:
+        raise ValueError(f"lxs must have 3 elements, you have lxs={lxs}")
 
     return np.fromfile(f, np.float64, np.prod(lxs[1:])).reshape(*lxs[1:], order="F")
 

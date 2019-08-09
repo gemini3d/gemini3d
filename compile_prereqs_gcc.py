@@ -156,7 +156,7 @@ def meson_build(args: typing.List[str], source_dir: Path, build_dir: Path, wipe:
     if not meson:
         raise FileNotFoundError("Meson not found.")
 
-    if wipe and (build_dir / "ninja.build").is_file():
+    if wipe and (build_dir / "build.ninja").is_file():
         args.append("--wipe")
 
     subprocess.check_call(
