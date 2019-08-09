@@ -93,10 +93,8 @@ def plot2D_cart(time: datetime, grid: dict, parm: dict, name: str, fg=None, ax=N
         parmp = fmp(x2plot, x1plot).reshape((lzp, lxp))
 
     elif grid["lx"][1] == 1:  # alt./lat. slice
-        Y3, Z3 = np.meshgrid(yp, zp * 1e3)
-
-        x1plot = Z3  # upward distance
-        x3plot = Y3 * R_EARTH  # northward distance;
+        x1plot = zp * 1e3  # upward distance
+        x3plot = yp * R_EARTH  # northward distance;
 
         # so north dist, east dist., alt.
         # slice expects the first dim. to be "y"

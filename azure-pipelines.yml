@@ -4,9 +4,8 @@ variables:
 
 stages:
 
-- stage: SyntaxChecks
+- stage: LintChecks
   jobs:
-
   - job: PEP8_MyPy_Python37
     pool:
       vmImage: ubuntu-latest
@@ -36,6 +35,41 @@ stages:
       displayName: PEP8
     - script: mypy .
       displayName: Type Check
+
+- stage: UnitTests
+  jobs:
+  - job: UnitGCC6
+    pool:
+      vmImage: ubuntu-latest
+
+    steps:
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: '3.7'
+        addToPath: true
+    - script: |
+        sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+        sudo apt update -q
+        sudo apt install -yq --no-install-recommends gcc-6 gfortran-6 liblapack-dev libscalapack-mpi-dev libmumps-dev libopenmpi-dev openmpi-bin
+      displayName: 'Install Linux prereqs'
+    - script: |
+        git clone https://github.com/mesonbuild/meson ../meson
+        python -m pip install -e ../meson
+        curl -Ls https://github.com/ninja-build/ninja/releases/download/v1.9.0/ninja-linux.zip -o ninja-linux.zip
+        sudo unzip ninja-linux.zip -d /usr/local/bin/
+      displayName: 'setup Meson'
+    - script: python -m pip install -e .[tests]
+      displayName: 'Install Python dev'
+    - script: meson setup build
+      env:
+        CC: gcc-6
+        FC: gfortran-6
+      displayName: 'Meson configure'
+    - script: meson test -C build --suite unit
+      displayName: 'Meson Build and Unit test'
+    - publish: build/meson-logs/testlog.txt
+      condition: failed()
+      artifact: UnitLogGCC6
 
 - stage: IntegrationTests
   jobs:
@@ -98,8 +132,7 @@ stages:
       displayName: 'setup Meson'
     - script: python -m pip install -e .[tests]
       displayName: 'Install Python dev'
-    - script: |
-        meson setup build
+    - script: meson setup build
       env:
         CC: gcc-6
         FC: gfortran-6
@@ -134,8 +167,7 @@ stages:
       displayName: 'setup Meson'
     - script: python -m pip install -e .[tests]
       displayName: 'Install Python dev'
-    - script: |
-        meson setup build
+    - script: meson setup build
       env:
         CC: gcc-6
         FC: gfortran-6
