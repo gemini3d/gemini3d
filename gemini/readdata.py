@@ -8,7 +8,6 @@ from datetime import datetime, timedelta
 import typing
 from functools import lru_cache
 import struct
-import xarray
 
 LSP = 7
 
@@ -62,7 +61,7 @@ def readgrid(fn: Path) -> typing.Dict[str, np.ndarray]:
     return grid
 
 
-def readdata(fn: Path) -> xarray.Dataset:
+def readdata(fn: Path) -> typing.Dict[str, typing.Any]:
 
     P = readconfig(fn.parent / "inputs/config.ini")
     if P["flagoutput"] == 1:
@@ -74,64 +73,63 @@ def readdata(fn: Path) -> xarray.Dataset:
     return dat
 
 
-def loadframe3d_curv(fn: Path) -> xarray.Dataset:
+def loadframe3d_curv(fn: Path) -> typing.Dict[str, typing.Any]:
     P = readconfig(fn.parent / "inputs/config.ini")
-    grid = readgrid(fn.parent / "inputs/simgrid.dat")
-    dat = xarray.Dataset(
-        coords={"x1": grid["x1"][2:-2], "x2": grid["x2"][2:-2], "x3": grid["x3"][2:-2]}
-    )
+    #    grid = readgrid(fn.parent / "inputs/simgrid.dat")
+    #    dat = xarray.Dataset(
+    #        coords={"x1": grid["x1"][2:-2], "x2": grid["x2"][2:-2], "x3": grid["x3"][2:-2]}
+    #    )
+
+    dat: typing.Dict[str, typing.Any] = {}
 
     with fn.open("rb") as f:
         t = np.fromfile(f, np.float64, 4)
-        dat.attrs["time"] = datetime(int(t[0]), int(t[1]), int(t[2])) + timedelta(
-            hours=t[3]
-        )
+        dat["time"] = datetime(int(t[0]), int(t[1]), int(t[2])) + timedelta(hours=t[3])
 
         ns = read4D(f, LSP, P["lxs"])
-        dat["ne"] = (("x1", "x2", "x3"), ns[:, :, :, LSP - 1].squeeze())
+        dat["ne"] = [("x1", "x2", "x3"), ns[:, :, :, LSP - 1].squeeze()]
 
         vs1 = read4D(f, LSP, P["lxs"])
-        dat["v1"] = (
+        dat["v1"] = [
             ("x1", "x2", "x3"),
             (ns[:, :, :, :6] * vs1[:, :, :, :6]).sum(axis=3) / ns[:, :, :, LSP - 1],
-        )
+        ]
 
         Ts = read4D(f, LSP, P["lxs"])
-        dat["Ti"] = (
+        dat["Ti"] = [
             ("x1", "x2", "x3"),
             (ns[:, :, :, :6] * Ts[:, :, :, :6]).sum(axis=3) / ns[:, :, :, LSP - 1],
-        )
-        dat["Te"] = (("x1", "x2", "x3"), Ts[:, :, :, LSP - 1].squeeze())
+        ]
+        dat["Te"] = [("x1", "x2", "x3"), Ts[:, :, :, LSP - 1].squeeze()]
 
         for p in ("J1", "J2", "J3", "v2", "v3"):
-            dat[p] = (("x1", "x2", "x3"), read3D(f, P["lxs"]))
+            dat[p] = [("x1", "x2", "x3"), read3D(f, P["lxs"])]
 
-        dat["Phitop"] = (("x2", "x3"), read2D(f, P["lxs"]))
+        dat["Phitop"] = [("x2", "x3"), read2D(f, P["lxs"])]
 
     return dat
 
 
-def loadframe3d_curvavg(fn: Path) -> xarray.Dataset:
+def loadframe3d_curvavg(fn: Path) -> typing.Dict[str, typing.Any]:
     P = readconfig(fn.parent / "inputs/config.ini")
-    grid = readgrid(fn.parent / "inputs/simgrid.dat")
-    dat = xarray.Dataset(
-        coords={"x1": grid["x1"][2:-2], "x2": grid["x2"][2:-2], "x3": grid["x3"][2:-2]}
-    )
+    #    grid = readgrid(fn.parent / "inputs/simgrid.dat")
+    #    dat = xarray.Dataset(
+    #        coords={"x1": grid["x1"][2:-2], "x2": grid["x2"][2:-2], "x3": grid["x3"][2:-2]}
+    #    )
+    dat: typing.Dict[str, typing.Any] = {}
 
     with fn.open("rb") as f:
         t = np.fromfile(f, np.float64, 4)
-        dat.attrs["time"] = datetime(int(t[0]), int(t[1]), int(t[2])) + timedelta(
-            hours=t[3]
-        )
+        dat["time"] = datetime(int(t[0]), int(t[1]), int(t[2])) + timedelta(hours=t[3])
 
         for p in ("ne", "v1", "Ti", "Te", "J1", "J2", "J3", "v2", "v3"):
-            dat[p] = (("x1", "x2", "x3"), read3D(f, P["lxs"]))
+            dat[p] = [("x1", "x2", "x3"), read3D(f, P["lxs"])]
 
-        dat["Phitop"] = (("x2", "x3"), read2D(f, P["lxs"]))
+        dat["Phitop"] = [("x2", "x3"), read2D(f, P["lxs"])]
 
     if P["lxs"][1] == 1 or P["lxs"][2] == 1:
-        dat["Ti"] = dat["Ti"].squeeze()
-        dat["Te"] = dat["Te"].squeeze()
+        dat["Ti"][1] = dat["Ti"][1].squeeze()
+        dat["Te"][1] = dat["Te"][1].squeeze()
 
     return dat
 
@@ -188,8 +186,8 @@ def readconfig(inifn: Path) -> typing.Dict[str, typing.Any]:
     return P
 
 
-def loadframe(simdir: Path, time: datetime) -> xarray.Dataset:
-    simdir = Path(simdir).expanduser()
+def loadframe(simdir: Path, time: datetime) -> typing.Dict[str, typing.Any]:
+    simdir = Path(simdir).expanduser().resolve(strict=True)
 
     P = readconfig(simdir / "inputs/config.ini")
 

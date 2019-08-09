@@ -15,7 +15,7 @@ stages:
       inputs:
         versionSpec: '3.7'
         addToPath: true
-    - script: pip install -e .[tests,cov]
+    - script: pip install -e .[tests]
       displayName: 'Dev install'
     - script: flake8
       displayName: PEP8
@@ -30,7 +30,7 @@ stages:
       inputs:
         versionSpec: '3.6'
         addToPath: true
-    - script: pip install -e .[tests,cov]
+    - script: pip install -e .[tests]
       displayName: 'Dev install'
     - script: flake8
       displayName: PEP8

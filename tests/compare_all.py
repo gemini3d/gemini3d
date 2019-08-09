@@ -12,7 +12,12 @@ def main():
     p.add_argument("dir2")
     P = p.parse_args()
 
-    compare_all(P.dir1, P.dir2)
+    errs = compare_all(P.dir1, P.dir2)
+
+    if errs:
+        raise SystemExit(f"{errs} compare errors")
+    else:
+        print(f"OK: Gemini output comparison {P.dir1} {P.dir2}")
 
 
 if __name__ == "__main__":

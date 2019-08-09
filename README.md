@@ -314,15 +314,15 @@ Select particular tests by either specifying individual test names or "suite(s)"
 
 * run 2D tests only:
   ```sh
-  meson test -C build --suite 2d
+  meson test -C build --suite 2d_fang
   ```
 * run 3D tests only:
   ```sh
-  meson test -C build --suite 3d
+  meson test -C build --suite 3d_fang
   ```
-* run only the Python comparison of 2D output:
+* run only the Python comparison of 2D output by giving the specific test **name**:
   ```sh
-  meson test -C build Compare2d
+  meson test -C build Compare2d_fang
   ```
 
 ### Number of MPI processes
