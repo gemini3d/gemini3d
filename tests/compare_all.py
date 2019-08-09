@@ -2,7 +2,7 @@
 """
 Compare two directories of simulation outputs
 """
-from gemini.output_compare import compare_all
+import gemini.output_compare
 from argparse import ArgumentParser
 
 
@@ -12,7 +12,7 @@ def main():
     p.add_argument("dir2")
     P = p.parse_args()
 
-    errs = compare_all(P.dir1, P.dir2)
+    errs = gemini.output_compare.compare_all(P.dir1, P.dir2)
 
     if errs:
         raise SystemExit(f"{errs} compare errors")

@@ -28,8 +28,11 @@ def compare_all(dir1: Path, dir2: Path) -> int:
     % J1,J2,J3 = 1e-9
     """
 
-    dir1 = Path(dir1).expanduser()
-    dir2 = Path(dir2).expanduser()
+    dir1 = Path(dir1).expanduser().resolve(strict=True)
+    dir2 = Path(dir2).expanduser().resolve(strict=True)
+
+    if dir1.samefile(dir2):
+        raise OSError(f"compare_all inputs are the same directory: {dir1}")
 
     rtol = 1e-5
     rtolN = rtol
@@ -49,19 +52,17 @@ def compare_all(dir1: Path, dir2: Path) -> int:
     # %% TIMES OF INTEREST
     t0 = params["t0"]
     times = datetime_range(t0, t0 + params["tdur"], params["dtout"])
-    Nt = len(times)
-    if Nt <= 1:
+    if len(times) <= 1:
         raise ValueError(
             "simulation did not run long enough, must run for more than one time step"
         )
-    t1 = t0
 
     errs = 0
 
-    for it in range(Nt):
-        st = f"UTsec {times[it]}"
-        A = loadframe(dir1, t1)
-        B = loadframe(dir2, t1)
+    for i, t in enumerate(times):
+        st = f"UTsec {t}"
+        A = loadframe(dir1, t)
+        B = loadframe(dir2, t)
 
         if not np.allclose(A["ne"][1], B["ne"][1], rtolN, atolN, True):
             errs += 1
@@ -83,7 +84,7 @@ def compare_all(dir1: Path, dir2: Path) -> int:
                 logging.error(f"{k} {st}  {abs(A[k][1] - B[k][1]).max().item():.3e}")
 
         # %% assert time steps have unique output (earth always rotating...)
-        if it > 1:
+        if i > 1:
             if np.allclose(ref["ne"][1], A["ne"][1], rtol, atol):
                 errs += 1
                 logging.error(f"Ne {st} too similar to prior step")
@@ -93,20 +94,18 @@ def compare_all(dir1: Path, dir2: Path) -> int:
                     errs += 1
                     logging.error(f"{k} {st} too similar to prior step")
 
-        if it == 3:
+        if i == 3:
             for k in ("Ti", "Te"):
                 if np.allclose(ref[k][1], A[k][1], rtol, atol):
                     errs += 1
                     logging.error(f"{k} {st} too similar to prior step")
 
-        if it == 2:
+        if i == 2:
             for k in ("J1", "J2", "J3"):
                 if np.allclose(ref[k][1], A[k][1], rtol, atol):
                     errs += 1
                     logging.error(f"{k} {st} too similar to prior step")
 
         ref.update(A)
-
-        t1 += params["dtout"]
 
     return errs

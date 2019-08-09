@@ -1,15 +1,12 @@
 #!/usr/bin/env python
+"""
+plots simulation output--a simple example
+"""
 from argparse import ArgumentParser
-import concurrent.futures
 from pathlib import Path
-from copy import deepcopy
-import itertools
-import oct2py
 
-
-def frame(direc: Path, ymd, UTsec, saveplots):
-    with oct2py.Oct2Py() as octave:
-        octave.plotframe(str(direc), ymd, UTsec, saveplots)
+import gemini.readdata as grd
+import gemini.vis as vis
 
 
 def main():
@@ -31,34 +28,17 @@ def main():
     )
     p = p.parse_args()
 
-    direc = Path(p.direc).expanduser()
-    config = direc / "inputs/config.ini"
+    direc = Path(p.direc).expanduser().resolve(strict=True)
 
-    # works single-threaded, was just a first test
-    #    with oct2py.Oct2Py() as octave:
-    #       octave.plotall(p.direc, p.saveplots)
-    # %% setup
-    with oct2py.Oct2Py() as octave:
-        octave.addpath("../script_utils")
-        ymd0, UTsec0, tdur, dtout = octave.readconfig(str(config), nout=4)
+    params = grd.readconfig(direc / "inputs/config.ini")
+    t0 = params["t0"]
+    times = grd.datetime_range(t0, t0 + params["tdur"], params["dtout"])
 
-        Nt = int((UTsec0 + tdur - UTsec0) // dtout) + 1
+    grid = grd.readgrid(direc / "inputs/simgrid.dat")
 
-        ymd = deepcopy(ymd0)
-        UTsec = deepcopy(UTsec0)
-        # %% setup threading
-        ymds = []
-        UTsecs = []
-        for _ in range(Nt):
-            ymd, UTsec = octave.dateinc(dtout, ymd, UTsec, nout=2)
-            ymds.append(ymd)
-            UTsecs.append(UTsec)
-    # %% threading
-    # set max_workers as high as your PC can handle
-    with concurrent.futures.ThreadPoolExecutor(max_workers=p.max_threads) as exc:
-        exc.map(
-            frame, itertools.repeat(direc), ymds, UTsecs, itertools.repeat(p.saveplots)
-        )
+    for t in times:
+        dat = grd.loadframe(direc, t)
+        vis.plotframe(t, grid, dat)
 
 
 if __name__ == "__main__":

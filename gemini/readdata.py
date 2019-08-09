@@ -12,6 +12,31 @@ import struct
 LSP = 7
 
 
+def readdata(fn: Path) -> typing.Dict[str, typing.Any]:
+    """
+    knowing the filename for a simulation time step, read the data for that time step
+
+    Parameters
+    ----------
+    fn: pathlib.Path
+        filename for this timestep
+
+    Returns
+    -------
+    dat: dict
+        simulation outputs as numpy.ndarray
+    """
+
+    P = readconfig(fn.parent / "inputs/config.ini")
+    if P["flagoutput"] == 1:
+        dat = loadframe3d_curv(fn)
+    elif P["flagoutput"] == 2:
+        dat = loadframe3d_curvavg(fn)
+    else:
+        raise NotImplementedError("TODO: need to handle this case, file a bug report.")
+    return dat
+
+
 def datetime_range(
     start: datetime, stop: datetime, step: timedelta
 ) -> typing.List[datetime]:
@@ -38,15 +63,43 @@ def datetime_range(
 
 @lru_cache()
 def get_simsize(fn: Path) -> typing.Tuple[int, int, int]:
+    """
+    get simulation dimensions from simsize.dat
+    in the future, this would be in the .h5 HDF5 output.
+
+    Parameters
+    ----------
+    fn: pathlib.Path
+        filepath to simsize.dat
+
+    Returns
+    -------
+    size: tuple of int, int, int
+        3 integers telling simulation grid size
+    """
     return struct.unpack("III", Path(fn).expanduser().read_bytes())  # type: ignore
 
 
 def readgrid(fn: Path) -> typing.Dict[str, np.ndarray]:
+    """
+    get simulation dimensions from simgrid.dat
+    in the future, this would be in the .h5 HDF5 output.
+
+    Parameters
+    ----------
+    fn: pathlib.Path
+        filepath to simgrid.dat
+
+    Returns
+    -------
+    grid: dict
+        grid parameters
+    """
     lxs = get_simsize(fn.parent / "simsize.dat")
     lgridghost = (lxs[0] + 4) * (lxs[1] + 4) * (lxs[2] + 4)
     gridsizeghost = [lxs[0] + 4, lxs[1] + 4, lxs[2] + 4]
 
-    grid = {}
+    grid: typing.Dict[str, typing.Any] = {"lx": lxs}
     with fn.open("rb") as f:
         for i in (1, 2, 3):
             grid[f"x{i}"] = np.fromfile(f, np.float64, lxs[i - 1] + 4)
@@ -57,23 +110,45 @@ def readgrid(fn: Path) -> typing.Dict[str, np.ndarray]:
             grid[f"h{i}"] = np.fromfile(f, np.float64, lgridghost).reshape(
                 gridsizeghost
             )
+        L = [lxs[0] + 1, lxs[1], lxs[2]]
+        for i in (1, 2, 3):
+            grid[f"h{i}x1i"] = np.fromfile(f, np.float64, np.prod(L)).reshape(L)
+        L = [lxs[0], lxs[1] + 1, lxs[2]]
+        for i in (1, 2, 3):
+            grid[f"h{i}x2i"] = np.fromfile(f, np.float64, np.prod(L)).reshape(L)
+        L = [lxs[0], lxs[1], lxs[2] + 1]
+        for i in (1, 2, 3):
+            grid[f"h{i}x3i"] = np.fromfile(f, np.float64, np.prod(L)).reshape(L)
+        for i in (1, 2, 3):
+            grid[f"gx{i}"] = np.fromfile(f, np.float64, np.prod(lxs)).reshape(lxs)
+        for k in ("alt", "glat", "glon", "Bmag"):
+            grid[k] = np.fromfile(f, np.float64, np.prod(lxs)).reshape(lxs)
+        grid["Bincl"] = np.fromfile(f, np.float64, lxs[1] * lxs[2]).reshape(lxs[1:])
+        grid["nullpts"] = np.fromfile(f, np.float64, np.prod(lxs)).reshape(lxs)
+        if f.tell() == fn.stat().st_size:  # not EOF
+            return grid
+
+        L = [lxs[0], lxs[1], lxs[2], 3]
+        np.fromfile(f, np.float64, np.prod(L))  # discard
+        for i in (1, 2, 3):
+            grid[f"e{i}"] = np.fromfile(f, np.float64, np.prod(L)).reshape(L)
+        for k in ("er", "etheta", "ephi"):
+            grid[k] = np.fromfile(f, np.float64, np.prod(L)).reshape(L)
+        for k in ("r", "theta", "phi"):
+            grid[k] = np.fromfile(f, np.float64, np.prod(lxs)).reshape(lxs)
+        if f.tell() == fn.stat().st_size:  # not EOF
+            return grid
+
+        for k in ("x", "y", "z"):
+            grid[k] = np.fromfile(f, np.float64, np.prod(lxs)).reshape(lxs)
 
     return grid
 
 
-def readdata(fn: Path) -> typing.Dict[str, typing.Any]:
-
-    P = readconfig(fn.parent / "inputs/config.ini")
-    if P["flagoutput"] == 1:
-        dat = loadframe3d_curv(fn)
-    elif P["flagoutput"] == 2:
-        dat = loadframe3d_curvavg(fn)
-    else:
-        raise NotImplementedError("TODO: need to handle this case, file a bug report.")
-    return dat
-
-
 def loadframe3d_curv(fn: Path) -> typing.Dict[str, typing.Any]:
+    """
+    end users should normally use laodframe() instead
+    """
     P = readconfig(fn.parent / "inputs/config.ini")
     #    grid = readgrid(fn.parent / "inputs/simgrid.dat")
     #    dat = xarray.Dataset(
@@ -111,6 +186,14 @@ def loadframe3d_curv(fn: Path) -> typing.Dict[str, typing.Any]:
 
 
 def loadframe3d_curvavg(fn: Path) -> typing.Dict[str, typing.Any]:
+    """
+    end users should normally use laodframe() instead
+
+    Parameters
+    ----------
+    path: pathlib.Path
+        filename of this timestep of simulation output
+    """
     P = readconfig(fn.parent / "inputs/config.ini")
     #    grid = readgrid(fn.parent / "inputs/simgrid.dat")
     #    dat = xarray.Dataset(
@@ -135,6 +218,9 @@ def loadframe3d_curvavg(fn: Path) -> typing.Dict[str, typing.Any]:
 
 
 def read4D(f, lsp: int, lxs: typing.Sequence[int]) -> np.ndarray:
+    """
+    end users should normally use laodframe() instead
+    """
     if not len(lxs) == 3:
         raise ValueError(f"lxs must have 3 elements, you have lxs={lxs}")
 
@@ -144,6 +230,9 @@ def read4D(f, lsp: int, lxs: typing.Sequence[int]) -> np.ndarray:
 
 
 def read3D(f, lxs: typing.Sequence[int]) -> np.ndarray:
+    """
+    end users should normally use laodframe() instead
+    """
     if not len(lxs) == 3:
         raise ValueError(f"lxs must have 3 elements, you have lxs={lxs}")
 
@@ -151,6 +240,9 @@ def read3D(f, lxs: typing.Sequence[int]) -> np.ndarray:
 
 
 def read2D(f, lxs: typing.Sequence[int]) -> np.ndarray:
+    """
+    end users should normally use laodframe() instead
+    """
     if not len(lxs) == 3:
         raise ValueError(f"lxs must have 3 elements, you have lxs={lxs}")
 
@@ -159,6 +251,22 @@ def read2D(f, lxs: typing.Sequence[int]) -> np.ndarray:
 
 @lru_cache()
 def readconfig(inifn: Path) -> typing.Dict[str, typing.Any]:
+    """
+    read simulation input configuration from config.ini
+    Fortran reads config.ini internally
+
+    Parameters
+    ----------
+    inifn: pathlib.Path
+        config.ini path
+
+
+    Returns
+    -------
+    params: dict
+        simulation parameters from config.ini
+
+    """
     inifn = Path(inifn).expanduser().resolve(strict=True)
 
     P: typing.Dict[str, typing.Any] = {}
@@ -187,12 +295,28 @@ def readconfig(inifn: Path) -> typing.Dict[str, typing.Any]:
 
 
 def loadframe(simdir: Path, time: datetime) -> typing.Dict[str, typing.Any]:
+    """
+    This is what users should normally use.
+    load a frame of simulation data, automatically selecting the correct
+    functions based on simulation parameters
+
+    Parameters
+    ----------
+    simdir: pathlib.Path
+        top-level directory of simulation output
+    time: datetime.datetime
+        time to load from simulation output
+
+    Returns
+    -------
+    dat: dict
+        simulation output for this time step
+    """
     simdir = Path(simdir).expanduser().resolve(strict=True)
 
     P = readconfig(simdir / "inputs/config.ini")
 
-    sizefn = simdir / "inputs/simsize.dat"
-    P["lxs"] = get_simsize(sizefn)
+    P["lxs"] = get_simsize(simdir / "inputs/simsize.dat")
 
     # %% datfn
 
