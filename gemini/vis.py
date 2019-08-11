@@ -1,22 +1,35 @@
 from datetime import datetime
 import numpy as np
 import math
+from pathlib import Path
 import scipy.interpolate as interp
-from matplotlib.pyplot import figure, draw, pause
+from matplotlib.pyplot import figure
 
 R_EARTH = 6370e3
 REF_ALT = 300  # km
 
 
-def plotframe(time: datetime, grid: dict, dat: dict):
+def plotframe(
+    time: datetime,
+    grid: dict,
+    dat: dict,
+    save_dir: Path = None,
+    save_ext: str = ".png",
+    fg=None,
+):
+    """
+    if save_dir, plots will not be visible while generating to speed plot writing
+    """
     plotfun = grid2plotfun(grid)
 
     for k in ("ne", "v1", "Ti", "Te", "J1", "v2", "v3", "J2", "J3"):
-        fg = figure(k)
+        if save_dir is None:
+            fg = figure(num=k)
+        fg.clf()
         ax = fg.gca()
         plotfun(time, grid, dat[k][1].squeeze(), k, fg, ax)
-        draw()
-        pause(1)
+        if save_dir:
+            fg.savefig(save_dir / f"{k}-{time.isoformat().replace(':','')}.{save_ext}")
 
 
 def grid2plotfun(grid: dict):
@@ -38,27 +51,22 @@ def grid2plotfun(grid: dict):
     return plotfun
 
 
-def plot3D_curv_frames_long(
-    time: datetime, grid: dict, parm: dict, name: str, fg=None, ax=None
-):
+def plot3D_curv_frames_long(time: datetime, grid: dict, parm: dict, name: str, fg, ax):
     pass
 
 
-def plot2D_curv(time: datetime, grid: dict, parm: dict, name: str, fg=None, ax=None):
+def plot2D_curv(time: datetime, grid: dict, parm: dict, name: str, fg, ax):
     pass
 
 
 def plot3D_cart_frames_long_ENU(
-    time: datetime, grid: dict, parm: dict, name: str, fg=None, ax=None
+    time: datetime, grid: dict, parm: dict, name: str, fg, ax
 ):
     pass
 
 
-def plot2D_cart(time: datetime, grid: dict, parm: dict, name: str, fg=None, ax=None):
+def plot2D_cart(time: datetime, grid: dict, parm: dict, name: str, fg, ax):
 
-    if fg is None:
-        fg = figure()
-        ax = fg.gca()
     # %% SIZE OF SIMULATION
     lx1, lx2, lx3 = grid["lx"]
     inds1 = slice(2, lx1 + 2)
