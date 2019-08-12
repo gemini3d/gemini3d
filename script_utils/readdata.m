@@ -1,6 +1,7 @@
 function [t,ns,Ts,vs1,J1,J2,J3,v2,v3,Phitop]=readdata(lxs,filename)
 
 narginchk(2,2)
+validateattr(lxs, {'numeric'}, {'vector', 'numel', 3, 'positive'}, mfilename, 'grid dimensions', 1)
 validateattr(filename, {'char'}, {'vector'}, mfilename, 'data filename', 2)
 
 
