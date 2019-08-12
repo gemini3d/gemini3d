@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
 build.py makes building projects with CMake or Meson + Ninja even simpler.
 It facilitates easy testing across operating systems and compiler vendors.

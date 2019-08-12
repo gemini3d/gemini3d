@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
 Installs prereqs for Gemini program for Gfortran
 """
