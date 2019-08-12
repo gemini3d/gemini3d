@@ -129,7 +129,6 @@ def readgrid(fn: Path) -> typing.Dict[str, np.ndarray]:
             return grid
 
         L = [lxs[0], lxs[1], lxs[2], 3]
-        np.fromfile(f, np.float64, np.prod(L))  # discard
         for i in (1, 2, 3):
             grid[f"e{i}"] = np.fromfile(f, np.float64, np.prod(L)).reshape(L)
         for k in ("er", "etheta", "ephi"):
