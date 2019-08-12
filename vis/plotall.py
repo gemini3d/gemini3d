@@ -28,7 +28,7 @@ def main():
         save_dir.mkdir(parents=True, exist_ok=True)
         from matplotlib.figure import Figure
 
-        fg = Figure()
+        fg = Figure(tight_layout=True)
     else:
         save_dir = save_ext = None
         fg = None
