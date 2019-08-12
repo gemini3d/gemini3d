@@ -24,7 +24,7 @@ Meson (recommended) or CMake may be used.
 **Meson**
 
 Meson uses Ninja as a modern, faster replacement for GNU Make.
-They may be obtained via:
+Meson may be obtained via:
 
 ```sh
 conda install meson
@@ -55,6 +55,9 @@ Such compilers include:
 * Intel `ifort`: all [currently supported versions](https://software.intel.com/en-us/articles/intel-parallel-studio-xe-supported-and-unsupported-product-versions)
 * Cray `ftn`
 * IBM XL
+
+Flang and PGI compilers have almost enough Fortran 2008 support for Gemini in mid-2019.
+Let us know if you need a current version of a compiler to work.
 
 
 ### Libraries
@@ -137,7 +140,7 @@ Perhaps consider running `python3 install_prereqs.py` to get the libraries you n
     ```sh
     cmake -B build
 
-    cmake --build . --parallel
+    cmake --build build --parallel
 
     cd build
 
@@ -198,49 +201,33 @@ python3 tests/compare_all.py /tmp/2d tests/data/zenodo2d
 
 ### OS-specific tips
 
-#### Ubuntu
+Meson will automatically and seamlessly download and build the required libraries before Gemini.
+You can try `python3 install_prereqs.py` or use system-specific install commands as appropriate for your system.
 
-Tested on Ubuntu 18.04 / 16.04, CentOS 7 and MacOS.
+* Ubuntu: tested on Ubuntu 18.04 / 16.04
+* CentOS 7
 
-If you have sudo (admin) access:
+    ```sh
+    module load git openmpi
 
-```sh
-python3 install_prereqs.py
-```
-Otherwise, ask your IT admin to install the libraries or
-[compile them yourself](https://github.com/scivision/fortran-libs)
-or consider Linuxbrew.
+    module load gcc
+    export CC=gcc CXX=g++ FC=gfortran
+    ```
+* MacOS: use Homebrew to install Gfortran like:
 
-
-#### CentOS
-
-This is for CentOS 7, using "modules" for more recent libraries.
-For the unavailable modules,
-[compile them yourself](https://github.com/scivision/fortran-libs)
-```sh
-module load git mumps scalapack openmpi lapack
-
-module load gcc
-export CC=gcc CXX=g++ FC=gfortran
-```
-
-Try to compile gemini as above, then
-[build the missing libraries](https://github.com/scivision/fortran-libs).
-
-Example:
-```sh
-meson setup build -DSCALAPACK_ROOT=../lib_gcc/scalapack -DMUMPS_ROOT=../lib_gcc/mumps-5.2.1
-```
+    ```sh
+    brew install gcc openmpi ninja
+    ```
 
 ## Known limitations and issues of GEMINI
 
 1. Generating equilibrium conditions can be a bit tricky with curvilinear grids.  A low-res run can be done, but it will not necessary interpolate properly onto a finer grid due to some issue with the way the grids are made with ghost cells etc.  A workaround is to use a slightly narrower (x2) grid in the high-res run (quarter of a degree seems to work most of the time).
 2. Magnetic field calculations on an open 2D grid do not appear completely consistent with MATLAB model prototype results; although there are quite close.  This may have been related to sign errors in the FAC calculations - these tests should be retried at some point.
-3. Occasionally MUMPS will throw an error because it underestimated the amount of memory needed for a solve.  If this happens a workaround is to uncomment (or add) this line of code to the potential solver being used for your simulations:
-  ```fortran
-  mumps_par%ICNTL(14)=50
-  ```
-  If the problem persists try changing the number to 100.
+3. Occasionally MUMPS will throw an error because it underestimated the amount of memory needed for a solve.  If this happens a workaround is to add this line of code to the potential solver being used for your simulations.  If the problem persists try changing the number to 100.
+
+    ```fortran
+    mumps_par%ICNTL(14)=50
+    ```
 4. There are potentially some issues with the way the stability condition is evaluated, i.e. it is computed before the perp. drifts are solved so it is possible when using input data to overrun this especially if your target CFL number is &gt; 0.8 or so.  Some code has been added as of 8/20/2018 to throttle how much dt is allowed to change between time steps and this seems to completely fix this issue, but theoretically it could still happen; however this is probably very unlikely.
 5. Occasionally one will see edge artifacts in either the field -aligned currents or other parameters for non-periodic in x3 solves.  This may be related to the divergence calculations needed for the parallel current (under EFL formulation) and for compression calculations in the multifluid module, but this needs to be investigated further...  This do not appear to affect solutions in the interior of the grid domain and can probably be safely ignored if your region of interest is sufficiently far from the boundary (which is alway good practice anyway).
 
