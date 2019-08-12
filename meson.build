@@ -119,6 +119,10 @@ magcalc = executable('magcalc.bin', 'magcalc.f90',
 mpiexec = find_program('mpiexec')
 pymod = import('python')
 python = pymod.find_installation('python3')
+if python.language_version().version_compare('< 3.6')
+  error('Python' + python.language_version() + ' is too old, you must have at least Python 3.6. Try "conda activate" or "module load python3" or similar.')
+endif
+message('Using Python ' + python.language_version())
 octave = find_program('octave', required: false)
 
 matlab = disabler()
