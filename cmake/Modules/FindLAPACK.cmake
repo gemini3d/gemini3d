@@ -142,7 +142,7 @@ if(LAPACK95 IN_LIST LAPACK_FIND_COMPONENTS)
   else()
     return()
   endif()
-endif()
+endif(LAPACK95 IN_LIST LAPACK_FIND_COMPONENTS)
 
 pkg_check_modules(LAPACK lapack-netlib)
 if(NOT LAPACK_FOUND)
@@ -186,7 +186,7 @@ if(LAPACKE IN_LIST LAPACK_FIND_COMPONENTS)
   endif()
 
   mark_as_advanced(LAPACKE_LIBRARY LAPACKE_INCLUDE_DIR)
-endif()
+endif(LAPACKE IN_LIST LAPACK_FIND_COMPONENTS)
 
 pkg_check_modules(BLAS blas-netlib)
 if(NOT BLAS_FOUND)
@@ -222,7 +222,7 @@ if(LAPACK95_LIBRARY)
   endif()
 
   set(LAPACK_LAPACK95_FOUND true PARENT_SCOPE)
-endif()
+endif(LAPACK95_LIBRARY)
 
 
 set(LAPACK_LIBRARY ${LAPACK_LIBRARY} PARENT_SCOPE)
