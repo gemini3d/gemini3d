@@ -36,8 +36,13 @@ OR
 python3 -m pip install --user meson
 ```
 
-and [download Ninja](https://github.com/ninja-build/ninja/releases/)
+[Download Ninja](https://github.com/ninja-build/ninja/releases/)
 and put Ninja executable directory on your PATH.
+If Homebrew is used, Ninja is installed by:
+
+```sh
+brew install ninja
+```
 
 Gemini scripts used to load and check data use Python &ge; 3.5.
 These scripts are installed by:
@@ -110,7 +115,7 @@ One could run large 2D or very small 3D simulations (not exceeding a few million
 
 ## Quick start
 
-This method is tested on CentOS and Ubuntu.
+This method is tested on MacOS, CentOS and Ubuntu.
 This test runs a short demo, taking about 2-5 minutes on a typical Mac / Linux laptop, from scratch.
 It assumes you have Python 3, Meson, Ninja and the appropriate compilers and libraries installed.
 Perhaps consider running `python3 install_prereqs.py` to get the libraries you need (assuming you have sudo access).
@@ -129,6 +134,16 @@ Perhaps consider running `python3 install_prereqs.py` to get the libraries you n
     ```
 3. Build and test
 
+    If using Homebrew, you want to be sure Homebrew's GCC is used instead of AppleClang or other non-Homebrew compilers so that the Homebrew library ABIs match the compiler ABI.
+    To do this for Homebrew, or other systems where you need to specify a specific compiler, add to ~/.bashrc (assuming you have GCC 9, adjust for your GCC version & path):
+
+    ```sh
+    export CC=/usr/local/bin/gcc-9
+    export FC=/usr/local/bin/gfortran-9
+    export CXX=/usr/local/bin/g++-9
+    ```
+
+
    **Meson is recommended in general**
 
     ```sh
@@ -137,12 +152,16 @@ Perhaps consider running `python3 install_prereqs.py` to get the libraries you n
     meson test -C build
     ```
 
-    **CMake may alternatively be used***
+    **CMake may alternatively be used**
 
     ```sh
     cmake -B build
 
-    cmake --build build --parallel --target test
+    cmake --build build --parallel
+
+    cd build
+
+    ctest -V
     ```
 
     with CMake, if you desire more control over test verbosity and which tests are run, use `ctest` from the `build` directory.

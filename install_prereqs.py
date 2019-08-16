@@ -106,13 +106,10 @@ def main(package_manager: str):
                 f"I don't know package manager {package_manager}, try installing the prereqs manually"
             )
     elif sys.platform == "darwin":
-        pkgs = {"brew": ["gcc", "ninja", "lapack", "scalapack", "openmpi"]}
-        if subprocess.run(["brew", "install"] + pkgs["brew"]).returncode:
-            raise SystemExit("installing prereqs failed.")
-        # if subprocess.run(["brew", "tap", "dpo/openblas"]).returncode:
-        #    raise SystemExit("installing prereqs failed.")
-        # if subprocess.run(["brew", "install", "mumps"]).returncode:
-        #    raise SystemExit("installing prereqs failed.")
+        pkgs = {"brew": ["gcc", "make", "cmake", "ninja", "lapack", "scalapack", "openmpi"]}
+        subprocess.run(["brew", "install"] + pkgs["brew"])
+        subprocess.run(["brew", "tap", "dpo/openblas"])
+        subprocess.run(["brew", "install", "mumps"])
     elif sys.platform == "cygwin":
         pkgs = ["gcc-fortran", "ninja", "liblapack-devel", "libopenmpi-devel"]
         if subprocess.run(["setup-x86_64.exe", "-P"] + pkgs).returncode:
