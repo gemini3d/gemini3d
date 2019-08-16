@@ -129,23 +129,23 @@ Perhaps consider running `python3 install_prereqs.py` to get the libraries you n
     ```
 3. Build and test
 
+   **Meson is recommended in general**
+
     ```sh
     meson setup build
 
     meson test -C build
     ```
 
-    OR
+    **CMake may alternatively be used***
 
     ```sh
     cmake -B build
 
-    cmake --build build --parallel
-
-    cd build
-
-    ctest --output-on-error
+    cmake --build build --parallel --target test
     ```
+
+    with CMake, if you desire more control over test verbosity and which tests are run, use `ctest` from the `build` directory.
 
 
 If you get errors about libraries not found or it's using the wrong compiler, specify the compilers or libraries like:
@@ -260,7 +260,7 @@ mpiexec -np 4 build/gemini_fang.bin initialize/2Dtest/config.ini /tmp/2d
 
 Note that the output *base* directory must already exist (e.g. `/tmp/2d`).
 The source code consists of about ten module source files encapsulating various functionalities used in the model.
-A diagram all of the modules and their function is shown in figure 1; a list of module dependencies can also be found one of the example makefiles included in the repo, CMakeList.txt or meson.build.
+A diagram all of the modules and their function is shown in figure 1; a list of module dependencies can also be found one of the example makefiles included in the repo, CMakeLists.txt or meson.build.
 
 Two of the log files created are:
 
