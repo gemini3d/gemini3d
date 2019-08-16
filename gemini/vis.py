@@ -11,9 +11,9 @@ if typing.TYPE_CHECKING:
     import matplotlib.axes as mpla
     import matplotlib.figure as mplf
 
-mpl.rcParams['axes.formatter.limits'] = (-3, 4)
-mpl.rcParams['axes.formatter.useoffset'] = False
-mpl.rcParams['axes.formatter.min_exponent'] = 4
+mpl.rcParams["axes.formatter.limits"] = (-3, 4)
+mpl.rcParams["axes.formatter.useoffset"] = False
+mpl.rcParams["axes.formatter.min_exponent"] = 4
 
 R_EARTH = 6370e3
 REF_ALT = 300  # km
