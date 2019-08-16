@@ -22,7 +22,7 @@ validateattributes(outID, {'char'}, {'vector'}, mfilename, 'output filestem',7)
   %% CHECK THAT THE DIRECTORY EXISTS - IF NOT CREATE IT AND GIVE THE USER AN INDICATION OF WHAT WAS DONE
   if (~(exist(outdir,'dir')==7))
     mkdir(outdir);
-    disp(['Created: ', GetFullPath(outdir)])
+    disp(['Created: ', outdir])
   end
 
 

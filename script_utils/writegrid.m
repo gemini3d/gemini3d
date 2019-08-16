@@ -12,7 +12,7 @@ validateattributes(outdir, {'char'}, {'vector'}, mfilename,'output directory',2)
   %% MAKE THE OUTPUT DIRECTORY IF IT DOESN'T EXIST AND NOTIFY USER
   if (~(exist(outdir,'dir')==7))
     mkdir(outdir);
-    disp(['Created: ', GetFullPath(outdir)])
+    disp(['Created: ', outdir])
   end
 
 

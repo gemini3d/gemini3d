@@ -27,6 +27,14 @@ validateattr(dir2, {'char'}, {'vector'}, mfilename,'directory to compare',2)
 rtol=1e-5; rtolN=rtol; rtolT=rtol; rtolJ=rtol; rtolV=rtol;
 atol=1e-8; atolN=1e9;  atolT=100;    atolJ=1e-7;   atolV=50;
 
+%% if paths not exist, exit code 77 as GNU standard skip test indicator
+% this is meant to occur when the simutation didn't complete for some reason
+if exist(dir1, 'dir') ~= 7, fprintf(2,[dir1,' not found']), exit(77), end
+if exist(dir2, 'dir') ~= 7, fprintf(2,[dir2,' not found']), exit(77), end
+%% check that paths not the same
+% this is not a very good check. Matlab has no native way to resolve absolute paths
+% and GetFullPath.m can arbitrarily change working directory, breaking the script.
+if strcmp(dir1, dir2), error([dir1, ' and ', dir2, ' directories are the same']), end
 %% READ IN THE SIMULATION INFORMATION
 [ymd0,UTsec0,tdur,dtout] = readconfig([dir1,filesep,'inputs/config.ini']);
 %% TIMES OF INTEREST
