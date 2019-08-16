@@ -181,8 +181,6 @@ stages:
       artifact: LinuxMesonTestLog
 
   - job: MacCMake
-    # just for now--takes 5 times longer than Linux, sometimes flaky homebrew download
-    condition: False
     pool:
       vmImage: macOS-latest
 
@@ -192,17 +190,17 @@ stages:
         versionSpec: '3.7'
         addToPath: true
     - script: |
-        brew install cmake
-        brew install gcc lapack openblas open-mpi
+        brew install cmake gcc lapack open-mpi scalapack
         brew tap dpo/openblas
         brew install mumps
       displayName: 'Install library prereqs'
     - script: python -m pip install -e .[tests]
       displayName: 'Install Python dev'
-    - script: |
-        cmake -B build -DMUMPS_ROOT=/usr/local/opt/mumps/libexec/ -DSCALAPACK_ROOT=/usr/local/opt/scalapack/ -DLAPACK_ROOT=/usr/local/opt/lapack/lib/
+    - script: cmake -B build
       env:
-        FC: gfortran
+        FC: /usr/local/bin/gfortran-9
+        CC: /usr/local/bin/gcc-9
+        CXX: /usr/local/bin/g++-9
       displayName: 'CMake: Configure and Generate'
     - script: cmake --build build --parallel
       displayName: 'CMake build'
@@ -213,9 +211,7 @@ stages:
       condition: failed()
       artifact: MacCMakeTestLog
 
-  - job: MacMeson
-    # need to figure out homebrew link of gemini.bin on physical Mac
-    condition: False
+  - job: MacMesonSubprojects
     pool:
       vmImage: macOS-latest
 
@@ -225,10 +221,7 @@ stages:
         versionSpec: '3.7'
         addToPath: true
     - script: |
-        brew install ninja
-        brew install gcc lapack openblas open-mpi
-        brew tap dpo/openblas
-        brew install mumps
+        brew install ninja gcc open-mpi
       displayName: 'Install library prereqs'
     - script: |
         git clone https://github.com/mesonbuild/meson ../meson
@@ -236,9 +229,11 @@ stages:
       displayName: 'Install Meson'
     - script: python -m pip install -e .[tests]
       displayName: 'Install Python dev'
-    - script: meson setup build -DMUMPS_ROOT=/usr/local/opt/mumps/libexec/ -DSCALAPACK_ROOT=/usr/local/opt/scalapack/ -DLAPACK_ROOT=/usr/local/opt/lapack/lib/
+    - script: meson setup build
       env:
-        FC: gfortran
+        FC: /usr/local/bin/gfortran-9
+        CC: /usr/local/bin/gcc-9
+        CXX: /usr/local/bin/g++-9
       displayName: 'Meson configure'
     - script: meson test -C build --suite unit
       displayName: 'Meson build'
