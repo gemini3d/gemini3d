@@ -103,12 +103,13 @@ stages:
       displayName: 'CMake Configure and Generate'
     - script: $(CMAKE_PATH)/cmake --build build --parallel
       displayName: 'CMake build'
-    - script: $(CMAKE_PATH)/ctest -R 2d_fang --parallel --output-on-failure
-      workingDirectory: build
-      displayName: 'CTest 2D Fang'
     - publish: build/CMakeFiles/CMakeError.log
       condition: failed()
       artifact: UbuntuCMakeTestLog
+    - script: $(CMAKE_PATH)/ctest -V -R 2d_fang --parallel
+      workingDirectory: build
+      displayName: 'CTest 2D Fang'
+
 
   - job: UbuntuMeson
     pool:
@@ -181,6 +182,7 @@ stages:
       artifact: LinuxMesonTestLog
 
   - job: MacCMake
+    condition: False
     pool:
       vmImage: macOS-latest
 
@@ -190,7 +192,7 @@ stages:
         versionSpec: '3.7'
         addToPath: true
     - script: |
-        brew install cmake gcc lapack open-mpi scalapack
+        brew install cmake gcc lapack open-mpi
         brew tap dpo/openblas
         brew install mumps
       displayName: 'Install library prereqs'
@@ -204,12 +206,13 @@ stages:
       displayName: 'CMake: Configure and Generate'
     - script: cmake --build build --parallel
       displayName: 'CMake build'
-    - script: ctest -R 2d_fang --parallel --output-on-failure
-      workingDirectory: build
-      displayName: 'CTest 2D Fang'
     - publish: build/CMakeFiles/CMakeError.log
       condition: failed()
       artifact: MacCMakeTestLog
+    - script: ctest -V -R 2d_fang --parallel
+      workingDirectory: build
+      displayName: 'CTest 2D Fang'
+
 
   - job: MacMesonSubprojects
     pool:

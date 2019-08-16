@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import os
+import sys
 import argparse
 from pathlib import Path
 import numpy as np
@@ -19,6 +20,8 @@ if __name__ == "__main__":
     P = p.parse_args()
 
     max_cpu = os.cpu_count()
+    if sys.platform == "darwin":  # MacOS seems to over-report CPU
+        max_cpu /= 2
 
     size = get_simsize(P.fn)
     # print(size)

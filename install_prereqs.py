@@ -106,7 +106,7 @@ def main(package_manager: str):
                 f"I don't know package manager {package_manager}, try installing the prereqs manually"
             )
     elif sys.platform == "darwin":
-        pkgs = {"brew": ["gcc", "make", "cmake", "ninja", "lapack", "scalapack", "openmpi"]}
+        pkgs = {"brew": ["gcc", "make", "cmake", "ninja", "lapack", "openmpi"]}
         subprocess.run(["brew", "install"] + pkgs["brew"])
         subprocess.run(["brew", "tap", "dpo/openblas"])
         subprocess.run(["brew", "install", "mumps"])
