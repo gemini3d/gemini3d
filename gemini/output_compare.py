@@ -18,7 +18,7 @@ def compare_all(dir1: Path, dir2: Path, tol: typing.Dict[str, float]) -> int:
     dir2 = Path(dir2).expanduser()
 
     if not dir1.is_dir() or not dir2.is_dir():
-        print("comparison directory(s) not found: {dir1}  {dir2}", file=sys.stderr)
+        print(f"comparison directory(s) not found: {dir1}  {dir2}", file=sys.stderr)
         raise SystemExit(77)
 
     if dir1.samefile(dir2):

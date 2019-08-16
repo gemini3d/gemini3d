@@ -148,7 +148,7 @@ endfunction(setup_gemini_test)
 function(octave_compare TESTNAME OUTDIR REFDIR REQFILE)
 
 add_test(NAME ${TESTNAME}
-  COMMAND ${Octave_EXECUTABLE} --eval "exit(compare_all('${CMAKE_CURRENT_BINARY_DIR}/${OUTDIR}','${CMAKE_CURRENT_SOURCE_DIR}/${REFDIR}'))"
+  COMMAND ${Octave_EXECUTABLE} --eval "compare_all('${CMAKE_CURRENT_BINARY_DIR}/${OUTDIR}','${CMAKE_CURRENT_SOURCE_DIR}/${REFDIR}')"
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 
 set_tests_properties(${TESTNAME} PROPERTIES
@@ -209,7 +209,7 @@ if(NOT DEFINED OctaveOK)
     PATH_SUFFIXES bin)
 
   # https://octave.sourceforge.io/octave/function/exist.html
-  # check_octave_source_runs("exit(assert(exist('validateattributes', 'file')==2))")
+  # check_octave_source_runs("assert(exist('validateattributes', 'file')==2)")
   # we made validateattr() so Octave 3.8 can work for compare_all()
   if(Octave_EXECUTABLE)
     message(STATUS "Using GNU Octave ${Octave_EXECUTABLE} for testing")
