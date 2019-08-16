@@ -60,7 +60,7 @@ stages:
       displayName: 'setup Meson'
     - script: python -m pip install -e .[tests]
       displayName: 'Install Python dev'
-    - script: meson setup build
+    - script: meson setup build -Dsystem_blas=true
       env:
         CC: gcc-6
         FC: gfortran-6
@@ -132,7 +132,7 @@ stages:
       displayName: 'setup Meson'
     - script: python -m pip install -e .[tests]
       displayName: 'Install Python dev'
-    - script: meson setup build
+    - script: meson setup build -Dsystem_blas=true
       env:
         CC: gcc-6
         FC: gfortran-6

@@ -35,17 +35,23 @@ if mpiret.returncode() != 0
   error('MPI does not link properly: ' + mpiret.stderr() + mpiret.stdout() + mpi_root + ' ' + mpi.name() + ' ' + mpi.version())
 endif
 
+system_blas = get_option('system_blas')
 lapack_root = get_option('LAPACK_ROOT')
-if lapack_root == ''
-  lapack = dependency('lapack', required: false)
-  blas = dependency('blas', required: false)
-  if not blas.found()  # necessary for some systems incl. CentOS 7
-    blas = fc.find_library('blas', required: false)
+if system_blas
+  if lapack_root == ''
+    lapack = dependency('lapack', required: false)
+    blas = dependency('blas', required: false)
+    if not blas.found()  # necessary for some systems incl. CentOS 7
+      blas = fc.find_library('blas', required: false)
+    endif
+  else
+    message('searching for LAPACK & BLAS in ' + lapack_root)
+    lapack = fc.find_library('lapack', dirs : lapack_root, required: false)
+    blas = fc.find_library('blas', dirs : lapack_root, required: false)
   endif
 else
-  message('searching for LAPACK & BLAS in ' + lapack_root)
-  lapack = fc.find_library('lapack', dirs : lapack_root, required: false)
-  blas = fc.find_library('blas', dirs : lapack_root, required: false)
+  lapack = disabler()
+  blas = disabler()
 endif
 if not lapack.found() or not blas.found()
   lapack_proj = subproject('lapack')
