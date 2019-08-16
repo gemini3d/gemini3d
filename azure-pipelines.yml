@@ -106,9 +106,12 @@ stages:
     - publish: build/CMakeFiles/CMakeError.log
       condition: failed()
       artifact: UbuntuCMakeTestLog
-    - script: $(CMAKE_PATH)/ctest -V -R 2d_fang --parallel
+    - script: $(CMAKE_PATH)/ctest --output-on-failure -R Gemini2d --parallel
       workingDirectory: build
-      displayName: 'CTest 2D Fang'
+      displayName: 'CTest: Run 2D Fang'
+    - script: $(CMAKE_PATH)/ctest -V -R Compare2d
+      workingDirectory: build
+      displayName: 'CTest: Compare 2D Fang'
 
 
   - job: UbuntuMeson
@@ -209,9 +212,12 @@ stages:
     - publish: build/CMakeFiles/CMakeError.log
       condition: failed()
       artifact: MacCMakeTestLog
-    - script: ctest -V -R 2d_fang --parallel
+    - script: ctest --output-on-failure -R Gemini2d --parallel
       workingDirectory: build
-      displayName: 'CTest 2D Fang'
+      displayName: 'CTest: Run 2D Fang'
+    - script: ctest -V -R Compare2d
+      workingDirectory: build
+      displayName: 'CTest: Compare 2D Fang'
 
 
   - job: MacMesonSubprojects
