@@ -2,16 +2,15 @@
 """
 Installs prereqs for Gemini program for Intel compiler
 """
-import subprocess
 import shutil
-import logging
 from pathlib import Path
-import pkg_resources
 from argparse import ArgumentParser
 import typing
 import sys
 import os
 from functools import lru_cache
+
+from compile_prereqs_gcc import meson_build, cmake_build, update
 
 # ========= user parameters ======================
 BUILDDIR = "build"
@@ -26,110 +25,49 @@ MUMPSDIR = "mumps"
 
 nice = ["nice"] if sys.platform == "linux" else []
 
-ENV = os.environ
 
-
-def mumps(wipe: bool, dirs: typing.Dict[str, Path], buildsys: str):
+def mumps(wipe: bool, dirs: typing.Dict[str, Path], buildsys: str, args: typing.List[str]):
     install_dir = dirs["prefix"] / MUMPSDIR
     source_dir = dirs["workdir"] / MUMPSDIR
     build_dir = source_dir / BUILDDIR
 
     update(source_dir, MUMPSGIT)
 
+    env = get_compilers()
+
     if buildsys == "cmake":
-        args = [f"-DCMAKE_INSTALL_PREFIX={install_dir}"]
-        cmake_build(args, source_dir, build_dir, wipe)
+        args += [f"-DCMAKE_INSTALL_PREFIX={install_dir}"]
+        cmake_build(args, source_dir, build_dir, wipe, env)
     elif buildsys == "meson":
-        args = [f"--prefix={dirs['prefix']}"]
-        meson_build(args, source_dir, build_dir, wipe)
+        args += [f"--prefix={dirs['prefix']}"]
+        meson_build(args, source_dir, build_dir, wipe, env)
     else:
         raise ValueError(f"unknown build system {buildsys}")
 
 
-def cmake_build(args: typing.List[str], source_dir: Path, build_dir: Path, wipe: bool):
-    cmake = cmake_minimum_version("3.13")
-    cachefile = build_dir / "CMakeCache.txt"
-    if wipe and cachefile.is_file():
-        cachefile.unlink()
-
-    subprocess.check_call(
-        nice + [cmake] + args + ["-B", str(build_dir), "-S", str(source_dir)], env=ENV
-    )
-
-    subprocess.check_call(
-        nice + [cmake, "--build", str(build_dir), "--parallel", "--target", "install"]
-    )
-
-    subprocess.check_call(
-        nice + ["ctest", "--parallel", "--output-on-failure"], cwd=str(build_dir)
-    )
-
-
-def meson_build(args: typing.List[str], source_dir: Path, build_dir: Path, wipe: bool):
-    meson = shutil.which("meson")
-    if not meson:
-        raise FileNotFoundError("Meson not found.")
-
-    if wipe and (build_dir / "ninja.build").is_file():
-        args.append("--wipe")
-
-    subprocess.check_call(
-        nice + [meson, "setup"] + args + [str(build_dir), str(source_dir)], env=ENV
-    )
-
-    for op in ("test", "install"):
-        subprocess.check_call(nice + [meson, op, "-C", str(build_dir)])
-
-
 @lru_cache()
-def cmake_minimum_version(min_version: str = None) -> str:
-    """
-    if CMake is at least minimum version, return path to CMake executable
-    """
+def get_compilers() -> typing.Dict[str, str]:
 
-    cmake = shutil.which("cmake")
-    if not cmake:
-        raise FileNotFoundError("could not find CMake")
+    FC = shutil.which("ifort")
+    if not FC:
+        raise FileNotFoundError("Intel Fortran compiler ifort not found")
+    CC = 'icl' if os.name == 'nt' else 'icc'
+    CC = shutil.which(CC)
+    if not CC:
+        raise FileNotFoundError("Intel C compiler not found")
+    CXX = 'icl' if os.name == 'nt' else 'icpc'
+    CXX = shutil.which(CXX)
+    if not CXX:
+        raise FileNotFoundError("Intel C++ compiler not found")
 
-    if not min_version:
-        return cmake
-    cmake_ver = (
-        subprocess.check_output([cmake, "--version"], universal_newlines=True)
-        .split("\n")[0]
-        .split(" ")[2]
-    )
-    if pkg_resources.parse_version(cmake_ver) < pkg_resources.parse_version(
-        min_version
-    ):
-        raise ValueError(
-            f"CMake {cmake_ver} is less than minimum required {min_version}"
-        )
-
-    return cmake
-
-
-def update(path: Path, repo: str):
-    """
-    Use Git to update a local repo, or clone it if not already existing.
-
-    we use cwd= instead of "git -C" for very old Git versions that might be on your HPC.
-    """
-    GITEXE = shutil.which("git")
-
-    if not GITEXE:
-        logging.warning("Git not available, cannot check for library updates")
-        return
-
-    if path.is_dir():
-        subprocess.check_call([GITEXE, "pull"], cwd=str(path))
-    else:
-        subprocess.check_call([GITEXE, "clone", repo, str(path)])
+    env = os.environ.update({"FC": FC, "CC": CC, "CXX": CXX})
+    return env
 
 
 if __name__ == "__main__":
     p = ArgumentParser()
     p.add_argument(
-        "-prefix", help="toplevel path to install libraries under", default="~/lib_gcc"
+        "-prefix", help="toplevel path to install libraries under", default="~/lib_intel"
     )
     p.add_argument(
         "-workdir", help="toplevel path to where you keep code repos", default="~/code"
@@ -138,8 +76,9 @@ if __name__ == "__main__":
         "-wipe", help="wipe before completely recompiling libs", action="store_true"
     )
     p.add_argument(
-        "-b", "--buildsys", help="build system (meson or cmake)", default="meson"
+        "-b", "--buildsys", help="build system (meson or cmake)", default="cmake"
     )
+    p.add_argument("-a", "--args", help="-Dfoo flags to pass to CMake / Meson", nargs="+", default=[])
     P = p.parse_args()
 
     dirs = {
@@ -147,4 +86,4 @@ if __name__ == "__main__":
         "workdir": Path(P.workdir).expanduser().resolve(),
     }
 
-    mumps(P.wipe, dirs, P.buildsys)
+    mumps(P.wipe, dirs, P.buildsys, P.args)

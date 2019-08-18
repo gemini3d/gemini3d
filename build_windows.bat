@@ -1,9 +1,12 @@
-@echo off
-
 REM uses Intel compiler (ifort) on Windows.
 REM assumes you already used Intel compilers to build MUMPS.
 
+del build_intel\CMakeCache.txt
 
-REM %userprofile%\intel.bat
+cmake -B build_intel -DCMAKE_BUILD_TYPE=Debug -DMUMPS_ROOT=c:/lib_intel/mumps-5.2.1
 
-python build.py intel --arg="-DMUMPS_ROOT=d:/mumps-5.1.2"
+cmake --build build_intel --parallel
+
+cd build_intel
+
+ctest -V

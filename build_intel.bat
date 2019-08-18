@@ -1,4 +1,4 @@
-REM for Intel compiler on Windows
-@echo off
+REM uses Intel compiler (ifort) on Windows.
+REM assumes you're in Intel compiler environment
 
-python build.py intel --args="-DMUMPS_ROOT=C:\mumps-5.1.2" -test
+c:\miniconda3\python compile_prereqs_intel.py --buildsys=cmake -prefix="c:/lib_intel/mumps-5.2.1" -wipe

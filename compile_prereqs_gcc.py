@@ -37,18 +37,6 @@ MUMPSDIR = "mumps"
 
 nice = ["nice"] if sys.platform == "linux" else []
 
-FC = shutil.which("gfortran")
-if not FC:
-    raise FileNotFoundError("Gfortran not found")
-CC = shutil.which("gcc")
-if not CC:
-    raise FileNotFoundError("GCC not found")
-CXX = shutil.which("g++")
-if not CXX:
-    raise FileNotFoundError("G++ not found")
-
-ENV = os.environ.update({"FC": FC, "CC": CC, "CXX": CXX})
-
 
 def openmpi(wipe: bool, dirs: typing.Dict[str, Path]):
     from script_utils.meson_file_download import url_retrieve
@@ -60,15 +48,17 @@ def openmpi(wipe: bool, dirs: typing.Dict[str, Path]):
     url_retrieve(MPIURL, MPIFN, ("sha1", MPISHA1))
     extract_tar(MPIFN, source_dir)
 
+    env = get_compilers()
+
     cmd = nice + [
         "./configure",
         f"--prefix={install_dir}",
-        f"CC={CC}",
-        f"CXX={CXX}",
-        f"FC={FC}",
+        f"CC={env['CC']}",
+        f"CXX={env['CXX']}",
+        f"FC={env['FC']}",
     ]
 
-    subprocess.check_call(cmd, cwd=source_dir, env=ENV)
+    subprocess.check_call(cmd, cwd=source_dir, env=env)
 
     cmd = nice + ["make", "-C", str(source_dir), "-j", LOADLIMIT, "install"]
     subprocess.check_call(cmd)
@@ -83,10 +73,10 @@ def lapack(wipe: bool, dirs: typing.Dict[str, Path], buildsys: str):
 
     if buildsys == "cmake":
         args = [f"-DCMAKE_INSTALL_PREFIX={install_dir}"]
-        cmake_build(args, source_dir, build_dir, wipe)
+        cmake_build(args, source_dir, build_dir, wipe, env=get_compilers())
     elif buildsys == "meson":
         args = [f"--prefix={dirs['prefix']}"]
-        meson_build(args, source_dir, build_dir, wipe)
+        meson_build(args, source_dir, build_dir, wipe, env=get_compilers())
     else:
         raise ValueError(f"unknown build system {buildsys}")
 
@@ -101,10 +91,10 @@ def scalapack(wipe: bool, dirs: typing.Dict[str, Path], buildsys: str):
 
     if buildsys == "cmake":
         args = [f"-DCMAKE_INSTALL_PREFIX={dirs['prefix'] / SCALAPACKDIR}"]
-        cmake_build(args + lib_args, source_dir, build_dir, wipe)
+        cmake_build(args + lib_args, source_dir, build_dir, wipe, env=get_compilers())
     elif buildsys == "meson":
         args = [f"--prefix={dirs['prefix']}"]
-        meson_build(args + lib_args, source_dir, build_dir, wipe)
+        meson_build(args + lib_args, source_dir, build_dir, wipe, env=get_compilers())
 
     else:
         raise ValueError(f"unknown build system {buildsys}")
@@ -124,22 +114,22 @@ def mumps(wipe: bool, dirs: typing.Dict[str, Path], buildsys: str):
 
     if buildsys == "cmake":
         args = [f"-DCMAKE_INSTALL_PREFIX={install_dir}"]
-        cmake_build(args + lib_args, source_dir, build_dir, wipe)
+        cmake_build(args + lib_args, source_dir, build_dir, wipe, env=get_compilers())
     elif buildsys == "meson":
         args = [f"--prefix={dirs['prefix']}"]
-        meson_build(args + lib_args, source_dir, build_dir, wipe)
+        meson_build(args + lib_args, source_dir, build_dir, wipe, env=get_compilers())
     else:
         raise ValueError(f"unknown build system {buildsys}")
 
 
-def cmake_build(args: typing.List[str], source_dir: Path, build_dir: Path, wipe: bool):
+def cmake_build(args: typing.List[str], source_dir: Path, build_dir: Path, wipe: bool, env: typing.Dict[str, str]):
     cmake = cmake_minimum_version("3.13")
     cachefile = build_dir / "CMakeCache.txt"
     if wipe and cachefile.is_file():
         cachefile.unlink()
 
     subprocess.check_call(
-        nice + [cmake] + args + ["-B", str(build_dir), "-S", str(source_dir)], env=ENV
+        nice + [cmake] + args + ["-B", str(build_dir), "-S", str(source_dir), "-G", "MinGW Makefiles"], env=env
     )
 
     subprocess.check_call(
@@ -151,7 +141,7 @@ def cmake_build(args: typing.List[str], source_dir: Path, build_dir: Path, wipe:
     )
 
 
-def meson_build(args: typing.List[str], source_dir: Path, build_dir: Path, wipe: bool):
+def meson_build(args: typing.List[str], source_dir: Path, build_dir: Path, wipe: bool, env: typing.Dict[str, str]):
     meson = shutil.which("meson")
     if not meson:
         raise FileNotFoundError("Meson not found.")
@@ -160,7 +150,7 @@ def meson_build(args: typing.List[str], source_dir: Path, build_dir: Path, wipe:
         args.append("--wipe")
 
     subprocess.check_call(
-        nice + [meson, "setup"] + args + [str(build_dir), str(source_dir)], env=ENV
+        nice + [meson, "setup"] + args + [str(build_dir), str(source_dir)], env=env
     )
 
     for op in ("test", "install"):
@@ -207,9 +197,26 @@ def update(path: Path, repo: str):
         return
 
     if path.is_dir():
-        subprocess.check_call([GITEXE, "pull"], cwd=str(path))
+        subprocess.run([GITEXE, "pull"], cwd=str(path))
     else:
-        subprocess.check_call([GITEXE, "clone", repo, str(path)])
+        subprocess.run([GITEXE, "clone", repo, str(path)])
+
+
+@lru_cache()
+def get_compilers() -> typing.Dict[str, str]:
+
+    FC = shutil.which("gfortran")
+    if not FC:
+        raise FileNotFoundError("Gfortran not found")
+    CC = shutil.which("gcc")
+    if not CC:
+        raise FileNotFoundError("GCC not found")
+    CXX = shutil.which("g++")
+    if not CXX:
+        raise FileNotFoundError("G++ not found")
+
+    env = os.environ.update({"FC": FC, "CC": CC, "CXX": CXX})
+    return env
 
 
 if __name__ == "__main__":
