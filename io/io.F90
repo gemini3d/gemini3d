@@ -6,8 +6,8 @@ use, intrinsic :: iso_c_binding, only: c_int
 use phys_consts, only : kB,ms,pi,lsp,wp,lwave
 use fsutils, only: expanduser
 use std_mkdir, only: mkdir, copyfile
-use calculus
-use mpimod
+use mpimod, only: bcast_recv, bcast_send, gather_send, gather_recv,  myid, &
+  tagns, tagvs1, tagv2, tagv3, tagAur, tagTs, tagJ1, tagJ2, tagJ3
 use grid, only : gridflag,flagswap,lx1,lx2,lx3,lx2all, lx3all
 use date_formats, only: date_filename
 ! use logging, only: logger
@@ -674,8 +674,7 @@ lx2all=size(Phiall,2)
 lx3all=size(Phiall,3)
 
 
-print*, 'System sizes according to Phiall:  ',lx1,lx2all,lx3all
-
+print *, 'System sizes according to Phiall:  ',lx1,lx2all,lx3all
 
 !ONLY AVERAGE DRIFTS PERP TO B NEEDED FOR OUTPUT
 v2avg=sum(ns(1:lx1,1:lx2,1:lx3,1:lsp-1)*vs2(1:lx1,1:lx2,1:lx3,1:lsp-1),4)
@@ -719,7 +718,6 @@ recordlength=int(8,8)+int(8,8)*int(3,8)*int(lx1,8)*int(lx2all,8)*int(lx3all,8)*i
              int(8,8)*int(5,8)*int(lx1,8)*int(lx2all,8)*int(lx3all,8)+ &
              int(8,8)*int(lx2,8)*int(lx3all,8)
 print *, 'Output bit length:  ',recordlength,lx1,lx2all,lx3all,lsp
-
 
 !WRITE THE DATA
 open(newunit=u,file=filenamefull,status='replace',form='unformatted',access='stream',action='write')    !has no problem with > 2GB output files
