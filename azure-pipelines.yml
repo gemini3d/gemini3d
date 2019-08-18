@@ -65,7 +65,7 @@ stages:
         CC: gcc-6
         FC: gfortran-6
       displayName: 'Meson configure'
-    - script: meson test -C build --suite unit
+    - script: meson test -C build --suite unit --suite 2d_fang
       displayName: 'Meson Build and Unit test'
     - publish: build/meson-logs/testlog.txt
       condition: failed()
