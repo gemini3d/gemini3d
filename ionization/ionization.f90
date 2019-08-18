@@ -41,7 +41,7 @@ data Pijcoeff(8,:) /-1.29566d0, -2.10952d-1, 2.73106d-1,  -2.92752d-2/
 contains
 
 
-function photoionization(x,nn,Tn,chi,f107,f107a)
+function photoionization(x,nn,chi,f107,f107a)
 
 !------------------------------------------------------------
 !-------COMPUTE PHOTOIONIZATION RATES PER SOLOMON ET AL, 2005
@@ -49,7 +49,7 @@ function photoionization(x,nn,Tn,chi,f107,f107a)
 
 type(curvmesh), intent(in) :: x
 real(wp), dimension(:,:,:,:), intent(in) :: nn
-real(wp), dimension(:,:,:), intent(in) :: Tn
+!real(wp), dimension(:,:,:), intent(in) :: Tn
 real(wp), dimension(:,:,:), intent(in) :: chi
 real(wp), intent(in) :: f107,f107a
 
@@ -139,18 +139,22 @@ if (myid==0) then     !root
       call mpi_recv(Tninftmp,1,mpi_realprec,iid,tagTninf,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
       if (Tninf < Tninftmp) Tninf=Tninftmp
   end do
+  if (ierr /= 0) error stop 'root failed to mpi_recv Tninf'
 
   do iid=1,lid-1
     call mpi_send(Tninf,1,mpi_realprec,iid,tagTninf,MPI_COMM_WORLD,ierr)
   end do
+  if (ierr /= 0) error stop 'root failed to mpi_send Tninf'
 
   if (debug) print *, 'Exospheric temperature used for photoionization:  ',Tninf
 else                  !workders
   call mpi_send(Tninf,1,mpi_realprec,0,tagTninf,MPI_COMM_WORLD,ierr)                        !send what I think Tninf should be
+  if (ierr /= 0) error stop 'worker failed to mpi_send Tninf'
   call mpi_recv(Tninf,1,mpi_realprec,0,tagTninf,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)      !receive roots decision
+  if (ierr /= 0) error stop 'worker failed to mpi_recv Tninf'
 end if
 
-if (ierr /= 0) error stop 'failed to MPI temperature for ionization'
+
 
 !O COLUMN DENSITY
 H=kB*Tninf/mn(1)/gavg      !scalar scale height
@@ -199,7 +203,7 @@ end do
 
 
 !PRIMARY AND SECONDARY IONIZATION RATES
-photoionization=0d0
+photoionization=0
 
 !direct O+ production
 do il=1,ll
@@ -207,7 +211,7 @@ do il=1,ll
 end do
 
 !direct NO+
-photoionization(:,:,:,2)=0d0
+photoionization(:,:,:,2)=0
 
 !direct N2+
 do il=1,ll
@@ -230,17 +234,17 @@ do il=1,ll
 end do
 
 !H+ production
-photoionization(:,:,:,6)=0d0
+photoionization(:,:,:,6)=0
 
 
 !THERE SHOULD BE SOME CODE HERE TO ZERO OUT THE BELOW-GROUND ALTITUDES.
-where (photoionization<0d0)
-  photoionization=0d0
+where (photoionization<0)
+  photoionization=0
 end where
 do isp=1,lsp-1
   phototmp=photoionization(:,:,:,isp)
   where (x%nullpts>0.9 .and. x%nullpts<1.1)
-    phototmp=0d0
+    phototmp=0
   end where
   photoionization(:,:,:,isp)=phototmp
 end do

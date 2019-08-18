@@ -171,7 +171,6 @@ if (myid==0) then
   if (debug) print *, 'Completed compression substep for time step:  ',t,' in cpu_time of:  ',tfin-tstart
 end if
 
-
 !CLEAN TEMPERATURE
 call clean_param(x,3,Ts)
 
@@ -193,13 +192,11 @@ if (myid==0) then
   if (debug) print *, 'Completed energy diffusion substep for time step:  ',t,' in cpu_time of:  ',tfin-tstart
 end if
 
-
 !ZZZ - CLEAN TEMPERATURE BEFORE CONVERTING TO INTERNAL ENERGY
 call clean_param(x,3,Ts)
 do isp=1,lsp
   rhoes(:,:,:,isp)=ns(:,:,:,isp)*kB*Ts(:,:,:,isp)/(gammas(isp)-1._wp)
 end do
-
 
 !LOAD ELECTRON PRECIPITATION PATTERN
 if (flagprecfile==1) then
@@ -207,6 +204,7 @@ if (flagprecfile==1) then
 else     !no file input specified, so just call 'regular' function
   call precipBCs(t,x,W0,PhiWmWm2)
 end if
+
 
 !STIFF/BALANCED ENERGY SOURCES
 call cpu_time(tstart)
@@ -254,7 +252,9 @@ if (myid==0) then
   if (debug) print *, 'Computing photoionization for time:  ',t,' using sza range of (root only):  ', &
               minval(chi)*180._wp/pi,maxval(chi)*180._wp/pi
 end if
-Prpreciptmp=photoionization(x,nn,Tn,chi,f107,f107a)
+
+Prpreciptmp=photoionization(x,nn,chi,f107,f107a)
+
 if (myid==0) then
   if (debug) print *, 'Min/max root photoionization production rates for time:  ',t,' :  ',minval(Prpreciptmp), &
               maxval(Prpreciptmp)
@@ -267,6 +267,7 @@ Prprecip=Prprecip+Prpreciptmp
 Qeprecip=Qeprecip+Qepreciptmp
 
 call srcsEnergy(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,Pr,Lo)
+
 do isp=1,lsp
   if (isp==lsp) then
     Pr(:,:,:,lsp)=Pr(:,:,:,lsp)+Qeprecip
