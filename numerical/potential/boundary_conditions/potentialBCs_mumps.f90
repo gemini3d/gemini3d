@@ -87,18 +87,18 @@ real(wp) :: h2ref,h3ref
 
 
 !COMPUTE SOURCE/FORCING TERMS FROM BACKGROUND FIELDS, ETC.
-E01all=0d0    !do not allow a background parallel field
+E01all = 0.    !do not allow a background parallel field
 
 
 !FILE INPUT FOR THE PERPENDICULAR COMPONENTS OF THE ELECTRIC FIELD (ZONAL - X2, MERIDIONAL - X3)
-if(t+dt/2d0>=tnext) then    !need to load a new file
+if(t + dt / 2._wp >= tnext) then    !need to load a new file
   if ( .not. allocated(mlonp)) then    !need to read in the grid data from input file
     ymdprev=ymd
     UTsecprev=UTsec
     ymdnext=ymdprev
     UTsecnext=UTsecprev
 
-    fn1 = trim(E0dir) // '/simsize.dat'
+    fn1 = E0dir // '/simsize.dat'
     if (debug) print *, 'Inputting electric field data size from file:  ',fn1
     open(newunit=inunit,file=fn1,status='old',form='unformatted',access='stream')
     read(inunit) llon,llat
@@ -143,8 +143,13 @@ if(t+dt/2d0>=tnext) then    !need to load a new file
 
 
     !ALL PROCESSES NEED TO DEFINE THE POINTS THAT THEY WILL BE INTERPOLATING ONTO
-    ix2ref=lx2all/2                                         !note integer division
+    if (lx2all > 1) then ! 3D sim
+      ix2ref = lx2all/2      !note integer division
+    else
+      ix2ref = 1
+    endif
     ix3ref=lx3all/3
+
     ix1ref=minloc(abs(x%rall(:,ix2ref,ix3ref)-Re-300d3),1)    !by default the code uses 300km altitude as a reference location, using the center x2,x3 point
     allocate(mloni(lx2all*lx3all),mlati(lx2all*lx3all))
     do ix3=1,lx3all
