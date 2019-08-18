@@ -24,7 +24,7 @@ if(CMAKE_Fortran_COMPILER_ID STREQUAL Intel)
   if(CMAKE_BUILD_TYPE STREQUAL Debug)
     if(WIN32)
       list(APPEND FFLAGS /check:bounds)
-      list(APPEND FFLAGS /heap-arrays)  # stack overflow even on tiny "Test2D" case without this option
+      list(APPEND FFLAGS /heap-arrays)  # stack overflow avoid
     else()
       #list(APPEND FFLAGS -check all)
       #list(APPEND FFLAGS -debug extended -check all -heap-arrays -fpe0 -fp-stack-check)
@@ -56,7 +56,7 @@ elseif(CMAKE_Fortran_COMPILER_ID STREQUAL GNU)
   list(APPEND FFLAGS -Wall -Wpedantic -Wextra)
 
   if(CMAKE_BUILD_TYPE STREQUAL Debug)
-    list(APPEND FFLAGS -fcheck=all)
+    list(APPEND FFLAGS -Werror=array-bounds -fcheck=all)
     # list(APPEND FFLAGS -ffpe-trap=invalid,zero,overflow)#,underflow)
   else()
     list(APPEND FFLAGS -Wno-unused-dummy-argument -Wno-unused-variable -Wno-unused-function)
@@ -67,7 +67,10 @@ elseif(CMAKE_Fortran_COMPILER_ID STREQUAL GNU)
   endif()
 
 elseif(CMAKE_Fortran_COMPILER_ID STREQUAL PGI)
-
+  list(APPEND FFLAGS -Mdclchk)
+  if(CMAKE_BUILD_TYPE STREQUAL Debug)
+    list(APPEND FFLAGS -Mbounds)
+  endif()
 elseif(CMAKE_Fortran_COMPILER_ID STREQUAL Cray)
 
 elseif(CMAKE_Fortran_COMPILER_ID STREQUAL XL)

@@ -1,10 +1,10 @@
 
-if fc.get_id() == 'gcc'
+if fcid == 'gcc'
   oldflags = ['-std=legacy', '-w', '-fno-implicit-none']
-elif fc.get_id() == 'intel'
+elif fcid == 'intel'
   oldflags = '-nowarn'
-elif fc.get_id() == 'intel-cl'
-  oldflags == '/nowarn'
+elif fcid == 'intel-cl'
+  oldflags = '/nowarn'
 else
   oldflags = ['-w']
 endif

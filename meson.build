@@ -6,20 +6,39 @@ project('GEMINI', 'fortran',
 real_bits = '-DREALBITS=' + get_option('realbits')
 use_glow = get_option('useglow')
 use_hdf = get_option('HDF')
+buildtype = get_option('buildtype')
 
 fc = meson.get_compiler('fortran')
+fcid = fc.get_id()
 # -- compiler options
-if fc.get_id() == 'gcc'
+if fcid == 'gcc'
   add_project_arguments('-Wno-unused-variable', '-Wno-maybe-uninitialized', '-Wno-unused-dummy-argument', '-Wno-unused-function',
   '-fimplicit-none',
   language : 'fortran')
   if fc.version().version_compare('>=8.0')
     add_project_arguments('-std=f2018', language: 'fortran')
   endif
-elif fc.get_id() == 'intel'
+  if buildtype.contains('debug')
+    add_project_arguments('-Werror=array-bounds', '-fcheck=all', language: 'fortran')
+  endif
+elif fcid == 'intel'
   add_project_arguments('-stand', 'f18', '-warn declarations', language: 'fortran')
-elif fc.get_id() == 'intel-cl'
-   add_project_arguments('/stand:f18', '/warn:declarations', language: 'fortran')
+  if buildtype.contains('debug')
+    # -heap-arrays didn't appear to be needed on Linux?
+    add_project_arguments('-check bounds', language: 'fortran')
+  endif
+elif fcid == 'intel-cl'
+  # /fpp is necessary for any Fortran preprocessing statement with Intel ifort on Windows
+  # https://software.intel.com/en-us/fortran-compiler-developer-guide-and-reference-fpp
+   add_project_arguments('/fpp', '/stand:f18', '/warn:declarations', language: 'fortran')
+   if buildtype.contains('debug')
+    add_project_arguments('/check:bounds', '/heap-arrays', language: 'fortran')
+  endif
+elif fcid == 'pgi'
+  add_project_arguments('-Mdclchk', language: 'fortran')
+  if buildtype.contains('debug')
+    add_project_arguments('-Mbounds', language: 'fortran')
+  endif
 endif
 # need find_library to search specific dirs at this time
 mpi_root = get_option('MPI_ROOT')
