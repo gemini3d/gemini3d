@@ -3,7 +3,11 @@ REM assumes you already used Intel compilers to build MUMPS.
 
 del build_intel\CMakeCache.txt
 
-cmake -B build_intel -DCMAKE_BUILD_TYPE=Debug -DMUMPS_ROOT=c:/lib_intel/mumps-5.2.1
+set FC=ifort
+set CC=icl
+set CXX=icpc
+
+cmake -B build_intel -DCMAKE_BUILD_TYPE=Debug -DMUMPS_ROOT=c:/lib_intel/mumps-5.2.1 -DPython3_ROOT=c:/miniconda3
 
 cmake --build build_intel --parallel
 

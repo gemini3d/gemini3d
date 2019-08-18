@@ -1,10 +1,11 @@
 
 if fcid == 'gcc'
-  oldflags = ['-std=legacy', '-w', '-fno-implicit-none']
+  oldflags = ['-std=legacy', '-w', '-fno-implicit-none',
+              '-Wno-error=array-bounds', '-fcheck=no-all']
 elif fcid == 'intel'
-  oldflags = '-nowarn'
+  oldflags = ['-nowarn', '-nocheck']
 elif fcid == 'intel-cl'
-  oldflags = '/nowarn'
+  oldflags = ['/nowarn', '/nocheck']
 else
   oldflags = ['-w']
 endif
