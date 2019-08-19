@@ -20,7 +20,5 @@ diffusion = library('diffusion',
   link_with: [const, grid],
   fortran_args: real_bits)
 
-interp = library('interpolation', 'interpolation/interpolation.f90',
-  link_with: const)
-
+subdir('interpolation')
 subdir('potential')

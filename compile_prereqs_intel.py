@@ -51,11 +51,11 @@ def get_compilers() -> typing.Dict[str, str]:
     FC = shutil.which("ifort")
     if not FC:
         raise FileNotFoundError("Intel Fortran compiler ifort not found")
-    CC = 'icl' if os.name == 'nt' else 'icc'
+    CC = "icl" if os.name == "nt" else "icc"
     CC = shutil.which(CC)
     if not CC:
         raise FileNotFoundError("Intel C compiler not found")
-    CXX = 'icl' if os.name == 'nt' else 'icpc'
+    CXX = "icl" if os.name == "nt" else "icpc"
     CXX = shutil.which(CXX)
     if not CXX:
         raise FileNotFoundError("Intel C++ compiler not found")
@@ -69,16 +69,12 @@ if __name__ == "__main__":
     p.add_argument(
         "-prefix", help="toplevel path to install libraries under", default="~/lib_intel"
     )
+    p.add_argument("-workdir", help="toplevel path to where you keep code repos", default="~/code")
+    p.add_argument("-wipe", help="wipe before completely recompiling libs", action="store_true")
+    p.add_argument("-b", "--buildsys", help="build system (meson or cmake)", default="cmake")
     p.add_argument(
-        "-workdir", help="toplevel path to where you keep code repos", default="~/code"
+        "-a", "--args", help="-Dfoo flags to pass to CMake / Meson", nargs="+", default=[]
     )
-    p.add_argument(
-        "-wipe", help="wipe before completely recompiling libs", action="store_true"
-    )
-    p.add_argument(
-        "-b", "--buildsys", help="build system (meson or cmake)", default="cmake"
-    )
-    p.add_argument("-a", "--args", help="-Dfoo flags to pass to CMake / Meson", nargs="+", default=[])
     P = p.parse_args()
 
     dirs = {

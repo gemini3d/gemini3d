@@ -37,9 +37,7 @@ def readdata(fn: Path) -> typing.Dict[str, typing.Any]:
     return dat
 
 
-def datetime_range(
-    start: datetime, stop: datetime, step: timedelta
-) -> typing.List[datetime]:
+def datetime_range(start: datetime, stop: datetime, step: timedelta) -> typing.List[datetime]:
 
     """
     Generate range of datetime
@@ -107,9 +105,7 @@ def readgrid(fn: Path) -> typing.Dict[str, np.ndarray]:
             grid[f"dx{i}b"] = np.fromfile(f, np.float64, lxs[i - 1] + 3)
             grid[f"dx{i}h"] = np.fromfile(f, np.float64, lxs[i - 1])
         for i in (1, 2, 3):
-            grid[f"h{i}"] = np.fromfile(f, np.float64, lgridghost).reshape(
-                gridsizeghost
-            )
+            grid[f"h{i}"] = np.fromfile(f, np.float64, lgridghost).reshape(gridsizeghost)
         L = [lxs[0] + 1, lxs[1], lxs[2]]
         for i in (1, 2, 3):
             grid[f"h{i}x1i"] = np.fromfile(f, np.float64, np.prod(L)).reshape(L)
@@ -223,9 +219,7 @@ def read4D(f, lsp: int, lxs: typing.Sequence[int]) -> np.ndarray:
     if not len(lxs) == 3:
         raise ValueError(f"lxs must have 3 elements, you have lxs={lxs}")
 
-    return np.fromfile(f, np.float64, np.prod(lxs) * lsp).reshape(
-        (*lxs, lsp), order="F"
-    )
+    return np.fromfile(f, np.float64, np.prod(lxs) * lsp).reshape((*lxs, lsp), order="F")
 
 
 def read3D(f, lxs: typing.Sequence[int]) -> np.ndarray:

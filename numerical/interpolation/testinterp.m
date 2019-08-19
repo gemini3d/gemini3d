@@ -1,17 +1,29 @@
 function testinterp(filename)
-  fid=fopen(filename,'r');
 
-  lx1=fread(fid,1,'integer*4');
-  lx2=fread(fid,1,'integer*4');
-  x1=fread(fid,lx1,'real*8');
-  x2=fread(fid,lx2,'real*8');
-  f=fread(fid,lx1*lx2,'real*8');
-  f=reshape(f,[lx1, lx2]);
+cwd = fileparts(mfilename('fullpath'));
+addpath([cwd,filesep,'..',filesep,'..',filesep,'script_utils'])
 
-  fclose(fid);
+validateattr(filename, {'char'}, {'vector'}, mfilename,'interp file to compare',1)
 
 
-  %% PLOT
+%% if path not exist, exit code 77 as GNU standard skip test indicator
+% this is meant to occur when the simutation didn't complete for some reason
+if exist(filename, 'file') ~= 2, fprintf(2,[filename,' not found\n']), exit(77), end
+
+fid=fopen(filename,'r');
+
+lx1=fread(fid,1,'integer*4');
+lx2=fread(fid,1,'integer*4');
+x1=fread(fid,lx1,'real*8');
+x2=fread(fid,lx2,'real*8');
+f=fread(fid,lx1*lx2,'real*8');
+f=reshape(f,[lx1, lx2]);
+
+fclose(fid);
+
+
+%% PLOT
+if isinteractive
   figure
 
   if (lx2==1)
@@ -28,7 +40,7 @@ function testinterp(filename)
     ylabel(c,'f')
     title('2-D interp')
   end
-
   %print -dpng -r300 ~/testinterp.png;
+end
 
 end % function

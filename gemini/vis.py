@@ -136,12 +136,7 @@ def plot12(
 
 
 def plot13(
-    y: np.ndarray,
-    z: np.ndarray,
-    parm,
-    name: str,
-    fg: "mplf.Figure",
-    ax: "mpla.Axes" = None,
+    y: np.ndarray, z: np.ndarray, parm, name: str, fg: "mplf.Figure", ax: "mpla.Axes" = None
 ):
     if parm.ndim != 2:
         raise ValueError(f"data must have 2 dimensions, you have {parm.shape}")
@@ -226,9 +221,7 @@ def plot_interp(
         # %% CONVERT TO DISTANCE UP, EAST, NORTH
         # JUST PICK AN X3 LOCATION FOR THE MERIDIONAL SLICE PLOT,
         # AND AN ALTITUDE FOR THE LAT./LON. SLICE
-        fmp = interp.interp2d(
-            grid["x2"][inds2], grid["x1"][inds1], parm[:, :, lx3 // 2]
-        )
+        fmp = interp.interp2d(grid["x2"][inds2], grid["x1"][inds1], parm[:, :, lx3 // 2])
         # slice expects the first dim. to be "y" ("z" in the 2D case)
         parmp = fmp(x2plot, zp)
         # CONVERT ANGULAR COORDINATES TO MLAT,MLON
@@ -242,9 +235,7 @@ def plot_interp(
         parmp = interp.interpn(
             (
                 grid["x2"][inds2],
-                grid["x3"][
-                    inds3
-                ],  # this is northward distance - again backwards from yp
+                grid["x3"][inds3],  # this is northward distance - again backwards from yp
                 grid["x1"][inds1],
             ),
             values=np.transpose(parm, [2, 1, 0]),
@@ -257,8 +248,6 @@ def plot_interp(
         parmp = parmp[iy, :, :]  # must be indexed in two steps
         plot13(xp[ix], yp[iy], parmp[:, ix, 2], name, fg, axs[1])
         # %% ALT/LAT SLICE
-        fmp = interp.interp2d(
-            grid["x3"][inds3], grid["x1"][inds1], parm[:, lx2 // 2, :]
-        )
+        fmp = interp.interp2d(grid["x3"][inds3], grid["x1"][inds1], parm[:, lx2 // 2, :])
         parmp = fmp(x3plot, x1plot)
         plot13(yp[iy], zp, parmp[:, iy], name, fg, axs[2])

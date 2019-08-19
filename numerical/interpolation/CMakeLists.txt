@@ -1,11 +1,16 @@
-add_executable(test_interp1 interpolation/testinterp1.f90)
-target_link_libraries(test_interp1 interp)
+add_library(interp interpolation.f90)
+target_link_libraries(interp PRIVATE const)
+target_compile_options(interp PRIVATE ${FFLAGS})
+set_target_properties(interp PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR})
+
+add_executable(test_interp1 testinterp1.f90)
+target_link_libraries(test_interp1 PRIVATE const interp)
 target_compile_options(test_interp1 PRIVATE ${FFLAGS})
 set_target_properties(test_interp1 PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR})
 
 
-add_executable(test_interp2 interpolation/testinterp2.f90)
-target_link_libraries(test_interp2 interp)
+add_executable(test_interp2 testinterp2.f90)
+target_link_libraries(test_interp2 PRIVATE const interp)
 target_compile_options(test_interp2 PRIVATE ${FFLAGS})
 set_target_properties(test_interp2 PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR})
 

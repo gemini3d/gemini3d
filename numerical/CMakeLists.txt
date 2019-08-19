@@ -3,15 +3,7 @@ target_compile_definitions(const PRIVATE REALBITS=${realbits})
 target_compile_options(const PRIVATE ${FFLAGS})
 set_target_properties(const PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR})
 
-add_library(interp interpolation/interpolation.f90)
-target_link_libraries(interp PRIVATE const)
-target_compile_options(interp PRIVATE ${FFLAGS})
-set_target_properties(interp PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR})
-
-
-if(CMAKE_BUILD_TYPE STREQUAL Debug)
-  include(interpolation/test_interp.cmake)
-endif()
+add_subdirectory(interpolation)
 
 add_library(mpimod mpimod/mpimod.F90 mpimod/mpisend.f90 mpimod/mpirecv.f90 mpimod/mpihalo.f90)
 target_link_libraries(mpimod PRIVATE const MPI::MPI_Fortran)

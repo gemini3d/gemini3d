@@ -70,12 +70,7 @@ def _needs_wipe(fn: Path, wipe: bool) -> bool:
             if line.startswith("CMAKE_C_COMPILER:FILEPATH"):
                 cc = line.split("/")[-1].strip()  # must have strip() for junk in cache
                 if cc != compilers["CC"]:
-                    print(
-                        "regenerating due to C compiler change:",
-                        cc,
-                        "=>",
-                        compilers["CC"],
-                    )
+                    print("regenerating due to C compiler change:", cc, "=>", compilers["CC"])
                     wipe = True
                     break
             elif line.startswith("CMAKE_GENERATOR:INTERNAL"):
@@ -89,10 +84,7 @@ def _needs_wipe(fn: Path, wipe: bool) -> bool:
                     wipe = True
                     break
                 elif gen.startswith("Visual") and compilers["CC"] != "cl":
-                    print(
-                        "regenerating due to C compiler change: MSVC =>",
-                        compilers["CC"],
-                    )
+                    print("regenerating due to C compiler change: MSVC =>", compilers["CC"])
                     wipe = True
                     break
 
@@ -113,9 +105,7 @@ def cmake_setup(compilers: Dict[str, str], args: List[str], **kwargs):
     wopts += args
 
     if kwargs.get("install"):  # path specified
-        wopts.append(
-            "-DCMAKE_INSTALL_PREFIX:PATH=" + str(Path(kwargs["install"]).expanduser())
-        )
+        wopts.append("-DCMAKE_INSTALL_PREFIX:PATH=" + str(Path(kwargs["install"]).expanduser()))
 
     cachefile = BUILD / "CMakeCache.txt"
 
@@ -124,9 +114,7 @@ def cmake_setup(compilers: Dict[str, str], args: List[str], **kwargs):
         shutil.rmtree(BUILD / "CMakeFiles", ignore_errors=True)
 
     # we didn't use -S -B to be compatible with CMake < 3.12
-    ret = subprocess.run(
-        [CMAKE] + wopts + [str(SRC)], cwd=BUILD, env=os.environ.update(compilers)
-    )
+    ret = subprocess.run([CMAKE] + wopts + [str(SRC)], cwd=BUILD, env=os.environ.update(compilers))
     if ret.returncode:
         raise SystemExit(ret.returncode)
 
@@ -138,9 +126,7 @@ def cmake_setup(compilers: Dict[str, str], args: List[str], **kwargs):
     _cmake_test(kwargs.get("dotest"))
     # %% install
     if kwargs.get("install"):
-        subprocess.run(
-            [CMAKE, "--build", str(BUILD), "--parallel", "--target", "install"]
-        )
+        subprocess.run([CMAKE, "--build", str(BUILD), "--parallel", "--target", "install"])
         if ret.returncode:
             raise SystemExit(ret.returncode)
 
@@ -189,9 +175,7 @@ def meson_setup(compilers: Dict[str, str], args: List[str], **kwargs):
 
     if kwargs.get("dotest"):
         if not ret.returncode:
-            ret = subprocess.run(
-                [MESON, "test", "-C", str(BUILD)]
-            )  # type: ignore     # MyPy bug
+            ret = subprocess.run([MESON, "test", "-C", str(BUILD)])  # type: ignore     # MyPy bug
             if ret.returncode:
                 raise SystemExit(ret.returncode)
 
@@ -271,9 +255,7 @@ def msvc_params() -> Tuple[Dict[str, str], List[str]]:
     so don't be surprised if a C++11 or newer program doesn't compile.
     """
     if not shutil.which("cl"):
-        raise EnvironmentError(
-            "Must have PATH set to include MSVC cl.exe compiler bin directory"
-        )
+        raise EnvironmentError("Must have PATH set to include MSVC cl.exe compiler bin directory")
 
     compilers = {"CC": "cl", "CXX": "cl"}
 
@@ -289,9 +271,7 @@ def pgi_params() -> Tuple[Dict[str, str], List[str]]:
     pgc++ is not available on Windows at this time
     """
     if not shutil.which("pgcc") or not shutil.which("pgfortran"):
-        raise EnvironmentError(
-            "Must have PATH set to include PGI compiler bin directory"
-        )
+        raise EnvironmentError("Must have PATH set to include PGI compiler bin directory")
 
     # %% compiler variables
     compilers = {"FC": "pgfortran", "CC": "pgcc"}
@@ -306,10 +286,7 @@ def pgi_params() -> Tuple[Dict[str, str], List[str]]:
 if __name__ == "__main__":
     p = ArgumentParser()
     p.add_argument(
-        "vendor",
-        help="compiler vendor [clang, gnu, intel, msvc, pgi]",
-        nargs="?",
-        default="gnu",
+        "vendor", help="compiler vendor [clang, gnu, intel, msvc, pgi]", nargs="?", default="gnu"
     )
     p.add_argument("-wipe", help="wipe and rebuild from scratch", action="store_true")
     p.add_argument("-buildsys", help="default build system", default="cmake")
@@ -318,9 +295,7 @@ if __name__ == "__main__":
         "-debug", help="debug (-O0) instead of release (-O3) build", action="store_true"
     )
     p.add_argument("-test", help="run self-test / example", action="store_true")
-    p.add_argument(
-        "-install", help="specify full install directory e.g. ~/lib_gcc/mumps"
-    )
+    p.add_argument("-install", help="specify full install directory e.g. ~/lib_gcc/mumps")
     a = p.parse_args()
 
     if a.vendor == "clang":

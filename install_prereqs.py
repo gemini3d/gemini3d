@@ -23,10 +23,7 @@ def os_release() -> typing.List[str]:
     """
     fn = Path("/etc/os-release")
     if not fn.is_file():
-        if (
-            Path("/etc/redhat-release").is_file()
-            or Path("/etc/centos-release").is_file()
-        ):
+        if Path("/etc/redhat-release").is_file() or Path("/etc/centos-release").is_file():
             return ["rhel"]
         elif Path("/etc/debian_version").is_file():
             return ["debian"]
@@ -85,9 +82,7 @@ def main(package_manager: str):
         }
 
         if package_manager == "yum":
-            if subprocess.run(
-                ["sudo", "yum", "--assumeyes", "install"] + pkgs["yum"]
-            ).returncode:
+            if subprocess.run(["sudo", "yum", "--assumeyes", "install"] + pkgs["yum"]).returncode:
                 raise SystemExit(
                     "This script is made for personal laptops/desktops.\n"
                     "HPCs using CentOS have system-specific library setup. \n"
@@ -97,9 +92,7 @@ def main(package_manager: str):
         elif package_manager == "apt":
             if subprocess.run(["sudo", "apt", "update"]).returncode:
                 raise SystemExit("installing prereqs failed.")
-            if subprocess.run(
-                ["sudo", "apt", "--yes", "install"] + pkgs["apt"]
-            ).returncode:
+            if subprocess.run(["sudo", "apt", "--yes", "install"] + pkgs["apt"]).returncode:
                 raise SystemExit("installing prereqs failed.")
         else:
             raise ValueError(
@@ -126,9 +119,7 @@ def main(package_manager: str):
 
 if __name__ == "__main__":
     p = ArgumentParser()
-    p.add_argument(
-        "package_manager", help="specify package manager e.g. apt, yum", nargs="?"
-    )
+    p.add_argument("package_manager", help="specify package manager e.g. apt, yum", nargs="?")
     P = p.parse_args()
 
     main(P.package_manager)

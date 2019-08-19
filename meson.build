@@ -175,17 +175,13 @@ foreach k, v : zenodo
 
     matoctargs = 'compare_all("' + test_dir + '","' + v['dir'] + '")'
 
-    if matlab.found()
-      test('CompareMatlab' + k, matlab,
-        args : ['-batch', matoctargs],
-        suite : k, timeout: 60, workdir : meson.source_root() / 'tests')
-    endif
+    test('CompareMatlab' + k, matlab,
+      args : ['-batch', matoctargs],
+      suite : k, timeout: 60, workdir : meson.source_root() / 'tests')
 
-    if octave.found()
-      test('CompareOctave' + k, octave,
-        args : ['--eval', matoctargs],
-        suite : k, timeout: 60, workdir : meson.source_root() / 'tests')
-    endif
+    test('CompareOctave' + k, octave,
+      args : ['--eval', matoctargs],
+      suite : k, timeout: 60, workdir : meson.source_root() / 'tests')
   else
     warning('Compare' + k + ' skipped due to missing reference data in ' + v['dir'])
   endif

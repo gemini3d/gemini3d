@@ -9,7 +9,7 @@ if isempty(inter)
     if isoctave
       inter = isguirunning;
     else % matlab, this test below doesn't work for Octave
-	  inter = usejava('desktop');
+      inter = usejava('desktop');
     end
 end
 

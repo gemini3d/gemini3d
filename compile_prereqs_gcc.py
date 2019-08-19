@@ -122,14 +122,24 @@ def mumps(wipe: bool, dirs: typing.Dict[str, Path], buildsys: str):
         raise ValueError(f"unknown build system {buildsys}")
 
 
-def cmake_build(args: typing.List[str], source_dir: Path, build_dir: Path, wipe: bool, env: typing.Dict[str, str]):
+def cmake_build(
+    args: typing.List[str],
+    source_dir: Path,
+    build_dir: Path,
+    wipe: bool,
+    env: typing.Dict[str, str],
+):
     cmake = cmake_minimum_version("3.13")
     cachefile = build_dir / "CMakeCache.txt"
     if wipe and cachefile.is_file():
         cachefile.unlink()
 
     subprocess.check_call(
-        nice + [cmake] + args + ["-B", str(build_dir), "-S", str(source_dir), "-G", "MinGW Makefiles"], env=env
+        nice
+        + [cmake]
+        + args
+        + ["-B", str(build_dir), "-S", str(source_dir), "-G", "MinGW Makefiles"],
+        env=env,
     )
 
     subprocess.check_call(
@@ -141,7 +151,13 @@ def cmake_build(args: typing.List[str], source_dir: Path, build_dir: Path, wipe:
     )
 
 
-def meson_build(args: typing.List[str], source_dir: Path, build_dir: Path, wipe: bool, env: typing.Dict[str, str]):
+def meson_build(
+    args: typing.List[str],
+    source_dir: Path,
+    build_dir: Path,
+    wipe: bool,
+    env: typing.Dict[str, str],
+):
     meson = shutil.which("meson")
     if not meson:
         raise FileNotFoundError("Meson not found.")
@@ -174,12 +190,8 @@ def cmake_minimum_version(min_version: str = None) -> str:
         .split("\n")[0]
         .split(" ")[2]
     )
-    if pkg_resources.parse_version(cmake_ver) < pkg_resources.parse_version(
-        min_version
-    ):
-        raise ValueError(
-            f"CMake {cmake_ver} is less than minimum required {min_version}"
-        )
+    if pkg_resources.parse_version(cmake_ver) < pkg_resources.parse_version(min_version):
+        raise ValueError(f"CMake {cmake_ver} is less than minimum required {min_version}")
 
     return cmake
 
@@ -221,21 +233,11 @@ def get_compilers() -> typing.Dict[str, str]:
 
 if __name__ == "__main__":
     p = ArgumentParser()
-    p.add_argument(
-        "libs", help="libraries to compile (lapack, scalapack, mumps)", nargs="+"
-    )
-    p.add_argument(
-        "-prefix", help="toplevel path to install libraries under", default="~/lib_gcc"
-    )
-    p.add_argument(
-        "-workdir", help="toplevel path to where you keep code repos", default="~/code"
-    )
-    p.add_argument(
-        "-wipe", help="wipe before completely recompiling libs", action="store_true"
-    )
-    p.add_argument(
-        "-b", "--buildsys", help="build system (meson or cmake)", default="meson"
-    )
+    p.add_argument("libs", help="libraries to compile (lapack, scalapack, mumps)", nargs="+")
+    p.add_argument("-prefix", help="toplevel path to install libraries under", default="~/lib_gcc")
+    p.add_argument("-workdir", help="toplevel path to where you keep code repos", default="~/code")
+    p.add_argument("-wipe", help="wipe before completely recompiling libs", action="store_true")
+    p.add_argument("-b", "--buildsys", help="build system (meson or cmake)", default="meson")
     P = p.parse_args()
 
     dirs = {
