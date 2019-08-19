@@ -4,7 +4,6 @@ validateattr(direc, {'char'}, {'vector'}, mfilename, 'data directory', 1)
 validateattr(direc, {'char'}, {'vector'}, mfilename, 'data filename', 2)
 %% SIMULATION SIZE
 lxs = simsize(direc);
-disp(['sim grid dimensions: ',num2str(lxs)])
 %% SIMULATION GRID FILE
 % (NOTE THAT THIS IS NOT THE ENTIRE THING - THAT NEEDS TO BE DONE WITH READGRID.M.  WE NEED THIS HERE TO DO MESHGRIDS
 %[x1, x2, x3] = simaxes(direc);

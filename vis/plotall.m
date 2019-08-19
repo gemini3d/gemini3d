@@ -10,22 +10,25 @@ validateattributes(direc, {'char'}, {'vector'}, mfilename, 'path to data', 1)
 if nargin<2, saveplots={}; end  %'png', 'eps' or {'png', 'eps'}
 
 if nargin<3
-  plotfun=[]; 
+  plotfun=[];
 else
   validateattributes(plotfun, {'char', 'function_handle'}, {'nonempty'}, mfilename, 'plotting function',3)
 end
 
 if nargin<4
-  xg=[]; 
+  xg=[];
 else
   validateattributes(xg, {'struct'}, {'scalar'}, mfilename, 'grid structure', 4)
 end
 
 if nargin<5
-  visible = 'on'; 
+  visible = 'on';
 else
   validateattributes(visible, {'char'}, {'vector'}, mfilename, 'plot visibility: on/off', 5)
 end
+
+lxs = simsize(direc);
+disp(['sim grid dimensions: ',num2str(lxs)])
 
 
 %% NEED TO READ INPUT FILE TO GET DURATION OF SIMULATION AND START TIME
@@ -76,6 +79,6 @@ end % if saveplots
 
 %% Don't print
 if nargout==0, clear('xg'), end
-    
+
 end % function
 

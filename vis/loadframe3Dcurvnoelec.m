@@ -5,7 +5,6 @@ validateattributes(direc, {'char'}, {'vector'}, mfilename, 'data filename', 2)
 %% SIMULATION SIZE
 lsp=7;
 lxs = simsize(direc);
-disp(['sim grid dimensions: ',num2str(lxs)])
 %% SIMULATION RESULTS
 fsimres = [direc,filesep,filename];
 assert(exist(fsimres,'file')==2, [fsimres,' does not exist'])
@@ -21,15 +20,15 @@ v1=sum(ns(:,:,:,1:6).*vs1(:,:,:,1:6),4)./ns(:,:,:,lsp);
 Ts = read4D(fid, lsp, lxs);
 
 % J1 = read3D(fid, lxs);
-% 
+%
 % J2 = read3D(fid, lxs);
-% 
+%
 % J3 = read3D(fid, lxs);
-% 
+%
 % v2 = read3D(fid, lxs);
-% 
+%
 % v3 = read3D(fid, lxs);
-% 
+%
 % Phitop = read2D(fid, lxs);
 
 fclose(fid);
@@ -58,7 +57,7 @@ if (lxs(2) == 1)    %a 2D simulations was done
   Te=squeeze(Ts(:,:,:,lsp));
 
 %  [X3,X1]=meshgrid(x3,x1);
-else    %full 3D run 
+else    %full 3D run
 %  Jpar=permute(J1(:,:,:),[3,2,1]);
 %  Jperp2=permute(J2(:,:,:),[3,2,1]);
 %  Jperp3=permute(J3(:,:,:),[3,2,1]);

@@ -6,15 +6,15 @@ program gemini
 
 use phys_consts, only : lnchem, lwave, lsp, wp, debug
 use grid, only: curvmesh, grid_size,read_grid,clear_grid,lx1,lx2,lx3,lx2all,lx3all
+use io, only : read_configfile,input_plasma,create_outdir,output_plasma,create_outdir_aur,output_aur
+use mpimod, only : mpisetup, mpibreakdown, mpi_manualgrid, mpigrid, lid, myid
+use multifluid, only : fluid_adv
+use neutral, only : neutral_atmos,make_dneu,neutral_perturb,clear_dneu
+use potentialBCs_mumps, only: clear_potential_fileinput
+use potential_comm,only : electrodynamics
+use precipBCs_mod, only: make_precip_fileinput, clear_precip_fileinput
 use temporal, only : dt_comm
 use timeutils, only: dateinc
-use neutral, only : neutral_atmos,make_dneu,neutral_perturb,clear_dneu
-use io, only : read_configfile,input_plasma,create_outdir,output_plasma,create_outdir_aur,output_aur
-use potential_comm,only : electrodynamics
-use multifluid, only : fluid_adv
-use mpimod, only : mpisetup, mpibreakdown, mpi_manualgrid, mpigrid, lid, myid
-use precipBCs_mod, only: make_precip_fileinput, clear_precip_fileinput
-use potentialBCs_mumps, only: clear_potential_fileinput
 
 implicit none
 
@@ -212,7 +212,7 @@ do while (t<tdur)
     if(dt/dtprev > dtscale) then     !throttle how quickly we allow dt to increase
       dt=dtscale*dtprev
       if (myid==0) then
-        print *, 'Throttling dt to:  ',dt
+        print '(A,EN14.3)', 'Throttling dt to:  ',dt
       end if
     end if
   end if
@@ -269,7 +269,7 @@ do while (t<tdur)
   it=it+1; t=t+dt;
   if (myid==0 .and. debug) print *, 'Moving on to time step (in sec):  ',t,'; end time of simulation:  ',tdur
   call dateinc(dt,ymd,UTsec)
-  if (myid==0) print *, 'Current date',ymd,'Current UT time:  ',UTsec
+  if (myid==0) print '(A,I4,A1,I0.2,A1,I0.2,A1,F12.6)', 'Current time ',ymd(1),'-',ymd(2),'-',ymd(3),' ',UTsec
 
 
   !OUTPUT

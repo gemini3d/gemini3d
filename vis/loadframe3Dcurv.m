@@ -5,7 +5,6 @@ validateattr(direc, {'char'}, {'vector'}, mfilename, 'data filename', 2)
 %% SIMULATION SIZE
 lsp=7;
 lxs = simsize(direc);
-disp(['sim grid dimensions: ',num2str(lxs)])
 %% SIMULATION RESULTS
 fsimres = [direc,filesep,filename];
 assert(exist(fsimres,'file')==2, [fsimres,' does not exist'])

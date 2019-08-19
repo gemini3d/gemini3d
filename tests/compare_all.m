@@ -45,6 +45,10 @@ if exist(dir2, 'dir') ~= 7, fprintf(2,[dir2,' not found']), exit(77), end
 if strcmp(dir1, dir2), error([dir1, ' and ', dir2, ' directories are the same']), end
 %% READ IN THE SIMULATION INFORMATION
 [ymd0,UTsec0,tdur,dtout] = readconfig([dir1,filesep,'inputs/config.ini']);
+
+lxs = simsize(dir1);
+disp(['sim grid dimensions: ',num2str(lxs)])
+
 %% TIMES OF INTEREST
 times=UTsec0:dtout:UTsec0+tdur;
 Nt = length(times);
