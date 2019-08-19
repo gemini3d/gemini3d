@@ -90,11 +90,11 @@ else
   message('Using Python ' + python.language_version())
 endif
 
-octave = find_program('octave', required: false)
+octave = find_program('octave', required: false, disabler: true)
 
 matlab = disabler()
 if get_option('usematlab')  # buggy for Matlab < R2019a, may hang "meson setup" silently for two minutes
-  matlab = find_program('matlab', required: false)
+  matlab = find_program('matlab', required: false, disabler: true)
   if run_command(python, meson.source_root() / 'script_utils/meson_matlab_has_batch.py').returncode() != 0
     matlab = disabler()
   endif
