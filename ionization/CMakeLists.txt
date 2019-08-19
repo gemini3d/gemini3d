@@ -9,7 +9,7 @@ if(useglow)
   target_link_libraries(ionization_glow PRIVATE cglow const neutral grid timeutils mpimod MPI::MPI_Fortran)
   set_target_properties(ionization_glow PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR})
   target_include_directories(ionization_glow PRIVATE ${ncarglow_BINARY_DIR}/src)
-  target_compile_definitions(ionization_glow PRIVATE DATADIR="build/_deps/ncarglow-src/data/")
+  target_compile_definitions(ionization_glow PRIVATE DATADIR=${CMAKE_BINARY_DIR}/_deps/ncarglow-src/data/)
 endif(useglow)
 
 add_library(precipBCs boundary_conditions/precipBCs_mod.f90)

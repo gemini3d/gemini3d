@@ -179,25 +179,26 @@ function(compare_gemini_output TESTNAME OUTDIR REFDIR REQFILE)
 
 #--- Python
 find_package(Python3 COMPONENTS Interpreter)
-execute_process(COMMAND Python3::Interpreter "-c import gemini"
+# Python3::Interpreter did NOT work
+execute_process(COMMAND ${Python3_EXECUTABLE} -c "import gemini; print(gemini.__file__)"
   ERROR_QUIET OUTPUT_QUIET
   RESULT_VARIABLE ret
   TIMEOUT 15)
 if(NOT ret EQUAL 0)
-  message(WARNING "Need to setup PyGemini by 'pip install -e gemini'")
+  message(WARNING "Need to setup PyGemini by 'pip install -e gemini'   error: ${ret}")
   set(Python3_FOUND false)
 endif()
 if(Python3_FOUND)
-    add_test(NAME ${TESTNAME}
-      COMMAND Python3::Interpreter compare_all.py
-        ${CMAKE_CURRENT_BINARY_DIR}/${OUTDIR} ${CMAKE_CURRENT_SOURCE_DIR}/${REFDIR}
-      WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/tests)
+  add_test(NAME ${TESTNAME}
+    COMMAND ${Python3_EXECUTABLE} compare_all.py
+      ${CMAKE_CURRENT_BINARY_DIR}/${OUTDIR} ${CMAKE_CURRENT_SOURCE_DIR}/${REFDIR}
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/tests)
 
-    set_tests_properties(${TESTNAME} PROPERTIES
-      TIMEOUT 30
-      REQUIRED_FILES "${CMAKE_CURRENT_BINARY_DIR}/${OUTDIR}/${REQFILE};${CMAKE_CURRENT_SOURCE_DIR}/${REFDIR}/${REQFILE}")
+  set_tests_properties(${TESTNAME} PROPERTIES
+    TIMEOUT 30
+    REQUIRED_FILES "${CMAKE_CURRENT_BINARY_DIR}/${OUTDIR}/${REQFILE};${CMAKE_CURRENT_SOURCE_DIR}/${REFDIR}/${REQFILE}")
 else()
-    message(WARNING "Python3 not found, self-test ${TESTNAME} will not work")
+  message(WARNING "Python3 not found, self-test ${TESTNAME} will not work")
 endif(Python3_FOUND)
 
 #--- Octave
