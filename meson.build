@@ -8,92 +8,25 @@ use_glow = get_option('useglow')
 use_hdf = get_option('HDF')
 buildtype = get_option('buildtype')
 
-fc = meson.get_compiler('fortran')
-fcid = fc.get_id()
-# -- compiler options
-if fcid == 'gcc'
-  add_project_arguments('-Wno-unused-variable', '-Wno-maybe-uninitialized', '-Wno-unused-dummy-argument', '-Wno-unused-function',
-  '-fimplicit-none',
-  language : 'fortran')
-  if fc.version().version_compare('>=8.0')
-    add_project_arguments('-std=f2018', language: 'fortran')
-  endif
-  if buildtype.contains('debug')
-    add_project_arguments('-Werror=array-bounds', '-fcheck=all', language: 'fortran')
-  endif
-elif fcid == 'intel'
-  add_project_arguments('-stand', 'f18', '-warn declarations', language: 'fortran')
-  if buildtype.contains('debug')
-    # -heap-arrays didn't appear to be needed on Linux?
-    add_project_arguments('-check bounds', language: 'fortran')
-  endif
-elif fcid == 'intel-cl'
-  # /fpp is necessary for any Fortran preprocessing statement with Intel ifort on Windows
-  # https://software.intel.com/en-us/fortran-compiler-developer-guide-and-reference-fpp
-   add_project_arguments('/fpp', '/stand:f18', '/warn:declarations', language: 'fortran')
-   if buildtype.contains('debug')
-    add_project_arguments('/check:bounds', '/heap-arrays', language: 'fortran')
-  endif
-elif fcid == 'pgi'
-  add_project_arguments('-Mdclchk', language: 'fortran')
-  if buildtype.contains('debug')
-    add_project_arguments('-Mbounds', language: 'fortran')
-  endif
-endif
-# need find_library to search specific dirs at this time
-mpi_root = get_option('MPI_ROOT')
-if mpi_root == ''
-  mpi = dependency('mpi', language : 'fortran', required : true)
-else
-  message('searching for MPI in ' + mpi_root)
-  mpi = fc.find_library('mpi', required : true, dirs : mpi_root / 'lib')
-endif
-
-mpiret = fc.run('use mpi; end', dependencies : mpi, name: 'Fortran MPI')
-if mpiret.returncode() != 0
-  error('MPI does not link properly: ' + mpiret.stderr() + mpiret.stdout() + mpi_root + ' ' + mpi.name() + ' ' + mpi.version())
-endif
-
-system_blas = get_option('system_blas')
-lapack_root = get_option('LAPACK_ROOT')
-if system_blas
-  if lapack_root == ''
-    lapack = dependency('lapack', required: false)
-    blas = dependency('blas', required: false)
-    if not blas.found()  # necessary for some systems incl. CentOS 7
-      blas = fc.find_library('blas', required: false)
-    endif
-  else
-    message('searching for LAPACK & BLAS in ' + lapack_root)
-    lapack = fc.find_library('lapack', dirs : lapack_root, required: false)
-    blas = fc.find_library('blas', dirs : lapack_root, required: false)
-  endif
-else
-  lapack = disabler()
-  blas = disabler()
-endif
-if not lapack.found() or not blas.found()
-  lapack_proj = subproject('lapack')
-  lapack = lapack_proj.get_variable('lapack')
-  blas = lapack_proj.get_variable('blas')
-endif
-
-if use_hdf  # see HDF5 branch, not yet fully ready.
- hdf5 = dependency('hdf5')
-endif
+subdir('cmake')
 
 #==========================================================
 const = library('const', 'numerical/constants/phys_consts.F90',
   fortran_args: real_bits)
 
 subdir('io')
-subdir('temporal')
-subdir('tests')
 
 collisions = library('collisions', 'collisions/collisions.f90',
   link_with: const)
-
+subdir('temporal')
 subdir('numerical')
+
+temporal = library('temporal', 'temporal/temporal.f90',
+  dependencies: mpi,
+  link_with: [const, grid, mpimod])
+
+subdir('tests')
+
 io = library('io','io/io.F90',
   link_with: [calculus, const, fsutils, grid, mpimod])
 
@@ -104,17 +37,23 @@ executable('msis_setup', 'setup/MSIS00/call_msis_gfortran.f90',
 
 neutral = library('neutral', 'neutral/neutral.f90',
   dependencies : mpi,
-  link_with : [const, calculus, mpimod, grid, io, msis, timeutils])
+  link_with : [const, grid, interp, io, mpimod, msis, timeutils])
 
 subdir('ionization')
 
-gemini_src = files('gemini.f90', 'temporal/temporal.f90', 'multifluid/multifluid.f90',
-'sources/sources.f90', 'numerical/advection/advec_mpi.f90', 'numerical/diffusion/diffusion.F90', 'vendor/lapack95/gbsv.F90')
+sources = library('sources', 'sources/sources.f90',
+  link_with: [calculus, collisions, const, grid, mpimod])
+
+multifluid = library('multifluid', 'multifluid/multifluid.f90',
+  link_with: [advection, calculus, collisions, const, diffusion, grid, ionization, mpimod,
+              precipBCs, sources, timeutils])
+
+
 # -- gemini exe
 gemini_fang_exe = executable('gemini_fang.bin',
-  sources: gemini_src,
-  link_with : [io, potential, calculus, collisions, grid, ionization, mpimod, neutral, const, timeutils],
-  dependencies : [scalapack, blacs, lapack, blas, mpi],
+  sources: 'gemini.f90',
+  link_with : [const, grid, io, mpimod, multifluid, neutral, potential, precipBCs, temporal, timeutils],
+  dependencies : [scalapack, blacs, lapack, blas],
   fortran_args: real_bits,
   install: true,
   link_language: 'fortran')
@@ -122,10 +61,15 @@ gemini_fang_exe = executable('gemini_fang.bin',
 # -- gemini_glow exe
 
 if use_glow
+
+  multifluid_glow = library('multifluid_glow', 'multifluid/multifluid.f90',
+  link_with: [advection, calculus, collisions, const, diffusion, grid, ionization_glow, mpimod,
+              precipBCs, sources, timeutils])
+
   gemini_glow_exe = executable('gemini_glow.bin',
-    sources: gemini_src,
-    link_with : [io, potential, calculus, collisions, grid, ionization_glow, mpimod, neutral,  const, timeutils],
-    dependencies : [scalapack, blacs, lapack, blas, mpi],
+    sources: 'gemini.f90',
+    link_with : [const, grid, io, mpimod, multifluid_glow, neutral, potential, precipBCs, temporal, timeutils],
+    dependencies : [scalapack, blacs, lapack, blas],
     fortran_args: real_bits,
     install: true,
     link_language: 'fortran')
@@ -141,24 +85,6 @@ magcalc = executable('magcalc.bin', 'magcalc.f90',
   install: true)
 
 # --- TESTS ---
-mpiexec = find_program('mpiexec')
-pymod = import('python')
-python = pymod.find_installation('python3')
-if python.language_version().version_compare('< 3.6')
-  error('Python ' + python.language_version() + ' is too old, you must have at least Python 3.6. Try "conda activate" or "module load python3" or similar.')
-endif
-message('Using Python ' + python.language_version())
-octave = find_program('octave', required: false)
-
-matlab = disabler()
-if get_option('usematlab')  # buggy for Matlab < R2019a, may hang "meson setup" silently for two minutes
-  matlab = find_program('matlab', required: false)
-  if run_command(python, 'script_utils/meson_matlab_has_batch.py').returncode() != 0
-    matlab = disabler()
-  endif
-endif
-
-is_ci = run_command(python, 'script_utils/meson_get_environment_variable.py', 'CI').stdout().to_lower() == 'true'
 
 zenodo = {
   '2d_fang': {
@@ -200,7 +126,7 @@ foreach k, v : zenodo
     continue
   endif
 
-  proc = run_command(python, files('script_utils/meson_file_download.py'),
+  proc = run_command(python, meson.source_root() / 'script_utils/meson_file_download.py',
                      v['url'], v['zip'], '-hash', 'md5', v['md5'])
   download_ok = true
   if proc.returncode() != 0
@@ -211,7 +137,7 @@ foreach k, v : zenodo
 
   ref_ok = true
   if download_ok
-    proc = run_command(python, files('script_utils/meson_file_extract.py'),
+    proc = run_command(python, meson.source_root() / 'script_utils/meson_file_extract.py',
                        v['zip'], v['dir'])
     if proc.returncode() != 0
       warning(k + 'test data in ' + v['dir'] + ' not available: ' + k + ' test disabled.')
@@ -224,8 +150,7 @@ foreach k, v : zenodo
   test_dir = meson.build_root() / 'test'  + k
 
   if mpi_np == ''
-    proc = run_command(python,
-                       files('script_utils/meson_cpu_count.py'),
+    proc = run_command(python, meson.source_root() / 'script_utils/meson_cpu_count.py',
                        v['dir']/ 'inputs/simsize.dat')
     mpi_np = proc.stdout()
     if proc.returncode() != 0 or mpi_np == ''
@@ -244,7 +169,7 @@ foreach k, v : zenodo
     is_parallel : false)
 
   if ref_ok
-    test('Compare' + k, python,
+    test('Compare' + k, python_test,
       args : ['compare_all.py', test_dir, v['dir']],
       suite : k, timeout: 60, workdir : meson.source_root() / 'tests')
 

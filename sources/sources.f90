@@ -1,10 +1,11 @@
 module sources
 
+use calculus, only : grad3d1
+use collisions, only:  maxwell_colln, coulomb_colln
 use phys_consts, only: wp, lsp, amu, kb, qs, ln, ms, gammas, elchrg, mn
 use grid, only : curvmesh,g1
-use calculus, only : grad3d1
 use mpimod, only: myid, tagvs1bc, tagvs2bc, tagvs3bc, lid, halo, myid2,myid3,lid2,lid3
-use collisions, only:  maxwell_colln, coulomb_colln
+
 
 implicit none
 

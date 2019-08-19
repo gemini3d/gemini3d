@@ -19,8 +19,12 @@ these parameters are a bit arbitrary.
 % J1,J2,J3 = 1e-9
 
 """
-import gemini.output_compare
 from argparse import ArgumentParser
+
+try:
+    import gemini.output_compare
+except ImportError:
+    raise ImportError("need to install PyGemini by  'pip install -e gemini'")
 
 tol = {
     "rtol": 1e-5,

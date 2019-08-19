@@ -1,18 +1,3 @@
-cmake_minimum_required(VERSION 3.12)
-# 3.9: MPI::MPI_Fortran, 3.11: Lapack, 3.12 for find_ROOT
-project(gem-num Fortran)
-enable_testing()
-
-get_directory_property(hasParent PARENT_DIRECTORY)
-if(NOT hasParent)
-  if(NOT realbits)
-    set(realbits 64)
-  endif()
-  list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../cmake/Modules/)
-  include(../cmake/compilers.cmake)
-  include(../cmake/libraries.cmake)
-endif()
-
 add_library(const constants/phys_consts.F90)
 target_compile_definitions(const PRIVATE REALBITS=${realbits})
 target_compile_options(const PRIVATE ${FFLAGS})
@@ -27,7 +12,6 @@ set_target_properties(interp PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
   include(interpolation/test_interp.cmake)
 endif()
-
 
 add_library(mpimod mpimod/mpimod.F90 mpimod/mpisend.f90 mpimod/mpirecv.f90 mpimod/mpihalo.f90)
 target_link_libraries(mpimod PRIVATE const MPI::MPI_Fortran)
@@ -45,10 +29,9 @@ target_link_libraries(calculus PRIVATE grid)
 target_compile_options(calculus PRIVATE ${FFLAGS})
 set_target_properties(calculus PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR})
 
-
 # ----- diffusion
 add_library(diffusion diffusion/diffusion.F90)
-target_link_libraries(diffusion PRIVATE grid ${LAPACK_LIBRARIES})
+target_link_libraries(diffusion PRIVATE const grid ${LAPACK_LIBRARIES})
 target_compile_options(diffusion PRIVATE ${FFLAGS})
 target_include_directories(diffusion PRIVATE ${LAPACK_INCLUDE_DIRS})
 if(NOT LAPACK_LAPACK95_FOUND)
@@ -66,3 +49,4 @@ target_link_libraries(advec PRIVATE const mpimod grid)
 target_compile_options(advec PRIVATE ${FFLAGS})
 set_target_properties(advec PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR})
 
+add_subdirectory(potential)

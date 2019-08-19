@@ -48,6 +48,6 @@ threads = dependency('threads')
 
 potential = library('potential',
   sources: ['potential_comm_mumps.f90', 'potential_mumps.F90', 'boundary_conditions/potentialBCs_mumps.f90'],
-  link_with: [calculus, collisions, fsutils, mpimod, const, grid, timeutils],
+  link_with: [calculus, collisions, const, fsutils, grid, interp, mpimod, timeutils],
   dependencies: [mumps, scalapack, blacs, mpi, threads],
   fortran_args: real_bits)

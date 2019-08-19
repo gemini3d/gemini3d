@@ -4,11 +4,13 @@ use, intrinsic:: iso_fortran_env, only: sp => real32
 use mpi, only: mpi_integer, mpi_comm_world, mpi_status_ignore
 
 use phys_consts, only: wp, lnchem, pi, re, debug
-use timeutils, only : doy_calc,dateinc
 use grid, only: curvmesh, lx1, lx2, lx3, clear_unitvecs
 use interpolation, only : interp2
-use mpimod, only: myid, lid, taglrho, taglz, mpi_realprec, tagdno, tagdnn2, tagdno2, tagdtn, tagdvnrho, tagdvnz, tagly
 use io, only : date_filename
+use timeutils, only : doy_calc,dateinc
+use mpimod, only: myid, lid, taglrho, taglz, mpi_realprec, tagdno, tagdnn2, tagdno2, tagdtn, tagdvnrho, tagdvnz, tagly
+
+! also links gtd7 from vendor/msis00/
 
 implicit none
 

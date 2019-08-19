@@ -2,7 +2,6 @@ module calculus
 
 !NEED TO MORE APPROPRIATELY NAME THE "ALT" DERIVATIVES...
 
-
 !SIZES USED IN ALL DERIVATIVE PROCEDURES ARE STORED IN GRID MODULE
 use phys_consts, only: wp
 use grid, only : curvmesh         !we do not want the full-grid sizes (lx1,lx2,lx3) in scope since we routinely need to do subgrid derivatives
@@ -67,7 +66,7 @@ pure function ETD_uncoupled(f,P,L,dt)
 
 !------------------------------------------------------------
 !-------APPLY UNCOUPLED SPECIES EXPONENTIAL TIME DIFFERENCING
-!-------SOURCE/LOSS ODE SOLUTION.  IT IS EXPECTED THAT 
+!-------SOURCE/LOSS ODE SOLUTION.  IT IS EXPECTED THAT
 !-------GHOST CELLS WILL HAVE BEEN TRIMMED FROM ARRAYS BEFORE
 !-------THEY ARE PASSED INTO THIS ROUTINE.
 !------------------------------------------------------------
@@ -93,10 +92,10 @@ end function ETD_uncoupled
 function grad3D1_curv_3(f,x,lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3)
 
 !------------------------------------------------------------
-!-------COMPUTE A 3D GRADIENT ALONG THE 1-DIMENSION.  IT IS EXPECTED THAT 
+!-------COMPUTE A 3D GRADIENT ALONG THE 1-DIMENSION.  IT IS EXPECTED THAT
 !-------GHOST CELLS WILL HAVE BEEN TRIMMED FROM ARRAYS BEFORE
 !-------THEY ARE PASSED INTO THIS ROUTINE - EXCEPT FOR THE GRID.
-!-------STRUCTURE.  
+!-------STRUCTURE.
 !-------
 !-------FOR THIS AND FOLLOWING CURV DERIVATIVE PROCEDURES THE UPPER
 !-------AND LOWER BOUNDS FOR DIFFERENTIATION CANNOT BE DETERMINED
@@ -166,10 +165,10 @@ end function grad3D1_curv_3
 function grad3D1_curv_23(f,x,lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3)
 
 !------------------------------------------------------------
-!-------COMPUTE A 3D GRADIENT ALONG THE 1-DIMENSION.  IT IS EXPECTED THAT 
+!-------COMPUTE A 3D GRADIENT ALONG THE 1-DIMENSION.  IT IS EXPECTED THAT
 !-------GHOST CELLS WILL HAVE BEEN TRIMMED FROM ARRAYS BEFORE
 !-------THEY ARE PASSED INTO THIS ROUTINE - EXCEPT FOR THE GRID.
-!-------STRUCTURE.  
+!-------STRUCTURE.
 !-------
 !-------FOR THIS AND FOLLOWING CURV DERIVATIVE PROCEDURES THE UPPER
 !-------AND LOWER BOUNDS FOR DIFFERENTIATION CANNOT BE DETERMINED
@@ -239,7 +238,7 @@ end function grad3D1_curv_23
 function grad3D2_curv_3(f,x,lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3)
 
 !------------------------------------------------------------
-!-------COMPUTE A 3D GRADIENT ALONG THE 2-DIMENSION.  IT IS EXPECTED THAT 
+!-------COMPUTE A 3D GRADIENT ALONG THE 2-DIMENSION.  IT IS EXPECTED THAT
 !-------GHOST CELLS WILL HAVE BEEN TRIMMED FROM ARRAYS BEFORE
 !-------THEY ARE PASSED INTO THIS ROUTINE
 !------------------------------------------------------------
@@ -299,7 +298,7 @@ end function grad3D2_curv_3
 function grad3D2_curv_23(f,x,lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3)
 
 !------------------------------------------------------------
-!-------COMPUTE A 3D GRADIENT ALONG THE 2-DIMENSION.  IT IS EXPECTED THAT 
+!-------COMPUTE A 3D GRADIENT ALONG THE 2-DIMENSION.  IT IS EXPECTED THAT
 !-------GHOST CELLS WILL HAVE BEEN TRIMMED FROM ARRAYS BEFORE
 !-------THEY ARE PASSED INTO THIS ROUTINE
 !------------------------------------------------------------
@@ -360,7 +359,7 @@ end function grad3D2_curv_23
 function grad3D3_curv_3(f,x,lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3)
 
 !------------------------------------------------------------
-!-------COMPUTE A 3D GRADIENT ALONG THE 3-DIMENSION.  IT IS EXPECTED THAT 
+!-------COMPUTE A 3D GRADIENT ALONG THE 3-DIMENSION.  IT IS EXPECTED THAT
 !-------GHOST CELLS WILL HAVE BEEN TRIMMED FROM ARRAYS BEFORE
 !-------THEY ARE PASSED INTO THIS ROUTINE
 !-------
@@ -370,7 +369,7 @@ function grad3D3_curv_3(f,x,lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3)
 !------------------------------------------------------------
 
 real(wp), dimension(:,:,:), intent(in) :: f
-type(curvmesh), intent(in) :: x 
+type(curvmesh), intent(in) :: x
 integer, intent(in) :: lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3
 
 integer :: ix1,ix2,lx1,lx2,lx3
@@ -424,7 +423,7 @@ end function grad3D3_curv_3
 function grad3D3_curv_23(f,x,lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3)
 
 !------------------------------------------------------------
-!-------COMPUTE A 3D GRADIENT ALONG THE 3-DIMENSION.  IT IS EXPECTED THAT 
+!-------COMPUTE A 3D GRADIENT ALONG THE 3-DIMENSION.  IT IS EXPECTED THAT
 !-------GHOST CELLS WILL HAVE BEEN TRIMMED FROM ARRAYS BEFORE
 !-------THEY ARE PASSED INTO THIS ROUTINE
 !-------
@@ -434,7 +433,7 @@ function grad3D3_curv_23(f,x,lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3)
 !------------------------------------------------------------
 
 real(wp), dimension(:,:,:), intent(in) :: f
-type(curvmesh), intent(in) :: x 
+type(curvmesh), intent(in) :: x
 integer, intent(in) :: lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3
 
 integer :: ix1,ix2,lx1,lx2,lx3
@@ -455,8 +454,8 @@ if (lx3>1) then    !only differentiate if we have non-singleton dimension, other
   if (lx1 /= ubnd1-lbnd1+1 .or. lx2 /= ubnd2-lbnd2+1 .or. lx3 /= ubnd3-lbnd3+1) then
     error stop '!!!  Inconsistent array and mesh sizes in gradient function.'   !just bail on it and let the user figure it out
   end if
-  
-  
+
+
   !CHOOSE THE METRIC FACTORS VARIABLES BASED ON THE SIZE OF THE X3-VARIABLE, ALSO RECAST SO THE
   !INDICES USED FOR F CAN ALSO BE USED IN THE METRIC FACTOR AND DX VARIABLE
   !Can avoid wasting memory and copying of metric factor arrays by recoding with pointers
@@ -471,8 +470,8 @@ if (lx3>1) then    !only differentiate if we have non-singleton dimension, other
   else
     error stop '!!!  Array size is larger than full mesh.'
   end if
-  
-  
+
+
   !FINITE DIFFERENCING
   do ix2=1,lx2
     do ix1=1,lx1
@@ -492,7 +491,7 @@ end function grad3D3_curv_23
 function div3D_curv_3(f1,f2,f3,x,lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3)
 
 !------------------------------------------------------------
-!-------COMPUTE A 3D DIVERGENCE.  IT IS EXPECTED THAT 
+!-------COMPUTE A 3D DIVERGENCE.  IT IS EXPECTED THAT
 !-------GHOST CELLS WILL HAVE BEEN TRIMMED FROM ARRAYS BEFORE
 !-------THEY ARE PASSED INTO THIS ROUTINE.  DX(I) IS PRESUMED
 !-------TO BE THE *BACKWARD* DIFFERENCE AT POINT I
@@ -509,7 +508,7 @@ integer, intent(in) :: lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3
 integer :: ix1,ix2,ix3,lx1,lx2,lx3
 
 real(wp), dimension(:,:,:), pointer :: h1,h2,h3   !local references to the metric factors to be used in the derivative
-real(wp), dimension(:), pointer :: dx1    
+real(wp), dimension(:), pointer :: dx1
 real(wp), dimension(:), pointer :: dx2
 real(wp), dimension(:), pointer :: dx3    !local reference to the backward difference
 
@@ -571,7 +570,7 @@ if (lx2>1) then   !only if the x2-direction is not null
     do ix1=1,lx1
       div3D_curv_3(ix1,1,ix3)=div3D_curv_3(ix1,1,ix3)+ &
                     (h1(ix1,2,ix3)*h3(ix1,2,ix3)*f2(ix1,2,ix3)-h1(ix1,1,ix3)*h3(ix1,1,ix3)*f2(ix1,1,ix3))/dx2(2)
-      div3D_curv_3(ix1,2:lx2-1,ix3)=div3D_curv_3(ix1,2:lx2-1,ix3)+ & 
+      div3D_curv_3(ix1,2:lx2-1,ix3)=div3D_curv_3(ix1,2:lx2-1,ix3)+ &
                     (h1(ix1,3:lx2,ix3)*h3(ix1,3:lx2,ix3)*f2(ix1,3:lx2,ix3)- &
                      h1(ix1,1:lx2-2,ix3)*h3(ix1,1:lx2-2,ix3)*f2(ix1,1:lx2-2,ix3)) &
                              /(dx2(3:lx2)+dx2(2:lx2-1))
@@ -604,7 +603,7 @@ end function div3D_curv_3
 function div3D_curv_23(f1,f2,f3,x,lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3)
 
 !------------------------------------------------------------
-!-------COMPUTE A 3D DIVERGENCE.  IT IS EXPECTED THAT 
+!-------COMPUTE A 3D DIVERGENCE.  IT IS EXPECTED THAT
 !-------GHOST CELLS WILL HAVE BEEN TRIMMED FROM ARRAYS BEFORE
 !-------THEY ARE PASSED INTO THIS ROUTINE.  DX(I) IS PRESUMED
 !-------TO BE THE *BACKWARD* DIFFERENCE AT POINT I
@@ -621,7 +620,7 @@ integer, intent(in) :: lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3
 integer :: ix1,ix2,ix3,lx1,lx2,lx3
 
 real(wp), dimension(:,:,:), pointer :: h1,h2,h3   !local references to the metric factors to be used in the derivative
-real(wp), dimension(:), pointer :: dx1    
+real(wp), dimension(:), pointer :: dx1
 real(wp), dimension(:), pointer :: dx2
 real(wp), dimension(:), pointer :: dx3    !local reference to the backward difference
 
@@ -690,7 +689,7 @@ if (lx2>1) then   !only if the x2-direction is not null
       div3D_curv_23(ix1,1,ix3)=div3D_curv_23(ix1,1,ix3)+ &
                     (h1(ix1,2,ix3)*h3(ix1,2,ix3)*f2(ix1,2,ix3)-h1(ix1,1,ix3)*h3(ix1,1,ix3)*f2(ix1,1,ix3))/dx2(2)
 
-      div3D_curv_23(ix1,2:lx2-1,ix3)=div3D_curv_23(ix1,2:lx2-1,ix3)+ & 
+      div3D_curv_23(ix1,2:lx2-1,ix3)=div3D_curv_23(ix1,2:lx2-1,ix3)+ &
                     (h1(ix1,3:lx2,ix3)*h3(ix1,3:lx2,ix3)*f2(ix1,3:lx2,ix3)- &
                      h1(ix1,1:lx2-2,ix3)*h3(ix1,1:lx2-2,ix3)*f2(ix1,1:lx2-2,ix3)) &
                              /(dx2(3:lx2)+dx2(2:lx2-1))
@@ -735,7 +734,7 @@ end function div3D_curv_23
 pure function grad2D1_curv(f,x,lbnd,ubnd)
 
 !------------------------------------------------------------
-!-------COMPUTE A 2D GRADIENT ALONG THE 1-DIMENSION.  IT IS EXPECTED THAT 
+!-------COMPUTE A 2D GRADIENT ALONG THE 1-DIMENSION.  IT IS EXPECTED THAT
 !-------GHOST CELLS WILL HAVE BEEN TRIMMED FROM ARRAYS BEFORE
 !-------THEY ARE PASSED INTO THIS ROUTINE
 !------------------------------------------------------------
@@ -764,7 +763,7 @@ pure function grad2D1_curv_alt_3(f,x,lbnd,ubnd)
 
 !------------------------------------------------------------
 !-------COMPUTE A 2D GRADIENT ALONG THE 1-DIMENSION USING THE
-!-------VARIABLE X2 AS THE DIFFERENTIAL. IT IS EXPECTED THAT 
+!-------VARIABLE X2 AS THE DIFFERENTIAL. IT IS EXPECTED THAT
 !-------GHOST CELLS WILL HAVE BEEN TRIMMED FROM ARRAYS BEFORE
 !-------THEY ARE PASSED INTO THIS ROUTINE
 !------------------------------------------------------------
@@ -793,7 +792,7 @@ function grad2D1_curv_alt_23(f,x,lbnd,ubnd)
 
 !------------------------------------------------------------
 !-------COMPUTE A 2D GRADIENT ALONG THE 1-DIMENSION USING THE
-!-------VARIABLE X2 AS THE DIFFERENTIAL. IT IS EXPECTED THAT 
+!-------VARIABLE X2 AS THE DIFFERENTIAL. IT IS EXPECTED THAT
 !-------GHOST CELLS WILL HAVE BEEN TRIMMED FROM ARRAYS BEFORE
 !-------THEY ARE PASSED INTO THIS ROUTINE
 !------------------------------------------------------------
@@ -842,7 +841,7 @@ end function grad2D1_curv_alt_23
 pure function grad2D2_curv(f,x,lbnd,ubnd)
 
 !------------------------------------------------------------
-!-------COMPUTE A 2D GRADIENT ALONG THE 2-DIMENSION.  IT IS EXPECTED THAT 
+!-------COMPUTE A 2D GRADIENT ALONG THE 2-DIMENSION.  IT IS EXPECTED THAT
 !-------GHOST CELLS WILL HAVE BEEN TRIMMED FROM ARRAYS BEFORE
 !-------THEY ARE PASSED INTO THIS ROUTINE
 !------------------------------------------------------------
@@ -874,7 +873,7 @@ end function grad2D2_curv
 function grad2D2_curv_23(f,x,lbnd,ubnd)
 
 !------------------------------------------------------------
-!-------COMPUTE A 2D GRADIENT ALONG THE 2-DIMENSION.  IT IS EXPECTED THAT 
+!-------COMPUTE A 2D GRADIENT ALONG THE 2-DIMENSION.  IT IS EXPECTED THAT
 !-------GHOST CELLS WILL HAVE BEEN TRIMMED FROM ARRAYS BEFORE
 !-------THEY ARE PASSED INTO THIS ROUTINE
 !------------------------------------------------------------
@@ -923,7 +922,7 @@ end function grad2D2_curv_23
 pure function grad2D3_curv(f,x,lbnd,ubnd)
 
 !------------------------------------------------------------
-!-------COMPUTE A 2D GRADIENT ALONG THE 3-DIMENSION.  IT IS EXPECTED THAT 
+!-------COMPUTE A 2D GRADIENT ALONG THE 3-DIMENSION.  IT IS EXPECTED THAT
 !-------GHOST CELLS WILL HAVE BEEN TRIMMED FROM ARRAYS BEFORE
 !-------THEY ARE PASSED INTO THIS ROUTINE.  A SEPARATE ROUTINE
 !-------IS NEEDED FOR THE CURVILINEAR CASE, BECAUSE OTHERWISE
@@ -964,7 +963,7 @@ end function grad2D3_curv
 function grad2D3_curv_23(f,x,lbnd,ubnd)
 
 !------------------------------------------------------------
-!-------COMPUTE A 2D GRADIENT ALONG THE 3-DIMENSION.  IT IS EXPECTED THAT 
+!-------COMPUTE A 2D GRADIENT ALONG THE 3-DIMENSION.  IT IS EXPECTED THAT
 !-------GHOST CELLS WILL HAVE BEEN TRIMMED FROM ARRAYS BEFORE
 !-------THEY ARE PASSED INTO THIS ROUTINE.  A SEPARATE ROUTINE
 !-------IS NEEDED FOR THE CURVILINEAR CASE, BECAUSE OTHERWISE
@@ -1019,7 +1018,7 @@ pure function integral3D1_curv(f,x,lbnd,ubnd)
 !   function integral3D1_curv(f,x,lbnd,ubnd)
 
 !------------------------------------------------------------
-!-------COMPUTE AN INTEGRAL OF A 3D ARRAY ALONG THE 1-DIM.  IT IS EXPECTED THAT 
+!-------COMPUTE AN INTEGRAL OF A 3D ARRAY ALONG THE 1-DIM.  IT IS EXPECTED THAT
 !-------GHOST CELLS WILL HAVE BEEN TRIMMED FROM ARRAYS BEFORE
 !-------THEY ARE PASSED INTO THIS ROUTINE
 !-------
@@ -1051,13 +1050,13 @@ pure function integral3D1_curv_alt(f,x,lbnd,ubnd)
 !   function integral3D1_curv_alt(f,x,lbnd,ubnd)
 
 !------------------------------------------------------------
-!-------COMPUTE AN INTEGRAL OF A 3D ARRAY ALONG THE 1-DIM.  IT IS EXPECTED THAT 
+!-------COMPUTE AN INTEGRAL OF A 3D ARRAY ALONG THE 1-DIM.  IT IS EXPECTED THAT
 !-------GHOST CELLS WILL HAVE BEEN TRIMMED FROM ARRAYS BEFORE
 !-------THEY ARE PASSED INTO THIS ROUTINE
 !-------
 !-------NOTE, AS BEFORE THAT THE GRID MAY BE INDEXED DIFFERENTLY
 !-------THAN THE FUNCTION BEING INTEGRATED.  ALSO THIS ALT VERSION
-!-------INTEGRATES FROM SET OPINT TO THE MAX VALUE ON THE GRID, 
+!-------INTEGRATES FROM SET OPINT TO THE MAX VALUE ON THE GRID,
 !-------RATHER THAN FROM THE MIN VALUE TO A FIXED POINT.
 !------------------------------------------------------------
 
@@ -1085,7 +1084,7 @@ pure function integral2D1_curv(f,x,lbnd,ubnd)
 !   function integral2D1_curv(f,x,lbnd,ubnd)
 
 !------------------------------------------------------------
-!-------COMPUTE AN INTEGRAL OF A 2D ARRAY ALONG THE 1-DIM.  IT IS EXPECTED THAT 
+!-------COMPUTE AN INTEGRAL OF A 2D ARRAY ALONG THE 1-DIM.  IT IS EXPECTED THAT
 !-------GHOST CELLS WILL HAVE BEEN TRIMMED FROM ARRAYS BEFORE
 !-------THEY ARE PASSED INTO THIS ROUTINE
 !------------------------------------------------------------
@@ -1114,7 +1113,7 @@ pure function integral2D1_curv_alt(f,x,lbnd,ubnd)
 !   function integral2D1_curv_alt(f,x,lbnd,ubnd)
 
 !------------------------------------------------------------
-!-------COMPUTE AN INTEGRAL OF A 2D ARRAY ALONG THE 1-DIM.  IT IS EXPECTED THAT 
+!-------COMPUTE AN INTEGRAL OF A 2D ARRAY ALONG THE 1-DIM.  IT IS EXPECTED THAT
 !-------GHOST CELLS WILL HAVE BEEN TRIMMED FROM ARRAYS BEFORE
 !-------THEY ARE PASSED INTO THIS ROUTINE.
 !-------
@@ -1145,8 +1144,8 @@ pure function integral2D2_curv(f,x,lbnd,ubnd)
 !   function integral2D2_curv(f,x,lbnd,ubnd)
 
 !------------------------------------------------------------
-!-------COMPUTE AN INTEGRAL OF A 2D ARRAY ALONG THE 2-DIM.  
-!-------WITH RESPECT TO X2.  IT IS EXPECTED THAT 
+!-------COMPUTE AN INTEGRAL OF A 2D ARRAY ALONG THE 2-DIM.
+!-------WITH RESPECT TO X2.  IT IS EXPECTED THAT
 !-------GHOST CELLS WILL HAVE BEEN TRIMMED FROM ARRAYS BEFORE
 !-------THEY ARE PASSED INTO THIS ROUTINE
 !-------
@@ -1178,8 +1177,8 @@ pure function integral2D2_curv_alt(f,x,lbnd,ubnd)
 !   function integral2D2_curv_alt(f,x,lbnd,ubnd)
 
 !------------------------------------------------------------
-!-------COMPUTE AN INTEGRAL OF A 2D ARRAY ALONG THE 2-DIM, 
-!-------WITH RESPECT TO X3.  IT IS EXPECTED THAT 
+!-------COMPUTE AN INTEGRAL OF A 2D ARRAY ALONG THE 2-DIM,
+!-------WITH RESPECT TO X3.  IT IS EXPECTED THAT
 !-------GHOST CELLS WILL HAVE BEEN TRIMMED FROM ARRAYS BEFORE
 !-------THEY ARE PASSED INTO THIS ROUTINE.
 !-------
@@ -1206,7 +1205,7 @@ end function integral2D2_curv_alt
 pure function grad3D3_curv_periodic(f,x,lbnd,ubnd)
 
 !------------------------------------------------------------
-!-------COMPUTE A 3D GRADIENT ALONG THE 3-DIMENSION.  IT IS EXPECTED THAT 
+!-------COMPUTE A 3D GRADIENT ALONG THE 3-DIMENSION.  IT IS EXPECTED THAT
 !-------GHOST CELLS WILL HAVE BEEN TRIMMED FROM ARRAYS BEFORE
 !-------THEY ARE PASSED INTO THIS ROUTINE.  THIS ROUTINE ASSUMES
 !-------A PERIODIC BOOUNDARY IN THE X3 DIMENSION
@@ -1260,7 +1259,7 @@ end function grad3D3_curv_periodic
 pure function grad2D3_curv_periodic(f,x,lbnd,ubnd)
 
 !------------------------------------------------------------
-!-------COMPUTE A 2D GRADIENT ALONG THE 3-DIMENSION.  IT IS EXPECTED THAT 
+!-------COMPUTE A 2D GRADIENT ALONG THE 3-DIMENSION.  IT IS EXPECTED THAT
 !-------GHOST CELLS WILL HAVE BEEN TRIMMED FROM ARRAYS BEFORE
 !-------THEY ARE PASSED INTO THIS ROUTINE.  A SEPARATE ROUTINE
 !-------IS NEEDED FOR THE CURVILINEAR CASE, BECAUSE OTHERWISE

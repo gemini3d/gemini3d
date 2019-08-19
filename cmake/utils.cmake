@@ -179,6 +179,14 @@ function(compare_gemini_output TESTNAME OUTDIR REFDIR REQFILE)
 
 #--- Python
 find_package(Python3 COMPONENTS Interpreter)
+execute_process(COMMAND Python3::Interpreter "-c import gemini"
+  ERROR_QUIET OUTPUT_QUIET
+  RESULT_VARIABLE ret
+  TIMEOUT 15)
+if(NOT ret EQUAL 0)
+  message(WARNING "Need to setup PyGemini by 'pip install -e gemini'")
+  set(Python3_FOUND false)
+endif()
 if(Python3_FOUND)
     add_test(NAME ${TESTNAME}
       COMMAND Python3::Interpreter compare_all.py
@@ -190,7 +198,7 @@ if(Python3_FOUND)
       REQUIRED_FILES "${CMAKE_CURRENT_BINARY_DIR}/${OUTDIR}/${REQFILE};${CMAKE_CURRENT_SOURCE_DIR}/${REFDIR}/${REQFILE}")
 else()
     message(WARNING "Python3 not found, self-test ${TESTNAME} will not work")
-endif()
+endif(Python3_FOUND)
 
 #--- Octave
 if(NOT DEFINED OctaveOK)

@@ -1,7 +1,6 @@
 module ionization
 
 use phys_consts, only: elchrg, lsp, kb, mn, re, pi, wp, lwave, debug
-use calculus, only: chapman_a
 use neutral, only: Tnmsis
 !! we need the unperturbed msis temperatures to apply the simple chapman theory used by this module
 use grid, only: curvmesh,lx1,lx2,lx3,g1,g2,g3

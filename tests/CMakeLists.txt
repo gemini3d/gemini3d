@@ -1,18 +1,10 @@
-cmake_minimum_required (VERSION 3.12) # 3.12 find_ROOT
-project(test_gem C Fortran)
-enable_testing()
-
-get_directory_property(hasParent PARENT_DIRECTORY)
-if(NOT hasParent)
-  if(NOT realbits)
-    set(realbits 64)
-  endif()
-
-  list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../cmake/Modules/)
-  include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/compilers.cmake)
-  include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/libraries.cmake)
-  include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/mumps.cmake)
-endif()
+add_executable(test_formats test_formats.f90)
+target_compile_options(test_formats PRIVATE ${FFLAGS})
+target_link_libraries(test_formats PRIVATE fsutils timeutils)
+set_target_properties(test_formats PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR})
+add_test(NAME DateFormats COMMAND test_formats)
+set_tests_properties(DateFormats PROPERTIES TIMEOUT 5.0
+  FIXTURES_SETUP IOfmt)
 
 find_package(MPI REQUIRED COMPONENTS Fortran)
 
