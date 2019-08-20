@@ -9,8 +9,13 @@ import typing
 
 from .readdata import readconfig, loadframe, datetime_range
 
+try:
+    from .plotdiff import plotdiff
+except ImportError:
+    pass
 
-def compare_all(dir1: Path, dir2: Path, tol: typing.Dict[str, float]) -> int:
+
+def compare_all(dir1: Path, dir2: Path, tol: typing.Dict[str, float], doplot: bool = False) -> int:
     """
     compare two directories across time steps
     """
@@ -25,7 +30,6 @@ def compare_all(dir1: Path, dir2: Path, tol: typing.Dict[str, float]) -> int:
         raise OSError(f"compare_all inputs are the same directory: {dir1}")
 
     ref: typing.Dict[str, typing.Any] = {}
-
     # %% READ IN THE SIMULATION INFORMATION
     params = readconfig(dir1 / "inputs/config.ini")
     # %% TIMES OF INTEREST
@@ -43,45 +47,32 @@ def compare_all(dir1: Path, dir2: Path, tol: typing.Dict[str, float]) -> int:
         A = loadframe(dir1, t)
         B = loadframe(dir2, t)
 
-        if not np.allclose(A["ne"][1], B["ne"][1], tol["rtolN"], tol["atolN"], True):
-            errs += 1
-            logging.error(f"Ne {st}   {abs(A['ne'][1] - B['ne'][1]).max().item():.3e}")
+        names = ["ne", "v1", "v2", "v3", "Ti", "Te", "J1", "J2", "J3"]
+        itols = ["N", "V", "V", "V", "T", "T", "J", "J", "J"]
 
-        for k in ("v1", "v2", "v3"):
-            if not np.allclose(A[k][1], B[k][1], tol["rtolV"], tol["atolV"], True):
+        for k, j in zip(names, itols):
+            if not np.allclose(A[k][1], B[k][1], tol[f"rtol{j}"], tol[f"atol{j}"], True):
                 errs += 1
                 logging.error(f"{k} {st}   {abs(A[k][1] - B[k][1]).max().item():.3e}")
-
-        for k in ("Ti", "Te"):
-            if not np.allclose(A[k][1], B[k][1], tol["rtolT"], tol["atolT"], True):
-                errs += 1
-                logging.error(f"{k} {st}   {abs(A[k][1] - B[k][1]).max().item():.3e}")
-
-        for k in ("J1", "J2", "J3"):
-            if not np.allclose(A[k][1], B[k][1], tol["rtolJ"], tol["atolJ"], True):
-                errs += 1
-                logging.error(f"{k} {st}  {abs(A[k][1] - B[k][1]).max().item():.3e}")
-
+                plotdiff(A[k][1], B[k][1], k, t, dir1, dir2)
         # %% assert time steps have unique output (earth always rotating...)
         if i > 1:
-            if np.allclose(ref["ne"][1], A["ne"][1], tol["rtol"], tol["atol"]):
-                errs += 1
-                logging.error(f"Ne {st} too similar to prior step")
-
-            for k in ("v1", "v2", "v3"):
-                if np.allclose(ref[k][1], A[k][1], tol["rtol"], tol["atol"]):
+            names = ["ne", "v1", "v2", "v3"]
+            itols = ["N", "V", "V", "V"]
+            for k, j in zip(names, itols):
+                if np.allclose(ref[k][1], A[k][1], tol[f"rtol{j}"], tol[f"atol{j}"]):
                     errs += 1
                     logging.error(f"{k} {st} too similar to prior step")
 
         if i == 3:
             for k in ("Ti", "Te"):
-                if np.allclose(ref[k][1], A[k][1], tol["rtol"], tol["atol"]):
+                if np.allclose(ref[k][1], A[k][1], tol["rtolT"], tol["atolT"]):
                     errs += 1
                     logging.error(f"{k} {st} too similar to prior step")
 
         if i == 2:
             for k in ("J1", "J2", "J3"):
-                if np.allclose(ref[k][1], A[k][1], tol["rtol"], tol["atol"]):
+                if np.allclose(ref[k][1], A[k][1], tol["rtolJ"], tol["atolJ"]):
                     errs += 1
                     logging.error(f"{k} {st} too similar to prior step")
 
