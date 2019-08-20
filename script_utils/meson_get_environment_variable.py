@@ -10,6 +10,6 @@ returns nothing '' if variable doesn't exist
 import os
 import sys
 
-var = os.environ.get(sys.argv[1], None)
+var = os.environ.get(sys.argv[1])
 if var:
     print(var, end="")

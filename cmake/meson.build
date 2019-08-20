@@ -30,19 +30,24 @@ elif fcid == 'pgi'
     add_project_arguments('-Mbounds', language: 'fortran')
   endif
 endif
-# need find_library to search specific dirs at this time
-mpi_root = get_option('MPI_ROOT')
-if mpi_root == ''
-  mpi = dependency('mpi', language : 'fortran', required : true)
+
+# check if MPI compiler wrapper is usable
+if fc.run('use mpi; end', name: 'Fortran MPI compiler wrapper').returncode() == 0
+  mpi = []
+  mpiroot = get_option('MPI_ROOT')
+  if mpiroot == ''
+    error('please specify -DMPI_ROOT= root path of MPI lib e.g. ~/lib/openmpi-3.1.4')
+  endif
+  mpiexec = find_program(mpiroot / 'bin/mpiexec')
 else
-  message('searching for MPI in ' + mpi_root)
-  mpi = fc.find_library('mpi', required : true, dirs : mpi_root / 'lib')
+  mpi = dependency('mpi', language : 'fortran')
+  mpiret = fc.run('use mpi; end', dependencies : mpi, name: 'Fortran MPI')
+  if mpiret.returncode() != 0
+    error('MPI does not link properly: ' + mpiret.stderr() + ' ' + mpiret.stdout())
+  endif
+  mpiexec = find_program('mpiexec')
 endif
 
-mpiret = fc.run('use mpi; end', dependencies : mpi, name: 'Fortran MPI')
-if mpiret.returncode() != 0
-  error('MPI does not link properly: ' + mpiret.stderr() + mpiret.stdout() + mpi_root + ' ' + mpi.name() + ' ' + mpi.version())
-endif
 
 system_blas = get_option('system_blas')
 lapack_root = get_option('LAPACK_ROOT')
@@ -73,7 +78,6 @@ if use_hdf  # see HDF5 branch, not yet fully ready.
 endif
 
 
-mpiexec = find_program('mpiexec')
 pymod = import('python')
 python = pymod.find_installation('python3')
 if python.language_version().version_compare('< 3.6')

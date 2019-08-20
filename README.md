@@ -70,7 +70,7 @@ Let us know if you need a current version of a compiler to work.
 Tested versions include:
 
 * OpenMPI 1.10, 2.1 - 4.0
-* MUMPS 4.10 - 5.2
+* MUMPS 4.10 - 5.2.   Mumps &ge; 5.2 recommended to have vastly less verbose console output
 * SCALAPACK 2.0
 * LAPACK95 3.0  (optional)
 * NCAR GLOW (optional)   enabled by Meson / CMake `-Duseglow=true` option
@@ -172,6 +172,14 @@ If you get errors about libraries not found or it's using the wrong compiler, sp
 ```sh
 FC=gfortran-9 CC=gcc-9 meson setup build
 ```
+
+
+If you need to specify MPI compiler wrappers, do like:
+
+```sh
+FC=~/lib_gcc/openmpi-3.1.4/bin/mpif90 CC=~/lib_gcc/openmpi-3.1.4/bin/mpicc meson build -DMPI_ROOT=~/lib_gcc/openmpi-3.1.4
+```
+
 
 and/or
 
