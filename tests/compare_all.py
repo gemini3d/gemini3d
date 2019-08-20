@@ -42,17 +42,17 @@ tol = {
 
 def main():
     p = ArgumentParser()
-    p.add_argument("dir1", help="directory to compare")
-    p.add_argument("dir2", help="directory to compare")
+    p.add_argument("outdir", help="directory to compare")
+    p.add_argument("refdir", help="reference directory")
     p.add_argument("-p", "--plot", help="make plots of differences", action="store_true")
     P = p.parse_args()
 
-    errs = gemini.output_compare.compare_all(P.dir1, P.dir2, tol, P.plot)
+    errs = gemini.output_compare.compare_all(P.outdir, P.refdir, tol, P.plot)
 
     if errs:
         raise SystemExit(f"{errs} compare errors")
     else:
-        print(f"OK: Gemini output comparison {P.dir1} {P.dir2}")
+        print(f"OK: Gemini output comparison {P.outdir} {P.refdir}")
 
 
 if __name__ == "__main__":

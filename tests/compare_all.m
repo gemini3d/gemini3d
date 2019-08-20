@@ -1,4 +1,4 @@
-function ok = compare_all(dir1, dir2)
+function ok = compare_all(outdir, refdir)
 
 % the absolute and relative tolerance account for slight IEEE-754 based differences,
 % including non-associativity of floating-point arithmetic.
@@ -21,8 +21,8 @@ addpath([cwd,filesep,'..',filesep,'script_utils'])
 addpath([cwd, filesep, '..', filesep, 'vis'])
 
 narginchk(2,2)
-validateattr(dir1, {'char'}, {'vector'}, mfilename,'directory to compare',1)
-validateattr(dir2, {'char'}, {'vector'}, mfilename,'directory to compare',2)
+validateattr(outdir, {'char'}, {'vector'}, mfilename,'directory to compare',1)
+validateattr(refdir, {'char'}, {'vector'}, mfilename,'directory to compare',2)
 
 tol.rtol = 1e-5;
 tol.rtolN = 1e-5;
@@ -37,16 +37,16 @@ tol.atolV=50;
 
 %% if paths not exist, exit code 77 as GNU standard skip test indicator
 % this is meant to occur when the simutation didn't complete for some reason
-if exist(dir1, 'dir') ~= 7, fprintf(2,[dir1,' not found\n']), exit(77), end
-if exist(dir2, 'dir') ~= 7, fprintf(2,[dir2,' not found\n']), exit(77), end
+if exist(outdir, 'dir') ~= 7, fprintf(2,[outdir,' not found\n']), exit(77), end
+if exist(refdir, 'dir') ~= 7, fprintf(2,[refdir,' not found\n']), exit(77), end
 %% check that paths not the same
 % this is not a very good check. Matlab has no native way to resolve absolute paths
 % and GetFullPath.m can arbitrarily change working directory, breaking the script.
-if strcmp(dir1, dir2), error([dir1, ' and ', dir2, ' directories are the same']), end
+if strcmp(outdir, refdir), error([outdir, ' and ', refdir, ' directories are the same']), end
 %% READ IN THE SIMULATION INFORMATION
-[ymd0,UTsec0,tdur,dtout] = readconfig([dir1,filesep,'inputs/config.ini']);
+[ymd0,UTsec0,tdur,dtout] = readconfig([outdir,filesep,'inputs/config.ini']);
 
-lxs = simsize(dir1);
+lxs = simsize(outdir);
 disp(['sim grid dimensions: ',num2str(lxs)])
 
 %% TIMES OF INTEREST
@@ -61,8 +61,8 @@ ok = false;
 
 for it=1:Nt
   st = ['UTsec ', num2str(times(it))];
-  [neA,~,~,~,v1A,TiA,TeA,J1A,v2A,v3A,J2A,J3A] = loadframe(dir1,ymd,UTsec,ymd0,UTsec0);
-  [neB,~,~,~,v1B,TiB,TeB,J1B,v2B,v3B,J2B,J3B] = loadframe(dir2,ymd,UTsec,ymd0,UTsec0);
+  [neA,~,~,~,v1A,TiA,TeA,J1A,v2A,v3A,J2A,J3A] = loadframe(outdir,ymd,UTsec,ymd0,UTsec0);
+  [neB,~,~,~,v1B,TiB,TeB,J1B,v2B,v3B,J2B,J3B] = loadframe(refdir,ymd,UTsec,ymd0,UTsec0);
 
   ok = ok + ~assert_allclose(neA,neB,tol.rtolN,tol.atolN,['Ne ',st], true);
 
