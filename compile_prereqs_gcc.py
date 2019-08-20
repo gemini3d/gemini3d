@@ -127,7 +127,7 @@ def cmake_build(
     source_dir: Path,
     build_dir: Path,
     wipe: bool,
-    env: typing.Dict[str, str],
+    env: typing.Mapping[str, str],
 ):
     cmake = cmake_minimum_version("3.13")
     cachefile = build_dir / "CMakeCache.txt"
@@ -156,7 +156,7 @@ def meson_build(
     source_dir: Path,
     build_dir: Path,
     wipe: bool,
-    env: typing.Dict[str, str],
+    env: typing.Mapping[str, str],
 ):
     meson = shutil.which("meson")
     if not meson:
@@ -215,19 +215,34 @@ def update(path: Path, repo: str):
 
 
 @lru_cache()
-def get_compilers() -> typing.Dict[str, str]:
+def get_compilers() -> typing.Mapping[str, str]:
 
-    FC = shutil.which("gfortran")
-    if not FC:
-        raise FileNotFoundError("Gfortran not found")
-    CC = shutil.which("gcc")
-    if not CC:
-        raise FileNotFoundError("GCC not found")
-    CXX = shutil.which("g++")
-    if not CXX:
-        raise FileNotFoundError("G++ not found")
+    env = os.environ
 
-    env = os.environ.update({"FC": FC, "CC": CC, "CXX": CXX})
+    fc_name = "gfortran"
+    cc_name = "gcc"
+    cxx_name = "g++"
+
+    fc = env.get("FC", "")
+    if fc_name not in fc:
+        fc = shutil.which(fc_name)
+    if not fc:
+        raise FileNotFoundError(f"{fc_name} not found")
+
+    cc = env.get("CC", "")
+    if cc_name not in cc:
+        cc = shutil.which(cc_name)
+    if not cc:
+        raise FileNotFoundError(f"{cc_name} not found")
+
+    cxx = env.get("CXX", "")
+    if cxx_name not in cxx:
+        cxx = shutil.which(cxx_name)
+    if not cxx:
+        raise FileNotFoundError(f"{cxx_name} not found")
+
+    env.update({"FC": fc, "CC": cc, "CXX": cxx})
+
     return env
 
 

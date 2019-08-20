@@ -26,41 +26,52 @@ MUMPSDIR = "mumps"
 nice = ["nice"] if sys.platform == "linux" else []
 
 
-def mumps(wipe: bool, dirs: typing.Dict[str, Path], buildsys: str, args: typing.List[str]):
+def mumps(wipe: bool, dirs: typing.Dict[str, Path], buildsys: str):
     install_dir = dirs["prefix"] / MUMPSDIR
     source_dir = dirs["workdir"] / MUMPSDIR
     build_dir = source_dir / BUILDDIR
 
     update(source_dir, MUMPSGIT)
 
-    env = get_compilers()
-
     if buildsys == "cmake":
-        args += [f"-DCMAKE_INSTALL_PREFIX={install_dir}"]
-        cmake_build(args, source_dir, build_dir, wipe, env)
+        args = [f"-DCMAKE_INSTALL_PREFIX={install_dir}"]
+        cmake_build(args, source_dir, build_dir, wipe, env=get_compilers())
     elif buildsys == "meson":
-        args += [f"--prefix={dirs['prefix']}"]
-        meson_build(args, source_dir, build_dir, wipe, env)
+        args = [f"--prefix={dirs['prefix']}"]
+        meson_build(args, source_dir, build_dir, wipe, env=get_compilers())
     else:
         raise ValueError(f"unknown build system {buildsys}")
 
 
 @lru_cache()
-def get_compilers() -> typing.Dict[str, str]:
+def get_compilers() -> typing.Mapping[str, str]:
 
-    FC = shutil.which("ifort")
-    if not FC:
-        raise FileNotFoundError("Intel Fortran compiler ifort not found")
-    CC = "icl" if os.name == "nt" else "icc"
-    CC = shutil.which(CC)
-    if not CC:
-        raise FileNotFoundError("Intel C compiler not found")
-    CXX = "icl" if os.name == "nt" else "icpc"
-    CXX = shutil.which(CXX)
-    if not CXX:
-        raise FileNotFoundError("Intel C++ compiler not found")
+    env = os.environ
 
-    env = os.environ.update({"FC": FC, "CC": CC, "CXX": CXX})
+    fc_name = "ifort"
+    cc_name = "icl" if os.name == "nt" else "icc"
+    cxx_name = "icl" if os.name == "nt" else "icpc"
+
+    fc = env.get("FC", "")
+    if fc_name not in fc:
+        fc = shutil.which(fc_name)
+    if not fc:
+        raise FileNotFoundError(f"{fc_name} not found")
+
+    cc = env.get("CC", "")
+    if cc_name not in cc:
+        cc = shutil.which(cc_name)
+    if not cc:
+        raise FileNotFoundError(f"{cc_name} not found")
+
+    cxx = env.get("CXX", "")
+    if cxx_name not in cxx:
+        cxx = shutil.which(cxx_name)
+    if not cxx:
+        raise FileNotFoundError(f"{cxx_name} not found")
+
+    env.update({"FC": fc, "CC": cc, "CXX": cxx})
+
     return env
 
 
@@ -72,9 +83,6 @@ if __name__ == "__main__":
     p.add_argument("-workdir", help="toplevel path to where you keep code repos", default="~/code")
     p.add_argument("-wipe", help="wipe before completely recompiling libs", action="store_true")
     p.add_argument("-b", "--buildsys", help="build system (meson or cmake)", default="cmake")
-    p.add_argument(
-        "-a", "--args", help="-Dfoo flags to pass to CMake / Meson", nargs="+", default=[]
-    )
     P = p.parse_args()
 
     dirs = {
@@ -82,4 +90,4 @@ if __name__ == "__main__":
         "workdir": Path(P.workdir).expanduser().resolve(),
     }
 
-    mumps(P.wipe, dirs, P.buildsys, P.args)
+    mumps(P.wipe, dirs, P.buildsys)
