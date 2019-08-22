@@ -39,6 +39,12 @@ nice = ["nice"] if sys.platform == "linux" else []
 
 
 def openmpi(wipe: bool, dirs: typing.Dict[str, Path]):
+    if os.name == "nt":
+        raise SystemExit(
+            "OpenMPI is not available in native Windows due to high maintenance burden."
+            "The Windows code was long ago ripped out from OpenMPI."
+        )
+
     from script_utils.meson_file_download import url_retrieve
     from script_utils.meson_file_extract import extract_tar
 

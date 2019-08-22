@@ -15,7 +15,9 @@ except ImportError:
     pass
 
 
-def compare_all(outdir: Path, refdir: Path, tol: typing.Dict[str, float], doplot: bool = False) -> int:
+def compare_all(
+    outdir: Path, refdir: Path, tol: typing.Dict[str, float], doplot: bool = False
+) -> int:
     """
     compare two directories across time steps
     """
@@ -60,19 +62,21 @@ def compare_all(outdir: Path, refdir: Path, tol: typing.Dict[str, float], doplot
             names = ["ne", "v1", "v2", "v3"]
             itols = ["N", "V", "V", "V"]
             for k, j in zip(names, itols):
-                if np.allclose(ref[k][1], A[k][1], 0.0001*tol[f"rtol{j}"], 0.0001*tol[f"atol{j}"]):
+                if np.allclose(
+                    ref[k][1], A[k][1], 0.0001 * tol[f"rtol{j}"], 0.0001 * tol[f"atol{j}"]
+                ):
                     errs += 1
                     logging.error(f"{k} {st} too similar to prior step")
 
         if i == 3:
             for k in ("Ti", "Te"):
-                if np.allclose(ref[k][1], A[k][1], 0.01*tol["rtolT"], 0.1*tol["atolT"]):
+                if np.allclose(ref[k][1], A[k][1], 0.01 * tol["rtolT"], 0.1 * tol["atolT"]):
                     errs += 1
                     logging.error(f"{k} {st} too similar to prior step")
 
         if i == 2:
             for k in ("J1", "J2", "J3"):
-                if np.allclose(ref[k][1], A[k][1], 0.01*tol["rtolJ"], 0.1*tol["atolJ"]):
+                if np.allclose(ref[k][1], A[k][1], 0.01 * tol["rtolJ"], 0.1 * tol["atolJ"]):
                     errs += 1
                     logging.error(f"{k} {st} too similar to prior step")
 
