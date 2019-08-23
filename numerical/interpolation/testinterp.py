@@ -4,13 +4,8 @@ from pathlib import Path
 import argparse
 import sys
 
-try:
-    from matplotlib.pyplot import figure, show
-except (ImportError, RuntimeError):
-    figure = show = None
 
-
-def compare_interp(fn: Path):
+def compare_interp(fn: Path, doplot: bool = False):
     fn = Path(fn).expanduser()
     if not fn.is_file():
         print(fn, "not found", file=sys.stderr)
@@ -25,7 +20,7 @@ def compare_interp(fn: Path):
         fx1x2 = np.fromfile(f, np.float64, lx1 * lx2).reshape((lx1, lx2))
         assert fx1x2.shape == (500, 1000)
 
-    if show is None:
+    if not doplot:
         return None
 
     fg = figure()
@@ -47,6 +42,13 @@ def compare_interp(fn: Path):
 if __name__ == "__main__":
     p = argparse.ArgumentParser()
     p.add_argument("file")
+    p.add_argument("-p", "--plot", help="make plots", action="store_true")
     P = p.parse_args()
 
-    compare_interp(P.file)
+    if P.plot:
+        from matplotlib.pyplot import figure, show
+
+    compare_interp(P.file, P.plot)
+
+    if P.plot:
+        show()
