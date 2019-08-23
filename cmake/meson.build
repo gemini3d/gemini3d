@@ -1,5 +1,11 @@
 fc = meson.get_compiler('fortran')
 fcid = fc.get_id()
+
+os = host_machine.system()
+if os == 'windows' and fcid != 'intel'
+  error('On native Windows, only the Intel compilers (ifort) works at this time, because OpenMPI is not available for Windows. Try Windows Subsystem for Linux.')
+endif
+
 # -- compiler options
 if fcid == 'gcc'
   add_project_arguments('-Wno-unused-variable', '-Wno-maybe-uninitialized', '-Wno-unused-dummy-argument', '-Wno-unused-function',
