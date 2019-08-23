@@ -223,7 +223,9 @@ end subroutine load_grav
 
 subroutine clear_grav()
 !! DEALLOCATE GRAV. FIELD ARRAY.
+
 deallocate(g1,g2,g3)
+
 end subroutine clear_grav
 
 end module grid

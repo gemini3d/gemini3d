@@ -63,7 +63,7 @@ real(wp), allocatable :: dl1,dl2,dl3     !these are grid distances in [m] used t
 !NEUTRAL PERTURBATION VARIABLES
 integer :: flagdneu                  !toggles neutral perturbations (0 - none; 1 - file-based neutral inputs)
 integer :: interptype                !toggles whether the neutral input data are interpreted (0 - Cartesian; 1 - axisymmetric)
-real(wp) :: drhon,dzn                 !finite differences for the neutral input data in the horizontal and vertical directions
+real(wp) :: dxn,drhon,dzn                 !finite differences for the neutral input data in the horizontal and vertical directions
 real(wp) :: sourcemlat,sourcemlon     !mag. lat./long for the neutral source location
 character(:), allocatable :: sourcedir          !directory where neutral input data are located
 real(wp) :: dtneu                     !time interval [s] in between neutral inputs
@@ -110,7 +110,7 @@ call get_command_argument(1,argv)
 infile = trim(argv)
 
 call read_configfile(infile, ymd,UTsec0,tdur,dtout,activ,tcfl,Teinf,potsolve,flagperiodic,flagoutput,flagcap, &
-                     indatsize,indatgrid,flagdneu,interptype,sourcemlat,sourcemlon,dtneu,drhon,dzn,sourcedir,flagprecfile, &
+                     indatsize,indatgrid,flagdneu,interptype,sourcemlat,sourcemlon,dtneu,dxn,drhon,dzn,sourcedir,flagprecfile, &
                      dtprec,precdir,flagE0file,dtE0,E0dir,flagglow,dtglow,dtglowout)
 
 !!CHECK THE GRID SIZE AND ESTABLISH A PROCESS GRID
@@ -238,10 +238,11 @@ do while (t<tdur)
     if (it==1) then    !this triggers the code to load the neutral frame correspdonding ot the beginning time of the simulation
       if (myid==0) print *, '!!!Attempting initial load of neutral dynamics files!!!' // &
                               ' This is a workaround that fixes the restart code...',t-dt
-      call neutral_perturb(interptype,dt,dtneu,t-dtneu,ymd,UTsec-dtneu,sourcedir,drhon,dzn, &
+      call neutral_perturb(interptype,dt,dtneu,t-dtneu,ymd,UTsec-dtneu,sourcedir,dxn,drhon,dzn, &
                                   sourcemlat,sourcemlon,x,nn,Tn,vn1,vn2,vn3)
     end if
-    call neutral_perturb(interptype,dt,dtneu,t,ymd,UTsec,sourcedir,drhon,dzn,sourcemlat,sourcemlon,x,nn,Tn,vn1,vn2,vn3)
+    call neutral_perturb(interptype,dt,dtneu,t,ymd,UTsec,sourcedir,dxn,drhon,dzn,sourcemlat, &
+                                  sourcemlon,x,nn,Tn,vn1,vn2,vn3)
     call cpu_time(tfin)
     if (myid==0 .and. debug) print *, 'Neutral perturbations calculated in time:  ',tfin-tstart
   end if

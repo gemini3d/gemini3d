@@ -115,7 +115,7 @@ interface ! input.f90
 module subroutine read_configfile(infile,ymd,UTsec0,tdur,dtout,activ,tcfl,Teinf, &
                  potsolve,flagperiodic, flagoutput,flagcap,&
                  indatsize,indatgrid,flagdneu,interptype, &
-                 sourcemlat,sourcemlon,dtneu,drhon,dzn,sourcedir,flagprecfile,&
+                 sourcemlat,sourcemlon,dtneu,dxn,drhon,dzn,sourcedir,flagprecfile,&
                  dtprec,precdir,flagE0file,dtE0,E0dir,flagglow,dtglow,dtglowout)
 character(*), intent(in) :: infile
 integer, dimension(3), intent(out):: ymd
@@ -130,7 +130,7 @@ integer, intent(out) :: flagdneu
 integer, intent(out) :: interptype
 real(wp), intent(out) :: sourcemlat,sourcemlon
 real(wp), intent(out) :: dtneu
-real(wp), intent(out) :: drhon,dzn
+real(wp), intent(out) :: dxn,drhon,dzn
 integer, intent(out) :: flagprecfile
 real(wp), intent(out) :: dtprec
 character(:), allocatable, intent(out) :: indatsize,indatgrid, sourcedir, precdir, E0dir

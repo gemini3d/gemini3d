@@ -203,7 +203,7 @@ FS=8;
 ha=subplot(1,3,1, 'parent', hf, 'nextplot', 'add', 'FontSize',FS);
 h=imagesc(ha,xp,zp,parmp);
 if (flagsource)
-  plot(ha,[minxp,maxxp],[altref,altref],'w--','LineWidth',1);
+  plot(ha,[minxp,maxxp],[altref,altref],'--','LineWidth',1,'Color',[0.25 0.25 0.25]);
   plot(ha,[sourcemlat,sourcemlat],[minzp,maxzp],'k--','LineWidth',1);
   plot(ha,sourcemlat,0,'r^','MarkerSize',6,'LineWidth',2);
 end
@@ -216,6 +216,29 @@ c=colorbar(ha);
 xlabel(c,parmlbl);
 xlabel(ha,'magnetic latitude (deg.)');
 ylabel(ha,'altitude (km)');
+
+
+
+%CONSTRUCT A STRING FOR THE TIME AND DATE
+t=UTsec/3600;     %decimal hours
+UThrs=floor(t);
+UTmin=floor((t-UThrs)*60);
+UTsec=floor((t-UThrs-UTmin/60)*3600);
+UThrsstr=num2str(UThrs);
+UTminstr=num2str(UTmin);
+if (numel(UTminstr)==1)
+  UTminstr=['0',UTminstr];
+end
+UTsecstr=num2str(UTsec);
+if (numel(UTsecstr)==1)
+  UTsecstr=['0',UTsecstr];
+end
+
+timestr=[UThrsstr,':',UTminstr,':',UTsecstr];
+strval=sprintf('%s \n %s',[num2str(ymd(1)),'/',num2str(ymd(2)),'/',num2str(ymd(3))], ...
+    [timestr,' UT']);
+title(ha,strval,'Color','black');
+
 
 
 ha=subplot(1,3,2, 'parent', hf, 'nextplot', 'add', 'FontSize',FS);
@@ -259,12 +282,13 @@ ylabel(ha,'altitude (km)');
 
 
 %CONSTRUCT A STRING FOR THE TIME AND DATE
-ha=subplot(1,3,1);
+%ha=subplot(1,3,1);
 
-t = datenum(ymd(1), ymd(2), ymd(3), 0, 0, UTsec);
-ttxt = {datestr(t,1), [datestr(t,13),' UT']};
-title(ha, ttxt)
-%text(xp(round(lxp/10)),zp(lzp-round(lzp/7.5)),strval,'FontSize',18,'Color',[0.66 0.66 0.66],'FontWeight','bold');
-%text(xp(round(lxp/10)),zp(lzp-round(lzp/7.5)),strval,'FontSize',16,'Color',[0.5 0.5 0.5],'FontWeight','bold');
+%t = datenum(ymd(1), ymd(2), ymd(3), 0, 0, UTsec);
+%ttxt = {datestr(t,1), [datestr(t,13),' UT']};
+%title(ha, ttxt)
+%%text(xp(round(lxp/10)),zp(lzp-round(lzp/7.5)),strval,'FontSize',18,'Color',[0.66 0.66 0.66],'FontWeight','bold');
+%%text(xp(round(lxp/10)),zp(lzp-round(lzp/7.5)),strval,'FontSize',16,'Color',[0.5 0.5 0.5],'FontWeight','bold');
+
 
 end

@@ -16,6 +16,6 @@ if(useglow)
 endif(useglow)
 
 add_library(precipBCs boundary_conditions/precipBCs_mod.f90)
-target_link_libraries(precipBCs PRIVATE mpimod const fsutils grid interp io timeutils MPI::MPI_Fortran)
+target_link_libraries(precipBCs PRIVATE mpimod const fsutils grid interp timeutils MPI::MPI_Fortran)
 target_compile_options(precipBCs PRIVATE ${FFLAGS})
 set_target_properties(precipBCs PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR})

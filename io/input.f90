@@ -50,7 +50,12 @@ if( flagdneu==1) then
   read(u,*) interptype
   read(u,*) sourcemlat,sourcemlon
   read(u,*) dtneu
-  read(u,*) drhon,dzn
+  if (interptype==3) then     !read in extra dxn if 3D
+    read(u,*) dxn,drhon,dzn
+  else
+    read(u,*) drhon,dzn
+    dxn=0
+  end if
   read(u,'(A256)') buf
   sourcedir = expanduser(buf)
   if (myid ==0) then

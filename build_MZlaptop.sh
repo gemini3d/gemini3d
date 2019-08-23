@@ -11,7 +11,7 @@ LAPACKPREFIX=
 SCALAPACKPREFIX=
 MUMPSPREFIX=
 
-OPTS="-DUSEGLOW=FALSE"
+OPTS="-Duseglow=false"
 
 . script_utils/check.sh
 

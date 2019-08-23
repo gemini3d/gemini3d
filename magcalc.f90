@@ -76,7 +76,7 @@ real(wp) :: rmean,thetamean
 !NEUTRAL PERTURBATION VARIABLES (UNUSED)
 integer :: flagdneu                  !toggles neutral perturbations (0 - none; 1 - file-based neutral inputs)
 integer :: interptype                !toggles whether the neutral input data are interpreted (0 - Cartesian; 1 - axisymmetric)
-real(wp) :: drhon,dzn                 !finite differences for the neutral input data in the horizontal and vertical directions
+real(wp) :: dxn,drhon,dzn                 !finite differences for the neutral input data in the horizontal and vertical directions
 real(wp) :: sourcemlat,sourcemlon     !mag. lat./long for the neutral source location
 character(:), allocatable :: sourcedir          !directory where neutral input data are located
 real(wp) :: dtneu                     !time interval [s] in between neutral inputs
@@ -124,10 +124,8 @@ if (myid==0) then
   print *, 'Simulation data directory:  ',outdir
   print *, 'Input config file:  ',infile
 end if
-call read_configfile(infile,ymd,UTsec0,tdur,dtout,activ,tcfl,Teinf, &
-                     potsolve,flagperiodic,flagoutput,flagcap, &
-                     indatsize,indatgrid,flagdneu,interptype,&
-                     sourcemlat,sourcemlon,dtneu,drhon,dzn,sourcedir,flagprecfile, &
+call read_configfile(infile,ymd,UTsec0,tdur,dtout,activ,tcfl,Teinf,potsolve,flagperiodic,flagoutput,flagcap, &
+                     indatsize,indatgrid,flagdneu,interptype,sourcemlat,sourcemlon,dtneu,dxn,drhon,dzn,sourcedir,flagprecfile, &
                      dtprec,precdir,flagE0file,dtE0,E0dir,flagglow,dtglow,dtglowout)
 
 
