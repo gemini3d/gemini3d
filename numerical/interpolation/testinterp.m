@@ -21,26 +21,24 @@ f=reshape(f,[lx1, lx2]);
 
 fclose(fid);
 
-
+if ~isinteractive, return, end
 %% PLOT
-if isinteractive
-  figure
+figure
 
-  if (lx2==1)
-    plot(x1,f);
-    xlabel('x_1')
-    ylabel('f')
-    title('1-D interp')
-  else
-    imagesc(x2,x1,f);
-    axis xy;
-    xlabel('x_2')
-    ylabel('x_1')
-    c=colorbar;
-    ylabel(c,'f')
-    title('2-D interp')
-  end
-  %print -dpng -r300 ~/testinterp.png;
+if (lx2==1)
+  plot(x1,f);
+  xlabel('x_1')
+  ylabel('f')
+  title('1-D interp')
+else
+  imagesc(x2,x1,f);
+  axis xy;
+  xlabel('x_2')
+  ylabel('x_1')
+  c=colorbar;
+  ylabel(c,'f')
+  title('2-D interp')
 end
+%print -dpng -r300 ~/testinterp.png;
 
 end % function
