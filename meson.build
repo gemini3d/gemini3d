@@ -27,7 +27,8 @@ temporal = library('temporal', 'temporal/temporal.f90',
 
 subdir('tests')
 
-io = library('io','io/io.F90', 'io/aurora.f90',
+io = library('io',
+  sources: io_src,
   link_with: [calculus, const, fsutils, grid, mpimod])
 
 subdir('vendor/msis00')
