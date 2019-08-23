@@ -36,7 +36,7 @@ stages:
     - script: mypy .
       displayName: Type Check
 
-- stage: UnitTests
+- stage: DebugTests
   jobs:
   - job: DebugOptsGCC6
     pool:
@@ -64,9 +64,11 @@ stages:
       env:
         CC: gcc-6
         FC: gfortran-6
-      displayName: 'Meson configure'
-    - script: meson test -C build --suite unit --suite 2d_fang
-      displayName: 'Meson Build and Unit test'
+      displayName: 'Configure'
+    - script: ninja -C build
+      displayName: 'Build'
+    - script: meson test -C build
+      displayName: 'Run all tests'
     - publish: build/meson-logs/testlog.txt
       condition: failed()
       artifact: UnitLogGCC6
@@ -100,18 +102,15 @@ stages:
       env:
         CC: gcc-6
         FC: gfortran-6
-      displayName: 'CMake Configure and Generate'
+      displayName: 'Configure and Generate'
     - script: $(CMAKE_PATH)/cmake --build build --parallel
-      displayName: 'CMake build'
+      displayName: 'Build'
     - publish: build/CMakeFiles/CMakeError.log
       condition: failed()
       artifact: UbuntuCMakeTestLog
-    - script: $(CMAKE_PATH)/ctest --output-on-failure -R Gemini2d --parallel
+    - script: $(CMAKE_PATH)/ctest -V --parallel
       workingDirectory: build
-      displayName: 'CTest: Run 2D Fang'
-    - script: $(CMAKE_PATH)/ctest -V -R Compare2d
-      workingDirectory: build
-      displayName: 'CTest: Compare 2D Fang'
+      displayName: 'Run all Tests'
 
 
   - job: UbuntuMeson
@@ -140,11 +139,11 @@ stages:
       env:
         CC: gcc-6
         FC: gfortran-6
-      displayName: 'Meson configure'
-    - script: meson test -C build --suite unit
-      displayName: 'Meson build'
-    - script: meson test -C build --suite 2d_fang
-      displayName: 'Meson test 2D Fang'
+      displayName: 'Configure'
+    - script: ninja -C build
+      displayName: 'Build'
+    - script: meson test -C build
+      displayName: 'Run all tests'
     - publish: build/meson-logs/testlog.txt
       condition: failed()
       artifact: LinuxMesonTestLog
@@ -175,11 +174,11 @@ stages:
       env:
         CC: gcc-6
         FC: gfortran-6
-      displayName: 'Meson configure'
-    - script: meson test -C build --suite unit
-      displayName: 'Meson build'
-    - script: meson test -C build --suite 2d_fang
-      displayName: 'Meson test 2D Fang'
+      displayName: 'Configure'
+    - script: ninja -C build
+      displayName: 'Build'
+    - script: meson test -C build
+      displayName: 'Run all tests'
     - publish: build/meson-logs/testlog.txt
       condition: failed()
       artifact: LinuxMesonTestLog
@@ -206,18 +205,15 @@ stages:
         FC: /usr/local/bin/gfortran-9
         CC: /usr/local/bin/gcc-9
         CXX: /usr/local/bin/g++-9
-      displayName: 'CMake: Configure and Generate'
+      displayName: 'Configure and Generate'
     - script: cmake --build build --parallel
-      displayName: 'CMake build'
+      displayName: 'Build'
     - publish: build/CMakeFiles/CMakeError.log
       condition: failed()
-      artifact: MacCMakeTestLog
-    - script: ctest --output-on-failure -R Gemini2d --parallel
+      artifact: MacCMakeBuildLog
+    - script: ctest -V --parallel
       workingDirectory: build
-      displayName: 'CTest: Run 2D Fang'
-    - script: ctest -V -R Compare2d
-      workingDirectory: build
-      displayName: 'CTest: Compare 2D Fang'
+      displayName: 'Run all tests'
 
 
   - job: MacMesonSubprojects
@@ -243,11 +239,11 @@ stages:
         FC: /usr/local/bin/gfortran-9
         CC: /usr/local/bin/gcc-9
         CXX: /usr/local/bin/g++-9
-      displayName: 'Meson configure'
-    - script: meson test -C build --suite unit
-      displayName: 'Meson build'
-    - script: meson test -C build --suite 2d_fang
-      displayName: 'Meson test 2D Fang'
+      displayName: 'Configure'
+    - script: ninja -C build
+      displayName: 'Build'
+    - script: meson test -C build
+      displayName: 'Run all tests'
     - publish: build/meson-logs/testlog.txt
       condition: failed()
       artifact: MacMesonTestLog

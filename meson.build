@@ -122,10 +122,10 @@ foreach k, v : zenodo
     continue
   endif
 
-  if is_ci and k.startswith('3d')
-    # save download / CPU on CI
-    continue
-  endif
+#  if is_ci and k.startswith('3d')
+#    # save download / CPU on CI
+#    continue
+#  endif
 
   proc = run_command(python, meson.source_root() / 'script_utils/meson_file_download.py',
                      v['url'], v['zip'], '-hash', 'md5', v['md5'])

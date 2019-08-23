@@ -89,7 +89,7 @@ target_compile_options(magcalc.bin PRIVATE ${FFLAGS})
 
 # --- self-tests
 include(${PROJECT_SOURCE_DIR}/cmake/test2d.cmake)
-if(NOT DEFINED ENV{CI} OR NOT $ENV{CI})
+#if(NOT DEFINED ENV{CI} OR NOT $ENV{CI})
   # need the dollar sign on ENV for IF: save needless downloading
-  include(${PROJECT_SOURCE_DIR}/cmake/test3d.cmake)
-endif()
+include(${PROJECT_SOURCE_DIR}/cmake/test3d.cmake)
+#endif()
