@@ -10,6 +10,10 @@ project(gemini3d
 
 enable_testing()
 
+if(WIN32 AND NOT CMAKE_Fortran_COMPILER_ID STREQUAL Intel)
+  message(FATAL_ERROR "On native Windows, only the Intel compilers (ifort) works at this time, because OpenMPI is not available for Windows. Try Windows Subsystem for Linux.")
+endif()
+
 if(NOT realbits)
   set(realbits 64)
 endif()
