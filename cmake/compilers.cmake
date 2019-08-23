@@ -4,6 +4,19 @@ if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.13)
   cmake_policy(SET CMP0076 NEW)
 endif()
 
+#========== Python setup
+if(NOT DEFINED PythonOK)
+  include(${PROJECT_SOURCE_DIR}/cmake/python.cmake)
+endif()
+#========== Octave setup
+if(NOT DEFINED OctaveOK)
+  include(${PROJECT_SOURCE_DIR}/cmake/octave.cmake)
+endif()
+#=== Matlab setup
+if(usematlab AND NOT DEFINED MatlabOK)
+  include(${PROJECT_SOURCE_DIR}/cmake/matlab.cmake)
+endif()
+#=== compiler setup
 if(CMAKE_Fortran_COMPILER_ID STREQUAL Intel)
 
   if(WIN32)

@@ -77,48 +77,6 @@ endif()
 endfunction(num_mpi_processes)
 
 
-function(check_octave_source_runs code)
-
-if(NOT Octave_EXECUTABLE)
-  set(ok false)
-else()
-  execute_process(COMMAND ${Octave_EXECUTABLE} --eval ${code}
-    ERROR_QUIET OUTPUT_QUIET
-    RESULT_VARIABLE ret
-    TIMEOUT 5)
-  if(ret EQUAL 0)
-    set(ok true)
-  else()
-    set(ok false)
-  endif()
-endif()
-
-set(OctaveOK ${ok} CACHE BOOL "GNU Octave is sufficiently new to run self-tests")
-
-endfunction(check_octave_source_runs)
-
-
-function(check_matlab_source_runs code)
-
-if(NOT Matlab_MAIN_PROGRAM)
-  set(ok false)
-else()
-  execute_process(COMMAND ${Matlab_MAIN_PROGRAM} -batch ${code}
-    ERROR_QUIET OUTPUT_QUIET
-    RESULT_VARIABLE ret
-    TIMEOUT 60)  # Matlab takes a long time to start with lots of toolboxes
-  if(ret EQUAL 0)
-    set(ok true)
-  else()
-    set(ok false)
-  endif()
-endif()
-
-set(MatlabOK ${ok} CACHE BOOL "Matlab is sufficiently new to run self-tests")
-
-endfunction(check_matlab_source_runs)
-
-
 function(setup_gemini_test TESTNAME EXE TESTDIR REFDIR TIMEOUT)
 
 num_mpi_processes(${REFDIR})
@@ -128,8 +86,6 @@ if(NP EQUAL 1)
 endif()
 
 set(TESTNAME ${TESTNAME}-NP${NP})  # for convenience, name with number of processes since this is important for debugging MPI
-
-message(STATUS "Test ${TESTNAME} uses ${NP} MPI processes")
 
 add_test(NAME ${TESTNAME}
   COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${NP} $<TARGET_FILE:${EXE}> ${CMAKE_CURRENT_SOURCE_DIR}/initialize/${TESTDIR}/config.ini ${CMAKE_CURRENT_BINARY_DIR}/${TESTDIR}
@@ -145,97 +101,22 @@ set_tests_properties(${TESTNAME} PROPERTIES
 endfunction(setup_gemini_test)
 
 
-function(octave_compare TESTNAME OUTDIR REFDIR REQFILE)
-
-add_test(NAME ${TESTNAME}
-  COMMAND ${Octave_EXECUTABLE} --eval "compare_all('${CMAKE_CURRENT_BINARY_DIR}/${OUTDIR}','${CMAKE_CURRENT_SOURCE_DIR}/${REFDIR}')"
-  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
-
-set_tests_properties(${TESTNAME} PROPERTIES
-  TIMEOUT 30
-  REQUIRED_FILES "${CMAKE_CURRENT_BINARY_DIR}/${OUTDIR}/${REQFILE};${CMAKE_CURRENT_SOURCE_DIR}/${REFDIR}/${REQFILE}"
-)
-
-endfunction(octave_compare)
-
-
-function(matlab_compare TESTNAME OUTDIR REFDIR REQFILE)
-
-add_test(NAME ${TESTNAME}
-  COMMAND ${Matlab_MAIN_PROGRAM} -batch compare_all('${CMAKE_CURRENT_BINARY_DIR}/${OUTDIR}','${CMAKE_CURRENT_SOURCE_DIR}/${REFDIR}')
-  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
-
-set_tests_properties(${TESTNAME} PROPERTIES
-  TIMEOUT 60
-  REQUIRED_FILES "${CMAKE_CURRENT_BINARY_DIR}/${OUTDIR}/${REQFILE};${CMAKE_CURRENT_SOURCE_DIR}/${REFDIR}/${REQFILE}"
-)
-# Matlab with a lot of toolboxes takes ~ 15 seconds just to start
-
-endfunction(matlab_compare)
-
-
 function(compare_gemini_output TESTNAME OUTDIR REFDIR REQFILE)
 # This sets up the Compare* tests
 
-#--- Python
-find_package(Python3 COMPONENTS Interpreter)
-# Python3::Interpreter did NOT work
-execute_process(COMMAND ${Python3_EXECUTABLE} -c "import gemini; print(gemini.__file__)"
-  ERROR_QUIET OUTPUT_QUIET
-  RESULT_VARIABLE ret
-  TIMEOUT 15)
-if(NOT ret EQUAL 0)
-  message(WARNING "Need to setup PyGemini by 'pip install -e gemini'   error: ${ret}")
-  set(Python3_FOUND false)
-endif()
-if(Python3_FOUND)
-  add_test(NAME ${TESTNAME}
-    COMMAND ${Python3_EXECUTABLE} compare_all.py
-      ${CMAKE_CURRENT_BINARY_DIR}/${OUTDIR} ${CMAKE_CURRENT_SOURCE_DIR}/${REFDIR}
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/tests)
+include(${PROJECT_SOURCE_DIR}/cmake/compare.cmake)
 
-  set_tests_properties(${TESTNAME} PROPERTIES
-    TIMEOUT 30
-    REQUIRED_FILES "${CMAKE_CURRENT_BINARY_DIR}/${OUTDIR}/${REQFILE};${CMAKE_CURRENT_SOURCE_DIR}/${REFDIR}/${REQFILE}")
-else()
-  message(WARNING "Python3 not found, self-test ${TESTNAME} will not work")
-endif(Python3_FOUND)
+#--- Python
+if(PythonOK)
+  python_compare(${TESTNAME}_Python ${OUTDIR} ${REFDIR} ${REQFILE})
+endif(PythonOK)
 
 #--- Octave
-if(NOT DEFINED OctaveOK)
-  if(WIN32)
-    if(NOT Octave_ROOT)
-      set(Octave_ROOT $ENV{HOMEDRIVE}/Octave)
-    endif()
-    file(GLOB _octpath "${Octave_ROOT}/Octave*/mingw64/bin/")
-  endif()
-
-  find_program(Octave_EXECUTABLE
-    NAMES octave-cli octave
-    DOC "GNU Octave"
-    PATHS ${Octave_ROOT}
-    HINTS ${_octpath}
-    PATH_SUFFIXES bin)
-
-  # https://octave.sourceforge.io/octave/function/exist.html
-  # check_octave_source_runs("assert(exist('validateattributes', 'file')==2)")
-  # we made validateattr() so Octave 3.8 can work for compare_all()
-  if(Octave_EXECUTABLE)
-    message(STATUS "Using GNU Octave ${Octave_EXECUTABLE} for testing")
-    set(OctaveOK true CACHE BOOL "GNU Octave is present.")
-  endif()
-endif()
-
 if(OctaveOK)
   octave_compare(${TESTNAME}_Octave ${OUTDIR} ${REFDIR} ${REQFILE})
 endif()
 
 #--- Matlab
-if(usematlab AND NOT DEFINED MatlabOK)
-  find_package(Matlab COMPONENTS MAIN_PROGRAM)
-  check_matlab_source_runs("exit")
-endif()
-
 if(MatlabOK)
   matlab_compare(${TESTNAME}_Matlab ${TESTDIR} ${REFDIR} ${REQFILE})
 endif()
