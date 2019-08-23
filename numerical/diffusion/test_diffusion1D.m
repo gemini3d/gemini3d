@@ -5,6 +5,8 @@ cwd = fileparts(mfilename('fullpath'));
 addpath([cwd,filesep,'../../tests'])
 addpath([cwd,filesep,'../../script_utils'])
 
+if exist(fn, 'file') ~= 2, fprintf(2, [fn, ' not found\n']), exit(77), end
+
 fid=fopen(fn);
 data=fscanf(fid,'%f',2);
 lt=data(1);
@@ -20,8 +22,6 @@ t=zeros(lt,1);
 for it=1:lt
   t(it)=fscanf(fid,'%f',1);
   Ts(:,it)=fscanf(fid,'%f',lx1)';
-%  plot(x1(3:end-2),Ts);
-%  pause(0.1)
 end % for
 
 assert_allclose(Ts(13,end), 0.2757552094055,[],[],'1-D diffusion accuracy')
