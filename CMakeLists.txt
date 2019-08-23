@@ -37,7 +37,7 @@ add_subdirectory(ionization)
 add_subdirectory(numerical)
 
 add_subdirectory(io)
-add_library(io io/io.f90 io/aurora.f90 io/mag.f90 io/plasma.f90)
+add_library(io io/io.f90 io/aurora.f90 io/mag.f90 io/plasma.f90 io/output.f90)
 target_link_libraries(io PRIVATE calculus const fsutils grid mpimod)
 target_compile_definitions(io PRIVATE TRACE=${TRACE})
 target_compile_options(io PRIVATE ${FFLAGS})
