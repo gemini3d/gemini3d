@@ -27,7 +27,7 @@ temporal = library('temporal', 'temporal/temporal.f90',
 
 subdir('tests')
 
-io = library('io','io/io.F90',
+io = library('io','io/io.F90', 'io/aurora.f90',
   link_with: [calculus, const, fsutils, grid, mpimod])
 
 subdir('vendor/msis00')
@@ -37,7 +37,7 @@ executable('msis_setup', 'setup/MSIS00/call_msis_gfortran.f90',
 
 neutral = library('neutral', 'neutral/neutral.f90',
   dependencies : mpi,
-  link_with : [const, grid, interp, io, mpimod, msis, timeutils])
+  link_with : [const, fsutils, grid, interp, mpimod, msis, timeutils])
 
 subdir('ionization')
 

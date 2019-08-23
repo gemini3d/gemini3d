@@ -14,17 +14,52 @@ use date_formats, only: date_filename
 
 implicit none
 
+private
+public :: read_configfile, create_outdir, &
+  input_plasma, output_plasma, input_plasma_currents, &
+  create_outdir_mag, output_magfields, &
+  create_outdir_aur, output_aur
+
 !> NONE OF THESE VARIABLES SHOULD BE ACCESSED BY PROCEDURES OUTSIDE THIS MODULE
 character(:), allocatable, private :: indatfile
 !! initial condition data files from input configuration file
 
+interface ! aurora.f90
+
+module subroutine create_outdir_aur(outdir)
+character(*), intent(in) :: outdir
+end subroutine create_outdir_aur
+
+module subroutine output_aur(outdir,flagglow,ymd,UTsec,iver)
+character(*), intent(in) :: outdir
+integer, intent(in) :: flagglow
+integer, dimension(3), intent(in) :: ymd
+real(wp), intent(in) :: UTsec
+real(wp), dimension(:,:,:), intent(in) :: iver
+end subroutine output_aur
+
+module subroutine output_aur_workers(iver)
+real(wp), dimension(:,:,:), intent(in) :: iver
+end subroutine output_aur_workers
+
+module subroutine output_aur_root(outdir,flagglow,ymd,UTsec,iver)
+character(*), intent(in) :: outdir
+integer, intent(in) :: flagglow, ymd(3)
+real(wp), intent(in) :: UTsec
+real(wp), dimension(:,:,:), intent(in) :: iver
+end subroutine output_aur_root
+
+end interface
+
+
 contains
 
 
-subroutine read_configfile(infile,ymd,UTsec0,tdur,dtout,activ,tcfl,Teinf,potsolve,flagperiodic, &
-                 flagoutput,flagcap,indatsize,indatgrid,flagdneu,interptype, &
-                 sourcemlat,sourcemlon,dtneu,drhon,dzn,sourcedir,flagprecfile,dtprec,precdir, &
-                 flagE0file,dtE0,E0dir,flagglow,dtglow,dtglowout)
+subroutine read_configfile(infile,ymd,UTsec0,tdur,dtout,activ,tcfl,Teinf, &
+                 potsolve,flagperiodic, flagoutput,flagcap,&
+                 indatsize,indatgrid,flagdneu,interptype, &
+                 sourcemlat,sourcemlon,dtneu,drhon,dzn,sourcedir,flagprecfile,&
+                 dtprec,precdir,flagE0file,dtE0,E0dir,flagglow,dtglow,dtglowout)
 !! READS THE INPUT CONFIGURAITON FILE ANDE ASSIGNS VARIABLES FOR FILENAMES, SIZES, ETC.
 
 
@@ -249,22 +284,6 @@ if (ierr/=0) error stop 'could not create magfields output directory'
 
 end subroutine create_outdir_mag
 
-
-subroutine create_outdir_aur(outdir)
-
-!------------------------------------------------------------
-!-------CREATES OUTPUT DIRECTORY FOR MAGNETIC FIELD CALCULATIONS
-!------------------------------------------------------------
-
-character(*), intent(in) :: outdir
-
-integer :: ierr
-
-!NOTE HERE THAT WE INTERPRET OUTDIR AS THE BASE DIRECTORY CONTAINING SIMULATION OUTPUT
-ierr = mkdir(outdir//'/aurmaps/')
-if (ierr /= 0) error stop 'could not create auroral map output directory'
-
-end subroutine create_outdir_aur
 
 subroutine input_plasma(x1,x2,x3all,indatsize,ns,vs1,Ts)
 !! A BASIC WRAPPER FOR THE ROOT AND WORKER INPUT FUNCTIONS
@@ -815,89 +834,6 @@ close(u)
 end subroutine output_root_stream_mpi
 
 
-subroutine output_aur(outdir,flagglow,ymd,UTsec,iver)
-
-!------------------------------------------------------------
-!-------A BASIC WRAPPER FOR THE ROOT AND WORKER OUTPUT FUNCTIONS
-!-------BOTH ROOT AND WORKERS CALL THIS PROCEDURE SO UNALLOCATED
-!-------VARIABLES MUST BE DECLARED AS ALLOCATABLE, INTENT(INOUT)
-!------------------------------------------------------------
-
-character(*), intent(in) :: outdir
-integer, intent(in) :: flagglow
-
-integer, dimension(3), intent(in) :: ymd
-real(wp), intent(in) :: UTsec
-
-real(wp), dimension(:,:,:), intent(in) :: iver
-
-
-if (myid/=0) then
-  call output_aur_workers(iver)
-else
-  call output_aur_root(outdir,flagglow,ymd,UTsec,iver)
-end if
-
-end subroutine output_aur
-
-
-subroutine output_aur_workers(iver)
-
-!------------------------------------------------------------
-!-------SEND COMPLETE DATA FROM WORKERS TO ROOT PROCESS FOR OUTPUT.
-!-------NO GHOST CELLS (I HOPE)
-!------------------------------------------------------------
-
-real(wp), dimension(:,:,:), intent(in) :: iver
-
-real(wp), dimension(1:lx2,1:lwave,1:lx3) :: ivertmp
-
-ivertmp=reshape(iver,[lx2,lwave,lx3],order=[1,3,2])
-
-!------- SEND AURORA PARAMETERS TO ROOT
-call gather_send(ivertmp,tagAur)
-
-end subroutine output_aur_workers
-
-
-subroutine output_aur_root(outdir,flagglow,ymd,UTsec,iver)
-
-!------------------------------------------------------------
-!-------COLLECT COMPLETE DATA FROM WORKERS AND PROCESS FOR OUTPUT.
-!-------NO GHOST CELLS (I HOPE)
-!------------------------------------------------------------
-
-character(*), intent(in) :: outdir
-integer, intent(in) :: flagglow, ymd(3)
-real(wp), intent(in) :: UTsec
-real(wp), dimension(:,:,:), intent(in) :: iver
-
-real(wp), dimension(1:lx2,1:lwave,1:lx3) :: ivertmp
-real(wp), dimension(1:lx2all,1:lwave,1:lx3all) :: iverall
-
-character(:), allocatable :: outdir_composite, filenamefull
-integer :: u
-
-ivertmp=reshape(iver,[lx2,lwave,lx3],order=[1,3,2])
-
-call gather_recv(ivertmp,tagAur,iverall)
-
-!FORM THE INPUT FILE NAME
-outdir_composite=outdir//'/aurmaps/'
-
-filenamefull=date_filename(outdir_composite,ymd,UTsec)
-
-print *, '  Output file name (auroral maps):  ',filenamefull
-open(newunit=u,file=filenamefull,status='replace',form='unformatted',access='stream',action='write')
-
-if(flagswap/=1) then
-  write(u) reshape(iverall,[lx2all,lx3all,lwave],order=[1,3,2])
-else
-  write(u) reshape(iverall,[lx3all,lwave,lx2all],order=[3,2,1])
-end if
-
-close(u)
-end subroutine output_aur_root
 
 
 subroutine output_magfields(outdir,ymd,UTsec,Br,Btheta,Bphi)

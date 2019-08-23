@@ -124,8 +124,10 @@ if (myid==0) then
   print *, 'Simulation data directory:  ',outdir
   print *, 'Input config file:  ',infile
 end if
-call read_configfile(infile,ymd,UTsec0,tdur,dtout,activ,tcfl,Teinf,potsolve,flagperiodic,flagoutput,flagcap, &
-                     indatsize,indatgrid,flagdneu,interptype,sourcemlat,sourcemlon,dtneu,drhon,dzn,sourcedir,flagprecfile, &
+call read_configfile(infile,ymd,UTsec0,tdur,dtout,activ,tcfl,Teinf, &
+                     potsolve,flagperiodic,flagoutput,flagcap, &
+                     indatsize,indatgrid,flagdneu,interptype,&
+                     sourcemlat,sourcemlon,dtneu,drhon,dzn,sourcedir,flagprecfile, &
                      dtprec,precdir,flagE0file,dtE0,E0dir,flagglow,dtglow,dtglowout)
 
 
@@ -134,7 +136,7 @@ call read_configfile(infile,ymd,UTsec0,tdur,dtout,activ,tcfl,Teinf,potsolve,flag
 !call mpigrid(lx2all,lx3all)    !following grid_size these are in scope
 !!CHECK THE GRID SIZE AND ESTABLISH A PROCESS GRID
 call grid_size(indatsize)
-if (argc>2) then   !user specified process grid
+if (argc > 2) then   !user specified process grid
   call get_command_argument(3,argv)
   read(argv,*) lid2in
   call get_command_argument(4,argv)

@@ -6,7 +6,7 @@ use mpi, only: mpi_integer, mpi_comm_world, mpi_status_ignore
 use phys_consts, only: wp, lnchem, pi, re, debug
 use grid, only: curvmesh, lx1, lx2, lx3, clear_unitvecs
 use interpolation, only : interp2
-use io, only : date_filename
+use date_formats, only: date_filename
 use timeutils, only : doy_calc,dateinc
 use mpimod, only: myid, lid, taglrho, taglz, mpi_realprec, tagdno, tagdnn2, tagdno2, tagdtn, tagdvnrho, tagdvnz, tagly
 

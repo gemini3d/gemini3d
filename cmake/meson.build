@@ -32,7 +32,7 @@ elif fcid == 'pgi'
 endif
 
 # check if MPI compiler wrapper is usable
-if fc.run('use mpi; end', name: 'Fortran MPI compiler wrapper').returncode() == 0
+if fc.run('use mpi; end', name: 'using Fortran MPI compiler wrapper?').returncode() == 0
   mpi = []
   mpiroot = get_option('MPI_ROOT')
   if mpiroot == ''

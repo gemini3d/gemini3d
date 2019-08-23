@@ -1,5 +1,3 @@
-program gemini
-
 !----------------------------------------------------------
 !------THIS IS THE MAIN PROGRAM FOR GEMINI3D
 !----------------------------------------------------------
@@ -318,4 +316,4 @@ call clear_potential_fileinput()
 !SHUT DOWN MPI
 call mpibreakdown()
 
-end program gemini
+end program
