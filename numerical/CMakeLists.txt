@@ -11,7 +11,7 @@ target_compile_definitions(mpimod PRIVATE REALBITS=${realbits})
 target_compile_options(mpimod PRIVATE ${FFLAGS})
 set_target_properties(mpimod PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR})
 
-add_library(grid grid/grid.f90)
+add_library(grid grid/grid.f90 grid/read.f90)
 target_link_libraries(grid PUBLIC const mpimod MPI::MPI_Fortran) # PUBLIC necessary for ifort, even with MPI target
 target_compile_options(grid PRIVATE ${FFLAGS})
 set_target_properties(grid PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR})

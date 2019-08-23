@@ -4,7 +4,8 @@ mpimod = library('mpimod',
   link_with: const,
   fortran_args: real_bits)
 
-grid = library('grid', 'grid/grid.f90',
+grid = library('grid',
+  sources: ['grid/grid.f90', 'grid/read.f90'],
   dependencies: mpi,
   link_with: [const, mpimod])
 
