@@ -97,7 +97,9 @@ end subroutine output_plasma
 
 end interface
 
+
 interface ! output.f90
+
 module subroutine create_outdir(outdir,infile,indatsize,indatgrid,flagdneu,sourcedir,flagprecfile,precdir,flagE0file,E0dir)
 character(*), intent(in) :: outdir, & !command line argument output directory
                             infile, & !command line argument input file
@@ -108,17 +110,13 @@ end subroutine create_outdir
 end interface
 
 
-contains
+interface ! input.f90
 
-
-subroutine read_configfile(infile,ymd,UTsec0,tdur,dtout,activ,tcfl,Teinf, &
+module subroutine read_configfile(infile,ymd,UTsec0,tdur,dtout,activ,tcfl,Teinf, &
                  potsolve,flagperiodic, flagoutput,flagcap,&
                  indatsize,indatgrid,flagdneu,interptype, &
                  sourcemlat,sourcemlon,dtneu,drhon,dzn,sourcedir,flagprecfile,&
                  dtprec,precdir,flagE0file,dtE0,E0dir,flagglow,dtglow,dtglowout)
-!! READS THE INPUT CONFIGURAITON FILE ANDE ASSIGNS VARIABLES FOR FILENAMES, SIZES, ETC.
-
-
 character(*), intent(in) :: infile
 integer, dimension(3), intent(out):: ymd
 real(wp), intent(out) :: UTsec0
@@ -140,125 +138,9 @@ integer, intent(out) :: flagE0file
 real(wp), intent(out) :: dtE0
 integer, intent(out) :: flagglow
 real(wp), intent(out) :: dtglow, dtglowout
-
-character(256) :: buf
-integer :: u
-real(wp) :: NaN
-
-NaN = ieee_value(0._wp, ieee_quiet_nan)
-
-!> READ CONFIG.DAT FILE FOR THIS SIMULATION
-open(newunit=u, file=infile, status='old', action='read')
-read(u,*) ymd(3),ymd(2),ymd(1)
-read(u,*) UTsec0
-read(u,*) tdur
-read(u,*) dtout
-read(u,*) activ(1),activ(2),activ(3)
-read(u,*) tcfl
-read(u,*) Teinf
-read(u,*) potsolve
-read(u,*) flagperiodic
-read(u,*) flagoutput
-read(u,*) flagcap
-read(u,'(a256)') buf
-!! format specifier needed, else it reads just one character
-indatsize = expanduser(buf)
-read(u,'(a256)') buf
-indatgrid = expanduser(buf)
-read(u,'(a256)') buf
-indatfile = expanduser(buf)
-
-!> PRINT SOME DIAGNOSIC INFO FROM ROOT
-if (myid==0) then
-  print '(A,I6,A1,I0.2,A1,I0.2)', infile//': simulation ymd is:  ',ymd(1),'/',ymd(2),'/',ymd(3)
-  print '(A51,F10.3)', 'start time is:  ',UTsec0
-  print '(A51,F10.3)', 'duration is:  ',tdur
-  print '(A51,F10.3)', 'output every:  ',dtout
-  print *, '...using input data files:  '
-  print *, '  ',indatsize
-  print *, '  ',indatgrid
-  print *, '  ',indatfile
-end if
-
-
-!> NEUTRAL PERTURBATION INPUT INFORMATION
-read(u,*) flagdneu
-if( flagdneu==1) then
-  read(u,*) interptype
-  read(u,*) sourcemlat,sourcemlon
-  read(u,*) dtneu
-  read(u,*) drhon,dzn
-  read(u,'(A256)') buf
-  sourcedir = expanduser(buf)
-  if (myid ==0) then
-    print *, 'Neutral disturbance mlat,mlon:  ',sourcemlat,sourcemlon
-    print *, 'Neutral disturbance cadence (s):  ',dtneu
-    print *, 'Neutral grid resolution (m):  ',drhon,dzn
-    print *, 'Neutral disturbance data files located in directory:  ',sourcedir
-  end if
-else
-!! just set it to something
-  interptype=0
-  sourcemlat=0._wp; sourcemlon=0._wp;
-  dtneu=0._wp
-  drhon=0._wp; dzn=0._wp;
-  sourcedir=''
-end if
-
-!> PRECIPITATION FILE INPUT INFORMATION
-read(u,*) flagprecfile
-if (flagprecfile==1) then
-!! get the location of the precipitation input files
-  read(u,*) dtprec
-
-  read(u,'(A256)') buf
-  precdir = expanduser(buf)
-
-  if (myid==0) then
-    print '(A,F10.3)', 'Precipitation file input cadence (s):  ',dtprec
-    print *, 'Precipitation file input source directory:  '//precdir
-  end if
-else
-!! just set results to something
-  dtprec=0._wp
-  precdir=''
-end if
-
-!> ELECTRIC FIELD FILE INPUT INFORMATION
-read(u,*) flagE0file
-if (flagE0file==1) then
-!! get the location of the precipitation input files
-  read(u,*) dtE0
-
-  read(u,'(a256)') buf
-  E0dir = expanduser(buf)
-
-  if (myid==0) then
-    print *, 'Electric field file input cadence (s):  ',dtE0
-    print *, 'Electric field file input source directory:  '//E0dir
-  end if
-else                         !just set results to something
-  dtE0=0._wp
-  E0dir=''
-end if
-
-!> GLOW ELECTRON TRANSPORT INFORMATION
-read(u,*) flagglow
-if (flagglow==1) then
-  read(u,*) dtglow
-  read(u,*) dtglowout
-  if (myid == 0) then
-    print *, 'GLOW enabled for auroral emission calculations.'
-    print *, 'GLOW electron transport calculation cadence (s): ', dtglow
-    print *, 'GLOW auroral emission output cadence (s): ', dtglowout
-  end if
-else
-  dtglow=NaN
-  dtglowout=NaN
-end if
-
-close(u)
 end subroutine read_configfile
+
+end interface
 
 
 end module io
