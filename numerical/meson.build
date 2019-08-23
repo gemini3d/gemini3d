@@ -15,11 +15,6 @@ calculus = library('calculus', 'calculus/calculus.f90',
 advection = library('advection', 'advection/advec_mpi.f90',
   link_with: [const, grid, mpimod])
 
-diffusion = library('diffusion',
-  sources: ['diffusion/diffusion.F90', '../vendor/lapack95/gbsv.F90'],
-  dependencies: lapack,
-  link_with: [const, grid],
-  fortran_args: real_bits)
-
+subdir('diffusion')
 subdir('interpolation')
 subdir('potential')

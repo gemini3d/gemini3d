@@ -12,7 +12,7 @@ test('Interp2D', test_interp2_exe,
   suite: 'unit')
 
 test('InterpOctave', octave,
-  args: ['--eval', 'testinterp("' + meson.build_root() / 'output2D.dat' + '")'],
+  args: ['--eval', 'testinterp("' + meson.build_root() / 'output2D.dat")'],
   timeout: 10,
   workdir: meson.current_source_dir(),
   suite: 'unit')
