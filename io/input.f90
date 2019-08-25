@@ -5,7 +5,7 @@ contains
 module procedure read_configfile
 !! READS THE INPUT CONFIGURAITON FILE ANDE ASSIGNS VARIABLES FOR FILENAMES, SIZES, ETC.
 character(256) :: buf
-integer :: u
+integer :: u, i
 real(wp) :: NaN
 
 NaN = ieee_value(0._wp, ieee_quiet_nan)
@@ -22,14 +22,14 @@ read(u,*) Teinf
 read(u,*) potsolve
 read(u,*) flagperiodic
 read(u,*) flagoutput
-read(u,*) flagcap
+read(u,*) flagcap                 ! line 11 config.ini
 read(u,'(a256)') buf
 !! format specifier needed, else it reads just one character
 indatsize = expanduser(buf)
 read(u,'(a256)') buf
 indatgrid = expanduser(buf)
 read(u,'(a256)') buf
-indatfile = expanduser(buf)
+indatfile = expanduser(buf)       ! line 14 config.ini
 
 !> PRINT SOME DIAGNOSIC INFO FROM ROOT
 if (myid==0) then
@@ -111,10 +111,15 @@ else                         !just set results to something
 end if
 
 !> GLOW ELECTRON TRANSPORT INFORMATION
-read(u,*) flagglow
+read(u,*, iostat=i) flagglow
+if (i /= 0) then
+  write(stderr, *) 'disabled Glow since not specified in ',infile
+  flagglow=0
+endif
 if (flagglow==1) then
-  read(u,*) dtglow
-  read(u,*) dtglowout
+  read(u,*, iostat=i) dtglow
+  read(u,*, iostat=i) dtglowout
+  if (i /= 0) error stop 'did you include GLOW timing config data in the .ini file?'
   if (myid == 0) then
     print *, 'GLOW enabled for auroral emission calculations.'
     print *, 'GLOW electron transport calculation cadence (s): ', dtglow
