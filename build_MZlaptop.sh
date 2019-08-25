@@ -5,15 +5,18 @@
 #
 # This is for Matt's Mac OS laptop which has all libraries installed via macports
 
+#
+#MPIPREFIX=
+#LAPACKPREFIX=
+#SCALAPACKPREFIX=
+#MUMPSPREFIX=
+#
+#OPTS="-Duseglow=false"
+#
+#. script_utils/check.sh
+#
+#. script_utils/build.sh
 
-MPIPREFIX=
-LAPACKPREFIX=
-SCALAPACKPREFIX=
-MUMPSPREFIX=
-
-OPTS="-Duseglow=false"
-
-. script_utils/check.sh
-
-. script_utils/build.sh
+cmake -Duseglow=false -B build
+cmake --build build -j
 
