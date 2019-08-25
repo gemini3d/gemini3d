@@ -516,6 +516,14 @@ call DMUMPS(mumps_par)
 error stop "realbits must be 32 or 64"
 #endif
 
+!> check if Mumps error occurred
+if (mumps_par%INFO(1) < 0 .or. mumps_par%INFOG(1) < 0) then
+  write(stderr, *) 'Gemini:potential_mumps:elliptic3D_cart  MUMPS ERROR: details:'
+  write(stderr, *) 'Mumps Error: INFO(1)',mumps_par%INFO(1),'INFO(2)',mumps_par%INFO(2)
+  write(stderr, *) 'Mumps Error: INFOG(1)',mumps_par%INFOG(1),'INFOG(2)',mumps_par%INFOG(2)
+  error stop
+endif
+
 
 !STORE PERMUTATION USED, SAVE RESULTS, CLEAN UP MUMPS ARRAYS
 !(can save ~25% execution time and improves scaling with openmpi
@@ -796,6 +804,14 @@ call DMUMPS(mumps_par)
 #else
 error stop "realbits must be 32 or 64"
 #endif
+
+!> check if Mumps error occurred
+if (mumps_par%INFO(1) < 0 .or. mumps_par%INFOG(1) < 0) then
+  write(stderr, *) 'Gemini:potential_mumps:elliptic3D_curv  MUMPS ERROR: details:'
+  write(stderr, *) 'Mumps Error: INFO(1)',mumps_par%INFO(1),'INFO(2)',mumps_par%INFO(2)
+  write(stderr, *) 'Mumps Error: INFOG(1)',mumps_par%INFOG(1),'INFOG(2)',mumps_par%INFOG(2)
+  error stop
+endif
 
 
 !STORE PERMUTATION USED, SAVE RESULTS, CLEAN UP MUMPS ARRAYS
@@ -1325,6 +1341,15 @@ call DMUMPS(mumps_par)
 #else
 error stop "realbits must be 32 or 64"
 #endif
+
+
+!> check if Mumps error occurred
+if (mumps_par%INFO(1) < 0 .or. mumps_par%INFOG(1) < 0) then
+  write(stderr, *) 'Gemini:potential_mumps:elliptic2D_pol_conv_curv  MUMPS ERROR: details:'
+  write(stderr, *) 'Mumps Error: INFO(1)',mumps_par%INFO(1),'INFO(2)',mumps_par%INFO(2)
+  write(stderr, *) 'Mumps Error: INFOG(1)',mumps_par%INFOG(1),'INFOG(2)',mumps_par%INFOG(2)
+  error stop
+endif
 
 
 !STORE PERMUTATION USED, SAVE RESULTS, CLEAN UP MUMPS ARRAYS
@@ -1875,6 +1900,14 @@ call DMUMPS(mumps_par)
 error stop "realbits must be 32 or 64"
 #endif
 
+!> check if Mumps error occurred
+if (mumps_par%INFO(1) < 0 .or. mumps_par%INFOG(1) < 0) then
+  write(stderr, *) 'Gemini:potential_mumps:elliptic2D_pol_conv_curv_periodic2  MUMPS ERROR: details:'
+  write(stderr, *) 'Mumps Error: INFO(1)',mumps_par%INFO(1),'INFO(2)',mumps_par%INFO(2)
+  write(stderr, *) 'Mumps Error: INFOG(1)',mumps_par%INFOG(1),'INFOG(2)',mumps_par%INFOG(2)
+  error stop
+endif
+
 
 !STORE PERMUTATION USED, SAVE RESULTS, CLEAN UP MUMPS ARRAYS
 !(can save ~25% execution time and improves scaling with openmpi
@@ -2138,8 +2171,8 @@ if ( myid==0 ) then
   if (perflag .and. it/=1) then       !used cached permutation
     if (debug) print *, 'Using a previously stored permutation'
     allocate(mumps_par%PERM_IN(mumps_par%N))
-    mumps_par%PERM_IN=mumps_perm
-    mumps_par%ICNTL(7)=1
+    mumps_par%PERM_IN = mumps_perm
+    mumps_par%ICNTL(7) = 1
   end if
 
   !may solve some memory allocation issues, uncomment if MUMPS throws errors
@@ -2148,7 +2181,7 @@ if ( myid==0 ) then
 end if
 
 
-!SOLVE (ALL WORKERS NEED TO SEE THIS CALL)
+!> SOLVE (ALL WORKERS NEED TO SEE THIS CALL)
 mumps_par%JOB = 6
 #if REALBITS==32
 call SMUMPS(mumps_par)
@@ -2158,6 +2191,13 @@ call DMUMPS(mumps_par)
 error stop "realbits must be 32 or 64"
 #endif
 
+!> check if Mumps error occurred
+if (mumps_par%INFO(1) < 0 .or. mumps_par%INFOG(1) < 0) then
+  write(stderr, *) 'Gemini:potential_mumps:elliptic2D_nonint_curv  MUMPS ERROR: details:'
+  write(stderr, *) 'Mumps Error: INFO(1)',mumps_par%INFO(1),'INFO(2)',mumps_par%INFO(2)
+  write(stderr, *) 'Mumps Error: INFOG(1)',mumps_par%INFOG(1),'INFOG(2)',mumps_par%INFOG(2)
+  error stop
+endif
 
 !STORE PERMUTATION USED, SAVE RESULTS, CLEAN UP MUMPS ARRAYS
 !(can save ~25% execution time and improves scaling with openmpi
@@ -2357,6 +2397,16 @@ call DMUMPS(mumps_par)
 #else
 error stop "realbits must be 32 or 64"
 #endif
+
+!> check if Mumps error occurred
+if (mumps_par%INFO(1) < 0 .or. mumps_par%INFOG(1) < 0) then
+  write(stderr, *) 'Gemini:potential_mumps:poisson2D  MUMPS ERROR: details:'
+  write(stderr, *) 'Mumps Error: INFO(1)',mumps_par%INFO(1),'INFO(2)',mumps_par%INFO(2)
+  write(stderr, *) 'Mumps Error: INFOG(1)',mumps_par%INFOG(1),'INFOG(2)',mumps_par%INFOG(2)
+  error stop
+endif
+
+
 call cpu_time(tfin)
 if (debug) print *, 'Solve took ',tfin-tstart,' seconds...'
 
@@ -2446,6 +2496,14 @@ call DMUMPS(mumps_par)
 #else
 error stop "realbits must be 32 or 64"
 #endif
+
+!> check if Mumps error occurred
+if (mumps_par%INFO(1) < 0 .or. mumps_par%INFOG(1) < 0) then
+  write(stderr, *) 'Gemini:potential_mumps:elliptic_workers  MUMPS ERROR: details:'
+  write(stderr, *) 'Mumps Error: INFO(1)',mumps_par%INFO(1),'INFO(2)',mumps_par%INFO(2)
+  write(stderr, *) 'Mumps Error: INFOG(1)',mumps_par%INFOG(1),'INFOG(2)',mumps_par%INFOG(2)
+  error stop
+endif
 
 
 !DEALLOCATE STRUCTURES USED BY WORKERS DURING SOLVE
