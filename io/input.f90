@@ -45,7 +45,11 @@ end if
 
 
 !> NEUTRAL PERTURBATION INPUT INFORMATION
-read(u,*) flagdneu
+read(u,*, iostat=i) flagdneu
+if (i /= 0) then
+  write(stderr, *) 'not using perturbation input files since not specified in ',infile
+  flagdneu=0
+endif
 if( flagdneu==1) then
   read(u,*) interptype
   read(u,*) sourcemlat,sourcemlon
@@ -74,7 +78,11 @@ else
 end if
 
 !> PRECIPITATION FILE INPUT INFORMATION
-read(u,*) flagprecfile
+read(u,*, iostat=i) flagprecfile
+if (i /= 0) then
+  write(stderr, *) 'not using precipitation input files since not specified in ',infile
+  flagprecfile=0
+endif
 if (flagprecfile==1) then
 !! get the location of the precipitation input files
   read(u,*) dtprec
@@ -93,7 +101,11 @@ else
 end if
 
 !> ELECTRIC FIELD FILE INPUT INFORMATION
-read(u,*) flagE0file
+read(u,*, iostat=i) flagE0file
+if (i /= 0) then
+  write(stderr, *) 'not using E-field input files since not specified in ',infile
+  flagE0file=0
+endif
 if (flagE0file==1) then
 !! get the location of the precipitation input files
   read(u,*) dtE0
