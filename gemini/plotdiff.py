@@ -2,10 +2,8 @@ from matplotlib.figure import Figure
 import numpy as np
 from pathlib import Path
 from datetime import datetime
-import shutil
-import subprocess
 
-git = shutil.which("git")
+from .utils import gitrev
 
 
 def plotdiff(A: np.ndarray, B: np.ndarray, name: str, time: datetime, dir1: Path, dir2: Path):
@@ -25,14 +23,7 @@ def plotdiff(A: np.ndarray, B: np.ndarray, name: str, time: datetime, dir1: Path
     fg.colorbar(hi, ax=axs[1])
     axs[1].set_title(str(dir2))
 
-    ttxt = f"{name}  {time.isoformat()}"
-    if git:
-        ttxt += (
-            "  Git: "
-            + subprocess.check_output(
-                [git, "rev-parse", "--short", "HEAD"], universal_newlines=True
-            ).strip()
-        )
+    ttxt = f"{name}  {time.isoformat()}  Git: {gitrev()}"
 
     fg.suptitle(ttxt)
 
