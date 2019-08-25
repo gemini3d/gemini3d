@@ -37,21 +37,19 @@ elif fcid == 'pgi'
   endif
 endif
 
-# check if MPI compiler wrapper is usable
-if fc.run('use mpi; end', name: 'using Fortran MPI compiler wrapper?').returncode() == 0
-  mpi = []
-  mpiroot = get_option('MPI_ROOT')
-  if mpiroot == ''
-    error('please specify -DMPI_ROOT= root path of MPI lib e.g. ~/lib/openmpi-3.1.4')
-  endif
-  mpiexec = find_program(mpiroot / 'bin/mpiexec')
-else
+# if MPI_ROOT, assume compiler wrapper is usable
+mpiroot = get_option('MPI_ROOT')
+if mpiroot == ''
+  mpiexec = find_program('mpiexec')
   mpi = dependency('mpi', language : 'fortran')
   mpiret = fc.run('use mpi; end', dependencies : mpi, name: 'Fortran MPI')
   if mpiret.returncode() != 0
-    error('MPI does not link properly: ' + mpiret.stderr() + ' ' + mpiret.stdout())
+    warning('MPI_Fortran does not link properly: ' + mpiret.stderr() + ' ' + mpiret.stdout())
   endif
-  mpiexec = find_program('mpiexec')
+else
+  fc.run('use mpi; integer :: i; call mpi_init(i); call mpi_finalize(i); end', name: 'Fortran MPI wrapper check')
+  mpiexec = find_program(mpiroot / 'mpiexec')
+  mpi = []
 endif
 
 
