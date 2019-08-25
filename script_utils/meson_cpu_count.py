@@ -7,6 +7,13 @@ import numpy as np
 import math
 import typing
 
+try:
+    import psutil
+except ImportError:
+    psutil = None
+    if sys.platform != "cygwin":
+        print('"pip install psutil" will improve CPU utilization.')
+
 
 def get_simsize(fn: Path) -> typing.List[int]:
     fn = Path(fn).expanduser().resolve(strict=True)
@@ -19,19 +26,29 @@ if __name__ == "__main__":
     p.add_argument("fn", help="simsize.dat to read")
     P = p.parse_args()
 
-    max_cpu = os.cpu_count()
-    if sys.platform == "darwin":  # MacOS seems to over-report CPU
-        max_cpu /= 2
+    # without psutil, hyperthreaded CPU may overestimate physical count by factor of 2 (or more)
+    if psutil is not None:
+        max_cpu = psutil.cpu_count(logical=False)
+        extradiv = 1
+    else:
+        max_cpu = os.cpu_count()
+        extradiv = 2
 
     size = get_simsize(P.fn)
-    # print(size)
-    if size[2] == 1:  # 2D sim
-        mpi_count = math.gcd(size[1] // 2, max_cpu)
-    else:  # 3D sim
-        mpi_count = math.gcd(size[2] // 2, max_cpu)
-
     # need at least 2 images for MPI to function for Gemini
-    mpi_count = max(mpi_count, 2)
+    mpi_count = 2
+    if size[2] == 1:  # 2D sim
+        for i in range(max_cpu, 2, -1):
+            mpi_count = max(math.gcd(size[1] // 2, i), mpi_count)
+            if i < mpi_count:
+                break
+    else:  # 3D sim
+        for i in range(max_cpu, 2, -1):
+            mpi_count = max(math.gcd(size[2] // 2, i), mpi_count)
+            if i < mpi_count:
+                break
+
+    mpi_count //= extradiv
 
     # need end='' or you'll have to .strip() in Meson
     print(mpi_count, end="")
