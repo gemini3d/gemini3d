@@ -99,6 +99,10 @@ else
 endif
 
 octave = find_program('octave', required: false, disabler: true)
+if run_command(octave, '--eval', 'assert(exist("validateattributes", "file")==2)').returncode() != 0
+  message('Not using too-old Octave for comparison tests.')
+  octave = disabler()
+endif
 
 matlab = disabler()
 if get_option('usematlab')  # buggy for Matlab < R2019a, may hang "meson setup" silently for two minutes

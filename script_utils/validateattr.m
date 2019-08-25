@@ -7,7 +7,7 @@ function validateattr(varargin)
 v = ver('octave');
 
 % NOTE: *NOT* isstruct(v) or isfield(v,'Version')
-if ~isempty(v) && str2double(v.Version) < 4
+if ~isempty(v) && str2double(v.Version(1:3)) < 4
   return
 end
 
