@@ -7,7 +7,7 @@
 %       3 - O NUMBER DENSITY(M-3)
 %       4 - N2 NUMBER DENSITY(M-3)
 %       5 - O2 NUMBER DENSITY(M-3)
-%       6 - AR NUMBER DENSITY(M-3)                       
+%       6 - AR NUMBER DENSITY(M-3)
 %       7 - TOTAL MASS DENSITY(KG/M3)
 %       8 - H NUMBER DENSITY(M-3)
 %       9 - N NUMBER DENSITY(M-3)
@@ -16,9 +16,10 @@
 %
 
 function natm = msis_matlab3D(xg,UT,dmy,activ)
+% [f107a, f107, ap] = activ;
 narginchk(4,4)
 validateattributes(xg,{'struct'},{'scalar'})
-validateattributes(UT,{'numeric'},{'nonnegative','scalar'})
+validateattributes(UT,{'numeric'},{'nonnegative','scalar'}, mfilename, "UT decimal hour from midnight", 2)
 validateattributes(dmy,{'numeric'},{'positive','vector','numel',3})
 validateattributes(activ,{'numeric'},{'positive','vector','numel',3})
 
@@ -85,5 +86,5 @@ natm=cat(4,nO,nN2,nO2,Tn,nN,nNO,nH);
 delete(fin);
 delete(fout);
 
-if nargout==0, clear('natm'), end 
+if nargout==0, clear('natm'), end
 end

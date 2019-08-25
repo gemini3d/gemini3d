@@ -1,8 +1,13 @@
 function [ns,Ts,vsx1]=eqICs3D(xg,UT,dmy,activ,nmf,nme)
+% [f107a, f107, ap] = activ;
+validateattributes(xg,{'struct'},{'scalar'})
+validateattributes(UT,{'numeric'},{'nonnegative','scalar'}, mfilename, "UT decimal hour from midnight", 2)
+validateattributes(dmy,{'numeric'},{'positive','vector','numel',3})
+validateattributes(activ,{'numeric'},{'positive','vector','numel',3})
+validateattributes(nmf,{'numeric'},{'nonnegative','scalar'})
+validateattributes(nme,{'numeric'},{'nonnegative','scalar'})
 
-%--------------------------------------------------------
-%-----MAKE UP SOME INITIAL CONDITIONS FOR FORTRAN CODE
-%--------------------------------------------------------
+%% MAKE UP SOME INITIAL CONDITIONS FOR FORTRAN CODE
 
 mindens=1e-100;
 
@@ -50,8 +55,8 @@ for ix3=1:lx3
     z0e=120e3;
     ne=chapmana(alt(:,ix2,ix3),nmf,z0f,Hf)+chapmana(alt(:,ix2,ix3),nme,z0e,He);
     p=1/2*tanh((alt(:,ix2,ix3)-200e3)/45e3)-1/2*tanh((alt(:,ix2,ix3)-1000e3)/200e3);
-    
-    
+
+
     inds=find(alt(:,ix2,ix3)>z0f);
     if ~isempty(inds)
         n0=nmf;
@@ -79,8 +84,8 @@ for ix3=1:lx3
         end
         ne(inds)=nesort;
     end
-    
-    
+
+
     %O+
     ns(:,ix2,ix3,1)=p.*ne;
     zref=900e3;
@@ -117,15 +122,15 @@ for ix3=1:lx3
         end
         ns(inds0,ix2,ix3,1)=n1sort;
     end
-    
-    
+
+
     %N+
     ns(:,ix2,ix3,5)=1e-4*ns(:,ix2,ix3,1);
-    
+
     inds2=inds;
     inds1=setdiff(1:lx1,inds2);
-    
-    
+
+
     %MOLECULAR DENSITIES
     nmolc=zeros(lx1,1);
     nmolc(inds1)=(1-p(inds1)).*ne(inds1);
@@ -155,8 +160,8 @@ for ix3=1:lx3
         nmolc(inds2)=nmolcsort;
     end
     ns(:,ix2,ix3,2)=1/3*nmolc; ns(:,ix2,ix3,3)=1/3*nmolc; ns(:,ix2,ix3,4)=1/3*nmolc;
-    
-    
+
+
     %PROTONS
     ns(inds2,ix2,ix3,6)=(1-p(inds2)).*ne(inds2);
     z=alt(inds1,ix2,ix3);
