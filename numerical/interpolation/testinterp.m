@@ -5,9 +5,7 @@ addpath([cwd,filesep,'..',filesep,'..',filesep,'script_utils'])
 
 validateattr(filename, {'char'}, {'vector'}, mfilename,'interp file to compare',1)
 
-
 %% if path not exist, exit code 77 as GNU standard skip test indicator
-% this is meant to occur when the simutation didn't complete for some reason
 if exist(filename, 'file') ~= 2, fprintf(2,[filename,' not found\n']), exit(77), end
 
 fid=fopen(filename,'r');
