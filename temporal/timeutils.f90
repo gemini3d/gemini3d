@@ -89,16 +89,15 @@ integer :: monthinc          !< we incremented the month
 
 year=ymd(1); month=ymd(2); day=ymd(3);
 
-if ((day < 1) .or. (day > 31)) error stop 'impossible day'
+if ((day < 1) .or. (day > daysmonth(year, month))) error stop 'impossible day'
 if (utsec < 0) error stop 'negative UTsec, simulation should go forward in time only!'
 if (dtsec < 0) error stop 'negative dtsec, simulation should go forward in time only!'
-if (dtsec > 86400) error stop 'excessively large dtsec, simulation step should be small enough!'
+if (dtsec > 86400) error stop 'excessively large dtsec > 86400, simulation step should be small enough!'
 
 UTsec = UTsec + dtsec
-if (UTsec >= 86400) then
-  UTsec = modulo(UTsec, 86400._wp)
+do while (UTsec >= 86400)
+  UTsec = UTsec - 86400._wp
   day = day+1          !roll the day over
-
 !> month rollover
   if (day > daysmonth(year, month)) then
     day=1
@@ -109,7 +108,7 @@ if (UTsec >= 86400) then
     month=1
     year=year+1
   end if
-end if
+end do
 
 ymd(1)=year; ymd(2)=month; ymd(3)=day;    !replace input array with new date
 

@@ -26,25 +26,67 @@ ymd = [1900,2,28]
 dtsec = 0.
 utsec = 86400.
 call dateinc(dtsec, ymd, utsec)
-if (.not.all(ymd == [1900,3,1])) error stop 'intrinsic rollover'
+if (.not.all(ymd == [1900,3,1]) .and. abs(utsec) < epsilon(1.)) error stop 'intrinsic rollover'
 
 ymd = [1900,2,28]
 dtsec = 1.
 utsec = 86399.
 call dateinc(dtsec, ymd, utsec)
-if (.not.all(ymd == [1900,3,1])) error stop '1900 NO leap year rollover'
+if (.not.all(ymd == [1900,3,1]) .and. abs(utsec) < epsilon(1.)) error stop '1900 NO leap year rollover'
 
 ymd = [2012,2,28]
 dtsec = 1.
 utsec = 86399.
 call dateinc(dtsec, ymd, utsec)
-if (.not.all(ymd == [2012,2,29])) error stop '2012 leap year rollover'
+if (.not.all(ymd == [2012,2,29]) .and. abs(utsec) < epsilon(1.)) error stop '2012 leap year rollover'
 
 
 ymd = [1999,12,31]
 dtsec = 1.
 utsec = 86399.
 call dateinc(dtsec, ymd, utsec)
-if (.not.all(ymd == [2000,1,1]) .and. utsec<=1e-3) error stop '2000 leap year rollover'
+if (.not.all(ymd == [2000,1,1]) .and. abs(utsec) < epsilon(1.)) error stop '2000 century rollover'
+
+ymd = [2000,2,28]
+dtsec = 1.
+utsec = 86399.
+call dateinc(dtsec, ymd, utsec)
+if (.not.all(ymd == [2000,2,29]) .and. abs(utsec) < epsilon(1.)) error stop '2000 leap year rollover'
+
+!> multi-day rollover
+ymd = [2000,2,28]
+dtsec = 1._wp
+utsec = 172799._wp
+call dateinc(dtsec, ymd, utsec)
+if (.not.all(ymd == [2000,3,1]) .and. abs(utsec) < epsilon(1.)) error stop '2000 leap year rollover'
+
+ymd = [2000,2,1]
+dtsec = 1.
+utsec = 2592000._wp
+call dateinc(dtsec, ymd, utsec)
+if (.not.all(ymd == [2000,3,1]) .and. abs(utsec) < epsilon(1.)) error stop '2000 leap year + month rollover'
+
+print *, 'rollover: 366 days leap year'
+ymd = [2000,2,1]
+dtsec = 1.
+utsec = 31622400._wp
+call dateinc(dtsec, ymd, utsec)
+if (.not.all(ymd == [2001,3,1]) .and. abs(utsec) < epsilon(1.)) error stop '2000 leap year 366 day rollover'
+
+print *, 'rollover: 10 years + leap year'
+ymd = [2000,2,1]
+dtsec = 1.
+utsec = 316224000._wp
+call dateinc(dtsec, ymd, utsec)
+if (.not.all(ymd == [2010,2,8]) .and. abs(utsec) < epsilon(1.)) error stop '10 years day rollover'
+
+
+print *, 'rollover: 100 years + leap year'
+ymd = [2000,2,1]
+dtsec = 1.
+utsec = 3162240000._wp
+call dateinc(dtsec, ymd, utsec)
+if (.not.all(ymd == [2100,4,17]) .and. abs(utsec) < epsilon(1.)) error stop '100 years day rollover'
+
 
 end program

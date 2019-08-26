@@ -14,6 +14,7 @@ integer :: ymd(3), i
 ! print *, 'Single precision lacks adequate precision for dates beyond millisecond'
 ! print *, utsec2filename([2015,4,13], 12345.000003_sp)
 
+print *, 'format: easy'
 fn = utsec2filename([2015,4,13], 12345.678910_dp)
 
 if (fn /= '20150413_12345.678910.dat') then
@@ -22,6 +23,7 @@ if (fn /= '20150413_12345.678910.dat') then
 endif
 
 
+print *, 'format: leading zeros'
 fn = utsec2filename([2015,4,13],  345.678911_dp)
 
 if (fn /= '20150413_00345.678911.dat') then
@@ -30,6 +32,7 @@ if (fn /= '20150413_00345.678911.dat') then
 endif
 
 
+print *, 'format: leading & trailing zeros'
 fn = utsec2filename([2013,2,20],  60._dp)
 
 if (fn /= '20130220_00060.000000.dat') then
@@ -38,6 +41,7 @@ if (fn /= '20130220_00060.000000.dat') then
 endif
 
 !! Increment time tests
+print *, 'format: increment microsecond'
 ymd = [2013,2,20]
 UTsec = 18000._dp
 call dateinc(1e-6_dp, ymd, UTsec)
@@ -47,6 +51,7 @@ if (fn /= '20130220_18000.000001.dat') then
   error stop 'mismatch output filename'
 endif
 
+print *, 'format: minute rollover'
 do i = 1,60
   call dateinc(1._dp, ymd, UTsec)
   ! print *, utsec2filename(ymd, UTsec)
