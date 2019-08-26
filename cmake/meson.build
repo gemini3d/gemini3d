@@ -99,7 +99,8 @@ else
 endif
 
 octave = find_program('octave', required: false, disabler: true)
-if run_command(octave, '--eval', 'assert(exist("validateattributes", "file")==2)').returncode() != 0
+# must do .found check since run_command(disabler()) has undefined returncode.
+if octave.found() and run_command(octave, '--eval', 'assert(exist("validateattributes", "file")==2)').returncode() != 0
   message('Not using too-old Octave for comparison tests.')
   octave = disabler()
 endif
@@ -107,7 +108,8 @@ endif
 matlab = disabler()
 if get_option('usematlab')  # buggy for Matlab < R2019a, may hang "meson setup" silently for two minutes
   matlab = find_program('matlab', required: false, disabler: true)
-  if run_command(python, meson.source_root() / 'script_utils/meson_matlab_has_batch.py').returncode() != 0
+  # must do .found check since run_command(disabler()) has undefined returncode.
+  if matlab.found() and run_command(python, meson.source_root() / 'script_utils/meson_matlab_has_batch.py').returncode() != 0
     matlab = disabler()
   endif
 endif
