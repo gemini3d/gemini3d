@@ -9,7 +9,7 @@ lxs = simsize(direc);
 %[x1, x2, x3] = simaxes(direc);
 %% SIMULATION RESULTS
 fsimres = [direc,filesep,filename];
-assert(exist(fsimres,'file')==2, [fsimres,' does not exist'])
+assert(exist(fsimres,'file')==2, ['loadframe3Dcurvavg: ',fsimres,' does not exist'])
 
 fid=fopen(fsimres,'r');
 simdt(fid);
