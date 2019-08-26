@@ -1,4 +1,5 @@
-addpath ../script_utils;
+cwd = fileparts(mfilename('fullpath'));
+addpath([cwd,'/../script_utils'])
 
 %SIMULATIONS LOCAITONS
 %simname='tohoku20113D_highres_var/';
@@ -6,12 +7,12 @@ addpath ../script_utils;
 simname='mooreOK3D_hemis_medres/'
 basedir='~/zettergmdata/simulations/'
 direc=[basedir,simname];
-system(['mkdir ',direc,'/Brplots']);
-system(['mkdir ',direc,'/Brplots_eps']);
-system(['mkdir ',direc,'/Bthplots']);    
-system(['mkdir ',direc,'/Bthplots_eps']);
-system(['mkdir ',direc,'/Bphiplots']);    
-system(['mkdir ',direc,'/Bphiplots_eps']);
+mkdir([direc, filesep, 'Brplots']);
+mkdir([direc, filesep, 'Brplots_eps']);
+mkdir([direc, filesep, 'Bthplots']);
+mkdir([direc, filesep, 'Bthplots_eps']);
+mkdir([direc, filesep, 'Bphiplots']);
+mkdir([direc, filesep, 'Bphiplots_eps']);
 
 %SIMULATION META-DATA
 [ymd0,UTsec0,tdur,dtout,flagoutput,mloc]=readconfig([direc,'/inputs/config.ini']);
@@ -136,14 +137,14 @@ for it=1:lt-1
     %CREATE A MAP AXIS
     figure(1);
     FS=8;
-    
+
     datehere=simdate_series(it,:);
     ymd=datehere(1:3);
     UTsec=datehere(4)*3600+datehere(5)*60+datehere(6);
     filename=datelab(ymd,UTsec);
     filename=[filename,'.dat']
     titlestring=datestr(datenum(datehere));
-    
+
 %    subplot(131);
     figure(1);
     clf;
@@ -170,7 +171,7 @@ for it=1:lt-1
     ax=axis;
     plotm(mlatsrc,mlonsrc,'r^','MarkerSize',6,'LineWidth',2);
     hold off;
-    
+
 %    subplot(132);
     figure(2);
     clf;
@@ -186,13 +187,13 @@ for it=1:lt-1
     c=colorbar
     set(c,'FontSize',FS)
     title(sprintf(['B_\\theta (nT)  ',titlestring,' \n\n']));
-    xlabel(sprintf('magnetic long. (deg.) \n\n'))   
+    xlabel(sprintf('magnetic long. (deg.) \n\n'))
     ylabel(sprintf('magnetic lat. (deg.)\n\n\n'))
     hold on;
     ax=axis;
     plotm(mlatsrc,mlonsrc,'r^','MarkerSize',6,'LineWidth',2);
     hold off;
-    
+
 %    subplot(133);
     figure(3);
     clf;
@@ -215,20 +216,20 @@ for it=1:lt-1
     ax=axis;
     plotm(mlatsrc,mlonsrc,'r^','MarkerSize',6,'LineWidth',2);
     hold off;
-    
-    
+
+
     %ADD A MAP OF COASTLINES
 %    if (license('test','Map_Toolbox'))
         load coastlines;
         [thetacoast,phicoast]=geog2geomag(coastlat,coastlon);
         mlatcoast=90-thetacoast*180/pi;
         mloncoast=phicoast*180/pi;
-        
+
         if (360-mlonsrc<20)
             inds=find(mloncoast>180);
             mloncoast(inds)=mloncoast(inds)-360;
         end
-        
+
 %        subplot(131);
         figure(1);
         hold on;
@@ -264,5 +265,3 @@ for it=1:lt-1
 %    end
     axis(ax);
 end
-
-rmpath ../script_utils;

@@ -6,7 +6,7 @@ validateattr(direc, {'char'}, {'vector'}, mfilename, 'data filename', 2)
 lxs = simsize(direc);
 %% SIMULATION RESULTS
 fsimres = [direc,filesep,filename];
-assert(exist(fsimres,'file')==2, [fsimres,' does not exist'])
+assert(exist(fsimres,'file')==2, ['loadframe3Dcurvne: ', fsimres,' does not exist'])
 
 fid=fopen(fsimres,'r');
 simdt(fid);

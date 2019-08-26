@@ -9,8 +9,8 @@ direc_control=[basedir,simname_control];
 mkdir([direc, filesep, 'TECplots']);    %store output plots with the simulation data
 
 
-%PATH TO UTILITIES
-addpath ../script_utils;
+cwd = fileparts(mfilename('fullpath'));
+addpath([cwd,'/../script_utils'])
 
 
 %READ IN THE SIMULATION INFORMATION
@@ -92,7 +92,7 @@ end
 [THETA,R,PHI]=meshgrid(theta,r,phi);
 
 
-%THESE ARE DIPOLE COORDINATES OF 
+%THESE ARE DIPOLE COORDINATES OF
 qI=(Re./R).^2.*cos(THETA);
 pI=R./Re./sin(THETA).^2;
 X3I=PHI;   %phi variable name already used, this is a bit kludgey
@@ -100,16 +100,16 @@ X3I=PHI;   %phi variable name already used, this is a bit kludgey
 
 ith1=min(find(theta-(thdist-dang*pi/180)>0))
 if (isempty(ith1))
-   ith1=1; 
+   ith1=1;
 end
 ith2=min(find(theta-(thdist+dang*pi/180)>0))
 if (isempty(ith2))
-   ith2=numel(theta); 
+   ith2=numel(theta);
 end
 if (~flag2D)
   iphi1=min(find(phi-(phidist-dang*pi/180)>0))
   if (isempty(iphi1))
-    iphi1=1; 
+    iphi1=1;
   end
   iphi2=min(find(phi-(phidist+dang*pi/180)>0))
   if (isempty(iphi2))
@@ -145,7 +145,7 @@ for it=1:length(times)
       x2=xg.x2(3:end-2);
       x3=xg.x3(3:end-2);
       [X2,X1,X3]=meshgrid(x2(:),x1(1:lh)',x3(:));   %loadframe overwrites this (sloppy!) so redefine eeach time step
-  
+
       neI=interp3(X2,X1,X3,ne,pI(:),qI(:),X3I(:));
     else
       fprintf('2D interpolation...\n')
@@ -234,7 +234,7 @@ for it=1:length(times)
     simdate_series=[simdate_series;simdate];
     [ymd,UTsec]=dateinc(dtout,ymd,UTsec);
 
-    
+
     %PLOT THE TOTAL ELECTRON CONTENT EACH TIME FRAME IF WE HAAVE DONE A 3D SIMULATION, OTHERWISE WAIT UNTIL THE END OR A SINGLE PLOT
     if (~flag2D)
       fprintf('Printing TEC plot for current time frame...\n');
@@ -294,8 +294,4 @@ end
 
 %SAVE THE DATA TO A .MAT FILE IN CASE WE3 NEED IT LATER
 t=datenum(simdate_series);
-save([direc,'/vTEC.mat'],'mlat','mlong','t','simdate_series','*vTEC*','-v7');
-
-
-%RESET Path
-rmpath ../script_utils;
+save([direc,filesep,'vTEC.mat'],'mlat','mlong','t','simdate_series','*vTEC*','-v7');

@@ -1,15 +1,16 @@
-addpath ../script_utils;
+cwd = fileparts(mfilename('fullpath'));
+addpath([cwd,'/../script_utils'])
 
 %SIMULATIONS LOCAITONS
 simname='mooreOK3D_medres/';
 basedir='~/Downloads/'
 direc=[basedir,simname];
-system(['mkdir ',direc,'/TECplots']);    %store output plots with the simulation data
-system(['mkdir ',direc,'/TECplots_eps']);    %store output plots with the simulation data
+mkdir([direc, filesep, 'TECplots']);    %store output plots with the simulation data
+mkdir([direc, filesep, 'TECplots_eps']);    %store output plots with the simulation data
 
 
 %LOAD THE COMPUTED MAGNETIC FIELD DATA
-load([direc,'/vTEC.mat']);
+load([direc,filesep,'vTEC.mat']);
 lt=numel(t);
 mlon=mlong;
 
@@ -37,19 +38,19 @@ for it=1:lt
     clf;
 %    FS=16;
     FS=10;
-    
+
     datehere=simdate_series(it,:);
     ymd=datehere(1:3);
     UTsec=datehere(4)*3600+datehere(5)*60+datehere(6);
     filename=datelab(ymd,UTsec);
     filename=[filename,'.dat'];
     titlestring=datestr(datenum(datehere));
-    
+
     mlatlimplot=[min(mlat)-0.5,max(mlat)+0.5];
     mlonlimplot=[min(mlon)-0.5,max(mlon)+0.5];
     axesm('MapProjection','Mercator','MapLatLimit',mlatlimplot,'MapLonLimit',mlonlimplot);
     param=dvTEC(:,:,it);
-    param=dvTEC(:,:,it)-dvTEC(:,:,5);   %flat-field dvTEC just in case    
+    param=dvTEC(:,:,it)-dvTEC(:,:,5);   %flat-field dvTEC just in case
     %imagesc(mlon,mlat,param);
     mlatlim=[min(mlat),max(mlat)];
     mlonlim=[min(mlon),max(mlon)];
@@ -72,19 +73,19 @@ for it=1:lt
     titlestring=datestr(datenum(simdate_series(it,:)));
     title(sprintf([titlestring,'\n\n']));
     %gridm;
-    
-    
+
+
     %ADD A MAP OF COASTLINES
     load coastlines;
     [thetacoast,phicoast]=geog2geomag(coastlat,coastlon);
     mlatcoast=90-thetacoast*180/pi;
     mloncoast=phicoast*180/pi;
-    
+
     if (360-mlonsrc<20)
         inds=find(mloncoast>180);
         mloncoast(inds)=mloncoast(inds)-360;
     end
-    
+
     hold on;
     ax=axis;
     plotm(mlatcoast,mloncoast,'k-','LineWidth',1);
@@ -92,11 +93,9 @@ for it=1:lt
     setm(gca,'MeridianLabel','on','ParallelLabel','on','MLineLocation',10,'PLineLocation',5,'MLabelLocation',10,'PLabelLocation',5);
 %    setm(gca,'MeridianLabel','on','ParallelLabel','on','MLineLocation',1,'PLineLocation',1,'MLabelLocation',1,'PLabelLocation',1);
     gridm on;
-    
-    
+
+
     %PRINT THE THING
     print('-dpng',[direc,'/TECplots/',filename,'.png'],'-r300');
 %    print('-depsc2',[direc,'/TECplots_eps/',filename,'.eps']);
 end
-
-rmpath ../script_utils;

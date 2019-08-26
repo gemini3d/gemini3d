@@ -118,11 +118,11 @@ fid=fopen(filename,'w');
 fwrite(fid,mlon,'real*8');
 fwrite(fid,mlat,'real*8');
 fclose(fid);
+
 for it=1:lt
     UTsec=expdate(it,4)*3600+expdate(it,5)*60+expdate(it,6);
     ymd=expdate(it,1:3);
-    filename=datelab(ymd,UTsec);
-    filename=[outdir,filename,'.dat']
+    filename=[outdir, datelab(ymd,UTsec), '.dat']
     fid=fopen(filename,'w');
 
     %FOR EACH FRAME WRITE A BC TYPE AND THEN OUTPUT BACKGROUND AND BCs
