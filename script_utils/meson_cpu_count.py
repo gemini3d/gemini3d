@@ -48,5 +48,7 @@ if __name__ == "__main__":
 
     mpi_count //= extradiv
 
+    mpi_count = max(mpi_count, 2)
+
     # need end='' or you'll have to .strip() in Meson
     print(mpi_count, end="")
