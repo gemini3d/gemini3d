@@ -1,5 +1,5 @@
 add_library(potential potential_comm_mumps.f90 potential_mumps.F90 boundary_conditions/potentialBCs_mumps.f90)
-target_link_libraries(potential PRIVATE calculus collision const grid fsutils interp timeutils
+target_link_libraries(potential PRIVATE calculus collision const grid interp timeutils
   ${MUMPS_LIBRARIES} MPI::MPI_Fortran)
 target_compile_options(potential PRIVATE ${FFLAGS})
 target_include_directories(potential PRIVATE ${MUMPS_INCLUDE_DIRS})

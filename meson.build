@@ -29,7 +29,7 @@ subdir('tests')
 
 io = library('io',
   sources: io_src,
-  link_with: [calculus, const, fsutils, grid, mpimod])
+  link_with: [calculus, const, fsutils, grid, mpimod, timeutils])
 
 subdir('vendor/msis00')
 # --- for setting up an equilibrium simulation --
@@ -38,7 +38,7 @@ executable('msis_setup', 'setup/MSIS00/call_msis_gfortran.f90',
 
 neutral = library('neutral', 'neutral/neutral.f90',
   dependencies : mpi,
-  link_with : [const, fsutils, grid, interp, mpimod, msis, timeutils])
+  link_with : [const, grid, interp, mpimod, msis, timeutils])
 
 subdir('ionization')
 

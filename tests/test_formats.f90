@@ -2,8 +2,7 @@
 !! It necessarily requires visual inspection, or run from an enclosing program with Regex,
 !! such as a Python program configured to test as desired.
 use, intrinsic:: iso_fortran_env, only: sp=>real32, dp=>real64, stderr=>error_unit
-use date_formats, only: utsec2filename
-use timeutils, only: dateinc
+use timeutils, only: dateinc, utsec2filename
 
 implicit none
 
@@ -62,5 +61,13 @@ if (fn /= '20130220_18060.000001.dat') then
   error stop 'mismatch leading zeros'
 endif
 
+
+print *, 'format: utsec==86400 corner case'
+fn = utsec2filename([2015,4,13], 86400)
+
+if (fn /= '20150414_00000.000000.dat') then
+  write(stderr,*) 'wrong output: '//fn
+  error stop 'mismatch 86400 utsec case'
+endif
 
 end program

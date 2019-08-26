@@ -17,5 +17,5 @@ if use_glow
 endif
 
 precipBCs = library('precipBCs', 'boundary_conditions/precipBCs_mod.f90',
-  link_with: [mpimod, const, fsutils, grid, interp, timeutils],
+  link_with: [mpimod, const, grid, interp, timeutils],
   dependencies: mpi)

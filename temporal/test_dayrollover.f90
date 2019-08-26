@@ -1,10 +1,10 @@
 !! test day rollover
 use phys_consts, only: wp
-use timeutils, only: dateinc, doy_calc
+use timeutils, only: dateinc, doy_calc, day_wrap
 
 implicit none
 
-integer :: ymd(3)
+integer :: ymd(3), year, month, day
 real(wp) :: dtsec, UTsec
 
 !> leap year tests
@@ -19,6 +19,25 @@ if (doy_calc(2000,2,29) /= 60) error stop 'doy_calc millenium leap day 60'
 if (doy_calc(1900,3,1) /= 60) error stop 'doy_calc 1900 NO leap day 60'
 
 if (doy_calc(2100,3,1) /= 60) error stop 'doy_calc 2100 NO leap day 60'
+
+!> day rollover checks
+year = 2000
+month = 2
+day = 30
+call day_wrap(year, month, day)
+if (year /= 2000 .or. month /= 3 .or. day /= 1) error stop 'day_wrap: single day leap fail'
+
+year = 2000
+month = 2
+day = 31
+call day_wrap(year, month, day)
+if (year /= 2000 .or. month /= 3 .or. day /= 2) error stop 'day_wrap: two day leap fail'
+
+year = 1999
+month = 14
+day = 31
+call day_wrap(year, month, day)
+if (year /= 2000 .or. month /= 3 .or. day /= 2) error stop 'day_wrap: 14 month + two day leap fail'
 
 
 !> date rollover tests
@@ -41,6 +60,7 @@ call dateinc(dtsec, ymd, utsec)
 if (.not.all(ymd == [2012,2,29]) .and. abs(utsec) < epsilon(1.)) error stop '2012 leap year rollover'
 
 
+print *,'rollover 1999-12-31T24:00:00'
 ymd = [1999,12,31]
 dtsec = 1.
 utsec = 86399.

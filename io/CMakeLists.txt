@@ -1,4 +1,4 @@
-add_library(fsutils mkdir.F90 expanduser.f90 formats.f90)
+add_library(fsutils mkdir.F90 expanduser.f90)
 target_compile_options(fsutils PRIVATE ${FFLAGS})
 set_target_properties(fsutils PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR})
 

@@ -42,14 +42,14 @@ add_subdirectory(numerical)
 
 add_subdirectory(io)
 add_library(io io/io.f90 io/aurora.f90 io/mag.f90 io/plasma.f90 io/output.f90 io/input.f90)
-target_link_libraries(io PRIVATE calculus const fsutils grid mpimod)
+target_link_libraries(io PRIVATE calculus const fsutils grid mpimod timeutils)
 target_compile_definitions(io PRIVATE TRACE=${TRACE})
 target_compile_options(io PRIVATE ${FFLAGS})
 
 add_subdirectory(temporal)
 
 add_library(neutral neutral/neutral.f90)
-target_link_libraries(neutral PRIVATE const fsutils grid interp mpimod msis timeutils MPI::MPI_Fortran)
+target_link_libraries(neutral PRIVATE const grid interp mpimod msis timeutils MPI::MPI_Fortran)
 target_compile_options(neutral PRIVATE ${FFLAGS})
 
 add_library(collision collisions/collisions.f90)

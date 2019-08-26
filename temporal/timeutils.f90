@@ -1,9 +1,9 @@
 module timeutils
 use phys_consts, only: wp
-use, intrinsic :: iso_fortran_env, only: sp=>real32, dp=>real64
+use, intrinsic :: iso_fortran_env, only: sp=>real32, dp=>real64, int32, int64
 implicit none
 private
-public :: doy_calc, sza, dateinc
+public :: doy_calc, sza, dateinc, utsec2filename, date_filename, day_wrap
 
 real(wp), parameter :: pi = 4._wp*atan(1._wp)
 
@@ -75,7 +75,8 @@ sza=acos(sin(soldecrad)*sin(latrad)+cos(soldecrad)*cos(latrad)*cos(hrang))
 end function sza
 
 
-subroutine dateinc(dtsec, ymd, UTsec)
+pure subroutine dateinc(dtsec, ymd, UTsec)
+!! increment datetime by dtsec
 
 real(wp), intent(in) :: dtsec
 !! seconds to increment
@@ -89,7 +90,7 @@ integer :: monthinc          !< we incremented the month
 
 year=ymd(1); month=ymd(2); day=ymd(3);
 
-if ((day < 1) .or. (day > daysmonth(year, month))) error stop 'impossible day'
+if (day < 1) error stop 'temporal:timeutils:dateinc(): days are positive integers'
 if (utsec < 0) error stop 'negative UTsec, simulation should go forward in time only!'
 if (dtsec < 0) error stop 'negative dtsec, simulation should go forward in time only!'
 if (dtsec > 86400) error stop 'excessively large dtsec > 86400, simulation step should be small enough!'
@@ -97,21 +98,98 @@ if (dtsec > 86400) error stop 'excessively large dtsec > 86400, simulation step 
 UTsec = UTsec + dtsec
 do while (UTsec >= 86400)
   UTsec = UTsec - 86400._wp
-  day = day+1          !roll the day over
-!> month rollover
-  if (day > daysmonth(year, month)) then
-    day=1
-    month = month + 1
-  end if
-
-  if (month>12) then    !< roll the year over
-    month=1
-    year=year+1
-  end if
+  day = day+1
+  call day_wrap(year, month, day)
 end do
 
 ymd(1)=year; ymd(2)=month; ymd(3)=day;    !replace input array with new date
 
 end subroutine dateinc
+
+
+recursive pure subroutine day_wrap(year, month, day)
+!! increment date if needed, according to day
+!! that is, if day is beyond month, increment month and year if needed
+integer, intent(inout) :: year, month, day
+
+if (month < 1 .or. day < 1) error stop 'day_wrap: months and days must be positive'
+
+!> wrap months
+do while (month > 12)
+  month = month - 12
+  year = year + 1
+end do
+
+!> wrap days
+do while (day > daysmonth(year, month))
+  day = day - daysmonth(year, month)
+  month = month + 1
+  call day_wrap(year, month, day)
+end do
+
+end subroutine day_wrap
+
+
+pure function date_filename(outdir,ymd,UTsec)  result(filename)
+!! GENERATE A FILENAME STRING OUT OF A GIVEN DATE/TIME
+
+character(*), intent(in) :: outdir
+integer, intent(in) :: ymd(3)
+class(*), intent(in) :: UTsec
+character(:), allocatable :: filename
+
+
+!> assemble
+filename = outdir // '/' // utsec2filename(ymd, UTsec)
+
+end function date_filename
+
+
+pure character(25) function utsec2filename(ymd, UTsec) result(fn)
+!! file name is exactly 25 characters long, per Matt Z's de facto spec.
+!! FIXME: until we go to integer UTsec (microsec) we round to nearest microsecond
+integer, intent(in) :: ymd(3)
+class(*), intent(in) :: UTsec
+!! UTC second: real [0.0 .. 86400.0)
+integer(int64) :: usec, seconds, frac
+character(12) :: sec_str
+integer(int64), parameter :: million = 1000000_int64
+integer :: year, month, day
+real(dp) :: UTsectmp
+
+year = ymd(1)
+month = ymd(2)
+day = ymd(3)
+
+select type(UTsec)
+  type is (real(sp))
+    usec = nint(UTsec * million, int64)
+  type is (real(dp))
+    usec = nint(UTsec * million, int64)
+  type is (integer(int32))
+    usec = int(UTsec, int64) * million
+  type is (integer(int64))
+    usec = UTsec * million
+  class default
+    error stop "io/formats.f90:utsec2filename unknown UTsec type"
+end select
+
+seconds = usec / million
+if (seconds < 0 .or. seconds > 86400) error stop 'io/formats.f90:utsec2filename did NOT satisfy 0 <= seconds < 86400'
+if (seconds == 86400) then
+  !> FIXME: This corner case is from not using integers for microseconds
+  ! write(stderr,*) 'utsec2filename: FIXME: patching UTsec=86400 to next day midnight'
+  day = day+1
+  seconds = 0
+  usec = 0
+  call day_wrap(year, month, day)
+endif
+frac = usec - seconds * million
+
+write(sec_str, '(I5.5, A1, I6.6)') seconds, '.', frac
+
+write(fn,'(i4,I2.2,I2.2,a17)') year, month, day, '_' // sec_str // '.dat'
+
+end function utsec2filename
 
 end module timeutils

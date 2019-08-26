@@ -3,10 +3,9 @@ module potentialBCs_mumps
 use mpi, only: mpi_integer, mpi_comm_world, mpi_status_ignore
 
 use phys_consts, only: wp, pi, Re, debug
-use date_formats, only : date_filename
 use grid, only: curvmesh, lx1, lx2, lx2all, lx3all, gridflag
 use interpolation, only : interp1,interp2
-use timeutils, only : dateinc
+use timeutils, only : dateinc, date_filename
 
 implicit none
 private
