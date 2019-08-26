@@ -1,7 +1,7 @@
 function [ne,mlatsrc,mlonsrc,xg,v1,Ti,Te,J1,v2,v3,J2,J3,filename,Phitop,ns,vs1,Ts] = loadframe(direc,ymd,UTsec,ymd0,UTsec0,tdur,dtout,flagoutput,mloc,xg)
 
 cwd = fileparts(mfilename('fullpath'));
-addpath([cwd,'/../script_utils'])
+addpath([cwd, filesep, '..', filesep, 'script_utils'])
 
 narginchk(3,10)
 validateattr(direc, {'char'}, {'vector'}, mfilename, 'data directory', 1)
@@ -42,7 +42,7 @@ end
 
 % CHECK WHETHER WE NEED TO RELOAD THE GRID (WHICH CAN BE TIME CONSUMING)
 if nargout >= 4 && ~exist('xg','var')
-  xg = readgrid([direc,'/inputs/']);
+  xg = readgrid([direc, filesep, 'inputs']);
 end
 
 
@@ -57,11 +57,12 @@ end
 
 
 %% LOAD DIST. FILE
-filestr=datelab(ymd,UTsec);
-if ymd(1)==ymd0(1) && ymd(2)==ymd0(2) && ymd(3)==ymd0(3) && UTsec==UTsec0    %tack on the decimal part
-  filestr(end)='1';
+stem = datelab(ymd, UTsec);
+filename = [stem, '.dat'];
+if ~exist(filename, 'file') % switch microsecond to one for first time step
+    stem(end) = '1';
+    filename = [stem, '.dat'];
 end
-filename=[filestr,'.dat'];
 
 switch flagoutput
   case 1
