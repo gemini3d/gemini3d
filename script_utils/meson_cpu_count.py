@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 import os
-import sys
 import argparse
 from pathlib import Path
 import numpy as np
@@ -11,8 +10,7 @@ try:
     import psutil
 except ImportError:
     psutil = None
-    if sys.platform != "cygwin":
-        print('"pip install psutil" will improve CPU utilization.')
+    # pip install psutil will improve CPU utilization.
 
 
 def get_simsize(fn: Path) -> typing.List[int]:
