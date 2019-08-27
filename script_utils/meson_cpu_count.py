@@ -22,15 +22,20 @@ def get_simsize(fn: Path) -> typing.List[int]:
 if __name__ == "__main__":
     p = argparse.ArgumentParser()
     p.add_argument("fn", help="simsize.dat to read")
+    p.add_argument("-f", "--force", help="force CPU count", type=int)
     P = p.parse_args()
 
-    # without psutil, hyperthreaded CPU may overestimate physical count by factor of 2 (or more)
-    if psutil is not None:
-        max_cpu = psutil.cpu_count(logical=False)
+    if P.force:
+        max_cpu = P.force
         extradiv = 1
     else:
-        max_cpu = os.cpu_count()
-        extradiv = 2
+        # without psutil, hyperthreaded CPU may overestimate physical count by factor of 2 (or more)
+        if psutil is not None:
+            max_cpu = psutil.cpu_count(logical=False)
+            extradiv = 1
+        else:
+            max_cpu = os.cpu_count()
+            extradiv = 2
 
     size = get_simsize(P.fn)
     # need at least 2 images for MPI to function for Gemini
