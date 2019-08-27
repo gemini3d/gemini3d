@@ -2,7 +2,7 @@ module mpimod
 !! NOTES:
 !! * Need to consider overloading routines as send_ghost and send_noghost so that
 !!   it is more clear what the structure of the input arrays should be.
-
+use, intrinsic:: iso_fortran_env, only: stderr=>error_unit
 use phys_consts, only : lsp, wp
 !! code needs to know how many species are being used.
 
@@ -491,8 +491,8 @@ if (lx3all==1 .or. lx2all==1) then    !this is a 2D simulation so the mpi'd dime
   lid2=1
 else
   if (lx3all/lid*lid/=lx3all) then
-    error stop '!!!Grid is not divisible by number of processes - please generate a new one  &
-                 & and try again or try a different number of processes...'
+    write (stderr, *) 'lx3all:',lx3all,'  lid:',lid
+    error stop 'Grid is not divisible by number of processes (lx3all/lid*lid /= lx3all).'
   end if
 
   lid2=1
