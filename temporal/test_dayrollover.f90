@@ -1,4 +1,5 @@
 !! test day rollover
+use, intrinsic :: iso_fortran_env, only: real32, real64, stderr=>error_unit
 use phys_consts, only: wp
 use timeutils, only: dateinc, doy_calc, day_wrap
 
@@ -86,12 +87,19 @@ utsec = 2592000._wp
 call dateinc(dtsec, ymd, utsec)
 if (.not.all(ymd == [2000,3,1]) .and. abs(utsec) < epsilon(1.)) error stop '2000 leap year + month rollover'
 
-print *, 'rollover: 366 days leap year'
-ymd = [2000,2,1]
-dtsec = 1.
-utsec = 31622400._wp
-call dateinc(dtsec, ymd, utsec)
-if (.not.all(ymd == [2001,3,1]) .and. abs(utsec) < epsilon(1.)) error stop '2000 leap year 366 day rollover'
+if (wp == real64) then
+  print *, 'rollover: 366 days leap year'
+  ymd = [2000,2,1]
+  dtsec = 1.
+  utsec = 31622400._wp
+  call dateinc(dtsec, ymd, utsec)
+  if (.not.all(ymd == [2001,3,1]) .and. abs(utsec) < epsilon(1.)) then
+    write(stderr, *) 'FAILED: expected 2001-03-01 but got', ymd
+    error stop 'FAILED: 2000 leap year 366 day rollover'
+  endif
+else
+  write(stderr, *) 'SKIPPED: 366 day rollover test: real32 not being precise enough'
+endif
 
 print *, 'rollover: 10 years + leap year'
 ymd = [2000,2,1]

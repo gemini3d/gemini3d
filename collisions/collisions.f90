@@ -3,6 +3,7 @@ module collisions
 use phys_consts, only: wp, lsp, ln, ms, kb, pi, elchrg, qs
 
 implicit none
+private
 
 real(wp), parameter :: Csn(lsp,ln) = reshape( &
 [-1.0_wp, 6.82e-10_wp, 6.64e-10_wp, -1.0_wp, &
@@ -48,7 +49,7 @@ contains
 pure subroutine maxwell_colln(isp,isp2,nn,Tn,Ts,nusn)
 
 !------------------------------------------------------------
-!-------COMPUTE MAXWELL COLLISIONS OF ISP WITH ISP2.  ION 
+!-------COMPUTE MAXWELL COLLISIONS OF ISP WITH ISP2.  ION
 !-------TEMPERATURE/DENSITY ARRAYS EXPECTED TO INCLUDE GHOST CELLS
 !------------------------------------------------------------
 !-------Note that it is done on a per species basis
@@ -104,7 +105,7 @@ end subroutine maxwell_colln
 pure subroutine coulomb_colln(isp,isp2,ns,Ts,vs1,nusj,Phisj,Psisj)
 
 !------------------------------------------------------------
-!-------COMPUTE COULOMB COLLISIONS OF ISP WITH ISP2.  
+!-------COMPUTE COULOMB COLLISIONS OF ISP WITH ISP2.
 !-------TEMPERATURE/DENSITY ARRAYS EXPECTED TO INCLUDE GHOST CELLS
 !-------NOTE THAT OTHER PIECES OF THE CODE REQUIRE SELF COLLISIONS
 !-------TO BE ZERO TO YIELD CORRECT OUTPUT (SOURCES.MOD)
@@ -188,7 +189,7 @@ end if
 end subroutine thermal_conduct
 
 
-pure subroutine conductivities(nn,Tn,ns,Ts,vs1,B1,sig0,sigP,sigH,muP,muH,muPvn,muHvn) 
+pure subroutine conductivities(nn,Tn,ns,Ts,vs1,B1,sig0,sigP,sigH,muP,muH,muPvn,muHvn)
 
 !------------------------------------------------------------
 !-------COMPUTE THE CONDUCTIVITIES OF THE IONOSPHERE.  STATE
@@ -240,7 +241,7 @@ do isp=1,lsp
   muPvn(:,:,:,isp)=nu**2/(nu**2+OMs**2)
   muHvn(:,:,:,isp)=-1.0_wp*nu*OMs/(nu**2+OMs**2)
 
-  !full mobilities   
+  !full mobilities
   muP(:,:,:,isp)=mubase*muPvn(:,:,:,isp)           !Pederson
   muH(:,:,:,isp)=mubase*muHvn(:,:,:,isp)       !Hall
 end do
@@ -261,7 +262,7 @@ end do
 end subroutine conductivities
 
 
-subroutine capacitance(ns,B1,flagcap,incap) 
+subroutine capacitance(ns,B1,flagcap,incap)
 
 !------------------------------------------------------------
 !-------COMPUTE THE INERTIAL CAPACITANCE OF THE IONOSPHERE.

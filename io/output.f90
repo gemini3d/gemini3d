@@ -51,9 +51,11 @@ endif
 !call execute_command_line('cp -r ./* '//outdir//'/inputs/source/', exitstat=ierr)
 !if (ierr /= 0) error stop 'error creating input source parameter output directory'
 
-call gitlog(outdir//'/gitrev.log')
+call gitlog(outdir // '/gitrev.log')
 
-call compiler_log(outdir//'/compiler.log')
+call compiler_log(outdir // '/compiler.log')
+
+call realbits_log(outdir // '/realbits.log')
 
 end procedure create_outdir
 
@@ -102,5 +104,27 @@ write(u,'(A)') compiler_options()
 close(u)
 
 end subroutine compiler_log
+
+
+subroutine realbits_log(logpath)
+
+character(*), intent(in) :: logpath
+integer :: u, ierr
+
+open(newunit=u, file=logpath, status='unknown', action='write', iostat=ierr)
+if(ierr /= 0) return
+
+select case (wp)
+  case (real64)
+    write(u,'(A)') '64'
+  case (real32)
+    write(u,'(A)') '32'
+  case default
+    write(u,'(A)') 'unknown'
+end select
+
+close(u)
+
+end subroutine realbits_log
 
 end submodule output

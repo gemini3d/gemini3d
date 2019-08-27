@@ -24,7 +24,8 @@ for it=1:lt
   Ts(:,it)=fscanf(fid,'%f',lx1)';
 end % for
 
-assert_allclose(Ts(13,end), 0.2757552094055,[],[],'1-D diffusion accuracy')
+% reltol = 1e-5 for real32
+assert_allclose(Ts(13,end), 0.2757552094055,1e-5,[],'1-D diffusion accuracy')
 
 if ~isinteractive, return, end
 %% plots

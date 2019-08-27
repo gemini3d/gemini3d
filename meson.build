@@ -7,6 +7,7 @@ real_bits = '-DREALBITS=' + get_option('realbits')
 use_glow = get_option('useglow')
 use_hdf = get_option('HDF')
 buildtype = get_option('buildtype')
+arith = get_option('arith')
 
 subdir('cmake')
 

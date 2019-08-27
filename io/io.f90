@@ -1,6 +1,6 @@
 module io
 !! HANDLES INPUT AND OUTPUT OF PLASMA STATE PARAMETERS (NOT GRID INPUTS)
-use, intrinsic :: iso_fortran_env, only: stderr=>error_unit
+use, intrinsic :: iso_fortran_env, only: stderr=>error_unit, real32, real64
 use, intrinsic :: ieee_arithmetic, only: ieee_is_nan, ieee_value, ieee_quiet_nan
 use, intrinsic :: iso_c_binding, only: c_int
 use phys_consts, only : kB,ms,pi,lsp,wp,lwave

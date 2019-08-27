@@ -1,20 +1,34 @@
-function testinterp(filename)
+function testinterp(filename, realbits)
 
 cwd = fileparts(mfilename('fullpath'));
 addpath([cwd,filesep,'..',filesep,'..',filesep,'script_utils'])
 
+if nargin == 1
+  realbits = 64;
+end
+
 validateattr(filename, {'char'}, {'vector'}, mfilename,'interp file to compare',1)
+validateattr(realbits, {'numeric'}, {'scalar', 'integer', 'positive'}, mfilename,'real bits',2)
 
 %% if path not exist, exit code 77 as GNU standard skip test indicator
 if exist(filename, 'file') ~= 2, fprintf(2,[filename,' not found\n']), exit(77), end
+
+switch realbits
+  case 64, freal = 'float64';
+  case 32, freal = 'float32';
+  otherwise, error(['unknown precision', num2str(realbits)])
+end
 
 fid=fopen(filename,'r');
 
 lx1=fread(fid,1,'integer*4');
 lx2=fread(fid,1,'integer*4');
-x1=fread(fid,lx1,'real*8');
-x2=fread(fid,lx2,'real*8');
-f=fread(fid,lx1*lx2,'real*8');
+assert(lx1==500)
+assert(lx2==1000)
+
+x1=fread(fid,lx1, freal);
+x2=fread(fid,lx2, freal);
+f=fread(fid,lx1*lx2, freal);
 f=reshape(f,[lx1, lx2]);
 
 fclose(fid);

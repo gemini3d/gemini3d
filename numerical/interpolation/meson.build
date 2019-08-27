@@ -17,7 +17,8 @@ test_interp3_exe = executable('test_interp3', 'testinterp3.f90',
 
 #== Octave
 test('Interp2d_octave', octave,
-  args: ['-q', '--eval', 'testinterp("' + meson.build_root() / 'output2D.dat")'],
+  args: ['-q', '--eval',
+         'testinterp("' + meson.build_root() / 'output2D.dat",' + get_option('realbits') +')'],
   timeout: 10,
   workdir: meson.current_source_dir(),
   suite: 'unit')
@@ -26,11 +27,16 @@ test('Interp2d_octave', octave,
 #== Python
 # must have .current_source_dir() for Python script
 test('Interp2d_python', python,
-  args: [meson.current_source_dir() / 'testinterp.py', meson.build_root() / 'output2D.dat'],
+  args: [meson.current_source_dir() / 'testinterp.py',
+         meson.build_root() / 'output2D.dat',
+         get_option('realbits')],
   timeout: 10,
   suite: 'unit')
 
 test('Interp3d_python', python,
-  args: [meson.current_source_dir() / 'testinterp3.py', meson.build_root() / 'output3D.dat', test_interp3_exe],
-  timeout: 30,  # need 30 for slow CPU
+  args: [meson.current_source_dir() / 'testinterp3.py',
+         meson.build_root() / 'output3D.dat',
+         get_option('realbits'),
+         test_interp3_exe],
+  timeout: 30, # need 30 for slow CPU
   suite: 'unit')

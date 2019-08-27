@@ -37,13 +37,13 @@ set_tests_properties(Interp3d PROPERTIES
 
 if(PythonOK)
 add_test(NAME InterpPython
-  COMMAND ${Python3_EXECUTABLE}  ${CMAKE_CURRENT_SOURCE_DIR}/testinterp.py ${CMAKE_BINARY_DIR}/output2D.dat)
+  COMMAND ${Python3_EXECUTABLE}  ${CMAKE_CURRENT_SOURCE_DIR}/testinterp.py ${CMAKE_BINARY_DIR}/output2D.dat ${realbits})
 set_tests_properties(InterpPython PROPERTIES
                      TIMEOUT 10
                      FIXTURES_REQUIRED GemInterp)
 
 add_test(NAME Interp3Python
-  COMMAND ${Python3_EXECUTABLE}  ${CMAKE_CURRENT_SOURCE_DIR}/testinterp3.py ${CMAKE_BINARY_DIR}/output3D.dat $<TARGET_FILE:test_interp3>)
+  COMMAND ${Python3_EXECUTABLE}  ${CMAKE_CURRENT_SOURCE_DIR}/testinterp3.py ${CMAKE_BINARY_DIR}/output3D.dat ${realbits} $<TARGET_FILE:test_interp3>)
 set_tests_properties(Interp3Python PROPERTIES
                      TIMEOUT 10
                      FIXTURES_REQUIRED GemInterp)
@@ -51,14 +51,14 @@ endif(PythonOK)
 
 if(OctaveOK)
 add_test(NAME InterpOctave
-         COMMAND ${Octave_EXECUTABLE} -q --eval "testinterp('${CMAKE_BINARY_DIR}/output2D.dat')"
+         COMMAND ${Octave_EXECUTABLE} -q --eval "testinterp('${CMAKE_BINARY_DIR}/output2D.dat', ${realbits})"
          WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 set_tests_properties(InterpOctave PROPERTIES
                      TIMEOUT 10
                      FIXTURES_REQUIRED GemInterp)
 
 add_test(NAME Interp3Octave
-         COMMAND ${Octave_EXECUTABLE} -q --eval "testinterp3('${CMAKE_BINARY_DIR}/output3D.dat')"
+         COMMAND ${Octave_EXECUTABLE} -q --eval "testinterp3('${CMAKE_BINARY_DIR}/output3D.dat', ${realbits})"
          WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 set_tests_properties(Interp3Octave PROPERTIES
                      TIMEOUT 10

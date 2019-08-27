@@ -1,13 +1,14 @@
 mumps_root = get_option('MUMPS_ROOT')
+mumps_name = arith + 'mumps'
 if system_blas
   # mumps = dependency('MUMPS', cmake_module_path : 'cmake/Modules')
   if mumps_root == ''
     mumpsinc = '/usr/include'
-    mumpslib = fc.find_library('dmumps', required : false)
+    mumpslib = fc.find_library(mumps_name, required : false)
   else
     message('searching for MUMPS in ' + mumps_root)
     mumpsinc = mumps_root / 'include'
-    mumpslib = [fc.find_library('dmumps', required : false, dirs : mumps_root),
+    mumpslib = [fc.find_library(mumps_name, required : false, dirs : mumps_root),
                 fc.find_library('mumps_common', required : false, dirs : mumps_root)]
   endif
 else

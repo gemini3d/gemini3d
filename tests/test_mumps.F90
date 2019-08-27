@@ -1,16 +1,22 @@
 use mpi, only: mpi_init, mpi_finalize, mpi_comm_world
 use, intrinsic :: iso_fortran_env, only: stderr=>error_unit, i64=>int64, compiler_version, compiler_options
 
-IMPLICIT NONE
+implicit none
 
-INCLUDE 'dmumps_struc.h'
-TYPE (DMUMPS_STRUC) :: mumps_par
-INTEGER :: IERR
-INTEGER(i64) :: I8
+#if REALBITS==32
+include 'smumps_struc.h'
+type (SMUMPS_STRUC) :: mumps_par
+#elif REALBITS==64
+include 'dmumps_struc.h'
+type (DMUMPS_STRUC) :: mumps_par
+#endif
+
+integer :: ierr
+integer(i64) :: i8
 
 print *,compiler_version(), compiler_options()
 
-CALL MPI_INIT(IERR)
+call mpi_init(ierr)
 ! Define a communicator for the package.
 mumps_par%COMM = MPI_COMM_WORLD
 !  Initialize an instance of the package
@@ -21,14 +27,18 @@ mumps_par%PAR = 1
 
 call simple_test(mumps_par)
 
-CALL MPI_FINALIZE(IERR)
+call mpi_finalize(ierr)
 
 contains
 
 
 subroutine simple_test(mumps_par)
 
-TYPE (DMUMPS_STRUC), intent(inout) :: mumps_par
+#if REALBITS==32
+type (SMUMPS_STRUC), intent(inout) :: mumps_par
+#elif REALBITS==64
+type (DMUMPS_STRUC), intent(inout) :: mumps_par
+#endif
 
 call mumps_run(mumps_par)
 
@@ -62,8 +72,13 @@ end subroutine simple_test
 
 subroutine read_input(mumps_par)
 
-type(dmumps_struc), intent(inout) :: mumps_par
-integer :: I, u
+#if REALBITS==32
+type (SMUMPS_STRUC), intent(inout) :: mumps_par
+#elif REALBITS==64
+type (DMUMPS_STRUC), intent(inout) :: mumps_par
+#endif
+
+integer :: i, u
 
 
 IF ( mumps_par%MYID == 0 ) THEN
@@ -90,9 +105,15 @@ end subroutine read_input
 
 subroutine mumps_run(mumps_par)
 
-type(dmumps_struc), intent(inout) :: mumps_par
-
+#if REALBITS==32
+type (SMUMPS_STRUC), intent(inout) :: mumps_par
+CALL SMUMPS(mumps_par)
+#elif REALBITS==64
+type (DMUMPS_STRUC), intent(inout) :: mumps_par
 CALL DMUMPS(mumps_par)
+#endif
+
+
 
 IF (mumps_par%INFOG(1) < 0) THEN
   WRITE(stderr,'(A,A,I6,A,I9)') " ERROR: ", &
