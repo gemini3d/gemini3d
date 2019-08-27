@@ -107,10 +107,13 @@ stages:
       displayName: 'Build'
     - publish: build/CMakeFiles/CMakeError.log
       condition: failed()
-      artifact: UbuntuCMakeTestLog
-    - script: $(CMAKE_PATH)/ctest -V --parallel
+      artifact: UbuntuCMakeConfigError
+    - script: $(CMAKE_PATH)/ctest --parallel
       workingDirectory: build
       displayName: 'Run all Tests'
+    - publish: build/CMakeFiles/CMakeError.log
+      condition: failed()
+      artifact: UbuntuCMakeTestError
 
 
   - job: UbuntuMeson
@@ -210,10 +213,13 @@ stages:
       displayName: 'Build'
     - publish: build/CMakeFiles/CMakeError.log
       condition: failed()
-      artifact: MacCMakeBuildLog
-    - script: ctest -V --parallel
+      artifact: MacCMakeConfigError
+    - script: ctest --parallel
       workingDirectory: build
       displayName: 'Run all tests'
+    - publish: build/CMakeFiles/CMakeError.log
+      condition: failed()
+      artifact: MacCMakeTestError
 
 
   - job: MacMesonSubprojects
