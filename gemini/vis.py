@@ -7,6 +7,8 @@ import matplotlib as mpl
 from matplotlib.pyplot import figure
 import typing
 
+from .utils import gitrev
+
 if typing.TYPE_CHECKING:
     import matplotlib.axes as mpla
     import matplotlib.figure as mplf
@@ -36,7 +38,6 @@ def plotframe(
     grid: typing.Dict[str, np.ndarray],
     dat: typing.Dict[str, typing.Any],
     save_dir: Path = None,
-    save_ext: str = ".png",
     fg: "mplf.Figure" = None,
 ):
     """
@@ -45,12 +46,12 @@ def plotframe(
     plotfun = grid2plotfun(grid)
 
     for k in ("ne", "v1", "Ti", "Te", "J1", "v2", "v3", "J2", "J3"):
-        if save_dir is None:
+        if save_dir is None or fg is None:
             fg = figure(num=k, constrained_layout=True)
         fg.clf()
         plotfun(time, grid, dat[k][1].squeeze(), k, fg)
         if save_dir:
-            fg.savefig(save_dir / f"{k}-{time.isoformat().replace(':','')}.{save_ext}")
+            fg.savefig(save_dir / f"{k}-{time.isoformat().replace(':','')}.png")
 
 
 def grid2plotfun(grid: typing.Dict[str, np.ndarray]):
@@ -122,11 +123,21 @@ def plot12(
     fg: "mplf.Figure",
     ax: "mpla.Axes" = None,
 ):
+
+    if name.startswith("v"):
+        cmap = "bwr"
+        vmin = -50
+        vmax = 50
+    else:
+        cmap = None
+        vmin = None
+        vmax = None
+
     if parm.ndim != 2:
         raise ValueError(f"data must have 2 dimensions, you have {parm.shape}")
     if ax is None:
         ax = fg.gca()
-    hi = ax.pcolormesh(x / 1e3, z, parm)
+    hi = ax.pcolormesh(x / 1e3, z, parm, cmap=cmap, vmin=vmin, vmax=vmax)
 
     ax.axhline(REF_ALT, color="w", linestyle="--", linewidth=2)
     fg.colorbar(hi, ax=ax, label=CB_LBL[name])
@@ -138,11 +149,21 @@ def plot12(
 def plot13(
     y: np.ndarray, z: np.ndarray, parm, name: str, fg: "mplf.Figure", ax: "mpla.Axes" = None
 ):
+
+    if name.startswith("v"):
+        cmap = "bwr"
+        vmin = -50
+        vmax = 50
+    else:
+        cmap = None
+        vmin = None
+        vmax = None
+
     if parm.ndim != 2:
         raise ValueError(f"data must have 2 dimensions, you have {parm.shape}")
     if ax is None:
         ax = fg.gca()
-    hi = ax.pcolormesh(y / 1e3, z, parm)
+    hi = ax.pcolormesh(y / 1e3, z, parm, cmap=cmap, vmin=vmin, vmax=vmax)
 
     fg.colorbar(hi, ax=ax, label=CB_LBL[name])
 
@@ -192,7 +213,7 @@ def plot_interp(
     # %% INTERPOLATE ONTO PLOTTING GRID
     if grid["lx"][2] == 1:  # alt./lon. slice
         ax = fg.gca()
-        ax.set_title(time.isoformat())
+        ax.set_title(f"{name}: {time.isoformat()}  {gitrev()}")
         # meridional meshgrid, this defines the grid for plotting
         # slice expects the first dim. to be "y" ("z" in the 2D case)
         fmp = interp.interp2d(grid["x2"][inds2], grid["x1"][inds1], parm)
@@ -203,7 +224,7 @@ def plot_interp(
         plot12(xp[i], zp, parmp[:, i], name, fg)
     elif grid["lx"][1] == 1:  # alt./lat. slice
         ax = fg.gca()
-        ax.set_title(time.isoformat())
+        ax.set_title(f"{name}: {time.isoformat()}  {gitrev()}")
         # so north dist, east dist., alt.
         # slice expects the first dim. to be "y"
         fmp = interp.interp2d(grid["x3"][inds3], grid["x1"][inds1], parm)
@@ -214,7 +235,7 @@ def plot_interp(
     else:  # 3-panel plot, vs. single-panel plots of 2-D cases
         fg.set_size_inches((18, 5))
         axs = fg.subplots(1, 3)
-        fg.suptitle(time.isoformat(), y=0.99)
+        fg.suptitle(f"{name}: {time.isoformat()}  {gitrev()}", y=0.99)
 
         xp *= 1e6
         yp *= 1e6

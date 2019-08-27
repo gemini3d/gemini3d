@@ -6,7 +6,7 @@ from datetime import datetime
 from .utils import gitrev
 
 
-def plotdiff(A: np.ndarray, B: np.ndarray, name: str, time: datetime, dir1: Path, dir2: Path):
+def plotdiff(A: np.ndarray, B: np.ndarray, name: str, time: datetime, outdir: Path, refdir: Path):
     A = A.squeeze()
     B = B.squeeze()
     if A.ndim != 2 or B.ndim != 2:
@@ -17,16 +17,16 @@ def plotdiff(A: np.ndarray, B: np.ndarray, name: str, time: datetime, dir1: Path
 
     hi = axs[0].pcolormesh(A)
     fg.colorbar(hi, ax=axs[0])
-    axs[0].set_title(str(dir1))
+    axs[0].set_title(str(outdir))
 
     hi = axs[1].pcolormesh(B)
     fg.colorbar(hi, ax=axs[1])
-    axs[1].set_title(str(dir2))
+    axs[1].set_title(str(refdir))
 
     ttxt = f"{name}  {time.isoformat()}  Git: {gitrev()}"
 
     fg.suptitle(ttxt)
 
-    fn = dir2 / f"{name}-diff-{time.isoformat().replace(':','')}.png"
+    fn = outdir / f"{name}-diff-{time.isoformat().replace(':','')}.png"
     print("writing", fn)
     fg.savefig(fn)
