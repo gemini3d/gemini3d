@@ -314,7 +314,9 @@ def loadframe(simdir: Path, time: datetime) -> typing.Dict[str, typing.Any]:
     # %% datfn
 
     t = time
-    timename = f"{t.year}{t.month:02d}{t.day:02d}_{t.hour*3600 + t.minute*60 + t.second:05d}.000000.dat"
+    timename = (
+        f"{t.year}{t.month:02d}{t.day:02d}_{t.hour*3600 + t.minute*60 + t.second:05d}.000000.dat"
+    )
     datfn = simdir / timename
     if not datfn.is_file():
         datfn = datfn.parent / (timename[:-10] + "000001.dat")
