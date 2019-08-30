@@ -3,7 +3,6 @@ module collisions
 use phys_consts, only: wp, lsp, ln, ms, kb, pi, elchrg, qs
 
 implicit none
-private
 
 real(wp), parameter :: Csn(lsp,ln) = reshape( &
 [-1.0_wp, 6.82e-10_wp, 6.64e-10_wp, -1.0_wp, &
@@ -41,7 +40,6 @@ real(wp), parameter :: Csj(lsp,lsp) = reshape( &
 1.23_wp, 1.25_wp, 1.25_wp, 1.25_wp, 1.23_wp, 0.90_wp,  29.7e-3_wp, &
 54.5_wp, 54.5_wp, 54.5_wp, 54.5_wp, 54.5_wp, 54.5_wp,  38.537_wp], shape(Csj), order=[2,1])
 
-
 public :: thermal_conduct, conductivities, capacitance, maxwell_colln, coulomb_colln
 
 contains
@@ -50,7 +48,7 @@ contains
 pure subroutine maxwell_colln(isp,isp2,nn,Tn,Ts,nusn)
 
 !------------------------------------------------------------
-!-------COMPUTE MAXWELL COLLISIONS OF ISP WITH ISP2.  ION
+!-------COMPUTE MAXWELL COLLISIONS OF ISP WITH ISP2.  ION 
 !-------TEMPERATURE/DENSITY ARRAYS EXPECTED TO INCLUDE GHOST CELLS
 !------------------------------------------------------------
 !-------Note that it is done on a per species basis
@@ -76,27 +74,27 @@ if (isp<lsp) then    !ion-neutral
   if (Csn(isp,isp2)<0.0) then    !resonant
     if (isp==1 .and. isp2==4) then
       Teff=Tn+Ts(1:lx1,1:lx2,1:lx3,isp)/16.0
-      nusn=C2sn1(isp,isp2)*Teff**0.5*nn(:,:,:,isp2)*1d-6
+      nusn=C2sn1(isp,isp2)*Teff**0.5*nn(:,:,:,isp2)*1e-6_wp
     else
       Teff=0.5*(Tn+Ts(1:lx1,1:lx2,1:lx3,isp))
       nusn=C2sn1(isp,isp2)*(1.0-C2sn2(isp,isp2)*log10(Teff))**2.0* &
-           (Teff**0.5)*nn(:,:,:,isp2)*1d-6
+           (Teff**0.5)*nn(:,:,:,isp2)*1e-6_wp
     end if
   else    !nonresonant
-    nusn=Csn(isp,isp2)*nn(:,:,:,isp2)*1d-6
+    nusn=Csn(isp,isp2)*nn(:,:,:,isp2)*1e-6_wp
   end if
 else    !electron-neutral
   Teff=Ts(1:lx1,1:lx2,1:lx3,isp)
 
   select case (isp2)
     case (1)
-      nusn=8.9d-11*(1.0+5.7d-4*Teff)*(Teff**0.5)*nn(:,:,:,isp2)*1d-6
+      nusn=8.9e-11_wp*(1.0+5.7e-4_wp*Teff)*(Teff**0.5)*nn(:,:,:,isp2)*1e-6_wp
     case (2)
-      nusn=2.33d-11*(1.0-1.21d-4*Teff)*(Teff)*nn(:,:,:,isp2)*1d-6
+      nusn=2.33e-11_wp*(1.0-1.21e-4_wp*Teff)*(Teff)*nn(:,:,:,isp2)*1e-6_wp
     case (3)
-      nusn=1.82d-10*(1.0+3.6d-2*(Teff**0.5))*(Teff**0.5)*nn(:,:,:,isp2)*1d-6
+      nusn=1.82e-10_wp*(1.0+3.6e-2_wp*(Teff**0.5))*(Teff**0.5)*nn(:,:,:,isp2)*1e-6_wp
     case (4)
-      nusn=4.5d-9*(1.0-1.35d-4*Teff)*(Teff**0.5)*nn(:,:,:,isp2)*1d-6
+      nusn=4.5e-9_wp*(1.0-1.35e-4_wp*Teff)*(Teff**0.5)*nn(:,:,:,isp2)*1e-6_wp
   end select
 end if
 
@@ -106,7 +104,7 @@ end subroutine maxwell_colln
 pure subroutine coulomb_colln(isp,isp2,ns,Ts,vs1,nusj,Phisj,Psisj)
 
 !------------------------------------------------------------
-!-------COMPUTE COULOMB COLLISIONS OF ISP WITH ISP2.
+!-------COMPUTE COULOMB COLLISIONS OF ISP WITH ISP2.  
 !-------TEMPERATURE/DENSITY ARRAYS EXPECTED TO INCLUDE GHOST CELLS
 !-------NOTE THAT OTHER PIECES OF THE CODE REQUIRE SELF COLLISIONS
 !-------TO BE ZERO TO YIELD CORRECT OUTPUT (SOURCES.MOD)
@@ -130,22 +128,22 @@ lx2=size(Ts,2)-4
 lx3=size(Ts,3)-4
 
 if (isp==isp2) then     !zero out all self collision terms (would need to be changed if non-Maxwellian distribution used).
-  nusj=0d0
-  Phisj=0d0
-  Psisj=0d0
+  nusj=0.0_wp
+  Phisj=0.0_wp
+  Psisj=0.0_wp
 else
   Teff=(ms(isp2)*Ts(1:lx1,1:lx2,1:lx3,isp)+ms(isp)* &
          Ts(1:lx1,1:lx2,1:lx3,isp2))/(ms(isp2)+ms(isp))
-  nusj=Csj(isp,isp2)*ns(1:lx1,1:lx2,1:lx3,isp2)*1d-6/Teff**1.5d0
+  nusj=Csj(isp,isp2)*ns(1:lx1,1:lx2,1:lx3,isp2)*1e-6_wp/Teff**1.5_wp
 
   mred=ms(isp)*ms(isp2)/(ms(isp)+ms(isp2))
   Wsj=abs(vs1(1:lx1,1:lx2,1:lx3,isp)-vs1(1:lx1,1:lx2,1:lx3,isp2))/ &
         sqrt(2*kB*Teff/mred)
-  Psisj=exp(-Wsj**2d0)
-  where (Wsj<0.1d0)
-    Phisj=1d0
+  Psisj=exp(-Wsj**2.0_wp)
+  where (Wsj<0.1_wp)
+    Phisj=1.0_wp
   elsewhere
-    Phisj=3d0/4d0*sqrt(pi)*erf(Wsj)/Wsj**3d0-3d0/2d0/Wsj**2d0*Psisj
+    Phisj=3.0_wp/4.0_wp*sqrt(pi)*erf(Wsj)/Wsj**3.0_wp-3.0_wp/2.0_wp/Wsj**2.0_wp*Psisj
   end where
 end if
 end subroutine coulomb_colln
@@ -175,22 +173,22 @@ lx2=size(Ts,2)-4
 lx3=size(Ts,3)-4
 
 if (isp<lsp) then       !ion species
-  lambda=25.0/8.0*kB**2*Ts(1:lx1,1:lx2,1:lx3)**(5.0/2.0)/ms(isp)/(Csj(isp,isp)*1d-6)
+  lambda=25.0_wp/8.0_wp*kB**2*Ts(1:lx1,1:lx2,1:lx3)**(5.0_wp/2.0_wp)/ms(isp)/(Csj(isp,isp)*1e-6_wp)
   beta=0.0
 else                  !electrons
-  lambda=elchrg*100.0*7.7d5*Ts(1:lx1,1:lx2,1:lx3)**(5.0/2.0)/ &
-      (1.0+3.22d4*Ts(1:lx1,1:lx2,1:lx3)**2/ns(1:lx1,1:lx2,1:lx3)* &
-        (nn(:,:,:,1)*1.1d-16*(1+5.7d-4*Ts(1:lx1,1:lx2,1:lx3)) + &
-        nn(:,:,:,2)*2.82d-17*sqrt(Ts(1:lx1,1:lx2,1:lx3))* &
-        (1-1.21d-4*Ts(1:lx1,1:lx2,1:lx3))+nn(:,:,:,3)* &
-        2.2d-16*(1+3.6d-2*sqrt(Ts(1:lx1,1:lx2,1:lx3))) ))
-  beta=5.0/2.0*kB/elchrg*J1
+  lambda=elchrg*100.0_wp*7.7e5_wp*Ts(1:lx1,1:lx2,1:lx3)**(5.0_wp/2.0_wp)/ &
+      (1.0+3.22e4_wp*Ts(1:lx1,1:lx2,1:lx3)**2/ns(1:lx1,1:lx2,1:lx3)* &
+        (nn(:,:,:,1)*1.1e-16_wp*(1+5.7e-4_wp*Ts(1:lx1,1:lx2,1:lx3)) + &
+        nn(:,:,:,2)*2.82e-17_wp*sqrt(Ts(1:lx1,1:lx2,1:lx3))* &
+        (1-1.21e-4_wp*Ts(1:lx1,1:lx2,1:lx3))+nn(:,:,:,3)* &
+        2.2e-16_wp*(1+3.6e-2_wp*sqrt(Ts(1:lx1,1:lx2,1:lx3))) ))
+  beta=5.0_wp/2.0_wp*kB/elchrg*J1
 end if
 
 end subroutine thermal_conduct
 
 
-pure subroutine conductivities(nn,Tn,ns,Ts,vs1,B1,sig0,sigP,sigH,muP,muH,muPvn,muHvn)
+pure subroutine conductivities(nn,Tn,ns,Ts,vs1,B1,sig0,sigP,sigH,muP,muH,muPvn,muHvn) 
 
 !------------------------------------------------------------
 !-------COMPUTE THE CONDUCTIVITIES OF THE IONOSPHERE.  STATE
@@ -219,7 +217,7 @@ do isp=1,lsp
 !      OMs=qs(isp)*abs(B1)/ms(isp)                 !cyclotron, abs() is sketch, needs to be checked.  Basically a negative sign here is fine, while abs messes up direction of Hall current
   OMs=qs(isp)*B1(1:lx1,1:lx2,1:lx3)/ms(isp)                 !cyclotron, a negative sign from B1 here is fine for cartesian, but for dipole this should be the magnitude since the magnetic field is *assumed* to be along the x1-direction
 
-  nu=0d0
+  nu=0.0_wp
   do isp2=1,ln
     call maxwell_colln(isp,isp2,nn,Tn,Ts,nutmp)
     nu=nu+nutmp
@@ -228,7 +226,7 @@ do isp=1,lsp
   if (isp<lsp) then
     mubase=qs(isp)/ms(isp)/nu      !parallel mobility
   else
-    nuej=0d0
+    nuej=0.0_wp
     do isp2=1,lsp
       call coulomb_colln(isp,isp2,ns,Ts,vs1,nutmp,Phisj,Psisj)
       nuej=nuej+nutmp
@@ -240,9 +238,9 @@ do isp=1,lsp
 
   !modified mobilities for neutral wind calculations
   muPvn(:,:,:,isp)=nu**2/(nu**2+OMs**2)
-  muHvn(:,:,:,isp)=-1d0*nu*OMs/(nu**2+OMs**2)
+  muHvn(:,:,:,isp)=-1.0_wp*nu*OMs/(nu**2+OMs**2)
 
-  !full mobilities
+  !full mobilities   
   muP(:,:,:,isp)=mubase*muPvn(:,:,:,isp)           !Pederson
   muH(:,:,:,isp)=mubase*muHvn(:,:,:,isp)       !Hall
 end do
@@ -251,19 +249,19 @@ end do
 !CONDUCTIVITIES
 sig0=ns(1:lx1,1:lx2,1:lx3,lsp)*qs(lsp)*mupar    !parallel includes only electrons...
 
-sigP=0d0
-sigH=0d0
+sigP=0.0_wp
+sigH=0.0_wp
 do isp=1,lsp
   rho=ns(1:lx1,1:lx2,1:lx3,isp)*qs(isp)
   sigP=sigP+rho*muP(:,:,:,isp)
   sigH=sigH+rho*muH(:,:,:,isp)
 end do
 
-!    sigH=max(sigH,0d0)    !to deal with precision issues.  This actually causes errors in Cartesian northern hemisphere grids...
+!    sigH=max(sigH,0.0_wp)    !to deal with precision issues.  This actually causes errors in Cartesian northern hemisphere grids...
 end subroutine conductivities
 
 
-subroutine capacitance(ns,B1,flagcap,incap)
+subroutine capacitance(ns,B1,flagcap,incap) 
 
 !------------------------------------------------------------
 !-------COMPUTE THE INERTIAL CAPACITANCE OF THE IONOSPHERE.
@@ -283,7 +281,7 @@ lx1=size(ns,1)-4
 lx2=size(ns,2)-4
 lx3=size(ns,3)-4
 
-incap=0d0
+incap=0.0_wp
 do isp=1,lsp
   incap=incap+ns(1:lx1,1:lx2,1:lx3,isp)*ms(isp)
 end do
@@ -292,7 +290,7 @@ incap=incap/B1(1:lx1,1:lx2,1:lx3)**2
 
 if (flagcap==2) then
   print *, '!!! Augmenting capacitance with a magnetospheric contribution...'
-  incap=incap+30d0/980d3    !kludge the value to account for a magnetosheric contribution - this is just a random guess that makes the KHI examples work well; a better value should be investigated
+  incap=incap+30.0_wp/980e3_wp    !kludge the value to account for a magnetosheric contribution - this is just a random guess that makes the KHI examples work well; a better value should be investigated
 end if
 end subroutine capacitance
 

@@ -74,7 +74,7 @@ integer :: iprec
 real(wp), dimension(1:size(vs1,1)-3,1:size(vs1,2)-4,1:size(vs1,3)-4) :: v1iupdate    !temp interface velocities for art. viscosity
 real(wp), dimension(1:size(vs1,1)-4,1:size(vs1,2)-4,1:size(vs1,3)-4) :: dv1iupdate    !interface diffs. for art. visc.
 real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,size(ns,4)) :: Q
-real(wp), parameter :: xicon=3d0    !decent value for closed field-line grids extending to high altitudes.
+real(wp), parameter :: xicon=3.0_wp    !decent value for closed field-line grids extending to high altitudes.
 
 
 !MAKING SURE THESE ARRAYS ARE ALWAYS IN SCOPE
@@ -143,9 +143,9 @@ call clean_param(x,2,vs1)
 
 !ARTIFICIAL VISCOSITY (NOT REALLY NEED BELOW 1000 KM ALT.).  NOTE THAT WE DON'T CHECK WHERE SUBCYCLING IS NEEDED SINCE, IN MY EXPERIENCE THEN CODE IS BOMBING ANYTIME IT IS...
 do isp=1,lsp-1
-  v1iupdate(1:lx1+1,:,:)=0.5d0*(vs1(0:lx1,1:lx2,1:lx3,isp)+vs1(1:lx1+1,1:lx2,1:lx3,isp))    !compute an updated interface velocity (only in x1-direction)
+  v1iupdate(1:lx1+1,:,:)=0.5_wp*(vs1(0:lx1,1:lx2,1:lx3,isp)+vs1(1:lx1+1,1:lx2,1:lx3,isp))    !compute an updated interface velocity (only in x1-direction)
   dv1iupdate=v1iupdate(2:lx1+1,:,:)-v1iupdate(1:lx1,:,:)
-  Q(:,:,:,isp)=ns(1:lx1,1:lx2,1:lx3,isp)*ms(isp)*0.25d0*xicon**2*(min(dv1iupdate,0._wp))**2   !note that viscosity does not have/need ghost cells
+  Q(:,:,:,isp)=ns(1:lx1,1:lx2,1:lx3,isp)*ms(isp)*0.25_wp*xicon**2*(min(dv1iupdate,0._wp))**2   !note that viscosity does not have/need ghost cells
 end do
 Q(:,:,:,lsp)=0._wp
 
@@ -158,7 +158,7 @@ do isp=1,lsp
   divvs=div3D(vs1(0:lx1+1,0:lx2+1,0:lx3+1,isp),vs2(0:lx1+1,0:lx2+1,0:lx3+1,isp), &
              vs3(0:lx1+1,0:lx2+1,0:lx3+1,isp),x,0,lx1+1,0,lx2+1,0,lx3+1)    !diff with one set of ghost cells to preserve second order accuracy over the grid
   paramtrim=rhoes(1:lx1,1:lx2,1:lx3,isp)
-  rhoeshalf=paramtrim-dt/2d0*(paramtrim*(gammas(isp)-1._wp)+Q(:,:,:,isp))*divvs(1:lx1,1:lx2,1:lx3) !t+dt/2 value of internal energy, use only interior points of divvs for second order accuracy
+  rhoeshalf=paramtrim-dt/2.0_wp*(paramtrim*(gammas(isp)-1._wp)+Q(:,:,:,isp))*divvs(1:lx1,1:lx2,1:lx3) !t+dt/2 value of internal energy, use only interior points of divvs for second order accuracy
 
   paramtrim=paramtrim-dt*(rhoeshalf*(gammas(isp)-1._wp)+Q(:,:,:,isp))*divvs(1:lx1,1:lx2,1:lx3)
   rhoes(1:lx1,1:lx2,1:lx3,isp)=paramtrim
@@ -218,13 +218,13 @@ if (gridflag/=0) then
       Prpreciptmp=ionrate_fang08(W0(:,:,iprec),PhiWmWm2(:,:,iprec),x%alt,nn,Tn)    !calculation based on Fang et al [2008]
       Prprecip=Prprecip+Prpreciptmp
     end do
-    Prprecip=max(Prprecip,1d-5)
+    Prprecip=max(Prprecip,1e-5_wp)
     Qeprecip=eheating(nn,Tn,Prprecip,ns)
   else      !GLOW USED, AURORA PRODUCED
     if (int(t/dtglow)/=int((t+dt)/dtglow).OR.t<0.1_wp) then
       PrprecipG=0.0_wp; QeprecipG=0.0_wp; iverG=0.0_wp;
       PrprecipG=ionrate_glow98(W0,PhiWmWm2,ymd,UTsec,f107,f107a,x%glat(1,:,:),x%glon(1,:,:),x%alt,nn,Tn,ns,Ts,QeprecipG,iverG)
-      PrprecipG=max(PrprecipG,1d-5)
+      PrprecipG=max(PrprecipG, 1e-5_wp)
     end if
     Prprecip=PrprecipG
     Qeprecip=QeprecipG
@@ -259,7 +259,7 @@ if (myid==0) then
   if (debug) print *, 'Min/max root photoionization production rates for time:  ',t,' :  ',minval(Prpreciptmp), &
               maxval(Prpreciptmp)
 end if
-Prpreciptmp=max(Prpreciptmp,1d-5)    !enforce minimum production rate to preserve conditioning for species that rely on constant production, testing should probably be done to see what the best choice is...
+Prpreciptmp=max(Prpreciptmp,1e-5_wp)    !enforce minimum production rate to preserve conditioning for species that rely on constant production, testing should probably be done to see what the best choice is...
 Qepreciptmp=eheating(nn,Tn,Prpreciptmp,ns)   !thermal electron heating rate from Swartz and Nisbet, (1978)
 
 !photoion ionrate and heating calculated seperately, added together with ionrate and heating from Fang or GLOW
@@ -370,7 +370,7 @@ select case (paramflag)
           ix2=x%inull(iinull,2)
           ix3=x%inull(iinull,3)
 
-          param(ix1,ix2,ix3,isp)=mindensnull*1d-2
+          param(ix1,ix2,ix3,isp)=mindensnull*1e-2_wp
         end do
       else
         do iinull=1,x%lnull
@@ -407,12 +407,12 @@ select case (paramflag)
       do ix3=1,lx3
         do ix2=1,lx2
           ix1beg=1
-          do while(x%nullpts(ix1beg,ix2,ix3)<0.5d0 .and. ix1beg<lx1)     !find the first non-null index for this field line, need to be careful if no null points exist...
+          do while(x%nullpts(ix1beg,ix2,ix3)<0.5_wp .and. ix1beg<lx1)     !find the first non-null index for this field line, need to be careful if no null points exist...
             ix1beg=ix1beg+1
           end do
 
           ix1end=ix1beg
-          do while(x%nullpts(ix1end,ix2,ix3)>0.5d0 .and. ix1end<lx1)     !find the first non-null index for this field line
+          do while(x%nullpts(ix1end,ix2,ix3)>0.5_wp .and. ix1end<lx1)     !find the first non-null index for this field line
             ix1end=ix1end+1
           end do
 
