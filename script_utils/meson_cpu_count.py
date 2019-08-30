@@ -29,11 +29,15 @@ if __name__ == "__main__":
         max_cpu = P.force
         extradiv = 1
     else:
+        max_cpu = None
         # without psutil, hyperthreaded CPU may overestimate physical count by factor of 2 (or more)
         if psutil is not None:
             max_cpu = psutil.cpu_count(logical=False)
             extradiv = 1
-        else:
+            if max_cpu is None:
+                max_cpu = psutil.cpu_count()
+                extradiv = 2
+        if max_cpu is None:
             max_cpu = os.cpu_count()
             extradiv = 2
 

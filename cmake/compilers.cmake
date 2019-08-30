@@ -1,8 +1,6 @@
 cmake_policy(SET CMP0074 NEW)
 cmake_policy(SET CMP0075 NEW)
-if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.13)
-  cmake_policy(SET CMP0076 NEW)
-endif()
+cmake_policy(SET CMP0076 NEW)
 
 #========== Python setup
 if(NOT DEFINED PythonOK)
@@ -27,7 +25,6 @@ if(CMAKE_Fortran_COMPILER_ID STREQUAL Intel)
     list(APPEND FFLAGS -qopenmp)  # undefined reference to `omp_get_max_threads'
   endif()
 
-  cmake_policy(VERSION 3.13)
   if(WIN32)
     #add_link_options(/Qparallel)
   else()
