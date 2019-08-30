@@ -58,6 +58,7 @@ def plotframe(
 
 
 def grid2plotfun(grid: typing.Dict[str, np.ndarray]):
+    plotfun = None
     h1 = grid.get("h1")
     if h1 is not None:
         minh1 = h1.min()
@@ -67,7 +68,7 @@ def grid2plotfun(grid: typing.Dict[str, np.ndarray]):
                 plotfun = plot3D_curv_frames_long
             else:
                 plotfun = plot2D_curv
-    else:  # cartesian grid
+    if plotfun is None:  # cartesian grid
         if (grid["lx"][1] > 1) and (grid["lx"][2] > 1):
             plotfun = plot3D_cart_frames_long_ENU
         else:
@@ -129,8 +130,7 @@ def plot12(
 
     if name.startswith("v"):
         cmap = "bwr"
-        vmin = -50
-        vmax = 50
+        vmin = vmax = None
     else:
         cmap = None
         vmin = None
@@ -146,10 +146,9 @@ def plot12(
         ax.set_xlabel("eastward dist. (km)")
         ax.set_ylabel("altitude (km)")
         ax.axhline(REF_ALT, color="w", linestyle="--", linewidth=2)
+        fg.colorbar(hi, ax=ax, label=CB_LBL[name])
     else:
         hi = ax.pcolormesh(parm, cmap=cmap)
-
-    fg.colorbar(hi, ax=ax, label=CB_LBL[name])
 
 
 def plot13(
@@ -158,8 +157,7 @@ def plot13(
 
     if name.startswith("v"):
         cmap = "bwr"
-        vmin = -50
-        vmax = 50
+        vmin = vmax = None
     else:
         cmap = None
         vmin = None
@@ -174,10 +172,9 @@ def plot13(
         hi = ax.pcolormesh(y / 1e3, z, parm, cmap=cmap, vmin=vmin, vmax=vmax)
         ax.set_xlabel("northward dist. (km)")
         ax.set_ylabel("altitude (km)")
+        fg.colorbar(hi, ax=ax, label=CB_LBL[name])
     else:
         hi = ax.pcolormesh(parm, cmap=cmap)
-
-    fg.colorbar(hi, ax=ax, label=CB_LBL[name])
 
 
 def plot_interp(

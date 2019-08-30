@@ -4,6 +4,7 @@ plots simulation output--a simple example
 """
 from argparse import ArgumentParser
 from pathlib import Path
+import logging
 import matplotlib.pyplot as mpl
 
 import gemini.readdata as grd
@@ -34,7 +35,12 @@ def main():
     grid = grd.readgrid(direc / "inputs/simgrid.dat")
 
     for t in times:
-        dat = grd.loadframe(direc, t)
+        try:
+            dat = grd.loadframe(direc, t)
+        except Exception as err:
+            logging.error(f"{t} in {direc} not loadable: {err}")
+            continue
+
         vis.plotframe(t, grid, dat, save_dir, fg)
         if not p.saveplots:
             mpl.draw()
