@@ -20,7 +20,7 @@ def zipper(path: Path, suffix: str, overwrite: bool = False, verbose: bool = Tru
     suffix: str
         file suffix to compress including .
     """
-    path = Path(path).resolve().expanduser()
+    path = Path(path).expanduser().resolve(True)
 
     flist = [f for f in path.iterdir() if f.is_file() and f.suffix == suffix]
 

@@ -10,6 +10,7 @@ import typing
 from contextlib import contextmanager
 from functools import lru_cache
 import struct
+import logging
 
 LSP = 7
 
@@ -24,7 +25,7 @@ def opener(fn: Path):
             flist = z.namelist()
             for zf in flist:
                 with z.open(zf, "r") as f:
-                    yield f
+                    yield f.read()
     elif fn.suffix == ".h5":
         raise NotImplementedError("we plan to offer HDF5 support, but it's not ready yet")
     else:
@@ -117,44 +118,53 @@ def readgrid(fn: Path) -> typing.Dict[str, np.ndarray]:
     gridsizeghost = [lxs[0] + 4, lxs[1] + 4, lxs[2] + 4]
 
     grid: typing.Dict[str, typing.Any] = {"lx": lxs}
+
+    if not fn.is_file():
+        logging.error(f"{fn} grid file is not present. Will try to load rest of data.")
+        return grid
+
     with opener(fn) as f:
+        if isinstance(f, bytes):
+            read = np.frombuffer
+        else:
+            read = np.fromfile
         for i in (1, 2, 3):
-            grid[f"x{i}"] = np.fromfile(f, np.float64, lxs[i - 1] + 4)
-            grid[f"x{i}i"] = np.fromfile(f, np.float64, lxs[i - 1] + 1)
-            grid[f"dx{i}b"] = np.fromfile(f, np.float64, lxs[i - 1] + 3)
-            grid[f"dx{i}h"] = np.fromfile(f, np.float64, lxs[i - 1])
+            grid[f"x{i}"] = read(f, np.float64, lxs[i - 1] + 4)
+            grid[f"x{i}i"] = read(f, np.float64, lxs[i - 1] + 1)
+            grid[f"dx{i}b"] = read(f, np.float64, lxs[i - 1] + 3)
+            grid[f"dx{i}h"] = read(f, np.float64, lxs[i - 1])
         for i in (1, 2, 3):
-            grid[f"h{i}"] = np.fromfile(f, np.float64, lgridghost).reshape(gridsizeghost)
+            grid[f"h{i}"] = read(f, np.float64, lgridghost).reshape(gridsizeghost)
         L = [lxs[0] + 1, lxs[1], lxs[2]]
         for i in (1, 2, 3):
-            grid[f"h{i}x1i"] = np.fromfile(f, np.float64, np.prod(L)).reshape(L)
+            grid[f"h{i}x1i"] = read(f, np.float64, np.prod(L)).reshape(L)
         L = [lxs[0], lxs[1] + 1, lxs[2]]
         for i in (1, 2, 3):
-            grid[f"h{i}x2i"] = np.fromfile(f, np.float64, np.prod(L)).reshape(L)
+            grid[f"h{i}x2i"] = read(f, np.float64, np.prod(L)).reshape(L)
         L = [lxs[0], lxs[1], lxs[2] + 1]
         for i in (1, 2, 3):
-            grid[f"h{i}x3i"] = np.fromfile(f, np.float64, np.prod(L)).reshape(L)
+            grid[f"h{i}x3i"] = read(f, np.float64, np.prod(L)).reshape(L)
         for i in (1, 2, 3):
-            grid[f"gx{i}"] = np.fromfile(f, np.float64, np.prod(lxs)).reshape(lxs)
+            grid[f"gx{i}"] = read(f, np.float64, np.prod(lxs)).reshape(lxs)
         for k in ("alt", "glat", "glon", "Bmag"):
-            grid[k] = np.fromfile(f, np.float64, np.prod(lxs)).reshape(lxs)
-        grid["Bincl"] = np.fromfile(f, np.float64, lxs[1] * lxs[2]).reshape(lxs[1:])
-        grid["nullpts"] = np.fromfile(f, np.float64, np.prod(lxs)).reshape(lxs)
+            grid[k] = read(f, np.float64, np.prod(lxs)).reshape(lxs)
+        grid["Bincl"] = read(f, np.float64, lxs[1] * lxs[2]).reshape(lxs[1:])
+        grid["nullpts"] = read(f, np.float64, np.prod(lxs)).reshape(lxs)
         if f.tell() == fn.stat().st_size:  # not EOF
             return grid
 
         L = [lxs[0], lxs[1], lxs[2], 3]
         for i in (1, 2, 3):
-            grid[f"e{i}"] = np.fromfile(f, np.float64, np.prod(L)).reshape(L)
+            grid[f"e{i}"] = read(f, np.float64, np.prod(L)).reshape(L)
         for k in ("er", "etheta", "ephi"):
-            grid[k] = np.fromfile(f, np.float64, np.prod(L)).reshape(L)
+            grid[k] = read(f, np.float64, np.prod(L)).reshape(L)
         for k in ("r", "theta", "phi"):
-            grid[k] = np.fromfile(f, np.float64, np.prod(lxs)).reshape(lxs)
+            grid[k] = read(f, np.float64, np.prod(lxs)).reshape(lxs)
         if f.tell() == fn.stat().st_size:  # not EOF
             return grid
 
         for k in ("x", "y", "z"):
-            grid[k] = np.fromfile(f, np.float64, np.prod(lxs)).reshape(lxs)
+            grid[k] = read(f, np.float64, np.prod(lxs)).reshape(lxs)
 
     return grid
 
@@ -172,7 +182,11 @@ def loadframe3d_curv(fn: Path) -> typing.Dict[str, typing.Any]:
     dat: typing.Dict[str, typing.Any] = {}
 
     with opener(fn) as f:
-        t = np.fromfile(f, np.float64, 4)
+        if isinstance(f, bytes):
+            read = np.frombuffer
+        else:
+            read = np.fromfile
+        t = read(f, np.float64, 4)
         dat["time"] = datetime(int(t[0]), int(t[1]), int(t[2])) + timedelta(hours=t[3])
 
         ns = read4D(f, LSP, P["lxs"])
@@ -216,7 +230,11 @@ def loadframe3d_curvavg(fn: Path) -> typing.Dict[str, typing.Any]:
     dat: typing.Dict[str, typing.Any] = {}
 
     with opener(fn) as f:
-        t = np.fromfile(f, np.float64, 4)
+        if isinstance(f, bytes):
+            read = np.frombuffer
+        else:
+            read = np.fromfile
+        t = read(f, np.float64, 4)
         dat["time"] = datetime(int(t[0]), int(t[1]), int(t[2])) + timedelta(hours=t[3])
 
         for p in ("ne", "v1", "Ti", "Te", "J1", "J2", "J3", "v2", "v3"):
@@ -237,8 +255,12 @@ def read4D(f, lsp: int, lxs: typing.Sequence[int]) -> np.ndarray:
     """
     if not len(lxs) == 3:
         raise ValueError(f"lxs must have 3 elements, you have lxs={lxs}")
+    if isinstance(f, bytes):
+        read = np.frombuffer
+    else:
+        read = np.fromfile
 
-    return np.fromfile(f, np.float64, np.prod(lxs) * lsp).reshape((*lxs, lsp), order="F")
+    return read(f, np.float64, np.prod(lxs) * lsp).reshape((*lxs, lsp), order="F")
 
 
 def read3D(f, lxs: typing.Sequence[int]) -> np.ndarray:
@@ -247,8 +269,12 @@ def read3D(f, lxs: typing.Sequence[int]) -> np.ndarray:
     """
     if not len(lxs) == 3:
         raise ValueError(f"lxs must have 3 elements, you have lxs={lxs}")
+    if isinstance(f, bytes):
+        read = np.frombuffer
+    else:
+        read = np.fromfile
 
-    return np.fromfile(f, np.float64, np.prod(lxs)).reshape(*lxs, order="F")
+    return read(f, np.float64, np.prod(lxs)).reshape(*lxs, order="F")
 
 
 def read2D(f, lxs: typing.Sequence[int]) -> np.ndarray:
@@ -257,8 +283,12 @@ def read2D(f, lxs: typing.Sequence[int]) -> np.ndarray:
     """
     if not len(lxs) == 3:
         raise ValueError(f"lxs must have 3 elements, you have lxs={lxs}")
+    if isinstance(f, bytes):
+        read = np.frombuffer
+    else:
+        read = np.fromfile
 
-    return np.fromfile(f, np.float64, np.prod(lxs[1:])).reshape(*lxs[1:], order="F")
+    return read(f, np.float64, np.prod(lxs[1:])).reshape(*lxs[1:], order="F")
 
 
 @lru_cache()
@@ -324,7 +354,7 @@ def loadframe(simdir: Path, time: datetime) -> typing.Dict[str, typing.Any]:
     dat: dict
         simulation output for this time step
     """
-    simdir = Path(simdir).expanduser().resolve(strict=True)
+    simdir = Path(simdir).expanduser().resolve(True)
 
     P = readconfig(simdir / "inputs/config.ini")
 
@@ -338,7 +368,11 @@ def loadframe(simdir: Path, time: datetime) -> typing.Dict[str, typing.Any]:
     )
     datfn = simdir / timename
     if not datfn.is_file():
-        datfn = datfn.parent / (timename[:-10] + "000001.dat")
+        if datfn.with_suffix(".zip").is_file():
+            datfn = datfn.with_suffix(".zip")
+        else:
+            logging.error(f"{datfn} not found.")
+            return {}
 
     dat = readdata(datfn)
 
