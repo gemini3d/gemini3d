@@ -2,14 +2,33 @@
 struct manpage:
 https://docs.python.org/3/library/struct.html#struct-format-strings
 """
+import zipfile
 import numpy as np
 from pathlib import Path
 from datetime import datetime, timedelta
 import typing
+from contextlib import contextmanager
 from functools import lru_cache
 import struct
 
 LSP = 7
+
+
+@contextmanager
+def opener(fn: Path):
+    if fn.suffix == ".dat":
+        with fn.open("rb") as f:
+            yield f
+    elif fn.suffix == ".zip":
+        with zipfile.ZipFile(fn, "r") as z:
+            flist = z.namelist()
+            for zf in flist:
+                with z.open(zf, "r") as f:
+                    yield f
+    elif fn.suffix == ".h5":
+        raise NotImplementedError("we plan to offer HDF5 support, but it's not ready yet")
+    else:
+        raise ValueError(f"not sure how to open file {fn}")
 
 
 def readdata(fn: Path) -> typing.Dict[str, typing.Any]:
@@ -98,7 +117,7 @@ def readgrid(fn: Path) -> typing.Dict[str, np.ndarray]:
     gridsizeghost = [lxs[0] + 4, lxs[1] + 4, lxs[2] + 4]
 
     grid: typing.Dict[str, typing.Any] = {"lx": lxs}
-    with fn.open("rb") as f:
+    with opener(fn) as f:
         for i in (1, 2, 3):
             grid[f"x{i}"] = np.fromfile(f, np.float64, lxs[i - 1] + 4)
             grid[f"x{i}i"] = np.fromfile(f, np.float64, lxs[i - 1] + 1)
@@ -152,7 +171,7 @@ def loadframe3d_curv(fn: Path) -> typing.Dict[str, typing.Any]:
 
     dat: typing.Dict[str, typing.Any] = {}
 
-    with fn.open("rb") as f:
+    with opener(fn) as f:
         t = np.fromfile(f, np.float64, 4)
         dat["time"] = datetime(int(t[0]), int(t[1]), int(t[2])) + timedelta(hours=t[3])
 
@@ -196,7 +215,7 @@ def loadframe3d_curvavg(fn: Path) -> typing.Dict[str, typing.Any]:
     #    )
     dat: typing.Dict[str, typing.Any] = {}
 
-    with fn.open("rb") as f:
+    with opener(fn) as f:
         t = np.fromfile(f, np.float64, 4)
         dat["time"] = datetime(int(t[0]), int(t[1]), int(t[2])) + timedelta(hours=t[3])
 
