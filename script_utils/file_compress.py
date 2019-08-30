@@ -10,7 +10,7 @@ import argparse
 COMP = zipfile.ZIP_LZMA
 
 
-def zipper(path: Path, suffix: str, verbose: bool = True):
+def zipper(path: Path, suffix: str, overwrite: bool = False, verbose: bool = True):
     """
     Parameters
     ----------
@@ -26,6 +26,15 @@ def zipper(path: Path, suffix: str, verbose: bool = True):
 
     for file in flist:
         zipfn = file.with_suffix(".zip")
+        if not overwrite and zipfn.is_file():
+            try:  # rudimentary check of zip file
+                with zipfile.ZipFile(zipfn, "r") as z:
+                    if len(z.namelist()) > 0:
+                        print("SKIP:", zipfn)
+                        continue
+            except zipfile.BadZipFile:
+                pass
+
         with zipfile.ZipFile(zipfn, mode="w", compression=COMP) as z:
             print("compressing", zipfn)
             # arcname= is necessary to avoid writing vestigial (for this application) relative paths
