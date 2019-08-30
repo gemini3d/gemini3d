@@ -20,11 +20,13 @@ these parameters are a bit arbitrary.
 
 """
 from argparse import ArgumentParser
+import sys
 
 try:
     import gemini.output_compare
 except ImportError:
-    raise ImportError("need to install PyGemini by  'pip install -e gemini'")
+    print("need to install PyGemini by  'pip install -e gemini'", file=sys.stderr)
+    raise SystemExit(77)
 
 tol = {
     "rtol": 1e-5,

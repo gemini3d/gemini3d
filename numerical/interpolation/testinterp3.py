@@ -8,13 +8,12 @@ import subprocess
 
 def compare_interp(fn: Path, exe: Path, doplot: bool = False):
     fn = Path(fn).expanduser()
-    if not fn.is_file():
-        exe = Path(exe).expanduser()
-        if not exe.is_file():
-            print(exe, "not found", file=sys.stderr)
-            raise SystemExit(77)
+    exe = Path(exe).expanduser()
+    if not exe.is_file():
+        print(exe, "not found", file=sys.stderr)
+        raise SystemExit(77)
 
-        subprocess.check_call(str(exe))
+    subprocess.check_call(str(exe))
 
     with fn.open("r") as f:
         lx1 = np.fromfile(f, np.int32, 1)[0]

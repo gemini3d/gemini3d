@@ -3,45 +3,45 @@ module collisions
 use phys_consts, only: wp, lsp, ln, ms, kb, pi, elchrg, qs
 
 implicit none
-
-!THESE DATA BLOCKS ARE UGLY; COULD THERE BE A BETTER WAY?
-real(wp), dimension(lsp,ln) :: Csn
-data Csn(1,:) /-1.0, 6.82d-10, 6.64d-10, -1.0/
-data Csn(2,:) /2.44d-10, 4.34d-10, 4.27d-10, 0.69d-10/
-data Csn(3,:) /2.58d-10, -1.0, 4.49d-10, 0.74d-10/
-data Csn(4,:) /2.31d-10, 4.13d-10, -1.0, 0.65d-10/
-data Csn(5,:) /4.42d-10, 7.47d-10, 7.25d-10, 1.45d-10/
-data Csn(6,:) /-1.0, 33.6d-10, 32.0d-10, -1.0/
-data Csn(7,:) /-1.0, -1.0, -1.0, -1.0/
-
-real(wp), dimension(lsp,ln) :: C2sn1
-data C2sn1(1,:) /3.67d-11, 0.0, 0.0, 4.63d-12/
-data C2sn1(2,:) /0.0, 0.0, 0.0, 0.0/
-data C2sn1(3,:) /0.0, 5.14d-11, 0.0, 0.0/
-data C2sn1(4,:) /0.0, 0.0, 2.59d-11, 0.0/
-data C2sn1(5,:) /0.0, 0.0, 0.0, 0.0/
-data C2sn1(6,:) /6.61d-11, 0.0, 0.0, 2.65d-10/
-data C2sn1(7,:) /-1.0, -1.0, -1.0, -1.0/
-
-real(wp), dimension(lsp,ln) :: C2sn2
-data C2sn2(1,:) /0.064, 0.0, 0.0, -1.0/
-data C2sn2(2,:) /0.0, 0.0, 0.0, 0.0/
-data C2sn2(3,:) /0.0, 0.069, 0.0, 0.0/
-data C2sn2(4,:) /0.0, 0.0, 0.073, 0.0/
-data C2sn2(5,:) /0.0, 0.0, 0.0, 0.0/
-data C2sn2(6,:) /0.047, 0.0, 0.0, 0.083/
-data C2sn2(7,:) /-1.0, -1.0, -1.0, -1.0/
-
-real(wp), dimension(lsp,lsp) :: Csj
-data Csj(1,:) /0.22, 0.26, 0.25, 0.26, 0.22, 0.077, 1.87e-3/
-data Csj(2,:) /0.14, 0.16, 0.16, 0.17, 0.13, 0.042, 9.97e-4/
-data Csj(3,:) /0.15, 0.17, 0.17, 0.18, 0.14, 0.045, 1.07e-3/
-data Csj(4,:) /0.13, 0.16, 0.15, 0.16, 0.12, 0.039, 9.347e-4/
-data Csj(5,:) /0.25, 0.28, 0.28, 0.28, 0.24, 0.088, 2.136e-3/
-data Csj(6,:) /1.23, 1.25, 1.25, 1.25, 1.23, 0.90,  29.7e-3/
-data Csj(7,:) /54.5, 54.5, 54.5, 54.5, 54.5, 54.5,  38.537/
-
 private
+
+real(wp), parameter :: Csn(lsp,ln) = reshape( &
+[-1.0_wp, 6.82e-10_wp, 6.64e-10_wp, -1.0_wp, &
+2.44e-10_wp, 4.34e-10_wp, 4.27e-10_wp, 0.69e-10_wp, &
+2.58e-10_wp, -1.0_wp, 4.49e-10_wp, 0.74e-10_wp, &
+2.31e-10_wp, 4.13e-10_wp, -1.0_wp, 0.65e-10_wp, &
+4.42e-10_wp, 7.47e-10_wp, 7.25e-10_wp, 1.45e-10_wp, &
+-1.0_wp, 33.6e-10_wp, 32.0e-10_wp, -1.0_wp, &
+-1.0_wp, -1.0_wp, -1.0_wp, -1.0_wp], shape(Csn), order=[2,1])
+
+real(wp), parameter :: C2sn1(lsp,ln) = reshape( &
+[3.67e-11_wp, 0._wp, 0._wp, 4.63e-12_wp, &
+0._wp, 0._wp, 0._wp, 0._wp, &
+0._wp, 5.14e-11_wp, 0._wp, 0._wp, &
+0._wp, 0._wp, 2.59e-11_wp, 0._wp, &
+0._wp, 0._wp, 0._wp, 0._wp, &
+6.61e-11_wp, 0._wp, 0._wp, 2.65e-10_wp, &
+-1._wp, -1._wp, -1._wp, -1._wp], shape(C2sn1), order=[2,1])
+
+real(wp), parameter :: C2sn2(lsp,ln) = reshape( &
+[0.064_wp, 0._wp, 0._wp, -1._wp, &
+0._wp, 0._wp, 0._wp, 0._wp, &
+0._wp, 0.069_wp, 0._wp, 0._wp, &
+0._wp, 0._wp, 0.073_wp, 0._wp, &
+0._wp, 0._wp, 0._wp, 0._wp, &
+0.047_wp, 0._wp, 0._wp, 0.083_wp, &
+-1._wp, -1._wp, -1._wp, -1._wp], shape(C2sn2), order=[2,1])
+
+real(wp), parameter :: Csj(lsp,lsp) = reshape( &
+[0.22_wp, 0.26_wp, 0.25_wp, 0.26_wp, 0.22_wp, 0.077_wp, 1.87e-3_wp, &
+0.14_wp, 0.16_wp, 0.16_wp, 0.17_wp, 0.13_wp, 0.042_wp, 9.97e-4_wp, &
+0.15_wp, 0.17_wp, 0.17_wp, 0.18_wp, 0.14_wp, 0.045_wp, 1.07e-3_wp, &
+0.13_wp, 0.16_wp, 0.15_wp, 0.16_wp, 0.12_wp, 0.039_wp, 9.347e-4_wp, &
+0.25_wp, 0.28_wp, 0.28_wp, 0.28_wp, 0.24_wp, 0.088_wp, 2.136e-3_wp, &
+1.23_wp, 1.25_wp, 1.25_wp, 1.25_wp, 1.23_wp, 0.90_wp,  29.7e-3_wp, &
+54.5_wp, 54.5_wp, 54.5_wp, 54.5_wp, 54.5_wp, 54.5_wp,  38.537_wp], shape(Csj), order=[2,1])
+
+
 public :: thermal_conduct, conductivities, capacitance, maxwell_colln, coulomb_colln
 
 contains
@@ -50,7 +50,7 @@ contains
 pure subroutine maxwell_colln(isp,isp2,nn,Tn,Ts,nusn)
 
 !------------------------------------------------------------
-!-------COMPUTE MAXWELL COLLISIONS OF ISP WITH ISP2.  ION 
+!-------COMPUTE MAXWELL COLLISIONS OF ISP WITH ISP2.  ION
 !-------TEMPERATURE/DENSITY ARRAYS EXPECTED TO INCLUDE GHOST CELLS
 !------------------------------------------------------------
 !-------Note that it is done on a per species basis
@@ -106,7 +106,7 @@ end subroutine maxwell_colln
 pure subroutine coulomb_colln(isp,isp2,ns,Ts,vs1,nusj,Phisj,Psisj)
 
 !------------------------------------------------------------
-!-------COMPUTE COULOMB COLLISIONS OF ISP WITH ISP2.  
+!-------COMPUTE COULOMB COLLISIONS OF ISP WITH ISP2.
 !-------TEMPERATURE/DENSITY ARRAYS EXPECTED TO INCLUDE GHOST CELLS
 !-------NOTE THAT OTHER PIECES OF THE CODE REQUIRE SELF COLLISIONS
 !-------TO BE ZERO TO YIELD CORRECT OUTPUT (SOURCES.MOD)
@@ -184,13 +184,13 @@ else                  !electrons
         nn(:,:,:,2)*2.82d-17*sqrt(Ts(1:lx1,1:lx2,1:lx3))* &
         (1-1.21d-4*Ts(1:lx1,1:lx2,1:lx3))+nn(:,:,:,3)* &
         2.2d-16*(1+3.6d-2*sqrt(Ts(1:lx1,1:lx2,1:lx3))) ))
-  beta=5.0/2.0*kB/elchrg*J1  
+  beta=5.0/2.0*kB/elchrg*J1
 end if
 
 end subroutine thermal_conduct
 
 
-pure subroutine conductivities(nn,Tn,ns,Ts,vs1,B1,sig0,sigP,sigH,muP,muH,muPvn,muHvn) 
+pure subroutine conductivities(nn,Tn,ns,Ts,vs1,B1,sig0,sigP,sigH,muP,muH,muPvn,muHvn)
 
 !------------------------------------------------------------
 !-------COMPUTE THE CONDUCTIVITIES OF THE IONOSPHERE.  STATE
@@ -242,7 +242,7 @@ do isp=1,lsp
   muPvn(:,:,:,isp)=nu**2/(nu**2+OMs**2)
   muHvn(:,:,:,isp)=-1d0*nu*OMs/(nu**2+OMs**2)
 
-  !full mobilities   
+  !full mobilities
   muP(:,:,:,isp)=mubase*muPvn(:,:,:,isp)           !Pederson
   muH(:,:,:,isp)=mubase*muHvn(:,:,:,isp)       !Hall
 end do
@@ -263,7 +263,7 @@ end do
 end subroutine conductivities
 
 
-subroutine capacitance(ns,B1,flagcap,incap) 
+subroutine capacitance(ns,B1,flagcap,incap)
 
 !------------------------------------------------------------
 !-------COMPUTE THE INERTIAL CAPACITANCE OF THE IONOSPHERE.

@@ -43,7 +43,7 @@ set_tests_properties(InterpPython PROPERTIES
                      FIXTURES_REQUIRED GemInterp)
 
 add_test(NAME Interp3Python
-  COMMAND ${Python3_EXECUTABLE}  ${CMAKE_CURRENT_SOURCE_DIR}/testinterp3.py ${CMAKE_BINARY_DIR}/output3D.dat test_interp3)
+  COMMAND ${Python3_EXECUTABLE}  ${CMAKE_CURRENT_SOURCE_DIR}/testinterp3.py ${CMAKE_BINARY_DIR}/output3D.dat $<TARGET_FILE:test_interp3>)
 set_tests_properties(Interp3Python PROPERTIES
                      TIMEOUT 10
                      FIXTURES_REQUIRED GemInterp)
