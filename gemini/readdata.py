@@ -46,7 +46,7 @@ def readdata(fn: Path) -> typing.Dict[str, typing.Any]:
     dat: dict
         simulation outputs as numpy.ndarray
     """
-
+    fn = Path(fn).expanduser().resolve(True)
     P = readconfig(fn.parent / "inputs/config.ini")
     if P["flagoutput"] == 1:
         dat = loadframe3d_curv(fn)
@@ -311,7 +311,7 @@ def readconfig(inifn: Path) -> typing.Dict[str, typing.Any]:
     """
     inifn = Path(inifn).expanduser().resolve(strict=True)
 
-    P: typing.Dict[str, typing.Any] = {}
+    P: typing.Dict[str, typing.Any] = {"lxs": get_simsize(inifn.parent / "simsize.dat")}
 
     with inifn.open("r") as f:
         date = list(map(int, f.readline().split()[0].split(",")))[::-1]
@@ -355,11 +355,6 @@ def loadframe(simdir: Path, time: datetime) -> typing.Dict[str, typing.Any]:
         simulation output for this time step
     """
     simdir = Path(simdir).expanduser().resolve(True)
-
-    P = readconfig(simdir / "inputs/config.ini")
-
-    P["lxs"] = get_simsize(simdir / "inputs/simsize.dat")
-
     # %% datfn
 
     t = time
