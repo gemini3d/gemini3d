@@ -19,7 +19,8 @@ Generally, the Git `master` branch has the current development version and is th
 
 ## Prerequisites
 
-Meson (recommended) or CMake may be used.
+Meson is recommended because Meson automatically builds the entire software library stack from Lapack up.
+CMake may be used if you know that your libraries are compiled to be compatible.
 
 **Meson**
 
