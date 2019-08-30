@@ -32,5 +32,5 @@ test('Interp2d_python', python,
 
 test('Interp3d_python', python,
   args: [meson.current_source_dir() / 'testinterp3.py', meson.build_root() / 'output3D.dat', test_interp3_exe],
-  timeout: 10,
+  timeout: 30,  # need 30 for slow CPU
   suite: 'unit')

@@ -32,7 +32,7 @@ set_tests_properties(Interp2d PROPERTIES
 
 add_test(NAME Interp3d COMMAND test_interp3 WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
 set_tests_properties(Interp3d PROPERTIES
-                     TIMEOUT 20
+                     TIMEOUT 30  # need 30 for slow CPU
                      FIXTURES_SETUP GemInterp)
 
 if(PythonOK)
