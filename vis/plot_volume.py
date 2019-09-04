@@ -23,4 +23,3 @@ if __name__ == "__main__":
         mlab.title(p)
         mlab.colorbar()
         mlab.show()
-        input("close existing plot and press Enter for next plot")
