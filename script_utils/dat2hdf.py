@@ -82,7 +82,16 @@ if __name__ == "__main__":
     indir = Path(P.indir).expanduser()
     outdir = Path(P.outdir).expanduser() if P.outdir else indir
 
-    for infile in indir.glob("*.dat"):
+    if indir.is_file() and indir.suffix == ".dat":
+        infiles = [indir]
+    elif indir.is_dir():
+        infiles = sorted(indir.glob("*.dat"))
+    else:
+        raise FileNotFoundError(f"{indir} is not a .dat file or directory")
+    if not infiles:
+        raise FileNotFoundError(f"no files to convert in {indir}")
+
+    for infile in infiles:
         outfile = outdir / (infile.stem + ".h5")
         print(infile, "=>", outfile)
         dat2hdf(infile, outfile)
