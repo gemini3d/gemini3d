@@ -76,6 +76,7 @@ if __name__ == "__main__":
     p = argparse.ArgumentParser()
     p.add_argument("indir", help="Gemini .dat file directory")
     p.add_argument("-o", "--outdir", help="directory to write HDF5 files")
+    p.add_argument("--delete", help="delete original file if conversion successful", action="store_true")
     P = p.parse_args()
 
     indir = Path(P.indir).expanduser()
@@ -85,3 +86,7 @@ if __name__ == "__main__":
         outfile = outdir / (infile.stem + ".h5")
         print(infile, "=>", outfile)
         dat2hdf(infile, outfile)
+
+        if P.delete:
+            print("deleting", infile)
+            infile.unlink()
