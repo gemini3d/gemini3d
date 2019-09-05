@@ -96,6 +96,6 @@ if __name__ == "__main__":
         print(infile, "=>", outfile)
         dat2hdf(infile, outfile)
 
-        if P.delete:
+        if P.delete and infile != infiles[-1]:
             print("deleting", infile)
             infile.unlink()
