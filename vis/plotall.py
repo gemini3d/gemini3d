@@ -27,9 +27,11 @@ def main():
         fg = None
         save_dir = None
 
-    grid = gemini.readgrid(direc / "inputs/simgrid.dat")
+    grid = gemini.readgrid(direc)
 
-    flist = sorted(list(direc.glob("*.dat")) + list(direc.glob("*.zip")))
+    flist = sorted(direc.glob("*.h5"))
+    if len(flist) == 0:
+        flist = sorted(direc.glob("*.dat"))
 
     for file in flist:
         dat = gemini.readdata(file)

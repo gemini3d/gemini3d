@@ -2,9 +2,8 @@
 import os
 import argparse
 from pathlib import Path
-import numpy as np
+import struct
 import math
-import typing
 
 try:
     import psutil
@@ -13,10 +12,11 @@ except ImportError:
     # pip install psutil will improve CPU utilization.
 
 
-def get_simsize(fn: Path) -> typing.List[int]:
-    fn = Path(fn).expanduser().resolve(strict=True)
-    with fn.open("rb") as f:
-        return np.fromfile(f, np.int32, 3).tolist()
+def get_simsize(fn: Path) -> tuple:
+    fn = Path(fn).expanduser()
+    if fn.stat().st_size != 12:
+        raise ValueError(f"{fn} is not expected 12 bytes long")
+    return struct.unpack("III", fn.open("rb").read(12))
 
 
 if __name__ == "__main__":

@@ -7,10 +7,22 @@ from pathlib import Path
 from datetime import datetime, timedelta
 import typing
 from functools import lru_cache
-import struct
-import logging
 
-LSP = 7
+from . import raw
+from . import hdf
+
+
+def readgrid(fn: Path) -> typing.Dict[str, np.ndarray]:
+
+    if fn.is_dir():
+        fn = fn / "inputs/simgrid.h5"
+        if not fn.is_file():
+            fn = fn.with_suffix(".dat")
+
+    if fn.suffix == ".dat":
+        return raw.readgrid(fn)
+    else:
+        return hdf.readgrid(fn)
 
 
 def readdata(fn: Path) -> typing.Dict[str, typing.Any]:
@@ -30,11 +42,17 @@ def readdata(fn: Path) -> typing.Dict[str, typing.Any]:
     fn = Path(fn).expanduser().resolve(True)
     P = readconfig(fn.parent / "inputs/config.ini")
     if P["flagoutput"] == 1:
-        dat = loadframe3d_curv(fn)
+        if fn.suffix == ".dat":
+            dat = raw.loadframe3d_curv(fn, P["lxs"])
+        else:
+            dat = hdf.loadframe3d_curv(fn)
     elif P["flagoutput"] == 2:
-        dat = loadframe3d_curvavg(fn)
+        if fn.suffix == ".dat":
+            dat = raw.loadframe3d_curvavg(fn, P["lxs"])
+        else:
+            dat = hdf.loadframe3d_curvavg(fn)
     else:
-        raise NotImplementedError("TODO: need to handle this case, file a bug report.")
+        raise ValueError("TODO: need to handle this case, file a bug report.")
     return dat
 
 
@@ -61,192 +79,6 @@ def datetime_range(start: datetime, stop: datetime, step: timedelta) -> typing.L
 
 
 @lru_cache()
-def get_simsize(fn: Path) -> typing.Tuple[int, int, int]:
-    """
-    get simulation dimensions from simsize.dat
-    in the future, this would be in the .h5 HDF5 output.
-
-    Parameters
-    ----------
-    fn: pathlib.Path
-        filepath to simsize.dat
-
-    Returns
-    -------
-    size: tuple of int, int, int
-        3 integers telling simulation grid size
-    """
-    return struct.unpack("III", Path(fn).expanduser().read_bytes())  # type: ignore
-
-
-def readgrid(fn: Path) -> typing.Dict[str, np.ndarray]:
-    """
-    get simulation dimensions from simgrid.dat
-    in the future, this would be in the .h5 HDF5 output.
-
-    Parameters
-    ----------
-    fn: pathlib.Path
-        filepath to simgrid.dat
-
-    Returns
-    -------
-    grid: dict
-        grid parameters
-    """
-    lxs = get_simsize(fn.parent / "simsize.dat")
-    lgridghost = (lxs[0] + 4) * (lxs[1] + 4) * (lxs[2] + 4)
-    gridsizeghost = [lxs[0] + 4, lxs[1] + 4, lxs[2] + 4]
-
-    grid: typing.Dict[str, typing.Any] = {"lx": lxs}
-
-    if not fn.is_file():
-        logging.error(f"{fn} grid file is not present. Will try to load rest of data.")
-        return grid
-
-    with fn.open("r") as f:
-        read = np.fromfile
-        for i in (1, 2, 3):
-            grid[f"x{i}"] = read(f, np.float64, lxs[i - 1] + 4)
-            grid[f"x{i}i"] = read(f, np.float64, lxs[i - 1] + 1)
-            grid[f"dx{i}b"] = read(f, np.float64, lxs[i - 1] + 3)
-            grid[f"dx{i}h"] = read(f, np.float64, lxs[i - 1])
-        for i in (1, 2, 3):
-            grid[f"h{i}"] = read(f, np.float64, lgridghost).reshape(gridsizeghost)
-        L = [lxs[0] + 1, lxs[1], lxs[2]]
-        for i in (1, 2, 3):
-            grid[f"h{i}x1i"] = read(f, np.float64, np.prod(L)).reshape(L)
-        L = [lxs[0], lxs[1] + 1, lxs[2]]
-        for i in (1, 2, 3):
-            grid[f"h{i}x2i"] = read(f, np.float64, np.prod(L)).reshape(L)
-        L = [lxs[0], lxs[1], lxs[2] + 1]
-        for i in (1, 2, 3):
-            grid[f"h{i}x3i"] = read(f, np.float64, np.prod(L)).reshape(L)
-        for i in (1, 2, 3):
-            grid[f"gx{i}"] = read(f, np.float64, np.prod(lxs)).reshape(lxs)
-        for k in ("alt", "glat", "glon", "Bmag"):
-            grid[k] = read(f, np.float64, np.prod(lxs)).reshape(lxs)
-        grid["Bincl"] = read(f, np.float64, lxs[1] * lxs[2]).reshape(lxs[1:])
-        grid["nullpts"] = read(f, np.float64, np.prod(lxs)).reshape(lxs)
-        if f.tell() == fn.stat().st_size:  # not EOF
-            return grid
-
-        L = [lxs[0], lxs[1], lxs[2], 3]
-        for i in (1, 2, 3):
-            grid[f"e{i}"] = read(f, np.float64, np.prod(L)).reshape(L)
-        for k in ("er", "etheta", "ephi"):
-            grid[k] = read(f, np.float64, np.prod(L)).reshape(L)
-        for k in ("r", "theta", "phi"):
-            grid[k] = read(f, np.float64, np.prod(lxs)).reshape(lxs)
-        if f.tell() == fn.stat().st_size:  # not EOF
-            return grid
-
-        for k in ("x", "y", "z"):
-            grid[k] = read(f, np.float64, np.prod(lxs)).reshape(lxs)
-
-    return grid
-
-
-def loadframe3d_curv(fn: Path) -> typing.Dict[str, typing.Any]:
-    """
-    end users should normally use loadframe() instead
-    """
-    P = readconfig(fn.parent / "inputs/config.ini")
-    #    grid = readgrid(fn.parent / "inputs/simgrid.dat")
-    #    dat = xarray.Dataset(
-    #        coords={"x1": grid["x1"][2:-2], "x2": grid["x2"][2:-2], "x3": grid["x3"][2:-2]}
-    #    )
-
-    dat: typing.Dict[str, typing.Any] = {}
-
-    with fn.open("r") as f:
-        dat["time"] = read_time(f)
-
-        ns = read4D(f, LSP, P["lxs"])
-        dat["ne"] = [("x1", "x2", "x3"), ns[:, :, :, LSP - 1].squeeze()]
-
-        vs1 = read4D(f, LSP, P["lxs"])
-        dat["v1"] = [("x1", "x2", "x3"), (ns[:, :, :, :6] * vs1[:, :, :, :6]).sum(axis=3) / ns[:, :, :, LSP - 1]]
-
-        Ts = read4D(f, LSP, P["lxs"])
-        dat["Ti"] = [("x1", "x2", "x3"), (ns[:, :, :, :6] * Ts[:, :, :, :6]).sum(axis=3) / ns[:, :, :, LSP - 1]]
-        dat["Te"] = [("x1", "x2", "x3"), Ts[:, :, :, LSP - 1].squeeze()]
-
-        for p in ("J1", "J2", "J3", "v2", "v3"):
-            dat[p] = [("x1", "x2", "x3"), read3D(f, P["lxs"])]
-
-        dat["Phitop"] = [("x2", "x3"), read2D(f, P["lxs"])]
-
-    return dat
-
-
-def loadframe3d_curvavg(fn: Path) -> typing.Dict[str, typing.Any]:
-    """
-    end users should normally use loadframe() instead
-
-    Parameters
-    ----------
-    path: pathlib.Path
-        filename of this timestep of simulation output
-    """
-    P = readconfig(fn.parent / "inputs/config.ini")
-    #    grid = readgrid(fn.parent / "inputs/simgrid.dat")
-    #    dat = xarray.Dataset(
-    #        coords={"x1": grid["x1"][2:-2], "x2": grid["x2"][2:-2], "x3": grid["x3"][2:-2]}
-    #    )
-    dat: typing.Dict[str, typing.Any] = {}
-
-    with fn.open("r") as f:
-        dat["time"] = read_time(f)
-
-        for p in ("ne", "v1", "Ti", "Te", "J1", "J2", "J3", "v2", "v3"):
-            dat[p] = [("x1", "x2", "x3"), read3D(f, P["lxs"])]
-
-        dat["Phitop"] = [("x2", "x3"), read2D(f, P["lxs"])]
-
-    if P["lxs"][1] == 1 or P["lxs"][2] == 1:
-        dat["Ti"][1] = dat["Ti"][1].squeeze()
-        dat["Te"][1] = dat["Te"][1].squeeze()
-
-    return dat
-
-
-def read4D(f, lsp: int, lxs: typing.Sequence[int]) -> np.ndarray:
-    """
-    end users should normally use laodframe() instead
-    """
-    if not len(lxs) == 3:
-        raise ValueError(f"lxs must have 3 elements, you have lxs={lxs}")
-
-    return np.fromfile(f, np.float64, np.prod(lxs) * lsp).reshape((*lxs, lsp), order="F")
-
-
-def read3D(f, lxs: typing.Sequence[int]) -> np.ndarray:
-    """
-    end users should normally use loadframe() instead
-    """
-    if not len(lxs) == 3:
-        raise ValueError(f"lxs must have 3 elements, you have lxs={lxs}")
-
-    return np.fromfile(f, np.float64, np.prod(lxs)).reshape(*lxs, order="F")
-
-
-def read2D(f, lxs: typing.Sequence[int]) -> np.ndarray:
-    """
-    end users should normally use laodframe() instead
-    """
-    if not len(lxs) == 3:
-        raise ValueError(f"lxs must have 3 elements, you have lxs={lxs}")
-
-    return np.fromfile(f, np.float64, np.prod(lxs[1:])).reshape(*lxs[1:], order="F")
-
-
-def read_time(f) -> datetime:
-    t = np.fromfile(f, np.float64, 4)
-    return datetime(int(t[0]), int(t[1]), int(t[2])) + timedelta(hours=t[3])
-
-
-@lru_cache()
 def readconfig(inifn: Path) -> typing.Dict[str, typing.Any]:
     """
     read simulation input configuration from config.ini
@@ -266,7 +98,7 @@ def readconfig(inifn: Path) -> typing.Dict[str, typing.Any]:
     """
     inifn = Path(inifn).expanduser().resolve(strict=True)
 
-    P: typing.Dict[str, typing.Any] = {"lxs": get_simsize(inifn.parent / "simsize.dat")}
+    P: typing.Dict[str, typing.Any] = {"lxs": raw.get_simsize(inifn.parent / "simsize.dat")}
 
     with inifn.open("r") as f:
         date = list(map(int, f.readline().split()[0].split(",")))[::-1]
@@ -313,14 +145,11 @@ def loadframe(simdir: Path, time: datetime) -> typing.Dict[str, typing.Any]:
     # %% datfn
 
     t = time
-    timename = f"{t.year}{t.month:02d}{t.day:02d}_{t.hour*3600 + t.minute*60 + t.second:05d}.000000.dat"
-    datfn = simdir / timename
-    if not datfn.is_file():
-        if datfn.with_suffix(".zip").is_file():
-            datfn = datfn.with_suffix(".zip")
-        else:
-            logging.error(f"{datfn} not found.")
-            return {}
+    stem = f"{t.year}{t.month:02d}{t.day:02d}_{t.hour*3600 + t.minute*60 + t.second:05d}.00000"
+    for ext in ("0.h5", "1.h5", "0.dat", "1.dat"):
+        datfn = simdir / (stem + ext)
+        if datfn.is_file():
+            break
 
     dat = readdata(datfn)
 
