@@ -45,9 +45,7 @@ def get_package_manager(like: typing.List[str] = None) -> str:
     elif {"debian", "ubuntu"}.intersection(like):
         return "apt"
     else:
-        raise ValueError(
-            f"Unknown ID_LIKE={like}, please file bug report or manually specify package manager"
-        )
+        raise ValueError(f"Unknown ID_LIKE={like}, please file bug report or manually specify package manager")
 
 
 def main(package_manager: str):
@@ -95,9 +93,7 @@ def main(package_manager: str):
             if subprocess.run(["sudo", "apt", "--yes", "install"] + pkgs["apt"]).returncode:
                 raise SystemExit("installing prereqs failed.")
         else:
-            raise ValueError(
-                f"I don't know package manager {package_manager}, try installing the prereqs manually"
-            )
+            raise ValueError(f"I don't know package manager {package_manager}, try installing the prereqs manually")
     elif sys.platform == "darwin":
         pkgs = {"brew": ["gcc", "make", "cmake", "ninja", "lapack", "openmpi"]}
         subprocess.run(["brew", "install"] + pkgs["brew"])
@@ -110,9 +106,7 @@ def main(package_manager: str):
 
         print("meson will automatically get Scalapack and Mumps during Gemini build")
     elif sys.platform == "win32":
-        raise SystemExit(
-            "It is easiest to use Intel compilers for Windows, or Windows Subsystem for Linux."
-        )
+        raise SystemExit("It is easiest to use Intel compilers for Windows, or Windows Subsystem for Linux.")
     else:
         raise NotImplementedError(f"unknown platform {sys.platform}")
 

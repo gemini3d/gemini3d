@@ -34,19 +34,14 @@ CB_LBL = {
 
 
 def plotframe(
-    time: datetime,
-    grid: typing.Dict[str, np.ndarray],
-    dat: typing.Dict[str, typing.Any],
-    save_dir: Path = None,
-    fg: "mplf.Figure" = None,
+    grid: typing.Dict[str, np.ndarray], dat: typing.Dict[str, typing.Any], save_dir: Path = None, fg: "mplf.Figure" = None
 ):
     """
     if save_dir, plots will not be visible while generating to speed plot writing
     """
-    if not dat:
-        return
-
     plotfun = grid2plotfun(grid)
+
+    time = dat["time"]
 
     for k in ("ne", "v1", "Ti", "Te", "J1", "v2", "v3", "J2", "J3"):
         if save_dir is None or fg is None:
@@ -77,56 +72,25 @@ def grid2plotfun(grid: typing.Dict[str, np.ndarray]):
     return plotfun
 
 
-def plot3D_curv_frames_long(
-    time: datetime,
-    grid: typing.Dict[str, np.ndarray],
-    parm: np.ndarray,
-    name: str,
-    fg: "mplf.Figure",
-):
+def plot3D_curv_frames_long(time: datetime, grid: typing.Dict[str, np.ndarray], parm: np.ndarray, name: str, fg: "mplf.Figure"):
     pass
 
 
-def plot2D_curv(
-    time: datetime,
-    grid: typing.Dict[str, np.ndarray],
-    parm: np.ndarray,
-    name: str,
-    fg: "mplf.Figure",
-):
+def plot2D_curv(time: datetime, grid: typing.Dict[str, np.ndarray], parm: np.ndarray, name: str, fg: "mplf.Figure"):
     pass
 
 
-def plot3D_cart_frames_long_ENU(
-    time: datetime,
-    grid: typing.Dict[str, np.ndarray],
-    parm: np.ndarray,
-    name: str,
-    fg: "mplf.Figure",
-):
+def plot3D_cart_frames_long_ENU(time: datetime, grid: typing.Dict[str, np.ndarray], parm: np.ndarray, name: str, fg: "mplf.Figure"):
 
     plot_interp(time, grid, parm, name, fg)
 
 
-def plot2D_cart(
-    time: datetime,
-    grid: typing.Dict[str, np.ndarray],
-    parm: np.ndarray,
-    name: str,
-    fg: "mplf.Figure",
-):
+def plot2D_cart(time: datetime, grid: typing.Dict[str, np.ndarray], parm: np.ndarray, name: str, fg: "mplf.Figure"):
 
     plot_interp(time, grid, parm, name, fg)
 
 
-def plot12(
-    x: np.ndarray,
-    z: np.ndarray,
-    parm: np.ndarray,
-    name: str,
-    fg: "mplf.Figure",
-    ax: "mpla.Axes" = None,
-):
+def plot12(x: np.ndarray, z: np.ndarray, parm: np.ndarray, name: str, fg: "mplf.Figure", ax: "mpla.Axes" = None):
 
     if name.startswith("v"):
         cmap = "bwr"
@@ -151,9 +115,7 @@ def plot12(
         hi = ax.pcolormesh(parm, cmap=cmap)
 
 
-def plot13(
-    y: np.ndarray, z: np.ndarray, parm, name: str, fg: "mplf.Figure", ax: "mpla.Axes" = None
-):
+def plot13(y: np.ndarray, z: np.ndarray, parm, name: str, fg: "mplf.Figure", ax: "mpla.Axes" = None):
 
     if name.startswith("v"):
         cmap = "bwr"
@@ -177,13 +139,7 @@ def plot13(
         hi = ax.pcolormesh(parm, cmap=cmap)
 
 
-def plot_interp(
-    time: datetime,
-    grid: typing.Dict[str, np.ndarray],
-    parm: np.ndarray,
-    name: str,
-    fg: "mplf.Figure",
-):
+def plot_interp(time: datetime, grid: typing.Dict[str, np.ndarray], parm: np.ndarray, name: str, fg: "mplf.Figure"):
     """
 
     xp:  eastward distance (rads.)
@@ -273,15 +229,9 @@ def plot_interp(
             X3, Y3, Z3 = np.meshgrid(x2plot, x3plot, zp2 * 1e3)
             # transpose: so north dist, east dist., alt.
             parmp = interp.interpn(
-                (
-                    grid["x2"][inds2],
-                    grid["x3"][inds3],  # this is northward distance - again backwards from yp
-                    grid["x1"][inds1],
-                ),
+                (grid["x2"][inds2], grid["x3"][inds3], grid["x1"][inds1]),  # this is northward distance - again backwards from yp
                 values=np.transpose(parm, [2, 1, 0]),
-                xi=np.column_stack(
-                    (X3.ravel(), Y3.ravel(), Z3.ravel())
-                ),  # slice expects the first dim. to be "y"
+                xi=np.column_stack((X3.ravel(), Y3.ravel(), Z3.ravel())),  # slice expects the first dim. to be "y"
                 bounds_error=False,
             ).reshape((lyp, lxp, len(zp2)))
 

@@ -15,9 +15,7 @@ except ImportError:
     pass
 
 
-def compare_all(
-    outdir: Path, refdir: Path, tol: typing.Dict[str, float], doplot: bool = False
-) -> int:
+def compare_all(outdir: Path, refdir: Path, tol: typing.Dict[str, float], doplot: bool = False) -> int:
     """
     compare two directories across time steps
     """
@@ -38,9 +36,7 @@ def compare_all(
     t0 = params["t0"]
     times = datetime_range(t0, t0 + params["tdur"], params["dtout"])
     if len(times) <= 1:
-        raise ValueError(
-            "simulation did not run long enough, must run for more than one time step"
-        )
+        raise ValueError("simulation did not run long enough, must run for more than one time step")
 
     errs = 0
 
@@ -62,9 +58,7 @@ def compare_all(
             names = ["ne", "v1", "v2", "v3"]
             itols = ["N", "V", "V", "V"]
             for k, j in zip(names, itols):
-                if np.allclose(
-                    ref[k][1], A[k][1], 0.0001 * tol[f"rtol{j}"], 0.0001 * tol[f"atol{j}"]
-                ):
+                if np.allclose(ref[k][1], A[k][1], 0.0001 * tol[f"rtol{j}"], 0.0001 * tol[f"atol{j}"]):
                     errs += 1
                     logging.error(f"{k} {st} too similar to prior step")
 

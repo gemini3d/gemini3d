@@ -8,7 +8,7 @@ https://docs.enthought.com/mayavi/mayavi/auto/mlab_decorations.html
 from mayavi import mlab
 import argparse
 
-import gemini.readdata as grd
+import gemini
 
 
 if __name__ == "__main__":
@@ -16,7 +16,7 @@ if __name__ == "__main__":
     p.add_argument("fn", help=".dat filename to load directly")
     P = p.parse_args()
 
-    dat = grd.readdata(P.fn)
+    dat = gemini.readdata(P.fn)
 
     for p in ("ne", "v1", "Ti", "Te", "J1", "J2", "J3", "v2", "v3"):
         mlab.pipeline.volume(mlab.pipeline.scalar_field(dat[p][1]))

@@ -2,34 +2,15 @@
 struct manpage:
 https://docs.python.org/3/library/struct.html#struct-format-strings
 """
-import zipfile
 import numpy as np
 from pathlib import Path
 from datetime import datetime, timedelta
 import typing
-from contextlib import contextmanager
 from functools import lru_cache
 import struct
 import logging
 
 LSP = 7
-
-
-@contextmanager
-def opener(fn: Path):
-    if fn.suffix == ".dat":
-        with fn.open("rb") as f:
-            yield f
-    elif fn.suffix == ".zip":
-        with zipfile.ZipFile(fn, "r") as z:
-            flist = z.namelist()
-            for zf in flist:
-                with z.open(zf, "r") as f:
-                    yield f.read()
-    elif fn.suffix == ".h5":
-        raise NotImplementedError("we plan to offer HDF5 support, but it's not ready yet")
-    else:
-        raise ValueError(f"not sure how to open file {fn}")
 
 
 def readdata(fn: Path) -> typing.Dict[str, typing.Any]:
@@ -123,11 +104,8 @@ def readgrid(fn: Path) -> typing.Dict[str, np.ndarray]:
         logging.error(f"{fn} grid file is not present. Will try to load rest of data.")
         return grid
 
-    with opener(fn) as f:
-        if isinstance(f, bytes):
-            read = np.frombuffer
-        else:
-            read = np.fromfile
+    with fn.open("r") as f:
+        read = np.fromfile
         for i in (1, 2, 3):
             grid[f"x{i}"] = read(f, np.float64, lxs[i - 1] + 4)
             grid[f"x{i}i"] = read(f, np.float64, lxs[i - 1] + 1)
@@ -171,7 +149,7 @@ def readgrid(fn: Path) -> typing.Dict[str, np.ndarray]:
 
 def loadframe3d_curv(fn: Path) -> typing.Dict[str, typing.Any]:
     """
-    end users should normally use laodframe() instead
+    end users should normally use loadframe() instead
     """
     P = readconfig(fn.parent / "inputs/config.ini")
     #    grid = readgrid(fn.parent / "inputs/simgrid.dat")
@@ -181,28 +159,17 @@ def loadframe3d_curv(fn: Path) -> typing.Dict[str, typing.Any]:
 
     dat: typing.Dict[str, typing.Any] = {}
 
-    with opener(fn) as f:
-        if isinstance(f, bytes):
-            read = np.frombuffer
-        else:
-            read = np.fromfile
-        t = read(f, np.float64, 4)
-        dat["time"] = datetime(int(t[0]), int(t[1]), int(t[2])) + timedelta(hours=t[3])
+    with fn.open("r") as f:
+        dat["time"] = read_time(f)
 
         ns = read4D(f, LSP, P["lxs"])
         dat["ne"] = [("x1", "x2", "x3"), ns[:, :, :, LSP - 1].squeeze()]
 
         vs1 = read4D(f, LSP, P["lxs"])
-        dat["v1"] = [
-            ("x1", "x2", "x3"),
-            (ns[:, :, :, :6] * vs1[:, :, :, :6]).sum(axis=3) / ns[:, :, :, LSP - 1],
-        ]
+        dat["v1"] = [("x1", "x2", "x3"), (ns[:, :, :, :6] * vs1[:, :, :, :6]).sum(axis=3) / ns[:, :, :, LSP - 1]]
 
         Ts = read4D(f, LSP, P["lxs"])
-        dat["Ti"] = [
-            ("x1", "x2", "x3"),
-            (ns[:, :, :, :6] * Ts[:, :, :, :6]).sum(axis=3) / ns[:, :, :, LSP - 1],
-        ]
+        dat["Ti"] = [("x1", "x2", "x3"), (ns[:, :, :, :6] * Ts[:, :, :, :6]).sum(axis=3) / ns[:, :, :, LSP - 1]]
         dat["Te"] = [("x1", "x2", "x3"), Ts[:, :, :, LSP - 1].squeeze()]
 
         for p in ("J1", "J2", "J3", "v2", "v3"):
@@ -215,7 +182,7 @@ def loadframe3d_curv(fn: Path) -> typing.Dict[str, typing.Any]:
 
 def loadframe3d_curvavg(fn: Path) -> typing.Dict[str, typing.Any]:
     """
-    end users should normally use laodframe() instead
+    end users should normally use loadframe() instead
 
     Parameters
     ----------
@@ -229,13 +196,8 @@ def loadframe3d_curvavg(fn: Path) -> typing.Dict[str, typing.Any]:
     #    )
     dat: typing.Dict[str, typing.Any] = {}
 
-    with opener(fn) as f:
-        if isinstance(f, bytes):
-            read = np.frombuffer
-        else:
-            read = np.fromfile
-        t = read(f, np.float64, 4)
-        dat["time"] = datetime(int(t[0]), int(t[1]), int(t[2])) + timedelta(hours=t[3])
+    with fn.open("r") as f:
+        dat["time"] = read_time(f)
 
         for p in ("ne", "v1", "Ti", "Te", "J1", "J2", "J3", "v2", "v3"):
             dat[p] = [("x1", "x2", "x3"), read3D(f, P["lxs"])]
@@ -255,26 +217,18 @@ def read4D(f, lsp: int, lxs: typing.Sequence[int]) -> np.ndarray:
     """
     if not len(lxs) == 3:
         raise ValueError(f"lxs must have 3 elements, you have lxs={lxs}")
-    if isinstance(f, bytes):
-        read = np.frombuffer
-    else:
-        read = np.fromfile
 
-    return read(f, np.float64, np.prod(lxs) * lsp).reshape((*lxs, lsp), order="F")
+    return np.fromfile(f, np.float64, np.prod(lxs) * lsp).reshape((*lxs, lsp), order="F")
 
 
 def read3D(f, lxs: typing.Sequence[int]) -> np.ndarray:
     """
-    end users should normally use laodframe() instead
+    end users should normally use loadframe() instead
     """
     if not len(lxs) == 3:
         raise ValueError(f"lxs must have 3 elements, you have lxs={lxs}")
-    if isinstance(f, bytes):
-        read = np.frombuffer
-    else:
-        read = np.fromfile
 
-    return read(f, np.float64, np.prod(lxs)).reshape(*lxs, order="F")
+    return np.fromfile(f, np.float64, np.prod(lxs)).reshape(*lxs, order="F")
 
 
 def read2D(f, lxs: typing.Sequence[int]) -> np.ndarray:
@@ -283,12 +237,13 @@ def read2D(f, lxs: typing.Sequence[int]) -> np.ndarray:
     """
     if not len(lxs) == 3:
         raise ValueError(f"lxs must have 3 elements, you have lxs={lxs}")
-    if isinstance(f, bytes):
-        read = np.frombuffer
-    else:
-        read = np.fromfile
 
-    return read(f, np.float64, np.prod(lxs[1:])).reshape(*lxs[1:], order="F")
+    return np.fromfile(f, np.float64, np.prod(lxs[1:])).reshape(*lxs[1:], order="F")
+
+
+def read_time(f) -> datetime:
+    t = np.fromfile(f, np.float64, 4)
+    return datetime(int(t[0]), int(t[1]), int(t[2])) + timedelta(hours=t[3])
 
 
 @lru_cache()
@@ -358,9 +313,7 @@ def loadframe(simdir: Path, time: datetime) -> typing.Dict[str, typing.Any]:
     # %% datfn
 
     t = time
-    timename = (
-        f"{t.year}{t.month:02d}{t.day:02d}_{t.hour*3600 + t.minute*60 + t.second:05d}.000000.dat"
-    )
+    timename = f"{t.year}{t.month:02d}{t.day:02d}_{t.hour*3600 + t.minute*60 + t.second:05d}.000000.dat"
     datfn = simdir / timename
     if not datfn.is_file():
         if datfn.with_suffix(".zip").is_file():

@@ -12,9 +12,7 @@ import typing
 import socket
 
 
-def url_retrieve(
-    url: str, outfile: Path, filehash: typing.Sequence[str] = None, overwrite: bool = False
-):
+def url_retrieve(url: str, outfile: Path, filehash: typing.Sequence[str] = None, overwrite: bool = False):
     """
     Parameters
     ----------

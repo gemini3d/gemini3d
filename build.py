@@ -181,9 +181,7 @@ def meson_setup(compilers: Dict[str, str], args: List[str], **kwargs):
 
     if kwargs.get("install"):
         if not ret.returncode:
-            ret = subprocess.run(
-                [MESON, "install", "-C", str(BUILD)]
-            )  # type: ignore     # MyPy bug
+            ret = subprocess.run([MESON, "install", "-C", str(BUILD)])  # type: ignore     # MyPy bug
             if ret.returncode:
                 raise SystemExit(ret.returncode)
 
@@ -226,9 +224,7 @@ def intel_params() -> Tuple[Dict[str, str], List[str]]:
     Intel compilers
     """
     if not os.environ.get("MKLROOT"):
-        raise EnvironmentError(
-            "must have set MKLROOT by running compilervars.bat or source compilervars.sh before this script."
-        )
+        raise EnvironmentError("must have set MKLROOT by running compilervars.bat or source compilervars.sh before this script.")
 
     # %% compiler variables
     compilers = {"FC": "ifort"}
@@ -285,15 +281,11 @@ def pgi_params() -> Tuple[Dict[str, str], List[str]]:
 
 if __name__ == "__main__":
     p = ArgumentParser()
-    p.add_argument(
-        "vendor", help="compiler vendor [clang, gnu, intel, msvc, pgi]", nargs="?", default="gnu"
-    )
+    p.add_argument("vendor", help="compiler vendor [clang, gnu, intel, msvc, pgi]", nargs="?", default="gnu")
     p.add_argument("-wipe", help="wipe and rebuild from scratch", action="store_true")
     p.add_argument("-buildsys", help="default build system", default="cmake")
     p.add_argument("-args", help="preprocessor arguments", nargs="+", default=[])
-    p.add_argument(
-        "-debug", help="debug (-O0) instead of release (-O3) build", action="store_true"
-    )
+    p.add_argument("-debug", help="debug (-O0) instead of release (-O3) build", action="store_true")
     p.add_argument("-test", help="run self-test / example", action="store_true")
     p.add_argument("-install", help="specify full install directory e.g. ~/lib_gcc/mumps")
     a = p.parse_args()

@@ -56,13 +56,7 @@ def openmpi(wipe: bool, dirs: typing.Dict[str, Path]):
 
     env = get_compilers()
 
-    cmd = nice + [
-        "./configure",
-        f"--prefix={install_dir}",
-        f"CC={env['CC']}",
-        f"CXX={env['CXX']}",
-        f"FC={env['FC']}",
-    ]
+    cmd = nice + ["./configure", f"--prefix={install_dir}", f"CC={env['CC']}", f"CXX={env['CXX']}", f"FC={env['FC']}"]
 
     subprocess.check_call(cmd, cwd=source_dir, env=env)
 
@@ -128,42 +122,20 @@ def mumps(wipe: bool, dirs: typing.Dict[str, Path], buildsys: str):
         raise ValueError(f"unknown build system {buildsys}")
 
 
-def cmake_build(
-    args: typing.List[str],
-    source_dir: Path,
-    build_dir: Path,
-    wipe: bool,
-    env: typing.Mapping[str, str],
-):
+def cmake_build(args: typing.List[str], source_dir: Path, build_dir: Path, wipe: bool, env: typing.Mapping[str, str]):
     cmake = cmake_minimum_version("3.13")
     cachefile = build_dir / "CMakeCache.txt"
     if wipe and cachefile.is_file():
         cachefile.unlink()
 
-    subprocess.check_call(
-        nice
-        + [cmake]
-        + args
-        + ["-B", str(build_dir), "-S", str(source_dir), "-G", "MinGW Makefiles"],
-        env=env,
-    )
+    subprocess.check_call(nice + [cmake] + args + ["-B", str(build_dir), "-S", str(source_dir), "-G", "MinGW Makefiles"], env=env)
 
-    subprocess.check_call(
-        nice + [cmake, "--build", str(build_dir), "--parallel", "--target", "install"]
-    )
+    subprocess.check_call(nice + [cmake, "--build", str(build_dir), "--parallel", "--target", "install"])
 
-    subprocess.check_call(
-        nice + ["ctest", "--parallel", "--output-on-failure"], cwd=str(build_dir)
-    )
+    subprocess.check_call(nice + ["ctest", "--parallel", "--output-on-failure"], cwd=str(build_dir))
 
 
-def meson_build(
-    args: typing.List[str],
-    source_dir: Path,
-    build_dir: Path,
-    wipe: bool,
-    env: typing.Mapping[str, str],
-):
+def meson_build(args: typing.List[str], source_dir: Path, build_dir: Path, wipe: bool, env: typing.Mapping[str, str]):
     meson = shutil.which("meson")
     if not meson:
         raise FileNotFoundError("Meson not found.")
@@ -171,9 +143,7 @@ def meson_build(
     if wipe and (build_dir / "build.ninja").is_file():
         args.append("--wipe")
 
-    subprocess.check_call(
-        nice + [meson, "setup"] + args + [str(build_dir), str(source_dir)], env=env
-    )
+    subprocess.check_call(nice + [meson, "setup"] + args + [str(build_dir), str(source_dir)], env=env)
 
     for op in ("test", "install"):
         subprocess.check_call(nice + [meson, op, "-C", str(build_dir)])
@@ -191,11 +161,7 @@ def cmake_minimum_version(min_version: str = None) -> str:
 
     if not min_version:
         return cmake
-    cmake_ver = (
-        subprocess.check_output([cmake, "--version"], universal_newlines=True)
-        .split("\n")[0]
-        .split(" ")[2]
-    )
+    cmake_ver = subprocess.check_output([cmake, "--version"], universal_newlines=True).split("\n")[0].split(" ")[2]
     if pkg_resources.parse_version(cmake_ver) < pkg_resources.parse_version(min_version):
         raise ValueError(f"CMake {cmake_ver} is less than minimum required {min_version}")
 
@@ -261,10 +227,7 @@ if __name__ == "__main__":
     p.add_argument("-b", "--buildsys", help="build system (meson or cmake)", default="meson")
     P = p.parse_args()
 
-    dirs = {
-        "prefix": Path(P.prefix).expanduser().resolve(),
-        "workdir": Path(P.workdir).expanduser().resolve(),
-    }
+    dirs = {"prefix": Path(P.prefix).expanduser().resolve(), "workdir": Path(P.workdir).expanduser().resolve()}
 
     if "openmpi" in P.libs:
         openmpi(P.wipe, dirs)

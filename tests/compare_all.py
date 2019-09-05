@@ -23,7 +23,7 @@ from argparse import ArgumentParser
 import sys
 
 try:
-    import gemini.output_compare
+    import gemini
 except ImportError:
     print("need to install PyGemini by  'pip install -e gemini'", file=sys.stderr)
     raise SystemExit(77)
@@ -49,7 +49,7 @@ def main():
     p.add_argument("-p", "--plot", help="make plots of differences", action="store_true")
     P = p.parse_args()
 
-    errs = gemini.output_compare.compare_all(P.outdir, P.refdir, tol, P.plot)
+    errs = gemini.compare_all(P.outdir, P.refdir, tol, P.plot)
 
     if errs:
         raise SystemExit(f"{errs} compare errors")
