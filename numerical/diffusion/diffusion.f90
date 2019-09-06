@@ -5,9 +5,9 @@ use phys_consts, only: kB,lsp,gammas,mindensdiv, wp
 use grid, only : curvmesh,gridflag             !sizes are not imported in case we want to do subgrid diffusion
 
 !> banded and tridiagonal solvers
-!use f95_lapack, only: gbsv=>la_gbsv !,gtsv=>la_gtsv 
+!use f95_lapack, only: gbsv=>la_gbsv !,gtsv=>la_gtsv
 
-use lapack95, only: gbsv!,gtsv 
+use lapack95, only: gbsv!,gtsv
 
 implicit none
 
@@ -62,7 +62,7 @@ if (gridflag==0) then
   do ix3=1,lx3
     do ix2=1,lx2
       Tn0=Tn(1,ix2,ix3)
-      T(0,ix2,ix3)=Tn0   
+      T(0,ix2,ix3)=Tn0
       Tn0=Tn(lx1,ix2,ix3)
       T(lx1+1,ix2,ix3)=Tn0
     end do
@@ -113,7 +113,7 @@ do ix3=1,lx3
     fx1slice=f(1:lx1,ix2,ix3)
     fx1slice=backEuler1D(fx1slice,A(:,ix2,ix3), &
                   B(:,ix2,ix3),C(:,ix2,ix3),D(:,ix2,ix3),E(:,ix2,ix3), &
-                  f(0,ix2,ix3),f(lx1+1,ix2,ix3),dt,dx1,dx1i)    
+                  f(0,ix2,ix3),f(lx1+1,ix2,ix3),dt,dx1,dx1i)
     !! inner ghost cells include boundary conditions
     backEuler3D(1:lx1,ix2,ix3)=fx1slice
   end do
@@ -150,7 +150,7 @@ do ix3=1,lx3
     fx1slice=f(1:lx1,ix2,ix3)
     fx1slice=TRBDF21D_curv(fx1slice,A(:,ix2,ix3), &
                   B(:,ix2,ix3),C(:,ix2,ix3),D(:,ix2,ix3),E(:,ix2,ix3), &
-                  f(0,ix2,ix3),f(lx1+1,ix2,ix3),dt,x)             
+                  f(0,ix2,ix3),f(lx1+1,ix2,ix3),dt,x)
     !! inner ghost cells include boundary conditions
     TRBDF23D_curv(1:lx1,ix2,ix3)=fx1slice
   end do
@@ -160,9 +160,9 @@ end function TRBDF23D_curv
 
 
 function TRBDF21D_curv(Ts,A,B,C,D,E,Tsminx1,Tsmaxx1,dt,x)
-!! SOLVE A 1D DIFFUSION PROBLEM.  IT IS EXPECTED THAT 
+!! SOLVE A 1D DIFFUSION PROBLEM.  IT IS EXPECTED THAT
 !! GHOST CELLS WILL HAVE BEEN TRIMMED FROM ARRAYS BEFORE
-!! THEY ARE PASSED INTO THIS ROUTINE.  
+!! THEY ARE PASSED INTO THIS ROUTINE.
 !!
 !! FORM OF EQUATION SOLVED IS:
 !!  dT/dt + A T + B dT/dx + C d/dx(D dT/dx) = E
@@ -205,19 +205,19 @@ TR(ix1)=Tsminx1
 ix1=2
 
 !> ix1-1
-M(ll+4,ix1-1)=-1*C(ix1)*Dh(ix1)/x%dx1i(ix1)/x%dx1(ix1)/2d0 &            
+M(ll+4,ix1-1)=-1*C(ix1)*Dh(ix1)/x%dx1i(ix1)/x%dx1(ix1)/2d0 &
            +B(ix1)/(x%dx1(ix1+1)+x%dx1(ix1))/2d0
 
-!> ix1       
-M(ll+3,ix1)=1.0/(dt/2d0)-A(ix1)/2d0 &                               
+!> ix1
+M(ll+3,ix1)=1.0/(dt/2d0)-A(ix1)/2d0 &
          +C(ix1)*Dh(ix1+1)/x%dx1i(ix1)/x%dx1(ix1+1)/2d0 &
          +C(ix1)*Dh(ix1)/x%dx1i(ix1)/x%dx1(ix1)/2d0
 
 !> ix1+1, super-diag.
-M(ll+2,ix1+1)=-1*C(ix1)*Dh(ix1+1)/x%dx1i(ix1)/x%dx1(ix1+1)/2d0 &        
+M(ll+2,ix1+1)=-1*C(ix1)*Dh(ix1+1)/x%dx1i(ix1)/x%dx1(ix1+1)/2d0 &
          -1*B(ix1)/(x%dx1(ix1+1)+x%dx1(ix1))/2d0
 M(ll+1,ix1+2)=0.0
-TR(ix1)=Ts(ix1)/(dt/2d0)+E(ix1) & 
+TR(ix1)=Ts(ix1)/(dt/2d0)+E(ix1) &
   -M(ll+4,ix1-1)*Ts(ix1-1) &
   -(-A(ix1)/2d0+C(ix1)*Dh(ix1+1)/x%dx1i(ix1)/x%dx1(ix1+1)/2d0+C(ix1)*Dh(ix1)/x%dx1i(ix1)/x%dx1(ix1)/2d0)*Ts(ix1) &
   -M(ll+2,ix1+1)*Ts(ix1+1) &
@@ -236,7 +236,7 @@ do concurrent (ix1=3:lx1-2)
            -1*B(ix1)/(x%dx1(ix1+1)+x%dx1(ix1))/2d0
   M(ll+1,ix1+2)=0.0                                               !ix1+2 grid point
   TR(ix1)=Ts(ix1)/(dt/2d0)+E(ix1) &
-    -M(ll+5,ix1-2)*Ts(ix1-2) & 
+    -M(ll+5,ix1-2)*Ts(ix1-2) &
     -M(ll+4,ix1-1)*Ts(ix1-1) &
     -(-A(ix1)/2d0+C(ix1)*Dh(ix1+1)/x%dx1i(ix1)/x%dx1(ix1+1)/2d0+C(ix1)*Dh(ix1)/x%dx1i(ix1)/x%dx1(ix1)/2d0)*Ts(ix1) &
     -M(ll+2,ix1+1)*Ts(ix1+1) &
@@ -296,7 +296,7 @@ M(ll+3,ix1)=1.0/(dt/3._wp)-A(ix1) &                               !ix1
 M(ll+2,ix1+1)=-1*C(ix1)*Dh(ix1+1)/x%dx1i(ix1)/x%dx1(ix1+1) &        !ix1+1, super-diag.
          -1*B(ix1)/(x%dx1(ix1+1)+x%dx1(ix1))
 M(ll+1,ix1+2)=0.0
-TRBDF21D_curv(ix1)=E(ix1) & 
+TRBDF21D_curv(ix1)=E(ix1) &
   -1._wp/3._wp*Ts(ix1)/(dt/3._wp) &
   +4._wp/3._wp*TR(ix1)/(dt/3._wp)
 
@@ -351,7 +351,7 @@ end function TRBDF21D_curv
 function backEuler1D(Ts,A,B,C,D,E,Tsminx1,Tsmaxx1,dt,dx1,dx1i)
 
 !------------------------------------------------------------
-!-------SOLVE A 1D DIFFUSION PROBLEM.  IT IS EXPECTED THAT 
+!-------SOLVE A 1D DIFFUSION PROBLEM.  IT IS EXPECTED THAT
 !-------GHOST CELLS WILL HAVE BEEN TRIMMED FROM ARRAYS BEFORE
 !-------THEY ARE PASSED INTO THIS ROUTINE.  FORM OF EQUATION
 !-------SOLVED IS:
@@ -443,5 +443,3 @@ end function backEuler1D
 
 
 end module diffusion
-
-

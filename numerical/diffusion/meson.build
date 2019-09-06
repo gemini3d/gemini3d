@@ -1,5 +1,5 @@
 diffusion = library('diffusion',
-  sources: ['diffusion.F90', '../../vendor/lapack95/gbsv.F90'],
+  sources: ['diffusion.f90', '../../vendor/lapack95/gbsv.F90'],
   dependencies: lapack,
   link_with: [const, grid],
   fortran_args: real_bits)

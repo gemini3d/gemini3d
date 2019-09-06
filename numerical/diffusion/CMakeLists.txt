@@ -1,4 +1,4 @@
-add_library(diffusion diffusion.F90)
+add_library(diffusion diffusion.f90)
 target_link_libraries(diffusion PRIVATE const grid ${LAPACK_LIBRARIES})
 target_compile_options(diffusion PRIVATE ${FFLAGS})
 target_include_directories(diffusion PRIVATE ${LAPACK_INCLUDE_DIRS})
