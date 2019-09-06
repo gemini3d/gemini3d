@@ -165,7 +165,7 @@ foreach k, v : zenodo
   message('Enabled test ' + testname)
   test(testname, mpiexec,
     suite : k,
-    args : ['-np', mpi_np, v['exe'], meson.source_root() / 'initialize/test' + k / 'config.ini', test_dir],
+    args : ['-np', mpi_np, v['exe'], meson.source_root() / 'initialize/test' + k / 'config.nml', test_dir],
     workdir : meson.source_root(),
     timeout : 1200,
     is_parallel : false)
