@@ -1,4 +1,4 @@
-[![Build Status](https://dev.azure.com/mhirsch0512/Gemini3D/_apis/build/status/gemini3d.GEMINI?branchName=master)](https://dev.azure.com/mhirsch0512/Gemini3D/_build/latest?definitionId=1&branchName=master)
+[![Actions Status](https://github.com/gemini3d/gemini/workflows/ci/badge.svg)](https://github.com/gemini3d/gemini/actions)
 
 # GEMINI
 

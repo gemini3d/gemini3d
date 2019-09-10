@@ -1,6 +1,6 @@
 variables:
   CI: "true"
-  cmake_version: 3.15.1
+  cmake_version: 3.15.3
 
 stages:
 
@@ -53,8 +53,7 @@ stages:
         sudo apt install -yq --no-install-recommends gcc-6 gfortran-6 liblapack-dev libscalapack-mpi-dev libmumps-dev libopenmpi-dev openmpi-bin
       displayName: 'Install Linux prereqs'
     - script: |
-        git clone https://github.com/mesonbuild/meson ../meson
-        python -m pip install -e ../meson
+        pip install meson
         curl -Ls https://github.com/ninja-build/ninja/releases/download/v1.9.0/ninja-linux.zip -o ninja-linux.zip
         sudo unzip ninja-linux.zip -d /usr/local/bin/
       displayName: 'setup Meson'
