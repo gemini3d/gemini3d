@@ -88,6 +88,8 @@ else
     sourcedir = expanduser(buf)
   endif
 end if
+!> have to allocate, even when not used, to avoid runtime errors with pickier compilers
+if (flagdneu/=1) sourcedir = ""
 
 if(flagdneu==1 .and. myid ==0) then
   print *, 'Neutral disturbance mlat,mlon:  ',sourcemlat,sourcemlon
@@ -113,6 +115,8 @@ else
     precdir = expanduser(buf)
   end if
 end if
+!> have to allocate, even when not used, to avoid runtime errors with pickier compilers
+if (flagprecfile/=1) precdir = ""
 
 if (flagprecfile==1 .and. myid==0) then
   print '(A,F10.3)', 'Precipitation file input cadence (s):  ',dtprec
@@ -136,6 +140,8 @@ else
     E0dir = expanduser(buf)
   end if
 end if
+!> have to allocate, even when not used, to avoid runtime errors with pickier compilers
+if (flagE0file/=1) E0dir = ""
 
 if(flagE0file==1 .and. myid==0) then
   print *, 'Electric field file input cadence (s):  ',dtE0

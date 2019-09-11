@@ -4,7 +4,19 @@ on: [push, pull_request]
 
 jobs:
 
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - uses: actions/setup-python@v1
+      with:
+        python-version: 3.7
+    - run: python -m pip install -e .[lint]
+    - run: flake8
+    - run: mypy .
+
   debug:
+    needs: [lint]
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
@@ -43,7 +55,7 @@ jobs:
       env:
         FC: gfortran
     - run: ${HOME}/.local/cmake-3.15.3-Linux-x86_64/bin/cmake --build build --parallel
-    - run: ${HOME}/.local/cmake-3.15.3-Linux-x86_64/bin/ctest --parallel
+    - run: ${HOME}/.local/cmake-3.15.3-Linux-x86_64/bin/ctest --parallel -V
       working-directory: build
     - uses: actions/upload-artifact@v1
       if: failure()
@@ -115,7 +127,7 @@ jobs:
         FC: gfortran-9
         CC: gcc-9
     - run: cmake --build build --parallel
-    - run: ctest --parallel
+    - run: ctest --parallel -V
       working-directory: build
     - uses: actions/upload-artifact@v1
       if: failure()
