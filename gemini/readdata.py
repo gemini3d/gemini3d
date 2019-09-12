@@ -6,10 +6,10 @@ import numpy as np
 from pathlib import Path
 from datetime import datetime, timedelta
 import typing
-from functools import lru_cache
 
 from . import raw
 from . import hdf
+from .config import read_config
 
 
 def readgrid(fn: Path) -> typing.Dict[str, np.ndarray]:
@@ -40,7 +40,7 @@ def readdata(fn: Path) -> typing.Dict[str, typing.Any]:
         simulation outputs as numpy.ndarray
     """
     fn = Path(fn).expanduser().resolve(True)
-    P = readconfig(fn.parent / "inputs/config.ini")
+    P = read_config(fn.parent / "inputs/config.nml")
     if P["flagoutput"] == 1:
         if fn.suffix == ".dat":
             dat = raw.loadframe3d_curv(fn, P["lxs"])
@@ -76,51 +76,6 @@ def datetime_range(start: datetime, stop: datetime, step: timedelta) -> typing.L
         times requested
     """
     return [start + i * step for i in range((stop - start) // step)]
-
-
-@lru_cache()
-def readconfig(inifn: Path) -> typing.Dict[str, typing.Any]:
-    """
-    read simulation input configuration from config.ini
-    Fortran reads config.ini internally
-
-    Parameters
-    ----------
-    inifn: pathlib.Path
-        config.ini path
-
-
-    Returns
-    -------
-    params: dict
-        simulation parameters from config.ini
-
-    """
-    inifn = Path(inifn).expanduser().resolve(strict=True)
-
-    P: typing.Dict[str, typing.Any] = {"lxs": raw.get_simsize(inifn.parent / "simsize.dat")}
-
-    with inifn.open("r") as f:
-        date = list(map(int, f.readline().split()[0].split(",")))[::-1]
-        sec = float(f.readline().split()[0])
-
-        P["t0"] = datetime(*date) + timedelta(seconds=sec)  # type: ignore  # mypy bug
-
-        P["tdur"] = timedelta(seconds=float(f.readline().split()[0]))
-
-        P["dtout"] = timedelta(seconds=float(f.readline().split()[0]))
-
-        P["f107a"], P["f107"], P["Ap"] = map(float, f.readline().split()[0].split(","))
-
-        P["tcfl"] = float(f.readline().split()[0])
-        P["Teinf"] = float(f.readline().split()[0])
-
-        P["flagpot"] = int(f.readline().split()[0])
-        P["flagperiodic"] = int(f.readline().split()[0])
-        P["flagoutput"] = int(f.readline().split()[0])
-        P["flagcap"] = int(f.readline().split()[0])
-
-    return P
 
 
 def loadframe(simdir: Path, time: datetime) -> typing.Dict[str, typing.Any]:

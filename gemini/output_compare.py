@@ -7,7 +7,7 @@ import logging
 import sys
 import typing
 
-from .readdata import readconfig, loadframe, datetime_range
+from .readdata import read_config, loadframe, datetime_range
 
 try:
     from .plotdiff import plotdiff
@@ -31,7 +31,7 @@ def compare_all(outdir: Path, refdir: Path, tol: typing.Dict[str, float], doplot
 
     ref: typing.Dict[str, typing.Any] = {}
     # %% READ IN THE SIMULATION INFORMATION
-    params = readconfig(outdir / "inputs/config.ini")
+    params = read_config(outdir / "inputs/config.nml")
     # %% TIMES OF INTEREST
     t0 = params["t0"]
     times = datetime_range(t0, t0 + params["tdur"], params["dtout"])

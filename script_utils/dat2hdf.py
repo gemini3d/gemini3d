@@ -16,7 +16,7 @@ CLVL = 6
 
 def dat2hdf(infn: Path, outfn: Path):
 
-    P = gemini.readconfig(infn.parent / "inputs/config.ini")
+    P = gemini.read_config(infn.parent / "inputs/config.nml")
     if P["flagoutput"] == 1:
         convert3d_curv(infn, outfn, P["lxs"])
     elif P["flagoutput"] == 2:
