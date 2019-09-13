@@ -8,8 +8,12 @@ from datetime import datetime, timedelta
 import typing
 
 from . import raw
-from . import hdf
 from .config import read_config
+
+try:
+    from . import hdf
+except ImportError:
+    hdf = None
 
 
 def readgrid(fn: Path) -> typing.Dict[str, np.ndarray]:
@@ -22,6 +26,8 @@ def readgrid(fn: Path) -> typing.Dict[str, np.ndarray]:
     if fn.suffix == ".dat":
         return raw.readgrid(fn)
     else:
+        if hdf is None:
+            raise ImportError("pip install h5py")
         return hdf.readgrid(fn)
 
 
@@ -45,11 +51,15 @@ def readdata(fn: Path) -> typing.Dict[str, typing.Any]:
         if fn.suffix == ".dat":
             dat = raw.loadframe3d_curv(fn, P["lxs"])
         else:
+            if hdf is None:
+                raise ImportError("pip install h5py")
             dat = hdf.loadframe3d_curv(fn)
     elif P["flagoutput"] == 2:
         if fn.suffix == ".dat":
             dat = raw.loadframe3d_curvavg(fn, P["lxs"])
         else:
+            if hdf is None:
+                raise ImportError("pip install h5py")
             dat = hdf.loadframe3d_curvavg(fn)
     else:
         raise ValueError("TODO: need to handle this case, file a bug report.")
