@@ -5,7 +5,7 @@ import argparse
 import sys
 
 
-def test_diffusion1D(fn: Path, doplot: bool = False):
+def read_diffusion1D(fn: Path) -> tuple:
 
     fn = Path(fn).expanduser()
     if not fn.is_file():
@@ -29,14 +29,7 @@ def test_diffusion1D(fn: Path, doplot: bool = False):
 
     assert np.isclose(Ts[12, -1], 0.2757552094055), "1-D diffusion accuracy"
 
-    if doplot:
-        fg = figure()
-        ax = fg.gca()
-        hi = ax.pcolormesh(t, x1[2:-2], Ts)
-        fg.colorbar(hi, ax=ax)
-        ax.set_xlabel("time [sec]")
-        ax.set_ylabel("displacement [m]")
-        ax.set_title("1-D diffusion (vs. time)")
+    return t, x1, Ts
 
 
 if __name__ == "__main__":
@@ -45,10 +38,15 @@ if __name__ == "__main__":
     p.add_argument("-p", "--plot", help="make plots", action="store_true")
     P = p.parse_args()
 
+    t, x1, Ts = read_diffusion1D(P.file)
+
     if P.plot:
         from matplotlib.pyplot import figure, show
-
-    test_diffusion1D(P.file, P.plot)
-
-    if P.plot:
+        fg = figure()
+        ax = fg.gca()
+        hi = ax.pcolormesh(t, x1[2:-2], Ts)
+        fg.colorbar(hi, ax=ax)
+        ax.set_xlabel("time [sec]")
+        ax.set_ylabel("displacement [m]")
+        ax.set_title("1-D diffusion (vs. time)")
         show()
