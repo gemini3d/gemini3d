@@ -36,7 +36,7 @@ def compare_all(outdir: Path, refdir: Path, tol: typing.Dict[str, float], doplot
     t0 = params["t0"]
     times = datetime_range(t0, t0 + params["tdur"], params["dtout"])
     if len(times) <= 1:
-        raise ValueError("simulation did not run long enough, must run for more than one time step")
+        raise ValueError(f"{outdir} simulation did not run long enough, must run for more than one time step")
 
     errs = 0
     for i, t in enumerate(times):
