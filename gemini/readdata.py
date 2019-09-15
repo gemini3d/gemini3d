@@ -45,8 +45,8 @@ def readdata(fn: Path) -> typing.Dict[str, typing.Any]:
     dat: dict
         simulation outputs as numpy.ndarray
     """
-    fn = Path(fn).expanduser().resolve(True)
-    P = read_config(fn.parent / "inputs/config.nml")
+    fn = Path(fn).expanduser()
+    P = read_config(fn.parent / "inputs")
     if P["flagoutput"] == 1:
         if fn.suffix == ".dat":
             dat = raw.loadframe3d_curv(fn, P["lxs"])

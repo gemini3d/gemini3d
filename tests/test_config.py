@@ -7,7 +7,7 @@ from datetime import datetime
 import gemini.config as config
 
 R = Path(__file__).resolve().parents[1]
-nml = R / "initialize/test2d_fang/config.nml"
+Rc = R / "initialize/test2d_fang"
 
 
 def test_nml_bad(tmp_path):
@@ -29,7 +29,7 @@ def test_nml_bad(tmp_path):
 
 @pytest.mark.parametrize("group", ["base", "precip", "efield"])
 def test_nml_group(group):
-    params = config.read_nml_group(nml, group)
+    params = config.read_nml_group(Rc / "config.nml", group)
     if group == "base":
         assert params["t0"] == datetime(2013, 2, 20, 5)
     elif group == "precip":
@@ -38,8 +38,11 @@ def test_nml_group(group):
         assert params["dtE0"] == approx(1.0)
 
 
-def test_nml_read():
-    params = config.read_config(nml)
+@pytest.mark.parametrize(
+    "filename", [Rc, Rc / "config.nml", R / "tests/data/zenodo2d/inputs/config.ini"], ids=["path", "nml", "ini"]
+)
+def test_read_config(filename):
+    params = config.read_config(filename)
     assert params["t0"] == datetime(2013, 2, 20, 5)
 
 

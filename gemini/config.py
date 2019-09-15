@@ -1,6 +1,5 @@
 import functools
 import typing
-import sys
 from pathlib import Path
 from datetime import datetime, timedelta
 
@@ -11,7 +10,7 @@ R = Path(__file__).resolve().parents[1]
 
 
 @functools.lru_cache()
-def read_config(fn: Path) -> typing.Dict[str, typing.Any]:
+def read_config(path: Path) -> typing.Dict[str, typing.Any]:
     """
     read simulation input configuration
 
@@ -19,29 +18,38 @@ def read_config(fn: Path) -> typing.Dict[str, typing.Any]:
 
     Parameters
     ----------
-    fn: pathlib.Path
+    path: pathlib.Path
         config file path
 
     Returns
     -------
     params: dict
-        simulation parameters from config.ini
+        simulation parameters from config file
 
     """
-    fn = Path(fn).expanduser()
-    if not fn.is_file():
-        if fn.with_suffix(".ini").is_file():
-            print("falling back to legacy .ini--we recommend .nml:", fn, file=sys.stderr)
-            fn = fn.with_suffix(".ini")
+    path = Path(path).expanduser().resolve()
+    if path.is_file():
+        file = path
+        path = path.parent
+        if file.suffix == ".nml":
+            P = read_nml(file)
+        elif file.suffix == ".ini":
+            P = read_ini(file)
         else:
-            raise FileNotFoundError(f"could not find .ini or .nml: {fn}")
-
-    if fn.suffix == ".nml":
-        P = read_nml(fn)
+            raise ValueError(f"unsure how to read {file}")
+    elif path.is_dir():
+        for suff in (".nml", ".ini"):
+            file = path / ("config" + suff)
+            if file.is_file():
+                P = read_config(file)
+                break
     else:
-        P = read_ini(fn)
+        raise FileNotFoundError(f"could not find config file in {file}")
 
-    P["lxs"] = raw.get_simsize(P["indat_size"])
+    # NOT P["indat_size"] because that assumes the reading computer has the same directory layout as HPC
+    simsize_file = path / "simsize.dat"
+    if simsize_file.is_file():
+        P["lxs"] = raw.get_simsize(simsize_file)
 
     return P
 
@@ -169,5 +177,8 @@ def read_ini(fn: Path) -> typing.Dict[str, typing.Any]:
         P["flagperiodic"] = int(f.readline().split()[0])
         P["flagoutput"] = int(f.readline().split()[0])
         P["flagcap"] = int(f.readline().split()[0])
+
+        for k in ("indat_size", "indat_grid", "indat_file"):
+            P[k] = Path(f.readline().strip().replace("'", "").replace('"', "")).expanduser()
 
     return P

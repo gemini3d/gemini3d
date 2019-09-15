@@ -31,7 +31,7 @@ def compare_all(outdir: Path, refdir: Path, tol: typing.Dict[str, float], doplot
 
     ref: typing.Dict[str, typing.Any] = {}
     # %% READ IN THE SIMULATION INFORMATION
-    params = read_config(outdir / "inputs/config.nml")
+    params = read_config(outdir / "inputs")
     # %% TIMES OF INTEREST
     t0 = params["t0"]
     times = datetime_range(t0, t0 + params["tdur"], params["dtout"])
@@ -39,7 +39,6 @@ def compare_all(outdir: Path, refdir: Path, tol: typing.Dict[str, float], doplot
         raise ValueError("simulation did not run long enough, must run for more than one time step")
 
     errs = 0
-
     for i, t in enumerate(times):
         st = f"UTsec {t}"
         A = loadframe(outdir, t)
