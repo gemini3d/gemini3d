@@ -14,7 +14,7 @@ addpath([cwd, filesep, '..', filesep, 'script_utils'])
 
 
 %READ IN SIMULATION INFO
-[ymd0,UTsec0,tdur,dtout,flagoutput,mloc]=readconfig([direc,filesep,'inputs/config.ini']);
+[ymd0,UTsec0,tdur,dtout,flagoutput,mloc]=readconfig([direc, filesep, 'inputs']);
 
 
 %READ IN THE GRID
@@ -47,7 +47,7 @@ for ind = 1:lt
 	bFrame(:,:,:,ind)=cAur(:,:,:);
     fclose(fid);
 	%max(max(bFrame))
-    
+
     if (flagplot)
         h=imagesc(x2,x3,log10(bFrame)');
         axis xy;

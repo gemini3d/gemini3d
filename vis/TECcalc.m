@@ -14,7 +14,7 @@ addpath([cwd,'/../script_utils'])
 
 
 %READ IN THE SIMULATION INFORMATION
-[ymd0,UTsec0,tdur,dtout,flagoutput,mloc]=readconfig([direc,'/inputs/config.ini']);
+[ymd0,UTsec0,tdur,dtout,flagoutput,mloc]=readconfig([direc, filesep, 'inputs']);
 
 
 %WE ALSO NEED TO LOAD THE GRID FILE (UNLESS IT ALREADY EXISTS IN THE WORKSPACE)

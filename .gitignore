@@ -1,3 +1,4 @@
+*.asv
 *.egg-info/
 pip-wheel-metadata/
 *.manifest

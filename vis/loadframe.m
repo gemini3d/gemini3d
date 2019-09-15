@@ -36,7 +36,7 @@ end
 % READ IN THE SIMULATION INFORMATION IF IT HAS NOT ALREADY BEEN PROVIDED
 if (~exist('UTsec0','var') || ~exist('ymd0','var') || ~exist('mloc','var') || ~exist('tdur','var') ...
      || ~exist('dtout','var') || ~exist('flagoutput','var') || ~exist('mloc','var') )
-  [ymd0,UTsec0,tdur,dtout,flagoutput,mloc]=readconfig([direc,'/inputs/config.ini']);
+  [ymd0,UTsec0,tdur,dtout,flagoutput,mloc] = readconfig([direc, filesep, 'inputs']);
 end
 
 

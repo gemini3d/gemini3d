@@ -32,7 +32,7 @@ disp(['sim grid dimensions: ',num2str(lxs)])
 
 
 %% NEED TO READ INPUT FILE TO GET DURATION OF SIMULATION AND START TIME
-[ymd0,UTsec0,tdur,dtout]=readconfig([direc,filesep,'inputs/config.ini']);
+[ymd0,UTsec0,tdur,dtout] = readconfig(direc, filesep, 'inputs');
 
 
 %% CHECK WHETHER WE NEED TO RELOAD THE GRID (check if one is given because this can take a long time)

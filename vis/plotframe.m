@@ -60,7 +60,7 @@ end
 
 
 %% READ IN THE SIMULATION INFORMATION (this is low cost so reread no matter what)
-[ymd0,UTsec0,tdur,dtout,flagoutput,mloc]=readconfig([direc,filesep,'inputs/config.ini']);
+[ymd0,UTsec0,tdur,dtout,flagoutput,mloc] = readconfig(direc, filesep, 'inputs');
 
 
 %% CHECK WHETHER WE NEED TO RELOAD THE GRID (check if one is given because this can take a long time)
@@ -160,7 +160,7 @@ if lotsplots   % 3D simulation or a very long 2D simulation - do separate plots 
         plotfun(ymd,UTsec,xg,J2,'J_2 (A/m^2)',J2lim,[mlatsrc,mlonsrc],h.f7, Jcmap);
         clf(h.f8)
         plotfun(ymd,UTsec,xg,J3,'J_3 (A/m^2)',J3lim,[mlatsrc,mlonsrc],h.f8, Jcmap);
-        
+
         if ~isempty(h.f9)
             clf(h.f9)
             h9a = axes('parent', h.f9);
@@ -220,7 +220,7 @@ end
 
 %% Don't print
 if nargout==0, clear('xg'), end
-  
+
 end % function plotframe
 
 

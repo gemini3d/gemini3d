@@ -29,7 +29,7 @@ E0dat=outargs.RESAMP_EO;
 
 %READ IN THE SIMULATION INFORMATION (MEANS WE NEED TO CREATE THIS FOR THE SIMULATION WE WANT TO DO)
 if (~exist('ymd0','var'))
-  [ymd0,UTsec0,tdur,dtout,flagoutput,mloc]=readconfig([direcconfig,'/config.ini']);
+  [ymd0,UTsec0,tdur,dtout,flagoutput,mloc]=readconfig(direcconfig);
   fprintf('Input config.dat file loaded.\n');
 end
 
@@ -94,7 +94,7 @@ for it=1:lt
   Q(it,:,:)=reshape(Qtmp,[1 llon llat]);
   E0tmp=squeeze(E0dat(it,:,:));
   E0tmp=interp2(glat,gloncorrected,E0tmp,GLAT(:),GLON(:));    %data are plaid in geographic so do the interpolation in that variable
-  E0(it,:,:)=reshape(E0tmp,[1 llon llat]);  
+  E0(it,:,:)=reshape(E0tmp,[1 llon llat]);
 end
 %}
 
@@ -126,7 +126,7 @@ for ilat=1:llat
        Qi=interp1(t,Qhere,outputt);
        E0i=interp1(t,E0here,outputt);
        Qit(ilon,ilat,:)=reshape(Qi,[1 1 ltout]);
-       E0it(ilon,ilat,:)=reshape(E0i,[1 1 ltout]);       
+       E0it(ilon,ilat,:)=reshape(E0i,[1 1 ltout]);
    end
 end
 %}

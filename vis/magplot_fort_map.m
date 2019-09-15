@@ -15,7 +15,7 @@ mkdir([direc, filesep, 'Bphiplots']);
 mkdir([direc, filesep, 'Bphiplots_eps']);
 
 %SIMULATION META-DATA
-[ymd0,UTsec0,tdur,dtout,flagoutput,mloc]=readconfig([direc,'/inputs/config.ini']);
+[ymd0,UTsec0,tdur,dtout,flagoutput,mloc] = readconfig(direc, filesep, 'inputs');
 times=UTsec0:dtout:UTsec0+tdur;
 lt=numel(times);
 
@@ -114,7 +114,7 @@ fprintf('...Done interpolating...\n');
 
 
 %SIMULATION META-DATA
-[ymd0,UTsec0,tdur,dtout,flagoutput,mloc]=readconfig([direc,'/inputs/config.ini']);
+[ymd0,UTsec0,tdur,dtout,flagoutput,mloc]=readconfig([direc, filesep, 'inputs']);
 
 
 %TABULATE THE SOURCE OR GRID CENTER LOCATION

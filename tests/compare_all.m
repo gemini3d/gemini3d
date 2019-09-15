@@ -44,15 +44,15 @@ if exist(refdir, 'dir') ~= 7, fprintf(2,[refdir,' not found\n']), exit(77), end
 % and GetFullPath.m can arbitrarily change working directory, breaking the script.
 if strcmp(outdir, refdir), error([outdir, ' and ', refdir, ' directories are the same']), end
 %% READ IN THE SIMULATION INFORMATION
-[ymd0,UTsec0,tdur,dtout] = readconfig([outdir,filesep,'inputs/config.ini']);
+[ymd0,UTsec0,tdur,dtout] = readconfig([outdir, filesep, 'inputs']);
 
 lxs = simsize(outdir);
 disp(['sim grid dimensions: ',num2str(lxs)])
 
 %% TIMES OF INTEREST
-times=UTsec0:dtout:UTsec0+tdur;
+times = UTsec0:dtout:UTsec0+tdur;
 Nt = length(times);
-assert(Nt > 1, 'simulation did not run long enough')
+assert(Nt > 1, [outdir, ' simulation did not run long enough'])
 
 ymd=ymd0;
 UTsec=UTsec0;
