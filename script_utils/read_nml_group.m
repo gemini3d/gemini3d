@@ -1,10 +1,11 @@
+%!assert(isstruct(read_nml_group))
 function params = read_nml_group(filename, group)
 
 narginchk(2,2)
 assert(is_file(filename), ['config file ', filename, ' not found.'])
 validateattr(group, {'char'}, {'vector'}, mfilename, 'nml group name', 2)
 
-params = [];
+params = struct();
 
 fid=fopen(filename);
 while ~feof(fid)
