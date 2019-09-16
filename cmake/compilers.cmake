@@ -20,9 +20,11 @@ if(CMAKE_Fortran_COMPILER_ID STREQUAL Intel)
   if(WIN32)
     set(FFLAGS /warn:declarations /traceback)
     list(APPEND FFLAGS /Qopenmp)
+    list(APPEND FFLAGS /heap-arrays)  # stack overflow avoid
   else()
     set(FFLAGS -warn declarations -traceback)  # -warn all or -warn gets mixed with -qopenmp with CMake 3.14.2
     list(APPEND FFLAGS -qopenmp)  # undefined reference to `omp_get_max_threads'
+    list(APPEND FFLAGS -heap-arrays)  # (is this needed on Linux?) stack overflow avoid
   endif()
 
   if(WIN32)
@@ -34,10 +36,9 @@ if(CMAKE_Fortran_COMPILER_ID STREQUAL Intel)
   if(CMAKE_BUILD_TYPE STREQUAL Debug)
     if(WIN32)
       list(APPEND FFLAGS /check:bounds)
-      list(APPEND FFLAGS /heap-arrays)  # stack overflow avoid
     else()
       #list(APPEND FFLAGS -check all)
-      #list(APPEND FFLAGS -debug extended -check all -heap-arrays -fpe0 -fp-stack-check)
+      #list(APPEND FFLAGS -debug extended -check all -fpe0 -fp-stack-check)
       list(APPEND FFLAGS -check bounds)
     endif()
   endif()
