@@ -32,7 +32,7 @@ figure(1);
 
 %MAKE THE PLOTS AND SAVE TO A FILE
 for it=1:lt
-    fprintf('Printing TEC plots...\n');
+    disp('Printing TEC plots...')
     %CREATE A MAP AXIS
     figure(1);
     clf;

@@ -1,4 +1,4 @@
-%!assert(isstruct(merge_struct))
+%!assert(isstruct(merge_struct(struct(), struct())))
 function s1 = merge_struct(s1, s2, overwrite)
 %% merge_struct(struct, s)
 %

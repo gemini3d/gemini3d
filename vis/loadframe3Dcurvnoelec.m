@@ -1,13 +1,12 @@
 function [ne,v1,Ti,Te,ns,Ts,vs1,simdate] = loadframe3Dcurvnoelec(direc, filename)
 %% READ IN SIMULATION DATA WITH NO ELECTRODYNAMIC PARAMS SUCH AS FROM AN INPUT FILE
-validateattributes(direc, {'char'}, {'vector'}, mfilename, 'data directory', 1)
-validateattributes(direc, {'char'}, {'vector'}, mfilename, 'data filename', 2)
+narginchk(2,2)
 %% SIMULATION SIZE
 lsp=7;
 lxs = simsize(direc);
 %% SIMULATION RESULTS
 fsimres = [direc,filesep,filename];
-assert(exist(fsimres,'file')==2, ['loadframe3Dcurvnoelec: ',fsimres,' does not exist'])
+assert(is_file(fsimres), [fsimres,' is not a file.'])
 
 fid=fopen(fsimres,'r');
 simdate = simdt(fid);

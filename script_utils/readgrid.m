@@ -7,10 +7,10 @@ function xgf=readgrid(inID)
 %--------------------------------------------------------
 
 narginchk(1,1)
-validateattr(inID, {'char'}, {'vector'}, mfilename, 'grid directory', 1)
+assert(is_folder(inID), [inID, ' is not a directory.'])
 
-filename=[inID,filesep,'simsize.dat'];
-if ~exist(filename,'file'), error(['readgrid: ', filename,' does not exist ']), end
+filename=[inID, filesep, 'simsize.dat'];
+assert(is_file(filename), [filename,' is not a file.'])
 
 fid=fopen(filename,'r');
 xgf.lx=fread(fid,3,'integer*4');
@@ -22,7 +22,7 @@ gridsize=[lx1,lx2,lx3];
 gridsizeghost=[lx1+4,lx2+4,lx3+4];
 %%
 fin = [inID,filesep,'simgrid.dat'];
-if ~exist(fin,'file'), error(['readgrid: ', fin,' does not exist']), end
+assert(is_file(fin), [fin, ' is not a file.'])
 
 fid=fopen(fin,'r');
 

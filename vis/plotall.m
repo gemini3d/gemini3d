@@ -4,7 +4,7 @@ cwd = fileparts(mfilename('fullpath'));
 addpath([cwd, filesep, 'plotfunctions'])
 addpath([cwd, filesep, '..', filesep, 'script_utils'])
 
-narginchk(1,3)
+narginchk(1,5)
 validateattributes(direc, {'char'}, {'vector'}, mfilename, 'path to data', 1)
 
 if nargin<2, saveplots={}; end  %'png', 'eps' or {'png', 'eps'}
@@ -34,11 +34,10 @@ disp(['sim grid dimensions: ',num2str(lxs)])
 %% NEED TO READ INPUT FILE TO GET DURATION OF SIMULATION AND START TIME
 [ymd0,UTsec0,tdur,dtout] = readconfig(direc, filesep, 'inputs');
 
-
 %% CHECK WHETHER WE NEED TO RELOAD THE GRID (check if one is given because this can take a long time)
 if isempty(xg)
   disp('Reloading grid...')
-  xg = readgrid([direc,filesep,'inputs',filesep]);
+  xg = readgrid([direc, filesep, 'inputs']);
 end
 
 plotfun = grid2plotfun(plotfun, xg);

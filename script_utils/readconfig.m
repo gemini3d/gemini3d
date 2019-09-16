@@ -1,8 +1,6 @@
 function [ymd,UTsec,tdur,dtout,flagoutput,mloc,activ] = readconfig(path)
 
 narginchk(1,1)
-validateattr(path, {'char'}, {'vector'}, mfilename, 'configuration path/filename', 1)
-
 assert(is_folder(path) || is_file(path), ['configuration path ', path,' does not exist'])
 
 filename = get_configfile(path);

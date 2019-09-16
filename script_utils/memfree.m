@@ -1,5 +1,5 @@
 %!assert(memfree() > 0)
-
+%!assert(isnumeric(memfree))
 function freebytes = memfree()
 %% find free physical RAM on Windows (with or without Cygwin) and Linux systems
 % currently Matlab doesn't support memory() on Linux/Mac systems

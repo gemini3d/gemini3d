@@ -1,9 +1,8 @@
 function [x1, x2, x3] = simaxes(direc)
 
-validateattributes(direc, {'char'}, {'vector'}, mfilename, 'data directory', 1)
-
+narginchk(1,1)
 fn = [direc,filesep,'inputs', filesep, 'simgrid.dat'];
-assert(exist(fn,'file')==2, [fn,' does not exist'])
+assert(is_file(fn), [fn, ' is not a file.'])
 
 lxs = simsize(direc);
 

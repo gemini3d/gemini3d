@@ -1,4 +1,3 @@
-%!assert(isstruct(read_nml_group))
 function params = read_nml_group(filename, group)
 
 narginchk(2,2)

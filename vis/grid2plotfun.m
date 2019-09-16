@@ -1,4 +1,5 @@
 function plotfun = grid2plotfun(plotfun, xg)
+narginchk(2,2)
 %% DEFINE THE PLOTTING FUNCTION BASED ON THE TYPE OF GRID USED
 %
 % assumes function_handle if not other cases.

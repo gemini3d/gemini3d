@@ -2,6 +2,8 @@ function cm_data=parula(m)
 %%  parula Blue-green-orange-yellow color map
 % parula(M) returns an M-by-3 matrix containing a colormap. 
 
+narginchk(0,1)
+
 cm = [0.2081, 0.1663, 0.5292;
 0.2116238095, 0.1897809524, 0.5776761905;
 0.212252381, 0.2137714286, 0.6269714286;

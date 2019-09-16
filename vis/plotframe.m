@@ -1,6 +1,5 @@
 function xg = plotframe(direc,ymd,UTsec,saveplots,plotfun,xg,h,visible)
 
-
 cwd = fileparts(mfilename('fullpath'));
 addpath([cwd, filesep, 'plotfunctions'])
 addpath([cwd, filesep, '..', filesep, 'script_utils'])
@@ -49,24 +48,13 @@ J2lim = [-10 10];
 J3lim=[-10 10];
 %}
 
-%% MAKE DIRECTORIES FOR OUTPUT FILES
-if ~isempty(saveplots)
-  dlist = {'nplots', 'v1plots', 'v2plots', 'v3plots', 'J1plots',...
-           'Tiplots', 'Teplots', 'J2plots', 'J3plots', 'Phiplots'};
-  for i=1:length(dlist)
-    mkdir([direc, filesep, dlist{i}]);
-  end
-end
-
-
 %% READ IN THE SIMULATION INFORMATION (this is low cost so reread no matter what)
 [ymd0,UTsec0,tdur,dtout,flagoutput,mloc] = readconfig(direc, filesep, 'inputs');
-
 
 %% CHECK WHETHER WE NEED TO RELOAD THE GRID (check if one is given because this can take a long time)
 if isempty(xg)
   disp('Reloading grid...  Provide one as input if you do not want this to happen.')
-  xg = readgrid([direc,filesep,'inputs',filesep]);
+  xg = readgrid([direc,filesep,'inputs']);
 end
 
 if nargin<7 || isempty(h)
@@ -106,7 +94,6 @@ end
 [ne,mlatsrc,mlonsrc,xg,v1,Ti,Te,J1,v2,v3,J2,J3,filename,Phitop,ns,vs1,Ts] = loadframe(direc,ymd,UTsec,ymd0,UTsec0,tdur,dtout,flagoutput,mloc,xg);
 disp([filename, ' => ', func2str(plotfun)])
 
-
 %% UNTIL WE PROVIDE A WAY FOR THE USER TO SPECIFY COLOR AXES, JUST TRY TO SET THEM AUTOMATICALLY
 if (~flagcaxlims)
  nelim =  [min(ne(:)), max(ne(:))];
@@ -140,82 +127,81 @@ end
 %Electron number density, 'position', [.1, .1, .5, .5], 'units', 'normalized'
 if lotsplots   % 3D simulation or a very long 2D simulation - do separate plots for each time frame
 
-    clf(h.f10)
-    plotfun(ymd,UTsec,xg, ne, 'n_e (m^{-3})', nelim,[mlatsrc,mlonsrc], h.f10, Ncmap);
+  clf(h.f10)
+  plotfun(ymd,UTsec,xg, ne, 'n_e (m^{-3})', nelim,[mlatsrc,mlonsrc], h.f10, Ncmap);
 
-    if flagoutput~=3
-        clf(h.f1)
-        plotfun(ymd,UTsec,xg,v1, 'v_1 (m/s)', v1lim,[mlatsrc,mlonsrc], h.f1, Vcmap);
-        clf(h.f2)
-        plotfun(ymd,UTsec,xg,Ti,'T_i (K)',Tilim,[mlatsrc,mlonsrc], h.f2, Tcmap);
-        clf(h.f3)
-        plotfun(ymd,UTsec,xg,Te,'T_e (K)',Telim,[mlatsrc,mlonsrc], h.f3, Tcmap);
-        clf(h.f4)
-        plotfun(ymd,UTsec,xg,J1,'J_1 (A/m^2)',J1lim,[mlatsrc,mlonsrc],h.f4, Jcmap);
-        clf(h.f5)
-        plotfun(ymd,UTsec,xg,v2,'v_2 (m/s)',v2lim,[mlatsrc,mlonsrc],h.f5, Vcmap);
-        clf(h.f6)
-        plotfun(ymd,UTsec,xg,v3,'v_3 (m/s)',v3lim,[mlatsrc,mlonsrc],h.f6, Vcmap);
-        clf(h.f7)
-        plotfun(ymd,UTsec,xg,J2,'J_2 (A/m^2)',J2lim,[mlatsrc,mlonsrc],h.f7, Jcmap);
-        clf(h.f8)
-        plotfun(ymd,UTsec,xg,J3,'J_3 (A/m^2)',J3lim,[mlatsrc,mlonsrc],h.f8, Jcmap);
+  if flagoutput~=3
+    clf(h.f1)
+    plotfun(ymd,UTsec,xg,v1, 'v_1 (m/s)', v1lim,[mlatsrc,mlonsrc], h.f1, Vcmap);
+    clf(h.f2)
+    plotfun(ymd,UTsec,xg,Ti,'T_i (K)',Tilim,[mlatsrc,mlonsrc], h.f2, Tcmap);
+    clf(h.f3)
+    plotfun(ymd,UTsec,xg,Te,'T_e (K)',Telim,[mlatsrc,mlonsrc], h.f3, Tcmap);
+    clf(h.f4)
+    plotfun(ymd,UTsec,xg,J1,'J_1 (A/m^2)',J1lim,[mlatsrc,mlonsrc],h.f4, Jcmap);
+    clf(h.f5)
+    plotfun(ymd,UTsec,xg,v2,'v_2 (m/s)',v2lim,[mlatsrc,mlonsrc],h.f5, Vcmap);
+    clf(h.f6)
+    plotfun(ymd,UTsec,xg,v3,'v_3 (m/s)',v3lim,[mlatsrc,mlonsrc],h.f6, Vcmap);
+    clf(h.f7)
+    plotfun(ymd,UTsec,xg,J2,'J_2 (A/m^2)',J2lim,[mlatsrc,mlonsrc],h.f7, Jcmap);
+    clf(h.f8)
+    plotfun(ymd,UTsec,xg,J3,'J_3 (A/m^2)',J3lim,[mlatsrc,mlonsrc],h.f8, Jcmap);
 
-        if ~isempty(h.f9)
-            clf(h.f9)
-            h9a = axes('parent', h.f9);
-            imagesc(Phitop, 'parent', h9a)
-            colorbar('peer', h9a)
-        end
+    if ~isempty(h.f9)
+      clf(h.f9)
+      h9a = axes('parent', h.f9);
+      imagesc(Phitop, 'parent', h9a)
+      colorbar('peer', h9a)
     end
+  end
 
-    % for 3D or long 2D plots print and output file every time step
-    dosave(flagoutput, direc, filename, saveplots, h)
+  % for 3D or long 2D plots print and output file every time step
+  dosave(flagoutput, direc, filename, saveplots, h)
 
 else    %short 2D simulation - put the entire time series in a single plot
 
-    figure(h.f10)
-    ha = subplot(Rsp, Csp,it,'parent',h.f10);
-    nelim =  [9 11.3];
-    plotfun(ymd,UTsec,xg,log10(ne), 'log_{10} n_e (m^{-3})',nelim,[mlatsrc,mlonsrc],ha);
+  figure(h.f10)
+  ha = subplot(Rsp, Csp,it,'parent',h.f10);
+  nelim =  [9 11.3];
+  plotfun(ymd,UTsec,xg,log10(ne), 'log_{10} n_e (m^{-3})',nelim,[mlatsrc,mlonsrc],ha);
 
-    if flagoutput~=3
-        ha = subplot(Rsp, Csp,it,'parent',h.f1);
-        plotfun(ymd,UTsec,xg,v1(:,:,:),'v_1 (m/s)',v1lim,[mlatsrc,mlonsrc],ha);
+  if flagoutput~=3
+    ha = subplot(Rsp, Csp,it,'parent',h.f1);
+    plotfun(ymd,UTsec,xg,v1(:,:,:),'v_1 (m/s)',v1lim,[mlatsrc,mlonsrc],ha);
 
-        ha = subplot(Rsp, Csp,it,'parent',h.f2);
-        plotfun(ymd,UTsec,xg,Ti(:,:,:),'T_i (K)',Tilim,[mlatsrc,mlonsrc],ha);
+    ha = subplot(Rsp, Csp,it,'parent',h.f2);
+    plotfun(ymd,UTsec,xg,Ti(:,:,:),'T_i (K)',Tilim,[mlatsrc,mlonsrc],ha);
 
-        ha = subplot(Rsp, Csp,it,'parent',h.f3);
-        plotfun(ymd,UTsec,xg,Te(:,:,:),'T_e (K)',Telim,[mlatsrc,mlonsrc],ha);
+    ha = subplot(Rsp, Csp,it,'parent',h.f3);
+    plotfun(ymd,UTsec,xg,Te(:,:,:),'T_e (K)',Telim,[mlatsrc,mlonsrc],ha);
 
-        ha = subplot(Rsp, Csp,it,'parent',h.f4);
-        plotfun(ymd,UTsec,xg,J1(:,:,:),'J_1 (A/m^2)',J1lim,[mlatsrc,mlonsrc],ha);
+    ha = subplot(Rsp, Csp,it,'parent',h.f4);
+    plotfun(ymd,UTsec,xg,J1(:,:,:),'J_1 (A/m^2)',J1lim,[mlatsrc,mlonsrc],ha);
 
-        ha = subplot(Rsp, Csp,it,'parent',h.f5);
-        plotfun(ymd,UTsec,xg,v2(:,:,:),'v_2 (m/s)',v2lim,[mlatsrc,mlonsrc],ha);
+    ha = subplot(Rsp, Csp,it,'parent',h.f5);
+    plotfun(ymd,UTsec,xg,v2(:,:,:),'v_2 (m/s)',v2lim,[mlatsrc,mlonsrc],ha);
 
-        ha = subplot(Rsp, Csp,it,'parent',h.f6);
-        plotfun(ymd,UTsec,xg,v3(:,:,:),'v_3 (m/s)',v3lim,[mlatsrc,mlonsrc],ha);
+    ha = subplot(Rsp, Csp,it,'parent',h.f6);
+    plotfun(ymd,UTsec,xg,v3(:,:,:),'v_3 (m/s)',v3lim,[mlatsrc,mlonsrc],ha);
 
-        ha = subplot(Rsp, Csp,it,'parent',h.f7);
-        plotfun(ymd,UTsec,xg,J2(:,:,:),'J_2 (A/m^2)',J2lim,[mlatsrc,mlonsrc],ha);
+    ha = subplot(Rsp, Csp,it,'parent',h.f7);
+    plotfun(ymd,UTsec,xg,J2(:,:,:),'J_2 (A/m^2)',J2lim,[mlatsrc,mlonsrc],ha);
 
-        ha = subplot(Rsp, Csp,it,'parent',h.f8);
-        plotfun(ymd,UTsec,xg,J3(:,:,:),'J_3 (A/m^2)',J3lim,[mlatsrc,mlonsrc],ha);
+    ha = subplot(Rsp, Csp,it,'parent',h.f8);
+    plotfun(ymd,UTsec,xg,J3(:,:,:),'J_3 (A/m^2)',J3lim,[mlatsrc,mlonsrc],ha);
 
-        if ~isempty(h.f9)
-
-            ha = subplot(Rsp, Csp,it,'parent',h.f9);
-            imagesc(Phitop, 'parent', ha)
-            colorbar('peer', ha)
-        end
+    if ~isempty(h.f9)
+      ha = subplot(Rsp, Csp,it,'parent',h.f9);
+      imagesc(Phitop, 'parent', ha)
+      colorbar('peer', ha)
     end
+  end
 
 end
 
 if ~lotsplots    %save the short 2D sim plots
-    dosave(flagoutput, direc, filename, saveplots, h)
+  dosave(flagoutput, direc, filename, saveplots, h)
 end
 
 %% Don't print
@@ -224,8 +210,7 @@ if nargout==0, clear('xg'), end
 end % function plotframe
 
 
-
-%%FUNCTION THAT CREATES IMAGE FILES FROM PLOTS
+%% FUNCTION THAT CREATES IMAGE FILES FROM PLOTS
 function dosave(flagoutput, direc, filename, fmt, h)
 
 narginchk(5,5)
@@ -233,42 +218,44 @@ validateattr(flagoutput, {'numeric'}, {'scalar'}, mfilename)
 validateattr(direc, {'char'}, {'vector'}, mfilename)
 validateattr(filename, {'char'}, {'vector'}, mfilename)
 
-if any(strcmpi(fmt, 'png'))
-    disp(['writing png plots to ',direc])
+mkdir(direc)
 
-    if flagoutput~=3
-        print(h.f1,'-dpng',[direc,'/v1plots/',filename,'.png'],'-r300')
-        print(h.f2,'-dpng',[direc,'/Tiplots/',filename,'.png'],'-r300')
-        print(h.f3,'-dpng',[direc,'/Teplots/',filename,'.png'],'-r300')
-        print(h.f4,'-dpng',[direc,'/J1plots/',filename,'.png'],'-r300')
-        print(h.f5,'-dpng',[direc,'/v2plots/',filename,'.png'],'-r300')
-        print(h.f6,'-dpng',[direc,'/v3plots/',filename,'.png'],'-r300')
-        print(h.f7,'-dpng',[direc,'/J2plots/',filename,'.png'],'-r300')
-        print(h.f8,'-dpng',[direc,'/J3plots/',filename,'.png'],'-r300')
-        if ~isempty(h.f9)
-            print(h.f9,'-dpng',[direc,'/Phiplots/',filename,'.png'],'-r300')
-        end
+if any(strcmpi(fmt, 'png'))
+  disp(['writing png plots to ',direc])
+
+  if flagoutput~=3
+    print(h.f1,'-dpng',[direc,'/v1plots/',filename,'.png'],'-r300')
+    print(h.f2,'-dpng',[direc,'/Tiplots/',filename,'.png'],'-r300')
+    print(h.f3,'-dpng',[direc,'/Teplots/',filename,'.png'],'-r300')
+    print(h.f4,'-dpng',[direc,'/J1plots/',filename,'.png'],'-r300')
+    print(h.f5,'-dpng',[direc,'/v2plots/',filename,'.png'],'-r300')
+    print(h.f6,'-dpng',[direc,'/v3plots/',filename,'.png'],'-r300')
+    print(h.f7,'-dpng',[direc,'/J2plots/',filename,'.png'],'-r300')
+    print(h.f8,'-dpng',[direc,'/J3plots/',filename,'.png'],'-r300')
+    if ~isempty(h.f9)
+      print(h.f9,'-dpng',[direc,'/Phiplots/',filename,'.png'],'-r300')
     end
-    print(h.f10,'-dpng',[direc,'/nplots/',filename,'.png'],'-r300')
+  end
+  print(h.f10,'-dpng',[direc,'/nplots/',filename,'.png'],'-r300')
 end
 
 if any(strcmpi(fmt, 'eps'))
-    disp(['writing eps plots to ',direc])
+  disp(['writing eps plots to ',direc])
 
-    if flagoutput~=3     %now make .eps prints of the plots
-        print(h.f1,'-depsc2',[direc,'/v1plots/',filename,'.eps'])
-        print(h.f2,'-depsc2',[direc,'/Tiplots/',filename,'.eps'])
-        print(h.f3,'-depsc2',[direc,'/Teplots/',filename,'.eps'])
-        print(h.f4,'-depsc2',[direc,'/J1plots/',filename,'.eps'])
-        print(h.f5,'-depsc2',[direc,'/v2plots/',filename,'.eps'])
-        print(h.f6,'-depsc2',[direc,'/v3plots/',filename,'.eps'])
-        print(h.f7,'-depsc2',[direc,'/J2plots/',filename,'.eps'])
-        print(h.f8,'-depsc2',[direc,'/J3plots/',filename,'.eps'])
-        if ~isempty(h.f9)
-            print(h.f9,'-depsc2',[direc,'/Phiplots/',filename,'.eps'])
-        end
+  if flagoutput~=3     %now make .eps prints of the plots
+    print(h.f1,'-depsc2',[direc,'/v1plots/',filename,'.eps'])
+    print(h.f2,'-depsc2',[direc,'/Tiplots/',filename,'.eps'])
+    print(h.f3,'-depsc2',[direc,'/Teplots/',filename,'.eps'])
+    print(h.f4,'-depsc2',[direc,'/J1plots/',filename,'.eps'])
+    print(h.f5,'-depsc2',[direc,'/v2plots/',filename,'.eps'])
+    print(h.f6,'-depsc2',[direc,'/v3plots/',filename,'.eps'])
+    print(h.f7,'-depsc2',[direc,'/J2plots/',filename,'.eps'])
+    print(h.f8,'-depsc2',[direc,'/J3plots/',filename,'.eps'])
+    if ~isempty(h.f9)
+      print(h.f9,'-depsc2',[direc,'/Phiplots/',filename,'.eps'])
     end
-    print(h.f10,'-depsc2',[direc,'/nplots/',filename,'.eps'])
+  end
+  print(h.f10,'-depsc2',[direc,'/nplots/',filename,'.eps'])
 end
 
 end %function dosave

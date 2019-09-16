@@ -1,12 +1,11 @@
 function ne = loadframe3Dcurvne(direc, filename)
 
-validateattr(direc, {'char'}, {'vector'}, mfilename, 'data directory', 1)
-validateattr(direc, {'char'}, {'vector'}, mfilename, 'data filename', 2)
+narginchk(2,2)
 %% SIMULATION SIZE
 lxs = simsize(direc);
 %% SIMULATION RESULTS
 fsimres = [direc,filesep,filename];
-assert(exist(fsimres,'file')==2, ['loadframe3Dcurvne: ', fsimres,' does not exist'])
+assert(is_file(fsimres), [fsimres,' is not a file.'])
 
 fid=fopen(fsimres,'r');
 simdt(fid);
@@ -17,7 +16,6 @@ fprintf('Loaded densities...\n');
 
 fclose(fid);
 
-
 %REORGANIZE ACCORDING TO MATLABS CONCEPT OF A 2D or 3D DATA SET
 if (lxs(2) == 1)    %a 2D simulations was done
   ne=squeeze(ns(:,:,:));
@@ -27,7 +25,5 @@ else    %full 3D run
   ne=ns;
 %  [X2,X3,X1]=meshgrid(x2,x3,x1);
 end
-
-
 
 end % function

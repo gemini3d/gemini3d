@@ -1,5 +1,5 @@
 function h = plotinit(xg, visible)
-
+narginchk(0,2)
 if nargin<1
   xg=[]; 
 elseif ~isempty(xg)

@@ -1,13 +1,12 @@
 function [ne,v1,Ti,Te,J1,v2,v3,J2,J3,ns,vs1,Ts,Phitop] = loadframe3Dcurv(direc, filename)
 
-validateattr(direc, {'char'}, {'vector'}, mfilename, 'data directory', 1)
-validateattr(direc, {'char'}, {'vector'}, mfilename, 'data filename', 2)
+narginchk(2,2)
 %% SIMULATION SIZE
 lsp=7;
 lxs = simsize(direc);
 %% SIMULATION RESULTS
 fsimres = [direc,filesep,filename];
-assert(exist(fsimres,'file')==2, ['loadframe3Dcurv: ', fsimres,' does not exist'])
+assert(is_file(fsimres), [fsimres,' is not a file.'])
 
 fid=fopen(fsimres,'r');
 simdt(fid);
