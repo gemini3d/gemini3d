@@ -6,7 +6,7 @@ implicit none
 #if REALBITS==32
 include 'smumps_struc.h'
 type (SMUMPS_STRUC) :: mumps_par
-#elif REALBITS==64
+#else
 include 'dmumps_struc.h'
 type (DMUMPS_STRUC) :: mumps_par
 #endif
@@ -36,7 +36,7 @@ subroutine simple_test(mumps_par)
 
 #if REALBITS==32
 type (SMUMPS_STRUC), intent(inout) :: mumps_par
-#elif REALBITS==64
+#else
 type (DMUMPS_STRUC), intent(inout) :: mumps_par
 #endif
 
@@ -74,7 +74,7 @@ subroutine read_input(mumps_par)
 
 #if REALBITS==32
 type (SMUMPS_STRUC), intent(inout) :: mumps_par
-#elif REALBITS==64
+#else
 type (DMUMPS_STRUC), intent(inout) :: mumps_par
 #endif
 
@@ -108,7 +108,7 @@ subroutine mumps_run(mumps_par)
 #if REALBITS==32
 type (SMUMPS_STRUC), intent(inout) :: mumps_par
 CALL SMUMPS(mumps_par)
-#elif REALBITS==64
+#else
 type (DMUMPS_STRUC), intent(inout) :: mumps_par
 CALL DMUMPS(mumps_par)
 #endif

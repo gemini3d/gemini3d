@@ -12,10 +12,8 @@ use mpi, only: mpi_init, mpi_comm_world, &
 
 #if REALBITS==32
 mpi_realprec=>mpi_real
-#elif REALBITS==64
-mpi_realprec=>mpi_double_precision
 #else
-error stop "realbits must be 32 or 64"
+mpi_realprec=>mpi_double_precision
 #endif
 
 implicit none

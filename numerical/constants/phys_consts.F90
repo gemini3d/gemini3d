@@ -7,10 +7,8 @@ public
 
 #if REALBITS==32
 integer,parameter :: wp=real32
-#elif REALBITS==64
-integer,parameter :: wp=real64
 #else
-error stop "realbits must be 32 or 64"
+integer,parameter :: wp=real64
 #endif
 
 !> colored output text (for Unix-like systems at least).
