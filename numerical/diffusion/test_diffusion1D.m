@@ -1,11 +1,11 @@
 %LOAD AND PLOT NUMERICAL SOLUTION
 function test_diffusion1D(fn)
-
+narginchk(1,1)
 cwd = fileparts(mfilename('fullpath'));
 addpath([cwd,filesep,'../../tests'])
 addpath([cwd,filesep,'../../script_utils'])
 
-if exist(fn, 'file') ~= 2, fprintf(2, [fn, ' not found\n']), exit(77), end
+exist_or_skip(fn)
 
 fid=fopen(fn);
 data=fscanf(fid,'%f',2);
@@ -27,7 +27,9 @@ end % for
 % reltol = 1e-5 for real32
 assert_allclose(Ts(13,end), 0.2757552094055,1e-5,[],'1-D diffusion accuracy')
 
-if ~isinteractive, return, end
+if ~isinteractive
+  return
+end
 %% plots
 figure
 imagesc(t,x1(3:end-2),Ts)
@@ -36,6 +38,4 @@ xlabel('time [sec]')
 ylabel('displacement [m]')
 title('1-D diffusion (vs. time)')
 
-
 end % function
-

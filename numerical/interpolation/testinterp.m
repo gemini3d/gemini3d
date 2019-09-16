@@ -1,5 +1,6 @@
 function testinterp(filename, realbits)
 
+narginchk(1,2)
 cwd = fileparts(mfilename('fullpath'));
 addpath([cwd,filesep,'..',filesep,'..',filesep,'script_utils'])
 
@@ -7,11 +8,8 @@ if nargin == 1
   realbits = 64;
 end
 
-validateattr(filename, {'char'}, {'vector'}, mfilename,'interp file to compare',1)
 validateattr(realbits, {'numeric'}, {'scalar', 'integer', 'positive'}, mfilename,'real bits',2)
-
-%% if path not exist, exit code 77 as GNU standard skip test indicator
-if exist(filename, 'file') ~= 2, fprintf(2,[filename,' not found\n']), exit(77), end
+exist_or_skip(filename)
 
 switch realbits
   case 64, freal = 'float64';
@@ -33,7 +31,9 @@ f=reshape(f,[lx1, lx2]);
 
 fclose(fid);
 
-if ~isinteractive, return, end
+if ~isinteractive
+  return
+end
 %% PLOT
 figure
 

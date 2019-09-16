@@ -35,10 +35,8 @@ tol.atolT=100;
 tol.atolJ=1e-7;
 tol.atolV=50;
 
-%% if paths not exist, exit code 77 as GNU standard skip test indicator
-% this is meant to occur when the simutation didn't complete for some reason
-if exist(outdir, 'dir') ~= 7, fprintf(2,[outdir,' not found\n']), exit(77), end
-if exist(refdir, 'dir') ~= 7, fprintf(2,[refdir,' not found\n']), exit(77), end
+exist_or_skip(outdir)
+exist_or_skip(refdir)
 %% check that paths not the same
 % this is not a very good check. Matlab has no native way to resolve absolute paths
 % and GetFullPath.m can arbitrarily change working directory, breaking the script.
