@@ -35,8 +35,8 @@ tol.atolT=100;
 tol.atolJ=1e-7;
 tol.atolV=50;
 
-exist_or_skip(outdir)
-exist_or_skip(refdir)
+exist_or_skip(outdir, 'dir')
+exist_or_skip(refdir, 'dir')
 %% check that paths not the same
 % this is not a very good check. Matlab has no native way to resolve absolute paths
 % and GetFullPath.m can arbitrarily change working directory, breaking the script.

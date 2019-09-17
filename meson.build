@@ -3,11 +3,13 @@ project('GEMINI', 'fortran',
   default_options : ['default_library=static', 'buildtype=release',
   'libdir=gemini/lib', 'includedir=gemini/include'])
 
-real_bits = '-DREALBITS=' + get_option('realbits')
+bits = get_option('realbits')
+real_bits = '-DREALBITS=' + bits
 use_glow = get_option('useglow')
 use_hdf = get_option('HDF')
 buildtype = get_option('buildtype')
 arith = get_option('arith')
+message('arith: ' + arith)
 
 subdir('cmake')
 

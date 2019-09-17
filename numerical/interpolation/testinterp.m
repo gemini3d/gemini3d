@@ -9,7 +9,7 @@ if nargin == 1
 end
 
 validateattr(realbits, {'numeric'}, {'scalar', 'integer', 'positive'}, mfilename,'real bits',2)
-exist_or_skip(filename)
+exist_or_skip(filename, 'file')
 
 switch realbits
   case 64, freal = 'float64';

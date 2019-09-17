@@ -1,5 +1,11 @@
 mumps_root = get_option('MUMPS_ROOT')
-mumps_name = arith + 'mumps'
+if bits == '64'
+  mumps_name = 'dmumps'
+elif bits == '32'
+  mumps_name = 'smumps'
+else
+  error('unknown precision ' + bits)
+endif
 if system_blas
   # mumps = dependency('MUMPS', cmake_module_path : 'cmake/Modules')
   if mumps_root == ''

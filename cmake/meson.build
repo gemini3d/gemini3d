@@ -1,39 +1,38 @@
 fc = meson.get_compiler('fortran')
-fcid = fc.get_id()
 
 os = host_machine.system()
-if os == 'windows' and fcid != 'intel'
+if os == 'windows' and fc.get_id() != 'intel'
   error('On native Windows, only the Intel compilers (ifort) works at this time, because OpenMPI is not available for Windows. Try Windows Subsystem for Linux.')
 endif
 
 # -- compiler options
-if fcid == 'gcc'
+quiet = fc.first_supported_argument(['-w', '-nowarn', '/nowarn'])
+impnone = fc.first_supported_argument(['-fimplicit-none', '-warn declarations', '/warn:declarations', '-Mdclchk'])
+std18 = fc.first_supported_argument(['-std=f2018', '-stand f18', '/stand:f18'])
+bounds = fc.first_supported_argument(['-Werror=array-bounds', '-check bounds', '/check:bounds', '-Mbounds'])
+if fc.get_id() == 'gcc'
   add_project_arguments('-Wno-unused-variable', '-Wno-maybe-uninitialized', '-Wno-unused-dummy-argument', '-Wno-unused-function',
-  '-fimplicit-none',
-  language : 'fortran')
-  if fc.version().version_compare('>=8.0')
-    add_project_arguments('-std=f2018', language: 'fortran')
-  endif
+    impnone, std18, language : 'fortran')
   if buildtype.contains('debug')
-    add_project_arguments('-Werror=array-bounds', '-fcheck=all', language: 'fortran')
+    add_project_arguments(bounds, '-fcheck=all', language: 'fortran')
   endif
-elif fcid == 'intel'
-  add_project_arguments('-stand', 'f18', '-warn declarations', language: 'fortran')
+elif fc.get_id() == 'intel'
+  add_project_arguments(std18, impnone, language: 'fortran')
   if buildtype.contains('debug')
     # -heap-arrays didn't appear to be needed on Linux?
-    add_project_arguments('-check bounds', language: 'fortran')
+    add_project_arguments(bounds, language: 'fortran')
   endif
-elif fcid == 'intel-cl'
+elif fc.get_id() == 'intel-cl'
   # /fpp is necessary for any Fortran preprocessing statement with Intel ifort on Windows
   # https://software.intel.com/en-us/fortran-compiler-developer-guide-and-reference-fpp
-   add_project_arguments('/fpp', '/stand:f18', '/warn:declarations', language: 'fortran')
+   add_project_arguments('/fpp', std18, impnone, language: 'fortran')
    if buildtype.contains('debug')
-    add_project_arguments('/check:bounds', '/heap-arrays', language: 'fortran')
+    add_project_arguments(bounds, '/heap-arrays', language: 'fortran')
   endif
-elif fcid == 'pgi'
-  add_project_arguments('-Mdclchk', language: 'fortran')
+elif ['pgi', 'flang'].contains(fc.get_id())
+  add_project_arguments(impnone, language: 'fortran')
   if buildtype.contains('debug')
-    add_project_arguments('-Mbounds', language: 'fortran')
+    add_project_arguments(bounds, language: 'fortran')
   endif
 endif
 
@@ -53,6 +52,7 @@ else
 endif
 
 
+# we don't use fallback because some systems have screwed-up libs factory installed
 system_blas = get_option('system_blas')
 lapack_root = get_option('LAPACK_ROOT')
 if system_blas

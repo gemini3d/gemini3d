@@ -5,7 +5,7 @@ cwd = fileparts(mfilename('fullpath'));
 addpath([cwd,filesep,'../../tests'])
 addpath([cwd,filesep,'../../script_utils'])
 
-exist_or_skip(fn)
+exist_or_skip(fn, 'file')
 
 fid=fopen(fn);
 data=fscanf(fid,'%f',2);
