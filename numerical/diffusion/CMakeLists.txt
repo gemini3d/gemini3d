@@ -1,10 +1,16 @@
+add_library(PDEparabolic PDEparabolic.f90)
+target_link_libraries(PDEparabolic PRIVATE const ${LAPACK_LIBRARIES})
+target_compile_options(PDEparabolic PRIVATE ${FFLAGS})
+target_include_directories(PDEparabolic PRIVATE ${LAPACK_INCLUDE_DIRS})
+set_target_properties(PDEparabolic PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR})
+if(NOT LAPACK_LAPACK95_FOUND)
+  target_sources(PDEparabolic PRIVATE ${CMAKE_SOURCE_DIR}/vendor/lapack95/gbsv.f90)
+endif()
+
 add_library(diffusion diffusion.f90)
-target_link_libraries(diffusion PRIVATE const grid ${LAPACK_LIBRARIES})
+target_link_libraries(diffusion PRIVATE const grid PDEparabolic ${LAPACK_LIBRARIES})
 target_compile_options(diffusion PRIVATE ${FFLAGS})
 target_include_directories(diffusion PRIVATE ${LAPACK_INCLUDE_DIRS})
-if(NOT LAPACK_LAPACK95_FOUND)
-  target_sources(diffusion PRIVATE ${CMAKE_SOURCE_DIR}/vendor/lapack95/gbsv.f90)
-endif()
 set_target_properties(diffusion PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR})
 
 

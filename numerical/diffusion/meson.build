@@ -1,7 +1,9 @@
-diffusion = library('diffusion',
-  sources: ['diffusion.f90', '../../vendor/lapack95/gbsv.f90'],
-  dependencies: lapack,
-  link_with: [const, grid])
+parabolic = library('PDEparabolic',
+  sources: ['PDEparabolic.f90', '../../vendor/lapack95/gbsv.f90'],
+  dependencies: lapack)
+
+diffusion = library('diffusion', 'diffusion.f90',
+  link_with: [const, grid, parabolic])
 
 test_diffusion1D_exe = executable('test_diffusion1D', 'test_diffusion1D.f90',
   link_with: [const, diffusion])
