@@ -1,8 +1,7 @@
 diffusion = library('diffusion',
-  sources: ['diffusion.f90', '../../vendor/lapack95/gbsv.F90'],
+  sources: ['diffusion.f90', '../../vendor/lapack95/gbsv.f90'],
   dependencies: lapack,
-  link_with: [const, grid],
-  fortran_args: real_bits)
+  link_with: [const, grid])
 
 test_diffusion1D_exe = executable('test_diffusion1D', 'test_diffusion1D.f90',
   link_with: [const, diffusion])
