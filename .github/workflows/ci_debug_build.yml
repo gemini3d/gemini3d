@@ -1,0 +1,29 @@
+name: ci_debug_build
+
+on: [push, pull_request]
+
+jobs:
+
+  linux:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - uses: actions/setup-python@v1
+      with:
+        python-version: '3.x'
+    - run: python -m pip install meson
+    - run: python -m pip install -e .[tests]
+    - run: sudo apt install -yq --no-install-recommends ninja-build gfortran liblapack-dev libscalapack-mpi-dev libmumps-dev libopenmpi-dev openmpi-bin
+    - run: meson setup build -Dsystem_blas=true --buildtype debug
+      env:
+        FC: gfortran
+    - run: pytest -r a -v
+      env:
+        CI: true
+    - run: ninja -C build
+    - run: meson test -C build -v
+    - uses: actions/upload-artifact@v1
+      if: failure()
+      with:
+        name: Linux_Meson_Debug_Testlog
+        path: build/meson-logs/testlog.txt
