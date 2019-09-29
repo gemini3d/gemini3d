@@ -1,7 +1,7 @@
 download_testfiles(
-5bd1bce1a465ccec5af813f8b7959ec8
-2520780
-zenodo2d
+57d72fd0005247c8eedf122ac4670ad0
+3464571
+zenodo2d_fang
 ${PROJECT_SOURCE_DIR}/tests/data
 )
 
@@ -9,14 +9,14 @@ setup_gemini_test(
 Gemini2d_fang
 gemini_fang.bin
 test2d_fang
-tests/data/zenodo2d
+tests/data/zenodo2d_fang
 300
 )
 
 compare_gemini_output(
 Compare2d_fang
 test2d_fang
-tests/data/zenodo2d
+tests/data/zenodo2d_fang
 20130220_18000.000001.dat
 )
 

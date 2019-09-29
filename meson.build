@@ -92,10 +92,10 @@ magcalc = executable('magcalc.bin', 'magcalc.f90',
 
 zenodo = {
   '2d_fang': {
-    'url': 'https://zenodo.org/record/2520780/files/zenodo2d.zip?download=1',
-    'md5': '5bd1bce1a465ccec5af813f8b7959ec8',
-    'dir': meson.source_root() / 'tests/data/zenodo2d',
-    'zip': meson.source_root() / 'tests/data/zenodo2d.zip',
+    'url': 'https://zenodo.org/record/3464571/files/zenodo2d_fang.zip?download=1',
+    'md5': '57d72fd0005247c8eedf122ac4670ad0',
+    'dir': meson.source_root() / 'tests/data/zenodo2d_fang',
+    'zip': meson.source_root() / 'tests/data/zenodo2d_fang.zip',
     'exe': gemini_fang_exe},
   '2d_glow': {
     'url': 'https://zenodo.org/record/2520780/files/zenodo2d_glow.zip?download=1',
