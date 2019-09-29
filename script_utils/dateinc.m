@@ -31,7 +31,7 @@ if UTsecnew>=86400
 
     ymdnew=[yearnew,monthnew,daynew];
 else
-    ymdnew=ymd;
+    ymdnew=ymd(:)';  % ensure always a row vector
 end
 
 end

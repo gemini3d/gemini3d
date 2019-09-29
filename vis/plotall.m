@@ -32,7 +32,7 @@ disp(['sim grid dimensions: ',num2str(lxs)])
 
 
 %% NEED TO READ INPUT FILE TO GET DURATION OF SIMULATION AND START TIME
-[ymd0,UTsec0,tdur,dtout] = readconfig(direc, filesep, 'inputs');
+[ymd0,UTsec0,tdur,dtout] = readconfig([direc, filesep, 'inputs']);
 
 %% CHECK WHETHER WE NEED TO RELOAD THE GRID (check if one is given because this can take a long time)
 if isempty(xg)
@@ -58,7 +58,7 @@ end
 h = plotinit(xg, visible);
 
 if ~isempty(saveplots)  % plot and save as fast as possible.
-  if(isempty(gcp('nocreate')))
+  if ~isoctave && ~isinteractive && isempty(gcp('nocreate'))
     parpool(2);
   end
   parfor i = 1:Nt

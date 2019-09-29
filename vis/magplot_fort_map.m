@@ -15,7 +15,7 @@ mkdir([direc, filesep, 'Bphiplots']);
 mkdir([direc, filesep, 'Bphiplots_eps']);
 
 %SIMULATION META-DATA
-[ymd0,UTsec0,tdur,dtout,flagoutput,mloc] = readconfig(direc, filesep, 'inputs');
+[ymd0,UTsec0,tdur,dtout,flagoutput,mloc] = readconfig([direc, filesep, 'inputs']);
 times=UTsec0:dtout:UTsec0+tdur;
 lt=numel(times);
 

@@ -49,7 +49,7 @@ J3lim=[-10 10];
 %}
 
 %% READ IN THE SIMULATION INFORMATION (this is low cost so reread no matter what)
-[ymd0,UTsec0,tdur,dtout,flagoutput,mloc] = readconfig(direc, filesep, 'inputs');
+[ymd0,UTsec0,tdur,dtout,flagoutput,mloc] = readconfig([direc, filesep, 'inputs']);
 
 %% CHECK WHETHER WE NEED TO RELOAD THE GRID (check if one is given because this can take a long time)
 if isempty(xg)
@@ -71,10 +71,10 @@ plotfun = grid2plotfun(plotfun, xg);
 %% LOCATE TIME NEAREST TO THE REQUESTED DATE
 %ymdprev=ymd0;
 %UTsecprev=UTsec0;
-ymdnext=ymd0;
+ymdnext=ymd0(:)';
 UTsecnext=UTsec0;
 it=1;
-while(datenum([ymdnext,UTsecnext/3600,0,0])<datenum([ymd,UTsec/3600,0,0]) && datenum([ymdnext,UTsecnext/3600,0,0])<datenum([ymdend,UTsecend/3600,0,0]))
+while(datenum([ymdnext,UTsecnext/3600,0,0]) < datenum([ymd,UTsec/3600,0,0]) && datenum([ymdnext,UTsecnext/3600,0,0]) < datenum([ymdend,UTsecend/3600,0,0]))
   ymdprev=ymdnext;
   UTsecprev=UTsecnext;
   [ymdnext,UTsecnext]=dateinc(dtout,ymdprev,UTsecprev);
@@ -218,44 +218,35 @@ validateattr(flagoutput, {'numeric'}, {'scalar'}, mfilename)
 validateattr(direc, {'char'}, {'vector'}, mfilename)
 validateattr(filename, {'char'}, {'vector'}, mfilename)
 
-mkdir(direc)
-
-if any(strcmpi(fmt, 'png'))
-  disp(['writing png plots to ',direc])
-
-  if flagoutput~=3
-    print(h.f1,'-dpng',[direc,'/v1plots/',filename,'.png'],'-r300')
-    print(h.f2,'-dpng',[direc,'/Tiplots/',filename,'.png'],'-r300')
-    print(h.f3,'-dpng',[direc,'/Teplots/',filename,'.png'],'-r300')
-    print(h.f4,'-dpng',[direc,'/J1plots/',filename,'.png'],'-r300')
-    print(h.f5,'-dpng',[direc,'/v2plots/',filename,'.png'],'-r300')
-    print(h.f6,'-dpng',[direc,'/v3plots/',filename,'.png'],'-r300')
-    print(h.f7,'-dpng',[direc,'/J2plots/',filename,'.png'],'-r300')
-    print(h.f8,'-dpng',[direc,'/J3plots/',filename,'.png'],'-r300')
-    if ~isempty(h.f9)
-      print(h.f9,'-dpng',[direc,'/Phiplots/',filename,'.png'],'-r300')
-    end
+dirs = {'v1plots', 'Tiplots', 'Teplots', 'J1plots', 'v2plots', 'v3plots', 'J2plots', 'J3plots', 'Phiplots', 'nplots'};
+for i = 1:length(dirs)
+  dirs{i} = [direc, filesep, dirs{i}];
+  if ~is_folder(dirs{i})
+    mkdir(dirs{i});
   end
-  print(h.f10,'-dpng',[direc,'/nplots/',filename,'.png'],'-r300')
 end
 
-if any(strcmpi(fmt, 'eps'))
-  disp(['writing eps plots to ',direc])
+disp(['writing plots to ',direc])
 
-  if flagoutput~=3     %now make .eps prints of the plots
-    print(h.f1,'-depsc2',[direc,'/v1plots/',filename,'.eps'])
-    print(h.f2,'-depsc2',[direc,'/Tiplots/',filename,'.eps'])
-    print(h.f3,'-depsc2',[direc,'/Teplots/',filename,'.eps'])
-    print(h.f4,'-depsc2',[direc,'/J1plots/',filename,'.eps'])
-    print(h.f5,'-depsc2',[direc,'/v2plots/',filename,'.eps'])
-    print(h.f6,'-depsc2',[direc,'/v3plots/',filename,'.eps'])
-    print(h.f7,'-depsc2',[direc,'/J2plots/',filename,'.eps'])
-    print(h.f8,'-depsc2',[direc,'/J3plots/',filename,'.eps'])
-    if ~isempty(h.f9)
-      print(h.f9,'-depsc2',[direc,'/Phiplots/',filename,'.eps'])
-    end
-  end
-  print(h.f10,'-depsc2',[direc,'/nplots/',filename,'.eps'])
+switch fmt
+  case 'png', flag = '-dpng'; suffix = '.png';
+  case 'eps', flag = '-depsc2'; suffix = '.eps';
+  otherwise, return
 end
+
+if flagoutput~=3
+  print(h.f1,flag,[dirs{1}, filesep, filename,suffix],'-r300')
+  print(h.f2,flag,[dirs{2}, filesep, filename,suffix],'-r300')
+  print(h.f3,flag,[dirs{3}, filesep, filename,suffix],'-r300')
+  print(h.f4,flag,[dirs{4}, filesep, filename,suffix],'-r300')
+  print(h.f5,flag,[dirs{5}, filesep, filename,suffix],'-r300')
+  print(h.f6,flag,[dirs{6}, filesep, filename,suffix],'-r300')
+  print(h.f7,flag,[dirs{7}, filesep, filename,suffix],'-r300')
+  print(h.f8,flag,[dirs{8}, filesep, filename,suffix],'-r300')
+  if ~isempty(h.f9)
+    print(h.f9,flag,[dirs{9}, filesep, filename,suffix],'-r300')
+  end
+end
+print(h.f10,flag,[dirs{10}, filesep, filename,suffix],'-r300')
 
 end %function dosave
