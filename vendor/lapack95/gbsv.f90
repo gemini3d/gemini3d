@@ -40,6 +40,8 @@ subroutine gbsv(A,B,KL,IPIV,INFO)
         call sgbsv(N,LKL,KU,NRHS,A,LDA,LPIV,B,N,LINFO)
       type is (real(real64))
         call dgbsv(N,LKL,KU,NRHS,A,LDA,LPIV,B,N,LINFO)
+      class default
+        error stop "unhandled kind"
     end select
   endif
 
