@@ -46,7 +46,7 @@ end interface
 
 !OVERLOAD THE SOLVERS FOR CURVILINEAR MESHES
 interface electrodynamics
- module procedure electrodynamics_cart,electrodynamics_curv 
+ module procedure electrodynamics_cart,electrodynamics_curv
 end interface electrodynamics
 
 contains
@@ -61,13 +61,13 @@ contains
     !------------------------------------------------------------
     !-------THIS IS A WRAPPER FUNCTION FOR THE ELECTRODYANMICS
     !-------PART OF THE MODEL.  BOTH THE ROOT AND WORKER PROCESSES
-    !-------CALL THIS SAME SUBROUTINE, WHEN THEN BRANCHES INTO 
+    !-------CALL THIS SAME SUBROUTINE, WHEN THEN BRANCHES INTO
     !-------DIFFERENT TASKS FOR EACH AFTER ALL COMPUTE CONDUCTIVITIES
     !-------AND INERTIAL CAPACITANCE.
     !-------
     !-------NOTE THAT THE ALLOCATION STATUS
     !-------OF THE ALL VARIABLES FOR THE WORKERS WILL BE UN-
-    !-------ALLOCATED.  SO THIS CODE IS ONLY COMPLIANT WITH 
+    !-------ALLOCATED.  SO THIS CODE IS ONLY COMPLIANT WITH
     !-------FORTRAN >= 2003 STANDARDS.
     !------------------------------------------------------------
 
@@ -117,7 +117,7 @@ contains
     !POTENTIAL SOLUTION (IF REQUIRED)
     call conductivities(nn,Tn,ns,Ts,vs1,B1,sig0,sigP,sigH,muP,muH)
     call capacitance(ns,B1,incap)
-  !  incap=0d0   !will get rid of polarization terms without having to switch solver  
+  !  incap=0d0   !will get rid of polarization terms without having to switch solver
     if (potsolve == 1 .or. potsolve == 3) then    !electrostatic solve or electrostatic alt. solve
       call cpu_time(tstart)
 
@@ -165,13 +165,13 @@ contains
     !------------------------------------------------------------
     !-------THIS IS A WRAPPER FUNCTION FOR THE ELECTRODYANMICS
     !-------PART OF THE MODEL.  BOTH THE ROOT AND WORKER PROCESSES
-    !-------CALL THIS SAME SUBROUTINE, WHEN THEN BRANCHES INTO 
+    !-------CALL THIS SAME SUBROUTINE, WHEN THEN BRANCHES INTO
     !-------DIFFERENT TASKS FOR EACH AFTER ALL COMPUTE CONDUCTIVITIES
     !-------AND INERTIAL CAPACITANCE.
     !-------
     !-------NOTE THAT THE ALLOCATION STATUS
     !-------OF THE ALL VARIABLES FOR THE WORKERS WILL BE UN-
-    !-------ALLOCATED.  SO THIS CODE IS ONLY COMPLIANT WITH 
+    !-------ALLOCATED.  SO THIS CODE IS ONLY COMPLIANT WITH
     !-------FORTRAN >= 2003 STANDARDS.
     !------------------------------------------------------------
 
@@ -211,7 +211,7 @@ contains
     !POTENTIAL SOLUTION (IF REQUIRED)
     call conductivities(nn,Tn,ns,Ts,vs1,B1,sig0,sigP,sigH,muP,muH)
     call capacitance(ns,B1,incap)
-  !  incap=0d0   !will get rid of polarization terms without having to switch solver  
+  !  incap=0d0   !will get rid of polarization terms without having to switch solver
     if (potsolve == 1 .or. potsolve == 3) then    !electrostatic solve or electrostatic alt. solve
       call cpu_time(tstart)
 
@@ -256,7 +256,7 @@ contains
                                 potsolve, &
                                 E1,E2,E3,J1,J2,J3, &
                                 E1all,E2all,E3all,J1all,J2all,J3all,Phiall)
-  
+
     !------------------------------------------------------------
     !-------ROOT MPI COMM./SOLVE ROUTINE FOR POTENTIAL
     !------------------------------------------------------------
@@ -283,7 +283,7 @@ contains
 
     real(wp), dimension(:,:,:), intent(out) :: E1,E2,E3,J1,J2,J3
     real(wp), dimension(:,:,:), intent(inout) :: E1all,E2all,E3all
-    real(wp), dimension(:,:,:), intent(out) :: J1all,J2all,J3all   
+    real(wp), dimension(:,:,:), intent(out) :: J1all,J2all,J3all
     real(wp), dimension(:,:,:), intent(inout) :: Phiall   !not good form, but I'm lazy
 
     real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: v2,v3
@@ -310,14 +310,14 @@ contains
     real(wp) :: dVmaxx1,dE02all,dE03all
 
     integer :: iid,islstart,islfin
- 
- 
+
+
     !SIZES
     lx1=size(sig0,1)
     lx2=size(sig0,2)
     lx3=size(sig0,3)
     lx3all=size(E1all,3)
-  
+
 !
 !    !COLLABORATE WITH WORKERS TO GET CONDUCTIVITIES
 !    sigPall(:,:,1:lx3)=sigP(:,:,1:lx3)
@@ -325,7 +325,7 @@ contains
 !    sig0all(:,:,1:lx3)=sig0(:,:,1:lx3)
 !    incapall(:,:,1:lx3)=incap(:,:,1:lx3)
 !    v2all(:,:,1:lx3)=vs2(1:lx1,1:lx2,1:lx3,1)    !use oxygen drift as ExB-ish drift...
-!    v3all(:,:,1:lx3)=vs3(1:lx1,1:lx2,1:lx3,1) 
+!    v3all(:,:,1:lx3)=vs3(1:lx1,1:lx2,1:lx3,1)
 !    do iid=1,lid-1
 !      islstart=iid*lx3+1
 !      islfin=islstart+lx3-1
@@ -436,16 +436,16 @@ contains
     else
       DE2Dtall=0d0
       DE3Dtall=0d0
-      J1polall=0d0 
+      J1polall=0d0
       J2polall=0d0
-      J3polall=0d0      
+      J3polall=0d0
     end if
 
 
     !BROADCAST DERIVED ELECTRIC FIELDS TO THE WORKERS
     call bcast_send(E2all,tagE2,E2)
     call bcast_send(E3all,tagE3,E3)
-    
+
     !CALCULATE AND DISTRIBUTE CURRENT TO WORKERS
     J1all=sig0all*E1all
     J2all=sigPall*E2all-sigHall*E3all    !BG field already added
@@ -464,10 +464,10 @@ contains
     J3all=J3all+J3polall
 
 
-    !BROADCAST PARALLEL FIELD AND CURRENT DENSITY TO WORKERS.  
+    !BROADCAST PARALLEL FIELD AND CURRENT DENSITY TO WORKERS.
     call bcast_send(J1all,tagJ1,J1)
     call bcast_send(E1all,tagE1,E1)
-     
+
   end subroutine potential_root_mpi_cart
 
 
@@ -475,7 +475,7 @@ contains
                                 potsolve, &
                                 E1,E2,E3,J1,J2,J3, &
                                 E1all,E2all,E3all,J1all,J2all,J3all,Phiall)
-  
+
     !------------------------------------------------------------
     !-------ROOT MPI COMM./SOLVE ROUTINE FOR POTENTIAL
     !------------------------------------------------------------
@@ -492,7 +492,7 @@ contains
 
     real(wp), dimension(:,:,:), intent(out) :: E1,E2,E3,J1,J2,J3
     real(wp), dimension(:,:,:), intent(inout) :: E1all,E2all,E3all
-    real(wp), dimension(:,:,:), intent(out) :: J1all,J2all,J3all   
+    real(wp), dimension(:,:,:), intent(out) :: J1all,J2all,J3all
     real(wp), dimension(:,:,:), intent(inout) :: Phiall   !not good form, but I'm lazy
 
     real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: v2,v3
@@ -519,14 +519,14 @@ contains
     real(wp) :: dVmaxx1,dE02all,dE03all
 
     integer :: iid,islstart,islfin
- 
- 
+
+
     !SIZES
     lx1=size(sig0,1)
     lx2=size(sig0,2)
     lx3=size(sig0,3)
     lx3all=size(E1all,3)
-  
+
 
     !GATHER WORKER CONDUCTIVITY VALUES
     call gather_recv(sigP,tagsigP,sigPall)
@@ -621,16 +621,16 @@ contains
     else
       DE2Dtall=0d0
       DE3Dtall=0d0
-      J1polall=0d0 
+      J1polall=0d0
       J2polall=0d0
-      J3polall=0d0      
+      J3polall=0d0
     end if
 
 
     !BROADCAST DERIVED ELECTRIC FIELDS TO THE WORKERS
     call bcast_send(E2all,tagE2,E2)
     call bcast_send(E3all,tagE3,E3)
-    
+
     !CALCULATE AND DISTRIBUTE CURRENT TO WORKERS
     J1all=sig0all*E1all
     J2all=sigPall*E2all-sigHall*E3all    !BG field already added
@@ -649,19 +649,19 @@ contains
     J3all=J3all+J3polall
 
 
-    !BROADCAST PARALLEL FIELD AND CURRENT DENSITY TO WORKERS.  
+    !BROADCAST PARALLEL FIELD AND CURRENT DENSITY TO WORKERS.
     call bcast_send(J1all,tagJ1,J1)
     call bcast_send(E1all,tagE1,E1)
-     
+
   end subroutine potential_root_mpi_curv
 
   subroutine potential_workers_mpi(sig0,sigP,sigH,incap,vs2,vs3,potsolve, &
                           E1,E2,E3,J1,J2,J3)
-  
+
     !------------------------------------------------------------
     !-------WORKER MPI COMMUNICATION ROUTINE FOR POTENTIAL SOLN.
     !------------------------------------------------------------
-  
+
     real(wp), dimension(:,:,:), intent(in) ::  sig0,sigP,sigH
     real(wp), dimension(:,:,:), intent(in) ::  incap
     real(wp), dimension(-1:,-1:,-1:,:), intent(in) ::  vs2,vs3
@@ -671,13 +671,13 @@ contains
     real(wp), dimension(:,:,:), intent(out) :: E1,E2,E3,J1,J2,J3
 
     real(wp), dimension(1:size(sigP,1),1:size(sigP,2),1:size(sigP,3)) :: vEB    !send vars need to be contiguous in memory
-    
+
     integer :: lx1,lx2,lx3
-    
+
     lx1=size(sig0,1)
     lx2=size(sig0,2)
     lx3=size(sig0,3)
-  
+
 
     !SEND DATA TO ROOT, WHO IS GATHERING
     call gather_send(sigP,tagsigP)
@@ -698,6 +698,6 @@ contains
     call bcast_recv(E1,tagE1)
 
   end subroutine potential_workers_mpi
-  
+
 
 end module potential_comm

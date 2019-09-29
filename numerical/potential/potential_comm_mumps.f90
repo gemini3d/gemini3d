@@ -10,17 +10,16 @@ module potential_comm
 
 use mpi, only: mpi_integer, mpi_comm_world, mpi_status_ignore
 
-use phys_consts, only : wp, pi, lsp, debug
-use grid, only : curvmesh,flagswap, gridflag
+use phys_consts, only: wp, pi, lsp, debug
+use grid, only: curvmesh,flagswap, gridflag
 use collisions, only: conductivities, capacitance
 use calculus, only: div3d, integral3d1, grad3d1, grad3d2, grad3d3, integral3d1_curv_alt
 use potentialBCs_mumps, only: potentialbcs2D, potentialbcs2D_fileinput
-use potential_mumps, only : elliptic3D_curv, &
-                            elliptic3D_decimate, &
-                            elliptic2D_pol_conv_curv, &
-                            elliptic2D_pol_conv_curv_periodic2, &
-                            elliptic2D_nonint_curv, &
-                            elliptic_workers
+use potential_mumps, only: potential3D_fieldresolved_decimate, &
+                            potential2D_fieldresolved, &
+                            potential2D_polarization, &
+                            potential2D_polarization_periodic
+use PDEelliptic, only: elliptic_workers
 
 use mpimod, only: lid, lid2, lid3, myid, myid2, myid3, tage01, tage02, tage03, tagflagdirich, tagincapint, &
   tagsrc, tagv2electro, tagv3electro, tagvmaxx1, tagvminx1, tagj1, tagj2, tagj3, tagphi, tagsig0, &
@@ -154,15 +153,16 @@ if (potsolve == 1 .or. potsolve == 3) then    !electrostatic solve or electrosta
   end if
 
   !DRIFTS - NEED TO INCLUDE ELECTRIC, WIND-DRIVEN, AND GRAVITATIONAL???
-  if (lx2/=1) then    !full 3D solve, go with the regular formulas
+!  if (lx2/=1) then    !full 3D solve, go with the regular formulas
+  if(flagswap/=1) then
     do isp=1,lsp
       vs2(1:lx1,1:lx2,1:lx3,isp)=muP(:,:,:,isp)*E2-muH(:,:,:,isp)*E3+muPvn(:,:,:,isp)*vn2-muHvn(:,:,:,isp)*vn3
       vs3(1:lx1,1:lx2,1:lx3,isp)=muH(:,:,:,isp)*E2+muP(:,:,:,isp)*E3+muHvn(:,:,:,isp)*vn2+muPvn(:,:,:,isp)*vn3
     end do
   else                !flip signs on the cross products in 2D.  Note that due to dimension shuffling E2,3 mapping is already handled
     do isp=1,lsp
-      vs2(1:lx1,1:lx2,1:lx3,isp)=-muP(:,:,:,isp)*E2+muH(:,:,:,isp)*E3-muPvn(:,:,:,isp)*vn2+muHvn(:,:,:,isp)*vn3
-      vs3(1:lx1,1:lx2,1:lx3,isp)=-muH(:,:,:,isp)*E2-muP(:,:,:,isp)*E3-muHvn(:,:,:,isp)*vn2-muPvn(:,:,:,isp)*vn3
+      vs2(1:lx1,1:lx2,1:lx3,isp)=muP(:,:,:,isp)*E2+muH(:,:,:,isp)*E3+muPvn(:,:,:,isp)*vn2+muHvn(:,:,:,isp)*vn3
+      vs3(1:lx1,1:lx2,1:lx3,isp)=-muH(:,:,:,isp)*E2+muP(:,:,:,isp)*E3-muHvn(:,:,:,isp)*vn2+muPvn(:,:,:,isp)*vn3
     end do
   end if
 
@@ -451,12 +451,12 @@ if (lx2/=1) then    !either field-resolved 3D or integrated 2D solve for 3D doma
       call cpu_time(tstart)
       if (.not. x%flagper) then     !nonperiodic mesh
         if (debug) print *, '!!!User selected aperiodic solve...'
-        Phislab=elliptic2D_pol_conv_curv(srctermintall,SigPint2all,SigPint3all,SigHintall,incapintall,v2slaball,v3slaball, &
+        Phislab=potential2D_polarization(srctermintall,SigPint2all,SigPint3all,SigHintall,incapintall,v2slaball,v3slaball, &
                                  Vminx2slice,Vmaxx2slice,Vminx3slice,Vmaxx3slice, &
                                  dt,x,Phislab0,perflag,it)    !note tha this solver is only valid for cartesian meshes, unless the inertial capacitance is set to zero
       else
         if (debug) print *, '!!!User selected periodic solve...'
-        Phislab=elliptic2D_pol_conv_curv_periodic2(srctermintall,SigPint2all,SigHintall,incapintall,v2slaball,v3slaball, &    !note that either sigPint2 or 3 will work since this must be cartesian...
+        Phislab=potential2D_polarization_periodic(srctermintall,SigPint2all,SigHintall,incapintall,v2slaball,v3slaball, &    !note that either sigPint2 or 3 will work since this must be cartesian...
                                    Vminx2slice,Vmaxx2slice,Vminx3slice,Vmaxx3slice, &
                                    dt,x,Phislab0,perflag,it)
       end if
@@ -510,7 +510,7 @@ if (lx2/=1) then    !either field-resolved 3D or integrated 2D solve for 3D doma
       do iid=1,lid-1
         call mpi_send(1,1,MPI_INTEGER,iid,tagflagdirich,MPI_COMM_WORLD,ierr)
       end do
-      Phiall=elliptic3D_decimate(srctermall,sig0scaledall,sigPscaledall,sigHscaledall, &
+      Phiall=potential3D_fieldresolved_decimate(srctermall,sig0scaledall,sigPscaledall,sigHscaledall, &
                                  Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3,Vmaxx3, &
                                  x,flagdirich,perflag,it)
     else
@@ -546,7 +546,7 @@ else   !lx1=1 so do a field-resolved 2D solve over x1,x3
 
   !EXECUTE THE SOLVE WITH MUMPS AND SCALED TERMS
   !NOTE THE LACK OF A SPECIAL CASE HERE TO CHANGE THE POTENTIAL PROBLEM - ONLY THE HALL TERM CHANGES (SINCE RELATED TO EXB) BUT THAT DOESN'T APPEAR IN THIS EQN!
-  Phiall=elliptic2D_nonint_curv(srctermall,sig0scaledall,sigPscaledall,Vminx1,Vmaxx1,Vminx3,Vmaxx3, &
+  Phiall=potential2D_fieldresolved(srctermall,sig0scaledall,sigPscaledall,Vminx1,Vmaxx1,Vminx3,Vmaxx3, &
                     x,flagdirich,perflag,it)
 end if
 if (debug) print *, 'MUMPS time:  ',tfin-tstart
