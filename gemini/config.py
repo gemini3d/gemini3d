@@ -44,7 +44,7 @@ def read_config(path: Path) -> typing.Dict[str, typing.Any]:
                 P = read_config(file)
                 break
     else:
-        raise FileNotFoundError(f"could not find config file in {file}")
+        raise FileNotFoundError(f"could not find config file in {path}")
 
     # NOT P["indat_size"] because that assumes the reading computer has the same directory layout as HPC
     simsize_file = path / "simsize.dat"

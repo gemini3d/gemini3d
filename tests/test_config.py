@@ -39,7 +39,7 @@ def test_nml_group(group):
 
 
 @pytest.mark.parametrize(
-    "filename", [Rc, Rc / "config.nml", R / "tests/data/zenodo2d/inputs/config.ini"], ids=["path", "nml", "ini"]
+    "filename", [Rc, Rc / "config.nml", R / "tests/config_example.ini"], ids=["path", "nml", "ini"]
 )
 def test_read_config(filename):
     params = config.read_config(filename)
