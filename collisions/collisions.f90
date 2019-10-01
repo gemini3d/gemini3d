@@ -1,6 +1,6 @@
 module collisions
 
-use phys_consts, only: wp, lsp, ln, ms, kb, pi, elchrg, qs
+use phys_consts, only: wp, lsp, ln, ms, kb, pi, elchrg, qs, debug
 
 implicit none
 private
@@ -290,7 +290,7 @@ end do
 incap=incap/B1(1:lx1,1:lx2,1:lx3)**2
 
 if (flagcap==2) then
-  print *, '!!! Augmenting capacitance with a magnetospheric contribution...'
+  if (debug) print *, '!!! Augmenting capacitance with a magnetospheric contribution...'
   incap=incap+30.0_wp/980e3_wp    !kludge the value to account for a magnetosheric contribution - this is just a random guess that makes the KHI examples work well; a better value should be investigated
 end if
 end subroutine capacitance

@@ -42,9 +42,9 @@ cmake --version
 [[ ${1:-} == "-d" ]] && OPTS="-DCMAKE_BUILD_TYPE=Debug $OPTS"
 [[ ${1:-} == "-t" ]] && OPTS="-DTRACE:BOOL=on $OPTS"
 
-rm -rf objects/*  # need this one-time in case different compiler e.g. ifort was previously used.
+rm -rf build/*  # need this one-time in case different compiler e.g. ifort was previously used.
 
-cmake $OPTS -B objects -S .
+cmake $OPTS -B build -S .
 
-cmake --build objects -j
+cmake --build build -j
 
