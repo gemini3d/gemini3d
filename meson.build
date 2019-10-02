@@ -5,7 +5,6 @@ project('GEMINI', 'fortran',
 
 bits = get_option('realbits')
 real_bits = '-DREALBITS=' + bits
-use_glow = get_option('useglow')
 use_hdf = get_option('HDF')
 buildtype = get_option('buildtype')
 arith = get_option('arith')
@@ -49,7 +48,7 @@ sources = library('sources', 'sources/sources.f90',
   link_with: [calculus, collisions, const, grid, mpimod])
 
 multifluid = library('multifluid', 'multifluid/multifluid.f90',
-  link_with: [advection, calculus, collisions, const, diffusion, grid, ionization, mpimod,
+  link_with: [advection, calculus, collisions, const, diffusion, grid, ionization_fang, mpimod,
               precipBCs, sources, timeutils])
 
 
@@ -64,22 +63,17 @@ gemini_fang_exe = executable('gemini_fang.bin',
 
 # -- gemini_glow exe
 
-if use_glow
-
-  multifluid_glow = library('multifluid_glow', 'multifluid/multifluid.f90',
+multifluid_glow = library('multifluid_glow', 'multifluid/multifluid.f90',
   link_with: [advection, calculus, collisions, const, diffusion, grid, ionization_glow, mpimod,
               precipBCs, sources, timeutils])
 
-  gemini_glow_exe = executable('gemini_glow.bin',
-    sources: 'gemini.f90',
-    link_with : [const, grid, io, mpimod, multifluid_glow, neutral, potential, precipBCs, temporal, timeutils],
-    dependencies : [scalapack, blacs, lapack, blas],
-    fortran_args: real_bits,
-    install: true,
-    link_language: 'fortran')
-else
-  gemini_glow_exe = disabler()
-endif
+gemini_glow_exe = executable('gemini_glow.bin',
+  sources: 'gemini.f90',
+  link_with : [const, grid, io, mpimod, multifluid_glow, neutral, potential, precipBCs, temporal, timeutils],
+  dependencies : [scalapack, blacs, lapack, blas],
+  fortran_args: real_bits,
+  install: true,
+  link_language: 'fortran')
 
 # -- magcalc exe
 
@@ -120,10 +114,6 @@ zenodo = {
 mpi_np = get_option('NP')
 
 foreach k, v : zenodo
-
-  if not use_glow and k.endswith('glow')
-    continue
-  endif
 
 #  if is_ci and k.startswith('3d')
 #    # save download / CPU on CI

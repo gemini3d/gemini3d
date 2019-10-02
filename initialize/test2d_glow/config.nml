@@ -10,9 +10,9 @@ potsolve = 1                             !potsolve:  how are we solving electrod
 flagperiodic = 0
 flagoutput = 2
 flagcap = 0
-indat_size = 'tests/data/zenodo2d/inputs/simsize.dat'
-indat_grid = 'tests/data/zenodo2d/inputs/simgrid.dat'
-indat_file = 'tests/data/zenodo2d/inputs/2Dtest_lowres_ICs.dat'
+indat_size = 'tests/data/zenodo2d_glow/inputs/simsize.dat'
+indat_grid = 'tests/data/zenodo2d_glow/inputs/simgrid.dat'
+indat_file = 'tests/data/zenodo2d_glow/inputs/2Dtest_lowres_ICs.dat'
 flagdneu = 0
 flagprecfile = 1
 flagE0file = 1
@@ -25,12 +25,12 @@ flagglow = 1
 
 &precip
 dtprec = 5.0
-prec_dir = 'tests/data/zenodo2d/inputs/prec_inputs/'
+prec_dir = 'tests/data/zenodo2d_glow/inputs/prec_inputs/'
 /
 
 &efield
 dtE0 = 1.0
-E0_dir = 'tests/data/zenodo2d/inputs/Efield_inputs/'
+E0_dir = 'tests/data/zenodo2d_glow/inputs/Efield_inputs/'
 /
 
 &glow

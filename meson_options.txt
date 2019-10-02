@@ -1,5 +1,4 @@
 option('HDF', type : 'boolean', value: false, description : 'use HDF5 for IO')
-option('useglow', type : 'boolean', value: false, description : 'use GLOW instead of Fang')
 option('realbits', type : 'string', value : '64', description : 'real bits')
 option('arith', type: 'string', value: 'sd', description: 'precision (s,d,c,z)')
 option('usematlab', type : 'boolean', value: false, description : 'Matlab >= R2019a required')
