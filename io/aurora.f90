@@ -40,12 +40,21 @@ module procedure output_aur_workers
 
 !real(wp), dimension(1:lx2,1:lwave,1:lx3) :: ivertmp
 real(wp), dimension(1:lwave,1:lx2,1:lx3) :: ivertmp
+integer :: iwave
+real(wp), dimension(1:lx2,1:lx3) :: emistmp
 
-!ivertmp=reshape(iver,[lx2,lwave,lx3],order=[1,3,2])
-ivertmp=reshape(iver,[lwave,lx2,lx3],order=[3,1,2])
 
-!------- SEND AURORA PARAMETERS TO ROOT
-call gather_send(ivertmp,tagAur)
+!!ivertmp=reshape(iver,[lx2,lwave,lx3],order=[1,3,2])
+!ivertmp=reshape(iver,[lwave,lx2,lx3],order=[3,1,2])
+!
+!!------- SEND AURORA PARAMETERS TO ROOT
+!call gather_send(ivertmp,tagAur)
+
+do iwave=1,lwave
+  emistmp=iver(:,:,iwave)
+  call gather_send(emistmp,tagAur)
+end do
+
 
 end procedure output_aur_workers
 
@@ -60,17 +69,24 @@ module procedure output_aur_root
 real(wp), dimension(1:lwave,1:lx2,1:lx3) :: ivertmp
 real(wp), dimension(1:lwave,1:lx2all,1:lx3all) :: iverall
 
+real(wp), dimension(1:lx2,1:lx3) :: emistmp                !single emission subgrid
+real(wp), dimension(1:lx2all,1:lx3all) :: emisall          !single emission total grid
+real(wp), dimension(1:lx2all,1:lx3all,1:lwave) :: iverout  !output array in the order scripts expect
+
+
 character(:), allocatable :: outdir_composite, filenamefull
 integer :: u
+integer :: iwave
 
-ivertmp=reshape(iver,[lwave,lx2,lx3],order=[3,1,2])
-!ivertmp=reshape(iver,[lx2,lwave,lx3],order=[1,3,2])
-!print*, shape(iver),shape(ivertmp)
-!print*, shape(iverall)
-!print*, lx2all,lx3all,lwave
-!print*, shape(reshape(iverall,[lx2all,lx3all,lwave],order=[2,3,1]))
+!!ivertmp=reshape(iver,[lx2,lwave,lx3],order=[1,3,2])
+!ivertmp=reshape(iver,[lwave,lx2,lx3],order=[3,1,2])
+!call gather_recv(ivertmp,tagAur,iverall)
+do iwave=1,lwave
+  emistmp=iver(:,:,iwave)
+  call gather_recv(emistmp,tagAur,emisall)
+  iverout(:,:,iwave)=emisall
+end do
 
-call gather_recv(ivertmp,tagAur,iverall)
 
 !FORM THE INPUT FILE NAME
 outdir_composite=outdir//'/aurmaps/'
@@ -81,14 +97,12 @@ print *, '  Output file name (auroral maps):  ',filenamefull
 open(newunit=u,file=filenamefull,status='replace',form='unformatted',access='stream',action='write')
 
 if(flagswap/=1) then
-  !!!  write(u) reshape(iverall,[lx2all,lx3all,lwave],order=[1,3,2])
-!!  write(u) reshape(iverall,[lx2all,lx3all,lwave],order=[2,3,1])
 !  write(u) reshape(iverall,[lx2all,lwave,lx3all],order=[2,1,3])
-  write(u) reshape(iverall,[lx2all,lx3all,lwave],order=[2,3,1])
+!  write(u) reshape(iverall,[lx2all,lx3all,lwave],order=[2,3,1])
+  write(u) iverout
 else
-  !!  write(u) reshape(iverall,[lx3all,lwave,lx2all],order=[3,2,1])
-  !write(u) reshape(iverall,[lx3all,lwave,lx2all],order=[3,1,2])
-  write(u) reshape(iverall,[lx3all,lx2all,lwave],order=[3,2,1])
+!  write(u) reshape(iverall,[lx3all,lx2all,lwave],order=[3,2,1])
+  write(u) reshape(iverout,[lx3all,lx2all,lwave],order=[2,1,3])
 end if
 
 close(u)
