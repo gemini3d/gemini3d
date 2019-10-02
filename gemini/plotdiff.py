@@ -15,7 +15,7 @@ def plotdiff(A: np.ndarray, B: np.ndarray, name: str, time: datetime, outdir: Pa
     fg = Figure(tight_layout=True, figsize=(12, 5))
     axs = fg.subplots(1, 2)
 
-    if name.startswith("v"):
+    if name.startswith(("J", "v")):
         cmap = "bwr"
     else:
         cmap = None
