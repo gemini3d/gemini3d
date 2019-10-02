@@ -81,8 +81,9 @@ if(flagswap/=1) then
   !  write(u) reshape(iverall,[lx2all,lx3all,lwave],order=[1,3,2])
   write(u) reshape(iverall,[lx2all,lx3all,lwave],order=[2,3,1])
 else
-  !  write(u) reshape(iverall,[lx3all,lwave,lx2all],order=[3,2,1])
-  write(u) reshape(iverall,[lx3all,lwave,lx2all],order=[3,1,2])
+  !!  write(u) reshape(iverall,[lx3all,lwave,lx2all],order=[3,2,1])
+  !write(u) reshape(iverall,[lx3all,lwave,lx2all],order=[3,1,2])
+  write(u) reshape(iverall,[lx3all,lx2all,lwave],order=[3,2,1])
 end if
 
 close(u)
