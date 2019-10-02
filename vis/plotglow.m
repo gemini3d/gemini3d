@@ -64,7 +64,7 @@ axis tight;
 %caxis(caxlims);
 cb=colorbar;
 cby=get(cb,'ytick');
-set(cb,'yticklabel',sprintf('10^{%g}|',cby))
+%set(cb,'yticklabel',sprintf('10^{%g}|',cby))
 ylabel(cb,'427.8 nm Intensity (R)')
 xlabel('Eastward Distance (km)')
 ylabel('Northward Distance (km)')
