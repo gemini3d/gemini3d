@@ -17,6 +17,6 @@
 #
 #. script_utils/build.sh
 
-cmake -Duseglow=false -B build
+cmake -Duseglow=true -B build
 cmake --build build -j
 

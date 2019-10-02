@@ -5,7 +5,7 @@ cwd = fileparts(mfilename('fullpath'));
 addpath([cwd, filesep, 'plotfunctions'])
 addpath([cwd, filesep, '..', filesep, 'script_utils'])
 
-assert(is_folder(direc), [direc, " is not a directory."])
+assert(is_folder(direc), [direc, ' is not a directory.'])
 
 %array of volume emission rates at each altitude; cm-3 s-1:
 %           3371A, 4278A, 5200A, 5577A, 6300A, 7320A, 10400A, 3466A,
@@ -58,17 +58,17 @@ end % function
 
 function plot1wl(x2, x3, bFrame)
 
-h=imagesc(x2,x3,log10(bFrame)');
+h=imagesc(x2,x3,log10(squeeze(bFrame(:,:,2)))');
 axis xy;
 axis tight;
-caxis(caxlims);
+%caxis(caxlims);
 cb=colorbar;
 cby=get(cb,'ytick');
 set(cb,'yticklabel',sprintf('10^{%g}|',cby))
 ylabel(cb,'427.8 nm Intensity (R)')
 xlabel('Eastward Distance (km)')
 ylabel('Northward Distance (km)')
-title(filename)
+title('427.8 nm intensity')
 
 end
 
