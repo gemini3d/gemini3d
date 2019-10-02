@@ -68,19 +68,23 @@ iri90_dir = trim(data_dir) // '/iri90/'
 if(first_call) then
   first_call = .false.
   jmax=size(alt,1)
+  nbins=190   !MZ - I have no idea what I'm doing here...
   call cglow_init
+  print*, 'Finished initializing glow...'
 end if
 
 !! Set electron energy grid:
 
 call egrid (ener, del, nbins)
+!print*, nbins
+!print*, shape(ener)
+!print*, shape(del)
 
 !! Set Maxwellian distribution into phitop array
 
 !! Hard coded solution, future = pass ec and ef array to maxt assuming > 2 populations
 phitop=0.0_wp
 do j = 1, size(PhiWmWm2,1)
-  !write(*,*) 'Eo and Q values: ',W0(j),PhiWmWm2(j)
   call maxt(real(PhiWmWm2(j),4),real(W0(j),4),ener,del,nbins,0,0,0,phitoptmp)
   phitop=phitop+phitoptmp
 end do

@@ -439,7 +439,9 @@ if ( maxval(PhiWmWm2) > 0.0_wp) then   !only compute rates if nonzero flux given
         call glow_run(W0(ix2,ix3,:),PhiWmWm2(ix2,ix3,:),date_doy,UTsec,f107,f107a,glat(ix2,ix3), &
         glon(ix2,ix3),alt(:,ix2,ix3),nn(:,ix2,ix3,:),Tn(:,ix2,ix3),ns(1:lx1,ix2,ix3,:), &
         Ts(1:lx1,ix2,ix3,:),ionrate_glow98(:,ix2,ix3,:),eheating(:,ix2,ix3),iver(ix2,ix3,:))
-        !write(*,*) 'glow called, max precip: ', maxval(ionrate_glow98(:,ix2,ix3,:))
+!        print*, 'glow called, max ionization rate: ', maxval(ionrate_glow98(:,ix2,ix3,:))
+!        print*, 'max iver:  ',maxval(iver(ix2,ix3,:))
+!        print*, 'max W0 and Phi:  ',maxval(W0(ix2,ix3,:)),maxval(PhiWmWm2(ix2,ix3,:))
       end if
     end do !Y coordinate loop
   end do !X coordinate loop
