@@ -80,6 +80,7 @@ if(t+dt/2d0>=tnext) then    !need to load a new file
 
 
       !MESSAGE WORKERS WITH GRID INFO
+      ierr=0
       do iid=1,lid-1
         call mpi_send(llon,1,MPI_INTEGER,iid,tagllon,MPI_COMM_WORLD,ierr)
         call mpi_send(llat,1,MPI_INTEGER,iid,tagllat,MPI_COMM_WORLD,ierr)

@@ -91,7 +91,7 @@ integer, parameter :: taglx=105,tagxn=106,tagyn=107,tagzn=108,tagdvnx=109
 integer, protected :: myid,lid
 !! no external procedure should mess with these (but they need to be able to read them)
 
-integer, private :: ierr
+integer, private :: ierr=0
 !> using procedures need to be able to overwrite this to prevent seg. faults (or something)
 
 

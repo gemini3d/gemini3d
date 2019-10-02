@@ -101,6 +101,7 @@ print *, 'Grid slab size:  ',lx1,lx2,lx3
 
 
 !COMMUNICATE THE GRID SIZE TO THE WORKERS SO THAT THEY CAN ALLOCATE SPACE
+ierr=0     !if this is a root-only simulation we don't want to error out
 do iid=1,lid-1
   call mpi_send(lx2,1,MPI_INTEGER,iid,taglx2,MPI_COMM_WORLD,ierr)          !need to also pass the lx2all size to all workers to they know
   call mpi_send(lx3,1,MPI_INTEGER,iid,taglx3,MPI_COMM_WORLD,ierr)
@@ -109,6 +110,7 @@ end do
 if (ierr/=0) error stop 'grid:read_grid_root failed mpi_send grid size'
 
 !TELL WORKERS IF WE'VE SWAPPED DIMENSIONS
+ierr=0
 do iid=1,lid-1
   call mpi_send(flagswap,1,MPI_INTEGER,iid,tagswap,MPI_COMM_WORLD,ierr)
 end do

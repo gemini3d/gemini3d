@@ -65,7 +65,10 @@ integer :: u
 
 ivertmp=reshape(iver,[lwave,lx2,lx3],order=[3,1,2])
 !ivertmp=reshape(iver,[lx2,lwave,lx3],order=[1,3,2])
-
+!print*, shape(iver),shape(ivertmp)
+!print*, shape(iverall)
+!print*, lx2all,lx3all,lwave
+!print*, shape(reshape(iverall,[lx2all,lx3all,lwave],order=[2,3,1]))
 
 call gather_recv(ivertmp,tagAur,iverall)
 
@@ -78,7 +81,9 @@ print *, '  Output file name (auroral maps):  ',filenamefull
 open(newunit=u,file=filenamefull,status='replace',form='unformatted',access='stream',action='write')
 
 if(flagswap/=1) then
-  !  write(u) reshape(iverall,[lx2all,lx3all,lwave],order=[1,3,2])
+  !!!  write(u) reshape(iverall,[lx2all,lx3all,lwave],order=[1,3,2])
+!!  write(u) reshape(iverall,[lx2all,lx3all,lwave],order=[2,3,1])
+!  write(u) reshape(iverall,[lx2all,lwave,lx3all],order=[2,1,3])
   write(u) reshape(iverall,[lx2all,lx3all,lwave],order=[2,3,1])
 else
   !!  write(u) reshape(iverall,[lx3all,lwave,lx2all],order=[3,2,1])

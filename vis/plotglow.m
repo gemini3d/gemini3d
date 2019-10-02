@@ -41,16 +41,16 @@ file_list=dir([direc,filesep,'*.dat']);
 lt=numel(file_list);
 bFrame = zeros(lx2,lx3,lwave,lt);
 for ind = 1:lt
-  figure
-  filename = [direc,filesep,'aurmaps/',file_list(ind).name];
-	bFrame = loadglow_aurmap(filename, lx2, lx3, lwave);
-
-  if lx3 > 1
-    plot1wl(x2, x3, bFrame)
-  else
-    imagesc(squeeze(bFrame))
-    colorbar
-  end
+    figure
+    filename = [direc,filesep,'aurmaps/',file_list(ind).name];
+    bFrame(:,:,:,ind) = loadglow_aurmap(filename, lx2, lx3, lwave);
+    
+    if lx3 > 1
+        plot1wl(x2, x3, bFrame(:,:,:,ind))
+    else
+        imagesc(squeeze(bFrame(:,:,:,ind)))    %there's a singleton dimension here since this corresponds to a 2D simulation
+        colorbar
+    end
 end
 
 end % function

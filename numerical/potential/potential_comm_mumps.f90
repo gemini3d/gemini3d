@@ -308,6 +308,7 @@ if (debug) print *, 'Root has computed BCs in time:  ',tfin-tstart
 
 
 !R--------
+ierr=0
 do iid=1,lid-1    !communicate intent for solve to workers so they know whether or not to call mumps fn.
   call mpi_send(flagdirich,1,MPI_INTEGER,iid,tagflagdirich,MPI_COMM_WORLD,ierr)
 end do
