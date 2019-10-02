@@ -1,6 +1,14 @@
 name: ci_debug_build
 
-on: [push, pull_request]
+on:
+  push:
+    paths:
+    - "**/*.f90"
+    - "**/*.F90"
+  pull_request:
+    paths:
+    - "**/*.f90"
+    - "**/*.F90"
 
 jobs:
 
