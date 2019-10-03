@@ -55,7 +55,7 @@ module procedure glow_run
 ! nc      number of component production terms for each emission
 
 
-real, dimension(nbins) :: phitoptmp
+real, dimension(:), allocatable :: phitoptmp
 integer :: j
 character(len=1024) :: iri90_dir
 
@@ -68,30 +68,28 @@ iri90_dir = trim(data_dir) // '/iri90/'
 if(first_call) then
   first_call = .false.
   jmax=size(alt,1)
-  nbins=190   !MZ - I have no idea what I'm doing here...
+  nbins=190     !MZ - note nbins no longer set to a default value in glow; user MUST assign this!!!
   call cglow_init
-  print*, 'Finished initializing glow...'
 end if
 
 !! Set electron energy grid:
 
 call egrid (ener, del, nbins)
-!print*, nbins
-!print*, shape(ener)
-!print*, shape(del)
 
 !! Set Maxwellian distribution into phitop array
 
 !! Hard coded solution, future = pass ec and ef array to maxt assuming > 2 populations
-phitop=0.0_wp
-do j = 1, size(PhiWmWm2,1)
+allocate(phitoptmp(nbins))
+phitoptmp=0.0
+
+phitop=phitoptmp
+do j = 1, size(PhiWmWm2,1)    !this index loops over population number
   call maxt(real(PhiWmWm2(j),4),real(W0(j),4),ener,del,nbins,0,0,0,phitoptmp)
   phitop=phitop+phitoptmp
 end do
-!write(*,*) 'Max flux in phitop: ',maxval(pack(phitop,.true.))
+
 
 !! Set variables given from GEMINI
-
 glat = real(xlat,4)
 glong = real(xlon,4)
 idate = date_doy
@@ -149,6 +147,7 @@ ionrate(:,6) = real(0d0,wp)*1.0d6 !H+
 eheating = real(eheat,wp)*1.0d6
 iver = real(vcb,wp)
 
+
 !  do j = 1, jmax
 !    IDENS(j) = sum((dflx(:,j)-uflx(:,j))*del(:))/6.241509d14
 !  enddo
@@ -161,6 +160,8 @@ iver = real(vcb,wp)
 !    write(6,"(1x,0p,f5.1,3f6.0,1p,12e10.2)") (alt(j)/1.0d3,ztn(j),zti(j),zte(j),zo(j),zn2(j),zno(j),ze(j), &
 !      ecalc(j),tir(j),PO(j),PO2(j),PNO(j),PN2(j),EHEATING(j),IDENS(j),j=1,jmax)
 !  end if
+
+deallocate(phitoptmp)
 
 end procedure glow_run
 
