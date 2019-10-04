@@ -97,6 +97,7 @@ disp([filename, ' => ', func2str(plotfun)])
 %% UNTIL WE PROVIDE A WAY FOR THE USER TO SPECIFY COLOR AXES, JUST TRY TO SET THEM AUTOMATICALLY
 if (~flagcaxlims)
  nelim =  [min(ne(:)), max(ne(:))];
+% nelim =  [2e11,4.5e11];
  v1mod=max(abs(v1(:)));
  v1lim = [-v1mod, v1mod];
  Tilim = [0, max(Ti(:))];
@@ -211,7 +212,7 @@ end % function plotframe
 
 
 %% FUNCTION THAT CREATES IMAGE FILES FROM PLOTS
-function dosave(flagoutput, direc, filename, fmt, h)
+function dosave(flagoutput, direc, filename, fmtvec, h)
 
 narginchk(5,5)
 validateattr(flagoutput, {'numeric'}, {'scalar'}, mfilename)
@@ -227,6 +228,9 @@ for i = 1:length(dirs)
 end
 
 disp(['writing plots to ',direc])
+
+for ifmt=1:length(fmtvec)
+fmt=fmtvec{ifmt};
 
 switch fmt
   case 'png', flag = '-dpng'; suffix = '.png';
@@ -248,5 +252,7 @@ if flagoutput~=3
   end
 end
 print(h.f10,flag,[dirs{10}, filesep, filename,suffix],'-r300')
+
+end %for
 
 end %function dosave
