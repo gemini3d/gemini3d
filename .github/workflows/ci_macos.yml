@@ -21,8 +21,8 @@ jobs:
     - uses: actions/setup-python@v1
       with:
         python-version: '3.x'
-    - run: python -m pip install meson
-    - run: python -m pip install -e .[tests]
+    - run: pip install meson
+    - run: pip install -e .[tests]
     - run: brew install gcc ninja open-mpi
     - run: meson setup build
       env:
@@ -46,7 +46,7 @@ jobs:
     - uses: actions/setup-python@v1
       with:
         python-version: '3.x'
-    - run: python -m pip install meson
+    - run: pip install -e .[tests]
     - name: Install dependencies
       run: |
         brew install cmake gcc lapack open-mpi
@@ -58,7 +58,7 @@ jobs:
         CC: gcc-9
     - run: cmake --build build --parallel
 # CI is too slow for 3d_glow
-    - run: ctest --parallel -E 3d_glow -V
+    - run: ctest --parallel -E 3d_glow --output-on-failure
       working-directory: build
     - uses: actions/upload-artifact@v1
       if: failure()
