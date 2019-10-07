@@ -1,4 +1,4 @@
 [wrap-git]
 directory = glow
 url = https://github.com/space-physics/ncar-glow.git
-revision = head
+revision = 6eacabf681
