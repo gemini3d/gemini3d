@@ -2,17 +2,13 @@ name: ci_debug_build
 
 on:
   push:
-    paths:
-    - "**/*.f90"
-    - "**/*.F90"
-    - "**/meson.build"
-    - "**/CMakeLists.txt"
+    paths-ignore:
+      - "**/*.py"
+      - "**/*.md"
   pull_request:
-    paths:
-    - "**/*.f90"
-    - "**/*.F90"
-    - "**/meson.build"
-    - "**/CMakeLists.txt"
+    paths-ignore:
+      - "**/*.py"
+      - "**/*.md"
 
 jobs:
 

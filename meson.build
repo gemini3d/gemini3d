@@ -121,10 +121,10 @@ foreach k, v : zenodo
 #  endif
 
   run_command(python, meson.source_root() / 'script_utils/meson_file_download.py',
-                     v['url'], v['zip'], '-hash', 'md5', v['md5'])
+                v['url'], v['zip'], '-hash', 'md5', v['md5'])
 
   run_command(python, meson.source_root() / 'script_utils/meson_file_extract.py',
-                       v['zip'], v['dir'])
+                v['zip'], v['dir'])
 
 
   test_dir = meson.build_root() / 'test'  + k
