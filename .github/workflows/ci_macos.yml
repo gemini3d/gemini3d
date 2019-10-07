@@ -27,7 +27,10 @@ jobs:
         FC: gfortran-9
         CC: gcc-9
     - run: ninja -C build
-    - run: meson test -C build -v
+    - run: meson test -C build --suite unit -v
+    - run: meson test -C build --suite 2d_fang -v
+    - run: meson test -C build --suite 2d_glow -v
+# CI is too slow for 3d_glow
     - uses: actions/upload-artifact@v1
       if: failure()
       with:
@@ -52,7 +55,8 @@ jobs:
         FC: gfortran-9
         CC: gcc-9
     - run: cmake --build build --parallel
-    - run: ctest --parallel -V
+# CI is too slow for 3d_glow
+    - run: ctest --parallel -E 3d_glow -V
       working-directory: build
     - uses: actions/upload-artifact@v1
       if: failure()

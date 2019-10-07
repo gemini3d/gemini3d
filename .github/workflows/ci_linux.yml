@@ -1,4 +1,6 @@
 name: ci_linux
+env:
+  cmake_version: '3.15.3'
 
 on:
   push:
@@ -24,12 +26,13 @@ jobs:
     - name: Setup CMake
       run: |
         python -m pip install cmakeutils
-        cmake_setup 3.15.3 --prefix ${HOME}/.local
-        ${HOME}/.local/cmake-3.15.3-Linux-x86_64/bin/cmake -B build
+        cmake_setup ${cmake_version} --prefix ${HOME}/.local
+        ${HOME}/.local/cmake-${cmake_version}-Linux-x86_64/bin/cmake -B build
       env:
         FC: gfortran
-    - run: ${HOME}/.local/cmake-3.15.3-Linux-x86_64/bin/cmake --build build --parallel
-    - run: ${HOME}/.local/cmake-3.15.3-Linux-x86_64/bin/ctest --parallel -V
+    - run: ${HOME}/.local/cmake-${cmake_version}-Linux-x86_64/bin/cmake --build build --parallel
+# CI is too slow for 3d_glow
+    - run: ${HOME}/.local/cmake-${cmake_version}-Linux-x86_64/bin/ctest --parallel -V -E 3d_glow
       working-directory: build
     - uses: actions/upload-artifact@v1
       if: failure()
@@ -51,7 +54,10 @@ jobs:
       env:
         FC: gfortran
     - run: ninja -C build
-    - run: meson test -C build -v
+    - run: meson test -C build --suite unit -v
+    - run: meson test -C build --suite 2d_fang -v
+    - run: meson test -C build --suite 2d_glow -v
+# CI is too slow for 3d_glow
     - uses: actions/upload-artifact@v1
       if: failure()
       with:

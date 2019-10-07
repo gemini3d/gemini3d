@@ -29,7 +29,10 @@ jobs:
       env:
         CI: true
     - run: ninja -C build
-    - run: meson test -C build -v
+    - run: meson test -C build --suite unit -v
+    - run: meson test -C build --suite 2d_fang -v
+    - run: meson test -C build --suite 2d_glow -v
+# CI is too slow for 3d_glow
     - uses: actions/upload-artifact@v1
       if: failure()
       with:
