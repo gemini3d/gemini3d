@@ -129,15 +129,12 @@ foreach k, v : zenodo
     download_ok = false
   endif
 
-  ref_ok = true
   if download_ok
     proc = run_command(python, meson.source_root() / 'script_utils/meson_file_extract.py',
                        v['zip'], v['dir'])
     if proc.returncode() != 0
-      warning(k + 'test data in ' + v['dir'] + ' not available: ' + k + ' test disabled.')
       message('stderr: \n' + proc.stderr())
       message('stdout: \n' + proc.stdout())
-      ref_ok=false
     endif
   endif
 
@@ -159,31 +156,29 @@ foreach k, v : zenodo
     suite : k,
     args : ['-np', mpi_np, v['exe'], meson.source_root() / 'initialize/test' + k / 'config.nml', test_dir],
     workdir : meson.source_root(),
-    timeout : 1200,
+    timeout : 1800,
     is_parallel : false)
 
-  if ref_ok
-    test('Compare' + k, python_test,
-      args : ['tests/compare_all.py', test_dir, v['dir']],
-      suite : k,
-      timeout: 60,
-      workdir : meson.source_root())
+  # --- Python-based simulation output comparision
+  test('Compare' + k, python_test,
+    args : ['compare_all.py', test_dir, v['dir']],
+    suite : k,
+    timeout: 60,
+    workdir : meson.source_root() / 'tests')
+  # --- Matlab/Octave-based simulation output comparision
+  matoctargs = 'compare_all("' + test_dir + '","' + v['dir'] + '")'
 
-    matoctargs = 'compare_all("' + test_dir + '","' + v['dir'] + '")'
+  test('CompareMatlab' + k, matlab,
+    args : ['-batch', matoctargs],
+    suite : k,
+    timeout: 60,
+    workdir : meson.source_root() / 'tests')
 
-    test('CompareMatlab' + k, matlab,
-      args : ['-batch', matoctargs],
-      suite : k,
-      timeout: 60,
-      workdir : meson.source_root() / 'tests')
+  test('CompareOctave' + k, octave,
+    args : ['--eval', matoctargs],
+    suite : k,
+    timeout: 60,
+    workdir : meson.source_root() / 'tests')
 
-    test('CompareOctave' + k, octave,
-      args : ['--eval', matoctargs],
-      suite : k,
-      timeout: 60,
-      workdir : meson.source_root() / 'tests')
-  else
-    warning('Compare' + k + ' skipped due to missing reference data in ' + v['dir'])
-  endif
 
 endforeach

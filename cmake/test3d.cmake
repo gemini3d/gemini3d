@@ -33,7 +33,7 @@ Gemini3d_glow
 gemini_glow.bin
 test3d_glow
 tests/data/zenodo3d_glow
-1200
+1800
 )
 
 compare_gemini_output(
