@@ -7,4 +7,4 @@ option('SCALAPACK_ROOT', type : 'string', description : 'root directory of SCALA
 option('MUMPS_ROOT', type : 'string', description : 'root directory of MUMPS')
 option('MPI_ROOT', type : 'string', description : 'root directory of MPI')
 option('NP', type: 'string', description: 'manually set number of MPI processes')
-option('system_blas', type: 'boolean', value: false, description: 'use system libraries')
+option('system_blas', type: 'boolean', value: true, description: 'use system libraries')
