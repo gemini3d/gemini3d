@@ -13,24 +13,22 @@ if nargin<6
 else
   validateattr(caxlims, {'numeric'}, {'vector', 'numel', 2}, mfilename, 'plot intensity (min, max)', 6)
 end
+
 if nargin<7  || isempty(sourceloc) % leave || for validate
   sourceloc = [];
 else
   validateattributes(sourceloc, {'numeric'}, {'vector', 'numel', 2}, mfilename, 'source magnetic coordinates', 7)
 end
+
 if nargin<8 || isempty(ha)
-  ha = axes('parent', figure);
+  ha = get_axes();
+else
+  ha = get_axes(ha);
 end
+
 if nargin<9 || isempty(cmap)
   cmap = parula(256);
 end   
-
-
-if isoctave % Octave < 5.0
-  if isfigure(ha), ha = axes('parent', ha); end
-else
-  ha = axes(ha);  % this is fine for Octave >= 5.0 and Matlab
-end
 
 
 %SOURCE LOCATION (SHOULD PROBABLY BE AN INPUT)

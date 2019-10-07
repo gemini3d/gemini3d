@@ -1,4 +1,4 @@
-function xg = plotframe(direc,ymd,UTsec,saveplots,plotfun,xg,h,visible)
+function xg = plotframe(direc,ymd,UTsec,saveplot_fmt,plotfun,xg,h,visible)
 
 cwd = fileparts(mfilename('fullpath'));
 addpath([cwd, filesep, 'plotfunctions'])
@@ -11,7 +11,7 @@ validateattributes(ymd, {'numeric'}, {'vector','numel',3}, mfilename, 'year, mon
 validateattributes(UTsec, {'numeric'}, {'scalar'}, mfilename, 'UTC second', 3)
 
 if nargin<4
-  saveplots={};  % 'png', 'eps' or {'png', 'eps'}
+  saveplot_fmt={};  % {'png'} or {'png', 'eps'}
 end
 if nargin<5
   plotfun=[];    %code will choose a plotting function if not given
@@ -97,7 +97,6 @@ disp([filename, ' => ', func2str(plotfun)])
 %% UNTIL WE PROVIDE A WAY FOR THE USER TO SPECIFY COLOR AXES, JUST TRY TO SET THEM AUTOMATICALLY
 if (~flagcaxlims)
  nelim =  [min(ne(:)), max(ne(:))];
-% nelim =  [2e11,4.5e11];
  v1mod=max(abs(v1(:)));
  v1lim = [-v1mod, v1mod];
  Tilim = [0, max(Ti(:))];
@@ -158,12 +157,12 @@ if lotsplots   % 3D simulation or a very long 2D simulation - do separate plots 
   end
 
   % for 3D or long 2D plots print and output file every time step
-  dosave(flagoutput, direc, filename, saveplots, h)
+  saveframe(flagoutput, direc, filename, saveplot_fmt, h)
 
 else    %short 2D simulation - put the entire time series in a single plot
 
   figure(h.f10)
-  ha = subplot(Rsp, Csp,it,'parent',h.f10);
+  ha = subplot(Rsp, Csp, it, 'parent',h.f10);
   nelim =  [9 11.3];
   plotfun(ymd,UTsec,xg,log10(ne), 'log_{10} n_e (m^{-3})',nelim,[mlatsrc,mlonsrc],ha);
 
@@ -202,7 +201,7 @@ else    %short 2D simulation - put the entire time series in a single plot
 end
 
 if ~lotsplots    %save the short 2D sim plots
-  dosave(flagoutput, direc, filename, saveplots, h)
+  saveframe(flagoutput, direc, filename, saveplot_fmt, h)
 end
 
 %% Don't print
@@ -210,49 +209,3 @@ if nargout==0, clear('xg'), end
 
 end % function plotframe
 
-
-%% FUNCTION THAT CREATES IMAGE FILES FROM PLOTS
-function dosave(flagoutput, direc, filename, fmtvec, h)
-
-narginchk(5,5)
-validateattr(flagoutput, {'numeric'}, {'scalar'}, mfilename)
-validateattr(direc, {'char'}, {'vector'}, mfilename)
-validateattr(filename, {'char'}, {'vector'}, mfilename)
-
-dirs = {'v1plots', 'Tiplots', 'Teplots', 'J1plots', 'v2plots', 'v3plots', 'J2plots', 'J3plots', 'Phiplots', 'nplots'};
-for i = 1:length(dirs)
-  dirs{i} = [direc, filesep, dirs{i}];
-  if ~is_folder(dirs{i})
-    mkdir(dirs{i});
-  end
-end
-
-disp(['writing plots to ',direc])
-
-for ifmt=1:length(fmtvec)
-fmt=fmtvec{ifmt};
-
-switch fmt
-  case 'png', flag = '-dpng'; suffix = '.png';
-  case 'eps', flag = '-depsc2'; suffix = '.eps';
-  otherwise, return
-end
-
-if flagoutput~=3
-  print(h.f1,flag,[dirs{1}, filesep, filename,suffix],'-r300')
-  print(h.f2,flag,[dirs{2}, filesep, filename,suffix],'-r300')
-  print(h.f3,flag,[dirs{3}, filesep, filename,suffix],'-r300')
-  print(h.f4,flag,[dirs{4}, filesep, filename,suffix],'-r300')
-  print(h.f5,flag,[dirs{5}, filesep, filename,suffix],'-r300')
-  print(h.f6,flag,[dirs{6}, filesep, filename,suffix],'-r300')
-  print(h.f7,flag,[dirs{7}, filesep, filename,suffix],'-r300')
-  print(h.f8,flag,[dirs{8}, filesep, filename,suffix],'-r300')
-  if ~isempty(h.f9)
-    print(h.f9,flag,[dirs{9}, filesep, filename,suffix],'-r300')
-  end
-end
-print(h.f10,flag,[dirs{10}, filesep, filename,suffix],'-r300')
-
-end %for
-
-end %function dosave

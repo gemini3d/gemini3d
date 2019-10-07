@@ -1,4 +1,4 @@
-function xg = plotall(direc, saveplots, plotfun, xg, visible)
+function xg = plotall(direc, saveplot_fmt, plotfun, xg, visible)
 
 cwd = fileparts(mfilename('fullpath'));
 addpath([cwd, filesep, 'plotfunctions'])
@@ -7,7 +7,7 @@ addpath([cwd, filesep, '..', filesep, 'script_utils'])
 narginchk(1,5)
 validateattributes(direc, {'char'}, {'vector'}, mfilename, 'path to data', 1)
 
-if nargin<2, saveplots={}; end  %'png', 'eps' or {'png', 'eps'}
+if nargin<2, saveplot_fmt={}; end  %e.g. {'png'} or {'png', 'eps'}
 
 if nargin<3
   plotfun=[];
@@ -21,11 +21,8 @@ else
   validateattributes(xg, {'struct'}, {'scalar'}, mfilename, 'grid structure', 4)
 end
 
-if nargin<5
-  visible = 'on';
-else
-  validateattributes(visible, {'char'}, {'vector'}, mfilename, 'plot visibility: on/off', 5)
-end
+if nargin<5, visible = 'on'; end
+validateattributes(visible, {'char'}, {'vector'}, mfilename, 'plot visibility: on/off', 5)
 
 lxs = simsize(direc);
 disp(['sim grid dimensions: ',num2str(lxs)])
@@ -57,17 +54,24 @@ end
 
 h = plotinit(xg, visible);
 
-if ~isempty(saveplots)  % plot and save as fast as possible.
-  if ~isoctave && ~isinteractive && isempty(gcp('nocreate'))
-    parpool(2);
+if ~isempty(saveplot_fmt)  % plot and save as fast as possible.
+  if ~isoctave && ~isinteractive
+    if isempty(gcp('nocreate'))
+      parpool(2); % don't use too much RAM loading huge data
+    end
+    parfor i = 1:Nt
+      plotframe(direc, ymd(i,:), UTsec(i), saveplot_fmt, plotfun, xg, h);
+    end
+  else
+    for i = 1:Nt
+      plotframe(direc, ymd(i,:), UTsec(i), saveplot_fmt, plotfun, xg, h);
+    end
   end
-  parfor i = 1:Nt
-    plotframe(direc, ymd(i,:), UTsec(i), saveplots, plotfun, xg, h);
-  end
+
 else  % displaying interactively, not saving
 
   for i = 1:Nt
-    xg = plotframe(direc, ymd(i,:), UTsec(i), saveplots, plotfun, xg, h);
+    xg = plotframe(direc, ymd(i,:), UTsec(i), saveplot_fmt, plotfun, xg, h);
 
     drawnow % need this here to ensure plots update (race condition)
     disp(''), disp('** press any key to plot next time step, or Ctrl C to stop**')
