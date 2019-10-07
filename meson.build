@@ -120,23 +120,12 @@ foreach k, v : zenodo
 #    continue
 #  endif
 
-  proc = run_command(python, meson.source_root() / 'script_utils/meson_file_download.py',
+  run_command(python, meson.source_root() / 'script_utils/meson_file_download.py',
                      v['url'], v['zip'], '-hash', 'md5', v['md5'])
-  download_ok = true
-  if proc.returncode() != 0
-    warning(k + ' ' + v['zip'] + ' test data could not be downloaded from ' + v['url'] + ' and so ' + k + ' test will fail.')
-    message('stderr: \n' + proc.stderr())
-    download_ok = false
-  endif
 
-  if download_ok
-    proc = run_command(python, meson.source_root() / 'script_utils/meson_file_extract.py',
+  run_command(python, meson.source_root() / 'script_utils/meson_file_extract.py',
                        v['zip'], v['dir'])
-    if proc.returncode() != 0
-      message('stderr: \n' + proc.stderr())
-      message('stdout: \n' + proc.stdout())
-    endif
-  endif
+
 
   test_dir = meson.build_root() / 'test'  + k
 
