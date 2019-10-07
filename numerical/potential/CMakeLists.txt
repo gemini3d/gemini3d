@@ -28,3 +28,11 @@ set_tests_properties(OctavePotential2d  PROPERTIES
                      TIMEOUT 15
                      FIXTURES_REQUIRED GemPot)
 endif(OctaveOK)
+
+if(PythonOK)
+add_test(NAME PythonPotential2d
+  COMMAND ${Python3_EXECUTABLE}  ${CMAKE_CURRENT_SOURCE_DIR}/test_potential2d.py ${CMAKE_BINARY_DIR}/test_potential2D.dat)
+set_tests_properties(PythonPotential2d PROPERTIES
+                     TIMEOUT 10
+                     FIXTURES_REQUIRED GemPot)
+endif(PythonOK)

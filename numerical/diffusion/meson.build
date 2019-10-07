@@ -16,10 +16,10 @@ test('Diffusion1D_octave', octave,
   args: ['-q', '--eval', 'test_diffusion1D("' + meson.build_root() / 'test_diffusion1d.dat")'],
   timeout: 10,
   workdir: meson.current_source_dir(),
-  suite: 'unit')
+  suite: 'unit', priority: -100)
 
-# must have .current_source_dir() for Python script
 test('Diffusion1D_python', python,
-  args: [meson.current_source_dir() / 'test_diffusion1D.py', meson.build_root() / 'test_diffusion1d.dat'],
+  args: ['test_diffusion1D.py', meson.build_root() / 'test_diffusion1d.dat'],
   timeout: 10,
-  suite: 'unit')
+  workdir: meson.current_source_dir(),
+  suite: 'unit', priority: -100)

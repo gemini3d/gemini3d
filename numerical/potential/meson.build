@@ -1,4 +1,5 @@
 mumps_root = get_option('MUMPS_ROOT')
+mumpslib = disabler()
 if bits == '64'
   mumps_name = 'dmumps'
 elif bits == '32'
@@ -17,8 +18,6 @@ if system_blas
     mumpslib = [fc.find_library(mumps_name, required : false, dirs : mumps_root),
                 fc.find_library('mumps_common', required : false, dirs : mumps_root)]
   endif
-else
-  mumpslib = disabler()
 endif
 if mumpslib.found()
   mumps = declare_dependency(include_directories: mumpsinc, dependencies: mumpslib)
@@ -29,6 +28,7 @@ endif
 
 
 scalapack_root = get_option('SCALAPACK_ROOT')
+scalapack = disabler()
 if system_blas
   # dependency('scalapack') not yet working in Meson--cmake->meson bug within Meson, yielding long meson-log.txt
   # scalapack = dependency('scalapack', cmake_module_path : 'cmake/Modules')
@@ -41,8 +41,6 @@ if system_blas
     message('searching for SCALAPACK in ' + scalapack_root)
     scalapack = fc.find_library('scalapack', dirs : scalapack_root / 'lib')
   endif
-else
-  scalapack = disabler()
 endif
 if not scalapack.found()
   scalapack_proj = subproject('scalapack')
@@ -73,7 +71,13 @@ test('potential2d_octave', octave,
   args: ['-q', '--eval', 'test_potential2D("' + meson.build_root() / 'test_potential2D.dat")'],
   timeout: 15,
   workdir: meson.current_source_dir(),
-  suite: 'unit')
+  suite: 'unit', priority: -100)
+
+test('potential2d_python', python,
+  args: ['test_potential2D.py', meson.build_root() / 'test_potential2D.dat'],
+  timeout: 15,
+  workdir: meson.current_source_dir(),
+  suite: 'unit', priority: -100)
 
 #test_potential3d = executable('test_potential3d', 'test_potential3D.f90',
 #  dependencies: [mpi, mumps])
