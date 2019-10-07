@@ -126,8 +126,8 @@ logical exists
 if (myid==0) then    !root must physically read the size info and pass to workers
   inquire(file=indatsize, exist=exists)
   if (.not.exists) then
-     write(stderr,*) 'must generate grid with script before running simulation--grid not present: ',indatsize
-     error stop
+     write(stderr,'(A,/,A)') 'must generate grid with script before running simulation--grid not present: ',indatsize
+     error stop 77
   endif
 
   !DETERMINE THE SIZE OF THE GRID TO BE LOADED
