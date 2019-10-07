@@ -1,5 +1,5 @@
 project('GEMINI', 'fortran',
-  meson_version: '>=0.51.2',
+  meson_version: '>=0.52.0',
   default_options : ['default_library=static', 'buildtype=release',
   'libdir=gemini/lib', 'includedir=gemini/include'])
 
