@@ -12,7 +12,7 @@ from .readdata import read_config, loadframe, datetime_range
 try:
     from .plotdiff import plotdiff
 except ImportError:
-    pass
+    plotdiff = None
 
 
 def compare_all(outdir: Path, refdir: Path, tol: typing.Dict[str, float], doplot: bool = False) -> int:
@@ -51,7 +51,8 @@ def compare_all(outdir: Path, refdir: Path, tol: typing.Dict[str, float], doplot
             if not np.allclose(A[k][1], B[k][1], tol[f"rtol{j}"], tol[f"atol{j}"], True):
                 errs += 1
                 logging.error(f"{k} {st}   {abs(A[k][1] - B[k][1]).max().item():.3e}")
-                plotdiff(A[k][1], B[k][1], k, t, outdir, refdir)
+                if plotdiff is not None:
+                    plotdiff(A[k][1], B[k][1], k, t, outdir, refdir)
         # %% assert time steps have unique output (earth always rotating...)
         if i > 1:
             names = ["ne", "v1", "v2", "v3"]
