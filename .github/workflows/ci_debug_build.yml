@@ -1,4 +1,6 @@
 name: ci_debug_build
+env:
+  CI: true
 
 on:
   push:
@@ -26,8 +28,6 @@ jobs:
       env:
         FC: gfortran
     - run: pytest -r a -v
-      env:
-        CI: true
     - run: ninja -C build
     - run: meson test -C build --suite unit -v
     - run: meson test -C build --suite 2d_fang -v

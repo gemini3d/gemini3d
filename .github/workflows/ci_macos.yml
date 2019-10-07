@@ -1,4 +1,6 @@
 name: ci_macos
+env:
+  CI: true
 
 on:
   push:

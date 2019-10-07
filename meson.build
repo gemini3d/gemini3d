@@ -115,6 +115,7 @@ mpi_np = get_option('NP')
 
 foreach k, v : zenodo
 
+
 #  if is_ci and k.startswith('3d')
 #    # save download / CPU on CI
 #    continue
