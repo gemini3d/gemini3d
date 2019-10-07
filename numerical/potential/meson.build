@@ -74,7 +74,7 @@ test('potential2d_octave', octave,
   suite: 'unit', priority: -100)
 
 test('potential2d_python', python,
-  args: ['test_potential2D.py', meson.build_root() / 'test_potential2D.dat'],
+  args: ['test_potential2d.py', meson.build_root() / 'test_potential2D.dat'],
   timeout: 15,
   workdir: meson.current_source_dir(),
   suite: 'unit', priority: -100)

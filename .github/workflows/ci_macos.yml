@@ -13,6 +13,8 @@ on:
 jobs:
 
   macosMeson:
+  # need to debug on real Mac, intermittant build (not test) failures with clashing symbols between vendor/msis and glow/msis and other random stuff e.g. f0ade97
+    if: false
     runs-on: macos-latest
     steps:
     - uses: actions/checkout@v1

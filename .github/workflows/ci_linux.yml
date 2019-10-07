@@ -32,7 +32,8 @@ jobs:
         FC: gfortran
     - run: ${HOME}/.local/cmake-${cmake_version}-Linux-x86_64/bin/cmake --build build --parallel
 # CI is too slow for 3d_glow
-    - run: ${HOME}/.local/cmake-${cmake_version}-Linux-x86_64/bin/ctest --parallel -V -E 3d_glow
+# -V output truncated on CI?
+    - run: ${HOME}/.local/cmake-${cmake_version}-Linux-x86_64/bin/ctest --parallel --output-on-failure -E 3d_glow
       working-directory: build
     - uses: actions/upload-artifact@v1
       if: failure()
