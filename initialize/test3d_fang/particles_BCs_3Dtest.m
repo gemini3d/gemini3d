@@ -3,7 +3,7 @@ addpath ../../script_utils;
 
 %REFERENCE GRID TO USE
 direcconfig='./'
-direcgrid='../tests/data/zenodo3d/input'
+direcgrid='../tests/data/zenodo3d_fang/input'
 
 %CREATE SOME SPACE FOR OUTPUT FILES
 outdir='../simulations/input/test3d_particles/';

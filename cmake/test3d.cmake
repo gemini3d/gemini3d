@@ -9,14 +9,14 @@ setup_gemini_test(
 Gemini3d_fang
 gemini_fang.bin
 test3d_fang
-tests/data/zenodo3d
+tests/data/zenodo3d_fang
 600
 )
 
 compare_gemini_output(
 Compare3d_fang
 test3d_fang
-tests/data/zenodo3d
+tests/data/zenodo3d_fang
 20130220_18000.000001.dat
 )
 

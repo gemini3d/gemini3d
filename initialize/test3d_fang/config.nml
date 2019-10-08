@@ -10,9 +10,9 @@ potsolve = 1                             !potsolve:  how are we solving electrod
 flagperiodic = 0
 flagoutput = 1
 flagcap = 0
-indat_size = 'tests/data/zenodo3d/inputs/simsize.dat'
-indat_grid = 'tests/data/zenodo3d/inputs/simgrid.dat'
-indat_file = 'tests/data/zenodo3d/inputs/3Dtest_ICs.dat'
+indat_size = 'tests/data/zenodo3d_fang/inputs/simsize.dat'
+indat_grid = 'tests/data/zenodo3d_fang/inputs/simgrid.dat'
+indat_file = 'tests/data/zenodo3d_fang/inputs/3Dtest_ICs.dat'
 flagdneu = 0
 flagprecfile = 1
 flagE0file = 1
@@ -25,10 +25,10 @@ flagglow = 0
 
 &precip
 dtprec = 5.0
-prec_dir = 'tests/data/zenodo3d/inputs/prec_inputs/'
+prec_dir = 'tests/data/zenodo3d_fang/inputs/prec_inputs/'
 /
 
 &efield
 dtE0 = 1.0
-E0_dir = 'tests/data/zenodo3d/inputs/Efield_inputs/'
+E0_dir = 'tests/data/zenodo3d_fang/inputs/Efield_inputs/'
 /

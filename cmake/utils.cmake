@@ -4,6 +4,11 @@ include(${CMAKE_CURRENT_LIST_DIR}/download.cmake)
 
 function(setup_gemini_test TESTNAME EXE TESTDIR REFDIR TIMEOUT)
 
+if(NOT EXISTS ${CMAKE_SOURCE_DIR}/initialize/${TESTDIR})
+  message(WARNING "directory ${CMAKE_SOURCE_DIR}/initialize/${TESTDIR} not found.")
+  return()
+endif()
+
 num_mpi_processes(${REFDIR})
 
 if(NP LESS 2)
