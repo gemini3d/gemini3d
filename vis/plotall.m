@@ -80,6 +80,10 @@ else  % displaying interactively, not saving
 
 end % if saveplots
 
+if is_folder([direc, filesep, 'aurmaps']) % glow sim
+  plotglow(direc, saveplot_fmt)
+end
+
 %% Don't print
 if nargout==0, clear('xg'), end
 

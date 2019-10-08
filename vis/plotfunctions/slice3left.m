@@ -17,7 +17,7 @@ slice3axes(ax, P)
 xlabel(ax,'eastward dist. (km)');
 ylabel(ax,'altitude (km)');
 
-ttxt = time2str(P.ymd, P.UTsec);
+ttxt = time2str(P.ymd, P.utsec);
 title(ax, ttxt)
 
 %text(xp(round(lxp/10)),zp(lzp-round(lzp/7.5)),strval,'FontSize',18,'Color',[0.66 0.66 0.66],'FontWeight','bold');
