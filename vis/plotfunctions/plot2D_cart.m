@@ -133,8 +133,7 @@ elseif (xg.lx(2)==1)
   plot13(yp, zp, parmp3, ha, FS, sourcemlat)
 end
 
-t = datenum(ymd(1), ymd(2), ymd(3), 0, 0, UTsec);
-ttxt = {datestr(t,1), [datestr(t,13),' UT']};
+ttxt = time2str(ymd, UTsec);
 title(ha, ttxt)
 %text(xp(round(lxp/10)),zp(lzp-round(lzp/7.5)),strval,'FontSize',18,'Color',[0.66 0.66 0.66],'FontWeight','bold');
 %text(xp(round(lxp/10)),zp(lzp-round(lzp/7.5)),strval,'FontSize',16,'Color',[0.5 0.5 0.5],'FontWeight','bold');
