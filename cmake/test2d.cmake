@@ -1,6 +1,6 @@
 download_testfiles(
 57d72fd0005247c8eedf122ac4670ad0
-3464571
+3477385
 zenodo2d_fang
 ${PROJECT_SOURCE_DIR}/tests/data
 )
@@ -22,8 +22,8 @@ tests/data/zenodo2d_fang
 
 if(useglow)
 download_testfiles(
-c5bbbbff3bdde85b6d7e9470bc3751a2
-2520780
+557bc6a91d8bf3464abdc5c8784f3042
+3477385
 zenodo2d_glow
 ${PROJECT_SOURCE_DIR}/tests/data
 )

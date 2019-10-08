@@ -1,7 +1,7 @@
 download_testfiles(
-225853d43937a70c9ef6726f90666645
-2520920
-zenodo3d
+cf73d6eb166369c522da7a371492a1ce
+3477330
+zenodo3d_fang
 ${PROJECT_SOURCE_DIR}/tests/data
 )
 
@@ -22,8 +22,8 @@ tests/data/zenodo3d
 
 if(useglow)
 download_testfiles(
-2c54bfde8aff0fb72d61115f04c361a7
-2520920
+3528946525295cc8271aa41bc262d7f1
+3477330
 zenodo3d_glow
 ${PROJECT_SOURCE_DIR}/tests/data
 )
