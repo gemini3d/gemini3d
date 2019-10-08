@@ -33,14 +33,15 @@ file_list = dir([direc,filesep,'*.dat']);
 time_str = time2str(ymd0, UTsec0);
 ymd = ymd0;
 UTsec = UTsec0;
+hf = [];
 for i = 1:length(file_list)
   filename = [direc,filesep,'aurmaps',filesep,file_list(i).name];
   bFrame = loadglow_aurmap(filename, lx2, lx3, lwave);
 
   if lx3 > 1  % 3D sim
-    hf = plot_emission_line(x2, x3, bFrame, time_str);
+    hf = plot_emission_line(x2, x3, bFrame, time_str, wavelengths, hf);
   else  % 2D sim
-    hf = plot_emissions(x2, wavelengths, squeeze(bFrame), time_str);
+    hf = plot_emissions(x2, wavelengths, squeeze(bFrame), time_str, hf);
   end
 
   save_glowframe(flagoutput, direc, file_list(i).name, saveplot_fmt, hf)
@@ -54,16 +55,19 @@ end
 end % function
 
 
-function f = plot_emissions(x2, wavelengths, bFrame, time_str)
-
+function hf = plot_emissions(x2, wavelengths, bFrame, time_str, hf)
+narginchk(4,5)
 validateattributes(x2, {'numeric'}, {'vector'}, mfilename)
 validateattributes(bFrame, {'numeric'}, {'ndims', 2}, mfilename)
 validateattributes(wavelengths, {'cell'}, {'vector'}, mfilename)
 
-f = figure('toolbar', 'none');
-pos = get(f, 'position');
-set(f, 'unit', 'pixels', 'position', [pos(1), pos(2), 800, 500])
-ax = axes('parent', f);
+if nargin < 5 || isempty(hf)
+  hf = make_glowfig();
+else
+  clf(hf)
+end
+
+ax = axes('parent', hf);
 imagesc(1:length(wavelengths), x2/1e3,squeeze(bFrame))    % singleton dimension since 2D simulation
 set(ax, 'xtick', 1:length(wavelengths), 'xticklabel', wavelengths)
 ylabel(ax, 'Eastward Distance (km)')
@@ -73,28 +77,48 @@ hc = colorbar('peer', ax);
 ylabel(hc, 'Intensity (R)')
 end
 
-function f = plot_emission_line(x2, x3, bFrame, time_str)
 
+function hf = plot_emission_line(x2, x3, bFrame, time_str, wavelengths, hf)
+narginchk(5,6)
 validateattributes(x2, {'numeric'}, {'vector'}, mfilename)
 validateattributes(x3, {'numeric'}, {'vector'}, mfilename)
 validateattributes(bFrame, {'numeric'}, {'ndims', 3}, mfilename)
+validateattributes(time_str, {'cell'}, {'vector'}, mfilename)
+validateattributes(wavelengths, {'cell'}, {'vector'}, mfilename)
 
-f = figure('toolbar', 'none');
-pos = get(f, 'position');
-set(f, 'unit', 'pixels', 'position', [pos(1), pos(2), 800, 500])
-ax = axes('parent', f);
-imagesc(x2,x3,log10(squeeze(bFrame(:,:,2)))', 'parent', ax);
-axis(ax, 'xy')
-axis(ax, 'tight')
-%caxis(caxlims);
-cb=colorbar('peer', ax);
-%set(cb,'yticklabel',sprintf('10^{%g}|', get(cb,'ytick')))
-ylabel(cb,'427.8 nm Intensity (R)')
-xlabel(ax, 'Eastward Distance (km)')
-ylabel(ax, 'Northward Distance (km)')
-title(ax, ['427.8 nm intensity: ', time_str])
-
+if nargin < 5 || isempty(hf)
+  hf = make_glowfig();
+else
+  clf(hf)
 end
 
+inds = [2, 4, 5, 9];
+
+for i=1:length(inds)
+  ax = subplot(2,2,i,'parent', hf);
+  imagesc(x2/1e3, x3/1e3, squeeze(bFrame(:,:,inds(i)))', 'parent', ax);
+  axis(ax, 'xy')
+  axis(ax, 'tight')
+  %caxis(caxlims);
+  cb = colorbar('peer', ax);
+  %set(cb,'yticklabel',sprintf('10^{%g}|', get(cb,'ytick')))
+  ylabel(cb,'Intensity (R)')
+  title(ax, [wavelengths{inds(i)},'\AA  intensity: ', time_str{1}, ' ', time_str{2}], 'interpreter', 'latex')
+end
+
+ax=subplot(2,2,3);
+xlabel(ax, 'Eastward Distance (km)')
+ylabel(ax, 'Northward Distance (km)')
+
+end % function
+
+
+function hf = make_glowfig()
+
+hf = figure('toolbar', 'none');
+pos = get(hf, 'position');
+set(hf, 'unit', 'pixels', 'position', [pos(1), pos(2), 800, 500])
+
+end
 %ffmpeg -framerate 10 -pattern_type glob -i '*.png' -c:v libxvid -r 30 -q:v 0 isinglass_geminiglow_4278.avi
 %ffmpeg -framerate 10 -pattern_type glob -i '*.png' -c:v libx264 -r 30 -pix_fmt yuv420p out.mp4
