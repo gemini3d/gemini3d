@@ -1,8 +1,8 @@
 include(FetchContent)
 
 FetchContent_Declare(ncarglow
-  GIT_REPOSITORY https://github.com/space-physics/ncar-glow.git
-  GIT_TAG 6eacabf681
+  GIT_REPOSITORY https://github.com/gemini3d/glow.git
+  GIT_TAG 4828736
 )
 
 FetchContent_GetProperties(ncarglow)

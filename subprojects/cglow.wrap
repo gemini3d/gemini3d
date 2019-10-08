@@ -1,4 +1,4 @@
 [wrap-git]
 directory = glow
-url = https://github.com/space-physics/ncar-glow.git
-revision = 6eacabf681
+url = https://github.com/gemini3d/glow.git
+revision = 4828736
