@@ -1,5 +1,7 @@
-function plotglow(direc)
-narginchk(1,1)
+function plotglow(direc, saveplot_fmt)
+% plots Gemini-Glow auroral emissions
+narginchk(1,2)
+if nargin<2, saveplot_fmt={}; end  %e.g. {'png'} or {'png', 'eps'}
 
 cwd = fileparts(mfilename('fullpath'));
 addpath([cwd, filesep, 'plotfunctions'])
@@ -13,8 +15,8 @@ wavelengths = {'3371', '4278', '5200', '5577', '6300', '7320', '10400', ...
   '3466', '7774', '8446', '3726', 'LBH', '1356', '1493', '1304'};
 
 %READ IN SIMULATION INFO
-[ymd0,UTsec0,~,dtout]=readconfig(config_dir);
-glow_params = read_nml_group([config_dir, filesep, 'config.nml'], 'glow');
+[ymd0,UTsec0,~,dtout,flagoutput]=readconfig(config_dir);
+%glow_params = read_nml_group([config_dir, filesep, 'config.nml'], 'glow');
 
 %READ IN THE GRID
 xg = readgrid(config_dir);
@@ -36,10 +38,12 @@ for i = 1:length(file_list)
   bFrame = loadglow_aurmap(filename, lx2, lx3, lwave);
 
   if lx3 > 1  % 3D sim
-    plot_emission_line(x2, x3, bFrame, time_str)
+    hf = plot_emission_line(x2, x3, bFrame, time_str);
   else  % 2D sim
-    plot_emissions(x2, wavelengths, squeeze(bFrame), time_str)
+    hf = plot_emissions(x2, wavelengths, squeeze(bFrame), time_str);
   end
+
+  save_glowframe(flagoutput, direc, file_list(i).name, saveplot_fmt, hf)
 
   % we use dtout instead of dtglow because we're only plotting times the
   % full simulation outputs too.
@@ -50,13 +54,15 @@ end
 end % function
 
 
-function plot_emissions(x2, wavelengths, bFrame, time_str)
+function f = plot_emissions(x2, wavelengths, bFrame, time_str)
 
 validateattributes(x2, {'numeric'}, {'vector'}, mfilename)
 validateattributes(bFrame, {'numeric'}, {'ndims', 2}, mfilename)
 validateattributes(wavelengths, {'cell'}, {'vector'}, mfilename)
 
-f = figure;
+f = figure('toolbar', 'none');
+pos = get(f, 'position');
+set(f, 'unit', 'pixels', 'position', [pos(1), pos(2), 800, 500])
 ax = axes('parent', f);
 imagesc(1:length(wavelengths), x2/1e3,squeeze(bFrame))    % singleton dimension since 2D simulation
 set(ax, 'xtick', 1:length(wavelengths), 'xticklabel', wavelengths)
@@ -67,13 +73,15 @@ hc = colorbar('peer', ax);
 ylabel(hc, 'Intensity (R)')
 end
 
-function plot_emission_line(x2, x3, bFrame, time_str)
+function f = plot_emission_line(x2, x3, bFrame, time_str)
 
 validateattributes(x2, {'numeric'}, {'vector'}, mfilename)
 validateattributes(x3, {'numeric'}, {'vector'}, mfilename)
 validateattributes(bFrame, {'numeric'}, {'ndims', 3}, mfilename)
 
-f = figure;
+f = figure('toolbar', 'none');
+pos = get(f, 'position');
+set(f, 'unit', 'pixels', 'position', [pos(1), pos(2), 800, 500])
 ax = axes('parent', f);
 imagesc(x2,x3,log10(squeeze(bFrame(:,:,2)))', 'parent', ax);
 axis(ax, 'xy')
