@@ -132,7 +132,7 @@ foreach k, v : zenodo
 
   if mpi_np == ''
     proc = run_command(python, meson.source_root() / 'script_utils/meson_cpu_count.py',
-                       v['dir']/ 'inputs/simsize.dat')
+                       v['dir'] / 'inputs/simsize.dat')
     mpi_np = proc.stdout()
     if proc.returncode() != 0 or mpi_np == ''
       warning('Unable to auto-compute appropriate number of MPI images, using NP=2')
