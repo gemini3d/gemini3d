@@ -1,4 +1,3 @@
-include(${CMAKE_CURRENT_LIST_DIR}/maxfactor.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/num_mpi.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/download.cmake)
 

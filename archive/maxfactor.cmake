@@ -20,4 +20,3 @@ foreach(i RANGE 1 ${N})
 endforeach()
 
 endfunction(maxfactor)
-
