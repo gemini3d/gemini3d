@@ -56,10 +56,11 @@ h = plotinit(xg, visible);
 
 if ~isempty(saveplot_fmt)  % plot and save as fast as possible.
   if ~isoctave && ~isinteractive
-    if isempty(gcp('nocreate'))
-      parpool(2); % don't use too much RAM loading huge data
-    end
-    parfor i = 1:Nt
+%    if isempty(gcp('nocreate'))
+%      parpool(2); % don't use too much RAM loading huge data
+%    end
+%    parfor i = 1:Nt
+    for i=1:Nt
       plotframe(direc, ymd(i,:), UTsec(i), saveplot_fmt, plotfun, xg, h);
     end
   else

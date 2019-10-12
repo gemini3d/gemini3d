@@ -75,7 +75,7 @@ if params.flagdneu
   datatrim = strtok(fgetl(fid),' ');
   [mlat,remainder]=strtok(datatrim,',');
   mlon = strtok(remainder,',');
-  params.mloc=[str2double(mlat), str2double(mlon)];
+  params.mloc=[str2num(mlat), str2num(mlon)];
 else
   params.mloc=[];
 end
