@@ -1,6 +1,7 @@
 function filename = get_configfile(path)
+%% get configuration file, checking first for config.nml and then config.ini
 
-validateattr(path, {'char'}, {'vector'}, mfilename,'directory or file',1)
+narginchk(1,1)
 
 if is_file(path)
   filename = path;

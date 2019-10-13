@@ -15,10 +15,9 @@ function expanded = expanduser(p)
 % that can't handle ~ and Matlab does not consider it a bug per conversations with
 % Mathworks staff
 %
-% Michael Hirsch
-%
 % tested with Matlab and Octave on Windows, Cygwin, Linux, and WINE
 %
+narginchk(1,1)
 %% try python first
 try %#ok<TRYNC> %requires Matlab R2014b or newer for following line
     expanded = char(py.os.path.expanduser(p));

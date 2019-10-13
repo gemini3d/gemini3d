@@ -7,7 +7,7 @@ assert(is_file(filename), ['config file ', filename, ' not found.'])
 fid=fopen(filename);
 
 %DATE
-datatrim =strtok(fgetl(fid),' ');
+datatrim = strtok(fgetl(fid),' ');
 [day,remainder]=strtok(datatrim,',');
 [month,remainder]=strtok(remainder,',');
 year =strtok(remainder,',');    %should not find delimiter..
@@ -75,7 +75,9 @@ if params.flagdneu
   datatrim = strtok(fgetl(fid),' ');
   [mlat,remainder]=strtok(datatrim,',');
   mlon = strtok(remainder,',');
-  params.mloc=[str2num(mlat), str2num(mlon)];
+  % NOTE: str2num necessary here in case input formatted like 1.3d0 which
+  % str2double returns NaN for while str2num works
+  params.mloc=[str2num(mlat), str2num(mlon)]; %#ok<ST2NM>
 else
   params.mloc=[];
 end

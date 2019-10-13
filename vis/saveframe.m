@@ -4,7 +4,6 @@ narginchk(5,5)
 validateattributes(flagoutput, {'numeric'}, {'scalar'}, mfilename)
 validateattributes(direc, {'char'}, {'vector'}, mfilename)
 validateattributes(filename, {'char'}, {'vector'}, mfilename)
-validateattributes(saveplot_fmt, {'cell'}, {'vector'}, mfilename)
 validateattributes(h, {'struct'}, {'vector'}, mfilename)
 
 dirs = {'v1plots', 'Tiplots', 'Teplots', 'J1plots', 'v2plots', 'v3plots', 'J2plots', 'J3plots', 'Phiplots', 'nplots'};

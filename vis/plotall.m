@@ -29,7 +29,7 @@ disp(['sim grid dimensions: ',num2str(lxs)])
 
 
 %% NEED TO READ INPUT FILE TO GET DURATION OF SIMULATION AND START TIME
-[ymd0,UTsec0,tdur,dtout] = readconfig([direc, filesep, 'inputs']);
+params = read_config([direc, filesep, 'inputs']);
 
 %% CHECK WHETHER WE NEED TO RELOAD THE GRID (check if one is given because this can take a long time)
 if isempty(xg)
@@ -40,16 +40,16 @@ end
 plotfun = grid2plotfun(plotfun, xg);
 
 %% TIMES OF INTEREST
-times=UTsec0:dtout:UTsec0+tdur;
+times=params.UTsec0:params.dtout:params.UTsec0+params.tdur;
 Nt=numel(times);
 
 %% MAIN FIGURE LOOP
 % NOTE: keep figure() calls in case plotfcn misses a graphics handle, and
 % for Octave...
-ymd(1,:) = ymd0;
-UTsec(1) = UTsec0;
+ymd(1,:) = params.ymd;
+UTsec(1) = params.UTsec0;
 for i = 2:Nt
-  [ymd(i,:), UTsec(i)] = dateinc(dtout, ymd(i-1,:), UTsec(i-1)); %#ok<AGROW>
+  [ymd(i,:), UTsec(i)] = dateinc(params.dtout, ymd(i-1,:), UTsec(i-1)); %#ok<AGROW>
 end
 
 h = plotinit(xg, visible);

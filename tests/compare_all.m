@@ -15,14 +15,11 @@ function ok = compare_all(outdir, refdir)
 % ne=1e7 m-3
 % vi,v2,v3=2 m/s
 % J1,J2,J3 = 1e-9
+narginchk(2,2)
 
 cwd = fileparts(mfilename('fullpath'));
 addpath([cwd,filesep,'..',filesep,'script_utils'])
 addpath([cwd, filesep, '..', filesep, 'vis'])
-
-narginchk(2,2)
-validateattr(outdir, {'char'}, {'vector'}, mfilename,'directory to compare',1)
-validateattr(refdir, {'char'}, {'vector'}, mfilename,'directory to compare',2)
 
 tol.rtol = 1e-5;
 tol.rtolN = 1e-5;
@@ -42,25 +39,25 @@ exist_or_skip(refdir, 'dir')
 % and GetFullPath.m can arbitrarily change working directory, breaking the script.
 if strcmp(outdir, refdir), error([outdir, ' and ', refdir, ' directories are the same']), end
 %% READ IN THE SIMULATION INFORMATION
-[ymd0,UTsec0,tdur,dtout] = readconfig([outdir, filesep, 'inputs']);
+params = read_config([outdir, filesep, 'inputs']);
 
 lxs = simsize(outdir);
 disp(['sim grid dimensions: ',num2str(lxs)])
 
 %% TIMES OF INTEREST
-times = UTsec0:dtout:UTsec0+tdur;
+times = params.UTsec0:params.dtout:params.UTsec0 + params.tdur;
 Nt = length(times);
 assert(Nt > 1, [outdir, ' simulation did not run long enough'])
 
-ymd=ymd0;
-UTsec=UTsec0;
+ymd=params.ymd;
+UTsec=params.UTsec0;
 
 ok = false;
 
 for it=1:Nt
   st = ['UTsec ', num2str(times(it))];
-  [neA,~,~,~,v1A,TiA,TeA,J1A,v2A,v3A,J2A,J3A] = loadframe(outdir,ymd,UTsec,ymd0,UTsec0);
-  [neB,~,~,~,v1B,TiB,TeB,J1B,v2B,v3B,J2B,J3B] = loadframe(refdir,ymd,UTsec,ymd0,UTsec0);
+  [neA,~,~,~,v1A,TiA,TeA,J1A,v2A,v3A,J2A,J3A] = loadframe(outdir,ymd,UTsec, params.ymd, params.UTsec0);
+  [neB,~,~,~,v1B,TiB,TeB,J1B,v2B,v3B,J2B,J3B] = loadframe(refdir,ymd,UTsec, params.ymd, params.UTsec0);
 
   ok = ok + ~assert_allclose(neA,neB,tol.rtolN,tol.atolN,['Ne ',st], true);
 
@@ -98,7 +95,7 @@ for it=1:Nt
 
   Ne = neA; v1=v1A; v2=v2A; v3=v3A; Ti=TiA; Te=TeA; J1=J1A; J2=J2A; J3=J3A;
 
-  [ymd,UTsec] = dateinc(dtout,ymd,UTsec);
+  [ymd,UTsec] = dateinc(params.dtout,ymd,UTsec);
 
 end
 

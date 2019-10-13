@@ -5,10 +5,8 @@ function validateattr(varargin)
 % overloading doesn't work in Octave since it is a core *library* function
 % there doesn't appear to be a solution besides renaming this function.
 
-if exist('validateattributes') == 0
-  return
+if exist('validateattributes', 'builtin') == 5 || exist('validateattributes', 'file') == 2
+  validateattributes(varargin{:})
 end
 
-validateattributes(varargin{:})
-
-end
+end % function

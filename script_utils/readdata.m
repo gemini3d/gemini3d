@@ -2,13 +2,9 @@ function [t,ns,Ts,vs1,J1,J2,J3,v2,v3,Phitop]=readdata(lxs,filename)
 
 narginchk(2,2)
 validateattr(lxs, {'numeric'}, {'vector', 'numel', 3, 'positive'}, mfilename, 'grid dimensions', 1)
-validateattr(filename, {'char'}, {'vector'}, mfilename, 'data filename', 2)
 
-
-%--------------------------------------------------------
-%-----READ DATA FROM AN OUTPUT FILE WRITTEN BY FORTRAN
-%-----CODE
-%--------------------------------------------------------
+assert(is_file(filename), [filename, 'is not found.'])
+%% READ DATA FROM AN OUTPUT FILE WRITTEN BY FORTRAN CODE
 
 fid=fopen(filename,'r');
 t=fread(fid,1,'real*8');
