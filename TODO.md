@@ -28,6 +28,7 @@ This file is intended to document development priorities for the GEMINI project.
 * magplot needs some way to know what the grid dimensions are so the user doesn't have to manually input 
 * Fix restart code for precipitation and electric field input files (need to be primed like the neutral input)
 * Proper restarting will require reading in an initial potential value, as well - means that the matlab input scripts need to be fixed/updated too...
+* Milestone full-data output to enable restarting
 * run + plot script...
 * X Right now MATLAB scripts assume you specify the geographic center of the grid *in the nortern hemisphere*
 * Unit tests for some numerical solvers (elliptic, advection, diffusion, etc.)
@@ -75,7 +76,7 @@ These are projects in progress involved GEMINI, you are encouraged to email M. Z
 
 
 ## Interfaces with other models
-* DONE!!! (VERY IMPORTANT) Ability to use GLOW to compute ionization and heating rates, as well as brightnesses of various bands of interest.  This brings up a lot of questions about how GLOW will function on a closed field-line grid; we may need to talk to Stan about this.  
+* X DONE!!! (VERY IMPORTANT) Ability to use GLOW to compute ionization and heating rates, as well as brightnesses of various bands of interest.  This brings up a lot of questions about how GLOW will function on a closed field-line grid; we may need to talk to Stan about this.  
 * Pass inclination from GEMINI to GLOW rather than using IGRF in glow while using a dipole in GEMINI
 * Return superthermal current from GLOW in order to calculate the thermal current in GEMINI
 * Inverted grid must be passed to GLOW if running a curvilinear altitude array to GLOW
