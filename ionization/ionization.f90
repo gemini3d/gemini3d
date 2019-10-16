@@ -2,6 +2,7 @@ module ionization
 
 use phys_consts, only: elchrg, lsp, kb, mn, re, pi, wp, lwave, debug
 use neutral, only: Tnmsis
+use ionize_fang, only: fang2008
 !! we need the unperturbed msis temperatures to apply the simple chapman theory used by this module
 use grid, only: curvmesh,lx1,lx2,lx3,g1,g2,g3
 use timeutils, only: doy_calc
@@ -242,84 +243,46 @@ end do
 end function photoionization
 
 
-pure function ionrate_fang08(W0,PhiWmWm2,alt,nn,Tn)
-
-!! COMPUTE IONIZATION RATES PER THE FANG 2008 SEMI-EMPIRICAL METHOD.
-!! https://agupubs.onlinelibrary.wiley.com/doi/10.1029/2008JA013384
-!! https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2010GL045406
-
-real(wp), parameter :: Pijcoeff(8,4) = reshape( &
-[3.49979d-1, -6.18200d-2, -4.08124d-2, 1.65414d-2, &
-5.85425d-1, -5.00793d-2, 5.69309d-2, -4.02491d-3, &
-1.69692d-1, -2.58981d-2, 1.96822d-2, 1.20505d-3, &
--1.22271d-1, -1.15532d-2, 5.37951d-6, 1.20189d-3, &
-1.57018d0, 2.87896d-1, -4.14857d-1, 5.18158d-2, &
-8.83195d-1, 4.31402d-2, -8.33599d-2, 1.02515d-2, &
-1.90953d0, -4.74704d-2, -1.80200d-1, 2.46652d-2, &
--1.29566d0, -2.10952d-1, 2.73106d-1,  -2.92752d-2], shape(Pijcoeff), order=[2,1])
-
+impure function ionrate_fang08(W0,PhiWmWm2,alt,nn,Tn)
 
 real(wp), dimension(:,:), intent(in) :: W0,PhiWmWm2
 
 real(wp), dimension(:,:,:,:), intent(in) :: nn
 real(wp), dimension(:,:,:), intent(in) :: alt,Tn
 
-real(wp) :: W0keV,PhiW,alt0,deps,massden0
-real(wp), dimension(1:size(nn,1)) :: H,massden,y,f,meanmass
-real(wp), dimension(8) :: C
+real(wp) :: W0keV,PhiW
+real(wp), dimension(1:size(nn,1)) :: massden,meanmass
 
-integer :: ix2,ix3,lx1,lx2,lx3,ii,ij,li,lj
+integer :: ix2,ix3,lx2,lx3
 
 real(wp), dimension(1:size(nn,1),1:size(nn,2),1:size(nn,3)) :: Ptot,PO,PN2,PO2
 
 real(wp), dimension(1:size(nn,1),1:size(nn,2),1:size(nn,3),lsp-1) :: ionrate_fang08
 
 
-lx1=size(nn,1)
 lx2=size(nn,2)
 lx3=size(nn,3)
 
-li=size(Pijcoeff,1)
-lj=size(Pijcoeff,2)
+!IONIZATION RATES ARE COMPUTED ON A PER-PROFILE BASIS
 
 !zero flux should really be check per field line
-if ( maxval(PhiWmWm2) > 0._wp) then   !only compute rates if nonzero flux given
-  !IONIZATION RATES ARE COMPUTED ON A PER-PROFILE BASIS
-  deps=35d-3    !keV, kinetic energy lost per ion-electron pair produced
+if ( maxval(PhiWmWm2) > 0) then   !only compute rates if nonzero flux given
+
   do ix3=1,lx3
     do ix2=1,lx2
       !CONVERSION TO DIFFERENTIAL NUMBER FLUX
-      PhiW=PhiWmWm2(ix2,ix3)*1d-3/elchrg    !from mW/m^2 to eV/m^2/s
-      PhiW=PhiW/1d3/1d4    !to keV/cm^2/s
-      W0keV=W0(ix2,ix3)/1d3
+      PhiW=PhiWmWm2(ix2,ix3)*1e-3_wp/elchrg    !from mW/m^2 to eV/m^2/s
+      PhiW=PhiW/1e3_wp/1e4_wp    !to keV/cm^2/s
+      W0keV=W0(ix2,ix3)/1e3_wp
 
-
-      !SCALE HEIGHT CALCULATION
       massden=mn(1)*nn(:,ix2,ix3,1)+mn(2)*nn(:,ix2,ix3,2)+mn(3)*nn(:,ix2,ix3,3)
-      meanmass=massden/(nn(:,ix2,ix3,1)+nn(:,ix2,ix3,2)+nn(:,ix2,ix3,3))    !mean mass per particle
-      H=kb*Tn(:,ix2,ix3)/meanmass/abs(g1(:,ix2,ix3))
+      !! mass densities are [kg m^-3] as per neutral/neutral.f90 "call meters(.true.)" for MSIS.
+      meanmass=massden/(nn(:,ix2,ix3,1)+nn(:,ix2,ix3,2)+nn(:,ix2,ix3,3))
+      !! mean mass per particle [kg]
 
-
-      !Y PARAMETER
-      massden=massden*1d3/1d6    !conversion of mass density from kg/m^3 to g/cm^3
-      H=H*1d2                    !convert from m to cm
-      y=1d0/W0keV*(massden*H/4d-6)**(0.606d0)
-
-
-      !Ci COEFFS and SHAPE FUNCTION
-      C = 0
-      do ii=1,li
-        do ij=1,lj
-          C(ii)=C(ii)+Pijcoeff(ii,ij)*log(W0keV)**(real(ij, wp)-1)    !check whether log or log10?
-        end do
-        C(ii)=exp(C(ii))
-      end do
-
-      f=C(1)*y**C(2)*exp(-1*C(3)*y**C(4))+C(5)*y**C(6)*exp(-1*C(7)*y**C(8))
-
-
-      !TOTAL IONIZATION RATE
-      Ptot(:,ix2,ix3)=PhiW/2._wp/deps/H*f*1e6_wp   !convert to 1/m^3/s
+      !! TOTAL IONIZATION RATE
+      Ptot(:,ix2,ix3) = fang2008(PhiW, W0keV, Tn(:,ix2,ix3), massden/1000, meanmass*1000, g1(:,ix2,ix3)) * 1e6_wp
+      !! [cm^-3 s^-1] => [m^-3 s^-1]
     end do
   end do
 

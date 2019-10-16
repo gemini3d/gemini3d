@@ -22,7 +22,7 @@ real(wp), parameter :: pi = 4.0_wp*atan(1.0_wp)
 
 
 !PHYSICAL CONSTANTS
-real(wp), parameter :: kB=1.38064852e-23_wp, &      !Boltzmann constant
+real(wp), parameter :: kB=1.38064852e-23_wp, &      !Boltzmann constant [J K^-1] = [m^2 kg s^-2 K^-1]
                        elchrg=1.60217662e-19_wp, &  !elementary charge
                        amu=1.660539040e-27_wp, &    !atomic mass unit
                        Gconst=6.67408e-11_wp, &     !Universal gravitation constant

@@ -1,12 +1,21 @@
+add_library(fang fang.f90)
+target_link_libraries(fang PRIVATE const)
+set_target_properties(fang PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR})
+
+add_executable(test_fang2008 test_fang2008.f90)
+target_link_libraries(test_fang2008 PRIVATE fang msis)
+set_target_properties(test_fang2008 PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR})
+
+
 add_library(ionization ionization.f90 glow_dummy.f90)
-target_link_libraries(ionization PRIVATE const neutral grid timeutils mpimod MPI::MPI_Fortran)
+target_link_libraries(ionization PRIVATE const neutral grid timeutils fang mpimod MPI::MPI_Fortran)
 set_target_properties(ionization PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR})
 
 if(useglow)
   include(${PROJECT_SOURCE_DIR}/cmake/glow.cmake)
 
   add_library(ionization_glow ionization.f90 glow_run.F90)
-  target_link_libraries(ionization_glow PRIVATE cglow const neutral grid timeutils mpimod MPI::MPI_Fortran)
+  target_link_libraries(ionization_glow PRIVATE cglow const neutral grid timeutils fang mpimod MPI::MPI_Fortran)
   set_target_properties(ionization_glow PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR})
   target_include_directories(ionization_glow PRIVATE ${ncarglow_BINARY_DIR})
   # double quotes needed in next line since it's injects directly into Fortran code
