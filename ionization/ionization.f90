@@ -268,7 +268,7 @@ real(wp) :: W0keV,PhiW,alt0,deps,massden0
 real(wp), dimension(1:size(nn,1)) :: H,massden,y,f,meanmass
 real(wp), dimension(8) :: C
 
-integer :: ix1,ix2,ix3,lx1,lx2,lx3,ii,ij,li,lj
+integer :: ix2,ix3,lx1,lx2,lx3,ii,ij,li,lj
 
 real(wp), dimension(1:size(nn,1),1:size(nn,2),1:size(nn,3)) :: Ptot,PO,PN2,PO2
 
@@ -329,32 +329,28 @@ if ( maxval(PhiWmWm2) > 0._wp) then   !only compute rates if nonzero flux given
   PN2=0d0
   PO2=0d0
 
-  do ix3=1,lx3
-    do ix2=1,lx2
-      do ix1=1,lx1
-        if (nn(ix1,ix2,ix3,1)+nn(ix1,ix2,ix3,2)+nn(ix1,ix2,ix3,3) > 1d-10 ) then
-          PN2(ix1,ix2,ix3)=Ptot(ix1,ix2,ix3)*0.94d0*nn(ix1,ix2,ix3,2)/ &
-                           (nn(ix1,ix2,ix3,3)+0.94d0*nn(ix1,ix2,ix3,2)+0.55d0*nn(ix1,ix2,ix3,1))
-        end if
+  where (nn(:,:,:,1)+nn(:,:,:,2)+nn(:,:,:,3) > 1e-10_wp )
+          PN2(:,:,:)=Ptot(:,:,:)*0.94_wp*nn(:,:,:,2)/ &
+                           (nn(:,:,:,3)+0.94_wp*nn(:,:,:,2)+0.55_wp*nn(:,:,:,1))
 
-        if (nn(ix1,ix2,ix3,2)>1d-10) then
-          PO2(ix1,ix2,ix3)=PN2(ix1,ix2,ix3)*1.07d0*nn(ix1,ix2,ix3,3)/nn(ix1,ix2,ix3,2)
-          PO(ix1,ix2,ix3)=PN2(ix1,ix2,ix3)*0.59d0*nn(ix1,ix2,ix3,1)/nn(ix1,ix2,ix3,2)
-        end if
-      end do
-    end do
-  end do
+  endwhere
+
+  where (nn(:,:,:,2)>1e-10_wp)
+    PO2(:,:,:)=PN2(:,:,:)*1.07_wp*nn(:,:,:,3)/nn(:,:,:,2)
+    PO(:,:,:)=PN2(:,:,:)*0.59_wp*nn(:,:,:,1)/nn(:,:,:,2)
+  endwhere
+
 
 
   !SPLIT TOTAL IONIZATION RATE PER VALLANCE JONES, 1973
   ionrate_fang08(:,:,:,1)=PO+0.33d0*PO2
-  ionrate_fang08(:,:,:,2)=0d0
+  ionrate_fang08(:,:,:,2)=0
   ionrate_fang08(:,:,:,3)=0.76d0*PN2
   ionrate_fang08(:,:,:,4)=0.67d0*PO2
   ionrate_fang08(:,:,:,5)=0.24d0*PN2
-  ionrate_fang08(:,:,:,6)=0d0
+  ionrate_fang08(:,:,:,6)=0
 else
-  ionrate_fang08(:,:,:,:)=0d0
+  ionrate_fang08(:,:,:,:)=0
 end if
 
 end function ionrate_fang08
