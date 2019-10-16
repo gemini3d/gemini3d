@@ -77,18 +77,14 @@ if not lapack.found() or not blas.found()
   blas = lapack_proj.get_variable('blas')
 endif
 
-if use_hdf  # see HDF5 branch, not yet fully ready.
- hdf5 = dependency('hdf5')
-endif
-
-
 pymod = import('python')
 python = pymod.find_installation('python3')
 if python.language_version().version_compare('< 3.6')
   error('Python ' + python.language_version() + ' is too old, you must have at least Python 3.6. Try "conda activate" or "module load python3" or similar.')
 endif
 
-is_ci = run_command(python, meson.source_root() / 'script_utils/meson_get_environment_variable.py', 'CI').stdout().to_lower() == 'true'
+# not needed at the moment
+# is_ci = run_command(python, meson.source_root() / 'script_utils/meson_get_environment_variable.py', 'CI').stdout().to_lower() == 'true'
 
 python_test = python
 if run_command(python, '-c', 'import gemini').returncode() != 0

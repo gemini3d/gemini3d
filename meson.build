@@ -5,7 +5,6 @@ project('GEMINI', 'fortran',
 
 bits = get_option('realbits')
 real_bits = '-DREALBITS=' + bits
-use_hdf = get_option('HDF')
 buildtype = get_option('buildtype')
 arith = get_option('arith')
 message('arith: ' + arith)
@@ -86,66 +85,28 @@ magcalc = executable('magcalc.bin', 'magcalc.f90',
 
 zenodo = {
   '2d_fang': {
-    'url': 'https://zenodo.org/record/3477385/files/zenodo2d_fang.zip?download=1',
-    'md5': '57d72fd0005247c8eedf122ac4670ad0',
     'dir': meson.source_root() / 'tests/data/zenodo2d_fang',
-    'zip': meson.source_root() / 'tests/data/zenodo2d_fang.zip',
     'exe': gemini_fang_exe},
   '2d_glow': {
-    'url': 'https://zenodo.org/record/3477385/files/zenodo2d_glow.zip?download=1',
-    'md5': '557bc6a91d8bf3464abdc5c8784f3042',
     'dir': meson.source_root() / 'tests/data/zenodo2d_glow',
-    'zip': meson.source_root() / 'tests/data/zenodo2d_glow.zip',
     'exe': gemini_glow_exe},
   '3d_fang': {
-    'url': 'https://zenodo.org/record/3477330/files/zenodo3d_fang.zip?download=1',
-    'md5': 'cf73d6eb166369c522da7a371492a1ce',
     'dir': meson.source_root() / 'tests/data/zenodo3d_fang',
-    'zip': meson.source_root() / 'tests/data/zenodo3d_fang.zip',
     'exe': gemini_fang_exe},
   '3d_glow': {
-     'url': 'https://zenodo.org/record/3477330/files/zenodo3d_glow.zip?download=1',
-     'md5': '3528946525295cc8271aa41bc262d7f1',
      'dir': meson.source_root() / 'tests/data/zenodo3d_glow',
-     'zip': meson.source_root() / 'tests/data/zenodo3d_glow.zip',
      'exe': gemini_glow_exe},
   }
 
-mpi_np = get_option('NP')
-
 foreach k, v : zenodo
-
-
-#  if is_ci and k.startswith('3d')
-#    # save download / CPU on CI
-#    continue
-#  endif
-
-  run_command(python, meson.source_root() / 'script_utils/meson_file_download.py',
-                v['url'], v['zip'], '-hash', 'md5', v['md5'])
-
-  run_command(python, meson.source_root() / 'script_utils/meson_file_extract.py',
-                v['zip'], v['dir'])
-
 
   test_dir = meson.build_root() / 'test'  + k
 
-  if mpi_np == ''
-    proc = run_command(python, meson.source_root() / 'script_utils/meson_cpu_count.py',
-                       v['dir'] / 'inputs/simsize.dat')
-    mpi_np = proc.stdout()
-    if proc.returncode() != 0 or mpi_np == ''
-      warning('Unable to auto-compute appropriate number of MPI images, using NP=2')
-      mpi_np = '2'
-    endif
-  endif
-
-  testname = 'Gemini' + k + '-NP' + mpi_np
-  message('Enabled test ' + testname)
-  test(testname, mpiexec,
+  testname = 'Gemini' + k
+  test(testname, python_test,
     suite : k,
-    args : ['-np', mpi_np, v['exe'], meson.source_root() / 'initialize/test' + k / 'config.nml', test_dir],
-    workdir : meson.source_root(),
+    args : ['meson_run_test.py', k, mpiexec.path(), v['exe'], meson.source_root() / 'initialize/test' + k / 'config.nml', test_dir],
+    workdir : meson.source_root() / 'script_utils',
     timeout : 1800,
     is_parallel : false)
 
@@ -169,6 +130,5 @@ foreach k, v : zenodo
     suite : k,
     timeout: 60,
     workdir : meson.source_root() / 'tests')
-
 
 endforeach
