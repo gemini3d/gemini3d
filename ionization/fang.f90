@@ -116,9 +116,6 @@ f = C(1)*y**C(2)*exp(-1*C(3)*y**C(4))+C(5)*y**C(6)*exp(-1*C(7)*y**C(8))
 Qtot = Q0_keV / 2._wp / deps / H_cm * f
 !! [cm^-3 s^-1]
 
-!print *, 'massden, meanmass:',massden_gcm3, meanmass_g
-!print *,'y',y
-
 end function fang2008
 
 end module ionize_fang
