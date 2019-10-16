@@ -60,7 +60,7 @@ Qtot = f * Q0 / deps / H_cm
 end function fang2010
 
 
-impure elemental real(wp) function fang2008(Q0_keV, E0_keV, Tn, massden_gcm3, meanmass_g, g1_ms2) result(Qtot)
+pure elemental real(wp) function fang2008(Q0_keV, E0_keV, Tn, massden_gcm3, meanmass_g, g1_ms2) result(Qtot)
 
 !! COMPUTE IONIZATION RATES PER THE FANG 2008 SEMI-EMPIRICAL METHOD.
 !! https://agupubs.onlinelibrary.wiley.com/doi/10.1029/2008JA013384

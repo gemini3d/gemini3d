@@ -243,7 +243,7 @@ end do
 end function photoionization
 
 
-impure function ionrate_fang08(W0,PhiWmWm2,alt,nn,Tn)
+pure function ionrate_fang08(W0,PhiWmWm2,alt,nn,Tn)
 
 real(wp), dimension(:,:), intent(in) :: W0,PhiWmWm2
 
