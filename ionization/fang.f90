@@ -1,15 +1,18 @@
 module ionize_fang
 
+use, intrinsic :: iso_fortran_env, only: sp=>real32, dp=>real64
 use phys_consts, only: wp, kb
 implicit none
 private
 
 real(wp), parameter :: deps = 0.035_wp
+real(dp), parameter :: erg2kev = 624150648._dp
 !! keV, kinetic energy lost per ion-electron pair produced
 
-public :: fang2008, fang2010
+public :: fang2008, fang2010, gravity_accel, erg2kev
 
 contains
+
 
 elemental real(wp) function fang2010(Q0, Emono_keV, Tn, massden_gcm3, meanmass, g1) result(Qtot)
 
@@ -60,7 +63,7 @@ Qtot = f * Q0 / deps / H_cm
 end function fang2010
 
 
-pure elemental real(wp) function fang2008(Q0_keV, E0_keV, Tn, massden_gcm3, meanmass_g, g1_ms2) result(Qtot)
+elemental real(wp) function fang2008(Q0_keV, E0_keV, Tn, massden_gcm3, meanmass_g, g_ms2) result(Qtot)
 
 !! COMPUTE IONIZATION RATES PER THE FANG 2008 SEMI-EMPIRICAL METHOD.
 !! https://agupubs.onlinelibrary.wiley.com/doi/10.1029/2008JA013384
@@ -68,11 +71,11 @@ pure elemental real(wp) function fang2008(Q0_keV, E0_keV, Tn, massden_gcm3, mean
 !! Total Ionization Rate by Precipitating Electrons With a
 !! Maxwellian Energy and Isotropic Pitch Angle Distribution
 
-real(wp), intent(in) :: Q0_keV, E0_keV, Tn, massden_gcm3, meanmass_g, g1_ms2
+real(wp), intent(in) :: Q0_keV, E0_keV, Tn, massden_gcm3, meanmass_g, g_ms2
 !! Q0: [keV cm^-2 s^-1]
 !! massden_gcm3: [g cm^-3]
 !! meanmass_g: [g]
-!! g1_ms2: [m s^-2]
+!! g_ms2: [m s^-2]
 
 real(wp) :: y, H_cm, f
 integer :: i, j
@@ -92,7 +95,7 @@ real(wp), parameter :: P(8,4) = reshape( &
 !! Equation (3)
 !! scale height
 !! kb [m^2 kg s^-2 K^-1]
-H_cm = 100 * kb * Tn / (meanmass_g/1000) / abs(g1_ms2)
+H_cm = 100 * kb * Tn / (meanmass_g/1000) / abs(g_ms2)
 !! H_cm [centimeters]
 
 !! Equation (4)
@@ -117,5 +120,13 @@ Qtot = Q0_keV / 2._wp / deps / H_cm * f
 !! [cm^-3 s^-1]
 
 end function fang2008
+
+
+elemental real(wp) function gravity_accel(alt_km)
+!! computes gravitational acceleration normal to Earth, where up is positive acceleration
+real(sp), intent(in) :: alt_km
+gravity_accel = -1 * 6.67408e-11_wp * 5.9722e24_wp / (6371.e3_wp + alt_km*1000)**2
+!! [m s^-2]
+end function gravity_accel
 
 end module ionize_fang
