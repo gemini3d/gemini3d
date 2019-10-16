@@ -102,13 +102,15 @@ foreach k, v : zenodo
 
   test_dir = meson.build_root() / 'test'  + k
 
-  testname = 'Gemini' + k
-  test(testname, python_test,
-    suite : k,
-    args : ['meson_run_test.py', k, mpiexec.path(), v['exe'], meson.source_root() / 'initialize/test' + k / 'config.nml', test_dir],
-    workdir : meson.source_root() / 'script_utils',
-    timeout : 1800,
-    is_parallel : false)
+  if mpiexec.found()
+    testname = 'Gemini' + k
+    test(testname, python_test,
+      suite : k,
+      args : ['meson_run_test.py', k, mpiexec.path(), v['exe'], meson.source_root() / 'initialize/test' + k / 'config.nml', test_dir],
+      workdir : meson.source_root() / 'script_utils',
+      timeout : 1800,
+      is_parallel : false)
+  endif
 
   # --- Python-based simulation output comparision
   test('Compare' + k, python_test,

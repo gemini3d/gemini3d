@@ -2,7 +2,7 @@ fc = meson.get_compiler('fortran')
 
 os = host_machine.system()
 if os == 'windows' and fc.get_id() != 'intel'
-  error('On native Windows, only the Intel compilers (ifort) works at this time, because OpenMPI is not available for Windows. Try Windows Subsystem for Linux.')
+  warning('On native Windows, only the Intel compilers (ifort) works at this time, because OpenMPI is not available for Windows. Consider Windows Subsystem for Linux.')
 endif
 
 # -- compiler options
@@ -41,11 +41,11 @@ mpiroot = get_option('MPI_ROOT')
 if mpiroot == ''
   mpiexec = find_program('mpiexec')
   mpi = dependency('mpi', language : 'fortran')
-  mpiret = fc.run('use mpi; end', dependencies : mpi, name: 'Fortran MPI')
-  if mpiret.returncode() != 0
-    warning('MPI_Fortran does not link properly: ' + mpiret.stderr() + ' ' + mpiret.stdout())
+  if not fc.links('use mpi; end', name: 'Fortran MPI', dependencies: mpi)
+    mpi = disabler()
+    mpiexec = disabler()
   endif
-else
+else  # compiler wrapper
   fc.run('use mpi; integer :: i; call mpi_init(i); call mpi_finalize(i); end', name: 'Fortran MPI wrapper check')
   mpiexec = find_program(mpiroot / 'mpiexec')
   mpi = []
