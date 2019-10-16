@@ -24,10 +24,10 @@ jobs:
     - run: python -m pip install meson
     - run: python -m pip install -e .[tests]
     - run: sudo apt install -yq --no-install-recommends ninja-build gfortran liblapack-dev libscalapack-mpi-dev libmumps-dev libopenmpi-dev openmpi-bin
-    - run: meson setup build --buildtype debug
+    - run: meson setup build --buildtype debug -Dsystem_blas=true
       env:
         FC: gfortran
-    - run: pytest -r a -v
+    - run: pytest
     - run: ninja -C build
     - run: meson test -C build --suite unit -v
     - run: meson test -C build --suite 2d_fang -v

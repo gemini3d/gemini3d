@@ -1,6 +1,6 @@
 name: ci_linux
 env:
-  cmake_version: '3.15.3'
+  cmake_version: '3.15.4'
   CI: true
 
 on:
