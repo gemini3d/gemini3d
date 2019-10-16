@@ -6,6 +6,13 @@ add_executable(test_fang2008 test_fang2008.f90)
 target_link_libraries(test_fang2008 PRIVATE fang msis)
 set_target_properties(test_fang2008 PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR})
 
+if(PythonOK)
+add_test(NAME Fang2008
+  COMMAND ${Python3_EXECUTABLE}  ${CMAKE_CURRENT_SOURCE_DIR}/test_fang2008.py $<TARGET_FILE:test_fang2008>)
+set_tests_properties(Fang2008 PROPERTIES
+                     TIMEOUT 10)
+endif(PythonOK)
+
 
 add_library(ionization ionization.f90 glow_dummy.f90)
 target_link_libraries(ionization PRIVATE const neutral grid timeutils fang mpimod MPI::MPI_Fortran)

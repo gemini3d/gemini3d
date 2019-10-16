@@ -7,7 +7,7 @@ use ionize_fang, only: fang2008, gravity_accel, erg2kev
 implicit none
 
 integer :: i, iyd
-real(sp), parameter :: alt_km(*) = [(real(i, sp), i=20,400,5)]
+real(sp), parameter :: alt_km(*) = [(real(i, sp), i=20,400,2)]
 real(dp), parameter :: E0_keV(*) = [0.1_dp, 1._dp, 10._dp, 100._dp, 1000._dp], &
                        Q0_erg = 1._dp
 real(dp) :: massden_gcm3, meanmass_g
@@ -29,8 +29,8 @@ call meters(.false.)
 
 sw(:) = 1
 call tselec(sw)
-call tretrv(sw)
-print '(A,/,25F3.0)', 'MSIS SW:', SW
+!call tretrv(sw)
+!print '(A,/,25F3.0)', 'MSIS SW:', SW
 
 do i = 1, size(alt_km)
   call gtd7(iyd,sec,alt_km(i),glat,glon,stl,f107a,f107,ap,48,d,T)
