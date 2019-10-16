@@ -26,17 +26,6 @@ integer, intent(in) :: date_doy
 end subroutine glow_run
 end interface
 
-! FIXME: THERE *IS* A BETTER WAY TO DO THIS
-real(wp), dimension(8,4) :: Pijcoeff
-data Pijcoeff(1,:) /3.49979d-1, -6.18200d-2, -4.08124d-2, 1.65414d-2/
-data Pijcoeff(2,:) /5.85425d-1, -5.00793d-2, 5.69309d-2, -4.02491d-3/
-data Pijcoeff(3,:) /1.69692d-1, -2.58981d-2, 1.96822d-2, 1.20505d-3/
-data Pijcoeff(4,:) /-1.22271d-1, -1.15532d-2, 5.37951d-6, 1.20189d-3/
-data Pijcoeff(5,:) /1.57018d0, 2.87896d-1, -4.14857d-1, 5.18158d-2/
-data Pijcoeff(6,:) /8.83195d-1, 4.31402d-2, -8.33599d-2, 1.02515d-2/
-data Pijcoeff(7,:) /1.90953d0, -4.74704d-2, -1.80200d-1, 2.46652d-2/
-data Pijcoeff(8,:) /-1.29566d0, -2.10952d-1, 2.73106d-1,  -2.92752d-2/
-
 contains
 
 
@@ -255,10 +244,20 @@ end function photoionization
 
 pure function ionrate_fang08(W0,PhiWmWm2,alt,nn,Tn)
 
-!------------------------------------------------------------
-!-------COMPUTE IONIZATION RATES PER THE FANG 2008 SEMI-EMPIRICAL
-!-------METHOD.
-!------------------------------------------------------------
+!! COMPUTE IONIZATION RATES PER THE FANG 2008 SEMI-EMPIRICAL METHOD.
+!! https://agupubs.onlinelibrary.wiley.com/doi/10.1029/2008JA013384
+!! https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2010GL045406
+
+real(wp), parameter :: Pijcoeff(8,4) = reshape( &
+[3.49979d-1, -6.18200d-2, -4.08124d-2, 1.65414d-2, &
+5.85425d-1, -5.00793d-2, 5.69309d-2, -4.02491d-3, &
+1.69692d-1, -2.58981d-2, 1.96822d-2, 1.20505d-3, &
+-1.22271d-1, -1.15532d-2, 5.37951d-6, 1.20189d-3, &
+1.57018d0, 2.87896d-1, -4.14857d-1, 5.18158d-2, &
+8.83195d-1, 4.31402d-2, -8.33599d-2, 1.02515d-2, &
+1.90953d0, -4.74704d-2, -1.80200d-1, 2.46652d-2, &
+-1.29566d0, -2.10952d-1, 2.73106d-1,  -2.92752d-2], shape(Pijcoeff), order=[2,1])
+
 
 real(wp), dimension(:,:), intent(in) :: W0,PhiWmWm2
 
