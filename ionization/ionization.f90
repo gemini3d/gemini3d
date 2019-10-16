@@ -307,10 +307,10 @@ if ( maxval(PhiWmWm2) > 0._wp) then   !only compute rates if nonzero flux given
 
 
       !Ci COEFFS and SHAPE FUNCTION
-      C=0d0
+      C = 0
       do ii=1,li
         do ij=1,lj
-          C(ii)=C(ii)+Pijcoeff(ii,ij)*log(W0keV)**(real(ij,8)-1d0)    !check whether log or log10?
+          C(ii)=C(ii)+Pijcoeff(ii,ij)*log(W0keV)**(real(ij, wp)-1)    !check whether log or log10?
         end do
         C(ii)=exp(C(ii))
       end do
@@ -319,38 +319,38 @@ if ( maxval(PhiWmWm2) > 0._wp) then   !only compute rates if nonzero flux given
 
 
       !TOTAL IONIZATION RATE
-      Ptot(:,ix2,ix3)=PhiW/2d0/deps/H*f*1d6   !convert to 1/m^3/s
+      Ptot(:,ix2,ix3)=PhiW/2._wp/deps/H*f*1e6_wp   !convert to 1/m^3/s
     end do
   end do
 
 
   !NOW THAT TOTAL IONIZATION RATE HAS BEEN CALCULATED BREAK IT INTO DIFFERENT ION PRODUCTION RATES
-  PO=0d0
-  PN2=0d0
-  PO2=0d0
+  PO = 0
+  PN2 = 0
+  PO2 = 0
 
   where (nn(:,:,:,1)+nn(:,:,:,2)+nn(:,:,:,3) > 1e-10_wp )
-          PN2(:,:,:)=Ptot(:,:,:)*0.94_wp*nn(:,:,:,2)/ &
+          PN2 = Ptot * 0.94_wp * nn(:,:,:,2) / &
                            (nn(:,:,:,3)+0.94_wp*nn(:,:,:,2)+0.55_wp*nn(:,:,:,1))
 
   endwhere
 
-  where (nn(:,:,:,2)>1e-10_wp)
-    PO2(:,:,:)=PN2(:,:,:)*1.07_wp*nn(:,:,:,3)/nn(:,:,:,2)
-    PO(:,:,:)=PN2(:,:,:)*0.59_wp*nn(:,:,:,1)/nn(:,:,:,2)
+  where (nn(:,:,:,2) > 1e-10_wp)
+    PO2 = PN2 * 1.07_wp * nn(:,:,:,3) / nn(:,:,:,2)
+    PO = PN2 * 0.59_wp * nn(:,:,:,1) / nn(:,:,:,2)
   endwhere
 
 
 
   !SPLIT TOTAL IONIZATION RATE PER VALLANCE JONES, 1973
-  ionrate_fang08(:,:,:,1)=PO+0.33d0*PO2
-  ionrate_fang08(:,:,:,2)=0
-  ionrate_fang08(:,:,:,3)=0.76d0*PN2
-  ionrate_fang08(:,:,:,4)=0.67d0*PO2
-  ionrate_fang08(:,:,:,5)=0.24d0*PN2
-  ionrate_fang08(:,:,:,6)=0
+  ionrate_fang08(:,:,:,1) = PO+0.33d0*PO2
+  ionrate_fang08(:,:,:,2) = 0
+  ionrate_fang08(:,:,:,3) = 0.76d0*PN2
+  ionrate_fang08(:,:,:,4) = 0.67d0*PO2
+  ionrate_fang08(:,:,:,5) = 0.24d0*PN2
+  ionrate_fang08(:,:,:,6) = 0
 else
-  ionrate_fang08(:,:,:,:)=0
+  ionrate_fang08(:,:,:,:) = 0
 end if
 
 end function ionrate_fang08
