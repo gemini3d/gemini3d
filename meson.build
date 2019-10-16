@@ -24,7 +24,7 @@ subdir('numerical')
 
 temporal = library('temporal', 'temporal/temporal.f90',
   dependencies: mpi,
-  link_with: [const, grid, mpimod])
+  link_with: [const, mesh, mpimod])
 
 subdir('tests')
 

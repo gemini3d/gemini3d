@@ -4,13 +4,10 @@ mpimod = library('mpimod',
   link_with: const,
   fortran_args: real_bits)
 
-grid = library('grid',
-  sources: ['grid/grid.f90', 'grid/read.f90'],
-  dependencies: mpi,
-  link_with: [const, mpimod])
+subdir('grid')
 
 calculus = library('calculus', 'calculus/calculus.f90',
-  link_with: [const, grid])
+  link_with: [const, mesh])
 
 advection = library('advection', 'advection/advec_mpi.f90',
   link_with: [const, grid, mpimod])

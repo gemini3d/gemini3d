@@ -1,5 +1,5 @@
 add_library(temporal temporal.f90)
-target_link_libraries(temporal PRIVATE const mpimod grid MPI::MPI_Fortran)
+target_link_libraries(temporal PRIVATE const mesh mpimod MPI::MPI_Fortran)
 target_compile_options(temporal PRIVATE ${FFLAGS})
 set_target_properties(temporal PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR})
 

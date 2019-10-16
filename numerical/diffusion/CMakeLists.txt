@@ -8,9 +8,8 @@ if(NOT LAPACK_LAPACK95_FOUND)
 endif()
 
 add_library(diffusion diffusion.f90)
-target_link_libraries(diffusion PRIVATE const grid PDEparabolic ${LAPACK_LIBRARIES})
+target_link_libraries(diffusion PRIVATE const grid mesh PDEparabolic)
 target_compile_options(diffusion PRIVATE ${FFLAGS})
-target_include_directories(diffusion PRIVATE ${LAPACK_INCLUDE_DIRS})
 set_target_properties(diffusion PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR})
 
 

@@ -15,7 +15,7 @@ use mpi, only: MPI_COMM_WORLD,MPI_STATUS_IGNORE
 
 use phys_consts, only:  kB,mu0,ms,lsp,pi, wp, debug
 use mpimod, only: mpi_realprec, tagdt, lid, myid
-use grid, only:  curvmesh
+use mesh, only:  curvmesh
 
 implicit none
 

@@ -3,7 +3,9 @@ module diffusion
 !! This module sets up the ionospheric diffusion problem and then passes it off to the parabolic solvers.
 
 use phys_consts, only: kB,lsp,gammas,mindensdiv, wp
-use grid, only : curvmesh,gridflag             !sizes are not imported in case we want to do subgrid diffusion
+!! sizes are not imported in case we want to do subgrid diffusion
+use mesh, only : curvmesh
+use grid, only : gridflag
 use PDEparabolic, only : backEuler1D,TRBDF21D
 
 implicit none

@@ -3,11 +3,8 @@ parabolic = library('PDEparabolic',
   link_with: const,
   dependencies: lapack)
 
-diffusion = library('diffusion', 'diffusion.f90',
-  link_with: [const, grid, parabolic])
-
 test_diffusion1D_exe = executable('test_diffusion1D', 'test_diffusion1D.f90',
-  link_with: [const, diffusion, parabolic])
+  link_with: [const, parabolic])
 test('diffusion1D', test_diffusion1D_exe,
   timeout: 5,
   suite: 'unit')
@@ -23,3 +20,7 @@ test('Diffusion1D_python', python,
   timeout: 10,
   workdir: meson.current_source_dir(),
   suite: 'unit', priority: -100)
+
+
+diffusion = library('diffusion', 'diffusion.f90',
+  link_with: [const, grid, mesh, parabolic])
