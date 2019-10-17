@@ -36,6 +36,8 @@ elif ['pgi', 'flang'].contains(fc.get_id())
   endif
 endif
 
+threads = dependency('threads')
+
 # if MPI_ROOT, assume compiler wrapper is usable
 mpiroot = get_option('MPI_ROOT')
 if mpiroot == ''
@@ -51,8 +53,10 @@ else  # compiler wrapper
   mpi = []
 endif
 
-
+# --- Find Lapack
 # we don't use fallback because some systems have screwed-up libs factory installed
+lapack = disabler()
+blas = disabler()
 system_blas = get_option('system_blas')
 lapack_root = get_option('LAPACK_ROOT')
 if system_blas
@@ -67,9 +71,6 @@ if system_blas
     lapack = fc.find_library('lapack', dirs : lapack_root, required: false)
     blas = fc.find_library('blas', dirs : lapack_root, required: false)
   endif
-else
-  lapack = disabler()
-  blas = disabler()
 endif
 if not lapack.found() or not blas.found()
   lapack_proj = subproject('lapack')
@@ -77,8 +78,79 @@ if not lapack.found() or not blas.found()
   blas = lapack_proj.get_variable('blas')
 endif
 
+# --- Find BLACS
+# some systems need Blacs explicitly, but most don't, so don't pass disabler() if not found.
+blacs = fc.find_library('blacs-openmpi', required: false)
+if not blacs.found()
+  blacs = []
+endif
+
+# --- Find Scalapack
+scalapack = disabler()
+scalapack_root = get_option('SCALAPACK_ROOT')
+
+if system_blas
+  # dependency('scalapack') not yet working in Meson--cmake->meson bug within Meson, yielding long meson-log.txt
+  # scalapack = dependency('scalapack', cmake_module_path : 'cmake/Modules')
+  if scalapack_root == ''  # system
+    scalapack = fc.find_library('scalapack-openmpi', required: false)
+    if not scalapack.found()
+      scalapack = fc.find_library('scalapack', required: false)
+    endif
+  else
+    message('searching for SCALAPACK in ' + scalapack_root)
+    scalapack = fc.find_library('scalapack', dirs : scalapack_root / 'lib')
+  endif
+endif
+if not scalapack.found() and mpiexec.found()
+  scalapack_proj = subproject('scalapack')
+  scalapack = declare_dependency(link_with: scalapack_proj.get_variable('scalapack_lib'))
+endif
+
+
+
+
+# --- find Mumps
+mumps = disabler()
+mumps_root = get_option('MUMPS_ROOT')
+
+if bits == '64'
+  mumps_name = 'dmumps'
+elif bits == '32'
+  mumps_name = 'smumps'
+else
+  error('unknown precision ' + bits)
+endif
+if system_blas
+  # mumps = dependency('MUMPS', cmake_module_path : 'cmake/Modules')
+  if mumps_root == ''
+    mumpsinc = ''
+    if os != 'windows'
+      mumpsinc = '/usr/include'
+    endif
+    mumpslib = fc.find_library(mumps_name, required : false)
+  else
+    message('searching for MUMPS in ' + mumps_root)
+    mumpsinc = mumps_root / 'include'
+    mumpslib = [fc.find_library(mumps_name, required : false, dirs : mumps_root),
+                fc.find_library('mumps_common', required : false, dirs : mumps_root)]
+  endif
+
+  mumps = declare_dependency(include_directories: mumpsinc, dependencies: mumpslib)
+endif
+if not mumps.found() and scalapack.found()
+  mumps_proj = subproject('mumps')
+  mumps = mumps_proj.get_variable('mumps')
+endif
+
+
+# --- Python
+
 pymod = import('python')
 python = pymod.find_installation('python3')
+
+message('Using Python ' + python.language_version())
+
 if python.language_version().version_compare('< 3.6')
   error('Python ' + python.language_version() + ' is too old, you must have at least Python 3.6. Try "conda activate" or "module load python3" or similar.')
 endif
@@ -86,13 +158,11 @@ endif
 # not needed at the moment
 # is_ci = run_command(python, meson.source_root() / 'script_utils/meson_get_environment_variable.py', 'CI').stdout().to_lower() == 'true'
 
-python_test = python
 if run_command(python, '-c', 'import gemini').returncode() != 0
-  message('Need to install PyGemini by "pip install -e ' + meson.source_root() + '"')
-  python_test = disabler()
-else
-  message('Using Python ' + python.language_version())
+  warning('Please install PyGemini by "pip install -e ' + meson.source_root() + '"')
 endif
+
+#--- Octave
 
 octave = find_program('octave', required: false, disabler: true)
 # must do .found check since run_command(disabler()) has undefined returncode.
@@ -100,6 +170,8 @@ if octave.found() and run_command(octave, '--eval', 'assert(exist("validateattri
   message('Not using too-old Octave for comparison tests.')
   octave = disabler()
 endif
+
+#--- Matlab
 
 matlab = disabler()
 if get_option('usematlab')  # buggy for Matlab < R2019a, may hang "meson setup" silently for two minutes

@@ -104,7 +104,7 @@ foreach k, v : zenodo
 
   if mpiexec.found()
     testname = 'Gemini' + k
-    test(testname, python_test,
+    test(testname, python,
       suite : k,
       args : ['meson_run_test.py', k, mpiexec.path(), v['exe'], meson.source_root() / 'initialize/test' + k / 'config.nml', test_dir],
       workdir : meson.source_root() / 'script_utils',
@@ -113,7 +113,7 @@ foreach k, v : zenodo
   endif
 
   # --- Python-based simulation output comparision
-  test('Compare' + k, python_test,
+  test('Compare' + k, python,
     args : ['compare_all.py', test_dir, v['dir']],
     suite : k,
     timeout: 60,

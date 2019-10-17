@@ -1,7 +1,7 @@
 test_mpi_exe = executable('test_mpi', 'test_mpi.f90',
   dependencies: mpi)
 test('MPI_OK', test_mpi_exe,
-  timeout: 5,
+  timeout: 10,
   suite: 'unit')
 
 

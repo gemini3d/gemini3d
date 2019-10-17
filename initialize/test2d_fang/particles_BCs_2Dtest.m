@@ -12,21 +12,6 @@ system(['mkdir ',outdir]);
 system(['rm ',outdir,'/*']);
 
 
-%{
-%READ IN THE IDL SAVE FILE
-%fname='isinglass_eflux_asi.sav';
-%fname='isinglass_eflux_asi_sync.sav';
-fname='isinglass_eflux_asi_resync.sav';
-outargs=restore_idl(fname);
-time=outargs.NEW_TIME;
-lat=outargs.NEW_LAT;
-lon=outargs.NEW_LON;
-Qdat=outargs.RESAMP_Q;
-E0dat=outargs.RESAMP_EO;
-[lt,llon,llat]=size(Qdat);
-%}
-
-
 %READ IN THE SIMULATION INFORMATION (MEANS WE NEED TO CREATE THIS FOR THE SIMULATION WE WANT TO DO)
 if (~exist('ymd0','var'))
   [ymd0,UTsec0,tdur,dtout,flagoutput,mloc]=readconfig(direcconfig);
