@@ -38,9 +38,7 @@ def test_nml_group(group):
         assert params["dtE0"] == approx(1.0)
 
 
-@pytest.mark.parametrize(
-    "filename", [Rc, Rc / "config.nml", R / "tests/config_example.ini"], ids=["path", "nml", "ini"]
-)
+@pytest.mark.parametrize("filename", [Rc, Rc / "config.nml", R / "tests/config_example.ini"], ids=["path", "nml", "ini"])
 def test_read_config(filename):
     params = config.read_config(filename)
     assert params["t0"] == datetime(2013, 2, 20, 5)

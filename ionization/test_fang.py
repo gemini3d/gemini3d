@@ -13,26 +13,45 @@ import argparse
 R = Path(__file__).parent
 
 
-def checker(exe: str, doplot: bool):
+def checker(exe: str, doplot: bool, params: dict = None):
     if not shutil.which(exe):
         print('executable', exe, 'not found', file=sys.stderr)
         raise SystemExit(77)
 
-    ret = subprocess.check_output(exe, universal_newlines=True)
+    if not params:
+        ret = subprocess.check_output(exe, universal_newlines=True)
+    else:
+        ret = subprocess.check_output(
+            [
+                exe,
+                params['Q0'],
+                params['E0'],
+                params['alt_range'],
+                params['f107'],
+                params['f107a'],
+                params['Ap'],
+                params['glat'],
+                params['glon'],
+                params['doy'],
+                params['utsec'],
+            ],
+            universal_newlines=True,
+        )
 
     keV = list(map(float, ret.split('\n')[0].split()[1:]))
     dat = np.loadtxt(io.StringIO(ret), skiprows=1, max_rows=191)
     alt_km = dat[:, 0]
     ionization_rates08 = dat[:, 1:]
 
-    dat = np.loadtxt(io.StringIO(ret), skiprows=191+3, max_rows=191)
+    dat = np.loadtxt(io.StringIO(ret), skiprows=191 + 3, max_rows=191)
     ionization_rates10 = dat[:, 1:]
 
-    assert np.isclose(ionization_rates08[89, 0], 2214.052), "E0: 100eV"
-    assert np.isclose(ionization_rates08[17, 4], 9579.046), "E0: 1MeV"
+    if not params:
+        assert np.isclose(ionization_rates08[89, 0], 2214.052), "E0: 100eV"
+        assert np.isclose(ionization_rates08[17, 4], 9579.046), "E0: 1MeV"
 
-    assert np.isclose(ionization_rates10[89, 0], 1192.002), "Emono: 100eV"
-    assert np.isclose(ionization_rates10[17, 4], 778.655), "Emono: 1MeV"
+        assert np.isclose(ionization_rates10[89, 0], 1192.002), "Emono: 100eV"
+        assert np.isclose(ionization_rates10[17, 4], 778.655), "Emono: 1MeV"
 
     if not doplot:
         return
@@ -40,7 +59,7 @@ def checker(exe: str, doplot: bool):
     fg = figure()
     axs = fg.subplots(1, 2, sharey=True)
     fg.suptitle(r'Ap=5 f107=50 Midnight MLT 60$^\circ$ lat.')
-# %% Fang 2008 plot
+    # %% Fang 2008 plot
     ax = axs[0]
     for i, e in enumerate(keV):
         ax.semilogx(ionization_rates08[:, i], alt_km, label=str(e))
@@ -50,7 +69,7 @@ def checker(exe: str, doplot: bool):
     ax.set_title(r'Figure 3 of Fang 2008 by $E_0$ [keV]')
     ax.legend(loc='best')
     ax.set_xlim(10, 1e5)
-# %% Fang 2010 plot
+    # %% Fang 2010 plot
     ax = axs[1]
     for i, e in enumerate(keV):
         ax.semilogx(ionization_rates10[:, i], alt_km, label=str(e))
