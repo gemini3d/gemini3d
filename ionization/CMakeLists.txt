@@ -2,14 +2,14 @@ add_library(fang fang.f90)
 target_link_libraries(fang PRIVATE const)
 set_target_properties(fang PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR})
 
-add_executable(test_fang2008 test_fang2008.f90)
-target_link_libraries(test_fang2008 PRIVATE fang msis)
-set_target_properties(test_fang2008 PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR})
+add_executable(test_fang test_fang.f90)
+target_link_libraries(test_fang PRIVATE fang msis)
+set_target_properties(test_fang PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR})
 
 if(PythonOK)
-add_test(NAME Fang2008
-  COMMAND ${Python3_EXECUTABLE}  ${CMAKE_CURRENT_SOURCE_DIR}/test_fang2008.py $<TARGET_FILE:test_fang2008>)
-set_tests_properties(Fang2008 PROPERTIES
+add_test(NAME FangIonize
+  COMMAND ${Python3_EXECUTABLE}  ${CMAKE_CURRENT_SOURCE_DIR}/test_fang.py $<TARGET_FILE:test_fang>)
+set_tests_properties(FangIonize PROPERTIES
                      TIMEOUT 10)
 endif(PythonOK)
 
