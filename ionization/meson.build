@@ -1,8 +1,11 @@
 fang = library('ionize_fang', 'fang.f90',
   link_with: const)
 
+fang_run = library('fang_run', 'fang_run.f90',
+  link_with: [fang, msis, const])
+
 test_fang_exe = executable('test_fang', 'test_fang.f90',
-  link_with: [fang, msis])
+  link_with: [fang_run, const])
 
 test('Fang', python,
   args: ['test_fang.py', test_fang_exe],

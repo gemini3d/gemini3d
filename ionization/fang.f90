@@ -124,7 +124,7 @@ end function fang2008
 
 elemental real(wp) function gravity_accel(alt_km)
 !! computes gravitational acceleration normal to Earth, where up is positive acceleration
-real(sp), intent(in) :: alt_km
+real(wp), intent(in) :: alt_km
 gravity_accel = -1 * 6.67408e-11_wp * 5.9722e24_wp / (6371.e3_wp + alt_km*1000)**2
 !! [m s^-2]
 end function gravity_accel

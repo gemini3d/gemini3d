@@ -1,49 +1,27 @@
-!! test fang2008 implementation
-!! trying to reproduce data of Figure 3 in https://agupubs.onlinelibrary.wiley.com/doi/10.1029/2008JA013384
-!!
-!! This could readily be turned into a subroutine. For now we use it as a registration case.
-use, intrinsic:: iso_fortran_env, only: dp=>real64, sp=>real32
-use ionize_fang, only: fang2008, fang2010, gravity_accel, erg2kev
+!! Reproduces data of:
+!! * Figure 3 in https://agupubs.onlinelibrary.wiley.com/doi/10.1029/2008JA013384
+!! * Figure 2 in Fang 2010
+
+use, intrinsic:: iso_fortran_env, only: sp=>real32
+use phys_consts, only: wp
+use ionrate, only: ionization_fang2008, ionization_fang2010
 implicit none
 
 integer :: i, iyd
-real(sp), parameter :: alt_km(*) = [(real(i, sp), i=20,400,2)]
-real(dp), parameter :: E0_keV(*) = [0.1_dp, 1._dp, 10._dp, 100._dp, 1000._dp], &
-                       Q0_erg = 1._dp
-real(dp) :: massden_gcm3, meanmass_g
-real(sp) :: f107, f107a, ap(7), glat, glon, sec, stl, d(9),T(2), sw(25)
-real(dp), allocatable :: Qtot08(:,:), Qtot10(:,:)
+real(wp), parameter :: alt_km(*) = [(real(i, wp), i=20,400,2)]
+real(wp), parameter :: E0_keV(*) = [0.1, 1., 10., 100., 1000.], &
+                       Q0_erg = 1.
+real(wp), parameter :: f107=50, f107a=50, Ap=5, glat=60, glon=0, utsec=0
+integer, parameter :: doy=1
+real(wp) :: massden_gcm3, meanmass_g
+real(wp), allocatable :: Qtot08(:,:), Qtot10(:,:)
 
 allocate(Qtot08(size(alt_km), size(E0_keV)), Qtot10(size(alt_km), size(E0_keV)))
 
-!! MSIS setup
-iyd = 00001
-sec = 0
-glat = 60
-glon = 0
-f107 = 50
-f107a = f107
-ap(:) = 5
-STL=SEC/3600+GLON/15
-call meters(.false.)
-
-sw(:) = 1
-call tselec(sw)
-!call tretrv(sw)
-!print '(A,/,25F3.0)', 'MSIS SW:', SW
 
 do i = 1, size(alt_km)
-  call gtd7(iyd,sec,alt_km(i),glat,glon,stl,f107a,f107,ap,48,d,T)
-  massden_gcm3 = d(6)  ! [g cm^-3]
-  meanmass_g = massden_gcm3 / (sum(d(1:5)) + sum(d(7:8)))
-
-  ! print *, massden_gcm3, meanmass_g
-  ! massden_gcm3 ~ 1e-5..1e-15
-  ! meanmass_g ~ 3e-26
-
-  Qtot08(i, :) = fang2008(Q0_erg*erg2kev, E0_keV, real(T(2), dp), massden_gcm3, meanmass_g, real(gravity_accel(alt_km(i)), dp))
-
-  Qtot10(i, :) = fang2010(Q0_erg*erg2kev, E0_keV, real(T(2), dp), massden_gcm3, meanmass_g, real(gravity_accel(alt_km(i)), dp))
+  Qtot08(i, :) = ionization_fang2008(Q0_erg, E0_keV, alt_km(i), f107, f107a, Ap, glat, glon, doy, UTsec)
+  Qtot10(i, :) = ionization_fang2010(Q0_erg, E0_keV, alt_km(i), f107, f107a, Ap, glat, glon, doy, UTsec)
 enddo
 
 print '(A)', 'alt[km]/E0[keV]    0.1            1.0             10.           100.            1000.'

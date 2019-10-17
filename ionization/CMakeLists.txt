@@ -2,8 +2,12 @@ add_library(fang fang.f90)
 target_link_libraries(fang PRIVATE const)
 set_target_properties(fang PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR})
 
+add_library(fang_run fang_run.f90)
+target_link_libraries(fang_run PRIVATE fang msis const)
+set_target_properties(fang_run PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR})
+
 add_executable(test_fang test_fang.f90)
-target_link_libraries(test_fang PRIVATE fang msis)
+target_link_libraries(test_fang PRIVATE fang_run const)
 set_target_properties(test_fang PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR})
 
 if(PythonOK)
