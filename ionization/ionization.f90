@@ -352,10 +352,8 @@ end function eheating
 
 function ionrate_glow98(W0,PhiWmWm2,ymd,UTsec,f107,f107a,glat,glon,alt,nn,Tn,ns,Ts,eheating,iver)
 
-!------------------------------------------------------------
-!-------COMPUTE IONIZATION RATES USING GLOW MODEL RUN AT EACH
-!-------X,Y METHOD.
-!------------------------------------------------------------
+!! COMPUTE IONIZATION RATES USING GLOW MODEL RUN AT EACH
+!! X,Y METHOD.
 
 real(wp), dimension(:,:,:), intent(in) :: W0,PhiWmWm2
 
@@ -378,8 +376,8 @@ lx1=size(nn,1)
 lx2=size(nn,2)
 lx3=size(nn,3)
 
-!zero flux should really be check per field line
-if ( maxval(PhiWmWm2) > 0.0_wp) then   !only compute rates if nonzero flux given
+!! zero flux should really be checked per field line
+if ( maxval(PhiWmWm2) > 0) then   !only compute rates if nonzero flux given
 
   date_doy = modulo(ymd(1), 100)*1000 + doy_calc(ymd(1), ymd(2), ymd(3))
   !! date in format needed by GLOW (yyddd)
@@ -387,16 +385,17 @@ if ( maxval(PhiWmWm2) > 0.0_wp) then   !only compute rates if nonzero flux given
     do ix2=1,lx2
       !W0eV=W0(ix2,ix3) !Eo in eV at upper x,y locations (z,x,y) normally
 
-      if ( maxval(PhiWmWm2(ix2,ix3,:)) <= 0.0_wp) then    !only compute rates if nonzero flux given *here*
-        ionrate_glow98(:,ix2,ix3,:)=0.0_wp
-        eheating(:,ix2,ix3)=0.0_wp
-        iver(ix2,ix3,:)=0.0_wp
+      if ( maxval(PhiWmWm2(ix2,ix3,:)) <= 0) then    !only compute rates if nonzero flux given *here*
+        ionrate_glow98(:,ix2,ix3,:) = 0
+        eheating(:,ix2,ix3) = 0
+        iver(ix2,ix3,:) = 0
       else
         !Run GLOW here with the input parameters to obtain production rates
-        !GLOW outputs ion production rates in 1/cm^3/s
-        call glow_run(W0(ix2,ix3,:),PhiWmWm2(ix2,ix3,:),date_doy,UTsec,f107,f107a,glat(ix2,ix3), &
-        glon(ix2,ix3),alt(:,ix2,ix3),nn(:,ix2,ix3,:),Tn(:,ix2,ix3),ns(1:lx1,ix2,ix3,:), &
-        Ts(1:lx1,ix2,ix3,:),ionrate_glow98(:,ix2,ix3,:),eheating(:,ix2,ix3),iver(ix2,ix3,:))
+        !GLOW outputs ion production rates in [cm^-3 s^-1]
+        call glow_run(W0(ix2,ix3,:), PhiWmWm2(ix2,ix3,:), &
+          date_doy, UTsec, f107, f107a, glat(ix2,ix3), glon(ix2,ix3), alt(:,ix2,ix3), &
+          nn(:,ix2,ix3,:),Tn(:,ix2,ix3), ns(1:lx1,ix2,ix3,:), Ts(1:lx1,ix2,ix3,:), &
+          ionrate_glow98(:,ix2,ix3,:), eheating(:,ix2,ix3), iver(ix2,ix3,:))
 !        print*, 'glow called, max ionization rate: ', maxval(ionrate_glow98(:,ix2,ix3,:))
 !        print*, 'max iver:  ',maxval(iver(ix2,ix3,:))
 !        print*, 'max W0 and Phi:  ',maxval(W0(ix2,ix3,:)),maxval(PhiWmWm2(ix2,ix3,:))
