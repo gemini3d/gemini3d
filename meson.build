@@ -83,6 +83,11 @@ magcalc = executable('magcalc.bin', 'magcalc.f90',
 
 # --- TESTS ---
 
+# tests can't be run without mpiexec.
+if not mpiexec.found()
+  subdir_done()
+endif
+
 zenodo = {
   '2d_fang': {
     'dir': meson.source_root() / 'tests/data/zenodo2d_fang',
@@ -102,15 +107,14 @@ foreach k, v : zenodo
 
   test_dir = meson.build_root() / 'test'  + k
 
-  if mpiexec.found()
-    testname = 'Gemini' + k
-    test(testname, python,
-      suite : k,
-      args : ['meson_run_test.py', k, mpiexec.path(), v['exe'], meson.source_root() / 'initialize/test' + k / 'config.nml', test_dir],
-      workdir : meson.source_root() / 'script_utils',
-      timeout : 1800,
-      is_parallel : false)
-  endif
+  testname = 'Gemini' + k
+  test(testname, python,
+    suite : k,
+    args : ['meson_run_test.py', k, mpiexec.path(), v['exe'], meson.source_root() / 'initialize/test' + k / 'config.nml', test_dir],
+    workdir : meson.source_root() / 'script_utils',
+    timeout : 1800,
+    is_parallel : false)
+
 
   # --- Python-based simulation output comparision
   test('Compare' + k, python,
