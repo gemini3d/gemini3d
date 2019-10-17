@@ -36,31 +36,29 @@ def checker(exe: str, doplot: bool):
 
     if not doplot:
         return
+
+    fg = figure()
+    axs = fg.subplots(1, 2, sharey=True)
+    fg.suptitle(r'Ap=5 f107=50 Midnight MLT 60$^\circ$ lat.')
 # %% Fang 2008 plot
-    ax = figure().gca()
+    ax = axs[0]
     for i, e in enumerate(keV):
         ax.semilogx(ionization_rates08[:, i], alt_km, label=str(e))
     ax.set_ylabel('altitude [km]')
     ax.set_xlabel('Total ionization rate [cm$^{-3}$ s$^{-1}$]')
     ax.grid(True)
-    ax.set_title(r'Figure 3 of Fang 2008 by $E_0$ [keV]'
-                 '\n'
-                 r'Ap=5 f107=50 Midnight MLT 60$^\circ$ lat.')
+    ax.set_title(r'Figure 3 of Fang 2008 by $E_0$ [keV]')
     ax.legend(loc='best')
     ax.set_xlim(10, 1e5)
 # %% Fang 2010 plot
-    ax = figure().gca()
+    ax = axs[1]
     for i, e in enumerate(keV):
         ax.semilogx(ionization_rates10[:, i], alt_km, label=str(e))
-    ax.set_ylabel('altitude [km]')
     ax.set_xlabel('Total ionization rate [cm$^{-3}$ s$^{-1}$]')
     ax.grid(True)
-    ax.set_title(r'Figure 2 of Fang 2010 by $E_{mono}$ [keV]'
-                 '\n'
-                 r'Ap=5 f107=50 Midnight MLT 60$^\circ$ lat.')
+    ax.set_title(r'Figure 2 of Fang 2010 by $E_{mono}$ [keV]')
     ax.legend(loc='best')
     ax.set_xlim(10, 1e5)
-    ax.set_ylim(50, 400)
 
 
 if __name__ == '__main__':
