@@ -1,7 +1,7 @@
 fc = meson.get_compiler('fortran')
 
 os = host_machine.system()
-if os == 'windows' and fc.get_id() != 'intel'
+if os == 'windows' and fc.get_id() != 'intel-cl'
   warning('On native Windows, only the Intel compilers (ifort) works at this time, because OpenMPI is not available for Windows. Consider Windows Subsystem for Linux.')
 endif
 
