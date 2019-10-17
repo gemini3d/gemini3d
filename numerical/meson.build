@@ -6,7 +6,8 @@ mpimod = library('mpimod',
 
 subdir('grid')
 
-calculus = library('calculus', 'calculus/calculus.f90',
+calculus = library('calculus',
+  sources: ['calculus/calculus.f90', 'calculus/gradient.f90', 'calculus/integral.f90', 'calculus/div.f90'],
   link_with: [const, mesh])
 
 advection = library('advection', 'advection/advec_mpi.f90',

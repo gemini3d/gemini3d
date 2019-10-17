@@ -13,7 +13,7 @@ set_target_properties(mpimod PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_
 
 add_subdirectory(grid)
 
-add_library(calculus calculus/calculus.f90)
+add_library(calculus calculus/calculus.f90 calculus/gradient.f90 calculus/integral.f90 calculus/div.f90)
 target_link_libraries(calculus PRIVATE mesh)
 target_compile_options(calculus PRIVATE ${FFLAGS})
 set_target_properties(calculus PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR})

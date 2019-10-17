@@ -52,6 +52,117 @@ interface integral2D2
 end interface integral2D2
 
 
+interface ! gradient.f90
+
+module function grad3D1_curv_3(f,x,lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3)
+real(wp), dimension(:,:,:), intent(in) :: f
+type(curvmesh), intent(in) :: x
+integer, intent(in) :: lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3    !upper and lower bounds on the mesh indices for this derivative
+real(wp), dimension(1:size(f,1),1:size(f,2),1:size(f,3)) :: grad3D1_curv_3
+end function grad3D1_curv_3
+
+module function grad3D1_curv_23(f,x,lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3)
+real(wp), dimension(:,:,:), intent(in) :: f
+type(curvmesh), intent(in) :: x
+integer, intent(in) :: lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3    !upper and lower bounds on the mesh indices for this derivative
+real(wp), dimension(1:size(f,1),1:size(f,2),1:size(f,3)) :: grad3D1_curv_23
+end function grad3D1_curv_23
+
+module function grad3D2_curv_3(f,x,lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3)
+real(wp), dimension(:,:,:), intent(in) :: f
+type(curvmesh), intent(in) :: x
+integer, intent(in) :: lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3
+real(wp), dimension(1:size(f,1),1:size(f,2),1:size(f,3)) :: grad3D2_curv_3
+end function grad3D2_curv_3
+
+module function grad3D2_curv_23(f,x,lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3)
+real(wp), dimension(:,:,:), intent(in) :: f
+type(curvmesh), intent(in) :: x
+integer, intent(in) :: lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3
+real(wp), dimension(1:size(f,1),1:size(f,2),1:size(f,3)) :: grad3D2_curv_23
+end function grad3D2_curv_23
+
+module function grad3D3_curv_3(f,x,lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3)
+real(wp), dimension(:,:,:), intent(in) :: f
+type(curvmesh), intent(in) :: x
+integer, intent(in) :: lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3
+real(wp), dimension(1:size(f,1),1:size(f,2),1:size(f,3)) :: grad3D3_curv_3
+end function grad3D3_curv_3
+
+module function grad3D3_curv_23(f,x,lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3)
+real(wp), dimension(:,:,:), intent(in) :: f
+type(curvmesh), intent(in) :: x
+integer, intent(in) :: lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3
+real(wp), dimension(1:size(f,1),1:size(f,2),1:size(f,3)) :: grad3D3_curv_23
+end function grad3D3_curv_23
+
+end interface
+
+interface  ! integral.f90
+
+module pure function integral3D1_curv(f,x,lbnd,ubnd)
+real(wp), dimension(:,:,:), intent(in) :: f
+type(curvmesh), intent(in) :: x
+integer, intent(in) :: lbnd,ubnd    !no upper bound used, but could be for error checking
+real(wp), dimension(1:size(f,1),1:size(f,2),1:size(f,3)) :: integral3D1_curv
+end function integral3D1_curv
+
+module pure function integral3D1_curv_alt(f,x,lbnd,ubnd)
+real(wp), dimension(:,:,:), intent(in) :: f
+type(curvmesh), intent(in) :: x
+integer, intent(in) :: lbnd,ubnd    !no upper bound used, but could be for error checking
+real(wp), dimension(1:size(f,1),1:size(f,2),1:size(f,3)) :: integral3D1_curv_alt
+end function integral3D1_curv_alt
+
+module pure function integral2D1_curv(f,x,lbnd,ubnd)
+real(wp), dimension(:,:), intent(in) :: f
+type(curvmesh), intent(in) :: x
+integer, intent(in) :: lbnd,ubnd
+real(wp), dimension(1:size(f,1),1:size(f,2)) :: integral2D1_curv
+end function integral2D1_curv
+
+module pure function integral2D1_curv_alt(f,x,lbnd,ubnd)
+real(wp), dimension(:,:), intent(in) :: f
+type(curvmesh), intent(in) :: x
+integer, intent(in) :: lbnd,ubnd
+real(wp), dimension(1:size(f,1),1:size(f,2)) :: integral2D1_curv_alt
+end function integral2D1_curv_alt
+
+module pure function integral2D2_curv(f,x,lbnd,ubnd)
+real(wp), dimension(:,:), intent(in) :: f
+type(curvmesh), intent(in) :: x
+integer, intent(in) :: lbnd,ubnd
+real(wp), dimension(1:size(f,1),1:size(f,2)) :: integral2D2_curv
+end function integral2D2_curv
+
+module pure function integral2D2_curv_alt(f,x,lbnd,ubnd)
+real(wp), dimension(:,:), intent(in) :: f
+type(curvmesh), intent(in) :: x
+integer, intent(in) :: lbnd,ubnd
+real(wp), dimension(1:size(f,1),1:size(f,2)) :: integral2D2_curv_alt
+end function integral2D2_curv_alt
+
+end interface
+
+interface ! div.f90
+
+module function div3D_curv_23(f1,f2,f3,x,lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3)
+real(wp), dimension(:,:,:), intent(in) :: f1,f2,f3    !regardless of what has been passed into the function here, we assume these start at 1
+type(curvmesh), intent(in) :: x
+integer, intent(in) :: lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3
+real(wp), dimension(1:size(f1,1),1:size(f1,2),1:size(f1,3)) :: div3D_curv_23
+end function div3D_curv_23
+
+module function div3D_curv_3(f1,f2,f3,x,lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3)
+real(wp), dimension(:,:,:), intent(in) :: f1,f2,f3
+type(curvmesh), intent(in) :: x
+integer, intent(in) :: lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3
+real(wp), dimension(1:size(f1,1),1:size(f1,2),1:size(f1,3)) :: div3D_curv_3
+end function div3D_curv_3
+
+end interface
+
+
 public :: grad3D1, grad3D2, grad3D3, &
   grad2d1_curv_alt, grad2D2, grad2D3, grad2D3_curv_periodic, &
   div3D, &
@@ -87,643 +198,6 @@ elsewhere
 end where
 
 end function ETD_uncoupled
-
-
-function grad3D1_curv_3(f,x,lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3)
-
-!------------------------------------------------------------
-!-------COMPUTE A 3D GRADIENT ALONG THE 1-DIMENSION.  IT IS EXPECTED THAT
-!-------GHOST CELLS WILL HAVE BEEN TRIMMED FROM ARRAYS BEFORE
-!-------THEY ARE PASSED INTO THIS ROUTINE - EXCEPT FOR THE GRID.
-!-------STRUCTURE.
-!-------
-!-------FOR THIS AND FOLLOWING CURV DERIVATIVE PROCEDURES THE UPPER
-!-------AND LOWER BOUNDS FOR DIFFERENTIATION CANNOT BE DETERMINED
-!-------WITHOUT ADDITIONAL ARGUMENTS SINCE STRUCTURE X CANNOT BE
-!-------BE TRIMMED IN THE SAME WAY AS A NORMAL ARRAY.  ESSENTIALLY
-!-------THE INPUT ARRAY "F" AND GRID NEED TO BE INDEXED DIFFERENTLY, LEADING
-!-------TO TWO SEPARATE SETS ON INDICES THROUGHOUT THIS AND SIMILAR ROUTINES.
-!-------
-!-------ONE ISSUE ADDRESSED HERE IS THAT THE METRIC FACTORS NEED TO KNOW
-!-------WHAT PART OF THE GRID THAT THEY ARE BEING USED OVER...  IE
-!-------IF ANY OF THESE IS FULL GRID THEN THE HALL VERSIONS SHOUDL
-!-------SHOULD BE USED FOR THE METRIC FACTORS...
-!------------------------------------------------------------
-
-real(wp), dimension(:,:,:), intent(in) :: f
-type(curvmesh), intent(in) :: x
-integer, intent(in) :: lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3    !upper and lower bounds on the mesh indices for this derivative
-
-integer :: ix2,ix3,lx1,lx2,lx3
-
-!    real(wp), dimension(1:size(f,1),1:size(f,2),1:size(f,3)) :: h1,h2,h3   !local references to the metric factors to be used in the derivative
-!    real(wp), dimension(1:size(f,1)) :: dx1    !local reference to the backward difference
-real(wp), dimension(:,:,:), pointer :: h1   !local references to the metric factors to be used in the derivative
-real(wp), dimension(:), pointer :: dx1    !local reference to the backward difference
-
-real(wp), dimension(1:size(f,1),1:size(f,2),1:size(f,3)) :: grad3D1_curv_3
-
-
-lx1=size(f,1)
-lx2=size(f,2)
-lx3=size(f,3)
-
-
-!ERROR CHECKING TO MAKE SURE DIFFRENCING IS DONE OVER A CONSISTENTLY-SIZED GRID
-if (lx1 /= ubnd1-lbnd1+1 .or. lx2 /= ubnd2-lbnd2+1 .or. lx3 /= ubnd3-lbnd3+1) then
-  error stop '!!!  Inconsistent array and mesh sizes in grad3D1 gradient function.'   !just bail on it and let the user figure it out
-end if
-
-
-!CHOOSE THE METRIC FACTORS VARIABLES BASED ON THE SIZE OF THE X3-VARIABLE, ALSO RECAST SO THE
-!INDICES USED FOR F CAN ALSO BE USED IN THE METRIC FACTOR AND DX VARIABLE
-!Can avoid wasting memory and copying of metric factor arrays by recoding with pointers
-!Unfortunately a pointer is not gauranteed to be contiguous in memory so I'm not sure this is the way to go
-if (lx3<=x%lx3+4) then
-  h1=>x%h1(lbnd1:ubnd1,lbnd2:ubnd2,lbnd3:ubnd3)
-else if (lx3<=x%lx3all+4) then
-  h1=>x%h1all(lbnd1:ubnd1,lbnd2:ubnd2,lbnd3:ubnd3)
-  print *,   '! Accessing root-only grid information'
-else
-  error stop '!!!  Array size is larger full mesh.'
-end if
-dx1=>x%dx1(lbnd1:ubnd1)
-
-
-!NOW EXECUTE THE FINITE DIFFERENCES - NOTE THAT LOOP INDICES ARE MEANT TO INDEX ARRAY BEING DIFFERENCED AND NOT THE MESH STRUCTURE, WHICH USES INPUT BOUNDS.  TO KEEP THE CODE CLEAN I'VE ALIASED THE GRID VARS SO THAT THEY MAY BE ACCESSED BY LOOP INDEX.
-do ix3=1,lx3
-  do ix2=1,lx2
-    grad3D1_curv_3(1,ix2,ix3)=(f(2,ix2,ix3)-f(1,ix2,ix3))/dx1(1)/h1(1,ix2,ix3)    !fwd diff. at beginning, note that h1 is cell-centered
-    grad3D1_curv_3(2:lx1-1,ix2,ix3)=(f(3:lx1,ix2,ix3)-f(1:lx1-2,ix2,ix3)) &
-                             /(dx1(3:lx1)+dx1(2:lx1-1))/h1(2:lx1-1,ix2,ix3)      !centered diff. in the middleq
-    grad3D1_curv_3(lx1,ix2,ix3)=(f(lx1,ix2,ix3)-f(lx1-1,ix2,ix3))/dx1(lx1)/h1(lx1,ix2,ix3)    !backward diff. at end
-  end do
-end do
-end function grad3D1_curv_3
-
-
-function grad3D1_curv_23(f,x,lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3)
-
-!------------------------------------------------------------
-!-------COMPUTE A 3D GRADIENT ALONG THE 1-DIMENSION.  IT IS EXPECTED THAT
-!-------GHOST CELLS WILL HAVE BEEN TRIMMED FROM ARRAYS BEFORE
-!-------THEY ARE PASSED INTO THIS ROUTINE - EXCEPT FOR THE GRID.
-!-------STRUCTURE.
-!-------
-!-------FOR THIS AND FOLLOWING CURV DERIVATIVE PROCEDURES THE UPPER
-!-------AND LOWER BOUNDS FOR DIFFERENTIATION CANNOT BE DETERMINED
-!-------WITHOUT ADDITIONAL ARGUMENTS SINCE STRUCTURE X CANNOT BE
-!-------BE TRIMMED IN THE SAME WAY AS A NORMAL ARRAY.  ESSENTIALLY
-!-------THE INPUT ARRAY "F" AND GRID NEED TO BE INDEXED DIFFERENTLY, LEADING
-!-------TO TWO SEPARATE SETS ON INDICES THROUGHOUT THIS AND SIMILAR ROUTINES.
-!-------
-!-------ONE ISSUE ADDRESSED HERE IS THAT THE METRIC FACTORS NEED TO KNOW
-!-------WHAT PART OF THE GRID THAT THEY ARE BEING USED OVER...  IE
-!-------IF ANY OF THESE IS FULL GRID THEN THE HALL VERSIONS SHOUDL
-!-------SHOULD BE USED FOR THE METRIC FACTORS...
-!------------------------------------------------------------
-
-real(wp), dimension(:,:,:), intent(in) :: f
-type(curvmesh), intent(in) :: x
-integer, intent(in) :: lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3    !upper and lower bounds on the mesh indices for this derivative
-
-integer :: ix2,ix3,lx1,lx2,lx3
-
-!    real(wp), dimension(1:size(f,1),1:size(f,2),1:size(f,3)) :: h1,h2,h3   !local references to the metric factors to be used in the derivative
-!    real(wp), dimension(1:size(f,1)) :: dx1    !local reference to the backward difference
-real(wp), dimension(:,:,:), pointer :: h1   !local references to the metric factors to be used in the derivative
-real(wp), dimension(:), pointer :: dx1    !local reference to the backward difference
-
-real(wp), dimension(1:size(f,1),1:size(f,2),1:size(f,3)) :: grad3D1_curv_23
-
-
-lx1=size(f,1)
-lx2=size(f,2)
-lx3=size(f,3)
-
-
-!ERROR CHECKING TO MAKE SURE DIFFRENCING IS DONE OVER A CONSISTENTLY-SIZED GRID
-if (lx1 /= ubnd1-lbnd1+1 .or. lx2 /= ubnd2-lbnd2+1 .or. lx3 /= ubnd3-lbnd3+1) then
-  error stop '!!!  Inconsistent array and mesh sizes in grad3D1 gradient function.'   !just bail on it and let the user figure it out
-end if
-
-
-!CHOOSE THE METRIC FACTORS VARIABLES BASED ON THE SIZE OF THE X3-VARIABLE, ALSO RECAST SO THE
-!INDICES USED FOR F CAN ALSO BE USED IN THE METRIC FACTOR AND DX VARIABLE
-!Can avoid wasting memory and copying of metric factor arrays by recoding with pointers
-!Unfortunately a pointer is not gauranteed to be contiguous in memory so I'm not sure this is the way to go
-if (lx3<=x%lx3+4) then
-  h1=>x%h1(lbnd1:ubnd1,lbnd2:ubnd2,lbnd3:ubnd3)
-else if (lx3<=x%lx3all+4) then
-  h1=>x%h1all(lbnd1:ubnd1,lbnd2:ubnd2,lbnd3:ubnd3)
-  print *,   '! Accessing root-only grid information'
-else
-  error stop '!!!  Array size is larger full mesh.'
-end if
-dx1=>x%dx1(lbnd1:ubnd1)
-
-
-!NOW EXECUTE THE FINITE DIFFERENCES - NOTE THAT LOOP INDICES ARE MEANT TO INDEX ARRAY BEING DIFFERENCED AND NOT THE MESH STRUCTURE, WHICH USES INPUT BOUNDS.  TO KEEP THE CODE CLEAN I'VE ALIASED THE GRID VARS SO THAT THEY MAY BE ACCESSED BY LOOP INDEX.
-do ix3=1,lx3
-  do ix2=1,lx2
-    grad3D1_curv_23(1,ix2,ix3)=(f(2,ix2,ix3)-f(1,ix2,ix3))/dx1(1)/h1(1,ix2,ix3)    !fwd diff. at beginning, note that h1 is cell-centered
-    grad3D1_curv_23(2:lx1-1,ix2,ix3)=(f(3:lx1,ix2,ix3)-f(1:lx1-2,ix2,ix3)) &
-                             /(dx1(3:lx1)+dx1(2:lx1-1))/h1(2:lx1-1,ix2,ix3)      !centered diff. in the middleq
-    grad3D1_curv_23(lx1,ix2,ix3)=(f(lx1,ix2,ix3)-f(lx1-1,ix2,ix3))/dx1(lx1)/h1(lx1,ix2,ix3)    !backward diff. at end
-  end do
-end do
-end function grad3D1_curv_23
-
-
-function grad3D2_curv_3(f,x,lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3)
-
-!------------------------------------------------------------
-!-------COMPUTE A 3D GRADIENT ALONG THE 2-DIMENSION.  IT IS EXPECTED THAT
-!-------GHOST CELLS WILL HAVE BEEN TRIMMED FROM ARRAYS BEFORE
-!-------THEY ARE PASSED INTO THIS ROUTINE
-!------------------------------------------------------------
-
-real(wp), dimension(:,:,:), intent(in) :: f
-type(curvmesh), intent(in) :: x
-integer, intent(in) :: lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3
-
-integer :: ix1,ix3,lx1,lx2,lx3
-
-real(wp), dimension(:,:,:), pointer :: h2   !local references to the metric factors to be used in the derivative
-real(wp), dimension(:), pointer :: dx2    !local reference to the backward difference
-
-real(wp), dimension(1:size(f,1),1:size(f,2),1:size(f,3)) :: grad3D2_curv_3
-
-
-lx1=size(f,1)
-lx2=size(f,2)
-lx3=size(f,3)
-
-if (lx2>1) then    !if we have a singleton dimension then we are doing a 2D run and the derivatives in this direction are zero
-
-  !ERROR CHECKING TO MAKE SURE DIFFRENCING IS DONE OVER A CONSISTENTLY-SIZED GRID
-  if (lx1 /= ubnd1-lbnd1+1 .or. lx2 /= ubnd2-lbnd2+1 .or. lx3 /= ubnd3-lbnd3+1) then
-    error stop '!!!  Inconsistent array and mesh sizes in gradient function.'   !just bail on it and let the user figure it out
-  end if
-
-
-  !CHOOSE THE METRIC FACTORS VARIABLES BASED ON THE SIZE OF THE X3-VARIABLE, ALSO RECAST SO THE
-  !INDICES USED FOR F CAN ALSO BE USED IN THE METRIC FACTOR AND DX VARIABLE
-  if (lx3<=x%lx3+4) then
-    h2=>x%h2(lbnd1:ubnd1,lbnd2:ubnd2,lbnd3:ubnd3)
-  else if (lx3<=x%lx3all+4) then
-    h2=>x%h2all(lbnd1:ubnd1,lbnd2:ubnd2,lbnd3:ubnd3)
-    print *,   '! Accessing root-only grid information'
-  else
-    error stop '!!!  Array size is larger full mesh.'
-  end if
-  dx2=>x%dx2(lbnd2:ubnd2)
-
-
-  !DIFFERENCING
-  do ix3=1,lx3
-    do ix1=1,lx1
-      grad3D2_curv_3(ix1,1,ix3)=(f(ix1,2,ix3)-f(ix1,1,ix3))/dx2(2)/h2(ix1,1,ix3)
-      grad3D2_curv_3(ix1,2:lx2-1,ix3)=(f(ix1,3:lx2,ix3)-f(ix1,1:lx2-2,ix3)) &
-                               /(dx2(3:lx2)+dx2(2:lx2-1))/h2(ix1,2:lx2-1,ix3)
-      grad3D2_curv_3(ix1,lx2,ix3)=(f(ix1,lx2,ix3)-f(ix1,lx2-1,ix3))/dx2(lx2)/h2(ix1,lx2,lx3)
-    end do
-  end do
-else
-  grad3D2_curv_3=0._wp
-end if
-end function grad3D2_curv_3
-
-
-function grad3D2_curv_23(f,x,lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3)
-
-!------------------------------------------------------------
-!-------COMPUTE A 3D GRADIENT ALONG THE 2-DIMENSION.  IT IS EXPECTED THAT
-!-------GHOST CELLS WILL HAVE BEEN TRIMMED FROM ARRAYS BEFORE
-!-------THEY ARE PASSED INTO THIS ROUTINE
-!------------------------------------------------------------
-
-real(wp), dimension(:,:,:), intent(in) :: f
-type(curvmesh), intent(in) :: x
-integer, intent(in) :: lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3
-
-integer :: ix1,ix3,lx1,lx2,lx3
-
-real(wp), dimension(:,:,:), pointer :: h2   !local references to the metric factors to be used in the derivative
-real(wp), dimension(:), pointer :: dx2    !local reference to the backward difference
-
-real(wp), dimension(1:size(f,1),1:size(f,2),1:size(f,3)) :: grad3D2_curv_23
-
-
-lx1=size(f,1)
-lx2=size(f,2)
-lx3=size(f,3)
-
-if (lx2>1) then    !if we have a singleton dimension then we are doing a 2D run and the derivatives in this direction are zero
-
-  !ERROR CHECKING TO MAKE SURE DIFFRENCING IS DONE OVER A CONSISTENTLY-SIZED GRID
-  if (lx1 /= ubnd1-lbnd1+1 .or. lx2 /= ubnd2-lbnd2+1 .or. lx3 /= ubnd3-lbnd3+1) then
-    error stop '!!!  Inconsistent array and mesh sizes in gradient function.'   !just bail on it and let the user figure it out
-  end if
-
-
-  !CHOOSE THE METRIC FACTORS VARIABLES BASED ON THE SIZE OF THE X3-VARIABLE, ALSO RECAST SO THE
-  !INDICES USED FOR F CAN ALSO BE USED IN THE METRIC FACTOR AND DX VARIABLE
-  if (lx3<=x%lx3+4) then     !this is a derivative over a slab region (subgrid)
-    h2=>x%h2(lbnd1:ubnd1,lbnd2:ubnd2,lbnd3:ubnd3)
-    dx2=>x%dx2(lbnd2:ubnd2)
-  else if (lx3<=x%lx3all+4) then    !if a larger dimension was specified for x3 then assume that we are differentiating over x2all and x3all
-    h2=>x%h2all(lbnd1:ubnd1,lbnd2:ubnd2,lbnd3:ubnd3)
-    dx2=>x%dx2all(lbnd2:ubnd2)
-    print *,   '! Accessing root-only grid information, while taking derivative in 2-direction'
-  else
-    error stop '!!!  Array size is larger full mesh.'
-  end if
-
-
-  !DIFFERENCING
-  do ix3=1,lx3
-    do ix1=1,lx1
-      grad3D2_curv_23(ix1,1,ix3)=(f(ix1,2,ix3)-f(ix1,1,ix3))/dx2(2)/h2(ix1,1,ix3)
-      grad3D2_curv_23(ix1,2:lx2-1,ix3)=(f(ix1,3:lx2,ix3)-f(ix1,1:lx2-2,ix3)) &
-                               /(dx2(3:lx2)+dx2(2:lx2-1))/h2(ix1,2:lx2-1,ix3)
-      grad3D2_curv_23(ix1,lx2,ix3)=(f(ix1,lx2,ix3)-f(ix1,lx2-1,ix3))/dx2(lx2)/h2(ix1,lx2,lx3)
-    end do
-  end do
-else
-  grad3D2_curv_23=0._wp
-end if
-end function grad3D2_curv_23
-
-
-function grad3D3_curv_3(f,x,lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3)
-
-!------------------------------------------------------------
-!-------COMPUTE A 3D GRADIENT ALONG THE 3-DIMENSION.  IT IS EXPECTED THAT
-!-------GHOST CELLS WILL HAVE BEEN TRIMMED FROM ARRAYS BEFORE
-!-------THEY ARE PASSED INTO THIS ROUTINE
-!-------
-!-------AN EXTRA STEP IS NEEDED IN THIS ROUTINE SINCE WE HAVE
-!-------TO DETERMINE WHETHER THIS IS A FULL-GRID OR SUBGRID
-!-------DERIVATIVE.
-!------------------------------------------------------------
-
-real(wp), dimension(:,:,:), intent(in) :: f
-type(curvmesh), intent(in) :: x
-integer, intent(in) :: lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3
-
-integer :: ix1,ix2,lx1,lx2,lx3
-
-real(wp), dimension(:,:,:), pointer :: h3   !local references to the metric factors to be used in the derivative
-real(wp), dimension(:), pointer :: dx3    !local reference to the backward difference
-
-real(wp), dimension(1:size(f,1),1:size(f,2),1:size(f,3)) :: grad3D3_curv_3
-
-
-lx1=size(f,1)
-lx2=size(f,2)
-lx3=size(f,3)
-
-
-!ERROR CHECKING TO MAKE SURE DIFFRENCING IS DONE OVER A CONSISTENTLY-SIZED GRID
-if (lx1 /= ubnd1-lbnd1+1 .or. lx2 /= ubnd2-lbnd2+1 .or. lx3 /= ubnd3-lbnd3+1) then
-  error stop '!!!  Inconsistent array and mesh sizes in gradient function.'   !just bail on it and let the user figure it out
-end if
-
-
-!CHOOSE THE METRIC FACTORS VARIABLES BASED ON THE SIZE OF THE X3-VARIABLE, ALSO RECAST SO THE
-!INDICES USED FOR F CAN ALSO BE USED IN THE METRIC FACTOR AND DX VARIABLE
-!Can avoid wasting memory and copying of metric factor arrays by recoding with pointers
-!Unfortunately a pointer is not gauranteed to be contiguous in memory so I'm not sure this is the way to go
-if (lx3<=x%lx3+4) then
-  h3=>x%h3(lbnd1:ubnd1,lbnd2:ubnd2,lbnd3:ubnd3)
-  dx3=>x%dx3(lbnd3:ubnd3)
-else if (lx3<=x%lx3all+4) then
-  h3=>x%h3all(lbnd1:ubnd1,lbnd2:ubnd2,lbnd3:ubnd3)
-  dx3=>x%dx3all(lbnd3:ubnd3)
-  print *,   '! Accessing root-only grid information'
-else
-  error stop '!!!  Array size is larger than full mesh.'
-end if
-
-
-!FINITE DIFFERENCING
-do ix2=1,lx2
-  do ix1=1,lx1
-    grad3D3_curv_3(ix1,ix2,1)=(f(ix1,ix2,2)-f(ix1,ix2,1))/dx3(2)/h3(ix1,ix2,1)
-    grad3D3_curv_3(ix1,ix2,2:lx3-1)=(f(ix1,ix2,3:lx3)-f(ix1,ix2,1:lx3-2)) &
-                             /(dx3(3:lx3)+dx3(2:lx3-1))/h3(ix1,ix2,2:lx3-1)
-    grad3D3_curv_3(ix1,ix2,lx3)=(f(ix1,ix2,lx3)-f(ix1,ix2,lx3-1))/dx3(lx3)/h3(ix1,ix2,lx3)
-  end do
-end do
-
-end function grad3D3_curv_3
-
-
-function grad3D3_curv_23(f,x,lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3)
-
-!------------------------------------------------------------
-!-------COMPUTE A 3D GRADIENT ALONG THE 3-DIMENSION.  IT IS EXPECTED THAT
-!-------GHOST CELLS WILL HAVE BEEN TRIMMED FROM ARRAYS BEFORE
-!-------THEY ARE PASSED INTO THIS ROUTINE
-!-------
-!-------AN EXTRA STEP IS NEEDED IN THIS ROUTINE SINCE WE HAVE
-!-------TO DETERMINE WHETHER THIS IS A FULL-GRID OR SUBGRID
-!-------DERIVATIVE.
-!------------------------------------------------------------
-
-real(wp), dimension(:,:,:), intent(in) :: f
-type(curvmesh), intent(in) :: x
-integer, intent(in) :: lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3
-
-integer :: ix1,ix2,lx1,lx2,lx3
-
-real(wp), dimension(:,:,:), pointer :: h3   !local references to the metric factors to be used in the derivative
-real(wp), dimension(:), pointer :: dx3    !local reference to the backward difference
-
-real(wp), dimension(1:size(f,1),1:size(f,2),1:size(f,3)) :: grad3D3_curv_23
-
-
-lx1=size(f,1)
-lx2=size(f,2)
-lx3=size(f,3)
-
-
-if (lx3>1) then    !only differentiate if we have non-singleton dimension, otherwise set to zero
-  !ERROR CHECKING TO MAKE SURE DIFFRENCING IS DONE OVER A CONSISTENTLY-SIZED GRID
-  if (lx1 /= ubnd1-lbnd1+1 .or. lx2 /= ubnd2-lbnd2+1 .or. lx3 /= ubnd3-lbnd3+1) then
-    error stop '!!!  Inconsistent array and mesh sizes in gradient function.'   !just bail on it and let the user figure it out
-  end if
-
-
-  !CHOOSE THE METRIC FACTORS VARIABLES BASED ON THE SIZE OF THE X3-VARIABLE, ALSO RECAST SO THE
-  !INDICES USED FOR F CAN ALSO BE USED IN THE METRIC FACTOR AND DX VARIABLE
-  !Can avoid wasting memory and copying of metric factor arrays by recoding with pointers
-  !Unfortunately a pointer is not gauranteed to be contiguous in memory so I'm not sure this is the way to go
-  if (lx3<=x%lx3+4) then
-    h3=>x%h3(lbnd1:ubnd1,lbnd2:ubnd2,lbnd3:ubnd3)
-    dx3=>x%dx3(lbnd3:ubnd3)
-  else if (lx3<=x%lx3all+4) then
-    h3=>x%h3all(lbnd1:ubnd1,lbnd2:ubnd2,lbnd3:ubnd3)
-    dx3=>x%dx3all(lbnd3:ubnd3)
-    print *,   '! Accessing root-only grid information while differentiating in x3'
-  else
-    error stop '!!!  Array size is larger than full mesh.'
-  end if
-
-
-  !FINITE DIFFERENCING
-  do ix2=1,lx2
-    do ix1=1,lx1
-      grad3D3_curv_23(ix1,ix2,1)=(f(ix1,ix2,2)-f(ix1,ix2,1))/dx3(2)/h3(ix1,ix2,1)
-      grad3D3_curv_23(ix1,ix2,2:lx3-1)=(f(ix1,ix2,3:lx3)-f(ix1,ix2,1:lx3-2)) &
-                               /(dx3(3:lx3)+dx3(2:lx3-1))/h3(ix1,ix2,2:lx3-1)
-      grad3D3_curv_23(ix1,ix2,lx3)=(f(ix1,ix2,lx3)-f(ix1,ix2,lx3-1))/dx3(lx3)/h3(ix1,ix2,lx3)
-    end do
-  end do
-else
-  grad3D3_curv_23=0._wp
-end if
-
-end function grad3D3_curv_23
-
-
-function div3D_curv_3(f1,f2,f3,x,lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3)
-
-!------------------------------------------------------------
-!-------COMPUTE A 3D DIVERGENCE.  IT IS EXPECTED THAT
-!-------GHOST CELLS WILL HAVE BEEN TRIMMED FROM ARRAYS BEFORE
-!-------THEY ARE PASSED INTO THIS ROUTINE.  DX(I) IS PRESUMED
-!-------TO BE THE *BACKWARD* DIFFERENCE AT POINT I
-!-------
-!-------AN EXTRA STEP IS NEEDED IN THIS ROUTINE SINCE WE HAVE
-!-------TO DETERMINE WHETHER THIS IS A FULL-GRID OR SUBGRID
-!-------DERIVATIVE.
-!------------------------------------------------------------
-
-real(wp), dimension(:,:,:), intent(in) :: f1,f2,f3
-type(curvmesh), intent(in) :: x
-integer, intent(in) :: lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3
-
-integer :: ix1,ix2,ix3,lx1,lx2,lx3
-
-real(wp), dimension(:,:,:), pointer :: h1,h2,h3   !local references to the metric factors to be used in the derivative
-real(wp), dimension(:), pointer :: dx1
-real(wp), dimension(:), pointer :: dx2
-real(wp), dimension(:), pointer :: dx3    !local reference to the backward difference
-
-real(wp), dimension(1:size(f1,1),1:size(f1,2),1:size(f1,3)) :: div3D_curv_3
-
-
-lx1=size(f1,1)
-lx2=size(f1,2)
-lx3=size(f1,3)
-
-
-!ERROR CHECKING TO MAKE SURE DIFFRENCING IS DONE OVER A CONSISTENTLY-SIZED GRID
-if (lx1 /= ubnd1-lbnd1+1 .or. lx2 /= ubnd2-lbnd2+1 .or. lx3 /= ubnd3-lbnd3+1) then
-  error stop '!!!  Inconsistent array and mesh sizes in gradient function.'   !just bail on it and let the user figure it out
-end if
-
-
-!CHOOSE THE METRIC FACTORS VARIABLES BASED ON THE SIZE OF THE X3-VARIABLE, ALSO RECAST SO THE
-!INDICES USED FOR F CAN ALSO BE USED IN THE METRIC FACTOR AND DX VARIABLE
-!Can avoid wasting memory and copying of metric factor arrays by recoding with pointers
-!Unfortunately a pointer is not gauranteed to be contiguous in memory so there may be a performance hit in doing this...
-dx1=>x%dx1(lbnd1:ubnd1)
-dx2=>x%dx2(lbnd2:ubnd2)
-if (lx3<=x%lx3+4) then     !+4 in case we need to differentiate over ghost cells, e.g. in compression terms
-  h1=>x%h1(lbnd1:ubnd1,lbnd2:ubnd2,lbnd3:ubnd3)
-  h2=>x%h2(lbnd1:ubnd1,lbnd2:ubnd2,lbnd3:ubnd3)
-  h3=>x%h3(lbnd1:ubnd1,lbnd2:ubnd2,lbnd3:ubnd3)
-  dx3=>x%dx3(lbnd3:ubnd3)
-else if (lx3<=x%lx3all+4) then     !presumes root.  may cause a seg fault since workers don't have the full-grid metric factors (should they?)
-  h1=>x%h1all(lbnd1:ubnd1,lbnd2:ubnd2,lbnd3:ubnd3)
-  h2=>x%h2all(lbnd1:ubnd1,lbnd2:ubnd2,lbnd3:ubnd3)
-  h3=>x%h3all(lbnd1:ubnd1,lbnd2:ubnd2,lbnd3:ubnd3)
-  dx3=>x%dx3all(lbnd3:ubnd3)
-  print *,   '! Accessing root-only grid information in divergence function div3D'
-else
-  error stop '!!!  Array size is larger than full mesh.'
-end if
-
-
-!REASSIGNING POINTERS AS SUBARRAYS TO BE DIFFERENCED PRODUCED CLEAN CODE (BELOW), BUT NOW REQUIRES THAT WE OFFSET
-!ARRAY INDICES FOR THE POINTER VARIABLES, SINCE, BY DEFAULT, THEY START AT 1...  ACTUALLY THIS SHOUDL NOT BE THE CASE
-!SINCE EVERYTHING IS GETTING OFFSET (F UPON BEING PASSED INTO THIS FUNCTION AND THEN DIFFERENTIALS IN THE POINTER
-!ASSIGNMENTS...
-
-
-!FINITE DIFFERENCES
-do ix3=1,lx3
-  do ix2=1,lx2
-    div3D_curv_3(1,ix2,ix3)=(h2(2,ix2,ix3)*h3(2,ix2,ix3)*f1(2,ix2,ix3)-h2(1,ix2,ix3)*h3(1,ix2,ix3)*f1(1,ix2,ix3))/dx1(2)
-    div3D_curv_3(2:lx1-1,ix2,ix3)=(h2(3:lx1,ix2,ix3)*h3(3:lx1,ix2,ix3)*f1(3:lx1,ix2,ix3)- &
-                h2(1:lx1-2,ix2,ix3)*h3(1:lx1-2,ix2,ix3)*f1(1:lx1-2,ix2,ix3)) / (dx1(3:lx1)+dx1(2:lx1-1))
-    div3D_curv_3(lx1,ix2,ix3)=(h2(lx1,ix2,ix3)*h3(lx1,ix2,ix3)*f1(lx1,ix2,ix3)- &
-                             h2(lx1-1,ix2,ix3)*h3(lx1-1,ix2,ix3)*f1(lx1-1,ix2,ix3))/dx1(lx1)
-  end do
-end do
-
-if (lx2>1) then   !only if the x2-direction is not null
-  do ix3=1,lx3
-    do ix1=1,lx1
-      div3D_curv_3(ix1,1,ix3)=div3D_curv_3(ix1,1,ix3)+ &
-                    (h1(ix1,2,ix3)*h3(ix1,2,ix3)*f2(ix1,2,ix3)-h1(ix1,1,ix3)*h3(ix1,1,ix3)*f2(ix1,1,ix3))/dx2(2)
-      div3D_curv_3(ix1,2:lx2-1,ix3)=div3D_curv_3(ix1,2:lx2-1,ix3)+ &
-                    (h1(ix1,3:lx2,ix3)*h3(ix1,3:lx2,ix3)*f2(ix1,3:lx2,ix3)- &
-                     h1(ix1,1:lx2-2,ix3)*h3(ix1,1:lx2-2,ix3)*f2(ix1,1:lx2-2,ix3)) &
-                             /(dx2(3:lx2)+dx2(2:lx2-1))
-      div3D_curv_3(ix1,lx2,ix3)=div3D_curv_3(ix1,lx2,ix3)+ &
-                    (h1(ix1,lx2,ix3)*h3(ix1,lx2,ix3)*f2(ix1,lx2,ix3)- &
-                     h1(ix1,lx2-1,ix3)*h3(ix1,lx2-1,ix3)*f2(ix1,lx2-1,ix3))/dx2(lx2)
-    end do
-  end do
-end if
-
-do ix2=1,lx2
-  do ix1=1,lx1
-    div3D_curv_3(ix1,ix2,1)=div3D_curv_3(ix1,ix2,1)+ &
-               (h1(ix1,ix2,2)*h2(ix1,ix2,2)*f3(ix1,ix2,2)-h1(ix1,ix2,1)*h2(ix1,ix2,1)*f3(ix1,ix2,1))/dx3(2)
-    div3D_curv_3(ix1,ix2,2:lx3-1)=div3D_curv_3(ix1,ix2,2:lx3-1)+ &
-               (h1(ix1,ix2,3:lx3)*h2(ix1,ix2,3:lx3)*f3(ix1,ix2,3:lx3)- &
-                h1(ix1,ix2,1:lx3-2)*h2(ix1,ix2,1:lx3-2)*f3(ix1,ix2,1:lx3-2))&
-                          /(dx3(3:lx3)+dx3(2:lx3-1))
-    div3D_curv_3(ix1,ix2,lx3)=div3D_curv_3(ix1,ix2,lx3)+ &
-               (h1(ix1,ix2,lx3)*h2(ix1,ix2,lx3)*f3(ix1,ix2,lx3)- &
-                h1(ix1,ix2,lx3-1)*h2(ix1,ix2,lx3-1)*f3(ix1,ix2,lx3-1))/dx3(lx3)
-  end do
-end do
-
-div3D_curv_3=div3D_curv_3/(h1*h2*h3)
-
-end function div3D_curv_3
-
-
-function div3D_curv_23(f1,f2,f3,x,lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3)
-
-!------------------------------------------------------------
-!-------COMPUTE A 3D DIVERGENCE.  IT IS EXPECTED THAT
-!-------GHOST CELLS WILL HAVE BEEN TRIMMED FROM ARRAYS BEFORE
-!-------THEY ARE PASSED INTO THIS ROUTINE.  DX(I) IS PRESUMED
-!-------TO BE THE *BACKWARD* DIFFERENCE AT POINT I
-!-------
-!-------AN EXTRA STEP IS NEEDED IN THIS ROUTINE SINCE WE HAVE
-!-------TO DETERMINE WHETHER THIS IS A FULL-GRID OR SUBGRID
-!-------DERIVATIVE.
-!------------------------------------------------------------
-
-real(wp), dimension(:,:,:), intent(in) :: f1,f2,f3    !regardless of what has been passed into the function here, we assume these start at 1
-type(curvmesh), intent(in) :: x
-integer, intent(in) :: lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3
-
-integer :: ix1,ix2,ix3,lx1,lx2,lx3
-
-real(wp), dimension(:,:,:), pointer :: h1,h2,h3   !local references to the metric factors to be used in the derivative
-real(wp), dimension(:), pointer :: dx1
-real(wp), dimension(:), pointer :: dx2
-real(wp), dimension(:), pointer :: dx3    !local reference to the backward difference
-
-real(wp), dimension(1:size(f1,1),1:size(f1,2),1:size(f1,3)) :: div3D_curv_23
-
-
-lx1=size(f1,1)
-lx2=size(f1,2)
-lx3=size(f1,3)
-
-
-if (lx1/=size(f2,1) .or. lx2/=size(f2,2) .or. lx3/=size(f2,3) .or. lx1/=size(f3,1) .or. &
-    lx2/=size(f3,2) .or. lx3/=size(f3,3)) error stop '!!! bad component sizes'
-
-
-!ERROR CHECKING TO MAKE SURE DIFFRENCING IS DONE OVER A CONSISTENTLY-SIZED GRID
-if (lx1 /= ubnd1-lbnd1+1 .or. lx2 /= ubnd2-lbnd2+1 .or. lx3 /= ubnd3-lbnd3+1) then
-  error stop '!!!  Inconsistent array and mesh sizes in div3D function.'   !just bail on it and let the user figure it out
-end if
-
-
-!CHOOSE THE METRIC FACTORS VARIABLES BASED ON THE SIZE OF THE X3-VARIABLE, ALSO RECAST SO THE
-!INDICES USED FOR F CAN ALSO BE USED IN THE METRIC FACTOR AND DX VARIABLE
-!Can avoid wasting memory and copying of metric factor arrays by recoding with pointers
-!Unfortunately a pointer is not gauranteed to be contiguous in memory so there may be a performance hit in doing this...
-dx1=>x%dx1(lbnd1:ubnd1)
-if (lx3<=x%lx3+4 .and. lx2<=x%lx2+4) then     !+4 in case we need to differentiate over ghost cells, e.g. in compression terms
-  h1=>x%h1(lbnd1:ubnd1,lbnd2:ubnd2,lbnd3:ubnd3)
-  h2=>x%h2(lbnd1:ubnd1,lbnd2:ubnd2,lbnd3:ubnd3)
-  h3=>x%h3(lbnd1:ubnd1,lbnd2:ubnd2,lbnd3:ubnd3)
-  dx3=>x%dx3(lbnd3:ubnd3)
-  dx2=>x%dx2(lbnd2:ubnd2)
-else if (lx3<=x%lx3all+4 .and. lx2<=x%lx2all+4) then     !presumes root or some process that has access to ALL full grid variables (normally only root).
-  h1=>x%h1all(lbnd1:ubnd1,lbnd2:ubnd2,lbnd3:ubnd3)
-  h2=>x%h2all(lbnd1:ubnd1,lbnd2:ubnd2,lbnd3:ubnd3)
-  h3=>x%h3all(lbnd1:ubnd1,lbnd2:ubnd2,lbnd3:ubnd3)
-  dx3=>x%dx3all(lbnd3:ubnd3)
-  dx2=>x%dx2all(lbnd2:ubnd2)
-  print *,   '! Accessing root-only grid information in divergence function div3D'
-else
-  error stop '!!!  Array size is larger than full mesh or inconsistent sizes in data to be differentiated.'
-end if
-
-!REASSIGNING POINTERS AS SUBARRAYS TO BE DIFFERENCED PRODUCED CLEAN CODE (BELOW), BUT NOW REQUIRES THAT WE OFFSET
-!ARRAY INDICES FOR THE POINTER VARIABLES, SINCE, BY DEFAULT, THEY START AT 1...  ACTUALLY THIS SHOUDL NOT BE THE CASE
-!SINCE EVERYTHING IS GETTING OFFSET (F UPON BEING PASSED INTO THIS FUNCTION AND THEN DIFFERENTIALS IN THE POINTER
-!ASSIGNMENTS...
-
-
-!FINITE DIFFERENCES
-do ix3=1,lx3
-  do ix2=1,lx2
-    div3D_curv_23(1,ix2,ix3)=(h2(2,ix2,ix3)*h3(2,ix2,ix3)*f1(2,ix2,ix3)-h2(1,ix2,ix3)*h3(1,ix2,ix3)*f1(1,ix2,ix3))/dx1(2)
-
-    div3D_curv_23(2:lx1-1,ix2,ix3)=(h2(3:lx1,ix2,ix3)*h3(3:lx1,ix2,ix3)*f1(3:lx1,ix2,ix3)- &
-                h2(1:lx1-2,ix2,ix3)*h3(1:lx1-2,ix2,ix3)*f1(1:lx1-2,ix2,ix3)) / (dx1(3:lx1)+dx1(2:lx1-1))
-
-    div3D_curv_23(lx1,ix2,ix3)=(h2(lx1,ix2,ix3)*h3(lx1,ix2,ix3)*f1(lx1,ix2,ix3)- &
-                             h2(lx1-1,ix2,ix3)*h3(lx1-1,ix2,ix3)*f1(lx1-1,ix2,ix3))/dx1(lx1)
-  end do
-end do
-
-if (lx2>1) then   !only if the x2-direction is not null
-  do ix3=1,lx3
-    do ix1=1,lx1
-      div3D_curv_23(ix1,1,ix3)=div3D_curv_23(ix1,1,ix3)+ &
-                    (h1(ix1,2,ix3)*h3(ix1,2,ix3)*f2(ix1,2,ix3)-h1(ix1,1,ix3)*h3(ix1,1,ix3)*f2(ix1,1,ix3))/dx2(2)
-
-      div3D_curv_23(ix1,2:lx2-1,ix3)=div3D_curv_23(ix1,2:lx2-1,ix3)+ &
-                    (h1(ix1,3:lx2,ix3)*h3(ix1,3:lx2,ix3)*f2(ix1,3:lx2,ix3)- &
-                     h1(ix1,1:lx2-2,ix3)*h3(ix1,1:lx2-2,ix3)*f2(ix1,1:lx2-2,ix3)) &
-                             /(dx2(3:lx2)+dx2(2:lx2-1))
-
-      div3D_curv_23(ix1,lx2,ix3)=div3D_curv_23(ix1,lx2,ix3)+ &
-                    (h1(ix1,lx2,ix3)*h3(ix1,lx2,ix3)*f2(ix1,lx2,ix3)- &
-                     h1(ix1,lx2-1,ix3)*h3(ix1,lx2-1,ix3)*f2(ix1,lx2-1,ix3))/dx2(lx2)
-    end do
-  end do
-end if
-
-
-if (lx3>1) then    !only if non-singleton 3rd dimension
-  do ix2=1,lx2
-    do ix1=1,lx1
-      div3D_curv_23(ix1,ix2,1)=div3D_curv_23(ix1,ix2,1)+ &
-                 (h1(ix1,ix2,2)*h2(ix1,ix2,2)*f3(ix1,ix2,2)-h1(ix1,ix2,1)*h2(ix1,ix2,1)*f3(ix1,ix2,1))/dx3(2)
-
-      div3D_curv_23(ix1,ix2,2:lx3-1)=div3D_curv_23(ix1,ix2,2:lx3-1)+ &
-                 (h1(ix1,ix2,3:lx3)*h2(ix1,ix2,3:lx3)*f3(ix1,ix2,3:lx3)- &
-                  h1(ix1,ix2,1:lx3-2)*h2(ix1,ix2,1:lx3-2)*f3(ix1,ix2,1:lx3-2))&
-                            /(dx3(3:lx3)+dx3(2:lx3-1))
-
-      div3D_curv_23(ix1,ix2,lx3)=div3D_curv_23(ix1,ix2,lx3)+ &
-                 (h1(ix1,ix2,lx3)*h2(ix1,ix2,lx3)*f3(ix1,ix2,lx3)- &
-                  h1(ix1,ix2,lx3-1)*h2(ix1,ix2,lx3-1)*f3(ix1,ix2,lx3-1))/dx3(lx3)
-    end do
-  end do
-end if
-
-
-div3D_curv_23=div3D_curv_23/(h1*h2*h3)
-
-end function div3D_curv_23
 
 
 
@@ -1010,196 +484,6 @@ end do
 end function grad2D3_curv_23
 
 
-pure function integral3D1_curv(f,x,lbnd,ubnd)
-
-!PURPOSEFULLY KEPT WARNING TO MAINTIN CONGRUITY WITH OTHER CALCULUS FUNCTIONS
-!/home/zettergm/zettergmdata/GEMINI/numerical/calculus/calculus.f90:512:0:
-!warning: unused parameter ‘ubnd’ [-Wunused-parameter]
-!   function integral3D1_curv(f,x,lbnd,ubnd)
-
-!------------------------------------------------------------
-!-------COMPUTE AN INTEGRAL OF A 3D ARRAY ALONG THE 1-DIM.  IT IS EXPECTED THAT
-!-------GHOST CELLS WILL HAVE BEEN TRIMMED FROM ARRAYS BEFORE
-!-------THEY ARE PASSED INTO THIS ROUTINE
-!-------
-!-------NOTE, AS BEFORE THAT THE GRID MAY BE INDEXED DIFFERENTLY
-!-------THAT THE FUNCTION BEING INTEGRATED
-!------------------------------------------------------------
-
-real(wp), dimension(:,:,:), intent(in) :: f
-type(curvmesh), intent(in) :: x
-integer, intent(in) :: lbnd,ubnd    !no upper bound used, but could be for error checking
-
-integer :: ix1,lx1
-real(wp), dimension(1:size(f,1),1:size(f,2),1:size(f,3)) :: integral3D1_curv
-
-lx1=size(f,1)
-
-integral3D1_curv(1,:,:)=0._wp
-do ix1=2,lx1
-  integral3D1_curv(ix1,:,:)=integral3D1_curv(ix1-1,:,:)+0.5d0*(f(ix1,:,:)+f(ix1-1,:,:))*x%dx1(lbnd+ix1-1)
-end do
-end function integral3D1_curv
-
-
-pure function integral3D1_curv_alt(f,x,lbnd,ubnd)
-
-!PURPOSEFULLY KEPT WARNING TO MAINTIN CONGRUITY WITH OTHER CALCULUS FUNCTIONS
-!/home/zettergm/zettergmdata/GEMINI/numerical/calculus/calculus.f90:539:0:
-!warning: unused parameter ‘ubnd’ [-Wunused-parameter]
-!   function integral3D1_curv_alt(f,x,lbnd,ubnd)
-
-!------------------------------------------------------------
-!-------COMPUTE AN INTEGRAL OF A 3D ARRAY ALONG THE 1-DIM.  IT IS EXPECTED THAT
-!-------GHOST CELLS WILL HAVE BEEN TRIMMED FROM ARRAYS BEFORE
-!-------THEY ARE PASSED INTO THIS ROUTINE
-!-------
-!-------NOTE, AS BEFORE THAT THE GRID MAY BE INDEXED DIFFERENTLY
-!-------THAN THE FUNCTION BEING INTEGRATED.  ALSO THIS ALT VERSION
-!-------INTEGRATES FROM SET OPINT TO THE MAX VALUE ON THE GRID,
-!-------RATHER THAN FROM THE MIN VALUE TO A FIXED POINT.
-!------------------------------------------------------------
-
-real(wp), dimension(:,:,:), intent(in) :: f
-type(curvmesh), intent(in) :: x
-integer, intent(in) :: lbnd,ubnd    !no upper bound used, but could be for error checking
-
-integer :: ix1,lx1
-real(wp), dimension(1:size(f,1),1:size(f,2),1:size(f,3)) :: integral3D1_curv_alt
-
-lx1=size(f,1)
-
-integral3D1_curv_alt(lx1,:,:)=0._wp
-do ix1=lx1-1,1,-1    !start from the logical top and sum  downward (keep dx positive since the intent is to integrate from fixed point to top)
-  integral3D1_curv_alt(ix1,:,:)=integral3D1_curv_alt(ix1+1,:,:)+0.5d0*(f(ix1,:,:)+f(ix1+1,:,:))*x%dx1(lbnd+ix1-1+1)   !+1 since we are starting from top
-end do
-end function integral3D1_curv_alt
-
-
-pure function integral2D1_curv(f,x,lbnd,ubnd)
-
-!PURPOSEFULLY KEPT WARNING TO MAINTIN CONGRUITY WITH OTHER CALCULUS FUNCTIONS
-!/home/zettergm/zettergmdata/GEMINI/numerical/calculus/calculus.f90:568:0:
-!warning: unused parameter ‘ubnd’ [-Wunused-parameter]
-!   function integral2D1_curv(f,x,lbnd,ubnd)
-
-!------------------------------------------------------------
-!-------COMPUTE AN INTEGRAL OF A 2D ARRAY ALONG THE 1-DIM.  IT IS EXPECTED THAT
-!-------GHOST CELLS WILL HAVE BEEN TRIMMED FROM ARRAYS BEFORE
-!-------THEY ARE PASSED INTO THIS ROUTINE
-!------------------------------------------------------------
-
-real(wp), dimension(:,:), intent(in) :: f
-type(curvmesh), intent(in) :: x
-integer, intent(in) :: lbnd,ubnd
-
-integer :: ix1,lx1
-real(wp), dimension(1:size(f,1),1:size(f,2)) :: integral2D1_curv
-
-lx1=size(f,1)
-
-integral2D1_curv(1,:)=0._wp
-do ix1=2,lx1
-  integral2D1_curv(ix1,:)=integral2D1_curv(ix1-1,:)+0.5d0*(f(ix1,:)+f(ix1-1,:))*x%dx1(lbnd+ix1-1)
-end do
-end function integral2D1_curv
-
-
-pure function integral2D1_curv_alt(f,x,lbnd,ubnd)
-
-!PURPOSEFULLY KEPT WARNING TO MAINTIN CONGRUITY WITH OTHER CALCULUS FUNCTIONS
-!/home/zettergm/zettergmdata/GEMINI/numerical/calculus/calculus.f90:592:0:
-!warning: unused parameter ‘ubnd’ [-Wunused-parameter]
-!   function integral2D1_curv_alt(f,x,lbnd,ubnd)
-
-!------------------------------------------------------------
-!-------COMPUTE AN INTEGRAL OF A 2D ARRAY ALONG THE 1-DIM.  IT IS EXPECTED THAT
-!-------GHOST CELLS WILL HAVE BEEN TRIMMED FROM ARRAYS BEFORE
-!-------THEY ARE PASSED INTO THIS ROUTINE.
-!-------
-!-------THIS VERSION INTEGRATES WRT X2
-!------------------------------------------------------------
-
-real(wp), dimension(:,:), intent(in) :: f
-type(curvmesh), intent(in) :: x
-integer, intent(in) :: lbnd,ubnd
-
-integer :: ix2,lx2
-real(wp), dimension(1:size(f,1),1:size(f,2)) :: integral2D1_curv_alt
-
-lx2=size(f,1)
-
-integral2D1_curv_alt(1,:)=0._wp
-do ix2=2,lx2
-  integral2D1_curv_alt(ix2,:)=integral2D1_curv_alt(ix2-1,:)+0.5d0*(f(ix2,:)+f(ix2-1,:))*x%dx2(lbnd+ix2-1)
-end do
-end function integral2D1_curv_alt
-
-
-pure function integral2D2_curv(f,x,lbnd,ubnd)
-
-!PURPOSEFULLY KEPT WARNING TO MAINTIN CONGRUITY WITH OTHER CALCULUS FUNCTIONS
-!/home/zettergm/zettergmdata/GEMINI/numerical/calculus/calculus.f90:618:0:
-!warning: unused parameter ‘ubnd’ [-Wunused-parameter]
-!   function integral2D2_curv(f,x,lbnd,ubnd)
-
-!------------------------------------------------------------
-!-------COMPUTE AN INTEGRAL OF A 2D ARRAY ALONG THE 2-DIM.
-!-------WITH RESPECT TO X2.  IT IS EXPECTED THAT
-!-------GHOST CELLS WILL HAVE BEEN TRIMMED FROM ARRAYS BEFORE
-!-------THEY ARE PASSED INTO THIS ROUTINE
-!-------
-!-------IT IS ASSUMED THAT THE INTEGRATION IS ALWAYS OVER THE
-!-------ENTIRE GRID (X2ALL).
-!------------------------------------------------------------
-
-real(wp), dimension(:,:), intent(in) :: f
-type(curvmesh), intent(in) :: x
-integer, intent(in) :: lbnd,ubnd
-
-integer :: ix2,lx2
-real(wp), dimension(1:size(f,1),1:size(f,2)) :: integral2D2_curv
-
-lx2=size(f,2)
-
-integral2D2_curv(:,1)=0._wp
-do ix2=2,lx2
-  integral2D2_curv(:,ix2)=integral2D2_curv(:,ix2-1)+0.5d0*(f(:,ix2)+f(:,ix2-1))*x%dx2all(lbnd+ix2-1)
-end do
-end function integral2D2_curv
-
-
-pure function integral2D2_curv_alt(f,x,lbnd,ubnd)
-
-!PURPOSEFULLY KEPT WARNING TO MAINTIN CONGRUITY WITH OTHER CALCULUS FUNCTIONS
-!/home/zettergm/zettergmdata/GEMINI/numerical/calculus/calculus.f90:642:0:
-!warning: unused parameter ‘ubnd’ [-Wunused-parameter]
-!   function integral2D2_curv_alt(f,x,lbnd,ubnd)
-
-!------------------------------------------------------------
-!-------COMPUTE AN INTEGRAL OF A 2D ARRAY ALONG THE 2-DIM,
-!-------WITH RESPECT TO X3.  IT IS EXPECTED THAT
-!-------GHOST CELLS WILL HAVE BEEN TRIMMED FROM ARRAYS BEFORE
-!-------THEY ARE PASSED INTO THIS ROUTINE.
-!-------
-!-------IT IS ASSUMED THAT THE INTEGRATION IS ALWAYS OVER THE
-!-------ENTIRE GRID (X3ALL).
-!------------------------------------------------------------
-
-real(wp), dimension(:,:), intent(in) :: f
-type(curvmesh), intent(in) :: x
-integer, intent(in) :: lbnd,ubnd
-
-integer :: ix3,lx3
-real(wp), dimension(1:size(f,1),1:size(f,2)) :: integral2D2_curv_alt
-
-lx3=size(f,2)
-
-integral2D2_curv_alt(:,1)=0._wp
-do ix3=2,lx3
-  integral2D2_curv_alt(:,ix3)=integral2D2_curv_alt(:,ix3-1)+0.5d0*(f(:,ix3)+f(:,ix3-1))*x%dx3all(lbnd+ix3-1)
-end do
-end function integral2D2_curv_alt
 
 
 pure function grad3D3_curv_periodic(f,x,lbnd,ubnd)
