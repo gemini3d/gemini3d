@@ -3,7 +3,7 @@
 !!
 !! This could readily be turned into a subroutine. For now we use it as a registration case.
 use, intrinsic:: iso_fortran_env, only: dp=>real64, sp=>real32
-use ionize_fang, only: fang2008, gravity_accel, erg2kev
+use ionize_fang, only: fang2008, fang2010, gravity_accel, erg2kev
 implicit none
 
 integer :: i, iyd
@@ -12,9 +12,9 @@ real(dp), parameter :: E0_keV(*) = [0.1_dp, 1._dp, 10._dp, 100._dp, 1000._dp], &
                        Q0_erg = 1._dp
 real(dp) :: massden_gcm3, meanmass_g
 real(sp) :: f107, f107a, ap(7), glat, glon, sec, stl, d(9),T(2), sw(25)
-real(dp), allocatable :: Qtot(:,:)
+real(dp), allocatable :: Qtot08(:,:), Qtot10(:,:)
 
-allocate(Qtot(size(alt_km), size(E0_keV)))
+allocate(Qtot08(size(alt_km), size(E0_keV)), Qtot10(size(alt_km), size(E0_keV)))
 
 !! MSIS setup
 iyd = 00001
@@ -41,12 +41,19 @@ do i = 1, size(alt_km)
   ! massden_gcm3 ~ 1e-5..1e-15
   ! meanmass_g ~ 3e-26
 
-  Qtot(i, :) = fang2008(Q0_erg*erg2kev, E0_keV, real(T(2), dp), massden_gcm3, meanmass_g, real(gravity_accel(alt_km(i)), dp))
+  Qtot08(i, :) = fang2008(Q0_erg*erg2kev, E0_keV, real(T(2), dp), massden_gcm3, meanmass_g, real(gravity_accel(alt_km(i)), dp))
+
+  Qtot10(i, :) = fang2010(Q0_erg*erg2kev, E0_keV, real(T(2), dp), massden_gcm3, meanmass_g, real(gravity_accel(alt_km(i)), dp))
 enddo
 
 print '(A)', 'alt[km]/E0[keV]    0.1            1.0             10.           100.            1000.'
 do i = 1,size(alt_km)
-  print '(F7.1,5F15.3)', alt_km(i), Qtot(i,:)
+  print '(F7.1,5F15.3)', alt_km(i), Qtot08(i,:)
+enddo
+
+print '(/,A)', 'alt[km]/Emono[keV]  0.1            1.0             10.           100.            1000.'
+do i = 1,size(alt_km)
+  print '(F7.1,5F15.3)', alt_km(i), Qtot10(i,:)
 enddo
 
 

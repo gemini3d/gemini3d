@@ -21,25 +21,43 @@ def checker(exe: str, doplot: bool):
     ret = subprocess.check_output(exe, universal_newlines=True)
 
     keV = list(map(float, ret.split('\n')[0].split()[1:]))
-    dat = np.loadtxt(io.StringIO(ret), skiprows=1)
+    dat = np.loadtxt(io.StringIO(ret), skiprows=1, max_rows=191)
     alt_km = dat[:, 0]
-    ionization_rates = dat[:, 1:]
+    ionization_rates08 = dat[:, 1:]
 
-    assert np.isclose(ionization_rates[89, 0], 2214.052), "100eV"
-    assert np.isclose(ionization_rates[17, 4], 9579.046), "1MeV"
+    dat = np.loadtxt(io.StringIO(ret), skiprows=191+3, max_rows=191)
+    ionization_rates10 = dat[:, 1:]
+
+    assert np.isclose(ionization_rates08[89, 0], 2214.052), "100eV"
+    assert np.isclose(ionization_rates08[17, 4], 9579.046), "1MeV"
 
     if not doplot:
         return
-
+# %% Fang 2008 plot
     ax = figure().gca()
     for i, e in enumerate(keV):
-        ax.semilogx(ionization_rates[:, i], alt_km, label=str(e))
+        ax.semilogx(ionization_rates08[:, i], alt_km, label=str(e))
     ax.set_ylabel('altitude [km]')
     ax.set_xlabel('Total ionization rate [cm$^{-3}$ s$^{-1}$]')
     ax.grid(True)
-    ax.set_title(r'Figure 3 of Fang 2008 by $E_0$ [keV]\nAp=5 f107=50 Midnight MLT 60$^\circ$ lat.')
+    ax.set_title(r'Figure 3 of Fang 2008 by $E_0$ [keV]'
+                 '\n'
+                 r'Ap=5 f107=50 Midnight MLT 60$^\circ$ lat.')
     ax.legend(loc='best')
     ax.set_xlim(10, 1e5)
+# %% Fang 2010 plot
+    ax = figure().gca()
+    for i, e in enumerate(keV):
+        ax.semilogx(ionization_rates10[:, i], alt_km, label=str(e))
+    ax.set_ylabel('altitude [km]')
+    ax.set_xlabel('Total ionization rate [cm$^{-3}$ s$^{-1}$]')
+    ax.grid(True)
+    ax.set_title(r'Figure 2 of Fang 2010 by $E_{mono}$ [keV]'
+                 '\n'
+                 r'Ap=5 f107=50 Midnight MLT 60$^\circ$ lat.')
+    ax.legend(loc='best')
+    ax.set_xlim(10, 1e5)
+    ax.set_ylim(50, 400)
 
 
 if __name__ == '__main__':

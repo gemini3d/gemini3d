@@ -14,9 +14,9 @@ public :: fang2008, fang2010, gravity_accel, erg2kev
 contains
 
 
-elemental real(wp) function fang2010(Q0, Emono_keV, Tn, massden_gcm3, meanmass, g1) result(Qtot)
+elemental real(wp) function fang2010(Q0_keV, Emono_keV, Tn, massden_gcm3, meanmass_g, g_ms2) result(Qtot)
 
-real(wp), intent(in) :: Emono_keV, Q0, Tn, massden_gcm3, meanmass, g1
+real(wp), intent(in) :: Q0_keV, Emono_keV, Tn, massden_gcm3, meanmass_g, g_ms2
 
 real(wp) :: y, H_cm, f
 integer :: i, j
@@ -36,7 +36,7 @@ real(wp), parameter :: P(8,4) = reshape( &
 
 !! scale height
 !! Equation (2)
-H_cm = kb * Tn / meanmass / abs(g1)
+H_cm = 100 * kb * Tn / (meanmass_g/1000) / abs(g_ms2)
 
 !! normalized atmospheric column mass
 !! Equation (1)
@@ -58,7 +58,7 @@ f = C(1)*y**C(2)*exp(-1*C(3)*y**C(4)) + C(5)*y**C(6) * exp(-1*C(7)*y**C(8))
 
 !! Equation (3)
 !! total ionization rate "qtot" [cm^-3 s^-1]
-Qtot = f * Q0 / deps / H_cm
+Qtot = f * Q0_keV / deps / H_cm
 
 end function fang2010
 
