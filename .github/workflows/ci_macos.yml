@@ -7,10 +7,12 @@ on:
     paths-ignore:
       - "**/*.py"
       - "**/*.md"
+      - "**/*.m"
   pull_request:
     paths-ignore:
       - "**/*.py"
       - "**/*.md"
+      - "**/*.m"
 
 jobs:
 
