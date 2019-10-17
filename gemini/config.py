@@ -94,9 +94,7 @@ def read_nml_group(fn: Path, group: str) -> typing.Dict[str, typing.Any]:
 
                 key = vals[0].strip()
                 values = [v.strip().replace("'", "").replace('"', "") for v in vals[1].split("!")[0].split(",")]
-                if len(values) == 1:
-                    values = values[0]
-                raw[key] = values
+                raw[key] = values[0] if len(values) == 1 else values
 
     if not raw:
         raise KeyError(f"did not find group {group} in {fn}")
