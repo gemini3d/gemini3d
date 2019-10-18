@@ -17,8 +17,6 @@ on:
 jobs:
 
   macosMeson:
-  # need to debug on real Mac, intermittant build (not test) failures with clashing symbols between vendor/msis and glow/msis and other random stuff e.g. f0ade97
-    if: false
     runs-on: macos-latest
     steps:
     - uses: actions/checkout@v1
@@ -44,8 +42,6 @@ jobs:
         path: build/meson-logs/testlog.txt
 
   macosCmake:
-    # need to debug on real Mac, for some reason python packages not recognized
-    if: false
     runs-on: macos-latest
     steps:
     - uses: actions/checkout@v1

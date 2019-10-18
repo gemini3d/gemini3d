@@ -194,8 +194,9 @@ if(NOT BLAS_FOUND)
 endif()
 find_library(BLAS_LIBRARY
   NAMES refblas blas
+  PATHS /usr/local/opt
   HINTS ${BLAS_LIBRARY_DIRS} ${BLAS_LIBDIR}
-  PATH_SUFFIXES blas)
+  PATH_SUFFIXES lapack lapack/lib blas)
 
 if(BLAS_LIBRARY)
   list(APPEND LAPACK_LIBRARY ${BLAS_LIBRARY})

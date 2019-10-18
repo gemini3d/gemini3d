@@ -1,5 +1,6 @@
 test_mpi_exe = executable('test_mpi', 'test_mpi.f90',
-  dependencies: mpi)
+  dependencies: mpi,
+  link_language: 'fortran')
 test('MPI_OK', test_mpi_exe,
   timeout: 10,
   suite: 'unit')

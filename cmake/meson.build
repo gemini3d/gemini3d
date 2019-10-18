@@ -38,19 +38,11 @@ endif
 
 threads = dependency('threads')
 
-# if MPI_ROOT, assume compiler wrapper is usable
-mpiroot = get_option('MPI_ROOT')
-if mpiroot == ''
-  mpiexec = find_program('mpiexec')
-  mpi = dependency('mpi', language : 'fortran')
-  if not fc.links('use mpi; end', name: 'Fortran MPI', dependencies: mpi)
-    mpi = disabler()
-    mpiexec = disabler()
-  endif
-else  # compiler wrapper
-  fc.run('use mpi; integer :: i; call mpi_init(i); call mpi_finalize(i); end', name: 'Fortran MPI wrapper check')
-  mpiexec = find_program(mpiroot / 'mpiexec')
-  mpi = []
+# == MPI
+mpiexec = find_program('mpiexec', required: false, disabler: true)
+mpi = dependency('mpi', language : 'fortran')
+if mpi.found() and not fc.links('use mpi; end', dependencies : mpi, name: 'Fortran MPI')
+  mpi = disabler()
 endif
 
 # --- Find Lapack
@@ -60,17 +52,24 @@ blas = disabler()
 system_blas = get_option('system_blas')
 lapack_root = get_option('LAPACK_ROOT')
 if system_blas
-  if lapack_root == ''
-    lapack = dependency('lapack', required: false)
-    blas = dependency('blas', required: false)
-    if not blas.found()  # necessary for some systems incl. CentOS 7
-      blas = fc.find_library('blas', required: false)
-    endif
-  else
-    message('searching for LAPACK & BLAS in ' + lapack_root)
-    lapack = fc.find_library('lapack', dirs : lapack_root, required: false)
-    blas = fc.find_library('blas', dirs : lapack_root, required: false)
+  blas = dependency('blas', required: false, disabler: true)
+  if not blas.found()  # necessary for some systems incl. CentOS 7
+    blas = fc.find_library('blas', dirs: lapack_root, required: false, disabler: true)
   endif
+endif
+if blas.found() and not fc.links('x=dnrm2(1, [2.], 1); end', dependencies: blas, name: 'BLAS')
+  blas = disabler()
+endif
+
+lapack = disabler()
+if system_blas and blas.found()
+  lapack = dependency('lapack', cmake_module_path: 'cmake/Modules', required: false, disabler: true)
+  if not lapack.found()
+    lapack = fc.find_library('lapack', dirs: lapack_root, required: false, disabler: true)
+  endif
+endif
+if lapack.found() and not fc.links('print *,disnan(0.); end', dependencies: lapack, name: 'LAPACK')
+  lapack = disabler()
 endif
 if not lapack.found() or not blas.found()
   lapack_proj = subproject('lapack')
@@ -87,32 +86,31 @@ endif
 
 # --- Find Scalapack
 scalapack = disabler()
-scalapack_root = get_option('SCALAPACK_ROOT')
 
 if system_blas
   # dependency('scalapack') not yet working in Meson--cmake->meson bug within Meson, yielding long meson-log.txt
   # scalapack = dependency('scalapack', cmake_module_path : 'cmake/Modules')
+  scalapack_root = get_option('SCALAPACK_ROOT')
   if scalapack_root == ''  # system
-    scalapack = fc.find_library('scalapack-openmpi', required: false)
+    scalapack = fc.find_library('scalapack-openmpi', required: false, disabler: true)
     if not scalapack.found()
-      scalapack = fc.find_library('scalapack', required: false)
+      scalapack = fc.find_library('scalapack', required: false, disabler: true)
     endif
   else
     message('searching for SCALAPACK in ' + scalapack_root)
-    scalapack = fc.find_library('scalapack', dirs : scalapack_root / 'lib')
+    scalapack = fc.find_library('scalapack', dirs : scalapack_root / 'lib', required: false, disabler: true)
   endif
+endif
+if scalapack.found() and not fc.links('L = numroc(1,1,1,1,1); end', dependencies: scalapack, name: 'SCALAPACK')
+  scalapack = disabler()
 endif
 if not scalapack.found() and mpiexec.found()
   scalapack_proj = subproject('scalapack')
   scalapack = declare_dependency(link_with: scalapack_proj.get_variable('scalapack_lib'))
 endif
 
-
-
-
 # --- find Mumps
 mumps = disabler()
-mumps_root = get_option('MUMPS_ROOT')
 
 if bits == '64'
   mumps_name = 'dmumps'
@@ -123,20 +121,32 @@ else
 endif
 if system_blas
   # mumps = dependency('MUMPS', cmake_module_path : 'cmake/Modules')
+  mumps_root = get_option('MUMPS_ROOT')
   if mumps_root == ''
     mumpsinc = ''
-    if os != 'windows'
-      mumpsinc = '/usr/include'
+    if os == 'linux'
+      mumpsinc = include_directories('/usr/include')
+    elif os == 'darwin'
+      mumpinc = include_directories('/usr/local/opt/mumps')
     endif
-    mumpslib = fc.find_library(mumps_name, required : false)
+    mumpslib = [fc.find_library(mumps_name, required : false, disabler: true),
+                fc.find_library('mumps_common', required: false, disabler: true)]
   else
     message('searching for MUMPS in ' + mumps_root)
     mumpsinc = mumps_root / 'include'
-    mumpslib = [fc.find_library(mumps_name, required : false, dirs : mumps_root),
-                fc.find_library('mumps_common', required : false, dirs : mumps_root)]
+    mumpslib = [fc.find_library(mumps_name, dirs : mumps_root, required : false, disabler: true),
+                fc.find_library('mumps_common', dirs : mumps_root, required : false, disabler: true)]
   endif
-
-  mumps = declare_dependency(include_directories: mumpsinc, dependencies: mumpslib)
+  if mumpslib[0].found() and mumpslib[1].found()  # has to be in if statement in case mumpsinc does not exist
+    mumps = declare_dependency(include_directories: mumpsinc, dependencies: mumpslib)
+  endif
+endif
+code='''
+include 'dmumps_struc.h'
+type(DMUMPS_STRUC) :: mumps_par
+end'''
+if mumps.found() and not fc.links(code, include_directories: mumpsinc, dependencies: mumpslib, name: 'MUMPS')
+  mumps = disabler()
 endif
 if not mumps.found() and scalapack.found()
   mumps_proj = subproject('mumps')

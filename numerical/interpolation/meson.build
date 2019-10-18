@@ -4,12 +4,12 @@ interp = library('interp', 'interpolation.f90',
 test_interp1_exe = executable('test_interp1', 'testinterp1.f90',
   link_with: [const, interp])
 test('Interp1d', test_interp1_exe,
-  suite: 'unit')
+  suite: 'unit', timeout: 10)
 
 test_interp2_exe = executable('test_interp2', 'testinterp2.f90',
   link_with: [const, interp])
 test('Interp2d', test_interp2_exe,
-  suite: 'unit')
+  suite: 'unit', timeout: 10)
 
 test_interp3_exe = executable('test_interp3', 'testinterp3.f90',
   link_with: [const, interp])
