@@ -112,7 +112,7 @@ foreach k, v : zenodo
     suite : k,
     args : ['meson_run_test.py', k, mpiexec.path(), v['exe'], meson.source_root() / 'initialize/test' + k / 'config.nml', test_dir],
     workdir : meson.source_root() / 'script_utils',
-    timeout : 1800,
+    timeout : 2700,
     is_parallel : false)
 
 
