@@ -6,36 +6,37 @@
 
 # GEMINI
 
-The GEMINI model (*G*eospace *E*nvironment *M*odel of *I*on-*N*eutral *I*nteractions) is a three-dimensional ionospheric fluid-electrodynamic model used for various scientific studies including effects of auroras on the terrestrial ionosphere, natural hazard effects on the space environment, and effects of ionospheric fluid instabilities on radio propagation (see references section of this document for details).  The detailed mathematical formulation of GEMINI is included in `doc/`.
-
+The GEMINI model (*G*eospace *E*nvironment *M*odel of *I*on-*N*eutral *I*nteractions) is a three-dimensional ionospheric fluid-electrodynamic model used for various scientific studies including effects of auroras on the terrestrial ionosphere, natural hazard effects on the space environment, and effects of ionospheric fluid instabilities on radio propagation (see references section of this document for details).
+The detailed mathematical formulation of GEMINI is included in `doc/`.
 A subroutine-level set of documentation describing functions of individual program units is given via source code comments which are
 [rendered as webpages](https://gemini3d.github.io/gemini/index.html).
-
 GEMINI uses generalized orthogonal curvilinear coordinates and has been tested with dipole and Cartesian coordinates.
 
-We have prioritized ease of setup/install across a wide variety of computing systems.
+We have prioritized ease of setup, install and use across computing systems.
+Computing systems that Gemini is reguarly tested and used on include:
+
+* MacOS: CI (Mojave) and laptop (Catalina)
+* Raspberry Pi 4: 1 Gbyte RAM, Linux Debian Buster
+* Linux: CentOS 7.x, Ubuntu 18.04
+* Windows: Windows Subsystem for Linux
+
 Please open a
 [GitHub Issue](https://github.com/gemini3d/gemini/issues)
 if you experience difficulty building GEMINI.
 
-Generally, the Git `master` branch has the current development version and is the best place to start, while more thoroughly-tested releases happen occasionally.  Specific commits corresponding to published results will also be noted, where appropriate, in the corresponding journal article.
+Generally, the Git `master` branch has the current development version and is the best place to start, while more thoroughly-tested releases happen occasionally.
+Specific commits corresponding to published results will also be noted, where appropriate, in the corresponding journal article.
 
 
 ## Prerequisites
 
-Meson is recommended because Meson automatically builds the entire software library stack from Lapack up.
-CMake may be used if you know that your libraries are compiled to be compatible.
+Meson is recommended because Meson automatically builds the entire software library stack, checking for compatibility of pre-installed libraries such as Lapack, Scalapack and MUMPS.
+CMake may be used if you know that your pre-installed libraries are ABI compatible with your compiler.
 
 **Meson**
 
 Meson uses Ninja as a modern, faster replacement for GNU Make.
 Meson may be obtained via:
-
-```sh
-conda install meson
-```
-
-OR
 
 ```sh
 python3 -m pip install --user meson
@@ -49,8 +50,8 @@ If Homebrew is used, Ninja is installed by:
 brew install ninja
 ```
 
-Gemini scripts used to load and check data use Python &ge; 3.5.
-These scripts are installed by:
+Gemini scripts used to load and check data use Python &ge; 3.6.
+These scripts are installed from the *top level gemini directory* by:
 
 ```sh
 python3 setup.py develop --user
@@ -58,17 +59,12 @@ python3 setup.py develop --user
 
 ### Compilers
 
-The object-oriented Fortran 2008 code used in GEMINI requires a Fortran 2008 compliant compiler.
-Such compilers include:
+The object-oriented Fortran 2008 code used in GEMINI requires a Fortran 2008 compliant compiler, including:
 
 * `gfortran` &ge; 6
 * Intel `ifort`: all [currently supported versions](https://software.intel.com/en-us/articles/intel-parallel-studio-xe-supported-and-unsupported-product-versions)
 * Cray `ftn`
 * IBM XL
-
-Flang and PGI compilers have almost enough Fortran 2008 support for Gemini in mid-2019.
-Let us know if you need a current version of a compiler to work.
-
 
 ### Libraries
 
@@ -78,15 +74,19 @@ Tested versions include:
 * MUMPS 4.10 - 5.2.   Mumps &ge; 5.2 recommended to have vastly less verbose console output
 * SCALAPACK 2.0
 * LAPACK95 3.0  (optional)
-* NCAR GLOW (optional)   enabled by Meson / CMake `-Duseglow=true` option
 
-### postprocessing and visualization of model output
+NCAR GLOW is automatically installed, but optional in general.
+Auroral emissions use GLOW.
+If you wish to enable/disable GLOW, use Meson / CMake `-Duseglow=true` or `-Duseglow=false` option
 
-GEMINI is transitioning to Python for interfaces, plotting and analysis.
-The CI tests are primarily focused on the Python code interacting with GEMINI and GEMINI data.
-However, we do retain the Matlab / GNU Octave scripts during this transition period.
-If GNU Octave is used with the .m scripts, GNU Octave version 4.0 or newer is required.
-Note that only the essential scripts needed to setup a simple example, and plot the results are included in the main GEMINI respository.  A separate repository has been created for more involved examples.
+### Analysis of simulation output
+
+GEMINI uses Python for essential interfaces, plotting and analysis.
+A lot of legacy analysis was done with Matlab / GNU Octave scripts that we continue to maintain.
+
+The Matlab .m scripts require either Matlab or GNU Octave &ge; 4.0.
+Only the essential scripts needed to setup a simple example, and plot the results are included in the main GEMINI respository.
+The [Gemini-scripts](https://github.com/gemini3d/GEMINI-scripts) and [Gemini-examples](https://github.com/gemini3d/GEMINI-examples) contain scripts used for various published and ongoing analyses.
 
 ### Document generation
 
