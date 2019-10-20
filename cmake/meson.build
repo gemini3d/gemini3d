@@ -123,14 +123,12 @@ if system_blas
   # mumps = dependency('MUMPS', cmake_module_path : 'cmake/Modules')
   mumps_root = get_option('MUMPS_ROOT')
   if mumps_root == ''
-    mumpsinc = ''
-    if os == 'linux'
-      mumpsinc = include_directories('/usr/include')
-    elif os == 'darwin'
-      mumpinc = include_directories('/usr/local/opt/mumps')
-    endif
+    mumpsinc = []
     mumpslib = [fc.find_library(mumps_name, required : false, disabler: true),
                 fc.find_library('mumps_common', required: false, disabler: true)]
+    if mumpslib[0].found() and os == 'darwin'  # assuming homebrew
+      mumpinc = include_directories('/usr/local/opt/mumps')
+    endif
   else
     message('searching for MUMPS in ' + mumps_root)
     mumpsinc = mumps_root / 'include'
