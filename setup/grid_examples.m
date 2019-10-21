@@ -4,97 +4,36 @@ addpath ../script_utils;
 clear;
 
 
-% %% EXAMPLE GRID CENTERED ON LONGYEAR
-% dtheta=15;
-% dphi=15;
-% lp=125;
-% lq=250;
-% lphi=40;
-% altmin=80e3;
-% glat=78;
-% glon=15;
-% gridflag=0;
-% flagsource=0;
-% iscurv=true;
-
-
-% %EXAMPLE FOR KRISTINA MIDEX MISSION
-% xdist=600e3;    %eastward distance
-% ydist=600e3;    %northward distance
-% lxp=128;
-% lyp=128;
-% glat=67.11;
-% glon=212.95;
-% gridflag=0;
-% I=90;
-% flagsource=0;     %specify no source
-% iscurv=false;
-
-% %CHILE 2015 GRID
-% dtheta=8;
-% dphi=14;
-% lp=50;
-% lq=250;
-% lphi=50;
-% altmin=80e3;
-% glat=17.0;
-% glon=288.2;
-% gridflag=1;
-% flagsource=0;
-% iscurv=true;
-
-
-% %SAPs grid
-% dtheta=15;
-% dphi=75;
-% lp=128;
-% lq=256;
-% lphi=64;
-% altmin=80e3;
-% glat=45;
-% glon=262.51;
-% gridflag=0;
-% flagsource=0;
-% iscurv=true;
-
-
-%% MSTIDs grid, CONUS
+%% Iowa grid for AGU 2019
 dtheta=20;
-dphi=27.5;
-lp=128;
-lq=256;
+dphi=30;
+lp=100;
+lq=200;
 lphi=40;
 altmin=80e3;
-glat=39;
-glon=262.51;
+glat=40;   %38.9609;
+glon=360-94.088;
 gridflag=0;
-flagsource=0;
+flagsource=1;
 iscurv=true;
 
 
 %% GEOGRAPHIC COORDINATES OF NEUTRAL SOURCE (OR GRID CENTER)
-sourcelat=glat;
-sourcelong=glon;
-neugridtype=[];
-zmin=[];
-zmax=[];
-rhomax=[];
-
-% %MOORE OK
-% sourcelat=35.3;
-% sourcelong=360-97.7;
-% neugridtype=0;            %1 = Cartesian neutral grid, anything else - axisymmetric
-% zmin=0;
-% zmax=660;
-% rhomax=1800;
-
-% % NO SOURCE SPECIFIED, SET TO CENTER OF GRID
-% sourcelat=glat;
-% sourcelong=glon;
+% Iowa example
+neuinfo.sourcelat=38.9609;
+neuinfo.sourcelong=360-94.088;
+neuinfo.neugridtype=3;    %1 = Cartesian neutral grid (2D), 2 - axisymmetric (2D), 3 - 3D Cartesian
+neuinfo.zmin=0;
+neuinfo.zmax=375;
+neuinfo.xmin=-1200;
+neuinfo.xmax=1200;
+neuinfo.ymin=-1200;
+neuinfo.ymax=1200;
+neuinfo.rhomax=[];        %meaningless in 3D situations
 
 
 %% FOR USERS INFO CONVERT SOURCE LOCATION TO GEOMAG
-[sourcetheta,sourcephi]=geog2geomag(sourcelat,sourcelong);
+[sourcetheta,sourcephi]=geog2geomag(neuinfo.sourcelat,neuinfo.sourcelong);
 sourcemlat=90-sourcetheta*180/pi;
 sourcemlon=sourcephi*180/pi;
 
@@ -111,7 +50,9 @@ if (~exist('xg'))
 end
 
 
-ha=plotgrid(xg,flagsource,sourcelat,sourcelong,neugridtype,zmin,zmax,rhomax);
+%% PLOT THE GRID AND NEUTRAL INPUT EXTENT
+%ha=plotgrid(xg,flagsource,sourcelat,sourcelong,neugridtype,zmin,zmax,rhomax);
+ha=plotgrid(xg,flagsource,neuinfo);
 
 
 %% RETURN PATH VARIABLES TO NORMAL
@@ -121,7 +62,9 @@ rmpath ../script_utils;
 
 %% ADDITIONAL EXAMPLES OF GRIDS AND SOURCE LOCATIONS...
 
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Sources
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % %TOHOKU
 % sourcelat=38.429575;
@@ -140,6 +83,39 @@ rmpath ../script_utils;
 % sourcelong=360-72.898;
 
 
+% %MOORE OK
+% sourcelat=35.3;
+% sourcelong=360-97.7;
+% neugridtype=0;            %1 = Cartesian neutral grid, anything else - axisymmetric
+% zmin=0;
+% zmax=660;
+% rhomax=1800;
+
+% % NO SOURCE
+% sourcelat=glat;
+% sourcelong=glon;
+% neugridtype=[];               %1 = Cartesian neutral grid, anything else - axisymmetric
+% zmin=[];
+% zmax=[];
+% rhomax=[];
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Grids
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% %% MSTIDs grid, CONUS
+% dtheta=20;
+% dphi=27.5;
+% lp=128;
+% lq=256;
+% lphi=40;
+% altmin=80e3;
+% glat=39;
+% glon=262.51;
+% gridflag=0;
+% flagsource=0;
+% iscurv=true;
 
 % %% MOORE, OK GRID (FULL)
 % dtheta=25;
@@ -288,3 +264,54 @@ rmpath ../script_utils;
 % glon=143.4;
 % gridflag=1;
 % flagsource=1;
+
+% %% EXAMPLE GRID CENTERED ON LONGYEAR
+% dtheta=15;
+% dphi=15;
+% lp=125;
+% lq=250;
+% lphi=40;
+% altmin=80e3;
+% glat=78;
+% glon=15;
+% gridflag=0;
+% flagsource=0;
+% iscurv=true;
+
+% %EXAMPLE FOR KRISTINA MIDEX MISSION
+% xdist=600e3;    %eastward distance
+% ydist=600e3;    %northward distance
+% lxp=128;
+% lyp=128;
+% glat=67.11;
+% glon=212.95;
+% gridflag=0;
+% I=90;
+% flagsource=0;     %specify no source
+% iscurv=false;
+
+% %CHILE 2015 GRID
+% dtheta=8;
+% dphi=14;
+% lp=50;
+% lq=250;
+% lphi=50;
+% altmin=80e3;
+% glat=17.0;
+% glon=288.2;
+% gridflag=1;
+% flagsource=0;
+% iscurv=true;
+
+% %SAPs grid
+% dtheta=15;
+% dphi=75;
+% lp=128;
+% lq=256;
+% lphi=64;
+% altmin=80e3;
+% glat=45;
+% glon=262.51;
+% gridflag=0;
+% flagsource=0;
+% iscurv=true;

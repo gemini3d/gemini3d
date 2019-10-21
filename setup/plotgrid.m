@@ -1,4 +1,21 @@
-function ha=plotgrid(xg,flagsource,sourcelat,sourcelong,neugridtype,zmin,zmax,rhomax)
+function ha=plotgrid(xg,flagsource,neuinfo)
+
+
+%% ORGANIZE INPUT STRUCTURE
+neugridtype=neuinfo.neugridtype;
+sourcelat=neuinfo.sourcelat;
+sourcelong=neuinfo.sourcelong;
+zmin=neuinfo.zmin;
+zmax=neuinfo.zmax;
+if (neugridtype==3)
+    xmin=neuinfo.xmin;
+    xmax=neuinfo.xmax;
+    ymin=neuinfo.ymin;
+    ymax=neuinfo.ymax;
+else
+    rhomax=neuinfo.rhomax;
+end %if
+
 
 
 %% INPUT COORDS NEED TO BE CONVERTED TO MAGNETIC
@@ -247,7 +264,7 @@ else     %full 3D grid
         plotfun(sourcemlat,sourcemlonplot,0,'ro','MarkerSize',16);    %put down a marker where the neutral source will be centered   
         lpts=100;                                                     %this is only number of points for the lines to be drawn
         
-        if (neugridtype~=1)    %interpret neutral grid as axisymmtric
+        if (neugridtype==2)    %interpret neutral grid as axisymmtric
             %Create a neutral grid, all distance in km here
             rhomin=0;
             zn=linspace(zmin,zmax,lpts);
@@ -290,7 +307,7 @@ else     %full 3D grid
             for iline=1:6    %the line objects for each axis are added in a "stack" fashion (last in first out)
                 h.Children(iline).Color=linecolor;
             end
-        else    %we have a Cartesian input neutral grid
+        elseif (neugridtype==1)   %we have a 2D Cartesian input neutral grid
             rhomin=0;
             zn=linspace(zmin,zmax,lpts);
             drho=rhomax-rhomin;
@@ -330,6 +347,44 @@ else     %full 3D grid
             for iline=1:12    %the line objects for each axis are added in a "stack" fashion (last in first out)
                 h.Children(iline).Color=linecolor;
             end
+        elseif (neugridtype==3)  %3D Cartesian input neutral grid
+            zn=linspace(zmin,zmax,lpts);
+            xn=linspace(xmin,xmax,lpts);
+            yn=linspace(ymin,ymax,lpts);
+            rn=zn+6370;         %convert altitude to geocentric distance
+            
+            dtheta=(max(xn(:))-min(xn(:)))/rn(1);    %equivalent theta coordinates of the neutral mesh
+            dphi=(max(yn(:))-min(yn(:)))/rn(1)/sin(sourcetheta);
+            thetan=linspace(sourcetheta-dtheta/2,sourcetheta+dtheta/2,lpts);
+            phin=linspace(sourcephi-dphi/2,sourcephi+dphi/2,lpts);
+            [THETAn,PHIn,Rn]=meshgrid(thetan,phin,rn);
+            
+            MLATn=90-THETAn*180/pi;
+            MLONn=PHIn*180/pi;
+            Zn=(Rn-6370);
+            Zn=Zn/altscale;     %must scale this if it is going on a map plot
+            
+            hold on;
+            plotfun(MLATn(:,end,1),MLONn(:,end,1),Zn(:,end,1),'LineWidth',LW);
+            h=plotfun(MLATn(:,end,end),MLONn(:,end,end),Zn(:,end,end),'LineWidth',LW);
+            linecolor=h.Color;    %grab the color of the second line
+            plotfun(MLATn(:,1,1),MLONn(:,1,1),Zn(:,1,1),'LineWidth',LW);
+            plotfun(MLATn(:,1,end),MLONn(:,1,end),Zn(:,1,end),'LineWidth',LW);
+            plotfun(squeeze(MLATn(1,:,1)),squeeze(MLONn(1,:,1)),squeeze(Zn(1,:,1)),'LineWidth',LW);
+            plotfun(squeeze(MLATn(1,:,end)),squeeze(MLONn(1,:,end)),squeeze(Zn(1,:,end)),'LineWidth',LW);
+            plotfun(squeeze(MLATn(end,:,1)),squeeze(MLONn(end,:,1)),squeeze(Zn(end,:,1)),altlinestyle,'LineWidth',LW);
+            plotfun(squeeze(MLATn(end,:,end)),squeeze(MLONn(end,:,end)),squeeze(Zn(end,:,end)),altlinestyle,'LineWidth',LW);
+            plotfun(squeeze(MLATn(1,1,:)),squeeze(MLONn(1,1,:)),squeeze(Zn(1,1,:)),'LineWidth',LW);
+            plotfun(squeeze(MLATn(1,end,:)),squeeze(MLONn(1,end,:)),squeeze(Zn(1,end,:)),'LineWidth',LW);
+            plotfun(squeeze(MLATn(end,1,:)),squeeze(MLONn(end,1,:)),squeeze(Zn(end,1,:)),altlinestyle,'LineWidth',LW);
+            plotfun(squeeze(MLATn(end,end,:)),squeeze(MLONn(end,end,:)),squeeze(Zn(end,end,:)),altlinestyle,'LineWidth',LW);
+            
+            %Make all grid lines the same color
+            h=gca;
+            lline=numel(h.Children);
+            for iline=1:12    %the line objects for each axis are added in a "stack" fashion (last in first out)
+                h.Children(iline).Color=linecolor;
+            end            
         end %if
     end %if
 end %if
