@@ -1,0 +1,9 @@
+@mattzett
+
+meson.build @scivision
+meson_options.txt @scivision
+CMakeLists.txt @scivision
+*.cmake @scivision
+cmake/ @scivision
+tests/ @scivision
+*.py @scivision
