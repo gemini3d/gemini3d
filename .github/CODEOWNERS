@@ -7,3 +7,5 @@ CMakeLists.txt @scivision
 cmake/ @scivision
 tests/ @scivision
 *.py @scivision
+*.yml @scivision
+*.toml @scivision
