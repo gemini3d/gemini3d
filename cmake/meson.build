@@ -126,7 +126,9 @@ if system_blas
     mumpsinc = []
     mumpslib = [fc.find_library(mumps_name, required : false, disabler: true),
                 fc.find_library('mumps_common', required: false, disabler: true)]
-    if mumpslib[0].found() and os == 'darwin'  # assuming homebrew
+    if os == 'linux'
+      mumpsinc = include_directories('/usr/include')
+    elif os == 'darwin'  # assuming homebrew
       mumpinc = include_directories('/usr/local/opt/mumps')
     endif
   else
