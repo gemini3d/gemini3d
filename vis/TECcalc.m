@@ -134,7 +134,7 @@ dvTEC=[];
 simdate_series=[];
 for it=1:length(times)
     %LOAD DIST. FILE
-    [ne]=loadframe(direc,ymd,UTsec,ymd0,UTsec0,tdur,dtout,flagoutput,mloc,xg);
+    [ne]=loadframe(direc,ymd,UTsec, flagoutput,mloc,xg);
     simdate=[ymd,UTsec/3600,0,0];    %create a datevec for matlab
 
 
@@ -165,7 +165,7 @@ for it=1:length(times)
 
 
     %LOAD CONTROL SIMULATION
-    [ne]=loadframe(direc_control,ymd,UTsec,ymd0,UTsec0,tdur,dtout,flagoutput,mloc,xg);
+    [ne]=loadframe(direc_control,ymd,UTsec, flagoutput,mloc,xg);
 
 
     %DEFINE A MESHGRID BASED ON CONTROL SIMULATION OUTPUT AND DO INTERPOLATION

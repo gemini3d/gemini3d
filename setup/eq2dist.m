@@ -11,7 +11,7 @@ function [nsi,vs1i,Tsi,xgin,ns,vs1,Ts]=eq2dist(eqdir,simID,xg)
 
   %LOAD THE FRAME
   [ne,mlatsrc,mlonsrc,xgin,v1,Ti,Te,J1,v2,v3,J2,J3,filename,Phitop,ns,vs1,Ts]= ...
-      loadframe(eqdir,ymdend,UTsecend,ymd0,UTsec0,tdur,dtout,flagoutput,mloc,xgin);
+      loadframe(eqdir,ymdend,UTsecend,flagoutput,mloc,xgin);
 
 
   %DO THE INTERPOLATION
