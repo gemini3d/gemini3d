@@ -25,10 +25,11 @@ validateattributes(activ,{'numeric'},{'positive','vector','numel',3})
 
 
 cwd = fileparts(mfilename('fullpath'));
-exeloc = [cwd,'/../'];
+exeloc = [cwd,'/../build/'];
 exe = [exeloc,'msis_setup'];
+if ispc, exe = [exe, '.exe']; end
 
-if ~exist(exe,'file'), error('MSIS setup executable not found'), end
+assert(is_file(exe), ['MSIS setup executable not found: ', exe])
 %% SPECIFY SIZES ETC.
 lx1=xg.lx(1); lx2=xg.lx(2); lx3=xg.lx(3);
 alt=xg.alt(:)/1e3;

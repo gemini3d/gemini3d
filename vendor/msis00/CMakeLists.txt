@@ -30,6 +30,6 @@ target_compile_options(msis PRIVATE ${oldflags})
 
 add_executable(msis_setup ${CMAKE_CURRENT_SOURCE_DIR}/../../setup/MSIS00/call_msis_gfortran.f90)
 target_link_libraries(msis_setup PRIVATE msis)
-set_target_properties(msis_setup PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR})
+set_target_properties(msis_setup PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BUILD_DIR})
 target_compile_options(msis_setup PRIVATE ${FFLAGS})
 
