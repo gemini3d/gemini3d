@@ -81,7 +81,7 @@ zp=linspace(minz,maxz,lzp)';     %altitude (meters)
 
 
 %INTERPOLATE ONTO PLOTTING GRID
-if (xg.lx(3)==1)     %alt./lon. slice
+if xg.lx(3)==1     %alt./lon. slice
   [X,Z]=meshgrid(xp,zp*1e3);    %meridional meshgrid, this defines the grid for plotting
   x1plot=Z(:);   %upward distance
   x2plot=X(:)*Re*sin(meantheta);     %eastward distance
@@ -89,7 +89,7 @@ if (xg.lx(3)==1)     %alt./lon. slice
   parmtmp=parm(:,:);
   parmp=interp2(xg.x2(inds2),xg.x1(inds1),parmtmp,x2plot,x1plot);
   parmp=reshape(parmp,[lzp,lxp]);    %slice expects the first dim. to be "y" ("z" in the 2D case)
-elseif (xg.lx(2)==1)     %alt./lat. slice
+elseif xg.lx(2)==1    %alt./lat. slice
   [Y3,Z3]=meshgrid(yp,zp*1e3);
 
   x1plot=Z3(:);   %upward distance

@@ -1,4 +1,7 @@
 function slice3axes(ax, P)
+narginchk(2,2)
+
+validateattributes(P, {'struct'}, {'scalar'}, mfilename)
 
 tight_axis(ax)
 colormap(ax, P.cmap)

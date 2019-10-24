@@ -24,6 +24,7 @@ if nargin<8, visible = 'on'; end
 
 Ncmap = parula(256);
 Tcmap = parula(256);
+Phi_cmap = parula(256);
 Vcmap = bwr();
 Jcmap = bwr();
 
@@ -111,6 +112,7 @@ if (~flagcaxlims)
  J2lim = [-J2mod, J2mod];
  J3mod=max(abs(J3(:)));
  J3lim=[-J3mod, J3mod];
+ Phitop_lim = [0, max(Phitop(:))];
 %   nelim =  [min(ne(:)), max(ne(:))];
 %   v1lim = [NaN,NaN];
 %   Tilim = [0, max(Ti(:))];
@@ -147,17 +149,10 @@ if lotsplots   % 3D simulation or a very long 2D simulation - do separate plots 
     plotfun(ymd,UTsec,xg,J2,'J_2 (A/m^2)',J2lim,[mlatsrc,mlonsrc],h.f7, Jcmap);
     clf(h.f8)
     plotfun(ymd,UTsec,xg,J3,'J_3 (A/m^2)',J3lim,[mlatsrc,mlonsrc],h.f8, Jcmap);
-
-    if ~isempty(h.f9)
-      clf(h.f9)
-      h9a = axes('parent', h.f9);
-      imagesc(Phitop, 'parent', h9a)
-      colorbar('peer', h9a)
-    end
+    clf(h.f9)
+    % TODO: check units
+    plotfun(ymd,UTsec,xg,Phitop,'\Phi_{top} (m^{-2} s^{-1})', Phitop_lim, [mlatsrc, mlonsrc], h.f9, Phi_cmap)
   end
-
-  % for 3D or long 2D plots print and output file every time step
-  saveframe(flagoutput, direc, filename, saveplot_fmt, h)
 
 else    %short 2D simulation - put the entire time series in a single plot
 
@@ -191,16 +186,15 @@ else    %short 2D simulation - put the entire time series in a single plot
     ha = subplot(Rsp, Csp,it,'parent',h.f8);
     plotfun(ymd,UTsec,xg,J3(:,:,:),'J_3 (A/m^2)',J3lim,[mlatsrc,mlonsrc],ha);
 
-    if ~isempty(h.f9)
-      ha = subplot(Rsp, Csp,it,'parent',h.f9);
-      imagesc(Phitop, 'parent', ha)
-      colorbar('peer', ha)
-    end
+    ha = subplot(Rsp, Csp,it,'parent',h.f9);
+    % TODO: check units
+    plotfun(ymd,UTsec,xg,Phitop,'Phitop (1/m^2/s)', Phitop_lim, [mlatsrc, mlonsrc], h.f9, Phi_cmap)
   end
 
 end
 
-if ~lotsplots    %save the short 2D sim plots
+if ~lotsplots
+  % for 3D or long 2D plots print and output file every time step
   saveframe(flagoutput, direc, filename, saveplot_fmt, h)
 end
 
