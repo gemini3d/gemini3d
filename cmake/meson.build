@@ -127,9 +127,9 @@ if system_blas
     mumpslib = [fc.find_library(mumps_name, required : false, disabler: true),
                 fc.find_library('mumps_common', required: false, disabler: true)]
     if os == 'linux'
-      mumpsinc = include_directories('/usr/include')
+      mumpsinc = '/usr/include'
     elif os == 'darwin'  # assuming homebrew
-      mumpinc = include_directories('/usr/local/opt/mumps')
+      mumpinc = '/usr/local/opt/mumps'
     endif
   else
     message('searching for MUMPS in ' + mumps_root)
@@ -138,7 +138,7 @@ if system_blas
                 fc.find_library('mumps_common', dirs : mumps_root, required : false, disabler: true)]
   endif
   if mumpslib[0].found() and mumpslib[1].found()  # has to be in if statement in case mumpsinc does not exist
-    mumps = declare_dependency(include_directories: mumpsinc, dependencies: mumpslib)
+    mumps = declare_dependency(include_directories: include_directories(mumpsinc), dependencies: mumpslib)
   endif
 endif
 code='''
