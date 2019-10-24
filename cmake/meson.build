@@ -145,7 +145,7 @@ code='''
 include 'dmumps_struc.h'
 type(DMUMPS_STRUC) :: mumps_par
 end'''
-if mumps.found() and not fc.links(code, include_directories: mumpsinc, dependencies: mumpslib, name: 'MUMPS')
+if mumps.found() and not fc.links(code, include_directories: include_directories(mumpsinc), dependencies: mumpslib, name: 'MUMPS')
   mumps = disabler()
 endif
 if not mumps.found() and scalapack.found()
