@@ -74,7 +74,7 @@ integer :: iprec
 real(wp), dimension(1:size(vs1,1)-3,1:size(vs1,2)-4,1:size(vs1,3)-4) :: v1iupdate    !temp interface velocities for art. viscosity
 real(wp), dimension(1:size(vs1,1)-4,1:size(vs1,2)-4,1:size(vs1,3)-4) :: dv1iupdate    !interface diffs. for art. visc.
 real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,size(ns,4)) :: Q
-real(wp), parameter :: xicon=3.0_wp    !decent value for closed field-line grids extending to high altitudes.
+real(wp), parameter :: xicon=3.0_wp    !artifical viscosity, decent value for closed field-line grids extending to high altitudes, can be set to 0 for cartesian simulations not exceed altitudes of 1500 km.  
 
 
 !MAKING SURE THESE ARRAYS ARE ALWAYS IN SCOPE
