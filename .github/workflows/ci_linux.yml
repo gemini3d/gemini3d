@@ -25,7 +25,7 @@ jobs:
       with:
         python-version: '3.x'
     - run: python -m pip install -e .[tests]
-    - run: sudo apt install -yq --no-install-recommends ninja-build gfortran libopenmpi-dev openmpi-bin liblapack-dev libscalapack-mpi-dev libmumps-dev
+    - run: sudo apt install -yq --no-install-recommends ninja-build gfortran libopenmpi-dev openmpi-bin liblapack-dev libscalapack-mpi-dev libmumps-dev libpthread-stubs0-dev
     - name: Setup CMake
       run: |
         pip install cmakeutils
