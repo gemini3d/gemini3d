@@ -82,23 +82,35 @@ zp=linspace(minz,maxz,lzp)';     %altitude (meters)
 
 %INTERPOLATE ONTO PLOTTING GRID
 if xg.lx(3)==1     %alt./lon. slice
-  [X,Z]=meshgrid(xp,zp*1e3);    %meridional meshgrid, this defines the grid for plotting
-  x1plot=Z(:);   %upward distance
-  x2plot=X(:)*Re*sin(meantheta);     %eastward distance
+  if isvector(parm)
+    parmp = interp1(xg.x2(inds2), parm, xp*Re*sin(meantheta));
+  elseif ismatrix(parm)
+    [X,Z]=meshgrid(xp,zp*1e3);    %meridional meshgrid, this defines the grid for plotting
+    x1plot=Z(:);   %upward distance
+    x2plot=X(:)*Re*sin(meantheta);     %eastward distance
 
-  parmtmp=parm(:,:);
-  parmp=interp2(xg.x2(inds2),xg.x1(inds1),parmtmp,x2plot,x1plot);
-  parmp=reshape(parmp,[lzp,lxp]);    %slice expects the first dim. to be "y" ("z" in the 2D case)
+    parmtmp=parm(:,:);
+    parmp=interp2(xg.x2(inds2),xg.x1(inds1),parmtmp,x2plot,x1plot);
+    parmp=reshape(parmp,[lzp,lxp]);    %slice expects the first dim. to be "y" ("z" in the 2D case)
+  else
+    error('need 2-D or 1-D parm')
+  end
 elseif xg.lx(2)==1    %alt./lat. slice
-  [Y3,Z3]=meshgrid(yp,zp*1e3);
+  if isvector(parm)
+    parmp = interp1(xg.x3(inds3), parm, yp*Re);
+  elseif ismatrix(parm)
+    [Y3,Z3]=meshgrid(yp,zp*1e3);
 
-  x1plot=Z3(:);   %upward distance
-  x3plot=Y3(:)*Re;     %northward distance;
+    x1plot=Z3(:);   %upward distance
+    x3plot=Y3(:)*Re;     %northward distance;
 
-  %ix2=floor(lx2/2);
-  parmtmp=parm(:,:);     %so north dist, east dist., alt.
-  parmp3=interp2(xg.x3(inds3),xg.x1(inds1),parmtmp,x3plot,x1plot);
-  parmp3=reshape(parmp3,[lzp,lyp]);    %slice expects the first dim. to be "y"
+    %ix2=floor(lx2/2);
+    parmtmp=parm(:,:);     %so north dist, east dist., alt.
+    parmp=interp2(xg.x3(inds3),xg.x1(inds1),parmtmp,x3plot,x1plot);
+    parmp=reshape(parmp,[lzp,lyp]);    %slice expects the first dim. to be "y"
+  else
+    error('need 2-D or 1-D parm')
+  end
 end
 
 
@@ -107,10 +119,8 @@ if (xg.lx(2)==1)
   yp=yp*Re;
   [yp,inds]=sort(yp);
   %parmp2=parmp2(inds,:,:);
-  parmp3=parmp3(:,inds);
-end 
-
-if (xg.lx(3)==1)
+  parmp=parmp(:,inds);
+elseif (xg.lx(3)==1)
   %xp=(xp+meanphi)*180/pi;
   xp=xp*Re*sin(meantheta);    %eastward ground distance
   [xp,inds]=sort(xp);
@@ -127,18 +137,41 @@ maxxp=max(xp(:));
 %maxzp=max(zp(:));
 
 %% MAKE THE PLOT!
-if (xg.lx(3)==1)
-  plot12(xp, zp, parmp, ha, FS, sourcemlat, minxp, maxxp, altref, cmap, caxlims, parmlbl)
-elseif (xg.lx(2)==1)
-  plot13(yp, zp, parmp3, ha, FS, sourcemlat)
+if isvector(parm)
+  if xg.lx(3) == 1
+    plot1d2(xp, parmp, ha, FS, parmlbl)
+  elseif xg.lx(2) == 1
+    plot1d3(yp, parmp, ha, FS, parmlbl)
+  end
+else
+  if xg.lx(3)==1
+    plot12(xp, zp, parmp, ha, FS, sourcemlat, minxp, maxxp, altref, cmap, caxlims, parmlbl)
+  elseif xg.lx(2)==1
+    plot13(yp, zp, parmp, ha, FS, sourcemlat)
+  end
 end
-
 ttxt = time2str(ymd, UTsec);
 title(ha, ttxt)
 %text(xp(round(lxp/10)),zp(lzp-round(lzp/7.5)),strval,'FontSize',18,'Color',[0.66 0.66 0.66],'FontWeight','bold');
 %text(xp(round(lxp/10)),zp(lzp-round(lzp/7.5)),strval,'FontSize',16,'Color',[0.5 0.5 0.5],'FontWeight','bold');
 
 end
+
+function plot1d2(xp, parm, ha, FS, parmlbl)
+plot(ha, xp/1e3, parm)
+set(ha, 'fontsize', FS)
+xlabel(ha, 'eastward dist. (km)')
+ylabel(ha, parmlbl)
+end % function
+
+
+function plot1d3(yp, parm, ha, FS, parmlbl)
+plot(ha, yp/1e3, parm)
+set(ha, 'fontsize', FS)
+xlabel(ha, 'northward dist. (km)')
+ylabel(ha, parmlbl)
+end % function
+
 
 function plot12(xp, zp, parmp, ha, FS, sourcemlat, minxp, maxxp, altref, cmap, caxlims, parmlbl)
 hi = imagesc(xp/1e3, zp,parmp, 'parent', ha);
@@ -150,7 +183,7 @@ if ~isempty(sourcemlat)
 end
 hold(ha, 'off')
 
-try % octave < 5
+try %#ok<*TRYNC> % octave < 5
   set(hi, 'alphadata', ~isnan(parmp))
 end
 set(ha,'FontSize',FS)
@@ -168,9 +201,9 @@ ylabel(ha, 'altitude (km)')
 
 end
 
-function plot13(yp, zp, parmp3, ha, FS, sourcemlat)
+function plot13(yp, zp, parmp, ha, FS, sourcemlat)
 
-hi = imagesc(yp/1e3, zp, parmp3, 'parent', ha);
+hi = imagesc(yp/1e3, zp, parmp, 'parent', ha);
 hold(ha, 'on')
 %plot([minyp,maxyp],[altref,altref],'w--','LineWidth',2);
 if (~isempty(sourcemlat))
@@ -178,8 +211,8 @@ if (~isempty(sourcemlat))
 end
 hold(ha, 'off')
 
-try %#ok<TRYNC> % octave < 5
-  set(hi, 'alphadata', ~isnan(parmp3));
+try % % octave < 5
+  set(hi, 'alphadata', ~isnan(parmp));
 end
 set(ha, 'FontSize', FS);
 
