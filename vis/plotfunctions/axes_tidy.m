@@ -1,4 +1,4 @@
-function slice3axes(ax, P)
+function axes_tidy(ax, P)
 narginchk(2,2)
 
 validateattributes(P, {'struct'}, {'scalar'}, mfilename)

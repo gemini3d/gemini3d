@@ -44,12 +44,11 @@ end
 %% LOAD DIST. FILE
 stem = datelab(ymd, UTsec);
 filename = [stem, '.dat'];
-if ~exist([direc, filesep, filename], 'file') % switch microsecond to one for first time step
+if ~is_file([direc, filesep, filename]) % switch microsecond to one for first time step
     filenameold = filename;
     stem(end) = '1';
     filename = [stem, '.dat'];
-    assert(exist([direc, filesep, filename], 'file')==2, ...
-        ['loadframe: ', [direc,filesep,filenameold], ' does not exist.'])
+    assert(is_file([direc, filesep, filename]), ['loadframe: ', [direc,filesep,filenameold], ' does not exist.'])
 end
 
 switch flagoutput

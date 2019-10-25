@@ -82,7 +82,7 @@ If you wish to enable/disable GLOW, use Meson / CMake `-Duseglow=true` or `-Duse
 ### Analysis of simulation output
 
 GEMINI uses Python for essential interfaces, plotting and analysis.
-A lot of legacy analysis was done with Matlab / GNU Octave scripts that we continue to maintain.
+A lot of legacy analysis was done with Matlab scripts that we continue to maintain.
 
 The Matlab .m scripts require either Matlab or GNU Octave &ge; 4.0.
 Only the essential scripts needed to setup a simple example, and plot the results are included in the main GEMINI respository.
@@ -437,7 +437,7 @@ The code determines 2D vs. 3D runs by the number of x2 or x3 grid points specifi
 ## Loading and plotting output
 
 MATLAB is required to load the output file via scripts in the ./vis directory (these scripts generally work on both 2D and 3D simulation results).
-GNU Octave is not reliable at plotting for any program, and might not work.
+GNU Octave is not reliable at plotting in general, and might crash or make wierd looking plots.
 The results for an entire simulation can be plotted using [plotall.m](./vis/plotall.m)
 
 ```matlab

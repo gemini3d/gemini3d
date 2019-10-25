@@ -2,7 +2,6 @@ function xg = plotframe(direc,ymd,UTsec,saveplot_fmt,plotfun,xg,h,visible)
 
 cwd = fileparts(mfilename('fullpath'));
 addpath([cwd, filesep, 'plotfunctions'])
-addpath([cwd, filesep, '..', filesep, 'script_utils'])
 
 %% CHECK ARGS AND SET SOME DEFAULT VALUES ON OPTIONAL ARGS
 narginchk(3,8)
@@ -24,7 +23,7 @@ if nargin<8, visible = 'on'; end
 
 Ncmap = parula(256);
 Tcmap = parula(256);
-Phi_cmap = parula(256);
+Phi_cmap = bwr();
 Vcmap = bwr();
 Jcmap = bwr();
 
@@ -32,8 +31,7 @@ lotsplots=true;   %@scivision may want to fix this...
 
 direc = expanduser(direc);  % for mkdir on Octave.
 
-%% NEED TO ADD SOME CODE TO VALIDATE THE INPUT DATA...
-
+% FIXME: VALIDATE THE INPUT DATA...
 
 %% SET THE CAXIS LIMITS FOR THE PLOTS - really needs to be user provided somehow...
 flagcaxlims=false;
@@ -50,7 +48,7 @@ J3lim=[-10 10];
 %}
 
 %% READ IN THE SIMULATION INFORMATION (this is low cost so reread no matter what)
-[ymd0,UTsec0,tdur,dtout,flagoutput,mloc] = readconfig([direc, filesep, 'inputs']);
+params = read_config([direc, filesep, 'inputs']);
 
 %% CHECK WHETHER WE NEED TO RELOAD THE GRID (check if one is given because this can take a long time)
 if isempty(xg)
@@ -66,19 +64,18 @@ plotfun = grid2plotfun(plotfun, xg);
 
 %% DETERMINE OUTPUT TIME NEAREST TO THAT REQUESTED
 %tnow = UTsec0+tdur;    %not date corrected, but doesn't really matter
-[ymdend,UTsecend]=dateinc(tdur,ymd0,UTsec0);
-
+[ymdend,UTsecend] = dateinc(params.tdur, params.ymd, params.UTsec0);
 
 %% LOCATE TIME NEAREST TO THE REQUESTED DATE
 %ymdprev=ymd0;
 %UTsecprev=UTsec0;
-ymdnext=ymd0(:)';
-UTsecnext=UTsec0;
+ymdnext = params.ymd(:)';
+UTsecnext = params.UTsec0;
 it=1;
 while(datenum([ymdnext,UTsecnext/3600,0,0]) < datenum([ymd,UTsec/3600,0,0]) && datenum([ymdnext,UTsecnext/3600,0,0]) < datenum([ymdend,UTsecend/3600,0,0]))
   ymdprev=ymdnext;
   UTsecprev=UTsecnext;
-  [ymdnext,UTsecnext]=dateinc(dtout,ymdprev,UTsecprev);
+  [ymdnext,UTsecnext]=dateinc(params.dtout,ymdprev,UTsecprev);
   it=it+1;
 end
 %{
@@ -92,7 +89,7 @@ end
 %}
 
 %% LOAD THE FRAME NEAREST TO THE REQUESTED TIME
-[ne,mlatsrc,mlonsrc,xg,v1,Ti,Te,J1,v2,v3,J2,J3,filename,Phitop,ns,vs1,Ts] = loadframe(direc,ymd,UTsec,flagoutput,mloc,xg);
+[ne,mlatsrc,mlonsrc,xg,v1,Ti,Te,J1,v2,v3,J2,J3,filename,Phitop] = loadframe(direc,ymd,UTsec, params.flagoutput, params.mloc,xg);
 disp([filename, ' => ', func2str(plotfun)])
 
 %% UNTIL WE PROVIDE A WAY FOR THE USER TO SPECIFY COLOR AXES, JUST TRY TO SET THEM AUTOMATICALLY
@@ -112,7 +109,7 @@ if (~flagcaxlims)
  J2lim = [-J2mod, J2mod];
  J3mod=max(abs(J3(:)));
  J3lim=[-J3mod, J3mod];
- Phitop_lim = [0, max(Phitop(:))];
+ Phitop_lim = [min(Phitop(:)), max(Phitop(:))];
 %   nelim =  [min(ne(:)), max(ne(:))];
 %   v1lim = [NaN,NaN];
 %   Tilim = [0, max(Ti(:))];
@@ -132,7 +129,7 @@ if lotsplots   % 3D simulation or a very long 2D simulation - do separate plots 
   clf(h.f10)
   plotfun(ymd,UTsec,xg, ne, 'n_e (m^{-3})', nelim,[mlatsrc,mlonsrc], h.f10, Ncmap);
 
-  if flagoutput~=3
+  if params.flagoutput ~= 3
     clf(h.f1)
     plotfun(ymd,UTsec,xg,v1, 'v_1 (m/s)', v1lim,[mlatsrc,mlonsrc], h.f1, Vcmap);
     clf(h.f2)
@@ -151,17 +148,17 @@ if lotsplots   % 3D simulation or a very long 2D simulation - do separate plots 
     plotfun(ymd,UTsec,xg,J3,'J_3 (A/m^2)',J3lim,[mlatsrc,mlonsrc],h.f8, Jcmap);
     clf(h.f9)
     % TODO: check units
-    plotfun(ymd,UTsec,xg,Phitop,'\Phi_{top} (m^{-2} s^{-1})', Phitop_lim, [mlatsrc, mlonsrc], h.f9, Phi_cmap)
+    plotfun(ymd,UTsec,xg,Phitop,'topside potential \Phi_{top} (V)', Phitop_lim, [mlatsrc, mlonsrc], h.f9, Phi_cmap)
   end
 
 else    %short 2D simulation - put the entire time series in a single plot
 
-  figure(h.f10)
+  figure(h.f10) %#ok<*UNRCH>
   ha = subplot(Rsp, Csp, it, 'parent',h.f10);
   nelim =  [9 11.3];
   plotfun(ymd,UTsec,xg,log10(ne), 'log_{10} n_e (m^{-3})',nelim,[mlatsrc,mlonsrc],ha);
 
-  if flagoutput~=3
+  if params.flagoutput ~= 3
     ha = subplot(Rsp, Csp,it,'parent',h.f1);
     plotfun(ymd,UTsec,xg,v1(:,:,:),'v_1 (m/s)',v1lim,[mlatsrc,mlonsrc],ha);
 
@@ -188,7 +185,7 @@ else    %short 2D simulation - put the entire time series in a single plot
 
     ha = subplot(Rsp, Csp,it,'parent',h.f9);
     % TODO: check units
-    plotfun(ymd,UTsec,xg,Phitop,'Phitop (1/m^2/s)', Phitop_lim, [mlatsrc, mlonsrc], h.f9, Phi_cmap)
+    plotfun(ymd,UTsec,xg,Phitop,'topside potential \Phi_{top} (V)', Phitop_lim, [mlatsrc, mlonsrc], h.f9, Phi_cmap)
   end
 
 end

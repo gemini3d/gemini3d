@@ -4,7 +4,7 @@ narginchk(5,5)
 ax = subplot(1,3,2, 'parent', hf, 'nextplot','add','FontSize', P.FS);
 %% image
 hi = imagesc(x, y, dat, 'parent', ax);
-try %#ok<TRYNC> octave < 5
+try %#ok<*TRYNC> % Octave at least thru 5.1 has scalar alphadata
   set(hi, 'alphadata', ~isnan(dat));
 end
 %% line
@@ -14,7 +14,7 @@ if ~isempty(P.sourcemlat)
 end
 
 %% axes
-slice3axes(ax, P)
+axes_tidy(ax, P)
 
 ylabel(ax, 'northward dist. (km)');
 xlabel(ax, 'eastward dist. (km)');

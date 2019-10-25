@@ -9,10 +9,13 @@ validateattributes(visible, {'char'}, {'vector'}, mfilename, 'figure visibility:
 %Csp = ceil(sqrt(Nt));
 %Rsp = ceil(Nt/Csp);
 
+pos2d = [0.1 0.1 0.3 0.3];
+pos3d = [0.1 0.1 0.8 0.3];
+
 if any(xg.lx(2:3)==1)  %2D simulation
-  figpos=[0.1 0.1 0.3 0.3];
+  figpos = pos2d;
 else                            %3D simulation
-  figpos=[0.1 0.1 0.8 0.3];
+  figpos = pos3d;
 end
 
 
@@ -33,7 +36,7 @@ set(h.f7, 'name', 'J2', 'units', 'normalized', 'position', figpos, 'visible', vi
 h.f8=figure(8);
 set(h.f8, 'name', 'J3', 'units', 'normalized', 'position', figpos, 'visible', visible)
 h.f9=figure(9);
-set(h.f9, 'name','phiTop', 'units', 'normalized', 'position', figpos, 'visible', visible)
+set(h.f9, 'name', 'Topside Potential Phi', 'units', 'normalized', 'position', pos2d, 'visible', visible)
 h.f10=figure(10);
 set(h.f10, 'name', 'Ne', 'units', 'normalized', 'position', figpos, 'visible', visible)
 
