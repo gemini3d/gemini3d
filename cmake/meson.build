@@ -159,6 +159,12 @@ if not mumps.found() and scalapack.found()
   mumps = mumps_proj.get_variable('mumps')
 endif
 
+# --- HDF5
+# NOTE: Gemini HDF5 I/O is just a stub at the moment, undergoing development.
+if get_option('hdf5').enabled()
+  hdf5_proj = subproject('oo_hdf5_fortran')
+  hdf5 = hdf5_proj.get_variable('hdf5')
+endif
 
 # --- Python
 

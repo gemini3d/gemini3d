@@ -1,0 +1,4 @@
+[wrap-git]
+directory = oo_hdf5_fortran
+url = https://github.com/scivision/oo_hdf5_fortran.git
+revision = head
