@@ -5,7 +5,6 @@ project('GEMINI', 'fortran',
 
 bits = get_option('realbits')
 real_bits = '-DREALBITS=' + bits
-buildtype = get_option('buildtype')
 arith = get_option('arith')
 message('arith: ' + arith)
 
