@@ -46,8 +46,7 @@ if mpi.found() and not fc.links('use mpi; end', dependencies : mpi, name: 'Fortr
 endif
 
 # --- Find Lapack
-# we don't use fallback because some systems have screwed-up libs factory installed
-blas = disabler()
+
 lapack_root = get_option('LAPACK_ROOT')
 if lapack_root == ''
   blas = dependency('blas', required: false, disabler: true)
