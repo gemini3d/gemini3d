@@ -25,7 +25,7 @@ jobs:
         python-version: '3.x'
     - run: python -m pip install meson
     - run: python -m pip install -e .[tests]
-    - run: sudo apt install -yq --no-install-recommends ninja-build gfortran liblapack-dev libscalapack-mpi-dev libmumps-dev libopenmpi-dev openmpi-bin
+    - run: sudo apt install -yq --no-install-recommends ninja-build gfortran liblapack-dev libscalapack-mpi-dev libmumps-dev libopenmpi-dev openmpi-bin octave
     - run: meson setup build --buildtype debug
       env:
         FC: gfortran
