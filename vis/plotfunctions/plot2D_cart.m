@@ -65,7 +65,7 @@ meantheta=mean(xg.theta(:));
 y=-1*(xg.theta-meantheta);   %this is a mag colat. coordinate and is only used for defining grid in linspaces below, runs backward from north distance, hence the negative sign
 %x=(xg.phi-meanphi);       %mag. lon coordinate, pos. eastward
 x=xg.x2(inds2)/Re/sin(meantheta);
-z=xg.alt/1e3;
+z=xg.alt;
 lxp=500;
 lyp=500;
 lzp=500;
@@ -85,9 +85,9 @@ if xg.lx(3)==1     %alt./lon. slice
   if isvector(parm)
     parmp = interp1(xg.x2(inds2), parm, xp*Re*sin(meantheta));
   elseif ismatrix(parm)
-    [X,Z]=meshgrid(xp,zp*1e3);    %meridional meshgrid, this defines the grid for plotting
-    x1plot=Z(:);   %upward distance
-    x2plot=X(:)*Re*sin(meantheta);     %eastward distance
+    [X,Z]=meshgrid(xp,zp);    %meridional meshgrid, this defines the grid for plotting
+    x1plot=Z(:);   % upward distance (meters)
+    x2plot=X(:)*Re*sin(meantheta);     % eastward distance (meters)
 
     parmtmp=parm(:,:);
     parmp=interp2(xg.x2(inds2),xg.x1(inds1),parmtmp,x2plot,x1plot);
@@ -99,7 +99,7 @@ elseif xg.lx(2)==1    %alt./lat. slice
   if isvector(parm)
     parmp = interp1(xg.x3(inds3), parm, yp*Re);
   elseif ismatrix(parm)
-    [Y3,Z3]=meshgrid(yp,zp*1e3);
+    [Y3,Z3]=meshgrid(yp,zp);
 
     x1plot=Z3(:);   %upward distance
     x3plot=Y3(:)*Re;     %northward distance;
@@ -174,7 +174,7 @@ end % function
 
 
 function plot12(xp, zp, parmp, ha, FS, sourcemlat, minxp, maxxp, altref, cmap, caxlims, parmlbl)
-hi = imagesc(xp/1e3, zp,parmp, 'parent', ha);
+hi = imagesc(xp/1e3, zp/1e3,parmp, 'parent', ha);
 hold(ha, 'on')
 plot(ha, [minxp/1e3,maxxp/1e3],[altref, altref],'w--','LineWidth',2);
 
@@ -203,7 +203,7 @@ end
 
 function plot13(yp, zp, parmp, ha, FS, sourcemlat)
 
-hi = imagesc(yp/1e3, zp, parmp, 'parent', ha);
+hi = imagesc(yp/1e3, zp/1e3, parmp, 'parent', ha);
 hold(ha, 'on')
 %plot([minyp,maxyp],[altref,altref],'w--','LineWidth',2);
 if (~isempty(sourcemlat))
