@@ -99,10 +99,10 @@ elseif xg.lx(2)==1    %alt./lat. slice
   if isvector(parm)
     parmp = interp1(xg.x3(inds3), parm, yp*Re);
   elseif ismatrix(parm)
-    [Y3,Z3]=meshgrid(yp,zp);
+    [Y,Z]=meshgrid(yp,zp);
 
-    x1plot=Z3(:);   %upward distance
-    x3plot=Y3(:)*Re;     %northward distance;
+    x1plot = Z(:); % upward distance (meters)
+    x3plot = Y(:)*Re; % northward distance (meters)
 
     %ix2=floor(lx2/2);
     parmtmp=parm(:,:);     %so north dist, east dist., alt.

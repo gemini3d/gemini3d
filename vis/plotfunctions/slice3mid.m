@@ -1,7 +1,7 @@
 function slice3mid(hf, x, y, dat, P)
 narginchk(5,5)
 
-ax = subplot(1,3,2, 'parent', hf, 'nextplot','add','FontSize', P.FS);
+ax = subplot(1,3,2, 'parent', hf, 'nextplot','add', 'FontSize', P.FS);
 %% image
 hi = imagesc(x, y, dat, 'parent', ax);
 try %#ok<*TRYNC> % Octave at least thru 5.1 has scalar alphadata

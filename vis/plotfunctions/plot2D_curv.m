@@ -176,7 +176,7 @@ hold(ha,'on')
 plot(ha,[minxp,maxxp],[altref,altref],'w--','LineWidth',2);
 plot(ha,sourcemlat,0,'r^','MarkerSize',8,'LineWidth',2);
 hold(ha,'off')
-try % octave < 5
+try %#ok<*TRYNC> % octave uses scalar alphadata
   set(hi,'alphadata',~isnan(parmp));
 end
 set(ha,'FontSize',FS)
