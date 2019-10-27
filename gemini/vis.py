@@ -272,30 +272,28 @@ def plot_interp(time: datetime, grid: typing.Dict[str, np.ndarray], parm: np.nda
             fg.colorbar(hi, ax=ax, label=CB_LBL[name])
             return
 
-        # %% CONVERT TO DISTANCE UP, EAST, NORTH
+        # %% CONVERT TO DISTANCE UP, EAST, NORTH (left panel)
         # JUST PICK AN X3 LOCATION FOR THE MERIDIONAL SLICE PLOT,
         # AND AN ALTITUDE FOR THE LAT./LON. SLICE
-        f = interp.interp2d(grid["x2"][inds2], grid["x1"][inds1], parm[:, :, lx3 // 2], bounds_error=False)
-        # slice expects the first dim. to be "y" ("z" in the 2D case)
-        parmp = f(xp, zp)
+        ix3 = lx3 // 2 - 1  # arbitrary slice, to match Matlab
+        f = interp.interp2d(grid["x2"][inds2], grid["x1"][inds1], parm[:, :, ix3], bounds_error=False)
         # CONVERT ANGULAR COORDINATES TO MLAT,MLON
         ix = np.argsort(xp)
         iy = np.argsort(yp)
-        plot12(xp[ix], zp, parmp[:, ix], name, cmap, vmin, vmax, fg, axs[0])
-        # %% LAT./LONG. SLICE COORDINATES
-        zp2 = np.array([REF_ALT - 10, REF_ALT, REF_ALT + 10])
+        plot12(xp[ix], zp, f(xp, zp)[:, ix], name, cmap, vmin, vmax, fg, axs[0])
+        # %% LAT./LONG. SLICE COORDINATES (center panel)
+        zp2 = REF_ALT
         X3, Y3, Z3 = np.meshgrid(xp, yp, zp2 * 1e3)
         # transpose: so north dist, east dist., alt.
         parmp = interp.interpn(
-            (grid["x2"][inds2], grid["x3"][inds3], grid["x1"][inds1]),  # this is northward distance - again backwards from yp
-            values=np.transpose(parm, [2, 1, 0]),
-            xi=np.column_stack((X3.ravel(), Y3.ravel(), Z3.ravel())),  # slice expects the first dim. to be "y"
-            bounds_error=False,
-        ).reshape((lyp, lxp, len(zp2)))
+            points=(grid["x1"][inds1], grid["x2"][inds2], grid["x3"][inds3]),
+            values=parm,
+            xi=np.column_stack((Z3.ravel(), Y3.ravel(), X3.ravel())),
+            bounds_error=False).reshape((1, lyp, lxp))
 
-        parmp = parmp[iy, :, :]  # must be indexed in two steps
-        plot23(xp[ix], yp[iy], parmp[:, ix, 2], name, cmap, vmin, vmax, fg, axs[1])
-        # %% ALT/LAT SLICE
-        f = interp.interp2d(grid["x3"][inds3], grid["x1"][inds1], parm[:, lx2 // 2, :], bounds_error=False)
-        parmp = f(yp, zp)
-        plot13(yp[iy], zp, parmp[:, iy], name, cmap, vmin, vmax, fg, axs[2])
+        parmp = parmp[:, iy, :]  # must be indexed in two steps
+        plot23(xp[ix], yp[iy], parmp[0, :, ix], name, cmap, vmin, vmax, fg, axs[1])
+        # %% ALT/LAT SLICE (right panel)
+        ix2 = lx2 // 2 - 1  # arbitrary slice, to match Matlab
+        f = interp.interp2d(grid["x3"][inds3], grid["x1"][inds1], parm[:, ix2, :], bounds_error=False)
+        plot13(yp[iy], zp, f(yp, zp)[:, iy], name, cmap, vmin, vmax, fg, axs[2])

@@ -136,7 +136,7 @@ if ndims(parm) == 3
   parmp=reshape(parmp,[lzp,lxp]);    %slice expects the first dim. to be "y" ("z" in the 2D case)
 end
 
-%% LAT./LONG. SLICE COORDIANTES
+%% LAT./LONG. SLICE COORDINATES
 %zp2=[290,300,310];
 zp2=[plotparams.altref-10, plotparams.altref, plotparams.altref+10];
 lzp2=numel(zp2);
