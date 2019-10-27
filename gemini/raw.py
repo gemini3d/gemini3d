@@ -155,10 +155,6 @@ def loadframe3d_curvavg(fn: Path, lxs: typing.Sequence[int]) -> typing.Dict[str,
 
         dat["Phitop"] = [("x2", "x3"), read2D(f, lxs)]
 
-    if lxs[1] == 1 or lxs[2] == 1:
-        dat["Ti"][1] = dat["Ti"][1].squeeze()
-        dat["Te"][1] = dat["Te"][1].squeeze()
-
     return dat
 
 

@@ -3,7 +3,7 @@ import typing
 import numpy as np
 import logging
 import h5py
-from dateutil.parser import parse
+from datetime import datetime, timedelta
 
 LSP = 7
 
@@ -51,7 +51,7 @@ def loadframe3d_curv(fn: Path) -> typing.Dict[str, typing.Any]:
     dat: typing.Dict[str, typing.Any] = {}
 
     with h5py.File(fn, "r") as f:
-        dat["time"] = parse(f["time"][()])
+        dat["time"] = ymdhourdec2datetime(f["time/ymd"][0], f["time/ymd"][1], f["time/ymd"][2], f['time/UThour'][()])
 
         dat["ne"] = [("x1", "x2", "x3"), f["ns"][:, :, :, LSP - 1]]
 
@@ -84,11 +84,24 @@ def loadframe3d_curvavg(fn: Path) -> typing.Dict[str, typing.Any]:
     dat: typing.Dict[str, typing.Any] = {}
 
     with h5py.File(fn, "r") as f:
-        dat["time"] = parse(f["time"][()])
+        dat["time"] = ymdhourdec2datetime(f["time/ymd"][0], f["time/ymd"][1], f["time/ymd"][2], f['/time/UThour'][()])
 
-        for p in ("ne", "v1", "Ti", "Te", "J1", "J2", "J3", "v2", "v3"):
-            dat[p] = [("x1", "x2", "x3"), f[p][:]]
-
-        dat["Phitop"] = [("x2", "x3"), f["Phitop"][:]]
+        dat['ne'] = [("x1", "x2", "x3"), f['/neall'][:].transpose(2, 0, 1)]
+        dat['v1'] = [("x1", "x2", "x3"), f['/v1avgall'][:].transpose(2, 0, 1)]
+        dat['Ti'] = [("x1", "x2", "x3"), f['/Tavgall'][:].transpose(2, 0, 1)]
+        dat['Te'] = [("x1", "x2", "x3"), f['/TEall'][:].transpose(2, 0, 1)]
+        dat['J1'] = [("x1", "x2", "x3"), f['/J1all'][:].transpose(2, 0, 1)]
+        dat['J2'] = [("x1", "x2", "x3"), f['/J2all'][:].transpose(2, 0, 1)]
+        dat['J3'] = [("x1", "x2", "x3"), f['/J3all'][:].transpose(2, 0, 1)]
+        dat['v2'] = [("x1", "x2", "x3"), f['/v2avgall'][:].transpose(2, 0, 1)]
+        dat['v3'] = [("x1", "x2", "x3"), f['/v3avgall'][:].transpose(2, 0, 1)]
+        dat["Phitop"] = [("x2", "x3"), f["/Phiall"][:]]
 
     return dat
+
+
+def ymdhourdec2datetime(year: int, month: int, day: int, hourdec: float) -> datetime:
+    """
+    convert year,month,day + decimal hour HH.hhh to time
+    """
+    return datetime(year, month, day, int(hourdec), int((hourdec*60) % 60)) + timedelta(seconds=(hourdec*3600) % 60)

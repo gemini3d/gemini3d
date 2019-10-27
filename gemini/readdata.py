@@ -12,7 +12,7 @@ from .config import read_config
 
 try:
     from . import hdf
-except ImportError:
+except ModuleNotFoundError:
     hdf = None
 
 
@@ -27,7 +27,7 @@ def readgrid(fn: Path) -> typing.Dict[str, np.ndarray]:
         return raw.readgrid(fn)
     else:
         if hdf is None:
-            raise ImportError("pip install h5py")
+            raise ModuleNotFoundError("pip install h5py")
         return hdf.readgrid(fn)
 
 
@@ -47,22 +47,23 @@ def readdata(fn: Path) -> typing.Dict[str, typing.Any]:
     """
     fn = Path(fn).expanduser()
     P = read_config(fn.parent / "inputs")
-    if P["flagoutput"] == 1:
-        if fn.suffix == ".dat":
+
+    if fn.suffix == ".dat":
+        if P["flagoutput"] == 1:
             dat = raw.loadframe3d_curv(fn, P["lxs"])
-        else:
-            if hdf is None:
-                raise ImportError("pip install h5py")
-            dat = hdf.loadframe3d_curv(fn)
-    elif P["flagoutput"] == 2:
-        if fn.suffix == ".dat":
+        elif P["flagoutput"] == 2:
             dat = raw.loadframe3d_curvavg(fn, P["lxs"])
         else:
-            if hdf is None:
-                raise ImportError("pip install h5py")
-            dat = hdf.loadframe3d_curvavg(fn)
+            raise ValueError("TODO: need to handle this case, file a bug report.")
     else:
-        raise ValueError("TODO: need to handle this case, file a bug report.")
+        if hdf is None:
+            raise ModuleNotFoundError("pip install h5py")
+        if P["flagoutput"] == 1:
+            dat = hdf.loadframe3d_curv(fn)
+        elif P["flagoutput"] == 2:
+            dat = hdf.loadframe3d_curvavg(fn)
+        else:
+            raise ValueError("TODO: need to handle this case, file a bug report.")
     return dat
 
 

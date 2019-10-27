@@ -11,7 +11,7 @@ from .readdata import read_config, loadframe, datetime_range
 
 try:
     from .plotdiff import plotdiff
-except ImportError:
+except ModuleNotFoundError:
     plotdiff = None
 
 
@@ -48,17 +48,20 @@ def compare_all(outdir: Path, refdir: Path, tol: typing.Dict[str, float], doplot
         itols = ["N", "V", "V", "V", "T", "T", "J", "J", "J"]
 
         for k, j in zip(names, itols):
-            if not np.allclose(A[k][1], B[k][1], tol[f"rtol{j}"], tol[f"atol{j}"], True):
+            a = A[k][1]
+            b = B[k][1]
+            assert a.shape == b.shape, f'{k} time {i} {t}: ref shape {b.shape} does not match data shape {a.shape}'
+            if not np.allclose(a, b, tol[f"rtol{j}"], tol[f"atol{j}"], True):
                 errs += 1
-                logging.error(f"{k} {st}   {abs(A[k][1] - B[k][1]).max().item():.3e}")
+                logging.error(f"{k} {st}   {abs(a - b).max().item():.3e}")
                 if plotdiff is not None:
-                    plotdiff(A[k][1], B[k][1], k, t, outdir, refdir)
+                    plotdiff(a, b, k, t, outdir, refdir)
         # %% assert time steps have unique output (earth always rotating...)
         if i > 1:
             names = ["ne", "v1", "v2", "v3"]
             itols = ["N", "V", "V", "V"]
             for k, j in zip(names, itols):
-                if np.allclose(ref[k][1], A[k][1], 0.0001 * tol[f"rtol{j}"], 0.0001 * tol[f"atol{j}"]):
+                if np.allclose(ref[k][1], a, 0.0001 * tol[f"rtol{j}"], 0.0001 * tol[f"atol{j}"]):
                     errs += 1
                     logging.error(f"{k} {st} too similar to prior step")
 
@@ -70,7 +73,7 @@ def compare_all(outdir: Path, refdir: Path, tol: typing.Dict[str, float], doplot
 
         if i == 2:
             for k in ("J1", "J2", "J3"):
-                if np.allclose(ref[k][1], A[k][1], 0.01 * tol["rtolJ"], 0.1 * tol["atolJ"]):
+                if np.allclose(ref[k][1], a, 0.01 * tol["rtolJ"], 0.1 * tol["atolJ"]):
                     errs += 1
                     logging.error(f"{k} {st} too similar to prior step")
 
