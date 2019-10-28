@@ -131,9 +131,8 @@ x1plot=Z(:);   %upward distance
 x2plot=X(:)*Re*sin(meantheta);     %eastward distance
 
 if ndims(parm) == 3
-  parmtmp=parm(:,:,ix3);
-  parmp=interp2(xg.x2(inds2),xg.x1(inds1),parmtmp,x2plot,x1plot);
-  parmp=reshape(parmp,[lzp,lxp]);    %slice expects the first dim. to be "y" ("z" in the 2D case)
+  % slice expects the first dim. to be "y" ("z" in the 2D case)
+  parmp=reshape(interp2(xg.x2(inds2),xg.x1(inds1),parm(:,:,ix3),x2plot,x1plot), [lzp,lxp]);
 end
 
 %% LAT./LONG. SLICE COORDINATES
@@ -162,11 +161,11 @@ x2plot=X2(:)*Re*sin(meantheta);     %eastward distance - needs to be fixed to be
 x3plot=Y2(:)*Re;     %northward distance;
 
 if ndims(parm) == 3
-  parmtmp=permute(parm,[3,2,1]);     %so north dist, east dist., alt.
   x3interp=xg.x3(inds3);  %this is northward distance - again backwards from yp
   x3interp=x3interp(:);     %interp doesn't like it unless this is a column vector
-  parmp2=interp3(xg.x2(inds2),x3interp,xg.x1(inds1),parmtmp,x2plot,x3plot,x1plot);
-  parmp2=reshape(parmp2,[lyp,lxp,lzp2]);    %slice expects the first dim. to be "y"
+  % slice expects the first dim. to be "y"
+  % so north dist, east dist., alt.
+  parmp2 = reshape(interp3(xg.x2(inds2),x3interp,xg.x1(inds1), permute(parm,[3,2,1]), x2plot,x3plot,x1plot), [lyp,lxp,lzp2]);
 elseif ismatrix(parm)
   [X,Y]=meshgrid(xp,yp);
   x3plot=Y(:)*Re;
@@ -183,10 +182,9 @@ if ndims(parm) == 3
   x3plot=Y3(:)*Re;     %northward distance;
 
   ix2=floor(lx2/2);
-  parmtmp=squeeze(parm(:,ix2,:));     %so north dist, east dist., alt.
-
-  parmp3=interp2(xg.x3(inds3),xg.x1(inds1),parmtmp,x3plot,x1plot);
-  parmp3=reshape(parmp3,[lzp,lyp]);    %slice expects the first dim. to be "y"
+  % so north dist, east dist., alt.
+  % slice expects the first dim. to be "y"
+  parmp3 = reshape(interp2(xg.x3(inds3),xg.x1(inds1), squeeze(parm(:,ix2,:)),x3plot,x1plot), [lzp,lyp]);
 end
 %% CONVERT ANGULAR COORDINATES TO MLAT,MLON
 %%yp=90-(yp+meantheta)*180/pi;     %convert northward distance (in rads.) to magnetic latitude
