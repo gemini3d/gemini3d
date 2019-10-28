@@ -33,7 +33,7 @@ if hdf5_interface.found()
     link_with: [calculus, const, fsutils, grid, mpimod, timeutils],
     dependencies: hdf5_interface)
 else
-    io = library('io',
+  io = library('io',
     sources: io_src,
     link_with: [calculus, const, fsutils, grid, mpimod, timeutils])
 endif

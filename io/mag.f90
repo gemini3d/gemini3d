@@ -9,11 +9,9 @@ module procedure create_outdir_mag
 integer :: ierr
 
 !NOTE HERE THAT WE INTERPRET OUTDIR AS THE BASE DIRECTORY CONTAINING SIMULATION OUTPUT
-ierr = mkdir(outdir//'/magfields/')
-ierr = mkdir(outdir//'/magfields/input/')
-ierr = copyfile(fieldpointfile, outdir//'/magfields/input/magfieldpoints.dat')
-
-if (ierr/=0) error stop 'could not create magfields output directory'
+if ( mkdir(outdir//'/magfields/') /= 0 ) error stop 'could not create magfields output directory'
+if ( mkdir(outdir//'/magfields/input/') /= 0 ) error stop 'could not create magfields/input directory'
+if ( copyfile(fieldpointfile, outdir//'/magfields/input/magfieldpoints.dat') /=0 ) error stop 'could not create magfields dat file'
 
 end procedure create_outdir_mag
 
