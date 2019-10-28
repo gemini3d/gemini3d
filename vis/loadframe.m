@@ -8,28 +8,16 @@ validateattr(direc, {'char'}, {'vector'}, mfilename, 'data directory', 1)
 validateattr(ymd, {'numeric'}, {'vector', 'numel', 3}, mfilename, 'year month day', 2)
 validateattr(UTsec, {'numeric'}, {'vector'}, mfilename, 'UTC second', 3)
 
-if nargin>=4 && ~isempty(flagoutput)
-  validateattr(flagoutput,{'numeric'},{'scalar'},mfilename,'output flag',4)
-end
-if nargin>=5 && ~isempty(mloc)
-  validateattr(mloc, {'numeric'}, {'vector', 'numel', 2}, mfilename, 'magnetic coordinates', 5)
-end
-if nargin>=6 && ~isempty(xg)
-  validateattr(xg, {'struct'}, {'scalar'}, mfilename, 'grid structure', 6)
-end
-
-
-% READ IN THE SIMULATION INFORMATION IF IT HAS NOT ALREADY BEEN PROVIDED
-if ~exist('flagoutput','var') || ~exist('mloc','var')
+if nargin < 5 || isempty(flagoutput) || isempty(mloc)
   [~,~,~,~,flagoutput,mloc] = readconfig([direc, filesep, 'inputs']);
 end
+validateattr(flagoutput,{'numeric'},{'scalar'},mfilename,'output flag',4)
+validateattr(mloc, {'numeric'}, {'vector', 'numel', 2}, mfilename, 'magnetic coordinates', 5)
 
-
-% CHECK WHETHER WE NEED TO RELOAD THE GRID (WHICH CAN BE TIME CONSUMING)
-if nargout >= 4 && ~exist('xg','var')
+if nargin < 6 || isempty(xg)
   xg = readgrid([direc, filesep, 'inputs']);
 end
-
+validateattr(xg, {'struct'}, {'scalar'}, mfilename, 'grid structure', 6)
 
 %% SET MAGNETIC LATITUDE AND LONGITUDE OF THE SOURCE
 if nargout >= 2 && ~isempty(mloc)
@@ -39,7 +27,6 @@ else
   mlatsrc=[];
   mlonsrc=[];
 end
-
 
 %% LOAD DIST. FILE
 stem0 = datelab(ymd, UTsec);
