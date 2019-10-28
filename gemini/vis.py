@@ -13,6 +13,7 @@ from .utils import gitrev
 if typing.TYPE_CHECKING:
     import matplotlib.axes as mpla
     import matplotlib.figure as mplf
+    import matplotlib.collections as mplc
 
 mpl.rcParams["axes.formatter.limits"] = (-3, 4)
 mpl.rcParams["axes.formatter.useoffset"] = False
@@ -92,54 +93,97 @@ def plot2D_cart(time: datetime, grid: typing.Dict[str, np.ndarray], parm: np.nda
     plot_interp(time, grid, parm, name, fg)
 
 
-def plot12(x: np.ndarray, z: np.ndarray, parm: np.ndarray, name: str,
-           cmap: str, vmin: float, vmax: float,
-           fg: "mplf.Figure", ax: "mpla.Axes" = None):
+def plot12(
+    x: np.ndarray,
+    z: np.ndarray,
+    parm: np.ndarray,
+    name: str,
+    cmap: str,
+    vmin: float,
+    vmax: float,
+    fg: "mplf.Figure",
+    ax: "mpla.Axes" = None,
+) -> "mplc.QuadMesh":
 
     if parm.ndim != 2:
         raise ValueError(f"data must have 2 dimensions, you have {parm.shape}")
+
     if ax is None:
         ax = fg.gca()
+        make_colorbar = True
+    else:
+        make_colorbar = False
 
     hi = ax.pcolormesh(x / 1e3, z / 1e3, parm, cmap=cmap, vmin=vmin, vmax=vmax)
     ax.yaxis.set_major_locator(MultipleLocator(100))
     ax.set_xlabel("eastward dist. (km)")
     ax.set_ylabel("upward dist. (km)")
     ax.axhline(REF_ALT, color="w", linestyle="--", linewidth=2)
-    fg.colorbar(hi, ax=ax, label=CB_LBL[name])
+    if make_colorbar:
+        fg.colorbar(hi, ax=ax, label=CB_LBL[name])
+
+    return hi
 
 
-def plot13(y: np.ndarray, z: np.ndarray, parm: np.ndarray, name: str,
-           cmap: str, vmin: float, vmax: float,
-           fg: "mplf.Figure", ax: "mpla.Axes" = None):
+def plot13(
+    y: np.ndarray,
+    z: np.ndarray,
+    parm: np.ndarray,
+    name: str,
+    cmap: str,
+    vmin: float,
+    vmax: float,
+    fg: "mplf.Figure",
+    ax: "mpla.Axes" = None,
+) -> "mplc.QuadMesh":
 
     if parm.ndim != 2:
         raise ValueError(f"data must have 2 dimensions, you have {parm.shape}")
+
     if ax is None:
         ax = fg.gca()
+        make_colorbar = True
+    else:
+        make_colorbar = False
 
     hi = ax.pcolormesh(y / 1e3, z / 1e3, parm, cmap=cmap, vmin=vmin, vmax=vmax)
     ax.yaxis.set_major_locator(MultipleLocator(100))
     ax.set_xlabel("northward dist. (km)")
     ax.set_ylabel("upward dist. (km)")
+    if make_colorbar:
+        fg.colorbar(hi, ax=ax, label=CB_LBL[name])
 
-    fg.colorbar(hi, ax=ax, label=CB_LBL[name])
+    return hi
 
 
-def plot23(x: np.ndarray, y: np.ndarray, parm: np.ndarray, name: str,
-           cmap: str, vmin: float, vmax: float,
-           fg: "mplf.Figure", ax: "mpla.Axes" = None):
+def plot23(
+    x: np.ndarray,
+    y: np.ndarray,
+    parm: np.ndarray,
+    name: str,
+    cmap: str,
+    vmin: float,
+    vmax: float,
+    fg: "mplf.Figure",
+    ax: "mpla.Axes" = None,
+) -> "mplc.QuadMesh":
 
     if parm.ndim != 2:
         raise ValueError(f"data must have 2 dimensions, you have {parm.shape}")
+
     if ax is None:
         ax = fg.gca()
+        make_colorbar = True
+    else:
+        make_colorbar = False
 
     hi = ax.pcolormesh(x / 1e3, y / 1e3, parm, cmap=cmap, vmin=vmin, vmax=vmax)
     ax.set_xlabel("eastward dist. (km)")
     ax.set_ylabel("northward dist. (km)")
+    if make_colorbar:
+        fg.colorbar(hi, ax=ax, label=CB_LBL[name])
 
-    fg.colorbar(hi, ax=ax, label=CB_LBL[name])
+    return hi
 
 
 def plot1d2(x: np.ndarray, parm: np.ndarray, name: str, fg: "mplf.Figure", ax: "mpla.Axes" = None):
@@ -188,7 +232,7 @@ def plot_interp(time: datetime, grid: typing.Dict[str, np.ndarray], parm: np.nda
         vmax = abs(parm).max()
         vmin = -vmax
     elif name.startswith("T"):
-        vmin = 0.
+        vmin = 0.0
         vmax = parm.max()
     else:
         vmin = vmax = None
@@ -289,11 +333,14 @@ def plot_interp(time: datetime, grid: typing.Dict[str, np.ndarray], parm: np.nda
             points=(grid["x1"][inds1], grid["x2"][inds2], grid["x3"][inds3]),
             values=parm,
             xi=np.column_stack((Z3.ravel(), Y3.ravel(), X3.ravel())),
-            bounds_error=False).reshape((1, lyp, lxp))
+            bounds_error=False,
+        ).reshape((1, lyp, lxp))
 
         parmp = parmp[:, iy, :]  # must be indexed in two steps
         plot23(xp[ix], yp[iy], parmp[0, :, ix], name, cmap, vmin, vmax, fg, axs[1])
         # %% ALT/LAT SLICE (right panel)
         ix2 = lx2 // 2 - 1  # arbitrary slice, to match Matlab
         f = interp.interp2d(grid["x3"][inds3], grid["x1"][inds1], parm[:, ix2, :], bounds_error=False)
-        plot13(yp[iy], zp, f(yp, zp)[:, iy], name, cmap, vmin, vmax, fg, axs[2])
+        hi = plot13(yp[iy], zp, f(yp, zp)[:, iy], name, cmap, vmin, vmax, fg, axs[2])
+
+        fg.colorbar(hi, ax=axs, aspect=60, pad=0.01)
