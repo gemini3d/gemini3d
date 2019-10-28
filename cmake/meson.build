@@ -163,7 +163,9 @@ endif
 # NOTE: Gemini HDF5 I/O is just a stub at the moment, undergoing development.
 if get_option('hdf5').enabled()
   hdf5_proj = subproject('oo_hdf5_fortran')
-  hdf5 = hdf5_proj.get_variable('hdf5')
+  hdf5_interface = hdf5_proj.get_variable('hdf5_interface')
+else
+  hdf5_interface = disabler()
 endif
 
 # --- Python

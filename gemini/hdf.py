@@ -53,17 +53,27 @@ def loadframe3d_curv(fn: Path) -> typing.Dict[str, typing.Any]:
     with h5py.File(fn, "r") as f:
         dat["time"] = ymdhourdec2datetime(f["time/ymd"][0], f["time/ymd"][1], f["time/ymd"][2], f['time/UThour'][()])
 
-        dat["ne"] = [("x1", "x2", "x3"), f["ns"][:, :, :, LSP - 1]]
+        dat["ne"] = (("x1", "x2", "x3"), f["/nsall"][LSP - 1, :, :, :].transpose())
 
-        dat["v1"] = [("x1", "x2", "x3"), (f["ns"][:, :, :, :6] * f["vs1"][:, :, :, :6]).sum(axis=3) / f["ns"][:, :, :, LSP - 1]]
+        dat["v1"] = (
+            ("x1", "x2", "x3"),
+            (f["/nsall"][:6, :, :, :].transpose() * f["/vs1all"][:6, :, :, :].transpose()).sum(axis=3) / dat["ne"][1],
+        )
 
-        dat["Ti"] = [("x1", "x2", "x3"), (f["ns"][:, :, :, :6] * f["Ts"][:, :, :, :6]).sum(axis=3) / f["ns"][:, :, :, LSP - 1]]
-        dat["Te"] = [("x1", "x2", "x3"), f["Ts"][:, :, :, LSP - 1]]
+        dat["Ti"] = (
+            ("x1", "x2", "x3"),
+            (f["/nsall"][:6, :, :, :].transpose() * f["/Tsall"][:6, :, :, :].transpose()).sum(axis=3) / dat["ne"][1],
+        )
+        dat["Te"] = (("x1", "x2", "x3"), f["/Tsall"][LSP - 1, :, :, :].transpose())
 
-        for p in ("J1", "J2", "J3", "v2", "v3"):
-            dat[p] = [("x1", "x2", "x3"), f[p][:]]
+        dat['J1'] = (("x1", "x2", "x3"), f['/J1all'][:].transpose())
+        dat['J2'] = (("x1", "x2", "x3"), f['/J2all'][:].transpose())
+        dat['J3'] = (("x1", "x2", "x3"), f['/J3all'][:].transpose())
 
-        dat["Phitop"] = [("x2", "x3"), f["Phitop"][:]]
+        dat['v2'] = (("x1", "x2", "x3"), f['/v2avgall'][:].transpose())
+        dat['v3'] = (("x1", "x2", "x3"), f['/v3avgall'][:].transpose())
+
+        dat["Phitop"] = (("x2", "x3"), f["/Phiall"][:])
 
     return dat
 
@@ -104,4 +114,4 @@ def ymdhourdec2datetime(year: int, month: int, day: int, hourdec: float) -> date
     """
     convert year,month,day + decimal hour HH.hhh to time
     """
-    return datetime(year, month, day, int(hourdec), int((hourdec*60) % 60)) + timedelta(seconds=(hourdec*3600) % 60)
+    return datetime(year, month, day, int(hourdec), int((hourdec * 60) % 60)) + timedelta(seconds=(hourdec * 3600) % 60)

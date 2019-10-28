@@ -27,9 +27,16 @@ temporal = library('temporal', 'temporal/temporal.f90',
 
 subdir('tests')
 
-io = library('io',
-  sources: io_src,
-  link_with: [calculus, const, fsutils, grid, mpimod, timeutils])
+if hdf5_interface.found()
+  io = library('io',
+    sources: io_src,
+    link_with: [calculus, const, fsutils, grid, mpimod, timeutils],
+    dependencies: hdf5_interface)
+else
+    io = library('io',
+    sources: io_src,
+    link_with: [calculus, const, fsutils, grid, mpimod, timeutils])
+endif
 
 subdir('vendor/msis00')
 # --- for setting up an equilibrium simulation --

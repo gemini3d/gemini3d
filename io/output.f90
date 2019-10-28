@@ -12,44 +12,30 @@ integer(c_int) :: ierr
 
 
 !> MAKE A COPY OF THE INPUT DATA IN THE OUTPUT DIRECTORY
-if (mkdir(outdir//'/inputs') /= 0) error stop 'error creating output directory'
+if ( mkdir(outdir//'/inputs') /= 0 ) error stop 'error creating output directory'
 
-ierr = copyfile(infile, outdir//'/inputs/')
-if (ierr /= 0) error stop 'error copying configuration .ini to output directory'
-ierr = copyfile(indatsize, outdir//'/inputs/')
-if (ierr /= 0) error stop 'error copying input data size file to output directory'
-ierr = copyfile(indatgrid, outdir//'/inputs/')
-if (ierr /= 0) error stop 'error copying input parameters to output directory'
-ierr = copyfile(indatfile, outdir//'/inputs/')
-if (ierr /= 0) error stop 'error copying input parameters to output directory'
+if ( copyfile(infile, outdir//'/inputs/')  /= 0) error stop 'error copying configuration file to output directory'
+if ( copyfile(indatsize, outdir//'/inputs/') /= 0) error stop 'error copying input data size file to output directory'
+if ( copyfile(indatgrid, outdir//'/inputs/') /= 0) error stop 'error copying input grid to output directory'
+if ( copyfile(indatfile, outdir//'/inputs/') /= 0) error stop 'error copying input data to output directory'
 
 !MAKE COPIES OF THE INPUT DATA, AS APPROPRIATE
 if (.false.) then
   if (flagdneu/=0) then
     ierr = mkdir(outdir//'/inputs/neutral_inputs')
-    ierr = copyfile(sourcedir//'/*', outdir//'/inputs/neutral_inputs/')
+    if ( copyfile(sourcedir//'/*', outdir//'/inputs/neutral_inputs/')  /= 0) error stop 'copy: neutral input => output dir'
   end if
-  if (ierr /= 0) error stop 'error copying neutral input parameters to output directory'
 
   if (flagprecfile/=0) then
     ierr = mkdir(outdir//'/inputs/prec_inputs')
-    ierr = copyfile(precdir//'/*', outdir//'/inputs/prec_inputs/')
+    if ( copyfile(precdir//'/*', outdir//'/inputs/prec_inputs/') /= 0) error stop 'copy: input precipitation => output dir'
   end if
-  if (ierr /= 0) error stop 'error copying input precipitation parameters to output directory'
 
   if (flagE0file/=0) then
     ierr = mkdir(outdir//'/inputs/Efield_inputs')
-    ierr = copyfile(E0dir//'/*', outdir//'/inputs/Efield_inputs/')
+    if ( copyfile(E0dir//'/*', outdir//'/inputs/Efield_inputs/') /= 0) error stop 'copy input energy => output dir'
   end if
-  if (ierr /= 0) error stop 'error copying input energy parameters to output directory'
 endif
-
-!NOW STORE THE VERSIONS/COMMIT IDENTIFIER IN A FILE IN THE OUTPUT DIRECTORY
-! this can break on POSIX due to copying files in endless loop, commended out - MH
-! ierr = mkdir(outdir//'/inputs/source/')
-!if (ierr /= 0) error stop 'error creating input source parameter output directory'
-!call execute_command_line('cp -r ./* '//outdir//'/inputs/source/', exitstat=ierr)
-!if (ierr /= 0) error stop 'error creating input source parameter output directory'
 
 call gitlog(outdir // '/gitrev.log')
 

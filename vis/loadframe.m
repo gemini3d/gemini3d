@@ -12,7 +12,9 @@ if nargin < 5 || isempty(flagoutput) || isempty(mloc)
   [~,~,~,~,flagoutput,mloc] = readconfig([direc, filesep, 'inputs']);
 end
 validateattr(flagoutput,{'numeric'},{'scalar'},mfilename,'output flag',4)
-validateattr(mloc, {'numeric'}, {'vector', 'numel', 2}, mfilename, 'magnetic coordinates', 5)
+if ~isempty(mloc)
+  validateattr(mloc, {'numeric'}, {'vector', 'numel', 2}, mfilename, 'magnetic coordinates', 5)
+end
 
 if nargin < 6 || isempty(xg)
   xg = readgrid([direc, filesep, 'inputs']);

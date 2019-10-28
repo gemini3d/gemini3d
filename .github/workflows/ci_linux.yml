@@ -51,10 +51,32 @@ jobs:
     - uses: actions/setup-python@v1
       with:
         python-version: '3.x'
-    - run: pip install meson
     - run: pip install -e .[tests]
     - run: sudo apt install -yq --no-install-recommends ninja-build gfortran libopenmpi-dev openmpi-bin liblapack-dev libscalapack-mpi-dev libmumps-dev
     - run: meson setup build
+      env:
+        FC: gfortran
+    - run: ninja -C build
+    - run: meson test -C build --suite unit -v
+    - run: meson test -C build --suite 2d_fang -v
+    - run: meson test -C build --suite 2d_glow -v
+# CI is too slow for 3d_glow
+    - uses: actions/upload-artifact@v1
+      if: failure()
+      with:
+        name: Linux_Meson_Testlog
+        path: build/meson-logs/testlog.txt
+
+  mesonHDF5:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - uses: actions/setup-python@v1
+      with:
+        python-version: '3.x'
+    - run: pip install -e .[tests]
+    - run: sudo apt install -yq --no-install-recommends ninja-build gfortran libopenmpi-dev openmpi-bin liblapack-dev libscalapack-mpi-dev libmumps-dev libhdf5-dev
+    - run: meson setup build -Dhdf5=enabled
       env:
         FC: gfortran
     - run: ninja -C build

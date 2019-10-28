@@ -115,14 +115,14 @@ def loadframe3d_curv(fn: Path, lxs: typing.Sequence[int]) -> typing.Dict[str, ty
         dat["time"] = read_time(f)
 
         ns = read4D(f, LSP, lxs)
-        dat["ne"] = [("x1", "x2", "x3"), ns[:, :, :, LSP - 1].squeeze()]
+        dat["ne"] = (("x1", "x2", "x3"), ns[:, :, :, LSP - 1])
 
         vs1 = read4D(f, LSP, lxs)
-        dat["v1"] = [("x1", "x2", "x3"), (ns[:, :, :, :6] * vs1[:, :, :, :6]).sum(axis=3) / ns[:, :, :, LSP - 1]]
+        dat["v1"] = (("x1", "x2", "x3"), (ns[:, :, :, :6] * vs1[:, :, :, :6]).sum(axis=3) / dat["ne"][1])
 
         Ts = read4D(f, LSP, lxs)
-        dat["Ti"] = [("x1", "x2", "x3"), (ns[:, :, :, :6] * Ts[:, :, :, :6]).sum(axis=3) / ns[:, :, :, LSP - 1]]
-        dat["Te"] = [("x1", "x2", "x3"), Ts[:, :, :, LSP - 1].squeeze()]
+        dat["Ti"] = (("x1", "x2", "x3"), (ns[:, :, :, :6] * Ts[:, :, :, :6]).sum(axis=3) / dat["ne"][1])
+        dat["Te"] = (("x1", "x2", "x3"), Ts[:, :, :, LSP - 1].squeeze())
 
         for p in ("J1", "J2", "J3", "v2", "v3"):
             dat[p] = [("x1", "x2", "x3"), read3D(f, lxs)]
