@@ -1,4 +1,9 @@
 function [ns,Ts,vsx1]=eqICs3D(xg,UT,dmy,activ,nmf,nme)
+
+%
+% This function generates (arbitrary) initial conditions for a grid; note that it only works on symmmetric closed grids!
+%
+
 % [f107a, f107, ap] = activ;
 validateattributes(xg,{'struct'},{'scalar'})
 validateattributes(UT,{'numeric'},{'nonnegative','scalar'}, mfilename, "UT decimal hour from midnight", 2)
@@ -16,9 +21,9 @@ mindens=1e-100;
 natm=msis_matlab3D(xg,UT,dmy,activ);
 closeddip=abs(xg.r(1,1,1)-xg.r(xg.lx(1),1,1))<50e3;     %logical flag marking the grid as closed dipole
 if closeddip         %closed dipole grid
-    [~,ialtmax]=max(xg.alt(:,1,1));
-    lalt=ialtmax;
-%    lalt=floor(xg.lx(1)/2);                         %FIXME:  needs to work with asymmetric grid...
+%    [~,ialtmax]=max(xg.alt(:,1,1));
+%    lalt=ialtmax;
+    lalt=floor(xg.lx(1)/2);                         %FIXME:  needs to work with asymmetric grid...
     alt=xg.alt(1:lalt,:,:);
     lx1=lalt;
     lx2=xg.lx(2);
