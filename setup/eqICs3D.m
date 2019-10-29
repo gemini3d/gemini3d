@@ -14,7 +14,7 @@ mindens=1e-100;
 
 %SLICE THE FIELD IN HALF IF WE ARE CLOSED
 natm=msis_matlab3D(xg,UT,dmy,activ);
-if abs(xg.r(1,1,1)-xg.r(xg.lx(1),1,1))<1         %closed dipole grid
+if abs(xg.r(1,1,1)-xg.r(xg.lx(1),1,1))<50e3         %closed dipole grid
     lalt=floor(xg.lx(1)/2);
     alt=xg.alt(1:lalt,:,:);
     lx1=lalt;
