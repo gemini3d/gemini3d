@@ -14,8 +14,11 @@ mindens=1e-100;
 
 %SLICE THE FIELD IN HALF IF WE ARE CLOSED
 natm=msis_matlab3D(xg,UT,dmy,activ);
-if abs(xg.r(1,1,1)-xg.r(xg.lx(1),1,1))<1         %closed dipole grid
-    lalt=floor(xg.lx(1)/2);
+closeddip=abs(xg.r(1,1,1)-xg.r(xg.lx(1),1,1))<50e3;     %logical flag marking the grid as closed dipole
+if closeddip         %closed dipole grid
+    [~,ialtmax]=max(xg.alt(:,1,1));
+    lalt=ialtmax;
+%    lalt=floor(xg.lx(1)/2);                         %FIXME:  needs to work with asymmetric grid...
     alt=xg.alt(1:lalt,:,:);
     lx1=lalt;
     lx2=xg.lx(2);
@@ -185,7 +188,8 @@ ns(:,:,:,7)=sum(ns(:,:,:,1:6),4);
 vsx1=zeros(lx1,lx2,lx3,7);
 Ts=repmat(Tn,[1,1,1,7]);
 
-if abs(xg.r(1,1,1)-xg.r(xg.lx(1),1,1))<1         %closed dipole grid
+if closeddip         %closed dipole grid
+    %FIXME:  This code only works for symmetric grids...
     if 2*lx1==xg.lx(1)
         ns=cat(1,ns,ns(lx1:-1:1,:,:,:));
         Ts=cat(1,Ts,Ts(lx1:-1:1,:,:,:));

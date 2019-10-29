@@ -5,7 +5,7 @@ addpath([cwd,'/../script_utils'])
 %simname='tohoku20113D_highres_var/';
 %simname='test3d_mag_23/';
 simname='mooreOK3D_hemis_medres/'
-basedir='~/zettergmdata/simulations/'
+basedir='~/Downloads/'
 direc=[basedir,simname];
 mkdir([direc, filesep, 'Brplots']);
 mkdir([direc, filesep, 'Brplots_eps']);
@@ -21,7 +21,7 @@ lt=numel(times);
 
 
 %LOAD/CONSTRUCT THE FIELD POINT GRID
-basemagdir=[direc,'/magfields.500km.line/'];
+basemagdir=[direc,'/magfields.500km.line1600/'];
 fid=fopen([basemagdir,'/input/magfieldpoints.dat'],'r');    %needs some way to know what the input file is, maybe force fortran code to use this filename...
 lpoints=fread(fid,1,'integer*4');
 r=fread(fid,lpoints,'real*8');
@@ -35,7 +35,7 @@ fclose(fid);
 %lphi=40;
 %ltheta=20;
 %lphi=20;
-ltheta=400;
+ltheta=1600;
 lphi=1;
 r=reshape(r(:),[ltheta,lphi]);
 theta=reshape(theta(:),[ltheta,lphi]);
@@ -95,7 +95,7 @@ fprintf('...Done reading data...\n');
 %STORE THE DATA IN A MATLAB FILE FOR LATER USE
 save([direc,'/magfields_fort.mat'],'simdate_series','mlat','mlon','Brt','Bthetat','Bphit');
 
-
+%{
 %INTERPOLATE TO HIGHER SPATIAL RESOLUTION FOR PLOTTING
 llonp=200;
 llatp=200;
@@ -265,3 +265,4 @@ for it=1:lt-1
 %    end
     axis(ax);
 end
+%}
