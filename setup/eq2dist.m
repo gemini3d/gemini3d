@@ -1,7 +1,7 @@
 function [nsi,vs1i,Tsi,xgin,ns,vs1,Ts]=eq2dist(eqdir,simID,xg)
 
   %READ IN THE SIMULATION INFORMATION
-  [ymd0,UTsec0,tdur,dtout,flagoutput,mloc] = readconfig(eqdir, filesep, 'inputs');
+  [ymd0,UTsec0,tdur,dtout,flagoutput,mloc] = readconfig([eqdir, filesep, 'inputs']);
   xgin = readgrid([eqdir,filesep, 'inputs/']);
 
 
