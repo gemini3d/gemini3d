@@ -1035,7 +1035,7 @@ if (myid==0) then    !root
   ymdtmp=ymdnext
   UTsectmp=UTsecnext
   call dateinc(dtneu,ymdtmp,UTsectmp)    !get the date for "next" params
-  filename=date_filename(neudir,ymdtmp,UTsectmp)     !form the standard data filename
+  filename=date_filename(neudir,ymdtmp,UTsectmp)  // '.dat'    !form the standard data filename
   print *, 'Pulling neutral data from file:  ',trim(adjustl(filename))
   open(newunit=inunit,file=trim(adjustl(filename)),status='old',form='unformatted',access='stream')
   read(inunit) dnO,dnN2,dnO2,dvnrho,dvnz,dTn     !these are module-scope variables
@@ -1111,7 +1111,7 @@ if (myid==0) then    !root
   ymdtmp=ymdnext
   UTsectmp=UTsecnext
   call dateinc(dtneu,ymdtmp,UTsectmp)                !get the date for "next" params
-  filename=date_filename(neudir,ymdtmp,UTsectmp)     !form the standard data filename
+  filename=date_filename(neudir,ymdtmp,UTsectmp) // '.dat'     !form the standard data filename
   print *, 'Pulling neutral data from file:  ',trim(adjustl(filename))
   open(newunit=inunit,file=trim(adjustl(filename)),status='old',form='unformatted',access='stream')
   read(inunit) dnOall,dnN2all,dnO2all,dvnxall,dvnrhoall,dvnzall,dTnall         !these are module-scope variables

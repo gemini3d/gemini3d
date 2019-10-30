@@ -42,16 +42,6 @@ add_subdirectory(ionization)
 add_subdirectory(numerical)
 
 add_subdirectory(io)
-if(usehdf5)
-  set(io_src io/plasma_output_hdf5.f90)
-else()
-  set(io_src io/plasma_output_raw.f90)
-endif()
-add_library(io io/io.f90 io/aurora.f90 io/mag.f90 io/plasma.f90 io/output.f90 io/input.f90
-  io/plasma_input_raw.f90 ${io_src})
-target_link_libraries(io PRIVATE calculus const fsutils grid mpimod timeutils)
-target_compile_definitions(io PRIVATE TRACE=${TRACE})
-target_compile_options(io PRIVATE ${FFLAGS})
 
 add_subdirectory(temporal)
 

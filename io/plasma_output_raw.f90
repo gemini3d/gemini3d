@@ -1,5 +1,6 @@
 submodule (io:plasma) plasma_output_raw
 
+use timeutils, only : date_filename
 contains
 
 module procedure output_root_stream_mpi
@@ -60,7 +61,7 @@ Teall=Tsall(1:lx1,1:lx2all,1:lx3all,lsp)
 
 
 !FIGURE OUT THE FILENAME
-filenamefull=date_filename(outdir,ymd,UTsec)
+filenamefull=date_filename(outdir,ymd,UTsec) // '.dat'
 print *, 'Output file name:  ',filenamefull
 ! call logger(filenamefull,'filename.log')
 ! call logger(UTsec, 'UTsec.log')

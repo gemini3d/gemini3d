@@ -22,7 +22,7 @@
 !    real(wp), dimension(:,:,:), intent(out) :: E01all,E02all,E03all
 !    integer, intent(out) :: flagdirich
 !
-!    character(512) :: filename 
+!    character(512) :: filename
 !    integer, parameter :: inunit=48
 !
 !    real(wp) :: UTsectmp
@@ -37,7 +37,7 @@
 !
 !
 !    !FIRST BIT OF CODE RESETS THE BOUNDARIES AND PARALLEL COMPONENTS WHICH SHOULD BE FIXED AT 0D0
-!    flagdirich=1    !Should be based on file input, as well.  This may also set some of the boundary conditions - refer to solver source code 
+!    flagdirich=1    !Should be based on file input, as well.  This may also set some of the boundary conditions - refer to solver source code
 !
 !
 !    !EVERYONE IS GROUNDED TO ALLOW FOR BOTH BACKGROUND FIELDS AND FACS
@@ -105,7 +105,7 @@
 !!        else    !workers
 !!          call mpi_recv(llon,1,MPI_INTEGER,0,tagllon,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
 !!          call mpi_recv(llat,1,MPI_INTEGER,0,tagllat,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-!!          allocate(mlonp(llon),mlatp(llat)) 
+!!          allocate(mlonp(llon),mlatp(llat))
 !!
 !!          call mpi_recv(mlonp,llon,mpi_realprec,0,tagmlon,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
 !!          call mpi_recv(mlatp,llat,mpi_realprec,0,tagmlat,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
@@ -137,7 +137,7 @@
 !        ymdtmp=ymdnext
 !        UTsectmp=UTsecnext
 !        call dateinc(dtE0,ymdtmp,UTsectmp)    !get the date for "next" params
-!        filename=date_filename(E0dir,ymdtmp,UTsectmp)     !form the standard data filename
+!        filename=date_filename(E0dir,ymdtmp,UTsectmp) // '.dat'     !form the standard data filename
 !        write(*,*) 'Pulling electric field data from file:  ',trim(adjustl(filename))
 !        open(inunit,file=trim(adjustl(filename)),status='old',form='unformatted',access='stream',iostat=ios)
 !        if (ios==0) then    !successful read
@@ -252,7 +252,7 @@
 !        do ix2=1,lx2
 !          do ix1=1,lx1
 !            E02all(ix1,ix2,ix3)=E0xinow(ix2,ix3)
-!            E03all(ix1,ix2,ix3)=E0yinow(ix2,ix3)      
+!            E03all(ix1,ix2,ix3)=E0yinow(ix2,ix3)
 !          end do
 !        end do
 !      end do
@@ -347,7 +347,7 @@
 !    end do
 !
 !
-!   
+!
 !    !COMPUTE SOURCE/FORCING TERMS FROM BACKGROUND FIELDS, ETC.
 !    E01all=0d0
 !    E02all=0d0
@@ -417,7 +417,7 @@
 !    Vminx3=0d0
 !    Vmaxx3=0d0
 !
-!    
+!
 !    !COMPUTE SOURCE/FORCING TERMS FROM BACKGROUND FIELDS, ETC.
 !    E01all=0d0
 !    E02all=0d0
@@ -431,7 +431,7 @@
 !
 !    !------------------------------------------------------------
 !    !-------POPULATES TOP BOUNDARY CONDITIONS FOR POTENTIAL AND
-!    !-------SOURCE TERMS FROM BACKGROUND FIELDS, ETC.  THIS 
+!    !-------SOURCE TERMS FROM BACKGROUND FIELDS, ETC.  THIS
 !    !-------PARTICULAR IMPLEMENTATION USES DIRICHLET CONDITIONS
 !    !------------------------------------------------------------
 !
@@ -526,7 +526,7 @@
 !
 !    !------------------------------------------------------------
 !    !-------POPULATES TOP BOUNDARY CONDITIONS FOR POTENTIAL AND
-!    !-------SOURCE TERMS FROM BACKGROUND FIELDS, ETC.  THIS 
+!    !-------SOURCE TERMS FROM BACKGROUND FIELDS, ETC.  THIS
 !    !-------PARTICULAR IMPLEMENTATION USES DIRICHLET CONDITIONS
 !    !------------------------------------------------------------
 !
@@ -831,7 +831,7 @@
 !    Vminx3=0d0
 !    Vmaxx3=0d0
 !
-!    
+!
 !    !COMPUTE SOURCE/FORCING TERMS FROM BACKGROUND FIELDS, ETC.
 !    E01all=0d0
 !    E02all=0d0
@@ -985,7 +985,7 @@
 !    Vminx3=0d0
 !    Vmaxx3=0d0
 !
-!    
+!
 !    !COMPUTE SOURCE/FORCING TERMS FROM BACKGROUND FIELDS, ETC.
 !    E01all=0d0
 !    E02all=0d0
@@ -1069,7 +1069,7 @@
 !
 !      Vmaxx1=integral2D2_curv_alt(Emaxx1,x,1,lx3all)   !integrate then modulate to avoid edge effects
 !      do ix3=1,lx3all
-!        do ix2=1,lx2      
+!        do ix2=1,lx2
 !          Vmaxx1(ix2,ix3)=Vmaxx1(ix2,ix3)*exp(-(x%x3all(ix3)-meanx3)**2/2d0/(3d0*sigx3)**2)
 !        end do
 !      end do
@@ -1091,7 +1091,7 @@
 !    Vminx3=0d0
 !    Vmaxx3=0d0
 !
-!    
+!
 !    !COMPUTE SOURCE/FORCING TERMS FROM BACKGROUND FIELDS, ETC.
 !    E01all=0d0
 !    if (t<90d0) then

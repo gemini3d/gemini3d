@@ -1,4 +1,5 @@
 submodule (io) io_aurora
+use timeutils, only : date_filename
 implicit none
 contains
 
@@ -91,7 +92,7 @@ end do
 !FORM THE INPUT FILE NAME
 outdir_composite=outdir//'/aurmaps/'
 
-filenamefull=date_filename(outdir_composite,ymd,UTsec)
+filenamefull=date_filename(outdir_composite,ymd,UTsec) // '.dat'
 
 print *, '  Output file name (auroral maps):  ',filenamefull
 open(newunit=u,file=filenamefull,status='replace',form='unformatted',access='stream',action='write')

@@ -1,5 +1,6 @@
 submodule (io:plasma) plasma_input_hdf5
 
+use timeutils, only : date_filename
 use hdf5_interface, only: hdf5_file
 
 contains
@@ -18,8 +19,7 @@ if (flagoutput==3) error stop '  !!!I need current densities in the output to co
 
 
 !> FORM THE INPUT FILE NAME
-filenamefull = date_filename(outdir,ymd,UTsec)
-filenamefull = filenamefull(1:len(filenamefull)-4)//'.h5'
+filenamefull = date_filename(outdir,ymd,UTsec) // '.h5'
 print *, 'Input file name for current densities:  ', filenamefull
 
 call h5f%initialize(filenamefull, status='old', action='r')

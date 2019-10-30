@@ -1,5 +1,6 @@
 module potentialBCs_mumps
 
+use, intrinsic:: iso_fortran_env, only: stderr=>error_unit
 use mpi, only: mpi_integer, mpi_comm_world, mpi_status_ignore
 
 use phys_consts, only: wp, pi, Re, debug
@@ -171,15 +172,13 @@ if(t + dt / 2._wp >= tnext) then    !need to load a new file
   ymdtmp=ymdnext
   UTsectmp=UTsecnext
   call dateinc(dtE0,ymdtmp,UTsectmp)    !get the date for "next" params
-  fn3=date_filename(E0dir,ymdtmp,UTsectmp)     !form the standard data filename
+  fn3=date_filename(E0dir,ymdtmp,UTsectmp) // '.dat'     !form the standard data filename
   if (debug) print *, 'Pulling electric field data from file:  ',fn3
   open(newunit=inunit, file=fn3, status='old',form='unformatted',access='stream',iostat=ios)
-  if (ios/=0) error stop 'Bad input file, cannot proceed'  ! per MZ Oct. 2018
-  !just set everything to zero
-  !print *, 'Bad input file, setting everything to some default value...'
-  !flagdirich=1    !to short-circuit solve...
-  !E0xp=0d0; E0yp=0d0; Vminx1p=0d0; Vmaxx1p=0d0;
-  !Vminx2pslice=0d0; Vmaxx2pslice=0d0; Vminx3pslice=0d0; Vmaxx3pslice=0d0;
+  if (ios/=0) then
+    write(stderr,*) 'Missing electric field file: ' // fn3
+    error stop
+  endif
 
   read(inunit) flagdirich_double
   read(inunit) E0xp,E0yp

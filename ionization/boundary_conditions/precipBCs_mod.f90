@@ -145,16 +145,15 @@ if(t+dt/2d0>=tnext) then    !need to load a new file
     ymdtmp=ymdnext
     UTsectmp=UTsecnext
     call dateinc(dtprec,ymdtmp,UTsectmp)    !get the date for "next" params
-    precfn = date_filename(precdir,ymdtmp,UTsectmp)     !form the standard data filename
+    precfn = date_filename(precdir,ymdtmp,UTsectmp) // '.dat'     !form the standard data filename
     print *, 'Read precipitation data:  ', precfn
     open(newunit=u,file=precfn,status='old',form='unformatted',access='stream',iostat=ios)
-    if (ios/=0)       error stop 'Missing precipitation input file!!!'
-      !error stop 'Bad input file: '//precfn   ! made error stop per MZ, Oct 2018
-      !just set everything to zero
-      !write(stderr,*) 'Bad input file '//precfn//' setting everything to some default value...'
-      !Qp=0d0; E0p=100d0;
+    if (ios/=0) then
+      write(stderr, *) 'Missing precipitation input file: ' // precfn
+      error stop
+    endif
 
-    if (debug) print *, 'Successfully located input file...'
+    if (debug) print *, 'Successfully located input file: ' // precfn
     read(u) Qp,E0p
     close(u)
 

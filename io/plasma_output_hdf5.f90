@@ -1,5 +1,6 @@
 submodule (io:plasma) plasma_output_hdf5
 
+use timeutils, only : date_filename
 use hdf5_interface, only: hdf5_file
 
 contains
@@ -14,7 +15,7 @@ real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: v2avg,v3avg
 real(wp), dimension(-1:size(Phiall,1)+2,-1:size(Phiall,2)+2,-1:size(Phiall,3)+2,1:lsp) :: nsall,vs1all,Tsall
 real(wp), dimension(1:size(Phiall,1),1:size(Phiall,2),1:size(Phiall,3)) :: v2avgall,v3avgall,v1avgall,Tavgall,neall,Teall
 real(wp), dimension(1:size(Phiall,1),1:size(Phiall,2),1:size(Phiall,3)) :: J1all,J2all,J3all
-character(:), allocatable :: filenamefull, h5filenamefull
+character(:), allocatable :: filenamefull
 integer(8) :: recordlength   !can be 8 byte with compiler flag -frecord-marker=8
 
 type(hdf5_file) :: h5f
@@ -61,9 +62,8 @@ Teall=Tsall(1:lx1,1:lx2all,1:lx3all,lsp)
 
 
 !> FIGURE OUT THE FILENAME
-filenamefull = date_filename(outdir,ymd,UTsec)
-h5filenamefull = filenamefull(1:len(filenamefull)-4)//'.h5'
-print *, 'HDF5 Output file name:  ',h5filenamefull
+filenamefull = date_filename(outdir,ymd,UTsec) // '.h5'
+print *, 'HDF5 Output file name:  ', filenamefull
 
 
 !SOME DEBUG OUTPUT ON FILE SIZE
@@ -73,7 +73,7 @@ recordlength=int(8,8)+int(8,8)*int(3,8)*int(lx1,8)*int(lx2all,8)*int(lx3all,8)*i
 print *, 'Output bit length:  ',recordlength,lx1,lx2all,lx3all,lsp
 
 
-call h5f%initialize(h5filenamefull,status='new',action='w',comp_lvl=1)
+call h5f%initialize(filenamefull,status='new',action='w',comp_lvl=1)
 
 call h5f%add('/time/ymd', ymd)
 call h5f%add('/time/UThour',UTsec/3600._wp)

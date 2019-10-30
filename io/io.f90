@@ -9,7 +9,6 @@ use std_mkdir, only: mkdir, copyfile
 use mpimod, only: bcast_recv, bcast_send, gather_send, gather_recv,  myid, &
   tagns, tagvs1, tagv2, tagv3, tagAur, tagTs, tagJ1, tagJ2, tagJ3
 use grid, only : gridflag,flagswap,lx1,lx2,lx3,lx2all, lx3all
-use timeutils, only: date_filename
 ! use logging, only: logger
 
 implicit none
