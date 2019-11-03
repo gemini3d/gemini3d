@@ -1,23 +1,16 @@
-name: ci_linux
+name: ci_rawio
+# for non-HDF5 I/O
+
 env:
   cmake_version: '3.15.5'
   CI: true
 
 on:
-  push:
-    paths-ignore:
-      - "**/*.py"
-      - "**/*.md"
-      - "**/*.m"
-  pull_request:
-    paths-ignore:
-      - "**/*.py"
-      - "**/*.md"
-      - "**/*.m"
+  release
 
 jobs:
 
-  cmakeHDF5:
+  cmake:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
@@ -28,13 +21,13 @@ jobs:
     - name: Install packages
       run: |
         sudo apt update -yq
-        sudo apt install -yq --no-install-recommends ninja-build gfortran libopenmpi-dev openmpi-bin liblapack-dev libscalapack-mpi-dev libmumps-dev libhdf5-dev libpthread-stubs0-dev
+        sudo apt install -yq --no-install-recommends ninja-build gfortran libopenmpi-dev openmpi-bin liblapack-dev libscalapack-mpi-dev libmumps-dev libpthread-stubs0-dev
     - name: Setup CMake
       run: |
         pip install cmakeutils
         cmake_setup ${cmake_version} --prefix ${HOME}/.local
     - name: CMake configure
-      run: ${HOME}/.local/cmake-${cmake_version}-Linux-x86_64/bin/cmake -B build -Dusehdf5=true
+      run: ${HOME}/.local/cmake-${cmake_version}-Linux-x86_64/bin/cmake -B build
       env:
         FC: gfortran
     - run: ${HOME}/.local/cmake-${cmake_version}-Linux-x86_64/bin/cmake --build build --parallel
@@ -48,7 +41,7 @@ jobs:
         name: Linux_Cmake_log
         path: build/CMakeFiles/CMakeError.log
 
-  mesonHDF5:
+  meson:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
@@ -59,8 +52,8 @@ jobs:
     - name: Install packages
       run: |
         sudo apt update -yq
-        sudo apt install -yq --no-install-recommends ninja-build gfortran libopenmpi-dev openmpi-bin liblapack-dev libscalapack-mpi-dev libmumps-dev libhdf5-dev
-    - run: meson setup build -Dhdf5=enabled
+        sudo apt install -yq --no-install-recommends ninja-build gfortran libopenmpi-dev openmpi-bin liblapack-dev libscalapack-mpi-dev libmumps-dev
+    - run: meson setup build
       env:
         FC: gfortran
     - run: ninja -C build

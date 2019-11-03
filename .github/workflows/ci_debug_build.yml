@@ -25,8 +25,8 @@ jobs:
         python-version: '3.7'
     - run: pip install -e .[tests]
     - run: sudo apt update -y
-    - run: sudo apt install -yq --no-install-recommends ninja-build gfortran liblapack-dev libscalapack-mpi-dev libmumps-dev libopenmpi-dev openmpi-bin octave
-    - run: meson setup build --buildtype debug
+    - run: sudo apt install -yq --no-install-recommends ninja-build gfortran liblapack-dev libscalapack-mpi-dev libmumps-dev libopenmpi-dev openmpi-bin libhdf5-dev octave
+    - run: meson setup build --buildtype=debug -Dhdf5=enabled
       env:
         FC: gfortran
     - run: pytest
