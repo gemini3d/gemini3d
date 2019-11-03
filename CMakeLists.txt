@@ -26,6 +26,7 @@ option(usehdf5 "use HDF5 instead of raw uncompressed output" OFF)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/Modules/)
 
 include(${PROJECT_SOURCE_DIR}/cmake/compilers.cmake)
+include(${PROJECT_SOURCE_DIR}/cmake/h5fortran.cmake)
 include(${PROJECT_SOURCE_DIR}/cmake/libraries.cmake)
 include(${PROJECT_SOURCE_DIR}/cmake/utils.cmake)
 include(${PROJECT_SOURCE_DIR}/cmake/mumps.cmake)

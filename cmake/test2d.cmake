@@ -17,7 +17,7 @@ compare_gemini_output(
 Compare2d_fang
 test2d_fang
 tests/data/zenodo2d_fang
-20130220_18000.000001.dat
+20130220_18000.000001
 )
 
 if(useglow)
@@ -40,6 +40,6 @@ compare_gemini_output(
 Compare2d_glow
 test2d_glow
 tests/data/zenodo2d_glow
-20130220_18000.000001.dat
+20130220_18000.000001
 )
 endif(useglow)

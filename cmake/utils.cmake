@@ -30,24 +30,24 @@ set_tests_properties(${TESTNAME} PROPERTIES
 endfunction(setup_gemini_test)
 
 
-function(compare_gemini_output TESTNAME OUTDIR REFDIR REQFILE)
+function(compare_gemini_output TESTNAME OUTDIR REFDIR REQSTEM)
 # This sets up the Compare* tests
 
 include(${PROJECT_SOURCE_DIR}/cmake/compare.cmake)
 
 #--- Python
 if(PythonOK)
-  python_compare(${TESTNAME}_Python ${OUTDIR} ${REFDIR} ${REQFILE})
+  python_compare(${TESTNAME}_Python ${OUTDIR} ${REFDIR} ${REQSTEM})
 endif(PythonOK)
 
 #--- Octave
 if(OctaveOK)
-  octave_compare(${TESTNAME}_Octave ${OUTDIR} ${REFDIR} ${REQFILE})
+  octave_compare(${TESTNAME}_Octave ${OUTDIR} ${REFDIR} ${REQSTEM})
 endif()
 
 #--- Matlab
 if(MatlabOK)
-  matlab_compare(${TESTNAME}_Matlab ${TESTDIR} ${REFDIR} ${REQFILE})
+  matlab_compare(${TESTNAME}_Matlab ${TESTDIR} ${REFDIR} ${REQSTEM})
 endif()
 
 endfunction(compare_gemini_output)

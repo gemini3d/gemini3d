@@ -17,7 +17,7 @@ compare_gemini_output(
 Compare3d_fang
 test3d_fang
 tests/data/zenodo3d_fang
-20130220_18000.000001.dat
+20130220_18000.000001
 )
 
 if(useglow)
@@ -40,6 +40,6 @@ compare_gemini_output(
 Compare3d_glow
 test3d_glow
 tests/data/zenodo3d_glow
-20130220_18000.000001.dat
+20130220_18000.000001
 )
 endif(useglow)

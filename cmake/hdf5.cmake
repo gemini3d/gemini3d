@@ -1,14 +1,39 @@
-if(usehdf5)
+if(NOT HDF5_FOUND)
 
-include(ExternalProject)
-
-ExternalProject_Add(h5fortran
-  GIT_REPOSITORY https://github.com/scivision/h5fortran.git
-  GIT_TAG master  # FIXME: it's better to use a specific Git revision or Git tag for reproducibility
-  INSTALL_COMMAND ""  # disables the install step for the external project
-)
-
-ExternalProject_Get_Property(h5fortran BINARY_DIR)
-set(h5fortran_BINARY_DIR BINARY_DIR)  # just to avoid accidentally reusing the variable name.
-
+if(BUILD_SHARED_LIBS)
+  set(HDF5_USE_STATIC_LIBRARIES false)
+else()
+  set(HDF5_USE_STATIC_LIBRARIES true)
 endif()
+find_package(HDF5 REQUIRED COMPONENTS Fortran Fortran_HL)
+
+if(WIN32)
+  # Needed for MSYS2, this directory wasn't in CMake 3.15.2 FindHDF5
+  if(BUILD_SHARED_LIBS)
+    list(APPEND HDF5_INCLUDE_DIRS ${HDF5_INCLUDE_DIRS}/shared)
+  else()
+    list(APPEND HDF5_INCLUDE_DIRS ${HDF5_INCLUDE_DIRS}/static)
+  endif()
+endif()
+
+message(STATUS "HDF5 includes: ${HDF5_INCLUDE_DIRS} ${HDF5_Fortran_INCLUDE_DIRS}")
+message(STATUS "HDF5 library: ${HDF5_Fortran_LIBRARIES}")
+message(STATUS "HDF5 H5LT library: ${HDF5_Fortran_HL_LIBRARIES}")
+if(HDF5_Fortran_COMPILER_EXECUTABLE)
+  message(STATUS "HDF5 Fortran compiler: ${HDF5_Fortran_COMPILER_EXECUTABLE}")
+endif()
+if(HDF5_Fortran_DEFINITIONS)
+  message(STATUS "HDF5 compiler defs: ${HDF5_Fortran_DEFINITIONS}")
+endif()
+
+set(CMAKE_REQUIRED_INCLUDES ${HDF5_INCLUDE_DIRS} ${HDF5_Fortran_INCLUDE_DIRS})
+set(CMAKE_REQUIRED_LIBRARIES ${HDF5_Fortran_HL_LIBRARIES} ${HDF5_Fortran_LIBRARIES})
+
+include(CheckFortranSourceCompiles)
+check_fortran_source_compiles("use h5lt; end" hasHDF5 SRC_EXT f90)
+
+if(NOT hasHDF5)
+  message(WARNING "HDF5 library may not be working with ${CMAKE_Fortran_COMPILER_ID} ${CMAKE_Fortran_COMPILER_VERSION}")
+endif()
+
+endif(NOT HDF5_FOUND)
