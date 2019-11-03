@@ -54,7 +54,7 @@ jobs:
     - uses: actions/checkout@v1
     - uses: actions/setup-python@v1
       with:
-        python-version: '3.x'
+        python-version: '3.7'
     - run: python -m pip install -e .[tests]
     - run: sudo apt install -yq --no-install-recommends ninja-build gfortran libopenmpi-dev openmpi-bin liblapack-dev libscalapack-mpi-dev libmumps-dev libhdf5-dev libpthread-stubs0-dev
     - name: Setup CMake
@@ -82,7 +82,7 @@ jobs:
     - uses: actions/checkout@v1
     - uses: actions/setup-python@v1
       with:
-        python-version: '3.x'
+        python-version: '3.7'
     - run: pip install -e .[tests]
     - run: sudo apt install -yq --no-install-recommends ninja-build gfortran libopenmpi-dev openmpi-bin liblapack-dev libscalapack-mpi-dev libmumps-dev
     - run: meson setup build
