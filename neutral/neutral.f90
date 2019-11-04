@@ -1467,31 +1467,31 @@ if (gridflag==0) then    !closed dipole grid
 !    print*, '...While sorting workers found a source in the NOTHERN HEMISPHERE...'
   end if
 
-  lx1tmp=lx1/2           !note use of integer division here...  This is the size of the half-grid, viz. one hemisphere of the grid
-  allocate(xitmp(lx1tmp,lx2,lx3),yitmp(lx1tmp,lx2,lx3),zitmp(lx1tmp,lx2,lx3))   !could this be done more less wastefully with pointers; I'm always unsure of whether "target" needs to be specified (maybe not for allocated memory???)
+!  lx1tmp=lx1/2           !note use of integer division here...  This is the size of the half-grid, viz. one hemisphere of the grid.  This also presumes that the grid is uniform in x1, which often won't be the case.  
+  ix1=maxloc(pack(zimat(:,1,1),.true.),1)    !apex is by definition the highest altitude along a given field line
+  if (flagSH) then
+    lx1tmp=ix1                  !first piece of arrays
+  else
+    lx1tmp=lx1-ix1    !second (end) piece of arrays
+  end if
+  allocate(xitmp(lx1tmp,lx2,lx3),yitmp(lx1tmp,lx2,lx3),zitmp(lx1tmp,lx2,lx3))   !could this be done more less wastefully with pointers???
 
-  !middle of x-y grid assumed to be zero (viz. centered on the neutral source)
-!  ix1stmp=minloc(abs(ximat),1)   !x1 indices where the x-distance from the source is minimum, but still larger than zero
-!  ix1tmp=minval(ix1stmp)                !x1 index of the minimum distance from epicenter (other indices not needed here)
-!  if (ix1tmp<lx1tmp) then               !source location is less than halfway into grid => southern hemisphere
-!    flagSH=.true.                        !source is on the lower x1 indices so southern
-  if(flagSH) then
-    xitmp=ximat(1:lx1tmp,1:lx2,1:lx3)    !select beginning of the array - the southern half
-    yitmp=yimat(1:lx1tmp,1:lx2,1:lx3)
-    zitmp=zimat(1:lx1tmp,1:lx2,1:lx3)
-  else                                     !not southern hemisphere so must be northern
-!    flagSH=.false.
-    if (lx1==lx1/2*2) then             !north half is exactly half the entire grid
+  if(flagSH) then    !southern hemisphere
+    xitmp=ximat(1:ix1,1:lx2,1:lx3)    !select beginning of the array - the southern half
+    yitmp=yimat(1:ix1,1:lx2,1:lx3)
+    zitmp=zimat(1:ix1,1:lx2,1:lx3)
+  else               !northern hemisphere
+!    if (lx1==lx1/2*2) then             !north half is exactly half the entire grid
 !      print*, 'NH evenly divisible'
-      xitmp=ximat(lx1tmp+1:lx1,1:lx2,1:lx3)    !select end half of the array
-      yitmp=yimat(lx1tmp+1:lx1,1:lx2,1:lx3)
-      zitmp=zimat(lx1tmp+1:lx1,1:lx2,1:lx3)
-    else                                     !if not half, must be smaller by one grid point
-      print*, 'Warning:  NH not evenly divisible along field line, chopping off apex point'
-      xitmp=ximat(lx1tmp+2:lx1,1:lx2,1:lx3)  !had an odd number of points along the field line, chop off the apex point - hopefully doesn't cause issues...
-      yitmp=yimat(lx1tmp+2:lx1,1:lx2,1:lx3)
-      zitmp=zimat(lx1tmp+2:lx1,1:lx2,1:lx3)
-    end if
+      xitmp=ximat(ix1+1:lx1,1:lx2,1:lx3)    !select end half of the array
+      yitmp=yimat(ix1+1:lx1,1:lx2,1:lx3)
+      zitmp=zimat(ix1+1:lx1,1:lx2,1:lx3)
+!    else                                     !if not half, must be smaller by one grid point
+!      print*, 'Warning:  NH not evenly divisible along field line, chopping off apex point'
+!      xitmp=ximat(lx1tmp+2:lx1,1:lx2,1:lx3)  !had an odd number of points along the field line, chop off the apex point - hopefully doesn't cause issues...
+!      yitmp=yimat(lx1tmp+2:lx1,1:lx2,1:lx3)
+!      zitmp=zimat(lx1tmp+2:lx1,1:lx2,1:lx3)
+!    end if
   end if
 else     !this is not a dipole grid so our approach is simpler
   lx1tmp=lx1
@@ -1518,6 +1518,8 @@ else    !things are swapped around in NH
   ix1=minloc(zitmp(:,lx2,1),1,zitmp(:,lx2,1)<0._wp)
   ynrange(2)=yitmp(ix1,lx2,1)
 end if
+
+deallocate(xitmp,yitmp,zitmp)
 
 end subroutine slabrange
 
