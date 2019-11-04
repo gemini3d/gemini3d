@@ -20,16 +20,15 @@ endif()
 
 option(TRACE "dump variables to disk at certain locations in program" OFF)
 option(useglow "use NCAR GLOW instead of Fang" ON)
-option(usematab "enable Matlab tests, which are slow and duplicate fast Octave tests" OFF)
-option(usehdf5 "use HDF5 instead of raw uncompressed output" OFF)
+option(matlab "enable Matlab tests, which are slow and duplicate fast Octave tests" OFF)
+option(hdf5 "use HDF5 instead of raw uncompressed output")
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/Modules/)
 
-include(${PROJECT_SOURCE_DIR}/cmake/compilers.cmake)
-include(${PROJECT_SOURCE_DIR}/cmake/h5fortran.cmake)
-include(${PROJECT_SOURCE_DIR}/cmake/libraries.cmake)
-include(${PROJECT_SOURCE_DIR}/cmake/utils.cmake)
-include(${PROJECT_SOURCE_DIR}/cmake/mumps.cmake)
+include(${CMAKE_SOURCE_DIR}/cmake/compilers.cmake)
+include(${CMAKE_SOURCE_DIR}/cmake/h5fortran.cmake)
+include(${CMAKE_SOURCE_DIR}/cmake/utils.cmake)
+include(${CMAKE_SOURCE_DIR}/cmake/mumps.cmake)
 
 # --- pretests, to help catch missing libs
 add_subdirectory(tests)
@@ -86,8 +85,8 @@ target_link_libraries(magcalc.bin PRIVATE mpimod const grid io timeutils)
 target_compile_options(magcalc.bin PRIVATE ${FFLAGS})
 
 # --- self-tests
-include(${PROJECT_SOURCE_DIR}/cmake/test2d.cmake)
+include(${CMAKE_SOURCE_DIR}/cmake/test2d.cmake)
 #if(NOT DEFINED ENV{CI} OR NOT $ENV{CI})
   # need the dollar sign on ENV for IF: save needless downloading
-include(${PROJECT_SOURCE_DIR}/cmake/test3d.cmake)
+include(${CMAKE_SOURCE_DIR}/cmake/test3d.cmake)
 #endif()

@@ -1,4 +1,8 @@
-if(usehdf5)
+include(${CMAKE_CURRENT_LIST_DIR}/python.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/octave.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/matlab.cmake)
+
+if(hdf5)
   set(OUTEXT ".h5")
 else()
   set(OUTEXT ".dat")
@@ -6,42 +10,59 @@ endif()
 
 set(_zenodo_ext ".dat")
 
-function(python_compare TESTNAME OUTDIR REFDIR REQSTEM)
+
+function(python_compare TESTNAME OUTDIR REFDIR)
 
 add_test(NAME ${TESTNAME}
-  COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/compare_all.py
-    ${CMAKE_BINARY_DIR}/${OUTDIR} ${CMAKE_SOURCE_DIR}/${REFDIR})
+  COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/compare_all.py ${CMAKE_BINARY_DIR}/${OUTDIR} ${REFDIR})
 
 set_tests_properties(${TESTNAME} PROPERTIES
   TIMEOUT 30
-  REQUIRED_FILES "${CMAKE_BINARY_DIR}/${OUTDIR}/${REQSTEM}${OUTEXT};${CMAKE_SOURCE_DIR}/${REFDIR}/${REQSTEM}${_zenodo_ext}")
+  SKIP_RETURN_CODE 77)
 
 endfunction(python_compare)
 
 
-function(octave_compare TESTNAME OUTDIR REFDIR REQSTEM)
+function(octave_compare TESTNAME OUTDIR REFDIR)
 
 add_test(NAME ${TESTNAME}
-  COMMAND ${Octave_EXECUTABLE} --eval "compare_all('${CMAKE_BINARY_DIR}/${OUTDIR}','${CMAKE_SOURCE_DIR}/${REFDIR}')"
+  COMMAND ${Octave_EXECUTABLE} --eval "compare_all('${CMAKE_BINARY_DIR}/${OUTDIR}','${REFDIR}')"
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/tests)
 
 set_tests_properties(${TESTNAME} PROPERTIES
   TIMEOUT 30
-  REQUIRED_FILES "${CMAKE_BINARY_DIR}/${OUTDIR}/${REQSTEM}${OUTEXT};${CMAKE_SOURCE_DIR}/${REFDIR}/${REQSTEM}${_zenodo_ext}")
+  SKIP_RETURN_CODE 77)
 
 endfunction(octave_compare)
 
 
-function(matlab_compare TESTNAME OUTDIR REFDIR REQSTEM)
+function(matlab_compare TESTNAME OUTDIR REFDIR)
 
 add_test(NAME ${TESTNAME}
-  COMMAND ${Matlab_MAIN_PROGRAM} -batch compare_all('${CMAKE_BINARY_DIR}/${OUTDIR}','${CMAKE_SOURCE_DIR}/${REFDIR}')
+  COMMAND ${Matlab_MAIN_PROGRAM} -batch compare_all('${CMAKE_BINARY_DIR}/${OUTDIR}','${REFDIR}')
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/tests)
 
 set_tests_properties(${TESTNAME} PROPERTIES
   TIMEOUT 60
-  REQUIRED_FILES "${CMAKE_BINARY_DIR}/${OUTDIR}/${REQSTEM}${OUTEXT};${CMAKE_SOURCE_DIR}/${REFDIR}/${REQSTEM}${_zenodo_ext}"
-)
-# Matlab with a lot of toolboxes takes ~ 15 seconds just to start
+  SKIP_RETURN_CODE 77)
+# Matlab with a lot of toolboxes takes 15..30 seconds just to start, particularly on HPC with network file system.
 
 endfunction(matlab_compare)
+
+
+function(compare_gemini_output TESTNAME OUTDIR REFDIR)
+# This sets up the Compare* tests
+
+if(PythonOK)
+  python_compare(${TESTNAME}_python ${OUTDIR} ${REFDIR})
+endif(PythonOK)
+
+if(OctaveOK)
+  octave_compare(${TESTNAME}_octave ${OUTDIR} ${REFDIR})
+endif(OctaveOK)
+
+if(MatlabOK)
+  matlab_compare(${TESTNAME}_matlab ${TESTDIR} ${REFDIR})
+endif(MatlabOK)
+
+endfunction(compare_gemini_output)

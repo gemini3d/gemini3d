@@ -1,3 +1,4 @@
+if(NOT DEFINED PythonOK)
 
 find_package(Python3 COMPONENTS Interpreter)
 # Python3::Interpreter did NOT work
@@ -10,4 +11,6 @@ if(ret EQUAL 0)
 else()
   message(WARNING "Need to setup PyGemini by 'pip install -e gemini'   error: ${ret}")
   set(PythonOK false CACHE BOOL "PyGemini is NOT present.")
+endif()
+
 endif()

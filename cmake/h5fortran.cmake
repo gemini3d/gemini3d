@@ -1,6 +1,6 @@
-if(usehdf5)
+if(hdf5) # needs to be run each configure for h5fortran_proj
 
-include(${PROJECT_SOURCE_DIR}/cmake/hdf5.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/hdf5.cmake)
 
 include(ExternalProject)
 
@@ -11,8 +11,6 @@ ExternalProject_Add(h5fortran_proj
 )
 
 ExternalProject_Get_Property(h5fortran_proj BINARY_DIR)
-set(h5fortran_BINARY_DIR ${BINARY_DIR})  # just to avoid accidentally reusing the variable name.
-
-message(STATUS "Using h5fortran in ${h5fortran_BINARY_DIR}")
+set(h5fortran_BINARY_DIR ${BINARY_DIR} CACHE PATH "path to h5fortran")
 
 endif()

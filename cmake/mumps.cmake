@@ -7,19 +7,24 @@
 # CentOS 6/7 EPEL: yum install mumps-devel
 # Ubuntu / Debian: apt install libmumps-dev
 
+unset(_mumps_extra)
+
+# BLACS
+if(BLACS_ROOT)
+  find_package(BLACS REQUIRED)
+  list(APPEND _mumps_extra ${BLACS_LIBRARIES})
+endif()
+
 # Metis
 if(METIS_ROOT)
   find_package(METIS REQUIRED)
+  list(APPEND _mumps_extra ${METIS_LIBRARIES})
 endif()
 
 # Scotch
 if(Scotch_ROOT)
   find_package(Scotch REQUIRED COMPONENTS ESMUMPS)
-endif()
-
-# BLACS
-if(BLACS_ROOT)
-  find_package(BLACS REQUIRED)
+  list(APPEND _mumps_extra ${Scotch_LIBRARIES})
 endif()
 
 # SCALAPACK always needed for MUMPS
@@ -29,6 +34,11 @@ else()
   find_package(SCALAPACK REQUIRED COMPONENTS OpenMPI)
 endif()
 
+if(DEFINED ENV{MKLROOT})
+  find_package(LAPACK REQUIRED COMPONENTS MKL)
+else()
+  find_package(LAPACK REQUIRED)
+endif()
 
 # Mumps
 if(realbits EQUAL 64)
@@ -40,20 +50,12 @@ else()
 endif()
 
 find_package(MUMPS REQUIRED COMPONENTS ${mumpscomp})
+
+# rather than appending this libraries everywhere, just put them together here.
 list(APPEND MUMPS_LIBRARIES ${SCALAPACK_LIBRARIES})
 list(APPEND MUMPS_INCLUDE_DIRS ${SCALAPACK_INCLUDE_DIRS})
 
-if(BLACS_FOUND)
-  list(APPEND MUMPS_LIBRARIES ${BLACS_LIBRARIES})
-endif()
-
-if(Scotch_FOUND)
-  list(APPEND MUMPS_LIBRARIES ${Scotch_LIBRARIES})
-endif()
-
-if(METIS_FOUND)
-  list(APPEND MUMPS_LIBRARIES ${METIS_LIBRARIES})
-endif()
+list(APPEND MUMPS_LIBRARIES ${_mumps_extra})
 
 if(MUMPS_ROOT)  # not a system library, need lapack
   list(APPEND MUMPS_LIBRARIES ${LAPACK_LIBRARIES})

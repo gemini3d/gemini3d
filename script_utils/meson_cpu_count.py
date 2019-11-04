@@ -49,7 +49,7 @@ def get_mpi_count(fn: Path, force: int = None) -> int:
 
 
 def get_simsize(fn: Path) -> tuple:
-    fn = Path(fn).expanduser()
+    fn = Path(fn).resolve().expanduser()
     if fn.stat().st_size != 12:
         raise ValueError(f"{fn} is not expected 12 bytes long")
     return struct.unpack("III", fn.open("rb").read(12))
