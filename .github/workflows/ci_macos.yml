@@ -22,7 +22,7 @@ jobs:
     - uses: actions/checkout@v1
     - uses: actions/setup-python@v1
       with:
-        python-version: '3.x'
+        python-version: '3.7'
     - run: pip install -e .[tests]
     - run: brew install gcc ninja open-mpi lapack
     - run: meson setup build
@@ -48,7 +48,7 @@ jobs:
     - uses: actions/checkout@v1
     - uses: actions/setup-python@v1
       with:
-        python-version: '3.x'
+        python-version: '3.7'
     - run: pip install -e .[tests]
     - name: Install dependencies
       run: |
