@@ -13,11 +13,11 @@ A subroutine-level set of documentation describing functions of individual progr
 GEMINI uses generalized orthogonal curvilinear coordinates and has been tested with dipole and Cartesian coordinates.
 
 We have prioritized ease of setup, install and use across computing systems.
-Computing systems that Gemini is reguarly tested and used on include:
+Computing systems that Gemini works easily on include:
 
-* MacOS: CI (Mojave) and laptop (Catalina)
-* Raspberry Pi 4: 1 Gbyte RAM, Linux Debian Buster
-* Linux: CentOS 7.x, Ubuntu 18.04
+* MacOS: as currently supported by Apple
+* Linux: CentOS 7/8, Ubuntu 16.04/18.04
+  * Raspberry Pi 4: 1 Gbyte RAM, Linux Debian Buster
 * Windows: Windows Subsystem for Linux
 
 Please open a
@@ -74,10 +74,34 @@ Tested versions include:
 * MUMPS 4.10 - 5.2.   Mumps &ge; 5.2 recommended to have vastly less verbose console output
 * SCALAPACK 2.0
 * LAPACK95 3.0  (optional)
+* HDF5 1.8 / 1.10 (optional)
+
+### build-time options
+
+build-time options in general are enabled or disabled like
+
+```sh
+meson build -Doption=enabled
+
+meson build -Doption=disabled
+```
+
+or
+
+```sh
+cmake -B build -Doption=enabled
+
+cmake -B build -Doption=disabled
+```
 
 NCAR GLOW is automatically installed, but optional in general.
 Auroral emissions use GLOW.
-If you wish to enable/disable GLOW, use Meson / CMake `-Duseglow=true` or `-Duseglow=false` option
+Enable or disable GLOW with `-Dglow=` option
+
+By default, Python and/or GNU Octave are used for the self-tests.
+Matlab is considerably slower, but may be enabled for self-tests with `-Dmatlab=enabled`
+
+HDF5 is enabled / disabled by `-Dhdf5=` option
 
 ### Analysis of simulation output
 
