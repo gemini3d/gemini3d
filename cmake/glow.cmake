@@ -1,14 +1,10 @@
-include(FetchContent)
+include(ExternalProject)
 
-FetchContent_Declare(ncarglow
+ExternalProject_Add(GLOW_proj
   GIT_REPOSITORY https://github.com/gemini3d/glow.git
   GIT_TAG 4828736
+  INSTALL_COMMAND ""  # disables the install step for the external project
 )
 
-FetchContent_GetProperties(ncarglow)
-
-if(NOT ncarglow_POPULATED)
-  FetchContent_Populate(ncarglow)
-  # builds under _deps/ncarglow-build/
-  add_subdirectory(${ncarglow_SOURCE_DIR} ${ncarglow_BINARY_DIR})
-endif()
+ExternalProject_Get_Property(GLOW_proj BINARY_DIR)
+set(GLOW_BINARY_DIR ${BINARY_DIR} CACHE PATH "path to GLOW")

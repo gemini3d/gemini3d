@@ -19,7 +19,7 @@ if(NOT realbits)
 endif()
 
 option(TRACE "dump variables to disk at certain locations in program" OFF)
-option(useglow "use NCAR GLOW instead of Fang" ON)
+option(glow "use NCAR GLOW instead of Fang" ON)
 option(matlab "enable Matlab tests, which are slow and duplicate fast Octave tests" OFF)
 option(hdf5 "use HDF5 instead of raw uncompressed output")
 
@@ -68,7 +68,7 @@ target_link_libraries(gemini_fang.bin PRIVATE const grid io mpimod multifluid ne
   ${LAPACK_LIBRARIES})  # necessary for self-compiled
 target_compile_options(gemini_fang.bin PRIVATE ${FFLAGS})
 
-if(useglow)
+if(glow)
   add_library(multifluid_glow multifluid/multifluid.f90)
   target_link_libraries(multifluid_glow PRIVATE advec calculus collision const diffusion grid ionization_glow mpimod precipBCs sources timeutils)
   target_compile_options(multifluid_glow PRIVATE ${FFLAGS})
@@ -77,7 +77,8 @@ if(useglow)
   target_link_libraries(gemini_glow.bin PRIVATE const grid io mpimod multifluid_glow neutral potential precipBCs temporal timeutils
     ${LAPACK_LIBRARIES})  # necessary for self-compiled
   target_compile_options(gemini_glow.bin PRIVATE ${FFLAGS})
-endif(useglow)
+  target_link_directories(gemini_glow.bin PRIVATE ${GLOW_BINARY_DIR})  # "not found -lcglow" without this
+endif(glow)
 
 #--------magnetic field calculation executable---------------
 add_executable(magcalc.bin magcalc.f90)

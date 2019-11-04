@@ -17,6 +17,10 @@ add_library(io io.f90 aurora.f90 output.f90 input.f90
   mag.f90
   plasma.f90 plasma_input_raw.f90
   ${io_src})
+set_target_properties(io PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR})
+target_link_libraries(io PRIVATE calculus const fsutils grid mpimod timeutils)
+target_compile_definitions(io PRIVATE TRACE=${TRACE})
+target_compile_options(io PRIVATE ${FFLAGS})
 
 if(hdf5)
   # these must be PUBLIC so that the top-level .bin link properly
@@ -26,7 +30,3 @@ if(hdf5)
   add_dependencies(io h5fortran_proj)
   target_link_libraries(io PUBLIC h5fortran ${HDF5_Fortran_HL_LIBRARIES} ${HDF5_Fortran_LIBRARIES})
 endif()
-set_target_properties(io PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR})
-target_link_libraries(io PRIVATE calculus const fsutils grid mpimod timeutils)
-target_compile_definitions(io PRIVATE TRACE=${TRACE})
-target_compile_options(io PRIVATE ${FFLAGS})
