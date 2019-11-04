@@ -1,6 +1,5 @@
 [![Actions Status](https://github.com/gemini3d/gemini/workflows/ci_python/badge.svg)](https://github.com/gemini3d/gemini/actions)
 [![Actions Status](https://github.com/gemini3d/gemini/workflows/ci_debug_build/badge.svg)](https://github.com/gemini3d/gemini/actions)
-[![Actions Status](https://github.com/gemini3d/gemini/workflows/ci_rawio/badge.svg)](https://github.com/gemini3d/gemini/actions)
 [![Actions Status](https://github.com/gemini3d/gemini/workflows/ci_linux/badge.svg)](https://github.com/gemini3d/gemini/actions)
 [![Actions Status](https://github.com/gemini3d/gemini/workflows/ci_macos/badge.svg)](https://github.com/gemini3d/gemini/actions)
 
