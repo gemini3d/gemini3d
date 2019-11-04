@@ -34,7 +34,7 @@ jobs:
         pip install cmakeutils
         cmake_setup ${cmake_version} --prefix ${HOME}/.local
     - name: CMake configure
-      run: ${HOME}/.local/cmake-${cmake_version}-Linux-x86_64/bin/cmake -B build -Dusehdf5=true
+      run: ${HOME}/.local/cmake-${cmake_version}-Linux-x86_64/bin/cmake -B build -Dhdf5=true
       env:
         FC: gfortran
     - run: ${HOME}/.local/cmake-${cmake_version}-Linux-x86_64/bin/cmake --build build --parallel

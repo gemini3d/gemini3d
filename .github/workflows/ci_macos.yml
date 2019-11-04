@@ -55,7 +55,7 @@ jobs:
         brew install gcc lapack open-mpi hdf5
         brew tap dpo/openblas
         brew install mumps
-    - run: cmake -B build -Dusehdf5=enabled
+    - run: cmake -B build -Dhdf5=enabled
       env:
         FC: gfortran-9
         CC: gcc-9

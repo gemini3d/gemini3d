@@ -27,7 +27,7 @@ jobs:
         pip install cmakeutils
         cmake_setup ${cmake_version} --prefix ${HOME}/.local
     - name: CMake configure
-      run: ${HOME}/.local/cmake-${cmake_version}-Linux-x86_64/bin/cmake -B build
+      run: ${HOME}/.local/cmake-${cmake_version}-Linux-x86_64/bin/cmake -B build -Dhdf5=disabled
       env:
         FC: gfortran
     - run: ${HOME}/.local/cmake-${cmake_version}-Linux-x86_64/bin/cmake --build build --parallel
@@ -53,7 +53,7 @@ jobs:
       run: |
         sudo apt update -yq
         sudo apt install -yq --no-install-recommends ninja-build gfortran libopenmpi-dev openmpi-bin liblapack-dev libscalapack-mpi-dev libmumps-dev
-    - run: meson setup build
+    - run: meson setup build -Dhdf5=disabled
       env:
         FC: gfortran
     - run: ninja -C build
