@@ -927,9 +927,10 @@ if (myid==0) then    !root
 
 
   !find index into into neutral arrays for each worker:  indx(lid,6)
+  print*, 'Root grid check:  ',ynall(1),ynall(lynall)
   print*, 'Converting ranges to indices...'
   do iid=0,lid-1
-    call range2inds(extents(iid,1:6),xnall,ynall,zn,indices)
+    call range2inds(extents(iid,1:6),zn,xnall,ynall,indices)
     indx(iid,1:6)=indices
     print*, 'Subgrid indices',iid,indx(iid,:)
   end do
@@ -1572,6 +1573,15 @@ do while (iyn<lynall .and. ynall(iyn)<maxyn)
   iyn=iyn+1
 end do
 indices(6)=iyn
+
+print*, '!!!!!!!!!!!!!!!!!'
+print*, myid
+print*, ranges
+print*, indices
+print*, lxnall,lynall
+print*, xnall(indices(3)),xnall(indices(4))
+print*, ynall(indices(5)),ynall(indices(6))
+print*, '!!!!!!!!!!!!!!!!!'
 
 
 !corner cases - range is not at all within the neutral grid...  Manifests as both indices being either 1 or lxi, interpolation should zero these out...
