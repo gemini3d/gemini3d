@@ -1462,10 +1462,8 @@ integer :: ix1
 if (gridflag==0) then    !closed dipole grid
   if (sourcemlat<=0) then
     flagSH=.true.
-!    print*, '...While sorting workers found a source in the SOUTHERN HEMISPHERE...'
   else
     flagSH=.false.
-!    print*, '...While sorting workers found a source in the NOTHERN HEMISPHERE...'
   end if
 
 !  lx1tmp=lx1/2           !note use of integer division here...  This is the size of the half-grid, viz. one hemisphere of the grid.  This also presumes that the grid is uniform in x1, which often won't be the case.  

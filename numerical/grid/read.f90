@@ -32,7 +32,9 @@ end if
 
 
 !DETERMINE THE TYPE OF GRID WE HAVE AND SET AN APPROPRIATE FLAG
-if (abs(x%alt(1,1,1)-x%alt(lx1,1,1))<10d3) then    !closed dipole grid
+!FIXME:  this needs to be done once, globally and also needs to be more
+!robust...
+if (abs(x%alt(1,1,1)-x%alt(lx1,1,1))<100d3) then    !closed dipole grid
   gridflag=0
 else if (x%alt(1,1,1)>x%alt(2,1,1)) then    !open dipole grid with inverted structure wrt altitude
   gridflag=1
