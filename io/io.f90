@@ -41,13 +41,6 @@ module subroutine output_aur_workers(iver)
 real(wp), dimension(:,:,:), intent(in) :: iver
 end subroutine output_aur_workers
 
-module subroutine output_aur_root(outdir,flagglow,ymd,UTsec,iver)
-character(*), intent(in) :: outdir
-integer, intent(in) :: flagglow, ymd(3)
-real(wp), intent(in) :: UTsec
-real(wp), dimension(:,:,:), intent(in) :: iver
-end subroutine output_aur_root
-
 end interface
 
 

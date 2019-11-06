@@ -8,9 +8,9 @@ set_target_properties(logging PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_BINARY
 
 #=== io library
 if(hdf5)
-  set(io_src plasma_output_hdf5.f90 mag_hdf5.f90)
+  set(io_src plasma_output_hdf5.f90 mag_hdf5.f90 aurora_hdf5.f90)
 else()
-  set(io_src plasma_output_raw.f90 mag_raw.f90)
+  set(io_src plasma_output_raw.f90 mag_raw.f90 aurora_raw.f90)
 endif()
 
 add_library(io io.f90 aurora.f90 output.f90 input.f90

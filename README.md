@@ -59,9 +59,11 @@ python3 setup.py develop --user
 
 ### Compilers
 
-The object-oriented Fortran 2008 code used in GEMINI requires a Fortran 2008 compliant compiler, including:
+The object-oriented Fortran 2008 code used in GEMINI requires a Fortran 2008 compliant compiler.
+We recommend Gfortran (version 6 or newer) since GNU/GCC is the easiest compiler to use in general on a wide range of projects.
 
-* `gfortran` &ge; 6
+These compilers should also work:
+
 * Intel `ifort`: all [currently supported versions](https://software.intel.com/en-us/articles/intel-parallel-studio-xe-supported-and-unsupported-product-versions)
 * Cray `ftn`
 * IBM XL
@@ -172,16 +174,16 @@ Perhaps consider running `python3 install_prereqs.py` to get the libraries you n
    ```
 
    If using Homebrew, you want to be sure Homebrew's GCC is used instead of AppleClang or other non-Homebrew compilers so that the Homebrew library ABIs match the compiler ABI.
-   To do this for Homebrew, or other systems where you need to specify a specific compile, use the Meson native-file like:
+   To do this for Homebrew or other systems where you need to specify a specific compiler, use a Meson native-file like:
 
    ```sh
    meson setup build --native-file homebrew.txt
    ```
 
-   OR on the command line instead of the native-file like:
+   alternatively, use the command line to specify paths instead of the native-file like:
 
    ```sh
-   meson setup build -DMUMPS_ROOT=../lib_gcc/mumps-5.2.1 -DSCALAPACK_ROOT=../lib_gcc/scalapack
+   FC=gfortran-9 CC=gcc-9 meson setup build -DMUMPS_ROOT=../lib_gcc/mumps-5.2.1 -DSCALAPACK_ROOT=../lib_gcc/scalapack
    ```
 
     **CMake may alternatively be used**
