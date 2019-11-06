@@ -95,7 +95,8 @@ disp([filename, ' => ', func2str(plotfun)])
 %% UNTIL WE PROVIDE A WAY FOR THE USER TO SPECIFY COLOR AXES, JUST TRY TO SET THEM AUTOMATICALLY
 if (~flagcaxlims)
  nelim =  [min(ne(:)), max(ne(:))];
- v1mod=max(abs(v1(:)));
+% v1mod=max(abs(v1(:)));
+ v1mod=80;
  v1lim = [-v1mod, v1mod];
  Tilim = [0, max(Ti(:))];
  Telim = [0, max(Te(:))];
@@ -147,8 +148,8 @@ if lotsplots   % 3D simulation or a very long 2D simulation - do separate plots 
     clf(h.f8)
     plotfun(ymd,UTsec,xg,J3,'J_3 (A/m^2)',J3lim,[mlatsrc,mlonsrc],h.f8, Jcmap);
     clf(h.f9)
-    % TODO: check units
-    plotfun(ymd,UTsec,xg,Phitop,'topside potential \Phi_{top} (V)', Phitop_lim, [mlatsrc, mlonsrc], h.f9, Phi_cmap)
+%    % TODO: check units
+%    plotfun(ymd,UTsec,xg,Phitop,'topside potential \Phi_{top} (V)', Phitop_lim, [mlatsrc, mlonsrc], h.f9, Phi_cmap)
   end
 
 else    %short 2D simulation - put the entire time series in a single plot
@@ -184,15 +185,16 @@ else    %short 2D simulation - put the entire time series in a single plot
     plotfun(ymd,UTsec,xg,J3(:,:,:),'J_3 (A/m^2)',J3lim,[mlatsrc,mlonsrc],ha);
 
     ha = subplot(Rsp, Csp,it,'parent',h.f9);
-    % TODO: check units
-    plotfun(ymd,UTsec,xg,Phitop,'topside potential \Phi_{top} (V)', Phitop_lim, [mlatsrc, mlonsrc], h.f9, Phi_cmap)
+%    % TODO: check units
+%    plotfun(ymd,UTsec,xg,Phitop,'topside potential \Phi_{top} (V)', Phitop_lim, [mlatsrc, mlonsrc], h.f9, Phi_cmap)
   end
 
 end
 
-if ~lotsplots
+
+if lotsplots
   % for 3D or long 2D plots print and output file every time step
-  saveframe(flagoutput, direc, filename, saveplot_fmt, h)
+  saveframe(params.flagoutput, direc, filename, saveplot_fmt, h)
 end
 
 %% Don't print
