@@ -80,6 +80,8 @@ yp=linspace(miny,maxy,lyp);     %should be interpreted as northward distance (in
 zp=linspace(minz,maxz,lzp)';     %altitude (meters)
 
 
+assert(ismatrix(parm) && ~isscalar(parm), ['need 2-D or 1-D ',parmlbl,' -- is squeeze() needed?  size(parm):', num2str(size(parm))])
+
 %INTERPOLATE ONTO PLOTTING GRID
 if xg.lx(3)==1     %alt./lon. slice
   if isvector(parm)
@@ -92,8 +94,6 @@ if xg.lx(3)==1     %alt./lon. slice
     parmtmp=parm(:,:);
     parmp=interp2(xg.x2(inds2),xg.x1(inds1),parmtmp,x2plot,x1plot);
     parmp=reshape(parmp,[lzp,lxp]);    %slice expects the first dim. to be "y" ("z" in the 2D case)
-  else
-    error('need 2-D or 1-D parm')
   end
 elseif xg.lx(2)==1    %alt./lat. slice
   if isvector(parm)
@@ -108,8 +108,6 @@ elseif xg.lx(2)==1    %alt./lat. slice
     parmtmp=parm(:,:);     %so north dist, east dist., alt.
     parmp=interp2(xg.x3(inds3),xg.x1(inds1),parmtmp,x3plot,x1plot);
     parmp=reshape(parmp,[lzp,lyp]);    %slice expects the first dim. to be "y"
-  else
-    error('need 2-D or 1-D parm')
   end
 end
 

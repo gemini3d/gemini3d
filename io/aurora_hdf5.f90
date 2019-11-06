@@ -24,21 +24,15 @@ character(:), allocatable :: outdir_composite, filenamefull, fstatus
 integer :: u
 logical :: exists
 
-!!ivertmp=reshape(iver,[lx2,lwave,lx3],order=[1,3,2])
-!ivertmp=reshape(iver,[lwave,lx2,lx3],order=[3,1,2])
-!call gather_recv(ivertmp,tagAur,iverall)
 do iwave=1,lwave
   emistmp=iver(:,:,iwave)
   call gather_recv(emistmp,tagAur,emisall)
   iverout(:,:,iwave)=emisall
 end do
 
-
-!FORM THE INPUT FILE NAME
+!! create an output file
 outdir_composite=outdir//'/aurmaps/'
-
 filenamefull=date_filename(outdir_composite,ymd,UTsec) // '.h5'
-
 inquire(file=filenamefull, exist=exists)
 if (exists) then
   fstatus = 'unknown'
@@ -48,6 +42,7 @@ else
 endif
 call h5f%initialize(filenamefull, status=fstatus,action='rw',comp_lvl=1)
 
+!! write data to file
 if(flagswap/=1) then
   call h5f%add('/aurora/iverout', iverout)
 else

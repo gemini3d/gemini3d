@@ -47,12 +47,16 @@ else
   Phitop = h5read(fn, '/Phiall');
 end
 %% REORGANIZE ACCORDING TO MATLABS CONCEPT OF A 2D or 3D DATA SET
-if lxs(2) == 1    %a 2D simulations was done in x1 and x3
-  Ti=squeeze(Ti);
-  Te=squeeze(Te);
-elseif lxs(3)==1   % 2D simuluation in x1,x2 with permuting of arrays in Fortran
-  Ti=squeeze(Ti);
-  Te=squeeze(Te);
-end % if
+if any(lxs(2:3) == 1)    %a 2D simulations was done in x1 and x3
+  ne = squeeze(ne);
+  v1 = squeeze(v1);
+  Ti = squeeze(Ti);
+  Te = squeeze(Te);
+  J1 = squeeze(J1);
+  J2 = squeeze(J2);
+  J3 = squeeze(J3);
+  v2 = squeeze(v2);
+  v3 = squeeze(v3);
+end
 
 end % function
