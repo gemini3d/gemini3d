@@ -1,3 +1,4 @@
+*.u2d
 *.pyd
 *.asv
 *.egg-info/

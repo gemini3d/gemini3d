@@ -163,23 +163,26 @@ Perhaps consider running `python3 install_prereqs.py` to get the libraries you n
     ```
 3. Build and test
 
-    If using Homebrew, you want to be sure Homebrew's GCC is used instead of AppleClang or other non-Homebrew compilers so that the Homebrew library ABIs match the compiler ABI.
-    To do this for Homebrew, or other systems where you need to specify a specific compiler, add to ~/.bashrc (assuming you have GCC 9, adjust for your GCC version & path):
-
-    ```sh
-    export CC=/usr/local/bin/gcc-9
-    export FC=/usr/local/bin/gfortran-9
-    export CXX=/usr/local/bin/g++-9
-    ```
-
-
    **Meson is recommended in general**
 
-    ```sh
-    meson setup build
+   ```sh
+   meson setup build
 
-    meson test -C build
-    ```
+   meson test -C build
+   ```
+
+   If using Homebrew, you want to be sure Homebrew's GCC is used instead of AppleClang or other non-Homebrew compilers so that the Homebrew library ABIs match the compiler ABI.
+   To do this for Homebrew, or other systems where you need to specify a specific compile, use the Meson native-file like:
+
+   ```sh
+   meson setup build --native-file homebrew.txt
+   ```
+
+   OR on the command line instead of the native-file like:
+
+   ```sh
+   meson setup build -DMUMPS_ROOT=../lib_gcc/mumps-5.2.1 -DSCALAPACK_ROOT=../lib_gcc/scalapack
+   ```
 
     **CMake may alternatively be used**
 
@@ -193,28 +196,19 @@ Perhaps consider running `python3 install_prereqs.py` to get the libraries you n
     ctest -V
     ```
 
-    with CMake, if you desire more control over test verbosity and which tests are run, use `ctest` from the `build` directory.
+
+    If you get errors about libraries not found or it's using the wrong compiler, specify the compilers or libraries like:
+
+    ```sh
+    FC=gfortran-9 CC=gcc-9 cmake -B build
+    ```
 
 
-If you get errors about libraries not found or it's using the wrong compiler, specify the compilers or libraries like:
+    If you need to specify MPI compiler wrappers, do like:
 
-```sh
-FC=gfortran-9 CC=gcc-9 meson setup build
-```
-
-
-If you need to specify MPI compiler wrappers, do like:
-
-```sh
-FC=~/lib_gcc/openmpi-3.1.4/bin/mpif90 CC=~/lib_gcc/openmpi-3.1.4/bin/mpicc meson build -DMPI_ROOT=~/lib_gcc/openmpi-3.1.4
-```
-
-
-and/or
-
-```sh
-meson setup build -DMUMPS_ROOT=../lib_gcc/mumps-5.2.1 -DSCALAPACK_ROOT=../lib_gcc/scalapack
-```
+    ```sh
+    FC=~/lib_gcc/openmpi-3.1.4/bin/mpif90 CC=~/lib_gcc/openmpi-3.1.4/bin/mpicc cmake -B build -DMPI_ROOT=~/lib_gcc/openmpi-3.1.4
+    ```
 
 ### input directory
 

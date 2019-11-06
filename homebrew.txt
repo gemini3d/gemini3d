@@ -1,0 +1,10 @@
+[binaries]
+c = '/usr/local/bin/gcc-9'
+fortran = '/usr/local/bin/gfortran-9'
+
+[properties]
+mpi_root = '/usr/local/opt/openmpi'
+lapack_root = '/usr/local/opt/lapack'
+scalapack_root = '/usr/local/opt/scalapack'
+mumps_root = '/usr/local/opt/mumps'
+hdf5_root = '/usr/local/opt/hdf5'
