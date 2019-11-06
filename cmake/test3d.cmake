@@ -21,7 +21,7 @@ ${CMAKE_SOURCE_DIR}/tests/data/zenodo3d_fang
 )
 
 #== Glow
-if(useglow)
+if(glow)
 download_testfiles(
 3528946525295cc8271aa41bc262d7f1
 3477330
@@ -42,4 +42,4 @@ Compare3d_glow
 test3d_glow
 ${CMAKE_SOURCE_DIR}/tests/data/zenodo3d_glow
 )
-endif(useglow)
+endif(glow)
