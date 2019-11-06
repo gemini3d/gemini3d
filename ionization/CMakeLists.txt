@@ -31,7 +31,7 @@ if(glow)
   target_include_directories(ionization_glow PUBLIC ${GLOW_BINARY_DIR})
   target_link_directories(ionization_glow PUBLIC ${GLOW_BINARY_DIR})
   # double quotes needed in next line since it injects directly into Fortran code
-  target_compile_definitions(ionization_glow PRIVATE DATADIR="${CMAKE_BINARY_DIR}/GLOW_proj-prefix/data/")
+  target_compile_definitions(ionization_glow PRIVATE DATADIR="${CMAKE_CURRENT_BINARY_DIR}/GLOW_proj-prefix/src/GLOW_proj/data/")
 
   # "ionization" is in this line to avoid intermittant quirks / race condition with ionization.mod
   # when ionization_glow and ionization may compile simultaneously.
