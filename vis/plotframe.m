@@ -1,7 +1,7 @@
 function xg = plotframe(direc,ymd,UTsec,saveplot_fmt,plotfun,xg,h,visible)
 
 cwd = fileparts(mfilename('fullpath'));
-addpath([cwd, filesep, 'plotfunctions'])
+addpath([cwd, '/plotfunctions'])
 
 %% CHECK ARGS AND SET SOME DEFAULT VALUES ON OPTIONAL ARGS
 narginchk(3,8)
@@ -48,12 +48,12 @@ J3lim=[-10 10];
 %}
 
 %% READ IN THE SIMULATION INFORMATION (this is low cost so reread no matter what)
-params = read_config([direc, filesep, 'inputs']);
+params = read_config([direc, '/inputs']);
 
 %% CHECK WHETHER WE NEED TO RELOAD THE GRID (check if one is given because this can take a long time)
 if isempty(xg)
   disp('Reloading grid...  Provide one as input if you do not want this to happen.')
-  xg = readgrid([direc,filesep,'inputs']);
+  xg = readgrid([direc, '/inputs']);
 end
 
 if nargin<7 || isempty(h)
@@ -148,8 +148,8 @@ if lotsplots   % 3D simulation or a very long 2D simulation - do separate plots 
     clf(h.f8)
     plotfun(ymd,UTsec,xg,J3,'J_3 (A/m^2)',J3lim,[mlatsrc,mlonsrc],h.f8, Jcmap);
     clf(h.f9)
-%    % TODO: check units
-%    plotfun(ymd,UTsec,xg,Phitop,'topside potential \Phi_{top} (V)', Phitop_lim, [mlatsrc, mlonsrc], h.f9, Phi_cmap)
+
+    plotfun(ymd,UTsec,xg,Phitop,'topside potential \Phi_{top} (V)', Phitop_lim, [mlatsrc, mlonsrc], h.f9, Phi_cmap)
   end
 
 else    %short 2D simulation - put the entire time series in a single plot
@@ -185,8 +185,8 @@ else    %short 2D simulation - put the entire time series in a single plot
     plotfun(ymd,UTsec,xg,J3(:,:,:),'J_3 (A/m^2)',J3lim,[mlatsrc,mlonsrc],ha);
 
     ha = subplot(Rsp, Csp,it,'parent',h.f9);
-%    % TODO: check units
-%    plotfun(ymd,UTsec,xg,Phitop,'topside potential \Phi_{top} (V)', Phitop_lim, [mlatsrc, mlonsrc], h.f9, Phi_cmap)
+
+    plotfun(ymd,UTsec,xg,Phitop,'topside potential \Phi_{top} (V)', Phitop_lim, [mlatsrc, mlonsrc], h.f9, Phi_cmap)
   end
 
 end
