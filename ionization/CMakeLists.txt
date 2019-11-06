@@ -32,7 +32,10 @@ if(glow)
   target_link_directories(ionization_glow PUBLIC ${GLOW_BINARY_DIR})
   # double quotes needed in next line since it injects directly into Fortran code
   target_compile_definitions(ionization_glow PRIVATE DATADIR="${CMAKE_BINARY_DIR}/GLOW_proj-prefix/data/")
-  add_dependencies(ionization_glow GLOW_proj)
+
+  # "ionization" is in this line to avoid intermittant quirks / race condition with ionization.mod
+  # when ionization_glow and ionization may compile simultaneously.
+  add_dependencies(ionization_glow GLOW_proj ionization)
 endif(glow)
 
 add_library(precipBCs boundary_conditions/precipBCs_mod.f90)
