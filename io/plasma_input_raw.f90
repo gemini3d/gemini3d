@@ -21,6 +21,7 @@ if (flagoutput==3) error stop '  !!!I need current densities in the output to co
 
 !> FORM THE INPUT FILE NAME
 filenamefull = date_filename(outdir,ymd,UTsec)
+filenamefull = filenamefull//'.dat'
 print *, 'Input file name for current densities:  ',filenamefull
 
 open(newunit=u,file=filenamefull,status='old',form='unformatted',access='stream',action='read')

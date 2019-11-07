@@ -5,15 +5,16 @@ clear;
 
 
 %% Iowa grid for AGU 2019
-dtheta=20;
-dphi=30;
+dtheta=16;
+dphi=29;
 lp=100;
 lq=200;
 lphi=40;
 altmin=80e3;
-glat=40;   %38.9609;
+%glat=40;   %38.9609;
+glat=41.5;   %38.9609;
 glon=360-94.088;
-gridflag=0;
+gridflag=1;
 flagsource=1;
 iscurv=true;
 

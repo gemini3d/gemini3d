@@ -102,8 +102,10 @@ integer :: lid2in,lid3in
 !! FOR HANDLING INPUT
 integer :: argc, ierr
 character(256) :: argv
+logical :: file_exists
 
 !! ## MAIN PROGRAM
+debug=.true.     !FIXME:  hardcode this in for now, needs to be set based on user input...
 
 argc = command_argument_count()
 if (argc < 2) error stop 'magcalc.f90 --> must specify .ini file to configure simulation and location of'// &
@@ -120,6 +122,10 @@ call get_command_argument(1,argv)
 outdir=trim(argv)
 infile=outdir//'/inputs/config.ini'
 !infile = trim(argv)
+inquire(file=infile,exist=file_exists)    !needed to deal with ini vs. nml inputs...
+if ( .not. file_exists) then
+  infile=outdir//'/inputs/config.nml'
+end if
 if (myid==0) then
   print *, 'Simulation data directory:  ',outdir
   print *, 'Input config file:  ',infile
