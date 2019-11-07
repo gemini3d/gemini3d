@@ -3,9 +3,9 @@ addpath([cwd,'/../script_utils'])
 
 %SIMULATIONS LOCAITONS
 %simname='tohoku20113D_highres_var/';
-%simname='test3d_mag_23/';
-simname='mooreOK3D_hemis_medres/'
-basedir='~/Downloads/'
+simname='test3d_fang/';
+%simname='mooreOK3D_hemis_medres/'
+basedir='../../simulations/'
 direc=[basedir,simname];
 mkdir([direc, filesep, 'Brplots']);
 mkdir([direc, filesep, 'Brplots_eps']);
@@ -21,7 +21,7 @@ lt=numel(times);
 
 
 %LOAD/CONSTRUCT THE FIELD POINT GRID
-basemagdir=[direc,'/magfields.500km.line1600/'];
+basemagdir=[direc,'/magfields/'];
 fid=fopen([basemagdir,'/input/magfieldpoints.dat'],'r');    %needs some way to know what the input file is, maybe force fortran code to use this filename...
 lpoints=fread(fid,1,'integer*4');
 r=fread(fid,lpoints,'real*8');
@@ -31,12 +31,14 @@ fclose(fid);
 
 
 %REORGANIZE THE FIELD POINTS (PROBLEM-SPECIFIC)
+ltheta=10;
+lphi=10;
 %ltheta=40;
 %lphi=40;
 %ltheta=20;
 %lphi=20;
-ltheta=1600;
-lphi=1;
+%ltheta=1600;
+%lphi=1;
 r=reshape(r(:),[ltheta,lphi]);
 theta=reshape(theta(:),[ltheta,lphi]);
 phi=reshape(phi(:),[ltheta,lphi]);
@@ -86,6 +88,7 @@ for it=1:lt-1
   Bphit(:,:,:,it)=Bphit(:,:,ilonsort,it);
 
   fclose(fid);
+  ymd=ymd(:)';
   simdate_series=cat(1,simdate_series,[ymd(1:3),UTsec/3600,0,0]);
   [ymd,UTsec]=dateinc(dtout,ymd,UTsec);
 end

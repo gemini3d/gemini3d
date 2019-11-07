@@ -163,6 +163,9 @@ else
 end if
 
 
+! FIXME:  need to copy the input grid file into the output directory
+
+
 !GRAB THE INFO FOR WHERE THE OUTPUT CALCULATIONS ARE STORED
 !call get_command_argument(2,argv)
 !outdir = trim(argv)    !this should be the base output directory that the simulation results have been stored in
