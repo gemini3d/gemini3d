@@ -24,7 +24,7 @@ This file is intended to document development priorities for the GEMINI project.
 
 * Work on some means for plot color axes to be adjustable.
 * refactor the precip and Efield generation scripts
-* Redo the way magcalc and magplot deal with file names and locations
+* Redo the way magcalc and magplot deal with file names and locations also have the shape of the grid determined automatically
 * magplot needs some way to know what the grid dimensions are so the user doesn't have to manually input 
 * Fix restart code for precipitation and electric field input files (need to be primed like the neutral input)
 * Proper restarting will require reading in an initial potential value, as well - means that the matlab input scripts need to be fixed/updated too...
