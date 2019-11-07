@@ -1,12 +1,13 @@
-function save_glowframe(flagoutput, direc, filename, saveplot_fmt, hf)
+function save_glowframe(flagoutput, filename, saveplot_fmt, hf)
 %% CREATES IMAGE FILES FROM PLOTS
-narginchk(5,5)
-validateattributes(flagoutput, {'numeric'}, {'scalar'}, mfilename)
-validateattributes(direc, {'char'}, {'vector'}, mfilename)
-validateattributes(filename, {'char'}, {'vector'}, mfilename)
-validateattributes(saveplot_fmt, {'cell'}, {'vector'}, mfilename)
+narginchk(4,4)
+validateattributes(flagoutput, {'numeric'}, {'scalar'}, mfilename, 'output flag', 1)
+validateattributes(filename, {'char'}, {'vector'}, mfilename, 'aurora filename', 2)
+validateattributes(saveplot_fmt, {'cell'}, {'vector'}, mfilename, 'format to save', 3)
 
-outdir = [direc, filesep, 'Aurplots'];
+[outdir, outname] = fileparts(filename);
+outdir = [outdir, '/../Aurplots'];
+
 
 if ~is_folder(outdir)
   mkdir(outdir);
@@ -20,7 +21,7 @@ for i=1:length(saveplot_fmt)
     otherwise, continue
   end
 
-  outfile = [outdir,filesep,filename,suffix];
+  outfile = [outdir, '/', outname, suffix];
   if flagoutput~=3
     disp(['writing ',outfile])
     print(hf,flag,outfile,'-r150')

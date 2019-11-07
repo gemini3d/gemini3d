@@ -1,8 +1,8 @@
 function xg = plotall(direc, saveplot_fmt, plotfun, xg, visible)
 
 cwd = fileparts(mfilename('fullpath'));
-addpath([cwd, filesep, 'plotfunctions'])
-addpath([cwd, filesep, '..', filesep, 'script_utils'])
+addpath([cwd, '/plotfunctions'])
+addpath([cwd, '/../script_utils'])
 
 narginchk(1,5)
 validateattributes(direc, {'char'}, {'vector'}, mfilename, 'path to data', 1)
@@ -29,12 +29,12 @@ disp(['sim grid dimensions: ',num2str(lxs)])
 
 
 %% NEED TO READ INPUT FILE TO GET DURATION OF SIMULATION AND START TIME
-params = read_config([direc, filesep, 'inputs']);
+params = read_config([direc, '/inputs']);
 
 %% CHECK WHETHER WE NEED TO RELOAD THE GRID (check if one is given because this can take a long time)
 if isempty(xg)
   disp('Reloading grid...')
-  xg = readgrid([direc, filesep, 'inputs']);
+  xg = readgrid([direc, '/inputs']);
 end
 
 plotfun = grid2plotfun(plotfun, xg);
@@ -81,7 +81,7 @@ else  % displaying interactively, not saving
 
 end % if saveplots
 
-if is_folder([direc, filesep, 'aurmaps']) % glow sim
+if is_folder([direc, '/aurmaps']) % glow sim
   plotglow(direc, saveplot_fmt)
 end
 

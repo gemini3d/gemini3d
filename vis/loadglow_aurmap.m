@@ -37,7 +37,7 @@ if isoctave
   D = load(filename);
   cAur = D.aurora.iverall;
 else
-  cAur = h5read(fn, '/aurora/iverall');
+  cAur = h5read(filename, '/aurora/iverout');
 end
 
 cAur = squeeze(cAur);

@@ -1,41 +1,48 @@
 function plotglow(direc, saveplot_fmt)
 % plots Gemini-Glow auroral emissions
 narginchk(1,2)
-if nargin<2, saveplot_fmt={}; end  %e.g. {'png'} or {'png', 'eps'}
+if nargin<2, saveplot_fmt={'png'}; end  %e.g. {'png'} or {'png', 'eps'}
 
 cwd = fileparts(mfilename('fullpath'));
-addpath([cwd, filesep, 'plotfunctions'])
-addpath([cwd, filesep, '..', filesep, 'script_utils'])
+addpath([cwd, '/plotfunctions'])
+addpath([cwd, '/../script_utils'])
 
 assert(is_folder(direc), [direc, ' is not a directory.'])
-config_dir = [direc, filesep, 'inputs'];
+config_dir = [direc, '/inputs'];
+aurora_dir = [direc, '/aurmaps'];
 
 %array of volume emission rates at each altitude; cm-3 s-1:
 wavelengths = {'3371', '4278', '5200', '5577', '6300', '7320', '10400', ...
   '3466', '7774', '8446', '3726', 'LBH', '1356', '1493', '1304'};
 
 %READ IN SIMULATION INFO
-[ymd0,UTsec0,~,dtout,flagoutput]=readconfig(config_dir);
-%glow_params = read_nml_group([config_dir, filesep, 'config.nml'], 'glow');
+params = read_config(config_dir);
+%glow_params = read_nml_group([config_dir, '/config.nml'], 'glow');
 
 %READ IN THE GRID
 xg = readgrid(config_dir);
 
-%GET THE SYSTEM SIZE
+%% GET THE SYSTEM SIZE
 lwave=length(wavelengths);
 lx2=xg.lx(2);
 lx3=xg.lx(3);
 x2=xg.x2(3:end-2);
 x3=xg.x3(3:end-2);
 
-%LOOP OVER FRAMES, SHOULDN'T BE A PROBLEM TO LOAD ALL AT ONCE
-file_list = dir([direc,filesep,'*.dat']);
-time_str = time2str(ymd0, UTsec0);
-ymd = ymd0;
-UTsec = UTsec0;
+%% get file list
+for ext = {'.h5', '.dat'}
+  file_list = dir([aurora_dir, '/*', ext{1}]);
+  if ~isempty(file_list), break, end
+end
+assert(~isempty(file_list), ['No auroral data found in ', aurora_dir])
+
+%% make plots
+ymd = params.ymd;
+UTsec = params.UTsec0;
+time_str = time2str(ymd, UTsec);
 hf = [];
 for i = 1:length(file_list)
-  filename = [direc,filesep,'aurmaps',filesep,file_list(i).name];
+  filename = [aurora_dir, '/', file_list(i).name];
   bFrame = loadglow_aurmap(filename, lx2, lx3, lwave);
 
   if lx3 > 1  % 3D sim
@@ -44,11 +51,11 @@ for i = 1:length(file_list)
     hf = plot_emissions(x2, wavelengths, squeeze(bFrame), time_str, hf);
   end
 
-  save_glowframe(flagoutput, direc, file_list(i).name, saveplot_fmt, hf)
+  save_glowframe(params.flagoutput, filename, saveplot_fmt, hf)
 
   % we use dtout instead of dtglow because we're only plotting times the
   % full simulation outputs too.
-  [ymd, UTsec] = dateinc(dtout, ymd, UTsec);
+  [ymd, UTsec] = dateinc(params.dtout, ymd, UTsec);
   time_str = time2str(ymd, UTsec);
 end
 
