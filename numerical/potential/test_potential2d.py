@@ -13,9 +13,9 @@ def read_potential2D(fn: Path, doplot: bool = False):
         raise SystemExit(77)
 
     with fn.open("r") as f:
-        lx2, = np.fromfile(f, int, 1, sep=" ")
+        (lx2,) = np.fromfile(f, int, 1, sep=" ")
         x2 = np.fromfile(f, float, lx2, sep=" ")
-        lx3, = np.fromfile(f, int, 1, sep=" ")
+        (lx3,) = np.fromfile(f, int, 1, sep=" ")
         x3 = np.fromfile(f, float, lx3, sep=" ")
         Phi = np.fromfile(f, float, lx2 * lx3, sep=" ").reshape((lx2, lx3))
         Phi2 = np.fromfile(f, float, lx2 * lx3, sep=" ").reshape((lx2, lx3))

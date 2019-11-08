@@ -30,25 +30,9 @@ Specific commits corresponding to published results will also be noted, where ap
 
 ## Prerequisites
 
-Meson is recommended because Meson automatically builds the entire software library stack, checking for compatibility of pre-installed libraries such as Lapack, Scalapack and MUMPS.
-CMake may be used if you know that your pre-installed libraries are ABI compatible with your compiler.
-
-**Meson**
-
-Meson uses Ninja as a modern, faster replacement for GNU Make.
-Meson may be obtained via:
-
-```sh
-python3 -m pip install --user meson
-```
-
-[Download Ninja](https://github.com/ninja-build/ninja/releases/)
-and put Ninja executable directory on your PATH.
-If Homebrew is used, Ninja is installed by:
-
-```sh
-brew install ninja
-```
+Gemini uses Meson build system to automatically build the entire software library stack,
+checking for compatibility of pre-installed libraries such as Lapack, Scalapack and MUMPS.
+While Meson is recommended, if necessary, CMake may be used if the pre-installed libraries are all ABI compatible with your compiler.
 
 Gemini scripts used to load and check data use Python &ge; 3.6.
 These scripts are installed from the *top level gemini directory* by:
@@ -148,7 +132,7 @@ One could run large 2D or very small 3D simulations (not exceeding a few million
 
 This method is tested on MacOS, CentOS and Ubuntu.
 This test runs a short demo, taking about 2-5 minutes on a typical Mac / Linux laptop, from scratch.
-It assumes you have Python 3, Meson, Ninja and the appropriate compilers and libraries installed.
+It assumes you have Python 3 and the appropriate compilers and libraries installed.
 Perhaps consider running `python3 install_prereqs.py` to get the libraries you need (assuming you have sudo access).
 
 1. Get GEMINI code and install prereqs
@@ -177,7 +161,7 @@ Perhaps consider running `python3 install_prereqs.py` to get the libraries you n
    To do this for Homebrew or other systems where you need to specify a specific compiler, use a Meson native-file like:
 
    ```sh
-   meson setup build --native-file homebrew.txt
+   meson setup build --native-file meson/homebrew.ini
    ```
 
    alternatively, use the command line to specify paths instead of the native-file like:
@@ -265,10 +249,10 @@ You can try `python3 install_prereqs.py` or use system-specific install commands
     module load gcc
     export CC=gcc CXX=g++ FC=gfortran
     ```
-* MacOS: use Homebrew to install Gfortran like:
+* MacOS / Linux: use Homebrew to install Gfortran and OpenMPI like:
 
     ```sh
-    brew install gcc openmpi ninja
+    brew install gcc openmpi
     ```
 
 ## Known limitations and issues of GEMINI

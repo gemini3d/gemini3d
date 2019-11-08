@@ -99,6 +99,7 @@ else
   clf(hf)
 end
 
+% arbitrary pick of which emission lines to plot lat/lon slices
 inds = [2, 4, 5, 9];
 
 for i=1:length(inds)

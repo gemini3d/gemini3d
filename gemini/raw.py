@@ -102,6 +102,13 @@ def readgrid(fn: Path) -> typing.Dict[str, np.ndarray]:
 def loadframe3d_curv(fn: Path, lxs: typing.Sequence[int]) -> typing.Dict[str, typing.Any]:
     """
     end users should normally use loadframe() instead
+
+    Parameters
+    ----------
+    fn: pathlib.Path
+        filename of this timestep of simulation output
+    lxs: list of int
+        array dimension
     """
 
     #    grid = readgrid(fn.parent / "inputs/simgrid.dat")
@@ -138,8 +145,10 @@ def loadframe3d_curvavg(fn: Path, lxs: typing.Sequence[int]) -> typing.Dict[str,
 
     Parameters
     ----------
-    path: pathlib.Path
+    fn: pathlib.Path
         filename of this timestep of simulation output
+    lxs: list of int
+        array dimension
     """
     #    grid = readgrid(fn.parent / "inputs/simgrid.dat")
     #    dat = xarray.Dataset(
@@ -186,6 +195,16 @@ def read2D(f, lxs: typing.Sequence[int]) -> np.ndarray:
         raise ValueError(f"lxs must have 3 elements, you have lxs={lxs}")
 
     return np.fromfile(f, np.float64, np.prod(lxs[1:])).reshape(*lxs[1:], order="F")
+
+
+def loadglow_aurmap(f, lxs: typing.Sequence[int], lwave: int) -> typing.Dict[str, typing.Any]:
+    """
+    read the auroral output from GLOW
+    """
+    if not len(lxs) == 3:
+        raise ValueError(f"lxs must have 3 elements, you have lxs={lxs}")
+    raw = np.fromfile(f, np.float64, np.prod(lxs[1:]) * lwave).reshape(np.prod(lxs[1:]) * lwave, order="F")
+    return {'rayleighs': [("wavelength", "x2", "x3"), raw]}
 
 
 def read_time(f) -> datetime:

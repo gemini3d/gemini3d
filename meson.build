@@ -1,14 +1,8 @@
 project('GEMINI', 'fortran',
   meson_version: '>=0.52.0',
-  default_options : ['default_library=static', 'buildtype=release',
-  'libdir=gemini/lib', 'includedir=gemini/include'])
+  default_options : ['default_library=static', 'buildtype=release'])
 
-bits = get_option('realbits')
-real_bits = '-DREALBITS=' + bits
-arith = get_option('arith')
-message('arith: ' + arith)
-
-subdir('cmake')
+subdir('meson')  # find libraries, etc.
 
 #==========================================================
 const = library('const', 'numerical/constants/phys_consts.F90',

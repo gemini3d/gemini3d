@@ -35,22 +35,31 @@ CB_LBL = {
     "Phitop": r"$\Phi_{top}$ (V)",
 }
 
+PARAMS = ["ne", "v1", "Ti", "Te", "J1", "v2", "v3", "J2", "J3", "Phitop"]
+
 
 def plotframe(
-    grid: typing.Dict[str, np.ndarray], dat: typing.Dict[str, typing.Any], save_dir: Path = None, fg: "mplf.Figure" = None
+    grid: typing.Dict[str, np.ndarray],
+    dat: typing.Dict[str, typing.Any],
+    params: typing.Sequence[str] = None,
+    save_dir: Path = None,
+    fg: "mplf.Figure" = None,
 ):
     """
     if save_dir, plots will not be visible while generating to speed plot writing
     """
+    if not params:
+        params = PARAMS
+
     plotfun = grid2plotfun(grid)
 
     time = dat["time"]
 
-    for k in ("ne", "v1", "Ti", "Te", "J1", "v2", "v3", "J2", "J3", "Phitop"):
+    for k in params:
         if save_dir is None or fg is None:
             fg = figure(num=k, constrained_layout=True)
         fg.clf()
-        plotfun(time, grid, dat[k][1].squeeze(), k, fg)
+        plotfun(time, grid, dat[k][1].squeeze(), k, fg, wavelength=dat.get("wavelength"))
         if save_dir:
             fg.savefig(save_dir / f"{k}-{time.isoformat().replace(':','')}.png")
 
@@ -75,22 +84,14 @@ def grid2plotfun(grid: typing.Dict[str, np.ndarray]):
     return plotfun
 
 
-def plot3D_curv_frames_long(time: datetime, grid: typing.Dict[str, np.ndarray], parm: np.ndarray, name: str, fg: "mplf.Figure"):
+def plot3D_curv_frames_long(
+    time: datetime, grid: typing.Dict[str, np.ndarray], parm: np.ndarray, name: str, fg: "mplf.Figure", **kwargs
+):
     raise NotImplementedError
 
 
-def plot2D_curv(time: datetime, grid: typing.Dict[str, np.ndarray], parm: np.ndarray, name: str, fg: "mplf.Figure"):
+def plot2D_curv(time: datetime, grid: typing.Dict[str, np.ndarray], parm: np.ndarray, name: str, fg: "mplf.Figure", **kwargs):
     raise NotImplementedError
-
-
-def plot3D_cart_frames_long_ENU(time: datetime, grid: typing.Dict[str, np.ndarray], parm: np.ndarray, name: str, fg: "mplf.Figure"):
-
-    plot_interp(time, grid, parm, name, fg)
-
-
-def plot2D_cart(time: datetime, grid: typing.Dict[str, np.ndarray], parm: np.ndarray, name: str, fg: "mplf.Figure"):
-
-    plot_interp(time, grid, parm, name, fg)
 
 
 def plot12(
@@ -212,7 +213,7 @@ def plot1d3(y: np.ndarray, parm: np.ndarray, name: str, fg: "mplf.Figure", ax: "
     ax.set_ylabel(CB_LBL[name])
 
 
-def plot_interp(time: datetime, grid: typing.Dict[str, np.ndarray], parm: np.ndarray, name: str, fg: "mplf.Figure"):
+def plot_interp(time: datetime, grid: typing.Dict[str, np.ndarray], parm: np.ndarray, name: str, fg: "mplf.Figure", **kwargs):
     """
 
     xp:  eastward distance (rads.)
@@ -227,9 +228,13 @@ def plot_interp(time: datetime, grid: typing.Dict[str, np.ndarray], parm: np.nda
     """
 
     cmap = None
-    if name.startswith(("J", "v")) or name == 'Phitop':
+    if name.startswith("J") or name == 'Phitop':
         cmap = "bwr"
         vmax = abs(parm).max()
+        vmin = -vmax
+    elif name.startswith("v"):
+        cmap = "bwr"
+        vmax = 80.0
         vmin = -vmax
     elif name.startswith("T"):
         vmin = 0.0
@@ -252,6 +257,7 @@ def plot_interp(time: datetime, grid: typing.Dict[str, np.ndarray], parm: np.nda
     # altitude [meters]
     z = grid["alt"] / 1e3
 
+    # arbitrary output plot resolution
     lxp = 500
     lyp = 500
     lzp = 500
@@ -271,14 +277,23 @@ def plot_interp(time: datetime, grid: typing.Dict[str, np.ndarray], parm: np.nda
         # %% CONVERT ANGULAR COORDINATES TO MLAT,MLON
         i = np.argsort(xp)  # FIXME: this was in Matlab code--what is its purpose?
 
-        if parm.ndim == 2:
+        if name == "rayleighs":
+            f = interp.interp1d(grid['x2'][inds2], parm, axis=1, bounds_error=False)
+            # hack for pcolormesh to put labels in center of pixel
+            wl = kwargs["wavelength"] + [""]
+            hi = ax.pcolormesh(xp / 1e3, np.arange(len(wl)), f(xp)[:, i])
+            ax.set_yticks(np.arange(len(wl)) + 0.5)
+            ax.set_yticklabels(wl)
+            ax.set_ylim(0, len(wl) - 1)
+            # end hack
+            ax.set_ylabel(r"wavelength $\AA$")
+            ax.set_xlabel("eastward dist. (km)")
+        elif parm.ndim == 2:
             f = interp.interp2d(grid["x2"][inds2], grid["x1"][inds1], parm, bounds_error=False)
-            parmp = f(xp, zp)
-            plot12(xp[i], zp, parmp[:, i], name, cmap, vmin, vmax, fg)
-        elif parm.ndim == 1:
+            plot12(xp[i], zp, f(xp, zp)[:, i], name, cmap, vmin, vmax, fg, ax)
+        elif parm.ndim == 1:  # phitop
             f = interp.interp1d(grid['x2'][inds2], parm, bounds_error=False)
-            parmp = f(xp)
-            plot1d2(xp, parmp, name, fg)
+            plot1d2(xp, f(xp), name, fg, ax)
         else:
             raise ValueError(f'{name}: only 2D and 1D data are expected--squeeze data')
     elif grid["lx"][1] == 1:  # alt./lat. slice
@@ -289,19 +304,42 @@ def plot_interp(time: datetime, grid: typing.Dict[str, np.ndarray], parm: np.nda
         # %% CONVERT ANGULAR COORDINATES TO MLAT,MLON
         i = np.argsort(yp)  # FIXME: this was in Matlab code--what is its purpose?
 
-        if parm.ndim == 2:
+        if name == "rayleighs":
+            # FIXME: this needs to be tested
+            f = interp.interp1d(grid['x3'][inds3], parm, axis=1, bounds_error=False)
+            # hack for pcolormesh to put labels in center of pixel
+            wl = kwargs["wavelength"] + [""]
+            hi = ax.pcolormesh(np.arange(len(wl)), yp / 1e3, f(yp)[:, i].T)
+            ax.set_xticks(np.arange(len(wl)) + 0.5)
+            ax.set_xticklabels(wl)
+            ax.set_xlim(0, len(wl) - 1)
+            # end hack
+            ax.set_xlabel(r"wavelength $\AA$")
+            ax.set_ylabel("northward dist. (km)")
+        elif parm.ndim == 2:
             f = interp.interp2d(grid["x3"][inds3], grid["x1"][inds1], parm, bounds_error=False)
             parmp = f(yp, zp).reshape((lzp, lyp))
-            plot13(yp[i], zp, parmp[:, i], name, cmap, vmin, vmax, fg)
-        elif parm.ndim == 1:
+            plot13(yp[i], zp, parmp[:, i], name, cmap, vmin, vmax, fg, ax)
+        elif parm.ndim == 1:  # phitop
             f = interp.interp1d(grid['x3'][inds3], parm, bounds_error=False)
-            parmp = f(yp)
-            plot1d3(yp, parmp, name, fg)
+            plot1d3(yp, f(yp), name, fg, ax)
         else:
             raise ValueError(f'{name}: only 2D and 1D data are expected--squeeze data')
 
     else:  # 3-panel plot, vs. single-panel plots of 2-D cases
-        if parm.ndim == 3:
+        if name == "rayleighs":
+            axs = fg.subplots(2, 2, sharey=True, sharex=True).ravel()
+            fg.suptitle(f"{name}: {time.isoformat()}  {gitrev()}", y=0.99)
+            # arbitrary pick of which emission lines to plot lat/lon slices
+            for j, i in enumerate([1, 3, 4, 8]):
+                f = interp.interp2d(grid["x3"][inds3], grid["x2"][inds2], parm[i, :, :], bounds_error=False)
+                hi = axs[j].pcolormesh(xp / 1e3, yp / 1e3, f(yp, xp))
+                axs[j].set_title(kwargs["wavelength"][i] + r"$\AA$")
+                fg.colorbar(hi, ax=axs[j], label="Rayleighs")
+            axs[2].set_xlabel('eastward dist. (km)')
+            axs[2].set_ylabel('northward dist. (km)')
+            return
+        elif parm.ndim == 3:
             fg.set_size_inches((18, 5))
             axs = fg.subplots(1, 3, sharey=False, sharex=False)
             fg.suptitle(f"{name}: {time.isoformat()}  {gitrev()}", y=0.99)
@@ -309,8 +347,7 @@ def plot_interp(time: datetime, grid: typing.Dict[str, np.ndarray], parm: np.nda
             # like phitop, SINGLE plot
             ax = fg.gca()
             f = interp.interp2d(grid["x3"][inds3], grid["x2"][inds2], parm, bounds_error=False)
-            parmp = f(yp, xp)
-            hi = ax.pcolormesh(xp / 1e3, yp / 1e3, parmp, cmap=cmap, vmin=vmin, vmax=vmax)
+            hi = ax.pcolormesh(xp / 1e3, yp / 1e3, f(yp, xp), cmap=cmap, vmin=vmin, vmax=vmax)
             ax.set_xlabel('eastward dist. (km)')
             ax.set_ylabel('northward dist. (km)')
             fg.colorbar(hi, ax=ax, label=CB_LBL[name])
@@ -344,3 +381,7 @@ def plot_interp(time: datetime, grid: typing.Dict[str, np.ndarray], parm: np.nda
         hi = plot13(yp[iy], zp, f(yp, zp)[:, iy], name, cmap, vmin, vmax, fg, axs[2])
 
         fg.colorbar(hi, ax=axs, aspect=60, pad=0.01)
+
+
+plot3D_cart_frames_long_ENU = plot_interp
+plot2D_cart = plot_interp

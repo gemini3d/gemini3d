@@ -1,3 +1,10 @@
+bits = get_option('realbits')
+real_bits = '-DREALBITS=' + bits
+arith = get_option('arith')
+message('arith: ' + arith)
+
+# === get compiler and OS
+
 fc = meson.get_compiler('fortran')
 
 os = host_machine.system()
@@ -5,7 +12,7 @@ if os == 'windows' and fc.get_id() != 'intel-cl'
   warning('On native Windows, only the Intel compilers (ifort) works at this time, because OpenMPI is not available for Windows. Consider Windows Subsystem for Linux.')
 endif
 
-# -- compiler options
+# === compiler options
 quiet = fc.first_supported_argument(['-w', '-nowarn', '/nowarn'])
 impnone = fc.first_supported_argument(['-fimplicit-none', '-warn declarations', '/warn:declarations', '-Mdclchk'])
 std18 = fc.first_supported_argument(['-std=f2018', '-stand f18', '/stand:f18'])

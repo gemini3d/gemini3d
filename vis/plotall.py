@@ -14,6 +14,7 @@ def main():
     p = ArgumentParser()
     p.add_argument("direc", help="directory to plot")
     p.add_argument("-s", "--saveplots", help="save plots to data directory", action="store_true")
+    p.add_argument("--only", help="only plot these quantities", nargs="+")
     p = p.parse_args()
 
     direc = Path(p.direc).expanduser().resolve(strict=True)
@@ -32,15 +33,16 @@ def main():
     flist = sorted(direc.glob("*.h5"))
     if len(flist) == 0:
         flist = sorted(direc.glob("*.dat"))
-
+    # %% loop over files / time
     for file in flist:
         dat = gemini.readdata(file)
 
-        vis.plotframe(grid, dat, save_dir, fg)
+        vis.plotframe(grid, dat, params=p.only, save_dir=save_dir, fg=fg)
+
         if not p.saveplots:
             mpl.show()
         else:
-            print(f"saving {dat['time']} to {save_dir}")
+            print(f"{dat['time']} => {save_dir}")
 
 
 if __name__ == "__main__":

@@ -5,15 +5,13 @@ env:
 
 on:
   push:
-    paths-ignore:
-      - "**/*.py"
-      - "**/*.md"
-      - "**/*.m"
+    paths:
+      - "**.f90"
+      - "**.F90"
   pull_request:
-    paths-ignore:
-      - "**/*.py"
-      - "**/*.md"
-      - "**/*.m"
+    paths:
+      - "**.f90"
+      - "**.F90"
 
 jobs:
 

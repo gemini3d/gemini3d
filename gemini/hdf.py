@@ -84,7 +84,7 @@ def loadframe3d_curvavg(fn: Path) -> typing.Dict[str, typing.Any]:
 
     Parameters
     ----------
-    path: pathlib.Path
+    fn: pathlib.Path
         filename of this timestep of simulation output
     """
     #    grid = readgrid(fn.parent / "inputs/simgrid.h5")
@@ -106,6 +106,22 @@ def loadframe3d_curvavg(fn: Path) -> typing.Dict[str, typing.Any]:
         dat['v2'] = [("x1", "x2", "x3"), f['/v2avgall'][:].transpose(2, 0, 1)]
         dat['v3'] = [("x1", "x2", "x3"), f['/v3avgall'][:].transpose(2, 0, 1)]
         dat["Phitop"] = [("x2", "x3"), f["/Phiall"][:]]
+
+    return dat
+
+
+def loadglow_aurmap(fn: Path) -> typing.Dict[str, typing.Any]:
+    """
+    read the auroral output from GLOW
+
+    Parameters
+    ----------
+    fn: pathlib.Path
+        filename of this timestep of simulation output
+    """
+
+    with h5py.File(fn, "r") as h:
+        dat = {'rayleighs': [("wavelength", "x2", "x3"), h['/aurora/iverout'][:]]}
 
     return dat
 

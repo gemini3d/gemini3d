@@ -45,7 +45,28 @@ def readdata(fn: Path) -> typing.Dict[str, typing.Any]:
     dat: dict
         simulation outputs as numpy.ndarray
     """
+
+    wavelength = [
+        '3371',
+        '4278',
+        '5200',
+        '5577',
+        '6300',
+        '7320',
+        '10400',
+        '3466',
+        '7774',
+        '8446',
+        '3726',
+        'LBH',
+        '1356',
+        '1493',
+        '1304',
+    ]
+
     fn = Path(fn).expanduser()
+    fn_aurora = fn.parent / 'aurmaps' / fn.name
+
     P = read_config(fn.parent / "inputs")
 
     if fn.suffix == ".dat":
@@ -55,15 +76,25 @@ def readdata(fn: Path) -> typing.Dict[str, typing.Any]:
             dat = raw.loadframe3d_curvavg(fn, P["lxs"])
         else:
             raise ValueError("TODO: need to handle this case, file a bug report.")
+
+        if fn_aurora.is_file():
+            dat.update(raw.loadglow_aurmap(fn_aurora, P["lxs"], len(wavelength)))
+            dat['wavelength'] = wavelength
     else:
         if hdf is None:
             raise ModuleNotFoundError("pip install h5py")
+
         if P["flagoutput"] == 1:
             dat = hdf.loadframe3d_curv(fn)
         elif P["flagoutput"] == 2:
             dat = hdf.loadframe3d_curvavg(fn)
         else:
             raise ValueError("TODO: need to handle this case, file a bug report.")
+
+        if fn_aurora.is_file():
+            dat.update(hdf.loadglow_aurmap(fn_aurora))
+            dat['wavelength'] = wavelength
+
     return dat
 
 
