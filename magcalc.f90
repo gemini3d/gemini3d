@@ -299,7 +299,7 @@ do while (t<tdur)
   call input_plasma_currents(outdir,flagoutput,ymd,UTsec,J1,J2,J3)    !now everyone has their piece of data
 
 
-  !FORCE PARALLEL CURRENTS TO ZERO BELOW 80KM
+  !FORCE PARALLEL CURRENTS TO ZERO BELOW SOME ALTITUDE LIMIT
   if(myid==0) print *, 'Nullifying low altitude currents...'
   where (alt<75d3)
     J1=0d0
@@ -307,7 +307,7 @@ do while (t<tdur)
 
 
   !DEAL WITH THE WEIRD EDGE ARTIFACTS THAT WE GET IN THE PARALLEL CURRENT
-  !SOMETIMES
+  !SOMETIMES, THIS IS FOR THE X2 DIRECTION
   if(myid==0) print *, 'Fixing potential edge artifacts...'
   if (myid3==lid3-1) then
     if (lx3>2) then    !do a ZOH
@@ -328,8 +328,26 @@ do while (t<tdur)
     end if
   end if
 
+  !X3 EDGES
+  if (myid2==lid2-1) then
+    if (lx2>2) then    !do a ZOH
+      J1(:,lx2-1,:)=J1(:,lx2-2,:)
+      J1(:,lx2,:)=J1(:,lx2-2,:)
+    else
+      J1(:,lx2-1,:)=0d0
+      J1(:,lx2-1,:)=0d0
+    end if
+  end if
+  if (myid2==0) then
+    if (lx2>2) then    !do a ZOH
+      J1(:,1,:)=J1(:,3,:)
+      J1(:,2,:)=J1(:,3,:)
+    else
+      J1(:,1,:)=0d0
+      J1(:,2,:)=0d0
+    end if
+  end if
 
-  !ZZZ - MAY NEED TO CHECK THE X3 EDGES???
 
 
   !ROTATE MAGNETIC FIELDS INTO VERTICAL,SOUTH,EAST COMPONENTS

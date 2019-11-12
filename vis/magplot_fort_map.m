@@ -3,9 +3,11 @@ addpath([cwd,'/../script_utils'])
 
 %SIMULATIONS LOCAITONS
 %simname='tohoku20113D_highres_var/';
-simname='test3d_fang/';
+simname='test3d_fang_mag/';
 %simname='mooreOK3D_hemis_medres/'
-basedir='../../simulations/'
+%simname='iowa3D_hemis_medres2/'
+%basedir='~/Downloads/'
+basedir='~/simulations/'
 direc=[basedir,simname];
 mkdir([direc, filesep, 'Brplots']);
 mkdir([direc, filesep, 'Brplots_eps']);

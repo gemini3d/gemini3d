@@ -1,5 +1,5 @@
 %SIMULATIONS LOCAITONS
-simname='test3d_fang/';
+simname='test3d_fang_mag/';
 basedir='../../../simulations/'
 direc=[basedir,simname];
 
