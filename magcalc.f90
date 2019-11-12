@@ -359,8 +359,8 @@ do while (t<tdur)
   Jz=J1*proj_e1ephi+J2*proj_e2ephi+J3*proj_e3ephi           !east
 
 
-    !print *, myid2,myid3,'  --> Min/max values of current',minval(Jx),maxval(Jx),minval(Jy),maxval(Jy), &
-    !                                           minval(Jz),maxval(Jz)
+    print *, myid2,myid3,'  --> Min/max values of current',minval(Jx),maxval(Jx),minval(Jy),maxval(Jy), &
+                                               minval(Jz),maxval(Jz)
 
 
   !GATHER THE END DATA SO WE DON'T LEAVE OUT A POINT IN THE INTEGRATION
