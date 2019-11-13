@@ -25,7 +25,7 @@ if fc.get_id() == 'gcc'
   endif
 elif fc.get_id() == 'intel'
   add_project_arguments(std18, impnone, language: 'fortran')
-  if buildtype.contains('debug')
+  if get_option('buildtype').contains('debug')
     # -heap-arrays didn't appear to be needed on Linux?
     add_project_arguments(bounds, language: 'fortran')
   endif
@@ -33,12 +33,12 @@ elif fc.get_id() == 'intel-cl'
   # /fpp is necessary for any Fortran preprocessing statement with Intel ifort on Windows
   # https://software.intel.com/en-us/fortran-compiler-developer-guide-and-reference-fpp
    add_project_arguments('/fpp', std18, impnone, language: 'fortran')
-   if buildtype.contains('debug')
+   if get_option('buildtype').contains('debug')
     add_project_arguments(bounds, '/heap-arrays', language: 'fortran')
   endif
 elif ['pgi', 'flang'].contains(fc.get_id())
   add_project_arguments(impnone, language: 'fortran')
-  if buildtype.contains('debug')
+  if get_option('buildtype').contains('debug')
     add_project_arguments(bounds, language: 'fortran')
   endif
 endif
@@ -142,7 +142,8 @@ if mumps_root == ''
     mumps_root = '/usr/local/opt/mumps'
     mumpslib = [fc.find_library(mumps_name, dirs: mumps_root / 'lib', required : false, disabler: true),
                   fc.find_library('mumps_common', dirs: mumps_root / 'lib', required: false, disabler: true)]
-
+  else
+    mumpslib = [disabler(), disabler()]
   endif
 else
   mumpslib = [fc.find_library(mumps_name, dirs : mumps_root, required : false, disabler: true),
