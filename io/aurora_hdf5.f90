@@ -10,6 +10,10 @@ module procedure output_aur_root
 !! COLLECT COMPLETE DATA FROM WORKERS AND PROCESS FOR OUTPUT.
 !! NO GHOST CELLS (I HOPE)
 
+!! Glow quantities (descriptions from their source)
+! ZXDEN(NEX,JMAX)   array of excited and and/or ionized state densities at each altitude [cm-3]
+!    O+(2P), O+(2D), O+(4S), N+, N2+, O2+, NO+, N2(A), N(2P), N(2D), O(1S), O(1D)
+
 type(hdf5_file) :: h5f
 
 real(wp), dimension(1:lwave,1:lx2,1:lx3) :: ivertmp
@@ -24,6 +28,7 @@ character(:), allocatable :: outdir_composite, filenamefull, fstatus
 integer :: u
 logical :: exists
 
+!! gather output from workers
 do iwave=1,lwave
   emistmp=iver(:,:,iwave)
   call gather_recv(emistmp,tagAur,emisall)

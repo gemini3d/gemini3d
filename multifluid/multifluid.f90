@@ -74,7 +74,7 @@ integer :: iprec
 real(wp), dimension(1:size(vs1,1)-3,1:size(vs1,2)-4,1:size(vs1,3)-4) :: v1iupdate    !temp interface velocities for art. viscosity
 real(wp), dimension(1:size(vs1,1)-4,1:size(vs1,2)-4,1:size(vs1,3)-4) :: dv1iupdate    !interface diffs. for art. visc.
 real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,size(ns,4)) :: Q
-real(wp), parameter :: xicon=3.0_wp    !artifical viscosity, decent value for closed field-line grids extending to high altitudes, can be set to 0 for cartesian simulations not exceed altitudes of 1500 km.  
+real(wp), parameter :: xicon=3.0_wp    !artifical viscosity, decent value for closed field-line grids extending to high altitudes, can be set to 0 for cartesian simulations not exceed altitudes of 1500 km.
 
 
 !MAKING SURE THESE ARRAYS ARE ALWAYS IN SCOPE
@@ -246,7 +246,7 @@ if ((flagglow/=0).and.(myid==0)) then
     minval(iver(:,:,2)), maxval(iver(:,:,2))
 end if
 
-!now add in photoionization sources
+!> now add in photoionization sources
 chi=sza(ymd(1), ymd(2), ymd(3), UTsec,x%glat,x%glon)
 if (myid==0) then
   if (debug) print *, 'Computing photoionization for time:  ',t,' using sza range of (root only):  ', &
@@ -259,10 +259,15 @@ if (myid==0) then
   if (debug) print *, 'Min/max root photoionization production rates for time:  ',t,' :  ',minval(Prpreciptmp), &
               maxval(Prpreciptmp)
 end if
-Prpreciptmp=max(Prpreciptmp,1e-5_wp)    !enforce minimum production rate to preserve conditioning for species that rely on constant production, testing should probably be done to see what the best choice is...
-Qepreciptmp=eheating(nn,Tn,Prpreciptmp,ns)   !thermal electron heating rate from Swartz and Nisbet, (1978)
 
-!photoion ionrate and heating calculated seperately, added together with ionrate and heating from Fang or GLOW
+Prpreciptmp=max(Prpreciptmp,1e-5_wp)
+!! enforce minimum production rate to preserve conditioning for species that rely on constant production
+!! testing should probably be done to see what the best choice is...
+
+Qepreciptmp=eheating(nn,Tn,Prpreciptmp,ns)
+!! thermal electron heating rate from Swartz and Nisbet, (1978)
+
+!> photoion ionrate and heating calculated seperately, added together with ionrate and heating from Fang or GLOW
 Prprecip=Prprecip+Prpreciptmp
 Qeprecip=Qeprecip+Qepreciptmp
 

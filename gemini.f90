@@ -190,14 +190,14 @@ B1(1:lx1,1:lx2,1:lx3)=x%Bmag      !this assumes that the grid is defined s.t. th
 
 !INITIALIZE ELECTRODYNAMIC QUANTITIES FOR POLARIZATION CURRENT
 if (myid==0) then
-  Phiall=0d0     !only root store entire potential array
+  Phiall = 0    !< only root store entire potential array
 end if
-E1=0d0; E2=0d0; E3=0d0;
-vs2=0d0; vs3=0d0;
+E1=0; E2=0; E3=0;
+vs2=0; vs3=0;
 
 !INITIALIZE AURORAL EMISSION MAP
 if(flagglow/=0) then
-  iver=0.0_wp
+  iver=0
 end if
 
 !MAIN LOOP
