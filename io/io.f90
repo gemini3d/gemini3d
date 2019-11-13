@@ -29,16 +29,18 @@ module subroutine create_outdir_aur(outdir)
 character(*), intent(in) :: outdir
 end subroutine create_outdir_aur
 
-module subroutine output_aur(outdir,flagglow,ymd,UTsec,iver)
+module subroutine output_aur(outdir,flagglow,ymd,UTsec,iver,zxden)
 character(*), intent(in) :: outdir
 integer, intent(in) :: flagglow
 integer, dimension(3), intent(in) :: ymd
 real(wp), intent(in) :: UTsec
 real(wp), dimension(:,:,:), intent(in) :: iver
+real(real32), intent(in) :: zxden(:,:,:,:)
 end subroutine output_aur
 
-module subroutine output_aur_workers(iver)
+module subroutine output_aur_workers(iver, zxden)
 real(wp), dimension(:,:,:), intent(in) :: iver
+real(real32), intent(in) :: zxden(:,:,:,:)
 end subroutine output_aur_workers
 
 end interface

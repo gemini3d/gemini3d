@@ -1,5 +1,6 @@
 module ionization
 
+use, intrinsic :: iso_fortran_env, only: real32
 use phys_consts, only: elchrg, lsp, kb, mn, re, pi, wp, lwave, debug
 use neutral, only: Tnmsis
 use ionize_fang, only: fang2008
@@ -13,9 +14,9 @@ implicit none
 private
 public :: ionrate_fang08, ionrate_glow98, eheating, photoionization
 
-interface
+interface  ! glow_run.f90
 module subroutine glow_run(W0,PhiWmWm2,date_doy,UTsec,xf107,xf107a,xlat,xlon,alt,nn,Tn,ns,Ts,&
-  ionrate,eheating,iver)
+  ionrate,eheating,iver, zxden)
 
 real(wp), dimension(:), intent(in) :: W0,PhiWmWm2,alt,Tn
 real(wp), dimension(:,:), intent(in) :: nn,ns,Ts
@@ -23,6 +24,7 @@ real(wp), dimension(:,:), intent(out) :: ionrate
 real(wp), dimension(:), intent(out) :: eheating, iver
 real(wp), intent(in) :: UTsec, xlat, xlon, xf107, xf107a
 integer, intent(in) :: date_doy
+real(real32), intent(out) :: zxden(:,:)
 
 end subroutine glow_run
 end interface
@@ -31,10 +33,7 @@ contains
 
 
 function photoionization(x,nn,chi,f107,f107a)
-
-!------------------------------------------------------------
-!-------COMPUTE PHOTOIONIZATION RATES PER SOLOMON ET AL, 2005
-!------------------------------------------------------------
+!! COMPUTE PHOTOIONIZATION RATES PER SOLOMON ET AL, 2005
 
 type(curvmesh), intent(in) :: x
 real(wp), dimension(:,:,:,:), intent(in) :: nn
@@ -42,7 +41,7 @@ real(wp), dimension(:,:,:,:), intent(in) :: nn
 real(wp), dimension(:,:,:), intent(in) :: chi
 real(wp), intent(in) :: f107,f107a
 
-integer, parameter :: ll=22     !number of wavelength bins
+integer, parameter :: ll=22     !< number of wavelength bins
 integer :: il,isp
 real(wp), dimension(ll) :: lambda1,lambda2,fref,Aeuv,sigmaO,sigmaN2,sigmaO2
 real(wp), dimension(ll) :: brN2i,brN2di,brO2i,brO2di,pepiO,pepiN2i,pepiN2di,pepiO2i,pepiO2di
@@ -56,17 +55,18 @@ real(wp), dimension(size(nn,1),size(nn,2),size(nn,3),ll) :: Iflux
 real(wp) :: Tninftmp
 integer :: iid, ierr
 
-real(wp), dimension(size(nn,1),size(nn,2),size(nn,3),lsp-1) :: photoionization    !don't need a separate rate for electrons
+real(wp), dimension(size(nn,1),size(nn,2),size(nn,3),lsp-1) :: photoionization
+!! don't need a separate rate for electrons
 
 
-!WAVELENGTH BIN BEGINNING AND END (THIS IDEALLY WOULD BE DATA STATEMENTS OR SOME KIND OF STRUCTURE THAT DOESN'T GET REASSIGNED AT EVERY CALL).  Actually all of these array assignments are static...
+!> WAVELENGTH BIN BEGINNING AND END (THIS IDEALLY WOULD BE DATA STATEMENTS OR SOME KIND OF STRUCTURE THAT DOESN'T GET REASSIGNED AT EVERY CALL).  Actually all of these array assignments are static...
 lambda1=[0.05, 0.4, 0.8, 1.8, 3.2, 7.0, 15.5, 22.4, 29.0, 32.0, 54.0, 65.0, 65.0, &
     79.8, 79.8, 79.8, 91.3, 91.3, 91.3, 97.5, 98.7, 102.7]*1e-9
 lambda2=[0.4, 0.8, 1.8, 3.2, 7.0, 15.5, 22.4, 29.0, 32.0, 54.0, 65.0, 79.8, 79.8, &
      91.3, 91.3, 91.3, 97.5, 97.5, 97.5, 98.7, 102.7, 105.0]*1e-9
 
 
-!EUVAC FLUX VALUES
+!> EUVAC FLUX VALUES
 fref=[5.01e1, 1e4, 2e6, 2.85e7, 5.326e8, 1.27e9, 5.612e9, 4.342e9, 8.380e9, &
     2.861e9, 4.83e9, 1.459e9, 1.142e9, 2.364e9, 3.655e9, 8.448e8, 3.818e8, &
     1.028e9, 7.156e8, 4.482e9, 4.419e9, 4.235e9]*1e4        !convert to m^-2 s^-1
@@ -75,7 +75,7 @@ Aeuv=[6.24e-1, 3.71e-1, 2e-1, 6.247e-2, 1.343e-2, 9.182e-3, 1.433e-2, 2.575e-2, 
     4.915e-3, 4.995e-3, 4.422e-3, 3.950e-3, 5.021e-3, 4.825e-3]
 
 
-!TOTAL ABSORPTION CROSS SECTIONS
+!> TOTAL ABSORPTION CROSS SECTIONS
 sigmaO=[0.0023, 0.0170, 0.1125, 0.1050, 0.3247, 1.3190, 3.7832, 6.0239, &
      7.7205, 10.7175, 13.1253, 8.5159, 4.7889, 3.0031, 4.1048, 3.7947, &
      0.0, 0.0, 0.0, 0.0, 0.0, 0.0]*1e-18*1e-4         !convert to m^2
@@ -87,7 +87,7 @@ sigmaO2=[0.0045, 0.034, 0.2251, 0.2101, 0.646, 2.6319, 7.6283, 13.2125, &
     13.3950, 14.4042, 32.5038, 18.7145, 1.6320, 1.15]*1e-18*1e-4
 
 
-!BRANCHING RATIOS
+!> BRANCHING RATIOS
 brN2i=[0.040,0.040,0.040,0.040, 0.717, 0.751, 0.747, 0.754, 0.908, 0.996, 1.0, 0.679,  &
     0.429, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 brN2di=[0.96, 0.96,0.96,0.96,0.282, 0.249, 0.253, 0.246, 0.093, 0.005, &
@@ -98,7 +98,7 @@ brO2di=[1.0, 1.0, 1.0, 1.0, 0.892, 0.653, 0.447, 0.376, 0.351, 0.240, 0.108, 0.0
     0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 
 
-!PHOTOELECTRON TO DIRECT PRODUCTION RATIOS
+!> PHOTOELECTRON TO DIRECT PRODUCTION RATIOS
 pepiO=[217.12, 50.593, 23.562, 71.378, 4.995, 2.192, 1.092, 0.694, 0.418, &
     0.127, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 pepiN2i=[263.99, 62.57, 25.213, 8.54, 6.142, 2.288, 0.786, 0.324, 0.169, 0.031, &
@@ -111,18 +111,18 @@ pepiO2di=[76.136, 17.944, 6.981, 20.338, 1.437, 0.521, 0.163, 0.052, 0.014, 0.00
     0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 
 
-!IRRADIANCE ACCORDING TO [RICHARDS, 1994]
+!> IRRADIANCE ACCORDING TO [RICHARDS, 1994]
 Iinf=fref*(1d0+Aeuv*(0.5d0*(f107+f107a)-80d0))
 
 
-!GRAVITATIONAL FIELD AND AVERAGE VALUE
+!> GRAVITATIONAL FIELD AND AVERAGE VALUE
 g=sqrt(g1**2+g2**2+g3**2)
 !    gavg=sum(g)/(lx1*lx2*lx3)    !single average value for computing colunn dens.  Interestingly this is a worker average...  Do we need root grav vars. grid mod to prevent tearing?  Should be okay as long as the grid is only sliced along the x3-dimension, BUT it isn't for simulations where arrays get permuted!!!
 gavg=8d0
 
 Tninf=maxval(Tnmsis)   !set exospheric temperature based on the max value of the background MSIS atmosphere; note this is a worker max
 
-!both g and Tinf need to be computed as average over the entire grid...
+!> both g and Tinf need to be computed as average over the entire grid...
 if (myid==0) then     !root
   ierr=0
   do iid=1,lid-1
@@ -147,11 +147,11 @@ end if
 
 
 
-!O COLUMN DENSITY
+!> O COLUMN DENSITY
 H=kB*Tninf/mn(1)/gavg      !scalar scale height
 bigX=(x%alt+Re)/H          !a reduced altitude
 y=sqrt(bigX/2d0)*abs(cos(chi))
-Chfn=0d0
+Chfn=0
 where (chi<pi/2d0)    !where does work with array corresponding elements provided they are conformable (e.g. bigX and y in this case)
 !      Chfn=sqrt(pi/2d0*bigX)*exp(y**2)*(1d0-erf(y))    !goodness this creates YUGE errors compared to erfc; left here as a lesson learned
   Chfn=sqrt(pi/2d0*bigX)*exp(y**2)*erfc(y)
@@ -161,11 +161,11 @@ end where
 nOcol=nn(:,:,:,1)*H*Chfn
 
 
-!N2 COLUMN DENSITY
+!> N2 COLUMN DENSITY
 H=kB*Tninf/mn(2)/gavg     !all of these temp quantities need to be recomputed for eacb neutral species being ionized
 bigX=(x%alt+Re)/H
 y=sqrt(bigX/2d0)*abs(cos(chi))
-Chfn=0d0
+Chfn=0
 where (chi<pi/2d0)
   Chfn=sqrt(pi/2d0*bigX)*exp(y**2)*erfc(y)
 elsewhere
@@ -351,7 +351,7 @@ end function eheating
 
 
 subroutine ionrate_glow98(W0,PhiWmWm2,ymd,UTsec,f107,f107a,glat,glon,alt,nn,Tn,ns,Ts, &
-                               eheating, iver, ionrate)
+                               eheating, iver, ionrate, zxden)
 
 !! COMPUTE IONIZATION RATES USING GLOW MODEL RUN AT EACH
 !! X,Y METHOD.
@@ -369,6 +369,7 @@ real(wp), dimension(:,:,:), intent(in) :: alt,Tn
 real(wp), dimension(1:size(nn,1),1:size(nn,2),1:size(nn,3)), intent(out) :: eheating
 real(wp), dimension(1:size(nn,2),1:size(nn,3),lwave), intent(out) :: iver
 real(wp), dimension(1:size(nn,1),1:size(nn,2),1:size(nn,3),lsp-1), intent(out) :: ionrate
+real(real32), intent(out) :: zxden(1:size(nn,2), 1:size(nn,3), 12, 1:size(nn,1))
 
 integer :: ix2,ix3,lx1,lx2,lx3,date_doy
 
@@ -395,7 +396,7 @@ if ( maxval(PhiWmWm2) > 0) then   !only compute rates if nonzero flux given
         call glow_run(W0(ix2,ix3,:), PhiWmWm2(ix2,ix3,:), &
           date_doy, UTsec, f107, f107a, glat(ix2,ix3), glon(ix2,ix3), alt(:,ix2,ix3), &
           nn(:,ix2,ix3,:),Tn(:,ix2,ix3), ns(1:lx1,ix2,ix3,:), Ts(1:lx1,ix2,ix3,:), &
-          ionrate(:,ix2,ix3,:), eheating(:,ix2,ix3), iver(ix2,ix3,:))
+          ionrate(:,ix2,ix3,:), eheating(:,ix2,ix3), iver(ix2,ix3,:), zxden=zxden(ix2, ix3,:,:))
 !        print*, 'glow called, max ionization rate: ', maxval(ionrate(:,ix2,ix3,:))
 !        print*, 'max iver:  ',maxval(iver(ix2,ix3,:))
 !        print*, 'max W0 and Phi:  ',maxval(W0(ix2,ix3,:)),maxval(PhiWmWm2(ix2,ix3,:))
@@ -404,9 +405,9 @@ if ( maxval(PhiWmWm2) > 0) then   !only compute rates if nonzero flux given
   end do !X coordinate loop
   eheating=eheating*elchrg
 else
-  ionrate(:,:,:,:)=0.0_wp !No Q for incoming electrons, no electron impact
-  eheating(:,:,:)=0.0_wp
-  iver(:,:,:)=0.0_wp
+  ionrate(:,:,:,:) = 0 !No Q for incoming electrons, no electron impact
+  eheating(:,:,:) = 0
+  iver(:,:,:) = 0
 end if
 
 end subroutine ionrate_glow98

@@ -1,5 +1,6 @@
 module multifluid
 
+use, intrinsic:: iso_fortran_env, only: real32
 use advec_mpi, only: advec3d_mc_mpi, advec_prep_mpi
 use calculus, only: etd_uncoupled, div3d
 use collisions, only:  thermal_conduct
@@ -24,7 +25,8 @@ real(wp), allocatable, dimension(:,:,:) :: QePrecipG, iverG
 contains
 
 subroutine fluid_adv(ns,vs1,Ts,vs2,vs3,J1,E1,Teinf,t,dt,x,nn,vn1,vn2,vn3,Tn,iver,f107,f107a,ymd,UTsec, &
-                   flagprecfile,dtprec,precdir,flagglow,dtglow)    !J1 needed for heat conduction; E1 for momentum equation
+                   flagprecfile,dtprec,precdir,flagglow,dtglow, zxden)
+!! J1 needed for heat conduction; E1 for momentum equation
 
 !------------------------------------------------------------
 !-------THIS SUBROUTINE ADVANCES ALL OF THE FLUID VARIABLES
@@ -51,7 +53,9 @@ real(wp), intent(in) :: dtprec
 character(*), intent(in) :: precdir
 integer, intent(in) :: flagglow
 real(wp), intent(in) :: dtglow
+
 real(wp), dimension(:,:,:), intent(out) :: iver
+real(real32), intent(out) :: zxden(:,:,:,:)
 
 integer :: isp
 real(wp) :: tstart,tfin
@@ -224,7 +228,7 @@ if (gridflag/=0) then
     if (int(t/dtglow)/=int((t+dt)/dtglow).OR.t<0.1_wp) then
       PrprecipG=0.0_wp; QeprecipG=0.0_wp; iverG=0.0_wp;
       call ionrate_glow98(W0,PhiWmWm2,ymd,UTsec,f107,f107a,x%glat(1,:,:),x%glon(1,:,:),x%alt,nn,Tn,ns,Ts, &
-                          QeprecipG, iverG, PrprecipG)
+                          eheating=QeprecipG, iver=iverG, ionrate=PrprecipG, zxden=zxden)
       PrprecipG=max(PrprecipG, 1e-5_wp)
     end if
     Prprecip=PrprecipG

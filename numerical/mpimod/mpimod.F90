@@ -77,7 +77,7 @@ integer, parameter :: tagx2all=94
 integer, parameter :: tagx3all=95
 
 !> AURORAL TAG(S)
-integer, parameter :: tagAur=96
+integer, parameter :: tagAur=96, tagZxden=200
 
 !!> GENERIC PARAMETER (USED BY ADVECTION CODE - HOPEFULLY DOESN'T CREATE PROBLEMS; MZ - probably need to fix???
 !integer, parameter :: taggenericparam=97

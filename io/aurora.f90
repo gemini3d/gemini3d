@@ -4,11 +4,12 @@ implicit none
 
 interface ! aurora_*.f90
 
-module subroutine output_aur_root(outdir,flagglow,ymd,UTsec,iver)
+module subroutine output_aur_root(outdir,flagglow,ymd,UTsec,iver,zxden)
 character(*), intent(in) :: outdir
 integer, intent(in) :: flagglow, ymd(3)
 real(wp), intent(in) :: UTsec
 real(wp), dimension(:,:,:), intent(in) :: iver
+real(real32), intent(in) :: zxden(:,:,:,:)
 end subroutine output_aur_root
 
 end interface
@@ -36,9 +37,9 @@ module procedure output_aur
 !! VARIABLES MUST BE DECLARED AS ALLOCATABLE, INTENT(INOUT)
 
 if (myid/=0) then
-  call output_aur_workers(iver)
+  call output_aur_workers(iver,zxden)
 else
-  call output_aur_root(outdir,flagglow,ymd,UTsec,iver)
+  call output_aur_root(outdir,flagglow,ymd,UTsec,iver,zxden)
 end if
 
 end procedure output_aur
@@ -52,7 +53,7 @@ module procedure output_aur_workers
 !! to the first dimension for the canned routines to work.
 
 !real(wp), dimension(1:lx2,1:lwave,1:lx3) :: ivertmp
-real(wp), dimension(1:lwave,1:lx2,1:lx3) :: ivertmp
+!real(wp), dimension(1:lwave,1:lx2,1:lx3) :: ivertmp
 integer :: iwave
 real(wp), dimension(1:lx2,1:lx3) :: emistmp
 

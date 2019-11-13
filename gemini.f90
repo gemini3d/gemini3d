@@ -1,7 +1,5 @@
-!----------------------------------------------------------
-!------THIS IS THE MAIN PROGRAM FOR GEMINI3D
-!----------------------------------------------------------
-
+!!THIS IS THE MAIN PROGRAM FOR GEMINI3D
+use, intrinsic :: iso_fortran_env, only: real32
 use phys_consts, only : lnchem, lwave, lsp, wp, debug
 use grid, only: curvmesh, grid_size,read_grid,clear_grid,lx1,lx2,lx3,lx2all,lx3all
 use io, only : read_configfile,input_plasma,create_outdir,output_plasma,create_outdir_aur,output_aur
@@ -38,10 +36,10 @@ character(:), allocatable :: infile    !command line argument input file
 character(:), allocatable :: outdir    !" " output directory
 character(:), allocatable :: indatsize,indatgrid    !grid size and data filenames
 
-!GRID STRUCTURE
+!> GRID STRUCTURE
 type(curvmesh) :: x    !structure containg grid locations, finite differences, etc.:  see grid module for details
 
-!STATE VARIABLES
+!> STATE VARIABLES
 real(wp), dimension(:,:,:,:), allocatable :: ns,vs1,vs2,vs3,Ts    !fluid state variables
 real(wp), dimension(:,:,:), allocatable :: E1,E2,E3,J1,J2,J3      !electrodynamic state variables
 real(wp), dimension(:,:,:), allocatable :: rhov2,rhov3,B1,B2,B3   !inductive state vars. (for future use - except for B1 which is used for the background field)
@@ -49,9 +47,11 @@ real(wp), dimension(:,:,:), allocatable :: rhom,v1,v2,v3          !inductive aux
 real(wp), dimension(:,:,:,:), allocatable :: nn                   !neutral density array
 real(wp), dimension(:,:,:), allocatable :: Tn,vn1,vn2,vn3         !neutral temperature and velocities
 real(wp), dimension(:,:,:), allocatable :: Phiall                 !full-grid potential solution.  To store previous time step value
-real(wp), dimension(:,:,:), allocatable :: iver                   !integrated volume emission rate of aurora calculated by GLOW
+real(wp), dimension(:,:,:), allocatable :: iver                   !< integrated volume emission rate of aurora calculated by GLOW
+real(real32), dimension(:,:,:,:), allocatable :: zxden            !< excitation rates from Glow (lx2, lx3, 12, lx1)
 
-!TEMPORAL VARIABLES
+
+!> TEMPORAL VARIABLES
 real(wp) :: t=0._wp,dt=1e-6_wp,dtprev      !time from beginning of simulation (s) and time step (s)
 real(wp) :: tout,dtout    !time for next output and time between outputs
 real(wp) :: tstart,tfin   !temp. vars. for measuring performance of code blocks
@@ -171,6 +171,7 @@ end if
 !ALLOCATE MEMORY FOR AURORAL EMISSIONS, IF CALCULATED
 if (flagglow/=0) then
   allocate(iver(lx2,lx3,lwave))
+  allocate(zxden(lx2, lx3, 12, lx1))
 end if
 
 
@@ -259,7 +260,7 @@ do while (t<tdur)
   !UPDATE THE FLUID VARIABLES
   call cpu_time(tstart)
   call fluid_adv(ns,vs1,Ts,vs2,vs3,J1,E1,Teinf,t,dt,x,nn,vn1,vn2,vn3,Tn,iver,activ(2),activ(1),ymd,UTsec, &
-                 flagprecfile,dtprec,precdir,flagglow,dtglow)
+                 flagprecfile,dtprec,precdir,flagglow,dtglow, zxden)
   call cpu_time(tfin)
   if (myid==0 .and. debug) print *, 'Multifluid total solve time:  ',tfin-tstart
 
@@ -284,7 +285,7 @@ do while (t<tdur)
   !GLOW OUTPUT
   if ((flagglow/=0).and.(abs(t-tglowout) < 1d-5)) then !same as plasma output
     call cpu_time(tstart)
-    call output_aur(outdir,flagglow,ymd,UTsec,iver)
+    call output_aur(outdir,flagglow,ymd,UTsec,iver, zxden)
     call cpu_time(tfin)
     if (myid==0) then
       print *, 'Auroral output done for time step:  ',t,' in cpu_time of: ',tfin-tstart

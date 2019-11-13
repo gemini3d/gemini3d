@@ -46,8 +46,10 @@ call h5f%initialize(filenamefull, status=fstatus,action='rw',comp_lvl=1)
 !! write data to file
 if(flagswap/=1) then
   call h5f%add('/aurora/iverout', iverout)
+  call h5f%add('/aurora/zxden', zxden)
 else
   call h5f%add('/aurora/iverout', reshape(iverout,[lx3all,lx2all,lwave],order=[2,1,3]))
+  call h5f%add('/aurora/zxden', reshape(zxden,[lx3all,lx2all,12,lx1], order=[2,1,3,4]))
 end if
 
 call h5f%finalize()
