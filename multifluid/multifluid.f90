@@ -223,7 +223,8 @@ if (gridflag/=0) then
   else      !GLOW USED, AURORA PRODUCED
     if (int(t/dtglow)/=int((t+dt)/dtglow).OR.t<0.1_wp) then
       PrprecipG=0.0_wp; QeprecipG=0.0_wp; iverG=0.0_wp;
-      PrprecipG=ionrate_glow98(W0,PhiWmWm2,ymd,UTsec,f107,f107a,x%glat(1,:,:),x%glon(1,:,:),x%alt,nn,Tn,ns,Ts,QeprecipG,iverG)
+      call ionrate_glow98(W0,PhiWmWm2,ymd,UTsec,f107,f107a,x%glat(1,:,:),x%glon(1,:,:),x%alt,nn,Tn,ns,Ts, &
+                          QeprecipG, iverG, PrprecipG)
       PrprecipG=max(PrprecipG, 1e-5_wp)
     end if
     Prprecip=PrprecipG

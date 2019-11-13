@@ -350,7 +350,8 @@ eheating=elchrg*avgenergy*totionrate
 end function eheating
 
 
-function ionrate_glow98(W0,PhiWmWm2,ymd,UTsec,f107,f107a,glat,glon,alt,nn,Tn,ns,Ts,eheating,iver)
+subroutine ionrate_glow98(W0,PhiWmWm2,ymd,UTsec,f107,f107a,glat,glon,alt,nn,Tn,ns,Ts, &
+                               eheating, iver, ionrate)
 
 !! COMPUTE IONIZATION RATES USING GLOW MODEL RUN AT EACH
 !! X,Y METHOD.
@@ -367,8 +368,7 @@ real(wp), dimension(:,:,:), intent(in) :: alt,Tn
 
 real(wp), dimension(1:size(nn,1),1:size(nn,2),1:size(nn,3)), intent(out) :: eheating
 real(wp), dimension(1:size(nn,2),1:size(nn,3),lwave), intent(out) :: iver
-
-real(wp), dimension(1:size(nn,1),1:size(nn,2),1:size(nn,3),lsp-1) :: ionrate_glow98
+real(wp), dimension(1:size(nn,1),1:size(nn,2),1:size(nn,3),lsp-1), intent(out) :: ionrate
 
 integer :: ix2,ix3,lx1,lx2,lx3,date_doy
 
@@ -386,7 +386,7 @@ if ( maxval(PhiWmWm2) > 0) then   !only compute rates if nonzero flux given
       !W0eV=W0(ix2,ix3) !Eo in eV at upper x,y locations (z,x,y) normally
 
       if ( maxval(PhiWmWm2(ix2,ix3,:)) <= 0) then    !only compute rates if nonzero flux given *here*
-        ionrate_glow98(:,ix2,ix3,:) = 0
+        ionrate(:,ix2,ix3,:) = 0
         eheating(:,ix2,ix3) = 0
         iver(ix2,ix3,:) = 0
       else
@@ -395,8 +395,8 @@ if ( maxval(PhiWmWm2) > 0) then   !only compute rates if nonzero flux given
         call glow_run(W0(ix2,ix3,:), PhiWmWm2(ix2,ix3,:), &
           date_doy, UTsec, f107, f107a, glat(ix2,ix3), glon(ix2,ix3), alt(:,ix2,ix3), &
           nn(:,ix2,ix3,:),Tn(:,ix2,ix3), ns(1:lx1,ix2,ix3,:), Ts(1:lx1,ix2,ix3,:), &
-          ionrate_glow98(:,ix2,ix3,:), eheating(:,ix2,ix3), iver(ix2,ix3,:))
-!        print*, 'glow called, max ionization rate: ', maxval(ionrate_glow98(:,ix2,ix3,:))
+          ionrate(:,ix2,ix3,:), eheating(:,ix2,ix3), iver(ix2,ix3,:))
+!        print*, 'glow called, max ionization rate: ', maxval(ionrate(:,ix2,ix3,:))
 !        print*, 'max iver:  ',maxval(iver(ix2,ix3,:))
 !        print*, 'max W0 and Phi:  ',maxval(W0(ix2,ix3,:)),maxval(PhiWmWm2(ix2,ix3,:))
       end if
@@ -404,11 +404,11 @@ if ( maxval(PhiWmWm2) > 0) then   !only compute rates if nonzero flux given
   end do !X coordinate loop
   eheating=eheating*elchrg
 else
-  ionrate_glow98(:,:,:,:)=0.0_wp !No Q for incoming electrons, no electron impact
+  ionrate(:,:,:,:)=0.0_wp !No Q for incoming electrons, no electron impact
   eheating(:,:,:)=0.0_wp
   iver(:,:,:)=0.0_wp
 end if
 
-end function ionrate_glow98
+end subroutine ionrate_glow98
 
 end module ionization

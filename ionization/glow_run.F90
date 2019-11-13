@@ -65,7 +65,7 @@ iri90_dir = trim(data_dir) // '/iri90/'
 if(first_call) then
   first_call = .false.
   jmax=size(alt,1)
-  nbins=190     !MZ - note nbins no longer set to a default value in glow; user MUST assign this!!!
+  nbins = 190     !< MZ - note nbins no longer set to a default value in glow; user MUST assign this!!!
   call cglow_init
 end if
 
@@ -77,7 +77,7 @@ call egrid (ener, del, nbins)
 
 !! Hard coded solution, future = pass ec and ef array to maxt assuming > 2 populations
 allocate(phitoptmp(nbins))
-phitoptmp=0.0
+phitoptmp=0
 
 phitop=phitoptmp
 do j = 1, size(PhiWmWm2,1)    !this index loops over population number
@@ -96,7 +96,7 @@ f107p = real(xf107, sp)
 f107a = real(xf107a, sp)
 ap = 5.
 kchem = 4.
-jlocal = 0.
+jlocal = 0
 
 !! Convert densities and altitudes into
 

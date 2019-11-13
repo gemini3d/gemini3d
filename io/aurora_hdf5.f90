@@ -10,10 +10,6 @@ module procedure output_aur_root
 !! COLLECT COMPLETE DATA FROM WORKERS AND PROCESS FOR OUTPUT.
 !! NO GHOST CELLS (I HOPE)
 
-!! Glow quantities (descriptions from their source)
-! ZXDEN(NEX,JMAX)   array of excited and and/or ionized state densities at each altitude [cm-3]
-!    O+(2P), O+(2D), O+(4S), N+, N2+, O2+, NO+, N2(A), N(2P), N(2D), O(1S), O(1D)
-
 type(hdf5_file) :: h5f
 
 real(wp), dimension(1:lwave,1:lx2,1:lx3) :: ivertmp
@@ -38,13 +34,13 @@ end do
 !! create an output file
 outdir_composite=outdir//'/aurmaps/'
 filenamefull=date_filename(outdir_composite,ymd,UTsec) // '.h5'
-inquire(file=filenamefull, exist=exists)
-if (exists) then
-  fstatus = 'unknown'
-else
+!inquire(file=filenamefull, exist=exists)
+!if (exists) then
+!  fstatus = 'unknown'
+!else
   print *, 'Output file name (auroral maps):  ',filenamefull
   fstatus = 'new'
-endif
+!endif
 call h5f%initialize(filenamefull, status=fstatus,action='rw',comp_lvl=1)
 
 !! write data to file
