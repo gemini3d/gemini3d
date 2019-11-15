@@ -27,6 +27,36 @@ if you experience difficulty building GEMINI.
 Generally, the Git `master` branch has the current development version and is the best place to start, while more thoroughly-tested releases happen occasionally.
 Specific commits corresponding to published results will also be noted, where appropriate, in the corresponding journal article.
 
+## Quickest start
+
+Gemini is meant to run on any modern
+[OpenMPI](https://www.open-mpi.org/)-capable
+computer, including MacOS, Linux and Windows.
+To build Gemini and run self-tests takes less than 10 minutes on a typical laptop, from scratch.
+
+0. Ensure Python &ge; 3.6 and a Fortran compiler are installed. In general, Gfortran &ge; 6 is the easiest to use. On MacOS, these are easily obtained via [Homebrew](https://brew.sh).
+
+1. get the Gemini code
+
+  ```sh
+  git clone https://github.com/gemini3d/gemini
+
+  cd gemini
+  ```
+2. Setup Gemini and prereqs
+
+  ```sh
+  python3 install_prereqs.py
+
+  python3 setup.py develop --user
+  ```
+3. Build Gemini and run self-tests
+
+  ```sh
+  meson build
+
+  meson test -C build
+  ```
 
 ## Prerequisites
 

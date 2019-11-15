@@ -59,7 +59,6 @@ def main(package_manager: str):
                 "epel-release",
                 "pkg-config",
                 "gcc-gfortran",
-                "ninja-build",
                 "MUMPS-openmpi-devel",
                 "lapack-devel",
                 "blacs-openmpi-devel",
@@ -69,7 +68,6 @@ def main(package_manager: str):
             "apt": [
                 "pkg-config",
                 "gfortran",
-                "ninja-build",
                 "libmumps-dev",
                 "liblapack-dev",
                 "libblacs-mpi-dev",
@@ -95,16 +93,15 @@ def main(package_manager: str):
         else:
             raise ValueError(f"I don't know package manager {package_manager}, try installing the prereqs manually")
     elif sys.platform == "darwin":
-        pkgs = {"brew": ["gcc", "make", "cmake", "ninja", "lapack", "openmpi"]}
+        pkgs = {"brew": ["gcc", "make", "cmake", "lapack", "openmpi"]}
         subprocess.run(["brew", "install"] + pkgs["brew"])
         subprocess.run(["brew", "tap", "dpo/openblas"])
         subprocess.run(["brew", "install", "mumps"])
     elif sys.platform == "cygwin":
-        pkgs = ["gcc-fortran", "ninja", "liblapack-devel", "libopenmpi-devel"]
+        pkgs = ["gcc-fortran", "liblapack-devel", "libopenmpi-devel"]
         if subprocess.run(["setup-x86_64.exe", "-P"] + pkgs).returncode:
             raise SystemExit("installing prereqs failed.")
 
-        print("meson will automatically get Scalapack and Mumps during Gemini build")
     elif sys.platform == "win32":
         raise SystemExit("It is easiest to use Intel compilers for Windows, or Windows Subsystem for Linux.")
     else:
@@ -117,5 +114,3 @@ if __name__ == "__main__":
     P = p.parse_args()
 
     main(P.package_manager)
-
-    print('If you need "meson" do "python3 -m pip install --user meson"')
