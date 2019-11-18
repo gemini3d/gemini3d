@@ -171,7 +171,7 @@ end if
 !ALLOCATE MEMORY FOR AURORAL EMISSIONS, IF CALCULATED
 if (flagglow/=0) then
   allocate(iver(lx2,lx3,lwave))
-  allocate(zxden(lx2, lx3, 12, lx1))
+  allocate(zxden(lx1, lx2, lx3, 12))
 end if
 
 

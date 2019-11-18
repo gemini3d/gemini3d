@@ -369,7 +369,7 @@ real(wp), dimension(:,:,:), intent(in) :: alt,Tn
 real(wp), dimension(1:size(nn,1),1:size(nn,2),1:size(nn,3)), intent(out) :: eheating
 real(wp), dimension(1:size(nn,2),1:size(nn,3),lwave), intent(out) :: iver
 real(wp), dimension(1:size(nn,1),1:size(nn,2),1:size(nn,3),lsp-1), intent(out) :: ionrate
-real(real32), intent(out) :: zxden(1:size(nn,2), 1:size(nn,3), 12, 1:size(nn,1))
+real(real32), intent(out) :: zxden(1:size(nn,1), 1:size(nn,2), 1:size(nn,3), 12)
 
 integer :: ix2,ix3,lx1,lx2,lx3,date_doy
 
@@ -396,7 +396,7 @@ if ( maxval(PhiWmWm2) > 0) then   !only compute rates if nonzero flux given
         call glow_run(W0(ix2,ix3,:), PhiWmWm2(ix2,ix3,:), &
           date_doy, UTsec, f107, f107a, glat(ix2,ix3), glon(ix2,ix3), alt(:,ix2,ix3), &
           nn(:,ix2,ix3,:),Tn(:,ix2,ix3), ns(1:lx1,ix2,ix3,:), Ts(1:lx1,ix2,ix3,:), &
-          ionrate(:,ix2,ix3,:), eheating(:,ix2,ix3), iver(ix2,ix3,:), zxden=zxden(ix2, ix3,:,:))
+          ionrate(:,ix2,ix3,:), eheating(:,ix2,ix3), iver(ix2,ix3,:), zxden=zxden(:, ix2, ix3,:))
 !        print*, 'glow called, max ionization rate: ', maxval(ionrate(:,ix2,ix3,:))
 !        print*, 'max iver:  ',maxval(iver(ix2,ix3,:))
 !        print*, 'max W0 and Phi:  ',maxval(W0(ix2,ix3,:)),maxval(PhiWmWm2(ix2,ix3,:))

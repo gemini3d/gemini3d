@@ -36,10 +36,10 @@ module procedure output_aur
 !! BOTH ROOT AND WORKERS CALL THIS PROCEDURE SO UNALLOCATED
 !! VARIABLES MUST BE DECLARED AS ALLOCATABLE, INTENT(INOUT)
 
-if (myid/=0) then
-  call output_aur_workers(iver,zxden)
-else
+if (myid==0) then
   call output_aur_root(outdir,flagglow,ymd,UTsec,iver,zxden)
+else
+  call output_aur_workers(iver,zxden)
 end if
 
 end procedure output_aur
@@ -54,7 +54,7 @@ module procedure output_aur_workers
 
 !real(wp), dimension(1:lx2,1:lwave,1:lx3) :: ivertmp
 !real(wp), dimension(1:lwave,1:lx2,1:lx3) :: ivertmp
-integer :: iwave
+integer :: i
 real(wp), dimension(1:lx2,1:lx3) :: emistmp
 
 
@@ -64,10 +64,18 @@ real(wp), dimension(1:lx2,1:lx3) :: emistmp
 !!------- SEND AURORA PARAMETERS TO ROOT
 !call gather_send(ivertmp,tagAur)
 
-do iwave=1,lwave
-  emistmp=iver(:,:,iwave)
+do i = 1,lwave
+  emistmp=iver(:, :, i)
   call gather_send(emistmp,tagAur)
 end do
+
+glow_sendMPI : block
+
+  do i = 1,size(zxden, 4)  !< loop over species
+    call gather_send(zxden(:,:,:,i), tagZxden)
+  enddo
+
+end block glow_sendMPI
 
 
 end procedure output_aur_workers

@@ -55,7 +55,8 @@ module procedure gather_recv32_3D_23
 integer :: lx1,lx2,lx3,lx2all,lx3all
 integer :: iid
 integer, dimension(4) :: inds
-real(real32), dimension(1:size(paramtrim,1),1:size(paramtrim,2),1:size(paramtrim,3)) :: paramtmp   !buffer space for mpi receive, includes only x1 ghost cells
+real(real32), dimension(1:size(paramtrim,1),1:size(paramtrim,2),1:size(paramtrim,3)) :: paramtmp
+!! buffer space for mpi receive, includes only x1 ghost cells
 
 
 lx1=size(paramtrim,1)
@@ -69,11 +70,14 @@ lx3=size(paramtrim,3)
 !to give root an efficient memory access pattern here, but I haven't tested this
 !theory.
 paramtrimall(:,1:lx2,1:lx3)=paramtrim(:,1:lx2,1:lx3)    !store root's piece of data
-do iid=1,lid-1        !must loop over all processes in the grid, don't enter loop if only root is present
-  call mpi_recv(paramtmp,lx1*lx2*lx3, &          !note no ghost cells!!!
-                mpi_real,iid,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)    !recieve chunk of data into buffer
+do iid=1,lid-1
+!! must loop over all processes in the grid, don't enter loop if only root is present
+  call mpi_recv(paramtmp,lx1*lx2*lx3, &          !< note no ghost cells!!!
+                mpi_real,iid,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+  !! recieve chunk of data into buffer
   inds=slabinds(iid,lx2,lx3)
-  paramtrimall(1:lx1,inds(1):inds(2),inds(3):inds(4))=paramtmp    !note the exclusion of the ghost cells
+  paramtrimall(1:lx1,inds(1):inds(2),inds(3):inds(4))=paramtmp
+  !! note the exclusion of the ghost cells
 end do
 
 end procedure gather_recv32_3D_23
