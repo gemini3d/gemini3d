@@ -1,10 +1,12 @@
-submodule (mpimod) mpirecv
+submodule (mpimod) mpirecv32
 
 implicit none
 
 contains
 
-module procedure gather_recv2D_23
+module procedure gather_recv32_2D_23
+!! module subroutine gather_recv2D_23(paramtrim,tag,paramtrimall)
+!!
 !! THIS SUBROUTINE GATHERS DATA FROM ALL WORKERS ONTO
 !! A FULL-GRID ARRAY ON THE ROOT PROCESS (PRESUMABLY FOR
 !! OUTPUT OR SOME ELECTRODYNAMIC CALCULATION, PERHAPS.
@@ -17,7 +19,7 @@ module procedure gather_recv2D_23
 integer :: lx1,lx2,lx3,lsp,lx2all,lx3all
 integer :: iid
 integer, dimension(4) :: inds
-real(wp), dimension(1:size(paramtrim,1),1:size(paramtrim,2)) :: paramtmp
+real(real32), dimension(1:size(paramtrim,1),1:size(paramtrim,2)) :: paramtmp
 
 lx2=size(paramtrim,1)    !note here that paramtrim does not have ghost cells
 lx3=size(paramtrim,2)
@@ -33,17 +35,17 @@ do iid=1,lid-1
   paramtrimall(inds(1):inds(2),inds(3):inds(4))=paramtmp    !note the exclusion of the ghost cells
 end do
 
-end procedure gather_recv2D_23
+end procedure gather_recv32_2D_23
 
 
-module procedure gather_recv3D_23
+module procedure gather_recv32_3D_23
 
 !! THIS SUBROUTINE GATHERS DATA FROM ALL WORKERS ONTO
 !! A FULL-GRID ARRAY ON THE ROOT PROCESS (PRESUMABLY FOR
 !! OUTPUT OR SOME ELECTRODYNAMIC CALCULATION, PERHAPS.
-!! 
+!!
 !! THIS SUBROUTINE IS TO BE CALLED BY ROOT TO DO GATHER
-!! 
+!!
 !! THIS VERSION WORKS ON 3D ARRAYS WHICH DO NOT INCLUDE
 !! ANY GHOST CELLS!!!!
 !! THIS VERION ALSO WORKS ON A PROCESS GRID
@@ -51,7 +53,7 @@ module procedure gather_recv3D_23
 integer :: lx1,lx2,lx3,lx2all,lx3all
 integer :: iid
 integer, dimension(4) :: inds
-real(wp), dimension(1:size(paramtrim,1),1:size(paramtrim,2),1:size(paramtrim,3)) :: paramtmp   !buffer space for mpi receive, includes only x1 ghost cells
+real(real32), dimension(1:size(paramtrim,1),1:size(paramtrim,2),1:size(paramtrim,3)) :: paramtmp   !buffer space for mpi receive, includes only x1 ghost cells
 
 
 lx1=size(paramtrim,1)
@@ -72,10 +74,10 @@ do iid=1,lid-1        !must loop over all processes in the grid, don't enter loo
   paramtrimall(1:lx1,inds(1):inds(2),inds(3):inds(4))=paramtmp    !note the exclusion of the ghost cells
 end do
 
-end procedure gather_recv3D_23
+end procedure gather_recv32_3D_23
 
 
-module procedure gather_recv4D_23
+module procedure gather_recv32_4D_23
 
 !------------------------------------------------------------
 !-------THIS SUBROUTINE GATHERS DATA FROM ALL WORKERS ONTO
@@ -91,7 +93,7 @@ module procedure gather_recv4D_23
 integer :: lx1,lx2,lx3,isp,lx2all,lx3all
 integer :: iid
 integer, dimension(4) :: inds
-real(wp), dimension(-1:size(param,1)-2,1:size(param,2)-4,1:size(param,3)-4) :: paramtmp   !buffer space for mpi receive, includes only x1 ghost cells
+real(real32), dimension(-1:size(param,1)-2,1:size(param,2)-4,1:size(param,3)-4) :: paramtmp   !buffer space for mpi receive, includes only x1 ghost cells
 
 
 lx1=size(param,1)-4
@@ -114,12 +116,12 @@ do isp=1,lsp
   end do
 end do
 
-end procedure gather_recv4D_23
+end procedure gather_recv32_4D_23
 
 
-module procedure bcast_recv1D_old3
-!! THIS SUBROUTINE RECEIVES BROADCAST DATA FROM A FULL 
-!! GRID ARRAY ON ROOT PROCESS TO WORKERS' SUB-GRID ARRAYS. 
+module procedure bcast_recv32_1D_old3
+!! THIS SUBROUTINE RECEIVES BROADCAST DATA FROM A FULL
+!! GRID ARRAY ON ROOT PROCESS TO WORKERS' SUB-GRID ARRAYS.
 !!
 !! SUBROUTINE IS TO BE CALLED BY WORKERS TO DO A BROADCAST
 !!
@@ -135,12 +137,12 @@ lx=size(param,1)-4
 call mpi_recv(param,(lx+4), &
   mpi_realprec,0,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
 
-end procedure bcast_recv1D_old3
+end procedure bcast_recv32_1D_old3
 
 
-module procedure bcast_recv1D_23_2
-!! THIS SUBROUTINE RECEIVES BROADCAST DATA FROM A FULL 
-!! GRID ARRAY ON ROOT PROCESS TO WORKERS' SUB-GRID ARRAYS. 
+module procedure bcast_recv32_1D_23_2
+!! THIS SUBROUTINE RECEIVES BROADCAST DATA FROM A FULL
+!! GRID ARRAY ON ROOT PROCESS TO WORKERS' SUB-GRID ARRAYS.
 !!
 !! SUBROUTINE IS TO BE CALLED BY WORKERS TO DO A BROADCAST
 !!
@@ -157,12 +159,12 @@ lx=size(param,1)-4
 call mpi_recv(param,(lx+4), &
   mpi_realprec,0,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
 
-end procedure bcast_recv1D_23_2
+end procedure bcast_recv32_1D_23_2
 
 
-module procedure bcast_recv1D_23_3
-!! THIS SUBROUTINE RECEIVES BROADCAST DATA FROM A FULL 
-!! GRID ARRAY ON ROOT PROCESS TO WORKERS' SUB-GRID ARRAYS. 
+module procedure bcast_recv32_1D_23_3
+!! THIS SUBROUTINE RECEIVES BROADCAST DATA FROM A FULL
+!! GRID ARRAY ON ROOT PROCESS TO WORKERS' SUB-GRID ARRAYS.
 !!
 !! SUBROUTINE IS TO BE CALLED BY WORKERS TO DO A BROADCAST
 !!
@@ -178,12 +180,12 @@ lx=size(param,1)-4
 call mpi_recv(param,(lx+4), &
   mpi_realprec,0,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
 
-end procedure bcast_recv1D_23_3
+end procedure bcast_recv32_1D_23_3
 
 
-module procedure bcast_recv2D_23
-!! THIS SUBROUTINE RECEIVES BROADCAST DATA FROM A FULL 
-!! GRID ARRAY ON ROOT PROCESS TO WORKERS' SUB-GRID ARRAYS. 
+module procedure bcast_recv32_2D_23
+!! THIS SUBROUTINE RECEIVES BROADCAST DATA FROM A FULL
+!! GRID ARRAY ON ROOT PROCESS TO WORKERS' SUB-GRID ARRAYS.
 !!
 !! SUBROUTINE IS TO BE CALLED BY WORKERS TO DO A BROADCAST
 !!
@@ -200,12 +202,12 @@ lx3=size(paramtrim,2)
 call mpi_recv(paramtrim,lx2*lx3, &
   mpi_realprec,0,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
 
-end procedure bcast_recv2D_23
+end procedure bcast_recv32_2D_23
 
 
-module procedure bcast_recv3D_23
-!! THIS SUBROUTINE RECEIVES BROADCAST DATA FROM A FULL 
-!! GRID ARRAY ON ROOT PROCESS TO WORKERS' SUB-GRID ARRAYS. 
+module procedure bcast_recv32_3D_23
+!! THIS SUBROUTINE RECEIVES BROADCAST DATA FROM A FULL
+!! GRID ARRAY ON ROOT PROCESS TO WORKERS' SUB-GRID ARRAYS.
 !!
 !! SUBROUTINE IS TO BE CALLED BY WORKERS TO DO A BROADCAST
 !!
@@ -224,12 +226,12 @@ lx3=size(paramtrim,3)
 call mpi_recv(paramtrim,lx1*lx2*lx3, &
                mpi_realprec,0,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
 
-end procedure bcast_recv3D_23
+end procedure bcast_recv32_3D_23
 
 
-module procedure bcast_recv3D_x3i_23
-!! THIS SUBROUTINE RECEIVES BROADCAST DATA FROM A FULL 
-!! GRID ARRAY ON ROOT PROCESS TO WORKERS' SUB-GRID ARRAYS. 
+module procedure bcast_recv32_3D_x3i_23
+!! THIS SUBROUTINE RECEIVES BROADCAST DATA FROM A FULL
+!! GRID ARRAY ON ROOT PROCESS TO WORKERS' SUB-GRID ARRAYS.
 !!
 !! SUBROUTINE IS TO BE CALLED BY WORKERS TO DO A BROADCAST
 !!
@@ -247,10 +249,10 @@ lx3=size(paramtrim,3)-1  ! `lx3` is an interfaced quantity
 call mpi_recv(paramtrim,lx1*lx2*(lx3+1), &
                mpi_realprec,0,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
 
-end procedure bcast_recv3D_x3i_23
+end procedure bcast_recv32_3D_x3i_23
 
 
-module procedure bcast_recv3D_x2i_23
+module procedure bcast_recv32_3D_x2i_23
 !! THIS SUBROUTINE RECEIVES BROADCAST DATA FROM A FULL
 !! GRID ARRAY ON ROOT PROCESS TO WORKERS' SUB-GRID ARRAYS.
 !!
@@ -271,12 +273,12 @@ lx3=size(paramtrim,3)
 call mpi_recv(paramtrim,lx1*(lx2+1)*lx3, &
                mpi_realprec,0,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
 
-end procedure bcast_recv3D_x2i_23
+end procedure bcast_recv32_3D_x2i_23
 
 
-module procedure bcast_recv3D_ghost_23
-!! THIS SUBROUTINE RECEIVES BROADCAST DATA FROM A FULL 
-!! GRID ARRAY ON ROOT PROCESS TO WORKERS' SUB-GRID ARRAYS. 
+module procedure bcast_recv32_3D_ghost_23
+!! THIS SUBROUTINE RECEIVES BROADCAST DATA FROM A FULL
+!! GRID ARRAY ON ROOT PROCESS TO WORKERS' SUB-GRID ARRAYS.
 !!
 !! SUBROUTINE IS TO BE CALLED BY WORKERS TO DO A BROADCAST
 !!
@@ -295,11 +297,11 @@ lx3=size(param,3)-4
 call mpi_recv(param,(lx1+4)*(lx2+4)*(lx3+4), &
                mpi_realprec,0,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
 
-end procedure bcast_recv3D_ghost_23
+end procedure bcast_recv32_3D_ghost_23
 
 
 
-module procedure bcast_recv4D_23
+module procedure bcast_recv32_4D_23
 !! THIS SUBROUTINE RECEIVES BROADCAST DATA FROM A FULL
 !! GRID ARRAY ON ROOT PROCESS TO WORKERS' SUB-GRID ARRAYS.
 !-------
@@ -310,7 +312,7 @@ module procedure bcast_recv4D_23
 !------------------------------------------------------------
 
 integer :: lx1,lx2,lx3,isp
-real(wp), dimension(-1:size(param,1)-2,1:size(param,2)-4,1:size(param,3)-4) :: paramtmp
+real(real32), dimension(-1:size(param,1)-2,1:size(param,2)-4,1:size(param,3)-4) :: paramtmp
 
 lx1=size(param,1)-4
 lx2=size(param,2)-4
@@ -324,8 +326,8 @@ do isp=1,lsp
   param(-1:lx1+2,1:lx2,1:lx3,isp)=paramtmp(-1:lx1+2,1:lx2,1:lx3)
 end do
 
-end procedure bcast_recv4D_23
+end procedure bcast_recv32_4D_23
 
 
 
-end submodule mpirecv
+end submodule mpirecv32

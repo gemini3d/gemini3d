@@ -16,16 +16,12 @@ type(hdf5_file) :: h5f
 real(wp), dimension(1:lwave,1:lx2,1:lx3) :: ivertmp
 real(wp), dimension(1:lwave,1:lx2all,1:lx3all) :: iverall
 
-real(wp), dimension(1:lx2,1:lx3) :: tmp3d
-real(real32) :: tmp4d(1:lx2,1:lx3,12,1:lx1)
-real(real32) :: tmpzx(1:lx2,1:lx3,1:lx1)
-real(real32) :: tmpzxper(1:lx1,1:lx2,1:lx3)
-real(real32) :: tmpzxall(1:lx1,1:lx2all,1:lx3all)
+real(wp), dimension(1:lx2, 1:lx3) :: tmp3d
 !! single emission subgrid
 
-real(wp), dimension(1:lx2all,1:lx3all) :: emisall
+real(wp), dimension(1:lx2all, 1:lx3all) :: emisall
 !real(real32) :: zxdenall(1:lx2all,1:lx3all,12,1:lx1)    !MZ - almost all of my arrays have x1 as the first dimension, suggest (lx1,lx2all,lx3all) to avoid heartburn later...
-real(real32) :: zxdenall(1:lx1,1:lx2all,1:lx3all,1:12)    !MZ - different dimension ordering so mpi works like we expect...
+real(real32) :: zxdenall(1:lx1, 1:lx2all, 1:lx3all, 1:12)    !MZ - different dimension ordering so mpi works like we expect...
 !! single emission total grid
 
 real(wp), dimension(1:lx2all,1:lx3all,1:lwave) :: iverout  !< output array in the order scripts expect
@@ -37,23 +33,32 @@ logical :: exists
 
 !! gather output from workers
 do i=1,lwave
-  tmp3d=iver(:,:,i)    !MZ - semantically confusing as this is a 2D array, but syntactically correct I think...
-  call gather_recv(tmp3d,tagAur,emisall)
+  tmp3d = iver(:,:,i)    !MZ - semantically confusing as this is a 2D array, but syntactically correct I think...
+  call gather_recv(tmp3d, tagAur, emisall)
   iverout(:,:,i)=emisall
 end do
 
+excitationMPI : block
+
+!real(real32) :: tmp4d(1:lx2, 1:lx3, 12, 1:lx1)  ! not used, just for notes
 !do i=1,12
 !  tmp4d=zxden(:,:,i,:)    !MZ - this is 4D, shouldn't it be 3D???
-!  call gather_recv(tmp4d,tagZxden,zxdenall)    !MZ - this is going to call gather_recv4D_23, which assumes ghost cells (there are none) and also assumes the last dimension is species (looped over) and the second two dimensions are x2,x3 (mpi'd).  Also this needs to go into a 3D receive buffer, which then gets assigned to zxdenall(:,:,:,iwave)
+!  call gather_recv(tmp4d, tagZxden, zxdenall)    !MZ - this is going to call gather_recv4D_23, which assumes ghost cells (there are none) and also assumes the last dimension is species (looped over) and the second two dimensions are x2,x3 (mpi'd).  Also this needs to go into a 3D receive buffer, which then gets assigned to zxdenall(:,:,:,iwave)
 !end do
 
-do i=1,12
-  tmpzx=zxden(:,:,i,:)
-  tmpzxper=reshape(zxden,[lx1,lx2,lx3],order=[3,1,2])    !MZ - need lx1 to be first dim for mpi, maybe this needs to be done at the data source when GLOW get called???
-  call gather_recv(tmpzxper,tagZxden,tmpzxall)
-  zxdenall(:,:,:,i)=tmpzxall     !assign buffer data to permanent array
-end do
+  real(real32) :: tmpzxper(1:lx1, 1:lx2, 1:lx3)
+  real(real32) :: tmpzxall(1:lx1, 1:lx2all, 1:lx3all)
+  real(real32) :: tmpzx(1:lx2, 1:lx3, 1:lx1)
 
+  do i=1,12  !< one species at a time
+    tmpzx = zxden(:,:,i,:)
+    !MZ - need lx1 to be first dim for mpi, maybe this needs to be done at the data source when GLOW get called???
+    tmpzxper = reshape(zxden, [lx1,lx2,lx3], order=[3,1,2])
+
+    call gather_recv(tmpzxper, tagZxden, tmpzxall)  !< 3D in, 3D+ghost out
+    zxdenall(:,:,:,i)=tmpzxall     !assign buffer data to permanent 4D array
+  end do
+end block excitationMPI
 
 !! create an output file
 outdir_composite=outdir//'/aurmaps/'

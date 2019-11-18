@@ -5,7 +5,9 @@ set_target_properties(const PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_D
 
 add_subdirectory(interpolation)
 
-add_library(mpimod mpimod/mpimod.F90 mpimod/mpisend.f90 mpimod/mpirecv.f90 mpimod/mpihalo.f90)
+add_library(mpimod mpimod/mpimod.F90 mpimod/mpisend.f90
+  mpimod/mpirecv32.f90 mpimod/mpirecv64.f90
+  mpimod/mpihalo.f90)
 target_link_libraries(mpimod PRIVATE const MPI::MPI_Fortran)
 target_compile_definitions(mpimod PRIVATE REALBITS=${realbits})
 target_compile_options(mpimod PRIVATE ${FFLAGS})

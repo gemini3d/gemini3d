@@ -2,7 +2,7 @@ module mpimod
 !! NOTES:
 !! * Need to consider overloading routines as send_ghost and send_noghost so that
 !!   it is more clear what the structure of the input arrays should be.
-use, intrinsic:: iso_fortran_env, only: stderr=>error_unit
+use, intrinsic:: iso_fortran_env, only: stderr=>error_unit, real32, real64
 use phys_consts, only : lsp, wp
 !! code needs to know how many species are being used.
 
@@ -103,72 +103,11 @@ integer, protected :: lid2,lid3,myid2,myid3
 !> Generally it is:
 !>  <optype>_<send,recv><dims>_<mpi dims>_<optional indicator>
 
-!
-!!> THESE INTERFACES OVERLOAD THE MPI GATHER,BROADCAST SUBROUTINES FOR ARRAYS OF DIFFERENT RANKS.
-!!> THESE ARE ALSO USEFUL FOR SUBBING IN DIFFERENT SCENARIOS - 1D VS. 2D MPI DIVISIONS ETC.
-!interface gather_recv
-!  module procedure gather_recv2D_23, gather_recv3D_23, gather_recv4D_23
-!end interface gather_recv
-!
-!interface gather_send
-!  module procedure gather_send2D_23, gather_send3D_23, gather_send4D_23
-!end interface gather_send
-!
-!interface bcast_send
-!  module procedure bcast_send2D_23, bcast_send3D_23, bcast_send4D_23
-!end interface bcast_send
-!
-!interface bcast_recv
-!  module procedure bcast_recv2D_23, bcast_recv3D_23, bcast_recv4D_23
-!end interface bcast_recv
-!
-!interface bcast_send1D_2
-!  module procedure bcast_send1D_23_2
-!end interface bcast_send1D_2
-!interface bcast_recv1D_2
-!  module procedure bcast_recv1D_23_2
-!end interface bcast_recv1D_2
-!
-!interface bcast_send1D_3
-!  module procedure bcast_send1D_23_3
-!end interface bcast_send1D_3
-!interface bcast_recv1D_3
-!  module procedure bcast_recv1D_23_3
-!end interface bcast_recv1D_3
-!
-!!> THIS ALLOWS EASY SWAPPING OF DIFFERENT ROUTINES FOR 3 VS. 23 DIVISIONS
-!interface halo
-!  module procedure halo_23
-!end interface halo
-!interface bcast_send3D_x3i
-!  module procedure bcast_send3D_x3i_23
-!end interface bcast_send3D_x3i
-!interface bcast_recv3D_x3i
-!  module procedure bcast_recv3D_x3i_23
-!end interface bcast_recv3D_x3i
-!
-!interface bcast_send3D_x2i
-!  module procedure bcast_send3D_x2i_23
-!end interface bcast_send3D_x2i
-!interface bcast_recv3D_x2i
-!  module procedure bcast_recv3D_x2i_23
-!end interface bcast_recv3D_x2i
-!
-!interface bcast_send3D_ghost
-!  module procedure bcast_send3D_ghost_23
-!end interface bcast_send3D_ghost
-!interface bcast_recv3D_ghost
-!  module procedure bcast_recv3D_ghost_23
-!end interface bcast_recv3D_ghost
-!
-!interface halo_end
-!  module procedure halo_end_23
-!end interface halo_end
-
-
 !> THESE INTERFACES OVERLOAD THE MPI GATHER,BROADCAST SUBROUTINES FOR ARRAYS OF DIFFERENT RANKS.
 interface gather_recv
-  procedure gather_recv2D_23, gather_recv3D_23, gather_recv4D_23
+  procedure gather_recv32_2D_23, gather_recv64_2D_23, &
+            gather_recv32_3D_23, gather_recv64_3D_23, &
+            gather_recv32_4D_23, gather_recv64_4D_23
 end interface gather_recv
 
 interface gather_send
@@ -180,21 +119,24 @@ interface bcast_send
 end interface bcast_send
 
 interface bcast_recv
-  procedure bcast_recv1D_23, bcast_recv2D_23, bcast_recv3D_23, bcast_recv4D_23
+  procedure bcast_recv32_1D_23, bcast_recv64_1D_23, &
+            bcast_recv32_2D_23, bcast_recv64_2D_23, &
+            bcast_recv32_3D_23, bcast_recv64_3D_23, &
+            bcast_recv32_4D_23, bcast_recv64_4D_23
 end interface bcast_recv
 
 interface bcast_send1D_2
   module procedure bcast_send1D_23_2
 end interface bcast_send1D_2
 interface bcast_recv1D_2
-  module procedure bcast_recv1D_23_2
+  module procedure bcast_recv32_1D_23_2, bcast_recv64_1D_23_2
 end interface bcast_recv1D_2
 
 interface bcast_send1D_3
   module procedure bcast_send1D_23_3
 end interface bcast_send1D_3
 interface bcast_recv1D_3
-  module procedure bcast_recv1D_23_3
+  module procedure bcast_recv32_1D_23_3, bcast_recv64_1D_23_3
 end interface bcast_recv1D_3
 
 interface halo
@@ -204,21 +146,21 @@ interface bcast_send3D_x3i
   module procedure bcast_send3D_x3i_23
 end interface bcast_send3D_x3i
 interface bcast_recv3D_x3i
-  module procedure bcast_recv3D_x3i_23
+  module procedure bcast_recv32_3D_x3i_23, bcast_recv64_3D_x3i_23
 end interface bcast_recv3D_x3i
 
 interface bcast_send3D_x2i
   module procedure bcast_send3D_x2i_23
 end interface bcast_send3D_x2i
 interface bcast_recv3D_x2i
-  module procedure bcast_recv3D_x2i_23
+  module procedure bcast_recv32_3D_x2i_23, bcast_recv64_3D_x2i_23
 end interface bcast_recv3D_x2i
 
 interface bcast_send3D_ghost
   module procedure bcast_send3D_ghost_23
 end interface bcast_send3D_ghost
 interface bcast_recv3D_ghost
-  module procedure bcast_recv3D_ghost_23
+  module procedure bcast_recv32_3D_ghost_23, bcast_recv64_3D_ghost_23
 end interface bcast_recv3D_ghost
 
 interface halo_end
@@ -226,7 +168,7 @@ interface halo_end
 end interface halo_end
 
 
-interface ! mpisend
+interface ! mpisend.f90
 
 module subroutine gather_send2D_23(paramtrim,tag)
 real(wp), dimension(:,:), intent(in) :: paramtrim
@@ -300,82 +242,160 @@ end subroutine bcast_send1D_23_2
 end interface
 
 
-interface ! mpirecv
+interface  ! mpirecv32.f90
 
-module subroutine gather_recv2D_23(paramtrim,tag,paramtrimall)
-real(wp), dimension(:,:), intent(in) :: paramtrim
+module subroutine gather_recv32_2D_23(paramtrim,tag,paramtrimall)
+real(real32), dimension(:,:), intent(in) :: paramtrim
 integer, intent(in) :: tag
-real(wp), dimension(:,:), intent(out) :: paramtrimall
-end subroutine gather_recv2D_23
+real(real32), dimension(:,:), intent(out) :: paramtrimall
+end subroutine gather_recv32_2D_23
 
-module subroutine gather_recv3D_23(paramtrim,tag,paramtrimall)
-real(wp), dimension(:,:,:), intent(in) :: paramtrim
+module subroutine gather_recv32_3D_23(paramtrim,tag,paramtrimall)
+real(real32), dimension(:,:,:), intent(in) :: paramtrim
 integer, intent(in) :: tag
-real(wp), dimension(:,:,:), intent(out) :: paramtrimall
-end subroutine gather_recv3D_23
+real(real32), dimension(:,:,:), intent(out) :: paramtrimall
+end subroutine gather_recv32_3D_23
 
-module subroutine gather_recv4D_23(param,tag,paramall)
-real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: param
+module subroutine gather_recv32_4D_23(param,tag,paramall)
+real(real32), dimension(-1:,-1:,-1:,:), intent(in) :: param
 integer, intent(in) :: tag
-real(wp), dimension(-1:,-1:,-1:,:), intent(out) :: paramall
-end subroutine gather_recv4D_23
+real(real32), dimension(-1:,-1:,-1:,:), intent(out) :: paramall
+end subroutine gather_recv32_4D_23
 
-module subroutine bcast_recv1D_23(param,tag)
-real(wp), dimension(-1:), intent(out) :: param
+module subroutine bcast_recv32_1D_23(param,tag)
+real(real32), dimension(-1:), intent(out) :: param
 integer, intent(in) :: tag
-end subroutine bcast_recv1D_23
+end subroutine bcast_recv32_1D_23
 
-module subroutine bcast_recv2D_23(paramtrim,tag)
-real(wp), dimension(:,:), intent(out) :: paramtrim
+module subroutine bcast_recv32_2D_23(paramtrim,tag)
+real(real32), dimension(:,:), intent(out) :: paramtrim
 integer, intent(in) :: tag
-end subroutine bcast_recv2D_23
+end subroutine bcast_recv32_2D_23
 
-module subroutine bcast_recv3D_23(paramtrim,tag)
-real(wp), dimension(:,:,:), intent(out) :: paramtrim
+module subroutine bcast_recv32_3D_23(paramtrim,tag)
+real(real32), dimension(:,:,:), intent(out) :: paramtrim
 integer, intent(in) :: tag
-end subroutine bcast_recv3D_23
+end subroutine bcast_recv32_3D_23
 
-module subroutine bcast_recv4D_23(param,tag)
-real(wp), dimension(-1:,-1:,-1:,:), intent(out) :: param
+module subroutine bcast_recv32_4D_23(param,tag)
+real(real32), dimension(-1:,-1:,-1:,:), intent(out) :: param
 integer, intent(in) :: tag
-end subroutine bcast_recv4D_23
+end subroutine bcast_recv32_4D_23
 
-module subroutine bcast_recv3D_x3i_23(paramtrim,tag)
-real(wp), dimension(:,:,:), intent(out) :: paramtrim
+module subroutine bcast_recv32_3D_x3i_23(paramtrim,tag)
+real(real32), dimension(:,:,:), intent(out) :: paramtrim
 integer, intent(in) :: tag
-end subroutine bcast_recv3D_x3i_23
+end subroutine bcast_recv32_3D_x3i_23
 
-module subroutine bcast_recv3D_ghost_23(param,tag)
-real(wp), dimension(-1:,-1:,-1:), intent(out) :: param
+module subroutine bcast_recv32_3D_ghost_23(param,tag)
+real(real32), dimension(-1:,-1:,-1:), intent(out) :: param
 integer, intent(in) :: tag
-end subroutine bcast_recv3D_ghost_23
+end subroutine bcast_recv32_3D_ghost_23
 
-module subroutine bcast_recv1D_old3(param,tag)
-real(wp), dimension(-1:), intent(out) :: param
+module subroutine bcast_recv32_1D_old3(param,tag)
+real(real32), dimension(-1:), intent(out) :: param
 integer, intent(in) :: tag
-end subroutine bcast_recv1D_old3
+end subroutine bcast_recv32_1D_old3
 
-module subroutine bcast_recv1D_23_2(param,tag)
-real(wp), dimension(-1:), intent(out) :: param
+module subroutine bcast_recv32_1D_23_2(param,tag)
+real(real32), dimension(-1:), intent(out) :: param
 integer, intent(in) :: tag
-end subroutine bcast_recv1D_23_2
+end subroutine bcast_recv32_1D_23_2
 
-module subroutine bcast_recv1D_23_3(param,tag)
-real(wp), dimension(-1:), intent(out) :: param
+module subroutine bcast_recv32_1D_23_3(param,tag)
+real(real32), dimension(-1:), intent(out) :: param
 integer, intent(in) :: tag
-end subroutine bcast_recv1D_23_3
+end subroutine bcast_recv32_1D_23_3
 
-module subroutine bcast_recv2D_23_3(paramtrim,tag)
-real(wp), dimension(:,:), intent(out) :: paramtrim
+module subroutine bcast_recv32_2D_23_3(paramtrim,tag)
+real(real32), dimension(:,:), intent(out) :: paramtrim
 integer, intent(in) :: tag
-end subroutine bcast_recv2D_23_3
+end subroutine bcast_recv32_2D_23_3
 
-module subroutine bcast_recv3D_x2i_23(paramtrim,tag)
-real(wp), dimension(:,:,:), intent(out) :: paramtrim
+module subroutine bcast_recv32_3D_x2i_23(paramtrim,tag)
+real(real32), dimension(:,:,:), intent(out) :: paramtrim
 integer, intent(in) :: tag
-end subroutine bcast_recv3D_x2i_23
+end subroutine bcast_recv32_3D_x2i_23
 
-end interface
+end interface  ! mpirecv32.f90
+
+
+interface  ! mpirecv64.f90
+
+module subroutine gather_recv64_2D_23(paramtrim,tag,paramtrimall)
+real(real64), dimension(:,:), intent(in) :: paramtrim
+integer, intent(in) :: tag
+real(real64), dimension(:,:), intent(out) :: paramtrimall
+end subroutine gather_recv64_2D_23
+
+module subroutine gather_recv64_3D_23(paramtrim,tag,paramtrimall)
+real(real64), dimension(:,:,:), intent(in) :: paramtrim
+integer, intent(in) :: tag
+real(real64), dimension(:,:,:), intent(out) :: paramtrimall
+end subroutine gather_recv64_3D_23
+
+module subroutine gather_recv64_4D_23(param,tag,paramall)
+real(real64), dimension(-1:,-1:,-1:,:), intent(in) :: param
+integer, intent(in) :: tag
+real(real64), dimension(-1:,-1:,-1:,:), intent(out) :: paramall
+end subroutine gather_recv64_4D_23
+
+module subroutine bcast_recv64_1D_23(param,tag)
+real(real64), dimension(-1:), intent(out) :: param
+integer, intent(in) :: tag
+end subroutine bcast_recv64_1D_23
+
+module subroutine bcast_recv64_2D_23(paramtrim,tag)
+real(real64), dimension(:,:), intent(out) :: paramtrim
+integer, intent(in) :: tag
+end subroutine bcast_recv64_2D_23
+
+module subroutine bcast_recv64_3D_23(paramtrim,tag)
+real(real64), dimension(:,:,:), intent(out) :: paramtrim
+integer, intent(in) :: tag
+end subroutine bcast_recv64_3D_23
+
+module subroutine bcast_recv64_4D_23(param,tag)
+real(real64), dimension(-1:,-1:,-1:,:), intent(out) :: param
+integer, intent(in) :: tag
+end subroutine bcast_recv64_4D_23
+
+module subroutine bcast_recv64_3D_x3i_23(paramtrim,tag)
+real(real64), dimension(:,:,:), intent(out) :: paramtrim
+integer, intent(in) :: tag
+end subroutine bcast_recv64_3D_x3i_23
+
+module subroutine bcast_recv64_3D_ghost_23(param,tag)
+real(real64), dimension(-1:,-1:,-1:), intent(out) :: param
+integer, intent(in) :: tag
+end subroutine bcast_recv64_3D_ghost_23
+
+module subroutine bcast_recv64_1D_old3(param,tag)
+real(real64), dimension(-1:), intent(out) :: param
+integer, intent(in) :: tag
+end subroutine bcast_recv64_1D_old3
+
+module subroutine bcast_recv64_1D_23_2(param,tag)
+real(real64), dimension(-1:), intent(out) :: param
+integer, intent(in) :: tag
+end subroutine bcast_recv64_1D_23_2
+
+module subroutine bcast_recv64_1D_23_3(param,tag)
+real(real64), dimension(-1:), intent(out) :: param
+integer, intent(in) :: tag
+end subroutine bcast_recv64_1D_23_3
+
+module subroutine bcast_recv64_2D_23_3(paramtrim,tag)
+real(real64), dimension(:,:), intent(out) :: paramtrim
+integer, intent(in) :: tag
+end subroutine bcast_recv64_2D_23_3
+
+module subroutine bcast_recv64_3D_x2i_23(paramtrim,tag)
+real(real64), dimension(:,:,:), intent(out) :: paramtrim
+integer, intent(in) :: tag
+end subroutine bcast_recv64_3D_x2i_23
+
+end interface  ! mpirecv64.f90
 
 
 interface ! mpihalo
