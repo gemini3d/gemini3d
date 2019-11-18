@@ -1,5 +1,7 @@
 submodule (mpimod) mpirecv32
 
+use mpi, only: mpi_real
+
 implicit none
 
 contains
@@ -30,7 +32,7 @@ paramtrimall(1:lx2,1:lx3)=paramtrim   !copy root's data into full-grid array
 
 do iid=1,lid-1
   call mpi_recv(paramtmp,lx2*lx3, &
-                mpi_realprec,iid,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+                mpi_real,iid,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
   inds=slabinds(iid,lx2,lx3)
   paramtrimall(inds(1):inds(2),inds(3):inds(4))=paramtmp    !note the exclusion of the ghost cells
 end do
@@ -69,7 +71,7 @@ lx3=size(paramtrim,3)
 paramtrimall(:,1:lx2,1:lx3)=paramtrim(:,1:lx2,1:lx3)    !store root's piece of data
 do iid=1,lid-1        !must loop over all processes in the grid, don't enter loop if only root is present
   call mpi_recv(paramtmp,lx1*lx2*lx3, &          !note no ghost cells!!!
-                mpi_realprec,iid,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)    !recieve chunk of data into buffer
+                mpi_real,iid,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)    !recieve chunk of data into buffer
   inds=slabinds(iid,lx2,lx3)
   paramtrimall(1:lx1,inds(1):inds(2),inds(3):inds(4))=paramtmp    !note the exclusion of the ghost cells
 end do
@@ -110,7 +112,7 @@ do isp=1,lsp
 
   do iid=1,lid-1        !must loop over all processes in the grid, don't enter loop if only root is present
     call mpi_recv(paramtmp,(lx1+4)*lx2*lx3, &
-                  mpi_realprec,iid,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)    !recieve chunk of data into buffer
+                  mpi_real,iid,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)    !recieve chunk of data into buffer
     inds=slabinds(iid,lx2,lx3)
     paramall(-1:lx1+2,inds(1):inds(2),inds(3):inds(4),isp)=paramtmp(-1:lx1+2,1:lx2,1:lx3)    !note the inclusion of x1 ghost cells
   end do
@@ -135,7 +137,7 @@ lx=size(param,1)-4
 
 !> WORKERS RECEIVE THE IC DATA FROM ROOT
 call mpi_recv(param,(lx+4), &
-  mpi_realprec,0,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+  mpi_real,0,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
 
 end procedure bcast_recv32_1D_old3
 
@@ -157,7 +159,7 @@ lx=size(param,1)-4
 
 !> WORKERS RECEIVE THE IC DATA FROM ROOT
 call mpi_recv(param,(lx+4), &
-  mpi_realprec,0,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+  mpi_real,0,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
 
 end procedure bcast_recv32_1D_23_2
 
@@ -178,7 +180,7 @@ lx=size(param,1)-4
 
 !> WORKERS RECEIVE THE IC DATA FROM ROOT
 call mpi_recv(param,(lx+4), &
-  mpi_realprec,0,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+  mpi_real,0,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
 
 end procedure bcast_recv32_1D_23_3
 
@@ -200,7 +202,7 @@ lx3=size(paramtrim,2)
 
 !> WORKERS RECEIVE THE IC DATA FROM ROOT
 call mpi_recv(paramtrim,lx2*lx3, &
-  mpi_realprec,0,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+  mpi_real,0,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
 
 end procedure bcast_recv32_2D_23
 
@@ -224,7 +226,7 @@ lx3=size(paramtrim,3)
 
 !> WORKERS RECEIVE THE IC DATA FROM ROOT
 call mpi_recv(paramtrim,lx1*lx2*lx3, &
-               mpi_realprec,0,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+               mpi_real,0,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
 
 end procedure bcast_recv32_3D_23
 
@@ -247,7 +249,7 @@ lx3=size(paramtrim,3)-1  ! `lx3` is an interfaced quantity
 
 !> WORKERS RECEIVE THE IC DATA FROM ROOT
 call mpi_recv(paramtrim,lx1*lx2*(lx3+1), &
-               mpi_realprec,0,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+               mpi_real,0,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
 
 end procedure bcast_recv32_3D_x3i_23
 
@@ -271,7 +273,7 @@ lx3=size(paramtrim,3)
 
 !> WORKERS RECEIVE THE IC DATA FROM ROOT
 call mpi_recv(paramtrim,lx1*(lx2+1)*lx3, &
-               mpi_realprec,0,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+               mpi_real,0,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
 
 end procedure bcast_recv32_3D_x2i_23
 
@@ -295,7 +297,7 @@ lx3=size(param,3)-4
 
 !> WORKERS RECEIVE THE IC DATA FROM ROOT
 call mpi_recv(param,(lx1+4)*(lx2+4)*(lx3+4), &
-               mpi_realprec,0,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+               mpi_real,0,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
 
 end procedure bcast_recv32_3D_ghost_23
 
@@ -322,7 +324,7 @@ lx3=size(param,3)-4
 !WORKERS RECEIVE THE IC DATA FROM ROOT
 do isp=1,lsp
   call mpi_recv(paramtmp,(lx1+4)*lx2*lx3, &
-                 mpi_realprec,0,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+                 mpi_real,0,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
   param(-1:lx1+2,1:lx2,1:lx3,isp)=paramtmp(-1:lx1+2,1:lx2,1:lx3)
 end do
 

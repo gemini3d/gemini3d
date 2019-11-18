@@ -7,7 +7,7 @@ use hdf5_interface, only: hdf5_file
 contains
 
 module procedure output_aur_root
-! subroutine output_aur_root(outdir,flagglow,ymd,UTsec,iver)
+! subroutine output_aur_root(outdir,flagglow,ymd,UTsec,iver,zxden)
 !! COLLECT COMPLETE DATA FROM WORKERS AND PROCESS FOR OUTPUT.
 !! NO GHOST CELLS (I HOPE)
 

@@ -30,7 +30,7 @@ end procedure create_outdir_aur
 
 
 module procedure output_aur
-!subroutine output_aur(outdir,flagglow,ymd,UTsec,iver)
+!subroutine output_aur(outdir,flagglow,ymd,UTsec,iver,zxden)
 
 !! A BASIC WRAPPER FOR THE ROOT AND WORKER OUTPUT FUNCTIONS
 !! BOTH ROOT AND WORKERS CALL THIS PROCEDURE SO UNALLOCATED
@@ -46,7 +46,7 @@ end procedure output_aur
 
 
 module procedure output_aur_workers
-!subroutine output_aur_workers(iver)
+!subroutine output_aur_workers(iver, zxden)
 !! SEND COMPLETE DATA FROM WORKERS TO ROOT PROCESS FOR OUTPUT.
 !! NO GHOST CELLS (I HOPE)
 !! The mpi'd dimensions are 2 and 3 so lwave needs to be permuted
