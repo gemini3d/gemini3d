@@ -46,9 +46,9 @@ OPTIM = -O3 $(OPTS)
 OBJS = $(OBJDIR)advec_mpi.o $(OBJDIR)diffusion.o $(OBJDIR)ionization.o $(OBJDIR)phys_consts.o $(OBJDIR)potential_mumps.o \
 	$(OBJDIR)calculus.o $(OBJDIR)gemini.o $(OBJDIR)msis00_gfortran.o $(OBJDIR)potentialBCs_mumps.o $(OBJDIR)precipBCs_mod.o \
 	$(OBJDIR)temporal.o $(OBJDIR)collisions.o $(OBJDIR)io.o $(OBJDIR)neutral.o $(OBJDIR)potential_comm_mumps.o $(OBJDIR)sources.o  \
-	$(OBJDIR)mpimod.o $(OBJDIR)multifluid.o $(OBJDIR)grid.o $(OBJDIR)interpolation.o 
+	$(OBJDIR)mpimod.o $(OBJDIR)multifluid.o $(OBJDIR)grid.o $(OBJDIR)interpolation.o
 
-all: gemini_mumps magcalc eq 
+all: gemini_mumps magcalc eq
 
 gemini_mumps: $(OBJS)
 	$(FL) $(OPTIM) -o gemini_mumps $(OBJDIR)interpolation.o $(OBJDIR)grid.o $(OBJDIR)multifluid.o $(OBJDIR)mpimod.o $(OBJDIR)advec_mpi.o $(OBJDIR)diffusion.o $(OBJDIR)ionization.o $(OBJDIR)phys_consts.o $(OBJDIR)potential_mumps.o $(OBJDIR)calculus.o $(OBJDIR)gemini.o $(OBJDIR)msis00_gfortran.o $(OBJDIR)potentialBCs_mumps.o $(OBJDIR)precipBCs_mod.o $(OBJDIR)temporal.o $(OBJDIR)collisions.o $(OBJDIR)io.o $(OBJDIR)neutral.o $(OBJDIR)potential_comm_mumps.o $(OBJDIR)sources.o $(LMUMPS) $(LORDERINGS) $(DORDERINGS) $(LSCALA) $(LLAPACK) $(LBLAS)
@@ -65,8 +65,8 @@ clean:
 $(OBJDIR)call_msis_gfortran.o: ./setup/MSIS00/call_msis_gfortran.f90
 	$(FC) -c $(OPTIM) ./setup/MSIS00/call_msis_gfortran.f90  -o $(OBJDIR)/call_msis_gfortran.o -J$(OBJDIR)
 
-$(OBJDIR)phys_consts.o: ./numerical/constants/phys_consts.f90 
-	$(FC) -c $(OPTIM) ./numerical/constants/phys_consts.f90 -o $(OBJDIR)/phys_consts.o -J$(OBJDIR) 
+$(OBJDIR)phys_consts.o: ./numerical/constants/phys_consts.f90
+	$(FC) -c $(OPTIM) ./numerical/constants/phys_consts.f90 -o $(OBJDIR)/phys_consts.o -J$(OBJDIR)
 
 $(OBJDIR)grid.o: ./numerical/grid/grid.f90 $(OBJDIR)mpimod.o $(OBJDIR)phys_consts.o
 	$(FC) -c $(OPTIM) ./numerical/grid/grid.f90 -o $(OBJDIR)/grid.o -J$(OBJDIR)
@@ -133,7 +133,7 @@ $(OBJDIR)gemini.o: gemini.f90 $(OBJDIR)phys_consts.o $(OBJDIR)potential_comm_mum
 	$(OBJDIR)glow_run.o
 	$(FC) -c $(OPTIM) gemini.f90 -o $(OBJDIR)/gemini.o -J$(OBJDIR)
 
-$(OBJDIR)magcalc.o: ./magcalc.f90 $(OBJDIR)phys_consts.o $(OBJDIR)grid.o $(OBJDIR)temporal.o $(OBJDIR)io.o $(OBJDIR)mpimod.o 
+$(OBJDIR)magcalc.o: ./magcalc.f90 $(OBJDIR)phys_consts.o $(OBJDIR)grid.o $(OBJDIR)temporal.o $(OBJDIR)io.o $(OBJDIR)mpimod.o
 	$(FC) -c $(OPTIM) magcalc.f90 -o $(OBJDIR)/magcalc.o -J$(OBJDIR)
 
 $(OBJDIR)glow_run.o: ./ionization/glow_run.f90

@@ -54,7 +54,7 @@ clean:
 $(OBJDIR)call_msis_gfortran.o: ./setup/MSIS00/call_msis_gfortran.f90
 	$(FC) -c $(OPTIM2) ./setup/MSIS00/call_msis_gfortran.f90  -o $(OBJDIR)/call_msis_gfortran.o -J$(OBJDIR)
 
-$(OBJDIR)phys_consts.o: ./numerical/constants/phys_consts.f90 
+$(OBJDIR)phys_consts.o: ./numerical/constants/phys_consts.f90
 	$(FC) -c $(OPTIM) $^ -o $@ -J$(OBJDIR)
 
 $(OBJDIR)grid.o: ./numerical/grid/grid.f90 $(OBJDIR)mpimod.o $(OBJDIR)phys_consts.o
@@ -121,4 +121,3 @@ $(OBJDIR)gemini.o: gemini.f90 $(OBJDIR)phys_consts.o $(OBJDIR)potential_comm_mum
 
 $(OBJDIR)magcalc.o: ./magcalc.f90 $(OBJDIR)mpimod.o $(OBJDIR)phys_consts.o $(OBJDIR)grid.o $(OBJDIR)io.o $(OBJDIR)temporal.o
 	$(FC) -c $(OPTIM2) magcalc.f90 -o $(OBJDIR)/magcalc.o -J$(OBJDIR)
-

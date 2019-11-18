@@ -35,22 +35,32 @@ computer, including MacOS, Linux and Windows.
 To build Gemini and run self-tests takes less than 10 minutes on a typical laptop, from scratch.
 
 0. Ensure Python &ge; 3.6 and a Fortran compiler are installed. In general, Gfortran &ge; 6 is the easiest to use. On MacOS, these are easily obtained via [Homebrew](https://brew.sh).
+1. We are using new features of Meson build system. Until Meson 0.53.0 is available, do:
 
-1. get the Gemini code
+  ```sh
+  git clone https://github.com/mesonbuild/meson
+
+  cd meson
+
+  python3 setup.py develop --user
+
+  cd ..
+  ```
+2. get the Gemini code
 
   ```sh
   git clone https://github.com/gemini3d/gemini
 
   cd gemini
   ```
-2. Setup Gemini and prereqs
+3. Setup Gemini and prereqs
 
   ```sh
   python3 install_prereqs.py
 
   python3 setup.py develop --user
   ```
-3. Build Gemini and run self-tests
+4. Build Gemini and run self-tests
 
   ```sh
   meson build
@@ -188,7 +198,7 @@ Perhaps consider running `python3 install_prereqs.py` to get the libraries you n
    ```
 
    If using Homebrew, you want to be sure Homebrew's GCC is used instead of AppleClang or other non-Homebrew compilers so that the Homebrew library ABIs match the compiler ABI.
-   To do this for Homebrew or other systems where you need to specify a specific compiler, use a Meson native-file like:
+   To do this for Homebrew or other systems where you need to specify a specific compiler, use a Meson &ge; 0.53.0 native-file like:
 
    ```sh
    meson setup build --native-file meson/homebrew.ini

@@ -7,13 +7,24 @@
 # *** for subsequent builds, you can just type "make" in the objects/ directory ***
 # (I keep a second Terminal tab for this purpose)
 
-PREFIX=$HOME/libs_gemini_gcc8
+PREFIX=/cygdrive/c/Users/ggrubbs1/Desktop/lib
 
-# --- local build dirs
-. script_utils/gcc_self.sh
+#======================================================
+MPIPREFIX=
+LAPACKPREFIX=
+SCALAPACKPREFIX=
+MUMPSPREFIX=$PREFIX/MUMPS_5.1.1
+
+
+export FC=mpifort
+export CC=mpicc
+
+# ============================================================
+# this temporarily disables Intel compiler (if installed) from messing up your gfortran environment.
+MKLROOT=
+LD_LIBRARY_PATH=
 
 # ----- build ! -------
 . script_utils/check.sh
 
 . script_utils/build.sh
-

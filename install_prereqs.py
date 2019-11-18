@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 """
-installs libraries
-For CentOS HPC systems, consider centos*.sh scripts that use "modules" or "extensions"
+installs Gemini prerequisite libraries for CentOS, Debian, Ubuntu, Homebrew and Cygwin, assuming GCC/Gfortran
 
-For Ubuntu systems, works best for Ubuntu >= 18.04
+Michael Hirsch, Ph.D.
 """
 import subprocess
 from pathlib import Path
