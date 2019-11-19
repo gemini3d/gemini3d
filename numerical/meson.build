@@ -1,7 +1,9 @@
 mpimod = library('mpimod',
-  sources: ['mpimod/mpimod.F90', 'mpimod/mpisend.f90',
+  sources: ['mpimod/mpimod.F90',
+            'mpimod/mpihalo.f90',
+            'mpimod/mpisend32.f90', 'mpimod/mpisend64.f90',
             'mpimod/mpirecv32.f90', 'mpimod/mpirecv64.f90',
-            'mpimod/mpihalo.f90'],
+            ],
   dependencies: mpi,
   link_with: const,
   fortran_args: real_bits)

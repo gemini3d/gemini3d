@@ -111,11 +111,16 @@ interface gather_recv
 end interface gather_recv
 
 interface gather_send
-  procedure gather_send2D_23, gather_send3D_23, gather_send4D_23
+  procedure gather_send32_2D_23, gather_send64_2D_23, &
+            gather_send32_3D_23, gather_send64_3D_23, &
+            gather_send32_4D_23, gather_send64_4D_23
 end interface gather_send
 
 interface bcast_send
-  procedure bcast_send1D_23, bcast_send2D_23, bcast_send3D_23, bcast_send4D_23
+  procedure bcast_send32_1D_23, bcast_send64_1D_23, &
+            bcast_send32_2D_23, bcast_send64_2D_23, &
+            bcast_send32_3D_23, bcast_send64_3D_23, &
+            bcast_send32_4D_23, bcast_send64_4D_23
 end interface bcast_send
 
 interface bcast_recv
@@ -126,14 +131,14 @@ interface bcast_recv
 end interface bcast_recv
 
 interface bcast_send1D_2
-  module procedure bcast_send1D_23_2
+  module procedure bcast_send32_1D_23_2, bcast_send64_1D_23_2
 end interface bcast_send1D_2
 interface bcast_recv1D_2
   module procedure bcast_recv32_1D_23_2, bcast_recv64_1D_23_2
 end interface bcast_recv1D_2
 
 interface bcast_send1D_3
-  module procedure bcast_send1D_23_3
+  module procedure bcast_send32_1D_23_3, bcast_send64_1D_23_3
 end interface bcast_send1D_3
 interface bcast_recv1D_3
   module procedure bcast_recv32_1D_23_3, bcast_recv64_1D_23_3
@@ -143,21 +148,21 @@ interface halo
   module procedure halo_23
 end interface halo
 interface bcast_send3D_x3i
-  module procedure bcast_send3D_x3i_23
+  module procedure bcast_send32_3D_x3i_23, bcast_send64_3D_x3i_23
 end interface bcast_send3D_x3i
 interface bcast_recv3D_x3i
   module procedure bcast_recv32_3D_x3i_23, bcast_recv64_3D_x3i_23
 end interface bcast_recv3D_x3i
 
 interface bcast_send3D_x2i
-  module procedure bcast_send3D_x2i_23
+  module procedure bcast_send32_3D_x2i_23, bcast_send64_3D_x2i_23
 end interface bcast_send3D_x2i
 interface bcast_recv3D_x2i
   module procedure bcast_recv32_3D_x2i_23, bcast_recv64_3D_x2i_23
 end interface bcast_recv3D_x2i
 
 interface bcast_send3D_ghost
-  module procedure bcast_send3D_ghost_23
+  module procedure bcast_send32_3D_ghost_23, bcast_send64_3D_ghost_23
 end interface bcast_send3D_ghost
 interface bcast_recv3D_ghost
   module procedure bcast_recv32_3D_ghost_23, bcast_recv64_3D_ghost_23
@@ -168,78 +173,152 @@ interface halo_end
 end interface halo_end
 
 
-interface ! mpisend.f90
+interface ! mpisend32.f90
 
-module subroutine gather_send2D_23(paramtrim,tag)
-real(wp), dimension(:,:), intent(in) :: paramtrim
+module subroutine gather_send32_2D_23(paramtrim,tag)
+real(real32), dimension(:,:), intent(in) :: paramtrim
 integer, intent(in) :: tag
-end subroutine gather_send2D_23
+end subroutine gather_send32_2D_23
 
-module subroutine gather_send3D_23(paramtrim,tag)
-real(wp), dimension(:,:,:), intent(in) :: paramtrim
+module subroutine gather_send32_3D_23(paramtrim,tag)
+real(real32), dimension(:,:,:), intent(in) :: paramtrim
 integer, intent(in) :: tag
-end subroutine gather_send3D_23
+end subroutine gather_send32_3D_23
 
-module subroutine gather_send4D_23(param,tag)
-real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: param
+module subroutine gather_send32_4D_23(param,tag)
+real(real32), dimension(-1:,-1:,-1:,:), intent(in) :: param
 integer, intent(in) :: tag
-end subroutine gather_send4D_23
+end subroutine gather_send32_4D_23
 
-module subroutine bcast_send1D_23(paramall,tag,param)
-real(wp), dimension(-1:), intent(in) :: paramall
+module subroutine bcast_send32_1D_23(paramall,tag,param)
+real(real32), dimension(-1:), intent(in) :: paramall
 integer, intent(in) :: tag
-real(wp), dimension(-1:), intent(out) :: param
-end subroutine bcast_send1D_23
+real(real32), dimension(-1:), intent(out) :: param
+end subroutine bcast_send32_1D_23
 
-module subroutine bcast_send2D_23(paramtrimall,tag,paramtrim)
-real(wp), dimension(:,:), intent(in) :: paramtrimall
+module subroutine bcast_send32_2D_23(paramtrimall,tag,paramtrim)
+real(real32), dimension(:,:), intent(in) :: paramtrimall
 integer, intent(in) :: tag
-real(wp), dimension(:,:), intent(out) :: paramtrim
-end subroutine bcast_send2D_23
+real(real32), dimension(:,:), intent(out) :: paramtrim
+end subroutine bcast_send32_2D_23
 
-module subroutine bcast_send3D_23(paramtrimall,tag,paramtrim)
-real(wp), dimension(:,:,:), intent(in) :: paramtrimall
+module subroutine bcast_send32_3D_23(paramtrimall,tag,paramtrim)
+real(real32), dimension(:,:,:), intent(in) :: paramtrimall
 integer, intent(in) :: tag
-real(wp), dimension(:,:,:), intent(out) :: paramtrim
-end subroutine bcast_send3D_23
+real(real32), dimension(:,:,:), intent(out) :: paramtrim
+end subroutine bcast_send32_3D_23
 
-module subroutine bcast_send4D_23(paramall,tag,param)
-real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: paramall
+module subroutine bcast_send32_4D_23(paramall,tag,param)
+real(real32), dimension(-1:,-1:,-1:,:), intent(in) :: paramall
 integer, intent(in) :: tag
-real(wp), dimension(-1:,-1:,-1:,:), intent(out) :: param
-end subroutine bcast_send4D_23
+real(real32), dimension(-1:,-1:,-1:,:), intent(out) :: param
+end subroutine bcast_send32_4D_23
 
-module subroutine bcast_send3D_x3i_23(paramtrimall,tag,paramtrim)
-real(wp), dimension(:,:,:), intent(in) :: paramtrimall
+module subroutine bcast_send32_3D_x3i_23(paramtrimall,tag,paramtrim)
+real(real32), dimension(:,:,:), intent(in) :: paramtrimall
 integer, intent(in) :: tag
-real(wp), dimension(:,:,:), intent(out) :: paramtrim
-end subroutine bcast_send3D_x3i_23
+real(real32), dimension(:,:,:), intent(out) :: paramtrim
+end subroutine bcast_send32_3D_x3i_23
 
-module subroutine bcast_send3D_ghost_23(paramall,tag,param)
-real(wp), dimension(-1:,-1:,-1:), intent(in) :: paramall
+module subroutine bcast_send32_3D_ghost_23(paramall,tag,param)
+real(real32), dimension(-1:,-1:,-1:), intent(in) :: paramall
 integer, intent(in) :: tag
-real(wp), dimension(-1:,-1:,-1:), intent(out) :: param
-end subroutine bcast_send3D_ghost_23
+real(real32), dimension(-1:,-1:,-1:), intent(out) :: param
+end subroutine bcast_send32_3D_ghost_23
 
-module subroutine bcast_send3D_x2i_23(paramtrimall,tag,paramtrim)
-real(wp), dimension(:,:,:), intent(in) :: paramtrimall
+module subroutine bcast_send32_3D_x2i_23(paramtrimall,tag,paramtrim)
+real(real32), dimension(:,:,:), intent(in) :: paramtrimall
 integer, intent(in) :: tag
-real(wp), dimension(:,:,:), intent(out) :: paramtrim
-end subroutine bcast_send3D_x2i_23
+real(real32), dimension(:,:,:), intent(out) :: paramtrim
+end subroutine bcast_send32_3D_x2i_23
 
-module subroutine bcast_send1D_23_3(paramall,tag,param)
-real(wp), dimension(-1:), intent(in) :: paramall
+module subroutine bcast_send32_1D_23_3(paramall,tag,param)
+real(real32), dimension(-1:), intent(in) :: paramall
 integer, intent(in) :: tag
-real(wp), dimension(-1:), intent(out) :: param
-end subroutine bcast_send1D_23_3
+real(real32), dimension(-1:), intent(out) :: param
+end subroutine bcast_send32_1D_23_3
 
-module subroutine bcast_send1D_23_2(paramall,tag,param)
-real(wp), dimension(-1:), intent(in) :: paramall
+module subroutine bcast_send32_1D_23_2(paramall,tag,param)
+real(real32), dimension(-1:), intent(in) :: paramall
 integer, intent(in) :: tag
-real(wp), dimension(-1:), intent(out) :: param
-end subroutine bcast_send1D_23_2
+real(real32), dimension(-1:), intent(out) :: param
+end subroutine bcast_send32_1D_23_2
 
-end interface
+end interface ! mpisend32.f90
+
+
+interface ! mpisend64.f90
+
+module subroutine gather_send64_2D_23(paramtrim,tag)
+real(real64), dimension(:,:), intent(in) :: paramtrim
+integer, intent(in) :: tag
+end subroutine gather_send64_2D_23
+
+module subroutine gather_send64_3D_23(paramtrim,tag)
+real(real64), dimension(:,:,:), intent(in) :: paramtrim
+integer, intent(in) :: tag
+end subroutine gather_send64_3D_23
+
+module subroutine gather_send64_4D_23(param,tag)
+real(real64), dimension(-1:,-1:,-1:,:), intent(in) :: param
+integer, intent(in) :: tag
+end subroutine gather_send64_4D_23
+
+module subroutine bcast_send64_1D_23(paramall,tag,param)
+real(real64), dimension(-1:), intent(in) :: paramall
+integer, intent(in) :: tag
+real(real64), dimension(-1:), intent(out) :: param
+end subroutine bcast_send64_1D_23
+
+module subroutine bcast_send64_2D_23(paramtrimall,tag,paramtrim)
+real(real64), dimension(:,:), intent(in) :: paramtrimall
+integer, intent(in) :: tag
+real(real64), dimension(:,:), intent(out) :: paramtrim
+end subroutine bcast_send64_2D_23
+
+module subroutine bcast_send64_3D_23(paramtrimall,tag,paramtrim)
+real(real64), dimension(:,:,:), intent(in) :: paramtrimall
+integer, intent(in) :: tag
+real(real64), dimension(:,:,:), intent(out) :: paramtrim
+end subroutine bcast_send64_3D_23
+
+module subroutine bcast_send64_4D_23(paramall,tag,param)
+real(real64), dimension(-1:,-1:,-1:,:), intent(in) :: paramall
+integer, intent(in) :: tag
+real(real64), dimension(-1:,-1:,-1:,:), intent(out) :: param
+end subroutine bcast_send64_4D_23
+
+module subroutine bcast_send64_3D_x3i_23(paramtrimall,tag,paramtrim)
+real(real64), dimension(:,:,:), intent(in) :: paramtrimall
+integer, intent(in) :: tag
+real(real64), dimension(:,:,:), intent(out) :: paramtrim
+end subroutine bcast_send64_3D_x3i_23
+
+module subroutine bcast_send64_3D_ghost_23(paramall,tag,param)
+real(real64), dimension(-1:,-1:,-1:), intent(in) :: paramall
+integer, intent(in) :: tag
+real(real64), dimension(-1:,-1:,-1:), intent(out) :: param
+end subroutine bcast_send64_3D_ghost_23
+
+module subroutine bcast_send64_3D_x2i_23(paramtrimall,tag,paramtrim)
+real(real64), dimension(:,:,:), intent(in) :: paramtrimall
+integer, intent(in) :: tag
+real(real64), dimension(:,:,:), intent(out) :: paramtrim
+end subroutine bcast_send64_3D_x2i_23
+
+module subroutine bcast_send64_1D_23_3(paramall,tag,param)
+real(real64), dimension(-1:), intent(in) :: paramall
+integer, intent(in) :: tag
+real(real64), dimension(-1:), intent(out) :: param
+end subroutine bcast_send64_1D_23_3
+
+module subroutine bcast_send64_1D_23_2(paramall,tag,param)
+real(real64), dimension(-1:), intent(in) :: paramall
+integer, intent(in) :: tag
+real(real64), dimension(-1:), intent(out) :: param
+end subroutine bcast_send64_1D_23_2
+
+end interface ! mpisend64.f90
 
 
 interface  ! mpirecv32.f90

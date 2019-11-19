@@ -55,7 +55,7 @@ module procedure output_aur_workers
 !real(wp), dimension(1:lx2,1:lwave,1:lx3) :: ivertmp
 !real(wp), dimension(1:lwave,1:lx2,1:lx3) :: ivertmp
 integer :: i
-real(wp), dimension(1:lx2,1:lx3) :: emistmp
+
 
 
 !!ivertmp=reshape(iver,[lx2,lwave,lx3],order=[1,3,2])
@@ -64,15 +64,24 @@ real(wp), dimension(1:lx2,1:lx3) :: emistmp
 !!------- SEND AURORA PARAMETERS TO ROOT
 !call gather_send(ivertmp,tagAur)
 
-do i = 1,lwave
-  emistmp=iver(:, :, i)
-  call gather_send(emistmp,tagAur)
-end do
+emisSend: block
+
+  real(wp), dimension(1:lx2, 1:lx3) :: tmp2
+
+  do i = 1,lwave
+    tmp2 = iver(:, :, i)
+    call gather_send(tmp2, tagAur)
+  end do
+
+end block emisSend
 
 glow_sendMPI : block
 
+  real(wp), dimension(1:lx1, 1:lx2, 1:lx3) :: tmp3
+
   do i = 1,size(zxden, 4)  !< loop over species
-    call gather_send(zxden(:,:,:,i), tagZxden)
+    tmp3 = zxden(:,:,:,i)
+    call gather_send(tmp3, tagZxden)
   enddo
 
 end block glow_sendMPI
