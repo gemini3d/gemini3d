@@ -303,6 +303,8 @@ do while (t<tdur)
   if(myid==0) print *, 'Nullifying low altitude currents...'
   where (alt<75d3)
     J1=0d0
+    J2=0d0
+    J3=0d0
   end where
 
 
