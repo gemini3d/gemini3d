@@ -3,11 +3,12 @@ addpath([cwd,'/../script_utils'])
 
 %SIMULATIONS LOCAITONS
 %simname='tohoku20113D_highres_var/';
-simname='test3d_fang_mag/';
+%simname='test3d_fang_mag/';
 %simname='mooreOK3D_hemis_medres/'
 %simname='iowa3D_hemis_medres2/'
-%basedir='~/Downloads/'
-basedir='~/simulations/'
+simname='iowa3D_hemis_medres2_control/'
+basedir='~/SDHCcard/'
+%basedir='~/simulations/'
 direc=[basedir,simname];
 mkdir([direc, filesep, 'Brplots']);
 mkdir([direc, filesep, 'Brplots_eps']);
@@ -33,10 +34,10 @@ fclose(fid);
 
 
 %REORGANIZE THE FIELD POINTS (PROBLEM-SPECIFIC)
-ltheta=10;
-lphi=10;
-%ltheta=40;
-%lphi=40;
+%ltheta=10;
+%lphi=10;
+ltheta=40;
+lphi=40;
 %ltheta=20;
 %lphi=20;
 %ltheta=1600;

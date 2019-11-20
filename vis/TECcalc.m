@@ -1,3 +1,5 @@
+addpath ../../GEMINI-scripts/vendor/;
+
 %SIMULATIONS LOCAITONS
 %simname='tohoku20113D_highres_long/';
 %simname_control='tohoku20113D_highres_long_control/';
