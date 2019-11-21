@@ -1,10 +1,11 @@
 cwd = fileparts(mfilename('fullpath'));
 addpath([cwd,'/../script_utils'])
-addpath([cwd,'/../../GEMINI-scripts/vendor/'])
+addpath([cwd,'/../vendor/colormaps'])
 
 
 %SIMULATIONS LOCAITONS
-simname='iowa3D_hemis_medres2/';
+%simname='iowa3D_hemis_medres2/';
+simname='mooreOK3D_hemis_medres/';
 basedir='~/SDHCcard/'
 direc=[basedir,simname];
 mkdir([direc, filesep, 'TECplots']);    %store output plots with the simulation data
@@ -64,7 +65,7 @@ for it=1:lt
     set(gca,'FontSize',FS);
     tightmap;
 %    caxis([-3,3]);
-    caxis([-0.25,0.25]);
+    caxis([-0.5,0.5]);
     c=colorbar
     set(c,'FontSize',FS)
     xlabel(c,'\Delta vTEC (TECU)')
