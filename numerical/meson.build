@@ -11,7 +11,8 @@ calculus = library('calculus',
   link_with: [const, mesh])
 
 advection = library('advection', 'advection/advec_mpi.f90',
-  link_with: [const, grid, mpimod])
+  link_with: [const, grid, mpimod],
+  dependencies: mpi)  # ifort needs dep: mpi here
 
 subdir('diffusion')
 subdir('interpolation')
