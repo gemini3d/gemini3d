@@ -46,10 +46,11 @@ endif
 threads = dependency('threads')
 
 # == MPI
-mpiexec = find_program('mpiexec', required: false, disabler: true)
+mpiexec = find_program('mpiexec')
 mpi = dependency('mpi', language : 'fortran')
-if mpi.found() and not fc.links('use mpi; end', dependencies : mpi, name: 'Fortran MPI')
-  mpi = disabler()
+# this test needs to be .RUN() to catch some MPI configuration errors
+if fc.run(files('../tests/test_mpi.f90'), dependencies : mpi, name: 'Fortran MPI').returncode() != 0
+  error('mpi was not able to run a simple program')
 endif
 
 # --- Find Lapack
