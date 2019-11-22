@@ -11,7 +11,8 @@ potential = library('potential',
 
 test_potential2d = executable('test_potential2d', 'test_potential2D.f90',
   link_with: [pde_elliptic, const],
-  dependencies: mpi)
+  dependencies: [blacs, mpi],
+  link_language: 'fortran')
 test('potential2d', test_potential2d, timeout: 30, suite: 'unit')
 
 test('potential2d_octave', octave,

@@ -32,8 +32,8 @@ elif fc.get_id() == 'intel'
 elif fc.get_id() == 'intel-cl'
   # /fpp is necessary for any Fortran preprocessing statement with Intel ifort on Windows
   # https://software.intel.com/en-us/fortran-compiler-developer-guide-and-reference-fpp
-   add_project_arguments('/fpp', std18, impnone, language: 'fortran')
-   if get_option('buildtype').contains('debug')
+  add_project_arguments('/fpp', std18, impnone, language: 'fortran')
+  if get_option('buildtype').contains('debug')
     add_project_arguments(bounds, '/heap-arrays', language: 'fortran')
   endif
 elif ['pgi', 'flang'].contains(fc.get_id())
@@ -44,7 +44,9 @@ elif ['pgi', 'flang'].contains(fc.get_id())
 endif
 
 # -- MKL (in general, MKL can be used with intel, intel-cl, gcc or PGI)
-mklroot = get_option('MKLROOT')
+mklroot = get_option('mklroot')
+mkllib_root = mklroot/'lib/intel64'
+# os == 'windows' ? mklroot/'lib/intel64_win' : mklroot/'lib/intel64'
 
 # == threads
 threads = dependency('threads')
@@ -57,37 +59,51 @@ if fc.run(files('../tests/test_mpi.f90'), dependencies : mpi, name: 'Fortran MPI
   error('mpi was not able to run a simple program')
 endif
 
-# --- Find Lapack
+# == Intel OpenMP
+intelMP_lib = []
+if mklroot != ''
+  n = os == 'windows' ? 'iomp5md' : 'iomp5'
+  intelMP_lib = fc.find_library(n, dirs: mklroot / '../compiler/lib/intel64')
+endif
 
-lapack_root = get_option('LAPACK_ROOT')
-if lapack_root == ''
+# == Lapack
+if mklroot == ''
   blas = dependency('blas', required: false, disabler: true)
   if not blas.found()  # necessary for some systems incl. CentOS 7
     blas = fc.find_library('blas', required: false, disabler: true)
   endif
-else
-  blas = fc.find_library('blas', dirs: lapack_root, required: false, disabler: true)
-endif
-if blas.found() and not fc.links('x=dnrm2(1, [2.], 1); end', dependencies: blas, name: 'BLAS')
-  blas = disabler()
-endif
+  if blas.found() and not fc.links('x=dnrm2(1, [2.], 1); end', dependencies: blas, name: 'BLAS')
+    blas = disabler()
+  endif
 
-lapack = disabler()
-if lapack_root == ''
-  lapack = dependency('lapack', cmake_module_path: 'cmake/Modules', required: false, disabler: true)
+  lapack = dependency('lapack', required: false, disabler: true)
   if not lapack.found()
     lapack = fc.find_library('lapack', required: false, disabler: true)
   endif
+  if lapack.found() and not fc.links('print *,disnan(0.); end', dependencies: lapack, name: 'LAPACK')
+    lapack = disabler()
+  endif
+  if not lapack.found() or not blas.found()
+    lapack_proj = subproject('lapack')
+    lapack = lapack_proj.get_variable('lapack')
+    blas = lapack_proj.get_variable('blas')
+  endif
 else
-  lapack = fc.find_library('lapack', dirs: lapack_root, required: false, disabler: true)
+  # MKL
+  lapack = []
+  n1 = fc.get_id() == 'gcc' ? 'mkl_gf_lp64' : 'mkl_intel_lp64'
+  names = [n1, 'mkl_intel_thread', 'mkl_core']
+  foreach n : names
+    lapack += fc.find_library(n, dirs: mkllib_root)
+  endforeach
+  lapack += intelMP_lib
+  blas = lapack
 endif
-if lapack.found() and not fc.links('print *,disnan(0.); end', dependencies: lapack, name: 'LAPACK')
-  lapack = disabler()
-endif
-if not lapack.found() or not blas.found()
-  lapack_proj = subproject('lapack')
-  lapack = lapack_proj.get_variable('lapack')
-  blas = lapack_proj.get_variable('blas')
+
+# --- intel MPI lib for Windows
+intelmpi_lib = []
+if mklroot != '' and os == 'windows'
+  intelmpi_lib = fc.find_library('impi', dirs: mklroot / '../mpi/intel64/lib/release')
 endif
 
 # --- Find BLACS
@@ -99,29 +115,17 @@ if mklroot == ''
     blacs = []
   endif
 else
-  if os == 'windows'
-    blacsroot = mklroot/'lib/intel64_win'
-  else
-    blacsroot = mklroot/'lib/intel64'
-  endif
-  blacs += fc.find_library('mkl_blacs_intelmpi_lp64', dirs: blacsroot)
-  if fc.get_id() == 'intel-cl'
-    blacs += fc.find_library('impi', dirs: blacsroot)
-    blacs += fc.find_library('iomp5md', dirs: blacsroot)
-  else
-    # blacs += fc.find_library('iomp5', dirs: blacsroot)  # link advisor cites, but not present on Linux...
-  endif
+  blacs += fc.find_library('mkl_blacs_intelmpi_lp64', dirs: mkllib_root)
+  blacs += intelmpi_lib
 endif
 
 
 # --- Find Scalapack
-# dependency('scalapack') not yet working in Meson--cmake->meson bug within Meson, yielding long meson-log.txt
-# scalapack = dependency('scalapack', cmake_module_path : 'cmake/Modules')
 scalapack = disabler()
 
 if mklroot != ''
-  scalapack_lib = fc.find_library('mkl_scalapack_lp64', dirs: blacsroot)
-  scalapack = declare_dependency(dependencies: scalapack_lib, include_directories: mklroot/'include/intel64/lp64')
+  scalapack_lib = fc.find_library('mkl_scalapack_lp64', dirs: mkllib_root)
+  scalapack = declare_dependency(dependencies: [scalapack_lib, blacs, lapack, intelmpi_lib], include_directories: mklroot/'include/intel64/lp64')
 endif
 
 if not scalapack.found()
@@ -149,57 +153,59 @@ if not scalapack.found()
   scalapack = declare_dependency(link_with: scalapack_proj.get_variable('scalapack_lib'))
 endif
 
-# --- find M, 'bounds', umps
+# --- find Mumps
 mumps = disabler()
 
-if bits == '64'
-  mumps_name = 'dmumps'
-elif bits == '32'
-  mumps_name = 'smumps'
-else
-  error('unknown precision ' + bits)
-endif
-
-mumps_root = get_option('MUMPS_ROOT')
-
-if mumps_root == ''
-  # mumps = dependency('MUMPS', cmake_module_path : 'cmake/Modules')
-  if os == 'linux'
-    mumps_root = '/usr'
-    mumpslib = [fc.find_library(mumps_name, required : false, disabler: true),
-                fc.find_library('mumps_common', required: false, disabler: true)]
-  elif os == 'darwin'
-    # assuming homebrew
-    mumps_root = '/usr/local/opt/mumps'
-    mumpslib = [fc.find_library(mumps_name, dirs: mumps_root / 'lib', required : false, disabler: true),
-                  fc.find_library('mumps_common', dirs: mumps_root / 'lib', required: false, disabler: true)]
+if mklroot == ''
+  if bits == '64'
+    mumps_name = 'dmumps'
+  elif bits == '32'
+    mumps_name = 'smumps'
   else
-    mumpslib = [disabler(), disabler()]
+    error('unknown precision ' + bits)
   endif
-else
-  mumpslib = [fc.find_library(mumps_name, dirs : mumps_root, required : false, disabler: true),
-              fc.find_library('mumps_common', dirs : mumps_root, required : false, disabler: true)]
-endif
-mumpsinc = mumps_root / 'include'
-if mumpslib[0].found() and mumpslib[1].found()
-  mumps = declare_dependency(include_directories: include_directories(mumpsinc), dependencies: mumpslib)
+
+  mumps_root = get_option('MUMPS_ROOT')
+  if mumps_root == ''
+    if os == 'linux'
+      mumps_root = '/usr'
+      mumpslib = [fc.find_library(mumps_name, required : false, disabler: true),
+                  fc.find_library('mumps_common', required: false, disabler: true)]
+    elif os == 'darwin'
+      # assuming homebrew
+      mumps_root = '/usr/local/opt/mumps'
+      mumpslib = [fc.find_library(mumps_name, dirs: mumps_root / 'lib', required : false, disabler: true),
+                    fc.find_library('mumps_common', dirs: mumps_root / 'lib', required: false, disabler: true)]
+    else
+      mumpslib = [disabler(), disabler()]
+    endif
+  else
+    mumpslib = [fc.find_library(mumps_name, dirs : mumps_root, required : false, disabler: true),
+                fc.find_library('mumps_common', dirs : mumps_root, required : false, disabler: true)]
+  endif
+
+  mumpsinc = mumps_root / 'include'
+  if mumpslib[0].found() and mumpslib[1].found()
+    mumps = declare_dependency(include_directories: include_directories(mumpsinc), dependencies: mumpslib)
+  endif
+
+  code='''
+  include 'dmumps_struc.h'
+  type(DMUMPS_STRUC) :: mumps_par
+  end'''
+
+  if mumps.found() and not fc.links(code, include_directories: include_directories(mumpsinc), dependencies: mumpslib, name: 'MUMPS')
+    mumps = disabler()
+  endif
 endif
 
-code='''
-include 'dmumps_struc.h'
-type(DMUMPS_STRUC) :: mumps_par
-end'''
-
-if mumps.found() and not fc.links(code, include_directories: include_directories(mumpsinc), dependencies: mumpslib, name: 'MUMPS')
-  mumps = disabler()
-endif
-if not mumps.found() and scalapack.found()
+if not mumps.found()
+  # MKL will always build MUMPS too
   mumps_proj = subproject('mumps')
   mumps = mumps_proj.get_variable('mumps')
 endif
 
 # --- HDF5
-# NOTE: Gemini HDF5 I/O is just a stub at the moment, undergoing development.
 if get_option('hdf5').enabled()
   hdf5_proj = subproject('h5fortran')
   hdf5_interface = hdf5_proj.get_variable('hdf5_interface')
