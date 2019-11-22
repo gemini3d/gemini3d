@@ -15,7 +15,7 @@ endif
 # === compiler options
 quiet = fc.first_supported_argument(['-w', '-nowarn', '/nowarn'])
 impnone = fc.first_supported_argument(['-fimplicit-none', '-warn declarations', '/warn:declarations', '-Mdclchk'])
-std18 = fc.first_supported_argument(['-std=f2018', '-stand f18', '/stand:f18'])
+std18 = fc.first_supported_argument(['-std=f2018', '-stand=f18', '/stand:f18'])
 bounds = fc.first_supported_argument(['-Werror=array-bounds', '-check bounds', '/check:bounds', '-Mbounds'])
 if fc.get_id() == 'gcc'
   add_project_arguments('-Wno-unused-variable', '-Wno-maybe-uninitialized', '-Wno-unused-dummy-argument', '-Wno-unused-function',
@@ -86,40 +86,69 @@ if not lapack.found() or not blas.found()
   blas = lapack_proj.get_variable('blas')
 endif
 
+# -- MKL (in general, MKL can be used with intel, intel-cl, gcc or PGI)
+mklroot = get_option('MKLROOT')
+
 # --- Find BLACS
 # some systems need Blacs explicitly, but most don't, so don't pass disabler() if not found.
-blacs = fc.find_library('blacs-openmpi', required: false)
-if not blacs.found()
-  blacs = []
-endif
-
-# --- Find Scalapack
-scalapack = disabler()
-scalapack_root = get_option('SCALAPACK_ROOT')
-if scalapack_root == ''
-  # dependency('scalapack') not yet working in Meson--cmake->meson bug within Meson, yielding long meson-log.txt
-  # scalapack = dependency('scalapack', cmake_module_path : 'cmake/Modules')
-  if os == 'linux'
-    scalapack = fc.find_library('scalapack-openmpi', required: false, disabler: true)
-    if not scalapack.found()
-      scalapack = fc.find_library('scalapack', required: false, disabler: true)
-    endif
-  elif os == 'darwin'
-    scalapack_root = '/usr/local/opt/scalapack'
-    scalapack = fc.find_library('scalapack', dirs: scalapack_root / 'lib', required: false, disabler: true)
+blacs = []
+if mklroot == ''
+  blacs = fc.find_library('blacs-openmpi', required: false)
+  if not blacs.found()
+    blacs = []
   endif
 else
-  scalapack = fc.find_library('scalapack', dirs : scalapack_root / 'lib', required: false, disabler: true)
+  if os == 'windows'
+    blacsroot = mklroot/'lib/intel64_win'
+  else
+    blacsroot = mklroot/'lib/intel64'
+  endif
+  blacs += fc.find_library('mkl_blacs_intelmpi_lp64', dirs: blacsroot)
+  if fc.get_id() == 'intel-cl'
+    blacs += fc.find_library('impi', dirs: blacsroot)
+    blacs += fc.find_library('iomp5md', dirs: blacsroot)
+  else
+    # blacs += fc.find_library('iomp5', dirs: blacsroot)  # link advisor cites, but not present on Linux...
+  endif
 endif
-if scalapack.found() and not fc.links('L = numroc(1,1,1,1,1); end', dependencies: scalapack, name: 'SCALAPACK')
-  scalapack = disabler()
+
+
+# --- Find Scalapack
+# dependency('scalapack') not yet working in Meson--cmake->meson bug within Meson, yielding long meson-log.txt
+# scalapack = dependency('scalapack', cmake_module_path : 'cmake/Modules')
+scalapack = disabler()
+
+if mklroot != ''
+  scalapack_lib = fc.find_library('mkl_scalapack_lp64', dirs: blacsroot)
+  scalapack = declare_dependency(dependencies: scalapack_lib, include_directories: mklroot/'include/intel64/lp64')
 endif
+
+if not scalapack.found()
+  scalapack_root = get_option('SCALAPACK_ROOT')
+  if scalapack_root != ''
+    scalapack = fc.find_library('scalapack', dirs : scalapack_root / 'lib', required: false, disabler: true)
+  else
+    if os == 'linux'
+      scalapack = fc.find_library('scalapack-openmpi', required: false, disabler: true)
+      if not scalapack.found()
+        scalapack = fc.find_library('scalapack', required: false, disabler: true)
+      endif
+    elif os == 'darwin'
+      scalapack_root = '/usr/local/opt/scalapack'
+      scalapack = fc.find_library('scalapack', dirs: scalapack_root / 'lib', required: false, disabler: true)
+    endif
+  endif
+  if scalapack.found() and not fc.links('L = numroc(1,1,1,1,1); end', dependencies: scalapack, name: 'SCALAPACK')
+    scalapack = disabler()
+  endif
+endif
+
 if not scalapack.found() and mpiexec.found()
   scalapack_proj = subproject('scalapack')
   scalapack = declare_dependency(link_with: scalapack_proj.get_variable('scalapack_lib'))
 endif
 
-# --- find Mumps
+# --- find M, 'bounds', umps
 mumps = disabler()
 
 if bits == '64'
