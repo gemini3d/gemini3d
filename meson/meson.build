@@ -43,6 +43,10 @@ elif ['pgi', 'flang'].contains(fc.get_id())
   endif
 endif
 
+# -- MKL (in general, MKL can be used with intel, intel-cl, gcc or PGI)
+mklroot = get_option('MKLROOT')
+
+# == threads
 threads = dependency('threads')
 
 # == MPI
@@ -85,9 +89,6 @@ if not lapack.found() or not blas.found()
   lapack = lapack_proj.get_variable('lapack')
   blas = lapack_proj.get_variable('blas')
 endif
-
-# -- MKL (in general, MKL can be used with intel, intel-cl, gcc or PGI)
-mklroot = get_option('MKLROOT')
 
 # --- Find BLACS
 # some systems need Blacs explicitly, but most don't, so don't pass disabler() if not found.
@@ -143,7 +144,7 @@ if not scalapack.found()
   endif
 endif
 
-if not scalapack.found() and mpiexec.found()
+if not scalapack.found()
   scalapack_proj = subproject('scalapack')
   scalapack = declare_dependency(link_with: scalapack_proj.get_variable('scalapack_lib'))
 endif
