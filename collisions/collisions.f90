@@ -215,8 +215,12 @@ lx3=size(Ts,3)-4
 
 !MOBILITIES
 do isp=1,lsp
-!      OMs=qs(isp)*abs(B1)/ms(isp)                 !cyclotron, abs() is sketch, needs to be checked.  Basically a negative sign here is fine, while abs messes up direction of Hall current
-  OMs=qs(isp)*B1(1:lx1,1:lx2,1:lx3)/ms(isp)                 !cyclotron, a negative sign from B1 here is fine for cartesian, but for dipole this should be the magnitude since the magnetic field is *assumed* to be along the x1-direction
+!      OMs=qs(isp)*abs(B1)/ms(isp)
+  !! cyclotron, abs() is sketch, needs to be checked.
+  !! Basically a negative sign here is fine, while abs messes up direction of Hall current
+  OMs=qs(isp)*B1(1:lx1,1:lx2,1:lx3)/ms(isp)
+  !! cyclotron, a negative sign from B1 here is fine for cartesian, but for dipole this should be the magnitude
+  !! since the magnetic field is *assumed* to be along the x1-direction
 
   nu=0.0_wp
   do isp2=1,ln
@@ -291,7 +295,9 @@ incap=incap/B1(1:lx1,1:lx2,1:lx3)**2
 
 if (flagcap==2) then
   if (debug) print *, '!!! Augmenting capacitance with a magnetospheric contribution...'
-  incap=incap+30.0_wp/980e3_wp    !kludge the value to account for a magnetosheric contribution - this is just a random guess that makes the KHI examples work well; a better value should be investigated
+  incap=incap+30.0_wp/980e3_wp
+  !! kludge the value to account for a magnetosheric contribution
+  !! this is just a random guess that makes the KHI examples work well; a better value should be investigated
 end if
 end subroutine capacitance
 

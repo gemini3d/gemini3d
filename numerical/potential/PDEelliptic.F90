@@ -324,7 +324,8 @@ function elliptic2D_polarization(srcterm,SigP2,SigP3,SigH,gradSigH2,gradSigH3,Cm
 !-------               D=Cm
 !------------------------------------------------------------
 
-real(wp), dimension(:,:), intent(in) :: srcterm,SigP2,SigP3,SigH,Cm,gradSigH2,gradSigH3,v2,v3   !ZZZ - THESE WILL NEED TO BE MODIFIED CONDUCTIVITIES, AND WE'LL NEED THREE OF THEM
+real(wp), dimension(:,:), intent(in) :: srcterm,SigP2,SigP3,SigH,Cm,gradSigH2,gradSigH3,v2,v3
+!! ZZZ - THESE WILL NEED TO BE MODIFIED CONDUCTIVITIES, AND WE'LL NEED THREE OF THEM
 real(wp), dimension(:), intent(in) :: Vminx2,Vmaxx2
 real(wp), dimension(:), intent(in) :: Vminx3,Vmaxx3
 real(wp), intent(in) :: dt
@@ -369,7 +370,8 @@ real(wp), dimension(size(SigP2,1),size(SigP2,2)) :: elliptic2D_polarization
   lx3=size(SigP2,2)
   lPhi=lx2*lx3
 !      lent=5*(lx2-2)*(lx3-2)+2*lx2+2*(lx3-2)    !static model; left here as a reference
-  lent=17*(lx2-2)*(lx3-2)+2*lx2+2*(lx3-2)-3*2*(lx2-2)-3*2*(lx3-2)    !interior+boundary-x3_adj-x2_adj.  Note that are 3 sets of entries for each adjacent point
+  lent=17*(lx2-2)*(lx3-2)+2*lx2+2*(lx3-2)-3*2*(lx2-2)-3*2*(lx3-2)
+  !! interior+boundary-x3_adj-x2_adj.  Note that are 3 sets of entries for each adjacent point
   allocate(ir(lent),ic(lent),M(lent),b(lPhi))
   if (debug) print *, 'MUMPS will attempt a solve of size:  ',lx2,lx3
   if (debug) print *, 'Total unknowns and nonzero entries in matrix:  ',lPhi,lent
@@ -377,7 +379,8 @@ real(wp), dimension(size(SigP2,1),size(SigP2,2)) :: elliptic2D_polarization
 
   !PREP INPUT DATA FOR SOLUTION OF SYSTEM
   SigPh2(1,:)=0d0
-  SigPh2(2:lx2,:)=0.5d0*(SigP2(1:lx2-1,:)+SigP2(2:lx2,:))   !note the different conductiances here ot be associated with derivatives in different directions
+  SigPh2(2:lx2,:)=0.5d0*(SigP2(1:lx2-1,:)+SigP2(2:lx2,:))
+  !! note the different conductiances here ot be associated with derivatives in different directions
   SigPh3(:,1)=0d0
   SigPh3(:,2:lx3)=0.5d0*(SigP3(:,1:lx3-1)+SigP3(:,2:lx3))
   Cmh2(1,:)=0d0
@@ -441,7 +444,8 @@ real(wp), dimension(size(SigP2,1),size(SigP2,2)) :: elliptic2D_polarization
 
         !ix2,ix3-2 grid point
         coeff=-1d0*Cm(ix2,ix3-1)*v3(ix2,ix3-1)/( (dx3all(ix3)+dx3all(ix3+1))*(dx3all(ix3-1)*dx3iall(ix3-1)) )
-        if (ix3==2) then    !bit of intentional code duplication here and in the following sections to keep things organized in a way I can debug...
+        if (ix3==2) then
+          !! bit of intentional code duplication here and in the following sections to keep things organized in a way I can debug...
           b(iPhi)=b(iPhi)-coeff*Vminx3(ix2)
         else
           ir(ient)=iPhi
@@ -491,7 +495,8 @@ real(wp), dimension(size(SigP2,1),size(SigP2,2)) :: elliptic2D_polarization
 
         coeff=Cmh3(ix2,ix3)/(dt*dx3iall(ix3)*dx3all(ix3))
         M(ient)=M(ient)+coeff   !polarization time derivative terms
-        b(iPhi)=b(iPhi)+coeff*Phi0(ix2,ix3-1)   !add in polarziation terms that include previous time step potential at this grid point
+        b(iPhi)=b(iPhi)+coeff*Phi0(ix2,ix3-1)
+        !! add in polarziation terms that include previous time step potential at this grid point
 
         coeff=Cm(ix2,ix3-1)*v3(ix2,ix3-1)/( (dx3all(ix3)+dx3all(ix3+1))*(dx3all(ix3)*dx3iall(ix3-1)) )+ &
               Cm(ix2,ix3-1)*v3(ix2,ix3-1)/( (dx3all(ix3)+dx3all(ix3+1))*(dx3all(ix3-1)*dx3iall(ix3-1)) )
@@ -885,10 +890,21 @@ real(wp), dimension(size(SigP,1),size(SigP,2)) :: elliptic2D_polarization_period
   lx2=size(SigP,1)    !these are full-grid sizes since grid module globals are not in scope
   lx3=size(SigP,2)
   lPhi=lx2*lx3
-!      lent=5*(lx2-2)*(lx3-2)+2*lx2+2*(lx3-2)    !static model
-!      lent=17*(lx2-2)*(lx3A-2)+2*lx2+2*(lx3-2)-3*2*(lx2-2)-3*2*(lx3-2)    !interior+boundary-x3_adj-x2_adj.  Note that are 3 sets of entries for each adjacent point.  The x3 adjacent points do not need to be removed in teh case of periodic boundary conditions.  This is technicall correct, but a bit misleading, I think.  Shouldn't it be lent=17*(lx2-2)*(lx3-2)+2*(lx2-2)+2*lx3-3*2*(lx2-2)-3*2*(lx3-2)???????
-!      lent=17*(lx2-2)*(lx3+1-2)+2*(lx3+1)+3*(lx2-2)-3*2*(lx3+1-2)    !true interior with x3 boundaries which are not treated as interior in periodic solves  + add x2 boundaries (note that these are now size lx3+1) + 3 entries for each x3 ghost cell that we are adding - x2_adj (x2 is not periodici, two sets of three points each, note again the larger x3 size as compared to aperiodic solutions).
-  lent=17*(lx2-2)*(lx3-2)+2*(lx3)+17*2*(lx2-2)-3*2*lx3    !true interior with x3 boundaries which are not treated as interior in periodic solves  + add x2 boundaries (note that these are now size lx3+1) + x3 edge cells (treated here as interior) - x2_adj (x2 is not periodici, two sets of three points each, note again the larger x3 size as compared to aperiodic solutions).
+!      lent=5*(lx2-2)*(lx3-2)+2*lx2+2*(lx3-2)
+!! static model
+!      lent=17*(lx2-2)*(lx3A-2)+2*lx2+2*(lx3-2)-3*2*(lx2-2)-3*2*(lx3-2)
+!! interior+boundary-x3_adj-x2_adj.  Note that are 3 sets of entries for each adjacent point.
+!! The x3 adjacent points do not need to be removed in teh case of periodic boundary conditions.
+!! This is technicall correct, but a bit misleading, I think.
+!! Shouldn't it be lent=17*(lx2-2)*(lx3-2)+2*(lx2-2)+2*lx3-3*2*(lx2-2)-3*2*(lx3-2)???????
+!      lent=17*(lx2-2)*(lx3+1-2)+2*(lx3+1)+3*(lx2-2)-3*2*(lx3+1-2)
+!! true interior with x3 boundaries which are not treated as interior in periodic solves
+!! + add x2 boundaries (note that these are now size lx3+1) + 3 entries for each x3 ghost cell that we are adding
+!! - x2_adj (x2 is not periodici, two sets of three points each, note again the larger x3 size as compared to aperiodic solutions).
+  lent=17*(lx2-2)*(lx3-2)+2*(lx3)+17*2*(lx2-2)-3*2*lx3
+!! true interior with x3 boundaries which are not treated as interior in periodic solves
+!! + add x2 boundaries (note that these are now size lx3+1) + x3 edge cells (treated here as interior)
+!! - x2_adj (x2 is not periodici, two sets of three points each, note again the larger x3 size as compared to aperiodic solutions).
   allocate(ir(lent),ic(lent),M(lent),b(lPhi))
 
   if (debug) print *, 'MUMPS will attempt a solve of size:  ',lx2,lx3
@@ -918,9 +934,11 @@ real(wp), dimension(size(SigP,1),size(SigP,2)) :: elliptic2D_polarization_period
   M(:)=0d0
   b=pack(srcterm,.true.)           !boundaries overwritten later, polarization terms also added later.
   ient=1
-  do ix3=1,lx3    !note that we have one extra ghost cell now to deal with due to the way we've chosen to implement periodic boundary conditions
+  do ix3=1,lx3
+  !! note that we have one extra ghost cell now to deal with due to the way we've chosen to implement periodic boundary conditions
     do ix2=1,lx2
-      iPhi=lx2*(ix3-1)+ix2     !linear index referencing Phi(ix2,ix3) as a column vector.  Also row of big matrix
+      iPhi=lx2*(ix3-1)+ix2
+      !! linear index referencing Phi(ix2,ix3) as a column vector.  Also row of big matrix
 
       if (ix2==1) then          !BOTTOM GRID POINTS + CORNER
         ir(ient)=iPhi
@@ -937,7 +955,8 @@ real(wp), dimension(size(SigP,1),size(SigP,2)) :: elliptic2D_polarization_period
       else                      !TREAT AS AN INTERIOR LOCATION, THIS INCLUDE X3 EDGES NOW SINCE PERIODIC,CIRCULANT
 
 
-      !ZZZ - NEED TO WRAP INDICES AROUND:  X 1) matrix row/column entries; 2) references to dx3i*(anything but ix3);  3) references to conductances/bcs/etc.
+      !! ZZZ - NEED TO WRAP INDICES AROUND:  X 1)
+      !! matrix row/column entries; 2) references to dx3i*(anything but ix3);  3) references to conductances/bcs/etc.
 
         !ix2-1,ix3-2 grid point
         coeff=-1d0*Cm(ix2,mod(ix3-1-1+lx3,lx3)+1)*v2(ix2,mod(ix3-1-1+lx3,lx3)+1)/ &
@@ -946,7 +965,9 @@ real(wp), dimension(size(SigP,1),size(SigP,2)) :: elliptic2D_polarization_period
         ix3tmp=mod(ix3-2-1+lx3,lx3)+1
         ix2tmp=ix2-1
         ic(ient)=lx2*(ix3tmp-1)+ix2tmp
-!              ic(ient)=iPhi-2*lx2-1+lPhi-1   !add the grid size to wrap the index around (would be negative otherwise), -1 at end because the last grid opint is actually the same as the first for our implementation
+!              ic(ient)=iPhi-2*lx2-1+lPhi-1
+        !! add the grid size to wrap the index around (would be negative otherwise),
+        !! -1 at end because the last grid opint is actually the same as the first for our implementation
 !            else
 !              ic(ient)=iPhi-2*lx2-1
 !            end if
@@ -1010,7 +1031,8 @@ real(wp), dimension(size(SigP,1),size(SigP,2)) :: elliptic2D_polarization_period
 
         coeff=Cmh3(ix2,ix3)/(dt*dx3iall(ix3)*dx3all(ix3))
         M(ient)=M(ient)+coeff   !polarization time derivative terms
-        b(iPhi)=b(iPhi)+coeff*Phi0(ix2,mod(ix3-1-1+lx3,lx3)+1)   !add in polarziation terms that include previous time step potential at this grid point
+        b(iPhi)=b(iPhi)+coeff*Phi0(ix2,mod(ix3-1-1+lx3,lx3)+1)
+        !! add in polarziation terms that include previous time step potential at this grid point
 
         coeff=Cm(ix2,mod(ix3-1-1+lx3,lx3)+1)*v3(ix2,mod(ix3-1-1+lx3,lx3)+1)/ &
                  ( (dx3all(ix3)+dx3all(ix3+1))*(dx3all(ix3)*dx3iall(mod(ix3-1-1+lx3,lx3)+1)) )+ &
@@ -1452,7 +1474,9 @@ real(wp), dimension(size(sig0,1),1,size(sig0,3)) :: elliptic2D_cart
     do ix1=1,lx1
       iPhi=lx1*(ix3-1)+ix1     !linear index referencing Phi(ix1,ix3) as a column vector.  Also row of big matrix
 
-      if (ix1==1) then          !(LOGICAL) BOTTOM GRID POINTS + CORNER, USE NEUMANN HERE, PRESUMABLY ZERO.  ZZZ - potential problem here if we have inverted grid...
+      if (ix1==1) then
+        !! (LOGICAL) BOTTOM GRID POINTS + CORNER, USE NEUMANN HERE, PRESUMABLY ZERO.
+        !! ZZZ - potential problem here if we have inverted grid...
         if (gridflag/=1) then
           ir(ient)=iPhi
           ic(ient)=iPhi

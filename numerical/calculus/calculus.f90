@@ -4,7 +4,8 @@ module calculus
 
 !SIZES USED IN ALL DERIVATIVE PROCEDURES ARE STORED IN GRID MODULE
 use phys_consts, only: wp
-use mesh, only : curvmesh         !we do not want the full-grid sizes (lx1,lx2,lx3) in scope since we routinely need to do subgrid derivatives
+use mesh, only : curvmesh
+!! we do not want the full-grid sizes (lx1,lx2,lx3) in scope since we routinely need to do subgrid derivatives
 implicit none
 private
 
@@ -25,7 +26,8 @@ interface div3D
   module procedure div3D_curv_23
 end interface div3D
 
-!ROUTINES BELOW DO NOT ACCOUNT FOR METRIC FACTORS...  As such they need to really be renamed to avoid confusion (they aren't curvilinear derivatives)
+!! ROUTINES BELOW DO NOT ACCOUNT FOR METRIC FACTORS...
+!! As such they need to really be renamed to avoid confusion (they aren't curvilinear derivatives)
 
 interface grad2D2
   module procedure grad2D2_curv_23
@@ -147,7 +149,8 @@ end interface
 interface ! div.f90
 
 module function div3D_curv_23(f1,f2,f3,x,lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3)
-real(wp), dimension(:,:,:), intent(in) :: f1,f2,f3    !regardless of what has been passed into the function here, we assume these start at 1
+real(wp), dimension(:,:,:), intent(in) :: f1,f2,f3
+!! regardless of what has been passed into the function here, we assume these start at 1
 type(curvmesh), intent(in) :: x
 integer, intent(in) :: lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3
 real(wp), dimension(1:size(f1,1),1:size(f1,2),1:size(f1,3)) :: div3D_curv_23
@@ -518,10 +521,14 @@ if(lx3 == x%lx3all) then    !differentiating over full grid
   do ix2=1,lx2
     do ix1=1,lx1
 !          grad3D3_curv_periodic(ix1,ix2,1)=(f(ix1,ix2,2)-f(ix1,ix2,1))/x%dx3all(lbnd+1)
-      grad3D3_curv_periodic(ix1,ix2,1)=(f(ix1,ix2,2)-f(ix1,ix2,lx3))/(x%dx3all(lbnd+1)+x%dx3all(lbnd))    !this assumes that the backward difference for hte first cell has been set the the same as the forward difference for the final cell, i.e. x%dx3all(lbnd)==x%dx3all(ubnd+1).  In general when doing periodic grids it is probably best to hard code all of the differences outside the domain to be equal (or to use uniform meshes)
-      grad3D3_curv_periodic(ix1,ix2,2:lx3-1)=(f(ix1,ix2,3:lx3)-f(ix1,ix2,1:lx3-2)) &
+      grad3D3_curv_periodic(ix1,ix2,1) = (f(ix1,ix2,2)-f(ix1,ix2,lx3))/(x%dx3all(lbnd+1)+x%dx3all(lbnd))
+      !! this assumes that the backward difference for hte first cell has been set the the same
+      !! as the forward difference for the final cell, i.e. x%dx3all(lbnd)==x%dx3all(ubnd+1).
+      !! In general when doing periodic grids it is probably best to hard code all of the differences
+      !! outside the domain to be equal (or to use uniform meshes)
+      grad3D3_curv_periodic(ix1,ix2,2:lx3-1) = (f(ix1,ix2,3:lx3)-f(ix1,ix2,1:lx3-2)) &
                                /(x%dx3all(lbnd+2:ubnd)+x%dx3all(lbnd+1:ubnd-1))
-      grad3D3_curv_periodic(ix1,ix2,lx3)=(f(ix1,ix2,1)-f(ix1,ix2,lx3-1))/(x%dx3all(ubnd)+x%dx3all(ubnd+1))
+      grad3D3_curv_periodic(ix1,ix2,lx3) = (f(ix1,ix2,1)-f(ix1,ix2,lx3-1))/(x%dx3all(ubnd)+x%dx3all(ubnd+1))
     end do
   end do
 else
@@ -569,11 +576,15 @@ lx3=size(f,2)
 if (lx3 == x%lx3all) then    !derivative over full grid (could maybe use some error checking with)
   do ix1=1,lx1
 !        grad2D3_curv_periodic(ix1,1)=(f(ix1,2)-f(ix1,1))/x%dx3all(lbnd+1)
-    grad2D3_curv_periodic(ix1,1)=(f(ix1,2)-f(ix1,lx3))/(x%dx3all(lbnd+1)+x%dx3all(lbnd))    !this assumes that the backward difference for hte first cell has been set the the same as the forward difference for the final cell, i.e. x%dx3all(lbnd)==x%dx3all(ubnd+1).  In general when doing periodic grids it is probably best to hard code all of the differences outside the domain to be equal (or to use uniform meshes)
-    grad2D3_curv_periodic(ix1,2:lx3-1)=(f(ix1,3:lx3)-f(ix1,1:lx3-2)) &
+    grad2D3_curv_periodic(ix1,1) = (f(ix1,2)-f(ix1,lx3))/(x%dx3all(lbnd+1)+x%dx3all(lbnd))
+    !! this assumes that the backward difference for hte first cell has been set
+    !! the same as the forward difference for the final cell, i.e. x%dx3all(lbnd)==x%dx3all(ubnd+1).
+    !! In general when doing periodic grids it is probably best to hard code all of the differences
+    !! outside the domain to be equal (or to use uniform meshes)
+    grad2D3_curv_periodic(ix1,2:lx3-1) = (f(ix1,3:lx3)-f(ix1,1:lx3-2)) &
                              /(x%dx3all(lbnd+2:ubnd)+x%dx3all(lbnd+1:ubnd-1))
 !        grad2D3_curv_periodic(ix1,lx3)=(f(ix1,lx3)-f(ix1,lx3-1))/x%dx3all(ubnd)
-    grad2D3_curv_periodic(ix1,lx3)=(f(ix1,1)-f(ix1,lx3-1))/(x%dx3all(ubnd)+x%dx3all(ubnd+1))
+    grad2D3_curv_periodic(ix1,lx3) = (f(ix1,1)-f(ix1,lx3-1))/(x%dx3all(ubnd)+x%dx3all(ubnd+1))
   end do
 else                         !derivative over part of the grid
   do ix1=1,lx1
@@ -608,4 +619,3 @@ end function chapman_a
 
 
 end module calculus
-

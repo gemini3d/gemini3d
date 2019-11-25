@@ -41,9 +41,9 @@ module procedure gather_recv3D_23
 !! THIS SUBROUTINE GATHERS DATA FROM ALL WORKERS ONTO
 !! A FULL-GRID ARRAY ON THE ROOT PROCESS (PRESUMABLY FOR
 !! OUTPUT OR SOME ELECTRODYNAMIC CALCULATION, PERHAPS.
-!! 
+!!
 !! THIS SUBROUTINE IS TO BE CALLED BY ROOT TO DO GATHER
-!! 
+!!
 !! THIS VERSION WORKS ON 3D ARRAYS WHICH DO NOT INCLUDE
 !! ANY GHOST CELLS!!!!
 !! THIS VERION ALSO WORKS ON A PROCESS GRID
@@ -51,7 +51,8 @@ module procedure gather_recv3D_23
 integer :: lx1,lx2,lx3,lx2all,lx3all
 integer :: iid
 integer, dimension(4) :: inds
-real(wp), dimension(1:size(paramtrim,1),1:size(paramtrim,2),1:size(paramtrim,3)) :: paramtmp   !buffer space for mpi receive, includes only x1 ghost cells
+real(wp), dimension(1:size(paramtrim,1),1:size(paramtrim,2),1:size(paramtrim,3)) :: paramtmp
+!! buffer space for mpi receive, includes only x1 ghost cells
 
 
 lx1=size(paramtrim,1)
@@ -91,7 +92,8 @@ module procedure gather_recv4D_23
 integer :: lx1,lx2,lx3,isp,lx2all,lx3all
 integer :: iid
 integer, dimension(4) :: inds
-real(wp), dimension(-1:size(param,1)-2,1:size(param,2)-4,1:size(param,3)-4) :: paramtmp   !buffer space for mpi receive, includes only x1 ghost cells
+real(wp), dimension(-1:size(param,1)-2,1:size(param,2)-4,1:size(param,3)-4) :: paramtmp
+!! buffer space for mpi receive, includes only x1 ghost cells
 
 
 lx1=size(param,1)-4
@@ -104,7 +106,8 @@ lx3=size(param,3)-4
 !to give root an efficient memory access pattern here, but I haven't tested this
 !theory.
 do isp=1,lsp
-  paramall(-1:lx1+2,1:lx2,1:lx3,isp)=param(-1:lx1+2,1:lx2,1:lx3,isp)    !root records his own piece of the grid into full grid variable
+  paramall(-1:lx1+2,1:lx2,1:lx3,isp)=param(-1:lx1+2,1:lx2,1:lx3,isp)
+  !! root records his own piece of the grid into full grid variable
 
   do iid=1,lid-1        !must loop over all processes in the grid, don't enter loop if only root is present
     call mpi_recv(paramtmp,(lx1+4)*lx2*lx3, &
@@ -118,8 +121,8 @@ end procedure gather_recv4D_23
 
 
 module procedure bcast_recv1D_old3
-!! THIS SUBROUTINE RECEIVES BROADCAST DATA FROM A FULL 
-!! GRID ARRAY ON ROOT PROCESS TO WORKERS' SUB-GRID ARRAYS. 
+!! THIS SUBROUTINE RECEIVES BROADCAST DATA FROM A FULL
+!! GRID ARRAY ON ROOT PROCESS TO WORKERS' SUB-GRID ARRAYS.
 !!
 !! SUBROUTINE IS TO BE CALLED BY WORKERS TO DO A BROADCAST
 !!
@@ -139,8 +142,8 @@ end procedure bcast_recv1D_old3
 
 
 module procedure bcast_recv1D_23_2
-!! THIS SUBROUTINE RECEIVES BROADCAST DATA FROM A FULL 
-!! GRID ARRAY ON ROOT PROCESS TO WORKERS' SUB-GRID ARRAYS. 
+!! THIS SUBROUTINE RECEIVES BROADCAST DATA FROM A FULL
+!! GRID ARRAY ON ROOT PROCESS TO WORKERS' SUB-GRID ARRAYS.
 !!
 !! SUBROUTINE IS TO BE CALLED BY WORKERS TO DO A BROADCAST
 !!
@@ -161,8 +164,8 @@ end procedure bcast_recv1D_23_2
 
 
 module procedure bcast_recv1D_23_3
-!! THIS SUBROUTINE RECEIVES BROADCAST DATA FROM A FULL 
-!! GRID ARRAY ON ROOT PROCESS TO WORKERS' SUB-GRID ARRAYS. 
+!! THIS SUBROUTINE RECEIVES BROADCAST DATA FROM A FULL
+!! GRID ARRAY ON ROOT PROCESS TO WORKERS' SUB-GRID ARRAYS.
 !!
 !! SUBROUTINE IS TO BE CALLED BY WORKERS TO DO A BROADCAST
 !!
@@ -182,8 +185,8 @@ end procedure bcast_recv1D_23_3
 
 
 module procedure bcast_recv2D_23
-!! THIS SUBROUTINE RECEIVES BROADCAST DATA FROM A FULL 
-!! GRID ARRAY ON ROOT PROCESS TO WORKERS' SUB-GRID ARRAYS. 
+!! THIS SUBROUTINE RECEIVES BROADCAST DATA FROM A FULL
+!! GRID ARRAY ON ROOT PROCESS TO WORKERS' SUB-GRID ARRAYS.
 !!
 !! SUBROUTINE IS TO BE CALLED BY WORKERS TO DO A BROADCAST
 !!
@@ -204,8 +207,8 @@ end procedure bcast_recv2D_23
 
 
 module procedure bcast_recv3D_23
-!! THIS SUBROUTINE RECEIVES BROADCAST DATA FROM A FULL 
-!! GRID ARRAY ON ROOT PROCESS TO WORKERS' SUB-GRID ARRAYS. 
+!! THIS SUBROUTINE RECEIVES BROADCAST DATA FROM A FULL
+!! GRID ARRAY ON ROOT PROCESS TO WORKERS' SUB-GRID ARRAYS.
 !!
 !! SUBROUTINE IS TO BE CALLED BY WORKERS TO DO A BROADCAST
 !!
@@ -228,8 +231,8 @@ end procedure bcast_recv3D_23
 
 
 module procedure bcast_recv3D_x3i_23
-!! THIS SUBROUTINE RECEIVES BROADCAST DATA FROM A FULL 
-!! GRID ARRAY ON ROOT PROCESS TO WORKERS' SUB-GRID ARRAYS. 
+!! THIS SUBROUTINE RECEIVES BROADCAST DATA FROM A FULL
+!! GRID ARRAY ON ROOT PROCESS TO WORKERS' SUB-GRID ARRAYS.
 !!
 !! SUBROUTINE IS TO BE CALLED BY WORKERS TO DO A BROADCAST
 !!
@@ -275,8 +278,8 @@ end procedure bcast_recv3D_x2i_23
 
 
 module procedure bcast_recv3D_ghost_23
-!! THIS SUBROUTINE RECEIVES BROADCAST DATA FROM A FULL 
-!! GRID ARRAY ON ROOT PROCESS TO WORKERS' SUB-GRID ARRAYS. 
+!! THIS SUBROUTINE RECEIVES BROADCAST DATA FROM A FULL
+!! GRID ARRAY ON ROOT PROCESS TO WORKERS' SUB-GRID ARRAYS.
 !!
 !! SUBROUTINE IS TO BE CALLED BY WORKERS TO DO A BROADCAST
 !!
