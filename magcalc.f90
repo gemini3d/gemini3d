@@ -414,6 +414,7 @@ do while (t<tdur)
     call halo_end(Ry,Ryend,Rytop,tagRy)
     call halo_end(Rz,Rzend,Rztop,tagRz)
 
+    !enforce a regulator on the distance variables to avoid div by zero
     where (Rx>-Rmin .and. Rx<Rmin .and. Rx>0)
       Rx=Rmin
     end where
