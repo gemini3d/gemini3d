@@ -1,6 +1,4 @@
-!----------------------------------------------------------
-!------THIS IS THE MAIN PROGRAM FOR GEMINI3D
-!----------------------------------------------------------
+!! MAIN PROGRAM FOR GEMINI3D
 
 use phys_consts, only : lnchem, lwave, lsp, wp, debug
 use grid, only: curvmesh, grid_size,read_grid,clear_grid,lx1,lx2,lx3,lx2all,lx3all
@@ -16,40 +14,58 @@ use timeutils, only: dateinc
 
 implicit none
 
-!----------------------------------------------------------
-!------VARIABLE DECLARATIONS
-!----------------------------------------------------------
+!! VARIABLE DECLARATIONS
 
-!VARIABLES READ IN FROM CONFIG.INI FILE
-integer, dimension(3) :: ymd    !year,month,day of simulation
-real(wp) :: UTsec      !UT (s)
-real(wp) :: UTsec0     !UT start time of simulation (s)
-real(wp) :: tdur       !duration of simulation
-real(wp), dimension(3) :: activ    !f10.7a,f10.7,ap
-real(wp) :: tcfl                       !target CFL number
-real(wp) :: Teinf                      !exospheric temperature
-integer :: potsolve                   !what type of potential solve
-integer :: flagperiodic               !toggles whether or not the grid is treated as periodic in the x3 dimension (affects some of the message passing)
-integer :: flagoutput                 !what type of output to do (1 - everything; 2 - avg'd parms.; 3 - ne only)
-integer :: flagcap                    !internal capacitance?
+!> VARIABLES READ IN FROM CONFIG.INI FILE
+integer, dimension(3) :: ymd
+!! year,month,day of simulation
+real(wp) :: UTsec
+!! UT (s)
+real(wp) :: UTsec0
+!! UT start time of simulation (s)
+real(wp) :: tdur
+!! duration of simulation
+real(wp), dimension(3) :: activ
+!! f10.7a,f10.7,ap
+real(wp) :: tcfl
+!! target CFL number
+real(wp) :: Teinf
+!! exospheric temperature
+integer :: potsolve
+!! what type of potential solve
+integer :: flagperiodic
+!! toggles whether or not the grid is treated as periodic in the x3 dimension (affects some of the message passing)
+integer :: flagoutput
+!! what type of output to do (1 - everything; 2 - avg'd parms.; 3 - ne only)
+integer :: flagcap
+!! internal capacitance?
 
-!INPUT AND OUTPUT FILES
+!> INPUT AND OUTPUT FILES
 character(:), allocatable :: infile    !command line argument input file
 character(:), allocatable :: outdir    !" " output directory
 character(:), allocatable :: indatsize,indatgrid    !grid size and data filenames
 
-!GRID STRUCTURE
-type(curvmesh) :: x    !structure containg grid locations, finite differences, etc.:  see grid module for details
+!> GRID STRUCTURE
+type(curvmesh) :: x
+!! structure containg grid locations, finite differences, etc.:  see grid module for details
 
-!STATE VARIABLES
-real(wp), dimension(:,:,:,:), allocatable :: ns,vs1,vs2,vs3,Ts    !fluid state variables
-real(wp), dimension(:,:,:), allocatable :: E1,E2,E3,J1,J2,J3      !electrodynamic state variables
-real(wp), dimension(:,:,:), allocatable :: rhov2,rhov3,B1,B2,B3   !inductive state vars. (for future use - except for B1 which is used for the background field)
-real(wp), dimension(:,:,:), allocatable :: rhom,v1,v2,v3          !inductive auxiliary
-real(wp), dimension(:,:,:,:), allocatable :: nn                   !neutral density array
-real(wp), dimension(:,:,:), allocatable :: Tn,vn1,vn2,vn3         !neutral temperature and velocities
-real(wp), dimension(:,:,:), allocatable :: Phiall                 !full-grid potential solution.  To store previous time step value
-real(wp), dimension(:,:,:), allocatable :: iver                   !integrated volume emission rate of aurora calculated by GLOW
+!> STATE VARIABLES
+real(wp), dimension(:,:,:,:), allocatable :: ns,vs1,vs2,vs3,Ts
+!! fluid state variables
+real(wp), dimension(:,:,:), allocatable :: E1,E2,E3,J1,J2,J3
+!! electrodynamic state variables
+real(wp), dimension(:,:,:), allocatable :: rhov2,rhov3,B1,B2,B3
+!! inductive state vars. (for future use - except for B1 which is used for the background field)
+real(wp), dimension(:,:,:), allocatable :: rhom,v1,v2,v3
+!! inductive auxiliary
+real(wp), dimension(:,:,:,:), allocatable :: nn
+!! neutral density array
+real(wp), dimension(:,:,:), allocatable :: Tn,vn1,vn2,vn3
+!! neutral temperature and velocities
+real(wp), dimension(:,:,:), allocatable :: Phiall
+!! full-grid potential solution.  To store previous time step value
+real(wp), dimension(:,:,:), allocatable :: iver
+!! integrated volume emission rate of aurora calculated by GLOW
 
 !TEMPORAL VARIABLES
 real(wp) :: t=0._wp,dt=1e-6_wp,dtprev      !time from beginning of simulation (s) and time step (s)
@@ -163,18 +179,18 @@ call make_dneu()    !allocate space for neutral perturbations in case they are u
 call make_precip_fileinput()
 
 
-!ALLOCATE MEMORY FOR ROOT TO STORE CERTAIN VARS. OVER ENTIRE GRID
+!> ALLOCATE MEMORY FOR ROOT TO STORE CERTAIN VARS. OVER ENTIRE GRID
 if (myid==0) then
   allocate(Phiall(lx1,lx2all,lx3all))
 end if
 
-!ALLOCATE MEMORY FOR AURORAL EMISSIONS, IF CALCULATED
+!> ALLOCATE MEMORY FOR AURORAL EMISSIONS, IF CALCULATED
 if (flagglow/=0) then
   allocate(iver(lx2,lx3,lwave))
 end if
 
 
-!LOAD ICS AND DISTRIBUTE TO WORKERS (REQUIRES GRAVITY FOR INITIAL GUESSING)
+!> LOAD ICS AND DISTRIBUTE TO WORKERS (REQUIRES GRAVITY FOR INITIAL GUESSING)
 call input_plasma(x%x1,x%x2all,x%x3all,indatsize,ns,vs1,Ts)
 
 !ROOT/WORKERS WILL ASSUME THAT THE MAGNETIC FIELDS AND PERP FLOWS START AT ZERO
@@ -185,7 +201,9 @@ call input_plasma(x%x1,x%x2all,x%x3all,indatsize,ns,vs1,Ts)
 !VARIABLE HERE TO WHATEVER IS SPECIFIED IN THE GRID STRUCTURE (THESE MUST BE CONSISTENT)
 rhov2=0d0; rhov3=0d0; v2=0d0; v3=0d0;
 B2=0d0; B3=0d0;
-B1(1:lx1,1:lx2,1:lx3)=x%Bmag      !this assumes that the grid is defined s.t. the x1 direction corresponds to the magnetic field direction (hence zero B2 and B3).
+B1(1:lx1,1:lx2,1:lx3)=x%Bmag
+!! this assumes that the grid is defined s.t. the x1 direction corresponds
+!! to the magnetic field direction (hence zero B2 and B3).
 
 
 !INITIALIZE ELECTRODYNAMIC QUANTITIES FOR POLARIZATION CURRENT

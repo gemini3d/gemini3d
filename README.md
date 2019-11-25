@@ -84,13 +84,10 @@ python3 setup.py develop --user
 ### Compilers
 
 The object-oriented Fortran 2008 code used in GEMINI requires a Fortran 2008 compliant compiler.
-We recommend Gfortran (version 6 or newer) since GNU/GCC is the easiest compiler to use in general on a wide range of projects.
 
-These compilers should also work:
+* Gfortran 6, 7, 8, 9, ... (Gfortran is strongly recommended)
+* Intel `ifort`: the *current update release* of [currently supported versions](https://software.intel.com/en-us/articles/intel-parallel-studio-xe-supported-and-unsupported-product-versions) -- **caveat: currently Intel compilers only work with 2D Gemini simulations**
 
-* Intel `ifort`: all [currently supported versions](https://software.intel.com/en-us/articles/intel-parallel-studio-xe-supported-and-unsupported-product-versions)
-* Cray `ftn`
-* IBM XL
 
 ### Libraries
 
@@ -545,4 +542,3 @@ An example of how to plot TEC computed by this script is included in `TECplot_ma
 ## Visualizing magnetic field perturbations computed by magcalc.f90
 
 The example script `magplot_fort_map.m` shows an example of how to load the results of running magcalc.
-

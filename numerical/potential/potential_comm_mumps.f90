@@ -83,7 +83,8 @@ integer, intent(in) :: potsolve
 integer, intent(in) :: flagcap
 
 real(wp), dimension(:,:,:), intent(out) :: E1,E2,E3,J1,J2,J3
-real(wp), dimension(:,:,:), allocatable, intent(inout) :: Phiall     !inout since it may not be allocated or deallocated in this procedure
+real(wp), dimension(:,:,:), allocatable, intent(inout) :: Phiall
+!! inout since it may not be allocated or deallocated in this procedure
 
 integer, intent(in) :: flagE0file
 real(wp), intent(in) :: dtE0
@@ -166,7 +167,9 @@ if (potsolve == 1 .or. potsolve == 3) then    !electrostatic solve or electrosta
     end do
   end if
 
-!    do isp=1,lsp    !To leading order the ion drifts do not include the polarization parts, otherwise it may mess up polarization convective term in the electrodynamics solver...
+!    do isp=1,lsp
+       !! To leading order the ion drifts do not include the polarization parts,
+       !! otherwise it may mess up polarization convective term in the electrodynamics solver...
 !      vs2(1:lx1,1:lx2,1:lx3,isp)=muP(:,:,:,isp)*E2-muH(:,:,:,isp)*E3+ms(isp)/qs(isp)/B1**2*DE2Dt
 !      vs3(1:lx1,1:lx2,1:lx3,isp)=muH(:,:,:,isp)*E2+muP(:,:,:,isp)*E3+ms(isp)/qs(isp)/B1**2*DE3Dt
 !    end do
@@ -239,7 +242,8 @@ real(wp), dimension(1:size(Phiall,2),1:size(Phiall,3)) :: v2slaball,v3slaball   
 !   real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: paramtrim    !to hold trimmed magnetic field
 
 real(wp), dimension(1:size(Phiall,1),1:size(Phiall,2),1:size(Phiall,3)) :: E01all,E02all,E03all    !background fields
-!   real(wp), dimension(1:size(Phiall,1),1:size(Phiall,2),1:size(Phiall,3)) :: divJperpall2,divJperpall3,divJperpall   !more work arrays
+!   real(wp), dimension(1:size(Phiall,1),1:size(Phiall,2),1:size(Phiall,3)) :: divJperpall2,divJperpall3,divJperpall
+!! more work arrays
 
 real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: integrand,sigintegral    !general work array for doing integrals
 
@@ -257,8 +261,10 @@ real(wp), dimension(1:size(Phiall,2),1:size(Phiall,3)) :: SigPint2all,SigPint3al
 
 real(wp), dimension(1:size(Phiall,2),1:size(Phiall,3)) :: Phislab,Phislab0
 
-real(wp), dimension(0:size(E1,1)+1,0:size(E1,2)+1,0:size(E1,3)+1) :: divtmp    !one extra grid point on either end to facilitate derivatives
-real(wp), dimension(-1:size(E1,1)+2,-1:size(E1,2)+2,-1:size(E1,3)+2) :: J1halo,J2halo,J3halo    !haloing assumes existence of two ghost cells
+real(wp), dimension(0:size(E1,1)+1,0:size(E1,2)+1,0:size(E1,3)+1) :: divtmp
+!! one extra grid point on either end to facilitate derivatives
+real(wp), dimension(-1:size(E1,1)+2,-1:size(E1,2)+2,-1:size(E1,3)+2) :: J1halo,J2halo,J3halo
+!! haloing assumes existence of two ghost cells
 
 real(wp), dimension(1:size(Phiall,1),1:size(Phiall,2),1:size(Phiall,3)) :: sig0scaledall,sigPscaledall,sigHscaledall
 real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: sig0scaled,sigPscaled,sigHscaled
@@ -293,7 +299,8 @@ perflag=.true.
 
 
 !R-------
-!POPULATE BACKGROUND AND BOUNDARY CONDITION ARRAYS - IDEALLY ROOT ONLY SINCE IT INVOLVES FILE INPUT, ALTHOUGH THE INTERPOLATION MAY BE SLOW...
+!! POPULATE BACKGROUND AND BOUNDARY CONDITION ARRAYS
+!! - IDEALLY ROOT ONLY SINCE IT INVOLVES FILE INPUT, ALTHOUGH THE INTERPOLATION MAY BE SLOW...
 call cpu_time(tstart)
 if (flagE0file==1) then
   call potentialBCs2D_fileinput(dt,dtE0,t,ymd,UTsec,E0dir,x,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3,Vmaxx3, &
@@ -358,11 +365,15 @@ if (debug) print *, 'Root has computed background field source terms...',minval(
 !NEUTRAL WIND SOURCE TERMS FOR POTENTIAL EQUATION, SIMILAR TO ABOVE BLOCK OF CODE
 J1=0d0    !so this div is only perp components
 if (flagswap==1) then
-  J2=-1*sigP*vn3*B1(1:lx1,1:lx2,1:lx3)+sigH*vn2*B1(1:lx1,1:lx2,1:lx3)     !wind x2 current, note that all workers already have a copy of this.
-  J3=sigH*vn3*B1(1:lx1,1:lx2,1:lx3)+sigP*vn2*B1(1:lx1,1:lx2,1:lx3)     !wind x3 current
+  J2=-1*sigP*vn3*B1(1:lx1,1:lx2,1:lx3)+sigH*vn2*B1(1:lx1,1:lx2,1:lx3)
+  !! wind x2 current, note that all workers already have a copy of this.
+  J3=sigH*vn3*B1(1:lx1,1:lx2,1:lx3)+sigP*vn2*B1(1:lx1,1:lx2,1:lx3)
+  !! wind x3 current
 else
-  J2=sigP*vn3*B1(1:lx1,1:lx2,1:lx3)+sigH*vn2*B1(1:lx1,1:lx2,1:lx3)     !wind x2 current
-  J3=sigH*vn3*B1(1:lx1,1:lx2,1:lx3)-sigP*vn2*B1(1:lx1,1:lx2,1:lx3)     !wind x3 current
+  J2=sigP*vn3*B1(1:lx1,1:lx2,1:lx3)+sigH*vn2*B1(1:lx1,1:lx2,1:lx3)
+  !! wind x2 current
+  J3=sigH*vn3*B1(1:lx1,1:lx2,1:lx3)-sigP*vn2*B1(1:lx1,1:lx2,1:lx3)
+  !! wind x3 current
 end if
 J1halo(1:lx1,1:lx2,1:lx3)=J1
 J2halo(1:lx1,1:lx2,1:lx3)=J2
@@ -413,12 +424,16 @@ if (lx2/=1) then    !either field-resolved 3D or integrated 2D solve for 3D doma
       sigintegral=integral3D1(integrand,x,1,lx1)
       srctermint=sigintegral(lx1,:,:)
       srctermint=srctermint+x%h2(lx1,1:lx2,1:lx3)*x%h3(lx1,1:lx2,1:lx3)*Vmaxx1slab- &
-                                 x%h2(1,1:lx2,1:lx3)*x%h3(1,1:lx2,1:lx3)*Vminx1slab     !workers don't have access to boundary conditions, unless root sends
+                                 x%h2(1,1:lx2,1:lx3)*x%h3(1,1:lx2,1:lx3)*Vminx1slab
+      !! workers don't have access to boundary conditions, unless root sends
       !-------
 
 
-      v2=vs2(1:lx1,1:lx2,1:lx3,1); v3=vs3(1:lx1,1:lx2,1:lx3,1);      !must be set since used later by the polarization current calculation
-      v2slab=v2(lx1,1:lx2,1:lx3); v3slab=v3(lx1,1:lx2,1:lx3);    !need to pick out the ExB drift here (i.e. the drifts from highest altitudes); but this is only valid for Cartesian, so it's okay for the foreseeable future
+      v2=vs2(1:lx1,1:lx2,1:lx3,1); v3=vs3(1:lx1,1:lx2,1:lx3,1);
+      ! must be set since used later by the polarization current calculation
+      v2slab=v2(lx1,1:lx2,1:lx3); v3slab=v3(lx1,1:lx2,1:lx3);
+      !! need to pick out the ExB drift here (i.e. the drifts from highest altitudes); but this is only valid for Cartesian,
+      !! so it's okay for the foreseeable future
 
 
       !RADD--- ROOT NEEDS TO PICK UP *INTEGRATED* SOURCE TERMS AND COEFFICIENTS FROM WORKERS
@@ -454,20 +469,28 @@ if (lx2/=1) then    !either field-resolved 3D or integrated 2D solve for 3D doma
         if (debug) print *, '!!!User selected aperiodic solve...'
         Phislab=potential2D_polarization(srctermintall,SigPint2all,SigPint3all,SigHintall,incapintall,v2slaball,v3slaball, &
                                  Vminx2slice,Vmaxx2slice,Vminx3slice,Vmaxx3slice, &
-                                 dt,x,Phislab0,perflag,it)    !note tha this solver is only valid for cartesian meshes, unless the inertial capacitance is set to zero
+                                 dt,x,Phislab0,perflag,it)
+        !! note tha this solver is only valid for cartesian meshes, unless the inertial capacitance is set to zero
       else
         if (debug) print *, '!!!User selected periodic solve...'
-        Phislab=potential2D_polarization_periodic(srctermintall,SigPint2all,SigHintall,incapintall,v2slaball,v3slaball, &    !note that either sigPint2 or 3 will work since this must be cartesian...
+        Phislab = potential2D_polarization_periodic(srctermintall,SigPint2all,SigHintall,incapintall,v2slaball,v3slaball, &
                                    Vminx2slice,Vmaxx2slice,Vminx3slice,Vmaxx3slice, &
                                    dt,x,Phislab0,perflag,it)
+        !! !note that either sigPint2 or 3 will work since this must be cartesian...
       end if
       call cpu_time(tfin)
       if (debug) print *, 'Root received results from MUMPS which took time:  ',tfin-tstart
       !R-------
 
-    else     !Dirichlet conditions - since this is field integrated we just copy BCs specified by user to other locations along field line
+    else
+      !! Dirichlet conditions - since this is field integrated we just copy BCs specified by user
+      !! to other locations along field line
       !R------
-      Phislab=Vmaxx1   !potential is whatever user specifies, since we assume equipotential field lines, it doesn't really matter whether we use Vmaxx1 or Vminx1.  Note however, tha thte boundary conditions subroutines should explicitly set these to be equal with Dirichlet conditions, for consistency.
+      Phislab=Vmaxx1
+      !! potential is whatever user specifies, since we assume equipotential field lines,
+      !! it doesn't really matter whether we use Vmaxx1 or Vminx1.
+      !! Note however, tha thte boundary conditions subroutines should explicitly
+      !! set these to be equal with Dirichlet conditions, for consistency.
       if (debug) print *, 'Dirichlet conditions selected with field-integrated solve. Copying BCs along x1-direction...'
       !R------
     end if
@@ -475,12 +498,16 @@ if (lx2/=1) then    !either field-resolved 3D or integrated 2D solve for 3D doma
 
     !R------  AFTER ANY TYPE OF FIELD-INT SOLVE COPY THE BCS ACROSS X1 DIMENSION
     do ix1=1,lx1
-      Phiall(ix1,:,:)=Phislab(:,:) !copy the potential across the ix1 direction; past this point there is no real difference with 3D, note that this is still valid in curvilinear form
+      Phiall(ix1,:,:)=Phislab(:,:)
+      !! copy the potential across the ix1 direction; past this point there is no real difference with 3D,
+      !! note that this is still valid in curvilinear form
     end do
     !R------
 
-  else    !resolved 3D solve
-    !ZZZ - conductivities need to be properly scaled here...  So does the source term...  Maybe leave as broken for now since I don't really plan to use this code
+  else
+    !! resolved 3D solve
+    !! ZZZ - conductivities need to be properly scaled here...
+    !! So does the source term...  Maybe leave as broken for now since I don't really plan to use this code
     if (debug) print *, 'Beginning field-resolved 3D solve...  Type;  ',flagdirich
 
     !-------
@@ -536,7 +563,9 @@ else   !lx1=1 so do a field-resolved 2D solve over x1,x3
     sigPscaled=x%h1(1:lx1,1:lx2,1:lx3)*x%h3(1:lx1,1:lx2,1:lx3)/x%h2(1:lx1,1:lx2,1:lx3)*sigP
   end if
   srcterm=srcterm*x%h1(1:lx1,1:lx2,1:lx3)*x%h2(1:lx1,1:lx2,1:lx3)*x%h3(1:lx1,1:lx2,1:lx3)
-!      srcterm=-1d0*srcterm     !in a 2D solve negate this due to it being a cross produce and the fact that we've permuted the 2 and 3 dimensions.  ZZZ - NOT JUST THIS WORKS WITH BACKGROUND FIELDS???
+!      srcterm=-1d0*srcterm
+  !! in a 2D solve negate this due to it being a cross produce and the fact that we've permuted the 2 and 3 dimensions.
+  !! ZZZ - NOT JUST THIS WORKS WITH BACKGROUND FIELDS???
   !-------
 
   !RADD--- NEED TO GET THE RESOLVED SOURCE TERMS AND COEFFICIENTS FROM WORKERS
@@ -545,8 +574,9 @@ else   !lx1=1 so do a field-resolved 2D solve over x1,x3
   call gather_recv(srcterm,tagsrc,srctermall)
 
 
-  !EXECUTE THE SOLVE WITH MUMPS AND SCALED TERMS
-  !NOTE THE LACK OF A SPECIAL CASE HERE TO CHANGE THE POTENTIAL PROBLEM - ONLY THE HALL TERM CHANGES (SINCE RELATED TO EXB) BUT THAT DOESN'T APPEAR IN THIS EQN!
+  !! EXECUTE THE SOLVE WITH MUMPS AND SCALED TERMS
+  !! NOTE THE LACK OF A SPECIAL CASE HERE TO CHANGE THE POTENTIAL PROBLEM
+  !! - ONLY THE HALL TERM CHANGES (SINCE RELATED TO EXB) BUT THAT DOESN'T APPEAR IN THIS EQN!
   Phiall=potential2D_fieldresolved(srctermall,sig0scaledall,sigPscaledall,Vminx1,Vmaxx1,Vminx3,Vmaxx3, &
                     x,flagdirich,perflag,it)
 end if
@@ -559,7 +589,8 @@ call bcast_send(Phiall,tagPhi,Phi)
 
 
 !-------
-!STORE PREVIOUS TIME TOTAL FIELDS BEFORE UPDATING THE ELECTRIC FIELDS WITH NEW POTENTIAL (OLD FIELDS USED TO CALCULATE POLARIZATION CURRENT)
+!! STORE PREVIOUS TIME TOTAL FIELDS BEFORE UPDATING THE ELECTRIC FIELDS WITH NEW POTENTIAL
+!! (OLD FIELDS USED TO CALCULATE POLARIZATION CURRENT)
 E1prev=E1
 E2prev=E2
 E3prev=E3
@@ -568,7 +599,9 @@ E3prev=E3
 
 !-------
 !CALCULATE PERP FIELDS FROM POTENTIAL
-!      E20all=grad3D2(-1d0*Phi0all,dx2(1:lx2))    !causes major memory leak. maybe from arithmetic statement argument? Left here as a 'lesson learned' (or is it a gfortran bug...)
+!      E20all=grad3D2(-1d0*Phi0all,dx2(1:lx2))
+!! causes major memory leak. maybe from arithmetic statement argument?
+!! Left here as a 'lesson learned' (or is it a gfortran bug...)
 !      E30all=grad3D3(-1d0*Phi0all,dx3all(1:lx3all))
 Phi=-1d0*Phi
 !COMPUTE THE 2 COMPONENT OF THE ELECTRIC FIELD
@@ -609,7 +642,9 @@ E3=E3+E03
 
 !--------
 !COMPUTE TIME DERIVATIVE NEEDED FOR POLARIZATION CURRENT.  ONLY DO THIS IF WE HAVE SPECIFIC NONZERO INERTIAL CAPACITANCE
-!if (maxval(incap) > 0._wp) then    !ZZZ this is really bad needs to be a global test rather than having each worker test since there is message passing embedded in here and everyone needs to do the same thing!!!
+!if (maxval(incap) > 0._wp) then
+!! ZZZ this is really bad needs to be a global test rather than having each worker test since there
+!! is message passing embedded in here and everyone needs to do the same thing!!!
 if (flagcap/=0) then
   if (debug) print*, 'Working on polarization currents...'
 
@@ -698,7 +733,9 @@ if (lx2/=1 .and. potsolve ==1) then    !we did a field-integrated solve above
   divtmp=div3D(J1halo(0:lx1+1,0:lx2+1,0:lx3+1),J2halo(0:lx1+1,0:lx2+1,0:lx3+1), &
                J3halo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
   divJperp=x%h1(1:lx1,1:lx2,1:lx3)*x%h2(1:lx1,1:lx2,1:lx3)*x%h3(1:lx1,1:lx2,1:lx3)*divtmp(1:lx1,1:lx2,1:lx3)
-  if (flagdirich /= 1) then     !Neumann conditions, this is boundary location-agnostic since both bottom and top FACs are known - they have to  be loaded into VVmaxx1 and Vminx1
+  if (flagdirich /= 1) then
+    !! Neumann conditions, this is boundary location-agnostic since both bottom and top FACs are known
+    !! - they have to  be loaded into VVmaxx1 and Vminx1
     if (debug) print *, 'Nuemann boundaries, integrated from highest altitude down to preserve accuracy...'
     if (gridflag==0) then     !closed dipole grid, really would be best off integrating from the source hemisphere
       if (debug) print *,  'Closed dipole grid; integration starting in source hemisphere (if applicable)...', &
@@ -736,7 +773,9 @@ if (lx2/=1 .and. potsolve ==1) then    !we did a field-integrated solve above
                          (x%h2(1,1:lx2,1:lx3)*x%h3(1,1:lx2,1:lx3)*Vmaxx1slab+J1(ix1,:,:))
       end do
     end if
-  else      !Dirichlet conditions - we need to integrate from the ***lowest altitude*** (where FAC is known to be zero, note this is not necessarilty the logical bottom of the grid), upwards (to where it isn't)
+  else
+    !! Dirichlet conditions - we need to integrate from the ***lowest altitude***
+    !! (where FAC is known to be zero, note this is not necessarilty the logical bottom of the grid), upwards (to where it isn't)
     if (gridflag/=2) then    !inverted grid (logical top is the lowest altitude)
       if (debug) print *, 'Inverted grid detected - integrating logical top downward to compute FAC...'
       J1=integral3D1_curv_alt(divJperp,x,1,lx1)    !int divperp of BG current
@@ -848,8 +887,10 @@ real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: Phi
 real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: integrand,sigintegral    !general work array for doing integrals
 real(wp), dimension(1:size(E1,2),1:size(E1,3)) :: SigPint2,SigPint3,SigHint,incapint,srctermint
 
-real(wp), dimension(0:size(E1,1)+1,0:size(E1,2)+1,0:size(E1,3)+1) :: divtmp    !one extra grid point on either end to facilitate derivatives
-real(wp), dimension(-1:size(E1,1)+2,-1:size(E1,2)+2,-1:size(E1,3)+2) :: J1halo,J2halo,J3halo    !haloing assumes existence of two ghost cells
+real(wp), dimension(0:size(E1,1)+1,0:size(E1,2)+1,0:size(E1,3)+1) :: divtmp
+!! one extra grid point on either end to facilitate derivatives
+real(wp), dimension(-1:size(E1,1)+2,-1:size(E1,2)+2,-1:size(E1,3)+2) :: J1halo,J2halo,J3halo
+!! haloing assumes existence of two ghost cells
 
 real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: sig0scaled,sigPscaled,sigHscaled
 
@@ -919,11 +960,15 @@ srcterm=divtmp(1:lx1,1:lx2,1:lx3)
 !NEUTRAL WIND SOURCE TERMS FOR POTENTIAL EQUATION, SIMILAR TO ABOVE BLOCK OF CODE
 J1=0d0    !so this div is only perp components
 if (flagswap==1) then
-  J2=-1*sigP*vn3*B1(1:lx1,1:lx2,1:lx3)+sigH*vn2*B1(1:lx1,1:lx2,1:lx3)     !wind x2 current, note that all workers already have a copy of this.
-  J3=sigH*vn3*B1(1:lx1,1:lx2,1:lx3)+sigP*vn2*B1(1:lx1,1:lx2,1:lx3)     !wind x3 current
+  J2=-1*sigP*vn3*B1(1:lx1,1:lx2,1:lx3)+sigH*vn2*B1(1:lx1,1:lx2,1:lx3)
+  !! wind x2 current, note that all workers already have a copy of this.
+  J3=sigH*vn3*B1(1:lx1,1:lx2,1:lx3)+sigP*vn2*B1(1:lx1,1:lx2,1:lx3)
+  !! wind x3 current
 else
-  J2=sigP*vn3*B1(1:lx1,1:lx2,1:lx3)+sigH*vn2*B1(1:lx1,1:lx2,1:lx3)     !wind x2 current
-  J3=sigH*vn3*B1(1:lx1,1:lx2,1:lx3)-sigP*vn2*B1(1:lx1,1:lx2,1:lx3)     !wind x3 current
+  J2=sigP*vn3*B1(1:lx1,1:lx2,1:lx3)+sigH*vn2*B1(1:lx1,1:lx2,1:lx3)
+  !! wind x2 current
+  J3=sigH*vn3*B1(1:lx1,1:lx2,1:lx3)-sigP*vn2*B1(1:lx1,1:lx2,1:lx3)
+  !! wind x3 current
 end if
 J1halo(1:lx1,1:lx2,1:lx3)=J1
 J2halo(1:lx1,1:lx2,1:lx3)=J2
@@ -967,13 +1012,15 @@ if (lx2/=1) then    !either field-resolved 3D or integrated 2D solve for 3D doma
     !-------
 
     !PRODUCE A FIELD-INTEGRATED SOURCE TERM
-    if (flagdirich /= 1) then   !Neumann conditions; incorporate a source term and execute the solve
+    if (flagdirich /= 1) then
+      !! Neumann conditions; incorporate a source term and execute the solve
       !-------
-      integrand=x%h1(1:lx1,1:lx2,1:lx3)*x%h2(1:lx1,1:lx2,1:lx3)*x%h3(1:lx1,1:lx2,1:lx3)*srcterm
-      sigintegral=integral3D1(integrand,x,1,lx1)
-      srctermint=sigintegral(lx1,:,:)
-      srctermint=srctermint+x%h2(lx1,1:lx2,1:lx3)*x%h3(lx1,1:lx2,1:lx3)*Vmaxx1slab- &
-                                 x%h2(1,1:lx2,1:lx3)*x%h3(1,1:lx2,1:lx3)*Vminx1slab     !workers don't have access to boundary conditions, unless root sends
+      integrand = x%h1(1:lx1,1:lx2,1:lx3)*x%h2(1:lx1,1:lx2,1:lx3)*x%h3(1:lx1,1:lx2,1:lx3)*srcterm
+      sigintegral = integral3D1(integrand,x,1,lx1)
+      srctermint = sigintegral(lx1,:,:)
+      srctermint = srctermint+x%h2(lx1,1:lx2,1:lx3)*x%h3(lx1,1:lx2,1:lx3)*Vmaxx1slab- &
+                                 x%h2(1,1:lx2,1:lx3)*x%h3(1,1:lx2,1:lx3)*Vminx1slab
+      !! workers don't have access to boundary conditions, unless root sends
       !-------
 
 
@@ -987,19 +1034,24 @@ if (lx2/=1) then    !either field-resolved 3D or integrated 2D solve for 3D doma
       v2slab=v2(lx1,:,:); v3slab=v3(lx1,:,:)
       call gather_send(v2slab,tagv2electro)
       call gather_send(v3slab,tagv3electro)
-!          v2slab=vs2(lx1,1:lx2,1:lx3,1); v3slab=vs3(lx1,1:lx2,1:lx3,1);    !need to pick out the ExB drift here (i.e. the drifts from highest altitudes); but this is only valid for Cartesian, so it's okay for the foreseeable future
+!          v2slab=vs2(lx1,1:lx2,1:lx3,1); v3slab=vs3(lx1,1:lx2,1:lx3,1);
+      !! need to pick out the ExB drift here (i.e. the drifts from highest altitudes);
+      !! but this is only valid for Cartesian, so it's okay for the foreseeable future
 
 
       call elliptic_workers()    !workers do not need any specific info about      proglem.
 
 
-    else     !Dirichlet conditions - since this is field integrated we just copy BCs specified by user to other locations along field line
+    else
+      !! Dirichlet conditions
+      !! - since this is field integrated we just copy BCs specified by user to other locations along field line
 
     end if
 
 !
   else    !resolved 3D solve
-    !ZZZ - conductivities need to be properly scaled here...  So does the source term...  Maybe leave as broken for now since I don't really plan to use this code
+    !! ZZZ - conductivities need to be properly scaled here...
+    !! So does the source term...  Maybe leave as broken for now since I don't really plan to use this code
    !PRODUCE SCALED CONDUCTIVITIES TO PASS TO SOLVER, ALSO SCALED SOURCE TERM
     sig0scaled=x%h2(1:lx1,1:lx2,1:lx3)*x%h3(1:lx1,1:lx2,1:lx3)/x%h1(1:lx1,1:lx2,1:lx3)*sig0
     if (flagswap==1) then
@@ -1053,7 +1105,8 @@ call bcast_recv(Phi,tagPhi)
 
 
 !-------
-!STORE PREVIOUS TIME TOTAL FIELDS BEFORE UPDATING THE ELECTRIC FIELDS WITH NEW POTENTIAL (OLD FIELDS USED TO CALCULATE POLARIZATION CURRENT)
+!! STORE PREVIOUS TIME TOTAL FIELDS BEFORE UPDATING THE ELECTRIC FIELDS WITH NEW POTENTIAL
+!! (OLD FIELDS USED TO CALCULATE POLARIZATION CURRENT)
 E1prev=E1
 E2prev=E2
 E3prev=E3
@@ -1062,7 +1115,9 @@ E3prev=E3
 
 !-------
 !CALCULATE PERP FIELDS FROM POTENTIAL
-!      E20all=grad3D2(-1d0*Phi0all,dx2(1:lx2))    !causes major memory leak. maybe from arithmetic statement argument? Left here as a 'lesson learned' (or is it a gfortran bug...)
+!      E20all=grad3D2(-1d0*Phi0all,dx2(1:lx2))
+!! causes major memory leak. maybe from arithmetic statement argument?
+!! Left here as a 'lesson learned' (or is it a gfortran bug...)
 !      E30all=grad3D3(-1d0*Phi0all,dx3all(1:lx3all))
 Phi=-1d0*Phi
 !    E2=grad3D2(Phi,x,1,lx1,1,lx2,1,lx3)    !no haloing required now must also be haloed
@@ -1187,7 +1242,10 @@ if (lx2/=1 .and. potsolve ==1) then    !we did a field-integrated solve above
   divtmp=div3D(J1halo(0:lx1+1,0:lx2+1,0:lx3+1),J2halo(0:lx1+1,0:lx2+1,0:lx3+1), &
                J3halo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
   divJperp=x%h1(1:lx1,1:lx2,1:lx3)*x%h2(1:lx1,1:lx2,1:lx3)*x%h3(1:lx1,1:lx2,1:lx3)*divtmp(1:lx1,1:lx2,1:lx3)
-  if (flagdirich /= 1) then     !Neumann conditions, this is boundary location-agnostic since both bottom and top FACs are known - they have to  be loaded into VVmaxx1 and Vminx1.  For numerical purposes we prefer to integrate from the location of nonzero current (usually highest altitude in open grid).
+  if (flagdirich /= 1) then
+    !! Neumann conditions, this is boundary location-agnostic since both bottom and top FACs are known
+    !! - they have to  be loaded into VVmaxx1 and Vminx1.
+    !! For numerical purposes we prefer to integrate from the location of nonzero current (usually highest altitude in open grid).
     if (gridflag==0) then     !closed dipole grid, really would be best off integrating from the source hemisphere
 !          if (debug) print *,  'Closed dipole grid; integration starting at max x1...', minval(Vmaxx1slab), &
 !                         maxval(Vmaxx1slab)
@@ -1221,10 +1279,13 @@ if (lx2/=1 .and. potsolve ==1) then    !we did a field-integrated solve above
                          (x%h2(1,1:lx2,1:lx3)*x%h3(1,1:lx2,1:lx3)*Vmaxx1slab+J1(ix1,:,:))
       end do
     end if
-!        if (gridflag==2) then    !for a cartesian grid in the northern hemisphere (assumed) we have the x1-direction being against the magnetic field...
+!        if (gridflag==2) then
+         !! for a cartesian grid in the northern hemisphere (assumed) we have the x1-direction being against the magnetic field...
 !          J1=-1d0*J1     !ZZZ - very questionable
 !        end if
-  else      !Dirichlet conditions - we need to integrate from the ***lowest altitude*** (where FAC is known to be zero, note this is not necessarilty the logical bottom of the grid), upwards (to where it isn't)
+  else
+    !! Dirichlet conditions - we need to integrate from the ***lowest altitude***
+    !! (where FAC is known to be zero, note this is not necessarilty the logical bottom of the grid), upwards (to where it isn't)
     if (gridflag/=2) then    !inverted grid (logical top is the lowest altitude)
 !          if (debug) print *, 'Inverted grid detected - integrating logical top downward to compute FAC...'
       J1=integral3D1_curv_alt(divJperp,x,1,lx1)    !int divperp of BG current
@@ -1259,7 +1320,8 @@ end if
 
 !    !R-------
 if (debug) then
-!    print *, 'Max topside FAC (abs. val.) computed to be:  ',maxval(abs(J1(1,:,:)))    !ZZZ - this rey needsz to be current at the "top"
+!    print *, 'Max topside FAC (abs. val.) computed to be:  ',maxval(abs(J1(1,:,:)))
+!! ZZZ - this rey needsz to be current at the "top"
 !    print *, 'Max polarization J2,3 (abs. val.) computed to be:  ',maxval(abs(J2pol)),  maxval(abs(J3pol))
 !    print *, 'Max conduction J2,3  computed to be:  ',maxval(J2), maxval(J3)
 !    print *, 'Min conduction J2,3  computed to be:  ',minval(J2),  minval(J3)

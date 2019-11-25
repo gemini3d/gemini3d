@@ -25,19 +25,24 @@ module procedure grad3D1_curv_3
 
 integer :: ix2,ix3,lx1,lx2,lx3
 
-!    real(wp), dimension(1:size(f,1),1:size(f,2),1:size(f,3)) :: h1,h2,h3   !local references to the metric factors to be used in the derivative
-!    real(wp), dimension(1:size(f,1)) :: dx1    !local reference to the backward difference
-real(wp), dimension(:,:,:), pointer :: h1   !local references to the metric factors to be used in the derivative
-real(wp), dimension(:), pointer :: dx1    !local reference to the backward difference
+!    real(wp), dimension(1:size(f,1),1:size(f,2),1:size(f,3)) :: h1,h2,h3
+!! local references to the metric factors to be used in the derivative
+!    real(wp), dimension(1:size(f,1)) :: dx1
+!! local reference to the backward difference
+real(wp), dimension(:,:,:), pointer :: h1
+!! local references to the metric factors to be used in the derivative
+real(wp), dimension(:), pointer :: dx1
+!! local reference to the backward difference
 
 lx1=size(f,1)
 lx2=size(f,2)
 lx3=size(f,3)
 
 
-!ERROR CHECKING TO MAKE SURE DIFFRENCING IS DONE OVER A CONSISTENTLY-SIZED GRID
+!! ERROR CHECKING TO MAKE SURE DIFFRENCING IS DONE OVER A CONSISTENTLY-SIZED GRID
 if (lx1 /= ubnd1-lbnd1+1 .or. lx2 /= ubnd2-lbnd2+1 .or. lx3 /= ubnd3-lbnd3+1) then
-  error stop '!!!  Inconsistent array and mesh sizes in grad3D1 gradient function.'   !just bail on it and let the user figure it out
+  error stop '!!!  Inconsistent array and mesh sizes in grad3D1 gradient function.'
+  !! just bail on it and let the user figure it out
 end if
 
 
@@ -56,13 +61,18 @@ end if
 dx1=>x%dx1(lbnd1:ubnd1)
 
 
-!NOW EXECUTE THE FINITE DIFFERENCES - NOTE THAT LOOP INDICES ARE MEANT TO INDEX ARRAY BEING DIFFERENCED AND NOT THE MESH STRUCTURE, WHICH USES INPUT BOUNDS.  TO KEEP THE CODE CLEAN I'VE ALIASED THE GRID VARS SO THAT THEY MAY BE ACCESSED BY LOOP INDEX.
+!! NOW EXECUTE THE FINITE DIFFERENCES -
+!! NOTE THAT LOOP INDICES ARE MEANT TO INDEX ARRAY BEING DIFFERENCED AND NOT THE MESH STRUCTURE,
+!! WHICH USES INPUT BOUNDS.  TO KEEP THE CODE CLEAN I'VE ALIASED THE GRID VARS SO THAT THEY MAY BE ACCESSED BY LOOP INDEX.
 do ix3=1,lx3
   do ix2=1,lx2
-    grad3D1_curv_3(1,ix2,ix3)=(f(2,ix2,ix3)-f(1,ix2,ix3))/dx1(1)/h1(1,ix2,ix3)    !fwd diff. at beginning, note that h1 is cell-centered
-    grad3D1_curv_3(2:lx1-1,ix2,ix3)=(f(3:lx1,ix2,ix3)-f(1:lx1-2,ix2,ix3)) &
-                             /(dx1(3:lx1)+dx1(2:lx1-1))/h1(2:lx1-1,ix2,ix3)      !centered diff. in the middleq
-    grad3D1_curv_3(lx1,ix2,ix3)=(f(lx1,ix2,ix3)-f(lx1-1,ix2,ix3))/dx1(lx1)/h1(lx1,ix2,ix3)    !backward diff. at end
+    grad3D1_curv_3(1,ix2,ix3) = (f(2,ix2,ix3)-f(1,ix2,ix3))/dx1(1)/h1(1,ix2,ix3)
+    !! fwd diff. at beginning, note that h1 is cell-centered
+    grad3D1_curv_3(2:lx1-1,ix2,ix3) = (f(3:lx1,ix2,ix3)-f(1:lx1-2,ix2,ix3)) &
+                             /(dx1(3:lx1)+dx1(2:lx1-1))/h1(2:lx1-1,ix2,ix3)
+    !! centered diff. in the middleq
+    grad3D1_curv_3(lx1,ix2,ix3) = (f(lx1,ix2,ix3)-f(lx1-1,ix2,ix3))/dx1(lx1)/h1(lx1,ix2,ix3)
+    !! backward diff. at end
   end do
 end do
 end procedure grad3D1_curv_3
@@ -91,10 +101,14 @@ module procedure grad3D1_curv_23
 
 integer :: ix2,ix3,lx1,lx2,lx3
 
-!    real(wp), dimension(1:size(f,1),1:size(f,2),1:size(f,3)) :: h1,h2,h3   !local references to the metric factors to be used in the derivative
-!    real(wp), dimension(1:size(f,1)) :: dx1    !local reference to the backward difference
-real(wp), dimension(:,:,:), pointer :: h1   !local references to the metric factors to be used in the derivative
-real(wp), dimension(:), pointer :: dx1    !local reference to the backward difference
+!    real(wp), dimension(1:size(f,1),1:size(f,2),1:size(f,3)) :: h1,h2,h3
+!! local references to the metric factors to be used in the derivative
+!    real(wp), dimension(1:size(f,1)) :: dx1
+!! local reference to the backward difference
+real(wp), dimension(:,:,:), pointer :: h1
+!! local references to the metric factors to be used in the derivative
+real(wp), dimension(:), pointer :: dx1
+!! local reference to the backward difference
 
 lx1=size(f,1)
 lx2=size(f,2)
@@ -103,7 +117,8 @@ lx3=size(f,3)
 
 !ERROR CHECKING TO MAKE SURE DIFFRENCING IS DONE OVER A CONSISTENTLY-SIZED GRID
 if (lx1 /= ubnd1-lbnd1+1 .or. lx2 /= ubnd2-lbnd2+1 .or. lx3 /= ubnd3-lbnd3+1) then
-  error stop '!!!  Inconsistent array and mesh sizes in grad3D1 gradient function.'   !just bail on it and let the user figure it out
+  error stop '!!!  Inconsistent array and mesh sizes in grad3D1 gradient function.'
+  !! just bail on it and let the user figure it out
 end if
 
 
@@ -122,13 +137,18 @@ end if
 dx1=>x%dx1(lbnd1:ubnd1)
 
 
-!NOW EXECUTE THE FINITE DIFFERENCES - NOTE THAT LOOP INDICES ARE MEANT TO INDEX ARRAY BEING DIFFERENCED AND NOT THE MESH STRUCTURE, WHICH USES INPUT BOUNDS.  TO KEEP THE CODE CLEAN I'VE ALIASED THE GRID VARS SO THAT THEY MAY BE ACCESSED BY LOOP INDEX.
+!! NOW EXECUTE THE FINITE DIFFERENCES
+!! NOTE THAT LOOP INDICES ARE MEANT TO INDEX ARRAY BEING DIFFERENCED AND NOT THE MESH STRUCTURE,
+!! WHICH USES INPUT BOUNDS.  TO KEEP THE CODE CLEAN I'VE ALIASED THE GRID VARS SO THAT THEY MAY BE ACCESSED BY LOOP INDEX.
 do ix3=1,lx3
   do ix2=1,lx2
-    grad3D1_curv_23(1,ix2,ix3)=(f(2,ix2,ix3)-f(1,ix2,ix3))/dx1(1)/h1(1,ix2,ix3)    !fwd diff. at beginning, note that h1 is cell-centered
-    grad3D1_curv_23(2:lx1-1,ix2,ix3)=(f(3:lx1,ix2,ix3)-f(1:lx1-2,ix2,ix3)) &
-                             /(dx1(3:lx1)+dx1(2:lx1-1))/h1(2:lx1-1,ix2,ix3)      !centered diff. in the middleq
-    grad3D1_curv_23(lx1,ix2,ix3)=(f(lx1,ix2,ix3)-f(lx1-1,ix2,ix3))/dx1(lx1)/h1(lx1,ix2,ix3)    !backward diff. at end
+    grad3D1_curv_23(1,ix2,ix3) = (f(2,ix2,ix3)-f(1,ix2,ix3))/dx1(1)/h1(1,ix2,ix3)
+    !! fwd diff. at beginning, note that h1 is cell-centered
+    grad3D1_curv_23(2:lx1-1,ix2,ix3) = (f(3:lx1,ix2,ix3)-f(1:lx1-2,ix2,ix3)) &
+                             /(dx1(3:lx1)+dx1(2:lx1-1))/h1(2:lx1-1,ix2,ix3)
+    !! centered diff. in the middleq
+    grad3D1_curv_23(lx1,ix2,ix3) = (f(lx1,ix2,ix3)-f(lx1-1,ix2,ix3))/dx1(lx1)/h1(lx1,ix2,ix3)
+    !! backward diff. at end
   end do
 end do
 end procedure grad3D1_curv_23
@@ -208,7 +228,8 @@ if (lx2>1) then    !if we have a singleton dimension then we are doing a 2D run 
 
   !ERROR CHECKING TO MAKE SURE DIFFRENCING IS DONE OVER A CONSISTENTLY-SIZED GRID
   if (lx1 /= ubnd1-lbnd1+1 .or. lx2 /= ubnd2-lbnd2+1 .or. lx3 /= ubnd3-lbnd3+1) then
-    error stop '!!!  Inconsistent array and mesh sizes in gradient function.'   !just bail on it and let the user figure it out
+    error stop '!!!  Inconsistent array and mesh sizes in gradient function.'
+    !! just bail on it and let the user figure it out
   end if
 
 
@@ -217,7 +238,8 @@ if (lx2>1) then    !if we have a singleton dimension then we are doing a 2D run 
   if (lx3<=x%lx3+4) then     !this is a derivative over a slab region (subgrid)
     h2=>x%h2(lbnd1:ubnd1,lbnd2:ubnd2,lbnd3:ubnd3)
     dx2=>x%dx2(lbnd2:ubnd2)
-  else if (lx3<=x%lx3all+4) then    !if a larger dimension was specified for x3 then assume that we are differentiating over x2all and x3all
+  else if (lx3<=x%lx3all+4) then
+    !! if a larger dimension was specified for x3 then assume that we are differentiating over x2all and x3all
     h2=>x%h2all(lbnd1:ubnd1,lbnd2:ubnd2,lbnd3:ubnd3)
     dx2=>x%dx2all(lbnd2:ubnd2)
     print *,   '! Accessing root-only grid information, while taking derivative in 2-direction'

@@ -24,7 +24,7 @@ if fc.get_id() == 'gcc'
     add_project_arguments(bounds, '-fcheck=all', language: 'fortran')
   endif
 elif fc.get_id() == 'intel'
-  add_project_arguments(std18, impnone, language: 'fortran')
+  add_project_arguments('-diag-disable 5268', std18, impnone, language: 'fortran')
   if get_option('buildtype').contains('debug')
     # -heap-arrays didn't appear to be needed on Linux?
     add_project_arguments(bounds, language: 'fortran')
@@ -32,7 +32,7 @@ elif fc.get_id() == 'intel'
 elif fc.get_id() == 'intel-cl'
   # /fpp is necessary for any Fortran preprocessing statement with Intel ifort on Windows
   # https://software.intel.com/en-us/fortran-compiler-developer-guide-and-reference-fpp
-  add_project_arguments('/fpp', std18, impnone, language: 'fortran')
+  add_project_arguments('/Qdiag-disable:5268', '/fpp', std18, impnone, language: 'fortran')
   if get_option('buildtype').contains('debug')
     add_project_arguments(bounds, '/heap-arrays', language: 'fortran')
   endif

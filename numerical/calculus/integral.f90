@@ -50,8 +50,10 @@ integer :: ix1,lx1
 lx1=size(f,1)
 
 integral3D1_curv_alt(lx1,:,:)=0._wp
-do ix1=lx1-1,1,-1    !start from the logical top and sum  downward (keep dx positive since the intent is to integrate from fixed point to top)
-  integral3D1_curv_alt(ix1,:,:)=integral3D1_curv_alt(ix1+1,:,:)+0.5d0*(f(ix1,:,:)+f(ix1+1,:,:))*x%dx1(lbnd+ix1-1+1)   !+1 since we are starting from top
+do ix1=lx1-1,1,-1
+  !! start from the logical top and sum  downward (keep dx positive since the intent is to integrate from fixed point to top)
+  integral3D1_curv_alt(ix1,:,:)=integral3D1_curv_alt(ix1+1,:,:)+0.5d0*(f(ix1,:,:)+f(ix1+1,:,:))*x%dx1(lbnd+ix1-1+1)
+  !! +1 since we are starting from top
 end do
 end procedure integral3D1_curv_alt
 
