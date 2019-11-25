@@ -32,8 +32,8 @@ elif fc.get_id() == 'intel'
 elif fc.get_id() == 'intel-cl'
   # /fpp is necessary for any Fortran preprocessing statement with Intel ifort on Windows
   # https://software.intel.com/en-us/fortran-compiler-developer-guide-and-reference-fpp
-   add_project_arguments('/fpp', std18, impnone, language: 'fortran')
-   if get_option('buildtype').contains('debug')
+  add_project_arguments('/fpp', std18, impnone, language: 'fortran')
+  if get_option('buildtype').contains('debug')
     add_project_arguments(bounds, '/heap-arrays', language: 'fortran')
   endif
 elif ['pgi', 'flang'].contains(fc.get_id())
@@ -45,7 +45,8 @@ endif
 
 # -- MKL (in general, MKL can be used with intel, intel-cl, gcc or PGI)
 mklroot = get_option('mklroot')
-mkllib_root = os == 'windows' ? mklroot/'lib/intel64_win' : mklroot/'lib/intel64'
+mkllib_root = mklroot/'lib/intel64'
+# os == 'windows' ? mklroot/'lib/intel64_win' : mklroot/'lib/intel64'
 
 # == threads
 threads = dependency('threads')
@@ -75,7 +76,7 @@ if mklroot == ''
     blas = disabler()
   endif
 
-  lapack = dependency('lapack', cmake_module_path: 'cmake/Modules', required: false, disabler: true)
+  lapack = dependency('lapack', required: false, disabler: true)
   if not lapack.found()
     lapack = fc.find_library('lapack', required: false, disabler: true)
   endif
@@ -92,9 +93,6 @@ else
   lapack = []
   n1 = fc.get_id() == 'gcc' ? 'mkl_gf_lp64' : 'mkl_intel_lp64'
   names = [n1, 'mkl_intel_thread', 'mkl_core']
-  if os == 'windows'
-    names += 'iomp5md'
-  endif
   foreach n : names
     lapack += fc.find_library(n, dirs: mkllib_root)
   endforeach
@@ -105,7 +103,7 @@ endif
 # --- intel MPI lib for Windows
 intelmpi_lib = []
 if mklroot != '' and os == 'windows'
-  intelmpi_lib = fc.find_library('impi', dirs: mkllib_root)
+  intelmpi_lib = fc.find_library('impi', dirs: mklroot / '../mpi/intel64/lib/release')
 endif
 
 # --- Find BLACS
@@ -123,14 +121,11 @@ endif
 
 
 # --- Find Scalapack
-
-# dependency('scalapack') not yet working in Meson--cmake->meson bug within Meson, yielding long meson-log.txt
-# scalapack = dependency('scalapack', cmake_module_path : 'cmake/Modules')
 scalapack = disabler()
 
 if mklroot != ''
   scalapack_lib = fc.find_library('mkl_scalapack_lp64', dirs: mkllib_root)
-  scalapack = declare_dependency(dependencies: [scalapack_lib, intelmpi_lib], include_directories: mklroot/'include/intel64/lp64')
+  scalapack = declare_dependency(dependencies: [scalapack_lib, blacs, lapack, intelmpi_lib], include_directories: mklroot/'include/intel64/lp64')
 endif
 
 if not scalapack.found()
@@ -172,7 +167,6 @@ if mklroot == ''
 
   mumps_root = get_option('MUMPS_ROOT')
   if mumps_root == ''
-    # mumps = dependency('MUMPS', cmake_module_path : 'cmake/Modules')
     if os == 'linux'
       mumps_root = '/usr'
       mumpslib = [fc.find_library(mumps_name, required : false, disabler: true),
