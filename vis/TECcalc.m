@@ -56,8 +56,8 @@ phidist=mlonsrc*pi/180;
 
 %ANGULAR RANGE TO COVER FOR TEC CALCULATIONS
 %dang=3.5;
-dang=10;
-%dang=90;
+%dang=10;
+dang=180;
 
 
 %TIMES OF INTEREST (MEASURED IN SECONDS FROM BEGINNING SIMJULATION DAY START
@@ -67,10 +67,10 @@ times=UTsec0:dtout:UTsec0+tdur;
 %NEW (PLOT) GRID SIZE IN R,TH
 Re=6370e3;
 %lth=500;
-lth=1500;
+lth=3000;
 %lr=250;
 lr=300;
-lphi=300;
+lphi=600;
 
 
 %DEFINE A GRID FOR THE INTERPOLATION

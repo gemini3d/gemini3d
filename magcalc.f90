@@ -104,6 +104,11 @@ integer :: argc, ierr
 character(256) :: argv
 logical :: file_exists
 
+!! REGULATOR FOR 1/R^3
+real(wp), parameter :: R3min=1d9
+real(wp), parameter :: Rmin=1d3
+
+
 !! ## MAIN PROGRAM
 debug=.true.     !FIXME:  hardcode this in for now, needs to be set based on user input...
 
@@ -281,9 +286,10 @@ allocate(integrand(lx1,lx2,lx3),integrandavg(lx1-1,max(lx2-1,1),lx3-1))    !latt
 allocate(Br(lpoints),Btheta(lpoints),Bphi(lpoints))
 allocate(Brall(lpoints),Bthetaall(lpoints),Bphiall(lpoints))    !only used by root, but I think workers need to have space allocated for this
 
-
 !MAIN LOOP
 UTsec=UTsec0; it=1; t=0d0; tout=t;
+call dateinc(dtout,ymd,UTsec)     !skip first file
+it=3
 do while (t<tdur)
   !TIME STEP CALCULATION
   dt=dtout    !only compute magnetic field at times when we've done output
@@ -389,20 +395,79 @@ do while (t<tdur)
     call halo_end(Ry,Ryend,Rytop,tagRy)
     call halo_end(Rz,Rzend,Rztop,tagRz)
 
+    where (Rx>-Rmin .and. Rx<Rmin .and. Rx>0)
+      Rx=Rmin
+    end where
+    where (Ry>-Rmin .and. Ry<Rmin .and. Ry>0)
+      Ry=Rmin
+    end where
+    where (Rz>-Rmin .and. Rz<Rmin .and. Rz>0)
+      Rz=Rmin
+    end where
+    where (Rx>-Rmin .and. Rx<Rmin .and. Rx<0)
+      Rx=-Rmin
+    end where
+    where (Ry>-Rmin .and. Ry<Rmin .and. Ry<0)
+      Ry=-Rmin
+    end where
+    where (Rz>-Rmin .and. Rz<Rmin .and. Rz<0)
+      Rz=-Rmin
+    end where
+
+    where (Rxend>-Rmin .and. Rxend<Rmin .and. Rxend>0)
+      Rxend=Rmin
+    end where
+    where (Ryend>-Rmin .and. Ryend<Rmin .and. Ryend>0)
+      Ryend=Rmin
+    end where
+    where (Rzend>-Rmin .and. Rzend<Rmin .and. Rzend>0)
+      Rzend=Rmin
+    end where
+    where (Rxend>-Rmin .and. Rxend<Rmin .and. Rxend<0)
+      Rxend=-Rmin
+    end where
+    where (Ryend>-Rmin .and. Ryend<Rmin .and. Ryend<0)
+      Ryend=-Rmin
+    end where
+    where (Rzend>-Rmin .and. Rzend<Rmin .and. Rzend<0)
+      Rzend=-Rmin
+    end where
+
+    where (Rxtop>-Rmin .and. Rxtop<Rmin .and. Rxtop>0)
+      Rxtop=Rmin
+    end where
+    where (Rytop>-Rmin .and. Rytop<Rmin .and. Rytop>0)
+      Rytop=Rmin
+    end where
+    where (Rztop>-Rmin .and. Rztop<Rmin .and. Rztop>0)
+      Rztop=Rmin
+    end where
+
+    where (Rxtop>-Rmin .and. Rxtop<Rmin .and. Rxtop<0)
+      Rxtop=-Rmin
+    end where
+    where (Rytop>-Rmin .and. Rytop<Rmin .and. Rytop<0)
+      Rytop=-Rmin
+    end where
+    where (Rztop>-Rmin .and. Rztop<Rmin .and. Rztop<0)
+      Rztop=-Rmin
+    end where
+
+
     if (flag2D/=1) then
       Rcubed(:,:,:)=(Rx**2+Ry**2+Rz**2)**(3d0/2d0)   !this really is R**3
-      where(Rcubed<1d3)
-        Rcubed=1d3
-      end where
+!      where(Rcubed<R3min)
+!        Rcubed=R3min
+!      end where
       call halo_end(Rcubed,Rcubedend,Rcubedtop,tagRcubed)
-      if(myid3==lid3-1) Rcubedend=1d3     !< avoids div by zero on the end
-      if(myid2==lid2-1) Rcubedtop=1d3
-      where(Rcubedtop<1d3)
-        Rcubedtop=1d3
-      end where
-      where(Rcubedend<1d3)
-        Rcubedend=1d3
-      end where
+      if(myid3==lid3-1) Rcubedend=R3min     !< avoids div by zero on the end
+      if(myid2==lid2-1) Rcubedtop=R3min
+!      where(Rcubedtop<R3min)
+!        Rcubedtop=R3min
+!      end where
+!      where(Rcubedend<R3min)
+!        Rcubedend=R3min
+!      end where
 
       !print*, myid2,myid3,'--> Rcubed:  ',minval(Rcubed),maxval(Rcubed),minval(Rcubedend), &
       !                                   maxval(Rcubedend),minval(Rcubedtop),minval(Rcubedtop)
@@ -469,9 +534,9 @@ do while (t<tdur)
                         sum(integrandavgtop*dVtop(2:lx1,2:lx3))
     else
       Rcubed(:,:,:)=Rx**2+Ry**2    !not really R**3 in 2D, just the denominator of the integrand
-      where(Rcubed<1d3)
-        Rcubed=1d3
-      end where
+!      where(Rcubed<R3min)
+!        Rcubed=R3min
+!      end where
       call halo_end(Rcubed,Rcubedend,Rcubedtop,tagRcubed)
       !DO WE NEED TO CHECK HERE FOR DIV BY ZERO???  ALSO IN 2D WE KNOW THAT WE ARE ONLY DIVIDED IN THE 3 DIMENSION SO THERE IS NO NEED TO WORRY ABOUT ADDING A 'TOP' ETC.
 
