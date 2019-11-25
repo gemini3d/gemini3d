@@ -4,9 +4,9 @@ addpath([cwd,'/../script_utils'])
 %SIMULATIONS LOCAITONS
 %simname='tohoku20113D_highres_var/';
 %simname='test3d_fang_mag/';
-%simname='mooreOK3D_hemis_medres/'
+simname='mooreOK3D_hemis_medres/'
 %simname='iowa3D_hemis_medres2/'
-simname='iowa3D_hemis_medres2_control/'
+%simname='iowa3D_hemis_medres2_control/'
 basedir='~/SDHCcard/'
 %basedir='~/simulations/'
 direc=[basedir,simname];
@@ -24,7 +24,7 @@ lt=numel(times);
 
 
 %LOAD/CONSTRUCT THE FIELD POINT GRID
-basemagdir=[direc,'/magfields/'];
+basemagdir=[direc,'/magfields.500km.20deg.highres/'];
 fid=fopen([basemagdir,'/input/magfieldpoints.dat'],'r');    %needs some way to know what the input file is, maybe force fortran code to use this filename...
 lpoints=fread(fid,1,'integer*4');
 r=fread(fid,lpoints,'real*8');
@@ -99,7 +99,7 @@ fprintf('...Done reading data...\n');
 
 
 %STORE THE DATA IN A MATLAB FILE FOR LATER USE
-save([direc,'/magfields_fort.mat'],'simdate_series','mlat','mlon','Brt','Bthetat','Bphit');
+save([direc,'/magfields_fort.mat'],'simdate_series','mlat','mlon','Brt','Bthetat','Bphit','mloc');
 
 %{
 %INTERPOLATE TO HIGHER SPATIAL RESOLUTION FOR PLOTTING

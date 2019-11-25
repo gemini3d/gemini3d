@@ -275,7 +275,8 @@ module procedure bcast_send3D_x3i_23
 integer :: lx1,lx2,lx3
 integer :: iid,islstart,islfin
 integer, dimension(4) :: inds
-real(wp), dimension(1:size(paramtrim,1),1:size(paramtrim,2),1:size(paramtrim,3)) :: paramtmp    !has size lx3+1 due to input having that size
+real(wp), dimension(1:size(paramtrim,1),1:size(paramtrim,2),1:size(paramtrim,3)) :: paramtmp
+!! has size lx3+1 due to input having that size
 
 lx1=size(paramtrim,1)      !note here that paramtrim does not have ghost cells
 lx2=size(paramtrim,2)
@@ -285,9 +286,11 @@ lx3=size(paramtrim,3)-1    !note that we are interpreting input as an x3i quanti
 !ROOT BROADCASTS IC DATA TO WORKERS
 do iid=1,lid-1
   inds=slabinds(iid,lx2,lx3)
-  paramtmp=paramtrimall(:,inds(1):inds(2),inds(3):inds(4)+1)     !+1 since this is an x3 interface quantity
+  paramtmp=paramtrimall(:,inds(1):inds(2),inds(3):inds(4)+1)
+  !! +1 since this is an x3 interface quantity
   call mpi_send(paramtmp,lx1*lx2*(lx3+1), &
-               mpi_realprec,iid,tag,MPI_COMM_WORLD,ierr)         !note the +1 since thes are interface quantities (and need to overlap b/t workers)
+               mpi_realprec,iid,tag,MPI_COMM_WORLD,ierr)
+  !! note the +1 since thes are interface quantities (and need to overlap b/t workers)
 end do
 
 
@@ -316,7 +319,8 @@ module procedure bcast_send3D_x2i_23
 integer :: lx1,lx2,lx3
 integer :: iid,islstart,islfin
 integer, dimension(4) :: inds
-real(wp), dimension(1:size(paramtrim,1),1:size(paramtrim,2),1:size(paramtrim,3)) :: paramtmp    !has size lx3+1 due to input having that size
+real(wp), dimension(1:size(paramtrim,1),1:size(paramtrim,2),1:size(paramtrim,3)) :: paramtmp
+!! has size lx3+1 due to input having that size
 
 lx1=size(paramtrim,1)      !note here that paramtrim does not have ghost cells
 lx2=size(paramtrim,2)-1    !for this routine the interface is in the x2-direciton
@@ -326,9 +330,11 @@ lx3=size(paramtrim,3)
 !ROOT BROADCASTS IC DATA TO WORKERS
 do iid=1,lid-1
   inds=slabinds(iid,lx2,lx3)
-  paramtmp=paramtrimall(:,inds(1):inds(2)+1,inds(3):inds(4))     !+1 since this is an x3 interface quantity
+  paramtmp=paramtrimall(:,inds(1):inds(2)+1,inds(3):inds(4))
+  !! +1 since this is an x3 interface quantity
   call mpi_send(paramtmp,lx1*(lx2+1)*lx3, &
-               mpi_realprec,iid,tag,MPI_COMM_WORLD,ierr)         !note the +1 since thes are interface quantities (and need to overlap b/t workers)
+               mpi_realprec,iid,tag,MPI_COMM_WORLD,ierr)
+  !! note the +1 since thes are interface quantities (and need to overlap b/t workers)
 end do
 
 

@@ -25,11 +25,12 @@ if hdf5_interface.found()
   io = library('io',
     sources: io_src,
     link_with: [calculus, const, fsutils, grid, mpimod, timeutils],
-    dependencies: hdf5_interface)
+    dependencies: [mpi, hdf5_interface])  # ifort needs dep: mpi here
 else
   io = library('io',
     sources: io_src,
-    link_with: [calculus, const, fsutils, grid, mpimod, timeutils])
+    link_with: [calculus, const, fsutils, grid, mpimod, timeutils],
+    dependencies: mpi)  # ifort needs dep: mpi here
 endif
 
 subdir('vendor/msis00')
@@ -44,18 +45,20 @@ neutral = library('neutral', 'neutral/neutral.f90',
 subdir('ionization')
 
 sources = library('sources', 'sources/sources.f90',
-  link_with: [calculus, collisions, const, grid, mpimod])
+  link_with: [calculus, collisions, const, grid, mpimod],
+    dependencies: mpi)  # ifort needs dep: mpi here
 
 multifluid = library('multifluid', 'multifluid/multifluid.f90',
   link_with: [advection, calculus, collisions, const, diffusion, grid, ionization_fang, mpimod,
-              precipBCs, sources, timeutils])
+              precipBCs, sources, timeutils],
+  dependencies: mpi)  # ifort needs dep: mpi here
 
 
 # -- gemini exe
 gemini_fang_exe = executable('gemini_fang.bin',
   sources: 'gemini.f90',
   link_with : [const, grid, io, mpimod, multifluid, neutral, potential, precipBCs, temporal, timeutils],
-  dependencies : [scalapack, blacs, lapack, blas],
+  dependencies : [scalapack, blacs, lapack, blas, mpi],  # ifort needs dep: mpi here
   fortran_args: real_bits,
   install: true,
   link_language: 'fortran')
@@ -64,12 +67,13 @@ gemini_fang_exe = executable('gemini_fang.bin',
 
 multifluid_glow = library('multifluid_glow', 'multifluid/multifluid.f90',
   link_with: [advection, calculus, collisions, const, diffusion, grid, ionization_glow, mpimod,
-              precipBCs, sources, timeutils])
+              precipBCs, sources, timeutils],
+  dependencies: mpi)  # ifort needs dep: mpi here
 
 gemini_glow_exe = executable('gemini_glow.bin',
   sources: 'gemini.f90',
   link_with : [const, grid, io, mpimod, multifluid_glow, neutral, potential, precipBCs, temporal, timeutils],
-  dependencies : [scalapack, blacs, lapack, blas],
+  dependencies : [scalapack, blacs, lapack, blas, mpi],    # ifort needs dep: mpi here
   fortran_args: real_bits,
   install: true,
   link_language: 'fortran')

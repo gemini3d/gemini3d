@@ -63,7 +63,8 @@ module procedure halo_23
     x3begin=.true.
   end if
   idleft=grid2ID(i2,i3)
-  if (x3begin .and. .not.(isperiodic)) then     !we are flagged as not wanting periodic boundaries so do nothing (overwrite idleft to send to NULL process
+  if (x3begin .and. .not.(isperiodic)) then
+    !! we are flagged as not wanting periodic boundaries so do nothing (overwrite idleft to send to NULL process
     idleft=MPI_PROC_NULL
   end if
 
@@ -120,7 +121,8 @@ module procedure halo_23
 
 
   !EXCHANGE MESSAGES IN THE X3-DIRECTION OF THE PROCESS GRID
-  if (.not. (x3begin .and. x3end)) then        !make sure we actually need to pass in this direction, viz. we aren't both the beginning and thend
+  if (.not. (x3begin .and. x3end)) then
+    !! make sure we actually need to pass in this direction, viz. we aren't both the beginning and thend
     buffer31=param(-1:lx1+2,1:lx2,1:lhalo)     !x1 ghost cells to be included
     call mpi_isend(buffer31,(lx1+4)*(lx2)*lhalo,mpi_realprec,idleft,tag,MPI_COMM_WORLD,tmpreq,ierr)
     requests(1)=tmpreq
@@ -274,7 +276,8 @@ module procedure halo_end_23
 
 
   !PASS DATA IN X3 DIRECTION
-  if (.not. (x3begin .and. x3end)) then        !make sure we actually need to pass in this direction, viz. we aren't both the beginning and thend
+  if (.not. (x3begin .and. x3end)) then
+    !! make sure we actually need to pass in this direction, viz. we aren't both the beginning and thend
     call mpi_isend(param(:,:,1),lx1*lx2,mpi_realprec,idleft,tag,MPI_COMM_WORLD,tmpreq,ierr)
     requests(1)=tmpreq
     call mpi_irecv(paramend,lx1*lx2,mpi_realprec,idright,tag,MPI_COMM_WORLD,tmpreq,ierr)

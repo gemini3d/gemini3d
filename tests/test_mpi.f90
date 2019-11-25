@@ -3,9 +3,10 @@ use mpi
 implicit none
 
 integer :: mrank, msize, vlen, ierr
-character(MPI_MAX_LIBRARY_VERSION_STRING) :: version  ! allocatable not ok
+character(MPI_MAX_LIBRARY_VERSION_STRING) :: version
+!! allocatable character for version does not work
 
-print *,compiler_version(), compiler_options()
+print '(/,A,/)',compiler_version()
 
 call MPI_INIT(ierr)
 if (ierr /= 0) error stop 'mpi init error'
@@ -17,11 +18,11 @@ call MPI_GET_LIBRARY_VERSION(version, vlen, ierr)
 call MPI_FINALIZE(ierr)
 if (ierr /= 0) error stop 'mpi finalize error'
 
-print '(A,I3,A,I3,A)', 'Image ', mrank, ' / ', msize, ':',version
+print '(A,I3,A,I3,A)', 'Image ', mrank, ' / ', msize, ':', trim(version)
 
-print '(A25,A7)','type','value'
-print *,'mpi_real',mpi_real
-print *,'mpi_real8',mpi_real8
+print '(A12,A15)','type','value'
+print '(A12,I15)','mpi_real',mpi_real
+print '(A12,I15)','mpi_real8',mpi_real8
 
 end program
 
@@ -30,4 +31,3 @@ end program
 ! type  value
 ! mpi_real  1275069468
 ! mpi_real8  1275070505
-

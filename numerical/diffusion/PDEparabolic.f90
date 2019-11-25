@@ -47,7 +47,8 @@ real(wp), dimension(size(Ts)) :: TRBDF21D
 lx1=size(Ts)
 Dh(1)=0.0
 Dh(2:lx1)=0.5*(D(1:lx1-1)+D(2:lx1))         !ith left cell wall thermal conductivity
-!    TR(:)=Ts(:)/dt+E(:)                !boundaries to be overwritten later...  This is now done for each grid point in a separate statement
+!    TR(:)=Ts(:)/dt+E(:)
+!! boundaries to be overwritten later...  This is now done for each grid point in a separate statement
 
 
 !! ## TR HALF STEP:  DEFINE A MATRIX USING BANDED STORAGE

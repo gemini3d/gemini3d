@@ -14,20 +14,31 @@ use mpimod, only: mpisetup, mpibreakdown, mpigrid, mpi_manualgrid, halo_end, &
 
 implicit none
 
-!! VARIABLES READ IN FROM CONFIG.DAT FILE
-integer, dimension(3) :: ymd    !year,month,day of simulation
-real(wp) :: UTsec      !UT (s)
-real(wp) :: UTsec0     !UT start time of simulation (s)
-real(wp) :: tdur       !duration of simulation
-real(wp), dimension(3) :: activ    !f10.7a,f10.7,ap
-real(wp) :: tcfl                       !target CFL number
-real(wp) :: Teinf                      !exospheric temperature
-integer :: potsolve                   !what type of potential solve
-integer :: flagperiodic               !toggles whether or not the grid is treated as periodic in the x3 dimension (affects some of the message passing)
-integer :: flagoutput                 !what type of output to do (1 - everything; 2 - avg'd parms.; 3 - ne only)
-integer :: flagcap                    !internal capacitance?
+!> VARIABLES READ IN FROM CONFIG.DAT FILE
+integer, dimension(3) :: ymd
+!! year,month,day of simulation
+real(wp) :: UTsec
+!! UT (s)
+real(wp) :: UTsec0
+!! UT start time of simulation (s)
+real(wp) :: tdur
+!! duration of simulation
+real(wp), dimension(3) :: activ
+!! f10.7a,f10.7,ap
+real(wp) :: tcfl
+!! target CFL number
+real(wp) :: Teinf
+!! exospheric temperature
+integer :: potsolve
+!! what type of potential solve
+integer :: flagperiodic
+!! toggles whether or not the grid is treated as periodic in the x3 dimension (affects some of the message passing)
+integer :: flagoutput
+!! what type of output to do (1 - everything; 2 - avg'd parms.; 3 - ne only)
+integer :: flagcap
+!! internal capacitance?
 
-!! INPUT AND OUTPUT FILES
+!> INPUT AND OUTPUT FILES
 character(:), allocatable :: infile    !command line argument input file
 character(:), allocatable :: outdir    !" " output directory
 character(:), allocatable :: indatsize,indatgrid    !grid size and data filenames
@@ -156,13 +167,15 @@ else     !try to decide the process grid ourself
 end if
 
 
-!LOAD UP THE GRID STRUCTURE/MODULE VARS. FOR THIS SIMULATION - THIS ALSO PERMUTES DIMENSIONS OF 2D GRID, IF NEEDED
+!> LOAD UP THE GRID STRUCTURE/MODULE VARS. FOR THIS SIMULATION - THIS ALSO PERMUTES DIMENSIONS OF 2D GRID, IF NEEDED
 if (myid==0) then
   print*, 'Process grid established; reading in full grid file now...'
 end if
-call read_grid(indatsize,indatgrid,flagperiodic,x)     !read in a previously generated grid from filename listed in input file, distribute subgrids to individual workers
+call read_grid(indatsize,indatgrid,flagperiodic,x)
+!! read in a previously generated grid from filename listed in input file, distribute subgrids to individual workers
 if (lx2==1) then
-  flag2D=1    !a 2D simulation was done, which changes how the integrations go...
+  flag2D=1
+  !! a 2D simulation was done, which changes how the integrations go...
 else
   flag2D=0
 end if
@@ -175,7 +188,8 @@ end if
 !call get_command_argument(2,argv)
 !outdir = trim(argv)    !this should be the base output directory that the simulation results have been stored in
 call get_command_argument(2,argv)
-fieldpointfile=trim(argv)    !this file contains the field points at which we are computing magnetic perturbations, it will be copied into the output directory
+fieldpointfile=trim(argv)
+!! this file contains the field points at which we are computing magnetic perturbations, it will be copied into the output directory
 
 
 !SET UP DIRECTORY TO STORE OUTPUT FILES
@@ -213,7 +227,8 @@ allocate(xp(lx1,lx2,lx3),yp(lx1,lx2,lx3),zp(lx1,lx2,lx3))
 xp(:,:,:)=x%alt(:,:,:)+Re                               !radial distance from Earth's center
 !yp(:,:,:)=xp(:,:,:)*x%theta(:,:,:)                      !southward distance (in the direction of the theta spherical coordinate)
 !zp(:,:,:)=xp(:,:,:)*sin(x%theta(:,:,:))*x%phi(:,:,:)    !eastward distance
-yp(:,:,:)=rmean*x%theta(:,:,:)    !the integrations are being treated as Cartesian so flatten out the local spherical coordinates into cartesian, as well
+yp(:,:,:)=rmean*x%theta(:,:,:)
+!! the integrations are being treated as Cartesian so flatten out the local spherical coordinates into cartesian, as well
 zp(:,:,:)=rmean*sin(thetamean)*x%phi(:,:,:)
 
 
@@ -250,20 +265,22 @@ else         !plane geometry assumption
 end if
 
 
-!GET END VOLUMES SO THE INTEGRALS ARE 'COMPLETE'
-call halo_end(dV,dVend,dVtop,tagdV)    !< need to define the differential volume on the edge of this x3-slab in
+!> GET END VOLUMES SO THE INTEGRALS ARE 'COMPLETE'
+call halo_end(dV,dVend,dVtop,tagdV)
+!! need to define the differential volume on the edge of this x3-slab in
 
 
 !print*, myid2,myid3,'--> dV vals.',minval(dV),maxval(dV),minval(dVend),maxval(dVend),minval(dVtop),maxval(dVtop)
 
 
-!COMPUTE NEEDED PROJECTIONS
+!> COMPUTE NEEDED PROJECTIONS
 allocate(proj_e1er(lx1,lx2,lx3),proj_e2er(lx1,lx2,lx3),proj_e3er(lx1,lx2,lx3))
 allocate(proj_e1etheta(lx1,lx2,lx3),proj_e2etheta(lx1,lx2,lx3),proj_e3etheta(lx1,lx2,lx3))
 allocate(proj_e1ephi(lx1,lx2,lx3),proj_e2ephi(lx1,lx2,lx3),proj_e3ephi(lx1,lx2,lx3))
 allocate(alt(lx1,lx2,lx3))
 alt(:,:,:)=x%alt
-proj_e1er(:,:,:)=sum(x%e1*x%er,4)    !fourth dimension of unit vectors is the 3 Cartesian components of each vector
+proj_e1er(:,:,:)=sum(x%e1*x%er,4)
+!! fourth dimension of unit vectors is the 3 Cartesian components of each vector
 proj_e2er(:,:,:)=sum(x%e2*x%er,4)
 proj_e3er(:,:,:)=sum(x%e3*x%er,4)
 proj_e1etheta(:,:,:)=sum(x%e1*x%etheta,4)
@@ -274,19 +291,21 @@ proj_e2ephi(:,:,:)=sum(x%e2*x%ephi,4)
 proj_e3ephi(:,:,:)=sum(x%e3*x%ephi,4)
 
 
-!DEALLOCATE GRID MODULE VARIABLES TO SAVE MEMORY (PROGRAM DOESN'T ACTUALLY NEED THESE ONCE X,Y,Z CREATED
+!> DEALLOCATE GRID MODULE VARIABLES TO SAVE MEMORY (PROGRAM DOESN'T ACTUALLY NEED THESE ONCE X,Y,Z CREATED
 call clear_grid(x)
 deallocate(r,theta,phi)
 
 
-!STORAGE FOR MAGNETIC FIELD CALCULATIONS
+!> STORAGE FOR MAGNETIC FIELD CALCULATIONS
 allocate(Rx(lx1,lx2,lx3),Ry(lx1,lx2,lx3),Rz(lx1,lx2,lx3))
 allocate(Rcubed(lx1,lx2,lx3))
-allocate(integrand(lx1,lx2,lx3),integrandavg(lx1-1,max(lx2-1,1),lx3-1))    !latter is cell centered hence -1 in size, max is needed to prevent zero sized array
+allocate(integrand(lx1,lx2,lx3),integrandavg(lx1-1,max(lx2-1,1),lx3-1))
+!! latter is cell centered hence -1 in size, max is needed to prevent zero sized array
 allocate(Br(lpoints),Btheta(lpoints),Bphi(lpoints))
-allocate(Brall(lpoints),Bthetaall(lpoints),Bphiall(lpoints))    !only used by root, but I think workers need to have space allocated for this
+allocate(Brall(lpoints),Bthetaall(lpoints),Bphiall(lpoints))
+!! only used by root, but I think workers need to have space allocated for this
 
-!MAIN LOOP
+!! MAIN LOOP
 UTsec=UTsec0; it=1; t=0d0; tout=t;
 call dateinc(dtout,ymd,UTsec)     !skip first file
 it=3
@@ -538,7 +557,8 @@ do while (t<tdur)
 !        Rcubed=R3min
 !      end where
       call halo_end(Rcubed,Rcubedend,Rcubedtop,tagRcubed)
-      !DO WE NEED TO CHECK HERE FOR DIV BY ZERO???  ALSO IN 2D WE KNOW THAT WE ARE ONLY DIVIDED IN THE 3 DIMENSION SO THERE IS NO NEED TO WORRY ABOUT ADDING A 'TOP' ETC.
+      !! DO WE NEED TO CHECK HERE FOR DIV BY ZERO???
+      !! ALSO IN 2D WE KNOW THAT WE ARE ONLY DIVIDED IN THE 3 DIMENSION SO THERE IS NO NEED TO WORRY ABOUT ADDING A 'TOP' ETC.
 
       !Bx
       integrand(:,:,:)=mu0/4d0/pi*(-2d0*Jz*Ry)/Rcubed
@@ -556,7 +576,8 @@ do while (t<tdur)
                            integrand(1:lx1-1,:,2:lx3) + integrand(2:lx1,:,2:lx3) )
       integrandavgend(:,:)=1d0/4d0*( integrand(1:lx1-1,:,lx3) + integrand(2:lx1,:,lx3) + &
                            integrandend(1:lx1-1,:) + integrandend(2:lx1,:) )
-      Btheta(ipoints)=sum(integrandavg*dV(2:lx1,:,2:lx3))+sum(integrandavgend*dVend(2:lx1,:))    !without dim= input it just sums everything which is what we want
+      Btheta(ipoints) = sum(integrandavg*dV(2:lx1,:,2:lx3))+sum(integrandavgend*dVend(2:lx1,:))
+      !! without dim= input it just sums everything which is what we want
 
       !Bz
       integrand(:,:,:)=mu0/4d0/pi*2d0*(Jx*Ry-Jy*Rx)/Rcubed
@@ -565,7 +586,8 @@ do while (t<tdur)
                            integrand(1:lx1-1,:,2:lx3) + integrand(2:lx1,:,2:lx3) )
       integrandavgend(:,:)=1d0/4d0*( integrand(1:lx1-1,:,lx3) + integrand(2:lx1,:,lx3) + &
                            integrandend(1:lx1-1,:) + integrandend(2:lx1,:) )
-      Bphi(ipoints)=sum(integrandavg*dV(2:lx1,:,2:lx3))+sum(integrandavgend*dVend(2:lx1,:))    !without dim= input it just sums everything which is what we want
+      Bphi(ipoints) = sum(integrandavg*dV(2:lx1,:,2:lx3))+sum(integrandavgend*dVend(2:lx1,:))
+      !! without dim= input it just sums everything which is what we want
     end if
   end do
     !print *, myid2,myid3,'  --> Min/max values of field',minval(Br),maxval(Br),minval(Btheta),maxval(Btheta), &
