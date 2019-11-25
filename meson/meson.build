@@ -45,6 +45,9 @@ endif
 
 # -- MKL (in general, MKL can be used with intel, intel-cl, gcc or PGI)
 mklroot = get_option('mklroot')
+if ['intel', 'intel-cl'].contains(fc.get_id()) and mklroot == ''
+  error('Normally Intel compiler uses MKL--please be sure to do like "meson build -Dmklroot=$MKLROOT"')
+endif
 mkllib_root = mklroot/'lib/intel64'
 # os == 'windows' ? mklroot/'lib/intel64_win' : mklroot/'lib/intel64'
 
@@ -143,8 +146,11 @@ if not scalapack.found()
       scalapack = fc.find_library('scalapack', dirs: scalapack_root / 'lib', required: false, disabler: true)
     endif
   endif
-  if scalapack.found() and not fc.links('L = numroc(1,1,1,1,1); end', dependencies: scalapack, name: 'SCALAPACK')
-    scalapack = disabler()
+  if scalapack.found()
+    if (fc.run(files('../tests/test_scalapack.f90'), dependencies: [scalapack, mpi], name: 'SCALAPACK').returncode() != 0)
+      # .links() is NOT an adequate test
+      scalapack = disabler()
+    endif
   endif
 endif
 
