@@ -118,7 +118,8 @@ if (argc < 2) error stop 'must specify .ini file to configure simulation and out
 
 !INITIALIZE MESSING PASSING VARIABLES, IDS ETC.
 call mpisetup()
-print *, 'Process:  ',myid,' of:  ',lid-1,' online...'
+call get_command_argument(0, argv)
+print '(A,A,I6,A3,I6)', trim(argv), ' Process:  ', myid,' / ',lid-1
 
 
 !READ FILE INPUT

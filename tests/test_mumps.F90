@@ -14,7 +14,7 @@ type (DMUMPS_STRUC) :: mumps_par
 integer :: ierr
 integer(i64) :: i8
 
-print *,compiler_version(), compiler_options()
+print *,compiler_version()
 
 call mpi_init(ierr)
 if (ierr /= 0) error stop 'mpi init error'
