@@ -4,7 +4,7 @@ program test_potential2D
 !-------SOLVE LAPLACE'S EQUATION IN 2D USING PDEelliptic, mumps-based libraries
 !-------------------------------------------------------------------------------
 
-use mpi
+use mpi, only : mpi_init, mpi_finalize, mpi_comm_rank, mpi_comm_size, mpi_comm_world
 use phys_consts, only: wp,debug,pi
 use PDEelliptic, only: elliptic2D_polarization,elliptic2D_cart,elliptic_workers
 implicit none
@@ -53,8 +53,11 @@ character(*), parameter :: outfile='test_potential2D.dat'
 
 !! mpi starting
 call mpi_init(ierr)
+if (ierr /= 0) error stop 'test_potential2d: MPI init error'
 call mpi_comm_rank(MPI_COMM_WORLD,myid,ierr)
+if (ierr /= 0) error stop 'test_potential2d: MPI_comm_rank error'
 call mpi_comm_size(MPI_COMM_WORLD,lid,ierr)
+if (ierr /= 0) error stop 'test_potential2d: MPI_comm_size error'
 
 
 !! Set things up to give debug output
@@ -139,7 +142,7 @@ if (myid==0) then
 end if
 
 call mpi_finalize(ierr)
-
+if (ierr /= 0) error stop 'test_potential2d: MPI finalize error'
 
 contains
 

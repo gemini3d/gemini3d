@@ -87,11 +87,6 @@ magcalc = executable('magcalc.bin', 'magcalc.f90',
 
 # --- TESTS ---
 
-# tests can't be run without mpiexec.
-if not mpiexec.found()
-  subdir_done()
-endif
-
 zenodo = {
   '2d_fang': {
     'dir': meson.source_root() / 'tests/data/zenodo2d_fang',
