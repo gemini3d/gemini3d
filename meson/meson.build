@@ -48,7 +48,8 @@ endif
 # -- MKL (in general, MKL can be used with intel, intel-cl, gcc or PGI)
 mklroot = get_option('mklroot')
 if ['intel', 'intel-cl'].contains(fc.get_id()) and mklroot == ''
-  error('Normally Intel compiler uses MKL--please be sure to do like "meson build -Dmklroot=$MKLROOT"')
+  missing_opt = os == 'windows' ? '-Dmklroot=%MKLROOT%   or   -Dmklroot=$env:mklroot' : '-Dmklroot=$MKLROOT'
+  error('Intel compiler needs MKL via MKLROOT environment variable. Please use option ' + missing_opt)
 endif
 mkllib_root = mklroot/'lib/intel64'
 # os == 'windows' ? mklroot/'lib/intel64_win' : mklroot/'lib/intel64'
