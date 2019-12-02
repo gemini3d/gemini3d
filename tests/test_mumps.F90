@@ -81,11 +81,26 @@ type (DMUMPS_STRUC), intent(inout) :: mumps_par
 #endif
 
 integer :: i, u
-
+logical :: exists
+character(2048) :: argv
+character(:), allocatable :: filename
 
 IF ( mumps_par%MYID == 0 ) THEN
 
-open(newunit=u, file='input_simpletest_real', form='formatted', status='old', action='read')
+call get_command_argument(1, argv, status=i)
+if (i/=0) then
+  filename = 'input_simpletest_real.txt'
+else
+  filename = trim(argv)
+endif
+
+inquire(file=filename, exist=exists)
+if(.not. exists) then
+  write(stderr, *) 'could not find input file: ',filename
+  error stop 77
+endif
+
+open(newunit=u, file=filename, form='formatted', status='old', action='read')
 READ(u,*) mumps_par%N
 READ(u,*) mumps_par%NZ  ! NNZ for MUMPS > 5.1.0
 ALLOCATE( mumps_par%IRN ( mumps_par%NZ ) )
