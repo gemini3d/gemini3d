@@ -6,7 +6,7 @@ pde_elliptic = library('pde_elliptic', 'PDEelliptic.F90',
 potential = library('potential',
   sources: ['potential_comm_mumps.f90', 'potential_mumps.F90', 'boundary_conditions/potentialBCs_mumps.f90'],
   link_with: [pde_elliptic, calculus, collisions, const, grid, interp, mpimod, timeutils],
-  dependencies: [mumps, scalapack, blacs, mpi, threads],
+  dependencies: [mumps, scalapack, blacs, lapack, mpi, threads],
   fortran_args: real_bits)
 
 test_potential2d = executable('test_potential2d', 'test_potential2D.f90',
