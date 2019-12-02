@@ -3,6 +3,8 @@ real_bits = '-DREALBITS=' + bits
 arith = get_option('arith')
 message('arith: ' + arith)
 
+nomalloc_env = environment({'MALLOC_PERTURB_': '0'})
+
 # === get compiler and OS
 
 fc = meson.get_compiler('fortran')
