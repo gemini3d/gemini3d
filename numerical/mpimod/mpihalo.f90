@@ -195,10 +195,6 @@ module procedure halo_end_23
   !! GENERIC HALOING ROUTINE WHICH PASSES THE BEGINNING OF THE
   !! SLAB TO ITS LEFTWARD (IN X3) NEIGHBOR SO THAT X3 INTEGRATIONS
   !! CAN BE DONE PROPERLY.  PRESENTLY THIS IS JUST USED IN MAGCALC
-  !!
-  !! THIS VERSION USES ASYNC COMM WITHOUT SWITCH STATEMENTS.  IT
-  !! ALSO ASSUMES THAT THE ARRAYS INVOLVED DO HAVE GHOST CELLS
-
 
   integer :: lx1,lx2,lx3,ihalo
   integer :: idleft,idright,iddown,idup
@@ -295,14 +291,14 @@ module procedure halo_end_23
     requests(1)=tmpreq
     call mpi_irecv(paramtop,lx1*lx3,mpi_realprec,idup,tag,MPI_COMM_WORLD,tmpreq,ierr)
     requests(2)=tmpreq
-    deallocate(buffer)
 
     call mpi_waitall(2,requests,statuses,ierr)
+    deallocate(buffer)
   end if
 
 
-  !ZERO OUT THE ENDS (DO NOT ADD DATA PAST EDGE OF THE GRID
-  if (myid2==lid2-1) paramtop=0d0    !add nothing on the end...
+  !ZERO OUT THE ENDS (DO NOT ADD DATA PAST THE GLOBAL EDGE OF THE GRID
+  if (myid2==lid2-1) paramtop=0d0    !add nothing on the end since noone is passing leftward to me
   if (myid3==lid3-1) paramend=0d0    !zero out the data at the end of the grid
 
 end procedure halo_end_23

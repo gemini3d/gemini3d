@@ -52,7 +52,7 @@ type(curvmesh) :: x    !structure containg grid locations, finite differences, e
 real(wp), dimension(:,:,:), allocatable :: J1,J2,J3      !electrodynamic state variables
 
 !TEMPORAL VARIABLES
-real(wp) :: t=0d0,dt      !time from beginning of simulation (s) and time step (s)
+real(wp) :: t=0._wp,dt      !time from beginning of simulation (s) and time step (s)
 real(wp) :: tout,dtout    !time for next output and time between outputs
 real(wp) :: tstart,tfin   !temp. vars. for measuring performance of code blocks
 integer :: it,isp        !time and species loop indices
@@ -116,7 +116,10 @@ character(256) :: argv
 logical :: file_exists
 
 !! REGULATOR FOR 1/R^3
+!real(wp), parameter :: R3min=1d11     !works well for 192x192 in situ
 real(wp), parameter :: R3min=1d9
+
+
 real(wp), parameter :: Rmin=1d3
 
 
@@ -308,7 +311,7 @@ allocate(Brall(lpoints),Bthetaall(lpoints),Bphiall(lpoints))
 !! MAIN LOOP
 UTsec=UTsec0; it=1; t=0d0; tout=t;
 call dateinc(dtout,ymd,UTsec)     !skip first file
-it=3
+it=3                              !don't trigger any special adaptations to filename
 do while (t<tdur)
   !TIME STEP CALCULATION
   dt=dtout    !only compute magnetic field at times when we've done output
@@ -325,7 +328,7 @@ do while (t<tdur)
 
 
   !FORCE PARALLEL CURRENTS TO ZERO BELOW SOME ALTITUDE LIMIT
-  if(myid==0) print *, 'Nullifying low altitude currents...'
+  if(myid==0) print *, 'Zeroing out low altitude currents (these are basically always artifacts)...'
   where (alt<75d3)
     J1=0d0
     J2=0d0
@@ -335,7 +338,7 @@ do while (t<tdur)
 
   !DEAL WITH THE WEIRD EDGE ARTIFACTS THAT WE GET IN THE PARALLEL CURRENT
   !SOMETIMES, THIS IS FOR THE X2 DIRECTION
-  if(myid==0) print *, 'Fixing potential edge artifacts...'
+  if(myid==0) print *, 'Fixing current edge artifacts...'
   if (myid3==lid3-1) then
     if (lx3>2) then    !do a ZOH
       J1(:,:,lx3-1)=J1(:,:,lx3-2)
@@ -413,75 +416,131 @@ do while (t<tdur)
     call halo_end(Rx,Rxend,Rxtop,tagRx)
     call halo_end(Ry,Ryend,Rytop,tagRy)
     call halo_end(Rz,Rzend,Rztop,tagRz)
+!
+!        do ix2=1,lx2
+!          do ix1=1,lx1
+!            if (isnan(Rxend(ix1,ix2)) .or. abs(Rxend(ix1,ix2))<Rmin) then
+!              if(myid2/=11) then
+!                print*,'Rx end:  ',myid2,myid3,Rxend(ix1,ix2),ix1,ix2
+!              end if
+!            end if
+!          end do
+!        end do
+!
+!        do ix3=1,lx3
+!          do ix1=1,lx1
+!            if (isnan(Rxtop(ix1,ix3)) .or. abs(Rxtop(ix1,ix3))<Rmin) then
+!              if (myid3/=5) then
+!                print*,'Rx top:  ',myid2,myid3,Rxtop(ix1,ix3),ix1,ix3
+!              end if
+!            end if
+!          end do
+!        end do
 
-    !enforce a regulator on the distance variables to avoid div by zero
-    where (Rx>-Rmin .and. Rx<Rmin .and. Rx>0)
-      Rx=Rmin
-    end where
-    where (Ry>-Rmin .and. Ry<Rmin .and. Ry>0)
-      Ry=Rmin
-    end where
-    where (Rz>-Rmin .and. Rz<Rmin .and. Rz>0)
-      Rz=Rmin
-    end where
-    where (Rx>-Rmin .and. Rx<Rmin .and. Rx<0)
-      Rx=-Rmin
-    end where
-    where (Ry>-Rmin .and. Ry<Rmin .and. Ry<0)
-      Ry=-Rmin
-    end where
-    where (Rz>-Rmin .and. Rz<Rmin .and. Rz<0)
-      Rz=-Rmin
-    end where
+!
+!    !enforce a regulator on the distance variables to avoid div by zero
+!    where (Rx<Rmin .and. Rx>=0._wp)
+!      Rx=Rmin
+!    end where
+!    where (Ry<Rmin .and. Ry>=0._wp)
+!      Ry=Rmin
+!    end where
+!    where (Rz<Rmin .and. Rz>=0._wp)
+!      Rz=Rmin
+!    end where
+!    where (Rx>-1*Rmin .and. Rx<0._wp)
+!      Rx=-1*Rmin
+!    end where
+!    where (Ry>-1*Rmin .and. Ry<0._wp)
+!      Ry=-1*Rmin
+!    end where
+!    where (Rz>-1*Rmin .and. Rz<0._wp)
+!      Rz=-1*Rmin
+!    end where
+!
+!    where (Rxend<Rmin .and. Rxend>=0._wp)
+!      Rxend=Rmin
+!    end where
+!    where (Ryend<Rmin .and. Ryend>=0._wp)
+!      Ryend=Rmin
+!    end where
+!    where (Rzend<Rmin .and. Rzend>=0._wp)
+!      Rzend=Rmin
+!    end where
+!    where (Rxend>-1*Rmin .and. Rxend<0._wp)
+!      Rxend=-1*Rmin
+!    end where
+!    where (Ryend>-1*Rmin .and. Ryend<0._wp)
+!      Ryend=-1*Rmin
+!    end where
+!    where (Rzend>-1*Rmin .and. Rzend<0._wp)
+!      Rzend=-1*Rmin
+!    end where
+!
+!    where (Rxtop<Rmin .and. Rxtop>=0._wp)
+!      Rxtop=Rmin
+!    end where
+!    where (Rytop<Rmin .and. Rytop>=0._wp)
+!      Rytop=Rmin
+!    end where
+!    where (Rztop<Rmin .and. Rztop>=0._wp)
+!      Rztop=Rmin
+!    end where
+!    where (Rxtop>-1*Rmin .and. Rxtop<0._wp)
+!      Rxtop=-1*Rmin
+!    end where
+!    where (Rytop>-1*Rmin .and. Rytop<0._wp)
+!      Rytop=-1*Rmin
+!    end where
+!    where (Rztop>-1*Rmin .and. Rztop<0._wp)
+!      Rztop=-1*Rmin
+!    end where
 
-    where (Rxend>-Rmin .and. Rxend<Rmin .and. Rxend>0)
-      Rxend=Rmin
-    end where
-    where (Ryend>-Rmin .and. Ryend<Rmin .and. Ryend>0)
-      Ryend=Rmin
-    end where
-    where (Rzend>-Rmin .and. Rzend<Rmin .and. Rzend>0)
-      Rzend=Rmin
-    end where
-    where (Rxend>-Rmin .and. Rxend<Rmin .and. Rxend<0)
-      Rxend=-Rmin
-    end where
-    where (Ryend>-Rmin .and. Ryend<Rmin .and. Ryend<0)
-      Ryend=-Rmin
-    end where
-    where (Rzend>-Rmin .and. Rzend<Rmin .and. Rzend<0)
-      Rzend=-Rmin
-    end where
-
-    where (Rxtop>-Rmin .and. Rxtop<Rmin .and. Rxtop>0)
-      Rxtop=Rmin
-    end where
-    where (Rytop>-Rmin .and. Rytop<Rmin .and. Rytop>0)
-      Rytop=Rmin
-    end where
-    where (Rztop>-Rmin .and. Rztop<Rmin .and. Rztop>0)
-      Rztop=Rmin
-    end where
-
-    where (Rxtop>-Rmin .and. Rxtop<Rmin .and. Rxtop<0)
-      Rxtop=-Rmin
-    end where
-    where (Rytop>-Rmin .and. Rytop<Rmin .and. Rytop<0)
-      Rytop=-Rmin
-    end where
-    where (Rztop>-Rmin .and. Rztop<Rmin .and. Rztop<0)
-      Rztop=-Rmin
-    end where
-
+!    print*,myid,minval(abs(Rx)),minval(abs(Ry)),minval(abs(Rz)),minval(abs(Rxend)),minval(abs(Ryend)), &
+!            minval(abs(Rzend)),minval(abs(Rxtop)),minval(abs(Rytop)),minval(abs(Rztop))
 
     if (flag2D/=1) then
-      Rcubed(:,:,:)=(Rx**2+Ry**2+Rz**2)**(3d0/2d0)   !this really is R**3
+!      Rcubed(:,:,:)=(Rx**2._wp+Ry**2._wp+Rz**2._wp)**(3._wp/2._wp)   !this really is R**3
+      Rcubed(:,:,:)=(Rx**2._wp+Ry**2._wp+Rz**2._wp+Rmin**2._wp)**(3._wp/2._wp)   !this really is R**3
+
+!      do ix3=1,lx3
+!        do ix2=1,lx2
+!          do ix1=1,lx1
+!            if (isnan(Rcubed(ix1,ix2,ix3)) .or. abs(Rcubed(ix1,ix2,ix3))<R3min) then
+!              print*,myid2,myid3,Rcubed(ix1,ix2,ix3),ix1,ix2,ix3
+!            end if
+!          end do
+!        end do
+!      end do
+!      print*,myid,minval(Rcubed)
+
 !      where(Rcubed<R3min)
 !        Rcubed=R3min
 !      end where
       call halo_end(Rcubed,Rcubedend,Rcubedtop,tagRcubed)
-      if(myid3==lid3-1) Rcubedend=R3min     !< avoids div by zero on the end
+      if(myid3==lid3-1) Rcubedend=R3min     !< avoids div by zero on the end which is set by the haloing
       if(myid2==lid2-1) Rcubedtop=R3min
+
+        do ix2=1,lx2
+          do ix1=1,lx1
+            if (isnan(Rcubedend(ix1,ix2)) .or. abs(Rcubedend(ix1,ix2))<R3min) then
+!              if ( myid2/=11 ) then
+                print*,'end:  ',myid2,myid3,Rcubedend(ix1,ix2),ix1,ix2
+!              end if
+            end if
+          end do
+        end do
+
+        do ix3=1,lx3
+          do ix1=1,lx1
+            if (isnan(Rcubedtop(ix1,ix3)) .or. abs(Rcubedtop(ix1,ix3))<R3min) then
+!              if (myid3/=5) then
+                print*,'top:  ',myid2,myid3,Rcubedtop(ix1,ix3),ix1,ix3
+!              end if
+            end if
+          end do
+        end do
+
 !      where(Rcubedtop<R3min)
 !        Rcubedtop=R3min
 !      end where
@@ -555,7 +614,7 @@ do while (t<tdur)
     else
       Rcubed(:,:,:)=Rx**2+Ry**2    !not really R**3 in 2D, just the denominator of the integrand
 !      where(Rcubed<R3min)
-!        Rcubed=R3min
+!        Rcubed=R3min    !should be R**2???
 !      end where
       call halo_end(Rcubed,Rcubedend,Rcubedtop,tagRcubed)
       !! DO WE NEED TO CHECK HERE FOR DIV BY ZERO???
