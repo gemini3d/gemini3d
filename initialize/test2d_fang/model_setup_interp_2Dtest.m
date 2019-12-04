@@ -11,17 +11,17 @@ I=90;
 
 %ADD PATHS FOR FUNCTIONS
 cwd = fileparts(mfilename('fullpath'));
-addpath([cwd, filesep, '..', filesep,'..',filesep,'script_utils']);
-addpath([cwd, filesep, '..', filesep,'..',filesep,'setup']);
-addpath([cwd, filesep, '..', filesep,'..',filesep,'setup',filesep,'gridgen'])
-addpath([cwd, filesep, '..', filesep,'..',filesep,'vis']);
+gemdir = [cwd, '/../..'];
+assert(isfolder(gemdir), [gemdir, ' not found'])
+addpath([gemdir, '/script_utils']);
+addpath([gemdir, '/setup']);
+addpath([gemdir, '/setup/gridgen'])
+addpath([gemdir, '/vis']);
 
 
 %RUN THE GRID GENERATION CODE
-if (~exist('xg'))
-  xg=makegrid_cart_3D(xdist,lxp,ydist,lyp,I,glat,glon);
-end
+xg=makegrid_cart_3D(xdist,lxp,ydist,lyp,I,glat,glon);
 
-eqdir='../../../simulations/2Dtest_eq/';
+eqdir = '../../../simulations/2Dtest_eq';
 simID='2Dtest';
 [nsi,vs1i,Tsi,xgin,ns,vs1,Ts]=eq2dist(eqdir,simID,xg);

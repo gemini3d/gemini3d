@@ -1,27 +1,30 @@
-function xgf=makegrid_cart_3D(xdist,lxp,ydist,lyp,I,glat,glon)
+function xgf = makegrid_cart_3D(xdist,lxp,ydist,lyp,I,glat,glon)
 
+narginchk(7, 7)
 %function xg=makegrid_cart_3D(xmin,xmax,lx,ymin,ymax,ly,I,glat,glon)
+validateattributes(xdist, {'numeric'}, {'scalar', 'positive'})
+validateattributes(lxp, {'numeric'}, {'scalar', 'integer', 'positive'})
+validateattributes(ydist, {'numeric'}, {'scalar', 'positive'})
+validateattributes(lyp, {'numeric'}, {'scalar', 'integer', 'positive'})
+validateattributes(I, {'numeric'}, {'scalar'})
+validateattributes(glat, {'numeric'}, {'scalar'})
+validateattributes(glon, {'numeric'}, {'scalar'})
 
-
-%PATH TO GEOMAGNETIC CONVERSION ROUTINES
-%addpath ../../script_utils;
-
-
-%ADD IN GHOST CELLS (Z WILL BE HANDLED LATER)
+%% ADD IN GHOST CELLS (Z WILL BE HANDLED LATER)
 lx=lxp+4;
 ly=lyp+4;
 
-
-%SETUP NONUNIFORM GRID IN ALTITUDE AND FIELD LINE DISTANCE
-altmin=80e3;
-altmax=1000e3;
+%% SETUP NONUNIFORM GRID IN ALTITUDE AND FIELD LINE DISTANCE
+% FIXME: should altitude limits be a parameter
+altmin = 80e3;
+altmax = 1000e3;
 %alt=linspace(altmin,altmax,920);
 ialt=1;
 alt(ialt)=altmin;
 while alt(ialt)<altmax
-    ialt=ialt+1;
-    dalt=10e3+8e3*tanh((alt(ialt-1)-500e3)/150e3);
-    alt(ialt)=alt(ialt-1)+dalt;
+  ialt=ialt+1;
+  dalt=10e3+8e3*tanh((alt(ialt-1)-500e3)/150e3);
+  alt(ialt)=alt(ialt-1)+dalt;
 end
 % while alt(ialt)<altmax
 %     ialt=ialt+1;
@@ -36,8 +39,7 @@ z=[z(1)-2*dz1;z(1)-dz1;z;z(end)+dzn;z(end)+2*dzn];
 lz=numel(z);
 lx1=lz;
 
-
-%TRANSVERSE GRID (BASED ON SIZE OF CURRENT REGION SPECIFIED ABOVE)
+%% TRANSVERSE GRID (BASED ON SIZE OF CURRENT REGION SPECIFIED ABOVE)
 %EAST
 xmin=-xdist/2;
 xmax=xdist/2;
@@ -47,8 +49,7 @@ dxn=x(end)-x(end-1);
 x=[x(1)-2*dx1,x(1)-dx1,x,x(end)+dxn,x(end)+2*dxn];    %now tack on ghost cells so they are outside user-specified region
 lx2=lx;
 
-
-%NORTH
+% NORTH
 ymin=-ydist/2;
 ymax=ydist/2;
 y=linspace(ymin,ymax,lyp);
@@ -57,8 +58,7 @@ dyn=y(end)-y(end-1);
 y=[y(1)-2*dy1,y(1)-dy1,y,y(end)+dyn,y(end)+2*dyn];
 lx3=ly;
 
-
-%COMPUTE CELL WALL LOCATIONS
+%% COMPUTE CELL WALL LOCATIONS
 xi=zeros(1,lx+1);
 xi(2:lx)=1/2*(x(2:lx)+x(1:lx-1));
 xi(1)=x(1)-1/2*(x(2)-x(1));
@@ -75,7 +75,7 @@ zi(1)=z(1)-1/2*(z(2)-z(1));
 zi(lz+1)=z(lz)+1/2*(z(lz)-z(lz-1));
 
 
-%GRAVITATIONAL FIELD COMPONENTS IN DIPOLE SYSTEM
+%% GRAVITATIONAL FIELD COMPONENTS IN DIPOLE SYSTEM
 Re=6370e3;
 G=6.67428e-11;
 Me=5.9722e24;
@@ -87,39 +87,36 @@ gz=repmat(-1*g,[1,lx2,lx3]);
 %DISTANCE EW AND NS (FROM ENU (or UEN in our case - cyclic permuted) COORD. SYSTEM) NEED TO BE CONVERTED TO DIPOLE SPHERICAL AND THEN
 %GLAT/GLONG - BASICALLY HERE WE ARE MAPPING THE CARTESIAN GRID ONTO THE
 %SURFACE OF A SPHERE THEN CONVERTING TO GEOGRAPHIC.
-[thetactr,phictr]=geog2geomag(glat,glon);    %get the magnetic coordinates of the grid center, based on user input
+[thetactr,phictr] = geog2geomag(glat,glon);    %get the magnetic coordinates of the grid center, based on user input
 
-%Center of earth distance
+%% Center of earth distance
 r=Re+z;
 r=reshape(r,[lx1,1,1]);
 r=repmat(r(:),[1,lx2,lx3]);
 
-%Northward angular distance
+%% Northward angular distance
 gamma2=y/Re;    %must retain the sign of x3
 theta=thetactr-gamma2;   %minus because distance north is against theta's direction
 theta=reshape(theta,[1,1,lx3]);
 theta=repmat(theta,[lx1,lx2,1]);
 
-%Eastward angular distance
+%% Eastward angular distance
 %gamma1=x/Re;     %must retain the sign of x2
 gamma1=x/Re/sin(thetactr);     %must retain the sign of x2, just use theta of center of grid
 phi=phictr+gamma1;
 phi=reshape(phi,[1,lx2,1]);
 phi=repmat(phi,[lx1,1,lx3]);
 
-
-%NOW COMPUTE THE GEOGRAPHIC COORDINATES OF EACH GRID POINT
+%% COMPUTE THE GEOGRAPHIC COORDINATES OF EACH GRID POINT
 [glatgrid,glongrid]=geomag2geog(theta,phi);
 
-
-%COMPUTE ECEF CARTESIAN IN CASE THEY ARE NEEDED
+%% COMPUTE ECEF CARTESIAN IN CASE THEY ARE NEEDED
 xECEF=r.*sin(theta).*cos(phi);
 yECEF=r.*sin(theta).*sin(phi);
 zECEF=r.*cos(theta);
 
-
-%COMPUTE SPHERICAL ECEF UNIT VECTORS - CARTESIAN-ECEF COMPONENTS
-fprintf('\nMAKEGRID_CART_3D.M --> Calculating spherical unit vectors.\n');
+%% COMPUTE SPHERICAL ECEF UNIT VECTORS - CARTESIAN-ECEF COMPONENTS
+disp('MAKEGRID_CART_3D.M --> Calculating spherical unit vectors')
 er(:,:,:,1)=sin(theta).*cos(phi);    %xECEF-component of er
 er(:,:,:,2)=sin(theta).*sin(phi);    %yECEF
 er(:,:,:,3)=cos(theta);              %zECEF
@@ -138,7 +135,7 @@ e3=-1*etheta;    %etheta is positive south, e3 is pos. north
 
 
 %STORE RESULTS IN GRID DATA STRUCTURE
-xg.x1=z; xg.x2=x; xg.x3=y; 
+xg.x1=z; xg.x2=x; xg.x3=y;
 xg.x1i=zi; xg.x2i=xi; xg.x3i=yi;
 lx=[numel(xg.x1),numel(xg.x2),numel(xg.x3)];
 xg.lx=lx;
@@ -197,22 +194,27 @@ xg.inull=[];
 xg.nullpts=zeros(xg.lx);
 
 
-%NOW TRIM THE DATA STRUCTRE TO BE THE SIZE FORTRAN EXPECTS
+%% TRIM DATA STRUCTRE TO BE THE SIZE FORTRAN EXPECTS
 xgf=xg;
 
-inds1=3:xgf.lx(1)-2;    %indices corresponding to non-ghost cells for 1 dimension
+% indices corresponding to non-ghost cells for 1 dimension
+inds1=3:xgf.lx(1)-2;
 inds2=3:xgf.lx(2)-2;
 inds3=3:xgf.lx(3)-2;
 
-indsdx1=2:xgf.lx(1);    %any dx variable will not need to first element (backward diff of two ghost cells)
+% any dx variable will not need to first element (backward diff of two ghost cells)
+indsdx1=2:xgf.lx(1);
 indsdx2=2:xgf.lx(2);
 indsdx3=2:xgf.lx(3);
 
-indsx1i=3:xgf.lx(1)-1;    %x1-interface variables need only non-ghost cell values (left interface) plus one
+% x1-interface variables need only non-ghost cell values (left interface) plus one
+indsx1i=3:xgf.lx(1)-1;
 indsx2i=3:xgf.lx(2)-1;
 indsx3i=3:xgf.lx(3)-1;
 
-xgf.lx=xgf.lx-4;    %remove ghost cells, now that indices have been define we can go ahead and make this change
+% remove ghost cells
+% now that indices have been define we can go ahead and make this change
+xgf.lx=xgf.lx-4;
 
 xgf.dx1b=xgf.dx1b(indsdx1);
 xgf.dx2b=xgf.dx2b(indsdx2);
@@ -267,9 +269,5 @@ xgf.phi=xgf.phi(inds1,inds2,inds3);
 xgf.x=xgf.x(inds1,inds2,inds3);
 xgf.y=xgf.y(inds1,inds2,inds3);
 xgf.z=xgf.z(inds1,inds2,inds3);
-
-
-%RESET PATH
-%rmpath ../../script_utils;
 
 end
