@@ -31,7 +31,7 @@ assert(all(isfinite(Tsi(:))), 'non-finite interpolated temperature')
 
 %% WRITE OUT THE GRID
 % this uses SIMID as output directory and filename tag
-basedir=[eqdir,'../input/'];
+basedir=[eqdir,'/../input/'];
 outdir=[basedir,simID];
 writegrid(xg,outdir);
 dmy=[ymdend(3),ymdend(2),ymdend(1)];

@@ -21,18 +21,18 @@ switch realbits
 end
 
 %% MAKE THE OUTPUT DIRECTORY IF IT DOESN'T EXIST AND NOTIFY USER
-if exist(outdir, 'dir') ~= 7
+if ~isfolder(outdir)
   mkdir(outdir);
   disp(['Created: ', outdir])
 end
 
 
-filename=[outdir,filesep,'simsize.dat'];
-fid=fopen(filename,'w');
+filename = [outdir, '/simsize.dat'];
+fid = fopen(filename, 'w');
 fwrite(fid, xg.lx, 'integer*4');
 fclose(fid);
 
-fid=fopen([outdir,filesep,'simgrid.dat'],'w');
+fid=fopen([outdir, '/simgrid.dat'], 'w');
 
 fwrite(fid,xg.x1, freal);    %coordinate values
 fwrite(fid,xg.x1i, freal);
