@@ -42,13 +42,20 @@ lx1=lz;
 %EAST
 xmin=-xdist/2;
 xmax=xdist/2;
-x=linspace(xmin,xmax,lx);
+x=linspace(xmin,xmax,lxp);    %exclude the ghost cells when setting extents
+dx1=x(2)-x(1);
+dxn=x(end)-x(end-1);
+x=[x(1)-2*dx1,x(1)-dx1,x,x(end)+dxn,x(end)+2*dxn];    %now tack on ghost cells so they are outside user-specified region
 lx2=lx;
+
 
 %NORTH
 ymin=-ydist/2;
 ymax=ydist/2;
-y=linspace(ymin,ymax,ly);
+y=linspace(ymin,ymax,lyp);
+dy1=y(2)-y(1);
+dyn=y(end)-y(end-1);
+y=[y(1)-2*dy1,y(1)-dy1,y,y(end)+dyn,y(end)+2*dyn];
 lx3=ly;
 
 

@@ -24,7 +24,7 @@ lt=numel(times);
 
 
 %LOAD/CONSTRUCT THE FIELD POINT GRID
-basemagdir=[direc,'/magfields.500km.20deg.highres/'];
+basemagdir=[direc,'/magfields/'];
 fid=fopen([basemagdir,'/input/magfieldpoints.dat'],'r');    %needs some way to know what the input file is, maybe force fortran code to use this filename...
 lpoints=fread(fid,1,'integer*4');
 r=fread(fid,lpoints,'real*8');
@@ -36,8 +36,8 @@ fclose(fid);
 %REORGANIZE THE FIELD POINTS (PROBLEM-SPECIFIC)
 %ltheta=10;
 %lphi=10;
-ltheta=40;
-lphi=40;
+ltheta=192;
+lphi=192;
 %ltheta=20;
 %lphi=20;
 %ltheta=1600;
@@ -67,13 +67,15 @@ simdate_series=[];
 Brt=zeros(1,ltheta,lphi,lt);
 Bthetat=zeros(1,ltheta,lphi,lt);
 Bphit=zeros(1,ltheta,lphi,lt);
-for it=1:lt-1
-  if (it==1)
-    UTsec=UTsec+0.000001;
-  end
-  if (it==2)
-    UTsec=UTsec-0.000001;
-  end
+
+[ymd,UTsec]=dateinc(dtout,ymd,UTsec);
+for it=2:lt-1
+%  if (it==1)
+%    UTsec=UTsec+0.000001;
+%  end
+%  if (it==2)
+%    UTsec=UTsec-0.000001;
+%  end
   filename=datelab(ymd,UTsec);
   fid=fopen([basemagdir,filename,'.dat'],'r');
 
