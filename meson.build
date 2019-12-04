@@ -87,11 +87,6 @@ magcalc = executable('magcalc.bin', 'magcalc.f90',
 
 # --- TESTS ---
 
-# tests can't be run without mpiexec.
-if not mpiexec.found()
-  subdir_done()
-endif
-
 zenodo = {
   '2d_fang': {
     'dir': meson.source_root() / 'tests/data/zenodo2d_fang',
@@ -117,6 +112,7 @@ foreach k, v : zenodo
     args : ['meson_run_test.py', k, mpiexec.path(), v['exe'], meson.source_root() / 'initialize/test' + k / 'config.nml', test_dir],
     workdir : meson.source_root() / 'script_utils',
     timeout : 2700,
+    env: nomalloc_env,
     is_parallel : false)
 
 
@@ -125,6 +121,7 @@ foreach k, v : zenodo
     args : ['compare_all.py', test_dir, v['dir']],
     suite : k,
     timeout: 60,
+    env: nomalloc_env,
     workdir : meson.source_root() / 'tests')
   # --- Matlab/Octave-based simulation output comparision
   matoctargs = 'compare_all("' + test_dir + '","' + v['dir'] + '")'
@@ -133,12 +130,14 @@ foreach k, v : zenodo
     args : ['-batch', matoctargs],
     suite : k,
     timeout: 60,
+    env: nomalloc_env,
     workdir : meson.source_root() / 'tests')
 
   test('CompareOctave' + k, octave,
     args : ['--eval', matoctargs],
     suite : k,
     timeout: 60,
+    env: nomalloc_env,
     workdir : meson.source_root() / 'tests')
 
 endforeach

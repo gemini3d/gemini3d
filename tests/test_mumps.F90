@@ -14,9 +14,10 @@ type (DMUMPS_STRUC) :: mumps_par
 integer :: ierr
 integer(i64) :: i8
 
-print *,compiler_version(), compiler_options()
+print *,compiler_version()
 
 call mpi_init(ierr)
+if (ierr /= 0) error stop 'mpi init error'
 ! Define a communicator for the package.
 mumps_par%COMM = MPI_COMM_WORLD
 !  Initialize an instance of the package
@@ -28,6 +29,7 @@ mumps_par%PAR = 1
 call simple_test(mumps_par)
 
 call mpi_finalize(ierr)
+if (ierr /= 0) error stop 'mpi finalize error'
 
 contains
 
@@ -79,11 +81,26 @@ type (DMUMPS_STRUC), intent(inout) :: mumps_par
 #endif
 
 integer :: i, u
-
+logical :: exists
+character(2048) :: argv
+character(:), allocatable :: filename
 
 IF ( mumps_par%MYID == 0 ) THEN
 
-open(newunit=u, file='input_simpletest_real', form='formatted', status='old', action='read')
+call get_command_argument(1, argv, status=i)
+if (i/=0) then
+  filename = 'input_simpletest_real.txt'
+else
+  filename = trim(argv)
+endif
+
+inquire(file=filename, exist=exists)
+if(.not. exists) then
+  write(stderr, *) 'could not find input file: ',filename
+  error stop 77
+endif
+
+open(newunit=u, file=filename, form='formatted', status='old', action='read')
 READ(u,*) mumps_par%N
 READ(u,*) mumps_par%NZ  ! NNZ for MUMPS > 5.1.0
 ALLOCATE( mumps_par%IRN ( mumps_par%NZ ) )

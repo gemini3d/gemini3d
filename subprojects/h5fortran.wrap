@@ -1,4 +1,4 @@
 [wrap-git]
 directory = h5fortran
 url = https://github.com/scivision/h5fortran.git
-revision = v1.3.1
+revision = v1.4.1

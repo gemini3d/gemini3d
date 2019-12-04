@@ -6,7 +6,7 @@ include(ExternalProject)
 
 ExternalProject_Add(h5fortran_proj
   GIT_REPOSITORY https://github.com/scivision/h5fortran.git
-  GIT_TAG v1.3.1
+  GIT_TAG v1.4.1
   INSTALL_COMMAND ""  # disables the install step for the external project
 )
 
