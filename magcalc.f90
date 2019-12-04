@@ -120,7 +120,7 @@ logical :: file_exists
 real(wp), parameter :: R3min=1d9
 
 
-real(wp), parameter :: Rmin=1d3
+real(wp), parameter :: Rmin=5d3
 
 
 !! ## MAIN PROGRAM
