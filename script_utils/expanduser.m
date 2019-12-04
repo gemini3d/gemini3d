@@ -20,8 +20,8 @@ function expanded = expanduser(p)
 narginchk(1,1)
 %% try python first
 try %#ok<TRYNC> %requires Matlab R2014b or newer for following line
-    expanded = char(py.os.path.expanduser(p));
-    return
+  expanded = char(py.pathlib.Path(p).expanduser().resolve());
+  return
 end
 %% if you have old Matlab or Octave
 
@@ -29,9 +29,9 @@ end
 home = homepath();
 
 if isempty(home)
-    warning('empty HOME environment variable, returning unmodified path')
-    expanded = p;
-    return
+  warning('empty HOME environment variable, returning unmodified path')
+  expanded = p;
+  return
 end %if
 %% now let's look at your path, does it have a leading tilde?
 if ~isempty(p) && ischar(p) && size(p,1) == 1

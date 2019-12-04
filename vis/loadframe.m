@@ -1,7 +1,7 @@
 function [ne,mlatsrc,mlonsrc,xg,v1,Ti,Te,J1,v2,v3,J2,J3,filename,Phitop,ns,vs1,Ts] = loadframe(direc,ymd,UTsec,flagoutput,mloc,xg)
 
 cwd = fileparts(mfilename('fullpath'));
-addpath([cwd, filesep, '..', filesep, 'script_utils'])
+addpath([cwd, '/../script_utils'])
 
 narginchk(3,6)
 validateattr(direc, {'char'}, {'vector'}, mfilename, 'data directory', 1)
@@ -20,6 +20,8 @@ if nargin < 6 || isempty(xg)
   xg = readgrid([direc, filesep, 'inputs']);
 end
 validateattr(xg, {'struct'}, {'scalar'}, mfilename, 'grid structure', 6)
+
+direc = absolute_path(direc);
 
 %% SET MAGNETIC LATITUDE AND LONGITUDE OF THE SOURCE
 if nargout >= 2 && ~isempty(mloc)

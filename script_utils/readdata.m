@@ -3,6 +3,7 @@ function [t,ns,Ts,vs1,J1,J2,J3,v2,v3,Phitop]=readdata(lxs,filename)
 narginchk(2,2)
 validateattr(lxs, {'numeric'}, {'vector', 'numel', 3, 'positive'}, mfilename, 'grid dimensions', 1)
 
+filename = absolute_path(filename);
 assert(is_file(filename), [filename, 'is not found.'])
 %% READ DATA FROM AN OUTPUT FILE WRITTEN BY FORTRAN CODE
 
@@ -20,7 +21,7 @@ disp('READDATA --> Loaded parallel velocities...')
 
 Ts=fread(fid,prod(lxs)*lsp,'real*8');
 Ts=reshape(Ts,[lxs,lsp]);
-disp('READDATA --> Loaded temperatures...\n')
+disp('READDATA --> Loaded temperatures...'))
 
 if (~feof(fid))   %some files may not have electrodynamic info
     J1=fread(fid,lxs(1)*lxs(2)*lxs(3),'real*8');
@@ -31,18 +32,18 @@ if (~feof(fid))   %some files may not have electrodynamic info
 
     J3=fread(fid,lxs(1)*lxs(2)*lxs(3),'real*8');
     J3=reshape(J3,[lxs(1),lxs(2),lxs(3)]);
-    fprintf('READDATA --> Loaded current density...\n');
+    disp('READDATA --> Loaded current density...')
 
     v2=fread(fid,lxs(1)*lxs(2)*lxs(3),'real*8');
     v2=reshape(v2,[lxs(1),lxs(2),lxs(3)]);
 
     v3=fread(fid,lxs(1)*lxs(2)*lxs(3),'real*8');
     v3=reshape(v3,[lxs(1),lxs(2),lxs(3)]);
-    fprintf('READDATA --> Loaded perpendicular drifts...\n');
+    disp('READDATA --> Loaded perpendicular drifts...')
 
     Phitop=fread(fid,lxs(2)*lxs(3),'real*8');
     Phitop=reshape(Phitop,[lxs(2),lxs(3)]);
-    fprintf('READDATA --> Loaded topside potential pattern...\n');
+    disp('READDATA --> Loaded topside potential pattern...')
 else
     J1=[];
     J2=[];
@@ -50,7 +51,7 @@ else
     v2=[];
     v3=[];
     Phitop=[];
-    fprintf('READDATA --> Skipping electrodynamic parameters...\n')
+    disp('READDATA --> Skipping electrodynamic parameters...')
 end
 
 fclose(fid);

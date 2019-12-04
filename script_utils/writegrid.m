@@ -1,10 +1,7 @@
 function writegrid(xg, outdir, realbits)
+%% write grid to raw binary files
+% INCLUDes STUFF NOT NEEDED BY FORTRAN CODE BUT POSSIBLY USEFUL FOR PLOTTING
 
-%--------------------------------------------------------
-%-----NOTE THAT WE DO STORE *ALL*
-%-----GRID DATA (INCLUDING STUFF NOT NEEDED BY
-%-----FORTRAN CODE BUT POSSIBLY USEFUL FOR PLOTTING)
-%--------------------------------------------------------
 narginchk(2,3)
 validateattributes(xg, {'struct'}, {'scalar'}, mfilename, 'grid parameters', 1)
 validateattributes(outdir, {'char'}, {'vector'}, mfilename,'output directory',2)
@@ -21,10 +18,13 @@ switch realbits
 end
 
 %% MAKE THE OUTPUT DIRECTORY IF IT DOESN'T EXIST AND NOTIFY USER
+outdir = absolute_path(outdir);
 if ~isfolder(outdir)
   mkdir(outdir);
   disp(['Created: ', outdir])
 end
+% malformed paths can be "created" but are not accessible. Bug in Matlab mkdir().
+assert(isfolder(outdir), [outdir, ' does not exist'])
 
 
 filename = [outdir, '/simsize.dat'];
@@ -99,4 +99,6 @@ fwrite(fid,xg.y, freal);
 fwrite(fid,xg.z, freal);
 
 fclose(fid);
+
+disp(['finishing writing grid to ', outdir])
 end

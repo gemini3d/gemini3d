@@ -3,7 +3,7 @@ function params = read_config(path)
 narginchk(1,1)
 
 % necessary for Matlab
-path = expanduser(path);
+path = absolute_path(path);
 
 filename = get_configfile(path);
 

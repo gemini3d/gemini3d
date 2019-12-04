@@ -1,4 +1,4 @@
-function xgf=readgrid(inID)
+function xgf = readgrid(path)
 
 %--------------------------------------------------------
 %-----THIS READS A GRID FROM A BINARY FILE CREATED
@@ -7,9 +7,10 @@ function xgf=readgrid(inID)
 %--------------------------------------------------------
 
 narginchk(1,1)
-assert(is_folder(inID), [inID, ' is not a directory.'])
+path = absolute_path(path);
+assert(is_folder(path), [path, ' is not a directory.'])
 
-filename=[inID, filesep, 'simsize.dat'];
+filename=[path, '/simsize.dat'];
 assert(is_file(filename), [filename,' is not a file.'])
 
 fid=fopen(filename,'r');
@@ -21,7 +22,7 @@ lgridghost=(lx1+4)*(lx2+4)*(lx3+4);
 gridsize=[lx1,lx2,lx3];
 gridsizeghost=[lx1+4,lx2+4,lx3+4];
 %%
-fin = [inID,filesep,'simgrid.dat'];
+fin = [path, '/simgrid.dat'];
 assert(is_file(fin), [fin, ' is not a file.'])
 
 fid=fopen(fin,'r');
