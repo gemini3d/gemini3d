@@ -1,53 +1,34 @@
 %!assert(ischar(expanduser('~')))
 function expanded = expanduser(p)
-%%
-% For now, handles only a leading tilde, does not currently handle specifying ~otheruser
+% expanded = expanduser(path)
 %
-% isunix==1 (linux & cygwin) example:
-% expanduser('~/Downloads/foo')
-% ans = /home/joespc/Downloads/foo
+%   expands tilde ~ into user home directory for Matlab and GNU Octave.
 %
-% ispc==1 example (Windows)
-% expanduser('~/Downloads/foo')
-% ans = C:\joespc/Downloads/foo
+%   Useful for Matlab functions like h5read() and some Computer Vision toolbox functions
+%   that can't handle ~ and Matlab does not consider it a bug per conversations with
+%   Mathworks staff
 %
-% Useful for Matlab functions like h5read() and some Computer Vision toolbox functions
-% that can't handle ~ and Matlab does not consider it a bug per conversations with
-% Mathworks staff
-%
-% tested with Matlab and Octave on Windows, Cygwin, Linux, and WINE
-%
+%   See also absolute_path
+
 narginchk(1,1)
-%% try python first
-try %#ok<TRYNC> %requires Matlab R2014b or newer for following line
-  expanded = char(py.pathlib.Path(p).expanduser().resolve());
+validateattributes(p, {'char'}, {'vector'})
+
+%% GNU Octave
+if isoctave
+  expanded = tilde_expand(p);
   return
 end
-%% if you have old Matlab or Octave
 
-%% what is the home path
-home = homepath();
-
-if isempty(home)
-  warning('empty HOME environment variable, returning unmodified path')
-  expanded = p;
+%% Matlab >= R2014b
+try %#ok<TRYNC>
+  expanded = char(py.pathlib.Path(p).expanduser());
   return
-end %if
-%% now let's look at your path, does it have a leading tilde?
-if ~isempty(p) && ischar(p) && size(p,1) == 1
-    if length(p) == 1 && strcmp(p,'~')
-        expanded = home;
-    elseif strcmp(p(1:2),'~/') || strcmp(p(1:2),'~\')
-        expanded = [home,p(2:end)];
-    elseif ~isempty(regexp(p,'~.*/', 'once')) || ~isempty(regexp(p,'~.*\\', 'once'))
-            warning('the ~otheruser case is not handled yet')
-            expanded = p;
-    else
-        expanded = p;
-    end %if
-else
-    warning('i only handle non-array strings for now') %FIXME: consider cellfun()
-    expanded = p;
-end %if
+end
+
+%% Matlab < R2014b
+expanded = p;
+if strcmp(expanded(1), '~')
+  expanded = [homepath(), expanded(2:end)];
+end
 
 end %function
