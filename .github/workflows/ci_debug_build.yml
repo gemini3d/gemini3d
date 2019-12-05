@@ -7,10 +7,12 @@ on:
     paths:
       - "**.f90"
       - "**.F90"
+      - ".github/workflows/ci_debug_build.yml"
   pull_request:
     paths:
       - "**.f90"
       - "**.F90"
+      - ".github/workflows/ci_debug_build.yml"
 
 jobs:
 
@@ -22,8 +24,10 @@ jobs:
       with:
         python-version: '3.7'
     - run: pip install -e .[tests]
-    - run: sudo apt update -y
-    - run: sudo apt install -yq --no-install-recommends ninja-build gfortran liblapack-dev libscalapack-mpi-dev libmumps-dev libopenmpi-dev openmpi-bin libhdf5-dev octave
+    - name: Install prereqs
+      run: |
+        sudo apt update -yq
+        sudo apt install -yq --no-install-recommends gfortran liblapack-dev libscalapack-mpi-dev libmumps-dev libopenmpi-dev openmpi-bin libhdf5-dev octave
     - run: meson setup build --buildtype=debug -Dhdf5=enabled
       env:
         FC: gfortran

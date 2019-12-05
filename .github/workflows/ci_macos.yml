@@ -7,10 +7,12 @@ on:
     paths:
       - "**.f90"
       - "**.F90"
+      - ".github/workflows/ci_macos.yml"
   pull_request:
     paths:
       - "**.f90"
       - "**.F90"
+      - ".github/workflows/ci_macos.yml"
 
 jobs:
 
@@ -22,7 +24,7 @@ jobs:
       with:
         python-version: '3.7'
     - run: pip install -e .[tests]
-    - run: brew install gcc ninja open-mpi lapack hdf5
+    - run: brew install gcc open-mpi lapack hdf5 scalapack
     - run: meson setup build -Dhdf5=enabled
       env:
         FC: gfortran-9

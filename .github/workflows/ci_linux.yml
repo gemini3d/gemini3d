@@ -1,6 +1,6 @@
 name: ci_linux
 env:
-  cmake_version: '3.15.5'
+  cmake_version: '3.16.0'
   CI: true
 
 on:
@@ -8,10 +8,12 @@ on:
     paths:
       - "**.f90"
       - "**.F90"
+      - ".github/workflows/ci_linux.yml"
   pull_request:
     paths:
       - "**.f90"
       - "**.F90"
+      - ".github/workflows/ci_linux.yml"
 
 jobs:
 

@@ -5,10 +5,12 @@ on:
     paths:
     - "**/*.py"
     - "**/*.yml"
+    - ".github/workflows/ci_python.yml"
   pull_request:
     paths:
     - "**/*.py"
     - "**/*.yml"
+    - ".github/workflows/ci_python.yml"
 
 jobs:
 
