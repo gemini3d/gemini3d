@@ -2,6 +2,7 @@
 !! FROM OUTPUT FROM A SIMULATIONS DONE BY GEMINI3D.
 !! THIS PROGRAM VERY MUCH MIRRORS THE SETUP OF THE MAIN GEMINI.F90 CODE.
 
+use, intrinsic :: ieee_arithmetic, only : ieee_is_nan
 use mpi, only: mpi_sum, mpi_comm_world
 
 use phys_consts, only : pi,mu0, wp, re, debug
@@ -419,7 +420,7 @@ do while (t<tdur)
 !
 !        do ix2=1,lx2
 !          do ix1=1,lx1
-!            if (isnan(Rxend(ix1,ix2)) .or. abs(Rxend(ix1,ix2))<Rmin) then
+!            if (ieee_is_nan(Rxend(ix1,ix2)) .or. abs(Rxend(ix1,ix2))<Rmin) then
 !              if(myid2/=11) then
 !                print*,'Rx end:  ',myid2,myid3,Rxend(ix1,ix2),ix1,ix2
 !              end if
@@ -429,7 +430,7 @@ do while (t<tdur)
 !
 !        do ix3=1,lx3
 !          do ix1=1,lx1
-!            if (isnan(Rxtop(ix1,ix3)) .or. abs(Rxtop(ix1,ix3))<Rmin) then
+!            if (ieee_is_nan(Rxtop(ix1,ix3)) .or. abs(Rxtop(ix1,ix3))<Rmin) then
 !              if (myid3/=5) then
 !                print*,'Rx top:  ',myid2,myid3,Rxtop(ix1,ix3),ix1,ix3
 !              end if
@@ -506,7 +507,7 @@ do while (t<tdur)
 !      do ix3=1,lx3
 !        do ix2=1,lx2
 !          do ix1=1,lx1
-!            if (isnan(Rcubed(ix1,ix2,ix3)) .or. abs(Rcubed(ix1,ix2,ix3))<R3min) then
+!            if (ieee_is_nan(Rcubed(ix1,ix2,ix3)) .or. abs(Rcubed(ix1,ix2,ix3))<R3min) then
 !              print*,myid2,myid3,Rcubed(ix1,ix2,ix3),ix1,ix2,ix3
 !            end if
 !          end do
@@ -523,7 +524,7 @@ do while (t<tdur)
 
         do ix2=1,lx2
           do ix1=1,lx1
-            if (isnan(Rcubedend(ix1,ix2)) .or. abs(Rcubedend(ix1,ix2))<R3min) then
+            if (ieee_is_nan(Rcubedend(ix1,ix2)) .or. abs(Rcubedend(ix1,ix2))<R3min) then
 !              if ( myid2/=11 ) then
                 print*,'end:  ',myid2,myid3,Rcubedend(ix1,ix2),ix1,ix2
 !              end if
@@ -533,7 +534,7 @@ do while (t<tdur)
 
         do ix3=1,lx3
           do ix1=1,lx1
-            if (isnan(Rcubedtop(ix1,ix3)) .or. abs(Rcubedtop(ix1,ix3))<R3min) then
+            if (ieee_is_nan(Rcubedtop(ix1,ix3)) .or. abs(Rcubedtop(ix1,ix3))<R3min) then
 !              if (myid3/=5) then
                 print*,'top:  ',myid2,myid3,Rcubedtop(ix1,ix3),ix1,ix3
 !              end if
