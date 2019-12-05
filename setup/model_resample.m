@@ -48,7 +48,17 @@ elseif lx2 == 1 % 2-D north-south
   disp('interpolating grid for 2-D simulation in lx1, lx3')
   % original grid, a priori the first 2 and last 2 values are ghost cells
   % on each axis
-  x3in_noghost = xgin.x3(3:end-2);
+  %
+  % Detect old non-padded grid and workaround
+  if allclose(xgin.x3(1), xg.x3(3), [], 1)
+    % old sim, no external ghost cells.
+    % Instead of discarding good cells,keep them and say there are
+    % new ghost cells outside the grid
+    x3in_noghost = linspace(xgin.x3(1), xgin.x3(end), xgin.lx(3));
+  else
+    % new sim, external ghost cells
+    x3in_noghost = xgin.x3(3:end-2);
+  end
   x1in_noghost = xgin.x1(3:end-2);
   [X1, X3] = ndgrid(x1in_noghost, x3in_noghost);
   % new grid

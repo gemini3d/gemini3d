@@ -43,19 +43,33 @@ lx1=lz;
 %EAST
 xmin=-xdist/2;
 xmax=xdist/2;
-x=linspace(xmin,xmax,lxp);    %exclude the ghost cells when setting extents
-dx1=x(2)-x(1);
-dxn=x(end)-x(end-1);
-x=[x(1)-2*dx1,x(1)-dx1,x,x(end)+dxn,x(end)+2*dxn];    %now tack on ghost cells so they are outside user-specified region
+
+if lxp == 1  % degenerate dimension
+  x = linspace(xmin, xmax, lx);
+else
+  % exclude the ghost cells when setting extents
+  x = linspace(xmin, xmax, lxp);
+  dx1=x(2)-x(1);
+  dxn=x(end)-x(end-1);
+  % now tack on ghost cells so they are outside user-specified region
+  x=[x(1)-2*dx1,x(1)-dx1,x,x(end)+dxn,x(end)+2*dxn];
+end
 lx2=lx;
 
 % NORTH
 ymin=-ydist/2;
 ymax=ydist/2;
-y=linspace(ymin,ymax,lyp);
-dy1=y(2)-y(1);
-dyn=y(end)-y(end-1);
-y=[y(1)-2*dy1,y(1)-dy1,y,y(end)+dyn,y(end)+2*dyn];
+
+if lyp == 1  % degenerate dimension
+  y = linspace(ymin, ymax, ly);
+else
+  % exclude the ghost cells when setting extents
+  y=linspace(ymin,ymax,lyp);
+  dy1=y(2)-y(1);
+  dyn=y(end)-y(end-1);
+  % now tack on ghost cells so they are outside user-specified region
+  y=[y(1)-2*dy1,y(1)-dy1,y,y(end)+dyn,y(end)+2*dyn];
+end
 lx3=ly;
 
 %% COMPUTE CELL WALL LOCATIONS

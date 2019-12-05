@@ -17,7 +17,7 @@ if ~isempty(mloc)
 end
 
 if nargin < 6 || isempty(xg)
-  xg = readgrid([direc, filesep, 'inputs']);
+  xg = readgrid([direc, '/inputs']);
 end
 validateattr(xg, {'struct'}, {'scalar'}, mfilename, 'grid structure', 6)
 
