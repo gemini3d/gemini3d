@@ -44,6 +44,23 @@ reader = library('reader',
 
 # == other
 
-pathlib = library('pathlib', 'pathlib.F90')
+pathlib_src = files('pathlib.F90')
+
+if os == 'windows'
+  code = '''#include <stdlib.h>
+  int main(void) {const char *relPath; char *absPath;
+  _fullpath(absPath, relPath, _MAX_PATH);
+  return 0; }
+  '''
+  pathlib_src += cc.links(code, name: 'Windows _fullpath') ? files('io_windows.f90') : files('io_dummy.f90')
+else
+  code = '''int main(void) {const char *path; char *resolved_path;
+  realpath(path, resolved_path);
+  return 0; }
+  '''
+  pathlib_src += cc.links(code, name: 'POSIX realpath') ? files('io_posix.f90') : files('io_dummy.f90')
+endif
+
+pathlib = library('pathlib', pathlib_src)
 
 logging = library('logging', 'logging.f90')

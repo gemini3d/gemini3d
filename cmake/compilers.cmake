@@ -22,3 +22,8 @@ endif()
 # === MPI
 # MPI is used throughout Gemini
 find_package(MPI REQUIRED COMPONENTS Fortran)
+
+# --- compiler check
+include(CheckCSourceCompiles)
+include(CheckFortranSourceCompiles)
+include(CheckFortranSourceRuns)

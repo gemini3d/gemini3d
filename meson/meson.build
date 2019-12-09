@@ -7,6 +7,7 @@ nomalloc_env = environment({'MALLOC_PERTURB_': '0'})
 # === get compiler and OS
 
 fc = meson.get_compiler('fortran')
+cc = meson.get_compiler('c')
 
 os = host_machine.system()
 

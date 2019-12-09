@@ -36,9 +36,9 @@ open(newunit=u, file=infile, status='old', action='read')
 if (is_nml) then
   read(u,nml=base, iostat=i)
   call check_nml_io(i, infile)
-  indatsize = expanduser(indat_size)
-  indatgrid = expanduser(indat_grid)
-  indatfile = expanduser(indat_file)
+  indatsize = realpath(expanduser(indat_size))
+  indatgrid = realpath(expanduser(indat_grid))
+  indatfile = realpath(expanduser(indat_file))
 else
   read(u,*) ymd(3),ymd(2),ymd(1)
   read(u,*) UTsec0
@@ -52,11 +52,12 @@ else
   read(u,*) flagoutput
   read(u,*) flagcap  ! line 11 config.ini
   read(u,'(a256)') buf  !! format specifier needed, else it reads just one character
-  indatsize = expanduser(buf)
+  indatsize = realpath(expanduser(buf))
   read(u,'(a256)') buf
-  indatgrid = expanduser(buf)
+  indatgrid = realpath(expanduser(buf))
   read(u,'(a256)') buf
-  indatfile = expanduser(buf)   ! line 14
+  indatfile = realpath(expanduser(buf))
+  !! line 14
 endif
 
 call assert_file_exists(indatsize)
@@ -85,7 +86,7 @@ if(is_nml) then
   if (flagdneu == 1) then
     read(u, nml=neutral_perturb, iostat=i)
     call check_nml_io(i, infile)
-    sourcedir = expanduser(source_dir)
+    sourcedir = realpath(expanduser(source_dir))
     call assert_directory_exists(sourcedir)
   endif
 else
@@ -101,7 +102,7 @@ else
       read(u,*) drhon,dzn
     end if
     read(u,'(A256)') buf
-    sourcedir = expanduser(buf)
+    sourcedir = realpath(expanduser(buf))
     call assert_directory_exists(sourcedir)
   endif
 end if
@@ -122,7 +123,7 @@ if(is_nml) then
   if (flagprecfile == 1) then
     read(u, nml=precip, iostat=i)
     call check_nml_io(i, infile)
-    precdir = expanduser(prec_dir)
+    precdir = realpath(expanduser(prec_dir))
     call assert_directory_exists(precdir)
   endif
 else
@@ -133,7 +134,7 @@ else
     read(u,*, iostat=i) dtprec
     read(u,'(A256)', iostat=i) buf
     call check_nml_io(i, infile)
-    precdir = expanduser(buf)
+    precdir = realpath(expanduser(buf))
     call assert_directory_exists(precdir)
   end if
 end if
@@ -152,7 +153,7 @@ if(is_nml) then
   if (flagE0file == 1) then
     read(u, nml=efield, iostat=i)
     call check_nml_io(i, infile)
-    E0dir = expanduser(E0_dir)
+    E0dir = realpath(expanduser(E0_dir))
     call assert_directory_exists(E0dir)
   endif
 else
@@ -163,7 +164,7 @@ else
     read(u,*, iostat=i) dtE0
     read(u,'(a256)', iostat=i) buf
     call check_nml_io(i, infile)
-    E0dir = expanduser(buf)
+    E0dir = realpath(expanduser(buf))
     call assert_directory_exists(E0dir)
   end if
 end if

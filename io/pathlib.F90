@@ -4,7 +4,16 @@ use, intrinsic:: iso_fortran_env, only: stderr=>error_unit
 
 implicit none
 private
-public :: mkdir, copyfile, expanduser, home
+public :: mkdir, copyfile, expanduser, home, realpath
+
+interface
+
+module function realpath(path)
+character(*), intent(in) :: path
+character(:), allocatable :: realpath
+end function realpath
+
+end interface
 
 contains
 

@@ -3,6 +3,31 @@ target_include_directories(pathlib INTERFACE ${CMAKE_CURRENT_BINARY_DIR}/include
 set_target_properties(pathlib PROPERTIES
   Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include)
 
+if(WIN32)
+  set(_code "#include <stdlib.h>
+  int main(void) {
+  const char *relPath; char *absPath;
+  _fullpath(absPath, relPath, _MAX_PATH);
+  return 0; }")
+  check_c_source_compiles("${_code}" windowsio_OK)
+  set(posixio_OK false)
+else()
+  set(_code "int main(void) {
+  const char *path; char *resolved_path;
+  realpath(path, resolved_path);
+  return 0; }")
+  check_c_source_compiles("${_code}" posixio_OK)
+  set(windowsio_OK false)
+endif()
+
+if(posixio_OK)
+  target_sources(pathlib PRIVATE io_posix.f90)
+elseif(windowsio_OK)
+  target_sources(pathlib PRIVATE io_windows.f90)
+else()
+  target_sources(pathlib PRIVATE io_dummy.f90)
+endif()
+
 add_library(logging logging.f90)
 
 #=== io library
