@@ -130,22 +130,17 @@ endif
 scalapack = dependency('scalapack', cmake_module_path: meson.source_root() /'cmake/Modules', required: false, disabler: true)
 
 if not scalapack.found()
-  if os == 'linux'
-    scalapack = fc.find_library('scalapack-openmpi', required: false, disabler: true)
-    if not scalapack.found()
-      scalapack = fc.find_library('scalapack', required: false, disabler: true)
+  foreach n : ['scalapack-openmpi', 'scalapack']
+    scalapack = fc.find_library(n, required: false, disabler: true)
+    if scalapack.found()
+      break
     endif
-  elif os == 'darwin'
-    scalapack_root = '/usr/local/opt/scalapack'
-    scalapack = fc.find_library('scalapack', dirs: scalapack_root / 'lib', required: false, disabler: true)
-  endif
+  endforeach
 endif
 
-if scalapack.found()
-  if fc.run(files('../tests/test_scalapack.f90'), dependencies: [scalapack, mpi], name: 'SCALAPACK').returncode() != 0
-    # .links() is NOT an adequate test
-    scalapack = disabler()
-  endif
+if fc.run(files('../tests/test_scalapack.f90'), dependencies: [scalapack, mpi], name: 'SCALAPACK').returncode() != 0
+  # .links() is NOT an adequate test
+  scalapack = disabler()
 endif
 
 if not scalapack.found()
@@ -185,8 +180,7 @@ if mklroot == ''
   endif
 
   mumpsinc = mumps_root / 'include'
-  # NOTE: leave this "if mumps.found()" so that mumpsinc is sure to be defined
-  if mumps.found() and mumpslib[0].found() and mumpslib[1].found()
+  if mumpslib[0].found() and mumpslib[1].found()
     mumps = declare_dependency(include_directories: include_directories(mumpsinc), dependencies: mumpslib)
   endif
 
@@ -236,8 +230,8 @@ endif
 
 octave = find_program('octave', required: false, disabler: true)
 # must do .found check since run_command(disabler()) has undefined returncode.
-if octave.found() and run_command(octave, '--eval', 'assert(exist("validateattributes", "file")==2)').returncode() != 0
-  message('Not using too-old Octave for comparison tests.')
+if run_command(octave, '--eval', 'assert(exist("validateattributes", "file")==2)').returncode() != 0
+  message('SKIP: Octave version is too old for comparison tests.')
   octave = disabler()
 endif
 
