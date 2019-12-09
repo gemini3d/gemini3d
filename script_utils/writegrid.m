@@ -32,7 +32,7 @@ fid = fopen(filename, 'w');
 fwrite(fid, xg.lx, 'integer*4');
 fclose(fid);
 
-fid=fopen([outdir, '/simgrid.dat'], 'w');
+fid = fopen([outdir, '/simgrid.dat'], 'w');
 
 fwrite(fid,xg.x1, freal);    %coordinate values
 fwrite(fid,xg.x1i, freal);

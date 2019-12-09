@@ -1,4 +1,4 @@
-function [nsi,vs1i,Tsi,xgin,ns,vs1,Ts] = eq2dist(eqdir, simID, xg)
+function [nsi,vs1i,Tsi,xgin,ns,vs1,Ts,outdir] = eq2dist(eqdir, simID, xg)
 
 narginchk(3, 3)
 validateattributes(eqdir, {'char', 'string'}, {'vector'})
@@ -31,9 +31,9 @@ assert(all(isfinite(Tsi(:))), 'non-finite interpolated temperature')
 
 %% WRITE OUT THE GRID
 % this uses SIMID as output directory and filename tag
-basedir=[eqdir,'/../input/'];
-outdir=[basedir,simID];
-writegrid(xg,outdir);
+basedir = [eqdir,'/../input/'];
+outdir = [basedir, simID];
+writegrid(xg, outdir);
 dmy=[ymdend(3),ymdend(2),ymdend(1)];
 writedata(dmy,UTsecend,nsi,vs1i,Tsi,outdir,simID);
 

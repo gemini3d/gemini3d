@@ -100,7 +100,7 @@ if(t + dt / 2._wp >= tnext) then    !need to load a new file
 
     fn1 = E0dir // '/simsize.dat'
     if (debug) print *, 'Inputting electric field data size from file:  ',fn1
-    call assert_exists(fn1)
+    call assert_file_exists(fn1)
     open(newunit=inunit, file=fn1, status='old', form='unformatted', access='stream')
     read(inunit) llon,llat
     close(inunit)
@@ -120,7 +120,7 @@ if(t + dt / 2._wp >= tnext) then    !need to load a new file
     !> NOW READ THE GRID
     fn2 = E0dir // '/simgrid.dat'
     if (debug) print *, 'Inputting electric field grid from file:  ',fn2
-    call assert_exists(fn2)
+    call assert_file_exists(fn2)
     open(newunit=inunit,file=fn2,status='old',form='unformatted',access='stream')
     read(inunit) mlonp,mlatp
     close(inunit)
@@ -180,7 +180,7 @@ if(t + dt / 2._wp >= tnext) then    !need to load a new file
   fn3 = date_filename(E0dir, ymdtmp, UTsectmp) // '.dat'
   !! form the standard data filename
   if (debug) print *, 'Read: electric field data from file:  ',fn3
-  call assert_exists(fn3)
+  call assert_file_exists(fn3)
   open(newunit=inunit, file=fn3, status='old', form='unformatted', access='stream')
   read(inunit) flagdirich_double
   read(inunit) E0xp,E0yp
@@ -517,8 +517,8 @@ E03all=0d0
 end subroutine potentialBCs2D
 
 
-impure elemental subroutine assert_exists(path)
-!! throw error if file or directory does not exist
+impure elemental subroutine assert_file_exists(path)
+!! throw error if file does not exist
 !! this accomodates non-Fortran 2018 error stop with variable character
 
 character(*), intent(in) :: path
@@ -531,6 +531,6 @@ if (.not.exists) then
   error stop
 endif
 
-end subroutine assert_exists
+end subroutine assert_file_exists
 
 end module potentialBCs_mumps

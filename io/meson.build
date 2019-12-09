@@ -4,7 +4,7 @@ io_src = files(
 'mag.f90',
 'plasma.f90',
 'output.f90',
-'input.f90'
+'input.F90'
 )
 
 # FIXME: when validated, use if hdf5_interface.found() as for output.
