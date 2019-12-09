@@ -41,9 +41,12 @@ integer :: flagcap
 !! internal capacitance?
 
 !> INPUT AND OUTPUT FILES
-character(:), allocatable :: infile    !command line argument input file
-character(:), allocatable :: outdir    !" " output directory
-character(:), allocatable :: indatsize,indatgrid    !grid size and data filenames
+character(:), allocatable :: infile
+!! command line argument input file
+character(:), allocatable :: outdir
+!! " " output directory
+character(:), allocatable :: indatsize,indatgrid
+!! grid size and data filenames
 
 !> GRID STRUCTURE
 type(curvmesh) :: x
@@ -68,61 +71,79 @@ real(wp), dimension(:,:,:), allocatable :: iver
 !! integrated volume emission rate of aurora calculated by GLOW
 
 !TEMPORAL VARIABLES
-real(wp) :: t=0._wp,dt=1e-6_wp,dtprev      !time from beginning of simulation (s) and time step (s)
-real(wp) :: tout,dtout    !time for next output and time between outputs
-real(wp) :: tstart,tfin   !temp. vars. for measuring performance of code blocks
-integer :: it,isp        !time and species loop indices
+real(wp) :: t=0._wp,dt=1e-6_wp,dtprev
+!! time from beginning of simulation (s) and time step (s)
+real(wp) :: tout,dtout
+!! time for next output and time between outputs
+real(wp) :: tstart,tfin
+!! temp. vars. for measuring performance of code blocks
+integer :: it,isp
+!! time and species loop indices
 
 !WORK ARRAYS
 real(wp), allocatable :: dl1,dl2,dl3     !these are grid distances in [m] used to compute Courant numbers
 
 !NEUTRAL PERTURBATION VARIABLES
-integer :: flagdneu                  !toggles neutral perturbations (0 - none; 1 - file-based neutral inputs)
-integer :: interptype                !toggles whether the neutral input data are interpreted (0 - Cartesian; 1 - axisymmetric)
-real(wp) :: dxn,drhon,dzn                 !finite differences for the neutral input data in the horizontal and vertical directions
-real(wp) :: sourcemlat,sourcemlon     !mag. lat./long for the neutral source location
-character(:), allocatable :: sourcedir          !directory where neutral input data are located
-real(wp) :: dtneu                     !time interval [s] in between neutral inputs
+integer :: flagdneu
+!! toggles neutral perturbations (0 - none; 1 - file-based neutral inputs)
+integer :: interptype
+!! toggles whether the neutral input data are interpreted (0 - Cartesian; 1 - axisymmetric)
+real(wp) :: dxn,drhon,dzn
+!! finite differences for the neutral input data in the horizontal and vertical directions
+real(wp) :: sourcemlat,sourcemlon
+!! mag. lat./long for the neutral source location
+character(:), allocatable :: sourcedir
+!! directory where neutral input data are located
+real(wp) :: dtneu
+!! time interval [s] in between neutral inputs
 
-!PRECIPITATION FILE INPUT VARIABLES
-integer :: flagprecfile              ! flag toggling precipitation file input (0 - no; 1 - yes)
-real(wp) :: dtprec                    ! time interval between precip. inputs
-character(:), allocatable :: precdir ! directory containing precip. input files
+!> PRECIPITATION FILE INPUT VARIABLES
+integer :: flagprecfile
+!! flag toggling precipitation file input (0 - no; 1 - yes)
+real(wp) :: dtprec
+!! time interval between precip. inputs
+character(:), allocatable :: precdir
+!! directory containing precip. input files
 
-!ELECTRIC FIELD FILE INPUT VARIABLES
-integer :: flagE0file                ! flag toggling electric field (potential BCs) file input (0 - no; 1 - yes)
-real(wp) :: dtE0                      ! time interval between electric field file inputs
-character(:), allocatable :: E0dir   ! directory containing electric field file input data
+!> ELECTRIC FIELD FILE INPUT VARIABLES
+integer :: flagE0file
+!! flag toggling electric field (potential BCs) file input (0 - no; 1 - yes)
+real(wp) :: dtE0
+!! time interval between electric field file inputs
+character(:), allocatable :: E0dir
+!! directory containing electric field file input data
 
-!GLOW MODULE INPUT VARIABLES
-integer :: flagglow                     !flag toggling GLOW module run (include aurora) (0 - no; 1 - yes)
-real(wp) :: dtglow                      !time interval between GLOW runs (s)
-real(wp) :: dtglowout                   !time interval between GLOW auroral outputs (s)
-real(wp) :: tglowout                    !time for next GLOW output
+!> GLOW MODULE INPUT VARIABLES
+integer :: flagglow
+!! flag toggling GLOW module run (include aurora) (0 - no; 1 - yes)
+real(wp) :: dtglow
+!! time interval between GLOW runs (s)
+real(wp) :: dtglowout
+!! time interval between GLOW auroral outputs (s)
+real(wp) :: tglowout
+!! time for next GLOW output
 
-!FOR HANDLING OUTPUT
+!> FOR HANDLING OUTPUT
 integer :: argc
 character(256) :: argv
 integer :: lid2in,lid3in
 
 
-!TO CONTROL THROTTLING OF TIME STEP
+!> TO CONTROL THROTTLING OF TIME STEP
 real(wp), parameter :: dtscale=2d0
 
-!----------------------------------------------------------
-!------MAIN PROGRAM
-!----------------------------------------------------------
+!! MAIN PROGRAM
 
 argc = command_argument_count()
 if (argc < 2) error stop 'must specify .ini file to configure simulation and output directory'
 
-!INITIALIZE MESSING PASSING VARIABLES, IDS ETC.
+!> INITIALIZE MESSING PASSING VARIABLES, IDS ETC.
 call mpisetup()
 call get_command_argument(0, argv)
 print '(A,A,I6,A3,I6)', trim(argv), ' Process:  ', myid,' / ',lid-1
 
 
-!READ FILE INPUT
+!> READ FILE INPUT
 call get_command_argument(1,argv)
 infile = trim(argv)
 
@@ -130,11 +151,11 @@ call read_configfile(infile, ymd,UTsec0,tdur,dtout,activ,tcfl,Teinf,potsolve,fla
                      indatsize,indatgrid,flagdneu,interptype,sourcemlat,sourcemlon,dtneu,dxn,drhon,dzn,sourcedir,flagprecfile, &
                      dtprec,precdir,flagE0file,dtE0,E0dir,flagglow,dtglow,dtglowout)
 
-!!CHECK THE GRID SIZE AND ESTABLISH A PROCESS GRID
+!> CHECK THE GRID SIZE AND ESTABLISH A PROCESS GRID
 call grid_size(indatsize)
 
 select case (argc)
-  case (4,5) !user specified process grid
+  case (4,5) !< user specified process grid
     call get_command_argument(3,argv)
     read(argv,*) lid2in
     call get_command_argument(4,argv)
@@ -149,15 +170,18 @@ select case (argc)
       call get_command_argument(3,argv)
       if (argv == '-d' .or. argv == '-debug')  debug = .true.
     endif
-    call mpigrid(lx2all,lx3all)    !following grid_size these are in scope
+    call mpigrid(lx2all,lx3all)
+    !! following grid_size these are in scope
 end select
 
 
-!LOAD UP THE GRID STRUCTURE/MODULE VARS. FOR THIS SIMULATION
-call read_grid(indatsize,indatgrid,flagperiodic,x)     !read in a previously generated grid from filenames listed in input file
+!> LOAD UP THE GRID STRUCTURE/MODULE VARS. FOR THIS SIMULATION
+call read_grid(indatsize,indatgrid,flagperiodic,x)
+!! read in a previously generated grid from filenames listed in input file
 
 
-!CREATE/PREP OUTPUT DIRECTORY AND OUTPUT SIMULATION SIZE AND GRID DATA; ONLY THE ROOT PROCESS WRITES OUTPUT DATA
+!> CREATE/PREP OUTPUT DIRECTORY AND OUTPUT SIMULATION SIZE AND GRID DATA
+!> ONLY THE ROOT PROCESS WRITES OUTPUT DATA
 call get_command_argument(2,argv)
 outdir = trim(argv)
 
@@ -167,7 +191,7 @@ if (myid==0) then
 end if
 
 
-!ALLOCATE ARRAYS (AT THIS POINT ALL SIZES ARE SET FOR EACH PROCESS SUBGRID)
+!> ALLOCATE ARRAYS (AT THIS POINT ALL SIZES ARE SET FOR EACH PROCESS SUBGRID)
 allocate(ns(-1:lx1+2,-1:lx2+2,-1:lx3+2,lsp),vs1(-1:lx1+2,-1:lx2+2,-1:lx3+2,lsp),vs2(-1:lx1+2,-1:lx2+2,-1:lx3+2,lsp), &
   vs3(-1:lx1+2,-1:lx2+2,-1:lx3+2,lsp), Ts(-1:lx1+2,-1:lx2+2,-1:lx3+2,lsp))
 allocate(rhov2(-1:lx1+2,-1:lx2+2,-1:lx3+2),rhov3(-1:lx1+2,-1:lx2+2,-1:lx3+2),B1(-1:lx1+2,-1:lx2+2,-1:lx3+2), &
@@ -176,7 +200,8 @@ allocate(v1(-1:lx1+2,-1:lx2+2,-1:lx3+2),v2(-1:lx1+2,-1:lx2+2,-1:lx3+2), &
          v3(-1:lx1+2,-1:lx2+2,-1:lx3+2),rhom(-1:lx1+2,-1:lx2+2,-1:lx3+2))
 allocate(E1(lx1,lx2,lx3),E2(lx1,lx2,lx3),E3(lx1,lx2,lx3),J1(lx1,lx2,lx3),J2(lx1,lx2,lx3),J3(lx1,lx2,lx3))
 allocate(nn(lx1,lx2,lx3,lnchem),Tn(lx1,lx2,lx3),vn1(lx1,lx2,lx3), vn2(lx1,lx2,lx3),vn3(lx1,lx2,lx3))
-call make_dneu()    !allocate space for neutral perturbations in case they are used with this run
+call make_dneu()
+!! allocate space for neutral perturbations in case they are used with this run
 call make_precip_fileinput()
 
 
@@ -207,26 +232,25 @@ B1(1:lx1,1:lx2,1:lx3)=x%Bmag
 !! to the magnetic field direction (hence zero B2 and B3).
 
 
-!INITIALIZE ELECTRODYNAMIC QUANTITIES FOR POLARIZATION CURRENT
-if (myid==0) then
-  Phiall = 0    !< only root store entire potential array
-end if
+!> INITIALIZE ELECTRODYNAMIC QUANTITIES FOR POLARIZATION CURRENT
+if (myid==0) Phiall = 0
+!! only root stores entire potential array
 E1=0; E2=0; E3=0;
 vs2=0; vs3=0;
 
-!INITIALIZE AURORAL EMISSION MAP
-if(flagglow/=0) then
-  iver=0
-end if
+!> INITIALIZE AURORAL EMISSION MAP
+if(flagglow/=0) iver=0
 
-!MAIN LOOP
+
+!> MAIN LOOP
 UTsec=UTsec0; it=1; t=0d0; tout=t; tglowout=t;
 do while (t<tdur)
-  !TIME STEP CALCULATION
+  !! TIME STEP CALCULATION
   dtprev=dt
   call dt_comm(t,tout,tglowout,flagglow,tcfl,ns,Ts,vs1,vs2,vs3,B1,B2,B3,x,potsolve,dt)
   if (it>1) then
-    if(dt/dtprev > dtscale) then     !throttle how quickly we allow dt to increase
+    if(dt/dtprev > dtscale) then
+      !! throttle how quickly we allow dt to increase
       dt=dtscale*dtprev
       if (myid==0) then
         print '(A,EN14.3)', 'Throttling dt to:  ',dt
@@ -242,7 +266,8 @@ do while (t<tdur)
   if (it==1) then
     call cpu_time(tstart)
     call neutral_atmos(ymd,UTsec,x%glat,x%glon,x%alt,activ,nn,Tn)
-    vn1=0d0; vn2=0d0; vn3=0d0     !hard-code these to zero for the first time step
+    vn1=0d0; vn2=0d0; vn3=0d0
+    !! hard-code these to zero for the first time step
     call cpu_time(tfin)
 
     if (myid==0) then
@@ -251,10 +276,11 @@ do while (t<tdur)
   end if
 
 
-  !GET NEUTRAL PERTURBATIONS FROM ANOTHER MODEL
+  !> GET NEUTRAL PERTURBATIONS FROM ANOTHER MODEL
   if (flagdneu==1) then
     call cpu_time(tstart)
-    if (it==1) then    !this triggers the code to load the neutral frame correspdonding ot the beginning time of the simulation
+    if (it==1) then
+      !! this triggers the code to load the neutral frame correspdonding ot the beginning time of the simulation
       if (myid==0) print *, '!!!Attempting initial load of neutral dynamics files!!!' // &
                               ' This is a workaround that fixes the restart code...',t-dt
       call neutral_perturb(interptype,dt,dtneu,t-dtneu,ymd,UTsec-dtneu,sourcedir,dxn,drhon,dzn, &
@@ -266,7 +292,7 @@ do while (t<tdur)
     if (myid==0 .and. debug) print *, 'Neutral perturbations calculated in time:  ',tfin-tstart
   end if
 
-  !POTENTIAL SOLUTION
+  !! POTENTIAL SOLUTION
   call cpu_time(tstart)
   call electrodynamics(it,t,dt,nn,vn2,vn3,Tn,sourcemlat,ns,Ts,vs1,B1,vs2,vs3,x, &
                         potsolve,flagcap,E1,E2,E3,J1,J2,J3, &
@@ -275,7 +301,7 @@ do while (t<tdur)
   if (myid==0 .and. debug) print *, 'Electrodynamics total solve time:  ',tfin-tstart
 
 
-  !UPDATE THE FLUID VARIABLES
+  !! UPDATE THE FLUID VARIABLES
   call cpu_time(tstart)
   call fluid_adv(ns,vs1,Ts,vs2,vs3,J1,E1,Teinf,t,dt,x,nn,vn1,vn2,vn3,Tn,iver,activ(2),activ(1),ymd,UTsec, &
                  flagprecfile,dtprec,precdir,flagglow,dtglow)
@@ -283,15 +309,16 @@ do while (t<tdur)
   if (myid==0 .and. debug) print *, 'Multifluid total solve time:  ',tfin-tstart
 
 
-  !NOW OUR SOLUTION IS FULLY UPDATED SO UPDATE TIME VARIABLES TO MATCH...
+  !! NOW OUR SOLUTION IS FULLY UPDATED SO UPDATE TIME VARIABLES TO MATCH...
   it=it+1; t=t+dt;
   if (myid==0 .and. debug) print *, 'Moving on to time step (in sec):  ',t,'; end time of simulation:  ',tdur
   call dateinc(dt,ymd,UTsec)
   if (myid==0) print '(A,I4,A1,I0.2,A1,I0.2,A1,F12.6)', 'Current time ',ymd(1),'-',ymd(2),'-',ymd(3),' ',UTsec
 
 
-  !OUTPUT
-  if (abs(t-tout) < 1d-5) then   !close enough to warrant an output now...
+  !! OUTPUT
+  if (abs(t-tout) < 1d-5) then
+    !! close enough to warrant an output now...
     call cpu_time(tstart)
     call output_plasma(outdir,flagoutput,ymd,UTsec,vs2,vs3,ns,vs1,Ts,Phiall,J1,J2,J3)
     call cpu_time(tfin)
@@ -300,7 +327,7 @@ do while (t<tdur)
     tout=tout+dtout
   end if
 
-  !GLOW OUTPUT
+  !! GLOW OUTPUT
   if ((flagglow/=0).and.(abs(t-tglowout) < 1d-5)) then !same as plasma output
     call cpu_time(tstart)
     call output_aur(outdir,flagglow,ymd,UTsec,iver)
@@ -313,7 +340,7 @@ do while (t<tdur)
 end do
 
 
-!DEALLOCATE MAIN PROGRAM DATA
+!! DEALLOCATE MAIN PROGRAM DATA
 deallocate(ns,vs1,vs2,vs3,Ts)
 deallocate(E1,E2,E3,J1,J2,J3)
 deallocate(nn,Tn,vn1,vn2,vn3)
@@ -326,14 +353,14 @@ if (flagglow/=0) then
   deallocate(iver)
 end if
 
-!DEALLOCATE MODULE VARIABLES (MAY HAPPEN AUTOMATICALLY IN F2003???)
+!! DEALLOCATE MODULE VARIABLES (MAY HAPPEN AUTOMATICALLY IN F2003???)
 call clear_grid(x)
 call clear_dneu()
 call clear_precip_fileinput()
 call clear_potential_fileinput()
 
 
-!SHUT DOWN MPI
+!! SHUT DOWN MPI
 call mpibreakdown()
 
 end program
