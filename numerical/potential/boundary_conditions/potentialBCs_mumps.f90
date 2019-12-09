@@ -100,15 +100,16 @@ if(t + dt / 2._wp >= tnext) then    !need to load a new file
 
     fn1 = E0dir // '/simsize.dat'
     if (debug) print *, 'Inputting electric field data size from file:  ',fn1
-    open(newunit=inunit,file=fn1,status='old',form='unformatted',access='stream')
+    call assert_exists(fn1)
+    open(newunit=inunit, file=fn1, status='old', form='unformatted', access='stream')
     read(inunit) llon,llat
     close(inunit)
-    if (debug) print *, 'Electric field data has llon,llat size:  ',llon,llat
-    allocate(mlonp(llon),mlatp(llat))    !bit of code duplication with worker code block below...
+    if (debug) print '(A,2I6)', 'Electric field data has llon,llat size:  ',llon,llat
+    allocate(mlonp(llon),mlatp(llat))
+    !! bit of code duplication with worker code block below...
 
 
-    !IF WE HAVE SINGLETON DIMENSION THEN ALLOCATE SOME SPACE FOR A TEMP
-    !ARRAY FOR INPUTTING INTO INTERP1
+    !> IF WE HAVE SINGLETON DIMENSION, ALLOCATE SOME SPACE FOR TEMP ARRAY INPUT TO INTERP1
     if (llon==1) then
       allocate(Edatp(llat))
     elseif (llat==1) then
@@ -116,16 +117,17 @@ if(t + dt / 2._wp >= tnext) then    !need to load a new file
     end if
 
 
-    !NOW READ THE GRID
+    !> NOW READ THE GRID
     fn2 = E0dir // '/simgrid.dat'
     if (debug) print *, 'Inputting electric field grid from file:  ',fn2
+    call assert_exists(fn2)
     open(newunit=inunit,file=fn2,status='old',form='unformatted',access='stream')
     read(inunit) mlonp,mlatp
     close(inunit)
     if (debug) print *, 'Electric field data has mlon,mlat extent:', &
               minval(mlonp(:)), maxval(mlonp(:)), minval(mlatp(:)), maxval(mlatp(:))
 
-    !SPACE TO STORE INPUT DATA
+    !> SPACE TO STORE INPUT DATA
     allocate(E0xp(llon,llat),E0yp(llon,llat))
     allocate(Vminx1p(llon,llat),Vmaxx1p(llon,llat))
     allocate(Vminx2pslice(llat),Vmaxx2pslice(llat))
@@ -136,7 +138,8 @@ if(t + dt / 2._wp >= tnext) then    !need to load a new file
              Vminx2isprev(lx3all),Vminx2isnext(lx3all),Vmaxx2isprev(lx3all),Vmaxx2isnext(lx3all), &
              Vminx3isprev(lx2all),Vminx3isnext(lx2all),Vmaxx3isprev(lx2all),Vmaxx3isnext(lx2all))
 
-    E0xiprev=0d0; E0yiprev=0d0; E0xinext=0d0; E0yinext=0d0;     !these need to be initialized so that something sensible happens at the beginning
+    E0xiprev=0d0; E0yiprev=0d0; E0xinext=0d0; E0yinext=0d0;
+    !! these need to be initialized so that something sensible happens at the beginning
     Vminx1iprev=0d0; Vmaxx1iprev=0d0; Vminx1inext=0d0; Vmaxx1inext=0d0;
     Vminx2isprev=0d0; Vmaxx2isprev=0d0; Vminx2isnext=0d0; Vmaxx2isnext=0d0;
     Vminx3isprev=0d0; Vmaxx3isprev=0d0; Vminx3isnext=0d0; Vmaxx3isnext=0d0;
@@ -150,7 +153,8 @@ if(t + dt / 2._wp >= tnext) then    !need to load a new file
     endif
     ix3ref=lx3all/3
 
-    ix1ref=minloc(abs(x%rall(:,ix2ref,ix3ref)-Re-300d3),1)    !by default the code uses 300km altitude as a reference location, using the center x2,x3 point
+    ix1ref=minloc(abs(x%rall(:,ix2ref,ix3ref)-Re-300d3),1)
+    !! by default the code uses 300km altitude as a reference location, using the center x2,x3 point
     allocate(mloni(lx2all*lx3all),mlati(lx2all*lx3all))
     do ix3=1,lx3all
       do ix2=1,lx2all
@@ -166,20 +170,18 @@ if(t + dt / 2._wp >= tnext) then    !need to load a new file
   end if
 
 
-  !GRID INFORMATION EXISTS AT THIS POINT SO START READING IN PRECIP DATA
-  !read in the data from file
+  !> GRID INFORMATION EXISTS AT THIS POINT SO START READING IN PRECIP DATA
+  !> read in the data from file
   if (debug) print *,'tprev,tnow,tnext:  ',tprev,t+dt/2d0,tnext
   ymdtmp=ymdnext
   UTsectmp=UTsecnext
-  call dateinc(dtE0,ymdtmp,UTsectmp)    !get the date for "next" params
-  fn3=date_filename(E0dir,ymdtmp,UTsectmp) // '.dat'     !form the standard data filename
-  if (debug) print *, 'Pulling electric field data from file:  ',fn3
-  open(newunit=inunit, file=fn3, status='old',form='unformatted',access='stream',iostat=ios)
-  if (ios/=0) then
-    write(stderr,*) 'Missing electric field file: ' // fn3
-    error stop
-  endif
-
+  call dateinc(dtE0,ymdtmp,UTsectmp)
+  !! get the date for "next" params
+  fn3 = date_filename(E0dir, ymdtmp, UTsectmp) // '.dat'
+  !! form the standard data filename
+  if (debug) print *, 'Read: electric field data from file:  ',fn3
+  call assert_exists(fn3)
+  open(newunit=inunit, file=fn3, status='old', form='unformatted', access='stream')
   read(inunit) flagdirich_double
   read(inunit) E0xp,E0yp
   read(inunit) Vminx1p,Vmaxx1p    !background fields and top/bottom boundar conditions
@@ -514,5 +516,21 @@ E03all=0d0
 
 end subroutine potentialBCs2D
 
+
+impure elemental subroutine assert_exists(path)
+!! throw error if file or directory does not exist
+!! this accomodates non-Fortran 2018 error stop with variable character
+
+character(*), intent(in) :: path
+logical :: exists
+
+inquire(file=path, exist=exists)
+
+if (.not.exists) then
+  write(stderr,*) path // ' does not exist'
+  error stop
+endif
+
+end subroutine assert_exists
 
 end module potentialBCs_mumps
