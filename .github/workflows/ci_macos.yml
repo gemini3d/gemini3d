@@ -7,11 +7,15 @@ on:
     paths:
       - "**.f90"
       - "**.F90"
+      - "**.cmake"
+      - "**.build"
       - ".github/workflows/ci_macos.yml"
   pull_request:
     paths:
       - "**.f90"
       - "**.F90"
+      - "**.cmake"
+      - "**.build"
       - ".github/workflows/ci_macos.yml"
 
 jobs:
@@ -29,6 +33,11 @@ jobs:
       env:
         FC: gfortran-9
         CC: gcc-9
+    - uses: actions/upload-artifact@v1
+      if: always()
+      with:
+        name: Mac_Meson_Configlog
+        path: build/meson-logs/meson-log.txt
     - run: ninja -C build
     - run: meson test -C build --suite unit -v
     - run: meson test -C build --suite 2d_fang -v

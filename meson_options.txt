@@ -2,7 +2,5 @@ option('realbits', type : 'combo', choices : ['64', '32'], description : 'real b
 option('arith', type: 'string', value: 'sd', description: 'precision (s,d,c,z)')
 option('matlab', type : 'feature', value: 'disabled', description : 'Matlab >= R2019a required')
 option('hdf5', type: 'feature', value: 'enabled', description: 'HDF5 I/O instead of raw binary files')
-option('SCALAPACK_ROOT', type : 'string', description : 'root directory of SCALAPACK')
 option('MUMPS_ROOT', type : 'string', description : 'root directory of MUMPS')
-option('MPI_ROOT', type : 'string', description : 'root directory of MPI')
 option('mklroot', type : 'string', description : 'MKL root directory')

@@ -78,7 +78,7 @@ if mklroot == ''
   if not blas.found()  # necessary for some systems incl. CentOS 7
     blas = fc.find_library('blas', required: false, disabler: true)
   endif
-  if blas.found() and not fc.links('x=dnrm2(1, [2.], 1); end', dependencies: blas, name: 'BLAS')
+  if not fc.links('x=dnrm2(1, [2.], 1); end', dependencies: blas, name: 'BLAS')
     blas = disabler()
   endif
 
@@ -86,7 +86,7 @@ if mklroot == ''
   if not lapack.found()
     lapack = fc.find_library('lapack', required: false, disabler: true)
   endif
-  if lapack.found() and not fc.links('print *,disnan(0.); end', dependencies: lapack, name: 'LAPACK')
+  if not fc.links('print *,disnan(0.); end', dependencies: lapack, name: 'LAPACK')
     lapack = disabler()
   endif
   if not lapack.found() or not blas.found()
@@ -127,33 +127,24 @@ endif
 
 
 # --- Find Scalapack
-scalapack = disabler()
-
-if mklroot != ''
-  scalapack_lib = fc.find_library('mkl_scalapack_lp64', dirs: mkllib_root)
-  scalapack = declare_dependency(dependencies: [scalapack_lib, blacs, lapack, intelmpi_lib], include_directories: mklroot/'include/intel64/lp64')
-endif
+scalapack = dependency('scalapack', cmake_module_path: meson.source_root() /'cmake/Modules', required: false, disabler: true)
 
 if not scalapack.found()
-  scalapack_root = get_option('SCALAPACK_ROOT')
-  if scalapack_root != ''
-    scalapack = fc.find_library('scalapack', dirs : scalapack_root / 'lib', required: false, disabler: true)
-  else
-    if os == 'linux'
-      scalapack = fc.find_library('scalapack-openmpi', required: false, disabler: true)
-      if not scalapack.found()
-        scalapack = fc.find_library('scalapack', required: false, disabler: true)
-      endif
-    elif os == 'darwin'
-      scalapack_root = '/usr/local/opt/scalapack'
-      scalapack = fc.find_library('scalapack', dirs: scalapack_root / 'lib', required: false, disabler: true)
+  if os == 'linux'
+    scalapack = fc.find_library('scalapack-openmpi', required: false, disabler: true)
+    if not scalapack.found()
+      scalapack = fc.find_library('scalapack', required: false, disabler: true)
     endif
+  elif os == 'darwin'
+    scalapack_root = '/usr/local/opt/scalapack'
+    scalapack = fc.find_library('scalapack', dirs: scalapack_root / 'lib', required: false, disabler: true)
   endif
-  if scalapack.found()
-    if (fc.run(files('../tests/test_scalapack.f90'), dependencies: [scalapack, mpi], name: 'SCALAPACK').returncode() != 0)
-      # .links() is NOT an adequate test
-      scalapack = disabler()
-    endif
+endif
+
+if scalapack.found()
+  if fc.run(files('../tests/test_scalapack.f90'), dependencies: [scalapack, mpi], name: 'SCALAPACK').returncode() != 0
+    # .links() is NOT an adequate test
+    scalapack = disabler()
   endif
 endif
 
@@ -194,7 +185,8 @@ if mklroot == ''
   endif
 
   mumpsinc = mumps_root / 'include'
-  if mumpslib[0].found() and mumpslib[1].found()
+  # NOTE: leave this "if mumps.found()" so that mumpsinc is sure to be defined
+  if mumps.found() and mumpslib[0].found() and mumpslib[1].found()
     mumps = declare_dependency(include_directories: include_directories(mumpsinc), dependencies: mumpslib)
   endif
 
@@ -202,7 +194,7 @@ if mklroot == ''
   include 'dmumps_struc.h'
   type(DMUMPS_STRUC) :: mumps_par
   end'''
-
+  # NOTE: leave this "if mumps.found()" so that mumpsinc is sure to be defined
   if mumps.found() and not fc.links(code, include_directories: include_directories(mumpsinc), dependencies: mumpslib, name: 'MUMPS')
     mumps = disabler()
   endif
