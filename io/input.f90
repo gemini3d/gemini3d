@@ -63,7 +63,7 @@ call assert_file_exists(indatfile)
 
 !> PRINT SOME DIAGNOSIC INFO FROM ROOT
 if (myid==0) then
-  print '(A,I6,A1,I0.2,A1,I0.2)', infile//': simulation ymd is:  ',ymd(1),'/',ymd(2),'/',ymd(3)
+  print '(A,I6,A1,I0.2,A1,I0.2)', infile//': simulation year-month-day is:  ',ymd(1),'-',ymd(2),'-',ymd(3)
   print '(A51,F10.3)', 'start time is:  ',UTsec0
   print '(A51,F10.3)', 'duration is:  ',tdur
   print '(A51,F10.3)', 'output every:  ',dtout

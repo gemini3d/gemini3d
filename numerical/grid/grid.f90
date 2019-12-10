@@ -63,20 +63,35 @@ if (myid==0) then    !root must physically read the size info and pass to worker
      error stop 77
   endif
 
-  !DETERMINE THE SIZE OF THE GRID TO BE LOADED
+  !! DETERMINE THE SIZE OF THE GRID TO BE LOADED
   open(newunit=u,file=indatsize,status='old',form='unformatted', &
        access='stream', action='read')
   read(u) lx1,lx2all,lx3all    !note that these are sizes *including ghost cells*
   close(u)
+
+  !! check correct number of MPI images. Help avoid confusing errors or bad simulations
+  if (lx2all > 1) then
+    if (modulo(lx2all, lid) /= 0) then
+      write(stderr,'(/,A,I6,A,I6,/)') 'ERROR: Number of MPI images ', lid, ' is not an integer factor of lx2all: ', lx2all
+      error stop
+    endif
+  endif
+
+  if (lx3all > 1) then
+    if (modulo(lx3all, lid) /= 0) then
+      write(stderr,'(/,A,I6,A,I6,/)') 'ERROR: Number of MPI images ', lid, ' is not an integer factor of lx3all: ', lx3all
+      error stop
+    endif
+  endif
+
   do iid=1,lid-1
     call mpi_send(lx1,1,MPI_INTEGER,iid,taglx1,MPI_COMM_WORLD,ierr)
     call mpi_send(lx2all,1,MPI_INTEGER,iid,taglx2all,MPI_COMM_WORLD,ierr)
     call mpi_send(lx3all,1,MPI_INTEGER,iid,taglx3all,MPI_COMM_WORLD,ierr)
+    if (ierr/=0) error stop 'grid:grid_size failed mpi_send'
   end do
 
-  if (ierr/=0) error stop 'grid:grid_size failed mpi_send'
-
-  print *, 'Grid has full size:  ',lx1,lx2all,lx3all
+  print *, 'grid:grid_size reporting full grid size:  ',lx1,lx2all,lx3all
 else
   call mpi_recv(lx1,1,MPI_INTEGER,0,taglx1,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
   call mpi_recv(lx2all,1,MPI_INTEGER,0,taglx2all,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
