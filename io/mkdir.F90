@@ -24,6 +24,7 @@ integer function copyfile(source, dest) result(istat)
 character(*), intent(in) :: source, dest
 character(len(source)) :: src
 character(len(dest)) :: dst
+logical :: exists
 
 #ifdef _WIN32
 character(6), parameter :: CMD='copy '
@@ -34,6 +35,12 @@ character(6), parameter ::  CMD='cp -r '
 src = source
 dst = dest
 #endif
+
+inquire(file=src, exist=exists)
+if (.not.exists) then
+  write(stderr, *) src // ' source file does not exist.'
+  error stop
+endif
 
 call execute_command_line(CMD//src//' '//dst, exitstat=istat)
 if (istat /= 0) write(stderr,*) 'error copying ',src, ' => ',dst
