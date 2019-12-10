@@ -1,9 +1,14 @@
-function [nsi,vs1i,Tsi,xgin,ns,vs1,Ts,outdir] = eq2dist(eqdir, simID, xg)
+function [nsi,vs1i,Tsi,xgin,ns,vs1,Ts] = eq2dist(eqdir, simID, xg, outdir)
 
-narginchk(3, 3)
+narginchk(3, 4)
 validateattributes(eqdir, {'char', 'string'}, {'vector'})
 validateattributes(simID, {'char', 'string'}, {'vector'})
 validateattributes(xg, {'struct'}, {'scalar'})
+if nargin > 3
+  assert(isfolder(outdir), [outdir, ' is not a directory'])
+else
+  outdir = [];
+end
 %% READ SIMULATION INFORMATION
 [ymd0,UTsec0,tdur,dtout,flagoutput,mloc] = readconfig([eqdir, '/inputs']);
 xgin = readgrid([eqdir, '/inputs']);
@@ -31,8 +36,10 @@ assert(all(isfinite(Tsi(:))), 'non-finite interpolated temperature')
 
 %% WRITE OUT THE GRID
 % this uses SIMID as output directory and filename tag
-basedir = [eqdir,'/../input/'];
-outdir = [basedir, simID];
+if isempty(outdir)
+  basedir = [eqdir,'/../input/'];
+  outdir = [basedir, simID];
+end
 writegrid(xg, outdir);
 dmy=[ymdend(3),ymdend(2),ymdend(1)];
 writedata(dmy,UTsecend,nsi,vs1i,Tsi,outdir,simID);
