@@ -13,7 +13,13 @@ else()
   set(io_src plasma_output_raw.f90 mag_raw.f90 aurora_raw.f90)
 endif()
 
-add_library(io io.f90 aurora.f90 output.f90 input.F90
+if(CMAKE_Fortran_COMPILER_ID STREQUAL Intel)
+  list(APPEND io_src path_exists_intel.f90)
+else()
+  list(APPEND io_src path_exists.f90)
+endif()
+
+add_library(io io.f90 aurora.f90 output.f90 input.f90
   mag.f90
   plasma.f90 plasma_input_raw.f90
   ${io_src})

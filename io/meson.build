@@ -4,8 +4,15 @@ io_src = files(
 'mag.f90',
 'plasma.f90',
 'output.f90',
-'input.F90'
+'input.f90'
 )
+
+# accomodate intel compiler non-standard inquire(directory=)
+if ['intel', 'intel-cl'].contains(fc.get_id())
+  io_src += files('path_exists_intel.f90')
+else
+  io_src += files('path_exists.f90')
+endif
 
 # FIXME: when validated, use if hdf5_interface.found() as for output.
 io_src += files('plasma_input_raw.f90')

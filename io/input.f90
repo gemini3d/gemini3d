@@ -1,5 +1,13 @@
 submodule (io) input
+
 implicit none
+
+interface ! path_exists*.f90
+module subroutine assert_directory_exists(path)
+character(*), intent(in) :: path
+end subroutine assert_directory_exists
+end interface
+
 contains
 
 module procedure read_configfile
@@ -233,27 +241,6 @@ error stop
 endif
 
 end subroutine check_ini_io
-
-
-subroutine assert_directory_exists(path)
-!! throw error if directory does not exist
-!! this accomodates non-Fortran 2018 error stop with variable character
-
-character(*), intent(in) :: path
-logical :: exists
-
-#ifdef __INTEL_COMPILER
-inquire(directory=path, exist=exists)
-#else
-inquire(file=path, exist=exists)
-#endif
-
-if (.not.exists) then
-  write(stderr,*) path // ' directory does not exist'
-  error stop
-endif
-
-end subroutine assert_directory_exists
 
 
 subroutine assert_file_exists(path)
