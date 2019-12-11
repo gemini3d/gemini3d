@@ -1,11 +1,14 @@
 function xg = plotall(direc, saveplot_fmt, plotfun, xg, visible)
 
+narginchk(1,5)
+
 cwd = fileparts(mfilename('fullpath'));
 addpath([cwd, '/plotfunctions'])
 addpath([cwd, '/../script_utils'])
 
-narginchk(1,5)
 validateattributes(direc, {'char'}, {'vector'}, mfilename, 'path to data', 1)
+direc = absolute_path(direc);
+assert(isfolder(direc), [direc, ' is not a directory'])
 
 if nargin<2, saveplot_fmt={}; end  %e.g. {'png'} or {'png', 'eps'}
 

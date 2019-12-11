@@ -21,6 +21,9 @@ end
 
 if nargin<8, visible = 'on'; end
 
+direc = absolute_path(direc);
+assert(isfolder(direc), [direc, ' is not a directory.'])
+
 Ncmap = parula(256);
 Tcmap = parula(256);
 Phi_cmap = bwr();
@@ -28,9 +31,6 @@ Vcmap = bwr();
 Jcmap = bwr();
 
 lotsplots = true;   %@scivision may want to fix this...
-
-direc = absolute_path(direc);
-
 % FIXME: VALIDATE THE INPUT DATA...
 
 %% SET THE CAXIS LIMITS FOR THE PLOTS - really needs to be user provided somehow...

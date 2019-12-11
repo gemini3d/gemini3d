@@ -6,15 +6,19 @@ validateattributes(direc, {'char'}, {'vector'}, mfilename)
 validateattributes(filename, {'char'}, {'vector'}, mfilename)
 validateattributes(h, {'struct'}, {'vector'}, mfilename)
 
-dirs = {'v1plots', 'Tiplots', 'Teplots', 'J1plots', 'v2plots', 'v3plots', 'J2plots', 'J3plots', 'Phiplots', 'nplots'};
-for i = 1:length(dirs)
-  dirs{i} = [direc, filesep, dirs{i}];
-  if ~is_folder(dirs{i})
-    mkdir(dirs{i});
-  end
+if ischar(saveplot_fmt), saveplot_fmt = {saveplot_fmt}; end
+
+assert(isfolder(direc), [direc, ' is not a directory.'])
+
+% filename has the suffix, let's ditch the suffix.
+[~, stem] = fileparts(filename);
+
+plotdir = [direc, '/plots'];
+if ~isfolder(plotdir)
+  mkdir(plotdir);
 end
 
-disp(['writing plots to ',direc])
+disp(['writing plots to ', plotdir])
 
 for i=1:length(saveplot_fmt)
 
@@ -25,19 +29,19 @@ for i=1:length(saveplot_fmt)
   end
 
   if flagoutput~=3
-    print(h.f1,flag,[dirs{1}, filesep, filename,suffix],'-r300')
-    print(h.f2,flag,[dirs{2}, filesep, filename,suffix],'-r300')
-    print(h.f3,flag,[dirs{3}, filesep, filename,suffix],'-r300')
-    print(h.f4,flag,[dirs{4}, filesep, filename,suffix],'-r300')
-    print(h.f5,flag,[dirs{5}, filesep, filename,suffix],'-r300')
-    print(h.f6,flag,[dirs{6}, filesep, filename,suffix],'-r300')
-    print(h.f7,flag,[dirs{7}, filesep, filename,suffix],'-r300')
-    print(h.f8,flag,[dirs{8}, filesep, filename,suffix],'-r300')
+    print(h.f1,flag,[plotdir, '/v1-', stem, suffix],'-r300')
+    print(h.f2,flag,[plotdir, '/Ti-', stem, suffix],'-r300')
+    print(h.f3,flag,[plotdir, '/Te-', stem, suffix],'-r300')
+    print(h.f4,flag,[plotdir, '/J1-', stem, suffix],'-r300')
+    print(h.f5,flag,[plotdir, '/v2-', stem, suffix],'-r300')
+    print(h.f6,flag,[plotdir, '/v3-', stem, suffix],'-r300')
+    print(h.f7,flag,[plotdir, '/J2-', stem, suffix],'-r300')
+    print(h.f8,flag,[plotdir, '/J3-', stem, suffix],'-r300')
     if ~isempty(h.f9)
-      print(h.f9,flag,[dirs{9}, filesep, filename,suffix],'-r300')
+      print(h.f9,flag,[plotdir, '/Phitop-', stem, suffix],'-r300')
     end
   end
-  print(h.f10,flag,[dirs{10}, filesep, filename,suffix],'-r300')
+  print(h.f10,flag,[plotdir, '/n3-', stem, suffix],'-r300')
 end % for
 
 end % function
