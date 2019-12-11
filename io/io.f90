@@ -27,6 +27,10 @@ interface check_nan_array
   procedure check_nan_array_1d, check_nan_array_2d, check_nan_array_3d, check_nan_array_4d
 end interface check_nan_array
 
+real, parameter :: nan_threshold = 0.
+!! nan_threshold = 0. means not a single NaN is allowed in an array
+
+
 interface ! aurora.f90
 module subroutine create_outdir_aur(outdir)
 character(*), intent(in) :: outdir
@@ -140,14 +144,11 @@ real(wp), intent(in) :: A(:)
 character(*), intent(in) :: vname
 integer :: Asize, Abad
 
-real, parameter :: threshold = 0.1
-!! arbitrary
-
 Abad = count(ieee_is_nan(A))
 
 if (Abad > 0) write(stderr,'(/,A,I10,A,/)') 'WARNING: ', Abad, ' NaN in 1d ' // vname
 
-if (Abad/size(A) > threshold) then
+if (Abad/size(A) > nan_threshold) then
   write(stderr, '(/,A,/)') 'ERROR: excessive NaNs in ' // vname
   error stop
 endif
@@ -163,14 +164,11 @@ real(wp), intent(in) :: A(:, :)
 character(*), intent(in) :: vname
 integer :: Asize, Abad
 
-real, parameter :: threshold = 0.1
-!! arbitrary
-
 Abad = count(ieee_is_nan(A))
 
 if (Abad > 0) write(stderr,'(/,A,I10,A,/)') 'WARNING: ', Abad, ' NaN in 2d ' // vname
 
-if (Abad/size(A) > threshold) then
+if (Abad/size(A) > nan_threshold) then
   write(stderr, '(/,A,/)') 'ERROR: excessive NaNs in ' // vname
   error stop
 endif
@@ -186,14 +184,11 @@ real(wp), intent(in) :: A(:, :, :)
 character(*), intent(in) :: vname
 integer :: Asize, Abad
 
-real, parameter :: threshold = 0.1
-!! arbitrary
-
 Abad = count(ieee_is_nan(A))
 
 if (Abad > 0) write(stderr,'(/,A,I10,A,/)') 'WARNING: ', Abad, ' NaN in 3d ' // vname
 
-if (Abad/size(A) > threshold) then
+if (Abad/size(A) > nan_threshold) then
   write(stderr, '(/,A,/)') 'ERROR: excessive NaNs in ' // vname
   error stop
 endif
@@ -209,13 +204,10 @@ real(wp), intent(in) :: A(:, :, :, :)
 character(*), intent(in) :: vname
 integer :: Asize, Abad
 
-real, parameter :: threshold = 0.1
-!! arbitrary
-
 Abad = count(ieee_is_nan(A))
 if (Abad > 0) write(stderr,'(/,A,I10,A,/)') 'WARNING: ', Abad, ' NaN in 4d ' // vname
 
-if (Abad/size(A) > threshold) then
+if (Abad/size(A) > nan_threshold) then
   write(stderr, '(/,A,/)') 'ERROR: excessive NaNs in ' // vname
   error stop
 endif
