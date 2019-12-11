@@ -27,7 +27,7 @@ Phi_cmap = bwr();
 Vcmap = bwr();
 Jcmap = bwr();
 
-lotsplots=true;   %@scivision may want to fix this...
+lotsplots = true;   %@scivision may want to fix this...
 
 direc = expanduser(direc);  % for mkdir on Octave.
 
@@ -186,7 +186,7 @@ else    %short 2D simulation - put the entire time series in a single plot
 
     ha = subplot(Rsp, Csp,it,'parent',h.f9);
 
-%    plotfun(ymd,UTsec,xg,Phitop,'topside potential \Phi_{top} (V)', Phitop_lim, [mlatsrc, mlonsrc], h.f9, Phi_cmap)
+    plotfun(ymd,UTsec,xg,Phitop,'topside potential \Phi_{top} (V)', Phitop_lim, [mlatsrc, mlonsrc], h.f9, Phi_cmap)
   end
 
 end

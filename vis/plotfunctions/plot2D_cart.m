@@ -1,22 +1,22 @@
 function plot2D_cart(ymd,UTsec,xg,parm,parmlbl,caxlims,sourceloc,ha, cmap)
 
 narginchk(4,9)
-validateattr(ymd, {'numeric'}, {'vector', 'numel', 3}, mfilename, 'year month day', 1)
-validateattr(UTsec, {'numeric'}, {'scalar'}, mfilename, 'UTC second', 2)
-validateattr(xg, {'struct'}, {'scalar'}, mfilename, 'grid structure', 3)
-validateattr(parm, {'numeric'}, {'real'}, mfilename, 'parameter to plot',4)
+validateattributes(ymd, {'numeric'}, {'vector', 'numel', 3}, mfilename, 'year month day', 1)
+validateattributes(UTsec, {'numeric'}, {'scalar'}, mfilename, 'UTC second', 2)
+validateattributes(xg, {'struct'}, {'scalar'}, mfilename, 'grid structure', 3)
+validateattributes(parm, {'numeric'}, {'real'}, mfilename, 'parameter to plot',4)
 if nargin<5, parmlbl=''; end
-validateattr(parmlbl, {'char'}, {'vector'}, mfilename, 'parameter label', 5)
+validateattributes(parmlbl, {'char'}, {'vector'}, mfilename, 'parameter label', 5)
 
 if nargin<6
   caxlims=[];
 else
-  validateattr(caxlims, {'numeric'}, {'vector', 'numel', 2}, mfilename, 'plot intensity (min, max)', 6)
+  validateattributes(caxlims, {'numeric'}, {'vector', 'numel', 2}, mfilename, 'plot intensity (min, max)', 6)
 end
 if nargin<7  || isempty(sourceloc) % leave || for validate
   sourceloc = [];
 else
-  validateattr(sourceloc, {'numeric'}, {'vector', 'numel', 2}, mfilename, 'source magnetic coordinates', 7)
+  validateattributes(sourceloc, {'numeric'}, {'vector', 'numel', 2}, mfilename, 'source magnetic coordinates', 7)
 end
 
 if nargin<8 || isempty(ha)
@@ -145,7 +145,7 @@ else
   if xg.lx(3)==1
     plot12(xp, zp, parmp, ha, FS, sourcemlat, minxp, maxxp, altref, cmap, caxlims, parmlbl)
   elseif xg.lx(2)==1
-    plot13(yp, zp, parmp, ha, FS, sourcemlat)
+    plot13(yp, zp, parmp, ha, FS, sourcemlat, cmap, caxlims, parmlbl)
   end
 end
 ttxt = time2str(ymd, UTsec);
@@ -186,20 +186,14 @@ try %#ok<*TRYNC> % octave < 5
 end
 set(ha,'FontSize',FS)
 
-tight_axis(ha)
+make_colorbar(ha, cmap, caxlims, parmlbl)
 
-colormap(ha, cmap)
-if ~isempty(caxlims)
-  caxis(ha, caxlims)
-end
-c=colorbar('peer', ha);
-xlabel(c,parmlbl)
 xlabel(ha, 'eastward dist. (km)')
 ylabel(ha, 'altitude (km)')
 
 end
 
-function plot13(yp, zp, parmp, ha, FS, sourcemlat)
+function plot13(yp, zp, parmp, ha, FS, sourcemlat, cmap, caxlims, parmlbl)
 
 hi = imagesc(yp/1e3, zp/1e3, parmp, 'parent', ha);
 hold(ha, 'on')
@@ -214,15 +208,22 @@ try % % octave < 5
 end
 set(ha, 'FontSize', FS);
 
-tight_axis(ha)
-colormap(ha, cmap);
-if ~isempty(caxlims)
-  caxis(ha, caxlims)
-end
+make_colorbar(ha, cmap, caxlims, parmlbl)
 
-c=colorbar('peer', ha);
-xlabel(c,parmlbl)
 xlabel(ha, 'northward dist. (km)')
 ylabel(ha, 'altitude (km)')
 
+end % function
+
+
+function make_colorbar(ha, cmap, caxlims, parmlbl)
+
+tight_axis(ha)
+colormap(ha, cmap)
+if ~isempty(caxlims) && all(~isnan(caxlims))
+  caxis(ha, caxlims)
 end
+c=colorbar('peer', ha);
+xlabel(c, parmlbl)
+
+end % function
