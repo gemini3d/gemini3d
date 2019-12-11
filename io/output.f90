@@ -55,21 +55,21 @@ integer :: ierr
 !> write branch
 call execute_command_line('git rev-parse --abbrev-ref HEAD > '// logpath, cmdstat=ierr)
 if(ierr /= 0) then
-  write(stderr, *) 'failed to log Git branch'
+  write(stderr, *) 'ERROR: failed to log Git branch'
   return
 endif
 
 !> write hash
 call execute_command_line('git rev-parse --short HEAD >> '// logpath, cmdstat=ierr)
 if(ierr /= 0) then
-  write(stderr, *) 'failed to log Git hash'
+  write(stderr, *) 'ERROR: failed to log Git hash'
   return
 endif
 
 !> write changed filenames
 call execute_command_line('git status --porcelain >> '// logpath, cmdstat=ierr)
 if(ierr /= 0) then
-  write(stderr, *) 'failed to log Git filenames'
+  write(stderr, *) 'ERROR: failed to log Git filenames'
   return
 endif
 
@@ -84,8 +84,7 @@ integer :: u, ierr
 open(newunit=u, file=logpath, status='unknown', action='write', iostat=ierr)
 if(ierr /= 0) return
 
-write(u,'(A,/)') compiler_version()
-write(u,'(A)') compiler_options()
+write(u,'(A,/,A)') compiler_version(), compiler_options()
 
 close(u)
 

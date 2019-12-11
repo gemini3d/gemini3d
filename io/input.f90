@@ -63,14 +63,11 @@ call assert_file_exists(indatfile)
 
 !> PRINT SOME DIAGNOSIC INFO FROM ROOT
 if (myid==0) then
-  print '(A,I6,A1,I0.2,A1,I0.2)', infile//': simulation year-month-day is:  ',ymd(1),'-',ymd(2),'-',ymd(3)
+  print '(A,I6,A1,I0.2,A1,I0.2)', infile // ' simulation year-month-day is:  ',ymd(1),'-',ymd(2),'-',ymd(3)
   print '(A51,F10.3)', 'start time is:  ',UTsec0
   print '(A51,F10.3)', 'duration is:  ',tdur
   print '(A51,F10.3)', 'output every:  ',dtout
-  print *, '...using input data files:  '
-  print *, '  ',indatsize
-  print *, '  ',indatgrid
-  print *, '  ',indatfile
+  print '(A,/,A,/,A,/,A)', 'using input data files:', indatsize, indatgrid, indatfile
 end if
 
 !> NEUTRAL PERTURBATION INPUT INFORMATION
@@ -214,12 +211,12 @@ integer, intent(in) :: i
 character(*), intent(in) :: filename
 
 if (is_iostat_end(i)) then
-  write(stderr,*) 'ensure there is a trailing blank line in ' // filename
+  write(stderr,*) 'ERROR: ensure there is a trailing blank line in ' // filename
   error stop
 endif
 
 if (i /= 0) then
-  write(stderr,*) 'problem reading ' // filename
+  write(stderr,*) 'ERROR: problem reading ' // filename
   error stop
 endif
 
@@ -236,7 +233,7 @@ character(*), intent(in) :: filename
 if (is_iostat_end(i)) return
 
 if (i /= 0) then
-write(stderr,*) 'problem reading ' // filename
+write(stderr,*) 'ERROR: problem reading ' // filename
 error stop
 endif
 
@@ -253,7 +250,7 @@ logical :: exists
 inquire(file=path, exist=exists)
 
 if (.not.exists) then
-  write(stderr,*) path // ' file does not exist'
+  write(stderr,*) 'ERROR: file does not exist' // path
   error stop
 endif
 

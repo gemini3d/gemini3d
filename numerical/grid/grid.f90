@@ -59,7 +59,7 @@ logical exists
 if (myid==0) then    !root must physically read the size info and pass to workers
   inquire(file=indatsize, exist=exists)
   if (.not.exists) then
-     write(stderr,'(A,/,A)') 'must generate grid with script before running simulation--grid not present: ',indatsize
+     write(stderr,'(A,/,A)') 'ERROR: generate grid with script before run simulation--grid not present: ',indatsize
      error stop 77
   endif
 
@@ -86,18 +86,21 @@ if (myid==0) then    !root must physically read the size info and pass to worker
 
   do iid=1,lid-1
     call mpi_send(lx1,1,MPI_INTEGER,iid,taglx1,MPI_COMM_WORLD,ierr)
+    if (ierr/=0) error stop 'grid:grid_size lx1 failed mpi_send'
     call mpi_send(lx2all,1,MPI_INTEGER,iid,taglx2all,MPI_COMM_WORLD,ierr)
+    if (ierr/=0) error stop 'grid:grid_size lx2all failed mpi_send'
     call mpi_send(lx3all,1,MPI_INTEGER,iid,taglx3all,MPI_COMM_WORLD,ierr)
-    if (ierr/=0) error stop 'grid:grid_size failed mpi_send'
+    if (ierr/=0) error stop 'grid:grid_size lx3all failed mpi_send'
   end do
 
   print *, 'grid:grid_size reporting full grid size:  ',lx1,lx2all,lx3all
 else
   call mpi_recv(lx1,1,MPI_INTEGER,0,taglx1,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+  if (ierr/=0) error stop 'grid:grid_size lx1 failed mpi_send'
   call mpi_recv(lx2all,1,MPI_INTEGER,0,taglx2all,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+  if (ierr/=0) error stop 'grid:grid_size lx2all failed mpi_send'
   call mpi_recv(lx3all,1,MPI_INTEGER,0,taglx3all,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-
-  if (ierr/=0) error stop 'grid:grid_size failed mpi_recv'
+  if (ierr/=0) error stop 'grid:grid_size lx3all failed mpi_send'
 end if
 
 end subroutine grid_size
