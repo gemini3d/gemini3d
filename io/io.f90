@@ -17,14 +17,17 @@ private
 public :: read_configfile, create_outdir, &
   input_plasma, output_plasma, input_plasma_currents, &
   create_outdir_mag, output_magfields, &
-  create_outdir_aur, output_aur
+  create_outdir_aur, output_aur, check_nan_array
 
 !> NONE OF THESE VARIABLES SHOULD BE ACCESSED BY PROCEDURES OUTSIDE THIS MODULE
 character(:), allocatable, private :: indatfile
 !! initial condition data files from input configuration file
 
-interface ! aurora.f90
+interface check_nan_array
+  procedure check_nan_array_1d, check_nan_array_2d, check_nan_array_3d, check_nan_array_4d
+end interface check_nan_array
 
+interface ! aurora.f90
 module subroutine create_outdir_aur(outdir)
 character(*), intent(in) :: outdir
 end subroutine create_outdir_aur
@@ -40,12 +43,10 @@ end subroutine output_aur
 module subroutine output_aur_workers(iver)
 real(wp), dimension(:,:,:), intent(in) :: iver
 end subroutine output_aur_workers
-
 end interface
 
 
 interface ! mag.f90
-
 module subroutine create_outdir_mag(outdir,fieldpointfile)
 character(*), intent(in) :: outdir
 character(*), intent(in) :: fieldpointfile
@@ -57,7 +58,6 @@ integer, intent(in) :: ymd(3)
 real(wp), intent(in) :: UTsec
 real(wp), dimension(:), intent(in)  :: Br,Btheta,Bphi
 end subroutine output_magfields
-
 end interface
 
 
@@ -91,19 +91,16 @@ end interface
 
 
 interface ! output.f90
-
 module subroutine create_outdir(outdir,infile,indatsize,indatgrid,flagdneu,sourcedir,flagprecfile,precdir,flagE0file,E0dir)
 character(*), intent(in) :: outdir, & !command line argument output directory
                             infile, & !command line argument input file
                             indatsize,indatgrid,sourcedir, precdir,E0dir
 integer, intent(in) :: flagdneu, flagprecfile, flagE0file
 end subroutine create_outdir
-
 end interface
 
 
 interface ! input.f90
-
 module subroutine read_configfile(infile,ymd,UTsec0,tdur,dtout,activ,tcfl,Teinf, &
                  potsolve,flagperiodic, flagoutput,flagcap,&
                  indatsize,indatgrid,flagdneu,interptype, &
@@ -131,8 +128,100 @@ real(wp), intent(out) :: dtE0
 integer, intent(out) :: flagglow
 real(wp), intent(out) :: dtglow, dtglowout
 end subroutine read_configfile
-
 end interface
+
+contains
+
+subroutine check_nan_array_1d(A, vname)
+  !! check if more than 10% (arbitrary) of array is NaN and fail sim.
+  !! otherwise, warn if any element, but less than 10% of array is NaN
+
+  real(wp), intent(in) :: A(:)
+  character(*), intent(in) :: vname
+  integer :: Asize, Abad
+
+  real, parameter :: threshold = 0.1
+  !! arbitrary
+
+  Abad = count(ieee_is_nan(A))
+
+  if (Abad > 0) write(stderr,'(/,A,I10,A,/)') 'WARNING: ', Abad, ' NaN in ' // vname
+
+  if (Abad/size(A) > threshold) then
+    write(stderr, '(/,A,/)') 'ERROR: excessive NaNs in ' // vname
+    error stop
+  endif
+
+  end subroutine check_nan_array_1d
+
+
+  subroutine check_nan_array_2d(A, vname)
+  !! check if more than 10% (arbitrary) of array is NaN and fail sim.
+  !! otherwise, warn if any element, but less than 10% of array is NaN
+
+  real(wp), intent(in) :: A(:, :)
+  character(*), intent(in) :: vname
+  integer :: Asize, Abad
+
+  real, parameter :: threshold = 0.1
+  !! arbitrary
+
+  Abad = count(ieee_is_nan(A))
+
+  if (Abad > 0) write(stderr,'(/,A,I10,A,/)') 'WARNING: ', Abad, ' NaN in ' // vname
+
+  if (Abad/size(A) > threshold) then
+    write(stderr, '(/,A,/)') 'ERROR: excessive NaNs in ' // vname
+    error stop
+  endif
+
+  end subroutine check_nan_array_2d
+
+
+  subroutine check_nan_array_3d(A, vname)
+  !! check if more than 10% (arbitrary) of array is NaN and fail sim.
+  !! otherwise, warn if any element, but less than 10% of array is NaN
+
+  real(wp), intent(in) :: A(:, :, :)
+  character(*), intent(in) :: vname
+  integer :: Asize, Abad
+
+  real, parameter :: threshold = 0.1
+  !! arbitrary
+
+  Abad = count(ieee_is_nan(A))
+
+  if (Abad > 0) write(stderr,'(/,A,I10,A,/)') 'WARNING: ', Abad, ' NaN in ' // vname
+
+  if (Abad/size(A) > threshold) then
+    write(stderr, '(/,A,/)') 'ERROR: excessive NaNs in ' // vname
+    error stop
+  endif
+
+  end subroutine check_nan_array_3d
+
+
+  subroutine check_nan_array_4d(A, vname)
+  !! check if more than 10% (arbitrary) of array is NaN and fail sim.
+  !! otherwise, warn if any element, but less than 10% of array is NaN
+
+  real(wp), intent(in) :: A(:, :, :, :)
+  character(*), intent(in) :: vname
+  integer :: Asize, Abad
+
+  real, parameter :: threshold = 0.1
+  !! arbitrary
+
+  Abad = count(ieee_is_nan(A))
+
+  if (Abad > 0) write(stderr,'(/,A,I10,A,/)') 'WARNING: ', Abad, ' NaN in ' // vname
+
+  if (Abad/size(A) > threshold) then
+    write(stderr, '(/,A,/)') 'ERROR: excessive NaNs in ' // vname
+    error stop
+  endif
+
+  end subroutine check_nan_array_4d
 
 
 end module io

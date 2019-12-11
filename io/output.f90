@@ -1,6 +1,9 @@
 submodule (io) output
+
 use, intrinsic :: iso_fortran_env, only: compiler_version, compiler_options
+
 implicit none
+
 contains
 
 

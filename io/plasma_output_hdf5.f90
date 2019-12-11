@@ -147,15 +147,15 @@ call h5f%finalize()
 
 !! Check for any NaN before proceeding to next time step
 
-if(any(ieee_is_nan(nsall))) write(stderr,'(/,A,/)') 'WARNING: NaN in nsall'
-if(any(ieee_is_nan(vs1all))) write(stderr,'(/,A,/)') 'WARNING: NaN in vs1all'
-if(any(ieee_is_nan(Tsall))) write(stderr,'(/,A,/)') 'WARNING: NaN in Tsall'
-if(any(ieee_is_nan(J1all))) write(stderr,'(/,A,/)') 'WARNING: NaN in J1all'
-if(any(ieee_is_nan(J2all))) write(stderr,'(/,A,/)') 'WARNING: NaN in J2all'
-if(any(ieee_is_nan(J3all))) write(stderr,'(/,A,/)') 'WARNING: NaN in J3all'
-if(any(ieee_is_nan(v3avgall))) write(stderr,'(/,A,/)') 'WARNING: NaN in v3avgall'
-if(any(ieee_is_nan(v2avgall))) write(stderr,'(/,A,/)') 'WARNING: NaN in v2avgall'
-if(any(ieee_is_nan(Phiall))) write(stderr,'(/,A,/)') 'WARNING: NaN in Phiall'
+call check_nan_array(nsall, 'nsall')
+call check_nan_array(vs1all, 'vs1all')
+call check_nan_array(Tsall, 'Tsall')
+call check_nan_array(J1all, 'J1all')
+call check_nan_array(J2all, 'J2all')
+call check_nan_array(J3all, 'J3all')
+call check_nan_array(v2avgall, 'v2avgall')
+call check_nan_array(v3avgall, 'v3avgall')
+call check_nan_array(Phiall, 'Phiall')
 
 end procedure output_root_stream_mpi
 
