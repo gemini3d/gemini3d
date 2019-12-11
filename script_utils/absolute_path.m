@@ -8,6 +8,7 @@ if isoctave
   abspath = make_absolute_filename(path);
 else
   if path(1) == '.'
+    % TODO: handle .file or .path/.file
     % this is necessary when run from arbitrary directories.
     path = [pwd, filesep, path];
   end
