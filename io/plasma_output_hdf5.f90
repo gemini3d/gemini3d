@@ -147,9 +147,11 @@ call h5f%finalize()
 
 !! Check for any NaN before proceeding to next time step
 
-call check_nan_array(nsall, 'nsall')
-call check_nan_array(vs1all, 'vs1all')
-call check_nan_array(Tsall, 'Tsall')
+call check_nan_array(neall, 'neall')
+! FIXME: nsall has 1000+ NaNs in run-to-run varying time and location and count, is that correct?
+call check_nan_array(v1avgall, 'v1avgall')
+call check_nan_array(TEall, 'TEall')
+! FIXME: Tsall can have 1000+ NaNs in run-to-run varying time and location and count,  is that correct?
 call check_nan_array(J1all, 'J1all')
 call check_nan_array(J2all, 'J2all')
 call check_nan_array(J3all, 'J3all')

@@ -133,95 +133,94 @@ end interface
 contains
 
 subroutine check_nan_array_1d(A, vname)
-  !! check if more than 10% (arbitrary) of array is NaN and fail sim.
-  !! otherwise, warn if any element, but less than 10% of array is NaN
+!! check if more than 10% (arbitrary) of array is NaN and fail sim.
+!! otherwise, warn if any element, but less than 10% of array is NaN
 
-  real(wp), intent(in) :: A(:)
-  character(*), intent(in) :: vname
-  integer :: Asize, Abad
+real(wp), intent(in) :: A(:)
+character(*), intent(in) :: vname
+integer :: Asize, Abad
 
-  real, parameter :: threshold = 0.1
-  !! arbitrary
+real, parameter :: threshold = 0.1
+!! arbitrary
 
-  Abad = count(ieee_is_nan(A))
+Abad = count(ieee_is_nan(A))
 
-  if (Abad > 0) write(stderr,'(/,A,I10,A,/)') 'WARNING: ', Abad, ' NaN in ' // vname
+if (Abad > 0) write(stderr,'(/,A,I10,A,/)') 'WARNING: ', Abad, ' NaN in 1d ' // vname
 
-  if (Abad/size(A) > threshold) then
-    write(stderr, '(/,A,/)') 'ERROR: excessive NaNs in ' // vname
-    error stop
-  endif
+if (Abad/size(A) > threshold) then
+  write(stderr, '(/,A,/)') 'ERROR: excessive NaNs in ' // vname
+  error stop
+endif
 
-  end subroutine check_nan_array_1d
-
-
-  subroutine check_nan_array_2d(A, vname)
-  !! check if more than 10% (arbitrary) of array is NaN and fail sim.
-  !! otherwise, warn if any element, but less than 10% of array is NaN
-
-  real(wp), intent(in) :: A(:, :)
-  character(*), intent(in) :: vname
-  integer :: Asize, Abad
-
-  real, parameter :: threshold = 0.1
-  !! arbitrary
-
-  Abad = count(ieee_is_nan(A))
-
-  if (Abad > 0) write(stderr,'(/,A,I10,A,/)') 'WARNING: ', Abad, ' NaN in ' // vname
-
-  if (Abad/size(A) > threshold) then
-    write(stderr, '(/,A,/)') 'ERROR: excessive NaNs in ' // vname
-    error stop
-  endif
-
-  end subroutine check_nan_array_2d
+end subroutine check_nan_array_1d
 
 
-  subroutine check_nan_array_3d(A, vname)
-  !! check if more than 10% (arbitrary) of array is NaN and fail sim.
-  !! otherwise, warn if any element, but less than 10% of array is NaN
+subroutine check_nan_array_2d(A, vname)
+!! check if more than 10% (arbitrary) of array is NaN and fail sim.
+!! otherwise, warn if any element, but less than 10% of array is NaN
 
-  real(wp), intent(in) :: A(:, :, :)
-  character(*), intent(in) :: vname
-  integer :: Asize, Abad
+real(wp), intent(in) :: A(:, :)
+character(*), intent(in) :: vname
+integer :: Asize, Abad
 
-  real, parameter :: threshold = 0.1
-  !! arbitrary
+real, parameter :: threshold = 0.1
+!! arbitrary
 
-  Abad = count(ieee_is_nan(A))
+Abad = count(ieee_is_nan(A))
 
-  if (Abad > 0) write(stderr,'(/,A,I10,A,/)') 'WARNING: ', Abad, ' NaN in ' // vname
+if (Abad > 0) write(stderr,'(/,A,I10,A,/)') 'WARNING: ', Abad, ' NaN in 2d ' // vname
 
-  if (Abad/size(A) > threshold) then
-    write(stderr, '(/,A,/)') 'ERROR: excessive NaNs in ' // vname
-    error stop
-  endif
+if (Abad/size(A) > threshold) then
+  write(stderr, '(/,A,/)') 'ERROR: excessive NaNs in ' // vname
+  error stop
+endif
 
-  end subroutine check_nan_array_3d
+end subroutine check_nan_array_2d
 
 
-  subroutine check_nan_array_4d(A, vname)
-  !! check if more than 10% (arbitrary) of array is NaN and fail sim.
-  !! otherwise, warn if any element, but less than 10% of array is NaN
+subroutine check_nan_array_3d(A, vname)
+!! check if more than 10% (arbitrary) of array is NaN and fail sim.
+!! otherwise, warn if any element, but less than 10% of array is NaN
 
-  real(wp), intent(in) :: A(:, :, :, :)
-  character(*), intent(in) :: vname
-  integer :: Asize, Abad
+real(wp), intent(in) :: A(:, :, :)
+character(*), intent(in) :: vname
+integer :: Asize, Abad
 
-  real, parameter :: threshold = 0.1
-  !! arbitrary
+real, parameter :: threshold = 0.1
+!! arbitrary
 
-  Abad = count(ieee_is_nan(A))
+Abad = count(ieee_is_nan(A))
 
-  if (Abad > 0) write(stderr,'(/,A,I10,A,/)') 'WARNING: ', Abad, ' NaN in ' // vname
+if (Abad > 0) write(stderr,'(/,A,I10,A,/)') 'WARNING: ', Abad, ' NaN in 3d ' // vname
 
-  if (Abad/size(A) > threshold) then
-    write(stderr, '(/,A,/)') 'ERROR: excessive NaNs in ' // vname
-    error stop
-  endif
+if (Abad/size(A) > threshold) then
+  write(stderr, '(/,A,/)') 'ERROR: excessive NaNs in ' // vname
+  error stop
+endif
 
-  end subroutine check_nan_array_4d
+end subroutine check_nan_array_3d
+
+
+subroutine check_nan_array_4d(A, vname)
+!! check if more than 10% (arbitrary) of array is NaN and fail sim.
+!! otherwise, warn if any element, but less than 10% of array is NaN
+
+real(wp), intent(in) :: A(:, :, :, :)
+character(*), intent(in) :: vname
+integer :: Asize, Abad
+
+real, parameter :: threshold = 0.1
+!! arbitrary
+
+Abad = count(ieee_is_nan(A))
+if (Abad > 0) write(stderr,'(/,A,I10,A,/)') 'WARNING: ', Abad, ' NaN in 4d ' // vname
+
+if (Abad/size(A) > threshold) then
+  write(stderr, '(/,A,/)') 'ERROR: excessive NaNs in ' // vname
+  error stop
+endif
+
+end subroutine check_nan_array_4d
 
 
 end module io
