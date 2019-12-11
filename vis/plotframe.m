@@ -29,7 +29,7 @@ Jcmap = bwr();
 
 lotsplots = true;   %@scivision may want to fix this...
 
-direc = expanduser(direc);  % for mkdir on Octave.
+direc = absolute_path(direc);
 
 % FIXME: VALIDATE THE INPUT DATA...
 

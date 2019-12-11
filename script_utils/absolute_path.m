@@ -1,3 +1,4 @@
+%!assert(ischar(absolute_path('~')))
 function abspath = absolute_path(path)
 % path need not exist, but absolute path is returned
 
