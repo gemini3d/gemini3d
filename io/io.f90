@@ -137,8 +137,8 @@ end interface
 contains
 
 subroutine check_nan_array_1d(A, vname)
-!! check if more than 10% (arbitrary) of array is NaN and fail sim.
-!! otherwise, warn if any element, but less than 10% of array is NaN
+!! check if more than nan_threshold fraction (arbitrary) of array is NaN and fail sim.
+!! otherwise, warn if any element, but less than nan_threshold fraction of array is NaN
 
 real(wp), intent(in) :: A(:)
 character(*), intent(in) :: vname
@@ -157,8 +157,8 @@ end subroutine check_nan_array_1d
 
 
 subroutine check_nan_array_2d(A, vname)
-!! check if more than 10% (arbitrary) of array is NaN and fail sim.
-!! otherwise, warn if any element, but less than 10% of array is NaN
+!! check if more than nan_threshold fraction (arbitrary) of array is NaN and fail sim.
+!! otherwise, warn if any element, but less than nan_threshold fraction of array is NaN
 
 real(wp), intent(in) :: A(:, :)
 character(*), intent(in) :: vname
@@ -177,8 +177,8 @@ end subroutine check_nan_array_2d
 
 
 subroutine check_nan_array_3d(A, vname)
-!! check if more than 10% (arbitrary) of array is NaN and fail sim.
-!! otherwise, warn if any element, but less than 10% of array is NaN
+!! check if more than nan_threshold fraction (arbitrary) of array is NaN and fail sim.
+!! otherwise, warn if any element, but less than nan_threshold fraction of array is NaN
 
 real(wp), intent(in) :: A(:, :, :)
 character(*), intent(in) :: vname
@@ -197,8 +197,8 @@ end subroutine check_nan_array_3d
 
 
 subroutine check_nan_array_4d(A, vname)
-!! check if more than 10% (arbitrary) of array is NaN and fail sim.
-!! otherwise, warn if any element, but less than 10% of array is NaN
+!! check if more than nan_threshold fraction (arbitrary) of array is NaN and fail sim.
+!! otherwise, warn if any element, but less than nan_threshold fraction of array is NaN
 
 real(wp), intent(in) :: A(:, :, :, :)
 character(*), intent(in) :: vname
