@@ -16,13 +16,12 @@ real(wp), dimension(-1:size(Phiall,1)+2,-1:size(Phiall,2)+2,-1:size(Phiall,3)+2,
 real(wp), dimension(1:size(Phiall,1),1:size(Phiall,2),1:size(Phiall,3)) :: v2avgall,v3avgall,v1avgall,Tavgall,neall,Teall
 real(wp), dimension(1:size(Phiall,1),1:size(Phiall,2),1:size(Phiall,3)) :: J1all,J2all,J3all
 character(:), allocatable :: filenamefull
-integer(8) :: recordlength   !can be 8 byte with compiler flag -frecord-marker=8
 
 type(hdf5_file) :: h5f
 
 
 !! SYSTEM SIZES
-! FIXME: should these be pull from the grid module???
+! FIXME: should these be pulled from the grid module???
 lx1=size(ns,1)-4
 lx2=size(ns,2)-4
 lx3=size(ns,3)-4
@@ -64,14 +63,6 @@ Teall=Tsall(1:lx1,1:lx2all,1:lx3all,lsp)
 !> FIGURE OUT THE FILENAME
 filenamefull = date_filename(outdir,ymd,UTsec) // '.h5'
 print *, 'HDF5 Output file name:  ', filenamefull
-
-
-!SOME DEBUG OUTPUT ON FILE SIZE
-recordlength=int(8,8)+int(8,8)*int(3,8)*int(lx1,8)*int(lx2all,8)*int(lx3all,8)*int(lsp,8)+ &
-             int(8,8)*int(5,8)*int(lx1,8)*int(lx2all,8)*int(lx3all,8)+ &
-             int(8,8)*int(lx2,8)*int(lx3all,8)
-print *, 'Output bit length:  ',recordlength,lx1,lx2all,lx3all,lsp
-
 
 call h5f%initialize(filenamefull,status='new',action='w',comp_lvl=1)
 
@@ -137,7 +128,7 @@ else
 
       call h5f%add('J1all', J1all)
 
-      !! J3,J2 and V3, V2 are swapped in name like this
+      !! NOTE: J3,J2 and V3, V2 are swapped in name like this
       call h5f%add('J2all', J3all)
       call h5f%add('J3all', J2all)
       call h5f%add('v2avgall', v3avgall)
@@ -153,6 +144,18 @@ else
 end if
 
 call h5f%finalize()
+
+!! Check for any NaN before proceeding to next time step
+
+if(any(ieee_is_nan(nsall))) write(stderr,'(/,A,/)') 'WARNING: NaN in nsall'
+if(any(ieee_is_nan(vs1all))) write(stderr,'(/,A,/)') 'WARNING: NaN in vs1all'
+if(any(ieee_is_nan(Tsall))) write(stderr,'(/,A,/)') 'WARNING: NaN in Tsall'
+if(any(ieee_is_nan(J1all))) write(stderr,'(/,A,/)') 'WARNING: NaN in J1all'
+if(any(ieee_is_nan(J2all))) write(stderr,'(/,A,/)') 'WARNING: NaN in J2all'
+if(any(ieee_is_nan(J3all))) write(stderr,'(/,A,/)') 'WARNING: NaN in J3all'
+if(any(ieee_is_nan(v3avgall))) write(stderr,'(/,A,/)') 'WARNING: NaN in v3avgall'
+if(any(ieee_is_nan(v2avgall))) write(stderr,'(/,A,/)') 'WARNING: NaN in v2avgall'
+if(any(ieee_is_nan(Phiall))) write(stderr,'(/,A,/)') 'WARNING: NaN in Phiall'
 
 end procedure output_root_stream_mpi
 
