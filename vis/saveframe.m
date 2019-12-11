@@ -41,7 +41,7 @@ for i=1:length(saveplot_fmt)
       print(h.f9,flag,[plotdir, '/Phitop-', stem, suffix],'-r300')
     end
   end
-  print(h.f10,flag,[plotdir, '/n3-', stem, suffix],'-r300')
+  print(h.f10,flag,[plotdir, '/ne-', stem, suffix],'-r300')
 end % for
 
 end % function
