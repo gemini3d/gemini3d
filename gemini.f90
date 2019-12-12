@@ -294,9 +294,11 @@ do while (t<tdur)
 
   !! POTENTIAL SOLUTION
   call cpu_time(tstart)
+  if (any(ieee_is_nan(vs2))) error stop 'multifluid:multifluid: NaN in vs2 before electrodynamics'
   call electrodynamics(it,t,dt,nn,vn2,vn3,Tn,sourcemlat,ns,Ts,vs1,B1,vs2,vs3,x, &
                         potsolve,flagcap,E1,E2,E3,J1,J2,J3, &
                         Phiall,flagE0file,dtE0,E0dir,ymd,UTsec)
+  if (any(ieee_is_nan(vs2))) error stop 'multifluid:multifluid: NaN in vs2 after electrodynamics'
   call cpu_time(tfin)
   if (myid==0 .and. debug) print '(A,F7.3)', 'Electrodynamics total solve time:  ',tfin-tstart
 

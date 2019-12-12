@@ -8,6 +8,7 @@ module potential_comm
 
 !NOTE THAT ONLY THE CURVILINEAR FUNCTION ARE UP TO DATE.
 
+use, intrinsic :: ieee_arithmetic, only : ieee_is_nan
 use mpi, only: mpi_integer, mpi_comm_world, mpi_status_ignore
 
 use phys_consts, only: wp, pi, lsp, debug
@@ -152,20 +153,30 @@ if (potsolve == 1 .or. potsolve == 3) then    !electrostatic solve or electrosta
                               E1,E2,E3,J1,J2,J3, &
                               Phiall,flagE0file,dtE0,E0dir,ymd,UTsec)
   end if
+  if (any(ieee_is_nan(vs2))) error stop 'potential:potential_comm_mumps: NaN in vs2 after potential_*_mpi'
 
   !DRIFTS - NEED TO INCLUDE ELECTRIC, WIND-DRIVEN, AND GRAVITATIONAL???
 !  if (lx2/=1) then    !full 3D solve, go with the regular formulas
   if(flagswap/=1) then
     do isp=1,lsp
-      vs2(1:lx1,1:lx2,1:lx3,isp)=muP(:,:,:,isp)*E2-muH(:,:,:,isp)*E3+muPvn(:,:,:,isp)*vn2-muHvn(:,:,:,isp)*vn3
-      vs3(1:lx1,1:lx2,1:lx3,isp)=muH(:,:,:,isp)*E2+muP(:,:,:,isp)*E3+muHvn(:,:,:,isp)*vn2+muPvn(:,:,:,isp)*vn3
+      vs2(1:lx1,1:lx2,1:lx3,isp) = muP(:,:,:,isp)*E2-muH(:,:,:,isp) * E3+muPvn(:,:,:,isp)*vn2-muHvn(:,:,:,isp)*vn3
+      vs3(1:lx1,1:lx2,1:lx3,isp) = muH(:,:,:,isp)*E2+muP(:,:,:,isp) * E3+muHvn(:,:,:,isp)*vn2+muPvn(:,:,:,isp)*vn3
     end do
   else                !flip signs on the cross products in 2D.  Note that due to dimension shuffling E2,3 mapping is already handled
     do isp=1,lsp
-      vs2(1:lx1,1:lx2,1:lx3,isp)=muP(:,:,:,isp)*E2+muH(:,:,:,isp)*E3+muPvn(:,:,:,isp)*vn2+muHvn(:,:,:,isp)*vn3
-      vs3(1:lx1,1:lx2,1:lx3,isp)=-muH(:,:,:,isp)*E2+muP(:,:,:,isp)*E3-muHvn(:,:,:,isp)*vn2+muPvn(:,:,:,isp)*vn3
+      vs2(1:lx1,1:lx2,1:lx3,isp) = muP(:,:,:,isp)*E2 + muH(:,:,:,isp) * E3+muPvn(:,:,:,isp)*vn2+muHvn(:,:,:,isp)*vn3
+      vs3(1:lx1,1:lx2,1:lx3,isp) = -muH(:,:,:,isp)*E2 + muP(:,:,:,isp) * E3-muHvn(:,:,:,isp)*vn2+muPvn(:,:,:,isp)*vn3
     end do
   end if
+
+  if (any(ieee_is_nan(vn2))) error stop 'potential:potential_comm_mumps: NaN in vn2 after drifts'
+  if (any(ieee_is_nan(E2))) error stop 'potential:potential_comm_mumps: NaN in E2 after drifts'
+  if (any(ieee_is_nan(E3))) error stop 'potential:potential_comm_mumps: NaN in E3 after drifts'
+  if (any(ieee_is_nan(muHvn))) error stop 'potential:potential_comm_mumps: NaN in muHvn after drifts'
+  if (any(ieee_is_nan(muPvn))) error stop 'potential:potential_comm_mumps: NaN in muPvn after drifts'
+  if (any(ieee_is_nan(muH))) error stop 'potential:potential_comm_mumps: NaN in muH after drifts'
+  if (any(ieee_is_nan(muP))) error stop 'potential:potential_comm_mumps: NaN in muP after drifts'
+  if (any(ieee_is_nan(vs2))) error stop 'potential:potential_comm_mumps: NaN in vs2 after drifts'
 
 !    do isp=1,lsp
        !! To leading order the ion drifts do not include the polarization parts,
@@ -586,6 +597,10 @@ if (debug) print *, 'MUMPS time:  ',tfin-tstart
 
 !RADD--- ROOT NEEDS TO PUSH THE POTENTIAL BACK TO ALL WORKERS FOR FURTHER PROCESSING (BELOW)
 call bcast_send(Phiall,tagPhi,Phi)
+if (any(ieee_is_nan(Phiall))) error stop &
+  'potential_comm_mumps:potential_root_mpi_curv: NaN in Phiall after bcast_send'
+if (any(ieee_is_nan(Phi))) error stop &
+  'potential_comm_mumps:potential_root_mpi_curv: NaN in Phi after bcast_send'
 
 
 !-------
@@ -595,7 +610,6 @@ E1prev=E1
 E2prev=E2
 E3prev=E3
 !-------
-
 
 !-------
 !CALCULATE PERP FIELDS FROM POTENTIAL
@@ -608,7 +622,7 @@ Phi= -1*Phi
 J1halo(1:lx1,1:lx2,1:lx3)=Phi
 call halo_pot(J1halo,tagJ1,x%flagper,.true.)
 divtmp=grad3D2(J1halo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
-E2=divtmp(1:lx1,1:lx2,1:lx3)
+E2 = divtmp(1:lx1,1:lx2,1:lx3)
 
 !COMPUTE THE 3 COMPONENT OF THE ELECTRIC FIELD
 J1halo(1:lx1,1:lx2,1:lx3)=Phi
@@ -638,7 +652,6 @@ endif
 E2=E2+E02
 E3=E3+E03
 !--------
-
 
 !--------
 !COMPUTE TIME DERIVATIVE NEEDED FOR POLARIZATION CURRENT.  ONLY DO THIS IF WE HAVE SPECIFIC NONZERO INERTIAL CAPACITANCE
@@ -838,6 +851,9 @@ J3=J3+J3pol
 !   close(utrace)
 !   error stop 'DEBUG'
 ! end if
+
+if (any(ieee_is_nan(E2))) error stop 'potential_comm_mumps:potential_root_mpi_curv: NaN in E2 at end'
+
 
 end subroutine potential_root_mpi_curv
 
@@ -1101,7 +1117,7 @@ end if
 
 
 !RADD--- ROOT NEEDS TO PUSH THE POTENTIAL BACK TO ALL WORKERS FOR FURTHER PROCESSING (BELOW)
-call bcast_recv(Phi,tagPhi)
+call bcast_recv(Phi, tagPhi)
 
 
 !-------
@@ -1123,13 +1139,19 @@ Phi= -1*Phi
 !    E2=grad3D2(Phi,x,1,lx1,1,lx2,1,lx3)    !no haloing required now must also be haloed
 !    E3=grad3D3(Phi,x,1,lx1,1,lx2,1,lx3)    !needs to be haloed
 
+if (any(ieee_is_nan(Phi))) error stop &
+  'potential_comm_mumps:potential_workers_mpi: NaN in Phi before J1halo'
 
 !E2 calculations
-J1halo(1:lx1,1:lx2,1:lx3)=Phi
+J1halo(1:lx1,1:lx2,1:lx3) = Phi
 call halo_pot(J1halo,tagJ1,x%flagper,.true.)
-divtmp=grad3D2(J1halo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
+
+if (any(ieee_is_nan(J1halo(1:lx1, 1:lx2, 1:lx3)))) error stop &
+  'potential_comm_mumps:potential_workers_mpi: NaN in J1halo before divtmp'
+divtmp = grad3D2(J1halo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
 E2=divtmp(1:lx1,1:lx2,1:lx3)
 
+if (any(ieee_is_nan(E2))) error stop 'potential_comm_mumps:potential_workers_mpi: NaN in E2 after divtmp'
 
 !E3 CALCULATIONS
 J1halo(1:lx1,1:lx2,1:lx3)=Phi

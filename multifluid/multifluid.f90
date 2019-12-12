@@ -110,6 +110,9 @@ do isp=1,lsp
   if(isp<lsp) then   !electron info found from charge neutrality and current density
     param = ns(:,:,:,isp)
     if (debug) then
+      if (any(ieee_is_nan(vs1))) error stop 'multifluid:multifluid: NaN in vs1 before advec3D_MC_mpi'
+      if (any(ieee_is_nan(vs2))) error stop 'multifluid:multifluid: NaN in vs2 before advec3D_MC_mpi'
+      if (any(ieee_is_nan(vs3))) error stop 'multifluid:multifluid: NaN in vs3 before advec3D_MC_mpi'
       if (any(ieee_is_nan(param))) error stop 'multifluid:multifluid: NaN in param before advec3D_MC_mpi'
       if (any(ieee_is_nan(v1i))) error stop 'multifluid:multifluid: NaN in v1i before advec3D_MC_mpi'
       if (any(ieee_is_nan(v2i))) error stop 'multifluid:multifluid: NaN in v2i before advec3D_MC_mpi'
