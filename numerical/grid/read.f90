@@ -78,13 +78,14 @@ real(wp), dimension(:,:,:), allocatable :: mpirecvbuf
 x%lx1=lx1; x%lx2all=lx2all; x%lx3all=lx3all;
 
 
-!ADJUST THE SIZES OF THE VARIABLES IF LX3ALL==1, SO THAT THE ALLOCATIONS ARE THE CORRECT SIZE
+!> ADJUST THE SIZES OF THE VARIABLES IF LX3ALL==1, SO THAT THE ALLOCATIONS ARE THE CORRECT SIZE
 if (lx3all==1) then
   print *, 'Detected a 2D run request...  swapping x2 and x3 sizes to maintain parallelization.'
   lx3all=lx2all; x%lx3all=lx2all;
   lx2=1
   lx2all=1; x%lx2all=1;
-  lx3=lx3all/lid     !use total number of processes since we only divide in one direction here...
+  lx3=lx3all/lid
+  !! use total number of processes since we only divide in one direction here...
   flagswap=1
 else
   if(lx2all==1) then
@@ -93,7 +94,8 @@ else
     lx3=lx3all/lid
   else
     print *, 'Detected a 3D run requuest...'
-    lx2=lx2all/lid2                                 !should divide evenly if generated from mpigrid
+    lx2=lx2all/lid2
+    !! should divide evenly if generated from mpigrid
     lx3=lx3all/lid3
   endif
   flagswap=0
@@ -102,22 +104,26 @@ x%lx2=lx2; x%lx3=lx3
 print *, 'Grid slab size:  ',lx1,lx2,lx3
 
 
-!COMMUNICATE THE GRID SIZE TO THE WORKERS SO THAT THEY CAN ALLOCATE SPACE
-ierr=0     !if this is a root-only simulation we don't want to error out
+!> COMMUNICATE THE GRID SIZE TO THE WORKERS SO THAT THEY CAN ALLOCATE SPACE
+ierr=0
+!! if this is a root-only simulation we don't want to error out
 do iid=1,lid-1
-  call mpi_send(lx2,1,MPI_INTEGER,iid,taglx2,MPI_COMM_WORLD,ierr)          !need to also pass the lx2all size to all workers to they know
+  call mpi_send(lx2,1,MPI_INTEGER,iid,taglx2,MPI_COMM_WORLD,ierr)
+  !! need to also pass the lx2all size to all workers to they know
+  if (ierr/=0) error stop 'grid:read_grid_root failed mpi_send lx2'
+
   call mpi_send(lx3,1,MPI_INTEGER,iid,taglx3,MPI_COMM_WORLD,ierr)
+  if (ierr/=0) error stop 'grid:read_grid_root failed mpi_send lx3'
 end do
 
-if (ierr/=0) error stop 'grid:read_grid_root failed mpi_send grid size'
+
 
 !TELL WORKERS IF WE'VE SWAPPED DIMENSIONS
 ierr=0
 do iid=1,lid-1
   call mpi_send(flagswap,1,MPI_INTEGER,iid,tagswap,MPI_COMM_WORLD,ierr)
+  if (ierr/=0) error stop 'grid:read_grid_root failed mpi_send flagswap'
 end do
-
-if (ierr/=0) error stop 'grid:read_grid_root failed mpi_send flagswap'
 
 !ALLOCATE SPACE FOR ROOTS SLAB OF DATA
 allocate(x%x1(-1:lx1+2))
@@ -389,11 +395,19 @@ allocate(g1(1:lx1,1:lx2,1:lx3),g2(1:lx1,1:lx2,1:lx3),g3(1:lx1,1:lx2,1:lx3))
 print*, 'Exchanging grid spacings...'
 do iid=1,lid-1
   call mpi_send(x%x1,lx1+4,mpi_realprec,iid,tagx1,MPI_COMM_WORLD,ierr)
+  if (ierr/=0) error stop 'failed mpi_send x1'
   call mpi_send(x%x2all,lx2all+4,mpi_realprec,iid,tagx2all,MPI_COMM_WORLD,ierr)
-  call mpi_send(x%x3all,lx3all+4,mpi_realprec,iid,tagx3all,MPI_COMM_WORLD,ierr)    !workers may need a copy of this, e.g. for boudnary conditiosn
+  if (ierr/=0) error stop 'failed mpi_send x2all'
+  call mpi_send(x%x3all,lx3all+4,mpi_realprec,iid,tagx3all,MPI_COMM_WORLD,ierr)
+  !! workers may need a copy of this, e.g. for boudnary conditions
+  if (ierr/=0) error stop 'failed mpi_send x3all'
+
   call mpi_send(x%dx1,lx1+3,mpi_realprec,iid,tagx1,MPI_COMM_WORLD,ierr)
+  if (ierr/=0) error stop 'failed mpi_send dx1'
   call mpi_send(x%x1i,lx1+1,mpi_realprec,iid,tagx1,MPI_COMM_WORLD,ierr)
+  if (ierr/=0) error stop 'failed mpi_send x1i'
   call mpi_send(x%dx1i,lx1,mpi_realprec,iid,tagx1,MPI_COMM_WORLD,ierr)
+  if (ierr/=0) error stop 'failed mpi_send dx1i'
 end do
 
 
@@ -582,13 +596,15 @@ integer :: ix1,ix2,ix3,icount,icomp, ierr
 
 !GET ROOTS MESSAGE WITH THE SIZE OF THE GRID WE ARE TO RECEIVE
 call mpi_recv(lx2,1,MPI_INTEGER,0,taglx2,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+if (ierr/=0) error stop 'failed mpi_recv lx2'
 call mpi_recv(lx3,1,MPI_INTEGER,0,taglx3,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-if (ierr/=0) error stop 'failed mpi_recv grid size'
+if (ierr/=0) error stop 'failed mpi_recv lx3'
 
 x%lx1=lx1; x%lx2=lx2; x%lx2all=lx2all; x%lx3all=lx3all; x%lx3=lx3
 
 !ROOT NEEDS TO TELL US WHETHER WE'VE SWAPPED DIMENSIONS SINCE THIS AFFECTS HOW CURRENTS ARE COMPUTED
 call mpi_recv(flagswap,1,MPI_INTEGER,0,tagswap,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+if (ierr/=0) error stop 'failed mpi_recv flagswap'
 
 if (flagswap==1) then
   x%lx3all=lx2all
@@ -633,13 +649,18 @@ allocate(g1(1:lx1,1:lx2,1:lx3),g2(1:lx1,1:lx2,1:lx3),g3(1:lx1,1:lx2,1:lx3))
 
 !RECEIVE GRID DATA FROM ROOT
 call mpi_recv(x%x1,lx1+4,mpi_realprec,0,tagx1,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+if (ierr/=0) error stop 'failed mpi_recv x1'
 call mpi_recv(x%x2all,lx2all+4,mpi_realprec,0,tagx2all,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+if (ierr/=0) error stop 'failed mpi_recv x2all'
 call mpi_recv(x%x3all,lx3all+4,mpi_realprec,0,tagx3all,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+if (ierr/=0) error stop 'failed mpi_recv x3all'
 call mpi_recv(x%dx1,lx1+3,mpi_realprec,0,tagx1,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+if (ierr/=0) error stop 'failed mpi_recv dx1'
 call mpi_recv(x%x1i,lx1+1,mpi_realprec,0,tagx1,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+if (ierr/=0) error stop 'failed mpi_recv x1i'
 call mpi_recv(x%dx1i,lx1,mpi_realprec,0,tagx1,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+if (ierr/=0) error stop 'failed mpi_recv dx1i'
 
-if (ierr/=0) error stop 'failed mpi_recv grid data from root'
 
 call bcast_recv1D_3(x%x3,tagx3)
 x%dx3=x%x3(0:lx3+2)-x%x3(-1:lx3+1)     !computing these avoids extra message passing (could be done for other coordinates
