@@ -99,16 +99,18 @@ do isp=1,lsp
 end do
 
 
-!ADVECTION SUBSTEP (CONSERVED VARIABLES SHOULD BE UPDATED BEFORE ENTERING)
+!> ADVECTION SUBSTEP (CONSERVED VARIABLES SHOULD BE UPDATED BEFORE ENTERING)
 call cpu_time(tstart)
 chrgflux=0._wp
 do isp=1,lsp
-  call advec_prep_mpi(isp,x%flagper,ns,rhovs1,vs1,vs2,vs3,rhoes,v1i,v2i,v3i)    !role-agnostic communcation pattern (all-to-neighbors)
+  call advec_prep_mpi(isp,x%flagper,ns,rhovs1,vs1,vs2,vs3,rhoes,v1i,v2i,v3i)
+  !! role-agnostic communcation pattern (all-to-neighbors)
 
   if(isp<lsp) then   !electron info found from charge neutrality and current density
     param=ns(:,:,:,isp)
 !    param=advec3D_MC_mpi(param,v1i,v2i,v3i,dt,x,0)   !last argument is tensor rank of thing being advected
-    param=advec3D_MC_mpi(param,v1i,v2i,v3i,dt,x,0,tagns)   !second to last argument is tensor rank of thing being advected
+    param=advec3D_MC_mpi(param,v1i,v2i,v3i,dt,x,0,tagns)
+    !! second to last argument is tensor rank of thing being advected
     ns(:,:,:,isp)=param
 
     param=rhovs1(:,:,:,isp)
@@ -116,13 +118,16 @@ do isp=1,lsp
     param=advec3D_MC_mpi(param,v1i,v2i,v3i,dt,x,1,tagvs1)
     rhovs1(:,:,:,isp)=param
 
-    vs1(:,:,:,isp)=rhovs1(:,:,:,isp)/(ms(isp)*max(ns(:,:,:,isp),mindensdiv))
+    vs1(:,:,:,isp) = rhovs1(:,:,:,isp) / (ms(isp)*max(ns(:,:,:,isp),mindensdiv))
     chrgflux=chrgflux+ns(1:lx1,1:lx2,1:lx3,isp)*qs(isp)*vs1(1:lx1,1:lx2,1:lx3,isp)
   else
     ns(:,:,:,lsp)=sum(ns(:,:,:,1:lsp-1),4)
 !      vs1(1:lx1,1:lx2,1:lx3,lsp)=1._wp/ns(1:lx1,1:lx2,1:lx3,lsp)/qs(lsp)*(J1-chrgflux)   !density floor needed???
-    vs1(1:lx1,1:lx2,1:lx3,lsp)=-1._wp/max(ns(1:lx1,1:lx2,1:lx3,lsp),mindensdiv)/qs(lsp)*chrgflux   !really not strictly correct, should include current density
+    vs1(1:lx1,1:lx2,1:lx3,lsp) = -1._wp/max(ns(1:lx1,1:lx2,1:lx3,lsp),mindensdiv)/qs(lsp)*chrgflux
+    !! really not strictly correct, should include current density
   end if
+
+  if (any(ieee_is_nan(vs1(1:lx1,1:lx2,1:lx3,lsp)))) error stop 'mulitifluid:multifluid: NaN in vs1 after advection substep'
 
   param=rhoes(:,:,:,isp)
 !  param=advec3D_MC_mpi(param,v1i,v2i,v3i,dt,x,0)
@@ -141,6 +146,8 @@ end if
 !THEY DON'T MESS UP FINITE DIFFERENCES LATER
 call clean_param(x,1,ns)
 call clean_param(x,2,vs1)
+if (any(ieee_is_nan(ns))) error stop 'mulitifluid:multifluid: NaN in ns before RK2'
+if (any(ieee_is_nan(vs1(1:lx1,1:lx2,1:lx3,lsp)))) error stop 'mulitifluid:multifluid: NaN in vs1 before RK2'
 
 
 !ARTIFICIAL VISCOSITY (NOT REALLY NEED BELOW 1000 KM ALT.).  NOTE THAT WE DON'T CHECK WHERE SUBCYCLING IS NEEDED SINCE, IN MY EXPERIENCE THEN CODE IS BOMBING ANYTIME IT IS...
@@ -149,13 +156,12 @@ do isp=1,lsp-1
   dv1iupdate=v1iupdate(2:lx1+1,:,:)-v1iupdate(1:lx1,:,:)
   Q(:,:,:,isp)=ns(1:lx1,1:lx2,1:lx3,isp)*ms(isp)*0.25_wp*xicon**2*(min(dv1iupdate,0._wp))**2   !note that viscosity does not have/need ghost cells
 end do
-Q(:,:,:,lsp)=0._wp
+Q(:,:,:,lsp) = 0
 
 
 !NONSTIFF/NONBALANCE INTERNAL ENERGY SOURCES (RK2 INTEGRATION)
-
 do isp=1,lsp
-  call RK2_prep_mpi(isp,x%flagper,vs1,vs2,vs3)    !role-agnostic mpi, all-to-neighbor
+  call RK2_prep_mpi(isp,x%flagper, vs1,vs2,vs3)    !role-agnostic mpi, all-to-neighbor
 
   divvs=div3D(vs1(0:lx1+1,0:lx2+1,0:lx3+1,isp),vs2(0:lx1+1,0:lx2+1,0:lx3+1,isp), &
              vs3(0:lx1+1,0:lx2+1,0:lx3+1,isp),x,0,lx1+1,0,lx2+1,0,lx3+1)    !diff with one set of ghost cells to preserve second order accuracy over the grid
@@ -277,13 +283,16 @@ Qepreciptmp=eheating(nn,Tn,Prpreciptmp,ns)
 
 !> photoion ionrate and heating calculated seperately, added together with ionrate and heating from Fang or GLOW
 Prprecip=Prprecip+Prpreciptmp
-Qeprecip=Qeprecip+Qepreciptmp
+Qeprecip = Qeprecip+Qepreciptmp
+if (any(ieee_is_nan(Qeprecip))) error stop 'multifluid:multifluid NaN in Qeprecip'
 
-call srcsEnergy(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,Pr,Lo)
+call srcsEnergy(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts, Pr,Lo)
+
+if (any(ieee_is_nan(ns))) error stop 'multifluid:multifluid NaN in ns'
 
 do isp=1,lsp
   if (isp==lsp) then
-    Pr(:,:,:,lsp)=Pr(:,:,:,lsp)+Qeprecip
+    Pr(:,:,:,lsp)=Pr(:,:,:,lsp) + Qeprecip
   end if
   paramtrim=rhoes(1:lx1,1:lx2,1:lx3,isp)
   paramtrim=ETD_uncoupled(paramtrim,Pr(:,:,:,isp),Lo(:,:,:,isp),dt)
@@ -310,7 +319,7 @@ do isp=1,lsp-1
   paramtrim=ETD_uncoupled(paramtrim,Pr(:,:,:,isp),Lo(:,:,:,isp),dt)
   rhovs1(1:lx1,1:lx2,1:lx3,isp)=paramtrim
 
-  vs1(:,:,:,isp)=rhovs1(:,:,:,isp)/(ms(isp)*max(ns(:,:,:,isp),mindensdiv))
+  vs1(:,:,:,isp) = rhovs1(:,:,:,isp) / (ms(isp) * max(ns(:,:,:,isp),mindensdiv))
 end do
 if (myid==0) then
   if (debug) then
@@ -318,18 +327,18 @@ if (myid==0) then
     print *, 'Velocity sources substep for time step:  ',t,'done in cpu_time of:  ',tfin-tstart
     call cpu_time(tstart)
   endif
-
 end if
 
-
 !ELECTRON VELOCITY SOLUTION
-chrgflux=0._wp
+chrgflux = 0
 do isp=1,lsp-1
-  chrgflux=chrgflux+ns(1:lx1,1:lx2,1:lx3,isp)*qs(isp)*vs1(1:lx1,1:lx2,1:lx3,isp)
+  chrgflux = chrgflux + ns(1:lx1,1:lx2,1:lx3,isp) * qs(isp) * vs1(1:lx1,1:lx2,1:lx3,isp)
 end do
+if (any(ieee_is_nan(chrgflux))) error stop 'mulitifluid:multifluid: NaN in chrgflux'
 !  vs1(1:lx1,1:lx2,1:lx3,lsp)=1._wp/max(ns(1:lx1,1:lx2,1:lx3,lsp),mindensdiv)/qs(lsp)*(J1-chrgflux)   !density floor needed???
-vs1(1:lx1,1:lx2,1:lx3,lsp)=-1._wp/max(ns(1:lx1,1:lx2,1:lx3,lsp),mindensdiv)/qs(lsp)*chrgflux    !don't bother with FAC contribution...
+vs1(1:lx1,1:lx2,1:lx3,lsp) = -1._wp/max(ns(1:lx1,1:lx2,1:lx3,lsp),mindensdiv)/qs(lsp)*chrgflux    !don't bother with FAC contribution...
 
+if (any(ieee_is_nan(vs1(1:lx1,1:lx2,1:lx3,lsp)))) error stop 'mulitifluid:multifluid: NaN in vs1'
 
 !CLEAN VELOCITY
 call clean_param(x,2,vs1)
@@ -364,7 +373,7 @@ call clean_param(x,1,ns)
 end subroutine fluid_adv
 
 
-subroutine clean_param(x,paramflag,param)
+subroutine clean_param(x, paramflag, param)
 
 !------------------------------------------------------------
 !-------THIS SUBROUTINE ZEROS OUT ALL NULL CELLS AND HANDLES

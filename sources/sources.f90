@@ -430,7 +430,7 @@ end do
 end subroutine srcsMomentum_curv
 
 
-subroutine srcsEnergy(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,Pr,Lo)
+subroutine srcsEnergy(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts, Pr,Lo)
 
 !------------------------------------------------------------
 !-------POPULATE SOURCE/LOSS ARRAYS FOR ENERGY EQUATION.  ION
@@ -528,7 +528,7 @@ Lo(:,:,:,lsp)=Lo(:,:,:,lsp)+ieLT
 end subroutine srcsEnergy
 
 
-subroutine RK2_prep_mpi(isp,isperiodic,vs1,vs2,vs3)
+subroutine RK2_prep_mpi(isp,isperiodic, vs1,vs2,vs3)
 
 !------------------------------------------------------------
 !-------PASS BOUNDARY CELLS FOR COMPUTING COMPRESSION.  DONE ON

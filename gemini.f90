@@ -1,4 +1,5 @@
 !! MAIN PROGRAM FOR GEMINI3D
+use, intrinsic :: ieee_arithmetic, only: ieee_is_nan
 use phys_consts, only : lnchem, lwave, lsp, wp, debug
 use grid, only: curvmesh, grid_size,read_grid,clear_grid,lx1,lx2,lx3,lx2all,lx3all
 use io, only : read_configfile,input_plasma,create_outdir,output_plasma,create_outdir_aur,output_aur,check_nan_array
@@ -217,6 +218,7 @@ end if
 
 !> LOAD ICS AND DISTRIBUTE TO WORKERS (REQUIRES GRAVITY FOR INITIAL GUESSING)
 call input_plasma(x%x1,x%x2all,x%x3all,indatsize,ns,vs1,Ts)
+if (any(ieee_is_nan(vs1(1:lx1,1:lx2,1:lx3,lsp)))) error stop 'mulitifluid:multifluid: NaN in vs1 after input_plasma'
 
 !ROOT/WORKERS WILL ASSUME THAT THE MAGNETIC FIELDS AND PERP FLOWS START AT ZERO
 !THIS KEEPS US FROM HAVING TO HAVE FULL-GRID ARRAYS FOR THESE STATE VARS (EXCEPT
@@ -300,6 +302,7 @@ do while (t<tdur)
 
   !! UPDATE THE FLUID VARIABLES
   call cpu_time(tstart)
+  if (any(ieee_is_nan(vs1(1:lx1,1:lx2,1:lx3,lsp)))) error stop 'gemini: NaN in vs1 before fluid_adv'
   call fluid_adv(ns,vs1,Ts,vs2,vs3,J1,E1,Teinf,t,dt,x,nn,vn1,vn2,vn3,Tn,iver,activ(2),activ(1),ymd,UTsec, &
                  flagprecfile,dtprec,precdir,flagglow,dtglow)
   call cpu_time(tfin)
