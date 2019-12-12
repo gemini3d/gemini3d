@@ -36,11 +36,9 @@ if exist(outdir,'dir')~=7
   disp(['Created: ', outdir])
 end
 
-
 %% OPEN THE FILE
 filename=[outdir,filesep,outID,'_ICs.dat'];
 fid=fopen(filename,'w');
-
 
 %% WRITE THE DATA
 fwrite(fid,dmy, freal);
@@ -51,4 +49,4 @@ fwrite(fid,Ts, freal);
 
 fclose(fid);
 
-end
+end % function
