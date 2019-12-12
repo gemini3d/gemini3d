@@ -110,20 +110,22 @@ ierr=0
 do iid=1,lid-1
   call mpi_send(lx2,1,MPI_INTEGER,iid,taglx2,MPI_COMM_WORLD,ierr)
   !! need to also pass the lx2all size to all workers to they know
-  if (ierr/=0) error stop 'grid:read_grid_root failed mpi_send lx2'
+  !if (ierr/=0) error stop 'grid:read_grid_root failed mpi_send lx2'
 
   call mpi_send(lx3,1,MPI_INTEGER,iid,taglx3,MPI_COMM_WORLD,ierr)
-  if (ierr/=0) error stop 'grid:read_grid_root failed mpi_send lx3'
+  !if (ierr/=0) error stop 'grid:read_grid_root failed mpi_send lx3'
 end do
 
-
+if (ierr/=0) error stop 'grid:read_grid_root failed mpi_send grid size'
 
 !TELL WORKERS IF WE'VE SWAPPED DIMENSIONS
 ierr=0
 do iid=1,lid-1
   call mpi_send(flagswap,1,MPI_INTEGER,iid,tagswap,MPI_COMM_WORLD,ierr)
-  if (ierr/=0) error stop 'grid:read_grid_root failed mpi_send flagswap'
+  !if (ierr/=0) error stop 'grid:read_grid_root failed mpi_send flagswap'
 end do
+
+if (ierr/=0) error stop 'grid:read_grid_root failed mpi_send flagswap'
 
 !ALLOCATE SPACE FOR ROOTS SLAB OF DATA
 allocate(x%x1(-1:lx1+2))
@@ -395,21 +397,22 @@ allocate(g1(1:lx1,1:lx2,1:lx3),g2(1:lx1,1:lx2,1:lx3),g3(1:lx1,1:lx2,1:lx3))
 print*, 'Exchanging grid spacings...'
 do iid=1,lid-1
   call mpi_send(x%x1,lx1+4,mpi_realprec,iid,tagx1,MPI_COMM_WORLD,ierr)
-  if (ierr/=0) error stop 'failed mpi_send x1'
+  !if (ierr/=0) error stop 'failed mpi_send x1'
   call mpi_send(x%x2all,lx2all+4,mpi_realprec,iid,tagx2all,MPI_COMM_WORLD,ierr)
-  if (ierr/=0) error stop 'failed mpi_send x2all'
+  !if (ierr/=0) error stop 'failed mpi_send x2all'
   call mpi_send(x%x3all,lx3all+4,mpi_realprec,iid,tagx3all,MPI_COMM_WORLD,ierr)
   !! workers may need a copy of this, e.g. for boudnary conditions
-  if (ierr/=0) error stop 'failed mpi_send x3all'
+  !if (ierr/=0) error stop 'failed mpi_send x3all'
 
   call mpi_send(x%dx1,lx1+3,mpi_realprec,iid,tagx1,MPI_COMM_WORLD,ierr)
-  if (ierr/=0) error stop 'failed mpi_send dx1'
+  !if (ierr/=0) error stop 'failed mpi_send dx1'
   call mpi_send(x%x1i,lx1+1,mpi_realprec,iid,tagx1,MPI_COMM_WORLD,ierr)
-  if (ierr/=0) error stop 'failed mpi_send x1i'
+  !if (ierr/=0) error stop 'failed mpi_send x1i'
   call mpi_send(x%dx1i,lx1,mpi_realprec,iid,tagx1,MPI_COMM_WORLD,ierr)
-  if (ierr/=0) error stop 'failed mpi_send dx1i'
+  !if (ierr/=0) error stop 'failed mpi_send dx1i'
 end do
 
+if (ierr/=0) error stop 'failed mpi_send x grid'
 
 !NOW SEND THE INFO THAT DEPENDS ON X3 SLAB SIZE
 print*, 'Computing subdomain spacing...'
