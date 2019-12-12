@@ -1,5 +1,5 @@
 module multifluid
-
+use, intrinsic :: ieee_arithmetic, only: ieee_is_nan
 use advec_mpi, only: advec3d_mc_mpi, advec_prep_mpi
 use calculus, only: etd_uncoupled, div3d
 use collisions, only:  thermal_conduct
@@ -129,9 +129,11 @@ do isp=1,lsp
   param=advec3D_MC_mpi(param,v1i,v2i,v3i,dt,x,0,tagTs)
   rhoes(:,:,:,isp)=param
 end do
-call cpu_time(tfin)
+
 if (myid==0) then
+  call cpu_time(tfin)
   if (debug) print *, 'Completed advection substep for time step:  ',t,' in cpu_time of:  ',tfin-tstart
+  call cpu_time(tstart)
 end if
 
 
@@ -151,7 +153,7 @@ Q(:,:,:,lsp)=0._wp
 
 
 !NONSTIFF/NONBALANCE INTERNAL ENERGY SOURCES (RK2 INTEGRATION)
-call cpu_time(tstart)
+
 do isp=1,lsp
   call RK2_prep_mpi(isp,x%flagper,vs1,vs2,vs3)    !role-agnostic mpi, all-to-neighbor
 
@@ -166,9 +168,11 @@ do isp=1,lsp
   Ts(:,:,:,isp)=(gammas(isp)-1._wp)/kB*rhoes(:,:,:,isp)/max(ns(:,:,:,isp),mindensdiv)
   Ts(:,:,:,isp)=max(Ts(:,:,:,isp),100._wp)
 end do
-call cpu_time(tfin)
+
 if (myid==0) then
+  call cpu_time(tfin)
   if (debug) print *, 'Completed compression substep for time step:  ',t,' in cpu_time of:  ',tfin-tstart
+  call cpu_time(tstart)
 end if
 
 !CLEAN TEMPERATURE
@@ -176,7 +180,7 @@ call clean_param(x,3,Ts)
 
 
 !DIFFUSION OF ENERGY
-call cpu_time(tstart)
+
 do isp=1,lsp
   param=Ts(:,:,:,isp)     !temperature for this species
   call thermal_conduct(isp,param,ns(:,:,:,isp),nn,J1,lambda,beta)
@@ -187,9 +191,11 @@ do isp=1,lsp
   Ts(:,:,:,isp)=param
   Ts(:,:,:,isp)=max(Ts(:,:,:,isp),100._wp)
 end do
-call cpu_time(tfin)
+
 if (myid==0) then
+  call cpu_time(tfin)
   if (debug) print *, 'Completed energy diffusion substep for time step:  ',t,' in cpu_time of:  ',tfin-tstart
+  call cpu_time(tstart)
 end if
 
 !ZZZ - CLEAN TEMPERATURE BEFORE CONVERTING TO INTERNAL ENERGY
@@ -204,10 +210,11 @@ if (flagprecfile==1) then
 else     !no file input specified, so just call 'regular' function
   call precipBCs(t,x,W0,PhiWmWm2)
 end if
+if (any(ieee_is_nan(PhiWmWm2))) error stop 'multifluid:multifluid: NaN in PhiWmWm2'
 
 
 !STIFF/BALANCED ENERGY SOURCES
-call cpu_time(tstart)
+
 Prprecip=0.0_wp
 Qeprecip=0.0_wp
 Prpreciptmp=0.0_wp
@@ -285,16 +292,18 @@ do isp=1,lsp
   Ts(:,:,:,isp)=(gammas(isp)-1._wp)/kB*rhoes(:,:,:,isp)/max(ns(:,:,:,isp),mindensdiv)
   Ts(:,:,:,isp)=max(Ts(:,:,:,isp),100._wp)
 end do
-call cpu_time(tfin)
 if (myid==0) then
-  if (debug) print *, 'Energy sources substep for time step:  ',t,'done in cpu_time of:  ',tfin-tstart
+  if (debug) then
+    call cpu_time(tfin)
+    print *, 'Energy sources substep for time step:  ',t,'done in cpu_time of:  ',tfin-tstart
+    call cpu_time(tstart)
+  endif
 end if
 
 !CLEAN TEMPERATURE
 call clean_param(x,3,Ts)
 
 !ALL VELOCITY SOURCES
-call cpu_time(tstart)
 call srcsMomentum(nn,vn1,Tn,ns,vs1,vs2,vs3,Ts,E1,Q,x,Pr,Lo)    !added artificial viscosity...
 do isp=1,lsp-1
   paramtrim=rhovs1(1:lx1,1:lx2,1:lx3,isp)
@@ -303,9 +312,13 @@ do isp=1,lsp-1
 
   vs1(:,:,:,isp)=rhovs1(:,:,:,isp)/(ms(isp)*max(ns(:,:,:,isp),mindensdiv))
 end do
-call cpu_time(tfin)
 if (myid==0) then
-  if (debug) print *, 'Velocity sources substep for time step:  ',t,'done in cpu_time of:  ',tfin-tstart
+  if (debug) then
+    call cpu_time(tfin)
+    print *, 'Velocity sources substep for time step:  ',t,'done in cpu_time of:  ',tfin-tstart
+    call cpu_time(tstart)
+  endif
+
 end if
 
 
@@ -321,9 +334,7 @@ vs1(1:lx1,1:lx2,1:lx3,lsp)=-1._wp/max(ns(1:lx1,1:lx2,1:lx3,lsp),mindensdiv)/qs(l
 !CLEAN VELOCITY
 call clean_param(x,2,vs1)
 
-
 !ALL MASS SOURCES
-call cpu_time(tstart)
 call srcsContinuity(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,Pr,Lo)
 Pr(:,:,:,1:6)=Pr(:,:,:,1:6)+Prprecip
 do isp=1,lsp-1
@@ -331,14 +342,18 @@ do isp=1,lsp-1
   paramtrim=ETD_uncoupled(paramtrim,Pr(:,:,:,isp),Lo(:,:,:,isp),dt)
   ns(1:lx1,1:lx2,1:lx3,isp)=paramtrim    !should there be a density floor here???  I think so...
 end do
-call cpu_time(tfin)
 if (myid==0) then
-  if (debug) print *, 'Mass sources substep for time step:  ',t,'done in cpu_time of:  ',tfin-tstart
+  if (debug) then
+    call cpu_time(tfin)
+    print *, 'Mass sources substep for time step:  ',t,'done in cpu_time of:  ',tfin-tstart
+  endif
 end if
 
 
 !ELECTRON DENSITY SOLUTION
 ns(:,:,:,lsp)=sum(ns(:,:,:,1:lsp-1),4)
+
+if (any(ieee_is_nan(ns(:,:,:,lsp)))) error stop 'mulitifluid:multifluid: NaN in ns'
 
 
 !CLEAN DENSITY (CONSERVED VARIABLES WILL BE RECOMPUTED AT THE BEGINNING OF NEXT TIME STEP

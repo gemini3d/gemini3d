@@ -265,7 +265,7 @@ end subroutine precipBCs_fileinput
 subroutine make_precip_fileinput()
 
 !INITIALIZE SOME MODULE TIMING VARIABLES
-tprev=0d0; tnext=0d0
+tprev= 0; tnext= 0
 
 end subroutine make_precip_fileinput
 
@@ -320,7 +320,7 @@ end do
 W0pk=100d0
 !      sigW0x3=100d3
 !      meanW0x3=0d0
-PhiWpk=0d0
+PhiWpk= 0.
 !      PhiWpk=1d-5    !successful grad-drift attempts
 !      PhiWpk=1d-4    !Swoboda blur testing
 !      PhiWpk=0.05d0    !testing of convergent Hall drifts
@@ -336,12 +336,12 @@ PhiWpk=0d0
 !      meanPhiWx3=0d0
 
 sigx2=50d3
-meanx2=0d0
+meanx2= 0.
 !    sigx3=10d3
 sigx3=25d3
 meant=900d0
 sigt=450d0
-x30amp=0d3
+x30amp= 0.
 varc=200d0
 
 !DISTURBANCE ELECTRON PRECIPITATION PATTERN
