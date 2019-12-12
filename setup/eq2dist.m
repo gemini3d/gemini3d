@@ -4,11 +4,7 @@ narginchk(3, 4)
 validateattributes(eqdir, {'char', 'string'}, {'vector'})
 validateattributes(simID, {'char', 'string'}, {'vector'})
 validateattributes(xg, {'struct'}, {'scalar'})
-if nargin > 3
-  assert(isfolder(outdir), [outdir, ' is not a directory'])
-else
-  outdir = [];
-end
+if nargin < 3, outdir = []; end
 %% READ SIMULATION INFORMATION
 [ymd0,UTsec0,tdur,dtout,flagoutput,mloc] = readconfig([eqdir, '/inputs']);
 xgin = readgrid([eqdir, '/inputs']);
