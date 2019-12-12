@@ -1,8 +1,7 @@
 !! MAIN PROGRAM FOR GEMINI3D
-
 use phys_consts, only : lnchem, lwave, lsp, wp, debug
 use grid, only: curvmesh, grid_size,read_grid,clear_grid,lx1,lx2,lx3,lx2all,lx3all
-use io, only : read_configfile,input_plasma,create_outdir,output_plasma,create_outdir_aur,output_aur
+use io, only : read_configfile,input_plasma,create_outdir,output_plasma,create_outdir_aur,output_aur,check_nan_array
 use mpimod, only : mpisetup, mpibreakdown, mpi_manualgrid, mpigrid, lid, myid
 use multifluid, only : fluid_adv
 use neutral, only : neutral_atmos,make_dneu,neutral_perturb,clear_dneu
@@ -130,7 +129,7 @@ integer :: lid2in,lid3in
 
 
 !> TO CONTROL THROTTLING OF TIME STEP
-real(wp), parameter :: dtscale=2d0
+real(wp), parameter :: dtscale= 2
 
 !! MAIN PROGRAM
 
@@ -225,8 +224,8 @@ call input_plasma(x%x1,x%x2all,x%x3all,indatsize,ns,vs1,Ts)
 !WILL BE A FINITE AMOUNT OF TIME FOR THE FLOWS TO 'START UP', BUT THIS SHOULDN'T
 !BE TOO MUCH OF AN ISSUE.  WE ALSO NEED TO SET THE BACKGROUND MAGNETIC FIELD STATE
 !VARIABLE HERE TO WHATEVER IS SPECIFIED IN THE GRID STRUCTURE (THESE MUST BE CONSISTENT)
-rhov2=0d0; rhov3=0d0; v2=0d0; v3=0d0;
-B2=0d0; B3=0d0;
+rhov2= 0; rhov3= 0; v2= 0; v3= 0;
+B2= 0; B3= 0;
 B1(1:lx1,1:lx2,1:lx3)=x%Bmag
 !! this assumes that the grid is defined s.t. the x1 direction corresponds
 !! to the magnetic field direction (hence zero B2 and B3).
@@ -243,7 +242,7 @@ if(flagglow/=0) iver=0
 
 
 !> MAIN LOOP
-UTsec=UTsec0; it=1; t=0d0; tout=t; tglowout=t;
+UTsec=UTsec0; it=1; t= 0; tout=t; tglowout=t;
 do while (t<tdur)
   !! TIME STEP CALCULATION
   dtprev=dt
@@ -266,15 +265,14 @@ do while (t<tdur)
   if (it==1) then
     call cpu_time(tstart)
     call neutral_atmos(ymd,UTsec,x%glat,x%glon,x%alt,activ,nn,Tn)
-    vn1=0d0; vn2=0d0; vn3=0d0
+    vn1= 0; vn2= 0; vn3= 0
     !! hard-code these to zero for the first time step
     call cpu_time(tfin)
 
     if (myid==0) then
-      print *, 'Neutral background calculated in time:  ',tfin-tstart
+      print '(A,F7.3)', 'Neutral background calculated. wallclock:  ',tfin-tstart
     end if
   end if
-
 
   !> GET NEUTRAL PERTURBATIONS FROM ANOTHER MODEL
   if (flagdneu==1) then
@@ -289,7 +287,7 @@ do while (t<tdur)
     call neutral_perturb(interptype,dt,dtneu,t,ymd,UTsec,sourcedir,dxn,drhon,dzn,sourcemlat, &
                                   sourcemlon,x,nn,Tn,vn1,vn2,vn3)
     call cpu_time(tfin)
-    if (myid==0 .and. debug) print *, 'Neutral perturbations calculated in time:  ',tfin-tstart
+    if (myid==0 .and. debug) print '(A,F7.3)', 'Neutral perturbations calculated in time:  ',tfin-tstart
   end if
 
   !! POTENTIAL SOLUTION
@@ -298,16 +296,14 @@ do while (t<tdur)
                         potsolve,flagcap,E1,E2,E3,J1,J2,J3, &
                         Phiall,flagE0file,dtE0,E0dir,ymd,UTsec)
   call cpu_time(tfin)
-  if (myid==0 .and. debug) print *, 'Electrodynamics total solve time:  ',tfin-tstart
-
+  if (myid==0 .and. debug) print '(A,F7.3)', 'Electrodynamics total solve time:  ',tfin-tstart
 
   !! UPDATE THE FLUID VARIABLES
   call cpu_time(tstart)
   call fluid_adv(ns,vs1,Ts,vs2,vs3,J1,E1,Teinf,t,dt,x,nn,vn1,vn2,vn3,Tn,iver,activ(2),activ(1),ymd,UTsec, &
                  flagprecfile,dtprec,precdir,flagglow,dtglow)
   call cpu_time(tfin)
-  if (myid==0 .and. debug) print *, 'Multifluid total solve time:  ',tfin-tstart
-
+  if (myid==0 .and. debug) print '(A,F7.3)', 'Multifluid total solve time:  ',tfin-tstart
 
   !! NOW OUR SOLUTION IS FULLY UPDATED SO UPDATE TIME VARIABLES TO MATCH...
   it=it+1; t=t+dt;
