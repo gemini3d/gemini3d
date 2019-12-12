@@ -98,6 +98,7 @@ do isp=1,lsp
   rhoes(:,:,:,isp)=ns(:,:,:,isp)*kB*Ts(:,:,:,isp)/(gammas(isp)-1._wp)
 end do
 
+if (any(ieee_is_nan(rhovs1))) error stop 'mulitifluid:multifluid: NaN in rhovs1 before advection substep'
 
 !> ADVECTION SUBSTEP (CONSERVED VARIABLES SHOULD BE UPDATED BEFORE ENTERING)
 call cpu_time(tstart)
@@ -107,33 +108,41 @@ do isp=1,lsp
   !! role-agnostic communcation pattern (all-to-neighbors)
 
   if(isp<lsp) then   !electron info found from charge neutrality and current density
-    param=ns(:,:,:,isp)
+    param = ns(:,:,:,isp)
+    if (debug) then
+      if (any(ieee_is_nan(param))) error stop 'multifluid:multifluid: NaN in param before advec3D_MC_mpi'
+      if (any(ieee_is_nan(v1i))) error stop 'multifluid:multifluid: NaN in v1i before advec3D_MC_mpi'
+      if (any(ieee_is_nan(v2i))) error stop 'multifluid:multifluid: NaN in v2i before advec3D_MC_mpi'
+      if (any(ieee_is_nan(v3i))) error stop 'multifluid:multifluid: NaN in v3i before advec3D_MC_mpi'
+    endif
 !    param=advec3D_MC_mpi(param,v1i,v2i,v3i,dt,x,0)   !last argument is tensor rank of thing being advected
-    param=advec3D_MC_mpi(param,v1i,v2i,v3i,dt,x,0,tagns)
+    param = advec3D_MC_mpi(param,v1i,v2i,v3i,dt,x,0,tagns)
+    if (debug.and.any(ieee_is_nan(param))) error stop 'multifluid:multifluid: NaN in param after advec3D_MC_mpi'
     !! second to last argument is tensor rank of thing being advected
     ns(:,:,:,isp)=param
 
     param=rhovs1(:,:,:,isp)
 !    param=advec3D_MC_mpi(param,v1i,v2i,v3i,dt,x,1)
-    param=advec3D_MC_mpi(param,v1i,v2i,v3i,dt,x,1,tagvs1)
+    param = advec3D_MC_mpi(param,v1i,v2i,v3i,dt,x,1,tagvs1)
     rhovs1(:,:,:,isp)=param
 
-    vs1(:,:,:,isp) = rhovs1(:,:,:,isp) / (ms(isp)*max(ns(:,:,:,isp),mindensdiv))
-    chrgflux=chrgflux+ns(1:lx1,1:lx2,1:lx3,isp)*qs(isp)*vs1(1:lx1,1:lx2,1:lx3,isp)
+    vs1(:,:,:,isp) = rhovs1(:,:,:,isp) / (ms(isp) * max(ns(:,:,:,isp), mindensdiv))
+    chrgflux = chrgflux + ns(1:lx1,1:lx2,1:lx3,isp) * qs(isp) * vs1(1:lx1,1:lx2,1:lx3,isp)
   else
     ns(:,:,:,lsp)=sum(ns(:,:,:,1:lsp-1),4)
 !      vs1(1:lx1,1:lx2,1:lx3,lsp)=1._wp/ns(1:lx1,1:lx2,1:lx3,lsp)/qs(lsp)*(J1-chrgflux)   !density floor needed???
-    vs1(1:lx1,1:lx2,1:lx3,lsp) = -1._wp/max(ns(1:lx1,1:lx2,1:lx3,lsp),mindensdiv)/qs(lsp)*chrgflux
+    vs1(1:lx1,1:lx2,1:lx3,lsp) = -1._wp / max(ns(1:lx1,1:lx2,1:lx3,lsp),mindensdiv) / qs(lsp) * chrgflux
     !! really not strictly correct, should include current density
   end if
-
-  if (any(ieee_is_nan(vs1(1:lx1,1:lx2,1:lx3,lsp)))) error stop 'mulitifluid:multifluid: NaN in vs1 after advection substep'
 
   param=rhoes(:,:,:,isp)
 !  param=advec3D_MC_mpi(param,v1i,v2i,v3i,dt,x,0)
   param=advec3D_MC_mpi(param,v1i,v2i,v3i,dt,x,0,tagTs)
   rhoes(:,:,:,isp)=param
 end do
+
+if (any(ieee_is_nan(chrgflux))) error stop 'mulitifluid:multifluid: NaN in chrgflux after advection substep'
+if (any(ieee_is_nan(vs1(1:lx1,1:lx2,1:lx3,:)))) error stop 'mulitifluid:multifluid: NaN in vs1 after advection substep'
 
 if (myid==0) then
   call cpu_time(tfin)
@@ -147,7 +156,7 @@ end if
 call clean_param(x,1,ns)
 call clean_param(x,2,vs1)
 if (any(ieee_is_nan(ns))) error stop 'mulitifluid:multifluid: NaN in ns before RK2'
-if (any(ieee_is_nan(vs1(1:lx1,1:lx2,1:lx3,lsp)))) error stop 'mulitifluid:multifluid: NaN in vs1 before RK2'
+if (any(ieee_is_nan(vs1(1:lx1,1:lx2,1:lx3,:)))) error stop 'mulitifluid:multifluid: NaN in vs1 before RK2'
 
 
 !ARTIFICIAL VISCOSITY (NOT REALLY NEED BELOW 1000 KM ALT.).  NOTE THAT WE DON'T CHECK WHERE SUBCYCLING IS NEEDED SINCE, IN MY EXPERIENCE THEN CODE IS BOMBING ANYTIME IT IS...

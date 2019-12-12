@@ -200,7 +200,7 @@ v3i(:,:,1:lx3+1)=0.5d0*(vs3(1:lx1,1:lx2,0:lx3,isp)+vs3(1:lx1,1:lx2,1:lx3+1,isp))
 end subroutine advec_prep_mpi_3
 
 
-subroutine advec_prep_mpi_23(isp,isperiodic,ns,rhovs1,vs1,vs2,vs3,rhoes,v1i,v2i,v3i)
+subroutine advec_prep_mpi_23(isp,isperiodic, ns,rhovs1,vs1,vs2,vs3,rhoes,v1i,v2i,v3i)
 !! COMPUTE INTERFACE VELOCITIES AND LOAD UP GHOST CELLS
 !! FOR FLUID STATE VARIABLES
 !!
@@ -210,7 +210,8 @@ subroutine advec_prep_mpi_23(isp,isperiodic,ns,rhovs1,vs1,vs2,vs3,rhoes,v1i,v2i,
 
 integer, intent(in) :: isp
 logical, intent(in) :: isperiodic
-real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: ns,rhovs1,vs1,vs2,vs3,rhoes
+real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: vs1
+real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: ns,rhovs1,vs2,vs3,rhoes
 
 real(wp), dimension(1:size(vs1,1)-3,1:size(vs1,2)-4,1:size(vs1,3)-4), intent(out) :: v1i
 real(wp), dimension(1:size(vs1,1)-4,1:size(vs1,2)-3,1:size(vs1,3)-4), intent(out) :: v2i
@@ -303,12 +304,12 @@ iddown=myid2-1; idup=myid2+1
 !NEED TO ALSO PASS THE X2 VELOCITIES SO WE CAN COMPUTE INTERFACE VALUES
 param=vs2(:,:,:,isp)
 call halo(param,1,tagvs2BC,isperiodic)     !! we only need one ghost cell to compute interface velocities
-vs2(:,:,:,isp)=param
+vs2(:,:,:,isp) = param
 
 
 !SET THE GLOBAL X2 BOUNDARY CELLS AND ASSUME HALOING WON'T OVERWRITE.  THIS DIMENSION IS ASSUMED TO NEVER BE PEREIODIC
 if (iddown==-1) then
-  vs2(:,0,:,isp)=vs2(:,1,:,isp)
+  vs2(:,0,:,isp) = vs2(:,1,:,isp)
 
   ns(:,0,:,isp)=ns(:,1,:,isp)
   ns(:,-1,:,isp)=ns(:,1,:,isp)
