@@ -128,7 +128,7 @@ lx3all=size(x3all)-4
 open(newunit=u,file=indatsize,status='old',form='unformatted', access='stream', action='read')
 read(u) lx1in,lx2in,lx3in
 close(u)
-print *, 'Input file has size:  ',lx1in,lx2in,lx3in
+print *, 'io:plasma_input_raw: ' // indatsize // ' size:  ',lx1in,lx2in,lx3in
 print *, 'Target grid structure has size',lx1,lx2all,lx3all
 
 if (flagswap==1) then
@@ -166,17 +166,17 @@ end if
 close(u)
 
 
-if (any(ieee_is_nan(nsall))) error stop 'NaN in nsall'
-if (any(ieee_is_nan(vs1all))) error stop 'NaN in vs1all'
-if (any(ieee_is_nan(Tsall))) error stop 'NaN in Tsall'
-if (any(Tsall<0._wp)) error stop 'negative temperature in Tsall'
-if (any(nsall<0._wp)) error stop 'negative density'
-if (any(vs1all>3e8_wp)) error stop 'drift faster than lightspeed'
+if (any(ieee_is_nan(nsall))) error stop 'io:plasma_input_raw: NaN in nsall'
+if (any(ieee_is_nan(vs1all))) error stop 'io:plasma_input_raw: NaN in vs1all'
+if (any(ieee_is_nan(Tsall))) error stop 'io:plasma_input_raw: NaN in Tsall'
+if (any(Tsall<0._wp)) error stop 'io:plasma_input_raw: negative temperature in Tsall'
+if (any(nsall<0._wp)) error stop 'io:plasma_input_raw: negative density'
+if (any(vs1all>3e8_wp)) error stop 'io:plasma_input_raw: drift faster than lightspeed'
 
 
 !> USER SUPPLIED FUNCTION TO TAKE A REFERENCE PROFILE AND CREATE INITIAL CONDITIONS FOR ENTIRE GRID.
 !> ASSUMING THAT THE INPUT DATA ARE EXACTLY THE CORRECT SIZE (AS IS THE CASE WITH FILE INPUT) THIS IS NOW SUPERFLUOUS
-print *, 'Done setting initial conditions...'
+print *, 'io:plasma_input_raw: read initial conditions...'
 
 
 !> dump loaded arrays for debugging
@@ -194,9 +194,9 @@ print *, 'Done setting initial conditions...'
  ! close(utrace)
 
 
-print *, 'Min/max input density:  ',     minval(nsall(:,:,:,7)),  maxval(nsall(:,:,:,7))
-print *, 'Min/max input velocity:  ',    minval(vs1all(:,:,:,:)), maxval(vs1all(:,:,:,:))
-print *, 'Min/max input temperature:  ', minval(Tsall(:,:,:,:)),  maxval(Tsall(:,:,:,:))
+print '(A, 2ES12.3)', 'Min/max input density:  ',     minval(nsall(:,:,:,7)),  maxval(nsall(:,:,:,7))
+print '(A, 2F9.2)', 'Min/max input velocity:  ',    minval(vs1all(:,:,:,:)), maxval(vs1all(:,:,:,:))
+print '(A, 2F9.2)', 'Min/max input temperature:  ', minval(Tsall(:,:,:,:)),  maxval(Tsall(:,:,:,:))
 
 
 !> ROOT BROADCASTS IC DATA TO WORKERS
@@ -205,7 +205,7 @@ call bcast_send(nsall,tagns,ns)
 call bcast_send(vs1all,tagvs1,vs1)
 call bcast_send(Tsall,tagTs,Ts)
 call cpu_time(tfin)
-print *, 'Done sending ICs to workers...  CPU elapsed time:  ',tfin-tstart
+print '(/,A, F7.3)', 'io:plasma_input_raw: sent ICs to workers. wallclock: ',tfin-tstart
 
 end procedure input_root_mpi
 

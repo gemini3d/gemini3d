@@ -504,7 +504,7 @@ real(wp), dimension(x%lx1,x%lx2,x%lx3) :: zimat,rhoimat,yimat
 !Establish the size of the grid based on input file and distribute to workers
 if (myid==0) then    !root
   write(filename,*) trim(adjustl(neudir)),'simsize.dat'
-  print *, 'Inputting neutral size from file:  ',trim(adjustl(filename))
+  print *, 'neutral:neutral: read neutral size from:  ',trim(adjustl(filename))
   open(newunit=inunit,file=trim(adjustl(filename)),status='old',form='unformatted',access='stream')
   read(inunit) lhorzn,lzn
   close(inunit)
@@ -1466,7 +1466,7 @@ if (gridflag==0) then    !closed dipole grid
     flagSH=.false.
   end if
 
-!  lx1tmp=lx1/2           !note use of integer division here...  This is the size of the half-grid, viz. one hemisphere of the grid.  This also presumes that the grid is uniform in x1, which often won't be the case.  
+!  lx1tmp=lx1/2           !note use of integer division here...  This is the size of the half-grid, viz. one hemisphere of the grid.  This also presumes that the grid is uniform in x1, which often won't be the case.
   ix1=maxloc(pack(zimat(:,1,1),.true.),1)    !apex is by definition the highest altitude along a given field line
   if (flagSH) then
     lx1tmp=ix1                  !first piece of arrays
