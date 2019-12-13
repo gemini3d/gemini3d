@@ -1139,8 +1139,7 @@ Phi= -1*Phi
 !    E2=grad3D2(Phi,x,1,lx1,1,lx2,1,lx3)    !no haloing required now must also be haloed
 !    E3=grad3D3(Phi,x,1,lx1,1,lx2,1,lx3)    !needs to be haloed
 
-if (any(ieee_is_nan(Phi))) error stop &
-  'potential_comm_mumps:potential_workers_mpi: NaN in Phi before J1halo'
+if (any(ieee_is_nan(Phi))) error stop 'potential_comm_mumps:potential_workers_mpi: NaN in Phi before J1halo'
 
 !E2 calculations
 J1halo(1:lx1,1:lx2,1:lx3) = Phi

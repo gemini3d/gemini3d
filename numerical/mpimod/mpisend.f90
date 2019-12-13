@@ -30,6 +30,8 @@ lx3=size(paramtrim,2)
 
 call mpi_send(paramtrim, lx2*lx3, mpi_realprec, 0, tag, MPI_COMM_WORLD, ierr)
 
+if (ierr/=0) error stop 'gather_send2D_23'
+
 end procedure gather_send2D_23
 
 
@@ -58,6 +60,8 @@ lx3=size(paramtrim,3)
 
 call mpi_send(paramtrim,lx1*lx2*lx3,mpi_realprec,0,tag,MPI_COMM_WORLD,ierr)
 
+if (ierr/=0) error stop 'gather_send3D_23'
+
 end procedure gather_send3D_23
 
 
@@ -80,6 +84,8 @@ lx3=size(param,3)-4
 do isp=1,lsp
   paramtmp=param(-1:lx1+2,1:lx2,1:lx3,isp)
   call mpi_send(paramtmp,(lx1+4)*lx2*lx3,mpi_realprec,0,tag,MPI_COMM_WORLD,ierr)
+
+  if (ierr/=0) error stop 'gather_send4D_23'
 end do
 
 end procedure gather_send4D_23
@@ -120,7 +126,9 @@ do iid=1,lid-1
 
   call mpi_send(paramall(islstart-2:islfin+2),(lx+4), &
                mpi_realprec,iid,tag,MPI_COMM_WORLD,ierr)
+  if (ierr/=0) error stop 'gather_send1D_23_2'
 end do
+
 param=paramall(-1:lx+2)
 
 end procedure bcast_send1D_23_2
@@ -161,7 +169,9 @@ do iid=1,lid-1
 
   call mpi_send(paramall(islstart-2:islfin+2),(lx+4), &
                mpi_realprec,iid,tag,MPI_COMM_WORLD,ierr)
+  if (ierr/=0) error stop 'bcast_send1D_23_3'
 end do
+
 param=paramall(-1:lx+2)
 
 end procedure bcast_send1D_23_3
@@ -202,8 +212,8 @@ do iid=1,lid-1
   paramtmp=paramtrimall(inds(1):inds(2),inds(3):inds(4))
   call mpi_send(paramtmp,lx2*lx3, &
                mpi_realprec,iid,tag,MPI_COMM_WORLD,ierr)
+  if (ierr/=0) error stop 'bcast_send2D_23'
 end do
-
 
 !ROOT TAKES A SLAB OF DATA
 paramtrim(1:lx2,1:lx3)=paramtrimall(1:lx2,1:lx3)
@@ -247,8 +257,8 @@ do iid=1,lid-1
   paramtmp=paramtrimall(1:lx1,inds(1):inds(2),inds(3):inds(4))
   call mpi_send(paramtmp,lx1*lx2*lx3, &
                mpi_realprec,iid,tag,MPI_COMM_WORLD,ierr)
+  if (ierr/=0) error stop 'bcast_send3D_23'
 end do
-
 
 !> ROOT TAKES A SLAB OF DATA
 paramtrim=paramtrimall(1:lx1,1:lx2,1:lx3)
@@ -291,8 +301,8 @@ do iid=1,lid-1
   call mpi_send(paramtmp,lx1*lx2*(lx3+1), &
                mpi_realprec,iid,tag,MPI_COMM_WORLD,ierr)
   !! note the +1 since thes are interface quantities (and need to overlap b/t workers)
+  if (ierr/=0) error stop 'bcast_send3D_x3i_23'
 end do
-
 
 !ROOT TAKES A SLAB OF DATA
 paramtrim=paramtrimall(:,1:lx2,1:lx3+1)
@@ -335,8 +345,8 @@ do iid=1,lid-1
   call mpi_send(paramtmp,lx1*(lx2+1)*lx3, &
                mpi_realprec,iid,tag,MPI_COMM_WORLD,ierr)
   !! note the +1 since thes are interface quantities (and need to overlap b/t workers)
+  if (ierr/=0) error stop 'bcast_send3D_x2i_23'
 end do
-
 
 !ROOT TAKES A SLAB OF DATA
 paramtrim=paramtrimall(:,1:lx2+1,1:lx3)
@@ -374,8 +384,8 @@ do iid=1,lid-1
   paramtmp=paramall(:,inds(1)-2:inds(2)+2,inds(3)-2:inds(4)+2)
   call mpi_send(paramtmp,(lx1+4)*(lx2+4)*(lx3+4), &
                mpi_realprec,iid,tag,MPI_COMM_WORLD,ierr)
+  if (ierr/=0) error stop 'bcast_send3D_ghost_23'
 end do
-
 
 !> ROOT TAKES A SLAB OF DATA
 param=paramall(:,-1:lx2+2,-1:lx3+2)
@@ -417,6 +427,8 @@ do isp=1,lsp
     paramtmp=paramall(-1:lx1+2,inds(1):inds(2),inds(3):inds(4),isp)
     call mpi_send(paramtmp,(lx1+4)*lx2*lx3, &
                mpi_realprec,iid,tag,MPI_COMM_WORLD,ierr)
+
+    if (ierr/=0) error stop 'bcast_send4D_23'
   end do
 end do
 
