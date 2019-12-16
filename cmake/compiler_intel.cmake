@@ -26,9 +26,9 @@ endif()
 
 # reduce build-time warning verbosity
 if(WIN32)
-  list(APPEND FFLAGS /warn:nounused /Qdiag-disable:5268)
+  list(APPEND FFLAGS /warn:nounused /Qdiag-disable:5268 /Qdiag-disable:7712)
 else()
-  list(APPEND FFLAGS -warn nounused -diag-disable 5268)
+  list(APPEND FFLAGS -warn nounused -diag-disable 5268 -diag-disable 7712)
 endif(WIN32)
 
 # enforce Fortran 2018 standard
