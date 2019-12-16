@@ -27,7 +27,7 @@ call meters(.false.)
 sw = 1
 call tselec(sw)
 call gtd7(doy, real(UTsec, sp), real(alt_km, sp), real(glat, sp), real(glon, sp), stl, &
-          real(f107a, sp), real(f107, sp), real(Ap, sp), 48, d, T)
+          real(f107a, sp), real(f107, sp), Ap7, 48, d, T)
 massden_gcm3 = d(6)  ! [g cm^-3]
 meanmass_g = massden_gcm3 / (sum(d(1:5)) + sum(d(7:8)))
 
@@ -51,7 +51,7 @@ call meters(.false.)
 sw = 1
 call tselec(sw)
 call gtd7(doy, real(UTsec, sp), real(alt_km, sp), real(glat, sp), real(glon, sp), stl, &
-          real(f107a, sp), real(f107, sp), real(Ap, sp), 48, d, T)
+          real(f107a, sp), real(f107, sp), Ap7, 48, d, T)
 massden_gcm3 = d(6)  ! [g cm^-3]
 meanmass_g = massden_gcm3 / (sum(d(1:5)) + sum(d(7:8)))
 
