@@ -15,33 +15,33 @@ if os == 'windows' and fc.get_id() != 'intel-cl'
 endif
 
 # === compiler options
-quiet = fc.first_supported_argument(['-w', '-nowarn', '/nowarn'])
-impnone = fc.first_supported_argument(['-fimplicit-none', '-warn declarations', '/warn:declarations', '-Mdclchk'])
+oldflags = fc.get_supported_arguments(['-std=legacy', '-w', '-fno-implicit-none', '-Wno-error=array-bounds', '-fcheck=no-all',
+  '-nocheck', '/nocheck', '-nowarn', '/nowarn', '-nostand', '/nowarn'])
+impnone = fc.first_supported_argument(['-fimplicit-none', '-warn', '/warn:declarations', '-Mdclchk'])
 std18 = fc.first_supported_argument(['-std=f2018', '-stand=f18', '/stand:f18'])
-bounds = fc.first_supported_argument(['-Werror=array-bounds', '-check bounds', '/check:bounds', '-Mbounds'])
 if fc.get_id() == 'gcc'
   add_project_arguments('-Wno-unused-variable', '-Wno-maybe-uninitialized', '-Wno-unused-dummy-argument', '-Wno-unused-function',
     impnone, std18, language : 'fortran')
-  if get_option('debug')
-    add_project_arguments(bounds, '-fcheck=all', language: 'fortran')
+  if get_option('buildtype').contains('debug')
+    add_project_arguments('-Werror=array-bounds', '-fcheck=all', language: 'fortran')
   endif
 elif fc.get_id() == 'intel'
   add_project_arguments('-diag-disable 5268', std18, impnone, language: 'fortran')
   if get_option('buildtype').contains('debug')
     # -heap-arrays didn't appear to be needed on Linux?
-    add_project_arguments(bounds, language: 'fortran')
+    add_project_arguments('-check bounds', language: 'fortran')
   endif
 elif fc.get_id() == 'intel-cl'
   # /fpp is necessary for any Fortran preprocessing statement with Intel ifort on Windows
   # https://software.intel.com/en-us/fortran-compiler-developer-guide-and-reference-fpp
   add_project_arguments('/Qdiag-disable:5268', '/fpp', std18, impnone, language: 'fortran')
   if get_option('buildtype').contains('debug')
-    add_project_arguments(bounds, '/heap-arrays', language: 'fortran')
+    add_project_arguments('/check:bounds', '/heap-arrays', language: 'fortran')
   endif
 elif ['pgi', 'flang'].contains(fc.get_id())
   add_project_arguments(impnone, language: 'fortran')
   if get_option('buildtype').contains('debug')
-    add_project_arguments(bounds, language: 'fortran')
+    add_project_arguments('-Mbounds', language: 'fortran')
   endif
 endif
 
