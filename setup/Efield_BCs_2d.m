@@ -101,6 +101,16 @@ for it=1:lt
   E.Vmaxx3ist(:,it)=zeros(llon,1);
 end
 
+%% check for NaNs
+% this is also done in Fortran, but just to help ensure results.
+assert(all(isfinite(E.Exit(:))), 'NaN in Exit')
+assert(all(isfinite(E.Eyit(:))), 'NaN in Eyit')
+assert(all(isfinite(E.Vminx1it(:))), 'NaN in Vminxlit')
+assert(all(isfinite(E.Vmaxx1it(:))), 'NaN in Vmaxxlit')
+assert(all(isfinite(E.Vminx2it(:))), 'NaN in Vminx2it')
+assert(all(isfinite(E.Vmaxx2it(:))), 'NaN in Vmaxx2it')
+assert(all(isfinite(E.Vminx3it(:))), 'NaN in Vminx3it')
+assert(all(isfinite(E.Vmaxx3it(:))), 'NaN in Vmaxx3it')
 %% SAVE THESE DATA TO APPROPRIATE FILES
 % LEAVE THE SPATIAL AND TEMPORAL INTERPOLATION TO THE
 % FORTRAN CODE IN CASE DIFFERENT GRIDS NEED TO BE TRIED.
