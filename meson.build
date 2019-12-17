@@ -100,16 +100,25 @@ zenodo = {
   '3d_glow': {
      'dir': meson.source_root() / 'tests/data/zenodo3d_glow',
      'exe': gemini_glow_exe},
-  }
+}
+
+np = get_option('np')
 
 foreach k, v : zenodo
 
   test_dir = meson.build_root() / 'test'  + k
 
   testname = 'Gemini' + k
+  test_args = ['meson_run_test.py', k, mpiexec.path(), v['exe'],
+               meson.source_root() / 'initialize/test' + k / 'config.nml',
+               test_dir]
+  if np > 0
+    test_args += ['-np', np.to_string()]
+  endif
+
   test(testname, python,
     suite : k,
-    args : ['meson_run_test.py', k, mpiexec.path(), v['exe'], meson.source_root() / 'initialize/test' + k / 'config.nml', test_dir],
+    args : test_args,
     workdir : meson.source_root() / 'script_utils',
     timeout : 2700,
     env: nomalloc_env,

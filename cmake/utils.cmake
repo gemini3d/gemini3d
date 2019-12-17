@@ -10,7 +10,9 @@ if(NOT EXISTS ${CMAKE_SOURCE_DIR}/initialize/${TESTDIR})
 endif()
 
 # sets NP
-num_mpi_processes(${REFDIR})
+if(NOT NP)
+  num_mpi_processes(${REFDIR})
+endif()
 
 set(_name ${TESTNAME}-NP${NP})  # for convenience, name with number of processes since this is important for debugging MPI
 

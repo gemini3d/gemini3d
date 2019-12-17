@@ -41,12 +41,13 @@ zenodo: typing.Dict[str, typing.Any] = {
 }
 
 
-def run_test(testname: str, mpiexec: str, exe: str, nml: str, outdir: str):
+def run_test(testname: str, mpiexec: str, exe: str, nml: str, outdir: str, mpi_count: int = None):
     z = zenodo[testname]
     url_retrieve(z['url'], z['zip'], ('md5', z['md5']))
     extract_zip(z['zip'], z['dir'])
 
-    mpi_count = get_mpi_count(z['dir'] / 'inputs/simsize.dat')
+    if not mpi_count:
+        mpi_count = get_mpi_count(z['dir'] / 'inputs/simsize.dat')
 
     # have to get exe as absolute path
     exe_abs = Path(exe).resolve()
@@ -62,6 +63,7 @@ if __name__ == '__main__':
     p.add_argument('exe')
     p.add_argument('nml')
     p.add_argument('outdir')
+    p.add_argument('-np', help='force number of MPI images', type=int)
     P = p.parse_args()
 
-    run_test(P.testname, P.mpiexec, P.exe, P.nml, P.outdir)
+    run_test(P.testname, P.mpiexec, P.exe, P.nml, P.outdir, mpi_count=P.np)
