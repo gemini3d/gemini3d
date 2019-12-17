@@ -8,11 +8,6 @@ execute_process(
   OUTPUT_VARIABLE NP
   TIMEOUT 15)
 
-# Gemini needs at least 2 MPI images, even if only single CPU core available.
-if(NOT NP OR NP LESS 2)
-  set(NP 2)
-endif()
-
 set(NP ${NP} PARENT_SCOPE)
 
 endfunction(num_mpi_processes)

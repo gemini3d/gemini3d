@@ -12,10 +12,6 @@ endif()
 # sets NP
 num_mpi_processes(${REFDIR})
 
-if(NP LESS 2)
-  message(FATAL_ERROR "Gemini with less than two MPI processes will fail. Must use at least 2 MPI images, even on single core CPU.")
-endif()
-
 set(_name ${TESTNAME}-NP${NP})  # for convenience, name with number of processes since this is important for debugging MPI
 
 add_test(NAME ${_name}

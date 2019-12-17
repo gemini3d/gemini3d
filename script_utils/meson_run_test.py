@@ -50,7 +50,9 @@ def run_test(testname: str, mpiexec: str, exe: str, nml: str, outdir: str):
 
     # have to get exe as absolute path
     exe_abs = Path(exe).resolve()
-    subprocess.check_call([mpiexec, '-np', str(mpi_count), str(exe_abs), nml, outdir], cwd=R)
+    cmd = [mpiexec, '-np', str(mpi_count), str(exe_abs), nml, outdir]
+    print(' '.join(cmd))
+    subprocess.check_call(cmd, cwd=R)
 
 
 if __name__ == '__main__':

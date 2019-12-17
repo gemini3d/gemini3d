@@ -30,8 +30,8 @@ def get_mpi_count(fn: Path, force: int = None) -> int:
             extradiv = 2
 
     size = get_simsize(fn)
-    # need at least 2 images for MPI to function for Gemini
-    mpi_count = 2
+
+    mpi_count = 1
     if size[2] == 1:  # 2D sim
         for i in range(max_cpu, 2, -1):
             mpi_count = max(math.gcd(size[1] // 2, i), mpi_count)
@@ -45,7 +45,7 @@ def get_mpi_count(fn: Path, force: int = None) -> int:
 
     mpi_count //= extradiv
 
-    return max(mpi_count, 2)
+    return max(mpi_count, 1)
 
 
 def get_simsize(fn: Path) -> tuple:
