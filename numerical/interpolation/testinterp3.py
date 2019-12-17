@@ -77,4 +77,4 @@ if __name__ == "__main__":
     if P.plot:
         show()
 
-    print('OK: test interp 3d')
+    print("OK: test interp 3d")

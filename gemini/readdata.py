@@ -47,25 +47,25 @@ def readdata(fn: Path) -> typing.Dict[str, typing.Any]:
     """
 
     wavelength = [
-        '3371',
-        '4278',
-        '5200',
-        '5577',
-        '6300',
-        '7320',
-        '10400',
-        '3466',
-        '7774',
-        '8446',
-        '3726',
-        'LBH',
-        '1356',
-        '1493',
-        '1304',
+        "3371",
+        "4278",
+        "5200",
+        "5577",
+        "6300",
+        "7320",
+        "10400",
+        "3466",
+        "7774",
+        "8446",
+        "3726",
+        "LBH",
+        "1356",
+        "1493",
+        "1304",
     ]
 
     fn = Path(fn).expanduser()
-    fn_aurora = fn.parent / 'aurmaps' / fn.name
+    fn_aurora = fn.parent / "aurmaps" / fn.name
 
     P = read_config(fn.parent / "inputs")
 
@@ -79,7 +79,7 @@ def readdata(fn: Path) -> typing.Dict[str, typing.Any]:
 
         if fn_aurora.is_file():
             dat.update(raw.loadglow_aurmap(fn_aurora, P["lxs"], len(wavelength)))
-            dat['wavelength'] = wavelength
+            dat["wavelength"] = wavelength
     else:
         if hdf is None:
             raise ModuleNotFoundError("pip install h5py")
@@ -93,9 +93,37 @@ def readdata(fn: Path) -> typing.Dict[str, typing.Any]:
 
         if fn_aurora.is_file():
             dat.update(hdf.loadglow_aurmap(fn_aurora))
-            dat['wavelength'] = wavelength
+            dat["wavelength"] = wavelength
 
     return dat
+
+
+def read_Efield(fn: Path) -> typing.Dict[str, typing.Any]:
+    """ load Efield data "Efield_inputs"
+
+    Parameters
+    ----------
+    fn: pathlib.Path
+        filename for this timestep
+
+    Returns
+    -------
+    dat: dict of np.ndarray
+        electric field
+    """
+
+    fn = Path(fn).expanduser().resolve()
+    if not fn.is_file():
+        raise FileNotFoundError(fn)
+
+    if fn.suffix == ".dat":
+        E = raw.load_Efield(fn)
+    else:
+        if hdf is None:
+            raise ModuleNotFoundError("pip install h5py")
+        E = hdf.load_Efield(fn)
+
+    return E
 
 
 def datetime_range(start: datetime, stop: datetime, step: timedelta) -> typing.List[datetime]:

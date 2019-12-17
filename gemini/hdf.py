@@ -38,6 +38,31 @@ def readgrid(fn: Path) -> typing.Dict[str, np.ndarray]:
     return grid
 
 
+def load_Efield(fn: Path) -> typing.Dict[str, np.ndarray]:
+    """
+    load Efield_inputs files that contain input electric field in V/m
+    """
+
+    E: typing.Dict[str, np.ndarray] = {}
+
+    sizefn = fn.parent / "simsize.h5"  # NOT the whole sim simsize.dat
+    with h5py.File(sizefn, "r") as f:
+        E["Nlon"] = f["Nlon"][()]
+        E["Nlat"] = f["Nlat"][()]
+
+    gridfn = fn.parent / "simgrid.h5"  # NOT the whole sim simgrid.dat
+    with h5py.File(gridfn, "r") as f:
+        E["mlon"] = f["mlon"][:]
+        E["mlat"] = f["mlat"][:]
+
+    with h5py.File(fn, "r") as f:
+        E["flagdirich"] = f["flagdirich"]
+        for p in ("Exit", "Eyit", "Vminx1it", "Vmaxx1it", "Vminx2ist", "Vmaxx2ist", "Vminx3ist", "Vmaxx3ist"):
+            E[p] = f[p][:]
+
+    return E
+
+
 def loadframe3d_curv(fn: Path) -> typing.Dict[str, typing.Any]:
     """
     end users should normally use loadframe() instead
@@ -51,7 +76,7 @@ def loadframe3d_curv(fn: Path) -> typing.Dict[str, typing.Any]:
     dat: typing.Dict[str, typing.Any] = {}
 
     with h5py.File(fn, "r") as f:
-        dat["time"] = ymdhourdec2datetime(f["time/ymd"][0], f["time/ymd"][1], f["time/ymd"][2], f['time/UThour'][()])
+        dat["time"] = ymdhourdec2datetime(f["time/ymd"][0], f["time/ymd"][1], f["time/ymd"][2], f["time/UThour"][()])
 
         dat["ne"] = (("x1", "x2", "x3"), f["/nsall"][LSP - 1, :, :, :].transpose())
 
@@ -66,12 +91,12 @@ def loadframe3d_curv(fn: Path) -> typing.Dict[str, typing.Any]:
         )
         dat["Te"] = (("x1", "x2", "x3"), f["/Tsall"][LSP - 1, :, :, :].transpose())
 
-        dat['J1'] = (("x1", "x2", "x3"), f['/J1all'][:].transpose())
-        dat['J2'] = (("x1", "x2", "x3"), f['/J2all'][:].transpose())
-        dat['J3'] = (("x1", "x2", "x3"), f['/J3all'][:].transpose())
+        dat["J1"] = (("x1", "x2", "x3"), f["/J1all"][:].transpose())
+        dat["J2"] = (("x1", "x2", "x3"), f["/J2all"][:].transpose())
+        dat["J3"] = (("x1", "x2", "x3"), f["/J3all"][:].transpose())
 
-        dat['v2'] = (("x1", "x2", "x3"), f['/v2avgall'][:].transpose())
-        dat['v3'] = (("x1", "x2", "x3"), f['/v3avgall'][:].transpose())
+        dat["v2"] = (("x1", "x2", "x3"), f["/v2avgall"][:].transpose())
+        dat["v3"] = (("x1", "x2", "x3"), f["/v3avgall"][:].transpose())
 
         dat["Phitop"] = (("x2", "x3"), f["/Phiall"][:])
 
@@ -94,17 +119,17 @@ def loadframe3d_curvavg(fn: Path) -> typing.Dict[str, typing.Any]:
     dat: typing.Dict[str, typing.Any] = {}
 
     with h5py.File(fn, "r") as f:
-        dat["time"] = ymdhourdec2datetime(f["time/ymd"][0], f["time/ymd"][1], f["time/ymd"][2], f['/time/UThour'][()])
+        dat["time"] = ymdhourdec2datetime(f["time/ymd"][0], f["time/ymd"][1], f["time/ymd"][2], f["/time/UThour"][()])
 
-        dat['ne'] = [("x1", "x2", "x3"), f['/neall'][:].transpose(2, 0, 1)]
-        dat['v1'] = [("x1", "x2", "x3"), f['/v1avgall'][:].transpose(2, 0, 1)]
-        dat['Ti'] = [("x1", "x2", "x3"), f['/Tavgall'][:].transpose(2, 0, 1)]
-        dat['Te'] = [("x1", "x2", "x3"), f['/TEall'][:].transpose(2, 0, 1)]
-        dat['J1'] = [("x1", "x2", "x3"), f['/J1all'][:].transpose(2, 0, 1)]
-        dat['J2'] = [("x1", "x2", "x3"), f['/J2all'][:].transpose(2, 0, 1)]
-        dat['J3'] = [("x1", "x2", "x3"), f['/J3all'][:].transpose(2, 0, 1)]
-        dat['v2'] = [("x1", "x2", "x3"), f['/v2avgall'][:].transpose(2, 0, 1)]
-        dat['v3'] = [("x1", "x2", "x3"), f['/v3avgall'][:].transpose(2, 0, 1)]
+        dat["ne"] = [("x1", "x2", "x3"), f["/neall"][:].transpose(2, 0, 1)]
+        dat["v1"] = [("x1", "x2", "x3"), f["/v1avgall"][:].transpose(2, 0, 1)]
+        dat["Ti"] = [("x1", "x2", "x3"), f["/Tavgall"][:].transpose(2, 0, 1)]
+        dat["Te"] = [("x1", "x2", "x3"), f["/TEall"][:].transpose(2, 0, 1)]
+        dat["J1"] = [("x1", "x2", "x3"), f["/J1all"][:].transpose(2, 0, 1)]
+        dat["J2"] = [("x1", "x2", "x3"), f["/J2all"][:].transpose(2, 0, 1)]
+        dat["J3"] = [("x1", "x2", "x3"), f["/J3all"][:].transpose(2, 0, 1)]
+        dat["v2"] = [("x1", "x2", "x3"), f["/v2avgall"][:].transpose(2, 0, 1)]
+        dat["v3"] = [("x1", "x2", "x3"), f["/v3avgall"][:].transpose(2, 0, 1)]
         dat["Phitop"] = [("x2", "x3"), f["/Phiall"][:]]
 
     return dat
@@ -121,7 +146,7 @@ def loadglow_aurmap(fn: Path) -> typing.Dict[str, typing.Any]:
     """
 
     with h5py.File(fn, "r") as h:
-        dat = {'rayleighs': [("wavelength", "x2", "x3"), h['/aurora/iverout'][:]]}
+        dat = {"rayleighs": [("wavelength", "x2", "x3"), h["/aurora/iverout"][:]]}
 
     return dat
 

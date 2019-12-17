@@ -50,7 +50,7 @@ def compare_all(outdir: Path, refdir: Path, tol: typing.Dict[str, float], doplot
         for k, j in zip(names, itols):
             a = A[k][1]
             b = B[k][1]
-            assert a.shape == b.shape, f'{k} time {i} {t}: ref shape {b.shape} does not match data shape {a.shape}'
+            assert a.shape == b.shape, f"{k} time {i} {t}: ref shape {b.shape} does not match data shape {a.shape}"
             if not np.allclose(a, b, tol[f"rtol{j}"], tol[f"atol{j}"], True):
                 errs += 1
                 logging.error(f"{k} {st}   {abs(a - b).max().item():.3e}")

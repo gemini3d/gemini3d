@@ -15,7 +15,7 @@ R = Path(__file__).parent
 
 def checker(exe: str, doplot: bool, params: dict = None):
     if not shutil.which(exe):
-        print('executable', exe, 'not found', file=sys.stderr)
+        print("executable", exe, "not found", file=sys.stderr)
         raise SystemExit(77)
 
     if not params:
@@ -24,21 +24,21 @@ def checker(exe: str, doplot: bool, params: dict = None):
         ret = subprocess.check_output(
             [
                 exe,
-                params['Q0'],
-                params['E0'],
-                params['alt_range'],
-                params['f107'],
-                params['f107a'],
-                params['Ap'],
-                params['glat'],
-                params['glon'],
-                params['doy'],
-                params['utsec'],
+                params["Q0"],
+                params["E0"],
+                params["alt_range"],
+                params["f107"],
+                params["f107a"],
+                params["Ap"],
+                params["glat"],
+                params["glon"],
+                params["doy"],
+                params["utsec"],
             ],
             universal_newlines=True,
         )
 
-    keV = list(map(float, ret.split('\n')[0].split()[1:]))
+    keV = list(map(float, ret.split("\n")[0].split()[1:]))
     dat = np.loadtxt(io.StringIO(ret), skiprows=1, max_rows=191)
     alt_km = dat[:, 0]
     ionization_rates08 = dat[:, 1:]
@@ -58,31 +58,31 @@ def checker(exe: str, doplot: bool, params: dict = None):
 
     fg = figure()
     axs = fg.subplots(1, 2, sharey=True)
-    fg.suptitle(r'Ap=5 f107=50 Midnight MLT 60$^\circ$ lat.')
+    fg.suptitle(r"Ap=5 f107=50 Midnight MLT 60$^\circ$ lat.")
     # %% Fang 2008 plot
     ax = axs[0]
     for i, e in enumerate(keV):
         ax.semilogx(ionization_rates08[:, i], alt_km, label=str(e))
-    ax.set_ylabel('altitude [km]')
-    ax.set_xlabel('Total ionization rate [cm$^{-3}$ s$^{-1}$]')
+    ax.set_ylabel("altitude [km]")
+    ax.set_xlabel("Total ionization rate [cm$^{-3}$ s$^{-1}$]")
     ax.grid(True)
-    ax.set_title(r'Figure 3 of Fang 2008 by $E_0$ [keV]')
-    ax.legend(loc='best')
+    ax.set_title(r"Figure 3 of Fang 2008 by $E_0$ [keV]")
+    ax.legend(loc="best")
     ax.set_xlim(10, 1e5)
     # %% Fang 2010 plot
     ax = axs[1]
     for i, e in enumerate(keV):
         ax.semilogx(ionization_rates10[:, i], alt_km, label=str(e))
-    ax.set_xlabel('Total ionization rate [cm$^{-3}$ s$^{-1}$]')
+    ax.set_xlabel("Total ionization rate [cm$^{-3}$ s$^{-1}$]")
     ax.grid(True)
-    ax.set_title(r'Figure 2 of Fang 2010 by $E_{mono}$ [keV]')
-    ax.legend(loc='best')
+    ax.set_title(r"Figure 2 of Fang 2010 by $E_{mono}$ [keV]")
+    ax.legend(loc="best")
     ax.set_xlim(10, 1e5)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     p = argparse.ArgumentParser()
-    p.add_argument('exe')
+    p.add_argument("exe")
     p.add_argument("-p", "--plot", help="make plots", action="store_true")
     P = p.parse_args()
 

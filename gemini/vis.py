@@ -190,26 +190,26 @@ def plot23(
 def plot1d2(x: np.ndarray, parm: np.ndarray, name: str, fg: "mplf.Figure", ax: "mpla.Axes" = None):
 
     if parm.ndim != 1:
-        raise ValueError('expecting 1-D data oriented east-west (along latitude)')
+        raise ValueError("expecting 1-D data oriented east-west (along latitude)")
 
     if ax is None:
         ax = fg.gca()
 
     ax.plot(x / 1e3, parm)
-    ax.set_xlabel('eastward dist. (km)')
+    ax.set_xlabel("eastward dist. (km)")
     ax.set_ylabel(CB_LBL[name])
 
 
 def plot1d3(y: np.ndarray, parm: np.ndarray, name: str, fg: "mplf.Figure", ax: "mpla.Axes" = None):
 
     if parm.ndim != 1:
-        raise ValueError('expecting 1-D data oriented east-west (along latitude)')
+        raise ValueError("expecting 1-D data oriented east-west (along latitude)")
 
     if ax is None:
         ax = fg.gca()
 
     ax.plot(y / 1e3, parm)
-    ax.set_xlabel('northward dist. (km)')
+    ax.set_xlabel("northward dist. (km)")
     ax.set_ylabel(CB_LBL[name])
 
 
@@ -228,7 +228,7 @@ def plot_interp(time: datetime, grid: typing.Dict[str, np.ndarray], parm: np.nda
     """
 
     cmap = None
-    if name.startswith("J") or name == 'Phitop':
+    if name.startswith("J") or name == "Phitop":
         cmap = "bwr"
         vmax = abs(parm).max()
         vmin = -vmax
@@ -278,7 +278,7 @@ def plot_interp(time: datetime, grid: typing.Dict[str, np.ndarray], parm: np.nda
         i = np.argsort(xp)  # FIXME: this was in Matlab code--what is its purpose?
 
         if name == "rayleighs":
-            f = interp.interp1d(grid['x2'][inds2], parm, axis=1, bounds_error=False)
+            f = interp.interp1d(grid["x2"][inds2], parm, axis=1, bounds_error=False)
             # hack for pcolormesh to put labels in center of pixel
             wl = kwargs["wavelength"] + [""]
             hi = ax.pcolormesh(xp / 1e3, np.arange(len(wl)), f(xp)[:, i])
@@ -292,10 +292,10 @@ def plot_interp(time: datetime, grid: typing.Dict[str, np.ndarray], parm: np.nda
             f = interp.interp2d(grid["x2"][inds2], grid["x1"][inds1], parm, bounds_error=False)
             plot12(xp[i], zp, f(xp, zp)[:, i], name, cmap, vmin, vmax, fg, ax)
         elif parm.ndim == 1:  # phitop
-            f = interp.interp1d(grid['x2'][inds2], parm, bounds_error=False)
+            f = interp.interp1d(grid["x2"][inds2], parm, bounds_error=False)
             plot1d2(xp, f(xp), name, fg, ax)
         else:
-            raise ValueError(f'{name}: only 2D and 1D data are expected--squeeze data')
+            raise ValueError(f"{name}: only 2D and 1D data are expected--squeeze data")
     elif grid["lx"][1] == 1:  # alt./lat. slice
         ax = fg.gca()
         ax.set_title(f"{name}: {time.isoformat()}  {gitrev()}")
@@ -306,7 +306,7 @@ def plot_interp(time: datetime, grid: typing.Dict[str, np.ndarray], parm: np.nda
 
         if name == "rayleighs":
             # FIXME: this needs to be tested
-            f = interp.interp1d(grid['x3'][inds3], parm, axis=1, bounds_error=False)
+            f = interp.interp1d(grid["x3"][inds3], parm, axis=1, bounds_error=False)
             # hack for pcolormesh to put labels in center of pixel
             wl = kwargs["wavelength"] + [""]
             hi = ax.pcolormesh(np.arange(len(wl)), yp / 1e3, f(yp)[:, i].T)
@@ -321,10 +321,10 @@ def plot_interp(time: datetime, grid: typing.Dict[str, np.ndarray], parm: np.nda
             parmp = f(yp, zp).reshape((lzp, lyp))
             plot13(yp[i], zp, parmp[:, i], name, cmap, vmin, vmax, fg, ax)
         elif parm.ndim == 1:  # phitop
-            f = interp.interp1d(grid['x3'][inds3], parm, bounds_error=False)
+            f = interp.interp1d(grid["x3"][inds3], parm, bounds_error=False)
             plot1d3(yp, f(yp), name, fg, ax)
         else:
-            raise ValueError(f'{name}: only 2D and 1D data are expected--squeeze data')
+            raise ValueError(f"{name}: only 2D and 1D data are expected--squeeze data")
 
     else:  # 3-panel plot, vs. single-panel plots of 2-D cases
         if name == "rayleighs":
@@ -336,8 +336,8 @@ def plot_interp(time: datetime, grid: typing.Dict[str, np.ndarray], parm: np.nda
                 hi = axs[j].pcolormesh(xp / 1e3, yp / 1e3, f(yp, xp))
                 axs[j].set_title(kwargs["wavelength"][i] + r"$\AA$")
                 fg.colorbar(hi, ax=axs[j], label="Rayleighs")
-            axs[2].set_xlabel('eastward dist. (km)')
-            axs[2].set_ylabel('northward dist. (km)')
+            axs[2].set_xlabel("eastward dist. (km)")
+            axs[2].set_ylabel("northward dist. (km)")
             return
         elif parm.ndim == 3:
             fg.set_size_inches((18, 5))
@@ -348,8 +348,8 @@ def plot_interp(time: datetime, grid: typing.Dict[str, np.ndarray], parm: np.nda
             ax = fg.gca()
             f = interp.interp2d(grid["x3"][inds3], grid["x2"][inds2], parm, bounds_error=False)
             hi = ax.pcolormesh(xp / 1e3, yp / 1e3, f(yp, xp), cmap=cmap, vmin=vmin, vmax=vmax)
-            ax.set_xlabel('eastward dist. (km)')
-            ax.set_ylabel('northward dist. (km)')
+            ax.set_xlabel("eastward dist. (km)")
+            ax.set_ylabel("northward dist. (km)")
             fg.colorbar(hi, ax=ax, label=CB_LBL[name])
             return
 

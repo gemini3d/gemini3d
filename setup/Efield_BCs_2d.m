@@ -1,15 +1,13 @@
-function E = Efield_BCs_2d(dir_grid, format, dir_config, realbits)
+function E = Efield_BCs_2d(params, dir_grid, format, dir_config)
 
-narginchk(2, 4)
-validateattributes(dir_grid, {'char'}, {'vector'})
-validateattributes(format, {'char'}, {'vector'})
+narginchk(3, 4)
+validateattributes(params, {'struct'}, {'scalar'}, mfilename, 'sim parameters', 1)
+validateattributes(dir_grid, {'char'}, {'vector'}, mfilename, 'grid directory', 2)
+validateattributes(format, {'char'}, {'vector'}, mfilename, 'file format', 3)
 
 cwd = fileparts(mfilename('fullpath'));
-if nargin < 3 || isempty(dir_config), dir_config = cwd; end
-validateattributes(dir_config, {'char'}, {'vector'})
-
-if nargin < 4, realbits = 64; end
-validateattributes(realbits, {'numeric'}, {'scalar', 'integer', 'positive'})
+if nargin < 4 || isempty(dir_config), dir_config = cwd; end
+validateattributes(dir_config, {'char'}, {'vector'}, mfilename, 'config directory', 4)
 
 dir_grid = absolute_path(dir_grid);
 dir_out = [dir_grid, '/Efield_inputs'];
@@ -18,128 +16,142 @@ if ~isfolder(dir_out)
   mkdir(dir_out);
 end
 
-
 %% READ IN THE SIMULATION INFORMATION
-[ymd0, UTsec0] = readconfig(dir_config);
+config = read_config(dir_config);
 
 xg = readgrid(dir_grid);
 lx1 = xg.lx(1);
 lx2 = xg.lx(2);
 lx3 = xg.lx(3);
 
-
-%CREATE A 'DATASET' OF ELECTRIC FIELD INFO
-llon=100;
-llat=100;
-if xg.lx(2) == 1    %this is cartesian-specific code
-  llon=1;
-elseif xg.lx(3) == 1
-  llat=1;
+%% CREATE ELECTRIC FIELD DATASET
+E.llon=100;
+E.llat=100;
+% NOTE: cartesian-specific code
+if lx2 == 1
+  E.llon = 1;
+elseif lx3 == 1
+  E.llat = 1;
+else
+  error('this function is for 2-D only')
 end
-thetamin=min(xg.theta(:));
-thetamax=max(xg.theta(:));
-mlatmin=90-thetamax*180/pi;
-mlatmax=90-thetamin*180/pi;
-mlonmin=min(xg.phi(:))*180/pi;
-mlonmax=max(xg.phi(:))*180/pi;
-latbuf=1/100*(mlatmax-mlatmin);
-lonbuf=1/100*(mlonmax-mlonmin);
-E.mlat = linspace(mlatmin-latbuf,mlatmax+latbuf,llat);
-E.mlon = linspace(mlonmin-lonbuf,mlonmax+lonbuf,llon);
+thetamin = min(xg.theta(:));
+thetamax = max(xg.theta(:));
+mlatmin = 90-thetamax*180/pi;
+mlatmax = 90-thetamin*180/pi;
+mlonmin = min(xg.phi(:))*180/pi;
+mlonmax = max(xg.phi(:))*180/pi;
+latbuf = 1/100 * (mlatmax-mlatmin);
+lonbuf = 1/100 * (mlonmax-mlonmin);
+E.mlat = linspace(mlatmin-latbuf, mlatmax+latbuf, E.llat);
+E.mlon = linspace(mlonmin-lonbuf, mlonmax+lonbuf, E.llon);
 [E.MLON, E.MLAT] = ndgrid(E.mlon, E.mlat);
 mlonmean = mean(E.mlon);
-% mlatmean=mean(E.mlat);
+mlatmean = mean(E.mlat);
 
 %% WIDTH OF THE DISTURBANCE
-fracwidth = 1/7;
-% mlatsig = fracwidth*(mlatmax-mlatmin);
-mlonsig=fracwidth*(mlonmax-mlonmin);
-sigx2=fracwidth*(max(xg.x2)-min(xg.x2));
-
+mlatsig = params.fracwidth*(mlatmax-mlatmin);
+mlonsig = params.fracwidth*(mlonmax-mlonmin);
+sigx2 = params.fracwidth*(max(xg.x2)-min(xg.x2));
+sigx3 = params.fracwidth*(max(xg.x3)-min(xg.x3));
 %% TIME VARIABLE (SECONDS FROM SIMULATION BEGINNING)
-tmin=0;
-tmax=300;
-dt = 1.;  % [seconds]  % FIXME: shouldn't this be from config.nml
-time = tmin:dt:tmax;
-lt = length(time);
+tmin = 0;
+time = tmin:config.dtE0:config.tdur;
+Nt = length(time);
 %% SET UP TIME VARIABLES
-ymd = ymd0;
-UTsec = UTsec0+time;     %time given in file is the seconds from beginning of hour
-UThrs = UTsec/3600;
-E.expdate = cat(2, repmat(ymd(:)',[lt,1]), UThrs', zeros(lt,1), zeros(lt,1));
+UTsec = config.UTsec0 + time;     %time given in file is the seconds from beginning of hour
+UThrs = UTsec / 3600;
+E.expdate = cat(2, repmat(config.ymd(:)',[Nt, 1]), UThrs', zeros(Nt, 1), zeros(Nt, 1));
 % t=datenum(E.expdate);
-
 %% CREATE DATA FOR BACKGROUND ELECTRIC FIELDS
-E.Exit=zeros(llon,llat,lt);
-E.Eyit=zeros(llon,llat,lt);
-for it=1:lt
-  E.Exit(:,:,it)=zeros(llon,llat);   %V/m
-  E.Eyit(:,:,it)=zeros(llon,llat);
-end
+E.Exit = zeros(E.llon, E.llat, Nt);
+E.Eyit = zeros(E.llon, E.llat, Nt);
 
+% put custom E-field background in this for loop
+%{
+for it=1:Nt
+  E.Exit(:,:,it) = ;   %V/m
+  E.Eyit(:,:,it) = ;
+end
+%}
 %% CREATE DATA FOR BOUNDARY CONDITIONS FOR POTENTIAL SOLUTION
-flagdirich=1;   %if 0 data is interpreted as FAC, else we interpret it as potential
-E.Vminx1it=zeros(llon,llat,lt);
-E.Vmaxx1it=zeros(llon,llat,lt);
-E.Vminx2ist=zeros(llat,lt);
-E.Vmaxx2ist=zeros(llat,lt);
-E.Vminx3ist=zeros(llon,lt);
-E.Vmaxx3ist=zeros(llon,lt);
-Etarg=50e-3;            % target E value in V/m
-if lx3 == 1
+params.flagdirich = 1;   %if 0 data is interpreted as FAC, else we interpret it as potential
+E.Vminx1it = zeros(E.llon,E.llat, Nt);
+E.Vmaxx1it = zeros(E.llon,E.llat, Nt);
+%these are just slices
+E.Vminx2ist = zeros(E.llat, Nt);
+E.Vmaxx2ist = zeros(E.llat, Nt);
+E.Vminx3ist = zeros(E.llon, Nt);
+E.Vmaxx3ist = zeros(E.llon, Nt);
+
+Etarg = 50e-3;            % target E value in V/m
+
+if lx3 == 1 % east-west
   pk = Etarg*sigx2 .* xg.h2(lx1, floor(lx2/2), 1).*sqrt(pi)./2;
-elseif lx2 == 1
-  pk = Etarg*sigx2 .* xg.h2(lx1, 1, floor(lx3/2)).*sqrt(pi)./2;
+elseif lx2 == 1 % north-south
+  pk = Etarg*sigx3 .* xg.h3(lx1, 1, floor(lx3/2)).*sqrt(pi)./2;
 end
 % x2ctr = 1/2*(xg.x2(lx2)+xg.x2(1));
-for it=1:lt
-  E.Vminx1it(:,:,it)=zeros(llon,llat);
-  E.Vmaxx1it(:,:,it)=pk.*erf((E.MLON-mlonmean)/mlonsig);%.*erf((MLAT-mlatmean)/mlatsig);
-  E.Vminx2ist(:,it)=zeros(llat,1);     %these are just slices
-  E.Vmaxx2ist(:,it)=zeros(llat,1);
-  E.Vminx3ist(:,it)=zeros(llon,1);
-  E.Vmaxx3ist(:,it)=zeros(llon,1);
+for i = 1:Nt
+  % put your functions in these if you want
+  %{
+  E.Vminx1it(:,:,i) = ;
+  %}
+  if lx2 == 1
+    E.Vmaxx1it(:,:,i) = pk .* erf((E.MLAT - mlatmean)/mlatsig);
+  elseif lx3 == 1
+    E.Vmaxx1it(:,:,i) = pk .* erf((E.MLON - mlonmean)/mlonsig);
+  end
+  % put your functions in these if you want
+  %{
+  E.Vminx2ist(:,i) = ;
+  E.Vmaxx2ist(:,i) = ;
+  E.Vminx3ist(:,i) = ;
+  E.Vmaxx3ist(:,i) = ;
+  %}
 end
 
 %% check for NaNs
 % this is also done in Fortran, but just to help ensure results.
 assert(all(isfinite(E.Exit(:))), 'NaN in Exit')
 assert(all(isfinite(E.Eyit(:))), 'NaN in Eyit')
-assert(all(isfinite(E.Vminx1it(:))), 'NaN in Vminxlit')
-assert(all(isfinite(E.Vmaxx1it(:))), 'NaN in Vmaxxlit')
-assert(all(isfinite(E.Vminx2it(:))), 'NaN in Vminx2it')
-assert(all(isfinite(E.Vmaxx2it(:))), 'NaN in Vmaxx2it')
-assert(all(isfinite(E.Vminx3it(:))), 'NaN in Vminx3it')
-assert(all(isfinite(E.Vmaxx3it(:))), 'NaN in Vmaxx3it')
+assert(all(isfinite(E.Vminx1it(:))), 'NaN in Vminx1it')
+assert(all(isfinite(E.Vmaxx1it(:))), 'NaN in Vmaxx1it')
+assert(all(isfinite(E.Vminx2ist(:))), 'NaN in Vminx2ist')
+assert(all(isfinite(E.Vmaxx2ist(:))), 'NaN in Vmaxx2ist')
+assert(all(isfinite(E.Vminx3ist(:))), 'NaN in Vminx3ist')
+assert(all(isfinite(E.Vmaxx3ist(:))), 'NaN in Vmaxx3ist')
 %% SAVE THESE DATA TO APPROPRIATE FILES
 % LEAVE THE SPATIAL AND TEMPORAL INTERPOLATION TO THE
 % FORTRAN CODE IN CASE DIFFERENT GRIDS NEED TO BE TRIED.
 % THE EFIELD DATA DO NOT TYPICALLY NEED TO BE SMOOTHED.
 
 switch format
-  case {'raw', 'dat'}, writeraw(dir_out, realbits)
-  case {'h5', 'hdf5'}, writehdf5(dir_out)
+  case {'raw', 'dat'}, writeraw(dir_out, E, params)
+  case {'h5', 'hdf5'}, writehdf5(dir_out, E, params)
   otherwise, error(['unknown data format ', format])
 end
 
-
 if ~nargout, clear('E'), end
 
-%% nested functions
+end % function
 
-function writehdf5(dir_out)
+
+function writehdf5(dir_out, E, params)
+narginchk(3,3)
 
 fn = [dir_out, '/simsize.h5'];
 if isfile(fn), delete(fn), end
-h5save(fn, '/llon', llon)
-h5save(fn, '/llat', llat)
+h5save(fn, '/Nlon', E.llon)
+h5save(fn, '/Nlat', E.llat)
 
 fn = [dir_out, '/simgrid.h5'];
 if isfile(fn), delete(fn), end
 h5save(fn, '/mlon', E.mlon)
 h5save(fn, '/mlat', E.mlat)
 
-for i = 1:lt
+Nt = size(E.expdate, 1);
+for i = 1:Nt
   UTsec = E.expdate(i, 4)*3600 + E.expdate(i,5)*60 + E.expdate(i,6);
   ymd = E.expdate(i, 1:3);
 
@@ -147,7 +159,7 @@ for i = 1:lt
   disp(['write: ', fn])
 
   %FOR EACH FRAME WRITE A BC TYPE AND THEN OUTPUT BACKGROUND AND BCs
-  h5save(fn, '/flagdirich', flagdirich)
+  h5save(fn, '/flagdirich', params.flagdirich)
   h5save(fn, '/Exit', E.Exit(:,:,i))
   h5save(fn, '/Eyit', E.Eyit(:,:,i))
   h5save(fn, '/Vminx1it', E.Vminx1it(:,:,i))
@@ -160,23 +172,24 @@ end
 end % function
 
 
-function writeraw(dir_out, realbits)
+function writeraw(dir_out, E, params)
+narginchk(3,3)
+assert(any(params.realbits == [32, 64]), 'realbits == 32 or 64')
 
-assert(any(realbits == [32, 64]), 'realbits == 32 or 64')
-
-freal = ['float',int2str(realbits)];
+freal = ['float',int2str(params.realbits)];
 
 fid = fopen([dir_out, '/simsize.dat'], 'w');
-fwrite(fid, llon, 'integer*4');
-fwrite(fid, llat, 'integer*4');
+fwrite(fid, E.llon, 'integer*4');
+fwrite(fid, E.llat, 'integer*4');
 fclose(fid);
 
-fid=fopen([dir_out, '/simgrid.dat'], 'w');
+fid = fopen([dir_out, '/simgrid.dat'], 'w');
 fwrite(fid, E.mlon, freal);
 fwrite(fid, E.mlat, freal);
 fclose(fid);
 
-for i=1:lt
+Nt = size(E.expdate, 1);
+for i = 1:Nt
   UTsec = E.expdate(i,4)*3600 + E.expdate(i,5)*60 + E.expdate(i,6);
   ymd = E.expdate(i,1:3);
   filename = [dir_out, filesep, datelab(ymd,UTsec), '.dat'];
@@ -184,7 +197,7 @@ for i=1:lt
   fid = fopen(filename, 'w');
 
   %FOR EACH FRAME WRITE A BC TYPE AND THEN OUTPUT BACKGROUND AND BCs
-  fwrite(fid, flagdirich, freal);
+  fwrite(fid, params.flagdirich, 'int32');
   fwrite(fid, E.Exit(:,:,i), freal);
   fwrite(fid, E.Eyit(:,:,i), freal);
   fwrite(fid, E.Vminx1it(:,:,i), freal);
@@ -196,8 +209,5 @@ for i=1:lt
 
   fclose(fid);
 end
-
-end % function
-
 
 end % function

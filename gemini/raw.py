@@ -99,6 +99,38 @@ def readgrid(fn: Path) -> typing.Dict[str, np.ndarray]:
     return grid
 
 
+def load_Efield(fn: Path) -> typing.Dict[str, np.ndarray]:
+    """
+    load Efield_inputs files that contain input electric field in V/m
+    """
+
+    read = np.fromfile
+
+    E: typing.Dict[str, np.ndarray] = {}
+
+    sizefn = fn.parent / "simsize.dat"  # NOT the whole sim simsize.dat
+    with sizefn.open("r") as f:
+        E["Nlon"], E["Nlat"] = read(f, np.int32, 2)
+
+    lxs = (0, E["Nlon"], E["Nlat"])
+
+    gridfn = fn.parent / "simgrid.dat"  # NOT the whole sim simgrid.dat
+    with gridfn.open("r") as f:
+        E["mlon"] = read(f, np.float64, E["Nlon"])
+        E["mlat"] = read(f, np.float64, E["Nlat"])
+
+    with fn.open("r") as f:
+        E["flagdirich"] = read(f, np.int32, 1)
+        for p in ("Exit", "Eyit", "Vminx1it", "Vmaxx1it"):
+            E[p] = read2D(f, lxs)
+        for p in ("Vminx2ist", "Vmaxx2ist"):
+            E[p] = read(f, np.float64, E["Nlat"])
+        for p in ("Vminx3ist", "Vmaxx3ist"):
+            E[p] = read(f, np.float64, E["Nlon"])
+
+    return E
+
+
 def loadframe3d_curv(fn: Path, lxs: typing.Sequence[int]) -> typing.Dict[str, typing.Any]:
     """
     end users should normally use loadframe() instead
@@ -204,7 +236,7 @@ def loadglow_aurmap(f, lxs: typing.Sequence[int], lwave: int) -> typing.Dict[str
     if not len(lxs) == 3:
         raise ValueError(f"lxs must have 3 elements, you have lxs={lxs}")
     raw = np.fromfile(f, np.float64, np.prod(lxs[1:]) * lwave).reshape(np.prod(lxs[1:]) * lwave, order="F")
-    return {'rayleighs': [("wavelength", "x2", "x3"), raw]}
+    return {"rayleighs": [("wavelength", "x2", "x3"), raw]}
 
 
 def read_time(f) -> datetime:
