@@ -67,6 +67,18 @@ rmpath ../script_utils;
 % Sources
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+% % Iowa example
+% neuinfo.sourcelat=38.9609;
+% neuinfo.sourcelong=360-94.088;
+% neuinfo.neugridtype=3;    %1 = Cartesian neutral grid (2D), 2 - axisymmetric (2D), 3 - 3D Cartesian
+% neuinfo.zmin=0;
+% neuinfo.zmax=375;
+% neuinfo.xmin=-1200;
+% neuinfo.xmax=1200;
+% neuinfo.ymin=-1200;
+% neuinfo.ymax=1200;
+% neuinfo.rhomax=[];        %meaningless in 3D situations
+
 % %TOHOKU
 % sourcelat=38.429575;
 % sourcelong=142.734757;

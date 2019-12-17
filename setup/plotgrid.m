@@ -1,34 +1,43 @@
 function ha=plotgrid(xg,flagsource,neuinfo)
 
 
-%% ORGANIZE INPUT STRUCTURE
-neugridtype=neuinfo.neugridtype;
-sourcelat=neuinfo.sourcelat;
-sourcelong=neuinfo.sourcelong;
-zmin=neuinfo.zmin;
-zmax=neuinfo.zmax;
-if (neugridtype==3)
-    xmin=neuinfo.xmin;
-    xmax=neuinfo.xmax;
-    ymin=neuinfo.ymin;
-    ymax=neuinfo.ymax;
-else
-    rhomax=neuinfo.rhomax;
-end %if
-
-
 
 %% INPUT COORDS NEED TO BE CONVERTED TO MAGNETIC
-[sourcetheta,sourcephi]=geog2geomag(sourcelat,sourcelong);
-sourcemlat=90-sourcetheta*180/pi;
-sourcemlon=sourcephi*180/pi;
 mlon=xg.phi*180/pi;
+mlat=90-xg.theta*180/pi;
 dmlon=max(mlon(:))-min(mlon(:));
-if (360-sourcemlon<dmlon+20)
-    sourcemlonplot=sourcemlon-360;
-else
-    sourcemlonplot=sourcemlon;
-end
+
+
+%% ORGANIZE INPUT STRUCTURE
+if (flagsource ~= 0)
+    neugridtype=neuinfo.neugridtype;
+    sourcelat=neuinfo.sourcelat;
+    sourcelong=neuinfo.sourcelong;
+    zmin=neuinfo.zmin;
+    zmax=neuinfo.zmax;
+    if (neugridtype==3)
+        xmin=neuinfo.xmin;
+        xmax=neuinfo.xmax;
+        ymin=neuinfo.ymin;
+        ymax=neuinfo.ymax;
+    else
+        rhomax=neuinfo.rhomax;
+    end %if
+    
+    [sourcetheta,sourcephi]=geog2geomag(sourcelat,sourcelong);
+    sourcemlat=90-sourcetheta*180/pi;
+    sourcemlon=sourcephi*180/pi;
+    
+    if (360-sourcemlon<dmlon+20)
+        sourcemlonplot=sourcemlon-360;
+    else
+        sourcemlonplot=sourcemlon;
+    end
+else     %no "epicenter" to track just use mean grid locations
+    sourcemlon=mean(mlon(:));
+    sourcemlat=mean(mlat(:));
+    sourcemlonplot=sourcemlon
+end %if
 
 
 %% SET UP A MAP PLOT IF MAPPING TOOLBOX EXISTS, DETECT WHETHER WE HAVE A 2D OR 3D GRID TO PLOT
@@ -52,9 +61,7 @@ end
 
 %% CONVERT INPUT GRID COORDINATES INTO MLAT,MLON,ALT
 Re=6370e3;
-mlat=90-xg.theta*180/pi;
 dphi=max(xg.phi(:))-min(xg.phi(:));
-mlon=xg.phi*180/pi;
 alt=xg.alt/1e3;
 altscale=max(alt(:));
 alt=alt/altscale;
