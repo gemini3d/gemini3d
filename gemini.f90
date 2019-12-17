@@ -1,5 +1,5 @@
 !! MAIN PROGRAM FOR GEMINI3D
-
+use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
 use phys_consts, only : lnchem, lwave, lsp, wp, debug
 use grid, only: curvmesh, grid_size,read_grid,clear_grid,lx1,lx2,lx3,lx2all,lx3all
 use io, only : read_configfile,input_plasma,create_outdir,output_plasma,create_outdir_aur,output_aur
@@ -124,6 +124,7 @@ real(wp) :: tglowout
 !! time for next GLOW output
 
 !> FOR HANDLING OUTPUT
+logical :: nooutput = .false.
 integer :: argc
 character(256) :: argv
 integer :: lid2in,lid3in
@@ -163,12 +164,22 @@ select case (argc)
     call mpi_manualgrid(lx2all,lx3all,lid2in,lid3in)
     if (argc == 5) then
       call get_command_argument(5,argv)
-      if (argv == '-d' .or. argv == '-debug')  debug = .true.
+      select case (argv)
+        case ('-d', '-debug')
+          debug = .true.
+        case ('-nooutput')
+          nooutput = .true.
+      end select
     endif
   case default
     if (argc == 3) then
       call get_command_argument(3,argv)
-      if (argv == '-d' .or. argv == '-debug')  debug = .true.
+      select case (argv)
+        case ('-d', '-debug')
+          debug = .true.
+        case ('-nooutput')
+          nooutput = .true.
+      end select
     endif
     call mpigrid(lx2all,lx3all)
     !! following grid_size these are in scope
@@ -268,9 +279,8 @@ do while (t<tdur)
     call neutral_atmos(ymd,UTsec,x%glat,x%glon,x%alt,activ,nn,Tn)
     vn1=0d0; vn2=0d0; vn3=0d0
     !! hard-code these to zero for the first time step
-    call cpu_time(tfin)
-
     if (myid==0) then
+      call cpu_time(tfin)
       print *, 'Neutral background calculated in time:  ',tfin-tstart
     end if
   end if
@@ -288,8 +298,10 @@ do while (t<tdur)
     end if
     call neutral_perturb(interptype,dt,dtneu,t,ymd,UTsec,sourcedir,dxn,drhon,dzn,sourcemlat, &
                                   sourcemlon,x,nn,Tn,vn1,vn2,vn3)
-    call cpu_time(tfin)
-    if (myid==0 .and. debug) print *, 'Neutral perturbations calculated in time:  ',tfin-tstart
+    if (myid==0 .and. debug) then
+      call cpu_time(tfin)
+      print *, 'Neutral perturbations calculated in time:  ',tfin-tstart
+    endif
   end if
 
   !! POTENTIAL SOLUTION
@@ -297,17 +309,19 @@ do while (t<tdur)
   call electrodynamics(it,t,dt,nn,vn2,vn3,Tn,sourcemlat,ns,Ts,vs1,B1,vs2,vs3,x, &
                         potsolve,flagcap,E1,E2,E3,J1,J2,J3, &
                         Phiall,flagE0file,dtE0,E0dir,ymd,UTsec)
-  call cpu_time(tfin)
-  if (myid==0 .and. debug) print *, 'Electrodynamics total solve time:  ',tfin-tstart
-
+  if (myid==0 .and. debug) then
+    call cpu_time(tfin)
+    print *, 'Electrodynamics total solve time:  ',tfin-tstart
+  endif
 
   !! UPDATE THE FLUID VARIABLES
-  call cpu_time(tstart)
+  if (myid==0 .and. debug) call cpu_time(tstart)
   call fluid_adv(ns,vs1,Ts,vs2,vs3,J1,E1,Teinf,t,dt,x,nn,vn1,vn2,vn3,Tn,iver,activ(2),activ(1),ymd,UTsec, &
                  flagprecfile,dtprec,precdir,flagglow,dtglow)
-  call cpu_time(tfin)
-  if (myid==0 .and. debug) print *, 'Multifluid total solve time:  ',tfin-tstart
-
+  if (myid==0 .and. debug) then
+    call cpu_time(tfin)
+    print *, 'Multifluid total solve time:  ',tfin-tstart
+  endif
 
   !! NOW OUR SOLUTION IS FULLY UPDATED SO UPDATE TIME VARIABLES TO MATCH...
   it=it+1; t=t+dt;
@@ -315,24 +329,29 @@ do while (t<tdur)
   call dateinc(dt,ymd,UTsec)
   if (myid==0) print '(A,I4,A1,I0.2,A1,I0.2,A1,F12.6)', 'Current time ',ymd(1),'-',ymd(2),'-',ymd(3),' ',UTsec
 
-
   !! OUTPUT
   if (abs(t-tout) < 1d-5) then
+    tout = tout + dtout
+    if (nooutput) then
+      write(stderr,*) 'WARNING: skipping file output at sim time (sec)',t
+      cycle
+    endif
     !! close enough to warrant an output now...
-    call cpu_time(tstart)
+    if (myid==0 .and. debug) call cpu_time(tstart)
     call output_plasma(outdir,flagoutput,ymd,UTsec,vs2,vs3,ns,vs1,Ts,Phiall,J1,J2,J3)
-    call cpu_time(tfin)
-    if (myid==0 .and. debug) print *, 'Plasma output done for time step:  ',t,' in cpu_time of:  ',tfin-tstart
 
-    tout=tout+dtout
+    if (myid==0 .and. debug) then
+      call cpu_time(tfin)
+      print *, 'Plasma output done for time step:  ',t,' in cpu_time of:  ',tfin-tstart
+    endif
   end if
 
   !! GLOW OUTPUT
   if ((flagglow/=0).and.(abs(t-tglowout) < 1d-5)) then !same as plasma output
     call cpu_time(tstart)
     call output_aur(outdir,flagglow,ymd,UTsec,iver)
-    call cpu_time(tfin)
     if (myid==0) then
+      call cpu_time(tfin)
       print *, 'Auroral output done for time step:  ',t,' in cpu_time of: ',tfin-tstart
     end if
     tglowout=tglowout+dtglowout
