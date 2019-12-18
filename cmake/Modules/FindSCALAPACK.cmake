@@ -15,7 +15,7 @@ Finds SCALAPACK libraries for MKL, OpenMPI and MPICH.
 Intel MKL relies on having environment variable MKLROOT set, typically by sourcing
 mklvars.sh beforehand.
 
-This also uses our FindLAPACK.cmake to deduplicate code.
+In general SCALAPACK requires linking LAPACK as well.
 
 
 Parameters
@@ -111,7 +111,6 @@ cmake_policy(VERSION 3.11)
 
 if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.12)
   cmake_policy(SET CMP0074 NEW)
-  cmake_policy(SET CMP0075 NEW)
 endif()
 
 if(NOT (OpenMPI IN_LIST SCALAPACK_FIND_COMPONENTS

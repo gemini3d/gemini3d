@@ -51,20 +51,20 @@ file(READ ${CMAKE_SOURCE_DIR}/tests/test_scalapack.f90 _code)
 check_fortran_source_runs(${_code} SCALAPACK_OK SRC_EXT f90)
 
 if(NOT SCALAPACK_OK)
-  message(FATAL_ERROR "Scalapack ${SCALAPACK_LIBRARIES} not working with LAPACK ${LAPACK_LIBRARIES} and ${CMAKE_Fortran_COMPILER_ID} ${CMAKE_Fortran_COMPILER_VERSION}")
-endif(NOT SCALAPACK_OK)
+message(FATAL_ERROR "Scalapack ${SCALAPACK_LIBRARIES} not working with LAPACK ${LAPACK_LIBRARIES} and ${CMAKE_Fortran_COMPILER_ID} ${CMAKE_Fortran_COMPILER_VERSION}")
+endif()
 
 
 # --- MUMPS
 if(realbits EQUAL 64)
-  set(mumpscomp d)
+  set(_mumpscomp d)
 elseif(realbits EQUAL 32)
-  set(mumpscomp s)
+  set(_mumpscomp s)
 else()
   message(FATAL_ERROR "MUMPS has only real32, real64")
 endif()
 
-find_package(MUMPS REQUIRED COMPONENTS ${mumpscomp})
+find_package(MUMPS REQUIRED COMPONENTS ${_mumpscomp})
 
 # rather than appending this libraries everywhere, just put them together here.
 list(APPEND MUMPS_LIBRARIES ${SCALAPACK_LIBRARIES})
@@ -74,4 +74,21 @@ list(APPEND MUMPS_LIBRARIES ${_mumps_extra})
 
 if(MUMPS_ROOT)  # not a system library, need lapack
   list(APPEND MUMPS_LIBRARIES ${LAPACK_LIBRARIES})
+endif()
+
+# -- verify MUMPS works
+
+include(CheckFortranSourceCompiles)
+
+set(CMAKE_REQUIRED_LIBRARIES ${MUMPS_LIBRARIES} MPI::MPI_Fortran)
+set(CMAKE_REQUIRED_INCLUDES ${MUMPS_INCLUDE_DIRS})
+
+# NOTE: These must be in quotes here: "d" "s" or behavior is intermittent
+check_fortran_source_compiles("include '${_mumpscomp}mumps_struc.h'
+type(${_mumpscomp}mumps_struc) :: mumps_par
+end"
+  MUMPS_OK SRC_EXT f90)
+
+if(NOT MUMPS_OK)
+message(FATAL_ERROR "MUMPS ${MUMPS_LIBRARIES} not working with ${CMAKE_Fortran_COMPILER_ID} ${CMAKE_Fortran_COMPILER_VERSION}")
 endif()
