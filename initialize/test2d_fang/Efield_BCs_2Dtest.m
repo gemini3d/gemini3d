@@ -8,7 +8,7 @@ direcgrid='../tests/data/zenodo2d/input/'
 
 %OUTPUT FILE LOCATION
 outdir='../simulations/input/test2d_fields/';
-system(['mkdir ',outdir]);
+mkdir(outdir);
 
 
 %READ IN THE SIMULATION INFORMATION (MEANS WE NEED TO CREATE THIS FOR THE SIMULATION WE WANT TO DO)

@@ -15,8 +15,7 @@ assert(isfolder(direc), [direc, ' is not a directory.'])
 
 plotdir = [direc, '/plots'];
 if ~isfolder(plotdir)
-  [status, msg] = mkdir(plotdir);
-  assert(status==0, ['could not create directory ', plotdir, ' ', msg])
+  mkdir(plotdir);
 end
 
 disp(['writing plots to ', plotdir])
