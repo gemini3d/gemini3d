@@ -25,7 +25,6 @@ add_library(io io.f90 aurora.f90 output.f90 input.f90
   ${io_src})
 set_target_properties(io PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR})
 target_link_libraries(io PRIVATE calculus const fsutils grid mpimod timeutils)
-target_compile_definitions(io PRIVATE TRACE=${TRACE})
 target_compile_options(io PRIVATE ${FFLAGS})
 
 if(hdf5)
