@@ -68,6 +68,8 @@ This file is intended to document development priorities for the GEMINI project.
 * Add an example or options to run with a global grid, in case that is useful for anyone.  This basically requires a special grid generation script and then the simulation needs to be flagged as periodic in x3 (magnetic longitude).  
 * Ability to run a dipole grid that encapsulates the magnetic poles
 * Include precipitation information (Qp,E0p,mlatp,mlonp variables from precipBCs module) in GEMINI output files.  
+* Optimized potential solution for case with no capacitance...
+* High-order differencing for decimated parallel grid...
 
 
 ## Plans for adding physics:
