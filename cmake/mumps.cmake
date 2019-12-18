@@ -46,9 +46,9 @@ endif()
 set(CMAKE_REQUIRED_INCLUDES ${SCALAPACK_INCLUDE_DIRS})
 set(CMAKE_REQUIRED_LIBRARIES ${SCALAPACK_LIBRARIES} ${LAPACK_LIBRARIES})
 
-include(CheckFortranSourceCompiles)
+include(CheckFortranSourceRuns)
 file(READ ${CMAKE_SOURCE_DIR}/tests/test_scalapack.f90 _code)
-check_fortran_source_compiles(${_code} SCALAPACK_OK SRC_EXT f90)
+check_fortran_source_runs(${_code} SCALAPACK_OK SRC_EXT f90)
 
 if(NOT SCALAPACK_OK)
   message(FATAL_ERROR "Scalapack ${SCALAPACK_LIBRARIES} not working with LAPACK ${LAPACK_LIBRARIES} and ${CMAKE_Fortran_COMPILER_ID} ${CMAKE_Fortran_COMPILER_VERSION}")

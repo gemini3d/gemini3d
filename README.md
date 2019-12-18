@@ -1,10 +1,10 @@
+
+# GEMINI
+
 [![Actions Status](https://github.com/gemini3d/gemini/workflows/ci_python/badge.svg)](https://github.com/gemini3d/gemini/actions)
 [![Actions Status](https://github.com/gemini3d/gemini/workflows/ci_debug_build/badge.svg)](https://github.com/gemini3d/gemini/actions)
 [![Actions Status](https://github.com/gemini3d/gemini/workflows/ci_linux/badge.svg)](https://github.com/gemini3d/gemini/actions)
 [![Actions Status](https://github.com/gemini3d/gemini/workflows/ci_macos/badge.svg)](https://github.com/gemini3d/gemini/actions)
-
-
-# GEMINI
 
 The GEMINI model (*G*eospace *E*nvironment *M*odel of *I*on-*N*eutral *I*nteractions) is a three-dimensional ionospheric fluid-electrodynamic model used for various scientific studies including effects of auroras on the terrestrial ionosphere, natural hazard effects on the space environment, and effects of ionospheric fluid instabilities on radio propagation (see references section of this document for details).
 The detailed mathematical formulation of GEMINI is included in `doc/`.

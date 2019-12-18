@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.13)  # 3.12 for find_ROOT, 3.13 for a lot of user functions
+cmake_minimum_required(VERSION 3.14)  # 3.12 for find_ROOT, 3.13 for a lot of user functions, 3.14 for check_fortran_source_runs
 
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release CACHE STRING "Debug or Release" FORCE)
