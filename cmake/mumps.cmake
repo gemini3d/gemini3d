@@ -83,7 +83,6 @@ include(CheckFortranSourceCompiles)
 set(CMAKE_REQUIRED_LIBRARIES ${MUMPS_LIBRARIES} MPI::MPI_Fortran)
 set(CMAKE_REQUIRED_INCLUDES ${MUMPS_INCLUDE_DIRS})
 
-# NOTE: These must be in quotes here: "d" "s" or behavior is intermittent
 check_fortran_source_compiles("include '${_mumpscomp}mumps_struc.h'
 type(${_mumpscomp}mumps_struc) :: mumps_par
 end"
