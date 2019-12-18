@@ -11,7 +11,7 @@ set_tests_properties(MPIbasic PROPERTIES
 # ---
 
 add_executable(test_scalapack test_scalapack.f90)
-target_link_libraries(test_scalapack PRIVATE ${SCALAPACK_LIBRARIES} MPI::MPI_Fortran)
+target_link_libraries(test_scalapack PRIVATE ${SCALAPACK_LIBRARIES} ${LAPACK_LIBRARIES} MPI::MPI_Fortran)
 target_include_directories(test_scalapack PRIVATE ${SCALAPACK_INCLUDE_DIRS})
 target_compile_options(test_scalapack PRIVATE ${FFLAGS})
 add_test(NAME ScalapackBasic COMMAND testmpi)
