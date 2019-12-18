@@ -71,14 +71,14 @@ if (myid==0) then    !root must physically read the size info and pass to worker
 
   !! check correct number of MPI images. Help avoid confusing errors or bad simulations
   if (lx2all > 1) then
-    if (modulo(lx2all, lid) /= 0) then
+    if (modulo(lx2all, lid2) /= 0) then
       write(stderr,'(/,A,I6,A,I6,/)') 'ERROR: Number of MPI images ', lid, ' is not an integer factor of lx2all: ', lx2all
       error stop
     endif
   endif
 
   if (lx3all > 1) then
-    if (modulo(lx3all, lid) /= 0) then
+    if (modulo(lx3all, lid3) /= 0) then
       write(stderr,'(/,A,I6,A,I6,/)') 'ERROR: Number of MPI images ', lid, ' is not an integer factor of lx3all: ', lx3all
       error stop
     endif
