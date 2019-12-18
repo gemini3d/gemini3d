@@ -1,7 +1,7 @@
 if(WIN32)
   set(FFLAGS /warn:declarations /traceback)
   list(APPEND FFLAGS /Qopenmp)
-  list(APPEND FFLAGS /heap-arrays)  # stack overflow avoid
+  list(APPEND FFLAGS /heap-arrays)  # necessary for stack overflow avoid
 else()
   set(FFLAGS -warn declarations -traceback)  # -warn all or -warn gets mixed with -qopenmp with CMake 3.14.2
   list(APPEND FFLAGS -qopenmp)  # undefined reference to `omp_get_max_threads'
