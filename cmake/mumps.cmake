@@ -34,13 +34,28 @@ else()
   find_package(SCALAPACK REQUIRED COMPONENTS OpenMPI)
 endif()
 
+# LAPACK
 if(DEFINED ENV{MKLROOT})
   find_package(LAPACK REQUIRED COMPONENTS MKL)
 else()
   find_package(LAPACK REQUIRED)
 endif()
 
-# Mumps
+# -- verify Scalapack links
+
+set(CMAKE_REQUIRED_INCLUDES ${SCALAPACK_INCLUDE_DIRS})
+set(CMAKE_REQUIRED_LIBRARIES ${SCALAPACK_LIBRARIES} ${LAPACK_LIBRARIES})
+
+include(CheckFortranSourceCompiles)
+file(READ ${CMAKE_SOURCE_DIR}/tests/test_scalapack.f90 _code)
+check_fortran_source_compiles(${_code} SCALAPACK_OK SRC_EXT f90)
+
+if(NOT SCALAPACK_OK)
+  message(FATAL_ERROR "Scalapack ${SCALAPACK_LIBRARIES} not working with LAPACK ${LAPACK_LIBRARIES} and ${CMAKE_Fortran_COMPILER_ID} ${CMAKE_Fortran_COMPILER_VERSION}")
+endif(NOT SCALAPACK_OK)
+
+
+# --- MUMPS
 if(realbits EQUAL 64)
   set(mumpscomp d)
 elseif(realbits EQUAL 32)
