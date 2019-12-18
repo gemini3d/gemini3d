@@ -5,6 +5,7 @@ if(BUILD_SHARED_LIBS)
 else()
   set(HDF5_USE_STATIC_LIBRARIES true)
 endif()
+
 find_package(HDF5 REQUIRED COMPONENTS Fortran Fortran_HL)
 
 if(WIN32)
@@ -28,7 +29,8 @@ if(HDF5_Fortran_DEFINITIONS)
   message(STATUS "HDF5 compiler defs: ${HDF5_Fortran_DEFINITIONS}")
 endif()
 
-endif()
+
+# -- verify HDF5 links
 
 set(CMAKE_REQUIRED_INCLUDES ${HDF5_INCLUDE_DIRS} ${HDF5_Fortran_INCLUDE_DIRS})
 set(CMAKE_REQUIRED_LIBRARIES ${HDF5_Fortran_HL_LIBRARIES} ${HDF5_Fortran_LIBRARIES})
@@ -39,5 +41,8 @@ check_fortran_source_compiles("use h5lt; end" HDF5OK SRC_EXT f90)
 set(HDF5OK ${HDF5OK} CACHE BOOL "HDF5 library working?")
 
 if(NOT HDF5OK)
-  message(WARNING "HDF5 library may not be working with ${CMAKE_Fortran_COMPILER_ID} ${CMAKE_Fortran_COMPILER_VERSION}")
-endif()
+  set(hdf5 false)
+  message(STATUS "DISABLED: HDF5 library not working with ${CMAKE_Fortran_COMPILER_ID} ${CMAKE_Fortran_COMPILER_VERSION}")
+endif(NOT HDF5OK)
+
+endif(NOT DEFINED HDF5OK)
