@@ -36,6 +36,7 @@ This file is intended to document development priorities for the GEMINI project.
 
 ## Future Code refactoring
 
+* Module for user defined options in input file to avoid excessive passing of flags around...
 * Fair bit of code repetition in top-level electric field and precipitation interpolation routines
 * X Code duplication in electrodynamics module (haloing part should be written as a subroutine).  This duplication also exists in other places, e.g., in RK2prep - this has now become a serious readability issue for anyone trying to modify those files
 * X Axisymmetric and Cartesian interpolations should be combined (much code-sharing)
@@ -47,6 +48,7 @@ This file is intended to document development priorities for the GEMINI project.
 * Handling of metric factors in the potential solves is sloppy - need to be passing into solver and used to eval. geometric terms there - would be more clear to reader...
 * elliptic solvers do not need to check for root vs. workers anymore; is done from calling functions
 * X Clean up neutral interpolation code...
+* Could combine a lot of the root and worker top-level electrodynamics???
 
 
 ## Coding style and standards issues
@@ -74,6 +76,7 @@ These are projects in progress involved GEMINI, you are encouraged to email M. Z
 * Resolved potential solutions - decimate parallel grid down to Farley mapping scale for perp resolution then so the solve on that coarse grid then interpolate back up to original grid.  I've had luck with MUMPS solves in reasonable time up to 300 x 300 x 15 grid points which is probably enough to do something interesting with appropriate periodic and Lagrangian grids (moving at E x B).  
 * Diamagnetic drift and perpendicular ambipolar fields - necessary for the smallest scales, e.g. less than 100 m
 * Need to add option for true coordinates to be used in the computations of magnetic perturbations (instead of flattened-out spherical)
+* Gravitational drift and current --> equatorial plasma bubbles.  
 
 
 ## Interfaces with other models

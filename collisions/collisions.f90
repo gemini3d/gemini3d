@@ -189,6 +189,7 @@ end if
 end subroutine thermal_conduct
 
 
+!ZZZ - add a "gravitational conductivity" output for use by potential solver, grav. drift can use mobilities...
 pure subroutine conductivities(nn,Tn,ns,Ts,vs1,B1,sig0,sigP,sigH,muP,muH,muPvn,muHvn)
 
 !------------------------------------------------------------

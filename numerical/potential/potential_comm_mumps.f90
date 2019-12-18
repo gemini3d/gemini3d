@@ -153,7 +153,8 @@ if (potsolve == 1 .or. potsolve == 3) then    !electrostatic solve or electrosta
                               Phiall,flagE0file,dtE0,E0dir,ymd,UTsec)
   end if
 
-  !DRIFTS - NEED TO INCLUDE ELECTRIC, WIND-DRIVEN, AND GRAVITATIONAL???
+  !DRIFTS - NEED TO INCLUDE ELECTRIC, WIND-DRIVEN
+!ZZZ - add in gravitational drift based on mobilities for each species...
 !  if (lx2/=1) then    !full 3D solve, go with the regular formulas
   if(flagswap/=1) then
     do isp=1,lsp
