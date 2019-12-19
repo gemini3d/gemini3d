@@ -407,6 +407,31 @@ if (debug) print *, 'Root has computed wind source terms...',minval(srcterm),  m
 !-------
 
 
+!-------
+!GRAVITATIONAL SOURCE TERMS FOR POTENTIAL EQUATION, SIMILAR TO ABOVE BLOCK OF CODE
+J1=0d0    !so this div is only perp components
+if (flagswap==1) then
+  J2=sigPgrav*g2+sigHgrav*g3       !grav x2 current
+  J3=-1*sigHgrav*g2+sigPgrav*g3    !grav x3 current
+else
+  J2=sigPgrav*g2-sigHgrav*g3
+  J3=sigHgrav*g2+sigPgrav*g3
+end if
+J1halo(1:lx1,1:lx2,1:lx3)=J1
+J2halo(1:lx1,1:lx2,1:lx3)=J2
+J3halo(1:lx1,1:lx2,1:lx3)=J3
+
+call halo_pot(J1halo,tagJ1,x%flagper,.false.)
+call halo_pot(J2halo,tagJ2,x%flagper,.false.)
+call halo_pot(J3halo,tagJ3,x%flagper,.false.)
+
+divtmp=div3D(J1halo(0:lx1+1,0:lx2+1,0:lx3+1),J2halo(0:lx1+1,0:lx2+1,0:lx3+1), &
+             J3halo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
+srcterm=srcterm+divtmp(1:lx1,1:lx2,1:lx3)
+if (debug) print *, 'Root has computed gravitational source terms...',minval(srcterm),  maxval(srcterm)
+!-------
+
+
 !!!!!!!!
 !-----AT THIS POINT WE MUST DECIDE WHETHER TO DO AN INTEGRATED SOLVE OR A 2D FIELD-RESOLVED SOLVED
 !-----DECIDE BASED ON THE SIZE OF THE X2 DIMENSION
@@ -1000,6 +1025,28 @@ divtmp=div3D(J1halo(0:lx1+1,0:lx2+1,0:lx3+1),J2halo(0:lx1+1,0:lx2+1,0:lx3+1), &
              J3halo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
 srcterm=srcterm+divtmp(1:lx1,1:lx2,1:lx3)
 !-------
+
+
+!GRAVITATIONAL SOURCE TERMS FOR POTENTIAL EQUATION, SIMILAR TO ABOVE BLOCK OF CODE
+J1=0d0    !so this div is only perp components
+if (flagswap==1) then
+  J2=sigPgrav*g2+sigHgrav*g3       !grav x2 current
+  J3=-1*sigHgrav*g2+sigPgrav*g3    !grav x3 current
+else
+  J2=sigPgrav*g2-sigHgrav*g3
+  J3=sigHgrav*g2+sigPgrav*g3
+end if
+J1halo(1:lx1,1:lx2,1:lx3)=J1
+J2halo(1:lx1,1:lx2,1:lx3)=J2
+J3halo(1:lx1,1:lx2,1:lx3)=J3
+
+call halo_pot(J1halo,tagJ1,x%flagper,.false.)
+call halo_pot(J2halo,tagJ2,x%flagper,.false.)
+call halo_pot(J3halo,tagJ3,x%flagper,.false.)
+
+divtmp=div3D(J1halo(0:lx1+1,0:lx2+1,0:lx3+1),J2halo(0:lx1+1,0:lx2+1,0:lx3+1), &
+             J3halo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
+srcterm=srcterm+divtmp(1:lx1,1:lx2,1:lx3)
 
 
 !    !ZZZ - DEBUG BY GETTING THE ENTIRE SOURCETERM ARRAY
