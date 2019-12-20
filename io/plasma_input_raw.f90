@@ -166,12 +166,12 @@ end if
 close(u)
 
 
-if (any(ieee_is_nan(nsall))) error stop 'NaN in nsall'
-if (any(ieee_is_nan(vs1all))) error stop 'NaN in vs1all'
-if (any(ieee_is_nan(Tsall))) error stop 'NaN in Tsall'
-if (any(Tsall<0._wp)) error stop 'negative temperature in Tsall'
-if (any(nsall<0._wp)) error stop 'negative density'
-if (any(vs1all>3e8_wp)) error stop 'drift faster than lightspeed'
+if (.not. all(ieee_is_finite(nsall))) error stop 'nsall: non-finite value(s)'
+if (.not. all(ieee_is_finite(vs1all))) error stop 'vs1all: non-finite value(s)'
+if (.not. all(ieee_is_finite(Tsall))) error stop 'Tsall: non-finite value(s)'
+if (any(Tsall < 0)) error stop 'negative temperature in Tsall'
+if (any(nsall < 0)) error stop 'negative density'
+if (any(vs1all > 3e8_wp)) error stop 'drift faster than lightspeed'
 
 
 !> USER SUPPLIED FUNCTION TO TAKE A REFERENCE PROFILE AND CREATE INITIAL CONDITIONS FOR ENTIRE GRID.

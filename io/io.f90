@@ -1,7 +1,7 @@
 module io
 !! HANDLES INPUT AND OUTPUT OF PLASMA STATE PARAMETERS (NOT GRID INPUTS)
 use, intrinsic :: iso_fortran_env, only: stderr=>error_unit, real32, real64
-use, intrinsic :: ieee_arithmetic, only: ieee_is_nan, ieee_value, ieee_quiet_nan
+use, intrinsic :: ieee_arithmetic, only: ieee_is_finite, ieee_value, ieee_quiet_nan
 use, intrinsic :: iso_c_binding, only: c_int
 use phys_consts, only : kB,ms,pi,lsp,wp,lwave
 use fsutils, only: expanduser
@@ -17,19 +17,11 @@ private
 public :: read_configfile, create_outdir, &
   input_plasma, output_plasma, input_plasma_currents, &
   create_outdir_mag, output_magfields, &
-  create_outdir_aur, output_aur, check_nan_array
+  create_outdir_aur, output_aur
 
 !> NONE OF THESE VARIABLES SHOULD BE ACCESSED BY PROCEDURES OUTSIDE THIS MODULE
 character(:), allocatable, private :: indatfile
 !! initial condition data files from input configuration file
-
-interface check_nan_array
-  procedure check_nan_array_1d, check_nan_array_2d, check_nan_array_3d, check_nan_array_4d
-end interface check_nan_array
-
-real, parameter :: nan_threshold = 0.
-!! nan_threshold = 0. means not a single NaN is allowed in an array
-
 
 interface ! aurora.f90
 module subroutine create_outdir_aur(outdir)
@@ -133,86 +125,6 @@ integer, intent(out) :: flagglow
 real(wp), intent(out) :: dtglow, dtglowout
 end subroutine read_configfile
 end interface
-
-contains
-
-subroutine check_nan_array_1d(A, vname)
-!! check if more than nan_threshold fraction (arbitrary) of array is NaN and fail sim.
-!! otherwise, warn if any element, but less than nan_threshold fraction of array is NaN
-
-real(wp), intent(in) :: A(:)
-character(*), intent(in) :: vname
-integer :: Asize, Abad
-
-Abad = count(ieee_is_nan(A))
-
-if (Abad > 0) write(stderr,'(/,A,I10,A,/)') 'WARNING: ', Abad, ' NaN in 1d ' // vname
-
-if (Abad/size(A) > nan_threshold) then
-  write(stderr, '(/,A,/)') 'ERROR: excessive NaNs in ' // vname
-  error stop
-endif
-
-end subroutine check_nan_array_1d
-
-
-subroutine check_nan_array_2d(A, vname)
-!! check if more than nan_threshold fraction (arbitrary) of array is NaN and fail sim.
-!! otherwise, warn if any element, but less than nan_threshold fraction of array is NaN
-
-real(wp), intent(in) :: A(:, :)
-character(*), intent(in) :: vname
-integer :: Asize, Abad
-
-Abad = count(ieee_is_nan(A))
-
-if (Abad > 0) write(stderr,'(/,A,I10,A,/)') 'WARNING: ', Abad, ' NaN in 2d ' // vname
-
-if (Abad/size(A) > nan_threshold) then
-  write(stderr, '(/,A,/)') 'ERROR: excessive NaNs in ' // vname
-  error stop
-endif
-
-end subroutine check_nan_array_2d
-
-
-subroutine check_nan_array_3d(A, vname)
-!! check if more than nan_threshold fraction (arbitrary) of array is NaN and fail sim.
-!! otherwise, warn if any element, but less than nan_threshold fraction of array is NaN
-
-real(wp), intent(in) :: A(:, :, :)
-character(*), intent(in) :: vname
-integer :: Asize, Abad
-
-Abad = count(ieee_is_nan(A))
-
-if (Abad > 0) write(stderr,'(/,A,I10,A,/)') 'WARNING: ', Abad, ' NaN in 3d ' // vname
-
-if (Abad/size(A) > nan_threshold) then
-  write(stderr, '(/,A,/)') 'ERROR: excessive NaNs in ' // vname
-  error stop
-endif
-
-end subroutine check_nan_array_3d
-
-
-subroutine check_nan_array_4d(A, vname)
-!! check if more than nan_threshold fraction (arbitrary) of array is NaN and fail sim.
-!! otherwise, warn if any element, but less than nan_threshold fraction of array is NaN
-
-real(wp), intent(in) :: A(:, :, :, :)
-character(*), intent(in) :: vname
-integer :: Asize, Abad
-
-Abad = count(ieee_is_nan(A))
-if (Abad > 0) write(stderr,'(/,A,I10,A,/)') 'WARNING: ', Abad, ' NaN in 4d ' // vname
-
-if (Abad/size(A) > nan_threshold) then
-  write(stderr, '(/,A,/)') 'ERROR: excessive NaNs in ' // vname
-  error stop
-endif
-
-end subroutine check_nan_array_4d
 
 
 end module io

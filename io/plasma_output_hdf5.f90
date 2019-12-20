@@ -147,17 +147,15 @@ call h5f%finalize()
 
 !! Check for any NaN before proceeding to next time step
 
-call check_nan_array(neall, 'neall')
-! FIXME: nsall has 1000+ NaNs in run-to-run varying time and location and count, is that correct?
-call check_nan_array(v1avgall, 'v1avgall')
-call check_nan_array(TEall, 'TEall')
-! FIXME: Tsall can have 1000+ NaNs in run-to-run varying time and location and count,  is that correct?
-call check_nan_array(J1all, 'J1all')
-call check_nan_array(J2all, 'J2all')
-call check_nan_array(J3all, 'J3all')
-call check_nan_array(v2avgall, 'v2avgall')
-call check_nan_array(v3avgall, 'v3avgall')
-call check_nan_array(Phiall, 'Phiall')
+if (.not.all(ieee_is_finite(neall))) error stop 'neall has non-finite value(s)'
+if (.not.all(ieee_is_finite(v1avgall))) error stop 'v1avgall has non-finite value(s)'
+if (.not.all(ieee_is_finite(Teall))) error stop 'Teall has non-finite value(s)'
+if (.not.all(ieee_is_finite(J1all))) error stop 'J1all has non-finite value(s)'
+if (.not.all(ieee_is_finite(J2all))) error stop 'J2all has non-finite value(s)'
+if (.not.all(ieee_is_finite(J3all))) error stop 'J3all has non-finite value(s)'
+if (.not.all(ieee_is_finite(v2avgall))) error stop 'v2avgall has non-finite value(s)'
+if (.not.all(ieee_is_finite(v3avgall))) error stop 'v3avgall has non-finite value(s)'
+if (.not.all(ieee_is_finite(Phiall))) error stop 'Phiall has non-finite value(s)'
 
 end procedure output_root_stream_mpi
 
