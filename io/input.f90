@@ -13,7 +13,7 @@ contains
 module procedure read_configfile
 !! READS THE INPUT CONFIGURAITON FILE ANDE ASSIGNS VARIABLES FOR FILENAMES, SIZES, ETC.
 character(256) :: buf, indat_size, indat_grid, indat_file, source_dir, prec_dir, E0_dir
-integer :: u, i
+integer :: i
 real(wp) :: NaN
 logical :: is_nml
 
@@ -30,6 +30,8 @@ NaN = ieee_value(0._wp, ieee_quiet_nan)
 is_nml = infile(len(infile)-3:len(infile)) == '.nml'
 
 !> READ CONFIG.DAT FILE FOR THIS SIMULATION
+rawconfig : block
+integer :: u
 open(newunit=u, file=infile, status='old', action='read')
 if (is_nml) then
   read(u,nml=base, iostat=i)
@@ -140,7 +142,7 @@ if (flagprecfile/=1) precdir = ""
 
 if (flagprecfile==1 .and. myid==0) then
   print '(A,F10.3)', 'Precipitation file input cadence (s):  ',dtprec
-  print *, 'Precipitation file input source directory:  '//precdir
+  print *, 'Precipitation file input source directory:  ' // precdir
 end if
 
 !> ELECTRIC FIELD FILE INPUT INFORMATION
@@ -170,7 +172,7 @@ if (flagE0file/=1) E0dir = ""
 
 if(flagE0file==1 .and. myid==0) then
   print *, 'Electric field file input cadence (s):  ',dtE0
-  print *, 'Electric field file input source directory:  '//E0dir
+  print *, 'Electric field file input source directory:  ' // E0dir
 end if
 
 !> GLOW ELECTRON TRANSPORT INFORMATION
@@ -199,6 +201,7 @@ if (flagglow==1 .and. myid == 0) then
 end if
 
 close(u)
+end block rawconfig
 
 end procedure read_configfile
 

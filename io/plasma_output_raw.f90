@@ -8,7 +8,7 @@ module procedure output_root_stream_mpi
 !! COLLECT OUTPUT FROM WORKERS AND WRITE TO A FILE USING STREAM I/O.
 !! STATE VARS ARE EXPECTED INCLUDE GHOST CELLS
 
-integer :: lx1,lx2,lx3,lx2all,lx3all,isp, u
+integer :: lx1,lx2,lx3,lx2all,lx3all,isp
 real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: v2avg,v3avg
 real(wp), dimension(-1:size(Phiall,1)+2,-1:size(Phiall,2)+2,-1:size(Phiall,3)+2,1:lsp) :: nsall,vs1all,Tsall
 real(wp), dimension(1:size(Phiall,1),1:size(Phiall,2),1:size(Phiall,3)) :: v2avgall,v3avgall,v1avgall,Tavgall,neall,Teall
@@ -74,6 +74,8 @@ recordlength=int(8,8)+int(8,8)*int(3,8)*int(lx1,8)*int(lx2all,8)*int(lx3all,8)*i
 print *, 'Output bit length:  ',recordlength,lx1,lx2all,lx3all,lsp
 
 !WRITE THE DATA
+block
+integer :: u
 open(newunit=u,file=filenamefull,status='replace',form='unformatted',access='stream',action='write')    !has no problem with > 2GB output files
 write(u) real(ymd,wp),UTsec/3600._wp    !no matter what we must output date and time
 
@@ -178,6 +180,7 @@ else
 end if
 
 close(u)
+end block
 
 end procedure output_root_stream_mpi
 

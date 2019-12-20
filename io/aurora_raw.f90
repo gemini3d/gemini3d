@@ -20,7 +20,6 @@ real(wp), dimension(1:lx2all,1:lx3all,1:lwave) :: iverout  !output array in the 
 
 
 character(:), allocatable :: outdir_composite, filenamefull
-integer :: u
 integer :: iwave
 
 !!ivertmp=reshape(iver,[lx2,lwave,lx3],order=[1,3,2])
@@ -36,21 +35,27 @@ end do
 !FORM THE INPUT FILE NAME
 outdir_composite=outdir//'/aurmaps/'
 
-filenamefull=date_filename(outdir_composite,ymd,UTsec) // '.dat'
+filenamefull = date_filename(outdir_composite,ymd,UTsec) // '.dat'
 
 print *, '  Output file name (auroral maps):  ',filenamefull
-open(newunit=u,file=filenamefull,status='replace',form='unformatted',access='stream',action='write')
+block
+  integer :: u
+  open(newunit=u,file=filenamefull,status='replace',form='unformatted',access='stream',action='write')
 
-if(flagswap/=1) then
-!  write(u) reshape(iverall,[lx2all,lwave,lx3all],order=[2,1,3])
-!  write(u) reshape(iverall,[lx2all,lx3all,lwave],order=[2,3,1])
-  write(u) iverout
-else
-!  write(u) reshape(iverall,[lx3all,lx2all,lwave],order=[3,2,1])
-  write(u) reshape(iverout,[lx3all,lx2all,lwave],order=[2,1,3])
-end if
+  if(flagswap/=1) then
+  !  write(u) reshape(iverall,[lx2all,lwave,lx3all],order=[2,1,3])
+  !  write(u) reshape(iverall,[lx2all,lx3all,lwave],order=[2,3,1])
+    write(u) iverout
+  else
+  !  write(u) reshape(iverall,[lx3all,lx2all,lwave],order=[3,2,1])
+    write(u) reshape(iverout,[lx3all,lx2all,lwave],order=[2,1,3])
+  end if
 
-close(u)
+  close(u)
+end block
+
+if(.not. all(ieee_is_finite(iverout))) error stop 'iverout: non-finite value(s)'
+
 end procedure output_aur_root
 
 end submodule io_aurora_raw
