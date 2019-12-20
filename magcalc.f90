@@ -44,7 +44,6 @@ character(:), allocatable :: infile    !command line argument input file
 character(:), allocatable :: outdir    !" " output directory
 character(:), allocatable :: indatsize,indatgrid    !grid size and data filenames
 character(:), allocatable :: fieldpointfile
-integer :: u
 
 !! GRID STRUCTURE
 type(curvmesh) :: x    !structure containg grid locations, finite differences, etc.:  see grid module for details
@@ -209,11 +208,16 @@ allocate(Jx(lx1,lx2,lx3),Jy(lx1,lx2,lx3),Jz(lx1,lx2,lx3))
 
 
 !NOW DEAL WITH THE UNMPRIMED COORDINATES
-open(newunit=u,file=fieldpointfile,form='unformatted',access='stream',action='read')
-read(u) lpoints    !size of coordinates for field points
-if (myid==0) print *, 'magcalc.f90 --> Number of field points:  ',lpoints
-allocate(r(lpoints),theta(lpoints),phi(lpoints))
-read(u) r,theta,phi
+block
+  integer :: u
+  open(newunit=u,file=fieldpointfile,status='old',form='unformatted',access='stream',action='read')
+  read(u) lpoints    !size of coordinates for field points
+  if (myid==0) print *, 'magcalc.f90 --> Number of field points:  ',lpoints
+  allocate(r(lpoints),theta(lpoints),phi(lpoints))
+  read(u) r,theta,phi
+  close(u)
+end block
+
 if (myid==0) print *, 'magcalc.f90 --> Range of r,theta,phi',minval(r),maxval(r),minval(theta), &
                            maxval(theta),minval(phi),maxval(phi)
 rmean=sum(r)/size(r)
