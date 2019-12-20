@@ -51,7 +51,6 @@ character(*), intent(in) :: precdir
 !! directory where neutral simulation data is kept
 type(curvmesh) :: x
 
-character(512) :: buf
 character(:), allocatable :: sizefn, gridfn, precfn
 integer :: ios, ierr
 integer :: iid,iflat,ix2,ix3
