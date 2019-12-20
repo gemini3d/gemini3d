@@ -89,10 +89,7 @@ real(wp), dimension(:,:,:), allocatable :: Phidec
 
 real(wp), dimension(1:size(Vminx1,1),1:size(Vminx1,2)) :: Vminx1pot,Vmaxx1pot
 
-integer :: utrace
-
 real(wp), dimension(size(srcterm,1),size(srcterm,2),size(srcterm,3)) :: potential3D_fieldresolved_decimate
-
 
 
 !SYSTEM SIZES
@@ -237,10 +234,10 @@ potential3D_fieldresolved_decimate(1,:,:)=Phidec(1,:,:)
 potential3D_fieldresolved_decimate(lx1,:,:)=Phidec(ldec,:,:)
 
 
-   open(newunit=utrace, form='unformatted', access='stream',file='Phidec.raw8',status='replace', action='write')
-   write(utrace) potential3D_fieldresolved_decimate,Phidec,Ac,Acdec,Bc,Bcdec,Cc,Ccdec,Dc,Dcdec,Ec,Ecdec,Fc,Fcdec,srcterm,srctermdec
-   write(utrace) Vminx1pot,Vmaxx1pot,Vminx2dec,Vmaxx2dec,Vminx3dec,Vmaxx3dec
-   close(utrace)
+! open(newunit=u, form='unformatted', access='stream',file='Phidec.raw8',status='replace', action='write')
+! write(u) potential3D_fieldresolved_decimate,Phidec,Ac,Acdec,Bc,Bcdec,Cc,Ccdec,Dc,Dcdec,Ec,Ecdec,Fc,Fcdec,srcterm,srctermdec
+! write(u) Vminx1pot,Vmaxx1pot,Vminx2dec,Vmaxx2dec,Vminx3dec,Vmaxx3dec
+! close(u)
 
 
 !CLEAN UP THE ALLOCATED ARRAYS
@@ -275,7 +272,7 @@ logical, intent(in) :: perflag
 integer, intent(in) :: it
 
 real(wp), dimension(1:size(SigP2,1),1:size(SigP2,2)) :: gradSigH2,gradSigH3
-integer :: utrace
+integer :: u
 integer :: lx2,lx3
 
 real(wp), dimension(size(SigP2,1),size(SigP2,2)) :: potential2D_polarization

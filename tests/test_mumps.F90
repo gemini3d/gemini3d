@@ -80,7 +80,7 @@ type (SMUMPS_STRUC), intent(inout) :: mumps_par
 type (DMUMPS_STRUC), intent(inout) :: mumps_par
 #endif
 
-integer :: i, u
+integer :: i
 logical :: exists
 character(2048) :: argv
 character(:), allocatable :: filename
@@ -96,24 +96,27 @@ endif
 
 inquire(file=filename, exist=exists)
 if(.not. exists) then
-  write(stderr, *) 'could not find input file: ',filename
+  write(stderr, *) 'could not find input file: ',trim(filename)
   error stop 77
 endif
 
-open(newunit=u, file=filename, form='formatted', status='old', action='read')
-READ(u,*) mumps_par%N
-READ(u,*) mumps_par%NZ  ! NNZ for MUMPS > 5.1.0
-ALLOCATE( mumps_par%IRN ( mumps_par%NZ ) )
-ALLOCATE( mumps_par%JCN ( mumps_par%NZ ) )
-ALLOCATE( mumps_par%A( mumps_par%NZ ) )
-ALLOCATE( mumps_par%RHS ( mumps_par%N  ) )
-DO I8 = 1, mumps_par%NZ
-  READ(u,*) mumps_par%IRN(I8),mumps_par%JCN(I8), mumps_par%A(I8)
-END DO
-DO I = 1, mumps_par%N
-  READ(u,*) mumps_par%RHS(I)
-END DO
-close(u)
+block
+  integer :: u
+  open(newunit=u, file=filename, form='formatted', status='old', action='read')
+  READ(u,*) mumps_par%N
+  READ(u,*) mumps_par%NZ  ! NNZ for MUMPS > 5.1.0
+  ALLOCATE( mumps_par%IRN ( mumps_par%NZ ) )
+  ALLOCATE( mumps_par%JCN ( mumps_par%NZ ) )
+  ALLOCATE( mumps_par%A( mumps_par%NZ ) )
+  ALLOCATE( mumps_par%RHS ( mumps_par%N  ) )
+  DO I8 = 1, mumps_par%NZ
+    READ(u,*) mumps_par%IRN(I8),mumps_par%JCN(I8), mumps_par%A(I8)
+  END DO
+  DO I = 1, mumps_par%N
+    READ(u,*) mumps_par%RHS(I)
+  END DO
+  close(u)
+end block
 
 END IF
 

@@ -8,11 +8,9 @@ integer, parameter :: lx1=50, lx2=100, lx1i=500, lx2i=1000
 real(wp), parameter :: stride=0.5_wp
 
 real(wp) :: x1(lx1), x2(lx2), f(lx1,lx2),x1i(lx1i), x2i(lx2i), fi(lx1i,lx2i)
-
-
 real(wp), dimension(1:lx1i*lx2i) :: x1ilist, x2ilist,filist
 
-integer :: ix1,ix2,ik,u
+integer :: ix1,ix2,ik
 
 
 
@@ -28,13 +26,13 @@ x2=x2-sum(x2)/size(x2,1)
 
 !test function
 do ix2=1,lx2
-    f(:,ix2)=sin(2._wp*pi/5._wp*x1)*cos(2._wp*pi/50._wp*x2(ix2))
+  f(:,ix2)=sin(2._wp*pi/5._wp*x1)*cos(2._wp*pi/50._wp*x2(ix2))
 end do
 
 
 !> grid for interpolated data
-x1i=[ ((real(ix1,wp)-1._wp)*stride/(lx1i/lx1), ix1=1,lx1i) ]
-x2i=[ ((real(ix2,wp)-1._wp)*stride/(lx2i/lx2), ix2=1,lx2i) ]
+x1i=[ ((real(ix1,wp)-1)*stride/(lx1i/lx1), ix1=1,lx1i) ]
+x2i=[ ((real(ix2,wp)-1)*stride/(lx2i/lx2), ix2=1,lx2i) ]
 
 
 !> center grid points at zero
@@ -57,15 +55,20 @@ fi=reshape(filist,[lx1i,lx2i])
 
 !> dump results to a file so we can check things
 !> has no problem with > 2GB output files
-open(newunit=u,file='input2D.dat',status='replace',form='unformatted',access='stream')
-write(u) lx1,lx2
-write(u) x1,x2,f
-close(u)
+block
+  integer :: u
+  open(newunit=u,file='input2D.dat',status='replace',form='unformatted',access='stream', action='write')
+  write(u) lx1,lx2
+  write(u) x1,x2,f
+  close(u)
+end block
 
-!> has no problem with > 2GB output files
-open(newunit=u,file='output2D.dat',status='replace',form='unformatted',access='stream')
-write(u) lx1i,lx2i
-write(u) x1i,x2i,fi   !since only interpolating in x1
-close(u)
+block
+  integer :: u
+  open(newunit=u,file='output2D.dat',status='replace',form='unformatted',access='stream', action='write')
+  write(u) lx1i,lx2i
+  write(u) x1i,x2i,fi   !since only interpolating in x1
+  close(u)
+end block
 
 end program

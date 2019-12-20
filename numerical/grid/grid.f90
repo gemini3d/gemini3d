@@ -26,9 +26,6 @@ real(wp), dimension(:,:,:), allocatable, protected :: g1,g2,g3   !gravity, not t
 integer, protected :: gridflag    !for cataloguing the type of grid that we are using, open, closed, inverted, etc.
 integer :: flagswap    !have the x2 and x3 dimensions been swapped?
 
-
-
-
 interface ! read.f90
 
 module subroutine read_grid(indatsize,indatgrid,flagperiodic,x)
@@ -52,7 +49,7 @@ subroutine grid_size(indatsize)
 
 character(*), intent(in) :: indatsize
 
-integer :: iid, ierr, u
+integer :: iid, ierr
 logical exists
 
 
@@ -64,10 +61,15 @@ if (myid==0) then    !root must physically read the size info and pass to worker
   endif
 
   !! DETERMINE THE SIZE OF THE GRID TO BE LOADED
-  open(newunit=u,file=indatsize,status='old',form='unformatted', &
-       access='stream', action='read')
-  read(u) lx1,lx2all,lx3all    !note that these are sizes *including ghost cells*
-  close(u)
+  block
+    integer :: u
+    open(newunit=u,file=indatsize,status='old',form='unformatted', &
+        access='stream', action='read')
+    read(u) lx1,lx2all,lx3all    !note that these are sizes *including ghost cells*
+    close(u)
+  end block
+
+  if (lx1 < 1 .or. lx2all < 1 .or. lx3all < 1) error stop 'grid size must be strictly positive'
 
   !! check correct number of MPI images. Help avoid confusing errors or bad simulations
   if (lx2all > 1) then

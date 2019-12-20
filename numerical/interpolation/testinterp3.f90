@@ -14,8 +14,6 @@ real(wp) :: x1i(lx1i),x2i(lx2i),x3i(lx3i),fi(lx1i,lx2i,lx3i)
 real(wp), dimension(1:lx1i*lx2i*lx3i) :: x1ilist,x2ilist,x3ilist,filist
 
 integer :: ix1,ix2,ix3,ik
-integer :: u
-
 
 
 !grid for original data
@@ -32,15 +30,15 @@ x3=x3-sum(x3)/size(x3,1)
 do ix3=1,lx3
   do ix2=1,lx2
     do ix1=1,lx1
-        f(ix1,ix2,ix3)=sin(2._wp*pi/5._wp*x1(ix1))*cos(2._wp*pi/20._wp*x2(ix2))*sin(2._wp*pi/15._wp*x3(ix3))
+      f(ix1,ix2,ix3)=sin(2._wp*pi/5._wp*x1(ix1))*cos(2._wp*pi/20._wp*x2(ix2))*sin(2._wp*pi/15._wp*x3(ix3))
     end do
   end do
 end do
 
 !> grid for interpolated data
-x1i=[ ((real(ix1,wp)-1._wp)*stride/(lx1i/lx1), ix1=1,lx1i) ]
-x2i=[ ((real(ix2,wp)-1._wp)*stride/(lx2i/lx2), ix2=1,lx2i) ]
-x3i=[ ((real(ix3,wp)-1._wp)*stride/(lx3i/lx3), ix3=1,lx3i) ]
+x1i=[ ((real(ix1,wp)-1)*stride/(lx1i/lx1), ix1=1,lx1i) ]
+x2i=[ ((real(ix2,wp)-1)*stride/(lx2i/lx2), ix2=1,lx2i) ]
+x3i=[ ((real(ix3,wp)-1)*stride/(lx3i/lx3), ix3=1,lx3i) ]
 
 !> center grid points at zero
 x1i=x1i-sum(x1i)/size(x1i,1)
@@ -65,15 +63,20 @@ fi=reshape(filist,[lx1i,lx2i,lx3i])
 
 !> dump results to a file so we can check things
 !> has no problem with > 2GB output files
-open(newunit=u,file='input3D.dat',status='replace',form='unformatted',access='stream')
-write(u) lx1,lx2,lx3
-write(u) x1,x2,x3,f
-close(u)
+block
+  integer :: u
+  open(newunit=u,file='input3D.dat',status='replace',form='unformatted',access='stream', action='write')
+  write(u) lx1,lx2,lx3
+  write(u) x1,x2,x3,f
+  close(u)
+end block
 
-!> has no problem with > 2GB output files
-open(newunit=u,file='output3D.dat',status='replace',form='unformatted',access='stream')
-write(u) lx1i,lx2i,lx3i
-write(u) x1i,x2i,x3i,fi   !since only interpolating in x1
-close(u)
+block
+  integer :: u
+  open(newunit=u,file='output3D.dat',status='replace',form='unformatted',access='stream', action='write')
+  write(u) lx1i,lx2i,lx3i
+  write(u) x1i,x2i,x3i,fi   !< since only interpolating in x1
+  close(u)
+end block
 
 end program

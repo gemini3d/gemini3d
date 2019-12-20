@@ -30,7 +30,7 @@ real(wp), dimension(lx2) :: Vminx3,Vmaxx3
 real(wp), dimension(1,lx3) :: Vminx22,Vmaxx22
 real(wp), dimension(lx2,1) :: Vminx32,Vmaxx32
 real(wp) :: tstart,tfin
-integer :: u,ierr,myid,lid
+integer :: ierr,myid,lid
 
 real(wp), dimension(lx2,lx3) :: Phi,Phi2squeeze,Phitrue,errorMUMPS,errorMUMPS2
 real(wp), dimension(lx2,1,lx3) :: Phi2    !FA solver requires different shaped arrays...
@@ -125,16 +125,18 @@ if (myid==0) then
   print*, 'Analytical solution range:  ',minval(Phitrue),maxval(Phitrue)
 
   print *,'Root process is writing ',outfile
-  open(newunit=u,file=outfile,status='replace')
-  write(u,*) lx2
-  call writearray(u,x2(1:lx2))
-  write(u,*) lx3
-  call writearray(u,x3(1:lx3))
-  call write2Darray(u,Phi)
-  call write2Darray(u,Phi2squeeze)
-  call write2Darray(u,Phitrue)
-  close(u)
-
+  block
+    integer :: u
+    open(newunit=u, file=outfile, status='replace', action='write')
+    write(u,*) lx2
+    call writearray(u,x2(1:lx2))
+    write(u,*) lx3
+    call writearray(u,x3(1:lx3))
+    call write2Darray(u,Phi)
+    call write2Darray(u,Phi2squeeze)
+    call write2Darray(u,Phitrue)
+    close(u)
+  end block
   print*, '1:  Max error over grid:  ',maxval(abs(errorMUMPS))
   print*, '2:  Max error over grid:  ',maxval(abs(errorMUMPS2))
   if (maxval(abs(errorMUMPS))>0.05_wp) error stop '1:  Numerical error too large; check setup/output!!!'
