@@ -1479,15 +1479,17 @@ logical :: flagSH
 integer :: ix1
 
 
+!in what hemisphere is our source?
+if (sourcemlat<=0) then
+  flagSH=.true.
+else
+  flagSH=.false.
+end if
+
+
 !peel the grid in half (source hemisphere if closed dipole)
 if (gridflag==0) then    !closed dipole grid
-  if (sourcemlat<=0) then
-    flagSH=.true.
-  else
-    flagSH=.false.
-  end if
 
-!  lx1tmp=lx1/2           !note use of integer division here...  This is the size of the half-grid, viz. one hemisphere of the grid.  This also presumes that the grid is uniform in x1, which often won't be the case.
   ix1=maxloc(pack(zimat(:,1,1),.true.),1)    !apex is by definition the highest altitude along a given field line
   if (flagSH) then
     lx1tmp=ix1                  !first piece of arrays
@@ -1497,27 +1499,21 @@ if (gridflag==0) then    !closed dipole grid
   allocate(xitmp(lx1tmp,lx2,lx3),yitmp(lx1tmp,lx2,lx3),zitmp(lx1tmp,lx2,lx3))   !could this be done more less wastefully with pointers???
 
   if(flagSH) then    !southern hemisphere
-    xitmp=ximat(1:ix1,1:lx2,1:lx3)    !select beginning of the array - the southern half
+    xitmp=ximat(1:ix1,1:lx2,1:lx3)          !select beginning of the array - the southern half
     yitmp=yimat(1:ix1,1:lx2,1:lx3)
     zitmp=zimat(1:ix1,1:lx2,1:lx3)
   else               !northern hemisphere
-!    if (lx1==lx1/2*2) then             !north half is exactly half the entire grid
-!      print*, 'NH evenly divisible'
       xitmp=ximat(ix1+1:lx1,1:lx2,1:lx3)    !select end half of the array
       yitmp=yimat(ix1+1:lx1,1:lx2,1:lx3)
       zitmp=zimat(ix1+1:lx1,1:lx2,1:lx3)
-!    else                                     !if not half, must be smaller by one grid point
-!      print*, 'Warning:  NH not evenly divisible along field line, chopping off apex point'
-!      xitmp=ximat(lx1tmp+2:lx1,1:lx2,1:lx3)  !had an odd number of points along the field line, chop off the apex point - hopefully doesn't cause issues...
-!      yitmp=yimat(lx1tmp+2:lx1,1:lx2,1:lx3)
-!      zitmp=zimat(lx1tmp+2:lx1,1:lx2,1:lx3)
-!    end if
   end if
-else     !this is not a dipole grid so our approach is simpler
+else     !this is not an interhemispheric grid so our approach is to just use all of the data
   lx1tmp=lx1
   allocate(xitmp(lx1tmp,lx2,lx3),yitmp(lx1tmp,lx2,lx3),zitmp(lx1tmp,lx2,lx3))   !could this be done more less wastefully with pointers?
   xitmp=ximat(1:lx1,1:lx2,1:lx3)
-  flagSH=.true.    !treat is as southern, doesn't really matter in this case...
+  yitmp=yimat(1:lx1,1:lx2,1:lx3)
+  zitmp=zimat(1:lx1,1:lx2,1:lx3)
+!  flagSH=.true.    !treat is as southern, doesn't really matter in this case...
 end if
 
 
