@@ -59,11 +59,7 @@ jobs:
       with:
         python-version: '3.7'
     - run: pip install -e .[tests]
-    - name: Install dependencies
-      run: |
-        brew install gcc lapack open-mpi hdf5
-        brew tap dpo/openblas
-        brew install mumps
+    - run: brew install gcc lapack open-mpi hdf5 scalapack
     - run: cmake -B build -Dhdf5=enabled
       env:
         FC: gfortran-9

@@ -9,37 +9,14 @@
 
 unset(_mumps_extra)
 
-# BLACS
 if(BLACS_ROOT)
   find_package(BLACS REQUIRED)
   list(APPEND _mumps_extra ${BLACS_LIBRARIES})
 endif()
 
-# Metis
-if(METIS_ROOT)
-  find_package(METIS REQUIRED)
-  list(APPEND _mumps_extra ${METIS_LIBRARIES})
-endif()
-
-# Scotch
-if(Scotch_ROOT)
-  find_package(Scotch REQUIRED COMPONENTS ESMUMPS)
-  list(APPEND _mumps_extra ${Scotch_LIBRARIES})
-endif()
-
-# SCALAPACK always needed for MUMPS
-if(DEFINED ENV{MKLROOT})
-  find_package(SCALAPACK REQUIRED COMPONENTS MKL)
-else()
-  find_package(SCALAPACK REQUIRED COMPONENTS OpenMPI)
-endif()
-
-# LAPACK
-if(DEFINED ENV{MKLROOT})
-  find_package(LAPACK REQUIRED COMPONENTS MKL)
-else()
-  find_package(LAPACK REQUIRED)
-endif()
+find_package(SCALAPACK REQUIRED)
+find_package(LAPACK REQUIRED)
+find_package(OpenMP COMPONENTS C Fortran REQUIRED)
 
 # -- verify Scalapack links
 
@@ -67,35 +44,47 @@ endif()
 
 
 # --- MUMPS
-if(realbits EQUAL 64)
-  set(_mumpscomp d)
-elseif(realbits EQUAL 32)
-  set(_mumpscomp s)
+if(realbits EQUAL 32)
+  set(arith s)
 else()
-  message(FATAL_ERROR "MUMPS has only real32, real64")
+  set(arith d)
 endif()
 
-find_package(MUMPS REQUIRED COMPONENTS ${_mumpscomp})
+set(mumps_external false)
+find_package(MUMPS COMPONENTS ${arith})
+if(NOT MUMPS_FOUND)
+  include(${CMAKE_CURRENT_LIST_DIR}/mumps_external.cmake)
+  set(mumps_external true)
+endif()
 
-# rather than appending this libraries everywhere, just put them together here.
-list(APPEND MUMPS_LIBRARIES ${SCALAPACK_LIBRARIES})
+if(mumps_external OR MUMPS_ROOT)
+  find_package(METIS)
+  if(METIS_FOUND)
+    list(APPEND _mumps_extra ${METIS_LIBRARIES})
+  endif()
+endif()
+if(mumps_external OR MUMPS_ROOT)
+  find_package(Scotch COMPONENTS ESMUMPS)
+  if(Scotch_FOUND)
+    list(APPEND _mumps_extra ${Scotch_LIBRARIES})
+  endif()
+endif()
+# rather than appending libraries everywhere, just put them together here.
+list(APPEND MUMPS_LIBRARIES ${SCALAPACK_LIBRARIES} ${LAPACK_LIBRARIES} ${_mumps_extra} OpenMP::OpenMP_Fortran OpenMP::OpenMP_C)
 list(APPEND MUMPS_INCLUDE_DIRS ${SCALAPACK_INCLUDE_DIRS})
 
-list(APPEND MUMPS_LIBRARIES ${_mumps_extra})
-
-if(MUMPS_ROOT)  # not a system library, need lapack
-  list(APPEND MUMPS_LIBRARIES ${LAPACK_LIBRARIES})
+if(mumps_external)
+  return()
 endif()
 
-# -- verify MUMPS works
-
+# -- minimal check that MUMPS is linkable
 include(CheckFortranSourceCompiles)
 
 set(CMAKE_REQUIRED_LIBRARIES ${MUMPS_LIBRARIES} MPI::MPI_Fortran)
 set(CMAKE_REQUIRED_INCLUDES ${MUMPS_INCLUDE_DIRS})
 
-check_fortran_source_compiles("include '${_mumpscomp}mumps_struc.h'
-type(${_mumpscomp}mumps_struc) :: mumps_par
+check_fortran_source_compiles("include '${arith}mumps_struc.h'
+type(${arith}mumps_struc) :: mumps_par
 end"
   MUMPS_OK SRC_EXT f90)
 
