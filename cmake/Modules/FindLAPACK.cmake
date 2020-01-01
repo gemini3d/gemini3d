@@ -308,8 +308,6 @@ endfunction(find_mkl_libs)
 
 # ========== main program
 
-cmake_policy(VERSION 3.3)
-
 if(NOT (OpenBLAS IN_LIST LAPACK_FIND_COMPONENTS
   OR Netlib IN_LIST LAPACK_FIND_COMPONENTS
   OR Atlas IN_LIST LAPACK_FIND_COMPONENTS
