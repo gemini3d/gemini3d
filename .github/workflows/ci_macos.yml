@@ -50,8 +50,6 @@ jobs:
         path: build/meson-logs/testlog.txt
 
   macosCmake:
-    # works but takes 3-4 times as long as Meson--conserving CI resources
-    if: false
     runs-on: macos-latest
     steps:
     - uses: actions/checkout@v1
