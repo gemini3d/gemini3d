@@ -36,13 +36,13 @@ set(CMAKE_REQUIRED_INCLUDES ${HDF5_INCLUDE_DIRS} ${HDF5_Fortran_INCLUDE_DIRS})
 set(CMAKE_REQUIRED_LIBRARIES ${HDF5_Fortran_HL_LIBRARIES} ${HDF5_Fortran_LIBRARIES})
 
 include(CheckFortranSourceCompiles)
-check_fortran_source_compiles("use h5lt; end" HDF5OK SRC_EXT f90)
+check_fortran_source_compiles("use hdf5, only : h5dwrite_f; use h5lt; end" HDF5OK SRC_EXT f90)
 
 set(HDF5OK ${HDF5OK} CACHE BOOL "HDF5 library working?")
 
 if(NOT HDF5OK)
   set(hdf5 false)
-  message(STATUS "DISABLED: HDF5 library not working with ${CMAKE_Fortran_COMPILER_ID} ${CMAKE_Fortran_COMPILER_VERSION}")
+  message(WARNING "DISABLED: HDF5 library not working with ${CMAKE_Fortran_COMPILER_ID} ${CMAKE_Fortran_COMPILER_VERSION}")
 endif(NOT HDF5OK)
 
 endif(NOT DEFINED HDF5OK)

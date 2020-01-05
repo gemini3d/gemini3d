@@ -28,10 +28,7 @@ target_link_libraries(io PRIVATE calculus const fsutils grid mpimod timeutils)
 target_compile_options(io PRIVATE ${FFLAGS})
 
 if(hdf5)
-  # these must be PUBLIC so that the top-level .bin link properly
-  target_link_directories(io PUBLIC ${h5fortran_BINARY_DIR})
-  target_include_directories(io PUBLIC ${h5fortran_BINARY_DIR} ${HDF5_INCLUDE_DIRS} ${HDF5_Fortran_INCLUDE_DIRS})
+  target_include_directories(io PUBLIC ${HDF5_INCLUDE_DIRS} ${HDF5_Fortran_INCLUDE_DIRS})
   target_compile_options(io PUBLIC ${HDF5_Fortran_DEFINITIONS})
-  add_dependencies(io h5fortran_proj)
   target_link_libraries(io PUBLIC h5fortran ${HDF5_Fortran_HL_LIBRARIES} ${HDF5_Fortran_LIBRARIES})
 endif()

@@ -20,12 +20,6 @@ add_test(NAME potential2d COMMAND test_potential2d WORKING_DIRECTORY ${CMAKE_BIN
 set_tests_properties(potential2d PROPERTIES TIMEOUT 30
                      FIXTURES_SETUP GemPot)
 
-if(mumps_external)
-  foreach(l PDEelliptic potential test_potential2d)
-    add_dependencies(${l} MUMPS)
-  endforeach()
-endif()
-
 if(OctaveOK)
 add_test(NAME OctavePotential2d
          COMMAND ${Octave_EXECUTABLE} -q --eval "test_potential2D('${CMAKE_BINARY_DIR}/test_potential2D.dat')"
