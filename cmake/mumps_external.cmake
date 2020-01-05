@@ -3,7 +3,7 @@ include(ExternalProject)
 ExternalProject_Add(MUMPS
   GIT_REPOSITORY https://github.com/scivision/mumps.git
   GIT_TAG v5.2.1.4
-  CMAKE_ARGS "-Darith=${arith}" "-Dparallel=true" "-Dmetis=false" "-Dscotch=false" "-Dopenmp=false"
+  CMAKE_ARGS "-Darith=${arith}" "-Dparallel=true" "-Dmetis=${metis}" "-Dscotch=${scotch}" "-Dopenmp=false"
   INSTALL_COMMAND ""  # disables the install step for the external project
 )
 

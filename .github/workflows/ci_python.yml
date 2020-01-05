@@ -4,12 +4,10 @@ on:
   push:
     paths:
     - "**/*.py"
-    - "**/*.yml"
     - ".github/workflows/ci_python.yml"
   pull_request:
     paths:
     - "**/*.py"
-    - "**/*.yml"
     - ".github/workflows/ci_python.yml"
 
 jobs:
@@ -20,7 +18,7 @@ jobs:
     - uses: actions/checkout@v1
     - uses: actions/setup-python@v1
       with:
-        python-version: '3.7'
+        python-version: '3.8'
     - run: python -m pip install -e .[lint]
     - run: flake8
     - run: mypy .

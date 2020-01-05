@@ -9,6 +9,7 @@ on:
       - "**.F90"
       - "**.cmake"
       - "**.build"
+      - "**.txt"
       - ".github/workflows/ci_macos.yml"
   pull_request:
     paths:

@@ -21,6 +21,8 @@ endif()
 option(glow "use NCAR GLOW instead of Fang" ON)
 option(matlab "enable Matlab tests, which are slow and duplicate fast Octave tests" OFF)
 option(hdf5 "use HDF5 instead of raw uncompressed output")
+option(metis "use METIS" OFF)
+option(scotch "use Scotch" OFF)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/Modules/)
 
