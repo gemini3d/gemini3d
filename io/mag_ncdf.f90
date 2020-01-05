@@ -1,14 +1,14 @@
 submodule (io) mag_hdf5
 
 use timeutils, only: date_filename
-use h5fortran, only: hdf5_file
+use nc4fortran, only: netcdf_file
 
 contains
 
 module procedure output_magfields
 !! WE ASSUME THE ROOT PROCESS HAS ALREADY REDUCED THE MAGNETIC FIELD DATA
 
-type(hdf5_file) :: hout
+type(netcdf_file) :: hout
 
 character(:), allocatable :: filenamefull
 integer :: ierr

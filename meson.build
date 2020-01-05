@@ -21,17 +21,17 @@ temporal = library('temporal', 'temporal/temporal.f90',
 
 subdir('tests')
 
+io_deps = [mpi]
 if hdf5_interface.found()
-  io = library('io',
-    sources: io_src,
-    link_with: [calculus, const, fsutils, grid, mpimod, timeutils],
-    dependencies: [mpi, hdf5_interface])  # ifort needs dep: mpi here
-else
-  io = library('io',
-    sources: io_src,
-    link_with: [calculus, const, fsutils, grid, mpimod, timeutils],
-    dependencies: mpi)  # ifort needs dep: mpi here
+  io_deps += hdf5_interface
+elif netcdf_interface.found()
+  io_dep += netcdf_interface
 endif
+io = library('io',
+  sources: io_src,
+  link_with: [calculus, const, fsutils, grid, mpimod, timeutils],
+  dependencies: io_deps)  # ifort needs dep: mpi here
+
 
 subdir('vendor/msis00')
 # --- for setting up an equilibrium simulation --

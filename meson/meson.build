@@ -200,8 +200,16 @@ if not mumps.found()
   mumps = mumps_proj.get_variable('mumps')
 endif
 
+# --- NetCDF4
+if get_option('netcdf').enabled()
+  netcdf_proj = subproject('nc4fortran')
+  netcdf_interface = netcdf_proj.get_variable('netcdf_interface')
+else
+  netcdf_interface = disabler()
+endif
+
 # --- HDF5
-if get_option('hdf5').enabled()
+if not netcdf_interface.found() and get_option('hdf5').enabled()
   hdf5_proj = subproject('h5fortran')
   hdf5_interface = hdf5_proj.get_variable('hdf5_interface')
 else

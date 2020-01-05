@@ -29,7 +29,7 @@ jobs:
       with:
         python-version: '3.7'
     - run: pip install -e .[tests]
-    - run: brew install gcc open-mpi lapack hdf5 scalapack
+    - run: brew install pkg-config gcc open-mpi lapack hdf5 scalapack
     - run: meson setup build -Dhdf5=enabled
       env:
         FC: gfortran-9
@@ -58,7 +58,7 @@ jobs:
       with:
         python-version: '3.7'
     - run: pip install -e .[tests]
-    - run: brew install gcc lapack open-mpi hdf5 scalapack
+    - run: brew install pkg-config gcc lapack open-mpi hdf5 scalapack
     - run: cmake -B build -Dhdf5=enabled
       env:
         FC: gfortran-9

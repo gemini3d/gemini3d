@@ -1,7 +1,7 @@
 submodule (io:plasma) plasma_output_hdf5
 
 use timeutils, only : date_filename
-use h5fortran, only: hdf5_file
+use nc4fortran, only: netcdf_file
 
 contains
 
@@ -17,7 +17,7 @@ real(wp), dimension(1:size(Phiall,1),1:size(Phiall,2),1:size(Phiall,3)) :: v2avg
 real(wp), dimension(1:size(Phiall,1),1:size(Phiall,2),1:size(Phiall,3)) :: J1all,J2all,J3all
 character(:), allocatable :: filenamefull
 
-type(hdf5_file) :: hout
+type(netcdf_file) :: hout
 
 
 !! SYSTEM SIZES

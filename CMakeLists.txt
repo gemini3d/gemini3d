@@ -20,15 +20,22 @@ endif()
 
 option(glow "use NCAR GLOW instead of Fang" ON)
 option(matlab "enable Matlab tests, which are slow and duplicate fast Octave tests" OFF)
-option(hdf5 "use HDF5 instead of raw uncompressed output")
+option(hdf5 "use HDF5 file I/O")
+option(netcdf "use NetCDF file I/O")
 option(metis "use METIS" OFF)
 option(scotch "use Scotch" OFF)
+
+if(netcdf AND hdf5)
+  message(FATAL_ERROR "HDF5 and NetCDF are mutually exclusive")
+endif()
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/Modules/)
 
 include(${CMAKE_SOURCE_DIR}/cmake/compilers.cmake)
 if(hdf5)
 include(${CMAKE_SOURCE_DIR}/cmake/h5fortran.cmake)
+elseif(netcdf)
+include(${CMAKE_SOURCE_DIR}/cmake/nc4fortran.cmake)
 endif()
 include(${CMAKE_SOURCE_DIR}/cmake/utils.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/mumps.cmake)
