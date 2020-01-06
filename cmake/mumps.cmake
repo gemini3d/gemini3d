@@ -16,7 +16,7 @@ endif()
 
 find_package(SCALAPACK REQUIRED)
 find_package(LAPACK REQUIRED)
-find_package(OpenMP COMPONENTS C Fortran REQUIRED)
+find_package(OpenMP COMPONENTS C Fortran)
 
 # -- verify Scalapack links
 
@@ -70,7 +70,10 @@ if(mumps_external OR MUMPS_ROOT)
   endif()
 endif()
 # rather than appending libraries everywhere, just put them together here.
-list(APPEND MUMPS_LIBRARIES ${SCALAPACK_LIBRARIES} ${LAPACK_LIBRARIES} ${_mumps_extra} OpenMP::OpenMP_Fortran OpenMP::OpenMP_C)
+list(APPEND MUMPS_LIBRARIES ${SCALAPACK_LIBRARIES} ${LAPACK_LIBRARIES} ${_mumps_extra})
+if(OpenMP_FOUND)
+  list(APPEND MUMPS_LIBRARIES OpenMP::OpenMP_Fortran OpenMP::OpenMP_C)
+endif()
 list(APPEND MUMPS_INCLUDE_DIRS ${SCALAPACK_INCLUDE_DIRS})
 
 if(mumps_external)
