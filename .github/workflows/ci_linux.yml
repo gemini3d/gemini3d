@@ -1,6 +1,5 @@
 name: ci_linux
 env:
-  cmake_version: '3.16.2'
   CI: true
 
 on:
@@ -33,24 +32,28 @@ jobs:
       run: |
         sudo apt update -yq
         sudo apt install -yq --no-install-recommends pkg-config gfortran libopenmpi-dev openmpi-bin liblapack-dev libscalapack-openmpi-dev libmumps-dev libhdf5-dev libpthread-stubs0-dev
-    - name: Setup CMake
-      run: |
-        pip install cmakeutils
-        cmake_setup ${cmake_version} --prefix ${HOME}/.local
+        pip install cmake
+
     - name: CMake configure
-      run: ${HOME}/.local/cmake-${cmake_version}-Linux-x86_64/bin/cmake -B build -Dhdf5=true
+      run: cmake -B build -Dhdf5=true
       env:
         FC: gfortran
-    - run: ${HOME}/.local/cmake-${cmake_version}-Linux-x86_64/bin/cmake --build build --parallel
+    - run: cmake --build build --parallel
+    - uses: actions/upload-artifact@v1
+      if: failure()
+      with:
+        name: LinuxOS_Cmake_Buildlog
+        path: build/CMakeFiles/CMakeError.log
 # CI is too slow for 3d_glow
+
 # -V output truncated on CI?
-    - run: ${HOME}/.local/cmake-${cmake_version}-Linux-x86_64/bin/ctest --parallel --output-on-failure -E 3d_glow
+    - run: ctest --parallel --output-on-failure -E 3d_glow
       working-directory: build
     - uses: actions/upload-artifact@v1
       if: failure()
       with:
-        name: Linux_Cmake_log
-        path: build/CMakeFiles/CMakeError.log
+        name: Linux_CMake_Testlog
+        path: build/Testing/Temporary/LastTest.log
 
   mesonHDF5:
     runs-on: ubuntu-latest
@@ -64,15 +67,17 @@ jobs:
       run: |
         sudo apt update -yq
         sudo apt install -yq --no-install-recommends pkg-config gfortran libopenmpi-dev openmpi-bin liblapack-dev libscalapack-openmpi-dev libmumps-dev libhdf5-dev
+
     - run: meson setup build -Dhdf5=enabled
       env:
         FC: gfortran
-    - uses: actions/upload-artifact@v1
-      if: always()
-      with:
-        name: Linux_Meson_Configlog
-        path: build/meson-logs/meson-log.txt
     - run: ninja -C build
+    - uses: actions/upload-artifact@v1
+      if: failure()
+      with:
+        name: Linux_Meson_Buildlog
+        path: build/meson-logs/meson-log.txt
+
     - run: meson test -C build --suite unit -v
     - run: meson test -C build --suite 2d_fang -v
     - run: meson test -C build --suite 2d_glow -v

@@ -32,10 +32,11 @@ jobs:
       env:
         FC: gfortran
     - uses: actions/upload-artifact@v1
-      if: always()
+      if: failure()
       with:
         name: LinuxDebug_Meson_Configlog
         path: build/meson-logs/meson-log.txt
+
     - run: pytest
     - run: ninja -C build
     - run: meson test -C build --suite unit -v

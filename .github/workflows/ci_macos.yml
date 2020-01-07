@@ -27,19 +27,28 @@ jobs:
     - uses: actions/checkout@v1
     - uses: actions/setup-python@v1
       with:
-        python-version: '3.7'
+        python-version: '3.x'
+
+# FIXME: need Meson 0.53 to have better MacOS HDF5 finding
+    - run: |
+        git clone https://github.com/mesonbuild/meson
+        pip install -e meson
+      working-directory: /tmp
+
     - run: pip install -e .[tests]
     - run: brew install pkg-config gcc open-mpi lapack hdf5 scalapack
+
     - run: meson setup build -Dhdf5=enabled
       env:
         FC: gfortran-9
         CC: gcc-9
+    - run: ninja -C build
     - uses: actions/upload-artifact@v1
-      if: always()
+      if: failure()
       with:
         name: Mac_Meson_Configlog
         path: build/meson-logs/meson-log.txt
-    - run: ninja -C build
+
     - run: meson test -C build --suite unit -v
     - run: meson test -C build --suite 2d_fang -v
     - run: meson test -C build --suite 2d_glow -v
@@ -59,16 +68,23 @@ jobs:
         python-version: '3.7'
     - run: pip install -e .[tests]
     - run: brew install pkg-config gcc lapack open-mpi hdf5 scalapack
+
     - run: cmake -B build -Dhdf5=enabled
       env:
         FC: gfortran-9
         CC: gcc-9
     - run: cmake --build build --parallel
+    - uses: actions/upload-artifact@v1
+      if: failure()
+      with:
+        name: MacOS_Cmake_Buildlog
+        path: build/CMakeFiles/CMakeError.log
+
 # CI is too slow for 3d_glow
     - run: ctest --parallel -E 3d_glow --output-on-failure
       working-directory: build
     - uses: actions/upload-artifact@v1
       if: failure()
       with:
-        name: MacOS_Cmake_Testlog
-        path: build/CMakeFiles/CMakeError.log
+        name: Mac_CMake_Testlog
+        path: build/Testing/Temporary/LastTest.log
