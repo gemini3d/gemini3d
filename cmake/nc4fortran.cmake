@@ -4,7 +4,7 @@ include(ExternalProject)
 
 ExternalProject_Add(nc4fortran_proj
   GIT_REPOSITORY https://github.com/scivision/nc4fortran.git
-  GIT_TAG master
+  GIT_TAG v0.0.1
   INSTALL_COMMAND ""  # disables the install step for the external project
 )
 

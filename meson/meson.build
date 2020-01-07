@@ -204,6 +204,7 @@ endif
 if get_option('netcdf').enabled()
   netcdf_proj = subproject('nc4fortran')
   netcdf_interface = netcdf_proj.get_variable('netcdf_interface')
+  assert(netcdf_interface.found(), 'NetCDF I/O requested but NetCDF library not available')
 else
   netcdf_interface = disabler()
 endif
@@ -212,6 +213,7 @@ endif
 if not netcdf_interface.found() and get_option('hdf5').enabled()
   hdf5_proj = subproject('h5fortran')
   hdf5_interface = hdf5_proj.get_variable('hdf5_interface')
+  assert(hdf5_interface.found(), 'HDF5 I/O requested but HDF5 library not available')
 else
   hdf5_interface = disabler()
 endif

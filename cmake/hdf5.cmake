@@ -41,8 +41,7 @@ check_fortran_source_compiles("use hdf5, only : h5dwrite_f; use h5lt; end" HDF5O
 set(HDF5OK ${HDF5OK} CACHE BOOL "HDF5 library working?")
 
 if(NOT HDF5OK)
-  set(hdf5 false)
-  message(WARNING "DISABLED: HDF5 library not working with ${CMAKE_Fortran_COMPILER_ID} ${CMAKE_Fortran_COMPILER_VERSION}")
+  message(FATAL_ERROR "HDF5 library not working with ${CMAKE_Fortran_COMPILER_ID} ${CMAKE_Fortran_COMPILER_VERSION}")
 endif(NOT HDF5OK)
 
 endif(NOT DEFINED HDF5OK)
