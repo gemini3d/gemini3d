@@ -26,5 +26,8 @@ set_tests_properties(${_name} PROPERTIES
   FIXTURES_REQUIRED "MPIMUMPS;IOfmt"
   RUN_SERIAL true
 )
+if(WIN32 AND HDF5_ROOT)  # for Windows ifort dll
+  set_tests_properties(${_name} PROPERTIES ENVIRONMENT "PATH=${HDF5_ROOT}/bin;$ENV{PATH}")
+endif()
 
 endfunction(setup_gemini_test)

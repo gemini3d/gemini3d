@@ -83,21 +83,44 @@ python3 setup.py develop --user
 
 ### Compilers
 
-The object-oriented Fortran 2008 code used in GEMINI requires a Fortran 2008 compliant compiler.
+The object-oriented Fortran 2008 code used in GEMINI requires a Fortran compiler that handles Fortran 2008 syntax including
 
-* Gfortran 6, 7, 8, 9, ... (Gfortran is strongly recommended)
-* Intel `ifort`: the *current update release* of [currently supported versions](https://software.intel.com/en-us/articles/intel-parallel-studio-xe-supported-and-unsupported-product-versions) -- **caveat: currently Intel compilers only work with 2D Gemini simulations**
+* submodule
+* block
 
+Most currently maintained compilers can do this, including:
+
+#### Gfortran
+
+Gfortran is the recommended compiler to run Gemini, as most libraries are already compiled for it.
+Gfortran 6 or newer works well.
+We regularly work with Gfortran 7 and 9 on MacOS and Linux (CentOS / Ubuntu)
+Due to OpenMPI not supporting native Windows, Gfortran is usable on Windows via Windows Subsystem for Linux.
+
+#### Intel Fortran
+
+Intel `ifort`: the *current update release* of
+[currently supported versions](https://software.intel.com/en-us/articles/intel-parallel-studio-xe-supported-and-unsupported-product-versions).
+
+Caveat: currently Intel compilers only work with 2D Gemini simulation.
+It's a priority to get Intel compiler working with 3D simulations.
+
+#### Other compilers
+
+* PGI / Flang: As of January 2020, the current PGI / Flang releases are so buggy in general for Fortran 95+ code, it's unlikely they'd work with Gemini yet. We'd like to work with Flang once it's integrated into LLVM and gets less buggy.
+* NAG: NAG >= 7 has `submodule` and so would work with Gemini. We'd be happy to try to work with NAG if you have a NAG license
+* Cray / IBM XL: these "should" have sufficient Fortran 2008 support, let us know and we'll iterate with you.
 
 ### Libraries
 
 Tested versions include:
 
-* OpenMPI 1.10, 2.1 - 4.0
-* MUMPS 4.10 - 5.2.   Mumps &ge; 5.2 recommended to have vastly less verbose console output
+* OpenMPI 1.10, 2.1 - 4.0  |  IntelMPI 19.0, 19.1
+* MUMPS 4.10, 5.1.2, 5.2.1
+  * Mumps &ge; 5.2 recommended to have vastly less verbose console output
 * SCALAPACK 2.0
 * LAPACK95 3.0  (optional)
-* HDF5 1.8 / 1.10 (optional)
+* HDF5 1.8.16 / 1.10.4 (optional)
 
 ### build-time options
 
