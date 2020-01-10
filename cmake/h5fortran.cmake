@@ -9,7 +9,6 @@ ExternalProject_Add(h5fortran_proj
 )
 
 ExternalProject_Get_Property(h5fortran_proj BINARY_DIR)
-#set(h5fortran_INCLUDE_DIR ${BINARY_DIR} CACHE PATH "path to h5fortran module files")
 
 add_library(h5fortran STATIC IMPORTED GLOBAL)
 add_dependencies(h5fortran h5fortran_proj)
