@@ -10,7 +10,7 @@ module procedure output_root_stream_mpi
 !! COLLECT OUTPUT FROM WORKERS AND WRITE TO A FILE USING STREAM I/O.
 !! STATE VARS ARE EXPECTED INCLUDE GHOST CELLS
 
-integer :: lx1,lx2,lx3,lx3all,isp, ierr
+integer :: lx1,lx2,lx3,lx2all,lx3all,isp, ierr
 real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: v2avg,v3avg
 real(wp), dimension(-1:size(Phiall,1)+2,-1:size(Phiall,2)+2,-1:size(Phiall,3)+2,1:lsp) :: nsall,vs1all,Tsall
 real(wp), dimension(1:size(Phiall,1),1:size(Phiall,2),1:size(Phiall,3)) :: v2avgall,v3avgall,v1avgall,Tavgall,neall,Teall
