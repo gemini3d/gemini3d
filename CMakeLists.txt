@@ -31,6 +31,8 @@ endif()
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/Modules/)
 
+set(CMAKE_Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR})
+
 include(${CMAKE_SOURCE_DIR}/cmake/compilers.cmake)
 if(hdf5)
 include(${CMAKE_SOURCE_DIR}/cmake/h5fortran.cmake)
@@ -57,43 +59,35 @@ add_subdirectory(temporal)
 
 add_library(neutral neutral/neutral.f90)
 target_link_libraries(neutral PRIVATE const grid interp mpimod msis timeutils MPI::MPI_Fortran)
-target_compile_options(neutral PRIVATE ${FFLAGS})
 
 add_library(collision collisions/collisions.f90)
 target_link_libraries(collision PRIVATE const)
-target_compile_options(collision PRIVATE ${FFLAGS})
 
 add_library(sources sources/sources.f90)
 target_link_libraries(sources PRIVATE calculus collision const grid mpimod)
-target_compile_options(sources PRIVATE ${FFLAGS})
 
 # --- other libs
 add_library(multifluid multifluid/multifluid.f90)
 target_link_libraries(multifluid PRIVATE advec calculus collision const diffusion grid ionization mpimod precipBCs sources timeutils)
-target_compile_options(multifluid PRIVATE ${FFLAGS})
 
 # --- Main GEMINI executable
 add_executable(gemini_fang.bin gemini.f90)
 target_link_libraries(gemini_fang.bin PRIVATE const grid io mpimod multifluid neutral potential precipBCs temporal timeutils
   ${LAPACK_LIBRARIES})  # necessary for self-compiled
-target_compile_options(gemini_fang.bin PRIVATE ${FFLAGS})
 
 if(glow)
   add_library(multifluid_glow multifluid/multifluid.f90)
   target_link_libraries(multifluid_glow PRIVATE advec calculus collision const diffusion grid ionization_glow mpimod precipBCs sources timeutils)
-  target_compile_options(multifluid_glow PRIVATE ${FFLAGS})
 
   add_executable(gemini_glow.bin gemini.f90)
   target_link_libraries(gemini_glow.bin PRIVATE const grid io mpimod multifluid_glow neutral potential precipBCs temporal timeutils
     ${LAPACK_LIBRARIES})  # necessary for self-compiled
-  target_compile_options(gemini_glow.bin PRIVATE ${FFLAGS})
   target_link_directories(gemini_glow.bin PRIVATE ${GLOW_BINARY_DIR})  # "not found -lcglow" without this
 endif(glow)
 
 #--------magnetic field calculation executable---------------
 add_executable(magcalc.bin magcalc.f90)
 target_link_libraries(magcalc.bin PRIVATE mpimod const grid io timeutils)
-target_compile_options(magcalc.bin PRIVATE ${FFLAGS})
 
 # --- self-tests
 include(${CMAKE_SOURCE_DIR}/cmake/test2d.cmake)

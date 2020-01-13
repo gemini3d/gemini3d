@@ -21,10 +21,9 @@ find_package(OpenMP COMPONENTS C Fortran)
 # -- verify Scalapack links
 
 set(CMAKE_REQUIRED_INCLUDES ${SCALAPACK_INCLUDE_DIRS})
-set(CMAKE_REQUIRED_LIBRARIES ${SCALAPACK_LIBRARIES} ${LAPACK_LIBRARIES})
+set(CMAKE_REQUIRED_LIBRARIES ${SCALAPACK_LIBRARIES} ${LAPACK_LIBRARIES} MPI::MPI_Fortran)
+# MPI needed for ifort
 
-include(CheckFortranSourceRuns)
-include(CheckFortranSourceCompiles)
 file(READ ${CMAKE_SOURCE_DIR}/tests/test_scalapack.f90 _code)
 
 check_fortran_source_compiles(${_code} SCALAPACK_Compiles_OK SRC_EXT f90)
@@ -50,11 +49,15 @@ else()
   set(arith d)
 endif()
 
-set(mumps_external false)
-find_package(MUMPS COMPONENTS ${arith})
-if(NOT MUMPS_FOUND)
+set(mumps_external true)
+if(MUMPS_ROOT OR CMAKE_Fortran_COMPILER_ID STREQUAL GNU)
+  find_package(MUMPS COMPONENTS ${arith})
+  if(MUMPS_FOUND)
+    set(mumps_external false)
+  endif()
+endif()
+if(mumps_external)
   include(${CMAKE_CURRENT_LIST_DIR}/mumps_external.cmake)
-  set(mumps_external true)
 endif()
 
 if(metis)
@@ -81,8 +84,6 @@ if(mumps_external)
 endif()
 
 # -- minimal check that MUMPS is linkable
-include(CheckFortranSourceCompiles)
-
 set(CMAKE_REQUIRED_LIBRARIES ${MUMPS_LIBRARIES} MPI::MPI_Fortran)
 set(CMAKE_REQUIRED_INCLUDES ${MUMPS_INCLUDE_DIRS})
 

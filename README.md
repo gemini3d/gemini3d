@@ -88,7 +88,8 @@ The object-oriented Fortran 2008 code used in GEMINI requires a Fortran compiler
 * submodule
 * block
 
-Most currently maintained compilers can do this, including:
+Most currently maintained compilers can do this.
+Gfortran and Intel Fortran are two compilers known to work easily with GEMINI.
 
 #### Gfortran
 
@@ -99,11 +100,13 @@ Due to OpenMPI not supporting native Windows, Gfortran is usable on Windows via 
 
 #### Intel Fortran
 
-Intel `ifort`: the *current update release* of
-[currently supported versions](https://software.intel.com/en-us/articles/intel-parallel-studio-xe-supported-and-unsupported-product-versions).
+Intel Fortran `ifort` for Linux--need to have "Parallel Studio XE" so that it has MPI.
+Ifort versions 19.0.5 and 19.1.0 are among the versions known to work with Gemini.
+Intel Fortran for Linux
+[currently supported versions](https://software.intel.com/en-us/articles/intel-parallel-studio-xe-supported-and-unsupported-product-versions)
+are generally targeted for Gemini support.
 
-Caveat: currently Intel compilers only work with 2D Gemini simulation.
-It's a priority to get Intel compiler working with 3D simulations.
+Intel Fortran for Windows is in general a tricky compiler to work with, and it is not supported for Gemini.
 
 #### Other compilers
 

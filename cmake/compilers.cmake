@@ -12,3 +12,6 @@ endif()
 
 #=== MPI
 find_package(MPI REQUIRED COMPONENTS Fortran)
+
+include(CheckFortranSourceCompiles)
+include(CheckFortranSourceRuns)
