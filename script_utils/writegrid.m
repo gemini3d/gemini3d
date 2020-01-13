@@ -19,12 +19,12 @@ end
 
 %% MAKE THE OUTPUT DIRECTORY IF IT DOESN'T EXIST AND NOTIFY USER
 outdir = absolute_path(outdir);
-if ~isfolder(outdir)
+if ~is_folder(outdir)
   mkdir(outdir);
   disp(['Created: ', outdir])
 end
 % malformed paths can be "created" but are not accessible. Bug in Matlab mkdir().
-assert(isfolder(outdir), [outdir, ' does not exist'])
+assert(is_folder(outdir), [outdir, ' does not exist'])
 
 
 filename = [outdir, '/simsize.dat'];
