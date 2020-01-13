@@ -1,8 +1,7 @@
 # don't enclose this all in "if(NOT DEFINED HDF5OK)" because CMake intermittantly doesn't cache needed HDF5 variables.
 
-if(WIN32)  # pkg-config is goofed up for Windows, including MSYS2
-  set(HDF5_NO_FIND_PACKAGE_CONFIG_FILE true)
-endif()
+set(HDF5_NO_FIND_PACKAGE_CONFIG_FILE true)
+set(HDF5_SEARCH_WRAPPER false)
 
 # set(HDF5_FIND_DEBUG true)
 
@@ -20,6 +19,7 @@ endif()
 if(HDF5_Fortran_DEFINITIONS)
   message(STATUS "HDF5 compiler defs: ${HDF5_Fortran_DEFINITIONS}")
 endif()
+endif(NOT DEFINED HDF5OK)
 
 set(CMAKE_REQUIRED_INCLUDES ${HDF5_INCLUDE_DIRS})
 set(CMAKE_REQUIRED_LIBRARIES ${HDF5_LIBRARIES})
@@ -27,10 +27,6 @@ set(CMAKE_REQUIRED_LIBRARIES ${HDF5_LIBRARIES})
 include(CheckFortranSourceCompiles)
 check_fortran_source_compiles("use hdf5, only : h5dwrite_f; use h5lt; end" HDF5OK SRC_EXT f90)
 
-set(HDF5OK ${HDF5OK} CACHE BOOL "HDF5 library working?")
-
 if(NOT HDF5OK)
   message(FATAL_ERROR "HDF5 library not working with ${CMAKE_Fortran_COMPILER_ID} ${CMAKE_Fortran_COMPILER_VERSION}")
 endif(NOT HDF5OK)
-
-endif(NOT DEFINED HDF5OK)

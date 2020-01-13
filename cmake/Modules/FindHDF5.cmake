@@ -552,7 +552,7 @@ if(NOT HDF5_FOUND AND NOT HDF5_NO_FIND_PACKAGE_CONFIG_FILE)
     endif()
 endif()
 
-if(NOT HDF5_FOUND)
+if(NOT HDF5_FOUND AND HDF5_SEARCH_WRAPPER)
   set(_HDF5_NEED_TO_SEARCH False)
   set(HDF5_COMPILER_NO_INTERROGATE True)
   # Only search for languages we've enabled
