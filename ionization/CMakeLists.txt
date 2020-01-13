@@ -7,12 +7,11 @@ target_link_libraries(fang_run PRIVATE fang msis const)
 add_executable(test_fang test_fang.f90)
 target_link_libraries(test_fang PRIVATE fang_run const)
 
-if(PythonOK)
+if(Python3_Interpreter_FOUND)
 add_test(NAME FangIonize
-  COMMAND ${Python3_EXECUTABLE}  ${CMAKE_CURRENT_SOURCE_DIR}/test_fang.py $<TARGET_FILE:test_fang>)
-set_tests_properties(FangIonize PROPERTIES
-                     TIMEOUT 10)
-endif(PythonOK)
+  COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test_fang.py $<TARGET_FILE:test_fang>)
+set_tests_properties(FangIonize PROPERTIES TIMEOUT 10)
+endif(Python3_Interpreter_FOUND)
 
 
 add_library(ionization ionization.f90 glow_dummy.f90)

@@ -1,7 +1,8 @@
-if(NOT DEFINED PythonOK)
 
 find_package(Python3 COMPONENTS Interpreter)
 # Python3::Interpreter did NOT work
+# if statement needs to be here or Python3_EXECUTABLE will intermittantly not be available.
+if(NOT DEFINED PythonOK)
 execute_process(COMMAND ${Python3_EXECUTABLE} -c "import gemini; print(gemini.__file__)"
   ERROR_QUIET OUTPUT_QUIET
   RESULT_VARIABLE ret
