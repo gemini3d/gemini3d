@@ -47,11 +47,12 @@ def checker(exe: str, doplot: bool, params: dict = None):
     ionization_rates10 = dat[:, 1:]
 
     if not params:
-        assert np.isclose(ionization_rates08[89, 0], 2214.052), "E0: 100eV"
-        assert np.isclose(ionization_rates08[17, 4], 9579.046), "E0: 1MeV"
+        # spot check values
+        assert np.isclose(ionization_rates08[89, 0], 2214.052, atol=0.001), "E0: 100eV"
+        assert np.isclose(ionization_rates08[17, 4], 9579.046, atol=0.001), "E0: 1MeV"
 
-        assert np.isclose(ionization_rates10[89, 0], 1192.002), "Emono: 100eV"
-        assert np.isclose(ionization_rates10[17, 4], 778.655), "Emono: 1MeV"
+        assert np.isclose(ionization_rates10[89, 0], 1192.002, atol=0.001), "Emono: 100eV"
+        assert np.isclose(ionization_rates10[17, 4], 778.655, atol=0.001), "Emono: 1MeV"
 
     if not doplot:
         return
