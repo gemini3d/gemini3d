@@ -1,10 +1,6 @@
-cmake_minimum_required (VERSION 3.1)
-project(MSIS_setup Fortran)
-
 # because of old coding practice, disable vendored MSIS compiler warnings
 if(CMAKE_Fortran_COMPILER_ID STREQUAL GNU)
-  set(oldflags -std=legacy -w -fno-implicit-none
-    -Wno-error=array-bounds -fcheck=no-all)
+  set(oldflags -std=legacy -w -fno-implicit-none -Wno-error=array-bounds -fcheck=no-all)
 elseif(CMAKE_Fortran_COMPILER_ID STREQUAL Intel)
   if(WIN32)
     set(oldflags /nowarn /nocheck)
@@ -28,6 +24,6 @@ target_compile_options(msis PRIVATE ${oldflags})
 
 # --- for setting up an equilibrium simulation --
 
-add_executable(msis_setup ${CMAKE_CURRENT_SOURCE_DIR}/../../setup/MSIS00/call_msis_gfortran.f90)
+add_executable(msis_setup ${CMAKE_SOURCE_DIR}/setup/MSIS00/call_msis_gfortran.f90)
 target_link_libraries(msis_setup PRIVATE msis)
 set_target_properties(msis_setup PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
