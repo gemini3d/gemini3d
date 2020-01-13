@@ -1,6 +1,8 @@
 # because of old coding practice, disable vendored MSIS compiler warnings
 if(CMAKE_Fortran_COMPILER_ID STREQUAL GNU)
-  set(oldflags -std=legacy -w -fno-implicit-none -Wno-error=array-bounds -fcheck=no-all)
+  # Gfortran >= 8 need -Wno-pedantic to allow mismatched array size inhernet to MSIS.
+  # "-w" doesn't disable pedantic
+  set(oldflags -std=legacy -Wno-pedantic -w -fno-implicit-none -Wno-error=array-bounds -fcheck=no-all)
 elseif(CMAKE_Fortran_COMPILER_ID STREQUAL Intel)
   if(WIN32)
     set(oldflags /nowarn /nocheck)
