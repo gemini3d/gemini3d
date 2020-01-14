@@ -5,7 +5,6 @@ module PDEelliptic
 use, intrinsic:: iso_fortran_env, only: stderr=>error_unit, stdout=>output_unit
 
 use mpi, only: mpi_comm_world
-
 use phys_consts, only: wp, debug
 
 implicit none
@@ -1675,7 +1674,9 @@ end function elliptic2D_cart
 
 
 subroutine quiet_mumps(obj)
-! this must be called AFTER the first mumps call that had job=-1
+!! this must be called AFTER the first mumps call that had job=-1
+!! Needs Mumps >= 5.2 to actually take effect, does nothing on older MUMPS
+!! it stops the 100's of megabytes of logging console text, probably speeding up as well
 #if REALBITS==32
 type (SMUMPS_STRUC), intent(inout) :: obj
 #else

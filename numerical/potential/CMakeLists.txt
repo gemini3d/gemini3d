@@ -11,13 +11,13 @@ target_compile_definitions(potential PRIVATE REALBITS=${realbits})
 
 add_executable(test_potential2d test_potential2D.f90)
 target_link_libraries(test_potential2d const PDEelliptic ${MUMPS_LIBRARIES} MPI::MPI_Fortran)
-add_test(NAME potential2d COMMAND test_potential2d WORKING_DIRECTORY ${CMAKE_BINARY_DIR})
+add_test(NAME potential2d COMMAND test_potential2d WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 set_tests_properties(potential2d PROPERTIES TIMEOUT 30
                      FIXTURES_SETUP GemPot)
 
 if(OctaveOK)
 add_test(NAME OctavePotential2d
-         COMMAND ${Octave_EXECUTABLE} -q --eval "test_potential2D('${CMAKE_BINARY_DIR}/test_potential2D.dat')"
+         COMMAND ${Octave_EXECUTABLE} -q --eval "test_potential2D('${CMAKE_CURRENT_BINARY_DIR}/test_potential2D.dat')"
          WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 set_tests_properties(OctavePotential2d  PROPERTIES
                      TIMEOUT 15
@@ -26,7 +26,7 @@ endif(OctaveOK)
 
 if(PythonOK)
 add_test(NAME PythonPotential2d
-  COMMAND ${Python3_EXECUTABLE}  ${CMAKE_CURRENT_SOURCE_DIR}/test_potential2d.py ${CMAKE_BINARY_DIR}/test_potential2D.dat)
+  COMMAND ${Python3_EXECUTABLE}  ${CMAKE_CURRENT_SOURCE_DIR}/test_potential2d.py ${CMAKE_CURRENT_BINARY_DIR}/test_potential2D.dat)
 set_tests_properties(PythonPotential2d PROPERTIES
                      TIMEOUT 10
                      FIXTURES_REQUIRED GemPot)
