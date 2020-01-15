@@ -25,7 +25,7 @@ io_deps = [mpi]
 if hdf5_interface.found()
   io_deps += hdf5_interface
 elif netcdf_interface.found()
-  io_dep += netcdf_interface
+  io_deps += netcdf_interface
 endif
 io = library('io',
   sources: io_src,
@@ -59,7 +59,6 @@ gemini_fang_exe = executable('gemini_fang.bin',
   sources: 'gemini.f90',
   link_with : [const, grid, io, mpimod, multifluid, neutral, potential, precipBCs, temporal, timeutils],
   dependencies : [scalapack, blacs, lapack, blas, mpi],  # ifort needs dep: mpi here
-  fortran_args: real_bits,
   install: true,
   link_language: 'fortran')
 
@@ -74,7 +73,6 @@ gemini_glow_exe = executable('gemini_glow.bin',
   sources: 'gemini.f90',
   link_with : [const, grid, io, mpimod, multifluid_glow, neutral, potential, precipBCs, temporal, timeutils],
   dependencies : [scalapack, blacs, lapack, blas, mpi],    # ifort needs dep: mpi here
-  fortran_args: real_bits,
   install: true,
   link_language: 'fortran')
 

@@ -1,12 +1,21 @@
 function(num_mpi_processes REFDIR)
 
-find_package(Python3 COMPONENTS Interpreter)
-
+if(PythonOK)
 # do not quote COMMAND line in general
 execute_process(
   COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/script_utils/meson_cpu_count.py ${REFDIR}/inputs/simsize.dat
   OUTPUT_VARIABLE NP
   TIMEOUT 15)
+else()
+  # CMake's CPU count is not so reliable
+  include(ProcessorCount)
+  ProcessorCount(NP)
+endif()
+
+if(NP LESS 1)
+  message(STATUS "could not detect number of CPUs, falling back to 1")
+  set(NP 1)
+endif()
 
 set(NP ${NP} PARENT_SCOPE)
 

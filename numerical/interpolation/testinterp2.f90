@@ -1,7 +1,10 @@
 use phys_consts, only: wp,pi
-use interpolation
+use interpolation, only : interp2
+use h5fortran, only : hdf5_file
+
 implicit none
 
+type(hdf5_file) :: hout
 integer, parameter :: lx1=50, lx2=100, lx1i=500, lx2i=1000
 !integer, parameter :: lx1=1000, lx2=1000
 !integer, parameter :: lx1i=8000, lx2i=8000
@@ -10,7 +13,7 @@ real(wp), parameter :: stride=0.5_wp
 real(wp) :: x1(lx1), x2(lx2), f(lx1,lx2),x1i(lx1i), x2i(lx2i), fi(lx1i,lx2i)
 real(wp), dimension(1:lx1i*lx2i) :: x1ilist, x2ilist,filist
 
-integer :: ix1,ix2,ik
+integer :: ix1,ix2,ik, ierr
 
 
 
@@ -53,22 +56,48 @@ filist=interp2(x1,x2,f,x1ilist,x2ilist)
 fi=reshape(filist,[lx1i,lx2i])
 
 
-!> dump results to a file so we can check things
-!> has no problem with > 2GB output files
-block
-  integer :: u
-  open(newunit=u,file='input2D.dat',status='replace',form='unformatted',access='stream', action='write')
-  write(u) lx1,lx2
-  write(u) x1,x2,f
-  close(u)
-end block
+!! dump results to a file so we can check things
+call hout%initialize("input2d.h5", ierr, status="replace", action="write")
+if(ierr/=0) error stop 'interp2: could not open input file'
 
-block
-  integer :: u
-  open(newunit=u,file='output2D.dat',status='replace',form='unformatted',access='stream', action='write')
-  write(u) lx1i,lx2i
-  write(u) x1i,x2i,fi   !since only interpolating in x1
-  close(u)
-end block
+call hout%write("/lx1", lx1, ierr)
+call hout%write("/lx2", lx2, ierr)
+call hout%write("/x1", x1, ierr)
+call hout%write("/x2", x2, ierr)
+call hout%write("/f", f, ierr)
+
+call hout%finalize(ierr)
+if(ierr/=0) error stop 'interp2: could not close input file'
+
+
+call hout%initialize("output2d.h5", ierr, status="replace", action="write")
+if(ierr/=0) error stop 'interp2: could not open output file'
+
+call hout%write("/lx1", lx1i, ierr)
+call hout%write("/lx2", lx2i, ierr)
+call hout%write("/x1", x1i, ierr)
+call hout%write("/x2", x2i, ierr)
+call hout%write("/f", fi, ierr)
+
+call hout%finalize(ierr)
+if(ierr/=0) error stop 'interp2: could not close output file'
 
 end program
+
+
+!> has no problem with > 2GB output files
+! block
+!   integer :: u
+!   open(newunit=u,file='input2d.dat',status='replace',form='unformatted',access='stream', action='write')
+!   write(u) lx1,lx2
+!   write(u) x1,x2,f
+!   close(u)
+! end block
+
+! block
+!   integer :: u
+!   open(newunit=u,file='output2d.dat',status='replace',form='unformatted',access='stream', action='write')
+!   write(u) lx1i,lx2i
+!   write(u) x1i,x2i,fi   !since only interpolating in x1
+!   close(u)
+! end block

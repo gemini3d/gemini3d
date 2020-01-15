@@ -39,12 +39,6 @@ implicit none
 
 private
 
-#if REALBITS==32
-include 'smumps_struc.h'
-#else
-include 'dmumps_struc.h'
-#endif
-
 integer, dimension(:), pointer, protected, save :: mumps_perm   !cached permutation, unclear whether save is necessary...
 
 public :: potential3D_fieldresolved_decimate, potential2D_polarization, potential2D_polarization_periodic, potential2D_fieldresolved

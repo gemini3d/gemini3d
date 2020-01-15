@@ -2,8 +2,11 @@ program testinterp3
 
 use phys_consts, only: wp,pi
 use interpolation
+use h5fortran, only: hdf5_file
+
 implicit none
 
+type(hdf5_file) :: hout
 integer, parameter :: lx1=80, lx2=90, lx3=100
 integer, parameter :: lx1i=256, lx2i=256, lx3i=256
 real(wp), parameter :: stride=0.5_wp
@@ -13,7 +16,7 @@ real(wp) :: x1i(lx1i),x2i(lx2i),x3i(lx3i),fi(lx1i,lx2i,lx3i)
 
 real(wp), dimension(1:lx1i*lx2i*lx3i) :: x1ilist,x2ilist,x3ilist,filist
 
-integer :: ix1,ix2,ix3,ik
+integer :: ix1,ix2,ix3,ik, ierr
 
 
 !grid for original data
@@ -62,21 +65,51 @@ fi=reshape(filist,[lx1i,lx2i,lx3i])
 
 
 !> dump results to a file so we can check things
-!> has no problem with > 2GB output files
-block
-  integer :: u
-  open(newunit=u,file='input3D.dat',status='replace',form='unformatted',access='stream', action='write')
-  write(u) lx1,lx2,lx3
-  write(u) x1,x2,x3,f
-  close(u)
-end block
+call hout%initialize("input3d.h5", ierr, status="replace", action="write")
+if(ierr/=0) error stop 'interp3: could not open input file'
 
-block
-  integer :: u
-  open(newunit=u,file='output3D.dat',status='replace',form='unformatted',access='stream', action='write')
-  write(u) lx1i,lx2i,lx3i
-  write(u) x1i,x2i,x3i,fi   !< since only interpolating in x1
-  close(u)
-end block
+call hout%write("/lx1", lx1, ierr)
+call hout%write("/lx2", lx2, ierr)
+call hout%write("/lx3", lx3, ierr)
+call hout%write("/x1", x1, ierr)
+call hout%write("/x2", x2, ierr)
+call hout%write("/x3", x3, ierr)
+call hout%write("/f", f, ierr)
+
+call hout%finalize(ierr)
+if(ierr/=0) error stop 'interp3: could not close input file'
+
+
+call hout%initialize("output3d.h5", ierr, status="replace", action="write")
+if(ierr/=0) error stop 'interp3: could not open output file'
+
+call hout%write("/lx1", lx1i, ierr)
+call hout%write("/lx2", lx2i, ierr)
+call hout%write("/lx3", lx3i, ierr)
+call hout%write("/x1", x1i, ierr)
+call hout%write("/x2", x2i, ierr)
+call hout%write("/x3", x3i, ierr)
+call hout%write("/f", fi, ierr)
+
+call hout%finalize(ierr)
+if(ierr/=0) error stop 'interp3: could not close output file'
 
 end program
+
+
+!> has no problem with > 2GB output files
+! block
+!   integer :: u
+!   open(newunit=u,file='input3D.dat',status='replace',form='unformatted',access='stream', action='write')
+!   write(u) lx1,lx2,lx3
+!   write(u) x1,x2,x3,f
+!   close(u)
+! end block
+
+! block
+!   integer :: u
+!   open(newunit=u,file='output3D.dat',status='replace',form='unformatted',access='stream', action='write')
+!   write(u) lx1i,lx2i,lx3i
+!   write(u) x1i,x2i,x3i,fi   !< since only interpolating in x1
+!   close(u)
+! end block

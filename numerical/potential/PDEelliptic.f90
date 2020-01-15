@@ -3,23 +3,15 @@ module PDEelliptic
 !! Various tools for solving elliptic partial differential equations - uses MUMPS, scalapack, lapack, openmpi, and blas
 
 use, intrinsic:: iso_fortran_env, only: stderr=>error_unit, stdout=>output_unit
-
+use mumps_interface, only : mumps_struc, mumps_exec
 use mpi, only: mpi_comm_world
 use phys_consts, only: wp, debug
 
 implicit none
-
 private
-
-#if REALBITS==32
-include 'smumps_struc.h'
-#else
-include 'dmumps_struc.h'
-#endif
+public :: elliptic3D_cart,elliptic2D_cart,elliptic2D_polarization,elliptic2D_polarization_periodic,elliptic_workers
 
 integer, dimension(:), pointer, protected, save :: mumps_perm   !cached permutation, unclear whether save is necessary...
-
-public :: elliptic3D_cart,elliptic2D_cart,elliptic2D_polarization,elliptic2D_polarization_periodic,elliptic_workers
 
 contains
 
@@ -59,11 +51,7 @@ real(wp), dimension(:), allocatable :: M
 real(wp), dimension(:), allocatable :: b
 real(wp) :: tstart,tfin
 
-#if REALBITS==32
-type (SMUMPS_STRUC) mumps_par
-#else
-type (DMUMPS_STRUC) mumps_par
-#endif
+type (MUMPS_STRUC) :: mumps_par
 
 real(wp), dimension(size(srcterm,1),size(srcterm,2),size(srcterm,3)) :: elliptic3D_cart
 
@@ -212,11 +200,7 @@ mumps_par%JOB = -1
 mumps_par%SYM = 0
 mumps_par%PAR = 1
 
-#if REALBITS==32
-call SMUMPS(mumps_par)
-#else
-call DMUMPS(mumps_par)
-#endif
+call MUMPS_exec(mumps_par)
 
 call quiet_mumps(mumps_par)
 
@@ -252,11 +236,8 @@ if (debug) print*, 'Loading mumps problem...'
 !SOLVE (ALL WORKERS NEED TO SEE THIS CALL)
 if (debug) print*, 'Executing solve...'
 mumps_par%JOB = 6
-#if REALBITS==32
-call SMUMPS(mumps_par)
-#else
-call DMUMPS(mumps_par)
-#endif
+
+call MUMPS_exec(mumps_par)
 
 !> check if Mumps error occurred
 if (mumps_par%INFO(1) < 0 .or. mumps_par%INFOG(1) < 0) then
@@ -289,11 +270,8 @@ endif
 !end if
 
 mumps_par%JOB = -2
-#if REALBITS==32
-call SMUMPS(mumps_par)
-#else
-call DMUMPS(mumps_par)
-#endif
+
+call MUMPS_exec(mumps_par)
 
 end function elliptic3D_cart
 
@@ -354,11 +332,7 @@ real(wp) :: tstart,tfin
 
 integer :: utrace
 
-#if REALBITS==32
-type (SMUMPS_STRUC) mumps_par
-#else
-type (DMUMPS_STRUC) mumps_par
-#endif
+type(MUMPS_STRUC) :: mumps_par
 
 real(wp), dimension(size(SigP2,1),size(SigP2,2)) :: elliptic2D_polarization
 
@@ -735,11 +709,8 @@ mumps_par%COMM = MPI_COMM_WORLD
 mumps_par%JOB = -1
 mumps_par%SYM = 0
 mumps_par%PAR = 1
-#if REALBITS==32
-call SMUMPS(mumps_par)
-#else
-call DMUMPS(mumps_par)
-#endif
+
+call MUMPS_exec(mumps_par)
 
 call quiet_mumps(mumps_par)
 
@@ -772,12 +743,8 @@ call quiet_mumps(mumps_par)
 
 !SOLVE (ALL WORKERS NEED TO SEE THIS CALL)
 mumps_par%JOB = 6
-#if REALBITS==32
-call SMUMPS(mumps_par)
-#else
-call DMUMPS(mumps_par)
-#endif
 
+call MUMPS_exec(mumps_par)
 
 !> check if Mumps error occurred
 if (mumps_par%INFO(1) < 0 .or. mumps_par%INFOG(1) < 0) then
@@ -810,11 +777,8 @@ endif
 !end if
 
 mumps_par%JOB = -2
-#if REALBITS==32
-call SMUMPS(mumps_par)
-#else
-call DMUMPS(mumps_par)
-#endif
+
+call MUMPS_exec(mumps_par)
 
 end function elliptic2D_polarization
 
@@ -871,16 +835,11 @@ real(wp), dimension(:), allocatable :: M
 real(wp), dimension(:), allocatable :: b
 real(wp) :: tstart,tfin
 
-#if REALBITS==32
-type (SMUMPS_STRUC) mumps_par
-#else
-type (DMUMPS_STRUC) mumps_par
-#endif
+type(MUMPS_STRUC) :: mumps_par
 
 integer :: lcount,ix2tmp,ix3tmp
 
 real(wp), dimension(size(SigP,1),size(SigP,2)) :: tmpresults
-
 real(wp), dimension(size(SigP,1),size(SigP,2)) :: elliptic2D_polarization_periodic
 
 
@@ -1305,11 +1264,8 @@ mumps_par%COMM = MPI_COMM_WORLD
 mumps_par%JOB = -1
 mumps_par%SYM = 0
 mumps_par%PAR = 1
-#if REALBITS==32
-call SMUMPS(mumps_par)
-#else
-call DMUMPS(mumps_par)
-#endif
+
+call MUMPS_exec(mumps_par)
 
 call quiet_mumps(mumps_par)
 
@@ -1340,11 +1296,8 @@ call quiet_mumps(mumps_par)
 
 !SOLVE (ALL WORKERS NEED TO SEE THIS CALL)
 mumps_par%JOB = 6
-#if REALBITS==32
-call SMUMPS(mumps_par)
-#else
-call DMUMPS(mumps_par)
-#endif
+
+call MUMPS_exec(mumps_par)
 
 !> check if Mumps error occurred
 if (mumps_par%INFO(1) < 0 .or. mumps_par%INFOG(1) < 0) then
@@ -1380,11 +1333,8 @@ endif
 !end if
 
 mumps_par%JOB = -2
-#if REALBITS==32
-call SMUMPS(mumps_par)
-#else
-call DMUMPS(mumps_par)
-#endif
+
+call MUMPS_exec(mumps_par)
 
 end function elliptic2D_polarization_periodic
 
@@ -1427,11 +1377,7 @@ real(wp), dimension(:), allocatable :: M
 real(wp), dimension(:), allocatable :: b
 real(wp) :: tstart,tfin
 
-#if REALBITS==32
-type (SMUMPS_STRUC) mumps_par
-#else
-type (DMUMPS_STRUC) mumps_par
-#endif
+type(MUMPS_STRUC) :: mumps_par
 
 real(wp), dimension(size(sig0,1),1,size(sig0,3)) :: elliptic2D_cart
 
@@ -1594,11 +1540,8 @@ mumps_par%COMM = MPI_COMM_WORLD
 mumps_par%JOB = -1
 mumps_par%SYM = 0
 mumps_par%PAR = 1
-#if REALBITS==32
-call SMUMPS(mumps_par)
-#else
-call DMUMPS(mumps_par)
-#endif
+
+call MUMPS_exec(mumps_par)
 
 call quiet_mumps(mumps_par)
 
@@ -1632,11 +1575,8 @@ call quiet_mumps(mumps_par)
 
 !> SOLVE (ALL WORKERS NEED TO SEE THIS CALL)
 mumps_par%JOB = 6
-#if REALBITS==32
-call SMUMPS(mumps_par)
-#else
-call DMUMPS(mumps_par)
-#endif
+
+call MUMPS_exec(mumps_par)
 
 call check_mumps_status(mumps_par)
 
@@ -1664,11 +1604,8 @@ call check_mumps_status(mumps_par)
 !end if
 
 mumps_par%JOB = -2
-#if REALBITS==32
-call SMUMPS(mumps_par)
-#else
-call DMUMPS(mumps_par)
-#endif
+
+call MUMPS_exec(mumps_par)
 
 end function elliptic2D_cart
 
@@ -1677,11 +1614,8 @@ subroutine quiet_mumps(obj)
 !! this must be called AFTER the first mumps call that had job=-1
 !! Needs Mumps >= 5.2 to actually take effect, does nothing on older MUMPS
 !! it stops the 100's of megabytes of logging console text, probably speeding up as well
-#if REALBITS==32
-type (SMUMPS_STRUC), intent(inout) :: obj
-#else
-type (DMUMPS_STRUC), intent(inout) :: obj
-#endif
+
+type(MUMPS_STRUC), intent(inout) :: obj
 
 obj%icntl(1) = stderr  ! error messages
 obj%icntl(2) = stdout !  diagnosic, statistics, and warning messages
@@ -1692,27 +1626,17 @@ end subroutine quiet_mumps
 
 
 subroutine elliptic_workers()
+!! ALLOWS WORKERS TO ENTER MUMPS SOLVES
 
-!------------------------------------------------------------
-!-------A FN. THAT ALLOWS WORKERS TO ENTER MUMPS SOLVES
-!------------------------------------------------------------
-#if REALBITS==32
-type (SMUMPS_STRUC) mumps_par
-#else
-type (DMUMPS_STRUC) mumps_par
-#endif
-
+type(MUMPS_STRUC) :: mumps_par
 
 !FIRE UP MUMPS
 mumps_par%COMM = MPI_COMM_WORLD
 mumps_par%JOB = -1
 mumps_par%SYM = 0
 mumps_par%PAR = 1
-#if REALBITS==32
-call SMUMPS(mumps_par)
-#else
-call DMUMPS(mumps_par)
-#endif
+
+call MUMPS_exec(mumps_par)
 
 call quiet_mumps(mumps_par)
 
@@ -1722,21 +1646,15 @@ call quiet_mumps(mumps_par)
 
 !SOLVE (ALL WORKERS NEED TO SEE THIS CALL)
 mumps_par%JOB = 6
-#if REALBITS==32
-call SMUMPS(mumps_par)
-#else
-call DMUMPS(mumps_par)
-#endif
+
+call MUMPS_exec(mumps_par)
 
 call check_mumps_status(mumps_par)
 
 !DEALLOCATE STRUCTURES USED BY WORKERS DURING SOLVE
 mumps_par%JOB = -2
-#if REALBITS==32
-call SMUMPS(mumps_par)
-#else
-call DMUMPS(mumps_par)
-#endif
+
+call MUMPS_exec(mumps_par)
 
 end subroutine elliptic_workers
 
@@ -1744,12 +1662,7 @@ end subroutine elliptic_workers
 subroutine check_mumps_status(p)
 !! check if Mumps error occurred
 
-#if REALBITS==32
-type (SMUMPS_STRUC) p
-#else
-type (DMUMPS_STRUC) p
-#endif
-
+type(MUMPS_STRUC), intent(in) :: p
 
 if (p%info(1) < 0 .or. p%infog(1) < 0) then
   write(stderr, *) 'Gemini:PDEelliptic:elliptic_workers  MUMPS ERROR: details:'

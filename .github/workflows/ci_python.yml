@@ -19,6 +19,6 @@ jobs:
     - uses: actions/setup-python@v1
       with:
         python-version: '3.8'
-    - run: python -m pip install -e .[lint]
+    - run: python3 -m pip install -e .[lint]
     - run: flake8
     - run: mypy .

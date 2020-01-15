@@ -30,13 +30,7 @@ jobs:
       with:
         python-version: '3.x'
 
-# FIXME: need Meson 0.53 to have better MacOS HDF5 finding
-    - run: |
-        git clone https://github.com/mesonbuild/meson
-        pip install -e meson
-      working-directory: /tmp
-
-    - run: pip install -e .[tests]
+    - run: python3 -m pip install -e .[tests]
     - run: brew install pkg-config gcc open-mpi lapack hdf5 scalapack
 
     - run: meson setup build -Dhdf5=enabled

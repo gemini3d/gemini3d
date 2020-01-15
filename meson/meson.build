@@ -1,7 +1,6 @@
 bits = get_option('realbits')
 real_bits = '-DREALBITS=' + bits
 arith = get_option('arith')
-message('arith: ' + arith)
 
 nomalloc_env = environment({'MALLOC_PERTURB_': '0'})
 
@@ -10,9 +9,6 @@ nomalloc_env = environment({'MALLOC_PERTURB_': '0'})
 fc = meson.get_compiler('fortran')
 
 os = host_machine.system()
-if os == 'windows' and fc.get_id() != 'intel-cl'
-  warning('On native Windows, only the Intel compilers (ifort) works at this time, because OpenMPI is not available for Windows. Consider Windows Subsystem for Linux.')
-endif
 
 # === compiler options
 oldflags = fc.get_supported_arguments(['-std=legacy', '-w', '-fno-implicit-none', '-Wno-error=array-bounds', '-fcheck=no-all',

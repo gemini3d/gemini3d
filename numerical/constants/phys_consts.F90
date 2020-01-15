@@ -1,15 +1,13 @@
 module phys_consts
-use, intrinsic:: iso_fortran_env
-
-implicit none
-
-public
 
 #if REALBITS==32
-integer,parameter :: wp=real32
+use, intrinsic:: iso_fortran_env, only: wp=>real32
 #else
-integer,parameter :: wp=real64
+use, intrinsic:: iso_fortran_env, only: wp=>real64
 #endif
+
+implicit none
+public
 
 !> colored output text (for Unix-like systems at least).
 !> It should be compatible across compiler vendors.
@@ -85,7 +83,5 @@ real(wp), parameter :: mindensnull = 1.0e-20_wp
 real(wp), parameter :: mindensdiv  = 1.0e-5_wp
 
 logical :: debug=.false.
-
-contains
 
 end module phys_consts

@@ -19,10 +19,8 @@ set_tests_properties(ScalapackBasic PROPERTIES
   FIXTURES_SETUP MPIMUMPS)
 
 # ---
-add_executable(test_mumps test_mumps.F90)
-target_include_directories(test_mumps PRIVATE ${MUMPS_INCLUDE_DIRS})
-target_compile_definitions(test_mumps PRIVATE REALBITS=${realbits})
-target_link_libraries(test_mumps PRIVATE ${MUMPS_LIBRARIES} MPI::MPI_Fortran)
+add_executable(test_mumps test_mumps.f90)
+target_link_libraries(test_mumps PRIVATE mumps_interface MPI::MPI_Fortran)
 
 add_test(NAME MUMPSbasic
   COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} 2 $<TARGET_FILE:test_mumps>

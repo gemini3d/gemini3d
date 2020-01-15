@@ -1,32 +1,36 @@
-pde_elliptic = library('pde_elliptic', 'PDEelliptic.F90',
+mumpsifc_src = bits == '32' ? files('mumps_real32.f90') : files('mumps_real64.f90')
+
+pde_elliptic = library('pde_elliptic',
+  sources: ['PDEelliptic.f90', mumpsifc_src],
   dependencies: [mpi, mumps],
-  link_with: const,
-  fortran_args: real_bits)
+  link_with: const)
 
 potential = library('potential',
-  sources: ['potential_comm_mumps.f90', 'potential_mumps.F90', 'boundary_conditions/potentialBCs_mumps.f90'],
+  sources: ['potential_comm_mumps.f90', 'potential_mumps.f90', 'boundary_conditions/potentialBCs_mumps.f90'],
   link_with: [pde_elliptic, calculus, collisions, const, grid, interp, mpimod, timeutils],
-  dependencies: [mumps, scalapack, blacs, lapack, mpi, threads],
-  fortran_args: real_bits)
+  dependencies: [mumps, scalapack, blacs, lapack, mpi, threads])
 
-test_potential2d = executable('test_potential2d', 'test_potential2D.f90',
+if not hdf5_interface.found()
+  subdir_done()
+endif
+
+test_potential2d = executable('test_potential2d',
+  sources: 'test_potential2D.f90',
   link_with: [pde_elliptic, const],
-  dependencies: [blacs, mpi],
-  link_language: 'fortran')
+  dependencies: [blacs, mpi, hdf5_interface])
 test('potential2d', test_potential2d,
-  timeout: 30,
-  env: nomalloc_env,
-  suite: 'unit')
+  timeout: 30, env: nomalloc_env, suite: 'unit',
+  workdir: meson.current_build_dir())
 
 test('potential2d_octave', octave,
-  args: ['-q', '--eval', 'test_potential2D("' + meson.build_root() / 'test_potential2D.dat")'],
+  args: ['-q', '--eval', 'test_potential2D("' + meson.current_build_dir() / 'test_potential2d.h5")'],
   timeout: 15,
   env: nomalloc_env,
   workdir: meson.current_source_dir(),
   suite: 'unit', priority: -100)
 
 test('potential2d_python', python,
-  args: ['test_potential2d.py', meson.build_root() / 'test_potential2D.dat'],
+  args: ['test_potential2d.py', meson.current_build_dir() / 'test_potential2d.h5'],
   timeout: 15,
   env: nomalloc_env,
   workdir: meson.current_source_dir(),

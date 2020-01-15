@@ -1,5 +1,5 @@
 option('realbits', type : 'combo', choices : ['64', '32'], description : 'real bits')
-option('arith', type: 'string', value: 'sd', description: 'precision (s,d,c,z)')
+option('arith', type: 'array', choices: ['s','d'], value: ['d'], description: 'arith precision')
 option('matlab', type : 'feature', value: 'disabled', description : 'Matlab >= R2019a required')
 option('hdf5', type: 'feature', value: 'enabled', description: 'HDF5 file I/O')
 option('netcdf', type: 'feature', value: 'disabled', description: 'NetCDF file I/O')

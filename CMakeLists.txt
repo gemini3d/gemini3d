@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.14)  # 3.12 for find_ROOT, 3.13 for a lot of user functions, 3.14 for check_fortran_source_runs
+cmake_minimum_required(VERSION 3.14)  # 3.12 for find_ROOT, 3.13 for a lot of user functions, 3.14 for check_fortran_source_runs & fetchcontent
 
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release CACHE STRING "Debug or Release" FORCE)
@@ -6,18 +6,14 @@ endif()
 
 project(gemini3d
   LANGUAGES C Fortran  # MUST include C language for Intel / MKL to work
+  DESCRIPTION "3-D ionopsheric model"
   HOMEPAGE_URL https://github.com/gemini3d/gemini)
 
 enable_testing()
 
-if(WIN32 AND NOT CMAKE_Fortran_COMPILER_ID STREQUAL Intel)
-  message(FATAL_ERROR "On native Windows, only the Intel compilers (ifort) works at this time, because OpenMPI is not available for Windows. Try Windows Subsystem for Linux.")
-endif()
-
 if(NOT realbits)
   set(realbits 64)
 endif()
-
 option(glow "use NCAR GLOW instead of Fang" ON)
 option(matlab "enable Matlab tests, which are slow and duplicate fast Octave tests" OFF)
 option(hdf5 "use HDF5 file I/O")
@@ -42,7 +38,7 @@ endif()
 include(${CMAKE_SOURCE_DIR}/cmake/utils.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/mumps.cmake)
 
-# --- pretests, to help catch missing libs
+# --- simple tests to help catch broken libs
 add_subdirectory(tests)
 
 # --- vendor libraries

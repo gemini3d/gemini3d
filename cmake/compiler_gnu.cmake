@@ -1,4 +1,4 @@
-set(CMAKE_Fortran_FLAGS "-march=native -fimplicit-none -Wall -Wpedantic -Wextra ")
+set(CMAKE_Fortran_FLAGS "-march=native -fimplicit-none -Wall -Wextra ")
 
 if(CMAKE_BUILD_TYPE STREQUAL Debug)
   string(APPEND CMAKE_Fortran_FLAGS "-Werror=array-bounds -fcheck=all ")
@@ -9,5 +9,5 @@ endif()
 
 # enforce Fortran 2018 standard
 if(CMAKE_Fortran_COMPILER_VERSION VERSION_GREATER_EQUAL 8)
-   string(APPEND CMAKE_Fortran_FLAGS "-std=f2018 ")
+   string(APPEND CMAKE_Fortran_FLAGS "-std=f2018 -Wpedantic ")
 endif()
