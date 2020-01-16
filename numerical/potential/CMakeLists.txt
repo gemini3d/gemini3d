@@ -26,19 +26,19 @@ set_tests_properties(potential2d PROPERTIES TIMEOUT 30
                      FIXTURES_SETUP GemPot)
 
 if(OctaveOK)
-add_test(NAME Potential2d_octave
+add_test(NAME potential2d_octave
   COMMAND ${Octave_EXECUTABLE} -q --eval "test_potential2D('${_potential_testfile}')"
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-set_tests_properties(Potential2d_octave PROPERTIES
+set_tests_properties(potential2d_octave PROPERTIES
   REQUIRED_FILES ${_potential_testfile}
   TIMEOUT 15
   FIXTURES_REQUIRED GemPot)
 endif(OctaveOK)
 
 if(PythonOK)
-add_test(NAME Potential2d_python
+add_test(NAME potential2d_python
   COMMAND ${Python3_EXECUTABLE}  ${CMAKE_CURRENT_SOURCE_DIR}/test_potential2d.py ${_potential_testfile})
-set_tests_properties(Potential2d_python PROPERTIES
+set_tests_properties(potential2d_python PROPERTIES
   REQUIRED_FILES ${_potential_testfile}
   TIMEOUT 10
   FIXTURES_REQUIRED GemPot)

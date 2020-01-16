@@ -24,9 +24,7 @@ add_library(io io.f90 aurora.f90 output.f90 input.f90
 target_link_libraries(io PRIVATE calculus const fsutils grid mpimod timeutils)
 
 if(hdf5)
-  target_include_directories(io PUBLIC ${HDF5_INCLUDE_DIRS})
-  target_compile_options(io PUBLIC ${HDF5_Fortran_DEFINITIONS})
-  target_link_libraries(io PUBLIC h5fortran ${HDF5_LIBRARIES})
+  target_link_libraries(io PUBLIC h5fortran::h5fortran)
 elseif(netcdf)
   target_include_directories(io PUBLIC ${NetCDF_INCLUDE_DIRS})
   target_link_libraries(io PUBLIC nc4fortran ${NetCDF_LIBRARIES})

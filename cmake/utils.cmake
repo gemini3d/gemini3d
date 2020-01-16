@@ -14,7 +14,7 @@ if(NOT NP)
   num_mpi_processes(${REFDIR})
 endif()
 
-set(_name ${TESTNAME}-NP${NP})  # for convenience, name with number of processes since this is important for debugging MPI
+set(_name ${TESTNAME})
 
 add_test(NAME ${_name}
   COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${NP} $<TARGET_FILE:${EXE}> ${CMAKE_SOURCE_DIR}/initialize/${TESTDIR}/config.nml ${CMAKE_BINARY_DIR}/${TESTDIR}
