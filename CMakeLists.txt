@@ -6,7 +6,7 @@ endif()
 
 project(gemini3d
   LANGUAGES C Fortran  # MUST include C language for Intel / MKL to work
-  DESCRIPTION "3-D ionopsheric model"
+  DESCRIPTION "3-D ionospheric model"
   HOMEPAGE_URL https://github.com/gemini3d/gemini)
 
 enable_testing()
@@ -72,13 +72,9 @@ target_link_libraries(gemini_fang.bin PRIVATE const grid io mpimod multifluid ne
   ${LAPACK_LIBRARIES})  # necessary for self-compiled
 
 if(glow)
-  add_library(multifluid_glow multifluid/multifluid.f90)
-  target_link_libraries(multifluid_glow PRIVATE advec calculus collision const diffusion grid ionization_glow mpimod precipBCs sources timeutils)
-
   add_executable(gemini_glow.bin gemini.f90)
-  target_link_libraries(gemini_glow.bin PRIVATE const grid io mpimod multifluid_glow neutral potential precipBCs temporal timeutils
+  target_link_libraries(gemini_glow.bin PRIVATE const grid io mpimod multifluid neutral potential precipBCs temporal timeutils
     ${LAPACK_LIBRARIES})  # necessary for self-compiled
-  target_link_directories(gemini_glow.bin PRIVATE ${GLOW_BINARY_DIR})  # "not found -lcglow" without this
 endif(glow)
 
 #--------magnetic field calculation executable---------------

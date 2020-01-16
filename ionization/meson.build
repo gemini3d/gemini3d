@@ -13,11 +13,6 @@ test('Fang', python,
   workdir: meson.current_source_dir(),
   suite: 'unit')
 
-ionization_fang = library('ionization',
-  sources: ['ionization.f90', 'glow_dummy.f90'],
-  link_with: [const, neutral, grid, timeutils, mpimod, fang],
-  dependencies : mpi)
-
 precipBCs = library('precipBCs', 'boundary_conditions/precipBCs_mod.f90',
   link_with: [mpimod, const, grid, interp, timeutils],
   dependencies: mpi)
@@ -25,13 +20,18 @@ precipBCs = library('precipBCs', 'boundary_conditions/precipBCs_mod.f90',
 
 # ===== GLOW library
 
-glow_proj = subproject('cglow')
-glow_lib = glow_proj.get_variable('cglow')
+if get_option('glow').enabled()
+  glow_proj = subproject('cglow')
+  glow_lib = glow_proj.get_variable('cglow')
 
-data_dir = 'subprojects/glow/data/' # need trailing slash
-
-ionization_glow = library('ionization_glow',
-  sources: ['ionization.f90', 'glow_run.F90'],
-  link_with: [glow_lib, const, neutral, grid, timeutils, mpimod, fang],
-  dependencies : mpi,
-  fortran_args: '-DDATADIR="'+data_dir+'"')
+  ionization = library('ionization_glow',
+    sources: ['ionization.f90', 'glow_run.F90'],
+    link_with: [glow_lib, const, neutral, grid, timeutils, mpimod, fang],
+    dependencies : mpi,
+    fortran_args: '-DDATADIR="' + glow_proj.get_variable('data_dir') + '/"')
+else
+  ionization = library('ionization',
+    sources: ['ionization.f90', 'glow_dummy.f90'],
+    link_with: [const, neutral, grid, timeutils, mpimod, fang],
+    dependencies : mpi)
+endif

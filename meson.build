@@ -49,7 +49,7 @@ sources = library('sources', 'sources/sources.f90',
     dependencies: mpi)  # ifort needs dep: mpi here
 
 multifluid = library('multifluid', 'multifluid/multifluid.f90',
-  link_with: [advection, calculus, collisions, const, diffusion, grid, ionization_fang, mpimod,
+  link_with: [advection, calculus, collisions, const, diffusion, grid, ionization, mpimod,
               precipBCs, sources, timeutils],
   dependencies: mpi)  # ifort needs dep: mpi here
 
@@ -63,19 +63,14 @@ gemini_fang_exe = executable('gemini_fang.bin',
   link_language: 'fortran')
 
 # -- gemini_glow exe
-
-multifluid_glow = library('multifluid_glow', 'multifluid/multifluid.f90',
-  link_with: [advection, calculus, collisions, const, diffusion, grid, ionization_glow, mpimod,
-              precipBCs, sources, timeutils],
-  dependencies: mpi)  # ifort needs dep: mpi here
-
-gemini_glow_exe = executable('gemini_glow.bin',
-  sources: 'gemini.f90',
-  link_with : [const, grid, io, mpimod, multifluid_glow, neutral, potential, precipBCs, temporal, timeutils],
-  dependencies : [scalapack, blacs, lapack, blas, mpi],    # ifort needs dep: mpi here
-  install: true,
-  link_language: 'fortran')
-
+if get_option('glow').enabled()
+  gemini_glow_exe = executable('gemini_glow.bin',
+    sources: 'gemini.f90',
+    link_with : [const, grid, io, mpimod, multifluid, neutral, potential, precipBCs, temporal, timeutils],
+    dependencies : [scalapack, blacs, lapack, blas, mpi],    # ifort needs dep: mpi here
+    install: true,
+    link_language: 'fortran')
+endif
 # -- magcalc exe
 
 magcalc = executable('magcalc.bin', 'magcalc.f90',

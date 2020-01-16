@@ -27,14 +27,14 @@ test('potential2d_octave', octave,
   timeout: 15,
   env: nomalloc_env,
   workdir: meson.current_source_dir(),
-  suite: 'unit', priority: -100)
+  suite: 'unit', is_parallel: false, priority: -100)
 
 test('potential2d_python', python,
   args: ['test_potential2d.py', meson.current_build_dir() / 'test_potential2d.h5'],
   timeout: 15,
   env: nomalloc_env,
   workdir: meson.current_source_dir(),
-  suite: 'unit', priority: -100)
+  suite: 'unit', is_parallel: false, priority: -100)
 
 #test_potential3d = executable('test_potential3d', 'test_potential3D.f90',
 #  dependencies: [mpi, mumps])

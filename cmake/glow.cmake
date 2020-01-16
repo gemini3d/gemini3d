@@ -1,10 +1,10 @@
-include(ExternalProject)
+include(FetchContent)
 
-ExternalProject_Add(GLOW_proj
+# set(FETCHCONTENT_FULLY_DISCONNECTED true BOOL "don't download")
+
+FetchContent_Declare(GLOW_proj
   GIT_REPOSITORY https://github.com/gemini3d/glow.git
-  GIT_TAG master
-  INSTALL_COMMAND ""  # disables the install step for the external project
+  GIT_TAG 915592c
 )
 
-ExternalProject_Get_Property(GLOW_proj BINARY_DIR)
-set(GLOW_BINARY_DIR ${BINARY_DIR} CACHE PATH "path to GLOW")
+FetchContent_MakeAvailable(GLOW_proj)
