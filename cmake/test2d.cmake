@@ -8,7 +8,7 @@ ${CMAKE_SOURCE_DIR}/tests/data
 
 setup_gemini_test(
 Gemini2d_fang
-gemini_fang.bin
+gemini.bin
 test2d_fang
 ${CMAKE_SOURCE_DIR}/tests/data/zenodo2d_fang
 300
@@ -31,7 +31,7 @@ ${CMAKE_SOURCE_DIR}/tests/data
 
 setup_gemini_test(
 Gemini2d_glow
-gemini_glow.bin
+gemini.bin
 test2d_glow
 ${CMAKE_SOURCE_DIR}/tests/data/zenodo2d_glow
 300

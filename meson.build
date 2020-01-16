@@ -55,22 +55,13 @@ multifluid = library('multifluid', 'multifluid/multifluid.f90',
 
 
 # -- gemini exe
-gemini_fang_exe = executable('gemini_fang.bin',
+gemini_exe = executable('gemini.bin',
   sources: 'gemini.f90',
   link_with : [const, grid, io, mpimod, multifluid, neutral, potential, precipBCs, temporal, timeutils],
   dependencies : [scalapack, blacs, lapack, blas, mpi],  # ifort needs dep: mpi here
   install: true,
   link_language: 'fortran')
 
-# -- gemini_glow exe
-if get_option('glow').enabled()
-  gemini_glow_exe = executable('gemini_glow.bin',
-    sources: 'gemini.f90',
-    link_with : [const, grid, io, mpimod, multifluid, neutral, potential, precipBCs, temporal, timeutils],
-    dependencies : [scalapack, blacs, lapack, blas, mpi],    # ifort needs dep: mpi here
-    install: true,
-    link_language: 'fortran')
-endif
 # -- magcalc exe
 
 magcalc = executable('magcalc.bin', 'magcalc.f90',
@@ -81,19 +72,10 @@ magcalc = executable('magcalc.bin', 'magcalc.f90',
 # --- TESTS ---
 
 zenodo = {
-  '2d_fang': {
-    'dir': meson.source_root() / 'tests/data/zenodo2d_fang',
-    'exe': gemini_fang_exe},
-  '2d_glow': {
-    'dir': meson.source_root() / 'tests/data/zenodo2d_glow',
-    'exe': gemini_glow_exe},
-  '3d_fang': {
-    'dir': meson.source_root() / 'tests/data/zenodo3d_fang',
-    'exe': gemini_fang_exe},
-  '3d_glow': {
-     'dir': meson.source_root() / 'tests/data/zenodo3d_glow',
-     'exe': gemini_glow_exe},
-}
+  '2d_fang': meson.source_root() / 'tests/data/zenodo2d_fang',
+  '2d_glow': meson.source_root() / 'tests/data/zenodo2d_glow',
+  '3d_fang': meson.source_root() / 'tests/data/zenodo3d_fang',
+  '3d_glow': meson.source_root() / 'tests/data/zenodo3d_glow'}
 
 np = get_option('np')
 
@@ -102,7 +84,7 @@ foreach k, v : zenodo
   test_dir = meson.build_root() / 'test'  + k
 
   testname = 'Gemini' + k
-  test_args = ['meson_run_test.py', k, mpiexec.path(), v['exe'],
+  test_args = ['meson_run_test.py', k, mpiexec.path(), gemini_exe,
                meson.source_root() / 'initialize/test' + k / 'config.nml',
                test_dir]
   if np > 0
@@ -120,13 +102,13 @@ foreach k, v : zenodo
 
   # --- Python-based simulation output comparision
   test('Compare' + k, python,
-    args : ['compare_all.py', test_dir, v['dir']],
+    args : ['compare_all.py', test_dir, v],
     suite : k,
     timeout: 60,
     env: nomalloc_env,
     workdir : meson.source_root() / 'tests')
   # --- Matlab/Octave-based simulation output comparision
-  matoctargs = 'compare_all("' + test_dir + '","' + v['dir'] + '")'
+  matoctargs = 'compare_all("' + test_dir + '","' + v + '")'
 
   test('CompareMatlab' + k, matlab,
     args : ['-batch', matoctargs],

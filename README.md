@@ -289,7 +289,7 @@ meson test -C build
 Can be manually done from the top-level gemini/ directory by:
 
 ```sh
-mpiexec -np 2 build/gemini_fang.bin initialize/2Dtest/config.ini /tmp/2d
+mpiexec -np 2 build/gemini.bin initialize/2Dtest/config.ini /tmp/2d
 ```
 
 use Python to compare test simulations with reference output data:
@@ -330,7 +330,6 @@ You can try `python3 install_prereqs.py` or use system-specific install commands
 4. There are potentially some issues with the way the stability condition is evaluated, i.e. it is computed before the perp. drifts are solved so it is possible when using input data to overrun this especially if your target CFL number is &gt; 0.8 or so.  Some code has been added as of 8/20/2018 to throttle how much dt is allowed to change between time steps and this seems to completely fix this issue, but theoretically it could still happen; however this is probably very unlikely.
 5. Occasionally one will see edge artifacts in either the field -aligned currents or other parameters for non-periodic in x3 solves.  This may be related to the divergence calculations needed for the parallel current (under EFL formulation) and for compression calculations in the multifluid module, but this needs to be investigated further...  This do not appear to affect solutions in the interior of the grid domain and can probably be safely ignored if your region of interest is sufficiently far from the boundary (which is alway good practice anyway).
 
-
 ## To do list
 
 See [TODO.md](./TODO.md).
@@ -341,20 +340,18 @@ GEMINI is Fortran 2008 compliant and uses two-space indents throughout (to accom
 
 ## Debug text
 
-The gemini_*.bin command line option `-d` or `-debug` prints a large amount to text to console, perhaps gigabytes worth for medium simulations. By default, only the current simulation time and a few other messages are shown.
-
-
+The gemini.bin command line option `-d` or `-debug` prints a large amount to text to console, perhaps gigabytes worth for medium simulations. By default, only the current simulation time and a few other messages are shown.
 
 ## Manually set number of MPI processes
 
 ```sh
-mpiexec -np <number of processors>  build/gemini_fang.bin <input config file> <output directory>
+mpiexec -np <number of processors>  build/gemini.bin <input config file> <output directory>
 ```
 
 for example:
 
 ```sh
-mpiexec -np 4 build/gemini_fang.bin initialize/2Dtest/config.ini /tmp/2d
+mpiexec -np 4 build/gemini.bin initialize/2Dtest/config.ini /tmp/2d
 ```
 
 Note that the output *base* directory must already exist (e.g. `/tmp/2d`).

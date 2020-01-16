@@ -67,15 +67,9 @@ add_library(multifluid multifluid/multifluid.f90)
 target_link_libraries(multifluid PRIVATE advec calculus collision const diffusion grid ionization mpimod precipBCs sources timeutils)
 
 # --- Main GEMINI executable
-add_executable(gemini_fang.bin gemini.f90)
-target_link_libraries(gemini_fang.bin PRIVATE const grid io mpimod multifluid neutral potential precipBCs temporal timeutils
+add_executable(gemini.bin gemini.f90)
+target_link_libraries(gemini.bin PRIVATE const grid io mpimod multifluid neutral potential precipBCs temporal timeutils
   ${LAPACK_LIBRARIES})  # necessary for self-compiled
-
-if(glow)
-  add_executable(gemini_glow.bin gemini.f90)
-  target_link_libraries(gemini_glow.bin PRIVATE const grid io mpimod multifluid neutral potential precipBCs temporal timeutils
-    ${LAPACK_LIBRARIES})  # necessary for self-compiled
-endif(glow)
 
 #--------magnetic field calculation executable---------------
 add_executable(magcalc.bin magcalc.f90)
