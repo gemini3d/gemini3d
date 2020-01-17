@@ -11,16 +11,13 @@ ExternalProject_Get_Property(MUMPS BINARY_DIR SOURCE_DIR)
 set(MUMPS_BINARY_DIR ${BINARY_DIR})
 set(MUMPS_SOURCE_DIR ${SOURCE_DIR})
 
-# here we have to use a priori about MUMPS, since MUMPS won't build as ExernalProject at configure time,
-# which is when find_package() is run
-# An alternative (messy) is a make a "superproject" that uses both as external projects and calls CMake twice.
-# This method below seems much preferable.
-# Meson makes this much easier, and is a key reason to use Meson instead of CMake.
+# FIXME: this doesn't use Scotch or Metis, but could simply.
 
 unset(MUMPS_LIBRARIES)
 foreach(a ${arith})
   list(APPEND MUMPS_LIBRARIES ${a}mumps)
 endforeach()
+
 list(APPEND MUMPS_LIBRARIES mumps_common pord)
 
 foreach(l ${MUMPS_LIBRARIES})
