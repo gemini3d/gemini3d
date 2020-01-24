@@ -25,7 +25,7 @@ jobs:
         python-version: '3.7'
     - run: |
         pip install -e .[tests]
-        pip install meson
+        pip install meson==0.53.0
     - name: Install prereqs
       run: |
         sudo apt update -yq

@@ -32,7 +32,7 @@ jobs:
 
     - run: |
         pip install -e .[tests]
-        pip install meson
+        pip install meson==0.53.0
     - run: brew install ninja pkg-config gcc open-mpi lapack hdf5 scalapack
 
     - run: meson setup build -Dhdf5=enabled

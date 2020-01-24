@@ -53,7 +53,7 @@ jobs:
         python-version: '3.x'
     - run: |
         pip install -e .[tests]
-        pip install meson
+        pip install meson==0.53.0
     - name: Install packages
       run: |
         sudo apt update -yq
