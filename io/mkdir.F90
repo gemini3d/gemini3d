@@ -4,7 +4,6 @@ use, intrinsic:: iso_fortran_env, only: stderr=>error_unit
 
 implicit none
 private
-
 public :: mkdir, copyfile
 
 contains
@@ -18,25 +17,18 @@ logical :: exists
 integer :: icstat
 
 #if defined(_WIN32)
-character(6), parameter :: CMD='copy '
+character(*), parameter :: CMD='copy '
 src = filesep_swap(source)
 dst = filesep_swap(dest)
 #else
-character(6), parameter ::  CMD='cp -r '
+character(*), parameter ::  CMD='cp -r '
 src = source
 dst = dest
 #endif
 
-inquire(file=src, exist=exists)
-if (.not.exists) then
-  write(stderr, *) src // ' source file does not exist.'
-  error stop
-endif
-
 call execute_command_line(CMD//src//' '//dst, exitstat=istat, cmdstat=icstat)
 if (istat == 0 .and. icstat /= 0) istat = icstat
 if (istat /= 0) write(stderr,*) 'ERROR: '//CMD//src//' '//dst
-
 
 end function copyfile
 
@@ -65,10 +57,10 @@ character(len(path)) :: p
 integer :: icstat
 
 #if defined(_WIN32)
-character(6), parameter :: CMD='mkdir '
+character(*), parameter :: CMD='mkdir '
 p = filesep_swap(path)
 #else
-character(9), parameter ::  CMD='mkdir -p '
+character(*), parameter ::  CMD='mkdir -p '
 p = path
 #endif
 

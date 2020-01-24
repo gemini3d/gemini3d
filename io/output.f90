@@ -11,32 +11,32 @@ module procedure create_outdir
 ! subroutine create_outdir(outdir,infile,indatsize,indatgrid,flagdneu,sourcedir,flagprecfile,precdir,flagE0file,E0dir)
 !! CREATES OUTPUT DIRECTORY, MOVES CONFIG FILES THERE AND GENERATES A GRID OUTPUT FILE
 
-integer(c_int) :: ierr
+integer :: ierr
 
 
 !> MAKE A COPY OF THE INPUT DATA IN THE OUTPUT DIRECTORY
 if ( mkdir(outdir//'/inputs') /= 0 ) error stop 'error creating output directory'
 
-if ( copyfile(infile, outdir//'/inputs/')  /= 0) error stop 'error copying configuration file to output directory'
-if ( copyfile(indatsize, outdir//'/inputs/') /= 0) error stop 'error copying input data size file to output directory'
-if ( copyfile(indatgrid, outdir//'/inputs/') /= 0) error stop 'error copying input grid to output directory'
-if ( copyfile(indatfile, outdir//'/inputs/') /= 0) error stop 'error copying input data to output directory'
+ierr = copyfile(infile, outdir//'/inputs/')
+ierr = copyfile(indatsize, outdir//'/inputs/')
+ierr = copyfile(indatgrid, outdir//'/inputs/')
+ierr = copyfile(indatfile, outdir//'/inputs/')
 
 !MAKE COPIES OF THE INPUT DATA, AS APPROPRIATE
 if (.false.) then
   if (flagdneu/=0) then
     ierr = mkdir(outdir//'/inputs/neutral_inputs')
-    if ( copyfile(sourcedir//'/*', outdir//'/inputs/neutral_inputs/')  /= 0) error stop 'copy: neutral input => output dir'
+    ierr = copyfile(sourcedir//'/*', outdir//'/inputs/neutral_inputs/')
   end if
 
   if (flagprecfile/=0) then
     ierr = mkdir(outdir//'/inputs/prec_inputs')
-    if ( copyfile(precdir//'/*', outdir//'/inputs/prec_inputs/') /= 0) error stop 'copy: input precipitation => output dir'
+    ierr = copyfile(precdir//'/*', outdir//'/inputs/prec_inputs/')
   end if
 
   if (flagE0file/=0) then
     ierr = mkdir(outdir//'/inputs/Efield_inputs')
-    if ( copyfile(E0dir//'/*', outdir//'/inputs/Efield_inputs/') /= 0) error stop 'copy input energy => output dir'
+    ierr = copyfile(E0dir//'/*', outdir//'/inputs/Efield_inputs/')
   end if
 endif
 
