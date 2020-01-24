@@ -51,7 +51,9 @@ jobs:
     - uses: actions/setup-python@v1
       with:
         python-version: '3.x'
-    - run: pip install -e .[tests]
+    - run: |
+        pip install -e .[tests]
+        pip install meson
     - name: Install packages
       run: |
         sudo apt update -yq

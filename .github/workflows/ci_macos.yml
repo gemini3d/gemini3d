@@ -30,7 +30,9 @@ jobs:
       with:
         python-version: '3.x'
 
-    - run: python3 -m pip install -e .[tests]
+    - run: |
+        pip install -e .[tests]
+        pip install meson
     - run: brew install ninja pkg-config gcc open-mpi lapack hdf5 scalapack
 
     - run: meson setup build -Dhdf5=enabled
