@@ -27,7 +27,7 @@ jobs:
     - name: Install prereqs
       run: |
         sudo apt update -yq
-        sudo apt install -yq --no-install-recommends pkg-config gfortran liblapack-dev libscalapack-openmpi-dev libmumps-dev libopenmpi-dev openmpi-bin libhdf5-dev octave
+        sudo apt install -yq --no-install-recommends ninja-build pkg-config gfortran liblapack-dev libscalapack-openmpi-dev libmumps-dev libopenmpi-dev openmpi-bin libhdf5-dev octave
     - run: meson setup build --buildtype=debug -Dhdf5=enabled
       env:
         FC: gfortran

@@ -55,7 +55,7 @@ jobs:
     - name: Install packages
       run: |
         sudo apt update -yq
-        sudo apt install -yq --no-install-recommends gfortran libopenmpi-dev openmpi-bin liblapack-dev libscalapack-mpi-dev libmumps-dev
+        sudo apt install -yq --no-install-recommends ninja-build pkg-config gfortran libopenmpi-dev openmpi-bin liblapack-dev libscalapack-mpi-dev libmumps-dev
 
     - run: meson setup build -Dhdf5=disabled
       env:

@@ -17,7 +17,7 @@ character(len(dest)) :: dst
 logical :: exists
 integer :: icstat
 
-#if defined(_WIN32) || defined(_WIN64)
+#if defined(_WIN32)
 character(6), parameter :: CMD='copy '
 src = filesep_swap(source)
 dst = filesep_swap(dest)
@@ -64,7 +64,7 @@ character(*), intent(in) :: path
 character(len(path)) :: p
 integer :: icstat
 
-#ifdef _WIN32
+#if defined(_WIN32)
 character(6), parameter :: CMD='mkdir '
 p = filesep_swap(path)
 #else

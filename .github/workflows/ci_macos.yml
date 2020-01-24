@@ -31,7 +31,7 @@ jobs:
         python-version: '3.x'
 
     - run: python3 -m pip install -e .[tests]
-    - run: brew install pkg-config gcc open-mpi lapack hdf5 scalapack
+    - run: brew install ninja pkg-config gcc open-mpi lapack hdf5 scalapack
 
     - run: meson setup build -Dhdf5=enabled
       env:
