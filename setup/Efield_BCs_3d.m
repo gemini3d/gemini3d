@@ -1,4 +1,4 @@
-function E = Efield_BCs_2d(params, dir_grid, format, dir_config)
+function E = Efield_BCs_3d(params, dir_grid, format, dir_config)
 
 narginchk(3, 4)
 validateattributes(params, {'struct'}, {'scalar'}, mfilename, 'sim parameters', 1)
@@ -65,13 +65,10 @@ E.expdate = cat(2, repmat(config.ymd(:)',[Nt, 1]), UThrs', zeros(Nt, 1), zeros(N
 E.Exit = zeros(E.llon, E.llat, Nt);
 E.Eyit = zeros(E.llon, E.llat, Nt);
 
-% put custom E-field background in this for loop
-%{
-for it=1:Nt
-  E.Exit(:,:,it) = ;   %V/m
-  E.Eyit(:,:,it) = ;
+for it=1:lt
+  Exit(:,:,it)=zeros(llon,llat);   %V/m
+  Eyit(:,:,it)=zeros(llon,llat);
 end
-%}
 %% CREATE DATA FOR BOUNDARY CONDITIONS FOR POTENTIAL SOLUTION
 params.flagdirich = 1;   %if 0 data is interpreted as FAC, else we interpret it as potential
 E.Vminx1it = zeros(E.llon,E.llat, Nt);
@@ -88,26 +85,18 @@ if lx3 == 1 % east-west
   pk = Etarg*sigx2 .* xg.h2(lx1, floor(lx2/2), 1) .* sqrt(pi)./2;
 elseif lx2 == 1 % north-south
   pk = Etarg*sigx3 .* xg.h3(lx1, 1, floor(lx3/2)) .* sqrt(pi)./2;
+else % 3D
+  pk = Etarg*sigx2 .* xg.h2(lx1,f loor(lx2/2), 1) .* sqrt(pi)./2;
 end
 
-% x2ctr = 1/2*(xg.x2(lx2)+xg.x2(1));
-for i = 1:Nt
-  % put your functions in these if you want
-  %{
-  E.Vminx1it(:,:,i) = ;
-  %}
-  if lx2 == 1
-    E.Vmaxx1it(:,:,i) = pk .* erf((E.MLAT - mlatmean)/mlatsig);
-  elseif lx3 == 1
-    E.Vmaxx1it(:,:,i) = pk .* erf((E.MLON - mlonmean)/mlonsig);
-  end
-  % put your functions in these if you want
-  %{
-  E.Vminx2ist(:,i) = ;
-  E.Vmaxx2ist(:,i) = ;
-  E.Vminx3ist(:,i) = ;
-  E.Vmaxx3ist(:,i) = ;
-  %}
+x2ctr = 1/2*(xg.x2(lx2)+xg.x2(1));
+for it=1:lt
+  Vminx1it(:,:,it)=zeros(llon,llat);
+  Vmaxx1it(:,:,it)=pk.*erf((MLON-mlonmean)/mlonsig).*erf((MLAT-mlatmean)/mlatsig);
+  Vminx2ist(:,it)=zeros(llat,1);     %these are just slices
+  Vmaxx2ist(:,it)=zeros(llat,1);
+  Vminx3ist(:,it)=zeros(llon,1);
+  Vmaxx3ist(:,it)=zeros(llon,1);
 end
 
 %% check for NaNs
