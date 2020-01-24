@@ -65,10 +65,6 @@ E.expdate = cat(2, repmat(config.ymd(:)',[Nt, 1]), UThrs', zeros(Nt, 1), zeros(N
 E.Exit = zeros(E.llon, E.llat, Nt);
 E.Eyit = zeros(E.llon, E.llat, Nt);
 
-for it=1:lt
-  Exit(:,:,it)=zeros(llon,llat);   %V/m
-  Eyit(:,:,it)=zeros(llon,llat);
-end
 %% CREATE DATA FOR BOUNDARY CONDITIONS FOR POTENTIAL SOLUTION
 params.flagdirich = 1;   %if 0 data is interpreted as FAC, else we interpret it as potential
 E.Vminx1it = zeros(E.llon,E.llat, Nt);
@@ -86,17 +82,12 @@ if lx3 == 1 % east-west
 elseif lx2 == 1 % north-south
   pk = Etarg*sigx3 .* xg.h3(lx1, 1, floor(lx3/2)) .* sqrt(pi)./2;
 else % 3D
-  pk = Etarg*sigx2 .* xg.h2(lx1,f loor(lx2/2), 1) .* sqrt(pi)./2;
+  pk = Etarg*sigx2 .* xg.h2(lx1, floor(lx2/2), 1) .* sqrt(pi)./2;
 end
 
-x2ctr = 1/2*(xg.x2(lx2)+xg.x2(1));
-for it=1:lt
-  Vminx1it(:,:,it)=zeros(llon,llat);
-  Vmaxx1it(:,:,it)=pk.*erf((MLON-mlonmean)/mlonsig).*erf((MLAT-mlatmean)/mlatsig);
-  Vminx2ist(:,it)=zeros(llat,1);     %these are just slices
-  Vmaxx2ist(:,it)=zeros(llat,1);
-  Vminx3ist(:,it)=zeros(llon,1);
-  Vmaxx3ist(:,it)=zeros(llon,1);
+% x2ctr = 1/2*(xg.x2(lx2) + xg.x2(1));
+for it=1:Nt
+  E.Vmaxx1it(:,:,it) = pk.*erf((E.MLON-mlonmean)/mlonsig).*erf((E.MLAT-mlatmean)/mlatsig);
 end
 
 %% check for NaNs
