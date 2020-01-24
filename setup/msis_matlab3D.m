@@ -29,6 +29,12 @@ exeloc = [cwd,'/../build/'];
 exe = [exeloc,'msis_setup'];
 if ispc, exe = [exe, '.exe']; end
 
+if ~is_file(exe)
+  src = [cwd,'/../vendor/msis00/msis00_gfortran.f ', cwd,'/MSIS00/call_msis_gfortran.f90'];
+  cmd = ['gfortran -std=legacy -w ',src,' -o ',exe];
+  status = system(cmd);
+  assert(status==0, 'failed to compile MSISe00')
+end
 assert(is_file(exe), ['MSIS setup executable not found: ', exe])
 %% SPECIFY SIZES ETC.
 lx1=xg.lx(1); lx2=xg.lx(2); lx3=xg.lx(3);

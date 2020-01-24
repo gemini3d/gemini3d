@@ -1,11 +1,11 @@
-function [nsi,vs1i,Tsi,xgin,ns,vs1,Ts] = eq2dist(eqdir, simID, xg, outdir, realbits)
+function [nsi,vs1i,Tsi,xgin,ns,vs1,Ts] = eq2dist(eqdir, simID, xg, format, outdir)
 
-narginchk(3, 5)
+narginchk(4, 5)
 validateattributes(eqdir, {'char', 'string'}, {'vector'})
 validateattributes(simID, {'char', 'string'}, {'vector'})
-validateattributes(xg, {'struct'}, {'scalar'})
-if nargin < 4, outdir = []; end
-if nargin < 5, realbits = 64; end
+validateattributes(xg, {'struct'}, {'scalar'}, mfilename, 'grid struct',3)
+validateattributes(format, {'char'}, {'vector'}, mfilename, 'raw or hdf5',4)
+if nargin < 5, outdir = []; end
 %% READ SIMULATION INFORMATION
 [ymd0,UTsec0,tdur,dtout,flagoutput,mloc] = readconfig([eqdir, '/inputs']);
 xgin = readgrid([eqdir, '/inputs']);
@@ -37,8 +37,8 @@ if isempty(outdir)
   basedir = [eqdir,'/../input/'];
   outdir = [basedir, simID];
 end
-writegrid(xg, outdir, realbits);
+writegrid(xg, outdir, format);
 dmy=[ymdend(3),ymdend(2),ymdend(1)];
-writedata(dmy,UTsecend,nsi,vs1i,Tsi,outdir,simID, realbits);
+writedata(dmy,UTsecend,nsi,vs1i,Tsi,outdir,simID, format);
 
 end % function eq2dist

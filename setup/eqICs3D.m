@@ -18,7 +18,7 @@ mindens=1e-100;
 
 
 %SLICE THE FIELD IN HALF IF WE ARE CLOSED
-natm=msis_matlab3D(xg,UT,dmy,activ);
+natm = msis_matlab3D(xg,UT,dmy,activ);
 closeddip=abs(xg.r(1,1,1)-xg.r(xg.lx(1),1,1))<50e3;     %logical flag marking the grid as closed dipole
 if closeddip         %closed dipole grid
 %    [~,ialtmax]=max(xg.alt(:,1,1));
