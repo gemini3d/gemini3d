@@ -1,9 +1,9 @@
-function [ne,mlatsrc,mlonsrc,xg,v1,Ti,Te,J1,v2,v3,J2,J3,filename,Phitop,ns,vs1,Ts] = loadframe(direc,ymd,UTsec,flagoutput,mloc,xg)
+function [ne,mlatsrc,mlonsrc,xg,v1,Ti,Te,J1,v2,v3,J2,J3,filename,Phitop,ns,vs1,Ts] = loadframe(direc,ymd,UTsec,flagoutput,mloc,xg,file_format)
 
 cwd = fileparts(mfilename('fullpath'));
 addpath([cwd, '/../script_utils'])
 
-narginchk(3,6)
+narginchk(3,7)
 validateattr(direc, {'char'}, {'vector'}, mfilename, 'data directory', 1)
 validateattr(ymd, {'numeric'}, {'vector', 'numel', 3}, mfilename, 'year month day', 2)
 validateattr(UTsec, {'numeric'}, {'vector'}, mfilename, 'UTC second', 3)
@@ -16,8 +16,13 @@ if ~isempty(mloc)
   validateattr(mloc, {'numeric'}, {'vector', 'numel', 2}, mfilename, 'magnetic coordinates', 5)
 end
 
+if nargin < 7 || isempty(file_format)
+  file_format = 'auto';
+end
+validateattr(file_format, {'char'}, {'vector'}, mfilename, 'raw or hdf5', 7)
+
 if nargin < 6 || isempty(xg)
-  xg = readgrid([direc, '/inputs']);
+  xg = readgrid([direc, '/inputs'], file_format);
 end
 validateattr(xg, {'struct'}, {'scalar'}, mfilename, 'grid structure', 6)
 
@@ -34,7 +39,13 @@ end
 
 %% LOAD DIST. FILE
 stem0 = datelab(ymd, UTsec);
-for ext = {'.h5', '.dat'}
+switch file_format
+  case 'hdf5', suffix = {'.h5'};
+  case 'raw', suffix = {'.dat'};
+  otherwise, suffix = {'.h5', '.dat'};
+end
+
+for ext = suffix
   stem = stem0;
   filename = [stem, ext{1}];
   if is_file([direc, filesep, filename])

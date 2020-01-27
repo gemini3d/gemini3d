@@ -23,7 +23,7 @@ add_test(NAME ${_name}
 set_tests_properties(${_name} PROPERTIES
   TIMEOUT ${TIMEOUT}
   SKIP_RETURN_CODE 77
-  FIXTURES_REQUIRED "MPIMUMPS;IOfmt"
+  FIXTURES_REQUIRED MPIMUMPS
   RUN_SERIAL true
 )
 if(WIN32 AND HDF5_ROOT)  # for Windows ifort dll

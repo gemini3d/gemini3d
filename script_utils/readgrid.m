@@ -1,24 +1,24 @@
-function xgf = readgrid(path, format)
-
-%--------------------------------------------------------
-%-----THIS READS A GRID FROM A BINARY FILE CREATED
-%-----BY MATLAB OR POSSIBLY FORTRAN (THOUGH THIS IS
-%-----NOT YET IMPLEMENTED AS OF 9/15/2016)
-%--------------------------------------------------------
-
+function xgf = readgrid(path, file_format)
+%% READS A GRID FROM MATLAB
+% OR POSSIBLY FORTRAN (THOUGH THIS IS NOT YET IMPLEMENTED AS OF 9/15/2016)
 narginchk(2,2)
-validateattributes(format, {'char'}, {'vector'}, mfilename, 'raw or hdf5',2)
+validateattributes(file_format, {'char'}, {'vector'}, mfilename, 'raw or hdf5', 2)
 
 path = absolute_path(path);
 assert(is_folder(path), [path, ' is not a directory.'])
 
-switch format
+switch file_format
   case 'raw', xgf = read_raw(path);
   case 'hdf5', xgf = read_hdf5(path);
-  otherwise, error('format must be raw or hdf5')
+  otherwise
+    if is_file([path, '/simsize.h5'])
+      xgf = read_hdf5(path);
+    else
+      xgf = read_raw(path);
+    end
 end
 
-end
+end % function
 
 
 function xgf = read_hdf5(path)

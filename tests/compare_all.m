@@ -32,11 +32,12 @@ tol.atolT=100;
 tol.atolJ=1e-7;
 tol.atolV=50;
 
+outdir = absolute_path(outdir);
+refdir = absolute_path(refdir);
+
 exist_or_skip(outdir, 'dir')
 exist_or_skip(refdir, 'dir')
 %% check that paths not the same
-% this is not a very good check. Matlab has no native way to resolve absolute paths
-% and GetFullPath.m can arbitrarily change working directory, breaking the script.
 if strcmp(outdir, refdir), error([outdir, ' and ', refdir, ' directories are the same']), end
 %% READ IN THE SIMULATION INFORMATION
 params = read_config([outdir, filesep, 'inputs']);
