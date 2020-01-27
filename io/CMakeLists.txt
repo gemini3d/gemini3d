@@ -1,4 +1,4 @@
-add_library(fsutils mkdir.F90 expanduser.f90)
+add_library(fsutils pathlib.F90 expanduser.f90)
 
 add_library(logging logging.f90)
 

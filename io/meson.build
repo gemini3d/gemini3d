@@ -26,6 +26,6 @@ else
 endif
 
 fsutils = library('fsutils',
-  sources: ['mkdir.F90', 'expanduser.f90'])
+  sources: ['pathlib.F90', 'expanduser.f90'])
 
 logging = library('logging', 'logging.f90')
