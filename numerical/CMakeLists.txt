@@ -1,4 +1,5 @@
 add_library(const constants/phys_consts.F90)
+target_include_directories(const INTERFACE ${CMAKE_CURRENT_BINARY_DIR})
 target_compile_definitions(const PRIVATE REALBITS=${realbits})
 
 add_subdirectory(interpolation)

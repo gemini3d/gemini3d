@@ -16,8 +16,8 @@ if(NOT realbits)
 endif()
 option(glow "use NCAR GLOW instead of Fang" ON)
 option(matlab "enable Matlab tests, which are slow and duplicate fast Octave tests" OFF)
-option(hdf5 "use HDF5 file I/O")
-option(netcdf "use NetCDF file I/O")
+option(hdf5 "use HDF5 file I/O" ON)
+option(netcdf "use NetCDF file I/O" OFF)
 option(metis "use METIS" OFF)
 option(scotch "use Scotch" OFF)
 
@@ -26,8 +26,6 @@ if(netcdf AND hdf5)
 endif()
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/Modules/)
-
-set(CMAKE_Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR})
 
 include(${CMAKE_SOURCE_DIR}/cmake/compilers.cmake)
 if(hdf5)

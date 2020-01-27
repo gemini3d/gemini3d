@@ -1,7 +1,5 @@
-find_package(MPI REQUIRED COMPONENTS Fortran)
-
 add_executable(testmpi test_mpi.f90)
-target_link_libraries(testmpi PRIVATE MPI::MPI_Fortran)
+target_link_libraries(testmpi MPI::MPI_Fortran)
 add_test(NAME mpi_basic COMMAND testmpi)
 
 set_tests_properties(mpi_basic PROPERTIES
@@ -10,7 +8,7 @@ set_tests_properties(mpi_basic PROPERTIES
 # ---
 
 add_executable(test_scalapack test_scalapack.f90)
-target_link_libraries(test_scalapack PRIVATE ${SCALAPACK_LIBRARIES} ${LAPACK_LIBRARIES} MPI::MPI_Fortran)
+target_link_libraries(test_scalapack ${SCALAPACK_LIBRARIES} ${LAPACK_LIBRARIES} MPI::MPI_Fortran)
 target_include_directories(test_scalapack PRIVATE ${SCALAPACK_INCLUDE_DIRS})
 add_test(NAME scalapack_basic COMMAND testmpi)
 
@@ -20,7 +18,7 @@ set_tests_properties(scalapack_basic PROPERTIES
 
 # ---
 add_executable(test_mumps test_mumps.f90)
-target_link_libraries(test_mumps PRIVATE mumps_interface MPI::MPI_Fortran)
+target_link_libraries(test_mumps mumps_interface MPI::MPI_Fortran)
 
 add_test(NAME mumps_basic
   COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} 2 $<TARGET_FILE:test_mumps>

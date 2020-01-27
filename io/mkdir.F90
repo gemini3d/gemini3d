@@ -1,4 +1,4 @@
-module std_mkdir
+module pathlib
 
 use, intrinsic:: iso_fortran_env, only: stderr=>error_unit
 
@@ -33,24 +33,8 @@ if (istat /= 0) write(stderr,*) 'ERROR: '//CMD//src//' '//dst
 end function copyfile
 
 
-function filesep_swap(path) result(swapped)
-! swaps '/' to '\' for Windows systems
-
-character(*), intent(in) :: path
-character(len(path)) :: swapped
-integer :: i
-
-swapped = path
-do
-  i = index(swapped, '/')
-  if (i == 0) exit
-  swapped(i:i) = char(92)
-end do
-
-end function filesep_swap
-
-
 integer function mkdir(path) result(istat)
+!! create a directory, with parents if needed
 
 character(*), intent(in) :: path
 character(len(path)) :: p
@@ -71,4 +55,20 @@ if (istat /= 0) write(stderr,*) 'ERROR: '//CMD//p
 end function mkdir
 
 
-end module std_mkdir
+function filesep_swap(path) result(swapped)
+! swaps '/' to '\' for Windows systems
+
+character(*), intent(in) :: path
+character(len(path)) :: swapped
+integer :: i
+
+swapped = path
+do
+  i = index(swapped, '/')
+  if (i == 0) exit
+  swapped(i:i) = char(92)
+end do
+
+end function filesep_swap
+
+end module pathlib
