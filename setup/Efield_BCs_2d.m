@@ -174,14 +174,8 @@ end % function
 
 function writeraw(dir_out, E, params)
 narginchk(3,3)
-try
-  realbits = params.realbits;
-catch
-  realbits = 64;
-end
-assert(any(realbits == [32, 64]), 'realbits == 32 or 64')
 
-freal = ['float',int2str(params.realbits)];
+freal = 'float64';
 
 fid = fopen([dir_out, '/simsize.dat'], 'w');
 fwrite(fid, E.llon, 'integer*4');

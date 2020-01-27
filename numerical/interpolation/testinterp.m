@@ -50,24 +50,15 @@ end
 end % function
 
 
-function testinterp_raw(filename, realbits)
+function testinterp_raw(filename)
 
-narginchk(1,2)
 cwd = fileparts(mfilename('fullpath'));
 addpath([cwd,filesep,'..',filesep,'..',filesep,'script_utils'])
 
-if nargin == 1
-  realbits = 64;
-end
 
-validateattr(realbits, {'numeric'}, {'scalar', 'integer', 'positive'}, mfilename,'real bits',2)
 exist_or_skip(filename, 'file')
 
-switch realbits
-  case 64, freal = 'float64';
-  case 32, freal = 'float32';
-  otherwise, error(['unknown precision', num2str(realbits)])
-end
+freal = 'float64';
 
 fid=fopen(filename,'r');
 

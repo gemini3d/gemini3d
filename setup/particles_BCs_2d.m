@@ -1,13 +1,7 @@
-function particles_BCs(config_dir, grid_dir, outdir, realbits)
-narginchk(3,4)
+function particles_BCs_2d(config_dir, grid_dir, outdir)
+narginchk(3,3)
 cwd = fileparts(mfilename('fullpath'));
 addpath([cwd, '/../../script_utils'])
-
-if nargin < 4
-  realbits = 64;
-end
-validateattributes(realbits, {'numeric'}, {'integer', 'scalar', 'positive'}, mfilename)
-wp = ['float', int2str(realbits)];
 
 if ~is_folder(outdir)
   mkdir(outdir)
@@ -125,6 +119,8 @@ fid=fopen(filename,'w');
 fwrite(fid,llon,'integer*4');
 fwrite(fid,llat,'integer*4');
 fclose(fid);
+
+wp = 'float64';
 
 filename=[outdir,'simgrid.dat'];
 fid=fopen(filename,'w');

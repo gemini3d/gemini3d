@@ -1,7 +1,8 @@
 function xgf = readgrid(path, file_format)
 %% READS A GRID FROM MATLAB
 % OR POSSIBLY FORTRAN (THOUGH THIS IS NOT YET IMPLEMENTED AS OF 9/15/2016)
-narginchk(2,2)
+narginchk(1,2)
+if nargin < 2, file_format = 'auto'; end
 validateattributes(file_format, {'char'}, {'vector'}, mfilename, 'raw or hdf5', 2)
 
 path = absolute_path(path);
