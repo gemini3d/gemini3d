@@ -3,8 +3,12 @@ if(realbits EQUAL 32)
 else()
   add_library(mumps_interface mumps_real64.f90)
 endif()
-target_include_directories(mumps_interface PUBLIC ${MUMPS_INCLUDE_DIRS})
+target_include_directories(mumps_interface
+  PUBLIC ${MUMPS_INCLUDE_DIRS}
+  INTERFACE ${CMAKE_CURRENT_BINARY_DIR}/include)
 target_link_libraries(mumps_interface PUBLIC ${MUMPS_LIBRARIES})
+set_target_properties(mumps_interface PROPERTIES
+  Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include)
 
 add_library(PDEelliptic PDEelliptic.f90)
 target_link_libraries(PDEelliptic PRIVATE const mumps_interface MPI::MPI_Fortran)
@@ -12,7 +16,9 @@ target_link_libraries(PDEelliptic PRIVATE const mumps_interface MPI::MPI_Fortran
 add_library(potential potential_comm_mumps.f90 potential_mumps.f90 boundary_conditions/potentialBCs_mumps.f90)
 target_link_libraries(potential PRIVATE calculus collision const grid interp timeutils
   MPI::MPI_Fortran PDEelliptic mpimod)
-
+target_include_directories(potential INTERFACE ${CMAKE_CURRENT_BINARY_DIR}/include)
+set_target_properties(potential PROPERTIES
+  Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include)
 
 if(NOT hdf5)
   return()

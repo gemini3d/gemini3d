@@ -16,7 +16,7 @@ if(NOT realbits)
 endif()
 option(glow "use NCAR GLOW instead of Fang" ON)
 option(matlab "enable Matlab tests, which are slow and duplicate fast Octave tests" OFF)
-option(hdf5 "use HDF5 file I/O" ON)
+option(hdf5 "use HDF5 file I/O")
 option(netcdf "use NetCDF file I/O" OFF)
 option(metis "use METIS" OFF)
 option(scotch "use Scotch" OFF)
@@ -53,9 +53,15 @@ add_subdirectory(temporal)
 
 add_library(neutral neutral/neutral.f90)
 target_link_libraries(neutral PRIVATE const grid interp mpimod msis timeutils MPI::MPI_Fortran)
+target_include_directories(neutral INTERFACE ${CMAKE_CURRENT_BINARY_DIR}/include)
+set_target_properties(neutral PROPERTIES
+  Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include)
 
 add_library(collision collisions/collisions.f90)
 target_link_libraries(collision PRIVATE const)
+target_include_directories(collision INTERFACE ${CMAKE_CURRENT_BINARY_DIR}/include)
+set_target_properties(collision PROPERTIES
+  Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include)
 
 add_library(sources sources/sources.f90)
 target_link_libraries(sources PRIVATE calculus collision const grid mpimod)

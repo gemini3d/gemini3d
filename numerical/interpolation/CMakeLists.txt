@@ -1,5 +1,8 @@
 add_library(interp interpolation.f90)
 target_link_libraries(interp PRIVATE const)
+target_include_directories(interp INTERFACE ${CMAKE_CURRENT_BINARY_DIR}/include)
+set_target_properties(interp PROPERTIES
+  Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include)
 
 # --- tests
 add_executable(test_interp1 testinterp1.f90)

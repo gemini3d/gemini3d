@@ -22,6 +22,9 @@ add_library(io io.f90 aurora.f90 output.f90 input.f90
   plasma.f90 plasma_input_raw.f90
   ${io_src})
 target_link_libraries(io PRIVATE calculus const fsutils grid mpimod timeutils)
+target_include_directories(io INTERFACE ${CMAKE_CURRENT_BINARY_DIR}/include)
+set_target_properties(io PROPERTIES
+  Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include)
 
 if(hdf5)
   target_link_libraries(io PUBLIC h5fortran::h5fortran)

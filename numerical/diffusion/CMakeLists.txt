@@ -7,6 +7,9 @@ endif()
 
 add_library(diffusion diffusion.f90)
 target_link_libraries(diffusion PRIVATE const grid mesh PDEparabolic)
+target_include_directories(diffusion INTERFACE ${CMAKE_CURRENT_BINARY_DIR}/include)
+set_target_properties(diffusion PROPERTIES
+  Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include)
 
 if(NOT hdf5)
   return()
