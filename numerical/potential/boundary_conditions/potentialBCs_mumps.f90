@@ -14,6 +14,25 @@ implicit none
 private
 public :: potentialbcs2D, potentialbcs2D_fileinput, clear_potential_fileinput
 
+interface ! bc_{raw,hdf5,nc4}.f90
+module subroutine get_simsize(path, llat, llon)
+character(*), intent(in) :: path
+integer, intent(out) :: llat, llon
+end subroutine get_simsize
+
+module subroutine get_simgrid(path, mlonp, mlatp)
+character(*), intent(in) :: path
+real(wp), dimension(:), intent(out) :: mlonp, mlatp
+end subroutine get_simgrid
+
+module subroutine get_Efield(path, flagdirich,E0xp,E0yp,Vminx1p,Vmaxx1p,Vminx2pslice,Vmaxx2pslice,Vminx3pslice,Vmaxx3pslice)
+character(*), intent(in) :: path
+integer, intent(out) :: flagdirich
+real(wp), dimension(:,:) :: E0xp,E0yp,Vminx1p,Vmaxx1p
+real(wp), dimension(:) :: Vminx2pslice,Vmaxx2pslice,Vminx3pslice,Vmaxx3pslice
+end subroutine get_Efield
+end interface
+
 !ALL OF THE FOLLOWING MODULE-SCOPE ARRAYS ARE USED FOR INTERPOLATING PRECIPITATION INPUT FILES (IF USED)
 !It should be noted that all of these will eventually be fullgrid variables since only root does this...
 real(wp), dimension(:), allocatable :: mlonp
@@ -38,9 +57,11 @@ integer, dimension(3) :: ymdprev,ymdnext   !dates for interpolated data
 real(wp) :: UTsecprev,UTsecnext
 real(wp) :: tprev,tnext
 
-real(wp) :: flagdirich_double
+integer :: ix1ref,ix2ref,ix3ref
+!! reference location along field line closest to reference point of input data (300 km alt. at the grid center)
 
-integer :: ix1ref,ix2ref,ix3ref     !reference locaiton along field line closest to reference point of input data (300 km alt. at the grid center)
+integer, private :: flagdirich_state
+!! NOTE: holds state of flagdirich between calls, do not delete!
 
 contains
 
@@ -66,8 +87,6 @@ real(wp), dimension(:,:), intent(out) :: Vminx2,Vmaxx2
 real(wp), dimension(:,:), intent(out) :: Vminx3,Vmaxx3
 real(wp), dimension(:,:,:), intent(out) :: E01all,E02all,E03all
 integer, intent(out) :: flagdirich
-
-character(:), allocatable :: fn1, fn2, fn3
 
 real(wp) :: UTsectmp
 integer, dimension(3) :: ymdtmp
@@ -98,15 +117,8 @@ if(t + dt / 2._wp >= tnext) then    !need to load a new file
     ymdnext=ymdprev
     UTsecnext=UTsecprev
 
-    fn1 = E0dir // '/simsize.dat'
-    if (debug) print '(A,/,A)', 'Inputting electric field data size from file:', fn1
-    call assert_file_exists(fn1)
-    block
-      integer :: u
-      open(newunit=u, file=fn1, status='old', form='unformatted', access='stream')
-      read(u) llon,llat
-      close(u)
-    end block
+    call get_simsize(E0dir, llat, llon)
+
     if (debug) print '(A,2I6)', 'Electric field data has llon,llat size:  ',llon,llat
     if (llon < 1 .or. llat < 1) error stop 'potentialBCs_mumps: grid size must be strictly positive'
     allocate(mlonp(llon),mlatp(llat))
@@ -122,15 +134,8 @@ if(t + dt / 2._wp >= tnext) then    !need to load a new file
 
 
     !> NOW READ THE GRID
-    fn2 = E0dir // '/simgrid.dat'
-    if (debug) print '(A,/,A)', 'Inputting electric field grid from file:', fn2
-    call assert_file_exists(fn2)
-    block
-      integer :: u
-      open(newunit=u,file=fn2,status='old',form='unformatted',access='stream')
-      read(u) mlonp,mlatp
-      close(u)
-    end block
+    call get_simgrid(E0dir, mlonp, mlatp)
+
     if (debug) print *, 'Electric field data has mlon,mlat extent:', &
               minval(mlonp(:)), maxval(mlonp(:)), minval(mlatp(:)), maxval(mlatp(:))
     if(.not. all(ieee_is_finite(mlonp))) error stop 'mlon must be finite'
@@ -185,22 +190,10 @@ if(t + dt / 2._wp >= tnext) then    !need to load a new file
   UTsectmp=UTsecnext
   call dateinc(dtE0,ymdtmp,UTsectmp)
   !! get the date for "next" params
-  fn3 = date_filename(E0dir, ymdtmp, UTsectmp) // '.dat'
-  !! form the standard data filename
-  if (debug) print *, 'Read: electric field data from file:  ',fn3
-  call assert_file_exists(fn3)
-  block
-    integer :: u
-    open(newunit=u, file=fn3, status='old', form='unformatted', access='stream')
-    read(u) flagdirich_double
-    read(u) E0xp,E0yp
-    read(u) Vminx1p,Vmaxx1p
-    !! background fields and top/bottom boundary conditions
-    read(u) Vminx2pslice,Vmaxx2pslice
-    !! these only used for 3D simulations
-    read(u) Vminx3pslice,Vmaxx3pslice
-    close(u)
-  end block
+
+  call get_Efield(date_filename(E0dir, ymdtmp, UTsectmp), &
+    flagdirich_state,E0xp,E0yp,Vminx1p,Vmaxx1p,&
+    Vminx2pslice,Vmaxx2pslice,Vminx3pslice,Vmaxx3pslice)
 
   if (debug) then
     print *, 'Min/max values for E0xp:  ',minval(E0xp),maxval(E0xp)
@@ -344,7 +337,7 @@ end if
 
 
 !> INTERPOLATE IN TIME (LINEAR)
-flagdirich = int(flagdirich_double)
+flagdirich = flagdirich_state
 !! make sure to set solve type every time step, as it does not persiste between function calls
 if (debug) print *, 'Solve type: ',flagdirich
 do ix3=1,lx3all
