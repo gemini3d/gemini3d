@@ -19,7 +19,7 @@ end
 %% READ IN THE SIMULATION INFORMATION
 config = read_config(dir_config);
 
-xg = readgrid(dir_grid);
+xg = readgrid(dir_grid, format);
 lx1 = xg.lx(1);
 lx2 = xg.lx(2);
 lx3 = xg.lx(3);
@@ -154,14 +154,7 @@ end % function
 
 function writeraw(dir_out, E, params)
 narginchk(3,3)
-try
-  realbits = params.realbits;
-catch
-  realbits = 64;
-end
-assert(any(realbits == [32, 64]), 'realbits == 32 or 64')
-
-freal = ['float',int2str(params.realbits)];
+freal = 'float64';
 
 fid = fopen([dir_out, '/simsize.dat'], 'w');
 fwrite(fid, E.llon, 'integer*4');

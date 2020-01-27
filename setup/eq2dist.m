@@ -8,7 +8,7 @@ validateattributes(format, {'char'}, {'vector'}, mfilename, 'raw or hdf5',4)
 if nargin < 5, outdir = []; end
 %% READ SIMULATION INFORMATION
 [ymd0,UTsec0,tdur,dtout,flagoutput,mloc] = readconfig([eqdir, '/inputs']);
-xgin = readgrid([eqdir, '/inputs']);
+xgin = readgrid([eqdir, '/inputs'], format);
 
 %% FIND THE DATE OF THE END FRAME OF THE SIMULATION
 % PRESUMABLY THIS WILL BE THE STARTING point FOR another

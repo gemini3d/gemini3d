@@ -1,4 +1,4 @@
-function xgf = readgrid(path)
+function xgf = readgrid(path, format)
 
 %--------------------------------------------------------
 %-----THIS READS A GRID FROM A BINARY FILE CREATED
@@ -6,9 +6,44 @@ function xgf = readgrid(path)
 %-----NOT YET IMPLEMENTED AS OF 9/15/2016)
 %--------------------------------------------------------
 
-narginchk(1,1)
+narginchk(2,2)
+validateattributes(format, {'char'}, {'vector'}, mfilename, 'raw or hdf5',2)
+
 path = absolute_path(path);
 assert(is_folder(path), [path, ' is not a directory.'])
+
+switch format
+  case 'raw', xgf = read_raw(path);
+  case 'hdf5', xgf = read_hdf5(path);
+  otherwise, error('format must be raw or hdf5')
+end
+
+end
+
+
+function xgf = read_hdf5(path)
+fn = [path, '/simsize.h5'];
+xgf.lx = [h5read(fn, '/lx1'), h5read(fn, '/lx2'), h5read(fn,'/lx3')];
+
+fn = [path, '/simgrid.h5'];
+xgf.x1 = h5read(fn, '/x1');
+xgf.x1i = h5read(fn, '/x1i');
+xgf.dx1b = h5read(fn, '/dx1b');
+xgf.dx1h = h5read(fn, '/dx1h');
+xgf.x2 = h5read(fn, '/x2');
+xgf.x3 = h5read(fn, '/x3');
+
+xgf.h1 = h5read(fn, '/h1');
+xgf.h2 = h5read(fn, '/h2');
+xgf.h3 = h5read(fn, '/h3');
+
+xgf.r = h5read(fn, '/r');
+xgf.theta = h5read(fn, '/theta');
+xgf.phi = h5read(fn, '/phi');
+end  % function read_hdf5
+
+
+function xgf = read_raw(path)
 
 filename=[path, '/simsize.dat'];
 assert(is_file(filename), [filename,' is not a file.'])
@@ -103,7 +138,7 @@ xgf.nullpts=reshape(tmp,gridsize);
 
 %STUFF PAST THIS POINT ISN'T USED IN FORTRAN CODE BUT INCLUDED IN THE
 %GRID FILE FOR COMPLETENESS
-if (~feof(fid))
+if ~feof(fid)
   tmpsize=[lx1,lx2,lx3,3];
   ltmp=prod(tmpsize);
   tmp=fread(fid,ltmp,'real*8');   %4D unit vectors (in cartesian components)
@@ -143,4 +178,4 @@ if (~feof(fid))
 end
 
 fclose(fid);
-end
+end  % function read_raw

@@ -7,9 +7,9 @@ if isfile(filename)
   varnames = extractfield(h5info(filename).Datasets, 'Name');
 end
 
-if any(strcmp(varname, varnames))
+if any(strcmp(varname, varnames) | strcmp(varname(2:end), varnames))
   % FIXME: existing variable
-  h5write(filename, varname, A, 1, length(A))
+  h5write(filename, varname, A, ones(1,ndims(A)), sizeA)
 else % new variable
   h5create(filename, varname, sizeA)
   h5write(filename, varname, A)

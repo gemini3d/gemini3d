@@ -17,7 +17,7 @@ end
 assert(is_folder(outdir), [outdir, ' does not exist'])
 
 switch format
-  case 'raw', write_raw(outdir, xg, realbits)
+  case 'raw', write_raw(outdir, xg)
   case 'hdf5', write_hdf5(outdir, xg)
   otherwise, error(['unknown file format ',format])
 end
@@ -98,9 +98,8 @@ h5save(fn, '/z', xg.z)
 end % function
 
 
-function write_raw(outdir, xg, realbits)
-assert(any(realbits==[32,64]), 'realbits is 32 or 64')
-freal = ['float',int2str(realbits)];
+function write_raw(outdir, xg)
+freal = 'float64';
 
 filename = [outdir, '/simsize.dat'];
 disp(['write ',filename])
