@@ -29,7 +29,7 @@ elif netcdf_interface.found()
 endif
 io = library('io',
   sources: io_src,
-  link_with: [calculus, const, fsutils, grid, mpimod, timeutils],
+  link_with: [calculus, const, pathlib, grid, mpimod, timeutils],
   dependencies: io_deps)  # ifort needs dep: mpi here
 
 

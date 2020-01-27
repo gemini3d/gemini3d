@@ -25,7 +25,6 @@ else
   io_src += files('plasma_output_raw.f90', 'mag_raw.f90', 'aurora_raw.f90')
 endif
 
-fsutils = library('fsutils',
-  sources: ['pathlib.F90', 'expanduser.f90'])
+pathlib = library('pathlib', 'pathlib.F90')
 
 logging = library('logging', 'logging.f90')

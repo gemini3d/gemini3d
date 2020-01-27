@@ -1,4 +1,7 @@
-add_library(fsutils pathlib.F90 expanduser.f90)
+add_library(pathlib pathlib.F90)
+target_include_directories(pathlib INTERFACE ${CMAKE_CURRENT_BINARY_DIR}/include)
+set_target_properties(pathlib PROPERTIES
+  Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include)
 
 add_library(logging logging.f90)
 
@@ -21,7 +24,7 @@ add_library(io io.f90 aurora.f90 output.f90 input.f90
   mag.f90
   plasma.f90 plasma_input_raw.f90
   ${io_src})
-target_link_libraries(io PRIVATE calculus const fsutils grid mpimod timeutils)
+target_link_libraries(io PRIVATE calculus const pathlib grid mpimod timeutils)
 target_include_directories(io INTERFACE ${CMAKE_CURRENT_BINARY_DIR}/include)
 set_target_properties(io PROPERTIES
   Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include)
