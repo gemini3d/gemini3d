@@ -1,7 +1,6 @@
 module neutral
-use, intrinsic :: iso_fortran_env, only: sp => real32
-use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
 
+use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
 use mpi, only: mpi_integer, mpi_comm_world, mpi_status_ignore
 
 use phys_consts, only: wp, lnchem, pi, re, debug
@@ -14,8 +13,20 @@ use mpimod, only: myid, lid, taglrho, taglz, mpi_realprec, tagdno, tagdnn2, tagd
 ! also links gtd7 from vendor/msis00/
 
 implicit none
-
 private
+public :: Tnmsis, neutral_atmos, make_dneu, clear_dneu, neutral_perturb
+
+
+interface ! atmos.f90
+module subroutine neutral_atmos(ymd,UTsecd,glat,glon,alt,activ,nn,Tn)
+integer, intent(in) :: ymd(3)
+real(wp), intent(in) :: UTsecd
+real(wp), dimension(:,:,:), intent(in) :: glat,glon,alt
+real(wp), intent(in) :: activ(3)
+real(wp), dimension(1:size(alt,1),1:size(alt,2),1:size(alt,3),lnchem), intent(out) :: nn
+real(wp), dimension(1:size(alt,1),1:size(alt,2),1:size(alt,3)), intent(out) :: Tn
+end subroutine neutral_atmos
+end interface
 
 
 !! ALL ARRAYS THAT FOLLOW ARE USED WHEN INCLUDING NEUTRAL PERTURBATIONS FROM ANOTHER MODEL
@@ -78,95 +89,7 @@ real(wp), dimension(:,:,:,:), allocatable, protected :: nnmsis
 real(wp), dimension(:,:,:), allocatable, protected :: Tnmsis
 real(wp), dimension(:,:,:), allocatable, protected :: vn1base,vn2base,vn3base
 
-public :: Tnmsis, neutral_atmos, make_dneu, clear_dneu, neutral_perturb
-
 contains
-
-
-subroutine neutral_atmos(ymd,UTsecd,glat,glon,alt,activ,nn,Tn)
-
-!------------------------------------------------------------
-!-------CALL NRL-MSISE-00 AND ORGANIZE THE RESULTS.  APPEND
-!-------OTHER AUXILIARY NEUTRAL DENSITY DATA USED BY MAIN
-!-------CODE
-!------------------------------------------------------------
-
-integer, dimension(3) :: ymd
-real(wp) :: UTsecd
-real(wp), dimension(:,:,:), intent(in) :: glat,glon,alt
-real(wp), dimension(3) :: activ
-
-real(wp), dimension(1:size(alt,1),1:size(alt,2),1:size(alt,3),lnchem), intent(out) :: nn
-real(wp), dimension(1:size(alt,1),1:size(alt,2),1:size(alt,3)), intent(out) :: Tn
-
-integer :: ix1,ix2,ix3,lx1,lx2,lx3
-
-integer :: iyd,mass=48
-integer :: dom,month,year,doy,yearshort
-real :: sec,f107a,f107,ap(7),stl,ap3
-real :: altnow,latnow,lonnow
-real :: d(9),t(2)
-
-!   real(wp), dimension(1:size(alt,1),1:size(alt,2),1:size(alt,3)) :: nnow
-!    real(wp), dimension(1:size(alt,1),1:size(alt,2),1:size(alt,3)) :: altalt    !an alternate altitude variable which fixes below ground values to 1km
-
-
-lx1=size(alt,1)
-lx2=size(alt,2)
-lx3=size(alt,3)
-
-
-!! CONVERT DATE INFO INTO EXPECTED FORM AND KIND
-f107a=real(activ(1),sp)
-f107=real(activ(2),sp)
-ap=real(activ(3),sp)
-ap3=real(activ(3),sp)
-dom=ymd(3)
-month=ymd(2)
-year=ymd(1)
-doy=doy_calc(year, month, dom)
-yearshort=mod(year,100)
-iyd=yearshort*1000+doy
-sec=floor(UTsecd)
-
-ap(2)=ap3   !superfluous for now
-
-
-!! ITERATED LAT, LON, ALT DATA
-call meters(.true.)    !switch to mksa units
-
-do ix3=1,lx3
-  do ix2=1,lx2
-    do ix1=1,lx1
-      altnow=real(alt(ix1,ix2,ix3)/1d3,sp)
-      if (altnow<0.0) then
-        altnow = 1._sp     !so that MSIS does not get called with below ground values and so that we set them to something sensible that won't mess up the conductance calculations
-      end if
-
-      latnow=real(glat(ix1,ix2,ix3),sp)
-      lonnow=real(glon(ix1,ix2,ix3),sp)
-
-      stl=sec/3600.0+lonnow/15.0
-      call gtd7(iyd,sec,altnow,latnow,lonnow,stl,f107a,f107,ap,mass,d,t)
-
-      nn(ix1,ix2,ix3,1)=real(d(2),wp)
-      nn(ix1,ix2,ix3,2)=real(d(3),wp)
-      nn(ix1,ix2,ix3,3)=real(d(4),wp)
-      nn(ix1,ix2,ix3,4)=real(d(7),wp)
-      nn(ix1,ix2,ix3,5)=real(d(8),wp)
-
-      Tn(ix1,ix2,ix3)=real(t(2),wp)
-      nn(ix1,ix2,ix3,6)=4d-1*exp(-3700.0/Tn(ix1,ix2,ix3))*nn(ix1,ix2,ix3,3)+ &
-                          5d-7*nn(ix1,ix2,ix3,1)   !Mitra, 1968
-    end do
-  end do
-end do
-
-
-!UPDATE THE REFERENCE ATMOSPHERE VALUES
-nnmsis=nn; Tnmsis=Tn; vn1base=0d0; vn2base=0d0; vn3base=0d0;
-
-end subroutine neutral_atmos
 
 
 !THIS IS  WRAPPER FOR THE NEUTRAL PERTURBATION CODES THAT DO EITHER

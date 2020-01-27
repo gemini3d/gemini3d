@@ -38,10 +38,7 @@ subdir('vendor/msis00')
 executable('msis_setup', 'setup/MSIS00/call_msis_gfortran.f90',
   link_with: msis)
 
-neutral = library('neutral', 'neutral/neutral.f90',
-  dependencies : mpi,
-  link_with : [const, grid, interp, mpimod, msis, timeutils])
-
+subdir('neutral')
 subdir('ionization')
 
 sources = library('sources', 'sources/sources.f90',
