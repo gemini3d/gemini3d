@@ -1,7 +1,6 @@
 submodule (neutral) atmos
 
 use, intrinsic :: iso_fortran_env, only: sp => real32
-use phys_consts, only: wp
 
 implicit none
 

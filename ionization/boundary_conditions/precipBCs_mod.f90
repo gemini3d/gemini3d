@@ -11,8 +11,8 @@ use timeutils, only : dateinc, date_filename
 use mpimod, only: lid, mpi_realprec, myid, tage0p, tagllat, tagllon, tagmlat, tagmlon, tagqp
 
 implicit none
-
 private
+public :: make_precip_fileinput, clear_precip_fileinput, precipBCs_fileinput, precipBCs
 
 !ALL OF THE FOLLOWING MODULE-SCOPE ARRAYS ARE USED FOR INTERPOLATING PRECIPITATION INPUT FILES (IF USED)
 real(wp), dimension(:), allocatable, private :: mlonp
@@ -31,8 +31,6 @@ integer, dimension(3), private :: ymdprev,ymdnext   !dates for interpolated data
 real(wp), private :: UTsecprev,UTsecnext
 real(wp), private :: tprev,tnext
 
-
-public :: make_precip_fileinput, clear_precip_fileinput, precipBCs_fileinput, precipBCs
 
 contains
 
@@ -62,10 +60,9 @@ real(wp), dimension(lx2*lx3) :: parami
 real(wp), dimension(lx2,lx3) :: slope,Qinow,E0inow
 real(wp) :: W0pk,PhiWpk
 
-UTsectmp = 0._wp
+UTsectmp = 0
 
-
-if(t+dt/2d0>=tnext) then    !need to load a new file
+if(t+dt / 2._wp>=tnext) then    !need to load a new file
   if ( .not. allocated(mlonp)) then    !need to read in the grid data from input file
     ymdprev=ymd
     UTsecprev=UTsec
@@ -135,15 +132,19 @@ if(t+dt/2d0>=tnext) then    !need to load a new file
     !SPACE TO STORE INPUT DATA
     allocate(Qp(llon,llat),E0p(llon,llat))
     allocate(Qiprev(lx2,lx3),E0iprev(lx2,lx3),Qinext(lx2,lx3),E0inext(lx2,lx3))
-    Qiprev=0d0; E0iprev=100d0; Qinext=0d0; E0inext=100d0;     !these need to be initialized so that something sensible happens at the beginning
+    Qiprev = 0
+    E0iprev = 100._wp
+    Qinext = 0
+    E0inext = 100._wp
+    !! these need to be initialized so that something sensible happens at the beginning
 
     !ALL PROCESSES NEED TO DEFINED THE OPINTS THAT THEY WILL BE INTERPOLATING ONTO
     allocate(mloni(lx2*lx3),mlati(lx2*lx3))
     do ix3=1,lx3
       do ix2=1,lx2
         iflat=(ix3-1)*lx2+ix2
-        mlati(iflat)=90d0-x%theta(lx1,ix2,ix3)*180d0/pi
-        mloni(iflat)=x%phi(lx1,ix2,ix3)*180d0/pi
+        mlati(iflat)=90._wp-x%theta(lx1,ix2,ix3)*180._wp/pi
+        mloni(iflat)=x%phi(lx1,ix2,ix3)*180._wp/pi
       end do
     end do
 
@@ -153,7 +154,7 @@ if(t+dt/2d0>=tnext) then    !need to load a new file
   !GRID INFORMATION EXISTS AT THIS POINT SO START READING IN PRECIP DATA
   if (myid==0) then    !only root reads file data
     !read in the data from file
-    if(debug) print *, 'tprev,tnow,tnext:  ',tprev,t+dt/2d0,tnext
+    if(debug) print *, 'tprev,tnow,tnext:  ',tprev,t+dt / 2._wp,tnext
     ymdtmp=ymdnext
     UTsectmp=UTsecnext
     call dateinc(dtprec,ymdtmp,UTsectmp)    !get the date for "next" params
@@ -246,17 +247,17 @@ end if
 do ix3=1,lx3
   do ix2=1,lx2
     slope(ix2,ix3)=(Qinext(ix2,ix3)-Qiprev(ix2,ix3))/(tnext-tprev)
-    Qinow(ix2,ix3)=Qiprev(ix2,ix3)+slope(ix2,ix3)*(t+dt/2d0-tprev)
+    Qinow(ix2,ix3)=Qiprev(ix2,ix3)+slope(ix2,ix3)*(t+dt/2._wp-tprev)
 
     slope(ix2,ix3)=(E0inext(ix2,ix3)-E0iprev(ix2,ix3))/(tnext-tprev)
-    E0inow(ix2,ix3)=E0iprev(ix2,ix3)+slope(ix2,ix3)*(t+dt/2d0-tprev)
+    E0inow(ix2,ix3)=E0iprev(ix2,ix3)+slope(ix2,ix3)*(t+dt/2._wp-tprev)
   end do
 end do
 
 
 !SOME BASIC DIAGNOSTICS
 if (myid==lid/2 .and. debug) then
-  print *, 'tprev,t,tnext:  ',tprev,t+dt/2d0,tnext
+  print *, 'tprev,t,tnext:  ',tprev,t+dt/2._wp,tnext
   print *, 'Min/max values for Qinow:  ',minval(Qinow),maxval(Qinow)
   print *, 'Min/max values for E0inow:  ',minval(E0inow),maxval(E0inow)
   print *, 'Min/max values for Qiprev:  ',minval(Qiprev),maxval(Qiprev)
@@ -268,7 +269,7 @@ end if
 
 !ASSIGN RESULTS OF INTERPOLATION TO OUTPUT VARIABLES
 !background precipitation
-W0pk=3d3
+W0pk=3e3_wp
 PhiWpk=1d-5
 do ix3=1,lx3
   do ix2=1,lx2
@@ -284,10 +285,9 @@ end subroutine precipBCs_fileinput
 
 
 subroutine make_precip_fileinput()
-
-!INITIALIZE SOME MODULE TIMING VARIABLES
-tprev=0d0; tnext=0d0
-
+!! INITIALIZE SOME MODULE TIMING VARIABLES
+tprev = 0
+tnext = 0
 end subroutine make_precip_fileinput
 
 
@@ -326,9 +326,9 @@ lprec=size(W0,3)    !assumed to be 2 in this subroutine
 
 
 !BACKGROUND PRECIPITATION
-W0pk=3d3
-!    PhiWpk=1d-5
-PhiWpk=1d-3
+W0pk = 3e3_wp
+!    PhiWpk=1e-5_wp
+PhiWpk = 1e-3_wp
 do ix3=1,lx3
   do ix2=1,lx2
     W0(ix2,ix3,1)=W0pk
@@ -338,38 +338,38 @@ end do
 
 
 !PARAMETERS FOR DISTURBANCE PRECIPITATION
-W0pk=100d0
-!      sigW0x3=100d3
-!      meanW0x3=0d0
-PhiWpk=0d0
-!      PhiWpk=1d-5    !successful grad-drift attempts
-!      PhiWpk=1d-4    !Swoboda blur testing
-!      PhiWpk=0.05d0    !testing of convergent Hall drifts
-!      PhiWpk=5d0
-!      sigPhiWx3=100d3
-!      meanPhiWx3=0d0
+W0pk = 100
+!      sigW0x3=100e3_wp
+!      meanW0x3=0
+PhiWpk = 0
+!      PhiWpk=1e-5_wp    !successful grad-drift attempts
+!      PhiWpk=1e-4_wp   !Swoboda blur testing
+!      PhiWpk=0.05_wp    !testing of convergent Hall drifts
+!      PhiWpk=5._wp
+!      sigPhiWx3=100e3_wp
+!      meanPhiWx3=0
 
-!      W0pk=0.3d3
-!      sigW0x3=100d3
-!      meanW0x3=0d0
-!      PhiWpk=2d0
-!      sigPhiWx3=100d3
-!      meanPhiWx3=0d0
+!      W0pk=0.3e3_wp
+!      sigW0x3=100e3_wp
+!      meanW0x3=0
+!      PhiWpk=2._wp
+!      sigPhiWx3=100e3_wp
+!      meanPhiWx3=0
 
-sigx2=50d3
-meanx2=0d0
-!    sigx3=10d3
-sigx3=25d3
-meant=900d0
-sigt=450d0
-x30amp=0d3
-varc=200d0
+sigx2 = 50e3_wp
+meanx2 = 0
+!    sigx3=10e3_wp
+sigx3 = 25e3_wp
+meant = 900
+sigt = 450
+x30amp= 0
+varc = 200
 
 !DISTURBANCE ELECTRON PRECIPITATION PATTERN
 do ix3=1,lx3
   do ix2=1,lx2
-    W0(ix2,ix3,2)=W0pk
-    PhiWmWm2(ix2,ix3,2)=PhiWpk
+    W0(ix2,ix3,2) = W0pk
+    PhiWmWm2(ix2,ix3,2) = PhiWpk
   end do
 end do
 
@@ -377,4 +377,3 @@ end subroutine precipBCs
 
 
 end module precipBCs_mod
-
