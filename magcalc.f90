@@ -6,7 +6,8 @@ use, intrinsic :: ieee_arithmetic, only : ieee_is_nan
 use mpi, only: mpi_sum, mpi_comm_world
 
 use phys_consts, only : pi,mu0, wp, re, debug
-use grid, only : curvmesh, lx1, lx2, lx3, read_grid, clear_grid, lx2all,lx3all,grid_size
+use grid, only : lx1, lx2, lx3, read_grid, clear_grid, lx2all,lx3all,grid_size
+use mesh, only : curvmesh
 use timeutils, only : dateinc
 use io, only : read_configfile,input_plasma_currents,create_outdir_mag,output_magfields
 use mpimod, only: mpisetup, mpibreakdown, mpigrid, mpi_manualgrid, halo_end, &

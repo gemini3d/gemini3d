@@ -37,7 +37,7 @@ end subroutine read_grid
 end interface
 
 
-public :: curvmesh,  lx1,lx2,lx3, lx2all,lx3all, gridflag, flagswap, clear_unitvecs, g1,g2,g3, &
+public :: lx1,lx2,lx3, lx2all,lx3all, gridflag, flagswap, clear_unitvecs, g1,g2,g3, &
   read_grid, clear_grid, grid_size
 
 contains

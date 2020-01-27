@@ -5,7 +5,8 @@ use, intrinsic :: ieee_arithmetic, only : ieee_is_finite
 use mpi, only: mpi_integer, mpi_comm_world, mpi_status_ignore
 
 use phys_consts, only: wp, pi, Re, debug
-use grid, only: curvmesh, lx1, lx2, lx2all, lx3all, gridflag
+use grid, only: lx1, lx2, lx2all, lx3all, gridflag
+use mesh, only: curvmesh
 use interpolation, only : interp1,interp2
 use timeutils, only : dateinc, date_filename
 

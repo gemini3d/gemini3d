@@ -4,7 +4,8 @@ use phys_consts, only: elchrg, lsp, kb, mn, re, pi, wp, lwave, debug
 use neutral, only: Tnmsis
 use ionize_fang, only: fang2008
 !! we need the unperturbed msis temperatures to apply the simple chapman theory used by this module
-use grid, only: curvmesh,lx1,lx2,lx3,g1,g2,g3
+use grid, only: lx1,lx2,lx3,g1,g2,g3
+use mesh, only: curvmesh
 use timeutils, only: doy_calc
 use mpi, only: MPI_COMM_WORLD,MPI_STATUS_IGNORE
 use mpimod, only: myid,lid,mpi_realprec,tagTninf

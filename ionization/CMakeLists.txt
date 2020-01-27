@@ -21,17 +21,17 @@ if(glow)
   include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/glow.cmake)
 
   add_library(ionization ionization.f90 glow_run.F90)
-  target_link_libraries(ionization PUBLIC glow::glow const neutral grid timeutils fang mpimod MPI::MPI_Fortran)
+  target_link_libraries(ionization PUBLIC glow::glow)
 else()
   add_library(ionization ionization.f90 glow_dummy.f90)
-  target_link_libraries(ionization PRIVATE const neutral grid timeutils fang mpimod MPI::MPI_Fortran)
 endif(glow)
+target_link_libraries(ionization PRIVATE const neutral grid mesh timeutils fang mpimod MPI::MPI_Fortran)
 target_include_directories(ionization INTERFACE ${CMAKE_CURRENT_BINARY_DIR}/include)
 set_target_properties(ionization PROPERTIES
   Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include)
 
 add_library(precipBCs boundary_conditions/precipBCs_mod.f90)
-target_link_libraries(precipBCs PRIVATE mpimod const grid interp timeutils MPI::MPI_Fortran)
+target_link_libraries(precipBCs PRIVATE mpimod const grid mesh interp timeutils MPI::MPI_Fortran)
 target_include_directories(precipBCs INTERFACE ${CMAKE_CURRENT_BINARY_DIR}/include)
 set_target_properties(precipBCs PROPERTIES
   Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include)

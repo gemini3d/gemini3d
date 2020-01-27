@@ -14,24 +14,24 @@ test('Fang', python,
   suite: 'unit')
 
 precipBCs = library('precipBCs', 'boundary_conditions/precipBCs_mod.f90',
-  link_with: [mpimod, const, grid, interp, timeutils],
+  link_with: [mpimod, const, grid, mesh, interp, timeutils],
   dependencies: mpi)
 
 
 # ===== GLOW library
-
+ion_libs = [const, neutral, grid, mesh, timeutils, mpimod, fang]
 if get_option('glow').enabled()
   glow_proj = subproject('cglow')
-  glow_lib = glow_proj.get_variable('cglow')
+  ion_libs += glow_proj.get_variable('cglow')
 
   ionization = library('ionization_glow',
     sources: ['ionization.f90', 'glow_run.F90'],
-    link_with: [glow_lib, const, neutral, grid, timeutils, mpimod, fang],
+    link_with: ion_libs,
     dependencies : mpi,
     fortran_args: '-DDATADIR="' + glow_proj.get_variable('data_dir') + '/"')
 else
   ionization = library('ionization',
     sources: ['ionization.f90', 'glow_dummy.f90'],
-    link_with: [const, neutral, grid, timeutils, mpimod, fang],
+    link_with: ion_libs,
     dependencies : mpi)
 endif

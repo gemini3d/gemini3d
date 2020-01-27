@@ -1,9 +1,10 @@
 module advec_mpi
 
 use phys_consts, only: lsp,ms, wp
-use grid, only : curvmesh,gridflag            
+use grid, only : gridflag
+use mesh, only: curvmesh
   !! do not import grid sizes in case we want do subgrid advection...
-use mpimod, only: myid, lid, myid2, myid3, lid2, lid3, tagnsbc, tagrhoesbc, tagrhovs1bc, tagvs3bc, & 
+use mpimod, only: myid, lid, myid2, myid3, lid2, lid3, tagnsbc, tagrhoesbc, tagrhovs1bc, tagvs3bc, &
                   tagvs2bc, halo
 
 implicit none
@@ -65,12 +66,12 @@ if (gridflag==0) then
   v1i(lx1+1,:,:)=vs1(lx1,1:lx2,1:lx3,isp)   !lowest alt on grid.
 else if (gridflag==1) then
   v1i(lx1+1,:,:)=vs1(lx1,1:lx2,1:lx3,isp)   !lowest alt on grid.
-  v1i(1,:,:) = min(v1i(2,1:lx2,1:lx3), 0._wp)    !highest alt; interesting that this is not vs1...   
+  v1i(1,:,:) = min(v1i(2,1:lx2,1:lx3), 0._wp)    !highest alt; interesting that this is not vs1...
 else
   v1i(1,:,:) = vs1(1,1:lx2,1:lx3,isp)
 !!    v1i(lx1+1,:,:)=v1i(lx1,:,:)    !avoids issues with top boundary velocity spikes which may arise
   v1i(lx1+1,:,:) = max(v1i(lx1,1:lx2,1:lx3),0._wp)    !interesting that this is not vs1...
-end if  
+end if
 
 v2i(:,1,:)=vs2(1:lx1,1,1:lx3,isp)
 v2i(:,2:lx2,:)=0.5*(vs2(1:lx1,1:lx2-1,1:lx3,isp)+vs2(1:lx1,2:lx2,1:lx3,isp))
@@ -91,7 +92,7 @@ v2i(:,lx2+1,:)=vs2(1:lx1,lx2,1:lx3,isp)
 
 !GHOST CELL VALUES FOR DENSITY (these need to be done last to avoid being overwritten by send/recv's!!!)
 ns(:,0,:,isp)=ns(:,1,:,isp)
-ns(:,-1,:,isp)=ns(:,1,:,isp) 
+ns(:,-1,:,isp)=ns(:,1,:,isp)
 ns(:,lx2+1,:,isp)=ns(:,lx2,:,isp)
 ns(:,lx2+2,:,isp)=ns(:,lx2,:,isp)
 
@@ -166,7 +167,7 @@ rhovs1(:,:,:,isp)=param3
 
 param4=rhoes(:,:,:,isp)
 call halo(param4,2,tagrhoesBC,isperiodic)
-rhoes(:,:,:,isp)=param4 
+rhoes(:,:,:,isp)=param4
 
 if (.not. isperiodic) then
   if (idleft==-1) then    !left side is at global boundary, assume haloing won't overwrite
@@ -238,12 +239,12 @@ if (gridflag==0) then          !non-inverted
   v1i(lx1+1,:,:)=vs1(lx1,1:lx2,1:lx3,isp)
 else if (gridflag==1) then     !inverted grid (assumes northern hemisphere???)
   v1i(lx1+1,:,:)=vs1(lx1,1:lx2,1:lx3,isp)        !lowest alt on grid.
-  v1i(1,:,:) = min(v1i(2,1:lx2,1:lx3), 0._wp)    !highest alt; interesting that this is not vs1...   
+  v1i(1,:,:) = min(v1i(2,1:lx2,1:lx3), 0._wp)    !highest alt; interesting that this is not vs1...
 else                           !closed dipole
   v1i(1,:,:) = vs1(1,1:lx2,1:lx3,isp)
 !!    v1i(lx1+1,:,:)=v1i(lx1,:,:)    !avoids issues with top boundary velocity spikes which may arise
   v1i(lx1+1,:,:) = max(v1i(lx1,1:lx2,1:lx3),0._wp)    !interesting that this is not vs1...
-end if  
+end if
 
 !v2i(:,1,:)=vs2(1:lx1,1,1:lx3,isp)
 !v2i(:,2:lx2,:)=0.5*(vs2(1:lx1,1:lx2-1,1:lx3,isp)+vs2(1:lx1,2:lx2,1:lx3,isp))
@@ -309,7 +310,7 @@ if (iddown==-1) then
   vs2(:,0,:,isp)=vs2(:,1,:,isp)
 
   ns(:,0,:,isp)=ns(:,1,:,isp)
-  ns(:,-1,:,isp)=ns(:,1,:,isp) 
+  ns(:,-1,:,isp)=ns(:,1,:,isp)
   rhovs1(:,0,:,isp)=rhovs1(:,1,:,isp);
   rhovs1(:,-1,:,isp)=rhovs1(:,1,:,isp);
   rhoes(:,0,:,isp)=rhoes(:,1,:,isp);
@@ -348,7 +349,7 @@ vs3(:,:,:,isp)=param
 !
 !param4=rhoes(:,:,:,isp)
 !call halo(param4,2,tagrhoesBC)
-!rhoes(:,:,:,isp)=param4 
+!rhoes(:,:,:,isp)=param4
 
 
 !SET THE GLOBAL x3 BOUNDARY CELLS AND ASSUME THAT HALOING WON'T OVERWRITE...
@@ -390,7 +391,7 @@ function advec3D_MC_mpi_curv_3(f,v1i,v2i,v3i,dt,x,frank)
 !------------------------------------------------------------
 !-------It is critical that the mpi'd dimension be advected
 !-------first to avoid having to repass ghost cells between
-!-------workers after 1 and 2 dimension are advected.  
+!-------workers after 1 and 2 dimension are advected.
 !-------
 !-------NOTE: also that the ghost cells should really
 !-------be updated after each sweep.  Ie the x2 boundary regions
@@ -408,7 +409,7 @@ integer, intent(in) :: frank    !f's rank so that we know which metric coeffs to
 
 integer :: ix1,ix2,ix3,lx1,lx2,lx3
 real(wp), dimension(-1:size(f,1)-2) :: fx1slice
-real(wp), dimension(1:size(f,1)-3) :: v1slice    
+real(wp), dimension(1:size(f,1)-3) :: v1slice
 real(wp), dimension(-1:size(f,1)-2) :: h11x1slice    !includes ghost cells
 real(wp), dimension(1:size(f,1)-3) :: h12ix1slice    !just includes interface info
 real(wp), dimension(1:size(f,1)-3) :: h1ix1slice
@@ -452,9 +453,9 @@ end do
 
 
 !copy x1,x2 boundary conditions to partially updated variable for next sweeps
-advec3D_MC_mpi_curv_3(:,-1:0,:)=f(:,-1:0,:);   
+advec3D_MC_mpi_curv_3(:,-1:0,:)=f(:,-1:0,:);
 advec3D_MC_mpi_curv_3(:,lx2+1:lx2+2,:)=f(:,lx2+1:lx2+2,:);
-advec3D_MC_mpi_curv_3(-1:0,:,:)=f(-1:0,:,:);           
+advec3D_MC_mpi_curv_3(-1:0,:,:)=f(-1:0,:,:);
 advec3D_MC_mpi_curv_3(lx1+1:lx1+2,:,:)=f(lx1+1:lx1+2,:,:);
 
 !x1-sweep
@@ -500,7 +501,7 @@ function advec3D_MC_mpi_curv_23(f,v1i,v2i,v3i,dt,x,frank,tagf)
 !------------------------------------------------------------
 !-------It is critical that the mpi'd dimension be advected
 !-------first to avoid having to repass ghost cells between
-!-------workers after 1 and 2 dimension are advected.  
+!-------workers after 1 and 2 dimension are advected.
 !-------
 !-------NOTE: also that the ghost cells should really
 !-------be updated after each sweep.  Ie the x2 boundary regions
@@ -519,7 +520,7 @@ integer, intent(in) :: tagf
 
 integer :: ix1,ix2,ix3,lx1,lx2,lx3
 real(wp), dimension(-1:size(f,1)-2) :: fx1slice
-real(wp), dimension(1:size(f,1)-3) :: v1slice    
+real(wp), dimension(1:size(f,1)-3) :: v1slice
 real(wp), dimension(-1:size(f,1)-2) :: h11x1slice    !includes ghost cells
 real(wp), dimension(1:size(f,1)-3) :: h12ix1slice    !just includes interface info
 real(wp), dimension(1:size(f,1)-3) :: h1ix1slice
@@ -616,7 +617,7 @@ end function advec3D_MC_mpi_curv_23
 function advec1D_MC_curv(f,v1i,dt,dx1,dx1i,ha1,ha2i,h1i)
 
 !----------------------------------------------------------------
-!-----NOTE THAT THIS FUNCTION NEEDS TO PICK OUT THE CORRECT 
+!-----NOTE THAT THIS FUNCTION NEEDS TO PICK OUT THE CORRECT
 !-----SPATIAL VARIABLE FROM THE STRUCTURE IN ORDER TO WORK.
 !-----THIS SHOULD PROBABLY JUST ACCEPT SOME GEOMETRIC FACTORS
 !-----FROM THE CALLING PROCEDURE TO AVOID DEEPLY EMBEDDED IF
@@ -644,7 +645,7 @@ lx1=size(f)-4     !we don't know what dimension this is so we actually do need t
 
 !Slopes
 lslope=(f(0)-f(-1))/dx1(0)
-do ix1=0,lx1+1    
+do ix1=0,lx1+1
   rslope=(f(ix1+1)-f(ix1))/dx1(ix1+1)
   cslope=(f(ix1+1)-f(ix1-1))/(dx1(ix1)+dx1(ix1+1))
   slope(ix1)=minmod(cslope,minmod(2*lslope,2*rslope))
@@ -653,10 +654,10 @@ do ix1=0,lx1+1
 end do
 
 
-!Slope-limited flux at ***left*** wall of cell ix1. 
+!Slope-limited flux at ***left*** wall of cell ix1.
 !The treatment of slope here (ie the dx1(ix1)) assumes that the grid point is centered within the cell
 do ix1=1,lx1+1
-  if (v1i(ix1) < 0d0) then 
+  if (v1i(ix1) < 0d0) then
     phi(ix1)=f(ix1)*v1i(ix1) - 0.5d0*v1i(ix1)*(dx1(ix1)+v1i(ix1)/h1i(ix1)*dt)*slope(ix1)
   else
     phi(ix1)=f(ix1-1)*v1i(ix1) + 0.5d0*v1i(ix1)*(dx1(ix1)-v1i(ix1)/h1i(ix1)*dt)*slope(ix1-1)

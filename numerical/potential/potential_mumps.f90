@@ -30,7 +30,8 @@ use, intrinsic:: iso_fortran_env, only: stderr=>error_unit, stdout=>output_unit
 use mpi, only: mpi_comm_world
 use phys_consts, only: wp, debug
 use calculus, only: grad3D1, grad3D2, grad3D3, grad2D1_curv_alt, grad2D3, grad2D3_curv_periodic
-use grid, only: curvmesh, gridflag
+use grid, only: gridflag
+use mesh, only: curvmesh
 use mpimod, only: myid
 use interpolation, only: interp1
 use PDEelliptic, only: elliptic3D_cart,elliptic2D_polarization,elliptic2D_polarization_periodic,elliptic2D_cart

@@ -7,7 +7,7 @@ pde_elliptic = library('pde_elliptic',
 
 potential = library('potential',
   sources: ['potential_comm_mumps.f90', 'potential_mumps.f90', 'boundary_conditions/potentialBCs_mumps.f90'],
-  link_with: [pde_elliptic, calculus, collisions, const, grid, interp, mpimod, timeutils],
+  link_with: [pde_elliptic, calculus, collisions, const, grid, mesh, interp, mpimod, timeutils],
   dependencies: [mumps, scalapack, blacs, lapack, mpi, threads])
 
 if not hdf5_interface.found()

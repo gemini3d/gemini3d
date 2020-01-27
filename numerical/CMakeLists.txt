@@ -18,6 +18,6 @@ add_subdirectory(diffusion)
 # -- more libs
 
 add_library(advec advection/advec_mpi.f90)
-target_link_libraries(advec PRIVATE const mpimod grid)
+target_link_libraries(advec PRIVATE const mpimod grid mesh)
 
 add_subdirectory(potential)

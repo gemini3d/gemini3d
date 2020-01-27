@@ -5,7 +5,8 @@ use calculus, only: etd_uncoupled, div3d
 use collisions, only:  thermal_conduct
 use phys_consts, only : wp,pi,qs,lsp,gammas,kB,ms,mindensdiv,mindens,mindensnull, debug
 use diffusion, only:  trbdf23d, diffusion_prep
-use grid, only: curvmesh, lx1, lx2, lx3, gridflag
+use grid, only: lx1, lx2, lx3, gridflag
+use mesh, only: curvmesh
 use ionization, only: ionrate_glow98, ionrate_fang08, eheating, photoionization
 use mpimod, only: myid,tagns,tagvs1,tagTs
 use precipBCs_mod, only: precipBCs_fileinput, precipBCs

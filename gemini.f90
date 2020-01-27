@@ -1,7 +1,8 @@
 !! MAIN PROGRAM FOR GEMINI3D
 use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
 use phys_consts, only : lnchem, lwave, lsp, wp, debug
-use grid, only: curvmesh, grid_size,read_grid,clear_grid,lx1,lx2,lx3,lx2all,lx3all
+use grid, only: grid_size,read_grid,clear_grid,lx1,lx2,lx3,lx2all,lx3all
+use mesh, only: curvmesh
 use io, only : read_configfile,input_plasma,create_outdir,output_plasma,create_outdir_aur,output_aur
 use mpimod, only : mpisetup, mpibreakdown, mpi_manualgrid, mpigrid, lid, myid
 use multifluid, only : fluid_adv

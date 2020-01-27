@@ -40,13 +40,10 @@ executable('msis_setup', 'setup/MSIS00/call_msis_gfortran.f90',
 
 subdir('neutral')
 subdir('ionization')
-
-sources = library('sources', 'sources/sources.f90',
-  link_with: [calculus, collisions, const, grid, mpimod],
-    dependencies: mpi)  # ifort needs dep: mpi here
+subdir('sources')
 
 multifluid = library('multifluid', 'multifluid/multifluid.f90',
-  link_with: [advection, calculus, collisions, const, diffusion, grid, ionization, mpimod,
+  link_with: [advection, calculus, collisions, const, diffusion, grid, mesh, ionization, mpimod,
               precipBCs, sources, timeutils],
   dependencies: mpi)  # ifort needs dep: mpi here
 
@@ -54,7 +51,7 @@ multifluid = library('multifluid', 'multifluid/multifluid.f90',
 # -- gemini exe
 gemini_exe = executable('gemini.bin',
   sources: 'gemini.f90',
-  link_with : [const, grid, io, mpimod, multifluid, neutral, potential, precipBCs, temporal, timeutils],
+  link_with : [const, grid, mesh, io, mpimod, multifluid, neutral, potential, precipBCs, temporal, timeutils],
   dependencies : [scalapack, blacs, lapack, blas, mpi],  # ifort needs dep: mpi here
   install: true,
   link_language: 'fortran')
@@ -62,7 +59,7 @@ gemini_exe = executable('gemini.bin',
 # -- magcalc exe
 
 magcalc = executable('magcalc.bin', 'magcalc.f90',
-  link_with : [const, calculus, grid, neutral, io, timeutils, mpimod],
+  link_with : [const, calculus, grid, mesh, neutral, io, timeutils, mpimod],
   dependencies : mpi,
   install: true)
 
