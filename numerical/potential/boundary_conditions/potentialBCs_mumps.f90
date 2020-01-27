@@ -12,6 +12,7 @@ use timeutils, only : dateinc, date_filename
 
 implicit none
 private
+public :: potentialbcs2D, potentialbcs2D_fileinput, clear_potential_fileinput
 
 !ALL OF THE FOLLOWING MODULE-SCOPE ARRAYS ARE USED FOR INTERPOLATING PRECIPITATION INPUT FILES (IF USED)
 !It should be noted that all of these will eventually be fullgrid variables since only root does this...
@@ -41,18 +42,15 @@ real(wp) :: flagdirich_double
 
 integer :: ix1ref,ix2ref,ix3ref     !reference locaiton along field line closest to reference point of input data (300 km alt. at the grid center)
 
-public :: potentialbcs2D, potentialbcs2D_fileinput, clear_potential_fileinput
-
 contains
 
 
 subroutine potentialBCs2D_fileinput(dt,dtE0,t,ymd,UTsec,E0dir,&
                                   x,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3, &
                                   Vmaxx3,E01all,E02all,E03all,flagdirich)
-
-!A FILE INPUT BASED BOUNDARY CONDITIONS FOR ELECTRIC POTENTIAL OR
-!FIELD-ALIGNED CURRENT.  NOTE THAT THIS IS ONLY CALLED BY THE ROOT
-!PROCESS!!!
+!! A FILE INPUT BASED BOUNDARY CONDITIONS FOR ELECTRIC POTENTIAL OR
+!! FIELD-ALIGNED CURRENT.
+!! NOTE: THIS IS ONLY CALLED BY THE ROOT PROCESS
 
 real(wp), intent(in) :: dt
 real(wp), intent(in) :: dtE0    !cadence at which we are reading in the E0 files
@@ -87,8 +85,9 @@ integer :: ix1,ix2,ix3,iid,iflat,ios    !grid sizes are borrowed from grid modul
 real(wp) :: h2ref,h3ref
 
 
-!COMPUTE SOURCE/FORCING TERMS FROM BACKGROUND FIELDS, ETC.
-E01all = 0.    !do not allow a background parallel field
+!> COMPUTE SOURCE/FORCING TERMS FROM BACKGROUND FIELDS, ETC.
+E01all = 0
+!! do not allow a background parallel field
 
 
 !FILE INPUT FOR THE PERPENDICULAR COMPONENTS OF THE ELECTRIC FIELD (ZONAL - X2, MERIDIONAL - X3)
@@ -195,8 +194,10 @@ if(t + dt / 2._wp >= tnext) then    !need to load a new file
     open(newunit=u, file=fn3, status='old', form='unformatted', access='stream')
     read(u) flagdirich_double
     read(u) E0xp,E0yp
-    read(u) Vminx1p,Vmaxx1p    !background fields and top/bottom boundar conditions
-    read(u) Vminx2pslice,Vmaxx2pslice    !these ohly used for 3D simulations
+    read(u) Vminx1p,Vmaxx1p
+    !! background fields and top/bottom boundary conditions
+    read(u) Vminx2pslice,Vmaxx2pslice
+    !! these only used for 3D simulations
     read(u) Vminx3pslice,Vmaxx3pslice
     close(u)
   end block
@@ -223,10 +224,12 @@ if(t + dt / 2._wp >= tnext) then    !need to load a new file
 
   !ALL WORKERS DO SPATIAL INTERPOLATION TO THEIR SPECIFIC GRID SITES
   if (debug) print *, 'Initiating electric field boundary condition spatial interpolations for date:  ',ymdtmp,' ',UTsectmp
-  if (llon==1) then    !source data has singleton dimension in longitude
+  if (llon==1) then
+    ! source data has singleton dimension in longitude
     if (debug) print *, 'Singleton longitude dimension detected; interpolating in latitude...'
     Edatp=E0xp(1,:)
-    parami=interp1(mlatp,Edatp,mlati)   !will work even for 2D grids, just repeats the data in the lon direction
+    parami=interp1(mlatp,Edatp,mlati)
+    !! will work even for 2D grids, just repeats the data in the lon direction
     E0xiprev=E0xinext
     E0xinext=reshape(parami,[lx2all,lx3all])
 
@@ -235,7 +238,8 @@ if(t + dt / 2._wp >= tnext) then    !need to load a new file
     E0yiprev=E0yinext
     E0yinext=reshape(parami,[lx2all,lx3all])
 
-    Edatp=Vminx1p(1,:)          !both min and max need to be read in from file and interpolated
+    Edatp=Vminx1p(1,:)
+    !! both min and max need to be read in from file and interpolated
     parami=interp1(mlatp,Edatp,mlati)
     Vminx1iprev=Vminx1inext
     Vminx1inext=reshape(parami,[lx2all,lx3all])
@@ -245,7 +249,7 @@ if(t + dt / 2._wp >= tnext) then    !need to load a new file
     Vmaxx1iprev=Vmaxx1inext
     Vmaxx1inext=reshape(parami,[lx2all,lx3all])
 
-    !note that for 2D simulations we don't use Vmaxx2p, etc. data read in from the input file - these BC's will be set later
+    !! Note: for 2D simulations we don't use Vmaxx2p, etc. data read in from the input file - these BC's will be set later
   elseif (llat==1) then
     if (debug) print *, 'Singleton latitude dimension detected; interpolating in longitude...'
     Edatp=E0xp(:,1)
@@ -267,7 +271,8 @@ if(t + dt / 2._wp >= tnext) then    !need to load a new file
     parami=interp1(mlonp,Edatp,mloni)
     Vmaxx1iprev=Vmaxx1inext
     Vmaxx1inext=reshape(parami,[lx2all,lx3all])
-  else    !source data is 2D
+  else
+    !! source data is 2D
     if (debug) print *, 'Executing full lat/lon interpolation...'
     parami=interp2(mlonp,mlatp,E0xp,mloni,mlati)     !interp to temp var.
     E0xiprev=E0xinext                       !save new pervious
@@ -327,7 +332,7 @@ if(t + dt / 2._wp >= tnext) then    !need to load a new file
   endif
 
 
-  !UPDATE OUR CONCEPT OF PREVIOUS AND NEXT TIMES
+  !> UPDATE OUR CONCEPT OF PREVIOUS AND NEXT TIMES
   tprev=tnext
   UTsecprev=UTsecnext
   ymdprev=ymdnext
@@ -338,8 +343,9 @@ if(t + dt / 2._wp >= tnext) then    !need to load a new file
 end if
 
 
-!INTERPOLATE IN TIME (LINEAR)
-flagdirich=int(flagdirich_double,4)     !make sure to set solve type every time step, as it does not persiste between function calls
+!> INTERPOLATE IN TIME (LINEAR)
+flagdirich = int(flagdirich_double)
+!! make sure to set solve type every time step, as it does not persiste between function calls
 if (debug) print *, 'Solve type: ',flagdirich
 do ix3=1,lx3all
   do ix2=1,lx2all
@@ -356,7 +362,8 @@ do ix3=1,lx3all
     Vmaxx1inow(ix2,ix3)=Vmaxx1iprev(ix2,ix3)+slope*(t+dt/2d0-tprev)
   end do
 end do
-if (lx2all/=1 .and. lx3all/=1) then     !full 3D grid need to also handle lateral boundaries
+if (lx2all/=1 .and. lx3all/=1) then
+  !! full 3D grid need to also handle lateral boundaries
   do ix3=1,lx3all
     slope=(Vminx2isnext(ix3)-Vminx2isprev(ix3))/(tnext-tprev)
     Vminx2isnow(ix3)=Vminx2isprev(ix3)+slope*(t+dt/2-tprev)
@@ -374,9 +381,9 @@ if (lx2all/=1 .and. lx3all/=1) then     !full 3D grid need to also handle latera
 end if
 
 
-!SOME BASIC DIAGNOSTICS
+!> SOME BASIC DIAGNOSTICS
 if(debug) then
-print *, 'tprev,t,tnext:  ',tprev,t+dt/2d0,tnext
+  print *, 'tprev,t,tnext:  ',tprev,t+dt/2d0,tnext
   print *, 'Min/max values for E0xinow:  ',minval(E0xinow),maxval(E0xinow)
   print *, 'Min/max values for E0yinow:  ',minval(E0yinow),maxval(E0yinow)
   print *, 'Min/max values for Vminx1inow:  ',minval(Vminx1inow),maxval(Vminx1inow)
@@ -390,10 +397,11 @@ print *, 'tprev,t,tnext:  ',tprev,t+dt/2d0,tnext
   end if
 endif
 
-!LOAD POTENTIAL SOLVER INPUT ARRAYS, FIRST MAP THE ELECTRIC FIELDS
+!> LOAD POTENTIAL SOLVER INPUT ARRAYS, FIRST MAP THE ELECTRIC FIELDS
 do ix3=1,lx3all
   do ix2=1,lx2all
-    h2ref=x%h2all(ix1ref,ix2,ix3)    !define a reference metric factor for a given field line
+    h2ref=x%h2all(ix1ref,ix2,ix3)
+    !! define a reference metric factor for a given field line
     h3ref=x%h3all(ix1ref,ix2,ix3)
     do ix1=1,lx1
       E02all(ix1,ix2,ix3)=E0xinow(ix2,ix3)*h2ref/x%h2all(ix1,ix2,ix3)
@@ -403,7 +411,7 @@ do ix3=1,lx3all
 end do
 
 
-!NOW THE BOUNDARY CONDITIONS
+!> NOW THE BOUNDARY CONDITIONS
 do ix3=1,lx3all
   do ix2=1,lx2all
     Vminx1(ix2,ix3)=Vminx1inow(ix2,ix3)
@@ -415,7 +423,8 @@ end do
 !SET REMAINING BOUNDARY CONDITIONS BASED ON WHAT THE TOP IS.  IF WE HAVE A
 !3D GRID THE SIDES ARE GROUNDED AUTOMATICALLY, WHEREAS FOR 2D THEY ARE SET
 !TO TOP VALUE  IF DIRICHLET AND TO TOP VALUE IF DIRICHLET.
-if (lx2all/=1 .and. lx3all/=1) then     !full 3D grid
+if (lx2all/=1 .and. lx3all/=1) then
+  !! full 3D grid
 !      Vminx2=0d0    !This actualy needs to be different for KHI
 !      Vmaxx2=0d0
 !      Vminx3=0d0
@@ -433,17 +442,20 @@ if (lx2all/=1 .and. lx3all/=1) then     !full 3D grid
       Vmaxx3(ix1,ix2)=Vmaxx3isnow(ix2)
     end do
   end do
-else    !some type of 2D grid, lateral boundary will be overwritten
+else
+  !! some type of 2D grid, lateral boundary will be overwritten
   Vminx2=0d0
   Vmaxx2=0d0
-  if (flagdirich==1) then    !Dirichlet:  needs to be the same as the top corner grid points
+  if (flagdirich==1) then
+    !! Dirichlet:  needs to be the same as the top corner grid points
     do ix1=1,lx1
       Vminx3(ix1,:)=Vmaxx1(:,1)
       Vmaxx3(ix1,:)=Vmaxx1(:,lx3all)
     end do
-  else    !Neumann in x1:  sides are grounded...
-    Vminx3=0d0
-    Vmaxx3=0d0
+  else
+    !! Neumann in x1:  sides are grounded...
+    Vminx3 = 0
+    Vmaxx3 = 0
   end if
 end if
 
