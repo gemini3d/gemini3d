@@ -23,7 +23,7 @@ add_executable(test_interp2 testinterp2.f90)
 target_link_libraries(test_interp2 PRIVATE interp const h5fortran::h5fortran)
 add_test(NAME interp2d COMMAND test_interp2 WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 set_tests_properties(interp2d PROPERTIES
-  TIMEOUT 10
+  TIMEOUT 15
   FIXTURES_SETUP GemInterp)
 
 add_executable(test_interp3 testinterp3.f90)
@@ -39,14 +39,15 @@ add_test(NAME interp2_python
   COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testinterp.py ${_testfile_interp2})
 set_tests_properties(interp2_python PROPERTIES
   REQUIRED_FILES ${_testfile_interp2}
-  TIMEOUT 10
+  TIMEOUT 30
   FIXTURES_REQUIRED GemInterp)
 
 add_test(NAME interp3_python
   COMMAND ${Python3_EXECUTABLE}  ${CMAKE_CURRENT_SOURCE_DIR}/testinterp3.py ${_testfile_interp3})
 set_tests_properties(interp3_python PROPERTIES
   REQUIRED_FILES ${_testfile_interp3}
-  TIMEOUT 10
+  TIMEOUT 30
+  RUN_SERIAL true
   FIXTURES_REQUIRED GemInterp)
 endif(PythonOK)
 
@@ -56,7 +57,7 @@ add_test(NAME interp2_octave
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 set_tests_properties(interp2_octave PROPERTIES
   REQUIRED_FILES ${_testfile_interp2}
-  TIMEOUT 10
+  TIMEOUT 30
   FIXTURES_REQUIRED GemInterp)
 
 add_test(NAME interp3_octave
@@ -64,6 +65,7 @@ add_test(NAME interp3_octave
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 set_tests_properties(interp3_octave PROPERTIES
   REQUIRED_FILES ${_testfile_interp3}
-  TIMEOUT 10
+  RUN_SERIAL true
+  TIMEOUT 30
   FIXTURES_REQUIRED GemInterp)
 endif(OctaveOK)

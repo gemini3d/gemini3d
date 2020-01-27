@@ -30,7 +30,7 @@ test_interp3_exe = executable('test_interp3', 'testinterp3.f90',
   link_with: [const, interp],
   dependencies: hdf5_interface)
 test('Interp3d', test_interp3_exe,
-  suite: 'unit', timeout: 15, workdir: meson.current_build_dir())
+  suite: 'unit', timeout: 30, workdir: meson.current_build_dir())
 test('Interp3d_python', python,
   args: [meson.current_source_dir() / 'testinterp3.py',
          meson.current_build_dir() / 'output3d.h5'],
