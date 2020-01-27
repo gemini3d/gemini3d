@@ -98,7 +98,7 @@ if(t + dt / 2._wp >= tnext) then    !need to load a new file
     ymdnext=ymdprev
     UTsecnext=UTsecprev
 
-    fn1 = E0dir // '/simsize' // '.dat'
+    fn1 = E0dir // '/simsize.dat'
     if (debug) print '(A,/,A)', 'Inputting electric field data size from file:', fn1
     call assert_file_exists(fn1)
     block
@@ -122,7 +122,7 @@ if(t + dt / 2._wp >= tnext) then    !need to load a new file
 
 
     !> NOW READ THE GRID
-    fn2 = E0dir // '/simgrid' // '.dat'
+    fn2 = E0dir // '/simgrid.dat'
     if (debug) print '(A,/,A)', 'Inputting electric field grid from file:', fn2
     call assert_file_exists(fn2)
     block
@@ -146,11 +146,11 @@ if(t + dt / 2._wp >= tnext) then    !need to load a new file
              Vminx2isprev(lx3all),Vminx2isnext(lx3all),Vmaxx2isprev(lx3all),Vmaxx2isnext(lx3all), &
              Vminx3isprev(lx2all),Vminx3isnext(lx2all),Vmaxx3isprev(lx2all),Vmaxx3isnext(lx2all))
 
-    E0xiprev=0d0; E0yiprev=0d0; E0xinext=0d0; E0yinext=0d0;
+    E0xiprev = 0; E0yiprev = 0; E0xinext = 0; E0yinext = 0;
     !! these need to be initialized so that something sensible happens at the beginning
-    Vminx1iprev=0d0; Vmaxx1iprev=0d0; Vminx1inext=0d0; Vmaxx1inext=0d0;
-    Vminx2isprev=0d0; Vmaxx2isprev=0d0; Vminx2isnext=0d0; Vmaxx2isnext=0d0;
-    Vminx3isprev=0d0; Vmaxx3isprev=0d0; Vminx3isnext=0d0; Vmaxx3isnext=0d0;
+    Vminx1iprev = 0; Vmaxx1iprev = 0; Vminx1inext = 0; Vmaxx1inext = 0;
+    Vminx2isprev = 0; Vmaxx2isprev = 0; Vminx2isnext = 0; Vmaxx2isnext = 0;
+    Vminx3isprev = 0; Vmaxx3isprev = 0; Vminx3isnext = 0; Vmaxx3isnext = 0;
 
 
     !ALL PROCESSES NEED TO DEFINE THE POINTS THAT THEY WILL BE INTERPOLATING ONTO
@@ -425,10 +425,10 @@ end do
 !TO TOP VALUE  IF DIRICHLET AND TO TOP VALUE IF DIRICHLET.
 if (lx2all/=1 .and. lx3all/=1) then
   !! full 3D grid
-!      Vminx2=0d0    !This actualy needs to be different for KHI
-!      Vmaxx2=0d0
-!      Vminx3=0d0
-!      Vmaxx3=0d0
+!      Vminx2 = 0    !This actualy needs to be different for KHI
+!      Vmaxx2 = 0
+!      Vminx3 = 0
+!      Vmaxx3 = 0
   do ix3=1,lx3all
     do ix1=1,lx1
       Vminx2(ix1,ix3)=Vminx2isnow(ix3)
@@ -444,8 +444,8 @@ if (lx2all/=1 .and. lx3all/=1) then
   end do
 else
   !! some type of 2D grid, lateral boundary will be overwritten
-  Vminx2=0d0
-  Vmaxx2=0d0
+  Vminx2 = 0
+  Vmaxx2 = 0
   if (flagdirich==1) then
     !! Dirichlet:  needs to be the same as the top corner grid points
     do ix1=1,lx1
@@ -521,11 +521,11 @@ else
   Vbotalt=>Vminx1
 end if
 
-Phipk=0d0      !pk current density
-flagdirich=0    !Neumann conditions
+Phipk = 0      !pk current density
+flagdirich = 0    !Neumann conditions
 do ix3=1,lx3all
   do ix2=1,lx2all
-    Vtopalt(ix2,ix3)=0d0
+    Vtopalt(ix2,ix3) = 0
   end do
 end do
 
@@ -535,17 +535,17 @@ if (debug) print *, 'At time:  ',t,'  Max FAC set to be:  ',maxval(abs(Vtopalt))
 
 
 !BOTTOM BOUNDARY IS ALWAYS ZERO CURRENT - SIDES ARE JUST GROUNDED
-Vbotalt=0d0   !since we need to have no current through bottom boundary
-Vminx2=0d0
-Vmaxx2=0d0
-Vminx3=0d0
-Vmaxx3=0d0
+Vbotalt = 0   !since we need to have no current through bottom boundary
+Vminx2 = 0
+Vmaxx2 = 0
+Vminx3 = 0
+Vmaxx3 = 0
 
 
 !COMPUTE SOURCE/FORCING TERMS FROM BACKGROUND FIELDS, ETC.
-E01all=0d0
-E02all=0d0
-E03all=0d0
+E01all = 0
+E02all = 0
+E03all = 0
 
 end subroutine potentialBCs2D
 
