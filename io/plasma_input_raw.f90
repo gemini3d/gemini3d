@@ -1,6 +1,8 @@
 submodule (io:plasma) plasma_input_raw
 
 use timeutils, only : date_filename
+implicit none
+
 contains
 
 module procedure input_root_currents

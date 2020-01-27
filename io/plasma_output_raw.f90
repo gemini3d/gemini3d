@@ -1,6 +1,8 @@
 submodule (io:plasma) plasma_output_raw
 
 use timeutils, only : date_filename
+implicit none
+
 contains
 
 module procedure output_root_stream_mpi

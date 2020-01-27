@@ -1,5 +1,7 @@
 submodule (ionization) glow_dummy
 
+implicit none
+
 contains
 
 module procedure glow_run

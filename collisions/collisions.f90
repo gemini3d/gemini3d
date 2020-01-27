@@ -1,5 +1,6 @@
 module collisions
 
+use, intrinsic :: iso_fortran_env, only: stderr=>error_unit
 use phys_consts, only: wp, lsp, ln, ms, kb, pi, elchrg, qs, debug
 
 implicit none
@@ -46,7 +47,7 @@ public :: thermal_conduct, conductivities, capacitance, maxwell_colln, coulomb_c
 contains
 
 
-pure subroutine maxwell_colln(isp,isp2,nn,Tn,Ts,nusn)
+subroutine maxwell_colln(isp,isp2,nn,Tn,Ts,nusn)
 
 !------------------------------------------------------------
 !-------COMPUTE MAXWELL COLLISIONS OF ISP WITH ISP2.  ION
@@ -96,6 +97,9 @@ else    !electron-neutral
       nusn=1.82e-10_wp*(1.0+3.6e-2_wp*(Teff**0.5))*(Teff**0.5)*nn(:,:,:,isp2)*1e-6_wp
     case (4)
       nusn=4.5e-9_wp*(1.0-1.35e-4_wp*Teff)*(Teff**0.5)*nn(:,:,:,isp2)*1e-6_wp
+    case default
+      write(stderr,*) 'ERROR: isp2 value is unknown: ',isp2
+      error stop
   end select
 end if
 
@@ -129,9 +133,9 @@ lx2=size(Ts,2)-4
 lx3=size(Ts,3)-4
 
 if (isp==isp2) then     !zero out all self collision terms (would need to be changed if non-Maxwellian distribution used).
-  nusj=0.0_wp
-  Phisj=0.0_wp
-  Psisj=0.0_wp
+  nusj = 0
+  Phisj = 0
+  Psisj = 0
 else
   Teff=(ms(isp2)*Ts(1:lx1,1:lx2,1:lx3,isp)+ms(isp)* &
          Ts(1:lx1,1:lx2,1:lx3,isp2))/(ms(isp2)+ms(isp))
@@ -189,7 +193,7 @@ end if
 end subroutine thermal_conduct
 
 
-pure subroutine conductivities(nn,Tn,ns,Ts,vs1,B1,sig0,sigP,sigH,muP,muH,muPvn,muHvn)
+subroutine conductivities(nn,Tn,ns,Ts,vs1,B1,sig0,sigP,sigH,muP,muH,muPvn,muHvn)
 
 !------------------------------------------------------------
 !-------COMPUTE THE CONDUCTIVITIES OF THE IONOSPHERE.  STATE
@@ -222,7 +226,7 @@ do isp=1,lsp
   !! cyclotron, a negative sign from B1 here is fine for cartesian, but for dipole this should be the magnitude
   !! since the magnetic field is *assumed* to be along the x1-direction
 
-  nu=0.0_wp
+  nu = 0
   do isp2=1,ln
     call maxwell_colln(isp,isp2,nn,Tn,Ts,nutmp)
     nu=nu+nutmp
@@ -231,7 +235,7 @@ do isp=1,lsp
   if (isp<lsp) then
     mubase=qs(isp)/ms(isp)/nu      !parallel mobility
   else
-    nuej=0.0_wp
+    nuej = 0
     do isp2=1,lsp
       call coulomb_colln(isp,isp2,ns,Ts,vs1,nutmp,Phisj,Psisj)
       nuej=nuej+nutmp
@@ -254,8 +258,8 @@ end do
 !CONDUCTIVITIES
 sig0=ns(1:lx1,1:lx2,1:lx3,lsp)*qs(lsp)*mupar    !parallel includes only electrons...
 
-sigP=0.0_wp
-sigH=0.0_wp
+sigP = 0
+sigH = 0
 do isp=1,lsp
   rho=ns(1:lx1,1:lx2,1:lx3,isp)*qs(isp)
   sigP=sigP+rho*muP(:,:,:,isp)
@@ -286,7 +290,7 @@ lx1=size(ns,1)-4
 lx2=size(ns,2)-4
 lx3=size(ns,3)-4
 
-incap=0.0_wp
+incap = 0
 do isp=1,lsp
   incap=incap+ns(1:lx1,1:lx2,1:lx3,isp)*ms(isp)
 end do
@@ -295,7 +299,7 @@ incap=incap/B1(1:lx1,1:lx2,1:lx3)**2
 
 if (flagcap==2) then
   if (debug) print *, '!!! Augmenting capacitance with a magnetospheric contribution...'
-  incap=incap+30.0_wp/980e3_wp
+  incap=incap + 30.0_wp / 980e3_wp
   !! kludge the value to account for a magnetosheric contribution
   !! this is just a random guess that makes the KHI examples work well; a better value should be investigated
 end if

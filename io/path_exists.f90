@@ -1,5 +1,6 @@
 submodule (io:input) path_exists
 !! this is for non-Intel compilers
+implicit none
 
 contains
 

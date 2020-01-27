@@ -2,6 +2,7 @@ submodule (io:plasma) plasma_input_hdf5
 
 use timeutils, only : date_filename
 use hdf5_interface, only: hdf5_file
+implicit none
 
 contains
 

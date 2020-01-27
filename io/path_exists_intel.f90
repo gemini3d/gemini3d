@@ -1,5 +1,6 @@
 submodule (io:input) path_exists
 !! Intel compilers require non-standard inquire(directory=)
+implicit none
 
 contains
 

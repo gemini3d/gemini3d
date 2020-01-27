@@ -2,6 +2,7 @@ submodule (io) mag_hdf5
 
 use timeutils, only: date_filename
 use h5fortran, only: hdf5_file
+implicit none
 
 contains
 

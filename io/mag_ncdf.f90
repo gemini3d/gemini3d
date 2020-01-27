@@ -2,6 +2,7 @@ submodule (io) mag_hdf5
 
 use timeutils, only: date_filename
 use nc4fortran, only: netcdf_file
+implicit none
 
 contains
 

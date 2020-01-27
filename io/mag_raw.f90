@@ -1,6 +1,7 @@
 submodule (io) mag_raw
 
 use timeutils, only: date_filename
+implicit none
 
 contains
 

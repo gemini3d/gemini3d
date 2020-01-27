@@ -1,6 +1,7 @@
 submodule(io:io_aurora) io_aurora_raw
 
 use timeutils, only : date_filename
+implicit none
 
 contains
 

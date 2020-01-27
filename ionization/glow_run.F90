@@ -52,7 +52,7 @@ module procedure glow_run
 ! nc      number of component production terms for each emission
 
 
-real, dimension(:), allocatable :: phitoptmp
+real(sp), dimension(:), allocatable :: phitoptmp
 integer :: j
 character(len=1024) :: iri90_dir
 
