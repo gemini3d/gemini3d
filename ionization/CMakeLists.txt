@@ -1,8 +1,12 @@
 add_library(fang fang.f90)
 target_link_libraries(fang PRIVATE const)
+target_include_directories(fang INTERFACE ${CMAKE_CURRENT_BINARY_DIR}/include)
+set_target_properties(fang PROPERTIES
+  Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include)
 
 add_library(fang_run fang_run.f90)
 target_link_libraries(fang_run PRIVATE fang msis const)
+
 
 add_executable(test_fang test_fang.f90)
 target_link_libraries(test_fang PRIVATE fang_run const)

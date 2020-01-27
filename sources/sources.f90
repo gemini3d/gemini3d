@@ -8,13 +8,14 @@ use mpimod, only: myid, tagvs1bc, tagvs2bc, tagvs3bc, lid, halo, myid2,myid3,lid
 
 
 implicit none
+private
+public :: rk2_prep_mpi, srcsenergy, srcsmomentum, srcscontinuity
 
 interface srcsMomentum
   module procedure srcsMomentum_curv
 end interface srcsMomentum
 
-private
-public ::  rk2_prep_mpi, srcsenergy, srcsmomentum, srcscontinuity
+
 
 contains
 

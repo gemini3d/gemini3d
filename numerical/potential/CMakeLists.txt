@@ -12,6 +12,9 @@ set_target_properties(mumps_interface PROPERTIES
 
 add_library(PDEelliptic PDEelliptic.f90)
 target_link_libraries(PDEelliptic PRIVATE const mumps_interface MPI::MPI_Fortran)
+target_include_directories(PDEelliptic INTERFACE ${CMAKE_CURRENT_BINARY_DIR}/include)
+set_target_properties(PDEelliptic PROPERTIES
+  Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include)
 
 add_library(potential potential_comm_mumps.f90 potential_mumps.f90 boundary_conditions/potentialBCs_mumps.f90)
 target_link_libraries(potential PRIVATE calculus collision const grid interp timeutils

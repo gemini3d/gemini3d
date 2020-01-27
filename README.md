@@ -363,7 +363,6 @@ Two of the log files created are:
 * gitrev.log: the Git branch and hash revision at runtime (changed filenames beyond this revision are logged)
 * compiler.log: compiler name, version and options used to compile the executable.
 
-
 ![Figure 1](doc/figure1.png)
 
 <!-- ![Figure 2](doc/figure2.png) -->
