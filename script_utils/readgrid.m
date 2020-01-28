@@ -24,6 +24,8 @@ end % function
 
 function xgf = read_hdf5(path)
 fn = [path, '/simsize.h5'];
+assert(is_file(fn), [fn, ' not found'])
+
 xgf.lx = [h5read(fn, '/lx1'), h5read(fn, '/lx2'), h5read(fn,'/lx3')];
 
 fn = [path, '/simgrid.h5'];

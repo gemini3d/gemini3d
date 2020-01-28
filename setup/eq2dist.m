@@ -1,14 +1,18 @@
-function [nsi,vs1i,Tsi,xgin,ns,vs1,Ts] = eq2dist(eqdir, simID, xg, format, outdir)
+function [nsi,vs1i,Tsi,xgin,ns,vs1,Ts] = eq2dist(eqdir, simID, xg, file_format, outdir)
 
 narginchk(4, 5)
 validateattributes(eqdir, {'char', 'string'}, {'vector'})
 validateattributes(simID, {'char', 'string'}, {'vector'})
 validateattributes(xg, {'struct'}, {'scalar'}, mfilename, 'grid struct',3)
-validateattributes(format, {'char'}, {'vector'}, mfilename, 'raw or hdf5',4)
+validateattributes(file_format, {'char'}, {'vector'}, mfilename, 'raw or hdf5',4)
 if nargin < 5, outdir = []; end
+%% Paths
+% this script is called from numerous places, so ensure necessary path
+cwd = fileparts(mfilename('fullpath'));
+addpath([cwd,'/../vis'])
 %% READ SIMULATION INFORMATION
 [ymd0,UTsec0,tdur,dtout,flagoutput,mloc] = readconfig([eqdir, '/inputs']);
-xgin = readgrid([eqdir, '/inputs'], format);
+xgin = readgrid([eqdir, '/inputs'], file_format);
 
 %% FIND THE DATE OF THE END FRAME OF THE SIMULATION
 % PRESUMABLY THIS WILL BE THE STARTING point FOR another
@@ -37,8 +41,8 @@ if isempty(outdir)
   basedir = [eqdir,'/../input/'];
   outdir = [basedir, simID];
 end
-writegrid(xg, outdir, format);
+writegrid(xg, outdir, file_format);
 dmy=[ymdend(3),ymdend(2),ymdend(1)];
-writedata(dmy,UTsecend,nsi,vs1i,Tsi,outdir,simID, format);
+writedata(dmy,UTsecend,nsi,vs1i,Tsi,outdir, file_format);
 
 end % function eq2dist

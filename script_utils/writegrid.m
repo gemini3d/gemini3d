@@ -1,11 +1,11 @@
-function writegrid(xg, outdir, format)
+function writegrid(xg, outdir, file_format)
 %% write grid to raw binary files
 % INCLUDes STUFF NOT NEEDED BY FORTRAN CODE BUT POSSIBLY USEFUL FOR PLOTTING
 
 narginchk(3,3)
 validateattributes(xg, {'struct'}, {'scalar'}, mfilename, 'grid parameters', 1)
 validateattributes(outdir, {'char'}, {'vector'}, mfilename,'output directory',2)
-validateattributes(format, {'char'}, {'vector'}, mfilename,'raw or hdf5',3)
+validateattributes(file_format, {'char'}, {'vector'}, mfilename,'raw or hdf5',3)
 
 %% MAKE THE OUTPUT DIRECTORY IF IT DOESN'T EXIST AND NOTIFY USER
 outdir = absolute_path(outdir);
@@ -16,10 +16,10 @@ end
 % malformed paths can be "created" but are not accessible. Bug in Matlab mkdir().
 assert(is_folder(outdir), [outdir, ' does not exist'])
 
-switch format
+switch file_format
   case 'raw', write_raw(outdir, xg)
   case 'hdf5', write_hdf5(outdir, xg)
-  otherwise, error(['unknown file format ',format])
+  otherwise, error(['unknown file format ',file_format])
 end
 
 end % function

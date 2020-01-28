@@ -1,4 +1,5 @@
  %LOWRES 2D EXAMPLE FOR TESTING
+ p.format = 'hdf5';
  xdist=1200e3;    %eastward distance
  ydist=600e3;    %northward distance
  lxp=15;
@@ -35,8 +36,7 @@ nme=2e11;
 
 
 %WRITE THE GRID AND INITIAL CONDITIONS
-simlabel='3Dtest_eq'
 outdir='../../tests/data/input/2Dtest_eq/';
 writegrid(xg,outdir);
 time=UT*3600;   %doesn't matter for input files
-writedata(dmy,time,ns,vsx1,Ts,outdir,simlabel);
+writedata(dmy,time,ns,vsx1,Ts,outdir,p.format);

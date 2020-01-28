@@ -1,9 +1,9 @@
-function E = Efield_BCs_3d(params, dir_grid, format, dir_config)
+function E = Efield_BCs_3d(params, dir_grid, file_format, dir_config)
 
 narginchk(3, 4)
 validateattributes(params, {'struct'}, {'scalar'}, mfilename, 'sim parameters', 1)
 validateattributes(dir_grid, {'char'}, {'vector'}, mfilename, 'grid directory', 2)
-validateattributes(format, {'char'}, {'vector'}, mfilename, 'file format', 3)
+validateattributes(file_format, {'char'}, {'vector'}, mfilename, 'file format', 3)
 
 cwd = fileparts(mfilename('fullpath'));
 if nargin < 4 || isempty(dir_config), dir_config = cwd; end
@@ -19,7 +19,7 @@ end
 %% READ IN THE SIMULATION INFORMATION
 config = read_config(dir_config);
 
-xg = readgrid(dir_grid, format);
+xg = readgrid(dir_grid, file_format);
 lx1 = xg.lx(1);
 lx2 = xg.lx(2);
 lx3 = xg.lx(3);
@@ -106,10 +106,10 @@ assert(all(isfinite(E.Vmaxx3ist(:))), 'NaN in Vmaxx3ist')
 % FORTRAN CODE IN CASE DIFFERENT GRIDS NEED TO BE TRIED.
 % THE EFIELD DATA DO NOT TYPICALLY NEED TO BE SMOOTHED.
 
-switch format
+switch file_format
   case {'raw', 'dat'}, writeraw(dir_out, E, params)
   case {'h5', 'hdf5'}, writehdf5(dir_out, E, params)
-  otherwise, error(['unknown data format ', format])
+  otherwise, error(['unknown data format ', file_format])
 end
 
 if ~nargout, clear('E'), end

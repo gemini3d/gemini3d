@@ -1,4 +1,5 @@
  %LOWRES 2D EXAMPLE FOR TESTING
+ p.format = 'hdf5';
  xdist=1200e3;    %eastward distance
  ydist=600e3;    %northward distance
  lxp=1;
@@ -31,14 +32,13 @@ activ=[76.5,79.3,31.5];
 %USE OLD CODE FROM MATLAB MODEL
 nmf=5e11;
 nme=2e11;
-[ns,Ts,vsx1]=eqICs3D(xg,UT,dmy,activ,nmf,nme);    %note that this actually calls msis_matlab - should be rewritten to include the neutral module form the fortran code!!!
+[ns,Ts,vsx1] = eqICs3D(xg,UT,dmy,activ,nmf,nme);    %note that this actually calls msis_matlab - should be rewritten to include the neutral module form the fortran code!!!
 
 
 %WRITE THE GRID AND INITIAL CONDITIONS
 %ADD PATHS FOR FUNCTIONS
-simlabel='2Dtest_eq'
 outdir='../../tests/data/input/2Dtest_eq/';
 writegrid(xg,outdir);
 time=UT*3600;   %doesn't matter for input files
-writedata(dmy,time,ns,vsx1,Ts,outdir,simlabel);
+writedata(dmy,time,ns,vsx1,Ts,outdir, p.format);
 
