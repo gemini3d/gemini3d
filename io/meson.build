@@ -35,8 +35,9 @@ elif netcdf_interface.found()
   reader_dep = netcdf_interface
 else
   reader_src = files('reader_raw.f90')
+  reader_dep = []
 endif
-library('reader',
+reader = library('reader',
   sources: ['reader.f90', reader_src],
   link_with: const,
   dependencies: reader_dep)
