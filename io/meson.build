@@ -25,6 +25,24 @@ else
   io_src += files('plasma_output_raw.f90', 'mag_raw.f90', 'aurora_raw.f90')
 endif
 
+# === reader
+
+if hdf5_interface.found()
+  reader_src = files('reader_hdf5.f90')
+  reader_dep = hdf5_interface
+elif netcdf_interface.found()
+  reader_src = files('reader_nc4.f90')
+  reader_dep = netcdf_interface
+else
+  reader_src = files('reader_raw.f90')
+endif
+library('reader',
+  sources: ['reader.f90', reader_src],
+  link_with: const,
+  dependencies: reader_dep)
+
+# == other
+
 pathlib = library('pathlib', 'pathlib.F90')
 
 logging = library('logging', 'logging.f90')

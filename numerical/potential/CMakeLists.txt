@@ -18,16 +18,7 @@ set_target_properties(PDEelliptic PROPERTIES
 
 add_library(potential potential_comm_mumps.f90 potential_mumps.f90 boundary_conditions/potentialBCs_mumps.f90)
 target_link_libraries(potential PRIVATE calculus collision const grid mesh interp timeutils
-  MPI::MPI_Fortran PDEelliptic mpimod)
-if(hdf5)
-  target_sources(potential PRIVATE boundary_conditions/bc_hdf5.f90)
-  target_link_libraries(potential PRIVATE h5fortran::h5fortran)
-elseif(netcdf)
-  target_sources(potential PRIVATE boundary_conditions/bc_nc4.f90)
-  target_link_libraries(potential PRIVATE nc4fortran::nc4fortran)
-else()
-  target_sources(potential PRIVATE boundary_conditions/bc_raw.f90)
-endif()
+  MPI::MPI_Fortran PDEelliptic mpimod reader)
 target_include_directories(potential INTERFACE ${CMAKE_CURRENT_BINARY_DIR}/include)
 set_target_properties(potential PROPERTIES
   Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include)

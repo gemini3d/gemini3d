@@ -7,19 +7,11 @@ pde_elliptic = library('pde_elliptic',
 
 pot_src = files('potential_comm_mumps.f90', 'potential_mumps.f90', 'boundary_conditions/potentialBCs_mumps.f90')
 pot_deps = [mumps, scalapack, blacs, lapack, mpi, threads]
-if hdf5_interface.found()
-  pot_src += files('boundary_conditions/bc_hdf5.f90')
-  pot_deps += hdf5_interface
-elif netcdf_interface.found()
-  pot_src += files('boundary_conditions/bc_nc4.f90')
-  pot_deps += netcdf_interface
-else
-  pot_src += files('boundary_conditions/bc_raw.f90')
-endif
 
 potential = library('potential',
   sources: pot_src,
-  link_with: [pde_elliptic, calculus, collisions, const, grid, mesh, interp, mpimod, timeutils],
+  link_with: [pde_elliptic, calculus, collisions, const, reader,
+    grid, mesh, interp, mpimod, timeutils],
   dependencies: pot_deps)
 
 if not hdf5_interface.found()
