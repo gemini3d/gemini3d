@@ -11,7 +11,7 @@ if any(strcmp(varname, varnames) | strcmp(varname(2:end), varnames))
   % FIXME: existing variable
   h5write(filename, varname, A, ones(1,ndims(A)), sizeA)
 else % new variable
-  h5create(filename, varname, sizeA)
+  h5create(filename, varname, sizeA, 'DataType', class(A))
   h5write(filename, varname, A)
 end
 

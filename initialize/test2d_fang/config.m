@@ -1,4 +1,8 @@
 %% LOWRES east-west 2D EXAMPLE FOR TESTING
+% to create reference data:
+% 1. run this script from Matlab / Octave
+% 2. run Gemini:
+%    mpiexec -np 4 gemini_sim/test2d_fang/inputs/config.nml gemini_sim/test2d_fang
 
 cwd = fileparts(mfilename('fullpath'));
 

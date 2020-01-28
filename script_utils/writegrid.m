@@ -30,9 +30,9 @@ function write_hdf5(dir_out, xg)
 fn = [dir_out, '/simsize.h5'];
 disp(['write ',fn])
 if isfile(fn), delete(fn), end
-h5save(fn, '/lx1', xg.lx(1))
-h5save(fn, '/lx2', xg.lx(2))
-h5save(fn, '/lx3', xg.lx(3))
+h5save(fn, '/lx1', int32(xg.lx(1)))
+h5save(fn, '/lx2', int32(xg.lx(2)))
+h5save(fn, '/lx3', int32(xg.lx(3)))
 
 fn = [dir_out, '/simgrid.h5'];
 disp(['write ',fn])
