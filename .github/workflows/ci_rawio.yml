@@ -24,7 +24,7 @@ jobs:
         pip install cmake
 
     - name: CMake configure
-      run: cmake -B build -Dhdf5=false
+      run: cmake -B build -Dhdf5=disabled
       env:
         FC: gfortran
     - run: cmake --build build --parallel
