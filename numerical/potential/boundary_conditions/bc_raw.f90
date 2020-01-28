@@ -1,5 +1,7 @@
 submodule (potentialBCs_mumps) bc_raw
 
+use, intrinsic :: iso_fortran_env, only : real64
+
 implicit none
 
 contains
@@ -33,14 +35,17 @@ end procedure get_simgrid
 
 module procedure get_Efield
 integer :: u
-real(wp) :: flagtmp
+real(real64) :: flagtmp
 character(:), allocatable :: fn
 
 fn = path // '.dat'
 if (debug) print *, 'Read: electric field data from file:  ',fn
 
 open(newunit=u, file=fn, status='old', form='unformatted', access='stream')
-read(u) flagtmp  !< FIXME: this is mistakenly a float from Matlab
+read(u) flagtmp
+!! NOTE: this is mistakenly a float from Matlab
+!! to keep compatibility with old files, we left it as real64.
+!! New work should be using HDF5 instead of raw in any case.
 flagdirich = int(flagtmp,4)
 read(u) E0xp,E0yp
 read(u) Vminx1p,Vmaxx1p
