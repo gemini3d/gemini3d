@@ -37,7 +37,7 @@ jobs:
         pip install cmake
 
     - name: CMake configure
-      run: cmake -B build -Dhdf5=true
+      run: cmake -B build -Dhdf5=false
       env:
         FC: gfortran
     - run: cmake --build build --parallel
@@ -72,7 +72,7 @@ jobs:
         sudo apt update -yq
         sudo apt install -yq --no-install-recommends ninja-build pkg-config gfortran libopenmpi-dev openmpi-bin liblapack-dev libscalapack-openmpi-dev libmumps-dev libhdf5-dev
 
-    - run: meson setup build -Dhdf5=enabled
+    - run: meson setup build -Dhdf5=disabled
       env:
         FC: gfortran
     - run: ninja -C build
