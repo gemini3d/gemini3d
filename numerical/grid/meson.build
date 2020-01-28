@@ -4,4 +4,4 @@ mesh = library('mesh', 'mesh.f90',
 grid = library('grid',
   sources: ['grid.f90', 'read.f90'],
   dependencies: mpi,
-  link_with: [const, mesh, mpimod])
+  link_with: [const, reader, mesh, mpimod])

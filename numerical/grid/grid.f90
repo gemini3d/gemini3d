@@ -5,6 +5,7 @@ use mpi, only: mpi_integer, mpi_comm_world, mpi_status_ignore
 use mesh, only: curvmesh
 
 use phys_consts, only: Gconst,Me,Re,wp,red,black
+use reader, only: get_simsize3
 
 use mpimod, only: myid, lid, lid2, lid3, &
   tagx1, tagx2, tagx3, tagtheta, tagr, tagphi, tagnull, taglx1, taglx2, taglx3, taglx3all, taginc, &
@@ -54,23 +55,13 @@ logical exists
 
 
 if (myid==0) then    !root must physically read the size info and pass to workers
-  inquire(file=indatsize, exist=exists)
-  if (.not.exists) then
-     write(stderr,'(A,/,A)') 'ERROR: generate grid with script before run simulation--grid not present: ',indatsize
-     error stop 77
-  endif
-
   !! DETERMINE THE SIZE OF THE GRID TO BE LOADED
-  block
-    integer :: u
-    open(newunit=u,file=indatsize,status='old',form='unformatted', &
-        access='stream', action='read')
-    read(u) lx1,lx2all,lx3all    !note that these are sizes *including ghost cells*
-    close(u)
-  end block
+  call get_simsize3(indatsize, lx1, lx2all, lx3all)
 
-  if (lx1 < 1 .or. lx2all < 1 .or. lx3all < 1) error stop 'grid size must be strictly positive'
-
+  if (lx1 < 1 .or. lx2all < 1 .or. lx3all < 1) then
+    write(stderr,*) 'ERROR: reading ' // indatsize
+    error stop 'grid.f90: grid size must be strictly positive'
+  endif
   !! check correct number of MPI images. Help avoid confusing errors or bad simulations
   if (lx2all > 1) then
     if (modulo(lx2all, lid2) /= 0) then
