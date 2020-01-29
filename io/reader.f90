@@ -9,9 +9,9 @@ private
 public :: get_simsize3, get_simsize2, get_grid2, get_Efield, get_precip, get_neutral2, get_neutral3
 
 interface ! reader_{raw,hdf5,nc4}.f90
-module subroutine get_simsize2(path, llat, llon)
+module subroutine get_simsize2(path, llon, llat)
 character(*), intent(in) :: path
-integer, intent(out) :: llat, llon
+integer, intent(out) :: llon, llat
 end subroutine get_simsize2
 
 module subroutine get_simsize3(path, lx1, lx2all, lx3all)

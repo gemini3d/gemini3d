@@ -31,7 +31,7 @@ set_target_properties(ionization PROPERTIES
   Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include)
 
 add_library(precipBCs boundary_conditions/precipBCs_mod.f90)
-target_link_libraries(precipBCs PRIVATE mpimod const grid mesh interp timeutils MPI::MPI_Fortran)
+target_link_libraries(precipBCs PRIVATE mpimod reader const grid mesh interp timeutils MPI::MPI_Fortran)
 target_include_directories(precipBCs INTERFACE ${CMAKE_CURRENT_BINARY_DIR}/include)
 set_target_properties(precipBCs PROPERTIES
   Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include)

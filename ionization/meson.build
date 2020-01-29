@@ -14,7 +14,7 @@ test('Fang', python,
   suite: 'unit')
 
 precipBCs = library('precipBCs', 'boundary_conditions/precipBCs_mod.f90',
-  link_with: [mpimod, const, grid, mesh, interp, timeutils],
+  link_with: [mpimod, const, reader, grid, mesh, interp, timeutils],
   dependencies: mpi)
 
 

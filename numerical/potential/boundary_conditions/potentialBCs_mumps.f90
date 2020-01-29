@@ -99,7 +99,7 @@ if(t + dt / 2._wp >= tnext) then    !need to load a new file
     ymdnext=ymdprev
     UTsecnext=UTsecprev
 
-    call get_simsize2(E0dir, llat, llon)
+    call get_simsize2(E0dir, llon=llon, llat=llat)
 
     if (debug) print '(A,2I6)', 'Electric field data has llon,llat size:  ',llon,llat
     if (llon < 1 .or. llat < 1) error stop 'potentialBCs_mumps: grid size must be strictly positive'

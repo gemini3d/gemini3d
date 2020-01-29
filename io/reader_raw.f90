@@ -25,7 +25,7 @@ if (.not.exists) then
    error stop 77
 endif
 
-open(newunit=u, file=fn, status='old', form='unformatted', access='stream')
+open(newunit=u, file=fn, status='old', form='unformatted', access='stream', action='read')
 read(u) llon,llat
 close(u)
 end procedure get_simsize2
@@ -50,7 +50,7 @@ if (.not.exists) then
    error stop 77
 endif
 
-open(newunit=u, file=fn, status='old', form='unformatted', access='stream')
+open(newunit=u, file=fn, status='old', form='unformatted', access='stream', action='read')
 read(u) lx1
 read(u) lx2all
 if (present(lx3all)) read(u) lx3all
@@ -69,7 +69,7 @@ else
 endif
 if (debug) print '(A,/,A)', 'READ 2D (B-perp, B-perp) grid:', fn
 
-open(newunit=u, file=fn, status='old', form='unformatted', access='stream')
+open(newunit=u, file=fn, status='old', form='unformatted', access='stream', action='read')
 read(u) mlonp,mlatp
 close(u)
 end procedure get_grid2
@@ -83,7 +83,7 @@ character(:), allocatable :: fn
 fn = path // '.dat'
 if (debug) print *, 'READ electric field data from:  ',fn
 
-open(newunit=u, file=fn, status='old', form='unformatted', access='stream')
+open(newunit=u, file=fn, status='old', form='unformatted', access='stream', action='read')
 read(u) flagtmp
 !! NOTE: this is mistakenly a float from Matlab
 !! to keep compatibility with old files, we left it as real64.
@@ -106,7 +106,7 @@ character(:), allocatable :: fn
 fn = path // '.dat'
 if (debug) print *, 'READ precipitation data from:  ',fn
 
-open(newunit=u, file=fn, status='old', form='unformatted', access='stream')
+open(newunit=u, file=fn, status='old', form='unformatted', access='stream', action='read')
 read(u) Qp,E0p
 close(u)
 end procedure get_precip
@@ -119,7 +119,7 @@ character(:), allocatable :: fn
 fn = path // '.dat'
 if (debug) print *, 'READ neutral 2D data from:  ',fn
 
-open(newunit=u, file=fn, status='old', form='unformatted', access='stream')
+open(newunit=u, file=fn, status='old', form='unformatted', access='stream', action='read')
 read(u) dnO,dnN2,dnO2,dvnrho,dvnz,dTn
 close(u)
 end procedure get_neutral2
@@ -132,7 +132,7 @@ character(:), allocatable :: fn
 fn = path // '.dat'
 if (debug) print *, 'READ neutral 3D data from:  ',fn
 
-open(newunit=u, file=fn, status='old', form='unformatted', access='stream')
+open(newunit=u, file=fn, status='old', form='unformatted', access='stream', action='read')
 read(u) dnOall,dnN2all,dnO2all,dvnxall,dvnrhoall,dvnzall,dTnall
 close(u)
 end procedure get_neutral3

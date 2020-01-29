@@ -4,6 +4,7 @@ use, intrinsic :: ieee_arithmetic, only : ieee_is_finite
 
 use mpi, only: mpi_integer, mpi_comm_world, mpi_status_ignore
 
+use reader, only: get_simsize2, get_precip, get_grid2
 use phys_consts, only: pi,wp, debug
 use grid, only : lx1,lx2,lx3,lx3all
 use mesh, only: curvmesh
@@ -50,7 +51,6 @@ character(*), intent(in) :: precdir
 !! directory where neutral simulation data is kept
 type(curvmesh) :: x
 
-character(:), allocatable :: sizefn, gridfn, precfn
 integer :: ios, ierr
 integer :: iid,iflat,ix2,ix3
 
@@ -72,17 +72,15 @@ if(t+dt / 2._wp>=tnext) then    !need to load a new file
 
     if (myid==0) then    !root process
       !READ IN THE GRID
-      sizefn = precdir // '/simsize.dat'
-      print '(A,/,A)', 'Inputting precipitation data size from file:',sizefn
-      block
-        integer :: u
-        open(newunit=u,file=sizefn, status='old',form='unformatted',access='stream', action='read')
-        read(u) llon,llat
-        close(u)
-      end block
-      print *, 'Precipitation data has llon,llat size:  ',llon,llat
-      if (llon < 1 .or. llat < 1) error stop 'precipitation grid size must be strictly positive'
+      print '(A,/,A)', 'READ precipitation size from:',precdir
 
+      call get_simsize2(precdir, llon=llon, llat=llat)
+
+      print *, 'Precipitation data has llon,llat size:  ',llon,llat
+      if (llon < 1 .or. llat < 1) then
+        write(stderr,*) 'ERROR: reading ' // precdir
+        error stop 'precipBCs_mod: precipitation grid size must be strictly positive'
+      endif
 
       !MESSAGE WORKERS WITH GRID INFO
       ierr=0
@@ -103,14 +101,8 @@ if(t+dt / 2._wp>=tnext) then    !need to load a new file
 
 
       !NOW READ THE GRID
-      gridfn = precdir // '/simgrid.dat'
-      print '(A,/,A)', 'Inputting precipitation grid from file:',gridfn
-      block
-        integer :: u
-        open(newunit=u,file=gridfn,status='old',form='unformatted',access='stream', action='read')
-        read(u) mlonp,mlatp
-        close(u)
-      end block
+      call get_grid2(precdir, mlonp, mlatp)
+
       print *, 'Precipitation data has mlon,mlat extent:  ',minval(mlonp(:)),maxval(mlonp(:)),minval(mlatp(:)), &
                                                               maxval(mlatp(:))
       if(.not. all(ieee_is_finite(mlonp))) error stop 'mlon must be finite'
@@ -159,21 +151,8 @@ if(t+dt / 2._wp>=tnext) then    !need to load a new file
     ymdtmp=ymdnext
     UTsectmp=UTsecnext
     call dateinc(dtprec,ymdtmp,UTsectmp)    !get the date for "next" params
-    precfn = date_filename(precdir,ymdtmp,UTsectmp) // '.dat'     !form the standard data filename
-    print '(A,/,A)', 'Read precipitation data from:', precfn
 
-    block
-      integer :: u
-      open(newunit=u,file=precfn,status='old',form='unformatted',access='stream',iostat=ios)
-      if (ios/=0) then
-        write(stderr, *) 'Missing precipitation input file: ' // precfn
-        error stop
-      endif
-
-      if (debug) print *, 'Successfully located input file: ' // precfn
-      read(u) Qp,E0p
-      close(u)
-    end block
+    call get_precip(date_filename(precdir,ymdtmp,UTsectmp), Qp, E0p)
 
     if (debug) print *, 'Min/max values for Qp:  ',minval(Qp),maxval(Qp)
     if (debug) print *, 'Min/max values for E0p:  ',minval(E0p),maxval(E0p)
