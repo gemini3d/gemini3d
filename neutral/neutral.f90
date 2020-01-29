@@ -1,8 +1,11 @@
 module neutral
 
 use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
+use, intrinsic :: iso_fortran_env, only: stderr=>error_unit
+
 use mpi, only: mpi_integer, mpi_comm_world, mpi_status_ignore
 
+use reader, only : get_simsize3, get_neutral2, get_neutral3
 use phys_consts, only: wp, lnchem, pi, re, debug
 use grid, only: lx1, lx2, lx3, clear_unitvecs, gridflag
 use mesh, only: curvmesh
@@ -406,7 +409,6 @@ type(curvmesh), intent(inout) :: x           !inout to allow deallocation of uni
 integer :: lhorzn
 real(wp) :: meanyn
 
-character(:), allocatable :: filename
 real(wp) :: theta1,phi1,theta2,phi2,gammarads,theta3,phi3,gamma1,gamma2,phip
 real(wp) :: xp,yp
 real(wp), dimension(3) :: erhop,ezp,eyp,tmpvec
@@ -418,17 +420,15 @@ real(wp), dimension(x%lx1,x%lx2,x%lx3) :: zimat,rhoimat,yimat
 
 !Establish the size of the grid based on input file and distribute to workers
 if (myid==0) then    !root
-  filename = neudir // '/simsize.dat'
-  print '(A,/,A)', 'Inputting neutral size from file:  ',filename
-  block
-    integer :: u
-    open(newunit=u, file=filename,status='old',form='unformatted',access='stream')
-    read(u) lhorzn,lzn
-    close(u)
-  end block
-  print *, 'Neutral data has lhorzn,lz size:  ',lhorzn,lzn,' with spacing dhorzn,dz',dhorzn,dzn
-  if (lhorzn < 1 .or. lzn < 1) error stop 'grid size must be strictly positive'
+  print '(A,/,A)', 'Inputting neutral size from:  ',neudir
 
+  call get_simsize3(neudir, lx1=lzn, lx2all=lhorzn)
+
+  print *, 'Neutral data has lhorzn,lz size:  ',lhorzn,lzn,' with spacing dhorzn,dz',dhorzn,dzn
+  if (lhorzn < 1 .or. lzn < 1) then
+    write(stderr,*) 'ERROR: reading ' // neudir
+    error stop 'neutral:gridproj_dneu2D: grid size must be strictly positive'
+  endif
   do iid=1,lid-1
     call mpi_send(lhorzn,1,MPI_INTEGER,iid,taglrho,MPI_COMM_WORLD,ierr)
     call mpi_send(lzn,1,MPI_INTEGER,iid,taglz,MPI_COMM_WORLD,ierr)
@@ -638,7 +638,6 @@ type(curvmesh), intent(inout) :: x           !inout to allow deallocation of uni
 real(wp) :: meanyn
 real(wp) :: meanxn
 
-character(:), allocatable :: filename
 real(wp) :: theta1,phi1,theta2,phi2,gammarads,theta3,phi3,gamma1,gamma2,phip
 real(wp) :: xp,yp
 real(wp), dimension(3) :: erhop,ezp,eyp,tmpvec,exprm
@@ -790,17 +789,15 @@ end if
 
 !Establish the size of the grid based on input file and distribute to workers
 if (myid==0) then    !root
-  filename = neudir // '/simsize.dat'
-  print '(A,/,A)', 'Inputting neutral size from file:', filename
-  block
-    integer :: u
-    open(newunit=u,file=filename,status='old',form='unformatted',access='stream')
-    read(u) lxnall,lynall,lzn
-    close(u)
-  end block
-  print *, 'Neutral data has lx,ly,lz size:  ',lxnall,lynall,lzn,' with spacing dx,dy,dz',dxn,dyn,dzn
-  if (lxnall < 1 .or. lynall < 1 .or. lzn < 1) error stop 'grid size must be strictly positive'
+  print '(A,/,A)', 'READ neutral size from:', neudir
 
+  call get_simsize3(neudir, lx1=lxnall, lx2all=lynall, lx3all=lzn)
+
+  print *, 'Neutral data has lx,ly,lz size:  ',lxnall,lynall,lzn,' with spacing dx,dy,dz',dxn,dyn,dzn
+  if (lxnall < 1 .or. lynall < 1 .or. lzn < 1) then
+    write(stderr,*) 'ERROR: reading ' // neudir
+    error stop 'neutral:gridproj_dneu3D: grid size must be strictly positive'
+  endif
 
   !root must allocate space for the entire grid of input data - this might be doable one parameter at a time???
   allocate(zn(lzn))        !the z coordinate is never split up in message passing - want to use full altitude range...
@@ -939,7 +936,6 @@ real(wp), intent(out) :: UTsectmp
 logical, intent(in) :: flagcart
 
 integer :: iid,ierr
-character(:), allocatable :: filename
 integer :: lhorzn                        !number of horizontal grid points
 
 
@@ -957,14 +953,8 @@ if (myid==0) then    !root
   UTsectmp=UTsecnext
   call dateinc(dtneu,ymdtmp,UTsectmp)    !get the date for "next" params
 
-  filename = date_filename(neudir,ymdtmp,UTsectmp)  // '.dat'    !form the standard data filename
-  print *, 'Pulling neutral data from file:  ',filename
-  block
-    integer :: u
-    open(newunit=u,file=filename,status='old',form='unformatted',access='stream')
-    read(u) dnO,dnN2,dnO2,dvnrho,dvnz,dTn     !these are module-scope variables
-    close(u)
-  end block
+  call get_neutral2(date_filename(neudir,ymdtmp,UTsectmp), &
+    dnO,dnN2,dnO2,dvnrho,dvnz,dTn)
 
   if (debug) then
     print *, 'Min/max values for dnO:  ',minval(dnO),maxval(dnO)
@@ -1029,7 +1019,6 @@ integer, dimension(3), intent(out) :: ymdtmp          !storage space for increme
 real(wp), intent(out) :: UTsectmp
 
 integer :: iid,ierr
-character(:), allocatable :: filename
 integer :: lhorzn                        !number of horizontal grid points
 real(wp), dimension(:,:,:), allocatable :: parmtmp    !temporary resizable space for subgrid neutral data
 
@@ -1044,14 +1033,8 @@ if (myid==0) then    !root
   UTsectmp=UTsecnext
   call dateinc(dtneu,ymdtmp,UTsectmp)                !get the date for "next" params
 
-  filename = date_filename(neudir,ymdtmp,UTsectmp) // '.dat'
-  print *, 'Pulling neutral data from file:  ', filename
-  block
-    integer :: u
-    open(newunit=u,file=filename,status='old',form='unformatted',access='stream', action='read')
-    read(u) dnOall,dnN2all,dnO2all,dvnxall,dvnrhoall,dvnzall,dTnall         !these are module-scope variables
-    close(u)
-  end block
+  call get_neutral3(date_filename(neudir,ymdtmp,UTsectmp), &
+    dnOall,dnN2all,dnO2all,dvnxall,dvnrhoall,dvnzall,dTnall)
 
   if (debug) then
     print *, 'Min/max values for dnOall:  ',minval(dnOall),maxval(dnOall)

@@ -183,10 +183,10 @@ for i = 1:Nt
 %   size(E.Vmaxx2ist)
 %   size(E.Vminx3ist)
 %   size(E.Vmaxx3ist)
-  
+
   %FOR EACH FRAME WRITE A BC TYPE AND THEN OUTPUT BACKGROUND AND BCs
 %  fwrite(fid, params.flagdirich, 'int32');
-  fwrite(fid, params.flagdirich, 'real*8');   %FIXME - fortran code still wants this to be a double...  
+  fwrite(fid, params.flagdirich, 'real*8');   %FIXME - fortran code still wants this to be a double...
   fwrite(fid, E.Exit(:,:,i), freal);
   fwrite(fid, E.Eyit(:,:,i), freal);
   fwrite(fid, E.Vminx1it(:,:,i), freal);
