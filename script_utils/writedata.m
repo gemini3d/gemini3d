@@ -49,7 +49,7 @@ end
 
 function write_raw(outdir, dmy, time, ns, vsx1, Ts)
 
-fn = [outdir,'/initial_conditions.h5'];
+fn = [outdir,'/initial_conditions.dat'];
 disp(['write ',fn])
 fid=fopen(fn, 'w');
 freal = 'float64';
