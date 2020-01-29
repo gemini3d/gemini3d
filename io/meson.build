@@ -39,7 +39,7 @@ else
 endif
 reader = library('reader',
   sources: ['reader.f90', reader_src],
-  link_with: const,
+  link_with: [const],
   dependencies: reader_dep)
 
 # == other

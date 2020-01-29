@@ -1,5 +1,19 @@
 submodule (grid) grid_read
+
 implicit none
+
+interface ! readgrid_{raw,hdf5,nc4}.f90
+module subroutine get_grid3(path, flagswap, x, g1all,g2all,g3all, altall,glatall,glonall,Bmagall,Incall,nullptsall,&
+  e1all,e2all,e3all,erall,ethetaall,ephiall,rall,thetaall,phiall)
+character(*), intent(in) :: path
+integer, intent(in) :: flagswap
+type(curvmesh), intent(inout) :: x
+real(wp), intent(out), dimension(:,:,:) :: g1all,g2all,g3all,altall,glatall,glonall,Bmagall,nullptsall,rall,thetaall,phiall
+real(wp), intent(out), dimension(:,:) :: Incall
+real(wp), intent(out), dimension(:,:,:,:) :: e1all,e2all,e3all,erall,ethetaall,ephiall
+end subroutine get_grid3
+end interface
+
 contains
 
 
@@ -182,53 +196,18 @@ allocate(x%er(1:lx1,1:lx2,1:lx3,1:3),x%etheta(1:lx1,1:lx2,1:lx3,1:3),x%ephi(1:lx
 !NOW WE NEED TO READ IN THE FULL GRID DATA AND PUT IT INTO THE STRUCTURE.
 !IF WE HAVE DONE ANY DIMENSION SWAPPING HERE WE NEED TO TAKE THAT INTO ACCOUNT IN THE VARIABLES THAT ARE BEING READ IN
 print *, 'Starting grid input from file: ',indatgrid
-open(newunit=u,file=indatgrid,status='old',form='unformatted',access='stream', action='read')
-if (flagswap/=1) then                     !normal (i.e. full 3D) grid ordering, or a 2D grid with 1 element naturally in the second dimension
-  read(u) x%x1,x%x1i,x%dx1,x%dx1i
-  read(u) x%x2all,x%x2iall,x%dx2all,x%dx2iall
-  read(u) x%x3all,x%x3iall,x%dx3all,x%dx3iall
-  read(u) x%h1all,x%h2all,x%h3all
-  read(u) x%h1x1iall,x%h2x1iall,x%h3x1iall
-  read(u) x%h1x2iall,x%h2x2iall,x%h3x2iall
-  read(u) x%h1x3iall,x%h2x3iall,x%h3x3iall
 
-  allocate(g1all(lx1,lx2all,lx3all),g2all(lx1,lx2all,lx3all),g3all(lx1,lx2all,lx3all))
-  read(u) g1all,g2all,g3all
+allocate(g1all(lx1,lx2all,lx3all), g2all(lx1,lx2all,lx3all), g3all(lx1,lx2all,lx3all))
+allocate(altall(lx1,lx2all,lx3all), glatall(lx1,lx2all,lx3all), glonall(lx1,lx2all,lx3all))
+allocate(Bmagall(lx1,lx2all,lx3all))
+allocate(Incall(lx2all,lx3all))
+allocate(nullptsall(lx1,lx2all,lx3all))
+allocate(e1all(lx1,lx2all,lx3all,3), e2all(lx1,lx2all,lx3all,3), e3all(lx1,lx2all,lx3all,3))
+allocate(erall(lx1,lx2all,lx3all,3), ethetaall(lx1,lx2all,lx3all,3), ephiall(lx1,lx2all,lx3all,3))
+allocate(rall(lx1,lx2all,lx3all), thetaall(lx1,lx2all,lx3all), phiall(lx1,lx2all,lx3all))
 
-  allocate(altall(lx1,lx2all,lx3all),glatall(lx1,lx2all,lx3all),glonall(lx1,lx2all,lx3all))
-  read(u) altall,glatall,glonall
-
-  allocate(Bmagall(lx1,lx2all,lx3all))
-  read(u) Bmagall
-
-  allocate(Incall(lx2all,lx3all))
-  read(u) Incall
-
-  allocate(nullptsall(lx1,lx2all,lx3all))
-  read(u) nullptsall
-
-  allocate(e1all(lx1,lx2all,lx3all,3))
-  read(u) e1all
-  allocate(e2all(lx1,lx2all,lx3all,3))
-  read(u) e2all
-  allocate(e3all(lx1,lx2all,lx3all,3))
-  read(u) e3all
-
-  allocate(erall(lx1,lx2all,lx3all,3))
-  read(u) erall
-  allocate(ethetaall(lx1,lx2all,lx3all,3))
-  read(u) ethetaall
-  allocate(ephiall(lx1,lx2all,lx3all,3))
-  read(u) ephiall
-
-  allocate(rall(lx1,lx2all,lx3all))
-  read(u) rall
-  allocate(thetaall(lx1,lx2all,lx3all))
-  read(u) thetaall
-  allocate(phiall(lx1,lx2all,lx3all))
-  read(u) phiall
-
-  x%rall=rall; x%thetaall=thetaall; x%phiall=phiall;
+if (flagswap/=1) then
+  !! normal (i.e. full 3D) grid ordering, or a 2D grid with 1 element naturally in the second dimension
 else
   !! this is apparently a 2D grid, so the x2 and x3 dimensions have been/need to be swapped
   !! MZ - may need to change lx2-->lx2all???
@@ -236,164 +215,16 @@ else
   !! This means tmp variable and permutes...
 
   print *, 'Detected a 2D grid, so will permute the dimensions of the input'
-
-  read(u) x%x1,x%x1i,x%dx1,x%dx1i                !< x1 untouched
-  read(u) x%x3all,x%x3iall,x%dx3all,x%dx3iall    !< for a 3D grid this is x2, but now considered x3(all)
-  read(u) x%x2all,x%x2iall,x%dx2all,x%dx2iall    !< formerly x3, now x2
-
-  block
-  real(wp), dimension(:,:,:), allocatable :: htmp
-  allocate(htmp(-1:lx1+2,-1:lx3all+2,-1:lx2all+2))    !< this stores the input metric factors which are swapped x2/x3 vs. what this simulation will use
-  read(u) htmp
-  x%h1all=reshape(htmp,[lx1+4,lx2all+4,lx3all+4],order=[1,3,2])
-  read(u) htmp        !< this would be h3, but with the input structure shape
-  x%h3all=reshape(htmp,[lx1+4,lx2all+4,lx3all+4],order=[1,3,2])   !< permute the dimensions of the array 3 --> 2, 2 --> 3
-  read(u) htmp        !< this would be h3, but with the input structure shape
-  x%h2all=reshape(htmp,[lx1+4,lx2all+4,lx3all+4],order=[1,3,2])
-  end block
-
-  block
-  real(wp), dimension(:,:,:), allocatable :: htmp
-  allocate(htmp(1:lx1+1,1:lx3all,1:lx2all))    !input 2 vs. 3 dimensions swapped from this program
-  read(u) htmp
-  x%h1x1iall=reshape(htmp,[lx1+1,lx2all,lx3all],order=[1,3,2])
-  read(u) htmp
-  x%h3x1iall=reshape(htmp,[lx1+1,lx2all,lx3all],order=[1,3,2])
-  read(u) htmp
-  x%h2x1iall=reshape(htmp,[lx1+1,lx2all,lx3all],order=[1,3,2])
-  end block
-
-  block
-  real(wp), dimension(:,:,:), allocatable :: htmp
-  allocate(htmp(1:lx1,1:lx3all+1,1:lx2all))
-  read(u) htmp
-  x%h1x3iall=reshape(htmp,[lx1,lx2all,lx3all+1],order=[1,3,2])    !Note also that the x2 interface from teh input file is x3i in this simulation
-  read(u) htmp
-  x%h3x3iall=reshape(htmp,[lx1,lx2all,lx3all+1],order=[1,3,2])
-  read(u) htmp
-  x%h2x3iall=reshape(htmp,[lx1,lx2all,lx3all+1],order=[1,3,2])
-  end block
-
-  block
-  real(wp), dimension(:,:,:), allocatable :: htmp
-  allocate(htmp(1:lx1,1:lx3all,1:lx2all+1))
-  read(u) htmp
-  x%h1x2iall=reshape(htmp,[lx1,lx2all+1,lx3all],order=[1,3,2])
-  read(u) htmp
-  x%h3x2iall=reshape(htmp,[lx1,lx2all+1,lx3all],order=[1,3,2])
-  read(u) htmp
-  x%h2x2iall=reshape(htmp,[lx1,lx2all+1,lx3all],order=[1,3,2])
-  end block
-
-  block
-  real(wp), dimension(:,:,:), allocatable :: htmp
-  allocate(g1all(lx1,lx2all,lx3all),g2all(lx1,lx2all,lx3all),g3all(lx1,lx2all,lx3all))
-  allocate(htmp(lx1,lx3all,lx2all))
-  read(u) htmp
-  g1all=reshape(htmp,[lx1,lx2all,lx3all],order=[1,3,2])
-  read(u) htmp
-  g3all=reshape(htmp,[lx1,lx2all,lx3all],order=[1,3,2])
-  read(u) htmp
-  g2all=reshape(htmp,[lx1,lx2all,lx3all],order=[1,3,2])
-
-  allocate(altall(lx1,lx2all,lx3all),glatall(lx1,lx2all,lx3all),glonall(lx1,lx2all,lx3all))
-  read(u) htmp
-  altall=reshape(htmp,[lx1,lx2all,lx3all],order=[1,3,2])
-  read(u) htmp
-  glatall=reshape(htmp,[lx1,lx2all,lx3all],order=[1,3,2])
-  read(u) htmp
-  glonall=reshape(htmp,[lx1,lx2all,lx3all],order=[1,3,2])
-
-  allocate(Bmagall(lx1,lx2all,lx3all))
-  read(u) htmp
-  Bmagall=reshape(htmp,[lx1,lx2all,lx3all],order=[1,3,2])
-  deallocate(htmp)
-  end block
-
-  block
-  real(wp), dimension(:,:), allocatable :: htmp2D
-  allocate(Incall(lx2all,lx3all))
-  allocate(htmp2D(lx3all,lx2all))
-  read(u) htmp2D
-  Incall=reshape(htmp2D,[lx2all,lx3all],order=[2,1])
-  end block
-
-
-  !inquire(u, pos=itell)
-  !print *,'file pos before read',itell
-  !read(u) nullptsall
-  !print *,'lx1',lx1,'lx2',lx2,'lx3all',lx3all
-  !print *,'shape(nullptsall)',shape(nullptsall)
-  !inquire(u, pos=itell)
-  !print *,'file pos after read',itell
-! FIXME BROKEN!
-  !allocate(nullptsall(lx1,lx2,lx3all))
-  !print *,shape(nullptsall)
-  !stop
-
-  ! FIXME would be like this, but this doesn't work.
-  !allocate(nullptsall(lx1,lx2,lx3all))
-  !read(u) nullptsall
-
-  block
-  real(wp), dimension(:,:,:), allocatable :: htmp
-  allocate(htmp(lx1,lx3all,lx2all))
-  read(u) htmp
-  nullptsall=reshape(htmp,[lx1,lx2all,lx3all],order=[1,3,2])
-  deallocate(htmp)
-  end block
-
-  block
-  real(wp), dimension(:,:,:,:), allocatable :: htmp4D
-  allocate(e1all(lx1,lx2all,lx3all,3))
-  allocate(htmp4D(lx1,lx3all,lx2all,3))
-  read(u) htmp4D
-  e1all=reshape(htmp4D,[lx1,lx2all,lx3all,3],order=[1,3,2,4])
-
-  allocate(e3all(lx1,lx2all,lx3all,3))          !swap the x2/x3 unit vectors
-  read(u) htmp4D
-  e3all=reshape(htmp4D,[lx1,lx2all,lx3all,3],order=[1,3,2,4])
-
-  allocate(e2all(lx1,lx2all,lx3all,3))
-  read(u) htmp4D
-  e2all=reshape(htmp4D,[lx1,lx2all,lx3all,3],order=[1,3,2,4])
-
-  allocate(erall(lx1,lx2all,lx3all,3))
-  read(u) htmp4D
-  erall=reshape(htmp4D,[lx1,lx2all,lx3all,3],order=[1,3,2,4])
-
-  allocate(ethetaall(lx1,lx2all,lx3all,3))
-  read(u) htmp4D
-  ethetaall=reshape(htmp4D,[lx1,lx2all,lx3all,3],order=[1,3,2,4])
-
-  allocate(ephiall(lx1,lx2all,lx3all,3))
-  read(u) htmp4D
-  ephiall=reshape(htmp4D,[lx1,lx2all,lx3all,3],order=[1,3,2,4])
-  end block
-
-  block
-  real(wp), dimension(:,:,:), allocatable :: htmp
-  allocate(rall(lx1,lx2all,lx3all),thetaall(lx1,lx2all,lx3all),phiall(lx1,lx2all,lx3all))
-  allocate(htmp(lx1,lx3all,lx2all))
-  read(u) htmp
-  rall=reshape(htmp,[lx1,lx2all,lx3all],order=[1,3,2])
-  read(u) htmp
-  thetaall=reshape(htmp,[lx1,lx2all,lx3all],order=[1,3,2])
-  read(u) htmp
-  phiall=reshape(htmp,[lx1,lx2all,lx3all],order=[1,3,2])
-  end block
-
-  x%rall=rall; x%thetaall=thetaall; x%phiall=phiall;
 end if
-close(u)
-print *, 'Done reading in grid data...'
 
+call get_grid3(indatgrid, flagswap, x, g1all,g2all,g3all, altall,glatall,glonall,Bmagall,Incall,nullptsall,&
+  e1all,e2all,e3all,erall,ethetaall,ephiall,rall,thetaall,phiall)
 
-!ALLOCATE SPACE FOR ROOTS SUBGRID GRAVITATIONAL FIELD
+!! ALLOCATE SPACE FOR ROOTS SUBGRID GRAVITATIONAL FIELD
 allocate(g1(1:lx1,1:lx2,1:lx3),g2(1:lx1,1:lx2,1:lx3),g3(1:lx1,1:lx2,1:lx3))
 
 
-!SEND FULL X1 AND X2 GRIDS TO EACH WORKER (ONLY X3-DIM. IS INVOLVED IN THE MPI
+!! SEND FULL X1 AND X2 GRIDS TO EACH WORKER (ONLY X3-DIM. IS INVOLVED IN THE MPI
 print*, 'Exchanging grid spacings...'
 do iid=1,lid-1
   call mpi_send(x%x1,lx1+4,mpi_realprec,iid,tagx1,MPI_COMM_WORLD,ierr)
@@ -414,7 +245,7 @@ end do
 
 if (ierr/=0) error stop 'failed mpi_send x grid'
 
-!NOW SEND THE INFO THAT DEPENDS ON X3 SLAB SIZE
+!! NOW SEND THE INFO THAT DEPENDS ON X3 SLAB SIZE
 print*, 'Computing subdomain spacing...'
 call bcast_send1D_3(x%x3all,tagx3,x%x3)
 x%dx3=x%x3(0:lx3+2)-x%x3(-1:lx3+1)     !computing these avoids extra message passing (could be done for other coordinates, as well)
@@ -456,7 +287,7 @@ call bcast_send3D_x3i(x%h2x3iall,tagh2,x%h2x3i)
 call bcast_send3D_x3i(x%h3x3iall,tagh3,x%h3x3i)
 
 
-print*, 'Sending gravity, etc...'
+print *, 'Sending gravity, etc...'
 call bcast_send(g1all,tagh1,g1)
 call bcast_send(g2all,tagh2,g2)
 call bcast_send(g3all,tagh3,g3)
@@ -469,7 +300,7 @@ call bcast_send(Bmagall,tagBmag,x%Bmag)
 call bcast_send(Incall,taginc,x%I)
 call bcast_send(nullptsall,tagnull,x%nullpts)
 
-print*, 'Now sending unit vectors...'
+print *, 'Now sending unit vectors...'
 allocate(mpisendbuf(1:lx1,1:lx2all,1:lx3all),mpirecvbuf(1:lx1,1:lx2,1:lx3))    !why is buffering used/needed here???
 do icomp=1,3
   mpisendbuf=e1all(:,:,:,icomp)
@@ -514,7 +345,7 @@ x%lnull=0;
 do ix3=1,lx3
   do ix2=1,lx2
     do ix1=1,lx1
-      if(x%nullpts(ix1,ix2,ix3)>0.5d0) then
+      if(x%nullpts(ix1,ix2,ix3) > 0.5_wp) then
         x%lnull=x%lnull+1
       end if
     end do
@@ -526,7 +357,7 @@ icount=1
 do ix3=1,lx3
   do ix2=1,lx2
     do ix1=1,lx1
-      if(x%nullpts(ix1,ix2,ix3)>0.5d0) then
+      if(x%nullpts(ix1,ix2,ix3) > 0.5_wp) then
         x%inull(icount,:)=[ix1,ix2,ix3]
         icount=icount+1
       end if
@@ -538,9 +369,8 @@ print *, 'Done computing null grid points...  Process:  ',myid,' has:  ',x%lnull
 
 !COMPUTE DIFFERENTIAL DISTANCES ALONG EACH DIRECTION (TO BE USED IN TIME STEP DETERMINATION...
 block
-real(wp), dimension(:,:,:), allocatable :: tmpdx
-
-allocate(x%dl1i(1:lx1,1:lx2,1:lx3),x%dl2i(1:lx1,1:lx2,1:lx3),x%dl3i(1:lx1,1:lx2,1:lx3),tmpdx(1:lx1,1:lx2,1:lx3))
+real(wp), dimension(1:lx1,1:lx2,1:lx3) :: tmpdx
+allocate(x%dl1i(1:lx1,1:lx2,1:lx3),x%dl2i(1:lx1,1:lx2,1:lx3),x%dl3i(1:lx1,1:lx2,1:lx3))
 
 tmpdx=spread(spread(x%dx1i,2,lx2),3,lx3)
 x%dl1i=tmpdx*x%h1(1:lx1,1:lx2,1:lx3)
@@ -678,8 +508,7 @@ x%dx2i=x%x2i(2:lx2+1)-x%x2i(1:lx2)
 
 
 block
-real(wp), dimension(:,:,:), allocatable :: mpirecvbuf
-allocate(mpirecvbuf(-1:lx1+2,-1:lx2+2,-1:lx3+2))
+real(wp), dimension(-1:lx1+2,-1:lx2+2,-1:lx3+2) :: mpirecvbuf
 
 call bcast_recv3D_ghost(mpirecvbuf,tagh1)
 x%h1=mpirecvbuf
@@ -714,8 +543,7 @@ call bcast_recv(x%I,taginc)           !only time that we need to exchange 2D arr
 call bcast_recv(x%nullpts,tagnull)    !note that this is not an integer array
 
 block
-real(wp), dimension(:,:,:), allocatable :: mpirecvbuf
-allocate(mpirecvbuf(1:lx1,1:lx2,1:lx3))
+real(wp), dimension(1:lx1,1:lx2,1:lx3) :: mpirecvbuf
 do icomp=1,3
   call bcast_recv(mpirecvbuf,tageunit1)
   x%e1(:,:,:,icomp)=mpirecvbuf
@@ -776,9 +604,8 @@ print *, 'Done computing null grid points...  Process:  ',myid,' has:  ',x%lnull
 
 !! COMPUTE DIFFERENTIAL DISTANCES ALONG EACH DIRECTION
 block
-real(wp), dimension(:,:,:), allocatable :: tmpdx
-
-allocate(x%dl1i(1:lx1,1:lx2,1:lx3),x%dl2i(1:lx1,1:lx2,1:lx3),x%dl3i(1:lx1,1:lx2,1:lx3),tmpdx(1:lx1,1:lx2,1:lx3))
+real(wp), dimension(1:lx1,1:lx2,1:lx3) :: tmpdx
+allocate(x%dl1i(1:lx1,1:lx2,1:lx3),x%dl2i(1:lx1,1:lx2,1:lx3),x%dl3i(1:lx1,1:lx2,1:lx3))
 
 tmpdx=spread(spread(x%dx1i,2,lx2),3,lx3)
 x%dl1i=tmpdx*x%h1(1:lx1,1:lx2,1:lx3)
