@@ -9,6 +9,8 @@
 
 unset(_mumps_extra)
 
+# --- Scalapack
+
 include(${CMAKE_CURRENT_LIST_DIR}/scalapack.cmake)
 
 # --- MUMPS
@@ -39,7 +41,8 @@ if(OpenMP_FOUND)
 endif()
 list(APPEND MUMPS_INCLUDE_DIRS ${SCALAPACK_INCLUDE_DIRS})
 
-if(mumps_external)
+if(mumps_external OR scalapack_external)
+# pre-build checks can't be used when external library isn't built yet.
   return()
 endif()
 
