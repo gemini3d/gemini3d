@@ -21,8 +21,14 @@ integer :: icstat
 character(*), parameter :: CMD='copy /y '
 src = filesep_swap(source)
 dst = filesep_swap(dest)
-#else
+#elif defined(__APPLE__)
+!! https://ss64.com/osx/cp.html
 character(*), parameter ::  CMD='cp -r '
+src = source
+dst = dest
+#else
+!! https://linux.die.net/man/1/cp
+character(*), parameter ::  CMD='cp -ru '
 src = source
 dst = dest
 #endif
