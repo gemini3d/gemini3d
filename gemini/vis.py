@@ -33,6 +33,7 @@ CB_LBL = {
     "J2": "$J_2 (Am^{-2})$",
     "J3": "$J_3 (Am^{-2})$",
     "Phitop": r"$\Phi_{top}$ (V)",
+    "Vmaxx1it": r"(V)",
 }
 
 PARAMS = ["ne", "v1", "Ti", "Te", "J1", "v2", "v3", "J2", "J3", "Phitop"]
@@ -56,6 +57,8 @@ def plotframe(
     time = dat["time"]
 
     for k in params:
+        if k not in dat:  # not present at this time step, often just the first time step
+            continue
         if save_dir is None or fg is None:
             fg = figure(num=k, constrained_layout=True)
         fg.clf()
@@ -228,6 +231,7 @@ def plot_interp(time: datetime, grid: typing.Dict[str, np.ndarray], parm: np.nda
     """
 
     cmap = None
+    is_Efield = False
     if name.startswith("J") or name == "Phitop":
         cmap = "bwr"
         vmax = abs(parm).max()
@@ -235,6 +239,11 @@ def plot_interp(time: datetime, grid: typing.Dict[str, np.ndarray], parm: np.nda
     elif name.startswith("v"):
         cmap = "bwr"
         vmax = 80.0
+        vmin = -vmax
+    elif name.startswith(("V", "E")):
+        is_Efield = True
+        cmap = "bwr"
+        vmax = abs(parm).max()
         vmin = -vmax
     elif name.startswith("T"):
         vmin = 0.0
@@ -343,6 +352,15 @@ def plot_interp(time: datetime, grid: typing.Dict[str, np.ndarray], parm: np.nda
             fg.set_size_inches((18, 5))
             axs = fg.subplots(1, 3, sharey=False, sharex=False)
             fg.suptitle(f"{name}: {time.isoformat()}  {gitrev()}", y=0.99)
+        elif is_Efield:
+            # like phitop, SINGLE plot
+            ax = fg.gca()
+            hi = ax.pcolormesh(grid['mlon'], grid['mlat'], parm, cmap=cmap, vmin=vmin, vmax=vmax)
+            ax.set_xlabel("magnetic longitude (deg.)")
+            ax.set_ylabel("magnetic latitude (deg.)")
+            ax.set_title(f"{name}: {time.isoformat()}  {gitrev()}")
+            fg.colorbar(hi, ax=ax, label=CB_LBL[name])
+            return
         else:
             # like phitop, SINGLE plot
             ax = fg.gca()
@@ -350,6 +368,7 @@ def plot_interp(time: datetime, grid: typing.Dict[str, np.ndarray], parm: np.nda
             hi = ax.pcolormesh(xp / 1e3, yp / 1e3, f(yp, xp), cmap=cmap, vmin=vmin, vmax=vmax)
             ax.set_xlabel("eastward dist. (km)")
             ax.set_ylabel("northward dist. (km)")
+            ax.set_title(f"{name}: {time.isoformat()}  {gitrev()}")
             fg.colorbar(hi, ax=ax, label=CB_LBL[name])
             return
 

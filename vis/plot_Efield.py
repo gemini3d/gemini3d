@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 """
-plot electric field input to simulation "Efield_inputs"
-
+plot electric field input to simulation "Efield_inputs" for a single file
 """
 import argparse
 from matplotlib.pyplot import figure, show
@@ -33,6 +32,6 @@ if __name__ == "__main__":
 
     dat = gemini.read_Efield(P.fn)
 
-    plotVmaxx1it(dat["Vmaxx1it"])
+    plotVmaxx1it(dat["Vmaxx1it"][1])
 
     show()

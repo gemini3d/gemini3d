@@ -4,13 +4,12 @@ import numpy as np
 import logging
 import struct
 from datetime import datetime, timedelta
-from functools import lru_cache
 
 LSP = 7
 
 
-@lru_cache()
-def get_simsize(fn: Path) -> tuple:
+# NOT lru_cache
+def get_simsize(fn: Path) -> typing.Tuple[int, ...]:
     """
     get simulation dimensions from simsize.dat
     in the future, this would be in the .h5 HDF5 output.
@@ -26,9 +25,15 @@ def get_simsize(fn: Path) -> tuple:
         3 integers telling simulation grid size
     """
     fn = Path(fn).expanduser()
-    if fn.stat().st_size != 12:
-        raise ValueError(f"{fn} is not expected 12 bytes long")
-    return struct.unpack("III", fn.open("rb").read(12))
+    fsize = fn.stat().st_size
+    if fsize == 12:
+        lxs = struct.unpack("III", fn.open("rb").read(12))
+    elif fsize == 8:
+        lxs = struct.unpack("II", fn.open("rb").read(8))
+    else:
+        raise ValueError(f"{fn} is not expected 8 bytes (2-D) or 12 bytes (3-D) long")
+
+    return lxs
 
 
 def readgrid(fn: Path) -> typing.Dict[str, np.ndarray]:
@@ -47,6 +52,30 @@ def readgrid(fn: Path) -> typing.Dict[str, np.ndarray]:
         grid parameters
     """
     lxs = get_simsize(fn.parent / "simsize.dat")
+    if len(lxs) == 2:
+        return readgrid2(fn, lxs)
+    elif len(lxs) == 3:
+        return readgrid3(fn, lxs)
+    else:
+        raise ValueError('lxs must be 2-D or 3-D')
+
+
+def readgrid2(fn: Path, lxs: typing.Sequence[int]) -> typing.Dict[str, np.ndarray]:
+    """ for Efield """
+    if not fn.is_file():
+        raise FileNotFoundError(fn)
+
+    read = np.fromfile
+    grid: typing.Dict[str, typing.Any] = {"lx": lxs}
+    with fn.open("r") as f:
+        grid["mlon"] = read(f, np.float64, lxs[0])
+        grid["mlat"] = read(f, np.float64, lxs[1])
+
+    return grid
+
+
+def readgrid3(fn: Path, lxs: typing.Sequence[int]) -> typing.Dict[str, np.ndarray]:
+
     lgridghost = (lxs[0] + 4) * (lxs[1] + 4) * (lxs[2] + 4)
     gridsizeghost = [lxs[0] + 4, lxs[1] + 4, lxs[2] + 4]
 
@@ -56,8 +85,9 @@ def readgrid(fn: Path) -> typing.Dict[str, np.ndarray]:
         logging.error(f"{fn} grid file is not present. Will try to load rest of data.")
         return grid
 
+    read = np.fromfile
+
     with fn.open("r") as f:
-        read = np.fromfile
         for i in (1, 2, 3):
             grid[f"x{i}"] = read(f, np.float64, lxs[i - 1] + 4)
             grid[f"x{i}i"] = read(f, np.float64, lxs[i - 1] + 1)
@@ -99,7 +129,7 @@ def readgrid(fn: Path) -> typing.Dict[str, np.ndarray]:
     return grid
 
 
-def load_Efield(fn: Path) -> typing.Dict[str, np.ndarray]:
+def load_Efield(fn: Path) -> typing.Dict[str, typing.Any]:
     """
     load Efield_inputs files that contain input electric field in V/m
     """
@@ -108,21 +138,16 @@ def load_Efield(fn: Path) -> typing.Dict[str, np.ndarray]:
 
     E: typing.Dict[str, np.ndarray] = {}
 
-    sizefn = fn.parent / "simsize.dat"  # NOT the whole sim simsize.dat
-    with sizefn.open("r") as f:
-        E["Nlon"], E["Nlat"] = read(f, np.int32, 2)
+    E["Nlon"], E["Nlat"] = get_simsize(fn.parent / "simsize.dat")
 
     assert E['Nlon'] > 0, 'must have strictly positive number of longitude cells'
     assert E['Nlat'] > 0, 'must have strictly positive number of latitude cells'
 
     lxs = (0, E["Nlon"], E["Nlat"])
 
-    gridfn = fn.parent / "simgrid.dat"  # NOT the whole sim simgrid.dat
-    with gridfn.open("r") as f:
-        E["mlon"] = read(f, np.float64, E["Nlon"])
-        E["mlat"] = read(f, np.float64, E["Nlat"])
+    E.update(readgrid2(fn.parent / "simgrid.dat", (E["Nlon"], E["Nlat"])))
 
-    assert ((E['mlat'] >= -90) & (E['mlat'] <= 90)).all(), f'impossible latitude, was file read correctly? {gridfn}'
+    assert ((E['mlat'] >= -90) & (E['mlat'] <= 90)).all(), f'impossible latitude, was file read correctly? {fn}'
 
     with fn.open("r") as f:
         """
@@ -131,13 +156,13 @@ def load_Efield(fn: Path) -> typing.Dict[str, np.ndarray]:
         to keep compatibility with old files, we left it as real64.
         New work should be using HDF5 instead of raw in any case.
         """
-        E["flagdirich"] = read(f, np.float64, 1)
+        E["flagdirich"] = int(read(f, np.float64, 1))
         for p in ("Exit", "Eyit", "Vminx1it", "Vmaxx1it"):
-            E[p] = read2D(f, lxs)
+            E[p] = [("x2", "x3"), read2D(f, lxs)]
         for p in ("Vminx2ist", "Vmaxx2ist"):
-            E[p] = read(f, np.float64, E["Nlat"])
+            E[p] = [("x2",), read(f, np.float64, E["Nlat"])]
         for p in ("Vminx3ist", "Vmaxx3ist"):
-            E[p] = read(f, np.float64, E["Nlon"])
+            E[p] = [("x3",), read(f, np.float64, E["Nlon"])]
         filesize = fn.stat().st_size
         if f.tell() != filesize:
             logging.error(f'{fn} size {filesize} != file read position {f.tell()}')

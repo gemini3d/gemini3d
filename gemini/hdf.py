@@ -38,7 +38,7 @@ def readgrid(fn: Path) -> typing.Dict[str, np.ndarray]:
     return grid
 
 
-def load_Efield(fn: Path) -> typing.Dict[str, np.ndarray]:
+def load_Efield(fn: Path) -> typing.Dict[str, typing.Any]:
     """
     load Efield_inputs files that contain input electric field in V/m
     """
@@ -57,8 +57,12 @@ def load_Efield(fn: Path) -> typing.Dict[str, np.ndarray]:
 
     with h5py.File(fn, "r") as f:
         E["flagdirich"] = f["flagdirich"]
-        for p in ("Exit", "Eyit", "Vminx1it", "Vmaxx1it", "Vminx2ist", "Vmaxx2ist", "Vminx3ist", "Vmaxx3ist"):
-            E[p] = f[p][:]
+        for p in ("Exit", "Eyit", "Vminx1it", "Vmaxx1it"):
+            E[p] = [("x2", "x3"), f[p][:]]
+        for p in ("Vminx2ist", "Vmaxx2ist"):
+            E[p] = [("x2",), f[p][:]]
+        for p in ("Vminx3ist", "Vmaxx3ist"):
+            E[p] = [("x3",), f[p][:]]
 
     return E
 

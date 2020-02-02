@@ -16,12 +16,17 @@ except ModuleNotFoundError:
     hdf = None
 
 
-def readgrid(fn: Path) -> typing.Dict[str, np.ndarray]:
+def readgrid(path: Path) -> typing.Dict[str, np.ndarray]:
 
-    if fn.is_dir():
-        fn = fn / "inputs/simgrid.h5"
-        if not fn.is_file():
-            fn = fn.with_suffix(".dat")
+    if path.is_dir():
+        for stem in ("inputs/simgrid.h5", "inputs/simgrid.dat"):
+            fn = path / stem
+            if fn.is_file():
+                break
+    elif path.is_file():
+        fn = path
+    else:
+        raise FileNotFoundError(path)
 
     if fn.suffix == ".dat":
         return raw.readgrid(fn)
@@ -66,6 +71,7 @@ def readdata(fn: Path) -> typing.Dict[str, typing.Any]:
 
     fn = Path(fn).expanduser()
     fn_aurora = fn.parent / "aurmaps" / fn.name
+    fn_Efield = fn.parent / "Efield_inputs" / fn.name
 
     P = read_config(fn.parent / "inputs")
 
@@ -80,6 +86,9 @@ def readdata(fn: Path) -> typing.Dict[str, typing.Any]:
         if fn_aurora.is_file():
             dat.update(raw.loadglow_aurmap(fn_aurora, P["lxs"], len(wavelength)))
             dat["wavelength"] = wavelength
+
+        if fn_Efield.is_file():
+            dat.update(read_Efield(fn_Efield))
     else:
         if hdf is None:
             raise ModuleNotFoundError("pip install h5py")

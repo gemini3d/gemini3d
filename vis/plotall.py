@@ -35,7 +35,14 @@ def main():
         flist = sorted(direc.glob("*.dat"))
     # %% loop over files / time
     for file in flist:
-        dat = gemini.readdata(file)
+        try:
+            dat = gemini.readdata(file)
+        except Exception as e:
+            print(f"SKIP: {file}   {e}")
+            continue
+        if 'mlon' in dat and 'mlon' not in grid:
+            grid['mlon'] = dat['mlon']
+            grid['mlat'] = dat['mlat']
 
         vis.plotframe(grid, dat, params=p.only, save_dir=save_dir, fg=fg)
 
