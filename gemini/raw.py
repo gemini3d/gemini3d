@@ -138,6 +138,9 @@ def load_Efield(fn: Path) -> typing.Dict[str, np.ndarray]:
             E[p] = read(f, np.float64, E["Nlat"])
         for p in ("Vminx3ist", "Vmaxx3ist"):
             E[p] = read(f, np.float64, E["Nlon"])
+        filesize = fn.stat().st_size
+        if f.tell() != filesize:
+            logging.error(f'{fn} size {filesize} != file read position {f.tell()}')
 
     return E
 
