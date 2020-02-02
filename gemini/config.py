@@ -27,6 +27,8 @@ def read_config(path: Path) -> typing.Dict[str, typing.Any]:
         simulation parameters from config file
 
     """
+    P: typing.Dict[str, typing.Any] = {}
+
     path = Path(path).expanduser().resolve()
     if path.is_file():
         file = path
@@ -44,6 +46,9 @@ def read_config(path: Path) -> typing.Dict[str, typing.Any]:
                 P = read_config(file)
                 break
     else:
+        raise FileNotFoundError(f"could not find config file in {path}")
+
+    if not P:
         raise FileNotFoundError(f"could not find config file in {path}")
 
     # NOT P["indat_size"] because that assumes the reading computer has the same directory layout as HPC
