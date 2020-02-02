@@ -132,11 +132,10 @@ set(BLACS_LIBRARY)
 find_library(BLACS_INIT
   NAMES blacsF77init blacsF77init-openmpi
   PATHS ${BLACS_ROOT})
-if(BLACS_LIB)
-  list(APPEND BLACS_LIBRARY ${BLACS_LIB})
+if(BLACS_INIT)
+  list(APPEND BLACS_LIBRARY ${BLACS_INIT})
 endif()
 
-# this is the only lib that scalapack/blacs/src provides
 find_library(BLACS_CINIT
   NAMES blacsCinit blacsCinit-openmpi
   PATHS ${BLACS_ROOT})
@@ -144,11 +143,12 @@ if(BLACS_CINIT)
   list(APPEND BLACS_LIBRARY ${BLACS_CINIT})
 endif()
 
+# this is the only lib that scalapack/blacs/src provides
 find_library(BLACS_LIB
   NAMES blacs blacs-mpi blacs-openmpi
   PATHS ${BLACS_ROOT})
-if(BLACS_INIT)
-  list(APPEND BLACS_LIBRARY ${BLACS_INIT})
+if(BLACS_LIB)
+  list(APPEND BLACS_LIBRARY ${BLACS_LIB})
 endif()
 
 if(BLACS_LIBRARY)

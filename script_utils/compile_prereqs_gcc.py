@@ -18,10 +18,10 @@ BUILDDIR = "build"
 LOADLIMIT = "-l 4"
 
 # Library parameters
-MPIVERSION = "4.0.2"  # OpenMPI 4 needs Scalapack 2.1
+MPIVERSION = "3.1.5"  # OpenMPI 4 needs Scalapack 2.1
 MPIFN = f"openmpi-{MPIVERSION}.tar.bz2"
-MPIURL = f"https://download.open-mpi.org/release/open-mpi/v4.0/{MPIFN}"
-MPISHA1 = "32ce3761288575fb8e4f6296c9105c3a25cf3235"
+MPIURL = f"https://download.open-mpi.org/release/open-mpi/v3.1/{MPIFN}"
+MPISHA1 = "56a74b116c81d4f3704c051a67e4422094ff913d"
 MPIDIR = f"openmpi-{MPIVERSION}"
 
 LAPACKGIT = "https://github.com/scivision/lapack"

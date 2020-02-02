@@ -354,7 +354,7 @@ if(MKL IN_LIST LAPACK_FIND_COMPONENTS)
     if(WIN32)
       list(APPEND _mkl_libs tbb.lib)
     endif()
-  else()
+  elseif(OpenMP IN_LIST LAPACK_FIND_COMPONENTS)
     pkg_check_modules(MKL mkl-${_mkltype}-${_mkl_bitflag}lp64-iomp)
 
     set(_mp iomp5)
@@ -362,10 +362,9 @@ if(MKL IN_LIST LAPACK_FIND_COMPONENTS)
       set(_mp libiomp5md)  # "lib" is indeed necessary, even on CMake 3.14.0
     endif()
     list(APPEND _mkl_libs mkl_intel_thread mkl_core ${_mp})
-
-    # most will want OpenMP by default if not TBB
-    # pkg_check_modules(MKL mkl-${_mkltype}-${_mkl_bitflag}lp64-seq)
-    # list(APPEND _mkl_libs mkl_sequential mkl_core)
+  else()
+    pkg_check_modules(MKL mkl-${_mkltype}-${_mkl_bitflag}lp64-seq)
+    list(APPEND _mkl_libs mkl_sequential mkl_core)
   endif()
 
   find_mkl_libs(${_mkl_libs})
