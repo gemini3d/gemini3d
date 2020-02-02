@@ -112,6 +112,9 @@ def load_Efield(fn: Path) -> typing.Dict[str, np.ndarray]:
     with sizefn.open("r") as f:
         E["Nlon"], E["Nlat"] = read(f, np.int32, 2)
 
+    assert E['Nlon'] > 0, 'must have strictly positive number of longitude cells'
+    assert E['Nlat'] > 0, 'must have strictly positive number of latitude cells'
+
     lxs = (0, E["Nlon"], E["Nlat"])
 
     gridfn = fn.parent / "simgrid.dat"  # NOT the whole sim simgrid.dat
@@ -119,8 +122,16 @@ def load_Efield(fn: Path) -> typing.Dict[str, np.ndarray]:
         E["mlon"] = read(f, np.float64, E["Nlon"])
         E["mlat"] = read(f, np.float64, E["Nlat"])
 
+    assert ((E['mlat'] >= -90) & (E['mlat'] <= 90)).all(), f'impossible latitude, was file read correctly? {gridfn}'
+
     with fn.open("r") as f:
-        E["flagdirich"] = read(f, np.int32, 1)
+        """
+        NOTE:
+        this is mistakenly a float from Matlab
+        to keep compatibility with old files, we left it as real64.
+        New work should be using HDF5 instead of raw in any case.
+        """
+        E["flagdirich"] = read(f, np.float64, 1)
         for p in ("Exit", "Eyit", "Vminx1it", "Vmaxx1it"):
             E[p] = read2D(f, lxs)
         for p in ("Vminx2ist", "Vmaxx2ist"):

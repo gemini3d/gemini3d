@@ -23,7 +23,7 @@ src = filesep_swap(source)
 dst = filesep_swap(dest)
 #elif defined(__APPLE__)
 !! https://ss64.com/osx/cp.html
-character(*), parameter ::  CMD='cp -r '
+character(*), parameter ::  CMD='cp -rf '
 src = source
 dst = dest
 #else

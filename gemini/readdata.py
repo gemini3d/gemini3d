@@ -112,9 +112,7 @@ def read_Efield(fn: Path) -> typing.Dict[str, typing.Any]:
         electric field
     """
 
-    fn = Path(fn).expanduser().resolve()
-    if not fn.is_file():
-        raise FileNotFoundError(fn)
+    fn = Path(fn).expanduser().resolve(strict=True)
 
     if fn.suffix == ".dat":
         E = raw.load_Efield(fn)
