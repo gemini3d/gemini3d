@@ -36,8 +36,9 @@ subroutine gbsv(A,B,KL,IPIV,INFO)
     KU = LDA - 2*LKL - 1
 
     select type (A)
-      type is (real(real32))
-        call sgbsv(N,LKL,KU,NRHS,A,LDA,LPIV,B,N,LINFO)
+      ! Note: reenable when actually using real32 in Gemini (makes library compile take longer)
+      ! type is (real(real32))
+      !  call sgbsv(N,LKL,KU,NRHS,A,LDA,LPIV,B,N,LINFO)
       type is (real(real64))
         call dgbsv(N,LKL,KU,NRHS,A,LDA,LPIV,B,N,LINFO)
       class default

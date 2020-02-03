@@ -12,11 +12,6 @@ unset(_mumps_extra)
 include(${CMAKE_CURRENT_LIST_DIR}/scalapack.cmake)
 
 # --- MUMPS
-if(realbits EQUAL 32)
-  set(arith s)
-else()
-  set(arith d)
-endif()
 
 set(mumps_external true)
 if(MUMPS_ROOT OR CMAKE_Fortran_COMPILER_ID STREQUAL GNU)

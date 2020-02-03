@@ -6,16 +6,16 @@ set_tests_properties(mpi_basic PROPERTIES
   TIMEOUT 15
   FIXTURES_SETUP MPIMUMPS)
 # ---
+if("d" IN_LIST arith)
+  add_executable(test_scalapack test_scalapack_d.f90)
+  target_link_libraries(test_scalapack ${SCALAPACK_LIBRARIES} ${LAPACK_LIBRARIES} MPI::MPI_Fortran)
+  target_include_directories(test_scalapack PRIVATE ${SCALAPACK_INCLUDE_DIRS})
+  add_test(NAME scalapack_basic COMMAND testmpi)
 
-add_executable(test_scalapack test_scalapack.f90)
-target_link_libraries(test_scalapack ${SCALAPACK_LIBRARIES} ${LAPACK_LIBRARIES} MPI::MPI_Fortran)
-target_include_directories(test_scalapack PRIVATE ${SCALAPACK_INCLUDE_DIRS})
-add_test(NAME scalapack_basic COMMAND testmpi)
-
-set_tests_properties(scalapack_basic PROPERTIES
-  TIMEOUT 15
-  FIXTURES_SETUP MPIMUMPS)
-
+  set_tests_properties(scalapack_basic PROPERTIES
+    TIMEOUT 15
+    FIXTURES_SETUP MPIMUMPS)
+endif()
 # ---
 add_executable(test_mumps test_mumps.f90)
 target_link_libraries(test_mumps mumps_interface MPI::MPI_Fortran)

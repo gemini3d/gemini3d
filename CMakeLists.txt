@@ -11,8 +11,11 @@ project(gemini3d
 
 enable_testing()
 
-if(NOT realbits)
+if(realbits EQUAL 32)
+  set(arith s)
+else()
   set(realbits 64)
+  set(arith d)
 endif()
 option(glow "use NCAR GLOW instead of Fang" ON)
 option(matlab "enable Matlab tests, which are slow and duplicate fast Octave tests" OFF)
