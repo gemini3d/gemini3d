@@ -1,13 +1,28 @@
-find_package(SCALAPACK REQUIRED)
-find_package(LAPACK REQUIRED)
+find_package(LAPACK)
+if(NOT LAPACK_FOUND)
+  include(${CMAKE_CURRENT_LIST_DIR}/lapack_external.cmake)
+endif()
+# --- Lapack
 
+find_package(SCALAPACK)
+
+set(scalapack_external false)
+if(NOT SCALAPACK_FOUND)
+  include(${CMAKE_CURRENT_LIST_DIR}/scalapack_external.cmake)
+  set(scalapack_external true)
+endif()
+
+if(scalapack_external)
+# can't run prebuild test with external libraries not yet built.
+  return()
+endif()
 # -- verify Scalapack links
 
 set(CMAKE_REQUIRED_INCLUDES ${SCALAPACK_INCLUDE_DIRS})
 set(CMAKE_REQUIRED_LIBRARIES ${SCALAPACK_LIBRARIES} ${LAPACK_LIBRARIES} MPI::MPI_Fortran)
 # MPI needed for ifort
 
-file(READ ${CMAKE_SOURCE_DIR}/tests/test_scalapack.f90 _code)
+file(READ ${CMAKE_SOURCE_DIR}/tests/test_scalapack_d.f90 _code)
 
 check_fortran_source_compiles(${_code} SCALAPACK_Compiles_OK SRC_EXT f90)
 if(NOT SCALAPACK_Compiles_OK)

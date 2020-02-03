@@ -85,8 +85,8 @@ if mklroot == ''
   endif
   if not lapack.found() or not blas.found()
     lapack_proj = subproject('lapack')
-    lapack = lapack_proj.get_variable('lapack')
-    blas = lapack_proj.get_variable('blas')
+    lapack = declare_dependency(link_with: lapack_proj.get_variable('lapack'))
+    blas = declare_dependency(link_with: lapack_proj.get_variable('blas'))
   endif
 else
   # MKL

@@ -22,7 +22,7 @@ on:
 
 jobs:
 
-  cmakeHDF5:
+  cmakeBuildAllLibs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
@@ -33,7 +33,7 @@ jobs:
     - name: Install packages
       run: |
         sudo apt update -yq
-        sudo apt install -yq --no-install-recommends pkg-config gfortran libopenmpi-dev openmpi-bin liblapack-dev libscalapack-openmpi-dev libmumps-dev libhdf5-dev libpthread-stubs0-dev
+        sudo apt install -yq --no-install-recommends pkg-config gfortran libopenmpi-dev openmpi-bin
         pip install cmake
 
     - name: CMake configure

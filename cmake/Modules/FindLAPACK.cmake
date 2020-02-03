@@ -319,12 +319,6 @@ if(NOT (OpenBLAS IN_LIST LAPACK_FIND_COMPONENTS
   endif()
 endif()
 
-if(NOT LAPACK_OK)
-  message(STATUS "Finding LAPACK components: ${LAPACK_FIND_COMPONENTS}")
-else()
-  return()
-endif()
-
 find_package(PkgConfig)
 
 # ==== generic MKL variables ====
