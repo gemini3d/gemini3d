@@ -232,6 +232,8 @@ def plot_interp(time: datetime, grid: typing.Dict[str, np.ndarray], parm: np.nda
 
     cmap = None
     is_Efield = False
+    vmin = None
+    vmax = None
     if name.startswith("J") or name == "Phitop":
         cmap = "bwr"
         vmax = abs(parm).max()
@@ -248,8 +250,9 @@ def plot_interp(time: datetime, grid: typing.Dict[str, np.ndarray], parm: np.nda
     elif name.startswith("T"):
         vmin = 0.0
         vmax = parm.max()
-    else:
-        vmin = vmax = None
+    elif name.startswith("n"):
+        vmin = 1e-7
+
     # %% SIZE OF SIMULATION
     lx1, lx2, lx3 = grid["lx"]
     inds1 = slice(2, lx1 + 2)
@@ -388,7 +391,7 @@ def plot_interp(time: datetime, grid: typing.Dict[str, np.ndarray], parm: np.nda
         parmp = interp.interpn(
             points=(grid["x1"][inds1], grid["x2"][inds2], grid["x3"][inds3]),
             values=parm,
-            xi=np.column_stack((Z3.ravel(), Y3.ravel(), X3.ravel())),
+            xi=np.column_stack((Z3.ravel(), X3.ravel(), Y3.ravel())),
             bounds_error=False,
         ).reshape((1, lyp, lxp))
 

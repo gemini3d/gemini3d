@@ -21,7 +21,7 @@ def main():
     if p.saveplots:
         from matplotlib.figure import Figure
 
-        fg = Figure(tight_layout=True)
+        fg = Figure(constrained_layout=True)
         save_dir = direc / "plots"
         save_dir.mkdir(parents=True, exist_ok=True)
     else:
