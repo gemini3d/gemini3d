@@ -28,7 +28,8 @@ src = source
 dst = dest
 #else
 !! https://linux.die.net/man/1/cp
-character(*), parameter ::  CMD='cp -ru '
+!! NOTE: some apple systems weren't defining __APPLE__ so keep this "cp -r "
+character(*), parameter ::  CMD='cp -rf '
 src = source
 dst = dest
 #endif
