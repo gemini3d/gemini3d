@@ -132,7 +132,8 @@ if not scalapack.found()
   endforeach
 endif
 
-if fc.run(files('../tests/test_scalapack.f90'), dependencies: [scalapack, mpi], name: 'SCALAPACK').returncode() != 0
+# FIXME: make real32 test
+if fc.run(files('../tests/test_scalapack_d.f90'), dependencies: [scalapack, mpi], name: 'SCALAPACK').returncode() != 0
   # .links() is NOT an adequate test
   scalapack = disabler()
 endif
