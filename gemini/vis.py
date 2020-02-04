@@ -393,10 +393,10 @@ def plot_interp(time: datetime, grid: typing.Dict[str, np.ndarray], parm: np.nda
             values=parm,
             xi=np.column_stack((Z3.ravel(), X3.ravel(), Y3.ravel())),
             bounds_error=False,
-        ).reshape((1, lyp, lxp))
+        ).reshape((1, lxp, lyp))
 
-        parmp = parmp[:, iy, :]  # must be indexed in two steps
-        plot23(xp[ix], yp[iy], parmp[0, :, ix], name, cmap, vmin, vmax, fg, axs[1])
+        parmp = parmp[:, :, iy]  # must be indexed in two steps
+        plot23(xp[ix], yp[iy], parmp[0, ix, :], name, cmap, vmin, vmax, fg, axs[1])
         # %% ALT/LAT SLICE (right panel)
         ix2 = lx2 // 2 - 1  # arbitrary slice, to match Matlab
         f = interp.interp2d(grid["x3"][inds3], grid["x1"][inds1], parm[:, ix2, :], bounds_error=False)
