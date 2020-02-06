@@ -18,6 +18,8 @@ else()
   set(realbits 64)
   set(arith d)
 endif()
+
+option(autobuild "autobuild missing Lapack, Scalapack or Mumps" ON)
 option(glow "use NCAR GLOW instead of Fang" ON)
 option(matlab "enable Matlab tests, which are slow and duplicate fast Octave tests" OFF)
 option(hdf5 "use HDF5 file I/O")

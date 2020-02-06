@@ -1,3 +1,8 @@
+if(NOT autobuild)
+  message(STATUS "NOT autobuilding Scalapack per user -Dautobuild=off")
+  return()
+endif()
+
 include(FetchContent)
 
 FetchContent_Declare(scalapack_proj

@@ -9,7 +9,7 @@
 
 unset(_mumps_extra)
 
-# --- Scalapack
+# --- prereqs
 
 include(${CMAKE_CURRENT_LIST_DIR}/scalapack.cmake)
 
@@ -41,7 +41,7 @@ if(OpenMP_FOUND)
 endif()
 list(APPEND MUMPS_INCLUDE_DIRS ${SCALAPACK_INCLUDE_DIRS})
 
-if(mumps_external OR scalapack_external)
+if(mumps_external OR scalapack_external OR lapack_external)
 # pre-build checks can't be used when external library isn't built yet.
   return()
 endif()
@@ -56,5 +56,7 @@ end"
   MUMPS_OK SRC_EXT f90)
 
 if(NOT MUMPS_OK)
-message(FATAL_ERROR "MUMPS ${MUMPS_LIBRARIES} not working with ${CMAKE_Fortran_COMPILER_ID} ${CMAKE_Fortran_COMPILER_VERSION}")
+  message(WARNING "MUMPS ${MUMPS_LIBRARIES} not working with ${CMAKE_Fortran_COMPILER_ID} ${CMAKE_Fortran_COMPILER_VERSION}")
+  include(${CMAKE_CURRENT_LIST_DIR}/mumps_external.cmake)
+  set(mumps_external true)
 endif()

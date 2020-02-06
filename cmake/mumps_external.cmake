@@ -1,3 +1,8 @@
+if(NOT autobuild)
+  message(STATUS "NOT autobuilding Mumps per user -Dautobuild=off")
+  return()
+endif()
+
 include(FetchContent)
 
 FetchContent_Declare(MUMPS_proj
