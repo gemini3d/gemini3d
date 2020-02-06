@@ -1,7 +1,7 @@
 option('realbits', type : 'combo', choices : ['64', '32'], description : 'real bits')
 option('arith', type: 'array', choices: ['s','d'], value: ['d'], description: 'arith precision')
 option('matlab', type : 'feature', value: 'disabled', description : 'Matlab >= R2019a required')
-option('hdf5', type: 'feature', value: 'enabled', description: 'HDF5 file I/O')
+option('hdf5', type: 'feature', value: 'disabled', description: 'HDF5 file I/O')
 option('glow', type: 'feature', value: 'enabled', description: 'GLOW model')
 option('netcdf', type: 'feature', value: 'disabled', description: 'NetCDF file I/O')
 option('MUMPS_ROOT', type : 'string', description : 'root directory of MUMPS')
