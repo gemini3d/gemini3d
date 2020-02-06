@@ -1,24 +1,18 @@
 
 # GEMINI
 
-[![Actions Status](https://github.com/gemini3d/gemini/workflows/ci_python/badge.svg)](https://github.com/gemini3d/gemini/actions)
-[![Actions Status](https://github.com/gemini3d/gemini/workflows/ci_debug_build/badge.svg)](https://github.com/gemini3d/gemini/actions)
-[![Actions Status](https://github.com/gemini3d/gemini/workflows/ci_linux/badge.svg)](https://github.com/gemini3d/gemini/actions)
-[![Actions Status](https://github.com/gemini3d/gemini/workflows/ci_macos/badge.svg)](https://github.com/gemini3d/gemini/actions)
+[![DOI](https://zenodo.org/badge/146920930.svg)](https://zenodo.org/badge/latestdoi/146920930)
+
+![ci_python](https://github.com/gemini3d/gemini/workflows/ci_python/badge.svg)
+![ci_debug_build](https://github.com/gemini3d/gemini/workflows/ci_debug_build/badge.svg)
+![ci_linux](https://github.com/gemini3d/gemini/workflows/ci_linux/badge.svg)
+![ci_macos](https://github.com/gemini3d/gemini/workflows/ci_macos/badge.svg)
 
 The GEMINI model (*G*eospace *E*nvironment *M*odel of *I*on-*N*eutral *I*nteractions) is a three-dimensional ionospheric fluid-electrodynamic model used for various scientific studies including effects of auroras on the terrestrial ionosphere, natural hazard effects on the space environment, and effects of ionospheric fluid instabilities on radio propagation (see references section of this document for details).
 The detailed mathematical formulation of GEMINI is included in `doc/`.
 A subroutine-level set of documentation describing functions of individual program units is given via source code comments which are
 [rendered as webpages](https://gemini3d.github.io/gemini/index.html).
 GEMINI uses generalized orthogonal curvilinear coordinates and has been tested with dipole and Cartesian coordinates.
-
-We have prioritized ease of setup, install and use across computing systems.
-Computing systems that Gemini works easily on include:
-
-* MacOS: as currently supported by Apple
-* Linux: CentOS 7/8, Ubuntu 16.04/18.04
-  * Raspberry Pi 4: 1 Gbyte RAM, Linux Debian Buster
-* Windows: Windows Subsystem for Linux
 
 Please open a
 [GitHub Issue](https://github.com/gemini3d/gemini/issues)
@@ -29,38 +23,53 @@ Specific commits corresponding to published results will also be noted, where ap
 
 ## Quickest start
 
-Gemini is meant to run on any modern
-[OpenMPI](https://www.open-mpi.org/)-capable
-computer, including MacOS, Linux and Windows.
-To build Gemini and run self-tests takes less than 10 minutes on a typical laptop, from scratch.
+Gemini can run on most modern computers using Linux, MacOS, or Windows.
+Gemini even runs on the Raspberry Pi 4 with 1 GByte of RAM.
+Windows users can use Intel
+[Parallel Studio](https://software.intel.com/en-us/parallel-studio-xe)
+or
+[Windows Subsystem for Linux](https://docs.microsoft.com/en-us/windows/wsl/install-win10).
+To build Gemini and run self-tests takes about 10 minutes on a typical laptop.
 
-0. Ensure Python &ge; 3.6 and a Fortran compiler are installed. In general, Gfortran &ge; 6 is the easiest to use. On MacOS, these are easily obtained via [Homebrew](https://brew.sh).
-1. We are using new features of Meson build system. Until Meson 0.53.0 is available, do:
+Requirements:
 
-  ```sh
-  git clone https://github.com/mesonbuild/meson
+* Fortran 2008 compiler (Gfortran &ge; 6 or Intel `ifort`)
+  * MacOS / [Homebrew](https://brew.sh): `brew install gcc`
+  * Ubuntu / Debian: `apt install gfortran`
+  * CentOS: `yum install gcc-gfortran`
+* OpenMPI or IntelMPI
+  * MacOS / [Homebrew](https://brew.sh): `brew install openmpi`
+  * Ubuntu / Debian: `apt install libopenmpi-dev openmpi-bin`
+  * CentOS: `yum install openmpi-devel`
+  * Windows: use Intel Parallel Studio IntelMPI
+* [CMake &ge; 3.14](https://cmake.org/download/) or Meson &ge; 0.53 `pip install meson`
+* [Python &ge; 3.6](https://docs.conda.io/en/latest/miniconda.html)
 
-  cd meson
-
-  python3 setup.py develop --user
-
-  cd ..
-  ```
-2. get the Gemini code
+1. get the Gemini code
 
   ```sh
   git clone https://github.com/gemini3d/gemini
 
   cd gemini
   ```
-3. Setup Gemini and prereqs
+2. Setup Gemini and prereqs
 
   ```sh
-  python3 install_prereqs.py
-
   python3 setup.py develop --user
   ```
-4. Build Gemini and run self-tests
+3. Build Gemini with CMake or Meson
+
+  ```sh
+  cmake -B build
+
+  cmake --build build -j
+
+  cd build
+
+  ctest
+  ```
+
+  or
 
   ```sh
   meson build
@@ -123,7 +132,7 @@ Tested versions include:
   * Mumps &ge; 5.2 recommended to have vastly less verbose console output
 * SCALAPACK 2.0
 * LAPACK95 3.0  (optional)
-* HDF5 1.8.16 / 1.10.4 (optional)
+* HDF5 1.8.16 / 1.10 (optional)
 
 ### build-time options
 
@@ -138,9 +147,9 @@ meson build -Doption=disabled
 or
 
 ```sh
-cmake -B build -Doption=enabled
+cmake -B build -Doption=true
 
-cmake -B build -Doption=disabled
+cmake -B build -Doption=false
 ```
 
 NCAR GLOW is automatically installed, but optional in general.
@@ -168,9 +177,11 @@ The documentation is Markdown-based, using FORD. If source code or documentation
 ```sh
 ford ford.md
 ```
+
 The output is under `docs/` and upon `git push` will appear at the [GEMINI docs website](https://mattzett.github.io/gemini/index.html).
 
 FORD is a Python program, installed via:
+
 ```sh
 pip install ford
 ```
@@ -179,8 +190,7 @@ Note: leave the LaTeX files and other non-autogenerated documents in `doc/` so t
 
 ## License
 
-GEMINI is distributed under the Affero GNU public license (aGPL) version 3+.
-
+GEMINI is distributed under the Apache 2.0 license.
 
 ## Suggested hardware
 
@@ -189,7 +199,6 @@ GEMINI can run on hardware ranging from a modest laptop to a high-performance co
 For large 3D simulations (more than 20M grid points), GEMINI should be run in a cluster environment or a "large" multicore workstation (e.g. 12 or more cores).  Runtime depends heavily on the grid spacing used, which determines the time step needed to insure stability,  For example we have found that a 20M grid point simulations takes about  4 hours on 72 Xeon E5 cores.  200M grid point simulations can take up to a week on 256 cores.  It has generally been found that acceptable performance requires > 1GB memory per core; moreover, a large amount of storage (hundreds of GB to several TB) is needed to store results from large simulations.
 
 One could run large 2D or very small 3D simulations (not exceeding a few million grid points) on a quad-core workstation, but may take quite a while to complete.
-
 
 ## Quick start
 
@@ -210,9 +219,7 @@ Perhaps consider running `python3 install_prereqs.py` to get the libraries you n
     ```sh
     python3 setup.py develop --user
     ```
-3. Build and test
-
-   **Meson is recommended in general**
+3. Build and test with Meson or CMake
 
    ```sh
    meson setup build
@@ -220,44 +227,43 @@ Perhaps consider running `python3 install_prereqs.py` to get the libraries you n
    meson test -C build
    ```
 
-   If using Homebrew, you want to be sure Homebrew's GCC is used instead of AppleClang or other non-Homebrew compilers so that the Homebrew library ABIs match the compiler ABI.
-   To do this for Homebrew or other systems where you need to specify a specific compiler, use a Meson &ge; 0.53.0 native-file like:
+   or
 
    ```sh
-   meson setup build --native-file meson/homebrew.ini
+   cmake -B build
+
+   cmake --build build -j
+
+   cd build
+
+   ctest -V
    ```
 
-   alternatively, use the command line to specify paths instead of the native-file like:
+If using Homebrew, you want to be sure Homebrew's GCC is used instead of AppleClang or other non-Homebrew compilers so that the Homebrew library ABIs match the compiler ABI.
+To do this for Homebrew or other systems where you need to specify a specific compiler, use a Meson &ge; 0.54.0 native-file like:
 
-   ```sh
-   FC=gfortran-9 CC=gcc-9 meson setup build -DMUMPS_ROOT=../lib_gcc/mumps-5.2.1 -DSCALAPACK_ROOT=../lib_gcc/scalapack
-   ```
+```sh
+meson setup build --native-file meson/homebrew.ini
+```
 
-    **CMake may alternatively be used**
+alternatively, use the command line to specify paths instead of the native-file like:
 
-    ```sh
-    cmake -B build
+```sh
+FC=gfortran-9 CC=gcc-9 meson setup build -DMUMPS_ROOT=../lib_gcc/mumps-5.2.1 -DSCALAPACK_ROOT=../lib_gcc/scalapack
+```
 
-    cmake --build build --parallel
+If you get errors about libraries not found or it's using the wrong compiler, specify the compilers or libraries like:
 
-    cd build
-
-    ctest -V
-    ```
-
-
-    If you get errors about libraries not found or it's using the wrong compiler, specify the compilers or libraries like:
-
-    ```sh
-    FC=gfortran-9 CC=gcc-9 cmake -B build
-    ```
+```sh
+FC=gfortran-9 CC=gcc-9 cmake -B build
+```
 
 
-    If you need to specify MPI compiler wrappers, do like:
+If you need to specify MPI compiler wrappers, do like:
 
-    ```sh
-    FC=~/lib_gcc/openmpi-3.1.4/bin/mpif90 CC=~/lib_gcc/openmpi-3.1.4/bin/mpicc cmake -B build -DMPI_ROOT=~/lib_gcc/openmpi-3.1.4
-    ```
+```sh
+FC=~/lib_gcc/openmpi-3.1.4/bin/mpif90 CC=~/lib_gcc/openmpi-3.1.4/bin/mpicc cmake -B build -DMPI_ROOT=~/lib_gcc/openmpi-3.1.4
+```
 
 ### input directory
 
