@@ -7,7 +7,8 @@ endif()
 project(gemini3d
   LANGUAGES C Fortran  # MUST include C language for Intel / MKL to work
   DESCRIPTION "3-D ionospheric model"
-  HOMEPAGE_URL https://github.com/gemini3d/gemini)
+  HOMEPAGE_URL https://github.com/gemini3d/gemini
+  VERSION 0.2.0)
 
 enable_testing()
 
@@ -23,6 +24,7 @@ option(hdf5 "use HDF5 file I/O")
 option(netcdf "use NetCDF file I/O" OFF)
 option(metis "use METIS" OFF)
 option(scotch "use Scotch" OFF)
+option(openmp "Use OpenMP when building MUMPS" OFF)
 
 if(netcdf AND hdf5)
   message(FATAL_ERROR "HDF5 and NetCDF are mutually exclusive")

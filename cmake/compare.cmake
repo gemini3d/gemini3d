@@ -4,6 +4,8 @@ include(${CMAKE_CURRENT_LIST_DIR}/matlab.cmake)
 
 if(hdf5)
   set(OUTEXT ".h5")
+elseif(netcdf)
+  set(OUTEXT ".nc")
 else()
   set(OUTEXT ".dat")
 endif()

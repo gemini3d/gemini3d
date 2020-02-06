@@ -16,8 +16,9 @@ endif()
 
 # === OpenMP
 # optional, for possible MUMPS speedup
-find_package(OpenMP COMPONENTS C Fortran)
-
+if(openmp)
+  find_package(OpenMP COMPONENTS C Fortran)
+endif()
 # === MPI
 # MPI is used throughout Gemini
 find_package(MPI REQUIRED COMPONENTS Fortran)

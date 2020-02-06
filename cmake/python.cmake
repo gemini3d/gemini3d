@@ -2,14 +2,17 @@
 find_package(Python3 COMPONENTS Interpreter)
 # keep find_package outside if() statement or Python3_EXECUTABLE will intermittently be missing
 
-# Python3::Interpreter did NOT work
+# Python3::Interpreter does NOT work, use ${Python3_EXECUTABLE}
 if(NOT DEFINED PythonOK)
 
 execute_process(COMMAND ${Python3_EXECUTABLE} -c "import gemini; print(gemini.__file__)"
+  OUTPUT_VARIABLE _pygemloc
+  OUTPUT_STRIP_TRAILING_WHITESPACE
   RESULT_VARIABLE ret
   TIMEOUT 15)
 if(ret EQUAL 0)
   set(PythonOK true CACHE BOOL "PyGemini is present.")
+  message(STATUS "PyGemini: ${_pygemloc}")
 else()
   message(STATUS "MISSING: PyGemini -> install by 'python3 setup.py --user develop'")
   set(PythonOK false CACHE BOOL "PyGemini is NOT present.")
