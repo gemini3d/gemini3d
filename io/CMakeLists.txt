@@ -7,11 +7,11 @@ add_library(logging logging.f90)
 
 #=== io library
 if(hdf5)
-  set(io_src plasma_output_hdf5.f90 mag_hdf5.f90 aurora_hdf5.f90)
+  set(io_src plasma_input_hdf5.f90 plasma_output_hdf5.f90 mag_hdf5.f90 aurora_hdf5.f90)
 elseif(netcdf)
-  set(io_src plasma_output_ncdf.f90 mag_ncdf.f90 aurora_ncdf.f90)
+  set(io_src plasma_input_ncdf.f90 plasma_output_ncdf.f90 mag_ncdf.f90 aurora_ncdf.f90)
 else()
-  set(io_src plasma_output_raw.f90 mag_raw.f90 aurora_raw.f90)
+  set(io_src plasma_input_raw.f90 plasma_output_raw.f90 mag_raw.f90 aurora_raw.f90)
 endif()
 
 if(CMAKE_Fortran_COMPILER_ID STREQUAL Intel)
@@ -20,10 +20,7 @@ else()
   list(APPEND io_src path_exists.f90)
 endif()
 
-add_library(io io.f90 aurora.f90 output.f90 input.f90
-  mag.f90
-  plasma.f90 plasma_input_raw.f90
-  ${io_src})
+add_library(io io.f90 aurora.f90 output.f90 input.f90 mag.f90 plasma.f90 ${io_src})
 target_link_libraries(io PRIVATE calculus const pathlib grid mpimod timeutils)
 target_include_directories(io INTERFACE ${CMAKE_CURRENT_BINARY_DIR}/include)
 set_target_properties(io PROPERTIES

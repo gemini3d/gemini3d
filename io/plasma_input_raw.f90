@@ -21,9 +21,8 @@ if (flagoutput==3) error stop '  !!!I need current densities in the output to co
 
 
 !> FORM THE INPUT FILE NAME
-filenamefull = date_filename(outdir,ymd,UTsec)
-filenamefull = filenamefull//'.dat'
-print *, 'Input file name for current densities:  ',filenamefull
+filenamefull = date_filename(outdir,ymd,UTsec) // '.dat'
+print *, 'Input file name for current densities:  ', filenamefull
 
 block
   integer :: u
@@ -100,13 +99,11 @@ end procedure input_root_currents
 
 module procedure input_root_mpi
 
-!------------------------------------------------------------
-!-------READ INPUT FROM FILE AND DISTRIBUTE TO WORKERS.
-!-------STATE VARS ARE EXPECTED INCLUDE GHOST CELLS.  NOTE ALSO
-!-------THAT RECORD-BASED INPUT IS USED SO NO FILES > 2GB DUE
-!-------TO GFORTRAN BUG WHICH DISALLOWS 8 BYTE INTEGER RECORD
-!-------LENGTHS.
-!------------------------------------------------------------
+!! READ INPUT FROM FILE AND DISTRIBUTE TO WORKERS.
+!! STATE VARS ARE EXPECTED INCLUDE GHOST CELLS.  NOTE ALSO
+!! THAT RECORD-BASED INPUT IS USED SO NO FILES > 2GB DUE
+!! TO GFORTRAN BUG WHICH DISALLOWS 8 BYTE INTEGER RECORD
+!! LENGTHS.
 
 integer :: lx1,lx2,lx3,lx2all,lx3all,isp
 
@@ -119,9 +116,9 @@ real(wp), dimension(3) :: ymdtmp
 real(wp) :: tstart,tfin
 
 !> so that random values (including NaN) don't show up in Ghost cells
-nsall = 0._wp
-vs1all= 0._wp
-Tsall = 0._wp
+nsall = 0
+vs1all= 0
+Tsall = 0
 
 !> SYSTEM SIZES
 lx1=size(ns,1)-4
@@ -130,12 +127,8 @@ lx3=size(ns,3)-4
 lx2all=size(x2all)-4
 lx3all=size(x3all)-4
 
-
-!READ IN FROM FILE, AS OF CURVILINEAR BRANCH THIS IS NOW THE ONLY INPUT
-!OPTION
-open(newunit=u,file=indatsize,status='old',form='unformatted', access='stream', action='read')
-read(u) lx1in,lx2in,lx3in
-close(u)
+!> READ IN FROM FILE, AS OF CURVILINEAR BRANCH THIS IS NOW THE ONLY INPUT OPTION
+call get_simsize3(indatsize, lx1in, lx2in, lx3in)
 print *, 'Input file has size:  ',lx1in,lx2in,lx3in
 print *, 'Target grid structure has size',lx1,lx2all,lx3all
 
@@ -146,10 +139,12 @@ if (flagswap==1) then
 end if
 
 if (.not. (lx1==lx1in .and. lx2all==lx2in .and. lx3all==lx3in)) then
-  error stop '!!!The input data must be the same size as the grid which you are running the simulation on' // &
+  error stop 'The input data must be the same size as the grid which you are running the simulation on' // &
        '- use a script to interpolate up/down to the simulation grid'
 end if
 
+block
+integer :: u
 open(newunit=u,file=indatfile,status='old',form='unformatted', access='stream', action='read')
 read(u) ymdtmp,tin
 
@@ -172,7 +167,7 @@ else
   deallocate(statetmp)
 end if
 close(u)
-
+end block
 
 if (.not. all(ieee_is_finite(nsall))) error stop 'nsall: non-finite value(s)'
 if (.not. all(ieee_is_finite(vs1all))) error stop 'vs1all: non-finite value(s)'

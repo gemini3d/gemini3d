@@ -1,6 +1,7 @@
 submodule (io) plasma
-!! plasma.f90 uses submodules in plasma_input_*.f90 and plasma_output_*.f90 for raw or hdf5 I/O
+!! plasma.f90 uses submodules in plasma_input_*.f90 and plasma_output_*.f90 for raw, hdf5 or netcdf4 I/O
 
+use reader, only : get_simsize3
 implicit none
 
 interface ! plasma_input_*.f90
