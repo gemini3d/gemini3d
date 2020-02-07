@@ -21,7 +21,7 @@ else()
 endif()
 
 add_library(io io.f90 aurora.f90 output.f90 input.f90 mag.f90 plasma.f90 ${io_src})
-target_link_libraries(io PRIVATE calculus const pathlib grid mpimod timeutils)
+target_link_libraries(io PRIVATE calculus const pathlib reader grid mpimod timeutils)
 target_include_directories(io INTERFACE ${CMAKE_CURRENT_BINARY_DIR}/include)
 set_target_properties(io PROPERTIES
   Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include)
