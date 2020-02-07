@@ -46,21 +46,38 @@ reader = library('reader',
 
 pathlib_src = files('pathlib.F90')
 
+realpath_src = files('io_dummy.f90')
 if os == 'windows'
-  code = '''#include <stdlib.h>
-  int main(void) {const char *relPath; char *absPath;
-  _fullpath(absPath, relPath, _MAX_PATH);
-  return 0; }
-  '''
-  pathlib_src += cc.links(code, name: 'Windows _fullpath') ? files('io_windows.f90') : files('io_dummy.f90')
-else
-  code = '''int main(void) {const char *path; char *resolved_path;
-  realpath(path, resolved_path);
-  return 0; }
-  '''
-  pathlib_src += cc.links(code, name: 'POSIX realpath') ? files('io_posix.f90') : files('io_dummy.f90')
+  code = '''
+#include <stdlib.h>
+#include <string.h>
+int main(void) {
+char resolved_path[_MAX_PATH];
+_fullpath(resolved_path, "..", _MAX_PATH);
+if(strcmp("..", resolved_path) == 0 || strcmp(".", resolved_path) == 0) return 1;
+return 0; }
+'''
+  if (cc.run(code, name: 'Windows _fullpath').returncode() == 0)
+    realpath_src = files('io_windows.f90')
+  endif
+elif os != 'darwin'  # FIXME: make test in Fortran not C
+  code = '''
+#include <limits.h>
+#include <stdlib.h>
+#include <string.h>
+int main(void) {
+char resolved_path[PATH_MAX];
+realpath("..", resolved_path);
+if(strcmp("..", resolved_path) == 0 || strcmp(".", resolved_path) == 0) return 1;
+return 0; }
+'''
+  if (cc.run(code, name: 'POSIXrealpath').returncode() == 0)
+    realpath_src = files('io_posix.f90')
+  endif
 endif
 
-pathlib = library('pathlib', pathlib_src)
+
+pathlib = library('pathlib',
+  sources: [pathlib_src, realpath_src])
 
 logging = library('logging', 'logging.f90')

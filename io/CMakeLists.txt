@@ -3,21 +3,33 @@ target_include_directories(pathlib INTERFACE ${CMAKE_CURRENT_BINARY_DIR}/include
 set_target_properties(pathlib PROPERTIES
   Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include)
 
+# FIXME: test in Fortran not C
 if(WIN32)
-  set(_code "#include <stdlib.h>
-  int main(void) {
-  const char *relPath; char *absPath;
-  _fullpath(absPath, relPath, _MAX_PATH);
-  return 0; }")
-  check_c_source_compiles("${_code}" windowsio_OK)
+  set(_code "
+#include <stdlib.h>
+#include <string.h>
+int main(void) {
+char resolved_path[_MAX_PATH];
+_fullpath(resolved_path, \"..\", _MAX_PATH);
+if(strcmp(\"..\", resolved_path) == 0 || strcmp(\".\", resolved_path) == 0) return 1;
+return 0; }")
+  check_c_source_runs("${_code}" windowsio_OK)
   set(posixio_OK false)
-else()
-  set(_code "int main(void) {
-  const char *path; char *resolved_path;
-  realpath(path, resolved_path);
-  return 0; }")
-  check_c_source_compiles("${_code}" posixio_OK)
+elseif(UNIX AND NOT APPLE)
+  set(_code "
+#include <limits.h>
+#include <stdlib.h>
+#include <string.h>
+int main(void) {
+char resolved_path[PATH_MAX];
+realpath(\"..\", resolved_path);
+if(strcmp(\"..\", resolved_path) == 0 || strcmp(\".\", resolved_path) == 0) return 1;
+return 0; }")
+  check_c_source_runs("${_code}" posixio_OK)
   set(windowsio_OK false)
+else()
+  set(windowsio_OK false)
+  set(posixio_OK false)
 endif()
 
 if(posixio_OK)

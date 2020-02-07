@@ -25,5 +25,6 @@ find_package(MPI REQUIRED COMPONENTS Fortran)
 
 # --- compiler check
 include(CheckCSourceCompiles)
+include(CheckCSourceRuns)
 include(CheckFortranSourceCompiles)
 include(CheckFortranSourceRuns)
