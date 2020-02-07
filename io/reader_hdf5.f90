@@ -156,20 +156,18 @@ if (debug) print *, 'READ neutral 2D data from file:  ',fn
 call hf%initialize(fn, ierr, status='old',action='r')
 if(ierr/=0) error stop 'could not open precipitation HDF5'
 
-call hf%read('/dn0', dn0, ierr)
+call hf%read('/dn0all', dnO, ierr)
 if(ierr/=0) error stop 'could not read dn0'
-call hf%read('/dnN2all', dnN2all, ierr)
-if(ierr/=0) error stop 'could not read dnN2all'
-call hf%read('/dnO2all', dnO2all, ierr)
-if(ierr/=0) error stop 'could not read dnO2all'
-call hf%read('/dnvxall', dnvxall, ierr)
-if(ierr/=0) error stop 'could not read dnvxall'
-call hf%read('/dvnrhoall', dvnrhoall, ierr)
-if(ierr/=0) error stop 'could not read dvnrhoall'
-call hf%read('/dvnzall', dvnzall, ierr)
-if(ierr/=0) error stop 'could not read dvnzall'
-call hf%read('/dTnall', dTnall, ierr)
-if(ierr/=0) error stop 'could not read dTnall'
+call hf%read('/dnN2all', dnN2, ierr)
+if(ierr/=0) error stop 'could not read dnN2'
+call hf%read('/dnO2all', dnO2, ierr)
+if(ierr/=0) error stop 'could not read dnO2'
+call hf%read('/dvnrhoall', dvnrho, ierr)
+if(ierr/=0) error stop 'could not read dvnrho'
+call hf%read('/dvnzall', dvnz, ierr)
+if(ierr/=0) error stop 'could not read dvnz'
+call hf%read('/dTnall', dTn, ierr)
+if(ierr/=0) error stop 'could not read dTn'
 
 call hf%finalize(ierr)
 
@@ -188,20 +186,20 @@ if (debug) print *, 'READ neutral 3D data from file:  ',fn
 call hf%initialize(fn, ierr, status='old',action='r')
 if(ierr/=0) error stop 'could not open precipitation HDF5'
 
-dnOall,dnN2all,dnO2all,dvnxall,dvnrhoall,dvnzall,dTnall
-
-call hf%read('/dn0all', dn0all, ierr)
+call hf%read('/dn0all', dnOall, ierr)
 if(ierr/=0) error stop 'could not read dn0all'
-call hf%read('/dnN2', dnN2, ierr)
+call hf%read('/dnN2all', dnN2all, ierr)
 if(ierr/=0) error stop 'could not read dnN2'
-call hf%read('/dnO2', dnO2, ierr)
-if(ierr/=0) error stop 'could not read dnO2'
-call hf%read('/dvnrho', dvnrho, ierr)
-if(ierr/=0) error stop 'could not read dvnrho'
-call hf%read('/dvnz', dvnz, ierr)
-if(ierr/=0) error stop 'could not read dvnz'
-call hf%read('/dTn', dTn, ierr)
-if(ierr/=0) error stop 'could not read dTn'
+call hf%read('/dnO2all', dnO2all, ierr)
+if(ierr/=0) error stop 'could not read dnO2all'
+call hf%read('/dvnxall', dvnxall, ierr)
+if(ierr/=0) error stop 'could not read dnvxall'
+call hf%read('/dvnrhoall', dvnrhoall, ierr)
+if(ierr/=0) error stop 'could not read dvnrhoall'
+call hf%read('/dvnzall', dvnzall, ierr)
+if(ierr/=0) error stop 'could not read dvnzall'
+call hf%read('/dTnall', dTnall, ierr)
+if(ierr/=0) error stop 'could not read dTnall'
 
 call hf%finalize(ierr)
 
