@@ -355,9 +355,18 @@ integer, intent(in) :: flagdirich
 logical, intent(in) :: perflag
 integer, intent(in) :: it
 
+real(wp), dimension(size(Vmaxx1,1),size(Vmaxx1,2)) :: Vmaxx1alt      !in case we need to do some transformations to convert current into potential
 real(wp), dimension(size(sig0,1),1,size(sig0,3)) :: potential2D_fieldresolved
+integer :: lx1
 
-potential2D_fieldresolved=elliptic2D_cart(srcterm,sig0,sigP,Vminx1,Vmaxx1,Vminx3,Vmaxx3, &
+lx1=size(sig0,1)
+if (flagdirich==0) then      !convert current into potential normal derivative
+  Vmaxx1alt=Vmaxx1*x%h1(lx1,:,:)/sig0(lx1,:,:)
+else                         !Dirichlet boundary conditions, don't change
+  Vmaxx1alt=Vmaxx1
+end if
+
+potential2D_fieldresolved=elliptic2D_cart(srcterm,sig0,sigP,Vminx1,Vmaxx1alt,Vminx3,Vmaxx3, &
                      x%dx1,x%dx1i,x%dx3all,x%dx3iall,flagdirich,perflag,gridflag,it)
 
 end function potential2D_fieldresolved
