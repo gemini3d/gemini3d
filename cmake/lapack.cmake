@@ -1,5 +1,6 @@
 # Finds Lapack, tests, and if not found or broken, autobuild Lapack
 if(lapack_external)
+  include(${CMAKE_CURRENT_LIST_DIR}/lapack_external.cmake)
   return()
 endif()
 

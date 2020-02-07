@@ -14,6 +14,7 @@ include(${CMAKE_CURRENT_LIST_DIR}/scalapack.cmake)
 # --- MUMPS
 
 if(mumps_external)
+  include(${CMAKE_CURRENT_LIST_DIR}/mumps_external.cmake)
   return()
 endif()
 
