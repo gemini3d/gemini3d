@@ -15,7 +15,7 @@ integer :: ierr
 
 
 !> MAKE A COPY OF THE INPUT DATA IN THE OUTPUT DIRECTORY
-if ( mkdir(outdir//'/inputs') /= 0 ) error stop 'error creating output directory'
+ierr = mkdir(outdir//'/inputs')
 
 ierr = copyfile(infile, outdir//'/inputs/')
 ierr = copyfile(indatsize, outdir//'/inputs/')
