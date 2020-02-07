@@ -3,7 +3,7 @@ if(WIN32)
   # workaround: /nologo /libs:dll are set by CMake in cmake_fortran_flags
   set(CMAKE_Fortran_FLAGS "/nologo /libs:dll /warn:declarations /traceback ")
   string(APPEND CMAKE_Fortran_FLAGS "/Qopenmp ")
-  # string(APPEND CMAKE_Fortran_FLAGS "/heap-arrays ")  # necessary for stack overflow avoid
+  string(APPEND CMAKE_Fortran_FLAGS "/heap-arrays ")  # necessary for stack overflow avoid, even for 2d_fang
 else()
   set(CMAKE_Fortran_FLAGS "-warn declarations -traceback ")  # -warn all or -warn gets mixed with -qopenmp with CMake 3.14.2
   string(APPEND CMAKE_Fortran_FLAGS "-qopenmp ")  # undefined reference to `omp_get_max_threads'
