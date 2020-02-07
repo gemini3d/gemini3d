@@ -361,7 +361,7 @@ integer :: lx1
 
 lx1=size(sig0,1)
 if (flagdirich==0) then      !convert current into potential normal derivative
-  Vmaxx1alt=Vmaxx1*x%h1(lx1,:,:)/sig0(lx1,:,:)
+  Vmaxx1alt=-1*Vmaxx1*x%h1(lx1,:,:)/sig0(lx1,:,:)
 else                         !Dirichlet boundary conditions, don't change
   Vmaxx1alt=Vmaxx1
 end if
