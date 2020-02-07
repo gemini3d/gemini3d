@@ -1,13 +1,12 @@
-function E = Efield_BCs_3d(params, dir_grid, file_format, dir_config)
+function E = Efield_BCs_3d(params, dir_grid, dir_config)
 
-narginchk(3, 4)
+narginchk(2, 3)
 validateattributes(params, {'struct'}, {'scalar'}, mfilename, 'sim parameters', 1)
 validateattributes(dir_grid, {'char'}, {'vector'}, mfilename, 'grid directory', 2)
-validateattributes(file_format, {'char'}, {'vector'}, mfilename, 'file format', 3)
 
 cwd = fileparts(mfilename('fullpath'));
-if nargin < 4 || isempty(dir_config), dir_config = cwd; end
-validateattributes(dir_config, {'char'}, {'vector'}, mfilename, 'config directory', 4)
+if nargin < 3 || isempty(dir_config), dir_config = cwd; end
+validateattributes(dir_config, {'char'}, {'vector'}, mfilename, 'config directory', 3)
 
 dir_grid = absolute_path(dir_grid);
 dir_out = [dir_grid, '/Efield_inputs'];
@@ -19,7 +18,7 @@ end
 %% READ IN THE SIMULATION INFORMATION
 config = read_config(dir_config);
 
-xg = readgrid(dir_grid, file_format);
+xg = readgrid(dir_grid);
 lx1 = xg.lx(1);
 lx2 = xg.lx(2);
 lx3 = xg.lx(3);
@@ -75,19 +74,17 @@ E.Vmaxx2ist = zeros(E.llat, Nt);
 E.Vminx3ist = zeros(E.llon, Nt);
 E.Vmaxx3ist = zeros(E.llon, Nt);
 
-Etarg = 50e-3;            % target E value in V/m
-
 if lx3 == 1 % east-west
-  pk = Etarg*sigx2 .* xg.h2(lx1, floor(lx2/2), 1) .* sqrt(pi)./2;
+  pk = params.Etarg * sigx2 .* xg.h2(lx1, floor(lx2/2), 1) .* sqrt(pi)./2;
 elseif lx2 == 1 % north-south
-  pk = Etarg*sigx3 .* xg.h3(lx1, 1, floor(lx3/2)) .* sqrt(pi)./2;
+  pk = params.Etarg * sigx3 .* xg.h3(lx1, 1, floor(lx3/2)) .* sqrt(pi)./2;
 else % 3D
-  pk = Etarg*sigx2 .* xg.h2(lx1, floor(lx2/2), 1) .* sqrt(pi)./2;
+  pk = params.Etarg * sigx2 .* xg.h2(lx1, floor(lx2/2), 1) .* sqrt(pi)./2;
 end
 
 % x2ctr = 1/2*(xg.x2(lx2) + xg.x2(1));
 for it=1:Nt
-  E.Vmaxx1it(:,:,it) = pk.*erf((E.MLON-mlonmean)/mlonsig).*erf((E.MLAT-mlatmean)/mlatsig);
+  E.Vmaxx1it(:,:,it) = pk .* erf((E.MLON-mlonmean)/mlonsig) .* erf((E.MLAT-mlatmean)/mlatsig);
 end
 
 %% check for NaNs
@@ -106,10 +103,10 @@ assert(all(isfinite(E.Vmaxx3ist(:))), 'NaN in Vmaxx3ist')
 % FORTRAN CODE IN CASE DIFFERENT GRIDS NEED TO BE TRIED.
 % THE EFIELD DATA DO NOT TYPICALLY NEED TO BE SMOOTHED.
 
-switch file_format
+switch p.format
   case {'raw', 'dat'}, writeraw(dir_out, E, params)
   case {'h5', 'hdf5'}, writehdf5(dir_out, E, params)
-  otherwise, error(['unknown data format ', file_format])
+  otherwise, error(['unknown data format ', p.format])
 end
 
 if ~nargout, clear('E'), end
