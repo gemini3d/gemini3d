@@ -31,7 +31,10 @@ if ispc, exe = [exe, '.exe']; end
 
 if ~is_file(exe)
   src = [cwd,'/../vendor/msis00/msis00_gfortran.f ', cwd,'/MSIS00/call_msis_gfortran.f90'];
-  cmd = ['gfortran -std=legacy -w ',src,' -o ',exe];
+  % -static avoids problems with missing .so or .dll, from Matlab's
+  % internal shell
+  cmd = ['gfortran -static -std=legacy -w ',src,' -o ',exe];
+  disp(cmd)
   status = system(cmd);
   assert(status==0, 'failed to compile MSISe00')
 end
@@ -69,10 +72,9 @@ fwrite(fid,alt,'real*4');
 fclose(fid);
 %% CALL MSIS AND READ IN RESULTING BINARY FILE
 fout = tempname;
-disp(['MSIS00 input: ', fin])
-disp(['MSIS00 output: ', fout])
-
-[status, msg] = system([exe,' ',fin,' ',fout]);   %output written to file
+cmd = [exe,' ',fin,' ',fout];
+disp(cmd)
+[status, msg] = system(cmd);   %output written to file
 if status~=0, error(['msis setup failed: ',msg]), end
 
 fid=fopen(fout,'r');
