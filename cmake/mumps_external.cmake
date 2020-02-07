@@ -7,7 +7,7 @@ include(FetchContent)
 
 FetchContent_Declare(MUMPS_proj
   GIT_REPOSITORY https://github.com/scivision/mumps.git
-  GIT_TAG v5.2.1.8
+  GIT_TAG v5.2.1.9
   CMAKE_ARGS "-Darith=${arith}" "-Dparallel=true" "-Dmetis=${metis}" "-Dscotch=${scotch}" "-Dopenmp=false"
 )
 

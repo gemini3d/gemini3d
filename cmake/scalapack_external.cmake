@@ -2,6 +2,9 @@ if(NOT autobuild)
   message(STATUS "NOT autobuilding Scalapack per user -Dautobuild=off")
   return()
 endif()
+if(NOT SCALAPACK_FOUND)
+  message(STATUS "AUTOBUILD: SCALAPACK")
+endif()
 
 include(FetchContent)
 
@@ -12,10 +15,6 @@ FetchContent_Declare(scalapack_proj
 )
 
 FetchContent_MakeAvailable(scalapack_proj)
-
-if(NOT SCALAPACK_FOUND)
-  message(STATUS "AUTOBUILD: SCALAPACK")
-endif()
 
 set(SCALAPACK_LIBRARIES scalapack::scalapack)
 set(BLACS_LIBRARIES scalapack::blacs)

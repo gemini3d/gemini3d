@@ -7,23 +7,24 @@
 # CentOS 6/7 EPEL: yum install mumps-devel
 # Ubuntu / Debian: apt install libmumps-dev
 
-unset(_mumps_extra)
-
 # --- prereqs
-
+include(${CMAKE_CURRENT_LIST_DIR}/lapack.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/scalapack.cmake)
 
 # --- MUMPS
 
-set(mumps_external true)
+if(mumps_external)
+  return()
+endif()
+
+unset(_mumps_extra)
+
 if(MUMPS_ROOT OR CMAKE_Fortran_COMPILER_ID STREQUAL GNU)
   find_package(MUMPS COMPONENTS ${arith})
-  if(MUMPS_FOUND)
-    set(mumps_external false)
-  endif()
 endif()
-if(mumps_external)
+if(NOT MUMPS_FOUND)
   include(${CMAKE_CURRENT_LIST_DIR}/mumps_external.cmake)
+  set(mumps_external true CACHE BOOL "autobuild Mumps")
 endif()
 
 if(metis)
@@ -39,7 +40,7 @@ list(APPEND MUMPS_LIBRARIES ${SCALAPACK_LIBRARIES} ${LAPACK_LIBRARIES} ${_mumps_
 if(OpenMP_FOUND)
   list(APPEND MUMPS_LIBRARIES OpenMP::OpenMP_Fortran OpenMP::OpenMP_C)
 endif()
-list(APPEND MUMPS_INCLUDE_DIRS ${SCALAPACK_INCLUDE_DIRS})
+list(APPEND MUMPS_INCLUDE_DIRS ${SCALAPACK_INCLUDE_DIRS} ${LAPACK_INCLUDE_DIRS})
 
 if(mumps_external OR scalapack_external OR lapack_external)
 # pre-build checks can't be used when external library isn't built yet.
@@ -56,7 +57,7 @@ end"
   MUMPS_OK SRC_EXT f90)
 
 if(NOT MUMPS_OK)
-  message(WARNING "MUMPS ${MUMPS_LIBRARIES} not working with ${CMAKE_Fortran_COMPILER_ID} ${CMAKE_Fortran_COMPILER_VERSION}")
+  message(STATUS "MUMPS ${MUMPS_LIBRARIES} not working with ${CMAKE_Fortran_COMPILER_ID} ${CMAKE_Fortran_COMPILER_VERSION}")
   include(${CMAKE_CURRENT_LIST_DIR}/mumps_external.cmake)
-  set(mumps_external true)
+  set(mumps_external true CACHE BOOL "autobuild Mumps")
 endif()
