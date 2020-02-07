@@ -50,6 +50,8 @@ References
 * MKL link-line advisor: https://software.intel.com/en-us/articles/intel-mkl-link-line-advisor
 #]=======================================================================]
 
+set(BLACS_LIBRARY)  # don't endlessly append
+
 #===== functions
 
 function(mkl_blacs)
@@ -126,8 +128,6 @@ if(BLACS_LIBRARY)
 endif()
 
 elseif(OpenMPI IN_LIST BLACS_FIND_COMPONENTS)
-
-set(BLACS_LIBRARY)
 
 find_library(BLACS_INIT
   NAMES blacsF77init blacsF77init-openmpi

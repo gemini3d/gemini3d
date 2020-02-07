@@ -75,6 +75,10 @@ References
 * MKL LAPACKE (C, C++): https://software.intel.com/en-us/mkl-linux-developer-guide-calling-lapack-blas-and-cblas-routines-from-c-c-language-environments
 #]=======================================================================]
 
+# clear to avoid endless appending on subsequent calls
+set(LAPACK_LIBRARY)
+set(LAPACK_INCLUDE_DIR)
+
 # ===== functions ==========
 
 function(atlas_libs)

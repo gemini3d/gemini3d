@@ -23,6 +23,8 @@ MUMPS_INCLUDE_DIRS
 
 #]=======================================================================]
 
+set(MUMPS_LIBRARY)  # don't endlessly append
+
 function(mumps_libs)
 
 find_path(MUMPS_INCLUDE_DIR
