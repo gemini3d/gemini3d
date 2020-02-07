@@ -157,14 +157,14 @@ else
   !print *, shape(statetmp),shape(nsall)
 
   read(u) statetmp
-  nsall(1:lx1,1:lx2all,1:lx3all,1:lsp)=reshape(statetmp,[lx1,lx2all,lx3all,lsp],order=[1,3,2,4])
+  nsall(1:lx1,1:lx2all,1:lx3all,1:lsp) = reshape(statetmp,[lx1,lx2all,lx3all,lsp],order=[1,3,2,4])
 
   read(u) statetmp
-  vs1all(1:lx1,1:lx2all,1:lx3all,1:lsp)=reshape(statetmp,[lx1,lx2all,lx3all,lsp],order=[1,3,2,4])
+  vs1all(1:lx1,1:lx2all,1:lx3all,1:lsp) = reshape(statetmp,[lx1,lx2all,lx3all,lsp],order=[1,3,2,4])
 
   read(u) statetmp
-  Tsall(1:lx1,1:lx2all,1:lx3all,1:lsp)=reshape(statetmp,[lx1,lx2all,lx3all,lsp],order=[1,3,2,4])    !permute the dimensions so that 2D runs are parallelized
-  deallocate(statetmp)
+  Tsall(1:lx1,1:lx2all,1:lx3all,1:lsp) = reshape(statetmp,[lx1,lx2all,lx3all,lsp],order=[1,3,2,4])
+  !! permute the dimensions so that 2D runs are parallelized
 end if
 close(u)
 end block
