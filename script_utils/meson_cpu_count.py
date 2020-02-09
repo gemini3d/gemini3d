@@ -12,7 +12,7 @@ except ImportError:
     # pip install psutil will improve CPU utilization.
 
 
-def get_mpi_count(fn: Path, force: int = None) -> int:
+def get_cpu_count(force: int = None) -> int:
     if force:
         max_cpu = force
         extradiv = 1
@@ -29,6 +29,12 @@ def get_mpi_count(fn: Path, force: int = None) -> int:
             max_cpu = os.cpu_count()
             extradiv = 2
 
+    return max_cpu // extradiv
+
+
+def get_mpi_count(fn: Path, force: int = None) -> int:
+    max_cpu = get_cpu_count(force)
+
     size = get_simsize(fn)
 
     mpi_count = 1
@@ -42,8 +48,6 @@ def get_mpi_count(fn: Path, force: int = None) -> int:
             mpi_count = max(math.gcd(size[2] // 2, i), mpi_count)
             if i < mpi_count:
                 break
-
-    mpi_count //= extradiv
 
     return max(mpi_count, 1)
 

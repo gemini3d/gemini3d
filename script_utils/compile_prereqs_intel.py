@@ -2,6 +2,7 @@
 """
 Installs prereqs for Gemini program for Intel compiler
 """
+import subprocess
 import shutil
 from pathlib import Path
 from argparse import ArgumentParser
@@ -9,14 +10,20 @@ import typing
 import sys
 import os
 from functools import lru_cache
-
+from meson_file_download import url_retrieve
+from meson_file_extract import extract_tar
+from meson_cpu_count import get_cpu_count
 from compile_prereqs_gcc import meson_build, cmake_build, update
 
 # ========= user parameters ======================
 BUILDDIR = "build"
-LOADLIMIT = "-l 4"
+NJOBS = get_cpu_count()
 
 # Library parameters
+HDF5VERSION = "1.10.6"
+HDF5URL = "https://zenodo.org/record/3659270/files/hdf5-1.10.6.tar.bz2?download=1"
+HDF5MD5 = "03095102a6118c32a75a9b9b40be66f2"
+HDF5DIR = f"hdf5-{HDF5VERSION}"
 
 MUMPSGIT = "https://github.com/scivision/mumps"
 MUMPSDIR = "mumps"
@@ -24,6 +31,27 @@ MUMPSDIR = "mumps"
 # ========= end of user parameters ================
 
 nice = ["nice"] if sys.platform == "linux" else []
+
+
+def hdf5(dirs: typing.Dict[str, Path]):
+    if os.name == "nt":
+        raise SystemExit("Please use binaries from HDF Group for Windows appropriate for your compiler.")
+
+    install_dir = dirs["prefix"] / HDF5DIR
+    source_dir = dirs["workdir"] / HDF5DIR
+
+    tarfn = f"hdf5-{HDF5VERSION}.tar.bz2"
+    url_retrieve(HDF5URL, tarfn, ("md5", HDF5MD5))
+    extract_tar(tarfn, source_dir)
+
+    env = get_compilers()
+
+    cmd = nice + ["./configure", f"--prefix={install_dir}", "--enable-fortran", "--enable-build-mode=production"]
+
+    subprocess.check_call(cmd, cwd=source_dir, env=env)
+
+    cmd = nice + ["make", "-C", str(source_dir), f"-j {NJOBS}", "install"]
+    subprocess.check_call(cmd)
 
 
 def mumps(wipe: bool, dirs: typing.Dict[str, Path], buildsys: str):
@@ -77,6 +105,7 @@ def get_compilers() -> typing.Mapping[str, str]:
 
 if __name__ == "__main__":
     p = ArgumentParser()
+    p.add_argument("libs", help="libraries to compile", choices=["hdf5", "mumps"], nargs="+")
     p.add_argument("-prefix", help="toplevel path to install libraries under", default="~/lib_intel")
     p.add_argument("-workdir", help="toplevel path to where you keep code repos", default="~/code")
     p.add_argument("-wipe", help="wipe before completely recompiling libs", action="store_true")
@@ -85,4 +114,7 @@ if __name__ == "__main__":
 
     dirs = {"prefix": Path(P.prefix).expanduser().resolve(), "workdir": Path(P.workdir).expanduser().resolve()}
 
-    mumps(P.wipe, dirs, P.buildsys)
+    if "mumps" in P.libs:
+        mumps(P.wipe, dirs, P.buildsys)
+    if "hdf5" in P.libs:
+        hdf5(dirs)
