@@ -3,6 +3,9 @@ function(download_testfiles HASH REFNUM REFNAME ROOT)
 # That could delete wrong directory causing data loss.
 # So use this more specific but safe method.
 
+# We can't use CMAKE_ROLE to defer downloading because the tests parameters are defined
+# using the test reference data.
+
 set(ARCHIVE ${REFNAME}.zip)
 set(URL https://zenodo.org/record/${REFNUM}/files/${REFNAME}.zip?download=1)
 
