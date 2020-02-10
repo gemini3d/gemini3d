@@ -204,8 +204,11 @@ One could run large 2D or very small 3D simulations (not exceeding a few million
 
 This method is tested on MacOS, CentOS and Ubuntu.
 This test runs a short demo, taking about 2-5 minutes on a typical Mac / Linux laptop, from scratch.
-It assumes you have Python 3 and the appropriate compilers and libraries installed.
-Perhaps consider running `python3 install_prereqs.py` to get the libraries you need (assuming you have sudo access).
+It assumes you have installed:
+
+* Python &ge; 3.6
+* Fortran compiler (Gfortran &ge; 6 or Intel ifort &ge; 19)
+* OpenMPI / IntelMPI
 
 1. Get GEMINI code and install prereqs
 
@@ -279,10 +282,8 @@ ICNTL 1-4 concern print output unit and verbosity level, see MUMPS
 
 #### Build tips
 
-Libraries:
-
-* If you have `sudo` access, try the `python3 install_prereqs.py` script
-
+Libraries are auto-built by Gemini when building gemini.bin.
+If it's desired to use system libraries, consider [install_prereqs.py](./script_utils/install_prereqs.py)
 
 ### self-tests
 
@@ -306,14 +307,13 @@ python3 tests/compare_all.py /tmp/2d tests/data/zenodo2d
 
 ### OS-specific tips
 
-Meson will automatically and seamlessly download and build the required libraries before Gemini.
-You can try `python3 install_prereqs.py` or use system-specific install commands as appropriate for your system.
+CMake and Meson will automatically download and build the numerical libraries for Gemini.
 
 * Ubuntu: tested on Ubuntu 18.04 / 16.04
 * CentOS 7
 
     ```sh
-    module load git openmpi
+    module load git cmake openmpi
 
     module load gcc
     export CC=gcc CXX=g++ FC=gfortran
@@ -321,7 +321,7 @@ You can try `python3 install_prereqs.py` or use system-specific install commands
 * MacOS / Linux: use Homebrew to install Gfortran and OpenMPI like:
 
     ```sh
-    brew install gcc openmpi
+    brew install cmake gcc openmpi
     ```
 
 ## Known limitations and issues of GEMINI
