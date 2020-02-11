@@ -3,6 +3,9 @@ function filename = get_configfile(path)
 
 narginchk(1,1)
 
+% necessary for Matlab
+path = absolute_path(path);
+
 if is_file(path)
   filename = path;
 elseif is_folder(path)
@@ -17,6 +20,6 @@ else
   error(['could not find config file in ', path])
 end
 
-assert(is_file(filename), ['could not find config file in ', filename])
+assert(is_file(filename), ['could not find config file in ', path])
 
 end % function

@@ -1,24 +1,16 @@
-function E = Efield_BCs_2d(params, dir_grid, dir_config)
+function E = Efield_BCs_2d(p)
 
-narginchk(2, 3)
-validateattributes(params, {'struct'}, {'scalar'}, mfilename, 'sim parameters', 1)
-validateattributes(dir_grid, {'char'}, {'vector'}, mfilename, 'grid directory', 2)
+narginchk(1, 1)
+validateattributes(p, {'struct'}, {'scalar'}, mfilename, 'sim parameters', 1)
 
-cwd = fileparts(mfilename('fullpath'));
-if nargin < 3 || isempty(dir_config), dir_config = cwd; end
-validateattributes(dir_config, {'char'}, {'vector'}, mfilename, 'config directory', 3)
+dir_out = [p.simdir, '/Efield_inputs'];
 
-dir_grid = absolute_path(dir_grid);
-dir_out = [dir_grid, '/Efield_inputs'];
-
-if ~isfolder(dir_out)
-  mkdir(dir_out);
-end
+makedir(dir_out);
 
 %% READ IN THE SIMULATION INFORMATION
-config = read_config(dir_config);
+config = read_config(p.nml);
 
-xg = readgrid(dir_grid);
+xg = readgrid(p.simdir);
 lx1 = xg.lx(1);
 lx2 = xg.lx(2);
 lx3 = xg.lx(3);
@@ -47,10 +39,10 @@ mlonmean = mean(E.mlon);
 mlatmean = mean(E.mlat);
 
 %% WIDTH OF THE DISTURBANCE
-mlatsig = params.fracwidth*(mlatmax-mlatmin);
-mlonsig = params.fracwidth*(mlonmax-mlonmin);
-sigx2 = params.fracwidth*(max(xg.x2)-min(xg.x2));
-sigx3 = params.fracwidth*(max(xg.x3)-min(xg.x3));
+mlatsig = p.fracwidth*(mlatmax-mlatmin);
+mlonsig = p.fracwidth*(mlonmax-mlonmin);
+sigx2 = p.fracwidth*(max(xg.x2)-min(xg.x2));
+sigx3 = p.fracwidth*(max(xg.x3)-min(xg.x3));
 %% TIME VARIABLE (SECONDS FROM SIMULATION BEGINNING)
 tmin = 0;
 time = tmin:config.dtE0:config.tdur;
@@ -72,7 +64,7 @@ for it=1:Nt
 end
 %}
 %% CREATE DATA FOR BOUNDARY CONDITIONS FOR POTENTIAL SOLUTION
-params.flagdirich = 1;   %if 0 data is interpreted as FAC, else we interpret it as potential
+p.flagdirich = 1;   %if 0 data is interpreted as FAC, else we interpret it as potential
 E.Vminx1it = zeros(E.llon,E.llat, Nt);
 E.Vmaxx1it = zeros(E.llon,E.llat, Nt);
 %these are just slices
@@ -82,12 +74,12 @@ E.Vminx3ist = zeros(E.llon, Nt);
 E.Vmaxx3ist = zeros(E.llon, Nt);
 
 if lx3 == 1 % east-west
-  pk = params.Etarg*sigx2 .* xg.h2(lx1, floor(lx2/2), 1) .* sqrt(pi)./2;
+  pk = p.Etarg * sigx2 .* xg.h2(lx1, floor(lx2/2), 1) .* sqrt(pi)./2;
 elseif lx2 == 1 % north-south
-  pk = params.Etarg*sigx3 .* xg.h3(lx1, 1, floor(lx3/2)) .* sqrt(pi)./2;
+  pk = p.Etarg * sigx3 .* xg.h3(lx1, 1, floor(lx3/2)) .* sqrt(pi)./2;
 end
 
-% x2ctr = 1/2*(xg.x2(lx2)+xg.x2(1));
+% x2ctr = 1/2*(xg.x2(lx2) + xg.x2(1));
 for i = 1:Nt
   % put your functions in these if you want
   %{
@@ -124,8 +116,8 @@ assert(all(isfinite(E.Vmaxx3ist(:))), 'NaN in Vmaxx3ist')
 % THE EFIELD DATA DO NOT TYPICALLY NEED TO BE SMOOTHED.
 
 switch p.format
-  case {'raw', 'dat'}, writeraw(dir_out, E, params)
-  case {'h5', 'hdf5'}, writehdf5(dir_out, E, params)
+  case {'raw', 'dat'}, writeraw(dir_out, E, p)
+  case {'h5', 'hdf5'}, writehdf5(dir_out, E, p)
   otherwise, error(['unknown data format ', p.format])
 end
 
@@ -193,7 +185,8 @@ for i = 1:Nt
   fid = fopen(filename, 'w');
 
   %FOR EACH FRAME WRITE A BC TYPE AND THEN OUTPUT BACKGROUND AND BCs
-  fwrite(fid, params.flagdirich, 'int32');
+%  fwrite(fid, params.flagdirich, 'int32');
+  fwrite(fid, params.flagdirich, 'real*8');   %FIXME - fortran code still wants this to be a double...
   fwrite(fid, E.Exit(:,:,i), freal);
   fwrite(fid, E.Eyit(:,:,i), freal);
   fwrite(fid, E.Vminx1it(:,:,i), freal);

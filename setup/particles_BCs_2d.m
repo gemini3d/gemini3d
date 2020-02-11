@@ -3,9 +3,8 @@ narginchk(3,3)
 cwd = fileparts(mfilename('fullpath'));
 addpath([cwd, '/../../script_utils'])
 
-if ~is_folder(outdir)
-  mkdir(outdir)
-end
+makedir(outdir)
+
 %% read desired simulation config
 params = read_config(config_dir);
 %% GRID ALREADY NEEDS TO BE MADE, AS WELL

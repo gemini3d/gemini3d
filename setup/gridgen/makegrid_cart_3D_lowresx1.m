@@ -1,18 +1,11 @@
-function xgf = makegrid_cart_3D_lowresx1(xdist,lxp,ydist,lyp,I,glat,glon)
+function xgf = makegrid_cart_3D_lowresx1(p)
 
-narginchk(7, 7)
-%function xg=makegrid_cart_3D(xmin,xmax,lx,ymin,ymax,ly,I,glat,glon)
-validateattributes(xdist, {'numeric'}, {'scalar', 'positive'})
-validateattributes(lxp, {'numeric'}, {'scalar', 'integer', 'positive'})
-validateattributes(ydist, {'numeric'}, {'scalar', 'positive'})
-validateattributes(lyp, {'numeric'}, {'scalar', 'integer', 'positive'})
-validateattributes(I, {'numeric'}, {'scalar'})
-validateattributes(glat, {'numeric'}, {'scalar'})
-validateattributes(glon, {'numeric'}, {'scalar'})
+narginchk(1, 1)
+validateattributes(p, {'struct'}, {'scalar'})
 
 %% ADD IN GHOST CELLS (Z WILL BE HANDLED LATER)
-lx=lxp+4;
-ly=lyp+4;
+lx = p.lxp + 4;
+ly = p.lyp + 4;
 
 %% SETUP NONUNIFORM GRID IN ALTITUDE AND FIELD LINE DISTANCE
 % FIXME: should altitude limits be a parameter
@@ -21,7 +14,7 @@ altmax = 1000e3;
 %alt=linspace(altmin,altmax,920);
 ialt=1;
 alt(ialt)=altmin;
-while alt(ialt)<altmax
+while alt(ialt) < altmax
   ialt=ialt+1;
   dalt=30e3+25e3*tanh((alt(ialt-1)-500e3)/150e3);
   alt(ialt)=alt(ialt-1)+dalt;
@@ -32,7 +25,7 @@ end
 %     alt(ialt)=alt(ialt-1)+dalt;
 % end
 alt=alt(:);
-z=alt*cscd(I);
+z=alt*cscd(p.I);
 dz1=z(2)-z(1);
 dzn=z(end)-z(end-1);
 z=[z(1)-2*dz1;z(1)-dz1;z;z(end)+dzn;z(end)+2*dzn];
@@ -41,18 +34,18 @@ lx1=lz;
 
 %% TRANSVERSE GRID (BASED ON SIZE OF CURRENT REGION SPECIFIED ABOVE)
 %EAST
-xmin=-xdist/2;
-xmax=xdist/2;
-x=linspace(xmin,xmax,lxp);    %exclude the ghost cells when setting extents
+xmin = -p.xdist/2;
+xmax = p.xdist/2;
+x = linspace(xmin, xmax, p.lxp);    %exclude the ghost cells when setting extents
 dx1=x(2)-x(1);
 dxn=x(end)-x(end-1);
 x=[x(1)-2*dx1,x(1)-dx1,x,x(end)+dxn,x(end)+2*dxn];    %now tack on ghost cells so they are outside user-specified region
 lx2=lx;
 
 % NORTH
-ymin=-ydist/2;
-ymax=ydist/2;
-y=linspace(ymin,ymax,lyp);
+ymin = -p.ydist/2;
+ymax = p.ydist/2;
+y = linspace(ymin, ymax, p.lyp);
 dy1=y(2)-y(1);
 dyn=y(end)-y(end-1);
 y=[y(1)-2*dy1,y(1)-dy1,y,y(end)+dyn,y(end)+2*dyn];
@@ -87,7 +80,7 @@ gz=repmat(-1*g,[1,lx2,lx3]);
 %DISTANCE EW AND NS (FROM ENU (or UEN in our case - cyclic permuted) COORD. SYSTEM) NEED TO BE CONVERTED TO DIPOLE SPHERICAL AND THEN
 %GLAT/GLONG - BASICALLY HERE WE ARE MAPPING THE CARTESIAN GRID ONTO THE
 %SURFACE OF A SPHERE THEN CONVERTING TO GEOGRAPHIC.
-[thetactr,phictr] = geog2geomag(glat,glon);    %get the magnetic coordinates of the grid center, based on user input
+[thetactr,phictr] = geog2geomag(p.glat, p.glon);    %get the magnetic coordinates of the grid center, based on user input
 
 %% Center of earth distance
 r=Re+z;
@@ -173,7 +166,7 @@ xg.rx2i=[]; xg.thetax2i=[];
 %These are cartesian representations of the ECEF, spherical unit vectors
 xg.er=er; xg.etheta=etheta; xg.ephi=ephi;
 
-xg.I=I*ones([lx2,lx3]);
+xg.I = p.I * ones([lx2,lx3]);
 
 %Cartesian ECEF coordinates
 xg.x=xECEF; xg.z=zECEF; xg.y=yECEF;
@@ -183,7 +176,8 @@ xg.gx1=gz; xg.gx2=zeros(xg.lx); xg.gx3=zeros(xg.lx);
 
 xg.Bmag=-50000e-9*ones(xg.lx);     %minus for northern hemisphere...
 
-xg.glat=glat*ones(xg.lx); xg.glon=glon*ones(xg.lx);    %use same lat./lon. for each grid point
+xg.glat = p.glat*ones(xg.lx);
+xg.glon = p.glon*ones(xg.lx);    %use same lat./lon. for each grid point
 
 %xg.xp=x; xg.zp=z;
 

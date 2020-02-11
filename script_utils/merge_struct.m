@@ -16,7 +16,7 @@ validateattributes(overwrite, {'logical'}, {'scalar'})
 
 s1fields = fieldnames(s1);
 for field = fieldnames(s2)'
-  if ~overwrite && any(strcmp(s1fields, field{:}))
+  if ~overwrite && isfield(s1fields, field{:})
     error(['not overwriting field ', field{:}])
   end
   s1.(field{:}) = s2.(field{:});

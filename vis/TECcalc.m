@@ -6,11 +6,11 @@ simname_control='mooreOK3D_hemis_medres_control/';
 basedir='~/zettergmdata/simulations/';
 direc=[basedir,simname];
 direc_control=[basedir,simname_control];
-mkdir([direc, filesep, 'TECplots']);    %store output plots with the simulation data
-
 
 cwd = fileparts(mfilename('fullpath'));
 addpath([cwd,'/../script_utils'])
+
+makedir([direc, '/TECplots']);    %store output plots with the simulation data
 
 
 %READ IN THE SIMULATION INFORMATION

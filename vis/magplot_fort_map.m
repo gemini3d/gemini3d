@@ -10,15 +10,15 @@ simname='mooreOK3D_hemis_medres/'
 basedir='~/SDHCcard/'
 %basedir='~/simulations/'
 direc=[basedir,simname];
-mkdir([direc, filesep, 'Brplots']);
-mkdir([direc, filesep, 'Brplots_eps']);
-mkdir([direc, filesep, 'Bthplots']);
-mkdir([direc, filesep, 'Bthplots_eps']);
-mkdir([direc, filesep, 'Bphiplots']);
-mkdir([direc, filesep, 'Bphiplots_eps']);
+makedir([direc, '/Brplots'])
+makedir([direc, '/Brplots_eps'])
+makedir([direc, '/Bthplots'])
+makedir([direc, '/Bthplots_eps'])
+makedir([direc, '/Bphiplots'])
+makedir([direc, '/Bphiplots_eps'])
 
 %SIMULATION META-DATA
-[ymd0,UTsec0,tdur,dtout,flagoutput,mloc] = readconfig([direc, filesep, 'inputs']);
+[ymd0,UTsec0,tdur,dtout,flagoutput,mloc] = readconfig([direc, '/inputs']);
 times=UTsec0:dtout:UTsec0+tdur;
 lt=numel(times);
 
@@ -122,7 +122,7 @@ fprintf('...Done interpolating...\n');
 
 
 %SIMULATION META-DATA
-[ymd0,UTsec0,tdur,dtout,flagoutput,mloc]=readconfig([direc, filesep, 'inputs']);
+[ymd0,UTsec0,tdur,dtout,flagoutput,mloc]=readconfig([direc, '/inputs']);
 
 
 %TABULATE THE SOURCE OR GRID CENTER LOCATION

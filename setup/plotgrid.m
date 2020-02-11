@@ -437,7 +437,7 @@ end %if
 %% OLD/EXTRA CODE THAT I'M LOATH TO PART WITH (MZ)
 % %MAKE A MOVIE OF THE GRID ROTATING
 % direc='~/Downloads/gridplot/';
-% mkdir(direc)
+% makedir(direc)
 % azstart=255;
 % az=azstart:1:azstart+359;
 % el=35;

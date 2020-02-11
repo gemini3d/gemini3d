@@ -1,25 +1,21 @@
- %LOWRES 2D EXAMPLE FOR TESTING
+ %% LOWRES 2D EXAMPLE FOR TESTING
  p.format = 'hdf5';
- xdist=1200e3;    %eastward distance
- ydist=600e3;    %northward distance
- lxp=15;
- lyp=15;
- glat=67.11;
- glon=212.95;
- gridflag=0;
- I=90;
+ p.xdist=1200e3;    %eastward distance
+ p.ydist=600e3;    %northward distance
+ p.lxp=15;
+ p.lyp=15;
+ p.glat=67.11;
+ p.glon=212.95;
+ p.I=90;
 
 
 %ADD PATHS FOR FUNCTIONS
 cwd = fileparts(mfilename('fullpath'));
-addpath([cwd, filesep, '..', filesep,'..',filesep,'script_utils']);
 addpath([cwd, filesep, '..', filesep,'..',filesep,'setup']);
 addpath([cwd, filesep, '..', filesep,'..',filesep,'setup',filesep,'gridgen'])
-addpath([cwd, filesep, '..', filesep,'..',filesep,'vis']);
 
-
-%MATLAB GRID GENERATION
-xg=makegrid_cart_3D_lowresx1(xdist,lxp,ydist,lyp,I,glat,glon);
+%% GRID GENERATION
+xg = makegrid_cart_3D_lowresx1(p);
 
 
 %GENERATE SOME INITIAL CONDITIONS FOR A PARTICULAR EVENT
@@ -36,7 +32,7 @@ nme=2e11;
 
 
 %WRITE THE GRID AND INITIAL CONDITIONS
-outdir='../../tests/data/input/2Dtest_eq/';
+outdir = [cwd, '/../../gemini_sim/test3d_eq'];
 writegrid(xg,outdir);
 time=UT*3600;   %doesn't matter for input files
 writedata(dmy,time,ns,vsx1,Ts,outdir,p.format);
