@@ -11,7 +11,7 @@ end interface
 contains
 
 module procedure read_configfile
-!! READS THE INPUT CONFIGURAITON FILE ANDE ASSIGNS VARIABLES FOR FILENAMES, SIZES, ETC.
+!! READS THE INPUT CONFIGURAITON FILE, ASSIGNS VARIABLES FOR FILENAMES, SIZES, ETC.
 character(256) :: buf, indat_size, indat_grid, indat_file, source_dir, prec_dir, E0_dir
 integer :: i
 real(wp) :: NaN
@@ -29,7 +29,7 @@ NaN = ieee_value(0._wp, ieee_quiet_nan)
 
 is_nml = infile(len(infile)-3:len(infile)) == '.nml'
 
-!> READ CONFIG.DAT FILE FOR THIS SIMULATION
+!> READ CONFIG FILE FOR THIS SIMULATION
 rawconfig : block
 integer :: u
 open(newunit=u, file=infile, status='old', action='read')

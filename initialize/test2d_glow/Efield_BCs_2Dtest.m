@@ -8,7 +8,7 @@ direcgrid='../simulations/input/test2d/'
 
 %OUTPUT FILE LOCATION
 outdir='../simulations/input/test2d_fields/';
-mkdir(outdir);
+makedir(outdir)
 
 
 %READ IN THE SIMULATION INFORMATION (MEANS WE NEED TO CREATE THIS FOR THE SIMULATION WE WANT TO DO)

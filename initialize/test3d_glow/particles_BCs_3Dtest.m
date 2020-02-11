@@ -7,7 +7,7 @@ direcgrid='../simulations/input/test3d/'
 
 %CREATE SOME SPACE FOR OUTPUT FILES
 outdir='../simulations/input/test3d_particles/';
-mkdir(outdir);
+makedir(outdir)
 
 
 %READ IN THE SIMULATION INFORMATION (MEANS WE NEED TO CREATE THIS FOR THE SIMULATION WE WANT TO DO)

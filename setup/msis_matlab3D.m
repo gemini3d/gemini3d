@@ -1,6 +1,8 @@
+function natm = msis_matlab3D(p, xg)
+%% calls MSIS Fortran exectuable from Matlab.
+% compiles if not present
 %
-%function data=msis_matlab(alt,glat,glon,iyd,sec,f107a,f107,ap)
-%
+% [f107a, f107, ap] = activ;
 %     COLUMNS OF DATA:
 %       1 - ALT
 %       2 - HE NUMBER DENSITY(M-3)
@@ -14,23 +16,18 @@
 %       10 - Anomalous oxygen NUMBER DENSITY(M-3)
 %       11 - TEMPERATURE AT ALT
 %
-
-function natm = msis_matlab3D(xg,UT,dmy,activ)
-% [f107a, f107, ap] = activ;
-narginchk(4,4)
-validateattributes(xg,{'struct'},{'scalar'})
-validateattributes(UT,{'numeric'},{'nonnegative','scalar'}, mfilename, "UT decimal hour from midnight", 2)
-validateattributes(dmy,{'numeric'},{'positive','vector','numel',3})
-validateattributes(activ,{'numeric'},{'positive','vector','numel',3})
-
+narginchk(2,2)
+validateattributes(p, {'struct'}, {'scalar'})
+validateattributes(xg, {'struct'}, {'scalar'})
 
 cwd = fileparts(mfilename('fullpath'));
-exeloc = [cwd,'/../build/'];
-exe = [exeloc,'msis_setup'];
+exeloc = [cwd,'/../build'];
+exe = absolute_path([exeloc,'/msis_setup']);
 if ispc, exe = [exe, '.exe']; end
 
 if ~is_file(exe)
-  src = [cwd,'/../vendor/msis00/msis00_gfortran.f ', cwd,'/MSIS00/call_msis_gfortran.f90'];
+  src = [absolute_path([cwd,'/../vendor/msis00/msis00_gfortran.f']), ' ', ...
+         absolute_path([cwd,'/MSIS00/call_msis_gfortran.f90'])];
   % -static avoids problems with missing .so or .dll, from Matlab's
   % internal shell
   cmd = ['gfortran -static -std=legacy -w ',src,' -o ',exe];
@@ -46,13 +43,15 @@ glat=xg.glat(:);
 glon=xg.glon(:);
 lz=lx1*lx2*lx3;
 %% CONVERT DATES/TIMES/INDICES INTO MSIS-FRIENDLY FORMAT
-f107a=activ(1); f107=activ(2); ap=activ(3); ap3=activ(3);
-doy = datenum(dmy(3), dmy(2), dmy(1)) - datenum(dmy(3),1,1) + 1;
+f107a = p.activ(1);
+f107 = p.activ(2);
+ap = p.activ(3);
+ap3 = p.activ(3);
+doy = datenum(p.ymd(1), p.ymd(2), p.ymd(3)) - datenum(p.ymd(1),1,1) + 1;
 
 disp(['MSIS00 using DOY:  ',int2str(doy)])
-yearshort = mod(dmy(3),100);
+yearshort = mod(p.ymd(1),100);
 iyd = yearshort*1000+doy;
-sec = round(UT*3600);
 %% KLUDGE THE BELOW-ZERO ALTITUDES SO THAT THEY DON'T GIVE INF
 alt(alt(:)<=0)=1;
 %% FIND A UNIQUE IDENTIFIER FOR THE INPUT FILE
@@ -60,7 +59,7 @@ fin = tempname;
 %% CREATE AND INPUT FILE FOR FORTRAN PROGRAM
 fid=fopen(fin,'w');
 fwrite(fid,iyd,'integer*4');
-fwrite(fid,sec,'integer*4');
+fwrite(fid,p.UTsec0,'integer*4');
 fwrite(fid,f107a,'real*4');
 fwrite(fid,f107,'real*4');
 fwrite(fid,ap,'real*4');

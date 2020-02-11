@@ -8,10 +8,7 @@ validateattributes(saveplot_fmt, {'cell'}, {'vector'}, mfilename, 'format to sav
 [outdir, outname] = fileparts(filename);
 outdir = [outdir, '/../Aurplots'];
 
-
-if ~is_folder(outdir)
-  mkdir(outdir);
-end
+makedir(outdir)
 
 for i=1:length(saveplot_fmt)
 

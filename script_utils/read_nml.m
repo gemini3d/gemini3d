@@ -1,5 +1,6 @@
 function params = read_nml(filename)
-
+% for reading simulation config*.nml. Fortran namelist is a standard
+% format.
 narginchk(1,1)
 
 params = read_nml_group(filename, 'base');

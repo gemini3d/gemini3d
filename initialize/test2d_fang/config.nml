@@ -1,12 +1,12 @@
 &base
 ymd = 2013,2,20               ! year, month, day
-UTsec0 = 18000.0                       !UTsec0:  start time in UT seconds
-tdur = 300.0                          !tdur:  duration of simulation in seconds
-dtout = 60.0                          !dtout: how often to do output
-activ = 150.0,150.0,50.0              !activ:  f107a,f107,Ap
-tcfl = 0.9                           !tcfl:  target cfl number
-Teinf = 1500.0                        !Teinf:  exospheric electron temperature
-potsolve = 1                             !potsolve:  how are we solving electrodynamics?   0 - no; 1 - electrostatic; 2 - inductive
+UTsec0 = 18000.0              ! UTsec0:  start time in UT seconds
+tdur = 300.0                  ! tdur:  duration of simulation in seconds
+dtout = 60.0                  ! dtout: how often to do output
+activ = 150.0,150.0,50.0      ! activ:  f107a,f107,Ap
+tcfl = 0.9                    ! tcfl:  target cfl number
+Teinf = 1500.0                ! Teinf:  exospheric electron temperature
+potsolve = 1                  ! potsolve:  how are we solving electrodynamics?   0 - no; 1 - electrostatic; 2 - inductive
 flagperiodic = 0
 flagoutput = 2
 flagcap = 0

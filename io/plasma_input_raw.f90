@@ -111,7 +111,6 @@ real(wp), dimension(-1:size(x1,1)-2,-1:size(x2all,1)-2,-1:size(x3all,1)-2,1:lsp)
 real(wp), dimension(:,:,:,:), allocatable :: statetmp
 integer :: lx1in,lx2in,lx3in,u, utrace
 real(wp) :: tin
-real(wp), dimension(3) :: ymdtmp
 
 real(wp) :: tstart,tfin
 
@@ -145,6 +144,7 @@ end if
 
 block
 integer :: u
+real(wp), dimension(3) :: ymdtmp
 open(newunit=u,file=indatfile,status='old',form='unformatted', access='stream', action='read')
 read(u) ymdtmp,tin
 

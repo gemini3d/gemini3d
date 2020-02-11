@@ -2,9 +2,6 @@ function params = read_config(path)
 % reads simulation configuration into struct
 narginchk(1,1)
 
-% necessary for Matlab
-path = absolute_path(path);
-
 filename = get_configfile(path);
 
 [~,~,ext] = fileparts(filename);

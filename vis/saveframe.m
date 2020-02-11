@@ -4,7 +4,7 @@ narginchk(5,5)
 validateattributes(flagoutput, {'numeric'}, {'scalar'}, mfilename)
 validateattributes(direc, {'char'}, {'vector'}, mfilename)
 validateattributes(filename, {'char'}, {'vector'}, mfilename)
-validateattributes(h, {'struct'}, {'vector'}, mfilename)
+validateattributes(h, {'struct'}, {'vector'}, mfilename, 'figure handles', 5)
 
 if ischar(saveplot_fmt), saveplot_fmt = {saveplot_fmt}; end
 
@@ -14,9 +14,8 @@ assert(is_folder(direc), [direc, ' is not a directory.'])
 [~, stem] = fileparts(filename);
 
 plotdir = [direc, '/plots'];
-if ~is_folder(plotdir)
-  mkdir(plotdir);
-end
+
+makedir(plotdir)
 
 disp(['writing plots to ', plotdir])
 

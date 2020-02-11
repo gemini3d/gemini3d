@@ -1,5 +1,6 @@
 function params = read_ini(filename)
-
+% read config*.ini files. Only for legacy use, new simulations should used
+% config.nml Namelist format.
 narginchk(1,1)
 
 assert(is_file(filename), ['config file ', filename, ' not found.'])

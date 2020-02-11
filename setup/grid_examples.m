@@ -1,7 +1,6 @@
 %% ADD PATHS TO THE GRID GENERATION SCRIPTS
 addpath ./gridgen;
 addpath ../script_utils;
-clear;
 
 
 %% Iowa grid for AGU 2019
@@ -40,13 +39,13 @@ sourcemlon=sourcephi*180/pi;
 
 
 %% RUN THE GRID GENERATION CODE
-if (~exist('xg'))
+if ~exist('xg', 'var')
     if(iscurv)
-      xg=makegrid_tilteddipole_3D(dtheta,dphi,lp,lq,lphi,altmin,glat,glon,gridflag);   
-%    xg=makegrid_tilteddipole_nonuniform_3D(dtheta,dphi,lp,lq,lphi,altmin,glat,glon,gridflag);   
+      xg=makegrid_tilteddipole_3D(dtheta,dphi,lp,lq,lphi,altmin,glat,glon,gridflag);
+%    xg=makegrid_tilteddipole_nonuniform_3D(dtheta,dphi,lp,lq,lphi,altmin,glat,glon,gridflag);
 %    xg=makegrid_tilteddipole_nonuniform_oneside_3D(dtheta,dphi,lp,lq,lphi,altmin,glat,glon,gridflag);
     else
-      xg=makegrid_cart_3D(xdist,lxp,ydist,lyp,I,glat,glon);
+      xg=makegrid_cart_3D(p);
     end
 end
 
