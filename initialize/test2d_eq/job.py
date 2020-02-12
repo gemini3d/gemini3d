@@ -19,7 +19,8 @@ def main(mpiexec: Pathlike, gemexe: Pathlike, config_file: Pathlike, out_dir: Pa
 
     if not mpiexec:
         mpiexec = "mpiexec"
-    mpiexec = shutil.which("mpiexec")
+    mpi_root = os.getenv("MPI_ROOT")
+    mpiexec = shutil.which(mpiexec, path=mpi_root)
     if not mpiexec:
         raise FileNotFoundError("Need mpiexec to run simulations")
     print("mpiexec:", mpiexec)
