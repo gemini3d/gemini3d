@@ -3,10 +3,10 @@ import typing as T
 from pathlib import Path
 from datetime import datetime, timedelta
 
-from .utils import get_simsize
-
 NaN = float("NaN")
 R = Path(__file__).resolve().parents[1]
+
+__all__ = ["read_config"]
 
 
 @functools.lru_cache()
@@ -49,9 +49,6 @@ def read_config(path: Path) -> T.Dict[str, T.Any]:
 
     if not P:
         raise FileNotFoundError(f"could not find config file in {path}")
-
-    # NOT P["indat_size"] because that assumes the reading computer has the same directory layout as HPC
-    P["lxs"] = get_simsize(path)
 
     return P
 
@@ -105,7 +102,10 @@ def read_nml_group(fn: Path, group: str) -> T.Dict[str, T.Any]:
 
 
 def parse_group(raw: T.Dict[str, str], group: str) -> T.Dict[str, T.Any]:
-    """ this is Gemini-specific """
+    """
+    this is Gemini-specific
+    don't resolve absolute paths here because that assumes same machine
+    """
 
     if group == "base":
         P = {
@@ -124,9 +124,10 @@ def parse_group(raw: T.Dict[str, str], group: str) -> T.Dict[str, T.Any]:
             except KeyError:
                 P[k] = 0
         for k in ("indat_file", "indat_grid", "indat_size"):
-            P[k] = make_abspath(raw[k])
+            P[k] = Path(raw[k])
     elif group == "neutral_perturb":
-        P = {"interptype": int(raw["interptype"]), "sourcedir": make_abspath(raw["source_dir"])}
+        P = {"interptype": int(raw["interptype"]),
+             "sourcedir": Path(raw["source_dir"])}
 
         for k in ("sourcemlat", "sourcemlon", "dtneu", "dxn", "drhon", "dzn"):
             try:
@@ -134,23 +135,18 @@ def parse_group(raw: T.Dict[str, str], group: str) -> T.Dict[str, T.Any]:
             except KeyError:
                 P[k] = NaN
     elif group == "precip":
-        P = {"dtprec": float(raw["dtprec"]), "precdir": make_abspath(raw["prec_dir"])}
+        P = {"dtprec": float(raw["dtprec"]),
+             "precdir": Path(raw["prec_dir"])}
     elif group == "efield":
-        P = {"dtE0": float(raw["dtE0"]), "E0dir": make_abspath(raw["E0_dir"])}
+        P = {"dtE0": float(raw["dtE0"]),
+             "E0dir": Path(raw["E0_dir"])}
     elif group == "glow":
-        P = {"dtglow": float(raw["dtglow"]), "dtglowout": float(raw["dtglowout"])}
+        P = {"dtglow": float(raw["dtglow"]),
+             "dtglowout": float(raw["dtglowout"])}
     else:
         raise ValueError(f"not sure how to handle group {group}")
 
     return P
-
-
-def make_abspath(fn: str) -> Path:
-    """ if relative path, make absolute based on this file """
-    fn = Path(fn).expanduser()
-    if not fn.is_absolute():
-        fn = R / fn
-    return fn
 
 
 def read_ini(fn: Path) -> T.Dict[str, T.Any]:
