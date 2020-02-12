@@ -10,8 +10,6 @@ else()
   set(OUTEXT ".dat")
 endif()
 
-set(_zenodo_ext ".dat")
-
 
 function(python_compare TESTNAME OUTDIR REFDIR)
 
