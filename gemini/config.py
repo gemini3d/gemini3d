@@ -1,16 +1,14 @@
 import functools
-import typing
+import typing as T
 from pathlib import Path
 from datetime import datetime, timedelta
-
-from . import raw
 
 NaN = float("NaN")
 R = Path(__file__).resolve().parents[1]
 
 
 @functools.lru_cache()
-def read_config(path: Path) -> typing.Dict[str, typing.Any]:
+def read_config(path: Path) -> T.Dict[str, T.Any]:
     """
     read simulation input configuration
 
@@ -25,9 +23,8 @@ def read_config(path: Path) -> typing.Dict[str, typing.Any]:
     -------
     params: dict
         simulation parameters from config file
-
     """
-    P: typing.Dict[str, typing.Any] = {}
+    P: T.Dict[str, T.Any] = {}
 
     path = Path(path).expanduser().resolve()
     if path.is_file():
@@ -52,14 +49,11 @@ def read_config(path: Path) -> typing.Dict[str, typing.Any]:
         raise FileNotFoundError(f"could not find config file in {path}")
 
     # NOT P["indat_size"] because that assumes the reading computer has the same directory layout as HPC
-    simsize_file = path / "simsize.dat"
-    if simsize_file.is_file():
-        P["lxs"] = raw.get_simsize(simsize_file)
 
     return P
 
 
-def read_nml(fn: Path) -> typing.Dict[str, typing.Any]:
+def read_nml(fn: Path) -> T.Dict[str, T.Any]:
     """ parse .nml file
     for now we don't use the f90nml package, though maybe we will in the future.
     Just trying to keep Python prereqs reduced for this simple parsing.
@@ -79,10 +73,10 @@ def read_nml(fn: Path) -> typing.Dict[str, typing.Any]:
     return params
 
 
-def read_nml_group(fn: Path, group: str) -> typing.Dict[str, typing.Any]:
+def read_nml_group(fn: Path, group: str) -> T.Dict[str, T.Any]:
     """ read a group from an .nml file """
 
-    raw: typing.Dict[str, typing.Any] = {}
+    raw: T.Dict[str, T.Any] = {}
 
     with fn.open("r") as f:
         for line in f:
@@ -107,7 +101,7 @@ def read_nml_group(fn: Path, group: str) -> typing.Dict[str, typing.Any]:
     return parse_group(raw, group)
 
 
-def parse_group(raw: typing.Dict[str, str], group: str) -> typing.Dict[str, typing.Any]:
+def parse_group(raw: T.Dict[str, str], group: str) -> T.Dict[str, T.Any]:
     """ this is Gemini-specific """
 
     if group == "base":
@@ -156,10 +150,10 @@ def make_abspath(fn: str) -> Path:
     return fn
 
 
-def read_ini(fn: Path) -> typing.Dict[str, typing.Any]:
+def read_ini(fn: Path) -> T.Dict[str, T.Any]:
     """ parse .ini file (legacy) """
 
-    P: typing.Dict[str, typing.Any] = {}
+    P: T.Dict[str, T.Any] = {}
 
     with fn.open("r") as f:
         date = list(map(int, f.readline().split()[0].split(",")))[::-1]

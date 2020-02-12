@@ -12,12 +12,12 @@ import os
 from functools import lru_cache
 from meson_file_download import url_retrieve
 from meson_file_extract import extract_tar
-from meson_cpu_count import get_cpu_count
+import gemini
 from compile_prereqs_gcc import meson_build, cmake_build, update
 
 # ========= user parameters ======================
 BUILDDIR = "build"
-NJOBS = get_cpu_count()
+NJOBS = gemini.get_cpu_count()
 
 # Library parameters
 HDF5VERSION = "1.10.6"

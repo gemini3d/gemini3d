@@ -6,8 +6,8 @@ import argparse
 import typing
 import subprocess
 from pathlib import Path
+import gemini
 
-from meson_cpu_count import get_mpi_count
 from meson_file_download import url_retrieve
 from meson_file_extract import extract_zip
 
@@ -47,7 +47,7 @@ def run_test(testname: str, mpiexec: str, exe: str, nml: str, outdir: str, mpi_c
     extract_zip(z["zip"], z["dir"])
 
     if not mpi_count:
-        mpi_count = get_mpi_count(z["dir"] / "inputs/simsize.dat")
+        mpi_count = gemini.get_mpi_count(z["dir"] / "inputs/simsize.dat")
 
     # have to get exe as absolute path
     exe_abs = Path(exe).resolve()

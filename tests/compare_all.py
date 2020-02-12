@@ -25,7 +25,7 @@ import sys
 try:
     import gemini
 except ModuleNotFoundError:
-    print("need to install PyGemini by  'pip install -e gemini'", file=sys.stderr)
+    print("need to install PyGemini", file=sys.stderr)
     raise SystemExit(77)
 
 tol = {

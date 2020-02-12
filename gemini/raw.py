@@ -1,5 +1,5 @@
 from pathlib import Path
-import typing
+import typing as T
 import numpy as np
 import logging
 import struct
@@ -9,7 +9,7 @@ LSP = 7
 
 
 # NOT lru_cache
-def get_simsize(fn: Path) -> typing.Tuple[int, ...]:
+def get_simsize(fn: Path) -> T.Tuple[int, ...]:
     """
     get simulation dimensions from simsize.dat
     in the future, this would be in the .h5 HDF5 output.
@@ -36,7 +36,7 @@ def get_simsize(fn: Path) -> typing.Tuple[int, ...]:
     return lxs
 
 
-def readgrid(fn: Path) -> typing.Dict[str, np.ndarray]:
+def readgrid(fn: Path) -> T.Dict[str, np.ndarray]:
     """
     get simulation dimensions
     in the future, this would be in the .h5 HDF5 output.
@@ -60,13 +60,13 @@ def readgrid(fn: Path) -> typing.Dict[str, np.ndarray]:
         raise ValueError('lxs must be 2-D or 3-D')
 
 
-def readgrid2(fn: Path, lxs: typing.Sequence[int]) -> typing.Dict[str, np.ndarray]:
+def readgrid2(fn: Path, lxs: T.Sequence[int]) -> T.Dict[str, np.ndarray]:
     """ for Efield """
     if not fn.is_file():
         raise FileNotFoundError(fn)
 
     read = np.fromfile
-    grid: typing.Dict[str, typing.Any] = {"lx": lxs}
+    grid: T.Dict[str, T.Any] = {"lx": lxs}
     with fn.open("r") as f:
         grid["mlon"] = read(f, np.float64, lxs[0])
         grid["mlat"] = read(f, np.float64, lxs[1])
@@ -74,12 +74,12 @@ def readgrid2(fn: Path, lxs: typing.Sequence[int]) -> typing.Dict[str, np.ndarra
     return grid
 
 
-def readgrid3(fn: Path, lxs: typing.Sequence[int]) -> typing.Dict[str, np.ndarray]:
+def readgrid3(fn: Path, lxs: T.Sequence[int]) -> T.Dict[str, np.ndarray]:
 
     lgridghost = (lxs[0] + 4) * (lxs[1] + 4) * (lxs[2] + 4)
     gridsizeghost = [lxs[0] + 4, lxs[1] + 4, lxs[2] + 4]
 
-    grid: typing.Dict[str, typing.Any] = {"lx": lxs}
+    grid: T.Dict[str, T.Any] = {"lx": lxs}
 
     if not fn.is_file():
         logging.error(f"{fn} grid file is not present. Will try to load rest of data.")
@@ -129,14 +129,14 @@ def readgrid3(fn: Path, lxs: typing.Sequence[int]) -> typing.Dict[str, np.ndarra
     return grid
 
 
-def load_Efield(fn: Path) -> typing.Dict[str, typing.Any]:
+def load_Efield(fn: Path) -> T.Dict[str, T.Any]:
     """
     load Efield_inputs files that contain input electric field in V/m
     """
 
     read = np.fromfile
 
-    E: typing.Dict[str, np.ndarray] = {}
+    E: T.Dict[str, np.ndarray] = {}
 
     E["Nlon"], E["Nlat"] = get_simsize(fn.parent / "simsize.dat")
 
@@ -170,7 +170,7 @@ def load_Efield(fn: Path) -> typing.Dict[str, typing.Any]:
     return E
 
 
-def loadframe3d_curv(fn: Path, lxs: typing.Sequence[int]) -> typing.Dict[str, typing.Any]:
+def loadframe3d_curv(fn: Path, lxs: T.Sequence[int]) -> T.Dict[str, T.Any]:
     """
     end users should normally use loadframe() instead
 
@@ -187,7 +187,7 @@ def loadframe3d_curv(fn: Path, lxs: typing.Sequence[int]) -> typing.Dict[str, ty
     #        coords={"x1": grid["x1"][2:-2], "x2": grid["x2"][2:-2], "x3": grid["x3"][2:-2]}
     #    )
 
-    dat: typing.Dict[str, typing.Any] = {}
+    dat: T.Dict[str, T.Any] = {}
 
     with fn.open("r") as f:
         dat["time"] = read_time(f)
@@ -210,7 +210,7 @@ def loadframe3d_curv(fn: Path, lxs: typing.Sequence[int]) -> typing.Dict[str, ty
     return dat
 
 
-def loadframe3d_curvavg(fn: Path, lxs: typing.Sequence[int]) -> typing.Dict[str, typing.Any]:
+def loadframe3d_curvavg(fn: Path, lxs: T.Sequence[int]) -> T.Dict[str, T.Any]:
     """
     end users should normally use loadframe() instead
 
@@ -225,7 +225,7 @@ def loadframe3d_curvavg(fn: Path, lxs: typing.Sequence[int]) -> typing.Dict[str,
     #    dat = xarray.Dataset(
     #        coords={"x1": grid["x1"][2:-2], "x2": grid["x2"][2:-2], "x3": grid["x3"][2:-2]}
     #    )
-    dat: typing.Dict[str, typing.Any] = {}
+    dat: T.Dict[str, T.Any] = {}
 
     with fn.open("r") as f:
         dat["time"] = read_time(f)
@@ -238,7 +238,7 @@ def loadframe3d_curvavg(fn: Path, lxs: typing.Sequence[int]) -> typing.Dict[str,
     return dat
 
 
-def read4D(f, lsp: int, lxs: typing.Sequence[int]) -> np.ndarray:
+def read4D(f, lsp: int, lxs: T.Sequence[int]) -> np.ndarray:
     """
     end users should normally use laodframe() instead
     """
@@ -248,7 +248,7 @@ def read4D(f, lsp: int, lxs: typing.Sequence[int]) -> np.ndarray:
     return np.fromfile(f, np.float64, np.prod(lxs) * lsp).reshape((*lxs, lsp), order="F")
 
 
-def read3D(f, lxs: typing.Sequence[int]) -> np.ndarray:
+def read3D(f, lxs: T.Sequence[int]) -> np.ndarray:
     """
     end users should normally use loadframe() instead
     """
@@ -258,7 +258,7 @@ def read3D(f, lxs: typing.Sequence[int]) -> np.ndarray:
     return np.fromfile(f, np.float64, np.prod(lxs)).reshape(*lxs, order="F")
 
 
-def read2D(f, lxs: typing.Sequence[int]) -> np.ndarray:
+def read2D(f, lxs: T.Sequence[int]) -> np.ndarray:
     """
     end users should normally use laodframe() instead
     """
@@ -268,7 +268,7 @@ def read2D(f, lxs: typing.Sequence[int]) -> np.ndarray:
     return np.fromfile(f, np.float64, np.prod(lxs[1:])).reshape(*lxs[1:], order="F")
 
 
-def loadglow_aurmap(f, lxs: typing.Sequence[int], lwave: int) -> typing.Dict[str, typing.Any]:
+def loadglow_aurmap(f, lxs: T.Sequence[int], lwave: int) -> T.Dict[str, T.Any]:
     """
     read the auroral output from GLOW
     """
