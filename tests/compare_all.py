@@ -20,13 +20,7 @@ these parameters are a bit arbitrary.
 
 """
 from argparse import ArgumentParser
-import sys
-
-try:
-    import gemini
-except ModuleNotFoundError:
-    print("need to install PyGemini", file=sys.stderr)
-    raise SystemExit(77)
+import gemini
 
 tol = {
     "rtol": 1e-5,

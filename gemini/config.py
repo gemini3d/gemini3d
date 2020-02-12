@@ -3,6 +3,8 @@ import typing as T
 from pathlib import Path
 from datetime import datetime, timedelta
 
+from .utils import get_simsize
+
 NaN = float("NaN")
 R = Path(__file__).resolve().parents[1]
 
@@ -49,6 +51,7 @@ def read_config(path: Path) -> T.Dict[str, T.Any]:
         raise FileNotFoundError(f"could not find config file in {path}")
 
     # NOT P["indat_size"] because that assumes the reading computer has the same directory layout as HPC
+    P["lxs"] = get_simsize(path)
 
     return P
 
