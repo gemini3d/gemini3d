@@ -1,19 +1,19 @@
 function(num_mpi_processes REFDIR)
 
+set(_pyok)
+
 if(PythonOK)
-# do not quote COMMAND line in general
-execute_process(
-  COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/script_utils/get_cpu_count.py ${REFDIR}/inputs
-  OUTPUT_VARIABLE NP
-  TIMEOUT 15)
-else()
-  # CMake's CPU count is not so reliable
-  include(ProcessorCount)
-  ProcessorCount(NP)
+  # do not quote COMMAND line in general
+  set(_cmd ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/script_utils/get_cpu_count.py ${REFDIR}/inputs)
+
+  execute_process(COMMAND ${_cmd}
+    RESULT_VARIABLE _pyok
+    OUTPUT_VARIABLE NP
+    TIMEOUT 15)
 endif()
 
-if(NP LESS 1)
-  message(STATUS "could not detect number of CPUs, falling back to 1")
+if(NOT _pyok EQUAL 0 OR NP LESS 1)
+  message(STATUS "${_cmd} could not detect MPI count, falling back to 1 (tests will run slowly)")
   set(NP 1)
 endif()
 

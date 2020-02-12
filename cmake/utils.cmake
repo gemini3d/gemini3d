@@ -5,14 +5,11 @@ include(${CMAKE_CURRENT_LIST_DIR}/compare.cmake)
 function(setup_gemini_test TESTNAME EXE TESTDIR REFDIR TIMEOUT)
 
 if(NOT EXISTS ${CMAKE_SOURCE_DIR}/initialize/${TESTDIR})
-  message(WARNING "directory ${CMAKE_SOURCE_DIR}/initialize/${TESTDIR} not found.")
+  message(STATUS "SKIP: directory ${CMAKE_SOURCE_DIR}/initialize/${TESTDIR} not found.")
   return()
 endif()
 
-# sets NP
-if(NOT NP)
-  num_mpi_processes(${REFDIR})
-endif()
+num_mpi_processes(${REFDIR})
 
 set(_name ${TESTNAME})
 
