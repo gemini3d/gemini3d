@@ -11,13 +11,13 @@ test('diffusion1D', test_diffusion1D_exe,
   suite: 'unit')
 
 test('Diffusion1D_octave', octave,
-  args: ['-q', '--eval', 'test_diffusion1D("' + meson.build_root() / 'test_diffusion1d.dat")'],
+  args: ['-q', '--eval', 'test_diffusion1D("' + meson.build_root() / 'test_diffusion1d.h5")'],
   timeout: 10,
   workdir: meson.current_source_dir(),
   suite: 'unit', is_parallel: false, priority: -100)
 
 test('Diffusion1D_python', python,
-  args: ['test_diffusion1D.py', meson.build_root() / 'test_diffusion1d.dat'],
+  args: ['test_diffusion1D.py', meson.build_root() / 'test_diffusion1d.h5'],
   timeout: 10,
   workdir: meson.current_source_dir(),
   suite: 'unit', is_parallel: false, priority: -100)
