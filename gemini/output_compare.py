@@ -33,7 +33,9 @@ def compare_all(outdir: Path, refdir: Path, tol: typing.Dict[str, float], doplot
 
     ref: typing.Dict[str, typing.Any] = {}
     # %% READ IN THE SIMULATION INFORMATION
-    params = read_config(outdir / "inputs")
+    outinput_dir = outdir / "inputs"
+    params = read_config(outinput_dir)
+    # params["lxs"] = get_simsize(outinput_dir)
     # %% TIMES OF INTEREST
     t0 = params["t0"]
     times = datetime_range(t0, t0 + params["tdur"], params["dtout"])

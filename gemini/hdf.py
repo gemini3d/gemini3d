@@ -12,10 +12,18 @@ def get_simsize(path: Path) -> T.Tuple[int, ...]:
     """
     get simulation size
     """
-    path = Path(path).expanduser()
+    path = Path(path).expanduser().resolve()
 
     with h5py.File(path, "r") as f:
-        lxs = f["lxs"][:]
+        if "lxs" in f:
+            lxs = f["lxs"][:]
+        elif "lx1" in f:
+            if f["lx1"].ndim > 0:
+                lxs = (f["lx1"][:].squeeze()[()], f["lx2"][:].squeeze()[()], f["lx3"][:].squeeze()[()])
+            else:
+                lxs = (f["lx1"][()], f["lx2"][()], f["lx3"][()])
+        else:
+            raise KeyError(f"could not find '/lxs' or '/lx1' in {path.as_posix()}")
 
     return lxs
 

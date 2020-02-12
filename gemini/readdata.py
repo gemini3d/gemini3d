@@ -9,6 +9,7 @@ import typing
 
 from . import raw
 from .config import read_config
+from .base import get_simsize
 
 try:
     from . import hdf
@@ -73,7 +74,9 @@ def readdata(fn: Path) -> typing.Dict[str, typing.Any]:
     fn_aurora = fn.parent / "aurmaps" / fn.name
     fn_Efield = fn.parent / "Efield_inputs" / fn.name
 
-    P = read_config(fn.parent / "inputs")
+    input_dir = fn.parent / "inputs"
+    P = read_config(input_dir)
+    P["lxs"] = get_simsize(input_dir)
 
     if fn.suffix == ".dat":
         if P["flagoutput"] == 1:
