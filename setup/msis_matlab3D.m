@@ -22,6 +22,7 @@ validateattributes(xg, {'struct'}, {'scalar'})
 
 cwd = fileparts(mfilename('fullpath'));
 exeloc = [cwd,'/../build'];
+makedir(exeloc)
 exe = absolute_path([exeloc,'/msis_setup']);
 if ispc, exe = [exe, '.exe']; end
 
