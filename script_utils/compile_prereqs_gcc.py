@@ -12,8 +12,6 @@ import typing
 import sys
 import os
 from functools import lru_cache
-from meson_file_download import url_retrieve
-from meson_file_extract import extract_tar
 import gemini
 
 # ========= user parameters ======================
@@ -44,6 +42,7 @@ nice = ["nice"] if sys.platform == "linux" else []
 
 
 def hdf5(dirs: typing.Dict[str, Path]):
+    """ build and install HDF5 """
     if os.name == "nt":
         raise SystemExit("Please use binaries from HDF Group for Windows appropriate for your compiler.")
 
@@ -51,8 +50,8 @@ def hdf5(dirs: typing.Dict[str, Path]):
     source_dir = dirs["workdir"] / HDF5DIR
 
     tarfn = f"hdf5-{HDF5VERSION}.tar.bz2"
-    url_retrieve(HDF5URL, tarfn, ("md5", HDF5MD5))
-    extract_tar(tarfn, source_dir)
+    gemini.url_retrieve(HDF5URL, tarfn, ("md5", HDF5MD5))
+    gemini.extract_tar(tarfn, source_dir)
 
     env = get_compilers()
 
@@ -65,6 +64,7 @@ def hdf5(dirs: typing.Dict[str, Path]):
 
 
 def openmpi(dirs: typing.Dict[str, Path]):
+    """ build and install OpenMPI """
     if os.name == "nt":
         raise SystemExit("OpenMPI is not available in native Windows.")
 
@@ -73,8 +73,8 @@ def openmpi(dirs: typing.Dict[str, Path]):
 
     tarfn = f"openmpi-{MPIVERSION}.tar.bz2"
     url = f"https://download.open-mpi.org/release/open-mpi/v{MPIVERSION[:3]}/{tarfn}"
-    url_retrieve(url, tarfn, ("sha1", MPISHA1))
-    extract_tar(tarfn, source_dir)
+    gemini.url_retrieve(url, tarfn, ("sha1", MPISHA1))
+    gemini.extract_tar(tarfn, source_dir)
 
     env = get_compilers()
 
@@ -87,6 +87,7 @@ def openmpi(dirs: typing.Dict[str, Path]):
 
 
 def lapack(wipe: bool, dirs: typing.Dict[str, Path], buildsys: str):
+    """ build and insall Lapack """
     install_dir = dirs["prefix"] / LAPACKDIR
     source_dir = dirs["workdir"] / LAPACKDIR
     build_dir = source_dir / BUILDDIR
@@ -104,6 +105,7 @@ def lapack(wipe: bool, dirs: typing.Dict[str, Path], buildsys: str):
 
 
 def scalapack(wipe: bool, dirs: typing.Dict[str, Path], buildsys: str):
+    """ build and install Scalapack """
     source_dir = dirs["workdir"] / SCALAPACKDIR
     build_dir = source_dir / BUILDDIR
 
@@ -117,12 +119,12 @@ def scalapack(wipe: bool, dirs: typing.Dict[str, Path], buildsys: str):
     elif buildsys == "meson":
         args = [f"--prefix={dirs['prefix']}"]
         meson_build(args + lib_args, source_dir, build_dir, wipe, env=get_compilers())
-
     else:
         raise ValueError(f"unknown build system {buildsys}")
 
 
 def mumps(wipe: bool, dirs: typing.Dict[str, Path], buildsys: str):
+    """ build and install Mumps """
     install_dir = dirs["prefix"] / MUMPSDIR
     source_dir = dirs["workdir"] / MUMPSDIR
     build_dir = source_dir / BUILDDIR
@@ -145,6 +147,7 @@ def mumps(wipe: bool, dirs: typing.Dict[str, Path], buildsys: str):
 
 
 def cmake_build(args: typing.List[str], source_dir: Path, build_dir: Path, wipe: bool, env: typing.Mapping[str, str]):
+    """ build and install with CMake """
     cmake = cmake_minimum_version("3.13")
     cachefile = build_dir / "CMakeCache.txt"
     if wipe and cachefile.is_file():
@@ -154,10 +157,13 @@ def cmake_build(args: typing.List[str], source_dir: Path, build_dir: Path, wipe:
 
     subprocess.check_call(nice + [cmake, "--build", str(build_dir), "--parallel", "--target", "install"])
 
-    subprocess.check_call(nice + ["ctest", "--parallel", "--output-on-failure"], cwd=str(build_dir))
+    ret = subprocess.run(nice + ["ctest", "--parallel", "--output-on-failure"], cwd=str(build_dir))
+
+    raise SystemExit(ret.returncode)
 
 
 def meson_build(args: typing.List[str], source_dir: Path, build_dir: Path, wipe: bool, env: typing.Mapping[str, str]):
+    """ build and install with Meson """
     meson = shutil.which("meson")
     if not meson:
         raise FileNotFoundError("Meson not found.")
@@ -168,7 +174,9 @@ def meson_build(args: typing.List[str], source_dir: Path, build_dir: Path, wipe:
     subprocess.check_call(nice + [meson, "setup"] + args + [str(build_dir), str(source_dir)], env=env)
 
     for op in ("test", "install"):
-        subprocess.check_call(nice + [meson, op, "-C", str(build_dir)])
+        ret = subprocess.run(nice + [meson, op, "-C", str(build_dir)])
+
+    raise SystemExit(ret.returncode)
 
 
 @lru_cache()

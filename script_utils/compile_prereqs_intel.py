@@ -6,12 +6,10 @@ import subprocess
 import shutil
 from pathlib import Path
 from argparse import ArgumentParser
-import typing
+import typing as T
 import sys
 import os
 from functools import lru_cache
-from meson_file_download import url_retrieve
-from meson_file_extract import extract_tar
 import gemini
 from compile_prereqs_gcc import meson_build, cmake_build, update
 
@@ -33,7 +31,8 @@ MUMPSDIR = "mumps"
 nice = ["nice"] if sys.platform == "linux" else []
 
 
-def hdf5(dirs: typing.Dict[str, Path]):
+def hdf5(dirs: T.Dict[str, Path]):
+    """ build and install HDF5 """
     if os.name == "nt":
         raise SystemExit("Please use binaries from HDF Group for Windows appropriate for your compiler.")
 
@@ -41,8 +40,8 @@ def hdf5(dirs: typing.Dict[str, Path]):
     source_dir = dirs["workdir"] / HDF5DIR
 
     tarfn = f"hdf5-{HDF5VERSION}.tar.bz2"
-    url_retrieve(HDF5URL, tarfn, ("md5", HDF5MD5))
-    extract_tar(tarfn, source_dir)
+    gemini.url_retrieve(HDF5URL, tarfn, ("md5", HDF5MD5))
+    gemini.extract_tar(tarfn, source_dir)
 
     env = get_compilers()
 
@@ -54,7 +53,8 @@ def hdf5(dirs: typing.Dict[str, Path]):
     subprocess.check_call(cmd)
 
 
-def mumps(wipe: bool, dirs: typing.Dict[str, Path], buildsys: str):
+def mumps(wipe: bool, dirs: T.Dict[str, Path], buildsys: str):
+    """ build and install Mumps """
     install_dir = dirs["prefix"] / MUMPSDIR
     source_dir = dirs["workdir"] / MUMPSDIR
     build_dir = source_dir / BUILDDIR
@@ -72,8 +72,8 @@ def mumps(wipe: bool, dirs: typing.Dict[str, Path], buildsys: str):
 
 
 @lru_cache()
-def get_compilers() -> typing.Mapping[str, str]:
-
+def get_compilers() -> T.Mapping[str, str]:
+    """ get paths to Intel compilers """
     env = os.environ
 
     fc_name = "ifort"

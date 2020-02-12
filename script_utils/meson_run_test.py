@@ -8,9 +8,6 @@ import subprocess
 from pathlib import Path
 import gemini
 
-from meson_file_download import url_retrieve
-from meson_file_extract import extract_zip
-
 R = Path(__file__).resolve().parents[1]
 
 zenodo: typing.Dict[str, typing.Any] = {
@@ -43,8 +40,8 @@ zenodo: typing.Dict[str, typing.Any] = {
 
 def run_test(testname: str, mpiexec: str, exe: str, nml: str, outdir: str, mpi_count: int = None):
     z = zenodo[testname]
-    url_retrieve(z["url"], z["zip"], ("md5", z["md5"]))
-    extract_zip(z["zip"], z["dir"])
+    gemini.url_retrieve(z["url"], z["zip"], ("md5", z["md5"]))
+    gemini.extract_zip(z["zip"], z["dir"])
 
     if not mpi_count:
         mpi_count = gemini.get_mpi_count(z["dir"] / "inputs/simsize.dat")
