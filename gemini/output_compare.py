@@ -22,12 +22,14 @@ def compare_all(outdir: Path, refdir: Path, tol: typing.Dict[str, float], doplot
     outdir = Path(outdir).expanduser()
     refdir = Path(refdir).expanduser()
 
-    if not outdir.is_dir() or not refdir.is_dir():
-        print(f"comparison directory(s) not found: {outdir}  {refdir}", file=sys.stderr)
+    if not outdir.is_dir():
+        print(f"output directory(s) not found: {outdir}", file=sys.stderr)
         raise SystemExit(77)
-
+    if not refdir.is_dir():
+        print(f"reference directory(s) not found: {refdir}", file=sys.stderr)
+        raise SystemExit(77)
     if outdir.samefile(refdir):
-        raise OSError(f"compare_all inputs are the same directory: {outdir}")
+        raise OSError(f"reference and output are the same directory: {outdir}")
 
     ref: typing.Dict[str, typing.Any] = {}
     # %% READ IN THE SIMULATION INFORMATION
