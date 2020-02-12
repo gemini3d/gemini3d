@@ -14,11 +14,11 @@ import os
 from functools import lru_cache
 from meson_file_download import url_retrieve
 from meson_file_extract import extract_tar
-from meson_cpu_count import get_cpu_count
+import gemini
 
 # ========= user parameters ======================
 BUILDDIR = "build"
-NJOBS = get_cpu_count()
+NJOBS = gemini.get_cpu_count()
 # Library parameters
 HDF5VERSION = "1.10.6"
 HDF5URL = "https://zenodo.org/record/3659270/files/hdf5-1.10.6.tar.bz2?download=1"

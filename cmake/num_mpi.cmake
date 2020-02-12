@@ -3,7 +3,7 @@ function(num_mpi_processes REFDIR)
 if(PythonOK)
 # do not quote COMMAND line in general
 execute_process(
-  COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/script_utils/meson_cpu_count.py ${REFDIR}/inputs/simsize.dat
+  COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/script_utils/get_cpu_count.py ${REFDIR}/inputs
   OUTPUT_VARIABLE NP
   TIMEOUT 15)
 else()

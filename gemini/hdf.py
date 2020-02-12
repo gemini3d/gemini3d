@@ -1,5 +1,5 @@
 from pathlib import Path
-import typing
+import typing as T
 import numpy as np
 import logging
 import h5py
@@ -8,7 +8,19 @@ from datetime import datetime, timedelta
 LSP = 7
 
 
-def readgrid(fn: Path) -> typing.Dict[str, np.ndarray]:
+def get_simsize(path: Path) -> T.Tuple[int, ...]:
+    """
+    get simulation size
+    """
+    path = Path(path).expanduser()
+
+    with h5py.File(path, "r") as f:
+        lxs = f["lxs"][:]
+
+    return lxs
+
+
+def readgrid(fn: Path) -> T.Dict[str, np.ndarray]:
     """
     get simulation dimensions
 
@@ -23,27 +35,27 @@ def readgrid(fn: Path) -> typing.Dict[str, np.ndarray]:
         grid parameters
     """
 
-    grid: typing.Dict[str, typing.Any] = {}
+    grid: T.Dict[str, T.Any] = {}
 
     if not fn.is_file():
         logging.error(f"{fn} grid file is not present. Will try to load rest of data.")
         return grid
 
-    with h5py.File(fn, "r") as f:
-        grid["lx"] = f["lxs"][:]
+    grid["lxs"] = get_simsize(fn)
 
+    with h5py.File(fn, "r") as f:
         for key in f.keys():
             grid[key] = f[key][:]
 
     return grid
 
 
-def load_Efield(fn: Path) -> typing.Dict[str, typing.Any]:
+def load_Efield(fn: Path) -> T.Dict[str, T.Any]:
     """
     load Efield_inputs files that contain input electric field in V/m
     """
 
-    E: typing.Dict[str, np.ndarray] = {}
+    E: T.Dict[str, np.ndarray] = {}
 
     sizefn = fn.parent / "simsize.h5"  # NOT the whole sim simsize.dat
     with h5py.File(sizefn, "r") as f:
@@ -67,7 +79,7 @@ def load_Efield(fn: Path) -> typing.Dict[str, typing.Any]:
     return E
 
 
-def loadframe3d_curv(fn: Path) -> typing.Dict[str, typing.Any]:
+def loadframe3d_curv(fn: Path) -> T.Dict[str, T.Any]:
     """
     end users should normally use loadframe() instead
     """
@@ -77,7 +89,7 @@ def loadframe3d_curv(fn: Path) -> typing.Dict[str, typing.Any]:
     #        coords={"x1": grid["x1"][2:-2], "x2": grid["x2"][2:-2], "x3": grid["x3"][2:-2]}
     #    )
 
-    dat: typing.Dict[str, typing.Any] = {}
+    dat: T.Dict[str, T.Any] = {}
 
     with h5py.File(fn, "r") as f:
         dat["time"] = ymdhourdec2datetime(f["time/ymd"][0], f["time/ymd"][1], f["time/ymd"][2], f["time/UThour"][()])
@@ -107,7 +119,7 @@ def loadframe3d_curv(fn: Path) -> typing.Dict[str, typing.Any]:
     return dat
 
 
-def loadframe3d_curvavg(fn: Path) -> typing.Dict[str, typing.Any]:
+def loadframe3d_curvavg(fn: Path) -> T.Dict[str, T.Any]:
     """
     end users should normally use loadframe() instead
 
@@ -120,7 +132,7 @@ def loadframe3d_curvavg(fn: Path) -> typing.Dict[str, typing.Any]:
     #    dat = xarray.Dataset(
     #        coords={"x1": grid["x1"][2:-2], "x2": grid["x2"][2:-2], "x3": grid["x3"][2:-2]}
     #    )
-    dat: typing.Dict[str, typing.Any] = {}
+    dat: T.Dict[str, T.Any] = {}
 
     with h5py.File(fn, "r") as f:
         dat["time"] = ymdhourdec2datetime(f["time/ymd"][0], f["time/ymd"][1], f["time/ymd"][2], f["/time/UThour"][()])
@@ -139,7 +151,7 @@ def loadframe3d_curvavg(fn: Path) -> typing.Dict[str, typing.Any]:
     return dat
 
 
-def loadglow_aurmap(fn: Path) -> typing.Dict[str, typing.Any]:
+def loadglow_aurmap(fn: Path) -> T.Dict[str, T.Any]:
     """
     read the auroral output from GLOW
 

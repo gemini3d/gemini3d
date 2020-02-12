@@ -3,9 +3,12 @@ from pathlib import Path
 import argparse
 import zipfile
 import tarfile
+import typing as T
+
+Pathlike = T.Union[str, Path]
 
 
-def extract_zip(fn: Path, outpath: Path, overwrite: bool = False):
+def extract_zip(fn: Pathlike, outpath: Pathlike, overwrite: bool = False):
     outpath = Path(outpath).expanduser().resolve()
     # need .resolve() in case intermediate relative dir doesn't exist
     if outpath.is_dir() and not overwrite:
@@ -16,7 +19,7 @@ def extract_zip(fn: Path, outpath: Path, overwrite: bool = False):
         z.extractall(str(outpath.parent))
 
 
-def extract_tar(fn: Path, outpath: Path, overwrite: bool = False):
+def extract_tar(fn: Pathlike, outpath: Pathlike, overwrite: bool = False):
     outpath = Path(outpath).expanduser().resolve()
     # need .resolve() in case intermediate relative dir doesn't exist
     if outpath.is_dir() and not overwrite:

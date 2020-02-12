@@ -10,9 +10,12 @@ import hashlib
 import argparse
 import typing
 import socket
+import typing as T
+
+Pathlike = T.Union[str, Path]
 
 
-def url_retrieve(url: str, outfile: Path, filehash: typing.Sequence[str] = None, overwrite: bool = False):
+def url_retrieve(url: str, outfile: Pathlike, filehash: typing.Sequence[str] = None, overwrite: bool = False):
     """
     Parameters
     ----------
