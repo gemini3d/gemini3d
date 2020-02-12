@@ -53,7 +53,9 @@ def run_test(testname: str, mpiexec: str, exe: str, nml: str, outdir: str, mpi_c
     exe_abs = Path(exe).resolve()
     cmd = [mpiexec, "-np", str(mpi_count), str(exe_abs), nml, outdir]
     print(" ".join(cmd))
-    subprocess.check_call(cmd, cwd=R)
+    ret = subprocess.run(cmd, cwd=R)
+
+    raise SystemExit(ret.returncode)
 
 
 if __name__ == "__main__":
