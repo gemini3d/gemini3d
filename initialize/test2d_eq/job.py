@@ -46,7 +46,9 @@ def main(mpiexec: Pathlike, gemexe: Pathlike, config_file: Pathlike, out_dir: Pa
 
     Nmpi = gemini.get_mpi_count(config_file, cwd=cwd)
 
-    ret = subprocess.run([str(mpiexec), "-n", str(Nmpi), str(gemexe), str(config_file), str(out_dir)])
+    cmd = [str(mpiexec), "-n", str(Nmpi), str(gemexe), str(config_file), str(out_dir)]
+    print(" ".join(cmd))
+    ret = subprocess.run(cmd)
 
     raise SystemExit(ret.returncode)
 
