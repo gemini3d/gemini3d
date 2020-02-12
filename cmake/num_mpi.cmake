@@ -21,5 +21,5 @@ set(NP ${NP} PARENT_SCOPE)
 
 endfunction(num_mpi_processes)
 
-# for testing standalone cmake -P
-# num_mpi_processes(tests/data/zenodo2d_fang)
+# test standalone:
+#   cmake -P num_mpi_processes(tests/data/zenodo2d_fang)
