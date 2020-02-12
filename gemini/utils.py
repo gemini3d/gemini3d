@@ -16,14 +16,14 @@ except ImportError:
     psutil = None
     # pip install psutil will improve CPU utilization.
 
-from .raw import get_simsize as get_simsize_raw
-from .hdf import get_simsize as get_simsize_h5
+from .config import read_config
+from .base import get_simsize
 
 git = shutil.which("git")
 
 Pathlike = T.Union[str, Path]
 
-__all__ = ["gitrev", "get_cpu_count", "get_mpi_count", "get_simsize"]
+__all__ = ["gitrev", "get_cpu_count", "get_mpi_count"]
 
 
 def gitrev() -> str:
@@ -53,11 +53,26 @@ def get_cpu_count(force: int = None) -> int:
     return max_cpu // extradiv
 
 
-def get_mpi_count(path: Pathlike, force: int = None) -> int:
+def get_mpi_count(path: Pathlike, force: int = None, cwd: Pathlike = None) -> int:
+
+    path = Path(path).expanduser()
 
     max_cpu = get_cpu_count(force)
 
-    size = get_simsize(path)
+    # %% config.nml file or directory or simsize.h5?
+    if path.is_dir():
+        size = get_simsize(path)
+    elif path.is_file():
+        if path.suffix in (".h5", ".nc", ".dat"):
+            size = get_simsize(path)
+        elif path.suffix in (".ini", ".nml"):
+            if cwd is None:
+                raise ValueError("must specify cwd when about to run a simulation using config file")
+            params = read_config(path)
+            # OK to use indat_size because we're going to run a sim on this machine
+            size = get_simsize(cwd / params["indat_size"])
+    else:
+        raise FileNotFoundError(f"{path} is not a file or directory")
 
     mpi_count = 1
     if size[2] == 1:  # 2D sim
@@ -72,27 +87,6 @@ def get_mpi_count(path: Pathlike, force: int = None) -> int:
                 break
 
     return max(mpi_count, 1)
-
-
-def get_simsize(path: Pathlike) -> T.Tuple[int, ...]:
-
-    path = Path(path).expanduser()
-    if path.is_dir():
-        for suffix in (".h5", ".nc", ".dat"):
-            fn = path / ("simsize" + suffix)
-            if fn.is_file():
-                break
-    else:
-        fn = path
-    if not fn.is_file():
-        raise FileNotFoundError(path)
-
-    if fn.suffix == '.h5':
-        return get_simsize_h5(fn)
-    elif fn.suffix == '.nc':
-        raise ValueError('TODO: implement NetCDF4')
-    else:
-        return get_simsize_raw(fn)
 
 
 def url_retrieve(url: str, outfile: Pathlike, filehash: T.Sequence[str] = None, overwrite: bool = False):

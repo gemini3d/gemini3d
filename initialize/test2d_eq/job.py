@@ -9,8 +9,10 @@ import shutil
 from pathlib import Path
 import argparse
 import typing as T
+import os
 
 Pathlike = T.Union[str, Path]
+cwd = os.getcwd()
 
 
 def main(mpiexec: Pathlike, gemexe: Pathlike, config_file: Pathlike, out_dir: Path):
@@ -35,7 +37,7 @@ def main(mpiexec: Pathlike, gemexe: Pathlike, config_file: Pathlike, out_dir: Pa
     if not out_dir.is_dir():
         out_dir.mkdir(parents=True, exist_ok=True)
 
-    Nmpi = gemini.get_mpi_count(config_file)
+    Nmpi = gemini.get_mpi_count(config_file, cwd=cwd)
 
     ret = subprocess.run([str(mpiexec), "-n", str(Nmpi), str(gemexe), str(config_file), str(out_dir)])
 
