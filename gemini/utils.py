@@ -75,18 +75,20 @@ def get_mpi_count(path: Pathlike, force: int = None, cwd: Pathlike = None) -> in
         raise FileNotFoundError(f"{path} is not a file or directory")
 
     mpi_count = 1
-    if size[2] == 1:  # 2D sim
+    if size[2] == 1:
+        # 2D sim
         for i in range(max_cpu, 2, -1):
-            mpi_count = max(math.gcd(size[1] // 2, i), mpi_count)
+            mpi_count = max(math.gcd(size[1], i), mpi_count)
             if i < mpi_count:
                 break
-    else:  # 3D sim
+    else:
+        # 3D sim
         for i in range(max_cpu, 2, -1):
-            mpi_count = max(math.gcd(size[2] // 2, i), mpi_count)
+            mpi_count = max(math.gcd(size[2], i), mpi_count)
             if i < mpi_count:
                 break
 
-    return max(mpi_count, 1)
+    return mpi_count
 
 
 def url_retrieve(url: str, outfile: Pathlike, filehash: T.Sequence[str] = None, overwrite: bool = False):
