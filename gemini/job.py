@@ -39,11 +39,12 @@ def runner(mpiexec: Pathlike, gemexe: Pathlike, config_file: Pathlike, out_dir: 
             raise FileNotFoundError("Cannot find gemini.bin")
     gemexe = str(gemexe)
 
-    ret = subprocess.run(gemexe, universal_newlines=True)
+    ret = subprocess.run(gemexe, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, universal_newlines=True)
     if ret.returncode != 77:
         raise RuntimeError(
             f"{gemexe} was not runnable on your platform. Try recompiling on this computer type."
             "E.g. different HPC nodes may not have the CPU feature sets."
+            f"{ret.stderr}"
         )
 
     print("using gemini executable", gemexe)
