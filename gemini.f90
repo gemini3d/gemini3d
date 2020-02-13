@@ -137,7 +137,15 @@ real(wp), parameter :: dtscale=2d0
 !! MAIN PROGRAM
 
 argc = command_argument_count()
-if (argc < 2) error stop 'must specify .ini file to configure simulation and output directory'
+if (argc < 2) then
+  print '(/,A,/)', 'GEMINI-3D: by Matthew Zettergren'
+  print '(A)', 'GLOW and auroral interfaces by Guy Grubbs'
+  print '(A,/)', 'build system and software engineering by Michael Hirsch'
+  print *, 'must specify .ini file to configure simulation and output directory. Example:'
+  print '(/,A,/)', 'mpiexec -np 4 build/gemini.bin initialize/test2d_fang/config.nml /tmp/test2d_fang'
+  stop 77
+  !! stops with de facto "skip test" return code
+endif
 
 !> INITIALIZE MESSING PASSING VARIABLES, IDS ETC.
 call mpisetup()
