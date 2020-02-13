@@ -1,4 +1,4 @@
-submodule (reader) reader_raw
+submodule (reader) reader_hdf5
 
 use h5fortran, only: hdf5_file
 
@@ -8,6 +8,7 @@ contains
 
 
 module procedure get_simsize2
+!! get x2 and x3 dimension sizes
 type(hdf5_file) :: hf
 character(:), allocatable :: fn
 integer :: ierr
@@ -22,22 +23,43 @@ if (debug) print '(A,/,A)', 'READ 2D (B-perp, B-perp) grid size from file:', fn
 
 inquire(file=fn, exist=exists)
 if (.not.exists) then
-   write(stderr,'(A,/,A)') 'ERROR: generate grid with script--grid not present: ',fn
+   write(stderr,'(/,A,/,A,/)') 'ERROR: reader_hdf5:get_simsize2: generate grid with script--grid not present:',fn
    error stop 77
 endif
 
 call hf%initialize(fn, ierr, status='old',action='r')
 if(ierr/=0) error stop 'could not read simsize.h5'
-call hf%read('/llat', llat, ierr)
-if(ierr/=0) error stop 'could not read llat'
-call hf%read('/llon', llon, ierr)
-if(ierr/=0) error stop 'could not read llon'
+
+!> scripts can use variety of variable names
+if(hf%exist('/llat', ierr)) then
+  call hf%read('/llat', llat, ierr)
+elseif(hf%exist('/Nlat', ierr)) then
+  call hf%read('/Nlat', llat, ierr)
+elseif(hf%exist('/lx2', ierr)) then
+  call hf%read('/lx2', llat, ierr)
+else
+  error stop 'reader_hdf5:get_simsize2: could not read llat / lx2'
+endif
+if(ierr/=0) error stop 'reader_hdf5:get_simsize2: could not read llat / lx2'
+
+if(hf%exist('/llon', ierr)) then
+  call hf%read('/llon', llon, ierr)
+elseif(hf%exist('/Nlat', ierr)) then
+  call hf%read('/Nlat', llon, ierr)
+elseif(hf%exist('/lx3', ierr)) then
+  call hf%read('/lx3', llon, ierr)
+else
+  error stop 'reader_hdf5:get_simsize2: could not read llon / lx3'
+endif
+if(ierr/=0) error stop 'reader_hdf5:get_simsize2: could not read llon / lx3'
+
 call hf%finalize(ierr)
 
 end procedure get_simsize2
 
 
 module procedure get_simsize3
+!! get x1, x2, x3 dimension sizes
 !! sizes include Ghost Cells
 type(hdf5_file) :: hf
 character(:), allocatable :: fn
@@ -207,4 +229,4 @@ end procedure get_neutral3
 
 
 
-end submodule reader_raw
+end submodule reader_hdf5

@@ -50,7 +50,7 @@ module procedure input_plasma
 
 if (myid==0) then
   !ROOT FINDS/CALCULATES INITIAL CONDITIONS AND SENDS TO WORKERS
-  print *, 'Assembling initial condition on root using '//indatsize//' '//indatfile
+  print '(A,/,A,/,A)', 'Assembling initial condition on root with:',indatsize,indatfile
   call input_root_mpi(x1,x2,x3all,indatsize,ns,vs1,Ts)
 else
   !WORKERS RECEIVE THE IC DATA FROM ROOT
