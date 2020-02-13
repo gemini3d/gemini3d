@@ -67,7 +67,8 @@ target_link_libraries(multifluid PRIVATE advec calculus collision const diffusio
 
 # --- Main GEMINI executable
 add_executable(gemini.bin gemini.f90)
-target_link_libraries(gemini.bin PRIVATE advec calculus const collision diffusion fang grid mesh io ionization mpimod multifluid neutral pathlib PDEelliptic PDEparabolic potential precipBCs sources temporal timeutils
+target_link_libraries(gemini.bin PRIVATE advec calculus const collision diffusion fang grid io interp ionization mesh mpimod multifluid
+  neutral pathlib PDEelliptic PDEparabolic potential precipBCs reader sources temporal timeutils
   ${LAPACK_LIBRARIES})  # necessary for self-compiled
 
 #--------magnetic field calculation executable---------------
@@ -81,7 +82,7 @@ include(${CMAKE_SOURCE_DIR}/cmake/test2d.cmake)
 include(${CMAKE_SOURCE_DIR}/cmake/test3d.cmake)
 #endif()
 
-foreach(t collision fang fang_run io ionization logging multifluid pathlib precipBCs reader sources temporal timeutils)
+foreach(t collision fang fang_run io ionization logging multifluid neutral pathlib precipBCs reader sources temporal timeutils)
   target_include_directories(${t} INTERFACE ${CMAKE_CURRENT_BINARY_DIR}/include)
   set_target_properties(${t} PROPERTIES
     Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include)
