@@ -34,8 +34,7 @@ assert(all(isfinite(vs1i(:))), 'non-finite interpolated drift')
 assert(all(isfinite(Tsi(:))), 'non-finite interpolated temperature')
 
 %% WRITE OUT THE GRID
-writegrid(xg, p.simdir, p.format);
-dmy=[ymdend(3),ymdend(2),ymdend(1)];
-writedata(dmy,UTsecend,nsi,vs1i,Tsi, p.simdir, p.format);
+writegrid(p, xg)
+writedata(ymdend, UTsecend,nsi,vs1i,Tsi, p.simdir, p.format);
 
 end % function eq2dist
