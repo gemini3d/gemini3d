@@ -18,7 +18,12 @@ def runner(mpiexec: Pathlike, gemexe: Pathlike, config_file: Pathlike, out_dir: 
         mpi_root += "/bin"
     mpiexec = shutil.which(mpiexec, path=mpi_root)
     if not mpiexec:
-        raise FileNotFoundError("Need mpiexec to run simulations")
+        msg = "Need mpiexec to run simulations"
+        if os.name == "nt":
+            msg += "\n\nTypically Windows users will use any one of:"
+            msg += "\na) Windows Subsystem for Linux (WSL) <-- recommended \nb) Cygwin"
+            msg += "\nc) Intel Parallel Studio for Windows (or WSL)"
+        raise FileNotFoundError(msg)
     print("mpiexec:", mpiexec)
 
     if gemexe:
@@ -26,13 +31,22 @@ def runner(mpiexec: Pathlike, gemexe: Pathlike, config_file: Pathlike, out_dir: 
         if not gemexe.is_file():
             raise FileNotFoundError(gemexe)
     else:
-        build_dir = Path(__file__).resolve().parents[1] / 'build'
+        build_dir = Path(__file__).resolve().parents[1] / "build"
         if not build_dir.is_dir():
             raise NotADirectoryError(build_dir)
         gemexe = shutil.which("gemini.bin", path=str(build_dir))
         if not gemexe:
             raise FileNotFoundError("Cannot find gemini.bin")
-    print("gemini executable:", gemexe)
+    gemexe = str(gemexe)
+
+    ret = subprocess.run(gemexe, universal_newlines=True)
+    if ret.returncode != 77:
+        raise RuntimeError(
+            f"{gemexe} was not runnable on your platform. Try recompiling on this computer type."
+            "E.g. different HPC nodes may not have the CPU feature sets."
+        )
+
+    print("using gemini executable", gemexe)
 
     out_dir = Path(out_dir).expanduser()
     if out_dir.is_file():
