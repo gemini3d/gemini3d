@@ -1,9 +1,6 @@
-add_library(pathlib pathlib.F90)
-target_include_directories(pathlib INTERFACE ${CMAKE_CURRENT_BINARY_DIR}/include)
-set_target_properties(pathlib PROPERTIES
-  Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include)
+add_library(pathlib OBJECT pathlib.F90)
 
-add_library(logging logging.f90)
+add_library(logging OBJECT logging.f90)
 
 #=== io library
 if(hdf5)
@@ -20,11 +17,8 @@ else()
   list(APPEND io_src path_exists.f90)
 endif()
 
-add_library(io io.f90 aurora.f90 output.f90 input.f90 mag.f90 plasma.f90 ${io_src})
+add_library(io OBJECT io.f90 aurora.f90 output.f90 input.f90 mag.f90 plasma.f90 ${io_src})
 target_link_libraries(io PRIVATE calculus const pathlib reader grid mpimod timeutils)
-target_include_directories(io INTERFACE ${CMAKE_CURRENT_BINARY_DIR}/include)
-set_target_properties(io PROPERTIES
-  Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include)
 
 if(hdf5)
   target_link_libraries(io PUBLIC h5fortran::h5fortran)
@@ -34,7 +28,7 @@ elseif(netcdf)
 endif()
 
 #=== reader
-add_library(reader reader.f90)
+add_library(reader OBJECT reader.f90)
 if(hdf5)
   target_sources(reader PRIVATE reader_hdf5.f90)
   target_link_libraries(reader PRIVATE h5fortran::h5fortran)
@@ -45,6 +39,3 @@ else()
   target_sources(reader PRIVATE reader_raw.f90)
 endif()
 target_link_libraries(reader PRIVATE const)
-target_include_directories(reader INTERFACE ${CMAKE_CURRENT_BINARY_DIR}/include)
-set_target_properties(reader PROPERTIES
-  Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include)
