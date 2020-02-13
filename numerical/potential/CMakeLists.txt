@@ -1,27 +1,16 @@
 if(realbits EQUAL 32)
-  add_library(mumps_interface mumps_real32.f90)
+  add_library(mumps_interface OBJECT mumps_real32.f90)
 else()
-  add_library(mumps_interface mumps_real64.f90)
+  add_library(mumps_interface OBJECT mumps_real64.f90)
 endif()
-target_include_directories(mumps_interface
-  PUBLIC ${MUMPS_INCLUDE_DIRS}
-  INTERFACE ${CMAKE_CURRENT_BINARY_DIR}/include)
+target_include_directories(mumps_interface PUBLIC ${MUMPS_INCLUDE_DIRS})
 target_link_libraries(mumps_interface PUBLIC ${MUMPS_LIBRARIES})
-set_target_properties(mumps_interface PROPERTIES
-  Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include)
 
-add_library(PDEelliptic PDEelliptic.f90)
-target_link_libraries(PDEelliptic PRIVATE const mumps_interface MPI::MPI_Fortran)
-target_include_directories(PDEelliptic INTERFACE ${CMAKE_CURRENT_BINARY_DIR}/include)
-set_target_properties(PDEelliptic PROPERTIES
-  Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include)
+add_library(PDEelliptic OBJECT PDEelliptic.f90)
+target_link_libraries(PDEelliptic PUBLIC const mumps_interface MPI::MPI_Fortran)
 
-add_library(potential potential_comm_mumps.f90 potential_mumps.f90 boundary_conditions/potentialBCs_mumps.f90)
-target_link_libraries(potential PRIVATE calculus collision const grid mesh interp timeutils
-  MPI::MPI_Fortran PDEelliptic mpimod reader)
-target_include_directories(potential INTERFACE ${CMAKE_CURRENT_BINARY_DIR}/include)
-set_target_properties(potential PROPERTIES
-  Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include)
+add_library(potential OBJECT potential_comm_mumps.f90 potential_mumps.f90 boundary_conditions/potentialBCs_mumps.f90)
+target_link_libraries(potential PUBLIC calculus collision const grid mesh interp timeutils PDEelliptic mpimod reader MPI::MPI_Fortran)
 
 if(NOT hdf5)
   return()

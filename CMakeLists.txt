@@ -56,26 +56,23 @@ add_subdirectory(io)
 add_subdirectory(temporal)
 add_subdirectory(neutral)
 
-add_library(collision collisions/collisions.f90)
+add_library(collision OBJECT collisions/collisions.f90)
 target_link_libraries(collision PRIVATE const)
-target_include_directories(collision INTERFACE ${CMAKE_CURRENT_BINARY_DIR}/include)
-set_target_properties(collision PROPERTIES
-  Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include)
 
 add_subdirectory(sources)
 
 # --- other libs
-add_library(multifluid multifluid/multifluid.f90)
+add_library(multifluid OBJECT multifluid/multifluid.f90)
 target_link_libraries(multifluid PRIVATE advec calculus collision const diffusion grid mesh ionization mpimod precipBCs sources timeutils)
 
 # --- Main GEMINI executable
 add_executable(gemini.bin gemini.f90)
-target_link_libraries(gemini.bin PRIVATE const grid mesh io mpimod multifluid neutral potential precipBCs temporal timeutils
+target_link_libraries(gemini.bin PRIVATE advec calculus const collision diffusion fang grid mesh io ionization mpimod multifluid neutral pathlib PDEelliptic PDEparabolic potential precipBCs sources temporal timeutils
   ${LAPACK_LIBRARIES})  # necessary for self-compiled
 
 #--------magnetic field calculation executable---------------
 add_executable(magcalc.bin magcalc.f90)
-target_link_libraries(magcalc.bin PRIVATE mpimod const grid mesh io timeutils)
+target_link_libraries(magcalc.bin PRIVATE mpimod const grid mesh io pathlib reader timeutils)
 
 # --- self-tests
 include(${CMAKE_SOURCE_DIR}/cmake/test2d.cmake)
@@ -83,3 +80,9 @@ include(${CMAKE_SOURCE_DIR}/cmake/test2d.cmake)
   # need the dollar sign on ENV for IF: save needless downloading
 include(${CMAKE_SOURCE_DIR}/cmake/test3d.cmake)
 #endif()
+
+foreach(t collision fang fang_run io ionization logging multifluid pathlib precipBCs reader sources temporal timeutils)
+  target_include_directories(${t} INTERFACE ${CMAKE_CURRENT_BINARY_DIR}/include)
+  set_target_properties(${t} PROPERTIES
+    Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include)
+endforeach()
