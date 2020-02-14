@@ -10,7 +10,7 @@ cwd = fileparts(mfilename('fullpath'));
 addpath([cwd,'/../vis'])
 %% READ Equilibrium SIMULATION INFO
 [ymd0,UTsec0,tdur,dtout, flagoutput, mloc] = readconfig(p.eqnml);
-xgin = readgrid([p.eqdir, '/inputs'], p.format);
+xgin = readgrid(p.eqnml, p.format);
 
 %% FIND THE DATE OF THE END FRAME OF THE SIMULATION
 % PRESUMABLY THIS WILL BE THE STARTING point FOR another
