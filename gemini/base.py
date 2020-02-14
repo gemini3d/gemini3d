@@ -12,7 +12,7 @@ Pathlike = T.Union[str, Path]
 
 def get_simsize(path: Pathlike) -> T.Tuple[int, ...]:
 
-    path = Path(path).expanduser()
+    path = Path(path).expanduser().resolve()
     if path.is_dir():
         for suffix in (".h5", ".nc", ".dat"):
             fn = path / ("simsize" + suffix)
