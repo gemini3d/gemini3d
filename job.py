@@ -4,6 +4,7 @@ runs a job
 """
 import argparse
 import gemini.job
+import sys
 
 
 if __name__ == "__main__":
@@ -14,4 +15,9 @@ if __name__ == "__main__":
     p.add_argument("-gemexe", help="path to desired gemini.bin")
     P = p.parse_args()
 
-    gemini.job.runner(P.mpiexec, P.gemexe, P.config_file, P.outdir)
+    try:
+        gemini.job.runner(P.mpiexec, P.gemexe, P.config_file, P.out_dir)
+    except FileNotFoundError:
+        print("\nA necessary simulation input file was not found."
+              "\nThis can mean that the simulation initialization script wasn't run first.\n", file=sys.stderr)
+        raise
