@@ -1,8 +1,10 @@
 function config()
 %% 2D east-west test equilibrium
+
 cwd = fileparts(mfilename('fullpath'));
 
 p.format = 'hdf5';
+p.nml = [cwd,'/config.nml'];
 p.simdir = [cwd, '/../../../gemini_sim/test2d_eq'];
 p.xdist = 1200e3;    %eastward distance
 p.ydist = 600e3;    %northward distance
@@ -19,15 +21,13 @@ addpath([gemdir, '/script_utils']);
 addpath([gemdir, '/setup']);
 addpath([gemdir, '/setup/gridgen'])
 
-p = merge_struct(p, read_config('config.nml'));
+p = merge_struct(p, read_config(p.nml));
 %% GRID GENERATION
 xg = makegrid_cart_3D(p);
-
-[ns,Ts,vsx1] = eqICs3D(p, xg);
-%note that this actually calls msis_matlab - should be rewritten to include the neutral module form the fortran code!!!
 
 %% WRITE GRID & INITIAL CONDITIONS
 writegrid(p, xg);
 
+[ns,Ts,vsx1] = eqICs3D(p, xg);
 writedata(p.ymd, p.UTsec0, ns, vsx1, Ts, p.simdir, p.format);
-end
+end % function

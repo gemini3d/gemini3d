@@ -24,7 +24,7 @@ def runner(mpiexec: Pathlike, gemexe: Pathlike, config_file: Pathlike, out_dir: 
             msg += "\na) Windows Subsystem for Linux (WSL) <-- recommended \nb) Cygwin"
             msg += "\nc) Intel Parallel Studio for Windows (or WSL)"
         raise FileNotFoundError(msg)
-    print("mpiexec:", mpiexec)
+    print("Using mpiexec:", mpiexec)
 
     if gemexe:
         gemexe = Path(gemexe).expanduser()
