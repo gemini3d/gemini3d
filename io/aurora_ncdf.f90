@@ -1,7 +1,7 @@
 submodule(io:io_aurora) io_aurora_hdf5
 
 use timeutils, only : date_filename
-use h5fortran, only: hdf5_file
+use nc4fortran, only: netcdf_file
 
 contains
 
@@ -10,7 +10,7 @@ module procedure output_aur_root
 !! COLLECT COMPLETE DATA FROM WORKERS AND PROCESS FOR OUTPUT.
 !! NO GHOST CELLS (I HOPE)
 
-type(hdf5_file) :: hout
+type(netcdf_file) :: hout
 
 real(wp), dimension(1:lwave,1:lx2,1:lx3) :: ivertmp
 real(wp), dimension(1:lwave,1:lx2all,1:lx3all) :: iverall

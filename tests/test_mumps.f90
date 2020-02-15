@@ -1,18 +1,13 @@
 use mpi, only: mpi_init, mpi_finalize, mpi_comm_world
 use, intrinsic :: iso_fortran_env, only: stderr=>error_unit, i64=>int64, compiler_version, compiler_options
+use mumps_interface, only: mumps_struc, mumps_exec
 
 implicit none
 
-#if REALBITS==32
-include 'smumps_struc.h'
-type (SMUMPS_STRUC) :: mumps_par
-#else
-include 'dmumps_struc.h'
-type (DMUMPS_STRUC) :: mumps_par
-#endif
-
+type(mumps_struc) :: mumps_par
 integer :: ierr
 integer(i64) :: i8
+
 
 print *,compiler_version()
 
@@ -36,11 +31,7 @@ contains
 
 subroutine simple_test(mumps_par)
 
-#if REALBITS==32
-type (SMUMPS_STRUC), intent(inout) :: mumps_par
-#else
-type (DMUMPS_STRUC), intent(inout) :: mumps_par
-#endif
+type (MUMPS_STRUC), intent(inout) :: mumps_par
 
 call mumps_run(mumps_par)
 
@@ -74,13 +65,9 @@ end subroutine simple_test
 
 subroutine read_input(mumps_par)
 
-#if REALBITS==32
-type (SMUMPS_STRUC), intent(inout) :: mumps_par
-#else
-type (DMUMPS_STRUC), intent(inout) :: mumps_par
-#endif
+  type (MUMPS_STRUC), intent(inout) :: mumps_par
 
-integer :: i, u
+integer :: i
 logical :: exists
 character(2048) :: argv
 character(:), allocatable :: filename
@@ -96,24 +83,27 @@ endif
 
 inquire(file=filename, exist=exists)
 if(.not. exists) then
-  write(stderr, *) 'could not find input file: ',filename
+  write(stderr, *) 'could not find input file: ',trim(filename)
   error stop 77
 endif
 
-open(newunit=u, file=filename, form='formatted', status='old', action='read')
-READ(u,*) mumps_par%N
-READ(u,*) mumps_par%NZ  ! NNZ for MUMPS > 5.1.0
-ALLOCATE( mumps_par%IRN ( mumps_par%NZ ) )
-ALLOCATE( mumps_par%JCN ( mumps_par%NZ ) )
-ALLOCATE( mumps_par%A( mumps_par%NZ ) )
-ALLOCATE( mumps_par%RHS ( mumps_par%N  ) )
-DO I8 = 1, mumps_par%NZ
-  READ(u,*) mumps_par%IRN(I8),mumps_par%JCN(I8), mumps_par%A(I8)
-END DO
-DO I = 1, mumps_par%N
-  READ(u,*) mumps_par%RHS(I)
-END DO
-close(u)
+block
+  integer :: u
+  open(newunit=u, file=filename, form='formatted', status='old', action='read')
+  READ(u,*) mumps_par%N
+  READ(u,*) mumps_par%NZ  ! NNZ for MUMPS > 5.1.0
+  ALLOCATE( mumps_par%IRN ( mumps_par%NZ ) )
+  ALLOCATE( mumps_par%JCN ( mumps_par%NZ ) )
+  ALLOCATE( mumps_par%A( mumps_par%NZ ) )
+  ALLOCATE( mumps_par%RHS ( mumps_par%N  ) )
+  DO I8 = 1, mumps_par%NZ
+    READ(u,*) mumps_par%IRN(I8),mumps_par%JCN(I8), mumps_par%A(I8)
+  END DO
+  DO I = 1, mumps_par%N
+    READ(u,*) mumps_par%RHS(I)
+  END DO
+  close(u)
+end block
 
 END IF
 
@@ -122,15 +112,9 @@ end subroutine read_input
 
 subroutine mumps_run(mumps_par)
 
-#if REALBITS==32
-type (SMUMPS_STRUC), intent(inout) :: mumps_par
-CALL SMUMPS(mumps_par)
-#else
-type (DMUMPS_STRUC), intent(inout) :: mumps_par
-CALL DMUMPS(mumps_par)
-#endif
+type (MUMPS_STRUC), intent(inout) :: mumps_par
 
-
+call mumps_exec(mumps_par)
 
 IF (mumps_par%INFOG(1) < 0) THEN
   WRITE(stderr,'(A,A,I6,A,I9)') " ERROR: ", &

@@ -6,17 +6,14 @@
 FindSCALAPACK
 -------------
 
-* Michael Hirsch, Ph.D. www.scivision.dev
-
-Let Michael know if there are more MKL / Lapack / compiler combination you want.
-Refer to https://software.intel.com/en-us/articles/intel-mkl-link-line-advisor
+by Michael Hirsch, Ph.D. www.scivision.dev
 
 Finds SCALAPACK libraries for MKL, OpenMPI and MPICH.
 Intel MKL relies on having environment variable MKLROOT set, typically by sourcing
 mklvars.sh beforehand.
+Intended to work with Intel MKL at least through version 2021.
 
-In general SCALAPACK requires linking LAPACK as well.
-
+This module does NOT find LAPACK.
 
 Parameters
 ^^^^^^^^^^
@@ -24,17 +21,11 @@ Parameters
 ``MKL``
   Intel MKL for MSVC, ICL, ICC, GCC and PGCC. Working with IntelMPI (default Window, Linux), MPICH (default Mac) or OpenMPI (Linux only).
 
-``IntelMPI``
-  MKL BLACS IntelMPI
-
-``MKL64``
-  MKL only: 64-bit integers  (default is 32-bit integers)
-
 ``OpenMPI``
-  SCALAPACK + OpenMPI
+  OpenMPI interface
 
 ``MPICH``
-  SCALAPACK + MPICH
+  MPICH interface
 
 
 Result Variables
@@ -56,9 +47,11 @@ References
 * Pkg-Config and MKL:  https://software.intel.com/en-us/articles/intel-math-kernel-library-intel-mkl-and-pkg-config-tool
 * MKL for Windows: https://software.intel.com/en-us/mkl-windows-developer-guide-static-libraries-in-the-lib-intel64-win-directory
 * MKL Windows directories: https://software.intel.com/en-us/mkl-windows-developer-guide-high-level-directory-structure
+* MKL link-line advisor: https://software.intel.com/en-us/articles/intel-mkl-link-line-advisor
 #]=======================================================================]
 
 #===== functions
+
 function(mkl_scala)
 
 set(_mkl_libs ${ARGV})
@@ -80,7 +73,7 @@ foreach(s ${_mkl_libs})
     return()
   endif()
 
-  list(APPEND SCALAPACK_LIB ${SCALAPACK_${s}_LIBRARY})
+  list(APPEND SCALAPACK_LIBRARY ${SCALAPACK_${s}_LIBRARY})
 endforeach()
 
 
@@ -89,7 +82,7 @@ find_path(SCALAPACK_INCLUDE_DIR
   PATHS ENV MKLROOT ENV I_MPI_ROOT ENV TBBROOT
   PATH_SUFFIXES
     include
-    include/intel64/${_mkl_bitflag}lp64
+    include/intel64/lp64
   HINTS ${MKL_INCLUDE_DIRS})
 
 if(NOT SCALAPACK_INCLUDE_DIR)
@@ -97,126 +90,109 @@ if(NOT SCALAPACK_INCLUDE_DIR)
   return()
 endif()
 
-list(APPEND SCALAPACK_INCLUDE_DIR
-  ${MKL_INCLUDE_DIRS})
+list(APPEND SCALAPACK_INCLUDE_DIR ${MKL_INCLUDE_DIRS})
 
-set(SCALAPACK_LIBRARY ${SCALAPACK_LIB} PARENT_SCOPE)
+set(SCALAPACK_MKL_FOUND true PARENT_SCOPE)
+set(SCALAPACK_LIBRARY ${SCALAPACK_LIBRARY} PARENT_SCOPE)
 set(SCALAPACK_INCLUDE_DIR ${SCALAPACK_INCLUDE_DIR} PARENT_SCOPE)
 
 endfunction(mkl_scala)
 
-#==== main program
-
-cmake_policy(VERSION 3.11)
-
-if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.12)
-  cmake_policy(SET CMP0074 NEW)
-endif()
+# === main
 
 if(NOT (OpenMPI IN_LIST SCALAPACK_FIND_COMPONENTS
         OR MPICH IN_LIST SCALAPACK_FIND_COMPONENTS
         OR MKL IN_LIST SCALAPACK_FIND_COMPONENTS))
-  if(DEFINED ENV{MKLROOT})
-    if(APPLE)
-      list(APPEND SCALAPACK_FIND_COMPONENTS MKL MPICH)
-    else()
-      list(APPEND SCALAPACK_FIND_COMPONENTS MKL IntelMPI)
-    endif()
-  else()
-    list(APPEND SCALAPACK_FIND_COMPONENTS OpenMPI)
+if(DEFINED ENV{MKLROOT})
+  list(APPEND SCALAPACK_FIND_COMPONENTS MKL)
+  if(APPLE)
+    list(APPEND SCALAPACK_FIND_COMPONENTS MPICH)
   endif()
+else()
+  list(APPEND SCALAPACK_FIND_COMPONENTS OpenMPI)
+endif()
 endif()
 
 find_package(PkgConfig)
 
-if(NOT WIN32)
-  find_package(Threads)  # not required--for example Flang
+# some systems (Ubuntu 16.04) need BLACS explicitly, when it isn't statically compiled into libscalapack
+# other systems (homebrew, Ubuntu 18.04) link BLACS into libscalapack, and don't need BLACS as a separately linked library.
+if(NOT MKL IN_LIST SCALAPACK_FIND_COMPONENTS)
+  find_package(BLACS COMPONENTS ${SCALAPACK_FIND_COMPONENTS})
 endif()
 
 if(MKL IN_LIST SCALAPACK_FIND_COMPONENTS)
 
-  if(BUILD_SHARED_LIBS)
-    set(_mkltype dynamic)
-  else()
-    set(_mkltype static)
+if(BUILD_SHARED_LIBS)
+  set(_mkltype dynamic)
+else()
+  set(_mkltype static)
+endif()
+
+if(WIN32)
+  set(_impi impi)
+else()
+  unset(_impi)
+endif()
+
+pkg_check_modules(MKL mkl-${_mkltype}-lp64-iomp)
+
+if(OpenMPI IN_LIST SCALAPACK_FIND_COMPONENTS)
+  mkl_scala(mkl_scalapack_lp64 mkl_blacs_openmpi_lp64)
+  set(SCALAPACK_OpenMPI_FOUND ${SCALAPACK_MKL_FOUND})
+elseif(MPICH IN_LIST SCALAPACK_FIND_COMPONENTS)
+  if(APPLE)
+    mkl_scala(mkl_scalapack_lp64 mkl_blacs_mpich_lp64)
+  elseif(WIN32)
+    mkl_scala(mkl_scalapack_lp64 mkl_blacs_mpich2_lp64.lib mpi.lib fmpich2.lib)
+  else()  # MPICH linux is just like IntelMPI
+    mkl_scala(mkl_scalapack_lp64 mkl_blacs_intelmpi_lp64)
   endif()
-
-  if(MKL64 IN_LIST SCALAPACK_FIND_COMPONENTS)
-    set(_mkl_bitflag i)
-  else()
-    set(_mkl_bitflag)
-  endif()
-
-
-  if(WIN32)
-    set(_impi impi)
-  else()
-    unset(_impi)
-  endif()
-
-
-  pkg_check_modules(MKL mkl-${_mkltype}-${_mkl_bitflag}lp64-iomp)
-
-  if(OpenMPI IN_LIST SCALAPACK_FIND_COMPONENTS)
-    mkl_scala(mkl_scalapack_${_mkl_bitflag}lp64 mkl_blacs_openmpi_${_mkl_bitflag}lp64)
-    if(SCALAPACK_LIBRARY)
-      set(SCALAPACK_OpenMPI_FOUND true)
-    endif()
-  elseif(MPICH IN_LIST SCALAPACK_FIND_COMPONENTS)
-    if(APPLE)
-      mkl_scala(mkl_scalapack_${_mkl_bitflag}lp64 mkl_blacs_mpich_${_mkl_bitflag}lp64)
-    elseif(WIN32)
-       mkl_scala(mkl_scalapack_${_mkl_bitflag}lp64 mkl_blacs_mpich2_${_mkl_bitflag}lp64.lib mpi.lib fmpich2.lib)
-    else()  # linux, yes it's just like IntelMPI
-       mkl_scala(mkl_scalapack_${_mkl_bitflag}lp64 mkl_blacs_intelmpi_${_mkl_bitflag}lp64)
-    endif()
-    if(SCALAPACK_LIBRARY)
-      set(SCALAPACK_MPICH_FOUND true)
-    endif()
-  else()  # IntelMPI
-    mkl_scala(mkl_scalapack_${_mkl_bitflag}lp64 mkl_blacs_intelmpi_${_mkl_bitflag}lp64 ${_impi})
-    if(SCALAPACK_LIBRARY)
-      set(SCALAPACK_IntelMPI_FOUND true)
-    endif()
-  endif()
-
-  if(SCALAPACK_LIBRARY)
-    set(SCALAPACK_MKL_FOUND true)
-  endif()
+  set(SCALAPACK_MPICH_FOUND ${SCALAPACK_MKL_FOUND})
+else()
+  mkl_scala(mkl_scalapack_lp64 mkl_blacs_intelmpi_lp64 ${_impi})
+endif()
 
 elseif(OpenMPI IN_LIST SCALAPACK_FIND_COMPONENTS)
 
-  pkg_check_modules(SCALAPACK scalapack-openmpi)
+pkg_check_modules(SCALAPACK scalapack-openmpi)
 
-  find_library(SCALAPACK_LIBRARY
-               NAMES scalapack scalapack-openmpi
-               HINTS ${SCALAPACK_LIBRARY_DIRS} ${SCALAPACK_LIBDIR})
+find_library(SCALAPACK_LIBRARY
+              NAMES scalapack scalapack-openmpi
+              HINTS ${SCALAPACK_LIBRARY_DIRS} ${SCALAPACK_LIBDIR})
 
-  if(SCALAPACK_LIBRARY)
-    set(SCALAPACK_OpenMPI_FOUND true)
-  endif()
+if(SCALAPACK_LIBRARY)
+  set(SCALAPACK_OpenMPI_FOUND true)
+endif()
 
 elseif(MPICH IN_LIST SCALAPACK_FIND_COMPONENTS)
-  find_library(SCALAPACK_LIBRARY
-               NAMES scalapack-mpich scalapack-mpich2)
 
-  if(SCALAPACK_LIBRARY)
-    set(SCALAPACK_MPICH_FOUND true)
-  endif()
+pkg_check_modules(SCALAPACK scalapack-mpich)
+
+find_library(SCALAPACK_LIBRARY
+              NAMES scalapack-mpich scalapack-mpich2
+              HINTS ${SCALAPACK_LIBRARY_DIRS} ${SCALAPACK_LIBDIR})
+
+if(SCALAPACK_LIBRARY)
+  set(SCALAPACK_MPICH_FOUND true)
+endif()
 
 endif()
 
 # --- Finalize
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(
-  SCALAPACK
+find_package_handle_standard_args(SCALAPACK
   REQUIRED_VARS SCALAPACK_LIBRARY
   HANDLE_COMPONENTS)
 
 if(SCALAPACK_FOUND)
   set(SCALAPACK_LIBRARIES ${SCALAPACK_LIBRARY})
   set(SCALAPACK_INCLUDE_DIRS ${SCALAPACK_INCLUDE_DIR})
+
+  if(BLACS_FOUND)
+    list(APPEND SCALAPACK_LIBRARIES ${BLACS_LIBRARIES})
+  endif()
 endif()
 
 mark_as_advanced(SCALAPACK_LIBRARY SCALAPACK_INCLUDE_DIR)

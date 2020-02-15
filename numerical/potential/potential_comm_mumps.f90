@@ -301,9 +301,6 @@ integer :: idleft,idright,iddown,idup
 
 real(wp) :: tstart,tfin
 
-integer :: utrace
-
-
 
 !SIZES - PERHAPS SHOULD BE TAKEN FROM GRID MODULE INSTEAD OF RECOMPUTED?
 lx1=size(sig0,1)
@@ -954,7 +951,6 @@ integer :: idleft,idright,iddown,idup
 
 real(wp) :: tstart,tfin
 
-integer :: utrace
 integer :: flagsolve
 
 

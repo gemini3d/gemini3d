@@ -1,36 +1,34 @@
-function [x1,x2,x3,f]=testinterp3(filename, realbits)
+function [x1,x2,x3,f] = testinterp3(filename)
 
-narginchk(1,2)
+narginchk(1,1)
 cwd = fileparts(mfilename('fullpath'));
 addpath([cwd,filesep,'..',filesep,'..',filesep,'script_utils'])
 
-if nargin == 1
-  realbits = 64;
-end
-
-validateattr(realbits, {'numeric'}, {'scalar', 'integer', 'positive'}, mfilename,'real bits',2)
-
 exist_or_skip(filename, 'file')
 
-switch realbits
-  case 64, freal = 'float64';
-  case 32, freal = 'float32';
-  otherwise, error(['unknown precision', num2str(realbits)])
+if isoctave
+  h = load(filename);
+  lx1 = h.lx1;
+  lx2 = h.lx2;
+  lx3 = h.lx3;
+  x1 = h.x1;
+  x2 = h.x2;
+  x3 = h.x3;
+  f = h.f;
+else
+  lx1 = h5read(filename, '/lx1');
+  lx2 = h5read(filename, '/lx2');
+  lx3 = h5read(filename, '/lx3');
+  x1 = h5read(filename, '/x1');
+  x2 = h5read(filename, '/x2');
+  x3 = h5read(filename, '/x3');
+  f = h5read(filename, '/f');
 end
 
-fid=fopen(filename,'r');
-
-%% LOAD DATA
-lx1=fread(fid,1,'integer*4');
-lx2=fread(fid,1,'integer*4');
-lx3=fread(fid,1,'integer*4');
-x1=fread(fid,lx1, freal);
-x2=fread(fid,lx2, freal);
-x3=fread(fid,lx3, freal);
-f=fread(fid,lx1*lx2*lx3, freal);
-f=reshape(f,[lx1,lx2,lx3]);
-
-fclose(fid);
+assert(lx1==256, int2str(size(lx1)))
+assert(lx2==256, int2str(size(lx2)))
+assert(lx3==256, int2str(size(lx3)))
+assert(all(size(f) == [lx1,lx2,lx3]), 'array size mismatch')
 
 if ~isinteractive
   if ~nargout, clear, end
@@ -67,3 +65,17 @@ c=colorbar;
 ylabel(c,'f')
 title('3D interp x_2-x_3')
 end % function
+
+% fid=fopen(filename,'r');
+
+% %% LOAD DATA
+% lx1=fread(fid,1,'integer*4');
+% lx2=fread(fid,1,'integer*4');
+% lx3=fread(fid,1,'integer*4');
+% x1=fread(fid,lx1, freal);
+% x2=fread(fid,lx2, freal);
+% x3=fread(fid,lx3, freal);
+% f=fread(fid,lx1*lx2*lx3, freal);
+% f=reshape(f,[lx1,lx2,lx3]);
+
+% fclose(fid);

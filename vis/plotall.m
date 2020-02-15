@@ -8,7 +8,7 @@ addpath([cwd, '/../script_utils'])
 
 validateattributes(direc, {'char'}, {'vector'}, mfilename, 'path to data', 1)
 direc = absolute_path(direc);
-assert(isfolder(direc), [direc, ' is not a directory'])
+assert(is_folder(direc), [direc, ' is not a directory'])
 
 if nargin<2, saveplot_fmt={}; end  %e.g. {'png'} or {'png', 'eps'}
 

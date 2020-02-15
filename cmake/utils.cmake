@@ -14,7 +14,7 @@ if(NOT NP)
   num_mpi_processes(${REFDIR})
 endif()
 
-set(_name ${TESTNAME}-NP${NP})  # for convenience, name with number of processes since this is important for debugging MPI
+set(_name ${TESTNAME})
 
 add_test(NAME ${_name}
   COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${NP} $<TARGET_FILE:${EXE}> ${CMAKE_SOURCE_DIR}/initialize/${TESTDIR}/config.nml ${CMAKE_BINARY_DIR}/${TESTDIR}
@@ -26,5 +26,8 @@ set_tests_properties(${_name} PROPERTIES
   FIXTURES_REQUIRED "MPIMUMPS;IOfmt"
   RUN_SERIAL true
 )
+if(WIN32 AND HDF5_ROOT)  # for Windows ifort dll
+  set_tests_properties(${_name} PROPERTIES ENVIRONMENT "PATH=${HDF5_ROOT}/bin;$ENV{PATH}")
+endif()
 
 endfunction(setup_gemini_test)

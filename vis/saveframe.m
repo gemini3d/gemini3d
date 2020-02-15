@@ -8,13 +8,13 @@ validateattributes(h, {'struct'}, {'vector'}, mfilename)
 
 if ischar(saveplot_fmt), saveplot_fmt = {saveplot_fmt}; end
 
-assert(isfolder(direc), [direc, ' is not a directory.'])
+assert(is_folder(direc), [direc, ' is not a directory.'])
 
 % filename has the suffix, let's ditch the suffix.
 [~, stem] = fileparts(filename);
 
 plotdir = [direc, '/plots'];
-if ~isfolder(plotdir)
+if ~is_folder(plotdir)
   mkdir(plotdir);
 end
 

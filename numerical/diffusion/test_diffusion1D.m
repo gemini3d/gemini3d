@@ -1,7 +1,7 @@
 %LOAD AND PLOT NUMERICAL SOLUTION to diffusion problem
 %return the test data to the user in case they want to
 %look over the differences and numerical error.
-function [x1,TsEuler,TsBDF2,Tstrue]=test_diffusion1D(fn)
+function [x1,TsEuler,TsBDF2,Tstrue] = test_diffusion1D(fn)
 
 narginchk(1,1)
 cwd = fileparts(mfilename('fullpath'));
@@ -11,25 +11,37 @@ end
 
 exist_or_skip(fn, 'file')
 
-fid=fopen(fn);
-data=fscanf(fid,'%f',2);
-lt=data(1);
-lx1=data(2);
-x1=fscanf(fid,'%f',lx1+4)';
+if isoctave
+  h = load(fn);
+  L = h.lt;
+  x1 = h.x1;
+else
+  L = h5read(fn, '/lt');
+  x1 = h5read(fn, '/x1');
+end
 
-t=zeros(lt,1);
-for it=1:lt
-  t(it)=fscanf(fid,'%f',1);
-  TsEuler(:,it)=fscanf(fid,'%f',lx1)';
-  TsBDF2(:,it)=fscanf(fid,'%f',lx1)';
-  Tstrue(:,it)=fscanf(fid,'%f',lx1)';
-end % for
+for it=1:L
+  ic = num2str(it, '%4.4d');
+  if isoctave
+    t(it) = h.(['t',ic]);
+    TsEuler(:, it) = h.(['TsEuler', ic]);
+    TsBDF2(:, it) = h.(['TsBDF2', ic]);
+    Tstrue(:, it) = h.(['TsTrue', ic]);
+  else
+    t(it) = h5read(fn, ['/t',ic]);
+    TsEuler(:, it) = h5read(fn, ['/TsEuler', ic]);
+    TsBDF2(:, it) = h5read(fn, ['/TsBDF2', ic]);
+    Tstrue(:, it) = h5read(fn, ['/TsTrue', ic]);
+  end
+end
 
 % reltol = 1e-5 for real32
 % this is just a random point we're comparing.
-assert_allclose(TsEuler(13, 13), 0.770938954253086, 1e-5,[],'1-D Euler diffusion accuracy')
-assert_allclose(TsBDF2(13, 13),  0.763236513549944, 1e-5,[],'1-D BDF2 diffusion accuracy')
-assert_allclose(Tstrue(13, 13),  0.763014494788105, 1e-5,[],'1-D true diffusion accuracy')
+assert_allclose(TsEuler(13,13), 0.770938954253086, 1e-5,[],'1-D Euler diffusion accuracy')
+assert_allclose(TsBDF2(13,13),  0.763236513549944, 1e-5,[],'1-D BDF2 diffusion accuracy')
+assert_allclose(Tstrue(13,13),  0.763014494788105, 1e-5,[],'1-D true diffusion accuracy')
+
+disp('OK: 1d diffusion')
 
 if ~isinteractive
   if ~nargout, clear, end
@@ -59,3 +71,18 @@ end
 
 if ~nargout, clear, end
 end % function
+
+
+% fid=fopen(fn);
+% data=fscanf(fid,'%f',2);
+% lt=data(1);
+% lx1=data(2);
+% x1=fscanf(fid,'%f',lx1+4)';
+
+% t=zeros(lt,1);
+% for it=1:lt
+%   t(it)=fscanf(fid,'%f',1);
+%   TsEuler(:,it)=fscanf(fid,'%f',lx1)';
+%   TsBDF2(:,it)=fscanf(fid,'%f',lx1)';
+%   Tstrue(:,it)=fscanf(fid,'%f',lx1)';
+% end % for

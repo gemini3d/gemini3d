@@ -1,5 +1,6 @@
 module precipBCs_mod
-use, intrinsic:: iso_fortran_env, only: stderr=>error_unit
+use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
+use, intrinsic :: ieee_arithmetic, only : ieee_is_finite
 
 use mpi, only: mpi_integer, mpi_comm_world, mpi_status_ignore
 
@@ -40,16 +41,18 @@ subroutine precipBCs_fileinput(dt,dtprec,t,ymd,UTsec,precdir,x,W0,PhiWmWm2)
 
 real(wp), intent(in) :: dt,dtprec
 real(wp), intent(in) :: t
-integer, dimension(3), intent(in) :: ymd    !date for which we wish to calculate perturbations
+integer, dimension(3), intent(in) :: ymd
+!! date for which we wish to calculate perturbations
 real(wp), intent(in) :: UTsec
-real(wp), dimension(:,:,:), intent(out) :: W0,PhiWmWm2    !last dimension is the number of particle populations
+real(wp), dimension(:,:,:), intent(out) :: W0,PhiWmWm2
+!! last dimension is the number of particle populations
 
-character(*), intent(in) :: precdir       !directory where neutral simulation data is kept
+character(*), intent(in) :: precdir
+!! directory where neutral simulation data is kept
 type(curvmesh) :: x
 
-character(512) :: buf
 character(:), allocatable :: sizefn, gridfn, precfn
-integer :: ios, u, ierr
+integer :: ios, ierr
 integer :: iid,iflat,ix2,ix3
 
 real(wp) :: UTsectmp
@@ -71,12 +74,16 @@ if(t+dt/2d0>=tnext) then    !need to load a new file
 
     if (myid==0) then    !root process
       !READ IN THE GRID
-      write(buf,*) precdir,'/simsize.dat'; sizefn = trim(adjustl(buf))  ! NOTE: need here trim(adjustl()) for some compilers despite doing it earlier on allocation in io.f90.
-      print *, 'Inputting precipitation data size from file:  ',sizefn
-      open(newunit=u,file=sizefn, status='old',form='unformatted',access='stream', action='read')
-      read(u) llon,llat
-      close(u)
+      sizefn = precdir // '/simsize.dat'
+      print '(A,/,A)', 'Inputting precipitation data size from file:',sizefn
+      block
+        integer :: u
+        open(newunit=u,file=sizefn, status='old',form='unformatted',access='stream', action='read')
+        read(u) llon,llat
+        close(u)
+      end block
       print *, 'Precipitation data has llon,llat size:  ',llon,llat
+      if (llon < 1 .or. llat < 1) error stop 'precipitation grid size must be strictly positive'
 
 
       !MESSAGE WORKERS WITH GRID INFO
@@ -98,13 +105,18 @@ if(t+dt/2d0>=tnext) then    !need to load a new file
 
 
       !NOW READ THE GRID
-      write(buf,*) precdir,'/simgrid.dat'; gridfn = trim(adjustl(buf)) ! NOTE: need here trim(adjustl()) for some compilers despite doing it earlier on allocation in io.f90.
-      print *, 'Inputting precipitation grid from file:  ',gridfn
-      open(newunit=u,file=gridfn,status='old',form='unformatted',access='stream', action='read')
-      read(u) mlonp,mlatp
-      close(u)
+      gridfn = precdir // '/simgrid.dat'
+      print '(A,/,A)', 'Inputting precipitation grid from file:',gridfn
+      block
+        integer :: u
+        open(newunit=u,file=gridfn,status='old',form='unformatted',access='stream', action='read')
+        read(u) mlonp,mlatp
+        close(u)
+      end block
       print *, 'Precipitation data has mlon,mlat extent:  ',minval(mlonp(:)),maxval(mlonp(:)),minval(mlatp(:)), &
                                                               maxval(mlatp(:))
+      if(.not. all(ieee_is_finite(mlonp))) error stop 'mlon must be finite'
+      if(.not. all(ieee_is_finite(mlatp))) error stop 'mlat must be finite'
 
       !NOW SEND THE GRID DATA
       do iid=1,lid-1
@@ -146,19 +158,28 @@ if(t+dt/2d0>=tnext) then    !need to load a new file
     UTsectmp=UTsecnext
     call dateinc(dtprec,ymdtmp,UTsectmp)    !get the date for "next" params
     precfn = date_filename(precdir,ymdtmp,UTsectmp) // '.dat'     !form the standard data filename
-    print *, 'Read precipitation data:  ', precfn
-    open(newunit=u,file=precfn,status='old',form='unformatted',access='stream',iostat=ios)
-    if (ios/=0) then
-      write(stderr, *) 'Missing precipitation input file: ' // precfn
-      error stop
-    endif
+    print '(A,/,A)', 'Read precipitation data from:', precfn
 
-    if (debug) print *, 'Successfully located input file: ' // precfn
-    read(u) Qp,E0p
-    close(u)
+    block
+      integer :: u
+      open(newunit=u,file=precfn,status='old',form='unformatted',access='stream',iostat=ios)
+      if (ios/=0) then
+        write(stderr, *) 'Missing precipitation input file: ' // precfn
+        error stop
+      endif
+
+      if (debug) print *, 'Successfully located input file: ' // precfn
+      read(u) Qp,E0p
+      close(u)
+    end block
 
     if (debug) print *, 'Min/max values for Qp:  ',minval(Qp),maxval(Qp)
     if (debug) print *, 'Min/max values for E0p:  ',minval(E0p),maxval(E0p)
+
+    if(.not. all(ieee_is_finite(Qp))) error stop 'Qp must be finite'
+    if(any(Qp < 0)) error stop 'Qp must be non-negative'
+    if(.not. all(ieee_is_finite(E0p))) error stop 'E0p must be finite'
+    if(any(E0p < 0)) error stop 'E0p must be non-negative'
 
     !send a full copy of the data to all of the workers
     do iid=1,lid-1

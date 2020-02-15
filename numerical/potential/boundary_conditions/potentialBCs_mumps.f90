@@ -1,6 +1,7 @@
 module potentialBCs_mumps
 
-use, intrinsic:: iso_fortran_env, only: stderr=>error_unit
+use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
+use, intrinsic :: ieee_arithmetic, only : ieee_is_finite
 use mpi, only: mpi_integer, mpi_comm_world, mpi_status_ignore
 
 use phys_consts, only: wp, pi, Re, debug
@@ -68,7 +69,6 @@ real(wp), dimension(:,:,:), intent(out) :: E01all,E02all,E03all
 integer, intent(out) :: flagdirich
 
 character(:), allocatable :: fn1, fn2, fn3
-integer :: inunit
 
 real(wp) :: UTsectmp
 integer, dimension(3) :: ymdtmp
@@ -98,13 +98,17 @@ if(t + dt / 2._wp >= tnext) then    !need to load a new file
     ymdnext=ymdprev
     UTsecnext=UTsecprev
 
-    fn1 = E0dir // '/simsize.dat'
-    if (debug) print *, 'Inputting electric field data size from file:  ',fn1
+    fn1 = E0dir // '/simsize' // '.dat'
+    if (debug) print '(A,/,A)', 'Inputting electric field data size from file:', fn1
     call assert_file_exists(fn1)
-    open(newunit=inunit, file=fn1, status='old', form='unformatted', access='stream')
-    read(inunit) llon,llat
-    close(inunit)
+    block
+      integer :: u
+      open(newunit=u, file=fn1, status='old', form='unformatted', access='stream')
+      read(u) llon,llat
+      close(u)
+    end block
     if (debug) print '(A,2I6)', 'Electric field data has llon,llat size:  ',llon,llat
+    if (llon < 1 .or. llat < 1) error stop 'potentialBCs_mumps: grid size must be strictly positive'
     allocate(mlonp(llon),mlatp(llat))
     !! bit of code duplication with worker code block below...
 
@@ -118,15 +122,19 @@ if(t + dt / 2._wp >= tnext) then    !need to load a new file
 
 
     !> NOW READ THE GRID
-    fn2 = E0dir // '/simgrid.dat'
-    if (debug) print *, 'Inputting electric field grid from file:  ',fn2
+    fn2 = E0dir // '/simgrid' // '.dat'
+    if (debug) print '(A,/,A)', 'Inputting electric field grid from file:', fn2
     call assert_file_exists(fn2)
-    open(newunit=inunit,file=fn2,status='old',form='unformatted',access='stream')
-    read(inunit) mlonp,mlatp
-    close(inunit)
+    block
+      integer :: u
+      open(newunit=u,file=fn2,status='old',form='unformatted',access='stream')
+      read(u) mlonp,mlatp
+      close(u)
+    end block
     if (debug) print *, 'Electric field data has mlon,mlat extent:', &
               minval(mlonp(:)), maxval(mlonp(:)), minval(mlatp(:)), maxval(mlatp(:))
-
+    if(.not. all(ieee_is_finite(mlonp))) error stop 'mlon must be finite'
+    if(.not. all(ieee_is_finite(mlatp))) error stop 'mlat must be finite'
     !> SPACE TO STORE INPUT DATA
     allocate(E0xp(llon,llat),E0yp(llon,llat))
     allocate(Vminx1p(llon,llat),Vmaxx1p(llon,llat))
@@ -165,7 +173,7 @@ if(t + dt / 2._wp >= tnext) then    !need to load a new file
         mloni(iflat)=x%phiall(ix1ref,ix2,ix3)*180d0/pi
       end do
     end do
-    if (debug) print *, 'Grid has mlon,mlat range:  ',minval(mloni),maxval(mloni),minval(mlati),maxval(mlati)
+    if (debug) print '(A,4F7.2)', 'Grid has mlon,mlat range:  ',minval(mloni),maxval(mloni),minval(mlati),maxval(mlati)
     if (debug) print *, 'Grid has size:  ',iflat
   end if
 
@@ -181,24 +189,36 @@ if(t + dt / 2._wp >= tnext) then    !need to load a new file
   !! form the standard data filename
   if (debug) print *, 'Read: electric field data from file:  ',fn3
   call assert_file_exists(fn3)
-  open(newunit=inunit, file=fn3, status='old', form='unformatted', access='stream')
-  read(inunit) flagdirich_double
-  read(inunit) E0xp,E0yp
-  read(inunit) Vminx1p,Vmaxx1p    !background fields and top/bottom boundar conditions
-  read(inunit) Vminx2pslice,Vmaxx2pslice    !these ohly used for 3D simulations
-  read(inunit) Vminx3pslice,Vmaxx3pslice
-  close(inunit)
+  block
+    integer :: u
+    open(newunit=u, file=fn3, status='old', form='unformatted', access='stream')
+    read(u) flagdirich_double
+    read(u) E0xp,E0yp
+    read(u) Vminx1p,Vmaxx1p    !background fields and top/bottom boundar conditions
+    read(u) Vminx2pslice,Vmaxx2pslice    !these ohly used for 3D simulations
+    read(u) Vminx3pslice,Vmaxx3pslice
+    close(u)
+  end block
 
   if (debug) then
-  print *, 'Min/max values for E0xp:  ',minval(E0xp),maxval(E0xp)
-  print *, 'Min/max values for E0yp:  ',minval(E0yp),maxval(E0yp)
-  print *, 'Min/max values for Vminx1p:  ',minval(Vminx1p),maxval(Vminx1p)
-  print *, 'Min/max values for Vmaxx1p:  ',minval(Vmaxx1p),maxval(Vmaxx1p)
-  print *, 'Min/max values for Vminx2pslice:  ',minval(Vminx2pslice),maxval(Vminx2pslice)
-  print *, 'Min/max values for Vmaxx2pslice:  ',minval(Vmaxx2pslice),maxval(Vmaxx2pslice)
-  print *, 'Min/max values for Vminx3pslice:  ',minval(Vminx3pslice),maxval(Vminx3pslice)
-  print *, 'Min/max values for Vmaxx3pslice:  ',minval(Vmaxx3pslice),maxval(Vmaxx3pslice)
+    print *, 'Min/max values for E0xp:  ',minval(E0xp),maxval(E0xp)
+    print *, 'Min/max values for E0yp:  ',minval(E0yp),maxval(E0yp)
+    print *, 'Min/max values for Vminx1p:  ',minval(Vminx1p),maxval(Vminx1p)
+    print *, 'Min/max values for Vmaxx1p:  ',minval(Vmaxx1p),maxval(Vmaxx1p)
+    print *, 'Min/max values for Vminx2pslice:  ',minval(Vminx2pslice),maxval(Vminx2pslice)
+    print *, 'Min/max values for Vmaxx2pslice:  ',minval(Vmaxx2pslice),maxval(Vmaxx2pslice)
+    print *, 'Min/max values for Vminx3pslice:  ',minval(Vminx3pslice),maxval(Vminx3pslice)
+    print *, 'Min/max values for Vmaxx3pslice:  ',minval(Vmaxx3pslice),maxval(Vmaxx3pslice)
   endif
+
+  if (.not. all(ieee_is_finite(E0xp))) error stop 'E0xp: non-finite value(s)'
+  if (.not. all(ieee_is_finite(E0yp))) error stop 'E0yp: non-finite value(s)'
+  if (.not. all(ieee_is_finite(Vminx1p))) error stop 'Vminx1p: non-finite value(s)'
+  if (.not. all(ieee_is_finite(Vmaxx1p))) error stop 'Vmaxx1p: non-finite value(s)'
+  if (.not. all(ieee_is_finite(Vminx2pslice))) error stop 'Vminx2pslice: non-finite value(s)'
+  if (.not. all(ieee_is_finite(Vmaxx2pslice))) error stop 'Vmaxx2pslice: non-finite value(s)'
+  if (.not. all(ieee_is_finite(Vminx3pslice))) error stop 'Vminx3pslice: non-finite value(s)'
+  if (.not. all(ieee_is_finite(Vmaxx3pslice))) error stop 'Vmaxx3pslice: non-finite value(s)'
 
   !ALL WORKERS DO SPATIAL INTERPOLATION TO THEIR SPECIFIC GRID SITES
   if (debug) print *, 'Initiating electric field boundary condition spatial interpolations for date:  ',ymdtmp,' ',UTsectmp

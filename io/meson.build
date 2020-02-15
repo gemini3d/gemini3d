@@ -19,6 +19,8 @@ io_src += files('plasma_input_raw.f90')
 
 if hdf5_interface.found()
   io_src += files('plasma_output_hdf5.f90', 'mag_hdf5.f90', 'aurora_hdf5.f90')
+elif netcdf_interface.found()
+  io_src += files('plasma_output_ncdf.f90', 'mag_ncdf.f90', 'aurora_ncdf.f90')
 else
   io_src += files('plasma_output_raw.f90', 'mag_raw.f90', 'aurora_raw.f90')
 endif

@@ -22,7 +22,7 @@ end
 if nargin<8, visible = 'on'; end
 
 direc = absolute_path(direc);
-assert(isfolder(direc), [direc, ' is not a directory.'])
+assert(is_folder(direc), [direc, ' is not a directory.'])
 
 Ncmap = parula(256);
 Tcmap = parula(256);

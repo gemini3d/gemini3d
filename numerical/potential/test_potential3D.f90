@@ -7,7 +7,7 @@ include 'dmumps_struc.h'
 type (DMUMPS_STRUC) mumps_par
 integer :: ierr
 
-integer, parameter :: npts1=256,npts2=256,npts3=12,outunit=42
+integer, parameter :: npts1=256,npts2=256,npts3=12
 integer, parameter :: lk=npts1*npts2*npts3
 integer :: lent
 integer :: ix1,ix2,ix3,lx1,lx2,lx3
@@ -146,74 +146,76 @@ b=b*dx1**2
 
 
 !OUTPUT FULL MATRIX FOR DEBUGGING IF ITS NOT TOO BIG (ZZZ --> CAN BE COMMENTED OUT)
-open(outunit,file='test_potential3D.dat',status='replace')
-write(outunit,*) lx1,lx2,lx3
-if (lk<150) then
-  allocate(Mfull(lk,lk))
-  Mfull(:,:)=0.0
-  do ient=1,size(ir)
-    Mfull(ir(ient),ic(ient))=M(ient)
-  end do
-  call write2Darray(outunit,Mfull)
-  call writearray(outunit,b)
-  deallocate(Mfull)
-end if
+block
+  integer :: u
+  open(newunit=u,file='test_potential3D.dat',status='replace')
+  write(u,*) lx1,lx2,lx3
+  if (lk<150) then
+    allocate(Mfull(lk,lk))
+    Mfull(:,:)=0.0
+    do ient=1,size(ir)
+      Mfull(ir(ient),ic(ient))=M(ient)
+    end do
+    call write2Darray(u,Mfull)
+    call writearray(u,b)
+    deallocate(Mfull)
+  end if
 
 
-!------------------------------------------------------------
-!-------DO SOME STUFF TO CALL MUMPS
-!------------------------------------------------------------
-call MPI_INIT(IERR)
+  !------------------------------------------------------------
+  !-------DO SOME STUFF TO CALL MUMPS
+  !------------------------------------------------------------
+  call MPI_INIT(IERR)
+  if (ierr/=0) error stop 'mpi init'
+
+  ! Define a communicator for the package.
+  mumps_par%COMM = MPI_COMM_WORLD
 
 
-! Define a communicator for the package.
-mumps_par%COMM = MPI_COMM_WORLD
+  !Initialize an instance of the package
+  !for L U factorization (sym = 0, with working host)
+  mumps_par%JOB = -1
+  mumps_par%SYM = 0
+  mumps_par%PAR = 1
+  call DMUMPS(mumps_par)
 
 
-!Initialize an instance of the package
-!for L U factorization (sym = 0, with working host)
-mumps_par%JOB = -1
-mumps_par%SYM = 0
-mumps_par%PAR = 1
-call DMUMPS(mumps_par)
+  !Define problem on the host (processor 0)
+  if ( mumps_par%MYID .eq. 0 ) then
+    mumps_par%N=lk
+    mumps_par%NZ=lent
+    allocate( mumps_par%IRN ( mumps_par%NZ ) )
+    allocate( mumps_par%JCN ( mumps_par%NZ ) )
+    allocate( mumps_par%A( mumps_par%NZ ) )
+    allocate( mumps_par%RHS ( mumps_par%N  ) )
+    mumps_par%IRN=ir
+    mumps_par%JCN=ic
+    mumps_par%A=M
+    mumps_par%RHS=b
+
+  !  mumps_par%ICNTL(7)=6    !force a particular reordering - see mumps docs
+  !  mumps_par%ICNTL(28)=2
+  !  mumps_par%ICNTL(29)=2
+  end if
 
 
-!Define problem on the host (processor 0)
-if ( mumps_par%MYID .eq. 0 ) then
-  mumps_par%N=lk
-  mumps_par%NZ=lent
-  allocate( mumps_par%IRN ( mumps_par%NZ ) )
-  allocate( mumps_par%JCN ( mumps_par%NZ ) )
-  allocate( mumps_par%A( mumps_par%NZ ) )
-  allocate( mumps_par%RHS ( mumps_par%N  ) )
-  mumps_par%IRN=ir
-  mumps_par%JCN=ic
-  mumps_par%A=M
-  mumps_par%RHS=b
-
-!  mumps_par%ICNTL(7)=6    !force a particular reordering - see mumps docs
-!  mumps_par%ICNTL(28)=2
-!  mumps_par%ICNTL(29)=2
-end if
+  !Call package for solution
+  mumps_par%JOB = 6
+  call cpu_time(tstart)
+  call DMUMPS(mumps_par)
+  call cpu_time(tfin)
+  write(*,*) 'Solve took ',tfin-tstart,' seconds...'
 
 
-!Call package for solution
-mumps_par%JOB = 6
-call cpu_time(tstart)
-call DMUMPS(mumps_par)
-call cpu_time(tfin)
-write(*,*) 'Solve took ',tfin-tstart,' seconds...'
-
-
-!Solution has been assembled on the host
-if ( mumps_par%MYID .eq. 0 ) then
-  call writearray(outunit,mumps_par%RHS/dx1**2)
-end if
-close(outunit)
-
+  !Solution has been assembled on the host
+  if ( mumps_par%MYID == 0 ) then
+    call writearray(u,mumps_par%RHS/dx1**2)
+  end if
+  close(u)
+end block
 
 !Deallocate user data
-if ( mumps_par%MYID .eq. 0 ) then
+if ( mumps_par%MYID == 0 ) then
   deallocate( mumps_par%IRN )
   deallocate( mumps_par%JCN )
   deallocate( mumps_par%A   )
@@ -225,7 +227,9 @@ deallocate(ir,ic,M,b)
 !Destroy the instance (deallocate internal data structures)
 mumps_par%JOB = -2
 call DMUMPS(mumps_par)
+
 call MPI_FINALIZE(IERR)
+if (ierr /= 0) error stop 'mpi finalize
 
 
 

@@ -21,17 +21,17 @@ temporal = library('temporal', 'temporal/temporal.f90',
 
 subdir('tests')
 
+io_deps = [mpi]
 if hdf5_interface.found()
-  io = library('io',
-    sources: io_src,
-    link_with: [calculus, const, fsutils, grid, mpimod, timeutils],
-    dependencies: [mpi, hdf5_interface])  # ifort needs dep: mpi here
-else
-  io = library('io',
-    sources: io_src,
-    link_with: [calculus, const, fsutils, grid, mpimod, timeutils],
-    dependencies: mpi)  # ifort needs dep: mpi here
+  io_deps += hdf5_interface
+elif netcdf_interface.found()
+  io_deps += netcdf_interface
 endif
+io = library('io',
+  sources: io_src,
+  link_with: [calculus, const, fsutils, grid, mpimod, timeutils],
+  dependencies: io_deps)  # ifort needs dep: mpi here
+
 
 subdir('vendor/msis00')
 # --- for setting up an equilibrium simulation --
@@ -49,32 +49,16 @@ sources = library('sources', 'sources/sources.f90',
     dependencies: mpi)  # ifort needs dep: mpi here
 
 multifluid = library('multifluid', 'multifluid/multifluid.f90',
-  link_with: [advection, calculus, collisions, const, diffusion, grid, ionization_fang, mpimod,
+  link_with: [advection, calculus, collisions, const, diffusion, grid, ionization, mpimod,
               precipBCs, sources, timeutils],
   dependencies: mpi)  # ifort needs dep: mpi here
 
 
 # -- gemini exe
-gemini_fang_exe = executable('gemini_fang.bin',
+gemini_exe = executable('gemini.bin',
   sources: 'gemini.f90',
   link_with : [const, grid, io, mpimod, multifluid, neutral, potential, precipBCs, temporal, timeutils],
   dependencies : [scalapack, blacs, lapack, blas, mpi],  # ifort needs dep: mpi here
-  fortran_args: real_bits,
-  install: true,
-  link_language: 'fortran')
-
-# -- gemini_glow exe
-
-multifluid_glow = library('multifluid_glow', 'multifluid/multifluid.f90',
-  link_with: [advection, calculus, collisions, const, diffusion, grid, ionization_glow, mpimod,
-              precipBCs, sources, timeutils],
-  dependencies: mpi)  # ifort needs dep: mpi here
-
-gemini_glow_exe = executable('gemini_glow.bin',
-  sources: 'gemini.f90',
-  link_with : [const, grid, io, mpimod, multifluid_glow, neutral, potential, precipBCs, temporal, timeutils],
-  dependencies : [scalapack, blacs, lapack, blas, mpi],    # ifort needs dep: mpi here
-  fortran_args: real_bits,
   install: true,
   link_language: 'fortran')
 
@@ -88,19 +72,10 @@ magcalc = executable('magcalc.bin', 'magcalc.f90',
 # --- TESTS ---
 
 zenodo = {
-  '2d_fang': {
-    'dir': meson.source_root() / 'tests/data/zenodo2d_fang',
-    'exe': gemini_fang_exe},
-  '2d_glow': {
-    'dir': meson.source_root() / 'tests/data/zenodo2d_glow',
-    'exe': gemini_glow_exe},
-  '3d_fang': {
-    'dir': meson.source_root() / 'tests/data/zenodo3d_fang',
-    'exe': gemini_fang_exe},
-  '3d_glow': {
-     'dir': meson.source_root() / 'tests/data/zenodo3d_glow',
-     'exe': gemini_glow_exe},
-}
+  '2d_fang': meson.source_root() / 'tests/data/zenodo2d_fang',
+  '2d_glow': meson.source_root() / 'tests/data/zenodo2d_glow',
+  '3d_fang': meson.source_root() / 'tests/data/zenodo3d_fang',
+  '3d_glow': meson.source_root() / 'tests/data/zenodo3d_glow'}
 
 np = get_option('np')
 
@@ -109,7 +84,7 @@ foreach k, v : zenodo
   test_dir = meson.build_root() / 'test'  + k
 
   testname = 'Gemini' + k
-  test_args = ['meson_run_test.py', k, mpiexec.path(), v['exe'],
+  test_args = ['meson_run_test.py', k, mpiexec.path(), gemini_exe,
                meson.source_root() / 'initialize/test' + k / 'config.nml',
                test_dir]
   if np > 0
@@ -127,13 +102,13 @@ foreach k, v : zenodo
 
   # --- Python-based simulation output comparision
   test('Compare' + k, python,
-    args : ['compare_all.py', test_dir, v['dir']],
+    args : ['compare_all.py', test_dir, v],
     suite : k,
     timeout: 60,
     env: nomalloc_env,
     workdir : meson.source_root() / 'tests')
   # --- Matlab/Octave-based simulation output comparision
-  matoctargs = 'compare_all("' + test_dir + '","' + v['dir'] + '")'
+  matoctargs = 'compare_all("' + test_dir + '","' + v + '")'
 
   test('CompareMatlab' + k, matlab,
     args : ['-batch', matoctargs],

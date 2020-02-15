@@ -23,7 +23,7 @@ jobs:
     - uses: actions/setup-python@v1
       with:
         python-version: '3.7'
-    - run: pip install -e .[tests]
+    - run: python3 -m pip install -e .[tests]
     - name: Install prereqs
       run: |
         sudo apt update -yq
@@ -32,10 +32,11 @@ jobs:
       env:
         FC: gfortran
     - uses: actions/upload-artifact@v1
-      if: always()
+      if: failure()
       with:
         name: LinuxDebug_Meson_Configlog
         path: build/meson-logs/meson-log.txt
+
     - run: pytest
     - run: ninja -C build
     - run: meson test -C build --suite unit -v

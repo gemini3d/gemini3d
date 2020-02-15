@@ -32,6 +32,8 @@ This file is intended to document development priorities for the GEMINI project.
 * run + plot script...
 * X Right now MATLAB scripts assume you specify the geographic center of the grid *in the nortern hemisphere*
 * Unit tests for some numerical solvers (elliptic, advection, diffusion, etc.)
+* Magnetic pole location maybe should be taken as input to geo*2geo*2, needs to be updated or to allow user-defined variations
+* Magnetic moment should not be hardcoded, inconsistent with IGRF, maybe need a lookup table based on latest IGRF.
 
 
 ## Future Code refactoring

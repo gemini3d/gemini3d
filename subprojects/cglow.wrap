@@ -1,4 +1,4 @@
 [wrap-git]
 directory = glow
 url = https://github.com/gemini3d/glow.git
-revision = head
+revision = 915592c

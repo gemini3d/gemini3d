@@ -1,7 +1,6 @@
 bits = get_option('realbits')
 real_bits = '-DREALBITS=' + bits
 arith = get_option('arith')
-message('arith: ' + arith)
 
 nomalloc_env = environment({'MALLOC_PERTURB_': '0'})
 
@@ -10,23 +9,19 @@ nomalloc_env = environment({'MALLOC_PERTURB_': '0'})
 fc = meson.get_compiler('fortran')
 
 os = host_machine.system()
-if os == 'windows' and fc.get_id() != 'intel-cl'
-  warning('On native Windows, only the Intel compilers (ifort) works at this time, because OpenMPI is not available for Windows. Consider Windows Subsystem for Linux.')
-endif
 
 # === compiler options
 oldflags = fc.get_supported_arguments(['-std=legacy', '-w', '-fno-implicit-none', '-Wno-error=array-bounds', '-fcheck=no-all',
   '-nocheck', '/nocheck', '-nowarn', '/nowarn', '-nostand', '/nowarn'])
-impnone = fc.first_supported_argument(['-fimplicit-none', '-warn', '/warn:declarations', '-Mdclchk'])
 std18 = fc.first_supported_argument(['-std=f2018', '-stand=f18', '/stand:f18'])
 if fc.get_id() == 'gcc'
   add_project_arguments('-Wno-unused-variable', '-Wno-maybe-uninitialized', '-Wno-unused-dummy-argument', '-Wno-unused-function',
-    impnone, std18, language : 'fortran')
+    '-fimplicit-none', std18, language : 'fortran')
   if get_option('buildtype').contains('debug')
     add_project_arguments('-Werror=array-bounds', '-fcheck=all', language: 'fortran')
   endif
 elif fc.get_id() == 'intel'
-  add_project_arguments('-diag-disable 5268', '-diag-disable 7712', std18, impnone, language: 'fortran')
+  add_project_arguments('-warn', '-diag-disable 5268', '-diag-disable 7712', std18, language: 'fortran')
   if get_option('buildtype').contains('debug')
     # -heap-arrays didn't appear to be needed on Linux?
     add_project_arguments('-check bounds', language: 'fortran')
@@ -34,12 +29,11 @@ elif fc.get_id() == 'intel'
 elif fc.get_id() == 'intel-cl'
   # /fpp is necessary for any Fortran preprocessing statement with Intel ifort on Windows
   # https://software.intel.com/en-us/fortran-compiler-developer-guide-and-reference-fpp
-  add_project_arguments('/Qdiag-disable:5268', '/Qdiag-disable:7712', '/fpp', std18, impnone, language: 'fortran')
+  add_project_arguments('/warn', '/Qdiag-disable:5268', '/Qdiag-disable:7712', '/fpp', std18, language: 'fortran')
   if get_option('buildtype').contains('debug')
     add_project_arguments('/check:bounds', '/heap-arrays', language: 'fortran')
   endif
 elif ['pgi', 'flang'].contains(fc.get_id())
-  add_project_arguments(impnone, language: 'fortran')
   if get_option('buildtype').contains('debug')
     add_project_arguments('-Mbounds', language: 'fortran')
   endif
@@ -200,10 +194,20 @@ if not mumps.found()
   mumps = mumps_proj.get_variable('mumps')
 endif
 
+# --- NetCDF4
+if get_option('netcdf').enabled()
+  netcdf_proj = subproject('nc4fortran')
+  netcdf_interface = netcdf_proj.get_variable('netcdf_interface')
+  assert(netcdf_interface.found(), 'NetCDF I/O requested but NetCDF library not available')
+else
+  netcdf_interface = disabler()
+endif
+
 # --- HDF5
-if get_option('hdf5').enabled()
+if not netcdf_interface.found() and get_option('hdf5').enabled()
   hdf5_proj = subproject('h5fortran')
   hdf5_interface = hdf5_proj.get_variable('hdf5_interface')
+  assert(hdf5_interface.found(), 'HDF5 I/O requested but HDF5 library not available')
 else
   hdf5_interface = disabler()
 endif

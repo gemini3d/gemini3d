@@ -12,7 +12,6 @@ character(:), allocatable :: filenamefull
 real(wp), dimension(:,:,:), allocatable :: J1all,J2all,J3all
 real(wp), dimension(:,:,:), allocatable :: tmpswap
 real(wp) :: tmpdate
-integer :: u
 
 
 !>  CHECK TO MAKE SURE WE ACTUALLY HAVE THE DATA WE NEED TO DO THE MAG COMPUTATIONS.
@@ -24,59 +23,66 @@ filenamefull = date_filename(outdir,ymd,UTsec)
 filenamefull = filenamefull//'.dat'
 print *, 'Input file name for current densities:  ',filenamefull
 
-open(newunit=u,file=filenamefull,status='old',form='unformatted',access='stream',action='read')
-read(u) tmpdate
-print *, 'File year:  ',tmpdate
-read(u) tmpdate
-print *, 'File month:  ',tmpdate
-read(u) tmpdate
-print *, 'File day:  ',tmpdate
-read(u) tmpdate
-print *, 'File UThrs:  ',tmpdate
+block
+  integer :: u
+  open(newunit=u,file=filenamefull,status='old',form='unformatted',access='stream',action='read')
+  read(u) tmpdate
+  print *, 'File year:  ',tmpdate
+  read(u) tmpdate
+  print *, 'File month:  ',tmpdate
+  read(u) tmpdate
+  print *, 'File day:  ',tmpdate
+  read(u) tmpdate
+  print *, 'File UThrs:  ',tmpdate
 
 
-!> LOAD THE DATA
-if (flagoutput==2) then    !the simulation data have only averaged plasma parameters
-  print *, '  Reading in files containing averaged plasma parameters of size:  ',lx1*lx2all*lx3all
-  allocate(tmparray3D(lx1,lx2all,lx3all))
-  !MZ:  I've found what I'd consider to be a gfortran bug here.  If I read
-  !in a flat array (i.e. a 1D set of data) I hit EOF, according to runtime
-  !error, well before I'm actually out of data this happens with a 20GB
-  !input file for not for a 3GB input file...  This doesn't happen when I do
-  !the reading with 3D arrays.
-  read(u) tmparray3D    !ne - could be done with some judicious fseeking...
-  read(u) tmparray3D    !vi
-  read(u) tmparray3D    !Ti
-  read(u) tmparray3D    !Te
-  deallocate(tmparray3D)
-else    !full output parameters are in the output files
-  print *, '  Reading in files containing full plasma parameters of size:  ',lx1*lx2all*lx3all*lsp
-  allocate(tmparray4D(lx1,lx2all,lx3all,lsp))
-  read(u) tmparray4D
-  read(u) tmparray4D
-  read(u) tmparray4D
-  deallocate(tmparray4D)
-end if
+  !> LOAD THE DATA
+  if (flagoutput==2) then    !the simulation data have only averaged plasma parameters
+    print *, '  Reading in files containing averaged plasma parameters of size:  ',lx1*lx2all*lx3all
+    allocate(tmparray3D(lx1,lx2all,lx3all))
+    !MZ:  I've found what I'd consider to be a gfortran bug here.  If I read
+    !in a flat array (i.e. a 1D set of data) I hit EOF, according to runtime
+    !error, well before I'm actually out of data this happens with a 20GB
+    !input file for not for a 3GB input file...  This doesn't happen when I do
+    !the reading with 3D arrays.
+    read(u) tmparray3D    !ne - could be done with some judicious fseeking...
+    read(u) tmparray3D    !vi
+    read(u) tmparray3D    !Ti
+    read(u) tmparray3D    !Te
+    deallocate(tmparray3D)
+  else    !full output parameters are in the output files
+    print *, '  Reading in files containing full plasma parameters of size:  ',lx1*lx2all*lx3all*lsp
+    allocate(tmparray4D(lx1,lx2all,lx3all,lsp))
+    read(u) tmparray4D
+    read(u) tmparray4D
+    read(u) tmparray4D
+    deallocate(tmparray4D)
+  end if
 
 
-!> PERMUTE THE ARRAYS IF NECESSARY
-print *, '  File fast-forward done, now reading currents...'
-allocate(J1all(lx1,lx2all,lx3all),J2all(lx1,lx2all,lx3all),J3all(lx1,lx2all,lx3all))
-if (flagswap==1) then
-  allocate(tmpswap(lx1,lx3all,lx2all))
-  read(u) tmpswap
-  J1all=reshape(tmpswap,[lx1,lx2all,lx3all],order=[1,3,2])
-  read(u) tmpswap
-  J2all=reshape(tmpswap,[lx1,lx2all,lx3all],order=[1,3,2])
-  read(u) tmpswap
-  J3all=reshape(tmpswap,[lx1,lx2all,lx3all],order=[1,3,2])
-  deallocate(tmpswap)
-else
-  !! no need to permute dimensions for 3D simulations
-  read(u) J1all,J2all,J3all
-end if
+  !> PERMUTE THE ARRAYS IF NECESSARY
+  print *, '  File fast-forward done, now reading currents...'
+  allocate(J1all(lx1,lx2all,lx3all),J2all(lx1,lx2all,lx3all),J3all(lx1,lx2all,lx3all))
+  if (flagswap==1) then
+    allocate(tmpswap(lx1,lx3all,lx2all))
+    read(u) tmpswap
+    J1all=reshape(tmpswap,[lx1,lx2all,lx3all],order=[1,3,2])
+    read(u) tmpswap
+    J2all=reshape(tmpswap,[lx1,lx2all,lx3all],order=[1,3,2])
+    read(u) tmpswap
+    J3all=reshape(tmpswap,[lx1,lx2all,lx3all],order=[1,3,2])
+    deallocate(tmpswap)
+  else
+    !! no need to permute dimensions for 3D simulations
+    read(u) J1all,J2all,J3all
+  end if
+  close(u)
+end block
 print *, 'Min/max current data:  ',minval(J1all),maxval(J1all),minval(J2all),maxval(J2all),minval(J3all),maxval(J3all)
 
+if(.not.all(ieee_is_finite(J1all))) error stop 'J1all: non-finite value(s)'
+if(.not.all(ieee_is_finite(J2all))) error stop 'J2all: non-finite value(s)'
+if(.not.all(ieee_is_finite(J3all))) error stop 'J3all: non-finite value(s)'
 
 !> DISTRIBUTE DATA TO WORKERS AND TAKE A PIECE FOR ROOT
 call bcast_send(J1all,tagJ1,J1)
@@ -166,12 +172,12 @@ end if
 close(u)
 
 
-if (any(ieee_is_nan(nsall))) error stop 'NaN in nsall'
-if (any(ieee_is_nan(vs1all))) error stop 'NaN in vs1all'
-if (any(ieee_is_nan(Tsall))) error stop 'NaN in Tsall'
-if (any(Tsall<0._wp)) error stop 'negative temperature in Tsall'
-if (any(nsall<0._wp)) error stop 'negative density'
-if (any(vs1all>3e8_wp)) error stop 'drift faster than lightspeed'
+if (.not. all(ieee_is_finite(nsall))) error stop 'nsall: non-finite value(s)'
+if (.not. all(ieee_is_finite(vs1all))) error stop 'vs1all: non-finite value(s)'
+if (.not. all(ieee_is_finite(Tsall))) error stop 'Tsall: non-finite value(s)'
+if (any(Tsall < 0)) error stop 'negative temperature in Tsall'
+if (any(nsall < 0)) error stop 'negative density'
+if (any(vs1all > 3e8_wp)) error stop 'drift faster than lightspeed'
 
 
 !> USER SUPPLIED FUNCTION TO TAKE A REFERENCE PROFILE AND CREATE INITIAL CONDITIONS FOR ENTIRE GRID.

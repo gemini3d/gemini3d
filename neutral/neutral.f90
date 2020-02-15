@@ -1,5 +1,6 @@
 module neutral
-use, intrinsic:: iso_fortran_env, only: sp => real32
+use, intrinsic :: iso_fortran_env, only: sp => real32
+use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
 
 use mpi, only: mpi_integer, mpi_comm_world, mpi_status_ignore
 
@@ -223,9 +224,6 @@ type(curvmesh), intent(inout) :: x         !grid structure  (inout becuase we wa
 real(wp), dimension(:,:,:,:), intent(out) :: nn   !neutral params interpolated to plasma grid at requested time
 real(wp), dimension(:,:,:), intent(out) :: Tn,vn1,vn2,vn3
 
-integer :: inunit                        !file handle for various input files
-character(512) :: filename               !space to store filenames, note size must be 512 to be consistent with our date_ffilename functinos
-
 integer :: ix1,ix2,ix3,iid!,irhon,izn
 integer, dimension(3) :: ymdtmp
 real(wp) :: UTsectmp
@@ -309,9 +307,6 @@ type(curvmesh), intent(inout) :: x         !grid structure  (inout becuase we wa
 real(wp), dimension(:,:,:,:), intent(out) :: nn   !neutral params interpolated to plasma grid at requested time
 real(wp), dimension(:,:,:), intent(out) :: Tn,vn1,vn2,vn3
 
-integer :: inunit          !file handle for various input files
-character(512) :: filename               !space to store filenames, note size must be 512 to be consistent with our date_ffilename functinos
-
 integer :: ix1,ix2,ix3,iid
 integer, dimension(3) :: ymdtmp
 real(wp) :: UTsectmp
@@ -392,9 +387,6 @@ character(*), intent(in) :: neudir       !directory where neutral simulation dat
 type(curvmesh), intent(inout) :: x         !grid structure  (inout becuase we want to be able to deallocate unit vectors once we are done with them)
 real(wp), dimension(:,:,:,:), intent(out) :: nn   !neutral params interpolated to plasma grid at requested time
 real(wp), dimension(:,:,:), intent(out) :: Tn,vn1,vn2,vn3
-
-integer :: inunit          !file handle for various input files
-character(512) :: filename               !space to store filenames, note size must be 512 to be consistent with our date_ffilename functinos
 
 integer :: ix1,ix2,ix3,iid
 integer, dimension(3) :: ymdtmp
@@ -483,15 +475,14 @@ subroutine gridproj_dneu2D(dhorzn,dzn,meanlat,meanlong,neudir,flagcart,x)
 
 real(wp), intent(in) :: dhorzn,dzn           !neutral grid spacing in horizontal "rho or y" and vertical directions
 real(wp), intent(in) :: meanlat, meanlong    !neutral source center location
-character(*), intent(in) :: neudir           !directory where neutral simulation data is kept
+character(*), intent(in) :: neudir           !< directory where neutral simulation data is kept
 logical, intent(in) :: flagcart              !whether or not the input data are to be interpreted as Cartesian
 type(curvmesh), intent(inout) :: x           !inout to allow deallocation of unit vectors once we are done with them, should consider exporting this to another functino to be called from main program to avoid having x writeable...
 
 integer :: lhorzn
 real(wp) :: meanyn
 
-integer :: inunit          !file handle for various input files
-character(512) :: filename               !space to store filenames, note size must be 512 to be consistent with our date_ffilename functinos
+character(:), allocatable :: filename
 real(wp) :: theta1,phi1,theta2,phi2,gammarads,theta3,phi3,gamma1,gamma2,phip
 real(wp) :: xp,yp
 real(wp), dimension(3) :: erhop,ezp,eyp,tmpvec
@@ -503,12 +494,16 @@ real(wp), dimension(x%lx1,x%lx2,x%lx3) :: zimat,rhoimat,yimat
 
 !Establish the size of the grid based on input file and distribute to workers
 if (myid==0) then    !root
-  write(filename,*) trim(adjustl(neudir)),'simsize.dat'
-  print *, 'Inputting neutral size from file:  ',trim(adjustl(filename))
-  open(newunit=inunit,file=trim(adjustl(filename)),status='old',form='unformatted',access='stream')
-  read(inunit) lhorzn,lzn
-  close(inunit)
+  filename = neudir // '/simsize.dat'
+  print '(A,/,A)', 'Inputting neutral size from file:  ',filename
+  block
+    integer :: u
+    open(newunit=u, file=filename,status='old',form='unformatted',access='stream')
+    read(u) lhorzn,lzn
+    close(u)
+  end block
   print *, 'Neutral data has lhorzn,lz size:  ',lhorzn,lzn,' with spacing dhorzn,dz',dhorzn,dzn
+  if (lhorzn < 1 .or. lzn < 1) error stop 'grid size must be strictly positive'
 
   do iid=1,lid-1
     call mpi_send(lhorzn,1,MPI_INTEGER,iid,taglrho,MPI_COMM_WORLD,ierr)
@@ -719,8 +714,7 @@ type(curvmesh), intent(inout) :: x           !inout to allow deallocation of uni
 real(wp) :: meanyn
 real(wp) :: meanxn
 
-integer :: inunit          !file handle for various input files
-character(512) :: filename               !space to store filenames, note size must be 512 to be consistent with our date_filename functions which is kind of a kludge...
+character(:), allocatable :: filename
 real(wp) :: theta1,phi1,theta2,phi2,gammarads,theta3,phi3,gamma1,gamma2,phip
 real(wp) :: xp,yp
 real(wp), dimension(3) :: erhop,ezp,eyp,tmpvec,exprm
@@ -872,12 +866,16 @@ end if
 
 !Establish the size of the grid based on input file and distribute to workers
 if (myid==0) then    !root
-  write(filename,*) trim(adjustl(neudir)),'simsize.dat'
-  print *, 'Inputting neutral size from file:  ',trim(adjustl(filename))
-  open(newunit=inunit,file=trim(adjustl(filename)),status='old',form='unformatted',access='stream')
-  read(inunit) lxnall,lynall,lzn
-  close(inunit)
+  filename = neudir // '/simsize.dat'
+  print '(A,/,A)', 'Inputting neutral size from file:', filename
+  block
+    integer :: u
+    open(newunit=u,file=filename,status='old',form='unformatted',access='stream')
+    read(u) lxnall,lynall,lzn
+    close(u)
+  end block
   print *, 'Neutral data has lx,ly,lz size:  ',lxnall,lynall,lzn,' with spacing dx,dy,dz',dxn,dyn,dzn
+  if (lxnall < 1 .or. lynall < 1 .or. lzn < 1) error stop 'grid size must be strictly positive'
 
 
   !root must allocate space for the entire grid of input data - this might be doable one parameter at a time???
@@ -1016,9 +1014,8 @@ integer, dimension(3), intent(out) :: ymdtmp          !storage space for increme
 real(wp), intent(out) :: UTsectmp
 logical, intent(in) :: flagcart
 
-integer :: inunit          !file handle for various input files
 integer :: iid,ierr
-character(512) :: filename               !space to store filenames, note size must be 512 to be consistent with our date_ffilename functinos
+character(:), allocatable :: filename
 integer :: lhorzn                        !number of horizontal grid points
 
 
@@ -1035,11 +1032,15 @@ if (myid==0) then    !root
   ymdtmp=ymdnext
   UTsectmp=UTsecnext
   call dateinc(dtneu,ymdtmp,UTsectmp)    !get the date for "next" params
-  filename=date_filename(neudir,ymdtmp,UTsectmp)  // '.dat'    !form the standard data filename
-  print *, 'Pulling neutral data from file:  ',trim(adjustl(filename))
-  open(newunit=inunit,file=trim(adjustl(filename)),status='old',form='unformatted',access='stream')
-  read(inunit) dnO,dnN2,dnO2,dvnrho,dvnz,dTn     !these are module-scope variables
-  close(inunit)
+
+  filename = date_filename(neudir,ymdtmp,UTsectmp)  // '.dat'    !form the standard data filename
+  print *, 'Pulling neutral data from file:  ',filename
+  block
+    integer :: u
+    open(newunit=u,file=filename,status='old',form='unformatted',access='stream')
+    read(u) dnO,dnN2,dnO2,dvnrho,dvnz,dTn     !these are module-scope variables
+    close(u)
+  end block
 
   if (debug) then
     print *, 'Min/max values for dnO:  ',minval(dnO),maxval(dnO)
@@ -1049,6 +1050,14 @@ if (myid==0) then    !root
     print *, 'Min/max values for dvnz:  ',minval(dvnz),maxval(dvnz)
     print *, 'Min/max values for dTn:  ',minval(dTn),maxval(dTn)
   endif
+
+  if (.not. all(ieee_is_finite(dnO))) error stop 'dnO: non-finite value(s)'
+  if (.not. all(ieee_is_finite(dnN2))) error stop 'dnN2: non-finite value(s)'
+  if (.not. all(ieee_is_finite(dnO2))) error stop 'dnO2: non-finite value(s)'
+  if (.not. all(ieee_is_finite(dvnrho))) error stop 'dvnrho: non-finite value(s)'
+  if (.not. all(ieee_is_finite(dvnz))) error stop 'dvnz: non-finite value(s)'
+  if (.not. all(ieee_is_finite(dTn))) error stop 'dTn: non-finite value(s)'
+
   !send a full copy of the data to all of the workers
   do iid=1,lid-1
     call mpi_send(dnO,lhorzn*lzn,mpi_realprec,iid,tagdnO,MPI_COMM_WORLD,ierr)
@@ -1095,9 +1104,8 @@ character(*), intent(in) :: neudir                    !directory where neutral s
 integer, dimension(3), intent(out) :: ymdtmp          !storage space for incrementing date without overwriting ymdnext...
 real(wp), intent(out) :: UTsectmp
 
-integer :: inunit          !file handle for various input files
 integer :: iid,ierr
-character(512) :: filename               !space to store filenames, note size must be 512 to be consistent with our date_ffilename functinos
+character(:), allocatable :: filename
 integer :: lhorzn                        !number of horizontal grid points
 real(wp), dimension(:,:,:), allocatable :: parmtmp    !temporary resizable space for subgrid neutral data
 
@@ -1111,11 +1119,15 @@ if (myid==0) then    !root
   ymdtmp=ymdnext
   UTsectmp=UTsecnext
   call dateinc(dtneu,ymdtmp,UTsectmp)                !get the date for "next" params
-  filename=date_filename(neudir,ymdtmp,UTsectmp) // '.dat'     !form the standard data filename
-  print *, 'Pulling neutral data from file:  ',trim(adjustl(filename))
-  open(newunit=inunit,file=trim(adjustl(filename)),status='old',form='unformatted',access='stream')
-  read(inunit) dnOall,dnN2all,dnO2all,dvnxall,dvnrhoall,dvnzall,dTnall         !these are module-scope variables
-  close(inunit)
+
+  filename = date_filename(neudir,ymdtmp,UTsectmp) // '.dat'
+  print *, 'Pulling neutral data from file:  ', filename
+  block
+    integer :: u
+    open(newunit=u,file=filename,status='old',form='unformatted',access='stream', action='read')
+    read(u) dnOall,dnN2all,dnO2all,dvnxall,dvnrhoall,dvnzall,dTnall         !these are module-scope variables
+    close(u)
+  end block
 
   if (debug) then
     print *, 'Min/max values for dnOall:  ',minval(dnOall),maxval(dnOall)
@@ -1126,6 +1138,15 @@ if (myid==0) then    !root
     print *, 'Min/max values for dvnzall:  ',minval(dvnzall),maxval(dvnzall)
     print *, 'Min/max values for dTnall:  ',minval(dTnall),maxval(dTnall)
   endif
+
+  if (.not. all(ieee_is_finite(dnOall))) error stop 'dnOall: non-finite value(s)'
+  if (.not. all(ieee_is_finite(dnN2all))) error stop 'dnN2all: non-finite value(s)'
+  if (.not. all(ieee_is_finite(dnO2all))) error stop 'dnO2all: non-finite value(s)'
+  if (.not. all(ieee_is_finite(dvnxall))) error stop 'dvnxall: non-finite value(s)'
+  if (.not. all(ieee_is_finite(dvnrhoall))) error stop 'dvnrhoall: non-finite value(s)'
+  if (.not. all(ieee_is_finite(dvnzall))) error stop 'dvnzall: non-finite value(s)'
+  if (.not. all(ieee_is_finite(dTnall))) error stop 'dTnall: non-finite value(s)'
+
 
   !in the 3D case we cannnot afford to send full grid data and need to instead use neutral subgrid splits defined earlier
   do iid=1,lid-1
@@ -1458,15 +1479,17 @@ logical :: flagSH
 integer :: ix1
 
 
+!in what hemisphere is our source?
+if (sourcemlat<=0) then
+  flagSH=.true.
+else
+  flagSH=.false.
+end if
+
+
 !peel the grid in half (source hemisphere if closed dipole)
 if (gridflag==0) then    !closed dipole grid
-  if (sourcemlat<=0) then
-    flagSH=.true.
-  else
-    flagSH=.false.
-  end if
 
-!  lx1tmp=lx1/2           !note use of integer division here...  This is the size of the half-grid, viz. one hemisphere of the grid.  This also presumes that the grid is uniform in x1, which often won't be the case.  
   ix1=maxloc(pack(zimat(:,1,1),.true.),1)    !apex is by definition the highest altitude along a given field line
   if (flagSH) then
     lx1tmp=ix1                  !first piece of arrays
@@ -1476,27 +1499,21 @@ if (gridflag==0) then    !closed dipole grid
   allocate(xitmp(lx1tmp,lx2,lx3),yitmp(lx1tmp,lx2,lx3),zitmp(lx1tmp,lx2,lx3))   !could this be done more less wastefully with pointers???
 
   if(flagSH) then    !southern hemisphere
-    xitmp=ximat(1:ix1,1:lx2,1:lx3)    !select beginning of the array - the southern half
+    xitmp=ximat(1:ix1,1:lx2,1:lx3)          !select beginning of the array - the southern half
     yitmp=yimat(1:ix1,1:lx2,1:lx3)
     zitmp=zimat(1:ix1,1:lx2,1:lx3)
   else               !northern hemisphere
-!    if (lx1==lx1/2*2) then             !north half is exactly half the entire grid
-!      print*, 'NH evenly divisible'
       xitmp=ximat(ix1+1:lx1,1:lx2,1:lx3)    !select end half of the array
       yitmp=yimat(ix1+1:lx1,1:lx2,1:lx3)
       zitmp=zimat(ix1+1:lx1,1:lx2,1:lx3)
-!    else                                     !if not half, must be smaller by one grid point
-!      print*, 'Warning:  NH not evenly divisible along field line, chopping off apex point'
-!      xitmp=ximat(lx1tmp+2:lx1,1:lx2,1:lx3)  !had an odd number of points along the field line, chop off the apex point - hopefully doesn't cause issues...
-!      yitmp=yimat(lx1tmp+2:lx1,1:lx2,1:lx3)
-!      zitmp=zimat(lx1tmp+2:lx1,1:lx2,1:lx3)
-!    end if
   end if
-else     !this is not a dipole grid so our approach is simpler
+else     !this is not an interhemispheric grid so our approach is to just use all of the data
   lx1tmp=lx1
   allocate(xitmp(lx1tmp,lx2,lx3),yitmp(lx1tmp,lx2,lx3),zitmp(lx1tmp,lx2,lx3))   !could this be done more less wastefully with pointers?
   xitmp=ximat(1:lx1,1:lx2,1:lx3)
-  flagSH=.true.    !treat is as southern, doesn't really matter in this case...
+  yitmp=yimat(1:lx1,1:lx2,1:lx3)
+  zitmp=zimat(1:lx1,1:lx2,1:lx3)
+!  flagSH=.true.    !treat is as southern, doesn't really matter in this case...
 end if
 
 

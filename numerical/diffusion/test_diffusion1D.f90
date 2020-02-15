@@ -1,23 +1,22 @@
-program test_diffusion1D
-
-!----------------------------------------------------------------------------
-!-------Solve a time-dependent heat equation in 1D.  See GEMINI-docs repo for
-!-------a description of the specific problem solved here
-!----------------------------------------------------------------------------
+!! Solve a time-dependent heat equation in 1D.  See GEMINI-docs repo for
+!! a description of the specific problem solved here
 
 use phys_consts, only : wp,pi
 use PDEparabolic, only : backEuler1D,TRBDF21D
+use h5fortran, only : hdf5_file
 implicit none
 
+type(hdf5_file) :: h5f
 integer, parameter :: npts=256,lt=20*5
-character(*), parameter :: outfile='test_diffusion1d.dat'
+character(*), parameter :: outfile='test_diffusion1d.h5'
+character(4) :: ic
 
 real(wp), dimension(npts) :: v1,dx1i
 real(wp), dimension(-1:npts+2) :: x1,TsEuler,TsBDF2,Tstrue
 real(wp), dimension(npts) :: lambda,A,B,C,D,E
 real(wp), dimension(npts+1) :: x1i
 real(wp), dimension(0:npts+2) :: dx1
-integer :: lx1,it,ix1,u
+integer :: lx1,it,ix1,ierr
 real(wp) :: t=0,dt
 real(wp) :: Tsminx1,Tsmaxx1
 
@@ -34,11 +33,14 @@ dx1i=x1i(2:lx1+1)-x1i(1:lx1)
 
 !! write the time, space length adn spatial grid to a file
 print *,'writing ',outfile
-open(newunit=u,file=outfile,status='replace')
-write(u,*) lt
-write(u,*) lx1
-call writearray(u,x1)
-
+! open(newunit=u,file=outfile,status='replace')
+! write(u,*) lt
+! write(u,*) lx1
+! call writearray(u,x1)
+call h5f%initialize(outfile, ierr, status='replace')
+call h5f%write('/lt', lt, ierr)
+call h5f%write('/lx1', lx1, ierr)
+call h5f%write('/x1', x1, ierr)
 
 !! initial conditions
 TsEuler(-1:lx1+2)=sin(2.0_wp*pi*x1(-1:lx1+2))+sin(8.0_wp*pi*x1(-1:lx1+2))
@@ -52,6 +54,7 @@ dt=0.05*1/8.0_wp**2/pi**2/maxval(lambda)
 
 !! time interations
 do it=1,lt
+  write(ic, '(I4.4)') it
   !boundary values
   Tsminx1=0.0
   Tsmaxx1=0.0
@@ -68,15 +71,18 @@ do it=1,lt
 
 
   !compute analytical solution to compare
-  Tstrue(1:lx1)=exp(-4.0_wp*pi**2*lambda*t)*sin(2.0_wp*pi*x1(1:lx1))+exp(-64.0_wp*pi**2*lambda*t)*sin(8.0_wp*pi*x1(1:lx1))
+  Tstrue(1:lx1) = exp(-4.0_wp*pi**2*lambda*t)*sin(2.0_wp*pi*x1(1:lx1))+exp(-64.0_wp*pi**2*lambda*t)*sin(8.0_wp*pi*x1(1:lx1))
 
 
-  !output
-  write(u,*) t
-  call writearray(u,TsEuler(1:lx1))
-  call writearray(u,TsBDF2(1:lx1))
-  call writearray(u,Tstrue(1:lx1))
-
+  !! output
+  ! write(u,*) t
+  ! call writearray(u,TsEuler(1:lx1))
+  ! call writearray(u,TsBDF2(1:lx1))
+  ! call writearray(u,Tstrue(1:lx1))
+  call h5f%write('/t'//ic, t, ierr)
+  call h5f%write('/TsEuler'//ic, TsEuler(1:lx1), ierr)
+  call h5f%write('/TsBDF2'//ic, TsBDF2(1:lx1), ierr)
+  call h5f%write('/TsTrue'//ic, Tstrue(1:lx1), ierr)
 
   !check the validity of the numerical solutions at this time step
   errorEuler(1:lx1)=TsEuler(1:lx1)-Tstrue(1:lx1)
@@ -94,21 +100,21 @@ do it=1,lt
   end if
 end do
 
- close(u)
-
+! close(u)
+call h5f%finalize(ierr)
 
 contains
 
-  subroutine writearray(u,array)
-    integer, intent(in) :: u
-    real(wp), dimension(:), intent(in) :: array
+! subroutine writearray(u,array)
+! integer, intent(in) :: u
+! real(wp), dimension(:), intent(in) :: array
 
-    integer :: k
+! integer :: k
 
-    do k=1,size(array)
-      write(u,*) array(k)
-    end do
-  end subroutine writearray
+! do k=1,size(array)
+!   write(u,*) array(k)
+! end do
+! end subroutine writearray
 
 !
 !  subroutine write2Darray(u,array)
@@ -123,4 +129,4 @@ contains
 !  end subroutine write2Darray
 !
 
-end program test_diffusion1D
+end program

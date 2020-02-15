@@ -1,5 +1,3 @@
-program test_potential2D
-
 !-------------------------------------------------------------------------------
 !-------SOLVE LAPLACE'S EQUATION IN 2D USING PDEelliptic, mumps-based libraries
 !-------------------------------------------------------------------------------
@@ -7,7 +5,10 @@ program test_potential2D
 use mpi, only : mpi_init, mpi_finalize, mpi_comm_rank, mpi_comm_size, mpi_comm_world
 use phys_consts, only: wp,debug,pi
 use PDEelliptic, only: elliptic2D_polarization,elliptic2D_cart,elliptic_workers
+use h5fortran, only: hdf5_file
 implicit none
+
+type(hdf5_file) :: hout
 
 integer, parameter :: lx1=256,lx2=256,lx3=256
 integer :: ix1,ix2,ix3
@@ -30,25 +31,25 @@ real(wp), dimension(lx2) :: Vminx3,Vmaxx3
 real(wp), dimension(1,lx3) :: Vminx22,Vmaxx22
 real(wp), dimension(lx2,1) :: Vminx32,Vmaxx32
 real(wp) :: tstart,tfin
-integer :: u,ierr,myid,lid
+integer :: ierr,myid,lid
 
 real(wp), dimension(lx2,lx3) :: Phi,Phi2squeeze,Phitrue,errorMUMPS,errorMUMPS2
 real(wp), dimension(lx2,1,lx3) :: Phi2    !FA solver requires different shaped arrays...
 
-real(wp), dimension(lx2,lx3) :: Phi0=1.0_wp,v2=1.0_wp,v3=1.0_wp     !shouldn't be used if D=0
-real(wp), dimension(lx2,lx3) :: A=1.0_wp,Ap=1.0_wp,App=0.0_wp,B=0.0_wp,C=0.0_wp,D=0.0_wp
-real(wp), dimension(lx2,1,lx3) :: A2=1.0_wp,Ap2=1.0_wp
+real(wp), dimension(lx2,lx3) :: Phi0=1,v2=1,v3=1     !shouldn't be used if D=0
+real(wp), dimension(lx2,lx3) :: A=1,Ap=1,App=0,B=0,C=0,D=0
+real(wp), dimension(lx2,1,lx3) :: A2=1,Ap2=1
 
-real(wp), dimension(lx2,lx3) :: srcterm=0.0_wp
-real(wp), dimension(lx2,1,lx3) :: srcterm2=0.0_wp
+real(wp), dimension(lx2,lx3) :: srcterm=0
+real(wp), dimension(lx2,1,lx3) :: srcterm2=0
 logical :: perflag=.false.     !shouldn't be used
 integer :: it=1                !not used
-real(wp) :: dt=1.0_wp          !not used
+real(wp) :: dt=1          !not used
 integer :: gridflag=1
 integer :: flagdirich=1        !denoting non-inverted grid...
 
 
-character(*), parameter :: outfile='test_potential2D.dat'
+character(*), parameter :: outfile='test_potential2d.h5'
 
 
 !! mpi starting
@@ -82,14 +83,14 @@ dx3i=x3i(2:lx3+1)-x3i(1:lx3)
 
 
 !! Define boundary conditions for this problem
-Vminx2(1:lx3)=0.0_wp
-Vmaxx2(1:lx3)=0.0_wp
-Vminx3(1:lx2)=0.0_wp
+Vminx2(1:lx3)=0
+Vmaxx2(1:lx3)=0
+Vminx3(1:lx2)=0
 Vmaxx3(1:lx2)=sin(2*pi*x2(1:lx2))
 
-Vminx22(1,1:lx3)=0.0_wp
-Vmaxx22(1,1:lx3)=0.0_wp
-Vminx32(1:lx2,1)=0.0_wp
+Vminx22(1,1:lx3)=0
+Vmaxx22(1,1:lx3)=0
+Vminx32(1:lx2,1)=0
 Vmaxx32(1:lx2,1)=sin(2*pi*x2(1:lx2))
 
 
@@ -125,15 +126,19 @@ if (myid==0) then
   print*, 'Analytical solution range:  ',minval(Phitrue),maxval(Phitrue)
 
   print *,'Root process is writing ',outfile
-  open(newunit=u,file=outfile,status='replace')
-  write(u,*) lx2
-  call writearray(u,x2(1:lx2))
-  write(u,*) lx3
-  call writearray(u,x3(1:lx3))
-  call write2Darray(u,Phi)
-  call write2Darray(u,Phi2squeeze)
-  call write2Darray(u,Phitrue)
-  close(u)
+
+  call hout%initialize(outfile, ierr, status="replace", action="write")
+  call hout%write("/lx1", lx1, ierr)
+  call hout%write("/lx2", lx2, ierr)
+  call hout%write("/lx3", lx3, ierr)
+  call hout%write("/x1", x1(1:lx1), ierr)
+  call hout%write("/x2", x2(1:lx2), ierr)
+  call hout%write("/x3", x3(1:lx3), ierr)
+  call hout%write("/Phi", Phi, ierr)
+  call hout%write("/Phi2squeeze", Phi2squeeze, ierr)
+  call hout%write("/Phitrue", Phitrue, ierr)
+  call hout%finalize(ierr)
+  if(ierr/=0) error stop 'finalizing file'
 
   print*, '1:  Max error over grid:  ',maxval(abs(errorMUMPS))
   print*, '2:  Max error over grid:  ',maxval(abs(errorMUMPS2))
@@ -144,29 +149,44 @@ end if
 call mpi_finalize(ierr)
 if (ierr /= 0) error stop 'test_potential2d: MPI finalize error'
 
-contains
+end program
 
-  subroutine writearray(fileunit,array)
-    integer, intent(in) :: fileunit
-    real(wp), dimension(:), intent(in) :: array
+! block
+!   integer :: u
+!   open(newunit=u, file=outfile, status='replace', action='write')
+!   write(u,*) lx2
+!   call writearray(u,x2(1:lx2))
+!   write(u,*) lx3
+!   call writearray(u,x3(1:lx3))
+!   call write2Darray(u,Phi)
+!   call write2Darray(u,Phi2squeeze)
+!   call write2Darray(u,Phitrue)
+!   close(u)
+! end block
 
-    integer :: k
+! contains
 
-    do k=1,size(array)
-      write(fileunit,*) array(k)
-    end do
-  end subroutine writearray
+!   subroutine writearray(fileunit,array)
+!     integer, intent(in) :: fileunit
+!     real(wp), dimension(:), intent(in) :: array
+
+!     integer :: k
+
+!     do k=1,size(array)
+!       write(fileunit,*) array(k)
+!     end do
+!   end subroutine writearray
 
 
-  subroutine write2Darray(fileunit,array)
-    integer, intent(in) :: fileunit
-    real(wp), dimension(:,:), intent(in) :: array
+!   subroutine write2Darray(fileunit,array)
+!     integer, intent(in) :: fileunit
+!     real(wp), dimension(:,:), intent(in) :: array
 
-    integer :: k1,k2
+!     integer :: k1,k2
 
-    do k1=1,size(array,1)
-      write(fileunit,'(f12.6)') (array(k1,k2), k2=1,size(array,2))
-    end do
-  end subroutine write2Darray
+!     do k1=1,size(array,1)
+!       write(fileunit,'(f12.6)') (array(k1,k2), k2=1,size(array,2))
+!     end do
+!   end subroutine write2Darray
 
-end program test_potential2D
+! end program test_potential2D
