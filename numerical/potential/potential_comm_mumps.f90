@@ -169,6 +169,8 @@ if (potsolve == 1 .or. potsolve == 3) then    !electrostatic solve or electrosta
                                 ms(isp)/qs(isp)*(-muH(:,:,:,isp)*g2+muP(:,:,:,isp)*g3)
     end do
   end if
+vs2(1:lx1,1:lx2,1:lx3,lsp)=0.0_wp
+vs3(1:lx1,1:lx2,1:lx3,lsp)=0.0_wp
 
 !
 !  if(flagswap/=1) then
@@ -848,6 +850,9 @@ else   !we resolved the field line (either 2D solve or full 3D) so just differen
 
 end if
 !!!!!!!!!
+J1=0.0_wp
+E1=0.0_wp
+
 
 
 !R-------
@@ -1381,6 +1386,9 @@ else   !we resolved the field line (either 2D solve or full 3D) so just differen
 
 end if
 !!!!!!!!!
+J1=0.0_wp
+E1=0.0_wp
+
 
 
 !    !R-------

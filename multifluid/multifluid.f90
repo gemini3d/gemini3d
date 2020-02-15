@@ -140,17 +140,17 @@ end if
 call clean_param(x,1,ns)
 call clean_param(x,2,vs1)
 
-
-!ARTIFICIAL VISCOSITY (NOT REALLY NEED BELOW 1000 KM ALT.).  NOTE THAT WE DON'T CHECK WHERE SUBCYCLING IS NEEDED SINCE, IN MY EXPERIENCE THEN CODE IS BOMBING ANYTIME IT IS...
+!
+!!ARTIFICIAL VISCOSITY (NOT REALLY NEED BELOW 1000 KM ALT.).  NOTE THAT WE DON'T CHECK WHERE SUBCYCLING IS NEEDED SINCE, IN MY EXPERIENCE THEN CODE IS BOMBING ANYTIME IT IS...
 do isp=1,lsp-1
   v1iupdate(1:lx1+1,:,:)=0.5_wp*(vs1(0:lx1,1:lx2,1:lx3,isp)+vs1(1:lx1+1,1:lx2,1:lx3,isp))    !compute an updated interface velocity (only in x1-direction)
   dv1iupdate=v1iupdate(2:lx1+1,:,:)-v1iupdate(1:lx1,:,:)
   Q(:,:,:,isp)=ns(1:lx1,1:lx2,1:lx3,isp)*ms(isp)*0.25_wp*xicon**2*(min(dv1iupdate,0._wp))**2   !note that viscosity does not have/need ghost cells
 end do
 Q(:,:,:,lsp)=0._wp
-
-
-!NONSTIFF/NONBALANCE INTERNAL ENERGY SOURCES (RK2 INTEGRATION)
+!
+!
+!!NONSTIFF/NONBALANCE INTERNAL ENERGY SOURCES (RK2 INTEGRATION)
 call cpu_time(tstart)
 do isp=1,lsp
   call RK2_prep_mpi(isp,x%flagper,vs1,vs2,vs3)    !role-agnostic mpi, all-to-neighbor
@@ -159,7 +159,7 @@ do isp=1,lsp
              vs3(0:lx1+1,0:lx2+1,0:lx3+1,isp),x,0,lx1+1,0,lx2+1,0,lx3+1)    !diff with one set of ghost cells to preserve second order accuracy over the grid
   paramtrim=rhoes(1:lx1,1:lx2,1:lx3,isp)
   rhoeshalf=paramtrim-dt/2.0_wp*(paramtrim*(gammas(isp)-1._wp)+Q(:,:,:,isp))*divvs(1:lx1,1:lx2,1:lx3) !t+dt/2 value of internal energy, use only interior points of divvs for second order accuracy
-
+!
   paramtrim=paramtrim-dt*(rhoeshalf*(gammas(isp)-1._wp)+Q(:,:,:,isp))*divvs(1:lx1,1:lx2,1:lx3)
   rhoes(1:lx1,1:lx2,1:lx3,isp)=paramtrim
 
@@ -170,7 +170,7 @@ call cpu_time(tfin)
 if (myid==0) then
   if (debug) print *, 'Completed compression substep for time step:  ',t,' in cpu_time of:  ',tfin-tstart
 end if
-
+!
 !CLEAN TEMPERATURE
 call clean_param(x,3,Ts)
 
@@ -292,6 +292,8 @@ end if
 
 !CLEAN TEMPERATURE
 call clean_param(x,3,Ts)
+Ts(1:lx1,1:lx2,1:lx3,lsp)=Ts(1:lx1,1:lx2,1:lx3,1)
+Ts(1:lx1,1:lx2,1:lx3,6)=Ts(1:lx1,1:lx2,1:lx3,1)
 
 !ALL VELOCITY SOURCES
 call cpu_time(tstart)
