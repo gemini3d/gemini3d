@@ -3,8 +3,7 @@ function E = Efield_BCs_2d(p)
 narginchk(1, 1)
 validateattributes(p, {'struct'}, {'scalar'}, mfilename, 'sim parameters', 1)
 
-dir_out = [p.simdir, '/Efield_inputs'];
-
+dir_out = absolute_path([p.simdir, '/inputs/Efield_inputs']);
 makedir(dir_out);
 
 %% READ IN THE SIMULATION INFORMATION
