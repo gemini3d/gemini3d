@@ -9,9 +9,10 @@ path = expanduser(path);
 if isoctave
   abspath = make_absolute_filename(path);
 else
-  if path(1) == '.' || ~contains(path, filesep)
+  if path(1) == '.' || ...
+     ~contains(path, filesep) || ...
+     (isletter(path(1)) && ~strcmp(path(2), ':'))
     % TODO: handle .file or .path/.file
-    % this is necessary when run from arbitrary directories.
     path = [pwd, filesep, path];
   end
   abspath = char(java.io.File(path).getCanonicalPath());

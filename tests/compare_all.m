@@ -18,8 +18,7 @@ function ok = compare_all(outdir, refdir)
 narginchk(2,2)
 
 cwd = fileparts(mfilename('fullpath'));
-addpath([cwd,filesep,'..',filesep,'script_utils'])
-addpath([cwd, filesep, '..', filesep, 'vis'])
+addpath([cwd,'/../script_utils'], [cwd, '/../vis'])
 
 tol.rtol = 1e-5;
 tol.rtolN = 1e-5;
