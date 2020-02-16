@@ -144,11 +144,11 @@ for i = 1:Nt
   UTsec = expdate(i,4)*3600 + expdate(i,5)*60 + expdate(i,6);
   ymd = expdate(i, 1:3);
 
-  fn = [outdir, datelab(ymd,UTsec), '.h5'];
+  fn = [outdir, filesep, datelab(ymd,UTsec), '.h5'];
   disp(['writing ', fn])
 
-  h5save(fn, '/Qit', Qit(:,:,i))
-  h5save(fn, '/E0it', E0it(:,:,i))
+  h5save(fn, '/Qp', Qit(:,:,i))
+  h5save(fn, '/E0p', E0it(:,:,i))
 end
 
 end % function
@@ -178,7 +178,7 @@ for i = 1:Nt
   UTsec = expdate(i,4)*3600 + expdate(i,5)*60 + expdate(i,6);
   ymd = expdate(i, 1:3);
 
-  filename = [outdir, datelab(ymd,UTsec), '.dat'];
+  filename = [outdir, filesep, datelab(ymd,UTsec), '.dat'];
   disp(['writing ', filename])
 
   fid = fopen(filename,'w');
