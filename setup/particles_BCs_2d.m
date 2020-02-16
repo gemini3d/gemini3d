@@ -1,23 +1,21 @@
-function particles_BCs_2d(config_dir, grid_dir, outdir)
-narginchk(3,3)
-cwd = fileparts(mfilename('fullpath'));
-addpath([cwd, '/../../script_utils'])
-
-makedir(outdir)
+function particles_BCs_2d(p)
+% create particle precip for 2D
+narginchk(1,1)
+validateattributes(p, {'struct'}, {'scalar'})
 
 %% read desired simulation config
-params = read_config(config_dir);
+params = read_config(p.nml);
 %% GRID ALREADY NEEDS TO BE MADE, AS WELL
-xg = readgrid(grid_dir);
+xg = readgrid(p.simdir);
 %% CREATE PRECIPITATION CHARACTERISTICS data
 
-% number of grid cells
+% number of grid cells. This will be interpolated to grid, so 100x100 is arbitrary
 llon=100;
 llat=100;
-if (xg.lx(2)==1)    % cartesian
-    llon=1;
-elseif (xg.lx(3)==1)
-    llat=1;
+if xg.lx(2) == 1    % cartesian
+  llon=1;
+elseif xg.lx(3) == 1
+  llat=1;
 end
 thetamin=min(xg.theta(:));
 thetamax=max(xg.theta(:));
@@ -36,23 +34,23 @@ mlonmean=mean(mlon);
 mlatmean=mean(mlat);
 
 %% disturbance width
-mlatsig=1/4*(mlatmax-mlatmin);
-mlatsig=max(mlatsig,0.01);    % can't let this go to zero...
-mlonsig=1/4*(mlonmax-mlonmin);
+mlatsig = p.precip_latwidth*(mlatmax-mlatmin);
+mlatsig = max(mlatsig,0.01);    % can't let this go to zero...
+mlonsig = p.precip_lonwidth*(mlonmax-mlonmin);
 
 %% TIME VARIABLE (SECONDS FROM SIMULATION BEGINNING)
 tmin=0;
 tmax=params.tdur;
-%lt=tdur+1;
-%time=linspace(tmin,tmax,lt)';
+%Nt=tdur+1;
+%time=linspace(tmin,tmax,Nt)';
 time=tmin:5:tmax;
-lt=numel(time);
+Nt=numel(time);
 
 %% COMPUTE THE TOTAL ENERGY FLUX AND CHAR. ENERGY
 %{
-Q=zeros(lt,llon,llat);
-E0=zeros(lt,llon,llat);
-for it=1:lt
+Q=zeros(Nt,llon,llat);
+E0=zeros(Nt,llon,llat);
+for it=1:Nt
   Qtmp=squeeze(Qdat(it,:,:));
   Qtmp=interp2(glat,gloncorrected,Qtmp,GLAT(:),GLON(:));    %data are plaid in geographic so do the interpolation in that variable
   Q(it,:,:)=reshape(Qtmp,[1 llon llat]);
@@ -66,7 +64,7 @@ end
 ymd=params.ymd;
 UTsec = params.UTsec0+time;     % seconds from beginning of hour
 UThrs=UTsec/3600;
-expdate=cat(2,repmat(ymd(:)',[lt,1]),UThrs(:),zeros(lt,1),zeros(lt,1));
+expdate=cat(2,repmat(ymd(:)',[Nt,1]),UThrs(:),zeros(Nt,1),zeros(Nt,1));
 % t=datenum(expdate);
 
 %{
@@ -97,9 +95,9 @@ end
 %% CREATE PRECIPITATION INPUT DATA
 % Qit: [mW m^-2]
 % E0it: [eV]
-Qit=zeros(llon,llat,lt);
-E0it=zeros(llon,llat,lt);
-for it=1:lt
+Qit=zeros(llon,llat,Nt);
+E0it=zeros(llon,llat,Nt);
+for it=1:Nt
    Qit(:,:,it)=10*exp(-(MLON-mlonmean).^2/(2*mlonsig^2)).*exp(-(MLAT-mlatmean).^2/(2*mlatsig^2));
 %  Qit(:,:,it)=5;
   E0it(:,:,it)=5e3;%*ones(llon,llat);
@@ -113,33 +111,80 @@ end
 % LEAVE THE SPATIAL AND TEMPORAL INTERPOLATION TO THE
 % FORTRAN CODE IN CASE DIFFERENT GRIDS NEED TO BE TRIED.
 % THE EFIELD DATA DO NOT NEED TO BE SMOOTHED.
-filename=[outdir,'simsize.dat'];
-fid=fopen(filename,'w');
+
+outdir = absolute_path([p.simdir, '/inputs/prec_inputs/']);
+makedir(outdir)
+
+switch p.format
+  case 'hdf5', write_hdf5(outdir, llon, llat, mlon, mlat, expdate, Nt, Qit, E0it)
+  case 'raw', write_raw(outdir, llon, llat, mlon, mlat, expdate, Nt, Qit, E0it)
+  otherwise, error(['unknown file format ', p.format])
+end
+
+%% ALSO SAVE TO A  MATLAB FILE
+% save([outdir,'particles.mat'],'mlon','mlat','Qit','E0it','expdate');
+
+end % function
+
+
+function write_hdf5(outdir, llon, llat, mlon, mlat, expdate, Nt, Qit, E0it)
+narginchk(9,9)
+
+fn = [outdir, '/simsize.h5'];
+disp(['write ', fn])
+h5save(fn, '/llon', int32(llon))
+h5save(fn, '/llat', int32(llat))
+
+fn = [outdir, '/simgrid.h5'];
+disp(['write ', fn])
+h5save(fn, '/mlon', mlon)
+h5save(fn, '/mlat', mlat)
+
+for i = 1:Nt
+  UTsec = expdate(i,4)*3600 + expdate(i,5)*60 + expdate(i,6);
+  ymd = expdate(i, 1:3);
+
+  fn = [outdir, datelab(ymd,UTsec), '.h5'];
+  disp(['writing ', fn])
+
+  h5save(fn, '/Qit', Qit(:,:,i))
+  h5save(fn, '/E0it', E0it(:,:,i))
+end
+
+end % function
+
+
+function write_raw(outdir, llon, llat, mlon, mlat, expdate, Nt, Qit, E0it)
+narginchk(9,9)
+
+filename=[outdir, '/simsize.dat'];
+disp(['write ', filename])
+fid=fopen(filename, 'w');
 fwrite(fid,llon,'integer*4');
 fwrite(fid,llat,'integer*4');
 fclose(fid);
 
 wp = 'float64';
 
-filename=[outdir,'simgrid.dat'];
+filename=[outdir, '/simgrid.dat'];
+disp(['write ', filename])
+
 fid=fopen(filename,'w');
 fwrite(fid,mlon, wp);
 fwrite(fid,mlat, wp);
 fclose(fid);
-for it=1:lt
-  UTsec=expdate(it,4)*3600+expdate(it,5)*60+expdate(it,6);
-  ymd=expdate(it,1:3);
-  filename = datelab(ymd,UTsec);
-  filename = [outdir,filename,'.dat']; %#ok<AGROW>
+
+for i = 1:Nt
+  UTsec = expdate(i,4)*3600 + expdate(i,5)*60 + expdate(i,6);
+  ymd = expdate(i, 1:3);
+
+  filename = [outdir, datelab(ymd,UTsec), '.dat'];
   disp(['writing ', filename])
-  fid=fopen(filename,'w');
-  fwrite(fid,Qit(:,:,it), wp);
-  fwrite(fid,E0it(:,:,it), wp);
+
+  fid = fopen(filename,'w');
+  fwrite(fid,Qit(:,:,i), wp);
+  fwrite(fid,E0it(:,:,i), wp);
   fclose(fid);
 end
-
-
-%% ALSO SAVE TO A  MATLAB FILE
-save([outdir,'particles.mat'],'mlon','mlat','Qit','E0it','expdate');
 
 end % function

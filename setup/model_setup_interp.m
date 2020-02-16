@@ -34,12 +34,24 @@ state.vs1 = vs1;
 state.Ts = Ts;
 
 %% potential boundary conditions
-
-if p.lxp == 1 || p.lyp == 1
-  E = Efield_BCs_2d(p);
-else % 3D
-  E = Efield_BCs_3d(p);
+if isfield(p, 'Efield_fracwidth')
+  if p.lxp == 1 || p.lyp == 1
+    E = Efield_BCs_2d(p);
+  else % 3D
+    E = Efield_BCs_3d(p);
+  end
 end
 
+%% aurora
+if isfield(p, 'precip_latwidth') && isfield(p, 'precip_lonwidth')
+  if p.lxp == 1 || p.lyp == 1
+    particles_BCs_2d(p)
+  else
+    particles_BCs_3d(p)
+  end
+end
+
+
+%% cleanup
 if ~nargout, clear('state', 'E'), end
 end % function
