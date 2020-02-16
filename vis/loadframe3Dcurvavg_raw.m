@@ -1,16 +1,15 @@
-function [ne,v1,Ti,Te,J1,v2,v3,J2,J3,Phitop] = loadframe3Dcurvavg_raw(direc, filename)
+function [ne,v1,Ti,Te,J1,v2,v3,J2,J3,Phitop] = loadframe3Dcurvavg_raw(filename)
 
-narginchk(2,2)
+narginchk(1,1)
 %% SIMULATION SIZE
-lxs = simsize(direc);
+lxs = simsize(filename);
 %% SIMULATION GRID FILE
 % (NOTE THAT THIS IS NOT THE ENTIRE THING - THAT NEEDS TO BE DONE WITH READGRID.M.  WE NEED THIS HERE TO DO MESHGRIDS
-%[x1, x2, x3] = simaxes(direc);
+%[x1, x2, x3] = simaxes(filename);
 %% SIMULATION RESULTS
-fsimres = [direc,filesep,filename];
-assert(is_file(fsimres), [fsimres,' is not a file.'])
+assert(is_file(filename), [filename,' is not a file.'])
 
-fid=fopen(fsimres,'r');
+fid = fopen(filename,'r');
 simdt(fid);
 %% Number densities
 ne = read3D(fid, lxs);

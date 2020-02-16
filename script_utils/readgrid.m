@@ -6,6 +6,9 @@ if nargin < 2, file_format = 'auto'; end
 validateattributes(file_format, {'char'}, {'vector'}, mfilename, 'raw or hdf5', 2)
 
 path = absolute_path(path);
+if is_file(path)
+  path = fileparts(path);
+end
 assert(is_folder(path), [path, ' is not a directory.'])
 
 switch file_format

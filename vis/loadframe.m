@@ -53,28 +53,28 @@ end
 
 for ext = suffix
   stem = stem0;
-  filename = [stem, ext{1}];
-  if is_file([direc, filesep, filename])
+  filename = [direc, filesep, stem, ext{1}];
+  if is_file(filename)
     break
   end
   % switch microsecond to one for first time step
   stem(end) = '1';
-  filename = [stem, ext{1}];
-  if is_file([direc, filesep, filename])
+  filename = [direc, filesep,stem, ext{1}];
+  if is_file(filename)
     break
   end
 end
 
-assert(is_file([direc, filesep, filename]), ['loadframe: ', [direc,filesep,stem,'.{dat,h5}'], ' does not exist.'])
+assert(is_file(filename), ['loadframe: ', filename, ' does not exist.'])
 
 switch flagoutput
   case 1
-    [ne,v1,Ti,Te,J1,v2,v3,J2,J3,ns,vs1,Ts,Phitop] = loadframe3Dcurv(direc,filename);
+    [ne,v1,Ti,Te,J1,v2,v3,J2,J3,ns,vs1,Ts,Phitop] = loadframe3Dcurv(filename);
   case 2
-    [ne,v1,Ti,Te,J1,v2,v3,J2,J3,Phitop] = loadframe3Dcurvavg(direc,filename);
+    [ne,v1,Ti,Te,J1,v2,v3,J2,J3,Phitop] = loadframe3Dcurvavg(filename);
     ns=[]; vs1=[]; Ts=[];
   otherwise
-    ne=loadframe3Dcurvne(direc,filename);
+    ne = loadframe3Dcurvne(filename);
     v1=[]; Ti=[]; Te=[]; J1=[]; v2=[]; v3=[]; J2=[]; J3=[];
     ns=[]; vs1=[]; Ts=[]; Phitop=[];
 end

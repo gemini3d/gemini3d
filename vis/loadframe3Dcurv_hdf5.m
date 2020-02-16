@@ -1,11 +1,10 @@
-function [ne,v1,Ti,Te,J1,v2,v3,J2,J3,ns,vs1,Ts,Phitop] = loadframe3Dcurv_hdf5(direc, filename)
+function [ne,v1,Ti,Te,J1,v2,v3,J2,J3,ns,vs1,Ts,Phitop] = loadframe3Dcurv_hdf5(fn)
 
-narginchk(2,2)
+narginchk(1,1)
 %% SIMULATION SIZE
 lsp=7;
-lxs = simsize(direc);
+lxs = simsize(fn);
 %% SIMULATION RESULTS
-fn = [direc,filesep,filename];
 assert(is_file(fn), [fn,' is not a file.'])
 
 if isoctave
