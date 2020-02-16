@@ -38,10 +38,10 @@ mlonmean = mean(E.mlon);
 mlatmean = mean(E.mlat);
 
 %% WIDTH OF THE DISTURBANCE
-mlatsig = p.fracwidth*(mlatmax-mlatmin);
-mlonsig = p.fracwidth*(mlonmax-mlonmin);
-sigx2 = p.fracwidth*(max(xg.x2)-min(xg.x2));
-sigx3 = p.fracwidth*(max(xg.x3)-min(xg.x3));
+mlatsig = p.Efield_fracwidth*(mlatmax-mlatmin);
+mlonsig = p.Efield_fracwidth*(mlonmax-mlonmin);
+sigx2 = p.Efield_fracwidth*(max(xg.x2)-min(xg.x2));
+sigx3 = p.Efield_fracwidth*(max(xg.x3)-min(xg.x3));
 %% TIME VARIABLE (SECONDS FROM SIMULATION BEGINNING)
 tmin = 0;
 time = tmin:config.dtE0:config.tdur;
