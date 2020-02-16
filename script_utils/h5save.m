@@ -1,6 +1,14 @@
 function h5save(filename, varname, A, sizeA)
+
 narginchk(3, 4)
-if nargin < 4, sizeA = size(A); end
+
+if nargin < 4
+  if isvector(A)
+    sizeA = length(A);
+  else
+    sizeA = size(A);
+  end
+end
 
 varnames = {};
 if isfile(filename)
@@ -10,11 +18,18 @@ end
 if any(strcmp(varname, varnames) | strcmp(varname(2:end), varnames))
   % existing variable
   diskshape = h5info(filename, varname).Dataspace.Size;
-  if diskshape(1) == 1 % isrow
-    start = ones(ndims(A),1);
-  elseif diskshape(2) == 1 % iscolumn
-    start = ones(1,ndims(A));
+  if length(diskshape) >= 2
+    if diskshape(1) == 1 % isrow
+      start = ones(ndims(A),1);
+    elseif diskshape(2) == 1 % iscolumn
+      start = ones(1,ndims(A));
+    else
+      start = ones(1,ndims(A));
+    end
+  else
+    start = 1;
   end
+
   if all(diskshape == sizeA)
     h5write(filename, varname, A, start, sizeA)
   elseif all(diskshape == fliplr(sizeA))

@@ -34,7 +34,7 @@ end % function
 function write_hdf5(outdir, ymd, time, ns, vsx1, Ts)
 fn = [outdir,'/initial_conditions.h5'];
 disp(['write ',fn])
-h5save(fn, '/ymd', ymd)
+h5save(fn, '/ymd', int32(ymd))
 h5save(fn, '/time', time)
 h5save(fn, '/ns', ns)
 h5save(fn, '/vsx1', vsx1)
