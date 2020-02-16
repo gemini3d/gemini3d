@@ -134,8 +134,8 @@ narginchk(3,3)
 
 fn = [dir_out, '/simsize.h5'];
 if isfile(fn), delete(fn), end
-h5save(fn, '/Nlon', E.llon)
-h5save(fn, '/Nlat', E.llat)
+h5save(fn, '/llon', int32(E.llon))
+h5save(fn, '/llat', int32(E.llat))
 
 fn = [dir_out, '/simgrid.h5'];
 if isfile(fn), delete(fn), end
