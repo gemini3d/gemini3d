@@ -73,6 +73,10 @@ E.Vmaxx2ist = zeros(E.llat, Nt);
 E.Vminx3ist = zeros(E.llon, Nt);
 E.Vmaxx3ist = zeros(E.llon, Nt);
 
+if p.Etarg > 1
+  warning(['Etarg units V/m but is ',num2str(p.Etarg), ' V/m realistic?'])
+end
+
 if lx3 == 1 % east-west
   pk = p.Etarg * sigx2 .* xg.h2(lx1, floor(lx2/2), 1) .* sqrt(pi)./2;
 elseif lx2 == 1 % north-south
@@ -148,7 +152,7 @@ for i = 1:Nt
   disp(['write: ', fn])
 
   %FOR EACH FRAME WRITE A BC TYPE AND THEN OUTPUT BACKGROUND AND BCs
-  h5save(fn, '/flagdirich', params.flagdirich)
+  h5save(fn, '/flagdirich', int32(params.flagdirich))
   h5save(fn, '/Exit', E.Exit(:,:,i))
   h5save(fn, '/Eyit', E.Eyit(:,:,i))
   h5save(fn, '/Vminx1it', E.Vminx1it(:,:,i))
