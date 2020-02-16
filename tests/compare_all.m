@@ -42,6 +42,11 @@ if strcmp(outdir, refdir), error([outdir, ' and ', refdir, ' directories are the
 params = read_config([outdir, filesep, 'inputs']);
 
 lxs = simsize(outdir);
+lxs_ref = simsize(refdir);
+if ~all(lxs==lxs_ref)
+  error(['ref dims ',int2str(lxs_ref), ' != this sim dims ', int2str(lxs)])
+end
+
 disp(['sim grid dimensions: ',num2str(lxs)])
 
 %% TIMES OF INTEREST
