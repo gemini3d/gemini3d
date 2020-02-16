@@ -41,7 +41,6 @@ if isfield(p, 'Efield_fracwidth')
     E = Efield_BCs_3d(p);
   end
 end
-
 %% aurora
 if isfield(p, 'precip_latwidth') && isfield(p, 'precip_lonwidth')
   if p.lxp == 1 || p.lyp == 1
