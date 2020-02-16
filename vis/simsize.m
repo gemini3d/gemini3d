@@ -10,7 +10,7 @@ if is_file(path)
   else
     fn = [fileparts(path), '/inputs/simsize', ext];
   end
-elseif is_directory(path)
+elseif is_folder(path)
   for ext = {'.h5', '.dat'}
     fn = [path, '/inputs/simsize',ext{:}];
     if is_file(fn)
