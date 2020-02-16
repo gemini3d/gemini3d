@@ -1,19 +1,18 @@
-function [ne,v1,Ti,Te,J1,v2,v3,J2,J3,Phitop] = loadframe3Dcurvavg_hdf5(direc, filename)
+function [ne,v1,Ti,Te,J1,v2,v3,J2,J3,Phitop] = loadframe3Dcurvavg_hdf5(filename)
 
-narginchk(2,2)
+narginchk(1,1)
 %% SIMULATION SIZE
-lxs = simsize(direc);
+lxs = simsize(filename);
 %% SIMULATION GRID FILE
 % (NOTE THAT THIS IS NOT THE ENTIRE THING - THAT NEEDS TO BE DONE WITH READGRID.M.  WE NEED THIS HERE TO DO MESHGRIDS
-% [x1, x2, x3] = simaxes(direc);
+% [x1, x2, x3] = simaxes(filename);
 %% SIMULATIONS RESULTS
-fn = [direc,filesep,filename];
-assert(is_file(fn), [fn,' does not exist '])
+assert(is_file(filename), [filename,' does not exist '])
 
 % simdate=zeros(1,6);    %datevec-style array
 
 if isoctave
-  D = load(fn);
+  D = load(filename);
 %   simdate(1:3) = D.time.ymd;
 %   simdate(4) = D.time.UThour;
   ne = D.neall;
@@ -27,24 +26,24 @@ if isoctave
   v3 = D.v3avgall;
   Phitop = D.Phiall;
 else
-%   simdate(1:3) = h5read(fn, '/time/ymd');
-%   simdate(4) = h5read(fn, '/time/UThour');
+%   simdate(1:3) = h5read(filename, '/time/ymd');
+%   simdate(4) = h5read(filename, '/time/UThour');
   %% Number densities
-  ne = h5read(fn, '/neall');
+  ne = h5read(filename, '/neall');
   %% Parallel Velocities
-  v1 = h5read(fn, '/v1avgall');
+  v1 = h5read(filename, '/v1avgall');
   %% Temperatures
-  Ti = h5read(fn, '/Tavgall');
-  Te = h5read(fn, '/TEall');
+  Ti = h5read(filename, '/Tavgall');
+  Te = h5read(filename, '/TEall');
   %% Current densities
-  J1 = h5read(fn, '/J1all');
-  J2 = permute(h5read(fn, '/J2all'), [1,3,2]);
-  J3 = permute(h5read(fn, '/J3all'), [1,3,2]);
+  J1 = h5read(filename, '/J1all');
+  J2 = permute(h5read(filename, '/J2all'), [1,3,2]);
+  J3 = permute(h5read(filename, '/J3all'), [1,3,2]);
   %% Perpendicular drifts
-  v2 = h5read(fn, '/v2avgall');
-  v3 = h5read(fn, '/v3avgall');
+  v2 = h5read(filename, '/v2avgall');
+  v3 = h5read(filename, '/v3avgall');
   %% Topside potential
-  Phitop = h5read(fn, '/Phiall');
+  Phitop = h5read(filename, '/Phiall');
 end
 %% REORGANIZE ACCORDING TO MATLABS CONCEPT OF A 2D or 3D DATA SET
 if any(lxs(2:3) == 1)    %a 2D simulations was done in x1 and x3

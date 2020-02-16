@@ -8,8 +8,20 @@ if isfile(filename)
 end
 
 if any(strcmp(varname, varnames) | strcmp(varname(2:end), varnames))
-  % FIXME: existing variable
-  h5write(filename, varname, A, ones(1,ndims(A)), sizeA)
+  % existing variable
+  diskshape = h5info(filename, varname).Dataspace.Size;
+  if diskshape(1) == 1 % isrow
+    start = ones(ndims(A),1);
+  elseif diskshape(2) == 1 % iscolumn
+    start = ones(1,ndims(A));
+  end
+  if all(diskshape == sizeA)
+    h5write(filename, varname, A, start, sizeA)
+  elseif all(diskshape == fliplr(sizeA))
+    h5write(filename, varname, A.', start, fliplr(sizeA))
+  else
+    error(['shape of ',varname,': ',int2str(sizeA),' does not match existing HDF5 shape: ', int2str(diskshape)])
+  end
 else % new variable
   h5create(filename, varname, sizeA, 'DataType', class(A))
   h5write(filename, varname, A)

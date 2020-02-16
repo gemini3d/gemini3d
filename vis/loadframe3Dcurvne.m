@@ -1,10 +1,14 @@
 function ne = loadframe3Dcurvne(direc, filename)
 
-narginchk(2,2)
+narginchk(1,2)
 %% SIMULATION SIZE
 lxs = simsize(direc);
 %% SIMULATION RESULTS
-fsimres = [direc,filesep,filename];
+if nargin == 2
+  fsimres = [direc,filesep,filename];
+else
+  fsimres = direc;
+end
 assert(is_file(fsimres), [fsimres,' is not a file.'])
 
 fid=fopen(fsimres,'r');
