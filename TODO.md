@@ -18,7 +18,7 @@ This file is intended to document development priorities for the GEMINI project.
 
 ## Refactoring and/or Cleanup Needed
 
-* mag field points need a separate file size so that it isn't hard coded in scripts...  This should be handled similarly to the neutral inputs and precipitaiton/potential boundary inputs...
+* Mag field points need a separate file size so that it isn't hard coded in scripts...  This should be handled similarly to the neutral inputs and precipitaiton/potential boundary inputs...
 * Redo the way magcalc and magplot deal with file names and locations also have the shape of the grid determined automatically via some sort of input file.
 * magplot needs some way to know what the grid dimensions are so the user doesn't have to manually input 
 * Fair bit of code repetition in top-level electric field and precipitation interpolation routines
@@ -30,7 +30,7 @@ This file is intended to document development priorities for the GEMINI project.
 * (Completed) There are now numerous versions of routines corresponding to message passing in x3 vs. on a x2/x3 process grid.  Somehow the x3 routines need to be kept as they may be faster in some (hopefully unusual) situations.  Michael suggests a submodule...
 * (Completed) Some modules have now become excessively large, e.g. mpimod and calculus...  These need to be organized and split up
 * Handling of metric factors in the potential solves is sloppy - need to be passing into solver and used to eval. geometric terms there - would be more clear to reader...
-* elliptic solvers do not need to check for root vs. workers anymore; is done from calling functions
+* Elliptic solvers do not need to check for root vs. workers anymore; is done from calling functions
 * (Completed) Clean up neutral interpolation code
 
 
