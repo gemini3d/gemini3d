@@ -42,9 +42,9 @@ else % new variable
     % enable Gzip compression--remember Matlab's dim order is flipped from
     % C / Python
     switch ndims(A)
-      case 4, chunksize = [sizeA(1), sizeA(2), sizeA(3), 1];
+      case 4, chunksize = [sizeA(1), sizeA(2), 1, sizeA(4)];
       case 3, chunksize = [sizeA(1), sizeA(2), 1];
-      otherwise, error(['FIXME: bigger than 4 dims'])
+      otherwise, error('FIXME: bigger than 4 dims')
     end
     h5create(filename, varname, sizeA, 'DataType', class(A), ...
       'Deflate', 1, 'Fletcher32', true, 'Shuffle', true, 'ChunkSize', chunksize)
