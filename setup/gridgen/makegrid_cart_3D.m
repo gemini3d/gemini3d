@@ -7,34 +7,18 @@ validateattributes(p, {'struct'}, {'scalar'})
 lx = p.lxp + 4;
 ly = p.lyp + 4;
 
-%% SETUP NONUNIFORM GRID IN ALTITUDE AND FIELD LINE DISTANCE
-% This defines x1 and lx1 for the simulations
-% FIXME: should altitude limits be a parameter
-altmin = 80e3;
-altmax = 1000e3;
-%alt=linspace(altmin,altmax,920);
-ialt=1;
-alt(ialt)=altmin;
-
-while alt(ialt) < altmax
-  ialt = ialt + 1;
-  dalt = 10e3 + 8e3 * tanh((alt(ialt-1) - 500e3) / 150e3);
-  alt(ialt) = alt(ialt-1) + dalt;
+%% create altitude grid
+%p.alt_min = 80e3;
+%p.alt_max = 1000e3;
+%p.alt_scale = [10e3, 8e3, 500e3, 150e3];
+if isfield(p, 'alt_min') && isfield(p, 'alt_max') && isfield(p, 'alt_scale') && isfield(p,'I')
+  z = altitude_grid(p.alt_min, p.alt_max, p.I, p.alt_scale);
+else
+  disp(['makegrid_cart_3D: reusing grid from ', p.eqdir])
+  xeq = readgrid(p.eqdir, p.format);
+  z = xeq.x1;
+  clear('xeq')
 end
-
-% while alt(ialt)<altmax
-%     ialt=ialt+1;
-%     dalt=10+9.5*tanh((alt(ialt-1)-500)/150);
-%     alt(ialt)=alt(ialt-1)+dalt;
-% end
-alt=alt(:);
-z=alt*cscd(p.I);
-dz1=z(2)-z(1);
-dzn=z(end)-z(end-1);
-z=[z(1)-2*dz1; z(1)-dz1;z; z(end)+dzn; z(end)+2*dzn];
-lz=numel(z);
-lx1=lz;
-
 %% TRANSVERSE GRID (BASED ON SIZE OF CURRENT REGION SPECIFIED ABOVE)
 %EAST
 xmin = -p.xdist/2;
@@ -79,10 +63,11 @@ yi(2:ly)=1/2*(y(2:ly)+y(1:ly-1));
 yi(1)=y(1)-1/2*(y(2)-y(1));
 yi(ly+1)=y(ly)+1/2*(y(ly)-y(ly-1));
 
-zi=zeros(lz+1,1);
-zi(2:lz)=1/2*(z(2:lz)+z(1:lz-1));
+lx1 = length(z);
+zi=zeros(lx1+1,1);
+zi(2:lx1)=1/2*(z(2:lx1)+z(1:lx1-1));
 zi(1)=z(1)-1/2*(z(2)-z(1));
-zi(lz+1)=z(lz)+1/2*(z(lz)-z(lz-1));
+zi(lx1+1)=z(lx1)+1/2*(z(lx1)-z(lx1-1));
 
 
 %% GRAVITATIONAL FIELD COMPONENTS IN DIPOLE SYSTEM

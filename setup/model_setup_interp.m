@@ -50,7 +50,6 @@ if isfield(p, 'precip_latwidth') && isfield(p, 'precip_lonwidth')
   end
 end
 
-
 %% cleanup
 if ~nargout, clear('state', 'E'), end
 end % function

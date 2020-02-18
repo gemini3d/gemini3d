@@ -31,6 +31,8 @@ assert(is_file(fn), [fn, ' not found'])
 xgf.lx = [h5read(fn, '/lx1'), h5read(fn, '/lx2'), h5read(fn,'/lx3')];
 
 fn = [path, '/simgrid.h5'];
+
+xgf.filename = fn;
 xgf.x1 = h5read(fn, '/x1');
 xgf.x1i = h5read(fn, '/x1i');
 xgf.dx1b = h5read(fn, '/dx1b');
@@ -45,6 +47,7 @@ xgf.h3 = h5read(fn, '/h3');
 xgf.r = h5read(fn, '/r');
 xgf.theta = h5read(fn, '/theta');
 xgf.phi = h5read(fn, '/phi');
+
 end  % function read_hdf5
 
 
@@ -54,6 +57,8 @@ filename=[path, '/simsize.dat'];
 assert(is_file(filename), [filename,' is not a file.'])
 
 fid=fopen(filename,'r');
+
+xgf.filename = filename;
 xgf.lx=fread(fid,3,'integer*4');
 fclose(fid);
 lx1=xgf.lx(1); lx2=xgf.lx(2); lx3=xgf.lx(3);
