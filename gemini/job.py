@@ -16,6 +16,9 @@ def runner(mpiexec: Pathlike, gemexe: Pathlike, config_file: Pathlike, out_dir: 
 
     # load configuration to know what directories to check
     p = read_config(config_file)
+    for k in ('indat_size', 'indat_grid', 'indat_file'):
+        if not p[k].is_file():
+            raise FileNotFoundError(p[k])
 
     if p.get('flagE0file') == 1:
         E0dir = p["E0dir"].resolve()
@@ -59,7 +62,7 @@ def check_mpiexec(mpiexec: Pathlike) -> str:
             msg += "\n\nTypically Windows users will use any one of:"
             msg += "\na) Windows Subsystem for Linux (WSL) <-- recommended \nb) Cygwin"
             msg += "\nc) Intel Parallel Studio for Windows (or WSL)"
-        raise FileNotFoundError(msg)
+        raise SystemExit(msg)
 
     return mpiexec
 
@@ -70,19 +73,19 @@ def check_gemini_exe(gemexe: Pathlike) -> str:
     if gemexe:
         gemexe = Path(gemexe).expanduser()
         if not gemexe.is_file():
-            raise FileNotFoundError(gemexe)
+            raise SystemExit(f"Cannot find gemini.bin in {gemexe}")
     else:
         build_dir = Path(__file__).resolve().parents[1] / "build"
         if not build_dir.is_dir():
             raise NotADirectoryError(build_dir)
         gemexe = shutil.which("gemini.bin", path=str(build_dir))
         if not gemexe:
-            raise FileNotFoundError("Cannot find gemini.bin")
+            raise SystemExit(f"Cannot find gemini.bin in {build_dir}")
     gemexe = str(gemexe)
 
     ret = subprocess.run(gemexe, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, universal_newlines=True)
     if ret.returncode != 77:
-        raise RuntimeError(
+        raise SystemExit(
             f"{gemexe} was not runnable on your platform. Try recompiling on this computer type."
             "E.g. different HPC nodes may not have the CPU feature sets."
             f"{ret.stderr}"
