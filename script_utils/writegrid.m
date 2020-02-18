@@ -10,8 +10,8 @@ outdir = absolute_path(p.simdir);
 makedir(outdir)
 
 switch p.format
-  case 'raw', write_raw(outdir, xg)
-  case 'hdf5', write_hdf5(outdir, xg)
+  case {'dat','raw'}, write_raw(outdir, xg)
+  case {'h5','hdf5'}, write_hdf5(outdir, xg)
   otherwise, error(['unknown file format ', p.format])
 end
 
