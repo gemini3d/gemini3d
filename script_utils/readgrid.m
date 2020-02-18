@@ -11,8 +11,8 @@ if is_file(path)
 end
 
 switch file_format
-  case 'raw', xgf = read_raw(path);
-  case 'hdf5', xgf = read_hdf5(path);
+  case {'dat','raw'}, xgf = read_raw(path);
+  case {'h5','hdf5'}, xgf = read_raw(path);
   otherwise
     if is_file([path, '/simsize.h5'])
       xgf = read_hdf5(path);

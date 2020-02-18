@@ -14,11 +14,11 @@ xgin = readgrid(p.eqnml, p.format);
 
 %% FIND THE DATE OF THE END FRAME OF THE SIMULATION
 % PRESUMABLY THIS WILL BE THE STARTING point FOR another
-[ymdend,UTsecend] = dateinc(tdur,ymd0,UTsec0);
+[ymd_end,UTsec_end] = dateinc(tdur,ymd0,UTsec0);
 
 %% LOAD THE FRAME
 [ne,mlatsrc,mlonsrc,xgin,v1,Ti,Te,J1,v2,v3,J2,J3,filename,Phitop,ns,vs1,Ts] = ...
-    loadframe(p.eqdir, ymdend, UTsecend, flagoutput, mloc, xgin, [], p.eqnml);
+    loadframe(p.eqdir, ymd_end, UTsec_end, flagoutput, mloc, xgin, [], p.eqnml);
 
 %% check input to interpolation
 assert(all(isfinite(ns(:))), 'non-finite density')
@@ -35,6 +35,6 @@ assert(all(isfinite(Tsi(:))), 'non-finite interpolated temperature')
 
 %% WRITE OUT THE GRID
 writegrid(p, xg)
-writedata(ymdend, UTsecend,nsi,vs1i,Tsi, p.simdir, p.format);
+writedata(ymd_end, UTsec_end,nsi,vs1i,Tsi, p.simdir, p.format);
 
 end % function eq2dist
