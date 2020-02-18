@@ -8,17 +8,20 @@ lx = p.lxp + 4;
 ly = p.lyp + 4;
 
 %% SETUP NONUNIFORM GRID IN ALTITUDE AND FIELD LINE DISTANCE
+% This defines x1 and lx1 for the simulations
 % FIXME: should altitude limits be a parameter
 altmin = 80e3;
 altmax = 1000e3;
 %alt=linspace(altmin,altmax,920);
 ialt=1;
 alt(ialt)=altmin;
+
 while alt(ialt) < altmax
-  ialt=ialt+1;
-  dalt=10e3+8e3*tanh((alt(ialt-1)-500e3)/150e3);
-  alt(ialt)=alt(ialt-1)+dalt;
+  ialt = ialt + 1;
+  dalt = 10e3 + 8e3 * tanh((alt(ialt-1) - 500e3) / 150e3);
+  alt(ialt) = alt(ialt-1) + dalt;
 end
+
 % while alt(ialt)<altmax
 %     ialt=ialt+1;
 %     dalt=10+9.5*tanh((alt(ialt-1)-500)/150);
