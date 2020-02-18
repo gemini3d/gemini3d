@@ -1,7 +1,7 @@
 function [x1, x2, x3] = simaxes(direc)
 
 narginchk(1,1)
-fn = [direc,filesep,'inputs', filesep, 'simgrid.dat'];
+fn = [direc,'/inputs/simgrid.dat'];
 assert(is_file(fn), [fn, ' is not a file.'])
 
 lxs = simsize(direc);
