@@ -9,7 +9,6 @@ path = absolute_path(path);
 if is_file(path)
   path = fileparts(path);
 end
-assert(is_folder(path), [path, ' is not a directory.'])
 
 switch file_format
   case 'raw', xgf = read_raw(path);
