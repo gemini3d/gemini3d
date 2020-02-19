@@ -1,11 +1,8 @@
 function xgf = makegrid_cart_3D(p)
-
+%% make 3D grid and save to disk
+%
 narginchk(1, 1)
 validateattributes(p, {'struct'}, {'scalar'})
-
-%% ADD IN GHOST CELLS (Z WILL BE HANDLED LATER)
-lx = p.lxp + 4;
-ly = p.lyp + 4;
 
 %% create altitude grid
 %p.alt_min = 80e3;
@@ -20,55 +17,30 @@ else
   clear('xeq')
 end
 %% TRANSVERSE GRID (BASED ON SIZE OF CURRENT REGION SPECIFIED ABOVE)
-%EAST
-xmin = -p.xdist/2;
-xmax = p.xdist/2;
-
-if p.lxp == 1  % degenerate dimension
-  x = linspace(xmin, xmax, lx);
-else
-  % exclude the ghost cells when setting extents
-  x = linspace(xmin, xmax, p.lxp);
-  dx1 = x(2) - x(1);
-  dxn = x(end) - x(end-1);
-  % now tack on ghost cells so they are outside user-specified region
-  x=[x(1)-2*dx1, x(1)-dx1,x, x(end)+dxn, x(end)+2*dxn];
-end
-lx2=lx;
+% EAST
+x = xgrid(p.xdist, p.lxp);
 
 % NORTH
-ymin = -p.ydist/2;
-ymax = p.ydist/2;
-
-if p.lyp == 1  % degenerate dimension
-  y = linspace(ymin, ymax, ly);
-else
-  % exclude the ghost cells when setting extents
-  y = linspace(ymin, ymax, p.lyp);
-  dy1=y(2)-y(1);
-  dyn=y(end)-y(end-1);
-  % now tack on ghost cells so they are outside user-specified region
-  y=[y(1)-2*dy1,y(1)-dy1,y,y(end)+dyn,y(end)+2*dyn];
-end
-lx3=ly;
+y = ygrid(p.ydist, p.lyp);
 
 %% COMPUTE CELL WALL LOCATIONS
-xi=zeros(1,lx+1);
-xi(2:lx)=1/2*(x(2:lx) + x(1:lx-1));
-xi(1)=x(1)-1/2 * (x(2) - x(1));
-xi(lx+1)=x(lx)+1/2*(x(lx)-x(lx-1));
+lx2 = length(x);
+xi = zeros(1,lx2+1);
+xi(2:lx2) = 1/2*(x(2:lx2) + x(1:lx2-1));
+xi(1) = x(1)-1/2 * (x(2) - x(1));
+xi(lx2+1) = x(lx2)+1/2*(x(lx2)-x(lx2-1));
 
-yi=zeros(1,ly+1);
-yi(2:ly)=1/2*(y(2:ly)+y(1:ly-1));
-yi(1)=y(1)-1/2*(y(2)-y(1));
-yi(ly+1)=y(ly)+1/2*(y(ly)-y(ly-1));
+lx3 = length(y);
+yi = zeros(1,lx3+1);
+yi(2:lx3) = 1/2*(y(2:lx3)+y(1:lx3-1));
+yi(1) = y(1)-1/2*(y(2)-y(1));
+yi(lx3+1) = y(lx3)+1/2*(y(lx3)-y(lx3-1));
 
 lx1 = length(z);
 zi=zeros(lx1+1,1);
 zi(2:lx1)=1/2*(z(2:lx1)+z(1:lx1-1));
 zi(1)=z(1)-1/2*(z(2)-z(1));
 zi(lx1+1)=z(lx1)+1/2*(z(lx1)-z(lx1-1));
-
 
 %% GRAVITATIONAL FIELD COMPONENTS IN DIPOLE SYSTEM
 Re=6370e3;
@@ -123,13 +95,13 @@ ephi(:,:,:,2)=cos(phi);
 ephi(:,:,:,3)=zeros(lx1,lx2,lx3);
 
 
-%UEN UNIT VECTORS IN ECEF COMPONENTS
+% UEN UNIT VECTORS IN ECEF COMPONENTS
 e1=er;    %up is the same cirection as from ctr of earth
 e2=ephi;    %e2 is same as ephi
 e3=-1*etheta;    %etheta is positive south, e3 is pos. north
 
 
-%STORE RESULTS IN GRID DATA STRUCTURE
+% STORE RESULTS IN GRID DATA STRUCTURE
 xg.x1=z; xg.x2=x; xg.x3=y;
 xg.x1i=zi; xg.x2i=xi; xg.x3i=yi;
 lx=[numel(xg.x1),numel(xg.x2),numel(xg.x3)];
