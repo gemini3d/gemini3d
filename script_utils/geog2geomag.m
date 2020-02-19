@@ -1,7 +1,7 @@
 function [thetat,phit] = geog2geomag(lat,lon)
 narginchk(2,2)
-validateattributes(lat, {'numeric'}, {'scalar', 'vector'}, mfilename)
-validateattributes(lon, {'numeric'}, {'scalar', 'vector'}, mfilename)
+validateattributes(lat, {'numeric'}, {'vector'}, mfilename)
+validateattributes(lon, {'numeric'}, {'vector'}, mfilename)
 
 thetan = deg2rad(11);
 phin = deg2rad(289);

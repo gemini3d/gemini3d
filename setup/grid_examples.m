@@ -1,7 +1,7 @@
+function grid_examples()
 %% ADD PATHS TO THE GRID GENERATION SCRIPTS
-addpath ./gridgen;
-addpath ../script_utils;
-
+cwd = fileparts(mfilename('fullpath'));
+addpath([cwd, '/gridgen'], [cwd, '/../script_utils'])
 
 %% Iowa grid for AGU 2019
 dtheta=16;
@@ -40,25 +40,20 @@ sourcemlon=sourcephi*180/pi;
 
 %% RUN THE GRID GENERATION CODE
 if ~exist('xg', 'var')
-    if(iscurv)
-      xg=makegrid_tilteddipole_3D(dtheta,dphi,lp,lq,lphi,altmin,glat,glon,gridflag);
+  if iscurv
+    xg = makegrid_tilteddipole_3D(dtheta,dphi,lp,lq,lphi,altmin,glat,glon,gridflag);
 %    xg=makegrid_tilteddipole_nonuniform_3D(dtheta,dphi,lp,lq,lphi,altmin,glat,glon,gridflag);
 %    xg=makegrid_tilteddipole_nonuniform_oneside_3D(dtheta,dphi,lp,lq,lphi,altmin,glat,glon,gridflag);
-    else
-      xg=makegrid_cart_3D(p);
-    end
+  else
+    xg = makegrid_cart_3D(p);
+  end
 end
 
 
 %% PLOT THE GRID AND NEUTRAL INPUT EXTENT
 %ha=plotgrid(xg,flagsource,sourcelat,sourcelong,neugridtype,zmin,zmax,rhomax);
-ha=plotgrid(xg,flagsource,neuinfo);
-
-
-%% RETURN PATH VARIABLES TO NORMAL
-rmpath ./gridgen;
-rmpath ../script_utils;
-
+ha = plot_mapgrid(xg,flagsource,neuinfo);
+end % function
 
 %% ADDITIONAL EXAMPLES OF GRIDS AND SOURCE LOCATIONS...
 
