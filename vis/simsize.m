@@ -31,6 +31,14 @@ switch ext
     elseif any(strcmp('lx1', varnames))
       lxs = [h5read(fn, '/lx1'), h5read(fn, '/lx2'), h5read(fn, '/lx3')];
     end
+  case '.nc'
+    varnames = extractfield(ncinfo(fn).Variables, 'Name');
+
+    if any(strcmp('lxs', varnames))
+      lxs = ncread(fn, '/lxs');
+    elseif any(strcmp('lx1', varnames))
+      lxs = [ncread(fn, '/lx1'), ncread(fn, '/lx2'), ncread(fn, '/lx3')];
+    end
   case '.dat'
     fid = fopen(fn, 'r');
     lxs = fread(fid, 3, 'integer*4');

@@ -1,31 +1,31 @@
-function [ne,v1,Ti,Te,J1,v2,v3,J2,J3,ns,vs1,Ts,Phitop] = loadframe3Dcurv_raw(direc, filename)
+function dat = loadframe3Dcurv_raw(filename)
 
-narginchk(2,2)
+narginchk(1,1)
 %% SIMULATION SIZE
 lsp=7;
-lxs = simsize(direc);
+lxs = simsize(filename);
 %% SIMULATION RESULTS
-fsimres = [direc,filesep,filename];
-assert(is_file(fsimres), [fsimres,' is not a file.'])
+assert(is_file(filename), [filename,' is not a file.'])
+dat.filename = filename;
 
-fid=fopen(fsimres,'r');
+fid=fopen(filename,'r');
 simdt(fid);
 %% load densities
-ns = read4D(fid, lsp, lxs);
+dat.ns = read4D(fid, lsp, lxs);
 %% load Vparallel
-vs1 = read4D(fid, lsp, lxs);
-v1=sum(ns(:,:,:,1:6).*vs1(:,:,:,1:6),4)./ns(:,:,:,lsp);
+dat.vs1 = read4D(fid, lsp, lxs);
+dat.v1 = sum(dat.ns(:,:,:,1:6) .* dat.vs1(:,:,:,1:6),4) ./ dat.ns(:,:,:,lsp);
 %% load temperatures
 Ts = read4D(fid, lsp, lxs);
 %% load current densities
-J1 = read3D(fid, lxs);
-J2 = read3D(fid, lxs);
-J3 = read3D(fid, lxs);
+dat.J1 = read3D(fid, lxs);
+dat.J2 = read3D(fid, lxs);
+dat.J3 = read3D(fid, lxs);
 %% load Vperp
-v2 = read3D(fid, lxs);
-v3 = read3D(fid, lxs);
+dat.v2 = read3D(fid, lxs);
+dat.v3 = read3D(fid, lxs);
 %% load topside potential
-Phitop = read2D(fid, lxs);
+dat.Phitop = read2D(fid, lxs);
 
 fclose(fid);
 
@@ -39,31 +39,30 @@ fclose(fid);
 
 
 %% REORGANIZE ACCORDING TO MATLABS CONCEPT OF A 2D or 3D DATA SET
-if (lxs(2) == 1)    %a 2D simulations was done
+if lxs(2) == 1 || lxs(3) == 1    %a 2D simulations was done
   %Jpar=squeeze(J1);
  % Jperp2=squeeze(J3);
-  ne=squeeze(ns(:,:,:,lsp));
-  %p=ns(:,:,:,1)./ns(:,:,:,lsp);
+  dat.ne = squeeze(dat.ns(:,:,:,lsp));
+  %p=dat.ns(:,:,:,1)./dat.ns(:,:,:,lsp);
   %p=squeeze(p);
   %vi=squeeze(v1);
   %vi2=squeeze(v2);
 %  vi3=permute(v3,[3,2,1]);
-  Ti=sum(ns(:,:,:,1:6).*Ts(:,:,:,1:6),4)./ns(:,:,:,lsp);
-  Ti=squeeze(Ti);
-  Te=squeeze(Ts(:,:,:,lsp));
+  dat.Ti = squeeze(sum(dat.ns(:,:,:,1:6) .* Ts(:,:,:,1:6),4) ./ dat.ns(:,:,:,lsp));
+  dat.Te = squeeze(Ts(:,:,:,lsp));
 
 %  [X3,X1]=meshgrid(x3,x1);
 else    %full 3D run
 %  Jpar=permute(J1(:,:,:),[3,2,1]);
 %  Jperp2=permute(J2(:,:,:),[3,2,1]);
 %  Jperp3=permute(J3(:,:,:),[3,2,1]);
-%  ne=permute(ns(:,:,:,lsp),[3,2,1]);
-%  p=ns(:,:,:,1)./ns(:,:,:,lsp);
+%  ne=permute(dat.ns(:,:,:,lsp),[3,2,1]);
+%  p=dat.ns(:,:,:,1)./dat.ns(:,:,:,lsp);
 %  p=permute(p,[3,2,1]);
 %  vi=permute(v1,[3,2,1]);
 %  vi2=permute(v2,[3,2,1]);
 %  vi3=permute(v3,[3,2,1]);
-%  Ti=sum(ns(:,:,:,1:6).*Ts(:,:,:,1:6),4)./ns(:,:,:,lsp);
+%  Ti=sum(dat.ns(:,:,:,1:6).*Ts(:,:,:,1:6),4)./dat.ns(:,:,:,lsp);
 %  Ti=permute(Ti,[3,2,1]);
 %  Te=permute(Ts(:,:,:,lsp),[3,2,1]);
 %
@@ -72,14 +71,14 @@ else    %full 3D run
   %Jpar=J1(:,:,:);
   %Jperp2=J2(:,:,:);
   %Jperp3=J3(:,:,:);
-  ne=ns(:,:,:,lsp);
-  %p=ns(:,:,:,1)./ns(:,:,:,lsp);
+  dat.ne = dat.ns(:,:,:,lsp);
+  %p=dat.ns(:,:,:,1)./dat.ns(:,:,:,lsp);
   %p=p;
   %vi=v1;
   %vi2=v2;
   %vi3=v3;
-  Ti=sum(ns(:,:,:,1:6).*Ts(:,:,:,1:6),4)./ns(:,:,:,lsp);
-  Te=Ts(:,:,:,lsp);
+  dat.Ti = sum(dat.ns(:,:,:,1:6) .* Ts(:,:,:,1:6),4) ./ dat.ns(:,:,:,lsp);
+  dat.Te = Ts(:,:,:,lsp);
 end
 
 end % function

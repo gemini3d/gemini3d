@@ -61,44 +61,44 @@ ok = false;
 
 for it=1:Nt
   st = ['UTsec ', num2str(times(it))];
-  [neA,~,~,~,v1A,TiA,TeA,J1A,v2A,v3A,J2A,J3A] = loadframe(outdir,ymd,UTsec);
-  [neB,~,~,~,v1B,TiB,TeB,J1B,v2B,v3B,J2B,J3B] = loadframe(refdir,ymd,UTsec);
+  out = loadframe(outdir,ymd,UTsec);
+  ref = loadframe(refdir,ymd,UTsec);
 
-  ok = ok + ~assert_allclose(neA,neB,tol.rtolN,tol.atolN,['Ne ',st], true);
-
-  if false
-    ok = ok + ~assert_allclose(v1A,v1B,tol.rtolV,tol.atolV,['V1 ', st], true);
-  end
-  ok = ok + ~assert_allclose(v2A,v2B,tol.rtolV,tol.atolV,['V2 ', st], true);
-  ok = ok + ~assert_allclose(v3A,v3B,tol.rtolV,tol.atolV,['V3 ', st], true);
+  ok = ok + ~assert_allclose(out.ne,ref.ne,tol.rtolN,tol.atolN,['Ne ',st], true);
 
   if false
-    ok = ok + ~assert_allclose(TiA,TiB,tol.rtolT,tol.atolT,['Ti ', st], true);
+    ok = ok + ~assert_allclose(out.v1,ref.v1,tol.rtolV,tol.atolV,['V1 ', st], true);
   end
-  ok = ok + ~assert_allclose(TeA,TeB,tol.rtolT,tol.atolT,['Te ', st], true);
+  ok = ok + ~assert_allclose(out.v2,ref.v2,tol.rtolV,tol.atolV,['V2 ', st], true);
+  ok = ok + ~assert_allclose(out.v3,ref.v3,tol.rtolV,tol.atolV,['V3 ', st], true);
 
-  ok = ok + ~assert_allclose(J1A,J1B,tol.rtolJ,tol.atolJ,['J1 ', st], true);
-  ok = ok + ~assert_allclose(J2A,J2B,tol.rtolJ,tol.atolJ,['J2 ', st], true);
-  ok = ok + ~assert_allclose(J3A,J3B,tol.rtolJ,tol.atolJ,['J3 ', st], true);
+  if false
+    ok = ok + ~assert_allclose(out.Ti,ref.Ti,tol.rtolT,tol.atolT,['Ti ', st], true);
+  end
+  ok = ok + ~assert_allclose(out.Te,ref.Te,tol.rtolT,tol.atolT,['Te ', st], true);
+
+  ok = ok + ~assert_allclose(out.J1,ref.J1,tol.rtolJ,tol.atolJ,['J1 ', st], true);
+  ok = ok + ~assert_allclose(out.J2,ref.J2,tol.rtolJ,tol.atolJ,['J2 ', st], true);
+  ok = ok + ~assert_allclose(out.J3,ref.J3,tol.rtolJ,tol.atolJ,['J3 ', st], true);
 
   %% assert time steps have unique output (earth always rotating...)
   if it>1
-    ok = ok + ~assert_allclose(Ne,neA,tol.rtol,tol.atol,['Ne ', st,' too similar to prior step'],true, true);
-    %ok = ok + ~assert_allclose(v1,v1A,tol.rtol,tol.atol,['V1 ', st,' too similar to prior step'],true, true);
-    ok = ok + ~assert_allclose(v2,v2A,tol.rtol,tol.atol,['V2 ', st,' too similar to prior step'],true, true);
-    ok = ok + ~assert_allclose(v3,v3A,tol.rtol,tol.atol,['V3 ', st,' too similar to prior step'],true, true);
+    ok = ok + ~assert_allclose(Ne,out.ne,tol.rtol,tol.atol,['Ne ', st,' too similar to prior step'],true, true);
+    %ok = ok + ~assert_allclose(v1,out.v1,tol.rtol,tol.atol,['V1 ', st,' too similar to prior step'],true, true);
+    ok = ok + ~assert_allclose(v2,out.v2,tol.rtol,tol.atol,['V2 ', st,' too similar to prior step'],true, true);
+    ok = ok + ~assert_allclose(v3,out.v3,tol.rtol,tol.atol,['V3 ', st,' too similar to prior step'],true, true);
   end
   if it==3
-   %ok = ok + ~assert_allclose(Ti,TiA,tol.rtol,tol.atol,['Ti ', st,' too similar to prior step'],true, true);
-    ok = ok + ~assert_allclose(Te,TeA,tol.rtol,tol.atol,['Te ', st,' too similar to prior step'],true, true);
+   %ok = ok + ~assert_allclose(Ti,out.Ti,tol.rtol,tol.atol,['Ti ', st,' too similar to prior step'],true, true);
+    ok = ok + ~assert_allclose(Te,out.Te,tol.rtol,tol.atol,['Te ', st,' too similar to prior step'],true, true);
   end
   if it==2
-    ok = ok + ~assert_allclose(J1,J1A,tol.rtol,tol.atol,['J1 ', st,' too similar to prior step'],true,true, true);
-    ok = ok + ~assert_allclose(J2,J2A,tol.rtol,tol.atol,['J2 ', st,' too similar to prior step'],true,true, true);
-    ok = ok + ~assert_allclose(J3,J3A,tol.rtol,tol.atol,['J3 ', st,' too similar to prior step'],true,true, true);
+    ok = ok + ~assert_allclose(J1,out.J1,tol.rtol,tol.atol,['J1 ', st,' too similar to prior step'],true,true, true);
+    ok = ok + ~assert_allclose(J2,out.J2,tol.rtol,tol.atol,['J2 ', st,' too similar to prior step'],true,true, true);
+    ok = ok + ~assert_allclose(J3,out.J3,tol.rtol,tol.atol,['J3 ', st,' too similar to prior step'],true,true, true);
   end
 
-  Ne = neA; v1=v1A; v2=v2A; v3=v3A; Ti=TiA; Te=TeA; J1=J1A; J2=J2A; J3=J3A;
+  Ne = out.ne; v1=out.v1; v2=out.v2; v3=out.v3; Ti=out.Ti; Te=out.Te; J1=out.J1; J2=out.J2; J3=out.J3;
 
   [ymd,UTsec] = dateinc(params.dtout,ymd,UTsec);
 

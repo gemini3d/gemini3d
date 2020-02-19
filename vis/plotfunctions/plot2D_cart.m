@@ -31,8 +31,6 @@ end
 
 
 %% PLOT parameters
-FS=8;
-
 %set(h,'PaperPosition',[0 0 11 4.5]);
 
 
@@ -137,15 +135,15 @@ maxxp=max(xp(:));
 %% MAKE THE PLOT!
 if isvector(parm)
   if xg.lx(3) == 1
-    plot1d2(xp, parmp, ha, FS, parmlbl)
+    plot1d2(xp, parmp, ha, parmlbl)
   elseif xg.lx(2) == 1
-    plot1d3(yp, parmp, ha, FS, parmlbl)
+    plot1d3(yp, parmp, ha, parmlbl)
   end
 else
   if xg.lx(3)==1
-    plot12(xp, zp, parmp, ha, FS, sourcemlat, minxp, maxxp, altref, cmap, caxlims, parmlbl)
+    plot12(xp, zp, parmp, ha, sourcemlat, minxp, maxxp, altref, cmap, caxlims, parmlbl)
   elseif xg.lx(2)==1
-    plot13(yp, zp, parmp, ha, FS, sourcemlat, cmap, caxlims, parmlbl)
+    plot13(yp, zp, parmp, ha, sourcemlat, cmap, caxlims, parmlbl)
   end
 end
 ttxt = time2str(ymd, UTsec);
@@ -155,36 +153,36 @@ title(ha, ttxt)
 
 end
 
-function plot1d2(xp, parm, ha, FS, parmlbl)
+function plot1d2(xp, parm, ha, parmlbl)
+narginchk(4,4)
 plot(ha, xp/1e3, parm)
-set(ha, 'fontsize', FS)
 xlabel(ha, 'eastward dist. (km)')
 ylabel(ha, parmlbl)
 end % function
 
 
-function plot1d3(yp, parm, ha, FS, parmlbl)
+function plot1d3(yp, parm, ha, parmlbl)
+narginchk(4,4)
 plot(ha, yp/1e3, parm)
-set(ha, 'fontsize', FS)
 xlabel(ha, 'northward dist. (km)')
 ylabel(ha, parmlbl)
 end % function
 
 
-function plot12(xp, zp, parmp, ha, FS, sourcemlat, minxp, maxxp, altref, cmap, caxlims, parmlbl)
+function plot12(xp, zp, parmp, ha, sourcemlat, minxp, maxxp, altref, cmap, caxlims, parmlbl)
+narginchk(11, 11)
 hi = imagesc(xp/1e3, zp/1e3,parmp, 'parent', ha);
 hold(ha, 'on')
-plot(ha, [minxp/1e3,maxxp/1e3],[altref, altref],'w--','LineWidth',2);
+plot(ha, [minxp/1e3,maxxp/1e3],[altref, altref],'w--','LineWidth',2)
 
 if ~isempty(sourcemlat)
-  plot(ha, sourcemlat,0,'r^','MarkerSize',12,'LineWidth',2);
+  plot(ha, sourcemlat,0,'r^','MarkerSize',12,'LineWidth',2)
 end
 hold(ha, 'off')
 
 try %#ok<*TRYNC> % octave < 5
   set(hi, 'alphadata', ~isnan(parmp))
 end
-set(ha,'FontSize',FS)
 
 make_colorbar(ha, cmap, caxlims, parmlbl)
 
@@ -193,8 +191,8 @@ ylabel(ha, 'altitude (km)')
 
 end
 
-function plot13(yp, zp, parmp, ha, FS, sourcemlat, cmap, caxlims, parmlbl)
-
+function plot13(yp, zp, parmp, ha, sourcemlat, cmap, caxlims, parmlbl)
+narginchk(8,8)
 hi = imagesc(yp/1e3, zp/1e3, parmp, 'parent', ha);
 hold(ha, 'on')
 %plot([minyp,maxyp],[altref,altref],'w--','LineWidth',2);
@@ -206,7 +204,6 @@ hold(ha, 'off')
 try % % octave < 5
   set(hi, 'alphadata', ~isnan(parmp));
 end
-set(ha, 'FontSize', FS);
 
 make_colorbar(ha, cmap, caxlims, parmlbl)
 
@@ -216,12 +213,13 @@ ylabel(ha, 'altitude (km)')
 end % function
 
 
-function make_colorbar(ha, cmap, caxlims, parmlbl)
+function make_colorbar(ha, cmap, lims, parmlbl)
 
 tight_axis(ha)
 colormap(ha, cmap)
-if ~isempty(caxlims) && all(~isnan(caxlims))
-  caxis(ha, caxlims)
+if ~isempty(lims) && all(~isnan(lims)) && lims(1) < lims(2)
+  % keep semicolon here as caxis can be buggy and output to console
+  caxis(ha, lims);
 end
 c=colorbar('peer', ha);
 xlabel(c, parmlbl)

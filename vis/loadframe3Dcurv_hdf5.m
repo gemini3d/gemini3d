@@ -1,4 +1,4 @@
-function [ne,v1,Ti,Te,J1,v2,v3,J2,J3,ns,vs1,Ts,Phitop] = loadframe3Dcurv_hdf5(fn)
+function dat = loadframe3Dcurv_hdf5(fn)
 
 narginchk(1,1)
 %% SIMULATION SIZE
@@ -6,47 +6,53 @@ lsp=7;
 lxs = simsize(fn);
 %% SIMULATION RESULTS
 assert(is_file(fn), [fn,' is not a file.'])
+dat.filename = fn;
 
 if isoctave
   D = load(fn);
 
-  ns = D.nsall;
-  vs1 = D.vs1all;
+  dat.ns = D.nsall;
+  dat.vs1 = D.vs1all;
   Ts = D.Tsall;
-  J1 = D.J1all;
-  J2 = D.J2all;
-  J3 = D.J3all;
-  v2 = D.v2avgall;
-  v3 = D.v3avgall;
-  Phitop = D.Phiall;
+  dat.J1 = D.J1all;
+  dat.J2 = D.J2all;
+  dat.J3 = D.J3all;
+  dat.v2 = D.v2avgall;
+  dat.v3 = D.v3avgall;
+  dat.Phitop = D.Phiall;
 else
-  ns = h5read(fn, '/nsall');
-  vs1 = h5read(fn, '/vs1all');
+  dat.ns = h5read(fn, '/nsall');
+  dat.vs1 = h5read(fn, '/vs1all');
   Ts = h5read(fn, '/Tsall');
-  J1 = h5read(fn, '/J1all');
-  J2 = h5read(fn, '/J2all');
-  J3 = h5read(fn, '/J3all');
-  v2 = h5read(fn, '/v2avgall');
-  v3 = h5read(fn, '/v3avgall');
-  Phitop = h5read(fn, '/Phiall');
+  dat.J1 = h5read(fn, '/J1all');
+  dat.J2 = h5read(fn, '/J2all');
+  dat.J3 = h5read(fn, '/J3all');
+  dat.v2 = h5read(fn, '/v2avgall');
+  dat.v3 = h5read(fn, '/v3avgall');
+  dat.Phitop = h5read(fn, '/Phiall');
 end
 
-v1 = sum(ns(:,:,:,1:6) .* vs1(:,:,:,1:6), 4) ./ ns(:,:,:,lsp);
+dat.J1 = squeeze(dat.J1);
+dat.J2 = squeeze(dat.J2);
+dat.J3 = squeeze(dat.J3);
+dat.v2 = squeeze(dat.v2);
+dat.v3 = squeeze(dat.v3);
+
+dat.v1 = squeeze(sum(dat.ns(:,:,:,1:6) .* dat.vs1(:,:,:,1:6), 4) ./ dat.ns(:,:,:,lsp));
 
 %% REORGANIZE ACCORDING TO MATLABS CONCEPT OF A 2D or 3D DATA SET
-if lxs(2) == 1   %a 2D simulations was done
-  ne=squeeze(ns(:,:,:,lsp));
+if lxs(2) == 1 || lxs(3) == 1  %a 2D simulations was done
+  dat.ne=squeeze(dat.ns(:,:,:,lsp));
 
-  Ti=sum(ns(:,:,:,1:6).*Ts(:,:,:,1:6),4)./ns(:,:,:,lsp);
-  Ti=squeeze(Ti);
-  Te=squeeze(Ts(:,:,:,lsp));
+  dat.Ti = squeeze(sum(dat.ns(:,:,:,1:6) .* Ts(:,:,:,1:6),4) ./ dat.ns(:,:,:,lsp));
+  dat.Te = squeeze(Ts(:,:,:,lsp));
 
 %  [X3,X1]=meshgrid(x3,x1);
 else    %full 3D run
-  ne=ns(:,:,:,lsp);
+  dat.ne = dat.ns(:,:,:,lsp);
 
-  Ti=sum(ns(:,:,:,1:6).*Ts(:,:,:,1:6),4)./ns(:,:,:,lsp);
-  Te=Ts(:,:,:,lsp);
+  dat.Ti = sum(dat.ns(:,:,:,1:6) .* Ts(:,:,:,1:6),4) ./ dat.ns(:,:,:,lsp);
+  dat.Te = Ts(:,:,:,lsp);
 end
 
 end % function

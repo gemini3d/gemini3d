@@ -17,16 +17,15 @@ xgin = readgrid(p.eqnml, p.format);
 [ymd_end,UTsec_end] = dateinc(tdur,ymd0,UTsec0);
 
 %% LOAD THE FRAME
-[ne,mlatsrc,mlonsrc,xgin,v1,Ti,Te,J1,v2,v3,J2,J3,filename,Phitop,ns,vs1,Ts] = ...
-    loadframe(p.eqdir, ymd_end, UTsec_end, flagoutput, mloc, xgin, [], p.eqnml);
+dat = loadframe(p.eqdir, ymd_end, UTsec_end, flagoutput, mloc, xgin, [], p.eqnml);
 
 %% check input to interpolation
-assert(all(isfinite(ns(:))), 'non-finite density')
-assert(all(isfinite(vs1(:))), 'non-finite drift')
-assert(all(isfinite(Ts(:))), 'non-finite temperature')
+assert(all(isfinite(dat.ns(:))), 'non-finite density')
+assert(all(isfinite(dat.vs1(:))), 'non-finite drift')
+assert(all(isfinite(dat.Ts(:))), 'non-finite temperature')
 
 %% DO THE INTERPOLATION
-[nsi,vs1i,Tsi] = model_resample(xgin, ns, vs1, Ts, xg);
+[nsi,vs1i,Tsi] = model_resample(xgin, dat.ns, dat.vs1, dat.Ts, xg);
 
 %% check IF THE INTERPOLATION WENT WEIRD...
 assert(all(isfinite(nsi(:))), 'non-finite interpolated density')

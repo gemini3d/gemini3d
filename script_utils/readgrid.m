@@ -46,6 +46,10 @@ xgf.h1 = h5read(fn, '/h1');
 xgf.h2 = h5read(fn, '/h2');
 xgf.h3 = h5read(fn, '/h3');
 
+xgf.alt = h5read(fn, '/alt');
+xgf.glat = h5read(fn, '/glat');
+xgf.glon = h5read(fn, '/glon');
+
 xgf.r = h5read(fn, '/r');
 xgf.theta = h5read(fn, '/theta');
 xgf.phi = h5read(fn, '/phi');

@@ -1,4 +1,4 @@
-function [ne,v1,Ti,Te,J1,v2,v3,J2,J3,Phitop] = loadframe3Dcurvavg_raw(filename)
+function dat = loadframe3Dcurvavg_raw(filename)
 
 narginchk(1,1)
 %% SIMULATION SIZE
@@ -8,25 +8,26 @@ lxs = simsize(filename);
 %[x1, x2, x3] = simaxes(filename);
 %% SIMULATION RESULTS
 assert(is_file(filename), [filename,' is not a file.'])
+dat.filename = filename;
 
 fid = fopen(filename,'r');
 simdt(fid);
 %% Number densities
-ne = read3D(fid, lxs);
+dat.ne = read3D(fid, lxs);
 %% Parallel Velocities
-v1 = read3D(fid, lxs);
+dat.v1 = read3D(fid, lxs);
 %% Temperatures
-Ti = read3D(fid, lxs);
-Te = read3D(fid, lxs);
+dat.Ti = read3D(fid, lxs);
+dat.Te = read3D(fid, lxs);
 %% Current densities
-J1 = read3D(fid, lxs);
-J2 = read3D(fid, lxs);
-J3 = read3D(fid, lxs);
+dat.J1 = read3D(fid, lxs);
+dat.J2 = read3D(fid, lxs);
+dat.J3 = read3D(fid, lxs);
 %% Perpendicular drifts
-v2 = read3D(fid, lxs);
-v3 = read3D(fid, lxs);
+dat.v2 = read3D(fid, lxs);
+dat.v3 = read3D(fid, lxs);
 %% Topside potential
-Phitop = read2D(fid, lxs);
+dat.Phitop = read2D(fid, lxs);
 
 fclose(fid);
 
@@ -42,9 +43,9 @@ if lxs(2) == 1    %a 2D simulations was done in x1 and x3
 %  vi2=squeeze(v2);
 %  vi3=permute(v3,[3,2,1]);
 %  Ti=sum(ns(:,:,:,1:6).*Ts(:,:,:,1:6),4)./ns(:,:,:,lsp);
-  Ti=squeeze(Ti);
+  dat.Ti=squeeze(dat.Ti);
 %  Te=squeeze(Ts(:,:,:,lsp));
-  Te=squeeze(Te);
+  dat.Te=squeeze(dat.Te);
 
  % [X3,X1]=meshgrid(x3,x1);
 elseif (lxs(3)==1)     %a 2D simuluation was done in x1,x2 with internal permutign of arrays by fortran code
@@ -53,8 +54,8 @@ elseif (lxs(3)==1)     %a 2D simuluation was done in x1,x2 with internal permuti
   %Jperp2=squeeze(J3);
   %vi=squeeze(v1);
   %vi2=squeeze(v2);
-  Ti=squeeze(Ti);
-  Te=squeeze(Te);
+  dat.Ti=squeeze(dat.Ti);
+  dat.Te=squeeze(dat.Te);
 
   %[X2,X1]=meshgrid(x2,x1);
 else    %full 3D run

@@ -3,8 +3,7 @@ function xg = plotall(direc, saveplot_fmt, plotfun, xg, visible)
 narginchk(1,5)
 
 cwd = fileparts(mfilename('fullpath'));
-addpath([cwd, '/plotfunctions'])
-addpath([cwd, '/../script_utils'])
+addpath([cwd, '/plotfunctions'], [cwd, '/../script_utils'])
 
 validateattributes(direc, {'char'}, {'vector'}, mfilename, 'path to data', 1)
 direc = absolute_path(direc);
@@ -57,31 +56,22 @@ end
 
 h = plotinit(xg, visible);
 
-if ~isempty(saveplot_fmt)  % plot and save as fast as possible.
-  if ~isoctave && ~isinteractive
-%    if isempty(gcp('nocreate'))
-%      parpool(2); % don't use too much RAM loading huge data
-%    end
-%    parfor i = 1:Nt
-    for i=1:Nt
-      plotframe(direc, ymd(i,:), UTsec(i), saveplot_fmt, plotfun, xg, h);
-    end
-  else
-    for i = 1:Nt
-      plotframe(direc, ymd(i,:), UTsec(i), saveplot_fmt, plotfun, xg, h);
-    end
-  end
-
-else  % displaying interactively, not saving
-
+if ~isempty(saveplot_fmt)
+  % plot and save as fast as possible.
   for i = 1:Nt
-    xg = plotframe(direc, ymd(i,:), UTsec(i), saveplot_fmt, plotfun, xg, h);
+    plotframe(direc, ymd(i,:), UTsec(i), saveplot_fmt, plotfun, xg, h)
+  end
+elseif isinteractive
+  % displaying interactively, not saving
+  for i = 1:Nt
+    plotframe(direc, ymd(i,:), UTsec(i), saveplot_fmt, plotfun, xg, h)
 
     drawnow % need this here to ensure plots update (race condition)
     disp(''), disp('** press any key to plot next time step, or Ctrl C to stop**')
     pause
   end
-
+else
+  error('No Matlab / Octave desktop so cannot plot. Was also not told to save')
 end % if saveplots
 
 if is_folder([direc, '/aurmaps']) % glow sim
