@@ -16,8 +16,10 @@ switch file_format
   otherwise
     if is_file([path, '/simsize.h5'])
       xgf = read_hdf5(path);
-    else
+    elseif is_file([path,'/simsize.dat'])
       xgf = read_raw(path);
+    else
+      error(['no simsize file found in ',path])
     end
 end
 
