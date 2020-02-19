@@ -8,13 +8,15 @@ validateattributes(p, {'struct'}, {'scalar'})
 %p.alt_min = 80e3;
 %p.alt_max = 1000e3;
 %p.alt_scale = [10e3, 8e3, 500e3, 150e3];
-if isfield(p, 'alt_min') && isfield(p, 'alt_max') && isfield(p, 'alt_scale') && isfield(p,'I')
-  z = altitude_grid(p.alt_min, p.alt_max, p.I, p.alt_scale);
-else
+if isfield(p, 'alt_min') && isfield(p, 'alt_max') && isfield(p, 'alt_scale') && isfield(p,'Bincl')
+  z = altitude_grid(p.alt_min, p.alt_max, p.Bincl, p.alt_scale);
+elseif is_file(p.eqdir)
   disp(['makegrid_cart_3D: reusing grid from ', p.eqdir])
   xeq = readgrid(p.eqdir, p.format);
   z = xeq.x1;
   clear('xeq')
+else
+  error('must specify altitude grid parameters or grid file to reuse')
 end
 %% TRANSVERSE GRID (BASED ON SIZE OF CURRENT REGION SPECIFIED ABOVE)
 % EAST
@@ -141,7 +143,7 @@ xg.rx2i=[]; xg.thetax2i=[];
 %These are cartesian representations of the ECEF, spherical unit vectors
 xg.er=er; xg.etheta=etheta; xg.ephi=ephi;
 
-xg.I = p.I * ones([lx2,lx3]);
+xg.I = p.Bincl * ones([lx2,lx3]);
 
 %Cartesian ECEF coordinates
 xg.x=xECEF; xg.z=zECEF; xg.y=yECEF;
