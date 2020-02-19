@@ -1,6 +1,11 @@
 function [nsi,vs1i,Tsi] = model_resample(xgin,ns,vs1,Ts,xg)
-
 narginchk(5, 5)
+validateattributes(xgin, {'struct'}, {'scalar'})
+validateattributes(ns, {'numeric'}, {'positive', 'finite'})
+validateattributes(vs1, {'numeric'}, {'finite'})
+validateattributes(Ts, {'numeric'}, {'positive','finite'})
+validateattributes(xg, {'struct'}, {'scalar'})
+
 %% NEW GRID SIZES
 lx1=xg.lx(1); lx2=xg.lx(2); lx3=xg.lx(3);
 lsp=size(ns,4);
@@ -31,7 +36,7 @@ if lx3 > 1 && lx2 > 1 % 3-D
     Tsi(:,:,:, i) = tmpvar;
   end
 elseif lx3 == 1 % 2-D east-west
-  disp('interpolating grid for 2-D simulation in lx1, lx2')
+  disp('interpolating grid for 2-D simulation in x1, x2')
   [X2,X1]=meshgrid(xgin.x2(3:end-2),xgin.x1(3:end-2));
   [X2i,X1i]=meshgrid(xg.x2(3:end-2),xg.x1(3:end-2));
   for i = 1:lsp
@@ -45,7 +50,7 @@ elseif lx3 == 1 % 2-D east-west
     Tsi(:,:,:, i)=reshape(tmpvar,[lx1,lx2,1]);
   end
 elseif lx2 == 1 % 2-D north-south
-  disp('interpolating grid for 2-D simulation in lx1, lx3')
+  disp('interpolating grid for 2-D simulation in x1, x3')
   % original grid, a priori the first 2 and last 2 values are ghost cells
   % on each axis
   %
