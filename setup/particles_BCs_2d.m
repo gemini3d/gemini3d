@@ -116,8 +116,8 @@ outdir = absolute_path([p.simdir, '/inputs/prec_inputs/']);
 makedir(outdir)
 
 switch p.format
-  case 'hdf5', write_hdf5(outdir, llon, llat, mlon, mlat, expdate, Nt, Qit, E0it)
-  case 'raw', write_raw(outdir, llon, llat, mlon, mlat, expdate, Nt, Qit, E0it)
+  case {'h5','hdf5'}, write_hdf5(outdir, llon, llat, mlon, mlat, expdate, Nt, Qit, E0it)
+  case {'dat','raw'}, write_raw(outdir, llon, llat, mlon, mlat, expdate, Nt, Qit, E0it)
   otherwise, error(['unknown file format ', p.format])
 end
 

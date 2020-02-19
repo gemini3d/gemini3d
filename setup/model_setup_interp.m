@@ -8,11 +8,8 @@ eqdir_inputs = [p.eqdir, '/inputs'];
 
 %ADD PATHS FOR FUNCTIONS
 cwd = fileparts(mfilename('fullpath'));
-gemdir = [cwd, '/../../gemini'];
-assert(isfolder(gemdir), [gemdir, ' not found'])
-for d = {'script_utils', 'setup', 'setup/gridgen', 'vis'}
-  addpath([gemdir, filesep, d{:}])
-end
+gemdir = [cwd, '/..'];
+addpath([gemdir, '/script_utils'],[gemdir, '/setup'],[gemdir, '/setup/gridgen'],[gemdir, '/vis'])
 
 %% copy equilibrium to new directory so Fortran can read and upsample
 makedir(simdir_inputs)
