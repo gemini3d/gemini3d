@@ -13,7 +13,7 @@ if isoctave
 
   dat.ns = D.nsall;
   dat.vs1 = D.vs1all;
-  Ts = D.Tsall;
+  dat.Ts = D.Tsall;
   dat.J1 = D.J1all;
   dat.J2 = D.J2all;
   dat.J3 = D.J3all;
@@ -23,7 +23,7 @@ if isoctave
 else
   dat.ns = h5read(fn, '/nsall');
   dat.vs1 = h5read(fn, '/vs1all');
-  Ts = h5read(fn, '/Tsall');
+  dat.Ts = h5read(fn, '/Tsall');
   dat.J1 = h5read(fn, '/J1all');
   dat.J2 = h5read(fn, '/J2all');
   dat.J3 = h5read(fn, '/J3all');
@@ -44,15 +44,15 @@ dat.v1 = squeeze(sum(dat.ns(:,:,:,1:6) .* dat.vs1(:,:,:,1:6), 4) ./ dat.ns(:,:,:
 if lxs(2) == 1 || lxs(3) == 1  %a 2D simulations was done
   dat.ne=squeeze(dat.ns(:,:,:,lsp));
 
-  dat.Ti = squeeze(sum(dat.ns(:,:,:,1:6) .* Ts(:,:,:,1:6),4) ./ dat.ns(:,:,:,lsp));
-  dat.Te = squeeze(Ts(:,:,:,lsp));
+  dat.Ti = squeeze(sum(dat.ns(:,:,:,1:6) .* dat.Ts(:,:,:,1:6),4) ./ dat.ns(:,:,:,lsp));
+  dat.Te = squeeze(dat.Ts(:,:,:,lsp));
 
 %  [X3,X1]=meshgrid(x3,x1);
 else    %full 3D run
   dat.ne = dat.ns(:,:,:,lsp);
 
-  dat.Ti = sum(dat.ns(:,:,:,1:6) .* Ts(:,:,:,1:6),4) ./ dat.ns(:,:,:,lsp);
-  dat.Te = Ts(:,:,:,lsp);
+  dat.Ti = sum(dat.ns(:,:,:,1:6) .* dat.Ts(:,:,:,1:6),4) ./ dat.ns(:,:,:,lsp);
+  dat.Te = dat.Ts(:,:,:,lsp);
 end
 
 end % function
