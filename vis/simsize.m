@@ -24,12 +24,26 @@ assert(is_file(fn), [fn,' is not a file.'])
 
 switch ext
   case '.h5'
-    varnames = extractfield(h5info(fn).Datasets, 'Name');
+    if isoctave
+      d = load(fn);
+      if isfield(d, 'lxs')
+        lxs = d.lxs;
+      elseif isfield(d, 'lx1')
+        % octave bug: octave_base_value::int32_scalar_value(): wrong type argument 'int32 matrix'
+        lxs = [d.lx1; d.lx2; d.lx3];
+      else
+        error(['did not find simsize in ', fn])
+      end
+    else
+      varnames = extractfield(h5info(fn).Datasets, 'Name');
 
-    if any(strcmp('lxs', varnames))
-      lxs = h5read(fn, '/lxs');
-    elseif any(strcmp('lx1', varnames))
-      lxs = [h5read(fn, '/lx1'), h5read(fn, '/lx2'), h5read(fn, '/lx3')];
+      if any(strcmp('lxs', varnames))
+        lxs = h5read(fn, '/lxs');
+      elseif any(strcmp('lx1', varnames))
+        lxs = [h5read(fn, '/lx1'), h5read(fn, '/lx2'), h5read(fn, '/lx3')];
+      else
+        error(['did not find simsize in ', fn])
+      end
     end
   case '.nc'
     varnames = extractfield(ncinfo(fn).Variables, 'Name');

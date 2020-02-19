@@ -11,15 +11,13 @@ assert(is_folder(direc), [direc, ' is not a directory'])
 
 if nargin<2, saveplot_fmt={}; end  %e.g. {'png'} or {'png', 'eps'}
 
-if nargin<3
-  plotfun=[];
-else
+if nargin<3, plotfun=[]; end
+if ~isempty(plotfun)
   validateattributes(plotfun, {'char', 'function_handle'}, {'nonempty'}, mfilename, 'plotting function',3)
 end
 
-if nargin<4
-  xg=[];
-else
+if nargin<4, xg=[]; end
+if ~isempty(xg)
   validateattributes(xg, {'struct'}, {'scalar'}, mfilename, 'grid structure', 4)
 end
 
@@ -61,8 +59,9 @@ if ~isempty(saveplot_fmt)
   for i = 1:Nt
     plotframe(direc, ymd(i,:), UTsec(i), saveplot_fmt, plotfun, xg, h)
   end
-elseif isinteractive
+elseif isoctave || isinteractive
   % displaying interactively, not saving
+  % Note: CLI Octave can plot also
   for i = 1:Nt
     plotframe(direc, ymd(i,:), UTsec(i), saveplot_fmt, plotfun, xg, h)
 
