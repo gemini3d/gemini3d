@@ -5,6 +5,7 @@ get Linux system info
 from configparser import ConfigParser
 import typing as T
 from pathlib import Path
+import sys
 
 
 def os_release() -> T.List[str]:
@@ -15,6 +16,10 @@ def os_release() -> T.List[str]:
     -------
     'rhel' or 'debian'
     """
+
+    if sys.platform != "linux":
+        return []
+
     fn = Path("/etc/os-release")
     if not fn.is_file():
         if Path("/etc/redhat-release").is_file() or Path("/etc/centos-release").is_file():
