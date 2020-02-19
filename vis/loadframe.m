@@ -13,7 +13,9 @@ if nargin < 8 || isempty(config_file)
 end
 
 if nargin < 5 || isempty(flagoutput) || isempty(mloc)
-  [~,~,~,~,flagoutput,mloc] = readconfig(config_file);
+  p = read_config(config_file);
+  flagoutput = p.flagoutput;
+  mloc = p.mloc;
 end
 validateattr(flagoutput,{'numeric'},{'scalar'},mfilename,'output flag',4)
 

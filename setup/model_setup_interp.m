@@ -2,18 +2,10 @@ function model_setup_interp(p)
 narginchk(1,1)
 validateattributes(p, {'struct'}, {'scalar'}, mfilename, 'parameters', 1)
 
-%% check directories
-simdir_inputs = [p.simdir, '/inputs'];
-eqdir_inputs = [p.eqdir, '/inputs'];
-
-%ADD PATHS FOR FUNCTIONS
+%% ADD PATHS FOR FUNCTIONS
 cwd = fileparts(mfilename('fullpath'));
 gemdir = [cwd, '/..'];
 addpath([gemdir, '/script_utils'],[gemdir, '/setup'],[gemdir, '/setup/gridgen'],[gemdir, '/vis'])
-
-%% copy equilibrium to new directory so Fortran can read and upsample
-makedir(simdir_inputs)
-copyfile(eqdir_inputs, simdir_inputs)
 
 %% GRID GENERATION
 xg = makegrid_cart_3D(p);
