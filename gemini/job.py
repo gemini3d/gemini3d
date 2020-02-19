@@ -1,6 +1,5 @@
 import typing as T
 import os
-import sys
 import logging
 import subprocess
 import shutil
@@ -8,7 +7,7 @@ from pathlib import Path
 
 from .utils import get_mpi_count
 from .config import read_config
-from .linux_info import os_release
+from .hpc import hpc_job, hpc_batch_create
 
 Pathlike = T.Union[str, Path]
 cwd = os.getcwd()
@@ -46,46 +45,13 @@ def runner(mpiexec: Pathlike, gemexe: Pathlike, config_file: Pathlike, out_dir: 
     print(" ".join(cmd), "\n")
 
     batcher = hpc_job()
-    if batcher:  # FIXME: create batch script
-        print("batcher would be", batcher)
+    if batcher:
+        job_file = hpc_batch_create(batcher, out_dir, cmd)  # noqa: F841
+        # hpc_submit_job(job_file)
+
     ret = subprocess.run(cmd)
 
     raise SystemExit(ret.returncode)
-
-
-def hpc_job() -> str:
-    """
-    this is a function that is enhanced over time as users tell us how to:
-
-    1. identify their HPC via environment variables
-    2. run a batch job
-
-    For now, assume non-{CentOS,RHEL} are not HPC
-    """
-
-    if sys.platform != "linux":
-        return None
-
-    linux_like = os_release()
-    if not {"centos", "rhel"}.intersection(linux_like):
-        return None
-
-    batcher = None
-    hostname = os.environ.get("HOSTNAME")
-    if hostname:
-        hostname = hostname.lower()
-        if hostname.startswith("desktop"):  # Windows Subsystem for Linux
-            return None
-        elif hostname.startswith("scc"):  # SCC
-            batcher = "qsub"
-
-    if batcher is None:
-        logging.warning(
-            "Your system is not yet known to Gemini job.py."
-            "\nPlease raise a GitHub Issue with environemnt variable we can use to ID your HPC and how to run a batch job."
-        )
-
-    return batcher
 
 
 def check_mpiexec(mpiexec: Pathlike) -> str:
