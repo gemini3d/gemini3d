@@ -1,17 +1,12 @@
-function [ne,v1,Ti,Te,J1,v2,v3,J2,J3,Phitop] = loadframe3Dcurvavg(direc, filename)
+function dat = loadframe3Dcurvavg(filename)
 
-narginchk(1,2)
-if nargin == 2
-  filename = [direc, filesep, filename];
-else
-  filename = direc;
-end
-
+narginchk(1,1)
 [~,~,ext] = fileparts(filename);
 
 switch ext
-  case '.dat', [ne,v1,Ti,Te,J1,v2,v3,J2,J3,Phitop] = loadframe3Dcurvavg_raw(filename);
-  case '.h5', [ne,v1,Ti,Te,J1,v2,v3,J2,J3,Phitop] = loadframe3Dcurvavg_hdf5(filename);
+  case '.h5', dat = loadframe3Dcurvavg_hdf5(filename);
+  case '.dat', dat = loadframe3Dcurvavg_raw(filename);
+  case '.nc', error('NetCDF4 not yet handled in Matlab')
   otherwise, error(['unknown file type ',filename])
 end
 

@@ -134,7 +134,7 @@ dvTEC=[];
 simdate_series=[];
 for it=1:length(times)
     %LOAD DIST. FILE
-    [ne]=loadframe(direc,ymd,UTsec, flagoutput,mloc,xg);
+    dat = loadframe(direc,ymd,UTsec, flagoutput,mloc,xg);
     simdate=[ymd,UTsec/3600,0,0];    %create a datevec for matlab
 
 
@@ -146,7 +146,7 @@ for it=1:length(times)
       x3=xg.x3(3:end-2);
       [X2,X1,X3]=meshgrid(x2(:),x1(1:lh)',x3(:));   %loadframe overwrites this (sloppy!) so redefine eeach time step
 
-      neI=interp3(X2,X1,X3,ne,pI(:),qI(:),X3I(:));
+      neI=interp3(X2,X1,X3,dat.ne,pI(:),qI(:),X3I(:));
     else
       fprintf('2D interpolation...\n')
       x1=xg.x1(3:end-2);
@@ -154,7 +154,7 @@ for it=1:length(times)
       x3=xg.x3(3:end-2);
       [X2,X1]=meshgrid(x2(:),x1(1:lh)');
 
-      neI=interp2(X2,X1,ne,pI(:),qI(:));
+      neI=interp2(X2,X1,dat.ne,pI(:),qI(:));
     end
 
 
@@ -165,7 +165,7 @@ for it=1:length(times)
 
 
     %LOAD CONTROL SIMULATION
-    [ne]=loadframe(direc_control,ymd,UTsec, flagoutput,mloc,xg);
+    dat = loadframe(direc_control,ymd,UTsec, flagoutput,mloc,xg);
 
 
     %DEFINE A MESHGRID BASED ON CONTROL SIMULATION OUTPUT AND DO INTERPOLATION
@@ -176,7 +176,7 @@ for it=1:length(times)
       x3c=xgc.x3(3:end-2);
       [X2c,X1c,X3c]=meshgrid(x2c(:),x1c(1:lhc)',x3c(:));   %loadframe overwrites this (sloppy!) so redefine eeach time step
 
-      neI_control=interp3(X2c,X1c,X3c,ne,pI(:),qI(:),X3I(:));
+      neI_control=interp3(X2c,X1c,X3c,dat.ne,pI(:),qI(:),X3I(:));
     else
       fprintf('2D interpolation...\n')
       x1c=xgc.x1(3:end-2);
@@ -184,7 +184,7 @@ for it=1:length(times)
       x3c=xgc.x3(3:end-2);
       [X2c,X1c]=meshgrid(x2c(:),x1c(1:lhc)');
 
-      neI_control=interp2(X2c,X1c,ne,pI(:),qI(:));
+      neI_control=interp2(X2c,X1c,dat.ne,pI(:),qI(:));
     end
 
 
@@ -237,7 +237,7 @@ for it=1:length(times)
 
     %PLOT THE TOTAL ELECTRON CONTENT EACH TIME FRAME IF WE HAAVE DONE A 3D SIMULATION, OTHERWISE WAIT UNTIL THE END OR A SINGLE PLOT
     if (~flag2D)
-      fprintf('Printing TEC plot for current time frame...\n');
+      disp('Printing TEC plot for current time frame...');
       direc=[basedir,simname]
       filename=datelab(ymd,UTsec)
       FS=18;

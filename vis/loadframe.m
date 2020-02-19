@@ -1,4 +1,4 @@
-function [ne,mlatsrc,mlonsrc,xg,v1,Ti,Te,J1,v2,v3,J2,J3,filename,Phitop,ns,vs1,Ts] = loadframe(direc,ymd,UTsec,flagoutput,mloc,xg,file_format, config_file)
+function dat = loadframe(direc,ymd,UTsec,flagoutput,mloc,xg,file_format, config_file)
 
 cwd = fileparts(mfilename('fullpath'));
 addpath([cwd, '/../script_utils'])
@@ -34,21 +34,13 @@ validateattr(xg, {'struct'}, {'scalar'}, mfilename, 'grid structure', 6)
 
 direc = absolute_path(direc);
 
-%% SET MAGNETIC LATITUDE AND LONGITUDE OF THE SOURCE
-if nargout >= 2 && ~isempty(mloc)
-  mlatsrc=mloc(1);
-  mlonsrc=mloc(2);
-else
-  mlatsrc=[];
-  mlonsrc=[];
-end
-
 %% LOAD DIST. FILE
 stem0 = datelab(ymd, UTsec);
 switch file_format
-  case 'hdf5', suffix = {'.h5'};
-  case 'raw', suffix = {'.dat'};
-  otherwise, suffix = {'.h5', '.dat'};
+  case {'h5','hdf5'}, suffix = {'.h5'};
+  case {'dat','raw'}, suffix = {'.dat'};
+  case {'nc'}, suffix = {'.nc'};
+  otherwise, suffix = {'.h5', '.nc', '.dat'};
 end
 
 for ext = suffix
@@ -69,14 +61,19 @@ assert(is_file(filename), ['loadframe: ', filename, ' does not exist.'])
 
 switch flagoutput
   case 1
-    [ne,v1,Ti,Te,J1,v2,v3,J2,J3,ns,vs1,Ts,Phitop] = loadframe3Dcurv(filename);
+    dat = loadframe3Dcurv(filename);
   case 2
-    [ne,v1,Ti,Te,J1,v2,v3,J2,J3,Phitop] = loadframe3Dcurvavg(filename);
-    ns=[]; vs1=[]; Ts=[];
+    dat = loadframe3Dcurvavg(filename);
   otherwise
-    ne = loadframe3Dcurvne(filename);
-    v1=[]; Ti=[]; Te=[]; J1=[]; v2=[]; v3=[]; J2=[]; J3=[];
-    ns=[]; vs1=[]; Ts=[]; Phitop=[];
+    dat = loadframe3Dcurvne(filename);
+end
+
+%% SET MAGNETIC LATITUDE AND LONGITUDE OF THE SOURCE
+dat.mlatsrc=[];
+dat.mlonsrc=[];
+if nargout >= 2 && ~isempty(mloc)
+  dat.mlatsrc=mloc(1);
+  dat.mlonsrc=mloc(2);
 end
 
 end % function
