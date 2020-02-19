@@ -1,7 +1,9 @@
-function ha=plotgrid(xg,flagsource,neuinfo)
+function ha = plot_mapgrid(xg,flagsource,neuinfo)
 
 narginchk(3,3)
-
+validateattributes(xg, {'struct'}, {'scalar'}, mfilename)
+validateattributes(flagsource, {'numeric'}, {'scalar'}, mfilename)
+validateattributes(neuinfo, {'struct'}, {'scalar'}, mfilename)
 %% INPUT COORDS NEED TO BE CONVERTED TO MAGNETIC
 mlon=xg.phi*180/pi;
 mlat=90-xg.theta*180/pi;
@@ -9,7 +11,7 @@ dmlon=max(mlon(:))-min(mlon(:));
 
 
 %% ORGANIZE INPUT STRUCTURE
-if (flagsource ~= 0)
+if flagsource ~= 0
     neugridtype=neuinfo.neugridtype;
     sourcelat=neuinfo.sourcelat;
     sourcelong=neuinfo.sourcelong;
@@ -60,8 +62,8 @@ end
 
 
 %% CONVERT INPUT GRID COORDINATES INTO MLAT,MLON,ALT
-Re=6370e3;
-dphi=max(xg.phi(:))-min(xg.phi(:));
+% Re=6370e3;
+% dphi=max(xg.phi(:))-min(xg.phi(:));
 alt=xg.alt/1e3;
 altscale=max(alt(:));
 alt=alt/altscale;
