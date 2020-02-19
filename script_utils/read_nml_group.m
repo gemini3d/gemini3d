@@ -35,10 +35,12 @@ while ~feof(fid)
     continue
   end
   v = strtok(v(2:end), '!');  % discard comments
-  % is it floats of up to length 3?
-  vals = sscanf(v, '%f,%f,%f');
+  % need textscan instead of sscanf to handle corner cases
+  vals = cell2mat(textscan(v, '%f','Delimiter',','));
   if isempty(vals)  % must be a string
-    vals = v;
+    vals = strtrim(strrep(v, char(39), ''));
+  else
+    vals = vals(:).';
   end
 
   params.(strtrim(k)) = vals;
