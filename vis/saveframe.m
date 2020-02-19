@@ -14,8 +14,7 @@ end
 
 assert(is_folder(direc), [direc, ' is not a directory.'])
 
-dpi = [];
-% dpi = '-r300';
+dpi = '-r150';
 % filename has the suffix, let's ditch the suffix.
 [~, stem] = fileparts(filename);
 
