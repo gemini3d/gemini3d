@@ -1,8 +1,3 @@
-# these policies avoid deprecated behavior and avoid needless warning flags
-cmake_policy(SET CMP0074 NEW)
-cmake_policy(SET CMP0075 NEW)
-cmake_policy(SET CMP0076 NEW)
-
 include(CheckFortranSourceCompiles)
 include(CheckFortranSourceRuns)
 

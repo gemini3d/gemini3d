@@ -47,8 +47,6 @@ The following cache variables may also be set:
 
 #]=======================================================================]
 
-cmake_policy(VERSION 3.3)
-
 unset(Octave_REQUIRED_VARS)
 unset(Octave_Development_FOUND)
 unset(Octave_Interpreter_FOUND)
