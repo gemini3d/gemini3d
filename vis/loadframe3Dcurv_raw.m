@@ -16,7 +16,7 @@ dat.ns = read4D(fid, lsp, lxs);
 dat.vs1 = read4D(fid, lsp, lxs);
 dat.v1 = sum(dat.ns(:,:,:,1:6) .* dat.vs1(:,:,:,1:6),4) ./ dat.ns(:,:,:,lsp);
 %% load temperatures
-Ts = read4D(fid, lsp, lxs);
+dat.Ts = read4D(fid, lsp, lxs);
 %% load current densities
 dat.J1 = read3D(fid, lxs);
 dat.J2 = read3D(fid, lxs);
@@ -48,8 +48,8 @@ if lxs(2) == 1 || lxs(3) == 1    %a 2D simulations was done
   %vi=squeeze(v1);
   %vi2=squeeze(v2);
 %  vi3=permute(v3,[3,2,1]);
-  dat.Ti = squeeze(sum(dat.ns(:,:,:,1:6) .* Ts(:,:,:,1:6),4) ./ dat.ns(:,:,:,lsp));
-  dat.Te = squeeze(Ts(:,:,:,lsp));
+  dat.Ti = squeeze(sum(dat.ns(:,:,:,1:6) .* dat.Ts(:,:,:,1:6),4) ./ dat.ns(:,:,:,lsp));
+  dat.Te = squeeze(dat.Ts(:,:,:,lsp));
 
 %  [X3,X1]=meshgrid(x3,x1);
 else    %full 3D run
@@ -62,9 +62,9 @@ else    %full 3D run
 %  vi=permute(v1,[3,2,1]);
 %  vi2=permute(v2,[3,2,1]);
 %  vi3=permute(v3,[3,2,1]);
-%  Ti=sum(dat.ns(:,:,:,1:6).*Ts(:,:,:,1:6),4)./dat.ns(:,:,:,lsp);
+%  Ti=sum(dat.ns(:,:,:,1:6).*dat.Ts(:,:,:,1:6),4)./dat.ns(:,:,:,lsp);
 %  Ti=permute(Ti,[3,2,1]);
-%  Te=permute(Ts(:,:,:,lsp),[3,2,1]);
+%  Te=permute(dat.Ts(:,:,:,lsp),[3,2,1]);
 %
 %  [X2,X3,X1]=meshgrid(x2,x3,x1);
 
@@ -77,8 +77,8 @@ else    %full 3D run
   %vi=v1;
   %vi2=v2;
   %vi3=v3;
-  dat.Ti = sum(dat.ns(:,:,:,1:6) .* Ts(:,:,:,1:6),4) ./ dat.ns(:,:,:,lsp);
-  dat.Te = Ts(:,:,:,lsp);
+  dat.Ti = sum(dat.ns(:,:,:,1:6) .* dat.Ts(:,:,:,1:6),4) ./ dat.ns(:,:,:,lsp);
+  dat.Te = dat.Ts(:,:,:,lsp);
 end
 
 end % function
