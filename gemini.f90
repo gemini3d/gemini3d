@@ -15,7 +15,7 @@ use timeutils, only: dateinc
 
 implicit none
 
-!! VARIABLE DECLARATIONS
+integer :: ierr
 
 !> VARIABLES READ IN FROM CONFIG.INI FILE
 integer, dimension(3) :: ymd
@@ -389,6 +389,13 @@ call clear_potential_fileinput()
 
 
 !! SHUT DOWN MPI
-call mpibreakdown()
+ierr = mpibreakdown()
+
+if (ierr /= 0) then
+  write(stderr, *) 'GEMINI: abnormal MPI shutdown code', ierr
+  error stop
+endif
+
+print '(/,A)', 'GEMINI: simulation complete'
 
 end program

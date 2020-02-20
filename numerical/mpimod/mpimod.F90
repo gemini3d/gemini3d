@@ -550,12 +550,12 @@ integer, dimension(4) :: slabinds
 end function slabinds
 
 
-subroutine mpibreakdown()
+integer function mpibreakdown() result(ierr)
 !! SHUTS DOWN MPI
 
 call mpi_finalize(ierr)
 
-end subroutine mpibreakdown
+end function mpibreakdown
 
 
 end module mpimod
