@@ -5,7 +5,7 @@ validateattributes(p, {'struct'}, {'scalar'}, mfilename, 'parameters', 1)
 %% ADD PATHS FOR FUNCTIONS
 cwd = fileparts(mfilename('fullpath'));
 gemdir = [cwd, '/..'];
-addpath([gemdir, '/script_utils'],[gemdir, '/setup'],[gemdir, '/setup/gridgen'],[gemdir, '/vis'])
+addpath([gemdir, '/script_utils'],[gemdir, '/setup/gridgen'],[gemdir, '/vis'])
 
 %% GRID GENERATION
 xg = makegrid_cart_3D(p);
