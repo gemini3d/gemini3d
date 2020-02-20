@@ -21,7 +21,13 @@ if ~isempty(xg)
   validateattributes(xg, {'struct'}, {'scalar'}, mfilename, 'grid structure', 4)
 end
 
-if nargin<5, visible = 'on'; end
+if nargin<5
+  if isempty(saveplot_fmt)
+    visible = 'on';
+  else
+    visible = 'off';
+  end
+end
 validateattributes(visible, {'char'}, {'vector'}, mfilename, 'plot visibility: on/off', 5)
 
 lxs = simsize(direc);
