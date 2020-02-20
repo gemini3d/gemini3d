@@ -26,11 +26,7 @@ disp(['writing plots to ', plotdir])
 
 for i=1:length(saveplot_fmt)
 
-  switch saveplot_fmt{i}
-    case 'png', flag = '-dpng'; suffix = '.png';
-    case 'eps', flag = '-depsc2'; suffix = '.eps';
-    otherwise, error('unknown plot format ')
-  end
+  [flag, suffix] = printflag(saveplot_fmt{i});
 
   if flagoutput~=3
     print(h.f1,flag,[plotdir, '/v1-', stem, suffix], dpi)
