@@ -1,6 +1,6 @@
-function plotglow(direc, saveplot_fmt)
+function plotglow(direc, saveplot_fmt, visible)
 % plots Gemini-Glow auroral emissions
-narginchk(1,2)
+narginchk(1,3)
 if nargin<2, saveplot_fmt={'png'}; end  %e.g. {'png'} or {'png', 'eps'}
 
 cwd = fileparts(mfilename('fullpath'));
@@ -46,9 +46,9 @@ for i = 1:length(file_list)
   bFrame = loadglow_aurmap(filename, lx2, lx3, lwave);
 
   if lx3 > 1  % 3D sim
-    hf = plot_emission_line(x2, x3, bFrame, time_str, wavelengths, hf);
+    hf = plot_emission_line(x2, x3, bFrame, time_str, wavelengths, hf, visible);
   else  % 2D sim
-    hf = plot_emissions(x2, wavelengths, squeeze(bFrame), time_str, hf);
+    hf = plot_emissions(x2, wavelengths, squeeze(bFrame), time_str, hf, visible);
   end
 
   save_glowframe(params.flagoutput, filename, saveplot_fmt, hf)
@@ -62,14 +62,14 @@ end
 end % function
 
 
-function hf = plot_emissions(x2, wavelengths, bFrame, time_str, hf)
-narginchk(4,5)
+function hf = plot_emissions(x2, wavelengths, bFrame, time_str, hf, visible)
+narginchk(4,6)
 validateattributes(x2, {'numeric'}, {'vector'}, mfilename)
 validateattributes(bFrame, {'numeric'}, {'ndims', 2}, mfilename)
 validateattributes(wavelengths, {'cell'}, {'vector'}, mfilename)
 
 if nargin < 5 || isempty(hf)
-  hf = make_glowfig();
+  hf = make_glowfig(visible);
 else
   clf(hf)
 end
@@ -85,8 +85,8 @@ ylabel(hc, 'Intensity (R)')
 end
 
 
-function hf = plot_emission_line(x2, x3, bFrame, time_str, wavelengths, hf)
-narginchk(5,6)
+function hf = plot_emission_line(x2, x3, bFrame, time_str, wavelengths, hf, visible)
+narginchk(5,7)
 validateattributes(x2, {'numeric'}, {'vector'}, mfilename)
 validateattributes(x3, {'numeric'}, {'vector'}, mfilename)
 validateattributes(bFrame, {'numeric'}, {'ndims', 3}, mfilename)
@@ -94,7 +94,7 @@ validateattributes(time_str, {'cell'}, {'vector'}, mfilename)
 validateattributes(wavelengths, {'cell'}, {'vector'}, mfilename)
 
 if nargin < 5 || isempty(hf)
-  hf = make_glowfig();
+  hf = make_glowfig(visible);
 else
   clf(hf)
 end
@@ -121,11 +121,14 @@ ylabel(ax, 'Northward Distance (km)')
 end % function
 
 
-function hf = make_glowfig()
+function hf = make_glowfig(visible)
+narginchk(0,1)
+if nargin < 1, visible = 'on'; end
+validateattributes(visible, {'char'}, {'vector'})
 
 hf = figure('toolbar', 'none');
 pos = get(hf, 'position');
-set(hf, 'unit', 'pixels', 'position', [pos(1), pos(2), 800, 500])
+set(hf, 'name', 'aurora', 'unit', 'pixels', 'position', [pos(1), pos(2), 800, 500], 'visible', visible)
 
 end
 %ffmpeg -framerate 10 -pattern_type glob -i '*.png' -c:v libxvid -r 30 -q:v 0 isinglass_geminiglow_4278.avi

@@ -74,7 +74,7 @@ else
 end % if saveplots
 
 if is_folder([direc, '/aurmaps']) % glow sim
-  plotglow(direc, saveplot_fmt)
+  plotglow(direc, saveplot_fmt, visible)
 end
 
 %% Don't print
