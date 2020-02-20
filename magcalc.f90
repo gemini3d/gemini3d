@@ -2,6 +2,7 @@
 !! FROM OUTPUT FROM A SIMULATIONS DONE BY GEMINI3D.
 !! THIS PROGRAM VERY MUCH MIRRORS THE SETUP OF THE MAIN GEMINI.F90 CODE.
 
+use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
 use, intrinsic :: ieee_arithmetic, only : ieee_is_nan
 use mpi, only: mpi_sum, mpi_comm_world
 
@@ -714,7 +715,14 @@ deallocate(integrandend,integrandavgend)
 deallocate(dVtop,Jxtop,Jytop,Jztop,Rxtop,Rytop,Rztop)
 deallocate(integrandtop,integrandavgtop)
 
-!SHUT DOWN MPI
-call mpibreakdown()
+!! SHUT DOWN MPI
+ierr = mpibreakdown()
+
+if (ierr /= 0) then
+  write(stderr, *) 'MAGCALC: abnormal MPI shutdown code', ierr
+  error stop
+endif
+
+print '(/,A)', 'MAGCALC: simulation complete'
 
 end program
