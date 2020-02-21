@@ -5,7 +5,9 @@ pde_elliptic = library('pde_elliptic',
   dependencies: [mpi, mumps],
   link_with: const)
 
-pot_src = files('potential_comm_mumps.f90', 'potential_mumps.f90', 'boundary_conditions/potentialBCs_mumps.f90')
+pot_src = files('potential_comm_mumps.f90', 'potential_root.f90', 'potential_worker.f90',
+'potential_mumps.f90', 'potential2d.f90',
+'boundary_conditions/potentialBCs_mumps.f90')
 pot_deps = [mumps, scalapack, blacs, lapack, mpi, threads]
 
 potential = library('potential',
