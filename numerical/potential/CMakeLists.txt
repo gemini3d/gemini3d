@@ -6,7 +6,7 @@ endif()
 target_include_directories(mumps_interface PUBLIC ${MUMPS_INCLUDE_DIRS})
 target_link_libraries(mumps_interface PUBLIC ${MUMPS_LIBRARIES})
 
-add_library(PDEelliptic OBJECT PDEelliptic.f90)
+add_library(PDEelliptic OBJECT PDEelliptic.f90 elliptic2d.f90)
 target_link_libraries(PDEelliptic PUBLIC const mumps_interface MPI::MPI_Fortran)
 
 add_library(potential OBJECT potential_comm_mumps.f90 potential_mumps.f90 boundary_conditions/potentialBCs_mumps.f90)
