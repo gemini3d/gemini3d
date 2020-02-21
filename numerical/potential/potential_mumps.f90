@@ -27,22 +27,57 @@ module potential_mumps
 
 use, intrinsic:: iso_fortran_env, only: stderr=>error_unit, stdout=>output_unit
 
-use mpi, only: mpi_comm_world
 use phys_consts, only: wp, debug
-use calculus, only: grad3D1, grad3D2, grad3D3, grad2D1_curv_alt, grad2D3, grad2D3_curv_periodic
-use grid, only: gridflag
+use calculus, only: grad3D1, grad3D2, grad3D3
 use mesh, only: curvmesh
 use mpimod, only: myid
 use interpolation, only: interp1
-use PDEelliptic, only: elliptic3D_cart,elliptic2D_polarization,elliptic2D_polarization_periodic,elliptic2D_cart
+use PDEelliptic, only: elliptic3D_cart
 
 implicit none
-
 private
+public :: potential3D_fieldresolved_decimate, potential2D_polarization, potential2D_polarization_periodic, potential2D_fieldresolved
 
 integer, dimension(:), pointer, protected, save :: mumps_perm   !cached permutation, unclear whether save is necessary...
 
-public :: potential3D_fieldresolved_decimate, potential2D_polarization, potential2D_polarization_periodic, potential2D_fieldresolved
+interface ! potential2d.f90
+module function potential2D_polarization(srcterm,SigP2,SigP3,SigH,Cm,v2,v3,Vminx2,Vmaxx2,Vminx3,Vmaxx3,dt,x,Phi0,perflag,it)
+real(wp), dimension(:,:), intent(in) :: srcterm,SigP2,SigP3,SigH,Cm,v2,v3
+!! ZZZ - THESE WILL NEED TO BE MODIFIED CONDUCTIVITIES, AND WE'LL NEED THREE OF THEM
+real(wp), dimension(:), intent(in) :: Vminx2,Vmaxx2
+real(wp), dimension(:), intent(in) :: Vminx3,Vmaxx3
+real(wp), intent(in) :: dt
+type(curvmesh), intent(in) :: x
+real(wp), dimension(:,:), intent(in) :: Phi0
+logical, intent(in) :: perflag
+integer, intent(in) :: it
+real(wp), dimension(size(SigP2,1),size(SigP2,2)) :: potential2D_polarization
+end function potential2D_polarization
+
+module function potential2D_polarization_periodic(srcterm,SigP,SigH,Cm,v2,v3,Vminx2,Vmaxx2,Vminx3,Vmaxx3,dt,x,Phi0,perflag,it)
+real(wp), dimension(:,:), intent(in) :: srcterm,SigP,SigH,Cm,v2,v3
+real(wp), dimension(:), intent(in) :: Vminx2,Vmaxx2
+real(wp), dimension(:), intent(in) :: Vminx3,Vmaxx3
+real(wp), intent(in) :: dt
+type(curvmesh), intent(in) :: x
+real(wp), dimension(:,:), intent(in) :: Phi0
+logical, intent(in) :: perflag
+integer, intent(in) :: it
+real(wp), dimension(size(SigP,1),size(SigP,2)) :: potential2D_polarization_periodic
+end function potential2D_polarization_periodic
+
+module function potential2D_fieldresolved(srcterm,sig0,sigP,Vminx1,Vmaxx1,Vminx3,Vmaxx3,x,flagdirich,perflag,it)
+real(wp), dimension(:,:,:), intent(in) :: srcterm,sig0,sigP   !arrays passed in will still have full rank 3
+real(wp), dimension(:,:), intent(in) :: Vminx1,Vmaxx1
+real(wp), dimension(:,:), intent(in) :: Vminx3,Vmaxx3
+type(curvmesh), intent(in) :: x
+integer, intent(in) :: flagdirich
+logical, intent(in) :: perflag
+integer, intent(in) :: it
+real(wp), dimension(size(sig0,1),1,size(sig0,3)) :: potential2D_fieldresolved
+end function potential2D_fieldresolved
+
+end interface
 
 contains
 
@@ -50,12 +85,10 @@ contains
 function potential3D_fieldresolved_decimate(srcterm,sig0,sigP,sigH,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3,Vmaxx3, &
                   x,flagdirich,perflag,it)
 
-!------------------------------------------------------------
-!-------SOLVE IONOSPHERIC POTENTIAL EQUATION IN 3D USING MUMPS
-!-------ASSUME THAT WE ARE RESOLVING THE POTENTIAL ALONG THE FIELD
-!-------LINE.  THIS IS MOSTLY INEFFICIENT/UNWORKABLE FOR MORE THAN 1M
-!-------GRID POINTS.
-!------------------------------------------------------------
+!! SOLVE IONOSPHERIC POTENTIAL EQUATION IN 3D USING MUMPS
+!! ASSUME THAT WE ARE RESOLVING THE POTENTIAL ALONG THE FIELD
+!! LINE.  THIS IS MOSTLY INEFFICIENT/UNWORKABLE FOR MORE THAN 1M
+!! GRID POINTS.
 
 real(wp), dimension(:,:,:), intent(in) :: srcterm,sig0,sigP,sigH
 real(wp), dimension(:,:), intent(in) :: Vminx1,Vmaxx1
@@ -241,134 +274,5 @@ deallocate(Phidec)
 
 end function potential3D_fieldresolved_decimate
 
-
-function potential2D_polarization(srcterm,SigP2,SigP3,SigH,Cm,v2,v3,Vminx2,Vmaxx2,Vminx3,Vmaxx3,dt,x,Phi0,perflag,it)
-
-!------------------------------------------------------------
-!-------SOLVE IONOSPHERIC POTENTIAL EQUATION IN 2D USING MUMPS
-!-------INCLUDES FULL OF POLARIZATION CURRENT, INCLUDING CONVECTIVE
-!-------TERMS.  VELOCITIES SHOULD BE TRIMMED (WITHOUT GHOST CELLS).
-!-------THIS VERSION OF THE *INTEGRATED* POTENTIAL SOLVER OBVIATES
-!-------ALL OTHERS SINCE A PURELY ELECTRSTATIC FORM CAN BE RECOVERED
-!-------BY ZEROING OUT THE INERTIAL CAPACITANCE.
-!-------
-!-------THIS FORM IS INTENDED TO  WORK WITH CURVILINEAR MESHES.
-!-------NOTE THAT THE FULL GRID VARIABLES (X%DX3ALL, ETC.) MUST
-!-------BE USED HERE!!!
-!------------------------------------------------------------
-
-real(wp), dimension(:,:), intent(in) :: srcterm,SigP2,SigP3,SigH,Cm,v2,v3    !ZZZ - THESE WILL NEED TO BE MODIFIED CONDUCTIVITIES, AND WE'LL NEED THREE OF THEM
-real(wp), dimension(:), intent(in) :: Vminx2,Vmaxx2
-real(wp), dimension(:), intent(in) :: Vminx3,Vmaxx3
-real(wp), intent(in) :: dt
-type(curvmesh), intent(in) :: x
-real(wp), dimension(:,:), intent(in) :: Phi0
-logical, intent(in) :: perflag
-integer, intent(in) :: it
-
-real(wp), dimension(1:size(SigP2,1),1:size(SigP2,2)) :: gradSigH2,gradSigH3
-integer :: u
-integer :: lx2,lx3
-
-real(wp), dimension(size(SigP2,1),size(SigP2,2)) :: potential2D_polarization
-
-
-lx2=x%lx2all    !use full grid sizes
-lx3=x%lx3all
-
-!gradSigH2=grad2D1(SigH,x,1,lx2)   !x2 is now 1st index and x3 is second...  This one appears to be the problem.  This issue here is that grad2D1 automatically uses x%dx1 as the differential element...
-gradSigH2=grad2D1_curv_alt(SigH,x,1,lx2)
-!! note the alt since we need to use dx2 as differential...  Tricky bug/feature
-gradSigH3=grad2D3(SigH,x,1,lx3)
-!! awkward way of handling this special case derivative which uses x3 as the differential to operate on a 2D array.
-
-potential2D_polarization=elliptic2D_polarization(srcterm,SigP2,SigP3,SigH,gradSigH2,gradSigH3,Cm,v2,v3, &
-                                  Vminx2,Vmaxx2,Vminx3,Vmaxx3,dt,x%dx1,x%dx1i,x%dx2all,x%dx2iall, &
-                                  x%dx3all,x%dx3iall,Phi0,perflag,it)
-
-end function potential2D_polarization
-
-
-function potential2D_polarization_periodic(srcterm,SigP,SigH,Cm,v2,v3,Vminx2,Vmaxx2,Vminx3,Vmaxx3,dt,x,Phi0,perflag,it)
-
-!------------------------------------------------------------
-!-------SOLVE IONOSPHERIC POTENTIAL EQUATION IN 2D USING MUMPS
-!-------INCLUDES FULL OF POLARIZATION CURRENT, INCLUDING CONVECTIVE
-!-------TERMS.  VELOCITIES SHOULD BE TRIMMED (WITHOUT GHOST CELLS).
-!-------THIS VERSION OF THE *INTEGRATED* POTENTIAL SOLVER OBVIATES
-!-------ALL OTHERS SINCE A PURELY ELECTRSTATIC FORM CAN BE RECOVERED
-!-------BY ZEROING OUT THE INERTIAL CAPACITANCE.
-!-------
-!-------THIS FORM IS INTENDED TO  WORK WITH CARTESIAN MESHES ONLY.
-!-------NOTE THAT THE FULL GRID VARIABLES (X%DX3ALL, ETC.) MUST
-!-------BE USED HERE!!!
-!-------
-!-------THIS FUNCTION WORKS ON A PERIODIC MESH BY USING A CIRCULANT MATRIX
-!------------------------------------------------------------
-
-real(wp), dimension(:,:), intent(in) :: srcterm,SigP,SigH,Cm,v2,v3
-real(wp), dimension(:), intent(in) :: Vminx2,Vmaxx2
-real(wp), dimension(:), intent(in) :: Vminx3,Vmaxx3
-real(wp), intent(in) :: dt
-type(curvmesh), intent(in) :: x
-real(wp), dimension(:,:), intent(in) :: Phi0
-logical, intent(in) :: perflag
-integer, intent(in) :: it
-
-real(wp), dimension(1:size(SigP,1),1:size(SigP,2)+1) :: gradSigH2,gradSigH3
-real(wp), dimension(size(SigP,1),size(SigP,2)) :: potential2D_polarization_periodic
-integer :: lx2,lx3
-
-
-lx2=x%lx2all    !use full grid sizes
-lx3=x%lx3all
-
-!ZZZ - THESE NEED TO BE CHANGED INTO CIRCULAR/PERIODIC DERIVATIVES FOR THE X3 DIRECTION
-gradSigH2=grad2D1_curv_alt(SigH,x,1,lx2)   !note the alt since we need to use dx2 as differential...  Tricky bug/feature
-gradSigH3=grad2D3_curv_periodic(SigH,x,1,lx3)    !circular difference
-
-
-potential2D_polarization_periodic=elliptic2D_polarization_periodic(srcterm,SigP,SigH,gradSigH2,gradSigH3, &
-                          Cm,v2,v3,Vminx2,Vmaxx2,Vminx3,Vmaxx3,dt,x%dx1,x%dx1i,x%dx2all,x%dx2iall,x%dx3all, &
-                          x%dx3iall,Phi0,perflag,it)
-
-end function potential2D_polarization_periodic
-
-
-function potential2D_fieldresolved(srcterm,sig0,sigP,Vminx1,Vmaxx1,Vminx3,Vmaxx3,x,flagdirich,perflag,it)
-
-!------------------------------------------------------------
-!-------SOLVE IONOSPHERIC POTENTIAL EQUATION IN 2D USING MUMPS
-!-------ASSUME THAT WE ARE RESOLVING THE POTENTIAL ALONG THE FIELD
-!-------LINE AND THAT IT VARIES IN X1 AND X3 (X2 IS NOMINALL JUST
-!-------ONE ELEMENT.  LEFT AND RIGHT BOUNDARIES (IN X3) ARE ASSUMED
-!-------TO USE DIRICHLET BOUNARY CONDITIONS, WHILE THE (ALTITUDE)
-!-------TOP CAN BE NEUMANN OR DIRICHLET.  BOTTOM (ALTITUDE)
-!-------IS ALWAYS ASSUMED TO BE DIRICHLET.
-!------------------------------------------------------------
-
-real(wp), dimension(:,:,:), intent(in) :: srcterm,sig0,sigP   !arrays passed in will still have full rank 3
-real(wp), dimension(:,:), intent(in) :: Vminx1,Vmaxx1
-real(wp), dimension(:,:), intent(in) :: Vminx3,Vmaxx3
-type(curvmesh), intent(in) :: x
-integer, intent(in) :: flagdirich
-logical, intent(in) :: perflag
-integer, intent(in) :: it
-
-real(wp), dimension(size(Vmaxx1,1),size(Vmaxx1,2)) :: Vmaxx1alt      !in case we need to do some transformations to convert current into potential
-real(wp), dimension(size(sig0,1),1,size(sig0,3)) :: potential2D_fieldresolved
-integer :: lx1
-
-lx1=size(sig0,1)
-if (flagdirich==0) then      !convert current into potential normal derivative
-  Vmaxx1alt=-1*Vmaxx1*x%h1(lx1,:,:)/sig0(lx1,:,:)
-else                         !Dirichlet boundary conditions, don't change
-  Vmaxx1alt=Vmaxx1
-end if
-
-potential2D_fieldresolved=elliptic2D_cart(srcterm,sig0,sigP,Vminx1,Vmaxx1alt,Vminx3,Vmaxx3, &
-                     x%dx1,x%dx1i,x%dx3all,x%dx3iall,flagdirich,perflag,gridflag,it)
-
-end function potential2D_fieldresolved
 
 end module potential_mumps
