@@ -1019,18 +1019,19 @@ end procedure elliptic2D_polarization_periodic
 
 
 module procedure elliptic2D_cart
-!------------------------------------------------------------
-!-------SOLVE IONOSPHERIC POTENTIAL EQUATION IN 2D USING MUMPS
-!-------ASSUME THAT WE ARE RESOLVING THE POTENTIAL ALONG THE FIELD
-!-------LINE AND THAT IT VARIES IN X1 AND X3 (X2 IS NOMINALL JUST
-!-------ONE ELEMENT.  LEFT AND RIGHT BOUNDARIES (IN X3) ARE ASSUMED
-!-------TO USE DIRICHLET BOUNARY CONDITIONS, WHILE THE (ALTITUDE)
-!-------TOP CAN BE NEUMANN OR DIRICHLET.  BOTTOM (ALTITUDE)
-!-------IS ALWAYS ASSUMED TO BE DIRICHLET.  This subroutine solves equations
-!-------of the form:
-!-------
-!-------   d/dx1(sig0 dV/dx1) + d/dx3(sigP dV/dx3) = srcterm
-!------------------------------------------------------------
+!! SOLVE IONOSPHERIC POTENTIAL EQUATION IN 2D USING MUMPS.
+!!
+!! ASSUME THAT:
+!! * WE ARE RESOLVING THE POTENTIAL ALONG THE FIELD LINE
+!! * POTENTIAL VARIES IN X1 AND X3. X2 IS NOMINALLY JUST ONE ELEMENT.
+!! * LEFT AND RIGHT BOUNDARIES (IN X3) USE DIRICHLET BOUNARY CONDITIONS
+!! * TOP (ALTITUDE) CAN BE NEUMANN OR DIRICHLET.
+!! * BOTTOM (ALTITUDE) IS ALWAYS DIRICHLET.
+!!
+!! This subroutine solves equations of the form:
+!!
+!!    d/dx1(sig0 dV/dx1) + d/dx3(sigP dV/dx3) = srcterm
+
 
 real(wp), dimension(1:size(sig0,1),1:size(sig0,3)) :: sig0h1
 real(wp), dimension(1:size(sigP,1),1:size(sigP,3)) :: sigPh3
