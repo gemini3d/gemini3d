@@ -1,6 +1,8 @@
-add_compile_options(-march=native -Wall -Wextra)
+add_compile_options(-march=native )
 
-string(APPEND CMAKE_Fortran_FLAGS "  -fimplicit-none")
+# keep Wall and Wextra in cmake_fortran_flags so FetchContent packages can override
+# and thereby avoid useless megabytes of other project warnings
+string(APPEND CMAKE_Fortran_FLAGS " -Wall -Wextra -fimplicit-none")
 
 # -Wpedantic makes too many false positives, through Gfortran 9
 
