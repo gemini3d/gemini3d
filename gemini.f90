@@ -130,6 +130,7 @@ integer :: argc
 character(256) :: argv
 integer :: lid2in,lid3in
 
+character(10) :: date, time
 
 !> TO CONTROL THROTTLING OF TIME STEP
 real(wp), parameter :: dtscale=2d0
@@ -150,7 +151,8 @@ endif
 !> INITIALIZE MESSING PASSING VARIABLES, IDS ETC.
 call mpisetup()
 call get_command_argument(0, argv)
-print '(A,A,I6,A3,I6)', trim(argv), ' Process:  ', myid,' / ',lid-1
+call date_and_time(date,time)
+print '(2A,I6,A3,I6,3A)', trim(argv), ' Process:  ', myid,' / ',lid-1, ' at ', date,' ',time
 
 
 !> READ FILE INPUT
@@ -392,6 +394,7 @@ if (ierr /= 0) then
   error stop
 endif
 
-print '(/,A,I6,A,I6)', 'GEMINI normal termination, Process #', myid,' /',lid-1
+call date_and_time(date,time)
+print '(/,A,I6,A,I6,3A)', 'GEMINI normal termination, Process #', myid,' /',lid-1, ' at ',date,time
 
 end program
