@@ -373,13 +373,9 @@ deallocate(ns,vs1,vs2,vs3,Ts)
 deallocate(E1,E2,E3,J1,J2,J3)
 deallocate(nn,Tn,vn1,vn2,vn3)
 
-if (myid==0) then
-  deallocate(Phiall)
-end if
+if (myid==0) deallocate(Phiall)
 
-if (flagglow/=0) then
-  deallocate(iver)
-end if
+if (flagglow/=0) deallocate(iver)
 
 !! DEALLOCATE MODULE VARIABLES (MAY HAPPEN AUTOMATICALLY IN F2003???)
 call clear_grid(x)
@@ -392,10 +388,10 @@ call clear_potential_fileinput()
 ierr = mpibreakdown()
 
 if (ierr /= 0) then
-  write(stderr, *) 'GEMINI: abnormal MPI shutdown code', ierr
+  write(stderr, *) 'GEMINI: abnormal MPI shutdown code', ierr, 'Process #', myid,' /',lid-1
   error stop
 endif
 
-print '(/,A)', 'GEMINI: simulation complete'
+print '(/,A,I6,A,I6)', 'GEMINI normal termination, Process #', myid,' /',lid-1
 
 end program
