@@ -40,8 +40,8 @@ real(wp), dimension(size(Ts)) :: Dh
 integer :: ix1,lx1
 
 real(wp), dimension(size(Ts)) :: TR
-real(wp), dimension(size(Ts)) :: TRBDF21D
 
+real(wp), dimension(size(Ts)) :: TRBDF21D
 
 !> ORGANIZE SIZES AND THERMAL CONDUCTIVITY
 lx1=size(Ts)
@@ -86,7 +86,9 @@ TR(ix1)=Ts(ix1)/(dt/2d0)+E(ix1) &
 
 !> INTERIOR GRID POINTS
 do concurrent (ix1=3:lx1-2)
-  M(ll+5,ix1-2)=0.0                                               !ix1-2 grid point, sub-diag.
+  !! do concurrent OK because only indexing already defined things
+  M(ll+5,ix1-2) = 0
+  !! ix1-2 grid point, sub-diag.
   M(ll+4,ix1-1)=-1*C(ix1)*Dh(ix1)/dx1i(ix1)/dx1(ix1)/2d0 &        !ix1-1
              +B(ix1)/(dx1(ix1+1)+dx1(ix1))/2d0
   M(ll+3,ix1)=1.0/(dt/2d0)-A(ix1)/2d0 &                           !ix1
@@ -94,7 +96,8 @@ do concurrent (ix1=3:lx1-2)
            +C(ix1)*Dh(ix1)/dx1i(ix1)/dx1(ix1)/2d0
   M(ll+2,ix1+1)=-1*C(ix1)*Dh(ix1+1)/dx1i(ix1)/dx1(ix1+1)/2d0 &    !ix1+1, super-diag.
            -1*B(ix1)/(dx1(ix1+1)+dx1(ix1))/2d0
-  M(ll+1,ix1+2)=0.0                                               !ix1+2 grid point
+  M(ll+1,ix1+2) = 0
+  !! ix1+2 grid point
   TR(ix1)=Ts(ix1)/(dt/2d0)+E(ix1) &
     -M(ll+5,ix1-2)*Ts(ix1-2) &
     -M(ll+4,ix1-1)*Ts(ix1-1) &
@@ -227,9 +230,10 @@ integer, parameter :: ll=2                   !number of lower diagonals
 
 real(wp), dimension(3*ll+1,size(Ts)) :: M    !note extra rows for lapack workspace
 real(wp), dimension(size(Ts)) :: Dh
-integer :: ix1,lx1
 
 real(wp), dimension(size(Ts)) :: backEuler1D
+
+integer :: ix1,lx1
 
 !------------------------------------------------------------
 !-------DEFINE A MATRIX USING BANDED STORAGE
@@ -262,7 +266,8 @@ M(ll+1,ix1+2)=0.0
 
 !> INTERIOR GRID POINTS
 do concurrent (ix1=3:lx1-2)
-  M(ll+5,ix1-2)=0.0                                               !ix1-2 grid point, sub-diag.
+  M(ll+5,ix1-2) = 0
+  !! ix1-2 grid point, sub-diag.
   M(ll+4,ix1-1)=-1*C(ix1)*Dh(ix1)/dx1i(ix1)/dx1(ix1) &            !ix1-1
              +B(ix1)/(dx1(ix1+1)+dx1(ix1))
   M(ll+3,ix1)=1.0/dt-A(ix1) &                                     !ix1
@@ -270,7 +275,8 @@ do concurrent (ix1=3:lx1-2)
            +C(ix1)*Dh(ix1)/dx1i(ix1)/dx1(ix1)
   M(ll+2,ix1+1)=-1*C(ix1)*Dh(ix1+1)/dx1i(ix1)/dx1(ix1+1) &        !ix1+1, super-diag.
            -1*B(ix1)/(dx1(ix1+1)+dx1(ix1))
-  M(ll+1,ix1+2)=0.0                                               !ix1+2 grid point
+  M(ll+1,ix1+2) = 0
+  !! ix1+2 grid point
 end do
 
 
