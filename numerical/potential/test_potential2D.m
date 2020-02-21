@@ -2,8 +2,8 @@ function test_potential2D(filename)
 narginchk(1,1)
 
 cwd = fileparts(mfilename('fullpath'));
-addpath([cwd,filesep,'..',filesep,'..', filesep, 'script_utils'])
-addpath([cwd,filesep,'..',filesep,'..', filesep, 'tests'])
+addpath([cwd,'/../../script_utils'])
+addpath([cwd,'/../../tests'])
 
 exist_or_skip(filename, 'file')
 

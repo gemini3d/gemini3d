@@ -1,7 +1,7 @@
 mumpsifc_src = bits == '32' ? files('mumps_real32.f90') : files('mumps_real64.f90')
 
 pde_elliptic = library('pde_elliptic',
-  sources: ['PDEelliptic.f90', mumpsifc_src],
+  sources: ['PDEelliptic.f90', 'elliptic2d.f90', mumpsifc_src],
   dependencies: [mpi, mumps],
   link_with: const)
 
