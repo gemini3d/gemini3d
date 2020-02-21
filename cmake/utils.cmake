@@ -4,8 +4,9 @@ include(${CMAKE_CURRENT_LIST_DIR}/compare.cmake)
 
 function(setup_gemini_test TESTNAME EXE TESTDIR REFDIR TIMEOUT)
 
-if(NOT EXISTS ${CMAKE_SOURCE_DIR}/initialize/${TESTDIR})
-  message(STATUS "SKIP: directory ${CMAKE_SOURCE_DIR}/initialize/${TESTDIR} not found.")
+if(NOT (EXISTS ${CMAKE_SOURCE_DIR}/initialize/${TESTDIR} AND
+        EXISTS ${CMAKE_SOURCE_DIR}/tests/data/${TESTDIR}))
+  message(STATUS "SKIP: directory {initialize,tests/data}/${TESTDIR} not found.")
   return()
 endif()
 

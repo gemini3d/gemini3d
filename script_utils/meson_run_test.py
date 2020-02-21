@@ -12,28 +12,28 @@ R = Path(__file__).resolve().parents[1]
 
 zenodo: typing.Dict[str, typing.Any] = {
     "2d_fang": {
-        "url": "https://zenodo.org/record/3477385/files/zenodo2d_fang.zip?download=1",
-        "md5": "57d72fd0005247c8eedf122ac4670ad0",
-        "dir": R / "tests/data/zenodo2d_fang",
-        "zip": R / "tests/data/zenodo2d_fang.zip",
+        "url": "https://zenodo.org/record/3677638/files/test2d_fang.zip?download=1",
+        "md5": "03c183bbc91706223313e5c15771918e",
+        "dir": R / "tests/data/test2d_fang",
+        "zip": R / "tests/data/test2d_fang.zip",
     },
     "2d_glow": {
-        "url": "https://zenodo.org/record/3477385/files/zenodo2d_glow.zip?download=1",
-        "md5": "557bc6a91d8bf3464abdc5c8784f3042",
-        "dir": R / "tests/data/zenodo2d_glow",
-        "zip": R / "tests/data/zenodo2d_glow.zip",
+        "url": "https://zenodo.org/record/3677638/files/test2d_glow.zip?download=1",
+        "md5": ":bd9a9c38bb462cc22cc0ea232e03dc21",
+        "dir": R / "tests/data/test2d_glow",
+        "zip": R / "tests/data/test2d_glow.zip",
     },
     "3d_fang": {
-        "url": "https://zenodo.org/record/3477330/files/zenodo3d_fang.zip?download=1",
-        "md5": "cf73d6eb166369c522da7a371492a1ce",
-        "dir": R / "tests/data/zenodo3d_fang",
-        "zip": R / "tests/data/zenodo3d_fang.zip",
+        "url": "https://zenodo.invalid",
+        "md5": "todo",
+        "dir": R / "tests/data/test3d_fang",
+        "zip": R / "tests/data/test3d_fang.zip",
     },
     "3d_glow": {
-        "url": "https://zenodo.org/record/3477330/files/zenodo3d_glow.zip?download=1",
-        "md5": "3528946525295cc8271aa41bc262d7f1",
-        "dir": R / "tests/data/zenodo3d_glow",
-        "zip": R / "tests/data/zenodo3d_glow.zip",
+        "url": "https://zenodo.invalid",
+        "md5": "todo",
+        "dir": R / "tests/data/test3d_glow",
+        "zip": R / "tests/data/test3d_glow.zip",
     },
 }
 

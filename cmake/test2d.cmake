@@ -1,8 +1,8 @@
 #== Fang
 download_testfiles(
-57d72fd0005247c8eedf122ac4670ad0
-3477385
-zenodo2d_fang
+03c183bbc91706223313e5c15771918e
+https://zenodo.org/record/3677638/files/test2d_fang.zip?download=1
+test2d_fang
 ${CMAKE_SOURCE_DIR}/tests/data
 )
 
@@ -10,22 +10,22 @@ setup_gemini_test(
 Gemini2d_fang
 gemini.bin
 test2d_fang
-${CMAKE_SOURCE_DIR}/tests/data/zenodo2d_fang
+${CMAKE_SOURCE_DIR}/tests/data/test2d_fang
 300
 )
 
 compare_gemini_output(
 Compare2d_fang
 test2d_fang
-${CMAKE_SOURCE_DIR}/tests/data/zenodo2d_fang
+${CMAKE_SOURCE_DIR}/tests/data/test2d_fang
 )
 
 #== glow
 if(glow)
 download_testfiles(
-557bc6a91d8bf3464abdc5c8784f3042
-3477385
-zenodo2d_glow
+bd9a9c38bb462cc22cc0ea232e03dc21
+https://zenodo.org/record/3677638/files/test2d_glow.zip?download=1
+test2d_glow
 ${CMAKE_SOURCE_DIR}/tests/data
 )
 
@@ -33,13 +33,13 @@ setup_gemini_test(
 Gemini2d_glow
 gemini.bin
 test2d_glow
-${CMAKE_SOURCE_DIR}/tests/data/zenodo2d_glow
+${CMAKE_SOURCE_DIR}/tests/data/test2d_glow
 300
 )
 
 compare_gemini_output(
 Compare2d_glow
 test2d_glow
-${CMAKE_SOURCE_DIR}/tests/data/zenodo2d_glow
+${CMAKE_SOURCE_DIR}/tests/data/test2d_glow
 )
 endif(glow)
