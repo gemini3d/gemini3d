@@ -19,34 +19,32 @@ jobs:
   linux:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - uses: actions/setup-python@v1
       with:
         python-version: '3.7'
     - run: |
-        pip install -e .[tests]
-        pip install meson==0.53.0
+        pip install -e .
+        pip install cmake
     - name: Install prereqs
       run: |
         sudo apt update -yq
-        sudo apt install -yq --no-install-recommends ninja-build pkg-config gfortran liblapack-dev libscalapack-openmpi-dev libmumps-dev libopenmpi-dev openmpi-bin libhdf5-dev octave
-    - run: meson setup build --buildtype=debug -Dhdf5=disabled
+        sudo apt install -yq --no-install-recommends gfortran liblapack-dev libscalapack-openmpi-dev libmumps-dev libopenmpi-dev openmpi-bin libhdf5-dev octave
+
+    - run: cmake -B build -DCMAKE_BUILD_TYPE=Debug -Dhdf5=true
       env:
         FC: gfortran
+    - run: cmake --build build
     - uses: actions/upload-artifact@v1
       if: failure()
       with:
-        name: LinuxDebug_Meson_Configlog
-        path: build/meson-logs/meson-log.txt
+        name: Linux_CMake_DebugBuildlog
+        path: build/CMakeFiles/CMakeError.log
 
-    - run: pytest
-    - run: ninja -C build
-    - run: meson test -C build --suite unit -v
-    - run: meson test -C build --suite 2d_fang -v
-    - run: meson test -C build --suite 2d_glow -v
-# CI is too slow for 3d_glow
+    - run: ctest --parallel -E 3d --output-on-failure
+      working-directory: build
     - uses: actions/upload-artifact@v1
       if: failure()
       with:
-        name: Linux_Meson_Debug_Testlog
-        path: build/meson-logs/testlog.txt
+        name: Linux_CMake_DebugTestlog
+        path: build/Testing/Temporary/LastTest.log

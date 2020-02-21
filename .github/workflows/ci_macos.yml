@@ -8,30 +8,59 @@ on:
       - "**.f90"
       - "**.F90"
       - "**.cmake"
-      - "**.build"
-      - "**.txt"
+      - "**/CMakeLists.txt"
       - ".github/workflows/ci_macos.yml"
   pull_request:
     paths:
       - "**.f90"
       - "**.F90"
       - "**.cmake"
-      - "**.build"
-      - "**.txt"
+      - "**/CMakeLists.txt"
       - ".github/workflows/ci_macos.yml"
 
 jobs:
 
-  macosMeson:
+  cmake:
     runs-on: macos-latest
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - uses: actions/setup-python@v1
       with:
-        python-version: '3.x'
+        python-version: '3.7'
+    - run: pip install -e .
+    - run: brew install pkg-config gcc lapack open-mpi hdf5 scalapack
+
+    - run: cmake -B build -Dhdf5=true
+      env:
+        FC: gfortran-9
+        CC: gcc-9
+    - run: cmake --build build --parallel
+    - uses: actions/upload-artifact@v1
+      if: failure()
+      with:
+        name: MacOS_CMake_Buildlog
+        path: build/CMakeFiles/CMakeError.log
+
+# CI is too slow for 3d_glow
+    - run: ctest --parallel -E 3d --output-on-failure
+      working-directory: build
+    - uses: actions/upload-artifact@v1
+      if: failure()
+      with:
+        name: Mac_CMake_Testlog
+        path: build/Testing/Temporary/LastTest.log
+
+  meson:
+    if: false
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v1
+      with:
+        python-version: '3.7'
 
     - run: |
-        pip install -e .[tests]
+        pip install -e .
         pip install meson==0.53.0
     - run: brew install ninja pkg-config gcc open-mpi lapack hdf5 scalapack
 
@@ -55,33 +84,3 @@ jobs:
       with:
         name: MacOS_Meson_Testlog
         path: build/meson-logs/testlog.txt
-
-  macosCmake:
-    runs-on: macos-latest
-    steps:
-    - uses: actions/checkout@v1
-    - uses: actions/setup-python@v1
-      with:
-        python-version: '3.7'
-    - run: pip install -e .[tests]
-    - run: brew install pkg-config gcc lapack open-mpi hdf5 scalapack
-
-    - run: cmake -B build -Dhdf5=false
-      env:
-        FC: gfortran-9
-        CC: gcc-9
-    - run: cmake --build build --parallel
-    - uses: actions/upload-artifact@v1
-      if: failure()
-      with:
-        name: MacOS_Cmake_Buildlog
-        path: build/CMakeFiles/CMakeError.log
-
-# CI is too slow for 3d_glow
-    - run: ctest --parallel -E 3d_glow --output-on-failure
-      working-directory: build
-    - uses: actions/upload-artifact@v1
-      if: failure()
-      with:
-        name: Mac_CMake_Testlog
-        path: build/Testing/Temporary/LastTest.log
