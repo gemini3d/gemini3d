@@ -2,15 +2,6 @@ include(${CMAKE_CURRENT_LIST_DIR}/python.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/octave.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/matlab.cmake)
 
-if(hdf5)
-  set(OUTEXT ".h5")
-elseif(netcdf)
-  set(OUTEXT ".nc")
-else()
-  set(OUTEXT ".dat")
-endif()
-
-
 function(python_compare TESTNAME OUTDIR REFDIR)
 
 add_test(NAME ${TESTNAME}
@@ -54,15 +45,15 @@ function(compare_gemini_output TESTNAME OUTDIR REFDIR)
 # This sets up the Compare* tests
 
 if(PythonOK)
-  python_compare(${TESTNAME}_python ${OUTDIR} ${REFDIR})
+  python_compare(${TESTNAME}:python ${OUTDIR} ${REFDIR})
 endif(PythonOK)
 
 if(OctaveOK)
-  octave_compare(${TESTNAME}_octave ${OUTDIR} ${REFDIR})
+  octave_compare(${TESTNAME}:octave ${OUTDIR} ${REFDIR})
 endif(OctaveOK)
 
 if(MatlabOK)
-  matlab_compare(${TESTNAME}_matlab ${TESTDIR} ${REFDIR})
+  matlab_compare(${TESTNAME}:matlab ${TESTDIR} ${REFDIR})
 endif(MatlabOK)
 
 endfunction(compare_gemini_output)
