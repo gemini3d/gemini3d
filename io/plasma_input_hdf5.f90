@@ -128,13 +128,19 @@ else
 end if
 call h5f%finalize(ierr)
 
+!> Sanity checks
 if (.not. all(ieee_is_finite(nsall))) error stop 'nsall: non-finite value(s)'
+if (any(nsall < 0)) error stop 'negative density'
+if (maxval(nsall) < 1e6) error stop 'unrealistically low maximum density'
+if (maxval(nsall) > 1e16) error stop 'unrealistically high maximum density'
+
 if (.not. all(ieee_is_finite(vs1all))) error stop 'vs1all: non-finite value(s)'
+if (any(abs(vs1all) > 1e7_wp)) error stop 'drift should not be realativistic'
+
 if (.not. all(ieee_is_finite(Tsall))) error stop 'Tsall: non-finite value(s)'
 if (any(Tsall < 0)) error stop 'negative temperature in Tsall'
-if (any(nsall < 0)) error stop 'negative density'
-if (any(vs1all > 3e8_wp)) error stop 'drift faster than lightspeed'
-
+if (any(Tsall > 100000)) error stop 'too hot Tsall'
+if (maxval(Tsall) < 500) error stop 'too cold maximum Tsall'
 
 !> USER SUPPLIED FUNCTION TO TAKE A REFERENCE PROFILE AND CREATE INITIAL CONDITIONS FOR ENTIRE GRID.
 !> ASSUMING THAT THE INPUT DATA ARE EXACTLY THE CORRECT SIZE (AS IS THE CASE WITH FILE INPUT) THIS IS NOW SUPERFLUOUS
@@ -150,7 +156,7 @@ call bcast_send(nsall,tagns,ns)
 call bcast_send(vs1all,tagvs1,vs1)
 call bcast_send(Tsall,tagTs,Ts)
 call cpu_time(tfin)
-print *, 'Done sending ICs to workers...  CPU elapsed time:  ',tfin-tstart
+print '(A,F10.6,A)', 'Sent ICs to workers in',tfin-tstart, ' seconds.'
 
 end procedure input_root_mpi
 
