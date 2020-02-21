@@ -468,8 +468,8 @@ inds=ID2grid(myid)
 myid2=inds(1)
 myid3=inds(2)
 
-print *, 'Input process grid is x2 by x3 size (in number of processes):  ',lid2,' by ',lid3
-print *, 'Process:  ',myid,' is at location:  ',myid2,myid3,' on the process grid'
+print '(A,I6,A,I6)', 'Input process grid is x2 by x3 size (in number of processes):',lid2,' by ',lid3
+print '(A,I6,A,2I6,A)', 'Process:',myid,' is at location:W',myid2,myid3,'on the process grid'
 
 end subroutine mpi_manualgrid
 
