@@ -55,7 +55,6 @@ type (MUMPS_STRUC) :: mumps_par
 
 real(wp), dimension(size(srcterm,1),size(srcterm,2),size(srcterm,3)) :: elliptic3D_cart
 
-
 !ONLY ROOT NEEDS TO ASSEMBLE THE MATRIX
 !if (myid==0) then
   lx1=size(Ac,1)
@@ -219,7 +218,7 @@ if (debug) print*, 'Loading mumps problem...'
   mumps_par%RHS=b
   deallocate(ir,ic,M,b)     !clear memory before solve begins!!!
 
-  if (debug) print*, 'Dealing with perumutation',perflag,it
+  if (debug) print*, 'Dealing with permutation',perflag,it
   if (perflag .and. it/=1) then       !used cached permutation, but only gets tested on first time step
     allocate(mumps_par%PERM_IN(mumps_par%N))
     mumps_par%PERM_IN=mumps_perm
