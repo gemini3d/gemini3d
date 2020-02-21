@@ -74,7 +74,6 @@ integer :: ierr
 integer :: lx1,lx2,lx3,lx2all,lx3all,isp
 
 real(wp), dimension(-1:size(x1,1)-2,-1:size(x2all,1)-2,-1:size(x3all,1)-2,1:lsp) :: nsall, vs1all, Tsall
-real(wp), dimension(:,:,:,:), allocatable :: statetmp
 integer :: lx1in,lx2in,lx3in,u, utrace
 real(wp) :: tin
 real(wp), dimension(3) :: ymdtmp
@@ -111,22 +110,36 @@ end if
 
 call h5f%initialize(indatfile, ierr, status='old', action='r')
 if(ierr/=0) error stop 'input_root_mpi: could not read plasma hdf5 file'
-if (flagswap/=1) then
-  call h5f%read('/ns', nsall(1:lx1,1:lx2all,1:lx3all,1:lsp), ierr)
-  call h5f%read('/vsx1', vs1all(1:lx1,1:lx2all,1:lx3all,1:lsp), ierr)
-  call h5f%read('/Ts', Tsall(1:lx1,1:lx2all,1:lx3all,1:lsp), ierr)
-else
-  allocate(statetmp(lx1,lx3all,lx2all,lsp))
-  call h5f%read('/ns', statetmp, ierr)
-  nsall(1:lx1,1:lx2all,1:lx3all,1:lsp) = reshape(statetmp,[lx1,lx2all,lx3all,lsp],order=[1,3,2,4])
-  call h5f%read('/vsx1', statetmp, ierr)
-  vs1all(1:lx1,1:lx2all,1:lx3all,1:lsp) = reshape(statetmp,[lx1,lx2all,lx3all,lsp],order=[1,3,2,4])
-  call h5f%read('/Ts', statetmp, ierr)
-  Tsall(1:lx1,1:lx2all,1:lx3all,1:lsp) = reshape(statetmp,[lx1,lx2all,lx3all,lsp],order=[1,3,2,4])
+
+if (flagswap==1) then
+  block
+  real(wp) :: tmp(lx1,lx3all,lx2all,lsp)
+  call h5f%read('/ns', tmp, ierr)
+  if(ierr/=0) error stop 'input_root_mpi:hdf5: could not read "ns"'
+  nsall(1:lx1,1:lx2all,1:lx3all,1:lsp) = reshape(tmp,[lx1,lx2all,lx3all,lsp],order=[1,3,2,4])
+  call h5f%read('/vsx1', tmp, ierr)
+  if(ierr/=0) error stop 'input_root_mpi:hdf5: could not read "vsx1"'
+  vs1all(1:lx1,1:lx2all,1:lx3all,1:lsp) = reshape(tmp,[lx1,lx2all,lx3all,lsp],order=[1,3,2,4])
+  call h5f%read('/Ts', tmp, ierr)
+  if(ierr/=0) error stop 'input_root_mpi:hdf5: could not read "Ts"'
+  Tsall(1:lx1,1:lx2all,1:lx3all,1:lsp) = reshape(tmp,[lx1,lx2all,lx3all,lsp],order=[1,3,2,4])
   !! permute the dimensions so that 2D runs are parallelized
-  deallocate(statetmp)
+  end block
+else
+  block
+  !! TODO: this is a workaround for a bug in h5fortran at least through 2.5.5
+  real(wp) :: tmp(lx1,lx2all,lx3all,lsp)
+  call h5f%read('/ns', tmp, ierr)
+  nsall(1:lx1,1:lx2all,1:lx3all,1:lsp) = tmp
+  call h5f%read('/vsx1', tmp, ierr)
+  vs1all(1:lx1,1:lx2all,1:lx3all,1:lsp) = tmp
+  call h5f%read('/Ts', tmp, ierr)
+  Tsall(1:lx1,1:lx2all,1:lx3all,1:lsp) = tmp
+  end block
 end if
+
 call h5f%finalize(ierr)
+if(ierr/=0) error stop 'input_root_mpi: could not close plasma hdf5 file'
 
 !> Sanity checks
 if (.not. all(ieee_is_finite(nsall))) error stop 'nsall: non-finite value(s)'
