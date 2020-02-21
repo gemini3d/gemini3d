@@ -1,4 +1,4 @@
-add_compile_options(-march=native )
+add_compile_options(-march=native)
 
 # keep Wall and Wextra in cmake_fortran_flags so FetchContent packages can override
 # and thereby avoid useless megabytes of other project warnings

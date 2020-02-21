@@ -238,14 +238,7 @@ mumps_par%JOB = 6
 
 call MUMPS_exec(mumps_par)
 
-!> check if Mumps error occurred
-if (mumps_par%INFO(1) < 0 .or. mumps_par%INFOG(1) < 0) then
-  write(stderr, *) 'Gemini:potential_mumps:elliptic3D_cart  MUMPS ERROR: details:'
-  write(stderr, *) 'Mumps Error: INFO(1)',mumps_par%INFO(1),'INFO(2)',mumps_par%INFO(2)
-  write(stderr, *) 'Mumps Error: INFOG(1)',mumps_par%INFOG(1),'INFOG(2)',mumps_par%INFOG(2)
-  error stop
-endif
-
+call check_mumps_status(mumps_par, 'elliptic3D_cart')
 
 !STORE PERMUTATION USED, SAVE RESULTS, CLEAN UP MUMPS ARRAYS
 !(can save ~25% execution time and improves scaling with openmpi
@@ -745,14 +738,7 @@ mumps_par%JOB = 6
 
 call MUMPS_exec(mumps_par)
 
-!> check if Mumps error occurred
-if (mumps_par%INFO(1) < 0 .or. mumps_par%INFOG(1) < 0) then
-  write(stderr, *) 'Gemini:potential_mumps:elliptic2D_polarization  MUMPS ERROR: details:'
-  write(stderr, *) 'Mumps Error: INFO(1)',mumps_par%INFO(1),'INFO(2)',mumps_par%INFO(2)
-  write(stderr, *) 'Mumps Error: INFOG(1)',mumps_par%INFOG(1),'INFOG(2)',mumps_par%INFOG(2)
-  error stop
-endif
-
+call check_mumps_status(mumps_par, 'elliptic2D_polarization')
 
 !STORE PERMUTATION USED, SAVE RESULTS, CLEAN UP MUMPS ARRAYS
 !(can save ~25% execution time and improves scaling with openmpi
@@ -1298,14 +1284,7 @@ mumps_par%JOB = 6
 
 call MUMPS_exec(mumps_par)
 
-!> check if Mumps error occurred
-if (mumps_par%INFO(1) < 0 .or. mumps_par%INFOG(1) < 0) then
-  write(stderr, *) 'Gemini:potential_mumps:elliptic2D_polarization_periodic  MUMPS ERROR: details:'
-  write(stderr, *) 'Mumps Error: INFO(1)',mumps_par%INFO(1),'INFO(2)',mumps_par%INFO(2)
-  write(stderr, *) 'Mumps Error: INFOG(1)',mumps_par%INFOG(1),'INFOG(2)',mumps_par%INFOG(2)
-  error stop
-endif
-
+call check_mumps_status(mumps_par, 'elliptic2D_polarization_periodic')
 
 !STORE PERMUTATION USED, SAVE RESULTS, CLEAN UP MUMPS ARRAYS
 !(can save ~25% execution time and improves scaling with openmpi
@@ -1568,7 +1547,9 @@ call quiet_mumps(mumps_par)
 
   !may solve some memory allocation issues, uncomment if MUMPS throws errors
   !about not having enough memory
-  !mumps_par%ICNTL(14)=50
+  ! e.g. INFO(1) = -9
+  ! however this error may also mean there is a deeper problem with the code.
+  !,mumps_par%ICNTL(14) = 50
 !end if
 
 
@@ -1577,7 +1558,7 @@ mumps_par%JOB = 6
 
 call MUMPS_exec(mumps_par)
 
-call check_mumps_status(mumps_par)
+call check_mumps_status(mumps_par, 'elliptic2D_cart')
 
 !STORE PERMUTATION USED, SAVE RESULTS, CLEAN UP MUMPS ARRAYS
 !(can save ~25% execution time and improves scaling with openmpi
@@ -1648,7 +1629,7 @@ mumps_par%JOB = 6
 
 call MUMPS_exec(mumps_par)
 
-call check_mumps_status(mumps_par)
+call check_mumps_status(mumps_par, 'elliptic_workers')
 
 !DEALLOCATE STRUCTURES USED BY WORKERS DURING SOLVE
 mumps_par%JOB = -2
@@ -1658,17 +1639,18 @@ call MUMPS_exec(mumps_par)
 end subroutine elliptic_workers
 
 
-subroutine check_mumps_status(p)
+subroutine check_mumps_status(p, name)
 !! check if Mumps error occurred
 
 type(MUMPS_STRUC), intent(in) :: p
+character(*), intent(in) :: name
 
 if (p%info(1) < 0 .or. p%infog(1) < 0) then
-  write(stderr, *) 'Gemini:PDEelliptic:elliptic_workers  MUMPS ERROR: details:'
+  write(stderr, *) 'Gemini:PDEelliptic:' // name // '  MUMPS ERROR: details:'
   if (p%info(1) == -1) write(stderr,'(a,i4)') 'the error was reported by processor #',p%info(2)
   write(stderr, *) 'Mumps Error: info(1,2,8):', p%info(1:2), p%info(8)
   write(stderr, *) 'Mumps Error: infoG(1,2)', p%infoG(1:2)
-  write(stderr, *) 'for error number meaning, see "8 Error Diagnositics" of MUMPS manual'
+  write(stderr, *) 'for error number meaning, see "8 Error Diagnostics" of MUMPS manual'
   error stop
 endif
 
