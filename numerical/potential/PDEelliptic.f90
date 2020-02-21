@@ -1666,7 +1666,8 @@ type(MUMPS_STRUC), intent(in) :: p
 
 if (p%info(1) < 0 .or. p%infog(1) < 0) then
   write(stderr, *) 'Gemini:PDEelliptic:elliptic_workers  MUMPS ERROR: details:'
-  write(stderr, *) 'Mumps Error: info(1,2,8):', p%info(1:2), p%info(2)
+  if (p%info(1) == -1) write(stderr,'(a,i4)') 'the error was reported by processor #',p%info(2)
+  write(stderr, *) 'Mumps Error: info(1,2,8):', p%info(1:2), p%info(8)
   write(stderr, *) 'Mumps Error: infoG(1,2)', p%infoG(1:2)
   write(stderr, *) 'for error number meaning, see "8 Error Diagnositics" of MUMPS manual'
   error stop
