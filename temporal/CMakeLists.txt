@@ -8,14 +8,12 @@ target_link_libraries(timeutils PRIVATE const)
 
 add_executable(test_formats test_formats.f90)
 target_link_libraries(test_formats PRIVATE timeutils const)
-add_test(NAME DateFormats COMMAND test_formats)
-set_tests_properties(DateFormats PROPERTIES TIMEOUT 5.0
-  FIXTURES_SETUP IOfmt)
+add_test(NAME unit:DateFormats COMMAND test_formats)
 
 add_executable(test_rollover test_dayrollover.f90)
 target_link_libraries(test_rollover PRIVATE timeutils const)
-add_test(NAME DateRollover COMMAND test_rollover)
+add_test(NAME unit:DateRollover COMMAND test_rollover)
 
 add_executable(test_sza test_sza.f90)
 target_link_libraries(test_sza PRIVATE timeutils const)
-add_test(NAME SolarZenithAngle COMMAND test_sza)
+add_test(NAME unit:SolarZenithAngle COMMAND test_sza)

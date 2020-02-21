@@ -9,9 +9,9 @@ add_executable(test_fang test_fang.f90)
 target_link_libraries(test_fang PRIVATE fang fang_run const)
 
 if(PythonOK)
-add_test(NAME FangIonize
+add_test(NAME unit:FangIonize
   COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test_fang.py $<TARGET_FILE:test_fang>)
-set_tests_properties(FangIonize PROPERTIES TIMEOUT 10)
+set_tests_properties(unit:FangIonize PROPERTIES TIMEOUT 10)
 endif(PythonOK)
 
 if(glow)

@@ -7,7 +7,7 @@ ${CMAKE_SOURCE_DIR}/tests/data
 )
 
 setup_gemini_test(
-Gemini2d_fang
+gemini:2d_fang
 gemini.bin
 test2d_fang
 ${CMAKE_SOURCE_DIR}/tests/data/test2d_fang
@@ -15,7 +15,7 @@ ${CMAKE_SOURCE_DIR}/tests/data/test2d_fang
 )
 
 compare_gemini_output(
-Compare2d_fang
+gemini:compare:2d_fang
 test2d_fang
 ${CMAKE_SOURCE_DIR}/tests/data/test2d_fang
 )
@@ -30,7 +30,7 @@ ${CMAKE_SOURCE_DIR}/tests/data
 )
 
 setup_gemini_test(
-Gemini2d_glow
+gemini:2d_glow
 gemini.bin
 test2d_glow
 ${CMAKE_SOURCE_DIR}/tests/data/test2d_glow
@@ -38,7 +38,7 @@ ${CMAKE_SOURCE_DIR}/tests/data/test2d_glow
 )
 
 compare_gemini_output(
-Compare2d_glow
+gemini:compare:2d_glow
 test2d_glow
 ${CMAKE_SOURCE_DIR}/tests/data/test2d_glow
 )

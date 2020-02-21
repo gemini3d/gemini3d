@@ -33,7 +33,7 @@ jobs:
     - name: Install packages
       run: |
         sudo apt update -yq
-        sudo apt install -yq --no-install-recommends pkg-config gfortran libopenmpi-dev openmpi-bin liblapack-dev libscalapack-openmpi-dev libmumps-dev
+        sudo apt install -yq --no-install-recommends pkg-config gfortran libopenmpi-dev openmpi-bin liblapack-dev libscalapack-openmpi-dev libmumps-dev libhdf5-dev
 
     - name: CMake configure
       run: cmake -B build -Dhdf5=true
@@ -48,7 +48,9 @@ jobs:
 # CI is too slow for 3d_glow
 
 # -V output truncated on CI?
-    - run: ctest --parallel --output-on-failure -E 3d
+    - run: ctest --parallel --output-on-failure -R unit
+      working-directory: build
+    - run: ctest --parallel --output-on-failure -R gemini:2d
       working-directory: build
     - uses: actions/upload-artifact@v1
       if: failure()
