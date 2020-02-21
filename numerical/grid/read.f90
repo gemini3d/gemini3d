@@ -94,7 +94,7 @@ x%lx1=lx1; x%lx2all=lx2all; x%lx3all=lx3all;
 
 !> ADJUST THE SIZES OF THE VARIABLES IF LX3ALL==1, SO THAT THE ALLOCATIONS ARE THE CORRECT SIZE
 if (lx3all==1) then
-  print *, 'Detected a 2D run request...  swapping x2 and x3 sizes to maintain parallelization.'
+  print *, '2D run: **SWAP** x2 and x3 dims'
   lx3all=lx2all; x%lx3all=lx2all;
   lx2=1
   lx2all=1; x%lx2all=1;
@@ -103,11 +103,11 @@ if (lx3all==1) then
   flagswap=1
 else
   if(lx2all==1) then
-    print *, 'Detected a 2D run request...  ***NOT*** swapping x2 and x3 sizes to maintain parallelization.'
+    print *, '2D run: do not swap x2 and x3 dims.'
     lx2=1
     lx3=lx3all/lid
   else
-    print *, 'Detected a 3D run requuest...'
+    print *, '3D run'
     lx2=lx2all/lid2
     !! should divide evenly if generated from mpigrid
     lx3=lx3all/lid3
@@ -115,7 +115,7 @@ else
   flagswap=0
 end if
 x%lx2=lx2; x%lx3=lx3
-print *, 'Grid slab size:  ',lx1,lx2,lx3
+print '(A,3I6)', 'Grid slab size:  ',lx1,lx2,lx3
 
 
 !> COMMUNICATE THE GRID SIZE TO THE WORKERS SO THAT THEY CAN ALLOCATE SPACE
@@ -214,7 +214,7 @@ else
   !! Note there that the fortran arrays are the correct size, but the input data are not!!!
   !! This means tmp variable and permutes...
 
-  print *, 'Detected a 2D grid, so will permute the dimensions of the input'
+  print *, '2D grid: **PERMUTE** x2 and x3 dimensions'
 end if
 
 call get_grid3(indatgrid, flagswap, x, g1all,g2all,g3all, altall,glatall,glonall,Bmagall,Incall,nullptsall,&

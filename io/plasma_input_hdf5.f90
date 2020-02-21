@@ -17,7 +17,7 @@ integer :: ierr
 type(hdf5_file) :: h5f
 
 !>  CHECK TO MAKE SURE WE ACTUALLY HAVE THE DATA WE NEED TO DO THE MAG COMPUTATIONS.
-if (flagoutput==3) error stop '  !!!I need current densities in the output to compute magnetic fields!!!'
+if (flagoutput==3) error stop 'Need current densities in the output to compute magnetic fields'
 
 
 !> FORM THE INPUT FILE NAME
@@ -25,7 +25,7 @@ filenamefull = date_filename(outdir,ymd,UTsec) // '.h5'
 print *, 'Input file name for current densities:  ', filenamefull
 
 call h5f%initialize(filenamefull, ierr, status='old', action='r')
-if(ierr/=0) error stop 'input_root_currents: could not load plasma input hdf5 file'
+if(ierr/=0) error stop 'plasma_input_hdf5:input_root_currents: could not load plasma input hdf5 file'
 
 !> LOAD THE DATA
 !> PERMUTE THE ARRAYS IF NECESSARY
@@ -95,11 +95,11 @@ lx3all=size(x3all)-4
 
 !> READ IN FROM FILE, AS OF CURVILINEAR BRANCH THIS IS NOW THE ONLY INPUT OPTION
 call get_simsize3(indatsize, lx1in, lx2in, lx3in)
-print *, 'Input file has size:  ',lx1in,lx2in,lx3in
-print *, 'Target grid structure has size',lx1,lx2all,lx3all
+print '(2A,3I6)', indatsize,' input dimensions:',lx1in,lx2in,lx3in
+print '(A,3I6)', 'Target (output) grid structure dimensions:',lx1,lx2all,lx3all
 
 if (flagswap==1) then
-  print *, '2D simulations grid detected, swapping input file dimension sizes and permuting input arrays'
+  print *, '2D simulation: **SWAP** x2/x3 dims and **PERMUTE** input arrays'
   lx3in=lx2in
   lx2in=1
 end if
@@ -138,11 +138,10 @@ if (any(vs1all > 3e8_wp)) error stop 'drift faster than lightspeed'
 
 !> USER SUPPLIED FUNCTION TO TAKE A REFERENCE PROFILE AND CREATE INITIAL CONDITIONS FOR ENTIRE GRID.
 !> ASSUMING THAT THE INPUT DATA ARE EXACTLY THE CORRECT SIZE (AS IS THE CASE WITH FILE INPUT) THIS IS NOW SUPERFLUOUS
-print *, 'Done setting initial conditions...'
-
-print *, 'Min/max input density:  ',     minval(nsall(:,:,:,7)),  maxval(nsall(:,:,:,7))
-print *, 'Min/max input velocity:  ',    minval(vs1all(:,:,:,:)), maxval(vs1all(:,:,:,:))
-print *, 'Min/max input temperature:  ', minval(Tsall(:,:,:,:)),  maxval(Tsall(:,:,:,:))
+print '(/,A,/,A)', 'HDF5: Initial conditions:','------------------------'
+print '(A,2ES11.2)', 'Min/max input density:',     minval(nsall(:,:,:,7)),  maxval(nsall(:,:,:,7))
+print '(A,2ES11.2)', 'Min/max input velocity:',    minval(vs1all(:,:,:,:)), maxval(vs1all(:,:,:,:))
+print '(A,2ES11.2)', 'Min/max input temperature:', minval(Tsall(:,:,:,:)),  maxval(Tsall(:,:,:,:))
 
 
 !> ROOT BROADCASTS IC DATA TO WORKERS
