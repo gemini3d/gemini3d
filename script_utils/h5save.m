@@ -1,12 +1,27 @@
-function h5save(filename, varname, A, sizeA)
+function h5save(filename, varname, A, sizeA, dtype)
 
-narginchk(3, 4)
+narginchk(3, 5)
 
-if nargin < 4
+if nargin < 4 || isempty(sizeA)
   if isvector(A)
     sizeA = length(A);
   else
     sizeA = size(A);
+  end
+end
+
+% coerce if needed
+if nargin >= 5 && ~isempty(dtype)
+  switch dtype
+    case {'float64', 'double'}
+      if ~isa(A, 'double')
+        A = double(A);
+      end
+    case {'float32', 'single'}
+      if ~isa(A, 'single')
+        A = single(A);
+      end
+    otherwise, error(['unknown dtype ',dtype])
   end
 end
 

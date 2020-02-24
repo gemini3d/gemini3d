@@ -18,6 +18,6 @@ writegrid(p, xg);
 cfg = read_config(p.nml);
 [ns,Ts,vsx1] = eqICs3D(p, xg);
 % Note: should be rewritten to include the neutral module form the fortran code
-writedata(p.ymd, cfg.UTsec0, ns, vsx1, Ts, p.simdir, p.format);
+writedata(p.ymd, cfg.UTsec0, ns, vsx1, Ts, p.simdir, p.format, p.realbits);
 
 end % function
