@@ -3,14 +3,13 @@ function E = Efield_BCs_3d(p)
 narginchk(1, 1)
 validateattributes(p, {'struct'}, {'scalar'}, mfilename, 'sim parameters', 1)
 
-dir_out = [p.simdir, '/Efield_inputs'];
-
-makedir(dir_out)
+dir_out = absolute_path([p.simdir, '/inputs/Efield_inputs']);
+makedir(dir_out);
 
 %% READ IN THE SIMULATION INFORMATION
 config = read_config(p.nml);
 
-xg = readgrid(p.simdir);
+xg = readgrid(p.simdir, p.format, p.realbits);
 lx1 = xg.lx(1);
 lx2 = xg.lx(2);
 lx3 = xg.lx(3);
@@ -39,10 +38,10 @@ mlonmean = mean(E.mlon);
 mlatmean = mean(E.mlat);
 
 %% WIDTH OF THE DISTURBANCE
-mlatsig = p.fracwidth*(mlatmax-mlatmin);
-mlonsig = p.fracwidth*(mlonmax-mlonmin);
-sigx2 = p.fracwidth*(max(xg.x2)-min(xg.x2));
-sigx3 = p.fracwidth*(max(xg.x3)-min(xg.x3));
+mlatsig = p.Efield_fracwidth*(mlatmax-mlatmin);
+mlonsig = p.Efield_fracwidth*(mlonmax-mlonmin);
+sigx2 = p.Efield_fracwidth*(max(xg.x2)-min(xg.x2));
+sigx3 = p.Efield_fracwidth*(max(xg.x3)-min(xg.x3));
 %% TIME VARIABLE (SECONDS FROM SIMULATION BEGINNING)
 tmin = 0;
 time = tmin:config.dtE0:config.tdur;
@@ -106,18 +105,21 @@ if ~nargout, clear('E'), end
 end % function
 
 
-function writehdf5(dir_out, E, params)
+function writehdf5(dir_out, E, p)
 narginchk(3,3)
 
 fn = [dir_out, '/simsize.h5'];
 if isfile(fn), delete(fn), end
-h5save(fn, '/Nlon', E.llon)
-h5save(fn, '/Nlat', E.llat)
+h5save(fn, '/llon', int32(E.llon))
+h5save(fn, '/llat', int32(E.llat))
 
 fn = [dir_out, '/simgrid.h5'];
 if isfile(fn), delete(fn), end
-h5save(fn, '/mlon', E.mlon)
-h5save(fn, '/mlat', E.mlat)
+
+freal = ['float',int2str(p.realbits)];
+
+h5save(fn, '/mlon', E.mlon, [], freal)
+h5save(fn, '/mlat', E.mlat, [], freal)
 
 Nt = size(E.expdate, 1);
 for i = 1:Nt
@@ -128,22 +130,23 @@ for i = 1:Nt
   disp(['write: ', fn])
 
   %FOR EACH FRAME WRITE A BC TYPE AND THEN OUTPUT BACKGROUND AND BCs
-  h5save(fn, '/flagdirich', params.flagdirich)
-  h5save(fn, '/Exit', E.Exit(:,:,i))
-  h5save(fn, '/Eyit', E.Eyit(:,:,i))
-  h5save(fn, '/Vminx1it', E.Vminx1it(:,:,i))
-  h5save(fn, '/Vmaxx1it', E.Vmaxx1it(:,:,i))
-  h5save(fn, '/Vminx2ist', E.Vminx2ist(:,i))
-  h5save(fn, '/Vmaxx2ist', E.Vmaxx2ist(:,i))
-  h5save(fn, '/Vminx3ist', E.Vminx3ist(:,i))
-  h5save(fn, '/Vmaxx3ist', E.Vmaxx3ist(:,i))
+  h5save(fn, '/flagdirich', int32(p.flagdirich))
+  h5save(fn, '/Exit', E.Exit(:,:,i), [], freal)
+  h5save(fn, '/Eyit', E.Eyit(:,:,i), [], freal)
+  h5save(fn, '/Vminx1it', E.Vminx1it(:,:,i), [], freal)
+  h5save(fn, '/Vmaxx1it', E.Vmaxx1it(:,:,i), [], freal)
+  h5save(fn, '/Vminx2ist', E.Vminx2ist(:,i), [], freal)
+  h5save(fn, '/Vmaxx2ist', E.Vmaxx2ist(:,i), [], freal)
+  h5save(fn, '/Vminx3ist', E.Vminx3ist(:,i), [], freal)
+  h5save(fn, '/Vmaxx3ist', E.Vmaxx3ist(:,i), [], freal)
 end
 end % function
 
 
-function writeraw(dir_out, E, params)
+function writeraw(dir_out, E, p)
 narginchk(3,3)
-freal = 'float64';
+
+freal = ['float', int2str(p.realbits)];
 
 fid = fopen([dir_out, '/simsize.dat'], 'w');
 fwrite(fid, E.llon, 'integer*4');
@@ -174,8 +177,8 @@ for i = 1:Nt
 %   size(E.Vmaxx3ist)
 
   %FOR EACH FRAME WRITE A BC TYPE AND THEN OUTPUT BACKGROUND AND BCs
-%  fwrite(fid, params.flagdirich, 'int32');
-  fwrite(fid, params.flagdirich, 'real*8');   %FIXME - fortran code still wants this to be a double...
+%  fwrite(fid, p.flagdirich, 'int32');
+  fwrite(fid, p.flagdirich, freal);   %FIXME - fortran code still wants this to be real...
   fwrite(fid, E.Exit(:,:,i), freal);
   fwrite(fid, E.Eyit(:,:,i), freal);
   fwrite(fid, E.Vminx1it(:,:,i), freal);
