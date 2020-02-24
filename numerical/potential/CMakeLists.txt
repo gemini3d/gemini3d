@@ -1,6 +1,8 @@
 if(realbits EQUAL 32)
+  message(STATUS "32-bit MUMPS interface")
   add_library(mumps_interface OBJECT mumps_real32.f90)
 else()
+  message(STATUS "64-bit MUMPS interface")
   add_library(mumps_interface OBJECT mumps_real64.f90)
 endif()
 target_include_directories(mumps_interface PUBLIC ${MUMPS_INCLUDE_DIRS})

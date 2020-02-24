@@ -2,7 +2,7 @@
 !! * Figure 3 in https://agupubs.onlinelibrary.wiley.com/doi/10.1029/2008JA013384
 !! * Figure 2 in Fang 2010
 
-use, intrinsic:: iso_fortran_env, only: sp=>real32
+use, intrinsic:: iso_fortran_env, only: real32, real64
 use phys_consts, only: wp
 use ionrate, only: ionization_fang2008, ionization_fang2010
 
@@ -89,9 +89,9 @@ subroutine parse_arg(iarg, val)
   select type(val)
     type is (integer)
       read(argv,*) val
-    type is (real(wp))
+    type is (real(real64))
       read(argv,*) val
-    type is (real(sp))
+    type is (real(real32))
       read(argv,*) val
     type is (character(*))
       read(argv,*) val

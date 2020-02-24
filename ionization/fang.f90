@@ -6,7 +6,7 @@ implicit none
 private
 
 real(wp), parameter :: deps = 0.035_wp
-real(dp), parameter :: erg2kev = 624150648._dp
+real(wp), parameter :: erg2kev = 624150648._wp
 !! keV, kinetic energy lost per ion-electron pair produced
 
 public :: fang2008, fang2010, gravity_accel, erg2kev
