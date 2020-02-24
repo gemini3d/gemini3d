@@ -1,9 +1,9 @@
-function xgf = readgrid(path, file_format)
+function xgf = readgrid(path, file_format, realbits)
 %% READS A GRID FROM MATLAB
 % OR POSSIBLY FORTRAN (THOUGH THIS IS NOT YET IMPLEMENTED AS OF 9/15/2016)
-narginchk(1,2)
-if nargin < 2, file_format = 'auto'; end
+narginchk(3,3)
 validateattributes(file_format, {'char'}, {'vector'}, mfilename, 'raw or hdf5', 2)
+validateattributes(realbits, {'numeric'}, {'scalar', 'integer'}, mfilename, '32 or 64', 3)
 
 path = absolute_path(path);
 if is_file(path)
@@ -11,13 +11,13 @@ if is_file(path)
 end
 
 switch file_format
-  case {'dat','raw'}, xgf = read_raw(path);
+  case {'dat','raw'}, xgf = read_raw(path, realbits);
   case {'h5','hdf5'}, xgf = read_hdf5(path);
   otherwise
     if is_file([path, '/simsize.h5'])
       xgf = read_hdf5(path);
     elseif is_file([path,'/simsize.dat'])
-      xgf = read_raw(path);
+      xgf = read_raw(path, realbits);
     else
       error(['no simsize file found in ',path])
     end
@@ -65,7 +65,7 @@ end
 end  % function read_hdf5
 
 
-function xgf = read_raw(path)
+function xgf = read_raw(path, realbits)
 
 filename=[path, '/simsize.dat'];
 assert(is_file(filename), [filename,' is not a file.'])
@@ -84,79 +84,81 @@ gridsizeghost=[lx1+4,lx2+4,lx3+4];
 fin = [path, '/simgrid.dat'];
 assert(is_file(fin), [fin, ' is not a file.'])
 
+freal = ['float',int2str(realbits)];
+
 fid=fopen(fin,'r');
 
-xgf.x1=fread(fid,lx1+4,'real*8');    %coordinate values
-xgf.x1i=fread(fid,lx1+1,'real*8');
-xgf.dx1b=fread(fid,lx1+3,'real*8');    %ZZZ - need to check that differences have appropriate ghost cell values, etc.
-xgf.dx1h=fread(fid,lx1,'real*8');
+xgf.x1=fread(fid,lx1+4, freal);    %coordinate values
+xgf.x1i=fread(fid,lx1+1, freal);
+xgf.dx1b=fread(fid,lx1+3, freal);    %ZZZ - need to check that differences have appropriate ghost cell values, etc.
+xgf.dx1h=fread(fid,lx1, freal);
 
-xgf.x2=fread(fid,lx2+4,'real*8');
-xgf.x2i=fread(fid,lx2+1,'real*8');
-xgf.dx2b=fread(fid,lx2+3,'real*8');
-xgf.dx2h=fread(fid,lx2,'real*8');
+xgf.x2=fread(fid,lx2+4, freal);
+xgf.x2i=fread(fid,lx2+1, freal);
+xgf.dx2b=fread(fid,lx2+3, freal);
+xgf.dx2h=fread(fid,lx2, freal);
 
-xgf.x3=fread(fid,lx3+4,'real*8');
-xgf.x3i=fread(fid,lx3+1,'real*8');
-xgf.dx3b=fread(fid,lx3+3,'real*8');
-xgf.dx3h=fread(fid,lx3,'real*8');
+xgf.x3=fread(fid,lx3+4, freal);
+xgf.x3i=fread(fid,lx3+1, freal);
+xgf.dx3b=fread(fid,lx3+3, freal);
+xgf.dx3h=fread(fid,lx3, freal);
 
-tmp=fread(fid,lgridghost,'real*8');   %cell-centered metric coefficients
+tmp=fread(fid,lgridghost, freal);   %cell-centered metric coefficients
 xgf.h1=reshape(tmp,gridsizeghost);
-tmp=fread(fid,lgridghost,'real*8');
+tmp=fread(fid,lgridghost, freal);
 xgf.h2=reshape(tmp,gridsizeghost);
-tmp=fread(fid,lgridghost,'real*8');
+tmp=fread(fid,lgridghost, freal);
 xgf.h3=reshape(tmp,gridsizeghost);
 
 tmpsize=[lx1+1,lx2,lx3];
 ltmp=prod(tmpsize);
-tmp=fread(fid,ltmp,'real*8');    %interface metric coefficients
+tmp=fread(fid,ltmp, freal);    %interface metric coefficients
 xgf.h1x1i=reshape(tmp,tmpsize);
-tmp=fread(fid,ltmp,'real*8');
+tmp=fread(fid,ltmp, freal);
 xgf.h2x1i=reshape(tmp,tmpsize);
-tmp=fread(fid,ltmp,'real*8');
+tmp=fread(fid,ltmp, freal);
 xgf.h3x1i=reshape(tmp,tmpsize);
 
 tmpsize=[lx1,lx2+1,lx3];
 ltmp=prod(tmpsize);
-tmp=fread(fid,ltmp,'real*8');
+tmp=fread(fid,ltmp, freal);
 xgf.h1x2i=reshape(tmp,tmpsize);
-tmp=fread(fid,ltmp,'real*8');
+tmp=fread(fid,ltmp, freal);
 xgf.h2x2i=reshape(tmp,tmpsize);
-tmp=fread(fid,ltmp,'real*8');
+tmp=fread(fid,ltmp, freal);
 xgf.h3x2i=reshape(tmp,tmpsize);
 
 tmpsize=[lx1,lx2,lx3+1];
 ltmp=prod(tmpsize);
-tmp=fread(fid,ltmp,'real*8');
+tmp=fread(fid,ltmp, freal);
 xgf.h1x3i=reshape(tmp,tmpsize);
-tmp=fread(fid,ltmp,'real*8');
+tmp=fread(fid,ltmp, freal);
 xgf.h2x3i=reshape(tmp,tmpsize);
-tmp=fread(fid,ltmp,'real*8');
+tmp=fread(fid,ltmp, freal);
 xgf.h3x3i=reshape(tmp,tmpsize);
 
 %gravity, geographic coordinates, magnetic field strength? unit vectors?
-tmp=fread(fid,lgrid,'real*8');    %gravitational field components
+tmp=fread(fid,lgrid, freal);    %gravitational field components
 xgf.gx1=reshape(tmp,gridsize);
-tmp=fread(fid,lgrid,'real*8');
+tmp=fread(fid,lgrid, freal);
 xgf.gx2=reshape(tmp,gridsize);
-tmp=fread(fid,lgrid,'real*8');
+tmp=fread(fid,lgrid, freal);
 xgf.gx3=reshape(tmp,gridsize);
 
-tmp=fread(fid,lgrid,'real*8');    %geographic coordinates
+tmp=fread(fid,lgrid, freal);    %geographic coordinates
 xgf.alt=reshape(tmp,gridsize);
-tmp=fread(fid,lgrid,'real*8');
+tmp=fread(fid,lgrid, freal);
 xgf.glat=reshape(tmp,gridsize);
-tmp=fread(fid,lgrid,'real*8');
+tmp=fread(fid,lgrid, freal);
 xgf.glon=reshape(tmp,gridsize);
 
-tmp=fread(fid,lgrid,'real*8');    %magnetic field strength
+tmp=fread(fid,lgrid, freal);    %magnetic field strength
 xgf.Bmag=reshape(tmp,gridsize);
 
-tmp=fread(fid,lx2*lx3,'real*8');    %magnetic field inclination - only one value for each field line
+tmp=fread(fid,lx2*lx3, freal);    %magnetic field inclination - only one value for each field line
 xgf.I=reshape(tmp,[lx2,lx3]);
 
-tmp=fread(fid,lgrid,'real*8');    %points not to be solved
+tmp=fread(fid,lgrid, freal);    %points not to be solved
 xgf.nullpts=reshape(tmp,gridsize);
 
 
@@ -165,39 +167,39 @@ xgf.nullpts=reshape(tmp,gridsize);
 if ~feof(fid)
   tmpsize=[lx1,lx2,lx3,3];
   ltmp=prod(tmpsize);
-  tmp=fread(fid,ltmp,'real*8');   %4D unit vectors (in cartesian components)
+  tmp=fread(fid,ltmp, freal);   %4D unit vectors (in cartesian components)
 
   if (feof(fid))    %for whatever reason, we sometimes don't hit eof until after first unit vector read...
      return;   %lazy as hell
   end
 
   xgf.e1=reshape(tmp,tmpsize);
-  tmp=fread(fid,ltmp,'real*8');
+  tmp=fread(fid,ltmp, freal);
   xgf.e2=reshape(tmp,tmpsize);
-  tmp=fread(fid,ltmp,'real*8');
+  tmp=fread(fid,ltmp, freal);
   xgf.e3=reshape(tmp,tmpsize);
 
   tmpsize=[lx1,lx2,lx3,3];
   ltmp=prod(tmpsize);
-  tmp=fread(fid,ltmp,'real*8');
+  tmp=fread(fid,ltmp, freal);
   xgf.er=reshape(tmp,tmpsize);
-  tmp=fread(fid,ltmp,'real*8');
+  tmp=fread(fid,ltmp, freal);
   xgf.etheta=reshape(tmp,tmpsize);
-  tmp=fread(fid,ltmp,'real*8');
+  tmp=fread(fid,ltmp, freal);
   xgf.ephi=reshape(tmp,tmpsize);
 
-  tmp=fread(fid,lgrid,'real*8');    %spherical coordinates
+  tmp=fread(fid,lgrid, freal);    %spherical coordinates
   xgf.r=reshape(tmp,gridsize);
-  tmp=fread(fid,lgrid,'real*8');
+  tmp=fread(fid,lgrid, freal);
   xgf.theta=reshape(tmp,gridsize);
-  tmp=fread(fid,lgrid,'real*8');
+  tmp=fread(fid,lgrid, freal);
   xgf.phi=reshape(tmp,gridsize);
 
-  tmp=fread(fid,lgrid,'real*8');     %cartesian coordinates
+  tmp=fread(fid,lgrid, freal);     %cartesian coordinates
   xgf.x=reshape(tmp,gridsize);
-  tmp=fread(fid,lgrid,'real*8');
+  tmp=fread(fid,lgrid, freal);
   xgf.y=reshape(tmp,gridsize);
-  tmp=fread(fid,lgrid,'real*8');
+  tmp=fread(fid,lgrid, freal);
   xgf.z=reshape(tmp,gridsize);
 end
 

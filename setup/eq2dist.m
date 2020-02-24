@@ -10,7 +10,7 @@ cwd = fileparts(mfilename('fullpath'));
 addpath([cwd,'/../vis'])
 %% READ Equilibrium SIMULATION INFO
 peq = read_nml(p.eqnml);
-xgin = readgrid(p.eqnml, p.format);
+xgin = readgrid(p.eqnml, p.format, p.realbits);
 
 %% END FRAME time of equilibrium simulation
 % PRESUMABLY THIS WILL BE THE STARTING point FOR another
@@ -34,7 +34,7 @@ check_temperature(Tsi)
 
 %% WRITE OUT THE GRID
 writegrid(p, xg)
-writedata(ymd_end, UTsec_end,nsi,vs1i,Tsi, p.simdir, p.format);
+writedata(ymd_end, UTsec_end,nsi,vs1i,Tsi, p.simdir, p.format, p.realbits);
 
 end % function eq2dist
 

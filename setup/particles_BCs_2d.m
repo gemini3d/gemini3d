@@ -6,7 +6,7 @@ validateattributes(p, {'struct'}, {'scalar'})
 %% read desired simulation config
 params = read_config(p.nml);
 %% GRID ALREADY NEEDS TO BE MADE, AS WELL
-xg = readgrid(p.simdir);
+xg = readgrid(p.simdir, p.format, p.realbits);
 %% CREATE PRECIPITATION CHARACTERISTICS data
 
 % number of grid cells. This will be interpolated to grid, so 100x100 is arbitrary
@@ -116,8 +116,8 @@ outdir = absolute_path([p.simdir, '/inputs/prec_inputs/']);
 makedir(outdir)
 
 switch p.format
-  case {'h5','hdf5'}, write_hdf5(outdir, llon, llat, mlon, mlat, expdate, Nt, Qit, E0it)
-  case {'dat','raw'}, write_raw(outdir, llon, llat, mlon, mlat, expdate, Nt, Qit, E0it)
+  case {'h5','hdf5'}, write_hdf5(outdir, llon, llat, mlon, mlat, expdate, Nt, Qit, E0it, p.realbits)
+  case {'dat','raw'}, write_raw(outdir, llon, llat, mlon, mlat, expdate, Nt, Qit, E0it, p.realbits)
   otherwise, error(['unknown file format ', p.format])
 end
 
@@ -127,18 +127,20 @@ end
 end % function
 
 
-function write_hdf5(outdir, llon, llat, mlon, mlat, expdate, Nt, Qit, E0it)
-narginchk(9,9)
+function write_hdf5(outdir, llon, llat, mlon, mlat, expdate, Nt, Qit, E0it, realbits)
+narginchk(10,10)
 
 fn = [outdir, '/simsize.h5'];
 disp(['write ', fn])
 h5save(fn, '/llon', int32(llon))
 h5save(fn, '/llat', int32(llat))
 
+freal = ['float',int2str(realbits)];
+
 fn = [outdir, '/simgrid.h5'];
 disp(['write ', fn])
-h5save(fn, '/mlon', mlon)
-h5save(fn, '/mlat', mlat)
+h5save(fn, '/mlon', mlon, [], freal)
+h5save(fn, '/mlat', mlat, [], freal)
 
 for i = 1:Nt
   UTsec = expdate(i,4)*3600 + expdate(i,5)*60 + expdate(i,6);
@@ -147,15 +149,15 @@ for i = 1:Nt
   fn = [outdir, filesep, datelab(ymd,UTsec), '.h5'];
   disp(['writing ', fn])
 
-  h5save(fn, '/Qp', Qit(:,:,i))
-  h5save(fn, '/E0p', E0it(:,:,i))
+  h5save(fn, '/Qp', Qit(:,:,i), [], freal)
+  h5save(fn, '/E0p', E0it(:,:,i), [], freal)
 end
 
 end % function
 
 
-function write_raw(outdir, llon, llat, mlon, mlat, expdate, Nt, Qit, E0it)
-narginchk(9,9)
+function write_raw(outdir, llon, llat, mlon, mlat, expdate, Nt, Qit, E0it, realbits)
+narginchk(10,10)
 
 filename=[outdir, '/simsize.dat'];
 disp(['write ', filename])
@@ -164,14 +166,14 @@ fwrite(fid,llon,'integer*4');
 fwrite(fid,llat,'integer*4');
 fclose(fid);
 
-wp = 'float64';
+freal = ['float', int2str(realbits)];
 
 filename=[outdir, '/simgrid.dat'];
 disp(['write ', filename])
 
 fid=fopen(filename,'w');
-fwrite(fid,mlon, wp);
-fwrite(fid,mlat, wp);
+fwrite(fid,mlon, freal);
+fwrite(fid,mlat, freal);
 fclose(fid);
 
 for i = 1:Nt
@@ -182,8 +184,8 @@ for i = 1:Nt
   disp(['writing ', filename])
 
   fid = fopen(filename,'w');
-  fwrite(fid,Qit(:,:,i), wp);
-  fwrite(fid,E0it(:,:,i), wp);
+  fwrite(fid,Qit(:,:,i), freal);
+  fwrite(fid,E0it(:,:,i), freal);
   fclose(fid);
 end
 
