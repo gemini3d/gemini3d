@@ -15,6 +15,7 @@ cwd = os.getcwd()
 
 def runner(mpiexec: Pathlike, gemexe: Pathlike, config_file: Pathlike, out_dir: Path):
 
+    config_file = Path(config_file).resolve()
     # load configuration to know what directories to check
     p = read_config(config_file)
     for k in ("indat_size", "indat_grid", "indat_file"):
@@ -48,10 +49,10 @@ def runner(mpiexec: Pathlike, gemexe: Pathlike, config_file: Pathlike, out_dir: 
     if batcher:
         job_file = hpc_batch_create(batcher, out_dir, cmd)  # noqa: F841
         # hpc_submit_job(job_file)
-
-    ret = subprocess.run(cmd)
-
-    raise SystemExit(ret.returncode)
+        print("Please examine batch file", job_file, "and when ready submit the job as usual.")
+    else:
+        ret = subprocess.run(cmd)
+        raise SystemExit(ret.returncode)
 
 
 def check_mpiexec(mpiexec: Pathlike) -> str:
@@ -101,7 +102,7 @@ def check_gemini_exe(gemexe: Pathlike) -> str:
         if not gemexe:
             raise SystemExit(f"Cannot find gemini.bin under {build_dir}")
 
-    gemexe = str(gemexe)
+    gemexe = str(Path(gemexe).resolve())
 
     ret = subprocess.run(gemexe, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, universal_newlines=True)
     if ret.returncode != 77:
@@ -116,7 +117,7 @@ def check_gemini_exe(gemexe: Pathlike) -> str:
 
 def check_outdir(out_dir: Pathlike) -> Path:
 
-    out_dir = Path(out_dir).expanduser()
+    out_dir = Path(out_dir).expanduser().resolve()
     if out_dir.is_file():
         raise NotADirectoryError(out_dir)
     if not out_dir.is_dir():

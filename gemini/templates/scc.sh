@@ -11,5 +11,3 @@
 echo "NSLOTS = $NSLOTS"
 
 . $HOME/gcccompilers.sh
-
-cd $GEMINI_ROOT
