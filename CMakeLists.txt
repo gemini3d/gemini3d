@@ -17,8 +17,10 @@ project(gemini3d
 enable_testing()
 
 if(realbits EQUAL 32)
+  message(STATUS "32-bit real precision")
   set(arith s)
 else()
+  message(STATUS "64-bit real precision")
   set(realbits 64)
   set(arith d)
 endif()
