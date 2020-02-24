@@ -124,7 +124,9 @@ else
   end block
 
   block
-  real(wp), dimension(1:lx1+1,1:lx3all,1:lx2all) :: htmp
+  !! htmp doesn't include the degenerate dimension
+  real(wp), dimension(1:lx1+1,1:lx3all) :: htmp
+  if(lx3all==1) error stop 'lx3 is assumed to be degenerate (?)'
   !! input 2 vs. 3 dimensions swapped from this program
   call hout%read('/h1x1i', htmp, ierr)
   x%h1x1iall = reshape(htmp,[lx1+1,lx2all,lx3all],order=[1,3,2])
@@ -135,7 +137,8 @@ else
   end block
 
   block
-  real(wp), dimension(1:lx1,1:lx3all+1,1:lx2all) :: htmp
+  !! htmp doesn't include the degenerate dimension
+  real(wp), dimension(1:lx1,1:lx3all+1) :: htmp
   call hout%read('/h1x2i', htmp, ierr)
   x%h1x3iall = reshape(htmp,[lx1,lx2all,lx3all+1],order=[1,3,2])
   !! Note also that the x2 interface from teh input file is x3i in this simulation
@@ -156,7 +159,8 @@ else
   end block
 
   block
-  real(wp), dimension(lx1,lx3all,lx2all) :: htmp
+  !! htmp doesn't include the degenerate dimension
+  real(wp), dimension(lx1,lx3all) :: htmp
   call hout%read('/gx1', htmp, ierr)
   g1all = reshape(htmp,[lx1,lx2all,lx3all],order=[1,3,2])
   call hout%read('/gx2', htmp, ierr)
@@ -176,13 +180,15 @@ else
   end block
 
   block
-  real(wp), dimension(lx3all,lx2all) :: htmp
+  !! htmp doesn't include the degenerate dimension
+  real(wp), dimension(lx3all) :: htmp
   call hout%read('/I', htmp, ierr)
   Incall = reshape(htmp,[lx2all,lx3all],order=[2,1])
   end block
 
   block
-  real(wp), dimension(lx1,lx3all,lx2all) :: htmp
+  !! htmp doesn't include the degenerate dimension
+  real(wp), dimension(lx1,lx3all) :: htmp
   call hout%read('/nullpts', htmp, ierr)
   nullptsall = reshape(htmp,[lx1,lx2all,lx3all],order=[1,3,2])
   end block
@@ -206,7 +212,8 @@ else
   end block
 
   block
-  real(wp), dimension(lx1,lx3all,lx2all) :: htmp
+  !! htmp doesn't include the degenerate dimension
+  real(wp), dimension(lx1,lx3all) :: htmp
   call hout%read('/r', htmp, ierr)
   rall = reshape(htmp,[lx1,lx2all,lx3all],order=[1,3,2])
   call hout%read('/theta', htmp, ierr)
