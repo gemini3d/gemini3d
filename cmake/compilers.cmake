@@ -1,6 +1,10 @@
 include(CheckFortranSourceCompiles)
 include(CheckFortranSourceRuns)
 
+# for CMake >= 3.17 with  cmake -G "Ninja Multi-Config"
+set(CMAKE_CONFIGURATION_TYPES "Debug;Release" CACHE STRING "Build type selections" FORCE)
+set(CMAKE_NMC_DEFAULT_BUILD_FILE_CONFIG "Release" CACHE STRING "Default Build type" FORCE)
+
 # === compiler setup
 # feel free to add more compiler_*.cmake
 if(CMAKE_Fortran_COMPILER_ID STREQUAL Intel)

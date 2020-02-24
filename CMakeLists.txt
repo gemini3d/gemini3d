@@ -32,7 +32,6 @@ option(metis "use METIS" OFF)
 option(scotch "use Scotch" OFF)
 option(openmp "Use OpenMP when building MUMPS" OFF)
 
-set(CMAKE_CONFIGURATION_TYPES "Debug;Release" CACHE STRING "" FORCE)
 set(FETCHCONTENT_UPDATES_DISCONNECTED off)
 # "on" allows live debugging from _deps directory
 # "off" is default, always checks for updates
