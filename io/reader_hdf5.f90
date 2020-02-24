@@ -130,12 +130,24 @@ call hf%initialize(fn, ierr, status='old',action='r')
 if(ierr/=0) error stop 'could not read Efield HDF5'
 call hf%read('/flagdirich', flagdirich, ierr)
 if(ierr/=0) error stop 'could not read flagdirich'
-call hf%read('/Exit', E0xp, ierr)
-if(ierr/=0) error stop 'could not read Ex'
-call hf%read('/Eyit', E0yp, ierr)
-if(ierr/=0) error stop 'could not read Ey'
-call hf%read('/Vminx1it', Vminx1p,ierr)
-call hf%read('/Vmaxx1it', Vmaxx1p, ierr)
+!! handle degenerate cases to avoid
+!! "Operating system error: Cannot allocate memory Memory allocation failed"
+if (size(E0xp, 1)==1) then
+  call hf%read('/Exit', E0xp(1,:), ierr)
+  call hf%read('/Eyit', E0yp(1,:), ierr)
+  call hf%read('/Vminx1it', Vminx1p(1,:),ierr)
+  call hf%read('/Vmaxx1it', Vmaxx1p(1,:), ierr)
+elseif (size(E0xp, 2)==1) then
+  call hf%read('/Exit', E0xp(:,1), ierr)
+  call hf%read('/Eyit', E0yp(:,1), ierr)
+  call hf%read('/Vminx1it', Vminx1p(:,1),ierr)
+  call hf%read('/Vmaxx1it', Vmaxx1p(:,1), ierr)
+else !< 3D
+  call hf%read('/Exit', E0xp, ierr)
+  call hf%read('/Eyit', E0yp, ierr)
+  call hf%read('/Vminx1it', Vminx1p,ierr)
+  call hf%read('/Vmaxx1it', Vmaxx1p, ierr)
+endif
 !! background fields and top/bottom boundary conditions
 call hf%read('/Vminx2ist', Vminx2pslice,ierr)
 call hf%read('/Vmaxx2ist', Vmaxx2pslice, ierr)
