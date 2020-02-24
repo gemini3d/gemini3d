@@ -169,10 +169,18 @@ if (debug) print *, 'READ precipitation data from file:  ',fn
 
 call hf%initialize(fn, ierr, status='old',action='r')
 if(ierr/=0) error stop 'could not open precipitation HDF5'
-call hf%read('/Qp', Qp, ierr)
-if(ierr/=0) error stop 'could not read Qp'
-call hf%read('/E0p', E0p, ierr)
-if(ierr/=0) error stop 'could not read E0p'
+!! handle degenerate cases to avoid
+!! "Operating system error: Cannot allocate memory Memory allocation failed"
+if (size(Qp, 1)==1) then
+  call hf%read('/Qp', Qp(1,:), ierr)
+  call hf%read('/E0p', E0p(1,:), ierr)
+elseif (size(Qp, 2)==1) then
+  call hf%read('/Qp', Qp(:,1), ierr)
+  call hf%read('/E0p', E0p(:,1), ierr)
+else  !< 3-D
+  call hf%read('/Qp', Qp, ierr)
+  call hf%read('/E0p', E0p, ierr)
+endif
 call hf%finalize(ierr)
 
 end procedure get_precip
