@@ -1,4 +1,4 @@
 [wrap-git]
 directory = nc4fortran
 url = https://github.com/scivision/nc4fortran.git
-revision = v0.1.0
+revision = v0.2.0

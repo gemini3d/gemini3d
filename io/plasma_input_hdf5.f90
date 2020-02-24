@@ -126,16 +126,9 @@ if (flagswap==1) then
   !! permute the dimensions so that 2D runs are parallelized
   end block
 else
-  block
-  !! TODO: this is a workaround for a bug in h5fortran at least through 2.5.5
-  real(wp) :: tmp(lx1,lx2all,lx3all,lsp)
-  call h5f%read('/ns', tmp, ierr)
-  nsall(1:lx1,1:lx2all,1:lx3all,1:lsp) = tmp
-  call h5f%read('/vsx1', tmp, ierr)
-  vs1all(1:lx1,1:lx2all,1:lx3all,1:lsp) = tmp
-  call h5f%read('/Ts', tmp, ierr)
-  Tsall(1:lx1,1:lx2all,1:lx3all,1:lsp) = tmp
-  end block
+  call h5f%read('/ns', nsall(1:lx1,1:lx2all,1:lx3all,1:lsp), ierr)
+  call h5f%read('/vsx1', vs1all(1:lx1,1:lx2all,1:lx3all,1:lsp), ierr)
+  call h5f%read('/Ts', Tsall(1:lx1,1:lx2all,1:lx3all,1:lsp), ierr)
 end if
 
 call h5f%finalize(ierr)
