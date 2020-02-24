@@ -75,7 +75,15 @@ def check_mpiexec(mpiexec: Pathlike) -> str:
 
 
 def check_gemini_exe(gemexe: Pathlike) -> str:
-    """ check that Gemini exectuable can run on this system """
+    """
+    check that Gemini exectuable can run on this system
+
+    If not given a specific full path to gemini.bin, looks for gemini.bin under:
+
+        build
+        build / Release
+        build / Debug
+    """
 
     if gemexe:
         gemexe = Path(gemexe).expanduser()
@@ -85,9 +93,14 @@ def check_gemini_exe(gemexe: Pathlike) -> str:
         build_dir = Path(__file__).resolve().parents[1] / "build"
         if not build_dir.is_dir():
             raise NotADirectoryError(build_dir)
-        gemexe = shutil.which("gemini.bin", path=str(build_dir))
+
+        for d in (build_dir, build_dir / "Release", build_dir / "Debug"):
+            gemexe = shutil.which("gemini.bin", path=str(d))
+            if gemexe:
+                break
         if not gemexe:
-            raise SystemExit(f"Cannot find gemini.bin in {build_dir}")
+            raise SystemExit(f"Cannot find gemini.bin under {build_dir}")
+
     gemexe = str(gemexe)
 
     ret = subprocess.run(gemexe, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, universal_newlines=True)
