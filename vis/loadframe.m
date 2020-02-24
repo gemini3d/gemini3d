@@ -1,12 +1,14 @@
-function dat = loadframe(direc,ymd,UTsec,flagoutput,mloc,xg,file_format, config_file)
+function dat = loadframe(direc,ymd,UTsec,flagoutput,mloc,xg,file_format, config_file, realbits)
 
 cwd = fileparts(mfilename('fullpath'));
 addpath([cwd, '/../script_utils'])
 
-narginchk(3,8)
+narginchk(3,9)
 validateattr(direc, {'char'}, {'vector'}, mfilename, 'data directory', 1)
 validateattr(ymd, {'numeric'}, {'vector', 'numel', 3}, mfilename, 'year month day', 2)
 validateattr(UTsec, {'numeric'}, {'vector'}, mfilename, 'UTC second', 3)
+
+if nargin < 9 || isempty(realbits), realbits = 64; end
 
 if nargin < 8 || isempty(config_file)
   config_file = [direc, '/inputs'];
@@ -29,7 +31,7 @@ end
 validateattr(file_format, {'char'}, {'vector'}, mfilename, 'raw or hdf5', 7)
 
 if nargin < 6 || isempty(xg)
-  xg = readgrid([direc, '/inputs'], file_format);
+  xg = readgrid([direc, '/inputs'], file_format, realbits);
 end
 validateattr(xg, {'struct'}, {'scalar'}, mfilename, 'grid structure', 6)
 

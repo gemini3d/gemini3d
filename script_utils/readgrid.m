@@ -1,8 +1,10 @@
 function xgf = readgrid(path, file_format, realbits)
 %% READS A GRID FROM MATLAB
 % OR POSSIBLY FORTRAN (THOUGH THIS IS NOT YET IMPLEMENTED AS OF 9/15/2016)
-narginchk(3,3)
+narginchk(1,3)
+if nargin < 2 || isempty(file_format), file_format = 'auto'; end
 validateattributes(file_format, {'char'}, {'vector'}, mfilename, 'raw or hdf5', 2)
+if nargin < 3 || isempty(realbits), realbits = 64; end
 validateattributes(realbits, {'numeric'}, {'scalar', 'integer'}, mfilename, '32 or 64', 3)
 
 path = absolute_path(path);
