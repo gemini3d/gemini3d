@@ -26,19 +26,19 @@ endif()
 option(autobuild "autobuild missing Lapack, Scalapack or Mumps" ON)
 option(glow "use NCAR GLOW instead of Fang" ON)
 option(matlab "enable Matlab tests, which are slow and duplicate fast Octave tests" OFF)
-option(hdf5 "use HDF5 file I/O")
-option(netcdf "use NetCDF file I/O" OFF)
+option(hdf5 "use HDF5 file I/O" on)
+option(netcdf "use NetCDF file I/O" off)
 option(metis "use METIS" OFF)
 option(scotch "use Scotch" OFF)
 option(openmp "Use OpenMP when building MUMPS" OFF)
 
+if(netcdf AND hdf5)
+  message(FATAL_ERROR "HDF5 and NetCDF are currently mutually exclusive (this is a planned feature)")
+endif()
+
 set(FETCHCONTENT_UPDATES_DISCONNECTED off)
 # "on" allows live debugging from _deps directory
 # "off" is default, always checks for updates
-
-if(netcdf AND hdf5)
-  message(FATAL_ERROR "HDF5 and NetCDF are mutually exclusive")
-endif()
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/Modules/)
 

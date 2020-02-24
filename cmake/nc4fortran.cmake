@@ -6,3 +6,7 @@ FetchContent_Declare(nc4fortran_proj
 )
 
 FetchContent_MakeAvailable(nc4fortran_proj)
+
+if(NOT NCDFOK)
+  message(FATAL_ERROR "NetCDF was requested but it's not working on your system")
+endif()
