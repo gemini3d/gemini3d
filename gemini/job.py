@@ -13,7 +13,7 @@ Pathlike = T.Union[str, Path]
 cwd = os.getcwd()
 
 
-def runner(mpiexec: Pathlike, gemexe: Pathlike, config_file: Pathlike, out_dir: Path):
+def runner(mpiexec: Pathlike, gemexe: Pathlike, config_file: Pathlike, out_dir: Path) -> int:
 
     config_file = Path(config_file).resolve()
     # load configuration to know what directories to check
@@ -53,9 +53,11 @@ def runner(mpiexec: Pathlike, gemexe: Pathlike, config_file: Pathlike, out_dir: 
         job_file = hpc_batch_create(batcher, out_dir, cmd)  # noqa: F841
         # hpc_submit_job(job_file)
         print("Please examine batch file", job_file, "and when ready submit the job as usual.")
+        ret = 0
     else:
-        ret = subprocess.run(cmd)
-        raise SystemExit(ret.returncode)
+        ret = subprocess.run(cmd).returncode
+
+    return ret
 
 
 def initialize_simulation(config_file: Path, p: T.Dict[str, T.Any], matlab: Pathlike = None) -> bool:
@@ -96,7 +98,7 @@ def check_mpiexec(mpiexec: Pathlike) -> str:
             msg += "\n\nTypically Windows users will use any one of:"
             msg += "\na) Windows Subsystem for Linux (WSL) <-- recommended \nb) Cygwin"
             msg += "\nc) Intel Parallel Studio for Windows (or WSL)"
-        raise SystemExit(msg)
+        raise FileNotFoundError(msg)
 
     return mpiexec
 
@@ -115,7 +117,7 @@ def check_gemini_exe(gemexe: Pathlike) -> str:
     if gemexe:
         gemexe = Path(gemexe).expanduser()
         if not gemexe.is_file():
-            raise SystemExit(f"Cannot find gemini.bin in {gemexe}")
+            raise FileNotFoundError(f"Cannot find gemini.bin in {gemexe}")
     else:
         build_dir = Path(__file__).resolve().parents[1] / "build"
         if not build_dir.is_dir():
@@ -126,13 +128,13 @@ def check_gemini_exe(gemexe: Pathlike) -> str:
             if gemexe:
                 break
         if not gemexe:
-            raise SystemExit(f"Cannot find gemini.bin under {build_dir}")
+            raise FileNotFoundError(f"Cannot find gemini.bin under {build_dir}")
 
     gemexe = str(Path(gemexe).resolve())
 
     ret = subprocess.run(gemexe, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, universal_newlines=True)
     if ret.returncode != 77:
-        raise SystemExit(
+        raise RuntimeError(
             f"{gemexe} was not runnable on your platform. Try recompiling on this computer type."
             "E.g. different HPC nodes may not have the CPU feature sets."
             f"{ret.stderr}"
