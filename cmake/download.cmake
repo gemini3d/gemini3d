@@ -11,12 +11,14 @@ set(_zipfile ${ROOT}/${_zipname})
 
 if(EXISTS ${ROOT}/${REFNAME})
   # reference file already extracted to directory
+  message(VERBOSE " ${ROOT}/${REFNAME} exists, skipping download")
   return()
 endif()
 
 if(NOT EXISTS ${_zipfile})
   # don't check hash during download in case of failure, so it doesn't stop using rest of program.
-  file(DOWNLOAD ${URL} ${_zipfile})
+  file(DOWNLOAD ${URL} ${_zipfile}
+    SHOW_PROGRESS)
 endif()
 
 file(SIZE ${_zipfile} _zipsize)
@@ -34,5 +36,44 @@ endif()
 
 execute_process(COMMAND ${CMAKE_COMMAND} -E tar -xf ${_zipname} WORKING_DIRECTORY ${ROOT})
 
-
 endfunction(download_testfiles)
+
+
+get_property(cmake_role GLOBAL PROPERTY CMAKE_ROLE)
+
+if(NOT cmake_role STREQUAL "SCRIPT")
+  return()
+endif()
+
+if(2d)
+download_testfiles(
+  03c183bbc91706223313e5c15771918e
+  https://zenodo.org/record/3677638/files/test2d_fang.zip?download=1
+  test2d_fang
+  ${CMAKE_CURRENT_SOURCE_DIR}/tests/data)
+endif()
+
+if(2d)
+download_testfiles(
+  bd9a9c38bb462cc22cc0ea232e03dc21
+  https://zenodo.org/record/3677638/files/test2d_glow.zip?download=1
+  test2d_glow
+  ${CMAKE_CURRENT_SOURCE_DIR}/tests/data
+  )
+endif()
+
+if(3d)
+download_testfiles(
+  b4c5fc43243b33549b8324c9a56ee198
+  https://zenodo.org/record/3687202/files/test3d_fang.zip?download=1
+  test3d_fang
+  ${CMAKE_CURRENT_SOURCE_DIR}/tests/data)
+endif(3d)
+
+if(glow3d)
+download_testfiles(
+  d70c8ee5a699ae028b0ffecb750fb5c6
+  https://zenodo.org/record/3687202/files/test3d_glow.zip?download=1
+  test3d_glow
+  ${CMAKE_CURRENT_SOURCE_DIR}/tests/data)
+endif()

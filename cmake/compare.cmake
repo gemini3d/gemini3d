@@ -4,8 +4,13 @@ include(${CMAKE_CURRENT_LIST_DIR}/matlab.cmake)
 
 function(python_compare TESTNAME OUTDIR REFDIR)
 
+if(NOT EXISTS ${REFDIR})
+  message(VERBOSE " SKIP ${TESTNAME}: ${REFDIR} not found.")
+  return()
+endif()
+
 add_test(NAME ${TESTNAME}
-  COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/compare_all.py ${CMAKE_BINARY_DIR}/${OUTDIR} ${REFDIR})
+  COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/compare_all.py ${CMAKE_BINARY_DIR}/${OUTDIR} ${REFDIR})
 
 set_tests_properties(${TESTNAME} PROPERTIES
   TIMEOUT 30
@@ -16,9 +21,14 @@ endfunction(python_compare)
 
 function(octave_compare TESTNAME OUTDIR REFDIR)
 
+if(NOT EXISTS ${REFDIR})
+  message(VERBOSE " SKIP ${TESTNAME}: ${REFDIR} not found.")
+  return()
+endif()
+
 add_test(NAME ${TESTNAME}
   COMMAND ${Octave_EXECUTABLE} --eval "compare_all('${CMAKE_BINARY_DIR}/${OUTDIR}','${REFDIR}')"
-  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/tests)
+  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 
 set_tests_properties(${TESTNAME} PROPERTIES
   TIMEOUT 30
@@ -29,9 +39,14 @@ endfunction(octave_compare)
 
 function(matlab_compare TESTNAME OUTDIR REFDIR)
 
+if(NOT EXISTS ${REFDIR})
+  message(VERBOSE " SKIP ${TESTNAME}: ${REFDIR} not found.")
+  return()
+endif()
+
 add_test(NAME ${TESTNAME}
   COMMAND ${Matlab_MAIN_PROGRAM} -batch compare_all('${CMAKE_BINARY_DIR}/${OUTDIR}','${REFDIR}')
-  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/tests)
+  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
 
 set_tests_properties(${TESTNAME} PROPERTIES
   TIMEOUT 60
