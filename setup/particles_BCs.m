@@ -121,9 +121,6 @@ switch p.format
   otherwise, error(['unknown file format ', p.format])
 end
 
-%% ALSO SAVE TO A  MATLAB FILE
-% save([outdir,'particles.mat'],'mlon','mlat','Qit','E0it','expdate');
-
 end % function
 
 

@@ -1,5 +1,5 @@
 function config()
-%% 2D east-west test equilibrium
+%% 3D test
 %
 
 %% boilerplate for each config.m file
@@ -10,10 +10,20 @@ p.nml = [cwd,'/config.nml'];
 p = merge_struct(p, read_nml(p.nml));
 p.simdir = absolute_path(['../', fileparts(p.indat_size)]);
 
+p.eqdir = absolute_path([p.simdir, '/../test3d_eq']);
+p.eqnml = [p.eqdir, '/inputs/config.nml'];
+
 p.format = 'h5';
 p.realbits = 64;
+%% perturbations
+p.Etarg = 50e-3;  % [V/m]
+
+% normalized widths
+p.Efield_fracwidth = 1/7;
+p.precip_latwidth = 1/4;
+p.precip_lonwidth = 1/4;
 
 %% setup simulation
-model_setup_equilibrium(p)
+model_setup_interp(p)
 
 end % function

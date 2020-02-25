@@ -10,8 +10,8 @@ p.nml = [cwd,'/config.nml'];
 p = merge_struct(p, read_nml(p.nml));
 p.simdir = absolute_path(['../', fileparts(p.indat_size)]);
 
-p.realbits = 64;
 p.format = 'h5';
+p.realbits = 64;
 
 %% setup simulation
 model_setup_equilibrium(p)
