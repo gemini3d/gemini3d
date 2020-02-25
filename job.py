@@ -15,10 +15,24 @@ if __name__ == "__main__":
     p.add_argument("-gemexe", help="path to desired gemini.bin")
     P = p.parse_args()
 
+    ret = -1
+
     try:
         ret = gemini.job.runner(P.mpiexec, P.gemexe, P.config_file, P.out_dir)
-        raise SystemExit(ret)
     except FileNotFoundError:
-        print("\nA necessary simulation input file was not found."
-              "\nThis can mean that the simulation initialization script wasn't run first.\n", file=sys.stderr)
+        print(
+            "\nA necessary simulation input file was not found."
+            "\nThis can mean that the simulation initialization script wasn't run first.\n",
+            file=sys.stderr,
+        )
         raise
+    except EnvironmentError:
+        print(
+            "If you need to build Gemini, from the Gemini directory:\n\n",
+            "cmake -B build\n",
+            "cmake --build build\n",
+            file=sys.stderr,
+        )
+        raise
+
+    raise SystemExit(ret)
