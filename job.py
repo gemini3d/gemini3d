@@ -16,7 +16,8 @@ if __name__ == "__main__":
     P = p.parse_args()
 
     try:
-        gemini.job.runner(P.mpiexec, P.gemexe, P.config_file, P.out_dir)
+        ret = gemini.job.runner(P.mpiexec, P.gemexe, P.config_file, P.out_dir)
+        raise SystemExit(ret)
     except FileNotFoundError:
         print("\nA necessary simulation input file was not found."
               "\nThis can mean that the simulation initialization script wasn't run first.\n", file=sys.stderr)
