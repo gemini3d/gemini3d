@@ -4,21 +4,23 @@
 *.egg-info/
 pip-wheel-metadata/
 *.manifest
-subprojects/
-data/
-build*/
 __pycache__/
+.mypy_cache/
+
+# meson
+subprojects/
+!subprojects/*.wrap
 
 *.ilk
 *.pdb
-
-.mypy_cache/
 
 *.stackdump
 *.exe
 *.dat
 *.orig
 
+data/
+build*/
 build/
 objects/
 *.DS_Store
@@ -32,4 +34,3 @@ objects/
 *.bbl
 *.blg
 *~
-*.raw8

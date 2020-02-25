@@ -61,13 +61,14 @@ def runner(mpiexec: Pathlike, gemexe: Pathlike, config_file: Pathlike, out_dir: 
 def initialize_simulation(config_file: Path, p: T.Dict[str, T.Any], matlab: Pathlike = None) -> bool:
     """
     TODO: these functions will be in Python
+
+    GNU Octave doesn't have the HDF5 API needed for Gemini
     """
 
     env = os.environ
     if not os.environ.get('GEMINI_ROOT'):
         env['GEMINI_ROOT'] = Path(__file__).parents[1].as_posix()
 
-    # Octave doesn't have the HDF5 API needed for Gemini
     matlab = shutil.which(matlab) if matlab else shutil.which('matlab')
     if not matlab:
         return False
