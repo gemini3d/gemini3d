@@ -22,7 +22,7 @@ def runner(mpiexec: Pathlike, gemexe: Pathlike, config_file: Pathlike, out_dir: 
         if not p[k].is_file():
             ok = initialize_simulation(config_file, p)
             if not ok or not p[k].is_file():
-                raise RuntimeError('could not initialize simulation. Try doing this manually.')
+                raise RuntimeError("could not initialize simulation. Try doing this manually.")
             break
 
     if p.get("flagE0file") == 1:
@@ -68,10 +68,10 @@ def initialize_simulation(config_file: Path, p: T.Dict[str, T.Any], matlab: Path
     """
 
     env = os.environ
-    if not os.environ.get('GEMINI_ROOT'):
-        env['GEMINI_ROOT'] = Path(__file__).parents[1].as_posix()
+    if not os.environ.get("GEMINI_ROOT"):
+        env["GEMINI_ROOT"] = Path(__file__).parents[1].as_posix()
 
-    matlab = shutil.which(matlab) if matlab else shutil.which('matlab')
+    matlab = shutil.which(matlab) if matlab else shutil.which("matlab")
     if not matlab:
         return False
 
@@ -98,7 +98,7 @@ def check_mpiexec(mpiexec: Pathlike) -> str:
             msg += "\n\nTypically Windows users will use any one of:"
             msg += "\na) Windows Subsystem for Linux (WSL) <-- recommended \nb) Cygwin"
             msg += "\nc) Intel Parallel Studio for Windows (or WSL)"
-        raise FileNotFoundError(msg)
+        raise EnvironmentError(msg)
 
     return mpiexec
 
@@ -117,18 +117,18 @@ def check_gemini_exe(gemexe: Pathlike) -> str:
     if gemexe:
         gemexe = Path(gemexe).expanduser()
         if not gemexe.is_file():
-            raise FileNotFoundError(f"Cannot find gemini.bin in {gemexe}")
+            raise EnvironmentError(f"Cannot find gemini.bin in {gemexe}")
     else:
         build_dir = Path(__file__).resolve().parents[1] / "build"
         if not build_dir.is_dir():
-            raise NotADirectoryError(build_dir)
+            raise EnvironmentError(f"Build directory missing: {build_dir}")
 
         for d in (build_dir, build_dir / "Release", build_dir / "Debug"):
             gemexe = shutil.which("gemini.bin", path=str(d))
             if gemexe:
                 break
         if not gemexe:
-            raise FileNotFoundError(f"Cannot find gemini.bin under {build_dir}")
+            raise EnvironmentError(f"Cannot find gemini.bin under {build_dir}")
 
     gemexe = str(Path(gemexe).resolve())
 
@@ -147,7 +147,7 @@ def check_outdir(out_dir: Pathlike) -> Path:
 
     out_dir = Path(out_dir).expanduser().resolve()
     if out_dir.is_file():
-        raise NotADirectoryError(out_dir)
+        raise NotADirectoryError(f"please specify output DIRECTORY, you specified {out_dir}")
     if not out_dir.is_dir():
         out_dir.mkdir(parents=True, exist_ok=True)
 
