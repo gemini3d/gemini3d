@@ -14,7 +14,7 @@ p.eqdir = absolute_path([p.simdir, '/../test2d_eq']);
 p.eqnml = [p.eqdir, '/inputs/config.nml'];
 
 p.format = 'h5';
-
+p.realbits = 64;
 %% perturbations
 p.Etarg = 50e-3;  % [V/m]
 

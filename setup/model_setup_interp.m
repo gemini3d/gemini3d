@@ -20,13 +20,10 @@ if isfield(p, 'Efield_fracwidth')
     Efield_BCs_3d(p);
   end
 end
+
 %% aurora
 if isfield(p, 'precip_latwidth') && isfield(p, 'precip_lonwidth')
-  if p.lxp == 1 || p.lyp == 1
-    particles_BCs_2d(p)
-  else
-    particles_BCs_3d(p)
-  end
+  particles_BCs(p)
 end
 
 end % function
