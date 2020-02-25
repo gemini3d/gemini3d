@@ -12,7 +12,7 @@ jobs:
   cmake:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - uses: actions/setup-python@v1
       with:
         python-version: '3.x'
@@ -23,6 +23,7 @@ jobs:
         sudo apt install -yq --no-install-recommends gfortran libopenmpi-dev openmpi-bin liblapack-dev libscalapack-mpi-dev libmumps-dev libpthread-stubs0-dev
         pip install cmake
 
+    - run: cmake -D2d=1 -Dglow2d=1 -D3d=1 -Dglow3d=1 cmake/download.cmake
     - name: CMake configure
       run: cmake -B build -Dhdf5=disabled
       env:
@@ -36,7 +37,7 @@ jobs:
         path: build/CMakeFiles/CMakeError.log
 
 # -V output truncated on CI?
-    - run: ctest --parallel --output-on-failure -E 3d_glow
+    - run: ctest --parallel --output-on-failure
       working-directory: build
     - uses: actions/upload-artifact@v1
       if: failure()
@@ -45,9 +46,10 @@ jobs:
         path: build/Testing/Temporary/LastTest.log
 
   meson:
+    if: false
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - uses: actions/setup-python@v1
       with:
         python-version: '3.x'
