@@ -25,9 +25,7 @@ Specific commits corresponding to published results will also be noted, where ap
 
 Gemini can run on most modern computers using Linux, MacOS, or Windows.
 Gemini even runs on the Raspberry Pi 4 with 1 GByte of RAM.
-Windows users can use Intel
-[Parallel Studio](https://software.intel.com/en-us/parallel-studio-xe)
-or
+Windows users should use
 [Windows Subsystem for Linux](https://docs.microsoft.com/en-us/windows/wsl/install-win10).
 To build Gemini and run self-tests takes about 10 minutes on a typical laptop.
 
@@ -35,13 +33,12 @@ Requirements:
 
 * Fortran 2008 compiler (Gfortran &ge; 6 or Intel `ifort`)
   * MacOS / [Homebrew](https://brew.sh): `brew install gcc`
-  * Ubuntu / Debian: `apt install gfortran`
+  * Ubuntu / Debian / Windows Subsystem for Linux: `apt install gfortran`
   * CentOS: `yum install gcc-gfortran`
 * OpenMPI or IntelMPI
   * MacOS / [Homebrew](https://brew.sh): `brew install openmpi`
-  * Ubuntu / Debian: `apt install libopenmpi-dev openmpi-bin`
+  * Ubuntu / Debian / Windows Subsystem for Linux: `apt install libopenmpi-dev openmpi-bin`
   * CentOS: `yum install openmpi-devel`
-  * Windows: use Intel Parallel Studio IntelMPI
 * [CMake &ge; 3.14](https://cmake.org/download/)
 * [Python &ge; 3.6](https://docs.conda.io/en/latest/miniconda.html)
 
@@ -57,7 +54,12 @@ Requirements:
   ```sh
   python3 setup.py develop --user
   ```
-3. Build Gemini with CMake or Meson
+3. Download the test reference data. This allows self tests to run. Otherwise Gemini will skip these self-tests.
+
+  ```sh
+  cmake -D2d=1 -Dglow2d=1 -D3d=1 -Dglow3d=1 cmake/download.cmake
+  ```
+4. Build Gemini
 
   ```sh
   cmake -B build
@@ -66,29 +68,14 @@ Requirements:
 
   cd build
 
-  ctest
-  ```
-
-  or
-
-  ```sh
-  meson build
-
-  meson test -C build
+  ctest --output-on-failure
   ```
 
 ## Prerequisites
 
-Gemini uses Meson build system to automatically build the entire software library stack,
+Gemini uses CMake build system to automatically build the entire software library stack,
 checking for compatibility of pre-installed libraries such as Lapack, Scalapack and MUMPS.
-While Meson is recommended, if necessary, CMake may be used if the pre-installed libraries are all ABI compatible with your compiler.
-
-Gemini scripts used to load and check data use Python &ge; 3.6.
-These scripts are installed from the *top level gemini directory* by:
-
-```sh
-python3 setup.py develop --user
-```
+Gemini scripts used to load and check data use Python.
 
 ### Compilers
 
@@ -117,12 +104,6 @@ are generally targeted for Gemini support.
 
 Intel Fortran for Windows is in general a tricky compiler to work with, and it is not supported for Gemini.
 
-#### Other compilers
-
-* PGI / Flang: As of January 2020, the current PGI / Flang releases are so buggy in general for Fortran 95+ code, it's unlikely they'd work with Gemini yet. We'd like to work with Flang once it's integrated into LLVM and gets less buggy.
-* NAG: NAG >= 7 has `submodule` and so would work with Gemini. We'd be happy to try to work with NAG if you have a NAG license
-* Cray / IBM XL: these "should" have sufficient Fortran 2008 support, let us know and we'll iterate with you.
-
 ### Libraries
 
 Tested versions include:
@@ -130,21 +111,13 @@ Tested versions include:
 * OpenMPI 1.10, 2.1 - 4.0  |  IntelMPI 19.0, 19.1
 * MUMPS 4.10, 5.1.2, 5.2.1
   * Mumps &ge; 5.2 recommended to have vastly less verbose console output
-* SCALAPACK 2.0
+* SCALAPACK 2.0 / 2.1
 * LAPACK95 3.0  (optional)
-* HDF5 1.8.16 / 1.10 (optional)
+* HDF5 1.8.16 / 1.10 / 1.12
 
 ### build-time options
 
 build-time options in general are enabled or disabled like
-
-```sh
-meson build -Doption=enabled
-
-meson build -Doption=disabled
-```
-
-or
 
 ```sh
 cmake -B build -Doption=true
@@ -168,7 +141,9 @@ A lot of legacy analysis was done with Matlab scripts that we continue to mainta
 
 The Matlab .m scripts generally require Matlab &ge; R2019a and are being transitioned to Python.
 Only the essential scripts needed to setup a simple example, and plot the results are included in the main GEMINI respository.
-The [Gemini-scripts](https://github.com/gemini3d/GEMINI-scripts) and [Gemini-examples](https://github.com/gemini3d/GEMINI-examples) contain scripts used for various published and ongoing analyses.
+The [Gemini-scripts](https://github.com/gemini3d/GEMINI-scripts) and
+[Gemini-examples](https://github.com/gemini3d/GEMINI-examples)
+contain scripts used for various published and ongoing analyses.
 
 ### Document generation
 
@@ -200,72 +175,18 @@ For large 3D simulations (more than 20M grid points), GEMINI should be run in a 
 
 One could run large 2D or very small 3D simulations (not exceeding a few million grid points) on a quad-core workstation, but may take quite a while to complete.
 
-## Quick start
+### Compiler configure
 
-This method is tested on MacOS, CentOS and Ubuntu.
-This test runs a short demo, taking about 2-5 minutes on a typical Mac / Linux laptop, from scratch.
-It assumes you have installed:
-
-* Python &ge; 3.6
-* Fortran compiler (Gfortran &ge; 6 or Intel ifort &ge; 19)
-* OpenMPI / IntelMPI
-
-1. Get GEMINI code and install prereqs
-
-    ```sh
-    git clone https://github.com/gemini3d/gemini
-
-    cd gemini
-    ```
-2. install Python data interfaces
-
-    ```sh
-    python3 setup.py develop --user
-    ```
-3. Build and test with Meson or CMake
-
-   ```sh
-   meson setup build
-
-   meson test -C build
-   ```
-
-   or
-
-   ```sh
-   cmake -B build
-
-   cmake --build build -j
-
-   cd build
-
-   ctest -V
-   ```
-
-If using Homebrew, you want to be sure Homebrew's GCC is used instead of AppleClang or other non-Homebrew compilers so that the Homebrew library ABIs match the compiler ABI.
-To do this for Homebrew or other systems where you need to specify a specific compiler, use a Meson &ge; 0.54.0 native-file like:
-
-```sh
-meson setup build --native-file meson/homebrew.ini
-```
-
-alternatively, use the command line to specify paths instead of the native-file like:
-
-```sh
-FC=gfortran-9 CC=gcc-9 meson setup build -DMUMPS_ROOT=../lib_gcc/mumps-5.2.1 -DSCALAPACK_ROOT=../lib_gcc/scalapack
-```
-
-If you get errors about libraries not found or it's using the wrong compiler, specify the compilers or libraries like:
+If using Homebrew, be sure Homebrew's GCC is used instead of AppleClang or other non-Homebrew compilers so that the Homebrew library ABIs match the compiler ABI.
 
 ```sh
 FC=gfortran-9 CC=gcc-9 cmake -B build
 ```
 
-
 If you need to specify MPI compiler wrappers, do like:
 
 ```sh
-FC=~/lib_gcc/openmpi-3.1.4/bin/mpif90 CC=~/lib_gcc/openmpi-3.1.4/bin/mpicc cmake -B build -DMPI_ROOT=~/lib_gcc/openmpi-3.1.4
+cmake -B build -DMPI_ROOT=~/lib_gcc/openmpi-3.1.4
 ```
 
 ### input directory
@@ -287,27 +208,12 @@ If it's desired to use system libraries, consider [install_prereqs.py](./script_
 
 ### self-tests
 
-GEMINI has self tests that compare the output from a "known" test problem to a reference output:
-
-```sh
-meson test -C build
-```
-
-Can be manually done from the top-level gemini/ directory by:
-
-```sh
-mpiexec -np 2 build/gemini.bin initialize/2Dtest/config.ini /tmp/2d
-```
-
-use Python to compare test simulations with reference output data:
-
-```python
-python3 tests/compare_all.py /tmp/2d tests/data/zenodo2d
-```
+GEMINI has self tests that compare the output from a "known" test problem to a reference output.
+Use `ctest -V` to reveal the commands being sent if you want to run them manually.
 
 ### OS-specific tips
 
-CMake and Meson will automatically download and build the numerical libraries for Gemini.
+CMake will automatically download and build necessary libraries for Gemini.
 
 * Ubuntu: tested on Ubuntu 18.04 / 16.04
 * CentOS 7
@@ -321,7 +227,7 @@ CMake and Meson will automatically download and build the numerical libraries fo
 * MacOS / Linux: use Homebrew to install Gfortran and OpenMPI like:
 
     ```sh
-    brew install cmake gcc openmpi
+    brew install cmake gcc openmpi lapack scalapack
     ```
 
 ## Known limitations and issues of GEMINI
@@ -373,7 +279,7 @@ Two of the log files created are:
 
 <!-- ![Figure 2](doc/figure2.png) -->
 
-##Auxiliary fortran program
+## Auxiliary fortran program
 
 Note that there is also a utility that can compute magnetic fields from the currents calculated by GEMINI.
 This can be run by:
@@ -384,36 +290,7 @@ mpirun -np 4 ./magcalc /tmp/3d tests/data/test3d/input/magfieldpoints.dat
 
 This will compute magnetic fields over a grid at ground level using currents computed from the 3Dtest simulation.  In order to run this program, you will need to create a set of field points at which the magnetic perturbations will be calculated.  For example, this could be a list of ground stations, a regular mesh, or a set of satellite tracks.
 
-## Verifying GEMINI build
-
-Assuming you have configured the build by:
-
-```sh
-meson setup build
-```
-
-compile and run all self-tests by:
-
-```sh
-meson test -C build
-```
-
-Select particular tests by either specifying individual test names or "suite(s)" of tests like:
-
-* run 2D tests only:
-  ```sh
-  meson test -C build --suite 2d_fang
-  ```
-* run 3D tests only:
-  ```sh
-  meson test -C build --suite 3d_fang
-  ```
-* run only the Python comparison of 2D output by giving the specific test **name**:
-  ```sh
-  meson test -C build Compare2d_fang
-  ```
-
-### Number of MPI processes
+## Number of MPI processes
 
 In general for MPI programs and associated simulations, there may be a minimum number of MPI processes and/or integer multiples that must be met (for example, number of processes must be factor of 4).
 The build system generation process automatically sets the maximum number of processes possible based on your CPU core count and grid size.
@@ -453,7 +330,6 @@ Each simulation needs an input file that specifies location of initial condition
 
 A large number of examples (in addition to those included in the main repo) are included in the GEMINI-script repository.
 
-
 ## Running with different boundary and initial conditions:
 
 GEMINI requires both initial and boundary conditions to run properly.  Specifically the user must provide a complete initial ionospheric state (density, drift, and temperature for all ionospheric species), along with boundary conditions for the electric potential (in 2D this are the top, bottom, and side potentials; in 3D the topside current density and side wave potentials).  Fluid state variables are given free-flow boundary conditions at the edges of the simulation grid.  The `io` module contains code dealing with input of initial state from file and the `potential_comm` and `potentialBCs_mumps` modules contains contains code dealing with boundary condition input.
@@ -480,11 +356,9 @@ An alternative is to use the file input option, which needs to be set up using M
 
 GEMINI needs density, drift, and temperature for each species that it simulations over the entire grid for which the simulation is being run as input.  Generally one will use the results of another GEMINI simulation that has been initialized in an arbitrary way but run for a full day to a proper ionospheric equilibrium as this input.  Any equilibrium simulation run this way must use full output (flagoutput=1 in the `config.ini`).  A useful approach for these equilibrium runs is to use a coarser grid so that the simulation completes quickly and then interpolate the results up to fine grid resolution.  An example of an equilibrium setup is given in `./initialize/2Dtest_eq`; note that this basically makes up an initial conditions (using `eqICs.m`) and runs until initial transients have settled.  An example of a script that interpolates the output of an equilibrium run to a finer grid is included with `./initialize/2Dtest`.
 
-
-## Running one of the premade examples:
+## Running one of the premade examples
 
 Currently the main repo only includes the very basic 2Dtest and 3Dtest examples
-
 
 ## Creating a simulation
 
@@ -496,7 +370,6 @@ Currently the main repo only includes the very basic 2Dtest and 3Dtest examples
 6)  Set up precipitation boundary conditions, if required -  see section of this document on boundary conditions
 7)  Recompile the code with make *only if you are using subroutine based input and boundary conditions* (please note that this functionality will be removed in a later release).  If you are using file-based input then a rebuild is not necessary (this is another benefit of using file-based input)
 8)  Run your new simulation
-
 
 ## Running in two dimensions
 
@@ -559,12 +432,10 @@ potential:  Phitop (EFL potential)
 
 Note that the electric field is not included in the output file, but that it can be calculated from this output by taking -vxB at an altitude above about 200 km or by differentiating the top boundary electric potential 'Phitop' with respect to the x2 and x3 variables; however, note that if a curvilinear grid is used the derivatives must include the appropriate metric factors.
 
-
 ## Computing total electron content (TEC)
 
 TEC and magnetic field variations can be calculated as a post-processing step in which the simulation data are read in and interpolated onto a regular geographic grid and then integrated accordingly using scripts in the './vis' directory - see `TECcalc.m`.
 An example of how to plot TEC computed by this script is included in `TECplot_map.m` (requires MATLAB mapping toolbox).
-
 
 ## Visualizing magnetic field perturbations computed by magcalc.f90
 
