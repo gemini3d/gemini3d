@@ -26,7 +26,7 @@ if nargin >= 5 && ~isempty(dtype)
 end
 
 varnames = {};
-if isfile(filename)
+if is_file(filename)
   varnames = extractfield(h5info(filename).Datasets, 'Name');
 end
 
