@@ -35,6 +35,7 @@ jobs:
         sudo apt update -yq
         sudo apt install -yq --no-install-recommends pkg-config gfortran libopenmpi-dev openmpi-bin liblapack-dev libscalapack-openmpi-dev libmumps-dev libhdf5-dev
 
+    - run: cmake -D2d=1 -Dglow2d=1 -D3d=1 -Dglow3d=0 cmake/download.cmake
     - name: CMake configure
       run: cmake -B build -Dhdf5=true
       env:
@@ -51,6 +52,8 @@ jobs:
     - run: ctest --parallel --output-on-failure -R unit
       working-directory: build
     - run: ctest --parallel --output-on-failure -R gemini:2d
+      working-directory: build
+    - run: ctest --parallel --output-on-failure -R gemini:3d_fang
       working-directory: build
     - uses: actions/upload-artifact@v1
       if: failure()

@@ -53,7 +53,7 @@ download_testfiles(
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/data)
 endif()
 
-if(2d)
+if(glow2d)
 download_testfiles(
   bd9a9c38bb462cc22cc0ea232e03dc21
   https://zenodo.org/record/3677638/files/test2d_glow.zip?download=1
