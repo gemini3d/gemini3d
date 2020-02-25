@@ -42,7 +42,7 @@ Requirements:
   * Ubuntu / Debian: `apt install libopenmpi-dev openmpi-bin`
   * CentOS: `yum install openmpi-devel`
   * Windows: use Intel Parallel Studio IntelMPI
-* [CMake &ge; 3.14](https://cmake.org/download/) or Meson &ge; 0.53 `pip install meson`
+* [CMake &ge; 3.14](https://cmake.org/download/)
 * [Python &ge; 3.6](https://docs.conda.io/en/latest/miniconda.html)
 
 1. get the Gemini code
@@ -166,7 +166,7 @@ HDF5 is enabled / disabled by `-Dhdf5=` option
 GEMINI uses Python for essential interfaces, plotting and analysis.
 A lot of legacy analysis was done with Matlab scripts that we continue to maintain.
 
-The Matlab .m scripts require either Matlab or GNU Octave &ge; 4.0.
+The Matlab .m scripts generally require Matlab &ge; R2019a and are being transitioned to Python.
 Only the essential scripts needed to setup a simple example, and plot the results are included in the main GEMINI respository.
 The [Gemini-scripts](https://github.com/gemini3d/GEMINI-scripts) and [Gemini-examples](https://github.com/gemini3d/GEMINI-examples) contain scripts used for various published and ongoing analyses.
 
@@ -502,7 +502,6 @@ Currently the main repo only includes the very basic 2Dtest and 3Dtest examples
 
 The code determines 2D vs. 3D runs by the number of x2 or x3 grid points specified in the `config.ini` input file.  If the number of x2 grid points is 1, then a 2D run is executed (since message passing in the x3 direction will work normally).  If the number of x3 grid points is 1, the simulation will swap array dimensions and vector components between the x2 and x3 directions so that message passing parallelization still provides performance benefits.  The data will be swapped again before output so that the output files are structured normally and the user who is not modifying the source code need not concern themselves with this reordering.
 
-
 ## Loading and plotting output
 
 MATLAB is required to load the output file via scripts in the ./vis directory (these scripts generally work on both 2D and 3D simulation results).
@@ -520,7 +519,7 @@ The particular format of the output files is specified by the user in the input 
 2)  average state parameter output - species averaged temperature and velocity; electron density.  Probably best for most uses
 3)  density only output - only electron density output.  Best for high-res instability runs where only the density is needed and the output cadence is high
 
-The organization of the data in the MATLAB/octave workspace, after a single frame is loaded (via 'loadframe.m'), is as follows (MKSA units throughout):
+The organization of the data in the Matlab workspace, after a single frame is loaded (via 'loadframe.m'), is as follows (MKSA units throughout):
 
 ### Time variables:
 

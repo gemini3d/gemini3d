@@ -109,12 +109,12 @@ function writehdf5(dir_out, E, p)
 narginchk(3,3)
 
 fn = [dir_out, '/simsize.h5'];
-if isfile(fn), delete(fn), end
+if is_file(fn), delete(fn), end
 h5save(fn, '/llon', int32(E.llon))
 h5save(fn, '/llat', int32(E.llat))
 
 fn = [dir_out, '/simgrid.h5'];
-if isfile(fn), delete(fn), end
+if is_file(fn), delete(fn), end
 
 freal = ['float',int2str(p.realbits)];
 
