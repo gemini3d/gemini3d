@@ -44,7 +44,7 @@ jobs:
 # CI is too slow for 3d_glow
     - run: ctest --parallel --output-on-failure -R unit
       working-directory: build
-    - run: ctest --parallel --output-on-failure -R gemini:2d_fang
+    - run: ctest --parallel --output-on-failure -R 2d_fang
       working-directory: build
     - uses: actions/upload-artifact@v1
       if: failure()
