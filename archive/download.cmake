@@ -39,13 +39,8 @@ execute_process(COMMAND ${CMAKE_COMMAND} -E tar -xf ${_zipname} WORKING_DIRECTOR
 endfunction(download_testfiles)
 
 
-get_property(cmake_role GLOBAL PROPERTY CMAKE_ROLE)
-
-if(NOT cmake_role STREQUAL "SCRIPT")
-  return()
-endif()
-
-if(2d)
+# these are meant to be called as cmake -P
+if(download_2d_fang)
 download_testfiles(
   03c183bbc91706223313e5c15771918e
   https://zenodo.org/record/3677638/files/test2d_fang.zip?download=1
@@ -53,7 +48,7 @@ download_testfiles(
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/data)
 endif()
 
-if(glow2d)
+if(download_2d_glow)
 download_testfiles(
   bd9a9c38bb462cc22cc0ea232e03dc21
   https://zenodo.org/record/3677638/files/test2d_glow.zip?download=1
@@ -62,15 +57,15 @@ download_testfiles(
   )
 endif()
 
-if(3d)
+if(download_3d_fang)
 download_testfiles(
   b4c5fc43243b33549b8324c9a56ee198
   https://zenodo.org/record/3687202/files/test3d_fang.zip?download=1
   test3d_fang
   ${CMAKE_CURRENT_SOURCE_DIR}/tests/data)
-endif(3d)
+endif()
 
-if(glow3d)
+if(download_3d_glow)
 download_testfiles(
   d70c8ee5a699ae028b0ffecb750fb5c6
   https://zenodo.org/record/3687202/files/test3d_glow.zip?download=1

@@ -44,7 +44,7 @@ add_test(NAME unit:interp3:python
 set_tests_properties(unit:interp3:python PROPERTIES
   REQUIRED_FILES ${_testfile_interp3}
   TIMEOUT 30
-  RUN_SERIAL true
+  RUN_SERIAL true  # due to memory use
   FIXTURES_REQUIRED GemInterp)
 endif(PythonOK)
 
