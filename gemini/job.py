@@ -34,9 +34,11 @@ def runner(mpiexec: Pathlike, gemexe: Pathlike, config_file: Pathlike, out_dir: 
         if not precdir.is_dir():
             raise FileNotFoundError(precdir)
 
-    # check MPIexec
+    # build checks
+    check_compiler()
+
     mpiexec = check_mpiexec(mpiexec)
-    logging.info(f"Using mpiexec: {mpiexec}")
+    logging.info(f"Detected mpiexec: {mpiexec}")
 
     gemexe = check_gemini_exe(gemexe)
     logging.info(f"using gemini executable: {gemexe}")
@@ -60,6 +62,14 @@ def runner(mpiexec: Pathlike, gemexe: Pathlike, config_file: Pathlike, out_dir: 
     return ret
 
 
+def check_compiler():
+
+    fc = os.environ.get("FC")
+    fc = shutil.which(fc) if fc else shutil.which("gfortran")
+    if not fc:
+        raise EnvironmentError("Cannot find Fortran compiler e.g. Gfortran")
+
+
 def initialize_simulation(config_file: Path, p: T.Dict[str, T.Any], matlab: Pathlike = None) -> bool:
     """
     TODO: these functions will be in Python
@@ -74,6 +84,8 @@ def initialize_simulation(config_file: Path, p: T.Dict[str, T.Any], matlab: Path
     matlab = shutil.which(matlab) if matlab else shutil.which("matlab")
     if not matlab:
         return False
+
+    check_compiler()
 
     cmd = [matlab, "-batch", "config()"]
     print("Initializing simulation: ", cmd)

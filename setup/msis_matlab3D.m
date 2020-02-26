@@ -31,7 +31,11 @@ if ~is_file(exe)
          absolute_path([cwd,'/MSIS00/call_msis_gfortran.f90'])];
   % -static avoids problems with missing .so or .dll, from Matlab's
   % internal shell
-  cmd = ['gfortran -static -std=legacy -w ',src,' -o ',exe];
+  fc = getenv('FC');
+  if isempty(fc)
+    fc = 'gfortran';
+  end
+  cmd = [fc, ' -static -std=legacy -w ',src,' -o ',exe];
   disp(cmd)
   status = system(cmd);
   assert(status==0, 'failed to compile MSISe00')
