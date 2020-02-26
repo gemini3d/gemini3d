@@ -1,4 +1,5 @@
-interp = library('interp', 'interpolation.f90',
+interp = library('interp',
+  sources : ['interpolation.f90','interp2d.f90'],
   link_with: const)
 
 test_interp1_exe = executable('test_interp1', 'testinterp1.f90',
