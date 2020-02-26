@@ -56,9 +56,9 @@ jobs:
 # -V output truncated on CI?
     - run: ctest --parallel --output-on-failure -R unit
       working-directory: build
-    - run: ctest --parallel --output-on-failure -R gemini:2d
+    - run: ctest --parallel --output-on-failure -R 2d
       working-directory: build
-    - run: ctest --parallel --output-on-failure -R gemini:3d_fang
+    - run: ctest --parallel --output-on-failure -R 3d_fang
       working-directory: build
     - uses: actions/upload-artifact@v1
       if: failure()
@@ -94,10 +94,9 @@ jobs:
       with:
         name: LinuxOS_Cmake_Buildlog
         path: build/CMakeFiles/CMakeError.log
-# CI is too slow for 3d_glow
 
 # -V output truncated on CI?
-    - run: ctest --parallel --output-on-failure -E 3d_glow
+    - run: ctest --parallel --output-on-failure -R unit
       working-directory: build
     - uses: actions/upload-artifact@v1
       if: failure()
