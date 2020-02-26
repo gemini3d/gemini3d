@@ -5,7 +5,7 @@ module PDEparabolic
 
 !> banded and tridiagonal solvers, for now we just take everything to be banded...
 use phys_consts, only: wp
-use lapack95, only: gbsv!,gtsv
+use vendor_lapack95, only: gbsv!,gtsv
 
 implicit none
 
