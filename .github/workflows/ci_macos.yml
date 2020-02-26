@@ -30,7 +30,6 @@ jobs:
     - run: pip install -e .
     - run: brew install pkg-config gcc lapack open-mpi hdf5 scalapack
 
-    - run: cmake -D2d=1 -Dglow2d=0 -D3d=0 -Dglow3d=0 cmake/download.cmake
     - run: cmake -B build -Dhdf5=true
       env:
         FC: gfortran-9

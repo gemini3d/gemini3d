@@ -253,7 +253,7 @@ logical :: exists
 inquire(file=path, exist=exists)
 
 if (.not.exists) then
-  write(stderr,*) 'ERROR: file does not exist' // path
+  write(stderr,'(A)') 'ERROR: file does not exist ' // path
   error stop
 endif
 

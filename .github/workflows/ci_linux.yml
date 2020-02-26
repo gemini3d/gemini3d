@@ -34,10 +34,15 @@ jobs:
       run: |
         sudo apt update -yq
         sudo apt install -yq --no-install-recommends pkg-config gfortran libopenmpi-dev openmpi-bin liblapack-dev libscalapack-openmpi-dev libmumps-dev libhdf5-dev
+    - name: Install Ninja
+      run: |
+        wget https://github.com/ninja-build/ninja/releases/download/v1.10.0/ninja-linux.zip
+        mkdir ~/bin
+        unzip ninja-linux.zip -d ~/bin
+        export PATH=$HOME/bin:$PATH
 
-    - run: cmake -D2d=1 -Dglow2d=1 -D3d=1 -Dglow3d=0 cmake/download.cmake
     - name: CMake configure
-      run: cmake -B build -Dhdf5=true
+      run: cmake -G Ninja -B build -Dhdf5=true
       env:
         FC: gfortran
     - run: cmake --build build --parallel

@@ -31,7 +31,6 @@ jobs:
         sudo apt update -yq
         sudo apt install -yq --no-install-recommends gfortran liblapack-dev libscalapack-openmpi-dev libmumps-dev libopenmpi-dev openmpi-bin libhdf5-dev octave
 
-    - run: cmake -D2d=1 cmake/download.cmake
     - run: cmake -B build -DCMAKE_BUILD_TYPE=Debug -Dhdf5=true
       env:
         FC: gfortran

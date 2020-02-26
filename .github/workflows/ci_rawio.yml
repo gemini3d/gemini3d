@@ -23,7 +23,6 @@ jobs:
         sudo apt install -yq --no-install-recommends gfortran libopenmpi-dev openmpi-bin liblapack-dev libscalapack-mpi-dev libmumps-dev libpthread-stubs0-dev
         pip install cmake
 
-    - run: cmake -D2d=1 -Dglow2d=1 -D3d=1 -Dglow3d=1 cmake/download.cmake
     - name: CMake configure
       run: cmake -B build -Dhdf5=disabled
       env:

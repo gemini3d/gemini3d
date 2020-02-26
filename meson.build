@@ -1,5 +1,5 @@
 project('GEMINI', 'fortran',
-  version: '0.2.0',
+  version: '0.3.0',
   meson_version: '>=0.52.0',
   default_options : ['default_library=static', 'buildtype=release'])
 
@@ -67,10 +67,10 @@ magcalc = executable('magcalc.bin', 'magcalc.f90',
 # --- TESTS ---
 
 zenodo = {
-  '2d_fang': meson.source_root() / 'tests/data/zenodo2d_fang',
-  '2d_glow': meson.source_root() / 'tests/data/zenodo2d_glow',
-  '3d_fang': meson.source_root() / 'tests/data/zenodo3d_fang',
-  '3d_glow': meson.source_root() / 'tests/data/zenodo3d_glow'}
+  '2d_fang': meson.source_root() / 'tests/data/test2d_fang',
+  '2d_glow': meson.source_root() / 'tests/data/test2d_glow',
+  '3d_fang': meson.source_root() / 'tests/data/test3d_fang',
+  '3d_glow': meson.source_root() / 'tests/data/test3d_glow'}
 
 np = get_option('np')
 
