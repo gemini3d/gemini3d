@@ -28,6 +28,7 @@ endif
 
 !> reads common to 2D and 3D
 call hout%read('/x1', x%x1, ierr)
+if(ierr/=0) error stop
 call hout%read('/x1i', x%x1i, ierr)
 call hout%read('/dx1b', x%dx1, ierr)
 call hout%read('/dx1h', x%dx1i, ierr)
@@ -110,9 +111,15 @@ else
   !! formerly x3, now x2
 
   block
-  real(wp), dimension(-1:lx1+2,-1:lx3all+2,-1:lx2all+2) :: htmp
-  !! this stores the input metric factors which are swapped x2/x3 vs. what this simulation will use
+  !> NOTE: workaround for Intel 2020, may not really be a bug
+  !> notice this is the only one with negative indices
+  !real(wp), dimension(-1:lx1+2,-1:lx3all+2,-1:lx2all+2) :: htmp
+  real(wp), allocatable :: htmp(:,:,:)
+  allocate(htmp(-1:lx1+2,-1:lx3all+2,-1:lx2all+2))
+  !! end workaround
+
   call hout%read('/h1', htmp, ierr)
+  if (ierr/=0) error stop
   x%h1all = reshape(htmp, [lx1+4,lx2all+4,lx3all+4], order=[1,3,2])
   call hout%read('/h2', htmp, ierr)
   !! this would be h3, but with the input structure shape

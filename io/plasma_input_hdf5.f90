@@ -109,30 +109,35 @@ if (.not. (lx1==lx1in .and. lx2all==lx2in .and. lx3all==lx3in)) then
 end if
 
 call h5f%initialize(indatfile, ierr, status='old', action='r')
-if(ierr/=0) error stop 'input_root_mpi: could not read plasma hdf5 file'
+if(ierr/=0) error stop 'input_root_mpi: could not open plasma hdf5 file'
 
 if (flagswap==1) then
   block
-  real(wp) :: tmp(lx1,lx3all,lx2all,lsp)
+  !> NOTE: workaround for intel 2020 segfault--may be a compiler bug
+  !real(wp) :: tmp(lx1,lx3all,lx2all,lsp)
+  real(wp), allocatable :: tmp(:,:,:,:)
+  allocate(tmp(lx1,lx3all,lx2all,lsp))
+  !! end workaround
   call h5f%read('/ns', tmp, ierr)
-  if(ierr/=0) error stop 'input_root_mpi:hdf5: could not read "ns"'
+  if(ierr/=0) error stop
   nsall(1:lx1,1:lx2all,1:lx3all,1:lsp) = reshape(tmp,[lx1,lx2all,lx3all,lsp],order=[1,3,2,4])
   call h5f%read('/vsx1', tmp, ierr)
-  if(ierr/=0) error stop 'input_root_mpi:hdf5: could not read "vsx1"'
+  if(ierr/=0) error stop
   vs1all(1:lx1,1:lx2all,1:lx3all,1:lsp) = reshape(tmp,[lx1,lx2all,lx3all,lsp],order=[1,3,2,4])
   call h5f%read('/Ts', tmp, ierr)
-  if(ierr/=0) error stop 'input_root_mpi:hdf5: could not read "Ts"'
+  if(ierr/=0) error stop
   Tsall(1:lx1,1:lx2all,1:lx3all,1:lsp) = reshape(tmp,[lx1,lx2all,lx3all,lsp],order=[1,3,2,4])
   !! permute the dimensions so that 2D runs are parallelized
   end block
 else
   call h5f%read('/ns', nsall(1:lx1,1:lx2all,1:lx3all,1:lsp), ierr)
+  if(ierr/=0) error stop
   call h5f%read('/vsx1', vs1all(1:lx1,1:lx2all,1:lx3all,1:lsp), ierr)
   call h5f%read('/Ts', Tsall(1:lx1,1:lx2all,1:lx3all,1:lsp), ierr)
 end if
 
 call h5f%finalize(ierr)
-if(ierr/=0) error stop 'input_root_mpi: could not close plasma hdf5 file'
+if(ierr/=0) error stop
 
 !> Sanity checks
 if (.not. all(ieee_is_finite(nsall))) error stop 'nsall: non-finite value(s)'
