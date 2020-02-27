@@ -91,7 +91,7 @@ def initialize_simulation(config_file: Path, p: T.Dict[str, T.Any], matlab: Path
 
     check_compiler()
 
-    cmd = [matlab, "-batch", "config()"]
+    cmd = [matlab, "-batch", f"model_setup('{config_file}')"]
     print("Initializing simulation: ", cmd)
 
     ret = subprocess.run(cmd, cwd=config_file.parent, env=env)

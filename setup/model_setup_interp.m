@@ -1,12 +1,9 @@
 function model_setup_interp(p)
+%% setup interpolated simulation based on equilibrium simulation
+% this is to be called by model_setup.m
+
 narginchk(1,1)
 validateattributes(p, {'struct'}, {'scalar'}, mfilename, 'parameters', 1)
-
-%% ADD PATHS FOR FUNCTIONS
-cwd = fileparts(mfilename('fullpath'));
-gemdir = [cwd, '/..'];
-addpath([gemdir, '/script_utils'],[gemdir, '/setup/gridgen'],[gemdir, '/vis'])
-
 %% GRID GENERATION
 xg = makegrid_cart_3D(p);
 
