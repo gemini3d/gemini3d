@@ -13,7 +13,7 @@ xg = makegrid_cart_3D(p);
 eq2dist(p, xg);
 
 %% potential boundary conditions
-if isfield(p, 'Efield_fracwidth')
+if isfield(p, 'flagE0file') && p.flagE0file
   if p.lxp == 1 || p.lyp == 1
     Efield_BCs_2d(p);
   else % 3D
@@ -22,7 +22,7 @@ if isfield(p, 'Efield_fracwidth')
 end
 
 %% aurora
-if isfield(p, 'precip_latwidth') && isfield(p, 'precip_lonwidth')
+if isfield(p, 'flagprecfile') && p.flagprecfile
   particles_BCs(p)
 end
 

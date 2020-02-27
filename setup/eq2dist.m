@@ -9,15 +9,15 @@ validateattributes(xg, {'struct'}, {'scalar'}, mfilename, 'grid struct', 2)
 cwd = fileparts(mfilename('fullpath'));
 addpath([cwd,'/../vis'])
 %% READ Equilibrium SIMULATION INFO
-peq = read_nml(p.eqnml);
-xgin = readgrid(p.eqnml, p.format, p.realbits);
+peq = read_nml(p.eqdir);
+xgin = readgrid(p.eqdir, p.format, p.realbits);
 
 %% END FRAME time of equilibrium simulation
 % PRESUMABLY THIS WILL BE THE STARTING point FOR another
 [ymd_end,UTsec_end] = dateinc(peq.tdur,peq.ymd,peq.UTsec0);
 
 %% LOAD THE last equilibrium frame
-dat = loadframe(p.eqdir, ymd_end, UTsec_end, peq.flagoutput, peq.mloc, xgin, p.format, p.eqnml);
+dat = loadframe(p.eqdir, ymd_end, UTsec_end, peq.flagoutput, peq.mloc, xgin, p.format, p.eqdir);
 
 %% sanity check equilibrium simulation input to interpolation
 check_density(dat.ns)
