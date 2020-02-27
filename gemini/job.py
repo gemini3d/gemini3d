@@ -28,11 +28,15 @@ def runner(mpiexec: Pathlike, gemexe: Pathlike, config_file: Pathlike, out_dir: 
     if p.get("flagE0file") == 1:
         E0dir = p["E0dir"].resolve()
         if not E0dir.is_dir():
-            raise FileNotFoundError(E0dir)
+            ok = initialize_simulation(config_file, p)
+            if not ok or not E0dir.is_dir():
+                raise FileNotFoundError(E0dir)
     if p.get("flagprecfile") == 1:
         precdir = p["precdir"].resolve()
         if not precdir.is_dir():
-            raise FileNotFoundError(precdir)
+            ok = initialize_simulation(config_file, p)
+            if not ok or not precdir.is_dir():
+                raise FileNotFoundError(precdir)
 
     # build checks
     check_compiler()
