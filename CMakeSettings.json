@@ -2,8 +2,8 @@
   "configurations": [
     {
       "name": "x64-Release",
-      "generator": "Visual Studio 16 2019 Win64",
-      "configurationType": "RelWithDebInfo",
+      "generator": "Ninja",
+      "configurationType": "Release",
       "buildRoot": "${projectDir}\\build\\${name}",
       "installRoot": "${projectDir}\\build\\install\\${name}",
       "cmakeCommandArgs": "",
