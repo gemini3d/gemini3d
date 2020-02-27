@@ -12,8 +12,6 @@ mlatmin = 90-thetamax*180/pi;
 mlatmax = 90-thetamin*180/pi;
 mlonmin = min(xg.phi(:))*180/pi;
 mlonmax = max(xg.phi(:))*180/pi;
-%mlat = linspace(mlatmin,mlatmax,llat);
-%mlon = linspace(mlonmin,mlonmax,llon);
 
 % add a 1% buffer
 latbuf = 1/100*(mlatmax-mlatmin);

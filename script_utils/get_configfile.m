@@ -1,5 +1,5 @@
 function filename = get_configfile(path)
-%% get configuration file, checking first for config.nml and then config.ini
+%% get configuration file
 
 narginchk(1,1)
 
@@ -9,7 +9,7 @@ path = absolute_path(path);
 if is_file(path)
   filename = path;
 elseif is_folder(path)
-  names = {'config.nml', 'config.ini'};
+  names = {'config.nml', 'inputs/config.nml'};
   for s = names
     filename = [path, filesep, s{:}];
     if is_file(filename)
@@ -17,7 +17,7 @@ elseif is_folder(path)
     end
   end
 else
-  error(['could not find config file in ', path])
+  error(['could not find config.nml file in ', path])
 end
 
 assert(is_file(filename), ['could not find config file in ', path])
