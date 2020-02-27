@@ -9,6 +9,9 @@ p = read_nml_group(filename, 'base');
 p.indat_file = absolute_path(p.indat_file);
 p.indat_size = absolute_path(p.indat_size);
 p.indat_grid = absolute_path(p.indat_grid);
+if ~isfield(p, 'simdir')
+  p.simdir = fileparts(p.indat_size);
+end
 
 if ~isfield(p, 'nml')
   p.nml = filename;
