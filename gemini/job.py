@@ -19,20 +19,21 @@ def runner(mpiexec: Pathlike, gemexe: Pathlike, config_file: Pathlike, out_dir: 
     # load configuration to know what directories to check
     p = read_config(config_file)
     for k in ("indat_size", "indat_grid", "indat_file"):
-        if not p[k].is_file():
+        f = p[k].resolve().expanduser()
+        if not f.is_file():
             ok = initialize_simulation(config_file, p)
-            if not ok or not p[k].is_file():
+            if not ok or not f.is_file():
                 raise RuntimeError("could not initialize simulation. Try doing this manually.")
             break
 
     if p.get("flagE0file") == 1:
-        E0dir = p["E0dir"].resolve()
+        E0dir = p["E0dir"].resolve().expanduser()
         if not E0dir.is_dir():
             ok = initialize_simulation(config_file, p)
             if not ok or not E0dir.is_dir():
                 raise FileNotFoundError(E0dir)
     if p.get("flagprecfile") == 1:
-        precdir = p["precdir"].resolve()
+        precdir = p["precdir"].resolve().expanduser()
         if not precdir.is_dir():
             ok = initialize_simulation(config_file, p)
             if not ok or not precdir.is_dir():
@@ -66,6 +67,17 @@ def runner(mpiexec: Pathlike, gemexe: Pathlike, config_file: Pathlike, out_dir: 
     return ret
 
 
+def detect_wsl() -> bool:
+    """
+    heuristic to detect if Windows Subsystem for Linux is available.
+    """
+    bash = None
+    if os.name == "nt":
+        bash = shutil.which("bash", path="c:/windows/system32")
+
+    return bash is not None
+
+
 def check_compiler():
 
     fc = os.environ.get("FC")
@@ -84,6 +96,7 @@ def initialize_simulation(config_file: Path, p: T.Dict[str, T.Any], matlab: Path
     env = os.environ
     if not os.environ.get("GEMINI_ROOT"):
         env["GEMINI_ROOT"] = Path(__file__).parents[1].as_posix()
+    matlab_script_dir = Path(env["GEMINI_ROOT"], 'setup')
 
     matlab = shutil.which(matlab) if matlab else shutil.which("matlab")
     if not matlab:
@@ -94,7 +107,7 @@ def initialize_simulation(config_file: Path, p: T.Dict[str, T.Any], matlab: Path
     cmd = [matlab, "-batch", f"model_setup('{config_file}')"]
     print("Initializing simulation: ", cmd)
 
-    ret = subprocess.run(cmd, cwd=config_file.parent, env=env)
+    ret = subprocess.run(cmd, cwd=matlab_script_dir, env=env)
 
     return ret.returncode == 0
 
@@ -111,9 +124,10 @@ def check_mpiexec(mpiexec: Pathlike) -> str:
     if not mpiexec:
         msg = "Need mpiexec to run simulations"
         if os.name == "nt":
-            msg += "\n\nTypically Windows users will use any one of:"
-            msg += "\na) Windows Subsystem for Linux (WSL) <-- recommended \nb) Cygwin"
-            msg += "\nc) Intel Parallel Studio for Windows (or WSL)"
+            msg += "\n\n Typically Windows users use Windows Subsystem for Linux (WSL)"
+            if detect_wsl():
+                msg += "\n 😊  WSL appears to be already installed on your PC, look in the Start menu for Ubuntu or see:"
+            msg += "\n 📖  WSL install guide: https://docs.microsoft.com/en-us/windows/wsl/install-win10"
         raise EnvironmentError(msg)
 
     return mpiexec
