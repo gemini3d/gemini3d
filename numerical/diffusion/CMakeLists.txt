@@ -22,26 +22,29 @@ target_link_libraries(test_diffusion1d PRIVATE PDEparabolic const
   ${LAPACK_LIBRARIES} h5fortran::h5fortran)
 
 # WORKING_DIRECTORY is needed to write output file to repeatable path.
-add_test(NAME unit:diffusion1d COMMAND $<TARGET_FILE:test_diffusion1d>
+add_test(NAME unit:diffusion1 COMMAND $<TARGET_FILE:test_diffusion1d>
   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
-set_tests_properties(unit:diffusion1d PROPERTIES
+set_tests_properties(unit:diffusion1 PROPERTIES
   TIMEOUT 5
   FIXTURES_SETUP GemDiff)
+win32_env(unit:diffusion1)
 
 
 if(OctaveOK)
-add_test(NAME unit:diffusion1d:octave
+add_test(NAME unit:diffusion1:octave
   COMMAND ${Octave_EXECUTABLE} -q --eval "test_diffusion1D('${_tmpdifffn}')"
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-set_tests_properties(unit:diffusion1d:octave PROPERTIES
+set_tests_properties(unit:diffusion1:octave PROPERTIES
   TIMEOUT 10
+  REQUIRED_FILES ${_tmpdifffn}
   FIXTURES_REQUIRED GemDiff)
 endif(OctaveOK)
 
 if(PythonOK)
-add_test(NAME unit:diffusion1d:python
+add_test(NAME unit:diffusion1:python
   COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test_diffusion1D.py ${_tmpdifffn})
-set_tests_properties(unit:diffusion1d:python PROPERTIES
+set_tests_properties(unit:diffusion1:python PROPERTIES
   TIMEOUT 10
+  REQUIRED_FILES ${_tmpdifffn}
   FIXTURES_REQUIRED GemDiff)
 endif(PythonOK)

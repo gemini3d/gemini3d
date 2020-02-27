@@ -20,8 +20,10 @@ endif()
 
 unset(_mumps_extra)
 
-if(MUMPS_ROOT OR CMAKE_Fortran_COMPILER_ID STREQUAL GNU)
+if(MUMPS_ROOT OR (DEFINED ENV{MUMPS_ROOT}) OR (CMAKE_Fortran_COMPILER_ID STREQUAL GNU))
   find_package(MUMPS COMPONENTS ${arith})
+else()
+  message(VERBOSE "Skipping find_package(MUMPS)")
 endif()
 if(NOT MUMPS_FOUND)
   include(${CMAKE_CURRENT_LIST_DIR}/mumps_external.cmake)

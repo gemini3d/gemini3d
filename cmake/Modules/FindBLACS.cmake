@@ -129,24 +129,18 @@ endif()
 
 elseif(OpenMPI IN_LIST BLACS_FIND_COMPONENTS)
 
-find_library(BLACS_INIT
-  NAMES blacsF77init blacsF77init-openmpi
-  PATHS ${BLACS_ROOT})
+find_library(BLACS_INIT NAMES blacsF77init blacsF77init-openmpi)
 if(BLACS_INIT)
   list(APPEND BLACS_LIBRARY ${BLACS_INIT})
 endif()
 
-find_library(BLACS_CINIT
-  NAMES blacsCinit blacsCinit-openmpi
-  PATHS ${BLACS_ROOT})
+find_library(BLACS_CINIT NAMES blacsCinit blacsCinit-openmpi)
 if(BLACS_CINIT)
   list(APPEND BLACS_LIBRARY ${BLACS_CINIT})
 endif()
 
 # this is the only lib that scalapack/blacs/src provides
-find_library(BLACS_LIB
-  NAMES blacs blacs-mpi blacs-openmpi
-  PATHS ${BLACS_ROOT})
+find_library(BLACS_LIB NAMES blacs blacs-mpi blacs-openmpi)
 if(BLACS_LIB)
   list(APPEND BLACS_LIBRARY ${BLACS_LIB})
 endif()
