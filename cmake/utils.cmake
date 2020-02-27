@@ -1,5 +1,20 @@
 include(${CMAKE_CURRENT_LIST_DIR}/compare.cmake)
 
+function(win32_env TESTNAME)
+# Windows with HDF5 needs to be added to PATH for each test
+if(WIN32) # for Windows ifort dll
+  if(HDF5_ROOT)
+    message(DEBUG " using HDF5_ROOT to set ${TESTNAME} Path")
+    set_tests_properties(${TESTNAME} PROPERTIES ENVIRONMENT "PATH=${HDF5_ROOT}/bin;$ENV{PATH}")
+  elseif(DEFINED ENV{HDF5_ROOT})
+    message(DEBUG " using ENV{HDF5_ROOT} to set ${TESTNAME} Path")
+    set_tests_properties(${TESTNAME} PROPERTIES ENVIRONMENT "PATH=$ENV{HDF5_ROOT}/bin;$ENV{PATH}")
+  endif()
+endif()
+
+endfunction(win32_env)
+
+
 function(setup_gemini_test TESTNAME EXE TESTDIR REFDIR TIMEOUT)
 
 if(NOT PythonOK)
@@ -21,8 +36,12 @@ set_tests_properties(gemini:${TESTNAME} PROPERTIES
   FIXTURES_SETUP GeminiRun_${TESTNAME}
   RUN_SERIAL true
 )
-if(WIN32 AND HDF5_ROOT)  # for Windows ifort dll
-  set_tests_properties(gemini:${TESTNAME} PROPERTIES ENVIRONMENT "PATH=${HDF5_ROOT}/bin;$ENV{PATH}")
+if(WIN32) # for Windows ifort dll
+  if(HDF5_ROOT)
+    set_tests_properties(gemini:${TESTNAME} PROPERTIES ENVIRONMENT "PATH=${HDF5_ROOT}/bin;$ENV{PATH}")
+  elseif(DEFINED ENV{HDF_ROOT})
+    set_tests_properties(gemini:${TESTNAME} PROPERTIES ENVIRONMENT "PATH=$ENV{HDF5_ROOT}/bin;$ENV{PATH}")
+  endif()
 endif()
 
 endfunction(setup_gemini_test)
