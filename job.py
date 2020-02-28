@@ -13,12 +13,23 @@ if __name__ == "__main__":
     p.add_argument("out_dir", help="simulation output directory")
     p.add_argument("-mpiexec", help="path to desired mpiexec executable")
     p.add_argument("-gemexe", help="path to desired gemini.bin")
+    p.add_argument("-matlab", help="Use Matlab instead of Python", action="store_true")
+    p.add_argument("-f", "--force", help="force regeneration of simulation", action="store_true")
     P = p.parse_args()
 
     ret = -1
 
+    P = {
+        "config_file": P.config_file,
+        "out_dir": P.out_dir,
+        "mpiexec": P.mpiexec,
+        "gemexe": P.gemexe,
+        "matlab": P.matlab,
+        "force": P.force,
+    }
+
     try:
-        ret = gemini.job.runner(P.mpiexec, P.gemexe, P.config_file, P.out_dir)
+        ret = gemini.job.runner(P)
     except FileNotFoundError:
         print(
             "\nA necessary simulation input file was not found."
