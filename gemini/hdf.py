@@ -28,6 +28,11 @@ def get_simsize(path: Path) -> T.Tuple[int, ...]:
     return lxs
 
 
+def write_frame(ymd: T.Tuple[int, int, int], UTsec: float, ns: np.ndarray, vs: np.ndarray, Ts: np.ndarray, outdir: Path,
+                file_format: str, realbits: int):
+    raise NotImplementedError
+
+
 def readgrid(fn: Path) -> T.Dict[str, np.ndarray]:
     """
     get simulation dimensions

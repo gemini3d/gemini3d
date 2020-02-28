@@ -50,6 +50,8 @@ def read_config(path: Path) -> T.Dict[str, T.Any]:
     if not P:
         raise FileNotFoundError(f"could not find config file in {path}")
 
+    P["nml"] = file
+
     return P
 
 
@@ -58,6 +60,9 @@ def read_nml(fn: Path) -> T.Dict[str, T.Any]:
     for now we don't use the f90nml package, though maybe we will in the future.
     Just trying to keep Python prereqs reduced for this simple parsing.
     """
+
+    if fn.is_dir():
+        fn = fn / "config.nml"
 
     params = {}
     params.update(read_nml_group(fn, "base"))
