@@ -67,15 +67,24 @@ def runner(mpiexec: Pathlike, gemexe: Pathlike, config_file: Pathlike, out_dir: 
     return ret
 
 
-def detect_wsl() -> bool:
+def wsl_available() -> bool:
     """
     heuristic to detect if Windows Subsystem for Linux is available.
-    """
-    bash = None
-    if os.name == "nt":
-        bash = shutil.which("bash", path="c:/windows/system32")
 
-    return bash is not None
+    Uses presence of /etc/os-release in the WSL image to say Linux is there.
+    This is a de facto file standard across Linux distros.
+    """
+    if os.name == "nt":
+        wsl = shutil.which("wsl")
+        if not wsl:
+            return False
+        # can't read this file or test with
+        # pathlib.Path('//wsl$/Ubuntu/etc/os-release').
+        # A Python limitation?
+        ret = subprocess.run(["wsl", "test", "-f", "/etc/os-release"])
+        return ret.returncode == 0
+
+    return False
 
 
 def check_compiler():
@@ -96,7 +105,7 @@ def initialize_simulation(config_file: Path, p: T.Dict[str, T.Any], matlab: Path
     env = os.environ
     if not os.environ.get("GEMINI_ROOT"):
         env["GEMINI_ROOT"] = Path(__file__).parents[1].as_posix()
-    matlab_script_dir = Path(env["GEMINI_ROOT"], 'setup')
+    matlab_script_dir = Path(env["GEMINI_ROOT"], "setup")
 
     matlab = shutil.which(matlab) if matlab else shutil.which("matlab")
     if not matlab:
@@ -125,7 +134,7 @@ def check_mpiexec(mpiexec: Pathlike) -> str:
         msg = "Need mpiexec to run simulations"
         if os.name == "nt":
             msg += "\n\n Typically Windows users use Windows Subsystem for Linux (WSL)"
-            if detect_wsl():
+            if wsl_available():
                 msg += "\n 😊  WSL appears to be already installed on your PC, look in the Start menu for Ubuntu or see:"
             msg += "\n 📖  WSL install guide: https://docs.microsoft.com/en-us/windows/wsl/install-win10"
         raise EnvironmentError(msg)

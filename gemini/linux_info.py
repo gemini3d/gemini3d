@@ -12,9 +12,11 @@ def os_release() -> T.List[str]:
     """
     reads /etc/os-release with fallback to legacy methods
 
-    returns
+    Returns
     -------
-    'rhel' or 'debian'
+
+    linux_names: list of str
+        name(s) of operating system detect
     """
 
     if sys.platform != "linux":
@@ -27,9 +29,14 @@ def os_release() -> T.List[str]:
         elif Path("/etc/debian_version").is_file():
             return ["debian"]
 
+    return parse_os_release("[all]" + fn.read_text())
+
+
+def parse_os_release(txt: str) -> T.List[str]:
+    """ parse /etc/os-release text """
+
     C = ConfigParser(inline_comment_prefixes=("#", ";"))
-    ini = "[all]" + fn.read_text()
-    C.read_string(ini)
+    C.read_string(txt)
     return C["all"].get("ID_LIKE").strip('"').strip("'").split()
 
 
