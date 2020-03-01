@@ -16,6 +16,11 @@ try:
 except ModuleNotFoundError:
     hdf = None
 
+try:
+    from . import nc4
+except ModuleNotFoundError:
+    nc4 = None
+
 FILE_FORMATS = (".h5", ".nc", ".dat")
 
 
@@ -27,6 +32,8 @@ def readgrid(path: Path) -> typing.Dict[str, np.ndarray]:
             fn = (path / stem).with_suffix(ext)
             if fn.is_file():
                 break
+        if not fn.is_file():
+            raise FileNotFoundError(path)
     elif path.is_file():
         fn = path
     else:
@@ -39,6 +46,8 @@ def readgrid(path: Path) -> typing.Dict[str, np.ndarray]:
             raise ModuleNotFoundError("pip install h5py")
         grid = hdf.readgrid(fn)
     elif fn.suffix == ".nc":
+        if nc4 is None:
+            raise ModuleNotFoundError("pip install netcdf4")
         raise NotImplementedError("TODO: NetCDF4 simgrid.nc")
     else:
         raise ValueError(f"Unknown file type {fn}")

@@ -6,6 +6,10 @@ try:
     from .hdf import get_simsize as get_simsize_h5
 except ModuleNotFoundError:
     get_simsize_h5 = None
+try:
+    from .nc4 import get_simsize as get_simsize_nc
+except ModuleNotFoundError:
+    get_simsize_nc = None
 
 Pathlike = T.Union[str, Path]
 
@@ -28,6 +32,8 @@ def get_simsize(path: Pathlike) -> T.Tuple[int, ...]:
             raise ModuleNotFoundError("pip install h5py")
         return get_simsize_h5(fn)
     elif fn.suffix == '.nc':
-        raise ValueError('TODO: implement NetCDF4')
+        if get_simsize_nc is None:
+            raise ModuleNotFoundError("pip install netcdf4")
+        return get_simsize_nc(fn)
     else:
         return get_simsize_raw(fn)
