@@ -94,6 +94,9 @@ def wsl_file_exist(file: Pathlike) -> bool:
     NOT //wsl$/Ubuntu/etc/os-release
     but /etc/os-release
     """
+    if os.name != "nt":
+        return False
+
     try:
         return subprocess.run(["wsl", "test", "-f", str(file)], timeout=10).returncode == 0
     except subprocess.TimeoutExpired:
