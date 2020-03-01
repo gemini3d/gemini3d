@@ -5,6 +5,7 @@ runs a job
 import argparse
 import gemini.job
 import sys
+from time import monotonic
 
 
 if __name__ == "__main__":
@@ -28,22 +29,25 @@ if __name__ == "__main__":
         "force": P.force,
     }
 
+    tic = monotonic()
     try:
         ret = gemini.job.runner(params)
-    except FileNotFoundError:
+    except FileNotFoundError as excp:
+        print(excp, file=sys.stderr)
         print(
             "\nA necessary simulation input file was not found."
             "\nThis can mean that the simulation initialization script wasn't run first.\n",
             file=sys.stderr,
         )
-        raise
-    except EnvironmentError:
+    except EnvironmentError as excp:
+        print(excp, file=sys.stderr)
         print(
             "If you need to build Gemini, from the Gemini directory:\n\n",
             "cmake -B build\n",
             "cmake --build build\n",
             file=sys.stderr,
         )
-        raise
+
+    print(f"job.py ran in {monotonic() - tic:.3f} seconds.")
 
     raise SystemExit(ret)

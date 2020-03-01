@@ -33,6 +33,8 @@ end % function
 function write_hdf5(outdir, ymd, UTsec, ns, vsx1, Ts, realbits)
 fn = [outdir,'/initial_conditions.h5'];
 disp(['write ',fn])
+if isfile(fn), delete(fn), end
+
 h5save(fn, '/ymd', int32(ymd))
 
 freal = ['float',int2str(realbits)];
