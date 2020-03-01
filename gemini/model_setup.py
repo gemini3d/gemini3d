@@ -25,7 +25,7 @@ def model_setup(path: Path, out_dir: Path):
       directory to write simulation artifacts to
   """
 
-    # read config.nml
+    # %% read config.nml
     p = read_nml(path)
     p["out_dir"] = Path(out_dir).expanduser().resolve()
 

@@ -27,33 +27,41 @@ def read_config(path: Path) -> T.Dict[str, T.Any]:
     params: dict
         simulation parameters from config file
     """
-    P: T.Dict[str, T.Any] = {}
 
-    path = Path(path).expanduser().resolve()
-    if path.is_file():
-        file = path
-        path = path.parent
-        if file.suffix == ".nml":
-            P = read_nml(file)
-        elif file.suffix == ".ini":
-            P = read_ini(file)
-        else:
-            raise ValueError(f"unsure how to read {file}")
-    elif path.is_dir():
-        for suff in (".nml", ".ini"):
-            file = path / ("config" + suff)
-            if file.is_file():
-                P = read_config(file)
-                break
+    file = get_config_filename(path)
+
+    if file.suffix == ".nml":
+        P = read_nml(file)
+    elif file.suffix == ".ini":
+        P = read_ini(file)
     else:
-        raise FileNotFoundError(f"could not find config file in {path}")
-
-    if not P:
-        raise FileNotFoundError(f"could not find config file in {path}")
+        raise ValueError(f"unsure how to read {file}")
 
     P["nml"] = file
 
     return P
+
+
+def get_config_filename(path: Path) -> Path:
+    """ given a path or config filename, return the full path to config file """
+
+    path = Path(path).expanduser().resolve()
+
+    if path.is_dir():
+        for p in (path, path / "inputs"):
+            for suff in (".nml", ".ini"):
+                file = p / ("config" + suff)
+                if file.is_file():
+                    return file
+    elif path.is_file():
+        name = path.name
+        path = path.parent
+        for p in (path, path / "inputs"):
+            file = p / name
+            if file.is_file():
+                return file
+
+    raise FileNotFoundError(f"could not find config file in {path}")
 
 
 def read_nml(fn: Path) -> T.Dict[str, T.Any]:
@@ -61,6 +69,8 @@ def read_nml(fn: Path) -> T.Dict[str, T.Any]:
     for now we don't use the f90nml package, though maybe we will in the future.
     Just trying to keep Python prereqs reduced for this simple parsing.
     """
+
+    fn = Path(fn).expanduser().resolve()
 
     if fn.is_dir():
         fn = fn / "config.nml"
@@ -164,9 +174,13 @@ def parse_group(raw: T.Dict[str, T.Any], group: T.Sequence[str]) -> T.Dict[str, 
 
         for k in ("lxp", "lyp"):
             P[k] = int(raw[k])
-        for k in ("glat", "glon", "xdist", "ydist", "alt_min", "alt_max", "Bincl", "nmf", "nme"):
+        for k in ("glat", "glon", "xdist", "ydist", "alt_min", "alt_max", "Bincl", "nmf", "nme",
+                  "precip_latwidth", "precip_lonwidth", "Etarg", "Efield_fracwidth"):
             if k in raw:
                 P[k] = float(raw[k])
+        for k in ("eqdir",):
+            if k in raw:
+                P[k] = Path(raw[k])
 
     if "neutral_perturb" in group:
         P["interptype"] = int(raw["interptype"])

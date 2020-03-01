@@ -48,7 +48,7 @@ def readgrid(path: Path) -> typing.Dict[str, np.ndarray]:
     elif fn.suffix == ".nc":
         if nc4 is None:
             raise ModuleNotFoundError("pip install netcdf4")
-        raise NotImplementedError("TODO: NetCDF4 simgrid.nc")
+        grid = nc4.readgrid(fn)
     else:
         raise ValueError(f"Unknown file type {fn}")
 
