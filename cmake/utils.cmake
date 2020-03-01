@@ -33,7 +33,6 @@ set_tests_properties(gemini:${TESTNAME} PROPERTIES
   SKIP_RETURN_CODE 77
   REQUIRED_FILES ${_config_file}
   FIXTURES_REQUIRED MPIMUMPS
-  FIXTURES_SETUP GeminiRun_${TESTNAME}
   RUN_SERIAL true
 )
 if(WIN32) # for Windows ifort dll

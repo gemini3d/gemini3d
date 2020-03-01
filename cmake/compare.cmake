@@ -9,7 +9,6 @@ add_test(NAME gemini:compare:${TESTNAME}:python
 
 set_tests_properties(gemini:compare:${TESTNAME}:python PROPERTIES
   TIMEOUT 30
-  FIXTURES_REQUIRED GeminiRun_${TESTNAME}
   REQUIRED_FILES ${CMAKE_CURRENT_BINARY_DIR}/${OUTDIR}/inputs/config.nml
   SKIP_RETURN_CODE 77)
 
@@ -24,7 +23,6 @@ add_test(NAME gemini:compare:${TESTNAME}:octave
 
 set_tests_properties(gemini:compare:${TESTNAME}:octave PROPERTIES
   TIMEOUT 30
-  FIXTURES_REQUIRED GeminiRun_${TESTNAME}
   REQUIRED_FILES ${CMAKE_CURRENT_BINARY_DIR}/${OUTDIR}/inputs/config.nml
   SKIP_RETURN_CODE 77)
 
@@ -39,7 +37,6 @@ add_test(NAME gemini:compare:${TESTNAME}:matlab
 
 set_tests_properties(gemini:compare:${TESTNAME}:matlab PROPERTIES
   TIMEOUT 60
-  FIXTURES_REQUIRED GeminiRun_${TESTNAME}
   REQUIRED_FILES ${CMAKE_CURRENT_BINARY_DIR}/${OUTDIR}/inputs/config.nml
   SKIP_RETURN_CODE 77)
 # Matlab with a lot of toolboxes takes 15..30 seconds just to start, particularly on HPC with network file system.
