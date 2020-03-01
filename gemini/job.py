@@ -23,21 +23,24 @@ def runner(pr: T.Dict[str, T.Any]) -> int:
     for k in ("indat_size", "indat_grid", "indat_file"):
         f = p[k].resolve().expanduser()
         if pr["force"] or not f.is_file():
-            ok = initialize_simulation(p, pr["matlab"])
-            if not ok or not f.is_file():
+            ok = initialize_simulation(p, pr)
+            if not ok:
                 raise RuntimeError("could not initialize simulation. Try doing this manually.")
+            if not f.is_file():
+                raise FileNotFoundError(f"tried to initialize simulation but missing expected output file {f}")
             break
 
     if p.get("flagE0file") == 1:
         E0dir = p["E0dir"].resolve().expanduser()
         if not E0dir.is_dir():
-            ok = initialize_simulation(p, pr["matlab"])
+            ok = initialize_simulation(p, pr)
             if not ok or not E0dir.is_dir():
                 raise FileNotFoundError(E0dir)
+
     if p.get("flagprecfile") == 1:
         precdir = p["precdir"].resolve().expanduser()
         if not precdir.is_dir():
-            ok = initialize_simulation(p, pr["matlab"])
+            ok = initialize_simulation(p, pr)
             if not ok or not precdir.is_dir():
                 raise FileNotFoundError(precdir)
 
@@ -91,7 +94,10 @@ def wsl_file_exist(file: Pathlike) -> bool:
     NOT //wsl$/Ubuntu/etc/os-release
     but /etc/os-release
     """
-    return subprocess.run(["wsl", "test", "-f", str(file)], timeout=10).returncode == 0
+    try:
+        return subprocess.run(["wsl", "test", "-f", str(file)], timeout=10).returncode == 0
+    except subprocess.TimeoutExpired:
+        return False
 
 
 def check_compiler():
@@ -102,7 +108,7 @@ def check_compiler():
         raise EnvironmentError("Cannot find Fortran compiler e.g. Gfortran")
 
 
-def initialize_simulation(p: T.Dict[str, T.Any], use_matlab: bool = False) -> bool:
+def initialize_simulation(p: T.Dict[str, T.Any], pr: T.Dict[str, T.Any]) -> bool:
     """
     TODO: these functions will be in Python
 
@@ -116,7 +122,7 @@ def initialize_simulation(p: T.Dict[str, T.Any], use_matlab: bool = False) -> bo
 
     check_compiler()
 
-    if use_matlab:
+    if pr["matlab"]:
         if not shutil.which("matlab"):
             raise EnvironmentError("Matlab not found")
         cmd = ["matlab", "-batch", f"model_setup('{p['nml']}')"]
@@ -125,7 +131,7 @@ def initialize_simulation(p: T.Dict[str, T.Any], use_matlab: bool = False) -> bo
         ret = subprocess.run(cmd, cwd=matlab_script_dir, env=env)
         return ret.returncode == 0
     else:
-        model_setup(p["nml"])
+        model_setup(p["nml"], pr["out_dir"])
         return True
 
 

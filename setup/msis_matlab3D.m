@@ -60,7 +60,7 @@ iyd = yearshort*1000+doy;
 %% KLUDGE THE BELOW-ZERO ALTITUDES SO THAT THEY DON'T GIVE INF
 alt(alt(:)<=0)=1;
 %% FIND A UNIQUE IDENTIFIER FOR THE INPUT FILE
-fin = tempname;
+fin = [tempdir, '/msis_setup_input.dat'];
 %% CREATE AND INPUT FILE FOR FORTRAN PROGRAM
 fid=fopen(fin,'w');
 fwrite(fid,iyd,'integer*4');
@@ -75,8 +75,8 @@ fwrite(fid,glon,'real*4');
 fwrite(fid,alt,'real*4');
 fclose(fid);
 %% CALL MSIS AND READ IN RESULTING BINARY FILE
-fout = tempname;
-cmd = [exe,' ',fin,' ',fout];
+fout = [tempdir, '/msis_setup_output.dat'];
+cmd = [exe,' ',fin,' ',fout,' ',int2str(lz)];
 disp(cmd)
 [status, msg] = system(cmd);   %output written to file
 if status~=0, error(['msis setup failed: ',msg]), end

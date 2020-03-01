@@ -1,15 +1,13 @@
 function writedata(ymd, UTsec,ns,vsx1,Ts, outdir, file_format, realbits)
+%% WRITE STATE VARIABLE DATA TO BE USED AS INITIAL CONDITIONS
+% FOR ANOTHER SIMULATION.  NOTE THAT WE
+% DO NOT HERE OUTPUT ANY OF THE ELECTRODYNAMIC
+% VARIABLES SINCE THEY ARE NOT NEEDED TO START THINGS
+% UP IN THE FORTRAN CODE.
+%
+% INPUT ARRAYS SHOULD BE TRIMMED TO THE CORRECT SIZE
+% I.E. THEY SHOULD NOT INCLUDE GHOST CELLS
 
-%--------------------------------------------------------
-%-----WRITE STATE VARIABLE DATA TO BE USED AS INITIAL
-%-----CONDITIONS FOR ANOTHER SIMULATION.  NOTE THAT WE
-%-----DO NOT HERE OUTPUT ANY OF THE ELECTRODYNAMIC
-%-----VARIABLES SINCE THEY ARE NOT NEEDED TO START THINGS
-%-----UP IN THE FORTRAN CODE.
-%-----
-%-----INPUT ARRAYS SHOULD BE TRIMMED TO THE CORRECT SIZE
-%-----(I.E. THEY SHOULD NOT INCLUDE GHOST CELLS
-%--------------------------------------------------------
 narginchk(8,8)
 validateattributes(ymd, {'numeric'}, {'vector', 'positive', 'numel', 3}, mfilename, 'year, month, day', 1)
 validateattributes(UTsec, {'numeric'}, {'scalar', 'nonnegative'}, mfilename, 'seconds since UT midnight', 2)
