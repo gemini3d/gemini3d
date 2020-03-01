@@ -3,17 +3,14 @@ env:
   CI: true
 
 on:
+  release:
   push:
     paths:
-      - "**.f90"
-      - "**.F90"
       - "**.cmake"
       - "**/CMakeLists.txt"
       - ".github/workflows/ci_macos.yml"
   pull_request:
     paths:
-      - "**.f90"
-      - "**.F90"
       - "**.cmake"
       - "**/CMakeLists.txt"
       - ".github/workflows/ci_macos.yml"
