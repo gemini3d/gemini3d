@@ -147,9 +147,22 @@ def parse_group(raw: T.Dict[str, T.Any], group: T.Sequence[str]) -> T.Dict[str, 
             P[k] = Path(raw[k])
 
     if "setup" in group:
-        P["format"] = raw["format"]
+        if "format" in raw:
+            P["format"] = raw["format"]
+        else:
+            # defaults to HDF5
+            P["format"] = "h5"
         P["alt_scale"] = np.array(list(map(float, raw["alt_scale"])))
-        for k in ("realbits", "lxp", "lyp"):
+
+        if "realbits" in raw:
+            P["realbits"] = int(raw["realbits"])
+        else:
+            if P["format"] in ("raw", "dat"):
+                P["realbits"] = 64
+            else:
+                P["realbits"] = 32
+
+        for k in ("lxp", "lyp"):
             P[k] = int(raw[k])
         for k in ("glat", "glon", "xdist", "ydist", "alt_min", "alt_max", "Bincl", "nmf", "nme"):
             if k in raw:
