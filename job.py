@@ -19,7 +19,7 @@ if __name__ == "__main__":
 
     ret = -1
 
-    P = {
+    params = {
         "config_file": P.config_file,
         "out_dir": P.out_dir,
         "mpiexec": P.mpiexec,
@@ -29,7 +29,7 @@ if __name__ == "__main__":
     }
 
     try:
-        ret = gemini.job.runner(P)
+        ret = gemini.job.runner(params)
     except FileNotFoundError:
         print(
             "\nA necessary simulation input file was not found."
