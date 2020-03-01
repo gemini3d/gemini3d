@@ -1,4 +1,4 @@
-use, intrinsic:: iso_fortran_env, only: sp=>real32
+use, intrinsic:: iso_fortran_env, only: sp=>real32, stderr=>error_unit
 
 implicit none
 

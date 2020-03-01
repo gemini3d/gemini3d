@@ -16,12 +16,15 @@ try:
 except ModuleNotFoundError:
     hdf = None
 
+FILE_FORMATS = (".h5", ".nc", ".dat")
+
 
 def readgrid(path: Path) -> typing.Dict[str, np.ndarray]:
 
     if path.is_dir():
-        for stem in ("inputs/simgrid.h5", "inputs/simgrid.dat"):
-            fn = path / stem
+        stem = "inputs/simgrid"
+        for ext in FILE_FORMATS:
+            fn = (path / stem).with_suffix(ext)
             if fn.is_file():
                 break
     elif path.is_file():
@@ -30,11 +33,17 @@ def readgrid(path: Path) -> typing.Dict[str, np.ndarray]:
         raise FileNotFoundError(path)
 
     if fn.suffix == ".dat":
-        return raw.readgrid(fn)
-    else:
+        grid = raw.readgrid(fn)
+    elif fn.suffix == ".h5":
         if hdf is None:
             raise ModuleNotFoundError("pip install h5py")
-        return hdf.readgrid(fn)
+        grid = hdf.readgrid(fn)
+    elif fn.suffix == ".nc":
+        raise NotImplementedError("TODO: NetCDF4 simgrid.nc")
+    else:
+        raise ValueError(f"Unknown file type {fn}")
+
+    return grid
 
 
 def readdata(fn: Path) -> typing.Dict[str, typing.Any]:
@@ -92,7 +101,7 @@ def readdata(fn: Path) -> typing.Dict[str, typing.Any]:
 
         if fn_Efield.is_file():
             dat.update(read_Efield(fn_Efield))
-    else:
+    elif fn.suffix == ".h5":
         if hdf is None:
             raise ModuleNotFoundError("pip install h5py")
 
@@ -106,6 +115,10 @@ def readdata(fn: Path) -> typing.Dict[str, typing.Any]:
         if fn_aurora.is_file():
             dat.update(hdf.loadglow_aurmap(fn_aurora))
             dat["wavelength"] = wavelength
+    elif fn.suffix == ".nc":
+        raise NotImplementedError("TODO: NetCDF4")
+    else:
+        raise ValueError(f"Unknown file type {fn}")
 
     return dat
 
@@ -128,10 +141,14 @@ def read_Efield(fn: Path) -> typing.Dict[str, typing.Any]:
 
     if fn.suffix == ".dat":
         E = raw.load_Efield(fn)
-    else:
+    elif fn.suffix == ".h5":
         if hdf is None:
             raise ModuleNotFoundError("pip install h5py")
         E = hdf.load_Efield(fn)
+    elif fn.suffix == ".nc":
+        raise NotImplementedError("TODO: NetCDF4")
+    else:
+        raise ValueError(f"Unknown file type {fn}")
 
     return E
 
@@ -176,16 +193,23 @@ def loadframe(simdir: Path, time: datetime) -> typing.Dict[str, typing.Any]:
     dat: dict
         simulation output for this time step
     """
+
+    return readdata(get_frame_filename(simdir, time))
+
+
+def get_frame_filename(simdir: Path, time: datetime) -> Path:
+    """
+    the frame filenames can have different file formats
+    """
+
     simdir = Path(simdir).expanduser().resolve(True)
-    # %% datfn
 
-    t = time
-    stem = f"{t.year}{t.month:02d}{t.day:02d}_{t.hour*3600 + t.minute*60 + t.second:05d}.00000"
-    for ext in ("0.h5", "1.h5", "0.dat", "1.dat"):
-        datfn = simdir / (stem + ext)
-        if datfn.is_file():
-            break
+    stem = time.strftime("%Y%m%d") + f"_{time.hour*3600 + time.minute*60 + time.second:05d}." + f"{time.microsecond:06d}"[:5]
 
-    dat = readdata(datfn)
+    for ext in FILE_FORMATS:
+        for tick in ("0", "1"):
+            fn = simdir / (stem + tick + ext)
+            if fn.is_file():
+                return fn
 
-    return dat
+    raise FileNotFoundError(f"could not find data file in {simdir} at {time}")

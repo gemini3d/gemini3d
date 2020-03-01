@@ -2,14 +2,324 @@
 plasma functions
 """
 import typing as T
+import numpy as np
+from pathlib import Path
+import os
+import shutil
+import tempfile
+import subprocess
+from scipy.integrate import cumtrapz
+from scipy.interpolate import interp1d
+
+R = Path(__file__).parents[1].resolve()
 
 
 def equilibrium_resample(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]):
     raise NotImplementedError
 
 
-def equilibrium_state(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]):
-    raise NotImplementedError
+def equilibrium_state(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]) -> T.Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """
+    generate (arbitrary) initial conditions for a grid.
+    NOTE: only works on symmmetric closed grids!
+
+    [f107a, f107, ap] = activ
+    """
+
+    # %% MAKE UP SOME INITIAL CONDITIONS FOR FORTRAN CODE
+    mindens = 1e-100
+
+    # %% SLICE THE FIELD IN HALF IF WE ARE CLOSED
+    natm = msis_matlab3D(p, xg)
+
+    closeddip = abs(xg["r"][0, 0, 0] - xg["r"][-1, 0, 0]) < 50e3
+    # logical flag marking the grid as closed dipole
+    if closeddip:
+        # closed dipole grid
+        #    [~,ialtmax]=max(xg.alt(:,1,1))
+        #    lalt=ialtmax
+        lalt = xg["lx"][0] // 2
+        # FIXME:  needs to work with asymmetric grid...
+        alt = xg["alt"][:lalt, :, :]
+        lx1 = lalt
+        lx2 = xg["lx"][1]
+        lx3 = xg["lx"][2]
+        Tn = natm[:lalt, :, :, 3]
+        g = abs(xg["gx1"][:lalt, :, :])
+        g = max(g, 1)
+        for ix3 in range(lx3):
+            for ix2 in range(lx2):
+                ialt = abs(g[:, ix2, ix3] - 1).argmin()
+                if ialt != lalt:
+                    g[ialt:lalt, ix2, ix3] = 1
+
+    else:
+        alt = xg["alt"]
+        lx1, lx2, lx3 = xg["lx"]
+        Tn = natm[:, :, :, 3]
+        g = abs(xg["gx1"])
+
+    # CONSTANTS
+    kb = 1.38e-23
+    amu = 1.67e-27
+
+    ns = np.zeros((lx1, lx2, lx3, 7))
+    for ix3 in range(lx3):
+        for ix2 in range(lx2):
+            Hf = kb * Tn[:, ix2, ix3] / amu / 16 / g[:, ix2, ix3]
+            z0f = 325e3
+            He = 2 * kb * Tn[:, ix2, ix3] / amu / 30 / g[:, ix2, ix3]
+            z0e = 120e3
+            ne = chapmana(alt[:, ix2, ix3], p["nmf"], z0f, Hf) + chapmana(alt[:, ix2, ix3], p["nme"], z0e, He)
+            rho = 1 / 2 * np.tanh((alt[:, ix2, ix3] - 200e3) / 45e3) - 1 / 2 * np.tanh((alt[:, ix2, ix3] - 1000e3) / 200e3)
+
+            # has to be np.nonzero() as integers not slice is needed.
+            inds = np.nonzero(alt[:, ix2, ix3] > z0f)[0]
+            if len(inds) > 0:
+                n0 = p["nmf"]
+                #     [n0,ix1]=max(ne);  %in case it isn't exactly z0f
+                #     if xg.r(1,1)>xg.r(2,1)
+                #         inds=1:ix1;
+                #     else
+                #         inds=ix1:lx1;
+                #     end
+                ms = rho[inds] * 16 * amu + (1 - rho[inds]) * amu
+                # topside composition only
+                H = kb * 2 * Tn[inds, ix2, ix3] / ms / g[inds, ix2, ix3]
+                z = alt[inds, ix2, ix3]
+                lz = z.size
+                iord = np.argsort(z)
+                z = z[iord]
+                #     z=[z; 2*z(lz)-z(lz-1)];
+                z = np.insert(z, 0, z0f)
+                integrand = 1 / H[iord]
+                integrand = np.append(integrand, integrand[-1])
+                #     redheight=intrap(integrand,z);
+                redheight = cumtrapz(integrand, z)
+                netop = n0 * np.exp(-redheight)
+                nesort = np.zeros(lz)
+                for iz in range(lz):
+                    nesort[iord[iz]] = netop[iz]
+
+                ne[inds] = nesort
+
+            # %% O+
+            ns[:, ix2, ix3, 0] = rho * ne
+            zref = 900e3
+            inds0 = alt[:, ix2, ix3] > zref
+            if any(inds0):
+                iord = np.argsort(alt[:, ix2, ix3])
+                altsort = alt[iord, ix2, ix3]
+                nsort = ns[:, ix2, ix3, 0]
+                nsort = nsort[iord]
+                #        n0=interpolate(nsort,altsort,zref,'lin','lin');
+                f = interp1d(altsort, nsort)
+                n0 = f(zref)
+                #     [tmp,iref]=min(abs(alt(:,ix2,ix3)-900e3));
+                #     if xg.r(1,1)>xg.r(2,1)
+                #         inds0=1:iref;
+                #     else
+                #         inds0=iref:lx1;
+                #     end
+                #    n0=ns(iref,ix2,ix3,1);
+                ms = 16 * amu
+                H = kb * 2 * Tn[inds, ix2, ix3] / ms / g[inds, ix2, ix3]
+                z = alt[inds0, ix2, ix3]
+                lz = z.size
+                iord = np.argsort(z)
+                z = z[iord]
+                #     z=[z; 2*z(lz)-z(lz-1)];
+                z = np.insert(z, 0, zref)
+                integrand = 1 / H[iord]
+                integrand = np.append(integrand, integrand[-1])
+                #        redheight=intrap(integrand,z);
+                redheight = cumtrapz(integrand, z)
+                n1top = n0 * np.exp(-redheight)
+                n1sort = np.zeros(lz)
+                for iz in range(lz):
+                    n1sort[iord[iz]] = n1top[iz]
+
+                ns[inds0, ix2, ix3, 0] = n1sort
+
+            # N+
+            ns[:, ix2, ix3, 5] = 1e-4 * ns[:, ix2, ix3, 0]
+
+            inds2 = inds
+            inds1 = np.setdiff1d(range(lx1), inds2)
+
+            # MOLECULAR DENSITIES
+            nmolc = np.zeros(lx1)
+            nmolc[inds1] = (1 - rho[inds1]) * ne[inds1]
+            if len(inds2) > 0:
+                if xg["r"][0, 0] > xg["r"][1, 0]:
+                    iref = inds1[0]
+                else:
+                    iref = inds1[-1]
+
+                n0 = nmolc[iref]
+                ms = 30.5 * amu
+                H = kb * Tn[inds2, ix2, ix3] / ms / g[inds2, ix2, ix3]
+                z = alt[inds2, ix2, ix3]
+                lz = z.size
+                iord = np.argsort(z)
+                z = z[iord]
+                z = np.append(z, 2 * z[-1] - z[-2])
+                integrand = 1 / H[iord]
+                integrand = np.append(integrand, integrand[-1])
+                #        redheight=intrap(integrand,z);
+                redheight = cumtrapz(integrand, z)
+                nmolctop = n0 * np.exp(-redheight)
+                nmolcsort = np.zeros(lz)
+                for iz in range(lz):
+                    nmolcsort[iord[iz]] = nmolctop[iz]
+
+                nmolc[inds2] = nmolcsort
+
+            ns[:, ix2, ix3, 1] = 1 / 3 * nmolc
+            ns[:, ix2, ix3, 2] = 1 / 3 * nmolc
+            ns[:, ix2, ix3, 3] = 1 / 3 * nmolc
+
+            # %% PROTONS
+            ns[inds2, ix2, ix3, 5] = (1 - rho[inds2]) * ne[inds2]
+            z = alt[inds1, ix2, ix3]
+            if len(inds2) > 0:
+                if xg["r"][0, 0] > xg["r"][1, 0]:
+                    iref = inds2[-1]
+                else:
+                    iref = inds2[0]
+
+                n0 = ns[iref, ix2, ix3, 5]
+            else:
+                iref = alt[:, ix2, ix3].argmax()
+                n0 = 1e6
+
+            ns[inds1, ix2, ix3, 5] = chapmana(z, n0, alt[iref, ix2, ix3], Hf.mean())
+
+    ns[:, :, :, :6][ns[:, :, :, :6] < mindens] = mindens
+    ns[:, :, :, 6] = ns[:, :, :, :6].sum(axis=3)
+
+    vsx1 = np.zeros((lx1, lx2, lx3, 7))
+    Ts = np.tile(Tn[:, :, :, None], [1, 1, 1, 7])
+
+    if closeddip:
+        # closed dipole grid
+        # FIXME:  This code only works for symmetric grids...
+        if 2 * lx1 == xg["lx"][0]:
+            ns = np.concatenate((ns, ns[::-1, :, :, :]), 0)
+            Ts = np.concatenate((Ts, Ts[::-1, :, :, :]), 0)
+            vsx1 = np.concatenate((vsx1, vsx1[::-1, :, :, :]), 0)
+        else:
+            ns = np.concatenate((ns, ns[lx1, :, :, :], ns[::-1, :, :, :]), 0)
+            Ts = np.concatenate((Ts, Ts[lx1, :, :, :], Ts[::-1, :, :, :]), 0)
+            vsx1 = np.concatenate((vsx1, vsx1[lx1, :, :, :], vsx1[::-1, :, :, :]), 0)
+
+    return ns, Ts, vsx1
+
+
+def chapmana(z, nm, z0, H):
+    zref = (z - z0) / H
+    ne = nm * np.exp(0.5 * (1 - zref - np.exp(-zref)))
+
+    ne[ne < 1] = 1
+
+    return ne
+
+
+def msis_matlab3D(p, xg) -> np.ndarray:
+    """calls MSIS Fortran exectuable
+    % compiles if not present
+    %
+    % [f107a, f107, ap] = activ
+    %     COLUMNS OF DATA:
+    %       1 - ALT
+    %       2 - HE NUMBER DENSITY(M-3)
+    %       3 - O NUMBER DENSITY(M-3)
+    %       4 - N2 NUMBER DENSITY(M-3)
+    %       5 - O2 NUMBER DENSITY(M-3)
+    %       6 - AR NUMBER DENSITY(M-3)
+    %       7 - TOTAL MASS DENSITY(KG/M3)
+    %       8 - H NUMBER DENSITY(M-3)
+    %       9 - N NUMBER DENSITY(M-3)
+    %       10 - Anomalous oxygen NUMBER DENSITY(M-3)
+    %       11 - TEMPERATURE AT ALT
+    %
+    """
+
+    exeloc = R / "build"
+    exeloc.mkdir(parents=True, exist_ok=True)
+    exe = shutil.which("msis_setup", path=str(exeloc))
+    if not exe:
+        src = (R / "vendor/msis00/msis00_gfortran.f", R / "setup/MSIS00/call_msis_gfortran.f90")
+        # -static avoids problems with missing .so or .dll
+        fc = os.getenv("FC")
+        if not fc:
+            fc = "gfortran"
+        cmd = [fc, "-static", "-std=legacy", "-w", "-o", str(exeloc / "msis_setup")] + list(map(str, src))
+        print(cmd)
+        subprocess.check_call(cmd)
+
+    exe = shutil.which("msis_setup", path=str(exeloc))
+    if not exe:
+        raise FileNotFoundError(f"MSIS setup executable not found in {exeloc}")
+    # %% SPECIFY SIZES ETC.
+    lx1 = xg["lx"][0]
+    lx2 = xg["lx"][1]
+    lx3 = xg["lx"][2]
+    alt = xg["alt"] / 1e3
+    glat = xg["glat"]
+    glon = xg["glon"]
+    lz = lx1 * lx2 * lx3
+    # % CONVERT DATES/TIMES/INDICES INTO MSIS-FRIENDLY FORMAT
+    t0 = p["t0"]
+    doy = int(t0.strftime("%j"))
+    UTsec0 = t0.hour * 3600 + t0.minute * 60 + t0.second + t0.microsecond / 1e6
+
+    print("MSIS00 using DOY:", doy)
+    yearshort = t0.year % 100
+    iyd = yearshort * 1000 + doy
+    # %% KLUDGE THE BELOW-ZERO ALTITUDES SO THAT THEY DON'T GIVE INF
+    alt[alt <= 0] = 1
+    # %% FIND A UNIQUE IDENTIFIER FOR THE INPUT FILE
+    # don't use NamedTemporaryFile because PermissionError on Windows
+    file_in = tempfile.gettempdir() + "/msis_setup_input.dat"
+    # %% CREATE AND INPUT FILE FOR FORTRAN PROGRAM
+    with open(file_in, "w") as f:
+        np.array(iyd).astype(np.int32).tofile(f)
+        np.array(UTsec0).astype(np.int32).tofile(f)
+        np.asarray([p["f107a"], p["f107"], p["Ap"], p["Ap"]]).astype(np.float32).tofile(f)
+        np.array(lz).astype(np.int32).tofile(f)
+        np.array(glat).astype(np.float32).tofile(f)
+        np.array(glon).astype(np.float32).tofile(f)
+        np.array(alt).astype(np.float32).tofile(f)
+
+    # %% CALL MSIS AND READ IN RESULTING BINARY FILE
+    file_out = tempfile.gettempdir() + "/msis_setup_output.dat"
+
+    cmd = [exe, file_in, file_out, str(lz)]
+    print(" ".join(cmd))
+
+    subprocess.check_call(cmd)
+    Nread = lz * 11
+    fout_size = Path(file_out).stat().st_size
+    if fout_size != Nread * 4:
+        raise RuntimeError(f"expected {file_out} size {Nread*4} but got {fout_size}")
+
+    with open(file_out, "r") as f:
+        msisdat = np.fromfile(f, np.float32, Nread).reshape((11, lz), order="F")
+
+    # %% ORGANIZE
+    nO = msisdat[2, :].reshape((lx1, lx2, lx3))
+    nN2 = msisdat[3, :].reshape((lx1, lx2, lx3))
+    nO2 = msisdat[4, :].reshape((lx1, lx2, lx3))
+    Tn = msisdat[10, :].reshape((lx1, lx2, lx3))
+    nN = msisdat[8, :].reshape((lx1, lx2, lx3))
+
+    nNO = 0.4 * np.exp(-3700 / Tn) * nO2 + 5e-7 * nO
+    # Mitra, 1968
+    nH = msisdat[7, :].reshape((lx1, lx2, lx3))
+    natm = np.stack((nO, nN2, nO2, Tn, nN, nNO, nH), 3)
+
+    return natm
 
 
 def Efield_BCs2d(p: T.Dict[str, T.Any]):

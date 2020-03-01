@@ -5,12 +5,14 @@ from pathlib import Path
 import typing as T
 
 from .config import read_nml
-from .grid import makegrid_cart3d, writegrid
+from .grid import makegrid_cart3d
 from .plasma import equilibrium_state, equilibrium_resample, Efield_BCs2d, Efield_BCs3d, particles_BCs
-from .hdf import write_frame
+from .hdf import write_state, write_grid
+
+R = Path(__file__).parents[1]
 
 
-def model_setup(path: Path):
+def model_setup(path: Path, out_dir: Path):
     """
   top-level function to create a new simulation
 
@@ -19,10 +21,13 @@ def model_setup(path: Path):
 
   path: pathlib.Path
       path (directory or full path) to config.nml
+  out_dir: pathlib.Path
+      directory to write simulation artifacts to
   """
 
     # read config.nml
     p = read_nml(path)
+    p["out_dir"] = Path(out_dir).expanduser().resolve()
 
     # %% is this equilibrium or interpolated simulation
     if "eqdir" in p:
@@ -36,13 +41,12 @@ def model_setup_equilibrium(p: T.Dict[str, T.Any]):
 
     xg = makegrid_cart3d(p)
 
-    writegrid(p, xg)
+    write_grid(p, xg)
 
     # %% Equilibrium input generation
-
     [ns, Ts, vsx1] = equilibrium_state(p, xg)
 
-    write_frame(p["ymd"], p["UTsec0"], ns, vsx1, Ts, p["simdir"], p["format"], p["realbits"])
+    write_state(p["t0"], ns, vsx1, Ts, p["out_dir"], p["format"], p["realbits"])
 
 
 def model_setup_interp(p: T.Dict[str, T.Any]):

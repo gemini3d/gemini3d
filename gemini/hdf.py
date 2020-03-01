@@ -28,9 +28,30 @@ def get_simsize(path: Path) -> T.Tuple[int, ...]:
     return lxs
 
 
-def write_frame(ymd: T.Tuple[int, int, int], UTsec: float, ns: np.ndarray, vs: np.ndarray, Ts: np.ndarray, outdir: Path,
-                file_format: str, realbits: int):
-    raise NotImplementedError
+def write_state(
+    time: datetime, ns: np.ndarray, vs: np.ndarray, Ts: np.ndarray, out_dir: Path, file_format: str, realbits: int,
+):
+    """
+     WRITE STATE VARIABLE DATA TO BE USED AS INITIAL CONDITIONS
+    FOR ANOTHER SIMULATION.  NOTE THAT WE
+    DO NOT HERE OUTPUT ANY OF THE ELECTRODYNAMIC
+    VARIABLES SINCE THEY ARE NOT NEEDED TO START THINGS
+    UP IN THE FORTRAN CODE.
+
+    INPUT ARRAYS SHOULD BE TRIMMED TO THE CORRECT SIZE
+    I.E. THEY SHOULD NOT INCLUDE GHOST CELLS
+    """
+
+    fn = out_dir / ("initial_conditions.h5")
+    print("write", fn)
+
+    with h5py.File(fn, "w") as f:
+        f["/ymd"] = [time.year, time.month, time.day]
+        f["/UTsec"] = time.hour * 3600 + time.minute * 60 + time.second + time.microsecond / 1e6
+
+        f.create_dataset(f"/ns", data=ns, dtype=np.float32, compression="gzip", compression_opts=1)
+        f.create_dataset(f"/vsx1", data=vs, dtype=np.float32, compression="gzip", compression_opts=1)
+        f.create_dataset(f"/Ts", data=Ts, dtype=np.float32, compression="gzip", compression_opts=1)
 
 
 def readgrid(fn: Path) -> T.Dict[str, np.ndarray]:
@@ -61,6 +82,33 @@ def readgrid(fn: Path) -> T.Dict[str, np.ndarray]:
             grid[key] = f[key][:]
 
     return grid
+
+
+def write_grid(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]):
+
+    p["out_dir"].mkdir(parents=True, exist_ok=True)
+
+    fn = p["out_dir"] / "simsize.h5"
+    print("write", fn)
+    with h5py.File(fn, "w") as h:
+        for k in ("lx", "lx1", "lx2", "lx3"):
+            h[f"/{k}"] = xg[k]
+
+    fn = p["out_dir"] / "simgrid.h5"
+    print("write", fn)
+    with h5py.File(fn, "w") as h:
+        for i in (1, 2, 3):
+            for k in (f"x{i}", f"x{i}i", f"dx{i}b", f"dx{i}h", f"h{i}", f"h{i}x1i", f"h{i}x2i", f"h{i}x3i", f"gx{i}", f"e{i}"):
+                if xg[k].ndim >= 2:
+                    h.create_dataset(f"/{k}", data=xg[k], dtype=np.float32, compression="gzip", compression_opts=1)
+                else:
+                    h[f"/{k}"] = xg[k].astype(np.float32)
+
+        for k in ("alt", "glat", "glon", "Bmag", "I", "nullpts", "er", "etheta", "ephi", "r", "theta", "phi", "x", "y", "z"):
+            if xg[k].ndim >= 2:
+                h.create_dataset(f"/{k}", data=xg[k], dtype=np.float32, compression="gzip", compression_opts=1)
+            else:
+                h[f"/{k}"] = xg[k].astype(np.float32)
 
 
 def load_Efield(fn: Path) -> T.Dict[str, T.Any]:
@@ -184,4 +232,13 @@ def ymdhourdec2datetime(year: int, month: int, day: int, hourdec: float) -> date
     """
     convert year,month,day + decimal hour HH.hhh to time
     """
+
     return datetime(year, month, day, int(hourdec), int((hourdec * 60) % 60)) + timedelta(seconds=(hourdec * 3600) % 60)
+
+
+def datetime2ymd_hourdec(dt: datetime) -> str:
+    """
+    convert datetime to ymd_hourdec string for filename stem
+    """
+
+    return dt.strftime("%Y%m%d") + f"_{dt.hour*3600 + dt.minute*60 + dt.second + dt.microsecond/1e6:12.6f}"

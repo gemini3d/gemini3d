@@ -65,15 +65,20 @@ def read_nml(fn: Path) -> T.Dict[str, T.Any]:
     if fn.is_dir():
         fn = fn / "config.nml"
 
-    params = read_nml_group(fn, ("base", "setup"))
+    groups = ["base", "setup"]
+    params = read_nml_group(fn, groups)
+
+    groups = []
     if params["flagdneu"]:
-        params.update(read_nml_group(fn, "neutral_perturb"))
+        groups.append("neutral_perturb")
     if params["flagprecfile"]:
-        params.update(read_nml_group(fn, "precip"))
+        groups.append("precip")
     if params["flagE0file"]:
-        params.update(read_nml_group(fn, "efield"))
+        groups.append("efield")
     if params["flagglow"]:
-        params.update(read_nml_group(fn, "glow"))
+        groups.append("glow")
+
+    params.update(read_nml_group(fn, groups))
 
     return params
 
@@ -82,6 +87,8 @@ def read_nml_group(fn: Path, group: T.Sequence[str]) -> T.Dict[str, T.Any]:
     """ read a group from an .nml file """
 
     groups = tuple(group)
+    if not groups:
+        return {}
 
     raw: T.Dict[str, T.Sequence[str]] = {}
 
@@ -123,13 +130,13 @@ def parse_group(raw: T.Dict[str, T.Any], group: T.Sequence[str]) -> T.Dict[str, 
     P: T.Dict[str, T.Any] = {}
 
     if "base" in group:
-        P["t0"] = datetime(int(raw["ymd"][0]), int(raw["ymd"][1]), int(raw["ymd"][2])) + timedelta(seconds=float(raw["UTsec0"])),
-        P["tdur"] = timedelta(seconds=float(raw["tdur"])),
-        P["dtout"] = timedelta(seconds=float(raw["dtout"])),
-        P["f107a"] = float(raw["activ"][0]),
-        P["f107"] = float(raw["activ"][1]),
-        P["Ap"] = float(raw["activ"][2]),
-        P["tcfl"] = float(raw["tcfl"]),
+        P["t0"] = datetime(int(raw["ymd"][0]), int(raw["ymd"][1]), int(raw["ymd"][2])) + timedelta(seconds=float(raw["UTsec0"]))
+        P["tdur"] = timedelta(seconds=float(raw["tdur"]))
+        P["dtout"] = timedelta(seconds=float(raw["dtout"]))
+        P["f107a"] = float(raw["activ"][0])
+        P["f107"] = float(raw["activ"][1])
+        P["Ap"] = float(raw["activ"][2])
+        P["tcfl"] = float(raw["tcfl"])
         P["Teinf"] = float(raw["Teinf"])
         for k in ("potsolve", "flagperiodic", "flagoutput", "flagcap", "flagglow", "flagE0file", "flagdneu", "flagprecfile"):
             if k in raw:
