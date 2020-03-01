@@ -5,7 +5,7 @@ env:
   CI: true
 
 on:
-  release
+  release:
 
 jobs:
 
@@ -24,7 +24,7 @@ jobs:
         pip install cmake
 
     - name: CMake configure
-      run: cmake -B build -Dhdf5=disabled
+      run: cmake -B build -Dhdf5=false
       env:
         FC: gfortran
     - run: cmake --build build --parallel

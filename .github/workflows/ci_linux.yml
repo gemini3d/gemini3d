@@ -17,6 +17,8 @@ on:
       - "**.cmake"
       - "**/CMakeLists.txt"
       - ".github/workflows/ci_linux.yml"
+  release:
+
 
 jobs:
 
@@ -33,7 +35,7 @@ jobs:
     - name: Install packages
       run: |
         sudo apt update -yq
-        sudo apt install -yq --no-install-recommends pkg-config gfortran libopenmpi-dev openmpi-bin liblapack-dev libscalapack-openmpi-dev libmumps-dev libhdf5-dev
+        sudo apt install -yq --no-install-recommends pkg-config gfortran libopenmpi-dev openmpi-bin liblapack-dev libscalapack-openmpi-dev libmumps-dev libhdf5-dev octave
     - name: Install Ninja
       run: |
         wget https://github.com/ninja-build/ninja/releases/download/v1.10.0/ninja-linux.zip

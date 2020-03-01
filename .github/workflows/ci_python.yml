@@ -9,6 +9,8 @@ on:
     paths:
     - "**/*.py"
     - ".github/workflows/ci_python.yml"
+  release:
+
 
 jobs:
 
