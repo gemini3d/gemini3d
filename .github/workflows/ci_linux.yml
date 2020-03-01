@@ -40,7 +40,7 @@ jobs:
         unzip ninja-linux.zip
 
     - name: CMake configure
-      run: cmake -G Ninja -DCMAKE_MAKE_PROGRAM=./ninja -B build -Dhdf5=true
+      run: cmake -G Ninja -DCMAKE_MAKE_PROGRAM=$(realpath ./ninja) -B build -Dhdf5=true
       env:
         FC: gfortran
     - run: cmake --build build --parallel
