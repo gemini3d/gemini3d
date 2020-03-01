@@ -1,6 +1,7 @@
 import functools
 import typing as T
 from pathlib import Path
+import numpy as np
 from datetime import datetime, timedelta
 
 NaN = float("NaN")
@@ -64,8 +65,7 @@ def read_nml(fn: Path) -> T.Dict[str, T.Any]:
     if fn.is_dir():
         fn = fn / "config.nml"
 
-    params = {}
-    params.update(read_nml_group(fn, "base"))
+    params = read_nml_group(fn, ("base", "setup"))
     if params["flagdneu"]:
         params.update(read_nml_group(fn, "neutral_perturb"))
     if params["flagprecfile"]:
@@ -78,17 +78,22 @@ def read_nml(fn: Path) -> T.Dict[str, T.Any]:
     return params
 
 
-def read_nml_group(fn: Path, group: str) -> T.Dict[str, T.Any]:
+def read_nml_group(fn: Path, group: T.Sequence[str]) -> T.Dict[str, T.Any]:
     """ read a group from an .nml file """
 
-    raw: T.Dict[str, T.Any] = {}
+    groups = tuple(group)
+
+    raw: T.Dict[str, T.Sequence[str]] = {}
 
     with fn.open("r") as f:
         for line in f:
-            if not line.lstrip().startswith(f"&{group}"):
-                continue
+            ls = line.strip()
+            if ls.startswith('&'):
+                # a group name
+                if not ls[1:].startswith(groups):
+                    continue
             for line in f:
-                if line.strip().startswith("/"):
+                if ls.startswith("/"):
                     # end of group
                     break
                 vals = line.split("=")
@@ -101,55 +106,72 @@ def read_nml_group(fn: Path, group: str) -> T.Dict[str, T.Any]:
                 raw[key] = values[0] if len(values) == 1 else values
 
     if not raw:
-        raise KeyError(f"did not find group {group} in {fn}")
+        raise KeyError(f"did not find Namelist group(s) {groups} in {fn}")
 
-    return parse_group(raw, group)
+    return parse_group(raw, groups)
 
 
-def parse_group(raw: T.Dict[str, str], group: str) -> T.Dict[str, T.Any]:
+def parse_group(raw: T.Dict[str, T.Any], group: T.Sequence[str]) -> T.Dict[str, T.Any]:
     """
     this is Gemini-specific
     don't resolve absolute paths here because that assumes same machine
     """
 
-    if group == "base":
-        P = {
-            "t0": datetime(int(raw["ymd"][0]), int(raw["ymd"][1]), int(raw["ymd"][2])) + timedelta(seconds=float(raw["UTsec0"])),
-            "tdur": timedelta(seconds=float(raw["tdur"])),
-            "dtout": timedelta(seconds=float(raw["dtout"])),
-            "f107a": float(raw["activ"][0]),
-            "f107": float(raw["activ"][1]),
-            "Ap": float(raw["activ"][2]),
-            "tcfl": float(raw["tcfl"]),
-            "Teinf": float(raw["Teinf"]),
-        }
+    if isinstance(group, str):
+        group = [group]
+
+    P: T.Dict[str, T.Any] = {}
+
+    if "base" in group:
+        P["t0"] = datetime(int(raw["ymd"][0]), int(raw["ymd"][1]), int(raw["ymd"][2])) + timedelta(seconds=float(raw["UTsec0"])),
+        P["tdur"] = timedelta(seconds=float(raw["tdur"])),
+        P["dtout"] = timedelta(seconds=float(raw["dtout"])),
+        P["f107a"] = float(raw["activ"][0]),
+        P["f107"] = float(raw["activ"][1]),
+        P["Ap"] = float(raw["activ"][2]),
+        P["tcfl"] = float(raw["tcfl"]),
+        P["Teinf"] = float(raw["Teinf"])
         for k in ("potsolve", "flagperiodic", "flagoutput", "flagcap", "flagglow", "flagE0file", "flagdneu", "flagprecfile"):
-            try:
+            if k in raw:
                 P[k] = int(raw[k])
-            except KeyError:
+            else:
                 P[k] = 0
         for k in ("indat_file", "indat_grid", "indat_size"):
             P[k] = Path(raw[k])
-    elif group == "neutral_perturb":
-        P = {"interptype": int(raw["interptype"]),
-             "sourcedir": Path(raw["source_dir"])}
+
+    if "setup" in group:
+        P["format"] = raw["format"]
+        P["alt_scale"] = np.array(list(map(float, raw["alt_scale"])))
+        for k in ("realbits", "lxp", "lyp"):
+            P[k] = int(raw[k])
+        for k in ("glat", "glon", "xdist", "ydist", "alt_min", "alt_max", "Bincl", "nmf", "nme"):
+            if k in raw:
+                P[k] = float(raw[k])
+
+    if "neutral_perturb" in group:
+        P["interptype"] = int(raw["interptype"])
+        P["sourcedir"] = Path(raw["source_dir"])
 
         for k in ("sourcemlat", "sourcemlon", "dtneu", "dxn", "drhon", "dzn"):
             try:
                 P[k] = float(raw[k])
             except KeyError:
                 P[k] = NaN
-    elif group == "precip":
-        P = {"dtprec": float(raw["dtprec"]),
-             "precdir": Path(raw["prec_dir"])}
-    elif group == "efield":
-        P = {"dtE0": float(raw["dtE0"]),
-             "E0dir": Path(raw["E0_dir"])}
-    elif group == "glow":
-        P = {"dtglow": float(raw["dtglow"]),
-             "dtglowout": float(raw["dtglowout"])}
-    else:
-        raise ValueError(f"not sure how to handle group {group}")
+
+    if "precip" in group:
+        P["dtprec"] = float(raw["dtprec"])
+        P["precdir"] = Path(raw["prec_dir"])
+
+    if "efield" in group:
+        P["dtE0"] = float(raw["dtE0"])
+        P["E0dir"] = Path(raw["E0_dir"])
+
+    if "glow" in group:
+        P["dtglow"] = float(raw["dtglow"])
+        P["dtglowout"] = float(raw["dtglowout"])
+
+    if not P:
+        raise ValueError(f"Not sure how to parse NML group {group}")
 
     return P
 
