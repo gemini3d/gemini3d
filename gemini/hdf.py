@@ -39,6 +39,13 @@ def write_state(time: datetime, ns: np.ndarray, vs: np.ndarray, Ts: np.ndarray, 
 
     INPUT ARRAYS SHOULD BE TRIMMED TO THE CORRECT SIZE
     I.E. THEY SHOULD NOT INCLUDE GHOST CELLS
+
+    NOTE: The .transpose() reverses the dimension order.
+    The HDF Group never implemented the intended H5T_array_create(..., perm)
+    and it's deprecated.
+    Fortran, including the HDF Group Fortran interfaces and h5fortran as well as
+    Matlab read/write HDF5 in Fortran order. h5py read/write HDF5 in C order so we
+    need the .transpose() for h5py
     """
 
     fn = out_dir / "initial_conditions.h5"
@@ -48,9 +55,9 @@ def write_state(time: datetime, ns: np.ndarray, vs: np.ndarray, Ts: np.ndarray, 
         f["/ymd"] = [time.year, time.month, time.day]
         f["/UTsec"] = time.hour * 3600 + time.minute * 60 + time.second + time.microsecond / 1e6
 
-        f.create_dataset(f"/ns", data=ns, dtype=np.float32, compression="gzip", compression_opts=1)
-        f.create_dataset(f"/vsx1", data=vs, dtype=np.float32, compression="gzip", compression_opts=1)
-        f.create_dataset(f"/Ts", data=Ts, dtype=np.float32, compression="gzip", compression_opts=1)
+        f.create_dataset(f"/ns", data=ns.transpose(), dtype=np.float32, compression="gzip", compression_opts=1)
+        f.create_dataset(f"/vsx1", data=vs.transpose(), dtype=np.float32, compression="gzip", compression_opts=1)
+        f.create_dataset(f"/Ts", data=Ts.transpose(), dtype=np.float32, compression="gzip", compression_opts=1)
 
 
 def readgrid(fn: Path) -> T.Dict[str, np.ndarray]:
@@ -93,6 +100,13 @@ def write_grid(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]):
         simulation parameters
     xg: dict
         grid values
+
+    NOTE: The .transpose() reverses the dimension order.
+    The HDF Group never implemented the intended H5T_array_create(..., perm)
+    and it's deprecated.
+    Fortran, including the HDF Group Fortran interfaces and h5fortran as well as
+    Matlab read/write HDF5 in Fortran order. h5py read/write HDF5 in C order so we
+    need the .transpose() for h5py
     """
 
     p["out_dir"].mkdir(parents=True, exist_ok=True)
@@ -108,13 +122,13 @@ def write_grid(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]):
         for i in (1, 2, 3):
             for k in (f"x{i}", f"x{i}i", f"dx{i}b", f"dx{i}h", f"h{i}", f"h{i}x1i", f"h{i}x2i", f"h{i}x3i", f"gx{i}", f"e{i}"):
                 if xg[k].ndim >= 2:
-                    h.create_dataset(f"/{k}", data=xg[k], dtype=np.float32, compression="gzip", compression_opts=1)
+                    h.create_dataset(f"/{k}", data=xg[k].transpose(), dtype=np.float32, compression="gzip", compression_opts=1)
                 else:
                     h[f"/{k}"] = xg[k].astype(np.float32)
 
         for k in ("alt", "glat", "glon", "Bmag", "I", "nullpts", "er", "etheta", "ephi", "r", "theta", "phi", "x", "y", "z"):
             if xg[k].ndim >= 2:
-                h.create_dataset(f"/{k}", data=xg[k], dtype=np.float32, compression="gzip", compression_opts=1)
+                h.create_dataset(f"/{k}", data=xg[k].transpose(), dtype=np.float32, compression="gzip", compression_opts=1)
             else:
                 h[f"/{k}"] = xg[k].astype(np.float32)
 
