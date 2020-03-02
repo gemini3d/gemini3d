@@ -42,7 +42,12 @@ zenodo: typing.Dict[str, typing.Any] = {
 
 def run_test(testname: str, mpiexec: str, exe: str, nml: str, outdir: str, mpi_count: int = None):
     z = zenodo[testname]
-    gemini.url_retrieve(z["url"], z["zip"], ("md5", z["md5"]))
+    try:
+        gemini.url_retrieve(z["url"], z["zip"], ("md5", z["md5"]))
+    except (ConnectionError, ValueError) as e:
+        print(f"SKIP: problem downloading reference data {e}", file=sys.stderr)
+        raise SystemExit(77)
+
     gemini.extract_zip(z["zip"], z["dir"])
 
     if not Path(nml).expanduser().is_file():
