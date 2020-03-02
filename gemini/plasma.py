@@ -27,6 +27,9 @@ def equilibrium_resample(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]):
     interpolated grid.
     """
 
+    if ~(xg["lx"] == np.array([xg["lx1"], xg["lx2"], xg["lx3"]])).all():
+        raise ValueError("simsize.h5 must exclude ghost cells")
+
     # %% READ Equilibrium SIMULATION INFO
     peq = read_config(p["eqdir"])
     xgin = readgrid(p["eqdir"])
@@ -241,8 +244,8 @@ def equilibrium_state(p: T.Dict[str, T.Any], xg: DictArray) -> T.Tuple[np.ndarra
             ne = chapmana(alt[:, ix2, ix3], p["nmf"], z0f, Hf) + chapmana(alt[:, ix2, ix3], p["nme"], z0e, He)
             rho = 1 / 2 * np.tanh((alt[:, ix2, ix3] - 200e3) / 45e3) - 1 / 2 * np.tanh((alt[:, ix2, ix3] - 1000e3) / 200e3)
 
-            # has to be np.nonzero() as integers not slice is needed.
-            inds = np.nonzero(alt[:, ix2, ix3] > z0f)[0]
+            # has to be .nonzero() as integers not slice is needed.
+            inds = (alt[:, ix2, ix3] > z0f).nonzero()[0]
             if len(inds) > 0:
                 n0 = p["nmf"]
                 #     [n0,ix1]=max(ne);  %in case it isn't exactly z0f
