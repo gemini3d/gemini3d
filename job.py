@@ -32,13 +32,13 @@ if __name__ == "__main__":
     tic = monotonic()
     try:
         ret = gemini.job.runner(params)
-    except FileNotFoundError as excp:
-        print(excp, file=sys.stderr)
+    except FileNotFoundError:
         print(
             "\nA necessary simulation input file was not found."
             "\nThis can mean that the simulation initialization script wasn't run first.\n",
             file=sys.stderr,
         )
+        raise
     except EnvironmentError as excp:
         print(excp, file=sys.stderr)
         print(

@@ -4,21 +4,189 @@ plasma functions
 import typing as T
 import numpy as np
 from pathlib import Path
+from math import isclose
 import os
 import shutil
 import tempfile
 import subprocess
 from scipy.integrate import cumtrapz
-from scipy.interpolate import interp1d
+from scipy.interpolate import interp1d, interp2d, interpn
+
+from .config import read_config
+from .readdata import readgrid, loadframe
+from .base import write_grid, write_state
 
 R = Path(__file__).parents[1].resolve()
 
+DictArray = T.Dict[str, T.Any]
+
 
 def equilibrium_resample(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]):
-    raise NotImplementedError
+    """
+    read and interpolate equilibrium simulation data, writing new
+    interpolated grid.
+    """
+
+    # %% READ Equilibrium SIMULATION INFO
+    peq = read_config(p["eqdir"])
+    xgin = readgrid(p["eqdir"])
+    # %% END FRAME time of equilibrium simulation
+    # this will be the starting time of the new simulation
+    t_eq_end = peq["t0"] + peq["tdur"]
+
+    # %% LOAD THE last equilibrium frame
+    dat = loadframe(p["eqdir"], t_eq_end)
+
+    # %% sanity check equilibrium simulation input to interpolation
+    check_density(dat["ns"][1])
+    check_drift(dat["vs"][1])
+    check_temperature(dat["Ts"][1])
+
+    # %% DO THE INTERPOLATION
+    nsi, vs1i, Tsi = model_resample(xgin, dat["ns"][1], dat["vs"][1], dat["Ts"][1], xg)
+
+    # %% sanity check interpolated variables
+    check_density(nsi)
+    check_drift(vs1i)
+    check_temperature(Tsi)
+
+    # %% WRITE OUT THE GRID
+    write_grid(p, xg)
+
+    write_state(t_eq_end, nsi, vs1i, Tsi, p["out_dir"], p["format"])
 
 
-def equilibrium_state(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]) -> T.Tuple[np.ndarray, np.ndarray, np.ndarray]:
+def model_resample(
+    xgin: DictArray, ns: np.ndarray, vs: np.ndarray, Ts: np.ndarray, xg: DictArray
+) -> T.Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """ resample a grid
+    usually used to upsample an equilibrium simulation grid
+
+    Parameters
+    ----------
+
+    xgin: dict
+        original grid (usually equilibrium sim grid)
+    ns: dict
+        number density of species(4D)
+    vs: dict
+        velocity (4D)
+    Ts: dict
+        temperature of species (4D)
+
+    Returns
+    -------
+
+
+    """
+    # %% NEW GRID SIZES
+    lx1, lx2, lx3 = xg["lx"]
+    lsp = ns.shape[0]
+
+    # %% ALLOCATIONS
+    nsi = np.empty((lsp, lx1, lx2, lx3))
+    vsi = np.empty_like(nsi)
+    Tsi = np.empty_like(nsi)
+
+    # %% INTERPOLATE ONTO NEWER GRID
+    X2 = xgin["x2"][2:-2]
+    X1 = xgin["x1"][2:-2]
+    X3 = xgin["x3"][2:-2]
+    X2i = xg["x2"][2:-2]
+    X1i = xg["x1"][2:-2]
+    X3i = xg["x3"][2:-2]
+
+    if lx3 > 1 and lx2 > 1:
+        # 3-D
+        print("interpolating grid for 3-D simulation")
+        # X2, X1, X3 = np.meshgrid(xgin['x2'][2:-2], xgin['x1'][2:-2], xgin['x3'][2:-2])
+        # X2i, X1i, X3i = np.meshgrid(xg['x2'][2:-2], xg['x1'][2:-2], xg['x3'][2:-2])
+
+        for i in range(lsp):
+            nsi[i, :, :, :] = interpn(points=(X2, X1, X3), values=ns[i, :, :, :], xi=(X2i, X1i, X3i), bounds_error=True)
+            vsi[i, :, :, :] = interpn(points=(X2, X1, X3), values=vs[i, :, :, :], xi=(X2i, X1i, X3i), bounds_error=True)
+            Tsi[i, :, :, :] = interpn(points=(X2, X1, X3), values=Ts[i, :, :, :], xi=(X2i, X1i, X3i), bounds_error=True)
+    elif lx3 == 1:
+        # 2-D east-west
+        print("interpolating grid for 2-D simulation in x1, x2")
+        # [X2,X1]=meshgrid(xgin.x2(3:end-2),xgin.x1(3:end-2));
+        # [X2i,X1i]=meshgrid(xg.x2(3:end-2),xg.x1(3:end-2));
+        for i in range(lsp):
+            f = interp2d(X2, X1, ns[i, :, :, :], bounds_error=True)
+            nsi[i, :, :, :] = f(X2i, X1i)[:, :, None]
+
+            f = interp2d(X2, X1, vs[i, :, :, :], bounds_error=True)
+            vsi[i, :, :, :] = f(X2i, X1i)[:, :, None]
+
+            f = interp2d(X2, X1, Ts[i, :, :, :], bounds_error=True)
+            Tsi[i, :, :, :] = f(X2i, X1i)[:, :, None]
+    elif lx2 == 1:
+        # 2-D north-south
+        print("interpolating grid for 2-D simulation in x1, x3")
+        # original grid, a priori the first 2 and last 2 values are ghost cells
+        # on each axis
+        #
+        # Detect old non-padded grid and workaround
+        if isclose(xgin["x3"][0], xg["x3"][2], abs_tol=1):
+            # old sim, no external ghost cells.
+            # Instead of discarding good cells,keep them and say there are
+            # new ghost cells outside the grid
+            X3 = np.linspace(xgin["x3"][0], xgin["x3"][-1], xgin["lx"][2])
+        else:
+            # new sim, external ghost cells
+            X3 = xgin["x3"][2:-2]
+
+        X1 = xgin["x1"][2:-2]
+        # new grid
+        X3i = xg["x3"][2:-2]
+        X1i = xg["x1"][2:-2]
+
+        # for each species
+        for i in range(lsp):
+            f = interp2d(X1, X3, ns[i, :, :, :], bounds_error=True)
+            nsi[i, :, :, :] = f(X1i, X3i)
+
+            f = interp2d(X1, X3, vs[i, :, :, :], bounds_error=True)
+            vsi[i, :, :, :] = f(X1i, X3i)
+
+            f = interp2d(X1, X3, Ts[i, :, :, :], bounds_error=True)
+            Tsi[i, :, :, :] = f(X1i, X3i)
+
+    else:
+        raise ValueError("Not sure if this is 2-D or 3-D simulation")
+
+    return nsi, vsi, Tsi
+
+
+def check_density(n: np.ndarray):
+
+    if not np.isfinite(n).all():
+        raise ValueError("non-finite density")
+    if (n < 0).any():
+        raise ValueError("negative density")
+    if n.max() < 1e6:
+        raise ValueError("too small maximum density")
+
+
+def check_drift(v: np.ndarray):
+
+    if not np.isfinite(v).all():
+        raise ValueError("non-finite drift")
+    if (abs(v) > 10e3).any():
+        raise ValueError("excessive drift velocity")
+
+
+def check_temperature(T: np.ndarray):
+
+    if not np.isfinite(T).all():
+        raise ValueError("non-finite temperature")
+    if (T < 0).any():
+        raise ValueError("negative temperature")
+    if T.max() < 500:
+        raise ValueError("too cold maximum temperature")
+
+
+def equilibrium_state(p: T.Dict[str, T.Any], xg: DictArray) -> T.Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
     generate (arbitrary) initial conditions for a grid.
     NOTE: only works on symmmetric closed grids!

@@ -1,15 +1,17 @@
 from pathlib import Path
 import typing as T
+import numpy as np
+from datetime import datetime
 
 from .raw import get_simsize as get_simsize_raw
 try:
-    from .hdf import get_simsize as get_simsize_h5
+    from .hdf import get_simsize as get_simsize_h5, write_grid as write_grid_h5, write_state as write_state_h5
 except ModuleNotFoundError:
-    get_simsize_h5 = None
+    get_simsize_h5 = write_grid_h5 = write_state_h5 = None
 try:
-    from .nc4 import get_simsize as get_simsize_nc
+    from .nc4 import get_simsize as get_simsize_nc, write_grid as write_grid_nc, write_state as write_state_nc
 except ModuleNotFoundError:
-    get_simsize_nc = None
+    get_simsize_nc = write_grid_nc = write_state_nc = None
 
 Pathlike = T.Union[str, Path]
 
@@ -24,6 +26,8 @@ def get_simsize(path: Pathlike) -> T.Tuple[int, ...]:
                 break
     else:
         fn = path
+        if not fn.stem == "simsize":
+            fn = path.parent / ("simsize" + path.suffix)
     if not fn.is_file():
         raise FileNotFoundError(path)
 
@@ -37,3 +41,50 @@ def get_simsize(path: Pathlike) -> T.Tuple[int, ...]:
         return get_simsize_nc(fn)
     else:
         return get_simsize_raw(fn)
+
+
+def write_grid(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]):
+    """ writes grid to disk
+
+    Parameters
+    ----------
+
+    p: dict
+        simulation parameters
+    xg: dict
+        grid values
+    """
+
+    if p["format"] in ("hdf5", "h5"):
+        if write_grid_h5 is None:
+            raise ImportError("pip install h5py")
+        write_grid_h5(p, xg)
+    elif p["format"] in ("netcdf", "nc"):
+        if write_grid_nc is None:
+            raise ImportError("pip install h5py")
+        write_grid_nc(p, xg)
+    else:
+        raise ValueError(f'unknown grid format {p["format"]}')
+
+
+def write_state(time: datetime, ns: np.ndarray, vs: np.ndarray, Ts: np.ndarray, out_dir: Path, file_format: str):
+    """
+     WRITE STATE VARIABLE DATA.
+    NOTE THAT WE don't write ANY OF THE ELECTRODYNAMIC
+    VARIABLES SINCE THEY ARE NOT NEEDED TO START THINGS
+    UP IN THE FORTRAN CODE.
+
+    INPUT ARRAYS SHOULD BE TRIMMED TO THE CORRECT SIZE
+    I.E. THEY SHOULD NOT INCLUDE GHOST CELLS
+    """
+
+    if file_format in ("hdf5", "h5"):
+        if write_grid_h5 is None:
+            raise ImportError("pip install h5py")
+        write_state_h5(time, ns, vs, Ts, out_dir)
+    elif file_format in ("netcdf", "nc"):
+        if write_grid_nc is None:
+            raise ImportError("pip install h5py")
+        write_state_nc(time, ns, vs, Ts, out_dir)
+    else:
+        raise ValueError(f'unknown grid format {file_format}')

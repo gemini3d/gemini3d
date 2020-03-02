@@ -26,6 +26,8 @@ FILE_FORMATS = (".h5", ".nc", ".dat")
 
 def readgrid(path: Path) -> typing.Dict[str, np.ndarray]:
 
+    path = Path(path).expanduser().resolve()
+
     if path.is_dir():
         stem = "inputs/simgrid"
         for ext in FILE_FORMATS:

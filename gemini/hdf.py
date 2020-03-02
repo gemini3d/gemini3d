@@ -28,13 +28,10 @@ def get_simsize(path: Path) -> T.Tuple[int, ...]:
     return lxs
 
 
-def write_state(
-    time: datetime, ns: np.ndarray, vs: np.ndarray, Ts: np.ndarray, out_dir: Path, file_format: str, realbits: int,
-):
+def write_state(time: datetime, ns: np.ndarray, vs: np.ndarray, Ts: np.ndarray, out_dir: Path):
     """
-     WRITE STATE VARIABLE DATA TO BE USED AS INITIAL CONDITIONS
-    FOR ANOTHER SIMULATION.  NOTE THAT WE
-    DO NOT HERE OUTPUT ANY OF THE ELECTRODYNAMIC
+     WRITE STATE VARIABLE DATA.
+    NOTE THAT WE don't write ANY OF THE ELECTRODYNAMIC
     VARIABLES SINCE THEY ARE NOT NEEDED TO START THINGS
     UP IN THE FORTRAN CODE.
 
@@ -42,7 +39,7 @@ def write_state(
     I.E. THEY SHOULD NOT INCLUDE GHOST CELLS
     """
 
-    fn = out_dir / ("initial_conditions.h5")
+    fn = out_dir / "initial_conditions.h5"
     print("write", fn)
 
     with h5py.File(fn, "w") as f:
@@ -75,7 +72,7 @@ def readgrid(fn: Path) -> T.Dict[str, np.ndarray]:
         logging.error(f"{fn} grid file is not present. Will try to load rest of data.")
         return grid
 
-    grid["lxs"] = get_simsize(fn)
+    grid["lxs"] = get_simsize(fn.with_name("simsize.h5"))
 
     with h5py.File(fn, "r") as f:
         for key in f.keys():
@@ -85,6 +82,16 @@ def readgrid(fn: Path) -> T.Dict[str, np.ndarray]:
 
 
 def write_grid(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]):
+    """ writes grid to disk
+
+    Parameters
+    ----------
+
+    p: dict
+        simulation parameters
+    xg: dict
+        grid values
+    """
 
     p["out_dir"].mkdir(parents=True, exist_ok=True)
 
@@ -155,27 +162,34 @@ def loadframe3d_curv(fn: Path) -> T.Dict[str, T.Any]:
     with h5py.File(fn, "r") as f:
         dat["time"] = ymdhourdec2datetime(f["time/ymd"][0], f["time/ymd"][1], f["time/ymd"][2], f["time/UThour"][()])
 
-        dat["ne"] = (("x1", "x2", "x3"), f["/nsall"][LSP - 1, :, :, :].transpose())
+        ns = f["/nsall"][:].transpose((0, 3, 2, 1))
+        dat["ns"] = (("lsp", "x1", "x2", "x3"), ns)
+        vs = f["/vs1all"][:].transpose((0, 3, 2, 1))
+        dat["vs"] = (("lsp", "x1", "x2", "x3"), vs)
+        Ts = f["/Tsall"][:].transpose((0, 3, 2, 1))
+        dat["Ts"] = (("lsp", "x1", "x2", "x3"), Ts)
+
+        dat["ne"] = (("x1", "x2", "x3"), ns[LSP - 1, :, :, :])
 
         dat["v1"] = (
             ("x1", "x2", "x3"),
-            (f["/nsall"][:6, :, :, :].transpose() * f["/vs1all"][:6, :, :, :].transpose()).sum(axis=3) / dat["ne"][1],
+            (ns[:6, :, :, :] * vs[:6, :, :, :]).sum(axis=0) / dat["ne"][1],
         )
 
         dat["Ti"] = (
             ("x1", "x2", "x3"),
-            (f["/nsall"][:6, :, :, :].transpose() * f["/Tsall"][:6, :, :, :].transpose()).sum(axis=3) / dat["ne"][1],
+            (ns[:6, :, :, :] * Ts[:6, :, :, :]).sum(axis=0) / dat["ne"][1],
         )
-        dat["Te"] = (("x1", "x2", "x3"), f["/Tsall"][LSP - 1, :, :, :].transpose())
+        dat["Te"] = (("x1", "x2", "x3"), Ts[LSP - 1, :, :, :])
 
-        dat["J1"] = (("x1", "x2", "x3"), f["/J1all"][:].transpose())
-        dat["J2"] = (("x1", "x2", "x3"), f["/J2all"][:].transpose())
-        dat["J3"] = (("x1", "x2", "x3"), f["/J3all"][:].transpose())
+        dat["J1"] = (("x1", "x2", "x3"), f["/J1all"][:].transpose((2, 1, 0)))
+        dat["J2"] = (("x1", "x2", "x3"), f["/J2all"][:].transpose((2, 1, 0)))
+        dat["J3"] = (("x1", "x2", "x3"), f["/J3all"][:].transpose((2, 1, 0)))
 
-        dat["v2"] = (("x1", "x2", "x3"), f["/v2avgall"][:].transpose())
-        dat["v3"] = (("x1", "x2", "x3"), f["/v3avgall"][:].transpose())
+        dat["v2"] = (("x1", "x2", "x3"), f["/v2avgall"][:].transpose((2, 1, 0)))
+        dat["v3"] = (("x1", "x2", "x3"), f["/v3avgall"][:].transpose((2, 1, 0)))
 
-        dat["Phitop"] = (("x2", "x3"), f["/Phiall"][:])
+        dat["Phitop"] = (("x2", "x3"), f["/Phiall"][:].transpose())
 
     return dat
 
