@@ -7,21 +7,20 @@ from pathlib import Path
 import functools
 
 from .utils import get_mpi_count
-from .config import read_config
+from .config import read_config, get_config_filename
 from .hpc import hpc_job, hpc_batch_create
 from .model_setup import model_setup
 
 Pathlike = T.Union[str, Path]
-cwd = os.getcwd()
 
 
 def runner(pr: T.Dict[str, T.Any]) -> int:
 
-    config_file = Path(pr["config_file"]).resolve()
+    config_file = get_config_filename(Path(pr["config_file"]))
     # load configuration to know what directories to check
     p = read_config(config_file)
     for k in ("indat_size", "indat_grid", "indat_file"):
-        f = p[k].resolve().expanduser()
+        f = p[k].expanduser().resolve()
         if pr["force"] or not f.is_file():
             ok = initialize_simulation(p, pr)
             if not ok:
@@ -31,14 +30,14 @@ def runner(pr: T.Dict[str, T.Any]) -> int:
             break
 
     if p.get("flagE0file") == 1:
-        E0dir = p["E0dir"].resolve().expanduser()
+        E0dir = p["E0dir"].expanduser().resolve()
         if not E0dir.is_dir():
             ok = initialize_simulation(p, pr)
             if not ok or not E0dir.is_dir():
                 raise FileNotFoundError(E0dir)
 
     if p.get("flagprecfile") == 1:
-        precdir = p["precdir"].resolve().expanduser()
+        precdir = p["precdir"].expanduser().resolve()
         if not precdir.is_dir():
             ok = initialize_simulation(p, pr)
             if not ok or not precdir.is_dir():
@@ -48,16 +47,16 @@ def runner(pr: T.Dict[str, T.Any]) -> int:
     check_compiler()
 
     mpiexec = check_mpiexec(pr["mpiexec"])
-    logging.info(f"Detected mpiexec: {mpiexec}")
+    logging.info(f"Detected mpiexec: {' '.join(mpiexec)}")
 
     gemexe = check_gemini_exe(pr["gemexe"])
     logging.info(f"using gemini executable: {gemexe}")
 
     out_dir = check_outdir(pr["out_dir"])
 
-    Nmpi = get_mpi_count(config_file, cwd=cwd)
+    Nmpi = get_mpi_count(config_file)
 
-    cmd = [str(mpiexec), "-n", str(Nmpi), str(gemexe), str(config_file), str(out_dir)]
+    cmd = mpiexec + ["-n", str(Nmpi), str(gemexe), str(config_file), str(out_dir)]
     print(" ".join(cmd), "\n")
 
     batcher = hpc_job()

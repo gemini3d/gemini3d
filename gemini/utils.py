@@ -54,7 +54,7 @@ def get_cpu_count(force: int = None) -> int:
     return max_cpu // extradiv
 
 
-def get_mpi_count(path: Pathlike, force: int = None, cwd: Pathlike = None) -> int:
+def get_mpi_count(path: Pathlike, force: int = None) -> int:
 
     path = Path(path).expanduser()
 
@@ -67,11 +67,9 @@ def get_mpi_count(path: Pathlike, force: int = None, cwd: Pathlike = None) -> in
         if path.suffix in (".h5", ".nc", ".dat"):
             size = get_simsize(path)
         elif path.suffix in (".ini", ".nml"):
-            if cwd is None:
-                raise ValueError("must specify cwd when about to run a simulation using config file")
             params = read_config(path)
             # OK to use indat_size because we're going to run a sim on this machine
-            size = get_simsize(cwd / params["indat_size"])
+            size = get_simsize(params["indat_size"])
     else:
         raise FileNotFoundError(f"{path} is not a file or directory")
 
