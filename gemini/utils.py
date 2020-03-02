@@ -112,11 +112,11 @@ def url_retrieve(url: str, outfile: Pathlike, filehash: T.Sequence[str] = None, 
         try:
             urllib.request.urlretrieve(url, str(outfile))
         except (socket.gaierror, urllib.error.URLError) as err:
-            raise SystemExit("ConnectionError: could not download {} due to {}".format(url, err))
+            raise ConnectionError(f"could not download {url} due to {err}")
 
     if filehash:
         if not file_checksum(outfile, filehash[0], filehash[1]):
-            raise SystemExit("HashError: {}".format(outfile))
+            raise ValueError(f"Hash mismatch: {outfile}")
 
 
 def file_checksum(fn: Path, mode: str, filehash: str) -> bool:
