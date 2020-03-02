@@ -12,9 +12,7 @@ path = expanduser(path);
 if isoctave
   abspath = make_absolute_filename(path);
 else
-  if path(1) == '.' || ...
-     ~contains(path, filesep) || ...
-     (isletter(path(1)) && ~strcmp(path(2), ':'))
+  if is_relative_path(path)
     % TODO: handle .file or .path/.file
     path = [pwd, filesep, path];
   end
