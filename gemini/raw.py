@@ -57,7 +57,7 @@ def readgrid(fn: Path) -> T.Dict[str, np.ndarray]:
     elif len(lxs) == 3:
         return readgrid3(fn, lxs)
     else:
-        raise ValueError('lxs must be 2-D or 3-D')
+        raise ValueError("lxs must be 2-D or 3-D")
 
 
 def readgrid2(fn: Path, lxs: T.Sequence[int]) -> T.Dict[str, np.ndarray]:
@@ -140,14 +140,14 @@ def load_Efield(fn: Path) -> T.Dict[str, T.Any]:
 
     E["Nlon"], E["Nlat"] = get_simsize(fn.parent / "simsize.dat")
 
-    assert E['Nlon'] > 0, 'must have strictly positive number of longitude cells'
-    assert E['Nlat'] > 0, 'must have strictly positive number of latitude cells'
+    assert E["Nlon"] > 0, "must have strictly positive number of longitude cells"
+    assert E["Nlat"] > 0, "must have strictly positive number of latitude cells"
 
     lxs = (0, E["Nlon"], E["Nlat"])
 
     E.update(readgrid2(fn.parent / "simgrid.dat", (E["Nlon"], E["Nlat"])))
 
-    assert ((E['mlat'] >= -90) & (E['mlat'] <= 90)).all(), f'impossible latitude, was file read correctly? {fn}'
+    assert ((E["mlat"] >= -90) & (E["mlat"] <= 90)).all(), f"impossible latitude, was file read correctly? {fn}"
 
     with fn.open("r") as f:
         """
@@ -165,7 +165,7 @@ def load_Efield(fn: Path) -> T.Dict[str, T.Any]:
             E[p] = [("x3",), read(f, np.float64, E["Nlon"])]
         filesize = fn.stat().st_size
         if f.tell() != filesize:
-            logging.error(f'{fn} size {filesize} != file read position {f.tell()}')
+            logging.error(f"{fn} size {filesize} != file read position {f.tell()}")
 
     return E
 

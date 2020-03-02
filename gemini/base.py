@@ -4,6 +4,7 @@ import numpy as np
 from datetime import datetime
 
 from .raw import get_simsize as get_simsize_raw
+
 try:
     from .hdf import get_simsize as get_simsize_h5, write_grid as write_grid_h5, write_state as write_state_h5
 except ModuleNotFoundError:
@@ -31,11 +32,11 @@ def get_simsize(path: Pathlike) -> T.Tuple[int, ...]:
     if not fn.is_file():
         raise FileNotFoundError(path)
 
-    if fn.suffix == '.h5':
+    if fn.suffix == ".h5":
         if get_simsize_h5 is None:
             raise ModuleNotFoundError("pip install h5py")
         return get_simsize_h5(fn)
-    elif fn.suffix == '.nc':
+    elif fn.suffix == ".nc":
         if get_simsize_nc is None:
             raise ModuleNotFoundError("pip install netcdf4")
         return get_simsize_nc(fn)
@@ -87,4 +88,4 @@ def write_state(time: datetime, ns: np.ndarray, vs: np.ndarray, Ts: np.ndarray, 
             raise ImportError("pip install h5py")
         write_state_nc(time, ns, vs, Ts, out_dir)
     else:
-        raise ValueError(f'unknown grid format {file_format}')
+        raise ValueError(f"unknown grid format {file_format}")

@@ -105,7 +105,7 @@ def read_nml_group(fn: Path, group: T.Sequence[str]) -> T.Dict[str, T.Any]:
     with fn.open("r") as f:
         for line in f:
             ls = line.strip()
-            if ls.startswith('&'):
+            if ls.startswith("&"):
                 # a group name
                 if not ls[1:].startswith(groups):
                     continue
@@ -174,8 +174,21 @@ def parse_group(raw: T.Dict[str, T.Any], group: T.Sequence[str]) -> T.Dict[str, 
 
         for k in ("lxp", "lyp"):
             P[k] = int(raw[k])
-        for k in ("glat", "glon", "xdist", "ydist", "alt_min", "alt_max", "Bincl", "nmf", "nme",
-                  "precip_latwidth", "precip_lonwidth", "Etarg", "Efield_fracwidth"):
+        for k in (
+            "glat",
+            "glon",
+            "xdist",
+            "ydist",
+            "alt_min",
+            "alt_max",
+            "Bincl",
+            "nmf",
+            "nme",
+            "precip_latwidth",
+            "precip_lonwidth",
+            "Etarg",
+            "Efield_fracwidth",
+        ):
             if k in raw:
                 P[k] = float(raw[k])
         for k in ("eqdir",):

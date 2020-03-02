@@ -40,9 +40,9 @@ def main():
         except Exception as e:
             print(f"SKIP: {file}   {e}")
             continue
-        if 'mlon' in dat and 'mlon' not in grid:
-            grid['mlon'] = dat['mlon']
-            grid['mlat'] = dat['mlat']
+        if "mlon" in dat and "mlon" not in grid:
+            grid["mlon"] = dat["mlon"]
+            grid["mlat"] = dat["mlat"]
 
         vis.plotframe(grid, dat, params=p.only, save_dir=save_dir, fg=fg)
 

@@ -358,7 +358,7 @@ def plot_interp(time: datetime, grid: typing.Dict[str, np.ndarray], parm: np.nda
         elif is_Efield:
             # like phitop, SINGLE plot
             ax = fg.gca()
-            hi = ax.pcolormesh(grid['mlon'], grid['mlat'], parm, cmap=cmap, vmin=vmin, vmax=vmax)
+            hi = ax.pcolormesh(grid["mlon"], grid["mlat"], parm, cmap=cmap, vmin=vmin, vmax=vmax)
             ax.set_xlabel("magnetic longitude (deg.)")
             ax.set_ylabel("magnetic latitude (deg.)")
             ax.set_title(f"{name}: {time.isoformat()}  {gitrev()}")
