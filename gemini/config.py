@@ -206,15 +206,15 @@ def parse_group(raw: T.Dict[str, T.Any], group: T.Sequence[str]) -> T.Dict[str, 
                 P[k] = NaN
 
     if "precip" in group:
-        P["dtprec"] = float(raw["dtprec"])
+        P["dtprec"] = timedelta(seconds=float(raw["dtprec"]))
         P["precdir"] = Path(raw["prec_dir"])
 
     if "efield" in group:
-        P["dtE0"] = float(raw["dtE0"])
+        P["dtE0"] = timedelta(seconds=float(raw["dtE0"]))
         P["E0dir"] = Path(raw["E0_dir"])
 
     if "glow" in group:
-        P["dtglow"] = float(raw["dtglow"])
+        P["dtglow"] = timedelta(seconds=float(raw["dtglow"]))
         P["dtglowout"] = float(raw["dtglowout"])
 
     if not P:

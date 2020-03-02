@@ -28,18 +28,7 @@ def readgrid(path: Path) -> typing.Dict[str, np.ndarray]:
 
     path = Path(path).expanduser().resolve()
 
-    if path.is_dir():
-        stem = "inputs/simgrid"
-        for ext in FILE_FORMATS:
-            fn = (path / stem).with_suffix(ext)
-            if fn.is_file():
-                break
-        if not fn.is_file():
-            raise FileNotFoundError(path)
-    elif path.is_file():
-        fn = path
-    else:
-        raise FileNotFoundError(path)
+    fn = get_grid_filename(path)
 
     if fn.suffix == ".dat":
         grid = raw.readgrid(fn)
@@ -224,3 +213,25 @@ def get_frame_filename(simdir: Path, time: datetime) -> Path:
                 return fn
 
     raise FileNotFoundError(f"could not find data file in {simdir} at {time}")
+
+
+def get_grid_filename(path: Path) -> Path:
+    """ given a path or filename, return the full path to simgrid file """
+
+    path = Path(path).expanduser().resolve()
+
+    if path.is_dir():
+        for p in (path, path / "inputs"):
+            for suff in FILE_FORMATS:
+                file = p / ("simgrid" + suff)
+                if file.is_file():
+                    return file
+    elif path.is_file():
+        name = path.name
+        path = path.parent
+        for p in (path, path / "inputs"):
+            file = p / name
+            if file.is_file():
+                return file
+
+    raise FileNotFoundError(f"could not find grid file in {path}")
