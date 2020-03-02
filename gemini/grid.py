@@ -151,9 +151,6 @@ def makegrid_cart3d(p: T.Dict[str, T.Any]) -> T.Dict[str, T.Any]:
 
     lx = np.array((xg["x1"].size, xg["x2"].size, xg["x3"].size))
     xg["lx"] = lx
-    xg["lx1"] = lx[0]
-    xg["lx2"] = lx[1]
-    xg["lx3"] = lx[2]
 
     xg["dx1f"] = np.append(xg["x1"][1:] - xg["x1"][:-1], xg["x1"][-1] - xg["x1"][-2])
     # FWD DIFF
