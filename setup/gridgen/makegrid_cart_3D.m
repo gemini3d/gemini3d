@@ -1,8 +1,8 @@
 function xgf = makegrid_cart_3D(p)
 %% make 3D grid and save to disk
-%
-narginchk(1, 1)
-validateattributes(p, {'struct'}, {'scalar'})
+arguments
+  p (1,1) struct
+end
 
 %% create altitude grid
 %p.alt_min = 80e3;
