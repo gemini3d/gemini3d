@@ -7,7 +7,7 @@ if(CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
 endif()
 
 if(NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE Release CACHE STRING "Debug or Release" FORCE)
+  set(CMAKE_BUILD_TYPE Release CACHE STRING "default to Release")
 endif()
 
 project(gemini3d
