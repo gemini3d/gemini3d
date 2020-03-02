@@ -1,8 +1,6 @@
 function model_setup(p)
 %% determines what kind of setup is needed and does it.
 
-narginchk(1,1)
-
 %% ADD PATHS FOR FUNCTIONS
 cwd = fileparts(mfilename('fullpath'));
 gemdir = [cwd, '/..'];
@@ -15,6 +13,8 @@ elseif isa(p, 'char')
   % path to config.nml
   validateattributes(p, {'char'}, {'vector'}, mfilename, 'parameters', 1)
   p = read_nml(p);
+else
+  error('model_setup needs path to config.nml')
 end
 
 
