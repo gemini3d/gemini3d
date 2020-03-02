@@ -6,7 +6,9 @@ import typing as T
 
 from .config import read_nml
 from .grid import makegrid_cart3d
-from .plasma import equilibrium_state, equilibrium_resample, Efield_BCs2d, Efield_BCs3d, particles_BCs
+from .plasma import equilibrium_state, equilibrium_resample
+from .efield import Efield_BCs
+from .particles import particles_BCs
 from .base import write_state, write_grid
 
 R = Path(__file__).parents[1]
@@ -57,10 +59,7 @@ def model_setup_interp(p: T.Dict[str, T.Any]):
 
     # %% potential boundary conditions
     if "flagE0file" in p and p["flagE0file"]:
-        if p["lxp"] == 1 or p["lyp"] == 1:
-            Efield_BCs2d(p)
-        else:  # 3D
-            Efield_BCs3d(p)
+        Efield_BCs(p)
 
     # %% aurora
     if "flagprecfile" in p and p["flagprecfile"]:

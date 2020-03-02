@@ -384,7 +384,7 @@ def equilibrium_state(p: T.Dict[str, T.Any], xg: DictArray) -> T.Tuple[np.ndarra
     return ns, Ts, vsx1
 
 
-def chapmana(z, nm, z0, H):
+def chapmana(z: np.ndarray, nm: float, z0: float, H: float) -> np.ndarray:
     zref = (z - z0) / H
     ne = nm * np.exp(0.5 * (1 - zref - np.exp(-zref)))
 
@@ -393,7 +393,7 @@ def chapmana(z, nm, z0, H):
     return ne
 
 
-def msis_matlab3D(p, xg) -> np.ndarray:
+def msis_matlab3D(p: DictArray, xg: DictArray) -> np.ndarray:
     """calls MSIS Fortran exectuable
     % compiles if not present
     %
@@ -488,15 +488,3 @@ def msis_matlab3D(p, xg) -> np.ndarray:
     natm = np.stack((nO, nN2, nO2, Tn, nN, nNO, nH), 3)
 
     return natm
-
-
-def Efield_BCs2d(p: T.Dict[str, T.Any]):
-    raise NotImplementedError
-
-
-def Efield_BCs3d(p: T.Dict[str, T.Any]):
-    raise NotImplementedError
-
-
-def particles_BCs(p: T.Dict[str, T.Any]):
-    raise NotImplementedError
