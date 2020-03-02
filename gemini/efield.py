@@ -16,7 +16,7 @@ def Efield_BCs(p: T.Dict[str, T.Any]) -> T.Dict[str, T.Any]:
 
     # %% READ IN THE SIMULATION INFO
     xg = readgrid(p["out_dir"])
-    lx1, lx2, lx3 = xg["lxs"]
+    _, lx2, lx3 = xg["lxs"]
 
     E: T.Dict[str, T.Any] = {}
 
@@ -94,14 +94,14 @@ def Efield_BCs(p: T.Dict[str, T.Any]) -> T.Dict[str, T.Any]:
 
     # %% check for NaNs
     # this is also done in Fortran, but just to help ensure results.
-    assert np.isfinite(E["Exit"]).all(), "NaN in Exit"
-    assert np.isfinite(E["Eyit"]).all(), "NaN in Eyit"
-    assert np.isfinite(E["Vminx1it"]).all(), "NaN in Vminx1it"
-    assert np.isfinite(E["Vmaxx1it"]).all(), "NaN in Vmaxx1it"
-    assert np.isfinite(E["Vminx2ist"]).all(), "NaN in Vminx2ist"
-    assert np.isfinite(E["Vmaxx2ist"]).all(), "NaN in Vmaxx2ist"
-    assert np.isfinite(E["Vminx3ist"]).all(), "NaN in Vminx3ist"
-    assert np.isfinite(E["Vmaxx3ist"]).all(), "NaN in Vmaxx3ist"
+    check_finite(E["Exit"], "Exit")
+    check_finite(E["Eyit"], "Eyit")
+    check_finite(E["Vminx1it"], "Vminx1it")
+    check_finite(E["Vmaxx1it"], "Vmaxx1it")
+    check_finite(E["Vminx2ist"], "Vminx2ist")
+    check_finite(E["Vmaxx2ist"], "Vmaxx2ist")
+    check_finite(E["Vminx3ist"], "Vminx3ist")
+    check_finite(E["Vmaxx3ist"], "Vmaxx3ist")
 
     # %% SAVE THESE DATA TO APPROPRIATE FILES
     # LEAVE THE SPATIAL AND TEMPORAL INTERPOLATION TO THE
@@ -110,3 +110,10 @@ def Efield_BCs(p: T.Dict[str, T.Any]) -> T.Dict[str, T.Any]:
     write_Efield(p, E)
 
     return E
+
+
+def check_finite(v: np.ndarray, name: str):
+
+    i = ~np.isfinite(v)
+    if i.any():
+        raise ValueError(f"{np.count_nonzero(i)} NaN in {name} at {i.nonzero()}")

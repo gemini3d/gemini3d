@@ -145,13 +145,13 @@ freal = ['float',int2str(p.realbits)];
 h5save(fn, '/mlon', E.mlon, [], freal)
 h5save(fn, '/mlat', E.mlat, [], freal)
 
+disp(['write Efield to ', dir_out])
 Nt = size(E.expdate, 1);
 for i = 1:Nt
   UTsec = E.expdate(i, 4)*3600 + E.expdate(i,5)*60 + E.expdate(i,6);
   ymd = E.expdate(i, 1:3);
 
   fn = [dir_out, filesep, datelab(ymd,UTsec), '.h5'];
-  disp(['write: ', fn])
 
   %FOR EACH FRAME WRITE A BC TYPE AND THEN OUTPUT BACKGROUND AND BCs
   h5save(fn, '/flagdirich', int32(p.flagdirich))

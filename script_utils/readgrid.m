@@ -29,10 +29,20 @@ end % function
 
 
 function xgf = read_hdf5(path)
-sizefn = [path, '/simsize.h5'];
+for f = {[path, '/inputs/simsize.h5'], [path, '/simsize.h5']}
+  sizefn = f{:};
+  if is_file(sizefn)
+    break
+  end
+end
 assert(is_file(sizefn), [sizefn, ' not found'])
 
-fn = [path, '/simgrid.h5'];
+for f = {[path, '/inputs/simgrid.h5'], [path, '/simgrid.h5']}
+  fn = f{:};
+  if is_file(fn)
+    break
+  end
+end
 assert(is_file(fn), [fn, ' not found'])
 
 xgf.filename = fn;

@@ -97,6 +97,8 @@ def write_grid(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]):
 
     fn = p["out_dir"] / "simsize.h5"
     print("write", fn)
+    # NOTE: lx = [lx1, lx2, lx3] and all should be WITHOUT ghost cells.
+    assert (xg['lx'] == np.array([xg['lx1'], xg['lx2'], xg['lx3']])).all(), "simsize.h5 must exclude ghost cells"
     with h5py.File(fn, "w") as h:
         for k in ("lx", "lx1", "lx2", "lx3"):
             h[f"/{k}"] = xg[k]
