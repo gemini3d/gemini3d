@@ -7,7 +7,7 @@ import typing as T
 from .config import read_nml
 from .grid import makegrid_cart3d
 from .plasma import equilibrium_state, equilibrium_resample, Efield_BCs2d, Efield_BCs3d, particles_BCs
-from .hdf import write_state, write_grid
+from .base import write_state, write_grid
 
 R = Path(__file__).parents[1]
 
@@ -46,7 +46,7 @@ def model_setup_equilibrium(p: T.Dict[str, T.Any]):
     # %% Equilibrium input generation
     [ns, Ts, vsx1] = equilibrium_state(p, xg)
 
-    write_state(p["t0"], ns, vsx1, Ts, p["out_dir"], p["format"], p["realbits"])
+    write_state(p["t0"], ns, vsx1, Ts, p["out_dir"], p["format"])
 
 
 def model_setup_interp(p: T.Dict[str, T.Any]):
