@@ -17,9 +17,9 @@ elseif is_folder(path)
     end
   end
 else
-  error(['could not find config.nml file in ', path])
+  error(['could not find config file in ', path])
 end
 
-assert(is_file(filename), ['could not find config file in ', path])
+assert(is_file(filename), ['could not find config file in ', filename])
 
 end % function
