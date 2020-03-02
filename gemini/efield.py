@@ -2,7 +2,7 @@ import typing as T
 from pathlib import Path
 import numpy as np
 import logging
-from datetime import timedelta
+from scipy.special import erf
 
 from .readdata import readgrid
 from .base import write_Efield
@@ -14,9 +14,9 @@ def Efield_BCs(p: T.Dict[str, T.Any]) -> T.Dict[str, T.Any]:
     dir_out = Path(p["out_dir"], "/inputs/Efield_inputs").expanduser().resolve()
     dir_out.mkdir(parents=True, exist_ok=True)
 
-    # %% READ IN THE SIMULATION INFORMATION
+    # %% READ IN THE SIMULATION INFO
     xg = readgrid(p["out_dir"])
-    lx1, lx2, lx3 = xg["lx"]
+    lx1, lx2, lx3 = xg["lxs"]
 
     E: T.Dict[str, T.Any] = {}
 
@@ -51,8 +51,8 @@ def Efield_BCs(p: T.Dict[str, T.Any]) -> T.Dict[str, T.Any]:
     sigx2 = p["Efield_fracwidth"] * (xg["x2"].max() - xg["x2"].min())
     sigx3 = p["Efield_fracwidth"] * (xg["x3"].max() - xg["x3"].min())
     # %% TIME VARIABLE (SECONDS FROM SIMULATION BEGINNING)
-    E["time"] = [p["t0"] + timedelta(seconds=i * p["dtE0"]) for i in range(0, p["tdur"] + p["dtE0"], p["dtE0"])]
-    Nt = len(E["time"])
+    Nt = (p["tdur"] + p["dtE0"]) // p["dtE0"]
+    E["time"] = [p["t0"] + i * p["dtE0"] for i in range(Nt)]
     # time given in file is the seconds from UTC midnight
 
     # %% CREATE DATA FOR BACKGROUND ELECTRIC FIELDS
@@ -76,21 +76,21 @@ def Efield_BCs(p: T.Dict[str, T.Any]) -> T.Dict[str, T.Any]:
 
     if lx3 == 1:
         # east-west
-        pk = p["Etarg"] * sigx2 * xg["h2"][lx1, lx2 // 2, 0] * np.sqrt(np.pi) / 2
+        pk = p["Etarg"] * sigx2 * xg["h2"][-1, lx2 // 2, 0] * np.sqrt(np.pi) / 2
     elif lx2 == 1:
         # north-south
-        pk = p["Etarg"] * sigx3 * xg["h3"][lx1, 0, lx3 // 2] * np.sqrt(np.pi) / 2
+        pk = p["Etarg"] * sigx3 * xg["h3"][-1, 0, lx3 // 2] * np.sqrt(np.pi) / 2
     else:
         # 3D
-        pk = p["Etarg"] * sigx2 * xg["h2"][lx1, lx2 // 2, 0] * np.sqrt(np.pi) / 2
+        pk = p["Etarg"] * sigx2 * xg["h2"][-1, lx2 // 2, 0] * np.sqrt(np.pi) / 2
 
     for i in range(Nt):
         if lx2 == 1:
-            E["Vmaxx1it"][i, :, :] = pk * np.erf((E["MLAT"] - mlatmean) / mlatsig)
+            E["Vmaxx1it"][i, :, :] = pk * erf((E["MLAT"] - mlatmean) / mlatsig)
         elif lx3 == 1:
-            E["Vmaxx1it"][i, :, :] = pk * np.erf((E["MLON"] - mlonmean) / mlonsig)
+            E["Vmaxx1it"][i, :, :] = pk * erf((E["MLON"] - mlonmean) / mlonsig)
         else:
-            E["Vmaxx1it"][i, :, :] = pk * np.erf((E["MLON"] - mlonmean) / mlonsig) * np.erf((E["MLAT"] - mlatmean) / mlatsig)
+            E["Vmaxx1it"][i, :, :] = pk * erf((E["MLON"] - mlonmean) / mlonsig) * erf((E["MLAT"] - mlatmean) / mlatsig)
 
     # %% check for NaNs
     # this is also done in Fortran, but just to help ensure results.
