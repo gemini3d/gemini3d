@@ -10,6 +10,7 @@ import urllib.error
 import socket
 import zipfile
 import tarfile
+
 try:
     import psutil
 except ImportError:

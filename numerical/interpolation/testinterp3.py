@@ -12,16 +12,16 @@ def compare_interp(fn: Path, doplot: bool = False):
         raise SystemExit(77)
 
     with h5py.File(fn, "r") as f:
-        lx1 = f['/lx1'][()]
-        lx2 = f['/lx2'][()]
-        lx3 = f['/lx3'][()]
-        x1 = f['/x1'][:]
-        x2 = f['/x2'][:]
-        x3 = f['/x3'][:]
+        lx1 = f["/lx1"][()]
+        lx2 = f["/lx2"][()]
+        lx3 = f["/lx3"][()]
+        x1 = f["/x1"][:]
+        x2 = f["/x2"][:]
+        x3 = f["/x3"][:]
 
-        fx1x2x3 = f['/f'][:]
+        fx1x2x3 = f["/f"][:]
     assert fx1x2x3.shape == (256, 256, 256), f"got shape {fx1x2x3.shape}"
-    assert fx1x2x3.shape == (x1.size, x2.size, x3.size), f'{x1.shape} {x2.shape} {x3.shape}'
+    assert fx1x2x3.shape == (x1.size, x2.size, x3.size), f"{x1.shape} {x2.shape} {x3.shape}"
 
     if not doplot:
         return None

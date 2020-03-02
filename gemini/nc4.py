@@ -19,7 +19,7 @@ def get_simsize(path: Path) -> T.Tuple[int, ...]:
     """
     path = Path(path).expanduser().resolve()
 
-    with Dataset(path, 'r') as f:
+    with Dataset(path, "r") as f:
         if "lxs" in f:
             lxs = f["lxs"][:]
         elif "lx1" in f:

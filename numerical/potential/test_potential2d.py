@@ -14,15 +14,15 @@ def read_potential2D(fn: Path, doplot: bool = False):
         raise SystemExit(77)
 
     with h5py.File(fn, "r") as f:
-        lx1 = f['/lx1'][()]
-        lx2 = f['/lx2'][()]
-        lx3 = f['/lx3'][()]
-        x1 = f['/x1'][:]
-        x2 = f['/x2'][:]
-        x3 = f['/x3'][:]
-        Phi = f['/Phi'][:]
-        Phi2 = f['/Phi2squeeze'][:]
-        Phitrue = f['/Phitrue'][:]
+        lx1 = f["/lx1"][()]
+        lx2 = f["/lx2"][()]
+        lx3 = f["/lx3"][()]
+        x1 = f["/x1"][:]
+        x2 = f["/x2"][:]
+        x3 = f["/x3"][:]
+        Phi = f["/Phi"][:]
+        Phi2 = f["/Phi2squeeze"][:]
+        Phitrue = f["/Phitrue"][:]
     assert np.isclose(Phi2[12, 12], 0.00032659, 1e-5), "Potential 2d accuracy"
     assert lx1 == x1.size
     assert lx2 == x2.size
