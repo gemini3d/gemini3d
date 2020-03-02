@@ -71,3 +71,10 @@ def write_state(time: datetime, ns: np.ndarray, vs: np.ndarray, Ts: np.ndarray, 
         f["/ns"] = ns
         f["/vsx1"] = vs
         f["/Ts"] = Ts
+
+
+def write_Efield(p: T.Dict[str, T.Any], E: T.Dict[str, np.ndarray]):
+    """
+    write Efield to disk
+    """
+    raise NotImplementedError("TODO: NetCDF")

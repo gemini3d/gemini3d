@@ -6,11 +6,21 @@ from datetime import datetime
 from .raw import get_simsize as get_simsize_raw
 
 try:
-    from .hdf import get_simsize as get_simsize_h5, write_grid as write_grid_h5, write_state as write_state_h5
+    from .hdf import (
+        get_simsize as get_simsize_h5,
+        write_grid as write_grid_h5,
+        write_state as write_state_h5,
+        write_Efield as write_Efield_h5,
+    )
 except ModuleNotFoundError:
     get_simsize_h5 = write_grid_h5 = write_state_h5 = None
 try:
-    from .nc4 import get_simsize as get_simsize_nc, write_grid as write_grid_nc, write_state as write_state_nc
+    from .nc4 import (
+        get_simsize as get_simsize_nc,
+        write_grid as write_grid_nc,
+        write_state as write_state_nc,
+        write_Efield as write_Efield_nc,
+    )
 except ModuleNotFoundError:
     get_simsize_nc = write_grid_nc = write_state_nc = None
 
@@ -62,10 +72,34 @@ def write_grid(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]):
         write_grid_h5(p, xg)
     elif p["format"] in ("netcdf", "nc"):
         if write_grid_nc is None:
-            raise ImportError("pip install h5py")
+            raise ImportError("pip install netcdf4")
         write_grid_nc(p, xg)
     else:
-        raise ValueError(f'unknown grid format {p["format"]}')
+        raise ValueError(f'unknown file format {p["format"]}')
+
+
+def write_Efield(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]):
+    """ writes grid to disk
+
+    Parameters
+    ----------
+
+    p: dict
+        simulation parameters
+    xg: dict
+        grid values
+    """
+
+    if p["format"] in ("hdf5", "h5"):
+        if write_Efield_h5 is None:
+            raise ImportError("pip install h5py")
+        write_Efield_h5(p, xg)
+    elif p["format"] in ("netcdf", "nc"):
+        if write_Efield_nc is None:
+            raise ImportError("pip install netcdf4")
+        write_Efield_nc(p, xg)
+    else:
+        raise ValueError(f'unknown file format {p["format"]}')
 
 
 def write_state(time: datetime, ns: np.ndarray, vs: np.ndarray, Ts: np.ndarray, out_dir: Path, file_format: str):
@@ -85,7 +119,7 @@ def write_state(time: datetime, ns: np.ndarray, vs: np.ndarray, Ts: np.ndarray, 
         write_state_h5(time, ns, vs, Ts, out_dir)
     elif file_format in ("netcdf", "nc"):
         if write_grid_nc is None:
-            raise ImportError("pip install h5py")
+            raise ImportError("pip install netcdf4")
         write_state_nc(time, ns, vs, Ts, out_dir)
     else:
-        raise ValueError(f"unknown grid format {file_format}")
+        raise ValueError(f"unknown file format {file_format}")

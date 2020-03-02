@@ -127,13 +127,13 @@ def load_Efield(fn: Path) -> T.Dict[str, T.Any]:
 
     sizefn = fn.parent / "simsize.h5"  # NOT the whole sim simsize.dat
     with h5py.File(sizefn, "r") as f:
-        E["Nlon"] = f["Nlon"][()]
-        E["Nlat"] = f["Nlat"][()]
+        E["llon"] = f["/llon"][()]
+        E["llat"] = f["/llat"][()]
 
     gridfn = fn.parent / "simgrid.h5"  # NOT the whole sim simgrid.dat
     with h5py.File(gridfn, "r") as f:
-        E["mlon"] = f["mlon"][:]
-        E["mlat"] = f["mlat"][:]
+        E["mlon"] = f["/mlon"][:]
+        E["mlat"] = f["/mlat"][:]
 
     with h5py.File(fn, "r") as f:
         E["flagdirich"] = f["flagdirich"]
@@ -145,6 +145,54 @@ def load_Efield(fn: Path) -> T.Dict[str, T.Any]:
             E[p] = [("x3",), f[p][:]]
 
     return E
+
+
+def write_Efield(p: T.Dict[str, T.Any], E: T.Dict[str, np.ndarray]):
+    """
+    write Efield to disk
+    """
+
+    print("write E-field data to", p["out_dir"])
+
+    with h5py.File(p["out_dir"] / "simsize.h5", "w") as f:
+        f["/llon"] = E["llon"]
+        f["/llat"] = E["llat"]
+
+    with h5py.File(p["out_dir"] / "simgrid.h5", "w") as f:
+        f["/mlon"] = E["mlon"].astype(np.float32)
+        f["/mlat"] = E["mlat"].astype(np.float32)
+
+    for i, t in enumerate(E["time"]):
+        fn = p["out_dir"] / (datetime2ymd_hourdec(t) + ".h5")
+
+        # FOR EACH FRAME WRITE A BC TYPE AND THEN OUTPUT BACKGROUND AND BCs
+        with h5py.File(fn, "w") as f:
+            f["/flagdirich"] = p["flagdirich"]
+            f["/time/ymd"] = [t.year, t.month, t.day]
+            f["/time/UTsec"] = t.hour * 3600 + t.minute * 60 + t.second + t.microsecond / 1e6
+
+            for k in ("Exit", "Eyit", "Vminx1it", "Vmaxx1it"):
+                f.create_dataset(f"/{k}", data=E[k][i, :, :], dtype=np.float32, compression="gzip", compression_opts=1)
+            for k in ("Vminx2ist", "Vmaxx2ist", "Vminx3ist", "Vmaxx3ist"):
+                f[f"/{k}"] = E[k][i, :].astype(np.float32)
+
+
+def write_precip(p: T.Dict[str, T.Any], E: T.Dict[str, T.Any]):
+
+    with h5py.File(p["out_dir"] / "simsize.h5", "w") as f:
+        f["/llon"] = E["llon"]
+        f["/llat"] = E["llat"]
+
+    with h5py.File(p["out_dir"] / "simgrid.h5", "w") as f:
+        f["/mlon"] = E["mlon"].astype(np.float32)
+        f["/mlat"] = E["mlat"].astype(np.float32)
+
+    for i, t in enumerate(E["time"]):
+        fn = p["out_dir"] / (datetime2ymd_hourdec(t) + ".h5")
+
+        with h5py.File(fn, "w") as f:
+            for k in ("Q", "E0"):
+                f.create_dataset(f"/{k}", data=E[k][i, :, :], dtype=np.float32, compression="gzip", compression_opts=1)
 
 
 def loadframe3d_curv(fn: Path) -> T.Dict[str, T.Any]:
