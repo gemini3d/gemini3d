@@ -120,11 +120,12 @@ def initialize_simulation(p: T.Dict[str, T.Any], pr: T.Dict[str, T.Any]) -> bool
         env["GEMINI_ROOT"] = Path(__file__).parents[1].as_posix()
     matlab_script_dir = Path(env["GEMINI_ROOT"], "setup")
 
-    check_compiler()
-
     if pr["matlab"]:
         if not shutil.which("matlab"):
             raise EnvironmentError("Matlab not found")
+
+        check_compiler()
+
         cmd = ["matlab", "-batch", f"model_setup('{p['nml']}')"]
         print("Initializing simulation: \n", " ".join(cmd))
 
