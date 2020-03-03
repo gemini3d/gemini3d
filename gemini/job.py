@@ -44,8 +44,6 @@ def runner(pr: T.Dict[str, T.Any]) -> int:
                 raise FileNotFoundError(precdir)
 
     # build checks
-    check_compiler()
-
     mpiexec = check_mpiexec(pr["mpiexec"])
     logging.info(f"Detected mpiexec: {' '.join(mpiexec)}")
 
