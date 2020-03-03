@@ -27,9 +27,6 @@ def equilibrium_resample(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]):
     interpolated grid.
     """
 
-    if ~(xg["lx"] == np.array([xg["lx1"], xg["lx2"], xg["lx3"]])).all():
-        raise ValueError("simsize.h5 must exclude ghost cells")
-
     # %% READ Equilibrium SIMULATION INFO
     peq = read_config(p["eqdir"])
     xgin = readgrid(p["eqdir"])
