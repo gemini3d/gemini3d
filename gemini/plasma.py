@@ -89,12 +89,15 @@ def model_resample(
     Tsi = np.empty_like(nsi)
 
     # %% INTERPOLATE ONTO NEWER GRID
-    X2 = xgin["x2"][2:-2]
-    X1 = xgin["x1"][2:-2]
-    X3 = xgin["x3"][2:-2]
-    X2i = xg["x2"][2:-2]
-    X1i = xg["x1"][2:-2]
-    X3i = xg["x3"][2:-2]
+    # to avoid IEEE754 rounding issues leading to bounds error,
+    # cast the arrays to the same precision,
+    # preferring float32 to save disk space and IO time
+    X2 = xgin["x2"][2:-2].astype(np.float32)
+    X1 = xgin["x1"][2:-2].astype(np.float32)
+    X3 = xgin["x3"][2:-2].astype(np.float32)
+    X2i = xg["x2"][2:-2].astype(np.float32)
+    X1i = xg["x1"][2:-2].astype(np.float32)
+    X3i = xg["x3"][2:-2].astype(np.float32)
 
     if lx3 > 1 and lx2 > 1:
         # 3-D
