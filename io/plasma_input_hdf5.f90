@@ -12,7 +12,6 @@ module procedure input_root_currents
 character(:), allocatable :: filenamefull
 real(wp), dimension(:,:,:), allocatable :: J1all,J2all,J3all
 real(wp), dimension(:,:,:), allocatable :: tmpswap
-integer :: ierr
 
 type(hdf5_file) :: h5f
 
@@ -24,29 +23,28 @@ if (flagoutput==3) error stop 'Need current densities in the output to compute m
 filenamefull = date_filename(outdir,ymd,UTsec) // '.h5'
 print *, 'Input file name for current densities:  ', filenamefull
 
-call h5f%initialize(filenamefull, ierr, status='old', action='r')
-if(ierr/=0) error stop 'plasma_input_hdf5:input_root_currents: could not load plasma input hdf5 file'
+call h5f%initialize(filenamefull, status='old', action='r')
 
 !> LOAD THE DATA
 !> PERMUTE THE ARRAYS IF NECESSARY
 allocate(J1all(lx1,lx2all,lx3all),J2all(lx1,lx2all,lx3all),J3all(lx1,lx2all,lx3all))
 if (flagswap==1) then
   allocate(tmpswap(lx1,lx3all,lx2all))
-  call h5f%read('/J1all', tmpswap, ierr)
+  call h5f%read('/J1all', tmpswap)
   J1all = reshape(tmpswap,[lx1,lx2all,lx3all],order=[1,3,2])
-  call h5f%read('/J2all', tmpswap, ierr)
+  call h5f%read('/J2all', tmpswap)
   J2all = reshape(tmpswap,[lx1,lx2all,lx3all],order=[1,3,2])
-  call h5f%read('/J3all', tmpswap, ierr)
+  call h5f%read('/J3all', tmpswap)
   J3all = reshape(tmpswap,[lx1,lx2all,lx3all],order=[1,3,2])
 else
   !! no need to permute dimensions for 3D simulations
-  call h5f%read('/J1all', J1all, ierr)
-  call h5f%read('/J2all', J2all, ierr)
-  call h5f%read('/J3all', J3all, ierr)
+  call h5f%read('/J1all', J1all)
+  call h5f%read('/J2all', J2all)
+  call h5f%read('/J3all', J3all)
 end if
 print *, 'Min/max current data:  ',minval(J1all),maxval(J1all),minval(J2all),maxval(J2all),minval(J3all),maxval(J3all)
 
-call h5f%finalize(ierr)
+call h5f%finalize()
 
 if(.not.all(ieee_is_finite(J1all))) error stop 'J1all: non-finite value(s)'
 if(.not.all(ieee_is_finite(J2all))) error stop 'J2all: non-finite value(s)'
@@ -69,7 +67,6 @@ module procedure input_root_mpi
 !! LENGTHS.
 
 type(hdf5_file) :: h5f
-integer :: ierr
 
 integer :: lx1,lx2,lx3,lx2all,lx3all,isp
 
@@ -108,8 +105,7 @@ if (.not. (lx1==lx1in .and. lx2all==lx2in .and. lx3all==lx3in)) then
        '- use a script to interpolate up/down to the simulation grid'
 end if
 
-call h5f%initialize(indatfile, ierr, status='old', action='r')
-if(ierr/=0) error stop 'input_root_mpi: could not open plasma hdf5 file'
+call h5f%initialize(indatfile, status='old', action='r')
 
 if (flagswap==1) then
   block
@@ -118,26 +114,21 @@ if (flagswap==1) then
   real(wp), allocatable :: tmp(:,:,:,:)
   allocate(tmp(lx1,lx3all,lx2all,lsp))
   !! end workaround
-  call h5f%read('/ns', tmp, ierr)
-  if(ierr/=0) error stop
+  call h5f%read('/ns', tmp)
   nsall(1:lx1,1:lx2all,1:lx3all,1:lsp) = reshape(tmp,[lx1,lx2all,lx3all,lsp],order=[1,3,2,4])
-  call h5f%read('/vsx1', tmp, ierr)
-  if(ierr/=0) error stop
+  call h5f%read('/vsx1', tmp)
   vs1all(1:lx1,1:lx2all,1:lx3all,1:lsp) = reshape(tmp,[lx1,lx2all,lx3all,lsp],order=[1,3,2,4])
-  call h5f%read('/Ts', tmp, ierr)
-  if(ierr/=0) error stop
+  call h5f%read('/Ts', tmp)
   Tsall(1:lx1,1:lx2all,1:lx3all,1:lsp) = reshape(tmp,[lx1,lx2all,lx3all,lsp],order=[1,3,2,4])
   !! permute the dimensions so that 2D runs are parallelized
   end block
 else
-  call h5f%read('/ns', nsall(1:lx1,1:lx2all,1:lx3all,1:lsp), ierr)
-  if(ierr/=0) error stop
-  call h5f%read('/vsx1', vs1all(1:lx1,1:lx2all,1:lx3all,1:lsp), ierr)
-  call h5f%read('/Ts', Tsall(1:lx1,1:lx2all,1:lx3all,1:lsp), ierr)
+  call h5f%read('/ns', nsall(1:lx1,1:lx2all,1:lx3all,1:lsp))
+  call h5f%read('/vsx1', vs1all(1:lx1,1:lx2all,1:lx3all,1:lsp))
+  call h5f%read('/Ts', Tsall(1:lx1,1:lx2all,1:lx3all,1:lsp))
 end if
 
-call h5f%finalize(ierr)
-if(ierr/=0) error stop
+call h5f%finalize()
 
 !> Sanity checks
 if (.not. all(ieee_is_finite(nsall))) error stop 'nsall: non-finite value(s)'

@@ -12,18 +12,17 @@ module procedure output_magfields
 type(hdf5_file) :: hout
 
 character(:), allocatable :: filenamefull
-integer :: ierr
 
 filenamefull = date_filename(outdir // '/magfields/',ymd,UTsec) // '.h5'
 print *, '  Output file name (magnetic fields):  ',filenamefull
 
-call hout%initialize(filenamefull, ierr, status='unknown',action='rw',comp_lvl=1)
+call hout%initialize(filenamefull, status='unknown',action='rw')
 
-call hout%write('/magfields/Br', Br, ierr)
-call hout%write('/magfields/Btheta', Btheta, ierr)
-call hout%write('/magfields/Bphi', Bphi, ierr)
+call hout%write('/magfields/Br', Br)
+call hout%write('/magfields/Btheta', Btheta)
+call hout%write('/magfields/Bphi', Bphi)
 
-call hout%finalize(ierr)
+call hout%finalize()
 
 end procedure output_magfields
 
