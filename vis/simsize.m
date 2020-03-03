@@ -39,10 +39,12 @@ switch ext
 
       if any(strcmp('lxs', varnames))
         lxs = h5read(fn, '/lxs');
+      elseif any(strcmp('lx', varnames))
+        lxs = h5read(fn, '/lx');
       elseif any(strcmp('lx1', varnames))
         lxs = [h5read(fn, '/lx1'), h5read(fn, '/lx2'), h5read(fn, '/lx3')];
       else
-        error(['did not find simsize in ', fn])
+        error(['did not find lxs, lx, lx1 in ', fn])
       end
     end
   case '.nc'
@@ -50,6 +52,8 @@ switch ext
 
     if any(strcmp('lxs', varnames))
       lxs = ncread(fn, '/lxs');
+    elseif any(strcmp('lx', varnames))
+        lxs = h5read(fn, '/lx');
     elseif any(strcmp('lx1', varnames))
       lxs = [ncread(fn, '/lx1'), ncread(fn, '/lx2'), ncread(fn, '/lx3')];
     end
