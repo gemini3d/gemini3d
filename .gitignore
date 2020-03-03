@@ -21,7 +21,6 @@ subprojects/
 
 data/
 build*/
-build/
 objects/
 *.DS_Store
 *.aux

@@ -10,9 +10,9 @@ potsolve = 1                  ! potsolve:  how are we solving electrodynamics?  
 flagperiodic = 0
 flagoutput = 1
 flagcap = 0
-indat_size = '~/gemini_sim/test3d_fang/simsize.h5'
-indat_grid = '~/gemini_sim/test3d_fang/simgrid.h5'
-indat_file = '~/gemini_sim/test3d_fang/initial_conditions.h5'
+indat_size = 'tests/data/test3d_fang/simsize.h5'
+indat_grid = 'tests/data/test3d_fang/simgrid.h5'
+indat_file = 'tests/data/test3d_fang/initial_conditions.h5'
 flagdneu = 0
 flagprecfile = 1
 flagE0file = 1
@@ -34,19 +34,19 @@ lyp = 20                     ! number of y-cells
 Bincl = 90                  ! geomagnetic inclination
 nmf = 5e11
 nme = 2e11
-precip_latwidth = 1/4
-precip_lonwidth = 1/4
+precip_latwidth = 0.25
+precip_lonwidth = 0.25
 Etarg = 50e-3   ! V/m
-Efield_fracwidth = 1/7
-eqdir = '~/gemini_sim/test3d_eq'
+Efield_fracwidth = 0.142857
+eqdir = 'tests/data/test3d_eq'
 /
 
 &precip
 dtprec = 5.0
-prec_dir = '~/gemini_sim/test3d_fang/inputs/prec_inputs/'
+prec_dir = 'tests/data/test3d_fang/inputs/prec_inputs/'
 /
 
 &efield
 dtE0 = 1.0
-E0_dir = '~/gemini_sim/test3d_fang/inputs/Efield_inputs/'
+E0_dir = 'tests/data/test3d_fang/inputs/Efield_inputs/'
 /
