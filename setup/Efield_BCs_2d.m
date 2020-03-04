@@ -1,13 +1,12 @@
-function E = Efield_BCs_2d(p)
+function E = Efield_BCs_2d(p, xg)
 
-narginchk(1, 1)
+narginchk(2, 2)
 validateattributes(p, {'struct'}, {'scalar'}, mfilename, 'sim parameters', 1)
+validateattributes(xg, {'struct'}, {'scalar'})
 
 dir_out = absolute_path([p.simdir, '/inputs/Efield_inputs']);
 makedir(dir_out);
 
-%% READ IN THE SIMULATION INFORMATION
-xg = readgrid(p.simdir, p.format, p.realbits);
 lx1 = xg.lx(1);
 lx2 = xg.lx(2);
 lx3 = xg.lx(3);

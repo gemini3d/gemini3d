@@ -1,12 +1,8 @@
-function particles_BCs(p)
+function particles_BCs(p, xg)
 % create particle precipitation
-narginchk(1,1)
+narginchk(2,2)
 validateattributes(p, {'struct'}, {'scalar'})
-
-%% read desired simulation config
-p = merge_struct(p, read_config(p.nml));
-%% GRID ALREADY NEEDS TO BE MADE, AS WELL
-xg = readgrid(p.simdir, p.format, p.realbits);
+validateattributes(xg, {'struct'}, {'scalar'})
 %% CREATE PRECIPITATION CHARACTERISTICS data
 % number of grid cells.
 % This will be interpolated to grid, so 100x100 is arbitrary

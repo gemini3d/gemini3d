@@ -167,18 +167,19 @@ def write_Efield(p: T.Dict[str, T.Any], E: T.Dict[str, np.ndarray]):
     write Efield to disk
     """
 
-    print("write E-field data to", p["out_dir"])
+    outdir = E["Efield_outdir"]
+    print("write E-field data to", outdir)
 
-    with h5py.File(p["out_dir"] / "simsize.h5", "w") as f:
+    with h5py.File(outdir / "simsize.h5", "w") as f:
         f["/llon"] = E["llon"]
         f["/llat"] = E["llat"]
 
-    with h5py.File(p["out_dir"] / "simgrid.h5", "w") as f:
+    with h5py.File(outdir / "simgrid.h5", "w") as f:
         f["/mlon"] = E["mlon"].astype(np.float32)
         f["/mlat"] = E["mlat"].astype(np.float32)
 
     for i, t in enumerate(E["time"]):
-        fn = p["out_dir"] / (datetime2ymd_hourdec(t) + ".h5")
+        fn = outdir / (datetime2ymd_hourdec(t) + ".h5")
 
         # FOR EACH FRAME WRITE A BC TYPE AND THEN OUTPUT BACKGROUND AND BCs
         with h5py.File(fn, "w") as f:
@@ -192,22 +193,25 @@ def write_Efield(p: T.Dict[str, T.Any], E: T.Dict[str, np.ndarray]):
                 f[f"/{k}"] = E[k][i, :].astype(np.float32)
 
 
-def write_precip(p: T.Dict[str, T.Any], E: T.Dict[str, T.Any]):
+def write_precip(precip: T.Dict[str, T.Any]):
 
-    with h5py.File(p["out_dir"] / "simsize.h5", "w") as f:
-        f["/llon"] = E["llon"]
-        f["/llat"] = E["llat"]
+    outdir = precip["precip_outdir"]
+    print("write precipitation data to", outdir)
 
-    with h5py.File(p["out_dir"] / "simgrid.h5", "w") as f:
-        f["/mlon"] = E["mlon"].astype(np.float32)
-        f["/mlat"] = E["mlat"].astype(np.float32)
+    with h5py.File(outdir / "simsize.h5", "w") as f:
+        f["/llon"] = precip["llon"]
+        f["/llat"] = precip["llat"]
 
-    for i, t in enumerate(E["time"]):
-        fn = p["out_dir"] / (datetime2ymd_hourdec(t) + ".h5")
+    with h5py.File(outdir / "simgrid.h5", "w") as f:
+        f["/mlon"] = precip["mlon"].astype(np.float32)
+        f["/mlat"] = precip["mlat"].astype(np.float32)
+
+    for i, t in enumerate(precip["time"]):
+        fn = outdir / (datetime2ymd_hourdec(t) + ".h5")
 
         with h5py.File(fn, "w") as f:
             for k in ("Q", "E0"):
-                f.create_dataset(f"/{k}", data=E[k][i, :, :], dtype=np.float32, compression="gzip", compression_opts=1)
+                f.create_dataset(f"/{k}", data=precip[k][i, :, :], dtype=np.float32, compression="gzip", compression_opts=1)
 
 
 def loadframe3d_curv(fn: Path) -> T.Dict[str, T.Any]:

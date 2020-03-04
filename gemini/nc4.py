@@ -78,3 +78,10 @@ def write_Efield(p: T.Dict[str, T.Any], E: T.Dict[str, np.ndarray]):
     write Efield to disk
     """
     raise NotImplementedError("TODO: NetCDF")
+
+
+def write_precip(E: T.Dict[str, np.ndarray]):
+    """
+    write precipitation to disk
+    """
+    raise NotImplementedError("TODO: NetCDF")

@@ -59,8 +59,8 @@ def model_setup_interp(p: T.Dict[str, T.Any]):
 
     # %% potential boundary conditions
     if "flagE0file" in p and p["flagE0file"]:
-        Efield_BCs(p)
+        Efield_BCs(p, xg)
 
     # %% aurora
     if "flagprecfile" in p and p["flagprecfile"]:
-        particles_BCs(p)
+        particles_BCs(p, xg)

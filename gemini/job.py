@@ -16,7 +16,7 @@ Pathlike = T.Union[str, Path]
 
 def runner(pr: T.Dict[str, T.Any]) -> int:
 
-    config_file = get_config_filename(Path(pr["config_file"]))
+    config_file = get_config_filename(pr["config_file"])
     # load configuration to know what directories to check
     p = read_config(config_file)
     for k in ("indat_size", "indat_grid", "indat_file"):

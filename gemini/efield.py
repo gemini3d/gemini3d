@@ -1,24 +1,24 @@
 import typing as T
-from pathlib import Path
 import numpy as np
 import logging
 from scipy.special import erf
 
-from .readdata import readgrid
 from .base import write_Efield
 
 
-def Efield_BCs(p: T.Dict[str, T.Any]) -> T.Dict[str, T.Any]:
+def Efield_BCs(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]) -> T.Dict[str, T.Any]:
     """ generate E-field """
 
-    dir_out = Path(p["out_dir"], "/inputs/Efield_inputs").expanduser().resolve()
-    dir_out.mkdir(parents=True, exist_ok=True)
+    E: T.Dict[str, T.Any] = {}
+
+    E["Efield_outdir"] = p["out_dir"] / "inputs/Efield_inputs"
+    E["Efield_outdir"].mkdir(parents=True, exist_ok=True)
 
     # %% READ IN THE SIMULATION INFO
-    xg = readgrid(p["out_dir"])
-    _, lx2, lx3 = xg["lxs"]
-
-    E: T.Dict[str, T.Any] = {}
+    for k in ("lx", "lxs"):
+        if k in xg:
+            _, lx2, lx3 = xg[k]
+            break
 
     # %% CREATE ELECTRIC FIELD DATASET
     E["llon"] = 100
@@ -41,7 +41,7 @@ def Efield_BCs(p: T.Dict[str, T.Any]) -> T.Dict[str, T.Any]:
     lonbuf = 0.01 * (mlonmax - mlonmin)
     E["mlat"] = np.linspace(mlatmin - latbuf, mlatmax + latbuf, E["llat"])
     E["mlon"] = np.linspace(mlonmin - lonbuf, mlonmax + lonbuf, E["llon"])
-    E["MLON"], E["MLAT"] = np.meshgrid(E["mlon"], E["mlat"])
+    # E["MLON"], E["MLAT"] = np.meshgrid(E["mlon"], E["mlat"])
     mlonmean = E["mlon"].mean()
     mlatmean = E["mlat"].mean()
 
@@ -86,11 +86,11 @@ def Efield_BCs(p: T.Dict[str, T.Any]) -> T.Dict[str, T.Any]:
 
     for i in range(Nt):
         if lx2 == 1:
-            E["Vmaxx1it"][i, :, :] = pk * erf((E["MLAT"] - mlatmean) / mlatsig)
+            E["Vmaxx1it"][i, :, :] = pk * erf((E["mlat"] - mlatmean) / mlatsig)[None, :]
         elif lx3 == 1:
-            E["Vmaxx1it"][i, :, :] = pk * erf((E["MLON"] - mlonmean) / mlonsig)
+            E["Vmaxx1it"][i, :, :] = pk * erf((E["mlon"] - mlonmean) / mlonsig)[:, None]
         else:
-            E["Vmaxx1it"][i, :, :] = pk * erf((E["MLON"] - mlonmean) / mlonsig) * erf((E["MLAT"] - mlatmean) / mlatsig)
+            E["Vmaxx1it"][i, :, :] = pk * erf((E["mlon"] - mlonmean) / mlonsig) * erf((E["mlat"] - mlatmean) / mlatsig)
 
     # %% check for NaNs
     # this is also done in Fortran, but just to help ensure results.
