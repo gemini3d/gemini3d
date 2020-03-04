@@ -3,6 +3,7 @@
 runs a job
 """
 import argparse
+from pathlib import Path
 import gemini.job
 import sys
 from time import monotonic
@@ -21,8 +22,8 @@ if __name__ == "__main__":
     ret = -1
 
     params = {
-        "config_file": P.config_file,
-        "out_dir": P.out_dir,
+        "config_file": Path(P.config_file).expanduser(),
+        "out_dir": Path(P.out_dir).expanduser(),
         "mpiexec": P.mpiexec,
         "gemexe": P.gemexe,
         "matlab": P.matlab,

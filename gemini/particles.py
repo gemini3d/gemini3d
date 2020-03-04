@@ -1,45 +1,48 @@
 import typing as T
 import numpy as np
-from datetime import timedelta
 
-from .readdata import readgrid
+from .base import write_precip
 
 
-def particles_BCs(p: T.Dict[str, T.Any]):
+def particles_BCs(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]):
     """ write particle precipitation to disk """
 
-    # %% GRID ALREADY NEEDS TO BE MADE
-    xg = readgrid(p["out_dir"])
     # %% CREATE PRECIPITATION CHARACTERISTICS data
     # number of grid cells.
     # This will be interpolated to grid, so 100x100 is arbitrary
-    llon = 100
-    llat = 100
 
-    if xg["lx"][1] == 1:  # cartesian
-        llon = 1
-    elif xg["lx"][2] == 1:
-        llat = 1
+    pg: T.Dict[str, T.Any] = {}
+
+    pg["llon"] = 100
+    pg["llat"] = 100
+    # NOTE: cartesian-specific code
+    for k in ("lx", "lxs"):
+        if k in xg:
+            _, lx2, lx3 = xg[k]
+            break
+    if lx2 == 1:
+        pg["llon"] = 1
+    elif lx3 == 1:
+        pg["llat"] = 1
+
+    pg = precip_grid(xg, p, pg)
 
     # %% TIME VARIABLE (SECONDS FROM SIMULATION BEGINNING)
     # dtprec is set in config.nml
-    time = [p["t0"] + timedelta(seconds=i * p["dtE0"]) for i in range(0, p["tdur"] + p["dtprec"], p["dtprec"])]
-    Nt = len(time)
+    Nt = (p["tdur"] + p["dtE0"]) // p["dtE0"]
+    pg["time"] = [p["t0"] + i * p["dtE0"] for i in range(Nt)]
 
     # %% CREATE PRECIPITATION INPUT DATA
     # Qit: energy flux [mW m^-2]
     # E0it: characteristic energy [eV]
 
     # did user specify on/off time? if not, assume always on.
-    i_on = min(abs(time - p["precip_startsec"])) if "precip_startsec" in p else 0
+    i_on = min(abs(pg["time"] - p["precip_startsec"])) if "precip_startsec" in p else 0
 
-    i_off = min(abs(time - p["precip_endsec"])) if "precip_endsec" in p else slice(-1)
+    i_off = min(abs(pg["time"] - p["precip_endsec"])) if "precip_endsec" in p else Nt
 
-    pg = precip_grid(xg, p, llat, llon)
-    pg["time"] = time
-
-    pg["Q"] = np.empty((Nt, llon, llat))
-    pg["E0"] = np.empty((Nt, llon, llat))
+    pg["Q"] = np.empty((Nt, pg["llon"], pg["llat"]))
+    pg["E0"] = np.empty((Nt, pg["llon"], pg["llat"]))
 
     for i in range(i_on, i_off):
         pg["Q"][i, :, :] = precip_gaussian2d(pg)
@@ -54,11 +57,13 @@ def particles_BCs(p: T.Dict[str, T.Any]):
     # FORTRAN CODE IN CASE DIFFERENT GRIDS NEED TO BE TRIED.
     # THE EFIELD DATA DO NOT NEED TO BE SMOOTHED.
 
-    out_dir = p["out_dir"] / "inputs/prec_inputs/"
-    out_dir.mkdir(parents=True, exist_ok=True)
+    pg["precip_outdir"] = p["out_dir"] / "inputs/prec_inputs/"
+    pg["precip_outdir"].mkdir(parents=True, exist_ok=True)
+
+    write_precip(p, pg)
 
 
-def precip_grid(xg, p, llat: int, llon: int) -> T.Dict[str, T.Any]:
+def precip_grid(xg: dict, p: dict, pg: dict) -> T.Dict[str, T.Any]:
 
     thetamin = xg["theta"].min()
     thetamax = xg["theta"].max()
@@ -71,25 +76,22 @@ def precip_grid(xg, p, llat: int, llon: int) -> T.Dict[str, T.Any]:
     latbuf = 0.01 * (mlatmax - mlatmin)
     lonbuf = 0.01 * (mlonmax - mlonmin)
 
-    E: T.Dict[str, T.Any] = {}
-    E["mlat"] = np.linspace(mlatmin - latbuf, mlatmax + latbuf, E["llat"])
-    E["mlon"] = np.linspace(mlonmin - lonbuf, mlonmax + lonbuf, E["llon"])
-    E["MLON"], E["MLAT"] = np.meshgrid(E["mlon"], E["mlat"])
-    # mlonmean = E["mlon"].mean()
-    # mlatmean = E["mlat"].mean()
+    pg["mlat"] = np.linspace(mlatmin - latbuf, mlatmax + latbuf, pg["llat"])
+    pg["mlon"] = np.linspace(mlonmin - lonbuf, mlonmax + lonbuf, pg["llon"])
+    # pg["MLON"], pg["MLAT"] = np.meshgrid(pg["mlon"], pg["mlat"])
 
     # %% disturbance width
     mlat_sigma = p["precip_latwidth"] * (mlatmax - mlatmin)
     # to avoid divide by zero below
-    E["mlat_sigma"] = max(mlat_sigma, 0.01)
-    E["mlon_sigma"] = p["precip_lonwidth"] * (mlonmax - mlonmin)
+    pg["mlat_sigma"] = max(mlat_sigma, 0.01)
+    pg["mlon_sigma"] = p["precip_lonwidth"] * (mlonmax - mlonmin)
 
-    return E
+    return pg
 
 
 def precip_gaussian2d(pg: T.Dict[str, T.Any]) -> np.ndarray:
     return (
         10
-        * np.exp(-((pg["MLON"] - pg["mlon_mean"]) ** 2) / (2 * pg["mlon_sigma"] ** 2))
-        * np.exp(-((pg["MLAT"] - pg["mlat_mean"]) ** 2) / (2 * pg["mlat_sigma"] ** 2))
+        * np.exp(-((pg["mlon"][:, None] - pg["mlon"].mean()) ** 2) / (2 * pg["mlon_sigma"] ** 2))
+        * np.exp(-((pg["mlat"][None, :] - pg["mlat"].mean()) ** 2) / (2 * pg["mlat_sigma"] ** 2))
     )

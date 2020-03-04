@@ -11,6 +11,7 @@ try:
         write_grid as write_grid_h5,
         write_state as write_state_h5,
         write_Efield as write_Efield_h5,
+        write_precip as write_precip_h5,
     )
 except ModuleNotFoundError:
     get_simsize_h5 = write_grid_h5 = write_state_h5 = None
@@ -20,6 +21,7 @@ try:
         write_grid as write_grid_nc,
         write_state as write_state_nc,
         write_Efield as write_Efield_nc,
+        write_precip as write_precip_nc,
     )
 except ModuleNotFoundError:
     get_simsize_nc = write_grid_nc = write_state_nc = None
@@ -98,6 +100,30 @@ def write_Efield(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]):
         if write_Efield_nc is None:
             raise ImportError("pip install netcdf4")
         write_Efield_nc(p, xg)
+    else:
+        raise ValueError(f'unknown file format {p["format"]}')
+
+
+def write_precip(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]):
+    """ writes grid to disk
+
+    Parameters
+    ----------
+
+    p: dict
+        simulation parameters
+    xg: dict
+        grid values
+    """
+
+    if p["format"] in ("hdf5", "h5"):
+        if write_precip_h5 is None:
+            raise ImportError("pip install h5py")
+        write_precip_h5(xg)
+    elif p["format"] in ("netcdf", "nc"):
+        if write_precip_nc is None:
+            raise ImportError("pip install netcdf4")
+        write_precip_nc(xg)
     else:
         raise ValueError(f'unknown file format {p["format"]}')
 
