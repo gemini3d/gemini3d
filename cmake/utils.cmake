@@ -17,11 +17,22 @@ endfunction(win32_env)
 
 function(setup_gemini_test TESTNAME EXE TESTDIR REFDIR TIMEOUT)
 
+# --- disable tests as needed
+set(_is_disabled false)
+
 if(NOT PythonOK)
   message(VERBOSE " SKIP ${TESTNAME}: Python not found.")
-  return()
+  set(_is_disabled true)
 endif()
 
+if(NOT glow)
+  string(FIND ${TESTNAME} "glow" _loc)
+  if(_loc EQUAL -1)
+    set(_is_disabled true)
+  endif()
+endif()
+
+# --- setup test
 set(_config_file ${CMAKE_CURRENT_SOURCE_DIR}/initialize/${TESTDIR}/config.nml)
 
 add_test(NAME gemini:${TESTNAME}
@@ -34,6 +45,7 @@ set_tests_properties(gemini:${TESTNAME} PROPERTIES
   REQUIRED_FILES ${_config_file}
   FIXTURES_REQUIRED MPIMUMPS
   RUN_SERIAL true
+  DISABLED ${_is_disabled}
 )
 if(WIN32) # for Windows ifort dll
   if(HDF5_ROOT)
