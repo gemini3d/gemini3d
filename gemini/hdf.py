@@ -191,7 +191,7 @@ def write_Efield(p: T.Dict[str, T.Any], E: T.Dict[str, np.ndarray]):
             f["/time/UTsec"] = t.hour * 3600 + t.minute * 60 + t.second + t.microsecond / 1e6
 
             for k in ("Exit", "Eyit", "Vminx1it", "Vmaxx1it"):
-                f.create_dataset(f"/{k}", data=E[k][i, :, :], dtype=np.float32, compression="gzip", compression_opts=1)
+                f.create_dataset(f"/{k}", data=E[k][i, :, :].transpose(), dtype=np.float32, compression="gzip", compression_opts=1)
             for k in ("Vminx2ist", "Vmaxx2ist", "Vminx3ist", "Vmaxx3ist"):
                 f[f"/{k}"] = E[k][i, :].astype(np.float32)
 
@@ -214,7 +214,9 @@ def write_precip(precip: T.Dict[str, T.Any]):
 
         with h5py.File(fn, "w") as f:
             for k in ("Q", "E0"):
-                f.create_dataset(f"/{k}", data=precip[k][i, :, :], dtype=np.float32, compression="gzip", compression_opts=1)
+                f.create_dataset(
+                    f"/{k}p", data=precip[k][i, :, :].transpose(), dtype=np.float32, compression="gzip", compression_opts=1
+                )
 
 
 def loadframe3d_curv(fn: Path, lxs: T.Sequence[int]) -> T.Dict[str, T.Any]:
