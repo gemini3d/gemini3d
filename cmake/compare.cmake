@@ -11,7 +11,7 @@ else()
 endif()
 
 add_test(NAME gemini:compare:${TESTNAME}:python
-  COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/tests/compare_all.py ${CMAKE_CURRENT_BINARY_DIR}/${OUTDIR} ${REFDIR})
+  COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/script_utils/compare_all.py ${CMAKE_CURRENT_BINARY_DIR}/${OUTDIR} ${REFDIR})
 
 set_tests_properties(gemini:compare:${TESTNAME}:python PROPERTIES
   TIMEOUT 30
@@ -31,13 +31,13 @@ else()
 endif()
 
 add_test(NAME gemini:compare:${TESTNAME}:octave
-  COMMAND ${Octave_EXECUTABLE} --eval "compare_all('${CMAKE_CURRENT_BINARY_DIR}/${OUTDIR}','${REFDIR}')"
-  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+  COMMAND ${Octave_EXECUTABLE} --eval "compare_all('${CMAKE_CURRENT_BINARY_DIR}/${OUTDIR}','${REFDIR}')")
 
 set_tests_properties(gemini:compare:${TESTNAME}:octave PROPERTIES
   TIMEOUT 30
   REQUIRED_FILES ${CMAKE_CURRENT_BINARY_DIR}/${OUTDIR}/inputs/config.nml
   SKIP_RETURN_CODE 77
+  ENVIRONMENT OCTAVE_PATH=${CMAKE_CURRENT_SOURCE_DIR}/script_utils
   DISABLED ${_i})
 
 endfunction(octave_compare)
@@ -52,13 +52,13 @@ else()
 endif()
 
 add_test(NAME gemini:compare:${TESTNAME}:matlab
-  COMMAND ${Matlab_MAIN_PROGRAM} -batch compare_all('${CMAKE_CURRENT_BINARY_DIR}/${OUTDIR}','${REFDIR}')
-  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+  COMMAND ${Matlab_MAIN_PROGRAM} -batch "compare_all('${CMAKE_CURRENT_BINARY_DIR}/${OUTDIR}','${REFDIR}')")
 
 set_tests_properties(gemini:compare:${TESTNAME}:matlab PROPERTIES
   TIMEOUT 60
   REQUIRED_FILES ${CMAKE_CURRENT_BINARY_DIR}/${OUTDIR}/inputs/config.nml
   SKIP_RETURN_CODE 77
+  ENVIRONMENT MATLABPATH=${CMAKE_CURRENT_SOURCE_DIR}/script_utils
   DISABLED ${_i})
 # Matlab with a lot of toolboxes takes 15..30 seconds just to start, particularly on HPC with network file system.
 
