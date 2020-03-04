@@ -22,7 +22,7 @@ outdir = absolute_path(outdir);
 makedir(outdir)
 
 switch file_format
-  case {'h5','hdf5'}, write_hdf5(outdir, ymd, UTsec, ns, vsx1, Ts, realbits)
+  case {'h5','hdf5'}, write_hdf5(outdir, ymd, UTsec, ns, vsx1, Ts)
   case {'dat','raw'}, write_raw(outdir, ymd, UTsec, ns, vsx1, Ts, realbits)
   otherwise, error('unknown file_format')
 end
@@ -30,14 +30,14 @@ end
 end % function
 
 
-function write_hdf5(outdir, ymd, UTsec, ns, vsx1, Ts, realbits)
+function write_hdf5(outdir, ymd, UTsec, ns, vsx1, Ts)
 fn = [outdir,'/initial_conditions.h5'];
 disp(['write ',fn])
 if isfile(fn), delete(fn), end
 
 h5save(fn, '/ymd', int32(ymd))
 
-freal = ['float',int2str(realbits)];
+freal = 'float32';
 
 h5save(fn, '/UTsec', UTsec, [], freal)
 h5save(fn, '/ns', ns, [], freal)
