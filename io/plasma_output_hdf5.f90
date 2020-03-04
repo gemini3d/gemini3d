@@ -68,80 +68,80 @@ print *, 'HDF5 Output file name:  ', filenamefull
 call hout%initialize(filenamefull, status='new',action='w',comp_lvl=1)
 
 call hout%write('/time/ymd', ymd)
-call hout%write('/time/UThour',UTsec/3600._wp)
+call hout%write('/time/UThour',   real(UTsec/3600.))
 
 if (flagswap/=1) then
   select case (flagoutput)
     case (2)    !output ISR-like average parameters
-      call hout%write('neall', neall(1:lx1,1:lx2all,1:lx3all))
-      call hout%write('v1avgall', v1avgall(1:lx1,1:lx2all,1:lx3all))
+      call hout%write('neall',    real(neall(1:lx1,1:lx2all,1:lx3all)))
+      call hout%write('v1avgall', real(v1avgall(1:lx1,1:lx2all,1:lx3all)))
       !output of ISR-like parameters (ne,Ti,Te,v1,etc.)
-      call hout%write('Tavgall', Tavgall(1:lx1,1:lx2all,1:lx3all))
-      call hout%write('TEall', Teall(1:lx1,1:lx2all,1:lx3all))
-      call hout%write('J1all', J1all(1:lx1,1:lx2all,1:lx3all))
-      call hout%write('J2all', J2all(1:lx1,1:lx2all,1:lx3all))
-      call hout%write('J3all', J3all(1:lx1,1:lx2all,1:lx3all))
-      call hout%write('v2avgall', v2avgall(1:lx1,1:lx2all,1:lx3all))
-      call hout%write('v3avgall', v3avgall(1:lx1,1:lx2all,1:lx3all))
+      call hout%write('Tavgall',  real(Tavgall(1:lx1,1:lx2all,1:lx3all)))
+      call hout%write('TEall',    real(Teall(1:lx1,1:lx2all,1:lx3all)))
+      call hout%write('J1all',    real(J1all(1:lx1,1:lx2all,1:lx3all)))
+      call hout%write('J2all',    real(J2all(1:lx1,1:lx2all,1:lx3all)))
+      call hout%write('J3all',    real(J3all(1:lx1,1:lx2all,1:lx3all)))
+      call hout%write('v2avgall', real(v2avgall(1:lx1,1:lx2all,1:lx3all)))
+      call hout%write('v3avgall', real(v3avgall(1:lx1,1:lx2all,1:lx3all)))
     case (3)     !just electron density
       print *, '!!!NOTE:  Input file has selected electron density only output, make sure this is what you really want!'
-      call hout%write('neall', neall(1:lx1,1:lx2all,1:lx3all))
+      call hout%write('neall',    real(neall(1:lx1,1:lx2all,1:lx3all)))
     case default    !output everything
       print *, '!!!NOTE:  Input file has selected full output, large files may result!'
-      call hout%write('nsall', nsall(1:lx1,1:lx2all,1:lx3all,:))
-      call hout%write('vs1all', vs1all(1:lx1,1:lx2all,1:lx3all,:))
+      call hout%write('nsall',    real(nsall(1:lx1,1:lx2all,1:lx3all,:)))
+      call hout%write('vs1all',   real(vs1all(1:lx1,1:lx2all,1:lx3all,:)))
       !this is full output of all parameters in 3D
-      call hout%write('Tsall', Tsall(1:lx1,1:lx2all,1:lx3all,:))
+      call hout%write('Tsall',    real(Tsall(1:lx1,1:lx2all,1:lx3all,:)))
 
-      call hout%write('J1all', J1all(1:lx1,1:lx2all,1:lx3all))
-      call hout%write('J2all', J2all(1:lx1,1:lx2all,1:lx3all))
-      call hout%write('J3all', J3all(1:lx1,1:lx2all,1:lx3all))
-      call hout%write('v2avgall', v2avgall(1:lx1,1:lx2all,1:lx3all))
-      call hout%write('v3avgall', v3avgall(1:lx1,1:lx2all,1:lx3all))
+      call hout%write('J1all',    real(J1all(1:lx1,1:lx2all,1:lx3all)))
+      call hout%write('J2all',    real(J2all(1:lx1,1:lx2all,1:lx3all)))
+      call hout%write('J3all',    real(J3all(1:lx1,1:lx2all,1:lx3all)))
+      call hout%write('v2avgall', real(v2avgall(1:lx1,1:lx2all,1:lx3all)))
+      call hout%write('v3avgall', real(v3avgall(1:lx1,1:lx2all,1:lx3all)))
     end select
 else
 !! 2D simulation
   select case (flagoutput)
     case (2)    !averaged parameters
-      call hout%write('neall', neall)
-      call hout%write('v1avgall', v1avgall)
-      call hout%write('Tavgall', Tavgall)
-      call hout%write('TEall', Teall)
+      call hout%write('neall',    real(neall))
+      call hout%write('v1avgall', real(v1avgall))
+      call hout%write('Tavgall',  real(Tavgall))
+      call hout%write('TEall',    real(Teall))
 
-      call hout%write('J1all', J1all)
+      call hout%write('J1all',    real(J1all))
 
       ! J3,J2 and V3, V2 are swapped
-      call hout%write('J2all', J3all)
-      call hout%write('J3all', J2all)
-      call hout%write('v2avgall', v3avgall)
-      call hout%write('v3avgall', v2avgall)
+      call hout%write('J2all',    real(J3all))
+      call hout%write('J3all',    real(J2all))
+      call hout%write('v2avgall', real(v3avgall))
+      call hout%write('v3avgall', real(v2avgall))
     case (3)     !electron density only output
       print *, '!!!NOTE:  Input file has selected electron density only output, make sure this is what you really want!'
 
-      call hout%write('neall', neall)
+      call hout%write('neall',    real(neall))
 
     case default
       print *, '!!!NOTE:  Input file has selected full output, large files may result!'
 
-      call hout%write('nsall', nsall(1:lx1,1:lx2all,1:lx3all,:))
-      call hout%write('vs1all', vs1all(1:lx1,1:lx2all,1:lx3all,:))
-      call hout%write('Tsall', Tsall(1:lx1,1:lx2all,1:lx3all,:))
+      call hout%write('nsall',    real(nsall(1:lx1,1:lx2all,1:lx3all,:)))
+      call hout%write('vs1all',   real(vs1all(1:lx1,1:lx2all,1:lx3all,:)))
+      call hout%write('Tsall',    real(Tsall(1:lx1,1:lx2all,1:lx3all,:)))
 
-      call hout%write('J1all', J1all)
+      call hout%write('J1all',    real(J1all))
 
       !! NOTE: J3,J2 and V3, V2 are swapped in name like this
-      call hout%write('J2all', J3all)
-      call hout%write('J3all', J2all)
-      call hout%write('v2avgall', v3avgall)
-      call hout%write('v3avgall', v2avgall)
+      call hout%write('J2all',    real(J3all))
+      call hout%write('J3all',    real(J2all))
+      call hout%write('v2avgall', real(v3avgall))
+      call hout%write('v3avgall', real(v2avgall))
   end select
 end if
 if (gridflag==1) then
   print *, 'Writing topside boundary conditions for inverted-type grid...'
-  call hout%write('Phiall', Phiall(1,:,:))
+  call hout%write('Phiall',       real(Phiall(1,:,:)))
 else
   print *, 'Writing topside boundary conditions for non-inverted-type grid...'
-  call hout%write('Phiall', Phiall(lx1,:,:))
+  call hout%write('Phiall',       real(Phiall(lx1,:,:)))
 end if
 
 call hout%finalize()
