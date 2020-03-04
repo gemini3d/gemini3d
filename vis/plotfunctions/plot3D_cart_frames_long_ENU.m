@@ -138,6 +138,9 @@ end
 %% LAT./LONG. SLICE COORDINATES
 %zp2=[290,300,310];
 zp2=[plotparams.altref-10, plotparams.altref, plotparams.altref+10];
+if isa(xp, 'single')
+  zp2 = single(zp2);
+end
 lzp2=numel(zp2);
 [X2,Y2,Z2]=meshgrid(xp,yp,zp2*1e3);       %lat./lon. meshgrid, need 3D since and altitude slice cuts through all 3 dipole dimensions
 
