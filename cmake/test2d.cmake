@@ -12,8 +12,6 @@ test2d_fang
 ${CMAKE_CURRENT_SOURCE_DIR}/tests/data/test2d_fang)
 
 #== glow
-if(glow)
-
 setup_gemini_test(
 2d_glow
 gemini.bin
@@ -25,5 +23,3 @@ compare_gemini_output(
 2d_glow
 test2d_glow
 ${CMAKE_CURRENT_SOURCE_DIR}/tests/data/test2d_glow)
-
-endif(glow)
