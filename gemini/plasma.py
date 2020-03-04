@@ -322,7 +322,11 @@ def equilibrium_state(p: T.Dict[str, T.Any], xg: DictArray) -> T.Tuple[np.ndarra
             nmolc = np.zeros(lx1)
             nmolc[inds1] = (1 - rho[inds1]) * ne[inds1]
             if len(inds2) > 0:
-                if xg["r"][0, 0] > xg["r"][1, 0]:
+                if lx2 != 1 and lx3 != 1:
+                    cond = xg["r"][0, 0, 0] > xg["r"][1, 0, 0]
+                else:
+                    cond = xg["r"][0, 0] > xg["r"][1, 0]
+                if cond:
                     iref = inds1[0]
                 else:
                     iref = inds1[-1]
@@ -354,7 +358,7 @@ def equilibrium_state(p: T.Dict[str, T.Any], xg: DictArray) -> T.Tuple[np.ndarra
             ns[5, inds2, ix2, ix3] = (1 - rho[inds2]) * ne[inds2]
             z = alt[inds1, ix2, ix3]
             if len(inds2) > 0:
-                if xg["r"][0, 0] > xg["r"][1, 0]:
+                if cond:
                     iref = inds2[-1]
                 else:
                     iref = inds2[0]
