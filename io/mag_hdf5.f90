@@ -18,9 +18,9 @@ print *, '  Output file name (magnetic fields):  ',filenamefull
 
 call hout%initialize(filenamefull, status='unknown',action='rw')
 
-call hout%write('/magfields/Br', Br)
-call hout%write('/magfields/Btheta', Btheta)
-call hout%write('/magfields/Bphi', Bphi)
+call hout%write('/magfields/Br',     real(Br))
+call hout%write('/magfields/Btheta', real(Btheta))
+call hout%write('/magfields/Bphi',   real(Bphi))
 
 call hout%finalize()
 

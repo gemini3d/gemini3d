@@ -39,9 +39,9 @@ call hout%initialize(filenamefull, status=fstatus,action='rw')
 
 !! write data to file
 if(flagswap/=1) then
-  call hout%write('/aurora/iverout', iverout)
+  call hout%write('/aurora/iverout', real(iverout))
 else
-  call hout%write('/aurora/iverout', reshape(iverout,[lx3all,lx2all,lwave],order=[2,1,3]))
+  call hout%write('/aurora/iverout', real(reshape(iverout,[lx3all,lx2all,lwave],order=[2,1,3])))
 end if
 
 call hout%finalize()
