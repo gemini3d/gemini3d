@@ -64,7 +64,7 @@ outdir = absolute_path([p.simdir, '/inputs/prec_inputs/']);
 makedir(outdir)
 
 switch p.format
-  case {'h5','hdf5'}, write_hdf5(outdir, llon, llat, pg.mlon, pg.mlat, expdate, Nt, Qit, E0it, p.realbits)
+  case {'h5','hdf5'}, write_hdf5(outdir, llon, llat, pg.mlon, pg.mlat, expdate, Nt, Qit, E0it)
   case {'dat','raw'}, write_raw(outdir, llon, llat, pg.mlon, pg.mlat, expdate, Nt, Qit, E0it, p.realbits)
   otherwise, error(['unknown file format ', p.format])
 end
@@ -72,7 +72,7 @@ end
 end % function
 
 
-function write_hdf5(outdir, llon, llat, mlon, mlat, expdate, Nt, Qit, E0it, realbits)
+function write_hdf5(outdir, llon, llat, mlon, mlat, expdate, Nt, Qit, E0it)
 narginchk(10,10)
 
 fn = [outdir, '/simsize.h5'];
@@ -80,7 +80,7 @@ disp(['write ', fn])
 h5save(fn, '/llon', int32(llon))
 h5save(fn, '/llat', int32(llat))
 
-freal = ['float',int2str(realbits)];
+freal = 'float32';
 
 fn = [outdir, '/simgrid.h5'];
 disp(['write ', fn])

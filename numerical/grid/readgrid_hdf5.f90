@@ -22,6 +22,8 @@ if (debug) print '(A,/,A)', 'READ 3D (B-parallel, B-perp, B-perp) grid:', fn
 call hout%initialize(fn, status='old',action='r')
 
 !> reads common to 2D and 3D
+
+!> 1-D variables
 call hout%read('/x1', x%x1)
 call hout%read('/x1i', x%x1i)
 call hout%read('/dx1b', x%dx1)
@@ -40,6 +42,7 @@ if (flagswap/=1) then
   call hout%read('/dx3b', x%dx3all)
   call hout%read('/dx3h', x%dx3iall)
 
+  !> 3D variables
   call hout%read('/h1', x%h1all)
   call hout%read('/h2', x%h2all)
   call hout%read('/h3', x%h3all)

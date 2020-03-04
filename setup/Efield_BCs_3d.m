@@ -113,7 +113,7 @@ h5save(fn, '/llat', int32(E.llat))
 fn = [dir_out, '/simgrid.h5'];
 if is_file(fn), delete(fn), end
 
-freal = ['float',int2str(p.realbits)];
+freal = 'float32';
 
 h5save(fn, '/mlon', E.mlon, [], freal)
 h5save(fn, '/mlat', E.mlat, [], freal)

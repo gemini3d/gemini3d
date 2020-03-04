@@ -58,9 +58,15 @@ def write_state(time: datetime, ns: np.ndarray, vs: np.ndarray, Ts: np.ndarray, 
         p4 = (0, 3, 2, 1)
         # we have to reverse axes order and put lsp at the last dim
 
-        f.create_dataset(f"/ns", data=ns.transpose(p4), dtype=np.float32, compression="gzip", compression_opts=1)
-        f.create_dataset(f"/vsx1", data=vs.transpose(p4), dtype=np.float32, compression="gzip", compression_opts=1)
-        f.create_dataset(f"/Ts", data=Ts.transpose(p4), dtype=np.float32, compression="gzip", compression_opts=1)
+        f.create_dataset(
+            f"/ns", data=ns.transpose(p4), dtype=np.float32, compression="gzip", compression_opts=1, shuffle=True, fletcher32=True
+        )
+        f.create_dataset(
+            f"/vsx1", data=vs.transpose(p4), dtype=np.float32, compression="gzip", compression_opts=1, shuffle=True, fletcher32=True
+        )
+        f.create_dataset(
+            f"/Ts", data=Ts.transpose(p4), dtype=np.float32, compression="gzip", compression_opts=1, shuffle=True, fletcher32=True
+        )
 
 
 def readgrid(fn: Path) -> T.Dict[str, np.ndarray]:
@@ -125,13 +131,29 @@ def write_grid(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]):
         for i in (1, 2, 3):
             for k in (f"x{i}", f"x{i}i", f"dx{i}b", f"dx{i}h", f"h{i}", f"h{i}x1i", f"h{i}x2i", f"h{i}x3i", f"gx{i}", f"e{i}"):
                 if xg[k].ndim >= 2:
-                    h.create_dataset(f"/{k}", data=xg[k].transpose(), dtype=np.float32, compression="gzip", compression_opts=1)
+                    h.create_dataset(
+                        f"/{k}",
+                        data=xg[k].transpose(),
+                        dtype=np.float32,
+                        compression="gzip",
+                        compression_opts=1,
+                        shuffle=True,
+                        fletcher32=True,
+                    )
                 else:
                     h[f"/{k}"] = xg[k].astype(np.float32)
 
         for k in ("alt", "glat", "glon", "Bmag", "I", "nullpts", "er", "etheta", "ephi", "r", "theta", "phi", "x", "y", "z"):
             if xg[k].ndim >= 2:
-                h.create_dataset(f"/{k}", data=xg[k].transpose(), dtype=np.float32, compression="gzip", compression_opts=1)
+                h.create_dataset(
+                    f"/{k}",
+                    data=xg[k].transpose(),
+                    dtype=np.float32,
+                    compression="gzip",
+                    compression_opts=1,
+                    shuffle=True,
+                    fletcher32=True,
+                )
             else:
                 h[f"/{k}"] = xg[k].astype(np.float32)
 
@@ -191,7 +213,15 @@ def write_Efield(p: T.Dict[str, T.Any], E: T.Dict[str, np.ndarray]):
             f["/time/UTsec"] = t.hour * 3600 + t.minute * 60 + t.second + t.microsecond / 1e6
 
             for k in ("Exit", "Eyit", "Vminx1it", "Vmaxx1it"):
-                f.create_dataset(f"/{k}", data=E[k][i, :, :].transpose(), dtype=np.float32, compression="gzip", compression_opts=1)
+                f.create_dataset(
+                    f"/{k}",
+                    data=E[k][i, :, :].transpose(),
+                    dtype=np.float32,
+                    compression="gzip",
+                    compression_opts=1,
+                    shuffle=True,
+                    fletcher32=True,
+                )
             for k in ("Vminx2ist", "Vmaxx2ist", "Vminx3ist", "Vmaxx3ist"):
                 f[f"/{k}"] = E[k][i, :].astype(np.float32)
 
@@ -215,7 +245,13 @@ def write_precip(precip: T.Dict[str, T.Any]):
         with h5py.File(fn, "w") as f:
             for k in ("Q", "E0"):
                 f.create_dataset(
-                    f"/{k}p", data=precip[k][i, :, :].transpose(), dtype=np.float32, compression="gzip", compression_opts=1
+                    f"/{k}p",
+                    data=precip[k][i, :, :].transpose(),
+                    dtype=np.float32,
+                    compression="gzip",
+                    compression_opts=1,
+                    shuffle=True,
+                    fletcher32=True,
                 )
 
 
