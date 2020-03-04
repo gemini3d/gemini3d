@@ -215,7 +215,7 @@ def equilibrium_state(p: T.Dict[str, T.Any], xg: DictArray) -> T.Tuple[np.ndarra
         lx1 = lalt
         lx2 = xg["lx"][1]
         lx3 = xg["lx"][2]
-        Tn = natm[:lalt, :, :, 3]
+        Tn = natm[3, :lalt, :, :]
         g = abs(xg["gx1"][:lalt, :, :])
         g = max(g, 1)
         for ix3 in range(lx3):
@@ -227,14 +227,14 @@ def equilibrium_state(p: T.Dict[str, T.Any], xg: DictArray) -> T.Tuple[np.ndarra
     else:
         alt = xg["alt"]
         lx1, lx2, lx3 = xg["lx"]
-        Tn = natm[:, :, :, 3]
+        Tn = natm[3, :, :, :]
         g = abs(xg["gx1"])
 
     # CONSTANTS
     kb = 1.38e-23
     amu = 1.67e-27
 
-    ns = np.zeros((lx1, lx2, lx3, 7))
+    ns = np.zeros((7, lx1, lx2, lx3))
     for ix3 in range(lx3):
         for ix2 in range(lx2):
             Hf = kb * Tn[:, ix2, ix3] / amu / 16 / g[:, ix2, ix3]
@@ -275,13 +275,13 @@ def equilibrium_state(p: T.Dict[str, T.Any], xg: DictArray) -> T.Tuple[np.ndarra
                 ne[inds] = nesort
 
             # %% O+
-            ns[:, ix2, ix3, 0] = rho * ne
+            ns[0, :, ix2, ix3] = rho * ne
             zref = 900e3
             inds0 = alt[:, ix2, ix3] > zref
             if any(inds0):
                 iord = np.argsort(alt[:, ix2, ix3])
                 altsort = alt[iord, ix2, ix3]
-                nsort = ns[:, ix2, ix3, 0]
+                nsort = ns[0, :, ix2, ix3]
                 nsort = nsort[iord]
                 #        n0=interpolate(nsort,altsort,zref,'lin','lin');
                 f = interp1d(altsort, nsort)
@@ -310,10 +310,10 @@ def equilibrium_state(p: T.Dict[str, T.Any], xg: DictArray) -> T.Tuple[np.ndarra
                 for iz in range(lz):
                     n1sort[iord[iz]] = n1top[iz]
 
-                ns[inds0, ix2, ix3, 0] = n1sort
+                ns[0, inds0, ix2, ix3] = n1sort
 
             # N+
-            ns[:, ix2, ix3, 5] = 1e-4 * ns[:, ix2, ix3, 0]
+            ns[5, :, ix2, ix3] = 1e-4 * ns[0, :, ix2, ix3]
 
             inds2 = inds
             inds1 = np.setdiff1d(range(lx1), inds2)
@@ -346,12 +346,12 @@ def equilibrium_state(p: T.Dict[str, T.Any], xg: DictArray) -> T.Tuple[np.ndarra
 
                 nmolc[inds2] = nmolcsort
 
-            ns[:, ix2, ix3, 1] = 1 / 3 * nmolc
-            ns[:, ix2, ix3, 2] = 1 / 3 * nmolc
-            ns[:, ix2, ix3, 3] = 1 / 3 * nmolc
+            ns[1, :, ix2, ix3] = 1 / 3 * nmolc
+            ns[2, :, ix2, ix3] = 1 / 3 * nmolc
+            ns[3, :, ix2, ix3] = 1 / 3 * nmolc
 
             # %% PROTONS
-            ns[inds2, ix2, ix3, 5] = (1 - rho[inds2]) * ne[inds2]
+            ns[5, inds2, ix2, ix3] = (1 - rho[inds2]) * ne[inds2]
             z = alt[inds1, ix2, ix3]
             if len(inds2) > 0:
                 if xg["r"][0, 0] > xg["r"][1, 0]:
@@ -359,30 +359,30 @@ def equilibrium_state(p: T.Dict[str, T.Any], xg: DictArray) -> T.Tuple[np.ndarra
                 else:
                     iref = inds2[0]
 
-                n0 = ns[iref, ix2, ix3, 5]
+                n0 = ns[5, iref, ix2, ix3]
             else:
                 iref = alt[:, ix2, ix3].argmax()
                 n0 = 1e6
 
-            ns[inds1, ix2, ix3, 5] = chapmana(z, n0, alt[iref, ix2, ix3], Hf.mean())
+            ns[5, inds1, ix2, ix3] = chapmana(z, n0, alt[iref, ix2, ix3], Hf.mean())
 
-    ns[:, :, :, :6][ns[:, :, :, :6] < mindens] = mindens
-    ns[:, :, :, 6] = ns[:, :, :, :6].sum(axis=3)
+    ns[:6, :, :, :][ns[:6, :, :, :] < mindens] = mindens
+    ns[6, :, :, :] = ns[:6, :, :, :].sum(axis=0)
 
-    vsx1 = np.zeros((lx1, lx2, lx3, 7))
-    Ts = np.tile(Tn[:, :, :, None], [1, 1, 1, 7])
+    vsx1 = np.zeros((7, lx1, lx2, lx3))
+    Ts = np.tile(Tn[None, :, :, :], [7, 1, 1, 1])
 
     if closeddip:
         # closed dipole grid
         # FIXME:  This code only works for symmetric grids...
         if 2 * lx1 == xg["lx"][0]:
-            ns = np.concatenate((ns, ns[::-1, :, :, :]), 0)
-            Ts = np.concatenate((Ts, Ts[::-1, :, :, :]), 0)
-            vsx1 = np.concatenate((vsx1, vsx1[::-1, :, :, :]), 0)
+            ns = np.concatenate((ns, ns[:, ::-1, :, :]), 1)
+            Ts = np.concatenate((Ts, Ts[:, ::-1, :, :]), 1)
+            vsx1 = np.concatenate((vsx1, vsx1[:, ::-1, :, :]), 1)
         else:
-            ns = np.concatenate((ns, ns[lx1, :, :, :], ns[::-1, :, :, :]), 0)
-            Ts = np.concatenate((Ts, Ts[lx1, :, :, :], Ts[::-1, :, :, :]), 0)
-            vsx1 = np.concatenate((vsx1, vsx1[lx1, :, :, :], vsx1[::-1, :, :, :]), 0)
+            ns = np.concatenate((ns, ns[:, lx1, :, :], ns[:, ::-1, :, :]), 1)
+            Ts = np.concatenate((Ts, Ts[:, lx1, :, :], Ts[:, ::-1, :, :]), 1)
+            vsx1 = np.concatenate((vsx1, vsx1[:, lx1, :, :], vsx1[:, ::-1, :, :]), 1)
 
     return ns, Ts, vsx1
 
@@ -488,6 +488,6 @@ def msis_matlab3D(p: DictArray, xg: DictArray) -> np.ndarray:
     nNO = 0.4 * np.exp(-3700 / Tn) * nO2 + 5e-7 * nO
     # Mitra, 1968
     nH = msisdat[7, :].reshape((lx1, lx2, lx3))
-    natm = np.stack((nO, nN2, nO2, Tn, nN, nNO, nH), 3)
+    natm = np.stack((nO, nN2, nO2, Tn, nN, nNO, nH), 0)
 
     return natm

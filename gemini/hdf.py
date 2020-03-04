@@ -55,9 +55,12 @@ def write_state(time: datetime, ns: np.ndarray, vs: np.ndarray, Ts: np.ndarray, 
         f["/ymd"] = [time.year, time.month, time.day]
         f["/UTsec"] = time.hour * 3600 + time.minute * 60 + time.second + time.microsecond / 1e6
 
-        f.create_dataset(f"/ns", data=ns.transpose(), dtype=np.float32, compression="gzip", compression_opts=1)
-        f.create_dataset(f"/vsx1", data=vs.transpose(), dtype=np.float32, compression="gzip", compression_opts=1)
-        f.create_dataset(f"/Ts", data=Ts.transpose(), dtype=np.float32, compression="gzip", compression_opts=1)
+        p4 = (0, 3, 2, 1)
+        # we have to reverse axes order and put lsp at the last dim
+
+        f.create_dataset(f"/ns", data=ns.transpose(p4), dtype=np.float32, compression="gzip", compression_opts=1)
+        f.create_dataset(f"/vsx1", data=vs.transpose(p4), dtype=np.float32, compression="gzip", compression_opts=1)
+        f.create_dataset(f"/Ts", data=Ts.transpose(p4), dtype=np.float32, compression="gzip", compression_opts=1)
 
 
 def readgrid(fn: Path) -> T.Dict[str, np.ndarray]:
@@ -214,7 +217,7 @@ def write_precip(precip: T.Dict[str, T.Any]):
                 f.create_dataset(f"/{k}", data=precip[k][i, :, :], dtype=np.float32, compression="gzip", compression_opts=1)
 
 
-def loadframe3d_curv(fn: Path) -> T.Dict[str, T.Any]:
+def loadframe3d_curv(fn: Path, lxs: T.Sequence[int]) -> T.Dict[str, T.Any]:
     """
     end users should normally use loadframe() instead
     """
@@ -229,11 +232,20 @@ def loadframe3d_curv(fn: Path) -> T.Dict[str, T.Any]:
     with h5py.File(fn, "r") as f:
         dat["time"] = ymdhourdec2datetime(f["time/ymd"][0], f["time/ymd"][1], f["time/ymd"][2], f["time/UThour"][()])
 
-        ns = f["/nsall"][:].transpose((0, 3, 2, 1))
+        if lxs[2] == 1:  # east-west
+            p4 = (0, 3, 1, 2)
+            p3 = (2, 0, 1)
+        else:  # 3D or north-south, no swap (need to verify)
+            p4 = (0, 1, 2, 3)
+            p3 = (0, 1, 2)
+
+        ns = f["/nsall"][:].transpose(p4)
+        if ns.shape[0] != 7 or (ns.shape[1:] != lxs).any():
+            raise ValueError("may have wrong permutation on read")
         dat["ns"] = (("lsp", "x1", "x2", "x3"), ns)
-        vs = f["/vs1all"][:].transpose((0, 3, 2, 1))
+        vs = f["/vs1all"][:].transpose(p4)
         dat["vs"] = (("lsp", "x1", "x2", "x3"), vs)
-        Ts = f["/Tsall"][:].transpose((0, 3, 2, 1))
+        Ts = f["/Tsall"][:].transpose(p4)
         dat["Ts"] = (("lsp", "x1", "x2", "x3"), Ts)
 
         dat["ne"] = (("x1", "x2", "x3"), ns[LSP - 1, :, :, :])
@@ -249,19 +261,21 @@ def loadframe3d_curv(fn: Path) -> T.Dict[str, T.Any]:
         )
         dat["Te"] = (("x1", "x2", "x3"), Ts[LSP - 1, :, :, :])
 
-        dat["J1"] = (("x1", "x2", "x3"), f["/J1all"][:].transpose((2, 1, 0)))
-        dat["J2"] = (("x1", "x2", "x3"), f["/J2all"][:].transpose((2, 1, 0)))
-        dat["J3"] = (("x1", "x2", "x3"), f["/J3all"][:].transpose((2, 1, 0)))
+        dat["J1"] = (("x1", "x2", "x3"), f["/J1all"][:].transpose(p3))
+        if (dat["J1"][1].shape != lxs).any():
+            raise ValueError("may have wrong permutation on read")
+        dat["J2"] = (("x1", "x2", "x3"), f["/J2all"][:].transpose(p3))
+        dat["J3"] = (("x1", "x2", "x3"), f["/J3all"][:].transpose(p3))
 
-        dat["v2"] = (("x1", "x2", "x3"), f["/v2avgall"][:].transpose((2, 1, 0)))
-        dat["v3"] = (("x1", "x2", "x3"), f["/v3avgall"][:].transpose((2, 1, 0)))
+        dat["v2"] = (("x1", "x2", "x3"), f["/v2avgall"][:].transpose(p3))
+        dat["v3"] = (("x1", "x2", "x3"), f["/v3avgall"][:].transpose(p3))
 
         dat["Phitop"] = (("x2", "x3"), f["/Phiall"][:].transpose())
 
     return dat
 
 
-def loadframe3d_curvavg(fn: Path) -> T.Dict[str, T.Any]:
+def loadframe3d_curvavg(fn: Path, lxs: T.Sequence[int]) -> T.Dict[str, T.Any]:
     """
     end users should normally use loadframe() instead
 

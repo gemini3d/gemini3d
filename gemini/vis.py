@@ -70,16 +70,22 @@ def plotframe(
 def grid2plotfun(grid: typing.Dict[str, np.ndarray]):
     plotfun = None
     h1 = grid.get("h1")
+    for k in ("lx", "lxs", "lx1"):
+        if k in grid:
+            if k == "lx1":
+                lxs = (grid["lx1"], grid["lx2"], grid["lx3"])
+            else:
+                lxs = grid[k]
     if h1 is not None:
         minh1 = h1.min()
         maxh1 = h1.max()
         if (abs(minh1 - 1) > 1e-4) or (abs(maxh1 - 1) > 1e-4):  # curvilinear grid
-            if (grid["lx"][1] > 1) and (grid["lx"][2] > 1):
+            if (lxs[1] > 1) and (lxs[2] > 1):
                 plotfun = plot3D_curv_frames_long
             else:
                 plotfun = plot2D_curv
     if plotfun is None:  # cartesian grid
-        if (grid["lx"][1] > 1) and (grid["lx"][2] > 1):
+        if (lxs[1] > 1) and (lxs[2] > 1):
             plotfun = plot3D_cart_frames_long_ENU
         else:
             plotfun = plot2D_cart
@@ -254,7 +260,13 @@ def plot_interp(time: datetime, grid: typing.Dict[str, np.ndarray], parm: np.nda
         vmin = 1e-7
 
     # %% SIZE OF SIMULATION
-    lx1, lx2, lx3 = grid["lx"]
+    for k in ("lx", "lxs", "lx1"):
+        if k in grid:
+            if k == "lx1":
+                lxs = (grid["lx1"], grid["lx2"], grid["lx3"])
+            else:
+                lxs = grid[k]
+    lx1, lx2, lx3 = lxs
     inds1 = slice(2, lx1 + 2)
     inds2 = slice(2, lx2 + 2)
     inds3 = slice(2, lx3 + 2)
@@ -281,7 +293,7 @@ def plot_interp(time: datetime, grid: typing.Dict[str, np.ndarray], parm: np.nda
     # upward distance [meters]
     zp = np.linspace(z.min(), z.max(), lzp) * 1e3
     # %% INTERPOLATE ONTO PLOTTING GRID
-    if grid["lx"][2] == 1:  # alt./lon. slice
+    if lxs[2] == 1:  # alt./lon. slice
         ax = fg.gca()
         ax.set_title(f"{name}: {time.isoformat()}  {gitrev()}")
         # meridional meshgrid, this defines the grid for plotting
@@ -308,7 +320,7 @@ def plot_interp(time: datetime, grid: typing.Dict[str, np.ndarray], parm: np.nda
             plot1d2(xp, f(xp), name, fg, ax)
         else:
             raise ValueError(f"{name}: only 2D and 1D data are expected--squeeze data")
-    elif grid["lx"][1] == 1:  # alt./lat. slice
+    elif lxs[1] == 1:  # alt./lat. slice
         ax = fg.gca()
         ax.set_title(f"{name}: {time.isoformat()}  {gitrev()}")
         # so north dist, east dist., alt.

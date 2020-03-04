@@ -106,9 +106,9 @@ def readdata(fn: Path) -> typing.Dict[str, typing.Any]:
             raise ModuleNotFoundError("pip install h5py")
 
         if P["flagoutput"] == 1:
-            dat = hdf.loadframe3d_curv(fn)
+            dat = hdf.loadframe3d_curv(fn, P["lxs"])
         elif P["flagoutput"] == 2:
-            dat = hdf.loadframe3d_curvavg(fn)
+            dat = hdf.loadframe3d_curvavg(fn, P["lxs"])
         else:
             raise ValueError("TODO: need to handle this case, file a bug report.")
 
