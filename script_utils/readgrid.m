@@ -53,7 +53,11 @@ xgf = load(fn);
 % octave bug: error: octave_base_value::int32_scalar_value(): wrong type argument 'int32 matrix'
 xgf.lx = [L.lx1; L.lx2; L.lx3];
 else
-xgf.lx = h5read(sizefn, '/lx');
+try
+  xgf.lx = h5read(sizefn, '/lx');
+catch
+  xgf.lx = [h5read(sizefn, '/lx1'), h5read(sizefn, '/lx2'), h5read(sizefn, '/lx3')];
+end
 xgf.x1 = h5read(fn, '/x1');
 xgf.x1i = h5read(fn, '/x1i');
 xgf.dx1b = h5read(fn, '/dx1b');
