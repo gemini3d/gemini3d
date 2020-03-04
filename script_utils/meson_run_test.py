@@ -14,14 +14,14 @@ Rt = R / "tests/data"
 
 zenodo: typing.Dict[str, typing.Any] = {
     "2d_fang": {
-        "url": "https://zenodo.org/record/3677638/files/test2d_fang.zip?download=1",
-        "md5": "03c183bbc91706223313e5c15771918e",
+        "url": "https://zenodo.org/record/3697235/files/test2d_fang.zip?download=1",
+        "md5": "7b237883b17d6da331b7db0309cc3da4",
         "dir": Rt / "test2d_fang",
         "zip": Rt / "test2d_fang.zip",
     },
     "2d_glow": {
-        "url": "https://zenodo.org/record/3677638/files/test2d_glow.zip?download=1",
-        "md5": "bd9a9c38bb462cc22cc0ea232e03dc21",
+        "url": "https://zenodo.org/record/3697235/files/test2d_glow.zip?download=1",
+        "md5": "4b8e31e239918ff9e02cbc3033099d60",
         "dir": Rt / "test2d_glow",
         "zip": Rt / "test2d_glow.zip",
     },
