@@ -28,11 +28,13 @@ switch ext
       d = load(fn);
       if isfield(d, 'lxs')
         lxs = d.lxs;
+      elseif isfield(d, 'lx')
+        lxs = d.lx;
       elseif isfield(d, 'lx1')
         % octave bug: octave_base_value::int32_scalar_value(): wrong type argument 'int32 matrix'
         lxs = [d.lx1; d.lx2; d.lx3];
       else
-        error(['did not find simsize in ', fn])
+        error(['did not find lxs, lx, lx1 in ', fn])
       end
     else
       varnames = extractfield(h5info(fn).Datasets, 'Name');

@@ -48,34 +48,41 @@ assert(is_file(fn), [fn, ' not found'])
 xgf.filename = fn;
 
 if isoctave
-L = load(sizefn);
-xgf = load(fn);
-% octave bug: error: octave_base_value::int32_scalar_value(): wrong type argument 'int32 matrix'
-xgf.lx = [L.lx1; L.lx2; L.lx3];
+  L = load(sizefn);
+  xgf = load(fn);
+
+  try
+    xgf.lx = L.lx;
+  catch
+    % octave bug: error: octave_base_value::int32_scalar_value(): wrong type argument 'int32 matrix'
+    xgf.lx = [L.lx1; L.lx2; L.lx3];
+  end
+
 else
-try
-  xgf.lx = h5read(sizefn, '/lx');
-catch
-  xgf.lx = [h5read(sizefn, '/lx1'), h5read(sizefn, '/lx2'), h5read(sizefn, '/lx3')];
-end
-xgf.x1 = h5read(fn, '/x1');
-xgf.x1i = h5read(fn, '/x1i');
-xgf.dx1b = h5read(fn, '/dx1b');
-xgf.dx1h = h5read(fn, '/dx1h');
-xgf.x2 = h5read(fn, '/x2');
-xgf.x3 = h5read(fn, '/x3');
 
-xgf.h1 = h5read(fn, '/h1');
-xgf.h2 = h5read(fn, '/h2');
-xgf.h3 = h5read(fn, '/h3');
+  try
+    xgf.lx = h5read(sizefn, '/lx');
+  catch
+    xgf.lx = [h5read(sizefn, '/lx1'), h5read(sizefn, '/lx2'), h5read(sizefn, '/lx3')];
+  end
+  xgf.x1 = h5read(fn, '/x1');
+  xgf.x1i = h5read(fn, '/x1i');
+  xgf.dx1b = h5read(fn, '/dx1b');
+  xgf.dx1h = h5read(fn, '/dx1h');
+  xgf.x2 = h5read(fn, '/x2');
+  xgf.x3 = h5read(fn, '/x3');
 
-xgf.alt = h5read(fn, '/alt');
-xgf.glat = h5read(fn, '/glat');
-xgf.glon = h5read(fn, '/glon');
+  xgf.h1 = h5read(fn, '/h1');
+  xgf.h2 = h5read(fn, '/h2');
+  xgf.h3 = h5read(fn, '/h3');
 
-xgf.r = h5read(fn, '/r');
-xgf.theta = h5read(fn, '/theta');
-xgf.phi = h5read(fn, '/phi');
+  xgf.alt = h5read(fn, '/alt');
+  xgf.glat = h5read(fn, '/glat');
+  xgf.glon = h5read(fn, '/glon');
+
+  xgf.r = h5read(fn, '/r');
+  xgf.theta = h5read(fn, '/theta');
+  xgf.phi = h5read(fn, '/phi');
 end
 
 end  % function read_hdf5
