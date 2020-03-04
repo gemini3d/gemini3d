@@ -2,11 +2,11 @@
 
 set -e
 
-builddir=build_budge/
+builddir=build_budge_h5/
 
 . $HOME/gcccompilers.sh
 
-OPTS="-Dhdf5=off"
+OPTS="-Dhdf5=on"
 
 rm -rf $builddir
 
