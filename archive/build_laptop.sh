@@ -18,4 +18,3 @@ OPTS=
 . script_utils/check.sh
 
 . script_utils/build.sh
-

@@ -10,6 +10,8 @@
 set -e
 set -u
 
+builddir=build
+
 PREFIX=$HOME/zettergmdata/lib-gcc7.3
 
 MPIPREFIX=$PREFIX/openmpi-3.1.3
@@ -42,9 +44,7 @@ cmake --version
 [[ ${1:-} == "-d" ]] && OPTS="-DCMAKE_BUILD_TYPE=Debug $OPTS"
 [[ ${1:-} == "-t" ]] && OPTS="-DTRACE:BOOL=on $OPTS"
 
-rm -rf build/*  # need this one-time in case different compiler e.g. ifort was previously used.
+cmake -B $builddir $OPTS
 
-cmake $OPTS -B build -S .
-
-cmake --build build -j
+cmake --build $builddir -j
 

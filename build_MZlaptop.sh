@@ -17,6 +17,6 @@
 #
 #. script_utils/build.sh
 
-cmake -Duseglow=true -DNP=4 -B build
+cmake -DNP=4 -B build
 cmake --build build -j
 

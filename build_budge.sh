@@ -8,8 +8,6 @@ builddir=build_budge/
 
 OPTS="-Dhdf5=off"
 
-rm -rf $builddir
-
 cmake -B $builddir $OPTS
 
 cmake --build $builddir -j
