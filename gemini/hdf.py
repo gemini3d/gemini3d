@@ -278,7 +278,8 @@ def loadframe3d_curv(fn: Path, lxs: T.Sequence[int]) -> T.Dict[str, T.Any]:
             p3 = (0, 1, 2)
 
         ns = f["/nsall"][:].transpose(p4)
-        if ns.shape[0] != 7 or (ns.shape[1:] != lxs).any():
+        # np.any() in case neither is an np.ndarray
+        if ns.shape[0] != 7 or np.any(ns.shape[1:] != lxs):
             raise ValueError("may have wrong permutation on read")
         dat["ns"] = (("lsp", "x1", "x2", "x3"), ns)
         vs = f["/vs1all"][:].transpose(p4)
@@ -300,7 +301,8 @@ def loadframe3d_curv(fn: Path, lxs: T.Sequence[int]) -> T.Dict[str, T.Any]:
         dat["Te"] = (("x1", "x2", "x3"), Ts[LSP - 1, :, :, :])
 
         dat["J1"] = (("x1", "x2", "x3"), f["/J1all"][:].transpose(p3))
-        if (dat["J1"][1].shape != lxs).any():
+        # np.any() in case neither is an np.ndarray
+        if np.any(dat["J1"][1].shape != lxs):
             raise ValueError("may have wrong permutation on read")
         dat["J2"] = (("x1", "x2", "x3"), f["/J2all"][:].transpose(p3))
         dat["J3"] = (("x1", "x2", "x3"), f["/J3all"][:].transpose(p3))
