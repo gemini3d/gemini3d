@@ -134,24 +134,24 @@ if (debug) print *, 'READ electric field data from file:  ',fn
 
 call hf%initialize(fn, status='old',action='r')
 call hf%read('/flagdirich', flagdirich)
-!! handle degenerate cases to avoid
+!! TODO: fix Matlab to include degenerate dimension, to avoid
 !! "Operating system error: Cannot allocate memory Memory allocation failed"
-if (size(E0xp, 1)==1) then
-  call hf%read('/Exit', E0xp(1,:))
-  call hf%read('/Eyit', E0yp(1,:))
-  call hf%read('/Vminx1it', Vminx1p(1,:))
-  call hf%read('/Vmaxx1it', Vmaxx1p(1,:))
-elseif (size(E0xp, 2)==1) then
-  call hf%read('/Exit', E0xp(:,1))
-  call hf%read('/Eyit', E0yp(:,1))
-  call hf%read('/Vminx1it', Vminx1p(:,1))
-  call hf%read('/Vmaxx1it', Vmaxx1p(:,1))
-else !< 3D
+! if (size(E0xp, 1)==1) then
+!   call hf%read('/Exit',  E0xp) ! E0xp(1,:))
+!   call hf%read('/Eyit', E0yp(1,:))
+!   call hf%read('/Vminx1it', Vminx1p(1,:))
+!   call hf%read('/Vmaxx1it', Vmaxx1p(1,:))
+! elseif (size(E0xp, 2)==1) then
+!   call hf%read('/Exit', E0xp(:,1))
+!   call hf%read('/Eyit', E0yp(:,1))
+!   call hf%read('/Vminx1it', Vminx1p(:,1))
+!   call hf%read('/Vmaxx1it', Vmaxx1p(:,1))
+! else !< 3D
   call hf%read('/Exit', E0xp)
   call hf%read('/Eyit', E0yp)
   call hf%read('/Vminx1it', Vminx1p)
   call hf%read('/Vmaxx1it', Vmaxx1p)
-endif
+! endif
 !! background fields and top/bottom boundary conditions
 call hf%read('/Vminx2ist', Vminx2pslice)
 call hf%read('/Vmaxx2ist', Vmaxx2pslice)
@@ -173,18 +173,18 @@ fn = path // '.h5'
 if (debug) print *, 'READ precipitation data from file:  ',fn
 
 call hf%initialize(fn, status='old',action='r')
-!! handle degenerate cases to avoid
+!! TODO: fix Matlab to include degenerate dimension, to avoid
 !! "Operating system error: Cannot allocate memory Memory allocation failed"
-if (size(Qp, 1)==1) then
-  call hf%read('/Qp', Qp(1,:))
-  call hf%read('/E0p', E0p(1,:))
-elseif (size(Qp, 2)==1) then
-  call hf%read('/Qp', Qp(:,1))
-  call hf%read('/E0p', E0p(:,1))
-else  !< 3-D
+! if (size(Qp, 1)==1) then
+!   call hf%read('/Qp', Qp(1,:))
+!   call hf%read('/E0p', E0p(1,:))
+! elseif (size(Qp, 2)==1) then
+!   call hf%read('/Qp', Qp(:,1))
+!   call hf%read('/E0p', E0p(:,1))
+! else  !< 3-D
   call hf%read('/Qp', Qp)
   call hf%read('/E0p', E0p)
-endif
+! endif
 
 call hf%finalize()
 
