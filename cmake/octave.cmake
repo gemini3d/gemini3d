@@ -19,9 +19,6 @@ find_program(Octave_EXECUTABLE
   HINTS ${_octpath}
   PATH_SUFFIXES bin)
 
-# https://octave.sourceforge.io/octave/function/exist.html
-# check_octave_source_runs("assert(exist('validateattributes', 'file')==2)")
-# we made validateattr() so Octave 3.8 can work for compare_all()
 if(Octave_EXECUTABLE)
   message(STATUS "Found GNU Octave ${Octave_EXECUTABLE}")
   set(OctaveOK true CACHE BOOL "GNU Octave is present.")

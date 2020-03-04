@@ -101,7 +101,7 @@ foreach k, v : zenodo
     suite : k,
     timeout: 60,
     env: nomalloc_env,
-    workdir : meson.source_root() / 'tests')
+    workdir : meson.source_root() / 'script_utils')
   # --- Matlab/Octave-based simulation output comparision
   matoctargs = 'compare_all("' + test_dir + '","' + v + '")'
 
@@ -110,13 +110,13 @@ foreach k, v : zenodo
     suite : k,
     timeout: 60,
     env: nomalloc_env,
-    workdir : meson.source_root() / 'tests')
+    workdir : meson.source_root() / 'script_utils')
 
   test('CompareOctave' + k, octave,
     args : ['--eval', matoctargs],
     suite : k,
     timeout: 60,
     env: nomalloc_env,
-    workdir : meson.source_root() / 'tests')
+    workdir : meson.source_root() / 'script_utils')
 
 endforeach
