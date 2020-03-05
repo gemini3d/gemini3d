@@ -273,14 +273,14 @@ def loadframe3d_curv(fn: Path, lxs: T.Sequence[int]) -> T.Dict[str, T.Any]:
         if lxs[2] == 1:  # east-west
             p4 = (0, 3, 1, 2)
             p3 = (2, 0, 1)
-        else:  # 3D or north-south, no swap (need to verify)
-            p4 = (0, 1, 2, 3)
-            p3 = (0, 1, 2)
+        else:  # 3D or north-south, no swap
+            p4 = (0, 3, 2, 1)
+            p3 = (2, 1, 0)
 
         ns = f["/nsall"][:].transpose(p4)
         # np.any() in case neither is an np.ndarray
         if ns.shape[0] != 7 or np.any(ns.shape[1:] != lxs):
-            raise ValueError("may have wrong permutation on read")
+            raise ValueError(f"may have wrong permutation on read. lxs: {lxs}  ns x1,x2,x3: {ns.shape}")
         dat["ns"] = (("lsp", "x1", "x2", "x3"), ns)
         vs = f["/vs1all"][:].transpose(p4)
         dat["vs"] = (("lsp", "x1", "x2", "x3"), vs)

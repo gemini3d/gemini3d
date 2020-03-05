@@ -84,7 +84,7 @@ def model_resample(
     lsp = ns.shape[0]
 
     # %% ALLOCATIONS
-    nsi = np.empty((lsp, lx1, lx2, lx3))
+    nsi = np.empty((lsp, lx1, lx2, lx3), dtype=np.float32)
     vsi = np.empty_like(nsi)
     Tsi = np.empty_like(nsi)
 
@@ -95,20 +95,21 @@ def model_resample(
     X2 = xgin["x2"][2:-2].astype(np.float32)
     X1 = xgin["x1"][2:-2].astype(np.float32)
     X3 = xgin["x3"][2:-2].astype(np.float32)
-    X2i = xg["x2"][2:-2].astype(np.float32)
-    X1i = xg["x1"][2:-2].astype(np.float32)
-    X3i = xg["x3"][2:-2].astype(np.float32)
+    x1i = xg["x1"][2:-2].astype(np.float32)
+    x2i = xg["x2"][2:-2].astype(np.float32)
+    x3i = xg["x3"][2:-2].astype(np.float32)
 
     if lx3 > 1 and lx2 > 1:
         # 3-D
         print("interpolating grid for 3-D simulation")
         # X2, X1, X3 = np.meshgrid(xgin['x2'][2:-2], xgin['x1'][2:-2], xgin['x3'][2:-2])
-        # X2i, X1i, X3i = np.meshgrid(xg['x2'][2:-2], xg['x1'][2:-2], xg['x3'][2:-2])
+        X2i, X1i, X3i = np.meshgrid(x2i, x1i, x3i)
+        assert X2i.shape == tuple(xg["lx"])
 
         for i in range(lsp):
-            nsi[i, :, :, :] = interpn(points=(X2, X1, X3), values=ns[i, :, :, :], xi=(X2i, X1i, X3i), bounds_error=True)
-            vsi[i, :, :, :] = interpn(points=(X2, X1, X3), values=vs[i, :, :, :], xi=(X2i, X1i, X3i), bounds_error=True)
-            Tsi[i, :, :, :] = interpn(points=(X2, X1, X3), values=Ts[i, :, :, :], xi=(X2i, X1i, X3i), bounds_error=True)
+            nsi[i, :, :, :] = interpn(points=(X1, X2, X3), values=ns[i, :, :, :], xi=(X1i, X2i, X3i), bounds_error=True)
+            vsi[i, :, :, :] = interpn(points=(X1, X2, X3), values=vs[i, :, :, :], xi=(X1i, X2i, X3i), bounds_error=True)
+            Tsi[i, :, :, :] = interpn(points=(X1, X2, X3), values=Ts[i, :, :, :], xi=(X1i, X2i, X3i), bounds_error=True)
     elif lx3 == 1:
         # 2-D east-west
         print("interpolating grid for 2-D simulation in x1, x2")

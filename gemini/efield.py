@@ -17,7 +17,7 @@ def Efield_BCs(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]) -> T.Dict[str, T.A
     # %% READ IN THE SIMULATION INFO
     for k in ("lx", "lxs"):
         if k in xg:
-            _, lx2, lx3 = xg[k]
+            lx1, lx2, lx3 = xg[k]
             break
 
     # %% CREATE ELECTRIC FIELD DATASET
@@ -74,15 +74,19 @@ def Efield_BCs(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]) -> T.Dict[str, T.A
     if p["Etarg"] > 1:
         logging.warning(f"Etarg units V/m -- is {p['Etarg']} V/m realistic?")
 
+    # NOTE: h2, h3 have ghost cells, so we use lx1 instead of -1 to index
+    # pk is a scalar.
     if lx3 == 1:
         # east-west
-        pk = p["Etarg"] * sigx2 * xg["h2"][-1, lx2 // 2, 0] * np.sqrt(np.pi) / 2
+        pk = p["Etarg"] * sigx2 * xg["h2"][lx1, lx2 // 2, 0] * np.sqrt(np.pi) / 2
     elif lx2 == 1:
         # north-south
-        pk = p["Etarg"] * sigx3 * xg["h3"][-1, 0, lx3 // 2] * np.sqrt(np.pi) / 2
+        pk = p["Etarg"] * sigx3 * xg["h3"][lx1, 0, lx3 // 2] * np.sqrt(np.pi) / 2
     else:
         # 3D
-        pk = p["Etarg"] * sigx2 * xg["h2"][-1, lx2 // 2, 0] * np.sqrt(np.pi) / 2
+        pk = p["Etarg"] * sigx2 * xg["h2"][lx1, lx2 // 2, 0] * np.sqrt(np.pi) / 2
+
+    assert pk.ndim == 0, 'pk is a scalar'
 
     for i in range(Nt):
         if lx2 == 1:
@@ -90,7 +94,8 @@ def Efield_BCs(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]) -> T.Dict[str, T.A
         elif lx3 == 1:
             E["Vmaxx1it"][i, :, :] = pk * erf((E["mlon"] - mlonmean) / mlonsig)[:, None]
         else:
-            E["Vmaxx1it"][i, :, :] = pk * erf((E["mlon"] - mlonmean) / mlonsig) * erf((E["mlat"] - mlatmean) / mlatsig)
+            E["Vmaxx1it"][i, :, :] = pk * (erf((E["mlon"] - mlonmean) / mlonsig)[:, None] *
+                                           erf((E["mlat"] - mlatmean) / mlatsig)[None, :])
 
     # %% check for NaNs
     # this is also done in Fortran, but just to help ensure results.
