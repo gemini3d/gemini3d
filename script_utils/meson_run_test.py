@@ -26,14 +26,14 @@ zenodo: typing.Dict[str, typing.Any] = {
         "zip": Rt / "test2d_glow.zip",
     },
     "3d_fang": {
-        "url": "https://zenodo.org/record/3687202/files/test3d_fang.zip?download=1",
-        "md5": "b4c5fc43243b33549b8324c9a56ee198",
+        "url": "https://zenodo.org/record/3698137/files/test3d_fang.zip?download=1",
+        "md5": "a270586fbd41ff58e3a5ed0acac63708",
         "dir": Rt / "test3d_fang",
         "zip": Rt / "test3d_fang.zip",
     },
     "3d_glow": {
-        "url": "https://zenodo.org/record/3687202/files/test3d_glow.zip?download=1",
-        "md5": "d70c8ee5a699ae028b0ffecb750fb5c6",
+        "url": "https://zenodo.org/record/3698137/files/test3d_glow.zip?download=1",
+        "md5": "993d817ee847314a631396608df56e0c",
         "dir": Rt / "test3d_glow",
         "zip": Rt / "test3d_glow.zip",
     },
