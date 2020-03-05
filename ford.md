@@ -1,8 +1,8 @@
 src_dir: ./
 output_dir: ./docs
 project: GEMINI3D
-project_github: https://github.com/mattzett/gemini
-project_website: https://mattzett.github.io/gemini
+project_github: https://github.com/gemini3d/gemini
+project_website: https://gemini3d.github.io/gemini
 summary: GEMINI3D is a modular ionospheric model that incorporates kinetic models such as Fang, GLOW.
 author: Matthew Zettergren
         Guy Grubbs
@@ -19,7 +19,6 @@ display: public
 source: false
 graph: false
 search: false
-
 
 ## References
 

@@ -3,6 +3,8 @@ project('GEMINI', 'fortran',
   meson_version: '>=0.52.0',
   default_options : ['default_library=static', 'buildtype=release'])
 
+message('CMake is recommended instead of Meson, which is not maintained by PyGemini.')
+
 subdir('meson')  # find libraries, etc.
 
 #==========================================================
