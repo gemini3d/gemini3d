@@ -13,7 +13,7 @@ real(wp), parameter :: stride=0.5_wp
 real(wp) :: x1(lx1), x2(lx2), f(lx1,lx2),x1i(lx1i), x2i(lx2i), fi(lx1i,lx2i)
 real(wp), dimension(1:lx1i*lx2i) :: x1ilist, x2ilist,filist
 
-integer :: ix1,ix2,ik, ierr
+integer :: ix1,ix2,ik
 
 
 
@@ -57,30 +57,26 @@ fi=reshape(filist,[lx1i,lx2i])
 
 
 !! dump results to a file so we can check things
-call hout%initialize("input2d.h5", ierr, status="replace", action="write")
-if(ierr/=0) error stop 'interp2: could not open input file'
+call hout%initialize("input2d.h5", status="replace", action="write")
 
-call hout%write("/lx1", lx1, ierr)
-call hout%write("/lx2", lx2, ierr)
-call hout%write("/x1", x1, ierr)
-call hout%write("/x2", x2, ierr)
-call hout%write("/f", f, ierr)
+call hout%write("/lx1", lx1)
+call hout%write("/lx2", lx2)
+call hout%write("/x1", x1)
+call hout%write("/x2", x2)
+call hout%write("/f", f)
 
-call hout%finalize(ierr)
-if(ierr/=0) error stop 'interp2: could not close input file'
+call hout%finalize()
 
 
-call hout%initialize("output2d.h5", ierr, status="replace", action="write")
-if(ierr/=0) error stop 'interp2: could not open output file'
+call hout%initialize("output2d.h5", status="replace", action="write")
 
-call hout%write("/lx1", lx1i, ierr)
-call hout%write("/lx2", lx2i, ierr)
-call hout%write("/x1", x1i, ierr)
-call hout%write("/x2", x2i, ierr)
-call hout%write("/f", fi, ierr)
+call hout%write("/lx1", lx1i)
+call hout%write("/lx2", lx2i)
+call hout%write("/x1", x1i)
+call hout%write("/x2", x2i)
+call hout%write("/f", fi)
 
-call hout%finalize(ierr)
-if(ierr/=0) error stop 'interp2: could not close output file'
+call hout%finalize()
 
 end program
 

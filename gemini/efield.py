@@ -86,7 +86,7 @@ def Efield_BCs(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]) -> T.Dict[str, T.A
         # 3D
         pk = p["Etarg"] * sigx2 * xg["h2"][lx1, lx2 // 2, 0] * np.sqrt(np.pi) / 2
 
-    assert pk.ndim == 0, 'pk is a scalar'
+    assert pk.ndim == 0, "pk is a scalar"
 
     for i in range(Nt):
         if lx2 == 1:
@@ -94,8 +94,9 @@ def Efield_BCs(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]) -> T.Dict[str, T.A
         elif lx3 == 1:
             E["Vmaxx1it"][i, :, :] = pk * erf((E["mlon"] - mlonmean) / mlonsig)[:, None]
         else:
-            E["Vmaxx1it"][i, :, :] = pk * (erf((E["mlon"] - mlonmean) / mlonsig)[:, None] *
-                                           erf((E["mlat"] - mlatmean) / mlatsig)[None, :])
+            E["Vmaxx1it"][i, :, :] = pk * (
+                erf((E["mlon"] - mlonmean) / mlonsig)[:, None] * erf((E["mlat"] - mlatmean) / mlatsig)[None, :]
+            )
 
     # %% check for NaNs
     # this is also done in Fortran, but just to help ensure results.

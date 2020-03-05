@@ -8,7 +8,7 @@ import functools
 
 from .utils import get_mpi_count
 from .config import read_config, get_config_filename
-from .hpc import hpc_job, hpc_batch_create
+from .hpc import hpc_batch_detect, hpc_batch_create
 from .model_setup import model_setup
 
 Pathlike = T.Union[str, Path]
@@ -24,9 +24,9 @@ def runner(pr: T.Dict[str, T.Any]) -> int:
         if pr["force"] or not f.is_file():
             ok = initialize_simulation(p, pr)
             if not ok:
-                raise RuntimeError("could not initialize simulation. Try doing this manually.")
+                raise RuntimeError("\ncould not initialize simulation parameters. Is there a problem with config.nml?")
             if not f.is_file():
-                raise FileNotFoundError(f"tried to initialize simulation but missing expected output file {f}")
+                raise FileNotFoundError(f"\ntried to initialize simulation but missing expected output file {f}")
             break
 
     if p.get("flagE0file") == 1:
@@ -57,7 +57,7 @@ def runner(pr: T.Dict[str, T.Any]) -> int:
     cmd = mpiexec + ["-n", str(Nmpi), str(gemexe), str(config_file), str(out_dir)]
     print(" ".join(cmd), "\n")
 
-    batcher = hpc_job()
+    batcher = hpc_batch_detect()
     if batcher:
         job_file = hpc_batch_create(batcher, out_dir, cmd)  # noqa: F841
         # hpc_submit_job(job_file)
@@ -191,14 +191,14 @@ def check_gemini_exe(gemexe: Pathlike) -> str:
             if gemexe:
                 break
         if not gemexe:
-            raise EnvironmentError(f"Cannot find gemini.bin under {build_dir}")
+            raise EnvironmentError(f"\nCannot find gemini.bin under {build_dir}")
 
     gemexe = str(Path(gemexe).resolve())
 
     ret = subprocess.run(gemexe, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, universal_newlines=True)
     if ret.returncode != 77:
         raise RuntimeError(
-            f"{gemexe} was not runnable on your platform. Try recompiling on this computer type."
+            f"\n{gemexe} was not runnable on your platform. Try recompiling on this computer type."
             "E.g. different HPC nodes may not have the CPU feature sets."
             f"{ret.stderr}"
         )
