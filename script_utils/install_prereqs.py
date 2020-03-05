@@ -14,7 +14,7 @@ from gemini.linux_info import get_package_manager
 
 def main(package_manager: str):
 
-    cmd: T.List[str] = []  # so that it's sure to be defined
+    cmd: T.List[str] = []
 
     if sys.platform == "linux":
         if not package_manager:
@@ -65,7 +65,7 @@ def main(package_manager: str):
     else:
         raise ValueError(f"unknown platform {sys.platform}")
 
-    print(cmd)
+    print(" ".join(cmd))
     ret = subprocess.run(cmd)
 
     raise SystemExit(ret.returncode)

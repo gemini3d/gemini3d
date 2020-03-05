@@ -49,7 +49,7 @@ def model_setup_equilibrium(p: T.Dict[str, T.Any]):
     [ns, Ts, vsx1] = equilibrium_state(p, xg)
     assert ns.shape == Ts.shape == vsx1.shape
     assert ns.shape[0] == 7
-    assert ns.shape[1:] == tuple(xg['lx'])
+    assert ns.shape[1:] == tuple(xg["lx"])
 
     write_state(p["t0"], ns, vsx1, Ts, p["out_dir"], p["format"])
 

@@ -3,9 +3,7 @@ import subprocess
 import binascii
 from pathlib import Path
 import typing as T
-import logging
-
-from .linux_info import os_release
+import shutil
 
 R = Path(__file__).parent
 
@@ -41,7 +39,7 @@ def hpc_batch_create(batcher: str, out_dir: Path, cmd: T.Sequence[str]) -> Path:
     Nchar = 8  # arbitrary number of characters
 
     if batcher == "qsub":
-        template_file = template_dir / "scc.sh"
+        template_file = template_dir / "qsub_template.sh"
         template = template_file.read_text()
         job_file = out_dir / f"job_{binascii.b2a_hex(os.urandom(Nchar)).decode('ascii')}.sh"
         print("writing job file", job_file)
@@ -53,33 +51,15 @@ def hpc_batch_create(batcher: str, out_dir: Path, cmd: T.Sequence[str]) -> Path:
     return job_file
 
 
-def hpc_job() -> str:
+def hpc_batch_detect() -> str:
     """
-    this is a function that is enhanced over time as users tell us how to:
-
-    1. identify their HPC via environment variables
-    2. run a batch job
-
-    For now, assume non-{CentOS,RHEL} are not HPC
+    Assuming a known job batching system, we will create a template for the user
+    to verify and then the user will run.
     """
-
-    linux_like = os_release()
-    if not {"centos", "rhel"}.intersection(linux_like):
-        return None
 
     batcher = None
-    hostname = os.environ.get("HOSTNAME")
-    if hostname:
-        hostname = hostname.lower()
-        if hostname.startswith("desktop"):  # Windows Subsystem for Linux
-            return None
-        elif hostname.startswith("scc"):  # SCC
-            batcher = "qsub"
 
-    if batcher is None:
-        logging.warning(
-            "Your system is not yet known to Gemini job.py."
-            "\nPlease raise a GitHub Issue with environemnt variable we can use to ID your HPC and how to run a batch job."
-        )
+    if shutil.which("qsub"):
+        batcher = "qsub"
 
     return batcher
