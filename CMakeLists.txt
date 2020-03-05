@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.14)
 # 3.12 for find_ROOT, 3.13 for a lot of user functions, 3.14 for check_fortran_source_runs & fetchcontent
 # 3.15 for robust Python finding
 
