@@ -12,7 +12,7 @@ execute_process(COMMAND ${Python3_EXECUTABLE} -c "import gemini3d; print(gemini3
 
 if(python_disabled EQUAL 0)
   message(STATUS "PyGemini: ${_pygemloc}")
-  set(python_disabled $${python_disabled} CACHE STRING "PyGemini OK")
+  set(python_disabled false CACHE BOOL "PyGemini OK")
 else()
   message(STATUS "MISSING: PyGemini -> install by 'python3 setup.py --user develop'")
 endif()
