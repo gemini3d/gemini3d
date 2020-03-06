@@ -1,6 +1,3 @@
-addpath ../../script_utils;
-
-
 %REFERENCE GRID TO USE
 direcconfig='./'
 direcgrid='../tests/data/zenodo2d/input/'
