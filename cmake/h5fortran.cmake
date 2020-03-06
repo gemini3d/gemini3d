@@ -8,5 +8,5 @@ FetchContent_Declare(h5fortran_proj
 FetchContent_MakeAvailable(h5fortran_proj)
 
 if(NOT HDF5OK)
-  message(FATAL_ERROR "HDF5 was requested but it's not working on your system")
+  message(FATAL_ERROR "HDF5 is not working")
 endif()

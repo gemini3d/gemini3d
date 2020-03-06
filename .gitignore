@@ -20,6 +20,7 @@ subprojects/
 *.orig
 
 data/
+dist/
 build*/
 objects/
 *.DS_Store

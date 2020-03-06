@@ -54,12 +54,7 @@ Requirements:
   ```sh
   python3 setup.py develop --user
   ```
-3. Download the test reference data. This allows self tests to run. Otherwise Gemini will skip these self-tests.
-
-  ```sh
-  cmake -D2d=1 -Dglow2d=1 -D3d=1 -Dglow3d=1 cmake/download.cmake
-  ```
-4. Build Gemini
+3. Build Gemini
 
   ```sh
   cmake -B build
@@ -204,7 +199,7 @@ ICNTL 1-4 concern print output unit and verbosity level, see MUMPS
 #### Build tips
 
 Libraries are auto-built by Gemini when building gemini.bin.
-If it's desired to use system libraries, consider [install_prereqs.py](./script_utils/install_prereqs.py)
+If it's desired to use system libraries, consider [install_prereqs.py](./scripts/install_prereqs.py)
 
 ### self-tests
 
@@ -268,7 +263,8 @@ mpiexec -np 4 build/gemini.bin initialize/2Dtest/config.ini /tmp/2d
 
 Note that the output *base* directory must already exist (e.g. `/tmp/2d`).
 The source code consists of about ten module source files encapsulating various functionalities used in the model.
-A diagram all of the modules and their function is shown in figure 1; a list of module dependencies can also be found one of the example makefiles included in the repo, CMakeLists.txt or meson.build.
+A diagram all of the modules and their function is shown in figure 1.
+CMake can generate a graphical [dependency graph](https://cmake.org/cmake/help/latest/module/CMakeGraphVizOptions.html).
 
 Two of the log files created are:
 

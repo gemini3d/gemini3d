@@ -1,4 +1,4 @@
-if(NOT DEFINED OctaveOK)
+if(NOT DEFINED octave_disabled)
 
 unset(_octpath)
 if(WIN32)
@@ -15,15 +15,15 @@ endif()
 find_program(Octave_EXECUTABLE
   NAMES octave-cli octave
   DOC "GNU Octave"
-  PATHS ${Octave_ROOT}
+  PATHS ${Octave_ROOT} ENV ${OCTAVE_EXECUTABLE}
   HINTS ${_octpath}
   PATH_SUFFIXES bin)
 
 if(Octave_EXECUTABLE)
   message(STATUS "Found GNU Octave ${Octave_EXECUTABLE}")
-  set(OctaveOK true CACHE BOOL "GNU Octave is present.")
+  set(octave_disabled false CACHE BOOL "GNU Octave tests")
 else()
-  set(OctaveOK false CACHE BOOL "GNU Octave is NOT present.")
-endif(Octave_EXECUTABLE)
+  set(octave_disabled true CACHE BOOL "GNU Octave tests")
+endif()
 
 endif()

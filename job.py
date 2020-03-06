@@ -4,7 +4,7 @@ runs a job
 """
 import argparse
 from pathlib import Path
-import gemini.job
+import gemini3d.job
 import sys
 from time import monotonic
 
@@ -32,7 +32,7 @@ if __name__ == "__main__":
 
     tic = monotonic()
     try:
-        ret = gemini.job.runner(params)
+        ret = gemini3d.job.runner(params)
     except FileNotFoundError:
         print(
             "\nA necessary simulation input file was not found."
