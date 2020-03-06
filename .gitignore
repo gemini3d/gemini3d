@@ -6,6 +6,8 @@ pip-wheel-metadata/
 *.manifest
 __pycache__/
 .mypy_cache/
+*.obj
+*.out
 
 # meson
 subprojects/

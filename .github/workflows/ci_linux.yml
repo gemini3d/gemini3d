@@ -11,12 +11,6 @@ on:
       - "**/CMakeLists.txt"
       - ".github/workflows/ci_linux.yml"
   pull_request:
-    paths:
-      - "**.f90"
-      - "**.F90"
-      - "**.cmake"
-      - "**/CMakeLists.txt"
-      - ".github/workflows/ci_linux.yml"
   release:
 
 
@@ -103,39 +97,3 @@ jobs:
       with:
         name: Linux_CMake_Testlog
         path: build/Testing/Temporary/LastTest.log
-
-  mesonHDF5:
-    if: false
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-python@v1
-      with:
-        python-version: '3.7'
-    - run: |
-        pip install -e .[tests]
-        pip install meson==0.53.0
-    - name: Install packages
-      run: |
-        sudo apt update -yq
-        sudo apt install -yq --no-install-recommends ninja-build pkg-config gfortran libopenmpi-dev openmpi-bin liblapack-dev libscalapack-openmpi-dev libmumps-dev libhdf5-dev
-
-    - run: meson setup build -Dhdf5=disabled
-      env:
-        FC: gfortran
-    - run: ninja -C build
-    - uses: actions/upload-artifact@v1
-      if: failure()
-      with:
-        name: Linux_Meson_Buildlog
-        path: build/meson-logs/meson-log.txt
-
-    - run: meson test -C build --suite unit -v
-    - run: meson test -C build --suite 2d_fang -v
-    - run: meson test -C build --suite 2d_glow -v
-# CI is too slow for 3d_glow
-    - uses: actions/upload-artifact@v1
-      if: failure()
-      with:
-        name: Linux_Meson_Testlog
-        path: build/meson-logs/testlog.txt

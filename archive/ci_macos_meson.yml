@@ -1,0 +1,35 @@
+
+  meson:
+    if: false
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v1
+      with:
+        python-version: '3.x'
+
+    - run: |
+        pip install -e .
+        pip install meson==0.53.0
+    - run: brew install ninja pkg-config gcc open-mpi lapack hdf5 scalapack
+
+    - run: meson setup build -Dhdf5=disabled
+      env:
+        FC: gfortran-9
+        CC: gcc-9
+    - run: ninja -C build
+    - uses: actions/upload-artifact@v1
+      if: failure()
+      with:
+        name: Mac_Meson_Configlog
+        path: build/meson-logs/meson-log.txt
+
+    - run: meson test -C build --suite unit -v
+    - run: meson test -C build --suite 2d_fang -v
+    - run: meson test -C build --suite 2d_glow -v
+# CI is too slow for 3d_glow
+    - uses: actions/upload-artifact@v1
+      if: failure()
+      with:
+        name: MacOS_Meson_Testlog
+        path: build/meson-logs/testlog.txt
