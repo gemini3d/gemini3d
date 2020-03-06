@@ -21,7 +21,7 @@ if (debug) print '(A,/,A)', 'READ 2D (B-perp, B-perp) grid size from file:', fn
 
 inquire(file=fn, exist=exists)
 if (.not.exists) then
-   write(stderr,'(A,/,A)') 'ERROR: generate grid with script--grid not present: ',fn
+   write(stderr,'(A,/,A)') 'ERROR: reader_raw:get_simsize2: generate grid with script--grid not present: ',fn
    error stop 77
 endif
 
@@ -46,7 +46,7 @@ if (debug) print '(A,/,A)', 'READ 3D (B-parallel, B-perp, B-perp) grid size from
 
 inquire(file=fn, exist=exists)
 if (.not.exists) then
-   write(stderr,'(A,/,A)') 'ERROR: generate grid with script--grid not present: ',fn
+   write(stderr,'(A,/,A)') 'ERROR: reader_raw:get_simsize3: generate grid with script--grid not present: ',fn
    error stop 77
 endif
 

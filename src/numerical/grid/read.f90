@@ -2,8 +2,8 @@ submodule (grid) grid_read
 
 implicit none
 
-interface ! readgrid_{raw,hdf5,nc4}.f90
-module subroutine get_grid3(path, flagswap, x, g1all,g2all,g3all, altall,glatall,glonall,Bmagall,Incall,nullptsall,&
+interface ! readgrid_raw.f90
+module subroutine get_grid3_raw(path, flagswap, x, g1all,g2all,g3all, altall,glatall,glonall,Bmagall,Incall,nullptsall,&
   e1all,e2all,e3all,erall,ethetaall,ephiall,rall,thetaall,phiall)
 character(*), intent(in) :: path
 integer, intent(in) :: flagswap
@@ -11,10 +11,60 @@ type(curvmesh), intent(inout) :: x
 real(wp), intent(out), dimension(:,:,:) :: g1all,g2all,g3all,altall,glatall,glonall,Bmagall,nullptsall,rall,thetaall,phiall
 real(wp), intent(out), dimension(:,:) :: Incall
 real(wp), intent(out), dimension(:,:,:,:) :: e1all,e2all,e3all,erall,ethetaall,ephiall
-end subroutine get_grid3
+end subroutine get_grid3_raw
+end interface
+
+interface ! readgrid_hdf5.f90
+module subroutine get_grid3_hdf5(path, flagswap, x, g1all,g2all,g3all, altall,glatall,glonall,Bmagall,Incall,nullptsall,&
+  e1all,e2all,e3all,erall,ethetaall,ephiall,rall,thetaall,phiall)
+character(*), intent(in) :: path
+integer, intent(in) :: flagswap
+type(curvmesh), intent(inout) :: x
+real(wp), intent(out), dimension(:,:,:) :: g1all,g2all,g3all,altall,glatall,glonall,Bmagall,nullptsall,rall,thetaall,phiall
+real(wp), intent(out), dimension(:,:) :: Incall
+real(wp), intent(out), dimension(:,:,:,:) :: e1all,e2all,e3all,erall,ethetaall,ephiall
+end subroutine get_grid3_hdf5
+end interface
+
+interface ! readgrid_nc4.f90
+module subroutine get_grid3_nc4(path, flagswap, x, g1all,g2all,g3all, altall,glatall,glonall,Bmagall,Incall,nullptsall,&
+  e1all,e2all,e3all,erall,ethetaall,ephiall,rall,thetaall,phiall)
+character(*), intent(in) :: path
+integer, intent(in) :: flagswap
+type(curvmesh), intent(inout) :: x
+real(wp), intent(out), dimension(:,:,:) :: g1all,g2all,g3all,altall,glatall,glonall,Bmagall,nullptsall,rall,thetaall,phiall
+real(wp), intent(out), dimension(:,:) :: Incall
+real(wp), intent(out), dimension(:,:,:,:) :: e1all,e2all,e3all,erall,ethetaall,ephiall
+end subroutine get_grid3_nc4
 end interface
 
 contains
+
+subroutine get_grid3(path, flagswap, x, g1all,g2all,g3all, altall,glatall,glonall,Bmagall,Incall,nullptsall,&
+  e1all,e2all,e3all,erall,ethetaall,ephiall,rall,thetaall,phiall)
+!! switchyard file format
+character(*), intent(in) :: path
+integer, intent(in) :: flagswap
+type(curvmesh), intent(inout) :: x
+real(wp), intent(out), dimension(:,:,:) :: g1all,g2all,g3all,altall,glatall,glonall,Bmagall,nullptsall,rall,thetaall,phiall
+real(wp), intent(out), dimension(:,:) :: Incall
+real(wp), intent(out), dimension(:,:,:,:) :: e1all,e2all,e3all,erall,ethetaall,ephiall
+
+select case (path(index(path, '.', back=.true.) : len(path)))
+case ('.dat')
+  call get_grid3_raw(path, flagswap, x, g1all,g2all,g3all, altall,glatall,glonall,Bmagall,Incall,nullptsall,&
+    e1all,e2all,e3all,erall,ethetaall,ephiall,rall,thetaall,phiall)
+case ('.h5')
+  call get_grid3_hdf5(path, flagswap, x, g1all,g2all,g3all, altall,glatall,glonall,Bmagall,Incall,nullptsall,&
+    e1all,e2all,e3all,erall,ethetaall,ephiall,rall,thetaall,phiall)
+case ('.nc')
+  call get_grid3_nc4(path, flagswap, x, g1all,g2all,g3all, altall,glatall,glonall,Bmagall,Incall,nullptsall,&
+    e1all,e2all,e3all,erall,ethetaall,ephiall,rall,thetaall,phiall)
+case default
+  error stop 'get_grid3: unknown grid format'
+end select
+
+end subroutine get_grid3
 
 
 module procedure read_grid
