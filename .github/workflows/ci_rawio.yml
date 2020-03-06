@@ -10,9 +10,6 @@ on:
     - "**/*.cmake"
     - ".github/workflows/ci_rawio.yml"
   pull_request:
-    paths:
-    - "**/*.cmake"
-    - ".github/workflows/ci_rawio.yml"
   release:
 
 jobs:
@@ -54,39 +51,3 @@ jobs:
       with:
         name: LinuxRawIO_CMake_Testlog
         path: build/Testing/Temporary/LastTest.log
-
-  meson:
-    if: false
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-python@v1
-      with:
-        python-version: '3.x'
-    - run: |
-        pip install -e .[tests]
-        pip install meson==0.53.0
-    - name: Install packages
-      run: |
-        sudo apt update -yq
-        sudo apt install -yq --no-install-recommends ninja-build pkg-config gfortran libopenmpi-dev openmpi-bin liblapack-dev libscalapack-mpi-dev libmumps-dev
-
-    - run: meson setup build -Dhdf5=disabled
-      env:
-        FC: gfortran
-    - run: ninja -C build
-    - uses: actions/upload-artifact@v1
-      if: failure()
-      with:
-        name: LinuxRawIO_Meson_Configlog
-        path: build/meson-logs/meson-log.txt
-
-    - run: meson test -C build --suite unit -v
-    - run: meson test -C build --suite 2d_fang -v
-    - run: meson test -C build --suite 2d_glow -v
-# CI is too slow for 3d_glow
-    - uses: actions/upload-artifact@v1
-      if: failure()
-      with:
-        name: LinuxRawIO_Meson_Testlog
-        path: build/meson-logs/testlog.txt
