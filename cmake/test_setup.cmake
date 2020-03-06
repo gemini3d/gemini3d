@@ -35,33 +35,38 @@ function(setup_gemini_test TESTNAME TIMEOUT)
 
 # --- disable tests as needed
 if(glow)
-  set(glow_disabled false)
+  set(gemini_disabled false)
 else()
   string(FIND ${TESTNAME} "glow" _loc)
   if(NOT _loc EQUAL -1)
-    set(glow_disabled true)
+    set(gemini_disabled true)
   endif()
+endif()
+
+if(python_disabled)
+  set(gemini_disabled true)
 endif()
 
 # --- setup test
 set(_outdir ${CMAKE_CURRENT_BINARY_DIR}/test${TESTNAME})
 set(_nml ${CMAKE_CURRENT_SOURCE_DIR}/tests/data/test${TESTNAME}/inputs/config.nml)
 
-if(python_disabled)
-  add_test(NAME gemini:${TESTNAME}
-      COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} 1 $<TARGET_FILE:gemini.bin> ${_nml} ${_outdir}
-      WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
-else()
-  add_test(NAME gemini:${TESTNAME}
-    COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/scripts/meson_run_test.py ${TESTNAME} ${MPIEXEC_EXECUTABLE} $<TARGET_FILE:gemini.bin> ${_nml} ${_outdir})
-endif()
+# this would need a downloader, but that needs Python to work properly...
+# if(python_disabled)
+#   add_test(NAME gemini:${TESTNAME}
+#       COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} 1 $<TARGET_FILE:gemini.bin> ${_nml} ${_outdir}
+#       WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
+# else()
+add_test(NAME gemini:${TESTNAME}
+  COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/scripts/meson_run_test.py ${TESTNAME} ${MPIEXEC_EXECUTABLE} $<TARGET_FILE:gemini.bin> ${_nml} ${_outdir})
+
 
 # NOTE: don't use REQUIRED_FILES because it won't let file download if not present.
 set_tests_properties(gemini:${TESTNAME} PROPERTIES
   TIMEOUT ${TIMEOUT}
   SKIP_RETURN_CODE 77
   RUN_SERIAL true
-  DISABLED ${glow_disabled}
+  DISABLED ${gemini_disabled}
 )
 win32_env(gemini:${TESTNAME})
 
