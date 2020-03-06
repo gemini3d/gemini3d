@@ -1,21 +1,21 @@
-submodule (grid:grid_read) readgrid_hdf5
+submodule (grid:grid_read) readgrid_nc4
 
 use phys_consts, only: debug
-use h5fortran, only: hdf5_file
+use nc4fortran, only: netcdf_file
 
 implicit none
 
 contains
 
-module procedure get_grid3_hdf5
+module procedure get_grid3_nc4
 
-type(hdf5_file) :: hout
+type(netcdf_file) :: hout
 character(:), allocatable :: fn
 
-if (index(path, 'simgrid.h5') /= 0) then
+if (index(path, 'simgrid.nc') /= 0) then
   fn = path
 else
-  fn = path // '/simgrid.h5'
+  fn = path // '/simgrid.nc'
 endif
 if (debug) print '(A,/,A)', 'READ 3D (B-parallel, B-perp, B-perp) grid:', fn
 
@@ -232,6 +232,6 @@ x%rall = rall
 x%thetaall = thetaall
 x%phiall = phiall
 
-end procedure get_grid3_hdf5
+end procedure get_grid3_nc4
 
-end submodule readgrid_hdf5
+end submodule readgrid_nc4

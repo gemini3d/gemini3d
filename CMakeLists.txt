@@ -50,11 +50,10 @@ set(FETCHCONTENT_UPDATES_DISCONNECTED off)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules/)
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/compilers.cmake)
-if(hdf5)
+
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/h5fortran.cmake)
-elseif(netcdf)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/nc4fortran.cmake)
-endif()
+
 # do this last, after h5fortran to avoid Threads::Threads test failure
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/mumps.cmake)
 

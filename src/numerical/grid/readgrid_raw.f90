@@ -6,7 +6,7 @@ implicit none
 
 contains
 
-module procedure get_grid3
+module procedure get_grid3_raw
 integer :: u
 character(:), allocatable :: fn
 
@@ -174,6 +174,6 @@ x%rall=rall
 x%thetaall=thetaall
 x%phiall=phiall
 
-end procedure get_grid3
+end procedure get_grid3_raw
 
 end submodule readgrid_raw
