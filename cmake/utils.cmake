@@ -42,8 +42,7 @@ add_test(NAME gemini:${TESTNAME}
 set_tests_properties(gemini:${TESTNAME} PROPERTIES
   TIMEOUT ${TIMEOUT}
   SKIP_RETURN_CODE 77
-  REQUIRED_FILES ${_config_file}
-  FIXTURES_REQUIRED MPIMUMPS
+  # FIXTURES_REQUIRED MPIMUMPS it will run first anyway
   RUN_SERIAL true
   DISABLED ${_is_disabled}
 )
