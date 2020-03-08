@@ -60,10 +60,13 @@ params.flagoutput=str2double(datatrim);
 datatrim = strtok(fgetl(fid),' ');
 params.flagcap=str2double(datatrim);
 
-%Strip out the junk
-fgetl(fid);
-fgetl(fid);
-fgetl(fid);
+%names of the input files (to be) used in the simulation
+datatrim=fgetl(fid);
+params.indat_size=datatrim;
+datatrim=fgetl(fid);
+params.indat_grid=datatrim;
+datatrim=fgetl(fid);
+params.indat_file=datatrim;
 
 %Neutral perturbation info
 datatrim = strtok(fgetl(fid),' ');

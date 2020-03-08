@@ -1,6 +1,8 @@
 function p = read_nml(path)
+
 % for reading simulation config*.nml. Fortran namelist is a standard
 % format.
+
 narginchk(1,1)
 
 filename = get_configfile(path);

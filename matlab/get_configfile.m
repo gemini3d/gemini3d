@@ -9,7 +9,7 @@ path = absolute_path(path);
 if is_file(path)
   filename = path;
 elseif is_folder(path)
-  names = {'config.nml', 'inputs/config.nml'};
+  names = {'config.nml', 'inputs/config.nml', 'config.ini', 'inputs/config.ini'};
   for s = names
     filename = [path, filesep, s{:}];
     if is_file(filename)

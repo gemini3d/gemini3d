@@ -1,4 +1,4 @@
-function [ymd,UTsec,tdur,dtout,flagoutput,mloc,activ] = readconfig(path)
+function [ymd,UTsec,tdur,dtout,flagoutput,mloc,activ,indat_size,indat_grid,indat_file] = readconfig(path)
 
 narginchk(1,1)
 
@@ -17,4 +17,7 @@ try
 catch
   mloc = [];
 end
+indat_size=params.indat_size;
+indat_grid=params.indat_grid;
+indat_file=params.indat_file;
 end % function

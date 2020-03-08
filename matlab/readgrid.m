@@ -90,7 +90,18 @@ end  % function read_hdf5
 
 function xgf = read_raw(path, realbits)
 
-filename=[path, '/simsize.dat'];
+
+%% Size file
+for f = {[path, '/inputs/simsize.dat'], [path, '/simsize.dat']}
+  sizefn = f{:};
+  if is_file(sizefn)
+    break
+  end
+end
+assert(is_file(sizefn), [sizefn, ' not found'])
+
+%filename=[path, '/inputs/simsize.dat'];
+filename=sizefn;
 assert(is_file(filename), [filename,' is not a file.'])
 
 fid=fopen(filename,'r');
@@ -103,8 +114,19 @@ lgrid=lx1*lx2*lx3;
 lgridghost=(lx1+4)*(lx2+4)*(lx3+4);
 gridsize=[lx1,lx2,lx3];
 gridsizeghost=[lx1+4,lx2+4,lx3+4];
-%%
-fin = [path, '/simgrid.dat'];
+
+
+%% Grid file
+for f = {[path, '/inputs/simgrid.dat'], [path, '/simgrid.dat']}
+  fn = f{:};
+  if is_file(fn)
+    break
+  end
+end
+assert(is_file(fn), [fn, ' not found'])
+
+%fin = [path, '/inputs/simgrid.dat'];
+fin=fn;
 assert(is_file(fin), [fin, ' is not a file.'])
 
 freal = ['float',int2str(realbits)];

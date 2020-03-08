@@ -4,33 +4,43 @@ function [nsi,vs1i,Tsi] = eq2dist(p, xg)
 narginchk(2, 2)
 validateattributes(p, {'struct'}, {'scalar'}, mfilename, 'parameters', 1)
 validateattributes(xg, {'struct'}, {'scalar'}, mfilename, 'grid struct', 2)
+
+
 %% Paths
 % this script is called from numerous places, so ensure necessary path
 cwd = fileparts(mfilename('fullpath'));
 addpath([cwd,'/../vis'])
+
+
 %% READ Equilibrium SIMULATION INFO
-peq = read_nml(p.eqdir);
+peq = read_config(p.eqdir);
 xgin = readgrid(p.eqdir, p.format, p.realbits);
+
 
 %% END FRAME time of equilibrium simulation
 % PRESUMABLY THIS WILL BE THE STARTING point FOR another
 [ymd_end,UTsec_end] = dateinc(peq.tdur,peq.ymd,peq.UTsec0);
 
+
 %% LOAD THE last equilibrium frame
 dat = loadframe(p.eqdir, ymd_end, UTsec_end, peq.flagoutput, peq.mloc, xgin, p.format, p.eqdir);
+
 
 %% sanity check equilibrium simulation input to interpolation
 check_density(dat.ns)
 check_drift(dat.vs1)
 check_temperature(dat.Ts)
 
+
 %% DO THE INTERPOLATION
 [nsi,vs1i,Tsi] = model_resample(xgin, dat.ns, dat.vs1, dat.Ts, xg);
+
 
 %% sanity check interpolated variables
 check_density(nsi)
 check_drift(vs1i)
 check_temperature(Tsi)
+
 
 %% WRITE OUT THE GRID
 writegrid(p, xg)
