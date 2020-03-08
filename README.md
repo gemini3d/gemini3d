@@ -35,10 +35,11 @@ Requirements:
   * MacOS / [Homebrew](https://brew.sh): `brew install gcc`
   * Ubuntu / Debian / Windows Subsystem for Linux: `apt install gfortran`
   * CentOS: `yum install gcc-gfortran`
-* OpenMPI or IntelMPI
+* MPI: any of OpenMPI, IntelMPI, MPICH, MS-MPI
   * MacOS / [Homebrew](https://brew.sh): `brew install openmpi`
   * Ubuntu / Debian / Windows Subsystem for Linux: `apt install libopenmpi-dev openmpi-bin`
   * CentOS: `yum install openmpi-devel`
+  * Windows MSYS2: `pacman -S mingw-w64-x86_64-gcc-fortran mingw-w64-x86_64-msmpi mingw-w64-x86_64-lapack mingw-w64-x86_64-hdf5` and install [Microsoft MS-MPI](https://docs.microsoft.com/en-us/message-passing-interface/microsoft-mpi-release-notes)
 * [CMake &ge; 3.14](https://cmake.org/download/)
 * [Python &ge; 3.6](https://docs.conda.io/en/latest/miniconda.html)
 
@@ -87,7 +88,6 @@ Gfortran and Intel Fortran are two compilers known to work easily with GEMINI.
 Gfortran is the recommended compiler to run Gemini, as most libraries are already compiled for it.
 Gfortran 6 or newer works well.
 We regularly work with Gfortran 7 and 9 on MacOS and Linux (CentOS / Ubuntu)
-Due to OpenMPI not supporting native Windows, Gfortran is usable on Windows via Windows Subsystem for Linux.
 
 #### Intel Fortran
 
@@ -103,7 +103,7 @@ Intel Fortran for Windows is in general a tricky compiler to work with, and it i
 
 Tested versions include:
 
-* OpenMPI 1.10, 2.1 - 4.0  |  IntelMPI 19.0, 19.1
+* OpenMPI 1.10, 2.1 - 4.0  | IntelMPI 19.0, 19.1 | MS-MPI 10.0
 * MUMPS 4.10, 5.1.2, 5.2.1
   * Mumps &ge; 5.2 recommended to have vastly less verbose console output
 * SCALAPACK 2.0 / 2.1
@@ -223,6 +223,12 @@ CMake will automatically download and build necessary libraries for Gemini.
 
     ```sh
     brew install cmake gcc openmpi lapack scalapack
+    ```
+* Windows MSYS2 with MS-MPI requires a one-time setup to build MPI Fortran interface "mpi.mod":
+
+    ```sh
+    cd c:/msys64/mingw64/include
+    gfortran -fno-range-check -c mpi.f90
     ```
 
 ## Known limitations and issues of GEMINI
