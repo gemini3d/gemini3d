@@ -341,7 +341,7 @@ do while (t<tdur)
 
   if (myid==0 .and. modulo(it,10) == 0) then
     !! print every 10th time step to avoid extreme amounts of console printing
-    print '(A,I4,A1,I0.2,A1,I0.2,A1,F12.6)', 'Current time ',ymd(1),'-',ymd(2),'-',ymd(3),' ',UTsec
+    print '(A,I4,A1,I0.2,A1,I0.2,A1,F12.6,A5,F8.6)', 'Current time ',ymd(1),'-',ymd(2),'-',ymd(3),' ',UTsec,'; dt=',dt
   endif
 
   !! OUTPUT

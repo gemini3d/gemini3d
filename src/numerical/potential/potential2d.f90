@@ -86,11 +86,16 @@ module procedure potential2D_fieldresolved
 
 real(wp), dimension(size(Vmaxx1,1),size(Vmaxx1,2)) :: Vmaxx1alt      !in case we need to do some transformations to convert current into potential
 
-integer :: lx1
+integer :: lx1,lx2all,lx3all
 
 lx1=size(sig0,1)
+lx2all=size(sig0,2)
+lx3all=size(sig0,3)
+
 if (flagdirich==0) then      !convert current into potential normal derivative
-  Vmaxx1alt=-1*Vmaxx1*x%h1(lx1,:,:)/sig0(lx1,:,:)
+  Vmaxx1alt=-1*Vmaxx1*x%h1all(lx1,1:lx2all,1:lx3all)/sig0(lx1,1:lx2all,1:lx3all)
+!  print*, 'Transforming boundary from current...'
+!  print*, shape(Vmaxx1),shape(x%h1all),shape(sig0)
 else                         !Dirichlet boundary conditions, don't change
   Vmaxx1alt=Vmaxx1
 end if
