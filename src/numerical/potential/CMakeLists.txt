@@ -21,9 +21,14 @@ if(NOT hdf5)
   return()
 endif()
 
+if(MINGW)
+  message(VERBOSE "this test doesn't work with MS-MPI")
+  return()
+endif()
+
 set(_potential_testfile ${CMAKE_CURRENT_BINARY_DIR}/test_potential2d.h5)
 add_executable(test_potential2d test_potential2D.f90)
-target_link_libraries(test_potential2d const PDEelliptic MPI::MPI_Fortran h5fortran)
+target_link_libraries(test_potential2d PRIVATE const PDEelliptic MPI::MPI_Fortran h5fortran)
 add_test(NAME unit:potential2 COMMAND $<TARGET_FILE:test_potential2d>
   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 set_tests_properties(unit:potential2 PROPERTIES TIMEOUT 30

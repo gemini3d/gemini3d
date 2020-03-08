@@ -10,6 +10,10 @@ if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release CACHE STRING "default to Release")
 endif()
 
+if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.15)
+  cmake_policy(SET CMP0094 NEW)
+endif()
+
 project(gemini3d
   LANGUAGES C Fortran  # MUST include C language for Intel / MKL to work
   DESCRIPTION "3-D ionospheric model"

@@ -19,7 +19,6 @@ mpi_realprec=>mpi_double_precision
 implicit none
 
 private :: lsp, wp
-private :: mpi_init, mpi_status_size, mpi_status_ignore, mpi_integer, mpi_sum, mpi_comm_world
 
 !> NOW A LIST OF TAGS SO THESE DO NOT NEED TO BE EMBEDDED IN EACH SUBROUTINE
 integer, parameter :: tagns=2,tagvs1=3,tagTs=4
