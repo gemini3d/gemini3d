@@ -3,16 +3,15 @@ module neutral
 use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
 use, intrinsic :: iso_fortran_env, only: stderr=>error_unit
 
-use mpi, only: mpi_integer, mpi_comm_world, mpi_status_ignore
-
 use reader, only : get_simsize3, get_neutral2, get_neutral3
 use phys_consts, only: wp, lnchem, pi, re, debug
 use grid, only: lx1, lx2, lx3, clear_unitvecs, gridflag
 use mesh, only: curvmesh
 use interpolation, only : interp2, interp3
 use timeutils, only : doy_calc,dateinc, date_filename
-use mpimod, only: myid, lid, taglrho, taglz, mpi_realprec, tagdno, tagdnn2, tagdno2, tagdtn, tagdvnrho, tagdvnz, tagly, &
-                  taglx,tagxn,tagxnrange,tagynrange,tagyn,tagzn,tagdvnx
+use mpimod, only: mpi_integer, mpi_comm_world, mpi_status_ignore, &
+myid, lid, taglrho, taglz, mpi_realprec, tagdno, tagdnn2, tagdno2, tagdtn, tagdvnrho, tagdvnz, tagly, &
+taglx,tagxn,tagxnrange,tagynrange,tagyn,tagzn,tagdvnx
 
 ! also links gtd7 from vendor/msis00/
 

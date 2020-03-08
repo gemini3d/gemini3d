@@ -2,8 +2,8 @@ module potentialBCs_mumps
 
 use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
 use, intrinsic :: ieee_arithmetic, only : ieee_is_finite
-use mpi, only: mpi_integer, mpi_comm_world, mpi_status_ignore
 
+use mpimod, only : mpi_integer, mpi_comm_world, mpi_status_ignore
 use phys_consts, only: wp, pi, Re, debug
 use grid, only: lx1, lx2, lx2all, lx3all, gridflag
 use mesh, only: curvmesh

@@ -6,8 +6,6 @@ module potential_comm
 !!
 !! NOTE THAT ONLY THE CURVILINEAR FUNCTION ARE UP TO DATE.
 
-use mpi, only: mpi_integer, mpi_comm_world, mpi_status_ignore
-
 use phys_consts, only: wp, pi, lsp, debug
 use grid, only: flagswap, gridflag
 use mesh, only: curvmesh
@@ -20,10 +18,11 @@ use potential_mumps, only: potential3D_fieldresolved_decimate, &
                             potential2D_polarization_periodic
 use PDEelliptic, only: elliptic_workers
 
-use mpimod, only: lid, lid2, lid3, myid, myid2, myid3, tage01, tage02, tage03, tagflagdirich, tagincapint, &
-  tagsrc, tagv2electro, tagv3electro, tagvmaxx1, tagvminx1, tagj1, tagj2, tagj3, tagphi, tagsig0, &
-  tagsigh, tagsighint, tagsigp, tagsigpint2, tagsigpint3, &
-  bcast_send, bcast_recv, gather_recv, gather_send, halo
+use mpimod, only: mpi_integer, mpi_comm_world, mpi_status_ignore, &
+lid, lid2, lid3, myid, myid2, myid3, tage01, tage02, tage03, tagflagdirich, tagincapint, &
+tagsrc, tagv2electro, tagv3electro, tagvmaxx1, tagvminx1, tagj1, tagj2, tagj3, tagphi, tagsig0, &
+tagsigh, tagsighint, tagsigp, tagsigpint2, tagsigpint3, &
+bcast_send, bcast_recv, gather_recv, gather_send, halo
 
 implicit none
 private

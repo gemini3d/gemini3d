@@ -1,6 +1,6 @@
-add_executable(testmpi test_mpi.f90)
-target_link_libraries(testmpi MPI::MPI_Fortran)
-add_test(NAME unit:mpi_basic COMMAND testmpi)
+add_executable(test_mpi test_mpi.f90)
+target_link_libraries(test_mpi MPI::MPI_Fortran)
+add_test(NAME unit:mpi_basic COMMAND $<TARGET_FILE:test_mpi>)
 
 set_tests_properties(unit:mpi_basic PROPERTIES
 TIMEOUT 15

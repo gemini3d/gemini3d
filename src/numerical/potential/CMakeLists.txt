@@ -9,7 +9,7 @@ target_include_directories(mumps_interface PUBLIC ${MUMPS_INCLUDE_DIRS})
 target_link_libraries(mumps_interface PUBLIC ${MUMPS_LIBRARIES})
 
 add_library(PDEelliptic OBJECT PDEelliptic.f90 elliptic2d.f90 elliptic3d.f90)
-target_link_libraries(PDEelliptic PUBLIC const mumps_interface MPI::MPI_Fortran)
+target_link_libraries(PDEelliptic PUBLIC const mpimod mumps_interface MPI::MPI_Fortran)
 
 add_library(potential OBJECT
 potential_comm_mumps.f90 potential_root.f90 potential_worker.f90
@@ -24,7 +24,7 @@ endif()
 set(_potential_testfile ${CMAKE_CURRENT_BINARY_DIR}/test_potential2d.h5)
 add_executable(test_potential2d test_potential2D.f90)
 target_link_libraries(test_potential2d const PDEelliptic MPI::MPI_Fortran h5fortran)
-add_test(NAME unit:potential2 COMMAND test_potential2d
+add_test(NAME unit:potential2 COMMAND $<TARGET_FILE:test_potential2d>
   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 set_tests_properties(unit:potential2 PROPERTIES TIMEOUT 30
   FIXTURES_SETUP GemPot)

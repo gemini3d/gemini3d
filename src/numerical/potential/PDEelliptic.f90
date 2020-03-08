@@ -4,7 +4,7 @@ module PDEelliptic
 
 use, intrinsic:: iso_fortran_env, only: stderr=>error_unit, stdout=>output_unit
 use mumps_interface, only : mumps_struc, mumps_exec
-use mpi, only: mpi_comm_world
+use mpimod, only: mpi_comm_world
 use phys_consts, only: wp, debug
 
 implicit none
