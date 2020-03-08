@@ -23,7 +23,6 @@ integer :: ierr
 
 !NOTE HERE THAT WE INTERPRET OUTDIR AS THE BASE DIRECTORY CONTAINING SIMULATION OUTPUT
 ierr = mkdir(outdir//'/aurmaps/')
-if (ierr /= 0) error stop 'could not create auroral map output directory'
 
 end procedure create_outdir_aur
 
