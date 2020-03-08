@@ -1,4 +1,9 @@
-add_library(pathlib OBJECT pathlib.F90)
+add_library(pathlib OBJECT pathlib.f90)
+if(WIN32)
+  target_sources(pathlib PRIVATE pathlib_windows.f90)
+else()
+  target_sources(pathlib PRIVATE pathlib_unix.f90)
+endif()
 
 add_library(logging OBJECT logging.f90)
 
