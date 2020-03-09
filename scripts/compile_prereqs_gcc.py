@@ -10,7 +10,6 @@ from argparse import ArgumentParser
 import typing as T
 import sys
 import os
-from functools import lru_cache
 
 from web import url_retrieve, extract_tar
 
@@ -30,14 +29,12 @@ except ImportError:
 BUILDDIR = "build"
 NJOBS = get_cpu_count()
 # Library parameters
-HDF5VERSION = "1.10.6"
-HDF5URL = "https://zenodo.org/record/3700903/files/hdf5-1.12.0.tar.bz2?download=1"
+HDF5VERSION = "1.12.0"
+HDF5URL = f"https://zenodo.org/record/3700903/files/hdf5-{HDF5VERSION}.tar.bz2?download=1"
 HDF5MD5 = "1fa68c4b11b6ef7a9d72ffa55995f898"
-HDF5DIR = f"hdf5-{HDF5VERSION}"
 
 MPIVERSION = "3.1.5"  # OpenMPI 4 needs Scalapack 2.1
 MPISHA1 = "56a74b116c81d4f3704c051a67e4422094ff913d"
-MPIDIR = f"openmpi-{MPIVERSION}"
 
 LAPACKGIT = "https://github.com/scivision/lapack"
 LAPACKDIR = "lapack"
@@ -58,8 +55,9 @@ def hdf5(dirs: T.Dict[str, Path], env: T.Mapping[str, str] = None):
     if os.name == "nt":
         raise SystemExit("Please use binaries from HDF Group for Windows appropriate for your compiler.")
 
-    install_dir = dirs["prefix"] / HDF5DIR
-    source_dir = dirs["workdir"] / HDF5DIR
+    hdf5_dir = f"hdf5-{HDF5VERSION}"
+    install_dir = dirs["prefix"] / hdf5_dir
+    source_dir = dirs["workdir"] / hdf5_dir
 
     tarfn = f"hdf5-{HDF5VERSION}.tar.bz2"
     url_retrieve(HDF5URL, tarfn, ("md5", HDF5MD5))
@@ -72,7 +70,7 @@ def hdf5(dirs: T.Dict[str, Path], env: T.Mapping[str, str] = None):
 
     subprocess.check_call(cmd, cwd=source_dir, env=env)
 
-    cmd = nice + ["make", "-C", str(source_dir), f"-j {NJOBS}", "install"]
+    cmd = nice + ["make", "-C", str(source_dir), "-j", str(NJOBS), "install"]
     subprocess.check_call(cmd)
 
 
@@ -81,8 +79,9 @@ def openmpi(dirs: T.Dict[str, Path], env: T.Mapping[str, str] = None):
     if os.name == "nt":
         raise SystemExit("OpenMPI is not available in native Windows. Use MS-MPI instead.")
 
-    install_dir = dirs["prefix"] / MPIDIR
-    source_dir = dirs["workdir"] / MPIDIR
+    mpi_dir = f"openmpi-{MPIVERSION}"
+    install_dir = dirs["prefix"] / mpi_dir
+    source_dir = dirs["workdir"] / mpi_dir
 
     tarfn = f"openmpi-{MPIVERSION}.tar.bz2"
     url = f"https://download.open-mpi.org/release/open-mpi/v{MPIVERSION[:3]}/{tarfn}"
@@ -96,7 +95,7 @@ def openmpi(dirs: T.Dict[str, Path], env: T.Mapping[str, str] = None):
 
     subprocess.check_call(cmd, cwd=source_dir, env=env)
 
-    cmd = nice + ["make", "-C", str(source_dir), f"-j{NJOBS}", "install"]
+    cmd = nice + ["make", "-C", str(source_dir), "-j", str(NJOBS), "install"]
     subprocess.check_call(cmd)
 
 
@@ -197,7 +196,6 @@ def meson_build(args: T.List[str], source_dir: Path, build_dir: Path, wipe: bool
     raise SystemExit(ret.returncode)
 
 
-@lru_cache()
 def cmake_minimum_version(min_version: str = None) -> str:
     """
     if CMake is at least minimum version, return path to CMake executable
@@ -238,7 +236,6 @@ def update(path: Path, repo: str):
         subprocess.run([GITEXE, "clone", repo, str(path)])
 
 
-@lru_cache()
 def get_compilers() -> T.Mapping[str, str]:
     """ get paths to GCC compilers """
     env = os.environ
@@ -276,7 +273,7 @@ if __name__ == "__main__":
     p.add_argument("-prefix", help="toplevel path to install libraries under", default="~/lib_gcc")
     p.add_argument("-workdir", help="toplevel path to where you keep code repos", default="~/code")
     p.add_argument("-wipe", help="wipe before completely recompiling libs", action="store_true")
-    p.add_argument("-b", "--buildsys", help="build system (meson or cmake)", default="cmake")
+    p.add_argument("-buildsys", help="build system (meson or cmake)", default="cmake")
     P = p.parse_args()
 
     dirs = {"prefix": Path(P.prefix).expanduser().resolve(), "workdir": Path(P.workdir).expanduser().resolve()}

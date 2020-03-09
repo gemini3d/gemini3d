@@ -29,6 +29,7 @@ def url_retrieve(url: str, outfile: Pathlike, filehash: T.Sequence[str] = None, 
     # need .resolve() in case intermediate relative dir doesn't exist
     if overwrite or not outfile.is_file():
         outfile.parent.mkdir(parents=True, exist_ok=True)
+        print(f"{url} => {outfile}")
         try:
             urllib.request.urlretrieve(url, str(outfile))
         except (socket.gaierror, urllib.error.URLError) as err:
