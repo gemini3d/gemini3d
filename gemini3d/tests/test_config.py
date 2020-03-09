@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 import pytest
-from pytest import approx
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import gemini3d.config as config
 
@@ -27,15 +26,21 @@ def test_nml_bad(tmp_path):
         config.read_nml_group(blank, "base")
 
 
-@pytest.mark.parametrize("group", ["base", ("base", "precip", "efield")])
+@pytest.mark.parametrize("group", ["base", ("base", "flags", "files", "precip", "efield")])
 def test_nml_group(group):
+
     params = config.read_nml_group(Rc / "config.nml", group)
-    if group == "base":
+    if "base" in group:
         assert params["t0"] == datetime(2013, 2, 20, 5)
-    elif group == "precip":
-        assert params["dtprec"] == approx(5.0)
-    elif group == "efield":
-        assert params["dtE0"] == approx(1.0)
+
+    if "files" in group:
+        assert params["format"] == "h5"
+
+    if "precip" in group:
+        assert params["dtprec"] == timedelta(seconds=5)
+
+    if "efield" in group:
+        assert params["dtE0"] == timedelta(seconds=1)
 
 
 @pytest.mark.parametrize("filename", [Rc, Rc / "config.nml", R / "config/config_example.ini"], ids=["path", "nml", "ini"])

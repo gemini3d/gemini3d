@@ -1,6 +1,6 @@
 submodule (io) output
 
-use, intrinsic :: iso_fortran_env, only: compiler_version, compiler_options
+use, intrinsic :: iso_fortran_env, only: compiler_version, compiler_options, stderr=>error_unit, real32, real64
 
 implicit none
 
@@ -8,7 +8,7 @@ contains
 
 
 module procedure create_outdir
-! subroutine create_outdir(outdir,infile,indatsize,indatgrid,flagdneu,sourcedir,flagprecfile,precdir,flagE0file,E0dir)
+! subroutine create_outdir(outdir,infile,indatsize,indatgrid,indatfile,flagdneu,sourcedir,flagprecfile,precdir,flagE0file,E0dir)
 !! CREATES OUTPUT DIRECTORY, MOVES CONFIG FILES THERE AND GENERATES A GRID OUTPUT FILE
 
 integer :: ierr

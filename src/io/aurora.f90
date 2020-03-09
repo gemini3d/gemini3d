@@ -1,20 +1,55 @@
 submodule (io) io_aurora
 
+use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
+
 implicit none
 
-interface ! aurora_*.f90
+interface ! aurora_raw.f90
 
-module subroutine output_aur_root(outdir,flagglow,ymd,UTsec,iver)
+module subroutine output_aur_root_raw(outdir,flagglow,ymd,UTsec,iver)
 character(*), intent(in) :: outdir
 integer, intent(in) :: flagglow, ymd(3)
 real(wp), intent(in) :: UTsec
 real(wp), dimension(:,:,:), intent(in) :: iver
-end subroutine output_aur_root
+end subroutine output_aur_root_raw
+
+module subroutine output_aur_root_hdf5(outdir,flagglow,ymd,UTsec,iver)
+character(*), intent(in) :: outdir
+integer, intent(in) :: flagglow, ymd(3)
+real(wp), intent(in) :: UTsec
+real(wp), dimension(:,:,:), intent(in) :: iver
+end subroutine output_aur_root_hdf5
+
+module subroutine output_aur_root_nc4(outdir,flagglow,ymd,UTsec,iver)
+character(*), intent(in) :: outdir
+integer, intent(in) :: flagglow, ymd(3)
+real(wp), intent(in) :: UTsec
+real(wp), dimension(:,:,:), intent(in) :: iver
+end subroutine output_aur_root_nc4
 
 end interface
 
 contains
 
+
+subroutine output_aur_root(outdir,flagglow,ymd,UTsec,iver, out_format)
+character(*), intent(in) :: outdir, out_format
+integer, intent(in) :: flagglow, ymd(3)
+real(wp), intent(in) :: UTsec
+real(wp), dimension(:,:,:), intent(in) :: iver
+
+select case (out_format)
+case ('.dat')
+  call output_aur_root_raw(outdir,flagglow,ymd,UTsec,iver)
+case ('.h5')
+  call output_aur_root_hdf5(outdir,flagglow,ymd,UTsec,iver)
+case ('.nc')
+  call output_aur_root_nc4(outdir,flagglow,ymd,UTsec,iver)
+case default
+  error stop 'get_grid3: unknown grid format'
+end select
+
+end subroutine output_aur_root
 
 module procedure create_outdir_aur
 !subroutine create_outdir_aur(outdir)
@@ -28,7 +63,7 @@ end procedure create_outdir_aur
 
 
 module procedure output_aur
-!subroutine output_aur(outdir,flagglow,ymd,UTsec,iver)
+!subroutine output_aur(outdir,flagglow,ymd,UTsec,iver, out_format)
 
 !! A BASIC WRAPPER FOR THE ROOT AND WORKER OUTPUT FUNCTIONS
 !! BOTH ROOT AND WORKERS CALL THIS PROCEDURE SO UNALLOCATED
@@ -37,7 +72,7 @@ module procedure output_aur
 if (myid/=0) then
   call output_aur_workers(iver)
 else
-  call output_aur_root(outdir,flagglow,ymd,UTsec,iver)
+  call output_aur_root(outdir,flagglow,ymd,UTsec,iver, out_format)
 end if
 
 end procedure output_aur

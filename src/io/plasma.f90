@@ -1,6 +1,6 @@
 submodule (io) plasma
 !! plasma.f90 uses submodules in plasma_input_*.f90 and plasma_output_*.f90 for raw, hdf5 or netcdf4 I/O
-
+use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
 use reader, only : get_simsize3
 implicit none
 
@@ -15,9 +15,9 @@ real(wp), dimension(:,:,:), intent(out) :: J1,J2,J3
 end subroutine input_root_currents
 
 
-module subroutine input_root_mpi(x1,x2all,x3all,indatsize,ns,vs1,Ts)
+module subroutine input_root_mpi(x1,x2all,x3all,indatsize,indatfile,ns,vs1,Ts)
 real(wp), dimension(-1:), intent(in) :: x1, x2all, x3all
-character(*), intent(in) :: indatsize
+character(*), intent(in) :: indatsize, indatfile
 real(wp), dimension(-1:,-1:,-1:,:), intent(out) :: ns,vs1,Ts
 end subroutine input_root_mpi
 
@@ -49,11 +49,10 @@ module procedure input_plasma
 !! VARIABLES MUST BE DECLARED AS ALLOCATABLE, INTENT(INOUT)
 
 if (myid==0) then
-  !ROOT FINDS/CALCULATES INITIAL CONDITIONS AND SENDS TO WORKERS
-  ! print '(A,/,A,/,A)', 'Assembling initial condition on root with:',indatsize,indatfile
-  call input_root_mpi(x1,x2,x3all,indatsize,ns,vs1,Ts)
+  !! ROOT FINDS/CALCULATES INITIAL CONDITIONS AND SENDS TO WORKERS
+  call input_root_mpi(x1,x2,x3all,indatsize,indatfile,ns,vs1,Ts)
 else
-  !WORKERS RECEIVE THE IC DATA FROM ROOT
+  !! WORKERS RECEIVE THE IC DATA FROM ROOT
   call input_workers_mpi(ns,vs1,Ts)
 end if
 

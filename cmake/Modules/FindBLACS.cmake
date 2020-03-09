@@ -186,7 +186,7 @@ else()
   unset(_impi)
 endif()
 
-pkg_check_modules(MKL mkl-${_mkltype}-lp64-iomp)
+pkg_check_modules(MKL mkl-${_mkltype}-lp64-iomp QUIET)
 
 if(OpenMPI IN_LIST BLACS_FIND_COMPONENTS)
   mkl_scala(mkl_blacs_openmpi_lp64)

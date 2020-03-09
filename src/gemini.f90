@@ -5,7 +5,9 @@ use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
 use phys_consts, only : lnchem, lwave, lsp, wp, debug
 use grid, only: grid_size,read_grid,clear_grid,lx1,lx2,lx3,lx2all,lx3all
 use mesh, only: curvmesh
-use io, only : read_configfile,input_plasma,create_outdir,output_plasma,create_outdir_aur,output_aur
+use config, only : read_configfile
+use pathlib, only : assert_file_exists, assert_directory_exists
+use io, only : input_plasma,create_outdir,output_plasma,create_outdir_aur,output_aur
 use mpimod, only : mpisetup, mpibreakdown, mpi_manualgrid, mpigrid, lid, myid
 use multifluid, only : fluid_adv
 use neutral, only : neutral_atmos,make_dneu,neutral_perturb,clear_dneu
@@ -48,7 +50,7 @@ character(:), allocatable :: infile
 !! command line argument input file
 character(:), allocatable :: outdir
 !! " " output directory
-character(:), allocatable :: indatsize,indatgrid
+character(:), allocatable :: indatsize,indatgrid,indatfile
 !! grid size and data filenames
 
 !> GRID STRUCTURE
@@ -125,6 +127,7 @@ real(wp) :: dtglowout
 !! time interval between GLOW auroral outputs (s)
 real(wp) :: tglowout
 !! time for next GLOW output
+character(:), allocatable :: out_format
 
 !> FOR HANDLING OUTPUT
 logical :: nooutput = .false.
@@ -144,7 +147,7 @@ if (argc < 2) then
   print '(/,A,/)', 'GEMINI-3D: by Matthew Zettergren'
   print '(A)', 'GLOW and auroral interfaces by Guy Grubbs'
   print '(A,/)', 'build system and software engineering by Michael Hirsch'
-  print *, 'must specify .ini file to configure simulation and output directory. Example:'
+  print *, 'must specify config.nml file to configure simulation and output directory. Example:'
   print '(/,A,/)', 'mpiexec -np 4 build/gemini.bin initialize/test2d_fang/config.nml /tmp/test2d_fang'
   stop 77
   !! stops with de facto "skip test" return code
@@ -162,8 +165,48 @@ call get_command_argument(1,argv)
 infile = trim(argv)
 
 call read_configfile(infile, ymd,UTsec0,tdur,dtout,activ,tcfl,Teinf,potsolve,flagperiodic,flagoutput,flagcap, &
-                     indatsize,indatgrid,flagdneu,interptype,sourcemlat,sourcemlon,dtneu,dxn,drhon,dzn,sourcedir,flagprecfile, &
-                     dtprec,precdir,flagE0file,dtE0,E0dir,flagglow,dtglow,dtglowout)
+                     indatsize,indatgrid,indatfile,&
+                     flagdneu,interptype,sourcemlat,sourcemlon,dtneu,dxn,drhon,dzn,sourcedir,flagprecfile, &
+                     dtprec,precdir,flagE0file,dtE0,E0dir,flagglow,dtglow,dtglowout, out_format)
+
+!> PRINT SOME DIAGNOSIC INFO FROM ROOT
+if (myid==0) then
+  call assert_file_exists(indatsize)
+  call assert_file_exists(indatgrid)
+  call assert_file_exists(indatfile)
+
+  print '(A,I6,A1,I0.2,A1,I0.2)', infile // ' simulation year-month-day is:  ',ymd(1),'-',ymd(2),'-',ymd(3)
+  print '(A51,F10.3)', 'start time is:  ',UTsec0
+  print '(A51,F10.3)', 'duration is:  ',tdur
+  print '(A51,F10.3)', 'output every:  ',dtout
+  print '(A,/,A,/,A,/,A)', 'using input data files:', indatsize, indatgrid, indatfile
+
+  if(flagdneu==1) then
+    call assert_directory_exists(sourcedir)
+    print *, 'Neutral disturbance mlat,mlon:  ',sourcemlat,sourcemlon
+    print *, 'Neutral disturbance cadence (s):  ',dtneu
+    print *, 'Neutral grid resolution (m):  ',drhon,dzn
+    print *, 'Neutral disturbance data files located in directory:  ',sourcedir
+  end if
+
+  if (flagprecfile==1) then
+    call assert_directory_exists(precdir)
+    print '(A,F10.3)', 'Precipitation file input cadence (s):  ',dtprec
+    print *, 'Precipitation file input source directory:  ' // precdir
+  end if
+
+  if(flagE0file==1) then
+    call assert_directory_exists(E0dir)
+    print *, 'Electric field file input cadence (s):  ',dtE0
+    print *, 'Electric field file input source directory:  ' // E0dir
+  end if
+
+  if (flagglow==1) then
+    print *, 'GLOW enabled for auroral emission calculations.'
+    print *, 'GLOW electron transport calculation cadence (s): ', dtglow
+    print *, 'GLOW auroral emission output cadence (s): ', dtglowout
+  end if
+end if
 
 !> CHECK THE GRID SIZE AND ESTABLISH A PROCESS GRID
 call grid_size(indatsize)
@@ -210,7 +253,7 @@ call get_command_argument(2,argv)
 outdir = trim(argv)
 
 if (myid==0) then
-  call create_outdir(outdir,infile,indatsize,indatgrid,flagdneu,sourcedir,flagprecfile,precdir,flagE0file,E0dir)
+  call create_outdir(outdir,infile,indatsize,indatgrid,indatfile,flagdneu,sourcedir,flagprecfile,precdir,flagE0file,E0dir)
   if (flagglow/=0) call create_outdir_aur(outdir)
 end if
 
@@ -241,7 +284,7 @@ end if
 
 
 !> LOAD ICS AND DISTRIBUTE TO WORKERS (REQUIRES GRAVITY FOR INITIAL GUESSING)
-call input_plasma(x%x1,x%x2all,x%x3all,indatsize,ns,vs1,Ts)
+call input_plasma(x%x1,x%x2all,x%x3all,indatsize,indatfile,ns,vs1,Ts)
 
 !ROOT/WORKERS WILL ASSUME THAT THE MAGNETIC FIELDS AND PERP FLOWS START AT ZERO
 !THIS KEEPS US FROM HAVING TO HAVE FULL-GRID ARRAYS FOR THESE STATE VARS (EXCEPT
@@ -366,7 +409,7 @@ do while (t<tdur)
   !! GLOW OUTPUT
   if ((flagglow/=0).and.(abs(t-tglowout) < 1d-5)) then !same as plasma output
     call cpu_time(tstart)
-    call output_aur(outdir,flagglow,ymd,UTsec,iver)
+    call output_aur(outdir,flagglow,ymd,UTsec,iver, out_format)
     if (myid==0) then
       call cpu_time(tfin)
       print *, 'Auroral output done for time step:  ',t,' in cpu_time of: ',tfin-tstart

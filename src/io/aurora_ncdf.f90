@@ -1,4 +1,4 @@
-submodule(io:io_aurora) io_aurora_hdf5
+submodule(io:io_aurora) io_aurora_nc4
 
 use timeutils, only : date_filename
 use nc4fortran, only: netcdf_file
@@ -6,7 +6,7 @@ implicit none
 
 contains
 
-module procedure output_aur_root
+module procedure output_aur_root_nc4
 ! subroutine output_aur_root(outdir,flagglow,ymd,UTsec,iver)
 !! COLLECT COMPLETE DATA FROM WORKERS AND PROCESS FOR OUTPUT.
 !! NO GHOST CELLS (I HOPE)
@@ -47,6 +47,6 @@ end if
 
 call hout%finalize(ierr)
 
-end procedure output_aur_root
+end procedure output_aur_root_nc4
 
-end submodule io_aurora_hdf5
+end submodule io_aurora_nc4

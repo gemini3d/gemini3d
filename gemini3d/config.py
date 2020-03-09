@@ -75,7 +75,7 @@ def read_nml(fn: Path) -> T.Dict[str, T.Any]:
     if fn.is_dir():
         fn = fn / "config.nml"
 
-    groups = ["base", "setup"]
+    groups = ["base", "files", "flags", "setup"]
     params = read_nml_group(fn, groups)
 
     groups = []
@@ -152,21 +152,20 @@ def parse_group(raw: T.Dict[str, T.Any], group: T.Sequence[str]) -> T.Dict[str, 
         P["Ap"] = float(raw["activ"][2])
         P["tcfl"] = float(raw["tcfl"])
         P["Teinf"] = float(raw["Teinf"])
+
+    if "flags" in group:
         for k in ("potsolve", "flagperiodic", "flagoutput", "flagcap", "flagglow", "flagE0file", "flagdneu", "flagprecfile"):
             if k in raw:
                 P[k] = int(raw[k])
             else:
                 P[k] = 0
-        for k in ("indat_file", "indat_grid", "indat_size"):
-            P[k] = Path(raw[k])
 
-    if "setup" in group:
-        if "format" in raw:
-            P["format"] = raw["format"]
+    if "files" in group:
+        if "file_format" in raw:
+            P["format"] = raw["file_format"]
         else:
             # defaults to HDF5
             P["format"] = "h5"
-        P["alt_scale"] = np.array(list(map(float, raw["alt_scale"])))
 
         if "realbits" in raw:
             P["realbits"] = int(raw["realbits"])
@@ -175,6 +174,12 @@ def parse_group(raw: T.Dict[str, T.Any], group: T.Sequence[str]) -> T.Dict[str, 
                 P["realbits"] = 64
             else:
                 P["realbits"] = 32
+
+        for k in ("indat_file", "indat_grid", "indat_size"):
+            P[k] = Path(raw[k])
+
+    if "setup" in group:
+        P["alt_scale"] = np.array(list(map(float, raw["alt_scale"])))
 
         for k in ("lxp", "lyp"):
             P[k] = int(raw[k])

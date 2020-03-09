@@ -11,7 +11,8 @@ use phys_consts, only : pi,mu0, wp, re, debug
 use grid, only : lx1, lx2, lx3, read_grid, clear_grid, lx2all,lx3all,grid_size
 use mesh, only : curvmesh
 use timeutils, only : dateinc
-use io, only : read_configfile,input_plasma_currents,create_outdir_mag,output_magfields
+use config, only : read_configfile
+use io, only : input_plasma_currents,create_outdir_mag,output_magfields
 use mpimod, only: mpi_sum, mpi_comm_world, &
 mpisetup, mpibreakdown, mpigrid, mpi_manualgrid, halo_end, &
 lid, lid2, lid3, myid, myid2, myid3, mpi_realprec, &
@@ -46,8 +47,9 @@ integer :: flagcap
 !> INPUT AND OUTPUT FILES
 character(:), allocatable :: infile    !command line argument input file
 character(:), allocatable :: outdir    !" " output directory
-character(:), allocatable :: indatsize,indatgrid    !grid size and data filenames
+character(:), allocatable :: indatsize,indatgrid,indatfile   !grid size and data filenames
 character(:), allocatable :: fieldpointfile
+character(:), allocatable :: out_format
 
 !! GRID STRUCTURE
 type(curvmesh) :: x    !structure containg grid locations, finite differences, etc.:  see grid module for details
@@ -154,9 +156,41 @@ if (myid==0) then
   print *, 'Input config file:  ',infile
 end if
 call read_configfile(infile,ymd,UTsec0,tdur,dtout,activ,tcfl,Teinf,potsolve,flagperiodic,flagoutput,flagcap, &
-                     indatsize,indatgrid,flagdneu,interptype,sourcemlat,sourcemlon,dtneu,dxn,drhon,dzn,sourcedir,flagprecfile, &
-                     dtprec,precdir,flagE0file,dtE0,E0dir,flagglow,dtglow,dtglowout)
+                     indatsize,indatgrid,indatfile,&
+                     flagdneu,interptype,sourcemlat,sourcemlon,dtneu,dxn,drhon,dzn,sourcedir,flagprecfile, &
+                     dtprec,precdir,flagE0file,dtE0,E0dir,flagglow,dtglow,dtglowout, out_format)
 
+!> PRINT SOME DIAGNOSIC INFO FROM ROOT
+if (myid==0) then
+  print '(A,I6,A1,I0.2,A1,I0.2)', infile // ' simulation year-month-day is:  ',ymd(1),'-',ymd(2),'-',ymd(3)
+  print '(A51,F10.3)', 'start time is:  ',UTsec0
+  print '(A51,F10.3)', 'duration is:  ',tdur
+  print '(A51,F10.3)', 'output every:  ',dtout
+  print '(A,/,A,/,A,/,A)', 'using input data files:', indatsize, indatgrid, indatfile
+
+  if(flagdneu==1) then
+    print *, 'Neutral disturbance mlat,mlon:  ',sourcemlat,sourcemlon
+    print *, 'Neutral disturbance cadence (s):  ',dtneu
+    print *, 'Neutral grid resolution (m):  ',drhon,dzn
+    print *, 'Neutral disturbance data files located in directory:  ',sourcedir
+  endif
+
+  if (flagprecfile==1) then
+    print '(A,F10.3)', 'Precipitation file input cadence (s):  ',dtprec
+    print *, 'Precipitation file input source directory:  ' // precdir
+  end if
+
+  if(flagE0file==1) then
+    print *, 'Electric field file input cadence (s):  ',dtE0
+    print *, 'Electric field file input source directory:  ' // E0dir
+  end if
+
+  if (flagglow==1) then
+    print *, 'GLOW enabled for auroral emission calculations.'
+    print *, 'GLOW electron transport calculation cadence (s): ', dtglow
+    print *, 'GLOW auroral emission output cadence (s): ', dtglowout
+  end if
+end if
 
 !ESTABLISH A PROCESS GRID
 !call grid_size(indatsize)

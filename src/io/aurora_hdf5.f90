@@ -6,7 +6,7 @@ implicit none
 
 contains
 
-module procedure output_aur_root
+module procedure output_aur_root_hdf5
 ! subroutine output_aur_root(outdir,flagglow,ymd,UTsec,iver)
 !! COLLECT COMPLETE DATA FROM WORKERS AND PROCESS FOR OUTPUT.
 !! NO GHOST CELLS (I HOPE)
@@ -46,6 +46,6 @@ end if
 
 call hout%finalize()
 
-end procedure output_aur_root
+end procedure output_aur_root_hdf5
 
 end submodule io_aurora_hdf5
