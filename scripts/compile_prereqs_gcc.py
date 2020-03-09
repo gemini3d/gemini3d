@@ -99,7 +99,7 @@ def openmpi(dirs: T.Dict[str, Path], env: T.Mapping[str, str] = None):
     subprocess.check_call(cmd)
 
 
-def lapack(wipe: bool, dirs: T.Dict[str, Path], buildsys: str):
+def lapack(wipe: bool, dirs: T.Dict[str, Path], buildsys: str, env: T.Mapping[str, str] = None):
     """ build and insall Lapack """
     install_dir = dirs["prefix"] / LAPACKDIR
     source_dir = dirs["workdir"] / LAPACKDIR
@@ -107,17 +107,20 @@ def lapack(wipe: bool, dirs: T.Dict[str, Path], buildsys: str):
 
     update(source_dir, LAPACKGIT)
 
+    if not env:
+        env = get_compilers()
+
     if buildsys == "cmake":
         args = [f"-DCMAKE_INSTALL_PREFIX={install_dir}"]
-        cmake_build(args, source_dir, build_dir, wipe, env=get_compilers())
+        cmake_build(args, source_dir, build_dir, wipe, env=env)
     elif buildsys == "meson":
         args = [f"--prefix={dirs['prefix']}"]
-        meson_build(args, source_dir, build_dir, wipe, env=get_compilers())
+        meson_build(args, source_dir, build_dir, wipe, env=env)
     else:
         raise ValueError(f"unknown build system {buildsys}")
 
 
-def scalapack(wipe: bool, dirs: T.Dict[str, Path], buildsys: str):
+def scalapack(wipe: bool, dirs: T.Dict[str, Path], buildsys: str, env: T.Mapping[str, str] = None):
     """ build and install Scalapack """
     source_dir = dirs["workdir"] / SCALAPACKDIR
     build_dir = source_dir / BUILDDIR
@@ -126,12 +129,15 @@ def scalapack(wipe: bool, dirs: T.Dict[str, Path], buildsys: str):
 
     lib_args = [f'-DLAPACK_ROOT={dirs["prefix"] / LAPACKDIR}']
 
+    if not env:
+        env = get_compilers()
+
     if buildsys == "cmake":
         args = [f"-DCMAKE_INSTALL_PREFIX={dirs['prefix'] / SCALAPACKDIR}"]
-        cmake_build(args + lib_args, source_dir, build_dir, wipe, env=get_compilers())
+        cmake_build(args + lib_args, source_dir, build_dir, wipe, env=env)
     elif buildsys == "meson":
         args = [f"--prefix={dirs['prefix']}"]
-        meson_build(args + lib_args, source_dir, build_dir, wipe, env=get_compilers())
+        meson_build(args + lib_args, source_dir, build_dir, wipe, env=env)
     else:
         raise ValueError(f"unknown build system {buildsys}")
 
