@@ -4,9 +4,9 @@ use, intrinsic:: iso_fortran_env, only: stderr=>error_unit
 
 implicit none
 private
-public :: mkdir, copyfile, expanduser, home, filesep_swap
+public :: mkdir, copyfile, expanduser, home, filesep_swap, assert_directory_exists, assert_file_exists
 
-interface
+interface  ! pathlib_{unix,windows}.f90
 module integer function copyfile(source, dest) result(istat)
 character(*), intent(in) :: source, dest
 end function copyfile
@@ -16,7 +16,30 @@ character(*), intent(in) :: path
 end function mkdir
 end interface
 
+interface ! path_exists*.f90
+module subroutine assert_directory_exists(path)
+character(*), intent(in) :: path
+end subroutine assert_directory_exists
+end interface
+
 contains
+
+subroutine assert_file_exists(path)
+  !! throw error if file does not exist
+  !! this accomodates non-Fortran 2018 error stop with variable character
+
+character(*), intent(in) :: path
+logical :: exists
+
+inquire(file=path, exist=exists)
+
+if (exists) return
+
+write(stderr,'(A)') 'ERROR: file does not exist ' // path
+error stop
+
+end subroutine assert_file_exists
+
 
 function filesep_swap(path) result(swapped)
 !! swaps '/' to '\' for Windows systems
@@ -67,7 +90,7 @@ end function expanduser
 
 function home()
 !! https://en.wikipedia.org/wiki/Home_directory#Default_home_directory_per_operating_system
-character(:), allocatable :: home, var
+character(:), allocatable :: home
 character(256) :: buf
 integer :: L, istat
 
@@ -77,8 +100,8 @@ if (L==0 .or. istat /= 0) then
 endif
 
 if (L==0 .or. istat /= 0) then
-  write(stderr,*) 'ERROR: could not determine home directory from env var ',var
-  if (istat==1) write(stderr,*) 'env var ',var,' does not exist.'
+  write(stderr,*) 'ERROR: could not determine home directory from env variable'
+  if (istat==1) write(stderr,*) 'env variable does not exist.'
   home = ""
 else
   home = trim(buf) // '/'

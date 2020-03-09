@@ -5,7 +5,7 @@ implicit none
 
 contains
 
-module procedure output_aur_root
+module procedure output_aur_root_raw
 ! subroutine output_aur_root(outdir,flagglow,ymd,UTsec,iver)
 !! COLLECT COMPLETE DATA FROM WORKERS AND PROCESS FOR OUTPUT.
 !! NO GHOST CELLS (I HOPE)
@@ -57,6 +57,6 @@ end block
 
 if(.not. all(ieee_is_finite(iverout))) error stop 'iverout: non-finite value(s)'
 
-end procedure output_aur_root
+end procedure output_aur_root_raw
 
 end submodule io_aurora_raw

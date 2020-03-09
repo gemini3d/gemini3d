@@ -2,7 +2,7 @@ submodule (grid) grid_read
 
 implicit none
 
-interface ! readgrid_raw.f90
+interface ! readgrid_*.f90
 module subroutine get_grid3_raw(path, flagswap, x, g1all,g2all,g3all, altall,glatall,glonall,Bmagall,Incall,nullptsall,&
   e1all,e2all,e3all,erall,ethetaall,ephiall,rall,thetaall,phiall)
 character(*), intent(in) :: path
@@ -12,9 +12,7 @@ real(wp), intent(out), dimension(:,:,:) :: g1all,g2all,g3all,altall,glatall,glon
 real(wp), intent(out), dimension(:,:) :: Incall
 real(wp), intent(out), dimension(:,:,:,:) :: e1all,e2all,e3all,erall,ethetaall,ephiall
 end subroutine get_grid3_raw
-end interface
 
-interface ! readgrid_hdf5.f90
 module subroutine get_grid3_hdf5(path, flagswap, x, g1all,g2all,g3all, altall,glatall,glonall,Bmagall,Incall,nullptsall,&
   e1all,e2all,e3all,erall,ethetaall,ephiall,rall,thetaall,phiall)
 character(*), intent(in) :: path
@@ -24,9 +22,7 @@ real(wp), intent(out), dimension(:,:,:) :: g1all,g2all,g3all,altall,glatall,glon
 real(wp), intent(out), dimension(:,:) :: Incall
 real(wp), intent(out), dimension(:,:,:,:) :: e1all,e2all,e3all,erall,ethetaall,ephiall
 end subroutine get_grid3_hdf5
-end interface
 
-interface ! readgrid_nc4.f90
 module subroutine get_grid3_nc4(path, flagswap, x, g1all,g2all,g3all, altall,glatall,glonall,Bmagall,Incall,nullptsall,&
   e1all,e2all,e3all,erall,ethetaall,ephiall,rall,thetaall,phiall)
 character(*), intent(in) :: path

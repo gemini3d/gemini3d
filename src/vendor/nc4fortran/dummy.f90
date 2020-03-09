@@ -5,7 +5,7 @@ module nc4fortran
 
   type netcdf_file
   contains
-  procedure, public :: initialize, read, finalize
+  procedure, public :: initialize, read, write, finalize
   end type netcdf_file
 
   contains
@@ -29,6 +29,13 @@ module nc4fortran
   error stop 'NetCDF4 / nc4fortran not available'
   end subroutine read
 
+  subroutine write(self, dname, value, ierr)
+  class(netcdf_file), intent(in)     :: self
+  character(*), intent(in)         :: dname
+  class(*), intent(in)      :: value(..)
+  integer, intent(out), optional :: ierr
+  error stop 'NetCDF4 / nc4fortran not available'
+  end subroutine write
 
   subroutine finalize(self, ierr)
   class(netcdf_file), intent(in) :: self

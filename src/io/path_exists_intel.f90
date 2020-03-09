@@ -1,4 +1,4 @@
-submodule (io:input) path_exists
+submodule (pathlib) path_exists
 !! Intel compilers require non-standard inquire(directory=)
 implicit none
 
@@ -12,10 +12,10 @@ logical :: exists
 
 inquire(directory=path, exist=exists)
 
-if (.not.exists) then
-  write(stderr,*) path // ' directory does not exist'
-  error stop
-endif
+if (exists) return
+
+write(stderr,*) path // ' directory does not exist'
+error stop
 
 end procedure assert_directory_exists
 
