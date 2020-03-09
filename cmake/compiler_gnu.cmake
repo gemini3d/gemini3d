@@ -1,4 +1,5 @@
-add_compile_options(-march=native)
+# NOTE: don't use -march=native as GCC doesn't support all CPU arches with that option.
+add_compile_options(-mtune=native)
 
 # keep Wall and Wextra in cmake_fortran_flags so FetchContent packages can override
 # and thereby avoid useless megabytes of other project warnings
