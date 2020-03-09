@@ -38,9 +38,9 @@ lent=lent+2*(lx1-2)*(lx2-2)+2*(lx2-2)*(lx3-2)+2*(lx1-2)*(lx3-2)                !
 lent=lent+4*(lx1-2)+4*(lx2-2)+4*(lx3-2)                                        !12 edges
 lent=lent+8                                                                    !8 corners, now we have total nonzero entries
 lent=lent+lx2*lx3                                                              !entries to deal with Neumann conditions on bottom
-if (flagdirich==0) then                                                        !more entries if Neumann on top
-lent=lent+lx2*lx3
-end if
+
+if (flagdirich==0) lent=lent+lx2*lx3
+!! more entries if Neumann on top
 
 allocate(ir(lent),ic(lent),M(lent),b(lPhi))
 
@@ -48,122 +48,131 @@ if (debug) print *, 'MUMPS will attempt a solve of size:  ',lx1,lx2,lx3
 if (debug) print *, 'Total unknowns and nonzero entries in matrix:  ',lPhi,lent
 
 
-!! DEFINE A MATRIX USING SPARSE STORAGE (CENTRALIZED ASSEMBLED MATRIX INPUT, SEE SECTION 4.5 OF MUMPS USER GUIDE).
-!LOAD UP MATRIX ELEMENTS
+!! DEFINE A MATRIX USING SPARSE STORAGE (CENTRALIZED ASSEMBLED MATRIX INPUT
+!! SEE SECTION 4.5 OF MUMPS USER GUIDE).
+
+!> LOAD UP MATRIX ELEMENTS
 M(:)=0d0
 b=pack(srcterm,.true.)           !boundaries overwritten later
 ient=1
 do ix3=1,lx3
-do ix2=1,lx2
-do ix1=1,lx1
-iPhi=lx1*lx2*(ix3-1)+lx1*(ix2-1)+ix1     !linear index referencing Phi(ix1,ix3) as a column vector.  Also row of big matrix
+  do ix2=1,lx2
+    do ix1=1,lx1
+      iPhi=lx1*lx2*(ix3-1)+lx1*(ix2-1)+ix1
+      !! linear index referencing Phi(ix1,ix3) as a column vector.  Also row of big matrix
 
-if (ix1==1) then          !BOTTOM GRID POINTS + CORNER, USE NEUMANN HERE, PRESUMABLY ZERO
-ir(ient)=iPhi
-ic(ient)=iPhi
-M(ient)=-1d0
-ient=ient+1
-ir(ient)=iPhi
-ic(ient)=iPhi+1
-M(ient)=1d0
-!            b(iPhi)=Vminx1(ix3)
-b(iPhi)=0d0    !force bottom current to zero
-ient=ient+1
-elseif (ix1==lx1) then    !TOP GRID POINTS + CORNER
-if (flagdirich/=0) then
-ir(ient)=iPhi
-ic(ient)=iPhi
-M(ient)=1d0
-b(iPhi)=Vmaxx1(ix2,ix3)
-ient=ient+1
-else
-ir(ient)=iPhi
-ic(ient)=iPhi-1
-M(ient)=-1d0/dx1(lx1)
-ient=ient+1
-ir(ient)=iPhi
-ic(ient)=iPhi
-M(ient)=1d0/dx1(lx1)
-b(iPhi)=Vmaxx1(ix2,ix3)
-ient=ient+1
-end if
-elseif (ix2==1) then      !LEFT BOUNDARY
-ir(ient)=iPhi
-ic(ient)=iPhi
-M(ient)=1.0
-b(iPhi)=Vminx2(ix1,ix3)
-ient=ient+1
-elseif (ix2==lx2) then    !RIGHT BOUNDARY
-ir(ient)=iPhi
-ic(ient)=iPhi
-M(ient)=1.0
-b(iPhi)=Vmaxx2(ix1,ix3)
-ient=ient+1
-elseif (ix3==1) then
-ir(ient)=iPhi
-ic(ient)=iPhi
-M(ient)=1.0
-b(iPhi)=Vminx3(ix1,ix2)
-ient=ient+1
-elseif (ix3==lx3) then
-ir(ient)=iPhi
-ic(ient)=iPhi
-M(ient)=1.0
-b(iPhi)=Vmaxx3(ix1,ix2)
-ient=ient+1
-else                      !INTERIOR
-!ix1,ix2,ix3-1 grid point in ix1,ix2,ix3 equation
-ir(ient)=iPhi
-ic(ient)=iPhi-lx1*lx2
-M(ient)=Bc(ix1,ix2,ix3)/dx3all(ix3)/dx3iall(ix3)-Ec(ix1,ix2,ix3)/(dx3all(ix3+1)+dx3all(ix3))
-ient=ient+1
+      if (ix1==1) then
+        !! BOTTOM GRID POINTS + CORNER, USE NEUMANN HERE, PRESUMABLY ZERO
+        ir(ient)=iPhi
+        ic(ient)=iPhi
+        M(ient)=-1d0
+        ient=ient+1
+        ir(ient)=iPhi
+        ic(ient)=iPhi+1
+        M(ient) = 1
+        !            b(iPhi)=Vminx1(ix3)
+        b(iPhi) = 0
+        !! force bottom current to zero
+        ient = ient+1
+      elseif (ix1==lx1) then
+        !! TOP GRID POINTS + CORNER
+        if (flagdirich/=0) then
+          ir(ient)=iPhi
+          ic(ient)=iPhi
+          M(ient)=1d0
+          b(iPhi)=Vmaxx1(ix2,ix3)
+          ient=ient+1
+        else
+          ir(ient)=iPhi
+          ic(ient)=iPhi-1
+          M(ient)=-1d0/dx1(lx1)
+          ient=ient+1
+          ir(ient)=iPhi
+          ic(ient)=iPhi
+          M(ient)=1d0/dx1(lx1)
+          b(iPhi)=Vmaxx1(ix2,ix3)
+          ient=ient+1
+        end if
+      elseif (ix2==1) then
+        !! LEFT BOUNDARY
+        ir(ient)=iPhi
+        ic(ient)=iPhi
+        M(ient)=1
+        b(iPhi)=Vminx2(ix1,ix3)
+        ient=ient+1
+      elseif (ix2==lx2) then
+        !! RIGHT BOUNDARY
+        ir(ient)=iPhi
+        ic(ient)=iPhi
+        M(ient)=1
+        b(iPhi)=Vmaxx2(ix1,ix3)
+        ient=ient+1
+      elseif (ix3==1) then
+        ir(ient)=iPhi
+        ic(ient)=iPhi
+        M(ient)=1
+        b(iPhi)=Vminx3(ix1,ix2)
+        ient=ient+1
+      elseif (ix3==lx3) then
+        ir(ient)=iPhi
+        ic(ient)=iPhi
+        M(ient)=1
+        b(iPhi)=Vmaxx3(ix1,ix2)
+        ient=ient+1
+      else
+        !! INTERIOR
+        !> ix1,ix2,ix3-1 grid point in ix1,ix2,ix3 equation
+        ir(ient)=iPhi
+        ic(ient)=iPhi-lx1*lx2
+        M(ient)=Bc(ix1,ix2,ix3)/dx3all(ix3)/dx3iall(ix3)-Ec(ix1,ix2,ix3)/(dx3all(ix3+1)+dx3all(ix3))
+        ient=ient+1
 
-!ix1,ix2-1,ix3
-ir(ient)=iPhi
-ic(ient)=iPhi-lx1
-M(ient)=Ac(ix1,ix2,ix3)/dx2all(ix2)/dx2iall(ix2)-Dc(ix1,ix2,ix3)/(dx2all(ix2+1)+dx2all(ix2))
-ient=ient+1
+        !> ix1,ix2-1,ix3
+        ir(ient)=iPhi
+        ic(ient)=iPhi-lx1
+        M(ient)=Ac(ix1,ix2,ix3)/dx2all(ix2)/dx2iall(ix2)-Dc(ix1,ix2,ix3)/(dx2all(ix2+1)+dx2all(ix2))
+        ient=ient+1
 
-!ix1-1,ix2,ix3
-ir(ient)=iPhi
-ic(ient)=iPhi-1
-M(ient)=Cc(ix1,ix2,ix3)/dx1(ix1)/dx1i(ix1)-Fc(ix1,ix2,ix3)/(dx1(ix1+1)+dx1(ix1))
-ient=ient+1
+        !> ix1-1,ix2,ix3
+        ir(ient)=iPhi
+        ic(ient)=iPhi-1
+        M(ient)=Cc(ix1,ix2,ix3)/dx1(ix1)/dx1i(ix1)-Fc(ix1,ix2,ix3)/(dx1(ix1+1)+dx1(ix1))
+        ient=ient+1
 
-!ix1,ix2,ix3
-ir(ient)=iPhi
-ic(ient)=iPhi
-M(ient)=-1d0*Ac(ix1,ix2,ix3)*(1d0/dx2all(ix2+1)/dx2iall(ix2)+1d0/dx2all(ix2)/dx2iall(ix2))- &
-       Bc(ix1,ix2,ix3)*(1d0/dx3all(ix3+1)/dx3iall(ix3)+1d0/dx3all(ix3)/dx3iall(ix3))- &
-       Cc(ix1,ix2,ix3)*(1d0/dx1(ix1+1)/dx1i(ix1)+1d0/dx1(ix1)/dx1i(ix1))
-ient=ient+1
+        !> ix1,ix2,ix3
+        ir(ient)=iPhi
+        ic(ient)=iPhi
+        M(ient)=-1d0*Ac(ix1,ix2,ix3)*(1d0/dx2all(ix2+1)/dx2iall(ix2)+1d0/dx2all(ix2)/dx2iall(ix2))- &
+              Bc(ix1,ix2,ix3)*(1d0/dx3all(ix3+1)/dx3iall(ix3)+1d0/dx3all(ix3)/dx3iall(ix3))- &
+              Cc(ix1,ix2,ix3)*(1d0/dx1(ix1+1)/dx1i(ix1)+1d0/dx1(ix1)/dx1i(ix1))
+        ient=ient+1
 
-!ix1+1,ix2,ix3
-ir(ient)=iPhi
-ic(ient)=iPhi+1
-M(ient)=Cc(ix1,ix2,ix3)/dx1(ix1+1)/dx1i(ix1)+Fc(ix1,ix2,ix3)/(dx1(ix1+1)+dx1(ix1))
-ient=ient+1
+        !> ix1+1,ix2,ix3
+        ir(ient)=iPhi
+        ic(ient)=iPhi+1
+        M(ient)=Cc(ix1,ix2,ix3)/dx1(ix1+1)/dx1i(ix1)+Fc(ix1,ix2,ix3)/(dx1(ix1+1)+dx1(ix1))
+        ient=ient+1
 
-!ix1,ix2+1,ix3
-ir(ient)=iPhi
-ic(ient)=iPhi+lx1
-M(ient)=Ac(ix1,ix2,ix3)/dx2all(ix2+1)/dx2iall(ix2)+Dc(ix1,ix2,ix3)/(dx2all(ix2+1)+dx2all(ix2))
-ient=ient+1
+        !> ix1,ix2+1,ix3
+        ir(ient)=iPhi
+        ic(ient)=iPhi+lx1
+        M(ient)=Ac(ix1,ix2,ix3)/dx2all(ix2+1)/dx2iall(ix2)+Dc(ix1,ix2,ix3)/(dx2all(ix2+1)+dx2all(ix2))
+        ient=ient+1
 
-!ix1,ix2,ix3+1
-ir(ient)=iPhi
-ic(ient)=iPhi+lx1*lx2
-M(ient)=Bc(ix1,ix2,ix3)/dx3all(ix3+1)/dx3iall(ix3)+Ec(ix1,ix2,ix3)/(dx3all(ix3+1)+dx3all(ix3))
-ient=ient+1
-end if
+        !> ix1,ix2,ix3+1
+        ir(ient)=iPhi
+        ic(ient)=iPhi+lx1*lx2
+        M(ient)=Bc(ix1,ix2,ix3)/dx3all(ix3+1)/dx3iall(ix3)+Ec(ix1,ix2,ix3)/(dx3all(ix3+1)+dx3all(ix3))
+        ient=ient+1
+      end if
+    end do
+  end do
 end do
-end do
-end do
-!end if
+
 if (debug) print *, 'Number of entries used:  ',ient-1
 
 
-! INIT MUMPS
+!> INIT MUMPS
 
 mumps_par%COMM = MPI_COMM_WORLD
 mumps_par%JOB = -1
@@ -191,9 +200,9 @@ deallocate(ir,ic,M,b)     !clear memory before solve begins!!!
 
 if (debug) print*, 'Dealing with permutation',perflag,it
 if (perflag .and. it/=1) then       !used cached permutation, but only gets tested on first time step
-allocate(mumps_par%PERM_IN(mumps_par%N))
-mumps_par%PERM_IN=mumps_perm
-mumps_par%ICNTL(7)=1
+  allocate(mumps_par%PERM_IN(mumps_par%N))
+  mumps_par%PERM_IN=mumps_perm
+  mumps_par%ICNTL(7)=1
 end if
 
 
@@ -218,8 +227,8 @@ call check_mumps_status(mumps_par, 'elliptic3D_cart')
 if (debug) print *, 'Now organizing results...'
 
 if (perflag .and. it==1) then
-allocate(mumps_perm(mumps_par%N))     !we don't have a corresponding deallocate statement
-mumps_perm=mumps_par%SYM_PERM
+  allocate(mumps_perm(mumps_par%N))     !we don't have a corresponding deallocate statement
+  mumps_perm=mumps_par%SYM_PERM
 end if
 
 elliptic3D_cart=reshape(mumps_par%RHS,[lx1,lx2,lx3])
