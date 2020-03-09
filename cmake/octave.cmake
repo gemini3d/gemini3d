@@ -23,7 +23,7 @@ if(Octave_EXECUTABLE)
   message(STATUS "Found GNU Octave ${Octave_EXECUTABLE}")
   set(octave_disabled false CACHE BOOL "GNU Octave tests")
 else()
-  set(octave_disabled true CACHE BOOL "GNU Octave tests")
+  set(octave_disabled true)
 endif()
 
 endif()

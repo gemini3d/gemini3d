@@ -14,6 +14,7 @@ if(python_disabled EQUAL 0)
   message(STATUS "PyGemini: ${_pygemloc}")
   set(python_disabled false CACHE BOOL "PyGemini OK")
 else()
+  set(python_disabled true)
   message(STATUS "MISSING: PyGemini -> install by 'python3 setup.py --user develop'")
 endif()
 

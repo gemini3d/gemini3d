@@ -43,7 +43,7 @@ else()
   endif()
 endif()
 
-if(python_disabled)
+if(NOT Python3_FOUND)
   set(gemini_disabled true)
 endif()
 
