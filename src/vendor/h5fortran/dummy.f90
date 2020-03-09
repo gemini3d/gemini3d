@@ -5,7 +5,7 @@ implicit none
 
 type hdf5_file
 contains
-procedure, public :: initialize, read, finalize
+procedure, public :: initialize, read, write, exist, finalize
 end type hdf5_file
 
 contains
@@ -22,13 +22,28 @@ logical, intent(in), optional      :: verbose
 error stop 'HDF5 / h5fortran not available'
 end subroutine initialize
 
-module subroutine read(self, dname, value, ierr)
+subroutine read(self, dname, value, ierr)
 class(hdf5_file), intent(in)     :: self
 character(*), intent(in)         :: dname
 class(*), intent(inout)      :: value(..)
 integer, intent(out), optional :: ierr
 error stop 'HDF5 / h5fortran not available'
 end subroutine read
+
+subroutine write(self, dname, value, ierr)
+class(hdf5_file), intent(in)     :: self
+character(*), intent(in)         :: dname
+class(*), intent(in)      :: value(..)
+integer, intent(out), optional :: ierr
+error stop 'HDF5 / h5fortran not available'
+end subroutine write
+
+logical function exist(self, dname)
+class(hdf5_file), intent(in)     :: self
+character(*), intent(in)         :: dname
+exist = .false.
+error stop 'HDF5 / h5fortran not available'
+end function exist
 
 subroutine finalize(self, ierr)
 class(hdf5_file), intent(in) :: self
