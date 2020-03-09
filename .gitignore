@@ -31,7 +31,6 @@ objects/
 *.toc
 *.synctex.gz
 *.o
-*.mod
 *.swp
 *.bbl
 *.blg
