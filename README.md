@@ -9,11 +9,11 @@
 ![ci_macos](https://github.com/gemini3d/gemini/workflows/ci_macos/badge.svg)
 
 The GEMINI model (*G*eospace *E*nvironment *M*odel of *I*on-*N*eutral *I*nteractions) is a three-dimensional ionospheric fluid-electrodynamic model used for various scientific studies including effects of auroras on the terrestrial ionosphere, natural hazard effects on the space environment, and effects of ionospheric fluid instabilities on radio propagation (see references section of this document for details).
-The detailed mathematical formulation of GEMINI is included in `doc/`.
+The detailed mathematical formulation of GEMINI is included in
+[GEMINI-docs](https://github.com/gemini3d/GEMINI-docs).
 A subroutine-level set of documentation describing functions of individual program units is given via source code comments which are
 [rendered as webpages](https://gemini3d.github.io/gemini/index.html).
 GEMINI uses generalized orthogonal curvilinear coordinates and has been tested with dipole and Cartesian coordinates.
-
 Please open a
 [GitHub Issue](https://github.com/gemini3d/gemini/issues)
 if you experience difficulty building GEMINI.
@@ -24,7 +24,7 @@ Specific commits corresponding to published results will also be noted, where ap
 ## Quickest start
 
 Gemini can run on most modern computers using Linux, MacOS, or Windows.
-Gemini even runs on the Raspberry Pi 4 with 1 GByte of RAM.
+Gemini runs on ARM CPUs including Raspberry Pi 4 with 1 GByte of RAM as well as IBM POWER CPUs.
 Windows users should use
 [Windows Subsystem for Linux](https://docs.microsoft.com/en-us/windows/wsl/install-win10).
 To build Gemini and run self-tests takes about 10 minutes on a typical laptop.
