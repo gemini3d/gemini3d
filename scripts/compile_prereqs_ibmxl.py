@@ -53,8 +53,8 @@ def get_compilers() -> T.Mapping[str, str]:
 
 if __name__ == "__main__":
     p = ArgumentParser()
-    p.add_argument("libs", help="libraries to compile", choices=["hdf5", "mumps"], nargs="+")
-    p.add_argument("-prefix", help="toplevel path to install libraries under", default="~/lib_intel")
+    p.add_argument("libs", help="libraries to compile", choices=["hdf5", "lapack", "scalapack", "mumps"], nargs="+")
+    p.add_argument("-prefix", help="toplevel path to install libraries under", default="~/lib_xl")
     p.add_argument("-workdir", help="toplevel path to where you keep code repos", default="~/code")
     p.add_argument("-wipe", help="wipe before completely recompiling libs", action="store_true")
     p.add_argument("-buildsys", help="build system (meson or cmake)", default="cmake")
