@@ -21,12 +21,18 @@ if you experience difficulty building GEMINI.
 Generally, the Git `master` branch has the current development version and is the best place to start, while more thoroughly-tested releases happen occasionally.
 Specific commits corresponding to published results will also be noted, where appropriate, in the corresponding journal article.
 
+## Platform agnostic
+
+Gemini is OS / CPU arch / platform / compiler agnostic as much as feasible.
+Operating system support includes Linux, MacOS, or Windows.
+CPU arch support includes:
+
+* Intel / AMD
+* ARM 32 / 64 bit including Raspberry Pi 4 with 1 GByte of RAM.
+* IBM POWER
+
 ## Quickest start
 
-Gemini can run on most modern computers using Linux, MacOS, or Windows.
-Gemini runs on ARM CPUs including Raspberry Pi 4 with 1 GByte of RAM as well as IBM POWER CPUs.
-Windows users should use
-[Windows Subsystem for Linux](https://docs.microsoft.com/en-us/windows/wsl/install-win10).
 To build Gemini and run self-tests takes about 10 minutes on a typical laptop.
 
 Requirements:
