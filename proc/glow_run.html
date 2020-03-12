@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+   
+   <meta name="description" content="GEMINI3D is a modular ionospheric model that incorporates kinetic models such as Fang, GLOW.">
+    
+    <meta name="author" content="Matthew Zettergren
+Guy Grubbs
+Michael Hirsch" >
+    <link rel="icon" href="../favicon.png">
+
+    <title>glow_run &ndash; GEMINI3D</title>
+
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+    <link href="../css/pygments.css" rel="stylesheet">
+    <link href="../css/font-awesome.min.css" rel="stylesheet">
+    <link href="../css/local.css" rel="stylesheet">
+    
+    
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    
+    <script src="../js/jquery-2.1.3.min.js"></script>
+    <script src="../js/svg-pan-zoom.min.js"></script>
+
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="../index.html">GEMINI3D </a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+        
+            <li class="dropdown hidden-xs visible-sm visible-md hidden-lg">
+              <a href="#" class="dropdown-toggle"
+              data-toggle="dropdown" role="button"
+              aria-haspopup="true"
+     aria-expanded="false">Contents <span class="caret"></span></a>
+        <ul class="dropdown-menu">
+          
+              
+            <li><a href="../lists/files.html">Source Files</a></li>
+        
+        
+        
+            <li><a href="../lists/modules.html">Modules</a></li>
+        
+            
+    <li><a href="../blockdata/gtd7bk.html">Block Data</a></li>
+    
+                                
+            <li><a href="../lists/procedures.html">Procedures</a></li>
+        
+               
+            <li><a href="../lists/types.html">Derived Types</a></li>
+        
+        
+            <li><a href="../lists/programs.html">Programs</a></li>
+        
+            </ul>
+            </li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/files.html">Source Files</a></li>
+
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/modules.html">Modules</a></li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../blockdata/gtd7bk.html">Block Data</a></li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/procedures.html">Procedures</a></li>
+
+                             
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/types.html">Derived Types</a></li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/programs.html">Programs</a></li>
+
+          </ul>
+        
+        </div><!--/.nav-collapse -->
+      </div>
+    </nav>
+
+    <div class="container">
+    
+  
+  <div class="row">
+    <h1>glow_run
+      <small>Procedure</small>
+    
+    </h1>
+    
+<div class="row">
+  <div class="col-lg-12">
+<div class="well well-sm">
+  <ul class="list-inline" style="margin-bottom:0px;display:inline">
+     
+     
+     
+     
+    
+    
+     <li><i class="fa fa-list-ol"></i>
+       <a data-toggle="tooltip"
+    data-placement="bottom" data-html="true"
+    title=" 0.7% of total for procedures.">64 statements</a>
+     </li> 
+     
+     
+     
+    <li><i class="fa fa-code"></i><a href="../src/glow_run.F90"> Source File</a></li>
+     
+     
+  </ul>
+  <ol class="breadcrumb in-well text-right">
+  
+    
+     <li><a href='../sourcefile/glow_run.f90.html'>glow_run.F90</a></li>
+    
+     <li><a href='../module/glow_mod.html'>glow_mod</a></li>
+    
+  
+     <li class="active">glow_run</li>
+  </ol>
+</div>
+</div>
+</div>
+<script>
+  $(function () {
+  $('[data-toggle="tooltip"]').tooltip()
+  })
+</script>
+
+  </div>
+  
+  <div class="row">
+    <div class="col-md-3 hidden-xs hidden-sm visible-md visible-lg">
+    
+<div id="sidebar">
+  
+<h3>Contents</h3>
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<em>None</em>
+
+
+</div>
+
+    </div>
+    
+    <div class="col-md-9" id='text'>
+    <h2>
+module procedure glow_run <small>module procedure glow_run()</small>
+    
+    
+   
+</h2>
+    
+  
+
+
+    
+    <p>Set electron energy grid:</p>
+<p>Set Maxwellian distribution into phitop array</p>
+<p>Hard coded solution, future = pass ec and ef array to maxt assuming &gt; 2 populations
+ Set variables given from GEMINI
+ Convert densities and altitudes into</p>
+<p>Call GLOW to calculate ionized and excited species, and airglow emission rates:</p>
+    
+
+    <h3>Arguments</h3>
+    
+    <em>None</em>
+    <br>
+    
+    
+    
+    <br>
+    
+    
+    <div class="panel panel-default">
+      <div class="panel-heading">
+  <h3 class="panel-title">Calls</h3>
+      </div>
+      <div class="panel-body">
+  <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.40.1 (20161225.0304)
+ -->
+<!-- Title: proc~~glow_run~~CallsGraph Pages: 1 -->
+<svg id="procglow_runCallsGraph" width="166pt" height="998pt"
+ viewBox="0.00 0.00 166.00 998.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="proc~~glow_run~~CallsGraph" class="graph" transform="scale(1 1) rotate(0) translate(4 994)">
+<title>proc~~glow_run~~CallsGraph</title>
+<polygon fill="#ffffff" stroke="transparent" points="-4,4 -4,-994 162,-994 162,4 -4,4"/>
+<!-- proc~glow_run -->
+<g id="proc~~glow_run~~CallsGraph_node1" class="node">
+<title>proc~glow_run</title>
+<polygon fill="none" stroke="#000000" points="56,-507 0,-507 0,-483 56,-483 56,-507"/>
+<text text-anchor="middle" x="28" y="-492.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#000000">glow_run</text>
+</g>
+<!-- glow -->
+<g id="proc~~glow_run~~CallsGraph_node2" class="node">
+<title>glow</title>
+<polygon fill="#777777" stroke="#777777" points="152,-990 98,-990 98,-966 152,-966 152,-990"/>
+<text text-anchor="middle" x="125" y="-975.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">glow</text>
+</g>
+<!-- proc~glow_run&#45;&gt;glow -->
+<g id="proc~~glow_run~~CallsGraph_edge1" class="edge">
+<title>proc~glow_run&#45;&gt;glow</title>
+<path fill="none" stroke="#000000" d="M28.3263,-507.1535C30.2714,-572.2023 42.01,-879.1561 92,-957 92.4128,-957.6428 92.8531,-958.2697 93.3176,-958.8808"/>
+<polygon fill="#000000" stroke="#000000" points="90.8903,-961.4029 100.4603,-965.949 95.8141,-956.4273 90.8903,-961.4029"/>
+</g>
+<!-- phiwmwm2 -->
+<g id="proc~~glow_run~~CallsGraph_node3" class="node">
+<title>phiwmwm2</title>
+<polygon fill="#777777" stroke="#777777" points="158,-948 92,-948 92,-924 158,-924 158,-948"/>
+<text text-anchor="middle" x="125" y="-933.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">phiwmwm2</text>
+</g>
+<!-- proc~glow_run&#45;&gt;phiwmwm2 -->
+<g id="proc~~glow_run~~CallsGraph_edge2" class="edge">
+<title>proc~glow_run&#45;&gt;phiwmwm2</title>
+<path fill="none" stroke="#000000" d="M28.5179,-507.248C31.3219,-568.877 46.287,-844.8669 92,-915 92.4172,-915.64 92.8614,-916.2643 93.3295,-916.8731"/>
+<polygon fill="#000000" stroke="#000000" points="90.916,-919.4085 100.5011,-923.9226 95.8231,-914.4164 90.916,-919.4085"/>
+</g>
+<!-- w0 -->
+<g id="proc~~glow_run~~CallsGraph_node4" class="node">
+<title>w0</title>
+<polygon fill="#777777" stroke="#777777" points="152,-906 98,-906 98,-882 152,-882 152,-906"/>
+<text text-anchor="middle" x="125" y="-891.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">w0</text>
+</g>
+<!-- proc~glow_run&#45;&gt;w0 -->
+<g id="proc~~glow_run~~CallsGraph_edge3" class="edge">
+<title>proc~glow_run&#45;&gt;w0</title>
+<path fill="none" stroke="#000000" d="M28.7418,-507.1553C32.4539,-564.8053 50.5041,-810.471 92,-873 92.4224,-873.6366 92.8715,-874.2577 93.3439,-874.8636"/>
+<polygon fill="#000000" stroke="#000000" points="90.9471,-877.415 100.5505,-881.8901 95.8339,-872.403 90.9471,-877.415"/>
+</g>
+<!-- zz -->
+<g id="proc~~glow_run~~CallsGraph_node5" class="node">
+<title>zz</title>
+<polygon fill="#777777" stroke="#777777" points="152,-864 98,-864 98,-840 152,-840 152,-864"/>
+<text text-anchor="middle" x="125" y="-849.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">zz</text>
+</g>
+<!-- proc~glow_run&#45;&gt;zz -->
+<g id="proc~~glow_run~~CallsGraph_edge4" class="edge">
+<title>proc~glow_run&#45;&gt;zz</title>
+<path fill="none" stroke="#000000" d="M29.7631,-507.3718C38.0195,-564.7538 73.246,-803.3593 92,-831 92.4289,-831.6322 92.8839,-832.2494 93.3618,-832.8516"/>
+<polygon fill="#000000" stroke="#000000" points="90.9856,-835.4226 100.6115,-839.8492 95.8471,-830.386 90.9856,-835.4226"/>
+</g>
+<!-- ionrate -->
+<g id="proc~~glow_run~~CallsGraph_node6" class="node">
+<title>ionrate</title>
+<polygon fill="#777777" stroke="#777777" points="152,-822 98,-822 98,-798 152,-798 152,-822"/>
+<text text-anchor="middle" x="125" y="-807.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">ionrate</text>
+</g>
+<!-- proc~glow_run&#45;&gt;ionrate -->
+<g id="proc~~glow_run~~CallsGraph_edge5" class="edge">
+<title>proc~glow_run&#45;&gt;ionrate</title>
+<path fill="none" stroke="#000000" d="M29.4096,-507.3292C35.2722,-556.9512 58.9706,-741.6621 92,-789 92.4372,-789.6265 92.8996,-790.2386 93.3843,-790.8361"/>
+<polygon fill="#000000" stroke="#000000" points="91.0345,-793.4316 100.6885,-797.7962 95.8634,-788.3638 91.0345,-793.4316"/>
+</g>
+<!-- ztn -->
+<g id="proc~~glow_run~~CallsGraph_node7" class="node">
+<title>ztn</title>
+<polygon fill="#777777" stroke="#777777" points="152,-780 98,-780 98,-756 152,-756 152,-780"/>
+<text text-anchor="middle" x="125" y="-765.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">ztn</text>
+</g>
+<!-- proc~glow_run&#45;&gt;ztn -->
+<g id="proc~~glow_run~~CallsGraph_edge6" class="edge">
+<title>proc~glow_run&#45;&gt;ztn</title>
+<path fill="none" stroke="#000000" d="M29.8566,-507.066C36.9072,-551.7161 63.0909,-707.0481 92,-747 92.5399,-747.7462 93.1152,-748.4722 93.7207,-749.1781"/>
+<polygon fill="#000000" stroke="#000000" points="91.3889,-751.7887 101.1215,-755.9752 96.1239,-746.6331 91.3889,-751.7887"/>
+</g>
+<!-- zte -->
+<g id="proc~~glow_run~~CallsGraph_node8" class="node">
+<title>zte</title>
+<polygon fill="#777777" stroke="#777777" points="152,-738 98,-738 98,-714 152,-714 152,-738"/>
+<text text-anchor="middle" x="125" y="-723.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">zte</text>
+</g>
+<!-- proc~glow_run&#45;&gt;zte -->
+<g id="proc~~glow_run~~CallsGraph_edge7" class="edge">
+<title>proc~glow_run&#45;&gt;zte</title>
+<path fill="none" stroke="#000000" d="M28.8052,-507.2234C31.6427,-541.745 43.7957,-641.5828 92,-705 92.5573,-705.7332 93.1482,-706.4477 93.7676,-707.1434"/>
+<polygon fill="#000000" stroke="#000000" points="91.4808,-709.7939 101.2588,-713.8734 96.159,-704.5867 91.4808,-709.7939"/>
+</g>
+<!-- egrid -->
+<g id="proc~~glow_run~~CallsGraph_node9" class="node">
+<title>egrid</title>
+<polygon fill="#777777" stroke="#777777" points="152,-696 98,-696 98,-672 152,-672 152,-696"/>
+<text text-anchor="middle" x="125" y="-681.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">egrid</text>
+</g>
+<!-- proc~glow_run&#45;&gt;egrid -->
+<g id="proc~~glow_run~~CallsGraph_edge8" class="edge">
+<title>proc~glow_run&#45;&gt;egrid</title>
+<path fill="none" stroke="#000000" d="M29.9454,-507.3065C35.1787,-537.0289 51.9623,-613.8943 92,-663 92.6866,-663.8421 93.4163,-664.661 94.181,-665.4562"/>
+<polygon fill="#000000" stroke="#000000" points="91.9165,-668.125 101.7908,-671.9654 96.4666,-662.8055 91.9165,-668.125"/>
+</g>
+<!-- ze -->
+<g id="proc~~glow_run~~CallsGraph_node10" class="node">
+<title>ze</title>
+<polygon fill="#777777" stroke="#777777" points="152,-654 98,-654 98,-630 152,-630 152,-654"/>
+<text text-anchor="middle" x="125" y="-639.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">ze</text>
+</g>
+<!-- proc~glow_run&#45;&gt;ze -->
+<g id="proc~~glow_run~~CallsGraph_edge9" class="edge">
+<title>proc~glow_run&#45;&gt;ze</title>
+<path fill="none" stroke="#000000" d="M31.6926,-507.0183C39.5424,-531.0098 59.8451,-585.5732 92,-621 92.7531,-621.8297 93.5461,-622.6397 94.3709,-623.429"/>
+<polygon fill="#000000" stroke="#000000" points="92.4528,-626.3794 102.4271,-629.9521 96.8578,-620.9391 92.4528,-626.3794"/>
+</g>
+<!-- zti -->
+<g id="proc~~glow_run~~CallsGraph_node11" class="node">
+<title>zti</title>
+<polygon fill="#777777" stroke="#777777" points="152,-612 98,-612 98,-588 152,-588 152,-612"/>
+<text text-anchor="middle" x="125" y="-597.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">zti</text>
+</g>
+<!-- proc~glow_run&#45;&gt;zti -->
+<g id="proc~~glow_run~~CallsGraph_edge10" class="edge">
+<title>proc~glow_run&#45;&gt;zti</title>
+<path fill="none" stroke="#000000" d="M35.3289,-507.1997C46.1742,-524.5732 67.8367,-556.7935 92,-579 93.0938,-580.0052 94.2415,-580.9919 95.4261,-581.956"/>
+<polygon fill="#000000" stroke="#000000" points="93.4615,-584.8555 103.5956,-587.9458 97.6005,-579.2102 93.4615,-584.8555"/>
+</g>
+<!-- zxden -->
+<g id="proc~~glow_run~~CallsGraph_node12" class="node">
+<title>zxden</title>
+<polygon fill="#777777" stroke="#777777" points="152,-570 98,-570 98,-546 152,-546 152,-570"/>
+<text text-anchor="middle" x="125" y="-555.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">zxden</text>
+</g>
+<!-- proc~glow_run&#45;&gt;zxden -->
+<g id="proc~~glow_run~~CallsGraph_edge11" class="edge">
+<title>proc~glow_run&#45;&gt;zxden</title>
+<path fill="none" stroke="#000000" d="M46.1629,-507.0165C58.95,-515.4526 76.4849,-526.9732 92,-537 93.6683,-538.0781 95.3861,-539.184 97.1204,-540.2973"/>
+<polygon fill="#000000" stroke="#000000" points="95.4653,-543.3933 105.7761,-545.8305 99.2356,-537.4954 95.4653,-543.3933"/>
+</g>
+<!-- ts -->
+<g id="proc~~glow_run~~CallsGraph_node13" class="node">
+<title>ts</title>
+<polygon fill="#777777" stroke="#777777" points="152,-528 98,-528 98,-504 152,-504 152,-528"/>
+<text text-anchor="middle" x="125" y="-513.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">ts</text>
+</g>
+<!-- proc~glow_run&#45;&gt;ts -->
+<g id="proc~~glow_run~~CallsGraph_edge12" class="edge">
+<title>proc~glow_run&#45;&gt;ts</title>
+<path fill="none" stroke="#000000" d="M56.0564,-501.0741C65.9784,-503.2221 77.2976,-505.6727 87.856,-507.9585"/>
+<polygon fill="#000000" stroke="#000000" points="87.1613,-511.3891 97.6755,-510.0844 88.6425,-504.5476 87.1613,-511.3891"/>
+</g>
+<!-- zo2 -->
+<g id="proc~~glow_run~~CallsGraph_node14" class="node">
+<title>zo2</title>
+<polygon fill="#777777" stroke="#777777" points="152,-486 98,-486 98,-462 152,-462 152,-486"/>
+<text text-anchor="middle" x="125" y="-471.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">zo2</text>
+</g>
+<!-- proc~glow_run&#45;&gt;zo2 -->
+<g id="proc~~glow_run~~CallsGraph_edge13" class="edge">
+<title>proc~glow_run&#45;&gt;zo2</title>
+<path fill="none" stroke="#000000" d="M56.0564,-488.9259C65.9784,-486.7779 77.2976,-484.3273 87.856,-482.0415"/>
+<polygon fill="#000000" stroke="#000000" points="88.6425,-485.4524 97.6755,-479.9156 87.1613,-478.6109 88.6425,-485.4524"/>
+</g>
+<!-- alt -->
+<g id="proc~~glow_run~~CallsGraph_node15" class="node">
+<title>alt</title>
+<polygon fill="#777777" stroke="#777777" points="152,-444 98,-444 98,-420 152,-420 152,-444"/>
+<text text-anchor="middle" x="125" y="-429.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">alt</text>
+</g>
+<!-- proc~glow_run&#45;&gt;alt -->
+<g id="proc~~glow_run~~CallsGraph_edge14" class="edge">
+<title>proc~glow_run&#45;&gt;alt</title>
+<path fill="none" stroke="#000000" d="M46.1629,-482.9835C58.95,-474.5474 76.4849,-463.0268 92,-453 93.6683,-451.9219 95.3861,-450.816 97.1204,-449.7027"/>
+<polygon fill="#000000" stroke="#000000" points="99.2356,-452.5046 105.7761,-444.1695 95.4653,-446.6067 99.2356,-452.5046"/>
+</g>
+<!-- ns -->
+<g id="proc~~glow_run~~CallsGraph_node16" class="node">
+<title>ns</title>
+<polygon fill="#777777" stroke="#777777" points="152,-402 98,-402 98,-378 152,-378 152,-402"/>
+<text text-anchor="middle" x="125" y="-387.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">ns</text>
+</g>
+<!-- proc~glow_run&#45;&gt;ns -->
+<g id="proc~~glow_run~~CallsGraph_edge15" class="edge">
+<title>proc~glow_run&#45;&gt;ns</title>
+<path fill="none" stroke="#000000" d="M35.3289,-482.8003C46.1742,-465.4268 67.8367,-433.2065 92,-411 93.0938,-409.9948 94.2415,-409.0081 95.4261,-408.044"/>
+<polygon fill="#000000" stroke="#000000" points="97.6005,-410.7898 103.5956,-402.0542 93.4615,-405.1445 97.6005,-410.7898"/>
+</g>
+<!-- sion -->
+<g id="proc~~glow_run~~CallsGraph_node17" class="node">
+<title>sion</title>
+<polygon fill="#777777" stroke="#777777" points="152,-360 98,-360 98,-336 152,-336 152,-360"/>
+<text text-anchor="middle" x="125" y="-345.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">sion</text>
+</g>
+<!-- proc~glow_run&#45;&gt;sion -->
+<g id="proc~~glow_run~~CallsGraph_edge16" class="edge">
+<title>proc~glow_run&#45;&gt;sion</title>
+<path fill="none" stroke="#000000" d="M31.6926,-482.9817C39.5424,-458.9902 59.8451,-404.4268 92,-369 92.7531,-368.1703 93.5461,-367.3603 94.3709,-366.571"/>
+<polygon fill="#000000" stroke="#000000" points="96.8578,-369.0609 102.4271,-360.0479 92.4528,-363.6206 96.8578,-369.0609"/>
+</g>
+<!-- znd -->
+<g id="proc~~glow_run~~CallsGraph_node18" class="node">
+<title>znd</title>
+<polygon fill="#777777" stroke="#777777" points="152,-318 98,-318 98,-294 152,-294 152,-318"/>
+<text text-anchor="middle" x="125" y="-303.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">znd</text>
+</g>
+<!-- proc~glow_run&#45;&gt;znd -->
+<g id="proc~~glow_run~~CallsGraph_edge17" class="edge">
+<title>proc~glow_run&#45;&gt;znd</title>
+<path fill="none" stroke="#000000" d="M29.9454,-482.6935C35.1787,-452.9711 51.9623,-376.1057 92,-327 92.6866,-326.1579 93.4163,-325.339 94.181,-324.5438"/>
+<polygon fill="#000000" stroke="#000000" points="96.4666,-327.1945 101.7908,-318.0346 91.9165,-321.875 96.4666,-327.1945"/>
+</g>
+<!-- zn2 -->
+<g id="proc~~glow_run~~CallsGraph_node19" class="node">
+<title>zn2</title>
+<polygon fill="#777777" stroke="#777777" points="152,-276 98,-276 98,-252 152,-252 152,-276"/>
+<text text-anchor="middle" x="125" y="-261.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">zn2</text>
+</g>
+<!-- proc~glow_run&#45;&gt;zn2 -->
+<g id="proc~~glow_run~~CallsGraph_edge18" class="edge">
+<title>proc~glow_run&#45;&gt;zn2</title>
+<path fill="none" stroke="#000000" d="M28.8052,-482.7766C31.6427,-448.255 43.7957,-348.4172 92,-285 92.5573,-284.2668 93.1482,-283.5523 93.7676,-282.8566"/>
+<polygon fill="#000000" stroke="#000000" points="96.159,-285.4133 101.2588,-276.1266 91.4808,-280.2061 96.159,-285.4133"/>
+</g>
+<!-- nn -->
+<g id="proc~~glow_run~~CallsGraph_node20" class="node">
+<title>nn</title>
+<polygon fill="#777777" stroke="#777777" points="152,-234 98,-234 98,-210 152,-210 152,-234"/>
+<text text-anchor="middle" x="125" y="-219.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">nn</text>
+</g>
+<!-- proc~glow_run&#45;&gt;nn -->
+<g id="proc~~glow_run~~CallsGraph_edge19" class="edge">
+<title>proc~glow_run&#45;&gt;nn</title>
+<path fill="none" stroke="#000000" d="M29.8566,-482.934C36.9072,-438.2839 63.0909,-282.9519 92,-243 92.5399,-242.2538 93.1152,-241.5278 93.7207,-240.8219"/>
+<polygon fill="#000000" stroke="#000000" points="96.1239,-243.3669 101.1215,-234.0248 91.3889,-238.2113 96.1239,-243.3669"/>
+</g>
+<!-- tn -->
+<g id="proc~~glow_run~~CallsGraph_node21" class="node">
+<title>tn</title>
+<polygon fill="#777777" stroke="#777777" points="152,-192 98,-192 98,-168 152,-168 152,-192"/>
+<text text-anchor="middle" x="125" y="-177.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">tn</text>
+</g>
+<!-- proc~glow_run&#45;&gt;tn -->
+<g id="proc~~glow_run~~CallsGraph_edge20" class="edge">
+<title>proc~glow_run&#45;&gt;tn</title>
+<path fill="none" stroke="#000000" d="M29.4096,-482.6708C35.2722,-433.0488 58.9706,-248.3379 92,-201 92.4372,-200.3735 92.8996,-199.7614 93.3843,-199.1639"/>
+<polygon fill="#000000" stroke="#000000" points="95.8634,-201.6362 100.6885,-192.2038 91.0345,-196.5684 95.8634,-201.6362"/>
+</g>
+<!-- cglow_init -->
+<g id="proc~~glow_run~~CallsGraph_node22" class="node">
+<title>cglow_init</title>
+<polygon fill="#777777" stroke="#777777" points="154.5,-150 95.5,-150 95.5,-126 154.5,-126 154.5,-150"/>
+<text text-anchor="middle" x="125" y="-135.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">cglow_init</text>
+</g>
+<!-- proc~glow_run&#45;&gt;cglow_init -->
+<g id="proc~~glow_run~~CallsGraph_edge21" class="edge">
+<title>proc~glow_run&#45;&gt;cglow_init</title>
+<path fill="none" stroke="#000000" d="M29.7631,-482.6282C38.0195,-425.2462 73.246,-186.6407 92,-159 92.4289,-158.3678 92.8839,-157.7506 93.3618,-157.1484"/>
+<polygon fill="#000000" stroke="#000000" points="95.8471,-159.614 100.6115,-150.1508 90.9856,-154.5774 95.8471,-159.614"/>
+</g>
+<!-- zno -->
+<g id="proc~~glow_run~~CallsGraph_node23" class="node">
+<title>zno</title>
+<polygon fill="#777777" stroke="#777777" points="152,-108 98,-108 98,-84 152,-84 152,-108"/>
+<text text-anchor="middle" x="125" y="-93.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">zno</text>
+</g>
+<!-- proc~glow_run&#45;&gt;zno -->
+<g id="proc~~glow_run~~CallsGraph_edge22" class="edge">
+<title>proc~glow_run&#45;&gt;zno</title>
+<path fill="none" stroke="#000000" d="M28.7418,-482.8447C32.4539,-425.1947 50.5041,-179.529 92,-117 92.4224,-116.3634 92.8715,-115.7423 93.3439,-115.1364"/>
+<polygon fill="#000000" stroke="#000000" points="95.8339,-117.597 100.5505,-108.1099 90.9471,-112.585 95.8339,-117.597"/>
+</g>
+<!-- zo -->
+<g id="proc~~glow_run~~CallsGraph_node24" class="node">
+<title>zo</title>
+<polygon fill="#777777" stroke="#777777" points="152,-66 98,-66 98,-42 152,-42 152,-66"/>
+<text text-anchor="middle" x="125" y="-51.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">zo</text>
+</g>
+<!-- proc~glow_run&#45;&gt;zo -->
+<g id="proc~~glow_run~~CallsGraph_edge23" class="edge">
+<title>proc~glow_run&#45;&gt;zo</title>
+<path fill="none" stroke="#000000" d="M28.5179,-482.752C31.3219,-421.123 46.287,-145.1331 92,-75 92.4172,-74.36 92.8614,-73.7357 93.3295,-73.1269"/>
+<polygon fill="#000000" stroke="#000000" points="95.8231,-75.5836 100.5011,-66.0774 90.916,-70.5915 95.8231,-75.5836"/>
+</g>
+<!-- zns -->
+<g id="proc~~glow_run~~CallsGraph_node25" class="node">
+<title>zns</title>
+<polygon fill="#777777" stroke="#777777" points="152,-24 98,-24 98,0 152,0 152,-24"/>
+<text text-anchor="middle" x="125" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">zns</text>
+</g>
+<!-- proc~glow_run&#45;&gt;zns -->
+<g id="proc~~glow_run~~CallsGraph_edge24" class="edge">
+<title>proc~glow_run&#45;&gt;zns</title>
+<path fill="none" stroke="#000000" d="M28.3263,-482.8465C30.2714,-417.7977 42.01,-110.8439 92,-33 92.4128,-32.3572 92.8531,-31.7303 93.3176,-31.1192"/>
+<polygon fill="#000000" stroke="#000000" points="95.8141,-33.5727 100.4603,-24.051 90.8903,-28.5971 95.8141,-33.5727"/>
+</g>
+</g>
+</svg>
+</div><div><a type="button" class="graph-help" data-toggle="modal" href="#graph-help-text">Help</a></div><div class="modal fade" id="graph-help-text" tabindex="-1" role="dialog"><div class="modal-dialog modal-lg" role="document"><div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button><h4 class="modal-title" id="-graph-help-label">Graph Key</h4></div><div class="modal-body">
+    <p>Nodes of different colours represent the following: </p>
+    <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.40.1 (20161225.0304)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="560pt" height="32pt"
+ viewBox="0.00 0.00 559.50 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 28)">
+<title>Graph Key</title>
+<polygon fill="#ffffff" stroke="transparent" points="-4,4 -4,-28 555.5,-28 555.5,4 -4,4"/>
+<!-- Subroutine -->
+<g id="node1" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="64,-24 0,-24 0,0 64,0 64,-24"/>
+<text text-anchor="middle" x="32" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node2" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="136,-24 82,-24 82,0 136,0 136,-24"/>
+<text text-anchor="middle" x="109" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Function</text>
+</g>
+<!-- Interface -->
+<g id="node3" class="node">
+<title>Interface</title>
+<polygon fill="#a7506f" stroke="#a7506f" points="209.5,-24 154.5,-24 154.5,0 209.5,0 209.5,-24"/>
+<text text-anchor="middle" x="182" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Interface</text>
+</g>
+<!-- Unknown Procedure Type -->
+<g id="node4" class="node">
+<title>Unknown Procedure Type</title>
+<polygon fill="#777777" stroke="#777777" points="364,-24 228,-24 228,0 364,0 364,-24"/>
+<text text-anchor="middle" x="296" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Unknown Procedure Type</text>
+</g>
+<!-- Program -->
+<g id="node5" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="436,-24 382,-24 382,0 436,0 436,-24"/>
+<text text-anchor="middle" x="409" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node6" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="#000000" points="551.5,-24 454.5,-24 454.5,0 551.5,0 551.5,-24"/>
+<text text-anchor="middle" x="503" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#000000">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+    
+    <p>Solid arrows point from a procedure to one which it calls. Dashed 
+    arrows point from an interface to procedures which implement that interface.
+    This could include the module procedures in a generic interface or the
+    implementation in a submodule of an interface in a parent module.
+    </p>
+    </div></div></div></div>
+      </div>
+    </div>
+     
+     
+    <br>
+
+    <section class="visible-xs visible-sm hidden-md">
+      
+<h3>Contents</h3>
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<em>None</em>
+
+
+    </section>
+    <br class="visible-xs visible-sm hidden-md">
+
+    
+
+    
+    
+    
+    
+    
+
+    
+    
+    
+    
+    
+
+
+    
+    
+    
+    
+    </div>
+  </div>
+
+
+    <hr>    
+    </div> <!-- /container -->
+    <footer>
+      <div class="container">
+      <div class="row">
+        <div class="col-xs-6 col-md-4"><p>&copy; 2020 <a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/80x15.png" /></a>
+                                          </p></div>
+        <div class="col-xs-6 col-md-4 col-md-push-4">
+          <p class="text-right">
+            Documentation generated by 
+            <a href="https://github.com/cmacmackin/ford">FORD</a>
+            
+          </p>
+        </div>
+        <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> GEMINI3D was developed by Matthew Zettergren
+Guy Grubbs
+Michael Hirsch</p></div>
+      </div>
+      <br>
+      </div> <!-- /container -->    
+    </footer>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+<!--
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+-->
+    <script src="../js/bootstrap.min.js"></script>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <script src="../js/ie10-viewport-bug-workaround.js"></script>
+
+    <!-- MathJax JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } },
+        jax: ['input/TeX','input/MathML','output/HTML-CSS'],
+        extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']
+      });
+    </script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    
+    
+  </body>
+</html>

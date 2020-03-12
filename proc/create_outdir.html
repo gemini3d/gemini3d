@@ -64,6 +64,8 @@ Michael Hirsch" >
             <li><a href="../lists/modules.html">Modules</a></li>
         
             
+    <li><a href="../blockdata/gtd7bk.html">Block Data</a></li>
+    
                                 
             <li><a href="../lists/procedures.html">Procedures</a></li>
         
@@ -83,6 +85,8 @@ Michael Hirsch" >
 
 <li class="visible-xs hidden-sm visible-lg"><a href="../lists/modules.html">Modules</a></li>
 
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../blockdata/gtd7bk.html">Block Data</a></li>
 
 
 <li class="visible-xs hidden-sm visible-lg"><a href="../lists/procedures.html">Procedures</a></li>
@@ -104,7 +108,7 @@ Michael Hirsch" >
   
   <div class="row">
     <h1>create_outdir
-      <small>Subroutine</small>
+      <small>Module Procedure</small>
     
     </h1>
     
@@ -121,21 +125,21 @@ Michael Hirsch" >
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 0.4% of total for procedures.">31 statements</a>
+    title=" 0.3% of total for procedures.">25 statements</a>
      </li> 
      
      
      
-    <li><i class="fa fa-code"></i><a href="../src/io.f90"> Source File</a></li>
+    <li><i class="fa fa-code"></i><a href="../src/output.f90"> Source File</a></li>
      
      
   </ul>
   <ol class="breadcrumb in-well text-right">
   
     
-     <li><a href='../sourcefile/io.f90.html'>io.f90</a></li>
+     <li><a href='../sourcefile/output.f90.html'>output.f90</a></li>
     
-     <li><a href='../module/io.html'>io</a></li>
+     <li><a href='../module/output.html'>output</a></li>
     
   
      <li class="active">create_outdir</li>
@@ -188,8 +192,10 @@ Michael Hirsch" >
     
     <div class="col-md-9" id='text'>
     <h2>
-public subroutine create_outdir(outdir, infile, indatsize, indatgrid, flagdneu, sourcedir, flagprecfile, precdir, flagE0file, E0dir)
+module procedure create_outdir <small>module subroutine create_outdir(outdir, infile, indatsize, indatgrid, flagdneu, sourcedir, flagprecfile, precdir, flagE0file, E0dir)</small>
     
+    
+   <a href='../interface/create_outdir.html'><button type="button" class="btn btn-info depwarn">Interface &rarr;</button></a>
     
    
 </h2>
@@ -197,6 +203,9 @@ public subroutine create_outdir(outdir, infile, indatsize, indatgrid, flagdneu, 
   
 
 
+    
+    <p>CREATES OUTPUT DIRECTORY, MOVES CONFIG FILES THERE AND GENERATES A GRID OUTPUT FILE</p>
+<p>MAKE A COPY OF THE INPUT DATA IN THE OUTPUT DIRECTORY</p>
     
 
     <h3>Arguments</h3>
@@ -217,7 +226,7 @@ public subroutine create_outdir(outdir, infile, indatsize, indatgrid, flagdneu, 
   
 <tr>
   
-  <td><span class="anchor" id="variable-outdir~2"></span>character(len=*),</td>
+  <td><span class="anchor" id="variable-outdir~8"></span>character(len=*),</td>
   <td>intent(in)</td>
   <td></td>
   
@@ -232,7 +241,7 @@ public subroutine create_outdir(outdir, infile, indatsize, indatgrid, flagdneu, 
   
 <tr>
   
-  <td><span class="anchor" id="variable-infile~2"></span>character(len=*),</td>
+  <td><span class="anchor" id="variable-infile"></span>character(len=*),</td>
   <td>intent(in)</td>
   <td></td>
   
@@ -262,7 +271,7 @@ public subroutine create_outdir(outdir, infile, indatsize, indatgrid, flagdneu, 
   
 <tr>
   
-  <td><span class="anchor" id="variable-indatgrid~2"></span>character(len=*),</td>
+  <td><span class="anchor" id="variable-indatgrid"></span>character(len=*),</td>
   <td>intent(in)</td>
   <td></td>
   
@@ -277,7 +286,7 @@ public subroutine create_outdir(outdir, infile, indatsize, indatgrid, flagdneu, 
   
 <tr>
   
-  <td><span class="anchor" id="variable-flagdneu~2"></span>integer,</td>
+  <td><span class="anchor" id="variable-flagdneu"></span>integer,</td>
   <td>intent(in)</td>
   <td></td>
   
@@ -292,7 +301,7 @@ public subroutine create_outdir(outdir, infile, indatsize, indatgrid, flagdneu, 
   
 <tr>
   
-  <td><span class="anchor" id="variable-sourcedir~2"></span>character(len=*),</td>
+  <td><span class="anchor" id="variable-sourcedir"></span>character(len=*),</td>
   <td>intent(in)</td>
   <td></td>
   
@@ -307,7 +316,7 @@ public subroutine create_outdir(outdir, infile, indatsize, indatgrid, flagdneu, 
   
 <tr>
   
-  <td><span class="anchor" id="variable-flagprecfile~3"></span>integer,</td>
+  <td><span class="anchor" id="variable-flagprecfile"></span>integer,</td>
   <td>intent(in)</td>
   <td></td>
   
@@ -322,7 +331,7 @@ public subroutine create_outdir(outdir, infile, indatsize, indatgrid, flagdneu, 
   
 <tr>
   
-  <td><span class="anchor" id="variable-precdir~3"></span>character(len=*),</td>
+  <td><span class="anchor" id="variable-precdir"></span>character(len=*),</td>
   <td>intent(in)</td>
   <td></td>
   
@@ -337,7 +346,7 @@ public subroutine create_outdir(outdir, infile, indatsize, indatgrid, flagdneu, 
   
 <tr>
   
-  <td><span class="anchor" id="variable-flage0file~2"></span>integer,</td>
+  <td><span class="anchor" id="variable-flage0file"></span>integer,</td>
   <td>intent(in)</td>
   <td></td>
   
@@ -352,7 +361,7 @@ public subroutine create_outdir(outdir, infile, indatsize, indatgrid, flagdneu, 
   
 <tr>
   
-  <td><span class="anchor" id="variable-e0dir~2"></span>character(len=*),</td>
+  <td><span class="anchor" id="variable-e0dir"></span>character(len=*),</td>
   <td>intent(in)</td>
   <td></td>
   
@@ -367,7 +376,316 @@ public subroutine create_outdir(outdir, infile, indatsize, indatgrid, flagdneu, 
     
     
     
+    <br>
     
+    
+    <div class="panel panel-default">
+      <div class="panel-heading">
+  <h3 class="panel-title">Calls</h3>
+      </div>
+      <div class="panel-body">
+  <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.40.1 (20161225.0304)
+ -->
+<!-- Title: proc~~create_outdir~~CallsGraph Pages: 1 -->
+<svg id="proccreate_outdirCallsGraph" width="283pt" height="200pt"
+ viewBox="0.00 0.00 283.00 200.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="proc~~create_outdir~~CallsGraph" class="graph" transform="scale(1 1) rotate(0) translate(4 196)">
+<title>proc~~create_outdir~~CallsGraph</title>
+<polygon fill="#ffffff" stroke="transparent" points="-4,4 -4,-196 279,-196 279,4 -4,4"/>
+<!-- proc~create_outdir -->
+<g id="proc~~create_outdir~~CallsGraph_node1" class="node">
+<title>proc~create_outdir</title>
+<polygon fill="none" stroke="#000000" points="76,-108 0,-108 0,-84 76,-84 76,-108"/>
+<text text-anchor="middle" x="38" y="-93.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#000000">create_outdir</text>
+</g>
+<!-- proc~realbits_log -->
+<g id="proc~~create_outdir~~CallsGraph_node2" class="node">
+<title>proc~realbits_log</title>
+<g id="a_proc~~create_outdir~~CallsGraph_node2"><a xlink:href=".././proc/realbits_log.html" xlink:title="realbits_log">
+<polygon fill="#d9534f" stroke="#d9534f" points="182,-192 115,-192 115,-168 182,-168 182,-192"/>
+<text text-anchor="middle" x="148.5" y="-177.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">realbits_log</text>
+</a>
+</g>
+</g>
+<!-- proc~create_outdir&#45;&gt;proc~realbits_log -->
+<g id="proc~~create_outdir~~CallsGraph_edge1" class="edge">
+<title>proc~create_outdir&#45;&gt;proc~realbits_log</title>
+<path fill="none" stroke="#000000" d="M50.7762,-108.1448C65.0781,-121.4305 89.2403,-142.9676 112,-159 113.6586,-160.1683 115.3864,-161.3301 117.1491,-162.473"/>
+<polygon fill="#000000" stroke="#000000" points="115.7411,-165.716 126.0926,-167.9737 119.4083,-159.7535 115.7411,-165.716"/>
+</g>
+<!-- interface~mkdir -->
+<g id="proc~~create_outdir~~CallsGraph_node3" class="node">
+<title>interface~mkdir</title>
+<g id="a_proc~~create_outdir~~CallsGraph_node3"><a xlink:href=".././interface/mkdir.html" xlink:title="mkdir">
+<polygon fill="#a7506f" stroke="#a7506f" points="175.5,-150 121.5,-150 121.5,-126 175.5,-126 175.5,-150"/>
+<text text-anchor="middle" x="148.5" y="-135.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">mkdir</text>
+</a>
+</g>
+</g>
+<!-- proc~create_outdir&#45;&gt;interface~mkdir -->
+<g id="proc~~create_outdir~~CallsGraph_edge2" class="edge">
+<title>proc~create_outdir&#45;&gt;interface~mkdir</title>
+<path fill="none" stroke="#000000" d="M69.6649,-108.0355C82.8024,-113.029 98.1302,-118.8549 111.7591,-124.0351"/>
+<polygon fill="#000000" stroke="#000000" points="110.736,-127.3905 121.3271,-127.6719 113.2231,-120.8472 110.736,-127.3905"/>
+</g>
+<!-- proc~gitlog -->
+<g id="proc~~create_outdir~~CallsGraph_node4" class="node">
+<title>proc~gitlog</title>
+<g id="a_proc~~create_outdir~~CallsGraph_node4"><a xlink:href=".././proc/gitlog.html" xlink:title="gitlog">
+<polygon fill="#d9534f" stroke="#d9534f" points="175.5,-108 121.5,-108 121.5,-84 175.5,-84 175.5,-108"/>
+<text text-anchor="middle" x="148.5" y="-93.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">gitlog</text>
+</a>
+</g>
+</g>
+<!-- proc~create_outdir&#45;&gt;proc~gitlog -->
+<g id="proc~~create_outdir~~CallsGraph_edge3" class="edge">
+<title>proc~create_outdir&#45;&gt;proc~gitlog</title>
+<path fill="none" stroke="#000000" d="M76.0278,-96C87.4036,-96 99.8616,-96 111.1907,-96"/>
+<polygon fill="#000000" stroke="#000000" points="111.2142,-99.5001 121.2142,-96 111.2142,-92.5001 111.2142,-99.5001"/>
+</g>
+<!-- proc~compiler_log -->
+<g id="proc~~create_outdir~~CallsGraph_node5" class="node">
+<title>proc~compiler_log</title>
+<g id="a_proc~~create_outdir~~CallsGraph_node5"><a xlink:href=".././proc/compiler_log.html" xlink:title="compiler_log">
+<polygon fill="#d9534f" stroke="#d9534f" points="185,-66 112,-66 112,-42 185,-42 185,-66"/>
+<text text-anchor="middle" x="148.5" y="-51.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">compiler_log</text>
+</a>
+</g>
+</g>
+<!-- proc~create_outdir&#45;&gt;proc~compiler_log -->
+<g id="proc~~create_outdir~~CallsGraph_edge4" class="edge">
+<title>proc~create_outdir&#45;&gt;proc~compiler_log</title>
+<path fill="none" stroke="#000000" d="M69.6649,-83.9645C81.3396,-79.527 94.744,-74.4322 107.1486,-69.7173"/>
+<polygon fill="#000000" stroke="#000000" points="108.7265,-72.8619 116.8305,-66.0373 106.2394,-66.3186 108.7265,-72.8619"/>
+</g>
+<!-- interface~copyfile -->
+<g id="proc~~create_outdir~~CallsGraph_node6" class="node">
+<title>interface~copyfile</title>
+<g id="a_proc~~create_outdir~~CallsGraph_node6"><a xlink:href=".././interface/copyfile.html" xlink:title="copyfile">
+<polygon fill="#a7506f" stroke="#a7506f" points="175.5,-24 121.5,-24 121.5,0 175.5,0 175.5,-24"/>
+<text text-anchor="middle" x="148.5" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">copyfile</text>
+</a>
+</g>
+</g>
+<!-- proc~create_outdir&#45;&gt;interface~copyfile -->
+<g id="proc~~create_outdir~~CallsGraph_edge5" class="edge">
+<title>proc~create_outdir&#45;&gt;interface~copyfile</title>
+<path fill="none" stroke="#000000" d="M50.7762,-83.8552C65.0781,-70.5695 89.2403,-49.0324 112,-33 113.6586,-31.8317 115.3864,-30.6699 117.1491,-29.527"/>
+<polygon fill="#000000" stroke="#000000" points="119.4083,-32.2465 126.0926,-24.0263 115.7411,-26.284 119.4083,-32.2465"/>
+</g>
+<!-- proc~mkdir -->
+<g id="proc~~create_outdir~~CallsGraph_node7" class="node">
+<title>proc~mkdir</title>
+<g id="a_proc~~create_outdir~~CallsGraph_node7"><a xlink:href=".././proc/mkdir.html" xlink:title="mkdir">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="275,-150 221,-150 221,-126 275,-126 275,-150"/>
+<text text-anchor="middle" x="248" y="-135.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">mkdir</text>
+</a>
+</g>
+</g>
+<!-- interface~mkdir&#45;&gt;proc~mkdir -->
+<g id="proc~~create_outdir~~CallsGraph_edge6" class="edge">
+<title>interface~mkdir&#45;&gt;proc~mkdir</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M175.6888,-138C186.4379,-138 198.9696,-138 210.5522,-138"/>
+<polygon fill="#000000" stroke="#000000" points="210.8441,-141.5001 220.8441,-138 210.844,-134.5001 210.8441,-141.5001"/>
+</g>
+<!-- proc~copyfile -->
+<g id="proc~~create_outdir~~CallsGraph_node8" class="node">
+<title>proc~copyfile</title>
+<g id="a_proc~~create_outdir~~CallsGraph_node8"><a xlink:href=".././proc/copyfile.html" xlink:title="copyfile">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="275,-24 221,-24 221,0 275,0 275,-24"/>
+<text text-anchor="middle" x="248" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">copyfile</text>
+</a>
+</g>
+</g>
+<!-- interface~copyfile&#45;&gt;proc~copyfile -->
+<g id="proc~~create_outdir~~CallsGraph_edge7" class="edge">
+<title>interface~copyfile&#45;&gt;proc~copyfile</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M175.6888,-12C186.4379,-12 198.9696,-12 210.5522,-12"/>
+<polygon fill="#000000" stroke="#000000" points="210.8441,-15.5001 220.8441,-12 210.844,-8.5001 210.8441,-15.5001"/>
+</g>
+</g>
+</svg>
+</div><div><a type="button" class="graph-help" data-toggle="modal" href="#graph-help-text">Help</a></div><div class="modal fade" id="graph-help-text" tabindex="-1" role="dialog"><div class="modal-dialog modal-lg" role="document"><div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button><h4 class="modal-title" id="-graph-help-label">Graph Key</h4></div><div class="modal-body">
+    <p>Nodes of different colours represent the following: </p>
+    <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.40.1 (20161225.0304)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="560pt" height="32pt"
+ viewBox="0.00 0.00 559.50 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 28)">
+<title>Graph Key</title>
+<polygon fill="#ffffff" stroke="transparent" points="-4,4 -4,-28 555.5,-28 555.5,4 -4,4"/>
+<!-- Subroutine -->
+<g id="node1" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="64,-24 0,-24 0,0 64,0 64,-24"/>
+<text text-anchor="middle" x="32" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node2" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="136,-24 82,-24 82,0 136,0 136,-24"/>
+<text text-anchor="middle" x="109" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Function</text>
+</g>
+<!-- Interface -->
+<g id="node3" class="node">
+<title>Interface</title>
+<polygon fill="#a7506f" stroke="#a7506f" points="209.5,-24 154.5,-24 154.5,0 209.5,0 209.5,-24"/>
+<text text-anchor="middle" x="182" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Interface</text>
+</g>
+<!-- Unknown Procedure Type -->
+<g id="node4" class="node">
+<title>Unknown Procedure Type</title>
+<polygon fill="#777777" stroke="#777777" points="364,-24 228,-24 228,0 364,0 364,-24"/>
+<text text-anchor="middle" x="296" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Unknown Procedure Type</text>
+</g>
+<!-- Program -->
+<g id="node5" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="436,-24 382,-24 382,0 436,0 436,-24"/>
+<text text-anchor="middle" x="409" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node6" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="#000000" points="551.5,-24 454.5,-24 454.5,0 551.5,0 551.5,-24"/>
+<text text-anchor="middle" x="503" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#000000">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+    
+    <p>Solid arrows point from a procedure to one which it calls. Dashed 
+    arrows point from an interface to procedures which implement that interface.
+    This could include the module procedures in a generic interface or the
+    implementation in a submodule of an interface in a parent module.
+    </p>
+    </div></div></div></div>
+      </div>
+    </div>
+     
+     
+    <div class="panel panel-default">
+      <div class="panel-heading">
+  <h3 class="panel-title">Called by</h3>
+      </div>
+      <div class="panel-body">
+  <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.40.1 (20161225.0304)
+ -->
+<!-- Title: proc~~create_outdir~~CalledByGraph Pages: 1 -->
+<svg id="proccreate_outdirCalledByGraph" width="292pt" height="32pt"
+ viewBox="0.00 0.00 292.00 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="proc~~create_outdir~~CalledByGraph" class="graph" transform="scale(1 1) rotate(0) translate(4 28)">
+<title>proc~~create_outdir~~CalledByGraph</title>
+<polygon fill="#ffffff" stroke="transparent" points="-4,4 -4,-28 288,-28 288,4 -4,4"/>
+<!-- proc~create_outdir -->
+<g id="proc~~create_outdir~~CalledByGraph_node1" class="node">
+<title>proc~create_outdir</title>
+<polygon fill="none" stroke="#000000" points="284,-24 208,-24 208,0 284,0 284,-24"/>
+<text text-anchor="middle" x="246" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#000000">create_outdir</text>
+</g>
+<!-- interface~create_outdir -->
+<g id="proc~~create_outdir~~CalledByGraph_node2" class="node">
+<title>interface~create_outdir</title>
+<g id="a_proc~~create_outdir~~CalledByGraph_node2"><a xlink:href=".././interface/create_outdir.html" xlink:title="create_outdir">
+<polygon fill="#a7506f" stroke="#a7506f" points="172,-24 96,-24 96,0 172,0 172,-24"/>
+<text text-anchor="middle" x="134" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">create_outdir</text>
+</a>
+</g>
+</g>
+<!-- interface~create_outdir&#45;&gt;proc~create_outdir -->
+<g id="proc~~create_outdir~~CalledByGraph_edge1" class="edge">
+<title>interface~create_outdir&#45;&gt;proc~create_outdir</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M172.2308,-12C180.4303,-12 189.1968,-12 197.7201,-12"/>
+<polygon fill="#000000" stroke="#000000" points="197.9415,-15.5001 207.9415,-12 197.9415,-8.5001 197.9415,-15.5001"/>
+</g>
+<!-- program~gemini3d -->
+<g id="proc~~create_outdir~~CalledByGraph_node3" class="node">
+<title>program~gemini3d</title>
+<g id="a_proc~~create_outdir~~CalledByGraph_node3"><a xlink:href=".././program/gemini3d.html" xlink:title="Gemini3D">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="60,-24 0,-24 0,0 60,0 60,-24"/>
+<text text-anchor="middle" x="30" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Gemini3D</text>
+</a>
+</g>
+</g>
+<!-- program~gemini3d&#45;&gt;interface~create_outdir -->
+<g id="proc~~create_outdir~~CalledByGraph_edge2" class="edge">
+<title>program~gemini3d&#45;&gt;interface~create_outdir</title>
+<path fill="none" stroke="#000000" d="M60.0811,-12C68.1011,-12 76.9725,-12 85.704,-12"/>
+<polygon fill="#000000" stroke="#000000" points="85.8303,-15.5001 95.8302,-12 85.8302,-8.5001 85.8303,-15.5001"/>
+</g>
+</g>
+</svg>
+</div><div><a type="button" class="graph-help" data-toggle="modal" href="#graph-help-text">Help</a></div><div class="modal fade" id="graph-help-text" tabindex="-1" role="dialog"><div class="modal-dialog modal-lg" role="document"><div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button><h4 class="modal-title" id="-graph-help-label">Graph Key</h4></div><div class="modal-body">
+    <p>Nodes of different colours represent the following: </p>
+    <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.40.1 (20161225.0304)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="560pt" height="32pt"
+ viewBox="0.00 0.00 559.50 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 28)">
+<title>Graph Key</title>
+<polygon fill="#ffffff" stroke="transparent" points="-4,4 -4,-28 555.5,-28 555.5,4 -4,4"/>
+<!-- Subroutine -->
+<g id="node1" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="64,-24 0,-24 0,0 64,0 64,-24"/>
+<text text-anchor="middle" x="32" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node2" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="136,-24 82,-24 82,0 136,0 136,-24"/>
+<text text-anchor="middle" x="109" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Function</text>
+</g>
+<!-- Interface -->
+<g id="node3" class="node">
+<title>Interface</title>
+<polygon fill="#a7506f" stroke="#a7506f" points="209.5,-24 154.5,-24 154.5,0 209.5,0 209.5,-24"/>
+<text text-anchor="middle" x="182" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Interface</text>
+</g>
+<!-- Unknown Procedure Type -->
+<g id="node4" class="node">
+<title>Unknown Procedure Type</title>
+<polygon fill="#777777" stroke="#777777" points="364,-24 228,-24 228,0 364,0 364,-24"/>
+<text text-anchor="middle" x="296" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Unknown Procedure Type</text>
+</g>
+<!-- Program -->
+<g id="node5" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="436,-24 382,-24 382,0 436,0 436,-24"/>
+<text text-anchor="middle" x="409" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node6" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="#000000" points="551.5,-24 454.5,-24 454.5,0 551.5,0 551.5,-24"/>
+<text text-anchor="middle" x="503" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#000000">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+    
+    <p>Solid arrows point from a procedure to one which it calls. Dashed 
+    arrows point from an interface to procedures which implement that interface.
+    This could include the module procedures in a generic interface or the
+    implementation in a submodule of an interface in a parent module.
+    </p>
+    </div></div></div></div>
+      </div>
+    </div>
      
     <br>
 
@@ -430,7 +748,7 @@ public subroutine create_outdir(outdir, infile, indatsize, indatgrid, flagdneu, 
     <footer>
       <div class="container">
       <div class="row">
-        <div class="col-xs-6 col-md-4"><p>&copy; 2018 <a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/80x15.png" /></a>
+        <div class="col-xs-6 col-md-4"><p>&copy; 2020 <a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/80x15.png" /></a>
                                           </p></div>
         <div class="col-xs-6 col-md-4 col-md-push-4">
           <p class="text-right">

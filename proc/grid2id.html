@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+   
+   <meta name="description" content="GEMINI3D is a modular ionospheric model that incorporates kinetic models such as Fang, GLOW.">
+    
+    <meta name="author" content="Matthew Zettergren
+Guy Grubbs
+Michael Hirsch" >
+    <link rel="icon" href="../favicon.png">
+
+    <title>grid2ID &ndash; GEMINI3D</title>
+
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+    <link href="../css/pygments.css" rel="stylesheet">
+    <link href="../css/font-awesome.min.css" rel="stylesheet">
+    <link href="../css/local.css" rel="stylesheet">
+    
+    
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    
+    <script src="../js/jquery-2.1.3.min.js"></script>
+    <script src="../js/svg-pan-zoom.min.js"></script>
+
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="../index.html">GEMINI3D </a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+        
+            <li class="dropdown hidden-xs visible-sm visible-md hidden-lg">
+              <a href="#" class="dropdown-toggle"
+              data-toggle="dropdown" role="button"
+              aria-haspopup="true"
+     aria-expanded="false">Contents <span class="caret"></span></a>
+        <ul class="dropdown-menu">
+          
+              
+            <li><a href="../lists/files.html">Source Files</a></li>
+        
+        
+        
+            <li><a href="../lists/modules.html">Modules</a></li>
+        
+            
+    <li><a href="../blockdata/gtd7bk.html">Block Data</a></li>
+    
+                                
+            <li><a href="../lists/procedures.html">Procedures</a></li>
+        
+               
+            <li><a href="../lists/types.html">Derived Types</a></li>
+        
+        
+            <li><a href="../lists/programs.html">Programs</a></li>
+        
+            </ul>
+            </li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/files.html">Source Files</a></li>
+
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/modules.html">Modules</a></li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../blockdata/gtd7bk.html">Block Data</a></li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/procedures.html">Procedures</a></li>
+
+                             
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/types.html">Derived Types</a></li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/programs.html">Programs</a></li>
+
+          </ul>
+        
+        </div><!--/.nav-collapse -->
+      </div>
+    </nav>
+
+    <div class="container">
+    
+  
+  <div class="row">
+    <h1>grid2ID
+      <small>Function</small>
+    
+    </h1>
+    
+<div class="row">
+  <div class="col-lg-12">
+<div class="well well-sm">
+  <ul class="list-inline" style="margin-bottom:0px;display:inline">
+     
+     
+     
+     
+    
+    
+     <li><i class="fa fa-list-ol"></i>
+       <a data-toggle="tooltip"
+    data-placement="bottom" data-html="true"
+    title=" 0.1% of total for procedures.">5 statements</a>
+     </li> 
+     
+     
+     
+    <li><i class="fa fa-code"></i><a href="../src/mpimod.F90"> Source File</a></li>
+     
+     
+  </ul>
+  <ol class="breadcrumb in-well text-right">
+  
+    
+     <li><a href='../sourcefile/mpimod.f90.html'>mpimod.F90</a></li>
+    
+     <li><a href='../module/mpimod.html'>mpimod</a></li>
+    
+  
+     <li class="active">grid2ID</li>
+  </ol>
+</div>
+</div>
+</div>
+<script>
+  $(function () {
+  $('[data-toggle="tooltip"]').tooltip()
+  })
+</script>
+
+  </div>
+  
+  <div class="row">
+    <div class="col-md-3 hidden-xs hidden-sm visible-md visible-lg">
+    
+<div id="sidebar">
+  
+<h3>Contents</h3>
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<em>None</em>
+
+
+</div>
+
+    </div>
+    
+    <div class="col-md-9" id='text'>
+    <h2>
+public function grid2ID(i2, i3)
+    
+    
+   
+</h2>
+    
+  
+
+
+    
+
+    <h3>Arguments</h3>
+    
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-i2"></span>integer,</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>i2</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-i3"></span>integer,</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>i3</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+    
+    
+    
+    
+    
+    
+    
+   <h3>Return Value <small><span class="anchor" id="variable-grid2id"></span>integer
+  </small></h3>
+    
+    
+    
+    <br>
+    
+    
+     
+    <div class="panel panel-default">
+      <div class="panel-heading">
+  <h3 class="panel-title">Called by</h3>
+      </div>
+      <div class="panel-body">
+  <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.40.1 (20161225.0304)
+ -->
+<!-- Title: proc~~grid2id~~CalledByGraph Pages: 1 -->
+<svg id="procgrid2idCalledByGraph" width="641pt" height="119pt"
+ viewBox="0.00 0.00 641.00 119.22" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="proc~~grid2id~~CalledByGraph" class="graph" transform="scale(.4533 .4533) rotate(0) translate(4 259)">
+<title>proc~~grid2id~~CalledByGraph</title>
+<polygon fill="#ffffff" stroke="transparent" points="-4,4 -4,-259 1410,-259 1410,4 -4,4"/>
+<!-- proc~grid2id -->
+<g id="proc~~grid2id~~CalledByGraph_node1" class="node">
+<title>proc~grid2id</title>
+<polygon fill="none" stroke="#000000" points="1406,-102 1352,-102 1352,-78 1406,-78 1406,-102"/>
+<text text-anchor="middle" x="1379" y="-87.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#000000">grid2ID</text>
+</g>
+<!-- proc~halo_23 -->
+<g id="proc~~grid2id~~CalledByGraph_node2" class="node">
+<title>proc~halo_23</title>
+<g id="a_proc~~grid2id~~CalledByGraph_node2"><a xlink:href=".././proc/halo_23.html" xlink:title="halo_23">
+<polygon fill="#d9534f" stroke="#d9534f" points="1305.5,-126 1251.5,-126 1251.5,-102 1305.5,-102 1305.5,-126"/>
+<text text-anchor="middle" x="1278.5" y="-111.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">halo_23</text>
+</a>
+</g>
+</g>
+<!-- proc~halo_23&#45;&gt;proc~grid2id -->
+<g id="proc~~grid2id~~CalledByGraph_edge1" class="edge">
+<title>proc~halo_23&#45;&gt;proc~grid2id</title>
+<path fill="none" stroke="#000000" d="M1305.6967,-107.5053C1316.869,-104.8373 1329.9822,-101.7057 1342.0052,-98.8346"/>
+<polygon fill="#000000" stroke="#000000" points="1342.868,-102.227 1351.7815,-96.4999 1341.242,-95.4185 1342.868,-102.227"/>
+</g>
+<!-- proc~halo_end_23 -->
+<g id="proc~~grid2id~~CalledByGraph_node3" class="node">
+<title>proc~halo_end_23</title>
+<g id="a_proc~~grid2id~~CalledByGraph_node3"><a xlink:href=".././proc/halo_end_23.html" xlink:title="halo_end_23">
+<polygon fill="#d9534f" stroke="#d9534f" points="1316,-81 1241,-81 1241,-57 1316,-57 1316,-81"/>
+<text text-anchor="middle" x="1278.5" y="-66.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">halo_end_23</text>
+</a>
+</g>
+</g>
+<!-- proc~halo_end_23&#45;&gt;proc~grid2id -->
+<g id="proc~~grid2id~~CalledByGraph_edge2" class="edge">
+<title>proc~halo_end_23&#45;&gt;proc~grid2id</title>
+<path fill="none" stroke="#000000" d="M1316.2084,-76.8794C1324.6031,-78.6335 1333.4967,-80.4918 1341.868,-82.2411"/>
+<polygon fill="#000000" stroke="#000000" points="1341.247,-85.6868 1351.7515,-84.3063 1342.6788,-78.8348 1341.247,-85.6868"/>
+</g>
+<!-- interface~halo_23 -->
+<g id="proc~~grid2id~~CalledByGraph_node4" class="node">
+<title>interface~halo_23</title>
+<g id="a_proc~~grid2id~~CalledByGraph_node4"><a xlink:href=".././interface/halo_23.html" xlink:title="halo_23">
+<polygon fill="#a7506f" stroke="#a7506f" points="1194.5,-127 1140.5,-127 1140.5,-103 1194.5,-103 1194.5,-127"/>
+<text text-anchor="middle" x="1167.5" y="-112.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">halo_23</text>
+</a>
+</g>
+</g>
+<!-- interface~halo_23&#45;&gt;proc~halo_23 -->
+<g id="proc~~grid2id~~CalledByGraph_edge3" class="edge">
+<title>interface~halo_23&#45;&gt;proc~halo_23</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M1194.6537,-114.7554C1208.6294,-114.6295 1225.8832,-114.474 1241.0989,-114.3369"/>
+<polygon fill="#000000" stroke="#000000" points="1241.2739,-117.8356 1251.242,-114.2456 1241.2108,-110.8359 1241.2739,-117.8356"/>
+</g>
+<!-- interface~halo_end_23 -->
+<g id="proc~~grid2id~~CalledByGraph_node5" class="node">
+<title>interface~halo_end_23</title>
+<g id="a_proc~~grid2id~~CalledByGraph_node5"><a xlink:href=".././interface/halo_end_23.html" xlink:title="halo_end_23">
+<polygon fill="#a7506f" stroke="#a7506f" points="1205,-76 1130,-76 1130,-52 1205,-52 1205,-76"/>
+<text text-anchor="middle" x="1167.5" y="-61.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">halo_end_23</text>
+</a>
+</g>
+</g>
+<!-- interface~halo_end_23&#45;&gt;proc~halo_end_23 -->
+<g id="proc~~grid2id~~CalledByGraph_edge4" class="edge">
+<title>interface~halo_end_23&#45;&gt;proc~halo_end_23</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M1205.0795,-65.6928C1213.3069,-66.0634 1222.1229,-66.4605 1230.6896,-66.8464"/>
+<polygon fill="#000000" stroke="#000000" points="1230.8118,-70.3553 1240.9592,-67.309 1231.1268,-63.3624 1230.8118,-70.3553"/>
+</g>
+<!-- interface~halo_end -->
+<g id="proc~~grid2id~~CalledByGraph_node6" class="node">
+<title>interface~halo_end</title>
+<g id="a_proc~~grid2id~~CalledByGraph_node6"><a xlink:href=".././interface/halo_end.html" xlink:title="halo_end">
+<polygon fill="#a7506f" stroke="#a7506f" points="1094,-66 1037,-66 1037,-42 1094,-42 1094,-66"/>
+<text text-anchor="middle" x="1065.5" y="-51.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">halo_end</text>
+</a>
+</g>
+</g>
+<!-- interface~halo_end&#45;&gt;interface~halo_end_23 -->
+<g id="proc~~grid2id~~CalledByGraph_edge6" class="edge">
+<title>interface~halo_end&#45;&gt;interface~halo_end_23</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M1094.1841,-56.8122C1102.1462,-57.5928 1111.0122,-58.462 1119.7505,-59.3187"/>
+<polygon fill="#000000" stroke="#000000" points="1119.5941,-62.82 1129.8879,-60.3125 1120.2772,-55.8534 1119.5941,-62.82"/>
+</g>
+<!-- interface~halo -->
+<g id="proc~~grid2id~~CalledByGraph_node7" class="node">
+<title>interface~halo</title>
+<g id="a_proc~~grid2id~~CalledByGraph_node7"><a xlink:href=".././interface/halo.html" xlink:title="halo">
+<polygon fill="#a7506f" stroke="#a7506f" points="1092.5,-129 1038.5,-129 1038.5,-105 1092.5,-105 1092.5,-129"/>
+<text text-anchor="middle" x="1065.5" y="-114.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">halo</text>
+</a>
+</g>
+</g>
+<!-- interface~halo&#45;&gt;interface~halo_23 -->
+<g id="proc~~grid2id~~CalledByGraph_edge5" class="edge">
+<title>interface~halo&#45;&gt;interface~halo_23</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M1092.5663,-116.4693C1104.0936,-116.2433 1117.7305,-115.9759 1130.1902,-115.7316"/>
+<polygon fill="#000000" stroke="#000000" points="1130.3778,-119.2287 1140.3072,-115.5332 1130.2405,-112.23 1130.3778,-119.2287"/>
+</g>
+<!-- proc~halo_pot -->
+<g id="proc~~grid2id~~CalledByGraph_node8" class="node">
+<title>proc~halo_pot</title>
+<g id="a_proc~~grid2id~~CalledByGraph_node8"><a xlink:href=".././proc/halo_pot.html" xlink:title="halo_pot">
+<polygon fill="#d9534f" stroke="#d9534f" points="955.5,-234 901.5,-234 901.5,-210 955.5,-210 955.5,-234"/>
+<text text-anchor="middle" x="928.5" y="-219.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">halo_pot</text>
+</a>
+</g>
+</g>
+<!-- proc~halo_pot&#45;&gt;interface~halo -->
+<g id="proc~~grid2id~~CalledByGraph_edge8" class="edge">
+<title>proc~halo_pot&#45;&gt;interface~halo</title>
+<path fill="none" stroke="#000000" d="M955.7443,-218.3148C970.1501,-215.3742 987.5794,-210.1609 1001,-201 1024.6439,-184.8607 1043.3859,-157.2821 1054.4429,-138.1484"/>
+<polygon fill="#000000" stroke="#000000" points="1057.5787,-139.7108 1059.3756,-129.2695 1051.4596,-136.3113 1057.5787,-139.7108"/>
+</g>
+<!-- proc~advec_prep_mpi_3 -->
+<g id="proc~~grid2id~~CalledByGraph_node9" class="node">
+<title>proc~advec_prep_mpi_3</title>
+<g id="a_proc~~grid2id~~CalledByGraph_node9"><a xlink:href=".././proc/advec_prep_mpi_3.html" xlink:title="advec_prep_mpi_3">
+<polygon fill="#d9534f" stroke="#d9534f" points="980.5,-192 876.5,-192 876.5,-168 980.5,-168 980.5,-192"/>
+<text text-anchor="middle" x="928.5" y="-177.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">advec_prep_mpi_3</text>
+</a>
+</g>
+</g>
+<!-- proc~advec_prep_mpi_3&#45;&gt;interface~halo -->
+<g id="proc~~grid2id~~CalledByGraph_edge9" class="edge">
+<title>proc~advec_prep_mpi_3&#45;&gt;interface~halo</title>
+<path fill="none" stroke="#000000" d="M977.5767,-167.9282C985.5524,-165.3602 993.6135,-162.3837 1001,-159 1015.1342,-152.5252 1029.7432,-143.2608 1041.4762,-135.0798"/>
+<polygon fill="#000000" stroke="#000000" points="1043.7376,-137.7653 1049.8323,-129.099 1039.6635,-132.0731 1043.7376,-137.7653"/>
+</g>
+<!-- proc~advec_prep_mpi_23 -->
+<g id="proc~~grid2id~~CalledByGraph_node10" class="node">
+<title>proc~advec_prep_mpi_23</title>
+<g id="a_proc~~grid2id~~CalledByGraph_node10"><a xlink:href=".././proc/advec_prep_mpi_23.html" xlink:title="advec_prep_mpi_23">
+<polygon fill="#d9534f" stroke="#d9534f" points="983.5,-108 873.5,-108 873.5,-84 983.5,-84 983.5,-108"/>
+<text text-anchor="middle" x="928.5" y="-93.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">advec_prep_mpi_23</text>
+</a>
+</g>
+</g>
+<!-- proc~advec_prep_mpi_23&#45;&gt;interface~halo -->
+<g id="proc~~grid2id~~CalledByGraph_edge10" class="edge">
+<title>proc~advec_prep_mpi_23&#45;&gt;interface~halo</title>
+<path fill="none" stroke="#000000" d="M983.8282,-104.481C998.7411,-106.7669 1014.5196,-109.1855 1028.1906,-111.281"/>
+<polygon fill="#000000" stroke="#000000" points="1027.7699,-114.7574 1038.1848,-112.813 1028.8306,-107.8382 1027.7699,-114.7574"/>
+</g>
+<!-- proc~rk2_prep_mpi -->
+<g id="proc~~grid2id~~CalledByGraph_node11" class="node">
+<title>proc~rk2_prep_mpi</title>
+<g id="a_proc~~grid2id~~CalledByGraph_node11"><a xlink:href=".././proc/rk2_prep_mpi.html" xlink:title="RK2_prep_mpi">
+<polygon fill="#d9534f" stroke="#d9534f" points="970.5,-150 886.5,-150 886.5,-126 970.5,-126 970.5,-150"/>
+<text text-anchor="middle" x="928.5" y="-135.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">RK2_prep_mpi</text>
+</a>
+</g>
+</g>
+<!-- proc~rk2_prep_mpi&#45;&gt;interface~halo -->
+<g id="proc~~grid2id~~CalledByGraph_edge11" class="edge">
+<title>proc~rk2_prep_mpi&#45;&gt;interface~halo</title>
+<path fill="none" stroke="#000000" d="M970.7224,-131.528C989.1246,-128.7072 1010.509,-125.4293 1028.3032,-122.7017"/>
+<polygon fill="#000000" stroke="#000000" points="1028.9613,-126.1418 1038.3155,-121.167 1027.9006,-119.2226 1028.9613,-126.1418"/>
+</g>
+<!-- program~magcalc -->
+<g id="proc~~grid2id~~CalledByGraph_node12" class="node">
+<title>program~magcalc</title>
+<g id="a_proc~~grid2id~~CalledByGraph_node12"><a xlink:href=".././program/magcalc.html" xlink:title="MagCalc">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="956,-24 901,-24 901,0 956,0 956,-24"/>
+<text text-anchor="middle" x="928.5" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">MagCalc</text>
+</a>
+</g>
+</g>
+<!-- program~magcalc&#45;&gt;interface~halo_end -->
+<g id="proc~~grid2id~~CalledByGraph_edge7" class="edge">
+<title>program~magcalc&#45;&gt;interface~halo_end</title>
+<path fill="none" stroke="#000000" d="M956.1049,-19.7656C969.6619,-23.638 986.2202,-28.4548 1001,-33 1009.5873,-35.6408 1018.7845,-38.5726 1027.4655,-41.3875"/>
+<polygon fill="#000000" stroke="#000000" points="1026.3948,-44.7197 1036.9873,-44.4941 1028.5661,-38.0649 1026.3948,-44.7197"/>
+</g>
+<!-- proc~advec3d_mc_mpi_curv_23 -->
+<g id="proc~~grid2id~~CalledByGraph_node13" class="node">
+<title>proc~advec3d_mc_mpi_curv_23</title>
+<g id="a_proc~~grid2id~~CalledByGraph_node13"><a xlink:href=".././proc/advec3d_mc_mpi_curv_23.html" xlink:title="advec3D_MC_mpi_curv_23">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1001,-66 856,-66 856,-42 1001,-42 1001,-66"/>
+<text text-anchor="middle" x="928.5" y="-51.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">advec3D_MC_mpi_curv_23</text>
+</a>
+</g>
+</g>
+<!-- proc~advec3d_mc_mpi_curv_23&#45;&gt;interface~halo -->
+<g id="proc~~grid2id~~CalledByGraph_edge12" class="edge">
+<title>proc~advec3d_mc_mpi_curv_23&#45;&gt;interface~halo</title>
+<path fill="none" stroke="#000000" d="M977.5767,-66.0718C985.5524,-68.6398 993.6135,-71.6163 1001,-75 1015.1342,-81.4748 1029.7432,-90.7392 1041.4762,-98.9202"/>
+<polygon fill="#000000" stroke="#000000" points="1039.6635,-101.9269 1049.8323,-104.901 1043.7376,-96.2347 1039.6635,-101.9269"/>
+</g>
+<!-- interface~rk2_prep_mpi -->
+<g id="proc~~grid2id~~CalledByGraph_node14" class="node">
+<title>interface~rk2_prep_mpi</title>
+<g id="a_proc~~grid2id~~CalledByGraph_node14"><a xlink:href=".././interface/rk2_prep_mpi.html" xlink:title="RK2_prep_mpi">
+<polygon fill="#a7506f" stroke="#a7506f" points="798.5,-150 714.5,-150 714.5,-126 798.5,-126 798.5,-150"/>
+<text text-anchor="middle" x="756.5" y="-135.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">RK2_prep_mpi</text>
+</a>
+</g>
+</g>
+<!-- interface~rk2_prep_mpi&#45;&gt;proc~rk2_prep_mpi -->
+<g id="proc~~grid2id~~CalledByGraph_edge16" class="edge">
+<title>interface~rk2_prep_mpi&#45;&gt;proc~rk2_prep_mpi</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M798.5759,-138C822.002,-138 851.3718,-138 876.2584,-138"/>
+<polygon fill="#000000" stroke="#000000" points="876.2624,-141.5001 886.2623,-138 876.2623,-134.5001 876.2624,-141.5001"/>
+</g>
+<!-- interface~advec_prep_mpi -->
+<g id="proc~~grid2id~~CalledByGraph_node15" class="node">
+<title>interface~advec_prep_mpi</title>
+<g id="a_proc~~grid2id~~CalledByGraph_node15"><a xlink:href=".././interface/advec_prep_mpi.html" xlink:title="advec_prep_mpi">
+<polygon fill="#a7506f" stroke="#a7506f" points="802.5,-108 710.5,-108 710.5,-84 802.5,-84 802.5,-108"/>
+<text text-anchor="middle" x="756.5" y="-93.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">advec_prep_mpi</text>
+</a>
+</g>
+</g>
+<!-- interface~advec_prep_mpi&#45;&gt;proc~advec_prep_mpi_23 -->
+<g id="proc~~grid2id~~CalledByGraph_edge15" class="edge">
+<title>interface~advec_prep_mpi&#45;&gt;proc~advec_prep_mpi_23</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M802.5928,-96C821.2356,-96 843.0931,-96 863.3166,-96"/>
+<polygon fill="#000000" stroke="#000000" points="863.4036,-99.5001 873.4036,-96 863.4035,-92.5001 863.4036,-99.5001"/>
+</g>
+<!-- proc~potential_root_mpi_curv -->
+<g id="proc~~grid2id~~CalledByGraph_node16" class="node">
+<title>proc~potential_root_mpi_curv</title>
+<g id="a_proc~~grid2id~~CalledByGraph_node16"><a xlink:href=".././proc/potential_root_mpi_curv.html" xlink:title="potential_root_mpi_curv">
+<polygon fill="#d9534f" stroke="#d9534f" points="820,-214 693,-214 693,-190 820,-190 820,-214"/>
+<text text-anchor="middle" x="756.5" y="-199.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">potential_root_mpi_curv</text>
+</a>
+</g>
+</g>
+<!-- proc~potential_root_mpi_curv&#45;&gt;proc~halo_pot -->
+<g id="proc~~grid2id~~CalledByGraph_edge13" class="edge">
+<title>proc~potential_root_mpi_curv&#45;&gt;proc~halo_pot</title>
+<path fill="none" stroke="#000000" d="M820.0578,-209.3904C843.9623,-212.17 870.3542,-215.2389 891.1163,-217.6531"/>
+<polygon fill="#000000" stroke="#000000" points="890.781,-221.1376 901.1184,-218.8161 891.5896,-214.1844 890.781,-221.1376"/>
+</g>
+<!-- proc~potential_workers_mpi -->
+<g id="proc~~grid2id~~CalledByGraph_node17" class="node">
+<title>proc~potential_workers_mpi</title>
+<g id="a_proc~~grid2id~~CalledByGraph_node17"><a xlink:href=".././proc/potential_workers_mpi.html" xlink:title="potential_workers_mpi">
+<polygon fill="#d9534f" stroke="#d9534f" points="653.5,-255 533.5,-255 533.5,-231 653.5,-231 653.5,-255"/>
+<text text-anchor="middle" x="593.5" y="-240.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">potential_workers_mpi</text>
+</a>
+</g>
+</g>
+<!-- proc~potential_workers_mpi&#45;&gt;proc~halo_pot -->
+<g id="proc~~grid2id~~CalledByGraph_edge14" class="edge">
+<title>proc~potential_workers_mpi&#45;&gt;proc~halo_pot</title>
+<path fill="none" stroke="#000000" d="M653.7782,-239.2214C722.7629,-234.897 833.6074,-227.9485 891.1402,-224.342"/>
+<polygon fill="#000000" stroke="#000000" points="891.4789,-227.8277 901.2403,-223.7088 891.0409,-220.8414 891.4789,-227.8277"/>
+</g>
+<!-- interface~advec3d_mc_mpi -->
+<g id="proc~~grid2id~~CalledByGraph_node18" class="node">
+<title>interface~advec3d_mc_mpi</title>
+<g id="a_proc~~grid2id~~CalledByGraph_node18"><a xlink:href=".././interface/advec3d_mc_mpi.html" xlink:title="advec3D_MC_mpi">
+<polygon fill="#a7506f" stroke="#a7506f" points="806.5,-66 706.5,-66 706.5,-42 806.5,-42 806.5,-66"/>
+<text text-anchor="middle" x="756.5" y="-51.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">advec3D_MC_mpi</text>
+</a>
+</g>
+</g>
+<!-- interface~advec3d_mc_mpi&#45;&gt;proc~advec3d_mc_mpi_curv_23 -->
+<g id="proc~~grid2id~~CalledByGraph_edge17" class="edge">
+<title>interface~advec3d_mc_mpi&#45;&gt;proc~advec3d_mc_mpi_curv_23</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M806.7119,-54C818.9593,-54 832.3853,-54 845.7084,-54"/>
+<polygon fill="#000000" stroke="#000000" points="845.8555,-57.5001 855.8555,-54 845.8554,-50.5001 845.8555,-57.5001"/>
+</g>
+<!-- interface~potential_workers_mpi -->
+<g id="proc~~grid2id~~CalledByGraph_node19" class="node">
+<title>interface~potential_workers_mpi</title>
+<g id="a_proc~~grid2id~~CalledByGraph_node19"><a xlink:href=".././interface/potential_workers_mpi.html" xlink:title="potential_workers_mpi">
+<polygon fill="#a7506f" stroke="#a7506f" points="494,-255 374,-255 374,-231 494,-231 494,-255"/>
+<text text-anchor="middle" x="434" y="-240.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">potential_workers_mpi</text>
+</a>
+</g>
+</g>
+<!-- interface~potential_workers_mpi&#45;&gt;proc~potential_workers_mpi -->
+<g id="proc~~grid2id~~CalledByGraph_edge21" class="edge">
+<title>interface~potential_workers_mpi&#45;&gt;proc~potential_workers_mpi</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M494.3001,-243C503.7939,-243 513.6793,-243 523.3723,-243"/>
+<polygon fill="#000000" stroke="#000000" points="523.3793,-246.5001 533.3792,-243 523.3792,-239.5001 523.3793,-246.5001"/>
+</g>
+<!-- proc~fluid_adv -->
+<g id="proc~~grid2id~~CalledByGraph_node20" class="node">
+<title>proc~fluid_adv</title>
+<g id="a_proc~~grid2id~~CalledByGraph_node20"><a xlink:href=".././proc/fluid_adv.html" xlink:title="fluid_adv">
+<polygon fill="#d9534f" stroke="#d9534f" points="621,-108 566,-108 566,-84 621,-84 621,-108"/>
+<text text-anchor="middle" x="593.5" y="-93.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">fluid_adv</text>
+</a>
+</g>
+</g>
+<!-- proc~fluid_adv&#45;&gt;interface~rk2_prep_mpi -->
+<g id="proc~~grid2id~~CalledByGraph_edge18" class="edge">
+<title>proc~fluid_adv&#45;&gt;interface~rk2_prep_mpi</title>
+<path fill="none" stroke="#000000" d="M621.1507,-103.1247C643.8822,-108.9819 676.7298,-117.4457 704.3728,-124.5685"/>
+<polygon fill="#000000" stroke="#000000" points="703.7362,-128.0187 714.2932,-127.1246 705.4829,-121.2401 703.7362,-128.0187"/>
+</g>
+<!-- proc~fluid_adv&#45;&gt;interface~advec_prep_mpi -->
+<g id="proc~~grid2id~~CalledByGraph_edge19" class="edge">
+<title>proc~fluid_adv&#45;&gt;interface~advec_prep_mpi</title>
+<path fill="none" stroke="#000000" d="M621.1507,-96C642.816,-96 673.6707,-96 700.4504,-96"/>
+<polygon fill="#000000" stroke="#000000" points="700.4868,-99.5001 710.4868,-96 700.4868,-92.5001 700.4868,-99.5001"/>
+</g>
+<!-- proc~fluid_adv&#45;&gt;interface~advec3d_mc_mpi -->
+<g id="proc~~grid2id~~CalledByGraph_edge22" class="edge">
+<title>proc~fluid_adv&#45;&gt;interface~advec3d_mc_mpi</title>
+<path fill="none" stroke="#000000" d="M621.1507,-88.8753C642.6549,-83.3343 673.2124,-75.4606 699.8524,-68.5963"/>
+<polygon fill="#000000" stroke="#000000" points="701.0332,-71.9065 709.8436,-66.0219 699.2866,-65.1279 701.0332,-71.9065"/>
+</g>
+<!-- interface~potential_root_mpi_curv -->
+<g id="proc~~grid2id~~CalledByGraph_node21" class="node">
+<title>interface~potential_root_mpi_curv</title>
+<g id="a_proc~~grid2id~~CalledByGraph_node21"><a xlink:href=".././interface/potential_root_mpi_curv.html" xlink:title="potential_root_mpi_curv">
+<polygon fill="#a7506f" stroke="#a7506f" points="657,-213 530,-213 530,-189 657,-189 657,-213"/>
+<text text-anchor="middle" x="593.5" y="-198.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">potential_root_mpi_curv</text>
+</a>
+</g>
+</g>
+<!-- interface~potential_root_mpi_curv&#45;&gt;proc~potential_root_mpi_curv -->
+<g id="proc~~grid2id~~CalledByGraph_edge20" class="edge">
+<title>interface~potential_root_mpi_curv&#45;&gt;proc~potential_root_mpi_curv</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M657.4541,-201.3924C665.7606,-201.4433 674.3224,-201.4958 682.7718,-201.5477"/>
+<polygon fill="#000000" stroke="#000000" points="682.9764,-205.0489 692.9977,-201.6104 683.0194,-198.049 682.9764,-205.0489"/>
+</g>
+<!-- interface~potential_root_mpi -->
+<g id="proc~~grid2id~~CalledByGraph_node22" class="node">
+<title>interface~potential_root_mpi</title>
+<g id="a_proc~~grid2id~~CalledByGraph_node22"><a xlink:href=".././interface/potential_root_mpi.html" xlink:title="potential_root_mpi">
+<polygon fill="#a7506f" stroke="#a7506f" points="484.5,-213 383.5,-213 383.5,-189 484.5,-189 484.5,-213"/>
+<text text-anchor="middle" x="434" y="-198.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">potential_root_mpi</text>
+</a>
+</g>
+</g>
+<!-- interface~potential_root_mpi&#45;&gt;interface~potential_root_mpi_curv -->
+<g id="proc~~grid2id~~CalledByGraph_edge24" class="edge">
+<title>interface~potential_root_mpi&#45;&gt;interface~potential_root_mpi_curv</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M484.9053,-201C495.976,-201 507.9038,-201 519.6593,-201"/>
+<polygon fill="#000000" stroke="#000000" points="519.9198,-204.5001 529.9198,-201 519.9197,-197.5001 519.9198,-204.5001"/>
+</g>
+<!-- proc~electrodynamics_curv -->
+<g id="proc~~grid2id~~CalledByGraph_node23" class="node">
+<title>proc~electrodynamics_curv</title>
+<g id="a_proc~~grid2id~~CalledByGraph_node23"><a xlink:href=".././proc/electrodynamics_curv.html" xlink:title="electrodynamics_curv">
+<polygon fill="#d9534f" stroke="#d9534f" points="338,-234 222,-234 222,-210 338,-210 338,-234"/>
+<text text-anchor="middle" x="280" y="-219.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">electrodynamics_curv</text>
+</a>
+</g>
+</g>
+<!-- proc~electrodynamics_curv&#45;&gt;interface~potential_workers_mpi -->
+<g id="proc~~grid2id~~CalledByGraph_edge23" class="edge">
+<title>proc~electrodynamics_curv&#45;&gt;interface~potential_workers_mpi</title>
+<path fill="none" stroke="#000000" d="M338.2208,-229.9392C346.608,-231.0829 355.3117,-232.2698 363.9001,-233.4409"/>
+<polygon fill="#000000" stroke="#000000" points="363.5219,-236.9217 373.9031,-234.805 364.4677,-229.9858 363.5219,-236.9217"/>
+</g>
+<!-- proc~electrodynamics_curv&#45;&gt;interface~potential_root_mpi -->
+<g id="proc~~grid2id~~CalledByGraph_edge25" class="edge">
+<title>proc~electrodynamics_curv&#45;&gt;interface~potential_root_mpi</title>
+<path fill="none" stroke="#000000" d="M338.2208,-214.0608C349.6836,-212.4977 361.7378,-210.8539 373.2805,-209.2799"/>
+<polygon fill="#000000" stroke="#000000" points="373.8292,-212.7376 383.2646,-207.9185 372.8834,-205.8018 373.8292,-212.7376"/>
+</g>
+<!-- interface~electrodynamics -->
+<g id="proc~~grid2id~~CalledByGraph_node24" class="node">
+<title>interface~electrodynamics</title>
+<g id="a_proc~~grid2id~~CalledByGraph_node24"><a xlink:href=".././interface/electrodynamics.html" xlink:title="electrodynamics">
+<polygon fill="#a7506f" stroke="#a7506f" points="186,-234 96,-234 96,-210 186,-210 186,-234"/>
+<text text-anchor="middle" x="141" y="-219.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">electrodynamics</text>
+</a>
+</g>
+</g>
+<!-- interface~electrodynamics&#45;&gt;proc~electrodynamics_curv -->
+<g id="proc~~grid2id~~CalledByGraph_edge26" class="edge">
+<title>interface~electrodynamics&#45;&gt;proc~electrodynamics_curv</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M186.1293,-222C194.3339,-222 203.0574,-222 211.7546,-222"/>
+<polygon fill="#000000" stroke="#000000" points="211.9198,-225.5001 221.9197,-222 211.9197,-218.5001 211.9198,-225.5001"/>
+</g>
+<!-- program~gemini3d -->
+<g id="proc~~grid2id~~CalledByGraph_node25" class="node">
+<title>program~gemini3d</title>
+<g id="a_proc~~grid2id~~CalledByGraph_node25"><a xlink:href=".././program/gemini3d.html" xlink:title="Gemini3D">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="60,-234 0,-234 0,-210 60,-210 60,-234"/>
+<text text-anchor="middle" x="30" y="-219.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Gemini3D</text>
+</a>
+</g>
+</g>
+<!-- program~gemini3d&#45;&gt;interface~electrodynamics -->
+<g id="proc~~grid2id~~CalledByGraph_edge27" class="edge">
+<title>program~gemini3d&#45;&gt;interface~electrodynamics</title>
+<path fill="none" stroke="#000000" d="M60.0382,-222C68.0619,-222 76.992,-222 85.9081,-222"/>
+<polygon fill="#000000" stroke="#000000" points="85.9196,-225.5001 95.9196,-222 85.9195,-218.5001 85.9196,-225.5001"/>
+</g>
+</g>
+</svg>
+</div><script>var panprocgrid2idCalledByGraph = svgPanZoom('#procgrid2idCalledByGraph', {zoomEnabled: true,controlIconsEnabled: true, fit: true, center: true,}); </script><div><a type="button" class="graph-help" data-toggle="modal" href="#graph-help-text">Help</a></div><div class="modal fade" id="graph-help-text" tabindex="-1" role="dialog"><div class="modal-dialog modal-lg" role="document"><div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button><h4 class="modal-title" id="-graph-help-label">Graph Key</h4></div><div class="modal-body">
+    <p>Nodes of different colours represent the following: </p>
+    <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.40.1 (20161225.0304)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="560pt" height="32pt"
+ viewBox="0.00 0.00 559.50 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 28)">
+<title>Graph Key</title>
+<polygon fill="#ffffff" stroke="transparent" points="-4,4 -4,-28 555.5,-28 555.5,4 -4,4"/>
+<!-- Subroutine -->
+<g id="node1" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="64,-24 0,-24 0,0 64,0 64,-24"/>
+<text text-anchor="middle" x="32" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node2" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="136,-24 82,-24 82,0 136,0 136,-24"/>
+<text text-anchor="middle" x="109" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Function</text>
+</g>
+<!-- Interface -->
+<g id="node3" class="node">
+<title>Interface</title>
+<polygon fill="#a7506f" stroke="#a7506f" points="209.5,-24 154.5,-24 154.5,0 209.5,0 209.5,-24"/>
+<text text-anchor="middle" x="182" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Interface</text>
+</g>
+<!-- Unknown Procedure Type -->
+<g id="node4" class="node">
+<title>Unknown Procedure Type</title>
+<polygon fill="#777777" stroke="#777777" points="364,-24 228,-24 228,0 364,0 364,-24"/>
+<text text-anchor="middle" x="296" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Unknown Procedure Type</text>
+</g>
+<!-- Program -->
+<g id="node5" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="436,-24 382,-24 382,0 436,0 436,-24"/>
+<text text-anchor="middle" x="409" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node6" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="#000000" points="551.5,-24 454.5,-24 454.5,0 551.5,0 551.5,-24"/>
+<text text-anchor="middle" x="503" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#000000">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+    
+    <p>Solid arrows point from a procedure to one which it calls. Dashed 
+    arrows point from an interface to procedures which implement that interface.
+    This could include the module procedures in a generic interface or the
+    implementation in a submodule of an interface in a parent module.
+    </p>
+    </div></div></div></div>
+      </div>
+    </div>
+     
+    <br>
+
+    <section class="visible-xs visible-sm hidden-md">
+      
+<h3>Contents</h3>
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<em>None</em>
+
+
+    </section>
+    <br class="visible-xs visible-sm hidden-md">
+
+    
+
+    
+    
+    
+    
+    
+
+    
+    
+    
+    
+    
+
+
+    
+    
+    
+    
+    </div>
+  </div>
+
+
+    <hr>    
+    </div> <!-- /container -->
+    <footer>
+      <div class="container">
+      <div class="row">
+        <div class="col-xs-6 col-md-4"><p>&copy; 2020 <a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/80x15.png" /></a>
+                                          </p></div>
+        <div class="col-xs-6 col-md-4 col-md-push-4">
+          <p class="text-right">
+            Documentation generated by 
+            <a href="https://github.com/cmacmackin/ford">FORD</a>
+            
+          </p>
+        </div>
+        <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> GEMINI3D was developed by Matthew Zettergren
+Guy Grubbs
+Michael Hirsch</p></div>
+      </div>
+      <br>
+      </div> <!-- /container -->    
+    </footer>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+<!--
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+-->
+    <script src="../js/bootstrap.min.js"></script>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <script src="../js/ie10-viewport-bug-workaround.js"></script>
+
+    <!-- MathJax JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } },
+        jax: ['input/TeX','input/MathML','output/HTML-CSS'],
+        extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']
+      });
+    </script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    
+    
+  </body>
+</html>

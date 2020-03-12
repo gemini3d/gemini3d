@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+   
+   <meta name="description" content="GEMINI3D is a modular ionospheric model that incorporates kinetic models such as Fang, GLOW.">
+    
+    <meta name="author" content="Matthew Zettergren
+Guy Grubbs
+Michael Hirsch" >
+    <link rel="icon" href="../favicon.png">
+
+    <title>bcast_send3D_x2i &ndash; GEMINI3D</title>
+
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+    <link href="../css/pygments.css" rel="stylesheet">
+    <link href="../css/font-awesome.min.css" rel="stylesheet">
+    <link href="../css/local.css" rel="stylesheet">
+    
+    
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    
+    <script src="../js/jquery-2.1.3.min.js"></script>
+    <script src="../js/svg-pan-zoom.min.js"></script>
+
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="../index.html">GEMINI3D </a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+        
+            <li class="dropdown hidden-xs visible-sm visible-md hidden-lg">
+              <a href="#" class="dropdown-toggle"
+              data-toggle="dropdown" role="button"
+              aria-haspopup="true"
+     aria-expanded="false">Contents <span class="caret"></span></a>
+        <ul class="dropdown-menu">
+          
+              
+            <li><a href="../lists/files.html">Source Files</a></li>
+        
+        
+        
+            <li><a href="../lists/modules.html">Modules</a></li>
+        
+            
+    <li><a href="../blockdata/gtd7bk.html">Block Data</a></li>
+    
+                                
+            <li><a href="../lists/procedures.html">Procedures</a></li>
+        
+               
+            <li><a href="../lists/types.html">Derived Types</a></li>
+        
+        
+            <li><a href="../lists/programs.html">Programs</a></li>
+        
+            </ul>
+            </li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/files.html">Source Files</a></li>
+
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/modules.html">Modules</a></li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../blockdata/gtd7bk.html">Block Data</a></li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/procedures.html">Procedures</a></li>
+
+                             
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/types.html">Derived Types</a></li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/programs.html">Programs</a></li>
+
+          </ul>
+        
+        </div><!--/.nav-collapse -->
+      </div>
+    </nav>
+
+    <div class="container">
+    
+  
+  <div class="row">
+    <h1>bcast_send3D_x2i
+   <small>Interface</small>
+    
+    </h1>
+    
+<div class="row">
+  <div class="col-lg-12">
+<div class="well well-sm">
+  <ul class="list-inline" style="margin-bottom:0px;display:inline">
+     
+     
+     
+     
+    
+    
+     <li><i class="fa fa-list-ol"></i>
+       <a data-toggle="tooltip"
+    data-placement="bottom" data-html="true"
+    title="<p> 0.0% of total for procedures.</p>Including implementation: 62 statements,  0.7% of total for procedures.">3 statements</a>
+     </li> 
+     
+     
+     
+    <li><i class="fa fa-code"></i><a href="../src/mpimod.F90"> Source File</a></li>
+     
+     
+  </ul>
+  <ol class="breadcrumb in-well text-right">
+  
+    
+     <li><a href='../sourcefile/mpimod.f90.html'>mpimod.F90</a></li>
+    
+     <li><a href='../module/mpimod.html'>mpimod</a></li>
+    
+  
+     <li class="active">bcast_send3D_x2i</li>
+  </ol>
+</div>
+</div>
+</div>
+<script>
+  $(function () {
+  $('[data-toggle="tooltip"]').tooltip()
+  })
+</script>
+
+  </div>
+  
+  <div class="row">
+    <div class="col-md-3 hidden-xs hidden-sm visible-md visible-lg">
+      
+<div id="sidebar">
+  
+<h3>Contents</h3>
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#modprocs-0">Module Procedures</a></h3></div>
+  <div id="modprocs-0" class="panel-collapse collapse">
+    <div class="list-group">
+      
+      <a class="list-group-item" href="../interface/bcast_send3d_x2i.html#moduleprocedure-bcast_send3d_x2i_23">bcast_send3D_x2i_23</a>
+      
+    </div>
+  </div>
+</div>
+
+
+
+
+</div>
+
+    </div>
+    
+    <div class="col-md-9" id='text'>
+      <h2>public interface bcast_send3D_x2i</h2>
+   
+     
+    <div class="panel panel-default">
+      <div class="panel-heading">
+  <h3 class="panel-title">Calls</h3>
+      </div>
+      <div class="panel-body">
+  <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.40.1 (20161225.0304)
+ -->
+<!-- Title: interface~~bcast_send3d_x2i~~CallsGraph Pages: 1 -->
+<svg id="interfacebcast_send3d_x2iCallsGraph" width="601pt" height="74pt"
+ viewBox="0.00 0.00 601.00 74.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="interface~~bcast_send3d_x2i~~CallsGraph" class="graph" transform="scale(1 1) rotate(0) translate(4 70)">
+<title>interface~~bcast_send3d_x2i~~CallsGraph</title>
+<polygon fill="#ffffff" stroke="transparent" points="-4,4 -4,-70 597,-70 597,4 -4,4"/>
+<!-- interface~bcast_send3d_x2i -->
+<g id="interface~~bcast_send3d_x2i~~CallsGraph_node1" class="node">
+<title>interface~bcast_send3d_x2i</title>
+<polygon fill="none" stroke="#000000" points="100,-45 0,-45 0,-21 100,-21 100,-45"/>
+<text text-anchor="middle" x="50" y="-30.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#000000">bcast_send3D_x2i</text>
+</g>
+<!-- interface~bcast_send3d_x2i_23 -->
+<g id="interface~~bcast_send3d_x2i~~CallsGraph_node2" class="node">
+<title>interface~bcast_send3d_x2i_23</title>
+<g id="a_interface~~bcast_send3d_x2i~~CallsGraph_node2"><a xlink:href=".././interface/bcast_send3d_x2i_23.html" xlink:title="bcast_send3D_x2i_23">
+<polygon fill="#a7506f" stroke="#a7506f" points="254,-45 136,-45 136,-21 254,-21 254,-45"/>
+<text text-anchor="middle" x="195" y="-30.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">bcast_send3D_x2i_23</text>
+</a>
+</g>
+</g>
+<!-- interface~bcast_send3d_x2i&#45;&gt;interface~bcast_send3d_x2i_23 -->
+<g id="interface~~bcast_send3d_x2i~~CallsGraph_edge1" class="edge">
+<title>interface~bcast_send3d_x2i&#45;&gt;interface~bcast_send3d_x2i_23</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M100.307,-33C108.5377,-33 117.1908,-33 125.7822,-33"/>
+<polygon fill="#000000" stroke="#000000" points="125.8106,-36.5001 135.8105,-33 125.8105,-29.5001 125.8106,-36.5001"/>
+</g>
+<!-- proc~bcast_send3d_x2i_23 -->
+<g id="interface~~bcast_send3d_x2i~~CallsGraph_node3" class="node">
+<title>proc~bcast_send3d_x2i_23</title>
+<g id="a_interface~~bcast_send3d_x2i~~CallsGraph_node3"><a xlink:href=".././proc/bcast_send3d_x2i_23.html" xlink:title="bcast_send3D_x2i_23">
+<polygon fill="#d9534f" stroke="#d9534f" points="408,-45 290,-45 290,-21 408,-21 408,-45"/>
+<text text-anchor="middle" x="349" y="-30.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">bcast_send3D_x2i_23</text>
+</a>
+</g>
+</g>
+<!-- interface~bcast_send3d_x2i_23&#45;&gt;proc~bcast_send3d_x2i_23 -->
+<g id="interface~~bcast_send3d_x2i~~CallsGraph_edge2" class="edge">
+<title>interface~bcast_send3d_x2i_23&#45;&gt;proc~bcast_send3d_x2i_23</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M254.1,-33C262.4218,-33 271.0389,-33 279.5326,-33"/>
+<polygon fill="#000000" stroke="#000000" points="279.8037,-36.5001 289.8037,-33 279.8037,-29.5001 279.8037,-36.5001"/>
+</g>
+<!-- mpi_send -->
+<g id="interface~~bcast_send3d_x2i~~CallsGraph_node4" class="node">
+<title>mpi_send</title>
+<polygon fill="#777777" stroke="#777777" points="503,-66 444,-66 444,-42 503,-42 503,-66"/>
+<text text-anchor="middle" x="473.5" y="-51.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">mpi_send</text>
+</g>
+<!-- proc~bcast_send3d_x2i_23&#45;&gt;mpi_send -->
+<g id="interface~~bcast_send3d_x2i~~CallsGraph_edge3" class="edge">
+<title>proc~bcast_send3d_x2i_23&#45;&gt;mpi_send</title>
+<path fill="none" stroke="#000000" d="M408.333,-43.008C416.9641,-44.4638 425.6702,-45.9323 433.7855,-47.3012"/>
+<polygon fill="#000000" stroke="#000000" points="433.2561,-50.7612 443.6989,-48.9733 434.4204,-43.8587 433.2561,-50.7612"/>
+</g>
+<!-- proc~slabinds -->
+<g id="interface~~bcast_send3d_x2i~~CallsGraph_node5" class="node">
+<title>proc~slabinds</title>
+<g id="a_interface~~bcast_send3d_x2i~~CallsGraph_node5"><a xlink:href=".././proc/slabinds.html" xlink:title="slabinds">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="500.5,-24 446.5,-24 446.5,0 500.5,0 500.5,-24"/>
+<text text-anchor="middle" x="473.5" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">slabinds</text>
+</a>
+</g>
+</g>
+<!-- proc~bcast_send3d_x2i_23&#45;&gt;proc~slabinds -->
+<g id="interface~~bcast_send3d_x2i~~CallsGraph_edge4" class="edge">
+<title>proc~bcast_send3d_x2i_23&#45;&gt;proc~slabinds</title>
+<path fill="none" stroke="#000000" d="M408.333,-22.992C417.8762,-21.3823 427.5109,-19.7572 436.3376,-18.2684"/>
+<polygon fill="#000000" stroke="#000000" points="436.9956,-21.7069 446.2741,-16.5923 435.8313,-14.8044 436.9956,-21.7069"/>
+</g>
+<!-- proc~id2grid -->
+<g id="interface~~bcast_send3d_x2i~~CallsGraph_node6" class="node">
+<title>proc~id2grid</title>
+<g id="a_interface~~bcast_send3d_x2i~~CallsGraph_node6"><a xlink:href=".././proc/id2grid.html" xlink:title="ID2grid">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="593,-24 539,-24 539,0 593,0 593,-24"/>
+<text text-anchor="middle" x="566" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">ID2grid</text>
+</a>
+</g>
+</g>
+<!-- proc~slabinds&#45;&gt;proc~id2grid -->
+<g id="interface~~bcast_send3d_x2i~~CallsGraph_edge5" class="edge">
+<title>proc~slabinds&#45;&gt;proc~id2grid</title>
+<path fill="none" stroke="#000000" d="M500.7528,-12C509.5034,-12 519.3521,-12 528.6947,-12"/>
+<polygon fill="#000000" stroke="#000000" points="528.9421,-15.5001 538.942,-12 528.942,-8.5001 528.9421,-15.5001"/>
+</g>
+</g>
+</svg>
+</div><div><a type="button" class="graph-help" data-toggle="modal" href="#graph-help-text">Help</a></div><div class="modal fade" id="graph-help-text" tabindex="-1" role="dialog"><div class="modal-dialog modal-lg" role="document"><div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button><h4 class="modal-title" id="-graph-help-label">Graph Key</h4></div><div class="modal-body">
+    <p>Nodes of different colours represent the following: </p>
+    <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.40.1 (20161225.0304)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="560pt" height="32pt"
+ viewBox="0.00 0.00 559.50 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 28)">
+<title>Graph Key</title>
+<polygon fill="#ffffff" stroke="transparent" points="-4,4 -4,-28 555.5,-28 555.5,4 -4,4"/>
+<!-- Subroutine -->
+<g id="node1" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="64,-24 0,-24 0,0 64,0 64,-24"/>
+<text text-anchor="middle" x="32" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node2" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="136,-24 82,-24 82,0 136,0 136,-24"/>
+<text text-anchor="middle" x="109" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Function</text>
+</g>
+<!-- Interface -->
+<g id="node3" class="node">
+<title>Interface</title>
+<polygon fill="#a7506f" stroke="#a7506f" points="209.5,-24 154.5,-24 154.5,0 209.5,0 209.5,-24"/>
+<text text-anchor="middle" x="182" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Interface</text>
+</g>
+<!-- Unknown Procedure Type -->
+<g id="node4" class="node">
+<title>Unknown Procedure Type</title>
+<polygon fill="#777777" stroke="#777777" points="364,-24 228,-24 228,0 364,0 364,-24"/>
+<text text-anchor="middle" x="296" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Unknown Procedure Type</text>
+</g>
+<!-- Program -->
+<g id="node5" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="436,-24 382,-24 382,0 436,0 436,-24"/>
+<text text-anchor="middle" x="409" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node6" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="#000000" points="551.5,-24 454.5,-24 454.5,0 551.5,0 551.5,-24"/>
+<text text-anchor="middle" x="503" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#000000">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+    
+    <p>Solid arrows point from a procedure to one which it calls. Dashed 
+    arrows point from an interface to procedures which implement that interface.
+    This could include the module procedures in a generic interface or the
+    implementation in a submodule of an interface in a parent module.
+    </p>
+    </div></div></div></div>
+      </div>
+    </div>
+     
+     
+    <div class="panel panel-default">
+      <div class="panel-heading">
+  <h3 class="panel-title">Called by</h3>
+      </div>
+      <div class="panel-body">
+     <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.40.1 (20161225.0304)
+ -->
+<!-- Title: interface~~bcast_send3d_x2i~~CalledByGraph Pages: 1 -->
+<svg id="interfacebcast_send3d_x2iCalledByGraph" width="511pt" height="74pt"
+ viewBox="0.00 0.00 511.00 74.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="interface~~bcast_send3d_x2i~~CalledByGraph" class="graph" transform="scale(1 1) rotate(0) translate(4 70)">
+<title>interface~~bcast_send3d_x2i~~CalledByGraph</title>
+<polygon fill="#ffffff" stroke="transparent" points="-4,4 -4,-70 507,-70 507,4 -4,4"/>
+<!-- interface~bcast_send3d_x2i -->
+<g id="interface~~bcast_send3d_x2i~~CalledByGraph_node1" class="node">
+<title>interface~bcast_send3d_x2i</title>
+<polygon fill="none" stroke="#000000" points="503,-45 403,-45 403,-21 503,-21 503,-45"/>
+<text text-anchor="middle" x="453" y="-30.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#000000">bcast_send3D_x2i</text>
+</g>
+<!-- proc~read_grid_root -->
+<g id="interface~~bcast_send3d_x2i~~CalledByGraph_node2" class="node">
+<title>proc~read_grid_root</title>
+<g id="a_interface~~bcast_send3d_x2i~~CalledByGraph_node2"><a xlink:href=".././proc/read_grid_root.html" xlink:title="read_grid_root">
+<polygon fill="#d9534f" stroke="#d9534f" points="367,-45 284,-45 284,-21 367,-21 367,-45"/>
+<text text-anchor="middle" x="325.5" y="-30.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">read_grid_root</text>
+</a>
+</g>
+</g>
+<!-- proc~read_grid_root&#45;&gt;interface~bcast_send3d_x2i -->
+<g id="interface~~bcast_send3d_x2i~~CalledByGraph_edge1" class="edge">
+<title>proc~read_grid_root&#45;&gt;interface~bcast_send3d_x2i</title>
+<path fill="none" stroke="#000000" d="M367.2483,-33C375.3914,-33 384.0805,-33 392.6858,-33"/>
+<polygon fill="#000000" stroke="#000000" points="392.7116,-36.5001 402.7116,-33 392.7116,-29.5001 392.7116,-36.5001"/>
+</g>
+<!-- proc~read_grid -->
+<g id="interface~~bcast_send3d_x2i~~CalledByGraph_node3" class="node">
+<title>proc~read_grid</title>
+<g id="a_interface~~bcast_send3d_x2i~~CalledByGraph_node3"><a xlink:href=".././proc/read_grid.html" xlink:title="read_grid">
+<polygon fill="#d9534f" stroke="#d9534f" points="248,-45 190,-45 190,-21 248,-21 248,-45"/>
+<text text-anchor="middle" x="219" y="-30.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">read_grid</text>
+</a>
+</g>
+</g>
+<!-- proc~read_grid&#45;&gt;proc~read_grid_root -->
+<g id="interface~~bcast_send3d_x2i~~CalledByGraph_edge2" class="edge">
+<title>proc~read_grid&#45;&gt;proc~read_grid_root</title>
+<path fill="none" stroke="#000000" d="M248.1016,-33C255.9809,-33 264.7552,-33 273.4852,-33"/>
+<polygon fill="#000000" stroke="#000000" points="273.6568,-36.5001 283.6568,-33 273.6567,-29.5001 273.6568,-36.5001"/>
+</g>
+<!-- interface~read_grid -->
+<g id="interface~~bcast_send3d_x2i~~CalledByGraph_node4" class="node">
+<title>interface~read_grid</title>
+<g id="a_interface~~bcast_send3d_x2i~~CalledByGraph_node4"><a xlink:href=".././interface/read_grid.html" xlink:title="read_grid">
+<polygon fill="#a7506f" stroke="#a7506f" points="154,-45 96,-45 96,-21 154,-21 154,-45"/>
+<text text-anchor="middle" x="125" y="-30.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">read_grid</text>
+</a>
+</g>
+</g>
+<!-- interface~read_grid&#45;&gt;proc~read_grid -->
+<g id="interface~~bcast_send3d_x2i~~CalledByGraph_edge3" class="edge">
+<title>interface~read_grid&#45;&gt;proc~read_grid</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M154.2269,-33C162.2732,-33 171.1345,-33 179.6513,-33"/>
+<polygon fill="#000000" stroke="#000000" points="179.7912,-36.5001 189.7912,-33 179.7911,-29.5001 179.7912,-36.5001"/>
+</g>
+<!-- program~magcalc -->
+<g id="interface~~bcast_send3d_x2i~~CalledByGraph_node5" class="node">
+<title>program~magcalc</title>
+<g id="a_interface~~bcast_send3d_x2i~~CalledByGraph_node5"><a xlink:href=".././program/magcalc.html" xlink:title="MagCalc">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="57.5,-66 2.5,-66 2.5,-42 57.5,-42 57.5,-66"/>
+<text text-anchor="middle" x="30" y="-51.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">MagCalc</text>
+</a>
+</g>
+</g>
+<!-- program~magcalc&#45;&gt;interface~read_grid -->
+<g id="interface~~bcast_send3d_x2i~~CalledByGraph_edge4" class="edge">
+<title>program~magcalc&#45;&gt;interface~read_grid</title>
+<path fill="none" stroke="#000000" d="M57.7333,-47.8695C66.5011,-45.9313 76.3626,-43.7514 85.7765,-41.6705"/>
+<polygon fill="#000000" stroke="#000000" points="86.7342,-45.0433 95.743,-39.4673 85.2232,-38.2083 86.7342,-45.0433"/>
+</g>
+<!-- program~gemini3d -->
+<g id="interface~~bcast_send3d_x2i~~CalledByGraph_node6" class="node">
+<title>program~gemini3d</title>
+<g id="a_interface~~bcast_send3d_x2i~~CalledByGraph_node6"><a xlink:href=".././program/gemini3d.html" xlink:title="Gemini3D">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="60,-24 0,-24 0,0 60,0 60,-24"/>
+<text text-anchor="middle" x="30" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Gemini3D</text>
+</a>
+</g>
+</g>
+<!-- program~gemini3d&#45;&gt;interface~read_grid -->
+<g id="interface~~bcast_send3d_x2i~~CalledByGraph_edge5" class="edge">
+<title>program~gemini3d&#45;&gt;interface~read_grid</title>
+<path fill="none" stroke="#000000" d="M60.0586,-18.6445C68.2635,-20.4582 77.2746,-22.4502 85.9036,-24.3576"/>
+<polygon fill="#000000" stroke="#000000" points="85.2667,-27.8013 95.7865,-26.5423 86.7777,-20.9663 85.2667,-27.8013"/>
+</g>
+</g>
+</svg>
+</div><div><a type="button" class="graph-help" data-toggle="modal" href="#graph-help-text">Help</a></div><div class="modal fade" id="graph-help-text" tabindex="-1" role="dialog"><div class="modal-dialog modal-lg" role="document"><div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button><h4 class="modal-title" id="-graph-help-label">Graph Key</h4></div><div class="modal-body">
+    <p>Nodes of different colours represent the following: </p>
+    <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.40.1 (20161225.0304)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="560pt" height="32pt"
+ viewBox="0.00 0.00 559.50 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 28)">
+<title>Graph Key</title>
+<polygon fill="#ffffff" stroke="transparent" points="-4,4 -4,-28 555.5,-28 555.5,4 -4,4"/>
+<!-- Subroutine -->
+<g id="node1" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="64,-24 0,-24 0,0 64,0 64,-24"/>
+<text text-anchor="middle" x="32" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node2" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="136,-24 82,-24 82,0 136,0 136,-24"/>
+<text text-anchor="middle" x="109" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Function</text>
+</g>
+<!-- Interface -->
+<g id="node3" class="node">
+<title>Interface</title>
+<polygon fill="#a7506f" stroke="#a7506f" points="209.5,-24 154.5,-24 154.5,0 209.5,0 209.5,-24"/>
+<text text-anchor="middle" x="182" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Interface</text>
+</g>
+<!-- Unknown Procedure Type -->
+<g id="node4" class="node">
+<title>Unknown Procedure Type</title>
+<polygon fill="#777777" stroke="#777777" points="364,-24 228,-24 228,0 364,0 364,-24"/>
+<text text-anchor="middle" x="296" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Unknown Procedure Type</text>
+</g>
+<!-- Program -->
+<g id="node5" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="436,-24 382,-24 382,0 436,0 436,-24"/>
+<text text-anchor="middle" x="409" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node6" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="#000000" points="551.5,-24 454.5,-24 454.5,0 551.5,0 551.5,-24"/>
+<text text-anchor="middle" x="503" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#000000">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+    
+    <p>Solid arrows point from a procedure to one which it calls. Dashed 
+    arrows point from an interface to procedures which implement that interface.
+    This could include the module procedures in a generic interface or the
+    implementation in a submodule of an interface in a parent module.
+    </p>
+    </div></div></div></div>
+      </div>
+    </div>
+     
+    <br>
+
+     <section class="visible-xs visible-sm hidden-md">
+       
+<h3>Contents</h3>
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#modprocs-1">Module Procedures</a></h3></div>
+  <div id="modprocs-1" class="panel-collapse collapse">
+    <div class="list-group">
+      
+      <a class="list-group-item" href="../interface/bcast_send3d_x2i.html#moduleprocedure-bcast_send3d_x2i_23">bcast_send3D_x2i_23</a>
+      
+    </div>
+  </div>
+</div>
+
+
+
+
+     </section>
+     <br class="visible-xs visible-sm hidden-md">
+     
+  
+
+  
+
+  
+   <h2>Module Procedures</h2>
+   
+    
+  <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="interface-bcast_send3d_x2i_23"></span><h3>
+public interface <a href='../interface/bcast_send3d_x2i_23.html'>bcast_send3D_x2i_23</a>()
+    
+    
+   
+</h3></div>
+  <div class="panel-body">
+       
+    
+    
+    <h4>Arguments</h4>
+    
+      <em>None</em>
+    
+    
+
+  </div>
+  </div>
+
+   
+     
+
+ </div>
+</div>
+
+
+    <hr>    
+    </div> <!-- /container -->
+    <footer>
+      <div class="container">
+      <div class="row">
+        <div class="col-xs-6 col-md-4"><p>&copy; 2020 <a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/80x15.png" /></a>
+                                          </p></div>
+        <div class="col-xs-6 col-md-4 col-md-push-4">
+          <p class="text-right">
+            Documentation generated by 
+            <a href="https://github.com/cmacmackin/ford">FORD</a>
+            
+          </p>
+        </div>
+        <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> GEMINI3D was developed by Matthew Zettergren
+Guy Grubbs
+Michael Hirsch</p></div>
+      </div>
+      <br>
+      </div> <!-- /container -->    
+    </footer>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+<!--
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+-->
+    <script src="../js/bootstrap.min.js"></script>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <script src="../js/ie10-viewport-bug-workaround.js"></script>
+
+    <!-- MathJax JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } },
+        jax: ['input/TeX','input/MathML','output/HTML-CSS'],
+        extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']
+      });
+    </script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    
+    
+  </body>
+</html>

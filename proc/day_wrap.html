@@ -1,0 +1,1295 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+   
+   <meta name="description" content="GEMINI3D is a modular ionospheric model that incorporates kinetic models such as Fang, GLOW.">
+    
+    <meta name="author" content="Matthew Zettergren
+Guy Grubbs
+Michael Hirsch" >
+    <link rel="icon" href="../favicon.png">
+
+    <title>day_wrap &ndash; GEMINI3D</title>
+
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+    <link href="../css/pygments.css" rel="stylesheet">
+    <link href="../css/font-awesome.min.css" rel="stylesheet">
+    <link href="../css/local.css" rel="stylesheet">
+    
+    
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    
+    <script src="../js/jquery-2.1.3.min.js"></script>
+    <script src="../js/svg-pan-zoom.min.js"></script>
+
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="../index.html">GEMINI3D </a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+        
+            <li class="dropdown hidden-xs visible-sm visible-md hidden-lg">
+              <a href="#" class="dropdown-toggle"
+              data-toggle="dropdown" role="button"
+              aria-haspopup="true"
+     aria-expanded="false">Contents <span class="caret"></span></a>
+        <ul class="dropdown-menu">
+          
+              
+            <li><a href="../lists/files.html">Source Files</a></li>
+        
+        
+        
+            <li><a href="../lists/modules.html">Modules</a></li>
+        
+            
+    <li><a href="../blockdata/gtd7bk.html">Block Data</a></li>
+    
+                                
+            <li><a href="../lists/procedures.html">Procedures</a></li>
+        
+               
+            <li><a href="../lists/types.html">Derived Types</a></li>
+        
+        
+            <li><a href="../lists/programs.html">Programs</a></li>
+        
+            </ul>
+            </li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/files.html">Source Files</a></li>
+
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/modules.html">Modules</a></li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../blockdata/gtd7bk.html">Block Data</a></li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/procedures.html">Procedures</a></li>
+
+                             
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/types.html">Derived Types</a></li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/programs.html">Programs</a></li>
+
+          </ul>
+        
+        </div><!--/.nav-collapse -->
+      </div>
+    </nav>
+
+    <div class="container">
+    
+  
+  <div class="row">
+    <h1>day_wrap
+      <small>Subroutine</small>
+    
+    </h1>
+    
+<div class="row">
+  <div class="col-lg-12">
+<div class="well well-sm">
+  <ul class="list-inline" style="margin-bottom:0px;display:inline">
+     
+     
+     
+     
+    
+    
+     <li><i class="fa fa-list-ol"></i>
+       <a data-toggle="tooltip"
+    data-placement="bottom" data-html="true"
+    title=" 0.1% of total for procedures.">13 statements</a>
+     </li> 
+     
+     
+     
+    <li><i class="fa fa-code"></i><a href="../src/timeutils.f90"> Source File</a></li>
+     
+     
+  </ul>
+  <ol class="breadcrumb in-well text-right">
+  
+    
+     <li><a href='../sourcefile/timeutils.f90.html'>timeutils.f90</a></li>
+    
+     <li><a href='../module/timeutils.html'>timeutils</a></li>
+    
+  
+     <li class="active">day_wrap</li>
+  </ol>
+</div>
+</div>
+</div>
+<script>
+  $(function () {
+  $('[data-toggle="tooltip"]').tooltip()
+  })
+</script>
+
+  </div>
+  
+  <div class="row">
+    <div class="col-md-3 hidden-xs hidden-sm visible-md visible-lg">
+    
+<div id="sidebar">
+  
+<h3>Contents</h3>
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<em>None</em>
+
+
+</div>
+
+    </div>
+    
+    <div class="col-md-9" id='text'>
+    <h2>
+public pure recursive subroutine day_wrap(year, month, day)
+    
+    
+   
+</h2>
+    
+  
+
+
+    
+    <p>increment date if needed, according to day
+ that is, if day is beyond month, increment month and year if needed
+ wrap months
+ wrap days</p>
+    
+
+    <h3>Arguments</h3>
+    
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-year~4"></span>integer,</td>
+  <td>intent(inout)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>year</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-month~4"></span>integer,</td>
+  <td>intent(inout)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>month</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-day~3"></span>integer,</td>
+  <td>intent(inout)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>day</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+    
+    
+    
+    <br>
+    
+    
+    <div class="panel panel-default">
+      <div class="panel-heading">
+  <h3 class="panel-title">Calls</h3>
+      </div>
+      <div class="panel-body">
+  <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.40.1 (20161225.0304)
+ -->
+<!-- Title: proc~~day_wrap~~CallsGraph Pages: 1 -->
+<svg id="procday_wrapCallsGraph" width="168pt" height="50pt"
+ viewBox="0.00 0.00 168.00 50.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="proc~~day_wrap~~CallsGraph" class="graph" transform="scale(1 1) rotate(0) translate(4 46)">
+<title>proc~~day_wrap~~CallsGraph</title>
+<polygon fill="#ffffff" stroke="transparent" points="-4,4 -4,-46 164,-46 164,4 -4,4"/>
+<!-- proc~day_wrap -->
+<g id="proc~~day_wrap~~CallsGraph_node1" class="node">
+<title>proc~day_wrap</title>
+<polygon fill="none" stroke="#000000" points="59,-24 0,-24 0,0 59,0 59,-24"/>
+<text text-anchor="middle" x="29.5" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#000000">day_wrap</text>
+</g>
+<!-- proc~day_wrap&#45;&gt;proc~day_wrap -->
+<g id="proc~~day_wrap~~CallsGraph_edge1" class="edge">
+<title>proc~day_wrap&#45;&gt;proc~day_wrap</title>
+<path fill="none" stroke="#000000" d="M13.2963,-24.0139C7.6378,-32.9717 13.0391,-42 29.5,-42 39.5309,-42 45.4549,-38.6474 47.272,-34.0013"/>
+<polygon fill="#000000" stroke="#000000" points="50.7127,-33.3499 45.7037,-24.0139 43.7974,-34.4358 50.7127,-33.3499"/>
+</g>
+<!-- proc~daysmonth -->
+<g id="proc~~day_wrap~~CallsGraph_node2" class="node">
+<title>proc~daysmonth</title>
+<g id="a_proc~~day_wrap~~CallsGraph_node2"><a xlink:href=".././proc/daysmonth.html" xlink:title="daysmonth">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="160,-24 95,-24 95,0 160,0 160,-24"/>
+<text text-anchor="middle" x="127.5" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">daysmonth</text>
+</a>
+</g>
+</g>
+<!-- proc~day_wrap&#45;&gt;proc~daysmonth -->
+<g id="proc~~day_wrap~~CallsGraph_edge2" class="edge">
+<title>proc~day_wrap&#45;&gt;proc~daysmonth</title>
+<path fill="none" stroke="#000000" d="M59.1692,-12C67.1794,-12 76.0105,-12 84.5887,-12"/>
+<polygon fill="#000000" stroke="#000000" points="84.8547,-15.5001 94.8547,-12 84.8546,-8.5001 84.8547,-15.5001"/>
+</g>
+</g>
+</svg>
+</div><div><a type="button" class="graph-help" data-toggle="modal" href="#graph-help-text">Help</a></div><div class="modal fade" id="graph-help-text" tabindex="-1" role="dialog"><div class="modal-dialog modal-lg" role="document"><div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button><h4 class="modal-title" id="-graph-help-label">Graph Key</h4></div><div class="modal-body">
+    <p>Nodes of different colours represent the following: </p>
+    <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.40.1 (20161225.0304)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="560pt" height="32pt"
+ viewBox="0.00 0.00 559.50 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 28)">
+<title>Graph Key</title>
+<polygon fill="#ffffff" stroke="transparent" points="-4,4 -4,-28 555.5,-28 555.5,4 -4,4"/>
+<!-- Subroutine -->
+<g id="node1" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="64,-24 0,-24 0,0 64,0 64,-24"/>
+<text text-anchor="middle" x="32" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node2" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="136,-24 82,-24 82,0 136,0 136,-24"/>
+<text text-anchor="middle" x="109" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Function</text>
+</g>
+<!-- Interface -->
+<g id="node3" class="node">
+<title>Interface</title>
+<polygon fill="#a7506f" stroke="#a7506f" points="209.5,-24 154.5,-24 154.5,0 209.5,0 209.5,-24"/>
+<text text-anchor="middle" x="182" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Interface</text>
+</g>
+<!-- Unknown Procedure Type -->
+<g id="node4" class="node">
+<title>Unknown Procedure Type</title>
+<polygon fill="#777777" stroke="#777777" points="364,-24 228,-24 228,0 364,0 364,-24"/>
+<text text-anchor="middle" x="296" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Unknown Procedure Type</text>
+</g>
+<!-- Program -->
+<g id="node5" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="436,-24 382,-24 382,0 436,0 436,-24"/>
+<text text-anchor="middle" x="409" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node6" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="#000000" points="551.5,-24 454.5,-24 454.5,0 551.5,0 551.5,-24"/>
+<text text-anchor="middle" x="503" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#000000">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+    
+    <p>Solid arrows point from a procedure to one which it calls. Dashed 
+    arrows point from an interface to procedures which implement that interface.
+    This could include the module procedures in a generic interface or the
+    implementation in a submodule of an interface in a parent module.
+    </p>
+    </div></div></div></div>
+      </div>
+    </div>
+     
+     
+    <div class="panel panel-default">
+      <div class="panel-heading">
+  <h3 class="panel-title">Called by</h3>
+      </div>
+      <div class="panel-body">
+  <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.40.1 (20161225.0304)
+ -->
+<!-- Title: proc~~day_wrap~~CalledByGraph Pages: 1 -->
+<svg id="procday_wrapCalledByGraph" width="641pt" height="378pt"
+ viewBox="0.00 0.00 641.00 378.40" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="proc~~day_wrap~~CalledByGraph" class="graph" transform="scale(.4776 .4776) rotate(0) translate(4 788.2219)">
+<title>proc~~day_wrap~~CalledByGraph</title>
+<polygon fill="#ffffff" stroke="transparent" points="-4,4 -4,-788.2219 1338,-788.2219 1338,4 -4,4"/>
+<!-- proc~day_wrap -->
+<g id="proc~~day_wrap~~CalledByGraph_node1" class="node">
+<title>proc~day_wrap</title>
+<polygon fill="none" stroke="#000000" points="1334,-714.2219 1275,-714.2219 1275,-690.2219 1334,-690.2219 1334,-714.2219"/>
+<text text-anchor="middle" x="1304.5" y="-699.8219" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#000000">day_wrap</text>
+</g>
+<!-- proc~day_wrap&#45;&gt;proc~day_wrap -->
+<g id="proc~~day_wrap~~CalledByGraph_edge1" class="edge">
+<title>proc~day_wrap&#45;&gt;proc~day_wrap</title>
+<path fill="none" stroke="#000000" d="M1286.9735,-714.2358C1280.8531,-723.1935 1286.6953,-732.2219 1304.5,-732.2219 1315.3497,-732.2219 1321.7573,-728.8693 1323.7228,-724.2231"/>
+<polygon fill="#000000" stroke="#000000" points="1327.1516,-723.5085 1322.0265,-714.2358 1320.2504,-724.6807 1327.1516,-723.5085"/>
+</g>
+<!-- proc~utsec2filestem -->
+<g id="proc~~day_wrap~~CalledByGraph_node2" class="node">
+<title>proc~utsec2filestem</title>
+<g id="a_proc~~day_wrap~~CalledByGraph_node2"><a xlink:href=".././proc/utsec2filestem.html" xlink:title="utsec2filestem">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1239,-674.2219 1158,-674.2219 1158,-650.2219 1239,-650.2219 1239,-674.2219"/>
+<text text-anchor="middle" x="1198.5" y="-659.8219" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">utsec2filestem</text>
+</a>
+</g>
+</g>
+<!-- proc~utsec2filestem&#45;&gt;proc~day_wrap -->
+<g id="proc~~day_wrap~~CalledByGraph_edge2" class="edge">
+<title>proc~utsec2filestem&#45;&gt;proc~day_wrap</title>
+<path fill="none" stroke="#000000" d="M1230.3035,-674.2232C1241.3565,-678.3941 1253.8822,-683.1208 1265.4526,-687.487"/>
+<polygon fill="#000000" stroke="#000000" points="1264.3021,-690.7937 1274.8938,-691.0497 1266.7735,-684.2445 1264.3021,-690.7937"/>
+</g>
+<!-- proc~dateinc -->
+<g id="proc~~day_wrap~~CalledByGraph_node3" class="node">
+<title>proc~dateinc</title>
+<g id="a_proc~~day_wrap~~CalledByGraph_node3"><a xlink:href=".././proc/dateinc.html" xlink:title="dateinc">
+<polygon fill="#d9534f" stroke="#d9534f" points="1109,-662.2219 1055,-662.2219 1055,-638.2219 1109,-638.2219 1109,-662.2219"/>
+<text text-anchor="middle" x="1082" y="-647.8219" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">dateinc</text>
+</a>
+</g>
+</g>
+<!-- proc~dateinc&#45;&gt;proc~day_wrap -->
+<g id="proc~~day_wrap~~CalledByGraph_edge3" class="edge">
+<title>proc~dateinc&#45;&gt;proc~day_wrap</title>
+<path fill="none" stroke="#000000" d="M1105.0026,-662.2303C1119.7651,-669.4233 1139.5581,-678.1316 1158,-683.2219 1193.3842,-692.9884 1234.995,-697.7732 1264.8098,-700.094"/>
+<polygon fill="#000000" stroke="#000000" points="1264.6085,-703.5885 1274.8342,-700.8162 1265.1116,-696.6066 1264.6085,-703.5885"/>
+</g>
+<!-- program~test_dayrollover -->
+<g id="proc~~day_wrap~~CalledByGraph_node4" class="node">
+<title>program~test_dayrollover</title>
+<g id="a_proc~~day_wrap~~CalledByGraph_node4"><a xlink:href=".././program/test_dayrollover.html" xlink:title="test_dayrollover">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="985,-784.2219 897,-784.2219 897,-760.2219 985,-760.2219 985,-784.2219"/>
+<text text-anchor="middle" x="941" y="-769.8219" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">test_dayrollover</text>
+</a>
+</g>
+</g>
+<!-- program~test_dayrollover&#45;&gt;proc~day_wrap -->
+<g id="proc~~day_wrap~~CalledByGraph_edge4" class="edge">
+<title>program~test_dayrollover&#45;&gt;proc~day_wrap</title>
+<path fill="none" stroke="#000000" d="M985.2088,-763.7085C1056.6558,-749.9498 1196.3927,-723.0403 1264.8243,-709.8623"/>
+<polygon fill="#000000" stroke="#000000" points="1265.6227,-713.2729 1274.7804,-707.945 1264.2989,-706.3992 1265.6227,-713.2729"/>
+</g>
+<!-- program~test_dayrollover&#45;&gt;proc~dateinc -->
+<g id="proc~~day_wrap~~CalledByGraph_edge13" class="edge">
+<title>program~test_dayrollover&#45;&gt;proc~dateinc</title>
+<path fill="none" stroke="#000000" d="M985.0731,-762.066C992.442,-759.2506 999.7223,-755.6951 1006,-751.2219 1035.5551,-730.1622 1058.6409,-694.1631 1071.282,-671.3145"/>
+<polygon fill="#000000" stroke="#000000" points="1074.4152,-672.8776 1076.0485,-662.4094 1068.2436,-669.5742 1074.4152,-672.8776"/>
+</g>
+<!-- proc~read_dneu2d -->
+<g id="proc~~day_wrap~~CalledByGraph_node5" class="node">
+<title>proc~read_dneu2d</title>
+<g id="a_proc~~day_wrap~~CalledByGraph_node5"><a xlink:href=".././proc/read_dneu2d.html" xlink:title="read_dneu2D">
+<polygon fill="#d9534f" stroke="#d9534f" points="980,-620.2219 902,-620.2219 902,-596.2219 980,-596.2219 980,-620.2219"/>
+<text text-anchor="middle" x="941" y="-605.8219" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">read_dneu2D</text>
+</a>
+</g>
+</g>
+<!-- proc~read_dneu2d&#45;&gt;proc~dateinc -->
+<g id="proc~~day_wrap~~CalledByGraph_edge14" class="edge">
+<title>proc~read_dneu2d&#45;&gt;proc~dateinc</title>
+<path fill="none" stroke="#000000" d="M980.2764,-619.9212C1000.6313,-625.9844 1025.3379,-633.3438 1045.3049,-639.2914"/>
+<polygon fill="#000000" stroke="#000000" points="1044.3924,-642.6715 1054.9754,-642.172 1046.3907,-635.9628 1044.3924,-642.6715"/>
+</g>
+<!-- proc~date_filename -->
+<g id="proc~~day_wrap~~CalledByGraph_node8" class="node">
+<title>proc~date_filename</title>
+<g id="a_proc~~day_wrap~~CalledByGraph_node8"><a xlink:href=".././proc/date_filename.html" xlink:title="date_filename">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1122,-352.2219 1042,-352.2219 1042,-328.2219 1122,-328.2219 1122,-352.2219"/>
+<text text-anchor="middle" x="1082" y="-337.8219" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">date_filename</text>
+</a>
+</g>
+</g>
+<!-- proc~read_dneu2d&#45;&gt;proc~date_filename -->
+<g id="proc~~day_wrap~~CalledByGraph_edge18" class="edge">
+<title>proc~read_dneu2d&#45;&gt;proc~date_filename</title>
+<path fill="none" stroke="#000000" d="M958.6496,-596.0145C973.1316,-585.1954 993.2575,-568.2014 1006,-549.2219 1046.9169,-488.2774 1068.9769,-402.5793 1077.6208,-362.5104"/>
+<polygon fill="#000000" stroke="#000000" points="1081.0978,-362.9806 1079.7075,-352.4774 1074.2445,-361.5552 1081.0978,-362.9806"/>
+</g>
+<!-- proc~precipbcs_fileinput -->
+<g id="proc~~day_wrap~~CalledByGraph_node6" class="node">
+<title>proc~precipbcs_fileinput</title>
+<g id="a_proc~~day_wrap~~CalledByGraph_node6"><a xlink:href=".././proc/precipbcs_fileinput.html" xlink:title="precipBCs_fileinput">
+<polygon fill="#d9534f" stroke="#d9534f" points="993,-498.2219 889,-498.2219 889,-474.2219 993,-474.2219 993,-498.2219"/>
+<text text-anchor="middle" x="941" y="-483.8219" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">precipBCs_fileinput</text>
+</a>
+</g>
+</g>
+<!-- proc~precipbcs_fileinput&#45;&gt;proc~dateinc -->
+<g id="proc~~day_wrap~~CalledByGraph_edge7" class="edge">
+<title>proc~precipbcs_fileinput&#45;&gt;proc~dateinc</title>
+<path fill="none" stroke="#000000" d="M992.0168,-498.3589C997.041,-500.796 1001.8185,-503.7184 1006,-507.2219 1044.5553,-539.525 1066.3397,-596.5184 1075.9637,-627.9156"/>
+<polygon fill="#000000" stroke="#000000" points="1072.7076,-629.2518 1078.8683,-637.8713 1079.4274,-627.2912 1072.7076,-629.2518"/>
+</g>
+<!-- proc~precipbcs_fileinput&#45;&gt;proc~date_filename -->
+<g id="proc~~day_wrap~~CalledByGraph_edge22" class="edge">
+<title>proc~precipbcs_fileinput&#45;&gt;proc~date_filename</title>
+<path fill="none" stroke="#000000" d="M991.1546,-474.1473C996.4559,-471.6934 1001.5329,-468.75 1006,-465.2219 1040.6392,-437.8631 1063.2739,-390.0396 1074.2385,-362.1477"/>
+<polygon fill="#000000" stroke="#000000" points="1077.6163,-363.1098 1077.8702,-352.518 1071.0666,-360.6397 1077.6163,-363.1098"/>
+</g>
+<!-- program~gemini3d -->
+<g id="proc~~day_wrap~~CalledByGraph_node7" class="node">
+<title>program~gemini3d</title>
+<g id="a_proc~~day_wrap~~CalledByGraph_node7"><a xlink:href=".././program/gemini3d.html" xlink:title="Gemini3D">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="60,-578.2219 0,-578.2219 0,-554.2219 60,-554.2219 60,-578.2219"/>
+<text text-anchor="middle" x="30" y="-563.8219" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Gemini3D</text>
+</a>
+</g>
+</g>
+<!-- program~gemini3d&#45;&gt;proc~dateinc -->
+<g id="proc~~day_wrap~~CalledByGraph_edge9" class="edge">
+<title>program~gemini3d&#45;&gt;proc~dateinc</title>
+<path fill="none" stroke="#000000" d="M43.2047,-578.3373C78.6431,-609.5389 179.9541,-690.2219 280,-690.2219 280,-690.2219 280,-690.2219 773,-690.2219 876.8993,-690.2219 903.6963,-689.3604 1006,-671.2219 1018.8469,-668.9441 1032.6625,-665.4514 1044.9448,-661.9643"/>
+<polygon fill="#000000" stroke="#000000" points="1046.234,-665.2338 1054.8464,-659.0632 1044.2657,-658.5162 1046.234,-665.2338"/>
+</g>
+<!-- proc~neutral_perturb -->
+<g id="proc~~day_wrap~~CalledByGraph_node32" class="node">
+<title>proc~neutral_perturb</title>
+<g id="a_proc~~day_wrap~~CalledByGraph_node32"><a xlink:href=".././proc/neutral_perturb.html" xlink:title="neutral_perturb">
+<polygon fill="#d9534f" stroke="#d9534f" points="648,-620.2219 562,-620.2219 562,-596.2219 648,-596.2219 648,-620.2219"/>
+<text text-anchor="middle" x="605" y="-605.8219" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">neutral_perturb</text>
+</a>
+</g>
+</g>
+<!-- program~gemini3d&#45;&gt;proc~neutral_perturb -->
+<g id="proc~~day_wrap~~CalledByGraph_edge46" class="edge">
+<title>program~gemini3d&#45;&gt;proc~neutral_perturb</title>
+<path fill="none" stroke="#000000" d="M60.1333,-577.6741C71.2441,-581.3978 84.0401,-585.1116 96,-587.2219 260.1238,-616.18 458.4136,-613.8853 551.6476,-610.6569"/>
+<polygon fill="#000000" stroke="#000000" points="551.8166,-614.1532 561.6826,-610.2915 551.5618,-607.1578 551.8166,-614.1532"/>
+</g>
+<!-- interface~output_plasma -->
+<g id="proc~~day_wrap~~CalledByGraph_node41" class="node">
+<title>interface~output_plasma</title>
+<g id="a_proc~~day_wrap~~CalledByGraph_node41"><a xlink:href=".././interface/output_plasma.html" xlink:title="output_plasma">
+<polygon fill="#a7506f" stroke="#a7506f" points="182.5,-261.2219 99.5,-261.2219 99.5,-237.2219 182.5,-237.2219 182.5,-261.2219"/>
+<text text-anchor="middle" x="141" y="-246.8219" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">output_plasma</text>
+</a>
+</g>
+</g>
+<!-- program~gemini3d&#45;&gt;interface~output_plasma -->
+<g id="proc~~day_wrap~~CalledByGraph_edge55" class="edge">
+<title>program~gemini3d&#45;&gt;interface~output_plasma</title>
+<path fill="none" stroke="#000000" d="M34.2158,-554.1822C50.8369,-506.7147 111.9675,-332.1345 133.4635,-270.7449"/>
+<polygon fill="#000000" stroke="#000000" points="136.7785,-271.8684 136.78,-261.2736 130.1718,-269.555 136.7785,-271.8684"/>
+</g>
+<!-- interface~output_aur -->
+<g id="proc~~day_wrap~~CalledByGraph_node42" class="node">
+<title>interface~output_aur</title>
+<g id="a_proc~~day_wrap~~CalledByGraph_node42"><a xlink:href=".././interface/output_aur.html" xlink:title="output_aur">
+<polygon fill="#a7506f" stroke="#a7506f" points="173,-447.2219 109,-447.2219 109,-423.2219 173,-423.2219 173,-447.2219"/>
+<text text-anchor="middle" x="141" y="-432.8219" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">output_aur</text>
+</a>
+</g>
+</g>
+<!-- program~gemini3d&#45;&gt;interface~output_aur -->
+<g id="proc~~day_wrap~~CalledByGraph_edge56" class="edge">
+<title>program~gemini3d&#45;&gt;interface~output_aur</title>
+<path fill="none" stroke="#000000" d="M40.2437,-554.1325C59.4072,-531.5161 100.8447,-482.6124 124.1688,-455.0857"/>
+<polygon fill="#000000" stroke="#000000" points="126.9867,-457.1741 130.7811,-447.282 121.6461,-452.6488 126.9867,-457.1741"/>
+</g>
+<!-- interface~electrodynamics -->
+<g id="proc~~day_wrap~~CalledByGraph_node43" class="node">
+<title>interface~electrodynamics</title>
+<g id="a_proc~~day_wrap~~CalledByGraph_node43"><a xlink:href=".././interface/electrodynamics.html" xlink:title="electrodynamics">
+<polygon fill="#a7506f" stroke="#a7506f" points="186,-578.2219 96,-578.2219 96,-554.2219 186,-554.2219 186,-578.2219"/>
+<text text-anchor="middle" x="141" y="-563.8219" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">electrodynamics</text>
+</a>
+</g>
+</g>
+<!-- program~gemini3d&#45;&gt;interface~electrodynamics -->
+<g id="proc~~day_wrap~~CalledByGraph_edge57" class="edge">
+<title>program~gemini3d&#45;&gt;interface~electrodynamics</title>
+<path fill="none" stroke="#000000" d="M60.0382,-566.2219C68.0619,-566.2219 76.992,-566.2219 85.9081,-566.2219"/>
+<polygon fill="#000000" stroke="#000000" points="85.9196,-569.722 95.9196,-566.2219 85.9195,-562.722 85.9196,-569.722"/>
+</g>
+<!-- proc~date_filename&#45;&gt;proc~utsec2filestem -->
+<g id="proc~~day_wrap~~CalledByGraph_edge5" class="edge">
+<title>proc~date_filename&#45;&gt;proc~utsec2filestem</title>
+<path fill="none" stroke="#000000" d="M1086.4247,-352.4514C1103.8693,-400.6676 1168.0289,-578.0014 1190.5901,-640.3593"/>
+<polygon fill="#000000" stroke="#000000" points="1187.3774,-641.7674 1194.0709,-649.9801 1193.9599,-639.3858 1187.3774,-641.7674"/>
+</g>
+<!-- program~test_formats -->
+<g id="proc~~day_wrap~~CalledByGraph_node9" class="node">
+<title>program~test_formats</title>
+<g id="a_proc~~day_wrap~~CalledByGraph_node9"><a xlink:href=".././program/test_formats.html" xlink:title="test_formats">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="977,-742.2219 905,-742.2219 905,-718.2219 977,-718.2219 977,-742.2219"/>
+<text text-anchor="middle" x="941" y="-727.8219" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">test_formats</text>
+</a>
+</g>
+</g>
+<!-- program~test_formats&#45;&gt;proc~utsec2filestem -->
+<g id="proc~~day_wrap~~CalledByGraph_edge6" class="edge">
+<title>program~test_formats&#45;&gt;proc~utsec2filestem</title>
+<path fill="none" stroke="#000000" d="M977.0754,-720.6951C1021.5839,-708.9414 1097.5259,-688.8869 1147.8612,-675.5944"/>
+<polygon fill="#000000" stroke="#000000" points="1148.7951,-678.9679 1157.57,-673.0306 1147.0078,-672.1999 1148.7951,-678.9679"/>
+</g>
+<!-- program~test_formats&#45;&gt;proc~dateinc -->
+<g id="proc~~day_wrap~~CalledByGraph_edge10" class="edge">
+<title>program~test_formats&#45;&gt;proc~dateinc</title>
+<path fill="none" stroke="#000000" d="M975.4327,-718.2075C985.5109,-714.2257 996.3959,-709.4578 1006,-704.2219 1024.8887,-693.9242 1044.6504,-679.7631 1059.2869,-668.5262"/>
+<polygon fill="#000000" stroke="#000000" points="1061.5363,-671.2105 1067.267,-662.2993 1057.23,-665.6917 1061.5363,-671.2105"/>
+</g>
+<!-- proc~potentialbcs2d_fileinput -->
+<g id="proc~~day_wrap~~CalledByGraph_node10" class="node">
+<title>proc~potentialbcs2d_fileinput</title>
+<g id="a_proc~~day_wrap~~CalledByGraph_node10"><a xlink:href=".././proc/potentialbcs2d_fileinput.html" xlink:title="potentialBCs2D_fileinput">
+<polygon fill="#d9534f" stroke="#d9534f" points="1005.5,-540.2219 876.5,-540.2219 876.5,-516.2219 1005.5,-516.2219 1005.5,-540.2219"/>
+<text text-anchor="middle" x="941" y="-525.8219" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">potentialBCs2D_fileinput</text>
+</a>
+</g>
+</g>
+<!-- proc~potentialbcs2d_fileinput&#45;&gt;proc~dateinc -->
+<g id="proc~~day_wrap~~CalledByGraph_edge11" class="edge">
+<title>proc~potentialbcs2d_fileinput&#45;&gt;proc~dateinc</title>
+<path fill="none" stroke="#000000" d="M980.5526,-540.2311C989.398,-543.9264 998.4007,-548.554 1006,-554.2219 1033.6085,-574.8133 1056.713,-607.7944 1069.9557,-629.234"/>
+<polygon fill="#000000" stroke="#000000" points="1067.0207,-631.1451 1075.1695,-637.9162 1073.0218,-627.5413 1067.0207,-631.1451"/>
+</g>
+<!-- proc~potentialbcs2d_fileinput&#45;&gt;proc~date_filename -->
+<g id="proc~~day_wrap~~CalledByGraph_edge23" class="edge">
+<title>proc~potentialbcs2d_fileinput&#45;&gt;proc~date_filename</title>
+<path fill="none" stroke="#000000" d="M992.5625,-516.1779C997.4252,-513.7248 1002.0166,-510.7731 1006,-507.2219 1050.1735,-467.8407 1070.2584,-397.6671 1077.9533,-362.1339"/>
+<polygon fill="#000000" stroke="#000000" points="1081.3918,-362.788 1079.9565,-352.2908 1074.5324,-361.3919 1081.3918,-362.788"/>
+</g>
+<!-- proc~read_dneu3d -->
+<g id="proc~~day_wrap~~CalledByGraph_node11" class="node">
+<title>proc~read_dneu3d</title>
+<g id="a_proc~~day_wrap~~CalledByGraph_node11"><a xlink:href=".././proc/read_dneu3d.html" xlink:title="read_dneu3D">
+<polygon fill="#d9534f" stroke="#d9534f" points="980,-662.2219 902,-662.2219 902,-638.2219 980,-638.2219 980,-662.2219"/>
+<text text-anchor="middle" x="941" y="-647.8219" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">read_dneu3D</text>
+</a>
+</g>
+</g>
+<!-- proc~read_dneu3d&#45;&gt;proc~dateinc -->
+<g id="proc~~day_wrap~~CalledByGraph_edge12" class="edge">
+<title>proc~read_dneu3d&#45;&gt;proc~dateinc</title>
+<path fill="none" stroke="#000000" d="M980.2764,-650.2219C1000.4454,-650.2219 1024.887,-650.2219 1044.7567,-650.2219"/>
+<polygon fill="#000000" stroke="#000000" points="1044.9754,-653.722 1054.9754,-650.2219 1044.9754,-646.722 1044.9754,-653.722"/>
+</g>
+<!-- proc~read_dneu3d&#45;&gt;proc~date_filename -->
+<g id="proc~~day_wrap~~CalledByGraph_edge25" class="edge">
+<title>proc~read_dneu3d&#45;&gt;proc~date_filename</title>
+<path fill="none" stroke="#000000" d="M980.3261,-644.3205C989.8019,-641.2063 999.1537,-636.458 1006,-629.2219 1043.1746,-589.931 1070.2128,-422.9048 1078.9633,-362.302"/>
+<polygon fill="#000000" stroke="#000000" points="1082.4458,-362.6714 1080.3827,-352.2794 1075.515,-361.6898 1082.4458,-362.6714"/>
+</g>
+<!-- program~magcalc -->
+<g id="proc~~day_wrap~~CalledByGraph_node12" class="node">
+<title>program~magcalc</title>
+<g id="a_proc~~day_wrap~~CalledByGraph_node12"><a xlink:href=".././program/magcalc.html" xlink:title="MagCalc">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="307.5,-332.2219 252.5,-332.2219 252.5,-308.2219 307.5,-308.2219 307.5,-332.2219"/>
+<text text-anchor="middle" x="280" y="-317.8219" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">MagCalc</text>
+</a>
+</g>
+</g>
+<!-- program~magcalc&#45;&gt;proc~dateinc -->
+<g id="proc~~day_wrap~~CalledByGraph_edge8" class="edge">
+<title>program~magcalc&#45;&gt;proc~dateinc</title>
+<path fill="none" stroke="#000000" d="M292.138,-332.5155C326.9967,-366.9637 431.8582,-464.6849 540,-507.2219 665.071,-556.4179 707.9419,-520.2483 840,-545.2219 914.7772,-559.363 938.1486,-552.7575 1006,-587.2219 1027.9175,-598.3546 1049.1335,-616.7901 1063.5533,-630.8498"/>
+<polygon fill="#000000" stroke="#000000" points="1061.2848,-633.5314 1070.8265,-638.1365 1066.2391,-628.5862 1061.2848,-633.5314"/>
+</g>
+<!-- interface~output_magfields -->
+<g id="proc~~day_wrap~~CalledByGraph_node33" class="node">
+<title>interface~output_magfields</title>
+<g id="a_proc~~day_wrap~~CalledByGraph_node33"><a xlink:href=".././interface/output_magfields.html" xlink:title="output_magfields">
+<polygon fill="#a7506f" stroke="#a7506f" points="486,-332.2219 392,-332.2219 392,-308.2219 486,-308.2219 486,-332.2219"/>
+<text text-anchor="middle" x="439" y="-317.8219" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">output_magfields</text>
+</a>
+</g>
+</g>
+<!-- program~magcalc&#45;&gt;interface~output_magfields -->
+<g id="proc~~day_wrap~~CalledByGraph_edge47" class="edge">
+<title>program~magcalc&#45;&gt;interface~output_magfields</title>
+<path fill="none" stroke="#000000" d="M307.6957,-320.2219C328.0276,-320.2219 356.3664,-320.2219 381.5147,-320.2219"/>
+<polygon fill="#000000" stroke="#000000" points="381.6984,-323.722 391.6984,-320.2219 381.6983,-316.722 381.6984,-323.722"/>
+</g>
+<!-- interface~input_plasma_currents -->
+<g id="proc~~day_wrap~~CalledByGraph_node39" class="node">
+<title>interface~input_plasma_currents</title>
+<g id="a_proc~~day_wrap~~CalledByGraph_node39"><a xlink:href=".././interface/input_plasma_currents.html" xlink:title="input_plasma_currents">
+<polygon fill="#a7506f" stroke="#a7506f" points="499.5,-285.2219 378.5,-285.2219 378.5,-261.2219 499.5,-261.2219 499.5,-285.2219"/>
+<text text-anchor="middle" x="439" y="-270.8219" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">input_plasma_currents</text>
+</a>
+</g>
+</g>
+<!-- program~magcalc&#45;&gt;interface~input_plasma_currents -->
+<g id="proc~~day_wrap~~CalledByGraph_edge53" class="edge">
+<title>program~magcalc&#45;&gt;interface~input_plasma_currents</title>
+<path fill="none" stroke="#000000" d="M307.6957,-312.0351C329.9628,-305.453 361.8335,-296.0321 388.5992,-288.1202"/>
+<polygon fill="#000000" stroke="#000000" points="389.6044,-291.4729 398.202,-285.2816 387.62,-284.76 389.6044,-291.4729"/>
+</g>
+<!-- proc~output_magfields -->
+<g id="proc~~day_wrap~~CalledByGraph_node13" class="node">
+<title>proc~output_magfields</title>
+<g id="a_proc~~day_wrap~~CalledByGraph_node13"><a xlink:href=".././proc/output_magfields.html" xlink:title="output_magfields">
+<polygon fill="#777777" stroke="#777777" points="988,-456.2219 894,-456.2219 894,-432.2219 988,-432.2219 988,-456.2219"/>
+<text text-anchor="middle" x="941" y="-441.8219" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">output_magfields</text>
+</a>
+</g>
+</g>
+<!-- proc~output_magfields&#45;&gt;proc~date_filename -->
+<g id="proc~~day_wrap~~CalledByGraph_edge20" class="edge">
+<title>proc~output_magfields&#45;&gt;proc~date_filename</title>
+<path fill="none" stroke="#000000" d="M988.1389,-432.2323C994.3819,-429.7264 1000.512,-426.7468 1006,-423.2219 1031.6868,-406.7233 1054.3304,-379.4436 1068.0763,-360.6902"/>
+<polygon fill="#000000" stroke="#000000" points="1070.9609,-362.6733 1073.9144,-352.4985 1065.2604,-358.6107 1070.9609,-362.6733"/>
+</g>
+<!-- proc~output_aur_root -->
+<g id="proc~~day_wrap~~CalledByGraph_node14" class="node">
+<title>proc~output_aur_root</title>
+<g id="a_proc~~day_wrap~~CalledByGraph_node14"><a xlink:href=".././proc/output_aur_root.html" xlink:title="output_aur_root">
+<polygon fill="#d9534f" stroke="#d9534f" points="649.5,-213.2219 560.5,-213.2219 560.5,-189.2219 649.5,-189.2219 649.5,-213.2219"/>
+<text text-anchor="middle" x="605" y="-198.8219" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">output_aur_root</text>
+</a>
+</g>
+</g>
+<!-- proc~output_aur_root&#45;&gt;proc~date_filename -->
+<g id="proc~~day_wrap~~CalledByGraph_edge19" class="edge">
+<title>proc~output_aur_root&#45;&gt;proc~date_filename</title>
+<path fill="none" stroke="#000000" d="M624.2657,-189.0863C686.0489,-151.8646 882.3864,-46.9248 1006,-133.2219 1037.445,-155.1742 1066.2199,-269.5488 1077.2447,-318.2396"/>
+<polygon fill="#000000" stroke="#000000" points="1073.8481,-319.0895 1079.435,-328.0915 1080.6813,-317.5703 1073.8481,-319.0895"/>
+</g>
+<!-- proc~neutral_perturb_3d -->
+<g id="proc~~day_wrap~~CalledByGraph_node15" class="node">
+<title>proc~neutral_perturb_3d</title>
+<g id="a_proc~~day_wrap~~CalledByGraph_node15"><a xlink:href=".././proc/neutral_perturb_3d.html" xlink:title="neutral_perturb_3D">
+<polygon fill="#d9534f" stroke="#d9534f" points="826,-662.2219 720,-662.2219 720,-638.2219 826,-638.2219 826,-662.2219"/>
+<text text-anchor="middle" x="773" y="-647.8219" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">neutral_perturb_3D</text>
+</a>
+</g>
+</g>
+<!-- proc~neutral_perturb_3d&#45;&gt;proc~read_dneu3d -->
+<g id="proc~~day_wrap~~CalledByGraph_edge34" class="edge">
+<title>proc~neutral_perturb_3d&#45;&gt;proc~read_dneu3d</title>
+<path fill="none" stroke="#000000" d="M826.1563,-650.2219C847.1266,-650.2219 871.0751,-650.2219 891.6573,-650.2219"/>
+<polygon fill="#000000" stroke="#000000" points="891.7706,-653.722 901.7705,-650.2219 891.7705,-646.722 891.7706,-653.722"/>
+</g>
+<!-- proc~fluid_adv -->
+<g id="proc~~day_wrap~~CalledByGraph_node16" class="node">
+<title>proc~fluid_adv</title>
+<g id="a_proc~~day_wrap~~CalledByGraph_node16"><a xlink:href=".././proc/fluid_adv.html" xlink:title="fluid_adv">
+<polygon fill="#d9534f" stroke="#d9534f" points="800.5,-456.2219 745.5,-456.2219 745.5,-432.2219 800.5,-432.2219 800.5,-456.2219"/>
+<text text-anchor="middle" x="773" y="-441.8219" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">fluid_adv</text>
+</a>
+</g>
+</g>
+<!-- proc~fluid_adv&#45;&gt;proc~precipbcs_fileinput -->
+<g id="proc~~day_wrap~~CalledByGraph_edge17" class="edge">
+<title>proc~fluid_adv&#45;&gt;proc~precipbcs_fileinput</title>
+<path fill="none" stroke="#000000" d="M800.7418,-451.1573C822.9867,-456.7185 854.9733,-464.7152 882.7843,-471.6679"/>
+<polygon fill="#000000" stroke="#000000" points="882.2654,-475.1459 892.8158,-474.1758 883.9632,-468.3549 882.2654,-475.1459"/>
+</g>
+<!-- proc~output_root_stream_mpi~3 -->
+<g id="proc~~day_wrap~~CalledByGraph_node17" class="node">
+<title>proc~output_root_stream_mpi~3</title>
+<g id="a_proc~~day_wrap~~CalledByGraph_node17"><a xlink:href=".././proc/output_root_stream_mpi~3.html" xlink:title="output_root_stream_mpi">
+<polygon fill="#777777" stroke="#777777" points="1006,-208.2219 876,-208.2219 876,-184.2219 1006,-184.2219 1006,-208.2219"/>
+<text text-anchor="middle" x="941" y="-193.8219" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">output_root_stream_mpi</text>
+</a>
+</g>
+</g>
+<!-- proc~output_root_stream_mpi~3&#45;&gt;proc~date_filename -->
+<g id="proc~~day_wrap~~CalledByGraph_edge21" class="edge">
+<title>proc~output_root_stream_mpi~3&#45;&gt;proc~date_filename</title>
+<path fill="none" stroke="#000000" d="M991.1295,-208.3282C996.4353,-210.7764 1001.5203,-213.7097 1006,-217.2219 1040.3324,-244.1385 1063.0768,-291.1984 1074.1436,-318.6455"/>
+<polygon fill="#000000" stroke="#000000" points="1070.9382,-320.0603 1077.8131,-328.1216 1077.4659,-317.5325 1070.9382,-320.0603"/>
+</g>
+<!-- proc~neutral_perturb_axisymm -->
+<g id="proc~~day_wrap~~CalledByGraph_node18" class="node">
+<title>proc~neutral_perturb_axisymm</title>
+<g id="a_proc~~day_wrap~~CalledByGraph_node18"><a xlink:href=".././proc/neutral_perturb_axisymm.html" xlink:title="neutral_perturb_axisymm">
+<polygon fill="#d9534f" stroke="#d9534f" points="840,-620.2219 706,-620.2219 706,-596.2219 840,-596.2219 840,-620.2219"/>
+<text text-anchor="middle" x="773" y="-605.8219" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">neutral_perturb_axisymm</text>
+</a>
+</g>
+</g>
+<!-- proc~neutral_perturb_axisymm&#45;&gt;proc~read_dneu2d -->
+<g id="proc~~day_wrap~~CalledByGraph_edge16" class="edge">
+<title>proc~neutral_perturb_axisymm&#45;&gt;proc~read_dneu2d</title>
+<path fill="none" stroke="#000000" d="M840.364,-608.2219C857.4375,-608.2219 875.4662,-608.2219 891.474,-608.2219"/>
+<polygon fill="#000000" stroke="#000000" points="891.6712,-611.722 901.6711,-608.2219 891.6711,-604.722 891.6712,-611.722"/>
+</g>
+<!-- proc~potential_root_mpi_curv -->
+<g id="proc~~day_wrap~~CalledByGraph_node19" class="node">
+<title>proc~potential_root_mpi_curv</title>
+<g id="a_proc~~day_wrap~~CalledByGraph_node19"><a xlink:href=".././proc/potential_root_mpi_curv.html" xlink:title="potential_root_mpi_curv">
+<polygon fill="#d9534f" stroke="#d9534f" points="836.5,-498.2219 709.5,-498.2219 709.5,-474.2219 836.5,-474.2219 836.5,-498.2219"/>
+<text text-anchor="middle" x="773" y="-483.8219" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">potential_root_mpi_curv</text>
+</a>
+</g>
+</g>
+<!-- proc~potential_root_mpi_curv&#45;&gt;proc~potentialbcs2d_fileinput -->
+<g id="proc~~day_wrap~~CalledByGraph_edge33" class="edge">
+<title>proc~potential_root_mpi_curv&#45;&gt;proc~potentialbcs2d_fileinput</title>
+<path fill="none" stroke="#000000" d="M821.1421,-498.2574C840.4735,-503.0902 862.9242,-508.7029 883.1335,-513.7552"/>
+<polygon fill="#000000" stroke="#000000" points="882.3006,-517.1547 892.8509,-516.1846 883.9984,-510.3637 882.3006,-517.1547"/>
+</g>
+<!-- proc~output_aur_root~2 -->
+<g id="proc~~day_wrap~~CalledByGraph_node20" class="node">
+<title>proc~output_aur_root~2</title>
+<g id="a_proc~~day_wrap~~CalledByGraph_node20"><a xlink:href=".././proc/output_aur_root~2.html" xlink:title="output_aur_root">
+<polygon fill="#777777" stroke="#777777" points="985.5,-166.2219 896.5,-166.2219 896.5,-142.2219 985.5,-142.2219 985.5,-166.2219"/>
+<text text-anchor="middle" x="941" y="-151.8219" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">output_aur_root</text>
+</a>
+</g>
+</g>
+<!-- proc~output_aur_root~2&#45;&gt;proc~date_filename -->
+<g id="proc~~day_wrap~~CalledByGraph_edge24" class="edge">
+<title>proc~output_aur_root~2&#45;&gt;proc~date_filename</title>
+<path fill="none" stroke="#000000" d="M985.5923,-163.169C992.9898,-166.1145 1000.1458,-170.0267 1006,-175.2219 1049.6107,-213.9231 1069.8689,-282.7787 1077.7593,-318.0518"/>
+<polygon fill="#000000" stroke="#000000" points="1074.3371,-318.7861 1079.8232,-327.8499 1081.1868,-317.3432 1074.3371,-318.7861"/>
+</g>
+<!-- proc~output_magfields~2 -->
+<g id="proc~~day_wrap~~CalledByGraph_node21" class="node">
+<title>proc~output_magfields~2</title>
+<g id="a_proc~~day_wrap~~CalledByGraph_node21"><a xlink:href=".././proc/output_magfields~2.html" xlink:title="output_magfields">
+<polygon fill="#d9534f" stroke="#d9534f" points="652,-332.2219 558,-332.2219 558,-308.2219 652,-308.2219 652,-332.2219"/>
+<text text-anchor="middle" x="605" y="-317.8219" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">output_magfields</text>
+</a>
+</g>
+</g>
+<!-- proc~output_magfields~2&#45;&gt;proc~date_filename -->
+<g id="proc~~day_wrap~~CalledByGraph_edge29" class="edge">
+<title>proc~output_magfields~2&#45;&gt;proc~date_filename</title>
+<path fill="none" stroke="#000000" d="M652.042,-322.1943C742.2292,-325.9757 938.7257,-334.2145 1031.533,-338.1058"/>
+<polygon fill="#000000" stroke="#000000" points="1031.6513,-341.6138 1041.7892,-338.5359 1031.9446,-334.6199 1031.6513,-341.6138"/>
+</g>
+<!-- proc~output_magfields~3 -->
+<g id="proc~~day_wrap~~CalledByGraph_node22" class="node">
+<title>proc~output_magfields~3</title>
+<g id="a_proc~~day_wrap~~CalledByGraph_node22"><a xlink:href=".././proc/output_magfields~3.html" xlink:title="output_magfields">
+<polygon fill="#777777" stroke="#777777" points="988,-86.2219 894,-86.2219 894,-62.2219 988,-62.2219 988,-86.2219"/>
+<text text-anchor="middle" x="941" y="-71.8219" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">output_magfields</text>
+</a>
+</g>
+</g>
+<!-- proc~output_magfields~3&#45;&gt;proc~date_filename -->
+<g id="proc~~day_wrap~~CalledByGraph_edge26" class="edge">
+<title>proc~output_magfields~3&#45;&gt;proc~date_filename</title>
+<path fill="none" stroke="#000000" d="M986.5785,-86.3778C993.7872,-89.908 1000.6238,-94.4333 1006,-100.2219 1036.1977,-132.7356 1066.3058,-264.6663 1077.4675,-317.8448"/>
+<polygon fill="#000000" stroke="#000000" points="1074.1013,-318.8498 1079.555,-327.9331 1080.9561,-317.4313 1074.1013,-318.8498"/>
+</g>
+<!-- proc~output_root_stream_mpi~2 -->
+<g id="proc~~day_wrap~~CalledByGraph_node23" class="node">
+<title>proc~output_root_stream_mpi~2</title>
+<g id="a_proc~~day_wrap~~CalledByGraph_node23"><a xlink:href=".././proc/output_root_stream_mpi~2.html" xlink:title="output_root_stream_mpi">
+<polygon fill="#d9534f" stroke="#d9534f" points="670,-52.2219 540,-52.2219 540,-28.2219 670,-28.2219 670,-52.2219"/>
+<text text-anchor="middle" x="605" y="-37.8219" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">output_root_stream_mpi</text>
+</a>
+</g>
+</g>
+<!-- proc~output_root_stream_mpi~2&#45;&gt;proc~date_filename -->
+<g id="proc~~day_wrap~~CalledByGraph_edge27" class="edge">
+<title>proc~output_root_stream_mpi~2&#45;&gt;proc~date_filename</title>
+<path fill="none" stroke="#000000" d="M642.5602,-28.1902C719.9564,-5.945 898.9018,32.0058 1006,-53.2219 1048.0501,-86.6849 1072.0212,-256.0502 1079.4664,-317.7212"/>
+<polygon fill="#000000" stroke="#000000" points="1076.0223,-318.4027 1080.6649,-327.9262 1082.9745,-317.5862 1076.0223,-318.4027"/>
+</g>
+<!-- proc~input_root_currents~2 -->
+<g id="proc~~day_wrap~~CalledByGraph_node24" class="node">
+<title>proc~input_root_currents~2</title>
+<g id="a_proc~~day_wrap~~CalledByGraph_node24"><a xlink:href=".././proc/input_root_currents~2.html" xlink:title="input_root_currents">
+<polygon fill="#777777" stroke="#777777" points="994,-414.2219 888,-414.2219 888,-390.2219 994,-390.2219 994,-414.2219"/>
+<text text-anchor="middle" x="941" y="-399.8219" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">input_root_currents</text>
+</a>
+</g>
+</g>
+<!-- proc~input_root_currents~2&#45;&gt;proc~date_filename -->
+<g id="proc~~day_wrap~~CalledByGraph_edge28" class="edge">
+<title>proc~input_root_currents~2&#45;&gt;proc~date_filename</title>
+<path fill="none" stroke="#000000" d="M982.3332,-390.1206C990.284,-387.4424 998.4747,-384.4355 1006,-381.2219 1021.9072,-374.4286 1038.913,-365.4309 1052.7961,-357.5954"/>
+<polygon fill="#000000" stroke="#000000" points="1054.924,-360.4098 1061.8567,-352.398 1051.441,-354.3379 1054.924,-360.4098"/>
+</g>
+<!-- proc~neutral_perturb_cart -->
+<g id="proc~~day_wrap~~CalledByGraph_node25" class="node">
+<title>proc~neutral_perturb_cart</title>
+<g id="a_proc~~day_wrap~~CalledByGraph_node25"><a xlink:href=".././proc/neutral_perturb_cart.html" xlink:title="neutral_perturb_cart">
+<polygon fill="#d9534f" stroke="#d9534f" points="828,-578.2219 718,-578.2219 718,-554.2219 828,-554.2219 828,-578.2219"/>
+<text text-anchor="middle" x="773" y="-563.8219" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">neutral_perturb_cart</text>
+</a>
+</g>
+</g>
+<!-- proc~neutral_perturb_cart&#45;&gt;proc~read_dneu2d -->
+<g id="proc~~day_wrap~~CalledByGraph_edge15" class="edge">
+<title>proc~neutral_perturb_cart&#45;&gt;proc~read_dneu2d</title>
+<path fill="none" stroke="#000000" d="M821.1421,-578.2574C843.3399,-583.8068 869.6506,-590.3845 891.9579,-595.9613"/>
+<polygon fill="#000000" stroke="#000000" points="891.346,-599.416 901.8963,-598.4459 893.0438,-592.625 891.346,-599.416"/>
+</g>
+<!-- proc~output_aur_root~3 -->
+<g id="proc~~day_wrap~~CalledByGraph_node26" class="node">
+<title>proc~output_aur_root~3</title>
+<g id="a_proc~~day_wrap~~CalledByGraph_node26"><a xlink:href=".././proc/output_aur_root~3.html" xlink:title="output_aur_root">
+<polygon fill="#777777" stroke="#777777" points="985.5,-372.2219 896.5,-372.2219 896.5,-348.2219 985.5,-348.2219 985.5,-372.2219"/>
+<text text-anchor="middle" x="941" y="-357.8219" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">output_aur_root</text>
+</a>
+</g>
+</g>
+<!-- proc~output_aur_root~3&#45;&gt;proc~date_filename -->
+<g id="proc~~day_wrap~~CalledByGraph_edge30" class="edge">
+<title>proc~output_aur_root~3&#45;&gt;proc~date_filename</title>
+<path fill="none" stroke="#000000" d="M985.6133,-353.8937C1000.2972,-351.8109 1016.721,-349.4813 1031.7923,-347.3435"/>
+<polygon fill="#000000" stroke="#000000" points="1032.5629,-350.7693 1041.9722,-345.8996 1031.5798,-343.8387 1032.5629,-350.7693"/>
+</g>
+<!-- proc~input_root_currents -->
+<g id="proc~~day_wrap~~CalledByGraph_node27" class="node">
+<title>proc~input_root_currents</title>
+<g id="a_proc~~day_wrap~~CalledByGraph_node27"><a xlink:href=".././proc/input_root_currents.html" xlink:title="input_root_currents">
+<polygon fill="#d9534f" stroke="#d9534f" points="994,-250.2219 888,-250.2219 888,-226.2219 994,-226.2219 994,-250.2219"/>
+<text text-anchor="middle" x="941" y="-235.8219" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">input_root_currents</text>
+</a>
+</g>
+</g>
+<!-- proc~input_root_currents&#45;&gt;proc~date_filename -->
+<g id="proc~~day_wrap~~CalledByGraph_edge31" class="edge">
+<title>proc~input_root_currents&#45;&gt;proc~date_filename</title>
+<path fill="none" stroke="#000000" d="M988.0995,-250.2732C994.3484,-252.7698 1000.4907,-255.7304 1006,-259.2219 1031.1954,-275.1893 1053.691,-301.4345 1067.5503,-319.7069"/>
+<polygon fill="#000000" stroke="#000000" points="1064.882,-321.9858 1073.6342,-327.9565 1070.5158,-317.831 1064.882,-321.9858"/>
+</g>
+<!-- proc~output_root_stream_mpi -->
+<g id="proc~~day_wrap~~CalledByGraph_node28" class="node">
+<title>proc~output_root_stream_mpi</title>
+<g id="a_proc~~day_wrap~~CalledByGraph_node28"><a xlink:href=".././proc/output_root_stream_mpi.html" xlink:title="output_root_stream_mpi">
+<polygon fill="#777777" stroke="#777777" points="1006,-292.2219 876,-292.2219 876,-268.2219 1006,-268.2219 1006,-292.2219"/>
+<text text-anchor="middle" x="941" y="-277.8219" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">output_root_stream_mpi</text>
+</a>
+</g>
+</g>
+<!-- proc~output_root_stream_mpi&#45;&gt;proc~date_filename -->
+<g id="proc~~day_wrap~~CalledByGraph_edge32" class="edge">
+<title>proc~output_root_stream_mpi&#45;&gt;proc~date_filename</title>
+<path fill="none" stroke="#000000" d="M971.854,-292.2699C982.689,-296.5783 994.9201,-301.5297 1006,-306.2219 1019.2583,-311.8365 1033.7053,-318.2294 1046.4086,-323.9448"/>
+<polygon fill="#000000" stroke="#000000" points="1045.1804,-327.2306 1055.7345,-328.1593 1048.0632,-320.8517 1045.1804,-327.2306"/>
+</g>
+<!-- interface~input_root_currents -->
+<g id="proc~~day_wrap~~CalledByGraph_node29" class="node">
+<title>interface~input_root_currents</title>
+<g id="a_proc~~day_wrap~~CalledByGraph_node29"><a xlink:href=".././interface/input_root_currents.html" xlink:title="input_root_currents">
+<polygon fill="#a7506f" stroke="#a7506f" points="826,-262.2219 720,-262.2219 720,-238.2219 826,-238.2219 826,-262.2219"/>
+<text text-anchor="middle" x="773" y="-247.8219" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">input_root_currents</text>
+</a>
+</g>
+</g>
+<!-- interface~input_root_currents&#45;&gt;proc~input_root_currents -->
+<g id="proc~~day_wrap~~CalledByGraph_edge42" class="edge">
+<title>interface~input_root_currents&#45;&gt;proc~input_root_currents</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M826.1563,-246.425C842.4759,-245.2593 860.5992,-243.9648 877.536,-242.755"/>
+<polygon fill="#000000" stroke="#000000" points="878.1762,-246.2183 887.9014,-242.0146 877.6774,-239.2361 878.1762,-246.2183"/>
+</g>
+<!-- interface~output_aur_root -->
+<g id="proc~~day_wrap~~CalledByGraph_node30" class="node">
+<title>interface~output_aur_root</title>
+<g id="a_proc~~day_wrap~~CalledByGraph_node30"><a xlink:href=".././interface/output_aur_root.html" xlink:title="output_aur_root">
+<polygon fill="#a7506f" stroke="#a7506f" points="483.5,-213.2219 394.5,-213.2219 394.5,-189.2219 483.5,-189.2219 483.5,-213.2219"/>
+<text text-anchor="middle" x="439" y="-198.8219" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">output_aur_root</text>
+</a>
+</g>
+</g>
+<!-- interface~output_aur_root&#45;&gt;proc~output_aur_root -->
+<g id="proc~~day_wrap~~CalledByGraph_edge35" class="edge">
+<title>interface~output_aur_root&#45;&gt;proc~output_aur_root</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M483.922,-201.2219C504.3035,-201.2219 528.596,-201.2219 550.0536,-201.2219"/>
+<polygon fill="#000000" stroke="#000000" points="550.33,-204.722 560.33,-201.2219 550.3299,-197.722 550.33,-204.722"/>
+</g>
+<!-- interface~output_root_stream_mpi -->
+<g id="proc~~day_wrap~~CalledByGraph_node31" class="node">
+<title>interface~output_root_stream_mpi</title>
+<g id="a_proc~~day_wrap~~CalledByGraph_node31"><a xlink:href=".././interface/output_root_stream_mpi.html" xlink:title="output_root_stream_mpi">
+<polygon fill="#a7506f" stroke="#a7506f" points="504,-132.2219 374,-132.2219 374,-108.2219 504,-108.2219 504,-132.2219"/>
+<text text-anchor="middle" x="439" y="-117.8219" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">output_root_stream_mpi</text>
+</a>
+</g>
+</g>
+<!-- interface~output_root_stream_mpi&#45;&gt;proc~output_root_stream_mpi~2 -->
+<g id="proc~~day_wrap~~CalledByGraph_edge40" class="edge">
+<title>interface~output_root_stream_mpi&#45;&gt;proc~output_root_stream_mpi~2</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M464.2118,-108.0716C492.6517,-94.3656 539.0618,-71.9993 570.7644,-56.7209"/>
+<polygon fill="#000000" stroke="#000000" points="572.6059,-59.7188 580.0948,-52.2244 569.5668,-53.4129 572.6059,-59.7188"/>
+</g>
+<!-- proc~neutral_perturb&#45;&gt;proc~neutral_perturb_3d -->
+<g id="proc~~day_wrap~~CalledByGraph_edge36" class="edge">
+<title>proc~neutral_perturb&#45;&gt;proc~neutral_perturb_3d</title>
+<path fill="none" stroke="#000000" d="M648.2642,-619.0379C668.5826,-624.1175 693.0967,-630.246 714.9959,-635.7208"/>
+<polygon fill="#000000" stroke="#000000" points="714.2988,-639.1542 724.8492,-638.1841 715.9966,-632.3632 714.2988,-639.1542"/>
+</g>
+<!-- proc~neutral_perturb&#45;&gt;proc~neutral_perturb_axisymm -->
+<g id="proc~~day_wrap~~CalledByGraph_edge37" class="edge">
+<title>proc~neutral_perturb&#45;&gt;proc~neutral_perturb_axisymm</title>
+<path fill="none" stroke="#000000" d="M648.2642,-608.2219C662.7562,-608.2219 679.3826,-608.2219 695.6723,-608.2219"/>
+<polygon fill="#000000" stroke="#000000" points="695.7493,-611.722 705.7493,-608.2219 695.7493,-604.722 695.7493,-611.722"/>
+</g>
+<!-- proc~neutral_perturb&#45;&gt;proc~neutral_perturb_cart -->
+<g id="proc~~day_wrap~~CalledByGraph_edge41" class="edge">
+<title>proc~neutral_perturb&#45;&gt;proc~neutral_perturb_cart</title>
+<path fill="none" stroke="#000000" d="M648.2642,-597.4058C668.5826,-592.3262 693.0967,-586.1977 714.9959,-580.7229"/>
+<polygon fill="#000000" stroke="#000000" points="715.9966,-584.0805 724.8492,-578.2596 714.2988,-577.2895 715.9966,-584.0805"/>
+</g>
+<!-- interface~output_magfields&#45;&gt;proc~output_magfields~2 -->
+<g id="proc~~day_wrap~~CalledByGraph_edge39" class="edge">
+<title>interface~output_magfields&#45;&gt;proc~output_magfields~2</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M486.1249,-320.2219C505.2252,-320.2219 527.4641,-320.2219 547.5055,-320.2219"/>
+<polygon fill="#000000" stroke="#000000" points="547.7573,-323.722 557.7573,-320.2219 547.7572,-316.722 547.7573,-323.722"/>
+</g>
+<!-- interface~potential_root_mpi_curv -->
+<g id="proc~~day_wrap~~CalledByGraph_node34" class="node">
+<title>interface~potential_root_mpi_curv</title>
+<g id="a_proc~~day_wrap~~CalledByGraph_node34"><a xlink:href=".././interface/potential_root_mpi_curv.html" xlink:title="potential_root_mpi_curv">
+<polygon fill="#a7506f" stroke="#a7506f" points="668.5,-498.2219 541.5,-498.2219 541.5,-474.2219 668.5,-474.2219 668.5,-498.2219"/>
+<text text-anchor="middle" x="605" y="-483.8219" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">potential_root_mpi_curv</text>
+</a>
+</g>
+</g>
+<!-- interface~potential_root_mpi_curv&#45;&gt;proc~potential_root_mpi_curv -->
+<g id="proc~~day_wrap~~CalledByGraph_edge38" class="edge">
+<title>interface~potential_root_mpi_curv&#45;&gt;proc~potential_root_mpi_curv</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M668.5136,-486.2219C678.5489,-486.2219 688.9996,-486.2219 699.244,-486.2219"/>
+<polygon fill="#000000" stroke="#000000" points="699.3966,-489.722 709.3966,-486.2219 699.3966,-482.722 699.3966,-489.722"/>
+</g>
+<!-- proc~output_plasma -->
+<g id="proc~~day_wrap~~CalledByGraph_node35" class="node">
+<title>proc~output_plasma</title>
+<g id="a_proc~~day_wrap~~CalledByGraph_node35"><a xlink:href=".././proc/output_plasma.html" xlink:title="output_plasma">
+<polygon fill="#d9534f" stroke="#d9534f" points="321.5,-172.2219 238.5,-172.2219 238.5,-148.2219 321.5,-148.2219 321.5,-172.2219"/>
+<text text-anchor="middle" x="280" y="-157.8219" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">output_plasma</text>
+</a>
+</g>
+</g>
+<!-- proc~output_plasma&#45;&gt;interface~output_root_stream_mpi -->
+<g id="proc~~day_wrap~~CalledByGraph_edge45" class="edge">
+<title>proc~output_plasma&#45;&gt;interface~output_root_stream_mpi</title>
+<path fill="none" stroke="#000000" d="M321.7754,-149.7123C339.9577,-145.1382 361.5673,-139.7018 381.25,-134.7502"/>
+<polygon fill="#000000" stroke="#000000" points="382.1914,-138.1225 391.0353,-132.2884 380.4836,-131.334 382.1914,-138.1225"/>
+</g>
+<!-- proc~output_aur -->
+<g id="proc~~day_wrap~~CalledByGraph_node36" class="node">
+<title>proc~output_aur</title>
+<g id="a_proc~~day_wrap~~CalledByGraph_node36"><a xlink:href=".././proc/output_aur.html" xlink:title="output_aur">
+<polygon fill="#d9534f" stroke="#d9534f" points="312,-234.2219 248,-234.2219 248,-210.2219 312,-210.2219 312,-234.2219"/>
+<text text-anchor="middle" x="280" y="-219.8219" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">output_aur</text>
+</a>
+</g>
+</g>
+<!-- proc~output_aur&#45;&gt;interface~output_aur_root -->
+<g id="proc~~day_wrap~~CalledByGraph_edge44" class="edge">
+<title>proc~output_aur&#45;&gt;interface~output_aur_root</title>
+<path fill="none" stroke="#000000" d="M312.176,-217.9722C332.82,-215.2456 360.1577,-211.635 384.1647,-208.4643"/>
+<polygon fill="#000000" stroke="#000000" points="384.7647,-211.9155 394.2203,-207.1362 383.8481,-204.9758 384.7647,-211.9155"/>
+</g>
+<!-- proc~input_plasma_currents -->
+<g id="proc~~day_wrap~~CalledByGraph_node37" class="node">
+<title>proc~input_plasma_currents</title>
+<g id="a_proc~~day_wrap~~CalledByGraph_node37"><a xlink:href=".././proc/input_plasma_currents.html" xlink:title="input_plasma_currents">
+<polygon fill="#d9534f" stroke="#d9534f" points="665.5,-275.2219 544.5,-275.2219 544.5,-251.2219 665.5,-251.2219 665.5,-275.2219"/>
+<text text-anchor="middle" x="605" y="-260.8219" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">input_plasma_currents</text>
+</a>
+</g>
+</g>
+<!-- proc~input_plasma_currents&#45;&gt;interface~input_root_currents -->
+<g id="proc~~day_wrap~~CalledByGraph_edge43" class="edge">
+<title>proc~input_plasma_currents&#45;&gt;interface~input_root_currents</title>
+<path fill="none" stroke="#000000" d="M665.6519,-258.5286C679.946,-257.4225 695.22,-256.2405 709.6305,-255.1254"/>
+<polygon fill="#000000" stroke="#000000" points="710.2445,-258.5885 719.9447,-254.3273 709.7044,-251.6094 710.2445,-258.5885"/>
+</g>
+<!-- interface~potential_root_mpi -->
+<g id="proc~~day_wrap~~CalledByGraph_node38" class="node">
+<title>interface~potential_root_mpi</title>
+<g id="a_proc~~day_wrap~~CalledByGraph_node38"><a xlink:href=".././interface/potential_root_mpi.html" xlink:title="potential_root_mpi">
+<polygon fill="#a7506f" stroke="#a7506f" points="489.5,-578.2219 388.5,-578.2219 388.5,-554.2219 489.5,-554.2219 489.5,-578.2219"/>
+<text text-anchor="middle" x="439" y="-563.8219" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">potential_root_mpi</text>
+</a>
+</g>
+</g>
+<!-- interface~potential_root_mpi&#45;&gt;interface~potential_root_mpi_curv -->
+<g id="proc~~day_wrap~~CalledByGraph_edge48" class="edge">
+<title>interface~potential_root_mpi&#45;&gt;interface~potential_root_mpi_curv</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M464.2118,-554.0716C492.6517,-540.3656 539.0618,-517.9993 570.7644,-502.7209"/>
+<polygon fill="#000000" stroke="#000000" points="572.6059,-505.7188 580.0948,-498.2244 569.5668,-499.4129 572.6059,-505.7188"/>
+</g>
+<!-- interface~input_plasma_currents&#45;&gt;proc~input_plasma_currents -->
+<g id="proc~~day_wrap~~CalledByGraph_edge51" class="edge">
+<title>interface~input_plasma_currents&#45;&gt;proc~input_plasma_currents</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M499.8697,-269.555C511.1058,-268.8781 522.9256,-268.1661 534.4203,-267.4736"/>
+<polygon fill="#000000" stroke="#000000" points="534.6437,-270.9666 544.4151,-266.8715 534.2227,-263.9793 534.6437,-270.9666"/>
+</g>
+<!-- proc~electrodynamics_curv -->
+<g id="proc~~day_wrap~~CalledByGraph_node40" class="node">
+<title>proc~electrodynamics_curv</title>
+<g id="a_proc~~day_wrap~~CalledByGraph_node40"><a xlink:href=".././proc/electrodynamics_curv.html" xlink:title="electrodynamics_curv">
+<polygon fill="#d9534f" stroke="#d9534f" points="338,-578.2219 222,-578.2219 222,-554.2219 338,-554.2219 338,-578.2219"/>
+<text text-anchor="middle" x="280" y="-563.8219" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">electrodynamics_curv</text>
+</a>
+</g>
+</g>
+<!-- proc~electrodynamics_curv&#45;&gt;interface~potential_root_mpi -->
+<g id="proc~~day_wrap~~CalledByGraph_edge52" class="edge">
+<title>proc~electrodynamics_curv&#45;&gt;interface~potential_root_mpi</title>
+<path fill="none" stroke="#000000" d="M338.3029,-566.2219C351.2408,-566.2219 364.9867,-566.2219 378.0281,-566.2219"/>
+<polygon fill="#000000" stroke="#000000" points="378.3073,-569.722 388.3072,-566.2219 378.3072,-562.722 378.3073,-569.722"/>
+</g>
+<!-- interface~output_plasma&#45;&gt;proc~output_plasma -->
+<g id="proc~~day_wrap~~CalledByGraph_edge49" class="edge">
+<title>interface~output_plasma&#45;&gt;proc~output_plasma</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M159.7462,-237.2189C183.5809,-221.9578 224.9265,-195.4847 252.376,-177.9091"/>
+<polygon fill="#000000" stroke="#000000" points="254.5726,-180.6587 261.1069,-172.3189 250.798,-174.7636 254.5726,-180.6587"/>
+</g>
+<!-- interface~output_aur&#45;&gt;proc~output_aur -->
+<g id="proc~~day_wrap~~CalledByGraph_edge50" class="edge">
+<title>interface~output_aur&#45;&gt;proc~output_aur</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M147.7217,-422.9428C161.0864,-398.7625 192.2772,-343.4821 222,-299.2219 235.2594,-279.4772 251.6707,-257.926 263.6486,-242.6582"/>
+<polygon fill="#000000" stroke="#000000" points="266.6764,-244.4717 270.1314,-234.456 261.1846,-240.1311 266.6764,-244.4717"/>
+</g>
+<!-- interface~electrodynamics&#45;&gt;proc~electrodynamics_curv -->
+<g id="proc~~day_wrap~~CalledByGraph_edge54" class="edge">
+<title>interface~electrodynamics&#45;&gt;proc~electrodynamics_curv</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M186.1293,-566.2219C194.3339,-566.2219 203.0574,-566.2219 211.7546,-566.2219"/>
+<polygon fill="#000000" stroke="#000000" points="211.9198,-569.722 221.9197,-566.2219 211.9197,-562.722 211.9198,-569.722"/>
+</g>
+</g>
+</svg>
+</div><script>var panprocday_wrapCalledByGraph = svgPanZoom('#procday_wrapCalledByGraph', {zoomEnabled: true,controlIconsEnabled: true, fit: true, center: true,}); </script><div><a type="button" class="graph-help" data-toggle="modal" href="#graph-help-text">Help</a></div><div class="modal fade" id="graph-help-text" tabindex="-1" role="dialog"><div class="modal-dialog modal-lg" role="document"><div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button><h4 class="modal-title" id="-graph-help-label">Graph Key</h4></div><div class="modal-body">
+    <p>Nodes of different colours represent the following: </p>
+    <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.40.1 (20161225.0304)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="560pt" height="32pt"
+ viewBox="0.00 0.00 559.50 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 28)">
+<title>Graph Key</title>
+<polygon fill="#ffffff" stroke="transparent" points="-4,4 -4,-28 555.5,-28 555.5,4 -4,4"/>
+<!-- Subroutine -->
+<g id="node1" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="64,-24 0,-24 0,0 64,0 64,-24"/>
+<text text-anchor="middle" x="32" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node2" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="136,-24 82,-24 82,0 136,0 136,-24"/>
+<text text-anchor="middle" x="109" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Function</text>
+</g>
+<!-- Interface -->
+<g id="node3" class="node">
+<title>Interface</title>
+<polygon fill="#a7506f" stroke="#a7506f" points="209.5,-24 154.5,-24 154.5,0 209.5,0 209.5,-24"/>
+<text text-anchor="middle" x="182" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Interface</text>
+</g>
+<!-- Unknown Procedure Type -->
+<g id="node4" class="node">
+<title>Unknown Procedure Type</title>
+<polygon fill="#777777" stroke="#777777" points="364,-24 228,-24 228,0 364,0 364,-24"/>
+<text text-anchor="middle" x="296" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Unknown Procedure Type</text>
+</g>
+<!-- Program -->
+<g id="node5" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="436,-24 382,-24 382,0 436,0 436,-24"/>
+<text text-anchor="middle" x="409" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node6" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="#000000" points="551.5,-24 454.5,-24 454.5,0 551.5,0 551.5,-24"/>
+<text text-anchor="middle" x="503" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#000000">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+    
+    <p>Solid arrows point from a procedure to one which it calls. Dashed 
+    arrows point from an interface to procedures which implement that interface.
+    This could include the module procedures in a generic interface or the
+    implementation in a submodule of an interface in a parent module.
+    </p>
+    </div></div></div></div>
+      </div>
+    </div>
+     
+    <br>
+
+    <section class="visible-xs visible-sm hidden-md">
+      
+<h3>Contents</h3>
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<em>None</em>
+
+
+    </section>
+    <br class="visible-xs visible-sm hidden-md">
+
+    
+
+    
+    
+    
+    
+    
+
+    
+    
+    
+    
+    
+
+
+    
+    
+    
+    
+    </div>
+  </div>
+
+
+    <hr>    
+    </div> <!-- /container -->
+    <footer>
+      <div class="container">
+      <div class="row">
+        <div class="col-xs-6 col-md-4"><p>&copy; 2020 <a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/80x15.png" /></a>
+                                          </p></div>
+        <div class="col-xs-6 col-md-4 col-md-push-4">
+          <p class="text-right">
+            Documentation generated by 
+            <a href="https://github.com/cmacmackin/ford">FORD</a>
+            
+          </p>
+        </div>
+        <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> GEMINI3D was developed by Matthew Zettergren
+Guy Grubbs
+Michael Hirsch</p></div>
+      </div>
+      <br>
+      </div> <!-- /container -->    
+    </footer>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+<!--
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+-->
+    <script src="../js/bootstrap.min.js"></script>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <script src="../js/ie10-viewport-bug-workaround.js"></script>
+
+    <!-- MathJax JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } },
+        jax: ['input/TeX','input/MathML','output/HTML-CSS'],
+        extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']
+      });
+    </script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    
+    
+  </body>
+</html>

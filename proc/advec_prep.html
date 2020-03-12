@@ -64,6 +64,8 @@ Michael Hirsch" >
             <li><a href="../lists/modules.html">Modules</a></li>
         
             
+    <li><a href="../blockdata/gtd7bk.html">Block Data</a></li>
+    
                                 
             <li><a href="../lists/procedures.html">Procedures</a></li>
         
@@ -83,6 +85,8 @@ Michael Hirsch" >
 
 <li class="visible-xs hidden-sm visible-lg"><a href="../lists/modules.html">Modules</a></li>
 
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../blockdata/gtd7bk.html">Block Data</a></li>
 
 
 <li class="visible-xs hidden-sm visible-lg"><a href="../lists/procedures.html">Procedures</a></li>
@@ -121,7 +125,7 @@ Michael Hirsch" >
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 0.9% of total for procedures.">66 statements</a>
+    title=" 0.7% of total for procedures.">66 statements</a>
      </li> 
      
      
@@ -198,7 +202,7 @@ public subroutine advec_prep(isp, ns, rhovs1, vs1, vs2, vs3, rhoes, v1i, v2i, v3
 
 
     
-    <div class="codehilite"><pre><span></span>    vadvx1(1,:,6)=mean(vadvx1(1,:,6));                          !for eq sims
+    <div class="codehilite"><pre><span></span><span class="err">    vadvx1(1,:,6)=mean(vadvx1(1,:,6));                          !for eq sims</span>
 </pre></div>
     
 
@@ -220,7 +224,7 @@ public subroutine advec_prep(isp, ns, rhovs1, vs1, vs2, vs3, rhoes, v1i, v2i, v3
   
 <tr>
   
-  <td><span class="anchor" id="variable-isp~6"></span>integer,</td>
+  <td><span class="anchor" id="variable-isp~4"></span>integer,</td>
   <td>intent(in)</td>
   <td></td>
   
@@ -235,7 +239,7 @@ public subroutine advec_prep(isp, ns, rhovs1, vs1, vs2, vs3, rhoes, v1i, v2i, v3
   
 <tr>
   
-  <td><span class="anchor" id="variable-ns~19"></span>real(kind=wp),</td>
+  <td><span class="anchor" id="variable-ns~15"></span>real(kind=wp),</td>
   <td>intent(inout),</td>
   <td></td>
   
@@ -265,7 +269,7 @@ public subroutine advec_prep(isp, ns, rhovs1, vs1, vs2, vs3, rhoes, v1i, v2i, v3
   
 <tr>
   
-  <td><span class="anchor" id="variable-vs1~17"></span>real(kind=wp),</td>
+  <td><span class="anchor" id="variable-vs1~10"></span>real(kind=wp),</td>
   <td>intent(inout),</td>
   <td></td>
   
@@ -280,7 +284,7 @@ public subroutine advec_prep(isp, ns, rhovs1, vs1, vs2, vs3, rhoes, v1i, v2i, v3
   
 <tr>
   
-  <td><span class="anchor" id="variable-vs2~17"></span>real(kind=wp),</td>
+  <td><span class="anchor" id="variable-vs2~5"></span>real(kind=wp),</td>
   <td>intent(inout),</td>
   <td></td>
   
@@ -295,7 +299,7 @@ public subroutine advec_prep(isp, ns, rhovs1, vs1, vs2, vs3, rhoes, v1i, v2i, v3
   
 <tr>
   
-  <td><span class="anchor" id="variable-vs3~17"></span>real(kind=wp),</td>
+  <td><span class="anchor" id="variable-vs3~5"></span>real(kind=wp),</td>
   <td>intent(inout),</td>
   <td></td>
   
@@ -433,7 +437,7 @@ public subroutine advec_prep(isp, ns, rhovs1, vs1, vs2, vs3, rhoes, v1i, v2i, v3
     <footer>
       <div class="container">
       <div class="row">
-        <div class="col-xs-6 col-md-4"><p>&copy; 2018 <a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/80x15.png" /></a>
+        <div class="col-xs-6 col-md-4"><p>&copy; 2020 <a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/80x15.png" /></a>
                                           </p></div>
         <div class="col-xs-6 col-md-4 col-md-push-4">
           <p class="text-right">

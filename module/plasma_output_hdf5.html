@@ -1,0 +1,978 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+   
+   <meta name="description" content="GEMINI3D is a modular ionospheric model that incorporates kinetic models such as Fang, GLOW.">
+    
+    <meta name="author" content="Matthew Zettergren
+Guy Grubbs
+Michael Hirsch" >
+    <link rel="icon" href="../favicon.png">
+
+    <title>plasma_output_hdf5 &ndash; GEMINI3D</title>
+
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+    <link href="../css/pygments.css" rel="stylesheet">
+    <link href="../css/font-awesome.min.css" rel="stylesheet">
+    <link href="../css/local.css" rel="stylesheet">
+    
+    
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    
+    <script src="../js/jquery-2.1.3.min.js"></script>
+    <script src="../js/svg-pan-zoom.min.js"></script>
+
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="../index.html">GEMINI3D </a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+        
+            <li class="dropdown hidden-xs visible-sm visible-md hidden-lg">
+              <a href="#" class="dropdown-toggle"
+              data-toggle="dropdown" role="button"
+              aria-haspopup="true"
+     aria-expanded="false">Contents <span class="caret"></span></a>
+        <ul class="dropdown-menu">
+          
+              
+            <li><a href="../lists/files.html">Source Files</a></li>
+        
+        
+        
+            <li><a href="../lists/modules.html">Modules</a></li>
+        
+            
+    <li><a href="../blockdata/gtd7bk.html">Block Data</a></li>
+    
+                                
+            <li><a href="../lists/procedures.html">Procedures</a></li>
+        
+               
+            <li><a href="../lists/types.html">Derived Types</a></li>
+        
+        
+            <li><a href="../lists/programs.html">Programs</a></li>
+        
+            </ul>
+            </li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/files.html">Source Files</a></li>
+
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/modules.html">Modules</a></li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../blockdata/gtd7bk.html">Block Data</a></li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/procedures.html">Procedures</a></li>
+
+                             
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/types.html">Derived Types</a></li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/programs.html">Programs</a></li>
+
+          </ul>
+        
+        </div><!--/.nav-collapse -->
+      </div>
+    </nav>
+
+    <div class="container">
+    
+  
+  <div class="row">
+    <h1>plasma_output_hdf5 
+    <small>Submodule</small>
+    
+    </h1>
+    
+<div class="row">
+  <div class="col-lg-12">
+<div class="well well-sm">
+  <ul class="list-inline" style="margin-bottom:0px;display:inline">
+     
+     
+     
+     
+    
+    
+     <li><i class="fa fa-list-ol"></i>
+       <a data-toggle="tooltip"
+    data-placement="bottom" data-html="true"
+    title=" 1.1% of total for modules and submodules.">114 statements</a>
+     </li> 
+     
+     
+     
+    <li><i class="fa fa-code"></i><a href="../src/plasma_output_ncdf.f90"> Source File</a></li>
+     
+     
+  </ul>
+  <ol class="breadcrumb in-well text-right">
+  
+    
+     <li><a href='../sourcefile/plasma_output_ncdf.f90.html'>plasma_output_ncdf.f90</a></li>
+    
+  
+     <li class="active">plasma_output_hdf5</li>
+  </ol>
+</div>
+</div>
+</div>
+<script>
+  $(function () {
+  $('[data-toggle="tooltip"]').tooltip()
+  })
+</script>
+
+  </div>
+  
+  <div class="row">
+    <div class="col-md-3 hidden-xs hidden-sm visible-md visible-lg">
+    
+<div id="sidebar">
+  
+<h3>Contents</h3>
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#modprocs-0">Module Procedures</a></h3></div>
+  <div id="modprocs-0" class="panel-collapse collapse">
+    <div class="list-group">
+      
+      <a class="list-group-item" href="../module/plasma_output_hdf5.html#proc-output_root_stream_mpi~2">output_root_stream_mpi</a>
+      
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+</div>
+
+    </div>
+    
+    <div class="col-md-9" id='text'>
+    
+      <br>
+    
+  
+    <div class="panel panel-default">
+      <div class="panel-heading">
+  <h3 class="panel-title">Uses</h3>
+      </div>
+      <ul class="list-group">
+      
+      <li class="list-group-item">
+  <ul class="list-inline">
+    
+    <li><a href='../module/timeutils.html'>timeutils</a></li>
+    
+    <li>nc4fortran</li>
+    
+  </ul>
+      </li>
+      
+      
+      <li class="list-group-item">
+  <ul class="list-inline">
+    <li><h5>Ancestors:</h5></li>
+    
+    <li><a href='../module/io.html'>io</a></li>
+    <li>:</li>
+    
+    <li><a href='../module/plasma.html'>plasma</a></li>
+    
+    
+  </ul>
+      </li>
+      
+      
+      <li class="list-group-item">
+  <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.40.1 (20161225.0304)
+ -->
+<!-- Title: module~~plasma_output_hdf5~~UsesGraph Pages: 1 -->
+<svg id="moduleplasma_output_hdf5UsesGraph" width="641pt" height="252pt"
+ viewBox="0.00 0.00 641.00 251.85" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="module~~plasma_output_hdf5~~UsesGraph" class="graph" transform="scale(.8581 .8581) rotate(0) translate(4 289.4976)">
+<title>module~~plasma_output_hdf5~~UsesGraph</title>
+<polygon fill="#ffffff" stroke="transparent" points="-4,4 -4,-289.4976 743,-289.4976 743,4 -4,4"/>
+<!-- module~plasma_output_hdf5 -->
+<g id="module~~plasma_output_hdf5~~UsesGraph_node1" class="node">
+<title>module~plasma_output_hdf5</title>
+<polygon fill="none" stroke="#000000" points="739,-243.4976 629,-243.4976 629,-219.4976 739,-219.4976 739,-243.4976"/>
+<text text-anchor="middle" x="684" y="-229.0976" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#000000">plasma_output_hdf5</text>
+</g>
+<!-- module~plasma -->
+<g id="module~~plasma_output_hdf5~~UsesGraph_node2" class="node">
+<title>module~plasma</title>
+<g id="a_module~~plasma_output_hdf5~~UsesGraph_node2"><a xlink:href=".././module/plasma.html" xlink:title="plasma">
+<polygon fill="#5bc0de" stroke="#5bc0de" points="589.5,-243.4976 535.5,-243.4976 535.5,-219.4976 589.5,-219.4976 589.5,-243.4976"/>
+<text text-anchor="middle" x="562.5" y="-229.0976" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">plasma</text>
+</a>
+</g>
+</g>
+<!-- module~plasma_output_hdf5&#45;&gt;module~plasma -->
+<g id="module~~plasma_output_hdf5~~UsesGraph_edge3" class="edge">
+<title>module~plasma_output_hdf5&#45;&gt;module~plasma</title>
+<path fill="none" stroke="#000000" d="M628.9379,-231.4976C618.9929,-231.4976 608.8428,-231.4976 599.5662,-231.4976"/>
+<polygon fill="#000000" stroke="#000000" points="599.5214,-227.9977 589.5214,-231.4976 599.5213,-234.9977 599.5214,-227.9977"/>
+</g>
+<!-- module~timeutils -->
+<g id="module~~plasma_output_hdf5~~UsesGraph_node3" class="node">
+<title>module~timeutils</title>
+<g id="a_module~~plasma_output_hdf5~~UsesGraph_node3"><a xlink:href=".././module/timeutils.html" xlink:title="timeutils">
+<polygon fill="#337ab7" stroke="#337ab7" points="285,-285.4976 231,-285.4976 231,-261.4976 285,-261.4976 285,-285.4976"/>
+<text text-anchor="middle" x="258" y="-271.0976" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">timeutils</text>
+</a>
+</g>
+</g>
+<!-- module~plasma_output_hdf5&#45;&gt;module~timeutils -->
+<g id="module~~plasma_output_hdf5~~UsesGraph_edge1" class="edge">
+<title>module~plasma_output_hdf5&#45;&gt;module~timeutils</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M638.4507,-243.5524C624.0109,-246.9573 607.9213,-250.3233 593,-252.4976 485.6127,-268.1461 357.1874,-272.1405 295.1594,-273.1553"/>
+<polygon fill="#000000" stroke="#000000" points="295.0253,-269.6568 285.0777,-273.3033 295.128,-276.6561 295.0253,-269.6568"/>
+</g>
+<!-- nc4fortran -->
+<g id="module~~plasma_output_hdf5~~UsesGraph_node4" class="node">
+<title>nc4fortran</title>
+<polygon fill="#337ab7" stroke="#337ab7" points="593,-201.4976 532,-201.4976 532,-177.4976 593,-177.4976 593,-201.4976"/>
+<text text-anchor="middle" x="562.5" y="-187.0976" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">nc4fortran</text>
+</g>
+<!-- module~plasma_output_hdf5&#45;&gt;nc4fortran -->
+<g id="module~~plasma_output_hdf5~~UsesGraph_edge2" class="edge">
+<title>module~plasma_output_hdf5&#45;&gt;nc4fortran</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M649.183,-219.4621C634.6872,-214.4512 617.7663,-208.602 602.7416,-203.4083"/>
+<polygon fill="#000000" stroke="#000000" points="603.7813,-200.0645 593.1866,-200.1053 601.4943,-206.6804 603.7813,-200.0645"/>
+</g>
+<!-- module~reader -->
+<g id="module~~plasma_output_hdf5~~UsesGraph_node6" class="node">
+<title>module~reader</title>
+<g id="a_module~~plasma_output_hdf5~~UsesGraph_node6"><a xlink:href=".././module/reader.html" xlink:title="reader">
+<polygon fill="#337ab7" stroke="#337ab7" points="285,-243.4976 231,-243.4976 231,-219.4976 285,-219.4976 285,-243.4976"/>
+<text text-anchor="middle" x="258" y="-229.0976" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">reader</text>
+</a>
+</g>
+</g>
+<!-- module~plasma&#45;&gt;module~reader -->
+<g id="module~~plasma_output_hdf5~~UsesGraph_edge4" class="edge">
+<title>module~plasma&#45;&gt;module~reader</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M535.4777,-231.4976C480.9912,-231.4976 357.8491,-231.4976 295.5718,-231.4976"/>
+<polygon fill="#000000" stroke="#000000" points="295.3995,-227.9977 285.3995,-231.4976 295.3995,-234.9977 295.3995,-227.9977"/>
+</g>
+<!-- module~io -->
+<g id="module~~plasma_output_hdf5~~UsesGraph_node7" class="node">
+<title>module~io</title>
+<g id="a_module~~plasma_output_hdf5~~UsesGraph_node7"><a xlink:href=".././module/io.html" xlink:title="io">
+<polygon fill="#337ab7" stroke="#337ab7" points="496,-142.4976 442,-142.4976 442,-118.4976 496,-118.4976 496,-142.4976"/>
+<text text-anchor="middle" x="469" y="-128.0976" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">io</text>
+</a>
+</g>
+</g>
+<!-- module~plasma&#45;&gt;module~io -->
+<g id="module~~plasma_output_hdf5~~UsesGraph_edge5" class="edge">
+<title>module~plasma&#45;&gt;module~io</title>
+<path fill="none" stroke="#000000" d="M543.1132,-219.4541C539.2659,-216.7106 535.3762,-213.6641 532,-210.4976 512.7426,-192.4365 494.5132,-168.2221 482.6662,-151.1804"/>
+<polygon fill="#000000" stroke="#000000" points="485.2988,-148.8282 476.7752,-142.5354 479.5141,-152.7701 485.2988,-148.8282"/>
+</g>
+<!-- module~phys_consts -->
+<g id="module~~plasma_output_hdf5~~UsesGraph_node5" class="node">
+<title>module~phys_consts</title>
+<g id="a_module~~plasma_output_hdf5~~UsesGraph_node5"><a xlink:href=".././module/phys_consts.html" xlink:title="phys_consts">
+<polygon fill="#337ab7" stroke="#337ab7" points="195,-203.4976 123,-203.4976 123,-179.4976 195,-179.4976 195,-203.4976"/>
+<text text-anchor="middle" x="159" y="-189.0976" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">phys_consts</text>
+</a>
+</g>
+</g>
+<!-- module~timeutils&#45;&gt;module~phys_consts -->
+<g id="module~~plasma_output_hdf5~~UsesGraph_edge7" class="edge">
+<title>module~timeutils&#45;&gt;module~phys_consts</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M242.2077,-261.3927C238.5072,-258.5072 234.596,-255.4172 231,-252.4976 213.8823,-238.5996 194.8631,-222.455 180.6729,-210.2672"/>
+<polygon fill="#000000" stroke="#000000" points="182.7879,-207.4696 172.9268,-203.5954 178.2196,-212.7735 182.7879,-207.4696"/>
+</g>
+<!-- iso_fortran_env -->
+<g id="module~~plasma_output_hdf5~~UsesGraph_node8" class="node">
+<title>iso_fortran_env</title>
+<g id="a_module~~plasma_output_hdf5~~UsesGraph_node8"><a xlink:href="http://fortranwiki.org/fortran/show/ISO_FORTRAN_ENV" xlink:title="iso_fortran_env">
+<polygon fill="#337ab7" stroke="#337ab7" points="87,-121.4976 0,-121.4976 0,-97.4976 87,-97.4976 87,-121.4976"/>
+<text text-anchor="middle" x="43.5" y="-107.0976" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">iso_fortran_env</text>
+</a>
+</g>
+</g>
+<!-- module~timeutils&#45;&gt;iso_fortran_env -->
+<g id="module~~plasma_output_hdf5~~UsesGraph_edge6" class="edge">
+<title>module~timeutils&#45;&gt;iso_fortran_env</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M230.8418,-271.2189C210.2997,-268.6855 181.8291,-263.4043 159,-252.4976"/>
+</g>
+<!-- module~phys_consts&#45;&gt;iso_fortran_env -->
+<g id="module~~plasma_output_hdf5~~UsesGraph_edge8" class="edge">
+<title>module~phys_consts&#45;&gt;iso_fortran_env</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M141.9576,-179.3982C122.6794,-165.7116 91.0874,-143.2826 68.9001,-127.5305"/>
+<polygon fill="#000000" stroke="#000000" points="70.7925,-124.5817 60.6123,-121.6466 66.7402,-130.2896 70.7925,-124.5817"/>
+</g>
+<!-- module~reader&#45;&gt;module~phys_consts -->
+<g id="module~~plasma_output_hdf5~~UsesGraph_edge10" class="edge">
+<title>module~reader&#45;&gt;module~phys_consts</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M230.9478,-220.5674C220.8521,-216.4884 209.1759,-211.7707 198.2055,-207.3382"/>
+<polygon fill="#000000" stroke="#000000" points="199.3869,-204.0407 188.8039,-203.5396 196.7646,-210.531 199.3869,-204.0407"/>
+</g>
+<!-- module~reader&#45;&gt;iso_fortran_env -->
+<g id="module~~plasma_output_hdf5~~UsesGraph_edge9" class="edge">
+<title>module~reader&#45;&gt;iso_fortran_env</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M236.596,-243.6349C215.889,-253.6605 184.0486,-264.4646 159,-252.4976"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M159,-252.4976C106.0254,-227.1889 69.5416,-164.4063 53.2046,-131.0795"/>
+<polygon fill="#000000" stroke="#000000" points="56.2314,-129.2935 48.7854,-121.7565 49.906,-132.2919 56.2314,-129.2935"/>
+</g>
+<!-- module~io&#45;&gt;module~phys_consts -->
+<g id="module~~plasma_output_hdf5~~UsesGraph_edge14" class="edge">
+<title>module~io&#45;&gt;module~phys_consts</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M454.4897,-142.6415C442.3326,-152.1204 424.1051,-164.773 406,-171.4976 343.7776,-194.6082 324.0703,-185.1379 258,-191.4976"/>
+</g>
+<!-- module~io&#45;&gt;iso_fortran_env -->
+<g id="module~~plasma_output_hdf5~~UsesGraph_edge13" class="edge">
+<title>module~io&#45;&gt;iso_fortran_env</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M258,-69.4976C195.5312,-51.4756 120.4112,-75.5979 77.682,-93.4552"/>
+<polygon fill="#000000" stroke="#000000" points="76.1085,-90.322 68.3077,-97.4912 78.8767,-96.7514 76.1085,-90.322"/>
+</g>
+<!-- module~pathlib -->
+<g id="module~~plasma_output_hdf5~~UsesGraph_node9" class="node">
+<title>module~pathlib</title>
+<g id="a_module~~plasma_output_hdf5~~UsesGraph_node9"><a xlink:href=".././module/pathlib.html" xlink:title="pathlib">
+<polygon fill="#337ab7" stroke="#337ab7" points="186,-41.4976 132,-41.4976 132,-17.4976 186,-17.4976 186,-41.4976"/>
+<text text-anchor="middle" x="159" y="-27.0976" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">pathlib</text>
+</a>
+</g>
+</g>
+<!-- module~io&#45;&gt;module~pathlib -->
+<g id="module~~plasma_output_hdf5~~UsesGraph_edge11" class="edge">
+<title>module~io&#45;&gt;module~pathlib</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M441.6895,-124.9903C420.3977,-120.7139 390.082,-114.6627 363.5,-109.4976"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M363.5,-109.4976C314.2747,-99.9327 306.181,-83.3976 258,-69.4976"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M258,-69.4976C236.1592,-63.1966 212.5271,-53.7543 193.8309,-45.6257"/>
+<polygon fill="#000000" stroke="#000000" points="195.1009,-42.3604 184.5396,-41.5183 192.2706,-48.7627 195.1009,-42.3604"/>
+</g>
+<!-- ieee_arithmetic -->
+<g id="module~~plasma_output_hdf5~~UsesGraph_node10" class="node">
+<title>ieee_arithmetic</title>
+<g id="a_module~~plasma_output_hdf5~~UsesGraph_node10"><a xlink:href="http://fortranwiki.org/fortran/show/IEEE_ARITHMETIC" xlink:title="ieee_arithmetic">
+<polygon fill="#337ab7" stroke="#337ab7" points="406,-81.4976 321,-81.4976 321,-57.4976 406,-57.4976 406,-81.4976"/>
+<text text-anchor="middle" x="363.5" y="-67.0976" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">ieee_arithmetic</text>
+</a>
+</g>
+</g>
+<!-- module~io&#45;&gt;ieee_arithmetic -->
+<g id="module~~plasma_output_hdf5~~UsesGraph_edge12" class="edge">
+<title>module~io&#45;&gt;ieee_arithmetic</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M448.1566,-118.446C432.4064,-109.3392 410.5774,-96.7177 393.0307,-86.5722"/>
+<polygon fill="#000000" stroke="#000000" points="394.7091,-83.4998 384.3001,-81.5242 391.2052,-89.5597 394.7091,-83.4998"/>
+</g>
+<!-- module~mpimod -->
+<g id="module~~plasma_output_hdf5~~UsesGraph_node11" class="node">
+<title>module~mpimod</title>
+<g id="a_module~~plasma_output_hdf5~~UsesGraph_node11"><a xlink:href=".././module/mpimod.html" xlink:title="mpimod">
+<polygon fill="#337ab7" stroke="#337ab7" points="285,-121.4976 231,-121.4976 231,-97.4976 285,-97.4976 285,-121.4976"/>
+<text text-anchor="middle" x="258" y="-107.0976" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">mpimod</text>
+</a>
+</g>
+</g>
+<!-- module~io&#45;&gt;module~mpimod -->
+<g id="module~~plasma_output_hdf5~~UsesGraph_edge15" class="edge">
+<title>module~io&#45;&gt;module~mpimod</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M363.5,-109.4976C341.1462,-105.1541 315.6214,-105.0295 295.2782,-106.0504"/>
+<polygon fill="#000000" stroke="#000000" points="294.9229,-102.5655 285.1565,-106.6724 295.3524,-109.5523 294.9229,-102.5655"/>
+</g>
+<!-- module~grid -->
+<g id="module~~plasma_output_hdf5~~UsesGraph_node12" class="node">
+<title>module~grid</title>
+<g id="a_module~~plasma_output_hdf5~~UsesGraph_node12"><a xlink:href=".././module/grid.html" xlink:title="grid">
+<polygon fill="#337ab7" stroke="#337ab7" points="390.5,-162.4976 336.5,-162.4976 336.5,-138.4976 390.5,-138.4976 390.5,-162.4976"/>
+<text text-anchor="middle" x="363.5" y="-148.0976" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">grid</text>
+</a>
+</g>
+</g>
+<!-- module~io&#45;&gt;module~grid -->
+<g id="module~~plasma_output_hdf5~~UsesGraph_edge16" class="edge">
+<title>module~io&#45;&gt;module~grid</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M441.8311,-135.6481C429.2791,-138.0276 414.1773,-140.8905 400.5974,-143.4649"/>
+<polygon fill="#000000" stroke="#000000" points="399.7499,-140.0632 390.5768,-145.3646 401.0537,-146.9407 399.7499,-140.0632"/>
+</g>
+<!-- iso_c_binding -->
+<g id="module~~plasma_output_hdf5~~UsesGraph_node13" class="node">
+<title>iso_c_binding</title>
+<g id="a_module~~plasma_output_hdf5~~UsesGraph_node13"><a xlink:href="http://fortranwiki.org/fortran/show/ISO_C_BINDING" xlink:title="iso_c_binding">
+<polygon fill="#337ab7" stroke="#337ab7" points="402.5,-39.4976 324.5,-39.4976 324.5,-15.4976 402.5,-15.4976 402.5,-39.4976"/>
+<text text-anchor="middle" x="363.5" y="-25.0976" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">iso_c_binding</text>
+</a>
+</g>
+</g>
+<!-- module~io&#45;&gt;iso_c_binding -->
+<g id="module~~plasma_output_hdf5~~UsesGraph_edge17" class="edge">
+<title>module~io&#45;&gt;iso_c_binding</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M462.0715,-118.2384C451.7434,-100.8529 430.839,-68.8861 406,-48.4976 404.4732,-47.2444 402.8592,-46.0416 401.1877,-44.8908"/>
+<polygon fill="#000000" stroke="#000000" points="402.8473,-41.8032 392.489,-39.577 399.1981,-47.7768 402.8473,-41.8032"/>
+</g>
+<!-- module~pathlib&#45;&gt;iso_fortran_env -->
+<g id="module~~plasma_output_hdf5~~UsesGraph_edge18" class="edge">
+<title>module~pathlib&#45;&gt;iso_fortran_env</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M141.458,-41.6479C122.1818,-54.9994 91.0406,-76.5691 69.0521,-91.7992"/>
+<polygon fill="#000000" stroke="#000000" points="67.0564,-88.9239 60.8286,-97.4951 71.0422,-94.6783 67.0564,-88.9239"/>
+</g>
+<!-- module~mpimod&#45;&gt;module~phys_consts -->
+<g id="module~~plasma_output_hdf5~~UsesGraph_edge21" class="edge">
+<title>module~mpimod&#45;&gt;module~phys_consts</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M242.124,-121.5014C238.4269,-124.3911 234.5383,-127.5083 231,-130.4976 214.42,-144.5052 211.58,-149.49 195,-163.4976 191.2652,-166.653 187.2375,-169.9152 183.2756,-173.0492"/>
+<polygon fill="#000000" stroke="#000000" points="181.0858,-170.3184 175.3505,-179.2267 185.3893,-175.8394 181.0858,-170.3184"/>
+</g>
+<!-- module~mpimod&#45;&gt;iso_fortran_env -->
+<g id="module~~plasma_output_hdf5~~UsesGraph_edge20" class="edge">
+<title>module~mpimod&#45;&gt;iso_fortran_env</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M230.8835,-120.6617C219.9376,-124.6032 207.0631,-128.54 195,-130.4976 163.4132,-135.6234 154.7336,-134.6182 123,-130.4976 112.4865,-129.1324 101.3823,-126.792 90.9151,-124.1571"/>
+<polygon fill="#000000" stroke="#000000" points="91.6773,-120.7384 81.1146,-121.5628 89.886,-127.5053 91.6773,-120.7384"/>
+</g>
+<!-- mpi -->
+<g id="module~~plasma_output_hdf5~~UsesGraph_node14" class="node">
+<title>mpi</title>
+<g id="a_module~~plasma_output_hdf5~~UsesGraph_node14"><a xlink:href="http://www.mpi-forum.org/docs/mpi-3.1/mpi31-report/node410.htm" xlink:title="mpi">
+<polygon fill="#337ab7" stroke="#337ab7" points="186,-121.4976 132,-121.4976 132,-97.4976 186,-97.4976 186,-121.4976"/>
+<text text-anchor="middle" x="159" y="-107.0976" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">mpi</text>
+</a>
+</g>
+</g>
+<!-- module~mpimod&#45;&gt;mpi -->
+<g id="module~~plasma_output_hdf5~~UsesGraph_edge19" class="edge">
+<title>module~mpimod&#45;&gt;mpi</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M230.9478,-109.4976C220.2528,-109.4976 207.784,-109.4976 196.2596,-109.4976"/>
+<polygon fill="#000000" stroke="#000000" points="196.0195,-105.9977 186.0195,-109.4976 196.0194,-112.9977 196.0195,-105.9977"/>
+</g>
+<!-- module~grid&#45;&gt;module~phys_consts -->
+<g id="module~~plasma_output_hdf5~~UsesGraph_edge24" class="edge">
+<title>module~grid&#45;&gt;module~phys_consts</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M342.5423,-162.6147C321.8487,-173.6023 288.9049,-188.5228 258,-191.4976"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M258,-191.4976C240.8568,-193.1477 221.9663,-193.5061 205.3229,-193.3311"/>
+<polygon fill="#000000" stroke="#000000" points="205.3443,-189.831 195.286,-193.16 205.2249,-196.83 205.3443,-189.831"/>
+</g>
+<!-- module~grid&#45;&gt;module~reader -->
+<g id="module~~plasma_output_hdf5~~UsesGraph_edge22" class="edge">
+<title>module~grid&#45;&gt;module~reader</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M347.4768,-162.7998C330.0254,-176.1985 301.9271,-197.7716 281.875,-213.1671"/>
+<polygon fill="#000000" stroke="#000000" points="279.6287,-210.479 273.8283,-219.3451 283.8916,-216.0313 279.6287,-210.479"/>
+</g>
+<!-- module~grid&#45;&gt;iso_fortran_env -->
+<g id="module~~plasma_output_hdf5~~UsesGraph_edge23" class="edge">
+<title>module~grid&#45;&gt;iso_fortran_env</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M339.7996,-138.4517C333.1767,-134.3288 326.3389,-129.2762 321,-123.4976 297.7942,-98.3804 309.2484,-79.6098 285,-55.4976 253.0014,-23.6788 238.8257,-19.2519 195,-8.4976 163.922,-.8714 151.7867,5.4782 123,-8.4976 89.1245,-24.944 65.3649,-63.5944 53.1044,-88.0298"/>
+<polygon fill="#000000" stroke="#000000" points="49.863,-86.6946 48.6951,-97.2249 56.1749,-89.7213 49.863,-86.6946"/>
+</g>
+<!-- module~grid&#45;&gt;module~mpimod -->
+<g id="module~~plasma_output_hdf5~~UsesGraph_edge26" class="edge">
+<title>module~grid&#45;&gt;module~mpimod</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M336.3311,-139.9391C323.656,-135.0132 308.3809,-129.0769 294.6984,-123.7595"/>
+<polygon fill="#000000" stroke="#000000" points="295.6655,-120.3804 285.0768,-120.0203 293.1298,-126.905 295.6655,-120.3804"/>
+</g>
+<!-- module~mesh -->
+<g id="module~~plasma_output_hdf5~~UsesGraph_node15" class="node">
+<title>module~mesh</title>
+<g id="a_module~~plasma_output_hdf5~~UsesGraph_node15"><a xlink:href=".././module/mesh.html" xlink:title="mesh">
+<polygon fill="#337ab7" stroke="#337ab7" points="285,-163.4976 231,-163.4976 231,-139.4976 285,-139.4976 285,-163.4976"/>
+<text text-anchor="middle" x="258" y="-149.0976" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">mesh</text>
+</a>
+</g>
+</g>
+<!-- module~grid&#45;&gt;module~mesh -->
+<g id="module~~plasma_output_hdf5~~UsesGraph_edge25" class="edge">
+<title>module~grid&#45;&gt;module~mesh</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M336.3311,-150.7551C323.7791,-150.8741 308.6773,-151.0172 295.0974,-151.146"/>
+<polygon fill="#000000" stroke="#000000" points="295.0431,-147.6462 285.0768,-151.2409 295.1096,-154.6459 295.0431,-147.6462"/>
+</g>
+<!-- module~mesh&#45;&gt;module~phys_consts -->
+<g id="module~~plasma_output_hdf5~~UsesGraph_edge27" class="edge">
+<title>module~mesh&#45;&gt;module~phys_consts</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M230.9478,-162.4278C220.8521,-166.5069 209.1759,-171.2245 198.2055,-175.657"/>
+<polygon fill="#000000" stroke="#000000" points="196.7646,-172.4642 188.8039,-179.4556 199.3869,-178.9545 196.7646,-172.4642"/>
+</g>
+</g>
+</svg>
+</div><script>var panmoduleplasma_output_hdf5UsesGraph = svgPanZoom('#moduleplasma_output_hdf5UsesGraph', {zoomEnabled: true,controlIconsEnabled: true, fit: true, center: true,}); </script><div><a type="button" class="graph-help" data-toggle="modal" href="#graph-help-text">Help</a></div><div class="modal fade" id="graph-help-text" tabindex="-1" role="dialog"><div class="modal-dialog modal-lg" role="document"><div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button><h4 class="modal-title" id="-graph-help-label">Graph Key</h4></div><div class="modal-body">
+    <p>Nodes of different colours represent the following: </p>
+    <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.40.1 (20161225.0304)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="490pt" height="32pt"
+ viewBox="0.00 0.00 489.50 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 28)">
+<title>Graph Key</title>
+<polygon fill="#ffffff" stroke="transparent" points="-4,4 -4,-28 485.5,-28 485.5,4 -4,4"/>
+<!-- Module -->
+<g id="node1" class="node">
+<title>Module</title>
+<polygon fill="#337ab7" stroke="#337ab7" points="54,-24 0,-24 0,0 54,0 54,-24"/>
+<text text-anchor="middle" x="27" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Module</text>
+</g>
+<!-- Submodule -->
+<g id="node2" class="node">
+<title>Submodule</title>
+<polygon fill="#5bc0de" stroke="#5bc0de" points="139.5,-24 72.5,-24 72.5,0 139.5,0 139.5,-24"/>
+<text text-anchor="middle" x="106" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Submodule</text>
+</g>
+<!-- Subroutine -->
+<g id="node3" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="222,-24 158,-24 158,0 222,0 222,-24"/>
+<text text-anchor="middle" x="190" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node4" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="294,-24 240,-24 240,0 294,0 294,-24"/>
+<text text-anchor="middle" x="267" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Function</text>
+</g>
+<!-- Program -->
+<g id="node5" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="366,-24 312,-24 312,0 366,0 366,-24"/>
+<text text-anchor="middle" x="339" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node6" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="#000000" points="481.5,-24 384.5,-24 384.5,0 481.5,0 481.5,-24"/>
+<text text-anchor="middle" x="433" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#000000">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+    
+    <p>Solid arrows point from a submodule to the (sub)module which it is
+    descended from. Dashed arrows point from a module or program unit to 
+    modules which it uses.
+    </p>
+    </div></div></div></div>
+      </li>
+      
+      </ul>
+    </div>
+    
+
+    
+    
+
+    <br>
+
+    <section class="visible-xs visible-sm hidden-md">
+      
+<h3>Contents</h3>
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#modprocs-1">Module Procedures</a></h3></div>
+  <div id="modprocs-1" class="panel-collapse collapse">
+    <div class="list-group">
+      
+      <a class="list-group-item" href="../module/plasma_output_hdf5.html#proc-output_root_stream_mpi~2">output_root_stream_mpi</a>
+      
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+    </section>
+    <br class="visible-xs visible-sm hidden-md">
+
+    
+
+    
+    
+    
+    
+    
+
+    
+    
+    
+    
+    
+
+    
+    
+    
+    
+        
+
+        
+
+        
+        <section>
+        <h2>Module Procedures</h2>
+        
+        
+  <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-output_root_stream_mpi~2"></span><h3>
+module procedure <a href='../proc/output_root_stream_mpi~2.html'>output_root_stream_mpi</a> <small>module subroutine output_root_stream_mpi(outdir, flagoutput, ymd, UTsec, vs2, vs3, ns, vs1, Ts, Phiall, J1, J2, J3)</small>
+    
+    
+   <a href='../interface/output_root_stream_mpi.html'><button type="button" class="btn btn-info depwarn">Interface &rarr;</button></a>
+    
+   
+</h3></div>
+  <div class="panel-body">
+       
+    
+
+
+
+
+
+
+
+<p>COLLECT OUTPUT FROM WORKERS AND WRITE TO A FILE USING STREAM I/O.
+ STATE VARS ARE EXPECTED INCLUDE GHOST CELLS</p><a href="../proc/output_root_stream_mpi~2.html" class="pull-right"><emph>Read more&hellip;</emph></a>
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>character(len=*),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>outdir</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer,</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>flagoutput</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer,</td>
+  <td>intent(in),</td>
+  <td></td>
+  
+  <td>dimension(3)</td><td>::</td>
+  <td><strong>ymd</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>UTsec</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(in),</td>
+  <td></td>
+  
+  <td>dimension(-1:,-1:,-1:,:)</td><td>::</td>
+  <td><strong>vs2</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(in),</td>
+  <td></td>
+  
+  <td>dimension(-1:,-1:,-1:,:)</td><td>::</td>
+  <td><strong>vs3</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(in),</td>
+  <td></td>
+  
+  <td>dimension(-1:,-1:,-1:,:)</td><td>::</td>
+  <td><strong>ns</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(in),</td>
+  <td></td>
+  
+  <td>dimension(-1:,-1:,-1:,:)</td><td>::</td>
+  <td><strong>vs1</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(in),</td>
+  <td></td>
+  
+  <td>dimension(-1:,-1:,-1:,:)</td><td>::</td>
+  <td><strong>Ts</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(in),</td>
+  <td></td>
+  
+  <td>dimension(:,:,:)</td><td>::</td>
+  <td><strong>Phiall</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(in),</td>
+  <td></td>
+  
+  <td>dimension(:,:,:)</td><td>::</td>
+  <td><strong>J1</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(in),</td>
+  <td></td>
+  
+  <td>dimension(:,:,:)</td><td>::</td>
+  <td><strong>J2</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(in),</td>
+  <td></td>
+  
+  <td>dimension(:,:,:)</td><td>::</td>
+  <td><strong>J3</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  </div>
+  </div>
+
+        
+        </section>    
+        
+    
+    
+    </div>
+  </div>
+
+  
+    <hr>    
+    </div> <!-- /container -->
+    <footer>
+      <div class="container">
+      <div class="row">
+        <div class="col-xs-6 col-md-4"><p>&copy; 2020 <a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/80x15.png" /></a>
+                                          </p></div>
+        <div class="col-xs-6 col-md-4 col-md-push-4">
+          <p class="text-right">
+            Documentation generated by 
+            <a href="https://github.com/cmacmackin/ford">FORD</a>
+            
+          </p>
+        </div>
+        <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> GEMINI3D was developed by Matthew Zettergren
+Guy Grubbs
+Michael Hirsch</p></div>
+      </div>
+      <br>
+      </div> <!-- /container -->    
+    </footer>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+<!--
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+-->
+    <script src="../js/bootstrap.min.js"></script>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <script src="../js/ie10-viewport-bug-workaround.js"></script>
+
+    <!-- MathJax JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } },
+        jax: ['input/TeX','input/MathML','output/HTML-CSS'],
+        extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']
+      });
+    </script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    
+    
+  </body>
+</html>

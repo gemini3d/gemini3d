@@ -64,6 +64,8 @@ Michael Hirsch" >
             <li><a href="../lists/modules.html">Modules</a></li>
         
             
+    <li><a href="../blockdata/gtd7bk.html">Block Data</a></li>
+    
                                 
             <li><a href="../lists/procedures.html">Procedures</a></li>
         
@@ -83,6 +85,8 @@ Michael Hirsch" >
 
 <li class="visible-xs hidden-sm visible-lg"><a href="../lists/modules.html">Modules</a></li>
 
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../blockdata/gtd7bk.html">Block Data</a></li>
 
 
 <li class="visible-xs hidden-sm visible-lg"><a href="../lists/procedures.html">Procedures</a></li>
@@ -104,7 +108,7 @@ Michael Hirsch" >
   
   <div class="row">
     <h1>output_root_stream_mpi
-      <small>Subroutine</small>
+      <small>Procedure</small>
     
     </h1>
     
@@ -121,21 +125,21 @@ Michael Hirsch" >
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 1.8% of total for procedures.">127 statements</a>
+    title=" 1.2% of total for procedures.">108 statements</a>
      </li> 
      
      
      
-    <li><i class="fa fa-code"></i><a href="../src/io.f90"> Source File</a></li>
+    <li><i class="fa fa-code"></i><a href="../src/plasma_output_hdf5.f90"> Source File</a></li>
      
      
   </ul>
   <ol class="breadcrumb in-well text-right">
   
     
-     <li><a href='../sourcefile/io.f90.html'>io.f90</a></li>
+     <li><a href='../sourcefile/plasma_output_hdf5.f90.html'>plasma_output_hdf5.f90</a></li>
     
-     <li><a href='../module/io.html'>io</a></li>
+     <li><a href='../module/plasma_output_hdf5~2.html'>plasma_output_hdf5</a></li>
     
   
      <li class="active">output_root_stream_mpi</li>
@@ -188,7 +192,7 @@ Michael Hirsch" >
     
     <div class="col-md-9" id='text'>
     <h2>
-public subroutine output_root_stream_mpi(outdir, flagoutput, ymd, UTsec, vs2, vs3, ns, vs1, Ts, Phiall, J1, J2, J3)
+module procedure output_root_stream_mpi <small>module procedure output_root_stream_mpi()</small>
     
     
    
@@ -198,221 +202,396 @@ public subroutine output_root_stream_mpi(outdir, flagoutput, ymd, UTsec, vs2, vs
 
 
     
+    <p>COLLECT OUTPUT FROM WORKERS AND WRITE TO A FILE USING STREAM I/O.
+ STATE VARS ARE EXPECTED INCLUDE GHOST CELLS</p>
+<p>RADD--- NEED TO ALSO GATHER FULL GRID ELECTRODYANMICS PARAMTERS FROM WORKERS
+ FIGURE OUT THE FILENAME
+ 2D simulation
+ NOTE: J3,J2 and V3, V2 are swapped in name like this
+ Check for any NaN before proceeding to next time step</p>
+    
 
     <h3>Arguments</h3>
     
-      
-<table class="table table-striped varlist">
-<thead><tr><th>Type</th>
-<th>Intent</th><th>Optional</th>
-<th>Attributes</th><th></th><th>Name</th><th></th></thead>
-
-
-
-<tbody>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-outdir~7"></span>character(len=*),</td>
-  <td>intent(in)</td>
-  <td></td>
-  
-  <td></td><td>::</td>
-  <td><strong>outdir</strong></td><td></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-flagoutput~5"></span>integer,</td>
-  <td>intent(in)</td>
-  <td></td>
-  
-  <td></td><td>::</td>
-  <td><strong>flagoutput</strong></td><td></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-ymd~7"></span>integer,</td>
-  <td>intent(in),</td>
-  <td></td>
-  
-  <td>dimension(3)</td><td>::</td>
-  <td><strong>ymd</strong></td><td></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-utsec~6"></span>real(kind=wp),</td>
-  <td>intent(in)</td>
-  <td></td>
-  
-  <td></td><td>::</td>
-  <td><strong>UTsec</strong></td><td></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-vs2~8"></span>real(kind=wp),</td>
-  <td>intent(in),</td>
-  <td></td>
-  
-  <td>dimension(-1:,-1:,-1:,:)</td><td>::</td>
-  <td><strong>vs2</strong></td><td></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-vs3~8"></span>real(kind=wp),</td>
-  <td>intent(in),</td>
-  <td></td>
-  
-  <td>dimension(-1:,-1:,-1:,:)</td><td>::</td>
-  <td><strong>vs3</strong></td><td></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-ns~10"></span>real(kind=wp),</td>
-  <td>intent(in),</td>
-  <td></td>
-  
-  <td>dimension(-1:,-1:,-1:,:)</td><td>::</td>
-  <td><strong>ns</strong></td><td></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-vs1~11"></span>real(kind=wp),</td>
-  <td>intent(in),</td>
-  <td></td>
-  
-  <td>dimension(-1:,-1:,-1:,:)</td><td>::</td>
-  <td><strong>vs1</strong></td><td></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-ts~10"></span>real(kind=wp),</td>
-  <td>intent(in),</td>
-  <td></td>
-  
-  <td>dimension(-1:,-1:,-1:,:)</td><td>::</td>
-  <td><strong>Ts</strong></td><td></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-phiall~2"></span>real(kind=wp),</td>
-  <td>intent(in),</td>
-  <td></td>
-  
-  <td>dimension(:,:,:)</td><td>::</td>
-  <td><strong>Phiall</strong></td><td></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-j1~7"></span>real(kind=wp),</td>
-  <td>intent(in),</td>
-  <td></td>
-  
-  <td>dimension(:,:,:)</td><td>::</td>
-  <td><strong>J1</strong></td><td></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-j2~6"></span>real(kind=wp),</td>
-  <td>intent(in),</td>
-  <td></td>
-  
-  <td>dimension(:,:,:)</td><td>::</td>
-  <td><strong>J2</strong></td><td></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-j3~6"></span>real(kind=wp),</td>
-  <td>intent(in),</td>
-  <td></td>
-  
-  <td>dimension(:,:,:)</td><td>::</td>
-  <td><strong>J3</strong></td><td></td>
-  
-</tr>
-
-</tbody>
-</table>
-
+    <em>None</em>
+    <br>
     
     
     
+    <br>
     
+    
+    <div class="panel panel-default">
+      <div class="panel-heading">
+  <h3 class="panel-title">Calls</h3>
+      </div>
+      <div class="panel-body">
+  <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.40.1 (20161225.0304)
+ -->
+<!-- Title: proc~~output_root_stream_mpi~~CallsGraph Pages: 1 -->
+<svg id="procoutput_root_stream_mpiCallsGraph" width="641pt" height="263pt"
+ viewBox="0.00 0.00 641.00 263.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="proc~~output_root_stream_mpi~~CallsGraph" class="graph" transform="scale(.8915 .8915) rotate(0) translate(4 291)">
+<title>proc~~output_root_stream_mpi~~CallsGraph</title>
+<polygon fill="#ffffff" stroke="transparent" points="-4,4 -4,-291 715,-291 715,4 -4,4"/>
+<!-- proc~output_root_stream_mpi -->
+<g id="proc~~output_root_stream_mpi~~CallsGraph_node1" class="node">
+<title>proc~output_root_stream_mpi</title>
+<polygon fill="none" stroke="#000000" points="130,-129 0,-129 0,-105 130,-105 130,-129"/>
+<text text-anchor="middle" x="65" y="-114.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#000000">output_root_stream_mpi</text>
+</g>
+<!-- interface~gather_recv -->
+<g id="proc~~output_root_stream_mpi~~CallsGraph_node2" class="node">
+<title>interface~gather_recv</title>
+<g id="a_proc~~output_root_stream_mpi~~CallsGraph_node2"><a xlink:href=".././interface/gather_recv.html" xlink:title="gather_recv">
+<polygon fill="#a7506f" stroke="#a7506f" points="241,-236 171,-236 171,-212 241,-212 241,-236"/>
+<text text-anchor="middle" x="206" y="-221.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">gather_recv</text>
+</a>
+</g>
+</g>
+<!-- proc~output_root_stream_mpi&#45;&gt;interface~gather_recv -->
+<g id="proc~~output_root_stream_mpi~~CallsGraph_edge1" class="edge">
+<title>proc~output_root_stream_mpi&#45;&gt;interface~gather_recv</title>
+<path fill="none" stroke="#000000" d="M78.134,-129.1859C96.863,-146.2625 132.6747,-177.8173 166,-201 168.6961,-202.8756 171.5547,-204.7403 174.4544,-206.5496"/>
+<polygon fill="#000000" stroke="#000000" points="172.7797,-209.6264 183.1562,-211.7664 176.3791,-203.6226 172.7797,-209.6264"/>
+</g>
+<!-- ns -->
+<g id="proc~~output_root_stream_mpi~~CallsGraph_node3" class="node">
+<title>ns</title>
+<polygon fill="#777777" stroke="#777777" points="233,-192 179,-192 179,-168 233,-168 233,-192"/>
+<text text-anchor="middle" x="206" y="-177.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">ns</text>
+</g>
+<!-- proc~output_root_stream_mpi&#45;&gt;ns -->
+<g id="proc~~output_root_stream_mpi~~CallsGraph_edge2" class="edge">
+<title>proc~output_root_stream_mpi&#45;&gt;ns</title>
+<path fill="none" stroke="#000000" d="M92.1862,-129.147C114.2282,-138.9956 145.4929,-152.9649 169.6783,-163.7711"/>
+<polygon fill="#000000" stroke="#000000" points="168.3393,-167.0063 178.8972,-167.8903 171.195,-160.6153 168.3393,-167.0063"/>
+</g>
+<!-- proc~date_filename -->
+<g id="proc~~output_root_stream_mpi~~CallsGraph_node4" class="node">
+<title>proc~date_filename</title>
+<g id="a_proc~~output_root_stream_mpi~~CallsGraph_node4"><a xlink:href=".././proc/date_filename.html" xlink:title="date_filename">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="246,-150 166,-150 166,-126 246,-126 246,-150"/>
+<text text-anchor="middle" x="206" y="-135.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">date_filename</text>
+</a>
+</g>
+</g>
+<!-- proc~output_root_stream_mpi&#45;&gt;proc~date_filename -->
+<g id="proc~~output_root_stream_mpi~~CallsGraph_edge3" class="edge">
+<title>proc~output_root_stream_mpi&#45;&gt;proc~date_filename</title>
+<path fill="none" stroke="#000000" d="M130.1345,-126.7009C138.7528,-127.9845 147.4786,-129.284 155.7928,-130.5223"/>
+<polygon fill="#000000" stroke="#000000" points="155.2888,-133.9858 165.6953,-131.9972 156.3201,-127.0622 155.2888,-133.9858"/>
+</g>
+<!-- vs3 -->
+<g id="proc~~output_root_stream_mpi~~CallsGraph_node5" class="node">
+<title>vs3</title>
+<polygon fill="#777777" stroke="#777777" points="233,-108 179,-108 179,-84 233,-84 233,-108"/>
+<text text-anchor="middle" x="206" y="-93.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">vs3</text>
+</g>
+<!-- proc~output_root_stream_mpi&#45;&gt;vs3 -->
+<g id="proc~~output_root_stream_mpi~~CallsGraph_edge4" class="edge">
+<title>proc~output_root_stream_mpi&#45;&gt;vs3</title>
+<path fill="none" stroke="#000000" d="M130.1345,-107.2991C143.4171,-105.3209 156.9551,-103.3046 168.848,-101.5333"/>
+<polygon fill="#000000" stroke="#000000" points="169.4528,-104.9819 178.8281,-100.0469 168.4216,-98.0583 169.4528,-104.9819"/>
+</g>
+<!-- vs2 -->
+<g id="proc~~output_root_stream_mpi~~CallsGraph_node6" class="node">
+<title>vs2</title>
+<polygon fill="#777777" stroke="#777777" points="233,-66 179,-66 179,-42 233,-42 233,-66"/>
+<text text-anchor="middle" x="206" y="-51.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">vs2</text>
+</g>
+<!-- proc~output_root_stream_mpi&#45;&gt;vs2 -->
+<g id="proc~~output_root_stream_mpi~~CallsGraph_edge5" class="edge">
+<title>proc~output_root_stream_mpi&#45;&gt;vs2</title>
+<path fill="none" stroke="#000000" d="M92.1862,-104.853C114.2282,-95.0044 145.4929,-81.0351 169.6783,-70.2289"/>
+<polygon fill="#000000" stroke="#000000" points="171.195,-73.3847 178.8972,-66.1097 168.3393,-66.9937 171.195,-73.3847"/>
+</g>
+<!-- phiall -->
+<g id="proc~~output_root_stream_mpi~~CallsGraph_node7" class="node">
+<title>phiall</title>
+<polygon fill="#777777" stroke="#777777" points="233,-24 179,-24 179,0 233,0 233,-24"/>
+<text text-anchor="middle" x="206" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">phiall</text>
+</g>
+<!-- proc~output_root_stream_mpi&#45;&gt;phiall -->
+<g id="proc~~output_root_stream_mpi~~CallsGraph_edge6" class="edge">
+<title>proc~output_root_stream_mpi&#45;&gt;phiall</title>
+<path fill="none" stroke="#000000" d="M77.7002,-104.9248C96.1951,-87.7028 132.0462,-55.6654 166,-33 167.9081,-31.7263 169.9024,-30.4695 171.9382,-29.2423"/>
+<polygon fill="#000000" stroke="#000000" points="174.0304,-32.0789 180.9916,-24.0919 170.569,-25.9945 174.0304,-32.0789"/>
+</g>
+<!-- interface~gather_recv3d_23 -->
+<g id="proc~~output_root_stream_mpi~~CallsGraph_node9" class="node">
+<title>interface~gather_recv3d_23</title>
+<g id="a_proc~~output_root_stream_mpi~~CallsGraph_node9"><a xlink:href=".././interface/gather_recv3d_23.html" xlink:title="gather_recv3D_23">
+<polygon fill="#a7506f" stroke="#a7506f" points="383,-245 282,-245 282,-221 383,-221 383,-245"/>
+<text text-anchor="middle" x="332.5" y="-230.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">gather_recv3D_23</text>
+</a>
+</g>
+</g>
+<!-- interface~gather_recv&#45;&gt;interface~gather_recv3d_23 -->
+<g id="proc~~output_root_stream_mpi~~CallsGraph_edge7" class="edge">
+<title>interface~gather_recv&#45;&gt;interface~gather_recv3d_23</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M241.2373,-226.507C250.7662,-227.1849 261.3582,-227.9385 271.8543,-228.6853"/>
+<polygon fill="#000000" stroke="#000000" points="271.6272,-232.1779 281.8504,-229.3965 272.1241,-225.1955 271.6272,-232.1779"/>
+</g>
+<!-- interface~gather_recv2d_23 -->
+<g id="proc~~output_root_stream_mpi~~CallsGraph_node10" class="node">
+<title>interface~gather_recv2d_23</title>
+<g id="a_proc~~output_root_stream_mpi~~CallsGraph_node10"><a xlink:href=".././interface/gather_recv2d_23.html" xlink:title="gather_recv2D_23">
+<polygon fill="#a7506f" stroke="#a7506f" points="383,-287 282,-287 282,-263 383,-263 383,-287"/>
+<text text-anchor="middle" x="332.5" y="-272.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">gather_recv2D_23</text>
+</a>
+</g>
+</g>
+<!-- interface~gather_recv&#45;&gt;interface~gather_recv2d_23 -->
+<g id="proc~~output_root_stream_mpi~~CallsGraph_edge8" class="edge">
+<title>interface~gather_recv&#45;&gt;interface~gather_recv2d_23</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M235.9787,-236.0863C253.0262,-242.9592 274.5814,-251.6494 292.9955,-259.0733"/>
+<polygon fill="#000000" stroke="#000000" points="291.7147,-262.3306 302.2981,-262.8237 294.3322,-255.8384 291.7147,-262.3306"/>
+</g>
+<!-- interface~gather_recv4d_23 -->
+<g id="proc~~output_root_stream_mpi~~CallsGraph_node11" class="node">
+<title>interface~gather_recv4d_23</title>
+<g id="a_proc~~output_root_stream_mpi~~CallsGraph_node11"><a xlink:href=".././interface/gather_recv4d_23.html" xlink:title="gather_recv4D_23">
+<polygon fill="#a7506f" stroke="#a7506f" points="383,-203 282,-203 282,-179 383,-179 383,-203"/>
+<text text-anchor="middle" x="332.5" y="-188.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">gather_recv4D_23</text>
+</a>
+</g>
+</g>
+<!-- interface~gather_recv&#45;&gt;interface~gather_recv4d_23 -->
+<g id="proc~~output_root_stream_mpi~~CallsGraph_edge9" class="edge">
+<title>interface~gather_recv&#45;&gt;interface~gather_recv4d_23</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M241.2373,-214.8077C252.089,-211.9768 264.3193,-208.7863 276.2168,-205.6826"/>
+<polygon fill="#000000" stroke="#000000" points="277.3021,-209.0167 286.0948,-203.1057 275.5351,-202.2433 277.3021,-209.0167"/>
+</g>
+<!-- proc~utsec2filestem -->
+<g id="proc~~output_root_stream_mpi~~CallsGraph_node8" class="node">
+<title>proc~utsec2filestem</title>
+<g id="a_proc~~output_root_stream_mpi~~CallsGraph_node8"><a xlink:href=".././proc/utsec2filestem.html" xlink:title="utsec2filestem">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="373,-146 292,-146 292,-122 373,-122 373,-146"/>
+<text text-anchor="middle" x="332.5" y="-131.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">utsec2filestem</text>
+</a>
+</g>
+</g>
+<!-- proc~date_filename&#45;&gt;proc~utsec2filestem -->
+<g id="proc~~output_root_stream_mpi~~CallsGraph_edge10" class="edge">
+<title>proc~date_filename&#45;&gt;proc~utsec2filestem</title>
+<path fill="none" stroke="#000000" d="M246.0254,-136.7344C257.3342,-136.3768 269.7934,-135.9828 281.6478,-135.608"/>
+<polygon fill="#000000" stroke="#000000" points="281.9811,-139.0993 291.8655,-135.2849 281.7598,-132.1028 281.9811,-139.0993"/>
+</g>
+<!-- proc~day_wrap -->
+<g id="proc~~output_root_stream_mpi~~CallsGraph_node12" class="node">
+<title>proc~day_wrap</title>
+<g id="a_proc~~output_root_stream_mpi~~CallsGraph_node12"><a xlink:href=".././proc/day_wrap.html" xlink:title="day_wrap">
+<polygon fill="#d9534f" stroke="#d9534f" points="499,-143 440,-143 440,-119 499,-119 499,-143"/>
+<text text-anchor="middle" x="469.5" y="-128.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">day_wrap</text>
+</a>
+</g>
+</g>
+<!-- proc~utsec2filestem&#45;&gt;proc~day_wrap -->
+<g id="proc~~output_root_stream_mpi~~CallsGraph_edge11" class="edge">
+<title>proc~utsec2filestem&#45;&gt;proc~day_wrap</title>
+<path fill="none" stroke="#000000" d="M373.2336,-133.108C391.0359,-132.7182 411.85,-132.2624 429.561,-131.8746"/>
+<polygon fill="#000000" stroke="#000000" points="429.6633,-135.3733 439.5842,-131.6551 429.51,-128.375 429.6633,-135.3733"/>
+</g>
+<!-- proc~gather_recv3d_23 -->
+<g id="proc~~output_root_stream_mpi~~CallsGraph_node14" class="node">
+<title>proc~gather_recv3d_23</title>
+<g id="a_proc~~output_root_stream_mpi~~CallsGraph_node14"><a xlink:href=".././proc/gather_recv3d_23.html" xlink:title="gather_recv3D_23">
+<polygon fill="#d9534f" stroke="#d9534f" points="520,-245 419,-245 419,-221 520,-221 520,-245"/>
+<text text-anchor="middle" x="469.5" y="-230.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">gather_recv3D_23</text>
+</a>
+</g>
+</g>
+<!-- interface~gather_recv3d_23&#45;&gt;proc~gather_recv3d_23 -->
+<g id="proc~~output_root_stream_mpi~~CallsGraph_edge12" class="edge">
+<title>interface~gather_recv3d_23&#45;&gt;proc~gather_recv3d_23</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M383.1245,-233C391.3614,-233 399.969,-233 408.4239,-233"/>
+<polygon fill="#000000" stroke="#000000" points="408.6262,-236.5001 418.6262,-233 408.6262,-229.5001 408.6262,-236.5001"/>
+</g>
+<!-- proc~gather_recv2d_23 -->
+<g id="proc~~output_root_stream_mpi~~CallsGraph_node13" class="node">
+<title>proc~gather_recv2d_23</title>
+<g id="a_proc~~output_root_stream_mpi~~CallsGraph_node13"><a xlink:href=".././proc/gather_recv2d_23.html" xlink:title="gather_recv2D_23">
+<polygon fill="#d9534f" stroke="#d9534f" points="520,-287 419,-287 419,-263 520,-263 520,-287"/>
+<text text-anchor="middle" x="469.5" y="-272.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">gather_recv2D_23</text>
+</a>
+</g>
+</g>
+<!-- interface~gather_recv2d_23&#45;&gt;proc~gather_recv2d_23 -->
+<g id="proc~~output_root_stream_mpi~~CallsGraph_edge13" class="edge">
+<title>interface~gather_recv2d_23&#45;&gt;proc~gather_recv2d_23</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M383.1245,-275C391.3614,-275 399.969,-275 408.4239,-275"/>
+<polygon fill="#000000" stroke="#000000" points="408.6262,-278.5001 418.6262,-275 408.6262,-271.5001 408.6262,-278.5001"/>
+</g>
+<!-- proc~gather_recv4d_23 -->
+<g id="proc~~output_root_stream_mpi~~CallsGraph_node15" class="node">
+<title>proc~gather_recv4d_23</title>
+<g id="a_proc~~output_root_stream_mpi~~CallsGraph_node15"><a xlink:href=".././proc/gather_recv4d_23.html" xlink:title="gather_recv4D_23">
+<polygon fill="#d9534f" stroke="#d9534f" points="520,-203 419,-203 419,-179 520,-179 520,-203"/>
+<text text-anchor="middle" x="469.5" y="-188.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">gather_recv4D_23</text>
+</a>
+</g>
+</g>
+<!-- interface~gather_recv4d_23&#45;&gt;proc~gather_recv4d_23 -->
+<g id="proc~~output_root_stream_mpi~~CallsGraph_edge14" class="edge">
+<title>interface~gather_recv4d_23&#45;&gt;proc~gather_recv4d_23</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M383.1245,-191C391.3614,-191 399.969,-191 408.4239,-191"/>
+<polygon fill="#000000" stroke="#000000" points="408.6262,-194.5001 418.6262,-191 408.6262,-187.5001 408.6262,-194.5001"/>
+</g>
+<!-- proc~day_wrap&#45;&gt;proc~day_wrap -->
+<g id="proc~~output_root_stream_mpi~~CallsGraph_edge15" class="edge">
+<title>proc~day_wrap&#45;&gt;proc~day_wrap</title>
+<path fill="none" stroke="#000000" d="M449.9894,-143.0139C443.1761,-151.9717 449.6797,-161 469.5,-161 481.578,-161 488.711,-157.6474 490.8989,-153.0013"/>
+<polygon fill="#000000" stroke="#000000" points="494.3076,-152.1896 489.0106,-143.0139 487.4294,-153.4901 494.3076,-152.1896"/>
+</g>
+<!-- proc~daysmonth -->
+<g id="proc~~output_root_stream_mpi~~CallsGraph_node18" class="node">
+<title>proc~daysmonth</title>
+<g id="a_proc~~output_root_stream_mpi~~CallsGraph_node18"><a xlink:href=".././proc/daysmonth.html" xlink:title="daysmonth">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="621,-143 556,-143 556,-119 621,-119 621,-143"/>
+<text text-anchor="middle" x="588.5" y="-128.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">daysmonth</text>
+</a>
+</g>
+</g>
+<!-- proc~day_wrap&#45;&gt;proc~daysmonth -->
+<g id="proc~~output_root_stream_mpi~~CallsGraph_edge16" class="edge">
+<title>proc~day_wrap&#45;&gt;proc~daysmonth</title>
+<path fill="none" stroke="#000000" d="M499.2218,-131C513.2052,-131 530.1452,-131 545.495,-131"/>
+<polygon fill="#000000" stroke="#000000" points="545.8118,-134.5001 555.8118,-131 545.8118,-127.5001 545.8118,-134.5001"/>
+</g>
+<!-- proc~slabinds -->
+<g id="proc~~output_root_stream_mpi~~CallsGraph_node16" class="node">
+<title>proc~slabinds</title>
+<g id="a_proc~~output_root_stream_mpi~~CallsGraph_node16"><a xlink:href=".././proc/slabinds.html" xlink:title="slabinds">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="615.5,-224 561.5,-224 561.5,-200 615.5,-200 615.5,-224"/>
+<text text-anchor="middle" x="588.5" y="-209.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">slabinds</text>
+</a>
+</g>
+</g>
+<!-- proc~gather_recv2d_23&#45;&gt;proc~slabinds -->
+<g id="proc~~output_root_stream_mpi~~CallsGraph_edge17" class="edge">
+<title>proc~gather_recv2d_23&#45;&gt;proc~slabinds</title>
+<path fill="none" stroke="#000000" d="M500.5589,-262.9808C507.0676,-260.2138 513.8266,-257.1519 520,-254 528.049,-249.8905 545.498,-239.1817 560.7698,-229.6066"/>
+<polygon fill="#000000" stroke="#000000" points="562.8251,-232.4485 569.4225,-224.1584 559.0953,-226.525 562.8251,-232.4485"/>
+</g>
+<!-- mpi_recv -->
+<g id="proc~~output_root_stream_mpi~~CallsGraph_node17" class="node">
+<title>mpi_recv</title>
+<polygon fill="#777777" stroke="#777777" points="616.5,-266 560.5,-266 560.5,-242 616.5,-242 616.5,-266"/>
+<text text-anchor="middle" x="588.5" y="-251.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">mpi_recv</text>
+</g>
+<!-- proc~gather_recv2d_23&#45;&gt;mpi_recv -->
+<g id="proc~~output_root_stream_mpi~~CallsGraph_edge18" class="edge">
+<title>proc~gather_recv2d_23&#45;&gt;mpi_recv</title>
+<path fill="none" stroke="#000000" d="M520.3119,-266.0332C530.4253,-264.2485 540.8809,-262.4034 550.4759,-260.7101"/>
+<polygon fill="#000000" stroke="#000000" points="551.2533,-264.1271 560.4929,-258.9424 550.0367,-257.2336 551.2533,-264.1271"/>
+</g>
+<!-- proc~gather_recv3d_23&#45;&gt;proc~slabinds -->
+<g id="proc~~output_root_stream_mpi~~CallsGraph_edge19" class="edge">
+<title>proc~gather_recv3d_23&#45;&gt;proc~slabinds</title>
+<path fill="none" stroke="#000000" d="M520.3119,-224.0332C530.8142,-222.1799 541.6855,-220.2614 551.5789,-218.5155"/>
+<polygon fill="#000000" stroke="#000000" points="552.2389,-221.9532 561.4785,-216.7685 551.0223,-215.0597 552.2389,-221.9532"/>
+</g>
+<!-- proc~gather_recv3d_23&#45;&gt;mpi_recv -->
+<g id="proc~~output_root_stream_mpi~~CallsGraph_edge20" class="edge">
+<title>proc~gather_recv3d_23&#45;&gt;mpi_recv</title>
+<path fill="none" stroke="#000000" d="M520.3119,-241.9668C530.4253,-243.7515 540.8809,-245.5966 550.4759,-247.2899"/>
+<polygon fill="#000000" stroke="#000000" points="550.0367,-250.7664 560.4929,-249.0576 551.2533,-243.8729 550.0367,-250.7664"/>
+</g>
+<!-- proc~gather_recv4d_23&#45;&gt;proc~slabinds -->
+<g id="proc~~output_root_stream_mpi~~CallsGraph_edge21" class="edge">
+<title>proc~gather_recv4d_23&#45;&gt;proc~slabinds</title>
+<path fill="none" stroke="#000000" d="M520.3119,-199.9668C530.8142,-201.8201 541.6855,-203.7386 551.5789,-205.4845"/>
+<polygon fill="#000000" stroke="#000000" points="551.0223,-208.9403 561.4785,-207.2315 552.2389,-202.0468 551.0223,-208.9403"/>
+</g>
+<!-- proc~gather_recv4d_23&#45;&gt;mpi_recv -->
+<g id="proc~~output_root_stream_mpi~~CallsGraph_edge22" class="edge">
+<title>proc~gather_recv4d_23&#45;&gt;mpi_recv</title>
+<path fill="none" stroke="#000000" d="M500.5589,-203.0192C507.0676,-205.7862 513.8266,-208.8481 520,-212 528.049,-216.1095 545.498,-226.8183 560.7698,-236.3934"/>
+<polygon fill="#000000" stroke="#000000" points="559.0953,-239.475 569.4225,-241.8416 562.8251,-233.5515 559.0953,-239.475"/>
+</g>
+<!-- proc~id2grid -->
+<g id="proc~~output_root_stream_mpi~~CallsGraph_node19" class="node">
+<title>proc~id2grid</title>
+<g id="a_proc~~output_root_stream_mpi~~CallsGraph_node19"><a xlink:href=".././proc/id2grid.html" xlink:title="ID2grid">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="711,-224 657,-224 657,-200 711,-200 711,-224"/>
+<text text-anchor="middle" x="684" y="-209.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">ID2grid</text>
+</a>
+</g>
+</g>
+<!-- proc~slabinds&#45;&gt;proc~id2grid -->
+<g id="proc~~output_root_stream_mpi~~CallsGraph_edge23" class="edge">
+<title>proc~slabinds&#45;&gt;proc~id2grid</title>
+<path fill="none" stroke="#000000" d="M615.611,-212C625.2889,-212 636.3674,-212 646.7492,-212"/>
+<polygon fill="#000000" stroke="#000000" points="646.8212,-215.5001 656.8212,-212 646.8212,-208.5001 646.8212,-215.5001"/>
+</g>
+</g>
+</svg>
+</div><script>var panprocoutput_root_stream_mpiCallsGraph = svgPanZoom('#procoutput_root_stream_mpiCallsGraph', {zoomEnabled: true,controlIconsEnabled: true, fit: true, center: true,}); </script><div><a type="button" class="graph-help" data-toggle="modal" href="#graph-help-text">Help</a></div><div class="modal fade" id="graph-help-text" tabindex="-1" role="dialog"><div class="modal-dialog modal-lg" role="document"><div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button><h4 class="modal-title" id="-graph-help-label">Graph Key</h4></div><div class="modal-body">
+    <p>Nodes of different colours represent the following: </p>
+    <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.40.1 (20161225.0304)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="560pt" height="32pt"
+ viewBox="0.00 0.00 559.50 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 28)">
+<title>Graph Key</title>
+<polygon fill="#ffffff" stroke="transparent" points="-4,4 -4,-28 555.5,-28 555.5,4 -4,4"/>
+<!-- Subroutine -->
+<g id="node1" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="64,-24 0,-24 0,0 64,0 64,-24"/>
+<text text-anchor="middle" x="32" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node2" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="136,-24 82,-24 82,0 136,0 136,-24"/>
+<text text-anchor="middle" x="109" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Function</text>
+</g>
+<!-- Interface -->
+<g id="node3" class="node">
+<title>Interface</title>
+<polygon fill="#a7506f" stroke="#a7506f" points="209.5,-24 154.5,-24 154.5,0 209.5,0 209.5,-24"/>
+<text text-anchor="middle" x="182" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Interface</text>
+</g>
+<!-- Unknown Procedure Type -->
+<g id="node4" class="node">
+<title>Unknown Procedure Type</title>
+<polygon fill="#777777" stroke="#777777" points="364,-24 228,-24 228,0 364,0 364,-24"/>
+<text text-anchor="middle" x="296" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Unknown Procedure Type</text>
+</g>
+<!-- Program -->
+<g id="node5" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="436,-24 382,-24 382,0 436,0 436,-24"/>
+<text text-anchor="middle" x="409" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node6" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="#000000" points="551.5,-24 454.5,-24 454.5,0 551.5,0 551.5,-24"/>
+<text text-anchor="middle" x="503" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#000000">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+    
+    <p>Solid arrows point from a procedure to one which it calls. Dashed 
+    arrows point from an interface to procedures which implement that interface.
+    This could include the module procedures in a generic interface or the
+    implementation in a submodule of an interface in a parent module.
+    </p>
+    </div></div></div></div>
+      </div>
+    </div>
+     
      
     <br>
 
@@ -475,7 +654,7 @@ public subroutine output_root_stream_mpi(outdir, flagoutput, ymd, UTsec, vs2, vs
     <footer>
       <div class="container">
       <div class="row">
-        <div class="col-xs-6 col-md-4"><p>&copy; 2018 <a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/80x15.png" /></a>
+        <div class="col-xs-6 col-md-4"><p>&copy; 2020 <a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/80x15.png" /></a>
                                           </p></div>
         <div class="col-xs-6 col-md-4 col-md-push-4">
           <p class="text-right">

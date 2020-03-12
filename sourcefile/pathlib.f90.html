@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+   
+   <meta name="description" content="GEMINI3D is a modular ionospheric model that incorporates kinetic models such as Fang, GLOW.">
+    
+    <meta name="author" content="Matthew Zettergren
+Guy Grubbs
+Michael Hirsch" >
+    <link rel="icon" href="../favicon.png">
+
+    <title>pathlib.f90 &ndash; GEMINI3D</title>
+
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+    <link href="../css/pygments.css" rel="stylesheet">
+    <link href="../css/font-awesome.min.css" rel="stylesheet">
+    <link href="../css/local.css" rel="stylesheet">
+    
+    
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    
+    <script src="../js/jquery-2.1.3.min.js"></script>
+    <script src="../js/svg-pan-zoom.min.js"></script>
+
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="../index.html">GEMINI3D </a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+        
+            <li class="dropdown hidden-xs visible-sm visible-md hidden-lg">
+              <a href="#" class="dropdown-toggle"
+              data-toggle="dropdown" role="button"
+              aria-haspopup="true"
+     aria-expanded="false">Contents <span class="caret"></span></a>
+        <ul class="dropdown-menu">
+          
+              
+            <li><a href="../lists/files.html">Source Files</a></li>
+        
+        
+        
+            <li><a href="../lists/modules.html">Modules</a></li>
+        
+            
+    <li><a href="../blockdata/gtd7bk.html">Block Data</a></li>
+    
+                                
+            <li><a href="../lists/procedures.html">Procedures</a></li>
+        
+               
+            <li><a href="../lists/types.html">Derived Types</a></li>
+        
+        
+            <li><a href="../lists/programs.html">Programs</a></li>
+        
+            </ul>
+            </li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/files.html">Source Files</a></li>
+
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/modules.html">Modules</a></li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../blockdata/gtd7bk.html">Block Data</a></li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/procedures.html">Procedures</a></li>
+
+                             
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/types.html">Derived Types</a></li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/programs.html">Programs</a></li>
+
+          </ul>
+        
+        </div><!--/.nav-collapse -->
+      </div>
+    </nav>
+
+    <div class="container">
+    
+  
+  <div class="row">
+    <h1>pathlib.f90
+    <small>Source File</small>
+    
+    </h1>
+    
+<div class="row">
+  <div class="col-lg-12">
+<div class="well well-sm">
+  <ul class="list-inline" style="margin-bottom:0px;display:inline">
+     
+     
+     
+     
+    
+    
+     <li><i class="fa fa-list-ol"></i>
+       <a data-toggle="tooltip"
+    data-placement="bottom" data-html="true"
+    title=" 0.4% of total for source files.">60 statements</a>
+     </li> 
+     
+     
+     
+    <li><i class="fa fa-code"></i><a href="../src/pathlib.f90"> Source File</a></li>
+     
+     
+  </ul>
+  <ol class="breadcrumb in-well text-right">
+  
+    
+  
+     <li class="active">pathlib.f90</li>
+  </ol>
+</div>
+</div>
+</div>
+<script>
+  $(function () {
+  $('[data-toggle="tooltip"]').tooltip()
+  })
+</script>
+
+  </div>
+  <div class="row">
+    <div class="col-md-3 hidden-xs hidden-sm visible-md visible-lg">
+    
+<div id="sidebar">
+  
+<h3>Contents</h3>
+ 
+
+
+
+
+
+
+
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#mods-0">Modules</a></h3></div>
+  <div id="mods-0" class="panel-collapse collapse">
+    <div class="list-group">
+      
+      <a class="list-group-item" href="../module/pathlib.html">pathlib</a>
+      
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
+  <div class="list-group">
+    <a class="list-group-item" href="../sourcefile/pathlib.f90.html#src">pathlib.f90</a>
+  </div>
+</div>
+
+
+
+</div>
+
+    </div>
+    <div class="col-md-9" id='text'>
+      
+      <br>
+    
+      
+    <div class="panel panel-default">
+      <div class="panel-heading">
+  <h3 class="panel-title">Files dependent on this one</h3>
+      </div>
+      <div class="panel-body">
+  <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.40.1 (20161225.0304)
+ -->
+<!-- Title: sourcefile~~pathlib.f90~~AfferentGraph Pages: 1 -->
+<svg id="sourcefilepathlibf90AfferentGraph" width="494pt" height="410pt"
+ viewBox="0.00 0.00 494.00 410.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="sourcefile~~pathlib.f90~~AfferentGraph" class="graph" transform="scale(1 1) rotate(0) translate(4 406)">
+<title>sourcefile~~pathlib.f90~~AfferentGraph</title>
+<polygon fill="#ffffff" stroke="transparent" points="-4,4 -4,-406 490,-406 490,4 -4,4"/>
+<!-- sourcefile~pathlib.f90 -->
+<g id="sourcefile~~pathlib.f90~~AfferentGraph_node1" class="node">
+<title>sourcefile~pathlib.f90</title>
+<polygon fill="none" stroke="#000000" points="62,-213 0,-213 0,-189 62,-189 62,-213"/>
+<text text-anchor="middle" x="31" y="-198.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#000000">pathlib.f90</text>
+</g>
+<!-- sourcefile~pathlib_windows.f90 -->
+<g id="sourcefile~~pathlib.f90~~AfferentGraph_node2" class="node">
+<title>sourcefile~pathlib_windows.f90</title>
+<g id="a_sourcefile~~pathlib.f90~~AfferentGraph_node2"><a xlink:href=".././sourcefile/pathlib_windows.f90.html" xlink:title="pathlib_windows.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="207,-255 98,-255 98,-231 207,-231 207,-255"/>
+<text text-anchor="middle" x="152.5" y="-240.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">pathlib_windows.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~pathlib_windows.f90&#45;&gt;sourcefile~pathlib.f90 -->
+<g id="sourcefile~~pathlib.f90~~AfferentGraph_edge1" class="edge">
+<title>sourcefile~pathlib_windows.f90&#45;&gt;sourcefile~pathlib.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M117.683,-230.9645C103.3023,-225.9934 86.5348,-220.1972 71.5997,-215.0345"/>
+<polygon fill="#000000" stroke="#000000" points="72.6881,-211.7075 62.0933,-211.7483 70.4011,-218.3234 72.6881,-211.7075"/>
+</g>
+<!-- sourcefile~io.f90 -->
+<g id="sourcefile~~pathlib.f90~~AfferentGraph_node3" class="node">
+<title>sourcefile~io.f90</title>
+<g id="a_sourcefile~~pathlib.f90~~AfferentGraph_node3"><a xlink:href=".././sourcefile/io.f90.html" xlink:title="io.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="179.5,-213 125.5,-213 125.5,-189 179.5,-189 179.5,-213"/>
+<text text-anchor="middle" x="152.5" y="-198.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">io.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~io.f90&#45;&gt;sourcefile~pathlib.f90 -->
+<g id="sourcefile~~pathlib.f90~~AfferentGraph_edge2" class="edge">
+<title>sourcefile~io.f90&#45;&gt;sourcefile~pathlib.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M125.233,-201C109.7051,-201 89.9328,-201 72.5135,-201"/>
+<polygon fill="#000000" stroke="#000000" points="72.0306,-197.5001 62.0305,-201 72.0305,-204.5001 72.0306,-197.5001"/>
+</g>
+<!-- sourcefile~pathlib_unix.f90 -->
+<g id="sourcefile~~pathlib.f90~~AfferentGraph_node4" class="node">
+<title>sourcefile~pathlib_unix.f90</title>
+<g id="a_sourcefile~~pathlib.f90~~AfferentGraph_node4"><a xlink:href=".././sourcefile/pathlib_unix.f90.html" xlink:title="pathlib_unix.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="196.5,-171 108.5,-171 108.5,-147 196.5,-147 196.5,-171"/>
+<text text-anchor="middle" x="152.5" y="-156.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">pathlib_unix.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~pathlib_unix.f90&#45;&gt;sourcefile~pathlib.f90 -->
+<g id="sourcefile~~pathlib.f90~~AfferentGraph_edge3" class="edge">
+<title>sourcefile~pathlib_unix.f90&#45;&gt;sourcefile~pathlib.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M117.683,-171.0355C103.3023,-176.0066 86.5348,-181.8028 71.5997,-186.9655"/>
+<polygon fill="#000000" stroke="#000000" points="70.4011,-183.6766 62.0933,-190.2517 72.6881,-190.2925 70.4011,-183.6766"/>
+</g>
+<!-- sourcefile~mag_hdf5.f90 -->
+<g id="sourcefile~~pathlib.f90~~AfferentGraph_node5" class="node">
+<title>sourcefile~mag_hdf5.f90</title>
+<g id="a_sourcefile~~pathlib.f90~~AfferentGraph_node5"><a xlink:href=".././sourcefile/mag_hdf5.f90.html" xlink:title="mag_hdf5.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="322,-402 243,-402 243,-378 322,-378 322,-402"/>
+<text text-anchor="middle" x="282.5" y="-387.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">mag_hdf5.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~mag_hdf5.f90&#45;&gt;sourcefile~io.f90 -->
+<g id="sourcefile~~pathlib.f90~~AfferentGraph_edge4" class="edge">
+<title>sourcefile~mag_hdf5.f90&#45;&gt;sourcefile~io.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M252.7335,-377.8606C249.063,-375.3686 245.6706,-372.4328 243,-369 201.6976,-315.9099 251.4332,-272.4989 207,-222 202.2746,-216.6295 196.0148,-212.6242 189.4252,-209.6395"/>
+<polygon fill="#000000" stroke="#000000" points="190.2665,-206.216 179.6749,-205.9567 187.7931,-212.7645 190.2665,-206.216"/>
+</g>
+<!-- sourcefile~mag.f90 -->
+<g id="sourcefile~~pathlib.f90~~AfferentGraph_node6" class="node">
+<title>sourcefile~mag.f90</title>
+<g id="a_sourcefile~~pathlib.f90~~AfferentGraph_node6"><a xlink:href=".././sourcefile/mag.f90.html" xlink:title="mag.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="309.5,-360 255.5,-360 255.5,-336 309.5,-336 309.5,-360"/>
+<text text-anchor="middle" x="282.5" y="-345.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">mag.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~mag.f90&#45;&gt;sourcefile~io.f90 -->
+<g id="sourcefile~~pathlib.f90~~AfferentGraph_edge5" class="edge">
+<title>sourcefile~mag.f90&#45;&gt;sourcefile~io.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M255.4256,-337.1588C250.8209,-334.3832 246.4274,-331.0181 243,-327 210.9843,-289.4664 241.2239,-257.5317 207,-222 202.0848,-216.8969 195.7924,-213.0151 189.2409,-210.068"/>
+<polygon fill="#000000" stroke="#000000" points="190.1778,-206.6794 179.587,-206.3856 187.683,-213.2198 190.1778,-206.6794"/>
+</g>
+<!-- sourcefile~aurora.f90 -->
+<g id="sourcefile~~pathlib.f90~~AfferentGraph_node7" class="node">
+<title>sourcefile~aurora.f90</title>
+<g id="a_sourcefile~~pathlib.f90~~AfferentGraph_node7"><a xlink:href=".././sourcefile/aurora.f90.html" xlink:title="aurora.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="313.5,-318 251.5,-318 251.5,-294 313.5,-294 313.5,-318"/>
+<text text-anchor="middle" x="282.5" y="-303.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">aurora.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~aurora.f90&#45;&gt;sourcefile~io.f90 -->
+<g id="sourcefile~~pathlib.f90~~AfferentGraph_edge6" class="edge">
+<title>sourcefile~aurora.f90&#45;&gt;sourcefile~io.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M254.7832,-293.8746C250.5555,-291.313 246.4564,-288.3526 243,-285 219.8514,-262.5469 231.4623,-243.0141 207,-222 201.7805,-217.5163 195.4987,-213.934 189.0845,-211.0904"/>
+<polygon fill="#000000" stroke="#000000" points="190.289,-207.8034 179.7006,-207.4337 187.7473,-214.3257 190.289,-207.8034"/>
+</g>
+<!-- sourcefile~output.f90 -->
+<g id="sourcefile~~pathlib.f90~~AfferentGraph_node8" class="node">
+<title>sourcefile~output.f90</title>
+<g id="a_sourcefile~~pathlib.f90~~AfferentGraph_node8"><a xlink:href=".././sourcefile/output.f90.html" xlink:title="output.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="313,-276 252,-276 252,-252 313,-252 313,-276"/>
+<text text-anchor="middle" x="282.5" y="-261.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">output.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~output.f90&#45;&gt;sourcefile~io.f90 -->
+<g id="sourcefile~~pathlib.f90~~AfferentGraph_edge7" class="edge">
+<title>sourcefile~output.f90&#45;&gt;sourcefile~io.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M259.4415,-251.9372C254.0259,-249.05 248.2919,-245.9487 243,-243 226.8191,-233.9839 223.6958,-230.0225 207,-222 201.3021,-219.2621 195.1471,-216.6123 189.0957,-214.17"/>
+<polygon fill="#000000" stroke="#000000" points="190.3402,-210.8986 179.7521,-210.5202 187.7932,-217.4188 190.3402,-210.8986"/>
+</g>
+<!-- sourcefile~gemini.f90 -->
+<g id="sourcefile~~pathlib.f90~~AfferentGraph_node9" class="node">
+<title>sourcefile~gemini.f90</title>
+<g id="a_sourcefile~~pathlib.f90~~AfferentGraph_node9"><a xlink:href=".././sourcefile/gemini.f90.html" xlink:title="gemini.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="313.5,-234 251.5,-234 251.5,-210 313.5,-210 313.5,-234"/>
+<text text-anchor="middle" x="282.5" y="-219.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">gemini.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~gemini.f90&#45;&gt;sourcefile~io.f90 -->
+<g id="sourcefile~~pathlib.f90~~AfferentGraph_edge8" class="edge">
+<title>sourcefile~gemini.f90&#45;&gt;sourcefile~io.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M251.3618,-216.97C232.8967,-213.9872 209.3736,-210.1873 189.9057,-207.0425"/>
+<polygon fill="#000000" stroke="#000000" points="190.2852,-203.5585 179.855,-205.4189 189.1689,-210.4689 190.2852,-203.5585"/>
+</g>
+<!-- sourcefile~plasma.f90 -->
+<g id="sourcefile~~pathlib.f90~~AfferentGraph_node10" class="node">
+<title>sourcefile~plasma.f90</title>
+<g id="a_sourcefile~~pathlib.f90~~AfferentGraph_node10"><a xlink:href=".././sourcefile/plasma.f90.html" xlink:title="plasma.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="315,-192 250,-192 250,-168 315,-168 315,-192"/>
+<text text-anchor="middle" x="282.5" y="-177.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">plasma.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~plasma.f90&#45;&gt;sourcefile~io.f90 -->
+<g id="sourcefile~~pathlib.f90~~AfferentGraph_edge9" class="edge">
+<title>sourcefile~plasma.f90&#45;&gt;sourcefile~io.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M249.6955,-185.2992C231.4176,-188.2518 208.5958,-191.9384 189.6603,-194.9972"/>
+<polygon fill="#000000" stroke="#000000" points="188.9079,-191.5733 179.594,-196.6233 190.0242,-198.4837 188.9079,-191.5733"/>
+</g>
+<!-- sourcefile~input.f90 -->
+<g id="sourcefile~~pathlib.f90~~AfferentGraph_node11" class="node">
+<title>sourcefile~input.f90</title>
+<g id="a_sourcefile~~pathlib.f90~~AfferentGraph_node11"><a xlink:href=".././sourcefile/input.f90.html" xlink:title="input.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="309.5,-150 255.5,-150 255.5,-126 309.5,-126 309.5,-150"/>
+<text text-anchor="middle" x="282.5" y="-135.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">input.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~input.f90&#45;&gt;sourcefile~io.f90 -->
+<g id="sourcefile~~pathlib.f90~~AfferentGraph_edge10" class="edge">
+<title>sourcefile~input.f90&#45;&gt;sourcefile~io.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M259.4415,-150.0628C254.0259,-152.95 248.2919,-156.0513 243,-159 226.8191,-168.0161 223.6958,-171.9775 207,-180 201.3021,-182.7379 195.1471,-185.3877 189.0957,-187.83"/>
+<polygon fill="#000000" stroke="#000000" points="187.7932,-184.5812 179.7521,-191.4798 190.3402,-191.1014 187.7932,-184.5812"/>
+</g>
+<!-- sourcefile~magcalc.f90 -->
+<g id="sourcefile~~pathlib.f90~~AfferentGraph_node12" class="node">
+<title>sourcefile~magcalc.f90</title>
+<g id="a_sourcefile~~pathlib.f90~~AfferentGraph_node12"><a xlink:href=".././sourcefile/magcalc.f90.html" xlink:title="magcalc.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="317.5,-108 247.5,-108 247.5,-84 317.5,-84 317.5,-108"/>
+<text text-anchor="middle" x="282.5" y="-93.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">magcalc.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~magcalc.f90&#45;&gt;sourcefile~io.f90 -->
+<g id="sourcefile~~pathlib.f90~~AfferentGraph_edge11" class="edge">
+<title>sourcefile~magcalc.f90&#45;&gt;sourcefile~io.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M254.7832,-108.1254C250.5555,-110.687 246.4564,-113.6474 243,-117 219.8514,-139.4531 231.4623,-158.9859 207,-180 201.7805,-184.4837 195.4987,-188.066 189.0845,-190.9096"/>
+<polygon fill="#000000" stroke="#000000" points="187.7473,-187.6743 179.7006,-194.5663 190.289,-194.1966 187.7473,-187.6743"/>
+</g>
+<!-- sourcefile~mag_raw.f90 -->
+<g id="sourcefile~~pathlib.f90~~AfferentGraph_node13" class="node">
+<title>sourcefile~mag_raw.f90</title>
+<g id="a_sourcefile~~pathlib.f90~~AfferentGraph_node13"><a xlink:href=".././sourcefile/mag_raw.f90.html" xlink:title="mag_raw.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="320,-66 245,-66 245,-42 320,-42 320,-66"/>
+<text text-anchor="middle" x="282.5" y="-51.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">mag_raw.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~mag_raw.f90&#45;&gt;sourcefile~io.f90 -->
+<g id="sourcefile~~pathlib.f90~~AfferentGraph_edge12" class="edge">
+<title>sourcefile~mag_raw.f90&#45;&gt;sourcefile~io.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M253.4102,-66.1042C249.5496,-68.6206 245.9233,-71.5728 243,-75 210.9843,-112.5336 241.2239,-144.4683 207,-180 202.0848,-185.1031 195.7924,-188.9849 189.2409,-191.932"/>
+<polygon fill="#000000" stroke="#000000" points="187.683,-188.7802 179.587,-195.6144 190.1778,-195.3206 187.683,-188.7802"/>
+</g>
+<!-- sourcefile~mag_ncdf.f90 -->
+<g id="sourcefile~~pathlib.f90~~AfferentGraph_node14" class="node">
+<title>sourcefile~mag_ncdf.f90</title>
+<g id="a_sourcefile~~pathlib.f90~~AfferentGraph_node14"><a xlink:href=".././sourcefile/mag_ncdf.f90.html" xlink:title="mag_ncdf.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="321.5,-24 243.5,-24 243.5,0 321.5,0 321.5,-24"/>
+<text text-anchor="middle" x="282.5" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">mag_ncdf.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~mag_ncdf.f90&#45;&gt;sourcefile~io.f90 -->
+<g id="sourcefile~~pathlib.f90~~AfferentGraph_edge13" class="edge">
+<title>sourcefile~mag_ncdf.f90&#45;&gt;sourcefile~io.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M252.7335,-24.1394C249.063,-26.6314 245.6706,-29.5672 243,-33 201.6976,-86.0901 251.4332,-129.5011 207,-180 202.2746,-185.3705 196.0148,-189.3758 189.4252,-192.3605"/>
+<polygon fill="#000000" stroke="#000000" points="187.7931,-189.2355 179.6749,-196.0433 190.2665,-195.784 187.7931,-189.2355"/>
+</g>
+<!-- sourcefile~plasma_output_raw.f90 -->
+<g id="sourcefile~~pathlib.f90~~AfferentGraph_node15" class="node">
+<title>sourcefile~plasma_output_raw.f90</title>
+<g id="a_sourcefile~~pathlib.f90~~AfferentGraph_node15"><a xlink:href=".././sourcefile/plasma_output_raw.f90.html" xlink:title="plasma_output_raw.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="484,-276 360,-276 360,-252 484,-252 484,-276"/>
+<text text-anchor="middle" x="422" y="-261.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">plasma_output_raw.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~plasma_output_raw.f90&#45;&gt;sourcefile~plasma.f90 -->
+<g id="sourcefile~~pathlib.f90~~AfferentGraph_edge17" class="edge">
+<title>sourcefile~plasma_output_raw.f90&#45;&gt;sourcefile~plasma.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M375.1451,-251.9675C369.1305,-249.4756 363.2485,-246.5112 358,-243 337.5657,-229.3295 341.1878,-216.3712 322,-201 320.6248,-199.8983 319.1831,-198.827 317.6976,-197.7893"/>
+<polygon fill="#000000" stroke="#000000" points="319.195,-194.5965 308.8664,-192.2363 315.4688,-200.5223 319.195,-194.5965"/>
+</g>
+<!-- sourcefile~plasma_output_ncdf.f90 -->
+<g id="sourcefile~~pathlib.f90~~AfferentGraph_node16" class="node">
+<title>sourcefile~plasma_output_ncdf.f90</title>
+<g id="a_sourcefile~~pathlib.f90~~AfferentGraph_node16"><a xlink:href=".././sourcefile/plasma_output_ncdf.f90.html" xlink:title="plasma_output_ncdf.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="485.5,-234 358.5,-234 358.5,-210 485.5,-210 485.5,-234"/>
+<text text-anchor="middle" x="422" y="-219.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">plasma_output_ncdf.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~plasma_output_ncdf.f90&#45;&gt;sourcefile~plasma.f90 -->
+<g id="sourcefile~~pathlib.f90~~AfferentGraph_edge18" class="edge">
+<title>sourcefile~plasma_output_ncdf.f90&#45;&gt;sourcefile~plasma.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M382.0249,-209.9645C364.2268,-204.6059 343.2445,-198.2887 325.1455,-192.8395"/>
+<polygon fill="#000000" stroke="#000000" points="326.0101,-189.4447 315.4257,-189.9131 323.992,-196.1475 326.0101,-189.4447"/>
+</g>
+<!-- sourcefile~plasma_input_hdf5.f90 -->
+<g id="sourcefile~~pathlib.f90~~AfferentGraph_node17" class="node">
+<title>sourcefile~plasma_input_hdf5.f90</title>
+<g id="a_sourcefile~~pathlib.f90~~AfferentGraph_node17"><a xlink:href=".././sourcefile/plasma_input_hdf5.f90.html" xlink:title="plasma_input_hdf5.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="482.5,-192 361.5,-192 361.5,-168 482.5,-168 482.5,-192"/>
+<text text-anchor="middle" x="422" y="-177.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">plasma_input_hdf5.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~plasma_input_hdf5.f90&#45;&gt;sourcefile~plasma.f90 -->
+<g id="sourcefile~~pathlib.f90~~AfferentGraph_edge19" class="edge">
+<title>sourcefile~plasma_input_hdf5.f90&#45;&gt;sourcefile~plasma.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M361.2191,-180C349.0768,-180 336.5658,-180 325.1911,-180"/>
+<polygon fill="#000000" stroke="#000000" points="325.1075,-176.5001 315.1075,-180 325.1074,-183.5001 325.1075,-176.5001"/>
+</g>
+<!-- sourcefile~plasma_input_raw.f90 -->
+<g id="sourcefile~~pathlib.f90~~AfferentGraph_node18" class="node">
+<title>sourcefile~plasma_input_raw.f90</title>
+<g id="a_sourcefile~~pathlib.f90~~AfferentGraph_node18"><a xlink:href=".././sourcefile/plasma_input_raw.f90.html" xlink:title="plasma_input_raw.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="481,-150 363,-150 363,-126 481,-126 481,-150"/>
+<text text-anchor="middle" x="422" y="-135.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">plasma_input_raw.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~plasma_input_raw.f90&#45;&gt;sourcefile~plasma.f90 -->
+<g id="sourcefile~~pathlib.f90~~AfferentGraph_edge20" class="edge">
+<title>sourcefile~plasma_input_raw.f90&#45;&gt;sourcefile~plasma.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M382.0249,-150.0355C364.2268,-155.3941 343.2445,-161.7113 325.1455,-167.1605"/>
+<polygon fill="#000000" stroke="#000000" points="323.992,-163.8525 315.4257,-170.0869 326.0101,-170.5553 323.992,-163.8525"/>
+</g>
+<!-- sourcefile~plasma_output_hdf5.f90 -->
+<g id="sourcefile~~pathlib.f90~~AfferentGraph_node19" class="node">
+<title>sourcefile~plasma_output_hdf5.f90</title>
+<g id="a_sourcefile~~pathlib.f90~~AfferentGraph_node19"><a xlink:href=".././sourcefile/plasma_output_hdf5.f90.html" xlink:title="plasma_output_hdf5.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="486,-108 358,-108 358,-84 486,-84 486,-108"/>
+<text text-anchor="middle" x="422" y="-93.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">plasma_output_hdf5.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~plasma_output_hdf5.f90&#45;&gt;sourcefile~plasma.f90 -->
+<g id="sourcefile~~pathlib.f90~~AfferentGraph_edge21" class="edge">
+<title>sourcefile~plasma_output_hdf5.f90&#45;&gt;sourcefile~plasma.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M375.1451,-108.0325C369.1305,-110.5244 363.2485,-113.4888 358,-117 337.5657,-130.6705 341.1878,-143.6288 322,-159 320.6248,-160.1017 319.1831,-161.173 317.6976,-162.2107"/>
+<polygon fill="#000000" stroke="#000000" points="315.4688,-159.4777 308.8664,-167.7637 319.195,-165.4035 315.4688,-159.4777"/>
+</g>
+<!-- sourcefile~path_exists_intel.f90 -->
+<g id="sourcefile~~pathlib.f90~~AfferentGraph_node20" class="node">
+<title>sourcefile~path_exists_intel.f90</title>
+<g id="a_sourcefile~~pathlib.f90~~AfferentGraph_node20"><a xlink:href=".././sourcefile/path_exists_intel.f90.html" xlink:title="path_exists_intel.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="477,-66 367,-66 367,-42 477,-42 477,-66"/>
+<text text-anchor="middle" x="422" y="-51.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">path_exists_intel.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~path_exists_intel.f90&#45;&gt;sourcefile~input.f90 -->
+<g id="sourcefile~~pathlib.f90~~AfferentGraph_edge22" class="edge">
+<title>sourcefile~path_exists_intel.f90&#45;&gt;sourcefile~input.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M375.1451,-66.0325C369.1305,-68.5244 363.2485,-71.4888 358,-75 337.5657,-88.6705 341.1878,-101.6288 322,-117 320.6248,-118.1017 319.1831,-119.173 317.6976,-120.2107"/>
+<polygon fill="#000000" stroke="#000000" points="315.4688,-117.4777 308.8664,-125.7637 319.195,-123.4035 315.4688,-117.4777"/>
+</g>
+<!-- sourcefile~aurora_ncdf.f90 -->
+<g id="sourcefile~~pathlib.f90~~AfferentGraph_node21" class="node">
+<title>sourcefile~aurora_ncdf.f90</title>
+<g id="a_sourcefile~~pathlib.f90~~AfferentGraph_node21"><a xlink:href=".././sourcefile/aurora_ncdf.f90.html" xlink:title="aurora_ncdf.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="466,-402 378,-402 378,-378 466,-378 466,-402"/>
+<text text-anchor="middle" x="422" y="-387.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">aurora_ncdf.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~aurora_ncdf.f90&#45;&gt;sourcefile~aurora.f90 -->
+<g id="sourcefile~~pathlib.f90~~AfferentGraph_edge14" class="edge">
+<title>sourcefile~aurora_ncdf.f90&#45;&gt;sourcefile~aurora.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M377.8254,-379.0441C370.8872,-376.3419 364.0261,-373.0314 358,-369 337.5657,-355.3295 341.1878,-342.3712 322,-327 320.6248,-325.8983 319.1831,-324.827 317.6976,-323.7893"/>
+<polygon fill="#000000" stroke="#000000" points="319.195,-320.5965 308.8664,-318.2363 315.4688,-326.5223 319.195,-320.5965"/>
+</g>
+<!-- sourcefile~path_exists.f90 -->
+<g id="sourcefile~~pathlib.f90~~AfferentGraph_node22" class="node">
+<title>sourcefile~path_exists.f90</title>
+<g id="a_sourcefile~~pathlib.f90~~AfferentGraph_node22"><a xlink:href=".././sourcefile/path_exists.f90.html" xlink:title="path_exists.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="464.5,-24 379.5,-24 379.5,0 464.5,0 464.5,-24"/>
+<text text-anchor="middle" x="422" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">path_exists.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~path_exists.f90&#45;&gt;sourcefile~input.f90 -->
+<g id="sourcefile~~pathlib.f90~~AfferentGraph_edge23" class="edge">
+<title>sourcefile~path_exists.f90&#45;&gt;sourcefile~input.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M379.2989,-20.3929C371.5573,-23.3963 364.0368,-27.4715 358,-33 328.0459,-60.4322 349.4934,-87.102 322,-117 320.8073,-118.297 319.5158,-119.5291 318.1523,-120.6975"/>
+<polygon fill="#000000" stroke="#000000" points="315.8472,-118.0428 309.7437,-126.7029 319.9155,-123.7392 315.8472,-118.0428"/>
+</g>
+<!-- sourcefile~aurora_hdf5.f90 -->
+<g id="sourcefile~~pathlib.f90~~AfferentGraph_node23" class="node">
+<title>sourcefile~aurora_hdf5.f90</title>
+<g id="a_sourcefile~~pathlib.f90~~AfferentGraph_node23"><a xlink:href=".././sourcefile/aurora_hdf5.f90.html" xlink:title="aurora_hdf5.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="466.5,-360 377.5,-360 377.5,-336 466.5,-336 466.5,-360"/>
+<text text-anchor="middle" x="422" y="-345.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">aurora_hdf5.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~aurora_hdf5.f90&#45;&gt;sourcefile~aurora.f90 -->
+<g id="sourcefile~~pathlib.f90~~AfferentGraph_edge15" class="edge">
+<title>sourcefile~aurora_hdf5.f90&#45;&gt;sourcefile~aurora.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M382.0249,-335.9645C363.5984,-330.4167 341.7589,-323.8414 323.2396,-318.2657"/>
+<polygon fill="#000000" stroke="#000000" points="324.1998,-314.8996 313.6153,-315.368 322.1817,-321.6024 324.1998,-314.8996"/>
+</g>
+<!-- sourcefile~aurora_raw.f90 -->
+<g id="sourcefile~~pathlib.f90~~AfferentGraph_node24" class="node">
+<title>sourcefile~aurora_raw.f90</title>
+<g id="a_sourcefile~~pathlib.f90~~AfferentGraph_node24"><a xlink:href=".././sourcefile/aurora_raw.f90.html" xlink:title="aurora_raw.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="464.5,-318 379.5,-318 379.5,-294 464.5,-294 464.5,-318"/>
+<text text-anchor="middle" x="422" y="-303.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">aurora_raw.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~aurora_raw.f90&#45;&gt;sourcefile~aurora.f90 -->
+<g id="sourcefile~~pathlib.f90~~AfferentGraph_edge16" class="edge">
+<title>sourcefile~aurora_raw.f90&#45;&gt;sourcefile~aurora.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M379.3874,-306C361.8699,-306 341.6469,-306 324.2228,-306"/>
+<polygon fill="#000000" stroke="#000000" points="323.7848,-302.5001 313.7848,-306 323.7848,-309.5001 323.7848,-302.5001"/>
+</g>
+</g>
+</svg>
+</div><div><a type="button" class="graph-help" data-toggle="modal" href="#graph-help-text">Help</a></div><div class="modal fade" id="graph-help-text" tabindex="-1" role="dialog"><div class="modal-dialog modal-lg" role="document"><div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button><h4 class="modal-title" id="-graph-help-label">Graph Key</h4></div><div class="modal-body">
+    <p>Nodes of different colours represent the following: </p>
+    <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.40.1 (20161225.0304)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="190pt" height="32pt"
+ viewBox="0.00 0.00 190.00 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 28)">
+<title>Graph Key</title>
+<polygon fill="#ffffff" stroke="transparent" points="-4,4 -4,-28 186,-28 186,4 -4,4"/>
+<!-- Source File -->
+<g id="node1" class="node">
+<title>Source File</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="67,-24 0,-24 0,0 67,0 67,-24"/>
+<text text-anchor="middle" x="33.5" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Source File</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node2" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="#000000" points="182,-24 85,-24 85,0 182,0 182,-24"/>
+<text text-anchor="middle" x="133.5" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#000000">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+    
+    <p>Solid arrows point from a file to a file which it depends on. A file
+    is dependent upon another if the latter must be compiled before the former
+    can be.
+    </p>
+    </div></div></div></div>
+      </div>
+    </div>
+      
+      <br>
+
+    <section class="visible-xs visible-sm hidden-md">
+      
+<h3>Contents</h3>
+ 
+
+
+
+
+
+
+
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#mods-1">Modules</a></h3></div>
+  <div id="mods-1" class="panel-collapse collapse">
+    <div class="list-group">
+      
+      <a class="list-group-item" href="../module/pathlib.html">pathlib</a>
+      
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
+  <div class="list-group">
+    <a class="list-group-item" href="../sourcefile/pathlib.f90.html#src">pathlib.f90</a>
+  </div>
+</div>
+
+
+
+    </section>
+    <br class="visible-xs visible-sm hidden-md">
+
+    <section>
+      <h2><span class="anchor" id="src"></span>Source Code</h2>
+    <div class="hl"><pre><span></span><a name="ln-1"></a><span class="k">module </span><span class="n">pathlib</span>
+<a name="ln-2"></a>
+<a name="ln-3"></a><span class="k">use</span><span class="p">,</span> <span class="k">intrinsic</span><span class="kd">::</span> <span class="n">iso_fortran_env</span><span class="p">,</span> <span class="n">only</span><span class="p">:</span> <span class="n">stderr</span><span class="o">=&gt;</span><span class="n">error_unit</span>
+<a name="ln-4"></a>
+<a name="ln-5"></a><span class="k">implicit none</span>
+<a name="ln-6"></a><span class="k">private</span>
+<a name="ln-7"></a><span class="k">public</span> <span class="kd">::</span> <span class="n">mkdir</span><span class="p">,</span> <span class="n">copyfile</span><span class="p">,</span> <span class="n">expanduser</span><span class="p">,</span> <span class="n">home</span><span class="p">,</span> <span class="n">filesep_swap</span>
+<a name="ln-8"></a>
+<a name="ln-9"></a><span class="k">interface</span>
+<a name="ln-10"></a><span class="k">module </span><span class="kt">integer </span><span class="k">function </span><span class="n">copyfile</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">dest</span><span class="p">)</span> <span class="k">result</span><span class="p">(</span><span class="n">istat</span><span class="p">)</span>
+<a name="ln-11"></a><span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">source</span><span class="p">,</span> <span class="n">dest</span>
+<a name="ln-12"></a><span class="k">end function </span><span class="n">copyfile</span>
+<a name="ln-13"></a>
+<a name="ln-14"></a><span class="k">module </span><span class="kt">integer </span><span class="k">function </span><span class="n">mkdir</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="k">result</span><span class="p">(</span><span class="n">istat</span><span class="p">)</span>
+<a name="ln-15"></a><span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">path</span>
+<a name="ln-16"></a><span class="k">end function </span><span class="n">mkdir</span>
+<a name="ln-17"></a><span class="k">end interface</span>
+<a name="ln-18"></a>
+<a name="ln-19"></a><span class="k">contains</span>
+<a name="ln-20"></a>
+<a name="ln-21"></a><span class="k">function </span><span class="n">filesep_swap</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="k">result</span><span class="p">(</span><span class="n">swapped</span><span class="p">)</span>
+<a name="ln-22"></a><span class="c">!! swaps &#39;/&#39; to &#39;\&#39; for Windows systems</span>
+<a name="ln-23"></a>
+<a name="ln-24"></a><span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">path</span>
+<a name="ln-25"></a><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">path</span><span class="p">))</span> <span class="kd">::</span> <span class="n">swapped</span>
+<a name="ln-26"></a><span class="kt">integer</span> <span class="kd">::</span> <span class="n">i</span>
+<a name="ln-27"></a>
+<a name="ln-28"></a><span class="n">swapped</span> <span class="o">=</span> <span class="n">path</span>
+<a name="ln-29"></a><span class="k">do</span>
+<a name="ln-30"></a><span class="k">  </span><span class="n">i</span> <span class="o">=</span> <span class="nb">index</span><span class="p">(</span><span class="n">swapped</span><span class="p">,</span> <span class="s1">&#39;/&#39;</span><span class="p">)</span>
+<a name="ln-31"></a>  <span class="k">if</span> <span class="p">(</span><span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="k">exit</span>
+<a name="ln-32"></a><span class="k">  </span><span class="n">swapped</span><span class="p">(</span><span class="n">i</span><span class="p">:</span><span class="n">i</span><span class="p">)</span> <span class="o">=</span> <span class="nb">char</span><span class="p">(</span><span class="mi">92</span><span class="p">)</span>
+<a name="ln-33"></a><span class="k">end do</span>
+<a name="ln-34"></a>
+<a name="ln-35"></a><span class="k">end function </span><span class="n">filesep_swap</span>
+<a name="ln-36"></a>
+<a name="ln-37"></a>
+<a name="ln-38"></a><span class="k">function </span><span class="n">expanduser</span><span class="p">(</span><span class="n">indir</span><span class="p">)</span>
+<a name="ln-39"></a><span class="c">!! resolve home directory as Fortran does not understand tilde</span>
+<a name="ln-40"></a><span class="c">!! works for Linux, Mac, Windows, etc.</span>
+<a name="ln-41"></a><span class="kt">character</span><span class="p">(:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">expanduser</span><span class="p">,</span> <span class="n">homedir</span>
+<a name="ln-42"></a><span class="kt">character</span><span class="p">(</span><span class="o">*</span><span class="p">),</span> <span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span> <span class="kd">::</span> <span class="n">indir</span>
+<a name="ln-43"></a>
+<a name="ln-44"></a><span class="k">if</span> <span class="p">(</span><span class="nb">len_trim</span><span class="p">(</span><span class="n">indir</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1</span> <span class="p">.</span><span class="nb">or</span><span class="p">.</span> <span class="n">indir</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="mi">1</span><span class="p">)</span> <span class="o">/=</span> <span class="s1">&#39;~&#39;</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-45"></a>  <span class="c">!! nothing to expand</span>
+<a name="ln-46"></a>  <span class="n">expanduser</span> <span class="o">=</span> <span class="nb">trim</span><span class="p">(</span><span class="nb">adjustl</span><span class="p">(</span><span class="n">indir</span><span class="p">))</span>
+<a name="ln-47"></a>  <span class="k">return</span>
+<a name="ln-48"></a><span class="n">endif</span>
+<a name="ln-49"></a>
+<a name="ln-50"></a><span class="n">homedir</span> <span class="o">=</span> <span class="n">home</span><span class="p">()</span>
+<a name="ln-51"></a><span class="k">if</span> <span class="p">(</span><span class="nb">len_trim</span><span class="p">(</span><span class="n">homedir</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-52"></a>  <span class="c">!! could not determine the home directory</span>
+<a name="ln-53"></a>  <span class="n">expanduser</span> <span class="o">=</span> <span class="nb">trim</span><span class="p">(</span><span class="nb">adjustl</span><span class="p">(</span><span class="n">indir</span><span class="p">))</span>
+<a name="ln-54"></a>  <span class="k">return</span>
+<a name="ln-55"></a><span class="n">endif</span>
+<a name="ln-56"></a>
+<a name="ln-57"></a><span class="k">if</span> <span class="p">(</span><span class="nb">len_trim</span><span class="p">(</span><span class="n">indir</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-58"></a>  <span class="c">!! ~ or ~/</span>
+<a name="ln-59"></a>  <span class="n">expanduser</span> <span class="o">=</span> <span class="n">homedir</span>
+<a name="ln-60"></a><span class="k">else</span>
+<a name="ln-61"></a>  <span class="c">!! ~/...</span>
+<a name="ln-62"></a>  <span class="n">expanduser</span> <span class="o">=</span> <span class="n">homedir</span> <span class="o">//</span> <span class="nb">trim</span><span class="p">(</span><span class="nb">adjustl</span><span class="p">(</span><span class="n">indir</span><span class="p">(</span><span class="mi">3</span><span class="p">:)))</span>
+<a name="ln-63"></a><span class="n">endif</span>
+<a name="ln-64"></a>
+<a name="ln-65"></a><span class="k">end function </span><span class="n">expanduser</span>
+<a name="ln-66"></a>
+<a name="ln-67"></a>
+<a name="ln-68"></a><span class="k">function </span><span class="n">home</span><span class="p">()</span>
+<a name="ln-69"></a><span class="c">!! https://en.wikipedia.org/wiki/Home_directory#Default_home_directory_per_operating_system</span>
+<a name="ln-70"></a><span class="kt">character</span><span class="p">(:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">home</span><span class="p">,</span> <span class="n">var</span>
+<a name="ln-71"></a><span class="kt">character</span><span class="p">(</span><span class="mi">256</span><span class="p">)</span> <span class="kd">::</span> <span class="n">buf</span>
+<a name="ln-72"></a><span class="kt">integer</span> <span class="kd">::</span> <span class="n">L</span><span class="p">,</span> <span class="n">istat</span>
+<a name="ln-73"></a>
+<a name="ln-74"></a><span class="k">call </span><span class="nb">get_environment_variable</span><span class="p">(</span><span class="s2">&quot;HOME&quot;</span><span class="p">,</span> <span class="n">buf</span><span class="p">,</span> <span class="n">length</span><span class="o">=</span><span class="n">L</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="n">istat</span><span class="p">)</span>
+<a name="ln-75"></a><span class="k">if</span> <span class="p">(</span><span class="n">L</span><span class="o">==</span><span class="mi">0</span> <span class="p">.</span><span class="nb">or</span><span class="p">.</span> <span class="n">istat</span> <span class="o">/=</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-76"></a><span class="k">  call </span><span class="nb">get_environment_variable</span><span class="p">(</span><span class="s2">&quot;USERPROFILE&quot;</span><span class="p">,</span> <span class="n">buf</span><span class="p">,</span> <span class="n">length</span><span class="o">=</span><span class="n">L</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="n">istat</span><span class="p">)</span>
+<a name="ln-77"></a><span class="n">endif</span>
+<a name="ln-78"></a>
+<a name="ln-79"></a><span class="k">if</span> <span class="p">(</span><span class="n">L</span><span class="o">==</span><span class="mi">0</span> <span class="p">.</span><span class="nb">or</span><span class="p">.</span> <span class="n">istat</span> <span class="o">/=</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-80"></a><span class="k">  write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="o">*</span><span class="p">)</span> <span class="s1">&#39;ERROR: could not determine home directory from env var &#39;</span><span class="p">,</span><span class="n">var</span>
+<a name="ln-81"></a>  <span class="k">if</span> <span class="p">(</span><span class="n">istat</span><span class="o">==</span><span class="mi">1</span><span class="p">)</span> <span class="k">write</span><span class="p">(</span><span class="n">stderr</span><span class="p">,</span><span class="o">*</span><span class="p">)</span> <span class="s1">&#39;env var &#39;</span><span class="p">,</span><span class="n">var</span><span class="p">,</span><span class="s1">&#39; does not exist.&#39;</span>
+<a name="ln-82"></a>  <span class="n">home</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+<a name="ln-83"></a><span class="k">else</span>
+<a name="ln-84"></a><span class="k">  </span><span class="n">home</span> <span class="o">=</span> <span class="nb">trim</span><span class="p">(</span><span class="n">buf</span><span class="p">)</span> <span class="o">//</span> <span class="s1">&#39;/&#39;</span>
+<a name="ln-85"></a><span class="n">endif</span>
+<a name="ln-86"></a>
+<a name="ln-87"></a><span class="k">end function </span><span class="n">home</span>
+<a name="ln-88"></a>
+<a name="ln-89"></a><span class="k">end module </span><span class="n">pathlib</span>
+</pre></div>
+
+    </section>
+    </div>
+  </div>
+
+  
+    <hr>    
+    </div> <!-- /container -->
+    <footer>
+      <div class="container">
+      <div class="row">
+        <div class="col-xs-6 col-md-4"><p>&copy; 2020 <a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/80x15.png" /></a>
+                                          </p></div>
+        <div class="col-xs-6 col-md-4 col-md-push-4">
+          <p class="text-right">
+            Documentation generated by 
+            <a href="https://github.com/cmacmackin/ford">FORD</a>
+            
+          </p>
+        </div>
+        <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> GEMINI3D was developed by Matthew Zettergren
+Guy Grubbs
+Michael Hirsch</p></div>
+      </div>
+      <br>
+      </div> <!-- /container -->    
+    </footer>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+<!--
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+-->
+    <script src="../js/bootstrap.min.js"></script>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <script src="../js/ie10-viewport-bug-workaround.js"></script>
+
+    <!-- MathJax JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } },
+        jax: ['input/TeX','input/MathML','output/HTML-CSS'],
+        extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']
+      });
+    </script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    
+    
+  </body>
+</html>

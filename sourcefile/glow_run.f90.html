@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+   
+   <meta name="description" content="GEMINI3D is a modular ionospheric model that incorporates kinetic models such as Fang, GLOW.">
+    
+    <meta name="author" content="Matthew Zettergren
+Guy Grubbs
+Michael Hirsch" >
+    <link rel="icon" href="../favicon.png">
+
+    <title>glow_run.F90 &ndash; GEMINI3D</title>
+
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+    <link href="../css/pygments.css" rel="stylesheet">
+    <link href="../css/font-awesome.min.css" rel="stylesheet">
+    <link href="../css/local.css" rel="stylesheet">
+    
+    
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    
+    <script src="../js/jquery-2.1.3.min.js"></script>
+    <script src="../js/svg-pan-zoom.min.js"></script>
+
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="../index.html">GEMINI3D </a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+        
+            <li class="dropdown hidden-xs visible-sm visible-md hidden-lg">
+              <a href="#" class="dropdown-toggle"
+              data-toggle="dropdown" role="button"
+              aria-haspopup="true"
+     aria-expanded="false">Contents <span class="caret"></span></a>
+        <ul class="dropdown-menu">
+          
+              
+            <li><a href="../lists/files.html">Source Files</a></li>
+        
+        
+        
+            <li><a href="../lists/modules.html">Modules</a></li>
+        
+            
+    <li><a href="../blockdata/gtd7bk.html">Block Data</a></li>
+    
+                                
+            <li><a href="../lists/procedures.html">Procedures</a></li>
+        
+               
+            <li><a href="../lists/types.html">Derived Types</a></li>
+        
+        
+            <li><a href="../lists/programs.html">Programs</a></li>
+        
+            </ul>
+            </li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/files.html">Source Files</a></li>
+
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/modules.html">Modules</a></li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../blockdata/gtd7bk.html">Block Data</a></li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/procedures.html">Procedures</a></li>
+
+                             
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/types.html">Derived Types</a></li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/programs.html">Programs</a></li>
+
+          </ul>
+        
+        </div><!--/.nav-collapse -->
+      </div>
+    </nav>
+
+    <div class="container">
+    
+  
+  <div class="row">
+    <h1>glow_run.F90
+    <small>Source File</small>
+    
+    </h1>
+    
+<div class="row">
+  <div class="col-lg-12">
+<div class="well well-sm">
+  <ul class="list-inline" style="margin-bottom:0px;display:inline">
+     
+     
+     
+     
+    
+    
+     <li><i class="fa fa-list-ol"></i>
+       <a data-toggle="tooltip"
+    data-placement="bottom" data-html="true"
+    title=" 0.5% of total for source files.">72 statements</a>
+     </li> 
+     
+     
+     
+    <li><i class="fa fa-code"></i><a href="../src/glow_run.F90"> Source File</a></li>
+     
+     
+  </ul>
+  <ol class="breadcrumb in-well text-right">
+  
+    
+  
+     <li class="active">glow_run.F90</li>
+  </ol>
+</div>
+</div>
+</div>
+<script>
+  $(function () {
+  $('[data-toggle="tooltip"]').tooltip()
+  })
+</script>
+
+  </div>
+  <div class="row">
+    <div class="col-md-3 hidden-xs hidden-sm visible-md visible-lg">
+    
+<div id="sidebar">
+  
+<h3>Contents</h3>
+ 
+
+
+
+
+
+
+
+
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#submods-0">Submodules</a></h3></div>
+  <div id="submods-0" class="panel-collapse collapse">
+    <div class="list-group">
+      
+      <a class="list-group-item" href="../module/glow_mod.html">glow_mod</a>
+      
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
+  <div class="list-group">
+    <a class="list-group-item" href="../sourcefile/glow_run.f90.html#src">glow_run.F90</a>
+  </div>
+</div>
+
+
+
+</div>
+
+    </div>
+    <div class="col-md-9" id='text'>
+      
+      <br>
+    
+    <div class="panel panel-default">
+      <div class="panel-heading">
+  <h3 class="panel-title">This file depends on</h3>
+      </div>
+      <div class="panel-body">
+  <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.40.1 (20161225.0304)
+ -->
+<!-- Title: sourcefile~~glow_run.f90~~EfferentGraph Pages: 1 -->
+<svg id="sourcefileglow_runf90EfferentGraph" width="641pt" height="259pt"
+ viewBox="0.00 0.00 641.00 259.20" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="sourcefile~~glow_run.f90~~EfferentGraph" class="graph" transform="scale(.9683 .9683) rotate(0) translate(4 263.693)">
+<title>sourcefile~~glow_run.f90~~EfferentGraph</title>
+<polygon fill="#ffffff" stroke="transparent" points="-4,4 -4,-263.693 658,-263.693 658,4 -4,4"/>
+<!-- sourcefile~glow_run.f90 -->
+<g id="sourcefile~~glow_run.f90~~EfferentGraph_node1" class="node">
+<title>sourcefile~glow_run.f90</title>
+<polygon fill="none" stroke="#000000" points="654,-223 576,-223 576,-199 654,-199 654,-223"/>
+<text text-anchor="middle" x="615" y="-208.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#000000">glow_run.F90</text>
+</g>
+<!-- sourcefile~ionization.f90 -->
+<g id="sourcefile~~glow_run.f90~~EfferentGraph_node2" class="node">
+<title>sourcefile~ionization.f90</title>
+<g id="a_sourcefile~~glow_run.f90~~EfferentGraph_node2"><a xlink:href=".././sourcefile/ionization.f90.html" xlink:title="ionization.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="540,-183 464,-183 464,-159 540,-159 540,-183"/>
+<text text-anchor="middle" x="502" y="-168.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">ionization.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~glow_run.f90&#45;&gt;sourcefile~ionization.f90 -->
+<g id="sourcefile~~glow_run.f90~~EfferentGraph_edge1" class="edge">
+<title>sourcefile~glow_run.f90&#45;&gt;sourcefile~ionization.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M581.0963,-198.9987C570.0243,-195.0794 557.5663,-190.6695 545.8695,-186.529"/>
+<polygon fill="#000000" stroke="#000000" points="546.8651,-183.1687 536.2704,-183.1311 544.5292,-189.7675 546.8651,-183.1687"/>
+</g>
+<!-- sourcefile~phys_consts.f90 -->
+<g id="sourcefile~~glow_run.f90~~EfferentGraph_node3" class="node">
+<title>sourcefile~phys_consts.f90</title>
+<g id="a_sourcefile~~glow_run.f90~~EfferentGraph_node3"><a xlink:href=".././sourcefile/phys_consts.f90.html" xlink:title="phys_consts.F90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="94,-163 0,-163 0,-139 94,-139 94,-163"/>
+<text text-anchor="middle" x="47" y="-148.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">phys_consts.F90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~glow_run.f90&#45;&gt;sourcefile~phys_consts.f90 -->
+<g id="sourcefile~~glow_run.f90~~EfferentGraph_edge2" class="edge">
+<title>sourcefile~glow_run.f90&#45;&gt;sourcefile~phys_consts.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M575.7078,-215.5138C494.1568,-224.9153 311.7416,-246.1286 283.5,-251"/>
+</g>
+<!-- sourcefile~ionization.f90&#45;&gt;sourcefile~phys_consts.f90 -->
+<g id="sourcefile~~glow_run.f90~~EfferentGraph_edge4" class="edge">
+<title>sourcefile~ionization.f90&#45;&gt;sourcefile~phys_consts.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M396,-171C355.5566,-174.567 360.7379,-207.987 328,-232 310.6595,-244.7191 304.6921,-247.3446 283.5,-251"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M283.5,-251C232.2567,-259.8389 216.7019,-264.5563 166.5,-251"/>
+</g>
+<!-- sourcefile~timeutils.f90 -->
+<g id="sourcefile~~glow_run.f90~~EfferentGraph_node4" class="node">
+<title>sourcefile~timeutils.f90</title>
+<g id="a_sourcefile~~glow_run.f90~~EfferentGraph_node4"><a xlink:href=".././sourcefile/timeutils.f90.html" xlink:title="timeutils.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="318.5,-223 248.5,-223 248.5,-199 318.5,-199 318.5,-223"/>
+<text text-anchor="middle" x="283.5" y="-208.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">timeutils.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~ionization.f90&#45;&gt;sourcefile~timeutils.f90 -->
+<g id="sourcefile~~glow_run.f90~~EfferentGraph_edge3" class="edge">
+<title>sourcefile~ionization.f90&#45;&gt;sourcefile~timeutils.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M396,-171C367.7602,-173.4907 337.5861,-184.7361 315.6039,-194.6713"/>
+<polygon fill="#000000" stroke="#000000" points="313.9949,-191.5599 306.416,-198.9634 316.9576,-197.902 313.9949,-191.5599"/>
+</g>
+<!-- sourcefile~grid.f90 -->
+<g id="sourcefile~~glow_run.f90~~EfferentGraph_node5" class="node">
+<title>sourcefile~grid.f90</title>
+<g id="a_sourcefile~~glow_run.f90~~EfferentGraph_node5"><a xlink:href=".././sourcefile/grid.f90.html" xlink:title="grid.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="310.5,-143 256.5,-143 256.5,-119 310.5,-119 310.5,-143"/>
+<text text-anchor="middle" x="283.5" y="-128.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">grid.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~ionization.f90&#45;&gt;sourcefile~grid.f90 -->
+<g id="sourcefile~~glow_run.f90~~EfferentGraph_edge5" class="edge">
+<title>sourcefile~ionization.f90&#45;&gt;sourcefile~grid.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M463.659,-169.3787C443.4868,-168.935 418.3646,-169.0275 396,-171"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M396,-171C365.6461,-173.6771 333.0574,-160.0907 310.809,-148.0356"/>
+<polygon fill="#000000" stroke="#000000" points="312.37,-144.8973 301.9437,-143.0148 308.9203,-150.9883 312.37,-144.8973"/>
+</g>
+<!-- sourcefile~mpimod.f90 -->
+<g id="sourcefile~~glow_run.f90~~EfferentGraph_node6" class="node">
+<title>sourcefile~mpimod.f90</title>
+<g id="a_sourcefile~~glow_run.f90~~EfferentGraph_node6"><a xlink:href=".././sourcefile/mpimod.f90.html" xlink:title="mpimod.F90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="203,-101 130,-101 130,-77 203,-77 203,-101"/>
+<text text-anchor="middle" x="166.5" y="-86.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">mpimod.F90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~ionization.f90&#45;&gt;sourcefile~mpimod.f90 -->
+<g id="sourcefile~~glow_run.f90~~EfferentGraph_edge6" class="edge">
+<title>sourcefile~ionization.f90&#45;&gt;sourcefile~mpimod.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M490.1928,-158.9172C476.3771,-145.3724 452.2857,-123.5388 428,-110 386.9979,-87.1421 374.3142,-83.6581 328,-76 289.6859,-69.6647 245.7268,-73.9434 213.3545,-79.2305"/>
+<polygon fill="#000000" stroke="#000000" points="212.532,-75.8207 203.2729,-80.9704 213.7225,-82.7187 212.532,-75.8207"/>
+</g>
+<!-- sourcefile~mesh.f90 -->
+<g id="sourcefile~~glow_run.f90~~EfferentGraph_node7" class="node">
+<title>sourcefile~mesh.f90</title>
+<g id="a_sourcefile~~glow_run.f90~~EfferentGraph_node7"><a xlink:href=".././sourcefile/mesh.f90.html" xlink:title="mesh.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="195,-223 138,-223 138,-199 195,-199 195,-223"/>
+<text text-anchor="middle" x="166.5" y="-208.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">mesh.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~ionization.f90&#45;&gt;sourcefile~mesh.f90 -->
+<g id="sourcefile~~glow_run.f90~~EfferentGraph_edge7" class="edge">
+<title>sourcefile~ionization.f90&#45;&gt;sourcefile~mesh.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M396,-171C346.1933,-175.3928 331.9123,-158.4999 283.5,-171"/>
+</g>
+<!-- sourcefile~fang.f90 -->
+<g id="sourcefile~~glow_run.f90~~EfferentGraph_node8" class="node">
+<title>sourcefile~fang.f90</title>
+<g id="a_sourcefile~~glow_run.f90~~EfferentGraph_node8"><a xlink:href=".././sourcefile/fang.f90.html" xlink:title="fang.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="423,-223 369,-223 369,-199 423,-199 423,-223"/>
+<text text-anchor="middle" x="396" y="-208.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">fang.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~ionization.f90&#45;&gt;sourcefile~fang.f90 -->
+<g id="sourcefile~~glow_run.f90~~EfferentGraph_edge8" class="edge">
+<title>sourcefile~ionization.f90&#45;&gt;sourcefile~fang.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M470.1965,-183.0013C458.3593,-187.4682 444.8331,-192.5724 432.6,-197.1887"/>
+<polygon fill="#000000" stroke="#000000" points="431.2438,-193.9595 423.1235,-200.7647 433.7152,-200.5087 431.2438,-193.9595"/>
+</g>
+<!-- sourcefile~neutral.f90 -->
+<g id="sourcefile~~glow_run.f90~~EfferentGraph_node9" class="node">
+<title>sourcefile~neutral.f90</title>
+<g id="a_sourcefile~~glow_run.f90~~EfferentGraph_node9"><a xlink:href=".././sourcefile/neutral.f90.html" xlink:title="neutral.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="428,-143 364,-143 364,-119 428,-119 428,-143"/>
+<text text-anchor="middle" x="396" y="-128.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">neutral.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~ionization.f90&#45;&gt;sourcefile~neutral.f90 -->
+<g id="sourcefile~~glow_run.f90~~EfferentGraph_edge9" class="edge">
+<title>sourcefile~ionization.f90&#45;&gt;sourcefile~neutral.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M470.1965,-158.9987C460.0182,-155.1578 448.5911,-150.8457 437.8111,-146.7778"/>
+<polygon fill="#000000" stroke="#000000" points="438.7392,-143.3871 428.1474,-143.1311 436.2677,-149.9363 438.7392,-143.3871"/>
+</g>
+<!-- sourcefile~timeutils.f90&#45;&gt;sourcefile~phys_consts.f90 -->
+<g id="sourcefile~~glow_run.f90~~EfferentGraph_edge10" class="edge">
+<title>sourcefile~timeutils.f90&#45;&gt;sourcefile~phys_consts.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M258.9773,-223.0016C230.1999,-236.4437 184.1676,-255.7709 166.5,-251"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M166.5,-251C120.9792,-238.7078 82.0492,-196.7985 61.8367,-171.2997"/>
+<polygon fill="#000000" stroke="#000000" points="64.5897,-169.1381 55.7171,-163.3478 59.0423,-173.4074 64.5897,-169.1381"/>
+</g>
+<!-- sourcefile~grid.f90&#45;&gt;sourcefile~phys_consts.f90 -->
+<g id="sourcefile~~glow_run.f90~~EfferentGraph_edge13" class="edge">
+<title>sourcefile~grid.f90&#45;&gt;sourcefile~phys_consts.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M256.2712,-139.9546C240.8338,-144.5609 221.0508,-149.6843 203,-152 170.5589,-156.1618 134.0105,-156.1746 104.4488,-155.0267"/>
+<polygon fill="#000000" stroke="#000000" points="104.4472,-151.5233 94.302,-154.5772 104.1373,-158.5165 104.4472,-151.5233"/>
+</g>
+<!-- sourcefile~grid.f90&#45;&gt;sourcefile~mpimod.f90 -->
+<g id="sourcefile~~glow_run.f90~~EfferentGraph_edge12" class="edge">
+<title>sourcefile~grid.f90&#45;&gt;sourcefile~mpimod.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M256.3638,-121.2588C242.4998,-116.282 225.299,-110.1073 209.6692,-104.4966"/>
+<polygon fill="#000000" stroke="#000000" points="210.7788,-101.1763 200.1843,-101.0918 208.4137,-107.7647 210.7788,-101.1763"/>
+</g>
+<!-- sourcefile~grid.f90&#45;&gt;sourcefile~mesh.f90 -->
+<g id="sourcefile~~glow_run.f90~~EfferentGraph_edge14" class="edge">
+<title>sourcefile~grid.f90&#45;&gt;sourcefile~mesh.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M261.4169,-143.132C254.1504,-147.3262 246.1141,-152.186 239,-157 222.2126,-168.3598 219.2583,-172.895 203,-185 199.4898,-187.6135 195.7599,-190.3338 192.0764,-192.9877"/>
+<polygon fill="#000000" stroke="#000000" points="189.7932,-190.3174 183.6909,-198.9784 193.8623,-196.0132 189.7932,-190.3174"/>
+</g>
+<!-- sourcefile~reader.f90 -->
+<g id="sourcefile~~glow_run.f90~~EfferentGraph_node11" class="node">
+<title>sourcefile~reader.f90</title>
+<g id="a_sourcefile~~glow_run.f90~~EfferentGraph_node11"><a xlink:href=".././sourcefile/reader.f90.html" xlink:title="reader.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="197.5,-143 135.5,-143 135.5,-119 197.5,-119 197.5,-143"/>
+<text text-anchor="middle" x="166.5" y="-128.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">reader.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~grid.f90&#45;&gt;sourcefile~reader.f90 -->
+<g id="sourcefile~~glow_run.f90~~EfferentGraph_edge11" class="edge">
+<title>sourcefile~grid.f90&#45;&gt;sourcefile~reader.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M256.3638,-131C241.966,-131 223.9698,-131 207.8714,-131"/>
+<polygon fill="#000000" stroke="#000000" points="207.6234,-127.5001 197.6234,-131 207.6234,-134.5001 207.6234,-127.5001"/>
+</g>
+<!-- sourcefile~mpimod.f90&#45;&gt;sourcefile~phys_consts.f90 -->
+<g id="sourcefile~~glow_run.f90~~EfferentGraph_edge15" class="edge">
+<title>sourcefile~mpimod.f90&#45;&gt;sourcefile~phys_consts.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M143.1755,-101.1014C124.9981,-110.5324 99.5474,-123.7369 79.3929,-134.1936"/>
+<polygon fill="#000000" stroke="#000000" points="77.5302,-131.217 70.2657,-138.9291 80.754,-137.4305 77.5302,-131.217"/>
+</g>
+<!-- sourcefile~mesh.f90&#45;&gt;sourcefile~phys_consts.f90 -->
+<g id="sourcefile~~glow_run.f90~~EfferentGraph_edge16" class="edge">
+<title>sourcefile~mesh.f90&#45;&gt;sourcefile~phys_consts.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M142.3174,-198.8581C124.4192,-189.8716 99.8264,-177.5237 80.1044,-167.6215"/>
+<polygon fill="#000000" stroke="#000000" points="81.6539,-164.4831 71.1466,-163.1238 78.5129,-170.7389 81.6539,-164.4831"/>
+</g>
+<!-- sourcefile~fang.f90&#45;&gt;sourcefile~phys_consts.f90 -->
+<g id="sourcefile~~glow_run.f90~~EfferentGraph_edge17" class="edge">
+<title>sourcefile~fang.f90&#45;&gt;sourcefile~phys_consts.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M369.8692,-223.1761C347.4985,-232.8902 314.1411,-245.7148 283.5,-251"/>
+</g>
+<!-- sourcefile~neutral.f90&#45;&gt;sourcefile~phys_consts.f90 -->
+<g id="sourcefile~~glow_run.f90~~EfferentGraph_edge20" class="edge">
+<title>sourcefile~neutral.f90&#45;&gt;sourcefile~phys_consts.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M370.7873,-118.9399C348.4363,-108.9535 314.6086,-95.5377 283.5,-90"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M283.5,-90C229.2524,-80.3433 218.3586,-30.3792 166.5,-49"/>
+</g>
+<!-- sourcefile~neutral.f90&#45;&gt;sourcefile~timeutils.f90 -->
+<g id="sourcefile~~glow_run.f90~~EfferentGraph_edge19" class="edge">
+<title>sourcefile~neutral.f90&#45;&gt;sourcefile~timeutils.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M380.888,-143.1874C362.5437,-157.9522 333.3814,-181.3187 328,-185 323.6797,-187.9554 319.0102,-190.9178 314.3766,-193.7296"/>
+<polygon fill="#000000" stroke="#000000" points="312.4397,-190.8088 305.6117,-198.91 316.0014,-196.8349 312.4397,-190.8088"/>
+</g>
+<!-- sourcefile~neutral.f90&#45;&gt;sourcefile~grid.f90 -->
+<g id="sourcefile~~glow_run.f90~~EfferentGraph_edge22" class="edge">
+<title>sourcefile~neutral.f90&#45;&gt;sourcefile~grid.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M363.762,-131C350.4131,-131 334.843,-131 320.988,-131"/>
+<polygon fill="#000000" stroke="#000000" points="320.7926,-127.5001 310.7926,-131 320.7925,-134.5001 320.7926,-127.5001"/>
+</g>
+<!-- sourcefile~neutral.f90&#45;&gt;sourcefile~mpimod.f90 -->
+<g id="sourcefile~~glow_run.f90~~EfferentGraph_edge23" class="edge">
+<title>sourcefile~neutral.f90&#45;&gt;sourcefile~mpimod.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M283.5,-90C260.6419,-85.931 234.8724,-85.296 213.3476,-85.8398"/>
+<polygon fill="#000000" stroke="#000000" points="213.0265,-82.3487 203.1532,-86.1916 213.268,-89.3446 213.0265,-82.3487"/>
+</g>
+<!-- sourcefile~neutral.f90&#45;&gt;sourcefile~mesh.f90 -->
+<g id="sourcefile~~glow_run.f90~~EfferentGraph_edge24" class="edge">
+<title>sourcefile~neutral.f90&#45;&gt;sourcefile~mesh.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M366.3689,-143.1688C343.9409,-151.9767 312.2013,-163.5893 283.5,-171"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M283.5,-171C256.8845,-177.8721 227.6218,-187.8773 205.0194,-196.1619"/>
+<polygon fill="#000000" stroke="#000000" points="203.611,-192.9512 195.4528,-199.711 206.0458,-199.5142 203.611,-192.9512"/>
+</g>
+<!-- sourcefile~interpolation.f90 -->
+<g id="sourcefile~~glow_run.f90~~EfferentGraph_node10" class="node">
+<title>sourcefile~interpolation.f90</title>
+<g id="a_sourcefile~~glow_run.f90~~EfferentGraph_node10"><a xlink:href=".././sourcefile/interpolation.f90.html" xlink:title="interpolation.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="328,-24 239,-24 239,0 328,0 328,-24"/>
+<text text-anchor="middle" x="283.5" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">interpolation.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~neutral.f90&#45;&gt;sourcefile~interpolation.f90 -->
+<g id="sourcefile~~glow_run.f90~~EfferentGraph_edge18" class="edge">
+<title>sourcefile~neutral.f90&#45;&gt;sourcefile~interpolation.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M384.3843,-118.7131C364.8305,-98.0296 325.1932,-56.1022 301.8466,-31.4066"/>
+<polygon fill="#000000" stroke="#000000" points="304.2982,-28.9051 294.885,-24.0428 299.2115,-33.714 304.2982,-28.9051"/>
+</g>
+<!-- sourcefile~neutral.f90&#45;&gt;sourcefile~reader.f90 -->
+<g id="sourcefile~~glow_run.f90~~EfferentGraph_edge21" class="edge">
+<title>sourcefile~neutral.f90&#45;&gt;sourcefile~reader.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M283.5,-90C267.4126,-87.1363 229.2503,-102.0925 200.858,-114.7377"/>
+<polygon fill="#000000" stroke="#000000" points="199.3149,-111.5942 191.6498,-118.9084 202.203,-117.9706 199.3149,-111.5942"/>
+</g>
+<!-- sourcefile~interpolation.f90&#45;&gt;sourcefile~phys_consts.f90 -->
+<g id="sourcefile~~glow_run.f90~~EfferentGraph_edge25" class="edge">
+<title>sourcefile~interpolation.f90&#45;&gt;sourcefile~phys_consts.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M242.6326,-24.0806C220.0457,-30.9681 191.5633,-40.0006 166.5,-49"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M166.5,-49C122.1793,-64.9142 83.2885,-105.7537 62.6611,-130.6618"/>
+<polygon fill="#000000" stroke="#000000" points="59.6994,-128.7589 56.1476,-138.7407 65.1489,-133.1525 59.6994,-128.7589"/>
+</g>
+<!-- sourcefile~reader.f90&#45;&gt;sourcefile~phys_consts.f90 -->
+<g id="sourcefile~~glow_run.f90~~EfferentGraph_edge26" class="edge">
+<title>sourcefile~reader.f90&#45;&gt;sourcefile~phys_consts.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M135.4147,-136.2026C125.8768,-137.7989 115.0616,-139.6089 104.3496,-141.4017"/>
+<polygon fill="#000000" stroke="#000000" points="103.4409,-138.0051 94.1558,-143.1078 104.5964,-144.909 103.4409,-138.0051"/>
+</g>
+</g>
+</svg>
+</div><script>var pansourcefileglow_runf90EfferentGraph = svgPanZoom('#sourcefileglow_runf90EfferentGraph', {zoomEnabled: true,controlIconsEnabled: true, fit: true, center: true,}); </script><div><a type="button" class="graph-help" data-toggle="modal" href="#graph-help-text">Help</a></div><div class="modal fade" id="graph-help-text" tabindex="-1" role="dialog"><div class="modal-dialog modal-lg" role="document"><div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button><h4 class="modal-title" id="-graph-help-label">Graph Key</h4></div><div class="modal-body">
+    <p>Nodes of different colours represent the following: </p>
+    <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.40.1 (20161225.0304)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="190pt" height="32pt"
+ viewBox="0.00 0.00 190.00 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 28)">
+<title>Graph Key</title>
+<polygon fill="#ffffff" stroke="transparent" points="-4,4 -4,-28 186,-28 186,4 -4,4"/>
+<!-- Source File -->
+<g id="node1" class="node">
+<title>Source File</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="67,-24 0,-24 0,0 67,0 67,-24"/>
+<text text-anchor="middle" x="33.5" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Source File</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node2" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="#000000" points="182,-24 85,-24 85,0 182,0 182,-24"/>
+<text text-anchor="middle" x="133.5" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#000000">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+    
+    <p>Solid arrows point from a file to a file which it depends on. A file
+    is dependent upon another if the latter must be compiled before the former
+    can be.
+    </p>
+    </div></div></div></div>
+      </div>
+    </div>
+    
+      
+      <br>
+
+    <section class="visible-xs visible-sm hidden-md">
+      
+<h3>Contents</h3>
+ 
+
+
+
+
+
+
+
+
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#submods-1">Submodules</a></h3></div>
+  <div id="submods-1" class="panel-collapse collapse">
+    <div class="list-group">
+      
+      <a class="list-group-item" href="../module/glow_mod.html">glow_mod</a>
+      
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
+  <div class="list-group">
+    <a class="list-group-item" href="../sourcefile/glow_run.f90.html#src">glow_run.F90</a>
+  </div>
+</div>
+
+
+
+    </section>
+    <br class="visible-xs visible-sm hidden-md">
+
+    <section>
+      <h2><span class="anchor" id="src"></span>Source Code</h2>
+    <div class="hl"><pre><span></span><a name="ln-1"></a><span class="k">submodule</span> <span class="p">(</span><span class="n">ionization</span><span class="p">)</span> <span class="n">glow_mod</span>
+<a name="ln-2"></a>
+<a name="ln-3"></a><span class="k">use</span><span class="p">,</span> <span class="k">intrinsic</span> <span class="kd">::</span> <span class="n">iso_fortran_env</span><span class="p">,</span> <span class="n">only</span><span class="p">:</span> <span class="n">sp</span><span class="o">=&gt;</span><span class="n">real32</span>
+<a name="ln-4"></a><span class="k">use </span><span class="n">phys_consts</span><span class="p">,</span> <span class="n">only</span> <span class="p">:</span> <span class="n">wp</span>
+<a name="ln-5"></a>
+<a name="ln-6"></a><span class="c">!&gt; subroutine to allocate use-associated variables</span>
+<a name="ln-7"></a><span class="k">use </span><span class="n">cglow</span><span class="p">,</span><span class="n">only</span><span class="p">:</span> <span class="n">cglow_init</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-8"></a>  <span class="n">jmax</span><span class="p">,</span><span class="n">nbins</span><span class="p">,</span><span class="n">lmax</span><span class="p">,</span><span class="n">nmaj</span><span class="p">,</span><span class="n">nei</span><span class="p">,</span><span class="n">nex</span><span class="p">,</span><span class="n">nw</span><span class="p">,</span><span class="n">nc</span><span class="p">,</span><span class="n">nst</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-9"></a>  <span class="nb">idate</span><span class="p">,</span><span class="n">ut</span><span class="p">,</span><span class="n">glat</span><span class="p">,</span><span class="n">glong</span><span class="p">,</span><span class="n">f107a</span><span class="p">,</span><span class="n">f107</span><span class="p">,</span><span class="n">f107p</span><span class="p">,</span><span class="n">ap</span><span class="p">,</span><span class="n">ef</span><span class="p">,</span><span class="n">ec</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-10"></a>  <span class="n">iscale</span><span class="p">,</span><span class="n">jlocal</span><span class="p">,</span><span class="n">kchem</span><span class="p">,</span><span class="n">xuvfac</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-11"></a>  <span class="n">sza</span><span class="p">,</span><span class="n">dip</span><span class="p">,</span><span class="n">efrac</span><span class="p">,</span><span class="n">ierr</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-12"></a>  <span class="n">zz</span><span class="p">,</span><span class="n">zo</span><span class="p">,</span><span class="n">zn2</span><span class="p">,</span><span class="n">zo2</span><span class="p">,</span><span class="n">zns</span><span class="p">,</span><span class="n">znd</span><span class="p">,</span><span class="n">zno</span><span class="p">,</span><span class="n">ztn</span><span class="p">,</span><span class="n">ze</span><span class="p">,</span><span class="n">zti</span><span class="p">,</span><span class="n">zte</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-13"></a>  <span class="n">ener</span><span class="p">,</span><span class="n">del</span><span class="p">,</span><span class="n">phitop</span><span class="p">,</span><span class="n">wave1</span><span class="p">,</span><span class="n">wave2</span><span class="p">,</span><span class="n">sflux</span><span class="p">,</span><span class="n">pespec</span><span class="p">,</span><span class="n">sespec</span><span class="p">,</span><span class="n">uflx</span><span class="p">,</span><span class="n">dflx</span><span class="p">,</span><span class="n">sion</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-14"></a>  <span class="n">photoi</span><span class="p">,</span><span class="n">photod</span><span class="p">,</span><span class="n">phono</span><span class="p">,</span><span class="n">aglw</span><span class="p">,</span><span class="n">ecalc</span><span class="p">,</span><span class="n">zxden</span><span class="p">,</span><span class="n">zeta</span><span class="p">,</span><span class="n">zceta</span><span class="p">,</span><span class="n">eheat</span><span class="p">,</span><span class="n">vcb</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-15"></a>  <span class="n">data_dir</span>
+<a name="ln-16"></a>
+<a name="ln-17"></a><span class="k">implicit none</span>
+<a name="ln-18"></a>
+<a name="ln-19"></a><span class="kt">logical</span> <span class="kd">::</span> <span class="n">first_call</span> <span class="o">=</span> <span class="p">.</span><span class="n">true</span><span class="p">.</span>
+<a name="ln-20"></a>
+<a name="ln-21"></a><span class="k">contains</span>
+<a name="ln-22"></a>
+<a name="ln-23"></a><span class="k">module procedure </span><span class="n">glow_run</span>
+<a name="ln-24"></a>
+<a name="ln-25"></a><span class="c">! This software is part of the GLOW model.  Use is governed by the Open Source</span>
+<a name="ln-26"></a><span class="c">! Academic Research License Agreement contained in the file glowlicense.txt.</span>
+<a name="ln-27"></a><span class="c">! For more information see the file glow.txt.</span>
+<a name="ln-28"></a>
+<a name="ln-29"></a><span class="c">! Stan Solomon and Ben Foster, 1/15</span>
+<a name="ln-30"></a><span class="c">! Stan Solomon, 12/15, 1/16</span>
+<a name="ln-31"></a><span class="c">! Stan Solomon, 3/16, MPI parallel version</span>
+<a name="ln-32"></a><span class="c">! Guy Grubbs II, 4/17, modified for GEMINI integration</span>
+<a name="ln-33"></a>
+<a name="ln-34"></a><span class="c">! For definitions of use-associated variables, see subroutine GLOW and module CGLOW.</span>
+<a name="ln-35"></a><span class="c">! For definitions of TGCM input variables see module READTGCM</span>
+<a name="ln-36"></a><span class="c">! For definitions of output arrays see module OUTPUT</span>
+<a name="ln-37"></a>
+<a name="ln-38"></a><span class="c">! Other definitions:</span>
+<a name="ln-39"></a><span class="c">! f107p   Solar 10.7 cm flux for previous day</span>
+<a name="ln-40"></a><span class="c">! ap      Ap index of geomagnetic activity</span>
+<a name="ln-41"></a><span class="c">! z       altitude array, km</span>
+<a name="ln-42"></a>
+<a name="ln-43"></a><span class="c">! Array dimensions:</span>
+<a name="ln-44"></a><span class="c">! jmax    number of altitude levels</span>
+<a name="ln-45"></a><span class="c">! nbins   number of energetic electron energy bins</span>
+<a name="ln-46"></a><span class="c">! lmax    number of wavelength intervals for solar flux</span>
+<a name="ln-47"></a><span class="c">! nmaj    number of major` species</span>
+<a name="ln-48"></a><span class="c">! nst     number of states produced by photoionization/dissociation</span>
+<a name="ln-49"></a><span class="c">! nei     number of states produced by electron impact</span>
+<a name="ln-50"></a><span class="c">! nex     number of ionized/excited species</span>
+<a name="ln-51"></a><span class="c">! nw      number of airglow emission wavelengths</span>
+<a name="ln-52"></a><span class="c">! nc      number of component production terms for each emission</span>
+<a name="ln-53"></a>
+<a name="ln-54"></a>
+<a name="ln-55"></a><span class="kt">real</span><span class="p">(</span><span class="n">sp</span><span class="p">),</span> <span class="k">dimension</span><span class="p">(:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">phitoptmp</span>
+<a name="ln-56"></a><span class="kt">integer</span> <span class="kd">::</span> <span class="n">j</span>
+<a name="ln-57"></a><span class="kt">character</span><span class="p">(</span><span class="nb">len</span><span class="o">=</span><span class="mi">1024</span><span class="p">)</span> <span class="kd">::</span> <span class="n">iri90_dir</span>
+<a name="ln-58"></a>
+<a name="ln-59"></a><span class="n">data_dir</span> <span class="o">=</span> <span class="n">DATADIR</span>
+<a name="ln-60"></a><span class="n">iri90_dir</span> <span class="o">=</span> <span class="nb">trim</span><span class="p">(</span><span class="n">data_dir</span><span class="p">)</span> <span class="o">//</span> <span class="s1">&#39;/iri90/&#39;</span>
+<a name="ln-61"></a>
+<a name="ln-62"></a>
+<a name="ln-63"></a><span class="c">!! Execute:  Allocate arrays in other modules (formerly in common blocks):</span>
+<a name="ln-64"></a>
+<a name="ln-65"></a><span class="k">if</span><span class="p">(</span><span class="n">first_call</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-66"></a><span class="k">  </span><span class="n">first_call</span> <span class="o">=</span> <span class="p">.</span><span class="n">false</span><span class="p">.</span>
+<a name="ln-67"></a>  <span class="n">jmax</span><span class="o">=</span><span class="n">size</span><span class="p">(</span><span class="n">alt</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+<a name="ln-68"></a>  <span class="n">nbins</span> <span class="o">=</span> <span class="mi">190</span>     <span class="c">!&lt; MZ - note nbins no longer set to a default value in glow; user MUST assign this!!!</span>
+<a name="ln-69"></a>  <span class="k">call </span><span class="n">cglow_init</span>
+<a name="ln-70"></a><span class="k">end if</span>
+<a name="ln-71"></a>
+<a name="ln-72"></a><span class="c">!! Set electron energy grid:</span>
+<a name="ln-73"></a>
+<a name="ln-74"></a><span class="k">call </span><span class="n">egrid</span> <span class="p">(</span><span class="n">ener</span><span class="p">,</span> <span class="n">del</span><span class="p">,</span> <span class="n">nbins</span><span class="p">)</span>
+<a name="ln-75"></a>
+<a name="ln-76"></a><span class="c">!! Set Maxwellian distribution into phitop array</span>
+<a name="ln-77"></a>
+<a name="ln-78"></a><span class="c">!! Hard coded solution, future = pass ec and ef array to maxt assuming &gt; 2 populations</span>
+<a name="ln-79"></a><span class="k">allocate</span><span class="p">(</span><span class="n">phitoptmp</span><span class="p">(</span><span class="n">nbins</span><span class="p">))</span>
+<a name="ln-80"></a><span class="n">phitoptmp</span><span class="o">=</span><span class="mi">0</span>
+<a name="ln-81"></a>
+<a name="ln-82"></a><span class="n">phitop</span><span class="o">=</span><span class="n">phitoptmp</span>
+<a name="ln-83"></a><span class="k">do </span><span class="n">j</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="p">(</span><span class="n">PhiWmWm2</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>    <span class="c">!this index loops over population number</span>
+<a name="ln-84"></a>  <span class="k">call </span><span class="n">maxt</span><span class="p">(</span><span class="kt">real</span><span class="p">(</span><span class="n">PhiWmWm2</span><span class="p">(</span><span class="n">j</span><span class="p">),</span> <span class="n">sp</span><span class="p">),</span><span class="kt">real</span><span class="p">(</span><span class="n">W0</span><span class="p">(</span><span class="n">j</span><span class="p">),</span> <span class="n">sp</span><span class="p">),</span><span class="n">ener</span><span class="p">,</span><span class="n">del</span><span class="p">,</span><span class="n">nbins</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="n">phitoptmp</span><span class="p">)</span>
+<a name="ln-85"></a>  <span class="n">phitop</span> <span class="o">=</span> <span class="n">phitop</span> <span class="o">+</span> <span class="n">phitoptmp</span>
+<a name="ln-86"></a><span class="k">end do</span>
+<a name="ln-87"></a>
+<a name="ln-88"></a>
+<a name="ln-89"></a><span class="c">!! Set variables given from GEMINI</span>
+<a name="ln-90"></a><span class="n">glat</span> <span class="o">=</span> <span class="kt">real</span><span class="p">(</span><span class="n">xlat</span><span class="p">,</span> <span class="n">sp</span><span class="p">)</span>
+<a name="ln-91"></a><span class="n">glong</span> <span class="o">=</span> <span class="kt">real</span><span class="p">(</span><span class="n">xlon</span><span class="p">,</span> <span class="n">sp</span><span class="p">)</span>
+<a name="ln-92"></a><span class="nb">idate</span> <span class="o">=</span> <span class="n">date_doy</span>
+<a name="ln-93"></a><span class="n">ut</span> <span class="o">=</span> <span class="kt">real</span><span class="p">(</span><span class="n">UTsec</span><span class="p">,</span> <span class="n">sp</span><span class="p">)</span>
+<a name="ln-94"></a><span class="n">f107</span> <span class="o">=</span> <span class="kt">real</span><span class="p">(</span><span class="n">xf107</span><span class="p">,</span> <span class="n">sp</span><span class="p">)</span>
+<a name="ln-95"></a><span class="n">f107p</span> <span class="o">=</span> <span class="kt">real</span><span class="p">(</span><span class="n">xf107</span><span class="p">,</span> <span class="n">sp</span><span class="p">)</span>
+<a name="ln-96"></a><span class="n">f107a</span> <span class="o">=</span> <span class="kt">real</span><span class="p">(</span><span class="n">xf107a</span><span class="p">,</span> <span class="n">sp</span><span class="p">)</span>
+<a name="ln-97"></a><span class="n">ap</span> <span class="o">=</span> <span class="mf">5.</span>
+<a name="ln-98"></a><span class="n">kchem</span> <span class="o">=</span> <span class="mf">4.</span>
+<a name="ln-99"></a><span class="n">jlocal</span> <span class="o">=</span> <span class="mi">0</span>
+<a name="ln-100"></a>
+<a name="ln-101"></a><span class="c">!! Convert densities and altitudes into</span>
+<a name="ln-102"></a>
+<a name="ln-103"></a><span class="n">zz</span><span class="p">(:)</span>  <span class="o">=</span> <span class="kt">real</span><span class="p">(</span><span class="n">alt</span><span class="p">(:)</span><span class="o">*</span><span class="mf">1e2_wp</span><span class="p">,</span> <span class="n">sp</span><span class="p">)</span>
+<a name="ln-104"></a><span class="n">zo</span><span class="p">(:)</span>  <span class="o">=</span> <span class="kt">real</span><span class="p">(</span><span class="n">nn</span><span class="p">(:,</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="mf">1e6_wp</span><span class="p">,</span> <span class="n">sp</span><span class="p">)</span>
+<a name="ln-105"></a><span class="n">zo2</span><span class="p">(:)</span> <span class="o">=</span> <span class="kt">real</span><span class="p">(</span><span class="n">nn</span><span class="p">(:,</span><span class="mi">3</span><span class="p">)</span><span class="o">/</span><span class="mf">1e6_wp</span><span class="p">,</span> <span class="n">sp</span><span class="p">)</span>
+<a name="ln-106"></a><span class="n">zn2</span><span class="p">(:)</span> <span class="o">=</span> <span class="kt">real</span><span class="p">(</span><span class="n">nn</span><span class="p">(:,</span><span class="mi">2</span><span class="p">)</span><span class="o">/</span><span class="mf">1e6_wp</span><span class="p">,</span> <span class="n">sp</span><span class="p">)</span>
+<a name="ln-107"></a><span class="n">zno</span><span class="p">(:)</span> <span class="o">=</span> <span class="kt">real</span><span class="p">(</span><span class="n">nn</span><span class="p">(:,</span><span class="mi">6</span><span class="p">)</span><span class="o">/</span><span class="mf">1e6_wp</span><span class="p">,</span> <span class="n">sp</span><span class="p">)</span>
+<a name="ln-108"></a><span class="n">zns</span><span class="p">(:)</span> <span class="o">=</span> <span class="kt">real</span><span class="p">(</span><span class="n">nn</span><span class="p">(:,</span><span class="mi">5</span><span class="p">)</span><span class="o">/</span><span class="mf">1e6_wp</span><span class="p">,</span> <span class="n">sp</span><span class="p">)</span>
+<a name="ln-109"></a><span class="n">znd</span><span class="p">(:)</span> <span class="o">=</span> <span class="kt">real</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">sp</span><span class="p">)</span>
+<a name="ln-110"></a><span class="n">ztn</span><span class="p">(:)</span> <span class="o">=</span> <span class="kt">real</span><span class="p">(</span><span class="n">Tn</span><span class="p">(:),</span> <span class="n">sp</span><span class="p">)</span>
+<a name="ln-111"></a>
+<a name="ln-112"></a><span class="c">! ZXDEN   array of excited and and/or ionized state densities at each altitude:</span>
+<a name="ln-113"></a><span class="c">!           O+(2P), O+(2D), O+(4S), N+, N2+, O2+, NO+, N2(A), N(2P),</span>
+<a name="ln-114"></a><span class="c">!           N(2D), O(1S), O(1D); cm-3</span>
+<a name="ln-115"></a><span class="c">!ions (ns): 1=O+, 2=NO+, 3=N2+, 4=O2+, 5=N+, 6=H+</span>
+<a name="ln-116"></a><span class="c">!neutrals (nn): O,N2,O2,H,N,NO</span>
+<a name="ln-117"></a><span class="n">zxden</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="p">:)</span> <span class="o">=</span> <span class="mi">0</span>
+<a name="ln-118"></a><span class="n">zxden</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="p">:)</span> <span class="o">=</span> <span class="mi">0</span>
+<a name="ln-119"></a><span class="n">zxden</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="p">:)</span> <span class="o">=</span> <span class="kt">real</span><span class="p">(</span><span class="n">ns</span><span class="p">(:,</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="mf">1e6_wp</span><span class="p">,</span> <span class="n">sp</span><span class="p">)</span>
+<a name="ln-120"></a><span class="n">zxden</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="p">:)</span> <span class="o">=</span> <span class="kt">real</span><span class="p">(</span><span class="n">ns</span><span class="p">(:,</span><span class="mi">5</span><span class="p">)</span><span class="o">/</span><span class="mf">1e6_wp</span><span class="p">,</span> <span class="n">sp</span><span class="p">)</span>
+<a name="ln-121"></a><span class="n">zxden</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="p">:)</span> <span class="o">=</span> <span class="kt">real</span><span class="p">(</span><span class="n">ns</span><span class="p">(:,</span><span class="mi">3</span><span class="p">)</span><span class="o">/</span><span class="mf">1e6_wp</span><span class="p">,</span> <span class="n">sp</span><span class="p">)</span>
+<a name="ln-122"></a><span class="n">zxden</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="p">:)</span> <span class="o">=</span> <span class="kt">real</span><span class="p">(</span><span class="n">ns</span><span class="p">(:,</span> <span class="n">sp</span><span class="p">)</span><span class="o">/</span><span class="mf">1e6_wp</span><span class="p">,</span> <span class="n">sp</span><span class="p">)</span>
+<a name="ln-123"></a><span class="n">zxden</span><span class="p">(</span><span class="mi">7</span><span class="p">,</span> <span class="p">:)</span> <span class="o">=</span> <span class="kt">real</span><span class="p">(</span><span class="n">ns</span><span class="p">(:,</span><span class="mi">2</span><span class="p">)</span><span class="o">/</span><span class="mf">1e6_wp</span><span class="p">,</span> <span class="n">sp</span><span class="p">)</span>
+<a name="ln-124"></a><span class="n">zxden</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="p">:)</span> <span class="o">=</span> <span class="mi">0</span>
+<a name="ln-125"></a><span class="n">zxden</span><span class="p">(</span><span class="mi">9</span><span class="p">,</span> <span class="p">:)</span> <span class="o">=</span> <span class="mi">0</span>
+<a name="ln-126"></a><span class="n">zxden</span><span class="p">(</span><span class="mi">10</span><span class="p">,:)</span> <span class="o">=</span> <span class="mi">0</span>
+<a name="ln-127"></a><span class="n">zxden</span><span class="p">(</span><span class="mi">11</span><span class="p">,:)</span> <span class="o">=</span> <span class="mi">0</span>
+<a name="ln-128"></a><span class="n">zxden</span><span class="p">(</span><span class="mi">12</span><span class="p">,:)</span> <span class="o">=</span> <span class="mi">0</span>
+<a name="ln-129"></a><span class="n">zti</span><span class="p">(:)</span> <span class="o">=</span> <span class="kt">real</span><span class="p">((</span><span class="n">Ts</span><span class="p">(:,</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">ns</span><span class="p">(:,</span><span class="mi">1</span><span class="p">)</span><span class="o">+</span><span class="n">Ts</span><span class="p">(:,</span><span class="mi">2</span><span class="p">)</span><span class="o">*</span><span class="n">ns</span><span class="p">(:,</span><span class="mi">2</span><span class="p">)</span><span class="o">+</span><span class="n">Ts</span><span class="p">(:,</span><span class="mi">3</span><span class="p">)</span><span class="o">*</span><span class="n">ns</span><span class="p">(:,</span><span class="mi">3</span><span class="p">)</span><span class="o">+</span><span class="n">Ts</span><span class="p">(:,</span><span class="mi">4</span><span class="p">)</span><span class="o">*</span><span class="n">ns</span><span class="p">(:,</span><span class="mi">4</span><span class="p">)</span><span class="o">+</span><span class="n">Ts</span><span class="p">(:,</span><span class="mi">5</span><span class="p">)</span><span class="o">*</span><span class="n">ns</span><span class="p">(:,</span><span class="mi">5</span><span class="p">))</span> <span class="p">&amp;</span>
+<a name="ln-130"></a>        <span class="o">/</span><span class="p">(</span><span class="n">ns</span><span class="p">(:,</span><span class="mi">1</span><span class="p">)</span><span class="o">+</span><span class="n">ns</span><span class="p">(:,</span><span class="mi">2</span><span class="p">)</span><span class="o">+</span><span class="n">ns</span><span class="p">(:,</span><span class="mi">3</span><span class="p">)</span><span class="o">+</span><span class="n">ns</span><span class="p">(:,</span><span class="mi">4</span><span class="p">)</span><span class="o">+</span><span class="n">ns</span><span class="p">(:,</span><span class="mi">5</span><span class="p">)),</span> <span class="n">sp</span><span class="p">)</span>
+<a name="ln-131"></a><span class="n">zte</span><span class="p">(:)</span> <span class="o">=</span> <span class="kt">real</span><span class="p">(</span><span class="n">Ts</span><span class="p">(:,</span><span class="mi">7</span><span class="p">),</span> <span class="n">sp</span><span class="p">)</span>
+<a name="ln-132"></a><span class="n">ze</span><span class="p">(:)</span>  <span class="o">=</span> <span class="kt">real</span><span class="p">(</span><span class="n">ns</span><span class="p">(:,</span><span class="mi">7</span><span class="p">)</span><span class="o">/</span><span class="mf">1e6_wp</span><span class="p">,</span> <span class="n">sp</span><span class="p">)</span>
+<a name="ln-133"></a>
+<a name="ln-134"></a><span class="c">!! Call GLOW to calculate ionized and excited species, and airglow emission rates:</span>
+<a name="ln-135"></a>
+<a name="ln-136"></a><span class="k">call </span><span class="n">glow</span>
+<a name="ln-137"></a>
+<a name="ln-138"></a><span class="n">ionrate</span><span class="p">(:,</span><span class="mi">1</span><span class="p">)</span> <span class="o">=</span> <span class="p">(</span><span class="kt">real</span><span class="p">(</span><span class="n">SION</span><span class="p">(</span><span class="mi">1</span><span class="p">,:),</span><span class="n">wp</span><span class="p">)</span><span class="o">+</span><span class="kt">real</span><span class="p">(</span><span class="n">SION</span><span class="p">(</span><span class="mi">2</span><span class="p">,:),</span><span class="n">wp</span><span class="p">)</span><span class="o">*</span><span class="mf">0.3_wp</span><span class="p">)</span><span class="o">*</span><span class="mf">1e6_wp</span> <span class="c">!O+</span>
+<a name="ln-139"></a><span class="n">ionrate</span><span class="p">(:,</span><span class="mi">4</span><span class="p">)</span> <span class="o">=</span> <span class="p">(</span><span class="kt">real</span><span class="p">(</span><span class="n">SION</span><span class="p">(</span><span class="mi">2</span><span class="p">,:),</span><span class="n">wp</span><span class="p">)</span><span class="o">*</span><span class="mf">0.7_wp</span><span class="p">)</span><span class="o">*</span><span class="mf">1e6_wp</span> <span class="c">!O2+</span>
+<a name="ln-140"></a><span class="n">ionrate</span><span class="p">(:,</span><span class="mi">3</span><span class="p">)</span> <span class="o">=</span> <span class="p">(</span><span class="kt">real</span><span class="p">(</span><span class="n">SION</span><span class="p">(</span><span class="mi">3</span><span class="p">,:),</span><span class="n">wp</span><span class="p">)</span><span class="o">*</span><span class="mf">0.84_wp</span><span class="p">)</span><span class="o">*</span><span class="mf">1e6_wp</span> <span class="c">!N2+</span>
+<a name="ln-141"></a><span class="n">ionrate</span><span class="p">(:,</span><span class="mi">5</span><span class="p">)</span> <span class="o">=</span> <span class="p">(</span><span class="kt">real</span><span class="p">(</span><span class="n">SION</span><span class="p">(</span><span class="mi">3</span><span class="p">,:),</span><span class="n">wp</span><span class="p">)</span><span class="o">*</span><span class="mf">0.16_wp</span><span class="p">)</span><span class="o">*</span><span class="mf">1e6_wp</span> <span class="c">!N+</span>
+<a name="ln-142"></a><span class="n">ionrate</span><span class="p">(:,</span><span class="mi">2</span><span class="p">)</span> <span class="o">=</span> <span class="kt">real</span><span class="p">(</span><span class="mf">0.</span><span class="p">,</span> <span class="n">wp</span><span class="p">)</span><span class="o">*</span><span class="mf">1e6_wp</span> <span class="c">!NO+</span>
+<a name="ln-143"></a><span class="n">ionrate</span><span class="p">(:,</span><span class="mi">6</span><span class="p">)</span> <span class="o">=</span> <span class="kt">real</span><span class="p">(</span><span class="mf">0.</span><span class="p">,</span> <span class="n">wp</span><span class="p">)</span><span class="o">*</span><span class="mf">1e6_wp</span> <span class="c">!H+</span>
+<a name="ln-144"></a>
+<a name="ln-145"></a><span class="n">eheating</span> <span class="o">=</span> <span class="kt">real</span><span class="p">(</span><span class="n">eheat</span><span class="p">,</span><span class="n">wp</span><span class="p">)</span><span class="o">*</span><span class="mf">1e6_wp</span>
+<a name="ln-146"></a>
+<a name="ln-147"></a><span class="n">iver</span> <span class="o">=</span> <span class="kt">real</span><span class="p">(</span><span class="n">vcb</span><span class="p">,</span><span class="n">wp</span><span class="p">)</span>
+<a name="ln-148"></a>
+<a name="ln-149"></a>
+<a name="ln-150"></a><span class="c">!  do j = 1, jmax</span>
+<a name="ln-151"></a><span class="c">!    IDENS(j) = sum((dflx(:,j)-uflx(:,j))*del(:))/6.241509d14</span>
+<a name="ln-152"></a><span class="c">!  enddo</span>
+<a name="ln-153"></a>
+<a name="ln-154"></a><span class="c">!  if (first_out) then</span>
+<a name="ln-155"></a><span class="c">!    first_out = .false.</span>
+<a name="ln-156"></a><span class="c">!    write(6,&quot;(1x,i7,11f10.3)&quot;) idate,ut,glat,glong,f107a,f107,f107p,ap,ef,ec,ef1,ec1</span>
+<a name="ln-157"></a><span class="c">!    write(6,&quot;(&#39;   Z     Tn   Ti   Te      O        N2        NO      Ne(in)    Ne(out)   Ionrate     &amp;</span>
+<a name="ln-158"></a><span class="c">!          O+        O2+       NO+       N2+     EHeat    Jz&#39;)&quot;)</span>
+<a name="ln-159"></a><span class="c">!    write(6,&quot;(1x,0p,f5.1,3f6.0,1p,12e10.2)&quot;) (alt(j)/1.0d3,ztn(j),zti(j),zte(j),zo(j),zn2(j),zno(j),ze(j), &amp;</span>
+<a name="ln-160"></a><span class="c">!      ecalc(j),tir(j),PO(j),PO2(j),PNO(j),PN2(j),EHEATING(j),IDENS(j),j=1,jmax)</span>
+<a name="ln-161"></a><span class="c">!  end if</span>
+<a name="ln-162"></a>
+<a name="ln-163"></a><span class="k">deallocate</span><span class="p">(</span><span class="n">phitoptmp</span><span class="p">)</span>
+<a name="ln-164"></a>
+<a name="ln-165"></a><span class="k">end procedure </span><span class="n">glow_run</span>
+<a name="ln-166"></a>
+<a name="ln-167"></a><span class="k">end submodule </span><span class="n">glow_mod</span>
+</pre></div>
+
+    </section>
+    </div>
+  </div>
+
+  
+    <hr>    
+    </div> <!-- /container -->
+    <footer>
+      <div class="container">
+      <div class="row">
+        <div class="col-xs-6 col-md-4"><p>&copy; 2020 <a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/80x15.png" /></a>
+                                          </p></div>
+        <div class="col-xs-6 col-md-4 col-md-push-4">
+          <p class="text-right">
+            Documentation generated by 
+            <a href="https://github.com/cmacmackin/ford">FORD</a>
+            
+          </p>
+        </div>
+        <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> GEMINI3D was developed by Matthew Zettergren
+Guy Grubbs
+Michael Hirsch</p></div>
+      </div>
+      <br>
+      </div> <!-- /container -->    
+    </footer>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+<!--
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+-->
+    <script src="../js/bootstrap.min.js"></script>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <script src="../js/ie10-viewport-bug-workaround.js"></script>
+
+    <!-- MathJax JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } },
+        jax: ['input/TeX','input/MathML','output/HTML-CSS'],
+        extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']
+      });
+    </script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    
+    
+  </body>
+</html>

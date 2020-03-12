@@ -64,6 +64,8 @@ Michael Hirsch" >
             <li><a href="../lists/modules.html">Modules</a></li>
         
             
+    <li><a href="../blockdata/gtd7bk.html">Block Data</a></li>
+    
                                 
             <li><a href="../lists/procedures.html">Procedures</a></li>
         
@@ -83,6 +85,8 @@ Michael Hirsch" >
 
 <li class="visible-xs hidden-sm visible-lg"><a href="../lists/modules.html">Modules</a></li>
 
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../blockdata/gtd7bk.html">Block Data</a></li>
 
 
 <li class="visible-xs hidden-sm visible-lg"><a href="../lists/procedures.html">Procedures</a></li>
@@ -121,19 +125,19 @@ Michael Hirsch" >
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 0.6% of total for procedures.">46 statements</a>
+    title=" 0.5% of total for procedures.">46 statements</a>
      </li> 
      
      
      
-    <li><i class="fa fa-code"></i><a href="../src/diffusion.F90"> Source File</a></li>
+    <li><i class="fa fa-code"></i><a href="../src/diffusion.f90"> Source File</a></li>
      
      
   </ul>
   <ol class="breadcrumb in-well text-right">
   
     
-     <li><a href='../sourcefile/diffusion.f90.html'>diffusion.F90</a></li>
+     <li><a href='../sourcefile/diffusion.f90.html'>diffusion.f90</a></li>
     
      <li><a href='../module/diffusion.html'>diffusion</a></li>
     
@@ -188,7 +192,7 @@ Michael Hirsch" >
     
     <div class="col-md-9" id='text'>
     <h2>
-public subroutine diffusion_prep(isp, x, lambda, betacoeff, ns, T, A, B, C, D, E, Tn, Teinf)
+public pure subroutine diffusion_prep(isp, x, lambda, betacoeff, ns, T, A, B, C, D, E, Tn, Teinf)
     
     
    
@@ -220,7 +224,7 @@ public subroutine diffusion_prep(isp, x, lambda, betacoeff, ns, T, A, B, C, D, E
   
 <tr>
   
-  <td><span class="anchor" id="variable-isp~5"></span>integer,</td>
+  <td><span class="anchor" id="variable-isp~7"></span>integer,</td>
   <td>intent(in)</td>
   <td></td>
   
@@ -235,7 +239,7 @@ public subroutine diffusion_prep(isp, x, lambda, betacoeff, ns, T, A, B, C, D, E
   
 <tr>
   
-  <td><span class="anchor" id="variable-x~41"></span>type(<a href='../type/curvmesh.html'>curvmesh</a>),</td>
+  <td><span class="anchor" id="variable-x~39"></span>type(<a href='../type/curvmesh.html'>curvmesh</a>),</td>
   <td>intent(in)</td>
   <td></td>
   
@@ -295,7 +299,7 @@ public subroutine diffusion_prep(isp, x, lambda, betacoeff, ns, T, A, B, C, D, E
   
 <tr>
   
-  <td><span class="anchor" id="variable-t"></span>real(kind=wp),</td>
+  <td><span class="anchor" id="variable-t~6"></span>real(kind=wp),</td>
   <td>intent(inout),</td>
   <td></td>
   
@@ -310,7 +314,7 @@ public subroutine diffusion_prep(isp, x, lambda, betacoeff, ns, T, A, B, C, D, E
   
 <tr>
   
-  <td><span class="anchor" id="variable-a~5"></span>real(kind=wp),</td>
+  <td><span class="anchor" id="variable-a~6"></span>real(kind=wp),</td>
   <td>intent(out),</td>
   <td></td>
   
@@ -325,7 +329,7 @@ public subroutine diffusion_prep(isp, x, lambda, betacoeff, ns, T, A, B, C, D, E
   
 <tr>
   
-  <td><span class="anchor" id="variable-b~5"></span>real(kind=wp),</td>
+  <td><span class="anchor" id="variable-b~3"></span>real(kind=wp),</td>
   <td>intent(out),</td>
   <td></td>
   
@@ -340,7 +344,7 @@ public subroutine diffusion_prep(isp, x, lambda, betacoeff, ns, T, A, B, C, D, E
   
 <tr>
   
-  <td><span class="anchor" id="variable-c~5"></span>real(kind=wp),</td>
+  <td><span class="anchor" id="variable-c~3"></span>real(kind=wp),</td>
   <td>intent(out),</td>
   <td></td>
   
@@ -355,7 +359,7 @@ public subroutine diffusion_prep(isp, x, lambda, betacoeff, ns, T, A, B, C, D, E
   
 <tr>
   
-  <td><span class="anchor" id="variable-d~5"></span>real(kind=wp),</td>
+  <td><span class="anchor" id="variable-d~7"></span>real(kind=wp),</td>
   <td>intent(out),</td>
   <td></td>
   
@@ -370,7 +374,7 @@ public subroutine diffusion_prep(isp, x, lambda, betacoeff, ns, T, A, B, C, D, E
   
 <tr>
   
-  <td><span class="anchor" id="variable-e~5"></span>real(kind=wp),</td>
+  <td><span class="anchor" id="variable-e~3"></span>real(kind=wp),</td>
   <td>intent(out),</td>
   <td></td>
   
@@ -385,7 +389,7 @@ public subroutine diffusion_prep(isp, x, lambda, betacoeff, ns, T, A, B, C, D, E
   
 <tr>
   
-  <td><span class="anchor" id="variable-tn~14"></span>real(kind=wp),</td>
+  <td><span class="anchor" id="variable-tn~15"></span>real(kind=wp),</td>
   <td>intent(in),</td>
   <td></td>
   
@@ -478,7 +482,7 @@ public subroutine diffusion_prep(isp, x, lambda, betacoeff, ns, T, A, B, C, D, E
     <footer>
       <div class="container">
       <div class="row">
-        <div class="col-xs-6 col-md-4"><p>&copy; 2018 <a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/80x15.png" /></a>
+        <div class="col-xs-6 col-md-4"><p>&copy; 2020 <a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/80x15.png" /></a>
                                           </p></div>
         <div class="col-xs-6 col-md-4 col-md-push-4">
           <p class="text-right">

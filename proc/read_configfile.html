@@ -64,6 +64,8 @@ Michael Hirsch" >
             <li><a href="../lists/modules.html">Modules</a></li>
         
             
+    <li><a href="../blockdata/gtd7bk.html">Block Data</a></li>
+    
                                 
             <li><a href="../lists/procedures.html">Procedures</a></li>
         
@@ -83,6 +85,8 @@ Michael Hirsch" >
 
 <li class="visible-xs hidden-sm visible-lg"><a href="../lists/modules.html">Modules</a></li>
 
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../blockdata/gtd7bk.html">Block Data</a></li>
 
 
 <li class="visible-xs hidden-sm visible-lg"><a href="../lists/procedures.html">Procedures</a></li>
@@ -104,7 +108,7 @@ Michael Hirsch" >
   
   <div class="row">
     <h1>read_configfile
-      <small>Subroutine</small>
+      <small>Module Procedure</small>
     
     </h1>
     
@@ -121,21 +125,21 @@ Michael Hirsch" >
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 1.4% of total for procedures.">101 statements</a>
+    title=" 1.8% of total for procedures.">160 statements</a>
      </li> 
      
      
      
-    <li><i class="fa fa-code"></i><a href="../src/io.f90"> Source File</a></li>
+    <li><i class="fa fa-code"></i><a href="../src/input.f90"> Source File</a></li>
      
      
   </ul>
   <ol class="breadcrumb in-well text-right">
   
     
-     <li><a href='../sourcefile/io.f90.html'>io.f90</a></li>
+     <li><a href='../sourcefile/input.f90.html'>input.f90</a></li>
     
-     <li><a href='../module/io.html'>io</a></li>
+     <li><a href='../module/input.html'>input</a></li>
     
   
      <li class="active">read_configfile</li>
@@ -188,8 +192,10 @@ Michael Hirsch" >
     
     <div class="col-md-9" id='text'>
     <h2>
-public subroutine read_configfile(infile, ymd, UTsec0, tdur, dtout, activ, tcfl, Teinf, potsolve, flagperiodic, flagoutput, flagcap, indatsize, indatgrid, flagdneu, interptype, sourcemlat, sourcemlon, dtneu, drhon, dzn, sourcedir, flagprecfile, dtprec, precdir, flagE0file, dtE0, E0dir)
+module procedure read_configfile <small>module subroutine read_configfile(infile, ymd, UTsec0, tdur, dtout, activ, tcfl, Teinf, potsolve, flagperiodic, flagoutput, flagcap, indatsize, indatgrid, flagdneu, interptype, sourcemlat, sourcemlon, dtneu, dxn, drhon, dzn, sourcedir, flagprecfile, dtprec, precdir, flagE0file, dtE0, E0dir, flagglow, dtglow, dtglowout)</small>
     
+    
+   <a href='../interface/read_configfile.html'><button type="button" class="btn btn-info depwarn">Interface &rarr;</button></a>
     
    
 </h2>
@@ -197,6 +203,24 @@ public subroutine read_configfile(infile, ymd, UTsec0, tdur, dtout, activ, tcfl,
   
 
 
+    
+    <p>READS THE INPUT CONFIGURAITON FILE, ASSIGNS VARIABLES FOR FILENAMES, SIZES, ETC.
+ READ CONFIG FILE FOR THIS SIMULATION
+ format specifier needed, else it reads just one character
+ PRINT SOME DIAGNOSIC INFO FROM ROOT
+ NEUTRAL PERTURBATION INPUT INFORMATION
+ defaults
+ have to allocate, even when not used, to avoid runtime errors with pickier compilers</p>
+<p>PRECIPITATION FILE INPUT INFORMATION
+ defaults
+ get the location of the precipitation input files
+ have to allocate, even when not used, to avoid runtime errors with pickier compilers</p>
+<p>ELECTRIC FIELD FILE INPUT INFORMATION
+ defaults
+ get the location of the precipitation input files
+ have to allocate, even when not used, to avoid runtime errors with pickier compilers</p>
+<p>GLOW ELECTRON TRANSPORT INFORMATION
+ defaults</p>
     
 
     <h3>Arguments</h3>
@@ -217,7 +241,7 @@ public subroutine read_configfile(infile, ymd, UTsec0, tdur, dtout, activ, tcfl,
   
 <tr>
   
-  <td><span class="anchor" id="variable-infile"></span>character(len=*),</td>
+  <td><span class="anchor" id="variable-infile~2"></span>character(len=*),</td>
   <td>intent(in)</td>
   <td></td>
   
@@ -232,7 +256,7 @@ public subroutine read_configfile(infile, ymd, UTsec0, tdur, dtout, activ, tcfl,
   
 <tr>
   
-  <td><span class="anchor" id="variable-ymd~3"></span>integer,</td>
+  <td><span class="anchor" id="variable-ymd~6"></span>integer,</td>
   <td>intent(out),</td>
   <td></td>
   
@@ -322,7 +346,7 @@ public subroutine read_configfile(infile, ymd, UTsec0, tdur, dtout, activ, tcfl,
   
 <tr>
   
-  <td><span class="anchor" id="variable-teinf~2"></span>real(kind=wp),</td>
+  <td><span class="anchor" id="variable-teinf"></span>real(kind=wp),</td>
   <td>intent(out)</td>
   <td></td>
   
@@ -352,7 +376,7 @@ public subroutine read_configfile(infile, ymd, UTsec0, tdur, dtout, activ, tcfl,
   
 <tr>
   
-  <td><span class="anchor" id="variable-flagperiodic~2"></span>integer,</td>
+  <td><span class="anchor" id="variable-flagperiodic"></span>integer,</td>
   <td>intent(out)</td>
   <td></td>
   
@@ -367,7 +391,7 @@ public subroutine read_configfile(infile, ymd, UTsec0, tdur, dtout, activ, tcfl,
   
 <tr>
   
-  <td><span class="anchor" id="variable-flagoutput"></span>integer,</td>
+  <td><span class="anchor" id="variable-flagoutput~3"></span>integer,</td>
   <td>intent(out)</td>
   <td></td>
   
@@ -382,7 +406,7 @@ public subroutine read_configfile(infile, ymd, UTsec0, tdur, dtout, activ, tcfl,
   
 <tr>
   
-  <td><span class="anchor" id="variable-flagcap"></span>integer,</td>
+  <td><span class="anchor" id="variable-flagcap~2"></span>integer,</td>
   <td>intent(out)</td>
   <td></td>
   
@@ -397,7 +421,7 @@ public subroutine read_configfile(infile, ymd, UTsec0, tdur, dtout, activ, tcfl,
   
 <tr>
   
-  <td><span class="anchor" id="variable-indatsize"></span>character(len=:),</td>
+  <td><span class="anchor" id="variable-indatsize~3"></span>character(len=:),</td>
   <td>intent(out),</td>
   <td></td>
   
@@ -412,7 +436,7 @@ public subroutine read_configfile(infile, ymd, UTsec0, tdur, dtout, activ, tcfl,
   
 <tr>
   
-  <td><span class="anchor" id="variable-indatgrid"></span>character(len=:),</td>
+  <td><span class="anchor" id="variable-indatgrid~2"></span>character(len=:),</td>
   <td>intent(out),</td>
   <td></td>
   
@@ -427,7 +451,7 @@ public subroutine read_configfile(infile, ymd, UTsec0, tdur, dtout, activ, tcfl,
   
 <tr>
   
-  <td><span class="anchor" id="variable-flagdneu"></span>integer,</td>
+  <td><span class="anchor" id="variable-flagdneu~2"></span>integer,</td>
   <td>intent(out)</td>
   <td></td>
   
@@ -502,6 +526,21 @@ public subroutine read_configfile(infile, ymd, UTsec0, tdur, dtout, activ, tcfl,
   
 <tr>
   
+  <td><span class="anchor" id="variable-dxn"></span>real(kind=wp),</td>
+  <td>intent(out)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>dxn</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
   <td><span class="anchor" id="variable-drhon"></span>real(kind=wp),</td>
   <td>intent(out)</td>
   <td></td>
@@ -532,7 +571,7 @@ public subroutine read_configfile(infile, ymd, UTsec0, tdur, dtout, activ, tcfl,
   
 <tr>
   
-  <td><span class="anchor" id="variable-sourcedir"></span>character(len=:),</td>
+  <td><span class="anchor" id="variable-sourcedir~2"></span>character(len=:),</td>
   <td>intent(out),</td>
   <td></td>
   
@@ -562,7 +601,7 @@ public subroutine read_configfile(infile, ymd, UTsec0, tdur, dtout, activ, tcfl,
   
 <tr>
   
-  <td><span class="anchor" id="variable-dtprec~2"></span>real(kind=wp),</td>
+  <td><span class="anchor" id="variable-dtprec"></span>real(kind=wp),</td>
   <td>intent(out)</td>
   <td></td>
   
@@ -592,7 +631,7 @@ public subroutine read_configfile(infile, ymd, UTsec0, tdur, dtout, activ, tcfl,
   
 <tr>
   
-  <td><span class="anchor" id="variable-flage0file"></span>integer,</td>
+  <td><span class="anchor" id="variable-flage0file~2"></span>integer,</td>
   <td>intent(out)</td>
   <td></td>
   
@@ -622,12 +661,57 @@ public subroutine read_configfile(infile, ymd, UTsec0, tdur, dtout, activ, tcfl,
   
 <tr>
   
-  <td><span class="anchor" id="variable-e0dir"></span>character(len=:),</td>
+  <td><span class="anchor" id="variable-e0dir~2"></span>character(len=:),</td>
   <td>intent(out),</td>
   <td></td>
   
   <td>allocatable</td><td>::</td>
   <td><strong>E0dir</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-flagglow~3"></span>integer,</td>
+  <td>intent(out)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>flagglow</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-dtglow"></span>real(kind=wp),</td>
+  <td>intent(out)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>dtglow</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-dtglowout"></span>real(kind=wp),</td>
+  <td>intent(out)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>dtglowout</strong></td><td></td>
   
 </tr>
 
@@ -637,7 +721,331 @@ public subroutine read_configfile(infile, ymd, UTsec0, tdur, dtout, activ, tcfl,
     
     
     
+    <br>
     
+    
+    <div class="panel panel-default">
+      <div class="panel-heading">
+  <h3 class="panel-title">Calls</h3>
+      </div>
+      <div class="panel-body">
+  <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.40.1 (20161225.0304)
+ -->
+<!-- Title: proc~~read_configfile~~CallsGraph Pages: 1 -->
+<svg id="procread_configfileCallsGraph" width="406pt" height="200pt"
+ viewBox="0.00 0.00 406.00 200.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="proc~~read_configfile~~CallsGraph" class="graph" transform="scale(1 1) rotate(0) translate(4 196)">
+<title>proc~~read_configfile~~CallsGraph</title>
+<polygon fill="#ffffff" stroke="transparent" points="-4,4 -4,-196 402,-196 402,4 -4,4"/>
+<!-- proc~read_configfile -->
+<g id="proc~~read_configfile~~CallsGraph_node1" class="node">
+<title>proc~read_configfile</title>
+<polygon fill="none" stroke="#000000" points="82,-108 0,-108 0,-84 82,-84 82,-108"/>
+<text text-anchor="middle" x="41" y="-93.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#000000">read_configfile</text>
+</g>
+<!-- proc~assert_file_exists -->
+<g id="proc~~read_configfile~~CallsGraph_node2" class="node">
+<title>proc~assert_file_exists</title>
+<g id="a_proc~~read_configfile~~CallsGraph_node2"><a xlink:href=".././proc/assert_file_exists.html" xlink:title="assert_file_exists">
+<polygon fill="#d9534f" stroke="#d9534f" points="226,-192 132,-192 132,-168 226,-168 226,-192"/>
+<text text-anchor="middle" x="179" y="-177.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">assert_file_exists</text>
+</a>
+</g>
+</g>
+<!-- proc~read_configfile&#45;&gt;proc~assert_file_exists -->
+<g id="proc~~read_configfile~~CallsGraph_edge1" class="edge">
+<title>proc~read_configfile&#45;&gt;proc~assert_file_exists</title>
+<path fill="none" stroke="#000000" d="M53.0563,-108.2056C67.4148,-122.1529 92.6559,-144.8687 118,-159 121.2221,-160.7966 124.6248,-162.4784 128.1084,-164.0454"/>
+<polygon fill="#000000" stroke="#000000" points="126.8723,-167.3218 137.4499,-167.9248 129.557,-160.8571 126.8723,-167.3218"/>
+</g>
+<!-- proc~check_nml_io -->
+<g id="proc~~read_configfile~~CallsGraph_node3" class="node">
+<title>proc~check_nml_io</title>
+<g id="a_proc~~read_configfile~~CallsGraph_node3"><a xlink:href=".././proc/check_nml_io.html" xlink:title="check_nml_io">
+<polygon fill="#d9534f" stroke="#d9534f" points="218,-150 140,-150 140,-126 218,-126 218,-150"/>
+<text text-anchor="middle" x="179" y="-135.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">check_nml_io</text>
+</a>
+</g>
+</g>
+<!-- proc~read_configfile&#45;&gt;proc~check_nml_io -->
+<g id="proc~~read_configfile~~CallsGraph_edge2" class="edge">
+<title>proc~read_configfile&#45;&gt;proc~check_nml_io</title>
+<path fill="none" stroke="#000000" d="M80.5453,-108.0355C95.9792,-112.7328 113.8335,-118.1667 130.0653,-123.1068"/>
+<polygon fill="#000000" stroke="#000000" points="129.3402,-126.5446 139.9261,-126.1079 131.3784,-119.8479 129.3402,-126.5446"/>
+</g>
+<!-- interface~assert_directory_exists -->
+<g id="proc~~read_configfile~~CallsGraph_node4" class="node">
+<title>interface~assert_directory_exists</title>
+<g id="a_proc~~read_configfile~~CallsGraph_node4"><a xlink:href=".././interface/assert_directory_exists.html" xlink:title="assert_directory_exists">
+<polygon fill="#a7506f" stroke="#a7506f" points="240,-108 118,-108 118,-84 240,-84 240,-108"/>
+<text text-anchor="middle" x="179" y="-93.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">assert_directory_exists</text>
+</a>
+</g>
+</g>
+<!-- proc~read_configfile&#45;&gt;interface~assert_directory_exists -->
+<g id="proc~~read_configfile~~CallsGraph_edge3" class="edge">
+<title>proc~read_configfile&#45;&gt;interface~assert_directory_exists</title>
+<path fill="none" stroke="#000000" d="M82.0309,-96C90.228,-96 99.0589,-96 107.9355,-96"/>
+<polygon fill="#000000" stroke="#000000" points="107.9455,-99.5001 117.9455,-96 107.9454,-92.5001 107.9455,-99.5001"/>
+</g>
+<!-- proc~check_ini_io -->
+<g id="proc~~read_configfile~~CallsGraph_node5" class="node">
+<title>proc~check_ini_io</title>
+<g id="a_proc~~read_configfile~~CallsGraph_node5"><a xlink:href=".././proc/check_ini_io.html" xlink:title="check_ini_io">
+<polygon fill="#d9534f" stroke="#d9534f" points="214.5,-66 143.5,-66 143.5,-42 214.5,-42 214.5,-66"/>
+<text text-anchor="middle" x="179" y="-51.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">check_ini_io</text>
+</a>
+</g>
+</g>
+<!-- proc~read_configfile&#45;&gt;proc~check_ini_io -->
+<g id="proc~~read_configfile~~CallsGraph_edge4" class="edge">
+<title>proc~read_configfile&#45;&gt;proc~check_ini_io</title>
+<path fill="none" stroke="#000000" d="M80.5453,-83.9645C97.0569,-78.9392 116.3388,-73.0708 133.4405,-67.8659"/>
+<polygon fill="#000000" stroke="#000000" points="134.6727,-71.1495 143.2204,-64.8895 132.6345,-64.4528 134.6727,-71.1495"/>
+</g>
+<!-- proc~expanduser -->
+<g id="proc~~read_configfile~~CallsGraph_node6" class="node">
+<title>proc~expanduser</title>
+<g id="a_proc~~read_configfile~~CallsGraph_node6"><a xlink:href=".././proc/expanduser.html" xlink:title="expanduser">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="213.5,-24 144.5,-24 144.5,0 213.5,0 213.5,-24"/>
+<text text-anchor="middle" x="179" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">expanduser</text>
+</a>
+</g>
+</g>
+<!-- proc~read_configfile&#45;&gt;proc~expanduser -->
+<g id="proc~~read_configfile~~CallsGraph_edge5" class="edge">
+<title>proc~read_configfile&#45;&gt;proc~expanduser</title>
+<path fill="none" stroke="#000000" d="M53.0563,-83.7944C67.4148,-69.8471 92.6559,-47.1313 118,-33 123.2015,-30.0998 128.8738,-27.4984 134.597,-25.1968"/>
+<polygon fill="#000000" stroke="#000000" points="136.0608,-28.3862 144.2025,-21.6066 133.61,-21.8292 136.0608,-28.3862"/>
+</g>
+<!-- proc~assert_directory_exists -->
+<g id="proc~~read_configfile~~CallsGraph_node8" class="node">
+<title>proc~assert_directory_exists</title>
+<g id="a_proc~~read_configfile~~CallsGraph_node8"><a xlink:href=".././proc/assert_directory_exists.html" xlink:title="assert_directory_exists">
+<polygon fill="#d9534f" stroke="#d9534f" points="398,-108 276,-108 276,-84 398,-84 398,-108"/>
+<text text-anchor="middle" x="337" y="-93.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">assert_directory_exists</text>
+</a>
+</g>
+</g>
+<!-- interface~assert_directory_exists&#45;&gt;proc~assert_directory_exists -->
+<g id="proc~~read_configfile~~CallsGraph_edge6" class="edge">
+<title>interface~assert_directory_exists&#45;&gt;proc~assert_directory_exists</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M240.0869,-96C248.5129,-96 257.226,-96 265.8146,-96"/>
+<polygon fill="#000000" stroke="#000000" points="265.8151,-99.5001 275.815,-96 265.815,-92.5001 265.8151,-99.5001"/>
+</g>
+<!-- proc~home -->
+<g id="proc~~read_configfile~~CallsGraph_node7" class="node">
+<title>proc~home</title>
+<g id="a_proc~~read_configfile~~CallsGraph_node7"><a xlink:href=".././proc/home.html" xlink:title="home">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="364,-24 310,-24 310,0 364,0 364,-24"/>
+<text text-anchor="middle" x="337" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">home</text>
+</a>
+</g>
+</g>
+<!-- proc~expanduser&#45;&gt;proc~home -->
+<g id="proc~~read_configfile~~CallsGraph_edge7" class="edge">
+<title>proc~expanduser&#45;&gt;proc~home</title>
+<path fill="none" stroke="#000000" d="M213.6738,-12C239.1426,-12 273.6992,-12 299.7535,-12"/>
+<polygon fill="#000000" stroke="#000000" points="299.9925,-15.5001 309.9924,-12 299.9924,-8.5001 299.9925,-15.5001"/>
+</g>
+</g>
+</svg>
+</div><div><a type="button" class="graph-help" data-toggle="modal" href="#graph-help-text">Help</a></div><div class="modal fade" id="graph-help-text" tabindex="-1" role="dialog"><div class="modal-dialog modal-lg" role="document"><div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button><h4 class="modal-title" id="-graph-help-label">Graph Key</h4></div><div class="modal-body">
+    <p>Nodes of different colours represent the following: </p>
+    <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.40.1 (20161225.0304)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="560pt" height="32pt"
+ viewBox="0.00 0.00 559.50 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 28)">
+<title>Graph Key</title>
+<polygon fill="#ffffff" stroke="transparent" points="-4,4 -4,-28 555.5,-28 555.5,4 -4,4"/>
+<!-- Subroutine -->
+<g id="node1" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="64,-24 0,-24 0,0 64,0 64,-24"/>
+<text text-anchor="middle" x="32" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node2" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="136,-24 82,-24 82,0 136,0 136,-24"/>
+<text text-anchor="middle" x="109" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Function</text>
+</g>
+<!-- Interface -->
+<g id="node3" class="node">
+<title>Interface</title>
+<polygon fill="#a7506f" stroke="#a7506f" points="209.5,-24 154.5,-24 154.5,0 209.5,0 209.5,-24"/>
+<text text-anchor="middle" x="182" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Interface</text>
+</g>
+<!-- Unknown Procedure Type -->
+<g id="node4" class="node">
+<title>Unknown Procedure Type</title>
+<polygon fill="#777777" stroke="#777777" points="364,-24 228,-24 228,0 364,0 364,-24"/>
+<text text-anchor="middle" x="296" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Unknown Procedure Type</text>
+</g>
+<!-- Program -->
+<g id="node5" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="436,-24 382,-24 382,0 436,0 436,-24"/>
+<text text-anchor="middle" x="409" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node6" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="#000000" points="551.5,-24 454.5,-24 454.5,0 551.5,0 551.5,-24"/>
+<text text-anchor="middle" x="503" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#000000">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+    
+    <p>Solid arrows point from a procedure to one which it calls. Dashed 
+    arrows point from an interface to procedures which implement that interface.
+    This could include the module procedures in a generic interface or the
+    implementation in a submodule of an interface in a parent module.
+    </p>
+    </div></div></div></div>
+      </div>
+    </div>
+     
+     
+    <div class="panel panel-default">
+      <div class="panel-heading">
+  <h3 class="panel-title">Called by</h3>
+      </div>
+      <div class="panel-body">
+  <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.40.1 (20161225.0304)
+ -->
+<!-- Title: proc~~read_configfile~~CalledByGraph Pages: 1 -->
+<svg id="procread_configfileCalledByGraph" width="304pt" height="74pt"
+ viewBox="0.00 0.00 304.00 74.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="proc~~read_configfile~~CalledByGraph" class="graph" transform="scale(1 1) rotate(0) translate(4 70)">
+<title>proc~~read_configfile~~CalledByGraph</title>
+<polygon fill="#ffffff" stroke="transparent" points="-4,4 -4,-70 300,-70 300,4 -4,4"/>
+<!-- proc~read_configfile -->
+<g id="proc~~read_configfile~~CalledByGraph_node1" class="node">
+<title>proc~read_configfile</title>
+<polygon fill="none" stroke="#000000" points="296,-45 214,-45 214,-21 296,-21 296,-45"/>
+<text text-anchor="middle" x="255" y="-30.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#000000">read_configfile</text>
+</g>
+<!-- interface~read_configfile -->
+<g id="proc~~read_configfile~~CalledByGraph_node2" class="node">
+<title>interface~read_configfile</title>
+<g id="a_proc~~read_configfile~~CalledByGraph_node2"><a xlink:href=".././interface/read_configfile.html" xlink:title="read_configfile">
+<polygon fill="#a7506f" stroke="#a7506f" points="178,-45 96,-45 96,-21 178,-21 178,-45"/>
+<text text-anchor="middle" x="137" y="-30.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">read_configfile</text>
+</a>
+</g>
+</g>
+<!-- interface~read_configfile&#45;&gt;proc~read_configfile -->
+<g id="proc~~read_configfile~~CalledByGraph_edge1" class="edge">
+<title>interface~read_configfile&#45;&gt;proc~read_configfile</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M178.2707,-33C186.492,-33 195.2197,-33 203.7292,-33"/>
+<polygon fill="#000000" stroke="#000000" points="203.9519,-36.5001 213.9519,-33 203.9519,-29.5001 203.9519,-36.5001"/>
+</g>
+<!-- program~magcalc -->
+<g id="proc~~read_configfile~~CalledByGraph_node3" class="node">
+<title>program~magcalc</title>
+<g id="a_proc~~read_configfile~~CalledByGraph_node3"><a xlink:href=".././program/magcalc.html" xlink:title="MagCalc">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="57.5,-66 2.5,-66 2.5,-42 57.5,-42 57.5,-66"/>
+<text text-anchor="middle" x="30" y="-51.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">MagCalc</text>
+</a>
+</g>
+</g>
+<!-- program~magcalc&#45;&gt;interface~read_configfile -->
+<g id="proc~~read_configfile~~CalledByGraph_edge2" class="edge">
+<title>program~magcalc&#45;&gt;interface~read_configfile</title>
+<path fill="none" stroke="#000000" d="M57.5552,-48.592C66.195,-46.8963 76.026,-44.9669 85.7572,-43.057"/>
+<polygon fill="#000000" stroke="#000000" points="86.6693,-46.4449 95.808,-41.0844 85.3211,-39.5759 86.6693,-46.4449"/>
+</g>
+<!-- program~gemini3d -->
+<g id="proc~~read_configfile~~CalledByGraph_node4" class="node">
+<title>program~gemini3d</title>
+<g id="a_proc~~read_configfile~~CalledByGraph_node4"><a xlink:href=".././program/gemini3d.html" xlink:title="Gemini3D">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="60,-24 0,-24 0,0 60,0 60,-24"/>
+<text text-anchor="middle" x="30" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Gemini3D</text>
+</a>
+</g>
+</g>
+<!-- program~gemini3d&#45;&gt;interface~read_configfile -->
+<g id="proc~~read_configfile~~CalledByGraph_edge3" class="edge">
+<title>program~gemini3d&#45;&gt;interface~read_configfile</title>
+<path fill="none" stroke="#000000" d="M60.0902,-17.9056C68.1741,-19.4921 77.1463,-21.253 86.0254,-22.9956"/>
+<polygon fill="#000000" stroke="#000000" points="85.4716,-26.4537 95.9585,-24.9451 86.8198,-19.5847 85.4716,-26.4537"/>
+</g>
+</g>
+</svg>
+</div><div><a type="button" class="graph-help" data-toggle="modal" href="#graph-help-text">Help</a></div><div class="modal fade" id="graph-help-text" tabindex="-1" role="dialog"><div class="modal-dialog modal-lg" role="document"><div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button><h4 class="modal-title" id="-graph-help-label">Graph Key</h4></div><div class="modal-body">
+    <p>Nodes of different colours represent the following: </p>
+    <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.40.1 (20161225.0304)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="560pt" height="32pt"
+ viewBox="0.00 0.00 559.50 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 28)">
+<title>Graph Key</title>
+<polygon fill="#ffffff" stroke="transparent" points="-4,4 -4,-28 555.5,-28 555.5,4 -4,4"/>
+<!-- Subroutine -->
+<g id="node1" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="64,-24 0,-24 0,0 64,0 64,-24"/>
+<text text-anchor="middle" x="32" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node2" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="136,-24 82,-24 82,0 136,0 136,-24"/>
+<text text-anchor="middle" x="109" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Function</text>
+</g>
+<!-- Interface -->
+<g id="node3" class="node">
+<title>Interface</title>
+<polygon fill="#a7506f" stroke="#a7506f" points="209.5,-24 154.5,-24 154.5,0 209.5,0 209.5,-24"/>
+<text text-anchor="middle" x="182" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Interface</text>
+</g>
+<!-- Unknown Procedure Type -->
+<g id="node4" class="node">
+<title>Unknown Procedure Type</title>
+<polygon fill="#777777" stroke="#777777" points="364,-24 228,-24 228,0 364,0 364,-24"/>
+<text text-anchor="middle" x="296" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Unknown Procedure Type</text>
+</g>
+<!-- Program -->
+<g id="node5" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="436,-24 382,-24 382,0 436,0 436,-24"/>
+<text text-anchor="middle" x="409" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node6" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="#000000" points="551.5,-24 454.5,-24 454.5,0 551.5,0 551.5,-24"/>
+<text text-anchor="middle" x="503" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#000000">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+    
+    <p>Solid arrows point from a procedure to one which it calls. Dashed 
+    arrows point from an interface to procedures which implement that interface.
+    This could include the module procedures in a generic interface or the
+    implementation in a submodule of an interface in a parent module.
+    </p>
+    </div></div></div></div>
+      </div>
+    </div>
      
     <br>
 
@@ -700,7 +1108,7 @@ public subroutine read_configfile(infile, ymd, UTsec0, tdur, dtout, activ, tcfl,
     <footer>
       <div class="container">
       <div class="row">
-        <div class="col-xs-6 col-md-4"><p>&copy; 2018 <a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/80x15.png" /></a>
+        <div class="col-xs-6 col-md-4"><p>&copy; 2020 <a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/80x15.png" /></a>
                                           </p></div>
         <div class="col-xs-6 col-md-4 col-md-push-4">
           <p class="text-right">

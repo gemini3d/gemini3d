@@ -1,0 +1,1570 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+   
+   <meta name="description" content="GEMINI3D is a modular ionospheric model that incorporates kinetic models such as Fang, GLOW.">
+    
+    <meta name="author" content="Matthew Zettergren
+Guy Grubbs
+Michael Hirsch" >
+    <link rel="icon" href="../favicon.png">
+
+    <title>potential2d &ndash; GEMINI3D</title>
+
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+    <link href="../css/pygments.css" rel="stylesheet">
+    <link href="../css/font-awesome.min.css" rel="stylesheet">
+    <link href="../css/local.css" rel="stylesheet">
+    
+    
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    
+    <script src="../js/jquery-2.1.3.min.js"></script>
+    <script src="../js/svg-pan-zoom.min.js"></script>
+
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="../index.html">GEMINI3D </a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+        
+            <li class="dropdown hidden-xs visible-sm visible-md hidden-lg">
+              <a href="#" class="dropdown-toggle"
+              data-toggle="dropdown" role="button"
+              aria-haspopup="true"
+     aria-expanded="false">Contents <span class="caret"></span></a>
+        <ul class="dropdown-menu">
+          
+              
+            <li><a href="../lists/files.html">Source Files</a></li>
+        
+        
+        
+            <li><a href="../lists/modules.html">Modules</a></li>
+        
+            
+    <li><a href="../blockdata/gtd7bk.html">Block Data</a></li>
+    
+                                
+            <li><a href="../lists/procedures.html">Procedures</a></li>
+        
+               
+            <li><a href="../lists/types.html">Derived Types</a></li>
+        
+        
+            <li><a href="../lists/programs.html">Programs</a></li>
+        
+            </ul>
+            </li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/files.html">Source Files</a></li>
+
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/modules.html">Modules</a></li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../blockdata/gtd7bk.html">Block Data</a></li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/procedures.html">Procedures</a></li>
+
+                             
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/types.html">Derived Types</a></li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/programs.html">Programs</a></li>
+
+          </ul>
+        
+        </div><!--/.nav-collapse -->
+      </div>
+    </nav>
+
+    <div class="container">
+    
+  
+  <div class="row">
+    <h1>potential2d 
+    <small>Submodule</small>
+    
+    </h1>
+    
+<div class="row">
+  <div class="col-lg-12">
+<div class="well well-sm">
+  <ul class="list-inline" style="margin-bottom:0px;display:inline">
+     
+     
+     
+     
+    
+    
+     <li><i class="fa fa-list-ol"></i>
+       <a data-toggle="tooltip"
+    data-placement="bottom" data-html="true"
+    title=" 0.4% of total for modules and submodules.">39 statements</a>
+     </li> 
+     
+     
+     
+    <li><i class="fa fa-code"></i><a href="../src/potential2d.f90"> Source File</a></li>
+     
+     
+  </ul>
+  <ol class="breadcrumb in-well text-right">
+  
+    
+     <li><a href='../sourcefile/potential2d.f90.html'>potential2d.f90</a></li>
+    
+  
+     <li class="active">potential2d</li>
+  </ol>
+</div>
+</div>
+</div>
+<script>
+  $(function () {
+  $('[data-toggle="tooltip"]').tooltip()
+  })
+</script>
+
+  </div>
+  
+  <div class="row">
+    <div class="col-md-3 hidden-xs hidden-sm visible-md visible-lg">
+    
+<div id="sidebar">
+  
+<h3>Contents</h3>
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#modprocs-0">Module Procedures</a></h3></div>
+  <div id="modprocs-0" class="panel-collapse collapse">
+    <div class="list-group">
+      
+      <a class="list-group-item" href="../module/potential2d.html#proc-potential2d_polarization">potential2D_polarization</a>
+      
+      <a class="list-group-item" href="../module/potential2d.html#proc-potential2d_polarization_periodic">potential2D_polarization_periodic</a>
+      
+      <a class="list-group-item" href="../module/potential2d.html#proc-potential2d_fieldresolved">potential2D_fieldresolved</a>
+      
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+</div>
+
+    </div>
+    
+    <div class="col-md-9" id='text'>
+    
+      <br>
+    
+  
+    <div class="panel panel-default">
+      <div class="panel-heading">
+  <h3 class="panel-title">Uses</h3>
+      </div>
+      <ul class="list-group">
+      
+      <li class="list-group-item">
+  <ul class="list-inline">
+    
+    <li><a href='../module/grid.html'>grid</a></li>
+    
+    <li><a href='../module/calculus.html'>calculus</a></li>
+    
+    <li><a href='../module/pdeelliptic.html'>PDEelliptic</a></li>
+    
+  </ul>
+      </li>
+      
+      
+      <li class="list-group-item">
+  <ul class="list-inline">
+    <li><h5>Ancestors:</h5></li>
+    
+    <li><a href='../module/potential_mumps.html'>potential_mumps</a></li>
+    
+    
+  </ul>
+      </li>
+      
+      
+      <li class="list-group-item">
+  <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.40.1 (20161225.0304)
+ -->
+<!-- Title: module~~potential2d~~UsesGraph Pages: 1 -->
+<svg id="modulepotential2dUsesGraph" width="641pt" height="348pt"
+ viewBox="0.00 0.00 641.00 347.89" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="module~~potential2d~~UsesGraph" class="graph" transform="scale(.9539 .9539) rotate(0) translate(4 360.7164)">
+<title>module~~potential2d~~UsesGraph</title>
+<polygon fill="#ffffff" stroke="transparent" points="-4,4 -4,-360.7164 668,-360.7164 668,4 -4,4"/>
+<!-- module~potential2d -->
+<g id="module~~potential2d~~UsesGraph_node1" class="node">
+<title>module~potential2d</title>
+<polygon fill="none" stroke="#000000" points="664,-262.2146 599,-262.2146 599,-238.2146 664,-238.2146 664,-262.2146"/>
+<text text-anchor="middle" x="631.5" y="-247.8146" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#000000">potential2d</text>
+</g>
+<!-- module~calculus -->
+<g id="module~~potential2d~~UsesGraph_node2" class="node">
+<title>module~calculus</title>
+<g id="a_module~~potential2d~~UsesGraph_node2"><a xlink:href=".././module/calculus.html" xlink:title="calculus">
+<polygon fill="#337ab7" stroke="#337ab7" points="424.5,-342.2146 370.5,-342.2146 370.5,-318.2146 424.5,-318.2146 424.5,-342.2146"/>
+<text text-anchor="middle" x="397.5" y="-327.8146" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">calculus</text>
+</a>
+</g>
+</g>
+<!-- module~potential2d&#45;&gt;module~calculus -->
+<g id="module~~potential2d~~UsesGraph_edge1" class="edge">
+<title>module~potential2d&#45;&gt;module~calculus</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M598.9633,-261.3383C555.7659,-276.1066 479.6768,-302.12 434.3905,-317.6025"/>
+<polygon fill="#000000" stroke="#000000" points="433.0017,-314.3783 424.6716,-320.9252 435.2662,-321.0019 433.0017,-314.3783"/>
+</g>
+<!-- module~grid -->
+<g id="module~~potential2d~~UsesGraph_node3" class="node">
+<title>module~grid</title>
+<g id="a_module~~potential2d~~UsesGraph_node3"><a xlink:href=".././module/grid.html" xlink:title="grid">
+<polygon fill="#337ab7" stroke="#337ab7" points="424.5,-182.2146 370.5,-182.2146 370.5,-158.2146 424.5,-158.2146 424.5,-182.2146"/>
+<text text-anchor="middle" x="397.5" y="-167.8146" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">grid</text>
+</a>
+</g>
+</g>
+<!-- module~potential2d&#45;&gt;module~grid -->
+<g id="module~~potential2d~~UsesGraph_edge2" class="edge">
+<title>module~potential2d&#45;&gt;module~grid</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M516,-170.2146C491.0688,-157.6863 459.2943,-158.4326 434.9249,-161.9045"/>
+<polygon fill="#000000" stroke="#000000" points="434.2813,-158.4632 424.9758,-163.5286 435.4091,-165.3717 434.2813,-158.4632"/>
+</g>
+<!-- module~potential_mumps -->
+<g id="module~~potential2d~~UsesGraph_node4" class="node">
+<title>module~potential_mumps</title>
+<g id="a_module~~potential2d~~UsesGraph_node4"><a xlink:href=".././module/potential_mumps.html" xlink:title="potential_mumps">
+<polygon fill="#337ab7" stroke="#337ab7" points="563,-262.2146 469,-262.2146 469,-238.2146 563,-238.2146 563,-262.2146"/>
+<text text-anchor="middle" x="516" y="-247.8146" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">potential_mumps</text>
+</a>
+</g>
+</g>
+<!-- module~potential2d&#45;&gt;module~potential_mumps -->
+<g id="module~~potential2d~~UsesGraph_edge4" class="edge">
+<title>module~potential2d&#45;&gt;module~potential_mumps</title>
+<path fill="none" stroke="#000000" d="M598.7113,-250.2146C590.754,-250.2146 582.0137,-250.2146 573.2875,-250.2146"/>
+<polygon fill="#000000" stroke="#000000" points="573.098,-246.7147 563.098,-250.2146 573.098,-253.7147 573.098,-246.7147"/>
+</g>
+<!-- module~pdeelliptic -->
+<g id="module~~potential2d~~UsesGraph_node5" class="node">
+<title>module~pdeelliptic</title>
+<g id="a_module~~potential2d~~UsesGraph_node5"><a xlink:href=".././module/pdeelliptic.html" xlink:title="PDEelliptic">
+<polygon fill="#337ab7" stroke="#337ab7" points="429,-102.2146 366,-102.2146 366,-78.2146 429,-78.2146 429,-102.2146"/>
+<text text-anchor="middle" x="397.5" y="-87.8146" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">PDEelliptic</text>
+</a>
+</g>
+</g>
+<!-- module~potential2d&#45;&gt;module~pdeelliptic -->
+<g id="module~~potential2d~~UsesGraph_edge3" class="edge">
+<title>module~potential2d&#45;&gt;module~pdeelliptic</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M617.0268,-238.1767C595.9378,-221.1207 555.0135,-189.8194 516,-170.2146"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M516,-170.2146C475.3283,-149.7765 471.3343,-134.7582 433,-110.2146 431.5665,-109.2968 430.0888,-108.3748 428.5879,-107.4576"/>
+<polygon fill="#000000" stroke="#000000" points="430.2748,-104.389 419.8844,-102.3178 426.7153,-110.4165 430.2748,-104.389"/>
+</g>
+<!-- module~phys_consts -->
+<g id="module~~potential2d~~UsesGraph_node8" class="node">
+<title>module~phys_consts</title>
+<g id="a_module~~potential2d~~UsesGraph_node8"><a xlink:href=".././module/phys_consts.html" xlink:title="phys_consts">
+<polygon fill="#337ab7" stroke="#337ab7" points="195,-222.2146 123,-222.2146 123,-198.2146 195,-198.2146 195,-222.2146"/>
+<text text-anchor="middle" x="159" y="-207.8146" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">phys_consts</text>
+</a>
+</g>
+</g>
+<!-- module~calculus&#45;&gt;module~phys_consts -->
+<g id="module~~potential2d~~UsesGraph_edge6" class="edge">
+<title>module~calculus&#45;&gt;module~phys_consts</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M370.3187,-333.5519C335.5064,-336.4607 274.4873,-336.844 231,-311.2146 199.9951,-292.9418 178.7866,-255.482 167.7976,-231.6746"/>
+<polygon fill="#000000" stroke="#000000" points="170.9482,-230.1446 163.7149,-222.4031 164.5418,-232.9656 170.9482,-230.1446"/>
+</g>
+<!-- module~mesh -->
+<g id="module~~potential2d~~UsesGraph_node11" class="node">
+<title>module~mesh</title>
+<g id="a_module~~potential2d~~UsesGraph_node11"><a xlink:href=".././module/mesh.html" xlink:title="mesh">
+<polygon fill="#337ab7" stroke="#337ab7" points="305.5,-302.2146 251.5,-302.2146 251.5,-278.2146 305.5,-278.2146 305.5,-302.2146"/>
+<text text-anchor="middle" x="278.5" y="-287.8146" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">mesh</text>
+</a>
+</g>
+</g>
+<!-- module~calculus&#45;&gt;module~mesh -->
+<g id="module~~potential2d~~UsesGraph_edge5" class="edge">
+<title>module~calculus&#45;&gt;module~mesh</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M370.4971,-321.138C354.1807,-315.6535 333.1612,-308.5881 315.3337,-302.5957"/>
+<polygon fill="#000000" stroke="#000000" points="316.402,-299.2624 305.808,-299.3938 314.1717,-305.8976 316.402,-299.2624"/>
+</g>
+<!-- module~reader -->
+<g id="module~~potential2d~~UsesGraph_node6" class="node">
+<title>module~reader</title>
+<g id="a_module~~potential2d~~UsesGraph_node6"><a xlink:href=".././module/reader.html" xlink:title="reader">
+<polygon fill="#337ab7" stroke="#337ab7" points="305.5,-222.2146 251.5,-222.2146 251.5,-198.2146 305.5,-198.2146 305.5,-222.2146"/>
+<text text-anchor="middle" x="278.5" y="-207.8146" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">reader</text>
+</a>
+</g>
+</g>
+<!-- module~grid&#45;&gt;module~reader -->
+<g id="module~~potential2d~~UsesGraph_edge7" class="edge">
+<title>module~grid&#45;&gt;module~reader</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M370.4971,-179.2912C354.1807,-184.7757 333.1612,-191.8411 315.3337,-197.8335"/>
+<polygon fill="#000000" stroke="#000000" points="314.1717,-194.5316 305.808,-201.0354 316.402,-201.1668 314.1717,-194.5316"/>
+</g>
+<!-- iso_fortran_env -->
+<g id="module~~potential2d~~UsesGraph_node7" class="node">
+<title>iso_fortran_env</title>
+<g id="a_module~~potential2d~~UsesGraph_node7"><a xlink:href="http://fortranwiki.org/fortran/show/ISO_FORTRAN_ENV" xlink:title="iso_fortran_env">
+<polygon fill="#337ab7" stroke="#337ab7" points="87,-182.2146 0,-182.2146 0,-158.2146 87,-158.2146 87,-182.2146"/>
+<text text-anchor="middle" x="43.5" y="-167.8146" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">iso_fortran_env</text>
+</a>
+</g>
+</g>
+<!-- module~grid&#45;&gt;iso_fortran_env -->
+<g id="module~~potential2d~~UsesGraph_edge8" class="edge">
+<title>module~grid&#45;&gt;iso_fortran_env</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M370.3163,-170.2886C326.0419,-170.3924 235.6009,-170.5351 159,-170.2146"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M159,-170.2146C138.9274,-168.5465 116.8248,-168.1874 97.3754,-168.3669"/>
+<polygon fill="#000000" stroke="#000000" points="97.1226,-164.8701 87.1732,-168.5115 97.2218,-171.8694 97.1226,-164.8701"/>
+</g>
+<!-- module~grid&#45;&gt;module~phys_consts -->
+<g id="module~~potential2d~~UsesGraph_edge9" class="edge">
+<title>module~grid&#45;&gt;module~phys_consts</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M379.7961,-182.4401C373.9935,-186.6406 367.601,-191.4804 362,-196.2146 328.2467,-224.7444 322.6954,-250.1867 278.5,-250.2146"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M278.5,-250.2146C247.1573,-250.2344 213.4705,-237.7052 189.8788,-226.6661"/>
+<polygon fill="#000000" stroke="#000000" points="191.2593,-223.4457 180.735,-222.2249 188.201,-229.7422 191.2593,-223.4457"/>
+</g>
+<!-- module~grid&#45;&gt;module~mesh -->
+<g id="module~~potential2d~~UsesGraph_edge10" class="edge">
+<title>module~grid&#45;&gt;module~mesh</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M390.4997,-182.4984C379.0214,-201.8103 354.5944,-239.6035 326,-264.2146 322.3616,-267.3461 318.2849,-270.2628 314.0894,-272.9258"/>
+<polygon fill="#000000" stroke="#000000" points="312.2624,-269.9398 305.4133,-278.0232 315.8083,-275.9753 312.2624,-269.9398"/>
+</g>
+<!-- module~mpimod -->
+<g id="module~~potential2d~~UsesGraph_node12" class="node">
+<title>module~mpimod</title>
+<g id="a_module~~potential2d~~UsesGraph_node12"><a xlink:href=".././module/mpimod.html" xlink:title="mpimod">
+<polygon fill="#337ab7" stroke="#337ab7" points="305.5,-104.2146 251.5,-104.2146 251.5,-80.2146 305.5,-80.2146 305.5,-104.2146"/>
+<text text-anchor="middle" x="278.5" y="-89.8146" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">mpimod</text>
+</a>
+</g>
+</g>
+<!-- module~grid&#45;&gt;module~mpimod -->
+<g id="module~~potential2d~~UsesGraph_edge11" class="edge">
+<title>module~grid&#45;&gt;module~mpimod</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M381.0598,-158.1769C360.8377,-143.382 328.8199,-120.0015 326,-118.2146 321.2354,-115.1954 316.0949,-112.1633 311.0166,-109.2901"/>
+<polygon fill="#000000" stroke="#000000" points="312.4823,-106.1012 302.0371,-104.3271 309.0962,-112.2277 312.4823,-106.1012"/>
+</g>
+<!-- module~potential_mumps&#45;&gt;module~calculus -->
+<g id="module~~potential2d~~UsesGraph_edge18" class="edge">
+<title>module~potential_mumps&#45;&gt;module~calculus</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M498.0024,-262.3649C478.2255,-275.7164 446.2754,-297.2861 423.7158,-312.5162"/>
+<polygon fill="#000000" stroke="#000000" points="421.6084,-309.7159 415.2787,-318.2121 425.5252,-315.5176 421.6084,-309.7159"/>
+</g>
+<!-- module~potential_mumps&#45;&gt;module~pdeelliptic -->
+<g id="module~~potential2d~~UsesGraph_edge15" class="edge">
+<title>module~potential_mumps&#45;&gt;module~pdeelliptic</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M506.4833,-237.898C496.6092,-224.8864 480.9666,-203.608 469,-184.2146 451.0428,-155.1127 455.3622,-142.0857 433,-116.2146 430.6817,-113.5325 428.0373,-110.9685 425.2613,-108.5678"/>
+<polygon fill="#000000" stroke="#000000" points="427.2758,-105.6995 417.2506,-102.2722 422.9505,-111.2032 427.2758,-105.6995"/>
+</g>
+<!-- module~potential_mumps&#45;&gt;iso_fortran_env -->
+<g id="module~~potential2d~~UsesGraph_edge12" class="edge">
+<title>module~potential_mumps&#45;&gt;iso_fortran_env</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M510.4185,-262.5049C499.3868,-285.093 472.3986,-332.5963 433,-351.2146 398.6177,-367.4624 245.7708,-342.799 231,-336.2146 155.2693,-302.4562 88.3147,-226.87 59.0888,-190.5115"/>
+<polygon fill="#000000" stroke="#000000" points="61.7516,-188.2361 52.8022,-182.5651 56.2618,-192.5792 61.7516,-188.2361"/>
+</g>
+<!-- module~potential_mumps&#45;&gt;module~phys_consts -->
+<g id="module~~potential2d~~UsesGraph_edge13" class="edge">
+<title>module~potential_mumps&#45;&gt;module~phys_consts</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M476.6957,-238.1481C463.006,-234.5143 447.4548,-231.0149 433,-229.2146 401.6864,-225.3147 393.3164,-225.337 362,-229.2146 324.0232,-233.9169 316.7668,-250.1904 278.5,-250.2146"/>
+</g>
+<!-- module~interpolation -->
+<g id="module~~potential2d~~UsesGraph_node10" class="node">
+<title>module~interpolation</title>
+<g id="a_module~~potential2d~~UsesGraph_node10"><a xlink:href=".././module/interpolation.html" xlink:title="interpolation">
+<polygon fill="#337ab7" stroke="#337ab7" points="433,-262.2146 362,-262.2146 362,-238.2146 433,-238.2146 433,-262.2146"/>
+<text text-anchor="middle" x="397.5" y="-247.8146" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">interpolation</text>
+</a>
+</g>
+</g>
+<!-- module~potential_mumps&#45;&gt;module~interpolation -->
+<g id="module~~potential2d~~UsesGraph_edge14" class="edge">
+<title>module~potential_mumps&#45;&gt;module~interpolation</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M468.8252,-250.2146C460.3822,-250.2146 451.5976,-250.2146 443.197,-250.2146"/>
+<polygon fill="#000000" stroke="#000000" points="443.1895,-246.7147 433.1895,-250.2146 443.1894,-253.7147 443.1895,-246.7147"/>
+</g>
+<!-- module~potential_mumps&#45;&gt;module~mesh -->
+<g id="module~~potential2d~~UsesGraph_edge16" class="edge">
+<title>module~potential_mumps&#45;&gt;module~mesh</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M472.7203,-262.2569C459.9964,-265.5002 446.0028,-268.7801 433,-271.2146 393.2638,-278.6544 347.2125,-283.887 315.7941,-286.9517"/>
+<polygon fill="#000000" stroke="#000000" points="315.3545,-283.4776 305.7305,-287.9079 316.0167,-290.4462 315.3545,-283.4776"/>
+</g>
+<!-- module~potential_mumps&#45;&gt;module~mpimod -->
+<g id="module~~potential2d~~UsesGraph_edge17" class="edge">
+<title>module~potential_mumps&#45;&gt;module~mpimod</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M507.1798,-237.9282C489.7519,-213.9281 451.0334,-162.0392 433,-149.2146 397.1048,-123.6873 348.458,-108.2413 315.4079,-99.9878"/>
+<polygon fill="#000000" stroke="#000000" points="316.2238,-96.5843 305.6831,-97.6541 314.5903,-103.391 316.2238,-96.5843"/>
+</g>
+<!-- module~pdeelliptic&#45;&gt;iso_fortran_env -->
+<g id="module~~potential2d~~UsesGraph_edge20" class="edge">
+<title>module~pdeelliptic&#45;&gt;iso_fortran_env</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M387.963,-77.957C375.5573,-63.121 352.333,-38.9213 326,-29.2146 241.3459,1.99 200.9037,16.2944 123,-29.2146 78.9626,-54.94 57.409,-115.0534 48.5926,-147.869"/>
+<polygon fill="#000000" stroke="#000000" points="45.1241,-147.3103 46.0769,-157.8622 51.9123,-149.0192 45.1241,-147.3103"/>
+</g>
+<!-- module~pdeelliptic&#45;&gt;module~phys_consts -->
+<g id="module~~potential2d~~UsesGraph_edge21" class="edge">
+<title>module~pdeelliptic&#45;&gt;module~phys_consts</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M373.3188,-102.3812C330.3528,-123.9994 240.6618,-169.1269 192.0411,-193.5902"/>
+<polygon fill="#000000" stroke="#000000" points="190.2505,-190.573 182.8906,-198.1942 193.3967,-196.8261 190.2505,-190.573"/>
+</g>
+<!-- module~mumps_interface~2 -->
+<g id="module~~potential2d~~UsesGraph_node9" class="node">
+<title>module~mumps_interface~2</title>
+<g id="a_module~~potential2d~~UsesGraph_node9"><a xlink:href=".././module/mumps_interface~2.html" xlink:title="mumps_interface">
+<polygon fill="#337ab7" stroke="#337ab7" points="326,-62.2146 231,-62.2146 231,-38.2146 326,-38.2146 326,-62.2146"/>
+<text text-anchor="middle" x="278.5" y="-47.8146" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">mumps_interface</text>
+</a>
+</g>
+</g>
+<!-- module~pdeelliptic&#45;&gt;module~mumps_interface~2 -->
+<g id="module~~potential2d~~UsesGraph_edge22" class="edge">
+<title>module~pdeelliptic&#45;&gt;module~mumps_interface~2</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M365.9226,-79.6004C353.0551,-75.2752 337.9344,-70.1926 323.9194,-65.4816"/>
+<polygon fill="#000000" stroke="#000000" points="325.0287,-62.1621 314.4347,-62.2935 322.7984,-68.7973 325.0287,-62.1621"/>
+</g>
+<!-- module~pdeelliptic&#45;&gt;module~mpimod -->
+<g id="module~~potential2d~~UsesGraph_edge19" class="edge">
+<title>module~pdeelliptic&#45;&gt;module~mpimod</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M365.9226,-90.7453C350.5591,-91.0035 331.9834,-91.3157 315.9129,-91.5858"/>
+<polygon fill="#000000" stroke="#000000" points="315.7128,-88.0886 305.773,-91.7562 315.8305,-95.0876 315.7128,-88.0886"/>
+</g>
+<!-- module~reader&#45;&gt;iso_fortran_env -->
+<g id="module~~potential2d~~UsesGraph_edge23" class="edge">
+<title>module~reader&#45;&gt;iso_fortran_env</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M256.3323,-198.0559C232.8816,-186.3416 194.4419,-170.3629 159,-170.2146"/>
+</g>
+<!-- module~reader&#45;&gt;module~phys_consts -->
+<g id="module~~potential2d~~UsesGraph_edge24" class="edge">
+<title>module~reader&#45;&gt;module~phys_consts</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M251.3836,-210.2146C237.7134,-210.2146 220.7556,-210.2146 205.1146,-210.2146"/>
+<polygon fill="#000000" stroke="#000000" points="205.0743,-206.7147 195.0743,-210.2146 205.0742,-213.7147 205.0743,-206.7147"/>
+</g>
+<!-- module~phys_consts&#45;&gt;iso_fortran_env -->
+<g id="module~~potential2d~~UsesGraph_edge25" class="edge">
+<title>module~phys_consts&#45;&gt;iso_fortran_env</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M124.3462,-198.2133C112.9161,-194.2548 100.0409,-189.7959 87.9817,-185.6195"/>
+<polygon fill="#000000" stroke="#000000" points="89.1233,-182.311 78.5285,-182.3457 86.8325,-188.9256 89.1233,-182.311"/>
+</g>
+<!-- module~mumps_rl -->
+<g id="module~~potential2d~~UsesGraph_node14" class="node">
+<title>module~mumps_rl</title>
+<g id="a_module~~potential2d~~UsesGraph_node14"><a xlink:href=".././module/mumps_rl.html" xlink:title="mumps_rl">
+<polygon fill="#337ab7" stroke="#337ab7" points="189,-62.2146 129,-62.2146 129,-38.2146 189,-38.2146 189,-62.2146"/>
+<text text-anchor="middle" x="159" y="-47.8146" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">mumps_rl</text>
+</a>
+</g>
+</g>
+<!-- module~mumps_interface~2&#45;&gt;module~mumps_rl -->
+<g id="module~~potential2d~~UsesGraph_edge26" class="edge">
+<title>module~mumps_interface~2&#45;&gt;module~mumps_rl</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M230.9271,-50.2146C220.4928,-50.2146 209.541,-50.2146 199.4189,-50.2146"/>
+<polygon fill="#000000" stroke="#000000" points="199.2273,-46.7147 189.2273,-50.2146 199.2272,-53.7147 199.2273,-46.7147"/>
+</g>
+<!-- module~interpolation&#45;&gt;module~phys_consts -->
+<g id="module~~potential2d~~UsesGraph_edge27" class="edge">
+<title>module~interpolation&#45;&gt;module~phys_consts</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M361.8306,-250.2028C338.1921,-250.1979 306.4939,-250.1969 278.5,-250.2146"/>
+</g>
+<!-- module~mesh&#45;&gt;module~phys_consts -->
+<g id="module~~potential2d~~UsesGraph_edge28" class="edge">
+<title>module~mesh&#45;&gt;module~phys_consts</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M254.9211,-278.1677C247.1643,-273.9791 238.5877,-269.1012 231,-264.2146 213.9206,-253.2151 195.6182,-239.4598 181.7404,-228.585"/>
+<polygon fill="#000000" stroke="#000000" points="183.7347,-225.6998 173.7218,-222.2366 179.3896,-231.188 183.7347,-225.6998"/>
+</g>
+<!-- module~mpimod&#45;&gt;iso_fortran_env -->
+<g id="module~~potential2d~~UsesGraph_edge30" class="edge">
+<title>module~mpimod&#45;&gt;iso_fortran_env</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M251.3032,-90.8412C219.3978,-90.1978 165.4672,-92.1696 123,-109.2146 99.7058,-118.5641 77.4161,-136.7512 62.3979,-150.8443"/>
+<polygon fill="#000000" stroke="#000000" points="59.5851,-148.6964 54.8423,-158.1704 64.458,-153.7219 59.5851,-148.6964"/>
+</g>
+<!-- module~mpimod&#45;&gt;module~phys_consts -->
+<g id="module~~potential2d~~UsesGraph_edge31" class="edge">
+<title>module~mpimod&#45;&gt;module~phys_consts</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M268.9379,-104.2724C254.1212,-122.586 224.2629,-158.0457 195,-184.2146 192.0458,-186.8565 188.8264,-189.4858 185.5674,-192.0009"/>
+<polygon fill="#000000" stroke="#000000" points="183.4703,-189.1987 177.5134,-197.9603 187.634,-194.8257 183.4703,-189.1987"/>
+</g>
+<!-- mpi -->
+<g id="module~~potential2d~~UsesGraph_node13" class="node">
+<title>mpi</title>
+<g id="a_module~~potential2d~~UsesGraph_node13"><a xlink:href="http://www.mpi-forum.org/docs/mpi-3.1/mpi31-report/node410.htm" xlink:title="mpi">
+<polygon fill="#337ab7" stroke="#337ab7" points="186,-142.2146 132,-142.2146 132,-118.2146 186,-118.2146 186,-142.2146"/>
+<text text-anchor="middle" x="159" y="-127.8146" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">mpi</text>
+</a>
+</g>
+</g>
+<!-- module~mpimod&#45;&gt;mpi -->
+<g id="module~~potential2d~~UsesGraph_edge29" class="edge">
+<title>module~mpimod&#45;&gt;mpi</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M251.3836,-100.8374C234.8825,-106.0846 213.5912,-112.8551 195.608,-118.5736"/>
+<polygon fill="#000000" stroke="#000000" points="194.4782,-115.2601 186.0091,-121.6259 196.5995,-121.9309 194.4782,-115.2601"/>
+</g>
+</g>
+</svg>
+</div><script>var panmodulepotential2dUsesGraph = svgPanZoom('#modulepotential2dUsesGraph', {zoomEnabled: true,controlIconsEnabled: true, fit: true, center: true,}); </script><div><a type="button" class="graph-help" data-toggle="modal" href="#graph-help-text">Help</a></div><div class="modal fade" id="graph-help-text" tabindex="-1" role="dialog"><div class="modal-dialog modal-lg" role="document"><div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button><h4 class="modal-title" id="-graph-help-label">Graph Key</h4></div><div class="modal-body">
+    <p>Nodes of different colours represent the following: </p>
+    <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.40.1 (20161225.0304)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="490pt" height="32pt"
+ viewBox="0.00 0.00 489.50 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 28)">
+<title>Graph Key</title>
+<polygon fill="#ffffff" stroke="transparent" points="-4,4 -4,-28 485.5,-28 485.5,4 -4,4"/>
+<!-- Module -->
+<g id="node1" class="node">
+<title>Module</title>
+<polygon fill="#337ab7" stroke="#337ab7" points="54,-24 0,-24 0,0 54,0 54,-24"/>
+<text text-anchor="middle" x="27" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Module</text>
+</g>
+<!-- Submodule -->
+<g id="node2" class="node">
+<title>Submodule</title>
+<polygon fill="#5bc0de" stroke="#5bc0de" points="139.5,-24 72.5,-24 72.5,0 139.5,0 139.5,-24"/>
+<text text-anchor="middle" x="106" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Submodule</text>
+</g>
+<!-- Subroutine -->
+<g id="node3" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="222,-24 158,-24 158,0 222,0 222,-24"/>
+<text text-anchor="middle" x="190" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node4" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="294,-24 240,-24 240,0 294,0 294,-24"/>
+<text text-anchor="middle" x="267" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Function</text>
+</g>
+<!-- Program -->
+<g id="node5" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="366,-24 312,-24 312,0 366,0 366,-24"/>
+<text text-anchor="middle" x="339" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node6" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="#000000" points="481.5,-24 384.5,-24 384.5,0 481.5,0 481.5,-24"/>
+<text text-anchor="middle" x="433" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#000000">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+    
+    <p>Solid arrows point from a submodule to the (sub)module which it is
+    descended from. Dashed arrows point from a module or program unit to 
+    modules which it uses.
+    </p>
+    </div></div></div></div>
+      </li>
+      
+      </ul>
+    </div>
+    
+
+    
+    
+
+    <br>
+
+    <section class="visible-xs visible-sm hidden-md">
+      
+<h3>Contents</h3>
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#modprocs-1">Module Procedures</a></h3></div>
+  <div id="modprocs-1" class="panel-collapse collapse">
+    <div class="list-group">
+      
+      <a class="list-group-item" href="../module/potential2d.html#proc-potential2d_polarization">potential2D_polarization</a>
+      
+      <a class="list-group-item" href="../module/potential2d.html#proc-potential2d_polarization_periodic">potential2D_polarization_periodic</a>
+      
+      <a class="list-group-item" href="../module/potential2d.html#proc-potential2d_fieldresolved">potential2D_fieldresolved</a>
+      
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+    </section>
+    <br class="visible-xs visible-sm hidden-md">
+
+    
+
+    
+    
+    
+    
+    
+
+    
+    
+    
+    
+    
+
+    
+    
+    
+    
+        
+
+        
+
+        
+        <section>
+        <h2>Module Procedures</h2>
+        
+        
+  <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-potential2d_polarization"></span><h3>
+module procedure <a href='../proc/potential2d_polarization.html'>potential2D_polarization</a> <small>module function potential2D_polarization(srcterm, SigP2, SigP3, SigH, Cm, v2, v3, Vminx2, Vmaxx2, Vminx3, Vmaxx3, dt, x, Phi0, perflag, it)</small>
+    
+    
+   <a href='../interface/potential2d_polarization.html'><button type="button" class="btn btn-info depwarn">Interface &rarr;</button></a>
+    
+   
+</h3></div>
+  <div class="panel-body">
+       
+    
+
+
+
+
+
+
+
+<p>SOLVE IONOSPHERIC POTENTIAL EQUATION IN 2D USING MUMPS
+ INCLUDES FULL OF POLARIZATION CURRENT, INCLUDING CONVECTIVE
+ TERMS.  VELOCITIES SHOULD BE TRIMMED (WITHOUT GHOST CELLS).
+ THIS VERSION OF THE <em>INTEGRATED</em> POTENTIAL SOLVER OBVIATES
+ ALL OTHERS SINCE A PURELY ELECTRSTATIC FORM CAN BE RECOVERED
+ BY ZEROING OUT THE INERTIAL CAPACITANCE.</p><a href="../proc/potential2d_polarization.html" class="pull-right"><emph>Read more&hellip;</emph></a>
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(in),</td>
+  <td></td>
+  
+  <td>dimension(:,:)</td><td>::</td>
+  <td><strong>srcterm</strong></td><td><p>ZZZ - THESE WILL NEED TO BE MODIFIED CONDUCTIVITIES, AND WE'LL NEED THREE OF THEM</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(in),</td>
+  <td></td>
+  
+  <td>dimension(:,:)</td><td>::</td>
+  <td><strong>SigP2</strong></td><td><p>ZZZ - THESE WILL NEED TO BE MODIFIED CONDUCTIVITIES, AND WE'LL NEED THREE OF THEM</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(in),</td>
+  <td></td>
+  
+  <td>dimension(:,:)</td><td>::</td>
+  <td><strong>SigP3</strong></td><td><p>ZZZ - THESE WILL NEED TO BE MODIFIED CONDUCTIVITIES, AND WE'LL NEED THREE OF THEM</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(in),</td>
+  <td></td>
+  
+  <td>dimension(:,:)</td><td>::</td>
+  <td><strong>SigH</strong></td><td><p>ZZZ - THESE WILL NEED TO BE MODIFIED CONDUCTIVITIES, AND WE'LL NEED THREE OF THEM</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(in),</td>
+  <td></td>
+  
+  <td>dimension(:,:)</td><td>::</td>
+  <td><strong>Cm</strong></td><td><p>ZZZ - THESE WILL NEED TO BE MODIFIED CONDUCTIVITIES, AND WE'LL NEED THREE OF THEM</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(in),</td>
+  <td></td>
+  
+  <td>dimension(:,:)</td><td>::</td>
+  <td><strong>v2</strong></td><td><p>ZZZ - THESE WILL NEED TO BE MODIFIED CONDUCTIVITIES, AND WE'LL NEED THREE OF THEM</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(in),</td>
+  <td></td>
+  
+  <td>dimension(:,:)</td><td>::</td>
+  <td><strong>v3</strong></td><td><p>ZZZ - THESE WILL NEED TO BE MODIFIED CONDUCTIVITIES, AND WE'LL NEED THREE OF THEM</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(in),</td>
+  <td></td>
+  
+  <td>dimension(:)</td><td>::</td>
+  <td><strong>Vminx2</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(in),</td>
+  <td></td>
+  
+  <td>dimension(:)</td><td>::</td>
+  <td><strong>Vmaxx2</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(in),</td>
+  <td></td>
+  
+  <td>dimension(:)</td><td>::</td>
+  <td><strong>Vminx3</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(in),</td>
+  <td></td>
+  
+  <td>dimension(:)</td><td>::</td>
+  <td><strong>Vmaxx3</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>dt</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>type(<a href='../type/curvmesh.html'>curvmesh</a>),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>x</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(in),</td>
+  <td></td>
+  
+  <td>dimension(:,:)</td><td>::</td>
+  <td><strong>Phi0</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>logical,</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>perflag</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer,</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>it</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  
+  
+  
+  
+     <h4>Return Value <small>real(kind=wp),
+  dimension(size(SigP2,1),size(SigP2,2))</small></h4>
+  
+    
+
+  </div>
+  </div>
+
+        
+        
+  <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-potential2d_polarization_periodic"></span><h3>
+module procedure <a href='../proc/potential2d_polarization_periodic.html'>potential2D_polarization_periodic</a> <small>module function potential2D_polarization_periodic(srcterm, SigP, SigH, Cm, v2, v3, Vminx2, Vmaxx2, Vminx3, Vmaxx3, dt, x, Phi0, perflag, it)</small>
+    
+    
+   <a href='../interface/potential2d_polarization_periodic.html'><button type="button" class="btn btn-info depwarn">Interface &rarr;</button></a>
+    
+   
+</h3></div>
+  <div class="panel-body">
+       
+    
+
+
+
+
+
+
+
+<p>SOLVE IONOSPHERIC POTENTIAL EQUATION IN 2D USING MUMPS
+ INCLUDES FULL OF POLARIZATION CURRENT, INCLUDING CONVECTIVE
+ TERMS.  VELOCITIES SHOULD BE TRIMMED (WITHOUT GHOST CELLS).
+ THIS VERSION OF THE <em>INTEGRATED</em> POTENTIAL SOLVER OBVIATES
+ ALL OTHERS SINCE A PURELY ELECTRSTATIC FORM CAN BE RECOVERED
+ BY ZEROING OUT THE INERTIAL CAPACITANCE.</p><a href="../proc/potential2d_polarization_periodic.html" class="pull-right"><emph>Read more&hellip;</emph></a>
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(in),</td>
+  <td></td>
+  
+  <td>dimension(:,:)</td><td>::</td>
+  <td><strong>srcterm</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(in),</td>
+  <td></td>
+  
+  <td>dimension(:,:)</td><td>::</td>
+  <td><strong>SigP</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(in),</td>
+  <td></td>
+  
+  <td>dimension(:,:)</td><td>::</td>
+  <td><strong>SigH</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(in),</td>
+  <td></td>
+  
+  <td>dimension(:,:)</td><td>::</td>
+  <td><strong>Cm</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(in),</td>
+  <td></td>
+  
+  <td>dimension(:,:)</td><td>::</td>
+  <td><strong>v2</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(in),</td>
+  <td></td>
+  
+  <td>dimension(:,:)</td><td>::</td>
+  <td><strong>v3</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(in),</td>
+  <td></td>
+  
+  <td>dimension(:)</td><td>::</td>
+  <td><strong>Vminx2</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(in),</td>
+  <td></td>
+  
+  <td>dimension(:)</td><td>::</td>
+  <td><strong>Vmaxx2</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(in),</td>
+  <td></td>
+  
+  <td>dimension(:)</td><td>::</td>
+  <td><strong>Vminx3</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(in),</td>
+  <td></td>
+  
+  <td>dimension(:)</td><td>::</td>
+  <td><strong>Vmaxx3</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>dt</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>type(<a href='../type/curvmesh.html'>curvmesh</a>),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>x</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(in),</td>
+  <td></td>
+  
+  <td>dimension(:,:)</td><td>::</td>
+  <td><strong>Phi0</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>logical,</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>perflag</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer,</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>it</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  
+  
+  
+  
+     <h4>Return Value <small>real(kind=wp),
+  dimension(size(SigP,1),size(SigP,2))</small></h4>
+  
+    
+
+  </div>
+  </div>
+
+        
+        
+  <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-potential2d_fieldresolved"></span><h3>
+module procedure <a href='../proc/potential2d_fieldresolved.html'>potential2D_fieldresolved</a> <small>module function potential2D_fieldresolved(srcterm, sig0, sigP, Vminx1, Vmaxx1, Vminx3, Vmaxx3, x, flagdirich, perflag, it)</small>
+    
+    
+   <a href='../interface/potential2d_fieldresolved.html'><button type="button" class="btn btn-info depwarn">Interface &rarr;</button></a>
+    
+   
+</h3></div>
+  <div class="panel-body">
+       
+    
+
+
+
+
+
+
+
+<p>SOLVE IONOSPHERIC POTENTIAL EQUATION IN 2D USING MUMPS
+ ASSUME THAT WE ARE RESOLVING THE POTENTIAL ALONG THE FIELD
+ LINE AND THAT IT VARIES IN X1 AND X3 (X2 IS NOMINALL JUST
+ ONE ELEMENT.  LEFT AND RIGHT BOUNDARIES (IN X3) ARE ASSUMED
+ TO USE DIRICHLET BOUNARY CONDITIONS, WHILE THE (ALTITUDE)
+ TOP CAN BE NEUMANN OR DIRICHLET.  BOTTOM (ALTITUDE)
+ IS ALWAYS ASSUMED TO BE DIRICHLET.</p>
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(in),</td>
+  <td></td>
+  
+  <td>dimension(:,:,:)</td><td>::</td>
+  <td><strong>srcterm</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(in),</td>
+  <td></td>
+  
+  <td>dimension(:,:,:)</td><td>::</td>
+  <td><strong>sig0</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(in),</td>
+  <td></td>
+  
+  <td>dimension(:,:,:)</td><td>::</td>
+  <td><strong>sigP</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(in),</td>
+  <td></td>
+  
+  <td>dimension(:,:)</td><td>::</td>
+  <td><strong>Vminx1</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(in),</td>
+  <td></td>
+  
+  <td>dimension(:,:)</td><td>::</td>
+  <td><strong>Vmaxx1</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(in),</td>
+  <td></td>
+  
+  <td>dimension(:,:)</td><td>::</td>
+  <td><strong>Vminx3</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(in),</td>
+  <td></td>
+  
+  <td>dimension(:,:)</td><td>::</td>
+  <td><strong>Vmaxx3</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>type(<a href='../type/curvmesh.html'>curvmesh</a>),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>x</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer,</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>flagdirich</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>logical,</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>perflag</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer,</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>it</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  
+  
+  
+  
+     <h4>Return Value <small>real(kind=wp),
+  dimension(size(sig0,1),1,size(sig0,3))</small></h4>
+  
+    
+
+  </div>
+  </div>
+
+        
+        </section>    
+        
+    
+    
+    </div>
+  </div>
+
+  
+    <hr>    
+    </div> <!-- /container -->
+    <footer>
+      <div class="container">
+      <div class="row">
+        <div class="col-xs-6 col-md-4"><p>&copy; 2020 <a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/80x15.png" /></a>
+                                          </p></div>
+        <div class="col-xs-6 col-md-4 col-md-push-4">
+          <p class="text-right">
+            Documentation generated by 
+            <a href="https://github.com/cmacmackin/ford">FORD</a>
+            
+          </p>
+        </div>
+        <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> GEMINI3D was developed by Matthew Zettergren
+Guy Grubbs
+Michael Hirsch</p></div>
+      </div>
+      <br>
+      </div> <!-- /container -->    
+    </footer>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+<!--
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+-->
+    <script src="../js/bootstrap.min.js"></script>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <script src="../js/ie10-viewport-bug-workaround.js"></script>
+
+    <!-- MathJax JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } },
+        jax: ['input/TeX','input/MathML','output/HTML-CSS'],
+        extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']
+      });
+    </script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    
+    
+  </body>
+</html>

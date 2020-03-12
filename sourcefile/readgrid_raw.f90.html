@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+   
+   <meta name="description" content="GEMINI3D is a modular ionospheric model that incorporates kinetic models such as Fang, GLOW.">
+    
+    <meta name="author" content="Matthew Zettergren
+Guy Grubbs
+Michael Hirsch" >
+    <link rel="icon" href="../favicon.png">
+
+    <title>readgrid_raw.f90 &ndash; GEMINI3D</title>
+
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+    <link href="../css/pygments.css" rel="stylesheet">
+    <link href="../css/font-awesome.min.css" rel="stylesheet">
+    <link href="../css/local.css" rel="stylesheet">
+    
+    
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    
+    <script src="../js/jquery-2.1.3.min.js"></script>
+    <script src="../js/svg-pan-zoom.min.js"></script>
+
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="../index.html">GEMINI3D </a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+        
+            <li class="dropdown hidden-xs visible-sm visible-md hidden-lg">
+              <a href="#" class="dropdown-toggle"
+              data-toggle="dropdown" role="button"
+              aria-haspopup="true"
+     aria-expanded="false">Contents <span class="caret"></span></a>
+        <ul class="dropdown-menu">
+          
+              
+            <li><a href="../lists/files.html">Source Files</a></li>
+        
+        
+        
+            <li><a href="../lists/modules.html">Modules</a></li>
+        
+            
+    <li><a href="../blockdata/gtd7bk.html">Block Data</a></li>
+    
+                                
+            <li><a href="../lists/procedures.html">Procedures</a></li>
+        
+               
+            <li><a href="../lists/types.html">Derived Types</a></li>
+        
+        
+            <li><a href="../lists/programs.html">Programs</a></li>
+        
+            </ul>
+            </li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/files.html">Source Files</a></li>
+
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/modules.html">Modules</a></li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../blockdata/gtd7bk.html">Block Data</a></li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/procedures.html">Procedures</a></li>
+
+                             
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/types.html">Derived Types</a></li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/programs.html">Programs</a></li>
+
+          </ul>
+        
+        </div><!--/.nav-collapse -->
+      </div>
+    </nav>
+
+    <div class="container">
+    
+  
+  <div class="row">
+    <h1>readgrid_raw.f90
+    <small>Source File</small>
+    
+    </h1>
+    
+<div class="row">
+  <div class="col-lg-12">
+<div class="well well-sm">
+  <ul class="list-inline" style="margin-bottom:0px;display:inline">
+     
+     
+     
+     
+    
+    
+     <li><i class="fa fa-list-ol"></i>
+       <a data-toggle="tooltip"
+    data-placement="bottom" data-html="true"
+    title=" 1.0% of total for source files.">134 statements</a>
+     </li> 
+     
+     
+     
+    <li><i class="fa fa-code"></i><a href="../src/readgrid_raw.f90"> Source File</a></li>
+     
+     
+  </ul>
+  <ol class="breadcrumb in-well text-right">
+  
+    
+  
+     <li class="active">readgrid_raw.f90</li>
+  </ol>
+</div>
+</div>
+</div>
+<script>
+  $(function () {
+  $('[data-toggle="tooltip"]').tooltip()
+  })
+</script>
+
+  </div>
+  <div class="row">
+    <div class="col-md-3 hidden-xs hidden-sm visible-md visible-lg">
+    
+<div id="sidebar">
+  
+<h3>Contents</h3>
+ 
+
+
+
+
+
+
+
+
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#submods-0">Submodules</a></h3></div>
+  <div id="submods-0" class="panel-collapse collapse">
+    <div class="list-group">
+      
+      <a class="list-group-item" href="../module/readgrid_raw.html">readgrid_raw</a>
+      
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
+  <div class="list-group">
+    <a class="list-group-item" href="../sourcefile/readgrid_raw.f90.html#src">readgrid_raw.f90</a>
+  </div>
+</div>
+
+
+
+</div>
+
+    </div>
+    <div class="col-md-9" id='text'>
+      
+      <br>
+    
+    <div class="panel panel-default">
+      <div class="panel-heading">
+  <h3 class="panel-title">This file depends on</h3>
+      </div>
+      <div class="panel-body">
+  <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.40.1 (20161225.0304)
+ -->
+<!-- Title: sourcefile~~readgrid_raw.f90~~EfferentGraph Pages: 1 -->
+<svg id="sourcefilereadgrid_rawf90EfferentGraph" width="521pt" height="160pt"
+ viewBox="0.00 0.00 521.00 159.52" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="sourcefile~~readgrid_raw.f90~~EfferentGraph" class="graph" transform="scale(1 1) rotate(0) translate(4 155.5177)">
+<title>sourcefile~~readgrid_raw.f90~~EfferentGraph</title>
+<polygon fill="#ffffff" stroke="transparent" points="-4,4 -4,-155.5177 517,-155.5177 517,4 -4,4"/>
+<!-- sourcefile~readgrid_raw.f90 -->
+<g id="sourcefile~~readgrid_raw.f90~~EfferentGraph_node1" class="node">
+<title>sourcefile~readgrid_raw.f90</title>
+<polygon fill="none" stroke="#000000" points="513,-50.8519 419,-50.8519 419,-26.8519 513,-26.8519 513,-50.8519"/>
+<text text-anchor="middle" x="466" y="-36.4519" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#000000">readgrid_raw.f90</text>
+</g>
+<!-- sourcefile~read.f90 -->
+<g id="sourcefile~~readgrid_raw.f90~~EfferentGraph_node2" class="node">
+<title>sourcefile~read.f90</title>
+<g id="a_sourcefile~~readgrid_raw.f90~~EfferentGraph_node2"><a xlink:href=".././sourcefile/read.f90.html" xlink:title="read.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="383,-71.8519 329,-71.8519 329,-47.8519 383,-47.8519 383,-71.8519"/>
+<text text-anchor="middle" x="356" y="-57.4519" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">read.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~readgrid_raw.f90&#45;&gt;sourcefile~read.f90 -->
+<g id="sourcefile~~readgrid_raw.f90~~EfferentGraph_edge1" class="edge">
+<title>sourcefile~readgrid_raw.f90&#45;&gt;sourcefile~read.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M418.7117,-47.8796C410.1956,-49.5054 401.4278,-51.1793 393.247,-52.7411"/>
+<polygon fill="#000000" stroke="#000000" points="392.4279,-49.3341 383.2617,-54.6474 393.7406,-56.21 392.4279,-49.3341"/>
+</g>
+<!-- sourcefile~phys_consts.f90 -->
+<g id="sourcefile~~readgrid_raw.f90~~EfferentGraph_node3" class="node">
+<title>sourcefile~phys_consts.f90</title>
+<g id="a_sourcefile~~readgrid_raw.f90~~EfferentGraph_node3"><a xlink:href=".././sourcefile/phys_consts.f90.html" xlink:title="phys_consts.F90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="94,-91.8519 0,-91.8519 0,-67.8519 94,-67.8519 94,-91.8519"/>
+<text text-anchor="middle" x="47" y="-77.4519" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">phys_consts.F90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~readgrid_raw.f90&#45;&gt;sourcefile~phys_consts.f90 -->
+<g id="sourcefile~~readgrid_raw.f90~~EfferentGraph_edge2" class="edge">
+<title>sourcefile~readgrid_raw.f90&#45;&gt;sourcefile~phys_consts.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M426.7131,-26.825C362.6759,-9.2799 232.6376,17.6893 130,-16.8519 104.5949,-25.4016 80.7931,-45.1595 65.2495,-60.287"/>
+<polygon fill="#000000" stroke="#000000" points="62.4637,-58.1257 57.9092,-67.6916 67.435,-63.0538 62.4637,-58.1257"/>
+</g>
+<!-- sourcefile~grid.f90 -->
+<g id="sourcefile~~readgrid_raw.f90~~EfferentGraph_node4" class="node">
+<title>sourcefile~grid.f90</title>
+<g id="a_sourcefile~~readgrid_raw.f90~~EfferentGraph_node4"><a xlink:href=".././sourcefile/grid.f90.html" xlink:title="grid.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="293,-91.8519 239,-91.8519 239,-67.8519 293,-67.8519 293,-91.8519"/>
+<text text-anchor="middle" x="266" y="-77.4519" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">grid.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~read.f90&#45;&gt;sourcefile~grid.f90 -->
+<g id="sourcefile~~readgrid_raw.f90~~EfferentGraph_edge3" class="edge">
+<title>sourcefile~read.f90&#45;&gt;sourcefile~grid.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M328.997,-65.8525C320.8842,-67.6554 311.8369,-69.6659 303.1869,-71.5881"/>
+<polygon fill="#000000" stroke="#000000" points="302.2976,-68.2003 293.295,-73.7863 303.8161,-75.0336 302.2976,-68.2003"/>
+</g>
+<!-- sourcefile~grid.f90&#45;&gt;sourcefile~phys_consts.f90 -->
+<g id="sourcefile~~readgrid_raw.f90~~EfferentGraph_edge6" class="edge">
+<title>sourcefile~grid.f90&#45;&gt;sourcefile~phys_consts.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M258.4031,-91.9322C248.0339,-107.1492 227.8655,-132.5522 203,-142.8519 173.0252,-155.2678 160.7498,-153.2003 130,-142.8519 104.5949,-134.3022 80.7931,-114.5442 65.2495,-99.4168"/>
+<polygon fill="#000000" stroke="#000000" points="67.435,-96.6499 57.9092,-92.0121 62.4637,-101.578 67.435,-96.6499"/>
+</g>
+<!-- sourcefile~mpimod.f90 -->
+<g id="sourcefile~~readgrid_raw.f90~~EfferentGraph_node5" class="node">
+<title>sourcefile~mpimod.f90</title>
+<g id="a_sourcefile~~readgrid_raw.f90~~EfferentGraph_node5"><a xlink:href=".././sourcefile/mpimod.f90.html" xlink:title="mpimod.F90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="203,-133.8519 130,-133.8519 130,-109.8519 203,-109.8519 203,-133.8519"/>
+<text text-anchor="middle" x="166.5" y="-119.4519" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">mpimod.F90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~grid.f90&#45;&gt;sourcefile~mpimod.f90 -->
+<g id="sourcefile~~readgrid_raw.f90~~EfferentGraph_edge5" class="edge">
+<title>sourcefile~grid.f90&#45;&gt;sourcefile~mpimod.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M238.8112,-91.3285C228.2024,-95.8066 215.8571,-101.0177 204.4016,-105.8532"/>
+<polygon fill="#000000" stroke="#000000" points="202.8978,-102.6889 195.046,-109.8023 205.62,-109.1379 202.8978,-102.6889"/>
+</g>
+<!-- sourcefile~mesh.f90 -->
+<g id="sourcefile~~readgrid_raw.f90~~EfferentGraph_node6" class="node">
+<title>sourcefile~mesh.f90</title>
+<g id="a_sourcefile~~readgrid_raw.f90~~EfferentGraph_node6"><a xlink:href=".././sourcefile/mesh.f90.html" xlink:title="mesh.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="195,-91.8519 138,-91.8519 138,-67.8519 195,-67.8519 195,-91.8519"/>
+<text text-anchor="middle" x="166.5" y="-77.4519" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">mesh.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~grid.f90&#45;&gt;sourcefile~mesh.f90 -->
+<g id="sourcefile~~readgrid_raw.f90~~EfferentGraph_edge7" class="edge">
+<title>sourcefile~grid.f90&#45;&gt;sourcefile~mesh.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M238.8112,-79.8519C228.4146,-79.8519 216.3502,-79.8519 205.09,-79.8519"/>
+<polygon fill="#000000" stroke="#000000" points="205.0461,-76.352 195.046,-79.8519 205.046,-83.352 205.0461,-76.352"/>
+</g>
+<!-- sourcefile~reader.f90 -->
+<g id="sourcefile~~readgrid_raw.f90~~EfferentGraph_node7" class="node">
+<title>sourcefile~reader.f90</title>
+<g id="a_sourcefile~~readgrid_raw.f90~~EfferentGraph_node7"><a xlink:href=".././sourcefile/reader.f90.html" xlink:title="reader.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="197.5,-49.8519 135.5,-49.8519 135.5,-25.8519 197.5,-25.8519 197.5,-49.8519"/>
+<text text-anchor="middle" x="166.5" y="-35.4519" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">reader.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~grid.f90&#45;&gt;sourcefile~reader.f90 -->
+<g id="sourcefile~~readgrid_raw.f90~~EfferentGraph_edge4" class="edge">
+<title>sourcefile~grid.f90&#45;&gt;sourcefile~reader.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M238.8112,-68.3752C228.2024,-63.8971 215.8571,-58.686 204.4016,-53.8505"/>
+<polygon fill="#000000" stroke="#000000" points="205.62,-50.5658 195.046,-49.9014 202.8978,-57.0149 205.62,-50.5658"/>
+</g>
+<!-- sourcefile~mpimod.f90&#45;&gt;sourcefile~phys_consts.f90 -->
+<g id="sourcefile~~readgrid_raw.f90~~EfferentGraph_edge8" class="edge">
+<title>sourcefile~mpimod.f90&#45;&gt;sourcefile~phys_consts.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M132.2561,-109.8163C119.3805,-105.291 104.5595,-100.082 90.9237,-95.2895"/>
+<polygon fill="#000000" stroke="#000000" points="91.8437,-91.903 81.2489,-91.8891 89.5226,-98.507 91.8437,-91.903"/>
+</g>
+<!-- sourcefile~mesh.f90&#45;&gt;sourcefile~phys_consts.f90 -->
+<g id="sourcefile~~readgrid_raw.f90~~EfferentGraph_edge9" class="edge">
+<title>sourcefile~mesh.f90&#45;&gt;sourcefile~phys_consts.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M137.8768,-79.8519C127.7298,-79.8519 115.9212,-79.8519 104.2407,-79.8519"/>
+<polygon fill="#000000" stroke="#000000" points="104.054,-76.352 94.054,-79.8519 104.054,-83.352 104.054,-76.352"/>
+</g>
+<!-- sourcefile~reader.f90&#45;&gt;sourcefile~phys_consts.f90 -->
+<g id="sourcefile~~readgrid_raw.f90~~EfferentGraph_edge10" class="edge">
+<title>sourcefile~reader.f90&#45;&gt;sourcefile~phys_consts.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M135.4147,-48.7772C121.7999,-53.5624 105.5827,-59.2621 90.7776,-64.4656"/>
+<polygon fill="#000000" stroke="#000000" points="89.5676,-61.1809 81.2939,-67.7988 91.8888,-67.7849 89.5676,-61.1809"/>
+</g>
+</g>
+</svg>
+</div><div><a type="button" class="graph-help" data-toggle="modal" href="#graph-help-text">Help</a></div><div class="modal fade" id="graph-help-text" tabindex="-1" role="dialog"><div class="modal-dialog modal-lg" role="document"><div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button><h4 class="modal-title" id="-graph-help-label">Graph Key</h4></div><div class="modal-body">
+    <p>Nodes of different colours represent the following: </p>
+    <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.40.1 (20161225.0304)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="190pt" height="32pt"
+ viewBox="0.00 0.00 190.00 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 28)">
+<title>Graph Key</title>
+<polygon fill="#ffffff" stroke="transparent" points="-4,4 -4,-28 186,-28 186,4 -4,4"/>
+<!-- Source File -->
+<g id="node1" class="node">
+<title>Source File</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="67,-24 0,-24 0,0 67,0 67,-24"/>
+<text text-anchor="middle" x="33.5" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Source File</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node2" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="#000000" points="182,-24 85,-24 85,0 182,0 182,-24"/>
+<text text-anchor="middle" x="133.5" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#000000">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+    
+    <p>Solid arrows point from a file to a file which it depends on. A file
+    is dependent upon another if the latter must be compiled before the former
+    can be.
+    </p>
+    </div></div></div></div>
+      </div>
+    </div>
+    
+      
+      <br>
+
+    <section class="visible-xs visible-sm hidden-md">
+      
+<h3>Contents</h3>
+ 
+
+
+
+
+
+
+
+
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#submods-1">Submodules</a></h3></div>
+  <div id="submods-1" class="panel-collapse collapse">
+    <div class="list-group">
+      
+      <a class="list-group-item" href="../module/readgrid_raw.html">readgrid_raw</a>
+      
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
+  <div class="list-group">
+    <a class="list-group-item" href="../sourcefile/readgrid_raw.f90.html#src">readgrid_raw.f90</a>
+  </div>
+</div>
+
+
+
+    </section>
+    <br class="visible-xs visible-sm hidden-md">
+
+    <section>
+      <h2><span class="anchor" id="src"></span>Source Code</h2>
+    <div class="hl"><pre><span></span><a name="ln-1"></a><span class="k">submodule</span> <span class="p">(</span><span class="n">grid</span><span class="p">:</span><span class="n">grid_read</span><span class="p">)</span> <span class="n">readgrid_raw</span>
+<a name="ln-2"></a>
+<a name="ln-3"></a><span class="k">use </span><span class="n">phys_consts</span><span class="p">,</span> <span class="n">only</span><span class="p">:</span> <span class="n">debug</span>
+<a name="ln-4"></a>
+<a name="ln-5"></a><span class="k">implicit none</span>
+<a name="ln-6"></a>
+<a name="ln-7"></a><span class="k">contains</span>
+<a name="ln-8"></a>
+<a name="ln-9"></a><span class="k">module procedure </span><span class="n">get_grid3</span>
+<a name="ln-10"></a><span class="kt">integer</span> <span class="kd">::</span> <span class="n">u</span>
+<a name="ln-11"></a><span class="kt">character</span><span class="p">(:),</span> <span class="k">allocatable</span> <span class="kd">::</span> <span class="n">fn</span>
+<a name="ln-12"></a>
+<a name="ln-13"></a><span class="k">if</span> <span class="p">(</span><span class="nb">index</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;simgrid.dat&#39;</span><span class="p">)</span> <span class="o">/=</span> <span class="mi">0</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-14"></a><span class="k">  </span><span class="n">fn</span> <span class="o">=</span> <span class="n">path</span>
+<a name="ln-15"></a><span class="k">else</span>
+<a name="ln-16"></a><span class="k">  </span><span class="n">fn</span> <span class="o">=</span> <span class="n">path</span> <span class="o">//</span> <span class="s1">&#39;/simgrid.dat&#39;</span>
+<a name="ln-17"></a><span class="n">endif</span>
+<a name="ln-18"></a><span class="k">if</span> <span class="p">(</span><span class="n">debug</span><span class="p">)</span> <span class="k">print</span> <span class="s1">&#39;(A,/,A)&#39;</span><span class="p">,</span> <span class="s1">&#39;READ 3D (B-parallel, B-perp, B-perp) grid:&#39;</span><span class="p">,</span> <span class="n">fn</span>
+<a name="ln-19"></a>
+<a name="ln-20"></a><span class="k">open</span><span class="p">(</span><span class="n">newunit</span><span class="o">=</span><span class="n">u</span><span class="p">,</span> <span class="k">file</span><span class="o">=</span><span class="n">fn</span><span class="p">,</span> <span class="n">status</span><span class="o">=</span><span class="s1">&#39;old&#39;</span><span class="p">,</span> <span class="n">form</span><span class="o">=</span><span class="s1">&#39;unformatted&#39;</span><span class="p">,</span> <span class="nb">access</span><span class="o">=</span><span class="s1">&#39;stream&#39;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s1">&#39;read&#39;</span><span class="p">)</span>
+<a name="ln-21"></a>
+<a name="ln-22"></a><span class="k">if</span> <span class="p">(</span><span class="n">flagswap</span><span class="o">/=</span><span class="mi">1</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-23"></a>  <span class="c">!! normal (i.e. full 3D) grid ordering, or a 2D grid with 1 element naturally in the second dimension</span>
+<a name="ln-24"></a>  <span class="k">read</span><span class="p">(</span><span class="n">u</span><span class="p">)</span> <span class="n">x</span><span class="p">%</span><span class="n">x1</span><span class="p">,</span><span class="n">x</span><span class="p">%</span><span class="n">x1i</span><span class="p">,</span><span class="n">x</span><span class="p">%</span><span class="n">dx1</span><span class="p">,</span><span class="n">x</span><span class="p">%</span><span class="n">dx1i</span>
+<a name="ln-25"></a>  <span class="k">read</span><span class="p">(</span><span class="n">u</span><span class="p">)</span> <span class="n">x</span><span class="p">%</span><span class="n">x2all</span><span class="p">,</span><span class="n">x</span><span class="p">%</span><span class="n">x2iall</span><span class="p">,</span><span class="n">x</span><span class="p">%</span><span class="n">dx2all</span><span class="p">,</span><span class="n">x</span><span class="p">%</span><span class="n">dx2iall</span>
+<a name="ln-26"></a>  <span class="k">read</span><span class="p">(</span><span class="n">u</span><span class="p">)</span> <span class="n">x</span><span class="p">%</span><span class="n">x3all</span><span class="p">,</span><span class="n">x</span><span class="p">%</span><span class="n">x3iall</span><span class="p">,</span><span class="n">x</span><span class="p">%</span><span class="n">dx3all</span><span class="p">,</span><span class="n">x</span><span class="p">%</span><span class="n">dx3iall</span>
+<a name="ln-27"></a>  <span class="k">read</span><span class="p">(</span><span class="n">u</span><span class="p">)</span> <span class="n">x</span><span class="p">%</span><span class="n">h1all</span><span class="p">,</span><span class="n">x</span><span class="p">%</span><span class="n">h2all</span><span class="p">,</span><span class="n">x</span><span class="p">%</span><span class="n">h3all</span>
+<a name="ln-28"></a>  <span class="k">read</span><span class="p">(</span><span class="n">u</span><span class="p">)</span> <span class="n">x</span><span class="p">%</span><span class="n">h1x1iall</span><span class="p">,</span><span class="n">x</span><span class="p">%</span><span class="n">h2x1iall</span><span class="p">,</span><span class="n">x</span><span class="p">%</span><span class="n">h3x1iall</span>
+<a name="ln-29"></a>  <span class="k">read</span><span class="p">(</span><span class="n">u</span><span class="p">)</span> <span class="n">x</span><span class="p">%</span><span class="n">h1x2iall</span><span class="p">,</span><span class="n">x</span><span class="p">%</span><span class="n">h2x2iall</span><span class="p">,</span><span class="n">x</span><span class="p">%</span><span class="n">h3x2iall</span>
+<a name="ln-30"></a>  <span class="k">read</span><span class="p">(</span><span class="n">u</span><span class="p">)</span> <span class="n">x</span><span class="p">%</span><span class="n">h1x3iall</span><span class="p">,</span><span class="n">x</span><span class="p">%</span><span class="n">h2x3iall</span><span class="p">,</span><span class="n">x</span><span class="p">%</span><span class="n">h3x3iall</span>
+<a name="ln-31"></a>
+<a name="ln-32"></a>  <span class="k">read</span><span class="p">(</span><span class="n">u</span><span class="p">)</span> <span class="n">g1all</span><span class="p">,</span><span class="n">g2all</span><span class="p">,</span><span class="n">g3all</span>
+<a name="ln-33"></a>  <span class="k">read</span><span class="p">(</span><span class="n">u</span><span class="p">)</span> <span class="n">altall</span><span class="p">,</span><span class="n">glatall</span><span class="p">,</span><span class="n">glonall</span>
+<a name="ln-34"></a>  <span class="k">read</span><span class="p">(</span><span class="n">u</span><span class="p">)</span> <span class="n">Bmagall</span>
+<a name="ln-35"></a>  <span class="k">read</span><span class="p">(</span><span class="n">u</span><span class="p">)</span> <span class="n">Incall</span>
+<a name="ln-36"></a>  <span class="k">read</span><span class="p">(</span><span class="n">u</span><span class="p">)</span> <span class="n">nullptsall</span>
+<a name="ln-37"></a>  <span class="k">read</span><span class="p">(</span><span class="n">u</span><span class="p">)</span> <span class="n">e1all</span>
+<a name="ln-38"></a>  <span class="k">read</span><span class="p">(</span><span class="n">u</span><span class="p">)</span> <span class="n">e2all</span>
+<a name="ln-39"></a>  <span class="k">read</span><span class="p">(</span><span class="n">u</span><span class="p">)</span> <span class="n">e3all</span>
+<a name="ln-40"></a>  <span class="k">read</span><span class="p">(</span><span class="n">u</span><span class="p">)</span> <span class="n">erall</span>
+<a name="ln-41"></a>  <span class="k">read</span><span class="p">(</span><span class="n">u</span><span class="p">)</span> <span class="n">ethetaall</span>
+<a name="ln-42"></a>  <span class="k">read</span><span class="p">(</span><span class="n">u</span><span class="p">)</span> <span class="n">ephiall</span>
+<a name="ln-43"></a>
+<a name="ln-44"></a>  <span class="k">read</span><span class="p">(</span><span class="n">u</span><span class="p">)</span> <span class="n">rall</span>
+<a name="ln-45"></a>  <span class="k">read</span><span class="p">(</span><span class="n">u</span><span class="p">)</span> <span class="n">thetaall</span>
+<a name="ln-46"></a>  <span class="k">read</span><span class="p">(</span><span class="n">u</span><span class="p">)</span> <span class="n">phiall</span>
+<a name="ln-47"></a><span class="k">else</span>
+<a name="ln-48"></a><span class="k">  read</span><span class="p">(</span><span class="n">u</span><span class="p">)</span> <span class="n">x</span><span class="p">%</span><span class="n">x1</span><span class="p">,</span><span class="n">x</span><span class="p">%</span><span class="n">x1i</span><span class="p">,</span><span class="n">x</span><span class="p">%</span><span class="n">dx1</span><span class="p">,</span><span class="n">x</span><span class="p">%</span><span class="n">dx1i</span>                <span class="c">!&lt; x1 untouched</span>
+<a name="ln-49"></a>  <span class="k">read</span><span class="p">(</span><span class="n">u</span><span class="p">)</span> <span class="n">x</span><span class="p">%</span><span class="n">x3all</span><span class="p">,</span><span class="n">x</span><span class="p">%</span><span class="n">x3iall</span><span class="p">,</span><span class="n">x</span><span class="p">%</span><span class="n">dx3all</span><span class="p">,</span><span class="n">x</span><span class="p">%</span><span class="n">dx3iall</span>    <span class="c">!&lt; for a 3D grid this is x2, but now considered x3(all)</span>
+<a name="ln-50"></a>  <span class="k">read</span><span class="p">(</span><span class="n">u</span><span class="p">)</span> <span class="n">x</span><span class="p">%</span><span class="n">x2all</span><span class="p">,</span><span class="n">x</span><span class="p">%</span><span class="n">x2iall</span><span class="p">,</span><span class="n">x</span><span class="p">%</span><span class="n">dx2all</span><span class="p">,</span><span class="n">x</span><span class="p">%</span><span class="n">dx2iall</span>    <span class="c">!&lt; formerly x3, now x2</span>
+<a name="ln-51"></a>
+<a name="ln-52"></a>  <span class="k">block</span>
+<a name="ln-53"></a><span class="k">  </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span> <span class="k">dimension</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="n">lx1</span><span class="o">+</span><span class="mi">2</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="n">lx3all</span><span class="o">+</span><span class="mi">2</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="n">lx2all</span><span class="o">+</span><span class="mi">2</span><span class="p">)</span> <span class="kd">::</span> <span class="n">htmp</span>
+<a name="ln-54"></a>  <span class="c">!! this stores the input metric factors which are swapped x2/x3 vs. what this simulation will use</span>
+<a name="ln-55"></a>  <span class="k">read</span><span class="p">(</span><span class="n">u</span><span class="p">)</span> <span class="n">htmp</span>
+<a name="ln-56"></a>  <span class="n">x</span><span class="p">%</span><span class="n">h1all</span><span class="o">=</span><span class="nb">reshape</span><span class="p">(</span><span class="n">htmp</span><span class="p">,[</span><span class="n">lx1</span><span class="o">+</span><span class="mi">4</span><span class="p">,</span><span class="n">lx2all</span><span class="o">+</span><span class="mi">4</span><span class="p">,</span><span class="n">lx3all</span><span class="o">+</span><span class="mi">4</span><span class="p">],</span><span class="n">order</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">])</span>
+<a name="ln-57"></a>  <span class="k">read</span><span class="p">(</span><span class="n">u</span><span class="p">)</span> <span class="n">htmp</span>        <span class="c">!&lt; this would be h3, but with the input structure shape</span>
+<a name="ln-58"></a>  <span class="n">x</span><span class="p">%</span><span class="n">h3all</span><span class="o">=</span><span class="nb">reshape</span><span class="p">(</span><span class="n">htmp</span><span class="p">,[</span><span class="n">lx1</span><span class="o">+</span><span class="mi">4</span><span class="p">,</span><span class="n">lx2all</span><span class="o">+</span><span class="mi">4</span><span class="p">,</span><span class="n">lx3all</span><span class="o">+</span><span class="mi">4</span><span class="p">],</span><span class="n">order</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">])</span>   <span class="c">!&lt; permute the dimensions of the array 3 --&gt; 2, 2 --&gt; 3</span>
+<a name="ln-59"></a>  <span class="k">read</span><span class="p">(</span><span class="n">u</span><span class="p">)</span> <span class="n">htmp</span>        <span class="c">!&lt; this would be h3, but with the input structure shape</span>
+<a name="ln-60"></a>  <span class="n">x</span><span class="p">%</span><span class="n">h2all</span><span class="o">=</span><span class="nb">reshape</span><span class="p">(</span><span class="n">htmp</span><span class="p">,[</span><span class="n">lx1</span><span class="o">+</span><span class="mi">4</span><span class="p">,</span><span class="n">lx2all</span><span class="o">+</span><span class="mi">4</span><span class="p">,</span><span class="n">lx3all</span><span class="o">+</span><span class="mi">4</span><span class="p">],</span><span class="n">order</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">])</span>
+<a name="ln-61"></a>  <span class="k">end block</span>
+<a name="ln-62"></a>
+<a name="ln-63"></a><span class="k">  block</span>
+<a name="ln-64"></a><span class="k">  </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span> <span class="k">dimension</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">lx1</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">:</span><span class="n">lx3all</span><span class="p">,</span><span class="mi">1</span><span class="p">:</span><span class="n">lx2all</span><span class="p">)</span> <span class="kd">::</span> <span class="n">htmp</span>
+<a name="ln-65"></a>  <span class="c">!! input 2 vs. 3 dimensions swapped from this program</span>
+<a name="ln-66"></a>  <span class="k">read</span><span class="p">(</span><span class="n">u</span><span class="p">)</span> <span class="n">htmp</span>
+<a name="ln-67"></a>  <span class="n">x</span><span class="p">%</span><span class="n">h1x1iall</span><span class="o">=</span><span class="nb">reshape</span><span class="p">(</span><span class="n">htmp</span><span class="p">,[</span><span class="n">lx1</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="n">lx2all</span><span class="p">,</span><span class="n">lx3all</span><span class="p">],</span><span class="n">order</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">])</span>
+<a name="ln-68"></a>  <span class="k">read</span><span class="p">(</span><span class="n">u</span><span class="p">)</span> <span class="n">htmp</span>
+<a name="ln-69"></a>  <span class="n">x</span><span class="p">%</span><span class="n">h3x1iall</span><span class="o">=</span><span class="nb">reshape</span><span class="p">(</span><span class="n">htmp</span><span class="p">,[</span><span class="n">lx1</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="n">lx2all</span><span class="p">,</span><span class="n">lx3all</span><span class="p">],</span><span class="n">order</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">])</span>
+<a name="ln-70"></a>  <span class="k">read</span><span class="p">(</span><span class="n">u</span><span class="p">)</span> <span class="n">htmp</span>
+<a name="ln-71"></a>  <span class="n">x</span><span class="p">%</span><span class="n">h2x1iall</span><span class="o">=</span><span class="nb">reshape</span><span class="p">(</span><span class="n">htmp</span><span class="p">,[</span><span class="n">lx1</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="n">lx2all</span><span class="p">,</span><span class="n">lx3all</span><span class="p">],</span><span class="n">order</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">])</span>
+<a name="ln-72"></a>  <span class="k">end block</span>
+<a name="ln-73"></a>
+<a name="ln-74"></a><span class="k">  block</span>
+<a name="ln-75"></a><span class="k">  </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span> <span class="k">dimension</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">lx1</span><span class="p">,</span><span class="mi">1</span><span class="p">:</span><span class="n">lx3all</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">:</span><span class="n">lx2all</span><span class="p">)</span> <span class="kd">::</span> <span class="n">htmp</span>
+<a name="ln-76"></a>  <span class="k">read</span><span class="p">(</span><span class="n">u</span><span class="p">)</span> <span class="n">htmp</span>
+<a name="ln-77"></a>  <span class="n">x</span><span class="p">%</span><span class="n">h1x3iall</span><span class="o">=</span><span class="nb">reshape</span><span class="p">(</span><span class="n">htmp</span><span class="p">,[</span><span class="n">lx1</span><span class="p">,</span><span class="n">lx2all</span><span class="p">,</span><span class="n">lx3all</span><span class="o">+</span><span class="mi">1</span><span class="p">],</span><span class="n">order</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">])</span>    <span class="c">!Note also that the x2 interface from teh input file is x3i in this simulation</span>
+<a name="ln-78"></a>  <span class="k">read</span><span class="p">(</span><span class="n">u</span><span class="p">)</span> <span class="n">htmp</span>
+<a name="ln-79"></a>  <span class="n">x</span><span class="p">%</span><span class="n">h3x3iall</span><span class="o">=</span><span class="nb">reshape</span><span class="p">(</span><span class="n">htmp</span><span class="p">,[</span><span class="n">lx1</span><span class="p">,</span><span class="n">lx2all</span><span class="p">,</span><span class="n">lx3all</span><span class="o">+</span><span class="mi">1</span><span class="p">],</span><span class="n">order</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">])</span>
+<a name="ln-80"></a>  <span class="k">read</span><span class="p">(</span><span class="n">u</span><span class="p">)</span> <span class="n">htmp</span>
+<a name="ln-81"></a>  <span class="n">x</span><span class="p">%</span><span class="n">h2x3iall</span><span class="o">=</span><span class="nb">reshape</span><span class="p">(</span><span class="n">htmp</span><span class="p">,[</span><span class="n">lx1</span><span class="p">,</span><span class="n">lx2all</span><span class="p">,</span><span class="n">lx3all</span><span class="o">+</span><span class="mi">1</span><span class="p">],</span><span class="n">order</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">])</span>
+<a name="ln-82"></a>  <span class="k">end block</span>
+<a name="ln-83"></a>
+<a name="ln-84"></a><span class="k">  block</span>
+<a name="ln-85"></a><span class="k">  </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span> <span class="k">dimension</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">lx1</span><span class="p">,</span><span class="mi">1</span><span class="p">:</span><span class="n">lx3all</span><span class="p">,</span><span class="mi">1</span><span class="p">:</span><span class="n">lx2all</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="kd">::</span> <span class="n">htmp</span>
+<a name="ln-86"></a>  <span class="k">read</span><span class="p">(</span><span class="n">u</span><span class="p">)</span> <span class="n">htmp</span>
+<a name="ln-87"></a>  <span class="n">x</span><span class="p">%</span><span class="n">h1x2iall</span><span class="o">=</span><span class="nb">reshape</span><span class="p">(</span><span class="n">htmp</span><span class="p">,[</span><span class="n">lx1</span><span class="p">,</span><span class="n">lx2all</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="n">lx3all</span><span class="p">],</span><span class="n">order</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">])</span>
+<a name="ln-88"></a>  <span class="k">read</span><span class="p">(</span><span class="n">u</span><span class="p">)</span> <span class="n">htmp</span>
+<a name="ln-89"></a>  <span class="n">x</span><span class="p">%</span><span class="n">h3x2iall</span><span class="o">=</span><span class="nb">reshape</span><span class="p">(</span><span class="n">htmp</span><span class="p">,[</span><span class="n">lx1</span><span class="p">,</span><span class="n">lx2all</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="n">lx3all</span><span class="p">],</span><span class="n">order</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">])</span>
+<a name="ln-90"></a>  <span class="k">read</span><span class="p">(</span><span class="n">u</span><span class="p">)</span> <span class="n">htmp</span>
+<a name="ln-91"></a>  <span class="n">x</span><span class="p">%</span><span class="n">h2x2iall</span><span class="o">=</span><span class="nb">reshape</span><span class="p">(</span><span class="n">htmp</span><span class="p">,[</span><span class="n">lx1</span><span class="p">,</span><span class="n">lx2all</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span><span class="n">lx3all</span><span class="p">],</span><span class="n">order</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">])</span>
+<a name="ln-92"></a>  <span class="k">end block</span>
+<a name="ln-93"></a>
+<a name="ln-94"></a><span class="k">  block</span>
+<a name="ln-95"></a><span class="k">  </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span> <span class="k">dimension</span><span class="p">(</span><span class="n">lx1</span><span class="p">,</span><span class="n">lx3all</span><span class="p">,</span><span class="n">lx2all</span><span class="p">)</span> <span class="kd">::</span> <span class="n">htmp</span>
+<a name="ln-96"></a>  <span class="k">read</span><span class="p">(</span><span class="n">u</span><span class="p">)</span> <span class="n">htmp</span>
+<a name="ln-97"></a>  <span class="n">g1all</span><span class="o">=</span><span class="nb">reshape</span><span class="p">(</span><span class="n">htmp</span><span class="p">,[</span><span class="n">lx1</span><span class="p">,</span><span class="n">lx2all</span><span class="p">,</span><span class="n">lx3all</span><span class="p">],</span><span class="n">order</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">])</span>
+<a name="ln-98"></a>  <span class="k">read</span><span class="p">(</span><span class="n">u</span><span class="p">)</span> <span class="n">htmp</span>
+<a name="ln-99"></a>  <span class="n">g3all</span><span class="o">=</span><span class="nb">reshape</span><span class="p">(</span><span class="n">htmp</span><span class="p">,[</span><span class="n">lx1</span><span class="p">,</span><span class="n">lx2all</span><span class="p">,</span><span class="n">lx3all</span><span class="p">],</span><span class="n">order</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">])</span>
+<a name="ln-100"></a>  <span class="k">read</span><span class="p">(</span><span class="n">u</span><span class="p">)</span> <span class="n">htmp</span>
+<a name="ln-101"></a>  <span class="n">g2all</span><span class="o">=</span><span class="nb">reshape</span><span class="p">(</span><span class="n">htmp</span><span class="p">,[</span><span class="n">lx1</span><span class="p">,</span><span class="n">lx2all</span><span class="p">,</span><span class="n">lx3all</span><span class="p">],</span><span class="n">order</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">])</span>
+<a name="ln-102"></a>
+<a name="ln-103"></a>  <span class="k">read</span><span class="p">(</span><span class="n">u</span><span class="p">)</span> <span class="n">htmp</span>
+<a name="ln-104"></a>  <span class="n">altall</span><span class="o">=</span><span class="nb">reshape</span><span class="p">(</span><span class="n">htmp</span><span class="p">,[</span><span class="n">lx1</span><span class="p">,</span><span class="n">lx2all</span><span class="p">,</span><span class="n">lx3all</span><span class="p">],</span><span class="n">order</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">])</span>
+<a name="ln-105"></a>  <span class="k">read</span><span class="p">(</span><span class="n">u</span><span class="p">)</span> <span class="n">htmp</span>
+<a name="ln-106"></a>  <span class="n">glatall</span><span class="o">=</span><span class="nb">reshape</span><span class="p">(</span><span class="n">htmp</span><span class="p">,[</span><span class="n">lx1</span><span class="p">,</span><span class="n">lx2all</span><span class="p">,</span><span class="n">lx3all</span><span class="p">],</span><span class="n">order</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">])</span>
+<a name="ln-107"></a>  <span class="k">read</span><span class="p">(</span><span class="n">u</span><span class="p">)</span> <span class="n">htmp</span>
+<a name="ln-108"></a>  <span class="n">glonall</span><span class="o">=</span><span class="nb">reshape</span><span class="p">(</span><span class="n">htmp</span><span class="p">,[</span><span class="n">lx1</span><span class="p">,</span><span class="n">lx2all</span><span class="p">,</span><span class="n">lx3all</span><span class="p">],</span><span class="n">order</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">])</span>
+<a name="ln-109"></a>
+<a name="ln-110"></a>  <span class="k">read</span><span class="p">(</span><span class="n">u</span><span class="p">)</span> <span class="n">htmp</span>
+<a name="ln-111"></a>  <span class="n">Bmagall</span><span class="o">=</span><span class="nb">reshape</span><span class="p">(</span><span class="n">htmp</span><span class="p">,[</span><span class="n">lx1</span><span class="p">,</span><span class="n">lx2all</span><span class="p">,</span><span class="n">lx3all</span><span class="p">],</span><span class="n">order</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">])</span>
+<a name="ln-112"></a>  <span class="k">end block</span>
+<a name="ln-113"></a>
+<a name="ln-114"></a><span class="k">  block</span>
+<a name="ln-115"></a><span class="k">  </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span> <span class="k">dimension</span><span class="p">(</span><span class="n">lx3all</span><span class="p">,</span><span class="n">lx2all</span><span class="p">)</span> <span class="kd">::</span> <span class="n">htmp</span>
+<a name="ln-116"></a>  <span class="k">read</span><span class="p">(</span><span class="n">u</span><span class="p">)</span> <span class="n">htmp</span>
+<a name="ln-117"></a>  <span class="n">Incall</span><span class="o">=</span><span class="nb">reshape</span><span class="p">(</span><span class="n">htmp</span><span class="p">,[</span><span class="n">lx2all</span><span class="p">,</span><span class="n">lx3all</span><span class="p">],</span><span class="n">order</span><span class="o">=</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span>
+<a name="ln-118"></a>  <span class="k">end block</span>
+<a name="ln-119"></a>
+<a name="ln-120"></a>    <span class="c">!inquire(u, pos=itell)</span>
+<a name="ln-121"></a>  <span class="c">!print *,&#39;file pos before read&#39;,itell</span>
+<a name="ln-122"></a>  <span class="c">!read(u) nullptsall</span>
+<a name="ln-123"></a>  <span class="c">!print *,&#39;lx1&#39;,lx1,&#39;lx2&#39;,lx2,&#39;lx3all&#39;,lx3all</span>
+<a name="ln-124"></a>  <span class="c">!print *,&#39;shape(nullptsall)&#39;,shape(nullptsall)</span>
+<a name="ln-125"></a>  <span class="c">!inquire(u, pos=itell)</span>
+<a name="ln-126"></a>  <span class="c">!print *,&#39;file pos after read&#39;,itell</span>
+<a name="ln-127"></a><span class="c">! FIXME BROKEN!</span>
+<a name="ln-128"></a>  <span class="c">!allocate(nullptsall(lx1,lx2,lx3all))</span>
+<a name="ln-129"></a>  <span class="c">!print *,shape(nullptsall)</span>
+<a name="ln-130"></a>  <span class="c">!stop</span>
+<a name="ln-131"></a>
+<a name="ln-132"></a>  <span class="c">! FIXME would be like this, but this doesn&#39;t work.</span>
+<a name="ln-133"></a>  <span class="c">!allocate(nullptsall(lx1,lx2,lx3all))</span>
+<a name="ln-134"></a>  <span class="c">!read(u) nullptsall</span>
+<a name="ln-135"></a>
+<a name="ln-136"></a>  <span class="k">block</span>
+<a name="ln-137"></a><span class="k">  </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span> <span class="k">dimension</span><span class="p">(</span><span class="n">lx1</span><span class="p">,</span><span class="n">lx3all</span><span class="p">,</span><span class="n">lx2all</span><span class="p">)</span> <span class="kd">::</span> <span class="n">htmp</span>
+<a name="ln-138"></a>  <span class="k">read</span><span class="p">(</span><span class="n">u</span><span class="p">)</span> <span class="n">htmp</span>
+<a name="ln-139"></a>  <span class="n">nullptsall</span><span class="o">=</span><span class="nb">reshape</span><span class="p">(</span><span class="n">htmp</span><span class="p">,[</span><span class="n">lx1</span><span class="p">,</span><span class="n">lx2all</span><span class="p">,</span><span class="n">lx3all</span><span class="p">],</span><span class="n">order</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">])</span>
+<a name="ln-140"></a>  <span class="k">end block</span>
+<a name="ln-141"></a>
+<a name="ln-142"></a><span class="k">  block</span>
+<a name="ln-143"></a><span class="k">  </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span> <span class="k">dimension</span><span class="p">(</span><span class="n">lx1</span><span class="p">,</span><span class="n">lx3all</span><span class="p">,</span><span class="n">lx2all</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span> <span class="kd">::</span> <span class="n">htmp</span>
+<a name="ln-144"></a>  <span class="k">read</span><span class="p">(</span><span class="n">u</span><span class="p">)</span> <span class="n">htmp</span>
+<a name="ln-145"></a>  <span class="n">e1all</span><span class="o">=</span><span class="nb">reshape</span><span class="p">(</span><span class="n">htmp</span><span class="p">,[</span><span class="n">lx1</span><span class="p">,</span><span class="n">lx2all</span><span class="p">,</span><span class="n">lx3all</span><span class="p">,</span><span class="mi">3</span><span class="p">],</span><span class="n">order</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">])</span>
+<a name="ln-146"></a>
+<a name="ln-147"></a>  <span class="c">!! swap the x2/x3 unit vectors</span>
+<a name="ln-148"></a>  <span class="k">read</span><span class="p">(</span><span class="n">u</span><span class="p">)</span> <span class="n">htmp</span>
+<a name="ln-149"></a>  <span class="n">e3all</span><span class="o">=</span><span class="nb">reshape</span><span class="p">(</span><span class="n">htmp</span><span class="p">,[</span><span class="n">lx1</span><span class="p">,</span><span class="n">lx2all</span><span class="p">,</span><span class="n">lx3all</span><span class="p">,</span><span class="mi">3</span><span class="p">],</span><span class="n">order</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">])</span>
+<a name="ln-150"></a>  <span class="k">read</span><span class="p">(</span><span class="n">u</span><span class="p">)</span> <span class="n">htmp</span>
+<a name="ln-151"></a>  <span class="n">e2all</span><span class="o">=</span><span class="nb">reshape</span><span class="p">(</span><span class="n">htmp</span><span class="p">,[</span><span class="n">lx1</span><span class="p">,</span><span class="n">lx2all</span><span class="p">,</span><span class="n">lx3all</span><span class="p">,</span><span class="mi">3</span><span class="p">],</span><span class="n">order</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">])</span>
+<a name="ln-152"></a>  <span class="k">read</span><span class="p">(</span><span class="n">u</span><span class="p">)</span> <span class="n">htmp</span>
+<a name="ln-153"></a>  <span class="n">erall</span><span class="o">=</span><span class="nb">reshape</span><span class="p">(</span><span class="n">htmp</span><span class="p">,[</span><span class="n">lx1</span><span class="p">,</span><span class="n">lx2all</span><span class="p">,</span><span class="n">lx3all</span><span class="p">,</span><span class="mi">3</span><span class="p">],</span><span class="n">order</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">])</span>
+<a name="ln-154"></a>  <span class="k">read</span><span class="p">(</span><span class="n">u</span><span class="p">)</span> <span class="n">htmp</span>
+<a name="ln-155"></a>  <span class="n">ethetaall</span><span class="o">=</span><span class="nb">reshape</span><span class="p">(</span><span class="n">htmp</span><span class="p">,[</span><span class="n">lx1</span><span class="p">,</span><span class="n">lx2all</span><span class="p">,</span><span class="n">lx3all</span><span class="p">,</span><span class="mi">3</span><span class="p">],</span><span class="n">order</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">])</span>
+<a name="ln-156"></a>  <span class="k">read</span><span class="p">(</span><span class="n">u</span><span class="p">)</span> <span class="n">htmp</span>
+<a name="ln-157"></a>  <span class="n">ephiall</span><span class="o">=</span><span class="nb">reshape</span><span class="p">(</span><span class="n">htmp</span><span class="p">,[</span><span class="n">lx1</span><span class="p">,</span><span class="n">lx2all</span><span class="p">,</span><span class="n">lx3all</span><span class="p">,</span><span class="mi">3</span><span class="p">],</span><span class="n">order</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">])</span>
+<a name="ln-158"></a>  <span class="k">end block</span>
+<a name="ln-159"></a>
+<a name="ln-160"></a><span class="k">  block</span>
+<a name="ln-161"></a><span class="k">  </span><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span> <span class="k">dimension</span><span class="p">(</span><span class="n">lx1</span><span class="p">,</span><span class="n">lx3all</span><span class="p">,</span><span class="n">lx2all</span><span class="p">)</span> <span class="kd">::</span> <span class="n">htmp</span>
+<a name="ln-162"></a>  <span class="k">read</span><span class="p">(</span><span class="n">u</span><span class="p">)</span> <span class="n">htmp</span>
+<a name="ln-163"></a>  <span class="n">rall</span><span class="o">=</span><span class="nb">reshape</span><span class="p">(</span><span class="n">htmp</span><span class="p">,[</span><span class="n">lx1</span><span class="p">,</span><span class="n">lx2all</span><span class="p">,</span><span class="n">lx3all</span><span class="p">],</span><span class="n">order</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">])</span>
+<a name="ln-164"></a>  <span class="k">read</span><span class="p">(</span><span class="n">u</span><span class="p">)</span> <span class="n">htmp</span>
+<a name="ln-165"></a>  <span class="n">thetaall</span><span class="o">=</span><span class="nb">reshape</span><span class="p">(</span><span class="n">htmp</span><span class="p">,[</span><span class="n">lx1</span><span class="p">,</span><span class="n">lx2all</span><span class="p">,</span><span class="n">lx3all</span><span class="p">],</span><span class="n">order</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">])</span>
+<a name="ln-166"></a>  <span class="k">read</span><span class="p">(</span><span class="n">u</span><span class="p">)</span> <span class="n">htmp</span>
+<a name="ln-167"></a>  <span class="n">phiall</span><span class="o">=</span><span class="nb">reshape</span><span class="p">(</span><span class="n">htmp</span><span class="p">,[</span><span class="n">lx1</span><span class="p">,</span><span class="n">lx2all</span><span class="p">,</span><span class="n">lx3all</span><span class="p">],</span><span class="n">order</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">])</span>
+<a name="ln-168"></a>  <span class="k">end block</span>
+<a name="ln-169"></a><span class="n">endif</span>
+<a name="ln-170"></a>
+<a name="ln-171"></a><span class="k">close</span><span class="p">(</span><span class="n">u</span><span class="p">)</span>
+<a name="ln-172"></a>
+<a name="ln-173"></a><span class="n">x</span><span class="p">%</span><span class="n">rall</span><span class="o">=</span><span class="n">rall</span>
+<a name="ln-174"></a><span class="n">x</span><span class="p">%</span><span class="n">thetaall</span><span class="o">=</span><span class="n">thetaall</span>
+<a name="ln-175"></a><span class="n">x</span><span class="p">%</span><span class="n">phiall</span><span class="o">=</span><span class="n">phiall</span>
+<a name="ln-176"></a>
+<a name="ln-177"></a><span class="k">end procedure </span><span class="n">get_grid3</span>
+<a name="ln-178"></a>
+<a name="ln-179"></a><span class="k">end submodule </span><span class="n">readgrid_raw</span>
+</pre></div>
+
+    </section>
+    </div>
+  </div>
+
+  
+    <hr>    
+    </div> <!-- /container -->
+    <footer>
+      <div class="container">
+      <div class="row">
+        <div class="col-xs-6 col-md-4"><p>&copy; 2020 <a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/80x15.png" /></a>
+                                          </p></div>
+        <div class="col-xs-6 col-md-4 col-md-push-4">
+          <p class="text-right">
+            Documentation generated by 
+            <a href="https://github.com/cmacmackin/ford">FORD</a>
+            
+          </p>
+        </div>
+        <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> GEMINI3D was developed by Matthew Zettergren
+Guy Grubbs
+Michael Hirsch</p></div>
+      </div>
+      <br>
+      </div> <!-- /container -->    
+    </footer>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+<!--
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+-->
+    <script src="../js/bootstrap.min.js"></script>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <script src="../js/ie10-viewport-bug-workaround.js"></script>
+
+    <!-- MathJax JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } },
+        jax: ['input/TeX','input/MathML','output/HTML-CSS'],
+        extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']
+      });
+    </script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    
+    
+  </body>
+</html>

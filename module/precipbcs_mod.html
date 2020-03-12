@@ -64,6 +64,8 @@ Michael Hirsch" >
             <li><a href="../lists/modules.html">Modules</a></li>
         
             
+    <li><a href="../blockdata/gtd7bk.html">Block Data</a></li>
+    
                                 
             <li><a href="../lists/procedures.html">Procedures</a></li>
         
@@ -83,6 +85,8 @@ Michael Hirsch" >
 
 <li class="visible-xs hidden-sm visible-lg"><a href="../lists/modules.html">Modules</a></li>
 
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../blockdata/gtd7bk.html">Block Data</a></li>
 
 
 <li class="visible-xs hidden-sm visible-lg"><a href="../lists/procedures.html">Procedures</a></li>
@@ -121,7 +125,7 @@ Michael Hirsch" >
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 3.2% of total for modules and submodules.">235 statements</a>
+    title=" 2.2% of total for modules and submodules.">232 statements</a>
      </li> 
      
      
@@ -172,15 +176,15 @@ Michael Hirsch" >
       
       <a class="list-group-item" href="../module/precipbcs_mod.html#variable-llat~2">llat</a>
       
-      <a class="list-group-item" href="../module/precipbcs_mod.html#variable-qp">Qp</a>
+      <a class="list-group-item" href="../module/precipbcs_mod.html#variable-qp~2">Qp</a>
       
-      <a class="list-group-item" href="../module/precipbcs_mod.html#variable-e0p">E0p</a>
+      <a class="list-group-item" href="../module/precipbcs_mod.html#variable-e0p~2">E0p</a>
       
       <a class="list-group-item" href="../module/precipbcs_mod.html#variable-precdatp">precdatp</a>
       
-      <a class="list-group-item" href="../module/precipbcs_mod.html#variable-mloni~2">mloni</a>
+      <a class="list-group-item" href="../module/precipbcs_mod.html#variable-mloni">mloni</a>
       
-      <a class="list-group-item" href="../module/precipbcs_mod.html#variable-mlati~2">mlati</a>
+      <a class="list-group-item" href="../module/precipbcs_mod.html#variable-mlati">mlati</a>
       
       <a class="list-group-item" href="../module/precipbcs_mod.html#variable-qiprev">Qiprev</a>
       
@@ -190,13 +194,13 @@ Michael Hirsch" >
       
       <a class="list-group-item" href="../module/precipbcs_mod.html#variable-e0inext">E0inext</a>
       
-      <a class="list-group-item" href="../module/precipbcs_mod.html#variable-ymdprev~3">ymdprev</a>
+      <a class="list-group-item" href="../module/precipbcs_mod.html#variable-ymdprev">ymdprev</a>
       
-      <a class="list-group-item" href="../module/precipbcs_mod.html#variable-ymdnext~3">ymdnext</a>
+      <a class="list-group-item" href="../module/precipbcs_mod.html#variable-ymdnext">ymdnext</a>
       
-      <a class="list-group-item" href="../module/precipbcs_mod.html#variable-utsecprev~3">UTsecprev</a>
+      <a class="list-group-item" href="../module/precipbcs_mod.html#variable-utsecprev">UTsecprev</a>
       
-      <a class="list-group-item" href="../module/precipbcs_mod.html#variable-utsecnext~3">UTsecnext</a>
+      <a class="list-group-item" href="../module/precipbcs_mod.html#variable-utsecnext">UTsecnext</a>
       
       <a class="list-group-item" href="../module/precipbcs_mod.html#variable-tprev~3">tprev</a>
       
@@ -249,219 +253,7 @@ Michael Hirsch" >
     </div>
     
     <div class="col-md-9" id='text'>
-    <div class="codehilite"><pre><span></span>  sigW0x3=100d3
-  meanW0x3=0d0
-
-  PhiWpk=1d-5    !successful grad-drift attempts
-  PhiWpk=1d-4    !Swoboda blur testing
-  PhiWpk=0.05d0    !testing of convergent Hall drifts
-  PhiWpk=5d0
-  sigPhiWx3=100d3
-  meanPhiWx3=0d0
-
-  W0pk=0.3d3
-  sigW0x3=100d3
-  meanW0x3=0d0
-  PhiWpk=2d0
-  sigPhiWx3=100d3
-  meanPhiWx3=0d0
-
-
-
-sigx3=10d3
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  sigW0x3=100d3
-  meanW0x3=0d0
-
-
-
-sigx3=10d3
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-lx2=size(W0,1)
-lx3=size(W0,2)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-if (t&lt;1800) then
-  PhiWpk=1d-5    !something very small, but nonzero
-else
-  PhiWpk=2d0
-end if
-
-
-
-sigx3=0.33d0*(x3(lx3)-x3(1))     !needs to be calculated based on full grid
-meanx3=0.5d0*(x3(1)+x3(lx3))     !ditto
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-!PARAMETERS FOR DISTURBANCE PRECIPITATION
-W0pk=100d0
-</pre></div>
-
-
-<p>!      sigW0x3=100d3
-!      meanW0x3=0d0
-!    PhiWpk=0.4d0     !Perry, et al 2015 RISR arc example
-      PhiWpk=1d-5    !successful grad-drift attempts
-!      PhiWpk=1d-4    !Swoboda blur testing
-!      PhiWpk=0.05d0    !testing of convergent Hall drifts
-!      PhiWpk=5d0
-!      sigPhiWx3=100d3
-!      meanPhiWx3=0d0</p>
-<p>!      W0pk=0.3d3
-!      sigW0x3=100d3
-!      meanW0x3=0d0
-!      PhiWpk=2d0
-!      sigPhiWx3=100d3
-!      meanPhiWx3=0d0</p>
-<div class="codehilite"><pre><span></span>sigx2=50d3
-meanx2=0d0
-</pre></div>
-
-
-<p>!    sigx3=10d3
-    sigx3=25d3
-    meant=900d0
-    sigt=450d0
-    x30amp=0d3
-    varc=200d0</p>
-<div class="codehilite"><pre><span></span><span class="sx">!DISTURBANCE ELECTRON PRECIPITATION PATTERN</span>
-<span class="n">do</span> <span class="n">ix3</span><span class="p">=</span><span class="mi">1</span><span class="p">,</span><span class="n">lx3</span>
-  <span class="n">do</span> <span class="n">ix2</span><span class="p">=</span><span class="mi">1</span><span class="p">,</span><span class="n">lx2</span>
-    <span class="n">meanx3</span><span class="p">=</span><span class="o">-</span><span class="n">varc</span><span class="o">*</span><span class="n">meant</span><span class="o">+</span><span class="n">varc</span><span class="o">*</span><span class="n">t</span>
-
-    <span class="n">W0</span><span class="p">(</span><span class="n">ix2</span><span class="p">,</span><span class="n">ix3</span><span class="p">,</span><span class="mi">2</span><span class="p">)=</span><span class="n">W0pk</span>
-</pre></div>
-
-
-<p>!        PhiWmWm2(ix2,ix3)=PhiWpk
-        PhiWmWm2(ix2,ix3,2)=(PhiWpk<em>exp(-(x3(ix3)-(-sigx3+meanx3+x30amp</em>cos(2d0<em>pi/(sigx2/2d0)</em>x2(ix2)) ))<strong>2/2d0/sigx3</strong>2)- &amp;
-                          Phiwpk<em>exp(-(x3(ix3)-(sigx3+meanx3+x30amp</em>cos(2d0<em>pi/(sigx2/2d0)</em>x2(ix2)) ))<strong>2/2d0/sigx3</strong>2) )<em> &amp;
-                            exp(-(x2(ix2)-meanx2)<strong>2/2d0/sigx2</strong>2)</em>exp(-(t-meant)<strong>2/2d0/sigt</strong>2)
-        if (PhiWmWm2(ix2,ix3,2) &lt; 0d0) then
-          PhiWmWm2(ix2,ix3,2)=0d0
-        end if
-!        PhiWmWm2(ix2,ix3,2)=(PhiWpk<em>exp(-(x3(ix3)-(-sigx3+meanx3+x30amp</em>cos(2d0<em>pi/(sigx2/2d0)</em>x2(ix2)) ))<strong>2/2d0/sigx3</strong>2) )<em> &amp;
-!                              exp(-(x2(ix2)-meanx2)<strong>2/2d0/sigx2</strong>2)</em>exp(-(t-meant)<strong>2/2d0/sigt</strong>2)
-      end do
-    end do</p>
+    
       <br>
     
   
@@ -476,15 +268,19 @@ meanx2=0d0
     
     <li><a href="http://fortranwiki.org/fortran/show/ISO_FORTRAN_ENV">iso_fortran_env</a></li>
     
+    <li><a href="http://fortranwiki.org/fortran/show/IEEE_ARITHMETIC">ieee_arithmetic</a></li>
+    
+    <li><a href='../module/reader.html'>reader</a></li>
+    
     <li><a href='../module/phys_consts.html'>phys_consts</a></li>
     
     <li><a href='../module/grid.html'>grid</a></li>
     
+    <li><a href='../module/mesh.html'>mesh</a></li>
+    
     <li><a href='../module/interpolation.html'>interpolation</a></li>
     
-    <li><a href='../module/io.html'>io</a></li>
-    
-    <li><a href='../module/temporal.html'>temporal</a></li>
+    <li><a href='../module/timeutils.html'>timeutils</a></li>
     
     <li><a href='../module/mpimod.html'>mpimod</a></li>
     
@@ -493,11 +289,452 @@ meanx2=0d0
       
       
       
+      <li class="list-group-item">
+  <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.40.1 (20161225.0304)
+ -->
+<!-- Title: module~~precipbcs_mod~~UsesGraph Pages: 1 -->
+<svg id="moduleprecipbcs_modUsesGraph" width="538pt" height="308pt"
+ viewBox="0.00 0.00 538.00 307.90" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="module~~precipbcs_mod~~UsesGraph" class="graph" transform="scale(1 1) rotate(0) translate(4 303.9006)">
+<title>module~~precipbcs_mod~~UsesGraph</title>
+<polygon fill="#ffffff" stroke="transparent" points="-4,4 -4,-303.9006 534,-303.9006 534,4 -4,4"/>
+<!-- module~precipbcs_mod -->
+<g id="module~~precipbcs_mod~~UsesGraph_node1" class="node">
+<title>module~precipbcs_mod</title>
+<polygon fill="none" stroke="#000000" points="530,-124 442,-124 442,-100 530,-100 530,-124"/>
+<text text-anchor="middle" x="486" y="-109.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#000000">precipBCs_mod</text>
+</g>
+<!-- ieee_arithmetic -->
+<g id="module~~precipbcs_mod~~UsesGraph_node2" class="node">
+<title>ieee_arithmetic</title>
+<g id="a_module~~precipbcs_mod~~UsesGraph_node2"><a xlink:href="http://fortranwiki.org/fortran/show/IEEE_ARITHMETIC" xlink:title="ieee_arithmetic">
+<polygon fill="#337ab7" stroke="#337ab7" points="406,-264 321,-264 321,-240 406,-240 406,-264"/>
+<text text-anchor="middle" x="363.5" y="-249.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">ieee_arithmetic</text>
+</a>
+</g>
+</g>
+<!-- module~precipbcs_mod&#45;&gt;ieee_arithmetic -->
+<g id="module~~precipbcs_mod~~UsesGraph_edge1" class="edge">
+<title>module~precipbcs_mod&#45;&gt;ieee_arithmetic</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M479.6577,-124.202C467.6282,-146.488 439.6655,-194.3874 406,-226 402.8788,-228.9309 399.3756,-231.7004 395.7549,-234.2614"/>
+<polygon fill="#000000" stroke="#000000" points="393.6768,-231.4383 387.2176,-239.8365 397.5042,-237.2993 393.6768,-231.4383"/>
+</g>
+<!-- module~reader -->
+<g id="module~~precipbcs_mod~~UsesGraph_node3" class="node">
+<title>module~reader</title>
+<g id="a_module~~precipbcs_mod~~UsesGraph_node3"><a xlink:href=".././module/reader.html" xlink:title="reader">
+<polygon fill="#337ab7" stroke="#337ab7" points="285,-184 231,-184 231,-160 285,-160 285,-184"/>
+<text text-anchor="middle" x="258" y="-169.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">reader</text>
+</a>
+</g>
+</g>
+<!-- module~precipbcs_mod&#45;&gt;module~reader -->
+<g id="module~~precipbcs_mod~~UsesGraph_edge2" class="edge">
+<title>module~precipbcs_mod&#45;&gt;module~reader</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M475.1999,-124.1205C455.3583,-145.5575 410.7826,-189.9718 363.5,-212"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M363.5,-212C335.128,-225.218 301.0719,-206.3515 279.4811,-190.3035"/>
+<polygon fill="#000000" stroke="#000000" points="281.6218,-187.5345 271.5844,-184.1434 277.3163,-193.0538 281.6218,-187.5345"/>
+</g>
+<!-- iso_fortran_env -->
+<g id="module~~precipbcs_mod~~UsesGraph_node4" class="node">
+<title>iso_fortran_env</title>
+<g id="a_module~~precipbcs_mod~~UsesGraph_node4"><a xlink:href="http://fortranwiki.org/fortran/show/ISO_FORTRAN_ENV" xlink:title="iso_fortran_env">
+<polygon fill="#337ab7" stroke="#337ab7" points="87,-124 0,-124 0,-100 87,-100 87,-124"/>
+<text text-anchor="middle" x="43.5" y="-109.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">iso_fortran_env</text>
+</a>
+</g>
+</g>
+<!-- module~precipbcs_mod&#45;&gt;iso_fortran_env -->
+<g id="module~~precipbcs_mod~~UsesGraph_edge3" class="edge">
+<title>module~precipbcs_mod&#45;&gt;iso_fortran_env</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M363.5,-212C344.6853,-220.6084 337.5799,-218.6223 321,-231 301.299,-245.7077 306.5056,-261.0856 285,-273 235.4613,-300.445 213.8291,-306.1802 159,-292"/>
+</g>
+<!-- module~phys_consts -->
+<g id="module~~precipbcs_mod~~UsesGraph_node5" class="node">
+<title>module~phys_consts</title>
+<g id="a_module~~precipbcs_mod~~UsesGraph_node5"><a xlink:href=".././module/phys_consts.html" xlink:title="phys_consts">
+<polygon fill="#337ab7" stroke="#337ab7" points="195,-124 123,-124 123,-100 195,-100 195,-124"/>
+<text text-anchor="middle" x="159" y="-109.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">phys_consts</text>
+</a>
+</g>
+</g>
+<!-- module~precipbcs_mod&#45;&gt;module~phys_consts -->
+<g id="module~~precipbcs_mod~~UsesGraph_edge4" class="edge">
+<title>module~precipbcs_mod&#45;&gt;module~phys_consts</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M363.5,-212C309.5738,-237.1233 283.3987,-221.1707 231,-193 204.9382,-178.9886 183.725,-151.6237 171.2386,-132.5997"/>
+<polygon fill="#000000" stroke="#000000" points="174.1242,-130.6141 165.827,-124.0257 168.2047,-134.3503 174.1242,-130.6141"/>
+</g>
+<!-- module~interpolation -->
+<g id="module~~precipbcs_mod~~UsesGraph_node6" class="node">
+<title>module~interpolation</title>
+<g id="a_module~~precipbcs_mod~~UsesGraph_node6"><a xlink:href=".././module/interpolation.html" xlink:title="interpolation">
+<polygon fill="#337ab7" stroke="#337ab7" points="399,-144 328,-144 328,-120 399,-120 399,-144"/>
+<text text-anchor="middle" x="363.5" y="-129.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">interpolation</text>
+</a>
+</g>
+</g>
+<!-- module~precipbcs_mod&#45;&gt;module~interpolation -->
+<g id="module~~precipbcs_mod~~UsesGraph_edge5" class="edge">
+<title>module~precipbcs_mod&#45;&gt;module~interpolation</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M441.7747,-119.2205C431.18,-120.9502 419.8471,-122.8005 409.1876,-124.5408"/>
+<polygon fill="#000000" stroke="#000000" points="408.5255,-121.1025 399.2202,-126.1681 409.6535,-128.011 408.5255,-121.1025"/>
+</g>
+<!-- module~mesh -->
+<g id="module~~precipbcs_mod~~UsesGraph_node7" class="node">
+<title>module~mesh</title>
+<g id="a_module~~precipbcs_mod~~UsesGraph_node7"><a xlink:href=".././module/mesh.html" xlink:title="mesh">
+<polygon fill="#337ab7" stroke="#337ab7" points="285,-104 231,-104 231,-80 285,-80 285,-104"/>
+<text text-anchor="middle" x="258" y="-89.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">mesh</text>
+</a>
+</g>
+</g>
+<!-- module~precipbcs_mod&#45;&gt;module~mesh -->
+<g id="module~~precipbcs_mod~~UsesGraph_edge6" class="edge">
+<title>module~precipbcs_mod&#45;&gt;module~mesh</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M441.769,-108.1201C399.2112,-104.387 335.5756,-98.8049 295.4535,-95.2854"/>
+<polygon fill="#000000" stroke="#000000" points="295.5601,-91.7814 285.2924,-94.3941 294.9483,-98.7546 295.5601,-91.7814"/>
+</g>
+<!-- module~mpimod -->
+<g id="module~~precipbcs_mod~~UsesGraph_node8" class="node">
+<title>module~mpimod</title>
+<g id="a_module~~precipbcs_mod~~UsesGraph_node8"><a xlink:href=".././module/mpimod.html" xlink:title="mpimod">
+<polygon fill="#337ab7" stroke="#337ab7" points="285,-24 231,-24 231,0 285,0 285,-24"/>
+<text text-anchor="middle" x="258" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">mpimod</text>
+</a>
+</g>
+</g>
+<!-- module~precipbcs_mod&#45;&gt;module~mpimod -->
+<g id="module~~precipbcs_mod~~UsesGraph_edge7" class="edge">
+<title>module~precipbcs_mod&#45;&gt;module~mpimod</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M478.1022,-99.9113C465.3673,-81.5424 438.4159,-47.0461 406,-31 371.166,-13.757 326.3255,-10.1993 295.1734,-10.2084"/>
+<polygon fill="#000000" stroke="#000000" points="295.1232,-6.7086 285.1678,-10.3336 295.2109,-13.7081 295.1232,-6.7086"/>
+</g>
+<!-- module~grid -->
+<g id="module~~precipbcs_mod~~UsesGraph_node9" class="node">
+<title>module~grid</title>
+<g id="a_module~~precipbcs_mod~~UsesGraph_node9"><a xlink:href=".././module/grid.html" xlink:title="grid">
+<polygon fill="#337ab7" stroke="#337ab7" points="390.5,-64 336.5,-64 336.5,-40 390.5,-40 390.5,-64"/>
+<text text-anchor="middle" x="363.5" y="-49.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">grid</text>
+</a>
+</g>
+</g>
+<!-- module~precipbcs_mod&#45;&gt;module~grid -->
+<g id="module~~precipbcs_mod~~UsesGraph_edge8" class="edge">
+<title>module~precipbcs_mod&#45;&gt;module~grid</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M461.2103,-99.8581C442.8628,-90.8716 417.6526,-78.5237 397.4355,-68.6215"/>
+<polygon fill="#000000" stroke="#000000" points="398.773,-65.3793 388.2528,-64.1238 395.6939,-71.6658 398.773,-65.3793"/>
+</g>
+<!-- module~timeutils -->
+<g id="module~~precipbcs_mod~~UsesGraph_node10" class="node">
+<title>module~timeutils</title>
+<g id="a_module~~precipbcs_mod~~UsesGraph_node10"><a xlink:href=".././module/timeutils.html" xlink:title="timeutils">
+<polygon fill="#337ab7" stroke="#337ab7" points="285,-264 231,-264 231,-240 285,-240 285,-264"/>
+<text text-anchor="middle" x="258" y="-249.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">timeutils</text>
+</a>
+</g>
+</g>
+<!-- module~precipbcs_mod&#45;&gt;module~timeutils -->
+<g id="module~~precipbcs_mod~~UsesGraph_edge9" class="edge">
+<title>module~precipbcs_mod&#45;&gt;module~timeutils</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M363.5,-212C341.2219,-222.379 315.4392,-232.1926 294.9386,-239.502"/>
+<polygon fill="#000000" stroke="#000000" points="293.6087,-236.2595 285.3375,-242.8805 295.9323,-242.8626 293.6087,-236.2595"/>
+</g>
+<!-- module~reader&#45;&gt;iso_fortran_env -->
+<g id="module~~precipbcs_mod~~UsesGraph_edge10" class="edge">
+<title>module~reader&#45;&gt;iso_fortran_env</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M251.4819,-184.2754C234.0886,-216.2205 186.063,-298.9992 159,-292"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M159,-292C88.5796,-273.7875 58.3007,-178.0451 47.9649,-134.0937"/>
+<polygon fill="#000000" stroke="#000000" points="51.3343,-133.1206 45.7545,-124.1142 44.4999,-134.6344 51.3343,-133.1206"/>
+</g>
+<!-- module~reader&#45;&gt;module~phys_consts -->
+<g id="module~~precipbcs_mod~~UsesGraph_edge11" class="edge">
+<title>module~reader&#45;&gt;module~phys_consts</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M237.9659,-159.8581C223.6078,-151.1562 204.0493,-139.3026 187.9898,-129.5696"/>
+<polygon fill="#000000" stroke="#000000" points="189.3704,-126.3137 179.0043,-124.1238 185.7423,-132.3001 189.3704,-126.3137"/>
+</g>
+<!-- module~phys_consts&#45;&gt;iso_fortran_env -->
+<g id="module~~precipbcs_mod~~UsesGraph_edge12" class="edge">
+<title>module~phys_consts&#45;&gt;iso_fortran_env</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M122.772,-112C114.6884,-112 105.9484,-112 97.3255,-112"/>
+<polygon fill="#000000" stroke="#000000" points="97.3033,-108.5001 87.3033,-112 97.3032,-115.5001 97.3033,-108.5001"/>
+</g>
+<!-- module~interpolation&#45;&gt;module~phys_consts -->
+<g id="module~~precipbcs_mod~~UsesGraph_edge13" class="edge">
+<title>module~interpolation&#45;&gt;module~phys_consts</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M327.8788,-128.5163C293.8836,-125.1916 242.4845,-120.1647 205.3219,-116.5303"/>
+<polygon fill="#000000" stroke="#000000" points="205.5372,-113.0347 195.244,-115.5446 204.8558,-120.0015 205.5372,-113.0347"/>
+</g>
+<!-- module~mesh&#45;&gt;module~phys_consts -->
+<g id="module~~precipbcs_mod~~UsesGraph_edge14" class="edge">
+<title>module~mesh&#45;&gt;module~phys_consts</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M230.9478,-97.4651C222.9614,-99.0785 213.9859,-100.8917 205.1532,-102.6761"/>
+<polygon fill="#000000" stroke="#000000" points="204.4107,-99.2553 195.3018,-104.6663 205.7969,-106.1167 204.4107,-99.2553"/>
+</g>
+<!-- module~mpimod&#45;&gt;iso_fortran_env -->
+<g id="module~~precipbcs_mod~~UsesGraph_edge16" class="edge">
+<title>module~mpimod&#45;&gt;iso_fortran_env</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M230.9369,-23.6982C211.1775,-32.0515 183.6482,-43.3025 159,-52"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M159,-52C127.7238,-63.0362 94.3437,-81.141 71.5537,-94.5809"/>
+<polygon fill="#000000" stroke="#000000" points="69.5521,-91.6999 62.7701,-99.8397 73.1478,-97.7058 69.5521,-91.6999"/>
+</g>
+<!-- module~mpimod&#45;&gt;module~phys_consts -->
+<g id="module~~precipbcs_mod~~UsesGraph_edge17" class="edge">
+<title>module~mpimod&#45;&gt;module~phys_consts</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M245.2803,-24.0847C240.7424,-28.4391 235.6134,-33.4104 231,-38 212.6039,-56.3013 191.9893,-77.5679 177.548,-92.5937"/>
+<polygon fill="#000000" stroke="#000000" points="174.9999,-90.194 170.6033,-99.8335 180.0516,-95.0397 174.9999,-90.194"/>
+</g>
+<!-- mpi -->
+<g id="module~~precipbcs_mod~~UsesGraph_node11" class="node">
+<title>mpi</title>
+<g id="a_module~~precipbcs_mod~~UsesGraph_node11"><a xlink:href="http://www.mpi-forum.org/docs/mpi-3.1/mpi31-report/node410.htm" xlink:title="mpi">
+<polygon fill="#337ab7" stroke="#337ab7" points="186,-24 132,-24 132,0 186,0 186,-24"/>
+<text text-anchor="middle" x="159" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">mpi</text>
+</a>
+</g>
+</g>
+<!-- module~mpimod&#45;&gt;mpi -->
+<g id="module~~precipbcs_mod~~UsesGraph_edge15" class="edge">
+<title>module~mpimod&#45;&gt;mpi</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M230.9478,-12C220.2528,-12 207.784,-12 196.2596,-12"/>
+<polygon fill="#000000" stroke="#000000" points="196.0195,-8.5001 186.0195,-12 196.0194,-15.5001 196.0195,-8.5001"/>
+</g>
+<!-- module~grid&#45;&gt;module~reader -->
+<g id="module~~precipbcs_mod~~UsesGraph_edge18" class="edge">
+<title>module~grid&#45;&gt;module~reader</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M352.607,-64.3901C334.3493,-85.1572 297.4205,-127.1615 275.4902,-152.1059"/>
+<polygon fill="#000000" stroke="#000000" points="272.6508,-150.0348 268.6766,-159.856 277.908,-154.6567 272.6508,-150.0348"/>
+</g>
+<!-- module~grid&#45;&gt;iso_fortran_env -->
+<g id="module~~precipbcs_mod~~UsesGraph_edge19" class="edge">
+<title>module~grid&#45;&gt;iso_fortran_env</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M336.4555,-49.8288C315.0471,-48.6313 284.4525,-48.0801 258,-52"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M258,-52C214.4753,-58.4498 200.4926,-37.3588 159,-52"/>
+</g>
+<!-- module~grid&#45;&gt;module~phys_consts -->
+<g id="module~~precipbcs_mod~~UsesGraph_edge20" class="edge">
+<title>module~grid&#45;&gt;module~phys_consts</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M258,-52C227.3474,-56.5423 197.7063,-77.3776 178.9773,-93.2323"/>
+<polygon fill="#000000" stroke="#000000" points="176.6171,-90.6469 171.4116,-99.8748 181.2355,-95.9072 176.6171,-90.6469"/>
+</g>
+<!-- module~grid&#45;&gt;module~mesh -->
+<g id="module~~precipbcs_mod~~UsesGraph_edge21" class="edge">
+<title>module~grid&#45;&gt;module~mesh</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M336.3311,-62.301C323.656,-67.1067 308.3809,-72.8982 294.6984,-78.0859"/>
+<polygon fill="#000000" stroke="#000000" points="293.1864,-74.916 285.0768,-81.7339 295.6681,-81.4613 293.1864,-74.916"/>
+</g>
+<!-- module~grid&#45;&gt;module~mpimod -->
+<g id="module~~precipbcs_mod~~UsesGraph_edge22" class="edge">
+<title>module~grid&#45;&gt;module~mpimod</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M336.3311,-41.699C323.656,-36.8933 308.3809,-31.1018 294.6984,-25.9141"/>
+<polygon fill="#000000" stroke="#000000" points="295.6681,-22.5387 285.0768,-22.2661 293.1864,-29.084 295.6681,-22.5387"/>
+</g>
+<!-- module~timeutils&#45;&gt;iso_fortran_env -->
+<g id="module~~precipbcs_mod~~UsesGraph_edge23" class="edge">
+<title>module~timeutils&#45;&gt;iso_fortran_env</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M243.6467,-264.1688C224.7407,-278.6948 190.2276,-300.0762 159,-292"/>
+</g>
+<!-- module~timeutils&#45;&gt;module~phys_consts -->
+<g id="module~~precipbcs_mod~~UsesGraph_edge24" class="edge">
+<title>module~timeutils&#45;&gt;module~phys_consts</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M244.1679,-239.9017C239.7301,-235.7097 234.9466,-230.8427 231,-226 206.4351,-195.8572 183.4343,-156.8334 170.3107,-133.1454"/>
+<polygon fill="#000000" stroke="#000000" points="173.3382,-131.3868 165.4705,-124.2911 167.196,-134.7445 173.3382,-131.3868"/>
+</g>
+</g>
+</svg>
+</div><div><a type="button" class="graph-help" data-toggle="modal" href="#graph-help-text">Help</a></div><div class="modal fade" id="graph-help-text" tabindex="-1" role="dialog"><div class="modal-dialog modal-lg" role="document"><div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button><h4 class="modal-title" id="-graph-help-label">Graph Key</h4></div><div class="modal-body">
+    <p>Nodes of different colours represent the following: </p>
+    <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.40.1 (20161225.0304)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="490pt" height="32pt"
+ viewBox="0.00 0.00 489.50 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 28)">
+<title>Graph Key</title>
+<polygon fill="#ffffff" stroke="transparent" points="-4,4 -4,-28 485.5,-28 485.5,4 -4,4"/>
+<!-- Module -->
+<g id="node1" class="node">
+<title>Module</title>
+<polygon fill="#337ab7" stroke="#337ab7" points="54,-24 0,-24 0,0 54,0 54,-24"/>
+<text text-anchor="middle" x="27" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Module</text>
+</g>
+<!-- Submodule -->
+<g id="node2" class="node">
+<title>Submodule</title>
+<polygon fill="#5bc0de" stroke="#5bc0de" points="139.5,-24 72.5,-24 72.5,0 139.5,0 139.5,-24"/>
+<text text-anchor="middle" x="106" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Submodule</text>
+</g>
+<!-- Subroutine -->
+<g id="node3" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="222,-24 158,-24 158,0 222,0 222,-24"/>
+<text text-anchor="middle" x="190" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node4" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="294,-24 240,-24 240,0 294,0 294,-24"/>
+<text text-anchor="middle" x="267" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Function</text>
+</g>
+<!-- Program -->
+<g id="node5" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="366,-24 312,-24 312,0 366,0 366,-24"/>
+<text text-anchor="middle" x="339" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node6" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="#000000" points="481.5,-24 384.5,-24 384.5,0 481.5,0 481.5,-24"/>
+<text text-anchor="middle" x="433" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#000000">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+    
+    <p>Solid arrows point from a submodule to the (sub)module which it is
+    descended from. Dashed arrows point from a module or program unit to 
+    modules which it uses.
+    </p>
+    </div></div></div></div>
+      </li>
+      
       </ul>
     </div>
     
 
     
+    
+    <div class="panel panel-default">
+      <div class="panel-heading">
+  <h3 class="panel-title">Used by</h3>
+      </div>
+      <ul class="list-group">
+  
+  
+  <li class="list-group-item">
+    <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.40.1 (20161225.0304)
+ -->
+<!-- Title: module~~precipbcs_mod~~UsedByGraph Pages: 1 -->
+<svg id="moduleprecipbcs_modUsedByGraph" width="283pt" height="52pt"
+ viewBox="0.00 0.00 283.00 52.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="module~~precipbcs_mod~~UsedByGraph" class="graph" transform="scale(1 1) rotate(0) translate(4 48)">
+<title>module~~precipbcs_mod~~UsedByGraph</title>
+<polygon fill="#ffffff" stroke="transparent" points="-4,4 -4,-48 279,-48 279,4 -4,4"/>
+<!-- module~precipbcs_mod -->
+<g id="module~~precipbcs_mod~~UsedByGraph_node1" class="node">
+<title>module~precipbcs_mod</title>
+<polygon fill="none" stroke="#000000" points="88,-44 0,-44 0,-20 88,-20 88,-44"/>
+<text text-anchor="middle" x="44" y="-29.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#000000">precipBCs_mod</text>
+</g>
+<!-- module~multifluid -->
+<g id="module~~precipbcs_mod~~UsedByGraph_node2" class="node">
+<title>module~multifluid</title>
+<g id="a_module~~precipbcs_mod~~UsedByGraph_node2"><a xlink:href=".././module/multifluid.html" xlink:title="multifluid">
+<polygon fill="#337ab7" stroke="#337ab7" points="179,-24 124,-24 124,0 179,0 179,-24"/>
+<text text-anchor="middle" x="151.5" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">multifluid</text>
+</a>
+</g>
+</g>
+<!-- module~multifluid&#45;&gt;module~precipbcs_mod -->
+<g id="module~~precipbcs_mod~~UsedByGraph_edge1" class="edge">
+<title>module~multifluid&#45;&gt;module~precipbcs_mod</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M123.8161,-17.1505C115.9514,-18.6137 107.1043,-20.2597 98.2395,-21.9089"/>
+<polygon fill="#000000" stroke="#000000" points="97.4657,-18.4927 88.2746,-23.7629 98.7461,-25.3747 97.4657,-18.4927"/>
+</g>
+<!-- program~gemini3d -->
+<g id="module~~precipbcs_mod~~UsedByGraph_node3" class="node">
+<title>program~gemini3d</title>
+<g id="a_module~~precipbcs_mod~~UsedByGraph_node3"><a xlink:href=".././program/gemini3d.html" xlink:title="Gemini3D">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="275,-44 215,-44 215,-20 275,-20 275,-44"/>
+<text text-anchor="middle" x="245" y="-29.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Gemini3D</text>
+</a>
+</g>
+</g>
+<!-- program~gemini3d&#45;&gt;module~precipbcs_mod -->
+<g id="module~~precipbcs_mod~~UsedByGraph_edge2" class="edge">
+<title>program~gemini3d&#45;&gt;module~precipbcs_mod</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M214.773,-32.5541C203.5404,-32.7347 190.6885,-32.9115 179,-33 154.5563,-33.1852 148.444,-33.1528 124,-33 115.6141,-32.9476 106.734,-32.8643 98.0593,-32.7676"/>
+<polygon fill="#000000" stroke="#000000" points="98.0528,-29.2673 88.0121,-32.6489 97.9701,-36.2669 98.0528,-29.2673"/>
+</g>
+<!-- program~gemini3d&#45;&gt;module~multifluid -->
+<g id="module~~precipbcs_mod~~UsedByGraph_edge3" class="edge">
+<title>program~gemini3d&#45;&gt;module~multifluid</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M214.9013,-25.5618C206.6134,-23.789 197.5222,-21.8443 188.877,-19.9951"/>
+<polygon fill="#000000" stroke="#000000" points="189.5189,-16.5533 179.008,-17.8841 188.0546,-23.3984 189.5189,-16.5533"/>
+</g>
+</g>
+</svg>
+</div><div><a type="button" class="graph-help" data-toggle="modal" href="#graph-help-text">Help</a></div><div class="modal fade" id="graph-help-text" tabindex="-1" role="dialog"><div class="modal-dialog modal-lg" role="document"><div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button><h4 class="modal-title" id="-graph-help-label">Graph Key</h4></div><div class="modal-body">
+    <p>Nodes of different colours represent the following: </p>
+    <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.40.1 (20161225.0304)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="490pt" height="32pt"
+ viewBox="0.00 0.00 489.50 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 28)">
+<title>Graph Key</title>
+<polygon fill="#ffffff" stroke="transparent" points="-4,4 -4,-28 485.5,-28 485.5,4 -4,4"/>
+<!-- Module -->
+<g id="node1" class="node">
+<title>Module</title>
+<polygon fill="#337ab7" stroke="#337ab7" points="54,-24 0,-24 0,0 54,0 54,-24"/>
+<text text-anchor="middle" x="27" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Module</text>
+</g>
+<!-- Submodule -->
+<g id="node2" class="node">
+<title>Submodule</title>
+<polygon fill="#5bc0de" stroke="#5bc0de" points="139.5,-24 72.5,-24 72.5,0 139.5,0 139.5,-24"/>
+<text text-anchor="middle" x="106" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Submodule</text>
+</g>
+<!-- Subroutine -->
+<g id="node3" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="222,-24 158,-24 158,0 222,0 222,-24"/>
+<text text-anchor="middle" x="190" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node4" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="294,-24 240,-24 240,0 294,0 294,-24"/>
+<text text-anchor="middle" x="267" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Function</text>
+</g>
+<!-- Program -->
+<g id="node5" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="366,-24 312,-24 312,0 366,0 366,-24"/>
+<text text-anchor="middle" x="339" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node6" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="#000000" points="481.5,-24 384.5,-24 384.5,0 481.5,0 481.5,-24"/>
+<text text-anchor="middle" x="433" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#000000">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+    
+    <p>Solid arrows point from a submodule to the (sub)module which it is
+    descended from. Dashed arrows point from a module or program unit to 
+    modules which it uses.
+    </p>
+    </div></div></div></div>
+  </li>
+  
+      </ul>
+    </div>
     
 
     <br>
@@ -522,15 +759,15 @@ meanx2=0d0
       
       <a class="list-group-item" href="../module/precipbcs_mod.html#variable-llat~2">llat</a>
       
-      <a class="list-group-item" href="../module/precipbcs_mod.html#variable-qp">Qp</a>
+      <a class="list-group-item" href="../module/precipbcs_mod.html#variable-qp~2">Qp</a>
       
-      <a class="list-group-item" href="../module/precipbcs_mod.html#variable-e0p">E0p</a>
+      <a class="list-group-item" href="../module/precipbcs_mod.html#variable-e0p~2">E0p</a>
       
       <a class="list-group-item" href="../module/precipbcs_mod.html#variable-precdatp">precdatp</a>
       
-      <a class="list-group-item" href="../module/precipbcs_mod.html#variable-mloni~2">mloni</a>
+      <a class="list-group-item" href="../module/precipbcs_mod.html#variable-mloni">mloni</a>
       
-      <a class="list-group-item" href="../module/precipbcs_mod.html#variable-mlati~2">mlati</a>
+      <a class="list-group-item" href="../module/precipbcs_mod.html#variable-mlati">mlati</a>
       
       <a class="list-group-item" href="../module/precipbcs_mod.html#variable-qiprev">Qiprev</a>
       
@@ -540,13 +777,13 @@ meanx2=0d0
       
       <a class="list-group-item" href="../module/precipbcs_mod.html#variable-e0inext">E0inext</a>
       
-      <a class="list-group-item" href="../module/precipbcs_mod.html#variable-ymdprev~3">ymdprev</a>
+      <a class="list-group-item" href="../module/precipbcs_mod.html#variable-ymdprev">ymdprev</a>
       
-      <a class="list-group-item" href="../module/precipbcs_mod.html#variable-ymdnext~3">ymdnext</a>
+      <a class="list-group-item" href="../module/precipbcs_mod.html#variable-ymdnext">ymdnext</a>
       
-      <a class="list-group-item" href="../module/precipbcs_mod.html#variable-utsecprev~3">UTsecprev</a>
+      <a class="list-group-item" href="../module/precipbcs_mod.html#variable-utsecprev">UTsecprev</a>
       
-      <a class="list-group-item" href="../module/precipbcs_mod.html#variable-utsecnext~3">UTsecnext</a>
+      <a class="list-group-item" href="../module/precipbcs_mod.html#variable-utsecnext">UTsecnext</a>
       
       <a class="list-group-item" href="../module/precipbcs_mod.html#variable-tprev~3">tprev</a>
       
@@ -674,7 +911,7 @@ meanx2=0d0
   
 <tr>
   
-  <td><span class="anchor" id="variable-qp"></span>real(kind=wp),</td>
+  <td><span class="anchor" id="variable-qp~2"></span>real(kind=wp),</td>
   
   <td>private,</td>
   <td>dimension(:,:), allocatable</td><td>::</td>
@@ -688,7 +925,7 @@ meanx2=0d0
   
 <tr>
   
-  <td><span class="anchor" id="variable-e0p"></span>real(kind=wp),</td>
+  <td><span class="anchor" id="variable-e0p~2"></span>real(kind=wp),</td>
   
   <td>private,</td>
   <td>dimension(:,:), allocatable</td><td>::</td>
@@ -716,7 +953,7 @@ meanx2=0d0
   
 <tr>
   
-  <td><span class="anchor" id="variable-mloni~2"></span>real(kind=wp),</td>
+  <td><span class="anchor" id="variable-mloni"></span>real(kind=wp),</td>
   
   <td>private,</td>
   <td>dimension(:), allocatable</td><td>::</td>
@@ -730,7 +967,7 @@ meanx2=0d0
   
 <tr>
   
-  <td><span class="anchor" id="variable-mlati~2"></span>real(kind=wp),</td>
+  <td><span class="anchor" id="variable-mlati"></span>real(kind=wp),</td>
   
   <td>private,</td>
   <td>dimension(:), allocatable</td><td>::</td>
@@ -800,7 +1037,7 @@ meanx2=0d0
   
 <tr>
   
-  <td><span class="anchor" id="variable-ymdprev~3"></span>integer,</td>
+  <td><span class="anchor" id="variable-ymdprev"></span>integer,</td>
   
   <td>private,</td>
   <td>dimension(3)</td><td>::</td>
@@ -814,7 +1051,7 @@ meanx2=0d0
   
 <tr>
   
-  <td><span class="anchor" id="variable-ymdnext~3"></span>integer,</td>
+  <td><span class="anchor" id="variable-ymdnext"></span>integer,</td>
   
   <td>private,</td>
   <td>dimension(3)</td><td>::</td>
@@ -828,7 +1065,7 @@ meanx2=0d0
   
 <tr>
   
-  <td><span class="anchor" id="variable-utsecprev~3"></span>real(kind=wp),</td>
+  <td><span class="anchor" id="variable-utsecprev"></span>real(kind=wp),</td>
   
   <td>private</td>
   <td></td><td>::</td>
@@ -842,7 +1079,7 @@ meanx2=0d0
   
 <tr>
   
-  <td><span class="anchor" id="variable-utsecnext~3"></span>real(kind=wp),</td>
+  <td><span class="anchor" id="variable-utsecnext"></span>real(kind=wp),</td>
   
   <td>private</td>
   <td></td><td>::</td>
@@ -910,6 +1147,14 @@ public subroutine <a href='../proc/precipbcs_fileinput.html'>precipBCs_fileinput
   <div class="panel-body">
        
     
+
+
+
+
+
+
+
+<p>these need to be initialized so that something sensible happens at the beginning</p>
     
     <h4>Arguments</h4>
     
@@ -980,7 +1225,7 @@ public subroutine <a href='../proc/precipbcs_fileinput.html'>precipBCs_fileinput
   <td></td>
   
   <td>dimension(3)</td><td>::</td>
-  <td><strong>ymd</strong></td><td></td>
+  <td><strong>ymd</strong></td><td><p>date for which we wish to calculate perturbations</p></td>
   
 </tr>
 
@@ -1010,7 +1255,7 @@ public subroutine <a href='../proc/precipbcs_fileinput.html'>precipBCs_fileinput
   <td></td>
   
   <td></td><td>::</td>
-  <td><strong>precdir</strong></td><td></td>
+  <td><strong>precdir</strong></td><td><p>directory where neutral simulation data is kept</p></td>
   
 </tr>
 
@@ -1040,7 +1285,7 @@ public subroutine <a href='../proc/precipbcs_fileinput.html'>precipBCs_fileinput
   <td></td>
   
   <td>dimension(:,:,:)</td><td>::</td>
-  <td><strong>W0</strong></td><td></td>
+  <td><strong>W0</strong></td><td><p>last dimension is the number of particle populations</p></td>
   
 </tr>
 
@@ -1055,7 +1300,7 @@ public subroutine <a href='../proc/precipbcs_fileinput.html'>precipBCs_fileinput
   <td></td>
   
   <td>dimension(:,:,:)</td><td>::</td>
-  <td><strong>PhiWmWm2</strong></td><td></td>
+  <td><strong>PhiWmWm2</strong></td><td><p>last dimension is the number of particle populations</p></td>
   
 </tr>
 
@@ -1081,6 +1326,14 @@ public subroutine <a href='../proc/make_precip_fileinput.html'>make_precip_filei
   <div class="panel-body">
        
     
+
+
+
+
+
+
+
+<p>INITIALIZE SOME MODULE TIMING VARIABLES</p>
     
     <h4>Arguments</h4>
     
@@ -1224,7 +1477,7 @@ public subroutine <a href='../proc/precipbcs.html'>precipBCs</a>(t, x, W0, PhiWm
     <footer>
       <div class="container">
       <div class="row">
-        <div class="col-xs-6 col-md-4"><p>&copy; 2018 <a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/80x15.png" /></a>
+        <div class="col-xs-6 col-md-4"><p>&copy; 2020 <a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/80x15.png" /></a>
                                           </p></div>
         <div class="col-xs-6 col-md-4 col-md-push-4">
           <p class="text-right">

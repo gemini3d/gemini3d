@@ -1,0 +1,1101 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+   
+   <meta name="description" content="GEMINI3D is a modular ionospheric model that incorporates kinetic models such as Fang, GLOW.">
+    
+    <meta name="author" content="Matthew Zettergren
+Guy Grubbs
+Michael Hirsch" >
+    <link rel="icon" href="../favicon.png">
+
+    <title>output_plasma &ndash; GEMINI3D</title>
+
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+    <link href="../css/pygments.css" rel="stylesheet">
+    <link href="../css/font-awesome.min.css" rel="stylesheet">
+    <link href="../css/local.css" rel="stylesheet">
+    
+    
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    
+    <script src="../js/jquery-2.1.3.min.js"></script>
+    <script src="../js/svg-pan-zoom.min.js"></script>
+
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="../index.html">GEMINI3D </a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+        
+            <li class="dropdown hidden-xs visible-sm visible-md hidden-lg">
+              <a href="#" class="dropdown-toggle"
+              data-toggle="dropdown" role="button"
+              aria-haspopup="true"
+     aria-expanded="false">Contents <span class="caret"></span></a>
+        <ul class="dropdown-menu">
+          
+              
+            <li><a href="../lists/files.html">Source Files</a></li>
+        
+        
+        
+            <li><a href="../lists/modules.html">Modules</a></li>
+        
+            
+    <li><a href="../blockdata/gtd7bk.html">Block Data</a></li>
+    
+                                
+            <li><a href="../lists/procedures.html">Procedures</a></li>
+        
+               
+            <li><a href="../lists/types.html">Derived Types</a></li>
+        
+        
+            <li><a href="../lists/programs.html">Programs</a></li>
+        
+            </ul>
+            </li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/files.html">Source Files</a></li>
+
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/modules.html">Modules</a></li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../blockdata/gtd7bk.html">Block Data</a></li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/procedures.html">Procedures</a></li>
+
+                             
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/types.html">Derived Types</a></li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/programs.html">Programs</a></li>
+
+          </ul>
+        
+        </div><!--/.nav-collapse -->
+      </div>
+    </nav>
+
+    <div class="container">
+    
+  
+  <div class="row">
+    <h1>output_plasma
+   <small>Interface</small>
+    
+    </h1>
+    
+    
+<div class="row">
+  <div class="col-lg-12">
+<div class="well well-sm">
+  <ul class="list-inline" style="margin-bottom:0px;display:inline">
+     
+     
+     
+     
+    
+    
+     <li><i class="fa fa-list-ol"></i>
+       <a data-toggle="tooltip"
+    data-placement="bottom" data-html="true"
+    title=" 0.3% of total for procedures.">23 statements</a>
+     </li> 
+     
+     
+     
+    <li><i class="fa fa-code"></i><a href="../src/io.f90"> Source File</a></li>
+     
+     
+  </ul>
+  <ol class="breadcrumb in-well text-right">
+  
+    
+     <li><a href='../sourcefile/io.f90.html'>io.f90</a></li>
+    
+     <li><a href='../module/io.html'>io</a></li>
+    
+  
+     <li class="active">output_plasma</li>
+  </ol>
+</div>
+</div>
+</div>
+<script>
+  $(function () {
+  $('[data-toggle="tooltip"]').tooltip()
+  })
+</script>
+
+    
+  </div>
+  
+  <div class="row">
+    <div class="col-md-3 hidden-xs hidden-sm visible-md visible-lg">
+    
+<div id="sidebar">
+  
+<h3>Contents</h3>
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<em>None</em>
+
+
+</div>
+
+    </div>
+    
+    <div class="col-md-9" id='text'>
+    
+    
+      <h2>interface</h2>
+      
+      <br>
+    
+    <div class="panel panel-default">
+      <div class="panel-heading">
+  <h3 class="panel-title">Calls</h3>
+      </div>
+      <div class="panel-body">
+  <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.40.1 (20161225.0304)
+ -->
+<!-- Title: interface~~output_plasma~~CallsGraph Pages: 1 -->
+<svg id="interfaceoutput_plasmaCallsGraph" width="641pt" height="168pt"
+ viewBox="0.00 0.00 641.00 168.33" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="interface~~output_plasma~~CallsGraph" class="graph" transform="scale(.5574 .5574) rotate(0) translate(4 298)">
+<title>interface~~output_plasma~~CallsGraph</title>
+<polygon fill="#ffffff" stroke="transparent" points="-4,4 -4,-298 1146,-298 1146,4 -4,4"/>
+<!-- interface~output_plasma -->
+<g id="interface~~output_plasma~~CallsGraph_node1" class="node">
+<title>interface~output_plasma</title>
+<polygon fill="none" stroke="#000000" points="83,-108 0,-108 0,-84 83,-84 83,-108"/>
+<text text-anchor="middle" x="41.5" y="-93.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#000000">output_plasma</text>
+</g>
+<!-- proc~output_plasma -->
+<g id="interface~~output_plasma~~CallsGraph_node2" class="node">
+<title>proc~output_plasma</title>
+<g id="a_interface~~output_plasma~~CallsGraph_node2"><a xlink:href=".././proc/output_plasma.html" xlink:title="output_plasma">
+<polygon fill="#d9534f" stroke="#d9534f" points="202,-108 119,-108 119,-84 202,-84 202,-108"/>
+<text text-anchor="middle" x="160.5" y="-93.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">output_plasma</text>
+</a>
+</g>
+</g>
+<!-- interface~output_plasma&#45;&gt;proc~output_plasma -->
+<g id="interface~~output_plasma~~CallsGraph_edge1" class="edge">
+<title>interface~output_plasma&#45;&gt;proc~output_plasma</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M83.1204,-96C91.3162,-96 100.0109,-96 108.4987,-96"/>
+<polygon fill="#000000" stroke="#000000" points="108.702,-99.5001 118.7019,-96 108.7019,-92.5001 108.702,-99.5001"/>
+</g>
+<!-- interface~output_root_stream_mpi -->
+<g id="interface~~output_plasma~~CallsGraph_node3" class="node">
+<title>interface~output_root_stream_mpi</title>
+<g id="a_interface~~output_plasma~~CallsGraph_node3"><a xlink:href=".././interface/output_root_stream_mpi.html" xlink:title="output_root_stream_mpi">
+<polygon fill="#a7506f" stroke="#a7506f" points="368,-171 238,-171 238,-147 368,-147 368,-171"/>
+<text text-anchor="middle" x="303" y="-156.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">output_root_stream_mpi</text>
+</a>
+</g>
+</g>
+<!-- proc~output_plasma&#45;&gt;interface~output_root_stream_mpi -->
+<g id="interface~~output_plasma~~CallsGraph_edge2" class="edge">
+<title>proc~output_plasma&#45;&gt;interface~output_root_stream_mpi</title>
+<path fill="none" stroke="#000000" d="M187.9754,-108.147C210.2519,-117.9956 241.8492,-131.9649 266.2919,-142.7711"/>
+<polygon fill="#000000" stroke="#000000" points="265.0476,-146.0478 275.6089,-146.8903 267.8781,-139.6456 265.0476,-146.0478"/>
+</g>
+<!-- proc~output_workers_mpi -->
+<g id="interface~~output_plasma~~CallsGraph_node4" class="node">
+<title>proc~output_workers_mpi</title>
+<g id="a_interface~~output_plasma~~CallsGraph_node4"><a xlink:href=".././proc/output_workers_mpi.html" xlink:title="output_workers_mpi">
+<polygon fill="#d9534f" stroke="#d9534f" points="357.5,-87 248.5,-87 248.5,-63 357.5,-63 357.5,-87"/>
+<text text-anchor="middle" x="303" y="-72.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">output_workers_mpi</text>
+</a>
+</g>
+</g>
+<!-- proc~output_plasma&#45;&gt;proc~output_workers_mpi -->
+<g id="interface~~output_plasma~~CallsGraph_edge3" class="edge">
+<title>proc~output_plasma&#45;&gt;proc~output_workers_mpi</title>
+<path fill="none" stroke="#000000" d="M202.1,-89.8695C213.3956,-88.2049 225.9013,-86.3619 238.1525,-84.5565"/>
+<polygon fill="#000000" stroke="#000000" points="238.9687,-87.9741 248.3515,-83.0535 237.948,-81.0489 238.9687,-87.9741"/>
+</g>
+<!-- proc~output_root_stream_mpi~2 -->
+<g id="interface~~output_plasma~~CallsGraph_node6" class="node">
+<title>proc~output_root_stream_mpi~2</title>
+<g id="a_interface~~output_plasma~~CallsGraph_node6"><a xlink:href=".././proc/output_root_stream_mpi~2.html" xlink:title="output_root_stream_mpi">
+<polygon fill="#d9534f" stroke="#d9534f" points="534,-192 404,-192 404,-168 534,-168 534,-192"/>
+<text text-anchor="middle" x="469" y="-177.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">output_root_stream_mpi</text>
+</a>
+</g>
+</g>
+<!-- interface~output_root_stream_mpi&#45;&gt;proc~output_root_stream_mpi~2 -->
+<g id="interface~~output_plasma~~CallsGraph_edge4" class="edge">
+<title>interface~output_root_stream_mpi&#45;&gt;proc~output_root_stream_mpi~2</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M368.1312,-167.2395C376.553,-168.3049 385.2324,-169.4029 393.8001,-170.4868"/>
+<polygon fill="#000000" stroke="#000000" points="393.424,-173.967 403.7842,-171.7498 394.3026,-167.0223 393.424,-173.967"/>
+</g>
+<!-- interface~gather_send -->
+<g id="interface~~output_plasma~~CallsGraph_node5" class="node">
+<title>interface~gather_send</title>
+<g id="a_interface~~output_plasma~~CallsGraph_node5"><a xlink:href=".././interface/gather_send.html" xlink:title="gather_send">
+<polygon fill="#a7506f" stroke="#a7506f" points="505.5,-76 432.5,-76 432.5,-52 505.5,-52 505.5,-76"/>
+<text text-anchor="middle" x="469" y="-61.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">gather_send</text>
+</a>
+</g>
+</g>
+<!-- proc~output_workers_mpi&#45;&gt;interface~gather_send -->
+<g id="interface~~output_plasma~~CallsGraph_edge5" class="edge">
+<title>proc~output_workers_mpi&#45;&gt;interface~gather_send</title>
+<path fill="none" stroke="#000000" d="M357.8147,-71.3677C378.6434,-69.9875 402.1592,-68.4292 422.1821,-67.1024"/>
+<polygon fill="#000000" stroke="#000000" points="422.5549,-70.5855 432.3016,-66.4318 422.092,-63.6008 422.5549,-70.5855"/>
+</g>
+<!-- interface~gather_send4d_23 -->
+<g id="interface~~output_plasma~~CallsGraph_node8" class="node">
+<title>interface~gather_send4d_23</title>
+<g id="a_interface~~output_plasma~~CallsGraph_node8"><a xlink:href=".././interface/gather_send4d_23.html" xlink:title="gather_send4D_23">
+<polygon fill="#a7506f" stroke="#a7506f" points="674,-24 570,-24 570,0 674,0 674,-24"/>
+<text text-anchor="middle" x="622" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">gather_send4D_23</text>
+</a>
+</g>
+</g>
+<!-- interface~gather_send&#45;&gt;interface~gather_send4d_23 -->
+<g id="interface~~output_plasma~~CallsGraph_edge7" class="edge">
+<title>interface~gather_send&#45;&gt;interface~gather_send4d_23</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M504.4858,-51.9395C526.0364,-44.6151 553.7523,-35.1953 576.8547,-27.3435"/>
+<polygon fill="#000000" stroke="#000000" points="578.1001,-30.6169 586.4419,-24.0851 575.8475,-23.9892 578.1001,-30.6169"/>
+</g>
+<!-- interface~gather_send2d_23 -->
+<g id="interface~~output_plasma~~CallsGraph_node10" class="node">
+<title>interface~gather_send2d_23</title>
+<g id="a_interface~~output_plasma~~CallsGraph_node10"><a xlink:href=".././interface/gather_send2d_23.html" xlink:title="gather_send2D_23">
+<polygon fill="#a7506f" stroke="#a7506f" points="674,-108 570,-108 570,-84 674,-84 674,-108"/>
+<text text-anchor="middle" x="622" y="-93.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">gather_send2D_23</text>
+</a>
+</g>
+</g>
+<!-- interface~gather_send&#45;&gt;interface~gather_send2d_23 -->
+<g id="interface~~output_plasma~~CallsGraph_edge8" class="edge">
+<title>interface~gather_send&#45;&gt;interface~gather_send2d_23</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M505.6473,-71.6648C521.9088,-75.0659 541.5035,-79.1641 559.9375,-83.0196"/>
+<polygon fill="#000000" stroke="#000000" points="559.2333,-86.448 569.7381,-85.0694 560.6664,-79.5962 559.2333,-86.448"/>
+</g>
+<!-- interface~gather_send3d_23 -->
+<g id="interface~~output_plasma~~CallsGraph_node11" class="node">
+<title>interface~gather_send3d_23</title>
+<g id="a_interface~~output_plasma~~CallsGraph_node11"><a xlink:href=".././interface/gather_send3d_23.html" xlink:title="gather_send3D_23">
+<polygon fill="#a7506f" stroke="#a7506f" points="674,-66 570,-66 570,-42 674,-42 674,-66"/>
+<text text-anchor="middle" x="622" y="-51.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">gather_send3D_23</text>
+</a>
+</g>
+</g>
+<!-- interface~gather_send&#45;&gt;interface~gather_send3d_23 -->
+<g id="interface~~output_plasma~~CallsGraph_edge6" class="edge">
+<title>interface~gather_send&#45;&gt;interface~gather_send3d_23</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M505.6473,-61.6048C521.8338,-60.5468 541.3229,-59.273 559.6826,-58.073"/>
+<polygon fill="#000000" stroke="#000000" points="559.9877,-61.5607 569.7381,-57.4158 559.5311,-54.5756 559.9877,-61.5607"/>
+</g>
+<!-- interface~gather_recv -->
+<g id="interface~~output_plasma~~CallsGraph_node7" class="node">
+<title>interface~gather_recv</title>
+<g id="a_interface~~output_plasma~~CallsGraph_node7"><a xlink:href=".././interface/gather_recv.html" xlink:title="gather_recv">
+<polygon fill="#a7506f" stroke="#a7506f" points="657,-192 587,-192 587,-168 657,-168 657,-192"/>
+<text text-anchor="middle" x="622" y="-177.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">gather_recv</text>
+</a>
+</g>
+</g>
+<!-- proc~output_root_stream_mpi~2&#45;&gt;interface~gather_recv -->
+<g id="interface~~output_plasma~~CallsGraph_edge10" class="edge">
+<title>proc~output_root_stream_mpi~2&#45;&gt;interface~gather_recv</title>
+<path fill="none" stroke="#000000" d="M534.3296,-180C548.5571,-180 563.3115,-180 576.5668,-180"/>
+<polygon fill="#000000" stroke="#000000" points="576.8372,-183.5001 586.8372,-180 576.8372,-176.5001 576.8372,-183.5001"/>
+</g>
+<!-- proc~date_filename -->
+<g id="interface~~output_plasma~~CallsGraph_node9" class="node">
+<title>proc~date_filename</title>
+<g id="a_interface~~output_plasma~~CallsGraph_node9"><a xlink:href=".././proc/date_filename.html" xlink:title="date_filename">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="662,-255 582,-255 582,-231 662,-231 662,-255"/>
+<text text-anchor="middle" x="622" y="-240.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">date_filename</text>
+</a>
+</g>
+</g>
+<!-- proc~output_root_stream_mpi~2&#45;&gt;proc~date_filename -->
+<g id="interface~~output_plasma~~CallsGraph_edge9" class="edge">
+<title>proc~output_root_stream_mpi~2&#45;&gt;proc~date_filename</title>
+<path fill="none" stroke="#000000" d="M498.4999,-192.147C522.7068,-202.1146 557.1647,-216.3031 583.535,-227.1615"/>
+<polygon fill="#000000" stroke="#000000" points="582.271,-230.4261 592.8505,-230.9972 584.9363,-223.9533 582.271,-230.4261"/>
+</g>
+<!-- interface~gather_recv3d_23 -->
+<g id="interface~~output_plasma~~CallsGraph_node12" class="node">
+<title>interface~gather_recv3d_23</title>
+<g id="a_interface~~output_plasma~~CallsGraph_node12"><a xlink:href=".././interface/gather_recv3d_23.html" xlink:title="gather_recv3D_23">
+<polygon fill="#a7506f" stroke="#a7506f" points="812.5,-234 711.5,-234 711.5,-210 812.5,-210 812.5,-234"/>
+<text text-anchor="middle" x="762" y="-219.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">gather_recv3D_23</text>
+</a>
+</g>
+</g>
+<!-- interface~gather_recv&#45;&gt;interface~gather_recv3d_23 -->
+<g id="interface~~output_plasma~~CallsGraph_edge11" class="edge">
+<title>interface~gather_recv&#45;&gt;interface~gather_recv3d_23</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M657.3279,-190.5984C674.0131,-195.6039 694.2143,-201.6643 712.4021,-207.1206"/>
+<polygon fill="#000000" stroke="#000000" points="711.3972,-210.4732 721.9812,-209.9944 713.4087,-203.7684 711.3972,-210.4732"/>
+</g>
+<!-- interface~gather_recv2d_23 -->
+<g id="interface~~output_plasma~~CallsGraph_node15" class="node">
+<title>interface~gather_recv2d_23</title>
+<g id="a_interface~~output_plasma~~CallsGraph_node15"><a xlink:href=".././interface/gather_recv2d_23.html" xlink:title="gather_recv2D_23">
+<polygon fill="#a7506f" stroke="#a7506f" points="812.5,-150 711.5,-150 711.5,-126 812.5,-126 812.5,-150"/>
+<text text-anchor="middle" x="762" y="-135.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">gather_recv2D_23</text>
+</a>
+</g>
+</g>
+<!-- interface~gather_recv&#45;&gt;interface~gather_recv2d_23 -->
+<g id="interface~~output_plasma~~CallsGraph_edge12" class="edge">
+<title>interface~gather_recv&#45;&gt;interface~gather_recv2d_23</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M657.3279,-169.4016C674.0131,-164.3961 694.2143,-158.3357 712.4021,-152.8794"/>
+<polygon fill="#000000" stroke="#000000" points="713.4087,-156.2316 721.9812,-150.0056 711.3972,-149.5268 713.4087,-156.2316"/>
+</g>
+<!-- interface~gather_recv4d_23 -->
+<g id="interface~~output_plasma~~CallsGraph_node16" class="node">
+<title>interface~gather_recv4d_23</title>
+<g id="a_interface~~output_plasma~~CallsGraph_node16"><a xlink:href=".././interface/gather_recv4d_23.html" xlink:title="gather_recv4D_23">
+<polygon fill="#a7506f" stroke="#a7506f" points="812.5,-192 711.5,-192 711.5,-168 812.5,-168 812.5,-192"/>
+<text text-anchor="middle" x="762" y="-177.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">gather_recv4D_23</text>
+</a>
+</g>
+</g>
+<!-- interface~gather_recv&#45;&gt;interface~gather_recv4d_23 -->
+<g id="interface~~output_plasma~~CallsGraph_edge13" class="edge">
+<title>interface~gather_recv&#45;&gt;interface~gather_recv4d_23</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M657.3279,-180C670.6226,-180 686.1497,-180 701.1117,-180"/>
+<polygon fill="#000000" stroke="#000000" points="701.3455,-183.5001 711.3455,-180 701.3454,-176.5001 701.3455,-183.5001"/>
+</g>
+<!-- proc~gather_send4d_23 -->
+<g id="interface~~output_plasma~~CallsGraph_node17" class="node">
+<title>proc~gather_send4d_23</title>
+<g id="a_interface~~output_plasma~~CallsGraph_node17"><a xlink:href=".././proc/gather_send4d_23.html" xlink:title="gather_send4D_23">
+<polygon fill="#d9534f" stroke="#d9534f" points="814,-24 710,-24 710,0 814,0 814,-24"/>
+<text text-anchor="middle" x="762" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">gather_send4D_23</text>
+</a>
+</g>
+</g>
+<!-- interface~gather_send4d_23&#45;&gt;proc~gather_send4d_23 -->
+<g id="interface~~output_plasma~~CallsGraph_edge14" class="edge">
+<title>interface~gather_send4d_23&#45;&gt;proc~gather_send4d_23</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M674.1308,-12C682.4213,-12 691.0702,-12 699.5685,-12"/>
+<polygon fill="#000000" stroke="#000000" points="699.8257,-15.5001 709.8256,-12 699.8256,-8.5001 699.8257,-15.5001"/>
+</g>
+<!-- proc~utsec2filestem -->
+<g id="interface~~output_plasma~~CallsGraph_node18" class="node">
+<title>proc~utsec2filestem</title>
+<g id="a_interface~~output_plasma~~CallsGraph_node18"><a xlink:href=".././proc/utsec2filestem.html" xlink:title="utsec2filestem">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="802.5,-276 721.5,-276 721.5,-252 802.5,-252 802.5,-276"/>
+<text text-anchor="middle" x="762" y="-261.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">utsec2filestem</text>
+</a>
+</g>
+</g>
+<!-- proc~date_filename&#45;&gt;proc~utsec2filestem -->
+<g id="interface~~output_plasma~~CallsGraph_edge15" class="edge">
+<title>proc~date_filename&#45;&gt;proc~utsec2filestem</title>
+<path fill="none" stroke="#000000" d="M662.1184,-249.0178C677.3631,-251.3045 694.9356,-253.9403 711.0502,-256.3575"/>
+<polygon fill="#000000" stroke="#000000" points="710.9816,-259.8863 721.3902,-257.9085 712.02,-252.9638 710.9816,-259.8863"/>
+</g>
+<!-- proc~gather_send2d_23 -->
+<g id="interface~~output_plasma~~CallsGraph_node13" class="node">
+<title>proc~gather_send2d_23</title>
+<g id="a_interface~~output_plasma~~CallsGraph_node13"><a xlink:href=".././proc/gather_send2d_23.html" xlink:title="gather_send2D_23">
+<polygon fill="#d9534f" stroke="#d9534f" points="814,-108 710,-108 710,-84 814,-84 814,-108"/>
+<text text-anchor="middle" x="762" y="-93.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">gather_send2D_23</text>
+</a>
+</g>
+</g>
+<!-- interface~gather_send2d_23&#45;&gt;proc~gather_send2d_23 -->
+<g id="interface~~output_plasma~~CallsGraph_edge16" class="edge">
+<title>interface~gather_send2d_23&#45;&gt;proc~gather_send2d_23</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M674.1308,-96C682.4213,-96 691.0702,-96 699.5685,-96"/>
+<polygon fill="#000000" stroke="#000000" points="699.8257,-99.5001 709.8256,-96 699.8256,-92.5001 699.8257,-99.5001"/>
+</g>
+<!-- proc~gather_send3d_23 -->
+<g id="interface~~output_plasma~~CallsGraph_node14" class="node">
+<title>proc~gather_send3d_23</title>
+<g id="a_interface~~output_plasma~~CallsGraph_node14"><a xlink:href=".././proc/gather_send3d_23.html" xlink:title="gather_send3D_23">
+<polygon fill="#d9534f" stroke="#d9534f" points="814,-66 710,-66 710,-42 814,-42 814,-66"/>
+<text text-anchor="middle" x="762" y="-51.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">gather_send3D_23</text>
+</a>
+</g>
+</g>
+<!-- interface~gather_send3d_23&#45;&gt;proc~gather_send3d_23 -->
+<g id="interface~~output_plasma~~CallsGraph_edge17" class="edge">
+<title>interface~gather_send3d_23&#45;&gt;proc~gather_send3d_23</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M674.1308,-54C682.4213,-54 691.0702,-54 699.5685,-54"/>
+<polygon fill="#000000" stroke="#000000" points="699.8257,-57.5001 709.8256,-54 699.8256,-50.5001 699.8257,-57.5001"/>
+</g>
+<!-- proc~gather_recv3d_23 -->
+<g id="interface~~output_plasma~~CallsGraph_node23" class="node">
+<title>proc~gather_recv3d_23</title>
+<g id="a_interface~~output_plasma~~CallsGraph_node23"><a xlink:href=".././proc/gather_recv3d_23.html" xlink:title="gather_recv3D_23">
+<polygon fill="#d9534f" stroke="#d9534f" points="951,-234 850,-234 850,-210 951,-210 951,-234"/>
+<text text-anchor="middle" x="900.5" y="-219.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">gather_recv3D_23</text>
+</a>
+</g>
+</g>
+<!-- interface~gather_recv3d_23&#45;&gt;proc~gather_recv3d_23 -->
+<g id="interface~~output_plasma~~CallsGraph_edge18" class="edge">
+<title>interface~gather_recv3d_23&#45;&gt;proc~gather_recv3d_23</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M812.7858,-222C821.5363,-222 830.7111,-222 839.6935,-222"/>
+<polygon fill="#000000" stroke="#000000" points="839.7203,-225.5001 849.7203,-222 839.7203,-218.5001 839.7203,-225.5001"/>
+</g>
+<!-- mpi_send -->
+<g id="interface~~output_plasma~~CallsGraph_node20" class="node">
+<title>mpi_send</title>
+<polygon fill="#777777" stroke="#777777" points="930,-66 871,-66 871,-42 930,-42 930,-66"/>
+<text text-anchor="middle" x="900.5" y="-51.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">mpi_send</text>
+</g>
+<!-- proc~gather_send2d_23&#45;&gt;mpi_send -->
+<g id="interface~~output_plasma~~CallsGraph_edge19" class="edge">
+<title>proc~gather_send2d_23&#45;&gt;mpi_send</title>
+<path fill="none" stroke="#000000" d="M801.6885,-83.9645C820.3895,-78.2934 842.6312,-71.5486 861.2733,-65.8955"/>
+<polygon fill="#000000" stroke="#000000" points="862.3803,-69.2172 870.9343,-62.9658 860.3489,-62.5185 862.3803,-69.2172"/>
+</g>
+<!-- proc~gather_send3d_23&#45;&gt;mpi_send -->
+<g id="interface~~output_plasma~~CallsGraph_edge20" class="edge">
+<title>proc~gather_send3d_23&#45;&gt;mpi_send</title>
+<path fill="none" stroke="#000000" d="M814.3609,-54C829.7713,-54 846.37,-54 860.8442,-54"/>
+<polygon fill="#000000" stroke="#000000" points="860.9608,-57.5001 870.9608,-54 860.9608,-50.5001 860.9608,-57.5001"/>
+</g>
+<!-- proc~gather_recv2d_23 -->
+<g id="interface~~output_plasma~~CallsGraph_node22" class="node">
+<title>proc~gather_recv2d_23</title>
+<g id="a_interface~~output_plasma~~CallsGraph_node22"><a xlink:href=".././proc/gather_recv2d_23.html" xlink:title="gather_recv2D_23">
+<polygon fill="#d9534f" stroke="#d9534f" points="951,-150 850,-150 850,-126 951,-126 951,-150"/>
+<text text-anchor="middle" x="900.5" y="-135.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">gather_recv2D_23</text>
+</a>
+</g>
+</g>
+<!-- interface~gather_recv2d_23&#45;&gt;proc~gather_recv2d_23 -->
+<g id="interface~~output_plasma~~CallsGraph_edge21" class="edge">
+<title>interface~gather_recv2d_23&#45;&gt;proc~gather_recv2d_23</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M812.7858,-138C821.5363,-138 830.7111,-138 839.6935,-138"/>
+<polygon fill="#000000" stroke="#000000" points="839.7203,-141.5001 849.7203,-138 839.7203,-134.5001 839.7203,-141.5001"/>
+</g>
+<!-- proc~gather_recv4d_23 -->
+<g id="interface~~output_plasma~~CallsGraph_node21" class="node">
+<title>proc~gather_recv4d_23</title>
+<g id="a_interface~~output_plasma~~CallsGraph_node21"><a xlink:href=".././proc/gather_recv4d_23.html" xlink:title="gather_recv4D_23">
+<polygon fill="#d9534f" stroke="#d9534f" points="951,-192 850,-192 850,-168 951,-168 951,-192"/>
+<text text-anchor="middle" x="900.5" y="-177.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">gather_recv4D_23</text>
+</a>
+</g>
+</g>
+<!-- interface~gather_recv4d_23&#45;&gt;proc~gather_recv4d_23 -->
+<g id="interface~~output_plasma~~CallsGraph_edge22" class="edge">
+<title>interface~gather_recv4d_23&#45;&gt;proc~gather_recv4d_23</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M812.7858,-180C821.5363,-180 830.7111,-180 839.6935,-180"/>
+<polygon fill="#000000" stroke="#000000" points="839.7203,-183.5001 849.7203,-180 839.7203,-176.5001 839.7203,-183.5001"/>
+</g>
+<!-- proc~gather_send4d_23&#45;&gt;mpi_send -->
+<g id="interface~~output_plasma~~CallsGraph_edge23" class="edge">
+<title>proc~gather_send4d_23&#45;&gt;mpi_send</title>
+<path fill="none" stroke="#000000" d="M801.6885,-24.0355C820.3895,-29.7066 842.6312,-36.4514 861.2733,-42.1045"/>
+<polygon fill="#000000" stroke="#000000" points="860.3489,-45.4815 870.9343,-45.0342 862.3803,-38.7828 860.3489,-45.4815"/>
+</g>
+<!-- proc~day_wrap -->
+<g id="interface~~output_plasma~~CallsGraph_node19" class="node">
+<title>proc~day_wrap</title>
+<g id="a_interface~~output_plasma~~CallsGraph_node19"><a xlink:href=".././proc/day_wrap.html" xlink:title="day_wrap">
+<polygon fill="#d9534f" stroke="#d9534f" points="930,-276 871,-276 871,-252 930,-252 930,-276"/>
+<text text-anchor="middle" x="900.5" y="-261.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">day_wrap</text>
+</a>
+</g>
+</g>
+<!-- proc~utsec2filestem&#45;&gt;proc~day_wrap -->
+<g id="interface~~output_plasma~~CallsGraph_edge24" class="edge">
+<title>proc~utsec2filestem&#45;&gt;proc~day_wrap</title>
+<path fill="none" stroke="#000000" d="M802.8055,-264C821.1672,-264 842.7583,-264 860.9667,-264"/>
+<polygon fill="#000000" stroke="#000000" points="860.9688,-267.5001 870.9688,-264 860.9687,-260.5001 860.9688,-267.5001"/>
+</g>
+<!-- proc~day_wrap&#45;&gt;proc~day_wrap -->
+<g id="interface~~output_plasma~~CallsGraph_edge25" class="edge">
+<title>proc~day_wrap&#45;&gt;proc~day_wrap</title>
+<path fill="none" stroke="#000000" d="M880.9894,-276.0139C874.1761,-284.9717 880.6797,-294 900.5,-294 912.578,-294 919.711,-290.6474 921.8989,-286.0013"/>
+<polygon fill="#000000" stroke="#000000" points="925.3076,-285.1896 920.0106,-276.0139 918.4294,-286.4901 925.3076,-285.1896"/>
+</g>
+<!-- proc~daysmonth -->
+<g id="interface~~output_plasma~~CallsGraph_node26" class="node">
+<title>proc~daysmonth</title>
+<g id="a_interface~~output_plasma~~CallsGraph_node26"><a xlink:href=".././proc/daysmonth.html" xlink:title="daysmonth">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1052,-276 987,-276 987,-252 1052,-252 1052,-276"/>
+<text text-anchor="middle" x="1019.5" y="-261.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">daysmonth</text>
+</a>
+</g>
+</g>
+<!-- proc~day_wrap&#45;&gt;proc~daysmonth -->
+<g id="interface~~output_plasma~~CallsGraph_edge26" class="edge">
+<title>proc~day_wrap&#45;&gt;proc~daysmonth</title>
+<path fill="none" stroke="#000000" d="M930.2218,-264C944.2052,-264 961.1452,-264 976.495,-264"/>
+<polygon fill="#000000" stroke="#000000" points="976.8118,-267.5001 986.8118,-264 976.8118,-260.5001 976.8118,-267.5001"/>
+</g>
+<!-- proc~slabinds -->
+<g id="interface~~output_plasma~~CallsGraph_node24" class="node">
+<title>proc~slabinds</title>
+<g id="a_interface~~output_plasma~~CallsGraph_node24"><a xlink:href=".././proc/slabinds.html" xlink:title="slabinds">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1046.5,-171 992.5,-171 992.5,-147 1046.5,-147 1046.5,-171"/>
+<text text-anchor="middle" x="1019.5" y="-156.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">slabinds</text>
+</a>
+</g>
+</g>
+<!-- proc~gather_recv4d_23&#45;&gt;proc~slabinds -->
+<g id="interface~~output_plasma~~CallsGraph_edge27" class="edge">
+<title>proc~gather_recv4d_23&#45;&gt;proc~slabinds</title>
+<path fill="none" stroke="#000000" d="M951.3119,-171.0332C961.8142,-169.1799 972.6855,-167.2614 982.5789,-165.5155"/>
+<polygon fill="#000000" stroke="#000000" points="983.2389,-168.9532 992.4785,-163.7685 982.0223,-162.0597 983.2389,-168.9532"/>
+</g>
+<!-- mpi_recv -->
+<g id="interface~~output_plasma~~CallsGraph_node25" class="node">
+<title>mpi_recv</title>
+<polygon fill="#777777" stroke="#777777" points="1047.5,-213 991.5,-213 991.5,-189 1047.5,-189 1047.5,-213"/>
+<text text-anchor="middle" x="1019.5" y="-198.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">mpi_recv</text>
+</g>
+<!-- proc~gather_recv4d_23&#45;&gt;mpi_recv -->
+<g id="interface~~output_plasma~~CallsGraph_edge28" class="edge">
+<title>proc~gather_recv4d_23&#45;&gt;mpi_recv</title>
+<path fill="none" stroke="#000000" d="M951.3119,-188.9668C961.4253,-190.7515 971.8809,-192.5966 981.4759,-194.2899"/>
+<polygon fill="#000000" stroke="#000000" points="981.0367,-197.7664 991.4929,-196.0576 982.2533,-190.8729 981.0367,-197.7664"/>
+</g>
+<!-- proc~gather_recv2d_23&#45;&gt;proc~slabinds -->
+<g id="interface~~output_plasma~~CallsGraph_edge29" class="edge">
+<title>proc~gather_recv2d_23&#45;&gt;proc~slabinds</title>
+<path fill="none" stroke="#000000" d="M951.3119,-146.9668C961.8142,-148.8201 972.6855,-150.7386 982.5789,-152.4845"/>
+<polygon fill="#000000" stroke="#000000" points="982.0223,-155.9403 992.4785,-154.2315 983.2389,-149.0468 982.0223,-155.9403"/>
+</g>
+<!-- proc~gather_recv2d_23&#45;&gt;mpi_recv -->
+<g id="interface~~output_plasma~~CallsGraph_edge30" class="edge">
+<title>proc~gather_recv2d_23&#45;&gt;mpi_recv</title>
+<path fill="none" stroke="#000000" d="M931.5589,-150.0192C938.0676,-152.7862 944.8266,-155.8481 951,-159 959.049,-163.1095 976.498,-173.8183 991.7698,-183.3934"/>
+<polygon fill="#000000" stroke="#000000" points="990.0953,-186.475 1000.4225,-188.8416 993.8251,-180.5515 990.0953,-186.475"/>
+</g>
+<!-- proc~gather_recv3d_23&#45;&gt;proc~slabinds -->
+<g id="interface~~output_plasma~~CallsGraph_edge31" class="edge">
+<title>proc~gather_recv3d_23&#45;&gt;proc~slabinds</title>
+<path fill="none" stroke="#000000" d="M931.5589,-209.9808C938.0676,-207.2138 944.8266,-204.1519 951,-201 959.049,-196.8905 976.498,-186.1817 991.7698,-176.6066"/>
+<polygon fill="#000000" stroke="#000000" points="993.8251,-179.4485 1000.4225,-171.1584 990.0953,-173.525 993.8251,-179.4485"/>
+</g>
+<!-- proc~gather_recv3d_23&#45;&gt;mpi_recv -->
+<g id="interface~~output_plasma~~CallsGraph_edge32" class="edge">
+<title>proc~gather_recv3d_23&#45;&gt;mpi_recv</title>
+<path fill="none" stroke="#000000" d="M951.3119,-213.0332C961.4253,-211.2485 971.8809,-209.4034 981.4759,-207.7101"/>
+<polygon fill="#000000" stroke="#000000" points="982.2533,-211.1271 991.4929,-205.9424 981.0367,-204.2336 982.2533,-211.1271"/>
+</g>
+<!-- proc~id2grid -->
+<g id="interface~~output_plasma~~CallsGraph_node27" class="node">
+<title>proc~id2grid</title>
+<g id="a_interface~~output_plasma~~CallsGraph_node27"><a xlink:href=".././proc/id2grid.html" xlink:title="ID2grid">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1142,-171 1088,-171 1088,-147 1142,-147 1142,-171"/>
+<text text-anchor="middle" x="1115" y="-156.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">ID2grid</text>
+</a>
+</g>
+</g>
+<!-- proc~slabinds&#45;&gt;proc~id2grid -->
+<g id="interface~~output_plasma~~CallsGraph_edge33" class="edge">
+<title>proc~slabinds&#45;&gt;proc~id2grid</title>
+<path fill="none" stroke="#000000" d="M1046.611,-159C1056.2889,-159 1067.3674,-159 1077.7492,-159"/>
+<polygon fill="#000000" stroke="#000000" points="1077.8212,-162.5001 1087.8212,-159 1077.8212,-155.5001 1077.8212,-162.5001"/>
+</g>
+</g>
+</svg>
+</div><script>var paninterfaceoutput_plasmaCallsGraph = svgPanZoom('#interfaceoutput_plasmaCallsGraph', {zoomEnabled: true,controlIconsEnabled: true, fit: true, center: true,}); </script><div><a type="button" class="graph-help" data-toggle="modal" href="#graph-help-text">Help</a></div><div class="modal fade" id="graph-help-text" tabindex="-1" role="dialog"><div class="modal-dialog modal-lg" role="document"><div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button><h4 class="modal-title" id="-graph-help-label">Graph Key</h4></div><div class="modal-body">
+    <p>Nodes of different colours represent the following: </p>
+    <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.40.1 (20161225.0304)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="560pt" height="32pt"
+ viewBox="0.00 0.00 559.50 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 28)">
+<title>Graph Key</title>
+<polygon fill="#ffffff" stroke="transparent" points="-4,4 -4,-28 555.5,-28 555.5,4 -4,4"/>
+<!-- Subroutine -->
+<g id="node1" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="64,-24 0,-24 0,0 64,0 64,-24"/>
+<text text-anchor="middle" x="32" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node2" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="136,-24 82,-24 82,0 136,0 136,-24"/>
+<text text-anchor="middle" x="109" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Function</text>
+</g>
+<!-- Interface -->
+<g id="node3" class="node">
+<title>Interface</title>
+<polygon fill="#a7506f" stroke="#a7506f" points="209.5,-24 154.5,-24 154.5,0 209.5,0 209.5,-24"/>
+<text text-anchor="middle" x="182" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Interface</text>
+</g>
+<!-- Unknown Procedure Type -->
+<g id="node4" class="node">
+<title>Unknown Procedure Type</title>
+<polygon fill="#777777" stroke="#777777" points="364,-24 228,-24 228,0 364,0 364,-24"/>
+<text text-anchor="middle" x="296" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Unknown Procedure Type</text>
+</g>
+<!-- Program -->
+<g id="node5" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="436,-24 382,-24 382,0 436,0 436,-24"/>
+<text text-anchor="middle" x="409" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node6" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="#000000" points="551.5,-24 454.5,-24 454.5,0 551.5,0 551.5,-24"/>
+<text text-anchor="middle" x="503" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#000000">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+    
+    <p>Solid arrows point from a procedure to one which it calls. Dashed 
+    arrows point from an interface to procedures which implement that interface.
+    This could include the module procedures in a generic interface or the
+    implementation in a submodule of an interface in a parent module.
+    </p>
+    </div></div></div></div>
+      </div>
+    </div>
+     
+     
+    <div class="panel panel-default">
+      <div class="panel-heading">
+  <h3 class="panel-title">Called by</h3>
+      </div>
+      <div class="panel-body">
+  <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.40.1 (20161225.0304)
+ -->
+<!-- Title: interface~~output_plasma~~CalledByGraph Pages: 1 -->
+<svg id="interfaceoutput_plasmaCalledByGraph" width="187pt" height="32pt"
+ viewBox="0.00 0.00 187.00 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="interface~~output_plasma~~CalledByGraph" class="graph" transform="scale(1 1) rotate(0) translate(4 28)">
+<title>interface~~output_plasma~~CalledByGraph</title>
+<polygon fill="#ffffff" stroke="transparent" points="-4,4 -4,-28 183,-28 183,4 -4,4"/>
+<!-- interface~output_plasma -->
+<g id="interface~~output_plasma~~CalledByGraph_node1" class="node">
+<title>interface~output_plasma</title>
+<polygon fill="none" stroke="#000000" points="179,-24 96,-24 96,0 179,0 179,-24"/>
+<text text-anchor="middle" x="137.5" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#000000">output_plasma</text>
+</g>
+<!-- program~gemini3d -->
+<g id="interface~~output_plasma~~CalledByGraph_node2" class="node">
+<title>program~gemini3d</title>
+<g id="a_interface~~output_plasma~~CalledByGraph_node2"><a xlink:href=".././program/gemini3d.html" xlink:title="Gemini3D">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="60,-24 0,-24 0,0 60,0 60,-24"/>
+<text text-anchor="middle" x="30" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Gemini3D</text>
+</a>
+</g>
+</g>
+<!-- program~gemini3d&#45;&gt;interface~output_plasma -->
+<g id="interface~~output_plasma~~CalledByGraph_edge1" class="edge">
+<title>program~gemini3d&#45;&gt;interface~output_plasma</title>
+<path fill="none" stroke="#000000" d="M60.2308,-12C68.1759,-12 76.975,-12 85.7052,-12"/>
+<polygon fill="#000000" stroke="#000000" points="85.8668,-15.5001 95.8668,-12 85.8667,-8.5001 85.8668,-15.5001"/>
+</g>
+</g>
+</svg>
+</div><div><a type="button" class="graph-help" data-toggle="modal" href="#graph-help-text">Help</a></div><div class="modal fade" id="graph-help-text" tabindex="-1" role="dialog"><div class="modal-dialog modal-lg" role="document"><div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button><h4 class="modal-title" id="-graph-help-label">Graph Key</h4></div><div class="modal-body">
+    <p>Nodes of different colours represent the following: </p>
+    <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.40.1 (20161225.0304)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="560pt" height="32pt"
+ viewBox="0.00 0.00 559.50 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 28)">
+<title>Graph Key</title>
+<polygon fill="#ffffff" stroke="transparent" points="-4,4 -4,-28 555.5,-28 555.5,4 -4,4"/>
+<!-- Subroutine -->
+<g id="node1" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="64,-24 0,-24 0,0 64,0 64,-24"/>
+<text text-anchor="middle" x="32" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node2" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="136,-24 82,-24 82,0 136,0 136,-24"/>
+<text text-anchor="middle" x="109" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Function</text>
+</g>
+<!-- Interface -->
+<g id="node3" class="node">
+<title>Interface</title>
+<polygon fill="#a7506f" stroke="#a7506f" points="209.5,-24 154.5,-24 154.5,0 209.5,0 209.5,-24"/>
+<text text-anchor="middle" x="182" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Interface</text>
+</g>
+<!-- Unknown Procedure Type -->
+<g id="node4" class="node">
+<title>Unknown Procedure Type</title>
+<polygon fill="#777777" stroke="#777777" points="364,-24 228,-24 228,0 364,0 364,-24"/>
+<text text-anchor="middle" x="296" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Unknown Procedure Type</text>
+</g>
+<!-- Program -->
+<g id="node5" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="436,-24 382,-24 382,0 436,0 436,-24"/>
+<text text-anchor="middle" x="409" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node6" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="#000000" points="551.5,-24 454.5,-24 454.5,0 551.5,0 551.5,-24"/>
+<text text-anchor="middle" x="503" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#000000">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+    
+    <p>Solid arrows point from a procedure to one which it calls. Dashed 
+    arrows point from an interface to procedures which implement that interface.
+    This could include the module procedures in a generic interface or the
+    implementation in a submodule of an interface in a parent module.
+    </p>
+    </div></div></div></div>
+      </div>
+    </div>
+     
+    
+    <br>
+    
+      <h2>
+public module subroutine output_plasma(outdir, flagoutput, ymd, UTsec, vs2, vs3, ns, vs1, Ts, Phiall, J1, J2, J3)
+    
+    
+   
+   <a href='../proc/output_plasma.html'><button type="button" class="btn btn-info depwarn">Implementation &rarr;</button></a>
+    
+</h2>
+    
+
+    
+  
+
+
+    <h3>Arguments</h3>
+    
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-outdir~7"></span>character(len=*),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>outdir</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-flagoutput~2"></span>integer,</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>flagoutput</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-ymd~5"></span>integer,</td>
+  <td>intent(in),</td>
+  <td></td>
+  
+  <td>dimension(3)</td><td>::</td>
+  <td><strong>ymd</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-utsec~5"></span>real(kind=wp),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>UTsec</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-vs2"></span>real(kind=wp),</td>
+  <td>intent(in),</td>
+  <td></td>
+  
+  <td>dimension(-1:,-1:,-1:,:)</td><td>::</td>
+  <td><strong>vs2</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-vs3"></span>real(kind=wp),</td>
+  <td>intent(in),</td>
+  <td></td>
+  
+  <td>dimension(-1:,-1:,-1:,:)</td><td>::</td>
+  <td><strong>vs3</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-ns~6"></span>real(kind=wp),</td>
+  <td>intent(in),</td>
+  <td></td>
+  
+  <td>dimension(-1:,-1:,-1:,:)</td><td>::</td>
+  <td><strong>ns</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-vs1~4"></span>real(kind=wp),</td>
+  <td>intent(in),</td>
+  <td></td>
+  
+  <td>dimension(-1:,-1:,-1:,:)</td><td>::</td>
+  <td><strong>vs1</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-ts~6"></span>real(kind=wp),</td>
+  <td>intent(in),</td>
+  <td></td>
+  
+  <td>dimension(-1:,-1:,-1:,:)</td><td>::</td>
+  <td><strong>Ts</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-phiall"></span>real(kind=wp),</td>
+  <td>intent(inout),</td>
+  <td></td>
+  
+  <td>dimension(:,:,:), allocatable</td><td>::</td>
+  <td><strong>Phiall</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-j1~3"></span>real(kind=wp),</td>
+  <td>intent(in),</td>
+  <td></td>
+  
+  <td>dimension(:,:,:)</td><td>::</td>
+  <td><strong>J1</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-j2~2"></span>real(kind=wp),</td>
+  <td>intent(in),</td>
+  <td></td>
+  
+  <td>dimension(:,:,:)</td><td>::</td>
+  <td><strong>J2</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-j3~2"></span>real(kind=wp),</td>
+  <td>intent(in),</td>
+  <td></td>
+  
+  <td>dimension(:,:,:)</td><td>::</td>
+  <td><strong>J3</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+    
+    
+    
+    <br>
+
+ </div>
+</div>
+
+
+    <hr>    
+    </div> <!-- /container -->
+    <footer>
+      <div class="container">
+      <div class="row">
+        <div class="col-xs-6 col-md-4"><p>&copy; 2020 <a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/80x15.png" /></a>
+                                          </p></div>
+        <div class="col-xs-6 col-md-4 col-md-push-4">
+          <p class="text-right">
+            Documentation generated by 
+            <a href="https://github.com/cmacmackin/ford">FORD</a>
+            
+          </p>
+        </div>
+        <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> GEMINI3D was developed by Matthew Zettergren
+Guy Grubbs
+Michael Hirsch</p></div>
+      </div>
+      <br>
+      </div> <!-- /container -->    
+    </footer>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+<!--
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+-->
+    <script src="../js/bootstrap.min.js"></script>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <script src="../js/ie10-viewport-bug-workaround.js"></script>
+
+    <!-- MathJax JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } },
+        jax: ['input/TeX','input/MathML','output/HTML-CSS'],
+        extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']
+      });
+    </script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    
+    
+  </body>
+</html>

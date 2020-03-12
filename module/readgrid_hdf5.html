@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+   
+   <meta name="description" content="GEMINI3D is a modular ionospheric model that incorporates kinetic models such as Fang, GLOW.">
+    
+    <meta name="author" content="Matthew Zettergren
+Guy Grubbs
+Michael Hirsch" >
+    <link rel="icon" href="../favicon.png">
+
+    <title>readgrid_hdf5 &ndash; GEMINI3D</title>
+
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+    <link href="../css/pygments.css" rel="stylesheet">
+    <link href="../css/font-awesome.min.css" rel="stylesheet">
+    <link href="../css/local.css" rel="stylesheet">
+    
+    
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    
+    <script src="../js/jquery-2.1.3.min.js"></script>
+    <script src="../js/svg-pan-zoom.min.js"></script>
+
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="../index.html">GEMINI3D </a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+        
+            <li class="dropdown hidden-xs visible-sm visible-md hidden-lg">
+              <a href="#" class="dropdown-toggle"
+              data-toggle="dropdown" role="button"
+              aria-haspopup="true"
+     aria-expanded="false">Contents <span class="caret"></span></a>
+        <ul class="dropdown-menu">
+          
+              
+            <li><a href="../lists/files.html">Source Files</a></li>
+        
+        
+        
+            <li><a href="../lists/modules.html">Modules</a></li>
+        
+            
+    <li><a href="../blockdata/gtd7bk.html">Block Data</a></li>
+    
+                                
+            <li><a href="../lists/procedures.html">Procedures</a></li>
+        
+               
+            <li><a href="../lists/types.html">Derived Types</a></li>
+        
+        
+            <li><a href="../lists/programs.html">Programs</a></li>
+        
+            </ul>
+            </li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/files.html">Source Files</a></li>
+
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/modules.html">Modules</a></li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../blockdata/gtd7bk.html">Block Data</a></li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/procedures.html">Procedures</a></li>
+
+                             
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/types.html">Derived Types</a></li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/programs.html">Programs</a></li>
+
+          </ul>
+        
+        </div><!--/.nav-collapse -->
+      </div>
+    </nav>
+
+    <div class="container">
+    
+  
+  <div class="row">
+    <h1>readgrid_hdf5 
+    <small>Submodule</small>
+    
+    </h1>
+    
+<div class="row">
+  <div class="col-lg-12">
+<div class="well well-sm">
+  <ul class="list-inline" style="margin-bottom:0px;display:inline">
+     
+     
+     
+     
+    
+    
+     <li><i class="fa fa-list-ol"></i>
+       <a data-toggle="tooltip"
+    data-placement="bottom" data-html="true"
+    title=" 1.6% of total for modules and submodules.">169 statements</a>
+     </li> 
+     
+     
+     
+    <li><i class="fa fa-code"></i><a href="../src/readgrid_hdf5.f90"> Source File</a></li>
+     
+     
+  </ul>
+  <ol class="breadcrumb in-well text-right">
+  
+    
+     <li><a href='../sourcefile/readgrid_hdf5.f90.html'>readgrid_hdf5.f90</a></li>
+    
+  
+     <li class="active">readgrid_hdf5</li>
+  </ol>
+</div>
+</div>
+</div>
+<script>
+  $(function () {
+  $('[data-toggle="tooltip"]').tooltip()
+  })
+</script>
+
+  </div>
+  
+  <div class="row">
+    <div class="col-md-3 hidden-xs hidden-sm visible-md visible-lg">
+    
+<div id="sidebar">
+  
+<h3>Contents</h3>
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#modprocs-0">Module Procedures</a></h3></div>
+  <div id="modprocs-0" class="panel-collapse collapse">
+    <div class="list-group">
+      
+      <a class="list-group-item" href="../module/readgrid_hdf5.html#proc-get_grid3">get_grid3</a>
+      
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+</div>
+
+    </div>
+    
+    <div class="col-md-9" id='text'>
+    
+      <br>
+    
+  
+    <div class="panel panel-default">
+      <div class="panel-heading">
+  <h3 class="panel-title">Uses</h3>
+      </div>
+      <ul class="list-group">
+      
+      <li class="list-group-item">
+  <ul class="list-inline">
+    
+    <li><a href='../module/phys_consts.html'>phys_consts</a></li>
+    
+    <li>h5fortran</li>
+    
+  </ul>
+      </li>
+      
+      
+      <li class="list-group-item">
+  <ul class="list-inline">
+    <li><h5>Ancestors:</h5></li>
+    
+    <li><a href='../module/grid.html'>grid</a></li>
+    <li>:</li>
+    
+    <li><a href='../module/grid_read.html'>grid_read</a></li>
+    
+    
+  </ul>
+      </li>
+      
+      
+      <li class="list-group-item">
+  <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.40.1 (20161225.0304)
+ -->
+<!-- Title: module~~readgrid_hdf5~~UsesGraph Pages: 1 -->
+<svg id="modulereadgrid_hdf5UsesGraph" width="592pt" height="180pt"
+ viewBox="0.00 0.00 592.00 179.97" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="module~~readgrid_hdf5~~UsesGraph" class="graph" transform="scale(1 1) rotate(0) translate(4 175.9716)">
+<title>module~~readgrid_hdf5~~UsesGraph</title>
+<polygon fill="#ffffff" stroke="transparent" points="-4,4 -4,-175.9716 588,-175.9716 588,4 -4,4"/>
+<!-- module~readgrid_hdf5 -->
+<g id="module~~readgrid_hdf5~~UsesGraph_node1" class="node">
+<title>module~readgrid_hdf5</title>
+<polygon fill="none" stroke="#000000" points="584,-133.0366 505,-133.0366 505,-109.0366 584,-109.0366 584,-133.0366"/>
+<text text-anchor="middle" x="544.5" y="-118.6366" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#000000">readgrid_hdf5</text>
+</g>
+<!-- module~grid_read -->
+<g id="module~~readgrid_hdf5~~UsesGraph_node2" class="node">
+<title>module~grid_read</title>
+<g id="a_module~~readgrid_hdf5~~UsesGraph_node2"><a xlink:href=".././module/grid_read.html" xlink:title="grid_read">
+<polygon fill="#5bc0de" stroke="#5bc0de" points="469,-133.0366 411,-133.0366 411,-109.0366 469,-109.0366 469,-133.0366"/>
+<text text-anchor="middle" x="440" y="-118.6366" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">grid_read</text>
+</a>
+</g>
+</g>
+<!-- module~readgrid_hdf5&#45;&gt;module~grid_read -->
+<g id="module~~readgrid_hdf5~~UsesGraph_edge3" class="edge">
+<title>module~readgrid_hdf5&#45;&gt;module~grid_read</title>
+<path fill="none" stroke="#000000" d="M504.993,-121.0366C496.5283,-121.0366 487.5884,-121.0366 479.1378,-121.0366"/>
+<polygon fill="#000000" stroke="#000000" points="479.1373,-117.5367 469.1373,-121.0366 479.1373,-124.5367 479.1373,-117.5367"/>
+</g>
+<!-- h5fortran -->
+<g id="module~~readgrid_hdf5~~UsesGraph_node3" class="node">
+<title>h5fortran</title>
+<polygon fill="#337ab7" stroke="#337ab7" points="468,-91.0366 412,-91.0366 412,-67.0366 468,-67.0366 468,-91.0366"/>
+<text text-anchor="middle" x="440" y="-76.6366" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">h5fortran</text>
+</g>
+<!-- module~readgrid_hdf5&#45;&gt;h5fortran -->
+<g id="module~~readgrid_hdf5~~UsesGraph_edge1" class="edge">
+<title>module~readgrid_hdf5&#45;&gt;h5fortran</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M514.5545,-109.0011C503.0378,-104.3724 489.7413,-99.0284 477.5945,-94.1464"/>
+<polygon fill="#000000" stroke="#000000" points="478.7394,-90.8345 468.1555,-90.3527 476.1289,-97.3295 478.7394,-90.8345"/>
+</g>
+<!-- module~phys_consts -->
+<g id="module~~readgrid_hdf5~~UsesGraph_node4" class="node">
+<title>module~phys_consts</title>
+<g id="a_module~~readgrid_hdf5~~UsesGraph_node4"><a xlink:href=".././module/phys_consts.html" xlink:title="phys_consts">
+<polygon fill="#337ab7" stroke="#337ab7" points="195,-140.0366 123,-140.0366 123,-116.0366 195,-116.0366 195,-140.0366"/>
+<text text-anchor="middle" x="159" y="-125.6366" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">phys_consts</text>
+</a>
+</g>
+</g>
+<!-- module~readgrid_hdf5&#45;&gt;module~phys_consts -->
+<g id="module~~readgrid_hdf5~~UsesGraph_edge2" class="edge">
+<title>module~readgrid_hdf5&#45;&gt;module~phys_consts</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M506.3849,-133.0376C451.8125,-148.9921 348.0495,-174.7765 258,-171.0366"/>
+</g>
+<!-- module~grid -->
+<g id="module~~readgrid_hdf5~~UsesGraph_node5" class="node">
+<title>module~grid</title>
+<g id="a_module~~readgrid_hdf5~~UsesGraph_node5"><a xlink:href=".././module/grid.html" xlink:title="grid">
+<polygon fill="#337ab7" stroke="#337ab7" points="375,-122.0366 321,-122.0366 321,-98.0366 375,-98.0366 375,-122.0366"/>
+<text text-anchor="middle" x="348" y="-107.6366" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">grid</text>
+</a>
+</g>
+</g>
+<!-- module~grid_read&#45;&gt;module~grid -->
+<g id="module~~readgrid_hdf5~~UsesGraph_edge4" class="edge">
+<title>module~grid_read&#45;&gt;module~grid</title>
+<path fill="none" stroke="#000000" d="M410.8906,-117.5562C402.7318,-116.5807 393.7498,-115.5067 385.1905,-114.4833"/>
+<polygon fill="#000000" stroke="#000000" points="385.3882,-110.9821 375.0434,-113.2701 384.5571,-117.9326 385.3882,-110.9821"/>
+</g>
+<!-- iso_fortran_env -->
+<g id="module~~readgrid_hdf5~~UsesGraph_node6" class="node">
+<title>iso_fortran_env</title>
+<g id="a_module~~readgrid_hdf5~~UsesGraph_node6"><a xlink:href="http://fortranwiki.org/fortran/show/ISO_FORTRAN_ENV" xlink:title="iso_fortran_env">
+<polygon fill="#337ab7" stroke="#337ab7" points="87,-100.0366 0,-100.0366 0,-76.0366 87,-76.0366 87,-100.0366"/>
+<text text-anchor="middle" x="43.5" y="-85.6366" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">iso_fortran_env</text>
+</a>
+</g>
+</g>
+<!-- module~phys_consts&#45;&gt;iso_fortran_env -->
+<g id="module~~readgrid_hdf5~~UsesGraph_edge5" class="edge">
+<title>module~phys_consts&#45;&gt;iso_fortran_env</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M124.3462,-116.0353C112.9161,-112.0769 100.0409,-107.6179 87.9817,-103.4415"/>
+<polygon fill="#000000" stroke="#000000" points="89.1233,-100.133 78.5285,-100.1677 86.8325,-106.7476 89.1233,-100.133"/>
+</g>
+<!-- module~grid&#45;&gt;module~phys_consts -->
+<g id="module~~readgrid_hdf5~~UsesGraph_edge8" class="edge">
+<title>module~grid&#45;&gt;module~phys_consts</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M338.8819,-122.1401C324.0137,-140.3346 292.7015,-172.4778 258,-171.0366"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M258,-171.0366C231.6128,-169.9407 204.2739,-157.0186 185.0288,-145.6239"/>
+<polygon fill="#000000" stroke="#000000" points="186.6177,-142.4914 176.2711,-140.2114 182.9376,-148.446 186.6177,-142.4914"/>
+</g>
+<!-- module~grid&#45;&gt;iso_fortran_env -->
+<g id="module~~readgrid_hdf5~~UsesGraph_edge7" class="edge">
+<title>module~grid&#45;&gt;iso_fortran_env</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M342.6862,-97.9225C333.7432,-79.1069 313.7951,-43.2379 285,-26.0366 236.3811,3.0067 214.4342,4.5547 159,-7.0366"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M159,-7.0366C118.7241,-14.7519 81.7242,-47.0254 60.9443,-68.4319"/>
+<polygon fill="#000000" stroke="#000000" points="58.3512,-66.0803 54.0464,-75.7612 63.4487,-70.8777 58.3512,-66.0803"/>
+</g>
+<!-- module~reader -->
+<g id="module~~readgrid_hdf5~~UsesGraph_node7" class="node">
+<title>module~reader</title>
+<g id="a_module~~readgrid_hdf5~~UsesGraph_node7"><a xlink:href=".././module/reader.html" xlink:title="reader">
+<polygon fill="#337ab7" stroke="#337ab7" points="285,-101.0366 231,-101.0366 231,-77.0366 285,-77.0366 285,-101.0366"/>
+<text text-anchor="middle" x="258" y="-86.6366" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">reader</text>
+</a>
+</g>
+</g>
+<!-- module~grid&#45;&gt;module~reader -->
+<g id="module~~readgrid_hdf5~~UsesGraph_edge6" class="edge">
+<title>module~grid&#45;&gt;module~reader</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M320.997,-103.7359C312.8842,-101.8429 303.8369,-99.7319 295.1869,-97.7136"/>
+<polygon fill="#000000" stroke="#000000" points="295.8287,-94.2694 285.295,-95.4055 294.2381,-101.0863 295.8287,-94.2694"/>
+</g>
+<!-- module~mesh -->
+<g id="module~~readgrid_hdf5~~UsesGraph_node8" class="node">
+<title>module~mesh</title>
+<g id="a_module~~readgrid_hdf5~~UsesGraph_node8"><a xlink:href=".././module/mesh.html" xlink:title="mesh">
+<polygon fill="#337ab7" stroke="#337ab7" points="285,-143.0366 231,-143.0366 231,-119.0366 285,-119.0366 285,-143.0366"/>
+<text text-anchor="middle" x="258" y="-128.6366" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">mesh</text>
+</a>
+</g>
+</g>
+<!-- module~grid&#45;&gt;module~mesh -->
+<g id="module~~readgrid_hdf5~~UsesGraph_edge9" class="edge">
+<title>module~grid&#45;&gt;module~mesh</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M320.997,-116.3373C312.8842,-118.2303 303.8369,-120.3414 295.1869,-122.3597"/>
+<polygon fill="#000000" stroke="#000000" points="294.2381,-118.987 285.295,-124.6678 295.8287,-125.8039 294.2381,-118.987"/>
+</g>
+<!-- module~mpimod -->
+<g id="module~~readgrid_hdf5~~UsesGraph_node9" class="node">
+<title>module~mpimod</title>
+<g id="a_module~~readgrid_hdf5~~UsesGraph_node9"><a xlink:href=".././module/mpimod.html" xlink:title="mpimod">
+<polygon fill="#337ab7" stroke="#337ab7" points="285,-59.0366 231,-59.0366 231,-35.0366 285,-35.0366 285,-59.0366"/>
+<text text-anchor="middle" x="258" y="-44.6366" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">mpimod</text>
+</a>
+</g>
+</g>
+<!-- module~grid&#45;&gt;module~mpimod -->
+<g id="module~~readgrid_hdf5~~UsesGraph_edge10" class="edge">
+<title>module~grid&#45;&gt;module~mpimod</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M330.6471,-97.8896C317.3248,-88.564 298.7242,-75.5436 283.6798,-65.0125"/>
+<polygon fill="#000000" stroke="#000000" points="285.4991,-62.0137 275.2996,-59.1464 281.4848,-67.7484 285.4991,-62.0137"/>
+</g>
+<!-- module~reader&#45;&gt;module~phys_consts -->
+<g id="module~~readgrid_hdf5~~UsesGraph_edge12" class="edge">
+<title>module~reader&#45;&gt;module~phys_consts</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M230.9478,-99.6936C221.1294,-103.5614 209.8161,-108.0182 199.111,-112.2353"/>
+<polygon fill="#000000" stroke="#000000" points="197.5323,-109.0954 189.5111,-116.0171 200.098,-115.6082 197.5323,-109.0954"/>
+</g>
+<!-- module~reader&#45;&gt;iso_fortran_env -->
+<g id="module~~readgrid_hdf5~~UsesGraph_edge11" class="edge">
+<title>module~reader&#45;&gt;iso_fortran_env</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M230.8334,-88.91C197.4028,-88.7541 139.8534,-88.4858 97.3393,-88.2876"/>
+<polygon fill="#000000" stroke="#000000" points="97.1679,-84.7869 87.1517,-88.2401 97.1352,-91.7868 97.1679,-84.7869"/>
+</g>
+<!-- module~mesh&#45;&gt;module~phys_consts -->
+<g id="module~~readgrid_hdf5~~UsesGraph_edge13" class="edge">
+<title>module~mesh&#45;&gt;module~phys_consts</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M230.9478,-130.2169C223.0473,-129.9775 214.1788,-129.7087 205.4382,-129.4438"/>
+<polygon fill="#000000" stroke="#000000" points="205.4033,-125.9413 195.3018,-129.1367 205.1912,-132.9381 205.4033,-125.9413"/>
+</g>
+<!-- module~mpimod&#45;&gt;module~phys_consts -->
+<g id="module~~readgrid_hdf5~~UsesGraph_edge16" class="edge">
+<title>module~mpimod&#45;&gt;module~phys_consts</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M242.2249,-59.1628C238.5237,-62.0474 234.6078,-65.1317 231,-68.0366 214.0489,-81.6853 195.1569,-97.4501 180.9791,-109.3942"/>
+<polygon fill="#000000" stroke="#000000" points="178.609,-106.8146 173.2265,-115.9404 183.1251,-112.163 178.609,-106.8146"/>
+</g>
+<!-- module~mpimod&#45;&gt;iso_fortran_env -->
+<g id="module~~readgrid_hdf5~~UsesGraph_edge15" class="edge">
+<title>module~mpimod&#45;&gt;iso_fortran_env</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M243.0987,-34.8351C224.1713,-20.8107 190.2094,-.5108 159,-7.0366"/>
+</g>
+<!-- mpi -->
+<g id="module~~readgrid_hdf5~~UsesGraph_node10" class="node">
+<title>mpi</title>
+<g id="a_module~~readgrid_hdf5~~UsesGraph_node10"><a xlink:href="http://www.mpi-forum.org/docs/mpi-3.1/mpi31-report/node410.htm" xlink:title="mpi">
+<polygon fill="#337ab7" stroke="#337ab7" points="186,-59.0366 132,-59.0366 132,-35.0366 186,-35.0366 186,-59.0366"/>
+<text text-anchor="middle" x="159" y="-44.6366" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">mpi</text>
+</a>
+</g>
+</g>
+<!-- module~mpimod&#45;&gt;mpi -->
+<g id="module~~readgrid_hdf5~~UsesGraph_edge14" class="edge">
+<title>module~mpimod&#45;&gt;mpi</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M230.9478,-47.0366C220.2528,-47.0366 207.784,-47.0366 196.2596,-47.0366"/>
+<polygon fill="#000000" stroke="#000000" points="196.0195,-43.5367 186.0195,-47.0366 196.0194,-50.5367 196.0195,-43.5367"/>
+</g>
+</g>
+</svg>
+</div><div><a type="button" class="graph-help" data-toggle="modal" href="#graph-help-text">Help</a></div><div class="modal fade" id="graph-help-text" tabindex="-1" role="dialog"><div class="modal-dialog modal-lg" role="document"><div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button><h4 class="modal-title" id="-graph-help-label">Graph Key</h4></div><div class="modal-body">
+    <p>Nodes of different colours represent the following: </p>
+    <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.40.1 (20161225.0304)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="490pt" height="32pt"
+ viewBox="0.00 0.00 489.50 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 28)">
+<title>Graph Key</title>
+<polygon fill="#ffffff" stroke="transparent" points="-4,4 -4,-28 485.5,-28 485.5,4 -4,4"/>
+<!-- Module -->
+<g id="node1" class="node">
+<title>Module</title>
+<polygon fill="#337ab7" stroke="#337ab7" points="54,-24 0,-24 0,0 54,0 54,-24"/>
+<text text-anchor="middle" x="27" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Module</text>
+</g>
+<!-- Submodule -->
+<g id="node2" class="node">
+<title>Submodule</title>
+<polygon fill="#5bc0de" stroke="#5bc0de" points="139.5,-24 72.5,-24 72.5,0 139.5,0 139.5,-24"/>
+<text text-anchor="middle" x="106" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Submodule</text>
+</g>
+<!-- Subroutine -->
+<g id="node3" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="222,-24 158,-24 158,0 222,0 222,-24"/>
+<text text-anchor="middle" x="190" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node4" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="294,-24 240,-24 240,0 294,0 294,-24"/>
+<text text-anchor="middle" x="267" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Function</text>
+</g>
+<!-- Program -->
+<g id="node5" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="366,-24 312,-24 312,0 366,0 366,-24"/>
+<text text-anchor="middle" x="339" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node6" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="#000000" points="481.5,-24 384.5,-24 384.5,0 481.5,0 481.5,-24"/>
+<text text-anchor="middle" x="433" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#000000">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+    
+    <p>Solid arrows point from a submodule to the (sub)module which it is
+    descended from. Dashed arrows point from a module or program unit to 
+    modules which it uses.
+    </p>
+    </div></div></div></div>
+      </li>
+      
+      </ul>
+    </div>
+    
+
+    
+    
+
+    <br>
+
+    <section class="visible-xs visible-sm hidden-md">
+      
+<h3>Contents</h3>
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#modprocs-1">Module Procedures</a></h3></div>
+  <div id="modprocs-1" class="panel-collapse collapse">
+    <div class="list-group">
+      
+      <a class="list-group-item" href="../module/readgrid_hdf5.html#proc-get_grid3">get_grid3</a>
+      
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+    </section>
+    <br class="visible-xs visible-sm hidden-md">
+
+    
+
+    
+    
+    
+    
+    
+
+    
+    
+    
+    
+    
+
+    
+    
+    
+    
+        
+
+        
+
+        
+        <section>
+        <h2>Module Procedures</h2>
+        
+        
+  <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-get_grid3"></span><h3>
+module procedure <a href='../proc/get_grid3.html'>get_grid3</a> <small>module subroutine get_grid3(path, flagswap, x, g1all, g2all, g3all, altall, glatall, glonall, Bmagall, Incall, nullptsall, e1all, e2all, e3all, erall, ethetaall, ephiall, rall, thetaall, phiall)</small>
+    
+    
+   <a href='../interface/get_grid3.html'><button type="button" class="btn btn-info depwarn">Interface &rarr;</button></a>
+    
+   
+</h3></div>
+  <div class="panel-body">
+       
+    
+
+
+
+
+
+
+
+<p>reads common to 2D and 3D
+ 1-D variables
+ normal (i.e. full 3D) grid ordering, or a 2D grid with 1 element naturally in the second dimension</p><a href="../proc/get_grid3.html" class="pull-right"><emph>Read more&hellip;</emph></a>
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>character(len=*),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>path</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer,</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>flagswap</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>type(<a href='../type/curvmesh.html'>curvmesh</a>),</td>
+  <td>intent(inout)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>x</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(out),</td>
+  <td></td>
+  
+  <td>dimension(:,:,:)</td><td>::</td>
+  <td><strong>g1all</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(out),</td>
+  <td></td>
+  
+  <td>dimension(:,:,:)</td><td>::</td>
+  <td><strong>g2all</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(out),</td>
+  <td></td>
+  
+  <td>dimension(:,:,:)</td><td>::</td>
+  <td><strong>g3all</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(out),</td>
+  <td></td>
+  
+  <td>dimension(:,:,:)</td><td>::</td>
+  <td><strong>altall</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(out),</td>
+  <td></td>
+  
+  <td>dimension(:,:,:)</td><td>::</td>
+  <td><strong>glatall</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(out),</td>
+  <td></td>
+  
+  <td>dimension(:,:,:)</td><td>::</td>
+  <td><strong>glonall</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(out),</td>
+  <td></td>
+  
+  <td>dimension(:,:,:)</td><td>::</td>
+  <td><strong>Bmagall</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(out),</td>
+  <td></td>
+  
+  <td>dimension(:,:)</td><td>::</td>
+  <td><strong>Incall</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(out),</td>
+  <td></td>
+  
+  <td>dimension(:,:,:)</td><td>::</td>
+  <td><strong>nullptsall</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(out),</td>
+  <td></td>
+  
+  <td>dimension(:,:,:,:)</td><td>::</td>
+  <td><strong>e1all</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(out),</td>
+  <td></td>
+  
+  <td>dimension(:,:,:,:)</td><td>::</td>
+  <td><strong>e2all</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(out),</td>
+  <td></td>
+  
+  <td>dimension(:,:,:,:)</td><td>::</td>
+  <td><strong>e3all</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(out),</td>
+  <td></td>
+  
+  <td>dimension(:,:,:,:)</td><td>::</td>
+  <td><strong>erall</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(out),</td>
+  <td></td>
+  
+  <td>dimension(:,:,:,:)</td><td>::</td>
+  <td><strong>ethetaall</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(out),</td>
+  <td></td>
+  
+  <td>dimension(:,:,:,:)</td><td>::</td>
+  <td><strong>ephiall</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(out),</td>
+  <td></td>
+  
+  <td>dimension(:,:,:)</td><td>::</td>
+  <td><strong>rall</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(out),</td>
+  <td></td>
+  
+  <td>dimension(:,:,:)</td><td>::</td>
+  <td><strong>thetaall</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(out),</td>
+  <td></td>
+  
+  <td>dimension(:,:,:)</td><td>::</td>
+  <td><strong>phiall</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  </div>
+  </div>
+
+        
+        </section>    
+        
+    
+    
+    </div>
+  </div>
+
+  
+    <hr>    
+    </div> <!-- /container -->
+    <footer>
+      <div class="container">
+      <div class="row">
+        <div class="col-xs-6 col-md-4"><p>&copy; 2020 <a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/80x15.png" /></a>
+                                          </p></div>
+        <div class="col-xs-6 col-md-4 col-md-push-4">
+          <p class="text-right">
+            Documentation generated by 
+            <a href="https://github.com/cmacmackin/ford">FORD</a>
+            
+          </p>
+        </div>
+        <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> GEMINI3D was developed by Matthew Zettergren
+Guy Grubbs
+Michael Hirsch</p></div>
+      </div>
+      <br>
+      </div> <!-- /container -->    
+    </footer>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+<!--
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+-->
+    <script src="../js/bootstrap.min.js"></script>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <script src="../js/ie10-viewport-bug-workaround.js"></script>
+
+    <!-- MathJax JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } },
+        jax: ['input/TeX','input/MathML','output/HTML-CSS'],
+        extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']
+      });
+    </script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    
+    
+  </body>
+</html>

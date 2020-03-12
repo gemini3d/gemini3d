@@ -66,6 +66,8 @@ All Programs &ndash; GEMINI3D
             <li><a href="../lists/modules.html">Modules</a></li>
         
             
+    <li><a href="../blockdata/gtd7bk.html">Block Data</a></li>
+    
                                 
             <li><a href="../lists/procedures.html">Procedures</a></li>
         
@@ -85,6 +87,8 @@ All Programs &ndash; GEMINI3D
 
 <li class="visible-xs hidden-sm visible-lg"><a href="../lists/modules.html">Modules</a></li>
 
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../blockdata/gtd7bk.html">Block Data</a></li>
 
 
 <li class="visible-xs hidden-sm visible-lg"><a href="../lists/procedures.html">Procedures</a></li>
@@ -110,13 +114,17 @@ All Programs &ndash; GEMINI3D
 			 <thead><tr><th>Program</th><th>Source File</th><th>Description</th></tr></thead>
 			 <tbody>
 			 
-			   <tr><td><a href='../program/gemini.html'>gemini</a></td><td><a href='../sourcefile/gemini.f90.html'>gemini.f90</a></td><td><p>ESTABLISH A PROCESS GRID, IF NEEDED - LEAVE HERE FOR FUTURE IMPLEMENTATIONS OF X2,X3 PARALLELIZATION</p></td></tr>
+			   <tr><td><a href='../program/gemini3d.html'>Gemini3D</a></td><td><a href='../sourcefile/gemini.f90.html'>gemini.f90</a></td><td><p>MAIN PROGRAM FOR GEMINI3D
+ Need program statement for FORD
+ stops with de facto "skip test" return code
+ INITIALIZE MESSING PASSING VARIABLES, IDS ETC.
+ READ FILE INPUT
+ CHECK THE GRID SIZE AND ESTABLISH A PROCESS GRID</p><a href="../program/gemini3d.html" class="pull-right"><emph>Read more&hellip;</emph></a></td></tr>
 			 
-			   <tr><td><a href='../program/hello.html'>hello</a></td><td><a href='../sourcefile/test_mpi.f90.html'>test_mpi.f90</a></td><td></td></tr>
-			 
-			   <tr><td><a href='../program/hello~2.html'>hello</a></td><td><a href='../sourcefile/test_mpi.f90~2.html'>test_mpi.f90</a></td><td></td></tr>
-			 
-			   <tr><td><a href='../program/magcalc.html'>magcalc</a></td><td><a href='../sourcefile/magcalc.f90.html'>magcalc.f90</a></td><td></td></tr>
+			   <tr><td><a href='../program/magcalc.html'>MagCalc</a></td><td><a href='../sourcefile/magcalc.f90.html'>magcalc.f90</a></td><td><p>Need program statement for FORD
+ THIS IS THE MAIN PROGRAM FOR COMPUTING MAGNETIC FIELDS
+ FROM OUTPUT FROM A SIMULATIONS DONE BY GEMINI3D.
+ THIS PROGRAM VERY MUCH MIRRORS THE SETUP OF THE MAIN GEMINI.F90 CODE.</p><a href="../program/magcalc.html" class="pull-right"><emph>Read more&hellip;</emph></a></td></tr>
 			 
 			   <tr><td><a href='../program/mhd1d_saw.html'>MHD1D_SAW</a></td><td><a href='../sourcefile/mhd1d_saw.f90.html'>MHD1D_SAW.f90</a></td><td></td></tr>
 			 
@@ -124,17 +132,41 @@ All Programs &ndash; GEMINI3D
 			 
 			   <tr><td><a href='../program/mhd1d_snd.html'>MHD1D_SND</a></td><td><a href='../sourcefile/mhd1d_snd.f90.html'>MHD1D_SND.f90</a></td><td></td></tr>
 			 
-			   <tr><td><a href='../program/mpi_ver.html'>mpi_ver</a></td><td><a href='../sourcefile/mpiver.f90.html'>mpiver.f90</a></td><td></td></tr>
+			   <tr><td><a href='../program/msis_driver.html'>msis_driver</a></td><td><a href='../sourcefile/msis_driver.f90.html'>msis_driver.f90</a></td><td><p>read in msis inputs</p><a href="../program/msis_driver.html" class="pull-right"><emph>Read more&hellip;</emph></a></td></tr>
 			 
-			   <tr><td><a href='../program/mpi_ver~2.html'>mpi_ver</a></td><td><a href='../sourcefile/mpiver.f90~2.html'>mpiver.f90</a></td><td></td></tr>
+			   <tr><td><a href='../program/test_dayrollover.html'>test_dayrollover</a></td><td><a href='../sourcefile/test_dayrollover.f90.html'>test_dayrollover.f90</a></td><td><p>test day rollover
+ leap year tests</p><a href="../program/test_dayrollover.html" class="pull-right"><emph>Read more&hellip;</emph></a></td></tr>
 			 
-			   <tr><td><a href='../program/neuatmos.html'>neuatmos</a></td><td><a href='../sourcefile/call_msis_gfortran.f90.html'>call_msis_gfortran.f90</a></td><td></td></tr>
+			   <tr><td><a href='../program/test_diffusion1d.html'>test_diffusion1d</a></td><td><a href='../sourcefile/test_diffusion1d.f90.html'>test_diffusion1D.f90</a></td><td><p>Need program statement for FORD
+ Solve a time-dependent heat equation in 1D.  See GEMINI-docs repo for
+ a description of the specific problem solved here</p><a href="../program/test_diffusion1d.html" class="pull-right"><emph>Read more&hellip;</emph></a></td></tr>
 			 
-			   <tr><td><a href='../program/test_diffusion1d.html'>test_diffusion1D</a></td><td><a href='../sourcefile/test_diffusion1d.f90.html'>test_diffusion1D.f90</a></td><td></td></tr>
+			   <tr><td><a href='../program/test_fang.html'>test_fang</a></td><td><a href='../sourcefile/test_fang.f90.html'>test_fang.f90</a></td><td><p>Need program statement for FORD
+ Reproduces data of:
+ * Figure 3 in https://agupubs.onlinelibrary.wiley.com/doi/10.1029/2008JA013384
+ * Figure 2 in Fang 2010</p></td></tr>
 			 
-			   <tr><td><a href='../program/testinterp1.html'>testinterp1</a></td><td><a href='../sourcefile/testinterp1.f90.html'>testinterp1.f90</a></td><td></td></tr>
+			   <tr><td><a href='../program/test_formats.html'>test_formats</a></td><td><a href='../sourcefile/test_formats.f90.html'>test_formats.f90</a></td><td><p>This tests various text output formats.
+ It necessarily requires visual inspection, or run from an enclosing program with Regex,
+ such as a Python program configured to test as desired.
+ Increment time tests</p></td></tr>
 			 
-			   <tr><td><a href='../program/testinterp2.html'>testinterp2</a></td><td><a href='../sourcefile/testinterp2.f90.html'>testinterp2.f90</a></td><td></td></tr>
+			   <tr><td><a href='../program/test_interp1.html'>test_interp1</a></td><td><a href='../sourcefile/testinterp1.f90.html'>testinterp1.f90</a></td><td><p>Need program statement for FORD</p></td></tr>
+			 
+			   <tr><td><a href='../program/test_interp2.html'>test_interp2</a></td><td><a href='../sourcefile/testinterp2.f90.html'>testinterp2.f90</a></td><td><p>Need program statement for FORD
+ grid for interpolated data
+ center grid points at zero
+ try a 2d interpolation
+ dump results to a file so we can check things</p></td></tr>
+			 
+			   <tr><td><a href='../program/test_potential2d.html'>test_potential2d</a></td><td><a href='../sourcefile/test_potential2d.f90.html'>test_potential2D.f90</a></td><td><p>Need program statement for FORD
+ SOLVE LAPLACE'S EQUATION IN 2D USING PDEelliptic, mumps-based libraries</p><a href="../program/test_potential2d.html" class="pull-right"><emph>Read more&hellip;</emph></a></td></tr>
+			 
+			   <tr><td><a href='../program/test_potential3d.html'>test_potential3D</a></td><td><a href='../sourcefile/test_potential3d.f90.html'>test_potential3D.f90</a></td><td><p>Need program statement for FORD</p></td></tr>
+			 
+			   <tr><td><a href='../program/test_sza.html'>test_sza</a></td><td><a href='../sourcefile/test_sza.f90.html'>test_sza.f90</a></td><td><p>test day rollover</p></td></tr>
+			 
+			   <tr><td><a href='../program/testinterp3.html'>testinterp3</a></td><td><a href='../sourcefile/testinterp3.f90.html'>testinterp3.f90</a></td><td><p>Need program statement for FORD</p><a href="../program/testinterp3.html" class="pull-right"><emph>Read more&hellip;</emph></a></td></tr>
 			 
 			 </tbody></table>
         </div>
@@ -145,7 +177,7 @@ All Programs &ndash; GEMINI3D
     <footer>
       <div class="container">
       <div class="row">
-        <div class="col-xs-6 col-md-4"><p>&copy; 2018 <a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/80x15.png" /></a>
+        <div class="col-xs-6 col-md-4"><p>&copy; 2020 <a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/80x15.png" /></a>
                                           </p></div>
         <div class="col-xs-6 col-md-4 col-md-push-4">
           <p class="text-right">

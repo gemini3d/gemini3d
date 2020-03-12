@@ -1,32 +1,32 @@
 module mpimod
 !! NOTES:
 !! * Need to consider overloading routines as send_ghost and send_noghost so that
-!!   it is more clear what the structure of the input arrays should be. 
-
-use phys_consts, only : lsp, wp 
+!!   it is more clear what the structure of the input arrays should be.
+use, intrinsic:: iso_fortran_env, only: stderr=>error_unit
+use phys_consts, only : lsp, wp
 !! code needs to know how many species are being used.
 
 use mpi, only: mpi_init, mpi_comm_world, &
                mpi_integer,mpi_sum, &
-               mpi_status_size, mpi_status_ignore, &
+               mpi_status_size, mpi_status_ignore, MPI_PROC_NULL, &
+
 #if REALBITS==32
 mpi_realprec=>mpi_real
-#elif REALBITS==64
+#else
 mpi_realprec=>mpi_double_precision
-#endif           
+#endif
 
 implicit none
 
 private :: lsp, wp
-private :: mpi_init, mpi_status_size
 
 !> NOW A LIST OF TAGS SO THESE DO NOT NEED TO BE EMBEDDED IN EACH SUBROUTINE
-integer, parameter :: tagns=2,tagvs1=3,tagTs=4    
+integer, parameter :: tagns=2,tagvs1=3,tagTs=4
 !! root/workers input routines.  also output routines for root/worker
 
-integer, parameter :: tagJ1=6,tagJ2=7,tagJ3=8,tagv2=9,tagv3=10    
+integer, parameter :: tagJ1=6,tagJ2=7,tagJ3=8,tagv2=9,tagv3=10
 !! output root/worker routines, main program, potential_comm
-integer, parameter :: tagvs3BC=100,tagnsBC=101,tagrhovs1BC=102,tagrhoesBC=103    
+integer, parameter :: tagvs3BC=100,tagnsBC=101,tagrhovs1BC=102,tagrhoesBC=103
 !! used in the advection boundary conditions
 integer, parameter :: tagvs1BC=1000,tagvs2BC=1001!,tagvs3BC=1002    !used in the compression solution
 
@@ -67,41 +67,340 @@ integer, parameter :: tagE01=76,tagE02=77,tagE03=78,tagVminx1=79,tagVmaxx1=80
 integer, parameter :: tagBr=81,tagBtheta=82, tagBphi=83
 integer, parameter :: tagdV=84,tagJx=85,tagJy=86,tagRx=87,tagRy=88,tagRz=89,tagRcubed=90,tagJz=91
 
+!> FOR COMMUNICATING IF THE GRID DIMENSIONS HAVE BEEN SWAPPED
+integer, parameter :: tagswap=92
+
+!> FOR SENDING THE FULL X2 GRID SIZE
+integer, parameter :: taglx2all=93
+integer, parameter :: tagx2all=94
+integer, parameter :: tagx3all=95
+
+!> AURORAL TAG(S)
+integer, parameter :: tagAur=96
+
+!!> GENERIC PARAMETER (USED BY ADVECTION CODE - HOPEFULLY DOESN'T CREATE PROBLEMS; MZ - probably need to fix???
+!integer, parameter :: taggenericparam=97
+
+integer, parameter :: tagTninf=98
+integer, parameter :: tagxnrange=99,tagynrange=104
+integer, parameter :: taglx=105,tagxn=106,tagyn=107,tagzn=108,tagdvnx=109
+
+
 !> VARIABLES REUSED BY ALL WORKERS AND USING MODULES
-integer, protected :: myid,lid    
+integer, protected :: myid,lid
 !! no external procedure should mess with these (but they need to be able to read them)
 
-integer :: ierr
-!! using procedures need to be able to overwrite this to prevent seg. faults (or something)
+integer, private :: ierr=0
+!> using procedures need to be able to overwrite this to prevent seg. faults (or something)
 
 
 !> VARIABLES RELATED TO PROCESS GRID (IF USED)
 integer, protected :: lid2,lid3,myid2,myid3
 
 
+!> Some explanation as the the naming convention used in this module is in order at this point.
+!> Generally it is:
+!>  <optype>_<send,recv><dims>_<mpi dims>_<optional indicator>
+
+!
+!!> THESE INTERFACES OVERLOAD THE MPI GATHER,BROADCAST SUBROUTINES FOR ARRAYS OF DIFFERENT RANKS.
+!!> THESE ARE ALSO USEFUL FOR SUBBING IN DIFFERENT SCENARIOS - 1D VS. 2D MPI DIVISIONS ETC.
+!interface gather_recv
+!  module procedure gather_recv2D_23, gather_recv3D_23, gather_recv4D_23
+!end interface gather_recv
+!
+!interface gather_send
+!  module procedure gather_send2D_23, gather_send3D_23, gather_send4D_23
+!end interface gather_send
+!
+!interface bcast_send
+!  module procedure bcast_send2D_23, bcast_send3D_23, bcast_send4D_23
+!end interface bcast_send
+!
+!interface bcast_recv
+!  module procedure bcast_recv2D_23, bcast_recv3D_23, bcast_recv4D_23
+!end interface bcast_recv
+!
+!interface bcast_send1D_2
+!  module procedure bcast_send1D_23_2
+!end interface bcast_send1D_2
+!interface bcast_recv1D_2
+!  module procedure bcast_recv1D_23_2
+!end interface bcast_recv1D_2
+!
+!interface bcast_send1D_3
+!  module procedure bcast_send1D_23_3
+!end interface bcast_send1D_3
+!interface bcast_recv1D_3
+!  module procedure bcast_recv1D_23_3
+!end interface bcast_recv1D_3
+!
+!!> THIS ALLOWS EASY SWAPPING OF DIFFERENT ROUTINES FOR 3 VS. 23 DIVISIONS
+!interface halo
+!  module procedure halo_23
+!end interface halo
+!interface bcast_send3D_x3i
+!  module procedure bcast_send3D_x3i_23
+!end interface bcast_send3D_x3i
+!interface bcast_recv3D_x3i
+!  module procedure bcast_recv3D_x3i_23
+!end interface bcast_recv3D_x3i
+!
+!interface bcast_send3D_x2i
+!  module procedure bcast_send3D_x2i_23
+!end interface bcast_send3D_x2i
+!interface bcast_recv3D_x2i
+!  module procedure bcast_recv3D_x2i_23
+!end interface bcast_recv3D_x2i
+!
+!interface bcast_send3D_ghost
+!  module procedure bcast_send3D_ghost_23
+!end interface bcast_send3D_ghost
+!interface bcast_recv3D_ghost
+!  module procedure bcast_recv3D_ghost_23
+!end interface bcast_recv3D_ghost
+!
+!interface halo_end
+!  module procedure halo_end_23
+!end interface halo_end
+
+
 !> THESE INTERFACES OVERLOAD THE MPI GATHER,BROADCAST SUBROUTINES FOR ARRAYS OF DIFFERENT RANKS.
 interface gather_recv
-  module procedure gather_recv2D, gather_recv3D, gather_recv4D
+  procedure gather_recv2D_23, gather_recv3D_23, gather_recv4D_23
 end interface gather_recv
 
 interface gather_send
-  module procedure gather_send2D, gather_send3D, gather_send4D
+  procedure gather_send2D_23, gather_send3D_23, gather_send4D_23
 end interface gather_send
 
 interface bcast_send
-  module procedure bcast_send1D, bcast_send2D, bcast_send3D, bcast_send4D
+  procedure bcast_send1D_23, bcast_send2D_23, bcast_send3D_23, bcast_send4D_23
 end interface bcast_send
 
 interface bcast_recv
-  module procedure bcast_recv1D, bcast_recv2D, bcast_recv3D, bcast_recv4D
+  procedure bcast_recv1D_23, bcast_recv2D_23, bcast_recv3D_23, bcast_recv4D_23
 end interface bcast_recv
+
+interface bcast_send1D_2
+  module procedure bcast_send1D_23_2
+end interface bcast_send1D_2
+interface bcast_recv1D_2
+  module procedure bcast_recv1D_23_2
+end interface bcast_recv1D_2
+
+interface bcast_send1D_3
+  module procedure bcast_send1D_23_3
+end interface bcast_send1D_3
+interface bcast_recv1D_3
+  module procedure bcast_recv1D_23_3
+end interface bcast_recv1D_3
+
+interface halo
+  module procedure halo_23
+end interface halo
+interface bcast_send3D_x3i
+  module procedure bcast_send3D_x3i_23
+end interface bcast_send3D_x3i
+interface bcast_recv3D_x3i
+  module procedure bcast_recv3D_x3i_23
+end interface bcast_recv3D_x3i
+
+interface bcast_send3D_x2i
+  module procedure bcast_send3D_x2i_23
+end interface bcast_send3D_x2i
+interface bcast_recv3D_x2i
+  module procedure bcast_recv3D_x2i_23
+end interface bcast_recv3D_x2i
+
+interface bcast_send3D_ghost
+  module procedure bcast_send3D_ghost_23
+end interface bcast_send3D_ghost
+interface bcast_recv3D_ghost
+  module procedure bcast_recv3D_ghost_23
+end interface bcast_recv3D_ghost
+
+interface halo_end
+  module procedure halo_end_23
+end interface halo_end
+
+
+interface ! mpisend
+
+module subroutine gather_send2D_23(paramtrim,tag)
+real(wp), dimension(:,:), intent(in) :: paramtrim
+integer, intent(in) :: tag
+end subroutine gather_send2D_23
+
+module subroutine gather_send3D_23(paramtrim,tag)
+real(wp), dimension(:,:,:), intent(in) :: paramtrim
+integer, intent(in) :: tag
+end subroutine gather_send3D_23
+
+module subroutine gather_send4D_23(param,tag)
+real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: param
+integer, intent(in) :: tag
+end subroutine gather_send4D_23
+
+module subroutine bcast_send1D_23(paramall,tag,param)
+real(wp), dimension(-1:), intent(in) :: paramall
+integer, intent(in) :: tag
+real(wp), dimension(-1:), intent(out) :: param
+end subroutine bcast_send1D_23
+
+module subroutine bcast_send2D_23(paramtrimall,tag,paramtrim)
+real(wp), dimension(:,:), intent(in) :: paramtrimall
+integer, intent(in) :: tag
+real(wp), dimension(:,:), intent(out) :: paramtrim
+end subroutine bcast_send2D_23
+
+module subroutine bcast_send3D_23(paramtrimall,tag,paramtrim)
+real(wp), dimension(:,:,:), intent(in) :: paramtrimall
+integer, intent(in) :: tag
+real(wp), dimension(:,:,:), intent(out) :: paramtrim
+end subroutine bcast_send3D_23
+
+module subroutine bcast_send4D_23(paramall,tag,param)
+real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: paramall
+integer, intent(in) :: tag
+real(wp), dimension(-1:,-1:,-1:,:), intent(out) :: param
+end subroutine bcast_send4D_23
+
+module subroutine bcast_send3D_x3i_23(paramtrimall,tag,paramtrim)
+real(wp), dimension(:,:,:), intent(in) :: paramtrimall
+integer, intent(in) :: tag
+real(wp), dimension(:,:,:), intent(out) :: paramtrim
+end subroutine bcast_send3D_x3i_23
+
+module subroutine bcast_send3D_ghost_23(paramall,tag,param)
+real(wp), dimension(-1:,-1:,-1:), intent(in) :: paramall
+integer, intent(in) :: tag
+real(wp), dimension(-1:,-1:,-1:), intent(out) :: param
+end subroutine bcast_send3D_ghost_23
+
+module subroutine bcast_send3D_x2i_23(paramtrimall,tag,paramtrim)
+real(wp), dimension(:,:,:), intent(in) :: paramtrimall
+integer, intent(in) :: tag
+real(wp), dimension(:,:,:), intent(out) :: paramtrim
+end subroutine bcast_send3D_x2i_23
+
+module subroutine bcast_send1D_23_3(paramall,tag,param)
+real(wp), dimension(-1:), intent(in) :: paramall
+integer, intent(in) :: tag
+real(wp), dimension(-1:), intent(out) :: param
+end subroutine bcast_send1D_23_3
+
+module subroutine bcast_send1D_23_2(paramall,tag,param)
+real(wp), dimension(-1:), intent(in) :: paramall
+integer, intent(in) :: tag
+real(wp), dimension(-1:), intent(out) :: param
+end subroutine bcast_send1D_23_2
+
+end interface
+
+
+interface ! mpirecv
+
+module subroutine gather_recv2D_23(paramtrim,tag,paramtrimall)
+real(wp), dimension(:,:), intent(in) :: paramtrim
+integer, intent(in) :: tag
+real(wp), dimension(:,:), intent(out) :: paramtrimall
+end subroutine gather_recv2D_23
+
+module subroutine gather_recv3D_23(paramtrim,tag,paramtrimall)
+real(wp), dimension(:,:,:), intent(in) :: paramtrim
+integer, intent(in) :: tag
+real(wp), dimension(:,:,:), intent(out) :: paramtrimall
+end subroutine gather_recv3D_23
+
+module subroutine gather_recv4D_23(param,tag,paramall)
+real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: param
+integer, intent(in) :: tag
+real(wp), dimension(-1:,-1:,-1:,:), intent(out) :: paramall
+end subroutine gather_recv4D_23
+
+module subroutine bcast_recv1D_23(param,tag)
+real(wp), dimension(-1:), intent(out) :: param
+integer, intent(in) :: tag
+end subroutine bcast_recv1D_23
+
+module subroutine bcast_recv2D_23(paramtrim,tag)
+real(wp), dimension(:,:), intent(out) :: paramtrim
+integer, intent(in) :: tag
+end subroutine bcast_recv2D_23
+
+module subroutine bcast_recv3D_23(paramtrim,tag)
+real(wp), dimension(:,:,:), intent(out) :: paramtrim
+integer, intent(in) :: tag
+end subroutine bcast_recv3D_23
+
+module subroutine bcast_recv4D_23(param,tag)
+real(wp), dimension(-1:,-1:,-1:,:), intent(out) :: param
+integer, intent(in) :: tag
+end subroutine bcast_recv4D_23
+
+module subroutine bcast_recv3D_x3i_23(paramtrim,tag)
+real(wp), dimension(:,:,:), intent(out) :: paramtrim
+integer, intent(in) :: tag
+end subroutine bcast_recv3D_x3i_23
+
+module subroutine bcast_recv3D_ghost_23(param,tag)
+real(wp), dimension(-1:,-1:,-1:), intent(out) :: param
+integer, intent(in) :: tag
+end subroutine bcast_recv3D_ghost_23
+
+module subroutine bcast_recv1D_old3(param,tag)
+real(wp), dimension(-1:), intent(out) :: param
+integer, intent(in) :: tag
+end subroutine bcast_recv1D_old3
+
+module subroutine bcast_recv1D_23_2(param,tag)
+real(wp), dimension(-1:), intent(out) :: param
+integer, intent(in) :: tag
+end subroutine bcast_recv1D_23_2
+
+module subroutine bcast_recv1D_23_3(param,tag)
+real(wp), dimension(-1:), intent(out) :: param
+integer, intent(in) :: tag
+end subroutine bcast_recv1D_23_3
+
+module subroutine bcast_recv2D_23_3(paramtrim,tag)
+real(wp), dimension(:,:), intent(out) :: paramtrim
+integer, intent(in) :: tag
+end subroutine bcast_recv2D_23_3
+
+module subroutine bcast_recv3D_x2i_23(paramtrim,tag)
+real(wp), dimension(:,:,:), intent(out) :: paramtrim
+integer, intent(in) :: tag
+end subroutine bcast_recv3D_x2i_23
+
+end interface
+
+
+interface ! mpihalo
+
+module subroutine halo_23(param,lhalo,tag,isperiodic)
+  real(wp), dimension(-1:,-1:,-1:), intent(inout) :: param
+  integer, intent(in) :: lhalo    !number of surrounding grid points to halo with (1 or 2 only)
+  integer, intent(in) :: tag
+  logical, intent(in) :: isperiodic
+end subroutine halo_23
+
+module subroutine halo_end_23(param,paramend,paramtop,tag)
+  real(wp), dimension(:,:,:), intent(inout) :: param
+  real(wp), dimension(:,:), intent(out) :: paramend
+  real(wp), dimension(:,:), intent(out) :: paramtop
+  integer, intent(in) :: tag
+end subroutine halo_end_23
+
+end interface
 
 
 contains
 
 
 subroutine mpisetup()
-!! INITIALIZES MODULE MPI VARIABLES FOR A WORKER.  
+!! INITIALIZES MODULE MPI VARIABLES FOR A WORKER.
 !! THIS CURRENTLY IS UNUSED AS IT HAS NOT BEEN
 !! FULLY IMPLEMENTED IN THIS VERSINO OF THE CODE.
 
@@ -116,26 +415,104 @@ subroutine mpisetup()
 end subroutine mpisetup
 
 
+function grid2ID(i2,i3)
+
+  !------------------------------------------------------------
+  !-------COMPUTES A PROCESS ID FROM A LOCATION ON THE PROCESS
+  !-------GRID
+  !------------------------------------------------------------
+
+  integer, intent(in) :: i2,i3
+  integer :: grid2ID
+
+  grid2ID=i3*lid2+i2    !this formulat assumes that the first element is (i2,i3)=(0,0)
+
+end function grid2ID
+
+
+function ID2grid(ID)
+
+  !------------------------------------------------------------
+  !-------COMPUTES GRID LOCATION FROM A PROCESS ID
+  !------------------------------------------------------------
+
+  integer, intent(in) :: ID
+  integer, dimension(2) :: ID2grid
+
+  ID2grid(2)=ID/lid2                !x3 index into process grid
+  ID2grid(1)=ID-ID2grid(2)*lid2     !x2 index into process grid
+
+end function ID2grid
+
+
+subroutine mpi_manualgrid(lx2all,lx3all,lid2in,lid3in)
+
+integer, intent(in) :: lx2all,lx3all
+integer, intent(in) :: lid2in,lid3in
+
+integer, dimension(2) :: inds
+
+
+if (lx2all/lid2in*lid2in/=lx2all) error stop 'user input grid split in x2 will not work'
+
+if (lx3all/lid3in*lid3in/=lx3all) error stop 'user input grid split in x3 will not work'
+
+if (lid2in*lid3in/=lid) error stop 'total number of processes not commensurate with x2 and x3 split'
+
+lid2=lid2in
+lid3=lid3in
+
+!THIS PROCESS' LOCATION ON THE GRID
+inds=ID2grid(myid)
+myid2=inds(1)
+myid3=inds(2)
+
+print '(A,I6,A,I6)', 'Input process grid is x2 by x3 size (in number of processes):',lid2,' by ',lid3
+print '(A,I6,A,2I6,A)', 'Process:',myid,' is at location:W',myid2,myid3,'on the process grid'
+
+end subroutine mpi_manualgrid
+
+
 subroutine mpigrid(lx2all,lx3all)
-!! THIS SUBROUTINE DEFINES A PROCESS GRID, IF REQUIRED 
-!! IT IS CURRENTLY NOT USED BUT KEPT HERE FOR FUTURE DEVELOPMENT
+
+!! THIS SUBROUTINE DEFINES A PROCESS GRID, IF REQUIRED
 
 integer, intent(in) :: lx2all,lx3all
 
-lid2=1
-lid3=lid
-do while( ((lid3/2)*2==lid3) .and. (lid3-lid2>lid3 .or. lid3-lid2>lid2) .and. &     
-         lx3all/(lid3/2)*(lid3/2)==lx3all .and. lx2all/(lid2*2)*(lid2*2)==lx2all)
-!! must insure that lx3 is divisible by lid3 and lx2 by lid2
+integer, dimension(2) :: inds
+logical :: x2div,x3div
 
-  lid3=lid3/2
-  lid2=lid2*2
-end do
+
+if (lx3all==1 .or. lx2all==1) then    !this is a 2D simulation so the mpi'd dimenions will get swapped to x3
+  lid3=lid         !just divide in x3
+  lid2=1
+else
+  if (lx3all/lid*lid/=lx3all) then
+    write (stderr, *) 'lx3all:',lx3all,'  lid:',lid
+    error stop 'Grid is not divisible by number of processes (lx3all/lid*lid /= lx3all).'
+  end if
+
+  lid2=1
+  lid3=lid
+  do while( ((lid3/2)*2==lid3) .and. (lid3-lid2>lid3 .or. lid3-lid2>lid2) .and. &
+           lx3all/(lid3/2)*(lid3/2)==lx3all .and. lx2all/(lid2*2)*(lid2*2)==lx2all .and. &
+           lid3/2>1)
+  !! must insure that lx3 is divisible by lid3 and lx2 by lid2 and lid3 must be > 1
+
+    lid3=lid3/2
+    lid2=lid2*2
+  end do
+end if
+
+
+!FORCE THE CODE TO USE 1D PROCESS GRID
+!lid2=1; lid3=lid;
 
 
 !THIS PROCESS' LOCATION ON THE GRID
-myid3=myid/lid2
-myid2=myid-myid3*lid2
+inds=ID2grid(myid)
+myid2=inds(1)
+myid3=inds(2)
 
 print *, 'Proposed process grid is x2 by x3 size (in number of processes):  ',lid2,' by ',lid3
 print *, 'Process:  ',myid,' is at location:  ',myid2,myid3,' on the process grid'
@@ -143,891 +520,41 @@ print *, 'Process:  ',myid,' is at location:  ',myid2,myid3,' on the process gri
 end subroutine mpigrid
 
 
-subroutine mpibreakdown()
+function slabinds(ID,lx2,lx3)
+
+!! GET THE MIN AND MAX X2,X3 INDICES REFERENCING FULL GRID VARIABLE FOR A GIVEN
+!! PROCESS ID
+
+integer, intent(in) :: ID
+integer, intent(in) :: lx2,lx3
+
+integer :: i2,i3,i2start,i2fin,i3start,i3fin
+integer, dimension(2) :: inds
+
+integer, dimension(4) :: slabinds
+
+
+  inds=ID2grid(ID)   !find the location on the process grid for this particular process ID
+  i2=inds(1)          !need process grid location in order to know where to put the incoming data
+  i3=inds(2)
+  i3start=i3*lx3+1   !index (3rd dim) in the full grid variable into which the next chunk of data are to be store
+  i3fin=i3start+lx3-1
+  i2start=i2*lx2+1   !index into 2nd dim of process grid
+  i2fin=i2start+lx2-1
+  slabinds(1)=i2start
+  slabinds(2)=i2fin
+  slabinds(3)=i3start
+  slabinds(4)=i3fin
+
+end function slabinds
+
+
+integer function mpibreakdown() result(ierr)
 !! SHUTS DOWN MPI
 
 call mpi_finalize(ierr)
 
-end subroutine mpibreakdown
+end function mpibreakdown
 
-
-subroutine halo(param,lhalo,tag)
-!! GENERIC HALOING ROUTINE FOR FILLING GHOST CELLS.  CAN
-!! BE USED TO SET BOUNDARY CONDITIONS OR PREPARE ARRAYS
-!! FOR FINITE DIFFERENCING, ETC.  OBVIOUSLY ARRAYS INCLUDE
-!! GHOST CELLS.  ARRAYS SHOULD HAVE SPECIES DIMENSION
-!! REMOVED BEFORE PASSAGE INTO THIS SUBROUTINE.  THIS
-!! ROUTINE WORKS FOR A 3D ARRAY, AND BY DEFAULT ENFORCES
-!! PERIODIC BOUNDARY CONDITIONS.  IF APERIODIC CONDITIONS
-!! ARE NEEDED YOU MUST OVERWRITE THE GLOBAL BOUNDARIES AFTER
-!! YOU CALL HALO.
-!! 
-!! THIS VERSION USES ASYNC COMM WITHOUT SWITCH STATEMENTS
-
-real(wp), dimension(-1:,-1:,-1:), intent(inout) :: param
-integer, intent(in) :: lhalo    !number of surrounding grid points to halo with (1 or 2 only)
-integer, intent(in) :: tag
-
-integer :: lx1,lx2,lx3,ihalo
-integer :: idleft,idright
-
-integer, dimension(4) :: requests
-integer, dimension(MPI_STATUS_SIZE,4) :: statuses
-integer :: tmpreq
-
-real(wp) :: tstart,tfin
-
-lx1=size(param,1)-4
-lx2=size(param,2)-4
-lx3=size(param,3)-4
-
-
-!> IDENTIFY MY NEIGHBORS
-idleft=myid-1
-idright=myid+1
-
-
-!> SCREEN FOR GLOBAL BOUNDARIES, ASSUME PERIODIC.
-!> MUST BE OVERWRITTEN LATER IF YOU ARE USING ANOTHER TYPE OF BOUNDARY
-if (idleft==-1) then
-  idleft=lid-1
-!      idleft=MPI_PROC_NULL    !if you wanted to default to aperiodic you could do this...
-end if
-if (idright==lid) then
-  idright=0
-!      idright=MPI_PROC_NULL
-end if
-
-
-call mpi_isend(param(:,:,1:lhalo),(lx1+4)*(lx2+4)*lhalo,mpi_realprec,idleft,tag,MPI_COMM_WORLD,tmpreq,ierr)
-requests(1)=tmpreq
-call mpi_isend(param(:,:,lx3+1-lhalo:lx3),(lx1+4)*(lx2+4)*lhalo,mpi_realprec, &
-                  idright,tag,MPI_COMM_WORLD,tmpreq,ierr)
-requests(2)=tmpreq
-call mpi_irecv(param(:,:,lx3+1:lx3+lhalo),(lx1+4)*(lx2+4)*lhalo,mpi_realprec,idright, &
-                  tag,MPI_COMM_WORLD,tmpreq,ierr)
-requests(3)=tmpreq
-call mpi_irecv(param(:,:,1-lhalo:0),(lx1+4)*(lx2+4)*lhalo,mpi_realprec,idleft, &
-                        tag,MPI_COMM_WORLD,tmpreq,ierr)
-requests(4)=tmpreq
-
-call mpi_waitall(4,requests,statuses,ierr)
-
-end subroutine halo
-
-
-subroutine halo_end(param,paramend,tag)
-!! GENERIC HALOING ROUTINE WHICH PASSES THE BEGINNING OF THE
-!! SLAB TO ITS LEFTWARD (IN X3) NEIGHBOR SO THAT X3 INTEGRATIONS
-!! CAN BE DONE PROPERLY 
-!! 
-!! THIS VERSION USES ASYNC COMM WITHOUT SWITCH STATEMENTS.  IT
-!! ALSO ASSUMES THAT THE ARRAYS INVOLVED DO HAVE GHOST CELLS
-
-real(wp), dimension(:,:,:), intent(inout) :: param
-real(wp), dimension(:,:), intent(out) :: paramend
-integer, intent(in) :: tag
-
-integer :: lx1,lx2,lx3,ihalo
-integer :: idleft,idright
-
-integer, dimension(2) :: requests
-integer, dimension(MPI_STATUS_SIZE,4) :: statuses
-integer :: tmpreq
-
-real(wp) :: tstart,tfin
-
-lx1=size(param,1)
-lx2=size(param,2)
-lx3=size(param,3)
-
-
-!IDENTIFY MY NEIGHBORS, I NEED TO GET DATA FROM BEGINNING OF RIGHT (FOR MY
-!END) AND SEND MY BEGINNING DATA TO THE LEFT (FOR THEIR END)
-idleft=myid-1
-idright=myid+1
-
-
-!SCREEN FOR GLOBAL BOUNDARIES, ASSUME PERIODIC (MUST BE OVERWRITTEN LATER IF
-!YOU ARE USING ANOTHER TYPE OF BOUNDARY
-if (idleft==-1) then
-  idleft=lid-1
-end if
-if (idright==lid) then
-  idright=0
-end if
-
-
-call mpi_isend(param(:,:,1),lx1*lx2,mpi_realprec,idleft,tag,MPI_COMM_WORLD,tmpreq,ierr)
-requests(1)=tmpreq
-call mpi_irecv(paramend,lx1*lx2,mpi_realprec,idright,tag,MPI_COMM_WORLD,tmpreq,ierr)
-requests(2)=tmpreq
-
-call mpi_waitall(2,requests,statuses,ierr)
-
-if (myid==lid-1) paramend=0d0    !zero out the data at the end of the grid
-
-end subroutine halo_end
-
-
-!   LEAVE THIS IN FOR FUTURE DEV. - HALOS AN ARRAY THAT IS SPLIT ALONG THE 2 AND
-!   3 RANKS
-!
-!  subroutine halo23(param,lhalo,tag)
-!
-!    !------------------------------------------------------------
-!    !-------GENERIC HALOING ROUTINE FOR FILLING GHOST CELLS.  CAN
-!    !-------BE USED TO SET BOUNDARY CONDITIONS OR PREPARE ARRAYS
-!    !-------FOR FINITE DIFFERENCING, ETC.  OBVIOUSLY ARRAYS INCLUDE
-!    !-------GHOST CELLS.  ARRAYS SHOULD HAVE SPECIES DIMENSION
-!    !-------REMOVED BEFORE PASSAGE INTO THIS SUBROUTINE.  THIS
-!    !-------ROUTINE WORKS FOR A 3D ARRAY.
-!    !-------
-!    !-------THIS SUBROUTINE SHOULD BE CONSIDERED DISTINCT IN FUNCTIONALITY
-!    !-------FROM THE SUBROUTINE WHICH COMPUTES BOUNDARY CONDITIONS FOR
-!    !-------THE GLOBAL GRID.  I.E., IF CALLED ON A WORKER THAT ABUTS THE
-!    !-------GLOBAL BOUNDARY IT WILL DO *NOTHING*.
-!    !-------
-!    !-------THIS VERSION USES ASYNC COMM WITHOUT SWITCH STATEMENTS
-!    !-------
-!    !-------THIS VERSION ALSO ASSUMES A PROCESS GRID HAS BEEN DEFINED
-!    !-------AND THAT PASSING NEEDS TO BE DONE IN X2 AND X3
-!    !------------------------------------------------------------
-!
-!    real(wp), dimension(-1:,-1:,-1:), intent(inout) :: param
-!    integer, intent(in) :: lhalo    !number of surrounding grid points to halo with (probably 1 or 2)
-!    integer, intent(in) :: tag
-!
-!    integer :: lx1,lx2,lx3,ihalo
-!    integer :: idleft,idright,idup,iddown
-!    integer :: i2,i3
-!
-!    integer, dimension(4) :: requests
-!    integer, dimension(MPI_STATUS_SIZE,4) :: statuses
-!    integer :: tmpreq
-!
-!    real(wp) :: tstart,tfin
-!
-!    lx1=size(param,1)-4
-!    lx2=size(param,2)-4
-!    lx3=size(param,3)-4
-!
-!
-!    !IDENTIFY MY NEIGHBORS IN X3
-!    i3=myid3-1
-!    if (i3==-1) then    !global boundary to my left
-!      i3=lid3
-!    end if
-!    i2=myid2
-!    idleft=(i3-1)*lid2+i2
-!    i3=myid3+1
-!    if (i3==lid3) then    !global boundary to my right
-!      i3=1
-!    end if
-!    i2=myid2
-!    idright=(i3-1)*lid2+i2
-!
-!
-!    !IDENTIFY MY NEIGHBORING PROCESSES IN X2
-!    i3=myid3
-!    i2=myid2-1
-!    if (i2==-1) then    !global boundary downward
-!      i2=lid2
-!    end if
-!    iddown=(i3-1)*lid2+i2
-!    i3=myid3
-!    i2=myid2+1
-!    if (i2==lid2) then     !global boundary upward
-!      i2=1
-!    end if
-!    idup=(i3-1)*lid2+i2
-!
-!
-!    !ALLOCATE SPACE TO BUFFER MESSAGES (SINCE USING ASYNCHRONOUS MPI COMMANDS)
-!    allocate(buffer31(-1:lx1+2,1:lx2,lhalo),buffer32(-1:lx1+2,1:lx2,lhalo),buffer33(-1:lx1+2,1:lx2,lhalo),buffer34(-1:lx1+2,1:lx2,lhalo))
-!    allocate(buffer21(-1:lx1+2,1:lx2,lhalo),buffer22(-1:lx1+2,1:lx2,lhalo),buffer23(-1:lx1+2,1:lx2,lhalo),buffer24(-1:lx1+2,1:lx2,lhalo))
-!
-!
-!    !EXCHANGE MESSAGES IN THE X3-DIRECTION OF THE PROCESS GRID
-!    buffer31=param(-1:lx1+2,1:lx2,1:lhalo)     !x1 ghost cells to be included
-!    call mpi_isend(buffer31,(lx1+4)*(lx2)*lhalo,mpi_realprec,idleft,tag,MPI_COMM_WORLD,tmpreq,ierr)
-!    requests(1)=tmpreq
-!
-!    buffer32=param(-1:lx1+2,1:lx2,lx3+1-lhalo:lx3)
-!    call mpi_isend(buffer32,(lx1+4)*(lx2)*lhalo,mpi_realprec, &
-!                      idright,tag,MPI_COMM_WORLD,tmpreq,ierr)
-!    requests(2)=tmpreq
-!
-!    call mpi_irecv(buffer33,(lx1+4)*(lx2)*lhalo,mpi_realprec,idright, &
-!                      tag,MPI_COMM_WORLD,tmpreq,ierr)
-!    requests(3)=tmpreq
-!
-!    call mpi_irecv(buffer34,(lx1+4)*(lx2)*lhalo,mpi_realprec,idleft, &
-!                            tag,MPI_COMM_WORLD,tmpreq,ierr)
-!    requests(4)=tmpreq
-!
-!    call mpi_waitall(4,requests,statuses,ierr)
-!    param(-1:lx1+2,1:lx2,lx3+1:lx3+lhalo)=buffer33    !can't copy out buffers until we know the messages have been received
-!    param(-1:lx1+2,1:lx2,1-lhalo:0)=buffer34
-!
-!
-!    !EXCHANGE MESSAGES IN THE X2 DIRECTION OF THE PROCESS GRID
-!    buffer21=param(-1:lx1+2,1:lhalo,1:lx3)
-!    call mpi_isend(buffer21,(lx1+4)*(lx3)*lhalo,mpi_realprec,iddown,tag,MPI_COMM_WORLD,tmpreq,ierr)
-!    requests(1)=tmpreq
-!
-!    buffer22=param(-1:lx1+2,lx2+1-lhalo:lx2,1:lx3)
-!    call mpi_isend(buffer22,(lx1+4)*(lx3)*lhalo,mpi_realprec, &
-!                      idup,tag,MPI_COMM_WORLD,tmpreq,ierr)
-!    requests(2)=tmpreq
-!
-!    call mpi_irecv(buffer23,(lx1+4)*(lx3)*lhalo,mpi_realprec,idup,&
-!                      tag,MPI_COMM_WORLD,tmpreq,ierr)
-!    requests(3)=tmpreq
-!
-!    call mpi_irecv(buffer24,(lx1+4)*(lx3)*lhalo,mpi_realprec,iddown, &
-!                            tag,MPI_COMM_WORLD,tmpreq,ierr)
-!    requests(4)=tmpreq
-!    
-!    call mpi_waitall(4,requests,statuses,ierr)
-!    param(-1:lx1+2,lx2+1:lx2+lhalo,1:lx3)=buffer23    !clear to copy out buffers
-!    param(-1,lx1+2,1-lhalo:0,1:lx3)=buffer24
-!
-!
-!    !CLEAR OUT BUFFER VARIABLES
-!    deallocate(buffer31,buffer32,buffer33,buffer34)
-!    deallocate(buffer21,buffer22,buffer23,buffer24)
-!
-!  end subroutine halo23
-
-
-subroutine gather_recv2D(paramtrim,tag,paramtrimall)
-!! THIS SUBROUTINE GATHERS DATA FROM ALL WORKERS ONTO
-!! A FULL-GRID ARRAY ON THE ROOT PROCESS (PRESUMABLY FOR
-!! OUTPUT OR SOME ELECTRODYNAMIC CALCULATION, PERHAPS.
-!! 
-!! THIS SUBROUTINE IS TO BE CALLED BY ROOT TO DO GATHER
-!! 
-!! THIS VERSION WORKS ON 2D ARRAYS WHICH DO NOT INCLUDE ANY GHOST CELLS!!!!
-
-real(wp), dimension(:,:), intent(in) :: paramtrim
-integer, intent(in) :: tag
-real(wp), dimension(:,:), intent(out) :: paramtrimall
-
-integer :: lx1,lx2,lx3,isp,lsp
-integer :: iid,islstart,islfin
-
-
-lx2=size(paramtrim,1)    !note here that paramtrim does not have ghost cells
-lx3=size(paramtrim,2)
-
-
-!PATCH DATA TOGETHER FOR OUTPUT STARTING WITH ROOT'S SLAB
-paramtrimall(:,1:lx3)=paramtrim   !copy root's data into full-grid array
-
-do iid=1,lid-1
-  islstart=iid*lx3+1
-  islfin=islstart+lx3-1
-
-  call mpi_recv(paramtrimall(:,islstart:islfin),lx2*lx3, &
-                mpi_realprec,iid,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-end do
-
-end subroutine gather_recv2D
-
-
-subroutine gather_recv3D(paramtrim,tag,paramtrimall)
-!! THIS SUBROUTINE GATHERS DATA FROM ALL WORKERS ONTO
-!! A FULL-GRID ARRAY ON THE ROOT PROCESS (PRESUMABLY FOR
-!! OUTPUT OR SOME ELECTRODYNAMIC CALCULATION, PERHAPS.
-!! 
-!! THIS SUBROUTINE IS TO BE CALLED BY ROOT TO DO GATHER
-!! 
-!! THIS VERSION WORKS ON 3D ARRAYS WHICH DO NOT INCLUDE
-!! ANY GHOST CELLS!!!!
-
-real(wp), dimension(:,:,:), intent(in) :: paramtrim
-integer, intent(in) :: tag
-real(wp), dimension(:,:,:), intent(out) :: paramtrimall
-
-integer :: lx1,lx2,lx3,isp,lsp
-integer :: iid,islstart,islfin
-
-
-lx1=size(paramtrim,1)    !note here that paramtrim does not have ghost cells
-lx2=size(paramtrim,2)
-lx3=size(paramtrim,3)
-
-
-!PATCH DATA TOGETHER FOR OUTPUT STARTING WITH ROOT'S SLAB
-paramtrimall(:,:,1:lx3)=paramtrim   !copy root's data into full-grid array
-
-do iid=1,lid-1
-  islstart=iid*lx3+1
-  islfin=islstart+lx3-1
-
-  call mpi_recv(paramtrimall(:,:,islstart:islfin),lx1*lx2*lx3, &
-                mpi_realprec,iid,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-end do
-
-end subroutine gather_recv3D
-
-
-subroutine gather_recv4D(param,tag,paramall)
-
-!------------------------------------------------------------
-!-------THIS SUBROUTINE GATHERS DATA FROM ALL WORKERS ONTO
-!-------A FULL-GRID ARRAY ON THE ROOT PROCESS (PRESUMABLY FOR
-!-------OUTPUT OR SOME ELECTRODYNAMIC CALCULATION, PERHAPS.
-!-------
-!-------THIS SUBROUTINE IS TO BE CALLED BY ROOT TO DO GATHER
-!-------
-!-------THIS VERSION WORKS ON 4D ARRAYS WHICH INCLUDE
-!-------GHOST CELLS!
-!------------------------------------------------------------
-
-real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: param
-integer, intent(in) :: tag
-real(wp), dimension(-1:,-1:,-1:,:), intent(out) :: paramall
-
-integer :: lx1,lx2,lx3,isp
-integer :: iid,islstart,islfin
-
-
-lx1=size(param,1)-4
-lx2=size(param,2)-4
-lx3=size(param,3)-4
-
-
-!Originally the outer loop was over worker number, which cycles the 3rd dimension
-!slower than 4th (backward from what would be most efficient memory access pattern)
-!Since the gathering operation is root-limited probably, I'm guessing it's better
-!to give root an efficient memory access pattern here, but I haven't tested this
-!theory.
-do isp=1,lsp
-  paramall(:,:,1:lx3,isp)=param(:,:,1:lx3,isp)
-
-  do iid=1,lid-1
-    islstart=iid*lx3+1
-    islfin=islstart+lx3-1
-
-    call mpi_recv(paramall(:,:,islstart:islfin,isp),(lx1+4)*(lx2+4)*lx3, &
-                  mpi_realprec,iid,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-  end do
-end do
-
-end subroutine gather_recv4D
-
-
-subroutine gather_send2D(paramtrim,tag)
-
-!------------------------------------------------------------
-!-------THIS SUBROUTINE GATHERS DATA FROM ALL WORKERS ONTO
-!-------A FULL-GRID ARRAY ON THE ROOT PROCESS (PRESUMABLY FOR
-!-------OUTPUT OR SOME ELECTRODYNAMIC CALCULATION, PERHAPS.
-!-------
-!-------SUBROUTINE IS TO BE CALLED BY WORKERS TO DO GATHER
-!-------
-!-------THIS VERSION WORKS ON 2D ARRAYS WHICH DO NOT INCLUDE
-!-------ANY GHOST CELLS!!!!
-!------------------------------------------------------------
-
-real(wp), dimension(:,:), intent(in) :: paramtrim
-integer, intent(in) :: tag
-
-integer :: lx2,lx3
-
-
-lx2=size(paramtrim,1)    !note here that paramtrim does not have ghost cells
-lx3=size(paramtrim,2)
-
-call mpi_send(paramtrim,lx2*lx3,mpi_realprec,0,tag,MPI_COMM_WORLD,ierr)
-
-end subroutine gather_send2D
-
-
-subroutine gather_send3D(paramtrim,tag)
-
-!------------------------------------------------------------
-!-------THIS SUBROUTINE GATHERS DATA FROM ALL WORKERS ONTO
-!-------A FULL-GRID ARRAY ON THE ROOT PROCESS (PRESUMABLY FOR
-!-------OUTPUT OR SOME ELECTRODYNAMIC CALCULATION, PERHAPS.
-!-------
-!-------SUBROUTINE IS TO BE CALLED BY WORKERS TO DO GATHER
-!-------
-!-------THIS VERSION WORKS ON 3D ARRAYS WHICH DO NOT INCLUDE
-!-------ANY GHOST CELLS!!!!
-!------------------------------------------------------------
-
-real(wp), dimension(:,:,:), intent(in) :: paramtrim
-integer, intent(in) :: tag
-
-integer :: lx1,lx2,lx3
-
-
-lx1=size(paramtrim,1)    !note here that paramtrim does not have ghost cells
-lx2=size(paramtrim,2)
-lx3=size(paramtrim,3)
-
-call mpi_send(paramtrim,lx1*lx2*lx3,mpi_realprec,0,tag,MPI_COMM_WORLD,ierr)
-
-end subroutine gather_send3D
-
-
-subroutine gather_send4D(param,tag)
-
-!------------------------------------------------------------
-!-------THIS SUBROUTINE GATHERS DATA FROM ALL WORKERS ONTO
-!-------A FULL-GRID ARRAY ON THE ROOT PROCESS (PRESUMABLY FOR
-!-------OUTPUT OR SOME ELECTRODYNAMIC CALCULATION, PERHAPS.
-!-------
-!-------SUBROUTINE IS TO BE CALLED BY WORKERS TO DO GATHER
-!-------
-!-------THIS VERSION WORKS ON 4D ARRAYS WHICH INCLUDE
-!-------GHOST CELLS!
-!------------------------------------------------------------
-
-real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: param
-integer, intent(in) :: tag
-
-integer :: lx1,lx2,lx3,isp
-
-
-lx1=size(param,1)-4
-lx2=size(param,2)-4
-lx3=size(param,3)-4
-
-do isp=1,lsp
-  call mpi_send(param(:,:,1:lx3,isp),(lx1+4)*(lx2+4)*lx3,mpi_realprec,0,tag,MPI_COMM_WORLD,ierr)
-end do
-
-end subroutine gather_send4D
-
-
-subroutine bcast_send1D(paramall,tag,param)
-
-!------------------------------------------------------------
-!-------BROADCASTS MPI DIMENSION VARIABLES TO WORKERS.  NOTE THAT
-!-------WE'VE ELECTED TO NOT USE THE GENERAL BROADCAST ROUTINES FOR
-!-------SINCE THESE OPERATIONS REQUIRE A LOT OF SPECIAL CASING FOR
-!-------THE SIZES OF THE VARIABLES TO BE SENT
-!-------
-!-------SUBROUTINE IS TO BE CALLED BY ROOT TO DO A BROADCAST
-!-------
-!-------THIS VERSION WORKS ON 1D ARRAYS
-!------------------------------------------------------------
-
-real(wp), dimension(-1:), intent(in) :: paramall
-integer, intent(in) :: tag
-real(wp), dimension(-1:), intent(out) :: param
-
-integer :: lx,lxall     !local sizes
-integer :: iid,islstart,islfin
-
-
-lxall=size(paramall,1)-4
-lx=size(param,1)-4
-
-
-do iid=1,lid-1
-  islstart=iid*lx+1
-  islfin=islstart+lx-1
-
-  call mpi_send(paramall(islstart-2:islfin+2),(lx+4), &
-               mpi_realprec,iid,tag,MPI_COMM_WORLD,ierr)
-end do
-param=paramall(-1:lx+2)
-
-end subroutine bcast_send1D
-
-
-subroutine bcast_send2D(paramtrimall,tag,paramtrim)
-
-!------------------------------------------------------------
-!-------THIS SUBROUTINE BROADCASTS DATA FROM A FULL GRID ARRAY
-!-------ON ROOT PROCESS TO ALL WORKERS' SUB-GRID ARRAYS.
-!-------
-!-------SUBROUTINE IS TO BE CALLED BY ROOT TO DO A BROADCAST
-!-------
-!-------THIS VERSION WORKS ON 2D ARRAYS WHICH DO NOT INCLUDE
-!-------GHOST CELLS!
-!------------------------------------------------------------
-
-real(wp), dimension(:,:), intent(in) :: paramtrimall
-integer, intent(in) :: tag
-real(wp), dimension(:,:), intent(out) :: paramtrim
-
-integer :: lx2,lx3
-integer :: iid,islstart,islfin
-
-
-lx2=size(paramtrim,1)    !assume this is an array which has been 'flattened' along the 1-dimension
-lx3=size(paramtrim,2)
-
-
-!ROOT BROADCASTS IC DATA TO WORKERS
-do iid=1,lid-1
-  islstart=iid*lx3+1
-  islfin=islstart+lx3-1
-
-  call mpi_send(paramtrimall(:,islstart:islfin),lx2*lx3, &
-               mpi_realprec,iid,tag,MPI_COMM_WORLD,ierr)
-end do
-
-
-!ROOT TAKES A SLAB OF DATA
-paramtrim=paramtrimall(:,1:lx3)
-
-end subroutine bcast_send2D
-
-
-subroutine bcast_send3D(paramtrimall,tag,paramtrim)
-
-!------------------------------------------------------------
-!-------THIS SUBROUTINE BROADCASTS DATA FROM A FULL GRID ARRAY
-!-------ON ROOT PROCESS TO ALL WORKERS' SUB-GRID ARRAYS.
-!-------
-!-------SUBROUTINE IS TO BE CALLED BY ROOT TO DO A BROADCAST
-!-------
-!-------THIS VERSION WORKS ON 3D ARRAYS WHICH DO NOT INCLUDE
-!-------GHOST CELLS!
-!-------
-!-------ALSO NOTE THAT IF THE ARRAY SIZE (DIM 3)  DOES NOT CORRESPOND
-!-------TO THE SIZE OF THE SYSTEM IN THE X3-DIRECTION, THEN 
-!-------THE SLAB CALCULATIONS FOR WORKERS WILL BE OFF.
-!------------------------------------------------------------
-
-real(wp), dimension(:,:,:), intent(in) :: paramtrimall
-integer, intent(in) :: tag
-real(wp), dimension(:,:,:), intent(out) :: paramtrim
-
-integer :: lx1,lx2,lx3
-integer :: iid,islstart,islfin
-
-
-lx1=size(paramtrim,1)    !note here that paramtrim does not have ghost cells
-lx2=size(paramtrim,2)
-lx3=size(paramtrim,3)
-
-
-!ROOT BROADCASTS IC DATA TO WORKERS
-do iid=1,lid-1
-  islstart=iid*lx3+1
-  islfin=islstart+lx3-1
-
-  call mpi_send(paramtrimall(:,:,islstart:islfin),lx1*lx2*lx3, &
-               mpi_realprec,iid,tag,MPI_COMM_WORLD,ierr)
-end do
-
-
-!ROOT TAKES A SLAB OF DATA
-paramtrim=paramtrimall(:,:,1:lx3)
-
-end subroutine bcast_send3D
-
-
-subroutine bcast_send3D_x3i(paramtrimall,tag,paramtrim)
-
-!------------------------------------------------------------
-!-------THIS SUBROUTINE BROADCASTS DATA FROM A FULL GRID ARRAY
-!-------ON ROOT PROCESS TO ALL WORKERS' SUB-GRID ARRAYS.
-!-------
-!-------SUBROUTINE IS TO BE CALLED BY ROOT TO DO A BROADCAST
-!-------
-!-------THIS VERSION WORKS ON 3D ARRAYS WHICH DO NOT INCLUDE
-!-------GHOST CELLS, BUT ARE X3 INTERFACE QUANITTIES
-!------------------------------------------------------------
-
-real(wp), dimension(:,:,:), intent(in) :: paramtrimall
-integer, intent(in) :: tag
-real(wp), dimension(:,:,:), intent(out) :: paramtrim
-
-integer :: lx1,lx2,lx3
-integer :: iid,islstart,islfin
-
-
-lx1=size(paramtrim,1)    !note here that paramtrim does not have ghost cells
-lx2=size(paramtrim,2)
-lx3=size(paramtrim,3)-1    !note that we are interpreting input as an x3i quantity meaning that it has size lx3+1
-
-
-!ROOT BROADCASTS IC DATA TO WORKERS
-do iid=1,lid-1
-  islstart=iid*lx3+1
-  islfin=islstart+lx3-1
-
-  call mpi_send(paramtrimall(:,:,islstart:islfin+1),lx1*lx2*(lx3+1), &
-               mpi_realprec,iid,tag,MPI_COMM_WORLD,ierr)     !note the +1 since thes are interfact quantities (and need to overlap b/t workers)
-end do
-
-
-!ROOT TAKES A SLAB OF DATA
-paramtrim=paramtrimall(:,:,1:lx3+1)
-
-end subroutine bcast_send3D_x3i
-
-
-subroutine bcast_send3D_ghost(paramall,tag,param)
-
-!------------------------------------------------------------
-!-------THIS SUBROUTINE BROADCASTS DATA FROM A FULL GRID ARRAY
-!-------ON ROOT PROCESS TO ALL WORKERS' SUB-GRID ARRAYS.
-!-------
-!-------SUBROUTINE IS TO BE CALLED BY ROOT TO DO A BROADCAST
-!-------
-!-------THIS VERSION WORKS ON 3D ARRAYS WHICH INCLUDE GHOST CELLS
-!------------------------------------------------------------
-
-real(wp), dimension(-1:,-1:,-1:), intent(in) :: paramall
-integer, intent(in) :: tag
-real(wp), dimension(-1:,-1:,-1:), intent(out) :: param
-
-integer :: lx1,lx2,lx3
-integer :: iid,islstart,islfin
-
-
-lx1=size(param,1)-4    !note here that param has ghost cells
-lx2=size(param,2)-4
-lx3=size(param,3)-4
-
-
-!ROOT BROADCASTS IC DATA TO WORKERS
-do iid=1,lid-1
-  islstart=iid*lx3+1
-  islfin=islstart+lx3-1
-
-  call mpi_send(paramall(:,:,islstart-2:islfin+2),(lx1+4)*(lx2+4)*(lx3+4), &
-               mpi_realprec,iid,tag,MPI_COMM_WORLD,ierr)
-end do
-
-
-!ROOT TAKES A SLAB OF DATA
-param=paramall(:,:,-1:lx3+2)
-
-end subroutine bcast_send3D_ghost
-
-
-subroutine bcast_send4D(paramall,tag,param)
-
-!------------------------------------------------------------
-!-------THIS SUBROUTINE BROADCASTS DATA FROM A FULL GRID ARRAY
-!-------ON ROOT PROCESS TO ALL WORKERS' SUB-GRID ARRAYS.
-!-------
-!-------SUBROUTINE IS TO BE CALLED BY ROOT TO DO A BROADCAST
-!-------
-!-------THIS VERSION WORKS ON 4D ARRAYS WHICH INCLUDE
-!-------GHOST CELLS!
-!------------------------------------------------------------
-
-real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: paramall
-integer, intent(in) :: tag
-real(wp), dimension(-1:,-1:,-1:,:), intent(out) :: param
-
-integer :: lx1,lx2,lx3,isp
-integer :: iid,islstart,islfin
-
-
-lx1=size(param,1)-4
-lx2=size(param,2)-4
-lx3=size(param,3)-4
-
-
-!ROOT BROADCASTS IC DATA TO WORKERS
-do isp=1,lsp
-  param(:,:,:,isp)=paramall(:,:,-1:lx3,isp)    !roots part of the data
-
-  do iid=1,lid-1
-    islstart=iid*lx3+1
-    islfin=islstart+lx3-1
-
-    call mpi_send(paramall(:,:,islstart-2:islfin+2,isp),(lx1+4)*(lx2+4)*(lx3+4), &
-               mpi_realprec,iid,tag,MPI_COMM_WORLD,ierr)
-  end do
-end do
-
-end subroutine bcast_send4D
-
-
-subroutine bcast_recv1D(param,tag)
-
-!------------------------------------------------------------
-!-------THIS SUBROUTINE RECEIVES BROADCAST DATA FROM A FULL 
-!-------GRID ARRAY ON ROOT PROCESS TO WORKERS' SUB-GRID ARRAYS. 
-!-------
-!-------SUBROUTINE IS TO BE CALLED BY WORKERS TO DO A BROADCAST
-!-------
-!-------THIS VERSION WORKS ON 1D ARRAYS WHICH DO NOT INCLUDE
-!-------GHOST CELLS!
-!------------------------------------------------------------
-
-real(wp), dimension(-1:), intent(out) :: param
-integer, intent(in) :: tag
-
-integer :: lx
-integer :: iid
-
-
-lx=size(param,1)-4
-
-!WORKERS RECEIVE THE IC DATA FROM ROOT
-call mpi_recv(param,(lx+4), &
-               mpi_realprec,0,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-
-end subroutine bcast_recv1D
-
-
-subroutine bcast_recv2D(paramtrim,tag)
-
-!------------------------------------------------------------
-!-------THIS SUBROUTINE RECEIVES BROADCAST DATA FROM A FULL 
-!-------GRID ARRAY ON ROOT PROCESS TO WORKERS' SUB-GRID ARRAYS. 
-!-------
-!-------SUBROUTINE IS TO BE CALLED BY WORKERS TO DO A BROADCAST
-!-------
-!-------THIS VERSION WORKS ON 3D ARRAYS WHICH DO NOT INCLUDE
-!-------GHOST CELLS!
-!------------------------------------------------------------
-
-real(wp), dimension(:,:), intent(out) :: paramtrim
-integer, intent(in) :: tag
-
-integer :: lx2,lx3
-integer :: iid
-
-
-lx2=size(paramtrim,1)
-lx3=size(paramtrim,2)
-
-
-!WORKERS RECEIVE THE IC DATA FROM ROOT
-call mpi_recv(paramtrim,lx2*lx3, &
-               mpi_realprec,0,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-
-end subroutine bcast_recv2D
-
-
-subroutine bcast_recv3D(paramtrim,tag)
-
-!------------------------------------------------------------
-!-------THIS SUBROUTINE RECEIVES BROADCAST DATA FROM A FULL 
-!-------GRID ARRAY ON ROOT PROCESS TO WORKERS' SUB-GRID ARRAYS. 
-!-------
-!-------SUBROUTINE IS TO BE CALLED BY WORKERS TO DO A BROADCAST
-!-------
-!-------THIS VERSION WORKS ON 3D ARRAYS WHICH DO NOT INCLUDE
-!-------GHOST CELLS!
-!------------------------------------------------------------
-
-real(wp), dimension(:,:,:), intent(out) :: paramtrim
-integer, intent(in) :: tag
-
-integer :: lx1,lx2,lx3
-integer :: iid
-
-
-lx1=size(paramtrim,1)    !note here that paramtrim does not have ghost cells
-lx2=size(paramtrim,2)
-lx3=size(paramtrim,3)
-
-
-!WORKERS RECEIVE THE IC DATA FROM ROOT
-call mpi_recv(paramtrim,lx1*lx2*lx3, &
-               mpi_realprec,0,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-
-end subroutine bcast_recv3D
-
-
-subroutine bcast_recv3D_x3i(paramtrim,tag)
-
-!------------------------------------------------------------
-!-------THIS SUBROUTINE RECEIVES BROADCAST DATA FROM A FULL 
-!-------GRID ARRAY ON ROOT PROCESS TO WORKERS' SUB-GRID ARRAYS. 
-!-------
-!-------SUBROUTINE IS TO BE CALLED BY WORKERS TO DO A BROADCAST
-!-------
-!-------THIS VERSION WORKS ON 3D ARRAYS WHICH DO NOT INCLUDE
-!-------GHOST CELLS!
-!------------------------------------------------------------
-
-real(wp), dimension(:,:,:), intent(out) :: paramtrim
-integer, intent(in) :: tag
-
-integer :: lx1,lx2,lx3
-integer :: iid
-
-
-lx1=size(paramtrim,1)    !note here that paramtrim does not have ghost cells
-lx2=size(paramtrim,2)
-lx3=size(paramtrim,3)-1    !this is an x3i quantity
-
-
-!WORKERS RECEIVE THE IC DATA FROM ROOT
-call mpi_recv(paramtrim,lx1*lx2*(lx3+1), &
-               mpi_realprec,0,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-
-end subroutine bcast_recv3D_x3i
-
-
-subroutine bcast_recv3D_ghost(param,tag)
-
-!------------------------------------------------------------
-!-------THIS SUBROUTINE RECEIVES BROADCAST DATA FROM A FULL 
-!-------GRID ARRAY ON ROOT PROCESS TO WORKERS' SUB-GRID ARRAYS. 
-!-------
-!-------SUBROUTINE IS TO BE CALLED BY WORKERS TO DO A BROADCAST
-!-------
-!-------THIS VERSION WORKS ON 3D ARRAYS WHICH DO NOT INCLUDE
-!-------GHOST CELLS!
-!------------------------------------------------------------
-
-real(wp), dimension(-1:,-1:,-1:), intent(out) :: param
-integer, intent(in) :: tag
-
-integer :: lx1,lx2,lx3
-integer :: iid
-
-
-lx1=size(param,1)-4    !note here that param has ghost cells
-lx2=size(param,2)-4
-lx3=size(param,3)-4
-
-
-!WORKERS RECEIVE THE IC DATA FROM ROOT
-call mpi_recv(param,(lx1+4)*(lx2+4)*(lx3+4), &
-               mpi_realprec,0,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-
-end subroutine bcast_recv3D_ghost
-
-
-subroutine bcast_recv4D(param,tag)
-
-!------------------------------------------------------------
-!-------THIS SUBROUTINE RECEIVES BROADCAST DATA FROM A FULL 
-!-------GRID ARRAY ON ROOT PROCESS TO WORKERS' SUB-GRID ARRAYS. 
-!-------
-!-------SUBROUTINE IS TO BE CALLED BY WORKERS TO DO A BROADCAST
-!-------
-!-------THIS VERSION WORKS ON 4D ARRAYS WHICH INCLUDE
-!-------GHOST CELLS!
-!------------------------------------------------------------
-
-real(wp), dimension(-1:,-1:,-1:,:), intent(out) :: param
-integer, intent(in) :: tag
-
-integer :: lx1,lx2,lx3,isp
-
-
-lx1=size(param,1)-4
-lx2=size(param,2)-4
-lx3=size(param,3)-4
-
-
-!WORKERS RECEIVE THE IC DATA FROM ROOT
-do isp=1,lsp
-  call mpi_recv(param(:,:,:,isp),(lx1+4)*(lx2+4)*(lx3+4), &
-                 mpi_realprec,0,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-end do
-
-end subroutine bcast_recv4D
 
 end module mpimod

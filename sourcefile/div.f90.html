@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+   
+   <meta name="description" content="GEMINI3D is a modular ionospheric model that incorporates kinetic models such as Fang, GLOW.">
+    
+    <meta name="author" content="Matthew Zettergren
+Guy Grubbs
+Michael Hirsch" >
+    <link rel="icon" href="../favicon.png">
+
+    <title>div.f90 &ndash; GEMINI3D</title>
+
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+    <link href="../css/pygments.css" rel="stylesheet">
+    <link href="../css/font-awesome.min.css" rel="stylesheet">
+    <link href="../css/local.css" rel="stylesheet">
+    
+    
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    
+    <script src="../js/jquery-2.1.3.min.js"></script>
+    <script src="../js/svg-pan-zoom.min.js"></script>
+
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="../index.html">GEMINI3D </a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+        
+            <li class="dropdown hidden-xs visible-sm visible-md hidden-lg">
+              <a href="#" class="dropdown-toggle"
+              data-toggle="dropdown" role="button"
+              aria-haspopup="true"
+     aria-expanded="false">Contents <span class="caret"></span></a>
+        <ul class="dropdown-menu">
+          
+              
+            <li><a href="../lists/files.html">Source Files</a></li>
+        
+        
+        
+            <li><a href="../lists/modules.html">Modules</a></li>
+        
+            
+    <li><a href="../blockdata/gtd7bk.html">Block Data</a></li>
+    
+                                
+            <li><a href="../lists/procedures.html">Procedures</a></li>
+        
+               
+            <li><a href="../lists/types.html">Derived Types</a></li>
+        
+        
+            <li><a href="../lists/programs.html">Programs</a></li>
+        
+            </ul>
+            </li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/files.html">Source Files</a></li>
+
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/modules.html">Modules</a></li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../blockdata/gtd7bk.html">Block Data</a></li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/procedures.html">Procedures</a></li>
+
+                             
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/types.html">Derived Types</a></li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/programs.html">Programs</a></li>
+
+          </ul>
+        
+        </div><!--/.nav-collapse -->
+      </div>
+    </nav>
+
+    <div class="container">
+    
+  
+  <div class="row">
+    <h1>div.f90
+    <small>Source File</small>
+    
+    </h1>
+    
+<div class="row">
+  <div class="col-lg-12">
+<div class="well well-sm">
+  <ul class="list-inline" style="margin-bottom:0px;display:inline">
+     
+     
+     
+     
+    
+    
+     <li><i class="fa fa-list-ol"></i>
+       <a data-toggle="tooltip"
+    data-placement="bottom" data-html="true"
+    title=" 0.8% of total for source files.">113 statements</a>
+     </li> 
+     
+     
+     
+    <li><i class="fa fa-code"></i><a href="../src/div.f90"> Source File</a></li>
+     
+     
+  </ul>
+  <ol class="breadcrumb in-well text-right">
+  
+    
+  
+     <li class="active">div.f90</li>
+  </ol>
+</div>
+</div>
+</div>
+<script>
+  $(function () {
+  $('[data-toggle="tooltip"]').tooltip()
+  })
+</script>
+
+  </div>
+  <div class="row">
+    <div class="col-md-3 hidden-xs hidden-sm visible-md visible-lg">
+    
+<div id="sidebar">
+  
+<h3>Contents</h3>
+ 
+
+
+
+
+
+
+
+
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#submods-0">Submodules</a></h3></div>
+  <div id="submods-0" class="panel-collapse collapse">
+    <div class="list-group">
+      
+      <a class="list-group-item" href="../module/div.html">div</a>
+      
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
+  <div class="list-group">
+    <a class="list-group-item" href="../sourcefile/div.f90.html#src">div.f90</a>
+  </div>
+</div>
+
+
+
+</div>
+
+    </div>
+    <div class="col-md-9" id='text'>
+      
+      <br>
+    
+    <div class="panel panel-default">
+      <div class="panel-heading">
+  <h3 class="panel-title">This file depends on</h3>
+      </div>
+      <div class="panel-body">
+  <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.40.1 (20161225.0304)
+ -->
+<!-- Title: sourcefile~~div.f90~~EfferentGraph Pages: 1 -->
+<svg id="sourcefiledivf90EfferentGraph" width="390pt" height="52pt"
+ viewBox="0.00 0.00 390.00 52.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="sourcefile~~div.f90~~EfferentGraph" class="graph" transform="scale(1 1) rotate(0) translate(4 48)">
+<title>sourcefile~~div.f90~~EfferentGraph</title>
+<polygon fill="#ffffff" stroke="transparent" points="-4,4 -4,-48 386,-48 386,4 -4,4"/>
+<!-- sourcefile~div.f90 -->
+<g id="sourcefile~~div.f90~~EfferentGraph_node1" class="node">
+<title>sourcefile~div.f90</title>
+<polygon fill="none" stroke="#000000" points="382,-44 328,-44 328,-20 382,-20 382,-44"/>
+<text text-anchor="middle" x="355" y="-29.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#000000">div.f90</text>
+</g>
+<!-- sourcefile~calculus.f90 -->
+<g id="sourcefile~~div.f90~~EfferentGraph_node2" class="node">
+<title>sourcefile~calculus.f90</title>
+<g id="a_sourcefile~~div.f90~~EfferentGraph_node2"><a xlink:href=".././sourcefile/calculus.f90.html" xlink:title="calculus.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="292,-44 223,-44 223,-20 292,-20 292,-44"/>
+<text text-anchor="middle" x="257.5" y="-29.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">calculus.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~div.f90&#45;&gt;sourcefile~calculus.f90 -->
+<g id="sourcefile~~div.f90~~EfferentGraph_edge1" class="edge">
+<title>sourcefile~div.f90&#45;&gt;sourcefile~calculus.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M327.8408,-32C319.903,-32 311.0081,-32 302.2837,-32"/>
+<polygon fill="#000000" stroke="#000000" points="302.1881,-28.5001 292.188,-32 302.188,-35.5001 302.1881,-28.5001"/>
+</g>
+<!-- sourcefile~phys_consts.f90 -->
+<g id="sourcefile~~div.f90~~EfferentGraph_node3" class="node">
+<title>sourcefile~phys_consts.f90</title>
+<g id="a_sourcefile~~div.f90~~EfferentGraph_node3"><a xlink:href=".././sourcefile/phys_consts.f90.html" xlink:title="phys_consts.F90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="94,-44 0,-44 0,-20 94,-20 94,-44"/>
+<text text-anchor="middle" x="47" y="-29.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">phys_consts.F90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~calculus.f90&#45;&gt;sourcefile~phys_consts.f90 -->
+<g id="sourcefile~~div.f90~~EfferentGraph_edge3" class="edge">
+<title>sourcefile~calculus.f90&#45;&gt;sourcefile~phys_consts.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M222.7182,-32.5912C211.335,-32.7586 198.6285,-32.9175 187,-33 161.6673,-33.1797 155.3329,-33.1526 130,-33 121.804,-32.9506 113.1531,-32.8738 104.6538,-32.7842"/>
+<polygon fill="#000000" stroke="#000000" points="104.4411,-29.2817 94.4026,-32.6696 104.3628,-36.2813 104.4411,-29.2817"/>
+</g>
+<!-- sourcefile~mesh.f90 -->
+<g id="sourcefile~~div.f90~~EfferentGraph_node4" class="node">
+<title>sourcefile~mesh.f90</title>
+<g id="a_sourcefile~~div.f90~~EfferentGraph_node4"><a xlink:href=".././sourcefile/mesh.f90.html" xlink:title="mesh.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="187,-24 130,-24 130,0 187,0 187,-24"/>
+<text text-anchor="middle" x="158.5" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">mesh.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~calculus.f90&#45;&gt;sourcefile~mesh.f90 -->
+<g id="sourcefile~~div.f90~~EfferentGraph_edge2" class="edge">
+<title>sourcefile~calculus.f90&#45;&gt;sourcefile~mesh.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M222.8746,-25.005C214.5499,-23.3232 205.6065,-21.5165 197.113,-19.8006"/>
+<polygon fill="#000000" stroke="#000000" points="197.5428,-16.3168 187.0477,-17.7672 196.1566,-23.1782 197.5428,-16.3168"/>
+</g>
+<!-- sourcefile~mesh.f90&#45;&gt;sourcefile~phys_consts.f90 -->
+<g id="sourcefile~~div.f90~~EfferentGraph_edge4" class="edge">
+<title>sourcefile~mesh.f90&#45;&gt;sourcefile~phys_consts.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M129.786,-17.1505C121.9099,-18.5632 113.084,-20.1464 104.2087,-21.7383"/>
+<polygon fill="#000000" stroke="#000000" points="103.4403,-18.3202 94.2153,-23.5309 104.6762,-25.2103 103.4403,-18.3202"/>
+</g>
+</g>
+</svg>
+</div><div><a type="button" class="graph-help" data-toggle="modal" href="#graph-help-text">Help</a></div><div class="modal fade" id="graph-help-text" tabindex="-1" role="dialog"><div class="modal-dialog modal-lg" role="document"><div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button><h4 class="modal-title" id="-graph-help-label">Graph Key</h4></div><div class="modal-body">
+    <p>Nodes of different colours represent the following: </p>
+    <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.40.1 (20161225.0304)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="190pt" height="32pt"
+ viewBox="0.00 0.00 190.00 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 28)">
+<title>Graph Key</title>
+<polygon fill="#ffffff" stroke="transparent" points="-4,4 -4,-28 186,-28 186,4 -4,4"/>
+<!-- Source File -->
+<g id="node1" class="node">
+<title>Source File</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="67,-24 0,-24 0,0 67,0 67,-24"/>
+<text text-anchor="middle" x="33.5" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Source File</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node2" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="#000000" points="182,-24 85,-24 85,0 182,0 182,-24"/>
+<text text-anchor="middle" x="133.5" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#000000">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+    
+    <p>Solid arrows point from a file to a file which it depends on. A file
+    is dependent upon another if the latter must be compiled before the former
+    can be.
+    </p>
+    </div></div></div></div>
+      </div>
+    </div>
+    
+      
+      <br>
+
+    <section class="visible-xs visible-sm hidden-md">
+      
+<h3>Contents</h3>
+ 
+
+
+
+
+
+
+
+
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#submods-1">Submodules</a></h3></div>
+  <div id="submods-1" class="panel-collapse collapse">
+    <div class="list-group">
+      
+      <a class="list-group-item" href="../module/div.html">div</a>
+      
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
+  <div class="list-group">
+    <a class="list-group-item" href="../sourcefile/div.f90.html#src">div.f90</a>
+  </div>
+</div>
+
+
+
+    </section>
+    <br class="visible-xs visible-sm hidden-md">
+
+    <section>
+      <h2><span class="anchor" id="src"></span>Source Code</h2>
+    <div class="hl"><pre><span></span><a name="ln-1"></a><span class="k">submodule</span> <span class="p">(</span><span class="n">calculus</span><span class="p">)</span> <span class="n">div</span>
+<a name="ln-2"></a>
+<a name="ln-3"></a><span class="k">contains</span>
+<a name="ln-4"></a>
+<a name="ln-5"></a><span class="k">module procedure </span><span class="n">div3D_curv_3</span>
+<a name="ln-6"></a>
+<a name="ln-7"></a><span class="c">!------------------------------------------------------------</span>
+<a name="ln-8"></a><span class="c">!-------COMPUTE A 3D DIVERGENCE.  IT IS EXPECTED THAT</span>
+<a name="ln-9"></a><span class="c">!-------GHOST CELLS WILL HAVE BEEN TRIMMED FROM ARRAYS BEFORE</span>
+<a name="ln-10"></a><span class="c">!-------THEY ARE PASSED INTO THIS ROUTINE.  DX(I) IS PRESUMED</span>
+<a name="ln-11"></a><span class="c">!-------TO BE THE *BACKWARD* DIFFERENCE AT POINT I</span>
+<a name="ln-12"></a><span class="c">!-------</span>
+<a name="ln-13"></a><span class="c">!-------AN EXTRA STEP IS NEEDED IN THIS ROUTINE SINCE WE HAVE</span>
+<a name="ln-14"></a><span class="c">!-------TO DETERMINE WHETHER THIS IS A FULL-GRID OR SUBGRID</span>
+<a name="ln-15"></a><span class="c">!-------DERIVATIVE.</span>
+<a name="ln-16"></a><span class="c">!------------------------------------------------------------</span>
+<a name="ln-17"></a>
+<a name="ln-18"></a><span class="kt">integer</span> <span class="kd">::</span> <span class="n">ix1</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="n">ix3</span><span class="p">,</span><span class="n">lx1</span><span class="p">,</span><span class="n">lx2</span><span class="p">,</span><span class="n">lx3</span>
+<a name="ln-19"></a>
+<a name="ln-20"></a><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span> <span class="k">dimension</span><span class="p">(:,:,:),</span> <span class="k">pointer</span> <span class="kd">::</span> <span class="n">h1</span><span class="p">,</span><span class="n">h2</span><span class="p">,</span><span class="n">h3</span>   <span class="c">!local references to the metric factors to be used in the derivative</span>
+<a name="ln-21"></a><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span> <span class="k">dimension</span><span class="p">(:),</span> <span class="k">pointer</span> <span class="kd">::</span> <span class="n">dx1</span>
+<a name="ln-22"></a><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span> <span class="k">dimension</span><span class="p">(:),</span> <span class="k">pointer</span> <span class="kd">::</span> <span class="n">dx2</span>
+<a name="ln-23"></a><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span> <span class="k">dimension</span><span class="p">(:),</span> <span class="k">pointer</span> <span class="kd">::</span> <span class="n">dx3</span>    <span class="c">!local reference to the backward difference</span>
+<a name="ln-24"></a>
+<a name="ln-25"></a>
+<a name="ln-26"></a><span class="n">lx1</span><span class="o">=</span><span class="n">size</span><span class="p">(</span><span class="n">f1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+<a name="ln-27"></a><span class="n">lx2</span><span class="o">=</span><span class="n">size</span><span class="p">(</span><span class="n">f1</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
+<a name="ln-28"></a><span class="n">lx3</span><span class="o">=</span><span class="n">size</span><span class="p">(</span><span class="n">f1</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span>
+<a name="ln-29"></a>
+<a name="ln-30"></a>
+<a name="ln-31"></a><span class="c">!ERROR CHECKING TO MAKE SURE DIFFRENCING IS DONE OVER A CONSISTENTLY-SIZED GRID</span>
+<a name="ln-32"></a><span class="k">if</span> <span class="p">(</span><span class="n">lx1</span> <span class="o">/=</span> <span class="n">ubnd1</span><span class="o">-</span><span class="n">lbnd1</span><span class="o">+</span><span class="mi">1</span> <span class="p">.</span><span class="nb">or</span><span class="p">.</span> <span class="n">lx2</span> <span class="o">/=</span> <span class="n">ubnd2</span><span class="o">-</span><span class="n">lbnd2</span><span class="o">+</span><span class="mi">1</span> <span class="p">.</span><span class="nb">or</span><span class="p">.</span> <span class="n">lx3</span> <span class="o">/=</span> <span class="n">ubnd3</span><span class="o">-</span><span class="n">lbnd3</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-33"></a><span class="k">  </span><span class="n">error</span> <span class="k">stop</span> <span class="s1">&#39;!!!  Inconsistent array and mesh sizes in gradient function.&#39;</span>   <span class="c">!just bail on it and let the user figure it out</span>
+<a name="ln-34"></a><span class="k">end if</span>
+<a name="ln-35"></a>
+<a name="ln-36"></a>
+<a name="ln-37"></a><span class="c">!CHOOSE THE METRIC FACTORS VARIABLES BASED ON THE SIZE OF THE X3-VARIABLE, ALSO RECAST SO THE</span>
+<a name="ln-38"></a><span class="c">!INDICES USED FOR F CAN ALSO BE USED IN THE METRIC FACTOR AND DX VARIABLE</span>
+<a name="ln-39"></a><span class="c">!Can avoid wasting memory and copying of metric factor arrays by recoding with pointers</span>
+<a name="ln-40"></a><span class="c">!Unfortunately a pointer is not gauranteed to be contiguous in memory so there may be a performance hit in doing this...</span>
+<a name="ln-41"></a><span class="n">dx1</span><span class="o">=&gt;</span><span class="n">x</span><span class="p">%</span><span class="n">dx1</span><span class="p">(</span><span class="n">lbnd1</span><span class="p">:</span><span class="n">ubnd1</span><span class="p">)</span>
+<a name="ln-42"></a><span class="n">dx2</span><span class="o">=&gt;</span><span class="n">x</span><span class="p">%</span><span class="n">dx2</span><span class="p">(</span><span class="n">lbnd2</span><span class="p">:</span><span class="n">ubnd2</span><span class="p">)</span>
+<a name="ln-43"></a><span class="k">if</span> <span class="p">(</span><span class="n">lx3</span><span class="o">&lt;=</span><span class="n">x</span><span class="p">%</span><span class="n">lx3</span><span class="o">+</span><span class="mi">4</span><span class="p">)</span> <span class="k">then</span>     <span class="c">!+4 in case we need to differentiate over ghost cells, e.g. in compression terms</span>
+<a name="ln-44"></a>  <span class="n">h1</span><span class="o">=&gt;</span><span class="n">x</span><span class="p">%</span><span class="n">h1</span><span class="p">(</span><span class="n">lbnd1</span><span class="p">:</span><span class="n">ubnd1</span><span class="p">,</span><span class="n">lbnd2</span><span class="p">:</span><span class="n">ubnd2</span><span class="p">,</span><span class="n">lbnd3</span><span class="p">:</span><span class="n">ubnd3</span><span class="p">)</span>
+<a name="ln-45"></a>  <span class="n">h2</span><span class="o">=&gt;</span><span class="n">x</span><span class="p">%</span><span class="n">h2</span><span class="p">(</span><span class="n">lbnd1</span><span class="p">:</span><span class="n">ubnd1</span><span class="p">,</span><span class="n">lbnd2</span><span class="p">:</span><span class="n">ubnd2</span><span class="p">,</span><span class="n">lbnd3</span><span class="p">:</span><span class="n">ubnd3</span><span class="p">)</span>
+<a name="ln-46"></a>  <span class="n">h3</span><span class="o">=&gt;</span><span class="n">x</span><span class="p">%</span><span class="n">h3</span><span class="p">(</span><span class="n">lbnd1</span><span class="p">:</span><span class="n">ubnd1</span><span class="p">,</span><span class="n">lbnd2</span><span class="p">:</span><span class="n">ubnd2</span><span class="p">,</span><span class="n">lbnd3</span><span class="p">:</span><span class="n">ubnd3</span><span class="p">)</span>
+<a name="ln-47"></a>  <span class="n">dx3</span><span class="o">=&gt;</span><span class="n">x</span><span class="p">%</span><span class="n">dx3</span><span class="p">(</span><span class="n">lbnd3</span><span class="p">:</span><span class="n">ubnd3</span><span class="p">)</span>
+<a name="ln-48"></a><span class="k">else if</span> <span class="p">(</span><span class="n">lx3</span><span class="o">&lt;=</span><span class="n">x</span><span class="p">%</span><span class="n">lx3all</span><span class="o">+</span><span class="mi">4</span><span class="p">)</span> <span class="k">then</span>     <span class="c">!presumes root.  may cause a seg fault since workers don&#39;t have the full-grid metric factors (should they?)</span>
+<a name="ln-49"></a>  <span class="n">h1</span><span class="o">=&gt;</span><span class="n">x</span><span class="p">%</span><span class="n">h1all</span><span class="p">(</span><span class="n">lbnd1</span><span class="p">:</span><span class="n">ubnd1</span><span class="p">,</span><span class="n">lbnd2</span><span class="p">:</span><span class="n">ubnd2</span><span class="p">,</span><span class="n">lbnd3</span><span class="p">:</span><span class="n">ubnd3</span><span class="p">)</span>
+<a name="ln-50"></a>  <span class="n">h2</span><span class="o">=&gt;</span><span class="n">x</span><span class="p">%</span><span class="n">h2all</span><span class="p">(</span><span class="n">lbnd1</span><span class="p">:</span><span class="n">ubnd1</span><span class="p">,</span><span class="n">lbnd2</span><span class="p">:</span><span class="n">ubnd2</span><span class="p">,</span><span class="n">lbnd3</span><span class="p">:</span><span class="n">ubnd3</span><span class="p">)</span>
+<a name="ln-51"></a>  <span class="n">h3</span><span class="o">=&gt;</span><span class="n">x</span><span class="p">%</span><span class="n">h3all</span><span class="p">(</span><span class="n">lbnd1</span><span class="p">:</span><span class="n">ubnd1</span><span class="p">,</span><span class="n">lbnd2</span><span class="p">:</span><span class="n">ubnd2</span><span class="p">,</span><span class="n">lbnd3</span><span class="p">:</span><span class="n">ubnd3</span><span class="p">)</span>
+<a name="ln-52"></a>  <span class="n">dx3</span><span class="o">=&gt;</span><span class="n">x</span><span class="p">%</span><span class="n">dx3all</span><span class="p">(</span><span class="n">lbnd3</span><span class="p">:</span><span class="n">ubnd3</span><span class="p">)</span>
+<a name="ln-53"></a>  <span class="k">print</span> <span class="o">*</span><span class="p">,</span>   <span class="s1">&#39;! Accessing root-only grid information in divergence function div3D&#39;</span>
+<a name="ln-54"></a><span class="k">else</span>
+<a name="ln-55"></a><span class="k">  </span><span class="n">error</span> <span class="k">stop</span> <span class="s1">&#39;!!!  Array size is larger than full mesh.&#39;</span>
+<a name="ln-56"></a><span class="k">end if</span>
+<a name="ln-57"></a>
+<a name="ln-58"></a>
+<a name="ln-59"></a><span class="c">!REASSIGNING POINTERS AS SUBARRAYS TO BE DIFFERENCED PRODUCED CLEAN CODE (BELOW), BUT NOW REQUIRES THAT WE OFFSET</span>
+<a name="ln-60"></a><span class="c">!ARRAY INDICES FOR THE POINTER VARIABLES, SINCE, BY DEFAULT, THEY START AT 1...  ACTUALLY THIS SHOUDL NOT BE THE CASE</span>
+<a name="ln-61"></a><span class="c">!SINCE EVERYTHING IS GETTING OFFSET (F UPON BEING PASSED INTO THIS FUNCTION AND THEN DIFFERENTIALS IN THE POINTER</span>
+<a name="ln-62"></a><span class="c">!ASSIGNMENTS...</span>
+<a name="ln-63"></a>
+<a name="ln-64"></a>
+<a name="ln-65"></a><span class="c">!FINITE DIFFERENCES</span>
+<a name="ln-66"></a><span class="k">do </span><span class="n">ix3</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">lx3</span>
+<a name="ln-67"></a>  <span class="k">do </span><span class="n">ix2</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">lx2</span>
+<a name="ln-68"></a>    <span class="n">div3D_curv_3</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="n">ix3</span><span class="p">)</span><span class="o">=</span><span class="p">(</span><span class="n">h2</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="n">ix3</span><span class="p">)</span><span class="o">*</span><span class="n">h3</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="n">ix3</span><span class="p">)</span><span class="o">*</span><span class="n">f1</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="n">ix3</span><span class="p">)</span><span class="o">-</span><span class="n">h2</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="n">ix3</span><span class="p">)</span><span class="o">*</span><span class="n">h3</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="n">ix3</span><span class="p">)</span><span class="o">*</span><span class="n">f1</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="n">ix3</span><span class="p">))</span><span class="o">/</span><span class="n">dx1</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<a name="ln-69"></a>    <span class="n">div3D_curv_3</span><span class="p">(</span><span class="mi">2</span><span class="p">:</span><span class="n">lx1</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="n">ix3</span><span class="p">)</span><span class="o">=</span><span class="p">(</span><span class="n">h2</span><span class="p">(</span><span class="mi">3</span><span class="p">:</span><span class="n">lx1</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="n">ix3</span><span class="p">)</span><span class="o">*</span><span class="n">h3</span><span class="p">(</span><span class="mi">3</span><span class="p">:</span><span class="n">lx1</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="n">ix3</span><span class="p">)</span><span class="o">*</span><span class="n">f1</span><span class="p">(</span><span class="mi">3</span><span class="p">:</span><span class="n">lx1</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="n">ix3</span><span class="p">)</span><span class="o">-</span> <span class="p">&amp;</span>
+<a name="ln-70"></a>                <span class="n">h2</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">lx1</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="n">ix3</span><span class="p">)</span><span class="o">*</span><span class="n">h3</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">lx1</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="n">ix3</span><span class="p">)</span><span class="o">*</span><span class="n">f1</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">lx1</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="n">ix3</span><span class="p">))</span> <span class="o">/</span> <span class="p">(</span><span class="n">dx1</span><span class="p">(</span><span class="mi">3</span><span class="p">:</span><span class="n">lx1</span><span class="p">)</span><span class="o">+</span><span class="n">dx1</span><span class="p">(</span><span class="mi">2</span><span class="p">:</span><span class="n">lx1</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+<a name="ln-71"></a>    <span class="n">div3D_curv_3</span><span class="p">(</span><span class="n">lx1</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="n">ix3</span><span class="p">)</span><span class="o">=</span><span class="p">(</span><span class="n">h2</span><span class="p">(</span><span class="n">lx1</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="n">ix3</span><span class="p">)</span><span class="o">*</span><span class="n">h3</span><span class="p">(</span><span class="n">lx1</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="n">ix3</span><span class="p">)</span><span class="o">*</span><span class="n">f1</span><span class="p">(</span><span class="n">lx1</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="n">ix3</span><span class="p">)</span><span class="o">-</span> <span class="p">&amp;</span>
+<a name="ln-72"></a>                             <span class="n">h2</span><span class="p">(</span><span class="n">lx1</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="n">ix3</span><span class="p">)</span><span class="o">*</span><span class="n">h3</span><span class="p">(</span><span class="n">lx1</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="n">ix3</span><span class="p">)</span><span class="o">*</span><span class="n">f1</span><span class="p">(</span><span class="n">lx1</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="n">ix3</span><span class="p">))</span><span class="o">/</span><span class="n">dx1</span><span class="p">(</span><span class="n">lx1</span><span class="p">)</span>
+<a name="ln-73"></a>  <span class="k">end do</span>
+<a name="ln-74"></a><span class="k">end do</span>
+<a name="ln-75"></a>
+<a name="ln-76"></a><span class="k">if</span> <span class="p">(</span><span class="n">lx2</span><span class="o">&gt;</span><span class="mi">1</span><span class="p">)</span> <span class="k">then</span>   <span class="c">!only if the x2-direction is not null</span>
+<a name="ln-77"></a>  <span class="k">do </span><span class="n">ix3</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">lx3</span>
+<a name="ln-78"></a>    <span class="k">do </span><span class="n">ix1</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">lx1</span>
+<a name="ln-79"></a>      <span class="n">div3D_curv_3</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="n">ix3</span><span class="p">)</span><span class="o">=</span><span class="n">div3D_curv_3</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="n">ix3</span><span class="p">)</span><span class="o">+</span> <span class="p">&amp;</span>
+<a name="ln-80"></a>                    <span class="p">(</span><span class="n">h1</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="n">ix3</span><span class="p">)</span><span class="o">*</span><span class="n">h3</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="n">ix3</span><span class="p">)</span><span class="o">*</span><span class="n">f2</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="n">ix3</span><span class="p">)</span><span class="o">-</span><span class="n">h1</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="n">ix3</span><span class="p">)</span><span class="o">*</span><span class="n">h3</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="n">ix3</span><span class="p">)</span><span class="o">*</span><span class="n">f2</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="n">ix3</span><span class="p">))</span><span class="o">/</span><span class="n">dx2</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<a name="ln-81"></a>      <span class="n">div3D_curv_3</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="mi">2</span><span class="p">:</span><span class="n">lx2</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">ix3</span><span class="p">)</span><span class="o">=</span><span class="n">div3D_curv_3</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="mi">2</span><span class="p">:</span><span class="n">lx2</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">ix3</span><span class="p">)</span><span class="o">+</span> <span class="p">&amp;</span>
+<a name="ln-82"></a>                    <span class="p">(</span><span class="n">h1</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="mi">3</span><span class="p">:</span><span class="n">lx2</span><span class="p">,</span><span class="n">ix3</span><span class="p">)</span><span class="o">*</span><span class="n">h3</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="mi">3</span><span class="p">:</span><span class="n">lx2</span><span class="p">,</span><span class="n">ix3</span><span class="p">)</span><span class="o">*</span><span class="n">f2</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="mi">3</span><span class="p">:</span><span class="n">lx2</span><span class="p">,</span><span class="n">ix3</span><span class="p">)</span><span class="o">-</span> <span class="p">&amp;</span>
+<a name="ln-83"></a>                     <span class="n">h1</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="mi">1</span><span class="p">:</span><span class="n">lx2</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span><span class="n">ix3</span><span class="p">)</span><span class="o">*</span><span class="n">h3</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="mi">1</span><span class="p">:</span><span class="n">lx2</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span><span class="n">ix3</span><span class="p">)</span><span class="o">*</span><span class="n">f2</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="mi">1</span><span class="p">:</span><span class="n">lx2</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span><span class="n">ix3</span><span class="p">))</span> <span class="p">&amp;</span>
+<a name="ln-84"></a>                             <span class="o">/</span><span class="p">(</span><span class="n">dx2</span><span class="p">(</span><span class="mi">3</span><span class="p">:</span><span class="n">lx2</span><span class="p">)</span><span class="o">+</span><span class="n">dx2</span><span class="p">(</span><span class="mi">2</span><span class="p">:</span><span class="n">lx2</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+<a name="ln-85"></a>      <span class="n">div3D_curv_3</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="n">lx2</span><span class="p">,</span><span class="n">ix3</span><span class="p">)</span><span class="o">=</span><span class="n">div3D_curv_3</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="n">lx2</span><span class="p">,</span><span class="n">ix3</span><span class="p">)</span><span class="o">+</span> <span class="p">&amp;</span>
+<a name="ln-86"></a>                    <span class="p">(</span><span class="n">h1</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="n">lx2</span><span class="p">,</span><span class="n">ix3</span><span class="p">)</span><span class="o">*</span><span class="n">h3</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="n">lx2</span><span class="p">,</span><span class="n">ix3</span><span class="p">)</span><span class="o">*</span><span class="n">f2</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="n">lx2</span><span class="p">,</span><span class="n">ix3</span><span class="p">)</span><span class="o">-</span> <span class="p">&amp;</span>
+<a name="ln-87"></a>                     <span class="n">h1</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="n">lx2</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">ix3</span><span class="p">)</span><span class="o">*</span><span class="n">h3</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="n">lx2</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">ix3</span><span class="p">)</span><span class="o">*</span><span class="n">f2</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="n">lx2</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">ix3</span><span class="p">))</span><span class="o">/</span><span class="n">dx2</span><span class="p">(</span><span class="n">lx2</span><span class="p">)</span>
+<a name="ln-88"></a>    <span class="k">end do</span>
+<a name="ln-89"></a><span class="k">  end do</span>
+<a name="ln-90"></a><span class="k">end if</span>
+<a name="ln-91"></a>
+<a name="ln-92"></a><span class="k">do </span><span class="n">ix2</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">lx2</span>
+<a name="ln-93"></a>  <span class="k">do </span><span class="n">ix1</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">lx1</span>
+<a name="ln-94"></a>    <span class="n">div3D_curv_3</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span><span class="o">=</span><span class="n">div3D_curv_3</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span><span class="o">+</span> <span class="p">&amp;</span>
+<a name="ln-95"></a>               <span class="p">(</span><span class="n">h1</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span><span class="o">*</span><span class="n">h2</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span><span class="o">*</span><span class="n">f3</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span><span class="o">-</span><span class="n">h1</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">h2</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">f3</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span><span class="o">/</span><span class="n">dx3</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<a name="ln-96"></a>    <span class="n">div3D_curv_3</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="mi">2</span><span class="p">:</span><span class="n">lx3</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">=</span><span class="n">div3D_curv_3</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="mi">2</span><span class="p">:</span><span class="n">lx3</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">+</span> <span class="p">&amp;</span>
+<a name="ln-97"></a>               <span class="p">(</span><span class="n">h1</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="mi">3</span><span class="p">:</span><span class="n">lx3</span><span class="p">)</span><span class="o">*</span><span class="n">h2</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="mi">3</span><span class="p">:</span><span class="n">lx3</span><span class="p">)</span><span class="o">*</span><span class="n">f3</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="mi">3</span><span class="p">:</span><span class="n">lx3</span><span class="p">)</span><span class="o">-</span> <span class="p">&amp;</span>
+<a name="ln-98"></a>                <span class="n">h1</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="mi">1</span><span class="p">:</span><span class="n">lx3</span><span class="o">-</span><span class="mi">2</span><span class="p">)</span><span class="o">*</span><span class="n">h2</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="mi">1</span><span class="p">:</span><span class="n">lx3</span><span class="o">-</span><span class="mi">2</span><span class="p">)</span><span class="o">*</span><span class="n">f3</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="mi">1</span><span class="p">:</span><span class="n">lx3</span><span class="o">-</span><span class="mi">2</span><span class="p">))&amp;</span>
+<a name="ln-99"></a>                          <span class="o">/</span><span class="p">(</span><span class="n">dx3</span><span class="p">(</span><span class="mi">3</span><span class="p">:</span><span class="n">lx3</span><span class="p">)</span><span class="o">+</span><span class="n">dx3</span><span class="p">(</span><span class="mi">2</span><span class="p">:</span><span class="n">lx3</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+<a name="ln-100"></a>    <span class="n">div3D_curv_3</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="n">lx3</span><span class="p">)</span><span class="o">=</span><span class="n">div3D_curv_3</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="n">lx3</span><span class="p">)</span><span class="o">+</span> <span class="p">&amp;</span>
+<a name="ln-101"></a>               <span class="p">(</span><span class="n">h1</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="n">lx3</span><span class="p">)</span><span class="o">*</span><span class="n">h2</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="n">lx3</span><span class="p">)</span><span class="o">*</span><span class="n">f3</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="n">lx3</span><span class="p">)</span><span class="o">-</span> <span class="p">&amp;</span>
+<a name="ln-102"></a>                <span class="n">h1</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="n">lx3</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">h2</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="n">lx3</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">f3</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="n">lx3</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span><span class="o">/</span><span class="n">dx3</span><span class="p">(</span><span class="n">lx3</span><span class="p">)</span>
+<a name="ln-103"></a>  <span class="k">end do</span>
+<a name="ln-104"></a><span class="k">end do</span>
+<a name="ln-105"></a>
+<a name="ln-106"></a><span class="n">div3D_curv_3</span><span class="o">=</span><span class="n">div3D_curv_3</span><span class="o">/</span><span class="p">(</span><span class="n">h1</span><span class="o">*</span><span class="n">h2</span><span class="o">*</span><span class="n">h3</span><span class="p">)</span>
+<a name="ln-107"></a>
+<a name="ln-108"></a><span class="k">end procedure </span><span class="n">div3D_curv_3</span>
+<a name="ln-109"></a>
+<a name="ln-110"></a>
+<a name="ln-111"></a><span class="k">module procedure </span><span class="n">div3D_curv_23</span>
+<a name="ln-112"></a>
+<a name="ln-113"></a><span class="c">!------------------------------------------------------------</span>
+<a name="ln-114"></a><span class="c">!-------COMPUTE A 3D DIVERGENCE.  IT IS EXPECTED THAT</span>
+<a name="ln-115"></a><span class="c">!-------GHOST CELLS WILL HAVE BEEN TRIMMED FROM ARRAYS BEFORE</span>
+<a name="ln-116"></a><span class="c">!-------THEY ARE PASSED INTO THIS ROUTINE.  DX(I) IS PRESUMED</span>
+<a name="ln-117"></a><span class="c">!-------TO BE THE *BACKWARD* DIFFERENCE AT POINT I</span>
+<a name="ln-118"></a><span class="c">!-------</span>
+<a name="ln-119"></a><span class="c">!-------AN EXTRA STEP IS NEEDED IN THIS ROUTINE SINCE WE HAVE</span>
+<a name="ln-120"></a><span class="c">!-------TO DETERMINE WHETHER THIS IS A FULL-GRID OR SUBGRID</span>
+<a name="ln-121"></a><span class="c">!-------DERIVATIVE.</span>
+<a name="ln-122"></a><span class="c">!------------------------------------------------------------</span>
+<a name="ln-123"></a>
+<a name="ln-124"></a><span class="kt">integer</span> <span class="kd">::</span> <span class="n">ix1</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="n">ix3</span><span class="p">,</span><span class="n">lx1</span><span class="p">,</span><span class="n">lx2</span><span class="p">,</span><span class="n">lx3</span>
+<a name="ln-125"></a>
+<a name="ln-126"></a><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span> <span class="k">dimension</span><span class="p">(:,:,:),</span> <span class="k">pointer</span> <span class="kd">::</span> <span class="n">h1</span><span class="p">,</span><span class="n">h2</span><span class="p">,</span><span class="n">h3</span>   <span class="c">!local references to the metric factors to be used in the derivative</span>
+<a name="ln-127"></a><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span> <span class="k">dimension</span><span class="p">(:),</span> <span class="k">pointer</span> <span class="kd">::</span> <span class="n">dx1</span>
+<a name="ln-128"></a><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span> <span class="k">dimension</span><span class="p">(:),</span> <span class="k">pointer</span> <span class="kd">::</span> <span class="n">dx2</span>
+<a name="ln-129"></a><span class="kt">real</span><span class="p">(</span><span class="n">wp</span><span class="p">),</span> <span class="k">dimension</span><span class="p">(:),</span> <span class="k">pointer</span> <span class="kd">::</span> <span class="n">dx3</span>    <span class="c">!local reference to the backward difference</span>
+<a name="ln-130"></a>
+<a name="ln-131"></a><span class="n">lx1</span><span class="o">=</span><span class="n">size</span><span class="p">(</span><span class="n">f1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+<a name="ln-132"></a><span class="n">lx2</span><span class="o">=</span><span class="n">size</span><span class="p">(</span><span class="n">f1</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
+<a name="ln-133"></a><span class="n">lx3</span><span class="o">=</span><span class="n">size</span><span class="p">(</span><span class="n">f1</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span>
+<a name="ln-134"></a>
+<a name="ln-135"></a>
+<a name="ln-136"></a><span class="k">if</span> <span class="p">(</span><span class="n">lx1</span><span class="o">/=</span><span class="n">size</span><span class="p">(</span><span class="n">f2</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span> <span class="p">.</span><span class="nb">or</span><span class="p">.</span> <span class="n">lx2</span><span class="o">/=</span><span class="n">size</span><span class="p">(</span><span class="n">f2</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span> <span class="p">.</span><span class="nb">or</span><span class="p">.</span> <span class="n">lx3</span><span class="o">/=</span><span class="n">size</span><span class="p">(</span><span class="n">f2</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span> <span class="p">.</span><span class="nb">or</span><span class="p">.</span> <span class="n">lx1</span><span class="o">/=</span><span class="n">size</span><span class="p">(</span><span class="n">f3</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span> <span class="p">.</span><span class="nb">or</span><span class="p">.</span> <span class="p">&amp;</span>
+<a name="ln-137"></a>    <span class="n">lx2</span><span class="o">/=</span><span class="n">size</span><span class="p">(</span><span class="n">f3</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span> <span class="p">.</span><span class="nb">or</span><span class="p">.</span> <span class="n">lx3</span><span class="o">/=</span><span class="n">size</span><span class="p">(</span><span class="n">f3</span><span class="p">,</span><span class="mi">3</span><span class="p">))</span> <span class="n">error</span> <span class="k">stop</span> <span class="s1">&#39;!!! bad component sizes&#39;</span>
+<a name="ln-138"></a>
+<a name="ln-139"></a>
+<a name="ln-140"></a><span class="c">!ERROR CHECKING TO MAKE SURE DIFFRENCING IS DONE OVER A CONSISTENTLY-SIZED GRID</span>
+<a name="ln-141"></a><span class="k">if</span> <span class="p">(</span><span class="n">lx1</span> <span class="o">/=</span> <span class="n">ubnd1</span><span class="o">-</span><span class="n">lbnd1</span><span class="o">+</span><span class="mi">1</span> <span class="p">.</span><span class="nb">or</span><span class="p">.</span> <span class="n">lx2</span> <span class="o">/=</span> <span class="n">ubnd2</span><span class="o">-</span><span class="n">lbnd2</span><span class="o">+</span><span class="mi">1</span> <span class="p">.</span><span class="nb">or</span><span class="p">.</span> <span class="n">lx3</span> <span class="o">/=</span> <span class="n">ubnd3</span><span class="o">-</span><span class="n">lbnd3</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="k">then</span>
+<a name="ln-142"></a><span class="k">  </span><span class="n">error</span> <span class="k">stop</span> <span class="s1">&#39;!!!  Inconsistent array and mesh sizes in div3D function.&#39;</span>   <span class="c">!just bail on it and let the user figure it out</span>
+<a name="ln-143"></a><span class="k">end if</span>
+<a name="ln-144"></a>
+<a name="ln-145"></a>
+<a name="ln-146"></a><span class="c">!CHOOSE THE METRIC FACTORS VARIABLES BASED ON THE SIZE OF THE X3-VARIABLE, ALSO RECAST SO THE</span>
+<a name="ln-147"></a><span class="c">!INDICES USED FOR F CAN ALSO BE USED IN THE METRIC FACTOR AND DX VARIABLE</span>
+<a name="ln-148"></a><span class="c">!Can avoid wasting memory and copying of metric factor arrays by recoding with pointers</span>
+<a name="ln-149"></a><span class="c">!Unfortunately a pointer is not gauranteed to be contiguous in memory so there may be a performance hit in doing this...</span>
+<a name="ln-150"></a><span class="n">dx1</span><span class="o">=&gt;</span><span class="n">x</span><span class="p">%</span><span class="n">dx1</span><span class="p">(</span><span class="n">lbnd1</span><span class="p">:</span><span class="n">ubnd1</span><span class="p">)</span>
+<a name="ln-151"></a><span class="k">if</span> <span class="p">(</span><span class="n">lx3</span><span class="o">&lt;=</span><span class="n">x</span><span class="p">%</span><span class="n">lx3</span><span class="o">+</span><span class="mi">4</span> <span class="p">.</span><span class="nb">and</span><span class="p">.</span> <span class="n">lx2</span><span class="o">&lt;=</span><span class="n">x</span><span class="p">%</span><span class="n">lx2</span><span class="o">+</span><span class="mi">4</span><span class="p">)</span> <span class="k">then</span>     <span class="c">!+4 in case we need to differentiate over ghost cells, e.g. in compression terms</span>
+<a name="ln-152"></a>  <span class="n">h1</span><span class="o">=&gt;</span><span class="n">x</span><span class="p">%</span><span class="n">h1</span><span class="p">(</span><span class="n">lbnd1</span><span class="p">:</span><span class="n">ubnd1</span><span class="p">,</span><span class="n">lbnd2</span><span class="p">:</span><span class="n">ubnd2</span><span class="p">,</span><span class="n">lbnd3</span><span class="p">:</span><span class="n">ubnd3</span><span class="p">)</span>
+<a name="ln-153"></a>  <span class="n">h2</span><span class="o">=&gt;</span><span class="n">x</span><span class="p">%</span><span class="n">h2</span><span class="p">(</span><span class="n">lbnd1</span><span class="p">:</span><span class="n">ubnd1</span><span class="p">,</span><span class="n">lbnd2</span><span class="p">:</span><span class="n">ubnd2</span><span class="p">,</span><span class="n">lbnd3</span><span class="p">:</span><span class="n">ubnd3</span><span class="p">)</span>
+<a name="ln-154"></a>  <span class="n">h3</span><span class="o">=&gt;</span><span class="n">x</span><span class="p">%</span><span class="n">h3</span><span class="p">(</span><span class="n">lbnd1</span><span class="p">:</span><span class="n">ubnd1</span><span class="p">,</span><span class="n">lbnd2</span><span class="p">:</span><span class="n">ubnd2</span><span class="p">,</span><span class="n">lbnd3</span><span class="p">:</span><span class="n">ubnd3</span><span class="p">)</span>
+<a name="ln-155"></a>  <span class="n">dx3</span><span class="o">=&gt;</span><span class="n">x</span><span class="p">%</span><span class="n">dx3</span><span class="p">(</span><span class="n">lbnd3</span><span class="p">:</span><span class="n">ubnd3</span><span class="p">)</span>
+<a name="ln-156"></a>  <span class="n">dx2</span><span class="o">=&gt;</span><span class="n">x</span><span class="p">%</span><span class="n">dx2</span><span class="p">(</span><span class="n">lbnd2</span><span class="p">:</span><span class="n">ubnd2</span><span class="p">)</span>
+<a name="ln-157"></a><span class="k">else if</span> <span class="p">(</span><span class="n">lx3</span><span class="o">&lt;=</span><span class="n">x</span><span class="p">%</span><span class="n">lx3all</span><span class="o">+</span><span class="mi">4</span> <span class="p">.</span><span class="nb">and</span><span class="p">.</span> <span class="n">lx2</span><span class="o">&lt;=</span><span class="n">x</span><span class="p">%</span><span class="n">lx2all</span><span class="o">+</span><span class="mi">4</span><span class="p">)</span> <span class="k">then</span>     <span class="c">!presumes root or some process that has access to ALL full grid variables (normally only root).</span>
+<a name="ln-158"></a>  <span class="n">h1</span><span class="o">=&gt;</span><span class="n">x</span><span class="p">%</span><span class="n">h1all</span><span class="p">(</span><span class="n">lbnd1</span><span class="p">:</span><span class="n">ubnd1</span><span class="p">,</span><span class="n">lbnd2</span><span class="p">:</span><span class="n">ubnd2</span><span class="p">,</span><span class="n">lbnd3</span><span class="p">:</span><span class="n">ubnd3</span><span class="p">)</span>
+<a name="ln-159"></a>  <span class="n">h2</span><span class="o">=&gt;</span><span class="n">x</span><span class="p">%</span><span class="n">h2all</span><span class="p">(</span><span class="n">lbnd1</span><span class="p">:</span><span class="n">ubnd1</span><span class="p">,</span><span class="n">lbnd2</span><span class="p">:</span><span class="n">ubnd2</span><span class="p">,</span><span class="n">lbnd3</span><span class="p">:</span><span class="n">ubnd3</span><span class="p">)</span>
+<a name="ln-160"></a>  <span class="n">h3</span><span class="o">=&gt;</span><span class="n">x</span><span class="p">%</span><span class="n">h3all</span><span class="p">(</span><span class="n">lbnd1</span><span class="p">:</span><span class="n">ubnd1</span><span class="p">,</span><span class="n">lbnd2</span><span class="p">:</span><span class="n">ubnd2</span><span class="p">,</span><span class="n">lbnd3</span><span class="p">:</span><span class="n">ubnd3</span><span class="p">)</span>
+<a name="ln-161"></a>  <span class="n">dx3</span><span class="o">=&gt;</span><span class="n">x</span><span class="p">%</span><span class="n">dx3all</span><span class="p">(</span><span class="n">lbnd3</span><span class="p">:</span><span class="n">ubnd3</span><span class="p">)</span>
+<a name="ln-162"></a>  <span class="n">dx2</span><span class="o">=&gt;</span><span class="n">x</span><span class="p">%</span><span class="n">dx2all</span><span class="p">(</span><span class="n">lbnd2</span><span class="p">:</span><span class="n">ubnd2</span><span class="p">)</span>
+<a name="ln-163"></a>  <span class="k">print</span> <span class="o">*</span><span class="p">,</span>   <span class="s1">&#39;! Accessing root-only grid information in divergence function div3D&#39;</span>
+<a name="ln-164"></a><span class="k">else</span>
+<a name="ln-165"></a><span class="k">  </span><span class="n">error</span> <span class="k">stop</span> <span class="s1">&#39;!!!  Array size is larger than full mesh or inconsistent sizes in data to be differentiated.&#39;</span>
+<a name="ln-166"></a><span class="k">end if</span>
+<a name="ln-167"></a>
+<a name="ln-168"></a><span class="c">!REASSIGNING POINTERS AS SUBARRAYS TO BE DIFFERENCED PRODUCED CLEAN CODE (BELOW), BUT NOW REQUIRES THAT WE OFFSET</span>
+<a name="ln-169"></a><span class="c">!ARRAY INDICES FOR THE POINTER VARIABLES, SINCE, BY DEFAULT, THEY START AT 1...  ACTUALLY THIS SHOUDL NOT BE THE CASE</span>
+<a name="ln-170"></a><span class="c">!SINCE EVERYTHING IS GETTING OFFSET (F UPON BEING PASSED INTO THIS FUNCTION AND THEN DIFFERENTIALS IN THE POINTER</span>
+<a name="ln-171"></a><span class="c">!ASSIGNMENTS...</span>
+<a name="ln-172"></a>
+<a name="ln-173"></a>
+<a name="ln-174"></a><span class="c">!FINITE DIFFERENCES</span>
+<a name="ln-175"></a><span class="k">do </span><span class="n">ix3</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">lx3</span>
+<a name="ln-176"></a>  <span class="k">do </span><span class="n">ix2</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">lx2</span>
+<a name="ln-177"></a>    <span class="n">div3D_curv_23</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="n">ix3</span><span class="p">)</span><span class="o">=</span><span class="p">(</span><span class="n">h2</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="n">ix3</span><span class="p">)</span><span class="o">*</span><span class="n">h3</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="n">ix3</span><span class="p">)</span><span class="o">*</span><span class="n">f1</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="n">ix3</span><span class="p">)</span><span class="o">-</span><span class="n">h2</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="n">ix3</span><span class="p">)</span><span class="o">*</span><span class="n">h3</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="n">ix3</span><span class="p">)</span><span class="o">*</span><span class="n">f1</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="n">ix3</span><span class="p">))</span><span class="o">/</span><span class="n">dx1</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<a name="ln-178"></a>
+<a name="ln-179"></a>    <span class="n">div3D_curv_23</span><span class="p">(</span><span class="mi">2</span><span class="p">:</span><span class="n">lx1</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="n">ix3</span><span class="p">)</span><span class="o">=</span><span class="p">(</span><span class="n">h2</span><span class="p">(</span><span class="mi">3</span><span class="p">:</span><span class="n">lx1</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="n">ix3</span><span class="p">)</span><span class="o">*</span><span class="n">h3</span><span class="p">(</span><span class="mi">3</span><span class="p">:</span><span class="n">lx1</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="n">ix3</span><span class="p">)</span><span class="o">*</span><span class="n">f1</span><span class="p">(</span><span class="mi">3</span><span class="p">:</span><span class="n">lx1</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="n">ix3</span><span class="p">)</span><span class="o">-</span> <span class="p">&amp;</span>
+<a name="ln-180"></a>                <span class="n">h2</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">lx1</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="n">ix3</span><span class="p">)</span><span class="o">*</span><span class="n">h3</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">lx1</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="n">ix3</span><span class="p">)</span><span class="o">*</span><span class="n">f1</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="n">lx1</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="n">ix3</span><span class="p">))</span> <span class="o">/</span> <span class="p">(</span><span class="n">dx1</span><span class="p">(</span><span class="mi">3</span><span class="p">:</span><span class="n">lx1</span><span class="p">)</span><span class="o">+</span><span class="n">dx1</span><span class="p">(</span><span class="mi">2</span><span class="p">:</span><span class="n">lx1</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+<a name="ln-181"></a>
+<a name="ln-182"></a>    <span class="n">div3D_curv_23</span><span class="p">(</span><span class="n">lx1</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="n">ix3</span><span class="p">)</span><span class="o">=</span><span class="p">(</span><span class="n">h2</span><span class="p">(</span><span class="n">lx1</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="n">ix3</span><span class="p">)</span><span class="o">*</span><span class="n">h3</span><span class="p">(</span><span class="n">lx1</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="n">ix3</span><span class="p">)</span><span class="o">*</span><span class="n">f1</span><span class="p">(</span><span class="n">lx1</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="n">ix3</span><span class="p">)</span><span class="o">-</span> <span class="p">&amp;</span>
+<a name="ln-183"></a>                             <span class="n">h2</span><span class="p">(</span><span class="n">lx1</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="n">ix3</span><span class="p">)</span><span class="o">*</span><span class="n">h3</span><span class="p">(</span><span class="n">lx1</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="n">ix3</span><span class="p">)</span><span class="o">*</span><span class="n">f1</span><span class="p">(</span><span class="n">lx1</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="n">ix3</span><span class="p">))</span><span class="o">/</span><span class="n">dx1</span><span class="p">(</span><span class="n">lx1</span><span class="p">)</span>
+<a name="ln-184"></a>  <span class="k">end do</span>
+<a name="ln-185"></a><span class="k">end do</span>
+<a name="ln-186"></a>
+<a name="ln-187"></a><span class="k">if</span> <span class="p">(</span><span class="n">lx2</span><span class="o">&gt;</span><span class="mi">1</span><span class="p">)</span> <span class="k">then</span>   <span class="c">!only if the x2-direction is not null</span>
+<a name="ln-188"></a>  <span class="k">do </span><span class="n">ix3</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">lx3</span>
+<a name="ln-189"></a>    <span class="k">do </span><span class="n">ix1</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">lx1</span>
+<a name="ln-190"></a>      <span class="n">div3D_curv_23</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="n">ix3</span><span class="p">)</span><span class="o">=</span><span class="n">div3D_curv_23</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="n">ix3</span><span class="p">)</span><span class="o">+</span> <span class="p">&amp;</span>
+<a name="ln-191"></a>                    <span class="p">(</span><span class="n">h1</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="n">ix3</span><span class="p">)</span><span class="o">*</span><span class="n">h3</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="n">ix3</span><span class="p">)</span><span class="o">*</span><span class="n">f2</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="n">ix3</span><span class="p">)</span><span class="o">-</span><span class="n">h1</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="n">ix3</span><span class="p">)</span><span class="o">*</span><span class="n">h3</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="n">ix3</span><span class="p">)</span><span class="o">*</span><span class="n">f2</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="n">ix3</span><span class="p">))</span><span class="o">/</span><span class="n">dx2</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<a name="ln-192"></a>
+<a name="ln-193"></a>      <span class="n">div3D_curv_23</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="mi">2</span><span class="p">:</span><span class="n">lx2</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">ix3</span><span class="p">)</span><span class="o">=</span><span class="n">div3D_curv_23</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="mi">2</span><span class="p">:</span><span class="n">lx2</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">ix3</span><span class="p">)</span><span class="o">+</span> <span class="p">&amp;</span>
+<a name="ln-194"></a>                    <span class="p">(</span><span class="n">h1</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="mi">3</span><span class="p">:</span><span class="n">lx2</span><span class="p">,</span><span class="n">ix3</span><span class="p">)</span><span class="o">*</span><span class="n">h3</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="mi">3</span><span class="p">:</span><span class="n">lx2</span><span class="p">,</span><span class="n">ix3</span><span class="p">)</span><span class="o">*</span><span class="n">f2</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="mi">3</span><span class="p">:</span><span class="n">lx2</span><span class="p">,</span><span class="n">ix3</span><span class="p">)</span><span class="o">-</span> <span class="p">&amp;</span>
+<a name="ln-195"></a>                     <span class="n">h1</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="mi">1</span><span class="p">:</span><span class="n">lx2</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span><span class="n">ix3</span><span class="p">)</span><span class="o">*</span><span class="n">h3</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="mi">1</span><span class="p">:</span><span class="n">lx2</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span><span class="n">ix3</span><span class="p">)</span><span class="o">*</span><span class="n">f2</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="mi">1</span><span class="p">:</span><span class="n">lx2</span><span class="o">-</span><span class="mi">2</span><span class="p">,</span><span class="n">ix3</span><span class="p">))</span> <span class="p">&amp;</span>
+<a name="ln-196"></a>                             <span class="o">/</span><span class="p">(</span><span class="n">dx2</span><span class="p">(</span><span class="mi">3</span><span class="p">:</span><span class="n">lx2</span><span class="p">)</span><span class="o">+</span><span class="n">dx2</span><span class="p">(</span><span class="mi">2</span><span class="p">:</span><span class="n">lx2</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+<a name="ln-197"></a>
+<a name="ln-198"></a>      <span class="n">div3D_curv_23</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="n">lx2</span><span class="p">,</span><span class="n">ix3</span><span class="p">)</span><span class="o">=</span><span class="n">div3D_curv_23</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="n">lx2</span><span class="p">,</span><span class="n">ix3</span><span class="p">)</span><span class="o">+</span> <span class="p">&amp;</span>
+<a name="ln-199"></a>                    <span class="p">(</span><span class="n">h1</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="n">lx2</span><span class="p">,</span><span class="n">ix3</span><span class="p">)</span><span class="o">*</span><span class="n">h3</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="n">lx2</span><span class="p">,</span><span class="n">ix3</span><span class="p">)</span><span class="o">*</span><span class="n">f2</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="n">lx2</span><span class="p">,</span><span class="n">ix3</span><span class="p">)</span><span class="o">-</span> <span class="p">&amp;</span>
+<a name="ln-200"></a>                     <span class="n">h1</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="n">lx2</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">ix3</span><span class="p">)</span><span class="o">*</span><span class="n">h3</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="n">lx2</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">ix3</span><span class="p">)</span><span class="o">*</span><span class="n">f2</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="n">lx2</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">ix3</span><span class="p">))</span><span class="o">/</span><span class="n">dx2</span><span class="p">(</span><span class="n">lx2</span><span class="p">)</span>
+<a name="ln-201"></a>    <span class="k">end do</span>
+<a name="ln-202"></a><span class="k">  end do</span>
+<a name="ln-203"></a><span class="k">end if</span>
+<a name="ln-204"></a>
+<a name="ln-205"></a>
+<a name="ln-206"></a><span class="k">if</span> <span class="p">(</span><span class="n">lx3</span><span class="o">&gt;</span><span class="mi">1</span><span class="p">)</span> <span class="k">then</span>    <span class="c">!only if non-singleton 3rd dimension</span>
+<a name="ln-207"></a>  <span class="k">do </span><span class="n">ix2</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">lx2</span>
+<a name="ln-208"></a>    <span class="k">do </span><span class="n">ix1</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">lx1</span>
+<a name="ln-209"></a>      <span class="n">div3D_curv_23</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span><span class="o">=</span><span class="n">div3D_curv_23</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span><span class="o">+</span> <span class="p">&amp;</span>
+<a name="ln-210"></a>                 <span class="p">(</span><span class="n">h1</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span><span class="o">*</span><span class="n">h2</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span><span class="o">*</span><span class="n">f3</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span><span class="o">-</span><span class="n">h1</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">h2</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">f3</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="mi">1</span><span class="p">))</span><span class="o">/</span><span class="n">dx3</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<a name="ln-211"></a>
+<a name="ln-212"></a>      <span class="n">div3D_curv_23</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="mi">2</span><span class="p">:</span><span class="n">lx3</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">=</span><span class="n">div3D_curv_23</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="mi">2</span><span class="p">:</span><span class="n">lx3</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">+</span> <span class="p">&amp;</span>
+<a name="ln-213"></a>                 <span class="p">(</span><span class="n">h1</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="mi">3</span><span class="p">:</span><span class="n">lx3</span><span class="p">)</span><span class="o">*</span><span class="n">h2</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="mi">3</span><span class="p">:</span><span class="n">lx3</span><span class="p">)</span><span class="o">*</span><span class="n">f3</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="mi">3</span><span class="p">:</span><span class="n">lx3</span><span class="p">)</span><span class="o">-</span> <span class="p">&amp;</span>
+<a name="ln-214"></a>                  <span class="n">h1</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="mi">1</span><span class="p">:</span><span class="n">lx3</span><span class="o">-</span><span class="mi">2</span><span class="p">)</span><span class="o">*</span><span class="n">h2</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="mi">1</span><span class="p">:</span><span class="n">lx3</span><span class="o">-</span><span class="mi">2</span><span class="p">)</span><span class="o">*</span><span class="n">f3</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="mi">1</span><span class="p">:</span><span class="n">lx3</span><span class="o">-</span><span class="mi">2</span><span class="p">))&amp;</span>
+<a name="ln-215"></a>                            <span class="o">/</span><span class="p">(</span><span class="n">dx3</span><span class="p">(</span><span class="mi">3</span><span class="p">:</span><span class="n">lx3</span><span class="p">)</span><span class="o">+</span><span class="n">dx3</span><span class="p">(</span><span class="mi">2</span><span class="p">:</span><span class="n">lx3</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+<a name="ln-216"></a>
+<a name="ln-217"></a>      <span class="n">div3D_curv_23</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="n">lx3</span><span class="p">)</span><span class="o">=</span><span class="n">div3D_curv_23</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="n">lx3</span><span class="p">)</span><span class="o">+</span> <span class="p">&amp;</span>
+<a name="ln-218"></a>                 <span class="p">(</span><span class="n">h1</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="n">lx3</span><span class="p">)</span><span class="o">*</span><span class="n">h2</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="n">lx3</span><span class="p">)</span><span class="o">*</span><span class="n">f3</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="n">lx3</span><span class="p">)</span><span class="o">-</span> <span class="p">&amp;</span>
+<a name="ln-219"></a>                  <span class="n">h1</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="n">lx3</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">h2</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="n">lx3</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">f3</span><span class="p">(</span><span class="n">ix1</span><span class="p">,</span><span class="n">ix2</span><span class="p">,</span><span class="n">lx3</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span><span class="o">/</span><span class="n">dx3</span><span class="p">(</span><span class="n">lx3</span><span class="p">)</span>
+<a name="ln-220"></a>    <span class="k">end do</span>
+<a name="ln-221"></a><span class="k">  end do</span>
+<a name="ln-222"></a><span class="k">end if</span>
+<a name="ln-223"></a>
+<a name="ln-224"></a>
+<a name="ln-225"></a><span class="n">div3D_curv_23</span><span class="o">=</span><span class="n">div3D_curv_23</span><span class="o">/</span><span class="p">(</span><span class="n">h1</span><span class="o">*</span><span class="n">h2</span><span class="o">*</span><span class="n">h3</span><span class="p">)</span>
+<a name="ln-226"></a>
+<a name="ln-227"></a><span class="k">end procedure </span><span class="n">div3D_curv_23</span>
+<a name="ln-228"></a>
+<a name="ln-229"></a><span class="k">end submodule </span><span class="n">div</span>
+</pre></div>
+
+    </section>
+    </div>
+  </div>
+
+  
+    <hr>    
+    </div> <!-- /container -->
+    <footer>
+      <div class="container">
+      <div class="row">
+        <div class="col-xs-6 col-md-4"><p>&copy; 2020 <a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/80x15.png" /></a>
+                                          </p></div>
+        <div class="col-xs-6 col-md-4 col-md-push-4">
+          <p class="text-right">
+            Documentation generated by 
+            <a href="https://github.com/cmacmackin/ford">FORD</a>
+            
+          </p>
+        </div>
+        <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> GEMINI3D was developed by Matthew Zettergren
+Guy Grubbs
+Michael Hirsch</p></div>
+      </div>
+      <br>
+      </div> <!-- /container -->    
+    </footer>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+<!--
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+-->
+    <script src="../js/bootstrap.min.js"></script>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <script src="../js/ie10-viewport-bug-workaround.js"></script>
+
+    <!-- MathJax JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } },
+        jax: ['input/TeX','input/MathML','output/HTML-CSS'],
+        extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']
+      });
+    </script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    
+    
+  </body>
+</html>

@@ -1,0 +1,1267 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+   
+   <meta name="description" content="GEMINI3D is a modular ionospheric model that incorporates kinetic models such as Fang, GLOW.">
+    
+    <meta name="author" content="Matthew Zettergren
+Guy Grubbs
+Michael Hirsch" >
+    <link rel="icon" href="../favicon.png">
+
+    <title>pathlib &ndash; GEMINI3D</title>
+
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+    <link href="../css/pygments.css" rel="stylesheet">
+    <link href="../css/font-awesome.min.css" rel="stylesheet">
+    <link href="../css/local.css" rel="stylesheet">
+    
+    
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    
+    <script src="../js/jquery-2.1.3.min.js"></script>
+    <script src="../js/svg-pan-zoom.min.js"></script>
+
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="../index.html">GEMINI3D </a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+        
+            <li class="dropdown hidden-xs visible-sm visible-md hidden-lg">
+              <a href="#" class="dropdown-toggle"
+              data-toggle="dropdown" role="button"
+              aria-haspopup="true"
+     aria-expanded="false">Contents <span class="caret"></span></a>
+        <ul class="dropdown-menu">
+          
+              
+            <li><a href="../lists/files.html">Source Files</a></li>
+        
+        
+        
+            <li><a href="../lists/modules.html">Modules</a></li>
+        
+            
+    <li><a href="../blockdata/gtd7bk.html">Block Data</a></li>
+    
+                                
+            <li><a href="../lists/procedures.html">Procedures</a></li>
+        
+               
+            <li><a href="../lists/types.html">Derived Types</a></li>
+        
+        
+            <li><a href="../lists/programs.html">Programs</a></li>
+        
+            </ul>
+            </li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/files.html">Source Files</a></li>
+
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/modules.html">Modules</a></li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../blockdata/gtd7bk.html">Block Data</a></li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/procedures.html">Procedures</a></li>
+
+                             
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/types.html">Derived Types</a></li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/programs.html">Programs</a></li>
+
+          </ul>
+        
+        </div><!--/.nav-collapse -->
+      </div>
+    </nav>
+
+    <div class="container">
+    
+  
+  <div class="row">
+    <h1>pathlib 
+    <small>Module</small>
+    
+    </h1>
+    
+<div class="row">
+  <div class="col-lg-12">
+<div class="well well-sm">
+  <ul class="list-inline" style="margin-bottom:0px;display:inline">
+     
+     
+     
+     
+    
+    
+     <li><i class="fa fa-list-ol"></i>
+       <a data-toggle="tooltip"
+    data-placement="bottom" data-html="true"
+    title=" 0.6% of total for modules and submodules.">60 statements</a>
+     </li> 
+     
+     
+     
+    <li><i class="fa fa-code"></i><a href="../src/pathlib.f90"> Source File</a></li>
+     
+     
+  </ul>
+  <ol class="breadcrumb in-well text-right">
+  
+    
+     <li><a href='../sourcefile/pathlib.f90.html'>pathlib.f90</a></li>
+    
+  
+     <li class="active">pathlib</li>
+  </ol>
+</div>
+</div>
+</div>
+<script>
+  $(function () {
+  $('[data-toggle="tooltip"]').tooltip()
+  })
+</script>
+
+  </div>
+  
+  <div class="row">
+    <div class="col-md-3 hidden-xs hidden-sm visible-md visible-lg">
+    
+<div id="sidebar">
+  
+<h3>Contents</h3>
+ 
+
+
+
+
+
+
+
+
+
+
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#inters-0">Interfaces</a></h3></div>
+  <div id="inters-0" class="panel-collapse collapse">
+    <div class="list-group">
+      
+      <a class="list-group-item" href="../module/pathlib.html#interface-copyfile">copyfile</a>
+      
+      <a class="list-group-item" href="../module/pathlib.html#interface-mkdir">mkdir</a>
+      
+    </div>
+  </div>
+</div>
+
+
+
+
+
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#funcs-0">Functions</a></h3></div>
+  <div id="funcs-0" class="panel-collapse collapse">
+    <div class="list-group">
+      
+      <a class="list-group-item" href="../module/pathlib.html#proc-filesep_swap">filesep_swap</a>
+      
+      <a class="list-group-item" href="../module/pathlib.html#proc-expanduser">expanduser</a>
+      
+      <a class="list-group-item" href="../module/pathlib.html#proc-home">home</a>
+      
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+</div>
+
+    </div>
+    
+    <div class="col-md-9" id='text'>
+    
+      <br>
+    
+  
+    <div class="panel panel-default">
+      <div class="panel-heading">
+  <h3 class="panel-title">Uses</h3>
+      </div>
+      <ul class="list-group">
+      
+      <li class="list-group-item">
+  <ul class="list-inline">
+    
+    <li><a href="http://fortranwiki.org/fortran/show/ISO_FORTRAN_ENV">iso_fortran_env</a></li>
+    
+  </ul>
+      </li>
+      
+      
+      
+      <li class="list-group-item">
+  <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.40.1 (20161225.0304)
+ -->
+<!-- Title: module~~pathlib~~UsesGraph Pages: 1 -->
+<svg id="modulepathlibUsesGraph" width="185pt" height="32pt"
+ viewBox="0.00 0.00 185.00 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="module~~pathlib~~UsesGraph" class="graph" transform="scale(1 1) rotate(0) translate(4 28)">
+<title>module~~pathlib~~UsesGraph</title>
+<polygon fill="#ffffff" stroke="transparent" points="-4,4 -4,-28 181,-28 181,4 -4,4"/>
+<!-- module~pathlib -->
+<g id="module~~pathlib~~UsesGraph_node1" class="node">
+<title>module~pathlib</title>
+<polygon fill="none" stroke="#000000" points="177,-24 123,-24 123,0 177,0 177,-24"/>
+<text text-anchor="middle" x="150" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#000000">pathlib</text>
+</g>
+<!-- iso_fortran_env -->
+<g id="module~~pathlib~~UsesGraph_node2" class="node">
+<title>iso_fortran_env</title>
+<g id="a_module~~pathlib~~UsesGraph_node2"><a xlink:href="http://fortranwiki.org/fortran/show/ISO_FORTRAN_ENV" xlink:title="iso_fortran_env">
+<polygon fill="#337ab7" stroke="#337ab7" points="87,-24 0,-24 0,0 87,0 87,-24"/>
+<text text-anchor="middle" x="43.5" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">iso_fortran_env</text>
+</a>
+</g>
+</g>
+<!-- module~pathlib&#45;&gt;iso_fortran_env -->
+<g id="module~~pathlib~~UsesGraph_edge1" class="edge">
+<title>module~pathlib&#45;&gt;iso_fortran_env</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M122.85,-12C114.9694,-12 106.0755,-12 97.1661,-12"/>
+<polygon fill="#000000" stroke="#000000" points="97.1538,-8.5001 87.1537,-12 97.1537,-15.5001 97.1538,-8.5001"/>
+</g>
+</g>
+</svg>
+</div><div><a type="button" class="graph-help" data-toggle="modal" href="#graph-help-text">Help</a></div><div class="modal fade" id="graph-help-text" tabindex="-1" role="dialog"><div class="modal-dialog modal-lg" role="document"><div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button><h4 class="modal-title" id="-graph-help-label">Graph Key</h4></div><div class="modal-body">
+    <p>Nodes of different colours represent the following: </p>
+    <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.40.1 (20161225.0304)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="490pt" height="32pt"
+ viewBox="0.00 0.00 489.50 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 28)">
+<title>Graph Key</title>
+<polygon fill="#ffffff" stroke="transparent" points="-4,4 -4,-28 485.5,-28 485.5,4 -4,4"/>
+<!-- Module -->
+<g id="node1" class="node">
+<title>Module</title>
+<polygon fill="#337ab7" stroke="#337ab7" points="54,-24 0,-24 0,0 54,0 54,-24"/>
+<text text-anchor="middle" x="27" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Module</text>
+</g>
+<!-- Submodule -->
+<g id="node2" class="node">
+<title>Submodule</title>
+<polygon fill="#5bc0de" stroke="#5bc0de" points="139.5,-24 72.5,-24 72.5,0 139.5,0 139.5,-24"/>
+<text text-anchor="middle" x="106" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Submodule</text>
+</g>
+<!-- Subroutine -->
+<g id="node3" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="222,-24 158,-24 158,0 222,0 222,-24"/>
+<text text-anchor="middle" x="190" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node4" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="294,-24 240,-24 240,0 294,0 294,-24"/>
+<text text-anchor="middle" x="267" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Function</text>
+</g>
+<!-- Program -->
+<g id="node5" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="366,-24 312,-24 312,0 366,0 366,-24"/>
+<text text-anchor="middle" x="339" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node6" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="#000000" points="481.5,-24 384.5,-24 384.5,0 481.5,0 481.5,-24"/>
+<text text-anchor="middle" x="433" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#000000">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+    
+    <p>Solid arrows point from a submodule to the (sub)module which it is
+    descended from. Dashed arrows point from a module or program unit to 
+    modules which it uses.
+    </p>
+    </div></div></div></div>
+      </li>
+      
+      </ul>
+    </div>
+    
+
+    
+    
+    <div class="panel panel-default">
+      <div class="panel-heading">
+  <h3 class="panel-title">Used by</h3>
+      </div>
+      <ul class="list-group">
+  
+  <li class="list-group-item">  
+    <ul class="list-inline">
+      <li><h5>Descendants:</h5></li>
+      
+      <li><a href='../module/pathlib_unix.html'>pathlib_unix</a></li>
+      
+      <li><a href='../module/pathlib_windows.html'>pathlib_windows</a></li>
+      
+    </ul>
+  </li>
+  
+  
+  <li class="list-group-item">
+    <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.40.1 (20161225.0304)
+ -->
+<!-- Title: module~~pathlib~~UsedByGraph Pages: 1 -->
+<svg id="modulepathlibUsedByGraph" width="432pt" height="431pt"
+ viewBox="0.00 0.00 432.00 431.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="module~~pathlib~~UsedByGraph" class="graph" transform="scale(1 1) rotate(0) translate(4 427)">
+<title>module~~pathlib~~UsedByGraph</title>
+<polygon fill="#ffffff" stroke="transparent" points="-4,4 -4,-427 428,-427 428,4 -4,4"/>
+<!-- module~pathlib -->
+<g id="module~~pathlib~~UsedByGraph_node1" class="node">
+<title>module~pathlib</title>
+<polygon fill="none" stroke="#000000" points="54,-234 0,-234 0,-210 54,-210 54,-234"/>
+<text text-anchor="middle" x="27" y="-219.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#000000">pathlib</text>
+</g>
+<!-- module~pathlib_unix -->
+<g id="module~~pathlib~~UsedByGraph_node2" class="node">
+<title>module~pathlib_unix</title>
+<g id="a_module~~pathlib~~UsedByGraph_node2"><a xlink:href=".././module/pathlib_unix.html" xlink:title="pathlib_unix">
+<polygon fill="#5bc0de" stroke="#5bc0de" points="170.5,-276 100.5,-276 100.5,-252 170.5,-252 170.5,-276"/>
+<text text-anchor="middle" x="135.5" y="-261.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">pathlib_unix</text>
+</a>
+</g>
+</g>
+<!-- module~pathlib_unix&#45;&gt;module~pathlib -->
+<g id="module~~pathlib~~UsedByGraph_edge2" class="edge">
+<title>module~pathlib_unix&#45;&gt;module~pathlib</title>
+<path fill="none" stroke="#000000" d="M104.4083,-251.9645C91.6093,-247.01 76.6932,-241.2361 63.3899,-236.0864"/>
+<polygon fill="#000000" stroke="#000000" points="64.6306,-232.8137 54.0414,-232.4676 62.1036,-239.3416 64.6306,-232.8137"/>
+</g>
+<!-- module~io -->
+<g id="module~~pathlib~~UsedByGraph_node3" class="node">
+<title>module~io</title>
+<g id="a_module~~pathlib~~UsedByGraph_node3"><a xlink:href=".././module/io.html" xlink:title="io">
+<polygon fill="#337ab7" stroke="#337ab7" points="162.5,-234 108.5,-234 108.5,-210 162.5,-210 162.5,-234"/>
+<text text-anchor="middle" x="135.5" y="-219.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">io</text>
+</a>
+</g>
+</g>
+<!-- module~io&#45;&gt;module~pathlib -->
+<g id="module~~pathlib~~UsedByGraph_edge1" class="edge">
+<title>module~io&#45;&gt;module~pathlib</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M108.4008,-222C95.0666,-222 78.7839,-222 64.2951,-222"/>
+<polygon fill="#000000" stroke="#000000" points="64.1299,-218.5001 54.1298,-222 64.1298,-225.5001 64.1299,-218.5001"/>
+</g>
+<!-- module~pathlib_windows -->
+<g id="module~~pathlib~~UsedByGraph_node4" class="node">
+<title>module~pathlib_windows</title>
+<g id="a_module~~pathlib~~UsedByGraph_node4"><a xlink:href=".././module/pathlib_windows.html" xlink:title="pathlib_windows">
+<polygon fill="#5bc0de" stroke="#5bc0de" points="181,-192 90,-192 90,-168 181,-168 181,-192"/>
+<text text-anchor="middle" x="135.5" y="-177.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">pathlib_windows</text>
+</a>
+</g>
+</g>
+<!-- module~pathlib_windows&#45;&gt;module~pathlib -->
+<g id="module~~pathlib~~UsedByGraph_edge3" class="edge">
+<title>module~pathlib_windows&#45;&gt;module~pathlib</title>
+<path fill="none" stroke="#000000" d="M104.4083,-192.0355C91.6093,-196.99 76.6932,-202.7639 63.3899,-207.9136"/>
+<polygon fill="#000000" stroke="#000000" points="62.1036,-204.6584 54.0414,-211.5324 64.6306,-211.1863 62.1036,-204.6584"/>
+</g>
+<!-- module~mag_raw -->
+<g id="module~~pathlib~~UsedByGraph_node5" class="node">
+<title>module~mag_raw</title>
+<g id="a_module~~pathlib~~UsedByGraph_node5"><a xlink:href=".././module/mag_raw.html" xlink:title="mag_raw">
+<polygon fill="#5bc0de" stroke="#5bc0de" points="276,-423 219,-423 219,-399 276,-399 276,-423"/>
+<text text-anchor="middle" x="247.5" y="-408.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">mag_raw</text>
+</a>
+</g>
+</g>
+<!-- module~mag_raw&#45;&gt;module~io -->
+<g id="module~~pathlib~~UsedByGraph_edge6" class="edge">
+<title>module~mag_raw&#45;&gt;module~io</title>
+<path fill="none" stroke="#000000" d="M225.7089,-398.996C222.4114,-396.3923 219.3368,-393.3865 217,-390 178.7986,-334.6367 223.7787,-294.9079 181,-243 178.3977,-239.8424 175.2159,-237.1362 171.7553,-234.8221"/>
+<polygon fill="#000000" stroke="#000000" points="173.1954,-231.619 162.7503,-229.8439 169.8086,-237.7452 173.1954,-231.619"/>
+</g>
+<!-- module~mag -->
+<g id="module~~pathlib~~UsedByGraph_node6" class="node">
+<title>module~mag</title>
+<g id="a_module~~pathlib~~UsedByGraph_node6"><a xlink:href=".././module/mag.html" xlink:title="mag">
+<polygon fill="#5bc0de" stroke="#5bc0de" points="274.5,-381 220.5,-381 220.5,-357 274.5,-357 274.5,-381"/>
+<text text-anchor="middle" x="247.5" y="-366.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">mag</text>
+</a>
+</g>
+</g>
+<!-- module~mag&#45;&gt;module~io -->
+<g id="module~~pathlib~~UsedByGraph_edge7" class="edge">
+<title>module~mag&#45;&gt;module~io</title>
+<path fill="none" stroke="#000000" d="M225.9623,-356.8126C222.6367,-354.2292 219.4869,-351.2778 217,-348 187.1812,-308.6984 214.0582,-279.6187 181,-243 178.3219,-240.0334 175.1398,-237.4553 171.7209,-235.2218"/>
+<polygon fill="#000000" stroke="#000000" points="173.3341,-232.1146 162.8865,-230.3546 169.9563,-238.2457 173.3341,-232.1146"/>
+</g>
+<!-- module~io_aurora -->
+<g id="module~~pathlib~~UsedByGraph_node7" class="node">
+<title>module~io_aurora</title>
+<g id="a_module~~pathlib~~UsedByGraph_node7"><a xlink:href=".././module/io_aurora.html" xlink:title="io_aurora">
+<polygon fill="#5bc0de" stroke="#5bc0de" points="276.5,-339 218.5,-339 218.5,-315 276.5,-315 276.5,-339"/>
+<text text-anchor="middle" x="247.5" y="-324.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">io_aurora</text>
+</a>
+</g>
+</g>
+<!-- module~io_aurora&#45;&gt;module~io -->
+<g id="module~~pathlib~~UsedByGraph_edge8" class="edge">
+<title>module~io_aurora&#45;&gt;module~io</title>
+<path fill="none" stroke="#000000" d="M227.1001,-314.8645C223.498,-312.2082 219.959,-309.218 217,-306 195.1721,-282.2609 204.7707,-264.7934 181,-243 178.2064,-240.4388 175.0461,-238.1412 171.7247,-236.0916"/>
+<polygon fill="#000000" stroke="#000000" points="173.1625,-232.8908 162.6978,-231.2348 169.8458,-239.0552 173.1625,-232.8908"/>
+</g>
+<!-- program~gemini3d -->
+<g id="module~~pathlib~~UsedByGraph_node8" class="node">
+<title>program~gemini3d</title>
+<g id="a_module~~pathlib~~UsedByGraph_node8"><a xlink:href=".././program/gemini3d.html" xlink:title="Gemini3D">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="277.5,-297 217.5,-297 217.5,-273 277.5,-273 277.5,-297"/>
+<text text-anchor="middle" x="247.5" y="-282.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Gemini3D</text>
+</a>
+</g>
+</g>
+<!-- program~gemini3d&#45;&gt;module~io -->
+<g id="module~~pathlib~~UsedByGraph_edge5" class="edge">
+<title>program~gemini3d&#45;&gt;module~io</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M229.8183,-272.9403C216.6335,-264.1694 198.0362,-252.2597 181,-243 178.0953,-241.4212 175.0504,-239.8484 171.9709,-238.3146"/>
+<polygon fill="#000000" stroke="#000000" points="173.2624,-235.0518 162.7344,-233.8633 170.2233,-241.3577 173.2624,-235.0518"/>
+</g>
+<!-- module~input -->
+<g id="module~~pathlib~~UsedByGraph_node9" class="node">
+<title>module~input</title>
+<g id="a_module~~pathlib~~UsedByGraph_node9"><a xlink:href=".././module/input.html" xlink:title="input">
+<polygon fill="#5bc0de" stroke="#5bc0de" points="274.5,-255 220.5,-255 220.5,-231 274.5,-231 274.5,-255"/>
+<text text-anchor="middle" x="247.5" y="-240.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">input</text>
+</a>
+</g>
+</g>
+<!-- module~input&#45;&gt;module~io -->
+<g id="module~~pathlib~~UsedByGraph_edge9" class="edge">
+<title>module~input&#45;&gt;module~io</title>
+<path fill="none" stroke="#000000" d="M220.3879,-237.9165C206.0491,-235.228 188.2307,-231.887 172.6263,-228.9612"/>
+<polygon fill="#000000" stroke="#000000" points="173.2244,-225.5124 162.7506,-227.1095 171.9343,-232.3925 173.2244,-225.5124"/>
+</g>
+<!-- module~mag_hdf5 -->
+<g id="module~~pathlib~~UsedByGraph_node10" class="node">
+<title>module~mag_hdf5</title>
+<g id="a_module~~pathlib~~UsedByGraph_node10"><a xlink:href=".././module/mag_hdf5.html" xlink:title="mag_hdf5">
+<polygon fill="#5bc0de" stroke="#5bc0de" points="278,-213 217,-213 217,-189 278,-189 278,-213"/>
+<text text-anchor="middle" x="247.5" y="-198.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">mag_hdf5</text>
+</a>
+</g>
+</g>
+<!-- module~mag_hdf5&#45;&gt;module~io -->
+<g id="module~~pathlib~~UsedByGraph_edge10" class="edge">
+<title>module~mag_hdf5&#45;&gt;module~io</title>
+<path fill="none" stroke="#000000" d="M216.8955,-206.7383C203.2406,-209.2986 187.03,-212.3381 172.6836,-215.0281"/>
+<polygon fill="#000000" stroke="#000000" points="171.8136,-211.6301 162.6299,-216.9131 173.1037,-218.5102 171.8136,-211.6301"/>
+</g>
+<!-- module~mag_hdf5~2 -->
+<g id="module~~pathlib~~UsedByGraph_node11" class="node">
+<title>module~mag_hdf5~2</title>
+<g id="a_module~~pathlib~~UsedByGraph_node11"><a xlink:href=".././module/mag_hdf5~2.html" xlink:title="mag_hdf5">
+<polygon fill="#5bc0de" stroke="#5bc0de" points="278,-171 217,-171 217,-147 278,-147 278,-171"/>
+<text text-anchor="middle" x="247.5" y="-156.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">mag_hdf5</text>
+</a>
+</g>
+</g>
+<!-- module~mag_hdf5~2&#45;&gt;module~io -->
+<g id="module~~pathlib~~UsedByGraph_edge11" class="edge">
+<title>module~mag_hdf5~2&#45;&gt;module~io</title>
+<path fill="none" stroke="#000000" d="M229.8183,-171.0597C216.6335,-179.8306 198.0362,-191.7403 181,-201 178.0953,-202.5788 175.0504,-204.1516 171.9709,-205.6854"/>
+<polygon fill="#000000" stroke="#000000" points="170.2233,-202.6423 162.7344,-210.1367 173.2624,-208.9482 170.2233,-202.6423"/>
+</g>
+<!-- module~plasma -->
+<g id="module~~pathlib~~UsedByGraph_node12" class="node">
+<title>module~plasma</title>
+<g id="a_module~~pathlib~~UsedByGraph_node12"><a xlink:href=".././module/plasma.html" xlink:title="plasma">
+<polygon fill="#5bc0de" stroke="#5bc0de" points="274.5,-129 220.5,-129 220.5,-105 274.5,-105 274.5,-129"/>
+<text text-anchor="middle" x="247.5" y="-114.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">plasma</text>
+</a>
+</g>
+</g>
+<!-- module~plasma&#45;&gt;module~io -->
+<g id="module~~pathlib~~UsedByGraph_edge12" class="edge">
+<title>module~plasma&#45;&gt;module~io</title>
+<path fill="none" stroke="#000000" d="M227.1001,-129.1355C223.498,-131.7918 219.959,-134.782 217,-138 195.1721,-161.7391 204.7707,-179.2066 181,-201 178.2064,-203.5612 175.0461,-205.8588 171.7247,-207.9084"/>
+<polygon fill="#000000" stroke="#000000" points="169.8458,-204.9448 162.6978,-212.7652 173.1625,-211.1092 169.8458,-204.9448"/>
+</g>
+<!-- module~output -->
+<g id="module~~pathlib~~UsedByGraph_node13" class="node">
+<title>module~output</title>
+<g id="a_module~~pathlib~~UsedByGraph_node13"><a xlink:href=".././module/output.html" xlink:title="output">
+<polygon fill="#5bc0de" stroke="#5bc0de" points="274.5,-87 220.5,-87 220.5,-63 274.5,-63 274.5,-87"/>
+<text text-anchor="middle" x="247.5" y="-72.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">output</text>
+</a>
+</g>
+</g>
+<!-- module~output&#45;&gt;module~io -->
+<g id="module~~pathlib~~UsedByGraph_edge13" class="edge">
+<title>module~output&#45;&gt;module~io</title>
+<path fill="none" stroke="#000000" d="M225.9623,-87.1874C222.6367,-89.7708 219.4869,-92.7222 217,-96 187.1812,-135.3016 214.0582,-164.3813 181,-201 178.3219,-203.9666 175.1398,-206.5447 171.7209,-208.7782"/>
+<polygon fill="#000000" stroke="#000000" points="169.9563,-205.7543 162.8865,-213.6454 173.3341,-211.8854 169.9563,-205.7543"/>
+</g>
+<!-- program~magcalc -->
+<g id="module~~pathlib~~UsedByGraph_node14" class="node">
+<title>program~magcalc</title>
+<g id="a_module~~pathlib~~UsedByGraph_node14"><a xlink:href=".././program/magcalc.html" xlink:title="MagCalc">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="275,-45 220,-45 220,-21 275,-21 275,-45"/>
+<text text-anchor="middle" x="247.5" y="-30.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">MagCalc</text>
+</a>
+</g>
+</g>
+<!-- program~magcalc&#45;&gt;module~io -->
+<g id="module~~pathlib~~UsedByGraph_edge4" class="edge">
+<title>program~magcalc&#45;&gt;module~io</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M225.7089,-45.004C222.4114,-47.6077 219.3368,-50.6135 217,-54 178.7986,-109.3633 223.7787,-149.0921 181,-201 178.3977,-204.1576 175.2159,-206.8638 171.7553,-209.1779"/>
+<polygon fill="#000000" stroke="#000000" points="169.8086,-206.2548 162.7503,-214.1561 173.1954,-212.381 169.8086,-206.2548"/>
+</g>
+<!-- module~plasma_output_hdf5 -->
+<g id="module~~pathlib~~UsedByGraph_node15" class="node">
+<title>module~plasma_output_hdf5</title>
+<g id="a_module~~pathlib~~UsedByGraph_node15"><a xlink:href=".././module/plasma_output_hdf5.html" xlink:title="plasma_output_hdf5">
+<polygon fill="#5bc0de" stroke="#5bc0de" points="424,-192 314,-192 314,-168 424,-168 424,-192"/>
+<text text-anchor="middle" x="369" y="-177.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">plasma_output_hdf5</text>
+</a>
+</g>
+</g>
+<!-- module~plasma_output_hdf5&#45;&gt;module~plasma -->
+<g id="module~~pathlib~~UsedByGraph_edge19" class="edge">
+<title>module~plasma_output_hdf5&#45;&gt;module~plasma</title>
+<path fill="none" stroke="#000000" d="M334.2204,-167.9228C327.4095,-165.2232 320.3981,-162.2021 314,-159 306.038,-155.0152 288.9317,-144.1917 274.0634,-134.5306"/>
+<polygon fill="#000000" stroke="#000000" points="275.94,-131.5759 265.6538,-129.0372 272.1118,-137.4364 275.94,-131.5759"/>
+</g>
+<!-- module~io_aurora_raw -->
+<g id="module~~pathlib~~UsedByGraph_node16" class="node">
+<title>module~io_aurora_raw</title>
+<g id="a_module~~pathlib~~UsedByGraph_node16"><a xlink:href=".././module/io_aurora_raw.html" xlink:title="io_aurora_raw">
+<polygon fill="#5bc0de" stroke="#5bc0de" points="410,-402 328,-402 328,-378 410,-378 410,-402"/>
+<text text-anchor="middle" x="369" y="-387.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">io_aurora_raw</text>
+</a>
+</g>
+</g>
+<!-- module~io_aurora_raw&#45;&gt;module~io_aurora -->
+<g id="module~~pathlib~~UsedByGraph_edge15" class="edge">
+<title>module~io_aurora_raw&#45;&gt;module~io_aurora</title>
+<path fill="none" stroke="#000000" d="M334.2204,-377.9228C327.4095,-375.2232 320.3981,-372.2021 314,-369 306.038,-365.0152 288.9317,-354.1917 274.0634,-344.5306"/>
+<polygon fill="#000000" stroke="#000000" points="275.94,-341.5759 265.6538,-339.0372 272.1118,-347.4364 275.94,-341.5759"/>
+</g>
+<!-- module~path_exists~2 -->
+<g id="module~~pathlib~~UsedByGraph_node17" class="node">
+<title>module~path_exists~2</title>
+<g id="a_module~~pathlib~~UsedByGraph_node17"><a xlink:href=".././module/path_exists~2.html" xlink:title="path_exists">
+<polygon fill="#5bc0de" stroke="#5bc0de" points="402.5,-276 335.5,-276 335.5,-252 402.5,-252 402.5,-276"/>
+<text text-anchor="middle" x="369" y="-261.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">path_exists</text>
+</a>
+</g>
+</g>
+<!-- module~path_exists~2&#45;&gt;module~input -->
+<g id="module~~pathlib~~UsedByGraph_edge18" class="edge">
+<title>module~path_exists~2&#45;&gt;module~input</title>
+<path fill="none" stroke="#000000" d="M335.478,-258.2061C319.8055,-255.4972 301.0846,-252.2615 284.9487,-249.4726"/>
+<polygon fill="#000000" stroke="#000000" points="285.2265,-245.9688 274.7764,-247.7144 284.0342,-252.8665 285.2265,-245.9688"/>
+</g>
+<!-- module~plasma_input_raw -->
+<g id="module~~pathlib~~UsedByGraph_node18" class="node">
+<title>module~plasma_input_raw</title>
+<g id="a_module~~pathlib~~UsedByGraph_node18"><a xlink:href=".././module/plasma_input_raw.html" xlink:title="plasma_input_raw">
+<polygon fill="#5bc0de" stroke="#5bc0de" points="419,-150 319,-150 319,-126 419,-126 419,-150"/>
+<text text-anchor="middle" x="369" y="-135.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">plasma_input_raw</text>
+</a>
+</g>
+</g>
+<!-- module~plasma_input_raw&#45;&gt;module~plasma -->
+<g id="module~~pathlib~~UsedByGraph_edge20" class="edge">
+<title>module~plasma_input_raw&#45;&gt;module~plasma</title>
+<path fill="none" stroke="#000000" d="M318.8798,-129.3373C307.3873,-127.3509 295.3709,-125.274 284.5455,-123.4029"/>
+<polygon fill="#000000" stroke="#000000" points="285.0374,-119.9361 274.5874,-121.6818 283.8452,-126.8339 285.0374,-119.9361"/>
+</g>
+<!-- module~plasma_input_hdf5 -->
+<g id="module~~pathlib~~UsedByGraph_node19" class="node">
+<title>module~plasma_input_hdf5</title>
+<g id="a_module~~pathlib~~UsedByGraph_node19"><a xlink:href=".././module/plasma_input_hdf5.html" xlink:title="plasma_input_hdf5">
+<polygon fill="#5bc0de" stroke="#5bc0de" points="420.5,-108 317.5,-108 317.5,-84 420.5,-84 420.5,-108"/>
+<text text-anchor="middle" x="369" y="-93.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">plasma_input_hdf5</text>
+</a>
+</g>
+</g>
+<!-- module~plasma_input_hdf5&#45;&gt;module~plasma -->
+<g id="module~~pathlib~~UsedByGraph_edge21" class="edge">
+<title>module~plasma_input_hdf5&#45;&gt;module~plasma</title>
+<path fill="none" stroke="#000000" d="M317.4731,-104.9059C306.4132,-106.8175 294.9358,-108.8012 284.5535,-110.5957"/>
+<polygon fill="#000000" stroke="#000000" points="283.8499,-107.1653 274.5921,-112.3174 285.0422,-114.063 283.8499,-107.1653"/>
+</g>
+<!-- module~io_aurora_hdf5 -->
+<g id="module~~pathlib~~UsedByGraph_node20" class="node">
+<title>module~io_aurora_hdf5</title>
+<g id="a_module~~pathlib~~UsedByGraph_node20"><a xlink:href=".././module/io_aurora_hdf5.html" xlink:title="io_aurora_hdf5">
+<polygon fill="#5bc0de" stroke="#5bc0de" points="411.5,-360 326.5,-360 326.5,-336 411.5,-336 411.5,-360"/>
+<text text-anchor="middle" x="369" y="-345.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">io_aurora_hdf5</text>
+</a>
+</g>
+</g>
+<!-- module~io_aurora_hdf5&#45;&gt;module~io_aurora -->
+<g id="module~~pathlib~~UsedByGraph_edge16" class="edge">
+<title>module~io_aurora_hdf5&#45;&gt;module~io_aurora</title>
+<path fill="none" stroke="#000000" d="M326.1636,-340.5962C313.3534,-338.3821 299.376,-335.9662 286.8043,-333.7933"/>
+<polygon fill="#000000" stroke="#000000" points="287.0813,-330.2894 276.6312,-332.035 285.889,-337.1871 287.0813,-330.2894"/>
+</g>
+<!-- module~io_aurora_hdf5~2 -->
+<g id="module~~pathlib~~UsedByGraph_node21" class="node">
+<title>module~io_aurora_hdf5~2</title>
+<g id="a_module~~pathlib~~UsedByGraph_node21"><a xlink:href=".././module/io_aurora_hdf5~2.html" xlink:title="io_aurora_hdf5">
+<polygon fill="#5bc0de" stroke="#5bc0de" points="411.5,-318 326.5,-318 326.5,-294 411.5,-294 411.5,-318"/>
+<text text-anchor="middle" x="369" y="-303.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">io_aurora_hdf5</text>
+</a>
+</g>
+</g>
+<!-- module~io_aurora_hdf5~2&#45;&gt;module~io_aurora -->
+<g id="module~~pathlib~~UsedByGraph_edge14" class="edge">
+<title>module~io_aurora_hdf5~2&#45;&gt;module~io_aurora</title>
+<path fill="none" stroke="#000000" d="M326.1636,-313.4038C313.3534,-315.6179 299.376,-318.0338 286.8043,-320.2067"/>
+<polygon fill="#000000" stroke="#000000" points="285.889,-316.8129 276.6312,-321.965 287.0813,-323.7106 285.889,-316.8129"/>
+</g>
+<!-- module~plasma_output_raw -->
+<g id="module~~pathlib~~UsedByGraph_node22" class="node">
+<title>module~plasma_output_raw</title>
+<g id="a_module~~pathlib~~UsedByGraph_node22"><a xlink:href=".././module/plasma_output_raw.html" xlink:title="plasma_output_raw">
+<polygon fill="#5bc0de" stroke="#5bc0de" points="422,-66 316,-66 316,-42 422,-42 422,-66"/>
+<text text-anchor="middle" x="369" y="-51.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">plasma_output_raw</text>
+</a>
+</g>
+</g>
+<!-- module~plasma_output_raw&#45;&gt;module~plasma -->
+<g id="module~~pathlib~~UsedByGraph_edge22" class="edge">
+<title>module~plasma_output_raw&#45;&gt;module~plasma</title>
+<path fill="none" stroke="#000000" d="M334.2204,-66.0772C327.4095,-68.7768 320.3981,-71.7979 314,-75 306.038,-78.9848 288.9317,-89.8083 274.0634,-99.4694"/>
+<polygon fill="#000000" stroke="#000000" points="272.1118,-96.5636 265.6538,-104.9628 275.94,-102.4241 272.1118,-96.5636"/>
+</g>
+<!-- module~plasma_output_hdf5~2 -->
+<g id="module~~pathlib~~UsedByGraph_node23" class="node">
+<title>module~plasma_output_hdf5~2</title>
+<g id="a_module~~pathlib~~UsedByGraph_node23"><a xlink:href=".././module/plasma_output_hdf5~2.html" xlink:title="plasma_output_hdf5">
+<polygon fill="#5bc0de" stroke="#5bc0de" points="424,-24 314,-24 314,0 424,0 424,-24"/>
+<text text-anchor="middle" x="369" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">plasma_output_hdf5</text>
+</a>
+</g>
+</g>
+<!-- module~plasma_output_hdf5~2&#45;&gt;module~plasma -->
+<g id="module~~pathlib~~UsedByGraph_edge23" class="edge">
+<title>module~plasma_output_hdf5~2&#45;&gt;module~plasma</title>
+<path fill="none" stroke="#000000" d="M327.8577,-24.0254C322.8828,-26.5117 318.1145,-29.4764 314,-33 289.5056,-53.9768 299.8279,-72.2609 278,-96 277.2603,-96.8045 276.4843,-97.5948 275.6801,-98.3691"/>
+<polygon fill="#000000" stroke="#000000" points="273.3334,-95.7689 267.8999,-104.8645 277.8195,-101.1425 273.3334,-95.7689"/>
+</g>
+<!-- module~path_exists -->
+<g id="module~~pathlib~~UsedByGraph_node24" class="node">
+<title>module~path_exists</title>
+<g id="a_module~~pathlib~~UsedByGraph_node24"><a xlink:href=".././module/path_exists.html" xlink:title="path_exists">
+<polygon fill="#5bc0de" stroke="#5bc0de" points="402.5,-234 335.5,-234 335.5,-210 402.5,-210 402.5,-234"/>
+<text text-anchor="middle" x="369" y="-219.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">path_exists</text>
+</a>
+</g>
+</g>
+<!-- module~path_exists&#45;&gt;module~input -->
+<g id="module~~pathlib~~UsedByGraph_edge17" class="edge">
+<title>module~path_exists&#45;&gt;module~input</title>
+<path fill="none" stroke="#000000" d="M335.478,-227.7939C319.8055,-230.5028 301.0846,-233.7385 284.9487,-236.5274"/>
+<polygon fill="#000000" stroke="#000000" points="284.0342,-233.1335 274.7764,-238.2856 285.2265,-240.0312 284.0342,-233.1335"/>
+</g>
+</g>
+</svg>
+</div><div><a type="button" class="graph-help" data-toggle="modal" href="#graph-help-text">Help</a></div><div class="modal fade" id="graph-help-text" tabindex="-1" role="dialog"><div class="modal-dialog modal-lg" role="document"><div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button><h4 class="modal-title" id="-graph-help-label">Graph Key</h4></div><div class="modal-body">
+    <p>Nodes of different colours represent the following: </p>
+    <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.40.1 (20161225.0304)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="490pt" height="32pt"
+ viewBox="0.00 0.00 489.50 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 28)">
+<title>Graph Key</title>
+<polygon fill="#ffffff" stroke="transparent" points="-4,4 -4,-28 485.5,-28 485.5,4 -4,4"/>
+<!-- Module -->
+<g id="node1" class="node">
+<title>Module</title>
+<polygon fill="#337ab7" stroke="#337ab7" points="54,-24 0,-24 0,0 54,0 54,-24"/>
+<text text-anchor="middle" x="27" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Module</text>
+</g>
+<!-- Submodule -->
+<g id="node2" class="node">
+<title>Submodule</title>
+<polygon fill="#5bc0de" stroke="#5bc0de" points="139.5,-24 72.5,-24 72.5,0 139.5,0 139.5,-24"/>
+<text text-anchor="middle" x="106" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Submodule</text>
+</g>
+<!-- Subroutine -->
+<g id="node3" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="222,-24 158,-24 158,0 222,0 222,-24"/>
+<text text-anchor="middle" x="190" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node4" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="294,-24 240,-24 240,0 294,0 294,-24"/>
+<text text-anchor="middle" x="267" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Function</text>
+</g>
+<!-- Program -->
+<g id="node5" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="366,-24 312,-24 312,0 366,0 366,-24"/>
+<text text-anchor="middle" x="339" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node6" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="#000000" points="481.5,-24 384.5,-24 384.5,0 481.5,0 481.5,-24"/>
+<text text-anchor="middle" x="433" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#000000">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+    
+    <p>Solid arrows point from a submodule to the (sub)module which it is
+    descended from. Dashed arrows point from a module or program unit to 
+    modules which it uses.
+    </p>
+    </div></div></div></div>
+  </li>
+  
+      </ul>
+    </div>
+    
+
+    <br>
+
+    <section class="visible-xs visible-sm hidden-md">
+      
+<h3>Contents</h3>
+ 
+
+
+
+
+
+
+
+
+
+
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#inters-1">Interfaces</a></h3></div>
+  <div id="inters-1" class="panel-collapse collapse">
+    <div class="list-group">
+      
+      <a class="list-group-item" href="../module/pathlib.html#interface-copyfile">copyfile</a>
+      
+      <a class="list-group-item" href="../module/pathlib.html#interface-mkdir">mkdir</a>
+      
+    </div>
+  </div>
+</div>
+
+
+
+
+
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#funcs-1">Functions</a></h3></div>
+  <div id="funcs-1" class="panel-collapse collapse">
+    <div class="list-group">
+      
+      <a class="list-group-item" href="../module/pathlib.html#proc-filesep_swap">filesep_swap</a>
+      
+      <a class="list-group-item" href="../module/pathlib.html#proc-expanduser">expanduser</a>
+      
+      <a class="list-group-item" href="../module/pathlib.html#proc-home">home</a>
+      
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+    </section>
+    <br class="visible-xs visible-sm hidden-md">
+
+    
+
+    
+    
+    
+    
+    
+    <section>
+   <h2>Interfaces</h2>
+   
+     
+<div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="interface-copyfile"></span><h3>interface 
+    
+  </h3></div>
+  
+  <ul class="list-group">
+  
+    <li class="list-group-item">
+    
+    
+    <h3>
+public module function copyfile(source, dest) result(istat)
+    
+    
+   
+   <a href='../proc/copyfile.html'><button type="button" class="btn btn-info depwarn">Implementation &rarr;</button></a>
+    
+</h3>
+    
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>character(len=*),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>source</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>character(len=*),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>dest</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  
+  
+  
+  
+     <h4>Return Value <small>integer
+  </small></h4>
+  
+    
+
+    </li>
+  
+  </ul>
+</div>
+
+    
+     
+<div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="interface-mkdir"></span><h3>interface 
+    
+  </h3></div>
+  
+  <ul class="list-group">
+  
+    <li class="list-group-item">
+    
+    
+    <h3>
+public module function mkdir(path) result(istat)
+    
+    
+   
+   <a href='../proc/mkdir.html'><button type="button" class="btn btn-info depwarn">Implementation &rarr;</button></a>
+    
+</h3>
+    
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>character(len=*),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>path</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  
+  
+  
+  
+     <h4>Return Value <small>integer
+  </small></h4>
+  
+    
+
+    </li>
+  
+  </ul>
+</div>
+
+    
+    </section>
+  <br>
+    
+
+    
+    
+    
+    
+     
+    <section>
+    <h2>Functions</h2>
+    
+    
+  <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-filesep_swap"></span><h3>
+public function <a href='../proc/filesep_swap.html'>filesep_swap</a>(path) result(swapped)
+    
+    
+   
+</h3></div>
+  <div class="panel-body">
+       
+    
+
+
+
+
+
+
+
+<p>swaps '/' to '\' for Windows systems</p>
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>character(len=*),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>path</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  
+  
+  
+  
+     <h4>Return Value <small>character(len=len(path))
+  </small></h4>
+  
+    
+
+  </div>
+  </div>
+
+    
+    
+  <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-expanduser"></span><h3>
+public function <a href='../proc/expanduser.html'>expanduser</a>(indir)
+    
+    
+   
+</h3></div>
+  <div class="panel-body">
+       
+    
+
+
+
+
+
+
+
+<p>resolve home directory as Fortran does not understand tilde
+ works for Linux, Mac, Windows, etc.
+ nothing to expand
+ could not determine the home directory
+ ~ or ~/
+ ~/...</p>
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>character(len=*),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>indir</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  
+  
+  
+  
+     <h4>Return Value <small>character(len=:),
+  allocatable</small></h4>
+  
+    
+
+  </div>
+  </div>
+
+    
+    
+  <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-home"></span><h3>
+public function <a href='../proc/home.html'>home</a>()
+    
+    
+   
+</h3></div>
+  <div class="panel-body">
+       
+    
+
+
+
+
+
+
+
+<p>https://en.wikipedia.org/wiki/Home_directory#Default_home_directory_per_operating_system</p>
+    
+    <h4>Arguments</h4>
+    
+      <em>None</em>
+    
+    
+
+  
+  
+  
+  
+     <h4>Return Value <small>character(len=:),
+  allocatable</small></h4>
+  
+    
+
+  </div>
+  </div>
+
+    
+    </section>
+    <br>
+    
+
+    
+    
+    
+    </div>
+  </div>
+
+  
+    <hr>    
+    </div> <!-- /container -->
+    <footer>
+      <div class="container">
+      <div class="row">
+        <div class="col-xs-6 col-md-4"><p>&copy; 2020 <a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/80x15.png" /></a>
+                                          </p></div>
+        <div class="col-xs-6 col-md-4 col-md-push-4">
+          <p class="text-right">
+            Documentation generated by 
+            <a href="https://github.com/cmacmackin/ford">FORD</a>
+            
+          </p>
+        </div>
+        <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> GEMINI3D was developed by Matthew Zettergren
+Guy Grubbs
+Michael Hirsch</p></div>
+      </div>
+      <br>
+      </div> <!-- /container -->    
+    </footer>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+<!--
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+-->
+    <script src="../js/bootstrap.min.js"></script>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <script src="../js/ie10-viewport-bug-workaround.js"></script>
+
+    <!-- MathJax JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } },
+        jax: ['input/TeX','input/MathML','output/HTML-CSS'],
+        extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']
+      });
+    </script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    
+    
+  </body>
+</html>

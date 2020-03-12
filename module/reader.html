@@ -1,0 +1,2244 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+   
+   <meta name="description" content="GEMINI3D is a modular ionospheric model that incorporates kinetic models such as Fang, GLOW.">
+    
+    <meta name="author" content="Matthew Zettergren
+Guy Grubbs
+Michael Hirsch" >
+    <link rel="icon" href="../favicon.png">
+
+    <title>reader &ndash; GEMINI3D</title>
+
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+    <link href="../css/pygments.css" rel="stylesheet">
+    <link href="../css/font-awesome.min.css" rel="stylesheet">
+    <link href="../css/local.css" rel="stylesheet">
+    
+    
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    
+    <script src="../js/jquery-2.1.3.min.js"></script>
+    <script src="../js/svg-pan-zoom.min.js"></script>
+
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="../index.html">GEMINI3D </a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+        
+            <li class="dropdown hidden-xs visible-sm visible-md hidden-lg">
+              <a href="#" class="dropdown-toggle"
+              data-toggle="dropdown" role="button"
+              aria-haspopup="true"
+     aria-expanded="false">Contents <span class="caret"></span></a>
+        <ul class="dropdown-menu">
+          
+              
+            <li><a href="../lists/files.html">Source Files</a></li>
+        
+        
+        
+            <li><a href="../lists/modules.html">Modules</a></li>
+        
+            
+    <li><a href="../blockdata/gtd7bk.html">Block Data</a></li>
+    
+                                
+            <li><a href="../lists/procedures.html">Procedures</a></li>
+        
+               
+            <li><a href="../lists/types.html">Derived Types</a></li>
+        
+        
+            <li><a href="../lists/programs.html">Programs</a></li>
+        
+            </ul>
+            </li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/files.html">Source Files</a></li>
+
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/modules.html">Modules</a></li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../blockdata/gtd7bk.html">Block Data</a></li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/procedures.html">Procedures</a></li>
+
+                             
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/types.html">Derived Types</a></li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/programs.html">Programs</a></li>
+
+          </ul>
+        
+        </div><!--/.nav-collapse -->
+      </div>
+    </nav>
+
+    <div class="container">
+    
+  
+  <div class="row">
+    <h1>reader 
+    <small>Module</small>
+    
+    </h1>
+    
+<div class="row">
+  <div class="col-lg-12">
+<div class="well well-sm">
+  <ul class="list-inline" style="margin-bottom:0px;display:inline">
+     
+     
+     
+     
+    
+    
+     <li><i class="fa fa-list-ol"></i>
+       <a data-toggle="tooltip"
+    data-placement="bottom" data-html="true"
+    title=" 0.4% of total for modules and submodules.">41 statements</a>
+     </li> 
+     
+     
+     
+    <li><i class="fa fa-code"></i><a href="../src/reader.f90"> Source File</a></li>
+     
+     
+  </ul>
+  <ol class="breadcrumb in-well text-right">
+  
+    
+     <li><a href='../sourcefile/reader.f90.html'>reader.f90</a></li>
+    
+  
+     <li class="active">reader</li>
+  </ol>
+</div>
+</div>
+</div>
+<script>
+  $(function () {
+  $('[data-toggle="tooltip"]').tooltip()
+  })
+</script>
+
+  </div>
+  
+  <div class="row">
+    <div class="col-md-3 hidden-xs hidden-sm visible-md visible-lg">
+    
+<div id="sidebar">
+  
+<h3>Contents</h3>
+ 
+
+
+
+
+
+
+
+
+
+
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#inters-0">Interfaces</a></h3></div>
+  <div id="inters-0" class="panel-collapse collapse">
+    <div class="list-group">
+      
+      <a class="list-group-item" href="../module/reader.html#interface-get_simsize2">get_simsize2</a>
+      
+      <a class="list-group-item" href="../module/reader.html#interface-get_simsize3">get_simsize3</a>
+      
+      <a class="list-group-item" href="../module/reader.html#interface-get_grid2">get_grid2</a>
+      
+      <a class="list-group-item" href="../module/reader.html#interface-get_efield">get_Efield</a>
+      
+      <a class="list-group-item" href="../module/reader.html#interface-get_precip">get_precip</a>
+      
+      <a class="list-group-item" href="../module/reader.html#interface-get_neutral2">get_neutral2</a>
+      
+      <a class="list-group-item" href="../module/reader.html#interface-get_neutral3">get_neutral3</a>
+      
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</div>
+
+    </div>
+    
+    <div class="col-md-9" id='text'>
+    <p>simple file reading procedures</p>
+      <br>
+    
+  
+    <div class="panel panel-default">
+      <div class="panel-heading">
+  <h3 class="panel-title">Uses</h3>
+      </div>
+      <ul class="list-group">
+      
+      <li class="list-group-item">
+  <ul class="list-inline">
+    
+    <li><a href="http://fortranwiki.org/fortran/show/ISO_FORTRAN_ENV">iso_fortran_env</a></li>
+    
+    <li><a href='../module/phys_consts.html'>phys_consts</a></li>
+    
+  </ul>
+      </li>
+      
+      
+      
+      <li class="list-group-item">
+  <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.40.1 (20161225.0304)
+ -->
+<!-- Title: module~~reader~~UsesGraph Pages: 1 -->
+<svg id="modulereaderUsesGraph" width="293pt" height="52pt"
+ viewBox="0.00 0.00 293.00 52.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="module~~reader~~UsesGraph" class="graph" transform="scale(1 1) rotate(0) translate(4 48)">
+<title>module~~reader~~UsesGraph</title>
+<polygon fill="#ffffff" stroke="transparent" points="-4,4 -4,-48 289,-48 289,4 -4,4"/>
+<!-- module~reader -->
+<g id="module~~reader~~UsesGraph_node1" class="node">
+<title>module~reader</title>
+<polygon fill="none" stroke="#000000" points="285,-44 231,-44 231,-20 285,-20 285,-44"/>
+<text text-anchor="middle" x="258" y="-29.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#000000">reader</text>
+</g>
+<!-- iso_fortran_env -->
+<g id="module~~reader~~UsesGraph_node2" class="node">
+<title>iso_fortran_env</title>
+<g id="a_module~~reader~~UsesGraph_node2"><a xlink:href="http://fortranwiki.org/fortran/show/ISO_FORTRAN_ENV" xlink:title="iso_fortran_env">
+<polygon fill="#337ab7" stroke="#337ab7" points="87,-44 0,-44 0,-20 87,-20 87,-44"/>
+<text text-anchor="middle" x="43.5" y="-29.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">iso_fortran_env</text>
+</a>
+</g>
+</g>
+<!-- module~reader&#45;&gt;iso_fortran_env -->
+<g id="module~~reader~~UsesGraph_edge1" class="edge">
+<title>module~reader&#45;&gt;iso_fortran_env</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M230.7124,-32.5275C219.6304,-32.7172 206.7042,-32.9071 195,-33 163.001,-33.2539 154.9994,-33.2012 123,-33 114.7571,-32.9482 106.0337,-32.8661 97.5026,-32.7707"/>
+<polygon fill="#000000" stroke="#000000" points="97.2779,-29.2679 87.237,-32.6489 97.1948,-36.2674 97.2779,-29.2679"/>
+</g>
+<!-- module~phys_consts -->
+<g id="module~~reader~~UsesGraph_node3" class="node">
+<title>module~phys_consts</title>
+<g id="a_module~~reader~~UsesGraph_node3"><a xlink:href=".././module/phys_consts.html" xlink:title="phys_consts">
+<polygon fill="#337ab7" stroke="#337ab7" points="195,-24 123,-24 123,0 195,0 195,-24"/>
+<text text-anchor="middle" x="159" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">phys_consts</text>
+</a>
+</g>
+</g>
+<!-- module~reader&#45;&gt;module~phys_consts -->
+<g id="module~~reader~~UsesGraph_edge2" class="edge">
+<title>module~reader&#45;&gt;module~phys_consts</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M230.9478,-26.5349C222.9614,-24.9215 213.9859,-23.1083 205.1532,-21.3239"/>
+<polygon fill="#000000" stroke="#000000" points="205.7969,-17.8833 195.3018,-19.3337 204.4107,-24.7447 205.7969,-17.8833"/>
+</g>
+<!-- module~phys_consts&#45;&gt;iso_fortran_env -->
+<g id="module~~reader~~UsesGraph_edge3" class="edge">
+<title>module~phys_consts&#45;&gt;iso_fortran_env</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M122.772,-18.2733C114.6884,-19.673 105.9484,-21.1864 97.3255,-22.6796"/>
+<polygon fill="#000000" stroke="#000000" points="96.5594,-19.26 87.3033,-24.415 97.7538,-26.1574 96.5594,-19.26"/>
+</g>
+</g>
+</svg>
+</div><div><a type="button" class="graph-help" data-toggle="modal" href="#graph-help-text">Help</a></div><div class="modal fade" id="graph-help-text" tabindex="-1" role="dialog"><div class="modal-dialog modal-lg" role="document"><div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button><h4 class="modal-title" id="-graph-help-label">Graph Key</h4></div><div class="modal-body">
+    <p>Nodes of different colours represent the following: </p>
+    <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.40.1 (20161225.0304)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="490pt" height="32pt"
+ viewBox="0.00 0.00 489.50 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 28)">
+<title>Graph Key</title>
+<polygon fill="#ffffff" stroke="transparent" points="-4,4 -4,-28 485.5,-28 485.5,4 -4,4"/>
+<!-- Module -->
+<g id="node1" class="node">
+<title>Module</title>
+<polygon fill="#337ab7" stroke="#337ab7" points="54,-24 0,-24 0,0 54,0 54,-24"/>
+<text text-anchor="middle" x="27" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Module</text>
+</g>
+<!-- Submodule -->
+<g id="node2" class="node">
+<title>Submodule</title>
+<polygon fill="#5bc0de" stroke="#5bc0de" points="139.5,-24 72.5,-24 72.5,0 139.5,0 139.5,-24"/>
+<text text-anchor="middle" x="106" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Submodule</text>
+</g>
+<!-- Subroutine -->
+<g id="node3" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="222,-24 158,-24 158,0 222,0 222,-24"/>
+<text text-anchor="middle" x="190" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node4" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="294,-24 240,-24 240,0 294,0 294,-24"/>
+<text text-anchor="middle" x="267" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Function</text>
+</g>
+<!-- Program -->
+<g id="node5" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="366,-24 312,-24 312,0 366,0 366,-24"/>
+<text text-anchor="middle" x="339" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node6" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="#000000" points="481.5,-24 384.5,-24 384.5,0 481.5,0 481.5,-24"/>
+<text text-anchor="middle" x="433" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#000000">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+    
+    <p>Solid arrows point from a submodule to the (sub)module which it is
+    descended from. Dashed arrows point from a module or program unit to 
+    modules which it uses.
+    </p>
+    </div></div></div></div>
+      </li>
+      
+      </ul>
+    </div>
+    
+
+    
+    
+    <div class="panel panel-default">
+      <div class="panel-heading">
+  <h3 class="panel-title">Used by</h3>
+      </div>
+      <ul class="list-group">
+  
+  <li class="list-group-item">  
+    <ul class="list-inline">
+      <li><h5>Descendants:</h5></li>
+      
+      <li><a href='../module/reader_hdf5.html'>reader_hdf5</a></li>
+      
+      <li><a href='../module/reader_raw.html'>reader_raw</a></li>
+      
+    </ul>
+  </li>
+  
+  
+  <li class="list-group-item">
+    <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.40.1 (20161225.0304)
+ -->
+<!-- Title: module~~reader~~UsedByGraph Pages: 1 -->
+<svg id="modulereaderUsedByGraph" width="641pt" height="861pt"
+ viewBox="0.00 0.00 641.00 860.56" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="module~~reader~~UsedByGraph" class="graph" transform="scale(.9358 .9358) rotate(0) translate(4 915.6296)">
+<title>module~~reader~~UsedByGraph</title>
+<polygon fill="#ffffff" stroke="transparent" points="-4,4 -4,-915.6296 681,-915.6296 681,4 -4,4"/>
+<!-- module~reader -->
+<g id="module~~reader~~UsedByGraph_node1" class="node">
+<title>module~reader</title>
+<polygon fill="none" stroke="#000000" points="54,-769.6296 0,-769.6296 0,-745.6296 54,-745.6296 54,-769.6296"/>
+<text text-anchor="middle" x="27" y="-755.2296" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#000000">reader</text>
+</g>
+<!-- module~potentialbcs_mumps -->
+<g id="module~~reader~~UsedByGraph_node2" class="node">
+<title>module~potentialbcs_mumps</title>
+<g id="a_module~~reader~~UsedByGraph_node2"><a xlink:href=".././module/potentialbcs_mumps.html" xlink:title="potentialBCs_mumps">
+<polygon fill="#337ab7" stroke="#337ab7" points="311,-749.6296 197,-749.6296 197,-725.6296 311,-725.6296 311,-749.6296"/>
+<text text-anchor="middle" x="254" y="-735.2296" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">potentialBCs_mumps</text>
+</a>
+</g>
+</g>
+<!-- module~potentialbcs_mumps&#45;&gt;module~reader -->
+<g id="module~~reader~~UsedByGraph_edge1" class="edge">
+<title>module~potentialbcs_mumps&#45;&gt;module~reader</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M196.7177,-738.8715C174.4695,-739.0287 148.7829,-738.8117 125.5,-737.6296"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M125.5,-737.6296C104.9141,-736.5844 82.3539,-740.762 64.0245,-745.5651"/>
+<polygon fill="#000000" stroke="#000000" points="63.0106,-742.2142 54.3161,-748.2687 64.8885,-748.9576 63.0106,-742.2142"/>
+</g>
+<!-- module~grid -->
+<g id="module~~reader~~UsedByGraph_node5" class="node">
+<title>module~grid</title>
+<g id="a_module~~reader~~UsedByGraph_node5"><a xlink:href=".././module/grid.html" xlink:title="grid">
+<polygon fill="#337ab7" stroke="#337ab7" points="152.5,-627.6296 98.5,-627.6296 98.5,-603.6296 152.5,-603.6296 152.5,-627.6296"/>
+<text text-anchor="middle" x="125.5" y="-613.2296" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">grid</text>
+</a>
+</g>
+</g>
+<!-- module~potentialbcs_mumps&#45;&gt;module~grid -->
+<g id="module~~reader~~UsedByGraph_edge10" class="edge">
+<title>module~potentialbcs_mumps&#45;&gt;module~grid</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M220.1174,-725.5506C212.0777,-721.7997 203.8544,-717.1645 197,-711.6296 170.9211,-690.5711 149.3208,-657.9387 136.9083,-636.6769"/>
+<polygon fill="#000000" stroke="#000000" points="139.8463,-634.7625 131.8687,-627.7905 133.7573,-638.2157 139.8463,-634.7625"/>
+</g>
+<!-- module~reader_raw -->
+<g id="module~~reader~~UsedByGraph_node3" class="node">
+<title>module~reader_raw</title>
+<g id="a_module~~reader~~UsedByGraph_node3"><a xlink:href=".././module/reader_raw.html" xlink:title="reader_raw">
+<polygon fill="#5bc0de" stroke="#5bc0de" points="159,-831.6296 92,-831.6296 92,-807.6296 159,-807.6296 159,-831.6296"/>
+<text text-anchor="middle" x="125.5" y="-817.2296" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">reader_raw</text>
+</a>
+</g>
+</g>
+<!-- module~reader_raw&#45;&gt;module~reader -->
+<g id="module~~reader~~UsedByGraph_edge6" class="edge">
+<title>module~reader_raw&#45;&gt;module~reader</title>
+<path fill="none" stroke="#000000" d="M104.7612,-807.5627C99.8947,-804.6757 94.7454,-801.5754 90,-798.6296 77.9271,-791.135 64.7264,-782.5981 53.5416,-775.2617"/>
+<polygon fill="#000000" stroke="#000000" points="55.3404,-772.2555 45.0639,-769.6781 51.4902,-778.1015 55.3404,-772.2555"/>
+</g>
+<!-- module~reader_hdf5 -->
+<g id="module~~reader~~UsedByGraph_node4" class="node">
+<title>module~reader_hdf5</title>
+<g id="a_module~~reader~~UsedByGraph_node4"><a xlink:href=".././module/reader_hdf5.html" xlink:title="reader_hdf5">
+<polygon fill="#5bc0de" stroke="#5bc0de" points="161,-789.6296 90,-789.6296 90,-765.6296 161,-765.6296 161,-789.6296"/>
+<text text-anchor="middle" x="125.5" y="-775.2296" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">reader_hdf5</text>
+</a>
+</g>
+</g>
+<!-- module~reader_hdf5&#45;&gt;module~reader -->
+<g id="module~~reader~~UsedByGraph_edge7" class="edge">
+<title>module~reader_hdf5&#45;&gt;module~reader</title>
+<path fill="none" stroke="#000000" d="M89.9392,-770.4091C81.5554,-768.7068 72.5967,-766.8878 64.145,-765.1717"/>
+<polygon fill="#000000" stroke="#000000" points="64.6565,-761.7042 54.16,-763.1443 63.2635,-768.5642 64.6565,-761.7042"/>
+</g>
+<!-- module~grid&#45;&gt;module~reader -->
+<g id="module~~reader~~UsedByGraph_edge2" class="edge">
+<title>module~grid&#45;&gt;module~reader</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M117.1019,-627.7364C100.2372,-652.0491 62.0873,-707.0468 41.2463,-737.0918"/>
+<polygon fill="#000000" stroke="#000000" points="38.2006,-735.3418 35.3768,-745.5534 43.9523,-739.3315 38.2006,-735.3418"/>
+</g>
+<!-- module~plasma -->
+<g id="module~~reader~~UsedByGraph_node6" class="node">
+<title>module~plasma</title>
+<g id="a_module~~reader~~UsedByGraph_node6"><a xlink:href=".././module/plasma.html" xlink:title="plasma">
+<polygon fill="#5bc0de" stroke="#5bc0de" points="418,-126.6296 364,-126.6296 364,-102.6296 418,-102.6296 418,-126.6296"/>
+<text text-anchor="middle" x="391" y="-112.2296" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">plasma</text>
+</a>
+</g>
+</g>
+<!-- module~plasma&#45;&gt;module~reader -->
+<g id="module~~reader~~UsedByGraph_edge3" class="edge">
+<title>module~plasma&#45;&gt;module~reader</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M363.9385,-118.3273C322.11,-125.4729 241.9028,-145.1018 197,-194.6296 120.721,-278.7653 48.6414,-641.8067 31.0622,-735.4989"/>
+<polygon fill="#000000" stroke="#000000" points="27.5799,-735.0812 29.192,-745.5527 34.4619,-736.3614 27.5799,-735.0812"/>
+</g>
+<!-- module~io -->
+<g id="module~~reader~~UsedByGraph_node14" class="node">
+<title>module~io</title>
+<g id="a_module~~reader~~UsedByGraph_node14"><a xlink:href=".././module/io.html" xlink:title="io">
+<polygon fill="#337ab7" stroke="#337ab7" points="281,-336.6296 227,-336.6296 227,-312.6296 281,-312.6296 281,-336.6296"/>
+<text text-anchor="middle" x="254" y="-322.2296" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">io</text>
+</a>
+</g>
+</g>
+<!-- module~plasma&#45;&gt;module~io -->
+<g id="module~~reader~~UsedByGraph_edge47" class="edge">
+<title>module~plasma&#45;&gt;module~io</title>
+<path fill="none" stroke="#000000" d="M363.5765,-124.2386C357.6155,-127.227 351.6963,-130.9892 347,-135.6296 297.7803,-184.2632 270.514,-264.2524 259.6369,-302.6796"/>
+<polygon fill="#000000" stroke="#000000" points="256.2526,-301.7868 256.9989,-312.3553 263.0061,-303.628 256.2526,-301.7868"/>
+</g>
+<!-- module~precipbcs_mod -->
+<g id="module~~reader~~UsedByGraph_node7" class="node">
+<title>module~precipbcs_mod</title>
+<g id="a_module~~reader~~UsedByGraph_node7"><a xlink:href=".././module/precipbcs_mod.html" xlink:title="precipBCs_mod">
+<polygon fill="#337ab7" stroke="#337ab7" points="298,-829.6296 210,-829.6296 210,-805.6296 298,-805.6296 298,-829.6296"/>
+<text text-anchor="middle" x="254" y="-815.2296" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">precipBCs_mod</text>
+</a>
+</g>
+</g>
+<!-- module~precipbcs_mod&#45;&gt;module~reader -->
+<g id="module~~reader~~UsedByGraph_edge4" class="edge">
+<title>module~precipbcs_mod&#45;&gt;module~reader</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M222.4884,-805.5789C213.8973,-801.6831 204.8119,-796.9697 197,-791.6296 164.1248,-769.1562 165.2712,-739.6488 125.5,-737.6296"/>
+</g>
+<!-- module~precipbcs_mod&#45;&gt;module~grid -->
+<g id="module~~reader~~UsedByGraph_edge20" class="edge">
+<title>module~precipbcs_mod&#45;&gt;module~grid</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M216.6854,-805.5524C209.4912,-801.9376 202.4951,-797.3608 197,-791.6296 174.8477,-768.5252 145.183,-679.2759 132.1332,-637.4687"/>
+<polygon fill="#000000" stroke="#000000" points="135.413,-636.2269 129.1189,-627.7042 128.7244,-638.2917 135.413,-636.2269"/>
+</g>
+<!-- module~neutral -->
+<g id="module~~reader~~UsedByGraph_node8" class="node">
+<title>module~neutral</title>
+<g id="a_module~~reader~~UsedByGraph_node8"><a xlink:href=".././module/neutral.html" xlink:title="neutral">
+<polygon fill="#337ab7" stroke="#337ab7" points="281,-871.6296 227,-871.6296 227,-847.6296 281,-847.6296 281,-871.6296"/>
+<text text-anchor="middle" x="254" y="-857.2296" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">neutral</text>
+</a>
+</g>
+</g>
+<!-- module~neutral&#45;&gt;module~reader -->
+<g id="module~~reader~~UsedByGraph_edge5" class="edge">
+<title>module~neutral&#45;&gt;module~reader</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M226.7457,-862.7037C192.4788,-865.239 132.946,-865.1298 90,-840.6296 65.2662,-826.5192 47.1305,-798.3816 36.8299,-778.8012"/>
+<polygon fill="#000000" stroke="#000000" points="39.8903,-777.0959 32.2859,-769.7186 33.6301,-780.2278 39.8903,-777.0959"/>
+</g>
+<!-- module~neutral&#45;&gt;module~grid -->
+<g id="module~~reader~~UsedByGraph_edge21" class="edge">
+<title>module~neutral&#45;&gt;module~grid</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M226.7473,-854.9619C216.2231,-851.9074 204.8515,-846.8806 197,-838.6296 160.0805,-799.8314 177.3624,-774.6258 161,-723.6296 151.4134,-693.7512 140.0422,-659.3301 132.8005,-637.5322"/>
+<polygon fill="#000000" stroke="#000000" points="136.0808,-636.3045 129.6031,-627.9206 129.4386,-638.5142 136.0808,-636.3045"/>
+</g>
+<!-- module~sources -->
+<g id="module~~reader~~UsedByGraph_node9" class="node">
+<title>module~sources</title>
+<g id="a_module~~reader~~UsedByGraph_node9"><a xlink:href=".././module/sources.html" xlink:title="sources">
+<polygon fill="#337ab7" stroke="#337ab7" points="418,-709.6296 364,-709.6296 364,-685.6296 418,-685.6296 418,-709.6296"/>
+<text text-anchor="middle" x="391" y="-695.2296" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">sources</text>
+</a>
+</g>
+</g>
+<!-- module~sources&#45;&gt;module~grid -->
+<g id="module~~reader~~UsedByGraph_edge11" class="edge">
+<title>module~sources&#45;&gt;module~grid</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M363.9836,-700.0597C325.269,-702.4429 252.5572,-702.7735 197,-678.6296 174.9795,-669.0599 154.9477,-650.094 141.7265,-635.4605"/>
+<polygon fill="#000000" stroke="#000000" points="144.3188,-633.1077 135.1127,-627.8637 139.0393,-637.7041 144.3188,-633.1077"/>
+</g>
+<!-- module~plasma_output_hdf5 -->
+<g id="module~~reader~~UsedByGraph_node10" class="node">
+<title>module~plasma_output_hdf5</title>
+<g id="a_module~~reader~~UsedByGraph_node10"><a xlink:href=".././module/plasma_output_hdf5.html" xlink:title="plasma_output_hdf5">
+<polygon fill="#5bc0de" stroke="#5bc0de" points="581,-84.6296 471,-84.6296 471,-60.6296 581,-60.6296 581,-84.6296"/>
+<text text-anchor="middle" x="526" y="-70.2296" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">plasma_output_hdf5</text>
+</a>
+</g>
+</g>
+<!-- module~plasma_output_hdf5&#45;&gt;module~plasma -->
+<g id="module~~reader~~UsedByGraph_edge24" class="edge">
+<title>module~plasma_output_hdf5&#45;&gt;module~plasma</title>
+<path fill="none" stroke="#000000" d="M487.3144,-84.6651C468.6441,-90.4736 446.3532,-97.4086 427.9201,-103.1433"/>
+<polygon fill="#000000" stroke="#000000" points="426.6327,-99.8783 418.1239,-106.191 428.7123,-106.5623 426.6327,-99.8783"/>
+</g>
+<!-- module~potential_comm -->
+<g id="module~~reader~~UsedByGraph_node11" class="node">
+<title>module~potential_comm</title>
+<g id="a_module~~reader~~UsedByGraph_node11"><a xlink:href=".././module/potential_comm.html" xlink:title="potential_comm">
+<polygon fill="#337ab7" stroke="#337ab7" points="435,-626.6296 347,-626.6296 347,-602.6296 435,-602.6296 435,-626.6296"/>
+<text text-anchor="middle" x="391" y="-612.2296" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">potential_comm</text>
+</a>
+</g>
+</g>
+<!-- module~potential_comm&#45;&gt;module~potentialbcs_mumps -->
+<g id="module~~reader~~UsedByGraph_edge8" class="edge">
+<title>module~potential_comm&#45;&gt;module~potentialbcs_mumps</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M367.822,-626.7041C360.8606,-630.7517 353.3828,-635.5408 347,-640.6296 328.8092,-655.1322 327.0824,-661.8191 311,-678.6296 298.3607,-691.8411 284.0641,-706.6389 272.9507,-718.1098"/>
+<polygon fill="#000000" stroke="#000000" points="270.2731,-715.8435 265.8249,-725.4594 275.2987,-720.7162 270.2731,-715.8435"/>
+</g>
+<!-- module~potential_comm&#45;&gt;module~grid -->
+<g id="module~~reader~~UsedByGraph_edge12" class="edge">
+<title>module~potential_comm&#45;&gt;module~grid</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M358.4778,-602.3959C354.2959,-599.9177 350.3219,-597.0108 347,-593.6296 319.9592,-566.1053 343.4511,-535.5034 311,-514.6296 268.3877,-487.2197 242.0021,-491.3503 197,-514.6296 164.9424,-531.2128 144.1679,-569.5276 133.6735,-593.9095"/>
+<polygon fill="#000000" stroke="#000000" points="130.3378,-592.8205 129.8024,-603.4019 136.8195,-595.4639 130.3378,-592.8205"/>
+</g>
+<!-- module~potential2d -->
+<g id="module~~reader~~UsedByGraph_node12" class="node">
+<title>module~potential2d</title>
+<g id="a_module~~reader~~UsedByGraph_node12"><a xlink:href=".././module/potential2d.html" xlink:title="potential2d">
+<polygon fill="#5bc0de" stroke="#5bc0de" points="286.5,-547.6296 221.5,-547.6296 221.5,-523.6296 286.5,-523.6296 286.5,-547.6296"/>
+<text text-anchor="middle" x="254" y="-533.2296" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">potential2d</text>
+</a>
+</g>
+</g>
+<!-- module~potential2d&#45;&gt;module~grid -->
+<g id="module~~reader~~UsedByGraph_edge13" class="edge">
+<title>module~potential2d&#45;&gt;module~grid</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M224.3771,-547.6626C215.3753,-551.7086 205.5961,-556.5072 197,-561.6296 179.5154,-572.0486 161.2258,-585.9237 147.5216,-597.0001"/>
+<polygon fill="#000000" stroke="#000000" points="145.1377,-594.4288 139.6295,-603.4792 149.5794,-599.8391 145.1377,-594.4288"/>
+</g>
+<!-- module~plasma_input_raw -->
+<g id="module~~reader~~UsedByGraph_node13" class="node">
+<title>module~plasma_input_raw</title>
+<g id="a_module~~reader~~UsedByGraph_node13"><a xlink:href=".././module/plasma_input_raw.html" xlink:title="plasma_input_raw">
+<polygon fill="#5bc0de" stroke="#5bc0de" points="576,-252.6296 476,-252.6296 476,-228.6296 576,-228.6296 576,-252.6296"/>
+<text text-anchor="middle" x="526" y="-238.2296" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">plasma_input_raw</text>
+</a>
+</g>
+</g>
+<!-- module~plasma_input_raw&#45;&gt;module~plasma -->
+<g id="module~~reader~~UsedByGraph_edge25" class="edge">
+<title>module~plasma_input_raw&#45;&gt;module~plasma</title>
+<path fill="none" stroke="#000000" d="M483.634,-228.5973C479.0294,-226.1284 474.6855,-223.1699 471,-219.6296 441.7083,-191.4911 463.1348,-164.9248 435,-135.6296 432.5815,-133.1113 429.8,-130.8593 426.8353,-128.8533"/>
+<polygon fill="#000000" stroke="#000000" points="428.554,-125.8042 418.144,-123.8337 425.0531,-131.8659 428.554,-125.8042"/>
+</g>
+<!-- module~io&#45;&gt;module~grid -->
+<g id="module~~reader~~UsedByGraph_edge15" class="edge">
+<title>module~io&#45;&gt;module~grid</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M247.2629,-336.6379C236.1537,-356.6486 213.5738,-398.2176 197,-434.6296 171.2498,-491.2015 145.5848,-559.9382 133.1806,-594.1406"/>
+<polygon fill="#000000" stroke="#000000" points="129.8712,-593.0003 129.7713,-603.5947 136.4561,-595.375 129.8712,-593.0003"/>
+</g>
+<!-- program~gemini3d -->
+<g id="module~~reader~~UsedByGraph_node15" class="node">
+<title>program~gemini3d</title>
+<g id="a_module~~reader~~UsedByGraph_node15"><a xlink:href=".././program/gemini3d.html" xlink:title="Gemini3D">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="677,-626.6296 617,-626.6296 617,-602.6296 677,-602.6296 677,-626.6296"/>
+<text text-anchor="middle" x="647" y="-612.2296" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Gemini3D</text>
+</a>
+</g>
+</g>
+<!-- program~gemini3d&#45;&gt;module~potentialbcs_mumps -->
+<g id="module~~reader~~UsedByGraph_edge9" class="edge">
+<title>program~gemini3d&#45;&gt;module~potentialbcs_mumps</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M643.3232,-626.9766C635.8202,-649.7217 616.3905,-697.8139 581,-718.6296 538.5337,-743.607 403.7478,-743.4769 321.0696,-740.7845"/>
+<polygon fill="#000000" stroke="#000000" points="321.1219,-737.2843 311.0067,-740.4359 320.8795,-744.2801 321.1219,-737.2843"/>
+</g>
+<!-- program~gemini3d&#45;&gt;module~grid -->
+<g id="module~~reader~~UsedByGraph_edge16" class="edge">
+<title>program~gemini3d&#45;&gt;module~grid</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M646.5244,-602.4835C643.3274,-523.9232 623.7839,-89.6909 581,-51.6296 444.9338,69.4175 295.7676,-41.6218 197,-194.6296 153.5044,-262.0116 132.4584,-516.2112 126.9835,-593.3193"/>
+<polygon fill="#000000" stroke="#000000" points="123.4869,-593.1497 126.2879,-603.3676 130.4702,-593.6332 123.4869,-593.1497"/>
+</g>
+<!-- program~gemini3d&#45;&gt;module~precipbcs_mod -->
+<g id="module~~reader~~UsedByGraph_edge30" class="edge">
+<title>program~gemini3d&#45;&gt;module~precipbcs_mod</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M645.2467,-626.7938C638.8167,-669.6095 615.1147,-812.2914 581,-840.6296 515.7191,-894.8566 475.6203,-866.0774 391,-859.6296"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M391,-859.6296C372.5855,-858.432 329.5043,-844.5173 296.5301,-833.0272"/>
+<polygon fill="#000000" stroke="#000000" points="297.689,-829.7247 287.0942,-829.71 295.3674,-836.3285 297.689,-829.7247"/>
+</g>
+<!-- program~gemini3d&#45;&gt;module~neutral -->
+<g id="module~~reader~~UsedByGraph_edge31" class="edge">
+<title>program~gemini3d&#45;&gt;module~neutral</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M391,-859.6296C357.2213,-857.4328 318.6587,-857.6786 291.0709,-858.33"/>
+<polygon fill="#000000" stroke="#000000" points="290.9715,-854.8313 281.0678,-858.5953 291.1571,-861.8289 290.9715,-854.8313"/>
+</g>
+<!-- program~gemini3d&#45;&gt;module~potential_comm -->
+<g id="module~~reader~~UsedByGraph_edge36" class="edge">
+<title>program~gemini3d&#45;&gt;module~potential_comm</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M617.6138,-602.5833C606.3624,-598.5729 593.2798,-594.6223 581,-592.6296 532.7424,-584.7984 519.4494,-586.0892 471,-592.6296 459.7428,-594.1492 447.8297,-596.8202 436.7331,-599.7891"/>
+<polygon fill="#000000" stroke="#000000" points="435.4952,-596.5013 426.814,-602.5748 437.3879,-603.2405 435.4952,-596.5013"/>
+</g>
+<!-- program~gemini3d&#45;&gt;module~io -->
+<g id="module~~reader~~UsedByGraph_edge40" class="edge">
+<title>program~gemini3d&#45;&gt;module~io</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M644.4121,-602.5744C636.1079,-565.0241 609.034,-451.2617 581,-427.6296 500.3301,-359.6265 444.8895,-426.9956 347,-387.6296 320.4111,-376.9369 293.7031,-357.7606 275.7742,-343.3639"/>
+<polygon fill="#000000" stroke="#000000" points="277.664,-340.3865 267.717,-336.7385 273.218,-345.7933 277.664,-340.3865"/>
+</g>
+<!-- module~multifluid -->
+<g id="module~~reader~~UsedByGraph_node19" class="node">
+<title>module~multifluid</title>
+<g id="a_module~~reader~~UsedByGraph_node19"><a xlink:href=".././module/multifluid.html" xlink:title="multifluid">
+<polygon fill="#337ab7" stroke="#337ab7" points="553.5,-667.6296 498.5,-667.6296 498.5,-643.6296 553.5,-643.6296 553.5,-667.6296"/>
+<text text-anchor="middle" x="526" y="-653.2296" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">multifluid</text>
+</a>
+</g>
+</g>
+<!-- program~gemini3d&#45;&gt;module~multifluid -->
+<g id="module~~reader~~UsedByGraph_edge51" class="edge">
+<title>program~gemini3d&#45;&gt;module~multifluid</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M616.7787,-624.8698C600.6287,-630.3421 580.6002,-637.1287 563.4681,-642.9337"/>
+<polygon fill="#000000" stroke="#000000" points="562.1148,-639.6968 553.767,-646.2209 564.3613,-646.3265 562.1148,-639.6968"/>
+</g>
+<!-- module~plasma_input_hdf5 -->
+<g id="module~~reader~~UsedByGraph_node16" class="node">
+<title>module~plasma_input_hdf5</title>
+<g id="a_module~~reader~~UsedByGraph_node16"><a xlink:href=".././module/plasma_input_hdf5.html" xlink:title="plasma_input_hdf5">
+<polygon fill="#5bc0de" stroke="#5bc0de" points="577.5,-210.6296 474.5,-210.6296 474.5,-186.6296 577.5,-186.6296 577.5,-210.6296"/>
+<text text-anchor="middle" x="526" y="-196.2296" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">plasma_input_hdf5</text>
+</a>
+</g>
+</g>
+<!-- module~plasma_input_hdf5&#45;&gt;module~plasma -->
+<g id="module~~reader~~UsedByGraph_edge26" class="edge">
+<title>module~plasma_input_hdf5&#45;&gt;module~plasma</title>
+<path fill="none" stroke="#000000" d="M487.1773,-186.6292C481.5102,-184.0881 475.9308,-181.1012 471,-177.6296 450.8973,-163.4759 454.5164,-150.5813 435,-135.6296 432.5265,-133.7346 429.8546,-131.9504 427.0924,-130.2842"/>
+<polygon fill="#000000" stroke="#000000" points="428.5495,-127.0922 418.095,-125.3736 425.1959,-133.2366 428.5495,-127.0922"/>
+</g>
+<!-- module~grid_read -->
+<g id="module~~reader~~UsedByGraph_node17" class="node">
+<title>module~grid_read</title>
+<g id="a_module~~reader~~UsedByGraph_node17"><a xlink:href=".././module/grid_read.html" xlink:title="grid_read">
+<polygon fill="#5bc0de" stroke="#5bc0de" points="283,-467.6296 225,-467.6296 225,-443.6296 283,-443.6296 283,-467.6296"/>
+<text text-anchor="middle" x="254" y="-453.2296" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">grid_read</text>
+</a>
+</g>
+</g>
+<!-- module~grid_read&#45;&gt;module~grid -->
+<g id="module~~reader~~UsedByGraph_edge23" class="edge">
+<title>module~grid_read&#45;&gt;module~grid</title>
+<path fill="none" stroke="#000000" d="M224.8345,-464.652C215.1495,-468.697 204.8472,-474.2559 197,-481.6296 163.1136,-513.4711 141.9849,-565.0286 132.1171,-594.0307"/>
+<polygon fill="#000000" stroke="#000000" points="128.7639,-593.0244 128.9883,-603.6169 135.4184,-595.1964 128.7639,-593.0244"/>
+</g>
+<!-- module~atmos -->
+<g id="module~~reader~~UsedByGraph_node18" class="node">
+<title>module~atmos</title>
+<g id="a_module~~reader~~UsedByGraph_node18"><a xlink:href=".././module/atmos.html" xlink:title="atmos">
+<polygon fill="#5bc0de" stroke="#5bc0de" points="418,-911.6296 364,-911.6296 364,-887.6296 418,-887.6296 418,-911.6296"/>
+<text text-anchor="middle" x="391" y="-897.2296" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">atmos</text>
+</a>
+</g>
+</g>
+<!-- module~atmos&#45;&gt;module~neutral -->
+<g id="module~~reader~~UsedByGraph_edge33" class="edge">
+<title>module~atmos&#45;&gt;module~neutral</title>
+<path fill="none" stroke="#000000" d="M363.9332,-891.7268C343.0113,-885.6183 313.8293,-877.098 290.789,-870.3709"/>
+<polygon fill="#000000" stroke="#000000" points="291.5907,-866.9589 281.0106,-867.5159 289.6288,-873.6783 291.5907,-866.9589"/>
+</g>
+<!-- module~multifluid&#45;&gt;module~grid -->
+<g id="module~~reader~~UsedByGraph_edge17" class="edge">
+<title>module~multifluid&#45;&gt;module~grid</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M498.3225,-654.6587C471.0251,-653.8819 428.1198,-653.1447 391,-654.6296"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M391,-654.6296C369.7161,-655.481 364.225,-648.1606 347,-635.6296 327.3904,-621.3638 333.0912,-604.6309 311,-594.6296 263.0266,-572.9106 201.2245,-587.2207 162.4728,-600.5743"/>
+<polygon fill="#000000" stroke="#000000" points="160.8865,-597.4254 152.6625,-604.105 163.257,-604.0118 160.8865,-597.4254"/>
+</g>
+<!-- module~multifluid&#45;&gt;module~precipbcs_mod -->
+<g id="module~~reader~~UsedByGraph_edge29" class="edge">
+<title>module~multifluid&#45;&gt;module~precipbcs_mod</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M391,-654.6296C369.1537,-655.5035 362.0691,-660.7882 347,-676.6296 319.5675,-705.468 333.1748,-725.5769 311,-758.6296 301.2004,-773.2363 287.5902,-787.4809 276.1268,-798.3134"/>
+<polygon fill="#000000" stroke="#000000" points="273.5975,-795.8844 268.6067,-805.2302 278.3362,-801.0365 273.5975,-795.8844"/>
+</g>
+<!-- module~multifluid&#45;&gt;module~sources -->
+<g id="module~~reader~~UsedByGraph_edge34" class="edge">
+<title>module~multifluid&#45;&gt;module~sources</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M498.355,-664.2302C478.0188,-670.5571 450.1631,-679.2233 427.9229,-686.1424"/>
+<polygon fill="#000000" stroke="#000000" points="426.6555,-682.8712 418.1467,-689.1839 428.7351,-689.5552 426.6555,-682.8712"/>
+</g>
+<!-- module~advec_mpi -->
+<g id="module~~reader~~UsedByGraph_node20" class="node">
+<title>module~advec_mpi</title>
+<g id="a_module~~reader~~UsedByGraph_node20"><a xlink:href=".././module/advec_mpi.html" xlink:title="advec_mpi">
+<polygon fill="#337ab7" stroke="#337ab7" points="286,-669.6296 222,-669.6296 222,-645.6296 286,-645.6296 286,-669.6296"/>
+<text text-anchor="middle" x="254" y="-655.2296" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">advec_mpi</text>
+</a>
+</g>
+</g>
+<!-- module~multifluid&#45;&gt;module~advec_mpi -->
+<g id="module~~reader~~UsedByGraph_edge52" class="edge">
+<title>module~multifluid&#45;&gt;module~advec_mpi</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M391,-654.6296C359.3116,-655.8972 323.4772,-656.6581 296.4069,-657.0963"/>
+<polygon fill="#000000" stroke="#000000" points="296.0653,-653.601 286.1203,-657.2542 296.1728,-660.6002 296.0653,-653.601"/>
+</g>
+<!-- module~diffusion -->
+<g id="module~~reader~~UsedByGraph_node21" class="node">
+<title>module~diffusion</title>
+<g id="a_module~~reader~~UsedByGraph_node21"><a xlink:href=".././module/diffusion.html" xlink:title="diffusion">
+<polygon fill="#337ab7" stroke="#337ab7" points="281,-627.6296 227,-627.6296 227,-603.6296 281,-603.6296 281,-627.6296"/>
+<text text-anchor="middle" x="254" y="-613.2296" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">diffusion</text>
+</a>
+</g>
+</g>
+<!-- module~multifluid&#45;&gt;module~diffusion -->
+<g id="module~~reader~~UsedByGraph_edge53" class="edge">
+<title>module~multifluid&#45;&gt;module~diffusion</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M391,-654.6296C371.5462,-655.4077 324.1952,-640.4747 290.6237,-628.8629"/>
+<polygon fill="#000000" stroke="#000000" points="291.7196,-625.5384 281.1248,-625.5396 289.4079,-632.1457 291.7196,-625.5384"/>
+</g>
+<!-- module~ionization -->
+<g id="module~~reader~~UsedByGraph_node23" class="node">
+<title>module~ionization</title>
+<g id="a_module~~reader~~UsedByGraph_node23"><a xlink:href=".././module/ionization.html" xlink:title="ionization">
+<polygon fill="#337ab7" stroke="#337ab7" points="420,-789.6296 362,-789.6296 362,-765.6296 420,-765.6296 420,-789.6296"/>
+<text text-anchor="middle" x="391" y="-775.2296" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">ionization</text>
+</a>
+</g>
+</g>
+<!-- module~multifluid&#45;&gt;module~ionization -->
+<g id="module~~reader~~UsedByGraph_edge54" class="edge">
+<title>module~multifluid&#45;&gt;module~ionization</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M498.2391,-662.9837C489.03,-666.2397 479.077,-670.7056 471,-676.6296 462.9434,-682.5386 427.1664,-729.3942 406.2857,-757.1644"/>
+<polygon fill="#000000" stroke="#000000" points="403.2836,-755.3339 400.0837,-765.434 408.8836,-759.5339 403.2836,-755.3339"/>
+</g>
+<!-- module~advec_mpi&#45;&gt;module~grid -->
+<g id="module~~reader~~UsedByGraph_edge22" class="edge">
+<title>module~advec_mpi&#45;&gt;module~grid</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M221.9055,-647.1395C203.8839,-641.2492 181.3147,-633.8725 162.5448,-627.7376"/>
+<polygon fill="#000000" stroke="#000000" points="163.4338,-624.346 152.8412,-624.566 161.259,-630.9996 163.4338,-624.346"/>
+</g>
+<!-- module~diffusion&#45;&gt;module~grid -->
+<g id="module~~reader~~UsedByGraph_edge18" class="edge">
+<title>module~diffusion&#45;&gt;module~grid</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M226.7485,-615.6296C208.1785,-615.6296 183.3535,-615.6296 162.9329,-615.6296"/>
+<polygon fill="#000000" stroke="#000000" points="162.7123,-612.1297 152.7123,-615.6296 162.7122,-619.1297 162.7123,-612.1297"/>
+</g>
+<!-- module~plasma_output_raw -->
+<g id="module~~reader~~UsedByGraph_node22" class="node">
+<title>module~plasma_output_raw</title>
+<g id="a_module~~reader~~UsedByGraph_node22"><a xlink:href=".././module/plasma_output_raw.html" xlink:title="plasma_output_raw">
+<polygon fill="#5bc0de" stroke="#5bc0de" points="579,-168.6296 473,-168.6296 473,-144.6296 579,-144.6296 579,-168.6296"/>
+<text text-anchor="middle" x="526" y="-154.2296" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">plasma_output_raw</text>
+</a>
+</g>
+</g>
+<!-- module~plasma_output_raw&#45;&gt;module~plasma -->
+<g id="module~~reader~~UsedByGraph_edge27" class="edge">
+<title>module~plasma_output_raw&#45;&gt;module~plasma</title>
+<path fill="none" stroke="#000000" d="M487.3144,-144.594C468.6441,-138.7855 446.3532,-131.8505 427.9201,-126.1158"/>
+<polygon fill="#000000" stroke="#000000" points="428.7123,-122.6968 418.1239,-123.0681 426.6327,-129.3808 428.7123,-122.6968"/>
+</g>
+<!-- module~ionization&#45;&gt;module~grid -->
+<g id="module~~reader~~UsedByGraph_edge19" class="edge">
+<title>module~ionization&#45;&gt;module~grid</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M361.7687,-782.9186C321.0377,-788.6143 246.6354,-792.7612 197,-758.6296 155.4924,-730.087 136.9023,-670.1456 129.5968,-637.6688"/>
+<polygon fill="#000000" stroke="#000000" points="133.0048,-636.8665 127.535,-627.7928 126.1526,-638.2971 133.0048,-636.8665"/>
+</g>
+<!-- module~ionization&#45;&gt;module~neutral -->
+<g id="module~~reader~~UsedByGraph_edge32" class="edge">
+<title>module~ionization&#45;&gt;module~neutral</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M377.7121,-789.7716C362.5062,-803.1676 336.413,-824.6729 311,-838.6296 304.7272,-842.0745 297.7749,-845.1687 290.9439,-847.856"/>
+<polygon fill="#000000" stroke="#000000" points="289.2782,-844.7405 281.1161,-851.4955 291.7092,-851.3048 289.2782,-844.7405"/>
+</g>
+<!-- module~plasma_output_hdf5~2 -->
+<g id="module~~reader~~UsedByGraph_node24" class="node">
+<title>module~plasma_output_hdf5~2</title>
+<g id="a_module~~reader~~UsedByGraph_node24"><a xlink:href=".././module/plasma_output_hdf5~2.html" xlink:title="plasma_output_hdf5">
+<polygon fill="#5bc0de" stroke="#5bc0de" points="581,-126.6296 471,-126.6296 471,-102.6296 581,-102.6296 581,-126.6296"/>
+<text text-anchor="middle" x="526" y="-112.2296" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">plasma_output_hdf5</text>
+</a>
+</g>
+</g>
+<!-- module~plasma_output_hdf5~2&#45;&gt;module~plasma -->
+<g id="module~~reader~~UsedByGraph_edge28" class="edge">
+<title>module~plasma_output_hdf5~2&#45;&gt;module~plasma</title>
+<path fill="none" stroke="#000000" d="M470.7008,-114.6296C456.4515,-114.6296 441.4519,-114.6296 428.357,-114.6296"/>
+<polygon fill="#000000" stroke="#000000" points="428.3142,-111.1297 418.3142,-114.6296 428.3141,-118.1297 428.3142,-111.1297"/>
+</g>
+<!-- program~magcalc -->
+<g id="module~~reader~~UsedByGraph_node25" class="node">
+<title>program~magcalc</title>
+<g id="a_module~~reader~~UsedByGraph_node25"><a xlink:href=".././program/magcalc.html" xlink:title="MagCalc">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="418.5,-168.6296 363.5,-168.6296 363.5,-144.6296 418.5,-144.6296 418.5,-168.6296"/>
+<text text-anchor="middle" x="391" y="-154.2296" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">MagCalc</text>
+</a>
+</g>
+</g>
+<!-- program~magcalc&#45;&gt;module~grid -->
+<g id="module~~reader~~UsedByGraph_edge14" class="edge">
+<title>program~magcalc&#45;&gt;module~grid</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M364.2671,-168.718C321.3805,-189.6095 237.8857,-236.7493 197,-303.6296 166.6491,-353.2771 138.106,-530.4965 128.7249,-593.3365"/>
+<polygon fill="#000000" stroke="#000000" points="125.2422,-592.9625 127.2461,-603.3661 132.1674,-593.9836 125.2422,-592.9625"/>
+</g>
+<!-- program~magcalc&#45;&gt;module~io -->
+<g id="module~~reader~~UsedByGraph_edge39" class="edge">
+<title>program~magcalc&#45;&gt;module~io</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M363.3404,-166.0078C357.3892,-169.0057 351.5336,-172.83 347,-177.6296 317.9829,-208.3491 334.0957,-230.2422 311,-265.6296 301.3865,-280.3594 287.7829,-294.6084 276.2763,-305.4124"/>
+<polygon fill="#000000" stroke="#000000" points="273.7493,-302.9801 268.7201,-312.3052 278.4668,-308.1516 273.7493,-302.9801"/>
+</g>
+<!-- module~mag_raw -->
+<g id="module~~reader~~UsedByGraph_node26" class="node">
+<title>module~mag_raw</title>
+<g id="a_module~~reader~~UsedByGraph_node26"><a xlink:href=".././module/mag_raw.html" xlink:title="mag_raw">
+<polygon fill="#5bc0de" stroke="#5bc0de" points="419.5,-210.6296 362.5,-210.6296 362.5,-186.6296 419.5,-186.6296 419.5,-210.6296"/>
+<text text-anchor="middle" x="391" y="-196.2296" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">mag_raw</text>
+</a>
+</g>
+</g>
+<!-- module~mag_raw&#45;&gt;module~io -->
+<g id="module~~reader~~UsedByGraph_edge41" class="edge">
+<title>module~mag_raw&#45;&gt;module~io</title>
+<path fill="none" stroke="#000000" d="M362.3899,-209.9067C357.006,-212.6723 351.6219,-215.9223 347,-219.6296 326.7487,-235.8733 328.0421,-246.0453 311,-265.6296 299.1496,-279.2477 285.0608,-293.844 273.8552,-305.1115"/>
+<polygon fill="#000000" stroke="#000000" points="271.2294,-302.7872 266.621,-312.3273 276.1729,-307.7432 271.2294,-302.7872"/>
+</g>
+<!-- module~mag -->
+<g id="module~~reader~~UsedByGraph_node27" class="node">
+<title>module~mag</title>
+<g id="a_module~~reader~~UsedByGraph_node27"><a xlink:href=".././module/mag.html" xlink:title="mag">
+<polygon fill="#5bc0de" stroke="#5bc0de" points="418,-458.6296 364,-458.6296 364,-434.6296 418,-434.6296 418,-458.6296"/>
+<text text-anchor="middle" x="391" y="-444.2296" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">mag</text>
+</a>
+</g>
+</g>
+<!-- module~mag&#45;&gt;module~io -->
+<g id="module~~reader~~UsedByGraph_edge42" class="edge">
+<title>module~mag&#45;&gt;module~io</title>
+<path fill="none" stroke="#000000" d="M367.8568,-434.5111C360.8968,-430.4617 353.4111,-425.6826 347,-420.6296 317.5274,-397.4 288.1785,-365.2093 270.5584,-344.6493"/>
+<polygon fill="#000000" stroke="#000000" points="273.105,-342.2404 263.9737,-336.8673 267.7613,-346.762 273.105,-342.2404"/>
+</g>
+<!-- module~io_aurora -->
+<g id="module~~reader~~UsedByGraph_node28" class="node">
+<title>module~io_aurora</title>
+<g id="a_module~~reader~~UsedByGraph_node28"><a xlink:href=".././module/io_aurora.html" xlink:title="io_aurora">
+<polygon fill="#5bc0de" stroke="#5bc0de" points="420,-378.6296 362,-378.6296 362,-354.6296 420,-354.6296 420,-378.6296"/>
+<text text-anchor="middle" x="391" y="-364.2296" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">io_aurora</text>
+</a>
+</g>
+</g>
+<!-- module~io_aurora&#45;&gt;module~io -->
+<g id="module~~reader~~UsedByGraph_edge43" class="edge">
+<title>module~io_aurora&#45;&gt;module~io</title>
+<path fill="none" stroke="#000000" d="M361.9458,-357.7224C341.2394,-351.3745 313.2381,-342.7902 290.9437,-335.9554"/>
+<polygon fill="#000000" stroke="#000000" points="291.7353,-332.5373 281.1486,-332.9525 289.6836,-339.2299 291.7353,-332.5373"/>
+</g>
+<!-- module~glow_mod -->
+<g id="module~~reader~~UsedByGraph_node29" class="node">
+<title>module~glow_mod</title>
+<g id="a_module~~reader~~UsedByGraph_node29"><a xlink:href=".././module/glow_mod.html" xlink:title="glow_mod">
+<polygon fill="#5bc0de" stroke="#5bc0de" points="556.5,-831.6296 495.5,-831.6296 495.5,-807.6296 556.5,-807.6296 556.5,-831.6296"/>
+<text text-anchor="middle" x="526" y="-817.2296" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">glow_mod</text>
+</a>
+</g>
+</g>
+<!-- module~glow_mod&#45;&gt;module~ionization -->
+<g id="module~~reader~~UsedByGraph_edge55" class="edge">
+<title>module~glow_mod&#45;&gt;module~ionization</title>
+<path fill="none" stroke="#000000" d="M495.3664,-810.0991C475.9786,-804.0674 450.7374,-796.2145 429.9348,-789.7426"/>
+<polygon fill="#000000" stroke="#000000" points="430.7125,-786.3192 420.1242,-786.6904 428.633,-793.0032 430.7125,-786.3192"/>
+</g>
+<!-- module~potential_worker -->
+<g id="module~~reader~~UsedByGraph_node30" class="node">
+<title>module~potential_worker</title>
+<g id="a_module~~reader~~UsedByGraph_node30"><a xlink:href=".././module/potential_worker.html" xlink:title="potential_worker">
+<polygon fill="#5bc0de" stroke="#5bc0de" points="571.5,-625.6296 480.5,-625.6296 480.5,-601.6296 571.5,-601.6296 571.5,-625.6296"/>
+<text text-anchor="middle" x="526" y="-611.2296" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">potential_worker</text>
+</a>
+</g>
+</g>
+<!-- module~potential_worker&#45;&gt;module~potential_comm -->
+<g id="module~~reader~~UsedByGraph_edge37" class="edge">
+<title>module~potential_worker&#45;&gt;module~potential_comm</title>
+<path fill="none" stroke="#000000" d="M480.2952,-613.9681C469.0542,-614.0514 456.9099,-614.1413 445.3069,-614.2273"/>
+<polygon fill="#000000" stroke="#000000" points="445.2596,-610.7274 435.2858,-614.3015 445.3115,-617.7272 445.2596,-610.7274"/>
+</g>
+<!-- module~potential_root -->
+<g id="module~~reader~~UsedByGraph_node31" class="node">
+<title>module~potential_root</title>
+<g id="a_module~~reader~~UsedByGraph_node31"><a xlink:href=".././module/potential_root.html" xlink:title="potential_root">
+<polygon fill="#5bc0de" stroke="#5bc0de" points="565,-545.6296 487,-545.6296 487,-521.6296 565,-521.6296 565,-545.6296"/>
+<text text-anchor="middle" x="526" y="-531.2296" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">potential_root</text>
+</a>
+</g>
+</g>
+<!-- module~potential_root&#45;&gt;module~potential_comm -->
+<g id="module~~reader~~UsedByGraph_edge38" class="edge">
+<title>module~potential_root&#45;&gt;module~potential_comm</title>
+<path fill="none" stroke="#000000" d="M495.9452,-545.7524C487.5726,-549.6772 478.6751,-554.3876 471,-559.6296 452.8264,-572.0418 453.1506,-581.1836 435,-593.6296 432.9232,-595.0536 430.7349,-596.4303 428.489,-597.7514"/>
+<polygon fill="#000000" stroke="#000000" points="426.7694,-594.7024 419.6556,-602.5538 430.1129,-600.8523 426.7694,-594.7024"/>
+</g>
+<!-- module~input -->
+<g id="module~~reader~~UsedByGraph_node32" class="node">
+<title>module~input</title>
+<g id="a_module~~reader~~UsedByGraph_node32"><a xlink:href=".././module/input.html" xlink:title="input">
+<polygon fill="#5bc0de" stroke="#5bc0de" points="418,-500.6296 364,-500.6296 364,-476.6296 418,-476.6296 418,-500.6296"/>
+<text text-anchor="middle" x="391" y="-486.2296" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">input</text>
+</a>
+</g>
+</g>
+<!-- module~input&#45;&gt;module~io -->
+<g id="module~~reader~~UsedByGraph_edge44" class="edge">
+<title>module~input&#45;&gt;module~io</title>
+<path fill="none" stroke="#000000" d="M363.9657,-478.6023C357.9887,-475.6312 351.9647,-471.9816 347,-467.6296 307.1842,-432.7268 277.6215,-376.8269 263.4108,-346.2824"/>
+<polygon fill="#000000" stroke="#000000" points="266.5031,-344.6265 259.1874,-336.9628 260.1272,-347.5159 266.5031,-344.6265"/>
+</g>
+<!-- module~sources_mpi -->
+<g id="module~~reader~~UsedByGraph_node33" class="node">
+<title>module~sources_mpi</title>
+<g id="a_module~~reader~~UsedByGraph_node33"><a xlink:href=".././module/sources_mpi.html" xlink:title="sources_mpi">
+<polygon fill="#5bc0de" stroke="#5bc0de" points="562.5,-709.6296 489.5,-709.6296 489.5,-685.6296 562.5,-685.6296 562.5,-709.6296"/>
+<text text-anchor="middle" x="526" y="-695.2296" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">sources_mpi</text>
+</a>
+</g>
+</g>
+<!-- module~sources_mpi&#45;&gt;module~sources -->
+<g id="module~~reader~~UsedByGraph_edge35" class="edge">
+<title>module~sources_mpi&#45;&gt;module~sources</title>
+<path fill="none" stroke="#000000" d="M489.4671,-697.6296C470.4918,-697.6296 447.3481,-697.6296 428.267,-697.6296"/>
+<polygon fill="#000000" stroke="#000000" points="428.1366,-694.1297 418.1366,-697.6296 428.1366,-701.1297 428.1366,-694.1297"/>
+</g>
+<!-- module~mag_hdf5 -->
+<g id="module~~reader~~UsedByGraph_node34" class="node">
+<title>module~mag_hdf5</title>
+<g id="a_module~~reader~~UsedByGraph_node34"><a xlink:href=".././module/mag_hdf5.html" xlink:title="mag_hdf5">
+<polygon fill="#5bc0de" stroke="#5bc0de" points="421.5,-336.6296 360.5,-336.6296 360.5,-312.6296 421.5,-312.6296 421.5,-336.6296"/>
+<text text-anchor="middle" x="391" y="-322.2296" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">mag_hdf5</text>
+</a>
+</g>
+</g>
+<!-- module~mag_hdf5&#45;&gt;module~io -->
+<g id="module~~reader~~UsedByGraph_edge45" class="edge">
+<title>module~mag_hdf5&#45;&gt;module~io</title>
+<path fill="none" stroke="#000000" d="M360.2545,-324.6296C339.9155,-324.6296 313.1184,-324.6296 291.524,-324.6296"/>
+<polygon fill="#000000" stroke="#000000" points="291.3922,-321.1297 281.3922,-324.6296 291.3921,-328.1297 291.3922,-321.1297"/>
+</g>
+<!-- module~mag_hdf5~2 -->
+<g id="module~~reader~~UsedByGraph_node35" class="node">
+<title>module~mag_hdf5~2</title>
+<g id="a_module~~reader~~UsedByGraph_node35"><a xlink:href=".././module/mag_hdf5~2.html" xlink:title="mag_hdf5">
+<polygon fill="#5bc0de" stroke="#5bc0de" points="421.5,-294.6296 360.5,-294.6296 360.5,-270.6296 421.5,-270.6296 421.5,-294.6296"/>
+<text text-anchor="middle" x="391" y="-280.2296" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">mag_hdf5</text>
+</a>
+</g>
+</g>
+<!-- module~mag_hdf5~2&#45;&gt;module~io -->
+<g id="module~~reader~~UsedByGraph_edge46" class="edge">
+<title>module~mag_hdf5~2&#45;&gt;module~io</title>
+<path fill="none" stroke="#000000" d="M360.2545,-292.0552C339.823,-298.3189 312.8746,-306.5804 291.2298,-313.216"/>
+<polygon fill="#000000" stroke="#000000" points="289.9271,-309.9546 281.3922,-316.232 291.9789,-316.6471 289.9271,-309.9546"/>
+</g>
+<!-- module~readgrid_hdf5 -->
+<g id="module~~reader~~UsedByGraph_node36" class="node">
+<title>module~readgrid_hdf5</title>
+<g id="a_module~~reader~~UsedByGraph_node36"><a xlink:href=".././module/readgrid_hdf5.html" xlink:title="readgrid_hdf5">
+<polygon fill="#5bc0de" stroke="#5bc0de" points="430.5,-542.6296 351.5,-542.6296 351.5,-518.6296 430.5,-518.6296 430.5,-542.6296"/>
+<text text-anchor="middle" x="391" y="-528.2296" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">readgrid_hdf5</text>
+</a>
+</g>
+</g>
+<!-- module~readgrid_hdf5&#45;&gt;module~grid_read -->
+<g id="module~~reader~~UsedByGraph_edge49" class="edge">
+<title>module~readgrid_hdf5&#45;&gt;module~grid_read</title>
+<path fill="none" stroke="#000000" d="M363.0542,-518.4112C357.6155,-515.7232 352.0414,-512.7425 347,-509.6296 329.7532,-498.98 328.3385,-492.129 311,-481.6296 305.1241,-478.0713 298.6782,-474.6863 292.3012,-471.6057"/>
+<polygon fill="#000000" stroke="#000000" points="293.6258,-468.3619 283.0819,-467.3251 290.6779,-474.7109 293.6258,-468.3619"/>
+</g>
+<!-- module~output -->
+<g id="module~~reader~~UsedByGraph_node37" class="node">
+<title>module~output</title>
+<g id="a_module~~reader~~UsedByGraph_node37"><a xlink:href=".././module/output.html" xlink:title="output">
+<polygon fill="#5bc0de" stroke="#5bc0de" points="418,-252.6296 364,-252.6296 364,-228.6296 418,-228.6296 418,-252.6296"/>
+<text text-anchor="middle" x="391" y="-238.2296" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">output</text>
+</a>
+</g>
+</g>
+<!-- module~output&#45;&gt;module~io -->
+<g id="module~~reader~~UsedByGraph_edge48" class="edge">
+<title>module~output&#45;&gt;module~io</title>
+<path fill="none" stroke="#000000" d="M364.1445,-252.6579C358.4038,-255.4469 352.4346,-258.5154 347,-261.6296 323.0072,-275.3782 297.0611,-293.2246 278.6865,-306.4112"/>
+<polygon fill="#000000" stroke="#000000" points="276.3631,-303.7723 270.3161,-312.4719 280.4685,-309.442 276.3631,-303.7723"/>
+</g>
+<!-- module~glow_dummy -->
+<g id="module~~reader~~UsedByGraph_node38" class="node">
+<title>module~glow_dummy</title>
+<g id="a_module~~reader~~UsedByGraph_node38"><a xlink:href=".././module/glow_dummy.html" xlink:title="glow_dummy">
+<polygon fill="#5bc0de" stroke="#5bc0de" points="564,-789.6296 488,-789.6296 488,-765.6296 564,-765.6296 564,-789.6296"/>
+<text text-anchor="middle" x="526" y="-775.2296" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">glow_dummy</text>
+</a>
+</g>
+</g>
+<!-- module~glow_dummy&#45;&gt;module~ionization -->
+<g id="module~~reader~~UsedByGraph_edge56" class="edge">
+<title>module~glow_dummy&#45;&gt;module~ionization</title>
+<path fill="none" stroke="#000000" d="M487.6755,-777.6296C469.8206,-777.6296 448.5933,-777.6296 430.5841,-777.6296"/>
+<polygon fill="#000000" stroke="#000000" points="430.4023,-774.1297 420.4022,-777.6296 430.4022,-781.1297 430.4023,-774.1297"/>
+</g>
+<!-- module~readgrid_raw -->
+<g id="module~~reader~~UsedByGraph_node39" class="node">
+<title>module~readgrid_raw</title>
+<g id="a_module~~reader~~UsedByGraph_node39"><a xlink:href=".././module/readgrid_raw.html" xlink:title="readgrid_raw">
+<polygon fill="#5bc0de" stroke="#5bc0de" points="429,-584.6296 353,-584.6296 353,-560.6296 429,-560.6296 429,-584.6296"/>
+<text text-anchor="middle" x="391" y="-570.2296" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">readgrid_raw</text>
+</a>
+</g>
+</g>
+<!-- module~readgrid_raw&#45;&gt;module~grid_read -->
+<g id="module~~reader~~UsedByGraph_edge50" class="edge">
+<title>module~readgrid_raw&#45;&gt;module~grid_read</title>
+<path fill="none" stroke="#000000" d="M359.0739,-560.5116C354.7075,-557.997 350.5226,-555.049 347,-551.6296 321.8976,-527.2621 336.3128,-505.7783 311,-481.6296 305.6436,-476.5195 299.1063,-472.2888 292.3946,-468.8311"/>
+<polygon fill="#000000" stroke="#000000" points="293.7737,-465.6127 283.2288,-464.5852 290.8314,-471.9643 293.7737,-465.6127"/>
+</g>
+<!-- module~io_aurora_raw -->
+<g id="module~~reader~~UsedByGraph_node40" class="node">
+<title>module~io_aurora_raw</title>
+<g id="a_module~~reader~~UsedByGraph_node40"><a xlink:href=".././module/io_aurora_raw.html" xlink:title="io_aurora_raw">
+<polygon fill="#5bc0de" stroke="#5bc0de" points="567,-336.6296 485,-336.6296 485,-312.6296 567,-312.6296 567,-336.6296"/>
+<text text-anchor="middle" x="526" y="-322.2296" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">io_aurora_raw</text>
+</a>
+</g>
+</g>
+<!-- module~io_aurora_raw&#45;&gt;module~io_aurora -->
+<g id="module~~reader~~UsedByGraph_edge58" class="edge">
+<title>module~io_aurora_raw&#45;&gt;module~io_aurora</title>
+<path fill="none" stroke="#000000" d="M487.3144,-336.6651C469.3016,-342.2691 447.9185,-348.9216 429.8813,-354.5332"/>
+<polygon fill="#000000" stroke="#000000" points="428.7563,-351.2176 420.2475,-357.5303 430.8358,-357.9016 428.7563,-351.2176"/>
+</g>
+<!-- module~path_exists~2 -->
+<g id="module~~reader~~UsedByGraph_node41" class="node">
+<title>module~path_exists~2</title>
+<g id="a_module~~reader~~UsedByGraph_node41"><a xlink:href=".././module/path_exists~2.html" xlink:title="path_exists">
+<polygon fill="#5bc0de" stroke="#5bc0de" points="559.5,-460.6296 492.5,-460.6296 492.5,-436.6296 559.5,-436.6296 559.5,-460.6296"/>
+<text text-anchor="middle" x="526" y="-446.2296" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">path_exists</text>
+</a>
+</g>
+</g>
+<!-- module~path_exists~2&#45;&gt;module~input -->
+<g id="module~~reader~~UsedByGraph_edge61" class="edge">
+<title>module~path_exists~2&#45;&gt;module~input</title>
+<path fill="none" stroke="#000000" d="M492.282,-458.6201C472.7735,-464.4004 448.1925,-471.6836 428.1322,-477.6274"/>
+<polygon fill="#000000" stroke="#000000" points="426.9917,-474.3149 418.398,-480.5116 428.9804,-481.0265 426.9917,-474.3149"/>
+</g>
+<!-- module~io_aurora_hdf5 -->
+<g id="module~~reader~~UsedByGraph_node42" class="node">
+<title>module~io_aurora_hdf5</title>
+<g id="a_module~~reader~~UsedByGraph_node42"><a xlink:href=".././module/io_aurora_hdf5.html" xlink:title="io_aurora_hdf5">
+<polygon fill="#5bc0de" stroke="#5bc0de" points="568.5,-294.6296 483.5,-294.6296 483.5,-270.6296 568.5,-270.6296 568.5,-294.6296"/>
+<text text-anchor="middle" x="526" y="-280.2296" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">io_aurora_hdf5</text>
+</a>
+</g>
+</g>
+<!-- module~io_aurora_hdf5&#45;&gt;module~io_aurora -->
+<g id="module~~reader~~UsedByGraph_edge59" class="edge">
+<title>module~io_aurora_hdf5&#45;&gt;module~io_aurora</title>
+<path fill="none" stroke="#000000" d="M487.1773,-294.6299C481.5102,-297.171 475.9308,-300.1579 471,-303.6296 450.8973,-317.7833 454.5164,-330.6778 435,-345.6296 433.1984,-347.0098 431.2916,-348.3312 429.3213,-349.5911"/>
+<polygon fill="#000000" stroke="#000000" points="427.3343,-346.6961 420.406,-354.7116 430.8206,-352.7661 427.3343,-346.6961"/>
+</g>
+<!-- module~io_aurora_hdf5~2 -->
+<g id="module~~reader~~UsedByGraph_node43" class="node">
+<title>module~io_aurora_hdf5~2</title>
+<g id="a_module~~reader~~UsedByGraph_node43"><a xlink:href=".././module/io_aurora_hdf5~2.html" xlink:title="io_aurora_hdf5">
+<polygon fill="#5bc0de" stroke="#5bc0de" points="568.5,-378.6296 483.5,-378.6296 483.5,-354.6296 568.5,-354.6296 568.5,-378.6296"/>
+<text text-anchor="middle" x="526" y="-364.2296" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">io_aurora_hdf5</text>
+</a>
+</g>
+</g>
+<!-- module~io_aurora_hdf5~2&#45;&gt;module~io_aurora -->
+<g id="module~~reader~~UsedByGraph_edge57" class="edge">
+<title>module~io_aurora_hdf5~2&#45;&gt;module~io_aurora</title>
+<path fill="none" stroke="#000000" d="M483.2852,-366.6296C466.4295,-366.6296 447.1793,-366.6296 430.6371,-366.6296"/>
+<polygon fill="#000000" stroke="#000000" points="430.2099,-363.1297 420.2098,-366.6296 430.2098,-370.1297 430.2099,-363.1297"/>
+</g>
+<!-- module~path_exists -->
+<g id="module~~reader~~UsedByGraph_node44" class="node">
+<title>module~path_exists</title>
+<g id="a_module~~reader~~UsedByGraph_node44"><a xlink:href=".././module/path_exists.html" xlink:title="path_exists">
+<polygon fill="#5bc0de" stroke="#5bc0de" points="559.5,-502.6296 492.5,-502.6296 492.5,-478.6296 559.5,-478.6296 559.5,-502.6296"/>
+<text text-anchor="middle" x="526" y="-488.2296" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">path_exists</text>
+</a>
+</g>
+</g>
+<!-- module~path_exists&#45;&gt;module~input -->
+<g id="module~~reader~~UsedByGraph_edge60" class="edge">
+<title>module~path_exists&#45;&gt;module~input</title>
+<path fill="none" stroke="#000000" d="M492.282,-490.13C472.8625,-489.8423 448.4168,-489.4802 428.4073,-489.1837"/>
+<polygon fill="#000000" stroke="#000000" points="428.4488,-485.6841 418.398,-489.0355 428.3451,-492.6833 428.4488,-485.6841"/>
+</g>
+</g>
+</svg>
+</div><script>var panmodulereaderUsedByGraph = svgPanZoom('#modulereaderUsedByGraph', {zoomEnabled: true,controlIconsEnabled: true, fit: true, center: true,}); </script><div><a type="button" class="graph-help" data-toggle="modal" href="#graph-help-text">Help</a></div><div class="modal fade" id="graph-help-text" tabindex="-1" role="dialog"><div class="modal-dialog modal-lg" role="document"><div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button><h4 class="modal-title" id="-graph-help-label">Graph Key</h4></div><div class="modal-body">
+    <p>Nodes of different colours represent the following: </p>
+    <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.40.1 (20161225.0304)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="490pt" height="32pt"
+ viewBox="0.00 0.00 489.50 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 28)">
+<title>Graph Key</title>
+<polygon fill="#ffffff" stroke="transparent" points="-4,4 -4,-28 485.5,-28 485.5,4 -4,4"/>
+<!-- Module -->
+<g id="node1" class="node">
+<title>Module</title>
+<polygon fill="#337ab7" stroke="#337ab7" points="54,-24 0,-24 0,0 54,0 54,-24"/>
+<text text-anchor="middle" x="27" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Module</text>
+</g>
+<!-- Submodule -->
+<g id="node2" class="node">
+<title>Submodule</title>
+<polygon fill="#5bc0de" stroke="#5bc0de" points="139.5,-24 72.5,-24 72.5,0 139.5,0 139.5,-24"/>
+<text text-anchor="middle" x="106" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Submodule</text>
+</g>
+<!-- Subroutine -->
+<g id="node3" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="222,-24 158,-24 158,0 222,0 222,-24"/>
+<text text-anchor="middle" x="190" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node4" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="294,-24 240,-24 240,0 294,0 294,-24"/>
+<text text-anchor="middle" x="267" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Function</text>
+</g>
+<!-- Program -->
+<g id="node5" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="366,-24 312,-24 312,0 366,0 366,-24"/>
+<text text-anchor="middle" x="339" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node6" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="#000000" points="481.5,-24 384.5,-24 384.5,0 481.5,0 481.5,-24"/>
+<text text-anchor="middle" x="433" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#000000">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+    
+    <p>Solid arrows point from a submodule to the (sub)module which it is
+    descended from. Dashed arrows point from a module or program unit to 
+    modules which it uses.
+    </p>
+    </div></div></div></div>
+  </li>
+  
+      </ul>
+    </div>
+    
+
+    <br>
+
+    <section class="visible-xs visible-sm hidden-md">
+      
+<h3>Contents</h3>
+ 
+
+
+
+
+
+
+
+
+
+
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#inters-1">Interfaces</a></h3></div>
+  <div id="inters-1" class="panel-collapse collapse">
+    <div class="list-group">
+      
+      <a class="list-group-item" href="../module/reader.html#interface-get_simsize2">get_simsize2</a>
+      
+      <a class="list-group-item" href="../module/reader.html#interface-get_simsize3">get_simsize3</a>
+      
+      <a class="list-group-item" href="../module/reader.html#interface-get_grid2">get_grid2</a>
+      
+      <a class="list-group-item" href="../module/reader.html#interface-get_efield">get_Efield</a>
+      
+      <a class="list-group-item" href="../module/reader.html#interface-get_precip">get_precip</a>
+      
+      <a class="list-group-item" href="../module/reader.html#interface-get_neutral2">get_neutral2</a>
+      
+      <a class="list-group-item" href="../module/reader.html#interface-get_neutral3">get_neutral3</a>
+      
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    </section>
+    <br class="visible-xs visible-sm hidden-md">
+
+    
+
+    
+    
+    
+    
+    
+    <section>
+   <h2>Interfaces</h2>
+   
+     
+<div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="interface-get_simsize2"></span><h3>interface 
+    
+  </h3></div>
+  
+  <ul class="list-group">
+  
+    <li class="list-group-item">
+    
+    
+    <h3>
+public module subroutine get_simsize2(path, llon, llat)
+    
+    
+   
+   <a href='../proc/get_simsize2.html'><button type="button" class="btn btn-info depwarn">Implementation &rarr;</button></a>
+    
+</h3>
+    
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>character(len=*),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>path</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer,</td>
+  <td>intent(out)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>llon</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer,</td>
+  <td>intent(out)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>llat</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+    </li>
+  
+  </ul>
+</div>
+
+    
+     
+<div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="interface-get_simsize3"></span><h3>interface 
+    
+  </h3></div>
+  
+  <ul class="list-group">
+  
+    <li class="list-group-item">
+    
+    
+    <h3>
+public module subroutine get_simsize3(path, lx1, lx2all, lx3all)
+    
+    
+   
+   <a href='../proc/get_simsize3.html'><button type="button" class="btn btn-info depwarn">Implementation &rarr;</button></a>
+    
+</h3>
+    
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>character(len=*),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>path</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer,</td>
+  <td>intent(out)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>lx1</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer,</td>
+  <td>intent(out)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>lx2all</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer,</td>
+  <td>intent(out),</td>
+  <td>optional</td>
+  
+  <td></td><td>::</td>
+  <td><strong>lx3all</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+    </li>
+  
+  </ul>
+</div>
+
+    
+     
+<div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="interface-get_grid2"></span><h3>interface 
+    
+  </h3></div>
+  
+  <ul class="list-group">
+  
+    <li class="list-group-item">
+    
+    
+    <h3>
+public module subroutine get_grid2(path, mlonp, mlatp)
+    
+    
+   
+   <a href='../proc/get_grid2.html'><button type="button" class="btn btn-info depwarn">Implementation &rarr;</button></a>
+    
+</h3>
+    
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>character(len=*),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>path</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(out),</td>
+  <td></td>
+  
+  <td>dimension(:)</td><td>::</td>
+  <td><strong>mlonp</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(out),</td>
+  <td></td>
+  
+  <td>dimension(:)</td><td>::</td>
+  <td><strong>mlatp</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+    </li>
+  
+  </ul>
+</div>
+
+    
+     
+<div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="interface-get_efield"></span><h3>interface 
+    
+  </h3></div>
+  
+  <ul class="list-group">
+  
+    <li class="list-group-item">
+    
+    
+    <h3>
+public module subroutine get_Efield(path, flagdirich, E0xp, E0yp, Vminx1p, Vmaxx1p, Vminx2pslice, Vmaxx2pslice, Vminx3pslice, Vmaxx3pslice)
+    
+    
+   
+   <a href='../proc/get_efield.html'><button type="button" class="btn btn-info depwarn">Implementation &rarr;</button></a>
+    
+</h3>
+    
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>character(len=*),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>path</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer,</td>
+  <td>intent(out)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>flagdirich</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(out),</td>
+  <td></td>
+  
+  <td>dimension(:,:)</td><td>::</td>
+  <td><strong>E0xp</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(out),</td>
+  <td></td>
+  
+  <td>dimension(:,:)</td><td>::</td>
+  <td><strong>E0yp</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(out),</td>
+  <td></td>
+  
+  <td>dimension(:,:)</td><td>::</td>
+  <td><strong>Vminx1p</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(out),</td>
+  <td></td>
+  
+  <td>dimension(:,:)</td><td>::</td>
+  <td><strong>Vmaxx1p</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(out),</td>
+  <td></td>
+  
+  <td>dimension(:)</td><td>::</td>
+  <td><strong>Vminx2pslice</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(out),</td>
+  <td></td>
+  
+  <td>dimension(:)</td><td>::</td>
+  <td><strong>Vmaxx2pslice</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(out),</td>
+  <td></td>
+  
+  <td>dimension(:)</td><td>::</td>
+  <td><strong>Vminx3pslice</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(out),</td>
+  <td></td>
+  
+  <td>dimension(:)</td><td>::</td>
+  <td><strong>Vmaxx3pslice</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+    </li>
+  
+  </ul>
+</div>
+
+    
+     
+<div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="interface-get_precip"></span><h3>interface 
+    
+  </h3></div>
+  
+  <ul class="list-group">
+  
+    <li class="list-group-item">
+    
+    
+    <h3>
+public module subroutine get_precip(path, Qp, E0p)
+    
+    
+   
+   <a href='../proc/get_precip.html'><button type="button" class="btn btn-info depwarn">Implementation &rarr;</button></a>
+    
+</h3>
+    
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>character(len=*),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>path</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(out),</td>
+  <td></td>
+  
+  <td>dimension(:,:)</td><td>::</td>
+  <td><strong>Qp</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(out),</td>
+  <td></td>
+  
+  <td>dimension(:,:)</td><td>::</td>
+  <td><strong>E0p</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+    </li>
+  
+  </ul>
+</div>
+
+    
+     
+<div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="interface-get_neutral2"></span><h3>interface 
+    
+  </h3></div>
+  
+  <ul class="list-group">
+  
+    <li class="list-group-item">
+    
+    
+    <h3>
+public module subroutine get_neutral2(path, dnO, dnN2, dnO2, dvnrho, dvnz, dTn)
+    
+    
+   
+   <a href='../proc/get_neutral2.html'><button type="button" class="btn btn-info depwarn">Implementation &rarr;</button></a>
+    
+</h3>
+    
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>character(len=*),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>path</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(out),</td>
+  <td></td>
+  
+  <td>dimension(:,:,:)</td><td>::</td>
+  <td><strong>dnO</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(out),</td>
+  <td></td>
+  
+  <td>dimension(:,:,:)</td><td>::</td>
+  <td><strong>dnN2</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(out),</td>
+  <td></td>
+  
+  <td>dimension(:,:,:)</td><td>::</td>
+  <td><strong>dnO2</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(out),</td>
+  <td></td>
+  
+  <td>dimension(:,:,:)</td><td>::</td>
+  <td><strong>dvnrho</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(out),</td>
+  <td></td>
+  
+  <td>dimension(:,:,:)</td><td>::</td>
+  <td><strong>dvnz</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(out),</td>
+  <td></td>
+  
+  <td>dimension(:,:,:)</td><td>::</td>
+  <td><strong>dTn</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+    </li>
+  
+  </ul>
+</div>
+
+    
+     
+<div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="interface-get_neutral3"></span><h3>interface 
+    
+  </h3></div>
+  
+  <ul class="list-group">
+  
+    <li class="list-group-item">
+    
+    
+    <h3>
+public module subroutine get_neutral3(path, dnOall, dnN2all, dnO2all, dvnxall, dvnrhoall, dvnzall, dTnall)
+    
+    
+   
+   <a href='../proc/get_neutral3.html'><button type="button" class="btn btn-info depwarn">Implementation &rarr;</button></a>
+    
+</h3>
+    
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>character(len=*),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>path</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(out),</td>
+  <td></td>
+  
+  <td>dimension(:,:,:)</td><td>::</td>
+  <td><strong>dnOall</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(out),</td>
+  <td></td>
+  
+  <td>dimension(:,:,:)</td><td>::</td>
+  <td><strong>dnN2all</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(out),</td>
+  <td></td>
+  
+  <td>dimension(:,:,:)</td><td>::</td>
+  <td><strong>dnO2all</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(out),</td>
+  <td></td>
+  
+  <td>dimension(:,:,:)</td><td>::</td>
+  <td><strong>dvnxall</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(out),</td>
+  <td></td>
+  
+  <td>dimension(:,:,:)</td><td>::</td>
+  <td><strong>dvnrhoall</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(out),</td>
+  <td></td>
+  
+  <td>dimension(:,:,:)</td><td>::</td>
+  <td><strong>dvnzall</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=wp),</td>
+  <td>intent(out),</td>
+  <td></td>
+  
+  <td>dimension(:,:,:)</td><td>::</td>
+  <td><strong>dTnall</strong></td><td></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+    </li>
+  
+  </ul>
+</div>
+
+    
+    </section>
+  <br>
+    
+
+    
+    
+    
+    
+    
+
+    
+    
+    
+    </div>
+  </div>
+
+  
+    <hr>    
+    </div> <!-- /container -->
+    <footer>
+      <div class="container">
+      <div class="row">
+        <div class="col-xs-6 col-md-4"><p>&copy; 2020 <a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/80x15.png" /></a>
+                                          </p></div>
+        <div class="col-xs-6 col-md-4 col-md-push-4">
+          <p class="text-right">
+            Documentation generated by 
+            <a href="https://github.com/cmacmackin/ford">FORD</a>
+            
+          </p>
+        </div>
+        <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> GEMINI3D was developed by Matthew Zettergren
+Guy Grubbs
+Michael Hirsch</p></div>
+      </div>
+      <br>
+      </div> <!-- /container -->    
+    </footer>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+<!--
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+-->
+    <script src="../js/bootstrap.min.js"></script>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <script src="../js/ie10-viewport-bug-workaround.js"></script>
+
+    <!-- MathJax JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } },
+        jax: ['input/TeX','input/MathML','output/HTML-CSS'],
+        extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']
+      });
+    </script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    
+    
+  </body>
+</html>

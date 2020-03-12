@@ -64,6 +64,8 @@ Michael Hirsch" >
             <li><a href="../lists/modules.html">Modules</a></li>
         
             
+    <li><a href="../blockdata/gtd7bk.html">Block Data</a></li>
+    
                                 
             <li><a href="../lists/procedures.html">Procedures</a></li>
         
@@ -83,6 +85,8 @@ Michael Hirsch" >
 
 <li class="visible-xs hidden-sm visible-lg"><a href="../lists/modules.html">Modules</a></li>
 
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../blockdata/gtd7bk.html">Block Data</a></li>
 
 
 <li class="visible-xs hidden-sm visible-lg"><a href="../lists/procedures.html">Procedures</a></li>
@@ -104,7 +108,7 @@ Michael Hirsch" >
   
   <div class="row">
     <h1>potential_root_mpi_curv
-      <small>Subroutine</small>
+      <small>Module Procedure</small>
     
     </h1>
     
@@ -121,21 +125,21 @@ Michael Hirsch" >
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 5.9% of total for procedures.">425 statements</a>
+    title=" 3.7% of total for procedures.">335 statements</a>
      </li> 
      
      
      
-    <li><i class="fa fa-code"></i><a href="../src/potential_comm_mumps.f90"> Source File</a></li>
+    <li><i class="fa fa-code"></i><a href="../src/potential_root.f90"> Source File</a></li>
      
      
   </ul>
   <ol class="breadcrumb in-well text-right">
   
     
-     <li><a href='../sourcefile/potential_comm_mumps.f90.html'>potential_comm_mumps.f90</a></li>
+     <li><a href='../sourcefile/potential_root.f90.html'>potential_root.f90</a></li>
     
-     <li><a href='../module/potential_comm~2.html'>potential_comm</a></li>
+     <li><a href='../module/potential_root.html'>potential_root</a></li>
     
   
      <li class="active">potential_root_mpi_curv</li>
@@ -188,8 +192,10 @@ Michael Hirsch" >
     
     <div class="col-md-9" id='text'>
     <h2>
-public subroutine potential_root_mpi_curv(it, t, dt, sig0, sigP, sigH, incap, vs2, vs3, vn2, vn3, sourcemlat, B1, x, potsolve, E1, E2, E3, J1, J2, J3, Phiall, flagE0file, dtE0, E0dir, ymd, UTsec)
+module procedure potential_root_mpi_curv <small>module subroutine potential_root_mpi_curv(it, t, dt, sig0, sigP, sigH, incap, vs2, vs3, vn2, vn3, sourcemlat, B1, x, potsolve, flagcap, E1, E2, E3, J1, J2, J3, Phiall, flagE0file, dtE0, E0dir, ymd, UTsec)</small>
     
+    
+   <a href='../interface/potential_root_mpi_curv.html'><button type="button" class="btn btn-info depwarn">Interface &rarr;</button></a>
     
    
 </h2>
@@ -198,10 +204,55 @@ public subroutine potential_root_mpi_curv(it, t, dt, sig0, sigP, sigH, incap, vs
 
 
     
-    <p>!!!!!!</p>
-<p>!!!!!!!</p>
-<p>!!!!!!</p>
-<p>!!!!!!!</p>
+    <p>ROOT MPI COMM./SOLVE ROUTINE FOR POTENTIAL.  THIS VERSION
+ INCLUDES THE POLARIZATION CURRENT TIME DERIVATIVE PART
+ AND CONVECTIVE PARTS IN MATRIX SOLUTION.
+ STATE VARIABLES VS2,3 INCLUDE GHOST CELLS.  FOR NOW THE
+ POLARIZATION TERMS ARE PASSED BACK TO MAIN FN, EVEN THOUGH
+ THEY ARE NOT USED (THEY MAY BE IN THE FUTURE)</p>
+<p>POPULATE BACKGROUND AND BOUNDARY CONDITION ARRAYS
+ - IDEALLY ROOT ONLY SINCE IT INVOLVES FILE INPUT, ALTHOUGH THE INTERPOLATION MAY BE SLOW...
+ wind x2 current, note that all workers already have a copy of this.
+ wind x3 current
+ wind x2 current
+ wind x3 current
+!!!!!!</p>
+<p>INTEGRATE CONDUCTANCES AND CAPACITANCES FOR SOLVER COEFFICIENTS
+ PRODUCE A FIELD-INTEGRATED SOURCE TERM
+ workers don't have access to boundary conditions, unless root sends</p>
+<p>need to pick out the ExB drift here (i.e. the drifts from highest altitudes); but this is only valid for Cartesian,
+ so it's okay for the foreseeable future</p>
+<p>note tha this solver is only valid for cartesian meshes, unless the inertial capacitance is set to zero
+ !note that either sigPint2 or 3 will work since this must be cartesian...
+ Dirichlet conditions - since this is field integrated we just copy BCs specified by user
+ to other locations along field line</p>
+<p>potential is whatever user specifies, since we assume equipotential field lines,
+ it doesn't really matter whether we use Vmaxx1 or Vminx1.
+ Note however, tha thte boundary conditions subroutines should explicitly
+ set these to be equal with Dirichlet conditions, for consistency.
+ copy the potential across the ix1 direction; past this point there is no real difference with 3D,
+ note that this is still valid in curvilinear form
+ resolved 3D solve
+ ZZZ - conductivities need to be properly scaled here...
+ So does the source term...  Maybe leave as broken for now since I don't really plan to use this code
+ in a 2D solve negate this due to it being a cross produce and the fact that we've permuted the 2 and 3 dimensions.
+ ZZZ - NOT JUST THIS WORKS WITH BACKGROUND FIELDS???</p>
+<p>EXECUTE THE SOLVE WITH MUMPS AND SCALED TERMS
+ NOTE THE LACK OF A SPECIAL CASE HERE TO CHANGE THE POTENTIAL PROBLEM
+ - ONLY THE HALL TERM CHANGES (SINCE RELATED TO EXB) BUT THAT DOESN'T APPEAR IN THIS EQN!
+!!!!!!!</p>
+<p>STORE PREVIOUS TIME TOTAL FIELDS BEFORE UPDATING THE ELECTRIC FIELDS WITH NEW POTENTIAL
+ (OLD FIELDS USED TO CALCULATE POLARIZATION CURRENT)
+ causes major memory leak. maybe from arithmetic statement argument?
+ Left here as a 'lesson learned' (or is it a gfortran bug...)</p>
+<p>ZZZ this is really bad needs to be a global test rather than having each worker test since there
+ is message passing embedded in here and everyone needs to do the same thing!!!
+!!!!!!</p>
+<p>Neumann conditions, this is boundary location-agnostic since both bottom and top FACs are known
+ - they have to  be loaded into VVmaxx1 and Vminx1
+ Dirichlet conditions - we need to integrate from the <strong><em>lowest altitude</em></strong>
+ (where FAC is known to be zero, note this is not necessarilty the logical bottom of the grid), upwards (to where it isn't)
+!!!!!!!</p>
     
 
     <h3>Arguments</h3>
@@ -222,7 +273,7 @@ public subroutine potential_root_mpi_curv(it, t, dt, sig0, sigP, sigH, incap, vs
   
 <tr>
   
-  <td><span class="anchor" id="variable-it~10"></span>integer,</td>
+  <td><span class="anchor" id="variable-it~7"></span>integer,</td>
   <td>intent(in)</td>
   <td></td>
   
@@ -237,7 +288,7 @@ public subroutine potential_root_mpi_curv(it, t, dt, sig0, sigP, sigH, incap, vs
   
 <tr>
   
-  <td><span class="anchor" id="variable-t~11"></span>real(kind=wp),</td>
+  <td><span class="anchor" id="variable-t~13"></span>real(kind=wp),</td>
   <td>intent(in)</td>
   <td></td>
   
@@ -252,7 +303,7 @@ public subroutine potential_root_mpi_curv(it, t, dt, sig0, sigP, sigH, incap, vs
   
 <tr>
   
-  <td><span class="anchor" id="variable-dt~12"></span>real(kind=wp),</td>
+  <td><span class="anchor" id="variable-dt~26"></span>real(kind=wp),</td>
   <td>intent(in)</td>
   <td></td>
   
@@ -267,7 +318,7 @@ public subroutine potential_root_mpi_curv(it, t, dt, sig0, sigP, sigH, incap, vs
   
 <tr>
   
-  <td><span class="anchor" id="variable-sig0~7"></span>real(kind=wp),</td>
+  <td><span class="anchor" id="variable-sig0~4"></span>real(kind=wp),</td>
   <td>intent(in),</td>
   <td></td>
   
@@ -282,7 +333,7 @@ public subroutine potential_root_mpi_curv(it, t, dt, sig0, sigP, sigH, incap, vs
   
 <tr>
   
-  <td><span class="anchor" id="variable-sigp~7"></span>real(kind=wp),</td>
+  <td><span class="anchor" id="variable-sigp~4"></span>real(kind=wp),</td>
   <td>intent(in),</td>
   <td></td>
   
@@ -297,7 +348,7 @@ public subroutine potential_root_mpi_curv(it, t, dt, sig0, sigP, sigH, incap, vs
   
 <tr>
   
-  <td><span class="anchor" id="variable-sigh~6"></span>real(kind=wp),</td>
+  <td><span class="anchor" id="variable-sigh~3"></span>real(kind=wp),</td>
   <td>intent(in),</td>
   <td></td>
   
@@ -312,7 +363,7 @@ public subroutine potential_root_mpi_curv(it, t, dt, sig0, sigP, sigH, incap, vs
   
 <tr>
   
-  <td><span class="anchor" id="variable-incap~5"></span>real(kind=wp),</td>
+  <td><span class="anchor" id="variable-incap~3"></span>real(kind=wp),</td>
   <td>intent(in),</td>
   <td></td>
   
@@ -327,7 +378,7 @@ public subroutine potential_root_mpi_curv(it, t, dt, sig0, sigP, sigH, incap, vs
   
 <tr>
   
-  <td><span class="anchor" id="variable-vs2~15"></span>real(kind=wp),</td>
+  <td><span class="anchor" id="variable-vs2~10"></span>real(kind=wp),</td>
   <td>intent(in),</td>
   <td></td>
   
@@ -342,7 +393,7 @@ public subroutine potential_root_mpi_curv(it, t, dt, sig0, sigP, sigH, incap, vs
   
 <tr>
   
-  <td><span class="anchor" id="variable-vs3~15"></span>real(kind=wp),</td>
+  <td><span class="anchor" id="variable-vs3~10"></span>real(kind=wp),</td>
   <td>intent(in),</td>
   <td></td>
   
@@ -387,7 +438,7 @@ public subroutine potential_root_mpi_curv(it, t, dt, sig0, sigP, sigH, incap, vs
   
 <tr>
   
-  <td><span class="anchor" id="variable-sourcemlat~3"></span>real(kind=wp),</td>
+  <td><span class="anchor" id="variable-sourcemlat~5"></span>real(kind=wp),</td>
   <td>intent(in)</td>
   <td></td>
   
@@ -402,7 +453,7 @@ public subroutine potential_root_mpi_curv(it, t, dt, sig0, sigP, sigH, incap, vs
   
 <tr>
   
-  <td><span class="anchor" id="variable-b1~6"></span>real(kind=wp),</td>
+  <td><span class="anchor" id="variable-b1~5"></span>real(kind=wp),</td>
   <td>intent(in),</td>
   <td></td>
   
@@ -417,7 +468,7 @@ public subroutine potential_root_mpi_curv(it, t, dt, sig0, sigP, sigH, incap, vs
   
 <tr>
   
-  <td><span class="anchor" id="variable-x~14"></span>type(<a href='../type/curvmesh.html'>curvmesh</a>),</td>
+  <td><span class="anchor" id="variable-x~48"></span>type(<a href='../type/curvmesh.html'>curvmesh</a>),</td>
   <td>intent(in)</td>
   <td></td>
   
@@ -432,7 +483,7 @@ public subroutine potential_root_mpi_curv(it, t, dt, sig0, sigP, sigH, incap, vs
   
 <tr>
   
-  <td><span class="anchor" id="variable-potsolve~8"></span>integer,</td>
+  <td><span class="anchor" id="variable-potsolve~4"></span>integer,</td>
   <td>intent(in)</td>
   <td></td>
   
@@ -447,7 +498,22 @@ public subroutine potential_root_mpi_curv(it, t, dt, sig0, sigP, sigH, incap, vs
   
 <tr>
   
-  <td><span class="anchor" id="variable-e1~9"></span>real(kind=wp),</td>
+  <td><span class="anchor" id="variable-flagcap~5"></span>integer,</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>flagcap</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-e1~4"></span>real(kind=wp),</td>
   <td>intent(out),</td>
   <td></td>
   
@@ -462,7 +528,7 @@ public subroutine potential_root_mpi_curv(it, t, dt, sig0, sigP, sigH, incap, vs
   
 <tr>
   
-  <td><span class="anchor" id="variable-e2~7"></span>real(kind=wp),</td>
+  <td><span class="anchor" id="variable-e2~3"></span>real(kind=wp),</td>
   <td>intent(out),</td>
   <td></td>
   
@@ -477,7 +543,7 @@ public subroutine potential_root_mpi_curv(it, t, dt, sig0, sigP, sigH, incap, vs
   
 <tr>
   
-  <td><span class="anchor" id="variable-e3~7"></span>real(kind=wp),</td>
+  <td><span class="anchor" id="variable-e3~3"></span>real(kind=wp),</td>
   <td>intent(out),</td>
   <td></td>
   
@@ -492,7 +558,7 @@ public subroutine potential_root_mpi_curv(it, t, dt, sig0, sigP, sigH, incap, vs
   
 <tr>
   
-  <td><span class="anchor" id="variable-j1~15"></span>real(kind=wp),</td>
+  <td><span class="anchor" id="variable-j1~11"></span>real(kind=wp),</td>
   <td>intent(out),</td>
   <td></td>
   
@@ -507,7 +573,7 @@ public subroutine potential_root_mpi_curv(it, t, dt, sig0, sigP, sigH, incap, vs
   
 <tr>
   
-  <td><span class="anchor" id="variable-j2~13"></span>real(kind=wp),</td>
+  <td><span class="anchor" id="variable-j2~9"></span>real(kind=wp),</td>
   <td>intent(out),</td>
   <td></td>
   
@@ -522,7 +588,7 @@ public subroutine potential_root_mpi_curv(it, t, dt, sig0, sigP, sigH, incap, vs
   
 <tr>
   
-  <td><span class="anchor" id="variable-j3~13"></span>real(kind=wp),</td>
+  <td><span class="anchor" id="variable-j3~9"></span>real(kind=wp),</td>
   <td>intent(out),</td>
   <td></td>
   
@@ -537,7 +603,7 @@ public subroutine potential_root_mpi_curv(it, t, dt, sig0, sigP, sigH, incap, vs
   
 <tr>
   
-  <td><span class="anchor" id="variable-phiall~8"></span>real(kind=wp),</td>
+  <td><span class="anchor" id="variable-phiall~4"></span>real(kind=wp),</td>
   <td>intent(inout),</td>
   <td></td>
   
@@ -597,7 +663,7 @@ public subroutine potential_root_mpi_curv(it, t, dt, sig0, sigP, sigH, incap, vs
   
 <tr>
   
-  <td><span class="anchor" id="variable-ymd~14"></span>integer,</td>
+  <td><span class="anchor" id="variable-ymd~18"></span>integer,</td>
   <td>intent(in),</td>
   <td></td>
   
@@ -612,7 +678,7 @@ public subroutine potential_root_mpi_curv(it, t, dt, sig0, sigP, sigH, incap, vs
   
 <tr>
   
-  <td><span class="anchor" id="variable-utsec~12"></span>real(kind=wp),</td>
+  <td><span class="anchor" id="variable-utsec~19"></span>real(kind=wp),</td>
   <td>intent(in)</td>
   <td></td>
   
@@ -627,7 +693,1639 @@ public subroutine potential_root_mpi_curv(it, t, dt, sig0, sigP, sigH, incap, vs
     
     
     
+    <br>
     
+    
+    <div class="panel panel-default">
+      <div class="panel-heading">
+  <h3 class="panel-title">Calls</h3>
+      </div>
+      <div class="panel-body">
+  <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.40.1 (20161225.0304)
+ -->
+<!-- Title: proc~~potential_root_mpi_curv~~CallsGraph Pages: 1 -->
+<svg id="procpotential_root_mpi_curvCallsGraph" width="641pt" height="672pt"
+ viewBox="0.00 0.00 641.00 672.35" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="proc~~potential_root_mpi_curv~~CallsGraph" class="graph" transform="scale(.5806 .5806) rotate(0) translate(4 1154)">
+<title>proc~~potential_root_mpi_curv~~CallsGraph</title>
+<polygon fill="#ffffff" stroke="transparent" points="-4,4 -4,-1154 1100,-1154 1100,4 -4,4"/>
+<!-- proc~potential_root_mpi_curv -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_node1" class="node">
+<title>proc~potential_root_mpi_curv</title>
+<polygon fill="none" stroke="#000000" points="127,-543 0,-543 0,-519 127,-519 127,-543"/>
+<text text-anchor="middle" x="63.5" y="-528.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#000000">potential_root_mpi_curv</text>
+</g>
+<!-- interface~potential2d_polarization_periodic -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_node2" class="node">
+<title>interface~potential2d_polarization_periodic</title>
+<g id="a_proc~~potential_root_mpi_curv~~CallsGraph_node2"><a xlink:href=".././interface/potential2d_polarization_periodic.html" xlink:title="potential2D_polarization_periodic">
+<polygon fill="#a7506f" stroke="#a7506f" points="339.5,-1016 168.5,-1016 168.5,-992 339.5,-992 339.5,-1016"/>
+<text text-anchor="middle" x="254" y="-1001.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">potential2D_polarization_periodic</text>
+</a>
+</g>
+</g>
+<!-- proc~potential_root_mpi_curv&#45;&gt;interface~potential2d_polarization_periodic -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge1" class="edge">
+<title>proc~potential_root_mpi_curv&#45;&gt;interface~potential2d_polarization_periodic</title>
+<path fill="none" stroke="#000000" d="M64.9948,-543.0199C72.8622,-604.7265 111.0864,-885.6684 163,-954 174.2125,-968.7586 191.098,-979.7276 207.2906,-987.5704"/>
+<polygon fill="#000000" stroke="#000000" points="206.1433,-990.893 216.6965,-991.8319 209.0322,-984.5169 206.1433,-990.893"/>
+</g>
+<!-- interface~gather_recv -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_node3" class="node">
+<title>interface~gather_recv</title>
+<g id="a_proc~~potential_root_mpi_curv~~CallsGraph_node3"><a xlink:href=".././interface/gather_recv.html" xlink:title="gather_recv">
+<polygon fill="#a7506f" stroke="#a7506f" points="289,-461 219,-461 219,-437 289,-437 289,-461"/>
+<text text-anchor="middle" x="254" y="-446.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">gather_recv</text>
+</a>
+</g>
+</g>
+<!-- proc~potential_root_mpi_curv&#45;&gt;interface~gather_recv -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge2" class="edge">
+<title>proc~potential_root_mpi_curv&#45;&gt;interface~gather_recv</title>
+<path fill="none" stroke="#000000" d="M91.6089,-518.9006C124.7666,-504.628 180.0103,-480.8486 216.7183,-465.0478"/>
+<polygon fill="#000000" stroke="#000000" points="218.2847,-468.1841 226.0861,-461.0154 215.517,-461.7544 218.2847,-468.1841"/>
+</g>
+<!-- proc~halo_pot -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_node4" class="node">
+<title>proc~halo_pot</title>
+<g id="a_proc~~potential_root_mpi_curv~~CallsGraph_node4"><a xlink:href=".././proc/halo_pot.html" xlink:title="halo_pot">
+<polygon fill="#d9534f" stroke="#d9534f" points="281,-192 227,-192 227,-168 281,-168 281,-192"/>
+<text text-anchor="middle" x="254" y="-177.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">halo_pot</text>
+</a>
+</g>
+</g>
+<!-- proc~potential_root_mpi_curv&#45;&gt;proc~halo_pot -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge3" class="edge">
+<title>proc~potential_root_mpi_curv&#45;&gt;proc~halo_pot</title>
+<path fill="none" stroke="#000000" d="M65.6282,-518.8491C75.2101,-465.4459 115.9357,-252.188 163,-206 177.1823,-192.0817 198.2736,-185.5113 216.581,-182.4524"/>
+<polygon fill="#000000" stroke="#000000" points="217.2556,-185.8926 226.6836,-181.059 216.2991,-178.9582 217.2556,-185.8926"/>
+</g>
+<!-- interface~bcast_send -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_node5" class="node">
+<title>interface~bcast_send</title>
+<g id="a_proc~~potential_root_mpi_curv~~CallsGraph_node5"><a xlink:href=".././interface/bcast_send.html" xlink:title="bcast_send">
+<polygon fill="#a7506f" stroke="#a7506f" points="287.5,-314 220.5,-314 220.5,-290 287.5,-290 287.5,-314"/>
+<text text-anchor="middle" x="254" y="-299.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">bcast_send</text>
+</a>
+</g>
+</g>
+<!-- proc~potential_root_mpi_curv&#45;&gt;interface~bcast_send -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge4" class="edge">
+<title>proc~potential_root_mpi_curv&#45;&gt;interface~bcast_send</title>
+<path fill="none" stroke="#000000" d="M73.7421,-518.688C104.9538,-481.1684 199.0824,-368.0165 237.4508,-321.8937"/>
+<polygon fill="#000000" stroke="#000000" points="240.2339,-324.0211 243.9384,-314.095 234.8525,-319.5444 240.2339,-324.0211"/>
+</g>
+<!-- interface~potential2d_fieldresolved -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_node6" class="node">
+<title>interface~potential2d_fieldresolved</title>
+<g id="a_proc~~potential_root_mpi_curv~~CallsGraph_node6"><a xlink:href=".././interface/potential2d_fieldresolved.html" xlink:title="potential2D_fieldresolved">
+<polygon fill="#a7506f" stroke="#a7506f" points="320.5,-1088 187.5,-1088 187.5,-1064 320.5,-1064 320.5,-1088"/>
+<text text-anchor="middle" x="254" y="-1073.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">potential2D_fieldresolved</text>
+</a>
+</g>
+</g>
+<!-- proc~potential_root_mpi_curv&#45;&gt;interface~potential2d_fieldresolved -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge5" class="edge">
+<title>proc~potential_root_mpi_curv&#45;&gt;interface~potential2d_fieldresolved</title>
+<path fill="none" stroke="#000000" d="M64.5782,-543.1756C70.7993,-611.1782 103.9069,-943.8442 163,-1025 174.1393,-1040.2983 191.3462,-1051.6047 207.8115,-1059.6293"/>
+<polygon fill="#000000" stroke="#000000" points="206.8174,-1063.0223 217.3688,-1063.9802 209.7177,-1056.6514 206.8174,-1063.0223"/>
+</g>
+<!-- proc~potentialbcs2d -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_node7" class="node">
+<title>proc~potentialbcs2d</title>
+<g id="a_proc~~potential_root_mpi_curv~~CallsGraph_node7"><a xlink:href=".././proc/potentialbcs2d.html" xlink:title="potentialBCs2D">
+<polygon fill="#d9534f" stroke="#d9534f" points="297,-150 211,-150 211,-126 297,-126 297,-150"/>
+<text text-anchor="middle" x="254" y="-135.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">potentialBCs2D</text>
+</a>
+</g>
+</g>
+<!-- proc~potential_root_mpi_curv&#45;&gt;proc~potentialbcs2d -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge16" class="edge">
+<title>proc~potential_root_mpi_curv&#45;&gt;proc~potentialbcs2d</title>
+<path fill="none" stroke="#000000" d="M65.0919,-518.6473C72.8787,-460.1188 108.7872,-211.3711 163,-159 173.1344,-149.2099 186.8753,-143.6467 200.6061,-140.5688"/>
+<polygon fill="#000000" stroke="#000000" points="201.3477,-143.9912 210.5507,-138.7419 200.0829,-137.1064 201.3477,-143.9912"/>
+</g>
+<!-- mpi_send -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_node8" class="node">
+<title>mpi_send</title>
+<polygon fill="#777777" stroke="#777777" points="893.5,-290 834.5,-290 834.5,-266 893.5,-266 893.5,-290"/>
+<text text-anchor="middle" x="864" y="-275.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">mpi_send</text>
+</g>
+<!-- proc~potential_root_mpi_curv&#45;&gt;mpi_send -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge6" class="edge">
+<title>proc~potential_root_mpi_curv&#45;&gt;mpi_send</title>
+<path fill="none" stroke="#000000" d="M64.8801,-518.9757C70.0471,-479.3605 91.7584,-351.4628 163,-281 236.8233,-207.9838 278.918,-215.9868 381,-197 545.8696,-166.335 743.3927,-231.0007 825.3914,-262.3062"/>
+<polygon fill="#000000" stroke="#000000" points="824.2194,-265.6055 834.8086,-265.9499 826.7454,-259.0771 824.2194,-265.6055"/>
+</g>
+<!-- proc~potentialbcs2d_fileinput -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_node9" class="node">
+<title>proc~potentialbcs2d_fileinput</title>
+<g id="a_proc~~potential_root_mpi_curv~~CallsGraph_node9"><a xlink:href=".././proc/potentialbcs2d_fileinput.html" xlink:title="potentialBCs2D_fileinput">
+<polygon fill="#d9534f" stroke="#d9534f" points="318.5,-604 189.5,-604 189.5,-580 318.5,-580 318.5,-604"/>
+<text text-anchor="middle" x="254" y="-589.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">potentialBCs2D_fileinput</text>
+</a>
+</g>
+</g>
+<!-- proc~potential_root_mpi_curv&#45;&gt;proc~potentialbcs2d_fileinput -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge7" class="edge">
+<title>proc~potential_root_mpi_curv&#45;&gt;proc~potentialbcs2d_fileinput</title>
+<path fill="none" stroke="#000000" d="M101.1367,-543.0516C131.4029,-552.7432 174.1008,-566.4155 206.6804,-576.8478"/>
+<polygon fill="#000000" stroke="#000000" points="205.8505,-580.257 216.4415,-579.9734 207.9852,-573.5905 205.8505,-580.257"/>
+</g>
+<!-- interface~div3d -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_node10" class="node">
+<title>interface~div3d</title>
+<g id="a_proc~~potential_root_mpi_curv~~CallsGraph_node10"><a xlink:href=".././interface/div3d.html" xlink:title="div3D">
+<polygon fill="#a7506f" stroke="#a7506f" points="281,-108 227,-108 227,-84 281,-84 281,-108"/>
+<text text-anchor="middle" x="254" y="-93.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">div3D</text>
+</a>
+</g>
+</g>
+<!-- proc~potential_root_mpi_curv&#45;&gt;interface~div3d -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge8" class="edge">
+<title>proc~potential_root_mpi_curv&#45;&gt;interface~div3d</title>
+<path fill="none" stroke="#000000" d="M64.7043,-518.9499C71.1226,-457.1299 103.2734,-176.1876 163,-117 177.0248,-103.1018 198.2984,-97.6742 216.7508,-95.8033"/>
+<polygon fill="#000000" stroke="#000000" points="217.2002,-99.2804 226.9297,-95.0869 216.7087,-92.2977 217.2002,-99.2804"/>
+</g>
+<!-- interface~integral3d1_curv_alt -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_node11" class="node">
+<title>interface~integral3d1_curv_alt</title>
+<g id="a_proc~~potential_root_mpi_curv~~CallsGraph_node11"><a xlink:href=".././interface/integral3d1_curv_alt.html" xlink:title="integral3D1_curv_alt">
+<polygon fill="#a7506f" stroke="#a7506f" points="309.5,-66 198.5,-66 198.5,-42 309.5,-42 309.5,-66"/>
+<text text-anchor="middle" x="254" y="-51.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">integral3D1_curv_alt</text>
+</a>
+</g>
+</g>
+<!-- proc~potential_root_mpi_curv&#45;&gt;interface~integral3d1_curv_alt -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge9" class="edge">
+<title>proc~potential_root_mpi_curv&#45;&gt;interface~integral3d1_curv_alt</title>
+<path fill="none" stroke="#000000" d="M64.4453,-518.6242C69.7492,-452.441 97.9316,-140.8516 163,-75 170.0941,-67.8205 179.1188,-62.8909 188.7158,-59.5415"/>
+<polygon fill="#000000" stroke="#000000" points="189.8376,-62.8602 198.4533,-56.6941 187.8729,-56.1415 189.8376,-62.8602"/>
+</g>
+<!-- interface~integral3d1 -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_node12" class="node">
+<title>interface~integral3d1</title>
+<g id="a_proc~~potential_root_mpi_curv~~CallsGraph_node12"><a xlink:href=".././interface/integral3d1.html" xlink:title="integral3D1">
+<polygon fill="#a7506f" stroke="#a7506f" points="287.5,-24 220.5,-24 220.5,0 287.5,0 287.5,-24"/>
+<text text-anchor="middle" x="254" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">integral3D1</text>
+</a>
+</g>
+</g>
+<!-- proc~potential_root_mpi_curv&#45;&gt;interface~integral3d1 -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge10" class="edge">
+<title>proc~potential_root_mpi_curv&#45;&gt;interface~integral3d1</title>
+<path fill="none" stroke="#000000" d="M64.185,-518.8841C68.3386,-449.7576 92.3736,-105.7482 163,-33 175.1587,-20.476 193.1843,-14.7717 209.992,-12.3661"/>
+<polygon fill="#000000" stroke="#000000" points="210.6687,-15.8136 220.2365,-11.2631 209.9193,-8.8538 210.6687,-15.8136"/>
+</g>
+<!-- interface~grad3d2 -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_node13" class="node">
+<title>interface~grad3d2</title>
+<g id="a_proc~~potential_root_mpi_curv~~CallsGraph_node13"><a xlink:href=".././interface/grad3d2.html" xlink:title="grad3D2">
+<polygon fill="#a7506f" stroke="#a7506f" points="493.5,-898 439.5,-898 439.5,-874 493.5,-874 493.5,-898"/>
+<text text-anchor="middle" x="466.5" y="-883.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">grad3D2</text>
+</a>
+</g>
+</g>
+<!-- proc~potential_root_mpi_curv&#45;&gt;interface~grad3d2 -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge11" class="edge">
+<title>proc~potential_root_mpi_curv&#45;&gt;interface~grad3d2</title>
+<path fill="none" stroke="#000000" d="M65.6291,-543.1351C75.0621,-595.4819 114.7601,-801.1564 163,-842 239.0546,-906.3937 366.1368,-900.1467 428.9738,-892.1328"/>
+<polygon fill="#000000" stroke="#000000" points="429.7762,-895.5559 439.212,-890.7375 428.8309,-888.62 429.7762,-895.5559"/>
+</g>
+<!-- interface~grad3d1 -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_node14" class="node">
+<title>interface~grad3d1</title>
+<g id="a_proc~~potential_root_mpi_curv~~CallsGraph_node14"><a xlink:href=".././interface/grad3d1.html" xlink:title="grad3D1">
+<polygon fill="#a7506f" stroke="#a7506f" points="493.5,-856 439.5,-856 439.5,-832 493.5,-832 493.5,-856"/>
+<text text-anchor="middle" x="466.5" y="-841.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">grad3D1</text>
+</a>
+</g>
+</g>
+<!-- proc~potential_root_mpi_curv&#45;&gt;interface~grad3d1 -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge12" class="edge">
+<title>proc~potential_root_mpi_curv&#45;&gt;interface~grad3d1</title>
+<path fill="none" stroke="#000000" d="M66.2272,-543.1886C77.2487,-591.3338 119.9718,-767.3316 163,-802 240.5287,-864.4659 366.9295,-858.0409 429.2934,-850.0707"/>
+<polygon fill="#000000" stroke="#000000" points="430.017,-853.5045 439.4521,-848.685 429.0708,-846.5687 430.017,-853.5045"/>
+</g>
+<!-- interface~potential2d_polarization -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_node15" class="node">
+<title>interface~potential2d_polarization</title>
+<g id="a_proc~~potential_root_mpi_curv~~CallsGraph_node15"><a xlink:href=".././interface/potential2d_polarization.html" xlink:title="potential2D_polarization">
+<polygon fill="#a7506f" stroke="#a7506f" points="317.5,-945 190.5,-945 190.5,-921 317.5,-921 317.5,-945"/>
+<text text-anchor="middle" x="254" y="-930.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">potential2D_polarization</text>
+</a>
+</g>
+</g>
+<!-- proc~potential_root_mpi_curv&#45;&gt;interface~potential2d_polarization -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge13" class="edge">
+<title>proc~potential_root_mpi_curv&#45;&gt;interface~potential2d_polarization</title>
+<path fill="none" stroke="#000000" d="M65.4309,-543.1551C74.6168,-599.6828 115.4259,-836.4507 163,-892 172.2515,-902.8024 184.925,-910.8925 197.8752,-916.8992"/>
+<polygon fill="#000000" stroke="#000000" points="196.7369,-920.2184 207.3089,-920.9137 199.4779,-913.7774 196.7369,-920.2184"/>
+</g>
+<!-- proc~potential3d_fieldresolved_decimate -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_node16" class="node">
+<title>proc~potential3d_fieldresolved_decimate</title>
+<g id="a_proc~~potential_root_mpi_curv~~CallsGraph_node16"><a xlink:href=".././proc/potential3d_fieldresolved_decimate.html" xlink:title="potential3D_fieldresolved_decimate">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="345,-793 163,-793 163,-769 345,-769 345,-793"/>
+<text text-anchor="middle" x="254" y="-778.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">potential3D_fieldresolved_decimate</text>
+</a>
+</g>
+</g>
+<!-- proc~potential_root_mpi_curv&#45;&gt;proc~potential3d_fieldresolved_decimate -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge15" class="edge">
+<title>proc~potential_root_mpi_curv&#45;&gt;proc~potential3d_fieldresolved_decimate</title>
+<path fill="none" stroke="#000000" d="M68.2709,-543.4258C80.5267,-574.2576 115.5174,-655.7615 163,-711 180.915,-731.8413 205.9305,-750.5388 225.2006,-763.3559"/>
+<polygon fill="#000000" stroke="#000000" points="223.312,-766.3027 233.6041,-768.8176 227.1267,-760.4334 223.312,-766.3027"/>
+</g>
+<!-- interface~grad3d3 -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_node17" class="node">
+<title>interface~grad3d3</title>
+<g id="a_proc~~potential_root_mpi_curv~~CallsGraph_node17"><a xlink:href=".././interface/grad3d3.html" xlink:title="grad3D3">
+<polygon fill="#a7506f" stroke="#a7506f" points="493.5,-772 439.5,-772 439.5,-748 493.5,-748 493.5,-772"/>
+<text text-anchor="middle" x="466.5" y="-757.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">grad3D3</text>
+</a>
+</g>
+</g>
+<!-- proc~potential_root_mpi_curv&#45;&gt;interface~grad3d3 -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge14" class="edge">
+<title>proc~potential_root_mpi_curv&#45;&gt;interface~grad3d3</title>
+<path fill="none" stroke="#000000" d="M76.7788,-543.1535C95.3451,-559.8587 130.4497,-590.4107 163,-613 254.9381,-676.8032 277.1772,-697.2355 381,-739 396.3239,-745.1643 413.9456,-749.8663 429.1946,-753.2422"/>
+<polygon fill="#000000" stroke="#000000" points="428.8092,-756.7376 439.3152,-755.3692 430.2489,-749.8873 428.8092,-756.7376"/>
+</g>
+<!-- proc~potential2d_polarization_periodic -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_node27" class="node">
+<title>proc~potential2d_polarization_periodic</title>
+<g id="a_proc~~potential_root_mpi_curv~~CallsGraph_node27"><a xlink:href=".././proc/potential2d_polarization_periodic.html" xlink:title="potential2D_polarization_periodic">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="552,-1045 381,-1045 381,-1021 552,-1021 552,-1045"/>
+<text text-anchor="middle" x="466.5" y="-1030.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">potential2D_polarization_periodic</text>
+</a>
+</g>
+</g>
+<!-- interface~potential2d_polarization_periodic&#45;&gt;proc~potential2d_polarization_periodic -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge17" class="edge">
+<title>interface~potential2d_polarization_periodic&#45;&gt;proc~potential2d_polarization_periodic</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M339.5133,-1015.6701C349.8262,-1017.0775 360.4103,-1018.5219 370.8562,-1019.9474"/>
+<polygon fill="#000000" stroke="#000000" points="370.4343,-1023.4222 380.8157,-1021.3066 371.3809,-1016.4865 370.4343,-1023.4222"/>
+</g>
+<!-- interface~gather_recv4d_23 -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_node19" class="node">
+<title>interface~gather_recv4d_23</title>
+<g id="a_proc~~potential_root_mpi_curv~~CallsGraph_node19"><a xlink:href=".././interface/gather_recv4d_23.html" xlink:title="gather_recv4D_23">
+<polygon fill="#a7506f" stroke="#a7506f" points="517,-482 416,-482 416,-458 517,-458 517,-482"/>
+<text text-anchor="middle" x="466.5" y="-467.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">gather_recv4D_23</text>
+</a>
+</g>
+</g>
+<!-- interface~gather_recv&#45;&gt;interface~gather_recv4d_23 -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge20" class="edge">
+<title>interface~gather_recv&#45;&gt;interface~gather_recv4d_23</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M289.0901,-452.4677C320.6614,-455.5877 367.7465,-460.2408 405.4767,-463.9695"/>
+<polygon fill="#000000" stroke="#000000" points="405.5541,-467.4941 415.8499,-464.9946 406.2426,-460.528 405.5541,-467.4941"/>
+</g>
+<!-- interface~gather_recv3d_23 -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_node22" class="node">
+<title>interface~gather_recv3d_23</title>
+<g id="a_proc~~potential_root_mpi_curv~~CallsGraph_node22"><a xlink:href=".././interface/gather_recv3d_23.html" xlink:title="gather_recv3D_23">
+<polygon fill="#a7506f" stroke="#a7506f" points="517,-440 416,-440 416,-416 517,-416 517,-440"/>
+<text text-anchor="middle" x="466.5" y="-425.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">gather_recv3D_23</text>
+</a>
+</g>
+</g>
+<!-- interface~gather_recv&#45;&gt;interface~gather_recv3d_23 -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge18" class="edge">
+<title>interface~gather_recv&#45;&gt;interface~gather_recv3d_23</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M289.0901,-445.5323C320.6614,-442.4123 367.7465,-437.7592 405.4767,-434.0305"/>
+<polygon fill="#000000" stroke="#000000" points="406.2426,-437.472 415.8499,-433.0054 405.5541,-430.5059 406.2426,-437.472"/>
+</g>
+<!-- interface~gather_recv2d_23 -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_node26" class="node">
+<title>interface~gather_recv2d_23</title>
+<g id="a_proc~~potential_root_mpi_curv~~CallsGraph_node26"><a xlink:href=".././interface/gather_recv2d_23.html" xlink:title="gather_recv2D_23">
+<polygon fill="#a7506f" stroke="#a7506f" points="517,-398 416,-398 416,-374 517,-374 517,-398"/>
+<text text-anchor="middle" x="466.5" y="-383.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">gather_recv2D_23</text>
+</a>
+</g>
+</g>
+<!-- interface~gather_recv&#45;&gt;interface~gather_recv2d_23 -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge19" class="edge">
+<title>interface~gather_recv&#45;&gt;interface~gather_recv2d_23</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M288.0018,-436.9483C313.4489,-428.1263 349.197,-416.1491 381,-407 389.024,-404.6917 397.5165,-402.4123 405.9123,-400.2546"/>
+<polygon fill="#000000" stroke="#000000" points="406.8526,-403.6271 415.6899,-397.7831 405.1371,-396.8405 406.8526,-403.6271"/>
+</g>
+<!-- interface~halo -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_node40" class="node">
+<title>interface~halo</title>
+<g id="a_proc~~potential_root_mpi_curv~~CallsGraph_node40"><a xlink:href=".././interface/halo.html" xlink:title="halo">
+<polygon fill="#a7506f" stroke="#a7506f" points="493.5,-150 439.5,-150 439.5,-126 493.5,-126 493.5,-150"/>
+<text text-anchor="middle" x="466.5" y="-135.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">halo</text>
+</a>
+</g>
+</g>
+<!-- proc~halo_pot&#45;&gt;interface~halo -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge21" class="edge">
+<title>proc~halo_pot&#45;&gt;interface~halo</title>
+<path fill="none" stroke="#000000" d="M281.3456,-174.5952C319.0403,-167.145 387.0897,-153.6952 429.3605,-145.3405"/>
+<polygon fill="#000000" stroke="#000000" points="430.1278,-148.7567 439.2593,-143.384 428.7704,-141.8895 430.1278,-148.7567"/>
+</g>
+<!-- interface~bcast_send1d_23 -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_node21" class="node">
+<title>interface~bcast_send1d_23</title>
+<g id="a_proc~~potential_root_mpi_curv~~CallsGraph_node21"><a xlink:href=".././interface/bcast_send1d_23.html" xlink:title="bcast_send1D_23">
+<polygon fill="#a7506f" stroke="#a7506f" points="516,-272 417,-272 417,-248 516,-248 516,-272"/>
+<text text-anchor="middle" x="466.5" y="-257.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">bcast_send1D_23</text>
+</a>
+</g>
+</g>
+<!-- interface~bcast_send&#45;&gt;interface~bcast_send1d_23 -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge25" class="edge">
+<title>interface~bcast_send&#45;&gt;interface~bcast_send1d_23</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M287.6713,-295.345C319.5779,-289.0387 368.2111,-279.4265 406.7103,-271.8173"/>
+<polygon fill="#000000" stroke="#000000" points="407.6378,-275.2017 416.7694,-269.8291 406.2805,-268.3346 407.6378,-275.2017"/>
+</g>
+<!-- interface~bcast_send2d_23 -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_node24" class="node">
+<title>interface~bcast_send2d_23</title>
+<g id="a_proc~~potential_root_mpi_curv~~CallsGraph_node24"><a xlink:href=".././interface/bcast_send2d_23.html" xlink:title="bcast_send2D_23">
+<polygon fill="#a7506f" stroke="#a7506f" points="516,-230 417,-230 417,-206 516,-206 516,-230"/>
+<text text-anchor="middle" x="466.5" y="-215.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">bcast_send2D_23</text>
+</a>
+</g>
+</g>
+<!-- interface~bcast_send&#45;&gt;interface~bcast_send2d_23 -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge23" class="edge">
+<title>interface~bcast_send&#45;&gt;interface~bcast_send2d_23</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M274.9375,-289.8203C299.6083,-275.8974 342.1675,-253.2044 381,-239 389.2394,-235.9861 398.0822,-233.2681 406.8437,-230.8647"/>
+<polygon fill="#000000" stroke="#000000" points="407.8814,-234.2109 416.6646,-228.2858 406.1036,-227.4404 407.8814,-234.2109"/>
+</g>
+<!-- interface~bcast_send4d_23 -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_node31" class="node">
+<title>interface~bcast_send4d_23</title>
+<g id="a_proc~~potential_root_mpi_curv~~CallsGraph_node31"><a xlink:href=".././interface/bcast_send4d_23.html" xlink:title="bcast_send4D_23">
+<polygon fill="#a7506f" stroke="#a7506f" points="516,-314 417,-314 417,-290 516,-290 516,-314"/>
+<text text-anchor="middle" x="466.5" y="-299.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">bcast_send4D_23</text>
+</a>
+</g>
+</g>
+<!-- interface~bcast_send&#45;&gt;interface~bcast_send4d_23 -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge24" class="edge">
+<title>interface~bcast_send&#45;&gt;interface~bcast_send4d_23</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M287.6713,-302C319.5779,-302 368.2111,-302 406.7103,-302"/>
+<polygon fill="#000000" stroke="#000000" points="406.7694,-305.5001 416.7694,-302 406.7693,-298.5001 406.7694,-305.5001"/>
+</g>
+<!-- interface~bcast_send3d_23 -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_node33" class="node">
+<title>interface~bcast_send3d_23</title>
+<g id="a_proc~~potential_root_mpi_curv~~CallsGraph_node33"><a xlink:href=".././interface/bcast_send3d_23.html" xlink:title="bcast_send3D_23">
+<polygon fill="#a7506f" stroke="#a7506f" points="516,-356 417,-356 417,-332 516,-332 516,-356"/>
+<text text-anchor="middle" x="466.5" y="-341.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">bcast_send3D_23</text>
+</a>
+</g>
+</g>
+<!-- interface~bcast_send&#45;&gt;interface~bcast_send3d_23 -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge22" class="edge">
+<title>interface~bcast_send&#45;&gt;interface~bcast_send3d_23</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M287.6713,-308.655C319.5779,-314.9613 368.2111,-324.5735 406.7103,-332.1827"/>
+<polygon fill="#000000" stroke="#000000" points="406.2805,-335.6654 416.7694,-334.1709 407.6378,-328.7983 406.2805,-335.6654"/>
+</g>
+<!-- proc~potential2d_fieldresolved -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_node20" class="node">
+<title>proc~potential2d_fieldresolved</title>
+<g id="a_proc~~potential_root_mpi_curv~~CallsGraph_node20"><a xlink:href=".././proc/potential2d_fieldresolved.html" xlink:title="potential2D_fieldresolved">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="533,-1119 400,-1119 400,-1095 533,-1095 533,-1119"/>
+<text text-anchor="middle" x="466.5" y="-1104.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">potential2D_fieldresolved</text>
+</a>
+</g>
+</g>
+<!-- interface~potential2d_fieldresolved&#45;&gt;proc~potential2d_fieldresolved -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge26" class="edge">
+<title>interface~potential2d_fieldresolved&#45;&gt;proc~potential2d_fieldresolved</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M320.6533,-1085.7235C342.6009,-1088.9253 367.179,-1092.5108 389.8126,-1095.8127"/>
+<polygon fill="#000000" stroke="#000000" points="389.3176,-1099.2774 399.7181,-1097.2577 390.3281,-1092.3507 389.3176,-1099.2774"/>
+</g>
+<!-- interface~interp2 -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_node18" class="node">
+<title>interface~interp2</title>
+<g id="a_proc~~potential_root_mpi_curv~~CallsGraph_node18"><a xlink:href=".././interface/interp2.html" xlink:title="interp2">
+<polygon fill="#a7506f" stroke="#a7506f" points="493.5,-688 439.5,-688 439.5,-664 493.5,-664 493.5,-688"/>
+<text text-anchor="middle" x="466.5" y="-673.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">interp2</text>
+</a>
+</g>
+</g>
+<!-- proc~potentialbcs2d_fileinput&#45;&gt;interface~interp2 -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge31" class="edge">
+<title>proc~potentialbcs2d_fileinput&#45;&gt;interface~interp2</title>
+<path fill="none" stroke="#000000" d="M274.9375,-604.1797C299.6083,-618.1026 342.1675,-640.7956 381,-655 396.5121,-660.6741 414.163,-665.2998 429.3832,-668.7512"/>
+<polygon fill="#000000" stroke="#000000" points="428.9596,-672.2409 439.4756,-670.9514 430.4507,-665.4016 428.9596,-672.2409"/>
+</g>
+<!-- proc~interp1 -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_node28" class="node">
+<title>proc~interp1</title>
+<g id="a_proc~~potential_root_mpi_curv~~CallsGraph_node28"><a xlink:href=".././proc/interp1.html" xlink:title="interp1">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="493.5,-730 439.5,-730 439.5,-706 493.5,-706 493.5,-730"/>
+<text text-anchor="middle" x="466.5" y="-715.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">interp1</text>
+</a>
+</g>
+</g>
+<!-- proc~potentialbcs2d_fileinput&#45;&gt;proc~interp1 -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge27" class="edge">
+<title>proc~potentialbcs2d_fileinput&#45;&gt;proc~interp1</title>
+<path fill="none" stroke="#000000" d="M264.9628,-604.1231C285.5136,-626.0872 332.1805,-672.4557 381,-697 395.8682,-704.4751 413.5544,-709.3903 428.9724,-712.571"/>
+<polygon fill="#000000" stroke="#000000" points="428.7458,-716.09 439.2216,-714.5061 430.0446,-709.2115 428.7458,-716.09"/>
+</g>
+<!-- interface~get_grid2 -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_node29" class="node">
+<title>interface~get_grid2</title>
+<g id="a_proc~~potential_root_mpi_curv~~CallsGraph_node29"><a xlink:href=".././interface/get_grid2.html" xlink:title="get_grid2">
+<polygon fill="#a7506f" stroke="#a7506f" points="495.5,-646 437.5,-646 437.5,-622 495.5,-622 495.5,-646"/>
+<text text-anchor="middle" x="466.5" y="-631.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">get_grid2</text>
+</a>
+</g>
+</g>
+<!-- proc~potentialbcs2d_fileinput&#45;&gt;interface~get_grid2 -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge28" class="edge">
+<title>proc~potentialbcs2d_fileinput&#45;&gt;interface~get_grid2</title>
+<path fill="none" stroke="#000000" d="M314.894,-604.0355C351.0354,-611.1788 395.7963,-620.0256 427.282,-626.2487"/>
+<polygon fill="#000000" stroke="#000000" points="426.9303,-629.7468 437.4192,-628.2523 428.2876,-622.8796 426.9303,-629.7468"/>
+</g>
+<!-- interface~get_simsize2 -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_node36" class="node">
+<title>interface~get_simsize2</title>
+<g id="a_proc~~potential_root_mpi_curv~~CallsGraph_node36"><a xlink:href=".././interface/get_simsize2.html" xlink:title="get_simsize2">
+<polygon fill="#a7506f" stroke="#a7506f" points="504,-604 429,-604 429,-580 504,-580 504,-604"/>
+<text text-anchor="middle" x="466.5" y="-589.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">get_simsize2</text>
+</a>
+</g>
+</g>
+<!-- proc~potentialbcs2d_fileinput&#45;&gt;interface~get_simsize2 -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge29" class="edge">
+<title>proc~potentialbcs2d_fileinput&#45;&gt;interface~get_simsize2</title>
+<path fill="none" stroke="#000000" d="M318.6225,-592C350.8449,-592 389.1345,-592 418.6776,-592"/>
+<polygon fill="#000000" stroke="#000000" points="418.7384,-595.5001 428.7384,-592 418.7383,-588.5001 418.7384,-595.5001"/>
+</g>
+<!-- proc~date_filename -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_node38" class="node">
+<title>proc~date_filename</title>
+<g id="a_proc~~potential_root_mpi_curv~~CallsGraph_node38"><a xlink:href=".././proc/date_filename.html" xlink:title="date_filename">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="506.5,-562 426.5,-562 426.5,-538 506.5,-538 506.5,-562"/>
+<text text-anchor="middle" x="466.5" y="-547.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">date_filename</text>
+</a>
+</g>
+</g>
+<!-- proc~potentialbcs2d_fileinput&#45;&gt;proc~date_filename -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge30" class="edge">
+<title>proc~potentialbcs2d_fileinput&#45;&gt;proc~date_filename</title>
+<path fill="none" stroke="#000000" d="M314.894,-579.9645C347.0687,-573.6053 386.0746,-565.8959 416.4639,-559.8895"/>
+<polygon fill="#000000" stroke="#000000" points="417.2857,-563.2949 426.4172,-557.9222 415.9284,-556.4277 417.2857,-563.2949"/>
+</g>
+<!-- proc~dateinc -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_node39" class="node">
+<title>proc~dateinc</title>
+<g id="a_proc~~potential_root_mpi_curv~~CallsGraph_node39"><a xlink:href=".././proc/dateinc.html" xlink:title="dateinc">
+<polygon fill="#d9534f" stroke="#d9534f" points="695,-521 641,-521 641,-497 695,-497 695,-521"/>
+<text text-anchor="middle" x="668" y="-506.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">dateinc</text>
+</a>
+</g>
+</g>
+<!-- proc~potentialbcs2d_fileinput&#45;&gt;proc~dateinc -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge32" class="edge">
+<title>proc~potentialbcs2d_fileinput&#45;&gt;proc~dateinc</title>
+<path fill="none" stroke="#000000" d="M272.4345,-579.9442C296.3555,-565.0031 339.9073,-540.1533 381,-529 468.173,-505.3396 575.407,-505.1271 630.8563,-507.0415"/>
+<polygon fill="#000000" stroke="#000000" points="630.7843,-510.5412 640.9128,-507.4324 631.0563,-503.5465 630.7843,-510.5412"/>
+</g>
+<!-- interface~div3d_curv_23 -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_node41" class="node">
+<title>interface~div3d_curv_23</title>
+<g id="a_proc~~potential_root_mpi_curv~~CallsGraph_node41"><a xlink:href=".././interface/div3d_curv_23.html" xlink:title="div3D_curv_23">
+<polygon fill="#a7506f" stroke="#a7506f" points="508.5,-108 424.5,-108 424.5,-84 508.5,-84 508.5,-108"/>
+<text text-anchor="middle" x="466.5" y="-93.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">div3D_curv_23</text>
+</a>
+</g>
+</g>
+<!-- interface~div3d&#45;&gt;interface~div3d_curv_23 -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge33" class="edge">
+<title>interface~div3d&#45;&gt;interface~div3d_curv_23</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M281.3456,-96C314.7945,-96 372.145,-96 414.1757,-96"/>
+<polygon fill="#000000" stroke="#000000" points="414.238,-99.5001 424.2379,-96 414.2379,-92.5001 414.238,-99.5001"/>
+</g>
+<!-- proc~integral3d1_curv_alt -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_node34" class="node">
+<title>proc~integral3d1_curv_alt</title>
+<g id="a_proc~~potential_root_mpi_curv~~CallsGraph_node34"><a xlink:href=".././proc/integral3d1_curv_alt.html" xlink:title="integral3D1_curv_alt">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="522,-66 411,-66 411,-42 522,-42 522,-66"/>
+<text text-anchor="middle" x="466.5" y="-51.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">integral3D1_curv_alt</text>
+</a>
+</g>
+</g>
+<!-- interface~integral3d1_curv_alt&#45;&gt;proc~integral3d1_curv_alt -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge34" class="edge">
+<title>interface~integral3d1_curv_alt&#45;&gt;proc~integral3d1_curv_alt</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M309.5543,-54C337.495,-54 371.5449,-54 400.7794,-54"/>
+<polygon fill="#000000" stroke="#000000" points="400.9013,-57.5001 410.9013,-54 400.9012,-50.5001 400.9013,-57.5001"/>
+</g>
+<!-- interface~integral3d1_curv -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_node35" class="node">
+<title>interface~integral3d1_curv</title>
+<g id="a_proc~~potential_root_mpi_curv~~CallsGraph_node35"><a xlink:href=".././interface/integral3d1_curv.html" xlink:title="integral3D1_curv">
+<polygon fill="#a7506f" stroke="#a7506f" points="513.5,-24 419.5,-24 419.5,0 513.5,0 513.5,-24"/>
+<text text-anchor="middle" x="466.5" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">integral3D1_curv</text>
+</a>
+</g>
+</g>
+<!-- interface~integral3d1&#45;&gt;interface~integral3d1_curv -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge35" class="edge">
+<title>interface~integral3d1&#45;&gt;interface~integral3d1_curv</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M287.6713,-12C320.2224,-12 370.1829,-12 409.0309,-12"/>
+<polygon fill="#000000" stroke="#000000" points="409.159,-15.5001 419.1589,-12 409.1589,-8.5001 409.159,-15.5001"/>
+</g>
+<!-- interface~grad3d2_curv_23 -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_node37" class="node">
+<title>interface~grad3d2_curv_23</title>
+<g id="a_proc~~potential_root_mpi_curv~~CallsGraph_node37"><a xlink:href=".././interface/grad3d2_curv_23.html" xlink:title="grad3D2_curv_23">
+<polygon fill="#a7506f" stroke="#a7506f" points="717,-898 619,-898 619,-874 717,-874 717,-898"/>
+<text text-anchor="middle" x="668" y="-883.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">grad3D2_curv_23</text>
+</a>
+</g>
+</g>
+<!-- interface~grad3d2&#45;&gt;interface~grad3d2_curv_23 -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge36" class="edge">
+<title>interface~grad3d2&#45;&gt;interface~grad3d2_curv_23</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M493.6752,-886C522.9364,-886 570.4034,-886 608.4228,-886"/>
+<polygon fill="#000000" stroke="#000000" points="608.8727,-889.5001 618.8727,-886 608.8726,-882.5001 608.8727,-889.5001"/>
+</g>
+<!-- interface~grad3d1_curv_23 -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_node32" class="node">
+<title>interface~grad3d1_curv_23</title>
+<g id="a_proc~~potential_root_mpi_curv~~CallsGraph_node32"><a xlink:href=".././interface/grad3d1_curv_23.html" xlink:title="grad3D1_curv_23">
+<polygon fill="#a7506f" stroke="#a7506f" points="717,-856 619,-856 619,-832 717,-832 717,-856"/>
+<text text-anchor="middle" x="668" y="-841.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">grad3D1_curv_23</text>
+</a>
+</g>
+</g>
+<!-- interface~grad3d1&#45;&gt;interface~grad3d1_curv_23 -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge37" class="edge">
+<title>interface~grad3d1&#45;&gt;interface~grad3d1_curv_23</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M493.6752,-844C522.9364,-844 570.4034,-844 608.4228,-844"/>
+<polygon fill="#000000" stroke="#000000" points="608.8727,-847.5001 618.8727,-844 608.8726,-840.5001 608.8727,-847.5001"/>
+</g>
+<!-- proc~potential2d_polarization -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_node23" class="node">
+<title>proc~potential2d_polarization</title>
+<g id="a_proc~~potential_root_mpi_curv~~CallsGraph_node23"><a xlink:href=".././proc/potential2d_polarization.html" xlink:title="potential2D_polarization">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="530,-961 403,-961 403,-937 530,-937 530,-961"/>
+<text text-anchor="middle" x="466.5" y="-946.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">potential2D_polarization</text>
+</a>
+</g>
+</g>
+<!-- interface~potential2d_polarization&#45;&gt;proc~potential2d_polarization -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge38" class="edge">
+<title>interface~potential2d_polarization&#45;&gt;proc~potential2d_polarization</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M317.757,-937.8005C341.2906,-939.5725 368.1541,-941.5951 392.5169,-943.4295"/>
+<polygon fill="#000000" stroke="#000000" points="392.5534,-946.9421 402.788,-944.2029 393.079,-939.9618 392.5534,-946.9421"/>
+</g>
+<!-- proc~potential3d_fieldresolved_decimate&#45;&gt;interface~grad3d2 -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge41" class="edge">
+<title>proc~potential3d_fieldresolved_decimate&#45;&gt;interface~grad3d2</title>
+<path fill="none" stroke="#000000" d="M268.6522,-793.1625C291.3296,-811.3901 336.9257,-845.7074 381,-865 396.1311,-871.6233 413.7228,-876.3969 429.0015,-879.7021"/>
+<polygon fill="#000000" stroke="#000000" points="428.6548,-883.203 439.1509,-881.7605 430.0461,-876.3426 428.6548,-883.203"/>
+</g>
+<!-- proc~potential3d_fieldresolved_decimate&#45;&gt;interface~grad3d1 -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge42" class="edge">
+<title>proc~potential3d_fieldresolved_decimate&#45;&gt;interface~grad3d1</title>
+<path fill="none" stroke="#000000" d="M288.0018,-793.0517C313.4489,-801.8737 349.197,-813.8509 381,-823 396.7541,-827.5322 414.3146,-831.9527 429.4027,-835.5596"/>
+<polygon fill="#000000" stroke="#000000" points="428.8644,-839.0286 439.4008,-837.9182 430.4716,-832.2156 428.8644,-839.0286"/>
+</g>
+<!-- proc~potential3d_fieldresolved_decimate&#45;&gt;interface~grad3d3 -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge43" class="edge">
+<title>proc~potential3d_fieldresolved_decimate&#45;&gt;interface~grad3d3</title>
+<path fill="none" stroke="#000000" d="M345.0439,-772.0027C374.5455,-769.0873 405.6441,-766.014 428.9873,-763.7071"/>
+<polygon fill="#000000" stroke="#000000" points="429.5259,-767.1711 439.1332,-762.7045 428.8374,-760.205 429.5259,-767.1711"/>
+</g>
+<!-- proc~potential3d_fieldresolved_decimate&#45;&gt;proc~interp1 -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge39" class="edge">
+<title>proc~potential3d_fieldresolved_decimate&#45;&gt;proc~interp1</title>
+<path fill="none" stroke="#000000" d="M288.0018,-768.9483C313.4489,-760.1263 349.197,-748.1491 381,-739 396.7541,-734.4678 414.3146,-730.0473 429.4027,-726.4404"/>
+<polygon fill="#000000" stroke="#000000" points="430.4716,-729.7844 439.4008,-724.0818 428.8644,-722.9714 430.4716,-729.7844"/>
+</g>
+<!-- interface~elliptic3d_cart -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_node30" class="node">
+<title>interface~elliptic3d_cart</title>
+<g id="a_proc~~potential_root_mpi_curv~~CallsGraph_node30"><a xlink:href=".././interface/elliptic3d_cart.html" xlink:title="elliptic3D_cart">
+<polygon fill="#a7506f" stroke="#a7506f" points="506,-814 427,-814 427,-790 506,-790 506,-814"/>
+<text text-anchor="middle" x="466.5" y="-799.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">elliptic3D_cart</text>
+</a>
+</g>
+</g>
+<!-- proc~potential3d_fieldresolved_decimate&#45;&gt;interface~elliptic3d_cart -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge40" class="edge">
+<title>proc~potential3d_fieldresolved_decimate&#45;&gt;interface~elliptic3d_cart</title>
+<path fill="none" stroke="#000000" d="M345.0439,-789.9973C369.633,-792.4273 395.3315,-794.9669 416.7242,-797.081"/>
+<polygon fill="#000000" stroke="#000000" points="416.5607,-800.5818 426.8565,-798.0823 417.2492,-793.6157 416.5607,-800.5818"/>
+</g>
+<!-- interface~grad3d3_curv_23 -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_node25" class="node">
+<title>interface~grad3d3_curv_23</title>
+<g id="a_proc~~potential_root_mpi_curv~~CallsGraph_node25"><a xlink:href=".././interface/grad3d3_curv_23.html" xlink:title="grad3D3_curv_23">
+<polygon fill="#a7506f" stroke="#a7506f" points="717,-772 619,-772 619,-748 717,-748 717,-772"/>
+<text text-anchor="middle" x="668" y="-757.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">grad3D3_curv_23</text>
+</a>
+</g>
+</g>
+<!-- interface~grad3d3&#45;&gt;interface~grad3d3_curv_23 -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge44" class="edge">
+<title>interface~grad3d3&#45;&gt;interface~grad3d3_curv_23</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M493.6752,-760C522.9364,-760 570.4034,-760 608.4228,-760"/>
+<polygon fill="#000000" stroke="#000000" points="608.8727,-763.5001 618.8727,-760 608.8726,-756.5001 608.8727,-763.5001"/>
+</g>
+<!-- proc~interp2 -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_node56" class="node">
+<title>proc~interp2</title>
+<g id="a_proc~~potential_root_mpi_curv~~CallsGraph_node56"><a xlink:href=".././proc/interp2.html" xlink:title="interp2">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="695,-689 641,-689 641,-665 695,-665 695,-689"/>
+<text text-anchor="middle" x="668" y="-674.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">interp2</text>
+</a>
+</g>
+</g>
+<!-- interface~interp2&#45;&gt;proc~interp2 -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge45" class="edge">
+<title>interface~interp2&#45;&gt;proc~interp2</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M493.6752,-676.1349C529.0767,-676.3106 591.1267,-676.6185 630.8538,-676.8157"/>
+<polygon fill="#000000" stroke="#000000" points="630.9171,-680.3159 640.9343,-676.8657 630.9519,-673.316 630.9171,-680.3159"/>
+</g>
+<!-- proc~gather_recv4d_23 -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_node50" class="node">
+<title>proc~gather_recv4d_23</title>
+<g id="a_proc~~potential_root_mpi_curv~~CallsGraph_node50"><a xlink:href=".././proc/gather_recv4d_23.html" xlink:title="gather_recv4D_23">
+<polygon fill="#d9534f" stroke="#d9534f" points="718.5,-479 617.5,-479 617.5,-455 718.5,-455 718.5,-479"/>
+<text text-anchor="middle" x="668" y="-464.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">gather_recv4D_23</text>
+</a>
+</g>
+</g>
+<!-- interface~gather_recv4d_23&#45;&gt;proc~gather_recv4d_23 -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge46" class="edge">
+<title>interface~gather_recv4d_23&#45;&gt;proc~gather_recv4d_23</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M517.0869,-469.2468C544.3936,-468.8403 578.3008,-468.3355 607.054,-467.9074"/>
+<polygon fill="#000000" stroke="#000000" points="607.4456,-471.402 617.3923,-467.7535 607.3413,-464.4028 607.4456,-471.402"/>
+</g>
+<!-- interface~elliptic2d_cart -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_node42" class="node">
+<title>interface~elliptic2d_cart</title>
+<g id="a_proc~~potential_root_mpi_curv~~CallsGraph_node42"><a xlink:href=".././interface/elliptic2d_cart.html" xlink:title="elliptic2D_cart">
+<polygon fill="#a7506f" stroke="#a7506f" points="707.5,-1150 628.5,-1150 628.5,-1126 707.5,-1126 707.5,-1150"/>
+<text text-anchor="middle" x="668" y="-1135.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">elliptic2D_cart</text>
+</a>
+</g>
+</g>
+<!-- proc~potential2d_fieldresolved&#45;&gt;interface~elliptic2d_cart -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge47" class="edge">
+<title>proc~potential2d_fieldresolved&#45;&gt;interface~elliptic2d_cart</title>
+<path fill="none" stroke="#000000" d="M533.0371,-1117.2365C560.8671,-1121.518 592.6493,-1126.4076 618.3785,-1130.3659"/>
+<polygon fill="#000000" stroke="#000000" points="617.8653,-1133.8281 628.2812,-1131.8894 618.9298,-1126.9095 617.8653,-1133.8281"/>
+</g>
+<!-- proc~gather_recv3d_23 -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_node55" class="node">
+<title>proc~gather_recv3d_23</title>
+<g id="a_proc~~potential_root_mpi_curv~~CallsGraph_node55"><a xlink:href=".././proc/gather_recv3d_23.html" xlink:title="gather_recv3D_23">
+<polygon fill="#d9534f" stroke="#d9534f" points="718.5,-437 617.5,-437 617.5,-413 718.5,-413 718.5,-437"/>
+<text text-anchor="middle" x="668" y="-422.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">gather_recv3D_23</text>
+</a>
+</g>
+</g>
+<!-- interface~gather_recv3d_23&#45;&gt;proc~gather_recv3d_23 -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge48" class="edge">
+<title>interface~gather_recv3d_23&#45;&gt;proc~gather_recv3d_23</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M517.0869,-427.2468C544.3936,-426.8403 578.3008,-426.3355 607.054,-425.9074"/>
+<polygon fill="#000000" stroke="#000000" points="607.4456,-429.402 617.3923,-425.7535 607.3413,-422.4028 607.4456,-429.402"/>
+</g>
+<!-- interface~grad2d1_curv_alt -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_node43" class="node">
+<title>interface~grad2d1_curv_alt</title>
+<g id="a_proc~~potential_root_mpi_curv~~CallsGraph_node43"><a xlink:href=".././interface/grad2d1_curv_alt.html" xlink:title="grad2D1_curv_alt">
+<polygon fill="#a7506f" stroke="#a7506f" points="716.5,-1024 619.5,-1024 619.5,-1000 716.5,-1000 716.5,-1024"/>
+<text text-anchor="middle" x="668" y="-1009.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">grad2D1_curv_alt</text>
+</a>
+</g>
+</g>
+<!-- proc~potential2d_polarization&#45;&gt;interface~grad2d1_curv_alt -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge50" class="edge">
+<title>proc~potential2d_polarization&#45;&gt;interface~grad2d1_curv_alt</title>
+<path fill="none" stroke="#000000" d="M499.2821,-961.0911C523.6086,-969.8775 557.6746,-981.7929 588,-991 594.9903,-993.1223 602.3617,-995.2305 609.6867,-997.2462"/>
+<polygon fill="#000000" stroke="#000000" points="609.0393,-1000.6969 619.6064,-999.9305 610.8678,-993.9399 609.0393,-1000.6969"/>
+</g>
+<!-- interface~elliptic2d_polarization -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_node44" class="node">
+<title>interface~elliptic2d_polarization</title>
+<g id="a_proc~~potential_root_mpi_curv~~CallsGraph_node44"><a xlink:href=".././interface/elliptic2d_polarization.html" xlink:title="elliptic2D_polarization">
+<polygon fill="#a7506f" stroke="#a7506f" points="726,-940 610,-940 610,-916 726,-916 726,-940"/>
+<text text-anchor="middle" x="668" y="-925.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">elliptic2D_polarization</text>
+</a>
+</g>
+</g>
+<!-- proc~potential2d_polarization&#45;&gt;interface~elliptic2d_polarization -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge51" class="edge">
+<title>proc~potential2d_polarization&#45;&gt;interface~elliptic2d_polarization</title>
+<path fill="none" stroke="#000000" d="M530.2559,-942.3555C552.3528,-940.0526 577.2067,-937.4623 599.6578,-935.1225"/>
+<polygon fill="#000000" stroke="#000000" points="600.2022,-938.5848 609.7855,-934.067 599.4765,-931.6225 600.2022,-938.5848"/>
+</g>
+<!-- interface~grad2d3 -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_node48" class="node">
+<title>interface~grad2d3</title>
+<g id="a_proc~~potential_root_mpi_curv~~CallsGraph_node48"><a xlink:href=".././interface/grad2d3.html" xlink:title="grad2D3">
+<polygon fill="#a7506f" stroke="#a7506f" points="695,-982 641,-982 641,-958 695,-958 695,-982"/>
+<text text-anchor="middle" x="668" y="-967.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">grad2D3</text>
+</a>
+</g>
+</g>
+<!-- proc~potential2d_polarization&#45;&gt;interface~grad2d3 -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge49" class="edge">
+<title>proc~potential2d_polarization&#45;&gt;interface~grad2d3</title>
+<path fill="none" stroke="#000000" d="M530.2559,-955.6445C563.2787,-959.0861 602.4592,-963.1694 630.5746,-966.0996"/>
+<polygon fill="#000000" stroke="#000000" points="630.4635,-969.6069 640.7724,-967.1624 631.1891,-962.6446 630.4635,-969.6069"/>
+</g>
+<!-- proc~bcast_send2d_23 -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_node52" class="node">
+<title>proc~bcast_send2d_23</title>
+<g id="a_proc~~potential_root_mpi_curv~~CallsGraph_node52"><a xlink:href=".././proc/bcast_send2d_23.html" xlink:title="bcast_send2D_23">
+<polygon fill="#d9534f" stroke="#d9534f" points="717.5,-269 618.5,-269 618.5,-245 717.5,-245 717.5,-269"/>
+<text text-anchor="middle" x="668" y="-254.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">bcast_send2D_23</text>
+</a>
+</g>
+</g>
+<!-- interface~bcast_send2d_23&#45;&gt;proc~bcast_send2d_23 -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge52" class="edge">
+<title>interface~bcast_send2d_23&#45;&gt;proc~bcast_send2d_23</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M516.0505,-227.5904C543.882,-232.9772 578.8129,-239.738 608.1634,-245.4187"/>
+<polygon fill="#000000" stroke="#000000" points="607.8086,-248.9149 618.2915,-247.379 609.1388,-242.0425 607.8086,-248.9149"/>
+</g>
+<!-- proc~grad3d3_curv_23 -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_node47" class="node">
+<title>proc~grad3d3_curv_23</title>
+<g id="a_proc~~potential_root_mpi_curv~~CallsGraph_node47"><a xlink:href=".././proc/grad3d3_curv_23.html" xlink:title="grad3D3_curv_23">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="913,-772 815,-772 815,-748 913,-748 913,-772"/>
+<text text-anchor="middle" x="864" y="-757.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">grad3D3_curv_23</text>
+</a>
+</g>
+</g>
+<!-- interface~grad3d3_curv_23&#45;&gt;proc~grad3d3_curv_23 -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge53" class="edge">
+<title>interface~grad3d3_curv_23&#45;&gt;proc~grad3d3_curv_23</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M717.2061,-760C743.7674,-760 776.7491,-760 804.7175,-760"/>
+<polygon fill="#000000" stroke="#000000" points="804.7737,-763.5001 814.7737,-760 804.7736,-756.5001 804.7737,-763.5001"/>
+</g>
+<!-- proc~gather_recv2d_23 -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_node60" class="node">
+<title>proc~gather_recv2d_23</title>
+<g id="a_proc~~potential_root_mpi_curv~~CallsGraph_node60"><a xlink:href=".././proc/gather_recv2d_23.html" xlink:title="gather_recv2D_23">
+<polygon fill="#d9534f" stroke="#d9534f" points="718.5,-395 617.5,-395 617.5,-371 718.5,-371 718.5,-395"/>
+<text text-anchor="middle" x="668" y="-380.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">gather_recv2D_23</text>
+</a>
+</g>
+</g>
+<!-- interface~gather_recv2d_23&#45;&gt;proc~gather_recv2d_23 -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge54" class="edge">
+<title>interface~gather_recv2d_23&#45;&gt;proc~gather_recv2d_23</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M517.0869,-385.2468C544.3936,-384.8403 578.3008,-384.3355 607.054,-383.9074"/>
+<polygon fill="#000000" stroke="#000000" points="607.4456,-387.402 617.3923,-383.7535 607.3413,-380.4028 607.4456,-387.402"/>
+</g>
+<!-- proc~potential2d_polarization_periodic&#45;&gt;interface~grad2d1_curv_alt -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge56" class="edge">
+<title>proc~potential2d_polarization_periodic&#45;&gt;interface~grad2d1_curv_alt</title>
+<path fill="none" stroke="#000000" d="M552.2463,-1024.0637C571.4083,-1022.0666 591.311,-1019.9924 609.0975,-1018.1387"/>
+<polygon fill="#000000" stroke="#000000" points="609.7205,-1021.5928 619.3038,-1017.075 608.9948,-1014.6306 609.7205,-1021.5928"/>
+</g>
+<!-- interface~elliptic2d_polarization_periodic -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_node53" class="node">
+<title>interface~elliptic2d_polarization_periodic</title>
+<g id="a_proc~~potential_root_mpi_curv~~CallsGraph_node53"><a xlink:href=".././interface/elliptic2d_polarization_periodic.html" xlink:title="elliptic2D_polarization_periodic">
+<polygon fill="#a7506f" stroke="#a7506f" points="748,-1066 588,-1066 588,-1042 748,-1042 748,-1066"/>
+<text text-anchor="middle" x="668" y="-1051.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">elliptic2D_polarization_periodic</text>
+</a>
+</g>
+</g>
+<!-- proc~potential2d_polarization_periodic&#45;&gt;interface~elliptic2d_polarization_periodic -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge55" class="edge">
+<title>proc~potential2d_polarization_periodic&#45;&gt;interface~elliptic2d_polarization_periodic</title>
+<path fill="none" stroke="#000000" d="M552.2463,-1041.9363C560.6231,-1042.8094 569.1414,-1043.6971 577.5626,-1044.5748"/>
+<polygon fill="#000000" stroke="#000000" points="577.4615,-1048.0831 587.7704,-1045.6386 578.1871,-1041.1208 577.4615,-1048.0831"/>
+</g>
+<!-- proc~grad2d3_curv_periodic -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_node61" class="node">
+<title>proc~grad2d3_curv_periodic</title>
+<g id="a_proc~~potential_root_mpi_curv~~CallsGraph_node61"><a xlink:href=".././proc/grad2d3_curv_periodic.html" xlink:title="grad2D3_curv_periodic">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="730,-1108 606,-1108 606,-1084 730,-1084 730,-1108"/>
+<text text-anchor="middle" x="668" y="-1093.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">grad2D3_curv_periodic</text>
+</a>
+</g>
+</g>
+<!-- proc~potential2d_polarization_periodic&#45;&gt;proc~grad2d3_curv_periodic -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge57" class="edge">
+<title>proc~potential2d_polarization_periodic&#45;&gt;proc~grad2d3_curv_periodic</title>
+<path fill="none" stroke="#000000" d="M499.2821,-1045.0911C523.6086,-1053.8775 557.6746,-1065.7929 588,-1075 594.9903,-1077.1223 602.3617,-1079.2305 609.6867,-1081.2462"/>
+<polygon fill="#000000" stroke="#000000" points="609.0393,-1084.6969 619.6064,-1083.9305 610.8678,-1077.9399 609.0393,-1084.6969"/>
+</g>
+<!-- proc~get_grid2 -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_node58" class="node">
+<title>proc~get_grid2</title>
+<g id="a_proc~~potential_root_mpi_curv~~CallsGraph_node58"><a xlink:href=".././proc/get_grid2.html" xlink:title="get_grid2">
+<polygon fill="#d9534f" stroke="#d9534f" points="697,-647 639,-647 639,-623 697,-623 697,-647"/>
+<text text-anchor="middle" x="668" y="-632.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">get_grid2</text>
+</a>
+</g>
+</g>
+<!-- interface~get_grid2&#45;&gt;proc~get_grid2 -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge58" class="edge">
+<title>interface~get_grid2&#45;&gt;proc~get_grid2</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M495.7998,-634.1454C530.8195,-634.3192 589.5678,-634.6108 628.5554,-634.8042"/>
+<polygon fill="#000000" stroke="#000000" points="628.9744,-638.3063 638.9917,-634.856 629.0092,-631.3064 628.9744,-638.3063"/>
+</g>
+<!-- proc~elliptic3d_cart -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_node45" class="node">
+<title>proc~elliptic3d_cart</title>
+<g id="a_proc~~potential_root_mpi_curv~~CallsGraph_node45"><a xlink:href=".././proc/elliptic3d_cart.html" xlink:title="elliptic3D_cart">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="903.5,-814 824.5,-814 824.5,-790 903.5,-790 903.5,-814"/>
+<text text-anchor="middle" x="864" y="-799.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">elliptic3D_cart</text>
+</a>
+</g>
+</g>
+<!-- interface~elliptic3d_cart&#45;&gt;proc~elliptic3d_cart -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge59" class="edge">
+<title>interface~elliptic3d_cart&#45;&gt;proc~elliptic3d_cart</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M506.0671,-802C578.8919,-802 734.0039,-802 813.993,-802"/>
+<polygon fill="#000000" stroke="#000000" points="814.2985,-805.5001 824.2984,-802 814.2984,-798.5001 814.2985,-805.5001"/>
+</g>
+<!-- proc~bcast_send4d_23 -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_node63" class="node">
+<title>proc~bcast_send4d_23</title>
+<g id="a_proc~~potential_root_mpi_curv~~CallsGraph_node63"><a xlink:href=".././proc/bcast_send4d_23.html" xlink:title="bcast_send4D_23">
+<polygon fill="#d9534f" stroke="#d9534f" points="717.5,-311 618.5,-311 618.5,-287 717.5,-287 717.5,-311"/>
+<text text-anchor="middle" x="668" y="-296.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">bcast_send4D_23</text>
+</a>
+</g>
+</g>
+<!-- interface~bcast_send4d_23&#45;&gt;proc~bcast_send4d_23 -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge60" class="edge">
+<title>interface~bcast_send4d_23&#45;&gt;proc~bcast_send4d_23</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M516.0505,-301.2623C543.882,-300.8479 578.8129,-300.3278 608.1634,-299.8909"/>
+<polygon fill="#000000" stroke="#000000" points="608.3448,-303.3887 618.2915,-299.7401 608.2405,-296.3894 608.3448,-303.3887"/>
+</g>
+<!-- proc~grad3d1_curv_23 -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_node54" class="node">
+<title>proc~grad3d1_curv_23</title>
+<g id="a_proc~~potential_root_mpi_curv~~CallsGraph_node54"><a xlink:href=".././proc/grad3d1_curv_23.html" xlink:title="grad3D1_curv_23">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="913,-856 815,-856 815,-832 913,-832 913,-856"/>
+<text text-anchor="middle" x="864" y="-841.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">grad3D1_curv_23</text>
+</a>
+</g>
+</g>
+<!-- interface~grad3d1_curv_23&#45;&gt;proc~grad3d1_curv_23 -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge61" class="edge">
+<title>interface~grad3d1_curv_23&#45;&gt;proc~grad3d1_curv_23</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M717.2061,-844C743.7674,-844 776.7491,-844 804.7175,-844"/>
+<polygon fill="#000000" stroke="#000000" points="804.7737,-847.5001 814.7737,-844 804.7736,-840.5001 804.7737,-847.5001"/>
+</g>
+<!-- proc~bcast_send3d_23 -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_node59" class="node">
+<title>proc~bcast_send3d_23</title>
+<g id="a_proc~~potential_root_mpi_curv~~CallsGraph_node59"><a xlink:href=".././proc/bcast_send3d_23.html" xlink:title="bcast_send3D_23">
+<polygon fill="#d9534f" stroke="#d9534f" points="717.5,-353 618.5,-353 618.5,-329 717.5,-329 717.5,-353"/>
+<text text-anchor="middle" x="668" y="-338.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">bcast_send3D_23</text>
+</a>
+</g>
+</g>
+<!-- interface~bcast_send3d_23&#45;&gt;proc~bcast_send3d_23 -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge62" class="edge">
+<title>interface~bcast_send3d_23&#45;&gt;proc~bcast_send3d_23</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M516.0505,-343.2623C543.882,-342.8479 578.8129,-342.3278 608.1634,-341.8909"/>
+<polygon fill="#000000" stroke="#000000" points="608.3448,-345.3887 618.2915,-341.7401 608.2405,-338.3894 608.3448,-345.3887"/>
+</g>
+<!-- proc~integral3d1_curv -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_node51" class="node">
+<title>proc~integral3d1_curv</title>
+<g id="a_proc~~potential_root_mpi_curv~~CallsGraph_node51"><a xlink:href=".././proc/integral3d1_curv.html" xlink:title="integral3D1_curv">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="715,-24 621,-24 621,0 715,0 715,-24"/>
+<text text-anchor="middle" x="668" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">integral3D1_curv</text>
+</a>
+</g>
+</g>
+<!-- interface~integral3d1_curv&#45;&gt;proc~integral3d1_curv -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge63" class="edge">
+<title>interface~integral3d1_curv&#45;&gt;proc~integral3d1_curv</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M513.7428,-12C542.6918,-12 579.9436,-12 610.5872,-12"/>
+<polygon fill="#000000" stroke="#000000" points="610.7045,-15.5001 620.7045,-12 610.7045,-8.5001 610.7045,-15.5001"/>
+</g>
+<!-- proc~get_simsize2 -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_node49" class="node">
+<title>proc~get_simsize2</title>
+<g id="a_proc~~potential_root_mpi_curv~~CallsGraph_node49"><a xlink:href=".././proc/get_simsize2.html" xlink:title="get_simsize2">
+<polygon fill="#d9534f" stroke="#d9534f" points="705.5,-605 630.5,-605 630.5,-581 705.5,-581 705.5,-605"/>
+<text text-anchor="middle" x="668" y="-590.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">get_simsize2</text>
+</a>
+</g>
+</g>
+<!-- interface~get_simsize2&#45;&gt;proc~get_simsize2 -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge64" class="edge">
+<title>interface~get_simsize2&#45;&gt;proc~get_simsize2</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M504.4006,-592.1881C537.189,-592.3508 584.764,-592.5869 620.167,-592.7626"/>
+<polygon fill="#000000" stroke="#000000" points="620.2521,-596.263 630.2693,-592.8128 620.2869,-589.2631 620.2521,-596.263"/>
+</g>
+<!-- proc~grad3d2_curv_23 -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_node64" class="node">
+<title>proc~grad3d2_curv_23</title>
+<g id="a_proc~~potential_root_mpi_curv~~CallsGraph_node64"><a xlink:href=".././proc/grad3d2_curv_23.html" xlink:title="grad3D2_curv_23">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="913,-898 815,-898 815,-874 913,-874 913,-898"/>
+<text text-anchor="middle" x="864" y="-883.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">grad3D2_curv_23</text>
+</a>
+</g>
+</g>
+<!-- interface~grad3d2_curv_23&#45;&gt;proc~grad3d2_curv_23 -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge65" class="edge">
+<title>interface~grad3d2_curv_23&#45;&gt;proc~grad3d2_curv_23</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M717.2061,-886C743.7674,-886 776.7491,-886 804.7175,-886"/>
+<polygon fill="#000000" stroke="#000000" points="804.7737,-889.5001 814.7737,-886 804.7736,-882.5001 804.7737,-889.5001"/>
+</g>
+<!-- proc~utsec2filestem -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_node65" class="node">
+<title>proc~utsec2filestem</title>
+<g id="a_proc~~potential_root_mpi_curv~~CallsGraph_node65"><a xlink:href=".././proc/utsec2filestem.html" xlink:title="utsec2filestem">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="708.5,-563 627.5,-563 627.5,-539 708.5,-539 708.5,-563"/>
+<text text-anchor="middle" x="668" y="-548.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">utsec2filestem</text>
+</a>
+</g>
+</g>
+<!-- proc~date_filename&#45;&gt;proc~utsec2filestem -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge66" class="edge">
+<title>proc~date_filename&#45;&gt;proc~utsec2filestem</title>
+<path fill="none" stroke="#000000" d="M506.7922,-550.2C538.5373,-550.3575 582.9899,-550.5781 617.1777,-550.7478"/>
+<polygon fill="#000000" stroke="#000000" points="617.4155,-554.2489 627.4327,-550.7987 617.4503,-547.249 617.4155,-554.2489"/>
+</g>
+<!-- proc~day_wrap -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_node57" class="node">
+<title>proc~day_wrap</title>
+<g id="a_proc~~potential_root_mpi_curv~~CallsGraph_node57"><a xlink:href=".././proc/day_wrap.html" xlink:title="day_wrap">
+<polygon fill="#d9534f" stroke="#d9534f" points="893.5,-542 834.5,-542 834.5,-518 893.5,-518 893.5,-542"/>
+<text text-anchor="middle" x="864" y="-527.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">day_wrap</text>
+</a>
+</g>
+</g>
+<!-- proc~dateinc&#45;&gt;proc~day_wrap -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge67" class="edge">
+<title>proc~dateinc&#45;&gt;proc~day_wrap</title>
+<path fill="none" stroke="#000000" d="M695.253,-511.92C728.7121,-515.5049 785.7303,-521.614 824.1194,-525.7271"/>
+<polygon fill="#000000" stroke="#000000" points="824.102,-529.2452 834.418,-526.8305 824.8478,-522.285 824.102,-529.2452"/>
+</g>
+<!-- interface~halo_23 -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_node62" class="node">
+<title>interface~halo_23</title>
+<g id="a_proc~~potential_root_mpi_curv~~CallsGraph_node62"><a xlink:href=".././interface/halo_23.html" xlink:title="halo_23">
+<polygon fill="#a7506f" stroke="#a7506f" points="695,-150 641,-150 641,-126 695,-126 695,-150"/>
+<text text-anchor="middle" x="668" y="-135.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">halo_23</text>
+</a>
+</g>
+</g>
+<!-- interface~halo&#45;&gt;interface~halo_23 -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge68" class="edge">
+<title>interface~halo&#45;&gt;interface~halo_23</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M493.6752,-138C529.0767,-138 591.1267,-138 630.8538,-138"/>
+<polygon fill="#000000" stroke="#000000" points="630.9344,-141.5001 640.9343,-138 630.9343,-134.5001 630.9344,-141.5001"/>
+</g>
+<!-- proc~div3d_curv_23 -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_node46" class="node">
+<title>proc~div3d_curv_23</title>
+<g id="a_proc~~potential_root_mpi_curv~~CallsGraph_node46"><a xlink:href=".././proc/div3d_curv_23.html" xlink:title="div3D_curv_23">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="710,-108 626,-108 626,-84 710,-84 710,-108"/>
+<text text-anchor="middle" x="668" y="-93.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">div3D_curv_23</text>
+</a>
+</g>
+</g>
+<!-- interface~div3d_curv_23&#45;&gt;proc~div3d_curv_23 -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge69" class="edge">
+<title>interface~div3d_curv_23&#45;&gt;proc~div3d_curv_23</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M508.741,-96C539.907,-96 582.5041,-96 615.8022,-96"/>
+<polygon fill="#000000" stroke="#000000" points="615.8146,-99.5001 625.8146,-96 615.8146,-92.5001 615.8146,-99.5001"/>
+</g>
+<!-- proc~elliptic2d_cart -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_node72" class="node">
+<title>proc~elliptic2d_cart</title>
+<g id="a_proc~~potential_root_mpi_curv~~CallsGraph_node72"><a xlink:href=".././proc/elliptic2d_cart.html" xlink:title="elliptic2D_cart">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="903.5,-1108 824.5,-1108 824.5,-1084 903.5,-1084 903.5,-1108"/>
+<text text-anchor="middle" x="864" y="-1093.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">elliptic2D_cart</text>
+</a>
+</g>
+</g>
+<!-- interface~elliptic2d_cart&#45;&gt;proc~elliptic2d_cart -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge70" class="edge">
+<title>interface~elliptic2d_cart&#45;&gt;proc~elliptic2d_cart</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M707.6635,-1129.5007C738.4807,-1122.897 781.3984,-1113.7003 814.4717,-1106.6132"/>
+<polygon fill="#000000" stroke="#000000" points="815.3508,-1110.0044 824.3955,-1104.4867 813.8841,-1103.1597 815.3508,-1110.0044"/>
+</g>
+<!-- proc~grad2d1_curv_alt_23 -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_node76" class="node">
+<title>proc~grad2d1_curv_alt_23</title>
+<g id="a_proc~~potential_root_mpi_curv~~CallsGraph_node76"><a xlink:href=".././proc/grad2d1_curv_alt_23.html" xlink:title="grad2D1_curv_alt_23">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="921.5,-1024 806.5,-1024 806.5,-1000 921.5,-1000 921.5,-1024"/>
+<text text-anchor="middle" x="864" y="-1009.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">grad2D1_curv_alt_23</text>
+</a>
+</g>
+</g>
+<!-- interface~grad2d1_curv_alt&#45;&gt;proc~grad2d1_curv_alt_23 -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge71" class="edge">
+<title>interface~grad2d1_curv_alt&#45;&gt;proc~grad2d1_curv_alt_23</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M716.7013,-1012C740.7226,-1012 770.0872,-1012 796.2593,-1012"/>
+<polygon fill="#000000" stroke="#000000" points="796.4931,-1015.5001 806.4931,-1012 796.4931,-1008.5001 796.4931,-1015.5001"/>
+</g>
+<!-- proc~elliptic2d_polarization -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_node66" class="node">
+<title>proc~elliptic2d_polarization</title>
+<g id="a_proc~~potential_root_mpi_curv~~CallsGraph_node66"><a xlink:href=".././proc/elliptic2d_polarization.html" xlink:title="elliptic2D_polarization">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="922,-940 806,-940 806,-916 922,-916 922,-940"/>
+<text text-anchor="middle" x="864" y="-925.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">elliptic2D_polarization</text>
+</a>
+</g>
+</g>
+<!-- interface~elliptic2d_polarization&#45;&gt;proc~elliptic2d_polarization -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge72" class="edge">
+<title>interface~elliptic2d_polarization&#45;&gt;proc~elliptic2d_polarization</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M726.0109,-928C747.8404,-928 772.8651,-928 795.5572,-928"/>
+<polygon fill="#000000" stroke="#000000" points="795.7993,-931.5001 805.7992,-928 795.7992,-924.5001 795.7993,-931.5001"/>
+</g>
+<!-- mumps_exec -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_node71" class="node">
+<title>mumps_exec</title>
+<polygon fill="#777777" stroke="#777777" points="1076,-1024 1000,-1024 1000,-1000 1076,-1000 1076,-1024"/>
+<text text-anchor="middle" x="1038" y="-1009.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">mumps_exec</text>
+</g>
+<!-- proc~elliptic3d_cart&#45;&gt;mumps_exec -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge73" class="edge">
+<title>proc~elliptic3d_cart&#45;&gt;mumps_exec</title>
+<path fill="none" stroke="#000000" d="M903.7941,-803.921C918.2548,-806.6066 933.5846,-812.0983 944,-823 996.7504,-878.2132 929.8062,-933.4527 980,-991 983.0522,-994.4993 986.7343,-997.4157 990.7454,-999.8463"/>
+<polygon fill="#000000" stroke="#000000" points="989.4242,-1003.0984 999.9352,-1004.4287 992.5479,-996.834 989.4242,-1003.0984"/>
+</g>
+<!-- proc~check_mumps_status -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_node74" class="node">
+<title>proc~check_mumps_status</title>
+<g id="a_proc~~potential_root_mpi_curv~~CallsGraph_node74"><a xlink:href=".././proc/check_mumps_status.html" xlink:title="check_mumps_status">
+<polygon fill="#d9534f" stroke="#d9534f" points="1096,-982 980,-982 980,-958 1096,-958 1096,-982"/>
+<text text-anchor="middle" x="1038" y="-967.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">check_mumps_status</text>
+</a>
+</g>
+</g>
+<!-- proc~elliptic3d_cart&#45;&gt;proc~check_mumps_status -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge74" class="edge">
+<title>proc~elliptic3d_cart&#45;&gt;proc~check_mumps_status</title>
+<path fill="none" stroke="#000000" d="M903.83,-804.3715C918.1225,-807.1305 933.3268,-812.5548 944,-823 985.6247,-863.7355 940.2643,-906.4198 980,-949 981.0275,-950.101 982.1171,-951.1445 983.2589,-952.1333"/>
+<polygon fill="#000000" stroke="#000000" points="981.2557,-955.0034 991.4472,-957.899 985.2859,-949.2799 981.2557,-955.0034"/>
+</g>
+<!-- mumps_perm -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_node77" class="node">
+<title>mumps_perm</title>
+<polygon fill="#777777" stroke="#777777" points="1077.5,-940 998.5,-940 998.5,-916 1077.5,-916 1077.5,-940"/>
+<text text-anchor="middle" x="1038" y="-925.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">mumps_perm</text>
+</g>
+<!-- proc~elliptic3d_cart&#45;&gt;mumps_perm -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge75" class="edge">
+<title>proc~elliptic3d_cart&#45;&gt;mumps_perm</title>
+<path fill="none" stroke="#000000" d="M903.6752,-807.6415C917.1586,-810.7654 931.8707,-815.5858 944,-823 979.2,-844.5166 1008.8107,-883.2415 1024.924,-907.1712"/>
+<polygon fill="#000000" stroke="#000000" points="1022.1994,-909.3991 1030.6088,-915.8438 1028.0538,-905.5616 1022.1994,-909.3991"/>
+</g>
+<!-- proc~quiet_mumps -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_node78" class="node">
+<title>proc~quiet_mumps</title>
+<g id="a_proc~~potential_root_mpi_curv~~CallsGraph_node78"><a xlink:href=".././proc/quiet_mumps.html" xlink:title="quiet_mumps">
+<polygon fill="#d9534f" stroke="#d9534f" points="1076.5,-1066 999.5,-1066 999.5,-1042 1076.5,-1042 1076.5,-1066"/>
+<text text-anchor="middle" x="1038" y="-1051.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">quiet_mumps</text>
+</a>
+</g>
+</g>
+<!-- proc~elliptic3d_cart&#45;&gt;proc~quiet_mumps -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge76" class="edge">
+<title>proc~elliptic3d_cart&#45;&gt;proc~quiet_mumps</title>
+<path fill="none" stroke="#000000" d="M903.6177,-803.6238C918.2314,-806.2507 933.715,-811.7796 944,-823 1007.9866,-892.8056 919.2429,-960.3661 980,-1033 982.9395,-1036.5142 986.5164,-1039.4403 990.4354,-1041.8767"/>
+<polygon fill="#000000" stroke="#000000" points="988.9477,-1045.0467 999.4469,-1046.4665 992.1247,-1038.8092 988.9477,-1045.0467"/>
+</g>
+<!-- proc~grad2d3_curv_23 -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_node73" class="node">
+<title>proc~grad2d3_curv_23</title>
+<g id="a_proc~~potential_root_mpi_curv~~CallsGraph_node73"><a xlink:href=".././proc/grad2d3_curv_23.html" xlink:title="grad2D3_curv_23">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="913,-982 815,-982 815,-958 913,-958 913,-982"/>
+<text text-anchor="middle" x="864" y="-967.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">grad2D3_curv_23</text>
+</a>
+</g>
+</g>
+<!-- interface~grad2d3&#45;&gt;proc~grad2d3_curv_23 -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge77" class="edge">
+<title>interface~grad2d3&#45;&gt;proc~grad2d3_curv_23</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M695.253,-970C723.424,-970 768.2958,-970 804.6882,-970"/>
+<polygon fill="#000000" stroke="#000000" points="804.707,-973.5001 814.707,-970 804.707,-966.5001 804.707,-973.5001"/>
+</g>
+<!-- mpi_recv -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_node67" class="node">
+<title>mpi_recv</title>
+<polygon fill="#777777" stroke="#777777" points="892,-437 836,-437 836,-413 892,-413 892,-437"/>
+<text text-anchor="middle" x="864" y="-422.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">mpi_recv</text>
+</g>
+<!-- proc~gather_recv4d_23&#45;&gt;mpi_recv -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge79" class="edge">
+<title>proc~gather_recv4d_23&#45;&gt;mpi_recv</title>
+<path fill="none" stroke="#000000" d="M718.7298,-456.1293C752.2569,-448.945 795.4902,-439.6807 826.0482,-433.1325"/>
+<polygon fill="#000000" stroke="#000000" points="826.8485,-436.5406 835.8931,-431.0229 825.3817,-429.696 826.8485,-436.5406"/>
+</g>
+<!-- proc~slabinds -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_node69" class="node">
+<title>proc~slabinds</title>
+<g id="a_proc~~potential_root_mpi_curv~~CallsGraph_node69"><a xlink:href=".././proc/slabinds.html" xlink:title="slabinds">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="891,-374 837,-374 837,-350 891,-350 891,-374"/>
+<text text-anchor="middle" x="864" y="-359.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">slabinds</text>
+</a>
+</g>
+</g>
+<!-- proc~gather_recv4d_23&#45;&gt;proc~slabinds -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge78" class="edge">
+<title>proc~gather_recv4d_23&#45;&gt;proc~slabinds</title>
+<path fill="none" stroke="#000000" d="M718.5748,-458.6772C728.793,-455.6611 739.1156,-451.5631 748,-446 768.8375,-432.9522 764.7723,-419.3213 784,-404 797.1834,-393.495 813.3953,-384.4087 827.7702,-377.4011"/>
+<polygon fill="#000000" stroke="#000000" points="829.3445,-380.5285 836.901,-373.1022 826.3627,-374.1953 829.3445,-380.5285"/>
+</g>
+<!-- proc~bcast_send2d_23&#45;&gt;mpi_send -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge80" class="edge">
+<title>proc~bcast_send2d_23&#45;&gt;mpi_send</title>
+<path fill="none" stroke="#000000" d="M717.7125,-262.3263C750.6839,-265.859 793.3774,-270.4333 824.1217,-273.7273"/>
+<polygon fill="#000000" stroke="#000000" points="824.1465,-277.2499 834.4624,-274.8353 824.8923,-270.2898 824.1465,-277.2499"/>
+</g>
+<!-- proc~bcast_send2d_23&#45;&gt;proc~slabinds -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge81" class="edge">
+<title>proc~bcast_send2d_23&#45;&gt;proc~slabinds</title>
+<path fill="none" stroke="#000000" d="M717.6675,-266.9813C727.9468,-269.8857 738.5238,-273.5188 748,-278 767.2503,-287.1033 812.6686,-321.6278 840.6212,-343.4815"/>
+<polygon fill="#000000" stroke="#000000" points="838.6604,-346.3919 848.6871,-349.8147 842.9834,-340.8862 838.6604,-346.3919"/>
+</g>
+<!-- proc~elliptic2d_polarization_periodic -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_node75" class="node">
+<title>proc~elliptic2d_polarization_periodic</title>
+<g id="a_proc~~potential_root_mpi_curv~~CallsGraph_node75"><a xlink:href=".././proc/elliptic2d_polarization_periodic.html" xlink:title="elliptic2D_polarization_periodic">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="944,-1066 784,-1066 784,-1042 944,-1042 944,-1066"/>
+<text text-anchor="middle" x="864" y="-1051.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">elliptic2D_polarization_periodic</text>
+</a>
+</g>
+</g>
+<!-- interface~elliptic2d_polarization_periodic&#45;&gt;proc~elliptic2d_polarization_periodic -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge82" class="edge">
+<title>interface~elliptic2d_polarization_periodic&#45;&gt;proc~elliptic2d_polarization_periodic</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M748.0034,-1054C756.5245,-1054 765.2335,-1054 773.8608,-1054"/>
+<polygon fill="#000000" stroke="#000000" points="773.9348,-1057.5001 783.9347,-1054 773.9347,-1050.5001 773.9348,-1057.5001"/>
+</g>
+<!-- proc~gather_recv3d_23&#45;&gt;mpi_recv -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge84" class="edge">
+<title>proc~gather_recv3d_23&#45;&gt;mpi_recv</title>
+<path fill="none" stroke="#000000" d="M718.7298,-425C752.1111,-425 795.1144,-425 825.6489,-425"/>
+<polygon fill="#000000" stroke="#000000" points="825.8932,-428.5001 835.8931,-425 825.8931,-421.5001 825.8932,-428.5001"/>
+</g>
+<!-- proc~gather_recv3d_23&#45;&gt;proc~slabinds -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge83" class="edge">
+<title>proc~gather_recv3d_23&#45;&gt;proc~slabinds</title>
+<path fill="none" stroke="#000000" d="M716.8525,-412.9292C727.1868,-410.1657 737.9922,-407.1183 748,-404 774.7191,-395.6749 804.3827,-384.9065 827.0243,-376.3578"/>
+<polygon fill="#000000" stroke="#000000" points="828.4791,-379.5492 836.5823,-372.7236 825.9913,-373.0062 828.4791,-379.5492"/>
+</g>
+<!-- proc~day_wrap&#45;&gt;proc~day_wrap -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge85" class="edge">
+<title>proc~day_wrap&#45;&gt;proc~day_wrap</title>
+<path fill="none" stroke="#000000" d="M835.2301,-542.0139C825.1835,-550.9717 834.7734,-560 864,-560 882.2666,-560 892.8627,-556.4733 895.7882,-551.6413"/>
+<polygon fill="#000000" stroke="#000000" points="899.1012,-550.5089 892.7699,-542.0139 892.4217,-552.603 899.1012,-550.5089"/>
+</g>
+<!-- proc~daysmonth -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_node70" class="node">
+<title>proc~daysmonth</title>
+<g id="a_proc~~potential_root_mpi_curv~~CallsGraph_node70"><a xlink:href=".././proc/daysmonth.html" xlink:title="daysmonth">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1070.5,-542 1005.5,-542 1005.5,-518 1070.5,-518 1070.5,-542"/>
+<text text-anchor="middle" x="1038" y="-527.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">daysmonth</text>
+</a>
+</g>
+</g>
+<!-- proc~day_wrap&#45;&gt;proc~daysmonth -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge86" class="edge">
+<title>proc~day_wrap&#45;&gt;proc~daysmonth</title>
+<path fill="none" stroke="#000000" d="M893.5167,-530C921.3924,-530 963.5192,-530 995.103,-530"/>
+<polygon fill="#000000" stroke="#000000" points="995.3741,-533.5001 1005.374,-530 995.374,-526.5001 995.3741,-533.5001"/>
+</g>
+<!-- proc~bcast_send3d_23&#45;&gt;mpi_send -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge87" class="edge">
+<title>proc~bcast_send3d_23&#45;&gt;mpi_send</title>
+<path fill="none" stroke="#000000" d="M716.8525,-328.9292C727.1868,-326.1657 737.9922,-323.1183 748,-320 773.8284,-311.9524 802.4084,-301.6217 824.7371,-293.2199"/>
+<polygon fill="#000000" stroke="#000000" points="826.099,-296.4468 834.21,-289.6304 823.6186,-289.9009 826.099,-296.4468"/>
+</g>
+<!-- proc~bcast_send3d_23&#45;&gt;proc~slabinds -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge88" class="edge">
+<title>proc~bcast_send3d_23&#45;&gt;proc~slabinds</title>
+<path fill="none" stroke="#000000" d="M717.7125,-346.3263C751.597,-349.9568 795.7494,-354.6874 826.6479,-357.998"/>
+<polygon fill="#000000" stroke="#000000" points="826.6697,-361.5203 836.9857,-359.1056 827.4155,-354.5601 826.6697,-361.5203"/>
+</g>
+<!-- proc~gather_recv2d_23&#45;&gt;mpi_recv -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge90" class="edge">
+<title>proc~gather_recv2d_23&#45;&gt;mpi_recv</title>
+<path fill="none" stroke="#000000" d="M718.7298,-393.8707C752.2569,-401.055 795.4902,-410.3193 826.0482,-416.8675"/>
+<polygon fill="#000000" stroke="#000000" points="825.3817,-420.304 835.8931,-418.9771 826.8485,-413.4594 825.3817,-420.304"/>
+</g>
+<!-- proc~gather_recv2d_23&#45;&gt;proc~slabinds -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge89" class="edge">
+<title>proc~gather_recv2d_23&#45;&gt;proc~slabinds</title>
+<path fill="none" stroke="#000000" d="M718.7298,-377.5647C752.5169,-373.9446 796.1615,-369.2684 826.7571,-365.9903"/>
+<polygon fill="#000000" stroke="#000000" points="827.4272,-369.4386 836.9974,-364.8931 826.6814,-362.4785 827.4272,-369.4386"/>
+</g>
+<!-- proc~halo_23 -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_node68" class="node">
+<title>proc~halo_23</title>
+<g id="a_proc~~potential_root_mpi_curv~~CallsGraph_node68"><a xlink:href=".././proc/halo_23.html" xlink:title="halo_23">
+<polygon fill="#d9534f" stroke="#d9534f" points="891,-150 837,-150 837,-126 891,-126 891,-150"/>
+<text text-anchor="middle" x="864" y="-135.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">halo_23</text>
+</a>
+</g>
+</g>
+<!-- interface~halo_23&#45;&gt;proc~halo_23 -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge91" class="edge">
+<title>interface~halo_23&#45;&gt;proc~halo_23</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M695.253,-138C729.4813,-138 788.3642,-138 826.7369,-138"/>
+<polygon fill="#000000" stroke="#000000" points="826.9785,-141.5001 836.9785,-138 826.9785,-134.5001 826.9785,-141.5001"/>
+</g>
+<!-- proc~bcast_send4d_23&#45;&gt;mpi_send -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge92" class="edge">
+<title>proc~bcast_send4d_23&#45;&gt;mpi_send</title>
+<path fill="none" stroke="#000000" d="M717.7125,-293.6737C750.6839,-290.141 793.3774,-285.5667 824.1217,-282.2727"/>
+<polygon fill="#000000" stroke="#000000" points="824.8923,-285.7102 834.4624,-281.1647 824.1465,-278.7501 824.8923,-285.7102"/>
+</g>
+<!-- proc~bcast_send4d_23&#45;&gt;proc~slabinds -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge93" class="edge">
+<title>proc~bcast_send4d_23&#45;&gt;proc~slabinds</title>
+<path fill="none" stroke="#000000" d="M716.8525,-311.0708C727.1868,-313.8343 737.9922,-316.8817 748,-320 774.7191,-328.3251 804.3827,-339.0935 827.0243,-347.6422"/>
+<polygon fill="#000000" stroke="#000000" points="825.9913,-350.9938 836.5823,-351.2764 828.4791,-344.4508 825.9913,-350.9938"/>
+</g>
+<!-- proc~utsec2filestem&#45;&gt;proc~day_wrap -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge94" class="edge">
+<title>proc~utsec2filestem&#45;&gt;proc~day_wrap</title>
+<path fill="none" stroke="#000000" d="M708.6113,-546.6488C742.5511,-543.0124 790.67,-537.8568 824.341,-534.2492"/>
+<polygon fill="#000000" stroke="#000000" points="824.7249,-537.7282 834.295,-533.1827 823.9791,-530.768 824.7249,-537.7282"/>
+</g>
+<!-- proc~elliptic2d_polarization&#45;&gt;mumps_exec -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge95" class="edge">
+<title>proc~elliptic2d_polarization&#45;&gt;mumps_exec</title>
+<path fill="none" stroke="#000000" d="M922.1294,-938.757C929.7962,-941.4489 937.3063,-944.8086 944,-949 964.8375,-962.0478 959.7753,-977.0212 980,-991 983.2761,-993.2643 986.8243,-995.314 990.4964,-997.1635"/>
+<polygon fill="#000000" stroke="#000000" points="989.2403,-1000.4364 999.7951,-1001.357 992.1181,-994.0553 989.2403,-1000.4364"/>
+</g>
+<!-- proc~elliptic2d_polarization&#45;&gt;proc~check_mumps_status -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge96" class="edge">
+<title>proc~elliptic2d_polarization&#45;&gt;proc~check_mumps_status</title>
+<path fill="none" stroke="#000000" d="M913.8614,-940.0355C933.9743,-944.8903 957.3472,-950.5321 978.3521,-955.6022"/>
+<polygon fill="#000000" stroke="#000000" points="977.5892,-959.0185 988.1313,-957.9627 979.2317,-952.214 977.5892,-959.0185"/>
+</g>
+<!-- proc~elliptic2d_polarization&#45;&gt;mumps_perm -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge97" class="edge">
+<title>proc~elliptic2d_polarization&#45;&gt;mumps_perm</title>
+<path fill="none" stroke="#000000" d="M922.4235,-928C943.7916,-928 967.747,-928 988.2839,-928"/>
+<polygon fill="#000000" stroke="#000000" points="988.3714,-931.5001 998.3713,-928 988.3713,-924.5001 988.3714,-931.5001"/>
+</g>
+<!-- proc~elliptic2d_polarization&#45;&gt;proc~quiet_mumps -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge98" class="edge">
+<title>proc~elliptic2d_polarization&#45;&gt;proc~quiet_mumps</title>
+<path fill="none" stroke="#000000" d="M922.2193,-936.4972C930.1345,-939.5117 937.6911,-943.563 944,-949 974.7681,-975.516 950.4653,-1005.1167 980,-1033 983.0662,-1035.8947 986.5612,-1038.3958 990.2807,-1040.5558"/>
+<polygon fill="#000000" stroke="#000000" points="988.7553,-1043.706 999.2707,-1045.0016 991.8584,-1037.4313 988.7553,-1043.706"/>
+</g>
+<!-- mpi_irecv -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_node80" class="node">
+<title>mpi_irecv</title>
+<polygon fill="#777777" stroke="#777777" points="1067,-129 1009,-129 1009,-105 1067,-105 1067,-129"/>
+<text text-anchor="middle" x="1038" y="-114.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">mpi_irecv</text>
+</g>
+<!-- proc~halo_23&#45;&gt;mpi_irecv -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge99" class="edge">
+<title>proc~halo_23&#45;&gt;mpi_irecv</title>
+<path fill="none" stroke="#000000" d="M891.1875,-134.7188C920.0802,-131.2317 966.0313,-125.6859 998.8269,-121.7278"/>
+<polygon fill="#000000" stroke="#000000" points="999.4657,-125.1762 1008.9743,-120.5031 998.6269,-118.2266 999.4657,-125.1762"/>
+</g>
+<!-- proc~grid2id -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_node81" class="node">
+<title>proc~grid2id</title>
+<g id="a_proc~~potential_root_mpi_curv~~CallsGraph_node81"><a xlink:href=".././proc/grid2id.html" xlink:title="grid2ID">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1065,-87 1011,-87 1011,-63 1065,-63 1065,-87"/>
+<text text-anchor="middle" x="1038" y="-72.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">grid2ID</text>
+</a>
+</g>
+</g>
+<!-- proc~halo_23&#45;&gt;proc~grid2id -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge100" class="edge">
+<title>proc~halo_23&#45;&gt;proc~grid2id</title>
+<path fill="none" stroke="#000000" d="M891.1875,-128.1563C920.725,-117.4616 968.0907,-100.312 1001.0026,-88.3956"/>
+<polygon fill="#000000" stroke="#000000" points="1002.5058,-91.5738 1010.7169,-84.8784 1000.1226,-84.9919 1002.5058,-91.5738"/>
+</g>
+<!-- mpi_isend -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_node82" class="node">
+<title>mpi_isend</title>
+<polygon fill="#777777" stroke="#777777" points="1068.5,-213 1007.5,-213 1007.5,-189 1068.5,-189 1068.5,-213"/>
+<text text-anchor="middle" x="1038" y="-198.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">mpi_isend</text>
+</g>
+<!-- proc~halo_23&#45;&gt;mpi_isend -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge102" class="edge">
+<title>proc~halo_23&#45;&gt;mpi_isend</title>
+<path fill="none" stroke="#000000" d="M891.1875,-147.8438C919.7722,-158.1934 965.0534,-174.5883 997.7735,-186.4352"/>
+<polygon fill="#000000" stroke="#000000" points="996.8982,-189.8406 1007.4924,-189.9541 999.2813,-183.2587 996.8982,-189.8406"/>
+</g>
+<!-- mpi_waitall -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_node83" class="node">
+<title>mpi_waitall</title>
+<polygon fill="#777777" stroke="#777777" points="1070.5,-171 1005.5,-171 1005.5,-147 1070.5,-147 1070.5,-171"/>
+<text text-anchor="middle" x="1038" y="-156.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">mpi_waitall</text>
+</g>
+<!-- proc~halo_23&#45;&gt;mpi_waitall -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge101" class="edge">
+<title>proc~halo_23&#45;&gt;mpi_waitall</title>
+<path fill="none" stroke="#000000" d="M891.1875,-141.2813C919.0453,-144.6434 962.7611,-149.9194 995.2533,-153.8409"/>
+<polygon fill="#000000" stroke="#000000" points="995.0267,-157.3389 1005.374,-155.0624 995.8655,-150.3893 995.0267,-157.3389"/>
+</g>
+<!-- proc~id2grid -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_node79" class="node">
+<title>proc~id2grid</title>
+<g id="a_proc~~potential_root_mpi_curv~~CallsGraph_node79"><a xlink:href=".././proc/id2grid.html" xlink:title="ID2grid">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="1065,-374 1011,-374 1011,-350 1065,-350 1065,-374"/>
+<text text-anchor="middle" x="1038" y="-359.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">ID2grid</text>
+</a>
+</g>
+</g>
+<!-- proc~slabinds&#45;&gt;proc~id2grid -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge103" class="edge">
+<title>proc~slabinds&#45;&gt;proc~id2grid</title>
+<path fill="none" stroke="#000000" d="M891.1875,-362C920.5977,-362 967.6827,-362 1000.5762,-362"/>
+<polygon fill="#000000" stroke="#000000" points="1000.7169,-365.5001 1010.7169,-362 1000.7168,-358.5001 1000.7169,-365.5001"/>
+</g>
+<!-- proc~elliptic2d_cart&#45;&gt;mumps_exec -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge104" class="edge">
+<title>proc~elliptic2d_cart&#45;&gt;mumps_exec</title>
+<path fill="none" stroke="#000000" d="M903.7661,-1090.5055C917.2574,-1087.3944 931.9513,-1082.5445 944,-1075 964.8375,-1061.9522 959.7753,-1046.9788 980,-1033 983.2761,-1030.7357 986.8243,-1028.686 990.4964,-1026.8365"/>
+<polygon fill="#000000" stroke="#000000" points="992.1181,-1029.9447 999.7951,-1022.643 989.2403,-1023.5636 992.1181,-1029.9447"/>
+</g>
+<!-- proc~elliptic2d_cart&#45;&gt;proc~check_mumps_status -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge105" class="edge">
+<title>proc~elliptic2d_cart&#45;&gt;proc~check_mumps_status</title>
+<path fill="none" stroke="#000000" d="M903.5641,-1092.8095C917.6576,-1089.9407 932.7963,-1084.6554 944,-1075 974.7681,-1048.484 950.4653,-1018.8833 980,-991 981.2849,-989.787 982.6451,-988.6431 984.0655,-987.5644"/>
+<polygon fill="#000000" stroke="#000000" points="986.1712,-990.3741 992.7551,-982.0733 982.4318,-984.4566 986.1712,-990.3741"/>
+</g>
+<!-- proc~elliptic2d_cart&#45;&gt;mumps_perm -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge106" class="edge">
+<title>proc~elliptic2d_cart&#45;&gt;mumps_perm</title>
+<path fill="none" stroke="#000000" d="M903.83,-1093.6285C918.1225,-1090.8695 933.3268,-1085.4452 944,-1075 985.6247,-1034.2645 940.2643,-991.5802 980,-949 982.757,-946.0456 985.9615,-943.5059 989.4215,-941.3228"/>
+<polygon fill="#000000" stroke="#000000" points="991.206,-944.3392 998.4394,-936.5978 987.9572,-938.1387 991.206,-944.3392"/>
+</g>
+<!-- proc~elliptic2d_cart&#45;&gt;proc~quiet_mumps -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge107" class="edge">
+<title>proc~elliptic2d_cart&#45;&gt;proc~quiet_mumps</title>
+<path fill="none" stroke="#000000" d="M903.9191,-1086.3644C929.3638,-1080.2225 962.4973,-1072.2248 989.4602,-1065.7165"/>
+<polygon fill="#000000" stroke="#000000" points="990.5635,-1069.0508 999.463,-1063.302 988.921,-1062.2462 990.5635,-1069.0508"/>
+</g>
+<!-- proc~elliptic2d_polarization_periodic&#45;&gt;mumps_exec -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge108" class="edge">
+<title>proc~elliptic2d_polarization_periodic&#45;&gt;mumps_exec</title>
+<path fill="none" stroke="#000000" d="M913.8614,-1041.9645C937.7621,-1036.1953 966.2665,-1029.315 989.9301,-1023.6031"/>
+<polygon fill="#000000" stroke="#000000" points="990.8481,-1026.9821 999.7477,-1021.2333 989.2056,-1020.1775 990.8481,-1026.9821"/>
+</g>
+<!-- proc~elliptic2d_polarization_periodic&#45;&gt;proc~check_mumps_status -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge109" class="edge">
+<title>proc~elliptic2d_polarization_periodic&#45;&gt;proc~check_mumps_status</title>
+<path fill="none" stroke="#000000" d="M925.8776,-1041.8672C932.2322,-1039.4293 938.4016,-1036.5055 944,-1033 964.8375,-1019.9522 959.7753,-1004.9788 980,-991 982.3538,-989.3731 984.8481,-987.857 987.4279,-986.4464"/>
+<polygon fill="#000000" stroke="#000000" points="988.9937,-989.5769 996.4487,-982.0486 985.9262,-983.2848 988.9937,-989.5769"/>
+</g>
+<!-- proc~elliptic2d_polarization_periodic&#45;&gt;mumps_perm -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge110" class="edge">
+<title>proc~elliptic2d_polarization_periodic&#45;&gt;mumps_perm</title>
+<path fill="none" stroke="#000000" d="M930.6336,-1041.8041C935.4429,-1039.373 939.9754,-1036.4684 944,-1033 974.7681,-1006.484 950.4653,-976.8833 980,-949 982.7717,-946.3833 985.8939,-944.0882 989.2156,-942.076"/>
+<polygon fill="#000000" stroke="#000000" points="991.0678,-945.0596 998.3702,-937.3834 987.8746,-938.8303 991.0678,-945.0596"/>
+</g>
+<!-- proc~elliptic2d_polarization_periodic&#45;&gt;proc~quiet_mumps -->
+<g id="proc~~potential_root_mpi_curv~~CallsGraph_edge111" class="edge">
+<title>proc~elliptic2d_polarization_periodic&#45;&gt;proc~quiet_mumps</title>
+<path fill="none" stroke="#000000" d="M944.1245,-1054C959.4768,-1054 975.1164,-1054 989.1151,-1054"/>
+<polygon fill="#000000" stroke="#000000" points="989.4681,-1057.5001 999.4681,-1054 989.4681,-1050.5001 989.4681,-1057.5001"/>
+</g>
+</g>
+</svg>
+</div><script>var panprocpotential_root_mpi_curvCallsGraph = svgPanZoom('#procpotential_root_mpi_curvCallsGraph', {zoomEnabled: true,controlIconsEnabled: true, fit: true, center: true,}); </script><div><a type="button" class="graph-help" data-toggle="modal" href="#graph-help-text">Help</a></div><div class="modal fade" id="graph-help-text" tabindex="-1" role="dialog"><div class="modal-dialog modal-lg" role="document"><div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button><h4 class="modal-title" id="-graph-help-label">Graph Key</h4></div><div class="modal-body">
+    <p>Nodes of different colours represent the following: </p>
+    <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.40.1 (20161225.0304)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="560pt" height="32pt"
+ viewBox="0.00 0.00 559.50 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 28)">
+<title>Graph Key</title>
+<polygon fill="#ffffff" stroke="transparent" points="-4,4 -4,-28 555.5,-28 555.5,4 -4,4"/>
+<!-- Subroutine -->
+<g id="node1" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="64,-24 0,-24 0,0 64,0 64,-24"/>
+<text text-anchor="middle" x="32" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node2" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="136,-24 82,-24 82,0 136,0 136,-24"/>
+<text text-anchor="middle" x="109" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Function</text>
+</g>
+<!-- Interface -->
+<g id="node3" class="node">
+<title>Interface</title>
+<polygon fill="#a7506f" stroke="#a7506f" points="209.5,-24 154.5,-24 154.5,0 209.5,0 209.5,-24"/>
+<text text-anchor="middle" x="182" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Interface</text>
+</g>
+<!-- Unknown Procedure Type -->
+<g id="node4" class="node">
+<title>Unknown Procedure Type</title>
+<polygon fill="#777777" stroke="#777777" points="364,-24 228,-24 228,0 364,0 364,-24"/>
+<text text-anchor="middle" x="296" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Unknown Procedure Type</text>
+</g>
+<!-- Program -->
+<g id="node5" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="436,-24 382,-24 382,0 436,0 436,-24"/>
+<text text-anchor="middle" x="409" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node6" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="#000000" points="551.5,-24 454.5,-24 454.5,0 551.5,0 551.5,-24"/>
+<text text-anchor="middle" x="503" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#000000">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+    
+    <p>Solid arrows point from a procedure to one which it calls. Dashed 
+    arrows point from an interface to procedures which implement that interface.
+    This could include the module procedures in a generic interface or the
+    implementation in a submodule of an interface in a parent module.
+    </p>
+    </div></div></div></div>
+      </div>
+    </div>
+     
+     
+    <div class="panel panel-default">
+      <div class="panel-heading">
+  <h3 class="panel-title">Called by</h3>
+      </div>
+      <div class="panel-body">
+  <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.40.1 (20161225.0304)
+ -->
+<!-- Title: proc~~potential_root_mpi_curv~~CalledByGraph Pages: 1 -->
+<svg id="procpotential_root_mpi_curvCalledByGraph" width="641pt" height="25pt"
+ viewBox="0.00 0.00 641.00 25.35" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="proc~~potential_root_mpi_curv~~CalledByGraph" class="graph" transform="scale(.7923 .7923) rotate(0) translate(4 28)">
+<title>proc~~potential_root_mpi_curv~~CalledByGraph</title>
+<polygon fill="#ffffff" stroke="transparent" points="-4,4 -4,-28 805,-28 805,4 -4,4"/>
+<!-- proc~potential_root_mpi_curv -->
+<g id="proc~~potential_root_mpi_curv~~CalledByGraph_node1" class="node">
+<title>proc~potential_root_mpi_curv</title>
+<polygon fill="none" stroke="#000000" points="801,-24 674,-24 674,0 801,0 801,-24"/>
+<text text-anchor="middle" x="737.5" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#000000">potential_root_mpi_curv</text>
+</g>
+<!-- interface~potential_root_mpi_curv -->
+<g id="proc~~potential_root_mpi_curv~~CalledByGraph_node2" class="node">
+<title>interface~potential_root_mpi_curv</title>
+<g id="a_proc~~potential_root_mpi_curv~~CalledByGraph_node2"><a xlink:href=".././interface/potential_root_mpi_curv.html" xlink:title="potential_root_mpi_curv">
+<polygon fill="#a7506f" stroke="#a7506f" points="638,-24 511,-24 511,0 638,0 638,-24"/>
+<text text-anchor="middle" x="574.5" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">potential_root_mpi_curv</text>
+</a>
+</g>
+</g>
+<!-- interface~potential_root_mpi_curv&#45;&gt;proc~potential_root_mpi_curv -->
+<g id="proc~~potential_root_mpi_curv~~CalledByGraph_edge1" class="edge">
+<title>interface~potential_root_mpi_curv&#45;&gt;proc~potential_root_mpi_curv</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M638.4541,-12C646.7606,-12 655.3224,-12 663.7718,-12"/>
+<polygon fill="#000000" stroke="#000000" points="663.9977,-15.5001 673.9977,-12 663.9977,-8.5001 663.9977,-15.5001"/>
+</g>
+<!-- interface~potential_root_mpi -->
+<g id="proc~~potential_root_mpi_curv~~CalledByGraph_node3" class="node">
+<title>interface~potential_root_mpi</title>
+<g id="a_proc~~potential_root_mpi_curv~~CalledByGraph_node3"><a xlink:href=".././interface/potential_root_mpi.html" xlink:title="potential_root_mpi">
+<polygon fill="#a7506f" stroke="#a7506f" points="475,-24 374,-24 374,0 475,0 475,-24"/>
+<text text-anchor="middle" x="424.5" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">potential_root_mpi</text>
+</a>
+</g>
+</g>
+<!-- interface~potential_root_mpi&#45;&gt;interface~potential_root_mpi_curv -->
+<g id="proc~~potential_root_mpi_curv~~CalledByGraph_edge2" class="edge">
+<title>interface~potential_root_mpi&#45;&gt;interface~potential_root_mpi_curv</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M475.2832,-12C483.469,-12 492.086,-12 500.6823,-12"/>
+<polygon fill="#000000" stroke="#000000" points="500.737,-15.5001 510.737,-12 500.7369,-8.5001 500.737,-15.5001"/>
+</g>
+<!-- proc~electrodynamics_curv -->
+<g id="proc~~potential_root_mpi_curv~~CalledByGraph_node4" class="node">
+<title>proc~electrodynamics_curv</title>
+<g id="a_proc~~potential_root_mpi_curv~~CalledByGraph_node4"><a xlink:href=".././proc/electrodynamics_curv.html" xlink:title="electrodynamics_curv">
+<polygon fill="#d9534f" stroke="#d9534f" points="338,-24 222,-24 222,0 338,0 338,-24"/>
+<text text-anchor="middle" x="280" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">electrodynamics_curv</text>
+</a>
+</g>
+</g>
+<!-- proc~electrodynamics_curv&#45;&gt;interface~potential_root_mpi -->
+<g id="proc~~potential_root_mpi_curv~~CalledByGraph_edge3" class="edge">
+<title>proc~electrodynamics_curv&#45;&gt;interface~potential_root_mpi</title>
+<path fill="none" stroke="#000000" d="M338.3572,-12C346.7101,-12 355.3206,-12 363.7188,-12"/>
+<polygon fill="#000000" stroke="#000000" points="363.8261,-15.5001 373.8261,-12 363.8261,-8.5001 363.8261,-15.5001"/>
+</g>
+<!-- interface~electrodynamics -->
+<g id="proc~~potential_root_mpi_curv~~CalledByGraph_node5" class="node">
+<title>interface~electrodynamics</title>
+<g id="a_proc~~potential_root_mpi_curv~~CalledByGraph_node5"><a xlink:href=".././interface/electrodynamics.html" xlink:title="electrodynamics">
+<polygon fill="#a7506f" stroke="#a7506f" points="186,-24 96,-24 96,0 186,0 186,-24"/>
+<text text-anchor="middle" x="141" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">electrodynamics</text>
+</a>
+</g>
+</g>
+<!-- interface~electrodynamics&#45;&gt;proc~electrodynamics_curv -->
+<g id="proc~~potential_root_mpi_curv~~CalledByGraph_edge4" class="edge">
+<title>interface~electrodynamics&#45;&gt;proc~electrodynamics_curv</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M186.1293,-12C194.3339,-12 203.0574,-12 211.7546,-12"/>
+<polygon fill="#000000" stroke="#000000" points="211.9198,-15.5001 221.9197,-12 211.9197,-8.5001 211.9198,-15.5001"/>
+</g>
+<!-- program~gemini3d -->
+<g id="proc~~potential_root_mpi_curv~~CalledByGraph_node6" class="node">
+<title>program~gemini3d</title>
+<g id="a_proc~~potential_root_mpi_curv~~CalledByGraph_node6"><a xlink:href=".././program/gemini3d.html" xlink:title="Gemini3D">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="60,-24 0,-24 0,0 60,0 60,-24"/>
+<text text-anchor="middle" x="30" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Gemini3D</text>
+</a>
+</g>
+</g>
+<!-- program~gemini3d&#45;&gt;interface~electrodynamics -->
+<g id="proc~~potential_root_mpi_curv~~CalledByGraph_edge5" class="edge">
+<title>program~gemini3d&#45;&gt;interface~electrodynamics</title>
+<path fill="none" stroke="#000000" d="M60.0382,-12C68.0619,-12 76.992,-12 85.9081,-12"/>
+<polygon fill="#000000" stroke="#000000" points="85.9196,-15.5001 95.9196,-12 85.9195,-8.5001 85.9196,-15.5001"/>
+</g>
+</g>
+</svg>
+</div><script>var panprocpotential_root_mpi_curvCalledByGraph = svgPanZoom('#procpotential_root_mpi_curvCalledByGraph', {zoomEnabled: true,controlIconsEnabled: true, fit: true, center: true,}); </script><div><a type="button" class="graph-help" data-toggle="modal" href="#graph-help-text">Help</a></div><div class="modal fade" id="graph-help-text" tabindex="-1" role="dialog"><div class="modal-dialog modal-lg" role="document"><div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button><h4 class="modal-title" id="-graph-help-label">Graph Key</h4></div><div class="modal-body">
+    <p>Nodes of different colours represent the following: </p>
+    <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.40.1 (20161225.0304)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="560pt" height="32pt"
+ viewBox="0.00 0.00 559.50 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 28)">
+<title>Graph Key</title>
+<polygon fill="#ffffff" stroke="transparent" points="-4,4 -4,-28 555.5,-28 555.5,4 -4,4"/>
+<!-- Subroutine -->
+<g id="node1" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="64,-24 0,-24 0,0 64,0 64,-24"/>
+<text text-anchor="middle" x="32" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node2" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="136,-24 82,-24 82,0 136,0 136,-24"/>
+<text text-anchor="middle" x="109" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Function</text>
+</g>
+<!-- Interface -->
+<g id="node3" class="node">
+<title>Interface</title>
+<polygon fill="#a7506f" stroke="#a7506f" points="209.5,-24 154.5,-24 154.5,0 209.5,0 209.5,-24"/>
+<text text-anchor="middle" x="182" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Interface</text>
+</g>
+<!-- Unknown Procedure Type -->
+<g id="node4" class="node">
+<title>Unknown Procedure Type</title>
+<polygon fill="#777777" stroke="#777777" points="364,-24 228,-24 228,0 364,0 364,-24"/>
+<text text-anchor="middle" x="296" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Unknown Procedure Type</text>
+</g>
+<!-- Program -->
+<g id="node5" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="436,-24 382,-24 382,0 436,0 436,-24"/>
+<text text-anchor="middle" x="409" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node6" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="#000000" points="551.5,-24 454.5,-24 454.5,0 551.5,0 551.5,-24"/>
+<text text-anchor="middle" x="503" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#000000">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+    
+    <p>Solid arrows point from a procedure to one which it calls. Dashed 
+    arrows point from an interface to procedures which implement that interface.
+    This could include the module procedures in a generic interface or the
+    implementation in a submodule of an interface in a parent module.
+    </p>
+    </div></div></div></div>
+      </div>
+    </div>
      
     <br>
 
@@ -690,7 +2388,7 @@ public subroutine potential_root_mpi_curv(it, t, dt, sig0, sigP, sigH, incap, vs
     <footer>
       <div class="container">
       <div class="row">
-        <div class="col-xs-6 col-md-4"><p>&copy; 2018 <a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/80x15.png" /></a>
+        <div class="col-xs-6 col-md-4"><p>&copy; 2020 <a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/80x15.png" /></a>
                                           </p></div>
         <div class="col-xs-6 col-md-4 col-md-push-4">
           <p class="text-right">

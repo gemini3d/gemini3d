@@ -64,6 +64,8 @@ Michael Hirsch" >
             <li><a href="../lists/modules.html">Modules</a></li>
         
             
+    <li><a href="../blockdata/gtd7bk.html">Block Data</a></li>
+    
                                 
             <li><a href="../lists/procedures.html">Procedures</a></li>
         
@@ -83,6 +85,8 @@ Michael Hirsch" >
 
 <li class="visible-xs hidden-sm visible-lg"><a href="../lists/modules.html">Modules</a></li>
 
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../blockdata/gtd7bk.html">Block Data</a></li>
 
 
 <li class="visible-xs hidden-sm visible-lg"><a href="../lists/procedures.html">Procedures</a></li>
@@ -121,7 +125,7 @@ Michael Hirsch" >
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 0.5% of total for procedures.">36 statements</a>
+    title=" 0.5% of total for procedures.">41 statements</a>
      </li> 
      
      
@@ -188,7 +192,7 @@ Michael Hirsch" >
     
     <div class="col-md-9" id='text'>
     <h2>
-public subroutine dt_comm(t, tout, tcfl, ns, Ts, vs1, vs2, vs3, B1, B2, B3, x, potsolve, dt)
+public subroutine dt_comm(t, tout, tglowout, flagglow, tcfl, ns, Ts, vs1, vs2, vs3, B1, B2, B3, x, potsolve, dt)
     
     
    
@@ -197,6 +201,8 @@ public subroutine dt_comm(t, tout, tcfl, ns, Ts, vs1, vs2, vs3, B1, B2, B3, x, p
   
 
 
+    
+    <p>these are roots courant numbers</p>
     
 
     <h3>Arguments</h3>
@@ -217,7 +223,7 @@ public subroutine dt_comm(t, tout, tcfl, ns, Ts, vs1, vs2, vs3, B1, B2, B3, x, p
   
 <tr>
   
-  <td><span class="anchor" id="variable-t~15"></span>real(kind=wp),</td>
+  <td><span class="anchor" id="variable-t~16"></span>real(kind=wp),</td>
   <td>intent(in)</td>
   <td></td>
   
@@ -247,6 +253,36 @@ public subroutine dt_comm(t, tout, tcfl, ns, Ts, vs1, vs2, vs3, B1, B2, B3, x, p
   
 <tr>
   
+  <td><span class="anchor" id="variable-tglowout"></span>real(kind=wp),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>tglowout</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-flagglow~5"></span>integer,</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>flagglow</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
   <td><span class="anchor" id="variable-tcfl~2"></span>real(kind=wp),</td>
   <td>intent(in)</td>
   <td></td>
@@ -262,7 +298,7 @@ public subroutine dt_comm(t, tout, tcfl, ns, Ts, vs1, vs2, vs3, B1, B2, B3, x, p
   
 <tr>
   
-  <td><span class="anchor" id="variable-ns~21"></span>real(kind=wp),</td>
+  <td><span class="anchor" id="variable-ns~23"></span>real(kind=wp),</td>
   <td>intent(in),</td>
   <td></td>
   
@@ -292,7 +328,7 @@ public subroutine dt_comm(t, tout, tcfl, ns, Ts, vs1, vs2, vs3, B1, B2, B3, x, p
   
 <tr>
   
-  <td><span class="anchor" id="variable-vs1~19"></span>real(kind=wp),</td>
+  <td><span class="anchor" id="variable-vs1~18"></span>real(kind=wp),</td>
   <td>intent(in),</td>
   <td></td>
   
@@ -307,7 +343,7 @@ public subroutine dt_comm(t, tout, tcfl, ns, Ts, vs1, vs2, vs3, B1, B2, B3, x, p
   
 <tr>
   
-  <td><span class="anchor" id="variable-vs2~19"></span>real(kind=wp),</td>
+  <td><span class="anchor" id="variable-vs2~15"></span>real(kind=wp),</td>
   <td>intent(in),</td>
   <td></td>
   
@@ -322,7 +358,7 @@ public subroutine dt_comm(t, tout, tcfl, ns, Ts, vs1, vs2, vs3, B1, B2, B3, x, p
   
 <tr>
   
-  <td><span class="anchor" id="variable-vs3~19"></span>real(kind=wp),</td>
+  <td><span class="anchor" id="variable-vs3~15"></span>real(kind=wp),</td>
   <td>intent(in),</td>
   <td></td>
   
@@ -337,7 +373,7 @@ public subroutine dt_comm(t, tout, tcfl, ns, Ts, vs1, vs2, vs3, B1, B2, B3, x, p
   
 <tr>
   
-  <td><span class="anchor" id="variable-b1~8"></span>real(kind=wp),</td>
+  <td><span class="anchor" id="variable-b1~6"></span>real(kind=wp),</td>
   <td>intent(in),</td>
   <td></td>
   
@@ -382,7 +418,7 @@ public subroutine dt_comm(t, tout, tcfl, ns, Ts, vs1, vs2, vs3, B1, B2, B3, x, p
   
 <tr>
   
-  <td><span class="anchor" id="variable-x~43"></span>type(<a href='../type/curvmesh.html'>curvmesh</a>),</td>
+  <td><span class="anchor" id="variable-x~56"></span>type(<a href='../type/curvmesh.html'>curvmesh</a>),</td>
   <td>intent(in)</td>
   <td></td>
   
@@ -397,7 +433,7 @@ public subroutine dt_comm(t, tout, tcfl, ns, Ts, vs1, vs2, vs3, B1, B2, B3, x, p
   
 <tr>
   
-  <td><span class="anchor" id="variable-potsolve~10"></span>integer,</td>
+  <td><span class="anchor" id="variable-potsolve~5"></span>integer,</td>
   <td>intent(in)</td>
   <td></td>
   
@@ -412,7 +448,7 @@ public subroutine dt_comm(t, tout, tcfl, ns, Ts, vs1, vs2, vs3, B1, B2, B3, x, p
   
 <tr>
   
-  <td><span class="anchor" id="variable-dt~26"></span>real(kind=wp),</td>
+  <td><span class="anchor" id="variable-dt~30"></span>real(kind=wp),</td>
   <td>intent(out)</td>
   <td></td>
   
@@ -427,7 +463,235 @@ public subroutine dt_comm(t, tout, tcfl, ns, Ts, vs1, vs2, vs3, B1, B2, B3, x, p
     
     
     
+    <br>
     
+    
+    <div class="panel panel-default">
+      <div class="panel-heading">
+  <h3 class="panel-title">Calls</h3>
+      </div>
+      <div class="panel-body">
+  <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.40.1 (20161225.0304)
+ -->
+<!-- Title: proc~~dt_comm~~CallsGraph Pages: 1 -->
+<svg id="procdt_commCallsGraph" width="160pt" height="116pt"
+ viewBox="0.00 0.00 160.00 116.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="proc~~dt_comm~~CallsGraph" class="graph" transform="scale(1 1) rotate(0) translate(4 112)">
+<title>proc~~dt_comm~~CallsGraph</title>
+<polygon fill="#ffffff" stroke="transparent" points="-4,4 -4,-112 156,-112 156,4 -4,4"/>
+<!-- proc~dt_comm -->
+<g id="proc~~dt_comm~~CallsGraph_node1" class="node">
+<title>proc~dt_comm</title>
+<polygon fill="none" stroke="#000000" points="57,-66 0,-66 0,-42 57,-42 57,-66"/>
+<text text-anchor="middle" x="28.5" y="-51.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#000000">dt_comm</text>
+</g>
+<!-- mpi_send -->
+<g id="proc~~dt_comm~~CallsGraph_node2" class="node">
+<title>mpi_send</title>
+<polygon fill="#777777" stroke="#777777" points="152,-108 93,-108 93,-84 152,-84 152,-108"/>
+<text text-anchor="middle" x="122.5" y="-93.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">mpi_send</text>
+</g>
+<!-- proc~dt_comm&#45;&gt;mpi_send -->
+<g id="proc~~dt_comm~~CallsGraph_edge1" class="edge">
+<title>proc~dt_comm&#45;&gt;mpi_send</title>
+<path fill="none" stroke="#000000" d="M55.4366,-66.0355C65.0731,-70.3412 76.0948,-75.2658 86.3808,-79.8616"/>
+<polygon fill="#000000" stroke="#000000" points="85.0015,-83.0788 95.5594,-83.9627 87.8572,-76.6877 85.0015,-83.0788"/>
+</g>
+<!-- proc~dt_calc -->
+<g id="proc~~dt_comm~~CallsGraph_node3" class="node">
+<title>proc~dt_calc</title>
+<g id="a_proc~~dt_comm~~CallsGraph_node3"><a xlink:href=".././proc/dt_calc.html" xlink:title="dt_calc">
+<polygon fill="#d9534f" stroke="#d9534f" points="149.5,-66 95.5,-66 95.5,-42 149.5,-42 149.5,-66"/>
+<text text-anchor="middle" x="122.5" y="-51.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">dt_calc</text>
+</a>
+</g>
+</g>
+<!-- proc~dt_comm&#45;&gt;proc~dt_calc -->
+<g id="proc~~dt_comm~~CallsGraph_edge2" class="edge">
+<title>proc~dt_comm&#45;&gt;proc~dt_calc</title>
+<path fill="none" stroke="#000000" d="M57.2139,-54C66.001,-54 75.7984,-54 85.076,-54"/>
+<polygon fill="#000000" stroke="#000000" points="85.2482,-57.5001 95.2482,-54 85.2482,-50.5001 85.2482,-57.5001"/>
+</g>
+<!-- mpi_recv -->
+<g id="proc~~dt_comm~~CallsGraph_node4" class="node">
+<title>mpi_recv</title>
+<polygon fill="#777777" stroke="#777777" points="150.5,-24 94.5,-24 94.5,0 150.5,0 150.5,-24"/>
+<text text-anchor="middle" x="122.5" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">mpi_recv</text>
+</g>
+<!-- proc~dt_comm&#45;&gt;mpi_recv -->
+<g id="proc~~dt_comm~~CallsGraph_edge3" class="edge">
+<title>proc~dt_comm&#45;&gt;mpi_recv</title>
+<path fill="none" stroke="#000000" d="M55.4366,-41.9645C65.0731,-37.6588 76.0948,-32.7342 86.3808,-28.1384"/>
+<polygon fill="#000000" stroke="#000000" points="87.8572,-31.3123 95.5594,-24.0373 85.0015,-24.9212 87.8572,-31.3123"/>
+</g>
+</g>
+</svg>
+</div><div><a type="button" class="graph-help" data-toggle="modal" href="#graph-help-text">Help</a></div><div class="modal fade" id="graph-help-text" tabindex="-1" role="dialog"><div class="modal-dialog modal-lg" role="document"><div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button><h4 class="modal-title" id="-graph-help-label">Graph Key</h4></div><div class="modal-body">
+    <p>Nodes of different colours represent the following: </p>
+    <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.40.1 (20161225.0304)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="560pt" height="32pt"
+ viewBox="0.00 0.00 559.50 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 28)">
+<title>Graph Key</title>
+<polygon fill="#ffffff" stroke="transparent" points="-4,4 -4,-28 555.5,-28 555.5,4 -4,4"/>
+<!-- Subroutine -->
+<g id="node1" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="64,-24 0,-24 0,0 64,0 64,-24"/>
+<text text-anchor="middle" x="32" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node2" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="136,-24 82,-24 82,0 136,0 136,-24"/>
+<text text-anchor="middle" x="109" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Function</text>
+</g>
+<!-- Interface -->
+<g id="node3" class="node">
+<title>Interface</title>
+<polygon fill="#a7506f" stroke="#a7506f" points="209.5,-24 154.5,-24 154.5,0 209.5,0 209.5,-24"/>
+<text text-anchor="middle" x="182" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Interface</text>
+</g>
+<!-- Unknown Procedure Type -->
+<g id="node4" class="node">
+<title>Unknown Procedure Type</title>
+<polygon fill="#777777" stroke="#777777" points="364,-24 228,-24 228,0 364,0 364,-24"/>
+<text text-anchor="middle" x="296" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Unknown Procedure Type</text>
+</g>
+<!-- Program -->
+<g id="node5" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="436,-24 382,-24 382,0 436,0 436,-24"/>
+<text text-anchor="middle" x="409" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node6" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="#000000" points="551.5,-24 454.5,-24 454.5,0 551.5,0 551.5,-24"/>
+<text text-anchor="middle" x="503" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#000000">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+    
+    <p>Solid arrows point from a procedure to one which it calls. Dashed 
+    arrows point from an interface to procedures which implement that interface.
+    This could include the module procedures in a generic interface or the
+    implementation in a submodule of an interface in a parent module.
+    </p>
+    </div></div></div></div>
+      </div>
+    </div>
+     
+     
+    <div class="panel panel-default">
+      <div class="panel-heading">
+  <h3 class="panel-title">Called by</h3>
+      </div>
+      <div class="panel-body">
+  <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.40.1 (20161225.0304)
+ -->
+<!-- Title: proc~~dt_comm~~CalledByGraph Pages: 1 -->
+<svg id="procdt_commCalledByGraph" width="161pt" height="32pt"
+ viewBox="0.00 0.00 161.00 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="proc~~dt_comm~~CalledByGraph" class="graph" transform="scale(1 1) rotate(0) translate(4 28)">
+<title>proc~~dt_comm~~CalledByGraph</title>
+<polygon fill="#ffffff" stroke="transparent" points="-4,4 -4,-28 157,-28 157,4 -4,4"/>
+<!-- proc~dt_comm -->
+<g id="proc~~dt_comm~~CalledByGraph_node1" class="node">
+<title>proc~dt_comm</title>
+<polygon fill="none" stroke="#000000" points="153,-24 96,-24 96,0 153,0 153,-24"/>
+<text text-anchor="middle" x="124.5" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#000000">dt_comm</text>
+</g>
+<!-- program~gemini3d -->
+<g id="proc~~dt_comm~~CalledByGraph_node2" class="node">
+<title>program~gemini3d</title>
+<g id="a_proc~~dt_comm~~CalledByGraph_node2"><a xlink:href=".././program/gemini3d.html" xlink:title="Gemini3D">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="60,-24 0,-24 0,0 60,0 60,-24"/>
+<text text-anchor="middle" x="30" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Gemini3D</text>
+</a>
+</g>
+</g>
+<!-- program~gemini3d&#45;&gt;proc~dt_comm -->
+<g id="proc~~dt_comm~~CalledByGraph_edge1" class="edge">
+<title>program~gemini3d&#45;&gt;proc~dt_comm</title>
+<path fill="none" stroke="#000000" d="M60.1602,-12C68.3014,-12 77.2249,-12 85.7646,-12"/>
+<polygon fill="#000000" stroke="#000000" points="85.9125,-15.5001 95.9125,-12 85.9125,-8.5001 85.9125,-15.5001"/>
+</g>
+</g>
+</svg>
+</div><div><a type="button" class="graph-help" data-toggle="modal" href="#graph-help-text">Help</a></div><div class="modal fade" id="graph-help-text" tabindex="-1" role="dialog"><div class="modal-dialog modal-lg" role="document"><div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button><h4 class="modal-title" id="-graph-help-label">Graph Key</h4></div><div class="modal-body">
+    <p>Nodes of different colours represent the following: </p>
+    <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.40.1 (20161225.0304)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="560pt" height="32pt"
+ viewBox="0.00 0.00 559.50 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 28)">
+<title>Graph Key</title>
+<polygon fill="#ffffff" stroke="transparent" points="-4,4 -4,-28 555.5,-28 555.5,4 -4,4"/>
+<!-- Subroutine -->
+<g id="node1" class="node">
+<title>Subroutine</title>
+<polygon fill="#d9534f" stroke="#d9534f" points="64,-24 0,-24 0,0 64,0 64,-24"/>
+<text text-anchor="middle" x="32" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Subroutine</text>
+</g>
+<!-- Function -->
+<g id="node2" class="node">
+<title>Function</title>
+<polygon fill="#d94e8f" stroke="#d94e8f" points="136,-24 82,-24 82,0 136,0 136,-24"/>
+<text text-anchor="middle" x="109" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Function</text>
+</g>
+<!-- Interface -->
+<g id="node3" class="node">
+<title>Interface</title>
+<polygon fill="#a7506f" stroke="#a7506f" points="209.5,-24 154.5,-24 154.5,0 209.5,0 209.5,-24"/>
+<text text-anchor="middle" x="182" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Interface</text>
+</g>
+<!-- Unknown Procedure Type -->
+<g id="node4" class="node">
+<title>Unknown Procedure Type</title>
+<polygon fill="#777777" stroke="#777777" points="364,-24 228,-24 228,0 364,0 364,-24"/>
+<text text-anchor="middle" x="296" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Unknown Procedure Type</text>
+</g>
+<!-- Program -->
+<g id="node5" class="node">
+<title>Program</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="436,-24 382,-24 382,0 436,0 436,-24"/>
+<text text-anchor="middle" x="409" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Program</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node6" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="#000000" points="551.5,-24 454.5,-24 454.5,0 551.5,0 551.5,-24"/>
+<text text-anchor="middle" x="503" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#000000">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+    
+    <p>Solid arrows point from a procedure to one which it calls. Dashed 
+    arrows point from an interface to procedures which implement that interface.
+    This could include the module procedures in a generic interface or the
+    implementation in a submodule of an interface in a parent module.
+    </p>
+    </div></div></div></div>
+      </div>
+    </div>
      
     <br>
 
@@ -490,7 +754,7 @@ public subroutine dt_comm(t, tout, tcfl, ns, Ts, vs1, vs2, vs3, B1, B2, B3, x, p
     <footer>
       <div class="container">
       <div class="row">
-        <div class="col-xs-6 col-md-4"><p>&copy; 2018 <a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/80x15.png" /></a>
+        <div class="col-xs-6 col-md-4"><p>&copy; 2020 <a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/80x15.png" /></a>
                                           </p></div>
         <div class="col-xs-6 col-md-4 col-md-push-4">
           <p class="text-right">

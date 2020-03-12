@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+   
+   <meta name="description" content="GEMINI3D is a modular ionospheric model that incorporates kinetic models such as Fang, GLOW.">
+    
+    <meta name="author" content="Matthew Zettergren
+Guy Grubbs
+Michael Hirsch" >
+    <link rel="icon" href="../favicon.png">
+
+    <title>glow_dummy.f90 &ndash; GEMINI3D</title>
+
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+    <link href="../css/pygments.css" rel="stylesheet">
+    <link href="../css/font-awesome.min.css" rel="stylesheet">
+    <link href="../css/local.css" rel="stylesheet">
+    
+    
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    
+    <script src="../js/jquery-2.1.3.min.js"></script>
+    <script src="../js/svg-pan-zoom.min.js"></script>
+
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="../index.html">GEMINI3D </a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+        
+            <li class="dropdown hidden-xs visible-sm visible-md hidden-lg">
+              <a href="#" class="dropdown-toggle"
+              data-toggle="dropdown" role="button"
+              aria-haspopup="true"
+     aria-expanded="false">Contents <span class="caret"></span></a>
+        <ul class="dropdown-menu">
+          
+              
+            <li><a href="../lists/files.html">Source Files</a></li>
+        
+        
+        
+            <li><a href="../lists/modules.html">Modules</a></li>
+        
+            
+    <li><a href="../blockdata/gtd7bk.html">Block Data</a></li>
+    
+                                
+            <li><a href="../lists/procedures.html">Procedures</a></li>
+        
+               
+            <li><a href="../lists/types.html">Derived Types</a></li>
+        
+        
+            <li><a href="../lists/programs.html">Programs</a></li>
+        
+            </ul>
+            </li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/files.html">Source Files</a></li>
+
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/modules.html">Modules</a></li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../blockdata/gtd7bk.html">Block Data</a></li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/procedures.html">Procedures</a></li>
+
+                             
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/types.html">Derived Types</a></li>
+
+
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/programs.html">Programs</a></li>
+
+          </ul>
+        
+        </div><!--/.nav-collapse -->
+      </div>
+    </nav>
+
+    <div class="container">
+    
+  
+  <div class="row">
+    <h1>glow_dummy.f90
+    <small>Source File</small>
+    
+    </h1>
+    
+<div class="row">
+  <div class="col-lg-12">
+<div class="well well-sm">
+  <ul class="list-inline" style="margin-bottom:0px;display:inline">
+     
+     
+     
+     
+    
+    
+     <li><i class="fa fa-list-ol"></i>
+       <a data-toggle="tooltip"
+    data-placement="bottom" data-html="true"
+    title=" 0.1% of total for source files.">10 statements</a>
+     </li> 
+     
+     
+     
+    <li><i class="fa fa-code"></i><a href="../src/glow_dummy.f90"> Source File</a></li>
+     
+     
+  </ul>
+  <ol class="breadcrumb in-well text-right">
+  
+    
+  
+     <li class="active">glow_dummy.f90</li>
+  </ol>
+</div>
+</div>
+</div>
+<script>
+  $(function () {
+  $('[data-toggle="tooltip"]').tooltip()
+  })
+</script>
+
+  </div>
+  <div class="row">
+    <div class="col-md-3 hidden-xs hidden-sm visible-md visible-lg">
+    
+<div id="sidebar">
+  
+<h3>Contents</h3>
+ 
+
+
+
+
+
+
+
+
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#submods-0">Submodules</a></h3></div>
+  <div id="submods-0" class="panel-collapse collapse">
+    <div class="list-group">
+      
+      <a class="list-group-item" href="../module/glow_dummy.html">glow_dummy</a>
+      
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
+  <div class="list-group">
+    <a class="list-group-item" href="../sourcefile/glow_dummy.f90.html#src">glow_dummy.f90</a>
+  </div>
+</div>
+
+
+
+</div>
+
+    </div>
+    <div class="col-md-9" id='text'>
+      
+      <br>
+    
+    <div class="panel panel-default">
+      <div class="panel-heading">
+  <h3 class="panel-title">This file depends on</h3>
+      </div>
+      <div class="panel-body">
+  <div class="depgraph"><?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.40.1 (20161225.0304)
+ -->
+<!-- Title: sourcefile~~glow_dummy.f90~~EfferentGraph Pages: 1 -->
+<svg id="sourcefileglow_dummyf90EfferentGraph" width="641pt" height="296pt"
+ viewBox="0.00 0.00 641.00 296.14" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="sourcefile~~glow_dummy.f90~~EfferentGraph" class="graph" transform="scale(.9454 .9454) rotate(0) translate(4 309.2359)">
+<title>sourcefile~~glow_dummy.f90~~EfferentGraph</title>
+<polygon fill="#ffffff" stroke="transparent" points="-4,4 -4,-309.2359 674,-309.2359 674,4 -4,4"/>
+<!-- sourcefile~glow_dummy.f90 -->
+<g id="sourcefile~~glow_dummy.f90~~EfferentGraph_node1" class="node">
+<title>sourcefile~glow_dummy.f90</title>
+<polygon fill="none" stroke="#000000" points="670,-104 576,-104 576,-80 670,-80 670,-104"/>
+<text text-anchor="middle" x="623" y="-89.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#000000">glow_dummy.f90</text>
+</g>
+<!-- sourcefile~ionization.f90 -->
+<g id="sourcefile~~glow_dummy.f90~~EfferentGraph_node2" class="node">
+<title>sourcefile~ionization.f90</title>
+<g id="a_sourcefile~~glow_dummy.f90~~EfferentGraph_node2"><a xlink:href=".././sourcefile/ionization.f90.html" xlink:title="ionization.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="540,-104 464,-104 464,-80 540,-80 540,-104"/>
+<text text-anchor="middle" x="502" y="-89.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">ionization.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~glow_dummy.f90&#45;&gt;sourcefile~ionization.f90 -->
+<g id="sourcefile~~glow_dummy.f90~~EfferentGraph_edge1" class="edge">
+<title>sourcefile~glow_dummy.f90&#45;&gt;sourcefile~ionization.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M575.8718,-92C567.4745,-92 558.7154,-92 550.2864,-92"/>
+<polygon fill="#000000" stroke="#000000" points="550.2151,-88.5001 540.2151,-92 550.215,-95.5001 550.2151,-88.5001"/>
+</g>
+<!-- sourcefile~timeutils.f90 -->
+<g id="sourcefile~~glow_dummy.f90~~EfferentGraph_node3" class="node">
+<title>sourcefile~timeutils.f90</title>
+<g id="a_sourcefile~~glow_dummy.f90~~EfferentGraph_node3"><a xlink:href=".././sourcefile/timeutils.f90.html" xlink:title="timeutils.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="318.5,-264 248.5,-264 248.5,-240 318.5,-240 318.5,-264"/>
+<text text-anchor="middle" x="283.5" y="-249.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">timeutils.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~ionization.f90&#45;&gt;sourcefile~timeutils.f90 -->
+<g id="sourcefile~~glow_dummy.f90~~EfferentGraph_edge2" class="edge">
+<title>sourcefile~ionization.f90&#45;&gt;sourcefile~timeutils.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M396,-212C374.8569,-223.8711 349.5472,-233.2451 328.293,-239.9255"/>
+<polygon fill="#000000" stroke="#000000" points="327.0803,-236.636 318.5327,-242.896 329.1185,-243.3327 327.0803,-236.636"/>
+</g>
+<!-- sourcefile~phys_consts.f90 -->
+<g id="sourcefile~~glow_dummy.f90~~EfferentGraph_node4" class="node">
+<title>sourcefile~phys_consts.f90</title>
+<g id="a_sourcefile~~glow_dummy.f90~~EfferentGraph_node4"><a xlink:href=".././sourcefile/phys_consts.f90.html" xlink:title="phys_consts.F90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="94,-165 0,-165 0,-141 94,-141 94,-165"/>
+<text text-anchor="middle" x="47" y="-150.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">phys_consts.F90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~ionization.f90&#45;&gt;sourcefile~phys_consts.f90 -->
+<g id="sourcefile~~glow_dummy.f90~~EfferentGraph_edge3" class="edge">
+<title>sourcefile~ionization.f90&#45;&gt;sourcefile~phys_consts.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M396,-212C360.598,-231.877 365.0028,-256.2911 328,-273 262.1313,-302.7435 234.4972,-316.4896 166.5,-292"/>
+</g>
+<!-- sourcefile~grid.f90 -->
+<g id="sourcefile~~glow_dummy.f90~~EfferentGraph_node5" class="node">
+<title>sourcefile~grid.f90</title>
+<g id="a_sourcefile~~glow_dummy.f90~~EfferentGraph_node5"><a xlink:href=".././sourcefile/grid.f90.html" xlink:title="grid.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="310.5,-184 256.5,-184 256.5,-160 310.5,-160 310.5,-184"/>
+<text text-anchor="middle" x="283.5" y="-169.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">grid.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~ionization.f90&#45;&gt;sourcefile~grid.f90 -->
+<g id="sourcefile~~glow_dummy.f90~~EfferentGraph_edge4" class="edge">
+<title>sourcefile~ionization.f90&#45;&gt;sourcefile~grid.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M495.09,-104.2898C480.4041,-129.155 443.5068,-185.3266 396,-212"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M396,-212C381.7907,-219.978 342.6001,-203.0684 314.4733,-188.8321"/>
+<polygon fill="#000000" stroke="#000000" points="315.9013,-185.6303 305.4109,-184.1464 312.6863,-191.8483 315.9013,-185.6303"/>
+</g>
+<!-- sourcefile~mpimod.f90 -->
+<g id="sourcefile~~glow_dummy.f90~~EfferentGraph_node6" class="node">
+<title>sourcefile~mpimod.f90</title>
+<g id="a_sourcefile~~glow_dummy.f90~~EfferentGraph_node6"><a xlink:href=".././sourcefile/mpimod.f90.html" xlink:title="mpimod.F90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="203,-245 130,-245 130,-221 203,-221 203,-245"/>
+<text text-anchor="middle" x="166.5" y="-230.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">mpimod.F90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~ionization.f90&#45;&gt;sourcefile~mpimod.f90 -->
+<g id="sourcefile~~glow_dummy.f90~~EfferentGraph_edge5" class="edge">
+<title>sourcefile~ionization.f90&#45;&gt;sourcefile~mpimod.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M396,-212C352.402,-236.4788 331.2976,-197.3238 283.5,-212"/>
+</g>
+<!-- sourcefile~mesh.f90 -->
+<g id="sourcefile~~glow_dummy.f90~~EfferentGraph_node7" class="node">
+<title>sourcefile~mesh.f90</title>
+<g id="a_sourcefile~~glow_dummy.f90~~EfferentGraph_node7"><a xlink:href=".././sourcefile/mesh.f90.html" xlink:title="mesh.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="195,-85 138,-85 138,-61 195,-61 195,-85"/>
+<text text-anchor="middle" x="166.5" y="-70.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">mesh.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~ionization.f90&#45;&gt;sourcefile~mesh.f90 -->
+<g id="sourcefile~~glow_dummy.f90~~EfferentGraph_edge6" class="edge">
+<title>sourcefile~ionization.f90&#45;&gt;sourcefile~mesh.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M463.6874,-81.6295C420.3461,-70.6864 347.4618,-54.6561 283.5,-52"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M283.5,-52C257.0786,-50.1455 227.7422,-55.4287 205.0546,-61.1589"/>
+<polygon fill="#000000" stroke="#000000" points="203.8964,-57.8452 195.1327,-63.7991 205.6965,-64.6098 203.8964,-57.8452"/>
+</g>
+<!-- sourcefile~fang.f90 -->
+<g id="sourcefile~~glow_dummy.f90~~EfferentGraph_node8" class="node">
+<title>sourcefile~fang.f90</title>
+<g id="a_sourcefile~~glow_dummy.f90~~EfferentGraph_node8"><a xlink:href=".././sourcefile/fang.f90.html" xlink:title="fang.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="423,-24 369,-24 369,0 423,0 423,-24"/>
+<text text-anchor="middle" x="396" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">fang.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~ionization.f90&#45;&gt;sourcefile~fang.f90 -->
+<g id="sourcefile~~glow_dummy.f90~~EfferentGraph_edge7" class="edge">
+<title>sourcefile~ionization.f90&#45;&gt;sourcefile~fang.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M485.9009,-79.8497C468.3667,-66.6164 440.1353,-45.3096 419.9881,-30.1042"/>
+<polygon fill="#000000" stroke="#000000" points="421.9937,-27.2329 411.9033,-24.0025 417.7768,-32.8203 421.9937,-27.2329"/>
+</g>
+<!-- sourcefile~neutral.f90 -->
+<g id="sourcefile~~glow_dummy.f90~~EfferentGraph_node9" class="node">
+<title>sourcefile~neutral.f90</title>
+<g id="a_sourcefile~~glow_dummy.f90~~EfferentGraph_node9"><a xlink:href=".././sourcefile/neutral.f90.html" xlink:title="neutral.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="428,-124 364,-124 364,-100 428,-100 428,-124"/>
+<text text-anchor="middle" x="396" y="-109.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">neutral.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~ionization.f90&#45;&gt;sourcefile~neutral.f90 -->
+<g id="sourcefile~~glow_dummy.f90~~EfferentGraph_edge8" class="edge">
+<title>sourcefile~ionization.f90&#45;&gt;sourcefile~neutral.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M463.7316,-99.2205C455.4683,-100.7796 446.686,-102.4366 438.2792,-104.0228"/>
+<polygon fill="#000000" stroke="#000000" points="437.4489,-100.6176 428.2713,-105.9111 438.7468,-107.4962 437.4489,-100.6176"/>
+</g>
+<!-- sourcefile~timeutils.f90&#45;&gt;sourcefile~phys_consts.f90 -->
+<g id="sourcefile~~glow_dummy.f90~~EfferentGraph_edge9" class="edge">
+<title>sourcefile~timeutils.f90&#45;&gt;sourcefile~phys_consts.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M259.5862,-264.1142C230.7143,-278.0486 183.8693,-298.2556 166.5,-292"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M166.5,-292C111.1459,-272.0639 73.4193,-208.43 56.7288,-174.6099"/>
+<polygon fill="#000000" stroke="#000000" points="59.6857,-172.6781 52.2281,-165.1525 53.3649,-175.6862 59.6857,-172.6781"/>
+</g>
+<!-- sourcefile~grid.f90&#45;&gt;sourcefile~phys_consts.f90 -->
+<g id="sourcefile~~glow_dummy.f90~~EfferentGraph_edge12" class="edge">
+<title>sourcefile~grid.f90&#45;&gt;sourcefile~phys_consts.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M256.4798,-174.5734C225.7216,-176.9887 174.0347,-179.4842 130,-174 118.933,-172.6217 107.2234,-170.2474 96.1986,-167.5793"/>
+<polygon fill="#000000" stroke="#000000" points="96.8581,-164.1357 86.3043,-165.0665 95.1351,-170.9204 96.8581,-164.1357"/>
+</g>
+<!-- sourcefile~grid.f90&#45;&gt;sourcefile~mpimod.f90 -->
+<g id="sourcefile~~glow_dummy.f90~~EfferentGraph_edge11" class="edge">
+<title>sourcefile~grid.f90&#45;&gt;sourcefile~mpimod.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M260.3846,-184.0516C242.6772,-193.2837 218.0415,-206.1279 198.449,-216.3428"/>
+<polygon fill="#000000" stroke="#000000" points="196.8165,-213.2468 189.5674,-220.9734 200.0527,-219.4538 196.8165,-213.2468"/>
+</g>
+<!-- sourcefile~grid.f90&#45;&gt;sourcefile~mesh.f90 -->
+<g id="sourcefile~~glow_dummy.f90~~EfferentGraph_edge13" class="edge">
+<title>sourcefile~grid.f90&#45;&gt;sourcefile~mesh.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M258.7881,-159.8353C252.0077,-155.9098 244.9043,-151.2095 239,-146 219.2697,-128.5914 221.9256,-117.2803 203,-99 200.265,-96.3582 197.2439,-93.7775 194.1456,-91.3308"/>
+<polygon fill="#000000" stroke="#000000" points="196.0238,-88.3661 185.9077,-85.2173 191.8522,-93.9873 196.0238,-88.3661"/>
+</g>
+<!-- sourcefile~reader.f90 -->
+<g id="sourcefile~~glow_dummy.f90~~EfferentGraph_node11" class="node">
+<title>sourcefile~reader.f90</title>
+<g id="a_sourcefile~~glow_dummy.f90~~EfferentGraph_node11"><a xlink:href=".././sourcefile/reader.f90.html" xlink:title="reader.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="197.5,-165 135.5,-165 135.5,-141 197.5,-141 197.5,-165"/>
+<text text-anchor="middle" x="166.5" y="-150.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">reader.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~grid.f90&#45;&gt;sourcefile~reader.f90 -->
+<g id="sourcefile~~glow_dummy.f90~~EfferentGraph_edge10" class="edge">
+<title>sourcefile~grid.f90&#45;&gt;sourcefile~reader.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M256.3638,-167.5933C241.966,-165.2552 223.9698,-162.3327 207.8714,-159.7184"/>
+<polygon fill="#000000" stroke="#000000" points="208.0551,-156.2025 197.6234,-158.0542 206.933,-163.112 208.0551,-156.2025"/>
+</g>
+<!-- sourcefile~mpimod.f90&#45;&gt;sourcefile~phys_consts.f90 -->
+<g id="sourcefile~~glow_dummy.f90~~EfferentGraph_edge14" class="edge">
+<title>sourcefile~mpimod.f90&#45;&gt;sourcefile~phys_consts.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M148.3505,-220.8497C128.4067,-207.4982 96.187,-185.9285 73.437,-170.6984"/>
+<polygon fill="#000000" stroke="#000000" points="75.1856,-167.6571 64.9287,-165.0025 71.2915,-173.474 75.1856,-167.6571"/>
+</g>
+<!-- sourcefile~mesh.f90&#45;&gt;sourcefile~phys_consts.f90 -->
+<g id="sourcefile~~glow_dummy.f90~~EfferentGraph_edge15" class="edge">
+<title>sourcefile~mesh.f90&#45;&gt;sourcefile~phys_consts.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M148.3505,-85.1503C128.4067,-98.5018 96.187,-120.0715 73.437,-135.3016"/>
+<polygon fill="#000000" stroke="#000000" points="71.2915,-132.526 64.9287,-140.9975 75.1856,-138.3429 71.2915,-132.526"/>
+</g>
+<!-- sourcefile~fang.f90&#45;&gt;sourcefile~phys_consts.f90 -->
+<g id="sourcefile~~glow_dummy.f90~~EfferentGraph_edge16" class="edge">
+<title>sourcefile~fang.f90&#45;&gt;sourcefile~phys_consts.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M368.6645,-9.9336C318.0418,-7.3787 207.7825,-7.8681 130,-52 96.8623,-70.8015 71.4942,-108.3753 57.9552,-132.017"/>
+<polygon fill="#000000" stroke="#000000" points="54.8145,-130.4642 53.0434,-140.9099 60.942,-133.8486 54.8145,-130.4642"/>
+</g>
+<!-- sourcefile~neutral.f90&#45;&gt;sourcefile~timeutils.f90 -->
+<g id="sourcefile~~glow_dummy.f90~~EfferentGraph_edge18" class="edge">
+<title>sourcefile~neutral.f90&#45;&gt;sourcefile~timeutils.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M391.1214,-124.3238C381.7293,-146.8077 359.265,-195.0171 328,-226 324.9255,-229.0468 321.4239,-231.8705 317.7665,-234.4466"/>
+<polygon fill="#000000" stroke="#000000" points="315.6207,-231.6642 309.0772,-239.9969 319.3888,-237.5634 315.6207,-231.6642"/>
+</g>
+<!-- sourcefile~neutral.f90&#45;&gt;sourcefile~phys_consts.f90 -->
+<g id="sourcefile~~glow_dummy.f90~~EfferentGraph_edge19" class="edge">
+<title>sourcefile~neutral.f90&#45;&gt;sourcefile~phys_consts.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M363.7032,-119.2232C341.3209,-123.8636 310.7594,-129.4784 283.5,-132"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M283.5,-132C231.0428,-136.8526 218.459,-104.3067 166.5,-113"/>
+</g>
+<!-- sourcefile~neutral.f90&#45;&gt;sourcefile~grid.f90 -->
+<g id="sourcefile~~glow_dummy.f90~~EfferentGraph_edge21" class="edge">
+<title>sourcefile~neutral.f90&#45;&gt;sourcefile~grid.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M373.2339,-124.1419C356.5367,-133.0471 333.6505,-145.253 315.1704,-155.1091"/>
+<polygon fill="#000000" stroke="#000000" points="313.4087,-152.082 306.2322,-159.8762 316.7028,-158.2585 313.4087,-152.082"/>
+</g>
+<!-- sourcefile~neutral.f90&#45;&gt;sourcefile~mpimod.f90 -->
+<g id="sourcefile~~glow_dummy.f90~~EfferentGraph_edge22" class="edge">
+<title>sourcefile~neutral.f90&#45;&gt;sourcefile~mpimod.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M388.4106,-124.2632C377.1277,-141.6234 354.4014,-173.4258 328,-193 310.725,-205.8079 304.0578,-205.6878 283.5,-212"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M283.5,-212C260.7638,-218.9811 234.7864,-223.9326 213.0941,-227.2671"/>
+<polygon fill="#000000" stroke="#000000" points="212.5242,-223.8132 203.1401,-228.7314 213.543,-230.7387 212.5242,-223.8132"/>
+</g>
+<!-- sourcefile~neutral.f90&#45;&gt;sourcefile~mesh.f90 -->
+<g id="sourcefile~~glow_dummy.f90~~EfferentGraph_edge23" class="edge">
+<title>sourcefile~neutral.f90&#45;&gt;sourcefile~mesh.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M382.9975,-99.996C363.1934,-82.9676 323.5306,-53.6623 283.5,-52"/>
+</g>
+<!-- sourcefile~interpolation.f90 -->
+<g id="sourcefile~~glow_dummy.f90~~EfferentGraph_node10" class="node">
+<title>sourcefile~interpolation.f90</title>
+<g id="a_sourcefile~~glow_dummy.f90~~EfferentGraph_node10"><a xlink:href=".././sourcefile/interpolation.f90.html" xlink:title="interpolation.f90">
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="328,-104 239,-104 239,-80 328,-80 328,-104"/>
+<text text-anchor="middle" x="283.5" y="-89.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">interpolation.f90</text>
+</a>
+</g>
+</g>
+<!-- sourcefile~neutral.f90&#45;&gt;sourcefile~interpolation.f90 -->
+<g id="sourcefile~~glow_dummy.f90~~EfferentGraph_edge17" class="edge">
+<title>sourcefile~neutral.f90&#45;&gt;sourcefile~interpolation.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M363.762,-106.2688C355.8285,-104.8584 347.1105,-103.3085 338.4343,-101.7661"/>
+<polygon fill="#000000" stroke="#000000" points="338.7761,-98.2721 328.3178,-99.9676 337.5508,-105.164 338.7761,-98.2721"/>
+</g>
+<!-- sourcefile~neutral.f90&#45;&gt;sourcefile~reader.f90 -->
+<g id="sourcefile~~glow_dummy.f90~~EfferentGraph_edge20" class="edge">
+<title>sourcefile~neutral.f90&#45;&gt;sourcefile~reader.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M283.5,-132C258.0172,-134.3573 229.7685,-139.3585 207.4131,-143.8889"/>
+<polygon fill="#000000" stroke="#000000" points="206.6686,-140.4688 197.5875,-145.9262 208.0898,-147.323 206.6686,-140.4688"/>
+</g>
+<!-- sourcefile~interpolation.f90&#45;&gt;sourcefile~phys_consts.f90 -->
+<g id="sourcefile~~glow_dummy.f90~~EfferentGraph_edge24" class="edge">
+<title>sourcefile~interpolation.f90&#45;&gt;sourcefile~phys_consts.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M238.8185,-100.2754C217.026,-104.2463 190.4162,-108.9986 166.5,-113"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M166.5,-113C138.1789,-117.7384 107.4866,-128.1324 84.299,-137.1372"/>
+<polygon fill="#000000" stroke="#000000" points="82.8511,-133.9463 74.8496,-140.8908 85.4354,-140.4518 82.8511,-133.9463"/>
+</g>
+<!-- sourcefile~reader.f90&#45;&gt;sourcefile~phys_consts.f90 -->
+<g id="sourcefile~~glow_dummy.f90~~EfferentGraph_edge25" class="edge">
+<title>sourcefile~reader.f90&#45;&gt;sourcefile~phys_consts.f90</title>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M135.4147,-153C125.8768,-153 115.0616,-153 104.3496,-153"/>
+<polygon fill="#000000" stroke="#000000" points="104.1559,-149.5001 94.1558,-153 104.1558,-156.5001 104.1559,-149.5001"/>
+</g>
+</g>
+</svg>
+</div><script>var pansourcefileglow_dummyf90EfferentGraph = svgPanZoom('#sourcefileglow_dummyf90EfferentGraph', {zoomEnabled: true,controlIconsEnabled: true, fit: true, center: true,}); </script><div><a type="button" class="graph-help" data-toggle="modal" href="#graph-help-text">Help</a></div><div class="modal fade" id="graph-help-text" tabindex="-1" role="dialog"><div class="modal-dialog modal-lg" role="document"><div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button><h4 class="modal-title" id="-graph-help-label">Graph Key</h4></div><div class="modal-body">
+    <p>Nodes of different colours represent the following: </p>
+    <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+ "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- Generated by graphviz version 2.40.1 (20161225.0304)
+ -->
+<!-- Title: Graph Key Pages: 1 -->
+<svg width="190pt" height="32pt"
+ viewBox="0.00 0.00 190.00 32.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 28)">
+<title>Graph Key</title>
+<polygon fill="#ffffff" stroke="transparent" points="-4,4 -4,-28 186,-28 186,4 -4,4"/>
+<!-- Source File -->
+<g id="node1" class="node">
+<title>Source File</title>
+<polygon fill="#f0ad4e" stroke="#f0ad4e" points="67,-24 0,-24 0,0 67,0 67,-24"/>
+<text text-anchor="middle" x="33.5" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#ffffff">Source File</text>
+</g>
+<!-- This Page&#39;s Entity -->
+<g id="node2" class="node">
+<title>This Page&#39;s Entity</title>
+<polygon fill="none" stroke="#000000" points="182,-24 85,-24 85,0 182,0 182,-24"/>
+<text text-anchor="middle" x="133.5" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="#000000">This Page&#39;s Entity</text>
+</g>
+</g>
+</svg>
+
+    
+    <p>Solid arrows point from a file to a file which it depends on. A file
+    is dependent upon another if the latter must be compiled before the former
+    can be.
+    </p>
+    </div></div></div></div>
+      </div>
+    </div>
+    
+      
+      <br>
+
+    <section class="visible-xs visible-sm hidden-md">
+      
+<h3>Contents</h3>
+ 
+
+
+
+
+
+
+
+
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#submods-1">Submodules</a></h3></div>
+  <div id="submods-1" class="panel-collapse collapse">
+    <div class="list-group">
+      
+      <a class="list-group-item" href="../module/glow_dummy.html">glow_dummy</a>
+      
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title">Source Code</h3></div>
+  <div class="list-group">
+    <a class="list-group-item" href="../sourcefile/glow_dummy.f90.html#src">glow_dummy.f90</a>
+  </div>
+</div>
+
+
+
+    </section>
+    <br class="visible-xs visible-sm hidden-md">
+
+    <section>
+      <h2><span class="anchor" id="src"></span>Source Code</h2>
+    <div class="hl"><pre><span></span><a name="ln-1"></a><span class="k">submodule</span> <span class="p">(</span><span class="n">ionization</span><span class="p">)</span> <span class="n">glow_dummy</span>
+<a name="ln-2"></a>
+<a name="ln-3"></a><span class="k">implicit none</span>
+<a name="ln-4"></a>
+<a name="ln-5"></a><span class="k">contains</span>
+<a name="ln-6"></a>
+<a name="ln-7"></a><span class="k">module procedure </span><span class="n">glow_run</span>
+<a name="ln-8"></a>  <span class="c">! these parameters are never used due to error stop.</span>
+<a name="ln-9"></a>  <span class="c">! They just stop lint output for stringent compiler warning flags</span>
+<a name="ln-10"></a>  <span class="n">ionrate</span> <span class="o">=</span> <span class="mf">0.</span>
+<a name="ln-11"></a>  <span class="n">eheating</span> <span class="o">=</span> <span class="mf">0.</span>
+<a name="ln-12"></a>  <span class="n">iver</span> <span class="o">=</span> <span class="mf">0.</span>
+<a name="ln-13"></a>  <span class="n">error</span> <span class="k">stop</span> <span class="s1">&#39;There appears to be a misconfiguration in your build&#39;</span>
+<a name="ln-14"></a><span class="k">end procedure </span><span class="n">glow_run</span>
+<a name="ln-15"></a>
+<a name="ln-16"></a><span class="k">end submodule </span><span class="n">glow_dummy</span>
+</pre></div>
+
+    </section>
+    </div>
+  </div>
+
+  
+    <hr>    
+    </div> <!-- /container -->
+    <footer>
+      <div class="container">
+      <div class="row">
+        <div class="col-xs-6 col-md-4"><p>&copy; 2020 <a rel="license" href="http://creativecommons.org/licenses/by/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by/4.0/80x15.png" /></a>
+                                          </p></div>
+        <div class="col-xs-6 col-md-4 col-md-push-4">
+          <p class="text-right">
+            Documentation generated by 
+            <a href="https://github.com/cmacmackin/ford">FORD</a>
+            
+          </p>
+        </div>
+        <div class="col-xs-12 col-md-4 col-md-pull-4"><p class="text-center"> GEMINI3D was developed by Matthew Zettergren
+Guy Grubbs
+Michael Hirsch</p></div>
+      </div>
+      <br>
+      </div> <!-- /container -->    
+    </footer>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+<!--
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+-->
+    <script src="../js/bootstrap.min.js"></script>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <script src="../js/ie10-viewport-bug-workaround.js"></script>
+
+    <!-- MathJax JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } },
+        jax: ['input/TeX','input/MathML','output/HTML-CSS'],
+        extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']
+      });
+    </script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    
+    
+  </body>
+</html>
