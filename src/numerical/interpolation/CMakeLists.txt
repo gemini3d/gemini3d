@@ -49,23 +49,3 @@ set_tests_properties(unit:interp3:python PROPERTIES
   RUN_SERIAL true  # due to memory use
   FIXTURES_REQUIRED GemInterp3
   DISABLED ${python_disabled})
-
-
-add_test(NAME unit:interp2:octave
-  COMMAND ${Octave_EXECUTABLE} -q --eval "testinterp('${_testfile_interp2}')"
-  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-set_tests_properties(unit:interp2:octave PROPERTIES
-  REQUIRED_FILES ${_testfile_interp2}
-  TIMEOUT 30
-  FIXTURES_REQUIRED GemInterp2
-  DISABLED ${octave_disabled})
-
-add_test(NAME unit:interp3:octave
-  COMMAND ${Octave_EXECUTABLE} -q --eval "testinterp3('${_testfile_interp3}')"
-  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-set_tests_properties(unit:interp3:octave PROPERTIES
-  REQUIRED_FILES ${_testfile_interp3}
-  RUN_SERIAL true
-  TIMEOUT 30
-  FIXTURES_REQUIRED GemInterp3
-  DISABLED ${octave_disabled})

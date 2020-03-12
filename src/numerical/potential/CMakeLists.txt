@@ -35,15 +35,6 @@ set_tests_properties(unit:potential2 PROPERTIES TIMEOUT 30
   FIXTURES_SETUP GemPot)
 win32_env(unit:potential2)
 
-add_test(NAME unit:potential2:octave
-  COMMAND ${Octave_EXECUTABLE} -q --eval "test_potential2D('${_potential_testfile}')"
-  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-set_tests_properties(unit:potential2:octave PROPERTIES
-  REQUIRED_FILES ${_potential_testfile}
-  TIMEOUT 15
-  FIXTURES_REQUIRED GemPot
-  DISABLED ${octave_disabled})
-
 add_test(NAME unit:potential2:python
   COMMAND ${Python3_EXECUTABLE}  ${CMAKE_CURRENT_SOURCE_DIR}/test_potential2d.py ${_potential_testfile})
 set_tests_properties(unit:potential2:python PROPERTIES
