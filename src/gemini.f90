@@ -1,4 +1,6 @@
+Program Gemini3D
 !! MAIN PROGRAM FOR GEMINI3D
+!! Need program statement for FORD
 use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
 use phys_consts, only : lnchem, lwave, lsp, wp, debug
 use grid, only: grid_size,read_grid,clear_grid,lx1,lx2,lx3,lx2all,lx3all

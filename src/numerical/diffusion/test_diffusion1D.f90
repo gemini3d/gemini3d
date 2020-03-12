@@ -1,3 +1,5 @@
+program test_diffusion1d
+!! Need program statement for FORD
 !! Solve a time-dependent heat equation in 1D.  See GEMINI-docs repo for
 !! a description of the specific problem solved here
 

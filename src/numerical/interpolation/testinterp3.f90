@@ -1,4 +1,5 @@
 program testinterp3
+!! Need program statement for FORD
 
 use phys_consts, only: wp,pi
 use interpolation

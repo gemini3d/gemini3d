@@ -1,3 +1,5 @@
+Program test_fang
+!! Need program statement for FORD
 !! Reproduces data of:
 !! * Figure 3 in https://agupubs.onlinelibrary.wiley.com/doi/10.1029/2008JA013384
 !! * Figure 2 in Fang 2010

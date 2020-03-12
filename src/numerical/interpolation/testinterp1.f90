@@ -1,3 +1,5 @@
+program test_interp1
+!! Need program statement for FORD
 use phys_consts, only: wp,pi
 use interpolation
 implicit none

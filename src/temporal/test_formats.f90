@@ -1,3 +1,4 @@
+program test_formats
 !! This tests various text output formats.
 !! It necessarily requires visual inspection, or run from an enclosing program with Regex,
 !! such as a Python program configured to test as desired.

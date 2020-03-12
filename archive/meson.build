@@ -38,7 +38,7 @@ io = library('io',
 
 subdir('vendor/msis00')
 # --- for setting up an equilibrium simulation --
-executable('msis_setup', 'setup/MSIS00/call_msis_gfortran.f90',
+executable('msis_setup', 'setup/MSIS00/msis_driver.f90',
   link_with: msis)
 
 subdir('neutral')

@@ -1,3 +1,5 @@
+program test_interp2
+!! Need program statement for FORD
 use phys_consts, only: wp,pi
 use interpolation, only : interp2
 use h5fortran, only : hdf5_file

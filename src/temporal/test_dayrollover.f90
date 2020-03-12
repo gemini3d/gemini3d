@@ -1,3 +1,4 @@
+program test_dayrollover
 !! test day rollover
 use, intrinsic :: iso_fortran_env, only: real32, real64, stderr=>error_unit
 use phys_consts, only: wp

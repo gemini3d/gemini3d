@@ -1,4 +1,5 @@
 program test_potential3D
+!! Need program statement for FORD
 use mpi
 implicit none
 

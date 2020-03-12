@@ -1,6 +1,6 @@
-!-------------------------------------------------------------------------------
-!-------SOLVE LAPLACE'S EQUATION IN 2D USING PDEelliptic, mumps-based libraries
-!-------------------------------------------------------------------------------
+program test_potential2d
+!! Need program statement for FORD
+!! SOLVE LAPLACE'S EQUATION IN 2D USING PDEelliptic, mumps-based libraries
 
 use mpi, only : mpi_init, mpi_finalize, mpi_comm_rank, mpi_comm_size, mpi_comm_world
 use phys_consts, only: wp,debug,pi

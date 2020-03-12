@@ -425,7 +425,7 @@ def msis_setup(p: DictArray, xg: DictArray) -> np.ndarray:
     exeloc.mkdir(parents=True, exist_ok=True)
     exe = shutil.which("msis_setup", path=str(exeloc))
     if not exe:
-        src = (R / "src/vendor/msis00/msis00_gfortran.f", R / "src/neutral/call_msis_gfortran.f90")
+        src = (R / "src/vendor/msis00/msis00_gfortran.f", R / "src/neutral/msis_driver.f90")
         # -static avoids problems with missing .so or .dll
         fc = os.getenv("FC")
         fc = [fc] if fc else ["gfortran", "-static", "-std=legacy", "-w"]

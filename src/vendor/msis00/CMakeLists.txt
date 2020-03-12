@@ -22,10 +22,3 @@ endif()
 
 add_library(msis msis00_gfortran.f)
 target_compile_options(msis PRIVATE ${oldflags})
-
-
-# --- for setting up an equilibrium simulation --
-
-add_executable(msis_setup ${PROJECT_SOURCE_DIR}/src/neutral/call_msis_gfortran.f90)
-target_link_libraries(msis_setup PRIVATE msis)
-set_target_properties(msis_setup PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})

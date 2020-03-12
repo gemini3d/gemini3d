@@ -1,3 +1,4 @@
+program test_sza
 !! test day rollover
 use phys_consts, only: wp
 use timeutils, only: sza
