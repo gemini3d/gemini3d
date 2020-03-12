@@ -73,6 +73,20 @@ Requirements:
   ctest --output-on-failure
   ```
 
+## How to setup a sim
+
+1. make a config.nml with desired paramaeters for an equilibrium sim. See tests/*config.nml.
+2. run the equilibrium sim:
+
+    ```sh
+    python job.py /path_to/config_eq.nml /path_to/sim_eq/
+    ```
+3. create a new config.nml for the actual simulation and run
+
+    ```sh
+    python job.py /path_to/config.nml /path_to/sim_out/
+    ```
+
 ## Prerequisites
 
 Gemini uses CMake build system to automatically build the entire software library stack,
@@ -129,18 +143,14 @@ cmake -B build -Doption=false
 NCAR GLOW is automatically installed, but optional in general.
 Auroral emissions use GLOW.
 Enable or disable GLOW with `-Dglow=` option
-
-By default, Python and/or GNU Octave are used for the self-tests.
-Matlab is considerably slower, but may be enabled for self-tests with `-Dmatlab=enabled`
-
 HDF5 is enabled / disabled by `-Dhdf5=` option
 
 ### Analysis of simulation output
 
 GEMINI uses Python for essential interfaces, plotting and analysis.
-A lot of legacy analysis was done with Matlab scripts that we continue to maintain.
+The legacy Matlab scripts were moved to
+[Gemini-Matlab repo](https://github.com/gemini3d/gemini-matlab).
 
-The Matlab .m scripts generally require Matlab &ge; R2019a and are being transitioned to Python.
 Only the essential scripts needed to setup a simple example, and plot the results are included in the main GEMINI respository.
 The [Gemini-scripts](https://github.com/gemini3d/GEMINI-scripts) and
 [Gemini-examples](https://github.com/gemini3d/GEMINI-examples)
@@ -154,7 +164,8 @@ The documentation is Markdown-based, using FORD. If source code or documentation
 ford ford.md
 ```
 
-The output is under `docs/` and upon `git push` will appear at the [GEMINI docs website](https://mattzett.github.io/gemini/index.html).
+The output is under `docs/` and upon `git push` will appear at the
+[GEMINI docs website](https://gemini3d.github.io/gemini/index.html).
 
 FORD is a Python program, installed via:
 
@@ -190,19 +201,8 @@ If you need to specify MPI compiler wrappers, do like:
 cmake -B build -DMPI_ROOT=~/lib_gcc/openmpi-3.1.4
 ```
 
-### input directory
 
-The example `config.ini` in `initialize/` looks for input grid data in `tests/data`.
-If you plan to push back to the repository, please don't edit those example `.ini` file paths, instead use softlinks `ln -s` to point somewhere else if needed.
-Note that any `config.ini` you create yourself in `initialize/` will not be included in the repository since that directory is in `.gitignore` (viz. not tracked by git).
-
-#### MUMPS verbosity
-
-MUMPS initialization ICNTL flags are set in `numerical/potential/potential_mumps.f90`.
-ICNTL 1-4 concern print output unit and verbosity level, see MUMPS
-[User Manual](http://mumps.enseeiht.fr/index.php?page=doc)
-
-#### Build tips
+### Build tips
 
 Libraries are auto-built by Gemini when building gemini.bin.
 If it's desired to use system libraries, consider [install_prereqs.py](./scripts/install_prereqs.py)
@@ -240,7 +240,7 @@ CMake will automatically download and build necessary libraries for Gemini.
 ## Known limitations and issues of GEMINI
 
 1. Generating equilibrium conditions can be a bit tricky with curvilinear grids.  A low-res run can be done, but it will not necessary interpolate properly onto a finer grid due to some issue with the way the grids are made with ghost cells etc.  A workaround is to use a slightly narrower (x2) grid in the high-res run (quarter of a degree seems to work most of the time).
-2. Magnetic field calculations on an open 2D grid do not appear completely consistent with MATLAB model prototype results; although there are quite close.  This may have been related to sign errors in the FAC calculations - these tests should be retried at some point.
+2. Magnetic field calculations on an open 2D grid do not appear completely consistent with model prototype results; although there are quite close.  This may have been related to sign errors in the FAC calculations - these tests should be retried at some point.
 3. Occasionally MUMPS will throw an error because it underestimated the amount of memory needed for a solve.  If this happens a workaround is to add this line of code to the potential solver being used for your simulations.  If the problem persists try changing the number to 100.
 
     ```fortran
@@ -354,11 +354,13 @@ There are two subroutines that can be modified by the user to provide boundary c
 
 `./numerical/potential/boundary_conditions/potentialBCs_mumps.f90` - boundary conditions for the electric potential or field-aligned current.  The type of input that is being used is specified by the flags in the `config.ini` file for the simulation.  This subroutine will only be called if the user has not specified an input file containing boundary conditions.
 
-By default these subroutines will be used for boundary conditions if file input is not specified in the config.ini input file.  The base GEMINI sets these to be zero potential (or current) and some negligible amount of precipitation.  Note that if you write over these subroutines then the code will use whatever you have put into them if file input is not specified.  This can lead to unintended behavior if ones modifies these and then forgets since the code will continue to use the modifications instead of some baseline.  Because of this issue, and the fact that GEMINI must be rebuilt every time these subroutines are changed, this method of boudnary condition input is going to be removed.
+By default these subroutines will be used for boundary conditions if file input is not specified in the config.ini input file.  The base GEMINI sets these to be zero potential (or current) and some negligible amount of precipitation.  Note that if you write over these subroutines then the code will use whatever you have put into them if file input is not specified.  This can lead to unintended behavior if ones modifies these and then forgets since the code will continue to use the modifications instead of some baseline.  Because of this issue, and the fact that GEMINI must be rebuilt every time these subroutines are changed, this method of boundary condition input is going to be removed.
 
 ### File-based input (*recommended*)
 
-An alternative is to use the file input option, which needs to be set up using MATLAB (or other) scripts.  To enable this type of input, the appropriate flags (flagprecfileinput and flagE0fileinput) need to be set in the input `config.ini` file (see Section entitled "Input file format" above).  All examples included in `initialize/` in both the GEMINI and GEMINI-scripts repositories use this method for setting boundary conditions.  Note that the user can specify the boundary condition on a different grid from what the simulation is to be run with; in this case GEMINI will just interpolate the given boundary data onto the current simulation grid.
+The file input is enabled by the appropriate flags (flagprecfile and flagE0file) set in the input `config.nml` file (see Section entitled "Input file format" above).
+All examples included in `initialize/` in both the GEMINI and GEMINI-scripts repositories use this method for setting boundary conditions.
+Note that the user can specify the boundary condition on a different grid from what the simulation is to be run with; in this case GEMINI will just interpolate the given boundary data onto the current simulation grid.
 
 ### Initial conditions
 
@@ -381,34 +383,32 @@ Currently the main repo only includes the very basic 2Dtest and 3Dtest examples
 
 ## Running in two dimensions
 
-The code determines 2D vs. 3D runs by the number of x2 or x3 grid points specified in the `config.ini` input file.  If the number of x2 grid points is 1, then a 2D run is executed (since message passing in the x3 direction will work normally).  If the number of x3 grid points is 1, the simulation will swap array dimensions and vector components between the x2 and x3 directions so that message passing parallelization still provides performance benefits.  The data will be swapped again before output so that the output files are structured normally and the user who is not modifying the source code need not concern themselves with this reordering.
+The code determines 2D vs. 3D runs by the number of x2 or x3 grid points specified in the config.nml input file.  If the number of x2 grid points is 1, then a 2D run is executed (since message passing in the x3 direction will work normally).  If the number of x3 grid points is 1, the simulation will swap array dimensions and vector components between the x2 and x3 directions so that message passing parallelization still provides performance benefits.  The data will be swapped again before output so that the output files are structured normally and the user who is not modifying the source code need not concern themselves with this reordering.
 
 ## Loading and plotting output
 
-MATLAB is required to load the output file via scripts in the ./vis directory (these scripts generally work on both 2D and 3D simulation results).
-GNU Octave is not reliable at plotting in general, and might crash or make wierd looking plots.
-The results for an entire simulation can be plotted using [plotall.m](./vis/plotall.m)
-
-```matlab
-plotall('/tmp/mysim')
+```sh
+python plotall.py /tmp/mysim
 ```
 
-These also illustrates how to read in a sequence of files from a simulation.  This script prints a copy of the output plots into the simulation output directory.  Finer-level output control can be achieve by using the 'plotframe.m' and 'loadframe.m' scripts to plot and load data from individual simulation output frames, respectively.
+The script reads a sequence of files from a simulation.
+This script saves a copy of the output plots into the simulation output directory.
 
-The particular format of the output files is specified by the user in the input config.ini file.  There are three options:
-1)  full output - output all state variables; very large file sizes will results, but this is required for building initial conditions and for some analysis that require detailed composition and temperature information.
-2)  average state parameter output - species averaged temperature and velocity; electron density.  Probably best for most uses
-3)  density only output - only electron density output.  Best for high-res instability runs where only the density is needed and the output cadence is high
+The particular format of the output files is specified by the user in the input config.nml file.  There are three options:
 
-The organization of the data in the Matlab workspace, after a single frame is loaded (via 'loadframe.m'), is as follows (MKSA units throughout):
+1. full output - output all state variables; very large file sizes will results, but this is required for building initial conditions and for some analysis that require detailed composition and temperature information.
+2. average state parameter output - species averaged temperature and velocity; electron density.  Probably best for most uses
+3. density only output - only electron density output.  Best for high-res instability runs where only the density is needed and the output cadence is high
 
-### Time variables:
+MKSA units are used throughout.
+
+### Time variables
 
 simdate - a six element vector containing year, month, day, UT hour, UT minute, and UT seconds of the present frame
 
-### Grid variables:
+### Grid variables
 
-<!--x1,x2,x3 - x1 is altitude (z in plots), x2 is east (x in plots), x3 north (y in plots); the sizes of these variables are stored in lxs by the MATLAB script.-->
+<!--x1,x2,x3 - x1 is altitude (z in plots), x2 is east (x in plots), x3 north (y in plots); the sizes of these variables are stored in lxs.-->
 
 structure xg - members xg.x1,2,3 are the position variables, `xg.h*` are the metric factors, `xg.dx*` are the finite differences,
 
@@ -416,24 +416,22 @@ xg.glat,glon are the latitudes and longitudes (degrees geographic) of each grid 
 
 xg.r,theta,phi - for each grid point:  radial distance (from ctr of Earth), magnetic colatitude (rads.), and magnetic longitude (rads.)
 
-The grid structure, by itself, can be read in by the MATLAB function 'readgrid.m'; this is automatically invoked with 'loadframe.m' so there is not need to separately load the grid and output frame data.
-
-### Temperature variable:
+### Temperature variable
 
 Ts (first three dimensions have size lxs; 4th dimension is species index:  1=O+,2=NO+,3=N2+,4=O2+,5=N+, 6=H+,7=e-)
 
-### Density variable:
+### Density variable
 
 ns (same indexing as temperature)
 
-### Drifts:
+### Drifts
 
 vs1 (same indexing as temperature)
 
 x2-drift component:  v2 (same for all species, so this is just size lxs and is a 3D array)
 x3-drift component:  v3
 
-### Electromagnetic variables:
+### Electromagnetic variables
 
 current density:  J1, J2, J3
 potential:  Phitop (EFL potential)
@@ -443,7 +441,7 @@ Note that the electric field is not included in the output file, but that it can
 ## Computing total electron content (TEC)
 
 TEC and magnetic field variations can be calculated as a post-processing step in which the simulation data are read in and interpolated onto a regular geographic grid and then integrated accordingly using scripts in the './vis' directory - see `TECcalc.m`.
-An example of how to plot TEC computed by this script is included in `TECplot_map.m` (requires MATLAB mapping toolbox).
+An example of how to plot TEC computed by this script is included in `TECplot_map.m` in Gemini-matlab repo
 
 ## Visualizing magnetic field perturbations computed by magcalc.f90
 
