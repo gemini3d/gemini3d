@@ -6,9 +6,6 @@ on:
     - "**/*.py"
     - ".github/workflows/ci_python.yml"
   pull_request:
-    paths:
-    - "**/*.py"
-    - ".github/workflows/ci_python.yml"
   release:
 
 
@@ -22,5 +19,8 @@ jobs:
       with:
         python-version: '3.8'
     - run: python3 -m pip install -e .[lint]
+
     - run: flake8
     - run: mypy .
+
+    - run: pytest

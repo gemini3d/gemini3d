@@ -17,13 +17,20 @@ endif()
 add_library(config OBJECT config.f90)
 target_link_libraries(config PRIVATE pathlib const)
 
-add_executable(test_config test_config.f90)
-target_link_libraries(test_config PRIVATE config const pathlib)
-add_test(NAME unit::config COMMAND $<TARGET_FILE:test_config> ${PROJECT_SOURCE_DIR}/tests/test2deq_config.nml)
-set_tests_properties(unit::config PROPERTIES
-REQUIRED_FILES ${PROJECT_SOURCE_DIR}/tests/test2deq_config.nml
+set(_test_file ${PROJECT_SOURCE_DIR}/gemini3d/tests/config/test2d_glow/config.nml)
+
+add_executable(test_namelist test_nml.f90)
+add_test(NAME unit::namelist COMMAND $<TARGET_FILE:test_namelist> ${_test_file})
+set_tests_properties(unit::namelist PROPERTIES
+REQUIRED_FILES ${_test_file}
 TIMEOUT 10)
 
+add_executable(test_config test_config.f90)
+target_link_libraries(test_config PRIVATE config const pathlib)
+add_test(NAME unit::config COMMAND $<TARGET_FILE:test_config> ${_test_file})
+set_tests_properties(unit::config PROPERTIES
+REQUIRED_FILES ${_test_file}
+TIMEOUT 10)
 
 # --- io
 add_library(io OBJECT io.f90 output.f90

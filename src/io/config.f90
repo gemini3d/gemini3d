@@ -61,6 +61,7 @@ NaN = ieee_value(0._wp, ieee_quiet_nan)
 is_nml = infile(len(infile)-3:len(infile)) == '.nml'
 
 !> READ CONFIG FILE FOR THIS SIMULATION
+!! NOTE: Namelist file groups must be read in order they appear in the Namelist file, or End of File error occurs
 rawconfig : block
 integer :: u
 open(newunit=u, file=infile, status='old', action='read')
@@ -69,15 +70,15 @@ if (is_nml) then
   read(u, nml=base, iostat=i)
   call check_nml_io(i, infile, "base", compiler_vendor)
 
+  read(u, nml=flags, iostat=i)
+  call check_nml_io(i, infile, "flags", compiler_vendor)
+
   read(u, nml=files, iostat=i)
   call check_nml_io(i, infile, "files", compiler_vendor)
   out_format = trim(file_format)
   indatsize = expanduser(indat_size)
   indatgrid = expanduser(indat_grid)
   indatfile = expanduser(indat_file)
-
-  read(u, nml=flags, iostat=i)
-  call check_nml_io(i, infile, "flags", compiler_vendor)
 
 else
   read(u,*) ymd(3),ymd(2),ymd(1)
@@ -222,6 +223,7 @@ if(present(group)) grp = group
 
 if (is_iostat_end(i)) then
   write(stderr,*) 'ERROR: group ' // grp // ': ensure there is a trailing blank line in ' // filename
+  write(stderr,*) 'also, ensure that Namelist groups are read in order: base, flags, files etc'
   error stop 5
 endif
 
