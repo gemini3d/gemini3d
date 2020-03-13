@@ -49,7 +49,7 @@ def run_test(testname: str, mpiexec: str, exe: str, nml: str, outdir: str, mpi_c
     This is usually called from CMake Ctest
     """
 
-    url_ini = R / "tests/url.ini"
+    url_ini = R / "gemini3d/tests/url.ini"
 
     z = get_test_params(testname, url_ini)
 

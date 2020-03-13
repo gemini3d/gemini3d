@@ -39,14 +39,15 @@ real(wp), intent(in) :: UTsec
 real(wp), dimension(:,:,:), intent(in) :: iver
 
 select case (out_format)
-case ('.dat')
+case ('raw')
   call output_aur_root_raw(outdir,flagglow,ymd,UTsec,iver)
-case ('.h5')
+case ('h5')
   call output_aur_root_hdf5(outdir,flagglow,ymd,UTsec,iver)
 case ('.nc')
   call output_aur_root_nc4(outdir,flagglow,ymd,UTsec,iver)
 case default
-  error stop 'get_grid3: unknown grid format'
+  write(stderr,*) 'aurora:output_aur_root: unknown grid format' // out_format
+  error stop 6
 end select
 
 end subroutine output_aur_root

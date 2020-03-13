@@ -46,7 +46,11 @@ real(wp), intent(out), dimension(:,:,:) :: g1all,g2all,g3all,altall,glatall,glon
 real(wp), intent(out), dimension(:,:) :: Incall
 real(wp), intent(out), dimension(:,:,:,:) :: e1all,e2all,e3all,erall,ethetaall,ephiall
 
-select case (path(index(path, '.', back=.true.) : len(path)))
+character(:), allocatable :: fmt
+
+fmt = path(index(path, '.', back=.true.) : len(path))
+
+select case (fmt)
 case ('.dat')
   call get_grid3_raw(path, flagswap, x, g1all,g2all,g3all, altall,glatall,glonall,Bmagall,Incall,nullptsall,&
     e1all,e2all,e3all,erall,ethetaall,ephiall,rall,thetaall,phiall)
@@ -57,7 +61,8 @@ case ('.nc')
   call get_grid3_nc4(path, flagswap, x, g1all,g2all,g3all, altall,glatall,glonall,Bmagall,Incall,nullptsall,&
     e1all,e2all,e3all,erall,ethetaall,ephiall,rall,thetaall,phiall)
 case default
-  error stop 'get_grid3: unknown grid format'
+  write(stderr,*) 'grid:read:get_grid3: unknown grid format: ' // fmt
+  error stop 6
 end select
 
 end subroutine get_grid3
