@@ -35,7 +35,7 @@ outdir_composite=outdir//'/aurmaps/'
 filenamefull=date_filename(outdir_composite,ymd,UTsec) // '.h5'
 print *, 'Output file name (auroral maps):  ',filenamefull
 fstatus = 'new'
-call hout%initialize(filenamefull, status=fstatus,action='rw')
+call hout%initialize(filenamefull, status=fstatus,action='rw', comp_lvl=1)
 
 !! write data to file
 if(flagswap/=1) then
