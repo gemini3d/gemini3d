@@ -428,7 +428,9 @@ def msis_setup(p: DictArray, xg: DictArray) -> np.ndarray:
         src = (R / "src/vendor/msis00/msis00_gfortran.f", R / "src/neutral/msis_driver.f90")
         # -static avoids problems with missing .so or .dll
         fc = os.getenv("FC")
-        fc = [fc] if fc else ["gfortran", "-static", "-std=legacy", "-w"]
+        fc = [fc] if fc else ["gfortran"]
+        if "gfortran" in fc[0]:
+            fc += ["-static", "-std=legacy", "-w"]
         cmd = fc + ["-o", str(exeloc / "msis_setup")] + list(map(str, src))
         print(" ".join(cmd))
         subprocess.check_call(cmd)
