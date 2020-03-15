@@ -1,4 +1,4 @@
-submodule (io:plasma) plasma_output_hdf5
+submodule (io:plasma_output) plasma_output_hdf5
 
 use timeutils, only : date_filename
 use h5fortran, only: hdf5_file
@@ -6,7 +6,7 @@ implicit none
 
 contains
 
-module procedure output_root_stream_mpi
+module procedure output_root_stream_mpi_hdf5
 
 !! COLLECT OUTPUT FROM WORKERS AND WRITE TO A FILE USING STREAM I/O.
 !! STATE VARS ARE EXPECTED INCLUDE GHOST CELLS
@@ -158,7 +158,7 @@ if (.not.all(ieee_is_finite(v2avgall))) error stop 'v2avgall has non-finite valu
 if (.not.all(ieee_is_finite(v3avgall))) error stop 'v3avgall has non-finite value(s)'
 if (.not.all(ieee_is_finite(Phiall))) error stop 'Phiall has non-finite value(s)'
 
-end procedure output_root_stream_mpi
+end procedure output_root_stream_mpi_hdf5
 
 
 end submodule plasma_output_hdf5

@@ -48,7 +48,7 @@ def write_state(time: datetime, ns: np.ndarray, vs: np.ndarray, Ts: np.ndarray, 
     need the .transpose() for h5py
     """
 
-    fn = out_dir / "initial_conditions.h5"
+    fn = out_dir / "inputs/initial_conditions.h5"
     print("write", fn)
 
     with h5py.File(fn, "w") as f:
@@ -118,14 +118,14 @@ def write_grid(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]):
     need the .transpose() for h5py
     """
 
-    p["out_dir"].mkdir(parents=True, exist_ok=True)
+    (p["out_dir"] / "inputs").mkdir(parents=True, exist_ok=True)
 
-    fn = p["out_dir"] / "simsize.h5"
+    fn = p["out_dir"] / "inputs/simsize.h5"
     print("write", fn)
     with h5py.File(fn, "w") as h:
         h["/lx"] = xg["lx"]
 
-    fn = p["out_dir"] / "simgrid.h5"
+    fn = p["out_dir"] / "inputs/simgrid.h5"
     print("write", fn)
     with h5py.File(fn, "w") as h:
         for i in (1, 2, 3):

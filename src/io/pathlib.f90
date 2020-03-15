@@ -4,7 +4,7 @@ use, intrinsic:: iso_fortran_env, only: stderr=>error_unit
 
 implicit none
 private
-public :: mkdir, copyfile, expanduser, home, filesep_swap, assert_directory_exists, assert_file_exists
+public :: mkdir, copyfile, expanduser, home, get_suffix, filesep_swap, assert_directory_exists, assert_file_exists
 
 interface  ! pathlib_{unix,windows}.f90
 module integer function copyfile(source, dest) result(istat)
@@ -23,6 +23,15 @@ end subroutine assert_directory_exists
 end interface
 
 contains
+
+pure function get_suffix(filename)
+character(*), intent(in) :: filename
+character(:), allocatable :: get_suffix
+
+get_suffix = filename(index(filename, '.', back=.true.) : len(filename))
+
+end function get_suffix
+
 
 subroutine assert_file_exists(path)
   !! throw error if file does not exist

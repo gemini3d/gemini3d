@@ -44,14 +44,7 @@ def get_test_params(test_name: str, url_file: Path) -> T.Dict[str, T.Any]:
     return z
 
 
-def run_test(testname: str, mpiexec: str, exe: str, nml: str, outdir: str, mpi_count: int = None):
-    """ configure and run a test
-    This is usually called from CMake Ctest
-    """
-
-    url_ini = R / "gemini3d/tests/url.ini"
-
-    z = get_test_params(testname, url_ini)
+def download_and_extract(z: T.Dict[str, T.Any], url_ini: Path):
 
     try:
         url_retrieve(z["url"], z["zip"], ("md5", z["md5"]))
@@ -61,6 +54,19 @@ def run_test(testname: str, mpiexec: str, exe: str, nml: str, outdir: str, mpi_c
     except KeyError as e:
         print(f"SKIP: problem getting reference config from {url_ini} {e}", file=sys.stderr)
         raise SystemExit(77)
+
+
+def run_test(testname: str, mpiexec: str, exe: str, nml: str, outdir: str, mpi_count: int = None):
+    """ configure and run a test
+    This is usually called from CMake Ctest
+    """
+
+    url_ini = R / "gemini3d/tests/url.ini"
+
+    z = get_test_params(testname, url_ini)
+
+    if not z["dir"].is_dir():
+        download_and_extract(z, url_ini)
 
     extract_zip(z["zip"], z["dir"])
 

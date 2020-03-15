@@ -1,4 +1,4 @@
-submodule (io:plasma) plasma_output_hdf5
+submodule (io:plasma_output) plasma_output_nc
 
 use timeutils, only : date_filename
 use nc4fortran, only: netcdf_file
@@ -6,12 +6,12 @@ implicit none
 
 contains
 
-module procedure output_root_stream_mpi
+module procedure output_root_stream_mpi_nc4
 
 !! COLLECT OUTPUT FROM WORKERS AND WRITE TO A FILE USING STREAM I/O.
 !! STATE VARS ARE EXPECTED INCLUDE GHOST CELLS
 
-integer :: lx1,lx2,lx3,lx2all,lx3all,isp, ierr
+integer :: lx1,lx2,lx3,lx2all,lx3all,isp
 real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: v2avg,v3avg
 real(wp), dimension(-1:size(Phiall,1)+2,-1:size(Phiall,2)+2,-1:size(Phiall,3)+2,1:lsp) :: nsall,vs1all,Tsall
 real(wp), dimension(1:size(Phiall,1),1:size(Phiall,2),1:size(Phiall,3)) :: v2avgall,v3avgall,v1avgall,Tavgall,neall,Teall
@@ -65,86 +65,86 @@ Teall=Tsall(1:lx1,1:lx2all,1:lx3all,lsp)
 filenamefull = date_filename(outdir,ymd,UTsec) // '.h5'
 print *, 'HDF5 Output file name:  ', filenamefull
 
-call hout%initialize(filenamefull, ierr, status='new',action='w',comp_lvl=1)
+call hout%initialize(filenamefull, status='new',action='w',comp_lvl=1)
 
-call hout%write('/time/ymd', ymd, ierr)
-call hout%write('/time/UThour',UTsec/3600._wp, ierr)
+call hout%write('/time/ymd', ymd)
+call hout%write('/time/UThour',UTsec/3600._wp)
 
 if (flagswap/=1) then
   select case (flagoutput)
     case (2)    !output ISR-like average parameters
-      call hout%write('neall', neall(1:lx1,1:lx2all,1:lx3all), ierr)
-      call hout%write('v1avgall', v1avgall(1:lx1,1:lx2all,1:lx3all), ierr)
+      call hout%write('neall', neall(1:lx1,1:lx2all,1:lx3all))
+      call hout%write('v1avgall', v1avgall(1:lx1,1:lx2all,1:lx3all))
       !output of ISR-like parameters (ne,Ti,Te,v1,etc.)
-      call hout%write('Tavgall', Tavgall(1:lx1,1:lx2all,1:lx3all), ierr)
-      call hout%write('TEall', Teall(1:lx1,1:lx2all,1:lx3all), ierr)
-      call hout%write('J1all', J1all(1:lx1,1:lx2all,1:lx3all), ierr)
-      call hout%write('J2all', J2all(1:lx1,1:lx2all,1:lx3all), ierr)
-      call hout%write('J3all', J3all(1:lx1,1:lx2all,1:lx3all), ierr)
-      call hout%write('v2avgall', v2avgall(1:lx1,1:lx2all,1:lx3all), ierr)
-      call hout%write('v3avgall', v3avgall(1:lx1,1:lx2all,1:lx3all), ierr)
+      call hout%write('Tavgall', Tavgall(1:lx1,1:lx2all,1:lx3all))
+      call hout%write('TEall', Teall(1:lx1,1:lx2all,1:lx3all))
+      call hout%write('J1all', J1all(1:lx1,1:lx2all,1:lx3all))
+      call hout%write('J2all', J2all(1:lx1,1:lx2all,1:lx3all))
+      call hout%write('J3all', J3all(1:lx1,1:lx2all,1:lx3all))
+      call hout%write('v2avgall', v2avgall(1:lx1,1:lx2all,1:lx3all))
+      call hout%write('v3avgall', v3avgall(1:lx1,1:lx2all,1:lx3all))
     case (3)     !just electron density
       print *, '!!!NOTE:  Input file has selected electron density only output, make sure this is what you really want!'
-      call hout%write('neall', neall(1:lx1,1:lx2all,1:lx3all), ierr)
+      call hout%write('neall', neall(1:lx1,1:lx2all,1:lx3all))
     case default    !output everything
       print *, '!!!NOTE:  Input file has selected full output, large files may result!'
-      call hout%write('nsall', nsall(1:lx1,1:lx2all,1:lx3all,:), ierr)
-      call hout%write('vs1all', vs1all(1:lx1,1:lx2all,1:lx3all,:), ierr)
+      call hout%write('nsall', nsall(1:lx1,1:lx2all,1:lx3all,:))
+      call hout%write('vs1all', vs1all(1:lx1,1:lx2all,1:lx3all,:))
       !this is full output of all parameters in 3D
-      call hout%write('Tsall', Tsall(1:lx1,1:lx2all,1:lx3all,:), ierr)
+      call hout%write('Tsall', Tsall(1:lx1,1:lx2all,1:lx3all,:))
 
-      call hout%write('J1all', J1all(1:lx1,1:lx2all,1:lx3all), ierr)
-      call hout%write('J2all', J2all(1:lx1,1:lx2all,1:lx3all), ierr)
-      call hout%write('J3all', J3all(1:lx1,1:lx2all,1:lx3all), ierr)
-      call hout%write('v2avgall', v2avgall(1:lx1,1:lx2all,1:lx3all), ierr)
-      call hout%write('v3avgall', v3avgall(1:lx1,1:lx2all,1:lx3all), ierr)
+      call hout%write('J1all', J1all(1:lx1,1:lx2all,1:lx3all))
+      call hout%write('J2all', J2all(1:lx1,1:lx2all,1:lx3all))
+      call hout%write('J3all', J3all(1:lx1,1:lx2all,1:lx3all))
+      call hout%write('v2avgall', v2avgall(1:lx1,1:lx2all,1:lx3all))
+      call hout%write('v3avgall', v3avgall(1:lx1,1:lx2all,1:lx3all))
     end select
 else
 !! 2D simulation
   select case (flagoutput)
     case (2)    !averaged parameters
-      call hout%write('neall', neall, ierr)
-      call hout%write('v1avgall', v1avgall, ierr)
-      call hout%write('Tavgall', Tavgall, ierr)
-      call hout%write('TEall', Teall, ierr)
+      call hout%write('neall', neall)
+      call hout%write('v1avgall', v1avgall)
+      call hout%write('Tavgall', Tavgall)
+      call hout%write('TEall', Teall)
 
-      call hout%write('J1all', J1all, ierr)
+      call hout%write('J1all', J1all)
 
       ! J3,J2 and V3, V2 are swapped
-      call hout%write('J2all', J3all, ierr)
-      call hout%write('J3all', J2all, ierr)
-      call hout%write('v2avgall', v3avgall, ierr)
-      call hout%write('v3avgall', v2avgall, ierr)
+      call hout%write('J2all', J3all)
+      call hout%write('J3all', J2all)
+      call hout%write('v2avgall', v3avgall)
+      call hout%write('v3avgall', v2avgall)
     case (3)     !electron density only output
       print *, '!!!NOTE:  Input file has selected electron density only output, make sure this is what you really want!'
 
-      call hout%write('neall', neall, ierr)
+      call hout%write('neall', neall)
 
     case default
       print *, '!!!NOTE:  Input file has selected full output, large files may result!'
 
-      call hout%write('nsall', nsall(1:lx1,1:lx2all,1:lx3all,:), ierr)
-      call hout%write('vs1all', vs1all(1:lx1,1:lx2all,1:lx3all,:), ierr)
-      call hout%write('Tsall', Tsall(1:lx1,1:lx2all,1:lx3all,:), ierr)
+      call hout%write('nsall', nsall(1:lx1,1:lx2all,1:lx3all,:))
+      call hout%write('vs1all', vs1all(1:lx1,1:lx2all,1:lx3all,:))
+      call hout%write('Tsall', Tsall(1:lx1,1:lx2all,1:lx3all,:))
 
-      call hout%write('J1all', J1all, ierr)
+      call hout%write('J1all', J1all)
 
       !! NOTE: J3,J2 and V3, V2 are swapped in name like this
-      call hout%write('J2all', J3all, ierr)
-      call hout%write('J3all', J2all, ierr)
-      call hout%write('v2avgall', v3avgall, ierr)
-      call hout%write('v3avgall', v2avgall, ierr)
+      call hout%write('J2all', J3all)
+      call hout%write('J3all', J2all)
+      call hout%write('v2avgall', v3avgall)
+      call hout%write('v3avgall', v2avgall)
   end select
 end if
 if (gridflag==1) then
   print *, 'Writing topside boundary conditions for inverted-type grid...'
-  call hout%write('Phiall', Phiall(1,:,:), ierr)
+  call hout%write('Phiall', Phiall(1,:,:))
 else
   print *, 'Writing topside boundary conditions for non-inverted-type grid...'
-  call hout%write('Phiall', Phiall(lx1,:,:), ierr)
+  call hout%write('Phiall', Phiall(lx1,:,:))
 end if
 
-call hout%finalize(ierr)
+call hout%finalize()
 
 !! Check for any NaN before proceeding to next time step
 
@@ -158,7 +158,7 @@ if (.not.all(ieee_is_finite(v2avgall))) error stop 'v2avgall has non-finite valu
 if (.not.all(ieee_is_finite(v3avgall))) error stop 'v3avgall has non-finite value(s)'
 if (.not.all(ieee_is_finite(Phiall))) error stop 'Phiall has non-finite value(s)'
 
-end procedure output_root_stream_mpi
+end procedure output_root_stream_mpi_nc4
 
 
-end submodule plasma_output_hdf5
+end submodule plasma_output_nc

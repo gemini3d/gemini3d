@@ -2,6 +2,32 @@ submodule (io) mag
 
 implicit none
 
+interface ! mag_*.f90
+
+module subroutine output_magfields_hdf5(outdir,ymd,UTsec,Br,Btheta,Bphi)
+character(*), intent(in) :: outdir
+integer, intent(in) :: ymd(3)
+real(wp), intent(in) :: UTsec
+real(wp), dimension(:), intent(in)  :: Br,Btheta,Bphi
+end subroutine output_magfields_hdf5
+
+module subroutine output_magfields_nc4(outdir,ymd,UTsec,Br,Btheta,Bphi)
+character(*), intent(in) :: outdir
+integer, intent(in) :: ymd(3)
+real(wp), intent(in) :: UTsec
+real(wp), dimension(:), intent(in)  :: Br,Btheta,Bphi
+end subroutine output_magfields_nc4
+
+module subroutine output_magfields_raw(outdir,ymd,UTsec,Br,Btheta,Bphi)
+character(*), intent(in) :: outdir
+integer, intent(in) :: ymd(3)
+real(wp), intent(in) :: UTsec
+real(wp), dimension(:), intent(in)  :: Br,Btheta,Bphi
+end subroutine output_magfields_raw
+
+
+end interface
+
 contains
 
 module procedure create_outdir_mag
@@ -16,6 +42,11 @@ if ( mkdir(outdir//'/magfields/input/') /= 0 ) error stop 'could not create magf
 if ( copyfile(fieldpointfile, outdir//'/magfields/input/magfieldpoints.dat') /=0 ) error stop 'could not create magfields dat file'
 
 end procedure create_outdir_mag
+
+module procedure output_magfields
+
+
+end procedure output_magfields
 
 
 end submodule mag

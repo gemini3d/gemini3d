@@ -21,9 +21,9 @@ flagglow = 0
 
 &files
 file_format = 'h5'
-indat_size = 'tests/data/test3d_fang/simsize.h5'
-indat_grid = 'tests/data/test3d_fang/simgrid.h5'
-indat_file = 'tests/data/test3d_fang/initial_conditions.h5'
+indat_size = 'tests/data/test3d_fang/inputs/simsize.h5'
+indat_grid = 'tests/data/test3d_fang/inputs/simgrid.h5'
+indat_file = 'tests/data/test3d_fang/inputs/initial_conditions.h5'
 /
 
 &setup

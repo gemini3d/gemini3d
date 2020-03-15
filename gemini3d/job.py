@@ -22,9 +22,7 @@ def runner(pr: T.Dict[str, T.Any]) -> int:
     for k in ("indat_size", "indat_grid", "indat_file"):
         f = p[k].expanduser().resolve()
         if pr["force"] or not f.is_file():
-            ok = initialize_simulation(p, pr)
-            if not ok:
-                raise RuntimeError("\ncould not initialize simulation parameters. Is there a problem with config.nml?")
+            model_setup(p["nml"], pr["out_dir"])
             if not f.is_file():
                 raise FileNotFoundError(f"\ntried to initialize simulation but missing expected output file {f}")
             break
@@ -32,15 +30,15 @@ def runner(pr: T.Dict[str, T.Any]) -> int:
     if p.get("flagE0file") == 1:
         E0dir = p["E0dir"].expanduser().resolve()
         if not E0dir.is_dir():
-            ok = initialize_simulation(p, pr)
-            if not ok or not E0dir.is_dir():
+            model_setup(p["nml"], pr["out_dir"])
+            if not E0dir.is_dir():
                 raise FileNotFoundError(E0dir)
 
     if p.get("flagprecfile") == 1:
         precdir = p["precdir"].expanduser().resolve()
         if not precdir.is_dir():
-            ok = initialize_simulation(p, pr)
-            if not ok or not precdir.is_dir():
+            model_setup(p["nml"], pr["out_dir"])
+            if not precdir.is_dir():
                 raise FileNotFoundError(precdir)
 
     # build checks
@@ -106,34 +104,6 @@ def check_compiler():
     fc = shutil.which(fc) if fc else shutil.which("gfortran")
     if not fc:
         raise EnvironmentError("Cannot find Fortran compiler e.g. Gfortran")
-
-
-def initialize_simulation(p: T.Dict[str, T.Any], pr: T.Dict[str, T.Any]) -> bool:
-    """
-    TODO: these functions will be in Python
-
-    GNU Octave doesn't have the HDF5 API needed for Gemini
-    """
-
-    env = os.environ
-    if not os.environ.get("GEMINI_ROOT"):
-        env["GEMINI_ROOT"] = Path(__file__).parents[1].as_posix()
-    matlab_script_dir = Path(env["GEMINI_ROOT"], "setup")
-
-    if pr["matlab"]:
-        if not shutil.which("matlab"):
-            raise EnvironmentError("Matlab not found")
-
-        check_compiler()
-
-        cmd = ["matlab", "-batch", f"model_setup('{p['nml']}')"]
-        print("Initializing simulation: \n", " ".join(cmd))
-
-        ret = subprocess.run(cmd, cwd=matlab_script_dir, env=env)
-        return ret.returncode == 0
-    else:
-        model_setup(p["nml"], pr["out_dir"])
-        return True
 
 
 def check_mpiexec(mpiexec: Pathlike) -> T.List[str]:

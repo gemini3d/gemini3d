@@ -145,7 +145,7 @@ print *, 'magcalc.f90 --> Process:  ',myid,' of:  ',lid-1,' online...'
 !READ CONFIG FILE FROM OUTPUT DIRECTORY
 call get_command_argument(1,argv)
 outdir=trim(argv)
-infile=outdir//'/inputs/config.ini'
+infile=outdir//'/inputs/config.nml'
 !infile = trim(argv)
 inquire(file=infile,exist=file_exists)    !needed to deal with ini vs. nml inputs...
 if ( .not. file_exists) then
@@ -367,7 +367,7 @@ do while (t<tdur)
   if (it==2) then
     UTsec=UTsec-0.000001d0
   end if
-  call input_plasma_currents(outdir,flagoutput,ymd,UTsec,J1,J2,J3)    !now everyone has their piece of data
+  call input_plasma_currents(outdir,out_format,flagoutput,ymd,UTsec,J1,J2,J3)    !now everyone has their piece of data
 
 
   !FORCE PARALLEL CURRENTS TO ZERO BELOW SOME ALTITUDE LIMIT

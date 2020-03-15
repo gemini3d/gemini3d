@@ -4,7 +4,7 @@ use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
 
 implicit none
 
-interface ! aurora_raw.f90
+interface ! aurora_*.f90
 
 module subroutine output_aur_root_raw(outdir,flagglow,ymd,UTsec,iver)
 character(*), intent(in) :: outdir
@@ -41,9 +41,9 @@ real(wp), dimension(:,:,:), intent(in) :: iver
 select case (out_format)
 case ('raw')
   call output_aur_root_raw(outdir,flagglow,ymd,UTsec,iver)
-case ('h5')
+case ('h5', 'hdf5')
   call output_aur_root_hdf5(outdir,flagglow,ymd,UTsec,iver)
-case ('.nc')
+case ('nc', 'nc4')
   call output_aur_root_nc4(outdir,flagglow,ymd,UTsec,iver)
 case default
   write(stderr,*) 'aurora:output_aur_root: unknown grid format' // out_format
