@@ -41,7 +41,7 @@ option(scotch "MUMPS: use Scotch" off)
 option(openmp "MUMPS: use OpenMP" off)
 
 # on: debug, off: normal
-set(FETCHCONTENT_UPDATES_DISCONNECTED on)
+set(FETCHCONTENT_UPDATES_DISCONNECTED off)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules/)
 
