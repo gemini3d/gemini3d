@@ -9,7 +9,7 @@ Teinf = 1500.0                ! Teinf:  exospheric electron temperature
 /
 
 &flags
-potsolve = 0                  ! potsolve:  how are we solving electrodynamics?   0 - no; 1 - electrostatic; 2 - inductive
+potsolve = 0                  ! solve electrodynamics:   0 - no; 1 - electrostatic; 2 - inductive
 flagperiodic = 0
 flagoutput = 1
 flagcap = 0
@@ -21,9 +21,9 @@ flagglow = 0
 
 &files
 file_format = 'h5'
-indat_size = 'tests/data/test3d_eq/simsize.h5'
-indat_grid = 'tests/data/test3d_eq/simgrid.h5'
-indat_file = 'tests/data/test3d_eq/initial_conditions.h5'
+indat_size = 'tests/data/test3d_eq/inputs/simsize.h5'
+indat_grid = 'tests/data/test3d_eq/inputs/simgrid.h5'
+indat_file = 'tests/data/test3d_eq/inputs/initial_conditions.h5'
 /
 
 &setup

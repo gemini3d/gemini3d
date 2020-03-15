@@ -2,6 +2,8 @@ module io
 !! HANDLES INPUT AND OUTPUT OF PLASMA STATE PARAMETERS (NOT GRID INPUTS)
 use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
 use, intrinsic :: iso_c_binding, only: c_int
+use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
+
 use phys_consts, only : kB,ms,pi,lsp,wp,lwave
 use pathlib, only: mkdir, copyfile
 use mpimod, only: bcast_recv, bcast_send, gather_send, gather_recv,  myid, &
@@ -58,16 +60,16 @@ character(*), intent(in) :: indatsize, indatfile
 real(wp), dimension(-1:,-1:,-1:,:), intent(out) :: ns,vs1,Ts
 end subroutine input_plasma
 
-module subroutine input_plasma_currents(outdir,flagoutput,ymd,UTsec,J1,J2,J3)
-character(*), intent(in) :: outdir
+module subroutine input_plasma_currents(outdir,out_format,flagoutput,ymd,UTsec,J1,J2,J3)
+character(*), intent(in) :: outdir, out_format
 integer, intent(in) :: flagoutput
 integer, dimension(3), intent(in) :: ymd
 real(wp), intent(in) :: UTsec
 real(wp), dimension(:,:,:), intent(out) :: J1,J2,J3
 end subroutine input_plasma_currents
 
-module subroutine output_plasma(outdir,flagoutput,ymd,UTsec,vs2,vs3,ns,vs1,Ts,Phiall,J1,J2,J3)
-character(*), intent(in) :: outdir
+module subroutine output_plasma(outdir,flagoutput,ymd,UTsec,vs2,vs3,ns,vs1,Ts,Phiall,J1,J2,J3, out_format)
+character(*), intent(in) :: outdir, out_format
 integer, intent(in) :: flagoutput
 integer, dimension(3), intent(in) :: ymd
 real(wp), intent(in) :: UTsec

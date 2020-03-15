@@ -34,18 +34,14 @@ endif()
 option(autobuild "autobuild missing Lapack, Scalapack or Mumps" on)
 option(glow "use NCAR GLOW airglow / aurora model" on)
 option(hdf5 "use HDF5 file I/O" on)
-option(netcdf "use NetCDF file I/O" off)
+option(netcdf "use NetCDF file I/O" on)
 # MUMPS build options (only used if auto-building MUMPS)
 option(metis "MUMPS: use METIS" off)
 option(scotch "MUMPS: use Scotch" off)
 option(openmp "MUMPS: use OpenMP" off)
 
-if(netcdf AND hdf5)
-  message(FATAL_ERROR "HDF5 and NetCDF together is a planned feature")
-endif()
-
 # on: debug, off: normal
-set(FETCHCONTENT_UPDATES_DISCONNECTED off)
+set(FETCHCONTENT_UPDATES_DISCONNECTED on)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules/)
 

@@ -117,13 +117,13 @@ def model_resample(
         # [X2i,X1i]=meshgrid(xg.x2(3:end-2),xg.x1(3:end-2));
         for i in range(lsp):
             f = interp2d(X2, X1, ns[i, :, :, :], bounds_error=True)
-            nsi[i, :, :, :] = f(X2i, X1i)[:, :, None]
+            nsi[i, :, :, :] = f(x2i, x1i)[:, :, None]
 
             f = interp2d(X2, X1, vs[i, :, :, :], bounds_error=True)
-            vsi[i, :, :, :] = f(X2i, X1i)[:, :, None]
+            vsi[i, :, :, :] = f(x2i, x1i)[:, :, None]
 
             f = interp2d(X2, X1, Ts[i, :, :, :], bounds_error=True)
-            Tsi[i, :, :, :] = f(X2i, X1i)[:, :, None]
+            Tsi[i, :, :, :] = f(x2i, x1i)[:, :, None]
     elif lx2 == 1:
         # 2-D north-south
         print("interpolating grid for 2-D simulation in x1, x3")

@@ -21,9 +21,9 @@ flagglow = 1
 
 &files
 file_format = 'h5'
-indat_size = 'tests/data/test2d_glow/simsize.h5'
-indat_grid = 'tests/data/test2d_glow/simgrid.h5'
-indat_file = 'tests/data/test2d_glow/initial_conditions.h5'
+indat_size = 'tests/data/test2d_glow/inputs/simsize.h5'
+indat_grid = 'tests/data/test2d_glow/inputs/simgrid.h5'
+indat_file = 'tests/data/test2d_glow/inputs/initial_conditions.h5'
 /
 
 &setup

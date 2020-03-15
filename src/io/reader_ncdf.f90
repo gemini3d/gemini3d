@@ -1,22 +1,22 @@
-submodule (reader) reader_hdf5
+submodule (reader) reader_nc4
 
-use h5fortran, only: hdf5_file
+use nc4fortran, only: netcdf_file
 
 implicit none
 
 contains
 
 
-module procedure get_simsize2_hdf5
+module procedure get_simsize2_nc4
 !! get x2 and x3 dimension sizes
-type(hdf5_file) :: hf
+type(netcdf_file) :: hf
 logical :: exists
 
 if (debug) print '(A,/,A)', 'READ 2D (B-perp, B-perp) grid size from file:', path
 
 inquire(file=path, exist=exists)
 if (.not.exists) then
-   write(stderr,'(/,A,/,A,/)') 'ERROR: reader_hdf5:get_simsize2: generate grid with script--grid not present:',path
+   write(stderr,'(/,A,/,A,/)') 'ERROR: reader_nc4:get_simsize2: generate grid with script--grid not present:',path
    error stop 77
 endif
 
@@ -30,7 +30,7 @@ elseif(hf%exist('/Nlat')) then
 elseif(hf%exist('/lx2')) then
   call hf%read('/lx2', llat)
 else
-  error stop 'reader_hdf5:get_simsize2: llat / lx2'
+  error stop 'reader_nc4:get_simsize2: llat / lx2'
 endif
 
 if(hf%exist('/llon')) then
@@ -40,25 +40,25 @@ elseif(hf%exist('/Nlat')) then
 elseif(hf%exist('/lx3')) then
   call hf%read('/lx3', llon)
 else
-  error stop 'reader_hdf5:get_simsize2: llon / lx3'
+  error stop 'reader_nc4:get_simsize2: llon / lx3'
 endif
 
 call hf%finalize()
 
-end procedure get_simsize2_hdf5
+end procedure get_simsize2_nc4
 
 
-module procedure get_simsize3_hdf5
+module procedure get_simsize3_nc4
 !! get x1, x2, x3 dimension sizes
 !! sizes include Ghost Cells
-type(hdf5_file) :: hf
+type(netcdf_file) :: hf
 logical :: exists
 
 if (debug) print '(A,/,A)', 'READ 3D (B-parallel, B-perp, B-perp) grid  size from file:', path
 
 inquire(file=path, exist=exists)
 if (.not.exists) then
-   write(stderr,'(A,/,A)') 'ERROR: reader_hdf5:get_simsize3: generate grid with script--grid not present: ', path
+   write(stderr,'(A,/,A)') 'ERROR: reader_nc4:get_simsize3: generate grid with script--grid not present: ', path
    error stop 77
 endif
 
@@ -90,11 +90,11 @@ endif
 
 call hf%finalize()
 
-end procedure get_simsize3_hdf5
+end procedure get_simsize3_nc4
 
 
-module procedure get_grid2_hdf5
-type(hdf5_file) :: hf
+module procedure get_grid2_nc4
+type(netcdf_file) :: hf
 
 if (debug) print '(A,/,A)', 'READ 2D (B-perp, B-perp) grid:', path
 
@@ -103,11 +103,11 @@ call hf%read('/mlon', mlonp)
 call hf%read('/mlat', mlatp)
 call hf%finalize()
 
-end procedure get_grid2_hdf5
+end procedure get_grid2_nc4
 
 
-module procedure get_Efield_hdf5
-type(hdf5_file) :: hf
+module procedure get_Efield_nc4
+type(netcdf_file) :: hf
 real(wp) :: flagtmp
 
 if (debug) print *, 'READ electric field data from file:  ',path
@@ -127,14 +127,14 @@ call hf%read('/Vmaxx3ist', Vmaxx3pslice)
 
 call hf%finalize()
 
-end procedure get_Efield_hdf5
+end procedure get_Efield_nc4
 
 
-module procedure get_precip_hdf5
-type(hdf5_file) :: hf
+module procedure get_precip_nc4
+type(netcdf_file) :: hf
 real(wp) :: flagtmp
 
-if (debug) print *, 'READ precipitation data from file:  ',path
+if (debug) print *, 'READ precipitation data from file: ',path
 
 call hf%initialize(path, status='old',action='r')
 
@@ -143,11 +143,11 @@ call hf%read('/E0p', E0p)
 
 call hf%finalize()
 
-end procedure get_precip_hdf5
+end procedure get_precip_nc4
 
 
-module procedure get_neutral2_hdf5
-type(hdf5_file) :: hf
+module procedure get_neutral2_nc4
+type(netcdf_file) :: hf
 real(wp) :: flagtmp
 
 if (debug) print *, 'READ neutral 2D data from file: ', path
@@ -163,14 +163,14 @@ call hf%read('/dTnall', dTn)
 
 call hf%finalize()
 
-end procedure get_neutral2_hdf5
+end procedure get_neutral2_nc4
 
 
-module procedure get_neutral3_hdf5
-type(hdf5_file) :: hf
+module procedure get_neutral3_nc4
+type(netcdf_file) :: hf
 real(wp) :: flagtmp
 
-if (debug) print *, 'READ neutral 3D data from file: ',path
+if (debug) print *, 'READ neutral 3D data from file:  ',path
 
 call hf%initialize(path, status='old',action='r')
 
@@ -184,7 +184,7 @@ call hf%read('/dTnall', dTnall)
 
 call hf%finalize()
 
-end procedure get_neutral3_hdf5
+end procedure get_neutral3_nc4
 
 
-end submodule reader_hdf5
+end submodule reader_nc4

@@ -1,11 +1,11 @@
-submodule (io:plasma) plasma_output_raw
+submodule (io:plasma_output) plasma_output_raw
 
 use timeutils, only : date_filename
 implicit none
 
 contains
 
-module procedure output_root_stream_mpi
+module procedure output_root_stream_mpi_raw
 
 !! COLLECT OUTPUT FROM WORKERS AND WRITE TO A FILE USING STREAM I/O.
 !! STATE VARS ARE EXPECTED INCLUDE GHOST CELLS
@@ -184,7 +184,7 @@ end if
 close(u)
 end block
 
-end procedure output_root_stream_mpi
+end procedure output_root_stream_mpi_raw
 
 
 end submodule plasma_output_raw
