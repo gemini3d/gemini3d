@@ -6,7 +6,7 @@ import shutil
 from pathlib import Path
 import functools
 
-from .utils import get_mpi_count
+from .mpi import get_mpi_count
 from .config import read_config, get_config_filename
 from .hpc import hpc_batch_detect, hpc_batch_create
 from .model_setup import model_setup

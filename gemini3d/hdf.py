@@ -3,7 +3,9 @@ import typing as T
 import numpy as np
 import logging
 import h5py
-from datetime import datetime, timedelta
+from datetime import datetime
+
+from .utils import datetime2ymd_hourdec, ymdhourdec2datetime
 
 LSP = 7
 
@@ -361,19 +363,3 @@ def loadglow_aurmap(fn: Path) -> T.Dict[str, T.Any]:
         dat = {"rayleighs": [("wavelength", "x2", "x3"), h["/aurora/iverout"][:]]}
 
     return dat
-
-
-def ymdhourdec2datetime(year: int, month: int, day: int, hourdec: float) -> datetime:
-    """
-    convert year,month,day + decimal hour HH.hhh to time
-    """
-
-    return datetime(year, month, day, int(hourdec), int((hourdec * 60) % 60)) + timedelta(seconds=(hourdec * 3600) % 60)
-
-
-def datetime2ymd_hourdec(dt: datetime) -> str:
-    """
-    convert datetime to ymd_hourdec string for filename stem
-    """
-
-    return dt.strftime("%Y%m%d") + f"_{dt.hour*3600 + dt.minute*60 + dt.second + dt.microsecond/1e6:12.6f}"

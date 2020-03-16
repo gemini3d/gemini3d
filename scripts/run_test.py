@@ -14,7 +14,7 @@ import logging
 from web import url_retrieve, extract_zip
 
 try:
-    from gemini3d.utils import get_mpi_count
+    from gemini3d import get_mpi_count
 except ImportError as e:
     logging.warning(f"could not use Gemini3D get_mpi_count(), falling back to single CPU.   {e}")
 
