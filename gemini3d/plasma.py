@@ -4,10 +4,8 @@ plasma functions
 import typing as T
 import numpy as np
 from pathlib import Path
-from math import isclose
 import os
 import shutil
-import tempfile
 import subprocess
 from scipy.integrate import cumtrapz
 from scipy.interpolate import interp1d, interp2d, interpn
@@ -131,7 +129,7 @@ def model_resample(
         # on each axis
         #
         # Detect old non-padded grid and workaround
-        if isclose(xgin["x3"][0], xg["x3"][2], abs_tol=1):
+        if np.isclose(xgin["x3"][0], xg["x3"][2], atol=1):
             # old sim, no external ghost cells.
             # Instead of discarding good cells,keep them and say there are
             # new ghost cells outside the grid
@@ -456,35 +454,48 @@ def msis_setup(p: DictArray, xg: DictArray) -> np.ndarray:
     iyd = yearshort * 1000 + doy
     # %% KLUDGE THE BELOW-ZERO ALTITUDES SO THAT THEY DON'T GIVE INF
     alt[alt <= 0] = 1
-    # %% FIND A UNIQUE IDENTIFIER FOR THE INPUT FILE
+    # %% CREATE INPUT FILE FOR FORTRAN PROGRAM
     # don't use NamedTemporaryFile because PermissionError on Windows
-    file_in = tempfile.gettempdir() + "/msis_setup_input.dat"
-    # %% CREATE AND INPUT FILE FOR FORTRAN PROGRAM
-    with open(file_in, "w") as f:
-        np.array(iyd).astype(np.int32).tofile(f)
-        np.array(UTsec0).astype(np.int32).tofile(f)
-        np.asarray([p["f107a"], p["f107"], p["Ap"], p["Ap"]]).astype(np.float32).tofile(f)
-        np.array(lz).astype(np.int32).tofile(f)
-        np.array(glat).astype(np.float32).tofile(f)
-        np.array(glon).astype(np.float32).tofile(f)
-        np.array(alt).astype(np.float32).tofile(f)
+    # file_in = tempfile.gettempdir() + "/msis_setup_input.dat"
 
-    # %% CALL MSIS AND READ IN RESULTING BINARY FILE
-    file_out = tempfile.gettempdir() + "/msis_setup_output.dat"
+    # with open(file_in, "w") as f:
+    #     np.array(iyd).astype(np.int32).tofile(f)
+    #     np.array(UTsec0).astype(np.int32).tofile(f)
+    #     np.asarray([p["f107a"], p["f107"], p["Ap"], p["Ap"]]).astype(np.float32).tofile(f)
+    #     np.array(lz).astype(np.int32).tofile(f)
+    #     np.array(glat).astype(np.float32).tofile(f)
+    #     np.array(glon).astype(np.float32).tofile(f)
+    #     np.array(alt).astype(np.float32).tofile(f)
 
-    cmd = [exe, file_in, file_out, str(lz)]
+    invals = (
+        f"{iyd}\n{int(UTsec0)}\n{p['f107a']} {p['f107']} {p['Ap']} {p['Ap']}\n{lz}\n"
+        + " ".join(map(str, glat.ravel(order="C")))
+        + "\n"
+        + " ".join(map(str, glon.ravel(order="C")))
+        + "\n"
+        + " ".join(map(str, alt.ravel(order="C")))
+    )
+    # %% CALL MSIS
+    # the "-" means to use stdin, stdout
+    cmd = [exe, "-", "-", str(lz)]
     print(" ".join(cmd))
+    ret = subprocess.check_output(cmd, input=invals, universal_newlines=True)
 
-    subprocess.check_call(cmd)
     Nread = lz * 11
-    fout_size = Path(file_out).stat().st_size
-    if fout_size != Nread * 4:
-        raise RuntimeError(f"expected {file_out} size {Nread*4} but got {fout_size}")
 
-    with open(file_out, "r") as f:
-        msisdat = np.fromfile(f, np.float32, Nread).reshape((11, lz), order="F")
+    # old code, from before we used stdout
+    # fout_size = Path(file_out).stat().st_size
+    # if fout_size != Nread * 4:
+    #     raise RuntimeError(f"expected {file_out} size {Nread*4} but got {fout_size}")
+
+    msisdat = np.fromstring(ret, np.float32, Nread, sep=" ").reshape((11, lz), order="F")
 
     # %% ORGANIZE
+    # altitude is a useful sanity check as it's very regular and obvious.
+    alt_km = msisdat[0, :].reshape((lx1, lx2, lx3))
+    if not np.allclose(alt_km, alt, atol=0.02):  # atol due to precision of stdout ~0.01 km
+        raise ValueError("was msis_driver output parsed correctly?")
+
     nO = msisdat[2, :].reshape((lx1, lx2, lx3))
     nN2 = msisdat[3, :].reshape((lx1, lx2, lx3))
     nO2 = msisdat[4, :].reshape((lx1, lx2, lx3))

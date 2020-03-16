@@ -1,0 +1,42 @@
+&base
+ymd = 2013,2,19               ! year, month, day
+UTsec0 = 18000.0              ! UTsec0:  start time in UT seconds
+tdur = 86400.0                ! tdur:  duration of simulation in seconds
+dtout = 1800.0                ! dtout: how often to do output
+activ = 109.5, 109.9, 5       ! activ:  f107a,f107,Ap
+tcfl = 0.9                    ! tcfl:  target cfl number
+Teinf = 1500.0                ! Teinf:  exospheric electron temperature
+/
+
+&flags
+potsolve = 0      ! solve electrodynamics:   0 - no; 1 - electrostatic; 2 - inductive
+flagperiodic = 0
+flagoutput = 1
+flagcap = 0
+flagdneu = 0
+flagprecfile = 0
+flagE0file = 0
+flagglow = 0
+/
+
+&files
+file_format = 'nc'
+indat_size = 'tests/data/test2d_eq/inputs/simsize.nc'
+indat_grid = 'tests/data/test2d_eq/inputs/simgrid.nc'
+indat_file = 'tests/data/test2d_eq/inputs/initial_conditions.nc'
+/
+
+&setup
+glat = 67.11
+glon = 212.95
+xdist = 1200e3              ! eastward distance (meters)
+ydist = 600e3               ! northward distance (meters)
+alt_min = 80e3              ! minimum altitude (meters)
+alt_max = 1000e3            ! maximum altitude (meters)
+alt_scale = 13.75e3, 20e3, 200e3, 200e3  ! altitude grid scales (meters)
+lxp = 15                    ! number of x-cells
+lyp = 1                     ! number of y-cells
+Bincl = 90                  ! geomagnetic inclination
+nmf = 5e11
+nme = 2e11
+/
