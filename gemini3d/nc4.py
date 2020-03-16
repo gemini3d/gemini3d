@@ -14,23 +14,24 @@ LSP = 7
 def get_simsize(path: Path) -> T.Tuple[int, ...]:
     """
     get simulation size
-
-    TODO: needs to be validated
     """
+
     path = Path(path).expanduser().resolve()
 
     with Dataset(path, "r") as f:
-        if "lxs" in f:
+        if "lxs" in f.variables:
             lxs = f["lxs"][:]
-        elif "lx1" in f:
+        elif "lx" in f.variables:
+            lxs = f["lx"][:]
+        elif "lx1" in f.variables:
             if f["lx1"].ndim > 0:
                 lxs = (f["lx1"][:].squeeze()[()], f["lx2"][:].squeeze()[()], f["lx3"][:].squeeze()[()])
             else:
                 lxs = (f["lx1"][()], f["lx2"][()], f["lx3"][()])
         else:
-            raise KeyError(f"could not find '/lxs' or '/lx1' in {path.as_posix()}")
+            raise KeyError(f"could not find 'lxs', 'lx' or 'lx1' in {path.as_posix()}")
 
-    return lxs
+    return lxs.data
 
 
 def readgrid(fn: Path) -> T.Dict[str, np.ndarray]:
@@ -116,7 +117,7 @@ def write_state(time: datetime, ns: np.ndarray, vs: np.ndarray, Ts: np.ndarray, 
     I.E. THEY SHOULD NOT INCLUDE GHOST CELLS
     """
 
-    fn = out_dir / "initial_conditions.h5"
+    fn = out_dir / "inputs/initial_conditions.nc"
     print("write_state:", fn)
 
     with Dataset(fn, "w") as f:
