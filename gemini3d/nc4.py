@@ -8,6 +8,8 @@ import typing as T
 import numpy as np
 from datetime import datetime
 
+from .utils import datetime2ymd_hourdec
+
 LSP = 7
 
 
@@ -54,7 +56,7 @@ def write_grid(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]):
     fn = p["out_dir"] / "inputs/simsize.nc"
     print("write_grid:", fn)
     with Dataset(fn, "w") as f:
-        f.createDimension('length', len(xg["lx"]))
+        f.createDimension("length", len(xg["lx"]))
         g = f.createVariable("lx", np.int32, ("length",))
         g[:] = xg["lx"]
 
@@ -63,22 +65,22 @@ def write_grid(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]):
     Ng = 4  # number of ghost cells
 
     with Dataset(fn, "w") as f:
-        f.createDimension('x1ghost', xg['lx'][0] + Ng)
-        f.createDimension("x1d", xg['lx'][0] + Ng - 1)
-        f.createDimension('x1i', xg['lx'][0] + 1)
-        f.createDimension('x1', xg['lx'][0])
+        f.createDimension("x1ghost", xg["lx"][0] + Ng)
+        f.createDimension("x1d", xg["lx"][0] + Ng - 1)
+        f.createDimension("x1i", xg["lx"][0] + 1)
+        f.createDimension("x1", xg["lx"][0])
 
-        f.createDimension('x2ghost', xg['lx'][1] + Ng)
-        f.createDimension("x2d", xg['lx'][1] + Ng - 1)
-        f.createDimension('x2i', xg['lx'][1] + 1)
-        f.createDimension('x2', xg['lx'][1])
+        f.createDimension("x2ghost", xg["lx"][1] + Ng)
+        f.createDimension("x2d", xg["lx"][1] + Ng - 1)
+        f.createDimension("x2i", xg["lx"][1] + 1)
+        f.createDimension("x2", xg["lx"][1])
 
-        f.createDimension('x3ghost', xg['lx'][2] + Ng)
-        f.createDimension("x3d", xg['lx'][2] + Ng - 1)
-        f.createDimension('x3i', xg['lx'][2] + 1)
-        f.createDimension('x3', xg['lx'][2])
+        f.createDimension("x3ghost", xg["lx"][2] + Ng)
+        f.createDimension("x3d", xg["lx"][2] + Ng - 1)
+        f.createDimension("x3i", xg["lx"][2] + 1)
+        f.createDimension("x3", xg["lx"][2])
 
-        f.createDimension('ecef', 3)
+        f.createDimension("ecef", 3)
 
         for i in (1, 2, 3):
             _write_var(f, f"x{i}", (f"x{i}ghost",), xg[f"x{i}"])
@@ -128,10 +130,10 @@ def write_state(time: datetime, ns: np.ndarray, vs: np.ndarray, Ts: np.ndarray, 
         g = f.createVariable("UTsec", np.float32)
         g[:] = time.hour * 3600 + time.minute * 60 + time.second + time.microsecond / 1e6
 
-        f.createDimension('species', 7)
-        f.createDimension('x1', ns.shape[1])
-        f.createDimension('x2', ns.shape[2])
-        f.createDimension('x3', ns.shape[3])
+        f.createDimension("species", 7)
+        f.createDimension("x1", ns.shape[1])
+        f.createDimension("x2", ns.shape[2])
+        f.createDimension("x3", ns.shape[3])
 
         _write_var(f, "ns", ("species", "x1", "x2", "x3"), ns)
         _write_var(f, "vsx1", ("species", "x1", "x2", "x3"), vs)
@@ -141,12 +143,79 @@ def write_state(time: datetime, ns: np.ndarray, vs: np.ndarray, Ts: np.ndarray, 
 def write_Efield(p: T.Dict[str, T.Any], E: T.Dict[str, np.ndarray]):
     """
     write Efield to disk
+
+    TODO: verify dimensions vs. data vs. Fortran order
     """
-    raise NotImplementedError("TODO: NetCDF")
+
+    outdir = E["Efield_outdir"]
+    print("write E-field data to", outdir)
+
+    with Dataset(outdir / "simsize.nc", "w") as f:
+        for k in ("llon", "llat"):
+            g = f.createVariable(k, np.int32)
+            g[:] = E[k]
+
+    with Dataset(outdir / "simgrid.nc", "w") as f:
+        f.createDimension("lon", E["mlon"].size)
+        f.createDimension("lat", E["mlat"].size)
+        _write_var(f, "mlon", ("lon",), E["mlon"])
+        _write_var(f, "mlat", ("lat",), E["mlat"])
+
+    for i, t in enumerate(E["time"]):
+        fn = outdir / (datetime2ymd_hourdec(t) + ".nc")
+
+        # FOR EACH FRAME WRITE A BC TYPE AND THEN OUTPUT BACKGROUND AND BCs
+        with Dataset(fn, "w") as f:
+            f.createDimension("lon", E["mlon"].size)
+            f.createDimension("lat", E["mlat"].size)
+
+            g = f.createVariable("flagdirich", np.int32)
+            g[:] = p["flagdirich"]
+
+            f.createDimension("ymd", 3)
+            g = f.createVariable("ymd", np.int32, "ymd")
+            g[:] = [t.year, t.month, t.day]
+
+            g = f.createVariable("UTsec", np.float32)
+            g[:] = t.hour * 3600 + t.minute * 60 + t.second + t.microsecond / 1e6
+
+            for k in ("Exit", "Eyit", "Vminx1it", "Vmaxx1it"):
+                _write_var(f, k, ("lon", "lat"), E[k][i, :, :])
+
+            for k in ("Vminx2ist", "Vmaxx2ist"):
+                _write_var(f, k, ("lat",), E[k][i, :])
+
+            for k in ("Vminx3ist", "Vmaxx3ist"):
+                _write_var(f, k, ("lon",), E[k][i, :])
 
 
-def write_precip(E: T.Dict[str, np.ndarray]):
+def write_precip(precip: T.Dict[str, np.ndarray]):
     """
     write precipitation to disk
+
+    TODO: verify dimensions vs. data vs. Fortran order
     """
-    raise NotImplementedError("TODO: NetCDF")
+
+    outdir = precip["precip_outdir"]
+    print("write precipitation data to", outdir)
+
+    with Dataset(outdir / "simsize.nc", "w") as f:
+        for k in ("llon", "llat"):
+            g = f.createVariable(k, np.int32)
+            g[:] = precip[k]
+
+    with Dataset(outdir / "simgrid.nc", "w") as f:
+        f.createDimension("lon", precip["mlon"].size)
+        f.createDimension("lat", precip["mlat"].size)
+        _write_var(f, "mlon", ("lon",), precip["mlon"])
+        _write_var(f, "mlat", ("lat",), precip["mlat"])
+
+    for i, t in enumerate(precip["time"]):
+        fn = outdir / (datetime2ymd_hourdec(t) + ".nc")
+
+        with Dataset(fn, "w") as f:
+            f.createDimension("lon", precip["mlon"].size)
+            f.createDimension("lat", precip["mlat"].size)
+
+            for k in ("Q", "E0"):
+                _write_var(f, f"/{k}p", ("lon", "lat"), precip[k][i, :, :])

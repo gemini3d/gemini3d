@@ -2,7 +2,7 @@ import subprocess
 import os
 import shutil
 from pathlib import Path
-import math
+from datetime import datetime, timedelta
 import typing as T
 
 try:
@@ -11,14 +11,12 @@ except ImportError:
     psutil = None
     # pip install psutil will improve CPU utilization.
 
-from .config import read_config
-from .base import get_simsize
 
 git = shutil.which("git")
 
 Pathlike = T.Union[str, Path]
 
-__all__ = ["gitrev", "get_cpu_count", "get_mpi_count"]
+__all__ = ["gitrev", "get_cpu_count", "ymdhourdec2datetime", "datetime2ymd_hourdec"]
 
 
 def gitrev() -> str:
@@ -52,48 +50,17 @@ def get_cpu_count() -> int:
     return max_cpu // extradiv
 
 
-def get_mpi_count(path: Path) -> int:
-    """ get appropriate MPI image count for problem shape
-
-    Parameters
-    ----------
-    path: pathlib.Path
-        simsize file
-
-    Returns
-    -------
-    count: int
-        detect number of physical CPU
+def ymdhourdec2datetime(year: int, month: int, day: int, hourdec: float) -> datetime:
     """
-    path = Path(path).expanduser()
+    convert year,month,day + decimal hour HH.hhh to time
+    """
 
-    max_cpu = get_cpu_count()
+    return datetime(year, month, day, int(hourdec), int((hourdec * 60) % 60)) + timedelta(seconds=(hourdec * 3600) % 60)
 
-    # %% config.nml file or directory or simsize.h5?
-    if path.is_dir():
-        size = get_simsize(path)
-    elif path.is_file():
-        if path.suffix in (".h5", ".nc", ".dat"):
-            size = get_simsize(path)
-        elif path.suffix in (".ini", ".nml"):
-            params = read_config(path)
-            # OK to use indat_size because we're going to run a sim on this machine
-            size = get_simsize(params["indat_size"])
-    else:
-        raise FileNotFoundError(f"{path} is not a file or directory")
 
-    mpi_count = 1
-    if size[2] == 1:
-        # 2D sim
-        for i in range(max_cpu, 2, -1):
-            mpi_count = max(math.gcd(size[1], i), mpi_count)
-            if i < mpi_count:
-                break
-    else:
-        # 3D sim
-        for i in range(max_cpu, 2, -1):
-            mpi_count = max(math.gcd(size[2], i), mpi_count)
-            if i < mpi_count:
-                break
+def datetime2ymd_hourdec(dt: datetime) -> str:
+    """
+    convert datetime to ymd_hourdec string for filename stem
+    """
 
-    return mpi_count
+    return dt.strftime("%Y%m%d") + f"_{dt.hour*3600 + dt.minute*60 + dt.second + dt.microsecond/1e6:12.6f}"

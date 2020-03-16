@@ -1,7 +1,6 @@
 import functools
 import typing as T
 from pathlib import Path
-import numpy as np
 from datetime import datetime, timedelta
 
 NaN = float("NaN")
@@ -47,19 +46,15 @@ def get_config_filename(path: Path) -> Path:
 
     path = Path(path).expanduser().resolve()
 
+    if path.is_file():
+        return path
+
     if path.is_dir():
         for p in (path, path / "inputs"):
             for suff in (".nml", ".ini"):
-                file = p / ("config" + suff)
-                if file.is_file():
-                    return file
-    elif path.is_file():
-        name = path.name
-        path = path.parent
-        for p in (path, path / "inputs"):
-            file = p / name
-            if file.is_file():
-                return file
+                for file in p.glob("config*" + suff):
+                    if file.is_file():
+                        return file
 
     raise FileNotFoundError(f"could not find config file in {path}")
 
@@ -179,7 +174,7 @@ def parse_group(raw: T.Dict[str, T.Any], group: T.Sequence[str]) -> T.Dict[str, 
             P[k] = Path(raw[k])
 
     if "setup" in group:
-        P["alt_scale"] = np.array(list(map(float, raw["alt_scale"])))
+        P["alt_scale"] = list(map(float, raw["alt_scale"]))
 
         for k in ("lxp", "lyp"):
             P[k] = int(raw[k])
