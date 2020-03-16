@@ -45,3 +45,9 @@ target_link_libraries(io PRIVATE calculus const reader grid mpimod timeutils
 # --- reader
 add_library(reader OBJECT reader.f90 reader_hdf5.f90 reader_ncdf.f90 reader_raw.f90)
 target_link_libraries(reader PRIVATE const pathlib h5fortran::h5fortran nc4fortran::nc4fortran)
+
+if(netcdf)
+add_executable(test_simsize_nc4 test_simsize_nc4.f90)
+target_link_libraries(test_simsize_nc4 nc4fortran::nc4fortran)
+# add_test(NAME unit:simsize_nc4 COMMAND test_simsize_nc4)
+endif(netcdf)

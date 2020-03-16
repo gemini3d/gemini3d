@@ -179,7 +179,7 @@ if (myid==0) then
   print '(A51,F10.3)', 'start time is:  ',UTsec0
   print '(A51,F10.3)', 'duration is:  ',tdur
   print '(A51,F10.3)', 'output every:  ',dtout
-  print '(A,/,A,/,A,/,A)', 'using input data files:', indatsize, indatgrid, indatfile
+  print '(A,/,A,/,A,/,A)', 'gemini.f90: using input data files:', indatsize, indatgrid, indatfile
 
   if(flagdneu==1) then
     call assert_directory_exists(sourcedir)

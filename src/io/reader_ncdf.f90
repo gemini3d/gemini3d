@@ -62,26 +62,28 @@ if (.not.exists) then
    error stop 77
 endif
 
+print *,'get_simsize3_nc4: opening ', path
+
 call hf%initialize(path, status='old',action='r')
 
-if (hf%exist("/lx1")) then
-  call hf%read('/lx1', lx1)
-  call hf%read('/lx2', lx2all)
+if (hf%exist("lx1")) then
+  call hf%read('lx1', lx1)
+  call hf%read('lx2', lx2all)
   if (present(lx3all)) then
-    call hf%read('/lx3', lx3all)
+    call hf%read('lx3', lx3all)
   endif
-elseif (hf%exist("/lxs")) then
+elseif (hf%exist("lxs")) then
   block
     integer :: lx(3)
-    call hf%read("/lxs", lx)
+    call hf%read("lxs", lx)
     lx1 = lx(1)
     lx2all = lx(2)
     if (present(lx3all)) lx3all = lx(3)
   end block
-elseif (hf%exist("/lx")) then
+elseif (hf%exist("lx")) then
   block
     integer :: lx(3)
-    call hf%read("/lx", lx)
+    call hf%read("lx", lx)
     lx1 = lx(1)
     lx2all = lx(2)
     if (present(lx3all)) lx3all = lx(3)
