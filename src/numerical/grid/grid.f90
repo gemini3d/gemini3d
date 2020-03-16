@@ -17,6 +17,8 @@ bcast_send3D_x2i,bcast_recv3D_x2i, bcast_send1D_2, bcast_recv1D_2, bcast_send1D_
 
 implicit none
 private
+public :: lx1,lx2,lx3, lx2all,lx3all, gridflag, flagswap, clear_unitvecs, g1,g2,g3, &
+  read_grid, clear_grid, grid_size
 
 integer, protected :: lx1,lx2,lx3,lx2all,lx3all
 !! this is a useful shorthand for most program units using this module,
@@ -37,9 +39,6 @@ end subroutine read_grid
 
 end interface
 
-
-public :: lx1,lx2,lx3, lx2all,lx3all, gridflag, flagswap, clear_unitvecs, g1,g2,g3, &
-  read_grid, clear_grid, grid_size
 
 contains
 
