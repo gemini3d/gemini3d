@@ -323,7 +323,7 @@ if(NOT (OpenBLAS IN_LIST LAPACK_FIND_COMPONENTS
   endif()
 endif()
 
-find_package(PkgConfig)
+find_package(PkgConfig QUIET)
 
 # ==== generic MKL variables ====
 

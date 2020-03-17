@@ -115,7 +115,7 @@ else()
 endif()
 endif()
 
-find_package(PkgConfig)
+find_package(PkgConfig QUIET)
 
 # some systems (Ubuntu 16.04) need BLACS explicitly, when it isn't statically compiled into libscalapack
 # other systems (homebrew, Ubuntu 18.04) link BLACS into libscalapack, and don't need BLACS as a separately linked library.
