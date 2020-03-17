@@ -170,7 +170,7 @@ else()
 endif()
 endif()
 
-find_package(PkgConfig)
+find_package(PkgConfig QUIET)
 
 if(MKL IN_LIST BLACS_FIND_COMPONENTS)
 
