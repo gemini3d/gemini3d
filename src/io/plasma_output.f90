@@ -74,17 +74,17 @@ v3avg=v3avg/ns(1:lx1,1:lx2,1:lx3,lsp)
 
 
 !SEND MY GRID DATA TO THE ROOT PROCESS
-call gather_send(v2avg,tagv2)
-call gather_send(v3avg,tagv3)
-call gather_send(ns,tagns)
-call gather_send(vs1,tagvs1)
-call gather_send(Ts,tagTs)
+call gather_send(v2avg,tag%v2)
+call gather_send(v3avg,tag%v3)
+call gather_send(ns,tag%ns)
+call gather_send(vs1,tag%vs1)
+call gather_send(Ts,tag%Ts)
 
 
 !------- SEND ELECTRODYNAMIC PARAMETERS TO ROOT
-call gather_send(J1,tagJ1)
-call gather_send(J2,tagJ2)
-call gather_send(J3,tagJ3)
+call gather_send(J1,tag%J1)
+call gather_send(J2,tag%J2)
+call gather_send(J3,tag%J3)
 
 end subroutine output_workers_mpi
 

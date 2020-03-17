@@ -97,7 +97,7 @@ if (debug) print *, 'Root has computed BCs in time:  ',tfin-tstart
 !R--------
 ierr=0
 do iid=1,lid-1    !communicate intent for solve to workers so they know whether or not to call mumps fn.
-  call mpi_send(flagdirich,1,MPI_INTEGER,iid,tagflagdirich,MPI_COMM_WORLD,ierr)
+  call mpi_send(flagdirich,1,MPI_INTEGER,iid,tag%flagdirich,MPI_COMM_WORLD,ierr)
 end do
 if (ierr/=0) error stop 'mpi_send failed to send solve intent'
 if (debug) print *, 'Root has communicated type of solve to workers:  ',flagdirich
@@ -106,14 +106,14 @@ if (debug) print *, 'Root has communicated type of solve to workers:  ',flagdiri
 
 !Need to broadcast background fields from root
 !Need to also broadcast x1 boundary conditions for source term calculations.
-call bcast_send(E01all,tagE01,E01)
-call bcast_send(E02all,tagE02,E02)
-call bcast_send(E03all,tagE03,E03)
+call bcast_send(E01all,tag%E01,E01)
+call bcast_send(E02all,tag%E02,E02)
+call bcast_send(E03all,tag%E03,E03)
 
 !These are pointer targets so don't assume contiguous in memory - pack them into a buffer to be safe
 Vmaxx1buf=Vmaxx1; Vminx1buf=Vminx1;
-call bcast_send(Vminx1buf,tagVminx1,Vminx1slab)
-call bcast_send(Vmaxx1buf,tagVmaxx1,Vmaxx1slab)
+call bcast_send(Vminx1buf,tag%Vminx1,Vminx1slab)
+call bcast_send(Vmaxx1buf,tag%Vmaxx1,Vmaxx1slab)
 
 
 !-------
@@ -130,9 +130,9 @@ J1halo(1:lx1,1:lx2,1:lx3)=J1
 J2halo(1:lx1,1:lx2,1:lx3)=J2
 J3halo(1:lx1,1:lx2,1:lx3)=J3
 
-call halo_pot(J1halo,tagJ1,x%flagper,.false.)
-call halo_pot(J2halo,tagJ2,x%flagper,.false.)
-call halo_pot(J3halo,tagJ3,x%flagper,.false.)
+call halo_pot(J1halo,tag%J1,x%flagper,.false.)
+call halo_pot(J2halo,tag%J2,x%flagper,.false.)
+call halo_pot(J3halo,tag%J3,x%flagper,.false.)
 
 divtmp=div3D(J1halo(0:lx1+1,0:lx2+1,0:lx3+1),J2halo(0:lx1+1,0:lx2+1,0:lx3+1), &
              J3halo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
@@ -159,9 +159,9 @@ J1halo(1:lx1,1:lx2,1:lx3)=J1
 J2halo(1:lx1,1:lx2,1:lx3)=J2
 J3halo(1:lx1,1:lx2,1:lx3)=J3
 
-call halo_pot(J1halo,tagJ1,x%flagper,.false.)
-call halo_pot(J2halo,tagJ2,x%flagper,.false.)
-call halo_pot(J3halo,tagJ3,x%flagper,.false.)
+call halo_pot(J1halo,tag%J1,x%flagper,.false.)
+call halo_pot(J2halo,tag%J2,x%flagper,.false.)
+call halo_pot(J3halo,tag%J3,x%flagper,.false.)
 
 divtmp=div3D(J1halo(0:lx1+1,0:lx2+1,0:lx3+1),J2halo(0:lx1+1,0:lx2+1,0:lx3+1), &
              J3halo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
@@ -217,13 +217,13 @@ if (lx2/=1) then    !either field-resolved 3D or integrated 2D solve for 3D doma
 
 
       !RADD--- ROOT NEEDS TO PICK UP *INTEGRATED* SOURCE TERMS AND COEFFICIENTS FROM WORKERS
-      call gather_recv(srctermint,tagsrc,srctermintall)
-      call gather_recv(incapint,tagincapint,incapintall)
-      call gather_recv(SigPint2,tagSigPint2,SigPint2all)
-      call gather_recv(SigPint3,tagSigPint3,SigPint3all)
-      call gather_recv(SigHint,tagSigHint,SigHintall)
-      call gather_recv(v2slab,tagv2electro,v2slaball)
-      call gather_recv(v3slab,tagv3electro,v3slaball)
+      call gather_recv(srctermint,tag%src,srctermintall)
+      call gather_recv(incapint,tag%incapint,incapintall)
+      call gather_recv(SigPint2,tag%SigPint2,SigPint2all)
+      call gather_recv(SigPint3,tag%SigPint3,SigPint3all)
+      call gather_recv(SigHint,tag%SigHint,SigHintall)
+      call gather_recv(v2slab,tag%v2electro,v2slaball)
+      call gather_recv(v3slab,tag%v3electro,v3slaball)
 
 
 !     if (t>480) then
@@ -304,10 +304,10 @@ if (lx2/=1) then    !either field-resolved 3D or integrated 2D solve for 3D doma
 
 
     !RADD--- ROOT NEEDS TO PICK UP FIELD-RESOLVED SOURCE TERM AND COEFFICIENTS FROM WORKERS
-    call gather_recv(sigPscaled,tagsigP,sigPscaledall)
-    call gather_recv(sigHscaled,tagsigH,sigHscaledall)
-    call gather_recv(sig0scaled,tagsig0,sig0scaledall)
-    call gather_recv(srcterm,tagsrc,srctermall)
+    call gather_recv(sigPscaled,tag%sigP,sigPscaledall)
+    call gather_recv(sigHscaled,tag%sigH,sigHscaledall)
+    call gather_recv(sig0scaled,tag%sig0,sig0scaledall)
+    call gather_recv(srcterm,tag%src,srctermall)
 
 
     !R------
@@ -316,14 +316,14 @@ if (lx2/=1) then    !either field-resolved 3D or integrated 2D solve for 3D doma
    !                   x,flagdirich,perflag,it)
     if( maxval(abs(Vminx1))>1e-12_wp .or. maxval(abs(Vmaxx1))>1e-12_wp ) then
       do iid=1,lid-1
-        call mpi_send(1,1,MPI_INTEGER,iid,tagflagdirich,MPI_COMM_WORLD,ierr)
+        call mpi_send(1,1,MPI_INTEGER,iid,tag%flagdirich,MPI_COMM_WORLD,ierr)
       end do
       Phiall=potential3D_fieldresolved_decimate(srctermall,sig0scaledall,sigPscaledall,sigHscaledall, &
                                  Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3,Vmaxx3, &
                                  x,flagdirich,perflag,it)
     else
       do iid=1,lid-1
-        call mpi_send(0,1,MPI_INTEGER,iid,tagflagdirich,MPI_COMM_WORLD,ierr)
+        call mpi_send(0,1,MPI_INTEGER,iid,tag%flagdirich,MPI_COMM_WORLD,ierr)
       end do
         if (debug) print*, 'Boundary conditions too small to require solve, setting everything to zero...'
       Phiall=0e0_wp
@@ -349,9 +349,9 @@ else   !lx1=1 so do a field-resolved 2D solve over x1,x3
   !-------
 
   !RADD--- NEED TO GET THE RESOLVED SOURCE TERMS AND COEFFICIENTS FROM WORKERS
-  call gather_recv(sigPscaled,tagsigP,sigPscaledall)
-  call gather_recv(sig0scaled,tagsig0,sig0scaledall)
-  call gather_recv(srcterm,tagsrc,srctermall)
+  call gather_recv(sigPscaled,tag%sigP,sigPscaledall)
+  call gather_recv(sig0scaled,tag%sig0,sig0scaledall)
+  call gather_recv(srcterm,tag%src,srctermall)
 
 
   !! EXECUTE THE SOLVE WITH MUMPS AND SCALED TERMS
@@ -365,7 +365,7 @@ if (debug) print *, 'MUMPS time:  ',tfin-tstart
 
 
 !RADD--- ROOT NEEDS TO PUSH THE POTENTIAL BACK TO ALL WORKERS FOR FURTHER PROCESSING (BELOW)
-call bcast_send(Phiall,tagPhi,Phi)
+call bcast_send(Phiall,tag%Phi,Phi)
 
 
 !-------
@@ -386,13 +386,13 @@ E3prev=E3
 Phi=-1d0*Phi
 !COMPUTE THE 2 COMPONENT OF THE ELECTRIC FIELD
 J1halo(1:lx1,1:lx2,1:lx3)=Phi
-call halo_pot(J1halo,tagJ1,x%flagper,.true.)
+call halo_pot(J1halo,tag%J1,x%flagper,.true.)
 divtmp=grad3D2(J1halo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
 E2=divtmp(1:lx1,1:lx2,1:lx3)
 
 !COMPUTE THE 3 COMPONENT OF THE ELECTRIC FIELD
 J1halo(1:lx1,1:lx2,1:lx3)=Phi
-call halo_pot(J1halo,tagJ1,x%flagper,.false.)
+call halo_pot(J1halo,tag%J1,x%flagper,.false.)
 divtmp=grad3D3(J1halo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
 E3=divtmp(1:lx1,1:lx2,1:lx3)
 Phi=-1d0*Phi   !put things back for later use
@@ -430,13 +430,13 @@ if (flagcap/=0) then
 
   !differentiate E2 in x2 (needs haloing)
   J1halo(1:lx1,1:lx2,1:lx3)=E2
-  call halo_pot(J1halo,tagJ1,x%flagper,.false.)
+  call halo_pot(J1halo,tag%J1,x%flagper,.false.)
   divtmp=grad3D2(J1halo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
   grad2E=divtmp(1:lx1,1:lx2,1:lx3)
 
   !Now differentiate E2 in the x3 direction
   J1halo(1:lx1,1:lx2,1:lx3)=E2
-  call halo_pot(J1halo,tagJ1,x%flagper,.false.)
+  call halo_pot(J1halo,tag%J1,x%flagper,.false.)
   divtmp=grad3D3(J1halo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
   grad3E=divtmp(1:lx1,1:lx2,1:lx3)
 
@@ -445,13 +445,13 @@ if (flagcap/=0) then
 
   !differentiate E3 in x2
   J1halo(1:lx1,1:lx2,1:lx3)=E3
-  call halo_pot(J1halo,tagJ1,x%flagper,.false.)
+  call halo_pot(J1halo,tag%J1,x%flagper,.false.)
   divtmp=grad3D2(J1halo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
   grad2E=divtmp(1:lx1,1:lx2,1:lx3)
 
   !differentiate E3 in x3
   J1halo(1:lx1,1:lx2,1:lx3)=E3
-  call halo_pot(J1halo,tagJ1,x%flagper,.false.)
+  call halo_pot(J1halo,tag%J1,x%flagper,.false.)
   divtmp=grad3D3(J1halo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
   grad3E=divtmp(1:lx1,1:lx2,1:lx3)
 
@@ -506,9 +506,9 @@ if (lx2/=1 .and. potsolve ==1) then    !we did a field-integrated solve above
   J2halo(1:lx1,1:lx2,1:lx3)=J2
   J3halo(1:lx1,1:lx2,1:lx3)=J3
 
-  call halo_pot(J1halo,tagJ1,x%flagper,.false.)
-  call halo_pot(J2halo,tagJ2,x%flagper,.false.)
-  call halo_pot(J3halo,tagJ3,x%flagper,.false.)
+  call halo_pot(J1halo,tag%J1,x%flagper,.false.)
+  call halo_pot(J2halo,tag%J2,x%flagper,.false.)
+  call halo_pot(J3halo,tag%J3,x%flagper,.false.)
 
   divtmp=div3D(J1halo(0:lx1+1,0:lx2+1,0:lx3+1),J2halo(0:lx1+1,0:lx2+1,0:lx3+1), &
                J3halo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)

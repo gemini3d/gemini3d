@@ -39,17 +39,17 @@ v3avg=v3avg/ns(1:lx1,1:lx2,1:lx3,lsp)
 
 
 !GET THE SUBGRID DATA FORM THE WORKERS
-call gather_recv(v2avg,tagv2,v2avgall)
-call gather_recv(v3avg,tagv3,v3avgall)
-call gather_recv(ns,tagns,nsall)
-call gather_recv(vs1,tagvs1,vs1all)
-call gather_recv(Ts,tagTs,Tsall)
+call gather_recv(v2avg,tag%v2,v2avgall)
+call gather_recv(v3avg,tag%v3,v3avgall)
+call gather_recv(ns,tag%ns,nsall)
+call gather_recv(vs1,tag%vs1,vs1all)
+call gather_recv(Ts,tag%Ts,Tsall)
 
 
 !> RADD--- NEED TO ALSO GATHER FULL GRID ELECTRODYANMICS PARAMTERS FROM WORKERS
-call gather_recv(J1,tagJ1,J1all)
-call gather_recv(J2,tagJ2,J2all)
-call gather_recv(J3,tagJ3,J3all)
+call gather_recv(J1,tag%J1,J1all)
+call gather_recv(J2,tag%J2,J2all)
+call gather_recv(J3,tag%J3,J3all)
 
 
 !COMPUTE AVERAGE VALUES FOR ION PLASMA PARAMETERS

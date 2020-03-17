@@ -9,7 +9,7 @@ use mesh, only: curvmesh
 use interpolation, only : interp1,interp2
 use timeutils, only : dateinc, date_filename
 use mpimod, only: mpi_integer, mpi_comm_world, mpi_status_ignore, &
-lid, mpi_realprec, myid, tage0p, tagllat, tagllon, tagmlat, tagmlon, tagqp
+lid, mpi_realprec, myid, tag=>mpi_tag
 
 implicit none
 private
@@ -84,8 +84,8 @@ if(t+dt / 2._wp>=tnext) then    !need to load a new file
       !MESSAGE WORKERS WITH GRID INFO
       ierr=0
       do iid=1,lid-1
-        call mpi_send(llon,1,MPI_INTEGER,iid,tagllon,MPI_COMM_WORLD,ierr)
-        call mpi_send(llat,1,MPI_INTEGER,iid,tagllat,MPI_COMM_WORLD,ierr)
+        call mpi_send(llon,1,MPI_INTEGER,iid,tag%llon,MPI_COMM_WORLD,ierr)
+        call mpi_send(llat,1,MPI_INTEGER,iid,tag%llat,MPI_COMM_WORLD,ierr)
       end do
       allocate(mlonp(llon),mlatp(llat))    !bit of code duplication with worker code block below...
 
@@ -109,16 +109,16 @@ if(t+dt / 2._wp>=tnext) then    !need to load a new file
 
       !NOW SEND THE GRID DATA
       do iid=1,lid-1
-        call mpi_send(mlonp,llon,mpi_realprec,iid,tagmlon,MPI_COMM_WORLD,ierr)
-        call mpi_send(mlatp,llat,mpi_realprec,iid,tagmlat,MPI_COMM_WORLD,ierr)
+        call mpi_send(mlonp,llon,mpi_realprec,iid,tag%mlon,MPI_COMM_WORLD,ierr)
+        call mpi_send(mlatp,llat,mpi_realprec,iid,tag%mlat,MPI_COMM_WORLD,ierr)
       end do
     else    !workers
-      call mpi_recv(llon,1,MPI_INTEGER,0,tagllon,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-      call mpi_recv(llat,1,MPI_INTEGER,0,tagllat,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+      call mpi_recv(llon,1,MPI_INTEGER,0,tag%llon,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+      call mpi_recv(llat,1,MPI_INTEGER,0,tag%llat,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
       allocate(mlonp(llon),mlatp(llat))
 
-      call mpi_recv(mlonp,llon,mpi_realprec,0,tagmlon,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-      call mpi_recv(mlatp,llat,mpi_realprec,0,tagmlat,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+      call mpi_recv(mlonp,llon,mpi_realprec,0,tag%mlon,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+      call mpi_recv(mlatp,llat,mpi_realprec,0,tag%mlat,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
     end if
 
     !SPACE TO STORE INPUT DATA
@@ -163,12 +163,12 @@ if(t+dt / 2._wp>=tnext) then    !need to load a new file
 
     !send a full copy of the data to all of the workers
     do iid=1,lid-1
-      call mpi_send(Qp,llon*llat,mpi_realprec,iid,tagQp,MPI_COMM_WORLD,ierr)
-      call mpi_send(E0p,llon*llat,mpi_realprec,iid,tagE0p,MPI_COMM_WORLD,ierr)
+      call mpi_send(Qp,llon*llat,mpi_realprec,iid,tag%Qp,MPI_COMM_WORLD,ierr)
+      call mpi_send(E0p,llon*llat,mpi_realprec,iid,tag%E0p,MPI_COMM_WORLD,ierr)
     end do
   else     !workers receive data from root
-    call mpi_recv(Qp,llon*llat,mpi_realprec,0,tagQp,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-    call mpi_recv(E0p,llon*llat,mpi_realprec,0,tagE0p,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+    call mpi_recv(Qp,llon*llat,mpi_realprec,0,tag%Qp,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+    call mpi_recv(E0p,llon*llat,mpi_realprec,0,tag%E0p,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
   end if
 
 

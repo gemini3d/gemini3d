@@ -1,5 +1,6 @@
 submodule (grid) grid_read
 
+use mpimod, only : mpi_realprec
 implicit none
 
 interface ! readgrid_*.f90
@@ -173,11 +174,11 @@ print '(A,3I6)', 'Grid slab size:  ',lx1,lx2,lx3
 ierr=0
 !! if this is a root-only simulation we don't want to error out
 do iid=1,lid-1
-  call mpi_send(lx2,1,MPI_INTEGER,iid,taglx2,MPI_COMM_WORLD,ierr)
+  call mpi_send(lx2,1,MPI_INTEGER,iid,tag%lx2,MPI_COMM_WORLD,ierr)
   !! need to also pass the lx2all size to all workers to they know
   !if (ierr/=0) error stop 'grid:read_grid_root failed mpi_send lx2'
 
-  call mpi_send(lx3,1,MPI_INTEGER,iid,taglx3,MPI_COMM_WORLD,ierr)
+  call mpi_send(lx3,1,MPI_INTEGER,iid,tag%lx3,MPI_COMM_WORLD,ierr)
   !if (ierr/=0) error stop 'grid:read_grid_root failed mpi_send lx3'
 end do
 
@@ -186,7 +187,7 @@ if (ierr/=0) error stop 'grid:read_grid_root failed mpi_send grid size'
 !TELL WORKERS IF WE'VE SWAPPED DIMENSIONS
 ierr=0
 do iid=1,lid-1
-  call mpi_send(flagswap,1,MPI_INTEGER,iid,tagswap,MPI_COMM_WORLD,ierr)
+  call mpi_send(flagswap,1,MPI_INTEGER,iid,tag%swap,MPI_COMM_WORLD,ierr)
   !if (ierr/=0) error stop 'grid:read_grid_root failed mpi_send flagswap'
 end do
 
@@ -278,19 +279,19 @@ allocate(g1(1:lx1,1:lx2,1:lx3),g2(1:lx1,1:lx2,1:lx3),g3(1:lx1,1:lx2,1:lx3))
 !! SEND FULL X1 AND X2 GRIDS TO EACH WORKER (ONLY X3-DIM. IS INVOLVED IN THE MPI
 print*, 'Exchanging grid spacings...'
 do iid=1,lid-1
-  call mpi_send(x%x1,lx1+4,mpi_realprec,iid,tagx1,MPI_COMM_WORLD,ierr)
+  call mpi_send(x%x1,lx1+4,mpi_realprec,iid,tag%x1,MPI_COMM_WORLD,ierr)
   !if (ierr/=0) error stop 'failed mpi_send x1'
-  call mpi_send(x%x2all,lx2all+4,mpi_realprec,iid,tagx2all,MPI_COMM_WORLD,ierr)
+  call mpi_send(x%x2all,lx2all+4,mpi_realprec,iid,tag%x2all,MPI_COMM_WORLD,ierr)
   !if (ierr/=0) error stop 'failed mpi_send x2all'
-  call mpi_send(x%x3all,lx3all+4,mpi_realprec,iid,tagx3all,MPI_COMM_WORLD,ierr)
+  call mpi_send(x%x3all,lx3all+4,mpi_realprec,iid,tag%x3all,MPI_COMM_WORLD,ierr)
   !! workers may need a copy of this, e.g. for boudnary conditions
   !if (ierr/=0) error stop 'failed mpi_send x3all'
 
-  call mpi_send(x%dx1,lx1+3,mpi_realprec,iid,tagx1,MPI_COMM_WORLD,ierr)
+  call mpi_send(x%dx1,lx1+3,mpi_realprec,iid,tag%x1,MPI_COMM_WORLD,ierr)
   !if (ierr/=0) error stop 'failed mpi_send dx1'
-  call mpi_send(x%x1i,lx1+1,mpi_realprec,iid,tagx1,MPI_COMM_WORLD,ierr)
+  call mpi_send(x%x1i,lx1+1,mpi_realprec,iid,tag%x1,MPI_COMM_WORLD,ierr)
   !if (ierr/=0) error stop 'failed mpi_send x1i'
-  call mpi_send(x%dx1i,lx1,mpi_realprec,iid,tagx1,MPI_COMM_WORLD,ierr)
+  call mpi_send(x%dx1i,lx1,mpi_realprec,iid,tag%x1,MPI_COMM_WORLD,ierr)
   !if (ierr/=0) error stop 'failed mpi_send dx1i'
 end do
 
@@ -298,13 +299,13 @@ if (ierr/=0) error stop 'failed mpi_send x grid'
 
 !! NOW SEND THE INFO THAT DEPENDS ON X3 SLAB SIZE
 print*, 'Computing subdomain spacing...'
-call bcast_send1D_3(x%x3all,tagx3,x%x3)
+call bcast_send1D_3(x%x3all,tag%x3,x%x3)
 x%dx3=x%x3(0:lx3+2)-x%x3(-1:lx3+1)     !computing these avoids extra message passing (could be done for other coordinates, as well)
 x%x3i(1:lx3+1)=0.5*(x%x3(0:lx3)+x%x3(1:lx3+1))
 x%dx3i=x%x3i(2:lx3+1)-x%x3i(1:lx3)
 
 
-call bcast_send1D_2(x%x2all,tagx2,x%x2)
+call bcast_send1D_2(x%x2all,tag%x2,x%x2)
 x%dx2=x%x2(0:lx2+2)-x%x2(-1:lx2+1)     !computing these avoids extra message passing (could be done for other coordinates
 x%x2i(1:lx2+1)=0.5*(x%x2(0:lx2)+x%x2(1:lx2+1))
 x%dx2i=x%x2i(2:lx2+1)-x%x2i(1:lx2)
@@ -314,80 +315,80 @@ print*, 'Dealing with metric factors...'
 allocate(mpisendbuf(-1:lx1+2,-1:lx2all+2,-1:lx3all+2),mpirecvbuf(-1:lx1+2,-1:lx2+2,-1:lx3+2))
 
 mpisendbuf=x%h1all    !since metric factors are pointers they are not gauranteed to be contiguous in memory so pack them into a buffer that is...
-call bcast_send3D_ghost(mpisendbuf,tagh1,mpirecvbuf)    !special broadcast subroutine to handle 3D arrays with ghost cells
+call bcast_send3D_ghost(mpisendbuf,tag%h1,mpirecvbuf)    !special broadcast subroutine to handle 3D arrays with ghost cells
 x%h1=mpirecvbuf       !store roots slab of metric factors in its grid structure
 mpisendbuf=x%h2all
-call bcast_send3D_ghost(mpisendbuf,tagh2,mpirecvbuf)
+call bcast_send3D_ghost(mpisendbuf,tag%h2,mpirecvbuf)
 x%h2=mpirecvbuf
 mpisendbuf=x%h3all
-call bcast_send3D_ghost(mpisendbuf,tagh3,mpirecvbuf)
+call bcast_send3D_ghost(mpisendbuf,tag%h3,mpirecvbuf)
 x%h3=mpirecvbuf
 
 deallocate(mpisendbuf,mpirecvbuf)    !we need different sized buffers below
 
-call bcast_send(x%h1x1iall,tagh1,x%h1x1i)    !do the weird sizes here (ie. lx1+1) give issues with MPI?  probably...  No because bcast reads the size off of the variable...
-call bcast_send(x%h2x1iall,tagh2,x%h2x1i)
-call bcast_send(x%h3x1iall,tagh3,x%h3x1i)
+call bcast_send(x%h1x1iall,tag%h1,x%h1x1i)    !do the weird sizes here (ie. lx1+1) give issues with MPI?  probably...  No because bcast reads the size off of the variable...
+call bcast_send(x%h2x1iall,tag%h2,x%h2x1i)
+call bcast_send(x%h3x1iall,tag%h3,x%h3x1i)
 
-call bcast_send3D_x2i(x%h1x2iall,tagh1,x%h1x2i)
-call bcast_send3D_x2i(x%h2x2iall,tagh2,x%h2x2i)
-call bcast_send3D_x2i(x%h3x2iall,tagh3,x%h3x2i)
+call bcast_send3D_x2i(x%h1x2iall,tag%h1,x%h1x2i)
+call bcast_send3D_x2i(x%h2x2iall,tag%h2,x%h2x2i)
+call bcast_send3D_x2i(x%h3x2iall,tag%h3,x%h3x2i)
 
-call bcast_send3D_x3i(x%h1x3iall,tagh1,x%h1x3i)
-call bcast_send3D_x3i(x%h2x3iall,tagh2,x%h2x3i)
-call bcast_send3D_x3i(x%h3x3iall,tagh3,x%h3x3i)
+call bcast_send3D_x3i(x%h1x3iall,tag%h1,x%h1x3i)
+call bcast_send3D_x3i(x%h2x3iall,tag%h2,x%h2x3i)
+call bcast_send3D_x3i(x%h3x3iall,tag%h3,x%h3x3i)
 
 
 print *, 'Sending gravity, etc...'
-call bcast_send(g1all,tagh1,g1)
-call bcast_send(g2all,tagh2,g2)
-call bcast_send(g3all,tagh3,g3)
+call bcast_send(g1all,tag%h1,g1)
+call bcast_send(g2all,tag%h2,g2)
+call bcast_send(g3all,tag%h3,g3)
 
-call bcast_send(glatall,tagglat,x%glat)
-call bcast_send(glonall,tagglon,x%glon)
-call bcast_send(altall,tagalt,x%alt)
+call bcast_send(glatall,tag%glat,x%glat)
+call bcast_send(glonall,tag%glon,x%glon)
+call bcast_send(altall,tag%alt,x%alt)
 
-call bcast_send(Bmagall,tagBmag,x%Bmag)
-call bcast_send(Incall,taginc,x%I)
-call bcast_send(nullptsall,tagnull,x%nullpts)
+call bcast_send(Bmagall,tag%Bmag,x%Bmag)
+call bcast_send(Incall,tag%inc,x%I)
+call bcast_send(nullptsall,tag%null,x%nullpts)
 
 print *, 'Now sending unit vectors...'
 allocate(mpisendbuf(1:lx1,1:lx2all,1:lx3all),mpirecvbuf(1:lx1,1:lx2,1:lx3))    !why is buffering used/needed here???
 do icomp=1,3
   mpisendbuf=e1all(:,:,:,icomp)
-  call bcast_send(mpisendbuf,tageunit1,mpirecvbuf)
+  call bcast_send(mpisendbuf,tag%eunit1,mpirecvbuf)
   x%e1(:,:,:,icomp)=mpirecvbuf
 end do
 do icomp=1,3
   mpisendbuf=e2all(:,:,:,icomp)
-  call bcast_send(mpisendbuf,tageunit2,mpirecvbuf)
+  call bcast_send(mpisendbuf,tag%eunit2,mpirecvbuf)
   x%e2(:,:,:,icomp)=mpirecvbuf
 end do
 do icomp=1,3
   mpisendbuf=e3all(:,:,:,icomp)
-  call bcast_send(mpisendbuf,tageunit3,mpirecvbuf)
+  call bcast_send(mpisendbuf,tag%eunit3,mpirecvbuf)
   x%e3(:,:,:,icomp)=mpirecvbuf
 end do
 do icomp=1,3
   mpisendbuf=erall(:,:,:,icomp)
-  call bcast_send(mpisendbuf,tager,mpirecvbuf)
+  call bcast_send(mpisendbuf,tag%er,mpirecvbuf)
   x%er(:,:,:,icomp)=mpirecvbuf
 end do
 do icomp=1,3
   mpisendbuf=ethetaall(:,:,:,icomp)
-  call bcast_send(mpisendbuf,tagetheta,mpirecvbuf)
+  call bcast_send(mpisendbuf,tag%etheta,mpirecvbuf)
   x%etheta(:,:,:,icomp)=mpirecvbuf
 end do
 do icomp=1,3
   mpisendbuf=ephiall(:,:,:,icomp)
-  call bcast_send(mpisendbuf,tagephi,mpirecvbuf)
+  call bcast_send(mpisendbuf,tag%ephi,mpirecvbuf)
   x%ephi(:,:,:,icomp)=mpirecvbuf
 end do
 deallocate(mpisendbuf,mpirecvbuf)
 
-call bcast_send(rall,tagr,x%r)
-call bcast_send(thetaall,tagtheta,x%theta)
-call bcast_send(phiall,tagphi,x%phi)
+call bcast_send(rall,tag%r,x%r)
+call bcast_send(thetaall,tag%theta,x%theta)
+call bcast_send(phiall,tag%phi,x%phi)
 print *,  'Done sending slabbed variables to workers...'
 
 
@@ -479,15 +480,15 @@ type(curvmesh), intent(inout) :: x
 integer :: ix1,ix2,ix3,icount,icomp, ierr
 
 !GET ROOTS MESSAGE WITH THE SIZE OF THE GRID WE ARE TO RECEIVE
-call mpi_recv(lx2,1,MPI_INTEGER,0,taglx2,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+call mpi_recv(lx2,1,MPI_INTEGER,0,tag%lx2,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
 if (ierr/=0) error stop 'failed mpi_recv lx2'
-call mpi_recv(lx3,1,MPI_INTEGER,0,taglx3,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+call mpi_recv(lx3,1,MPI_INTEGER,0,tag%lx3,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
 if (ierr/=0) error stop 'failed mpi_recv lx3'
 
 x%lx1=lx1; x%lx2=lx2; x%lx2all=lx2all; x%lx3all=lx3all; x%lx3=lx3
 
 !ROOT NEEDS TO TELL US WHETHER WE'VE SWAPPED DIMENSIONS SINCE THIS AFFECTS HOW CURRENTS ARE COMPUTED
-call mpi_recv(flagswap,1,MPI_INTEGER,0,tagswap,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+call mpi_recv(flagswap,1,MPI_INTEGER,0,tag%swap,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
 if (ierr/=0) error stop 'failed mpi_recv flagswap'
 
 if (flagswap==1) then
@@ -532,27 +533,27 @@ allocate(g1(1:lx1,1:lx2,1:lx3),g2(1:lx1,1:lx2,1:lx3),g3(1:lx1,1:lx2,1:lx3))
 
 
 !RECEIVE GRID DATA FROM ROOT
-call mpi_recv(x%x1,lx1+4,mpi_realprec,0,tagx1,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+call mpi_recv(x%x1,lx1+4,mpi_realprec,0,tag%x1,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
 if (ierr/=0) error stop 'failed mpi_recv x1'
-call mpi_recv(x%x2all,lx2all+4,mpi_realprec,0,tagx2all,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+call mpi_recv(x%x2all,lx2all+4,mpi_realprec,0,tag%x2all,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
 if (ierr/=0) error stop 'failed mpi_recv x2all'
-call mpi_recv(x%x3all,lx3all+4,mpi_realprec,0,tagx3all,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+call mpi_recv(x%x3all,lx3all+4,mpi_realprec,0,tag%x3all,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
 if (ierr/=0) error stop 'failed mpi_recv x3all'
-call mpi_recv(x%dx1,lx1+3,mpi_realprec,0,tagx1,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+call mpi_recv(x%dx1,lx1+3,mpi_realprec,0,tag%x1,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
 if (ierr/=0) error stop 'failed mpi_recv dx1'
-call mpi_recv(x%x1i,lx1+1,mpi_realprec,0,tagx1,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+call mpi_recv(x%x1i,lx1+1,mpi_realprec,0,tag%x1,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
 if (ierr/=0) error stop 'failed mpi_recv x1i'
-call mpi_recv(x%dx1i,lx1,mpi_realprec,0,tagx1,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+call mpi_recv(x%dx1i,lx1,mpi_realprec,0,tag%x1,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
 if (ierr/=0) error stop 'failed mpi_recv dx1i'
 
 
-call bcast_recv1D_3(x%x3,tagx3)
+call bcast_recv1D_3(x%x3,tag%x3)
 x%dx3=x%x3(0:lx3+2)-x%x3(-1:lx3+1)     !computing these avoids extra message passing (could be done for other coordinates
 x%x3i(1:lx3+1)=0.5*(x%x3(0:lx3)+x%x3(1:lx3+1))
 x%dx3i=x%x3i(2:lx3+1)-x%x3i(1:lx3)
 
 
-call bcast_recv1D_2(x%x2,tagx2)
+call bcast_recv1D_2(x%x2,tag%x2)
 x%dx2=x%x2(0:lx2+2)-x%x2(-1:lx2+1)
 x%x2i(1:lx2+1)=0.5*(x%x2(0:lx2)+x%x2(1:lx2+1))
 x%dx2i=x%x2i(2:lx2+1)-x%x2i(1:lx2)
@@ -561,69 +562,69 @@ x%dx2i=x%x2i(2:lx2+1)-x%x2i(1:lx2)
 block
 real(wp), dimension(-1:lx1+2,-1:lx2+2,-1:lx3+2) :: mpirecvbuf
 
-call bcast_recv3D_ghost(mpirecvbuf,tagh1)
+call bcast_recv3D_ghost(mpirecvbuf,tag%h1)
 x%h1=mpirecvbuf
-call bcast_recv3D_ghost(mpirecvbuf,tagh2)
+call bcast_recv3D_ghost(mpirecvbuf,tag%h2)
 x%h2=mpirecvbuf
-call bcast_recv3D_ghost(mpirecvbuf,tagh3)
+call bcast_recv3D_ghost(mpirecvbuf,tag%h3)
 x%h3=mpirecvbuf
 end block
 
-call bcast_recv(x%h1x1i,tagh1)
-call bcast_recv(x%h2x1i,tagh2)
-call bcast_recv(x%h3x1i,tagh3)
+call bcast_recv(x%h1x1i,tag%h1)
+call bcast_recv(x%h2x1i,tag%h2)
+call bcast_recv(x%h3x1i,tag%h3)
 
-call bcast_recv3D_x2i(x%h1x2i,tagh1)
-call bcast_recv3D_x2i(x%h2x2i,tagh2)
-call bcast_recv3D_x2i(x%h3x2i,tagh3)
+call bcast_recv3D_x2i(x%h1x2i,tag%h1)
+call bcast_recv3D_x2i(x%h2x2i,tag%h2)
+call bcast_recv3D_x2i(x%h3x2i,tag%h3)
 
-call bcast_recv3D_x3i(x%h1x3i,tagh1)
-call bcast_recv3D_x3i(x%h2x3i,tagh2)
-call bcast_recv3D_x3i(x%h3x3i,tagh3)
+call bcast_recv3D_x3i(x%h1x3i,tag%h1)
+call bcast_recv3D_x3i(x%h2x3i,tag%h2)
+call bcast_recv3D_x3i(x%h3x3i,tag%h3)
 
-call bcast_recv(g1,tagh1)
-call bcast_recv(g2,tagh2)
-call bcast_recv(g3,tagh3)
+call bcast_recv(g1,tag%h1)
+call bcast_recv(g2,tag%h2)
+call bcast_recv(g3,tag%h3)
 
-call bcast_recv(x%glat,tagglat)
-call bcast_recv(x%glon,tagglon)
-call bcast_recv(x%alt,tagalt)
+call bcast_recv(x%glat,tag%glat)
+call bcast_recv(x%glon,tag%glon)
+call bcast_recv(x%alt,tag%alt)
 
-call bcast_recv(x%Bmag,tagBmag)
-call bcast_recv(x%I,taginc)           !only time that we need to exchange 2D array data, I think
-call bcast_recv(x%nullpts,tagnull)    !note that this is not an integer array
+call bcast_recv(x%Bmag,tag%Bmag)
+call bcast_recv(x%I,tag%inc)           !only time that we need to exchange 2D array data, I think
+call bcast_recv(x%nullpts,tag%null)    !note that this is not an integer array
 
 block
 real(wp), dimension(1:lx1,1:lx2,1:lx3) :: mpirecvbuf
 do icomp=1,3
-  call bcast_recv(mpirecvbuf,tageunit1)
+  call bcast_recv(mpirecvbuf,tag%eunit1)
   x%e1(:,:,:,icomp)=mpirecvbuf
 end do
 do icomp=1,3
-  call bcast_recv(mpirecvbuf,tageunit2)
+  call bcast_recv(mpirecvbuf,tag%eunit2)
   x%e2(:,:,:,icomp)=mpirecvbuf
 end do
 do icomp=1,3
-  call bcast_recv(mpirecvbuf,tageunit3)
+  call bcast_recv(mpirecvbuf,tag%eunit3)
   x%e3(:,:,:,icomp)=mpirecvbuf
 end do
 do icomp=1,3
-  call bcast_recv(mpirecvbuf,tager)
+  call bcast_recv(mpirecvbuf,tag%er)
   x%er(:,:,:,icomp)=mpirecvbuf
 end do
 do icomp=1,3
-  call bcast_recv(mpirecvbuf,tagetheta)
+  call bcast_recv(mpirecvbuf,tag%etheta)
   x%etheta(:,:,:,icomp)=mpirecvbuf
 end do
 do icomp=1,3
-  call bcast_recv(mpirecvbuf,tagephi)
+  call bcast_recv(mpirecvbuf,tag%ephi)
   x%ephi(:,:,:,icomp)=mpirecvbuf
 end do
 end block
 
-call bcast_recv(x%r,tagr)
-call bcast_recv(x%theta,tagtheta)
-call bcast_recv(x%phi,tagphi)
+call bcast_recv(x%r,tag%r)
+call bcast_recv(x%theta,tag%theta)
+call bcast_recv(x%phi,tag%phi)
 
 
 !COUNT THE NUMBER OF NULL GRID POINTS AND GENERATE A LIST OF NULL INDICES FOR LATER USE

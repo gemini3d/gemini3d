@@ -16,8 +16,7 @@ use pathlib, only : assert_file_exists, assert_directory_exists
 use io, only : input_plasma_currents,create_outdir_mag,output_magfields
 use mpimod, only: mpi_sum, mpi_comm_world, &
 mpisetup, mpibreakdown, mpigrid, mpi_manualgrid, halo_end, &
-lid, lid2, lid3, myid, myid2, myid3, mpi_realprec, &
-tagdv, tagjx, tagjy, tagjz, tagrcubed, tagrx, tagry, tagrz
+lid, lid2, lid3, myid, myid2, myid3, mpi_realprec, tag=>mpi_tag
 
 implicit none
 
@@ -280,7 +279,7 @@ end if
 
 
 !> GET END VOLUMES SO THE INTEGRALS ARE 'COMPLETE'
-call halo_end(dV,dVend,dVtop,tagdV)
+call halo_end(dV,dVend,dVtop,tag%dV)
 !! need to define the differential volume on the edge of this x3-slab in
 
 
@@ -404,9 +403,9 @@ do while (t < cfg%tdur)
 
 
   !GATHER THE END DATA SO WE DON'T LEAVE OUT A POINT IN THE INTEGRATION
-  call halo_end(Jx,Jxend,Jxtop,tagJx)
-  call halo_end(Jy,Jyend,Jytop,tagJy)
-  call halo_end(Jz,Jzend,Jztop,tagJz)
+  call halo_end(Jx,Jxend,Jxtop,tag%Jx)
+  call halo_end(Jy,Jyend,Jytop,tag%Jy)
+  call halo_end(Jz,Jzend,Jztop,tag%Jz)
 
     !print *, myid2,myid3,'  --> Min/max values of end current',minval(Jxend),maxval(Jxend),minval(Jyend),maxval(Jyend), &
     !                                           minval(Jzend),maxval(Jzend)
@@ -424,9 +423,9 @@ do while (t < cfg%tdur)
     Rx(:,:,:)=xf(ipoints)-xp(:,:,:)
     Ry(:,:,:)=yf(ipoints)-yp(:,:,:)
     Rz(:,:,:)=zf(ipoints)-zp(:,:,:)
-    call halo_end(Rx,Rxend,Rxtop,tagRx)
-    call halo_end(Ry,Ryend,Rytop,tagRy)
-    call halo_end(Rz,Rzend,Rztop,tagRz)
+    call halo_end(Rx,Rxend,Rxtop,tag%Rx)
+    call halo_end(Ry,Ryend,Rytop,tag%Ry)
+    call halo_end(Rz,Rzend,Rztop,tag%Rz)
 !
 !        do ix2=1,lx2
 !          do ix1=1,lx1
@@ -528,7 +527,7 @@ do while (t < cfg%tdur)
 !      where(Rcubed<R3min)
 !        Rcubed=R3min
 !      end where
-      call halo_end(Rcubed,Rcubedend,Rcubedtop,tagRcubed)
+      call halo_end(Rcubed,Rcubedend,Rcubedtop,tag%Rcubed)
       if(myid3==lid3-1) Rcubedend=R3min     !< avoids div by zero on the end which is set by the haloing
       if(myid2==lid2-1) Rcubedtop=R3min
 
@@ -627,7 +626,7 @@ do while (t < cfg%tdur)
 !      where(Rcubed<R3min)
 !        Rcubed=R3min    !should be R**2???
 !      end where
-      call halo_end(Rcubed,Rcubedend,Rcubedtop,tagRcubed)
+      call halo_end(Rcubed,Rcubedend,Rcubedtop,tag%Rcubed)
       !! DO WE NEED TO CHECK HERE FOR DIV BY ZERO???
       !! ALSO IN 2D WE KNOW THAT WE ARE ONLY DIVIDED IN THE 3 DIMENSION SO THERE IS NO NEED TO WORRY ABOUT ADDING A 'TOP' ETC.
 

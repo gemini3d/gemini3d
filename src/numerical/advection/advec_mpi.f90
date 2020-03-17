@@ -4,11 +4,11 @@ use phys_consts, only: lsp,ms, wp
 use grid, only : gridflag
 use mesh, only: curvmesh
   !! do not import grid sizes in case we want do subgrid advection...
-use mpimod, only: myid, lid, myid2, myid3, lid2, lid3, tagnsbc, tagrhoesbc, tagrhovs1bc, tagvs3bc, &
-                  tagvs2bc, halo
+use mpimod, only: myid, lid, myid2, myid3, lid2, lid3, halo, tag=>mpi_tag
 
 implicit none
 private
+public :: advec3d_mc_mpi, advec_prep_mpi
 
 
 !> OVERLOAD ADVECTION TO DEAL WITH THE CURVILINEAR GRID/MESH STRUCTURE.
@@ -21,7 +21,7 @@ interface advec_prep_mpi
   module procedure advec_prep_mpi_23
 end interface advec_prep_mpi
 
-public :: advec3d_mc_mpi, advec_prep_mpi
+
 
 contains
 
@@ -154,19 +154,19 @@ idleft=myid-1; idright=myid+1
 
 !> PASS X3 BOUNDARY CONDITIONS WITH GENERIC HALOING ROUTINES
 param=vs3(:,:,:,isp)
-call halo(param,1,tagvs3BC,isperiodic)     !! we only need one ghost cell to compute interface velocities
+call halo(param,1,tag%vs3BC,isperiodic)     !! we only need one ghost cell to compute interface velocities
 vs3(:,:,:,isp)=param
 
 param2=ns(:,:,:,isp)
-call halo(param2,2,tagnsBC,isperiodic)
+call halo(param2,2,tag%nsBC,isperiodic)
 ns(:,:,:,isp)=param2
 
 param3=rhovs1(:,:,:,isp)
-call halo(param3,2,tagrhovs1BC,isperiodic)
+call halo(param3,2,tag%rhovs1BC,isperiodic)
 rhovs1(:,:,:,isp)=param3
 
 param4=rhoes(:,:,:,isp)
-call halo(param4,2,tagrhoesBC,isperiodic)
+call halo(param4,2,tag%rhoesBC,isperiodic)
 rhoes(:,:,:,isp)=param4
 
 if (.not. isperiodic) then
@@ -301,7 +301,7 @@ iddown=myid2-1; idup=myid2+1
 
 !NEED TO ALSO PASS THE X2 VELOCITIES SO WE CAN COMPUTE INTERFACE VALUES
 param=vs2(:,:,:,isp)
-call halo(param,1,tagvs2BC,isperiodic)     !! we only need one ghost cell to compute interface velocities
+call halo(param,1,tag%vs2BC,isperiodic)     !! we only need one ghost cell to compute interface velocities
 vs2(:,:,:,isp)=param
 
 
@@ -334,21 +334,21 @@ idleft=myid3-1; idright=myid3+1
 
 !> PASS X3 VELOCITY BOUNDARY CONDITIONS WITH GENERIC HALOING ROUTINES
 param=vs3(:,:,:,isp)
-call halo(param,1,tagvs3BC,isperiodic)     !! we only need one ghost cell to compute interface velocities
+call halo(param,1,tag%vs3BC,isperiodic)     !! we only need one ghost cell to compute interface velocities
 vs3(:,:,:,isp)=param
 
 
 !these will now be haloed internal ot the advection routines, viz. all advected quantities are haloed withine advection
 !param2=ns(:,:,:,isp)
-!call halo(param2,2,tagnsBC)
+!call halo(param2,2,tag%nsBC)
 !ns(:,:,:,isp)=param2
 !
 !param3=rhovs1(:,:,:,isp)
-!call halo(param3,2,tagrhovs1BC)
+!call halo(param3,2,tag%rhovs1BC)
 !rhovs1(:,:,:,isp)=param3
 !
 !param4=rhoes(:,:,:,isp)
-!call halo(param4,2,tagrhoesBC)
+!call halo(param4,2,tag%rhoesBC)
 !rhoes(:,:,:,isp)=param4
 
 

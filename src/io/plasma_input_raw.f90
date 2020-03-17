@@ -86,9 +86,9 @@ if(.not.all(ieee_is_finite(J2all))) error stop 'J2all: non-finite value(s)'
 if(.not.all(ieee_is_finite(J3all))) error stop 'J3all: non-finite value(s)'
 
 !> DISTRIBUTE DATA TO WORKERS AND TAKE A PIECE FOR ROOT
-call bcast_send(J1all,tagJ1,J1)
-call bcast_send(J2all,tagJ2,J2)
-call bcast_send(J3all,tagJ3,J3)
+call bcast_send(J1all,tag%J1,J1)
+call bcast_send(J2all,tag%J2,J2)
+call bcast_send(J3all,tag%J3,J3)
 
 
 !> CLEAN UP MEMORY
@@ -204,9 +204,9 @@ print *, 'Min/max input temperature:  ', minval(Tsall(:,:,:,:)),  maxval(Tsall(:
 
 !> ROOT BROADCASTS IC DATA TO WORKERS
 call cpu_time(tstart)
-call bcast_send(nsall,tagns,ns)
-call bcast_send(vs1all,tagvs1,vs1)
-call bcast_send(Tsall,tagTs,Ts)
+call bcast_send(nsall,tag%ns,ns)
+call bcast_send(vs1all,tag%vs1,vs1)
+call bcast_send(Tsall,tag%Ts,Ts)
 call cpu_time(tfin)
 print *, 'Done sending ICs to workers...  CPU elapsed time:  ',tfin-tstart
 
