@@ -4,6 +4,7 @@ use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
 use, intrinsic :: iso_c_binding, only: c_int
 use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
 
+use config, only : gemini_cfg
 use phys_consts, only : kB,ms,pi,lsp,wp,lwave
 use pathlib, only: mkdir, copyfile
 use mpimod, only: bcast_recv, bcast_send, gather_send, gather_recv,  myid, &
@@ -82,12 +83,10 @@ end interface
 
 
 interface ! output.f90
-module subroutine create_outdir(outdir,infile,indatsize,indatgrid,indatfile, &
-  flagdneu,sourcedir,flagprecfile,precdir,flagE0file,E0dir)
+module subroutine create_outdir(outdir,infile,cfg)
 character(*), intent(in) :: outdir, & !< command line argument output directory
-  infile, & !< command line argument input file
-  indatsize,indatgrid,indatfile,sourcedir, precdir,E0dir
-integer, intent(in) :: flagdneu, flagprecfile, flagE0file
+  infile !< command line argument input file
+class(gemini_cfg), intent(in) :: cfg
 end subroutine create_outdir
 end interface
 
