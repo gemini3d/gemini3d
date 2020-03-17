@@ -26,7 +26,7 @@ character(:), allocatable :: outdir_composite, filenamefull, fstatus
 !! gather output from workers
 do iwave=1,lwave
   emistmp=iver(:,:,iwave)
-  call gather_recv(emistmp,tagAur,emisall)
+  call gather_recv(emistmp,tag%Aur,emisall)
   iverout(:,:,iwave)=emisall
 end do
 

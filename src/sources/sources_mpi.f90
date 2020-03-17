@@ -1,6 +1,6 @@
 submodule (sources) sources_mpi
 
-use mpimod, only: myid, tagvs1bc, tagvs2bc, tagvs3bc, lid, halo, myid2,myid3,lid2,lid3
+use mpimod, only: myid, tag=>mpi_tag,lid, halo, myid2,myid3,lid2,lid3
 implicit none
 
 contains
@@ -35,13 +35,13 @@ iddown=myid2-1; idup=myid2+1
 !-- global boundary will still have one interior boundary to be haloed.
 !BY DEFAULT THE GLOBAL BOUNDARIES ARE ASSUMED TO BE PERIOIDIC
 param=vs1(:,:,:,isp)
-call halo(param,1,tagvs1BC,isperiodic)
+call halo(param,1,tag%vs1BC,isperiodic)
 vs1(:,:,:,isp)=param
 param=vs2(:,:,:,isp)
-call halo(param,1,tagvs2BC,isperiodic)
+call halo(param,1,tag%vs2BC,isperiodic)
 vs2(:,:,:,isp)=param
 param=vs3(:,:,:,isp)
-call halo(param,1,tagvs3BC,isperiodic)
+call halo(param,1,tag%vs3BC,isperiodic)
 vs3(:,:,:,isp)=param
 
 

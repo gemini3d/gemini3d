@@ -8,7 +8,7 @@ use diffusion, only:  trbdf23d, diffusion_prep
 use grid, only: lx1, lx2, lx3, gridflag
 use mesh, only: curvmesh
 use ionization, only: ionrate_glow98, ionrate_fang08, eheating, photoionization
-use mpimod, only: myid,tagns,tagvs1,tagTs
+use mpimod, only: myid, tag=>mpi_tag
 use precipBCs_mod, only: precipBCs_fileinput, precipBCs
 use sources, only: rk2_prep_mpi, srcsenergy, srcsmomentum, srcscontinuity
 use timeutils, only : sza
@@ -81,15 +81,15 @@ real(wp), parameter :: xicon=3.0_wp    !artifical viscosity, decent value for cl
 !MAKING SURE THESE ARRAYS ARE ALWAYS IN SCOPE
 if ((flagglow/=0).and.(.NOT.allocated(PrprecipG))) then
   allocate(PrprecipG(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,size(ns,4)-1))
-  PrprecipG(:,:,:,:)=0.0_wp
+  PrprecipG(:,:,:,:)=0
 end if
 if ((flagglow/=0).and.(.NOT.allocated(QeprecipG))) then
   allocate(QeprecipG(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4))
-  QeprecipG(:,:,:)=0.0_wp
+  QeprecipG(:,:,:)=0
 end if
 if ((flagglow/=0).and.(.NOT.allocated(iverG))) then
   allocate(iverG(size(iver,1),size(iver,2),size(iver,3)))
-  iverG(:,:,:)=0.0_wp
+  iverG(:,:,:)=0
 end if
 
 
@@ -109,12 +109,12 @@ do isp=1,lsp
   if(isp<lsp) then   !electron info found from charge neutrality and current density
     param=ns(:,:,:,isp)
 !    param=advec3D_MC_mpi(param,v1i,v2i,v3i,dt,x,0)   !last argument is tensor rank of thing being advected
-    param=advec3D_MC_mpi(param,v1i,v2i,v3i,dt,x,0,tagns)   !second to last argument is tensor rank of thing being advected
+    param=advec3D_MC_mpi(param,v1i,v2i,v3i,dt,x,0,tag%ns)   !second to last argument is tensor rank of thing being advected
     ns(:,:,:,isp)=param
 
     param=rhovs1(:,:,:,isp)
 !    param=advec3D_MC_mpi(param,v1i,v2i,v3i,dt,x,1)
-    param=advec3D_MC_mpi(param,v1i,v2i,v3i,dt,x,1,tagvs1)
+    param=advec3D_MC_mpi(param,v1i,v2i,v3i,dt,x,1,tag%vs1)
     rhovs1(:,:,:,isp)=param
 
     vs1(:,:,:,isp)=rhovs1(:,:,:,isp)/(ms(isp)*max(ns(:,:,:,isp),mindensdiv))
@@ -127,7 +127,7 @@ do isp=1,lsp
 
   param=rhoes(:,:,:,isp)
 !  param=advec3D_MC_mpi(param,v1i,v2i,v3i,dt,x,0)
-  param=advec3D_MC_mpi(param,v1i,v2i,v3i,dt,x,0,tagTs)
+  param=advec3D_MC_mpi(param,v1i,v2i,v3i,dt,x,0,tag%Ts)
   rhoes(:,:,:,isp)=param
 end do
 call cpu_time(tfin)
@@ -209,10 +209,10 @@ end if
 
 !STIFF/BALANCED ENERGY SOURCES
 call cpu_time(tstart)
-Prprecip=0.0_wp
-Qeprecip=0.0_wp
-Prpreciptmp=0.0_wp
-Qepreciptmp=0.0_wp
+Prprecip=0
+Qeprecip=0
+Prpreciptmp=0
+Qepreciptmp=0
 if (gridflag/=0) then
   if(flagglow==0) then !RUN FANG APPROXIMATION
     do iprec=1,lprec    !loop over the different populations of precipitation (2 here?), accumulating production rates
@@ -223,7 +223,7 @@ if (gridflag/=0) then
     Qeprecip=eheating(nn,Tn,Prprecip,ns)
   else      !GLOW USED, AURORA PRODUCED
     if (int(t/dtglow)/=int((t+dt)/dtglow).OR.t<0.1_wp) then
-      PrprecipG=0.0_wp; QeprecipG=0.0_wp; iverG=0.0_wp;
+      PrprecipG=0; QeprecipG=0; iverG=0;
       call ionrate_glow98(W0,PhiWmWm2,ymd,UTsec,f107,f107a,x%glat(1,:,:),x%glon(1,:,:),x%alt,nn,Tn,ns,Ts, &
                           QeprecipG, iverG, PrprecipG)
       PrprecipG=max(PrprecipG, 1e-5_wp)

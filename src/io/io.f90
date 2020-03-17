@@ -7,8 +7,7 @@ use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
 use config, only : gemini_cfg
 use phys_consts, only : kB,ms,pi,lsp,wp,lwave
 use pathlib, only: mkdir, copyfile
-use mpimod, only: bcast_recv, bcast_send, gather_send, gather_recv,  myid, &
-  tagns, tagvs1, tagv2, tagv3, tagAur, tagTs, tagJ1, tagJ2, tagJ3
+use mpimod, only: bcast_recv, bcast_send, gather_send, gather_recv,  myid, tag=>mpi_tag
 use grid, only : gridflag,flagswap,lx1,lx2,lx3,lx2all, lx3all
 
 implicit none

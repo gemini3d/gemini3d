@@ -10,8 +10,7 @@ use mesh, only: curvmesh
 use interpolation, only : interp2, interp3
 use timeutils, only : doy_calc,dateinc, date_filename
 use mpimod, only: mpi_integer, mpi_comm_world, mpi_status_ignore, &
-myid, lid, taglrho, taglz, mpi_realprec, tagdno, tagdnn2, tagdno2, tagdtn, tagdvnrho, tagdvnz, tagly, &
-taglx,tagxn,tagxnrange,tagynrange,tagyn,tagzn,tagdvnx
+myid, lid, mpi_realprec, tag=>mpi_tag
 
 ! also links gtd7 from vendor/msis00/
 
@@ -429,12 +428,12 @@ if (myid==0) then    !root
     error stop 'neutral:gridproj_dneu2D: grid size must be strictly positive'
   endif
   do iid=1,lid-1
-    call mpi_send(lhorzn,1,MPI_INTEGER,iid,taglrho,MPI_COMM_WORLD,ierr)
-    call mpi_send(lzn,1,MPI_INTEGER,iid,taglz,MPI_COMM_WORLD,ierr)
+    call mpi_send(lhorzn,1,MPI_INTEGER,iid,tag%lrho,MPI_COMM_WORLD,ierr)
+    call mpi_send(lzn,1,MPI_INTEGER,iid,tag%lz,MPI_COMM_WORLD,ierr)
   end do
 else                 !workers
-  call mpi_recv(lhorzn,1,MPI_INTEGER,0,taglrho,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-  call mpi_recv(lzn,1,MPI_INTEGER,0,taglz,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+  call mpi_recv(lhorzn,1,MPI_INTEGER,0,tag%lrho,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+  call mpi_recv(lzn,1,MPI_INTEGER,0,tag%lz,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
 end if
 
 
@@ -812,8 +811,8 @@ if (myid==0) then    !root
   zn=[ ((real(izn,8)-1._wp)*dzn, izn=1,lzn) ]    !root calculates and distributes but this is the same for all workers - assmes that the max neutral grid extent in altitude is always less than the plasma grid (should almost always be true)
   maxzn=maxval(zn)
   do iid=1,lid-1
-    call mpi_send(lzn,1,MPI_INTEGER,iid,taglz,MPI_COMM_WORLD,ierr)
-    call mpi_send(zn,lzn,mpi_realprec,iid,tagzn,MPI_COMM_WORLD,ierr)
+    call mpi_send(lzn,1,MPI_INTEGER,iid,tag%lz,MPI_COMM_WORLD,ierr)
+    call mpi_send(zn,lzn,mpi_realprec,iid,tag%zn,MPI_COMM_WORLD,ierr)
   end do
 
 
@@ -837,8 +836,8 @@ if (myid==0) then    !root
   !receive extents of each of the other workers: extents(lid,6)
   print*, 'Receiving xn and yn ranges from workers...'
   do iid=1,lid-1
-    call mpi_recv(xnrange,2,mpi_realprec,iid,tagxnrange,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-    call mpi_recv(ynrange,2,mpi_realprec,iid,tagynrange,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+    call mpi_recv(xnrange,2,mpi_realprec,iid,tag%xnrange,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+    call mpi_recv(ynrange,2,mpi_realprec,iid,tag%ynrange,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
     extents(iid,1:6)=[0._wp,maxzn,xnrange(1),xnrange(2),ynrange(1),ynrange(2)]     !need to store values as xnrange overwritten for each worker
     print*, 'Subgrid extents:  ',iid,extents(iid,:)
   end do
@@ -860,13 +859,13 @@ if (myid==0) then    !root
     lxn=indx(iid,4)-indx(iid,3)+1
     lyn=indx(iid,6)-indx(iid,5)+1
     slabsizes(iid,1:2)=[lxn,lyn]
-    call mpi_send(lyn,1,MPI_INTEGER,iid,taglrho,MPI_COMM_WORLD,ierr)
-    call mpi_send(lxn,1,MPI_INTEGER,iid,taglx,MPI_COMM_WORLD,ierr)
+    call mpi_send(lyn,1,MPI_INTEGER,iid,tag%lrho,MPI_COMM_WORLD,ierr)
+    call mpi_send(lxn,1,MPI_INTEGER,iid,tag%lx,MPI_COMM_WORLD,ierr)
     allocate(xn(lxn),yn(lyn))
     xn=xnall(indx(iid,3):indx(iid,4))
     yn=ynall(indx(iid,5):indx(iid,6))
-    call mpi_send(xn,lxn,mpi_realprec,iid,tagxn,MPI_COMM_WORLD,ierr)
-    call mpi_send(yn,lyn,mpi_realprec,iid,tagyn,MPI_COMM_WORLD,ierr)
+    call mpi_send(xn,lxn,mpi_realprec,iid,tag%xn,MPI_COMM_WORLD,ierr)
+    call mpi_send(yn,lyn,mpi_realprec,iid,tag%yn,MPI_COMM_WORLD,ierr)
     deallocate(xn,yn)
   end do
 
@@ -881,9 +880,9 @@ if (myid==0) then    !root
   yn=ynall(indx(0,5):indx(0,6))
 else                 !workers
   !get teh z-grid from root so we know what the max altitude we have to deal with will be
-  call mpi_recv(lzn,1,MPI_INTEGER,0,taglz,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+  call mpi_recv(lzn,1,MPI_INTEGER,0,tag%lz,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
   allocate(zn(lzn))
-  call mpi_recv(zn,lzn,mpi_realprec,0,tagzn,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+  call mpi_recv(zn,lzn,mpi_realprec,0,tag%zn,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
   maxzn=maxval(zn)
 
 
@@ -892,16 +891,16 @@ else                 !workers
 
 
   !send ranges to root
-  call mpi_send(xnrange,2,mpi_realprec,0,tagxnrange,MPI_COMM_WORLD,ierr)
-  call mpi_send(ynrange,2,mpi_realprec,0,tagynrange,MPI_COMM_WORLD,ierr)
+  call mpi_send(xnrange,2,mpi_realprec,0,tag%xnrange,MPI_COMM_WORLD,ierr)
+  call mpi_send(ynrange,2,mpi_realprec,0,tag%ynrange,MPI_COMM_WORLD,ierr)
 
 
   !receive my sizes from root, allocate then receive my pieces of the grid
-  call mpi_recv(lxn,1,MPI_INTEGER,0,taglx,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-  call mpi_recv(lyn,1,MPI_INTEGER,0,taglrho,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+  call mpi_recv(lxn,1,MPI_INTEGER,0,tag%lx,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+  call mpi_recv(lyn,1,MPI_INTEGER,0,tag%lrho,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
   allocate(xn(lxn),yn(lyn))
-  call mpi_recv(xn,lxn,mpi_realprec,0,tagxn,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-  call mpi_recv(yn,lyn,mpi_realprec,0,tagyn,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+  call mpi_recv(xn,lxn,mpi_realprec,0,tag%xn,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+  call mpi_recv(yn,lyn,mpi_realprec,0,tag%yn,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
 end if
 
 
@@ -973,21 +972,21 @@ if (myid==0) then    !root
 
   !send a full copy of the data to all of the workers
   do iid=1,lid-1
-    call mpi_send(dnO,lhorzn*lzn,mpi_realprec,iid,tagdnO,MPI_COMM_WORLD,ierr)
-    call mpi_send(dnN2,lhorzn*lzn,mpi_realprec,iid,tagdnN2,MPI_COMM_WORLD,ierr)
-    call mpi_send(dnO2,lhorzn*lzn,mpi_realprec,iid,tagdnO2,MPI_COMM_WORLD,ierr)
-    call mpi_send(dTn,lhorzn*lzn,mpi_realprec,iid,tagdTn,MPI_COMM_WORLD,ierr)
-    call mpi_send(dvnrho,lhorzn*lzn,mpi_realprec,iid,tagdvnrho,MPI_COMM_WORLD,ierr)
-    call mpi_send(dvnz,lhorzn*lzn,mpi_realprec,iid,tagdvnz,MPI_COMM_WORLD,ierr)
+    call mpi_send(dnO,lhorzn*lzn,mpi_realprec,iid,tag%dnO,MPI_COMM_WORLD,ierr)
+    call mpi_send(dnN2,lhorzn*lzn,mpi_realprec,iid,tag%dnN2,MPI_COMM_WORLD,ierr)
+    call mpi_send(dnO2,lhorzn*lzn,mpi_realprec,iid,tag%dnO2,MPI_COMM_WORLD,ierr)
+    call mpi_send(dTn,lhorzn*lzn,mpi_realprec,iid,tag%dTn,MPI_COMM_WORLD,ierr)
+    call mpi_send(dvnrho,lhorzn*lzn,mpi_realprec,iid,tag%dvnrho,MPI_COMM_WORLD,ierr)
+    call mpi_send(dvnz,lhorzn*lzn,mpi_realprec,iid,tag%dvnz,MPI_COMM_WORLD,ierr)
   end do
 else     !workers
   !receive a full copy of the data from root
-  call mpi_recv(dnO,lhorzn*lzn,mpi_realprec,0,tagdnO,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-  call mpi_recv(dnN2,lhorzn*lzn,mpi_realprec,0,tagdnN2,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-  call mpi_recv(dnO2,lhorzn*lzn,mpi_realprec,0,tagdnO2,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-  call mpi_recv(dTn,lhorzn*lzn,mpi_realprec,0,tagdTn,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-  call mpi_recv(dvnrho,lhorzn*lzn,mpi_realprec,0,tagdvnrho,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-  call mpi_recv(dvnz,lhorzn*lzn,mpi_realprec,0,tagdvnz,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+  call mpi_recv(dnO,lhorzn*lzn,mpi_realprec,0,tag%dnO,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+  call mpi_recv(dnN2,lhorzn*lzn,mpi_realprec,0,tag%dnN2,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+  call mpi_recv(dnO2,lhorzn*lzn,mpi_realprec,0,tag%dnO2,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+  call mpi_recv(dTn,lhorzn*lzn,mpi_realprec,0,tag%dTn,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+  call mpi_recv(dvnrho,lhorzn*lzn,mpi_realprec,0,tag%dvnrho,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+  call mpi_recv(dvnz,lhorzn*lzn,mpi_realprec,0,tag%dvnz,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
 end if
 
 
@@ -1059,25 +1058,25 @@ if (myid==0) then    !root
     allocate(parmtmp(lzn,slabsizes(iid,1),slabsizes(iid,2)))    !get space for the parameter for this worker
 
     parmtmp=dnOall(1:lzn,indx(iid,3):indx(iid,4),indx(iid,5):indx(iid,6))
-    call mpi_send(parmtmp,lzn*slabsizes(iid,1)*slabsizes(iid,2),mpi_realprec,iid,tagdnO,MPI_COMM_WORLD,ierr)
+    call mpi_send(parmtmp,lzn*slabsizes(iid,1)*slabsizes(iid,2),mpi_realprec,iid,tag%dnO,MPI_COMM_WORLD,ierr)
 
     parmtmp=dnN2all(1:lzn,indx(iid,3):indx(iid,4),indx(iid,5):indx(iid,6))
-    call mpi_send(parmtmp,lzn*slabsizes(iid,1)*slabsizes(iid,2),mpi_realprec,iid,tagdnN2,MPI_COMM_WORLD,ierr)
+    call mpi_send(parmtmp,lzn*slabsizes(iid,1)*slabsizes(iid,2),mpi_realprec,iid,tag%dnN2,MPI_COMM_WORLD,ierr)
 
     parmtmp=dnO2all(1:lzn,indx(iid,3):indx(iid,4),indx(iid,5):indx(iid,6))
-    call mpi_send(parmtmp,lzn*slabsizes(iid,1)*slabsizes(iid,2),mpi_realprec,iid,tagdnO2,MPI_COMM_WORLD,ierr)
+    call mpi_send(parmtmp,lzn*slabsizes(iid,1)*slabsizes(iid,2),mpi_realprec,iid,tag%dnO2,MPI_COMM_WORLD,ierr)
 
     parmtmp=dTnall(1:lzn,indx(iid,3):indx(iid,4),indx(iid,5):indx(iid,6))
-    call mpi_send(parmtmp,lzn*slabsizes(iid,1)*slabsizes(iid,2),mpi_realprec,iid,tagdTn,MPI_COMM_WORLD,ierr)
+    call mpi_send(parmtmp,lzn*slabsizes(iid,1)*slabsizes(iid,2),mpi_realprec,iid,tag%dTn,MPI_COMM_WORLD,ierr)
 
     parmtmp=dvnrhoall(1:lzn,indx(iid,3):indx(iid,4),indx(iid,5):indx(iid,6))
-    call mpi_send(parmtmp,lzn*slabsizes(iid,1)*slabsizes(iid,2),mpi_realprec,iid,tagdvnrho,MPI_COMM_WORLD,ierr)
+    call mpi_send(parmtmp,lzn*slabsizes(iid,1)*slabsizes(iid,2),mpi_realprec,iid,tag%dvnrho,MPI_COMM_WORLD,ierr)
 
     parmtmp=dvnzall(1:lzn,indx(iid,3):indx(iid,4),indx(iid,5):indx(iid,6))
-    call mpi_send(parmtmp,lzn*slabsizes(iid,1)*slabsizes(iid,2),mpi_realprec,iid,tagdvnz,MPI_COMM_WORLD,ierr)
+    call mpi_send(parmtmp,lzn*slabsizes(iid,1)*slabsizes(iid,2),mpi_realprec,iid,tag%dvnz,MPI_COMM_WORLD,ierr)
 
     parmtmp=dvnxall(1:lzn,indx(iid,3):indx(iid,4),indx(iid,5):indx(iid,6))
-    call mpi_send(parmtmp,lzn*slabsizes(iid,1)*slabsizes(iid,2),mpi_realprec,iid,tagdvnx,MPI_COMM_WORLD,ierr)
+    call mpi_send(parmtmp,lzn*slabsizes(iid,1)*slabsizes(iid,2),mpi_realprec,iid,tag%dvnx,MPI_COMM_WORLD,ierr)
 
     deallocate(parmtmp)
   end do
@@ -1092,13 +1091,13 @@ if (myid==0) then    !root
   dvnx=dvnxall(1:lzn,indx(0,3):indx(0,4),indx(0,5):indx(0,6))
 else     !workers
   !receive a subgrid copy of the data from root
-  call mpi_recv(dnO,lzn*lxn*lyn,mpi_realprec,0,tagdnO,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-  call mpi_recv(dnN2,lzn*lxn*lyn,mpi_realprec,0,tagdnN2,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-  call mpi_recv(dnO2,lzn*lxn*lyn,mpi_realprec,0,tagdnO2,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-  call mpi_recv(dTn,lzn*lxn*lyn,mpi_realprec,0,tagdTn,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-  call mpi_recv(dvnrho,lzn*lxn*lyn,mpi_realprec,0,tagdvnrho,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-  call mpi_recv(dvnz,lzn*lxn*lyn,mpi_realprec,0,tagdvnz,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-  call mpi_recv(dvnx,lzn*lxn*lyn,mpi_realprec,0,tagdvnx,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+  call mpi_recv(dnO,lzn*lxn*lyn,mpi_realprec,0,tag%dnO,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+  call mpi_recv(dnN2,lzn*lxn*lyn,mpi_realprec,0,tag%dnN2,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+  call mpi_recv(dnO2,lzn*lxn*lyn,mpi_realprec,0,tag%dnO2,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+  call mpi_recv(dTn,lzn*lxn*lyn,mpi_realprec,0,tag%dTn,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+  call mpi_recv(dvnrho,lzn*lxn*lyn,mpi_realprec,0,tag%dvnrho,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+  call mpi_recv(dvnz,lzn*lxn*lyn,mpi_realprec,0,tag%dvnz,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+  call mpi_recv(dvnx,lzn*lxn*lyn,mpi_realprec,0,tag%dvnx,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
 end if
 
 

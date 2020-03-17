@@ -17,74 +17,80 @@ mpi_realprec=>mpi_double_precision
 #endif
 
 implicit none
-
+public
 private :: lsp, wp
 
-!> NOW A LIST OF TAGS SO THESE DO NOT NEED TO BE EMBEDDED IN EACH SUBROUTINE
-integer, parameter :: tagns=2,tagvs1=3,tagTs=4
-!! root/workers input routines.  also output routines for root/worker
+type :: mpi_tags
 
-integer, parameter :: tagJ1=6,tagJ2=7,tagJ3=8,tagv2=9,tagv3=10
+integer :: ns=2, vs1=3, Ts=4
+!! root/workers input routines.  also output routines for root/worker
+integer :: J1=6,J2=7,J3=8,v2=9,v3=10
 !! output root/worker routines, main program, potential_comm
-integer, parameter :: tagvs3BC=100,tagnsBC=101,tagrhovs1BC=102,tagrhoesBC=103
+integer :: vs3BC=100,nsBC=101,rhovs1BC=102,rhoesBC=103
 !! used in the advection boundary conditions
-integer, parameter :: tagvs1BC=1000,tagvs2BC=1001!,tagvs3BC=1002    !used in the compression solution
+integer:: vs1BC=1000,vs2BC=1001!,vs3BC=1002
+!! used in the compression solution
 
 !> THESE MESSAGES ARE USED IN ELECTRODYNAMICS MODULE
-integer, parameter :: tagE1=11,tagE2=12,tagE3=13
-integer, parameter :: tagsigP=16,tagsigH=17,tagsig0=18,tagincap=19,tagv2pol=20,tagv3pol=21
-integer, parameter :: tagDE2Dt=22,tagDE3Dt=23,tagflagdirich=24    !unused in present version
-integer, parameter :: tagvn2=25,tagvn3=26,tagB1=27                !for passing/gathering full-grid winds
+! integer :: E1=11,E2=12,E3=13
+integer :: sigP=16,sigH=17,sig0=18,incap=19,v2pol=20,v3pol=21
+integer :: DE2Dt=22,DE3Dt=23,flagdirich=24    !unused in present version
+! integer :: vn2=25,vn3=26,B1=27                !for passing/gathering full-grid winds
 
 !> IN THE MAIN PROGRAM
-integer, parameter :: tagx3=1,tagdt=5
-integer, parameter :: tagx1=27,tagx2=28
+integer :: x3=1,dt=5
+integer :: x1=27,x2=28
 
 !> IN THE GRID MODULE
-integer, parameter :: tagh1=29,tagh2=30,tagh3=31
-integer, parameter :: tagglat=32,tagglon=33,tagalt=34
-integer, parameter :: taglx1=35,taglx2=36,taglx3=37,taglx3all=38
-integer, parameter :: tagBmag=39,taginc=40,tagnull=41
-integer, parameter :: tageunit1=42,tageunit2=43,tageunit3=44,tager=45,tagetheta=46,tagephi=47
-integer, parameter :: tagr=56,tagtheta=57,tagphi=58
+integer :: h1=29,h2=30,h3=31
+integer :: glat=32,glon=33,alt=34
+integer :: lx1=35,lx2=36,lx3=37,lx3all=38
+integer :: Bmag=39,inc=40,null=41
+integer :: eunit1=42,eunit2=43,eunit3=44,er=45,etheta=46,ephi=47
+integer :: r=56,theta=57,phi=58
 
 !> IN THE NEUTRAL MODULE
-integer, parameter :: taglrho=48,taglz=49
-integer, parameter :: tagdnO=50,tagdnN2=51,tagdnO2=52,tagdTn=53,tagdvnrho=54,tagdvnz=55
-integer, parameter :: tagly=69
+integer :: lrho=48,lz=49
+integer :: dnO=50,dnN2=51,dnO2=52,dTn=53,dvnrho=54,dvnz=55
+integer :: ly=69
 
 !> FOR DEALING WITH PRECIPITATION BOUNDARY CONDITIONS MODULE
-integer, parameter :: tagllat=59,tagllon=60,tagmlat=61,tagmlon=62,tagQp=63,tagE0p=64
+integer :: llat=59,llon=60,mlat=61,mlon=62,Qp=63,E0p=64
 
 !> FOR DEALING WITH THE ELECTRIC FIELD BOUNDARY CONDITIONS
-integer, parameter :: tagE0xp=65,tagE0yp=66,tagE0xi=67,tagE0yi=68
+integer :: E0xp=65,E0yp=66,E0xi=67,E0yi=68
 
 !> FOR DISTRIBUTING PART OF THE ELECTRODYNAMICS CALCULATIONS
-integer, parameter :: tagsrc=69,tagSigPint2=70,tagSigPint3=71,tagSigHint=72,tagincapint=73,tagv2electro=74,tagv3electro=75
-integer, parameter :: tagE01=76,tagE02=77,tagE03=78,tagVminx1=79,tagVmaxx1=80
+integer :: src=69,SigPint2=70,SigPint3=71,SigHint=72,incapint=73,v2electro=74,v3electro=75
+integer :: E01=76,E02=77,E03=78,Vminx1=79,Vmaxx1=80
 
 !> THESE ARE USED IN MAGCALC.F90 PROGRAM
-integer, parameter :: tagBr=81,tagBtheta=82, tagBphi=83
-integer, parameter :: tagdV=84,tagJx=85,tagJy=86,tagRx=87,tagRy=88,tagRz=89,tagRcubed=90,tagJz=91
+integer :: Br=81,Btheta=82, Bphi=83
+integer :: dV=84,Jx=85,Jy=86,Rx=87,Ry=88,Rz=89,Rcubed=90,Jz=91
 
 !> FOR COMMUNICATING IF THE GRID DIMENSIONS HAVE BEEN SWAPPED
-integer, parameter :: tagswap=92
+integer :: swap=92
 
 !> FOR SENDING THE FULL X2 GRID SIZE
-integer, parameter :: taglx2all=93
-integer, parameter :: tagx2all=94
-integer, parameter :: tagx3all=95
+integer :: lx2all=93
+integer :: x2all=94
+integer :: x3all=95
 
-!> AURORAL TAG(S)
-integer, parameter :: tagAur=96
+!> AURORAL (S)
+integer :: Aur=96
 
 !!> GENERIC PARAMETER (USED BY ADVECTION CODE - HOPEFULLY DOESN'T CREATE PROBLEMS; MZ - probably need to fix???
-!integer, parameter :: taggenericparam=97
+!integer :: genericparam=97
 
-integer, parameter :: tagTninf=98
-integer, parameter :: tagxnrange=99,tagynrange=104
-integer, parameter :: taglx=105,tagxn=106,tagyn=107,tagzn=108,tagdvnx=109
+integer :: Tninf=98
+integer :: xnrange=99,ynrange=104
+integer :: lx=105,xn=106,yn=107,zn=108,dvnx=109
 
+end type mpi_tags
+
+type(mpi_tags), protected :: mpi_tag
+
+!> A LIST OF TAGS SO THESE DO NOT NEED TO BE EMBEDDED IN EACH SUBROUTINE
 
 !> VARIABLES REUSED BY ALL WORKERS AND USING MODULES
 integer, protected :: myid,lid

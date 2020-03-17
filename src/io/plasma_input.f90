@@ -127,9 +127,9 @@ real(wp), dimension(:,:,:), intent(out) :: J1,J2,J3
 
 
 !> ALL WE HAVE TO DO IS WAIT TO RECEIVE OUR PIECE OF DATA FROM ROOT
-call bcast_recv(J1,tagJ1)
-call bcast_recv(J2,tagJ2)
-call bcast_recv(J3,tagJ3)
+call bcast_recv(J1,tag%J1)
+call bcast_recv(J2,tag%J2)
+call bcast_recv(J3,tag%J3)
 
 end subroutine input_workers_currents
 
@@ -141,9 +141,9 @@ subroutine input_workers_mpi(ns,vs1,Ts)
 
 real(wp), dimension(-1:,-1:,-1:,:), intent(out) :: ns,vs1,Ts
 
-call bcast_recv(ns,tagns)
-call bcast_recv(vs1,tagvs1)
-call bcast_recv(Ts,tagTs)
+call bcast_recv(ns,tag%ns)
+call bcast_recv(vs1,tag%vs1)
+call bcast_recv(Ts,tag%Ts)
 
 
 if (.false.) then

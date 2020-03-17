@@ -7,11 +7,7 @@ use phys_consts, only: Gconst,Me,Re,wp,red,black
 use reader, only: get_simsize3
 
 use mpimod, only: mpi_integer, mpi_comm_world, mpi_status_ignore, &
-myid, lid, lid2, lid3, &
-tagx1, tagx2, tagx3, tagtheta, tagr, tagphi, tagnull, taglx1, taglx2, taglx3, taglx3all, taginc, &
-tagh1, tagh2, tagh3, tagglat, tagglon, tageunit1, tageunit2, tageunit3, tagetheta, tager, &
-tagalt, tagbmag, tagephi, tagswap, &
-mpi_realprec, taglx2all, tagx3all, tagx2all, &
+myid, lid, lid2, lid3, tag=>mpi_tag, &
 bcast_recv, bcast_send, bcast_recv3D_ghost, bcast_send3D_ghost, bcast_recv3D_x3i, bcast_send3D_x3i, &
 bcast_send3D_x2i,bcast_recv3D_x2i, bcast_send1D_2, bcast_recv1D_2, bcast_send1D_3, bcast_recv1D_3
 
@@ -77,21 +73,21 @@ if (myid==0) then    !root must physically read the size info and pass to worker
   endif
 
   do iid=1,lid-1
-    call mpi_send(lx1,1,MPI_INTEGER,iid,taglx1,MPI_COMM_WORLD,ierr)
+    call mpi_send(lx1,1,MPI_INTEGER,iid,tag%lx1,MPI_COMM_WORLD,ierr)
     if (ierr/=0) error stop 'grid:grid_size lx1 failed mpi_send'
-    call mpi_send(lx2all,1,MPI_INTEGER,iid,taglx2all,MPI_COMM_WORLD,ierr)
+    call mpi_send(lx2all,1,MPI_INTEGER,iid,tag%lx2all,MPI_COMM_WORLD,ierr)
     if (ierr/=0) error stop 'grid:grid_size lx2all failed mpi_send'
-    call mpi_send(lx3all,1,MPI_INTEGER,iid,taglx3all,MPI_COMM_WORLD,ierr)
+    call mpi_send(lx3all,1,MPI_INTEGER,iid,tag%lx3all,MPI_COMM_WORLD,ierr)
     if (ierr/=0) error stop 'grid:grid_size lx3all failed mpi_send'
   end do
 
   print *, 'grid:grid_size reporting full grid size:  ',lx1,lx2all,lx3all
 else
-  call mpi_recv(lx1,1,MPI_INTEGER,0,taglx1,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+  call mpi_recv(lx1,1,MPI_INTEGER,0,tag%lx1,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
   if (ierr/=0) error stop 'grid:grid_size lx1 failed mpi_send'
-  call mpi_recv(lx2all,1,MPI_INTEGER,0,taglx2all,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+  call mpi_recv(lx2all,1,MPI_INTEGER,0,tag%lx2all,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
   if (ierr/=0) error stop 'grid:grid_size lx2all failed mpi_send'
-  call mpi_recv(lx3all,1,MPI_INTEGER,0,taglx3all,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+  call mpi_recv(lx3all,1,MPI_INTEGER,0,tag%lx3all,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
   if (ierr/=0) error stop 'grid:grid_size lx3all failed mpi_send'
 end if
 

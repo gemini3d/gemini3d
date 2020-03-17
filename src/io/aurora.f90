@@ -100,7 +100,7 @@ real(wp), dimension(1:lx2,1:lx3) :: emistmp
 
 do iwave=1,lwave
   emistmp=iver(:,:,iwave)
-  call gather_send(emistmp,tagAur)
+  call gather_send(emistmp,tag%Aur)
 end do
 
 

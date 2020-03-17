@@ -19,9 +19,7 @@ use potential_mumps, only: potential3D_fieldresolved_decimate, &
 use PDEelliptic, only: elliptic_workers
 
 use mpimod, only: mpi_integer, mpi_comm_world, mpi_status_ignore, &
-lid, lid2, lid3, myid, myid2, myid3, tage01, tage02, tage03, tagflagdirich, tagincapint, &
-tagsrc, tagv2electro, tagv3electro, tagvmaxx1, tagvminx1, tagj1, tagj2, tagj3, tagphi, tagsig0, &
-tagsigh, tagsighint, tagsigp, tagsigpint2, tagsigpint3, &
+lid, lid2, lid3, myid, myid2, myid3, tag=>mpi_tag, &
 bcast_send, bcast_recv, gather_recv, gather_send, halo
 
 implicit none

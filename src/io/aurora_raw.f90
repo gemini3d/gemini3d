@@ -25,10 +25,10 @@ integer :: iwave
 
 !!ivertmp=reshape(iver,[lx2,lwave,lx3],order=[1,3,2])
 !ivertmp=reshape(iver,[lwave,lx2,lx3],order=[3,1,2])
-!call gather_recv(ivertmp,tagAur,iverall)
+!call gather_recv(ivertmp,tag%Aur,iverall)
 do iwave=1,lwave
   emistmp=iver(:,:,iwave)
-  call gather_recv(emistmp,tagAur,emisall)
+  call gather_recv(emistmp,tag%Aur,emisall)
   iverout(:,:,iwave)=emisall
 end do
 
