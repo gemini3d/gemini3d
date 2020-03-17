@@ -27,7 +27,7 @@ This file is intended to document development priorities for the GEMINI project.
 	* p4est based; ForestClaw?
 * Two way coupling with MAGIC
 	* High-latitude is the obvious application for this
-* GLOW for the dipole coordinate system
+* GLOW application on dipole geomagnetic field lines
 
 
 ## Refactoring and/or Cleanup Needed
@@ -68,6 +68,7 @@ This file is intended to document development priorities for the GEMINI project.
 
 * Magnetic pole location maybe should be taken as input to geo*2geo*2, needs to be updated or to allow user-defined secular variations depending on epoch, etc.
 * Magnetic moment should not be hardcoded, inconsistent with IGRF, maybe need a lookup table based on latest IGRF.
+* Chunk input data directly from file to workers.  
 
 
 ## Issues affecting ease of use
