@@ -1,7 +1,6 @@
 submodule (ionization) glow_mod
 
 use, intrinsic :: iso_fortran_env, only: sp=>real32
-use phys_consts, only : wp
 
 !> subroutine to allocate use-associated variables
 use cglow,only: cglow_init, &

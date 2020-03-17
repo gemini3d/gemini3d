@@ -1,6 +1,6 @@
 submodule (io) output
 
-use, intrinsic :: iso_fortran_env, only: compiler_version, compiler_options, stderr=>error_unit, real32, real64
+use, intrinsic :: iso_fortran_env, only: compiler_version, compiler_options, real32, real64
 
 implicit none
 

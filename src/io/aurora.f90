@@ -1,7 +1,5 @@
 submodule (io) io_aurora
 
-use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
-
 implicit none
 
 interface ! aurora_*.f90
