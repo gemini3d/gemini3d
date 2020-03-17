@@ -11,7 +11,8 @@ use phys_consts, only : pi,mu0, wp, re, debug
 use grid, only : lx1, lx2, lx3, read_grid, clear_grid, lx2all,lx3all,grid_size
 use mesh, only : curvmesh
 use timeutils, only : dateinc
-use config, only : read_configfile
+use config, only : read_configfile, gemini_cfg
+use pathlib, only : assert_file_exists, assert_directory_exists
 use io, only : input_plasma_currents,create_outdir_mag,output_magfields
 use mpimod, only: mpi_sum, mpi_comm_world, &
 mpisetup, mpibreakdown, mpigrid, mpi_manualgrid, halo_end, &
@@ -20,46 +21,32 @@ tagdv, tagjx, tagjy, tagjz, tagrcubed, tagrx, tagry, tagrz
 
 implicit none
 
-!> VARIABLES READ IN FROM CONFIG.DAT FILE
-integer, dimension(3) :: ymd
-!! year,month,day of simulation
+!> VARIABLES READ IN FROM CONFIG FILE
+
 real(wp) :: UTsec
 !! UT (s)
-real(wp) :: UTsec0
-!! UT start time of simulation (s)
-real(wp) :: tdur
-!! duration of simulation
-real(wp), dimension(3) :: activ
-!! f10.7a,f10.7,ap
-real(wp) :: tcfl
-!! target CFL number
-real(wp) :: Teinf
-!! exospheric temperature
-integer :: potsolve
-!! what type of potential solve
-integer :: flagperiodic
-!! toggles whether or not the grid is treated as periodic in the x3 dimension (affects some of the message passing)
-integer :: flagoutput
-!! what type of output to do (1 - everything; 2 - avg'd parms.; 3 - ne only)
-integer :: flagcap
-!! internal capacitance?
 
 !> INPUT AND OUTPUT FILES
-character(:), allocatable :: infile    !command line argument input file
-character(:), allocatable :: outdir    !" " output directory
-character(:), allocatable :: indatsize,indatgrid,indatfile   !grid size and data filenames
+character(:), allocatable :: infile
+!! command line argument input file
+character(:), allocatable :: outdir
+!! " " output directory
+
 character(:), allocatable :: fieldpointfile
-character(:), allocatable :: out_format
+
+type(gemini_cfg) :: cfg
+
 
 !! GRID STRUCTURE
-type(curvmesh) :: x    !structure containg grid locations, finite differences, etc.:  see grid module for details
+type(curvmesh) :: x
+!! structure containg grid locations, finite differences, etc.:  see grid module for details
 
 !STATE VARIABLES
 real(wp), dimension(:,:,:), allocatable :: J1,J2,J3      !electrodynamic state variables
 
 !TEMPORAL VARIABLES
 real(wp) :: t=0._wp,dt      !time from beginning of simulation (s) and time step (s)
-real(wp) :: tout,dtout    !time for next output and time between outputs
+real(wp) :: tout    !time for next output and time between outputs
 real(wp) :: tstart,tfin   !temp. vars. for measuring performance of code blocks
 integer :: it,isp        !time and species loop indices
 
@@ -90,28 +77,6 @@ real(wp), dimension(:,:), allocatable :: integrandavgtop
 integer :: ix1,ix2,ix3
 real(wp) :: rmean,thetamean
 
-!NEUTRAL PERTURBATION VARIABLES (UNUSED)
-integer :: flagdneu                  !toggles neutral perturbations (0 - none; 1 - file-based neutral inputs)
-integer :: interptype                !toggles whether the neutral input data are interpreted (0 - Cartesian; 1 - axisymmetric)
-real(wp) :: dxn,drhon,dzn                 !finite differences for the neutral input data in the horizontal and vertical directions
-real(wp) :: sourcemlat,sourcemlon     !mag. lat./long for the neutral source location
-character(:), allocatable :: sourcedir          !directory where neutral input data are located
-real(wp) :: dtneu                     !time interval [s] in between neutral inputs
-
-!PRECIPITATION FILE INPUT VARIABLES (UNUSED)
-integer :: flagprecfile              ! flag toggling precipitation file input (0 - no; 1 - yes)
-real(wp) :: dtprec                    ! time interval between precip. inputs
-character(:), allocatable :: precdir ! directory containing precip. input files
-
-!! ELECTRIC FIELD FILE INPUT VARIABLES (UNUSED)
-integer :: flagE0file                !< flag toggling electric field (potential BCs) file input (0 - no; 1 - yes)
-real(wp) :: dtE0                      !< time interval between electric field file inputs
-character(:), allocatable :: E0dir   !< directory containing electric field file input data
-
-!! GLOW MODULE INPUT VARIABLES
-integer :: flagglow                     !flag toggling GLOW module run (include aurora) (0 - no; 1 - yes)
-real(wp) :: dtglow                      !time interval between GLOW runs (s)
-real(wp) :: dtglowout                   !time interval between GLOW auroral outputs (s)
 
 !! FOR SPECIFYING THE PROCESS GRID
 integer :: lid2in,lid3in
@@ -146,57 +111,60 @@ print *, 'magcalc.f90 --> Process:  ',myid,' of:  ',lid-1,' online...'
 call get_command_argument(1,argv)
 outdir=trim(argv)
 infile=outdir//'/inputs/config.nml'
-!infile = trim(argv)
 inquire(file=infile,exist=file_exists)    !needed to deal with ini vs. nml inputs...
-if ( .not. file_exists) then
-  infile=outdir//'/inputs/config.nml'
+if (.not. file_exists) then
+  infile=outdir//'/inputs/config.ini'
 end if
 if (myid==0) then
   print *, 'Simulation data directory:  ',outdir
   print *, 'Input config file:  ',infile
 end if
-call read_configfile(infile,ymd,UTsec0,tdur,dtout,activ,tcfl,Teinf,potsolve,flagperiodic,flagoutput,flagcap, &
-                     indatsize,indatgrid,indatfile,&
-                     flagdneu,interptype,sourcemlat,sourcemlon,dtneu,dxn,drhon,dzn,sourcedir,flagprecfile, &
-                     dtprec,precdir,flagE0file,dtE0,E0dir,flagglow,dtglow,dtglowout, out_format)
+call read_configfile(infile, cfg)
 
 !> PRINT SOME DIAGNOSIC INFO FROM ROOT
 if (myid==0) then
-  print '(A,I6,A1,I0.2,A1,I0.2)', infile // ' simulation year-month-day is:  ',ymd(1),'-',ymd(2),'-',ymd(3)
-  print '(A51,F10.3)', 'start time is:  ',UTsec0
-  print '(A51,F10.3)', 'duration is:  ',tdur
-  print '(A51,F10.3)', 'output every:  ',dtout
-  print '(A,/,A,/,A,/,A)', 'using input data files:', indatsize, indatgrid, indatfile
+  call assert_file_exists(cfg%indatsize)
+  call assert_file_exists(cfg%indatgrid)
+  call assert_file_exists(cfg%indatfile)
 
-  if(flagdneu==1) then
-    print *, 'Neutral disturbance mlat,mlon:  ',sourcemlat,sourcemlon
-    print *, 'Neutral disturbance cadence (s):  ',dtneu
-    print *, 'Neutral grid resolution (m):  ',drhon,dzn
-    print *, 'Neutral disturbance data files located in directory:  ',sourcedir
-  endif
+  print '(A,I6,A1,I0.2,A1,I0.2)', infile // ' simulation year-month-day is:  ',cfg%ymd(1),'-',cfg%ymd(2),'-',cfg%ymd(3)
+  print '(A51,F10.3)', 'start time is:  ',cfg%UTsec0
+  print '(A51,F10.3)', 'duration is:  ',cfg%tdur
+  print '(A51,F10.3)', 'output every:  ',cfg%dtout
+  print '(A,/,A,/,A,/,A)', 'gemini.f90: using input data files:', cfg%indatsize, cfg%indatgrid, cfg%indatfile
 
-  if (flagprecfile==1) then
-    print '(A,F10.3)', 'Precipitation file input cadence (s):  ',dtprec
-    print *, 'Precipitation file input source directory:  ' // precdir
+  if(cfg%flagdneu==1) then
+    call assert_directory_exists(cfg%sourcedir)
+    print *, 'Neutral disturbance mlat,mlon:  ',cfg%sourcemlat,cfg%sourcemlon
+    print *, 'Neutral disturbance cadence (s):  ',cfg%dtneu
+    print *, 'Neutral grid resolution (m):  ',cfg%drhon,cfg%dzn
+    print *, 'Neutral disturbance data files located in directory:  ',cfg%sourcedir
   end if
 
-  if(flagE0file==1) then
-    print *, 'Electric field file input cadence (s):  ',dtE0
-    print *, 'Electric field file input source directory:  ' // E0dir
+  if (cfg%flagprecfile==1) then
+    call assert_directory_exists(cfg%precdir)
+    print '(A,F10.3)', 'Precipitation file input cadence (s):  ',cfg%dtprec
+    print *, 'Precipitation file input source directory:  ' // cfg%precdir
   end if
 
-  if (flagglow==1) then
+  if(cfg%flagE0file==1) then
+    call assert_directory_exists(cfg%E0dir)
+    print *, 'Electric field file input cadence (s):  ',cfg%dtE0
+    print *, 'Electric field file input source directory:  ' // cfg%E0dir
+  end if
+
+  if (cfg%flagglow==1) then
     print *, 'GLOW enabled for auroral emission calculations.'
-    print *, 'GLOW electron transport calculation cadence (s): ', dtglow
-    print *, 'GLOW auroral emission output cadence (s): ', dtglowout
+    print *, 'GLOW electron transport calculation cadence (s): ', cfg%dtglow
+    print *, 'GLOW auroral emission output cadence (s): ', cfg%dtglowout
   end if
 end if
 
 !ESTABLISH A PROCESS GRID
-!call grid_size(indatsize)
+!call grid_size(cfg%indatsize)
 !call mpigrid(lx2all,lx3all)    !following grid_size these are in scope
 !!CHECK THE GRID SIZE AND ESTABLISH A PROCESS GRID
-call grid_size(indatsize)
+call grid_size(cfg%indatsize)
 if (argc > 2) then   !user specified process grid
   call get_command_argument(3,argv)
   read(argv,*) lid2in
@@ -212,7 +180,7 @@ end if
 if (myid==0) then
   print*, 'Process grid established; reading in full grid file now...'
 end if
-call read_grid(indatsize,indatgrid,flagperiodic,x)
+call read_grid(cfg%indatsize,cfg%indatgrid, cfg%flagperiodic,x)
 !! read in a previously generated grid from filename listed in input file, distribute subgrids to individual workers
 if (lx2==1) then
   flag2D=1
@@ -352,12 +320,12 @@ allocate(Brall(lpoints),Bthetaall(lpoints),Bphiall(lpoints))
 !! only used by root, but I think workers need to have space allocated for this
 
 !! MAIN LOOP
-UTsec=UTsec0; it=1; t=0d0; tout=t;
-call dateinc(dtout,ymd,UTsec)     !skip first file
+UTsec=cfg%UTsec0; it=1; t=0d0; tout=t;
+call dateinc(cfg%dtout,cfg%ymd,UTsec)     !skip first file
 it=3                              !don't trigger any special adaptations to filename
-do while (t<tdur)
+do while (t < cfg%tdur)
   !TIME STEP CALCULATION
-  dt=dtout    !only compute magnetic field at times when we've done output
+  dt=cfg%dtout    !only compute magnetic field at times when we've done output
 
 
   !READ IN THE FULL PLASMA AND FIELD DATA FROM THE OUTPUT FILE (NOTE THAT WE NEED TO KNOW OUTPUT TYPE DONE)
@@ -367,15 +335,15 @@ do while (t<tdur)
   if (it==2) then
     UTsec=UTsec-0.000001d0
   end if
-  call input_plasma_currents(outdir,out_format,flagoutput,ymd,UTsec,J1,J2,J3)    !now everyone has their piece of data
+  call input_plasma_currents(outdir, cfg%out_format, cfg%flagoutput,cfg%ymd,UTsec,J1,J2,J3)    !now everyone has their piece of data
 
 
   !FORCE PARALLEL CURRENTS TO ZERO BELOW SOME ALTITUDE LIMIT
   if(myid==0) print *, 'Zeroing out low altitude currents (these are basically always artifacts)...'
   where (alt<75d3)
-    J1=0d0
-    J2=0d0
-    J3=0d0
+    J1=0
+    J2=0
+    J3=0
   end where
 
 
@@ -449,7 +417,7 @@ do while (t<tdur)
   do ipoints=1,lpoints
     if (myid == 0) then
       print *, 'magcalc.f90 --> Computing magnetic field for field point:  ',ipoints,' out of:  ',lpoints
-      print *, '            --> ...for time:  ',ymd,UTsec
+      print *, '            --> ...for time:  ',cfg%ymd,UTsec
     end if
 
 
@@ -714,19 +682,19 @@ do while (t<tdur)
   !OUTPUT SHOULD BE DONE FOR EVERY INPUT FILE THAT HAS BEEN READ IN
   if (myid==0) then
     call cpu_time(tstart)
-    call output_magfields(outdir,ymd,UTsec,Brall,Bthetaall,Bphiall)   !mag field data already reduced so just root needs to output
+    call output_magfields(outdir,cfg%ymd,UTsec,Brall,Bthetaall,Bphiall)   !mag field data already reduced so just root needs to output
     call cpu_time(tfin)
    if(debug) print *, 'magcalc.f90 --> Output done for time step:  ',t,' in cpu_time of:  ',tfin-tstart
   end if
-  tout=tout+dtout
+  tout=tout+cfg%dtout
 
 
   !NOW OUR SOLUTION IS FULLY UPDATED SO UPDATE TIME VARIABLES TO MATCH...
   it=it+1; t=t+dt;
-  if (myid==0 .and. debug) print *, 'magcalc.f90 --> Moving on to time step (in sec):  ',t,'; end time of simulation:  ',tdur
-  call dateinc(dt,ymd,UTsec)
+  if (myid==0 .and. debug) print *, 'magcalc.f90 --> Moving on to time step (in sec):  ',t,'; end time of simulation:  ',cfg%tdur
+  call dateinc(dt,cfg%ymd,UTsec)
   if (myid==0) then
-    print *, 'magcalc.f90 --> Current date',ymd,'Current UT time:  ',UTsec
+    print *, 'magcalc.f90 --> Current date',cfg%ymd,'Current UT time:  ',UTsec
   end if
 end do
 
@@ -755,7 +723,7 @@ deallocate(integrandtop,integrandavgtop)
 ierr = mpibreakdown()
 
 if (ierr /= 0) then
-  write(stderr, *) 'MAGCALC: abnormal MPI shutdown code', ierr
+  write(stderr, *) 'MAGCALC: abnormal MPI shutdown code', ierr, 'Process #', myid,' /',lid-1
   error stop
 endif
 

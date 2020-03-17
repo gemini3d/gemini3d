@@ -151,9 +151,12 @@ if(present(stem)) then
   i = index(path, '.', back=.true.)
 
   !> find filename if path specified
-  if (i > 8 .and. path(i-7:i-1) == stem) then
-    fn = path  !< assuming it's the full path
-    return
+  if (i > 8) then
+    !! has to be nested since no short-circuit logic
+    if (path(i-7:i-1) == stem) then
+      fn = path  !< assuming it's the full path
+      return
+    endif
   endif
 else
   stem1 = ''

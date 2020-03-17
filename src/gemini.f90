@@ -5,7 +5,7 @@ use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
 use phys_consts, only : lnchem, lwave, lsp, wp, debug
 use grid, only: grid_size,read_grid,clear_grid,lx1,lx2,lx3,lx2all,lx3all
 use mesh, only: curvmesh
-use config, only : read_configfile
+use config, only : read_configfile, gemini_cfg
 use pathlib, only : assert_file_exists, assert_directory_exists
 use io, only : input_plasma,create_outdir,output_plasma,create_outdir_aur,output_aur
 use mpimod, only : mpisetup, mpibreakdown, mpi_manualgrid, mpigrid, lid, myid
@@ -21,37 +21,17 @@ implicit none
 
 integer :: ierr
 
-!> VARIABLES READ IN FROM CONFIG.INI FILE
-integer, dimension(3) :: ymd
-!! year,month,day of simulation
+!> VARIABLES READ IN FROM CONFIG FILE
 real(wp) :: UTsec
 !! UT (s)
-real(wp) :: UTsec0
-!! UT start time of simulation (s)
-real(wp) :: tdur
-!! duration of simulation
-real(wp), dimension(3) :: activ
-!! f10.7a,f10.7,ap
-real(wp) :: tcfl
-!! target CFL number
-real(wp) :: Teinf
-!! exospheric temperature
-integer :: potsolve
-!! what type of potential solve
-integer :: flagperiodic
-!! toggles whether or not the grid is treated as periodic in the x3 dimension (affects some of the message passing)
-integer :: flagoutput
-!! what type of output to do (1 - everything; 2 - avg'd parms.; 3 - ne only)
-integer :: flagcap
-!! internal capacitance?
 
 !> INPUT AND OUTPUT FILES
 character(:), allocatable :: infile
 !! command line argument input file
 character(:), allocatable :: outdir
 !! " " output directory
-character(:), allocatable :: indatsize,indatgrid,indatfile
-!! grid size and data filenames
+
+type(gemini_cfg) :: cfg
 
 !> GRID STRUCTURE
 type(curvmesh) :: x
@@ -76,9 +56,9 @@ real(wp), dimension(:,:,:), allocatable :: iver
 !! integrated volume emission rate of aurora calculated by GLOW
 
 !TEMPORAL VARIABLES
-real(wp) :: t=0._wp,dt=1e-6_wp,dtprev
+real(wp) :: t=0, dt=1e-6_wp,dtprev
 !! time from beginning of simulation (s) and time step (s)
-real(wp) :: tout,dtout
+real(wp) :: tout
 !! time for next output and time between outputs
 real(wp) :: tstart,tfin
 !! temp. vars. for measuring performance of code blocks
@@ -88,46 +68,8 @@ integer :: it,isp
 !WORK ARRAYS
 real(wp), allocatable :: dl1,dl2,dl3     !these are grid distances in [m] used to compute Courant numbers
 
-!NEUTRAL PERTURBATION VARIABLES
-integer :: flagdneu
-!! toggles neutral perturbations (0 - none; 1 - file-based neutral inputs)
-integer :: interptype
-!! toggles whether the neutral input data are interpreted (0 - Cartesian; 1 - axisymmetric)
-real(wp) :: dxn,drhon,dzn
-!! finite differences for the neutral input data in the horizontal and vertical directions
-real(wp) :: sourcemlat,sourcemlon
-!! mag. lat./long for the neutral source location
-character(:), allocatable :: sourcedir
-!! directory where neutral input data are located
-real(wp) :: dtneu
-!! time interval [s] in between neutral inputs
-
-!> PRECIPITATION FILE INPUT VARIABLES
-integer :: flagprecfile
-!! flag toggling precipitation file input (0 - no; 1 - yes)
-real(wp) :: dtprec
-!! time interval between precip. inputs
-character(:), allocatable :: precdir
-!! directory containing precip. input files
-
-!> ELECTRIC FIELD FILE INPUT VARIABLES
-integer :: flagE0file
-!! flag toggling electric field (potential BCs) file input (0 - no; 1 - yes)
-real(wp) :: dtE0
-!! time interval between electric field file inputs
-character(:), allocatable :: E0dir
-!! directory containing electric field file input data
-
-!> GLOW MODULE INPUT VARIABLES
-integer :: flagglow
-!! flag toggling GLOW module run (include aurora) (0 - no; 1 - yes)
-real(wp) :: dtglow
-!! time interval between GLOW runs (s)
-real(wp) :: dtglowout
-!! time interval between GLOW auroral outputs (s)
 real(wp) :: tglowout
 !! time for next GLOW output
-character(:), allocatable :: out_format
 
 !> FOR HANDLING OUTPUT
 logical :: nooutput = .false.
@@ -164,52 +106,49 @@ print '(2A,I6,A3,I6,3A)', trim(argv), ' Process:  ', myid,' / ',lid-1, ' at ', d
 call get_command_argument(1,argv)
 infile = trim(argv)
 
-call read_configfile(infile, ymd,UTsec0,tdur,dtout,activ,tcfl,Teinf,potsolve,flagperiodic,flagoutput,flagcap, &
-                     indatsize,indatgrid,indatfile,&
-                     flagdneu,interptype,sourcemlat,sourcemlon,dtneu,dxn,drhon,dzn,sourcedir,flagprecfile, &
-                     dtprec,precdir,flagE0file,dtE0,E0dir,flagglow,dtglow,dtglowout, out_format)
+call read_configfile(infile, cfg)
 
 !> PRINT SOME DIAGNOSIC INFO FROM ROOT
 if (myid==0) then
-  call assert_file_exists(indatsize)
-  call assert_file_exists(indatgrid)
-  call assert_file_exists(indatfile)
+  call assert_file_exists(cfg%indatsize)
+  call assert_file_exists(cfg%indatgrid)
+  call assert_file_exists(cfg%indatfile)
 
-  print '(A,I6,A1,I0.2,A1,I0.2)', infile // ' simulation year-month-day is:  ',ymd(1),'-',ymd(2),'-',ymd(3)
-  print '(A51,F10.3)', 'start time is:  ',UTsec0
-  print '(A51,F10.3)', 'duration is:  ',tdur
-  print '(A51,F10.3)', 'output every:  ',dtout
-  print '(A,/,A,/,A,/,A)', 'gemini.f90: using input data files:', indatsize, indatgrid, indatfile
+  print '(A,I6,A1,I0.2,A1,I0.2)', infile // ' simulation year-month-day is:  ',cfg%ymd(1),'-',cfg%ymd(2),'-',cfg%ymd(3)
+  print '(A51,F10.3)', 'start time is:  ',cfg%UTsec0
+  print '(A51,F10.3)', 'duration is:  ',cfg%tdur
+  print '(A51,F10.3)', 'output every:  ',cfg%dtout
+  print '(A,/,A,/,A,/,A)', 'gemini.f90: using input data files:', cfg%indatsize, cfg%indatgrid, cfg%indatfile
 
-  if(flagdneu==1) then
-    call assert_directory_exists(sourcedir)
-    print *, 'Neutral disturbance mlat,mlon:  ',sourcemlat,sourcemlon
-    print *, 'Neutral disturbance cadence (s):  ',dtneu
-    print *, 'Neutral grid resolution (m):  ',drhon,dzn
-    print *, 'Neutral disturbance data files located in directory:  ',sourcedir
+  if(cfg%flagdneu==1) then
+    call assert_directory_exists(cfg%sourcedir)
+    print *, 'Neutral disturbance mlat,mlon:  ',cfg%sourcemlat,cfg%sourcemlon
+    print *, 'Neutral disturbance cadence (s):  ',cfg%dtneu
+    print *, 'Neutral grid resolution (m):  ',cfg%drhon,cfg%dzn
+    print *, 'Neutral disturbance data files located in directory:  ',cfg%sourcedir
   end if
 
-  if (flagprecfile==1) then
-    call assert_directory_exists(precdir)
-    print '(A,F10.3)', 'Precipitation file input cadence (s):  ',dtprec
-    print *, 'Precipitation file input source directory:  ' // precdir
+  if (cfg%flagprecfile==1) then
+    call assert_directory_exists(cfg%precdir)
+    print '(A,F10.3)', 'Precipitation file input cadence (s):  ',cfg%dtprec
+    print *, 'Precipitation file input source directory:  ' // cfg%precdir
   end if
 
-  if(flagE0file==1) then
-    call assert_directory_exists(E0dir)
-    print *, 'Electric field file input cadence (s):  ',dtE0
-    print *, 'Electric field file input source directory:  ' // E0dir
+  if(cfg%flagE0file==1) then
+    call assert_directory_exists(cfg%E0dir)
+    print *, 'Electric field file input cadence (s):  ',cfg%dtE0
+    print *, 'Electric field file input source directory:  ' // cfg%E0dir
   end if
 
-  if (flagglow==1) then
+  if (cfg%flagglow==1) then
     print *, 'GLOW enabled for auroral emission calculations.'
-    print *, 'GLOW electron transport calculation cadence (s): ', dtglow
-    print *, 'GLOW auroral emission output cadence (s): ', dtglowout
+    print *, 'GLOW electron transport calculation cadence (s): ', cfg%dtglow
+    print *, 'GLOW auroral emission output cadence (s): ', cfg%dtglowout
   end if
 end if
 
 !> CHECK THE GRID SIZE AND ESTABLISH A PROCESS GRID
-call grid_size(indatsize)
+call grid_size(cfg%indatsize)
 
 select case (argc)
   case (4,5) !< user specified process grid
@@ -243,7 +182,7 @@ end select
 
 
 !> LOAD UP THE GRID STRUCTURE/MODULE VARS. FOR THIS SIMULATION
-call read_grid(indatsize,indatgrid,flagperiodic,x)
+call read_grid(cfg%indatsize,cfg%indatgrid,cfg%flagperiodic, x)
 !! read in a previously generated grid from filenames listed in input file
 
 
@@ -253,8 +192,8 @@ call get_command_argument(2,argv)
 outdir = trim(argv)
 
 if (myid==0) then
-  call create_outdir(outdir,infile,indatsize,indatgrid,indatfile,flagdneu,sourcedir,flagprecfile,precdir,flagE0file,E0dir)
-  if (flagglow/=0) call create_outdir_aur(outdir)
+  call create_outdir(outdir,infile,cfg)
+  if (cfg%flagglow/=0) call create_outdir_aur(outdir)
 end if
 
 
@@ -278,13 +217,13 @@ if (myid==0) then
 end if
 
 !> ALLOCATE MEMORY FOR AURORAL EMISSIONS, IF CALCULATED
-if (flagglow/=0) then
+if (cfg%flagglow/=0) then
   allocate(iver(lx2,lx3,lwave))
 end if
 
 
 !> LOAD ICS AND DISTRIBUTE TO WORKERS (REQUIRES GRAVITY FOR INITIAL GUESSING)
-call input_plasma(x%x1,x%x2all,x%x3all,indatsize,indatfile,ns,vs1,Ts)
+call input_plasma(x%x1,x%x2all,x%x3all,cfg%indatsize,cfg%indatfile,ns,vs1,Ts)
 
 !ROOT/WORKERS WILL ASSUME THAT THE MAGNETIC FIELDS AND PERP FLOWS START AT ZERO
 !THIS KEEPS US FROM HAVING TO HAVE FULL-GRID ARRAYS FOR THESE STATE VARS (EXCEPT
@@ -306,15 +245,15 @@ E1=0; E2=0; E3=0;
 vs2=0; vs3=0;
 
 !> INITIALIZE AURORAL EMISSION MAP
-if(flagglow/=0) iver=0
+if(cfg%flagglow/=0) iver=0
 
 
 !> MAIN LOOP
-UTsec=UTsec0; it=1; t=0d0; tout=t; tglowout=t;
-do while (t<tdur)
+UTsec=cfg%UTsec0; it=1; t=0; tout=t; tglowout=t;
+do while (t < cfg%tdur)
   !! TIME STEP CALCULATION
   dtprev=dt
-  call dt_comm(t,tout,tglowout,flagglow,tcfl,ns,Ts,vs1,vs2,vs3,B1,B2,B3,x,potsolve,dt)
+  call dt_comm(t,tout,tglowout,cfg%flagglow,cfg%tcfl,ns,Ts,vs1,vs2,vs3,B1,B2,B3,x,cfg%potsolve,dt)
   if (it>1) then
     if(dt/dtprev > dtscale) then
       !! throttle how quickly we allow dt to increase
@@ -332,7 +271,7 @@ do while (t<tdur)
   !RECALLED EVERY SO OFTEN (MAYBE EVERY 10-15 MINS)
   if (it==1) then
     call cpu_time(tstart)
-    call neutral_atmos(ymd,UTsec,x%glat,x%glon,x%alt,activ,nn,Tn)
+    call neutral_atmos(cfg%ymd,UTsec,x%glat,x%glon,x%alt,cfg%activ,nn,Tn)
     vn1=0d0; vn2=0d0; vn3=0d0
     !! hard-code these to zero for the first time step
     if (myid==0) then
@@ -343,17 +282,18 @@ do while (t<tdur)
 
 
   !> GET NEUTRAL PERTURBATIONS FROM ANOTHER MODEL
-  if (flagdneu==1) then
+  if (cfg%flagdneu==1) then
     call cpu_time(tstart)
     if (it==1) then
       !! this triggers the code to load the neutral frame correspdonding ot the beginning time of the simulation
       if (myid==0) print *, '!!!Attempting initial load of neutral dynamics files!!!' // &
                               ' This is a workaround that fixes the restart code...',t-dt
-      call neutral_perturb(interptype,dt,dtneu,t-dtneu,ymd,UTsec-dtneu,sourcedir,dxn,drhon,dzn, &
-                                  sourcemlat,sourcemlon,x,nn,Tn,vn1,vn2,vn3)
+      call neutral_perturb(cfg%interptype,dt,cfg%dtneu,t-cfg%dtneu,cfg%ymd,UTsec-cfg%dtneu, &
+        cfg%sourcedir,cfg%dxn,cfg%drhon,cfg%dzn, &
+        cfg%sourcemlat,cfg%sourcemlon,x,nn,Tn,vn1,vn2,vn3)
     end if
-    call neutral_perturb(interptype,dt,dtneu,t,ymd,UTsec,sourcedir,dxn,drhon,dzn,sourcemlat, &
-                                  sourcemlon,x,nn,Tn,vn1,vn2,vn3)
+    call neutral_perturb(cfg%interptype,dt,cfg%dtneu,t,cfg%ymd,UTsec,cfg%sourcedir,cfg%dxn,cfg%drhon,cfg%dzn,cfg%sourcemlat, &
+      cfg%sourcemlon,x,nn,Tn,vn1,vn2,vn3)
     if (myid==0 .and. debug) then
       call cpu_time(tfin)
       print *, 'Neutral perturbations calculated in time:  ',tfin-tstart
@@ -362,9 +302,9 @@ do while (t<tdur)
 
   !! POTENTIAL SOLUTION
   call cpu_time(tstart)
-  call electrodynamics(it,t,dt,nn,vn2,vn3,Tn,sourcemlat,ns,Ts,vs1,B1,vs2,vs3,x, &
-                        potsolve,flagcap,E1,E2,E3,J1,J2,J3, &
-                        Phiall,flagE0file,dtE0,E0dir,ymd,UTsec)
+  call electrodynamics(it,t,dt,nn,vn2,vn3,Tn, cfg%sourcemlat,ns,Ts,vs1,B1,vs2,vs3,x, &
+                        cfg%potsolve, cfg%flagcap,E1,E2,E3,J1,J2,J3, &
+                        Phiall, cfg%flagE0file, cfg%dtE0, cfg%E0dir, cfg%ymd,UTsec)
   if (myid==0 .and. debug) then
     call cpu_time(tfin)
     print *, 'Electrodynamics total solve time:  ',tfin-tstart
@@ -372,8 +312,8 @@ do while (t<tdur)
 
   !! UPDATE THE FLUID VARIABLES
   if (myid==0 .and. debug) call cpu_time(tstart)
-  call fluid_adv(ns,vs1,Ts,vs2,vs3,J1,E1,Teinf,t,dt,x,nn,vn1,vn2,vn3,Tn,iver,activ(2),activ(1),ymd,UTsec, &
-                 flagprecfile,dtprec,precdir,flagglow,dtglow)
+  call fluid_adv(ns,vs1,Ts,vs2,vs3,J1,E1,cfg%Teinf,t,dt,x,nn,vn1,vn2,vn3,Tn,iver,cfg%activ(2),cfg%activ(1),cfg%ymd,UTsec, &
+    cfg%flagprecfile,cfg%dtprec,cfg%precdir,cfg%flagglow,cfg%dtglow)
   if (myid==0 .and. debug) then
     call cpu_time(tfin)
     print *, 'Multifluid total solve time:  ',tfin-tstart
@@ -381,24 +321,24 @@ do while (t<tdur)
 
   !! NOW OUR SOLUTION IS FULLY UPDATED SO UPDATE TIME VARIABLES TO MATCH...
   it=it+1; t=t+dt;
-  if (myid==0 .and. debug) print *, 'Moving on to time step (in sec):  ',t,'; end time of simulation:  ',tdur
-  call dateinc(dt,ymd,UTsec)
+  if (myid==0 .and. debug) print *, 'Moving on to time step (in sec):  ',t,'; end time of simulation:  ',cfg%tdur
+  call dateinc(dt,cfg%ymd,UTsec)
 
   if (myid==0 .and. modulo(it,10) == 0) then
     !! print every 10th time step to avoid extreme amounts of console printing
-    print '(A,I4,A1,I0.2,A1,I0.2,A1,F12.6,A5,F8.6)', 'Current time ',ymd(1),'-',ymd(2),'-',ymd(3),' ',UTsec,'; dt=',dt
+    print '(A,I4,A1,I0.2,A1,I0.2,A1,F12.6,A5,F8.6)', 'Current time ',cfg%ymd(1),'-',cfg%ymd(2),'-',cfg%ymd(3),' ',UTsec,'; dt=',dt
   endif
 
   !! OUTPUT
   if (abs(t-tout) < 1d-5) then
-    tout = tout + dtout
+    tout = tout + cfg%dtout
     if (nooutput) then
       write(stderr,*) 'WARNING: skipping file output at sim time (sec)',t
       cycle
     endif
     !! close enough to warrant an output now...
     if (myid==0 .and. debug) call cpu_time(tstart)
-    call output_plasma(outdir,flagoutput,ymd,UTsec,vs2,vs3,ns,vs1,Ts,Phiall,J1,J2,J3, out_format)
+    call output_plasma(outdir,cfg%flagoutput,cfg%ymd,UTsec,vs2,vs3,ns,vs1,Ts,Phiall,J1,J2,J3, cfg%out_format)
 
     if (myid==0 .and. debug) then
       call cpu_time(tfin)
@@ -407,14 +347,14 @@ do while (t<tdur)
   end if
 
   !! GLOW OUTPUT
-  if ((flagglow/=0).and.(abs(t-tglowout) < 1d-5)) then !same as plasma output
+  if ((cfg%flagglow/=0).and.(abs(t-tglowout) < 1d-5)) then !same as plasma output
     call cpu_time(tstart)
-    call output_aur(outdir,flagglow,ymd,UTsec,iver, out_format)
+    call output_aur(outdir,cfg%flagglow,cfg%ymd,UTsec,iver, cfg%out_format)
     if (myid==0) then
       call cpu_time(tfin)
       print *, 'Auroral output done for time step:  ',t,' in cpu_time of: ',tfin-tstart
     end if
-    tglowout=tglowout+dtglowout
+    tglowout = tglowout + cfg%dtglowout
   end if
 end do
 
@@ -426,7 +366,7 @@ deallocate(nn,Tn,vn1,vn2,vn3)
 
 if (myid==0) deallocate(Phiall)
 
-if (flagglow/=0) deallocate(iver)
+if (cfg%flagglow/=0) deallocate(iver)
 
 !! DEALLOCATE MODULE VARIABLES (MAY HAPPEN AUTOMATICALLY IN F2003???)
 call clear_grid(x)

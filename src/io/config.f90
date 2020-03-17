@@ -1,209 +1,256 @@
 module config
 
 use, intrinsic :: iso_fortran_env, only : stderr=>error_unit, compiler_version
-use, intrinsic :: ieee_arithmetic, only: ieee_is_finite, ieee_value, ieee_quiet_nan
 
 use pathlib, only : expanduser
 use phys_consts, only : wp
 
 implicit none
+private
+public :: read_configfile, gemini_cfg
+
+type :: gemini_cfg
+
+integer :: ymd(3)
+real(wp) :: UTsec0, tdur, dtout
+real(wp) :: activ(3)
+real(wp) :: tcfl
+real(wp) :: Teinf
+integer :: potsolve, flagperiodic, flagoutput, flagcap,flagdneu,flagprecfile,interptype=0
+real(wp) :: sourcemlat=0,sourcemlon=0,dtneu=0, dxn=0,drhon=0,dzn=0
+real(wp) :: dtprec=0
+character(:), allocatable :: indatsize,indatgrid, indatfile, sourcedir, precdir, E0dir, out_format
+integer :: flagE0file
+real(wp) :: dtE0=0
+integer :: flagglow
+real(wp) :: dtglow, dtglowout
+
+end type gemini_cfg
+
+character(:), allocatable :: compiler_vendor
 
 contains
 
-subroutine read_configfile(infile,ymd,UTsec0,tdur,dtout,activ,tcfl,Teinf, &
-  potsolve,flagperiodic, flagoutput,flagcap,&
-  indatsize,indatgrid,indatfile,flagdneu,interptype, &
-  sourcemlat,sourcemlon,dtneu,dxn,drhon,dzn,sourcedir,flagprecfile,&
-  dtprec,precdir,flagE0file,dtE0,E0dir,flagglow,dtglow,dtglowout, out_format)
+subroutine read_configfile(filename, cfg)
 
-character(*), intent(in) :: infile
-integer, dimension(3), intent(out):: ymd
-real(wp), intent(out) :: UTsec0
-real(wp), intent(out) :: tdur
-real(wp), intent(out) :: dtout
-real(wp), dimension(3), intent(out) :: activ
-real(wp), intent(out) :: tcfl
-real(wp), intent(out) :: Teinf
-integer, intent(out) :: potsolve, flagperiodic, flagoutput, flagcap
-integer, intent(out) :: flagdneu
-integer, intent(out) :: interptype
-real(wp), intent(out) :: sourcemlat,sourcemlon
-real(wp), intent(out) :: dtneu
-real(wp), intent(out) :: dxn,drhon,dzn
-integer, intent(out) :: flagprecfile
-real(wp), intent(out) :: dtprec
-character(:), allocatable, intent(out) :: indatsize,indatgrid, indatfile, sourcedir, precdir, E0dir, out_format
-integer, intent(out) :: flagE0file
-real(wp), intent(out) :: dtE0
-integer, intent(out) :: flagglow
-real(wp), intent(out) :: dtglow, dtglowout
+character(*), intent(in) :: filename
+class(gemini_cfg), intent(out) :: cfg
+
 !! READS THE INPUT CONFIGURAITON FILE, ASSIGNS VARIABLES FOR FILENAMES, SIZES, ETC.
-character(256) :: buf, indat_size, indat_grid, indat_file, source_dir, prec_dir, E0_dir
-character(4) :: file_format
 integer :: i, realbits, lxp, lyp
 real(wp) :: NaN, glat, glon, xdist, ydist, alt_min, alt_max, alt_scale(4), Bincl, nmf, nme
-logical :: is_nml
-character(:), allocatable :: compiler_vendor
+
+compiler_vendor = get_compiler_vendor()
+
+!> READ CONFIG FILE FOR THIS SIMULATION
+!! NOTE: Namelist file groups must be read in order they appear in the Namelist file, or End of File error occurs
+
+if (filename(len(filename)-3:len(filename)) == '.nml') then
+  call read_nml(filename, cfg)
+else
+  call read_ini(filename, cfg)
+endif
+
+end subroutine read_configfile
+
+
+subroutine read_nml(filename, cfg)
+
+character(*), intent(in) :: filename
+class(gemini_cfg), intent(out) :: cfg
+
+integer :: u, i
+
+integer :: ymd(3)
+real(wp) :: UTsec0
+real(wp) :: tdur
+real(wp) :: dtout
+real(wp) :: activ(3)
+real(wp) :: tcfl
+real(wp) :: Teinf
+integer :: potsolve, flagperiodic, flagoutput, flagcap
+integer :: flagdneu
+integer :: interptype
+real(wp) :: sourcemlat,sourcemlon
+real(wp) :: dtneu
+real(wp) :: dxn,drhon,dzn
+integer :: flagprecfile
+real(wp) :: dtprec=0
+character(256) :: indat_size, indat_grid, indat_file, source_dir, prec_dir, E0_dir
+character(4) :: file_format
+integer :: flagE0file
+real(wp) :: dtE0=0
+integer :: flagglow
+real(wp) :: dtglow=0, dtglowout=0
 
 namelist /base/ ymd, UTsec0, tdur, dtout, activ, tcfl, Teinf
 namelist /files/ file_format, indat_size, indat_grid, indat_file
 namelist /flags/ potsolve, flagperiodic, flagoutput, flagcap, flagdneu, flagprecfile, flagE0file, flagglow
-namelist /setup/ glat, glon, xdist, ydist, alt_min, alt_max, alt_scale,lxp,lyp,Bincl,nmf,nme
-namelist /neutral_perturb/ interptype, sourcemlat, sourcemlon, dxn, drhon, dzn, source_dir
+namelist /neutral_perturb/ interptype, sourcemlat, sourcemlon, dtneu, dxn, drhon, dzn, source_dir
 namelist /precip/ dtprec, prec_dir
 namelist /efield/ dtE0, E0_dir
 namelist /glow/ dtglow, dtglowout
 
-compiler_vendor = get_compiler_vendor()
+open(newunit=u, file=filename, status='old', action='read')
 
-NaN = ieee_value(0._wp, ieee_quiet_nan)
+read(u, nml=base, iostat=i)
+call check_nml_io(i, filename, "base", compiler_vendor)
+cfg%ymd = ymd
+cfg%UTsec0 = UTsec0
+cfg%tdur = tdur
+cfg%dtout = dtout
+cfg%activ = activ
+cfg%tcfl = tcfl
+cfg%Teinf = Teinf
 
-is_nml = infile(len(infile)-3:len(infile)) == '.nml'
+read(u, nml=flags, iostat=i)
+call check_nml_io(i, filename, "flags", compiler_vendor)
+cfg%potsolve = potsolve
+cfg%flagperiodic = flagperiodic
+cfg%flagoutput = flagoutput
+cfg%flagcap = flagcap
+cfg%flagdneu = flagdneu
+cfg%flagprecfile = flagprecfile
+cfg%flagE0file = flagE0file
+cfg%flagglow = flagglow
 
-!> READ CONFIG FILE FOR THIS SIMULATION
-!! NOTE: Namelist file groups must be read in order they appear in the Namelist file, or End of File error occurs
-rawconfig : block
-integer :: u
-open(newunit=u, file=infile, status='old', action='read')
-if (is_nml) then
+read(u, nml=files, iostat=i)
+call check_nml_io(i, filename, "files", compiler_vendor)
+cfg%out_format = trim(file_format)
+cfg%indatsize = expanduser(indat_size)
+cfg%indatgrid = expanduser(indat_grid)
+cfg%indatfile = expanduser(indat_file)
 
-  read(u, nml=base, iostat=i)
-  call check_nml_io(i, infile, "base", compiler_vendor)
-
-  read(u, nml=flags, iostat=i)
-  call check_nml_io(i, infile, "flags", compiler_vendor)
-
-  read(u, nml=files, iostat=i)
-  call check_nml_io(i, infile, "files", compiler_vendor)
-  out_format = trim(file_format)
-  indatsize = expanduser(indat_size)
-  indatgrid = expanduser(indat_grid)
-  indatfile = expanduser(indat_file)
-
+if (cfg%flagdneu == 1) then
+  read(u, nml=neutral_perturb, iostat=i)
+  call check_nml_io(i, filename, "neutral_perturb", compiler_vendor)
+  cfg%sourcedir = expanduser(source_dir)
+  cfg%interptype = interptype
+  cfg%sourcemlat = sourcemlat
+  cfg%sourcemlon = sourcemlon
+  cfg%dtneu = dtneu
+  cfg%drhon = drhon
+  cfg%dzn = dzn
+  cfg%dxn = dxn
 else
-  read(u,*) ymd(3),ymd(2),ymd(1)
-  read(u,*) UTsec0
-  read(u,*) tdur
-  read(u,*) dtout
-  read(u,*) activ(1),activ(2),activ(3)
-  read(u,*) tcfl
-  read(u,*) Teinf
-  read(u,*) potsolve
-  read(u,*) flagperiodic
-  read(u,*) flagoutput
-  read(u,*) flagcap  ! line 11 config.ini
-  read(u,'(a256)') buf  !! format specifier needed, else it reads just one character
-  indatsize = expanduser(buf)
-  read(u,'(a256)') buf
-  indatgrid = expanduser(buf)
-  read(u,'(a256)') buf
-  indatfile = expanduser(buf)   ! line 14
-  out_format = "raw"
+  cfg%sourcedir = ""
 endif
 
-!> NEUTRAL PERTURBATION INPUT INFORMATION
-!> defaults
-interptype=0
-sourcemlat=0
-sourcemlon=0
-dtneu=0
-drhon=0
-dzn=0
-dxn=0
-if(is_nml) then
-  if (flagdneu == 1) then
-    read(u, nml=neutral_perturb, iostat=i)
-    call check_nml_io(i, infile, "neutral_perturb", compiler_vendor)
-    sourcedir = expanduser(source_dir)
-  endif
-else
-  read(u,*, iostat=i) flagdneu  ! line 15
-  call check_ini_io(i, infile)
-  if( flagdneu==1) then
-    read(u,*) interptype
-    read(u,*) sourcemlat,sourcemlon
-    read(u,*) dtneu
-    if (interptype==3) then     !read in extra dxn if 3D
-      read(u,*) dxn,drhon,dzn
-    else
-      read(u,*) drhon,dzn
-    end if
-    read(u,'(A256)') buf
-    sourcedir = expanduser(buf)
-  endif
-end if
-!> have to allocate, even when not used, to avoid runtime errors with pickier compilers
-if (flagdneu/=1) sourcedir = ""
 
-!> PRECIPITATION FILE INPUT INFORMATION
-!> defaults
-dtprec=0
-if(is_nml) then
-  if (flagprecfile == 1) then
-    read(u, nml=precip, iostat=i)
-    call check_nml_io(i, infile, "precip", compiler_vendor)
-    precdir = expanduser(prec_dir)
-  endif
+if (cfg%flagprecfile == 1) then
+  read(u, nml=precip, iostat=i)
+  call check_nml_io(i, filename, "precip", compiler_vendor)
+  cfg%precdir = expanduser(prec_dir)
+  cfg%dtprec = dtprec
 else
-  read(u,*, iostat=i) flagprecfile
-  call check_ini_io(i, infile)
-  if (flagprecfile==1) then
-  !! get the location of the precipitation input files
-    read(u,*, iostat=i) dtprec
-    read(u,'(A256)', iostat=i) buf
-    call check_nml_io(i, infile)
-    precdir = expanduser(buf)
-  end if
-end if
-!> have to allocate, even when not used, to avoid runtime errors with pickier compilers
-if (flagprecfile/=1) precdir = ""
+  cfg%precdir = ""
+endif
 
-!> ELECTRIC FIELD FILE INPUT INFORMATION
-!> defaults
-dtE0=0
-if(is_nml) then
-  if (flagE0file == 1) then
-    read(u, nml=efield, iostat=i)
-    call check_nml_io(i, infile, "efield", compiler_vendor)
-    E0dir = expanduser(E0_dir)
-  endif
+if (cfg%flagE0file == 1) then
+  read(u, nml=efield, iostat=i)
+  call check_nml_io(i, filename, "efield", compiler_vendor)
+  cfg%E0dir = expanduser(E0_dir)
+  cfg%dtE0 = dtE0
 else
-  read(u,*, iostat=i) flagE0file
-  call check_ini_io(i, infile)
-  if (flagE0file==1) then
-  !! get the location of the precipitation input files
-    read(u,*, iostat=i) dtE0
-    read(u,'(a256)', iostat=i) buf
-    call check_ini_io(i, infile)
-    E0dir = expanduser(buf)
-  end if
-end if
-!> have to allocate, even when not used, to avoid runtime errors with pickier compilers
-if (flagE0file/=1) E0dir = ""
+  cfg%E0dir = ""
+endif
 
-!> GLOW ELECTRON TRANSPORT INFORMATION
-!> defaults
-dtglow=NaN
-dtglowout=NaN
-if(is_nml) then
-  if (flagglow == 1) then
-    read(u, nml=glow, iostat=i)
-    call check_nml_io(i, infile, "glow", compiler_vendor)
-  endif
-else
-  read(u,*, iostat=i) flagglow
-  call check_ini_io(i, infile)
-  if (flagglow==1) then
-    read(u,*, iostat=i) dtglow
-    read(u,*, iostat=i) dtglowout
-    call check_nml_io(i, infile)
+if (cfg%flagglow == 1) then
+  read(u, nml=glow, iostat=i)
+  call check_nml_io(i, filename, "glow", compiler_vendor)
+  cfg%dtglow = dtglow
+  cfg%dtglowout = dtglowout
+endif
+
+
+close(u)
+
+end subroutine read_nml
+
+
+subroutine read_ini(filename, cfg)
+
+character(*), intent(in) :: filename
+class(gemini_cfg), intent(out) :: cfg
+
+integer :: u,i
+character(256) :: buf
+
+open(newunit=u, file=filename, status='old', action='read')
+
+read(u,*) cfg%ymd(3), cfg%ymd(2), cfg%ymd(1)
+read(u,*) cfg%UTsec0
+read(u,*) cfg%tdur
+read(u,*) cfg%dtout
+read(u,*) cfg%activ(1), cfg%activ(2), cfg%activ(3)
+read(u,*) cfg%tcfl
+read(u,*) cfg%Teinf
+read(u,*) cfg%potsolve
+read(u,*) cfg%flagperiodic
+read(u,*) cfg%flagoutput
+read(u,*) cfg%flagcap  !< line 11 config.ini
+read(u,'(a256)') buf
+!! format specifier needed, else it reads just one character
+cfg%indatsize = expanduser(buf)
+read(u,'(a256)') buf
+cfg%indatgrid = expanduser(buf)
+read(u,'(a256)') buf
+cfg%indatfile = expanduser(buf)   !< line 14
+cfg%out_format = "raw"
+
+!! neutral
+read(u,*, iostat=i) cfg%flagdneu  !< line 15
+call check_ini_io(i, filename)
+if(cfg%flagdneu==1) then
+  read(u,*) cfg%interptype
+  read(u,*) cfg%sourcemlat, cfg%sourcemlon
+  read(u,*) cfg%dtneu
+  if (cfg%interptype==3) then     !< read in extra dxn if 3D
+    read(u,*) cfg%dxn,cfg%drhon,cfg%dzn
+  else
+    read(u,*) cfg%drhon,cfg%dzn
   end if
+  read(u,'(A256)') buf
+  cfg%sourcedir = expanduser(buf)
+else
+  cfg%sourcedir = ""
+endif
+
+read(u,*, iostat=i) cfg%flagprecfile
+call check_ini_io(i, filename)
+if (cfg%flagprecfile==1) then
+!! get the location of the precipitation input files
+  read(u,*, iostat=i) cfg%dtprec
+  read(u,'(A256)', iostat=i) buf
+  call check_nml_io(i, filename)
+  cfg%precdir = expanduser(buf)
+else
+  cfg%precdir = ""
+end if
+
+read(u,*, iostat=i) cfg%flagE0file
+call check_ini_io(i, filename)
+if (cfg%flagE0file==1) then
+!! get the location of the precipitation input files
+  read(u,*, iostat=i) cfg%dtE0
+  read(u,'(a256)', iostat=i) buf
+  call check_ini_io(i, filename)
+  cfg%E0dir = expanduser(buf)
+else
+  cfg%E0dir = ""
+end if
+
+read(u,*, iostat=i) cfg%flagglow
+call check_ini_io(i, filename)
+if (cfg%flagglow==1) then
+  read(u,*, iostat=i) cfg%dtglow
+  read(u,*, iostat=i) cfg%dtglowout
+  call check_nml_io(i, filename)
 end if
 
 close(u)
-end block rawconfig
 
-end subroutine read_configfile
+end subroutine read_ini
 
 
 subroutine check_nml_io(i, filename, group, vendor)

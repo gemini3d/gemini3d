@@ -8,7 +8,6 @@ contains
 
 
 module procedure create_outdir
-! subroutine create_outdir(outdir,infile,indatsize,indatgrid,indatfile,flagdneu,sourcedir,flagprecfile,precdir,flagE0file,E0dir)
 !! CREATES OUTPUT DIRECTORY, MOVES CONFIG FILES THERE AND GENERATES A GRID OUTPUT FILE
 
 integer :: ierr
@@ -18,25 +17,25 @@ integer :: ierr
 ierr = mkdir(outdir//'/inputs')
 
 ierr = copyfile(infile, outdir//'/inputs/')
-ierr = copyfile(indatsize, outdir//'/inputs/')
-ierr = copyfile(indatgrid, outdir//'/inputs/')
-ierr = copyfile(indatfile, outdir//'/inputs/')
+ierr = copyfile(cfg%indatsize, outdir//'/inputs/')
+ierr = copyfile(cfg%indatgrid, outdir//'/inputs/')
+ierr = copyfile(cfg%indatfile, outdir//'/inputs/')
 
 !MAKE COPIES OF THE INPUT DATA, AS APPROPRIATE
 if (.false.) then
-  if (flagdneu/=0) then
+  if (cfg%flagdneu/=0) then
     ierr = mkdir(outdir//'/inputs/neutral_inputs')
-    ierr = copyfile(sourcedir//'/*', outdir//'/inputs/neutral_inputs/')
+    ierr = copyfile(cfg%sourcedir//'/*', outdir//'/inputs/neutral_inputs/')
   end if
 
-  if (flagprecfile/=0) then
+  if (cfg%flagprecfile/=0) then
     ierr = mkdir(outdir//'/inputs/prec_inputs')
-    ierr = copyfile(precdir//'/*', outdir//'/inputs/prec_inputs/')
+    ierr = copyfile(cfg%precdir//'/*', outdir//'/inputs/prec_inputs/')
   end if
 
-  if (flagE0file/=0) then
+  if (cfg%flagE0file/=0) then
     ierr = mkdir(outdir//'/inputs/Efield_inputs')
-    ierr = copyfile(E0dir//'/*', outdir//'/inputs/Efield_inputs/')
+    ierr = copyfile(cfg%E0dir//'/*', outdir//'/inputs/Efield_inputs/')
   end if
 endif
 
