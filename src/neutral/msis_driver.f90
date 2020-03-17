@@ -54,7 +54,7 @@ do i=1,lz
   endif
 end do
 
-if (outfile == '-') return
+if (outfile == '-') stop
 
 close(u)
 
