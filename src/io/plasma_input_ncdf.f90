@@ -30,17 +30,17 @@ call h5%initialize(filenamefull, status='old', action='r')
 allocate(J1all(lx1,lx2all,lx3all),J2all(lx1,lx2all,lx3all),J3all(lx1,lx2all,lx3all))
 if (flagswap==1) then
   allocate(tmpswap(lx1,lx3all,lx2all))
-  call h5%read('/J1all', tmpswap)
+  call h5%read('J1all', tmpswap)
   J1all = reshape(tmpswap,[lx1,lx2all,lx3all],order=[1,3,2])
-  call h5%read('/J2all', tmpswap)
+  call h5%read('J2all', tmpswap)
   J2all = reshape(tmpswap,[lx1,lx2all,lx3all],order=[1,3,2])
-  call h5%read('/J3all', tmpswap)
+  call h5%read('J3all', tmpswap)
   J3all = reshape(tmpswap,[lx1,lx2all,lx3all],order=[1,3,2])
 else
   !! no need to permute dimensions for 3D simulations
-  call h5%read('/J1all', J1all)
-  call h5%read('/J2all', J2all)
-  call h5%read('/J3all', J3all)
+  call h5%read('J1all', J1all)
+  call h5%read('J2all', J2all)
+  call h5%read('J3all', J3all)
 end if
 print *, 'Min/max current data:  ',minval(J1all),maxval(J1all),minval(J2all),maxval(J2all),minval(J3all),maxval(J3all)
 
@@ -114,18 +114,18 @@ if (flagswap==1) then
   real(wp), allocatable :: tmp(:,:,:,:)
   allocate(tmp(lx1,lx3all,lx2all,lsp))
   !! end workaround
-  call h5%read('/ns', tmp)
+  call h5%read('ns', tmp)
   nsall(1:lx1,1:lx2all,1:lx3all,1:lsp) = reshape(tmp,[lx1,lx2all,lx3all,lsp],order=[1,3,2,4])
-  call h5%read('/vsx1', tmp)
+  call h5%read('vsx1', tmp)
   vs1all(1:lx1,1:lx2all,1:lx3all,1:lsp) = reshape(tmp,[lx1,lx2all,lx3all,lsp],order=[1,3,2,4])
-  call h5%read('/Ts', tmp)
+  call h5%read('Ts', tmp)
   Tsall(1:lx1,1:lx2all,1:lx3all,1:lsp) = reshape(tmp,[lx1,lx2all,lx3all,lsp],order=[1,3,2,4])
   !! permute the dimensions so that 2D runs are parallelized
   end block
 else
-  call h5%read('/ns', nsall(1:lx1,1:lx2all,1:lx3all,1:lsp))
-  call h5%read('/vsx1', vs1all(1:lx1,1:lx2all,1:lx3all,1:lsp))
-  call h5%read('/Ts', Tsall(1:lx1,1:lx2all,1:lx3all,1:lsp))
+  call h5%read('ns', nsall(1:lx1,1:lx2all,1:lx3all,1:lsp))
+  call h5%read('vsx1', vs1all(1:lx1,1:lx2all,1:lx3all,1:lsp))
+  call h5%read('Ts', Tsall(1:lx1,1:lx2all,1:lx3all,1:lsp))
 end if
 
 call h5%finalize()

@@ -32,16 +32,16 @@ end do
 
 !! create an output file
 outdir_composite=outdir//'/aurmaps/'
-filenamefull=date_filename(outdir_composite,ymd,UTsec) // '.h5'
+filenamefull=date_filename(outdir_composite,ymd,UTsec) // '.nc'
 print *, 'Output file name (auroral maps):  ',filenamefull
 fstatus = 'new'
 call hout%initialize(filenamefull, status=fstatus,action='rw',comp_lvl=1)
 
 !! write data to file
 if(flagswap/=1) then
-  call hout%write('/aurora/iverout', iverout)
+  call hout%write('iverout', iverout)
 else
-  call hout%write('/aurora/iverout', reshape(iverout,[lx3all,lx2all,lwave],order=[2,1,3]))
+  call hout%write('iverout', reshape(iverout,[lx3all,lx2all,lwave],order=[2,1,3]))
 end if
 
 call hout%finalize()

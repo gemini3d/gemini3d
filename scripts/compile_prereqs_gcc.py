@@ -349,6 +349,7 @@ if __name__ == "__main__":
     dirs = {"prefix": Path(P.prefix).expanduser().resolve(), "workdir": Path(P.workdir).expanduser().resolve()}
 
     if "netcdf" in P.libs:
+        hdf5(dirs)
         netcdf(dirs)
     if "hdf5" in P.libs:
         hdf5(dirs)
