@@ -16,13 +16,7 @@ integer :: lx(3)
 
 call get_command_argument(1, buf)
 
-path = buf
-
-inquire(file=path, exist=exists)
-if (.not.exists) then
-   write(stderr,'(A,/,A)') 'ERROR: reader_nc4:get_simsize3: generate grid with script--grid not present: ', path
-   error stop 77
-endif
+path = trim(buf)
 
 call hf%initialize(path, status='old', action='r')
 
