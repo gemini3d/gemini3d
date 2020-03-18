@@ -29,6 +29,12 @@ except ImportError:
 BUILDDIR = "build"
 NJOBS = get_cpu_count()
 # Library parameters
+
+NETCDF_C = "4.7.3"
+NETCDF_C_GIT = f"https://github.com/Unidata/netcdf-c.git"
+NETCDF_FORTRAN = "4.5.2"
+NETCDF_FORTRAN_GIT = f"https://github.com/Unidata/netcdf-fortran.git"
+
 HDF5VERSION = "1.12.0"
 HDF5URL = f"https://zenodo.org/record/3700903/files/hdf5-{HDF5VERSION}.tar.bz2?download=1"
 HDF5MD5 = "1fa68c4b11b6ef7a9d72ffa55995f898"
@@ -36,18 +42,71 @@ HDF5MD5 = "1fa68c4b11b6ef7a9d72ffa55995f898"
 MPIVERSION = "3.1.5"  # OpenMPI 4 needs Scalapack 2.1
 MPISHA1 = "56a74b116c81d4f3704c051a67e4422094ff913d"
 
-LAPACKGIT = "https://github.com/scivision/lapack"
+LAPACKGIT = "https://github.com/scivision/lapack.git"
 LAPACKDIR = "lapack"
 
-SCALAPACKGIT = "https://github.com/scivision/scalapack"
+SCALAPACKGIT = "https://github.com/scivision/scalapack.git"
 SCALAPACKDIR = "scalapack"
 
-MUMPSGIT = "https://github.com/scivision/mumps"
+MUMPSGIT = "https://github.com/scivision/mumps.git"
 MUMPSDIR = "mumps"
 
 # ========= end of user parameters ================
 
 nice = ["nice"] if sys.platform == "linux" else []
+
+
+def netcdf(dirs: T.Dict[str, Path], env: T.Mapping[str, str] = None):
+    """ build and install NetCDF
+    first we do the NetCDF-C and then NetCDF-Fortran as both are required for Fortran
+
+    for convenience we put them into the same directory tree
+    """
+
+    nc_dir = f"netcdf-{NETCDF_C}"
+    install_dir = dirs["prefix"] / nc_dir
+    source_dir = dirs["workdir"] / "netcdf-c"
+    build_dir = source_dir / BUILDDIR
+
+    if not env:
+        env = get_compilers()
+
+    # %% NetCDF-C
+    update(source_dir, NETCDF_C_GIT, f"v{NETCDF_C}")
+
+    c_args = [
+        f"-DCMAKE_INSTALL_PREFIX={install_dir}",
+        "-DCMAKE_BUILD_TYPE=Release",
+        "-DBUILD_SHARED_LIBS:BOOL=ON",
+        "-DBUILD_UTILITIES:BOOL=OFF",
+        "-DENABLE_TESTS:BOOL=off",
+        "-DBUILD_TESTING:BOOL=OFF",
+        "-DENABLE_HDF4:BOOL=OFF",
+        "-DUSE_DAP:BOOL=off",
+        "-DENABLE_DAP:BOOL=OFF",
+        "-DENABLE_DAP2:BOOL=OFF",
+        "-DENABLE_DAP4:BOOL=OFF",
+    ]
+    cmake_build(c_args, source_dir, build_dir, wipe=False, env=env)
+
+    # %% NetCDF-Fortran
+    source_dir = dirs["workdir"] / "netcdf-fortran"
+    build_dir = source_dir / BUILDDIR
+
+    update(source_dir, NETCDF_FORTRAN_GIT, f"v{NETCDF_FORTRAN}")
+
+    # NetCDF-Fortran does not yet use NetCDF_ROOT
+    patch = [f"-DNETCDF_C_LIBRARY={install_dir / 'lib/libnetcdf.so'}", f"-DNETCDF_INCLUDE_DIR={install_dir / 'include'}"]
+    f_args = patch + [
+        f"-DNetCDF_ROOT={install_dir}",
+        f"-DCMAKE_INSTALL_PREFIX={install_dir}",
+        "-DCMAKE_BUILD_TYPE=Release",
+        "-DBUILD_SHARED_LIBS:BOOL=ON",
+        "-DBUILD_UTILITIES:BOOL=OFF",
+        "-DENABLE_TESTS:BOOL=off",
+        "-DBUILD_EXAMPLES:BOOL=OFF",
+    ]
+    cmake_build(f_args, source_dir, build_dir, wipe=False, env=env)
 
 
 def hdf5(dirs: T.Dict[str, Path], env: T.Mapping[str, str] = None):
@@ -59,7 +118,7 @@ def hdf5(dirs: T.Dict[str, Path], env: T.Mapping[str, str] = None):
     install_dir = dirs["prefix"] / hdf5_dir
     source_dir = dirs["workdir"] / hdf5_dir
 
-    tarfn = f"hdf5-{HDF5VERSION}.tar.bz2"
+    tarfn = dirs["workdir"] / f"hdf5-{HDF5VERSION}.tar.bz2"
     url_retrieve(HDF5URL, tarfn, ("md5", HDF5MD5))
     extract_tar(tarfn, source_dir)
 
@@ -83,7 +142,7 @@ def openmpi(dirs: T.Dict[str, Path], env: T.Mapping[str, str] = None):
     install_dir = dirs["prefix"] / mpi_dir
     source_dir = dirs["workdir"] / mpi_dir
 
-    tarfn = f"openmpi-{MPIVERSION}.tar.bz2"
+    tarfn = dirs["workdir"] / f"openmpi-{MPIVERSION}.tar.bz2"
     url = f"https://download.open-mpi.org/release/open-mpi/v{MPIVERSION[:3]}/{tarfn}"
     url_retrieve(url, tarfn, ("sha1", MPISHA1))
     extract_tar(tarfn, source_dir)
@@ -169,7 +228,7 @@ def mumps(wipe: bool, dirs: T.Dict[str, Path], buildsys: str, env: T.Mapping[str
         raise ValueError(f"unknown build system {buildsys}")
 
 
-def cmake_build(args: T.List[str], source_dir: Path, build_dir: Path, wipe: bool, env: T.Mapping[str, str]):
+def cmake_build(args: T.List[str], source_dir: Path, build_dir: Path, wipe: bool, env: T.Mapping[str, str]) -> int:
     """ build and install with CMake """
     cmake = cmake_minimum_version("3.13")
     cachefile = build_dir / "CMakeCache.txt"
@@ -182,10 +241,10 @@ def cmake_build(args: T.List[str], source_dir: Path, build_dir: Path, wipe: bool
 
     ret = subprocess.run(nice + ["ctest", "--parallel", "--output-on-failure"], cwd=str(build_dir))
 
-    raise SystemExit(ret.returncode)
+    return ret.returncode
 
 
-def meson_build(args: T.List[str], source_dir: Path, build_dir: Path, wipe: bool, env: T.Mapping[str, str]):
+def meson_build(args: T.List[str], source_dir: Path, build_dir: Path, wipe: bool, env: T.Mapping[str, str]) -> int:
     """ build and install with Meson """
     meson = shutil.which("meson")
     if not meson:
@@ -199,7 +258,7 @@ def meson_build(args: T.List[str], source_dir: Path, build_dir: Path, wipe: bool
     for op in ("test", "install"):
         ret = subprocess.run(nice + [meson, op, "-C", str(build_dir)])
 
-    raise SystemExit(ret.returncode)
+    return ret.returncode
 
 
 def cmake_minimum_version(min_version: str = None) -> str:
@@ -224,7 +283,7 @@ def cmake_minimum_version(min_version: str = None) -> str:
     return cmake
 
 
-def update(path: Path, repo: str):
+def update(path: Path, repo: str, tag: str = None):
     """
     Use Git to update a local repo, or clone it if not already existing.
 
@@ -237,9 +296,12 @@ def update(path: Path, repo: str):
         return
 
     if path.is_dir():
-        subprocess.run([GITEXE, "pull"], cwd=str(path))
+        subprocess.run([GITEXE, "-C", str(path), "pull"])
     else:
         subprocess.run([GITEXE, "clone", repo, str(path)])
+
+    if tag:
+        subprocess.run([GITEXE, "-C", str(path), "checkout", tag])
 
 
 def get_compilers() -> T.Mapping[str, str]:
@@ -275,7 +337,9 @@ def get_compilers() -> T.Mapping[str, str]:
 
 if __name__ == "__main__":
     p = ArgumentParser()
-    p.add_argument("libs", help="libraries to compile", choices=["openmpi", "hdf5", "lapack", "scalapack", "mumps"], nargs="+")
+    p.add_argument(
+        "libs", help="libraries to compile", choices=["netcdf", "openmpi", "hdf5", "lapack", "scalapack", "mumps"], nargs="+"
+    )
     p.add_argument("-prefix", help="toplevel path to install libraries under", default="~/lib_gcc")
     p.add_argument("-workdir", help="toplevel path to where you keep code repos", default="~/code")
     p.add_argument("-wipe", help="wipe before completely recompiling libs", action="store_true")
@@ -284,6 +348,8 @@ if __name__ == "__main__":
 
     dirs = {"prefix": Path(P.prefix).expanduser().resolve(), "workdir": Path(P.workdir).expanduser().resolve()}
 
+    if "netcdf" in P.libs:
+        netcdf(dirs)
     if "hdf5" in P.libs:
         hdf5(dirs)
     if "openmpi" in P.libs:
