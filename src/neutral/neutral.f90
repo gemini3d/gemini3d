@@ -239,7 +239,7 @@ real(wp), dimension(size(nn,1),size(nn,2),size(nn,3)) :: dnOinow,dnN2inow,dnO2in
 
 
 !CHECK WHETHER WE NEED TO LOAD A NEW FILE
-if (t+dt/2d0>=tnext .or. t<=0d0) then
+if (t+dt/2d0 >= tnext .or. t <= 0) then
   !IF FIRST LOAD ATTEMPT CREATE A NEUTRAL GRID AND COMPUTE GRID SITES FOR IONOSPHERIC GRID.  Since this needs an input file, I'm leaving it under this condition here
   if (.not. allocated(zn)) then     !means this is the first tiem we've tried to load neutral simulation data, should we check for a previous neutral file to load???
     !initialize dates
@@ -530,10 +530,10 @@ do ix3=1,lx3
 
       !COMPUTE COORDIANTES FROM DISTANCES
       if (theta3>theta1) then       !place distances in correct quadrant, here field point (theta3=theta2) is is SOUTHward of source point (theta1), whreas yp is distance northward so throw in a negative sign
-        yp=-1._wp*yp            !do we want an abs here to be safe
+        yp = -yp            !do we want an abs here to be safe
       end if
       if (phi2<phi3) then     !assume we aren't doing a global grid otherwise need to check for wrapping, here field point (phi2) less than soure point (phi3=phi1)
-        xp=-1._wp*xp
+        xp = -xp
       end if
       phip=atan2(yp,xp)
 
