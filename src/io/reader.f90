@@ -202,15 +202,19 @@ character(*), intent(in) :: path
 integer, intent(out) :: lx1, lx2all
 integer, intent(out), optional :: lx3all
 
-select case (get_suffix(path))
+character(:), allocatable :: fn
+
+fn = get_filename(path, 'simsize')
+
+select case (get_suffix(fn))
 case ('.h5')
-  call get_simsize3_hdf5(path, lx1, lx2all, lx3all)
+  call get_simsize3_hdf5(fn, lx1, lx2all, lx3all)
 case ('.nc')
-  call get_simsize3_nc4(path, lx1, lx2all, lx3all)
+  call get_simsize3_nc4(fn, lx1, lx2all, lx3all)
 case ('.dat')
-  call get_simsize3_raw(path, lx1, lx2all, lx3all)
+  call get_simsize3_raw(fn, lx1, lx2all, lx3all)
 case default
-  write(stderr,*) 'reader:get_simsize3: unknown file suffix' // get_suffix(path)
+  write(stderr,*) 'reader:get_simsize3: unknown file suffix' // fn
   error stop 6
 end select
 end subroutine get_simsize3
