@@ -164,6 +164,9 @@ select case (argc)
           debug = .true.
         case ('-nooutput')
           nooutput = .true.
+        case ('-out_format')
+          call get_command_argument(6, argv)
+          cfg%out_format = trim(argv)
       end select
     endif
   case default
@@ -174,6 +177,9 @@ select case (argc)
           debug = .true.
         case ('-nooutput')
           nooutput = .true.
+        case ('-out_format')
+          call get_command_argument(6, argv)
+          cfg%out_format = trim(argv)
       end select
     endif
     call mpigrid(lx2all,lx3all)

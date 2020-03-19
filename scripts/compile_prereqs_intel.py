@@ -10,7 +10,7 @@ import typing as T
 import sys
 import os
 
-from compile_prereqs_gcc import get_cpu_count, mumps, hdf5
+from compile_prereqs_gcc import get_cpu_count, mumps, hdf5, netcdf_c, netcdf_fortran
 
 # ========= user parameters ======================
 BUILDDIR = "build"
@@ -53,7 +53,7 @@ def get_compilers() -> T.Mapping[str, str]:
 
 if __name__ == "__main__":
     p = ArgumentParser()
-    p.add_argument("libs", help="libraries to compile", choices=["hdf5", "mumps"], nargs="+")
+    p.add_argument("libs", help="libraries to compile", choices=["netcdf", "hdf5", "mumps"], nargs="+")
     p.add_argument("-prefix", help="toplevel path to install libraries under", default="~/lib_intel")
     p.add_argument("-workdir", help="toplevel path to where you keep code repos", default="~/code")
     p.add_argument("-wipe", help="wipe before completely recompiling libs", action="store_true")
@@ -62,7 +62,12 @@ if __name__ == "__main__":
 
     dirs = {"prefix": Path(P.prefix).expanduser().resolve(), "workdir": Path(P.workdir).expanduser().resolve()}
 
-    if "mumps" in P.libs:
-        mumps(P.wipe, dirs, P.buildsys, env=get_compilers())
+    env = get_compilers()
     if "hdf5" in P.libs:
-        hdf5(dirs, env=get_compilers())
+        hdf5(dirs, env=env)
+    if "netcdf" in P.libs:
+        netcdf_c(dirs, env=env, wipe=P.wipe)
+        netcdf_fortran(dirs, env=env, wipe=P.wipe)
+
+    if "mumps" in P.libs:
+        mumps(P.wipe, dirs, P.buildsys, env=env)

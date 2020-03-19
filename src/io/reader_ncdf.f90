@@ -62,8 +62,6 @@ if (.not.exists) then
    error stop 77
 endif
 
-print *,'get_simsize3_nc4: opening ', path
-
 call hf%initialize(path, status='old',action='r')
 
 if (hf%exist("lx1")) then

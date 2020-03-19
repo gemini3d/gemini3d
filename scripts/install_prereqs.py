@@ -30,6 +30,7 @@ def main(package_manager: str):
                 "blacs-openmpi-devel",
                 "scalapack-openmpi-devel",
                 "openmpi-devel",
+                "hdf5-devel",
             ],
             "apt": [
                 "pkg-config",
@@ -40,6 +41,7 @@ def main(package_manager: str):
                 "libscalapack-mpi-dev",
                 "libopenmpi-dev",
                 "openmpi-bin",
+                "libhdf5-dev",
             ],
         }
 
@@ -52,7 +54,7 @@ def main(package_manager: str):
         else:
             raise ValueError(f"Unknown package manager {package_manager}, try installing the prereqs manually")
     elif sys.platform == "darwin":
-        pkgs = {"brew": ["gcc", "make", "cmake", "lapack", "openmpi"]}
+        pkgs = {"brew": ["gcc", "make", "cmake", "lapack", "scalapack", "openmpi", "hdf5"]}
         cmd = ["brew", "install"] + pkgs["brew"]
         # just autobuild Mumps instead, it's much faster
         # subprocess.run(["brew", "tap", "dpo/openblas"])
@@ -61,7 +63,7 @@ def main(package_manager: str):
         pkgs = ["gcc-fortran", "liblapack-devel", "libopenmpi-devel"]
         cmd = ["setup-x86_64.exe", "-P"] + pkgs
     elif sys.platform == "win32":
-        raise SystemExit("Windows Subsystem for Linux is recommended.")
+        raise SystemExit("Windows Subsystem for Linux or MSYS2 is recommended.")
     else:
         raise ValueError(f"unknown platform {sys.platform}")
 

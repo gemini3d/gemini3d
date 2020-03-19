@@ -114,6 +114,7 @@ if (flagswap==1) then
   real(wp), allocatable :: tmp(:,:,:,:)
   allocate(tmp(lx1,lx3all,lx2all,lsp))
   !! end workaround
+
   call h5%read('ns', tmp)
   nsall(1:lx1,1:lx2all,1:lx3all,1:lsp) = reshape(tmp,[lx1,lx2all,lx3all,lsp],order=[1,3,2,4])
   call h5%read('vsx1', tmp)
@@ -123,6 +124,7 @@ if (flagswap==1) then
   !! permute the dimensions so that 2D runs are parallelized
   end block
 else
+  print *,'plasma_input_ncdf:input_root_mpi_nc4: read ns noswap'
   call h5%read('ns', nsall(1:lx1,1:lx2all,1:lx3all,1:lsp))
   call h5%read('vsx1', vs1all(1:lx1,1:lx2all,1:lx3all,1:lsp))
   call h5%read('Ts', Tsall(1:lx1,1:lx2all,1:lx3all,1:lsp))

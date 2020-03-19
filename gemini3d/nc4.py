@@ -87,20 +87,20 @@ def write_grid(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]):
             _write_var(f, f"x{i}i", (f"x{i}i",), xg[f"x{i}i"])
             _write_var(f, f"dx{i}b", (f"x{i}d",), xg[f"dx{i}b"])
             _write_var(f, f"dx{i}h", (f"x{i}",), xg[f"dx{i}h"])
-            _write_var(f, f"h{i}", ("x1ghost", "x2ghost", "x3ghost"), xg[f"h{i}"])
-            _write_var(f, f"h{i}x1i", ("x1i", "x2", "x3"), xg[f"h{i}x1i"])
-            _write_var(f, f"h{i}x2i", ("x1", "x2i", "x3"), xg[f"h{i}x2i"])
-            _write_var(f, f"h{i}x3i", ("x1", "x2", "x3i"), xg[f"h{i}x3i"])
-            _write_var(f, f"gx{i}", ("x1", "x2", "x3"), xg[f"gx{i}"])
-            _write_var(f, f"e{i}", ("x1", "x2", "x3", "ecef"), xg[f"e{i}"])
+            _write_var(f, f"h{i}", ("x3ghost", "x2ghost", "x1ghost"), xg[f"h{i}"].transpose())
+            _write_var(f, f"h{i}x1i", ("x3", "x2", "x1i"), xg[f"h{i}x1i"].transpose())
+            _write_var(f, f"h{i}x2i", ("x3", "x2i", "x1"), xg[f"h{i}x2i"].transpose())
+            _write_var(f, f"h{i}x3i", ("x3i", "x2", "x1"), xg[f"h{i}x3i"].transpose())
+            _write_var(f, f"gx{i}", ("x3", "x2", "x1"), xg[f"gx{i}"].transpose())
+            _write_var(f, f"e{i}", ("ecef", "x3", "x2", "x1"), xg[f"e{i}"].transpose())
 
         for k in ("alt", "glat", "glon", "Bmag", "nullpts", "r", "theta", "phi", "x", "y", "z"):
-            _write_var(f, k, ("x1", "x2", "x3"), xg[k])
+            _write_var(f, k, ("x3", "x2", "x1"), xg[k].transpose())
 
         for k in ("er", "etheta", "ephi"):
-            _write_var(f, k, ("x1", "x2", "x3", "ecef"), xg[k])
+            _write_var(f, k, ("ecef", "x3", "x2", "x1"), xg[k].transpose())
 
-        _write_var(f, "I", ("x2", "x3"), xg["I"])
+        _write_var(f, "I", ("x3", "x2"), xg["I"].transpose())
 
 
 def _write_var(f, name: str, dims: tuple, value: np.ndarray):
@@ -123,6 +123,8 @@ def write_state(time: datetime, ns: np.ndarray, vs: np.ndarray, Ts: np.ndarray, 
     print("write_state:", fn)
 
     with Dataset(fn, "w") as f:
+        p4 = (0, 3, 2, 1)
+
         f.createDimension("ymd", 3)
         g = f.createVariable("ymd", np.int32, "ymd")
         g[:] = [time.year, time.month, time.day]
@@ -135,9 +137,9 @@ def write_state(time: datetime, ns: np.ndarray, vs: np.ndarray, Ts: np.ndarray, 
         f.createDimension("x2", ns.shape[2])
         f.createDimension("x3", ns.shape[3])
 
-        _write_var(f, "ns", ("species", "x1", "x2", "x3"), ns)
-        _write_var(f, "vsx1", ("species", "x1", "x2", "x3"), vs)
-        _write_var(f, "Ts", ("species", "x1", "x2", "x3"), Ts)
+        _write_var(f, "ns", ("species", "x3", "x2", "x1"), ns.transpose(p4))
+        _write_var(f, "vsx1", ("species", "x3", "x2", "x1"), vs.transpose(p4))
+        _write_var(f, "Ts", ("species", "x3", "x2", "x1"), Ts.transpose(p4))
 
 
 def write_Efield(p: T.Dict[str, T.Any], E: T.Dict[str, np.ndarray]):
@@ -180,7 +182,7 @@ def write_Efield(p: T.Dict[str, T.Any], E: T.Dict[str, np.ndarray]):
             g[:] = t.hour * 3600 + t.minute * 60 + t.second + t.microsecond / 1e6
 
             for k in ("Exit", "Eyit", "Vminx1it", "Vmaxx1it"):
-                _write_var(f, k, ("lon", "lat"), E[k][i, :, :])
+                _write_var(f, k, ("lat", "lon"), E[k][i, :, :].transpose())
 
             for k in ("Vminx2ist", "Vmaxx2ist"):
                 _write_var(f, k, ("lat",), E[k][i, :])
@@ -218,4 +220,4 @@ def write_precip(precip: T.Dict[str, np.ndarray]):
             f.createDimension("lat", precip["mlat"].size)
 
             for k in ("Q", "E0"):
-                _write_var(f, f"/{k}p", ("lon", "lat"), precip[k][i, :, :])
+                _write_var(f, f"/{k}p", ("lat", "lon"), precip[k][i, :, :].transpose())

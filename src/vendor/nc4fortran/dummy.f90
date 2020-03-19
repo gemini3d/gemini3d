@@ -29,10 +29,11 @@ integer, intent(out), optional :: ierr
 error stop 'NetCDF4 / nc4fortran not available'
 end subroutine read
 
-subroutine write(self, dname, value, ierr)
+subroutine write(self, dname, value, dims, ierr)
 class(netcdf_file), intent(in)     :: self
 character(*), intent(in)         :: dname
 class(*), intent(in)      :: value(..)
+character(*), intent(in), optional :: dims(:)
 integer, intent(out), optional :: ierr
 error stop 'NetCDF4 / nc4fortran not available'
 end subroutine

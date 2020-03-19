@@ -56,28 +56,25 @@ MUMPSDIR = "mumps"
 nice = ["nice"] if sys.platform == "linux" else []
 
 
-def netcdf(dirs: T.Dict[str, Path], env: T.Mapping[str, str] = None):
-    """ build and install NetCDF
-    first we do the NetCDF-C and then NetCDF-Fortran as both are required for Fortran
-
-    for convenience we put them into the same directory tree
+def netcdf_c(dirs: T.Dict[str, Path], env: T.Mapping[str, str] = None, wipe: bool = False):
+    """ build and install NetCDF-C
     """
 
-    nc_dir = f"netcdf-{NETCDF_C}"
-    install_dir = dirs["prefix"] / nc_dir
+    install_dir = dirs["prefix"] / f"netcdf-{NETCDF_C}"
     source_dir = dirs["workdir"] / "netcdf-c"
     build_dir = source_dir / BUILDDIR
 
     if not env:
         env = get_compilers()
 
-    # %% NetCDF-C
     update(source_dir, NETCDF_C_GIT, f"v{NETCDF_C}")
 
     c_args = [
-        f"-DCMAKE_INSTALL_PREFIX={install_dir}",
-        "-DCMAKE_BUILD_TYPE=Release",
+        f"-DCMAKE_INSTALL_PREFIX:PATH={install_dir}",
+        "-DCMAKE_BUILD_TYPE:STRING=Release",
         "-DBUILD_SHARED_LIBS:BOOL=ON",
+        "-DENABLE_PARALLEL4:BOOL=OFF",
+        "-DENABLE_PNETCDF:BOOL=OFF",
         "-DBUILD_UTILITIES:BOOL=OFF",
         "-DENABLE_TESTS:BOOL=off",
         "-DBUILD_TESTING:BOOL=OFF",
@@ -87,32 +84,53 @@ def netcdf(dirs: T.Dict[str, Path], env: T.Mapping[str, str] = None):
         "-DENABLE_DAP2:BOOL=OFF",
         "-DENABLE_DAP4:BOOL=OFF",
     ]
-    cmake_build(c_args, source_dir, build_dir, wipe=False, env=env)
+    cmake_build(c_args, source_dir, build_dir, wipe, env=env, run_test=False)
 
-    # %% NetCDF-Fortran
+
+def netcdf_fortran(dirs: T.Dict[str, Path], env: T.Mapping[str, str] = None, wipe: bool = False):
+    """ build and install NetCDF-Fortran
+    """
+
+    install_dir = dirs["prefix"] / f"netcdf-{NETCDF_C}"
     source_dir = dirs["workdir"] / "netcdf-fortran"
     build_dir = source_dir / BUILDDIR
 
+    if not env:
+        env = get_compilers()
+
     update(source_dir, NETCDF_FORTRAN_GIT, f"v{NETCDF_FORTRAN}")
 
-    # NetCDF-Fortran does not yet use NetCDF_ROOT
-    patch = [f"-DNETCDF_C_LIBRARY={install_dir / 'lib/libnetcdf.so'}", f"-DNETCDF_INCLUDE_DIR={install_dir / 'include'}"]
+    # NetCDF-Fortran does not yet use NetCDF_ROO
+    if sys.platform == "linux":
+        netcdf_c = install_dir / "lib/libnetcdf.so"
+    elif sys.platform == "win32":
+        print("NetCDF4 on MSYS2 may not work, see https://github.com/Unidata/netcdf-c/issues/554", file=sys.stderr)
+        netcdf_c = install_dir / "bin/libnetcdf.dll"
+    elif sys.platform == "darwin":
+        netcdf_c = install_dir / "lib/libnetcdf.dylib"
+    else:
+        raise NotImplementedError(f"please open a GitHub Issue for your operating system {sys.platform}")
+
+    patch = [
+        f"-DNETCDF_C_LIBRARY:FILEPATH={netcdf_c}",
+        f"-DNETCDF_INCLUDE_DIR:PATH={install_dir / 'include'}",
+    ]
     f_args = patch + [
-        f"-DNetCDF_ROOT={install_dir}",
-        f"-DCMAKE_INSTALL_PREFIX={install_dir}",
-        "-DCMAKE_BUILD_TYPE=Release",
+        f"-DNetCDF_ROOT:PATH={install_dir}",
+        f"-DCMAKE_INSTALL_PREFIX:PATH={install_dir}",
+        "-DCMAKE_BUILD_TYPE:STRING=Release",
         "-DBUILD_SHARED_LIBS:BOOL=ON",
         "-DBUILD_UTILITIES:BOOL=OFF",
         "-DENABLE_TESTS:BOOL=off",
         "-DBUILD_EXAMPLES:BOOL=OFF",
     ]
-    cmake_build(f_args, source_dir, build_dir, wipe=False, env=env)
+    cmake_build(f_args, source_dir, build_dir, wipe, env=env, run_test=False)
 
 
 def hdf5(dirs: T.Dict[str, Path], env: T.Mapping[str, str] = None):
     """ build and install HDF5 """
     if os.name == "nt":
-        raise SystemExit("Please use binaries from HDF Group for Windows appropriate for your compiler.")
+        raise NotImplementedError("Please use binaries from HDF Group for Windows appropriate for your compiler.")
 
     hdf5_dir = f"hdf5-{HDF5VERSION}"
     install_dir = dirs["prefix"] / hdf5_dir
@@ -136,7 +154,7 @@ def hdf5(dirs: T.Dict[str, Path], env: T.Mapping[str, str] = None):
 def openmpi(dirs: T.Dict[str, Path], env: T.Mapping[str, str] = None):
     """ build and install OpenMPI """
     if os.name == "nt":
-        raise SystemExit("OpenMPI is not available in native Windows. Use MS-MPI instead.")
+        raise NotImplementedError("OpenMPI is not available in native Windows. Use MS-MPI instead.")
 
     mpi_dir = f"openmpi-{MPIVERSION}"
     install_dir = dirs["prefix"] / mpi_dir
@@ -170,7 +188,7 @@ def lapack(wipe: bool, dirs: T.Dict[str, Path], buildsys: str, env: T.Mapping[st
         env = get_compilers()
 
     if buildsys == "cmake":
-        args = [f"-DCMAKE_INSTALL_PREFIX={install_dir}"]
+        args = [f"-DCMAKE_INSTALL_PREFIX:PATH={install_dir}"]
         cmake_build(args, source_dir, build_dir, wipe, env=env)
     elif buildsys == "meson":
         args = [f"--prefix={dirs['prefix']}"]
@@ -192,7 +210,7 @@ def scalapack(wipe: bool, dirs: T.Dict[str, Path], buildsys: str, env: T.Mapping
         env = get_compilers()
 
     if buildsys == "cmake":
-        args = [f"-DCMAKE_INSTALL_PREFIX={dirs['prefix'] / SCALAPACKDIR}"]
+        args = [f"-DCMAKE_INSTALL_PREFIX:PATH={dirs['prefix'] / SCALAPACKDIR}"]
         cmake_build(args + lib_args, source_dir, build_dir, wipe, env=env)
     elif buildsys == "meson":
         args = [f"--prefix={dirs['prefix']}"]
@@ -216,10 +234,10 @@ def mumps(wipe: bool, dirs: T.Dict[str, Path], buildsys: str, env: T.Mapping[str
         lib_args = []
     else:
         env = get_compilers()
-        lib_args = [f"-DSCALAPACK_ROOT={scalapack_lib}", f"-DLAPACK_ROOT={lapack_lib}"]
+        lib_args = [f"-DSCALAPACK_ROOT:PATH={scalapack_lib}", f"-DLAPACK_ROOT:PATH={lapack_lib}"]
 
     if buildsys == "cmake":
-        args = [f"-DCMAKE_INSTALL_PREFIX={install_dir}"]
+        args = [f"-DCMAKE_INSTALL_PREFIX:PATH={install_dir}"]
         cmake_build(args + lib_args, source_dir, build_dir, wipe, env=env)
     elif buildsys == "meson":
         args = [f"--prefix={dirs['prefix']}"]
@@ -228,7 +246,7 @@ def mumps(wipe: bool, dirs: T.Dict[str, Path], buildsys: str, env: T.Mapping[str
         raise ValueError(f"unknown build system {buildsys}")
 
 
-def cmake_build(args: T.List[str], source_dir: Path, build_dir: Path, wipe: bool, env: T.Mapping[str, str]) -> int:
+def cmake_build(args: T.List[str], source_dir: Path, build_dir: Path, wipe: bool, env: T.Mapping[str, str], run_test: bool = True):
     """ build and install with CMake """
     cmake = cmake_minimum_version("3.13")
     cachefile = build_dir / "CMakeCache.txt"
@@ -239,9 +257,8 @@ def cmake_build(args: T.List[str], source_dir: Path, build_dir: Path, wipe: bool
 
     subprocess.check_call(nice + [cmake, "--build", str(build_dir), "--parallel", "--target", "install"])
 
-    ret = subprocess.run(nice + ["ctest", "--parallel", "--output-on-failure"], cwd=str(build_dir))
-
-    return ret.returncode
+    if run_test:
+        subprocess.check_call(nice + ["ctest", "--parallel", "--output-on-failure"], cwd=str(build_dir))
 
 
 def meson_build(args: T.List[str], source_dir: Path, build_dir: Path, wipe: bool, env: T.Mapping[str, str]) -> int:
@@ -348,11 +365,14 @@ if __name__ == "__main__":
 
     dirs = {"prefix": Path(P.prefix).expanduser().resolve(), "workdir": Path(P.workdir).expanduser().resolve()}
 
-    if "netcdf" in P.libs:
-        hdf5(dirs)
-        netcdf(dirs)
+    # Note: HDF5 needs to be before NetCDF
     if "hdf5" in P.libs:
         hdf5(dirs)
+    if "netcdf" in P.libs:
+        netcdf_c(dirs, wipe=P.wipe)
+        netcdf_fortran(dirs, wipe=P.wipe)
+
+    # Note: OpenMPI needs to be before scalapack and mumps
     if "openmpi" in P.libs:
         openmpi(dirs)
     if "lapack" in P.libs:
