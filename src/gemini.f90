@@ -65,6 +65,8 @@ real(wp) :: tstart,tfin
 integer :: it,isp
 !! time and species loop indices
 
+integer :: i
+
 !WORK ARRAYS
 real(wp), allocatable :: dl1,dl2,dl3     !these are grid distances in [m] used to compute Courant numbers
 
@@ -83,6 +85,8 @@ character(10) :: date, time
 real(wp), parameter :: dtscale=2d0
 
 !! MAIN PROGRAM
+
+lid2in = -1  !< sentinel
 
 argc = command_argument_count()
 if (argc < 2) then
@@ -150,42 +154,32 @@ end if
 !> CHECK THE GRID SIZE AND ESTABLISH A PROCESS GRID
 call grid_size(cfg%indatsize)
 
-select case (argc)
-  case (4,5,6,7) !< user specified process grid
-    call get_command_argument(3,argv)
-    read(argv,*) lid2in
-    call get_command_argument(4,argv)
-    read(argv,*) lid3in
-    call mpi_manualgrid(lx2all,lx3all,lid2in,lid3in)
-    if (argc == 5) then
-      call get_command_argument(5,argv)
-      select case (argv)
-        case ('-d', '-debug')
-          debug = .true.
-        case ('-nooutput')
-          nooutput = .true.
-        case ('-out_format')
-          call get_command_argument(6, argv)
-          cfg%out_format = trim(argv)
-      end select
-    endif
-  case default
-    if (argc == 3) then
-      call get_command_argument(3,argv)
-      select case (argv)
-        case ('-d', '-debug')
-          debug = .true.
-        case ('-nooutput')
-          nooutput = .true.
-        case ('-out_format')
-          call get_command_argument(6, argv)
-          cfg%out_format = trim(argv)
-      end select
-    endif
-    call mpigrid(lx2all,lx3all)
-    !! following grid_size these are in scope
-end select
+do i = 3,argc
+  call get_command_argument(i,argv)
 
+  select case (argv)
+  case ('-d', '-debug')
+    debug = .true.
+  case ('-nooutput')
+    nooutput = .true.
+  case ('-out_format')
+    call get_command_argument(i+1, argv)
+    cfg%out_format = trim(argv)
+    print *,'override output file format: ',cfg%out_format
+  case ('-manual_grid')
+    read(argv,*) lid2in
+    call get_command_argument(i+1,argv)
+    read(argv,*) lid3in
+  end select
+
+end do
+
+if (lid2in==-1) then
+  call mpigrid(lx2all,lx3all)
+  !! grid_size defines lx2all and lx3all
+else
+  call mpi_manualgrid(lx2all,lx3all,lid2in,lid3in)
+endif
 
 !> LOAD UP THE GRID STRUCTURE/MODULE VARS. FOR THIS SIMULATION
 call read_grid(cfg%indatsize,cfg%indatgrid,cfg%flagperiodic, x)
@@ -338,7 +332,7 @@ do while (t < cfg%tdur)
   !! OUTPUT
   if (abs(t-tout) < 1d-5) then
     tout = tout + cfg%dtout
-    if (nooutput .and. myid==0) then
+    if (nooutput) then
       write(stderr,*) 'WARNING: skipping file output at sim time (sec)',t
       cycle
     endif
