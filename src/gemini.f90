@@ -167,8 +167,9 @@ do i = 3,argc
     cfg%out_format = trim(argv)
     print *,'override output file format: ',cfg%out_format
   case ('-manual_grid')
-    read(argv,*) lid2in
     call get_command_argument(i+1,argv)
+    read(argv,*) lid2in
+    call get_command_argument(i+2,argv)
     read(argv,*) lid3in
   end select
 

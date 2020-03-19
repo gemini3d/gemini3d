@@ -6,14 +6,34 @@ function(python_compare TESTNAME)
 set(_outdir ${PROJECT_BINARY_DIR}/test${TESTNAME})
 set(_refdir ${PROJECT_SOURCE_DIR}/tests/data/test${TESTNAME})
 
-add_test(NAME gemini:compare:${TESTNAME}:python
-COMMAND ${Python3_EXECUTABLE} ${PROJECT_SOURCE_DIR}/scripts/compare_all.py ${_outdir} ${_refdir})
+set(hdf5_disabled true)
+if(hdf5 AND NOT python_disabled)
+  set(hdf5_disabled false)
+endif()
 
-set_tests_properties(gemini:compare:${TESTNAME}:python PROPERTIES
+add_test(NAME gemini:compare:hdf5:${TESTNAME}:python
+COMMAND ${Python3_EXECUTABLE} ${PROJECT_SOURCE_DIR}/scripts/compare_all.py ${_outdir} ${_refdir} -file_format h5)
+
+set_tests_properties(gemini:compare:hdf5:${TESTNAME}:python PROPERTIES
 TIMEOUT 30
 REQUIRED_FILES ${_outdir}/inputs/config.nml
 SKIP_RETURN_CODE 77
-DISABLED ${python_disabled})
+DISABLED ${hdf5_disabled})
+
+
+set(netcdf_disabled true)
+if(netcdf AND NOT python_disabled)
+  set(netcdf_disabled false)
+endif()
+
+add_test(NAME gemini:compare:netcdf:${TESTNAME}:python
+COMMAND ${Python3_EXECUTABLE} ${PROJECT_SOURCE_DIR}/scripts/compare_all.py ${_outdir} ${_refdir} -file_format nc)
+
+set_tests_properties(gemini:compare:netcdf:${TESTNAME}:python PROPERTIES
+TIMEOUT 30
+REQUIRED_FILES ${_outdir}/inputs/config.nml
+SKIP_RETURN_CODE 77
+DISABLED ${hdf5_disabled})
 
 endfunction(python_compare)
 
@@ -34,6 +54,10 @@ COMMAND ${HDF5_DIFF_EXECUTABLE} --relative=${_reltol} ${_outdir}/20130220_18300.
 set(h5diff_disabled false)
 if(NOT HDF5_DIFF_EXECUTABLE)
   set(h5diff_disabled true)
+endif()
+
+if(NOT EXISTS "${_outdir}/20130220_18300.000000.h5")
+set(h5diff_disabled true)
 endif()
 
 set_tests_properties(gemini:compare:${TESTNAME}:h5diff PROPERTIES

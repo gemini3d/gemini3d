@@ -15,7 +15,7 @@ except ModuleNotFoundError:
     plotdiff = None
 
 
-def compare_all(outdir: Path, refdir: Path, tol: typing.Dict[str, float], doplot: bool = False) -> int:
+def compare_all(outdir: Path, refdir: Path, tol: typing.Dict[str, float], doplot: bool = False, file_format: str = None) -> int:
     """
     compare two directories across time steps
     """
@@ -45,8 +45,9 @@ def compare_all(outdir: Path, refdir: Path, tol: typing.Dict[str, float], doplot
     errs = 0
     for i, t in enumerate(times):
         st = f"UTsec {t}"
-        A = loadframe(outdir, t)
+        A = loadframe(outdir, t, file_format)
         B = loadframe(refdir, t)
+        # don't specify file_format for reference, so that one reference file format can check multiple "out" format
 
         names = ["ne", "v1", "v2", "v3", "Ti", "Te", "J1", "J2", "J3"]
         itols = ["N", "V", "V", "V", "T", "T", "J", "J", "J"]

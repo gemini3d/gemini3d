@@ -8,7 +8,7 @@ import typing as T
 import numpy as np
 from datetime import datetime
 
-from .utils import datetime2ymd_hourdec
+from .utils import datetime2ymd_hourdec, ymdhourdec2datetime
 
 LSP = 7
 
@@ -220,4 +220,112 @@ def write_precip(precip: T.Dict[str, np.ndarray]):
             f.createDimension("lat", precip["mlat"].size)
 
             for k in ("Q", "E0"):
-                _write_var(f, f"/{k}p", ("lat", "lon"), precip[k][i, :, :].transpose())
+                _write_var(f, f"{k}p", ("lat", "lon"), precip[k][i, :, :].transpose())
+
+
+def loadframe3d_curv(fn: Path, lxs: T.Sequence[int]) -> T.Dict[str, T.Any]:
+    """
+    end users should normally use loadframe() instead
+    """
+
+    #    grid = readgrid(fn.parent / "inputs/simgrid.h5")
+    #    dat = xarray.Dataset(
+    #        coords={"x1": grid["x1"][2:-2], "x2": grid["x2"][2:-2], "x3": grid["x3"][2:-2]}
+    #    )
+
+    dat: T.Dict[str, T.Any] = {}
+
+    with Dataset(fn, "r") as f:
+        dat["time"] = ymdhourdec2datetime(f["time/ymd"][0], f["time/ymd"][1], f["time/ymd"][2], f["time/UThour"][()])
+
+        if lxs[2] == 1:  # east-west
+            p4 = (0, 3, 1, 2)
+            p3 = (2, 0, 1)
+        else:  # 3D or north-south, no swap
+            p4 = (0, 3, 2, 1)
+            p3 = (2, 1, 0)
+
+        ns = f["nsall"][:].transpose(p4)
+        # np.any() in case neither is an np.ndarray
+        if ns.shape[0] != 7 or np.any(ns.shape[1:] != lxs):
+            raise ValueError(f"may have wrong permutation on read. lxs: {lxs}  ns x1,x2,x3: {ns.shape}")
+        dat["ns"] = (("lsp", "x1", "x2", "x3"), ns)
+        vs = f["vs1all"][:].transpose(p4)
+        dat["vs"] = (("lsp", "x1", "x2", "x3"), vs)
+        Ts = f["Tsall"][:].transpose(p4)
+        dat["Ts"] = (("lsp", "x1", "x2", "x3"), Ts)
+
+        dat["ne"] = (("x1", "x2", "x3"), ns[LSP - 1, :, :, :])
+
+        dat["v1"] = (
+            ("x1", "x2", "x3"),
+            (ns[:6, :, :, :] * vs[:6, :, :, :]).sum(axis=0) / dat["ne"][1],
+        )
+
+        dat["Ti"] = (
+            ("x1", "x2", "x3"),
+            (ns[:6, :, :, :] * Ts[:6, :, :, :]).sum(axis=0) / dat["ne"][1],
+        )
+        dat["Te"] = (("x1", "x2", "x3"), Ts[LSP - 1, :, :, :])
+
+        dat["J1"] = (("x1", "x2", "x3"), f["J1all"][:].transpose(p3))
+        # np.any() in case neither is an np.ndarray
+        if np.any(dat["J1"][1].shape != lxs):
+            raise ValueError("may have wrong permutation on read")
+        dat["J2"] = (("x1", "x2", "x3"), f["J2all"][:].transpose(p3))
+        dat["J3"] = (("x1", "x2", "x3"), f["J3all"][:].transpose(p3))
+
+        dat["v2"] = (("x1", "x2", "x3"), f["v2avgall"][:].transpose(p3))
+        dat["v3"] = (("x1", "x2", "x3"), f["v3avgall"][:].transpose(p3))
+
+        dat["Phitop"] = (("x2", "x3"), f["Phiall"][:].transpose())
+
+    return dat
+
+
+def loadframe3d_curvavg(fn: Path, lxs: T.Sequence[int]) -> T.Dict[str, T.Any]:
+    """
+    end users should normally use loadframe() instead
+
+    Parameters
+    ----------
+    fn: pathlib.Path
+        filename of this timestep of simulation output
+    """
+    #    grid = readgrid(fn.parent / "inputs/simgrid.h5")
+    #    dat = xarray.Dataset(
+    #        coords={"x1": grid["x1"][2:-2], "x2": grid["x2"][2:-2], "x3": grid["x3"][2:-2]}
+    #    )
+    dat: T.Dict[str, T.Any] = {}
+
+    with Dataset(fn, "r") as f:
+        dat["time"] = ymdhourdec2datetime(f["ymd"][0], f["ymd"][1], f["ymd"][2], f["UThour"][()])
+
+        dat["ne"] = [("x1", "x2", "x3"), f["neall"][:].transpose(2, 0, 1)]
+        dat["v1"] = [("x1", "x2", "x3"), f["v1avgall"][:].transpose(2, 0, 1)]
+        dat["Ti"] = [("x1", "x2", "x3"), f["Tavgall"][:].transpose(2, 0, 1)]
+        dat["Te"] = [("x1", "x2", "x3"), f["TEall"][:].transpose(2, 0, 1)]
+        dat["J1"] = [("x1", "x2", "x3"), f["J1all"][:].transpose(2, 0, 1)]
+        dat["J2"] = [("x1", "x2", "x3"), f["J2all"][:].transpose(2, 0, 1)]
+        dat["J3"] = [("x1", "x2", "x3"), f["J3all"][:].transpose(2, 0, 1)]
+        dat["v2"] = [("x1", "x2", "x3"), f["v2avgall"][:].transpose(2, 0, 1)]
+        dat["v3"] = [("x1", "x2", "x3"), f["v3avgall"][:].transpose(2, 0, 1)]
+        dat["Phitop"] = [("x2", "x3"), f["Phiall"][:]]
+
+    return dat
+
+
+def loadglow_aurmap(fn: Path) -> T.Dict[str, T.Any]:
+    """
+    read the auroral output from GLOW
+
+    Parameters
+    ----------
+    fn: pathlib.Path
+        filename of this timestep of simulation output
+    """
+
+    with Dataset(fn, "r") as h:
+        dat = {"rayleighs": [("wavelength", "x2", "x3"), h["iverout"][:]]}
+
+    return dat

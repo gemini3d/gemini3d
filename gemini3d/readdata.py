@@ -21,10 +21,10 @@ try:
 except ModuleNotFoundError:
     nc4 = None
 
-FILE_FORMATS = (".h5", ".nc", ".dat")
+FILE_FORMATS = [".h5", ".nc", ".dat"]
 
 
-def readgrid(path: Path) -> typing.Dict[str, np.ndarray]:
+def readgrid(path: Path, file_format: str = None) -> typing.Dict[str, np.ndarray]:
 
     path = Path(path).expanduser().resolve()
 
@@ -46,7 +46,7 @@ def readgrid(path: Path) -> typing.Dict[str, np.ndarray]:
     return grid
 
 
-def readdata(fn: Path) -> typing.Dict[str, typing.Any]:
+def readdata(fn: Path, file_format: str = None) -> typing.Dict[str, typing.Any]:
     """
     knowing the filename for a simulation time step, read the data for that time step
 
@@ -116,7 +116,19 @@ def readdata(fn: Path) -> typing.Dict[str, typing.Any]:
             dat.update(hdf.loadglow_aurmap(fn_aurora))
             dat["wavelength"] = wavelength
     elif fn.suffix == ".nc":
-        raise NotImplementedError("TODO: NetCDF4")
+        if nc4 is None:
+            raise ModuleNotFoundError("pip install netcdf4")
+
+        if P["flagoutput"] == 1:
+            dat = nc4.loadframe3d_curv(fn, P["lxs"])
+        elif P["flagoutput"] == 2:
+            dat = nc4.loadframe3d_curvavg(fn, P["lxs"])
+        else:
+            raise ValueError("TODO: need to handle this case, file a bug report.")
+
+        if fn_aurora.is_file():
+            dat.update(nc4.loadglow_aurmap(fn_aurora))
+            dat["wavelength"] = wavelength
     else:
         raise ValueError(f"Unknown file type {fn}")
 
@@ -175,7 +187,7 @@ def datetime_range(start: datetime, stop: datetime, step: timedelta) -> typing.L
     return [start + i * step for i in range((stop - start) // step)]
 
 
-def loadframe(simdir: Path, time: datetime) -> typing.Dict[str, typing.Any]:
+def loadframe(simdir: Path, time: datetime, file_format: str = None) -> typing.Dict[str, typing.Any]:
     """
     This is what users should normally use.
     load a frame of simulation data, automatically selecting the correct
@@ -194,10 +206,10 @@ def loadframe(simdir: Path, time: datetime) -> typing.Dict[str, typing.Any]:
         simulation output for this time step
     """
 
-    return readdata(get_frame_filename(simdir, time))
+    return readdata(get_frame_filename(simdir, time, file_format), file_format)
 
 
-def get_frame_filename(simdir: Path, time: datetime) -> Path:
+def get_frame_filename(simdir: Path, time: datetime, file_format: str = None) -> Path:
     """
     the frame filenames can have different file formats
     """
@@ -206,7 +218,9 @@ def get_frame_filename(simdir: Path, time: datetime) -> Path:
 
     stem = time.strftime("%Y%m%d") + f"_{time.hour*3600 + time.minute*60 + time.second:05d}." + f"{time.microsecond:06d}"[:5]
 
-    for ext in FILE_FORMATS:
+    suffixes = [f".{file_format}"] if file_format else FILE_FORMATS
+
+    for ext in suffixes:
         for tick in ("0", "1"):
             fn = simdir / (stem + tick + ext)
             if fn.is_file():
@@ -216,7 +230,10 @@ def get_frame_filename(simdir: Path, time: datetime) -> Path:
 
 
 def get_grid_filename(path: Path) -> Path:
-    """ given a path or filename, return the full path to simgrid file """
+    """ given a path or filename, return the full path to simgrid file
+    we don't override FILE_FORMATS to allow outputs from a prior sim in a different
+    file format to be used in this sim.
+    """
 
     path = Path(path).expanduser().resolve()
 

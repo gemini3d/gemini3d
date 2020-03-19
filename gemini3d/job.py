@@ -53,8 +53,8 @@ def runner(pr: T.Dict[str, T.Any]) -> int:
     Nmpi = get_mpi_count(config_file)
 
     cmd = mpiexec + ["-n", str(Nmpi), str(gemexe), str(config_file), str(out_dir)]
-    if pr['out_format']:
-        cmd += ['-out_format', pr['out_format']]
+    if pr["out_format"]:
+        cmd += ["-out_format", pr["out_format"]]
     print(" ".join(cmd), "\n")
 
     batcher = hpc_batch_detect()
