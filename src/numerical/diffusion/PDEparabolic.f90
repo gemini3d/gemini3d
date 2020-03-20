@@ -53,6 +53,8 @@ Dh(2:lx1)=0.5*(D(1:lx1-1)+D(2:lx1))         !ith left cell wall thermal conducti
 
 !! ## TR HALF STEP:  DEFINE A MATRIX USING BANDED STORAGE
 
+
+! ZZZ - check whether diriclet or neumann...
 !> MINX1 BOUNDARY (DIRICHLET)
 ix1=1
 M(ll+3,ix1)=1.0
@@ -124,6 +126,7 @@ TR(ix1)=Ts(ix1)/(dt/2d0)+E(ix1) &
   -M(ll+2,ix1+1)*Ts(ix1+1)
 
 
+! ZZZ - check whether dirichlet or neumann...
 !> MAXX1 BOUNDARY
 ix1=lx1
 M(ll+5,ix1-2)=0.0
@@ -141,6 +144,7 @@ call gbsv(M,TR,kl=2)
 
 !! ## BDF2 STEP:  DEFINE A MATRIX USING BANDED STORAGE
 
+!ZZZ - check whether D or N
 !> MINX1 BOUNDARY (DIRICHLET)
 ix1=1
 M(ll+3,ix1)=1.0
@@ -195,6 +199,7 @@ TRBDF21D(ix1)=E(ix1) &
   -1._wp/3._wp*Ts(ix1)/(dt/3._wp) &
   +4._wp/3._wp*TR(ix1)/(dt/3._wp)
 
+!check whether D or N
 !> MAXX1 BOUNDARY
 ix1=lx1
 M(ll+5,ix1-2)=0.0
@@ -244,17 +249,26 @@ Dh(2:lx1)=0.5*(D(1:lx1-1)+D(2:lx1))         !ith left cell wall thermal conducti
 backEuler1D(:)=Ts(:)/dt+E(:)                !boundaries to be overwritten later...
 
 
-!> MINX1 BOUNDARY
+! check whether D or N
+!> MINX1 BOUNDARY, Dirichlet BCS
 ix1=1
-M(ll+3,ix1)=1.0
-M(ll+2,ix1+1)=0.0
-M(ll+1,ix1+2)=0.0
+M(ll+3,ix1)=1.0       !main diagonal denoted temperature at this grid point... 1*Ts,i=Tsminx1
+M(ll+2,ix1+1)=0.0     !1st super diagonal
+M(ll+1,ix1+2)=0.0     !2nd super diagonal
 backEuler1D(ix1)=Tsminx1
+
+!! if Neumann version, use a 1st order forward...
+!ix1=1
+!M(ll+3,ix1)=-1.0/dx1(ix1+1)       !main diagonal denoted temperature at this grid point... 1*Ts,i=Tsminx1
+!M(ll+2,ix1+1)=1.0/dx1(ix1+1)      !1st super diagonal
+!M(ll+1,ix1+2)=0.0                 !2nd super diagonal
+!backEuler1D(ix1)=Tsminx1          !here this is not intepreted as temperature, but instead the -1*heat flux divided by thermal conductivity
+!
 
 
 !> FIRST INTERIOR GRID POINT
 ix1=2
-M(ll+4,ix1-1)=-1*C(ix1)*Dh(ix1)/dx1i(ix1)/dx1(ix1) &            !ix1-1
+M(ll+4,ix1-1)=-1*C(ix1)*Dh(ix1)/dx1i(ix1)/dx1(ix1) &            !ix1-1, sub-diaginal
            +B(ix1)/(dx1(ix1+1)+dx1(ix1))
 M(ll+3,ix1)=1.0/dt-A(ix1) &                                     !ix1
          +C(ix1)*Dh(ix1+1)/dx1i(ix1)/dx1(ix1+1) &
@@ -291,14 +305,21 @@ M(ll+3,ix1)=1.0/dt-A(ix1) &                                     !ix1
 M(ll+2,ix1+1)=-1*C(ix1)*Dh(ix1+1)/dx1i(ix1)/dx1(ix1+1) &        !ix1+1, super-diag.
          -1*B(ix1)/(dx1(ix1+1)+dx1(ix1))
 
-
+! check whether D or N
 !> MAXX1 BOUNDARY
 ix1=lx1
 M(ll+5,ix1-2)=0.0
 M(ll+4,ix1-1)=0.0
 M(ll+3,ix1)=1.0
 backEuler1D(ix1)=Tsmaxx1
-
+!
+!!Neumann conditions...
+!ix1=lx1
+!M(ll+5,ix1-2)=0.0            !superdiagonal
+!M(ll+4,ix1-1)=-1.0/dx1(ix1)            !subdiagonal
+!M(ll+3,ix1)=1.0/dx1(ix1)              !main diag.
+!backEuler1D(ix1)=Tsmaxx1     !here interpreted as -1*heat flux divided by thermal conductivity...
+!
 
 !! ## DO SOME STUFF TO CALL LAPACK'S BANDED SOLVER
 

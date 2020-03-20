@@ -22,7 +22,7 @@ integer, protected :: lx1,lx2,lx3,lx2all,lx3all
 !! is required when using this module.
 
 real(wp), dimension(:,:,:), allocatable, protected :: g1,g2,g3   !gravity, not to be modified by a procedure outside this module
-integer, protected :: gridflag    !for cataloguing the type of grid that we are using, open, closed, inverted, etc.
+integer, protected :: gridflag    !for cataloguing the type of grid that we are using, open, closed, inverted, etc.  0 - closed dipole, 1 - inverted open, 2 - standard open.
 integer :: flagswap    !have the x2 and x3 dimensions been swapped?
 
 interface ! read.f90

@@ -61,7 +61,8 @@ E=0._wp
 
 
 !SET THE BOUNDARY CONDITIONS BASED ON GRID TYPE
-if (gridflag==0) then
+! if Neumann need to scale heat flux by thermal conductivity and metric factor...
+if (gridflag==0) then    !closed dipole grid, both ends are thermalized against neutrals
   do ix3=1,lx3
     do ix2=1,lx2
       Tn0=Tn(1,ix2,ix3)
@@ -70,7 +71,7 @@ if (gridflag==0) then
       T(lx1+1,ix2,ix3)=Tn0
     end do
   end do
-else if (gridflag==1) then
+else if (gridflag==1) then    !inverted grid, bottom altitude is thermalized to neutrals, top to electrons (possibly heat flow)
   do ix3=1,lx3
     do ix2=1,lx2
       Tn0=Tn(lx1,ix2,ix3)
@@ -78,11 +79,11 @@ else if (gridflag==1) then
       T(0,ix2,ix3)=Teinf     !top
     end do
   end do
-else
+else                          !non-inverted, standard.  Bottom is logical first element of array...
   do ix3=1,lx3
     do ix2=1,lx2
       Tn0=Tn(1,ix2,ix3)
-      T(0,ix2,ix3)=Tn0    !bottom
+      T(0,ix2,ix3)=Tn0          !bottom
       T(lx1+1,ix2,ix3)=Teinf    !top
     end do
   end do

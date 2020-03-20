@@ -4,7 +4,7 @@ use advec_mpi, only: advec3d_mc_mpi, advec_prep_mpi
 use calculus, only: etd_uncoupled, div3d
 use collisions, only:  thermal_conduct
 use phys_consts, only : wp,pi,qs,lsp,gammas,kB,ms,mindensdiv,mindens,mindensnull, debug
-use diffusion, only:  trbdf23d, diffusion_prep
+use diffusion, only:  trbdf23d, diffusion_prep, backEuler3D
 use grid, only: lx1, lx2, lx3, gridflag
 use mesh, only: curvmesh
 use ionization, only: ionrate_glow98, ionrate_fang08, eheating, photoionization
@@ -183,8 +183,9 @@ do isp=1,lsp
   call thermal_conduct(isp,param,ns(:,:,:,isp),nn,J1,lambda,beta)
 
   call diffusion_prep(isp,x,lambda,beta,ns(:,:,:,isp),param,A,B,C,D,E,Tn,Teinf)
-!      param=backEuler3D(param,A,B,C,D,E,dt,dx1,dx1i)    !1st order method, likely deprecated but needs to be kept here for debug purposes, perhaps?
-  param=TRBDF23D(param,A,B,C,D,E,dt,x)
+      !ZZZ - should be controllable via optional input flag, default to second order???
+      param=backEuler3D(param,A,B,C,D,E,dt,x)    !1st order method, likely deprecated but needs to be kept here for debug purposes, perhaps?
+!  param=TRBDF23D(param,A,B,C,D,E,dt,x)
   Ts(:,:,:,isp)=param
   Ts(:,:,:,isp)=max(Ts(:,:,:,isp),100._wp)
 end do
