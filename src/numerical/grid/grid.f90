@@ -57,6 +57,8 @@ if (myid==0) then    !root must physically read the size info and pass to worker
     write(stderr,*) 'ERROR: reading ' // indatsize
     error stop 'grid.f90: grid size must be strictly positive'
   endif
+
+  !these checks cannot be done until after mpigrid gets called???
   !! check correct number of MPI images. Help avoid confusing errors or bad simulations
   if (lx2all > 1) then
     if (modulo(lx2all, lid2) /= 0) then
