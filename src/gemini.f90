@@ -151,7 +151,7 @@ end if
 call grid_size(cfg%indatsize)
 
 select case (argc)
-  case (4,5) !< user specified process grid
+  case (4,5,6,7) !< user specified process grid
     call get_command_argument(3,argv)
     read(argv,*) lid2in
     call get_command_argument(4,argv)
@@ -338,7 +338,7 @@ do while (t < cfg%tdur)
   !! OUTPUT
   if (abs(t-tout) < 1d-5) then
     tout = tout + cfg%dtout
-    if (nooutput) then
+    if (nooutput .and. myid==0) then
       write(stderr,*) 'WARNING: skipping file output at sim time (sec)',t
       cycle
     endif

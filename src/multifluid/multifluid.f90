@@ -184,8 +184,8 @@ do isp=1,lsp
 
   call diffusion_prep(isp,x,lambda,beta,ns(:,:,:,isp),param,A,B,C,D,E,Tn,Teinf)
       !ZZZ - should be controllable via optional input flag, default to second order???
-      param=backEuler3D(param,A,B,C,D,E,dt,x)    !1st order method, likely deprecated but needs to be kept here for debug purposes, perhaps?
-!  param=TRBDF23D(param,A,B,C,D,E,dt,x)
+!      param=backEuler3D(param,A,B,C,D,E,dt,x)    !1st order method, likely deprecated but needs to be kept here for debug purposes, perhaps?
+  param=TRBDF23D(param,A,B,C,D,E,dt,x)
   Ts(:,:,:,isp)=param
   Ts(:,:,:,isp)=max(Ts(:,:,:,isp),100._wp)
 end do
