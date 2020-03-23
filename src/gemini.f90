@@ -333,7 +333,7 @@ do while (t < cfg%tdur)
   !! OUTPUT
   if (abs(t-tout) < 1d-5) then
     tout = tout + cfg%dtout
-    if (nooutput) then
+    if (nooutput .and. myid==0) then
       write(stderr,*) 'WARNING: skipping file output at sim time (sec)',t
       cycle
     endif
