@@ -10,7 +10,7 @@ implicit none
 type(hdf5_file) :: hout
 integer, parameter :: lx1=80, lx2=90, lx3=100
 integer, parameter :: lx1i=256, lx2i=256, lx3i=256
-real(wp), parameter :: stride=0.5_wp
+real, parameter :: stride=0.5
 
 real(wp) :: x1(lx1),x2(lx2),x3(lx3),f(lx1,lx2,lx3)
 real(wp) :: x1i(lx1i),x2i(lx2i),x3i(lx3i),fi(lx1i,lx2i,lx3i)
@@ -40,9 +40,9 @@ do ix3=1,lx3
 end do
 
 !> grid for interpolated data
-x1i=[ ((real(ix1,wp)-1)*stride/(lx1i/lx1), ix1=1,lx1i) ]
-x2i=[ ((real(ix2,wp)-1)*stride/(lx2i/lx2), ix2=1,lx2i) ]
-x3i=[ ((real(ix3,wp)-1)*stride/(lx3i/lx3), ix3=1,lx3i) ]
+x1i=[ ((real(ix1)-1) * stride/(lx1i/real(lx1)), ix1=1,lx1i) ]
+x2i=[ ((real(ix2)-1) * stride/(lx2i/real(lx2)), ix2=1,lx2i) ]
+x3i=[ ((real(ix3)-1) * stride/(lx3i/real(lx3)), ix3=1,lx3i) ]
 
 !> center grid points at zero
 x1i=x1i-sum(x1i)/size(x1i,1)
