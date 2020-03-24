@@ -236,7 +236,7 @@ def loadframe3d_curv(fn: Path, lxs: T.Sequence[int]) -> T.Dict[str, T.Any]:
     dat: T.Dict[str, T.Any] = {}
 
     with Dataset(fn, "r") as f:
-        dat["time"] = ymdhourdec2datetime(f["time/ymd"][0], f["time/ymd"][1], f["time/ymd"][2], f["time/UThour"][()])
+        dat["time"] = ymdhourdec2datetime(f["ymd"][0], f["ymd"][1], f["ymd"][2], f["UThour"][()])
 
         if lxs[2] == 1:  # east-west
             p4 = (0, 3, 1, 2)
