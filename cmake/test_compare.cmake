@@ -33,7 +33,7 @@ set_tests_properties(gemini:compare:netcdf:${TESTNAME}:python PROPERTIES
 TIMEOUT 30
 REQUIRED_FILES ${_outdir}/inputs/config.nml
 SKIP_RETURN_CODE 77
-DISABLED ${hdf5_disabled})
+DISABLED ${netcdf_disabled})
 
 endfunction(python_compare)
 
