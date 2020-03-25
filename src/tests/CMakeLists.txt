@@ -16,6 +16,7 @@ if("d" IN_LIST arith)
   add_test(NAME unit:scalapack_d COMMAND gemini_scalapack_d)
   set_tests_properties(unit:scalapack_d PROPERTIES
   TIMEOUT 15
+  DEPENDS unit:mpi_basic
   FIXTURES_SETUP MPIMUMPS)
 endif()
 
@@ -29,7 +30,7 @@ WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
 set_tests_properties(unit:mumps_basic PROPERTIES
 TIMEOUT 15
-DEPENDS MPIexist
+DEPENDS unit:mpi_basic
 PROCESSORS 2
 RUN_SERIAL true
 FIXTURES_SETUP MPIMUMPS)

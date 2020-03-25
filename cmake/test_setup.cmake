@@ -70,6 +70,7 @@ set_tests_properties(gemini:hdf5:${TESTNAME} PROPERTIES
   TIMEOUT ${TIMEOUT}
   SKIP_RETURN_CODE 77
   RUN_SERIAL true
+  FIXTURES_REQUIRED MPIMUMPS
   DISABLED ${gemini_disabled}
 )
 win32_env(gemini:${TESTNAME})
