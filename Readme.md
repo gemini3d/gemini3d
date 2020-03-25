@@ -2,6 +2,7 @@
 # GEMINI
 
 [![DOI](https://zenodo.org/badge/146920930.svg)](https://zenodo.org/badge/latestdoi/146920930)
+[![CDash](./tests/data/CDash.png)](https://my.cdash.org/index.php?project=Gemini3D)
 
 ![ci_python](https://github.com/gemini3d/gemini/workflows/ci_python/badge.svg)
 ![ci_debug_build](https://github.com/gemini3d/gemini/workflows/ci_debug_build/badge.svg)
