@@ -47,13 +47,7 @@ jobs:
         path: build/CMakeFiles/CMakeError.log
 # CI is too slow for 3d_glow
 
-# -V output truncated on CI?
-    - run: ctest --parallel --output-on-failure -R unit
-      working-directory: build
-    - run: ctest --parallel --output-on-failure -R 2d
-      working-directory: build
-    - run: ctest --parallel --output-on-failure -R 3d_fang
-      working-directory: build
+    - run: ctest -S cdash.cmake -E 3d_glow -V
     - uses: actions/upload-artifact@v1
       if: failure()
       with:
