@@ -8,9 +8,9 @@ target_link_libraries(fang_run PRIVATE fang msis const)
 add_executable(test_fang test_fang.f90)
 target_link_libraries(test_fang PRIVATE fang fang_run const)
 
-add_test(NAME unit:FangIonize
+add_test(NAME unit:fangIonize
   COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test_fang.py $<TARGET_FILE:test_fang>)
-set_tests_properties(unit:FangIonize PROPERTIES
+set_tests_properties(unit:fangIonize PROPERTIES
   TIMEOUT 10
   DISABLED ${python_disabled})
 
