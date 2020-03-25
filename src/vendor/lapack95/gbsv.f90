@@ -45,6 +45,8 @@ if ( ISTAT == 0 ) then
   end select
 endif
 
+if ( .NOT.present(IPIV) ) deallocate(LPIV)
+
 end subroutine gbsv
 
 end module vendor_lapack95
