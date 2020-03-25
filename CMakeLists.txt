@@ -21,6 +21,8 @@ project(gemini3d
   VERSION 0.4.0)
 
 enable_testing()
+include(CTest) # for CDash
+site_name("nobody")
 
 if(realbits EQUAL 32)
   message(VERBOSE " 32-bit real precision")

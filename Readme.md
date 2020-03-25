@@ -73,6 +73,14 @@ Requirements:
   ctest --output-on-failure
   ```
 
+Optional: if you want to submit your test results to the
+[Gemini CDash](https://my.cdash.org/index.php?project=Gemini3D)
+you can run:
+
+```sh
+ctest -S cdash.cmake
+```
+
 ## How to setup a sim
 
 1. make a config.nml with desired paramaeters for an equilibrium sim. See tests/*config.nml.
