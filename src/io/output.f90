@@ -10,8 +10,13 @@ contains
 module procedure create_outdir
 !! CREATES OUTPUT DIRECTORY, MOVES CONFIG FILES THERE AND GENERATES A GRID OUTPUT FILE
 
-integer :: ierr
+integer :: ierr, u, realbits
+logical :: porcelain
+character(:), allocatable :: branch, rev
+character(256) :: buf
 
+namelist /files/ infile,outdir,realbits
+namelist /git/ branch, rev, porcelain
 
 !> MAKE A COPY OF THE INPUT DATA IN THE OUTPUT DIRECTORY
 ierr = mkdir(outdir//'/inputs')
@@ -43,7 +48,35 @@ call gitlog(outdir // '/gitrev.log')
 
 call compiler_log(outdir // '/compiler.log')
 
-call realbits_log(outdir // '/realbits.log')
+!! Log to output.nml
+select case (wp)
+case (real64)
+  realbits = 64
+case (real32)
+  realbits = 32
+case default
+  error stop 'unknown real precision'
+end select
+
+branch = ''
+rev = ''
+porcelain = .false.
+open(newunit=u, file=outdir// '/gitrev.log', status='old', action='read', iostat=ierr)
+if(ierr==0) then
+  read(u, '(A256)', iostat=ierr) buf
+  if(ierr==0) branch = trim(buf)
+  read(u, '(A256)', iostat=ierr) buf
+  if(ierr==0) rev = trim(buf)
+  read(u, '(A256)', iostat=ierr) buf
+  if (len_trim(buf)==0 .or. is_iostat_end(ierr)) porcelain=.true.
+  close(u)
+endif
+
+!> let this crash the program if it can't write as an early indicator of output directory problem.
+open(newunit=u, file=outdir // '/output.nml', status='unknown', action='write')
+  write(u, nml=files)
+  write(u, nml=git)
+close(u)
 
 end procedure create_outdir
 
@@ -54,7 +87,7 @@ subroutine gitlog(logpath)
 character(*), intent(in) :: logpath
 integer :: ierr
 
-!> write branch
+!> git branch --show-current requires Git >= 2.22, June 2019
 call execute_command_line('git rev-parse --abbrev-ref HEAD > '// logpath, cmdstat=ierr)
 if(ierr /= 0) then
   write(stderr, *) 'ERROR: failed to log Git branch'
@@ -92,26 +125,5 @@ close(u)
 
 end subroutine compiler_log
 
-
-subroutine realbits_log(logpath)
-
-character(*), intent(in) :: logpath
-integer :: u, ierr
-
-open(newunit=u, file=logpath, status='unknown', action='write', iostat=ierr)
-if(ierr /= 0) return
-
-select case (wp)
-  case (real64)
-    write(u,'(A)') '64'
-  case (real32)
-    write(u,'(A)') '32'
-  case default
-    write(u,'(A)') 'unknown'
-end select
-
-close(u)
-
-end subroutine realbits_log
 
 end submodule output
