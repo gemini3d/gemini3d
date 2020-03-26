@@ -23,13 +23,13 @@ jobs:
     - uses: actions/setup-python@v1
       with:
         python-version: '3.7'
-    - run: |
-        pip install -e .
-        pip install cmake
+    - run: pip install -e .
+
     - name: Install packages
       run: |
         sudo apt update -yq
-        sudo apt install -yq --no-install-recommends pkg-config gfortran libopenmpi-dev openmpi-bin liblapack-dev libscalapack-openmpi-dev libmumps-dev libhdf5-dev octave
+        sudo apt install -yq --no-install-recommends pkg-config gfortran libopenmpi-dev openmpi-bin liblapack-dev libscalapack-openmpi-dev libmumps-dev libhdf5-dev
+
     - name: Install Ninja
       run: |
         wget https://github.com/ninja-build/ninja/releases/download/v1.10.0/ninja-linux.zip
@@ -39,20 +39,17 @@ jobs:
       run: cmake -G Ninja -DCMAKE_MAKE_PROGRAM=$(realpath ./ninja) -B build
       env:
         FC: gfortran
+
     - run: cmake --build build --parallel
     - uses: actions/upload-artifact@v1
       if: failure()
       with:
         name: Linux_Cmake_Buildlog
         path: build/CMakeFiles/CMakeError.log
-# CI is too slow for 3d_glow
 
-    - run: ctest -S cdash.cmake -E 3d_glow -V
-    - uses: actions/upload-artifact@v1
-      if: failure()
-      with:
-        name: Linux_CMake_Testlog
-        path: build/Testing/Temporary/LastTest.log
+# CI is too slow for 3d_glow
+    - run: ctest -S cdash.cmake -E 3d_glow -VV
+
 
   cmakeBuildAllLibs:
     if: false
@@ -62,31 +59,11 @@ jobs:
     - uses: actions/setup-python@v1
       with:
         python-version: '3.7'
-    - run: |
-        pip install -e .
-        pip install cmake
+    - run: pip install -e .
+
     - name: Install packages
       run: |
         sudo apt update -yq
         sudo apt install -yq --no-install-recommends pkg-config gfortran libopenmpi-dev openmpi-bin
 
-
-    - name: CMake configure
-      run: cmake -B build -Dhdf5=true
-      env:
-        FC: gfortran
-    - run: cmake --build build --parallel
-    - uses: actions/upload-artifact@v1
-      if: failure()
-      with:
-        name: LinuxOS_Cmake_Buildlog
-        path: build/CMakeFiles/CMakeError.log
-
-# -V output truncated on CI?
-    - run: ctest --parallel --output-on-failure -R unit
-      working-directory: build
-    - uses: actions/upload-artifact@v1
-      if: failure()
-      with:
-        name: Linux_CMake_Testlog
-        path: build/Testing/Temporary/LastTest.log
+    - run: ctest -S cdash.cmake -E 3d_glow -V

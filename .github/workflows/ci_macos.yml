@@ -24,21 +24,5 @@ jobs:
     - run: pip install -e .
     - run: brew install pkg-config gcc lapack open-mpi hdf5 scalapack
 
-    - run: cmake -B build -Dhdf5=true
-      env:
-        FC: gfortran-9
-        CC: gcc-9
-    - run: cmake --build build --parallel
-    - uses: actions/upload-artifact@v1
-      if: failure()
-      with:
-        name: MacOS_CMake_Buildlog
-        path: build/CMakeFiles/CMakeError.log
-
 # CI is too slow for 3d_glow
-    - run: ctest -S cdash.cmake -E 3d -V
-    - uses: actions/upload-artifact@v1
-      if: failure()
-      with:
-        name: Mac_CMake_Testlog
-        path: build/Testing/Temporary/LastTest.log
+    - run: ctest -S cdash.cmake -E 3d -VV
