@@ -40,60 +40,73 @@ contains
 
 
 subroutine grid_size(indatsize)
-
 !! CHECK THE SIZE OF THE GRID TO BE LOADED AND SET SIZES IN THIS MODULE (NOT IN STRUCTURE THOUGH)
 
 character(*), intent(in) :: indatsize
 
-integer :: iid, ierr
-logical exists
-
-
 if (myid==0) then    !root must physically read the size info and pass to workers
-  !! DETERMINE THE SIZE OF THE GRID TO BE LOADED
-  call get_simsize3(indatsize, lx1, lx2all, lx3all)
-
-  if (lx1 < 1 .or. lx2all < 1 .or. lx3all < 1) then
-    write(stderr,*) 'ERROR: reading ' // indatsize
-    error stop 'grid.f90: grid size must be strictly positive'
-  endif
-
-  !these checks cannot be done until after mpigrid gets called???
-  !! check correct number of MPI images. Help avoid confusing errors or bad simulations
-  if (lx2all > 1) then
-    if (modulo(lx2all, lid2) /= 0) then
-      write(stderr,'(/,A,I6,A,I6,/)') 'ERROR: Number of MPI images along x2', lid2, ' is not an integer factor of lx2all: ', lx2all
-      error stop
-    endif
-  endif
-
-  if (lx3all > 1) then
-    if (modulo(lx3all, lid3) /= 0) then
-      write(stderr,'(/,A,I6,A,I6,/)') 'ERROR: Number of MPI images along x3', lid3, ' is not an integer factor of lx3all: ', lx3all
-      error stop
-    endif
-  endif
-
-  do iid=1,lid-1
-    call mpi_send(lx1,1,MPI_INTEGER,iid,tag%lx1,MPI_COMM_WORLD,ierr)
-    if (ierr/=0) error stop 'grid:grid_size lx1 failed mpi_send'
-    call mpi_send(lx2all,1,MPI_INTEGER,iid,tag%lx2all,MPI_COMM_WORLD,ierr)
-    if (ierr/=0) error stop 'grid:grid_size lx2all failed mpi_send'
-    call mpi_send(lx3all,1,MPI_INTEGER,iid,tag%lx3all,MPI_COMM_WORLD,ierr)
-    if (ierr/=0) error stop 'grid:grid_size lx3all failed mpi_send'
-  end do
-
-  print *, 'grid:grid_size reporting full grid size:  ',lx1,lx2all,lx3all
+  call grid_size_root(indatsize)
 else
-  call mpi_recv(lx1,1,MPI_INTEGER,0,tag%lx1,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-  if (ierr/=0) error stop 'grid:grid_size lx1 failed mpi_send'
-  call mpi_recv(lx2all,1,MPI_INTEGER,0,tag%lx2all,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-  if (ierr/=0) error stop 'grid:grid_size lx2all failed mpi_send'
-  call mpi_recv(lx3all,1,MPI_INTEGER,0,tag%lx3all,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-  if (ierr/=0) error stop 'grid:grid_size lx3all failed mpi_send'
+  call grid_size_worker()
 end if
 
 end subroutine grid_size
+
+
+subroutine grid_size_root(indatsize)
+!! DETERMINE THE SIZE OF THE GRID TO BE LOADED
+character(*), intent(in) :: indatsize
+integer :: i, ierr
+
+call get_simsize3(indatsize, lx1, lx2all, lx3all)
+
+if (lx1 < 1 .or. lx2all < 1 .or. lx3all < 1) then
+  write(stderr,*) 'ERROR: reading ' // indatsize
+  error stop 'grid_size_root: grid size must be strictly positive'
+endif
+
+!> check correct number of MPI images. Help avoid confusing errors or bad simulations
+if (lx2all > 1) then
+  if (modulo(lx2all, lid2) /= 0) then
+    write(stderr,'(/,A,I6,A,I6,/)') 'ERROR:grid_size_root: Number of MPI images along x2', lid2, &
+                                    ' not an integer factor of lx2all: ', lx2all
+    error stop
+  endif
+endif
+
+if (lx3all > 1) then
+  if (modulo(lx3all, lid3) /= 0) then
+    write(stderr,'(/,A,I6,A,I6,/)') 'ERROR:grid_size_root: Number of MPI images along x3', lid3, &
+                                    ' not an integer factor of lx3all: ', lx3all
+    error stop
+  endif
+endif
+
+do i = 1,lid-1
+  call mpi_send(lx1,1,MPI_INTEGER, i, tag%lx1,MPI_COMM_WORLD,ierr)
+  if (ierr/=0) error stop 'grid_size_root: lx1 failed mpi_send'
+  call mpi_send(lx2all,1,MPI_INTEGER, i, tag%lx2all,MPI_COMM_WORLD,ierr)
+  if (ierr/=0) error stop 'grid_size_root: lx2all failed mpi_send'
+  call mpi_send(lx3all,1,MPI_INTEGER, i, tag%lx3all,MPI_COMM_WORLD,ierr)
+  if (ierr/=0) error stop 'grid_size_root: lx3all failed mpi_send'
+end do
+
+print *, 'grid_size_root: full grid size:  ',lx1,lx2all,lx3all
+
+end subroutine grid_size_root
+
+
+subroutine grid_size_worker()
+
+integer :: ierr
+
+call mpi_recv(lx1,1,MPI_INTEGER,0,tag%lx1,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+if (ierr/=0) error stop 'grid_size_worker: lx1 failed mpi_send'
+call mpi_recv(lx2all,1,MPI_INTEGER,0,tag%lx2all,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+if (ierr/=0) error stop 'grid_size_worker: lx2all failed mpi_send'
+call mpi_recv(lx3all,1,MPI_INTEGER,0,tag%lx3all,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+if (ierr/=0) error stop 'grid_size_worker: lx3all failed mpi_send'
+end subroutine grid_size_worker
 
 
 subroutine clear_grid(x)

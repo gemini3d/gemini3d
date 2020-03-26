@@ -151,9 +151,6 @@ if (myid==0) then
   end if
 end if
 
-!> CHECK THE GRID SIZE AND ESTABLISH A PROCESS GRID
-call grid_size(cfg%indatsize)
-
 do i = 3,argc
   call get_command_argument(i,argv)
 
@@ -182,10 +179,13 @@ else
   call mpi_manualgrid(lx2all,lx3all,lid2in,lid3in)
 endif
 
+!> CHECK THE GRID SIZE AND ESTABLISH A PROCESS GRID
+!> this need to be done AFTER mpigrid/mpi_manualgrid but BEFORE read_grid
+call grid_size(cfg%indatsize)
+
 !> LOAD UP THE GRID STRUCTURE/MODULE VARS. FOR THIS SIMULATION
 call read_grid(cfg%indatsize,cfg%indatgrid,cfg%flagperiodic, x)
 !! read in a previously generated grid from filenames listed in input file
-
 
 !> CREATE/PREP OUTPUT DIRECTORY AND OUTPUT SIMULATION SIZE AND GRID DATA
 !> ONLY THE ROOT PROCESS WRITES OUTPUT DATA

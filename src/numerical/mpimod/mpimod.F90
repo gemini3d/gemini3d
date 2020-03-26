@@ -411,8 +411,11 @@ subroutine mpisetup()
 !! FULLY IMPLEMENTED IN THIS VERSINO OF THE CODE.
 
   call mpi_init(ierr)
+  if (ierr/=0) error stop 'could not init MPI'
   call mpi_comm_rank(MPI_COMM_WORLD,myid,ierr)
+  if (ierr/=0) error stop 'could get MPI comm rank'
   call mpi_comm_size(MPI_COMM_WORLD,lid,ierr)
+  if (ierr/=0) error stop 'mpimod: mpi_comm_size'
 
 !> INITIALIZE, ONLY PARALLELIZING IN X3, GRIDDING FUNCTION MAY CHANGE THIS, IF CALLED.
   lid2=1
