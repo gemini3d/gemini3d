@@ -79,7 +79,7 @@ Optional: if you want to submit your test results to the
 you can run:
 
 ```sh
-ctest -S cdash.cmake
+ctest -S setup.cmake -V
 ```
 
 ## How to setup a sim
