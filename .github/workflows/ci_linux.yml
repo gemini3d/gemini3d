@@ -35,21 +35,10 @@ jobs:
         wget https://github.com/ninja-build/ninja/releases/download/v1.10.0/ninja-linux.zip
         unzip ninja-linux.zip
 
-    - name: CMake configure
-      run: cmake -G Ninja -DCMAKE_MAKE_PROGRAM=$(realpath ./ninja) -B build
-      env:
-        FC: gfortran
-
-    - run: cmake --build build --parallel
-    - uses: actions/upload-artifact@v1
-      if: failure()
-      with:
-        name: Linux_Cmake_Buildlog
-        path: build/CMakeFiles/CMakeError.log
-
 # CI is too slow for 3d_glow
-    - run: ctest -S cdash.cmake -E 3d_glow -VV
-
+    - run: ctest -S cdash.cmake -DCMAKE_MAKE_PROGRAM=$(realpath ./ninja) -E 3d -VV
+      env:
+        FC: gfortran-7
 
   cmakeBuildAllLibs:
     if: false
@@ -67,3 +56,5 @@ jobs:
         sudo apt install -yq --no-install-recommends pkg-config gfortran libopenmpi-dev openmpi-bin
 
     - run: ctest -S cdash.cmake -E 3d_glow -V
+      env:
+        FC: gfortran-7

@@ -22,7 +22,9 @@ jobs:
       with:
         python-version: '3.x'
     - run: pip install -e .
-    - run: brew install pkg-config gcc lapack open-mpi hdf5 scalapack
+    - run: brew install pkg-config ninja lapack open-mpi hdf5 scalapack
 
 # CI is too slow for 3d_glow
     - run: ctest -S cdash.cmake -E 3d -VV
+      env:
+        FC: gfortran-9
