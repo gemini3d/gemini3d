@@ -25,9 +25,6 @@
 #  Scotch_LIBRARY_DIRS    - Link directories for scotch libraries
 #  Scotch_LIBRARIES       - scotch component libraries to be linked
 #  Scotch_INTSIZE         - Number of octets occupied by a Scotch_Num
-#
-# The user can give specific paths where to find the libraries adding cmake
-# options at configure (ex: cmake .. -DScotch_ROOT=path/to/scotch):
 
 #=============================================================================
 # Copyright 2012-2013 Inria
@@ -80,8 +77,8 @@ foreach(scotch_lib ${Scotch_libs_to_find})
     PATH_SUFFIXES lib lib32 lib64)
 endforeach()
 
-set(Scotch_LIBRARIES "")
-set(Scotch_LIBRARY_DIRS "")
+set(Scotch_LIBRARIES)
+set(Scotch_LIBRARY_DIRS)
 # If found, add path to cmake variable
 # ------------------------------------
 foreach(scotch_lib ${Scotch_libs_to_find})

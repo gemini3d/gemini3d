@@ -61,13 +61,18 @@ set(_mkl_libs ${ARGV})
 foreach(s ${_mkl_libs})
   find_library(BLACS_${s}_LIBRARY
            NAMES ${s}
-           PATHS ENV MKLROOT ENV I_MPI_ROOT ENV TBBROOT
+           PATHS
+            ENV MKLROOT
+            ENV I_MPI_ROOT
+            ENV TBBROOT
+            ../tbb/lib/intel64/gcc4.7
+            ../tbb/lib/intel64/vc_mt
+            ../compiler/lib/intel64
            PATH_SUFFIXES
              lib/intel64 lib/intel64_win
              intel64/lib/release
-             lib/intel64/gcc4.7 ../tbb/lib/intel64/gcc4.7
-             lib/intel64/vc_mt ../tbb/lib/intel64/vc_mt
-             ../compiler/lib/intel64
+             lib/intel64/gcc4.7
+             lib/intel64/vc_mt
            HINTS ${MKL_LIBRARY_DIRS} ${MKL_LIBDIR}
            NO_DEFAULT_PATH)
   if(NOT BLACS_${s}_LIBRARY)
@@ -81,7 +86,10 @@ endforeach()
 
 find_path(BLACS_INCLUDE_DIR
   NAMES mkl_blacs.h
-  PATHS ENV MKLROOT ENV I_MPI_ROOT ENV TBBROOT
+  PATHS
+    ENV MKLROOT
+    ENV I_MPI_ROOT
+    ENV TBBROOT
   PATH_SUFFIXES
     include
     include/intel64/lp64
@@ -129,18 +137,21 @@ endif()
 
 elseif(OpenMPI IN_LIST BLACS_FIND_COMPONENTS)
 
-find_library(BLACS_INIT NAMES blacsF77init blacsF77init-openmpi)
+find_library(BLACS_INIT
+  NAMES blacsF77init blacsF77init-openmpi)
 if(BLACS_INIT)
   list(APPEND BLACS_LIBRARY ${BLACS_INIT})
 endif()
 
-find_library(BLACS_CINIT NAMES blacsCinit blacsCinit-openmpi)
+find_library(BLACS_CINIT
+  NAMES blacsCinit blacsCinit-openmpi)
 if(BLACS_CINIT)
   list(APPEND BLACS_LIBRARY ${BLACS_CINIT})
 endif()
 
 # this is the only lib that scalapack/blacs/src provides
-find_library(BLACS_LIB NAMES blacs blacs-mpi blacs-openmpi)
+find_library(BLACS_LIB
+  NAMES blacs blacs-mpi blacs-openmpi)
 if(BLACS_LIB)
   list(APPEND BLACS_LIBRARY ${BLACS_LIB})
 endif()
