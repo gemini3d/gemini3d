@@ -131,8 +131,9 @@ deallocate(x%h1x2i,x%h2x2i,x%h3x2i)
 deallocate(x%h1x3i,x%h2x3i,x%h3x3i)
 
 deallocate(x%I,x%Bmag,x%nullpts)
-!    deallocate(x%e1,x%e2,x%e3)    !handled by clear_unitvecs (assuming netural perturbations are used)
-!    deallocate(x%er,x%etheta,x%ephi)
+
+if(allocated(x%e1)) deallocate(x%e1,x%e2,x%e3)
+if(allocated(x%er)) deallocate(x%er,x%etheta,x%ephi)
 
 deallocate(x%dl1i,x%dl2i,x%dl3i)
 
@@ -157,7 +158,8 @@ subroutine clear_unitvecs(x)
 
 type(curvmesh), intent(inout) :: x
 
-deallocate(x%e1,x%e2,x%e3,x%er,x%etheta,x%ephi)
+if(allocated(x%e1)) deallocate(x%e1,x%e2,x%e3)
+if(allocated(x%er)) deallocate(x%er,x%etheta,x%ephi)
 
 end subroutine clear_unitvecs
 
