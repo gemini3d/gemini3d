@@ -12,11 +12,12 @@ module procedure create_outdir
 
 integer :: ierr, u, realbits
 logical :: porcelain
-character(:), allocatable :: branch, rev
+character(:), allocatable :: input_nml, output_dir, branch, rev, compiler, exe
 character(256) :: buf
 
-namelist /files/ infile,outdir,realbits
+namelist /files/ input_nml, output_dir,realbits
 namelist /git/ branch, rev, porcelain
+namelist /system/ compiler, exe
 
 !> MAKE A COPY OF THE INPUT DATA IN THE OUTPUT DIRECTORY
 ierr = mkdir(outdir//'/inputs')
@@ -48,7 +49,13 @@ call gitlog(outdir // '/gitrev.log')
 
 call compiler_log(outdir // '/compiler.log')
 
-!! Log to output.nml
+!> Log to output.nml
+
+!> files group
+input_nml = infile
+output_dir = outdir
+!! character namelist variables can't be assumed length, but can be allocatable.
+
 select case (wp)
 case (real64)
   realbits = 64
@@ -58,6 +65,7 @@ case default
   error stop 'unknown real precision'
 end select
 
+!> git group
 branch = ''
 rev = ''
 porcelain = .false.
@@ -72,10 +80,16 @@ if(ierr==0) then
   close(u)
 endif
 
+!> system group
+compiler = trim(compiler_version())
+call get_command_argument(0, buf)
+exe = trim(buf)
+
 !> let this crash the program if it can't write as an early indicator of output directory problem.
 open(newunit=u, file=outdir // '/output.nml', status='unknown', action='write')
   write(u, nml=files)
   write(u, nml=git)
+  write(u, nml=system)
 close(u)
 
 end procedure create_outdir
