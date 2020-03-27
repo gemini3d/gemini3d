@@ -9,7 +9,6 @@ on:
       - "**.F90"
       - ".github/workflows/ci_debug_build.yml"
   pull_request:
-  release:
 
 
 jobs:
@@ -21,9 +20,7 @@ jobs:
     - uses: actions/setup-python@v1
       with:
         python-version: '3.6'
-    - run: |
-        pip install -e .
-        pip install cmake
+    - run: pip install -e .
     - name: Install Ninja
       run: |
         wget https://github.com/ninja-build/ninja/releases/download/v1.10.0/ninja-linux.zip

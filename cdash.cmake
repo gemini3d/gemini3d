@@ -1,6 +1,11 @@
 # run by:
 # ctest -S setup.cmake
 
+# --- Project-specific -Doptions
+# these will be used if the project isn't already configured.
+set(_opts)
+
+# --- boilerplate follows
 # site is OS name
 if(NOT DEFINED CTEST_SITE)
   set(CTEST_SITE ${CMAKE_SYSTEM_NAME})
@@ -46,13 +51,17 @@ if(NOT DEFINED CTEST_CMAKE_GENERATOR)
     set(CTEST_CMAKE_GENERATOR "Ninja")
   elseif(WIN32)
     set(CTEST_CMAKE_GENERATOR "MinGW Makefiles")
+    set(CTEST_BUILD_FLAGS -j)
   else()
     set(CTEST_CMAKE_GENERATOR "Unix Makefiles")
+    set(CTEST_BUILD_FLAGS -j)
   endif()
 endif()
 
 ctest_start("Experimental" ${CTEST_SOURCE_DIRECTORY} ${CTEST_BINARY_DIRECTORY})
-ctest_configure(BUILD ${CTEST_BINARY_DIRECTORY} SOURCE ${CTEST_SOURCE_DIRECTORY})
+if(NOT EXISTS ${CTEST_BINARY_DIRECTORY}/CMakeCache.txt)
+  ctest_configure(BUILD ${CTEST_BINARY_DIRECTORY} SOURCE ${CTEST_SOURCE_DIRECTORY} OPTIONS "${_opts}")
+endif()
 ctest_build(BUILD ${CTEST_BINARY_DIRECTORY} CONFIGURATION ${CTEST_BUILD_CONFIGURATION})
 ctest_test(BUILD ${CTEST_BINARY_DIRECTORY})
 ctest_submit()

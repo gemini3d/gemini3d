@@ -9,7 +9,6 @@ on:
       - "**/CMakeLists.txt"
       - ".github/workflows/ci_macos.yml"
   pull_request:
-  release:
 
 
 jobs:
@@ -28,3 +27,4 @@ jobs:
     - run: ctest -S cdash.cmake -E 3d -VV
       env:
         FC: gfortran-9
+        CC: gcc-9
