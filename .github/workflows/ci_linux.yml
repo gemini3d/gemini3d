@@ -11,7 +11,6 @@ on:
       - "**/CMakeLists.txt"
       - ".github/workflows/ci_linux.yml"
   pull_request:
-  release:
 
 
 jobs:
@@ -22,7 +21,7 @@ jobs:
     - uses: actions/checkout@v2
     - uses: actions/setup-python@v1
       with:
-        python-version: '3.7'
+        python-version: '3.8'
     - run: pip install -e .
 
     - name: Install packages
@@ -30,15 +29,10 @@ jobs:
         sudo apt update -yq
         sudo apt install -yq --no-install-recommends pkg-config gfortran libopenmpi-dev openmpi-bin liblapack-dev libscalapack-openmpi-dev libmumps-dev libhdf5-dev
 
-    - name: Install Ninja
-      run: |
-        wget https://github.com/ninja-build/ninja/releases/download/v1.10.0/ninja-linux.zip
-        unzip ninja-linux.zip
-
 # CI is too slow for 3d_glow
-    - run: ctest -S cdash.cmake -DCMAKE_MAKE_PROGRAM=$(realpath ./ninja) -E 3d -VV
+    - run: ctest -S cdash.cmake -E 3d -VV
       env:
-        FC: gfortran-7
+        FC: gfortran
 
   cmakeBuildAllLibs:
     if: false
@@ -47,7 +41,7 @@ jobs:
     - uses: actions/checkout@v2
     - uses: actions/setup-python@v1
       with:
-        python-version: '3.7'
+        python-version: '3.8'
     - run: pip install -e .
 
     - name: Install packages
@@ -57,4 +51,4 @@ jobs:
 
     - run: ctest -S cdash.cmake -E 3d_glow -V
       env:
-        FC: gfortran-7
+        FC: gfortran

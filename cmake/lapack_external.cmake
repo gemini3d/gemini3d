@@ -11,7 +11,7 @@ include(FetchContent)
 
 FetchContent_Declare(lapack_proj
   GIT_REPOSITORY https://github.com/scivision/lapack.git
-  GIT_TAG v3.9.0.1
+  GIT_TAG v3.9.0.2
   CMAKE_ARGS "-Darith=${arith}"
 )
 
