@@ -1,5 +1,4 @@
 module diffusion
-
 !! This module sets up the ionospheric diffusion problem and then passes it off to the parabolic solvers.
 
 use phys_consts, only: kB,lsp,gammas,mindensdiv, wp
@@ -13,11 +12,11 @@ private
 public :: diffusion_prep, TRBDF23D, backEuler3D
 
 interface TRBDF23D
-  module procedure TRBDF23D_curv
+module procedure TRBDF23D_curv
 end interface TRBDF23D
 
 interface backEuler3D
-  module procedure backEuler3D_curv
+module procedure backEuler3D_curv
 end interface backEuler3D
 
 
@@ -55,14 +54,16 @@ lx3=size(ns,3)-4
 A(:,:,:)=0._wp
  C(:,:,:)=(gammas(isp)-1._wp)/kB/max(ns(1:lx1,1:lx2,1:lx3),mindensdiv)/ &
            (x%h1(1:lx1,1:lx2,1:lx3)*x%h2(1:lx1,1:lx2,1:lx3)*x%h3(1:lx1,1:lx2,1:lx3))
-B(:,:,:)=C(:,:,:)*betacoeff/x%h1(1:lx1,1:lx2,1:lx3)    !beta must be set to zero if not electrons!
+B(:,:,:)=C(:,:,:)*betacoeff/x%h1(1:lx1,1:lx2,1:lx3)
+!! beta must be set to zero if not electrons!
 D=lambda*x%h2(1:lx1,1:lx2,1:lx3)*x%h3(1:lx1,1:lx2,1:lx3)/x%h1(1:lx1,1:lx2,1:lx3)
 E=0._wp
 
 
 !SET THE BOUNDARY CONDITIONS BASED ON GRID TYPE
 ! if Neumann need to scale heat flux by thermal conductivity and metric factor...
-if (gridflag==0) then    !closed dipole grid, both ends are thermalized against neutrals
+if (gridflag==0) then
+  !! closed dipole grid, both ends are thermalized against neutrals
   do ix3=1,lx3
     do ix2=1,lx2
       Tn0=Tn(1,ix2,ix3)
@@ -71,7 +72,8 @@ if (gridflag==0) then    !closed dipole grid, both ends are thermalized against 
       T(lx1+1,ix2,ix3)=Tn0
     end do
   end do
-else if (gridflag==1) then    !inverted grid, bottom altitude is thermalized to neutrals, top to electrons (possibly heat flow)
+else if (gridflag==1) then
+  !! inverted grid, bottom altitude is thermalized to neutrals, top to electrons (possibly heat flow)
   do ix3=1,lx3
     do ix2=1,lx2
       Tn0=Tn(lx1,ix2,ix3)
@@ -79,7 +81,8 @@ else if (gridflag==1) then    !inverted grid, bottom altitude is thermalized to 
       T(0,ix2,ix3)=Teinf     !top
     end do
   end do
-else                          !non-inverted, standard.  Bottom is logical first element of array...
+else
+  !! non-inverted, standard.  Bottom is logical first element of array...
   do ix3=1,lx3
     do ix2=1,lx2
       Tn0=Tn(1,ix2,ix3)
