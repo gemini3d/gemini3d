@@ -71,7 +71,7 @@ real(wp) :: activ(3)
 real(wp) :: tcfl
 real(wp) :: Teinf
 integer :: potsolve, flagperiodic=0, flagoutput, flagcap=0
-integer :: flagdirichTemperatureTop, flagdirichTemperatureBottom
+integer :: flagdirichTemperatureTop=1, flagdirichTemperatureBottom=1
 integer :: flagdneu=0
 integer :: interptype
 real(wp) :: sourcemlat,sourcemlon
@@ -117,6 +117,7 @@ cfg%flagdneu = flagdneu
 cfg%flagprecfile = flagprecfile
 cfg%flagE0file = flagE0file
 cfg%flagglow = flagglow
+!> flagdirichTemperature{Top,Bottom}: 1: dirichlet, 0: neumann
 cfg%flagdirichTemperatureTop = flagdirichTemperatureTop
 cfg%flagdirichTemperatureBottom = flagdirichTemperatureBottom
 
