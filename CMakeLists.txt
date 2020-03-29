@@ -6,6 +6,7 @@ if(CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
   message(FATAL_ERROR "use cmake -B build or similar to avoid building in-source, which is messy")
 endif()
 
+set(CMAKE_CONFIGURATION_TYPES "Release;RelWithDebInfo;Debug" CACHE STRING "Build type selections" FORCE)
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release CACHE STRING "default to Release")
 endif()
@@ -18,7 +19,7 @@ project(gemini3d
   LANGUAGES C Fortran  # MUST include C language for Intel / MKL to work
   DESCRIPTION "3-D ionospheric model"
   HOMEPAGE_URL https://github.com/gemini3d/gemini
-  VERSION 0.4.0)
+  VERSION 0.5.1)
 
 enable_testing()
 include(CTest) # for CDash
@@ -59,3 +60,6 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/test_setup.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/test_sim.cmake)
 
 add_subdirectory(src)
+
+# summary print
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/summary.cmake)

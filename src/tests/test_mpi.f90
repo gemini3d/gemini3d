@@ -1,3 +1,5 @@
+program test_mpi
+
 use, intrinsic :: iso_fortran_env
 use mpi
 implicit none

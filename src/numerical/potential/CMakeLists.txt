@@ -35,10 +35,11 @@ set_tests_properties(unit:potential2 PROPERTIES TIMEOUT 30
   FIXTURES_SETUP GemPot)
 win32_env(unit:potential2)
 
-add_test(NAME unit:potential2:python
-  COMMAND ${Python3_EXECUTABLE}  ${CMAKE_CURRENT_SOURCE_DIR}/test_potential2d.py ${_potential_testfile})
-set_tests_properties(unit:potential2:python PROPERTIES
-  REQUIRED_FILES ${_potential_testfile}
-  TIMEOUT 10
-  FIXTURES_REQUIRED GemPot
-  DISABLED ${python_disabled})
+if(python_ok)
+  add_test(NAME unit:potential2:python
+    COMMAND ${Python3_EXECUTABLE}  ${CMAKE_CURRENT_SOURCE_DIR}/test_potential2d.py ${_potential_testfile})
+  set_tests_properties(unit:potential2:python PROPERTIES
+    REQUIRED_FILES ${_potential_testfile}
+    TIMEOUT 10
+    FIXTURES_REQUIRED GemPot)
+endif()

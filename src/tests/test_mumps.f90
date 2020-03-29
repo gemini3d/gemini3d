@@ -1,3 +1,5 @@
+program test_mumps
+
 use mpi
 use, intrinsic :: iso_fortran_env, only: stderr=>error_unit, i64=>int64, compiler_version, compiler_options
 use mumps_interface, only: mumps_struc, mumps_exec
@@ -7,9 +9,6 @@ implicit none
 type(mumps_struc) :: mumps_par
 integer :: ierr
 integer(i64) :: i8
-
-
-print *,compiler_version()
 
 call mpi_init(ierr)
 if (ierr /= 0) error stop 'mpi init error'
@@ -35,26 +34,20 @@ type (MUMPS_STRUC), intent(inout) :: mumps_par
 
 call mumps_run(mumps_par)
 
+IF (mumps_par%MYID == 0) print *,compiler_version()
+
 !>  Define problem on the host (processor 0)
-call read_input(mumps_par)
+IF (mumps_par%MYID == 0) call read_input(mumps_par)
 
 !>  Call package for solution
 mumps_par%JOB = 6
 call mumps_run(mumps_par)
 
 !>  Solution has been assembled on the host
-IF ( mumps_par%MYID .eq. 0 ) THEN
-  print *, ' Solution is '
-  print '(5F7.3)', mumps_par%RHS
-END IF
+IF (mumps_par%MYID == 0) print '(A,5F7.3)', ' Solution: ', mumps_par%RHS
 
 !>  Deallocate user data
-IF ( mumps_par%MYID .eq. 0 )THEN
-  DEALLOCATE( mumps_par%IRN )
-  DEALLOCATE( mumps_par%JCN )
-  DEALLOCATE( mumps_par%A   )
-  DEALLOCATE( mumps_par%RHS )
-END IF
+IF (mumps_par%MYID == 0) DEALLOCATE( mumps_par%IRN, mumps_par%JCN, mumps_par%A, mumps_par%RHS)
 
 !>  Destroy the instance (deallocate internal data structures)
 mumps_par%JOB = -2
@@ -65,47 +58,45 @@ end subroutine simple_test
 
 subroutine read_input(mumps_par)
 
-  type (MUMPS_STRUC), intent(inout) :: mumps_par
+type (MUMPS_STRUC), intent(inout) :: mumps_par
 
-integer :: i
-logical :: exists
+integer :: i, u
 character(2048) :: argv
 character(:), allocatable :: filename
 
-IF ( mumps_par%MYID == 0 ) THEN
+integer :: N, NNZ
+integer, allocatable :: IRN(:), JCN(:)
+real, allocatable :: A(:), RHS(:)
+
+namelist /shape/ N, NNZ
+namelist /data/ IRN,JCN,A,RHS
+
 
 call get_command_argument(1, argv, status=i)
 if (i/=0) then
-  filename = 'input_simpletest_real.txt'
+  filename = 'input_simpletest_real.nml'
 else
   filename = trim(argv)
 endif
 
-inquire(file=filename, exist=exists)
-if(.not. exists) then
+
+open(newunit=u, file=filename, form='formatted', status='old', action='read', iostat=i)
+if (i/=0) then
   write(stderr, *) 'could not find input file: ',trim(filename)
   error stop 77
 endif
 
-block
-  integer :: u
-  open(newunit=u, file=filename, form='formatted', status='old', action='read')
-  READ(u,*) mumps_par%N
-  READ(u,*) mumps_par%NZ  ! NNZ for MUMPS > 5.1.0
-  ALLOCATE( mumps_par%IRN ( mumps_par%NZ ) )
-  ALLOCATE( mumps_par%JCN ( mumps_par%NZ ) )
-  ALLOCATE( mumps_par%A( mumps_par%NZ ) )
-  ALLOCATE( mumps_par%RHS ( mumps_par%N  ) )
-  DO I8 = 1, mumps_par%NZ
-    READ(u,*) mumps_par%IRN(I8),mumps_par%JCN(I8), mumps_par%A(I8)
-  END DO
-  DO I = 1, mumps_par%N
-    READ(u,*) mumps_par%RHS(I)
-  END DO
-  close(u)
-end block
+read(u, nml=shape)
+mumps_par%N = N
+mumps_par%NNZ = NNZ
+ALLOCATE(mumps_par%IRN(NNZ), IRN(NNZ), mumps_par%JCN(NNZ), JCN(NNZ), mumps_par%A(NNZ), A(NNZ), mumps_par%RHS(N), RHS(N))
 
-END IF
+read(u, nml=data)
+mumps_par%IRN = IRN
+mumps_par%JCN = JCN
+mumps_par%A = A
+mumps_par%RHS = RHS
+close(u)
 
 end subroutine read_input
 

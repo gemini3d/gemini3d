@@ -1,9 +1,6 @@
 include(CheckFortranSourceCompiles)
 include(CheckFortranSourceRuns)
 
-# for CMake >= 3.17 with  cmake -G "Ninja Multi-Config"
-set(CMAKE_CONFIGURATION_TYPES "Release;Debug" CACHE STRING "Build type selections" FORCE)
-
 # Do these before compiler options so options don't goof up finding
 # === OpenMP
 # optional, for possible MUMPS speedup

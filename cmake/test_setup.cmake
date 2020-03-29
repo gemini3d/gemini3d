@@ -33,58 +33,33 @@ endfunction(win32_env)
 
 function(setup_gemini_test TESTNAME TIMEOUT)
 
-# --- disable tests as needed
-set(gemini_disabled false)
-
-if(NOT glow)
-  string(FIND ${TESTNAME} "glow" _loc)
-  if(NOT _loc EQUAL -1)
-    set(gemini_disabled true)
-  endif()
-endif()
-
-if(NOT Python3_FOUND)
-  set(gemini_disabled true)
-endif()
-
-set(netcdf_disabled true)
-if(netcdf AND NOT gemini_disabled)
-  set(netcdf_disabled false)
-endif()
-
 # --- setup test
 set(_outdir ${CMAKE_CURRENT_BINARY_DIR}/test${TESTNAME})
 set(_nml ${CMAKE_CURRENT_SOURCE_DIR}/tests/data/test${TESTNAME}/inputs/config.nml)
 
-# this would need a downloader, but that needs Python to work properly...
-# if(python_disabled)
-#   add_test(NAME gemini:${TESTNAME}
-#       COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} 1 $<TARGET_FILE:gemini.bin> ${_nml} ${_outdir}
-#       WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
-# else()
-add_test(NAME gemini:hdf5:${TESTNAME}
-  COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/scripts/run_test.py ${TESTNAME} ${MPIEXEC_EXECUTABLE} $<TARGET_FILE:gemini.bin> ${_nml} ${_outdir})
+if(python_ok AND hdf5)
+  add_test(NAME gemini:hdf5:${TESTNAME}
+    COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/scripts/run_test.py ${TESTNAME} ${MPIEXEC_EXECUTABLE} $<TARGET_FILE:gemini.bin> ${_nml} ${_outdir})
 
-# NOTE: don't use REQUIRED_FILES because it won't let file download if not present.
-set_tests_properties(gemini:hdf5:${TESTNAME} PROPERTIES
-  TIMEOUT ${TIMEOUT}
-  SKIP_RETURN_CODE 77
-  RUN_SERIAL true
-  FIXTURES_REQUIRED MPIMUMPS
-  DISABLED ${gemini_disabled}
-)
-win32_env(gemini:${TESTNAME})
+  # NOTE: don't use REQUIRED_FILES because it won't let file download if not present.
+  set_tests_properties(gemini:hdf5:${TESTNAME} PROPERTIES
+    TIMEOUT ${TIMEOUT}
+    SKIP_RETURN_CODE 77
+    RUN_SERIAL true
+    FIXTURES_REQUIRED MPIMUMPS)
+  win32_env(gemini:${TESTNAME})
+endif()
 
+if(python_ok AND netcdf)
+  add_test(NAME gemini:netcdf:${TESTNAME}
+    COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/scripts/run_test.py ${TESTNAME} ${MPIEXEC_EXECUTABLE} $<TARGET_FILE:gemini.bin> ${_nml} ${_outdir} -out_format nc)
 
-add_test(NAME gemini:netcdf:${TESTNAME}
-  COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/scripts/run_test.py ${TESTNAME} ${MPIEXEC_EXECUTABLE} $<TARGET_FILE:gemini.bin> ${_nml} ${_outdir} -out_format nc)
-
-set_tests_properties(gemini:netcdf:${TESTNAME} PROPERTIES
-  TIMEOUT ${TIMEOUT}
-  SKIP_RETURN_CODE 77
-  RUN_SERIAL true
-  DISABLED ${netcdf_disabled}
-)
+  set_tests_properties(gemini:netcdf:${TESTNAME} PROPERTIES
+    TIMEOUT ${TIMEOUT}
+    SKIP_RETURN_CODE 77
+    RUN_SERIAL true
+    FIXTURES_REQUIRED MPIMUMPS)
+endif()
 
 
 compare_gemini_output(${TESTNAME})

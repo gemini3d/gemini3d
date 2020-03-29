@@ -154,7 +154,7 @@ end if
 end subroutine coulomb_colln
 
 
-subroutine thermal_conduct(isp,Ts,ns,nn,J1,lambda,beta)
+pure subroutine thermal_conduct(isp,Ts,ns,nn,J1,lambda,beta)
 
 !------------------------------------------------------------
 !-------COMPUTE THERMAL CONDUCTIVITY.  TEMPERATURE ARRAY

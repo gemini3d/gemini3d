@@ -33,19 +33,19 @@ set_tests_properties(unit:interp3 PROPERTIES
 win32_env(unit:interp3)
 
 
-add_test(NAME unit:interp2:python
-  COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testinterp.py ${_testfile_interp2})
-set_tests_properties(unit:interp2:python PROPERTIES
-  REQUIRED_FILES ${_testfile_interp2}
-  TIMEOUT 30
-  FIXTURES_REQUIRED GemInterp2
-  DISABLED ${python_disabled})
+if(python_ok)
+  add_test(NAME unit:interp2:python
+    COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testinterp.py ${_testfile_interp2})
+  set_tests_properties(unit:interp2:python PROPERTIES
+    REQUIRED_FILES ${_testfile_interp2}
+    TIMEOUT 30
+    FIXTURES_REQUIRED GemInterp2)
 
-add_test(NAME unit:interp3:python
-  COMMAND ${Python3_EXECUTABLE}  ${CMAKE_CURRENT_SOURCE_DIR}/testinterp3.py ${_testfile_interp3})
-set_tests_properties(unit:interp3:python PROPERTIES
-  REQUIRED_FILES ${_testfile_interp3}
-  TIMEOUT 30
-  RUN_SERIAL true  # due to memory use
-  FIXTURES_REQUIRED GemInterp3
-  DISABLED ${python_disabled})
+  add_test(NAME unit:interp3:python
+    COMMAND ${Python3_EXECUTABLE}  ${CMAKE_CURRENT_SOURCE_DIR}/testinterp3.py ${_testfile_interp3})
+  set_tests_properties(unit:interp3:python PROPERTIES
+    REQUIRED_FILES ${_testfile_interp3}
+    TIMEOUT 30
+    RUN_SERIAL true  # due to memory use
+    FIXTURES_REQUIRED GemInterp3)
+endif(python_ok)

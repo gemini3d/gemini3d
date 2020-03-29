@@ -32,5 +32,6 @@ set_tests_properties(unit:mumps_basic PROPERTIES
 TIMEOUT 15
 DEPENDS unit:mpi_basic
 PROCESSORS 2
+SKIP_RETURN_CODE 77
 RUN_SERIAL true
 FIXTURES_SETUP MPIMUMPS)

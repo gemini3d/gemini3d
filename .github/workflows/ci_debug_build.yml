@@ -1,6 +1,7 @@
 name: ci_debug_build
 env:
   CI: true
+  CMAKE_GENERATOR: Ninja
 
 on:
   push:
@@ -30,7 +31,7 @@ jobs:
         sudo apt update -yq
         sudo apt install -yq --no-install-recommends gfortran liblapack-dev libscalapack-openmpi-dev libmumps-dev libopenmpi-dev openmpi-bin libhdf5-dev
 
-    - run: cmake -B build -DCMAKE_BUILD_TYPE=Debug -G Ninja -DCMAKE_MAKE_PROGRAM=$(realpath ./ninja) -Dhdf5=true
+    - run: cmake -B build -DCMAKE_BUILD_TYPE=Debug -DCMAKE_MAKE_PROGRAM=$(realpath ./ninja)
       env:
         FC: gfortran
     - run: cmake --build build

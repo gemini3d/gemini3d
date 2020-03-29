@@ -6,34 +6,27 @@ function(python_compare TESTNAME)
 set(_outdir ${PROJECT_BINARY_DIR}/test${TESTNAME})
 set(_refdir ${PROJECT_SOURCE_DIR}/tests/data/test${TESTNAME})
 
-set(hdf5_disabled true)
-if(hdf5 AND NOT python_disabled)
-  set(hdf5_disabled false)
+
+if(python_ok AND hdf5)
+  add_test(NAME gemini:compare:hdf5:${TESTNAME}:python
+  COMMAND ${Python3_EXECUTABLE} ${PROJECT_SOURCE_DIR}/scripts/compare_all.py ${_outdir} ${_refdir} -file_format h5)
+
+  set_tests_properties(gemini:compare:hdf5:${TESTNAME}:python PROPERTIES
+  TIMEOUT 30
+  REQUIRED_FILES ${_outdir}/inputs/config.nml
+  SKIP_RETURN_CODE 77)
 endif()
 
-add_test(NAME gemini:compare:hdf5:${TESTNAME}:python
-COMMAND ${Python3_EXECUTABLE} ${PROJECT_SOURCE_DIR}/scripts/compare_all.py ${_outdir} ${_refdir} -file_format h5)
 
-set_tests_properties(gemini:compare:hdf5:${TESTNAME}:python PROPERTIES
-TIMEOUT 30
-REQUIRED_FILES ${_outdir}/inputs/config.nml
-SKIP_RETURN_CODE 77
-DISABLED ${hdf5_disabled})
+if(python_ok AND netcdf)
+  add_test(NAME gemini:compare:netcdf:${TESTNAME}:python
+  COMMAND ${Python3_EXECUTABLE} ${PROJECT_SOURCE_DIR}/scripts/compare_all.py ${_outdir} ${_refdir} -file_format nc)
 
-
-set(netcdf_disabled true)
-if(netcdf AND NOT python_disabled)
-  set(netcdf_disabled false)
+  set_tests_properties(gemini:compare:netcdf:${TESTNAME}:python PROPERTIES
+  TIMEOUT 30
+  REQUIRED_FILES ${_outdir}/inputs/config.nml
+  SKIP_RETURN_CODE 77)
 endif()
-
-add_test(NAME gemini:compare:netcdf:${TESTNAME}:python
-COMMAND ${Python3_EXECUTABLE} ${PROJECT_SOURCE_DIR}/scripts/compare_all.py ${_outdir} ${_refdir} -file_format nc)
-
-set_tests_properties(gemini:compare:netcdf:${TESTNAME}:python PROPERTIES
-TIMEOUT 30
-REQUIRED_FILES ${_outdir}/inputs/config.nml
-SKIP_RETURN_CODE 77
-DISABLED ${netcdf_disabled})
 
 endfunction(python_compare)
 
@@ -48,22 +41,14 @@ set(_reltol 0.15)
 # this large relative tolerance is because h5diff can only do rel or abs, while Python can do both
 # and so h5diff has to be looser for miniscule numerical noise.
 
-add_test(NAME gemini:compare:${TESTNAME}:h5diff
-COMMAND ${HDF5_DIFF_EXECUTABLE} --relative=${_reltol} ${_outdir}/20130220_18300.000000.h5 ${_refdir}/20130220_18300.000000.h5)
+if(HDF5_DIFF_EXECUTABLE AND EXISTS "${_outdir}/20130220_18300.000000.h5")
+  add_test(NAME gemini:compare:${TESTNAME}:h5diff
+  COMMAND ${HDF5_DIFF_EXECUTABLE} --relative=${_reltol} ${_outdir}/20130220_18300.000000.h5 ${_refdir}/20130220_18300.000000.h5)
 
-set(h5diff_disabled false)
-if(NOT HDF5_DIFF_EXECUTABLE)
-  set(h5diff_disabled true)
+  set_tests_properties(gemini:compare:${TESTNAME}:h5diff PROPERTIES
+  TIMEOUT 15
+  REQUIRED_FILES "${_outdir}/20130220_18300.000000.h5;${_refdir}/20130220_18300.000000.h5")
 endif()
-
-if(NOT EXISTS "${_outdir}/20130220_18300.000000.h5")
-set(h5diff_disabled true)
-endif()
-
-set_tests_properties(gemini:compare:${TESTNAME}:h5diff PROPERTIES
-TIMEOUT 15
-REQUIRED_FILES "${_outdir}/20130220_18300.000000.h5;${_refdir}/20130220_18300.000000.h5"
-DISABLED ${h5diff_disabled})
 
 endfunction(h5diff_compare)
 
