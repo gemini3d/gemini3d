@@ -16,8 +16,10 @@ real(wp) :: UTsec0, tdur, dtout
 real(wp) :: activ(3)
 real(wp) :: tcfl
 real(wp) :: Teinf
-integer :: potsolve, flagperiodic, flagoutput, flagcap,flagdneu,flagprecfile,interptype=0
-real(wp) :: sourcemlat=0,sourcemlon=0,dtneu=0, dxn=0,drhon=0,dzn=0
+integer :: potsolve, flagperiodic, flagoutput, flagcap,flagdneu,flagprecfile, &
+  flagdirichTemperatureTop, flagdirichTemperatureBottom
+integer :: interptype = 0
+real(wp) :: sourcemlat = 0,sourcemlon = 0,dtneu = 0, dxn = 0,drhon=0,dzn=0
 logical :: nooutput = .false.
 real(wp) :: dtprec=0
 character(:), allocatable :: infile, outdir, &
@@ -37,7 +39,7 @@ subroutine read_configfile(cfg)
 
 class(gemini_cfg), intent(inout) :: cfg
 
-!! READS THE INPUT CONFIGURAITON FILE, ASSIGNS VARIABLES FOR FILENAMES, SIZES, ETC.
+!! READS THE INPUT CONFIG FILE, ASSIGNS VARIABLES FOR FILENAMES, SIZES, ETC.
 integer :: i, realbits, lxp, lyp
 real(wp) :: NaN, glat, glon, xdist, ydist, alt_min, alt_max, alt_scale(4), Bincl, nmf, nme
 
@@ -69,6 +71,7 @@ real(wp) :: activ(3)
 real(wp) :: tcfl
 real(wp) :: Teinf
 integer :: potsolve, flagperiodic=0, flagoutput, flagcap=0
+integer :: flagdirichTemperatureTop, flagdirichTemperatureBottom
 integer :: flagdneu=0
 integer :: interptype
 real(wp) :: sourcemlat,sourcemlon
@@ -85,7 +88,8 @@ real(wp) :: dtglow=0, dtglowout=0
 
 namelist /base/ ymd, UTsec0, tdur, dtout, activ, tcfl, Teinf
 namelist /files/ file_format, indat_size, indat_grid, indat_file
-namelist /flags/ potsolve, flagperiodic, flagoutput, flagcap, flagdneu, flagprecfile, flagE0file, flagglow
+namelist /flags/ potsolve, flagperiodic, flagoutput, flagcap, flagdneu, flagprecfile, flagE0file, flagglow, &
+  flagdirichTemperatureTop, flagdirichTemperatureBottom
 namelist /neutral_perturb/ interptype, sourcemlat, sourcemlon, dtneu, dxn, drhon, dzn, source_dir
 namelist /precip/ dtprec, prec_dir
 namelist /efield/ dtE0, E0_dir
@@ -113,6 +117,8 @@ cfg%flagdneu = flagdneu
 cfg%flagprecfile = flagprecfile
 cfg%flagE0file = flagE0file
 cfg%flagglow = flagglow
+cfg%flagdirichTemperatureTop = flagdirichTemperatureTop
+cfg%flagdirichTemperatureBottom = flagdirichTemperatureBottom
 
 read(u, nml=files, iostat=i)
 call check_nml_io(i, cfg%infile, "files", compiler_vendor)
