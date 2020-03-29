@@ -1,9 +1,8 @@
 module PDEparabolic
-
 !! a module for use for solving parabolic partial differential equations
+!! banded and tridiagonal solvers, for now we just take everything to be banded...
 
-
-!> banded and tridiagonal solvers, for now we just take everything to be banded...
+use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
 use phys_consts, only: wp
 use vendor_lapack95, only: gbsv
 
@@ -12,11 +11,10 @@ implicit none (type, external)
 private
 public :: TRBDF21D, backEuler1D
 
-
 contains
 
 
-function TRBDF21D(Ts,A,B,C,D,E,Tsminx1,Tsmaxx1,dt,dx1,dx1i)
+function TRBDF21D(Ts,A,B,C,D,E,Tsminx1,Tsmaxx1,dt,dx1,dx1i, flagdirichBottom, flagdirichTop)
 
 !! SOLVE A 1D DIFFUSION PROBLEM.  IT IS EXPECTED THAT
 !! GHOST CELLS WILL HAVE BEEN TRIMMED FROM ARRAYS BEFORE
@@ -33,6 +31,8 @@ real(wp), dimension(:), intent(in) :: Ts
 real(wp), intent(in) :: Tsminx1, Tsmaxx1, dt
 real(wp), dimension(0:), intent(in) :: dx1   !ith backward difference
 real(wp), dimension(:), intent(in) :: dx1i   !ith centered difference
+integer, intent(in) ::  flagdirichBottom, flagdirichTop
+
 integer, parameter :: ll=2                   !number of lower diagonals
 
 real(wp), dimension(3*ll+1,size(Ts)) :: M    !note extra rows for lapack workspace
@@ -144,14 +144,26 @@ call gbsv(M,TR,kl=2)
 
 !! ## BDF2 STEP:  DEFINE A MATRIX USING BANDED STORAGE
 
-!ZZZ - check whether D or N
-!> MINX1 BOUNDARY (DIRICHLET)
-ix1=1
-M(ll+3,ix1)=1.0
-M(ll+2,ix1+1) = 0
-M(ll+1,ix1+2) = 0
-TRBDF21D(ix1)=Tsminx1
-
+select case (flagdirichBottom)
+case (1)
+  !! MINX1 BOUNDARY (DIRICHLET)
+  ix1=1
+  M(ll+3,ix1)=1.0
+  M(ll+2,ix1+1) = 0
+  M(ll+1,ix1+2) = 0
+  TRBDF21D(ix1)=Tsminx1
+case (0)
+  !! if Neumann version, use a 1st order forward...
+  ix1=1
+  M(ll+3,ix1)=-1.0/dx1(ix1+1)       !< main diagonal denoted temperature at this grid point... 1*Ts,i=Tsminx1
+  M(ll+2,ix1+1)=1.0/dx1(ix1+1)      !< 1st super diagonal
+  M(ll+1,ix1+2) = 0                 !< 2nd super diagonal
+  TRBDF21D(ix1)=Tsminx1
+  !! here this is not intepreted as temperature, but instead the -1*heat flux divided by thermal conductivity
+case default
+  write(stderr,*) 'PDEparabolic:TRBDF21D: unknown flagdirich:',flagdirichBottom
+  error stop
+end select
 
 !> FIRST INTERIOR GRID POINT
 ix1=2
@@ -199,14 +211,25 @@ TRBDF21D(ix1)=E(ix1) &
   -1._wp/3._wp*Ts(ix1)/(dt/3._wp) &
   +4._wp/3._wp*TR(ix1)/(dt/3._wp)
 
-!check whether D or N
-!> MAXX1 BOUNDARY
-ix1=lx1
-M(ll+5,ix1-2) = 0
-M(ll+4,ix1-1) = 0
-M(ll+3,ix1)=1.0
-TRBDF21D(ix1)=Tsmaxx1
-
+select case (flagdirichTop)
+case (1)
+  !! MAXX1 BOUNDARY, Direchlet BCS
+  ix1=lx1
+  M(ll+5,ix1-2) = 0
+  M(ll+4,ix1-1) = 0
+  M(ll+3,ix1) = 1
+  TRBDF21D(ix1)=Tsmaxx1
+case (0)
+  !!Neumann conditions...
+  ix1=lx1
+  M(ll+5,ix1-2) = 0            !< superdiagonal
+  M(ll+4,ix1-1) = -1.0 / dx1(ix1)  !< subdiagonal
+  M(ll+3,ix1)   = 1.0 / dx1(ix1)     !< main diag.
+  TRBDF21D(ix1) = Tsmaxx1     !< here interpreted as -1*heat flux divided by thermal conductivity...
+case default
+  write(stderr,*) 'PDEparabolic:TRBDF21D: unknown flagdirich:',flagdirichTop
+  error stop
+end select
 
 !! ## BDF2 STEP MATRIX SOLUTION:  CALL LAPACK'S BANDED SOLVER
 
@@ -216,7 +239,7 @@ call gbsv(M,TRBDF21D,kl=2)
 end function TRBDF21D
 
 
-function backEuler1D(Ts,A,B,C,D,E,Tsminx1,Tsmaxx1,dt,dx1,dx1i)
+function backEuler1D(Ts,A,B,C,D,E,Tsminx1,Tsmaxx1,dt,dx1,dx1i, flagdirichBottom, flagdirichTop)
 
 !------------------------------------------------------------
 !-------SOLVE A 1D DIFFUSION PROBLEM.  IT IS EXPECTED THAT
@@ -231,6 +254,8 @@ real(wp), dimension(:), intent(in) :: Ts
 real(wp), intent(in) :: Tsminx1, Tsmaxx1, dt
 real(wp), dimension(0:), intent(in) :: dx1   !ith backward difference
 real(wp), dimension(:), intent(in) :: dx1i   !ith centered difference
+integer, intent(in) :: flagdirichBottom, flagdirichTop
+
 integer, parameter :: ll=2                   !number of lower diagonals
 
 real(wp), dimension(3*ll+1,size(Ts)) :: M    !note extra rows for lapack workspace
@@ -249,21 +274,26 @@ Dh(2:lx1) = 0.5*(D(1:lx1-1)+D(2:lx1))         !ith left cell wall thermal conduc
 backEuler1D(:)=Ts(:)/dt+E(:)                !boundaries to be overwritten later...
 
 
-! check whether D or N
-!> MINX1 BOUNDARY, Dirichlet BCS
-ix1=1
-M(ll+3,ix1)=1.0       !main diagonal denoted temperature at this grid point... 1*Ts,i=Tsminx1
-M(ll+2,ix1+1) = 0     !1st super diagonal
-M(ll+1,ix1+2) = 0     !2nd super diagonal
-backEuler1D(ix1)=Tsminx1
-
-!! if Neumann version, use a 1st order forward...
-!ix1=1
-!M(ll+3,ix1)=-1.0/dx1(ix1+1)       !main diagonal denoted temperature at this grid point... 1*Ts,i=Tsminx1
-!M(ll+2,ix1+1)=1.0/dx1(ix1+1)      !1st super diagonal
-!M(ll+1,ix1+2) = 0                 !2nd super diagonal
-!backEuler1D(ix1)=Tsminx1          !here this is not intepreted as temperature, but instead the -1*heat flux divided by thermal conductivity
-!
+select case (flagdirichBottom)
+case (1)
+  !! MINX1 BOUNDARY, Dirichlet BCS
+  ix1=1
+  M(ll+3,ix1) = 1       !main diagonal denoted temperature at this grid point... 1*Ts,i=Tsminx1
+  M(ll+2,ix1+1) = 0     !1st super diagonal
+  M(ll+1,ix1+2) = 0     !2nd super diagonal
+  backEuler1D(ix1)=Tsminx1
+case (0)
+  !! if Neumann version, use a 1st order forward...
+  ix1=1
+  M(ll+3,ix1)=-1.0/dx1(ix1+1)       !< main diagonal denoted temperature at this grid point... 1*Ts,i=Tsminx1
+  M(ll+2,ix1+1)=1.0/dx1(ix1+1)      !< 1st super diagonal
+  M(ll+1,ix1+2) = 0                 !< 2nd super diagonal
+  backEuler1D(ix1)=Tsminx1
+  !! here this is not intepreted as temperature, but instead the -1*heat flux divided by thermal conductivity
+case default
+  write(stderr,*) 'PDEparabolic:backEuler1d: unknown flagdirich:',flagdirichBottom
+  error stop
+end select
 
 
 !> FIRST INTERIOR GRID POINT
@@ -305,25 +335,27 @@ M(ll+3,ix1)=1.0/dt-A(ix1) &                                     !ix1
 M(ll+2,ix1+1)=-1*C(ix1)*Dh(ix1+1)/dx1i(ix1)/dx1(ix1+1) &        !ix1+1, super-diag.
          -1*B(ix1)/(dx1(ix1+1)+dx1(ix1))
 
-! check whether D or N
-!> MAXX1 BOUNDARY
-ix1=lx1
-M(ll+5,ix1-2) = 0
-M(ll+4,ix1-1) = 0
-M(ll+3,ix1)=1.0
-backEuler1D(ix1)=Tsmaxx1
-!
-!!Neumann conditions...
-!ix1=lx1
-!M(ll+5,ix1-2) = 0            !superdiagonal
-!M(ll+4,ix1-1)=-1.0/dx1(ix1)            !subdiagonal
-!M(ll+3,ix1)=1.0/dx1(ix1)              !main diag.
-!backEuler1D(ix1)=Tsmaxx1     !here interpreted as -1*heat flux divided by thermal conductivity...
-!
+select case (flagdirichTop)
+case (1)
+  !! MAXX1 BOUNDARY
+  ix1=lx1
+  M(ll+5,ix1-2) = 0
+  M(ll+4,ix1-1) = 0
+  M(ll+3,ix1) = 1
+  backEuler1D(ix1)=Tsmaxx1
+case (0)
+  !!Neumann conditions...
+  ix1=lx1
+  M(ll+5,ix1-2) = 0            !< superdiagonal
+  M(ll+4,ix1-1) = -1.0 / dx1(ix1)  !< subdiagonal
+  M(ll+3,ix1)   = 1.0 / dx1(ix1)     !< main diag.
+  backEuler1D(ix1) = Tsmaxx1     !< here interpreted as -1*heat flux divided by thermal conductivity...
+case default
+  write(stderr,*) 'PDEparabolic:backEuler1d: unknown flagdirich:',flagdirichTop
+  error stop
+end select
 
-!! ## DO SOME STUFF TO CALL LAPACK'S BANDED SOLVER
-
-!> BANDED SOLVER (INPUT MATRIX MUST BE SHIFTED 'DOWN' BY KL ROWS)
+!! CALL LAPACK'S BANDED SOLVER (INPUT MATRIX MUST BE SHIFTED 'DOWN' BY KL ROWS)
 call gbsv(M,backEuler1D,kl=2)
 
 end function backEuler1D

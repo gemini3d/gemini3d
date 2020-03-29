@@ -231,8 +231,9 @@ do while (t < cfg%tdur)
 
   !! UPDATE THE FLUID VARIABLES
   if (myid==0 .and. debug) call cpu_time(tstart)
-  call fluid_adv(ns,vs1,Ts,vs2,vs3,J1,E1,cfg%Teinf,t,dt,x,nn,vn1,vn2,vn3,Tn,iver,cfg%activ(2),cfg%activ(1),cfg%ymd,UTsec, &
-    cfg%flagprecfile,cfg%dtprec,cfg%precdir,cfg%flagglow,cfg%dtglow)
+
+  call fluid_adv(cfg, ns,vs1,Ts,vs2,vs3,J1,E1,t,dt,x,nn,vn1,vn2,vn3,Tn,iver,UTsec)
+
   if (myid==0 .and. debug) then
     call cpu_time(tfin)
     print *, 'Multifluid total solve time:  ',tfin-tstart

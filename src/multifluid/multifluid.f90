@@ -3,6 +3,7 @@ module multifluid
 use advec_mpi, only: advec3d_mc_mpi, advec_prep_mpi
 use calculus, only: etd_uncoupled, div3d
 use collisions, only:  thermal_conduct
+use config, only : gemini_cfg
 use phys_consts, only : wp,pi,qs,lsp,gammas,kB,ms,mindensdiv,mindens,mindensnull, debug
 use diffusion, only:  trbdf23d, diffusion_prep, backEuler3D
 use grid, only: lx1, lx2, lx3, gridflag
@@ -24,36 +25,29 @@ real(wp), allocatable, dimension(:,:,:) :: QePrecipG, iverG
 
 contains
 
-subroutine fluid_adv(ns,vs1,Ts,vs2,vs3,J1,E1,Teinf,t,dt,x,nn,vn1,vn2,vn3,Tn,iver,f107,f107a,ymd,UTsec, &
-                   flagprecfile,dtprec,precdir,flagglow,dtglow)    !J1 needed for heat conduction; E1 for momentum equation
+subroutine fluid_adv(cfg,ns,vs1,Ts,vs2,vs3,J1,E1,t,dt,x,nn,vn1,vn2,vn3,Tn,iver,UTsec)
+!! J1 needed for heat conduction; E1 for momentum equation
+!! THIS SUBROUTINE ADVANCES ALL OF THE FLUID VARIABLES BY TIME STEP DT.
 
-!------------------------------------------------------------
-!-------THIS SUBROUTINE ADVANCES ALL OF THE FLUID VARIABLES
-!------ BY TIME STEP DT.
-!------------------------------------------------------------
-
+class(gemini_cfg), intent(in) :: cfg
 real(wp), dimension(-1:,-1:,-1:,:), intent(inout) ::  ns,vs1,Ts
 real(wp), dimension(-1:,-1:,-1:,:), intent(inout) ::  vs2,vs3
-real(wp), dimension(:,:,:), intent(in) :: J1       !needed for thermal conduction in electron population
-real(wp), dimension(:,:,:), intent(inout) :: E1    !will have ambipolar field added into it in this procedure...
+real(wp), dimension(:,:,:), intent(in) :: J1
+!! needed for thermal conduction in electron population
+real(wp), dimension(:,:,:), intent(inout) :: E1
+!! will have ambipolar field added into it in this procedure...
 
-real(wp), intent(in) :: Teinf,t,dt
+real(wp), intent(in) :: t,dt
 
-type(curvmesh), intent(in) :: x                   !grid structure variable
+type(curvmesh), intent(in) :: x
+!! grid structure variable
 
 real(wp), dimension(:,:,:,:), intent(in) :: nn
 real(wp), dimension(:,:,:), intent(in) :: vn1,vn2,vn3,Tn
-real(wp), intent(in) :: f107,f107a
-integer, dimension(3), intent(in) :: ymd
 real(wp), intent(in) :: UTsec
-
-integer, intent(in) :: flagprecfile
-real(wp), intent(in) :: dtprec
-character(*), intent(in) :: precdir
-integer, intent(in) :: flagglow
-real(wp), intent(in) :: dtglow
 real(wp), dimension(:,:,:), intent(out) :: iver
 
+real(wp) :: f107,f107a
 integer :: isp
 real(wp) :: tstart,tfin
 
@@ -72,24 +66,30 @@ real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: chi
 real(wp), dimension(1:size(ns,2)-4,1:size(ns,3)-4,lprec) :: W0,PhiWmWm2
 
 integer :: iprec
-real(wp), dimension(1:size(vs1,1)-3,1:size(vs1,2)-4,1:size(vs1,3)-4) :: v1iupdate    !temp interface velocities for art. viscosity
-real(wp), dimension(1:size(vs1,1)-4,1:size(vs1,2)-4,1:size(vs1,3)-4) :: dv1iupdate    !interface diffs. for art. visc.
+real(wp), dimension(1:size(vs1,1)-3,1:size(vs1,2)-4,1:size(vs1,3)-4) :: v1iupdate
+!! temp interface velocities for art. viscosity
+real(wp), dimension(1:size(vs1,1)-4,1:size(vs1,2)-4,1:size(vs1,3)-4) :: dv1iupdate
+!! interface diffs. for art. visc.
 real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,size(ns,4)) :: Q
-real(wp), parameter :: xicon=3.0_wp    !artifical viscosity, decent value for closed field-line grids extending to high altitudes, can be set to 0 for cartesian simulations not exceed altitudes of 1500 km.
+real(wp), parameter :: xicon=3.0_wp
+!! artifical viscosity, decent value for closed field-line grids extending to high altitudes, can be set to 0 for cartesian simulations not exceed altitudes of 1500 km.
 
+
+f107 = cfg%activ(2)
+f107a = cfg%activ(1)
 
 !MAKING SURE THESE ARRAYS ARE ALWAYS IN SCOPE
-if ((flagglow/=0).and.(.NOT.allocated(PrprecipG))) then
+if ((cfg%flagglow/=0).and.(.NOT.allocated(PrprecipG))) then
   allocate(PrprecipG(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,size(ns,4)-1))
-  PrprecipG(:,:,:,:)=0
+  PrprecipG(:,:,:,:) = 0
 end if
-if ((flagglow/=0).and.(.NOT.allocated(QeprecipG))) then
+if ((cfg%flagglow/=0).and.(.NOT.allocated(QeprecipG))) then
   allocate(QeprecipG(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4))
-  QeprecipG(:,:,:)=0
+  QeprecipG(:,:,:) = 0
 end if
-if ((flagglow/=0).and.(.NOT.allocated(iverG))) then
+if ((cfg%flagglow/=0).and.(.NOT.allocated(iverG))) then
   allocate(iverG(size(iver,1),size(iver,2),size(iver,3)))
-  iverG(:,:,:)=0
+  iverG(:,:,:) = 0
 end if
 
 
@@ -182,10 +182,10 @@ do isp=1,lsp
   param=Ts(:,:,:,isp)     !temperature for this species
   call thermal_conduct(isp,param,ns(:,:,:,isp),nn,J1,lambda,beta)
 
-  call diffusion_prep(isp,x,lambda,beta,ns(:,:,:,isp),param,A,B,C,D,E,Tn,Teinf)
+  call diffusion_prep(isp,x,lambda,beta,ns(:,:,:,isp),param,A,B,C,D,E,Tn, cfg)
       !ZZZ - should be controllable via optional input flag, default to second order???
-!      param=backEuler3D(param,A,B,C,D,E,dt,x)    !1st order method, likely deprecated but needs to be kept here for debug purposes, perhaps?
-  param=TRBDF23D(param,A,B,C,D,E,dt,x)
+!      param=backEuler3D(param,A,B,C,D,E,dt,x, cfg)    !1st order method, likely deprecated but needs to be kept here for debug purposes, perhaps?
+  param=TRBDF23D(param,A,B,C,D,E,dt,x, cfg)
   Ts(:,:,:,isp)=param
   Ts(:,:,:,isp)=max(Ts(:,:,:,isp),100._wp)
 end do
@@ -201,8 +201,8 @@ do isp=1,lsp
 end do
 
 !LOAD ELECTRON PRECIPITATION PATTERN
-if (flagprecfile==1) then
-  call precipBCs_fileinput(dt,dtprec,t,ymd,UTsec,precdir,x,W0,PhiWmWm2)
+if (cfg%flagprecfile == 1) then
+  call precipBCs_fileinput(dt, cfg%dtprec, t,cfg%ymd, UTsec, cfg%precdir,x,W0,PhiWmWm2)
 else     !no file input specified, so just call 'regular' function
   call precipBCs(t,x,W0,PhiWmWm2)
 end if
@@ -215,7 +215,7 @@ Qeprecip=0
 Prpreciptmp=0
 Qepreciptmp=0
 if (gridflag/=0) then
-  if(flagglow==0) then !RUN FANG APPROXIMATION
+  if(cfg%flagglow == 0) then !RUN FANG APPROXIMATION
     do iprec=1,lprec    !loop over the different populations of precipitation (2 here?), accumulating production rates
       Prpreciptmp=ionrate_fang08(W0(:,:,iprec),PhiWmWm2(:,:,iprec),x%alt,nn,Tn)    !calculation based on Fang et al [2008]
       Prprecip=Prprecip+Prpreciptmp
@@ -223,9 +223,9 @@ if (gridflag/=0) then
     Prprecip=max(Prprecip,1e-5_wp)
     Qeprecip=eheating(nn,Tn,Prprecip,ns)
   else      !GLOW USED, AURORA PRODUCED
-    if (int(t/dtglow)/=int((t+dt)/dtglow).OR.t<0.1_wp) then
+    if (int(t/cfg%dtglow) /= int((t+dt)/cfg%dtglow) .OR. t < 0.1_wp) then
       PrprecipG=0; QeprecipG=0; iverG=0;
-      call ionrate_glow98(W0,PhiWmWm2,ymd,UTsec,f107,f107a,x%glat(1,:,:),x%glon(1,:,:),x%alt,nn,Tn,ns,Ts, &
+      call ionrate_glow98(W0,PhiWmWm2,cfg%ymd,UTsec,f107,f107a,x%glat(1,:,:),x%glon(1,:,:),x%alt,nn,Tn,ns,Ts, &
                           QeprecipG, iverG, PrprecipG)
       PrprecipG=max(PrprecipG, 1e-5_wp)
     end if
@@ -244,13 +244,13 @@ if (myid==0) then
     minval(Prprecip), maxval(Prprecip)
 end if
 
-if ((flagglow/=0).and.(myid==0)) then
+if ((cfg%flagglow/=0).and.(myid==0)) then
   if (debug) print *, 'Min/max 427.8 nm emission column-integrated intensity for time:  ',t,' :  ', &
     minval(iver(:,:,2)), maxval(iver(:,:,2))
 end if
 
 !> now add in photoionization sources
-chi=sza(ymd(1), ymd(2), ymd(3), UTsec,x%glat,x%glon)
+chi=sza(cfg%ymd(1), cfg%ymd(2), cfg%ymd(3), UTsec,x%glat,x%glon)
 if (myid==0) then
   if (debug) print *, 'Computing photoionization for time:  ',t,' using sza range of (root only):  ', &
               minval(chi)*180._wp/pi,maxval(chi)*180._wp/pi
