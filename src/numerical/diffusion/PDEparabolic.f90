@@ -53,15 +53,7 @@ Dh(2:lx1) = 0.5*(D(1:lx1-1)+D(2:lx1))         !ith left cell wall thermal conduc
 
 !! ## TR HALF STEP:  DEFINE A MATRIX USING BANDED STORAGE
 
-
-! ZZZ - check whether diriclet or neumann...
-!> MINX1 BOUNDARY (DIRICHLET)
-ix1=1
-M(ll+3,ix1)=1.0
-M(ll+2,ix1+1) = 0
-M(ll+1,ix1+2) = 0
-TR(ix1)=Tsminx1
-
+call bottom_bcs(flagdirichBottom, ll, Tsminx1, dx1, M, TR)
 
 !> FIRST INTERIOR GRID POINT
 ix1=2
@@ -126,14 +118,7 @@ TR(ix1)=Ts(ix1)/(dt/2d0)+E(ix1) &
   -M(ll+2,ix1+1)*Ts(ix1+1)
 
 
-! ZZZ - check whether dirichlet or neumann...
-!> MAXX1 BOUNDARY
-ix1=lx1
-M(ll+5,ix1-2) = 0
-M(ll+4,ix1-1) = 0
-M(ll+3,ix1)=1.0
-TR(ix1)=Tsmaxx1
-
+call top_bcs(flagdirichTop, ll, lx1, Tsmaxx1, dx1, M, TR)
 
 !! ### TR HALF STEP MATRIX SOLUTION:  CALL LAPACK'S BANDED SOLVER
 
@@ -144,26 +129,7 @@ call gbsv(M,TR,kl=2)
 
 !! ## BDF2 STEP:  DEFINE A MATRIX USING BANDED STORAGE
 
-select case (flagdirichBottom)
-case (1)
-  !! MINX1 BOUNDARY (DIRICHLET)
-  ix1=1
-  M(ll+3,ix1)=1.0
-  M(ll+2,ix1+1) = 0
-  M(ll+1,ix1+2) = 0
-  TRBDF21D(ix1)=Tsminx1
-case (0)
-  !! if Neumann version, use a 1st order forward...
-  ix1=1
-  M(ll+3,ix1)=-1.0/dx1(ix1+1)       !< main diagonal denoted temperature at this grid point... 1*Ts,i=Tsminx1
-  M(ll+2,ix1+1)=1.0/dx1(ix1+1)      !< 1st super diagonal
-  M(ll+1,ix1+2) = 0                 !< 2nd super diagonal
-  TRBDF21D(ix1)=Tsminx1
-  !! here this is not intepreted as temperature, but instead the -1*heat flux divided by thermal conductivity
-case default
-  write(stderr,*) 'PDEparabolic:TRBDF21D: unknown flagdirich:',flagdirichBottom
-  error stop
-end select
+call bottom_bcs(flagdirichBottom, ll, Tsminx1, dx1, M, TRBDF21D)
 
 !> FIRST INTERIOR GRID POINT
 ix1=2
@@ -211,25 +177,7 @@ TRBDF21D(ix1)=E(ix1) &
   -1._wp/3._wp*Ts(ix1)/(dt/3._wp) &
   +4._wp/3._wp*TR(ix1)/(dt/3._wp)
 
-select case (flagdirichTop)
-case (1)
-  !! MAXX1 BOUNDARY, Direchlet BCS
-  ix1=lx1
-  M(ll+5,ix1-2) = 0
-  M(ll+4,ix1-1) = 0
-  M(ll+3,ix1) = 1
-  TRBDF21D(ix1)=Tsmaxx1
-case (0)
-  !!Neumann conditions...
-  ix1=lx1
-  M(ll+5,ix1-2) = 0            !< superdiagonal
-  M(ll+4,ix1-1) = -1.0 / dx1(ix1)  !< subdiagonal
-  M(ll+3,ix1)   = 1.0 / dx1(ix1)     !< main diag.
-  TRBDF21D(ix1) = Tsmaxx1     !< here interpreted as -1*heat flux divided by thermal conductivity...
-case default
-  write(stderr,*) 'PDEparabolic:TRBDF21D: unknown flagdirich:',flagdirichTop
-  error stop
-end select
+call top_bcs(flagdirichTop, ll, lx1, Tsmaxx1, dx1, M, TRBDF21D)
 
 !! ## BDF2 STEP MATRIX SOLUTION:  CALL LAPACK'S BANDED SOLVER
 
@@ -273,28 +221,7 @@ Dh(1) = 0
 Dh(2:lx1) = 0.5*(D(1:lx1-1)+D(2:lx1))         !ith left cell wall thermal conductivity
 backEuler1D(:)=Ts(:)/dt+E(:)                !boundaries to be overwritten later...
 
-
-select case (flagdirichBottom)
-case (1)
-  !! MINX1 BOUNDARY, Dirichlet BCS
-  ix1=1
-  M(ll+3,ix1) = 1       !main diagonal denoted temperature at this grid point... 1*Ts,i=Tsminx1
-  M(ll+2,ix1+1) = 0     !1st super diagonal
-  M(ll+1,ix1+2) = 0     !2nd super diagonal
-  backEuler1D(ix1)=Tsminx1
-case (0)
-  !! if Neumann version, use a 1st order forward...
-  ix1=1
-  M(ll+3,ix1)=-1.0/dx1(ix1+1)       !< main diagonal denoted temperature at this grid point... 1*Ts,i=Tsminx1
-  M(ll+2,ix1+1)=1.0/dx1(ix1+1)      !< 1st super diagonal
-  M(ll+1,ix1+2) = 0                 !< 2nd super diagonal
-  backEuler1D(ix1)=Tsminx1
-  !! here this is not intepreted as temperature, but instead the -1*heat flux divided by thermal conductivity
-case default
-  write(stderr,*) 'PDEparabolic:backEuler1d: unknown flagdirich:',flagdirichBottom
-  error stop
-end select
-
+call bottom_bcs(flagdirichBottom, ll, Tsminx1, dx1, M, backEuler1D)
 
 !> FIRST INTERIOR GRID POINT
 ix1=2
@@ -335,30 +262,72 @@ M(ll+3,ix1)=1.0/dt-A(ix1) &                                     !ix1
 M(ll+2,ix1+1)=-1*C(ix1)*Dh(ix1+1)/dx1i(ix1)/dx1(ix1+1) &        !ix1+1, super-diag.
          -1*B(ix1)/(dx1(ix1+1)+dx1(ix1))
 
-select case (flagdirichTop)
-case (1)
-  !! MAXX1 BOUNDARY
-  ix1=lx1
-  M(ll+5,ix1-2) = 0
-  M(ll+4,ix1-1) = 0
-  M(ll+3,ix1) = 1
-  backEuler1D(ix1)=Tsmaxx1
-case (0)
-  !!Neumann conditions...
-  ix1=lx1
-  M(ll+5,ix1-2) = 0            !< superdiagonal
-  M(ll+4,ix1-1) = -1.0 / dx1(ix1)  !< subdiagonal
-  M(ll+3,ix1)   = 1.0 / dx1(ix1)     !< main diag.
-  backEuler1D(ix1) = Tsmaxx1     !< here interpreted as -1*heat flux divided by thermal conductivity...
-case default
-  write(stderr,*) 'PDEparabolic:backEuler1d: unknown flagdirich:',flagdirichTop
-  error stop
-end select
+call top_bcs(flagdirichTop, ll, lx1, Tsmaxx1, dx1, M, backEuler1D)
 
 !! CALL LAPACK'S BANDED SOLVER (INPUT MATRIX MUST BE SHIFTED 'DOWN' BY KL ROWS)
 call gbsv(M,backEuler1D,kl=2)
 
 end function backEuler1D
 
+
+subroutine bottom_bcs(flagdirich, ll, Ts, dx1, M, val)
+
+integer, intent(in) :: flagdirich, ll
+real(wp), intent(in) :: Ts, dx1(0:)
+real(wp), intent(inout) :: M(:, :), val(:)
+
+integer, parameter :: i = 1
+
+select case (flagdirich)
+case (1)
+  !! MINX1 BOUNDARY (DIRICHLET)
+  M(ll+3,i) = 1
+  M(ll+2,i+1) = 0
+  M(ll+1,i+2) = 0
+  val(i) = Ts
+case (0)
+  !! if Neumann version, use a 1st order forward...
+  M(ll+3,i)=-1.0/dx1(i+1)       !< main diagonal denoted temperature at this grid point... 1*Ts,i=Tsminx1
+  M(ll+2,i+1)=1.0/dx1(i+1)      !< 1st super diagonal
+  M(ll+1,i+2) = 0                 !< 2nd super diagonal
+  val(i) = Ts
+  !! here this is not intepreted as temperature, but instead the -1*heat flux divided by thermal conductivity
+case default
+  write(stderr,*) 'PDEparabolic:bottom_bcs: unknown flagdirich:',flagdirich
+  error stop
+end select
+
+end subroutine bottom_bcs
+
+
+subroutine top_bcs(flagdirich, ll, lx1, Ts, dx1, M, val)
+
+integer, intent(in) :: flagdirich, ll, lx1
+real(wp), intent(in) :: Ts, dx1(0:)
+real(wp), intent(inout) :: M(:, :), val(:)
+
+integer :: i
+
+i = lx1
+
+select case (flagdirich)
+case (1)
+  !! MAXX1 dirichlet BOUNDARY
+  M(ll+5,i-2) = 0
+  M(ll+4,i-1) = 0
+  M(ll+3,i) = 1
+  val(i) = Ts
+case (0)
+  !!Neumann conditions...
+  M(ll+5,i-2) = 0            !< superdiagonal
+  M(ll+4,i-1) = -1.0 / dx1(i)  !< subdiagonal
+  M(ll+3,i)   = 1.0 / dx1(i)     !< main diag.
+  val(i) = Ts     !< here interpreted as -1*heat flux divided by thermal conductivity...
+case default
+  write(stderr,*) 'PDEparabolic:top_bcs: unknown flagdirich:',flagdirich
+  error stop
+end select
+
+end subroutine top_bcs
 
 end module PDEparabolic

@@ -51,8 +51,10 @@ def read_diffusion1D(fn: Path, doplot: bool = False):
         # Intel 19.1, GCC 7.5:  got 0.966898
         assert np.isclose(
             TsEuler[12, 12], 0.966897705905538
-        ), f"1-D Euler diffusion:neumann accuracy: expected 0.0.966897, got {TsEuler[12, 12]:.6f}"
-        assert np.isclose(TsBDF2[12, 12], 0.8184326849585553), "1-D BDF2 diffusion:neumann accuracy"
+        ), f"1-D Euler diffusion:neumann accuracy: expected 0.966897, got {TsEuler[12, 12]:.6f}"
+        assert np.isclose(
+            TsBDF2[12, 12], 0.9545709288834086
+        ), f"1-D BDF2 diffusion:neumann accuracy: expected 0.954571, got {TsBDF2[12, 12]:.6f}"
 
     if not doplot:
         return
