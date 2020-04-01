@@ -21,3 +21,8 @@ if(CMAKE_Fortran_COMPILER_VERSION VERSION_GREATER_EQUAL 8 AND
    CMAKE_Fortran_COMPILER_VERSION VERSION_LESS 9)
   string(APPEND CMAKE_Fortran_FLAGS " -std=f2018")
 endif()
+
+if(CMAKE_Fortran_COMPILER_VERSION VERSION_EQUAL 9.3.0)
+  # makes a lot of spurious warnngs on alloctable scalar character
+  string(APPEND CMAKE_Fortran_FLAGS " -Wno-maybe-uninitialized")
+endif()
