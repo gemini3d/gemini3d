@@ -136,19 +136,26 @@ If it's desired to use system libraries, consider [install_prereqs.py](./scripts
 4. There are potentially some issues with the way the stability condition is evaluated, i.e. it is computed before the perp. drifts are solved so it is possible when using input data to overrun this especially if your target CFL number is &gt; 0.8 or so.  Some code has been added as of 8/20/2018 to throttle how much dt is allowed to change between time steps and this seems to completely fix this issue, but theoretically it could still happen; however this is probably very unlikely.
 5. Occasionally one will see edge artifacts in either the field -aligned currents or other parameters for non-periodic in x3 solves.  This may be related to the divergence calculations needed for the parallel current (under EFL formulation) and for compression calculations in the multifluid module, but this needs to be investigated further...  This do not appear to affect solutions in the interior of the grid domain and can probably be safely ignored if your region of interest is sufficiently far from the boundary (which is alway good practice anyway).
 
-## Debug text
+## Command-line options
 
-The gemini.bin command line option `-d` or `-debug` prints a large amount to text to console, perhaps gigabytes worth for medium simulations.
-By default, only the current simulation time and a few other messages are shown.
+By default, only the current simulation time and a few other messages are shown to keep logs uncluttered.
+gemini.bin command line options include:
 
-## Number of MPI processes
+`-d` | `-debug`
+: print verbosely -- could be 100s of megabytes of text on long simulation. Generally for difficult long-term debugging only.
+
+`-nooutput`
+: do not write data to disk. This is for benchmarking file output time, as the simulation output is lost.
+
+`-out_format`
+: normally Gemini reads and writes data files in the same format (HDF5, NetCDF4). This option allow one to read in one format (say NetCDF4) while writing HDF5.
+
+### Number of MPI processes
 
 In general for MPI programs and associated simulations, there may be a minimum number of MPI processes and/or integer multiples that must be met.
 The build system generation process automatically sets the maximum number of processes possible based on your CPU core count and grid size.
 
-### Manually set number of MPI processes
-
-This can also be done via [job.py](./job.py).
+This can also be done via [job.py](./job.py) `-np` options.
 
 ```sh
 mpiexec -np <number of processors>  build/gemini.bin <input config file> <output directory>
