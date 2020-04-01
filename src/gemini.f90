@@ -84,10 +84,10 @@ call grid_size(cfg%indatsize)
 
 !mpi gridding cannot be done until we know the grid size
 if (lid2in==-1) then
-  call mpigrid(lx2all,lx3all)
+  call mpigrid(lx2all, lx3all)
   !! grid_size defines lx2all and lx3all
 else
-  call mpi_manualgrid(lx2all,lx3all,lid2in,lid3in)
+  call mpi_manualgrid(lx2all, lx3all, lid2in, lid3in)
 endif
 
 !> Make sure we have a sensible x2,3 decomposition of grid
@@ -102,7 +102,7 @@ call read_grid(cfg%indatsize,cfg%indatgrid,cfg%flagperiodic, x)
 
 if (myid==0) then
   call create_outdir(cfg)
-  if (cfg%flagglow/=0) call create_outdir_aur(cfg%outdir)
+  if (cfg%flagglow /= 0) call create_outdir_aur(cfg%outdir)
 end if
 
 
@@ -126,8 +126,9 @@ if (myid==0) then
 end if
 
 !> ALLOCATE MEMORY FOR AURORAL EMISSIONS, IF CALCULATED
-if (cfg%flagglow/=0) then
+if (cfg%flagglow /= 0) then
   allocate(iver(lx2,lx3,lwave))
+  iver = 0
 end if
 
 
@@ -146,7 +147,7 @@ v2 = 0
 v3 = 0
 B2 = 0
 B3 = 0
-B1(1:lx1,1:lx2,1:lx3)=x%Bmag
+B1(1:lx1,1:lx2,1:lx3) = x%Bmag
 !! this assumes that the grid is defined s.t. the x1 direction corresponds
 !! to the magnetic field direction (hence zero B2 and B3).
 
@@ -159,10 +160,6 @@ E2 = 0
 E3 = 0
 vs2 = 0
 vs3 = 0
-
-!> INITIALIZE AURORAL EMISSION MAP
-if(cfg%flagglow/=0) iver = 0
-
 
 !> MAIN LOOP
 UTsec = cfg%UTsec0
@@ -270,9 +267,9 @@ do while (t < cfg%tdur)
   end if
 
   !! GLOW OUTPUT
-  if ((cfg%flagglow/=0).and.(abs(t-tglowout) < 1d-5)) then !same as plasma output
+  if ((cfg%flagglow /= 0) .and. (abs(t-tglowout) < 1d-5)) then !same as plasma output
     call cpu_time(tstart)
-    call output_aur(cfg%outdir, cfg%flagglow, cfg%ymd, UTsec,iver, cfg%out_format)
+    call output_aur(cfg%outdir, cfg%flagglow, cfg%ymd, UTsec, iver, cfg%out_format)
     if (myid==0) then
       call cpu_time(tfin)
       print *, 'Auroral output done for time step:  ',t,' in cpu_time of: ',tfin-tstart
