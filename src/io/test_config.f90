@@ -9,16 +9,15 @@ implicit none
 type(gemini_cfg) :: cfg
 
 character(256) :: argv
-character(:), allocatable :: infile
 integer :: i
 
 call get_command_argument(1, argv, status=i)
 if (i/=0) error stop 77
 
-infile = trim(argv)
+cfg%infile = trim(argv)
 
-call read_configfile(infile,cfg)
+call read_configfile(cfg)
 
-print *, "OK: config read ",infile
+print *, "OK: config read ",cfg%infile
 
 end program

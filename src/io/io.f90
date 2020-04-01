@@ -82,9 +82,7 @@ end interface
 
 
 interface ! output.f90
-module subroutine create_outdir(outdir,infile,cfg)
-character(*), intent(in) :: outdir, & !< command line argument output directory
-  infile !< command line argument input file
+module subroutine create_outdir(cfg)
 class(gemini_cfg), intent(in) :: cfg
 end subroutine create_outdir
 end interface

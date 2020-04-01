@@ -18,8 +18,10 @@ real(wp) :: tcfl
 real(wp) :: Teinf
 integer :: potsolve, flagperiodic, flagoutput, flagcap,flagdneu,flagprecfile,interptype=0
 real(wp) :: sourcemlat=0,sourcemlon=0,dtneu=0, dxn=0,drhon=0,dzn=0
+logical :: nooutput = .false.
 real(wp) :: dtprec=0
-character(:), allocatable :: indatsize,indatgrid, indatfile, sourcedir, precdir, E0dir, out_format
+character(:), allocatable :: infile, outdir, &
+  indatsize,indatgrid, indatfile, sourcedir, precdir, E0dir, out_format
 integer :: flagE0file
 real(wp) :: dtE0=0
 integer :: flagglow
@@ -31,10 +33,9 @@ character(:), allocatable :: compiler_vendor
 
 contains
 
-subroutine read_configfile(filename, cfg)
+subroutine read_configfile(cfg)
 
-character(*), intent(in) :: filename
-class(gemini_cfg), intent(out) :: cfg
+class(gemini_cfg), intent(inout) :: cfg
 
 !! READS THE INPUT CONFIGURAITON FILE, ASSIGNS VARIABLES FOR FILENAMES, SIZES, ETC.
 integer :: i, realbits, lxp, lyp
@@ -45,19 +46,18 @@ compiler_vendor = get_compiler_vendor()
 !> READ CONFIG FILE FOR THIS SIMULATION
 !! NOTE: Namelist file groups must be read in order they appear in the Namelist file, or End of File error occurs
 
-if (filename(len(filename)-3:len(filename)) == '.nml') then
-  call read_nml(filename, cfg)
+if (cfg%infile(len(cfg%infile)-3 : len(cfg%infile)) == '.nml') then
+  call read_nml(cfg)
 else
-  call read_ini(filename, cfg)
+  call read_ini(cfg)
 endif
 
 end subroutine read_configfile
 
 
-subroutine read_nml(filename, cfg)
+subroutine read_nml(cfg)
 
-character(*), intent(in) :: filename
-class(gemini_cfg), intent(out) :: cfg
+class(gemini_cfg), intent(inout) :: cfg
 
 integer :: u, i
 
@@ -91,10 +91,10 @@ namelist /precip/ dtprec, prec_dir
 namelist /efield/ dtE0, E0_dir
 namelist /glow/ dtglow, dtglowout
 
-open(newunit=u, file=filename, status='old', action='read')
+open(newunit=u, file=cfg%infile, status='old', action='read')
 
 read(u, nml=base, iostat=i)
-call check_nml_io(i, filename, "base", compiler_vendor)
+call check_nml_io(i, cfg%infile, "base", compiler_vendor)
 cfg%ymd = ymd
 cfg%UTsec0 = UTsec0
 cfg%tdur = tdur
@@ -104,7 +104,7 @@ cfg%tcfl = tcfl
 cfg%Teinf = Teinf
 
 read(u, nml=flags, iostat=i)
-call check_nml_io(i, filename, "flags", compiler_vendor)
+call check_nml_io(i, cfg%infile, "flags", compiler_vendor)
 cfg%potsolve = potsolve
 cfg%flagperiodic = flagperiodic
 cfg%flagoutput = flagoutput
@@ -115,7 +115,7 @@ cfg%flagE0file = flagE0file
 cfg%flagglow = flagglow
 
 read(u, nml=files, iostat=i)
-call check_nml_io(i, filename, "files", compiler_vendor)
+call check_nml_io(i, cfg%infile, "files", compiler_vendor)
 cfg%out_format = trim(file_format)
 cfg%indatsize = expanduser(indat_size)
 cfg%indatgrid = expanduser(indat_grid)
@@ -123,7 +123,7 @@ cfg%indatfile = expanduser(indat_file)
 
 if (cfg%flagdneu == 1) then
   read(u, nml=neutral_perturb, iostat=i)
-  call check_nml_io(i, filename, "neutral_perturb", compiler_vendor)
+  call check_nml_io(i, cfg%infile, "neutral_perturb", compiler_vendor)
   cfg%sourcedir = expanduser(source_dir)
   cfg%interptype = interptype
   cfg%sourcemlat = sourcemlat
@@ -139,7 +139,7 @@ endif
 
 if (cfg%flagprecfile == 1) then
   read(u, nml=precip, iostat=i)
-  call check_nml_io(i, filename, "precip", compiler_vendor)
+  call check_nml_io(i, cfg%infile, "precip", compiler_vendor)
   cfg%precdir = expanduser(prec_dir)
   cfg%dtprec = dtprec
 else
@@ -148,7 +148,7 @@ endif
 
 if (cfg%flagE0file == 1) then
   read(u, nml=efield, iostat=i)
-  call check_nml_io(i, filename, "efield", compiler_vendor)
+  call check_nml_io(i, cfg%infile, "efield", compiler_vendor)
   cfg%E0dir = expanduser(E0_dir)
   cfg%dtE0 = dtE0
 else
@@ -157,7 +157,7 @@ endif
 
 if (cfg%flagglow == 1) then
   read(u, nml=glow, iostat=i)
-  call check_nml_io(i, filename, "glow", compiler_vendor)
+  call check_nml_io(i, cfg%infile, "glow", compiler_vendor)
   cfg%dtglow = dtglow
   cfg%dtglowout = dtglowout
 endif
@@ -168,15 +168,14 @@ close(u)
 end subroutine read_nml
 
 
-subroutine read_ini(filename, cfg)
+subroutine read_ini(cfg)
 
-character(*), intent(in) :: filename
-class(gemini_cfg), intent(out) :: cfg
+class(gemini_cfg), intent(inout) :: cfg
 
 integer :: u,i
 character(256) :: buf
 
-open(newunit=u, file=filename, status='old', action='read')
+open(newunit=u, file=cfg%infile, status='old', action='read')
 
 read(u,*) cfg%ymd(3), cfg%ymd(2), cfg%ymd(1)
 read(u,*) cfg%UTsec0
@@ -200,7 +199,7 @@ cfg%out_format = "raw"
 
 !! neutral
 read(u,*, iostat=i) cfg%flagdneu  !< line 15
-call check_ini_io(i, filename)
+call check_ini_io(i, cfg%infile)
 if(cfg%flagdneu==1) then
   read(u,*) cfg%interptype
   read(u,*) cfg%sourcemlat, cfg%sourcemlon
@@ -217,35 +216,35 @@ else
 endif
 
 read(u,*, iostat=i) cfg%flagprecfile
-call check_ini_io(i, filename)
+call check_ini_io(i, cfg%infile)
 if (cfg%flagprecfile==1) then
 !! get the location of the precipitation input files
   read(u,*, iostat=i) cfg%dtprec
   read(u,'(A256)', iostat=i) buf
-  call check_nml_io(i, filename)
+  call check_nml_io(i, cfg%infile)
   cfg%precdir = expanduser(buf)
 else
   cfg%precdir = ""
 end if
 
 read(u,*, iostat=i) cfg%flagE0file
-call check_ini_io(i, filename)
+call check_ini_io(i, cfg%infile)
 if (cfg%flagE0file==1) then
 !! get the location of the precipitation input files
   read(u,*, iostat=i) cfg%dtE0
   read(u,'(a256)', iostat=i) buf
-  call check_ini_io(i, filename)
+  call check_ini_io(i, cfg%infile)
   cfg%E0dir = expanduser(buf)
 else
   cfg%E0dir = ""
 end if
 
 read(u,*, iostat=i) cfg%flagglow
-call check_ini_io(i, filename)
+call check_ini_io(i, cfg%infile)
 if (cfg%flagglow==1) then
   read(u,*, iostat=i) cfg%dtglow
   read(u,*, iostat=i) cfg%dtglowout
-  call check_nml_io(i, filename)
+  call check_nml_io(i, cfg%infile)
 end if
 
 close(u)

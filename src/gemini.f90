@@ -25,13 +25,8 @@ integer :: ierr
 real(wp) :: UTsec
 !! UT (s)
 
-!> INPUT AND OUTPUT FILES
-character(:), allocatable :: infile
-!! command line argument input file
-character(:), allocatable :: outdir
-!! " " output directory
-
 type(gemini_cfg) :: cfg
+!! holds many user simulation parameters
 
 !> GRID STRUCTURE
 type(curvmesh) :: x
@@ -65,8 +60,6 @@ real(wp) :: tstart,tfin
 integer :: it,isp
 !! time and species loop indices
 
-integer :: i
-
 !WORK ARRAYS
 real(wp), allocatable :: dl1,dl2,dl3     !these are grid distances in [m] used to compute Courant numbers
 
@@ -74,103 +67,17 @@ real(wp) :: tglowout
 !! time for next GLOW output
 
 !> FOR HANDLING OUTPUT
-logical :: nooutput = .false.
-integer :: argc
-character(256) :: argv
 integer :: lid2in,lid3in
-
-character(10) :: date, time
 
 !> TO CONTROL THROTTLING OF TIME STEP
 real(wp), parameter :: dtscale=2d0
 
 !! MAIN PROGRAM
 
-lid2in = -1  !< sentinel
-
-argc = command_argument_count()
-if (argc < 2) then
-  print '(/,A,/)', 'GEMINI-3D: by Matthew Zettergren'
-  print '(A)', 'GLOW and auroral interfaces by Guy Grubbs'
-  print '(A,/)', 'build system and software engineering by Michael Hirsch'
-  print *, 'must specify config.nml file to configure simulation and output directory. Example:'
-  print '(/,A,/)', 'mpiexec -np 4 build/gemini.bin initialize/test2d_fang/config.nml /tmp/test2d_fang'
-  stop 77
-  !! stops with de facto "skip test" return code
-endif
+call initial_config(cfg, lid2in, lid3in)
 
 !> INITIALIZE MESSING PASSING VARIABLES, IDS ETC.
 call mpisetup()
-call get_command_argument(0, argv)
-call date_and_time(date,time)
-print '(2A,I6,A3,I6,3A)', trim(argv), ' Process:  ', myid,' / ',lid-1, ' at ', date,' ',time
-
-
-!> READ FILE INPUT
-call get_command_argument(1,argv)
-infile = trim(argv)
-
-call read_configfile(infile, cfg)
-
-!> PRINT SOME DIAGNOSIC INFO FROM ROOT
-if (myid==0) then
-  call assert_file_exists(cfg%indatsize)
-  call assert_file_exists(cfg%indatgrid)
-  call assert_file_exists(cfg%indatfile)
-
-  print '(A,I6,A1,I0.2,A1,I0.2)', infile // ' simulation year-month-day is:  ',cfg%ymd(1),'-',cfg%ymd(2),'-',cfg%ymd(3)
-  print '(A51,F10.3)', 'start time is:  ',cfg%UTsec0
-  print '(A51,F10.3)', 'duration is:  ',cfg%tdur
-  print '(A51,F10.3)', 'output every:  ',cfg%dtout
-  print '(A,/,A,/,A,/,A)', 'gemini.f90: using input data files:', cfg%indatsize, cfg%indatgrid, cfg%indatfile
-
-  if(cfg%flagdneu==1) then
-    call assert_directory_exists(cfg%sourcedir)
-    print *, 'Neutral disturbance mlat,mlon:  ',cfg%sourcemlat,cfg%sourcemlon
-    print *, 'Neutral disturbance cadence (s):  ',cfg%dtneu
-    print *, 'Neutral grid resolution (m):  ',cfg%drhon,cfg%dzn
-    print *, 'Neutral disturbance data files located in directory:  ',cfg%sourcedir
-  end if
-
-  if (cfg%flagprecfile==1) then
-    call assert_directory_exists(cfg%precdir)
-    print '(A,F10.3)', 'Precipitation file input cadence (s):  ',cfg%dtprec
-    print *, 'Precipitation file input source directory:  ' // cfg%precdir
-  end if
-
-  if(cfg%flagE0file==1) then
-    call assert_directory_exists(cfg%E0dir)
-    print *, 'Electric field file input cadence (s):  ',cfg%dtE0
-    print *, 'Electric field file input source directory:  ' // cfg%E0dir
-  end if
-
-  if (cfg%flagglow==1) then
-    print *, 'GLOW enabled for auroral emission calculations.'
-    print *, 'GLOW electron transport calculation cadence (s): ', cfg%dtglow
-    print *, 'GLOW auroral emission output cadence (s): ', cfg%dtglowout
-  end if
-end if
-
-do i = 3,argc
-  call get_command_argument(i,argv)
-
-  select case (argv)
-  case ('-d', '-debug')
-    debug = .true.
-  case ('-nooutput')
-    nooutput = .true.
-  case ('-out_format')
-    call get_command_argument(i+1, argv)
-    cfg%out_format = trim(argv)
-    print *,'override output file format: ',cfg%out_format
-  case ('-manual_grid')
-    call get_command_argument(i+1,argv)
-    read(argv,*) lid2in
-    call get_command_argument(i+2,argv)
-    read(argv,*) lid3in
-  end select
-
-end do
 
 if (lid2in==-1) then
   call mpigrid(lx2all,lx3all)
@@ -189,12 +96,10 @@ call read_grid(cfg%indatsize,cfg%indatgrid,cfg%flagperiodic, x)
 
 !> CREATE/PREP OUTPUT DIRECTORY AND OUTPUT SIMULATION SIZE AND GRID DATA
 !> ONLY THE ROOT PROCESS WRITES OUTPUT DATA
-call get_command_argument(2,argv)
-outdir = trim(argv)
 
 if (myid==0) then
-  call create_outdir(outdir,infile,cfg)
-  if (cfg%flagglow/=0) call create_outdir_aur(outdir)
+  call create_outdir(cfg)
+  if (cfg%flagglow/=0) call create_outdir_aur(cfg%outdir)
 end if
 
 
@@ -232,8 +137,12 @@ call input_plasma(x%x1,x%x2all,x%x3all,cfg%indatsize,cfg%indatfile,ns,vs1,Ts)
 !WILL BE A FINITE AMOUNT OF TIME FOR THE FLOWS TO 'START UP', BUT THIS SHOULDN'T
 !BE TOO MUCH OF AN ISSUE.  WE ALSO NEED TO SET THE BACKGROUND MAGNETIC FIELD STATE
 !VARIABLE HERE TO WHATEVER IS SPECIFIED IN THE GRID STRUCTURE (THESE MUST BE CONSISTENT)
-rhov2=0d0; rhov3=0d0; v2=0d0; v3=0d0;
-B2=0d0; B3=0d0;
+rhov2 = 0
+rhov3 = 0
+v2 = 0
+v3 = 0
+B2 = 0
+B3 = 0
 B1(1:lx1,1:lx2,1:lx3)=x%Bmag
 !! this assumes that the grid is defined s.t. the x1 direction corresponds
 !! to the magnetic field direction (hence zero B2 and B3).
@@ -242,24 +151,32 @@ B1(1:lx1,1:lx2,1:lx3)=x%Bmag
 !> INITIALIZE ELECTRODYNAMIC QUANTITIES FOR POLARIZATION CURRENT
 if (myid==0) Phiall = 0
 !! only root stores entire potential array
-E1=0; E2=0; E3=0;
-vs2=0; vs3=0;
+E1 = 0
+E2 = 0
+E3 = 0
+vs2 = 0
+vs3 = 0
 
 !> INITIALIZE AURORAL EMISSION MAP
-if(cfg%flagglow/=0) iver=0
+if(cfg%flagglow/=0) iver = 0
 
 
 !> MAIN LOOP
-UTsec=cfg%UTsec0; it=1; t=0; tout=t; tglowout=t;
+UTsec = cfg%UTsec0
+it = 1
+t = 0
+tout = t
+tglowout = t
+
 do while (t < cfg%tdur)
   !! TIME STEP CALCULATION
   dtprev=dt
-  call dt_comm(t,tout,tglowout,cfg%flagglow,cfg%tcfl,ns,Ts,vs1,vs2,vs3,B1,B2,B3,x,cfg%potsolve,dt)
+  call dt_comm(t,tout,tglowout, cfg%flagglow,cfg%tcfl,ns,Ts,vs1,vs2,vs3,B1,B2,B3,x,cfg%potsolve,dt)
   if (it>1) then
     if(dt/dtprev > dtscale) then
       !! throttle how quickly we allow dt to increase
       dt=dtscale*dtprev
-      if (myid==0) then
+      if (myid == 0) then
         print '(A,EN14.3)', 'Throttling dt to:  ',dt
       end if
     end if
@@ -333,13 +250,15 @@ do while (t < cfg%tdur)
   !! OUTPUT
   if (abs(t-tout) < 1d-5) then
     tout = tout + cfg%dtout
-    if (nooutput .and. myid==0) then
+    if (cfg%nooutput .and. myid==0) then
       write(stderr,*) 'WARNING: skipping file output at sim time (sec)',t
       cycle
     endif
     !! close enough to warrant an output now...
     if (myid==0 .and. debug) call cpu_time(tstart)
-    call output_plasma(outdir,cfg%flagoutput,cfg%ymd,UTsec,vs2,vs3,ns,vs1,Ts,Phiall,J1,J2,J3, cfg%out_format)
+    call output_plasma(cfg%outdir,cfg%flagoutput,cfg%ymd, &
+      UTsec,vs2,vs3,ns,vs1,Ts,Phiall,J1,J2,J3, &
+      cfg%out_format)
 
     if (myid==0 .and. debug) then
       call cpu_time(tfin)
@@ -350,7 +269,7 @@ do while (t < cfg%tdur)
   !! GLOW OUTPUT
   if ((cfg%flagglow/=0).and.(abs(t-tglowout) < 1d-5)) then !same as plasma output
     call cpu_time(tstart)
-    call output_aur(outdir,cfg%flagglow,cfg%ymd,UTsec,iver, cfg%out_format)
+    call output_aur(cfg%outdir, cfg%flagglow, cfg%ymd, UTsec,iver, cfg%out_format)
     if (myid==0) then
       call cpu_time(tfin)
       print *, 'Auroral output done for time step:  ',t,' in cpu_time of: ',tfin-tstart
@@ -384,7 +303,112 @@ if (ierr /= 0) then
   error stop
 endif
 
+block
+  character(10) :: date, time
+
+  call date_and_time(date,time)
+  print '(/,A,I6,A,I6,3A)', 'GEMINI normal termination, Process #', myid,' /',lid-1, ' at ',date,time
+end block
+
+contains
+
+
+subroutine initial_config(cfg, lid2in, lid3in)
+
+type(gemini_cfg), intent(out) :: cfg
+integer, intent(out) :: lid2in, lid3in
+
+integer :: argc, i
+character(256) :: argv
+character(10) :: date, time
+
+argc = command_argument_count()
+if (argc < 2) then
+  print '(/,A,/)', 'GEMINI-3D: by Matthew Zettergren'
+  print '(A)', 'GLOW and auroral interfaces by Guy Grubbs'
+  print '(A,/)', 'build system and software engineering by Michael Hirsch'
+  print *, 'must specify config.nml file to configure simulation and output directory. Example:'
+  print '(/,A,/)', 'mpiexec -np 4 build/gemini.bin initialize/test2d_fang/config.nml /tmp/test2d_fang'
+  stop 77
+  !! stops with de facto "skip test" return code
+endif
+
+call get_command_argument(0, argv)
 call date_and_time(date,time)
-print '(/,A,I6,A,I6,3A)', 'GEMINI normal termination, Process #', myid,' /',lid-1, ' at ',date,time
+print '(2A,I6,A3,I6,3A)', trim(argv), ' Process:  ', myid,' / ',lid-1, ' at ', date,' ',time
+
+
+!> READ FILE INPUT
+call get_command_argument(1,argv)
+cfg%infile = trim(argv)
+
+call read_configfile(cfg)
+
+!> PRINT SOME DIAGNOSIC INFO FROM ROOT
+if (myid==0) then
+  call assert_file_exists(cfg%indatsize)
+  call assert_file_exists(cfg%indatgrid)
+  call assert_file_exists(cfg%indatfile)
+
+  print '(A,I6,A1,I0.2,A1,I0.2)', cfg%infile // ' simulation year-month-day is:  ', cfg%ymd(1), '-', cfg%ymd(2),'-',cfg%ymd(3)
+  print '(A51,F10.3)', 'start time is:  ',cfg%UTsec0
+  print '(A51,F10.3)', 'duration is:  ',cfg%tdur
+  print '(A51,F10.3)', 'output every:  ',cfg%dtout
+  print '(A,/,A,/,A,/,A)', 'gemini.f90: using input data files:', cfg%indatsize, cfg%indatgrid, cfg%indatfile
+
+  if(cfg%flagdneu==1) then
+    call assert_directory_exists(cfg%sourcedir)
+    print *, 'Neutral disturbance mlat,mlon:  ',cfg%sourcemlat,cfg%sourcemlon
+    print *, 'Neutral disturbance cadence (s):  ',cfg%dtneu
+    print *, 'Neutral grid resolution (m):  ',cfg%drhon,cfg%dzn
+    print *, 'Neutral disturbance data files located in directory:  ',cfg%sourcedir
+  end if
+
+  if (cfg%flagprecfile==1) then
+    call assert_directory_exists(cfg%precdir)
+    print '(A,F10.3)', 'Precipitation file input cadence (s):  ',cfg%dtprec
+    print *, 'Precipitation file input source directory:  ' // cfg%precdir
+  end if
+
+  if(cfg%flagE0file==1) then
+    call assert_directory_exists(cfg%E0dir)
+    print *, 'Electric field file input cadence (s):  ',cfg%dtE0
+    print *, 'Electric field file input source directory:  ' // cfg%E0dir
+  end if
+
+  if (cfg%flagglow==1) then
+    print *, 'GLOW enabled for auroral emission calculations.'
+    print *, 'GLOW electron transport calculation cadence (s): ', cfg%dtglow
+    print *, 'GLOW auroral emission output cadence (s): ', cfg%dtglowout
+  end if
+end if
+
+!! default values
+lid2in = -1  !< sentinel
+
+do i = 3,argc
+  call get_command_argument(i,argv)
+
+  select case (argv)
+  case ('-d', '-debug')
+    debug = .true.
+  case ('-nooutput')
+    cfg%nooutput = .true.
+  case ('-out_format')
+    call get_command_argument(i+1, argv)
+    cfg%out_format = trim(argv)
+    print *,'override output file format: ',cfg%out_format
+  case ('-manual_grid')
+    call get_command_argument(i+1, argv)
+    read(argv,*) lid2in
+    call get_command_argument(i+2, argv)
+    read(argv,*) lid3in
+  end select
+end do
+
+call get_command_argument(2,argv)
+cfg%outdir = trim(argv)
+
+end subroutine initial_config
 
 end program

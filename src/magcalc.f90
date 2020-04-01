@@ -25,16 +25,10 @@ implicit none
 real(wp) :: UTsec
 !! UT (s)
 
-!> INPUT AND OUTPUT FILES
-character(:), allocatable :: infile
-!! command line argument input file
-character(:), allocatable :: outdir
-!! " " output directory
-
 character(:), allocatable :: fieldpointfile
 
 type(gemini_cfg) :: cfg
-
+!! most user parameters
 
 !! GRID STRUCTURE
 type(curvmesh) :: x
@@ -108,17 +102,17 @@ print *, 'magcalc.f90 --> Process:  ',myid,' of:  ',lid-1,' online...'
 
 !READ CONFIG FILE FROM OUTPUT DIRECTORY
 call get_command_argument(1,argv)
-outdir=trim(argv)
-infile=outdir//'/inputs/config.nml'
-inquire(file=infile,exist=file_exists)    !needed to deal with ini vs. nml inputs...
+cfg%outdir = trim(argv)
+cfg%infile = cfg%outdir//'/inputs/config.nml'
+inquire(file=cfg%infile,exist=file_exists)    !needed to deal with ini vs. nml inputs...
 if (.not. file_exists) then
-  infile=outdir//'/inputs/config.ini'
+  cfg%infile = cfg%outdir//'/inputs/config.ini'
 end if
 if (myid==0) then
-  print *, 'Simulation data directory:  ',outdir
-  print *, 'Input config file:  ',infile
+  print *, 'Simulation data directory:  ', cfg%outdir
+  print *, 'Input config file:  ',cfg%infile
 end if
-call read_configfile(infile, cfg)
+call read_configfile(cfg)
 
 !> PRINT SOME DIAGNOSIC INFO FROM ROOT
 if (myid==0) then
@@ -126,7 +120,7 @@ if (myid==0) then
   call assert_file_exists(cfg%indatgrid)
   call assert_file_exists(cfg%indatfile)
 
-  print '(A,I6,A1,I0.2,A1,I0.2)', infile // ' simulation year-month-day is:  ',cfg%ymd(1),'-',cfg%ymd(2),'-',cfg%ymd(3)
+  print '(A,I6,A1,I0.2,A1,I0.2)', cfg%infile // ' simulation year-month-day is:  ',cfg%ymd(1),'-',cfg%ymd(2),'-',cfg%ymd(3)
   print '(A51,F10.3)', 'start time is:  ',cfg%UTsec0
   print '(A51,F10.3)', 'duration is:  ',cfg%tdur
   print '(A51,F10.3)', 'output every:  ',cfg%dtout
@@ -193,8 +187,6 @@ end if
 
 
 !GRAB THE INFO FOR WHERE THE OUTPUT CALCULATIONS ARE STORED
-!call get_command_argument(2,argv)
-!outdir = trim(argv)    !this should be the base output directory that the simulation results have been stored in
 call get_command_argument(2,argv)
 fieldpointfile=trim(argv)
 !! this file contains the field points at which we are computing magnetic perturbations, it will be copied into the output directory
@@ -202,8 +194,7 @@ fieldpointfile=trim(argv)
 
 !SET UP DIRECTORY TO STORE OUTPUT FILES
 if (myid==0) then
-  print*, 'Creating output directory...'
-  call create_outdir_mag(outdir,fieldpointfile)
+  call create_outdir_mag(cfg%outdir,fieldpointfile)
 end if
 
 
@@ -334,7 +325,7 @@ do while (t < cfg%tdur)
   if (it==2) then
     UTsec=UTsec-0.000001d0
   end if
-  call input_plasma_currents(outdir, cfg%out_format, cfg%flagoutput,cfg%ymd,UTsec,J1,J2,J3)    !now everyone has their piece of data
+  call input_plasma_currents(cfg%outdir, cfg%out_format, cfg%flagoutput,cfg%ymd,UTsec,J1,J2,J3)    !now everyone has their piece of data
 
 
   !FORCE PARALLEL CURRENTS TO ZERO BELOW SOME ALTITUDE LIMIT
@@ -681,7 +672,7 @@ do while (t < cfg%tdur)
   !OUTPUT SHOULD BE DONE FOR EVERY INPUT FILE THAT HAS BEEN READ IN
   if (myid==0) then
     call cpu_time(tstart)
-    call output_magfields(outdir,cfg%ymd,UTsec,Brall,Bthetaall,Bphiall)   !mag field data already reduced so just root needs to output
+    call output_magfields(cfg%outdir,cfg%ymd,UTsec,Brall,Bthetaall,Bphiall)   !mag field data already reduced so just root needs to output
     call cpu_time(tfin)
    if(debug) print *, 'magcalc.f90 --> Output done for time step:  ',t,' in cpu_time of:  ',tfin-tstart
   end if
