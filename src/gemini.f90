@@ -3,7 +3,7 @@ Program Gemini3D
 !! Need program statement for FORD
 use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
 use phys_consts, only : lnchem, lwave, lsp, wp, debug
-use grid, only: grid_size,read_grid,clear_grid,lx1,lx2,lx3,lx2all,lx3all
+use grid, only: grid_size,read_grid,clear_grid,grid_check,lx1,lx2,lx3,lx2all,lx3all
 use mesh, only: curvmesh
 use config, only : read_configfile, gemini_cfg
 use pathlib, only : assert_file_exists, assert_directory_exists
@@ -79,6 +79,10 @@ call initial_config(cfg, lid2in, lid3in)
 !> INITIALIZE MESSING PASSING VARIABLES, IDS ETC.
 call mpisetup()
 
+!> CHECK THE GRID SIZE AND ESTABLISH A PROCESS GRID
+call grid_size(cfg%indatsize)
+
+!mpi gridding cannot be done until we know the grid size
 if (lid2in==-1) then
   call mpigrid(lx2all,lx3all)
   !! grid_size defines lx2all and lx3all
@@ -86,9 +90,8 @@ else
   call mpi_manualgrid(lx2all,lx3all,lid2in,lid3in)
 endif
 
-!> CHECK THE GRID SIZE AND ESTABLISH A PROCESS GRID
-!> this need to be done AFTER mpigrid/mpi_manualgrid but BEFORE read_grid
-call grid_size(cfg%indatsize)
+!> Make sure we have a sensible x2,3 decomposition of grid
+call grid_check()
 
 !> LOAD UP THE GRID STRUCTURE/MODULE VARS. FOR THIS SIMULATION
 call read_grid(cfg%indatsize,cfg%indatgrid,cfg%flagperiodic, x)

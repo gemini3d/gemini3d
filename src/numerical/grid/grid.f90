@@ -14,7 +14,7 @@ bcast_send3D_x2i,bcast_recv3D_x2i, bcast_send1D_2, bcast_recv1D_2, bcast_send1D_
 implicit none
 private
 public :: lx1,lx2,lx3, lx2all,lx3all, gridflag, flagswap, clear_unitvecs, g1,g2,g3, &
-  read_grid, clear_grid, grid_size
+  read_grid, clear_grid, grid_size, grid_check
 
 integer, protected :: lx1,lx2,lx3,lx2all,lx3all
 !! this is a useful shorthand for most program units using this module,
@@ -65,7 +65,25 @@ if (lx1 < 1 .or. lx2all < 1 .or. lx3all < 1) then
   error stop 'grid_size_root: grid size must be strictly positive'
 endif
 
+do i = 1,lid-1
+  call mpi_send(lx1,1,MPI_INTEGER, i, tag%lx1,MPI_COMM_WORLD,ierr)
+  if (ierr/=0) error stop 'grid_size_root: lx1 failed mpi_send'
+  call mpi_send(lx2all,1,MPI_INTEGER, i, tag%lx2all,MPI_COMM_WORLD,ierr)
+  if (ierr/=0) error stop 'grid_size_root: lx2all failed mpi_send'
+  call mpi_send(lx3all,1,MPI_INTEGER, i, tag%lx3all,MPI_COMM_WORLD,ierr)
+  if (ierr/=0) error stop 'grid_size_root: lx3all failed mpi_send'
+end do
+
+print *, 'grid_size_root: full grid size:  ',lx1,lx2all,lx3all
+
+end subroutine grid_size_root
+
+
+subroutine grid_check()
+
 !> check correct number of MPI images. Help avoid confusing errors or bad simulations
+! Must be called after both grid size and mpi gridding have been established...
+
 if (lx2all > 1) then
   if (modulo(lx2all, lid2) /= 0) then
     write(stderr,'(/,A,I6,A,I6,/)') 'ERROR:grid_size_root: Number of MPI images along x2', lid2, &
@@ -82,18 +100,7 @@ if (lx3all > 1) then
   endif
 endif
 
-do i = 1,lid-1
-  call mpi_send(lx1,1,MPI_INTEGER, i, tag%lx1,MPI_COMM_WORLD,ierr)
-  if (ierr/=0) error stop 'grid_size_root: lx1 failed mpi_send'
-  call mpi_send(lx2all,1,MPI_INTEGER, i, tag%lx2all,MPI_COMM_WORLD,ierr)
-  if (ierr/=0) error stop 'grid_size_root: lx2all failed mpi_send'
-  call mpi_send(lx3all,1,MPI_INTEGER, i, tag%lx3all,MPI_COMM_WORLD,ierr)
-  if (ierr/=0) error stop 'grid_size_root: lx3all failed mpi_send'
-end do
-
-print *, 'grid_size_root: full grid size:  ',lx1,lx2all,lx3all
-
-end subroutine grid_size_root
+end subroutine grid_check
 
 
 subroutine grid_size_worker()
