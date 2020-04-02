@@ -33,9 +33,19 @@ endif()
 if(openmp)
   find_package(OpenMP COMPONENTS C Fortran)
 endif()
+
 # === MPI
 # MPI is used throughout Gemini
 find_package(MPI REQUIRED COMPONENTS Fortran)
+# sometimes a mismatch exists between CMake's found MPI and the compiler.
+# Catch this here to avoid confusing build errors.
+# Runtime errors will be caught by test_mpi in ctest.
+set(CMAKE_REQUIRED_INCLUDES ${MPI_INCLUDE_DIRS})
+set(CMAKE_REQUIRED_LIBRARIES MPI::MPI_Fortran)
+check_fortran_source_compiles("use mpi; end" MPI_OK SRC_EXT f90)
+if(NOT MPI_OK)
+  message(FATAL_ERROR "${MPI_Fortran_LIBRARIES} not working with ${CMAKE_Fortran_COMPILER_ID} ${CMAKE_Fortran_COMPILER_VERSION}")
+endif()
 
 # === compiler setup
 # feel free to add more compiler_*.cmake
