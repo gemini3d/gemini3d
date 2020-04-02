@@ -5,7 +5,7 @@ use, intrinsic :: iso_fortran_env, only : stderr=>error_unit, compiler_version
 use pathlib, only : expanduser
 use phys_consts, only : wp
 
-implicit none
+implicit none (external)
 private
 public :: read_configfile, gemini_cfg
 

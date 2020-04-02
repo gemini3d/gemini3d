@@ -6,7 +6,7 @@ use phys_consts, only: wp
 use, intrinsic:: iso_fortran_env, only: sp=>real32
 use ionize_fang, only: fang2008, fang2010, gravity_accel, erg2kev
 
-implicit none
+implicit none (external)
 private
 public :: ionization_fang2008, ionization_fang2010
 
@@ -19,6 +19,8 @@ integer, intent(in) :: doy
 
 real(wp) :: massden_gcm3, meanmass_g
 real(sp) :: stl, d(9),T(2), sw(25), Ap7(7)
+
+external :: meters, gtd7, tselec
 
 !! MSIS setup
 Ap7 = real(Ap, sp)
@@ -43,6 +45,8 @@ integer, intent(in) :: doy
 
 real(wp) :: massden_gcm3, meanmass_g
 real(sp) :: stl, d(9),T(2), sw(25), Ap7(7)
+
+external :: meters, gtd7, tselec
 
 !! MSIS setup
 Ap7 = real(Ap, sp)

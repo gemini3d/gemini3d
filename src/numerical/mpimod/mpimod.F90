@@ -6,7 +6,7 @@ use, intrinsic:: iso_fortran_env, only: stderr=>error_unit
 use phys_consts, only : lsp, wp
 !! code needs to know how many species are being used.
 
-use mpi, only: mpi_init, mpi_comm_world, &
+use mpi, only: mpi_init, mpi_comm_rank, mpi_comm_size, mpi_comm_world, &
                mpi_integer,mpi_sum, &
                mpi_status_size, mpi_status_ignore, MPI_PROC_NULL, &
 
@@ -16,9 +16,11 @@ mpi_realprec=>mpi_real
 mpi_realprec=>mpi_double_precision
 #endif
 
-implicit none
+implicit none (external)
 public
 private :: lsp, wp
+
+external :: mpi_finalize, mpi_send, mpi_recv, mpi_isend, mpi_irecv, mpi_waitall
 
 type :: mpi_tags
 

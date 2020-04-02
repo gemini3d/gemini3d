@@ -6,7 +6,8 @@ module calculus
 use phys_consts, only: wp
 use mesh, only : curvmesh
 !! we do not want the full-grid sizes (lx1,lx2,lx3) in scope since we routinely need to do subgrid derivatives
-implicit none
+
+implicit none (external)
 private
 
 !OVERLOAD ALL OF THE CALCULUS ROUTINE TO DEAL WITH THE CURVILINEAR GRID STRUCTURES

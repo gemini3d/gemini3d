@@ -1,7 +1,9 @@
 module mesh
 
 use phys_consts, only: wp
-implicit none
+
+implicit none (external)
+public
 
 type :: curvmesh
   !CURVILINEAR VARIABLES AND DIFFS.

@@ -1,5 +1,7 @@
 submodule (potential_comm) potential_worker
-implicit none
+
+implicit none (external)
+
 contains
 
 module procedure potential_workers_mpi

@@ -2,7 +2,8 @@ program test_interp1
 !! Need program statement for FORD
 use phys_consts, only: wp,pi
 use interpolation
-implicit none
+
+implicit none (external)
 
 integer, parameter :: lx1=25, lx2=50
 integer, parameter :: lx1i=200, lx2i=400

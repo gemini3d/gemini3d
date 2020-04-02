@@ -14,7 +14,7 @@ myid, lid, mpi_realprec, tag=>mpi_tag
 
 ! also links gtd7 from vendor/msis00/
 
-implicit none
+implicit none (external)
 private
 public :: Tnmsis, neutral_atmos, make_dneu, clear_dneu, neutral_perturb
 
@@ -30,6 +30,7 @@ real(wp), dimension(1:size(alt,1),1:size(alt,2),1:size(alt,3)), intent(out) :: T
 end subroutine neutral_atmos
 end interface
 
+external :: mpi_send, mpi_recv
 
 !! ALL ARRAYS THAT FOLLOW ARE USED WHEN INCLUDING NEUTRAL PERTURBATIONS FROM ANOTHER MODEL
 !! ARRAYS TO STORE THE NEUTRAL GRID INFORMATION

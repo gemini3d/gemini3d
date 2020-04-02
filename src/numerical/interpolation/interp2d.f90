@@ -1,5 +1,7 @@
 submodule (interpolation) interpolation2d
-implicit none
+
+implicit none (external)
+
 contains
 
 module procedure interp2

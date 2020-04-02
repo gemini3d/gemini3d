@@ -34,7 +34,7 @@ use mpimod, only: myid
 use interpolation, only: interp1
 use PDEelliptic, only: elliptic3D_cart
 
-implicit none
+implicit none (external)
 private
 public :: potential3D_fieldresolved_decimate, potential2D_polarization, potential2D_polarization_periodic, potential2D_fieldresolved
 

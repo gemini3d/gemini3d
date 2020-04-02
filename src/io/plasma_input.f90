@@ -3,7 +3,7 @@ submodule (io) plasma_input
 use reader, only : get_simsize3
 use pathlib, only : get_suffix
 
-implicit none
+implicit none (external)
 
 interface ! plasma_input_*.f90
 

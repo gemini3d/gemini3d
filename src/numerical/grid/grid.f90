@@ -11,19 +11,24 @@ myid, lid, lid2, lid3, tag=>mpi_tag, &
 bcast_recv, bcast_send, bcast_recv3D_ghost, bcast_send3D_ghost, bcast_recv3D_x3i, bcast_send3D_x3i, &
 bcast_send3D_x2i,bcast_recv3D_x2i, bcast_send1D_2, bcast_recv1D_2, bcast_send1D_3, bcast_recv1D_3
 
-implicit none
+implicit none (external)
 private
 public :: lx1,lx2,lx3, lx2all,lx3all, gridflag, flagswap, clear_unitvecs, g1,g2,g3, &
   read_grid, clear_grid, grid_size, grid_check
+
+external :: mpi_recv, mpi_send
 
 integer, protected :: lx1,lx2,lx3,lx2all,lx3all
 !! this is a useful shorthand for most program units using this module,
 !! occassionally a program unit needs to define its own size in which case an only statement
 !! is required when using this module.
 
-real(wp), dimension(:,:,:), allocatable, protected :: g1,g2,g3   !gravity, not to be modified by a procedure outside this module
-integer, protected :: gridflag    !for cataloguing the type of grid that we are using, open, closed, inverted, etc.  0 - closed dipole, 1 - inverted open, 2 - standard open.
-integer :: flagswap    !have the x2 and x3 dimensions been swapped?
+real(wp), dimension(:,:,:), allocatable, protected :: g1,g2,g3
+!! gravity, not to be modified by a procedure outside this module
+integer, protected :: gridflag
+!! for cataloguing the type of grid that we are using, open, closed, inverted, etc.  0 - closed dipole, 1 - inverted open, 2 - standard open.
+integer :: flagswap
+!! have the x2 and x3 dimensions been swapped?
 
 interface ! read.f90
 
@@ -44,7 +49,8 @@ subroutine grid_size(indatsize)
 
 character(*), intent(in) :: indatsize
 
-if (myid==0) then    !root must physically read the size info and pass to workers
+if (myid==0) then
+  !! root must physically read the size info and pass to workers
   call grid_size_root(indatsize)
 else
   call grid_size_worker()
@@ -80,9 +86,8 @@ end subroutine grid_size_root
 
 
 subroutine grid_check()
-
-!> check correct number of MPI images. Help avoid confusing errors or bad simulations
-! Must be called after both grid size and mpi gridding have been established...
+!! check correct number of MPI images. Help avoid confusing errors or bad simulations
+!! Must be called after both grid size and mpi gridding have been established...
 
 if (lx2all > 1) then
   if (modulo(lx2all, lid2) /= 0) then
@@ -117,12 +122,9 @@ end subroutine grid_size_worker
 
 
 subroutine clear_grid(x)
+!! DEALLOCATES GRID VARIABLES.
 
 type(curvmesh), intent(inout) :: x
-
-!------------------------------------------------------------
-!-------DEALLOCATES GRID VARIABLES.
-!------------------------------------------------------------
 
 deallocate(x%x3all,x%x2all)
 deallocate(x%x1,x%x2,x%x3)

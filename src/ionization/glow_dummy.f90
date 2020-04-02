@@ -1,6 +1,6 @@
 submodule (ionization) glow_dummy
 
-implicit none
+implicit none (external)
 
 contains
 

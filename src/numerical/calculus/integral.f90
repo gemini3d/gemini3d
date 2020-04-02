@@ -1,5 +1,7 @@
 submodule (calculus) integral
 
+implicit none (external)
+
 contains
 
 module procedure integral3D1_curv

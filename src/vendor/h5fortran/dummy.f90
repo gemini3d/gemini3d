@@ -1,7 +1,7 @@
 module h5fortran
 !! this is a dummy interface that errors intentionally
 
-implicit none
+implicit none (external)
 
 type hdf5_file
 contains

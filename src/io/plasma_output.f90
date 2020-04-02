@@ -1,6 +1,6 @@
 submodule (io) plasma_output
 
-implicit none
+implicit none (external)
 
 interface ! plasma_output_*.f90
 

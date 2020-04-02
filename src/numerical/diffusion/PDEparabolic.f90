@@ -7,7 +7,7 @@ module PDEparabolic
 use phys_consts, only: wp
 use vendor_lapack95, only: gbsv!,gtsv
 
-implicit none
+implicit none (external)
 
 private
 public :: TRBDF21D, backEuler1D
@@ -58,8 +58,8 @@ Dh(2:lx1)=0.5*(D(1:lx1-1)+D(2:lx1))         !ith left cell wall thermal conducti
 !> MINX1 BOUNDARY (DIRICHLET)
 ix1=1
 M(ll+3,ix1)=1.0
-M(ll+2,ix1+1)=0.0
-M(ll+1,ix1+2)=0.0
+M(ll+2,ix1+1)=0
+M(ll+1,ix1+2)=0
 TR(ix1)=Tsminx1
 
 

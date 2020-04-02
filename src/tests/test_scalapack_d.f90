@@ -1,10 +1,13 @@
 ! minimal Scalapack demo
 use, intrinsic :: iso_fortran_env, only: real64
-implicit none
+
+implicit none (external)
 
 integer :: ictxt, myid, nprocs, mycol, myrow, npcol, nprow
 real(real64) :: eps
 real(real64), external :: pdlamch
+
+external :: blacs_pinfo, blacs_get, blacs_gridinit, blacs_gridinfo, blacs_gridexit, blacs_exit
 
 ! arbitrary test parameters
 npcol = 2

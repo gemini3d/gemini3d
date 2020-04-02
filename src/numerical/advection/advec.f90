@@ -1,7 +1,8 @@
 module advec
 
 use phys_consts, only: lsp,ms
-implicit none
+
+implicit none (external)
 
 contains
 

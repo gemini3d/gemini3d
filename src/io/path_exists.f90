@@ -1,6 +1,7 @@
 submodule (pathlib) path_exists
 !! this is for non-Intel compilers
-implicit none
+
+implicit none (external)
 
 contains
 

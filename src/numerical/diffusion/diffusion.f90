@@ -8,7 +8,9 @@ use mesh, only : curvmesh
 use grid, only : gridflag
 use PDEparabolic, only : backEuler1D,TRBDF21D
 
-implicit none
+implicit none (external)
+private
+public :: diffusion_prep, TRBDF23D, backEuler3D
 
 interface TRBDF23D
   module procedure TRBDF23D_curv
@@ -18,8 +20,6 @@ interface backEuler3D
   module procedure backEuler3D_curv
 end interface backEuler3D
 
-private
-public :: diffusion_prep, TRBDF23D, backEuler3D
 
 
 contains

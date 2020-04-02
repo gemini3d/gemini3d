@@ -8,7 +8,7 @@ use, intrinsic:: iso_fortran_env, only: real32, real64
 use phys_consts, only: wp
 use ionrate, only: ionization_fang2008, ionization_fang2010
 
-implicit none
+implicit none (external)
 
 integer :: i, argc
 real(wp) :: Q0_erg, f107, f107a, Ap, glat, glon, UTsec, altrange(3), a

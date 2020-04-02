@@ -6,7 +6,7 @@ use, intrinsic:: iso_fortran_env, only: wp=>real32
 use, intrinsic:: iso_fortran_env, only: wp=>real64
 #endif
 
-implicit none
+implicit none (external)
 public
 
 !> colored output text (for Unix-like systems at least).

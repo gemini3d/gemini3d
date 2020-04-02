@@ -13,7 +13,7 @@ use precipBCs_mod, only: precipBCs_fileinput, precipBCs
 use sources, only: rk2_prep_mpi, srcsenergy, srcsmomentum, srcscontinuity
 use timeutils, only : sza
 
-implicit none
+implicit none (external)
 private
 public :: fluid_adv
 

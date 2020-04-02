@@ -1,7 +1,10 @@
 !! ADAPTED FROM LAPACK_95 by Guy Grubbs and Michael Hirsch
 module vendor_lapack95
 use, intrinsic :: iso_fortran_env, only: real32, real64
-implicit none
+
+implicit none (external)
+private
+public :: gbsv
 
 contains
 
@@ -14,6 +17,8 @@ integer, intent(out), optional :: INFO
 integer :: LINFO, ISTAT, ISTAT1, SIPIV, LDA, N, NRHS, LKL, KU
 integer, dimension(:), pointer :: LPIV
 intrinsic :: size, present
+
+external :: sgbsv, dgbsv
 
 LINFO = 0; ISTAT = 0;
 LDA = size(A,1); N = size(A,2); NRHS = 1;

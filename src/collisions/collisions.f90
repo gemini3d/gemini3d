@@ -3,8 +3,10 @@ module collisions
 use, intrinsic :: iso_fortran_env, only: stderr=>error_unit
 use phys_consts, only: wp, lsp, ln, ms, kb, pi, elchrg, qs, debug
 
-implicit none
+implicit none (external)
 private
+public :: thermal_conduct, conductivities, capacitance, maxwell_colln, coulomb_colln
+
 
 real(wp), parameter :: Csn(lsp,ln) = reshape( &
 [-1.0_wp, 6.82e-10_wp, 6.64e-10_wp, -1.0_wp, &
@@ -41,8 +43,6 @@ real(wp), parameter :: Csj(lsp,lsp) = reshape( &
 0.25_wp, 0.28_wp, 0.28_wp, 0.28_wp, 0.24_wp, 0.088_wp, 2.136e-3_wp, &
 1.23_wp, 1.25_wp, 1.25_wp, 1.25_wp, 1.23_wp, 0.90_wp,  29.7e-3_wp, &
 54.5_wp, 54.5_wp, 54.5_wp, 54.5_wp, 54.5_wp, 54.5_wp,  38.537_wp], shape(Csj), order=[2,1])
-
-public :: thermal_conduct, conductivities, capacitance, maxwell_colln, coulomb_colln
 
 contains
 

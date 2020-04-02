@@ -18,7 +18,9 @@ use mpimod, only: mpi_sum, mpi_comm_world, &
 mpisetup, mpibreakdown, mpigrid, mpi_manualgrid, halo_end, &
 lid, lid2, lid3, myid, myid2, myid3, mpi_realprec, tag=>mpi_tag
 
-implicit none
+implicit none (external)
+
+external :: mpi_reduce
 
 !> VARIABLES READ IN FROM CONFIG FILE
 

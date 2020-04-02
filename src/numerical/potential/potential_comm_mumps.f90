@@ -22,19 +22,20 @@ use mpimod, only: mpi_integer, mpi_comm_world, mpi_status_ignore, &
 lid, lid2, lid3, myid, myid2, myid3, tag=>mpi_tag, &
 bcast_send, bcast_recv, gather_recv, gather_send, halo
 
-implicit none
+implicit none (external)
 private
 public :: electrodynamics, halo_pot
 
+external :: mpi_send, mpi_recv
 
 !! OVERLOAD THE SOLVERS FOR DEALING WITH THE CURVILINEAR MESHES
 !! NOTE WORKER SUBROUTINE DOES NOT NEED TO BE CHANGED/OVERLOADED
 interface electrodynamics
-  module procedure electrodynamics_curv
+module procedure electrodynamics_curv
 end interface electrodynamics
 
 interface potential_root_mpi
-  module procedure potential_root_mpi_curv
+module procedure potential_root_mpi_curv
 end interface potential_root_mpi
 
 interface ! potential_worker.f90

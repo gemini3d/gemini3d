@@ -1,8 +1,12 @@
 program test_mpi
 
 use, intrinsic :: iso_fortran_env
-use mpi
-implicit none
+use mpi, only : mpi_init, mpi_comm_rank, mpi_comm_size, mpi_comm_world, mpi_real, mpi_real8, &
+  MPI_GET_LIBRARY_VERSION, MPI_MAX_LIBRARY_VERSION_STRING
+
+implicit none (external)
+
+external :: mpi_finalize
 
 integer :: mrank, msize, vlen, ierr
 character(MPI_MAX_LIBRARY_VERSION_STRING) :: version

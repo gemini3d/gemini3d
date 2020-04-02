@@ -2,7 +2,8 @@ submodule(io:io_aurora) io_aurora_nc4
 
 use timeutils, only : date_filename
 use nc4fortran, only: netcdf_file
-implicit none
+
+implicit none (external)
 
 contains
 

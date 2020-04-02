@@ -1,11 +1,11 @@
 program test_potential3D
 !! Need program statement for FORD
 use mpi
-implicit none
 
-include 'dmumps_struc.h'
+implicit none (external)
 
-type (DMUMPS_STRUC) mumps_par
+type(mumps_struc) :: mumps_par
+
 integer :: ierr
 
 integer, parameter :: npts1=256,npts2=256,npts3=12

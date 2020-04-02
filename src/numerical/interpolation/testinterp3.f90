@@ -5,7 +5,7 @@ use phys_consts, only: wp,pi
 use interpolation
 use h5fortran, only: hdf5_file
 
-implicit none
+implicit none (external)
 
 type(hdf5_file) :: hout
 integer, parameter :: lx1=80, lx2=90, lx3=100

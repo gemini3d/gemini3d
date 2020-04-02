@@ -2,7 +2,7 @@ program msis_driver
 !! will write to stdout if "-" specified, so we avoid printing to console unless file output is used
 use, intrinsic:: iso_fortran_env, only: sp=>real32, stderr=>error_unit, stdout=>output_unit, stdin=>input_unit
 
-implicit none
+implicit none (external)
 
 integer, parameter :: mass=48
 integer :: iyd,sec,lz, i
@@ -12,6 +12,8 @@ real(sp), allocatable :: glat(:),glon(:),alt(:)
 integer :: u
 character(256) :: buf
 character(:), allocatable :: infile,outfile
+
+external :: meters, gtd7
 
 !> read in msis inputs
 if (command_argument_count() < 2) error stop 'msis_setup: must specify input and output filenames'

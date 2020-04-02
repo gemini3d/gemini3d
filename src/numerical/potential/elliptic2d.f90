@@ -1,6 +1,6 @@
 submodule (PDEelliptic) elliptic2d
 
-implicit none
+implicit none (external)
 
 contains
 

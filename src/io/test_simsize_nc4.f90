@@ -3,7 +3,7 @@ program test_simsixe_nc4
 use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
 use nc4fortran, only: netcdf_file
 
-implicit none
+implicit none (external)
 
 logical :: exists
 

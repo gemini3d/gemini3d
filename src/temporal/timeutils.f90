@@ -1,7 +1,8 @@
 module timeutils
 use phys_consts, only: wp
 use, intrinsic :: iso_fortran_env, only: sp=>real32, dp=>real64, int32, int64
-implicit none
+
+implicit none (external)
 private
 public :: doy_calc, sza, dateinc, utsec2filestem, date_filename, day_wrap
 

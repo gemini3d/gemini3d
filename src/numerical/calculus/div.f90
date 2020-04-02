@@ -1,5 +1,7 @@
 submodule (calculus) div
 
+implicit none (external)
+
 contains
 
 module procedure div3D_curv_3

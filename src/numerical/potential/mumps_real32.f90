@@ -1,5 +1,6 @@
 module mumps_rl
-implicit none
+
+implicit none (external)
 private
 public :: smumps, smumps_struc
 

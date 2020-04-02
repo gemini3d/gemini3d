@@ -69,12 +69,10 @@ Intel compilers are available at no-cost for academic instruction and open-sourc
 You need to have
 [Intel Parallel Studio XE](https://software.intel.com/en-us/parallel-studio-xe)
 that includes IntelMPI, BLACS and SCALAPACK.
-Intel Fortran
-[currently supported versions](https://software.intel.com/en-us/articles/intel-parallel-studio-xe-supported-and-unsupported-product-versions)
-are generally targeted for Gemini support.
+Intel Fortran &ge; 19.1 / Parallel Studio &ge; 2020 are generally targeted for Gemini support.
 
-We regularly use the latest Intel compilers on Linux and Windows.
-We haven't tried Intel compiler on MacOS, please let us know if it works or has issues.
+We regularly use the latest release Intel compilers on Linux and Windows.
+MacOS with Intel compiler hasn't been tried--let us know.
 
 ### Intel MKL with Gfortran
 

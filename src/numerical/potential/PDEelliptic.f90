@@ -7,7 +7,7 @@ use mumps_interface, only : mumps_struc, mumps_exec
 use mpimod, only: mpi_comm_world
 use phys_consts, only: wp, debug
 
-implicit none
+implicit none (external)
 private
 public :: elliptic3D_cart,elliptic2D_cart,elliptic2D_polarization,elliptic2D_polarization_periodic,&
   elliptic_workers, check_mumps_status, quiet_mumps

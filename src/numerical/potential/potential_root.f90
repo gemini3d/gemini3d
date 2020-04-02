@@ -1,5 +1,7 @@
 submodule (potential_comm) potential_root
-implicit none
+
+implicit none (external)
+
 contains
 
 module procedure potential_root_mpi_curv

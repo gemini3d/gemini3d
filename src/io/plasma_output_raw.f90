@@ -1,7 +1,8 @@
 submodule (io:plasma_output) plasma_output_raw
 
 use timeutils, only : date_filename
-implicit none
+
+implicit none (external)
 
 contains
 

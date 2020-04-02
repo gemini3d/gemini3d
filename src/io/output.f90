@@ -2,7 +2,7 @@ submodule (io) output
 
 use, intrinsic :: iso_fortran_env, only: compiler_version, compiler_options, real32, real64
 
-implicit none
+implicit none (external)
 
 contains
 

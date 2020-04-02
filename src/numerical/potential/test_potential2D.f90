@@ -6,7 +6,8 @@ use mpi, only : mpi_init, mpi_finalize, mpi_comm_rank, mpi_comm_size, mpi_comm_w
 use phys_consts, only: wp,debug,pi
 use PDEelliptic, only: elliptic2D_polarization,elliptic2D_cart,elliptic_workers
 use h5fortran, only: hdf5_file
-implicit none
+
+implicit none (external)
 
 type(hdf5_file) :: hout
 

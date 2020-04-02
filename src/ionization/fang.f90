@@ -2,14 +2,14 @@ module ionize_fang
 
 use, intrinsic :: iso_fortran_env, only: sp=>real32, dp=>real64
 use phys_consts, only: wp, kb
-implicit none
+
+implicit none (external)
 private
+public :: fang2008, fang2010, gravity_accel, erg2kev
 
 real(wp), parameter :: deps = 0.035_wp
 real(wp), parameter :: erg2kev = 624150648._wp
 !! keV, kinetic energy lost per ion-electron pair produced
-
-public :: fang2008, fang2010, gravity_accel, erg2kev
 
 contains
 

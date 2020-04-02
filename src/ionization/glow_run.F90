@@ -13,9 +13,11 @@ use cglow,only: cglow_init, &
   photoi,photod,phono,aglw,ecalc,zxden,zeta,zceta,eheat,vcb, &
   data_dir
 
-implicit none
+implicit none (external)
 
 logical :: first_call = .true.
+
+external :: egrid, maxt, glow
 
 contains
 

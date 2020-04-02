@@ -2,7 +2,8 @@ submodule (io:plasma_input) plasma_input_hdf5
 
 use timeutils, only : date_filename
 use h5fortran, only: hdf5_file
-implicit none
+
+implicit none (external)
 
 contains
 

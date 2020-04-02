@@ -1,5 +1,7 @@
 submodule (calculus) gradient
 
+implicit none (external)
+
 contains
 
 module procedure grad3D1_curv_3

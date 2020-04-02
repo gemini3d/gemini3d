@@ -9,9 +9,11 @@ use mesh, only: curvmesh
 use timeutils, only: doy_calc
 use mpimod, only: myid,lid,mpi_realprec, tag=>mpi_tag, MPI_COMM_WORLD,MPI_STATUS_IGNORE
 
-implicit none
+implicit none (external)
 private
 public :: ionrate_fang08, ionrate_glow98, eheating, photoionization
+
+external :: mpi_send, mpi_recv
 
 interface
 module subroutine glow_run(W0,PhiWmWm2,date_doy,UTsec,xf107,xf107a,xlat,xlon,alt,nn,Tn,ns,Ts,&

@@ -1,7 +1,8 @@
 module logging
 
 use, intrinsic :: iso_fortran_env, only: int32, int64, real32, real64, stderr=>error_unit
-implicit none
+
+implicit none (external)
 
 contains
 

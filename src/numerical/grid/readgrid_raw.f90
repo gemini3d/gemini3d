@@ -2,7 +2,7 @@ submodule (grid:grid_read) readgrid_raw
 
 use phys_consts, only: debug
 
-implicit none
+implicit none (external)
 
 contains
 

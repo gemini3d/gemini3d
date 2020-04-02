@@ -1,6 +1,6 @@
 submodule (mpimod) mpisend
 
-implicit none
+implicit none (external)
 
 contains
 

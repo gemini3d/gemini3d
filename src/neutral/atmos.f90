@@ -2,7 +2,7 @@ submodule (neutral) atmos
 
 use, intrinsic :: iso_fortran_env, only: sp => real32
 
-implicit none
+implicit none (external)
 
 contains
 
@@ -18,6 +18,8 @@ integer :: dom,month,year,doy,yearshort
 real(sp) :: sec,f107a,f107,ap(7),stl,ap3
 real(sp) :: altnow,latnow,lonnow
 real(sp) :: d(9),t(2)
+
+external :: meters, gtd7
 
 !   real(wp), dimension(1:size(alt,1),1:size(alt,2),1:size(alt,3)) :: nnow
 !    real(wp), dimension(1:size(alt,1),1:size(alt,2),1:size(alt,3)) :: altalt    !an alternate altitude variable which fixes below ground values to 1km

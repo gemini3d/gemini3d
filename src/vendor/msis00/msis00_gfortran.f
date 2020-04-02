@@ -1,4 +1,3 @@
-C-----------------------------------------------------------------------
       SUBROUTINE GTD7(IYD,SEC,ALT,GLAT,GLONG,STL,F107A,F107,AP,MASS,D,T)
 C
 C     NRLMSISE-00
@@ -946,7 +945,7 @@ C       ADJUST DENSITIES FROM CGS TO KGM
       END Subroutine GTS7
 C-----------------------------------------------------------------------
       SUBROUTINE METERS(METER)
-      Implicit None
+      implicit none (external)
 C      Convert outputs to Kg & Meters if METER true
       logical,Intent(In) :: METER
       Integer IMR
@@ -2440,4 +2439,4 @@ C         MIDDLE ATMOSPHERE AVERAGES
       DATA PAVGM/
      M  2.61000E+02, 2.64000E+02, 2.29000E+02, 2.17000E+02, 2.17000E+02,
      M  2.23000E+02, 2.86760E+02,-2.93940E+00, 2.50000E+00, 0.00000E+00/
-      END
+      END block data
