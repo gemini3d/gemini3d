@@ -17,6 +17,9 @@ endif(python_ok)
 if(glow)
   include(${PROJECT_SOURCE_DIR}/cmake/glow.cmake)
 
+  # DATADIR comes from glow project BUILD_INTERFACE COMPILE_DEFINITIONS
+  # this does not seem to work with get_target_property()
+  # so preprocess instead of configure_file()
   add_library(ionization OBJECT ionization.f90 glow_run.F90)
   target_link_libraries(ionization PUBLIC glow::glow)
 else()

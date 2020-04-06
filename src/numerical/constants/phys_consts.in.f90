@@ -1,10 +1,6 @@
 module phys_consts
 
-#if REALBITS==32
-use, intrinsic:: iso_fortran_env, only: wp=>real32
-#else
-use, intrinsic:: iso_fortran_env, only: wp=>real64
-#endif
+use, intrinsic:: iso_fortran_env, only: wp=>real@realbits@
 
 implicit none (external)
 public

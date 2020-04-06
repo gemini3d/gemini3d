@@ -1,10 +1,7 @@
-if(realbits EQUAL 32)
-  message(STATUS "32-bit MUMPS interface")
-  add_library(mumps_interface OBJECT mumps_real32.f90)
-else()
-  message(STATUS "64-bit MUMPS interface")
-  add_library(mumps_interface OBJECT mumps_real64.f90)
-endif()
+# make mumps usage precision-agnostic
+# this is needed because Mumps uses Fortran 95 syntax instead of Fortran 2003 syntax
+configure_file(mumps_ifc.in.f90 mumps_ifc.f90)
+add_library(mumps_interface OBJECT ${CMAKE_CURRENT_BINARY_DIR}/mumps_ifc.f90)
 target_include_directories(mumps_interface PUBLIC ${MUMPS_INCLUDE_DIRS})
 target_link_libraries(mumps_interface PUBLIC ${MUMPS_LIBRARIES})
 

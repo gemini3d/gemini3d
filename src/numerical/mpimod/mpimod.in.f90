@@ -7,14 +7,9 @@ use phys_consts, only : lsp, wp
 !! code needs to know how many species are being used.
 
 use mpi, only: mpi_init, mpi_comm_rank, mpi_comm_size, mpi_comm_world, &
-               mpi_integer,mpi_sum, &
-               mpi_status_size, mpi_status_ignore, MPI_PROC_NULL, &
-
-#if REALBITS==32
-mpi_realprec=>mpi_real
-#else
-mpi_realprec=>mpi_double_precision
-#endif
+  mpi_integer,mpi_sum, &
+  mpi_status_size, mpi_status_ignore, MPI_PROC_NULL, &
+  mpi_realprec=>@mpi_realprec@
 
 implicit none (external)
 public

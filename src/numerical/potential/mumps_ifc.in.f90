@@ -2,16 +2,16 @@ module mumps_rl
 
 implicit none (external)
 private
-public :: smumps, smumps_struc
+public :: @arith@mumps, @arith@mumps_struc
 
-external :: smumps
+external :: @arith@mumps
 
-include 'smumps_struc.h'
+include '@arith@mumps_struc.h'
 
 end module mumps_rl
 
 module mumps_interface
-use mumps_rl, only : mumps_struc=>smumps_struc, mumps_exec=>smumps
+use mumps_rl, only : mumps_struc=>@arith@mumps_struc, mumps_exec=>@arith@mumps
 implicit none
 private
 public :: mumps_exec, mumps_struc
