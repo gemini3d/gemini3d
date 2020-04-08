@@ -63,11 +63,11 @@ if (flagswap/=1) then
   call hout%read('gx2', g2all)
   call hout%read('gx3', g3all)
 
-  call hout%read('alt', altall)
+  call hout%read('alt', x%altall)
   call hout%read('glat', glatall)
   call hout%read('glon', glonall)
 
-  call hout%read('Bmag', Bmagall)
+  call hout%read('Bmag', x%Bmagall)
   call hout%read('I', Incall)
   call hout%read('nullpts', nullptsall)
 
@@ -162,14 +162,14 @@ else
   g2all = reshape(htmp,[lx1,lx2all,lx3all],order=[1,3,2])
 
   call hout%read('alt', htmp)
-  altall = reshape(htmp,[lx1,lx2all,lx3all],order=[1,3,2])
+  x%altall = reshape(htmp,[lx1,lx2all,lx3all],order=[1,3,2])
   call hout%read('glat', htmp)
   glatall = reshape(htmp,[lx1,lx2all,lx3all],order=[1,3,2])
   call hout%read('glon', htmp)
   glonall = reshape(htmp,[lx1,lx2all,lx3all],order=[1,3,2])
 
   call hout%read('Bmag', htmp)
-  Bmagall = reshape(htmp,[lx1,lx2all,lx3all],order=[1,3,2])
+  x%Bmagall = reshape(htmp,[lx1,lx2all,lx3all],order=[1,3,2])
   end block
 
   block

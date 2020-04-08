@@ -79,5 +79,6 @@ real(wp), parameter :: mindensnull = 1.0e-20_wp
 real(wp), parameter :: mindensdiv  = 1.0e-5_wp
 
 logical :: debug=.false.
+logical,parameter :: flagEIA=.true.
 
 end module phys_consts
