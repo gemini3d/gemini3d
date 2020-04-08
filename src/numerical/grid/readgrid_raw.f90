@@ -7,6 +7,7 @@ implicit none (external)
 contains
 
 module procedure get_grid3_raw
+
 integer :: u
 character(:), allocatable :: fn
 
@@ -30,8 +31,9 @@ if (flagswap/=1) then
   read(u) x%h1x3iall,x%h2x3iall,x%h3x3iall
 
   read(u) g1all,g2all,g3all
-  read(u) altall,glatall,glonall
-  read(u) Bmagall
+  read(u) x%altall
+  read(u) glatall,glonall
+  read(u) x%Bmagall
   read(u) Incall
   read(u) nullptsall
   read(u) e1all
@@ -101,14 +103,14 @@ else
   g2all=reshape(htmp,[lx1,lx2all,lx3all],order=[1,3,2])
 
   read(u) htmp
-  altall=reshape(htmp,[lx1,lx2all,lx3all],order=[1,3,2])
+  x%altall=reshape(htmp,[lx1,lx2all,lx3all],order=[1,3,2])
   read(u) htmp
   glatall=reshape(htmp,[lx1,lx2all,lx3all],order=[1,3,2])
   read(u) htmp
   glonall=reshape(htmp,[lx1,lx2all,lx3all],order=[1,3,2])
 
   read(u) htmp
-  Bmagall=reshape(htmp,[lx1,lx2all,lx3all],order=[1,3,2])
+  x%Bmagall=reshape(htmp,[lx1,lx2all,lx3all],order=[1,3,2])
   end block
 
   block

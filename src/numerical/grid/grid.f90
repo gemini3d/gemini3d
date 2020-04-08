@@ -154,6 +154,7 @@ if (myid == 0) then
   deallocate(x%h1x2iall,x%h2x2iall,x%h3x2iall)
   deallocate(x%h1x3iall,x%h2x3iall,x%h3x3iall)
   deallocate(x%rall,x%thetaall,x%phiall)
+  deallocate(x%altall,x%Bmagall)
 end if
 
 !THIS NEEDS TO DEALLOCATE BOTH GRAVITY AND THE MAGNETIC FIELD MAGNITUDE
