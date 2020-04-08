@@ -14,7 +14,7 @@ class(*), dimension(:), intent(inout) :: B
 integer, intent(in), optional :: KL
 integer, dimension(:), intent(out), optional, target :: IPIV
 integer, intent(out), optional :: INFO
-integer :: LINFO, ISTAT, ISTAT1, SIPIV, LDA, N, NRHS, LKL, KU
+integer :: LINFO, ISTAT, SIPIV, LDA, N, NRHS, LKL, KU
 integer, dimension(:), pointer :: LPIV
 intrinsic :: size, present
 
@@ -42,13 +42,15 @@ if ( ISTAT == 0 ) then
 
   select type (A)
     type is (real(real32))
-      call sgbsv(N,LKL,KU,NRHS,A,LDA,LPIV,B,N,LINFO)
+      @sgbsv@
     type is (real(real64))
       call dgbsv(N,LKL,KU,NRHS,A,LDA,LPIV,B,N,LINFO)
     class default
       error stop "unhandled kind"
   end select
 endif
+
+if(present(info)) info = linfo
 
 if ( .NOT.present(IPIV) ) deallocate(LPIV)
 

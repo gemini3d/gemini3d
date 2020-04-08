@@ -16,4 +16,4 @@ add_test(NAME unit:DateRollover COMMAND test_rollover)
 
 add_executable(test_sza test_sza.f90)
 target_link_libraries(test_sza PRIVATE timeutils const)
-add_test(NAME unit:SolarZenithAngle COMMAND test_sza)
+add_test(NAME unit:SolarZenithAngle COMMAND $<TARGET_FILE:test_sza>)

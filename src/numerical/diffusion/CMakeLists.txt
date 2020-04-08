@@ -1,9 +1,6 @@
 add_library(PDEparabolic OBJECT PDEparabolic.f90)
-target_link_libraries(PDEparabolic PRIVATE const ${LAPACK_LIBRARIES})
+target_link_libraries(PDEparabolic PRIVATE const gbsv ${LAPACK_LIBRARIES})
 target_include_directories(PDEparabolic PRIVATE ${LAPACK_INCLUDE_DIRS})
-if(NOT LAPACK_LAPACK95_FOUND)
-  target_sources(PDEparabolic PRIVATE ${PROJECT_SOURCE_DIR}/src/vendor/lapack95/gbsv.f90)
-endif()
 
 add_library(diffusion OBJECT diffusion.f90)
 target_link_libraries(diffusion PRIVATE const grid mesh PDEparabolic)
@@ -18,7 +15,7 @@ set(_tmpdifffn ${CMAKE_CURRENT_BINARY_DIR}/test_diffusion1d.h5)
 
 add_executable(test_diffusion1d test_diffusion1D.f90)
 # lapack needed for MacOS
-target_link_libraries(test_diffusion1d PRIVATE PDEparabolic const
+target_link_libraries(test_diffusion1d PRIVATE PDEparabolic gbsv const
   ${LAPACK_LIBRARIES} h5fortran::h5fortran)
 
 # WORKING_DIRECTORY is needed to write output file to repeatable path.

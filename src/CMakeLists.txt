@@ -3,6 +3,7 @@ add_subdirectory(tests)
 
 # --- vendor libraries
 add_subdirectory(vendor/msis00)
+add_subdirectory(vendor/lapack95)  # used by PDEparabolic
 
 # --- GEMINI
 add_subdirectory(ionization)
@@ -22,7 +23,7 @@ target_link_libraries(multifluid PRIVATE advec calculus collision const diffusio
 
 # --- Main GEMINI executable
 add_executable(gemini.bin gemini.f90)
-target_link_libraries(gemini.bin PRIVATE advec calculus config const collision diffusion fang grid io interp ionization mesh mpimod multifluid
+target_link_libraries(gemini.bin PRIVATE advec calculus config const collision diffusion fang grid io interp ionization gbsv mesh mpimod multifluid
   neutral pathlib PDEelliptic PDEparabolic potential precipBCs reader sources temporal timeutils
   ${LAPACK_LIBRARIES})  # necessary for self-compiled
 set_target_properties(gemini.bin PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
@@ -34,7 +35,7 @@ set_target_properties(magcalc.bin PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BI
 
 # --- set common target properties
 
-foreach(t collision config fang fang_run io ionization logging multifluid neutral pathlib precipBCs reader sources temporal timeutils)
+foreach(t collision config fang fang_run io ionization gbsv logging multifluid neutral pathlib precipBCs reader sources temporal timeutils)
   target_include_directories(${t} INTERFACE ${CMAKE_CURRENT_BINARY_DIR}/include)
   set_target_properties(${t} PROPERTIES
     Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include)
