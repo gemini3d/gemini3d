@@ -4,7 +4,7 @@ use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
 use, intrinsic :: ieee_arithmetic, only : ieee_is_finite
 
 use mpimod, only : mpi_integer, mpi_comm_world, mpi_status_ignore
-use phys_consts, only: wp, pi, Re, debug
+use phys_consts, only: wp, pi, Re, debug, flagEIA
 use grid, only: lx1, lx2, lx2all, lx3all, gridflag
 use mesh, only: curvmesh
 use interpolation, only : interp1,interp2
@@ -481,6 +481,8 @@ real(wp) :: meanx2,sigx2,meanx3,sigx3,meant,sigt,sigcurv,x30amp,varc    !for set
 
 real(wp), dimension(:,:), pointer :: Vtopalt,Vbotalt
 
+real(wp) :: vamp,ltnepal,velhuba,z
+
 
 !CALCULATE/SET TOP BOUNDARY CONDITIONS
 sigx2=1d0/20d0*(x%x2all(lx2all)-x%x2all(1))
@@ -517,10 +519,42 @@ Vminx3 = 0
 Vmaxx3 = 0
 
 
+!PI's EIA code COMPUTE SOURCE/FORCING TERMS FROM BACKGROUND FIELDS, ETC.
+if (flagEIA) then
+!	ltnepal = t/60d0/60d0+6d0 ! Local time for Nepal (+5:45)
+  ltnepal = t/60d0/60d0-3d0 ! Local time for Chile (UTC-5:00)
+!        ltnepal = t/60d0/60d0+11d0 ! Local time for New Zealand (UTC+12)
+  velhuba = sin(2d0*3.1415*(ltnepal-7d0)/24d0) ! Huba's formulate for velocity
+  vamp=10d0
+
 !COMPUTE SOURCE/FORCING TERMS FROM BACKGROUND FIELDS, ETC.
-E01all = 0
-E02all = 0
-E03all = 0
+  E01all=0d0
+  E03all=0d0
+
+  do ix3=1,lx3all    ! For x1 coordinate ("azimuth")
+    do ix2=1,lx2all
+      do ix1=1,lx1  ! For x2 coordinate (altitude)
+        z = x%altall(lx1/2,ix2,ix3)  ! Current altitude
+!                        write(*,*) 'z:  ',z,lx1/2,ix3,lx3all
+        if (z<=150d3) then
+          E02all(ix1,ix2,ix3) = 0d0
+          ! for Chile I use V0=4
+        elseif ((z>=150d3) .and. (z<=300d3)) then
+          E02all(ix1,ix2,ix3) = (velhuba*vamp*(z-150d3)/150d3)*x%Bmagall(lx1/2,ix2,ix3)
+        elseif (z>300d3) then
+          E02all(ix1,ix2,ix3) = velhuba*vamp*x%Bmagall(lx1/2,ix2,ix3)
+        end if
+      end do
+    end do
+  end do
+
+  print*, '  Applied EIA perturbation to background electric field...'
+  print*, '    ',minval(E02all),maxval(E02all)
+else
+  E01all = 0
+  E02all = 0
+  E03all = 0
+end if 
 
 end subroutine potentialBCs2D
 

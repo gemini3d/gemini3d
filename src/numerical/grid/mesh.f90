@@ -66,6 +66,10 @@ type :: curvmesh
   real(wp), dimension(:,:,:), allocatable :: Bmag
   real(wp), dimension(:,:), allocatable :: I
 
+  !NEED FOR EIA CALCULATIONS
+  real(wp), dimension(:,:,:), allocatable :: altall
+  real(wp), dimension(:,:,:), allocatable :: Bmagall
+
   !DEFINE POINTS TO EXCLUDE FROM NUMERICAL SOLVES?
   real(wp), dimension(:,:,:), allocatable :: nullpts   !this could be a logical but I'm going to treat it as real*8
   integer :: lnull                                    !length of null point index array
