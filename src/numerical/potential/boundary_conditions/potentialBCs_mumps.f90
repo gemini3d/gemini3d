@@ -529,7 +529,7 @@ if (flagEIA) then
 
 !COMPUTE SOURCE/FORCING TERMS FROM BACKGROUND FIELDS, ETC.
   E01all=0d0
-  E03all=0d0
+  E02all=0d0
 
   do ix3=1,lx3all    ! For x1 coordinate ("azimuth")
     do ix2=1,lx2all
@@ -537,12 +537,12 @@ if (flagEIA) then
         z = x%altall(lx1/2,ix2,ix3)  ! Current altitude
 !                        write(*,*) 'z:  ',z,lx1/2,ix3,lx3all
         if (z<=150d3) then
-          E02all(ix1,ix2,ix3) = 0d0
+          E03all(ix1,ix2,ix3) = 0d0
           ! for Chile I use V0=4
         elseif ((z>=150d3) .and. (z<=300d3)) then
-          E02all(ix1,ix2,ix3) = (velhuba*vamp*(z-150d3)/150d3)*x%Bmagall(lx1/2,ix2,ix3)
+          E03all(ix1,ix2,ix3) = (velhuba*vamp*(z-150d3)/150d3)*x%Bmagall(lx1/2,ix2,ix3)
         elseif (z>300d3) then
-          E02all(ix1,ix2,ix3) = velhuba*vamp*x%Bmagall(lx1/2,ix2,ix3)
+          E03all(ix1,ix2,ix3) = velhuba*vamp*x%Bmagall(lx1/2,ix2,ix3)
         end if
       end do
     end do
