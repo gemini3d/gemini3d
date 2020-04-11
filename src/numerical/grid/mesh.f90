@@ -67,7 +67,7 @@ type :: curvmesh
   real(wp), dimension(:,:), allocatable :: I
 
   !NEED FOR EIA CALCULATIONS
-  real(wp), dimension(:,:,:), allocatable :: altall
+  real(wp), dimension(:,:,:), allocatable :: altall,glonall
   real(wp), dimension(:,:,:), allocatable :: Bmagall
 
   !DEFINE POINTS TO EXCLUDE FROM NUMERICAL SOLVES?
