@@ -65,7 +65,7 @@ if (flagswap/=1) then
 
   call hout%read('/alt', x%altall)
   call hout%read('/glat', glatall)
-  call hout%read('/glon', glonall)
+  call hout%read('/glon', x%glonall)
 
   call hout%read('/Bmag', x%Bmagall)
   call hout%read('/I', Incall)
@@ -166,7 +166,7 @@ else
   call hout%read('/glat', htmp)
   glatall = reshape(htmp,[lx1,lx2all,lx3all],order=[1,3,2])
   call hout%read('/glon', htmp)
-  glonall = reshape(htmp,[lx1,lx2all,lx3all],order=[1,3,2])
+  x%glonall = reshape(htmp,[lx1,lx2all,lx3all],order=[1,3,2])
 
   call hout%read('/Bmag', htmp)
   x%Bmagall = reshape(htmp,[lx1,lx2all,lx3all],order=[1,3,2])

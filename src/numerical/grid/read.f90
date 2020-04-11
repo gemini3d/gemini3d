@@ -5,32 +5,32 @@ use mpimod, only : mpi_realprec
 implicit none (type, external)
 
 interface ! readgrid_*.f90
-module subroutine get_grid3_raw(path, flagswap, x, g1all,g2all,g3all,glatall,glonall,Incall,nullptsall,&
+module subroutine get_grid3_raw(path, flagswap, x, g1all,g2all,g3all,glatall,Incall,nullptsall,&
   e1all,e2all,e3all,erall,ethetaall,ephiall,rall,thetaall,phiall)
 character(*), intent(in) :: path
 integer, intent(in) :: flagswap
 type(curvmesh), intent(inout) :: x
-real(wp), intent(out), dimension(:,:,:) :: g1all,g2all,g3all,glatall,glonall,nullptsall,rall,thetaall,phiall
+real(wp), intent(out), dimension(:,:,:) :: g1all,g2all,g3all,glatall,nullptsall,rall,thetaall,phiall
 real(wp), intent(out), dimension(:,:) :: Incall
 real(wp), intent(out), dimension(:,:,:,:) :: e1all,e2all,e3all,erall,ethetaall,ephiall
 end subroutine get_grid3_raw
 
-module subroutine get_grid3_hdf5(path, flagswap, x, g1all,g2all,g3all,glatall,glonall,Incall,nullptsall,&
+module subroutine get_grid3_hdf5(path, flagswap, x, g1all,g2all,g3all,glatall,Incall,nullptsall,&
   e1all,e2all,e3all,erall,ethetaall,ephiall,rall,thetaall,phiall)
 character(*), intent(in) :: path
 integer, intent(in) :: flagswap
 type(curvmesh), intent(inout) :: x
-real(wp), intent(out), dimension(:,:,:) :: g1all,g2all,g3all,glatall,glonall,nullptsall,rall,thetaall,phiall
+real(wp), intent(out), dimension(:,:,:) :: g1all,g2all,g3all,glatall,nullptsall,rall,thetaall,phiall
 real(wp), intent(out), dimension(:,:) :: Incall
 real(wp), intent(out), dimension(:,:,:,:) :: e1all,e2all,e3all,erall,ethetaall,ephiall
 end subroutine get_grid3_hdf5
 
-module subroutine get_grid3_nc4(path, flagswap, x, g1all,g2all,g3all,glatall,glonall,Incall,nullptsall,&
+module subroutine get_grid3_nc4(path, flagswap, x, g1all,g2all,g3all,glatall,Incall,nullptsall,&
   e1all,e2all,e3all,erall,ethetaall,ephiall,rall,thetaall,phiall)
 character(*), intent(in) :: path
 integer, intent(in) :: flagswap
 type(curvmesh), intent(inout) :: x
-real(wp), intent(out), dimension(:,:,:) :: g1all,g2all,g3all,glatall,glonall,nullptsall,rall,thetaall,phiall
+real(wp), intent(out), dimension(:,:,:) :: g1all,g2all,g3all,glatall,nullptsall,rall,thetaall,phiall
 real(wp), intent(out), dimension(:,:) :: Incall
 real(wp), intent(out), dimension(:,:,:,:) :: e1all,e2all,e3all,erall,ethetaall,ephiall
 end subroutine get_grid3_nc4
@@ -38,13 +38,13 @@ end interface
 
 contains
 
-subroutine get_grid3(path, flagswap, x, g1all,g2all,g3all,glatall,glonall,Incall,nullptsall,&
+subroutine get_grid3(path, flagswap, x, g1all,g2all,g3all,glatall,Incall,nullptsall,&
   e1all,e2all,e3all,erall,ethetaall,ephiall,rall,thetaall,phiall)
 !! switchyard file format
 character(*), intent(in) :: path
 integer, intent(in) :: flagswap
 type(curvmesh), intent(inout) :: x
-real(wp), intent(out), dimension(:,:,:) :: g1all,g2all,g3all,glatall,glonall,nullptsall,rall,thetaall,phiall
+real(wp), intent(out), dimension(:,:,:) :: g1all,g2all,g3all,glatall,nullptsall,rall,thetaall,phiall
 real(wp), intent(out), dimension(:,:) :: Incall
 real(wp), intent(out), dimension(:,:,:,:) :: e1all,e2all,e3all,erall,ethetaall,ephiall
 
@@ -54,13 +54,13 @@ fmt = path(index(path, '.', back=.true.) : len(path))
 
 select case (fmt)
 case ('.dat')
-  call get_grid3_raw(path, flagswap, x, g1all,g2all,g3all,glatall,glonall,Incall,nullptsall,&
+  call get_grid3_raw(path, flagswap, x, g1all,g2all,g3all,glatall,Incall,nullptsall,&
     e1all,e2all,e3all,erall,ethetaall,ephiall,rall,thetaall,phiall)
 case ('.h5')
-  call get_grid3_hdf5(path, flagswap, x, g1all,g2all,g3all,glatall,glonall,Incall,nullptsall,&
+  call get_grid3_hdf5(path, flagswap, x, g1all,g2all,g3all,glatall,Incall,nullptsall,&
     e1all,e2all,e3all,erall,ethetaall,ephiall,rall,thetaall,phiall)
 case ('.nc')
-  call get_grid3_nc4(path, flagswap, x, g1all,g2all,g3all,glatall,glonall,Incall,nullptsall,&
+  call get_grid3_nc4(path, flagswap, x, g1all,g2all,g3all,glatall,Incall,nullptsall,&
     e1all,e2all,e3all,erall,ethetaall,ephiall,rall,thetaall,phiall)
 case default
   write(stderr,*) 'grid:read:get_grid3: unknown grid format: ' // fmt
@@ -128,7 +128,7 @@ integer u,ierr,iid,ix1,ix2,ix3,icount,icomp!,itell
 
 !NOTE THAT HAVING THESE ARE LOCAL (TEMPORARY) VARS. PREVENTS ROOT FROM WRITING ENTIRE GRID TO FILE AT SOME LATER POINT...
 real(wp), dimension(:,:,:), allocatable :: g1all,g2all,g3all   !to temporarily store input data to be distributed
-real(wp), dimension(:,:,:), allocatable :: glatall,glonall
+real(wp), dimension(:,:,:), allocatable :: glatall
 real(wp), dimension(:,:,:), allocatable :: rall,thetaall,phiall
 real(wp), dimension(:,:), allocatable :: Incall
 real(wp), dimension(:,:,:), allocatable :: nullptsall
@@ -220,7 +220,7 @@ allocate(x%h1x3iall(1:lx1,1:lx2all,1:lx3all+1),x%h2x3iall(1:lx1,1:lx2all,1:lx3al
 
 allocate(x%rall(1:lx1,1:lx2all,1:lx3all),x%thetaall(1:lx1,1:lx2all,1:lx3all),x%phiall(1:lx1,1:lx2all,1:lx3all))
 allocate(x%altall(1:lx1,1:lx2all,1:lx3all),x%Bmagall(1:lx1,1:lx2all,1:lx3all))
-
+allocate(x%glonall(1:lx1,1:lx2all,1:lx3all))
 
 !DETERMINE AND ALLOCATE SPACE NEEDED FOR ROOT SUBGRIDS (WORKERS USE SIMILAR ALLOCATE STATEMENTS)
 allocate(x%x3(-1:lx3+2))
@@ -252,7 +252,7 @@ print *, 'Starting grid input from file: ',indatgrid
 
 allocate(g1all(lx1,lx2all,lx3all), g2all(lx1,lx2all,lx3all), g3all(lx1,lx2all,lx3all))
 !allocate(altall(lx1,lx2all,lx3all), glatall(lx1,lx2all,lx3all), glonall(lx1,lx2all,lx3all))
-allocate(glatall(lx1,lx2all,lx3all), glonall(lx1,lx2all,lx3all))
+allocate(glatall(lx1,lx2all,lx3all))
 !allocate(Bmagall(lx1,lx2all,lx3all))
 allocate(Incall(lx2all,lx3all))
 allocate(nullptsall(lx1,lx2all,lx3all))
@@ -271,7 +271,7 @@ else
   print *, '2D grid: **PERMUTE** x2 and x3 dimensions'
 end if
 
-call get_grid3(indatgrid,flagswap,x,g1all,g2all,g3all,glatall,glonall,Incall,nullptsall,&
+call get_grid3(indatgrid,flagswap,x,g1all,g2all,g3all,glatall,Incall,nullptsall,&
   e1all,e2all,e3all,erall,ethetaall,ephiall,rall,thetaall,phiall)   !altall and Bmagall now in grid structure (if root)
 
 !! ALLOCATE SPACE FOR ROOTS SUBGRID GRAVITATIONAL FIELD
@@ -347,7 +347,7 @@ call bcast_send(g2all,tag%h2,g2)
 call bcast_send(g3all,tag%h3,g3)
 
 call bcast_send(glatall,tag%glat,x%glat)
-call bcast_send(glonall,tag%glon,x%glon)
+call bcast_send(x%glonall,tag%glon,x%glon)
 call bcast_send(x%altall,tag%alt,x%alt)
 
 call bcast_send(x%Bmagall,tag%Bmag,x%Bmag)
@@ -470,7 +470,7 @@ end block
 !
 
 !DEALLOCATE ANY FULL GRID VARIABLES THAT ARE NO LONGER NEEDED
-deallocate(g1all,g2all,g3all,glatall,glonall,Incall,nullptsall,rall,thetaall,phiall)   !altall and Bmagall now in x structure
+deallocate(g1all,g2all,g3all,glatall,Incall,nullptsall,rall,thetaall,phiall)   !altall and Bmagall now in x structure
 
 end subroutine read_grid_root
 
