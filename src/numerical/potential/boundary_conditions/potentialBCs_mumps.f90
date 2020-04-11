@@ -481,7 +481,7 @@ real(wp) :: meanx2,sigx2,meanx3,sigx3,meant,sigt,sigcurv,x30amp,varc    !for set
 
 real(wp), dimension(:,:), pointer :: Vtopalt,Vbotalt
 
-real(wp) :: vamp,ltnepal,velhuba,z
+real(wp) :: vamp,LThrs,veltime,z,glonmer
 
 
 !CALCULATE/SET TOP BOUNDARY CONDITIONS
@@ -522,27 +522,32 @@ Vmaxx3 = 0
 !PI's EIA code COMPUTE SOURCE/FORCING TERMS FROM BACKGROUND FIELDS, ETC.
 if (flagEIA) then
 !	ltnepal = t/60d0/60d0+6d0 ! Local time for Nepal (+5:45)
-  ltnepal = t/60d0/60d0-3d0 ! Local time for Chile (UTC-5:00)
 !        ltnepal = t/60d0/60d0+11d0 ! Local time for New Zealand (UTC+12)
-  velhuba = sin(2d0*3.1415*(ltnepal-7d0)/24d0) ! Huba's formulate for velocity
-  vamp=10d0
+  vamp=10d0    !amplitude of vertical drift at equator
 
-!COMPUTE SOURCE/FORCING TERMS FROM BACKGROUND FIELDS, ETC.
+  !For 3D only the zonal field (vertical drift is specified
   E01all=0d0
   E02all=0d0
 
-  do ix3=1,lx3all    ! For x1 coordinate ("azimuth")
+  do ix3=1,lx3all
+    !for each meridional slice define a local time
+    glonmer=x%glonall(lx1/2,lx2all/2,ix3)     !just use halfway up in altitude at the magnetic equator
+    do while (glonmer<0d0)
+      glonmer=glonmer+360d0
+    end do
+
+    LThrs=t/3600d0+glonmer/15d0                 !Local time of center of meridian
+    veltime = sin(2d0*pi*(LThrs-7d0)/24d0)    ! Huba's formulate for velocity amplitude vs. time
+
     do ix2=1,lx2all
-      do ix1=1,lx1  ! For x2 coordinate (altitude)
-        z = x%altall(lx1/2,ix2,ix3)  ! Current altitude
-!                        write(*,*) 'z:  ',z,lx1/2,ix3,lx3all
+      z = x%altall(lx1/2,ix2,ix3)  !Current altitude of center of this flux tube
+      do ix1=1,lx1
         if (z<=150d3) then
           E03all(ix1,ix2,ix3) = 0d0
-          ! for Chile I use V0=4
         elseif ((z>=150d3) .and. (z<=300d3)) then
-          E03all(ix1,ix2,ix3) = (velhuba*vamp*(z-150d3)/150d3)*x%Bmagall(lx1/2,ix2,ix3)
+          E03all(ix1,ix2,ix3) = (veltime*vamp*(z-150d3)/150d3)*x%Bmagall(lx1/2,ix2,ix3)
         elseif (z>300d3) then
-          E03all(ix1,ix2,ix3) = velhuba*vamp*x%Bmagall(lx1/2,ix2,ix3)
+          E03all(ix1,ix2,ix3) = veltime*vamp*x%Bmagall(lx1/2,ix2,ix3)
         end if
       end do
     end do

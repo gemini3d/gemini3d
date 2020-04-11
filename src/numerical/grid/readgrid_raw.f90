@@ -32,7 +32,7 @@ if (flagswap/=1) then
 
   read(u) g1all,g2all,g3all
   read(u) x%altall
-  read(u) glatall,glonall
+  read(u) glatall,x%glonall
   read(u) x%Bmagall
   read(u) Incall
   read(u) nullptsall
@@ -107,7 +107,7 @@ else
   read(u) htmp
   glatall=reshape(htmp,[lx1,lx2all,lx3all],order=[1,3,2])
   read(u) htmp
-  glonall=reshape(htmp,[lx1,lx2all,lx3all],order=[1,3,2])
+  x%glonall=reshape(htmp,[lx1,lx2all,lx3all],order=[1,3,2])
 
   read(u) htmp
   x%Bmagall=reshape(htmp,[lx1,lx2all,lx3all],order=[1,3,2])
