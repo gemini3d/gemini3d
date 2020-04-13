@@ -6,7 +6,7 @@ target_link_libraries(fang_run PRIVATE fang msis const)
 
 
 add_executable(test_fang test_fang.f90)
-target_link_libraries(test_fang PRIVATE fang fang_run const)
+target_link_libraries(test_fang PRIVATE fang fang_run const msis)
 
 if(python_ok)
   add_test(NAME unit:fangIonize
