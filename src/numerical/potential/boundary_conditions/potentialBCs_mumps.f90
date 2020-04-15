@@ -5,7 +5,7 @@ use, intrinsic :: ieee_arithmetic, only : ieee_is_finite
 
 use mpimod, only : mpi_integer, mpi_comm_world, mpi_status_ignore
 use phys_consts, only: wp, pi, Re, debug, flagEIA
-use grid, only: lx1, lx2, lx2all, lx3all, gridflag
+use grid, only: lx1, lx2, lx2all, lx3all, gridflag, flagswap
 use mesh, only: curvmesh
 use interpolation, only : interp1,interp2
 use timeutils, only : dateinc, date_filename
@@ -521,40 +521,69 @@ Vmaxx3 = 0
 
 !PI's EIA code COMPUTE SOURCE/FORCING TERMS FROM BACKGROUND FIELDS, ETC.
 if (flagEIA) then
-!	ltnepal = t/60d0/60d0+6d0 ! Local time for Nepal (+5:45)
-!        ltnepal = t/60d0/60d0+11d0 ! Local time for New Zealand (UTC+12)
-  vamp=10d0    !amplitude of vertical drift at equator
+  vamp=10d0    !amplitude of vertical drift at equator, should ideally be included as an input parameter
 
-  !For 3D only the zonal field (vertical drift is specified
-  E01all=0d0
-  E02all=0d0
-
-  do ix3=1,lx3all
-    !for each meridional slice define a local time
-    glonmer=x%glonall(lx1/2,lx2all/2,ix3)     !just use halfway up in altitude at the magnetic equator
-    do while (glonmer<0d0)
-      glonmer=glonmer+360d0
-    end do
-
-    LThrs=t/3600d0+glonmer/15d0                 !Local time of center of meridian
-    veltime = sin(2d0*pi*(LThrs-7d0)/24d0)    ! Huba's formulate for velocity amplitude vs. time
-
-    do ix2=1,lx2all
-      z = x%altall(lx1/2,ix2,ix3)  !Current altitude of center of this flux tube
-      do ix1=1,lx1
-        if (z<=150d3) then
-          E03all(ix1,ix2,ix3) = 0d0
-        elseif ((z>=150d3) .and. (z<=300d3)) then
-          E03all(ix1,ix2,ix3) = (veltime*vamp*(z-150d3)/150d3)*x%Bmagall(lx1/2,ix2,ix3)    !note vxB is westward so minus cancels with -vxB
-        elseif (z>300d3) then
-          E03all(ix1,ix2,ix3) = veltime*vamp*x%Bmagall(lx1/2,ix2,ix3)
-        end if
+  if (flagswap==0) then    !FIXME:  flagswap should be logical???
+    !For 3D or non-swapped 2D the background electric field is zonal for a
+    !vertical drift
+    E01all=0d0
+    E02all=0d0
+  
+    do ix3=1,lx3all
+      !for each meridional slice define a local time
+      glonmer=x%glonall(lx1/2,lx2all/2,ix3)     !just use halfway up in altitude at the magnetic equator
+      do while (glonmer<0d0)
+        glonmer=glonmer+360d0
+      end do
+  
+      LThrs=t/3600d0+glonmer/15d0                 !Local time of center of meridian
+      veltime = sin(2d0*pi*(LThrs-7d0)/24d0)    ! Huba's formulate for velocity amplitude vs. time
+  
+      do ix2=1,lx2all
+        z = x%altall(lx1/2,ix2,ix3)  !Current altitude of center of this flux tube
+        do ix1=1,lx1
+          if (z<=150d3) then
+            E03all(ix1,ix2,ix3) = 0d0
+          elseif ((z>=150d3) .and. (z<=300d3)) then
+            E03all(ix1,ix2,ix3) = (veltime*vamp*(z-150d3)/150d3)*x%Bmagall(lx1/2,ix2,ix3)    !note vxB is westward so minus cancels with -vxB
+          elseif (z>300d3) then
+            E03all(ix1,ix2,ix3) = veltime*vamp*x%Bmagall(lx1/2,ix2,ix3)
+          end if
+        end do
       end do
     end do
-  end do
+  else
+    E01all=0d0
+    E03all=0d0
+  
+    do ix2=1,lx2all    !for a swapped grid this is longitude
+      !for each meridional slice define a local time
+      glonmer=x%glonall(lx1/2,ix2,lx3all/2)     !just use halfway up in altitude at the magnetic equator
+      do while (glonmer<0d0)
+        glonmer=glonmer+360d0
+      end do
+  
+      LThrs=t/3600d0+glonmer/15d0                 !Local time of center of meridian
+      veltime = sin(2d0*pi*(LThrs-7d0)/24d0)    ! Huba's formulate for velocity amplitude vs. time
+  
+      do ix3=1,lx3all     !here this is L-shell
+        z = x%altall(lx1/2,ix2,ix3)  !Current altitude of center of this flux tube
+        do ix1=1,lx1
+          if (z<=150d3) then
+            E02all(ix1,ix2,ix3) = 0d0
+          elseif ((z>=150d3) .and. (z<=300d3)) then
+            E02all(ix1,ix2,ix3) = -1d0*(veltime*vamp*(z-150d3)/150d3)*x%Bmagall(lx1/2,ix2,ix3)    !minus sign to deal with permuted dimensions
+          elseif (z>300d3) then
+            E02all(ix1,ix2,ix3) = -1d0*veltime*vamp*x%Bmagall(lx1/2,ix2,ix3)
+          end if
+        end do
+      end do
+    end do
+  end if
 
-  print*, '  Applied EIA perturbation to background electric field...'
-  print*, '    ',minval(E03all),maxval(E03all)
+
+!  print*, '  Applied EIA perturbation to background electric field...'
+!  print*, '    ',minval(E03all),maxval(E03all)
 else
   E01all = 0
   E02all = 0
