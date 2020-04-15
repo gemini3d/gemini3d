@@ -545,9 +545,9 @@ if (flagEIA) then
         if (z<=150d3) then
           E03all(ix1,ix2,ix3) = 0d0
         elseif ((z>=150d3) .and. (z<=300d3)) then
-          E03all(ix1,ix2,ix3) = -1d0*(veltime*vamp*(z-150d3)/150d3)*x%Bmagall(lx1/2,ix2,ix3)
+          E03all(ix1,ix2,ix3) = (veltime*vamp*(z-150d3)/150d3)*x%Bmagall(lx1/2,ix2,ix3)    !note vxB is westward so minus cancels with -vxB
         elseif (z>300d3) then
-          E03all(ix1,ix2,ix3) = -1d0*veltime*vamp*x%Bmagall(lx1/2,ix2,ix3)
+          E03all(ix1,ix2,ix3) = veltime*vamp*x%Bmagall(lx1/2,ix2,ix3)
         end if
       end do
     end do
