@@ -1,5 +1,6 @@
 include(CheckFortranSourceCompiles)
 include(CheckFortranSourceRuns)
+include(CheckFortranCompilerFlag)
 
 # === check that the compiler has adequate Fortran 2008 support
 # this is to mitigate confusing syntax error messages for new users
