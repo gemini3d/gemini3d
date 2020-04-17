@@ -52,11 +52,3 @@ check_fortran_source_compiles("use mpi; end" MPI_OK SRC_EXT f90)
 if(NOT MPI_OK)
   message(FATAL_ERROR "${MPI_Fortran_LIBRARIES} not working with ${CMAKE_Fortran_COMPILER_ID} ${CMAKE_Fortran_COMPILER_VERSION}")
 endif()
-
-# === compiler setup
-# feel free to add more compiler_*.cmake
-if(CMAKE_Fortran_COMPILER_ID STREQUAL Intel)
-  include(${CMAKE_CURRENT_LIST_DIR}/compiler_intel.cmake)
-elseif(CMAKE_Fortran_COMPILER_ID STREQUAL GNU)
-  include(${CMAKE_CURRENT_LIST_DIR}/compiler_gnu.cmake)
-endif()

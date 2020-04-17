@@ -52,7 +52,10 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/nc4fortran.cmake)
 
 # do these after h5fortran to avoid h5fortran HDF5OK threads test failure
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/compilers.cmake)
+# first this to get libs
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/mumps.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/compiler_flags.cmake)
+# this comes last to avoid intermittent failures
 
 # self-test simulations
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/test_setup.cmake)

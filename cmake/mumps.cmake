@@ -28,6 +28,8 @@ endif()
 if(NOT MUMPS_FOUND)
   include(${CMAKE_CURRENT_LIST_DIR}/mumps_external.cmake)
   set(mumps_external true CACHE BOOL "autobuild Mumps")
+else()
+  set(mumps_external false CACHE BOOL "autobuild Mumps")
 endif()
 
 if(metis)

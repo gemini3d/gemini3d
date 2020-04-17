@@ -10,5 +10,9 @@ add_feature_info(HDF5 HDF5OK "file read / write")
 add_feature_info(NetCDF4 NCDFOK "file read / write")
 add_feature_info(Python python_ok "simulation generation, HPC script generator and plotting")
 
+add_feature_info(AutoMumps mumps_external "auto-build Mumps")
+add_feature_info(AutoScalapack scalapack_external "auto-build Scalapack")
+add_feature_info(AutoLapack lapack_external "auto-build Lapack")
+
 # print to screen
 feature_summary(WHAT ENABLED_FEATURES DISABLED_FEATURES)
