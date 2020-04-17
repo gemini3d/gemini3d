@@ -6,8 +6,8 @@ set_package_properties(MPI PROPERTIES
     PURPOSE "MPI is essential to GEMINI for massively parallel computation.")
 
 add_feature_info(GLOW glow "airglow / aurora model")
-add_feature_info(HDF5 hdf5 "file read / write")
-add_feature_info(NetCDF4 netcdf "file read / write")
+add_feature_info(HDF5 HDF5OK "file read / write")
+add_feature_info(NetCDF4 NCDFOK "file read / write")
 add_feature_info(Python python_ok "simulation generation, HPC script generator and plotting")
 
 # print to screen

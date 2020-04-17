@@ -8,7 +8,7 @@ endif()
 
 set(CMAKE_CONFIGURATION_TYPES "Release;RelWithDebInfo;Debug" CACHE STRING "Build type selections" FORCE)
 if(NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE Release CACHE STRING "default to Release")
+  set(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING "default build type")
 endif()
 
 if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.15)
@@ -47,12 +47,11 @@ set(FETCHCONTENT_UPDATES_DISCONNECTED off)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules/)
 
-include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/compilers.cmake)
-
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/h5fortran.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/nc4fortran.cmake)
 
-# do this last, after h5fortran to avoid Threads::Threads test failure
+# do these after h5fortran to avoid h5fortran HDF5OK threads test failure
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/compilers.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/mumps.cmake)
 
 # self-test simulations
