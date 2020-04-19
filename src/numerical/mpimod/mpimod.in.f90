@@ -93,10 +93,6 @@ type(mpi_tags), protected :: mpi_tag
 integer, protected :: myid,lid
 !! no external procedure should mess with these (but they need to be able to read them)
 
-integer, private :: ierr=0
-!> using procedures need to be able to overwrite this to prevent seg. faults (or something)
-
-
 !> VARIABLES RELATED TO PROCESS GRID (IF USED)
 integer, protected :: lid2,lid3,myid2,myid3
 
@@ -383,17 +379,17 @@ end interface
 interface ! mpihalo
 
 module subroutine halo_23(param,lhalo,tag,isperiodic)
-  real(wp), dimension(-1:,-1:,-1:), intent(inout) :: param
-  integer, intent(in) :: lhalo    !number of surrounding grid points to halo with (1 or 2 only)
-  integer, intent(in) :: tag
-  logical, intent(in) :: isperiodic
+real(wp), dimension(-1:,-1:,-1:), intent(inout) :: param
+integer, intent(in) :: lhalo    !number of surrounding grid points to halo with (1 or 2 only)
+integer, intent(in) :: tag
+logical, intent(in) :: isperiodic
 end subroutine halo_23
 
 module subroutine halo_end_23(param,paramend,paramtop,tag)
-  real(wp), dimension(:,:,:), intent(inout) :: param
-  real(wp), dimension(:,:), intent(out) :: paramend
-  real(wp), dimension(:,:), intent(out) :: paramtop
-  integer, intent(in) :: tag
+real(wp), dimension(:,:,:), intent(inout) :: param
+real(wp), dimension(:,:), intent(out) :: paramend
+real(wp), dimension(:,:), intent(out) :: paramtop
+integer, intent(in) :: tag
 end subroutine halo_end_23
 
 end interface
@@ -404,19 +400,21 @@ contains
 
 subroutine mpisetup()
 !! INITIALIZES MODULE MPI VARIABLES FOR A WORKER.
-!! THIS CURRENTLY IS UNUSED AS IT HAS NOT BEEN
-!! FULLY IMPLEMENTED IN THIS VERSINO OF THE CODE.
 
-  call mpi_init(ierr)
-  if (ierr/=0) error stop 'could not init MPI'
-  call mpi_comm_rank(MPI_COMM_WORLD,myid,ierr)
-  if (ierr/=0) error stop 'could get MPI comm rank'
-  call mpi_comm_size(MPI_COMM_WORLD,lid,ierr)
-  if (ierr/=0) error stop 'mpimod: mpi_comm_size'
+integer :: ierr
+
+call mpi_init(ierr)
+if (ierr/=0) error stop 'mpimod: mpi_init'
+call mpi_comm_rank(MPI_COMM_WORLD,myid,ierr)
+if (ierr/=0) error stop 'mpimod: mpi_comm_rank'
+call mpi_comm_size(MPI_COMM_WORLD,lid,ierr)
+if (ierr/=0) error stop 'mpimod: mpi_comm_size'
+
+if(myid==0) print *, lid, "MPI processes detected"
 
 !> INITIALIZE, ONLY PARALLELIZING IN X3, GRIDDING FUNCTION MAY CHANGE THIS, IF CALLED.
-  lid2=1
-  lid3=lid
+lid2 = 1
+lid3 = lid
 
 end subroutine mpisetup
 

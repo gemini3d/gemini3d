@@ -21,7 +21,7 @@ module procedure gather_send2D_23
 !-------THIS ROUTINE WORKS ON A PROCESS GRID
 !------------------------------------------------------------
 
-
+integer :: ierr
 integer :: lx2,lx3
 
 
@@ -49,6 +49,7 @@ module procedure gather_send3D_23
 !-------THIS VERSION WORKS ON A PROCESS GRID
 !------------------------------------------------------------
 
+integer :: ierr
 integer :: lx1,lx2,lx3
 
 
@@ -69,6 +70,7 @@ module procedure gather_send4D_23
 !-------SENDS 4D DATA ON A 2D PROCESS GRID TO ROOT.
 !------------------------------------------------------------
 
+integer :: ierr
 integer :: lx1,lx2,lx3,isp
 real(wp), dimension(-1:size(param,1)-2,1:size(param,2)-4,1:size(param,3)-4) :: paramtmp
 
@@ -102,6 +104,7 @@ module procedure bcast_send1D_23_2
 !-------THE X2-DIRECTION
 !------------------------------------------------------------
 
+integer :: ierr
 integer :: lx,lxall     !local sizes
 integer :: iid,islstart,islfin
 integer, dimension(2) :: indsgrid
@@ -143,6 +146,7 @@ module procedure bcast_send1D_23_3
 !-------THE X2-DIRECTION
 !------------------------------------------------------------
 
+integer :: ierr
 integer :: lx,lxall     !local sizes
 integer :: iid,islstart,islfin
 integer, dimension(2) :: indsgrid
@@ -182,6 +186,7 @@ module procedure bcast_send2D_23
 !-------GHOST CELLS!
 !------------------------------------------------------------
 
+integer :: ierr
 integer :: lx2,lx3
 integer :: iid,islstart,islfin
 integer, dimension(4) :: inds
@@ -230,6 +235,7 @@ module procedure bcast_send3D_23
 !-------THE SLAB CALCULATIONS FOR WORKERS WILL BE OFF.
 !------------------------------------------------------------
 
+integer :: ierr
 integer :: lx1,lx2,lx3
 integer :: iid,islstart,islfin
 integer, dimension(4) :: inds
@@ -272,6 +278,7 @@ module procedure bcast_send3D_x3i_23
 !-------LARGER THAN  LX3
 !------------------------------------------------------------
 
+integer :: ierr
 integer :: lx1,lx2,lx3
 integer :: iid,islstart,islfin
 integer, dimension(4) :: inds
@@ -316,6 +323,7 @@ module procedure bcast_send3D_x2i_23
 !-------LARGER THAN  LX2
 !------------------------------------------------------------
 
+integer :: ierr
 integer :: lx1,lx2,lx3
 integer :: iid,islstart,islfin
 integer, dimension(4) :: inds
@@ -356,7 +364,7 @@ module procedure bcast_send3D_ghost_23
 !!
 !! THIS VERSION WORKS ON 3D ARRAYS WHICH INCLUDE GHOST CELLS
 
-
+integer :: ierr
 integer :: lx1,lx2,lx3
 integer :: iid,islstart,islfin
 integer, dimension(4) :: inds
@@ -396,7 +404,7 @@ module procedure bcast_send4D_23
 !! THIS VERSION WORKS ON 4D ARRAYS WHICH INCLUDE
 !! GHOST CELLS!
 
-
+integer :: ierr
 integer :: lx1,lx2,lx3,isp
 integer :: iid,islstart,islfin
 integer, dimension(4) :: inds

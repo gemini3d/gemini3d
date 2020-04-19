@@ -74,10 +74,11 @@ real(wp), parameter :: dtscale=2.0_wp
 
 !! MAIN PROGRAM
 
-call initial_config(cfg, lid2in, lid3in)
-
 !> INITIALIZE MESSING PASSING VARIABLES, IDS ETC.
 call mpisetup()
+
+call initial_config(cfg, lid2in, lid3in)
+!! initial_config is AFTER mpi_setup
 
 !> CHECK THE GRID SIZE AND ESTABLISH A PROCESS GRID
 call grid_size(cfg%indatsize)
@@ -334,6 +335,8 @@ if (argc < 2) then
   stop 77
   !! stops with de facto "skip test" return code
 endif
+
+if(lid < 1) error stop 'number of MPI processes must be >= 1. Was MPI initialized properly?'
 
 call get_command_argument(0, argv)
 call date_and_time(date,time)
