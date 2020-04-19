@@ -15,7 +15,6 @@ if __name__ == "__main__":
     p.add_argument("out_dir", help="simulation output directory")
     p.add_argument("-mpiexec", help="path to desired mpiexec executable")
     p.add_argument("-gemexe", help="path to desired gemini.bin")
-    p.add_argument("-matlab", help="Use Matlab instead of Python", action="store_true")
     p.add_argument("-f", "--force", help="force regeneration of simulation", action="store_true")
     p.add_argument('-out_format', help='override Fortran output file format', choices=['h5', 'nc', 'raw'])
     P = p.parse_args()
@@ -27,7 +26,6 @@ if __name__ == "__main__":
         "out_dir": Path(P.out_dir).expanduser(),
         "mpiexec": P.mpiexec,
         "gemexe": P.gemexe,
-        "matlab": P.matlab,
         "force": P.force,
         "out_format": P.out_format,
     }

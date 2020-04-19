@@ -4,7 +4,6 @@ plasma functions
 import typing as T
 import numpy as np
 from pathlib import Path
-import os
 import shutil
 import subprocess
 from scipy.integrate import cumtrapz
@@ -419,23 +418,21 @@ def msis_setup(p: DictArray, xg: DictArray) -> np.ndarray:
     %
     """
 
-    exeloc = R / "build"
-    exeloc.mkdir(parents=True, exist_ok=True)
-    exe = shutil.which("msis_setup", path=str(exeloc))
+    builddir = R / "build"
+    builddir.mkdir(parents=True, exist_ok=True)
+    exe = shutil.which("msis_setup", path=str(builddir))
     if not exe:
-        src = (R / "src/vendor/msis00/msis00_gfortran.f", R / "src/neutral/msis_driver.f90")
-        # -static avoids problems with missing .so or .dll
-        fc = os.getenv("FC")
-        fc = [fc] if fc else ["gfortran"]
-        if "gfortran" in fc[0]:
-            fc += ["-static", "-std=legacy", "-w"]
-        cmd = fc + ["-o", str(exeloc / "msis_setup")] + list(map(str, src))
-        print(" ".join(cmd))
-        subprocess.check_call(cmd)
+        cfg_cmd = ['cmake', '-S', str(R), '-B', str(builddir)]
+        print(' '.join(cfg_cmd))
+        subprocess.check_call(cfg_cmd)
 
-    exe = shutil.which("msis_setup", path=str(exeloc))
+        build_cmd = ["cmake", "--build", str(builddir), "--target", "msis_setup"]
+        print(" ".join(build_cmd))
+        subprocess.check_call(build_cmd)
+
+    exe = shutil.which("msis_setup", path=str(builddir))
     if not exe:
-        raise FileNotFoundError(f"MSIS setup executable not found in {exeloc}")
+        raise FileNotFoundError(f"MSIS setup executable not found in {builddir}")
     # %% SPECIFY SIZES ETC.
     lx1 = xg["lx"][0]
     lx2 = xg["lx"][1]
