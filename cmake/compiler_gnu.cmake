@@ -9,7 +9,7 @@ string(APPEND CMAKE_Fortran_FLAGS " -Wall -Wextra -fimplicit-none")
 
 # Wdo-subscript is known to warn on obvious non-problems
 check_fortran_compiler_flag(-Wdo-subscript dosubflag)
-if(dosuflag)
+if(dosubflag)
   string(APPEND CMAKE_Fortran_FLAGS " -Wno-do-subscript")
 endif()
 
@@ -18,12 +18,11 @@ string(APPEND CMAKE_Fortran_FLAGS_DEBUG " -Werror=array-bounds -fcheck=all")
 string(APPEND CMAKE_Fortran_FLAGS " -Wno-unused-dummy-argument -Wno-unused-variable -Wno-unused-function")
 
 # enforce Fortran 2018 standard
-# Gfortran 9.2 and 9.3 at least give spurious "COMMON block" warnings so enable for Gfotran 8 only for now.
-# FIXME: is Gfortran 10 OK with this flag?
-if(CMAKE_Fortran_COMPILER_VERSION VERSION_GREATER_EQUAL 8 AND
-   CMAKE_Fortran_COMPILER_VERSION VERSION_LESS 9)
-  string(APPEND CMAKE_Fortran_FLAGS " -std=f2018")
-endif()
+# this flag is buggy at least through GCC 9, causing fake "Common block" warnings
+# check_fortran_compiler_flag(-std=f2018 f18flag)
+# if(f18flag)
+#   string(APPEND CMAKE_Fortran_FLAGS " -std=f2018")
+# endif()
 
 if(CMAKE_Fortran_COMPILER_VERSION VERSION_EQUAL 9.3.0)
   # makes a lot of spurious warnngs on alloctable scalar character
