@@ -12,8 +12,14 @@ use mpi, only: mpi_init, mpi_comm_rank, mpi_comm_size, mpi_comm_world, &
   mpi_realprec=>@mpi_realprec@
 
 implicit none (external)
-public
-private :: lsp, wp
+private
+public :: mpi_tag, myid, myid2, myid3, lid, lid2, lid3, &
+  mpi_realprec, mpisetup, mpibreakdown, mpi_manualgrid, mpigrid, id2grid, grid2id, slabinds, &
+  bcast_send,  bcast_send1d_2, bcast_send1d_3, bcast_send3d_x2i, bcast_send3d_x3i, bcast_send3d_ghost, &
+  bcast_recv, bcast_recv1d_2, bcast_recv1d_3, bcast_recv3d_x2i, bcast_recv3d_x3i, bcast_recv3d_ghost, &
+  gather_send, gather_recv, &
+  halo, halo_end, &
+  mpi_comm_world, mpi_status_ignore, mpi_integer
 
 external :: mpi_finalize, mpi_send, mpi_recv, mpi_isend, mpi_irecv, mpi_waitall
 
