@@ -3,7 +3,7 @@ if(netcdf)
 
   FetchContent_Declare(nc4fortran_proj
     GIT_REPOSITORY https://github.com/scivision/nc4fortran.git
-    GIT_TAG v0.4.2)
+    GIT_TAG v0.4.4)
 
   FetchContent_MakeAvailable(nc4fortran_proj)
 
