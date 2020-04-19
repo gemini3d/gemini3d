@@ -60,7 +60,7 @@ real(wp) :: tstart,tfin
 integer :: it,isp
 !! time and species loop indices
 
-!WORK ARRAYS
+!> WORK ARRAYS
 real(wp), allocatable :: dl1,dl2,dl3     !these are grid distances in [m] used to compute Courant numbers
 
 real(wp) :: tglowout
@@ -70,7 +70,7 @@ real(wp) :: tglowout
 integer :: lid2in,lid3in
 
 !> TO CONTROL THROTTLING OF TIME STEP
-real(wp), parameter :: dtscale=2d0
+real(wp), parameter :: dtscale=2.0_wp
 
 !! MAIN PROGRAM
 
@@ -304,10 +304,11 @@ if (ierr /= 0) then
 endif
 
 block
-  character(10) :: date, time
+  character(8) :: date
+  character(10) :: time
 
   call date_and_time(date,time)
-  print '(/,A,I6,A,I6,3A)', 'GEMINI normal termination, Process #', myid,' /',lid-1, ' at ',date,time
+  print '(/,A,I6,A,I6,A)', 'GEMINI normal termination, Process #', myid,' /',lid-1, ' at ' // date // 'T' // time
 end block
 
 contains
@@ -320,7 +321,8 @@ integer, intent(out) :: lid2in, lid3in
 
 integer :: argc, i
 character(256) :: argv
-character(10) :: date, time
+character(8) :: date
+character(10) :: time
 
 argc = command_argument_count()
 if (argc < 2) then
@@ -335,7 +337,7 @@ endif
 
 call get_command_argument(0, argv)
 call date_and_time(date,time)
-print '(2A,I6,A3,I6,3A)', trim(argv), ' Process:  ', myid,' / ',lid-1, ' at ', date,' ',time
+print '(2A,I6,A3,I6,A)', trim(argv), ' Process:  ', myid,' / ',lid-1, ' at ' // date // 'T' // time
 
 
 !> READ FILE INPUT
