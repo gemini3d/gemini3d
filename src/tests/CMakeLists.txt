@@ -1,6 +1,7 @@
 add_executable(test_mpi test_mpi.f90)
 target_link_libraries(test_mpi MPI::MPI_Fortran)
-add_test(NAME unit:mpi_basic COMMAND $<TARGET_FILE:test_mpi>)
+add_test(NAME unit:mpi_basic
+COMMAND COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${MPIEXEC_MAX_NUMPROCS} $<TARGET_FILE:test_mpi> ${MPIEXEC_MAX_NUMPROCS})
 
 set_tests_properties(unit:mpi_basic PROPERTIES
 TIMEOUT 15
