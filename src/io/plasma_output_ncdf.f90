@@ -3,7 +3,7 @@ submodule (io:plasma_output) plasma_output_nc
 use timeutils, only : date_filename
 use nc4fortran, only: netcdf_file
 
-implicit none (external)
+implicit none (type, external)
 
 contains
 

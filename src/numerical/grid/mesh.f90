@@ -2,7 +2,7 @@ module mesh
 
 use phys_consts, only: wp
 
-implicit none (external)
+implicit none (type, external)
 public
 
 type :: curvmesh

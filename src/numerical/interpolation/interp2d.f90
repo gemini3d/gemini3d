@@ -1,6 +1,6 @@
 submodule (interpolation) interpolation2d
 
-implicit none (external)
+implicit none (type, external)
 
 contains
 

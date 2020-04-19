@@ -15,7 +15,7 @@ use phys_consts, only:  kB,mu0,ms,lsp,pi, wp, debug
 use mpimod, only: mpi_realprec, tag=>mpi_tag, lid, myid, MPI_COMM_WORLD,MPI_STATUS_IGNORE
 use mesh, only:  curvmesh
 
-implicit none (external)
+implicit none (type, external)
 
 private
 public :: dt_comm

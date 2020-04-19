@@ -1,6 +1,6 @@
 submodule (calculus) div
 
-implicit none (external)
+implicit none (type, external)
 
 contains
 

@@ -5,7 +5,7 @@ use, intrinsic :: iso_fortran_env, only: stderr=>error_unit
 use phys_consts, only: wp, debug
 use pathlib, only : get_suffix
 
-implicit none (external)
+implicit none (type, external)
 private
 public :: get_simsize3, get_simsize2, get_grid2, get_Efield, get_precip, get_neutral2, get_neutral3
 

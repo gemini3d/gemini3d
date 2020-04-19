@@ -7,7 +7,7 @@ use phys_consts, only : wp,pi
 use PDEparabolic, only : backEuler1D,TRBDF21D
 use h5fortran, only : hdf5_file
 
-implicit none (external)
+implicit none (type, external)
 
 type(hdf5_file) :: h5f
 integer, parameter :: npts=256,lt=20*5

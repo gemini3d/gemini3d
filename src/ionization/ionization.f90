@@ -9,7 +9,7 @@ use mesh, only: curvmesh
 use timeutils, only: doy_calc
 use mpimod, only: myid,lid,mpi_realprec, tag=>mpi_tag, MPI_COMM_WORLD,MPI_STATUS_IGNORE
 
-implicit none (external)
+implicit none (type, external)
 private
 public :: ionrate_fang08, ionrate_glow98, eheating, photoionization
 

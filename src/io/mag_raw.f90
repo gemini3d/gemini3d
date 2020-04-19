@@ -2,7 +2,7 @@ submodule (io:mag) mag_raw
 
 use timeutils, only: date_filename
 
-implicit none (external)
+implicit none (type, external)
 
 contains
 

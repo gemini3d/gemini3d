@@ -1,6 +1,6 @@
 submodule (calculus) gradient
 
-implicit none (external)
+implicit none (type, external)
 
 contains
 

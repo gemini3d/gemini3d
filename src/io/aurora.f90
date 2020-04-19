@@ -1,6 +1,6 @@
 submodule (io) io_aurora
 
-implicit none (external)
+implicit none (type, external)
 
 interface ! aurora_*.f90
 

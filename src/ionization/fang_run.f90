@@ -6,7 +6,7 @@ use phys_consts, only: wp
 use, intrinsic:: iso_fortran_env, only: sp=>real32
 use ionize_fang, only: fang2008, fang2010, gravity_accel, erg2kev
 
-implicit none (external)
+implicit none (type, external)
 private
 public :: ionization_fang2008, ionization_fang2010
 

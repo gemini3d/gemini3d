@@ -2,7 +2,7 @@ submodule (neutral) atmos
 
 use, intrinsic :: iso_fortran_env, only: sp => real32
 
-implicit none (external)
+implicit none (type, external)
 
 contains
 

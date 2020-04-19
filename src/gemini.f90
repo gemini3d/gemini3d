@@ -17,7 +17,7 @@ use precipBCs_mod, only: make_precip_fileinput, clear_precip_fileinput
 use temporal, only : dt_comm
 use timeutils, only: dateinc
 
-implicit none (external)
+implicit none (type, external)
 
 integer :: ierr
 

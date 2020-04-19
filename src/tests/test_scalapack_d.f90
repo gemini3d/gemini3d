@@ -1,7 +1,7 @@
 ! minimal Scalapack demo
 use, intrinsic :: iso_fortran_env, only: real64
 
-implicit none (external)
+implicit none (type, external)
 
 integer :: ictxt, myid, nprocs, mycol, myrow, npcol, nprow
 real(real64) :: eps

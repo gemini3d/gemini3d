@@ -14,7 +14,7 @@ myid, lid, mpi_realprec, tag=>mpi_tag
 
 ! also links gtd7 from vendor/msis00/
 
-implicit none (external)
+implicit none (type, external)
 private
 public :: Tnmsis, neutral_atmos, make_dneu, clear_dneu, neutral_perturb
 

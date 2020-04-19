@@ -1,7 +1,7 @@
 module interpolation
 use phys_consts, only: wp
 
-implicit none (external)
+implicit none (type, external)
 public
 
 interface ! interp2d.f90

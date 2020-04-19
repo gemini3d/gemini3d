@@ -11,7 +11,7 @@ use timeutils, only : dateinc, date_filename
 use mpimod, only: mpi_integer, mpi_comm_world, mpi_status_ignore, &
 lid, mpi_realprec, myid, tag=>mpi_tag
 
-implicit none (external)
+implicit none (type, external)
 private
 public :: make_precip_fileinput, clear_precip_fileinput, precipBCs_fileinput, precipBCs
 

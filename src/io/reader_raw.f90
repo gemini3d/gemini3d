@@ -2,7 +2,7 @@ submodule (reader) reader_raw
 
 use, intrinsic :: iso_fortran_env, only : real64
 
-implicit none (external)
+implicit none (type, external)
 
 contains
 

@@ -7,7 +7,7 @@ module PDEparabolic
 use phys_consts, only: wp
 use vendor_lapack95, only: gbsv!,gtsv
 
-implicit none (external)
+implicit none (type, external)
 
 private
 public :: TRBDF21D, backEuler1D

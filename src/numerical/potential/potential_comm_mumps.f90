@@ -22,7 +22,7 @@ use mpimod, only: mpi_integer, mpi_comm_world, mpi_status_ignore, &
 lid, lid2, lid3, myid, myid2, myid3, tag=>mpi_tag, &
 bcast_send, bcast_recv, gather_recv, gather_send, halo
 
-implicit none (external)
+implicit none (type, external)
 private
 public :: electrodynamics, halo_pot
 

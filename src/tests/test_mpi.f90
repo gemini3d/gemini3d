@@ -4,7 +4,7 @@ use, intrinsic :: iso_fortran_env
 use mpi, only : mpi_init, mpi_comm_rank, mpi_comm_size, mpi_comm_world, mpi_real, mpi_real8, &
   MPI_GET_LIBRARY_VERSION, MPI_MAX_LIBRARY_VERSION_STRING
 
-implicit none (external)
+implicit none (type, external)
 
 external :: mpi_finalize
 

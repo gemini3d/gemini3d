@@ -2,7 +2,7 @@
 module vendor_lapack95
 use, intrinsic :: iso_fortran_env, only: real32, real64
 
-implicit none (external)
+implicit none (type, external)
 private
 public :: gbsv
 

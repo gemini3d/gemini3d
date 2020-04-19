@@ -6,7 +6,7 @@ use mesh, only: curvmesh
   !! do not import grid sizes in case we want do subgrid advection...
 use mpimod, only: myid, lid, myid2, myid3, lid2, lid3, halo, tag=>mpi_tag
 
-implicit none (external)
+implicit none (type, external)
 private
 public :: advec3d_mc_mpi, advec_prep_mpi
 

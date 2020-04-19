@@ -1,6 +1,6 @@
 submodule (PDEelliptic) elliptic3d
 
-implicit none (external)
+implicit none (type, external)
 
 contains
 

@@ -1,6 +1,6 @@
 submodule (potential_comm) potential_worker
 
-implicit none (external)
+implicit none (type, external)
 
 contains
 

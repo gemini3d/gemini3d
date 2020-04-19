@@ -6,7 +6,7 @@ use phys_consts, only: wp, lsp, amu, kb, qs, ln, ms, gammas, elchrg, mn
 use mesh, only : curvmesh
 use grid, only : g1
 
-implicit none (external)
+implicit none (type, external)
 private
 public :: rk2_prep_mpi, srcsenergy, srcsmomentum, srcscontinuity
 

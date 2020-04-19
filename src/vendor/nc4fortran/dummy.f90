@@ -1,7 +1,7 @@
 module nc4fortran
 !! this is a dummy interface that errors intentionally
 
-implicit none (external)
+implicit none (type, external)
 
 type netcdf_file
 contains

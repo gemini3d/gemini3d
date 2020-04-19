@@ -4,7 +4,7 @@ program MHD1D_shock
 !FOR THE IDEAL MHD EQUATIONS IN 1.66 DIMENSIONS.  M. ZETTERGREN, T. SYMONS
 
 use advec
-implicit none
+implicit none (type, external)
 
 integer, parameter :: method=1
 integer, parameter :: npts=1001                                         !hard-coded for SND problem

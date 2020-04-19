@@ -2,7 +2,7 @@ submodule (sources) sources_mpi
 
 use mpimod, only: myid, tag=>mpi_tag,lid, halo, myid2,myid3,lid2,lid3
 
-implicit none (external)
+implicit none (type, external)
 
 contains
 

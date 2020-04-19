@@ -4,7 +4,7 @@ use grid, only: gridflag
 use calculus, only : grad2D1_curv_alt, grad2D3, grad2D3_curv_periodic
 use PDEelliptic, only: elliptic2D_polarization,elliptic2D_polarization_periodic,elliptic2D_cart
 
-implicit none (external)
+implicit none (type, external)
 
 contains
 

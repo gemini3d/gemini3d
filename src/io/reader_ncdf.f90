@@ -2,7 +2,7 @@ submodule (reader) reader_nc4
 
 use nc4fortran, only: netcdf_file
 
-implicit none (external)
+implicit none (type, external)
 
 contains
 

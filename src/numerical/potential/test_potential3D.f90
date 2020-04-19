@@ -2,7 +2,7 @@ program test_potential3D
 !! Need program statement for FORD
 use mpi
 
-implicit none (external)
+implicit none (type, external)
 
 type(mumps_struc) :: mumps_par
 

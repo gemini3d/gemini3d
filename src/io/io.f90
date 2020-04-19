@@ -10,7 +10,7 @@ use pathlib, only: mkdir, copyfile
 use mpimod, only: bcast_recv, bcast_send, gather_send, gather_recv,  myid, tag=>mpi_tag
 use grid, only : gridflag,flagswap,lx1,lx2,lx3,lx2all, lx3all
 
-implicit none (external)
+implicit none (type, external)
 
 private
 public :: create_outdir, &

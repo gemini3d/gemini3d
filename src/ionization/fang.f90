@@ -3,7 +3,7 @@ module ionize_fang
 use, intrinsic :: iso_fortran_env, only: sp=>real32, dp=>real64
 use phys_consts, only: wp, kb
 
-implicit none (external)
+implicit none (type, external)
 private
 public :: fang2008, fang2010, gravity_accel, erg2kev
 

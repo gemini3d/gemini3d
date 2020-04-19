@@ -3,7 +3,7 @@ module collisions
 use, intrinsic :: iso_fortran_env, only: stderr=>error_unit
 use phys_consts, only: wp, lsp, ln, ms, kb, pi, elchrg, qs, debug
 
-implicit none (external)
+implicit none (type, external)
 private
 public :: thermal_conduct, conductivities, capacitance, maxwell_colln, coulomb_colln
 

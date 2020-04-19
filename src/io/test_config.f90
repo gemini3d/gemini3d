@@ -4,7 +4,7 @@ program test_config
 
 use config, only : read_configfile, gemini_cfg
 
-implicit none (external)
+implicit none (type, external)
 
 type(gemini_cfg) :: cfg
 

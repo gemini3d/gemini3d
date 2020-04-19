@@ -11,7 +11,7 @@ use interpolation, only : interp1,interp2
 use timeutils, only : dateinc, date_filename
 use reader, only : get_grid2, get_simsize2, get_Efield
 
-implicit none (external)
+implicit none (type, external)
 private
 public :: potentialbcs2D, potentialbcs2D_fileinput, clear_potential_fileinput
 

@@ -2,7 +2,7 @@ program msis_driver
 !! will write to stdout if "-" specified, so we avoid printing to console unless file output is used
 use, intrinsic:: iso_fortran_env, only: sp=>real32, stderr=>error_unit, stdout=>output_unit, stdin=>input_unit
 
-implicit none (external)
+implicit none (type, external)
 
 integer, parameter :: mass=48
 integer :: iyd,sec,lz, i

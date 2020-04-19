@@ -1,6 +1,6 @@
 submodule (io) mag
 
-implicit none (external)
+implicit none (type, external)
 
 interface ! mag_*.f90
 

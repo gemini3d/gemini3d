@@ -8,7 +8,7 @@ use mesh, only : curvmesh
 use grid, only : gridflag
 use PDEparabolic, only : backEuler1D,TRBDF21D
 
-implicit none (external)
+implicit none (type, external)
 private
 public :: diffusion_prep, TRBDF23D, backEuler3D
 

@@ -4,7 +4,7 @@ use, intrinsic :: iso_fortran_env, only: real32, real64, stderr=>error_unit
 use phys_consts, only: wp
 use timeutils, only: dateinc, doy_calc, day_wrap
 
-implicit none (external)
+implicit none (type, external)
 
 integer :: ymd(3), year, month, day
 real(wp) :: dtsec, UTsec

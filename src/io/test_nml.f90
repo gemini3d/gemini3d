@@ -1,7 +1,7 @@
 program test_nml
 !! test reference config.nml to see if it's a problem with file or Gemini
 
-implicit none (external)
+implicit none (type, external)
 
 type :: gemini_config
   integer :: potsolve, flagperiodic, flagoutput, flagcap, flagdneu, flagprecfile, flagE0file, flagglow

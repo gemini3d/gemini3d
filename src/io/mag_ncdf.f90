@@ -3,7 +3,7 @@ submodule (io:mag) mag_nc4
 use timeutils, only: date_filename
 use nc4fortran, only: netcdf_file
 
-implicit none (external)
+implicit none (type, external)
 
 contains
 
