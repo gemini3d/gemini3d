@@ -68,19 +68,19 @@ real(wp) :: dtout
 real(wp) :: activ(3)
 real(wp) :: tcfl
 real(wp) :: Teinf
-integer :: potsolve, flagperiodic, flagoutput, flagcap
-integer :: flagdneu
+integer :: potsolve, flagperiodic=0, flagoutput, flagcap=0
+integer :: flagdneu=0
 integer :: interptype
 real(wp) :: sourcemlat,sourcemlon
 real(wp) :: dtneu
 real(wp) :: dxn,drhon,dzn
-integer :: flagprecfile
+integer :: flagprecfile=0
 real(wp) :: dtprec=0
 character(256) :: indat_size, indat_grid, indat_file, source_dir, prec_dir, E0_dir
 character(4) :: file_format
-integer :: flagE0file
+integer :: flagE0file=0
 real(wp) :: dtE0=0
-integer :: flagglow
+integer :: flagglow=0
 real(wp) :: dtglow=0, dtglowout=0
 
 namelist /base/ ymd, UTsec0, tdur, dtout, activ, tcfl, Teinf
