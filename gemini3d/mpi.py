@@ -6,7 +6,7 @@ from .base import get_simsize
 from .config import read_config
 
 
-def get_mpi_count(path: Path) -> int:
+def get_mpi_count(path: Path, max_cpu: int) -> int:
     """ get appropriate MPI image count for problem shape
 
     Parameters
@@ -21,7 +21,8 @@ def get_mpi_count(path: Path) -> int:
     """
     path = Path(path).expanduser()
 
-    max_cpu = get_cpu_count()
+    if not max_cpu:
+        max_cpu = get_cpu_count()
 
     # %% config.nml file or directory or simsize.h5?
     if path.is_dir():

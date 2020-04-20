@@ -36,7 +36,7 @@ def hpc_batch_create(batcher: str, out_dir: Path, cmd: T.Sequence[str]) -> Path:
     """
 
     template_dir = R / "templates"
-    Nchar = 8  # arbitrary number of characters
+    Nchar = 6  # arbitrary number of characters
 
     if batcher == "qsub":
         template_file = template_dir / "qsub_template.sh"

@@ -4,7 +4,6 @@ import logging
 import subprocess
 import shutil
 from pathlib import Path
-import functools
 
 from .mpi import get_mpi_count
 from .config import read_config, get_config_filename
@@ -50,7 +49,7 @@ def runner(pr: T.Dict[str, T.Any]) -> int:
 
     out_dir = check_outdir(pr["out_dir"])
 
-    Nmpi = get_mpi_count(config_file)
+    Nmpi = get_mpi_count(config_file, pr["cpu_count"])
 
     cmd = mpiexec + ["-n", str(Nmpi), str(gemexe), str(config_file), str(out_dir)]
     if pr["out_format"]:
@@ -67,37 +66,6 @@ def runner(pr: T.Dict[str, T.Any]) -> int:
         ret = subprocess.run(cmd).returncode
 
     return ret
-
-
-@functools.lru_cache()
-def wsl_available() -> bool:
-    """
-    heuristic to detect if Windows Subsystem for Linux is available.
-
-    Uses presence of /etc/os-release in the WSL image to say Linux is there.
-    This is a de facto file standard across Linux distros.
-    """
-
-    has_wsl = False
-    if os.name == "nt" and shutil.which("wsl"):
-        has_wsl = wsl_file_exist("/etc/os-release")
-
-    return has_wsl
-
-
-def wsl_file_exist(file: Pathlike) -> bool:
-    """
-    path is specified as if in WSL
-    NOT //wsl$/Ubuntu/etc/os-release
-    but /etc/os-release
-    """
-    if os.name != "nt":
-        return False
-
-    try:
-        return subprocess.run(["wsl", "test", "-f", str(file)], timeout=10).returncode == 0
-    except subprocess.TimeoutExpired:
-        return False
 
 
 def check_compiler():
@@ -121,19 +89,7 @@ def check_mpiexec(mpiexec: Pathlike) -> T.List[str]:
     if mpiexec:
         mpi_exec = [mpiexec]
     else:
-        msg = "Need mpiexec to run simulations"
-        if os.name == "nt":
-            msg += "\n\n Typically Windows users use Windows Subsystem for Linux (WSL)"
-            if wsl_available():
-                msg += "\n 😊  WSL appears to be already installed on your PC, look in the Start menu for Ubuntu or see:"
-                mpi_exec = ["wsl", "mpiexec"]
-                ret = subprocess.run(mpi_exec + ["--version"])
-                if ret.returncode != 0:
-                    mpi_exec = []
-            msg += "\n 📖  WSL install guide: https://docs.microsoft.com/en-us/windows/wsl/install-win10"
-
-    if not mpi_exec:
-        raise EnvironmentError(msg)
+        raise EnvironmentError("Need mpiexec to run simulations")
 
     return mpi_exec
 
