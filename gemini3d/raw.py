@@ -12,7 +12,6 @@ LSP = 7
 def get_simsize(fn: Path) -> T.Tuple[int, ...]:
     """
     get simulation dimensions from simsize.dat
-    in the future, this would be in the .h5 HDF5 output.
 
     Parameters
     ----------
@@ -39,7 +38,6 @@ def get_simsize(fn: Path) -> T.Tuple[int, ...]:
 def readgrid(fn: Path) -> T.Dict[str, np.ndarray]:
     """
     get simulation dimensions
-    in the future, this would be in the .h5 HDF5 output.
 
     Parameters
     ----------
