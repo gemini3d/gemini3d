@@ -18,7 +18,7 @@ try:
 except ImportError as e:
     logging.warning(f"could not use Gemini3D get_mpi_count(), falling back to single CPU.   {e}")
 
-    def get_mpi_count(path: Path) -> int:
+    def get_mpi_count(path: Path, max_cpu: int) -> int:
         return 1
 
 
@@ -75,7 +75,7 @@ def run_test(testname: str, mpiexec: str, exe: str, nml: str, outdir: str, mpi_c
         raise SystemExit(77)
 
     if not mpi_count:
-        mpi_count = get_mpi_count(z["dir"] / "inputs/simsize.h5")
+        mpi_count = get_mpi_count(z["dir"] / "inputs/simsize.h5", 0)
 
     # have to get exe as absolute path
     exe_abs = Path(exe).resolve()
