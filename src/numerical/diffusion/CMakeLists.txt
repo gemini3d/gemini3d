@@ -20,13 +20,13 @@ target_link_libraries(test_diffusion1d PRIVATE PDEparabolic gbsv const
 
 
 
-add_test(NAME unit:diffusion1:dirichlet COMMAND $<TARGET_FILE:test_diffusion1d> 1 1 "${_diffstem}_dirichlet.h5")
+add_test(NAME unit:diffusion1:dirichlet COMMAND $<TARGET_FILE:test_diffusion1d> 1 "${_diffstem}_dirichlet.h5")
 set_tests_properties(unit:diffusion1:dirichlet PROPERTIES
   TIMEOUT 5
   FIXTURES_SETUP GemDiffDirich)
 win32_env(unit:diffusion1:dirichlet)
 
-add_test(NAME unit:diffusion1:neumann COMMAND $<TARGET_FILE:test_diffusion1d> 0 0 "${_diffstem}_neumann.h5")
+add_test(NAME unit:diffusion1:neumann COMMAND $<TARGET_FILE:test_diffusion1d> 0 "${_diffstem}_neumann.h5")
 set_tests_properties(unit:diffusion1:neumann PROPERTIES
   TIMEOUT 5
   FIXTURES_SETUP GemDiffNeumann)

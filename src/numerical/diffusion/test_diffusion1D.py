@@ -23,6 +23,28 @@ def read_diffusion1D(fn: Path, doplot: bool = False):
         make plots
     """
 
+    def plot_diff():
+        fg = figure(figsize=(12, 5))
+        ax = fg.subplots(1, 3, sharey=True, sharex=True)
+
+        h = ax[0].pcolormesh(t, x1[2:-2], TsEuler.T, cmap="bwr")
+        fg.colorbar(h, ax=ax[0])
+        ax[0].set_xlabel("time [sec]")
+        ax[0].set_ylabel("displacement [m]")
+        ax[0].set_title("1-D diffusion (Backward Euler)")
+
+        h = ax[1].pcolormesh(t, x1[2:-2], TsBDF2.T, cmap="bwr")
+        fg.colorbar(h, ax=ax[1])
+        ax[1].set_title("1-D diffusion (TRBDF2)")
+
+        h = ax[2].pcolormesh(t, x1[2:-2], TsTrue.T, cmap="bwr")
+        fg.colorbar(h, ax=ax[2])
+        ax[2].set_title("1-D diffusion (analytic)")
+
+        fg.suptitle(fn.name)
+
+        show()
+
     fn = Path(fn).expanduser().resolve()
     if not fn.is_file():
         print(fn, "not found", file=sys.stderr)
@@ -35,10 +57,13 @@ def read_diffusion1D(fn: Path, doplot: bool = False):
         TsEuler = f["/Euler/Ts"][:]
         TsBDF2 = f["/BDF2/Ts"][:]
         TsTrue = f["/True/Ts"][:]
-        dirichTop = f["/flagdirichBottom"][()] == 1
-        dirichBottom = f["/flagdirichTop"][()] == 1
+        dirichTop = f["/flagdirichTop"][()] == 1
+        dirichBottom = f["/flagdirichBottom"][()] == 1
 
     assert lx1 == TsEuler.shape[1] == TsBDF2.shape[1] == TsTrue.shape[1]
+
+    if doplot:
+        plot_diff()
 
     if dirichBottom and dirichTop:
         assert np.isclose(
@@ -47,7 +72,7 @@ def read_diffusion1D(fn: Path, doplot: bool = False):
         assert np.isclose(TsBDF2[12, 12], 0.763236513549944), "1-D BDF2 diffusion:dirichlet accuracy"
         assert np.isclose(TsTrue[12, 12], 0.763014494788105), "1-D true diffusion:dirichlet accuracy"
         print("OK: diffusion1d:dirichlet BCS")
-    elif not dirichBottom and not dirichTop:
+    elif dirichBottom and not dirichTop:
         # Intel 19.1, GCC 7.5:  got 0.966898
         assert np.isclose(
             TsEuler[12, 12], 0.966897705905538
@@ -55,28 +80,8 @@ def read_diffusion1D(fn: Path, doplot: bool = False):
         assert np.isclose(
             TsBDF2[12, 12], 0.9545709288834086
         ), f"1-D BDF2 diffusion:neumann accuracy: expected 0.954571, got {TsBDF2[12, 12]:.6f}"
-
-    if not doplot:
-        return
-
-    fg = figure(figsize=(12, 5))
-    ax = fg.subplots(1, 3, sharey=True, sharex=True)
-
-    h = ax[0].pcolormesh(x1[2:-2], t, TsEuler, cmap="bwr")
-    fg.colorbar(h, ax=ax[0])
-    ax[0].set_xlabel("time [sec]")
-    ax[0].set_ylabel("displacement [m]")
-    ax[0].set_title("1-D diffusion (Backward Euler)")
-
-    h = ax[1].pcolormesh(x1[2:-2], t, TsBDF2, cmap="bwr")
-    fg.colorbar(h, ax=ax[1])
-    ax[1].set_title("1-D diffusion (TRBDF2)")
-
-    h = ax[2].pcolormesh(x1[2:-2], t, TsTrue, cmap="bwr")
-    fg.colorbar(h, ax=ax[2])
-    ax[2].set_title("1-D diffusion (analytic)")
-
-    fg.suptitle(fn.name)
+    else:
+        raise NotImplementedError(f"flagDirichletTop {dirichTop}  flagDirichletBottom {dirichBottom}")
 
 
 if __name__ == "__main__":
@@ -89,6 +94,3 @@ if __name__ == "__main__":
         from matplotlib.pyplot import figure, show
 
     read_diffusion1D(P.file, P.plot)
-
-    if P.plot:
-        show()
