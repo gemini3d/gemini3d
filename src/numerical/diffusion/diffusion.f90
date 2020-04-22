@@ -21,11 +21,10 @@ module procedure backEuler3D_curv
 end interface backEuler3D
 
 
-
 contains
 
 
-pure subroutine diffusion_prep(isp,x,lambda,betacoeff,ns,T,A,B,C,D,E,Tn,cfg)
+pure subroutine diffusion_prep(isp,x,lambda,betacoeff,ns,T,A,B,C,D,E, Tn,cfg)
 !! COMPUTE COEFFICIENTS IN DIFFUSION EQUATIONS AND LOAD UP GHOST CELLS
 !!
 !! Note: done on a per species basis. This is never called over the full grid
@@ -41,7 +40,7 @@ real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4), intent(out) :
 real(wp), dimension(:,:,:), intent(in) :: Tn
 type(gemini_cfg), intent(in) :: cfg
 
-real(wp) :: Tn0
+real(wp) :: Tn0, Tx(size(Tn,1), size(Tn,2), size(Tn,3))
 
 integer :: lx1,lx2,lx3,ix2,ix3
 
@@ -50,7 +49,7 @@ lx2=size(ns,2) - 4
 lx3=size(ns,3) - 4
 
 
-!COEFFICIENTS OF PARABOLIC EQUAITON
+!> COEFFICIENTS OF PARABOLIC EQUAITON
 A(:,:,:) = 0
 C(:,:,:) = (gammas(isp)-1._wp)/kB/max(ns(1:lx1,1:lx2,1:lx3),mindensdiv)/ &
            (x%h1(1:lx1,1:lx2,1:lx3)*x%h2(1:lx1,1:lx2,1:lx3)*x%h3(1:lx1,1:lx2,1:lx3))
@@ -60,24 +59,34 @@ D = lambda*x%h2(1:lx1,1:lx2,1:lx3)*x%h3(1:lx1,1:lx2,1:lx3)/x%h1(1:lx1,1:lx2,1:lx
 E = 0
 
 
-!SET THE BOUNDARY CONDITIONS BASED ON GRID TYPE
-! if Neumann need to scale heat flux by thermal conductivity and metric factor...
+!> SET THE BOUNDARY CONDITIONS BASED ON GRID TYPE
+
+select case (cfg%flagdirichTemperatureTop)
+case (1)
+  Tx = Tn
+case (0)
+  !! Neumann: scale heat flux by thermal conductivity and metric factor
+  Tx = Tn / lambda / x%h1
+case default
+  error stop 'diffusion.f90:diffusion_prep: cfg%flagdirichTemperatureTop must be 0 or 1'
+end select
+
 if (gridflag==0) then
   !! closed dipole grid, both ends are thermalized against neutrals
   do ix3=1,lx3
     do ix2=1,lx2
-      Tn0=Tn(1,ix2,ix3)
-      T(0,ix2,ix3)=Tn0
-      Tn0=Tn(lx1,ix2,ix3)
-      T(lx1+1,ix2,ix3)=Tn0
+      Tn0 = Tx(1,ix2,ix3)
+      T(0,ix2,ix3) = Tn0
+      Tn0 = Tx(lx1,ix2,ix3)
+      T(lx1+1,ix2,ix3) = Tn0
     end do
   end do
 else if (gridflag==1) then
   !! inverted grid, bottom altitude is thermalized to neutrals, top to electrons (possibly heat flow)
   do ix3=1,lx3
     do ix2=1,lx2
-      Tn0=Tn(lx1,ix2,ix3)
-      T(lx1+1,ix2,ix3)=Tn0   !bottom
+      Tn0 = Tx(lx1,ix2,ix3)
+      T(lx1+1,ix2,ix3) = Tn0   !bottom
       T(0,ix2,ix3) = cfg%Teinf     !top
     end do
   end do
@@ -85,8 +94,8 @@ else
   !! non-inverted, standard.  Bottom is logical first element of array...
   do ix3=1,lx3
     do ix2=1,lx2
-      Tn0=Tn(1,ix2,ix3)
-      T(0,ix2,ix3)=Tn0          !bottom
+      Tn0 = Tx(1,ix2,ix3)
+      T(0,ix2,ix3) = Tn0          !bottom
       T(lx1+1,ix2,ix3) = cfg%Teinf    !top
     end do
   end do

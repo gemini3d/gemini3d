@@ -32,7 +32,8 @@ logical :: failed = .false.
 character(256) :: argv
 character(:), allocatable :: outfile
 
-flagdirichBottom = 1  !< Dirichlet always for bottom, allow top to be Dirichlet or Neumann
+flagdirichBottom = 1
+!! Dirichlet always for bottom, allow top to be Dirichlet or Neumann
 
 flagdirichTop = 1
 call get_command_argument(1, argv, status=i)
