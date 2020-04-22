@@ -36,8 +36,7 @@ real(wp), dimension(:,:,:), intent(in) :: lambda,betacoeff
 
 real(wp), dimension(-1:,-1:,-1:), intent(in) :: ns
 real(wp), dimension(-1:,-1:,-1:), intent(inout) :: T
-real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4), &
-         intent(out) :: A,B,C,D,E
+real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4), intent(out) :: A,B,C,D,E
 
 real(wp), dimension(:,:,:), intent(in) :: Tn
 type(gemini_cfg), intent(in) :: cfg
@@ -46,19 +45,19 @@ real(wp) :: Tn0
 
 integer :: lx1,lx2,lx3,ix2,ix3
 
-lx1=size(ns,1)-4
-lx2=size(ns,2)-4
-lx3=size(ns,3)-4
+lx1=size(ns,1) - 4
+lx2=size(ns,2) - 4
+lx3=size(ns,3) - 4
 
 
 !COEFFICIENTS OF PARABOLIC EQUAITON
-A(:,:,:)=0._wp
- C(:,:,:)=(gammas(isp)-1._wp)/kB/max(ns(1:lx1,1:lx2,1:lx3),mindensdiv)/ &
+A(:,:,:) = 0
+C(:,:,:) = (gammas(isp)-1._wp)/kB/max(ns(1:lx1,1:lx2,1:lx3),mindensdiv)/ &
            (x%h1(1:lx1,1:lx2,1:lx3)*x%h2(1:lx1,1:lx2,1:lx3)*x%h3(1:lx1,1:lx2,1:lx3))
-B(:,:,:)=C(:,:,:)*betacoeff/x%h1(1:lx1,1:lx2,1:lx3)
+B(:,:,:) = C(:,:,:)*betacoeff/x%h1(1:lx1,1:lx2,1:lx3)
 !! beta must be set to zero if not electrons!
-D=lambda*x%h2(1:lx1,1:lx2,1:lx3)*x%h3(1:lx1,1:lx2,1:lx3)/x%h1(1:lx1,1:lx2,1:lx3)
-E=0._wp
+D = lambda*x%h2(1:lx1,1:lx2,1:lx3)*x%h3(1:lx1,1:lx2,1:lx3)/x%h1(1:lx1,1:lx2,1:lx3)
+E = 0
 
 
 !SET THE BOUNDARY CONDITIONS BASED ON GRID TYPE

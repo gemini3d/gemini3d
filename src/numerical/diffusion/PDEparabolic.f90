@@ -59,11 +59,11 @@ call bottom_bcs(flagdirichBottom, ll, Tsminx1, dx1, M, TR)
 ix1=2
 
 !> ix1-1
-M(ll+4,ix1-1)=-1*C(ix1)*Dh(ix1)/dx1i(ix1)/dx1(ix1)/2d0 &
-           +B(ix1)/(dx1(ix1+1)+dx1(ix1))/2d0
+M(ll+4,ix1-1)=-1*C(ix1)*Dh(ix1)/dx1i(ix1)/dx1(ix1)/2 &
+           +B(ix1)/(dx1(ix1+1)+dx1(ix1))/2
 
 !> ix1
-M(ll+3,ix1)=1.0/(dt/2d0)-A(ix1)/2d0 &
+M(ll+3,ix1)= 1/(dt/2d0)-A(ix1)/2d0 &
          +C(ix1)*Dh(ix1+1)/dx1i(ix1)/dx1(ix1+1)/2d0 &
          +C(ix1)*Dh(ix1)/dx1i(ix1)/dx1(ix1)/2d0
 
@@ -225,13 +225,13 @@ call bottom_bcs(flagdirichBottom, ll, Tsminx1, dx1, M, backEuler1D)
 
 !> FIRST INTERIOR GRID POINT
 ix1=2
-M(ll+4,ix1-1)=-1*C(ix1)*Dh(ix1)/dx1i(ix1)/dx1(ix1) &            !ix1-1, sub-diaginal
+M(ll+4,ix1-1) = -C(ix1)*Dh(ix1)/dx1i(ix1)/dx1(ix1) &            !ix1-1, sub-diaginal
            +B(ix1)/(dx1(ix1+1)+dx1(ix1))
-M(ll+3,ix1)=1.0/dt-A(ix1) &                                     !ix1
+M(ll+3,ix1)= 1/dt-A(ix1) &                                     !ix1
          +C(ix1)*Dh(ix1+1)/dx1i(ix1)/dx1(ix1+1) &
          +C(ix1)*Dh(ix1)/dx1i(ix1)/dx1(ix1)
-M(ll+2,ix1+1)=-1*C(ix1)*Dh(ix1+1)/dx1i(ix1)/dx1(ix1+1) &        !ix1+1, super-diag.
-         -1*B(ix1)/(dx1(ix1+1)+dx1(ix1))
+M(ll+2,ix1+1) = -C(ix1)*Dh(ix1+1)/dx1i(ix1)/dx1(ix1+1) - &        !ix1+1, super-diag.
+                B(ix1)/(dx1(ix1+1)+dx1(ix1))
 M(ll+1,ix1+2) = 0
 
 
@@ -239,13 +239,13 @@ M(ll+1,ix1+2) = 0
 do concurrent (ix1=3:lx1-2)
   M(ll+5,ix1-2) = 0
   !! ix1-2 grid point, sub-diag.
-  M(ll+4,ix1-1)=-1*C(ix1)*Dh(ix1)/dx1i(ix1)/dx1(ix1) &            !ix1-1
-             +B(ix1)/(dx1(ix1+1)+dx1(ix1))
-  M(ll+3,ix1)=1.0/dt-A(ix1) &                                     !ix1
-           +C(ix1)*Dh(ix1+1)/dx1i(ix1)/dx1(ix1+1) &
-           +C(ix1)*Dh(ix1)/dx1i(ix1)/dx1(ix1)
-  M(ll+2,ix1+1)=-1*C(ix1)*Dh(ix1+1)/dx1i(ix1)/dx1(ix1+1) &        !ix1+1, super-diag.
-           -1*B(ix1)/(dx1(ix1+1)+dx1(ix1))
+  M(ll+4,ix1-1) = -C(ix1)*Dh(ix1)/dx1i(ix1)/dx1(ix1) + &            !ix1-1
+                  B(ix1)/(dx1(ix1+1)+dx1(ix1))
+  M(ll+3,ix1) = 1/dt - A(ix1) + &                                     !ix1
+                C(ix1)*Dh(ix1+1)/dx1i(ix1)/dx1(ix1+1) + &
+                C(ix1)*Dh(ix1)/dx1i(ix1)/dx1(ix1)
+  M(ll+2,ix1+1) = -C(ix1)*Dh(ix1+1)/dx1i(ix1)/dx1(ix1+1) - &        !ix1+1, super-diag.
+             B(ix1)/(dx1(ix1+1)+dx1(ix1))
   M(ll+1,ix1+2) = 0
   !! ix1+2 grid point
 end do
@@ -254,13 +254,13 @@ end do
 !> LAST INTERIOR GRID POINT
 ix1=lx1-1
 M(ll+5,ix1-2) = 0
-M(ll+4,ix1-1)=-1*C(ix1)*Dh(ix1)/dx1i(ix1)/dx1(ix1) &            !ix1-1
-           +B(ix1)/(dx1(ix1+1)+dx1(ix1))
-M(ll+3,ix1)=1.0/dt-A(ix1) &                                     !ix1
-         +C(ix1)*Dh(ix1+1)/dx1i(ix1)/dx1(ix1+1) &
-         +C(ix1)*Dh(ix1)/dx1i(ix1)/dx1(ix1)
-M(ll+2,ix1+1)=-1*C(ix1)*Dh(ix1+1)/dx1i(ix1)/dx1(ix1+1) &        !ix1+1, super-diag.
-         -1*B(ix1)/(dx1(ix1+1)+dx1(ix1))
+M(ll+4,ix1-1) = -C(ix1)*Dh(ix1)/dx1i(ix1)/dx1(ix1) + &            !ix1-1
+                   B(ix1)/(dx1(ix1+1) + dx1(ix1))
+M(ll+3,ix1) = 1 / dt - A(ix1) + &                                     !ix1
+                C(ix1)*Dh(ix1+1) / dx1i(ix1)/dx1(ix1+1) + &
+                C(ix1)*Dh(ix1) / dx1i(ix1) / dx1(ix1)
+M(ll+2,ix1+1)= -C(ix1)*Dh(ix1+1)/dx1i(ix1)/dx1(ix1+1) - &        !ix1+1, super-diag.
+                 B(ix1) / (dx1(ix1+1) + dx1(ix1))
 
 call top_bcs(flagdirichTop, ll, lx1, Tsmaxx1, dx1, M, backEuler1D)
 
