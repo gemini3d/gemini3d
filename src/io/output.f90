@@ -19,32 +19,6 @@ namelist /files/ input_nml, output_dir,realbits
 namelist /git/ branch, rev, porcelain
 namelist /system/ compiler, exe
 
-!> MAKE A COPY OF THE INPUT DATA IN THE OUTPUT DIRECTORY
-ierr = mkdir(cfg%outdir//'/inputs')
-
-ierr = copyfile(cfg%infile, cfg%outdir//'/inputs/')
-ierr = copyfile(cfg%indatsize, cfg%outdir//'/inputs/')
-ierr = copyfile(cfg%indatgrid, cfg%outdir//'/inputs/')
-ierr = copyfile(cfg%indatfile, cfg%outdir//'/inputs/')
-
-!MAKE COPIES OF THE INPUT DATA, AS APPROPRIATE
-if (.false.) then
-  if (cfg%flagdneu/=0) then
-    ierr = mkdir(cfg%outdir//'/inputs/neutral_inputs')
-    ierr = copyfile(cfg%sourcedir//'/*', cfg%outdir//'/inputs/neutral_inputs/')
-  end if
-
-  if (cfg%flagprecfile/=0) then
-    ierr = mkdir(cfg%outdir//'/inputs/prec_inputs')
-    ierr = copyfile(cfg%precdir//'/*', cfg%outdir//'/inputs/prec_inputs/')
-  end if
-
-  if (cfg%flagE0file/=0) then
-    ierr = mkdir(cfg%outdir//'/inputs/Efield_inputs')
-    ierr = copyfile(cfg%E0dir//'/*', cfg%outdir//'/inputs/Efield_inputs/')
-  end if
-endif
-
 call gitlog(cfg%outdir // '/gitrev.log')
 
 call compiler_log(cfg%outdir // '/compiler.log')
