@@ -10,24 +10,13 @@ from argparse import ArgumentParser
 import typing as T
 import sys
 import os
+import pkg_resources
 
-from web import url_retrieve, extract_tar
-
-try:
-    import pkg_resources
-except ModuleNotFoundError:
-    pkg_resources = None
-try:
-    from gemini3d.utils import get_cpu_count
-except ImportError:
-
-    def get_cpu_count() -> int:
-        return 1
-
+import gemini3d
 
 # ========= user parameters ======================
 BUILDDIR = "build"
-NJOBS = get_cpu_count()
+NJOBS = gemini3d.get_cpu_count()
 # Library parameters
 
 NETCDF_C = "4.7.3"
@@ -137,8 +126,8 @@ def hdf5(dirs: T.Dict[str, Path], env: T.Mapping[str, str] = None):
     source_dir = dirs["workdir"] / hdf5_dir
 
     tarfn = dirs["workdir"] / f"hdf5-{HDF5VERSION}.tar.bz2"
-    url_retrieve(HDF5URL, tarfn, ("md5", HDF5MD5))
-    extract_tar(tarfn, source_dir)
+    gemini3d.url_retrieve(HDF5URL, tarfn, ("md5", HDF5MD5))
+    gemini3d.extract_tar(tarfn, source_dir)
 
     if not env:
         env = get_compilers()
@@ -162,8 +151,8 @@ def openmpi(dirs: T.Dict[str, Path], env: T.Mapping[str, str] = None):
 
     tarfn = dirs["workdir"] / f"openmpi-{MPIVERSION}.tar.bz2"
     url = f"https://download.open-mpi.org/release/open-mpi/v{MPIVERSION[:3]}/{tarfn}"
-    url_retrieve(url, tarfn, ("sha1", MPISHA1))
-    extract_tar(tarfn, source_dir)
+    gemini3d.url_retrieve(url, tarfn, ("sha1", MPISHA1))
+    gemini3d.extract_tar(tarfn, source_dir)
 
     if not env:
         env = get_compilers()
@@ -288,9 +277,6 @@ def cmake_minimum_version(min_version: str = None) -> str:
         raise FileNotFoundError("could not find CMake")
 
     if not min_version:
-        return cmake
-
-    if pkg_resources is None:
         return cmake
 
     cmake_ver = subprocess.check_output([cmake, "--version"], universal_newlines=True).split("\n")[0].split(" ")[2]

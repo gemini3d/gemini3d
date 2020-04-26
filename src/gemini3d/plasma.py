@@ -422,8 +422,8 @@ def msis_setup(p: DictArray, xg: DictArray) -> np.ndarray:
     builddir.mkdir(parents=True, exist_ok=True)
     exe = shutil.which("msis_setup", path=str(builddir))
     if not exe:
-        cfg_cmd = ['cmake', '-S', str(R), '-B', str(builddir)]
-        print(' '.join(cfg_cmd))
+        cfg_cmd = ["cmake", "-S", str(R), "-B", str(builddir)]
+        print(" ".join(cfg_cmd))
         subprocess.check_call(cfg_cmd)
 
         build_cmd = ["cmake", "--build", str(builddir), "--target", "msis_setup"]

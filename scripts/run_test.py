@@ -9,23 +9,12 @@ import typing
 import subprocess
 from pathlib import Path
 import typing as T
-import logging
 
-from web import url_retrieve, extract_zip
+import gemini3d
 
-try:
-    from gemini3d import get_mpi_count
-except ImportError as e:
-    logging.warning(f"could not use Gemini3D get_mpi_count(), falling back to single CPU.   {e}")
-
-    def get_mpi_count(path: Path, max_cpu: int) -> int:
-        return 1
-
-
-R = Path(__file__).resolve().parents[1]
-Rt = R / "tests/data"
-
-Pathlike = T.Union[Path, str]
+Rtop = Path(__file__).resolve().parents[1]
+Rtest = Rtop / "tests/data"
+Rpy = Path(gemini3d.__file__).resolve().parent
 
 
 def get_test_params(test_name: str, url_file: Path) -> T.Dict[str, T.Any]:
@@ -37,8 +26,8 @@ def get_test_params(test_name: str, url_file: Path) -> T.Dict[str, T.Any]:
     z = {
         "url": C.get(test_name, "url"),
         "md5": C.get(test_name, "md5"),
-        "dir": Rt / f"test{test_name}",
-        "zip": Rt / f"test{test_name}.zip",
+        "dir": Rtest / f"test{test_name}",
+        "zip": Rtest / f"test{test_name}.zip",
     }
 
     return z
@@ -47,7 +36,7 @@ def get_test_params(test_name: str, url_file: Path) -> T.Dict[str, T.Any]:
 def download_and_extract(z: T.Dict[str, T.Any], url_ini: Path):
 
     try:
-        url_retrieve(z["url"], z["zip"], ("md5", z["md5"]))
+        gemini3d.url_retrieve(z["url"], z["zip"], ("md5", z["md5"]))
     except (ConnectionError, ValueError) as e:
         print(f"SKIP: problem downloading reference data {e}", file=sys.stderr)
         raise SystemExit(77)
@@ -61,21 +50,21 @@ def run_test(testname: str, mpiexec: str, exe: str, nml: str, outdir: str, mpi_c
     This is usually called from CMake Ctest
     """
 
-    url_ini = R / "gemini3d/tests/url.ini"
+    url_ini = Rpy / "tests/url.ini"
 
     z = get_test_params(testname, url_ini)
 
     if not z["dir"].is_dir():
         download_and_extract(z, url_ini)
 
-    extract_zip(z["zip"], z["dir"])
+    gemini3d.extract_zip(z["zip"], z["dir"])
 
     if not Path(nml).expanduser().is_file():
         print(f"SKIP: file {nml} does not exist", file=sys.stderr)
         raise SystemExit(77)
 
     if not mpi_count:
-        mpi_count = get_mpi_count(z["dir"] / "inputs/simsize.h5", 0)
+        mpi_count = gemini3d.get_mpi_count(z["dir"] / "inputs/simsize.h5", 0)
 
     # have to get exe as absolute path
     exe_abs = Path(exe).resolve()
@@ -83,7 +72,7 @@ def run_test(testname: str, mpiexec: str, exe: str, nml: str, outdir: str, mpi_c
     if out_format:
         cmd += ["-out_format", out_format]
     print(" ".join(cmd))
-    ret = subprocess.run(cmd, cwd=R)
+    ret = subprocess.run(cmd, cwd=Rtop)
 
     raise SystemExit(ret.returncode)
 
