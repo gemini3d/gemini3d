@@ -28,8 +28,8 @@ HDF5VERSION = "1.12.0"
 HDF5URL = f"https://zenodo.org/record/3700903/files/hdf5-{HDF5VERSION}.tar.bz2?download=1"
 HDF5MD5 = "1fa68c4b11b6ef7a9d72ffa55995f898"
 
-MPIVERSION = "3.1.5"  # OpenMPI 4 needs Scalapack 2.1
-MPISHA1 = "56a74b116c81d4f3704c051a67e4422094ff913d"
+MPIVERSION = "3.1.6"  # OpenMPI 4 needs Scalapack 2.1
+MPISHA1 = "bc4cd7fa0a7993d0ae05ead839e6056207e432d4"
 
 LAPACKGIT = "https://github.com/scivision/lapack.git"
 LAPACKDIR = "lapack"
@@ -149,8 +149,9 @@ def openmpi(dirs: T.Dict[str, Path], env: T.Mapping[str, str] = None):
     install_dir = dirs["prefix"] / mpi_dir
     source_dir = dirs["workdir"] / mpi_dir
 
-    tarfn = dirs["workdir"] / f"openmpi-{MPIVERSION}.tar.bz2"
-    url = f"https://download.open-mpi.org/release/open-mpi/v{MPIVERSION[:3]}/{tarfn}"
+    tar_name = f"openmpi-{MPIVERSION}.tar.bz2"
+    tarfn = dirs["workdir"] / tar_name
+    url = f"https://download.open-mpi.org/release/open-mpi/v{MPIVERSION[:3]}/{tar_name}"
     gemini3d.url_retrieve(url, tarfn, ("sha1", MPISHA1))
     gemini3d.extract_tar(tarfn, source_dir)
 
