@@ -11,13 +11,24 @@ module procedure create_outdir
 !! CREATES OUTPUT DIRECTORY, MOVES CONFIG FILES THERE AND GENERATES A GRID OUTPUT FILE
 
 integer :: ierr, u, realbits
-logical :: porcelain
+logical :: porcelain, exists
 character(:), allocatable :: input_nml, output_dir, branch, rev, compiler, exe
 character(256) :: buf
 
 namelist /files/ input_nml, output_dir,realbits
 namelist /git/ branch, rev, porcelain
 namelist /system/ compiler, exe
+
+!> MAKE A COPY OF THE INPUT DATA IN THE OUTPUT DIRECTORY
+ierr = mkdir(cfg%outdir//'/inputs')
+
+inquire(file=cfg%outdir//'/inputs/config.nml', exist=exists)
+if(.not.exists) then
+  ierr = copyfile(cfg%infile, cfg%outdir//'/inputs/')
+  ierr = copyfile(cfg%indatsize, cfg%outdir//'/inputs/')
+  ierr = copyfile(cfg%indatgrid, cfg%outdir//'/inputs/')
+  ierr = copyfile(cfg%indatfile, cfg%outdir//'/inputs/')
+endif
 
 call gitlog(cfg%outdir // '/gitrev.log')
 
