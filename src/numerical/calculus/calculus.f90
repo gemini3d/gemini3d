@@ -3,7 +3,7 @@ module calculus
 !NEED TO MORE APPROPRIATELY NAME THE "ALT" DERIVATIVES...
 
 !SIZES USED IN ALL DERIVATIVE PROCEDURES ARE STORED IN GRID MODULE
-use phys_consts, only: wp
+use phys_consts, only: wp, debug
 use mesh, only : curvmesh
 !! we do not want the full-grid sizes (lx1,lx2,lx3) in scope since we routinely need to do subgrid derivatives
 
@@ -179,12 +179,10 @@ contains
 
 pure function ETD_uncoupled(f,P,L,dt)
 
-!------------------------------------------------------------
-!-------APPLY UNCOUPLED SPECIES EXPONENTIAL TIME DIFFERENCING
-!-------SOURCE/LOSS ODE SOLUTION.  IT IS EXPECTED THAT
-!-------GHOST CELLS WILL HAVE BEEN TRIMMED FROM ARRAYS BEFORE
-!-------THEY ARE PASSED INTO THIS ROUTINE.
-!------------------------------------------------------------
+!! APPLY UNCOUPLED SPECIES EXPONENTIAL TIME DIFFERENCING
+!! SOURCE/LOSS ODE SOLUTION.  IT IS EXPECTED THAT
+!! GHOST CELLS WILL HAVE BEEN TRIMMED FROM ARRAYS BEFORE
+!! THEY ARE PASSED INTO THIS ROUTINE.
 
 real(wp), dimension(:,:,:), intent(in) :: f,P,L
 real(wp), intent(in) :: dt
@@ -211,11 +209,9 @@ end function ETD_uncoupled
 
 pure function grad2D1_curv(f,x,lbnd,ubnd)
 
-!------------------------------------------------------------
-!-------COMPUTE A 2D GRADIENT ALONG THE 1-DIMENSION.  IT IS EXPECTED THAT
-!-------GHOST CELLS WILL HAVE BEEN TRIMMED FROM ARRAYS BEFORE
-!-------THEY ARE PASSED INTO THIS ROUTINE
-!------------------------------------------------------------
+!! COMPUTE A 2D GRADIENT ALONG THE 1-DIMENSION.  IT IS EXPECTED THAT
+!! GHOST CELLS WILL HAVE BEEN TRIMMED FROM ARRAYS BEFORE
+!! THEY ARE PASSED INTO THIS ROUTINE
 
 real(wp), dimension(:,:), intent(in) :: f
 type(curvmesh), intent(in) :: x
@@ -239,12 +235,10 @@ end function grad2D1_curv
 
 pure function grad2D1_curv_alt_3(f,x,lbnd,ubnd)
 
-!------------------------------------------------------------
-!-------COMPUTE A 2D GRADIENT ALONG THE 1-DIMENSION USING THE
-!-------VARIABLE X2 AS THE DIFFERENTIAL. IT IS EXPECTED THAT
-!-------GHOST CELLS WILL HAVE BEEN TRIMMED FROM ARRAYS BEFORE
-!-------THEY ARE PASSED INTO THIS ROUTINE
-!------------------------------------------------------------
+!! COMPUTE A 2D GRADIENT ALONG THE 1-DIMENSION USING THE
+!! VARIABLE X2 AS THE DIFFERENTIAL. IT IS EXPECTED THAT
+!! GHOST CELLS WILL HAVE BEEN TRIMMED FROM ARRAYS BEFORE
+!! THEY ARE PASSED INTO THIS ROUTINE
 
 real(wp), dimension(:,:), intent(in) :: f
 type(curvmesh), intent(in) :: x
@@ -268,12 +262,10 @@ end function grad2D1_curv_alt_3
 
 function grad2D1_curv_alt_23(f,x,lbnd,ubnd)
 
-!------------------------------------------------------------
-!-------COMPUTE A 2D GRADIENT ALONG THE 1-DIMENSION USING THE
-!-------VARIABLE X2 AS THE DIFFERENTIAL. IT IS EXPECTED THAT
-!-------GHOST CELLS WILL HAVE BEEN TRIMMED FROM ARRAYS BEFORE
-!-------THEY ARE PASSED INTO THIS ROUTINE
-!------------------------------------------------------------
+!! COMPUTE A 2D GRADIENT ALONG THE 1-DIMENSION USING THE
+!! VARIABLE X2 AS THE DIFFERENTIAL. IT IS EXPECTED THAT
+!! GHOST CELLS WILL HAVE BEEN TRIMMED FROM ARRAYS BEFORE
+!! THEY ARE PASSED INTO THIS ROUTINE
 
 !may need to explicitly check that we aren't differentiating over lx2=1???
 
@@ -292,7 +284,7 @@ lx3=size(f,2)
 
 !ERROR CHECKING TO MAKE SURE DIFFRENCING IS DONE OVER A CONSISTENTLY-SIZED GRID
 if (lx2 /= ubnd-lbnd+1) then
-  error stop '!!!  Inconsistent array and mesh sizes in grad2D1_curv_alt_23.'   !just bail on it and let the user figure it out
+  error stop 'Inconsistent array and mesh sizes in grad2D1_curv_alt_23.'   !just bail on it and let the user figure it out
 end if
 
 
@@ -300,9 +292,9 @@ if (lx2<=x%lx2+4) then     !+4 in case we need to differentiate over ghost cells
   dx2=>x%dx2(lbnd:ubnd)
 else if (lx2<=x%lx2all+4) then     !presumes root or some process that has access to ALL full grid variables (normally only root).
   dx2=>x%dx2all(lbnd:ubnd)
-  print *,   '! Accessing root-only grid information in divergence function grad2D1_curv_alt_23'
+  if (debug) print *, 'DEBUG: Accessing root-only grid information in divergence function grad2D1_curv_alt_23'
 else
-  error stop '!!!  Array size is larger than full mesh.'
+  error stop 'Array size is larger than full mesh.'
 end if
 
 
@@ -318,11 +310,9 @@ end function grad2D1_curv_alt_23
 
 pure function grad2D2_curv(f,x,lbnd,ubnd)
 
-!------------------------------------------------------------
-!-------COMPUTE A 2D GRADIENT ALONG THE 2-DIMENSION.  IT IS EXPECTED THAT
-!-------GHOST CELLS WILL HAVE BEEN TRIMMED FROM ARRAYS BEFORE
-!-------THEY ARE PASSED INTO THIS ROUTINE
-!------------------------------------------------------------
+!! COMPUTE A 2D GRADIENT ALONG THE 2-DIMENSION.
+!! IT IS EXPECTED THAT GHOST CELLS WILL HAVE BEEN TRIMMED FROM ARRAYS BEFORE
+!! THEY ARE PASSED INTO THIS ROUTINE
 
 real(wp), dimension(:,:), intent(in) :: f
 type(curvmesh), intent(in) :: x
@@ -350,11 +340,9 @@ end function grad2D2_curv
 
 function grad2D2_curv_23(f,x,lbnd,ubnd)
 
-!------------------------------------------------------------
-!-------COMPUTE A 2D GRADIENT ALONG THE 2-DIMENSION.  IT IS EXPECTED THAT
-!-------GHOST CELLS WILL HAVE BEEN TRIMMED FROM ARRAYS BEFORE
-!-------THEY ARE PASSED INTO THIS ROUTINE
-!------------------------------------------------------------
+!! COMPUTE A 2D GRADIENT ALONG THE 2-DIMENSION.
+!! IT IS EXPECTED THAT GHOST CELLS WILL HAVE BEEN TRIMMED FROM ARRAYS BEFORE
+!! THEY ARE PASSED INTO THIS ROUTINE
 
 real(wp), dimension(:,:), intent(in) :: f
 type(curvmesh), intent(in) :: x
@@ -368,15 +356,17 @@ real(wp), dimension(1:size(f,1),1:size(f,2)) :: grad2D2_curv_23
 lx1=size(f,1)
 lx2=size(f,2)
 
-!ERROR CHECKING TO MAKE SURE DIFFRENCING IS DONE OVER A CONSISTENTLY-SIZED GRID
+!> ERROR CHECKING TO MAKE SURE DIFFRENCING IS DONE OVER A CONSISTENTLY-SIZED GRID
 if (lx2 /= ubnd-lbnd+1) then
   error stop '!!!  Inconsistent array and mesh sizes in grad2D2_curv_23.'   !just bail on it and let the user figure it out
 end if
 
 
-if (lx2<=x%lx2+4) then     !+4 in case we need to differentiate over ghost cells, e.g. in compression terms
+if (lx2<=x%lx2+4) then
+  !! +4 in case we need to differentiate over ghost cells, e.g. in compression terms
   dx2=>x%dx2(lbnd:ubnd)
-else if (lx2<=x%lx2all+4) then     !presumes root or some process that has access to ALL full grid variables (normally only root).
+else if (lx2<=x%lx2all+4) then
+  !! presumes root or some process that has access to ALL full grid variables (normally only root).
   dx2=>x%dx2all(lbnd:ubnd)
   print *,   '! Accessing root-only grid information in divergence function grad2D2_curv_23'
 else
@@ -384,7 +374,8 @@ else
 end if
 
 
-if (lx2>1) then         !are we even simulating x2-direction?
+if (lx2>1) then
+  !! are we even simulating x2-direction?
   do ix1=1,lx1
     grad2D2_curv_23(ix1,1)=(f(ix1,2)-f(ix1,1))/dx2(2)
     grad2D2_curv_23(ix1,2:lx2-1)=(f(ix1,3:lx2)-f(ix1,1:lx2-2)) &
@@ -399,14 +390,12 @@ end function grad2D2_curv_23
 
 pure function grad2D3_curv(f,x,lbnd,ubnd)
 
-!------------------------------------------------------------
-!-------COMPUTE A 2D GRADIENT ALONG THE 3-DIMENSION.  IT IS EXPECTED THAT
-!-------GHOST CELLS WILL HAVE BEEN TRIMMED FROM ARRAYS BEFORE
-!-------THEY ARE PASSED INTO THIS ROUTINE.  A SEPARATE ROUTINE
-!-------IS NEEDED FOR THE CURVILINEAR CASE, BECAUSE OTHERWISE
-!-------WE HAVE NO WAY TO KNOW WHAT DIMENSION IN THE STRUCTURE
-!-------SHOULD BE USED FOR THE DERIVATIVE.
-!------------------------------------------------------------
+!! COMPUTE A 2D GRADIENT ALONG THE 3-DIMENSION.  IT IS EXPECTED THAT
+!! GHOST CELLS WILL HAVE BEEN TRIMMED FROM ARRAYS BEFORE
+!! THEY ARE PASSED INTO THIS ROUTINE.  A SEPARATE ROUTINE
+!! IS NEEDED FOR THE CURVILINEAR CASE, BECAUSE OTHERWISE
+!! WE HAVE NO WAY TO KNOW WHAT DIMENSION IN THE STRUCTURE
+!! SHOULD BE USED FOR THE DERIVATIVE.
 
 real(wp), dimension(:,:), intent(in) :: f
 type(curvmesh), intent(in) :: x
@@ -440,14 +429,12 @@ end function grad2D3_curv
 
 function grad2D3_curv_23(f,x,lbnd,ubnd)
 
-!------------------------------------------------------------
-!-------COMPUTE A 2D GRADIENT ALONG THE 3-DIMENSION.  IT IS EXPECTED THAT
-!-------GHOST CELLS WILL HAVE BEEN TRIMMED FROM ARRAYS BEFORE
-!-------THEY ARE PASSED INTO THIS ROUTINE.  A SEPARATE ROUTINE
-!-------IS NEEDED FOR THE CURVILINEAR CASE, BECAUSE OTHERWISE
-!-------WE HAVE NO WAY TO KNOW WHAT DIMENSION IN THE STRUCTURE
-!-------SHOULD BE USED FOR THE DERIVATIVE.
-!------------------------------------------------------------
+!! COMPUTE A 2D GRADIENT ALONG THE 3-DIMENSION.  IT IS EXPECTED THAT
+!! GHOST CELLS WILL HAVE BEEN TRIMMED FROM ARRAYS BEFORE
+!! THEY ARE PASSED INTO THIS ROUTINE.  A SEPARATE ROUTINE
+!! IS NEEDED FOR THE CURVILINEAR CASE, BECAUSE OTHERWISE
+!! WE HAVE NO WAY TO KNOW WHAT DIMENSION IN THE STRUCTURE
+!! SHOULD BE USED FOR THE DERIVATIVE.
 
 real(wp), dimension(:,:), intent(in) :: f
 type(curvmesh), intent(in) :: x
@@ -464,17 +451,20 @@ lx3=size(f,2)
 
 !ERROR CHECKING TO MAKE SURE DIFFRENCING IS DONE OVER A CONSISTENTLY-SIZED GRID
 if (lx3 /= ubnd-lbnd+1) then
-  error stop '!!!  Inconsistent array and mesh sizes in grad2D3_curv_alt_23.'   !just bail on it and let the user figure it out
+  error stop 'Inconsistent array and mesh sizes in grad2D3_curv_alt_23.'
+  !! just bail on it and let the user figure it out
 end if
 
 
-if (lx3<=x%lx3+4) then     !+4 in case we need to differentiate over ghost cells, e.g. in compression terms
+if (lx3<=x%lx3+4) then
+  !! +4 in case we need to differentiate over ghost cells, e.g. in compression terms
   dx3=>x%dx3(lbnd:ubnd)
-else if (lx3<=x%lx3all+4) then     !presumes root or some process that has access to ALL full grid variables (normally only root).
+else if (lx3<=x%lx3all+4) then
+  !! presumes root or some process that has access to ALL full grid variables (normally only root).
   dx3=>x%dx3all(lbnd:ubnd)
   print *,   '! Accessing root-only grid information in divergence function grad2D3_curv_alt_23'
 else
-  error stop '!!!  Array size is larger than full mesh.'
+  error stop 'Array size is larger than full mesh.'
 end if
 
 
@@ -491,19 +481,16 @@ end function grad2D3_curv_23
 
 
 pure function grad3D3_curv_periodic(f,x,lbnd,ubnd)
-
-!------------------------------------------------------------
-!-------COMPUTE A 3D GRADIENT ALONG THE 3-DIMENSION.  IT IS EXPECTED THAT
-!-------GHOST CELLS WILL HAVE BEEN TRIMMED FROM ARRAYS BEFORE
-!-------THEY ARE PASSED INTO THIS ROUTINE.  THIS ROUTINE ASSUMES
-!-------A PERIODIC BOOUNDARY IN THE X3 DIMENSION
-!-------
-!-------AN EXTRA STEP IS NEEDED IN THIS ROUTINE SINCE WE HAVE
-!-------TO DETERMINE WHETHER THIS IS A FULL-GRID OR SUBGRID
-!-------DERIVATIVE.
-!-------
-!-------THIS FUNCTION IS ONLY VALID WITH CARTESIAN GRIDS.
-!------------------------------------------------------------
+!! COMPUTE A 3D GRADIENT ALONG THE 3-DIMENSION.  IT IS EXPECTED THAT
+!! GHOST CELLS WILL HAVE BEEN TRIMMED FROM ARRAYS BEFORE
+!! THEY ARE PASSED INTO THIS ROUTINE.  THIS ROUTINE ASSUMES
+!! A PERIODIC BOOUNDARY IN THE X3 DIMENSION
+!!
+!! AN EXTRA STEP IS NEEDED IN THIS ROUTINE SINCE WE HAVE
+!! TO DETERMINE WHETHER THIS IS A FULL-GRID OR SUBGRID
+!! DERIVATIVE.
+!!
+!! THIS FUNCTION IS ONLY VALID WITH CARTESIAN GRIDS.
 
 real(wp), dimension(:,:,:), intent(in) :: f
 type(curvmesh), intent(in) :: x
@@ -518,7 +505,8 @@ lx1=size(f,1)
 lx2=size(f,2)
 lx3=size(f,3)
 
-if(lx3 == x%lx3all) then    !differentiating over full grid
+if(lx3 == x%lx3all) then
+  !! differentiating over full grid
   do ix2=1,lx2
     do ix1=1,lx1
 !          grad3D3_curv_periodic(ix1,ix2,1)=(f(ix1,ix2,2)-f(ix1,ix2,1))/x%dx3all(lbnd+1)
@@ -550,18 +538,17 @@ end function grad3D3_curv_periodic
 
 pure function grad2D3_curv_periodic(f,x,lbnd,ubnd)
 
-!------------------------------------------------------------
-!-------COMPUTE A 2D GRADIENT ALONG THE 3-DIMENSION.  IT IS EXPECTED THAT
-!-------GHOST CELLS WILL HAVE BEEN TRIMMED FROM ARRAYS BEFORE
-!-------THEY ARE PASSED INTO THIS ROUTINE.  A SEPARATE ROUTINE
-!-------IS NEEDED FOR THE CURVILINEAR CASE, BECAUSE OTHERWISE
-!-------WE HAVE NO WAY TO KNOW WHAT DIMENSION IN THE STRUCTURE
-!-------SHOULD BE USED FOR THE DERIVATIVE.  NOTE THAT THIS USES
-!-------A PERIODIC DIFFERENCE IF THE DERIVATIVE IS OVER THE ENTIRE
-!-------GRID AND APERIODIC OTHERWISE.
-!-------
-!-------THIS FUNCTION IS ONLY VALID WITH CARTESIAN GRIDS.
-!------------------------------------------------------------
+!! COMPUTE A 2D GRADIENT ALONG THE 3-DIMENSION.  IT IS EXPECTED THAT
+!! GHOST CELLS WILL HAVE BEEN TRIMMED FROM ARRAYS BEFORE
+!! THEY ARE PASSED INTO THIS ROUTINE.  A SEPARATE ROUTINE
+!! IS NEEDED FOR THE CURVILINEAR CASE, BECAUSE OTHERWISE
+!! WE HAVE NO WAY TO KNOW WHAT DIMENSION IN THE STRUCTURE
+!! SHOULD BE USED FOR THE DERIVATIVE.  NOTE THAT THIS USES
+!! A PERIODIC DIFFERENCE IF THE DERIVATIVE IS OVER THE ENTIRE
+!! GRID AND APERIODIC OTHERWISE.
+!!
+!! THIS FUNCTION IS ONLY VALID WITH CARTESIAN GRIDS.
+
 
 real(wp), dimension(:,:), intent(in) :: f
 type(curvmesh), intent(in) :: x
@@ -574,7 +561,8 @@ real(wp), dimension(1:size(f,1),1:size(f,2)) :: grad2D3_curv_periodic
 lx1=size(f,1)    !this is really the 2-dimension for a flattened array
 lx3=size(f,2)
 
-if (lx3 == x%lx3all) then    !derivative over full grid (could maybe use some error checking with)
+if (lx3 == x%lx3all) then
+  !! derivative over full grid (could maybe use some error checking with)
   do ix1=1,lx1
 !        grad2D3_curv_periodic(ix1,1)=(f(ix1,2)-f(ix1,1))/x%dx3all(lbnd+1)
     grad2D3_curv_periodic(ix1,1) = (f(ix1,2)-f(ix1,lx3))/(x%dx3all(lbnd+1)+x%dx3all(lbnd))
@@ -599,11 +587,7 @@ end function grad2D3_curv_periodic
 
 
 pure function chapman_a(alt,nmax,alt0,H)
-
-!------------------------------------------------------------
-!-------GENERATE A CHAPMAN ALPHA PROFILE.
-!------------------------------------------------------------
-
+!! GENERATE A CHAPMAN ALPHA PROFILE.
 
 real(wp), dimension(:,:,:), intent(in) :: alt,H
 real(wp), intent(in) :: nmax,alt0
