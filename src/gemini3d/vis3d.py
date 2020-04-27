@@ -9,13 +9,16 @@ from pathlib import Path
 import numpy as np
 from datetime import datetime
 import typing as T
+
 # import scipy.interpolate as interp
 
 from mayavi import mlab
 
+# mlab.options.backend = 'envisage'  # for GUI
+
 from .vis import PARAMS
 
-PLOTFUN = {"scalar": ("ne" "Ti", "Te", "J1", "J2", "J3"), "vector": ("v1", "v2", "v3")}
+PLOTFUN = {"scalar": ("ne", "Ti", "Te", "J1", "J2", "J3"), "vector": ("v1", "v2", "v3")}
 R_EARTH = 6370e3
 
 
@@ -33,8 +36,12 @@ def plotframe(grid: T.Dict[str, np.ndarray], dat: T.Dict[str, T.Any], params: T.
     for k in params:
         if k not in dat:  # not present at this time step, often just the first time step
             continue
+
         if k in PLOTFUN["scalar"]:
             scalar(time, grid, dat[k][1].squeeze(), name=k)
+        elif k in PLOTFUN["vector"]:
+            print("TODO: vector plot", k)
+
         if save_dir:
             pass
             # fg.savefig(save_dir / f"{k}-{time.isoformat().replace(':','')}.png")
@@ -88,6 +95,7 @@ def scalar(time: datetime, grid: T.Dict[str, np.ndarray], parm: np.ndarray, name
     # x3, y3, z3 = np.mgrid[xp[0]: xp[-1]: lxp * 1j, yp[0]: yp[-1]: lyp * 1j, zp[0]: zp[-1]: lzp * 1j]  # type: ignore
 
     # non-interpolated
+    parm = parm.transpose(1, 2, 0)
     xp = np.linspace(x.min(), x.max(), parm.shape[0])
     yp = np.linspace(y.min(), y.max(), parm.shape[1])
     zp = np.linspace(z.min(), z.max(), parm.shape[2])
@@ -97,6 +105,7 @@ def scalar(time: datetime, grid: T.Dict[str, np.ndarray], parm: np.ndarray, name
     if ~np.isfinite(parm).all():
         raise ValueError("Mayavi requires finite data values")
 
+    # TODO: check order of interpolated axes (1,2,0) or ?
     # parmp = interp.interpn(
     #     points=(grid["x1"][inds1], grid["x2"][inds2], grid["x3"][inds3]),
     #     values=parm,
@@ -107,8 +116,8 @@ def scalar(time: datetime, grid: T.Dict[str, np.ndarray], parm: np.ndarray, name
     # if ~np.isfinite(parmp).all():
     #     raise ValueError('Interpolation issue: Mayavi requires finite data values')
 
-    scf = mlab.pipeline.scalar_field(x3 / 1e3, y3 / 1e3, z3 / 1e3, parm)
-    fig = mlab.gcf()
-    mlab.pipeline.volume(scf, figure=fig)
-    mlab.scalarbar()
+    fig = mlab.figure()
+    scf = mlab.pipeline.scalar_field(x3 / 1e3, y3 / 1e3, z3 / 1e3, parm, figure=fig)
+    vol = mlab.pipeline.volume(scf, figure=fig)
+    mlab.colorbar(vol, title=name)
     mlab.axes(figure=fig, xlabel="x (km)", ylabel="y (km)", zlabel="z (km)")
