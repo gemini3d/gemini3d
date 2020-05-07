@@ -17,7 +17,11 @@ endif()
 add_library(config OBJECT config.f90)
 target_link_libraries(config PRIVATE pathlib const)
 
-set(_test_file ${PYGEMINI_DIR}/tests/config/test2d_glow/config.nml)
+if(EXISTS ${PYGEMINI_DIR})
+  set(_test_file ${PYGEMINI_DIR}/tests/config/test2d_glow/config.nml)
+else()  # don't make test depend needlessly on Python
+  set(_test_file ${CMAKE_CURRENT_SOURCE_DIR}/../gemini3d/tests/config/test2d_glow/config.nml)
+endif()
 
 add_executable(test_namelist test_nml.f90)
 add_test(NAME unit:namelist COMMAND $<TARGET_FILE:test_namelist> ${_test_file})
