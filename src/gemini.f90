@@ -60,6 +60,9 @@ real(wp) :: tstart,tfin
 integer :: it,isp
 !! time and species loop indices
 
+real(wp) :: tneuBG, dtneuBG=900
+!! time for calling msis
+
 !WORK ARRAYS
 real(wp), allocatable :: dl1,dl2,dl3     !these are grid distances in [m] used to compute Courant numbers
 
@@ -167,6 +170,7 @@ it = 1
 t = 0
 tout = t
 tglowout = t
+tneuBG=t-dtneuBG-1    !to trigger neutral eval on first timestep
 
 do while (t < cfg%tdur)
   !! TIME STEP CALCULATION
@@ -187,7 +191,8 @@ do while (t < cfg%tdur)
   !ON THE FIRST TIME STEP DUE TO A NEED TO KEEP A CONSTANT BACKGROUND (I.E. ONE NOT VARYING
   !IN TIME) FOR SOME SIMULATIONS USING NEUTRAL INPUT.  REALISTICALLY THIS NEEDS TO BE
   !RECALLED EVERY SO OFTEN (MAYBE EVERY 10-15 MINS)
-  if (it==1) then
+!  if (it==1) then
+  if (tneuBG+dtneuBG <= t) then
     call cpu_time(tstart)
     call neutral_atmos(cfg%ymd,UTsec,x%glat,x%glon,x%alt,cfg%activ,nn,Tn)
     vn1=0d0; vn2=0d0; vn3=0d0
@@ -196,6 +201,7 @@ do while (t < cfg%tdur)
       call cpu_time(tfin)
       print *, 'Neutral background calculated in time:  ',tfin-tstart
     end if
+    tneuBG=tneuBG+dtneuBG
   end if
 
 
