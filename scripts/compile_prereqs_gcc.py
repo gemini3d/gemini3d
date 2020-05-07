@@ -19,7 +19,7 @@ BUILDDIR = "build"
 NJOBS = gemini3d.get_cpu_count()
 # Library parameters
 
-NETCDF_C = "4.7.3"
+NETCDF_C = "4.7.4"
 NETCDF_C_GIT = f"https://github.com/Unidata/netcdf-c.git"
 NETCDF_FORTRAN = "4.5.2"
 NETCDF_FORTRAN_GIT = f"https://github.com/Unidata/netcdf-fortran.git"
