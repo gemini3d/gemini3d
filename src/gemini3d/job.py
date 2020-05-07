@@ -54,7 +54,14 @@ def runner(pr: T.Dict[str, T.Any]) -> int:
     cmd = mpiexec + ["-n", str(Nmpi), str(gemexe), str(config_file), str(out_dir)]
     if pr["out_format"]:
         cmd += ["-out_format", pr["out_format"]]
-    print(" ".join(cmd), "\n")
+
+    # %% attempt dry run, but don't fail in case intended for HPC
+    logging.info('Attempting Gemini dry run of first time step')
+    dryrun_ok = subprocess.run(cmd + ["-dryrun"], stdout=subprocess.DEVNULL).returncode == 0
+    if dryrun_ok:
+        logging.info("OK: Gemini dry run")
+    else:
+        logging.error("Gemini dry run failed.")
 
     batcher = hpc_batch_detect()
     if batcher:
@@ -62,8 +69,13 @@ def runner(pr: T.Dict[str, T.Any]) -> int:
         # hpc_submit_job(job_file)
         print("Please examine batch file", job_file, "and when ready submit the job as usual.")
         ret = 0
-    else:
+    elif dryrun_ok:
+        print("\nBEGIN Gemini run with command:")
+        print(" ".join(cmd), "\n")
         ret = subprocess.run(cmd).returncode
+    else:
+        ret = -1
+        logging.error("Did not run Gemini due to dry run failure")
 
     return ret
 
@@ -123,12 +135,11 @@ def check_gemini_exe(gemexe: Pathlike) -> str:
 
     gemexe = str(Path(gemexe).resolve())
 
-    ret = subprocess.run(gemexe, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, universal_newlines=True)
+    ret = subprocess.run(gemexe, stdout=subprocess.DEVNULL)
     if ret.returncode != 77:
         raise RuntimeError(
             f"\n{gemexe} was not runnable on your platform. Try recompiling on this computer type."
             "E.g. different HPC nodes may not have the CPU feature sets."
-            f"{ret.stderr}"
         )
 
     return gemexe

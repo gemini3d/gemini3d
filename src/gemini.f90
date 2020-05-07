@@ -248,7 +248,13 @@ do while (t < cfg%tdur)
     print '(A,I4,A1,I0.2,A1,I0.2,A1,F12.6,A5,F8.6)', 'Current time ',cfg%ymd(1),'-',cfg%ymd(2),'-',cfg%ymd(3),' ',UTsec,'; dt=',dt
   endif
 
-  !! OUTPUT
+  if (cfg%dryrun) then
+    ierr = mpibreakdown()
+    if (ierr /= 0) error stop 'Gemini dry run MPI shutdown failure'
+    stop "OK: Gemini dry run"
+  endif
+
+  !> File output
   if (abs(t-tout) < 1d-5) then
     tout = tout + cfg%dtout
     if (cfg%nooutput .and. myid==0) then
@@ -267,7 +273,7 @@ do while (t < cfg%tdur)
     endif
   end if
 
-  !! GLOW OUTPUT
+  !> GLOW file output
   if ((cfg%flagglow /= 0) .and. (abs(t-tglowout) < 1d-5)) then !same as plasma output
     call cpu_time(tstart)
     call output_aur(cfg%outdir, cfg%flagglow, cfg%ymd, UTsec, iver, cfg%out_format)
@@ -397,9 +403,14 @@ do i = 3,argc
   select case (argv)
   case ('-d', '-debug')
     debug = .true.
+  case ('-dryrun')
+    !! this is a no file output test mode that runs one time step then quits
+    !! it helps avoid HPC queuing when a simple setup error exists
+    cfg%dryrun = .true.
   case ('-nooutput')
     cfg%nooutput = .true.
   case ('-out_format')
+    !! used mostly for debugging--normally should be set as file_format in config.nml
     call get_command_argument(i+1, argv)
     cfg%out_format = trim(argv)
     print *,'override output file format: ',cfg%out_format

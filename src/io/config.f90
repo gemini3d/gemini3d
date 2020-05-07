@@ -19,6 +19,7 @@ real(wp) :: Teinf
 integer :: potsolve, flagperiodic, flagoutput, flagcap,flagdneu,flagprecfile,interptype=0
 real(wp) :: sourcemlat=0,sourcemlon=0,dtneu=0, dxn=0,drhon=0,dzn=0
 logical :: nooutput = .false.
+logical :: dryrun = .false.
 real(wp) :: dtprec=0
 character(:), allocatable :: infile, outdir, &
   indatsize,indatgrid, indatfile, sourcedir, precdir, E0dir, out_format
