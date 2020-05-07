@@ -68,17 +68,7 @@ if (flagswap/=1) then
   call hout%read('glon', glonall)
 
   call hout%read('Bmag', Bmagall)
-  !! corner case: for 2d sims, Incall has degenerate dimension
-  !! and HDF5 file may be a 1-D vector, which can cause glibc
-  !! error "corrupted size vs. prev_size" and hard crash.
-  !! Since it's just one variable, easier to check and handle
-  if (lx2all==1) then
-    call hout%read('I', Incall(1,:))
-  elseif (lx3all==1) then
-    call hout%read('I', Incall(:,1))
-  else  !< 3d sim, so "/I" is 2D
-    call hout%read('I', Incall)
-  endif
+  call hout%read('I', Incall)
   call hout%read('nullpts', nullptsall)
 
   call hout%read('e1', e1all)
