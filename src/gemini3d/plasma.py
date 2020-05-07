@@ -13,8 +13,6 @@ from .config import read_config
 from .readdata import readgrid, loadframe
 from .base import write_grid, write_state
 
-R = Path(__file__).resolve().parents[1]
-
 DictArray = T.Dict[str, T.Any]
 
 
@@ -418,6 +416,7 @@ def msis_setup(p: DictArray, xg: DictArray) -> np.ndarray:
     %
     """
 
+    R = Path(__file__).resolve().parent
     builddir = R / "build"
     builddir.mkdir(parents=True, exist_ok=True)
     exe = shutil.which("msis_setup", path=str(builddir))
@@ -430,7 +429,8 @@ def msis_setup(p: DictArray, xg: DictArray) -> np.ndarray:
         print(" ".join(build_cmd))
         subprocess.check_call(build_cmd)
 
-    exe = shutil.which("msis_setup", path=str(builddir))
+        exe = shutil.which("msis_setup", path=str(builddir))
+
     if not exe:
         raise FileNotFoundError(f"MSIS setup executable not found in {builddir}")
     # %% SPECIFY SIZES ETC.
