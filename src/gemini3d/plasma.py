@@ -317,11 +317,14 @@ def equilibrium_state(p: T.Dict[str, T.Any], xg: DictArray) -> T.Tuple[np.ndarra
             # MOLECULAR DENSITIES
             nmolc = np.zeros(lx1)
             nmolc[inds1] = (1 - rho[inds1]) * ne[inds1]
+
             if len(inds2) > 0:
-                if lx2 != 1 and lx3 != 1:
+                if xg["r"].ndim == 3:
                     cond = xg["r"][0, 0, 0] > xg["r"][1, 0, 0]
-                else:
+                elif xg["r"].ndim == 2:
                     cond = xg["r"][0, 0] > xg["r"][1, 0]
+                else:
+                    raise ValueError("xg['r'] expected to be 3D, possibly with degenerate 2nd or 3rd dimension")
                 if cond:
                     iref = inds1[0]
                 else:
