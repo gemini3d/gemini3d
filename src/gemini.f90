@@ -4,7 +4,7 @@ Program Gemini3D
 use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
 
 use sanity_check, only : check_finite_output
-use phys_consts, only : lnchem, lwave, lsp, wp, debug
+use phys_consts, only : lnchem, lwave, lsp, wp, debug, flagneuBG, dtneuBG
 use grid, only: grid_size,read_grid,clear_grid,grid_check,lx1,lx2,lx3,lx2all,lx3all
 use mesh, only: curvmesh
 use config, only : read_configfile, gemini_cfg
@@ -61,6 +61,7 @@ real(wp) :: tstart,tfin
 !! temp. vars. for measuring performance of code blocks
 integer :: it,isp
 !! time and species loop indices
+real(wp) :: tneuBG !for testing whether we should re-evaluate neutral background
 
 !> WORK ARRAYS
 real(wp), allocatable :: dl1,dl2,dl3     !these are grid distances in [m] used to compute Courant numbers
@@ -73,6 +74,7 @@ integer :: lid2in,lid3in
 
 !> TO CONTROL THROTTLING OF TIME STEP
 real(wp), parameter :: dtscale=2.0_wp
+
 
 !! MAIN PROGRAM
 
@@ -154,6 +156,10 @@ B1(1:lx1,1:lx2,1:lx3) = x%Bmag
 !! this assumes that the grid is defined s.t. the x1 direction corresponds
 !! to the magnetic field direction (hence zero B2 and B3).
 
+!Set the neutral drifts to zero at the beginning of the simulation
+vn1=0
+vn2=0
+vn3=0
 
 !> INITIALIZE ELECTRODYNAMIC QUANTITIES FOR POLARIZATION CURRENT
 if (myid==0) Phiall = 0
@@ -170,6 +176,7 @@ it = 1
 t = 0
 tout = t
 tglowout = t
+tneuBG=t
 
 do while (t < cfg%tdur)
   !! TIME STEP CALCULATION
@@ -186,18 +193,14 @@ do while (t < cfg%tdur)
   end if
 
 
-  !COMPUTE BACKGROUND NEUTRAL ATMOSPHERE USING MSIS00.  PRESENTLY THIS ONLY GETS CALLED
-  !ON THE FIRST TIME STEP DUE TO A NEED TO KEEP A CONSTANT BACKGROUND (I.E. ONE NOT VARYING
-  !IN TIME) FOR SOME SIMULATIONS USING NEUTRAL INPUT.  REALISTICALLY THIS NEEDS TO BE
-  !RECALLED EVERY SO OFTEN (MAYBE EVERY 10-15 MINS)
-  if (it==1) then
+  !COMPUTE BACKGROUND NEUTRAL ATMOSPHERE USING MSIS00.
+  if (it==1 .or. flagneuBG .and. abs(t-tneuBG)<1d-5) then
     call cpu_time(tstart)
     call neutral_atmos(cfg%ymd,UTsec,x%glat,x%glon,x%alt,cfg%activ,nn,Tn)
-    vn1=0d0; vn2=0d0; vn3=0d0
-    !! hard-code these to zero for the first time step
+    tneuBG=tneuBG+dtneuBG;
     if (myid==0) then
       call cpu_time(tfin)
-      print *, 'Neutral background calculated in time:  ',tfin-tstart
+      print *, 'Neutral background at time:  ',t,' calculated in time:  ',tfin-tstart
     end if
   end if
 

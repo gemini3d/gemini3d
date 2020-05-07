@@ -73,12 +73,19 @@ real(wp), parameter :: wavelengths(lwave)=[3371.0_wp, &
                                         1493.0_wp, &
                                         1304.0_wp] !wavelength of each auroral line, housekeeping
 
-!> HOUSEKEEPING PARAMETERS
+!> HOUSEKEEPING PARAMETERS for conditioning densities
 real(wp), parameter :: mindens     = 1.0e-100_wp
 real(wp), parameter :: mindensnull = 1.0e-20_wp
 real(wp), parameter :: mindensdiv  = 1.0e-5_wp
 
+!To control the amount of console output; can be changed by user command line flag "-debug"
 logical :: debug=.false.
+
+!Whether or not to invoke the a vertical equatorial drift to mimic EIA
 logical,parameter :: flagEIA=.true.
+
+!Have MSIS update actively during the simulation and at what rate?
+logical, parameter :: flagneuBG=.true.     !re-evaluate neutral background during simulation
+real(wp), parameter :: dtneuBG=900._wp     !time between evaluations (seconds)
 
 end module phys_consts
