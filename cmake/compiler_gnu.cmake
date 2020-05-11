@@ -28,3 +28,8 @@ if(CMAKE_Fortran_COMPILER_VERSION VERSION_EQUAL 9.3.0)
   # makes a lot of spurious warnngs on alloctable scalar character
   string(APPEND CMAKE_Fortran_FLAGS " -Wno-maybe-uninitialized")
 endif()
+
+unset(gcc10opts)
+if(CMAKE_Fortran_COMPILER_VERSION VERSION_GREATER_EQUAL 10)
+  set(gcc10opts -fallow-argument-mismatch)
+endif()

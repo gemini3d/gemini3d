@@ -9,8 +9,8 @@ public :: gbsv
 contains
 
 subroutine gbsv(A,B,KL,IPIV,INFO)
-class(*), dimension(:,:), intent(inout) :: A
-class(*), dimension(:), intent(inout) :: B
+real(real64), dimension(:,:), intent(inout) :: A
+real(real64), dimension(:), intent(inout) :: B
 integer, intent(in), optional :: KL
 integer, dimension(:), intent(out), optional, target :: IPIV
 integer, intent(out), optional :: INFO
@@ -40,14 +40,16 @@ end if
 if ( ISTAT == 0 ) then
   KU = LDA - 2*LKL - 1
 
-  select type (A)
-    type is (real(real32))
-      @sgbsv@
-    type is (real(real64))
-      call dgbsv(N,LKL,KU,NRHS,A,LDA,LPIV,B,N,LINFO)
-    class default
-      error stop "unhandled kind"
-  end select
+  ! select type (A)
+  !   type is (real(real32))
+  !     @sgbsv@
+  !   type is (real(real64))
+  !     call dgbsv(N,LKL,KU,NRHS,A,LDA,LPIV,B,N,LINFO)
+  !   class default
+  !     error stop "unhandled kind"
+  ! end select
+  ! FIXME: above comments are workaround for GCC10
+  call dgbsv(N,LKL,KU,NRHS,A,LDA,LPIV,B,N,LINFO)
 endif
 
 if(present(info)) info = linfo
