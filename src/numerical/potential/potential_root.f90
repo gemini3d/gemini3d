@@ -372,6 +372,7 @@ if (debug) print *, 'MUMPS time:  ',tfin-tstart
 
 
 !RADD--- ROOT NEEDS TO PUSH THE POTENTIAL BACK TO ALL WORKERS FOR FURTHER PROCESSING (BELOW)
+Phiall=0._wp
 call bcast_send(Phiall,tag%Phi,Phi)
 
 
