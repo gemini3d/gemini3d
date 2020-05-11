@@ -85,10 +85,10 @@ if (flagswap/=1) then
       call hout%write('v2avgall', real(v2avgall(1:lx1,1:lx2all,1:lx3all)))
       call hout%write('v3avgall', real(v3avgall(1:lx1,1:lx2all,1:lx3all)))
     case (3)     !just electron density
-      print *, '!!!NOTE:  Input file has selected electron density only output, make sure this is what you really want!'
+      print *, 'INFO:  Input file has selected electron density only output, make sure this is what you really want!'
       call hout%write('neall',    real(neall(1:lx1,1:lx2all,1:lx3all)))
     case default    !output everything
-      print *, '!!!NOTE:  Input file has selected full output, large files may result!'
+      print *, 'INFO:  Input file has selected full output, large files may result!'
       call hout%write('nsall',    real(nsall(1:lx1,1:lx2all,1:lx3all,:)))
       call hout%write('vs1all',   real(vs1all(1:lx1,1:lx2all,1:lx3all,:)))
       !this is full output of all parameters in 3D
@@ -117,12 +117,12 @@ else
       call hout%write('v2avgall', real(v3avgall))
       call hout%write('v3avgall', real(v2avgall))
     case (3)     !electron density only output
-      print *, '!!!NOTE:  Input file has selected electron density only output, make sure this is what you really want!'
+      print *, 'INFO:  Input file has selected electron density only output, make sure this is what you really want!'
 
       call hout%write('neall',    real(neall))
 
     case default
-      print *, '!!!NOTE:  Input file has selected full output, large files may result!'
+      print *, 'INFO:  Input file has selected full output, large files may result!'
 
       call hout%write('nsall',    real(nsall(1:lx1,1:lx2all,1:lx3all,:)))
       call hout%write('vs1all',   real(vs1all(1:lx1,1:lx2all,1:lx3all,:)))
@@ -149,15 +149,15 @@ call hout%finalize()
 
 !! Check for any NaN before proceeding to next time step
 
-if (.not.all(ieee_is_finite(neall))) error stop 'neall has non-finite value(s)'
-if (.not.all(ieee_is_finite(v1avgall))) error stop 'v1avgall has non-finite value(s)'
-if (.not.all(ieee_is_finite(Teall))) error stop 'Teall has non-finite value(s)'
-if (.not.all(ieee_is_finite(J1all))) error stop 'J1all has non-finite value(s)'
-if (.not.all(ieee_is_finite(J2all))) error stop 'J2all has non-finite value(s)'
-if (.not.all(ieee_is_finite(J3all))) error stop 'J3all has non-finite value(s)'
-if (.not.all(ieee_is_finite(v2avgall))) error stop 'v2avgall has non-finite value(s)'
-if (.not.all(ieee_is_finite(v3avgall))) error stop 'v3avgall has non-finite value(s)'
-if (.not.all(ieee_is_finite(Phiall))) error stop 'Phiall has non-finite value(s)'
+if (.not.all(ieee_is_finite(neall))) error stop 'output_root_stream_mpi_hdf5: neall has non-finite value(s)'
+if (.not.all(ieee_is_finite(v1avgall))) error stop 'output_root_stream_mpi_hdf5: v1avgall has non-finite value(s)'
+if (.not.all(ieee_is_finite(Teall))) error stop 'output_root_stream_mpi_hdf5: Teall has non-finite value(s)'
+if (.not.all(ieee_is_finite(J1all))) error stop 'output_root_stream_mpi_hdf5: J1all has non-finite value(s)'
+if (.not.all(ieee_is_finite(J2all))) error stop 'output_root_stream_mpi_hdf5: J2all has non-finite value(s)'
+if (.not.all(ieee_is_finite(J3all))) error stop 'output_root_stream_mpi_hdf5: J3all has non-finite value(s)'
+if (.not.all(ieee_is_finite(v2avgall))) error stop 'output_root_stream_mpi_hdf5: v2avgall has non-finite value(s)'
+if (.not.all(ieee_is_finite(v3avgall))) error stop 'output_root_stream_mpi_hdf5: v3avgall has non-finite value(s)'
+if (.not.all(ieee_is_finite(Phiall))) error stop 'output_root_stream_mpi_hdf5: Phiall has non-finite value(s)'
 
 end procedure output_root_stream_mpi_hdf5
 
