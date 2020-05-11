@@ -268,6 +268,7 @@ end subroutine get_Efield
 
 
 subroutine get_precip(path, Qp, E0p)
+!! Qp, E0p are (llon, llat)
 character(*), intent(in) :: path
 real(wp), dimension(:,:), intent(out) :: Qp, E0p
 

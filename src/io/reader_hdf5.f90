@@ -131,6 +131,7 @@ end procedure get_Efield_hdf5
 
 
 module procedure get_precip_hdf5
+!! Qp, E0p are (llon, llat)
 type(hdf5_file) :: hf
 real(wp) :: flagtmp
 
