@@ -2,7 +2,7 @@ module config
 
 use, intrinsic :: iso_fortran_env, only : stderr=>error_unit, compiler_version
 
-use pathlib, only : expanduser
+use pathlib, only : expanduser, get_suffix
 use phys_consts, only : wp
 
 implicit none (type, external)
@@ -78,7 +78,7 @@ real(wp) :: dxn,drhon,dzn
 integer :: flagprecfile=0
 real(wp) :: dtprec=0
 character(256) :: indat_size, indat_grid, indat_file, source_dir, prec_dir, E0_dir
-character(4) :: file_format
+character(4) :: file_format=""  !< need to initialize blank or random invisible fouls len_trim>0
 integer :: flagE0file=0
 real(wp) :: dtE0=0
 integer :: flagglow=0
@@ -117,7 +117,15 @@ cfg%flagglow = flagglow
 
 read(u, nml=files, iostat=i)
 call check_nml_io(i, cfg%infile, "files", compiler_vendor)
-cfg%out_format = trim(file_format)
+
+!> auto file_format if not specified
+if (len_trim(file_format) > 0) then
+  cfg%out_format = trim(file_format)
+else
+  file_format = get_suffix(indat_size)
+  cfg%out_format = file_format(2:)
+endif
+
 cfg%indatsize = expanduser(indat_size)
 cfg%indatgrid = expanduser(indat_grid)
 cfg%indatfile = expanduser(indat_file)

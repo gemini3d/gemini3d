@@ -25,6 +25,7 @@ end interface
 contains
 
 pure function get_suffix(filename)
+!! extracts path suffix, including the final "." dot
 character(*), intent(in) :: filename
 character(:), allocatable :: get_suffix
 
