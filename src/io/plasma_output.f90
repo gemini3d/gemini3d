@@ -95,11 +95,10 @@ module procedure output_plasma
 !! BOTH ROOT AND WORKERS CALL THIS PROCEDURE SO UNALLOCATED
 !! VARIABLES MUST BE DECLARED AS ALLOCATABLE, INTENT(INOUT)
 
-if (myid/=0) then
-  call output_workers_mpi(vs2,vs3,ns,vs1,Ts,J1,J2,J3)
-else
+if (myid == 0) then
   call output_root_stream_mpi(outdir,flagoutput,ymd,UTsec,vs2,vs3,ns,vs1,Ts,Phiall,J1,J2,J3, out_format)
-  !! only option that works with >2GB files
+else
+  call output_workers_mpi(vs2,vs3,ns,vs1,Ts,J1,J2,J3)
 end if
 
 end procedure output_plasma
