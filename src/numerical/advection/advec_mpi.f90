@@ -14,11 +14,11 @@ public :: advec3d_mc_mpi, advec_prep_mpi
 !> OVERLOAD ADVECTION TO DEAL WITH THE CURVILINEAR GRID/MESH STRUCTURE.
 !> NOTE THAT THE LOWER-LEVEL CALLS ARE DISTINCT, NOT-OVERLOADED PROCEDURES.
 interface advec3D_MC_mpi
-  module procedure advec3D_MC_mpi_curv_23
+module procedure advec3D_MC_mpi_curv_23
 end interface advec3D_MC_mpi
 
 interface advec_prep_mpi
-  module procedure advec_prep_mpi_23
+module procedure advec_prep_mpi_23
 end interface advec_prep_mpi
 
 
@@ -58,8 +58,9 @@ lx2=size(vs1,2)-4
 lx3=size(vs1,3)-4
 
 
-!COMPUTE INTERFACE VELCOTIES AND APPLY LIMITING, IF NEEDED
-v1i(2:lx1,:,:)=0.5*(vs1(1:lx1-1,1:lx2,1:lx3,isp)+vs1(2:lx1,1:lx2,1:lx3,isp))   !first the interior points
+!> COMPUTE INTERFACE VELCOTIES AND APPLY LIMITING, IF NEEDED
+v1i(2:lx1,:,:)=0.5*(vs1(1:lx1-1,1:lx2,1:lx3,isp)+vs1(2:lx1,1:lx2,1:lx3,isp))
+!! first the interior points
 
 if (gridflag==0) then
   v1i(1,:,:)=vs1(1,1:lx2,1:lx3,isp)   !lowest alt on grid.
@@ -78,7 +79,7 @@ v2i(:,2:lx2,:)=0.5*(vs2(1:lx1,1:lx2-1,1:lx3,isp)+vs2(1:lx1,2:lx2,1:lx3,isp))
 v2i(:,lx2+1,:)=vs2(1:lx1,lx2,1:lx3,isp)
 
 
-! THIS TYPE OF LIMITING MAY BE NEEDED FOR VERY HIGH-ALTITUDE SIMULATIONS...
+!> THIS TYPE OF LIMITING MAY BE NEEDED FOR VERY HIGH-ALTITUDE SIMULATIONS...
 !    if (isp<lsp-1) then
 !      v1i(lx1+1,:,:)=max(vs1(lx1+1,:,:,isp),-1*vellim)    !limit inflow
 !    else if (isp==6) then
@@ -90,7 +91,7 @@ v2i(:,lx2+1,:)=vs2(1:lx1,lx2,1:lx3,isp)
 !    end if
 
 
-!GHOST CELL VALUES FOR DENSITY (these need to be done last to avoid being overwritten by send/recv's!!!)
+!> GHOST CELL VALUES FOR DENSITY (these need to be done last to avoid being overwritten by send/recv's!!!)
 ns(:,0,:,isp)=ns(:,1,:,isp)
 ns(:,-1,:,isp)=ns(:,1,:,isp)
 ns(:,lx2+1,:,isp)=ns(:,lx2,:,isp)
@@ -98,12 +99,12 @@ ns(:,lx2+2,:,isp)=ns(:,lx2,:,isp)
 
 do ix3=1,lx3
   do ix2=1,lx2
-    !logical bottom
+    !> logical bottom
     coeff=ns(2,ix2,ix3,isp)/ns(3,ix2,ix3,isp)
     ns(0,ix2,ix3,isp)=min(coeff*ns(1,ix2,ix3,isp),ns(1,ix2,ix3,isp))
     ns(-1,ix2,ix3,isp)=min(coeff*ns(0,ix2,ix3,isp),ns(0,ix2,ix3,isp))
 
-    !logical top
+    !> logical top
     coeff=ns(lx1-1,ix2,ix3,isp)/ns(lx1-2,ix2,ix3,isp)
     ns(lx1+1,ix2,ix3,isp)=min(coeff*ns(lx1,ix2,ix3,isp),ns(lx1,ix2,ix3,isp))
     ns(lx1+2,ix2,ix3,isp)=min(coeff*ns(lx1+1,ix2,ix3,isp),ns(lx1+1,ix2,ix3,isp))
@@ -111,15 +112,19 @@ do ix3=1,lx3
 end do
 
 
-!FOR X1 MOMENTUM DENSITY
+!> FOR X1 MOMENTUM DENSITY
 rhovs1(:,0,:,isp)=rhovs1(:,1,:,isp);
 rhovs1(:,-1,:,isp)=rhovs1(:,1,:,isp);
 rhovs1(:,lx2+1,:,isp)=rhovs1(:,lx2,:,isp);
 rhovs1(:,lx2+2,:,isp)=rhovs1(:,lx2,:,isp);
 
-rhovs1(0,1:lx2,1:lx3,isp)=2d0*v1i(1,:,:)-vs1(1,1:lx2,1:lx3,isp);  !initially these are velocities.  Also loose definition of 'conformable'.  Also corners never get set, but I suppose they aren't really used anyway.
+rhovs1(0,1:lx2,1:lx3,isp)=2d0*v1i(1,:,:)-vs1(1,1:lx2,1:lx3,isp);
+!! initially these are velocities.
+!! Also loose definition of 'conformable'.
+!! Also corners never get set, but I suppose they aren't really used anyway.
 
-rhovs1(0,0,:,isp)=rhovs1(0,1,:,isp)    !set the cells left out in previous statement where we couldn't use ghost cells due to v1i
+rhovs1(0,0,:,isp)=rhovs1(0,1,:,isp)
+!! set the cells left out in previous statement where we couldn't use ghost cells due to v1i
 rhovs1(0,-1,:,isp)=rhovs1(0,1,:,isp)
 rhovs1(0,lx2+1,:,isp)=rhovs1(0,lx2,:,isp)
 rhovs1(0,lx2+2,:,isp)=rhovs1(0,lx2,:,isp)
@@ -132,7 +137,8 @@ rhovs1(-1,:,:,isp)=rhovs1(0,:,:,isp)+rhovs1(0,:,:,isp)-vs1(1,:,:,isp);
 rhovs1(lx1+1,1:lx2,1:lx3,isp)=2d0*v1i(lx1+1,:,:)-vs1(lx1,1:lx2,1:lx3,isp);
 rhovs1(lx1+2,:,:,isp)=rhovs1(lx1+1,:,:,isp)+rhovs1(lx1+1,:,:,isp)-vs1(lx1,:,:,isp);
 
-rhovs1(-1:0,:,:,isp)=rhovs1(-1:0,:,:,isp)*ns(-1:0,:,:,isp)*ms(isp)   !now convert to momentum density
+rhovs1(-1:0,:,:,isp)=rhovs1(-1:0,:,:,isp)*ns(-1:0,:,:,isp)*ms(isp)
+!! now convert to momentum density
 rhovs1(lx1+1:lx1+2,:,:,isp)=rhovs1(lx1+1:lx1+2,:,:,isp)*ns(lx1+1:lx1+2,:,:,isp)*ms(isp)
 
 
@@ -154,7 +160,8 @@ idleft=myid-1; idright=myid+1
 
 !> PASS X3 BOUNDARY CONDITIONS WITH GENERIC HALOING ROUTINES
 param=vs3(:,:,:,isp)
-call halo(param,1,tag%vs3BC,isperiodic)     !! we only need one ghost cell to compute interface velocities
+call halo(param,1,tag%vs3BC,isperiodic)
+!! we only need one ghost cell to compute interface velocities
 vs3(:,:,:,isp)=param
 
 param2=ns(:,:,:,isp)
@@ -170,8 +177,10 @@ call halo(param4,2,tag%rhoesBC,isperiodic)
 rhoes(:,:,:,isp)=param4
 
 if (.not. isperiodic) then
-  if (idleft==-1) then    !left side is at global boundary, assume haloing won't overwrite
-    vs3(:,:,0,isp)=vs3(:,:,1,isp)    !copy first cell to first ghost (vs3 not advected so only need only ghost)
+  if (idleft==-1) then
+    !! left side is at global boundary, assume haloing won't overwrite
+    vs3(:,:,0,isp)=vs3(:,:,1,isp)
+    !! copy first cell to first ghost (vs3 not advected so only need only ghost)
 
     ns(:,:,0,isp)=ns(:,:,1,isp)
     ns(:,:,-1,isp)=ns(:,:,1,isp)
@@ -180,8 +189,10 @@ if (.not. isperiodic) then
     rhoes(:,:,0,isp)=rhoes(:,:,1,isp);
     rhoes(:,:,-1,isp)=rhoes(:,:,1,isp);
   end if
-  if (idright==lid) then    !my right boundary is the global boundary, assume haloing won't overwrite
-    vs3(:,:,lx3+1,isp)=vs3(:,:,lx3,isp)    !copy last cell to first ghost (all that's needed since vs3 not advected)
+  if (idright==lid) then
+    !! my right boundary is the global boundary, assume haloing won't overwrite
+    vs3(:,:,lx3+1,isp)=vs3(:,:,lx3,isp)
+    !! copy last cell to first ghost (all that's needed since vs3 not advected)
 
     ns(:,:,lx3+1,isp)=ns(:,:,lx3,isp)
     ns(:,:,lx3+2,isp)=ns(:,:,lx3,isp)
@@ -238,12 +249,15 @@ if (gridflag==0) then          !non-inverted
   v1i(1,:,:)=vs1(1,1:lx2,1:lx3,isp)
   v1i(lx1+1,:,:)=vs1(lx1,1:lx2,1:lx3,isp)
 else if (gridflag==1) then     !inverted grid (assumes northern hemisphere???)
-  v1i(lx1+1,:,:)=vs1(lx1,1:lx2,1:lx3,isp)        !lowest alt on grid.
-  v1i(1,:,:) = min(v1i(2,1:lx2,1:lx3), 0._wp)    !highest alt; interesting that this is not vs1...
+  v1i(lx1+1,:,:)=vs1(lx1,1:lx2,1:lx3,isp)
+  !! lowest alt on grid.
+  v1i(1,:,:) = min(v1i(2,1:lx2,1:lx3), 0._wp)
+  !! highest alt; interesting that this is not vs1...
 else                           !closed dipole
   v1i(1,:,:) = vs1(1,1:lx2,1:lx3,isp)
 !!    v1i(lx1+1,:,:)=v1i(lx1,:,:)    !avoids issues with top boundary velocity spikes which may arise
-  v1i(lx1+1,:,:) = max(v1i(lx1,1:lx2,1:lx3),0._wp)    !interesting that this is not vs1...
+  v1i(lx1+1,:,:) = max(v1i(lx1,1:lx2,1:lx3),0._wp)
+  !! NOTE: interesting that this is not vs1...
 end if
 
 !v2i(:,1,:)=vs2(1:lx1,1,1:lx3,isp)
@@ -263,15 +277,15 @@ end if
 !    end if
 
 
-!GHOST CELL VALUES FOR DENSITY (these need to be done last to avoid being overwritten by send/recv's!!!)
+!> GHOST CELL VALUES FOR DENSITY (these need to be done last to avoid being overwritten by send/recv's!!!)
 do ix3=1,lx3
   do ix2=1,lx2
-    !logical bottom
+    !> logical bottom
     coeff=ns(2,ix2,ix3,isp)/ns(3,ix2,ix3,isp)
     ns(0,ix2,ix3,isp)=min(coeff*ns(1,ix2,ix3,isp),ns(1,ix2,ix3,isp))
     ns(-1,ix2,ix3,isp)=min(coeff*ns(0,ix2,ix3,isp),ns(0,ix2,ix3,isp))
 
-    !logical top
+    !> logical top
     coeff=ns(lx1-1,ix2,ix3,isp)/ns(lx1-2,ix2,ix3,isp)
     ns(lx1+1,ix2,ix3,isp)=min(coeff*ns(lx1,ix2,ix3,isp),ns(lx1,ix2,ix3,isp))
     ns(lx1+2,ix2,ix3,isp)=min(coeff*ns(lx1+1,ix2,ix3,isp),ns(lx1+1,ix2,ix3,isp))
@@ -280,12 +294,14 @@ end do
 
 
 !FOR X1 MOMENTUM DENSITY
-rhovs1(0,1:lx2,1:lx3,isp)=2d0*v1i(1,:,:)-vs1(1,1:lx2,1:lx3,isp);  !initially these are velocities.  Also loose definition of 'conformable'.  Also corners never get set, but I suppose they aren't really used anyway.
+rhovs1(0,1:lx2,1:lx3,isp)=2d0*v1i(1,:,:)-vs1(1,1:lx2,1:lx3,isp);
+!! initially these are velocities.  Also loose definition of 'conformable'.  Also corners never get set, but I suppose they aren't really used anyway.
 rhovs1(-1,:,:,isp)=rhovs1(0,:,:,isp)+rhovs1(0,:,:,isp)-vs1(1,:,:,isp);
 rhovs1(lx1+1,1:lx2,1:lx3,isp)=2d0*v1i(lx1+1,:,:)-vs1(lx1,1:lx2,1:lx3,isp);
 rhovs1(lx1+2,:,:,isp)=rhovs1(lx1+1,:,:,isp)+rhovs1(lx1+1,:,:,isp)-vs1(lx1,:,:,isp);
 
-rhovs1(-1:0,:,:,isp)=rhovs1(-1:0,:,:,isp)*ns(-1:0,:,:,isp)*ms(isp)   !now convert to momentum density
+rhovs1(-1:0,:,:,isp)=rhovs1(-1:0,:,:,isp)*ns(-1:0,:,:,isp)*ms(isp)
+!! now convert to momentum density
 rhovs1(lx1+1:lx1+2,:,:,isp)=rhovs1(lx1+1:lx1+2,:,:,isp)*ns(lx1+1:lx1+2,:,:,isp)*ms(isp)
 
 
@@ -297,15 +313,18 @@ rhoes(lx1+2,:,:,isp)=rhoes(lx1,:,:,isp);
 
 
 !MZ - collect the x2 boundary conditions here - these are no longer global
-iddown=myid2-1; idup=myid2+1
+iddown=myid2-1
+idup=myid2+1
 
-!NEED TO ALSO PASS THE X2 VELOCITIES SO WE CAN COMPUTE INTERFACE VALUES
+!> NEED TO ALSO PASS THE X2 VELOCITIES SO WE CAN COMPUTE INTERFACE VALUES
 param=vs2(:,:,:,isp)
-call halo(param,1,tag%vs2BC,isperiodic)     !! we only need one ghost cell to compute interface velocities
+call halo(param,1,tag%vs2BC,isperiodic)
+!! we only need one ghost cell to compute interface velocities
 vs2(:,:,:,isp)=param
 
 
-!SET THE GLOBAL X2 BOUNDARY CELLS AND ASSUME HALOING WON'T OVERWRITE.  THIS DIMENSION IS ASSUMED TO NEVER BE PEREIODIC
+!> SET THE GLOBAL X2 BOUNDARY CELLS AND ASSUME HALOING WON'T OVERWRITE.
+!> THIS DIMENSION IS ASSUMED TO NEVER BE PEREIODIC
 if (iddown==-1) then
   vs2(:,0,:,isp)=vs2(:,1,:,isp)
 
@@ -334,11 +353,12 @@ idleft=myid3-1; idright=myid3+1
 
 !> PASS X3 VELOCITY BOUNDARY CONDITIONS WITH GENERIC HALOING ROUTINES
 param=vs3(:,:,:,isp)
-call halo(param,1,tag%vs3BC,isperiodic)     !! we only need one ghost cell to compute interface velocities
+call halo(param,1,tag%vs3BC,isperiodic)
+!! we only need one ghost cell to compute interface velocities
 vs3(:,:,:,isp)=param
 
 
-!these will now be haloed internal ot the advection routines, viz. all advected quantities are haloed withine advection
+!> these will now be haloed internal ot the advection routines, viz. all advected quantities are haloed withine advection
 !param2=ns(:,:,:,isp)
 !call halo(param2,2,tag%nsBC)
 !ns(:,:,:,isp)=param2
@@ -352,10 +372,12 @@ vs3(:,:,:,isp)=param
 !rhoes(:,:,:,isp)=param4
 
 
-!SET THE GLOBAL x3 BOUNDARY CELLS AND ASSUME THAT HALOING WON'T OVERWRITE...
+!> SET THE GLOBAL x3 BOUNDARY CELLS AND ASSUME THAT HALOING WON'T OVERWRITE...
 if (.not. isperiodic) then
-  if (idleft==-1) then    !left side is at global boundary, assume haloing won't overwrite
-    vs3(:,:,0,isp)=vs3(:,:,1,isp)    !copy first cell to first ghost (vs3 not advected so only need only ghost)
+  if (idleft==-1) then
+    !! left side is at global boundary, assume haloing won't overwrite
+    vs3(:,:,0,isp)=vs3(:,:,1,isp)
+    !! copy first cell to first ghost (vs3 not advected so only need only ghost)
 
     ns(:,:,0,isp)=ns(:,:,1,isp)
     ns(:,:,-1,isp)=ns(:,:,1,isp)
