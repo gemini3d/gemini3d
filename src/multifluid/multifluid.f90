@@ -1,5 +1,7 @@
 module multifluid
 
+use, intrinsic :: ieee_arithmetic, only : ieee_is_nan
+
 use advec_mpi, only: advec3d_mc_mpi, advec_prep_mpi
 use calculus, only: etd_uncoupled, div3d
 use collisions, only:  thermal_conduct
@@ -17,7 +19,8 @@ implicit none (type, external)
 private
 public :: fluid_adv
 
-integer, parameter :: lprec=2    !number of precipitating electron populations
+integer, parameter :: lprec=2
+!! number of precipitating electron populations
 
 real(wp), allocatable, dimension(:,:,:,:) :: PrPrecipG
 real(wp), allocatable, dimension(:,:,:) :: QePrecipG, iverG
@@ -25,21 +28,22 @@ real(wp), allocatable, dimension(:,:,:) :: QePrecipG, iverG
 contains
 
 subroutine fluid_adv(ns,vs1,Ts,vs2,vs3,J1,E1,Teinf,t,dt,x,nn,vn1,vn2,vn3,Tn,iver,f107,f107a,ymd,UTsec, &
-                   flagprecfile,dtprec,precdir,flagglow,dtglow)    !J1 needed for heat conduction; E1 for momentum equation
+                   flagprecfile,dtprec,precdir,flagglow,dtglow)
+!! J1 needed for heat conduction; E1 for momentum equation
 
-!------------------------------------------------------------
-!-------THIS SUBROUTINE ADVANCES ALL OF THE FLUID VARIABLES
-!------ BY TIME STEP DT.
-!------------------------------------------------------------
+!! THIS SUBROUTINE ADVANCES ALL OF THE FLUID VARIABLES BY TIME STEP DT.
 
 real(wp), dimension(-1:,-1:,-1:,:), intent(inout) ::  ns,vs1,Ts
 real(wp), dimension(-1:,-1:,-1:,:), intent(inout) ::  vs2,vs3
-real(wp), dimension(:,:,:), intent(in) :: J1       !needed for thermal conduction in electron population
-real(wp), dimension(:,:,:), intent(inout) :: E1    !will have ambipolar field added into it in this procedure...
+real(wp), dimension(:,:,:), intent(in) :: J1
+!! needed for thermal conduction in electron population
+real(wp), dimension(:,:,:), intent(inout) :: E1
+!! will have ambipolar field added into it in this procedure...
 
 real(wp), intent(in) :: Teinf,t,dt
 
-type(curvmesh), intent(in) :: x                   !grid structure variable
+type(curvmesh), intent(in) :: x
+!! grid structure variable
 
 real(wp), dimension(:,:,:,:), intent(in) :: nn
 real(wp), dimension(:,:,:), intent(in) :: vn1,vn2,vn3,Tn
@@ -72,13 +76,16 @@ real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: chi
 real(wp), dimension(1:size(ns,2)-4,1:size(ns,3)-4,lprec) :: W0,PhiWmWm2
 
 integer :: iprec
-real(wp), dimension(1:size(vs1,1)-3,1:size(vs1,2)-4,1:size(vs1,3)-4) :: v1iupdate    !temp interface velocities for art. viscosity
-real(wp), dimension(1:size(vs1,1)-4,1:size(vs1,2)-4,1:size(vs1,3)-4) :: dv1iupdate    !interface diffs. for art. visc.
+real(wp), dimension(1:size(vs1,1)-3,1:size(vs1,2)-4,1:size(vs1,3)-4) :: v1iupdate
+!! temp interface velocities for art. viscosity
+real(wp), dimension(1:size(vs1,1)-4,1:size(vs1,2)-4,1:size(vs1,3)-4) :: dv1iupdate
+!! interface diffs. for art. visc.
 real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,size(ns,4)) :: Q
-real(wp), parameter :: xicon=3.0_wp    !artifical viscosity, decent value for closed field-line grids extending to high altitudes, can be set to 0 for cartesian simulations not exceed altitudes of 1500 km.
+real(wp), parameter :: xicon = 3
+!! artifical viscosity, decent value for closed field-line grids extending to high altitudes, can be set to 0 for cartesian simulations not exceed altitudes of 1500 km.
 
 
-!MAKING SURE THESE ARRAYS ARE ALWAYS IN SCOPE
+!> MAKING SURE THESE ARRAYS ARE ALWAYS IN SCOPE
 if ((flagglow/=0).and.(.NOT.allocated(PrprecipG))) then
   allocate(PrprecipG(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,size(ns,4)-1))
   PrprecipG(:,:,:,:)=0
@@ -130,9 +137,10 @@ do isp=1,lsp
   param=advec3D_MC_mpi(param,v1i,v2i,v3i,dt,x,0,tag%Ts)
   rhoes(:,:,:,isp)=param
 end do
-call cpu_time(tfin)
-if (myid==0) then
-  if (debug) print *, 'Completed advection substep for time step:  ',t,' in cpu_time of:  ',tfin-tstart
+
+if (myid==0 .and. debug) then
+  call cpu_time(tfin)
+  print *, 'Completed advection substep for time step:  ',t,' in cpu_time of:  ',tfin-tstart
 end if
 
 
@@ -420,7 +428,7 @@ select case (paramflag)
         ix2=x%inull(iinull,2)
         ix3=x%inull(iinull,3)
 
-        param(ix1,ix2,ix3,isp)=0._wp
+        param(ix1,ix2,ix3,isp) = 0
       end do
     end do
 
@@ -467,14 +475,13 @@ select case (paramflag)
       end do
     end do
 
-
     !> SET TEMPS TO SOME NOMINAL VALUE
-    param(-1:0,:,:,:)=100._wp
-    param(lx1+1:lx1+2,:,:,:)=100._wp
-    param(:,-1:0,:,:)=100._wp
-    param(:,lx2+1:lx2+2,:,:)=100._wp
-    param(:,:,-1:0,:)=100._wp
-    param(:,:,lx3+1:lx3+2,:)=100._wp
+    param(-1:0,:,:,:) = 100
+    param(lx1+1:lx1+2,:,:,:) = 100
+    param(:,-1:0,:,:) = 100
+    param(:,lx2+1:lx2+2,:,:) = 100
+    param(:,:,-1:0,:) = 100
+    param(:,:,lx3+1:lx3+2,:) = 100
   case default
     !! do nothing...
     if (debug) print *,  '!non-standard parameter selected in clean_params...'
