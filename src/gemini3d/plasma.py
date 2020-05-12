@@ -137,19 +137,19 @@ def model_resample(
 
         X1 = xgin["x1"][2:-2]
         # new grid
-        X3i = xg["x3"][2:-2]
-        X1i = xg["x1"][2:-2]
+        x3i = xg["x3"][2:-2].astype(np.float32)
+        x1i = xg["x1"][2:-2].astype(np.float32)
 
         # for each species
         for i in range(lsp):
-            f = interp2d(X1, X3, ns[i, :, :, :], bounds_error=True)
-            nsi[i, :, :, :] = f(X1i, X3i)
+            f = interp2d(X3, X1, ns[i, :, :, :], bounds_error=True)
+            nsi[i, :, :, :] = f(x3i, x1i)[:, None, :]
 
-            f = interp2d(X1, X3, vs[i, :, :, :], bounds_error=True)
-            vsi[i, :, :, :] = f(X1i, X3i)
+            f = interp2d(X3, X1, vs[i, :, :, :], bounds_error=True)
+            vsi[i, :, :, :] = f(x3i, x1i)[:, None, :]
 
-            f = interp2d(X1, X3, Ts[i, :, :, :], bounds_error=True)
-            Tsi[i, :, :, :] = f(X1i, X3i)
+            f = interp2d(X3, X1, Ts[i, :, :, :], bounds_error=True)
+            Tsi[i, :, :, :] = f(x3i, x1i)[:, None, :]
 
     else:
         raise ValueError("Not sure if this is 2-D or 3-D simulation")
