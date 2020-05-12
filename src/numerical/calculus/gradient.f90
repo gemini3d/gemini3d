@@ -226,7 +226,7 @@ lx1=size(f,1)
 lx2=size(f,2)
 lx3=size(f,3)
 
-if (lx2>1) then    !if we have a singleton dimension then we are doing a 2D run and the derivatives in this direction are zero
+if (x%lx2>1) then    !if we have a singleton dimension then we are doing a 2D run and the derivatives in this direction are zero
 
   !ERROR CHECKING TO MAKE SURE DIFFRENCING IS DONE OVER A CONSISTENTLY-SIZED GRID
   if (lx1 /= ubnd1-lbnd1+1 .or. lx2 /= ubnd2-lbnd2+1 .or. lx3 /= ubnd3-lbnd3+1) then
@@ -344,7 +344,7 @@ lx2=size(f,2)
 lx3=size(f,3)
 
 
-if (lx3>1) then    !only differentiate if we have non-singleton dimension, otherwise set to zero
+if (x%lx3>1) then    !only differentiate if we have non-singleton dimension, otherwise set to zero
   !ERROR CHECKING TO MAKE SURE DIFFRENCING IS DONE OVER A CONSISTENTLY-SIZED GRID
   if (lx1 /= ubnd1-lbnd1+1 .or. lx2 /= ubnd2-lbnd2+1 .or. lx3 /= ubnd3-lbnd3+1) then
     error stop '!!!  Inconsistent array and mesh sizes in gradient function.'   !just bail on it and let the user figure it out

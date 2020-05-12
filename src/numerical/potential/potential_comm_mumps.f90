@@ -6,6 +6,8 @@ module potential_comm
 !!
 !! NOTE THAT ONLY THE CURVILINEAR FUNCTION ARE UP TO DATE.
 
+use, intrinsic :: ieee_arithmetic
+
 use phys_consts, only: wp, pi, lsp, debug
 use grid, only: flagswap, gridflag
 use mesh, only: curvmesh
@@ -155,7 +157,6 @@ lx3=size(ns,3)-4
 !POTENTIAL SOLUTION (IF REQUIRED)
 call cpu_time(tstart)
 call conductivities(nn,Tn,ns,Ts,vs1,B1,sig0,sigP,sigH,muP,muH,muPvn,muHvn)
-
 
 if (flagcap/=0) then
   call capacitance(ns,B1,flagcap,incap)

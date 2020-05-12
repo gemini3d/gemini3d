@@ -186,7 +186,7 @@ do ix3=1,lx3
   end do
 end do
 
-if (lx2>1) then   !only if the x2-direction is not null
+if (x%lx2>1) then   !only if the x2-direction is not null, this should be based on the grid data and not the data passed into this function
   do ix3=1,lx3
     do ix1=1,lx1
       div3D_curv_23(ix1,1,ix3)=div3D_curv_23(ix1,1,ix3)+ &
@@ -205,7 +205,7 @@ if (lx2>1) then   !only if the x2-direction is not null
 end if
 
 
-if (lx3>1) then    !only if non-singleton 3rd dimension
+if (x%lx3>1) then    !only if non-singleton 3rd dimension (I'm not sure this will ever be the case due to dimension swapping)
   do ix2=1,lx2
     do ix1=1,lx1
       div3D_curv_23(ix1,ix2,1)=div3D_curv_23(ix1,ix2,1)+ &

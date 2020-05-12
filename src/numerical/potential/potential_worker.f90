@@ -94,6 +94,10 @@ divtmp=div3D(J1halo(0:lx1+1,0:lx2+1,0:lx3+1),J2halo(0:lx1+1,0:lx2+1,0:lx3+1), &
              J3halo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
 srcterm=divtmp(1:lx1,1:lx2,1:lx3)
 !-------
+!print*, myid, any(ieee_is_nan(J1halo(0:lx1+1,1:lx2,1:lx3))), &
+!              any(ieee_is_nan(J2halo(1:lx1,0:lx2+1,1:lx3))), &
+!              any(ieee_is_nan(J3halo(1:lx1,1:lx2,0:lx3+1))), &
+!              any(ieee_is_nan(divtmp(1:lx1,1:lx2,1:lx3)))
 
 
 !-------
