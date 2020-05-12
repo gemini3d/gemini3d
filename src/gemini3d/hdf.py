@@ -61,13 +61,13 @@ def write_state(time: datetime, ns: np.ndarray, vs: np.ndarray, Ts: np.ndarray, 
         # we have to reverse axes order and put lsp at the last dim
 
         f.create_dataset(
-            f"/ns", data=ns.transpose(p4), dtype=np.float32, compression="gzip", compression_opts=1, shuffle=True, fletcher32=True
+            "/ns", data=ns.transpose(p4), dtype=np.float32, compression="gzip", compression_opts=1, shuffle=True, fletcher32=True
         )
         f.create_dataset(
-            f"/vsx1", data=vs.transpose(p4), dtype=np.float32, compression="gzip", compression_opts=1, shuffle=True, fletcher32=True
+            "/vsx1", data=vs.transpose(p4), dtype=np.float32, compression="gzip", compression_opts=1, shuffle=True, fletcher32=True
         )
         f.create_dataset(
-            f"/Ts", data=Ts.transpose(p4), dtype=np.float32, compression="gzip", compression_opts=1, shuffle=True, fletcher32=True
+            "/Ts", data=Ts.transpose(p4), dtype=np.float32, compression="gzip", compression_opts=1, shuffle=True, fletcher32=True
         )
 
 

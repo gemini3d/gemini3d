@@ -20,9 +20,9 @@ NJOBS = gemini3d.get_cpu_count()
 # Library parameters
 
 NETCDF_C = "4.7.4"
-NETCDF_C_GIT = f"https://github.com/Unidata/netcdf-c.git"
+NETCDF_C_GIT = "https://github.com/Unidata/netcdf-c.git"
 NETCDF_FORTRAN = "4.5.2"
-NETCDF_FORTRAN_GIT = f"https://github.com/Unidata/netcdf-fortran.git"
+NETCDF_FORTRAN_GIT = "https://github.com/Unidata/netcdf-fortran.git"
 
 HDF5VERSION = "1.12.0"
 HDF5URL = f"https://zenodo.org/record/3700903/files/hdf5-{HDF5VERSION}.tar.bz2?download=1"
