@@ -180,6 +180,9 @@ do isp=1,lsp
   Ts(:,:,:,isp)=max(Ts(:,:,:,isp),100._wp)
 end do
 
+!> NaN check
+if (any(ieee_is_nan(Ts))) error stop 'multifluid:fluid_adv: NaN detected in Ts after div3D()'
+
 if (myid==0 .and. debug) then
   call cpu_time(tfin)
   print *, 'Completed compression substep for time step:  ',t,' in cpu_time of:  ',tfin-tstart
@@ -254,8 +257,8 @@ if (gridflag/=0) then
   end if
 else
   !! do not compute impact ionization on a closed mesh (presumably there is no source of energetic electrons at these lats.)
-  if (myid==0) then
-    if (debug) print *, 'Looks like we have a closed grid, so skipping impact ionization for time step:  ',t
+  if (myid==0 .and. debug) then
+    print *, 'Looks like we have a closed grid, so skipping impact ionization for time step:  ',t
   end if
 end if
 
