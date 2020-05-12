@@ -156,10 +156,14 @@ call cpu_time(tstart)
 do isp=1,lsp
   call RK2_prep_mpi(isp,x%flagper,vs1,vs2,vs3)    !role-agnostic mpi, all-to-neighbor
 
-  divvs=div3D(vs1(0:lx1+1,0:lx2+1,0:lx3+1,isp),vs2(0:lx1+1,0:lx2+1,0:lx3+1,isp), &
-             vs3(0:lx1+1,0:lx2+1,0:lx3+1,isp),x,0,lx1+1,0,lx2+1,0,lx3+1)    !diff with one set of ghost cells to preserve second order accuracy over the grid
+  divvs = div3D(vs1(0:lx1+1,0:lx2+1,0:lx3+1,isp),&
+                vs2(0:lx1+1,0:lx2+1,0:lx3+1,isp), &
+                vs3(0:lx1+1,0:lx2+1,0:lx3+1,isp),x,0,lx1+1,0,lx2+1,0,lx3+1)
+  !! diff with one set of ghost cells to preserve second order accuracy over the grid
   paramtrim=rhoes(1:lx1,1:lx2,1:lx3,isp)
-  rhoeshalf=paramtrim-dt/2.0_wp*(paramtrim*(gammas(isp)-1._wp)+Q(:,:,:,isp))*divvs(1:lx1,1:lx2,1:lx3) !t+dt/2 value of internal energy, use only interior points of divvs for second order accuracy
+
+  rhoeshalf = paramtrim - dt/2.0_wp * (paramtrim*(gammas(isp)-1) + Q(:,:,:,isp)) * divvs(1:lx1,1:lx2,1:lx3)
+  !! t+dt/2 value of internal energy, use only interior points of divvs for second order accuracy
 
   paramtrim=paramtrim-dt*(rhoeshalf*(gammas(isp)-1._wp)+Q(:,:,:,isp))*divvs(1:lx1,1:lx2,1:lx3)
   rhoes(1:lx1,1:lx2,1:lx3,isp)=paramtrim
@@ -167,9 +171,10 @@ do isp=1,lsp
   Ts(:,:,:,isp)=(gammas(isp)-1._wp)/kB*rhoes(:,:,:,isp)/max(ns(:,:,:,isp),mindensdiv)
   Ts(:,:,:,isp)=max(Ts(:,:,:,isp),100._wp)
 end do
-call cpu_time(tfin)
-if (myid==0) then
-  if (debug) print *, 'Completed compression substep for time step:  ',t,' in cpu_time of:  ',tfin-tstart
+
+if (myid==0 .and. debug) then
+  call cpu_time(tfin)
+  print *, 'Completed compression substep for time step:  ',t,' in cpu_time of:  ',tfin-tstart
 end if
 
 !CLEAN TEMPERATURE
@@ -189,9 +194,10 @@ do isp=1,lsp
   Ts(:,:,:,isp)=param
   Ts(:,:,:,isp)=max(Ts(:,:,:,isp),100._wp)
 end do
-call cpu_time(tfin)
-if (myid==0) then
-  if (debug) print *, 'Completed energy diffusion substep for time step:  ',t,' in cpu_time of:  ',tfin-tstart
+
+if (myid==0 .and. debug) then
+  call cpu_time(tfin)
+  print *, 'Completed energy diffusion substep for time step:  ',t,' in cpu_time of:  ',tfin-tstart
 end if
 
 !ZZZ - CLEAN TEMPERATURE BEFORE CONVERTING TO INTERNAL ENERGY
@@ -200,10 +206,11 @@ do isp=1,lsp
   rhoes(:,:,:,isp)=ns(:,:,:,isp)*kB*Ts(:,:,:,isp)/(gammas(isp)-1._wp)
 end do
 
-!LOAD ELECTRON PRECIPITATION PATTERN
+!> LOAD ELECTRON PRECIPITATION PATTERN
 if (flagprecfile==1) then
   call precipBCs_fileinput(dt,dtprec,t,ymd,UTsec,precdir,x,W0,PhiWmWm2)
-else     !no file input specified, so just call 'regular' function
+else
+  !! no file input specified, so just call 'regular' function
   call precipBCs(t,x,W0,PhiWmWm2)
 end if
 
@@ -215,14 +222,18 @@ Qeprecip=0
 Prpreciptmp=0
 Qepreciptmp=0
 if (gridflag/=0) then
-  if(flagglow==0) then !RUN FANG APPROXIMATION
-    do iprec=1,lprec    !loop over the different populations of precipitation (2 here?), accumulating production rates
-      Prpreciptmp=ionrate_fang08(W0(:,:,iprec),PhiWmWm2(:,:,iprec),x%alt,nn,Tn)    !calculation based on Fang et al [2008]
+  if (flagglow==0) then
+    !! RUN FANG APPROXIMATION
+    do iprec=1,lprec
+      !! loop over the different populations of precipitation (2 here?), accumulating production rates
+      Prpreciptmp = ionrate_fang08(W0(:,:,iprec),PhiWmWm2(:,:,iprec),x%alt,nn,Tn)
+      !! calculation based on Fang et al [2008]
       Prprecip=Prprecip+Prpreciptmp
     end do
     Prprecip=max(Prprecip,1e-5_wp)
     Qeprecip=eheating(nn,Tn,Prprecip,ns)
-  else      !GLOW USED, AURORA PRODUCED
+  else
+    !! GLOW USED, AURORA PRODUCED
     if (int(t/dtglow)/=int((t+dt)/dtglow).OR.t<0.1_wp) then
       PrprecipG=0; QeprecipG=0; iverG=0;
       call ionrate_glow98(W0,PhiWmWm2,ymd,UTsec,f107,f107a,x%glat(1,:,:),x%glon(1,:,:),x%alt,nn,Tn,ns,Ts, &
@@ -233,7 +244,8 @@ if (gridflag/=0) then
     Qeprecip=QeprecipG
     iver=iverG
   end if
-else    !do not compute impact ionization on a closed mesh (presumably there is no source of energetic electrons at these lats.)
+else
+  !! do not compute impact ionization on a closed mesh (presumably there is no source of energetic electrons at these lats.)
   if (myid==0) then
     if (debug) print *, 'Looks like we have a closed grid, so skipping impact ionization for time step:  ',t
   end if
@@ -251,16 +263,16 @@ end if
 
 !> now add in photoionization sources
 chi=sza(ymd(1), ymd(2), ymd(3), UTsec,x%glat,x%glon)
-if (myid==0) then
-  if (debug) print *, 'Computing photoionization for time:  ',t,' using sza range of (root only):  ', &
-              minval(chi)*180._wp/pi,maxval(chi)*180._wp/pi
+if (myid==0 .and. debug) then
+  print *, 'Computing photoionization for time:  ',t,' using sza range of (root only):  ', &
+    minval(chi)*180._wp/pi,maxval(chi)*180._wp/pi
 end if
 
 Prpreciptmp=photoionization(x,nn,chi,f107,f107a)
 
-if (myid==0) then
-  if (debug) print *, 'Min/max root photoionization production rates for time:  ',t,' :  ',minval(Prpreciptmp), &
-              maxval(Prpreciptmp)
+if (myid==0 .and. debug) then
+  print *, 'Min/max root photoionization production rates for time:  ',t,' :  ', &
+    minval(Prpreciptmp), maxval(Prpreciptmp)
 end if
 
 Prpreciptmp=max(Prpreciptmp,1e-5_wp)
@@ -287,9 +299,10 @@ do isp=1,lsp
   Ts(:,:,:,isp)=(gammas(isp)-1._wp)/kB*rhoes(:,:,:,isp)/max(ns(:,:,:,isp),mindensdiv)
   Ts(:,:,:,isp)=max(Ts(:,:,:,isp),100._wp)
 end do
-call cpu_time(tfin)
-if (myid==0) then
-  if (debug) print *, 'Energy sources substep for time step:  ',t,'done in cpu_time of:  ',tfin-tstart
+
+if (myid==0 .and. debug) then
+  call cpu_time(tfin)
+  print *, 'Energy sources substep for time step:  ',t,'done in cpu_time of:  ',tfin-tstart
 end if
 
 !CLEAN TEMPERATURE
@@ -305,9 +318,10 @@ do isp=1,lsp-1
 
   vs1(:,:,:,isp)=rhovs1(:,:,:,isp)/(ms(isp)*max(ns(:,:,:,isp),mindensdiv))
 end do
-call cpu_time(tfin)
-if (myid==0) then
-  if (debug) print *, 'Velocity sources substep for time step:  ',t,'done in cpu_time of:  ',tfin-tstart
+
+if (myid==0 .and. debug) then
+  call cpu_time(tfin)
+  print *, 'Velocity sources substep for time step:  ',t,'done in cpu_time of:  ',tfin-tstart
 end if
 
 
@@ -333,9 +347,10 @@ do isp=1,lsp-1
   paramtrim=ETD_uncoupled(paramtrim,Pr(:,:,:,isp),Lo(:,:,:,isp),dt)
   ns(1:lx1,1:lx2,1:lx3,isp)=paramtrim    !should there be a density floor here???  I think so...
 end do
-call cpu_time(tfin)
-if (myid==0) then
-  if (debug) print *, 'Mass sources substep for time step:  ',t,'done in cpu_time of:  ',tfin-tstart
+
+if (myid==0 .and. debug) then
+  call cpu_time(tfin)
+  print *, 'Mass sources substep for time step:  ',t,'done in cpu_time of:  ',tfin-tstart
 end if
 
 
@@ -364,7 +379,6 @@ real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: param     !note that this i
 
 real(wp), dimension(-1:size(param,1)-2,-1:size(param,2)-2,-1:size(param,3)-2,lsp) :: paramnew
 integer :: isp,ix1,ix2,ix3,iinull,ix1beg,ix1end
-
 
 select case (paramflag)
   case (1)    !density
@@ -454,14 +468,15 @@ select case (paramflag)
     end do
 
 
-    !SET TEMPS TO SOME NOMINAL VALUE
+    !> SET TEMPS TO SOME NOMINAL VALUE
     param(-1:0,:,:,:)=100._wp
     param(lx1+1:lx1+2,:,:,:)=100._wp
     param(:,-1:0,:,:)=100._wp
     param(:,lx2+1:lx2+2,:,:)=100._wp
     param(:,:,-1:0,:)=100._wp
     param(:,:,lx3+1:lx3+2,:)=100._wp
-  case default    !do nothing...
+  case default
+    !! do nothing...
     if (debug) print *,  '!non-standard parameter selected in clean_params...'
 end select
 
