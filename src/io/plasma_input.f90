@@ -2,6 +2,7 @@ submodule (io) plasma_input
 !! plasma.f90 uses submodules in plasma_input_*.f90 and plasma_output_*.f90 for raw, hdf5 or netcdf4 I/O
 use reader, only : get_simsize3
 use pathlib, only : get_suffix
+use sanity_check, only : check_finite_current, check_finite_plasma
 
 implicit none (type, external)
 
@@ -95,6 +96,15 @@ if (myid==0) then
     write(stderr,*) 'grid:read:get_grid3: unknown grid format: ' // get_suffix(indatsize)
     error stop 6
   end select
+
+  !> USER SUPPLIED FUNCTION TO TAKE A REFERENCE PROFILE AND CREATE INITIAL CONDITIONS FOR ENTIRE GRID.
+  !> ASSUMING THAT THE INPUT DATA ARE EXACTLY THE CORRECT SIZE (AS IS THE CASE WITH FILE INPUT) THIS IS NOW SUPERFLUOUS
+  print '(/,A,/,A)', 'Initial conditions:','------------------------'
+  print '(A,2ES11.2)', 'Min/max input density:',     minval(ns(:,:,:,7)),  maxval(ns(:,:,:,7))
+  print '(A,2ES11.2)', 'Min/max input velocity:',    minval(vs1(:,:,:,:)), maxval(vs1(:,:,:,:))
+  print '(A,2ES11.2)', 'Min/max input temperature:', minval(Ts(:,:,:,:)),  maxval(Ts(:,:,:,:))
+
+  call check_finite_plasma(ns, vs1, Ts)
 else
   !! WORKERS RECEIVE THE IC DATA FROM ROOT
   call input_workers_mpi(ns,vs1,Ts)
@@ -112,6 +122,8 @@ if (myid==0) then
   !> ROOT FINDS/CALCULATES INITIAL CONDITIONS AND SENDS TO WORKERS
   print *, 'Assembling current density data on root...  '
   call input_root_currents(outdir,out_format,flagoutput,ymd,UTsec,J1,J2,J3)
+
+  call check_finite_current(J1, J2, J3)
 else
   !> WORKERS RECEIVE THE IC DATA FROM ROOT
   call input_workers_currents(J1,J2,J3)

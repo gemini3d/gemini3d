@@ -151,18 +151,6 @@ end if
 
 call hout%finalize()
 
-!! Check for any NaN before proceeding to next time step
-
-if (.not.all(ieee_is_finite(neall))) error stop 'output_root_stream_mpi_nc4: neall has non-finite value(s)'
-if (.not.all(ieee_is_finite(v1avgall))) error stop 'output_root_stream_mpi_nc4: v1avgall has non-finite value(s)'
-if (.not.all(ieee_is_finite(Teall))) error stop 'output_root_stream_mpi_nc4: Teall has non-finite value(s)'
-if (.not.all(ieee_is_finite(J1all))) error stop 'output_root_stream_mpi_nc4: J1all has non-finite value(s)'
-if (.not.all(ieee_is_finite(J2all))) error stop 'output_root_stream_mpi_nc4: J2all has non-finite value(s)'
-if (.not.all(ieee_is_finite(J3all))) error stop 'output_root_stream_mpi_nc4: J3all has non-finite value(s)'
-if (.not.all(ieee_is_finite(v2avgall))) error stop 'output_root_stream_mpi_nc4: v2avgall has non-finite value(s)'
-if (.not.all(ieee_is_finite(v3avgall))) error stop 'output_root_stream_mpi_nc4: v3avgall has non-finite value(s)'
-if (.not.all(ieee_is_finite(Phiall))) error stop 'output_root_stream_mpi_nc4: Phiall has non-finite value(s)'
-
 end procedure output_root_stream_mpi_nc4
 
 

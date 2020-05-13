@@ -1,5 +1,8 @@
 add_library(logging OBJECT logging.f90)
 
+add_library(sanity_check OBJECT sanity_check.f90)
+target_link_libraries(sanity_check PRIVATE const)
+
 # --- pathlib
 add_library(pathlib OBJECT pathlib.f90)
 if(WIN32)
@@ -43,7 +46,7 @@ mag.f90 mag_hdf5.f90 mag_ncdf.f90 mag_raw.f90
 plasma_input.f90 plasma_input_hdf5.f90 plasma_input_ncdf.f90 plasma_input_raw.f90
 plasma_output.f90 plasma_output_hdf5.f90 plasma_output_ncdf.f90 plasma_output_raw.f90)
 
-target_link_libraries(io PRIVATE calculus config const reader grid mpimod timeutils
+target_link_libraries(io PRIVATE calculus config const reader grid mpimod sanity_check timeutils
  h5fortran::h5fortran nc4fortran::nc4fortran)
 
 # --- reader
