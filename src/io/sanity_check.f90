@@ -33,7 +33,7 @@ call check_finite(J2, 'J2', time, id)
 call check_finite(J3, 'J3', time, id)
 call check_finite(vs2, 'vs2', time, id)
 call check_finite(vs3, 'vs3', time, id)
-call check_finite(Phi, 'Phi', time, id)
+! call check_finite(Phi, 'Phi', time, id)
 
 end subroutine check_finite_output
 
