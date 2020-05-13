@@ -1,5 +1,7 @@
 submodule (io) io_aurora
 
+use, intrinsic :: ieee_arithmetic, only : ieee_is_finite
+
 implicit none (type, external)
 
 interface ! aurora_*.f90
@@ -47,6 +49,8 @@ case default
   write(stderr,*) 'aurora:output_aur_root: unknown grid format' // out_format
   error stop 6
 end select
+
+if(.not. all(ieee_is_finite(iver))) error stop 'iverout: non-finite value(s)'
 
 end subroutine output_aur_root
 

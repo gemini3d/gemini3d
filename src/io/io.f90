@@ -1,8 +1,6 @@
 module io
 !! HANDLES INPUT AND OUTPUT OF PLASMA STATE PARAMETERS (NOT GRID INPUTS)
 use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
-use, intrinsic :: iso_c_binding, only: c_int
-use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
 
 use config, only : gemini_cfg
 use phys_consts, only : kB,ms,pi,lsp,wp,lwave
@@ -43,8 +41,8 @@ character(*), intent(in) :: outdir
 character(*), intent(in) :: fieldpointfile
 end subroutine create_outdir_mag
 
-module subroutine output_magfields(outdir,ymd,UTsec,Br,Btheta,Bphi)
-character(*), intent(in) :: outdir
+module subroutine output_magfields(outdir,ymd,UTsec,Br,Btheta,Bphi, out_format)
+character(*), intent(in) :: outdir, out_format
 integer, intent(in) :: ymd(3)
 real(wp), intent(in) :: UTsec
 real(wp), dimension(:), intent(in)  :: Br,Btheta,Bphi

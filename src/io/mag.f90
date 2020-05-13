@@ -1,5 +1,7 @@
 submodule (io) mag
 
+use sanity_check, only : check_finite_mag
+
 implicit none (type, external)
 
 interface ! mag_*.f90
@@ -43,7 +45,22 @@ if ( copyfile(fieldpointfile, outdir//'/magfields/input/magfieldpoints.dat') /=0
 
 end procedure create_outdir_mag
 
+
 module procedure output_magfields
+
+select case (out_format)
+case ('raw')
+  call output_magfields_raw(outdir,ymd,UTsec,Br,Btheta,Bphi)
+case ('h5', 'hdf5')
+  call output_magfields_hdf5(outdir,ymd,UTsec,Br,Btheta,Bphi)
+case ('nc', 'nc4')
+  call output_magfields_nc4(outdir,ymd,UTsec,Br,Btheta,Bphi)
+case default
+  write(stderr,*) 'mag:output_magfields: unknown file format' // out_format
+  error stop 6
+end select
+
+call check_finite_mag(Br, Btheta, Bphi)
 
 
 end procedure output_magfields

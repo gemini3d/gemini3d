@@ -674,7 +674,7 @@ do while (t < cfg%tdur)
   !OUTPUT SHOULD BE DONE FOR EVERY INPUT FILE THAT HAS BEEN READ IN
   if (myid==0) then
     call cpu_time(tstart)
-    call output_magfields(cfg%outdir,cfg%ymd,UTsec,Brall,Bthetaall,Bphiall)   !mag field data already reduced so just root needs to output
+    call output_magfields(cfg%outdir,cfg%ymd,UTsec,Brall,Bthetaall,Bphiall,cfg%out_format)   !mag field data already reduced so just root needs to output
     call cpu_time(tfin)
    if(debug) print *, 'magcalc.f90 --> Output done for time step:  ',t,' in cpu_time of:  ',tfin-tstart
   end if
