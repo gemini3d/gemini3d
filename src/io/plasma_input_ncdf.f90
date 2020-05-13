@@ -47,10 +47,6 @@ print *, 'Min/max current data:  ',minval(J1all),maxval(J1all),minval(J2all),max
 
 call h5%finalize()
 
-if(.not.all(ieee_is_finite(J1all))) error stop 'J1all: non-finite value(s)'
-if(.not.all(ieee_is_finite(J2all))) error stop 'J2all: non-finite value(s)'
-if(.not.all(ieee_is_finite(J3all))) error stop 'J3all: non-finite value(s)'
-
 !> DISTRIBUTE DATA TO WORKERS AND TAKE A PIECE FOR ROOT
 call bcast_send(J1all,tag%J1,J1)
 call bcast_send(J2all,tag%J2,J2)
@@ -132,28 +128,6 @@ else
 end if
 
 call h5%finalize()
-
-!> Sanity checks
-if (.not. all(ieee_is_finite(nsall))) error stop 'nsall: non-finite value(s)'
-if (any(nsall < 0)) error stop 'negative density'
-if (maxval(nsall) < 1e6) error stop 'unrealistically low maximum density'
-if (maxval(nsall) > 1e16) error stop 'unrealistically high maximum density'
-
-if (.not. all(ieee_is_finite(vs1all))) error stop 'vs1all: non-finite value(s)'
-if (any(abs(vs1all) > 1e7_wp)) error stop 'drift should not be realativistic'
-
-if (.not. all(ieee_is_finite(Tsall))) error stop 'Tsall: non-finite value(s)'
-if (any(Tsall < 0)) error stop 'negative temperature in Tsall'
-if (any(Tsall > 100000)) error stop 'too hot Tsall'
-if (maxval(Tsall) < 500) error stop 'too cold maximum Tsall'
-
-!> USER SUPPLIED FUNCTION TO TAKE A REFERENCE PROFILE AND CREATE INITIAL CONDITIONS FOR ENTIRE GRID.
-!> ASSUMING THAT THE INPUT DATA ARE EXACTLY THE CORRECT SIZE (AS IS THE CASE WITH FILE INPUT) THIS IS NOW SUPERFLUOUS
-print '(/,A,/,A)', 'Initial conditions:','------------------------'
-print '(A,2ES11.2)', 'Min/max input density:',     minval(nsall(:,:,:,7)),  maxval(nsall(:,:,:,7))
-print '(A,2ES11.2)', 'Min/max input velocity:',    minval(vs1all(:,:,:,:)), maxval(vs1all(:,:,:,:))
-print '(A,2ES11.2)', 'Min/max input temperature:', minval(Tsall(:,:,:,:)),  maxval(Tsall(:,:,:,:))
-
 
 !> ROOT BROADCASTS IC DATA TO WORKERS
 call cpu_time(tstart)
