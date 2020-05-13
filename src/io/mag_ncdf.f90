@@ -25,10 +25,6 @@ call hout%write('magfields/Bphi', Bphi)
 
 call hout%finalize()
 
-if(.not. all(ieee_is_finite(Br))) error stop 'Br: non-finite value(s)'
-if(.not. all(ieee_is_finite(Btheta))) error stop 'Btheta: non-finite value(s)'
-if(.not. all(ieee_is_finite(Bphi))) error stop 'Bphi: non-finite value(s)'
-
 end procedure output_magfields_nc4
 
 end submodule mag_nc4

@@ -25,10 +25,6 @@ block
   close(u)
 end block
 
-if(.not. all(ieee_is_finite(Br))) error stop 'Br: non-finite value(s)'
-if(.not. all(ieee_is_finite(Btheta))) error stop 'Btheta: non-finite value(s)'
-if(.not. all(ieee_is_finite(Bphi))) error stop 'Bphi: non-finite value(s)'
-
 end procedure output_magfields_raw
 
 end submodule mag_raw

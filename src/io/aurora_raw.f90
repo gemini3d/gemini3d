@@ -56,8 +56,6 @@ block
   close(u)
 end block
 
-if(.not. all(ieee_is_finite(iverout))) error stop 'iverout: non-finite value(s)'
-
 end procedure output_aur_root_raw
 
 end submodule io_aurora_raw
