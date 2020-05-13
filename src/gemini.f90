@@ -240,7 +240,10 @@ do while (t < cfg%tdur)
     print *, 'Multifluid total solve time:  ',tfin-tstart
   endif
 
-  !! NOW OUR SOLUTION IS FULLY UPDATED SO UPDATE TIME VARIABLES TO MATCH...
+  !> Sanity check key variables before advancing
+  call check_finite_output(t, myid, vs2,vs3,ns,vs1,Ts,Phiall,J1,J2,J3)
+
+  !> NOW OUR SOLUTION IS FULLY UPDATED SO UPDATE TIME VARIABLES TO MATCH...
   it=it+1; t=t+dt;
   if (myid==0 .and. debug) print *, 'Moving on to time step (in sec):  ',t,'; end time of simulation:  ',cfg%tdur
   call dateinc(dt,cfg%ymd,UTsec)
