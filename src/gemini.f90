@@ -2,6 +2,8 @@ Program Gemini3D
 !! MAIN PROGRAM FOR GEMINI3D
 !! Need program statement for FORD
 use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
+
+use sanity_check, only : check_finite_output
 use phys_consts, only : lnchem, lwave, lsp, wp, debug
 use grid, only: grid_size,read_grid,clear_grid,grid_check,lx1,lx2,lx3,lx2all,lx3all
 use mesh, only: curvmesh
@@ -229,7 +231,7 @@ do while (t < cfg%tdur)
     print *, 'Electrodynamics total solve time:  ',tfin-tstart
   endif
 
-  !! UPDATE THE FLUID VARIABLES
+  !> UPDATE THE FLUID VARIABLES
   if (myid==0 .and. debug) call cpu_time(tstart)
   call fluid_adv(ns,vs1,Ts,vs2,vs3,J1,E1,cfg%Teinf,t,dt,x,nn,vn1,vn2,vn3,Tn,iver,cfg%activ(2),cfg%activ(1),cfg%ymd,UTsec, &
     cfg%flagprecfile,cfg%dtprec,cfg%precdir,cfg%flagglow,cfg%dtglow)
@@ -243,7 +245,7 @@ do while (t < cfg%tdur)
   if (myid==0 .and. debug) print *, 'Moving on to time step (in sec):  ',t,'; end time of simulation:  ',cfg%tdur
   call dateinc(dt,cfg%ymd,UTsec)
 
-  if (myid==0 .and. modulo(it,10) == 0) then
+  if (myid==0 .and. (modulo(it,10) == 0 .or. debug)) then
     !! print every 10th time step to avoid extreme amounts of console printing
     print '(A,I4,A1,I0.2,A1,I0.2,A1,F12.6,A5,F8.6)', 'Current time ',cfg%ymd(1),'-',cfg%ymd(2),'-',cfg%ymd(3),' ',UTsec,'; dt=',dt
   endif
