@@ -88,7 +88,7 @@ if (flagE0file==1) then
   call potentialBCs2D_fileinput(dt,dtE0,t,ymd,UTsec,E0dir,x,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3,Vmaxx3, &
                       E01all,E02all,E03all,flagdirich)
 else
-  call potentialBCs2D(t,x,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3,Vmaxx3, &
+  call potentialBCs2D(UTsec,x,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3,Vmaxx3, &
                       E01all,E02all,E03all,flagdirich)     !user needs to manually swap x2 and x3 in this function.
 end if
 call cpu_time(tfin)

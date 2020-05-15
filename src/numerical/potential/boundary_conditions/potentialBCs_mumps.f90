@@ -455,12 +455,12 @@ end if
 end subroutine clear_potential_fileinput
 
 
-subroutine potentialBCs2D(t,x,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3, &
+subroutine potentialBCs2D(UTsec,x,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3, &
                                       Vmaxx3,E01all,E02all,E03all,flagdirich)
 
 !THIS IS A SIMPLE GAUSSIAN POTENTIAL PERTURBATION (IN X1,X2,X3 SPAE)
 
-real(wp), intent(in) :: t
+real(wp), intent(in) :: UTsec
 type(curvmesh), intent(in) :: x
 
 real(wp), dimension(:,:), intent(out), target :: Vminx1,Vmaxx1
@@ -508,7 +508,7 @@ end do
 
 
 !SOME USER INFO
-if (debug) print *, 'At time:  ',t,'  Max FAC set to be:  ',maxval(abs(Vtopalt))
+if (debug) print *, 'At time (UT seconds):  ',UTsec,'  Max FAC set to be:  ',maxval(abs(Vtopalt))
 
 
 !BOTTOM BOUNDARY IS ALWAYS ZERO CURRENT - SIDES ARE JUST GROUNDED
@@ -536,7 +536,7 @@ if (flagEIA) then
         glonmer=glonmer+360d0
       end do
   
-      LThrs=t/3600d0+glonmer/15d0                 !Local time of center of meridian
+      LThrs=UTsec/3600d0+glonmer/15d0                 !Local time of center of meridian
       veltime = sin(2d0*pi*(LThrs-7d0)/24d0)    ! Huba's formulate for velocity amplitude vs. time
   
       do ix2=1,lx2all
@@ -563,7 +563,7 @@ if (flagEIA) then
         glonmer=glonmer+360d0
       end do
   
-      LThrs=t/3600d0+glonmer/15d0                 !Local time of center of meridian
+      LThrs=UTsec/3600d0+glonmer/15d0                 !Local time of center of meridian
       veltime = sin(2d0*pi*(LThrs-7d0)/24d0)    ! Huba's formulate for velocity amplitude vs. time
   
       do ix3=1,lx3all     !here this is L-shell
