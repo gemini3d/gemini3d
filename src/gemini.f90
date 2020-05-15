@@ -225,11 +225,12 @@ do while (t < cfg%tdur)
   end if
 
   !! POTENTIAL SOLUTION
+  !> FIXME:  an issue here is that for EIA simulations UTsec is needed in the electrodynamics whereas input file interpolation simply uses the time since beginning of the simulation...
   call cpu_time(tstart)
 !  call electrodynamics(it,t,dt,nn,vn2,vn3,Tn, cfg%sourcemlat,ns,Ts,vs1,B1,vs2,vs3,x, &
 !                        cfg%potsolve, cfg%flagcap,E1,E2,E3,J1,J2,J3, &
 !                        Phiall, cfg%flagE0file, cfg%dtE0, cfg%E0dir, cfg%ymd,UTsec)
-  call electrodynamics(it,UTsec,dt,nn,vn2,vn3,Tn,cfg%sourcemlat,ns,Ts,vs1,B1,vs2,vs3,x, &
+  call electrodynamics(it,t,dt,nn,vn2,vn3,Tn,cfg%sourcemlat,ns,Ts,vs1,B1,vs2,vs3,x, &
                         cfg%potsolve, cfg%flagcap,E1,E2,E3,J1,J2,J3, &
                         Phiall, cfg%flagE0file, cfg%dtE0, cfg%E0dir,cfg%ymd,UTsec)
   if (myid==0 .and. debug) then
