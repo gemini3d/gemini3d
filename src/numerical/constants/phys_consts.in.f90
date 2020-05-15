@@ -82,10 +82,10 @@ real(wp), parameter :: mindensdiv  = 1.0e-5_wp
 logical :: debug=.false.
 
 !Whether or not to invoke the a vertical equatorial drift to mimic EIA
-logical,parameter :: flagEIA=.true.
+logical,parameter :: flagEIA=.false.
 
 !Have MSIS update actively during the simulation and at what rate?
-logical, parameter :: flagneuBG=.true.     !re-evaluate neutral background during simulation
+logical, parameter :: flagneuBG=.false.     !re-evaluate neutral background during simulation
 real(wp), parameter :: dtneuBG=900._wp     !time between evaluations (seconds)
 
 end module phys_consts
