@@ -308,8 +308,8 @@ lprec=size(W0,3)    !assumed to be 2 in this subroutine
 
 !BACKGROUND PRECIPITATION
 W0pk = 3e3_wp
-!    PhiWpk=1e-5_wp
-PhiWpk = 1e-3_wp
+PhiWpk=1e-5_wp
+!PhiWpk = 1e-3_wp
 do ix3=1,lx3
   do ix2=1,lx2
     W0(ix2,ix3,1)=W0pk
