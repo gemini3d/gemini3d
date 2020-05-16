@@ -216,14 +216,12 @@ do while (t < cfg%tdur)
       !! this triggers the code to load the neutral frame correspdonding ot the beginning time of the simulation
       if (myid==0) print *, '!!!Attempting initial load of neutral dynamics files!!!' // &
                               ' This is a workaround that fixes the restart code...',t-dt
-      call neutral_perturb(cfg%interptype,dt,cfg%dtneu,t-cfg%dtneu,ymd,UTsec-cfg%dtneu, &
-        cfg%sourcedir,cfg%dxn,cfg%drhon,cfg%dzn, &
-        cfg%sourcemlat,cfg%sourcemlon,x,nn,Tn,vn1,vn2,vn3)
-!      call neutral_perturb(cfg,dt,t-cfg%dtneu,ymd,UTsec-cfg%dtneu, &
-!        x,nn,Tn,vn1,vn2,vn3)
+!      call neutral_perturb(cfg%interptype,dt,cfg%dtneu,t-cfg%dtneu,ymd,UTsec-cfg%dtneu, &
+!        cfg%sourcedir,cfg%dxn,cfg%drhon,cfg%dzn, &
+!        cfg%sourcemlat,cfg%sourcemlon,x,nn,Tn,vn1,vn2,vn3)
+      call neutral_perturb(cfg,dt,cfg%dtneu,t-cfg%dtneu,ymd,UTsec-cfg%dtneu,x,nn,Tn,vn1,vn2,vn3)
     end if
-    call neutral_perturb(cfg%interptype,dt,cfg%dtneu,t,ymd,UTsec,cfg%sourcedir,cfg%dxn,cfg%drhon,cfg%dzn,cfg%sourcemlat, &
-      cfg%sourcemlon,x,nn,Tn,vn1,vn2,vn3)
+    call neutral_perturb(cfg,dt,cfg%dtneu,t,ymd,UTsec,x,nn,Tn,vn1,vn2,vn3)
     if (myid==0 .and. debug) then
       call cpu_time(tfin)
       print *, 'Neutral perturbations calculated in time:  ',tfin-tstart
