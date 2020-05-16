@@ -11,6 +11,7 @@ use interpolation, only : interp2, interp3
 use timeutils, only : doy_calc,dateinc, date_filename
 use mpimod, only: mpi_integer, mpi_comm_world, mpi_status_ignore, &
 myid, lid, mpi_realprec, tag=>mpi_tag
+use config, only: gemini_cfg
 
 ! also links gtd7 from vendor/msis00/
 
@@ -97,28 +98,27 @@ contains
 
 !THIS IS  WRAPPER FOR THE NEUTRAL PERTURBATION CODES THAT DO EITHER
 !AXISYMMETRIC OR CARTESIAN OR 3D INTERPOLATION
-subroutine neutral_perturb(interptype,dt,dtneu,t,ymd,UTsec,neudir,dxn,drhon,dzn,meanlat,meanlong,x,nn,Tn,vn1,vn2,vn3)
+!subroutine neutral_perturb(interptype,dt,dtneu,t,ymd,UTsec,neudir,dxn,drhon,dzn,meanlat,meanlong,x,nn,Tn,vn1,vn2,vn3)
+subroutine neutral_perturb(cfg,dt,dtneu,t,ymd,UTsec,x,nn,Tn,vn1,vn2,vn3)
 
-integer, intent(in) :: interptype
+type(gemini_cfg), intent(in) :: cfg
 real(wp), intent(in) :: dt,dtneu
 real(wp), intent(in) :: t
 integer, dimension(3), intent(in) :: ymd     !date for which we wish to calculate perturbations
 real(wp), intent(in) :: UTsec
-real(wp), intent(in) :: dxn,drhon,dzn            !neutral grid spacing
-real(wp), intent(in) :: meanlat, meanlong    !neutral source center location
-character(*), intent(in) :: neudir           !directory where neutral simulation data is kept
 
 type(curvmesh), intent(inout) :: x                !grid structure  (inout becuase we want to be able to deallocate unit vectors once we are done with them)
 real(wp), dimension(:,:,:,:), intent(out) :: nn   !neutral params interpolated to plasma grid at requested time
 real(wp), dimension(:,:,:), intent(out) :: Tn,vn1,vn2,vn3
 
 
-if (interptype==0) then                           !cartesian interpolation drho inputs (radial distance) will be interpreted as dy (horizontal distance)
-  call neutral_perturb_cart(dt,dtneu,t,ymd,UTsec,neudir,drhon,dzn,meanlat,meanlong,x,nn,Tn,vn1,vn2,vn3)
-else if (interptype==1) then                      !axisymmetric interpolation
-  call neutral_perturb_axisymm(dt,dtneu,t,ymd,UTsec,neudir,drhon,dzn,meanlat,meanlong,x,nn,Tn,vn1,vn2,vn3)
-else if (interptype==3) then                      !3D interpolation drhon is takent to be dyn (northward distance)
-  call neutral_perturb_3D(dt,dtneu,t,ymd,UTsec,neudir,dxn,drhon,dzn,meanlat,meanlong,x,nn,Tn,vn1,vn2,vn3)
+if (cfg%interptype==0) then                           !cartesian interpolation drho inputs (radial distance) will be interpreted as dy (horizontal distance)
+!  call neutral_perturb_cart(dt,dtneu,t,ymd,UTsec,neudir,drhon,dzn,meanlat,meanlong,x,nn,Tn,vn1,vn2,vn3)
+  call neutral_perturb_cart(dt,dtneu,t,ymd,UTsec,cfg,x,nn,Tn,vn1,vn2,vn3)
+else if (cfg%interptype==1) then                      !axisymmetric interpolation
+  call neutral_perturb_axisymm(dt,dtneu,t,ymd,UTsec,cfg,x,nn,Tn,vn1,vn2,vn3)
+else if (cfg%interptype==3) then                      !3D interpolation drhon is takent to be dyn (northward distance)
+  call neutral_perturb_3D(dt,dtneu,t,ymd,UTsec,cfg,x,nn,Tn,vn1,vn2,vn3)
 else
   error stop '...Invalid interpolation type specified from input file...'
 end if
@@ -127,7 +127,7 @@ end subroutine neutral_perturb
 
 
 !FOR CONSISTENCY I'D LIKE TO STRUCTURE NEUTRAL PERTURB OPERATIONS LIKE GRAVITY IS HANDLED IN THE GRID MODULE, I.E. HAVE AN EXPLICIT CONSTRUCTORS/DESTRUCTOR TYPE ROUTINE THAT HANDLES ALLOCATION AND DEALLOCATION, WHICH WILL CLEAN UP THE NEUTRAL_PERTURB SUBROUTINE, I.E. REMOVE ALLOCATES OF PERSISTENT MODULE VARIABLES.
-subroutine neutral_perturb_axisymm(dt,dtneu,t,ymd,UTsec,neudir,drhon,dzn,meanlat,meanlong,x,nn,Tn,vn1,vn2,vn3)
+subroutine neutral_perturb_axisymm(dt,dtneu,t,ymd,UTsec,cfg,x,nn,Tn,vn1,vn2,vn3)
 
 !------------------------------------------------------------
 !-------COMPUTE NEUTRAL PERTURBATIONS FOR THIS TIME STEP.  ADD
@@ -142,9 +142,7 @@ real(wp), intent(in) :: dt,dtneu
 real(wp), intent(in) :: t
 integer, dimension(3), intent(in) :: ymd    !date for which we wish to calculate perturbations
 real(wp), intent(in) :: UTsec
-real(wp), intent(in) :: drhon,dzn         !neutral grid spacing
-real(wp), intent(in) :: meanlat, meanlong    !neutral source center location
-character(*), intent(in) :: neudir       !directory where neutral simulation data is kept
+type(gemini_cfg), intent(in) :: cfg
 
 type(curvmesh), intent(inout) :: x         !grid structure  (inout becuase we want to be able to deallocate unit vectors once we are done with them)
 real(wp), dimension(:,:,:,:), intent(out) :: nn   !neutral params interpolated to plasma grid at requested time
@@ -168,11 +166,11 @@ if (t+dt/2d0>=tnext .or. t<=0d0) then   !negative time means that we need to loa
     UTsecnext=UTsecprev
 
     !Create a neutral grid, do some allocations and projections
-    call gridproj_dneu2D(drhon,dzn,meanlat,meanlong,neudir,.false.,x)    !set false to denote not Cartesian...
+    call gridproj_dneu2D(cfg,.false.,x)    !set false to denote not Cartesian...
   end if
 
   !Read in neutral data from a file
-  call read_dneu2D(tprev,tnext,t,dtneu,dt,neudir,ymdtmp,UTsectmp,.false.)
+  call read_dneu2D(tprev,tnext,t,dtneu,dt,cfg%sourcedir,ymdtmp,UTsectmp,.false.)
 
   !Spatial interpolatin for the frame we just read in
   if (myid==0 .and. debug) then
@@ -210,7 +208,7 @@ end subroutine neutral_perturb_axisymm
 
 
 !! THIS SHARES SO MUCH CODE WITH THE AXISYMMETRIC VERSION THAT THEY SHOULD PROBABLY BE COMBINED
-subroutine neutral_perturb_cart(dt,dtneu,t,ymd,UTsec,neudir,dyn,dzn,meanlat,meanlong,x,nn,Tn,vn1,vn2,vn3)
+subroutine neutral_perturb_cart(dt,dtneu,t,ymd,UTsec,cfg,x,nn,Tn,vn1,vn2,vn3)
 
 !------------------------------------------------------------
 !-------COMPUTE NEUTRAL PERTURBATIONS FOR THIS TIME STEP.  ADD
@@ -225,9 +223,7 @@ real(wp), intent(in) :: dt,dtneu
 real(wp), intent(in) :: t
 integer, dimension(3), intent(in) :: ymd    !date for which we wish to calculate perturbations
 real(wp), intent(in) :: UTsec
-real(wp), intent(in) :: dyn,dzn         !neutral grid spacing
-real(wp), intent(in) :: meanlat, meanlong    !neutral source center location
-character(*), intent(in) :: neudir       !directory where neutral simulation data is kept
+type(gemini_cfg), intent(in) :: cfg
 
 type(curvmesh), intent(inout) :: x         !grid structure  (inout becuase we want to be able to deallocate unit vectors once we are done with them)
 real(wp), dimension(:,:,:,:), intent(out) :: nn   !neutral params interpolated to plasma grid at requested time
@@ -250,11 +246,11 @@ if (t+dt/2d0 >= tnext .or. t <= 0) then
     UTsecnext=UTsecprev
 
     !Create a neutral grid, do some allocations and projections
-    call gridproj_dneu2D(dyn,dzn,meanlat,meanlong,neudir,.true.,x)    !set true to denote Cartesian...
+    call gridproj_dneu2D(cfg,.true.,x)    !set true to denote Cartesian...
   end if
 
   !Read in neutral data from a file
-  call read_dneu2D(tprev,tnext,t,dtneu,dt,neudir,ymdtmp,UTsectmp,.true.)
+  call read_dneu2D(tprev,tnext,t,dtneu,dt,cfg%sourcedir,ymdtmp,UTsectmp,.true.)
 
   !Spatial interpolatin for the frame we just read in
   if (myid==0 .and. debug) then
@@ -291,7 +287,7 @@ vn3=vn3base+dvn3inow
 end subroutine neutral_perturb_cart
 
 
-subroutine neutral_perturb_3D(dt,dtneu,t,ymd,UTsec,neudir,dxn,dyn,dzn,meanlat,meanlong,x,nn,Tn,vn1,vn2,vn3)
+subroutine neutral_perturb_3D(dt,dtneu,t,ymd,UTsec,cfg,x,nn,Tn,vn1,vn2,vn3)
 
 !------------------------------------------------------------
 !-------COMPUTE NEUTRAL PERTURBATIONS FOR THIS TIME STEP.  ADD
@@ -306,9 +302,7 @@ real(wp), intent(in) :: dt,dtneu
 real(wp), intent(in) :: t
 integer, dimension(3), intent(in) :: ymd    !date for which we wish to calculate perturbations
 real(wp), intent(in) :: UTsec
-real(wp), intent(in) :: dxn,dyn,dzn         !neutral grid spacing
-real(wp), intent(in) :: meanlat, meanlong    !neutral source center location
-character(*), intent(in) :: neudir       !directory where neutral simulation data is kept
+type(gemini_cfg), intent(in) :: cfg
 
 type(curvmesh), intent(inout) :: x         !grid structure  (inout becuase we want to be able to deallocate unit vectors once we are done with them)
 real(wp), dimension(:,:,:,:), intent(out) :: nn   !neutral params interpolated to plasma grid at requested time
@@ -336,7 +330,7 @@ if (t+dt/2d0>=tnext .or. t<=0d0) then
     if (myid==0 .and. debug) then
       print*, 'Creating a neutral grid...'
     end if
-    call gridproj_dneu3D(dxn,dyn,dzn,meanlat,meanlong,neudir,x)    !set true to denote Cartesian...
+    call gridproj_dneu3D(cfg,x)
   end if
 
   !Read in neutral data from a file
@@ -344,7 +338,7 @@ if (t+dt/2d0>=tnext .or. t<=0d0) then
     print*, 'Reading in data from neutral file'
     call cpu_time(starttime)
   end if
-  call read_dneu3D(tprev,tnext,t,dtneu,dt,neudir,ymdtmp,UTsectmp)
+  call read_dneu3D(tprev,tnext,t,dtneu,dt,cfg%sourcedir,ymdtmp,UTsectmp)
   if (myid==0 .and. debug) then
     call cpu_time(endtime)
     print*, 'Neutral data input required time:  ',endtime-starttime
@@ -394,17 +388,16 @@ vn3=vn3base+dvn3inow
 end subroutine neutral_perturb_3D
 
 
-subroutine gridproj_dneu2D(dhorzn,dzn,meanlat,meanlong,neudir,flagcart,x)
+subroutine gridproj_dneu2D(cfg,flagcart,x)
 
 !Read in the grid for the neutral data and project unit vectors into the appropriiate directions.
 !Also allocate module-scope variables for storing neutral perturbations read in from input files.
 
-real(wp), intent(in) :: dhorzn,dzn           !neutral grid spacing in horizontal "rho or y" and vertical directions
-real(wp), intent(in) :: meanlat, meanlong    !neutral source center location
-character(*), intent(in) :: neudir           !< directory where neutral simulation data is kept
+type(gemini_cfg), intent(in) :: cfg
 logical, intent(in) :: flagcart              !whether or not the input data are to be interpreted as Cartesian
 type(curvmesh), intent(inout) :: x           !inout to allow deallocation of unit vectors once we are done with them, should consider exporting this to another functino to be called from main program to avoid having x writeable...
 
+real(wp) :: dhorzn           !neutral grid spacing in horizontal "rho or y" and vertical directions
 integer :: lhorzn
 real(wp) :: meanyn
 
@@ -417,15 +410,18 @@ integer :: ix1,ix2,ix3,ihorzn,izn,iid,ierr
 real(wp), dimension(x%lx1,x%lx2,x%lx3) :: zimat,rhoimat,yimat
 
 
+!horizontal grid spacing
+dhorzn=cfg%drhon
+
 !Establish the size of the grid based on input file and distribute to workers
 if (myid==0) then    !root
-  print '(A,/,A)', 'Inputting neutral size from:  ',neudir
+  print '(A,/,A)', 'Inputting neutral size from:  ',cfg%sourcedir
 
-  call get_simsize3(neudir, lx1=lzn, lx2all=lhorzn)
+  call get_simsize3(cfg%sourcedir, lx1=lzn, lx2all=lhorzn)
 
-  print *, 'Neutral data has lhorzn,lz size:  ',lhorzn,lzn,' with spacing dhorzn,dz',dhorzn,dzn
+  print *, 'Neutral data has lhorzn,lz size:  ',lhorzn,lzn,' with spacing dhorzn,dz',dhorzn,cfg%dzn
   if (lhorzn < 1 .or. lzn < 1) then
-    write(stderr,*) 'ERROR: reading ' // neudir
+    write(stderr,*) 'ERROR: reading ' // cfg%sourcedir
     error stop 'neutral:gridproj_dneu2D: grid size must be strictly positive'
   endif
   do iid=1,lid-1
@@ -463,7 +459,7 @@ if (flagcart) then     !Cartesian neutral simulation
 else
   rhon=[ ((real(ihorzn,8)-1._wp)*dhorzn, ihorzn=1,lhorzn) ]
 end if
-zn=[ ((real(izn,8)-1._wp)*dzn, izn=1,lzn) ]
+zn=[ ((real(izn,8)-1._wp)*cfg%dzn, izn=1,lzn) ]
 
 if (myid==0) then
   if (flagcart) then
@@ -475,8 +471,8 @@ end if
 
 
 !Neutral source locations specified in input file, here referenced by spherical magnetic coordinates.
-phi1=meanlong*pi/180d0
-theta1=pi/2d0-meanlat*pi/180d0
+phi1=cfg%sourcemlon*pi/180d0
+theta1=pi/2d0-cfg%sourcemlat*pi/180d0
 
 
 !Convert plasma simulation grid locations to z,rho values to be used in interoplation.  altitude ~ zi; lat/lon --> rhoi.  Also compute unit vectors and projections
@@ -616,7 +612,7 @@ if (myid==0 .and. debug) then
     print *, 'Min/max rhoi,zi values',minval(rhoi),maxval(rhoi),minval(zi),maxval(zi)
   end if
 
-  print *, 'Source lat/long:  ',meanlat,meanlong
+  print *, 'Source lat/long:  ',cfg%sourcemlat,cfg%sourcemlon
   print *, 'Plasma grid lat range:  ',minval(x%glat(:,:,:)),maxval(x%glat(:,:,:))
   print *, 'Plasma grid lon range:  ',minval(x%glon(:,:,:)),maxval(x%glon(:,:,:))
 end if
@@ -624,14 +620,12 @@ end if
 end subroutine gridproj_dneu2D
 
 
-subroutine gridproj_dneu3D(dxn,dyn,dzn,meanlat,meanlong,neudir,x)
+subroutine gridproj_dneu3D(cfg,x)
 
 !Read in the grid for the neutral data and project unit vectors into the appropriiate directions.
 !Also allocate module-scope variables for storing neutral perturbations read in from input files.
 
-real(wp), intent(in) :: dxn,dyn,dzn           !neutral grid spacing in horizontal "rho or y" and vertical directions
-real(wp), intent(in) :: meanlat, meanlong    !neutral source center location
-character(*), intent(in) :: neudir           !directory where neutral simulation data is kept
+type(gemini_cfg), intent(in) :: cfg
 type(curvmesh), intent(inout) :: x           !inout to allow deallocation of unit vectors once we are done with them, should consider exporting this to another functino to be called from main program to avoid having x writeable...
 
 real(wp) :: meanyn
@@ -651,8 +645,8 @@ integer, dimension(6) :: indices
 
 
 !Neutral source locations specified in input file, here referenced by spherical magnetic coordinates.
-phi1=meanlong*pi/180._wp
-theta1=pi/2._wp-meanlat*pi/180._wp
+phi1=cfg%sourcemlon*pi/180._wp
+theta1=pi/2._wp-cfg%sourcemlat*pi/180._wp
 
 
 !Convert plasma simulation grid locations to z,rho values to be used in interoplation.  altitude ~ zi; lat/lon --> rhoi.  Also compute unit vectors and projections
@@ -788,13 +782,13 @@ end if
 
 !Establish the size of the grid based on input file and distribute to workers
 if (myid==0) then    !root
-  print '(A,/,A)', 'READ neutral size from:', neudir
+  print '(A,/,A)', 'READ neutral size from:', cfg%sourcedir
 
-  call get_simsize3(neudir, lx1=lxnall, lx2all=lynall, lx3all=lzn)
+  call get_simsize3(cfg%sourcedir, lx1=lxnall, lx2all=lynall, lx3all=lzn)
 
-  print *, 'Neutral data has lx,ly,lz size:  ',lxnall,lynall,lzn,' with spacing dx,dy,dz',dxn,dyn,dzn
+  print *, 'Neutral data has lx,ly,lz size:  ',lxnall,lynall,lzn,' with spacing dx,dy,dz',cfg%dxn,cfg%drhon,cfg%dzn
   if (lxnall < 1 .or. lynall < 1 .or. lzn < 1) then
-    write(stderr,*) 'ERROR: reading ' // neudir
+    write(stderr,*) 'ERROR: reading ' // cfg%sourcedir
     error stop 'neutral:gridproj_dneu3D: grid size must be strictly positive'
   endif
 
@@ -809,7 +803,7 @@ if (myid==0) then    !root
 
   !calculate the z grid (same for all) and distribute to workers so we can figure out their x-y slabs
   print*, '...creating vertical grid and sending to workers...'
-  zn=[ ((real(izn,8)-1._wp)*dzn, izn=1,lzn) ]    !root calculates and distributes but this is the same for all workers - assmes that the max neutral grid extent in altitude is always less than the plasma grid (should almost always be true)
+  zn=[ ((real(izn,8)-1._wp)*cfg%dzn, izn=1,lzn) ]    !root calculates and distributes but this is the same for all workers - assmes that the max neutral grid extent in altitude is always less than the plasma grid (should almost always be true)
   maxzn=maxval(zn)
   do iid=1,lid-1
     call mpi_send(lzn,1,MPI_INTEGER,iid,tag%lz,MPI_COMM_WORLD,ierr)
@@ -818,10 +812,10 @@ if (myid==0) then    !root
 
 
   !Define a global neutral grid (input data) by assuming that the spacing is constant
-  ynall=[ ((real(iyn,8)-1._wp)*dyn, iyn=1,lynall) ]
+  ynall=[ ((real(iyn,8)-1._wp)*cfg%drhon, iyn=1,lynall) ]
   meanyn=sum(ynall,1)/size(ynall,1)
   ynall=ynall-meanyn     !the neutral grid should be centered on zero for a cartesian interpolation
-  xnall=[ ((real(ixn,8)-1._wp)*dxn, ixn=1,lxnall) ]
+  xnall=[ ((real(ixn,8)-1._wp)*cfg%dxn, ixn=1,lxnall) ]
   meanxn=sum(xnall,1)/size(xnall,1)
   xnall=xnall-meanxn     !the neutral grid should be centered on zero for a cartesian interpolation
   print *, 'Created full neutral grid with y,z extent:',minval(xnall),maxval(xnall),minval(ynall), &
@@ -829,7 +823,7 @@ if (myid==0) then    !root
 
 
   !calculate the extent of my piece of the grid using max altitude specified for the neutral grid
-  call slabrange(maxzn,ximat,yimat,zimat,meanlat,xnrange,ynrange)
+  call slabrange(maxzn,ximat,yimat,zimat,cfg%sourcemlat,xnrange,ynrange)
   allocate(extents(0:lid-1,6),indx(0:lid-1,6),slabsizes(0:lid-1,2))
   extents(0,1:6)=[0._wp,maxzn,xnrange(1),xnrange(2),ynrange(1),ynrange(2)]
 
@@ -888,7 +882,7 @@ else                 !workers
 
 
   !calculate the extent of my grid
-  call slabrange(maxzn,ximat,yimat,zimat,meanlat,xnrange,ynrange)
+  call slabrange(maxzn,ximat,yimat,zimat,cfg%sourcemlat,xnrange,ynrange)
 
 
   !send ranges to root

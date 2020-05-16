@@ -29,7 +29,7 @@ contains
 subroutine dt_comm(t,tout,tglowout,cfg,ns,Ts,vs1,vs2,vs3,B1,B2,B3,x,dt)
 
 real(wp), intent(in) :: t,tout,tglowout
-type(gemini_cfg) :: cfg
+type(gemini_cfg), intent(in) :: cfg
 real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns,Ts,vs1,vs2,vs3
 real(wp),  dimension(-1:,-1:,-1:), intent(in) :: B1,B2,B3
 type(curvmesh), intent(in) :: x
