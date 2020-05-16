@@ -185,7 +185,7 @@ tneuBG=t
 do while (t < cfg%tdur)
   !! TIME STEP CALCULATION, requires workers to report their most stringent local stability constraint
   dtprev=dt
-  call dt_comm(t,tout,tglowout, cfg%flagglow,cfg%tcfl,ns,Ts,vs1,vs2,vs3,B1,B2,B3,x,cfg%potsolve,dt)
+  call dt_comm(t,tout,tglowout,cfg,ns,Ts,vs1,vs2,vs3,B1,B2,B3,x,dt)
   if (it>1) then
     if(dt/dtprev > dtscale) then
       !! throttle how quickly we allow dt to increase
@@ -219,6 +219,8 @@ do while (t < cfg%tdur)
       call neutral_perturb(cfg%interptype,dt,cfg%dtneu,t-cfg%dtneu,ymd,UTsec-cfg%dtneu, &
         cfg%sourcedir,cfg%dxn,cfg%drhon,cfg%dzn, &
         cfg%sourcemlat,cfg%sourcemlon,x,nn,Tn,vn1,vn2,vn3)
+!      call neutral_perturb(cfg,dt,t-cfg%dtneu,ymd,UTsec-cfg%dtneu, &
+!        x,nn,Tn,vn1,vn2,vn3)
     end if
     call neutral_perturb(cfg%interptype,dt,cfg%dtneu,t,ymd,UTsec,cfg%sourcedir,cfg%dxn,cfg%drhon,cfg%dzn,cfg%sourcemlat, &
       cfg%sourcemlon,x,nn,Tn,vn1,vn2,vn3)

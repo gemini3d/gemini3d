@@ -14,6 +14,7 @@ module temporal
 use phys_consts, only:  kB,mu0,ms,lsp,pi, wp, debug
 use mpimod, only: mpi_realprec, tag=>mpi_tag, lid, myid, MPI_COMM_WORLD,MPI_STATUS_IGNORE
 use mesh, only:  curvmesh
+use config, only: gemini_cfg
 
 implicit none (type, external)
 
@@ -25,13 +26,13 @@ external :: mpi_send, mpi_recv
 contains
 
 
-subroutine dt_comm(t,tout,tglowout,flagglow,tcfl,ns,Ts,vs1,vs2,vs3,B1,B2,B3,x,potsolve,dt)
+subroutine dt_comm(t,tout,tglowout,cfg,ns,Ts,vs1,vs2,vs3,B1,B2,B3,x,dt)
 
-real(wp), intent(in) :: t,tout,tglowout,tcfl
+real(wp), intent(in) :: t,tout,tglowout
+type(gemini_cfg) :: cfg
 real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns,Ts,vs1,vs2,vs3
 real(wp),  dimension(-1:,-1:,-1:), intent(in) :: B1,B2,B3
 type(curvmesh), intent(in) :: x
-integer, intent(in) :: flagglow,potsolve
 real(wp), intent(out) :: dt
 
 real(wp), dimension(lsp) :: cour1,cour2,cour3
@@ -39,7 +40,7 @@ integer :: iid,isp, ierr
 real(wp) :: dttmp
 
 
-call dt_calc(tcfl,ns,Ts,vs1,vs2,vs3,B1,B2,B3,x%dl1i,x%dl2i,x%dl3i,potsolve,cour1,cour2,cour3,dt)
+call dt_calc(cfg%tcfl,ns,Ts,vs1,vs2,vs3,B1,B2,B3,x%dl1i,x%dl2i,x%dl3i,cfg%potsolve,cour1,cour2,cour3,dt)
 
 if (myid/=0) then
   call mpi_send(dt,1,mpi_realprec,0,tag%dt,MPI_COMM_WORLD,ierr)   !send what I think dt should be
@@ -54,7 +55,7 @@ else
 
   !CHECK WHETHER WE'D OVERSTEP OUR TARGET OUTPUT TIME
   !GLOW OUTPUT HAS PRIORITY SINCE IT WILL OUTPUT MORE OFTEN
-  if ((flagglow/=0).and.(t+dt>tglowout)) then
+  if ((cfg%flagglow/=0).and.(t+dt>tglowout)) then
     dt=tglowout-t
     print *, 'GLOW is throttling dt...'
   end if
