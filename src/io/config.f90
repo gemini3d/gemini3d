@@ -12,7 +12,7 @@ public :: read_configfile, gemini_cfg, get_compiler_vendor
 type :: gemini_cfg
 
 !> basic simulation information
-integer :: ymd(3)
+integer, dimension(3) :: ymd0
 real(wp) :: UTsec0, tdur, dtout
 real(wp) :: activ(3)
 real(wp) :: tcfl
