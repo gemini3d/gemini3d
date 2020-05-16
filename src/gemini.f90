@@ -26,6 +26,8 @@ integer :: ierr
 !> VARIABLES READ IN FROM CONFIG FILE
 real(wp) :: UTsec
 !! UT (s)
+integer, dimension(3) :: ymd
+!! year, month, day (current, not to be confused with starting year month and day in gemini_cfg structure)
 
 type(gemini_cfg) :: cfg
 !! holds many user simulation parameters
@@ -35,6 +37,7 @@ type(curvmesh) :: x
 !! structure containg grid locations, finite differences, etc.:  see grid module for details
 
 !> STATE VARIABLES
+!> MZ note:  it is likely that there could be a plasma and neutral derived type containing these data...  May be worth considering in a refactor...
 real(wp), dimension(:,:,:,:), allocatable :: ns,vs1,vs2,vs3,Ts
 !! fluid state variables
 real(wp), dimension(:,:,:), allocatable :: E1,E2,E3,J1,J2,J3
@@ -172,6 +175,7 @@ vs3 = 0
 
 !> MAIN LOOP
 UTsec = cfg%UTsec0
+ymd=cfg%ymd0
 it = 1
 t = 0
 tout = t
@@ -179,7 +183,7 @@ tglowout = t
 tneuBG=t
 
 do while (t < cfg%tdur)
-  !! TIME STEP CALCULATION
+  !! TIME STEP CALCULATION, requires workers to report their most stringent local stability constraint
   dtprev=dt
   call dt_comm(t,tout,tglowout, cfg%flagglow,cfg%tcfl,ns,Ts,vs1,vs2,vs3,B1,B2,B3,x,cfg%potsolve,dt)
   if (it>1) then
@@ -196,7 +200,7 @@ do while (t < cfg%tdur)
   !COMPUTE BACKGROUND NEUTRAL ATMOSPHERE USING MSIS00.
   if (it==1 .or. flagneuBG .and. t>tneuBG) then     !we dont' throttle for tneuBG so we have to do things this way to not skip over...
     call cpu_time(tstart)
-    call neutral_atmos(cfg%ymd,UTsec,x%glat,x%glon,x%alt,cfg%activ,nn,Tn)
+    call neutral_atmos(ymd,UTsec,x%glat,x%glon,x%alt,cfg%activ,nn,Tn)
     tneuBG=tneuBG+dtneuBG;
     if (myid==0) then
       call cpu_time(tfin)
@@ -212,11 +216,11 @@ do while (t < cfg%tdur)
       !! this triggers the code to load the neutral frame correspdonding ot the beginning time of the simulation
       if (myid==0) print *, '!!!Attempting initial load of neutral dynamics files!!!' // &
                               ' This is a workaround that fixes the restart code...',t-dt
-      call neutral_perturb(cfg%interptype,dt,cfg%dtneu,t-cfg%dtneu,cfg%ymd,UTsec-cfg%dtneu, &
+      call neutral_perturb(cfg%interptype,dt,cfg%dtneu,t-cfg%dtneu,ymd,UTsec-cfg%dtneu, &
         cfg%sourcedir,cfg%dxn,cfg%drhon,cfg%dzn, &
         cfg%sourcemlat,cfg%sourcemlon,x,nn,Tn,vn1,vn2,vn3)
     end if
-    call neutral_perturb(cfg%interptype,dt,cfg%dtneu,t,cfg%ymd,UTsec,cfg%sourcedir,cfg%dxn,cfg%drhon,cfg%dzn,cfg%sourcemlat, &
+    call neutral_perturb(cfg%interptype,dt,cfg%dtneu,t,ymd,UTsec,cfg%sourcedir,cfg%dxn,cfg%drhon,cfg%dzn,cfg%sourcemlat, &
       cfg%sourcemlon,x,nn,Tn,vn1,vn2,vn3)
     if (myid==0 .and. debug) then
       call cpu_time(tfin)
@@ -225,11 +229,10 @@ do while (t < cfg%tdur)
   end if
 
   !! POTENTIAL SOLUTION
-  !> FIXME:  an issue here is that for EIA simulations UTsec is needed in the electrodynamics whereas input file interpolation simply uses the time since beginning of the simulation...
   call cpu_time(tstart)
   call electrodynamics(it,t,dt,nn,vn2,vn3,Tn,cfg%sourcemlat,ns,Ts,vs1,B1,vs2,vs3,x, &
                         cfg%potsolve, cfg%flagcap,E1,E2,E3,J1,J2,J3, &
-                        Phiall, cfg%flagE0file, cfg%dtE0, cfg%E0dir,cfg%ymd,UTsec)
+                        Phiall, cfg%flagE0file, cfg%dtE0, cfg%E0dir,ymd,UTsec)
   if (myid==0 .and. debug) then
     call cpu_time(tfin)
     print *, 'Electrodynamics total solve time:  ',tfin-tstart
@@ -237,7 +240,7 @@ do while (t < cfg%tdur)
 
   !> UPDATE THE FLUID VARIABLES
   if (myid==0 .and. debug) call cpu_time(tstart)
-  call fluid_adv(ns,vs1,Ts,vs2,vs3,J1,E1,cfg%Teinf,t,dt,x,nn,vn1,vn2,vn3,Tn,iver,cfg%activ(2),cfg%activ(1),cfg%ymd,UTsec, &
+  call fluid_adv(ns,vs1,Ts,vs2,vs3,J1,E1,cfg%Teinf,t,dt,x,nn,vn1,vn2,vn3,Tn,iver,cfg%activ(2),cfg%activ(1),ymd,UTsec, &
     cfg%flagprecfile,cfg%dtprec,cfg%precdir,cfg%flagglow,cfg%dtglow)
   if (myid==0 .and. debug) then
     call cpu_time(tfin)
@@ -250,11 +253,11 @@ do while (t < cfg%tdur)
   !> NOW OUR SOLUTION IS FULLY UPDATED SO UPDATE TIME VARIABLES TO MATCH...
   it=it+1; t=t+dt;
   if (myid==0 .and. debug) print *, 'Moving on to time step (in sec):  ',t,'; end time of simulation:  ',cfg%tdur
-  call dateinc(dt,cfg%ymd,UTsec)
+  call dateinc(dt,ymd,UTsec)
 
   if (myid==0 .and. (modulo(it,10) == 0 .or. debug)) then
     !! print every 10th time step to avoid extreme amounts of console printing
-    print '(A,I4,A1,I0.2,A1,I0.2,A1,F12.6,A5,F8.6)', 'Current time ',cfg%ymd(1),'-',cfg%ymd(2),'-',cfg%ymd(3),' ',UTsec,'; dt=',dt
+    print '(A,I4,A1,I0.2,A1,I0.2,A1,F12.6,A5,F8.6)', 'Current time ',ymd(1),'-',ymd(2),'-',ymd(3),' ',UTsec,'; dt=',dt
   endif
 
   if (cfg%dryrun) then
@@ -272,7 +275,7 @@ do while (t < cfg%tdur)
     endif
     !! close enough to warrant an output now...
     if (myid==0 .and. debug) call cpu_time(tstart)
-    call output_plasma(cfg%outdir,cfg%flagoutput,cfg%ymd, &
+    call output_plasma(cfg%outdir,cfg%flagoutput,ymd, &
       UTsec,vs2,vs3,ns,vs1,Ts,Phiall,J1,J2,J3, &
       cfg%out_format)
 
@@ -285,7 +288,7 @@ do while (t < cfg%tdur)
   !> GLOW file output
   if ((cfg%flagglow /= 0) .and. (abs(t-tglowout) < 1d-5)) then !same as plasma output
     call cpu_time(tstart)
-    call output_aur(cfg%outdir, cfg%flagglow, cfg%ymd, UTsec, iver, cfg%out_format)
+    call output_aur(cfg%outdir, cfg%flagglow, ymd, UTsec, iver, cfg%out_format)
     if (myid==0) then
       call cpu_time(tfin)
       print *, 'Auroral output done for time step:  ',t,' in cpu_time of: ',tfin-tstart
@@ -370,7 +373,7 @@ if (myid==0) then
   call assert_file_exists(cfg%indatgrid)
   call assert_file_exists(cfg%indatfile)
 
-  print '(A,I6,A1,I0.2,A1,I0.2)', cfg%infile // ' simulation year-month-day is:  ', cfg%ymd(1), '-', cfg%ymd(2),'-',cfg%ymd(3)
+  print '(A,I6,A1,I0.2,A1,I0.2)', cfg%infile // ' simulation year-month-day is:  ', ymd(1), '-', ymd(2),'-',ymd(3)
   print '(A51,F10.3)', 'start time is:  ',cfg%UTsec0
   print '(A51,F10.3)', 'duration is:  ',cfg%tdur
   print '(A51,F10.3)', 'output every:  ',cfg%dtout

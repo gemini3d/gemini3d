@@ -26,6 +26,8 @@ external :: mpi_reduce
 
 real(wp) :: UTsec
 !! UT (s)
+integer, dimension(3) :: ymd
+!! year, month, day (current)
 
 character(:), allocatable :: fieldpointfile
 
@@ -122,7 +124,7 @@ if (myid==0) then
   call assert_file_exists(cfg%indatgrid)
   call assert_file_exists(cfg%indatfile)
 
-  print '(A,I6,A1,I0.2,A1,I0.2)', cfg%infile // ' simulation year-month-day is:  ',cfg%ymd(1),'-',cfg%ymd(2),'-',cfg%ymd(3)
+  print '(A,I6,A1,I0.2,A1,I0.2)', cfg%infile // ' simulation year-month-day is:  ',ymd(1),'-',ymd(2),'-',ymd(3)
   print '(A51,F10.3)', 'start time is:  ',cfg%UTsec0
   print '(A51,F10.3)', 'duration is:  ',cfg%tdur
   print '(A51,F10.3)', 'output every:  ',cfg%dtout
@@ -313,7 +315,7 @@ allocate(Brall(lpoints),Bthetaall(lpoints),Bphiall(lpoints))
 
 !! MAIN LOOP
 UTsec=cfg%UTsec0; it=1; t=0d0; tout=t;
-call dateinc(cfg%dtout,cfg%ymd,UTsec)     !skip first file
+call dateinc(cfg%dtout,ymd,UTsec)     !skip first file
 it=3                              !don't trigger any special adaptations to filename
 do while (t < cfg%tdur)
   !TIME STEP CALCULATION
@@ -327,7 +329,7 @@ do while (t < cfg%tdur)
   if (it==2) then
     UTsec=UTsec-0.000001d0
   end if
-  call input_plasma_currents(cfg%outdir, cfg%out_format, cfg%flagoutput,cfg%ymd,UTsec,J1,J2,J3)    !now everyone has their piece of data
+  call input_plasma_currents(cfg%outdir, cfg%out_format, cfg%flagoutput,ymd,UTsec,J1,J2,J3)    !now everyone has their piece of data
 
 
   !FORCE PARALLEL CURRENTS TO ZERO BELOW SOME ALTITUDE LIMIT
@@ -409,7 +411,7 @@ do while (t < cfg%tdur)
   do ipoints=1,lpoints
     if (myid == 0) then
       print *, 'magcalc.f90 --> Computing magnetic field for field point:  ',ipoints,' out of:  ',lpoints
-      print *, '            --> ...for time:  ',cfg%ymd,UTsec
+      print *, '            --> ...for time:  ',ymd,UTsec
     end if
 
 
@@ -674,7 +676,7 @@ do while (t < cfg%tdur)
   !OUTPUT SHOULD BE DONE FOR EVERY INPUT FILE THAT HAS BEEN READ IN
   if (myid==0) then
     call cpu_time(tstart)
-    call output_magfields(cfg%outdir,cfg%ymd,UTsec,Brall,Bthetaall,Bphiall,cfg%out_format)   !mag field data already reduced so just root needs to output
+    call output_magfields(cfg%outdir,ymd,UTsec,Brall,Bthetaall,Bphiall,cfg%out_format)   !mag field data already reduced so just root needs to output
     call cpu_time(tfin)
    if(debug) print *, 'magcalc.f90 --> Output done for time step:  ',t,' in cpu_time of:  ',tfin-tstart
   end if
@@ -684,9 +686,9 @@ do while (t < cfg%tdur)
   !NOW OUR SOLUTION IS FULLY UPDATED SO UPDATE TIME VARIABLES TO MATCH...
   it=it+1; t=t+dt;
   if (myid==0 .and. debug) print *, 'magcalc.f90 --> Moving on to time step (in sec):  ',t,'; end time of simulation:  ',cfg%tdur
-  call dateinc(dt,cfg%ymd,UTsec)
+  call dateinc(dt,ymd,UTsec)
   if (myid==0) then
-    print *, 'magcalc.f90 --> Current date',cfg%ymd,'Current UT time:  ',UTsec
+    print *, 'magcalc.f90 --> Current date',ymd,'Current UT time:  ',UTsec
   end if
 end do
 
