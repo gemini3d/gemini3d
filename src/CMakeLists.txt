@@ -13,7 +13,7 @@ add_subdirectory(temporal)
 add_subdirectory(neutral)
 
 add_library(collision OBJECT collisions/collisions.f90)
-target_link_libraries(collision PRIVATE const)
+target_link_libraries(collision PRIVATE const config)
 
 add_subdirectory(sources)
 

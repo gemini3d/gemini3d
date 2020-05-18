@@ -19,10 +19,10 @@ use potential_mumps, only: potential3D_fieldresolved_decimate, &
                             potential2D_polarization, &
                             potential2D_polarization_periodic
 use PDEelliptic, only: elliptic_workers
-
 use mpimod, only: mpi_integer, mpi_comm_world, mpi_status_ignore, &
 lid, lid2, lid3, myid, myid2, myid3, tag=>mpi_tag, &
 bcast_send, bcast_recv, gather_recv, gather_send, halo
+use config, only: gemini_cfg
 
 implicit none (type, external)
 private
@@ -30,77 +30,61 @@ public :: electrodynamics, halo_pot
 
 external :: mpi_send, mpi_recv
 
-!! OVERLOAD THE SOLVERS FOR DEALING WITH THE CURVILINEAR MESHES
-!! NOTE WORKER SUBROUTINE DOES NOT NEED TO BE CHANGED/OVERLOADED
+!! overloading to deal with vestigial cartesian->curvilinear code
 interface electrodynamics
-module procedure electrodynamics_curv
+  module procedure electrodynamics_curv
 end interface electrodynamics
 
 interface potential_root_mpi
-module procedure potential_root_mpi_curv
+  module procedure potential_root_mpi_curv
 end interface potential_root_mpi
 
 interface ! potential_worker.f90
-module subroutine potential_workers_mpi(it,t,dt,sig0,sigP,sigH,incap,vs2,vs3,vn2,vn3,sourcemlat,B1,x, &
-  potsolve,flagcap, &
-  E1,E2,E3,J1,J2,J3)
-
-integer, intent(in) :: it
-real(wp), intent(in) :: t,dt
-real(wp), dimension(:,:,:), intent(in) ::  sig0,sigP,sigH
-real(wp), dimension(:,:,:), intent(in) ::  incap
-real(wp), dimension(-1:,-1:,-1:,:), intent(in) ::  vs2,vs3
-real(wp), dimension(:,:,:), intent(in) ::  vn2,vn3
-real(wp), intent(in) :: sourcemlat
-real(wp), dimension(-1:,-1:,-1:), intent(in) ::  B1
-
-type(curvmesh), intent(in) :: x
-
-integer, intent(in) :: potsolve
-integer, intent(in) :: flagcap
-
-real(wp), dimension(:,:,:), intent(out) :: E1,E2,E3,J1,J2,J3
-end subroutine potential_workers_mpi
+  module subroutine potential_workers_mpi(it,t,dt,sig0,sigP,sigH,incap,vs2,vs3,vn2,vn3,cfg,B1,x, &
+    E1,E2,E3,J1,J2,J3)
+  
+  integer, intent(in) :: it
+  real(wp), intent(in) :: t,dt
+  real(wp), dimension(:,:,:), intent(in) ::  sig0,sigP,sigH
+  real(wp), dimension(:,:,:), intent(in) ::  incap
+  real(wp), dimension(-1:,-1:,-1:,:), intent(in) ::  vs2,vs3
+  real(wp), dimension(:,:,:), intent(in) ::  vn2,vn3
+  type(gemini_cfg), intent(in) :: cfg
+  real(wp), dimension(-1:,-1:,-1:), intent(in) ::  B1
+  
+  type(curvmesh), intent(in) :: x
+  
+  real(wp), dimension(:,:,:), intent(out) :: E1,E2,E3,J1,J2,J3
+  end subroutine potential_workers_mpi
 end interface
 
 interface ! potential_root.f90
-module subroutine potential_root_mpi_curv(it,t,dt,sig0,sigP,sigH,incap,vs2,vs3,vn2,vn3,sourcemlat,B1,x, &
-  potsolve,flagcap, &
-  E1,E2,E3,J1,J2,J3, &
-  Phiall,flagE0file,dtE0,E0dir,ymd,UTsec)
-
-integer, intent(in) :: it
-real(wp), intent(in) :: t,dt
-real(wp), dimension(:,:,:), intent(in) ::  sig0,sigP,sigH
-real(wp), dimension(:,:,:), intent(in) ::  incap
-real(wp), dimension(-1:,-1:,-1:,:), intent(in) ::  vs2,vs3
-real(wp), dimension(:,:,:), intent(in) ::  vn2,vn3
-real(wp), intent(in) :: sourcemlat
-real(wp), dimension(-1:,-1:,-1:), intent(in) ::  B1
-
-type(curvmesh), intent(in) :: x
-
-integer, intent(in) :: potsolve
-integer, intent(in) :: flagcap
-
-real(wp), dimension(:,:,:), intent(out) :: E1,E2,E3,J1,J2,J3
-real(wp), dimension(:,:,:), intent(inout) :: Phiall   !not good form, but I'm lazy...  Forgot what I meant by this...
-
-integer, intent(in) :: flagE0file
-real(wp), intent(in) :: dtE0
-character(*), intent(in) :: E0dir
-integer, dimension(3), intent(in) :: ymd
-real(wp), intent(in) :: UTsec
-end subroutine potential_root_mpi_curv
+  module subroutine potential_root_mpi_curv(it,t,dt,sig0,sigP,sigH,incap,vs2,vs3,vn2,vn3,cfg,B1,x, &
+    E1,E2,E3,J1,J2,J3,Phiall,ymd,UTsec)
+  
+  integer, intent(in) :: it
+  real(wp), intent(in) :: t,dt
+  real(wp), dimension(:,:,:), intent(in) ::  sig0,sigP,sigH
+  real(wp), dimension(:,:,:), intent(in) ::  incap
+  real(wp), dimension(-1:,-1:,-1:,:), intent(in) ::  vs2,vs3
+  real(wp), dimension(:,:,:), intent(in) ::  vn2,vn3
+  type(gemini_cfg), intent(in) :: cfg
+  real(wp), dimension(-1:,-1:,-1:), intent(in) ::  B1
+  
+  type(curvmesh), intent(in) :: x
+  
+  real(wp), dimension(:,:,:), intent(out) :: E1,E2,E3,J1,J2,J3
+  real(wp), dimension(:,:,:), intent(inout) :: Phiall   !not good form, but I'm lazy...  Forgot what I meant by this...
+  integer, dimension(3), intent(in) :: ymd
+  real(wp), intent(in) :: UTsec
+  end subroutine potential_root_mpi_curv
 end interface
 
 contains
 
 
-subroutine electrodynamics_curv(it,t,dt,nn,vn2,vn3,Tn,sourcemlat,ns,Ts,vs1,B1,vs2,vs3,x, &
-                         potsolve,flagcap, &
-                         E1,E2,E3,J1,J2,J3,Phiall, &
-                         flagE0file,dtE0,E0dir,ymd,UTsec)
+subroutine electrodynamics_curv(it,t,dt,nn,vn2,vn3,Tn,cfg,ns,Ts,vs1,B1,vs2,vs3,x, &
+                         E1,E2,E3,J1,J2,J3,Phiall,ymd,UTsec)
 
 !! THIS IS A WRAPPER FUNCTION FOR THE ELECTRODYANMICS
 !! PART OF THE MODEL.  BOTH THE ROOT AND WORKER PROCESSES
@@ -117,23 +101,14 @@ real(wp), intent(in) :: t,dt
 
 real(wp), dimension(:,:,:,:), intent(in) :: nn
 real(wp), dimension(:,:,:), intent(in) :: vn2,vn3,Tn
-real(wp), intent(in) :: sourcemlat
+type(gemini_cfg), intent(in) :: cfg
 real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns,Ts,vs1
 real(wp), dimension(-1:,-1:,-1:), intent(in) :: B1
 real(wp), dimension(-1:,-1:,-1:,:), intent(inout) ::  vs2,vs3
-
 type(curvmesh), intent(in) :: x
-
-integer, intent(in) :: potsolve
-integer, intent(in) :: flagcap
-
 real(wp), dimension(:,:,:), intent(out) :: E1,E2,E3,J1,J2,J3
 real(wp), dimension(:,:,:), allocatable, intent(inout) :: Phiall
 !! inout since it may not be allocated or deallocated in this procedure
-
-integer, intent(in) :: flagE0file
-real(wp), intent(in) :: dtE0
-character(*), intent(in) :: E0dir
 integer, dimension(3), intent(in) :: ymd
 real(wp), intent(in) :: UTsec
 
@@ -158,8 +133,8 @@ lx3=size(ns,3)-4
 call cpu_time(tstart)
 call conductivities(nn,Tn,ns,Ts,vs1,B1,sig0,sigP,sigH,muP,muH,muPvn,muHvn)
 
-if (flagcap/=0) then
-  call capacitance(ns,B1,flagcap,incap)
+if (cfg%flagcap/=0) then
+  call capacitance(ns,B1,cfg,incap)    !> full cfg needed for optional inputs...
   if (it==1) then     !check that we don't have an unsupported grid type for doing capacitance
     minh1=minval(x%h1)
     maxh1=maxval(x%h1)
@@ -176,25 +151,21 @@ else
 end if
 call cpu_time(tfin)
 if (myid==0) then
-  if (flagcap/=0) then
+  if (cfg%flagcap/=0) then
     if (debug) print *, 'Conductivities and capacitance for time step:  ',t,' took ',tfin-tstart,' seconds...'
   else
     if (debug) print *, 'Conductivities for time step:  ',t,' took ',tfin-tstart,' seconds...'
   end if
 end if
 
-if (potsolve == 1 .or. potsolve == 3) then    !electrostatic solve or electrostatic alt. solve
+if (cfg%potsolve == 1 .or. cfg%potsolve == 3) then    !electrostatic solve or electrostatic alt. solve
   call cpu_time(tstart)
 
   if (myid/=0) then    !role-specific communication pattern (all-to-root-to-all), workers initiate with sends
-     call potential_workers_mpi(it,t,dt,sig0,sigP,sigH,incap,vs2,vs3,vn2,vn3,sourcemlat,B1,x, &
-                            potsolve,flagcap, &
-                            E1,E2,E3,J1,J2,J3)
+     call potential_workers_mpi(it,t,dt,sig0,sigP,sigH,incap,vs2,vs3,vn2,vn3,cfg,B1,x,E1,E2,E3,J1,J2,J3)
   else
-    call potential_root_mpi(it,t,dt,sig0,sigP,sigH,incap,vs2,vs3,vn2,vn3,sourcemlat,B1,x, &
-                              potsolve,flagcap, &
-                              E1,E2,E3,J1,J2,J3, &
-                              Phiall,flagE0file,dtE0,E0dir,ymd,UTsec)
+    call potential_root_mpi(it,t,dt,sig0,sigP,sigH,incap,vs2,vs3,vn2,vn3,cfg,B1,x, &
+                              E1,E2,E3,J1,J2,J3,Phiall,ymd,UTsec)
   end if
 
   !DRIFTS - NEED TO INCLUDE ELECTRIC, WIND-DRIVEN, AND GRAVITATIONAL???
@@ -225,7 +196,7 @@ if (potsolve == 1 .or. potsolve == 3) then    !electrostatic solve or electrosta
     if (debug) print *, 'Min and max root drift values:  ',minval(vs2),maxval(vs2), minval(vs3),maxval(vs3)
   end if
 
-else if (potsolve == 2) then  !inductive form of model, could this be subcycled to speed things up?
+else if (cfg%potsolve == 2) then  !inductive form of model, could this be subcycled to speed things up?
   !Do nothing for now...
 else   !null solve; just force everything to zero
   E1=0d0; E2=0d0; E3=0d0; J1=0d0; J2=0d0; J3=0d0;

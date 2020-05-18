@@ -2,6 +2,7 @@ module collisions
 
 use, intrinsic :: iso_fortran_env, only: stderr=>error_unit
 use phys_consts, only: wp, lsp, ln, ms, kb, pi, elchrg, qs, debug
+use config, only: gemini_cfg
 
 implicit none (type, external)
 private
@@ -270,7 +271,7 @@ end do
 end subroutine conductivities
 
 
-subroutine capacitance(ns,B1,flagcap,incap)
+subroutine capacitance(ns,B1,cfg,incap)
 
 !------------------------------------------------------------
 !-------COMPUTE THE INERTIAL CAPACITANCE OF THE IONOSPHERE.
@@ -279,8 +280,7 @@ subroutine capacitance(ns,B1,flagcap,incap)
 
 real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns
 real(wp), dimension(-1:,-1:,-1:), intent(in) :: B1
-integer, intent(in) :: flagcap
-
+type(gemini_cfg), intent(in) :: cfg
 real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4), intent(out) :: incap
 
 integer :: lx1,lx2,lx3,isp
@@ -297,11 +297,11 @@ end do
 
 incap=incap/B1(1:lx1,1:lx2,1:lx3)**2
 
-if (flagcap==2) then
+if (cfg%flagcap==2) then
   if (debug) print *, '!!! Augmenting capacitance with a magnetospheric contribution...'
-  incap=incap + 30.0_wp / 980e3_wp
-  !! kludge the value to account for a magnetosheric contribution
-  !! this is just a random guess that makes the KHI examples work well; a better value should be investigated
+  incap=incap + cfg%magcap / 980e3_wp
+  !! augment the value to account for a magnetosheric contribution, based on user input.  Probably should
+  !! be in the 5-35 F range...  Note that the assumes that the grid extends from ~90-1000 km in altitude approx.  
 end if
 end subroutine capacitance
 
