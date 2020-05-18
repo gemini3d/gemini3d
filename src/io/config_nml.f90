@@ -27,6 +27,16 @@ character(4) :: file_format=""  !< need to initialize blank or random invisible 
 real(wp) :: dtE0=0
 integer :: flagdneu, flagprecfile, flagE0file, flagglow !< FIXME: these four parameters are ignored, kept temporarily
 real(wp) :: dtglow=0, dtglowout=0
+logical :: flagEIA
+real(wp) :: v0equator
+logical :: flagneuBG
+real(wp) :: dtneuBG
+real(wp) :: PhiWBG,W0BG
+logical :: flagJpar
+logical :: flgcap
+real(wp) :: magcap
+integer :: diffsolvetype
+
 character(:), allocatable :: compiler_vendor
 
 namelist /base/ ymd, UTsec0, tdur, dtout, activ, tcfl, Teinf
@@ -37,7 +47,12 @@ namelist /neutral_perturb/ interptype, sourcemlat, sourcemlon, dtneu, dxn, drhon
 namelist /precip/ dtprec, prec_dir
 namelist /efield/ dtE0, E0_dir
 namelist /glow/ dtglow, dtglowout
-
+namelist /EIA/ flagEIA,v0equator
+namelist /neutral_BG/ flagneuBG,dtneuBG
+namelist /precip_BG/ PhiWBG,W0BG
+namelist /Jpar/ flagJpar
+namelist /capacitance/ flgcap,magcap     ! later need to regroup these in a way that is more logical now there are so many more inputs
+namelist /diffusion/ diffsolvetype
 
 compiler_vendor = get_compiler_vendor()
 
@@ -125,6 +140,52 @@ if (namelist_exists(u, "glow", verbose)) then
 else
   cfg%flagglow = 0
 endif
+
+!!> EIA (optional)
+!read(u, nml=EIA, iostat=i)
+!if (i/=0) then     ! user wants a non-default setting (defaults set by constructor)
+!  cfg%flagEIA=flagEIA
+!  cfg%v0equator=v0equator
+!else
+!  print*, 'EIA:  ',cfg%flagEIA,cfg%v0equator
+!end if
+!
+!!> neural background (optional)
+!read(u, nml=neutral_BG, iostat=i)
+!if (i/=0) then
+!  cfg%flagneuBG=flagneuBG
+!  cfg%dtneuBG=dtneuBG
+!else
+!  print*, 'neu BG:  ',cfg%flagneuBG,dtneuBG
+!end if
+!
+!!> precip background (optional)
+!read(u, nml=precip_BG, iostat=i)
+!if (i/=0) then
+!  cfg%PhiWBG=PhiWBG
+!  cfg%W0BG=W0BG
+!end if
+!
+!!> parallel current density (optional)
+!read(u, nml=Jpar, iostat=i)
+!if (i/=0) then
+!  cfg%flagJpar=flagJpar
+!end if
+!
+!!> inertial capacitance (optional)
+!read(u, nml=capacitance, iostat=i)
+!if (i/=0) then
+!  !cfg%flagcap=flagcap    !FIXME:  need to regroup this from /flags/
+!  cfg%magcap=magcap
+!end if
+!
+!read(u, nml=diffusion, iostat=i)
+!if (i/=0) then
+!  cfg%diffsolvetype=diffsolvetype
+!  print*, 'diffsolvetype (file):  ',cfg%diffsolvetype
+!else
+!  print*, 'diffsolvetype:  ',cfg%diffsolvetype
+!end if
 
 close(u)
 
