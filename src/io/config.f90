@@ -73,10 +73,15 @@ end type gemini_cfg
 
 character(:), allocatable :: compiler_vendor
 
+!> overload group_exists file vs. unit inputs
+interface group_exists
+  procedure group_exists_file, group_exists_unit
+end interface group_exists
+
 contains
 
 
-logical function group_exists(filename, group)
+logical function group_exists_file(filename, group)
 !! determines if Namelist group exists in file
 !! *** this was backported from cfg_v2 and will be in config_nml.f90 next.
 
@@ -84,7 +89,7 @@ character(*), intent(in) :: filename, group
 integer :: u, i
 character(256) :: line  !< arbitrary length
 
-group_exists = .false.
+group_exists_file = .false.
 
 open(newunit=u, file=filename, status='old', action='read')
 
@@ -93,14 +98,39 @@ do
   if(i/=0) exit
   if (line(1:1) /= '&') cycle
   if (line(2:) == group) then
-    group_exists = .true.
+    group_exists_file = .true.
     exit
   end if
 end do
 
 close(u)
 
-end function group_exists
+end function group_exists_file
+
+
+logical function group_exists_unit(u, group)
+!! determines if Namelist group exists in open file unit
+
+integer, intent(in) :: u
+character(*), intent(in) :: group
+
+integer :: i
+character(256) :: line  !< arbitrary length
+
+rewind(u)     !so that we don't miss any groups, reset file pointer
+group_exists_unit = .false.
+
+do
+  read(u, '(A)', iostat=i) line
+  if(i/=0) exit
+  if (line(1:1) /= '&') cycle
+  if (line(2:) == group) then
+    group_exists_unit = .true.
+    exit
+  end if
+end do
+
+end function group_exists_unit
 
 
 subroutine read_configfile(cfg)
@@ -255,51 +285,45 @@ if (cfg%flagglow == 1) then
   cfg%dtglowout = dtglowout
 endif
 
-!!> EIA (optional)
-!read(u, nml=EIA, iostat=i)
-!if (i/=0) then     ! user wants a non-default setting (defaults set by constructor)
-!  cfg%flagEIA=flagEIA
-!  cfg%v0equator=v0equator
-!else
-!  print*, 'EIA:  ',cfg%flagEIA,cfg%v0equator
-!end if
-!
-!!> neural background (optional)
-!read(u, nml=neutral_BG, iostat=i)
-!if (i/=0) then
-!  cfg%flagneuBG=flagneuBG
-!  cfg%dtneuBG=dtneuBG
-!else
-!  print*, 'neu BG:  ',cfg%flagneuBG,dtneuBG
-!end if
-!
-!!> precip background (optional)
-!read(u, nml=precip_BG, iostat=i)
-!if (i/=0) then
-!  cfg%PhiWBG=PhiWBG
-!  cfg%W0BG=W0BG
-!end if
-!
-!!> parallel current density (optional)
-!read(u, nml=Jpar, iostat=i)
-!if (i/=0) then
-!  cfg%flagJpar=flagJpar
-!end if
-!
-!!> inertial capacitance (optional)
-!read(u, nml=capacitance, iostat=i)
-!if (i/=0) then
-!  !cfg%flagcap=flagcap    !FIXME:  need to regroup this from /flags/
-!  cfg%magcap=magcap
-!end if
-!
-!read(u, nml=diffusion, iostat=i)
-!if (i/=0) then
-!  cfg%diffsolvetype=diffsolvetype
-!  print*, 'diffsolvetype (file):  ',cfg%diffsolvetype
-!else
-!  print*, 'diffsolvetype:  ',cfg%diffsolvetype
-!end if
+!> EIA (optional)
+if (group_exists(u,'EIA')) then
+  read(u, nml=EIA, iostat=i)
+  cfg%flagEIA=flagEIA
+  cfg%v0equator=v0equator
+end if
+
+!> neural background (optional)
+if (group_exists(u,'neutral_BG')) then
+  read(u, nml=neutral_BG, iostat=i)
+  cfg%flagneuBG=flagneuBG
+  cfg%dtneuBG=dtneuBG
+end if
+
+!> precip background (optional)
+if (group_exists(u,'precip_BG')) then
+  read(u, nml=precip_BG, iostat=i)
+  cfg%PhiWBG=PhiWBG
+  cfg%W0BG=W0BG
+end if
+
+!> parallel current density (optional)
+if (group_exists(u,'Jpar')) then
+  read(u, nml=Jpar, iostat=i)
+  cfg%flagJpar=flagJpar
+end if
+
+!> inertial capacitance (optional)
+if (group_exists(u,'capacitance')) then
+  read(u, nml=capacitance, iostat=i)
+  !cfg%flagcap=flagcap    !FIXME:  need to regroup this from /flags/
+  cfg%magcap=magcap
+end if
+
+!> diffusion solve type (optional)
+if (group_exists(u,'diffusion')) then
+  read(u, nml=diffusion, iostat=i)
+  cfg%diffsolvetype=diffsolvetype
+end if
 
 close(u)
 
