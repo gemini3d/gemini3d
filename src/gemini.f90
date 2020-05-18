@@ -227,9 +227,6 @@ do while (t < cfg%tdur)
 
   !! POTENTIAL SOLUTION
   call cpu_time(tstart)
-!  call electrodynamics(it,t,dt,nn,vn2,vn3,Tn,cfg%sourcemlat,ns,Ts,vs1,B1,vs2,vs3,x, &
-!                        cfg%potsolve, cfg%flagcap,E1,E2,E3,J1,J2,J3, &
-!                        Phiall, cfg%flagE0file, cfg%dtE0, cfg%E0dir,ymd,UTsec)
   call electrodynamics(it,t,dt,nn,vn2,vn3,Tn,cfg,ns,Ts,vs1,B1,vs2,vs3,x,E1,E2,E3,J1,J2,J3,Phiall,ymd,UTsec)
   if (myid==0 .and. debug) then
     call cpu_time(tfin)
@@ -238,14 +235,15 @@ do while (t < cfg%tdur)
 
   !> UPDATE THE FLUID VARIABLES
   if (myid==0 .and. debug) call cpu_time(tstart)
-  call fluid_adv(ns,vs1,Ts,vs2,vs3,J1,E1,cfg%Teinf,t,dt,x,nn,vn1,vn2,vn3,Tn,iver,cfg%activ(2),cfg%activ(1),ymd,UTsec, &
-    cfg%flagprecfile,cfg%dtprec,cfg%precdir,cfg%flagglow,cfg%dtglow)
+!  call fluid_adv(ns,vs1,Ts,vs2,vs3,J1,E1,cfg%Teinf,t,dt,x,nn,vn1,vn2,vn3,Tn,iver,cfg%activ(2),cfg%activ(1),ymd,UTsec, &
+!    cfg%flagprecfile,cfg%dtprec,cfg%precdir,cfg%flagglow,cfg%dtglow)
+  call fluid_adv(ns,vs1,Ts,vs2,vs3,J1,E1,cfg,t,dt,x,nn,vn1,vn2,vn3,Tn,iver,ymd,UTsec)
   if (myid==0 .and. debug) then
     call cpu_time(tfin)
     print *, 'Multifluid total solve time:  ',tfin-tstart
   endif
 
-  !> FIXME:  shouldn't this be done for all workers; also how much overhead does this incur every time step???
+  !> FIXME:  MZ - shouldn't this be done for all workers; also how much overhead does this incur every time step???
   !> Sanity check key variables before advancing
   if (myid==0) call check_finite_output(t, myid, vs2,vs3,ns,vs1,Ts,Phiall,J1,J2,J3)
 

@@ -53,7 +53,7 @@ logical :: flagneuBG=.false.                ! whether or not to allow MSIS to be
 real(wp) :: dtneuBG=900._wp                  ! approximate time between MSIS calls
 
 !> background preciptation
-real(wp) :: PhiWBG=0.05                      ! background total energy flux in mW/m^2  
+real(wp) :: PhiWBG=1e-5                      ! background total energy flux in mW/m^2  
 real(wp) :: W0BG=3e3_wp                      ! background characteristic energy for precipitation
 
 !> parallel current calculations
@@ -62,6 +62,9 @@ logical :: flagJpar=.true.                  ! whether or not to compute parallel
 !> inertial capacitance
 integer :: flagcap               ! use inertial capacitance? 0 - set all to zero, 1 - use ionosphere to compute, 2 - add a magnetospheric part
 real(wp) :: magcap=30._wp        ! value of integrated magnetospheric capacitance to use 
+
+!> type of diffusion solver to sue
+integer :: diffsolvetype=2       ! 1 - first order backward Euler time stepping; 2 - 2nd order TRBDF2 stepping 
 
 end type gemini_cfg
 
