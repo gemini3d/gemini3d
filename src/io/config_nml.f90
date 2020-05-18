@@ -43,7 +43,7 @@ namelist /base/ ymd, UTsec0, tdur, dtout, activ, tcfl, Teinf
 namelist /files/ file_format, indat_size, indat_grid, indat_file
 namelist /flags/ potsolve, flagperiodic, flagoutput, flagcap, &
    flagdneu, flagprecfile, flagE0file, flagglow !< FIXME: these last four parameters are ignored, kept temporarily for compatibility, should be removed
-namelist /neutral_perturb/ interptype, sourcemlat, sourcemlon, dtneu, dxn, drhon, dzn, source_dir
+namelist /neutral_perturb/ flagdneu, interptype, sourcemlat, sourcemlon, dtneu, dxn, drhon, dzn, source_dir
 namelist /precip/ dtprec, prec_dir
 namelist /efield/ dtE0, E0_dir
 namelist /glow/ dtglow, dtglowout

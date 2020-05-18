@@ -56,7 +56,7 @@ logical :: flagneuBG=.false.                ! whether or not to allow MSIS to be
 real(wp) :: dtneuBG=900._wp                  ! approximate time between MSIS calls
 
 !> background preciptation
-real(wp) :: PhiWBG=1e-5_wp                      ! background total energy flux in mW/m^2  
+real(wp) :: PhiWBG=1e-5_wp                      ! background total energy flux in mW/m^2
 real(wp) :: W0BG=3e3_wp                      ! background characteristic energy for precipitation
 
 !> parallel current calculations
@@ -64,7 +64,7 @@ logical :: flagJpar=.true.                  ! whether or not to compute parallel
 
 !> inertial capacitance
 integer :: flagcap = 0           ! use inertial capacitance? 0 - set all to zero, 1 - use ionosphere to compute, 2 - add a magnetospheric part
-real(wp) :: magcap=30._wp        ! value of integrated magnetospheric capacitance to use 
+real(wp) :: magcap=30._wp        ! value of integrated magnetospheric capacitance to use
 
 !> type of diffusion solver to sue
 integer :: diffsolvetype=2       ! 1 - first order backward Euler time stepping; 2 - 2nd order TRBDF2 diffusion solver
@@ -84,9 +84,8 @@ end subroutine read_ini
 end interface
 
 
-
-
 contains
+
 
 subroutine read_configfile(cfg, verbose)
 
@@ -136,14 +135,29 @@ integer :: flagE0file=0
 real(wp) :: dtE0=0
 integer :: flagglow=0
 real(wp) :: dtglow=0, dtglowout=0
+logical :: flagEIA
+real(wp) :: v0equator
+logical :: flagneuBG
+real(wp) :: dtneuBG
+real(wp) :: PhiWBG,W0BG
+logical :: flagJpar
+logical :: flgcap
+real(wp) :: magcap
+integer :: diffsolvetype
 
 namelist /base/ ymd, UTsec0, tdur, dtout, activ, tcfl, Teinf
 namelist /files/ file_format, indat_size, indat_grid, indat_file
 namelist /flags/ potsolve, flagperiodic, flagoutput, flagcap, flagdneu, flagprecfile, flagE0file, flagglow
-namelist /neutral_perturb/ interptype, sourcemlat, sourcemlon, dtneu, dxn, drhon, dzn, source_dir
+namelist /neutral_perturb/ flagdneu, interptype, sourcemlat, sourcemlon, dtneu, dxn, drhon, dzn, source_dir
 namelist /precip/ dtprec, prec_dir
 namelist /efield/ dtE0, E0_dir
 namelist /glow/ dtglow, dtglowout
+namelist /EIA/ flagEIA,v0equator
+namelist /neutral_BG/ flagneuBG,dtneuBG
+namelist /precip_BG/ PhiWBG,W0BG
+namelist /Jpar/ flagJpar
+namelist /capacitance/ flgcap,magcap     ! later need to regroup these in a way that is more logical now there are so many more inputs
+namelist /diffusion/ diffsolvetype
 
 open(newunit=u, file=cfg%infile, status='old', action='read')
 
@@ -224,6 +238,51 @@ if (cfg%flagglow == 1) then
   cfg%dtglowout = dtglowout
 endif
 
+!!> EIA (optional)
+!read(u, nml=EIA, iostat=i)
+!if (i/=0) then     ! user wants a non-default setting (defaults set by constructor)
+!  cfg%flagEIA=flagEIA
+!  cfg%v0equator=v0equator
+!else
+!  print*, 'EIA:  ',cfg%flagEIA,cfg%v0equator
+!end if
+!
+!!> neural background (optional)
+!read(u, nml=neutral_BG, iostat=i)
+!if (i/=0) then
+!  cfg%flagneuBG=flagneuBG
+!  cfg%dtneuBG=dtneuBG
+!else
+!  print*, 'neu BG:  ',cfg%flagneuBG,dtneuBG
+!end if
+!
+!!> precip background (optional)
+!read(u, nml=precip_BG, iostat=i)
+!if (i/=0) then
+!  cfg%PhiWBG=PhiWBG
+!  cfg%W0BG=W0BG
+!end if
+!
+!!> parallel current density (optional)
+!read(u, nml=Jpar, iostat=i)
+!if (i/=0) then
+!  cfg%flagJpar=flagJpar
+!end if
+!
+!!> inertial capacitance (optional)
+!read(u, nml=capacitance, iostat=i)
+!if (i/=0) then
+!  !cfg%flagcap=flagcap    !FIXME:  need to regroup this from /flags/
+!  cfg%magcap=magcap
+!end if
+!
+!read(u, nml=diffusion, iostat=i)
+!if (i/=0) then
+!  cfg%diffsolvetype=diffsolvetype
+!  print*, 'diffsolvetype (file):  ',cfg%diffsolvetype
+!else
+!  print*, 'diffsolvetype:  ',cfg%diffsolvetype
+!end if
 
 close(u)
 
