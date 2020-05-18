@@ -14,6 +14,7 @@ use mpimod, only: myid, tag=>mpi_tag
 use precipBCs_mod, only: precipBCs_fileinput, precipBCs
 use sources, only: rk2_prep_mpi, srcsenergy, srcsmomentum, srcscontinuity
 use timeutils, only : sza
+use config, only: gemini_cfg
 
 implicit none (type, external)
 private
@@ -27,8 +28,7 @@ real(wp), allocatable, dimension(:,:,:) :: QePrecipG, iverG
 
 contains
 
-subroutine fluid_adv(ns,vs1,Ts,vs2,vs3,J1,E1,Teinf,t,dt,x,nn,vn1,vn2,vn3,Tn,iver,f107,f107a,ymd,UTsec, &
-                   flagprecfile,dtprec,precdir,flagglow,dtglow)
+subroutine fluid_adv(ns,vs1,Ts,vs2,vs3,J1,E1,cfg,t,dt,x,nn,vn1,vn2,vn3,Tn,iver,ymd,UTsec)
 !! J1 needed for heat conduction; E1 for momentum equation
 
 !! THIS SUBROUTINE ADVANCES ALL OF THE FLUID VARIABLES BY TIME STEP DT.
@@ -40,26 +40,23 @@ real(wp), dimension(:,:,:), intent(in) :: J1
 real(wp), dimension(:,:,:), intent(inout) :: E1
 !! will have ambipolar field added into it in this procedure...
 
-real(wp), intent(in) :: Teinf,t,dt
+type(gemini_cfg), intent(in) :: cfg
+real(wp), intent(in) :: t,dt
 
 type(curvmesh), intent(in) :: x
 !! grid structure variable
 
 real(wp), dimension(:,:,:,:), intent(in) :: nn
 real(wp), dimension(:,:,:), intent(in) :: vn1,vn2,vn3,Tn
-real(wp), intent(in) :: f107,f107a
 integer, dimension(3), intent(in) :: ymd
 real(wp), intent(in) :: UTsec
 
-integer, intent(in) :: flagprecfile
-real(wp), intent(in) :: dtprec
-character(*), intent(in) :: precdir
-integer, intent(in) :: flagglow
-real(wp), intent(in) :: dtglow
 real(wp), dimension(:,:,:), intent(out) :: iver
 
 integer :: isp
 real(wp) :: tstart,tfin
+
+real(wp) :: f107,f107a
 
 real(wp), dimension(-1:size(ns,1)-2,-1:size(ns,2)-2,-1:size(ns,3)-2,size(ns,4)) ::  rhovs1,rhoes
 real(wp), dimension(-1:size(ns,1)-2,-1:size(ns,2)-2,-1:size(ns,3)-2) :: param
@@ -86,18 +83,23 @@ real(wp), parameter :: xicon = 3
 
 
 !> MAKING SURE THESE ARRAYS ARE ALWAYS IN SCOPE
-if ((flagglow/=0).and.(.NOT.allocated(PrprecipG))) then
+if ((cfg%flagglow/=0).and.(.not.allocated(PrprecipG))) then
   allocate(PrprecipG(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,size(ns,4)-1))
   PrprecipG(:,:,:,:)=0
 end if
-if ((flagglow/=0).and.(.NOT.allocated(QeprecipG))) then
+if ((cfg%flagglow/=0).and.(.not.allocated(QeprecipG))) then
   allocate(QeprecipG(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4))
   QeprecipG(:,:,:)=0
 end if
-if ((flagglow/=0).and.(.NOT.allocated(iverG))) then
+if ((cfg%flagglow/=0).and.(.not.allocated(iverG))) then
   allocate(iverG(size(iver,1),size(iver,2),size(iver,3)))
   iverG(:,:,:)=0
 end if
+
+
+! cfg arrays can be confusing, particularly f107, so assign to sensible variable name here
+f107=cfg%activ(2)
+f107a=cfg%activ(1)
 
 
 !CALCULATE THE INTERNAL ENERGY AND MOMENTUM FLUX DENSITIES (ADVECTION AND SOURCE SOLUTIONS ARE DONE IN THESE VARIABLES)
@@ -115,12 +117,10 @@ do isp=1,lsp
 
   if(isp<lsp) then   !electron info found from charge neutrality and current density
     param=ns(:,:,:,isp)
-!    param=advec3D_MC_mpi(param,v1i,v2i,v3i,dt,x,0)   !last argument is tensor rank of thing being advected
     param=advec3D_MC_mpi(param,v1i,v2i,v3i,dt,x,0,tag%ns)   !second to last argument is tensor rank of thing being advected
     ns(:,:,:,isp)=param
 
     param=rhovs1(:,:,:,isp)
-!    param=advec3D_MC_mpi(param,v1i,v2i,v3i,dt,x,1)
     param=advec3D_MC_mpi(param,v1i,v2i,v3i,dt,x,1,tag%vs1)
     rhovs1(:,:,:,isp)=param
 
@@ -133,7 +133,6 @@ do isp=1,lsp
   end if
 
   param=rhoes(:,:,:,isp)
-!  param=advec3D_MC_mpi(param,v1i,v2i,v3i,dt,x,0)
   param=advec3D_MC_mpi(param,v1i,v2i,v3i,dt,x,0,tag%Ts)
   rhoes(:,:,:,isp)=param
 end do
@@ -198,10 +197,17 @@ do isp=1,lsp
   param=Ts(:,:,:,isp)     !temperature for this species
   call thermal_conduct(isp,param,ns(:,:,:,isp),nn,J1,lambda,beta)
 
-  call diffusion_prep(isp,x,lambda,beta,ns(:,:,:,isp),param,A,B,C,D,E,Tn,Teinf)
+  call diffusion_prep(isp,x,lambda,beta,ns(:,:,:,isp),param,A,B,C,D,E,Tn,cfg%Teinf)
       !ZZZ - should be controllable via optional input flag, default to second order???
-!      param=backEuler3D(param,A,B,C,D,E,dt,x)    !1st order method, likely deprecated but needs to be kept here for debug purposes, perhaps?
-  param=TRBDF23D(param,A,B,C,D,E,dt,x)
+  select case (cfg%diffsolvetype)
+    case (1)
+      param=backEuler3D(param,A,B,C,D,E,dt,x)    !1st order method, only use if you are seeing grid-level oscillations in temperatures
+    case (2)
+      param=TRBDF23D(param,A,B,C,D,E,dt,x)       !2nd order method, should be used for most simulations
+    case default
+      error stop 'Unsupported diffusion solver type/mode; should be either 1 or 2.'
+  end select
+
   Ts(:,:,:,isp)=param
   Ts(:,:,:,isp)=max(Ts(:,:,:,isp),100._wp)
 end do
@@ -217,12 +223,13 @@ do isp=1,lsp
   rhoes(:,:,:,isp)=ns(:,:,:,isp)*kB*Ts(:,:,:,isp)/(gammas(isp)-1._wp)
 end do
 
+
 !> LOAD ELECTRON PRECIPITATION PATTERN
-if (flagprecfile==1) then
-  call precipBCs_fileinput(dt,dtprec,t,ymd,UTsec,precdir,x,W0,PhiWmWm2)
+if (cfg%flagprecfile==1) then
+  call precipBCs_fileinput(dt,t,cfg,ymd,UTsec,x,W0,PhiWmWm2)
 else
   !! no file input specified, so just call 'regular' function
-  call precipBCs(t,x,W0,PhiWmWm2)
+  call precipBCs(t,x,cfg,W0,PhiWmWm2)
 end if
 
 
@@ -233,7 +240,7 @@ Qeprecip=0
 Prpreciptmp=0
 Qepreciptmp=0
 if (gridflag/=0) then
-  if (flagglow==0) then
+  if (cfg%flagglow==0) then
     !! RUN FANG APPROXIMATION
     do iprec=1,lprec
       !! loop over the different populations of precipitation (2 here?), accumulating production rates
@@ -245,7 +252,7 @@ if (gridflag/=0) then
     Qeprecip=eheating(nn,Tn,Prprecip,ns)
   else
     !! GLOW USED, AURORA PRODUCED
-    if (int(t/dtglow)/=int((t+dt)/dtglow).OR.t<0.1_wp) then
+    if (int(t/cfg%dtglow)/=int((t+dt)/cfg%dtglow) .or. t<0.1_wp) then
       PrprecipG=0; QeprecipG=0; iverG=0;
       call ionrate_glow98(W0,PhiWmWm2,ymd,UTsec,f107,f107a,x%glat(1,:,:),x%glon(1,:,:),x%alt,nn,Tn,ns,Ts, &
                           QeprecipG, iverG, PrprecipG)
@@ -267,7 +274,7 @@ if (myid==0) then
     minval(Prprecip), maxval(Prprecip)
 end if
 
-if ((flagglow/=0).and.(myid==0)) then
+if ((cfg%flagglow/=0).and.(myid==0)) then
   if (debug) print *, 'Min/max 427.8 nm emission column-integrated intensity for time:  ',t,' :  ', &
     minval(iver(:,:,2)), maxval(iver(:,:,2))
 end if
@@ -486,8 +493,8 @@ select case (paramflag)
     param(:,:,-1:0,:) = 100
     param(:,:,lx3+1:lx3+2,:) = 100
   case default
-    !! do nothing...
-    if (debug) print *,  '!non-standard parameter selected in clean_params...'
+    !! throw an error as the code is likely not going to behave in a predictable way in this situation...
+    error stop '!non-standard parameter selected in clean_params, unreliable/incorrect results possible...'
 end select
 
 end subroutine clean_param

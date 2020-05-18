@@ -10,6 +10,7 @@ use interpolation, only : interp1,interp2
 use timeutils, only : dateinc, date_filename
 use mpimod, only: mpi_integer, mpi_comm_world, mpi_status_ignore, &
 lid, mpi_realprec, myid, tag=>mpi_tag
+use config, only: gemini_cfg
 
 implicit none (type, external)
 private
@@ -38,19 +39,17 @@ real(wp), private :: tprev,tnext
 contains
 
 
-subroutine precipBCs_fileinput(dt,dtprec,t,ymd,UTsec,precdir,x,W0,PhiWmWm2)
+subroutine precipBCs_fileinput(dt,t,cfg,ymd,UTsec,x,W0,PhiWmWm2)
 
-real(wp), intent(in) :: dt,dtprec
+real(wp), intent(in) :: dt
 real(wp), intent(in) :: t
+type(gemini_cfg), intent(in) :: cfg
 integer, dimension(3), intent(in) :: ymd
 !! date for which we wish to calculate perturbations
 real(wp), intent(in) :: UTsec
 real(wp), dimension(:,:,:), intent(out) :: W0,PhiWmWm2
 !! last dimension is the number of particle populations
-
-character(*), intent(in) :: precdir
-!! directory where neutral simulation data is kept
-type(curvmesh) :: x
+type(curvmesh), intent(in) :: x
 
 integer :: ios, ierr
 integer :: iid,iflat,ix2,ix3
@@ -73,13 +72,13 @@ if(t+dt / 2._wp>=tnext) then    !need to load a new file
 
     if (myid==0) then    !root process
       !READ IN THE GRID
-      print '(A,/,A)', 'READ precipitation size from:',precdir
+      print '(A,/,A)', 'READ precipitation size from:',cfg%precdir
 
-      call get_simsize2(precdir, llon=llon, llat=llat)
+      call get_simsize2(cfg%precdir, llon=llon, llat=llat)
 
       print *, 'Precipitation data has llon,llat size:  ',llon,llat
       if (llon < 1 .or. llat < 1) then
-        write(stderr,*) 'ERROR: reading ' // precdir
+        write(stderr,*) 'ERROR: reading ' // cfg%precdir
         error stop 'precipBCs_mod: precipitation grid size must be strictly positive'
       endif
 
@@ -102,7 +101,7 @@ if(t+dt / 2._wp>=tnext) then    !need to load a new file
 
 
       !NOW READ THE GRID
-      call get_grid2(precdir, mlonp, mlatp)
+      call get_grid2(cfg%precdir, mlonp, mlatp)
 
       print *, 'Precipitation data has mlon,mlat extent:  ',minval(mlonp(:)),maxval(mlonp(:)),minval(mlatp(:)), &
                                                               maxval(mlatp(:))
@@ -151,9 +150,9 @@ if(t+dt / 2._wp>=tnext) then    !need to load a new file
     if(debug) print *, 'tprev,tnow,tnext:  ',tprev,t+dt / 2._wp,tnext
     ymdtmp=ymdnext
     UTsectmp=UTsecnext
-    call dateinc(dtprec,ymdtmp,UTsectmp)    !get the date for "next" params
+    call dateinc(cfg%dtprec,ymdtmp,UTsectmp)    !get the date for "next" params
 
-    call get_precip(date_filename(precdir,ymdtmp,UTsectmp), Qp, E0p)
+    call get_precip(date_filename(cfg%precdir,ymdtmp,UTsectmp), Qp, E0p)
 
     if (debug) print *, 'Min/max values for Qp:  ',minval(Qp),maxval(Qp)
     if (debug) print *, 'Min/max values for E0p:  ',minval(E0p),maxval(E0p)
@@ -218,7 +217,7 @@ if(t+dt / 2._wp>=tnext) then    !need to load a new file
   UTsecprev=UTsecnext
   ymdprev=ymdnext
 
-  tnext=tprev+dtprec
+  tnext=tprev+cfg%dtprec
   UTsecnext=UTsectmp
   ymdnext=ymdtmp
 end if
@@ -250,8 +249,8 @@ end if
 
 !ASSIGN RESULTS OF INTERPOLATION TO OUTPUT VARIABLES
 !background precipitation
-W0pk=3e3_wp
-PhiWpk=1d-5
+W0pk=cfg%W0BG
+PhiWpk=cfg%PhiWBG
 do ix3=1,lx3
   do ix2=1,lx2
     W0(ix2,ix3,1)=W0pk
@@ -284,7 +283,7 @@ end if
 end subroutine clear_precip_fileinput
 
 
-subroutine precipBCs(t,x,W0,PhiWmWm2)
+subroutine precipBCs(t,x,cfg,W0,PhiWmWm2)
 
 !------------------------------------------------------------
 !-------LOAD UP ARRAYS CONTAINING TOP BOUNDARY CHAR. ENERGY
@@ -294,6 +293,7 @@ subroutine precipBCs(t,x,W0,PhiWmWm2)
 
 real(wp), intent(in) :: t
 type(curvmesh), intent(in) :: x
+type(gemini_cfg), intent(in) :: cfg
 real(wp), dimension(:,:,:), intent(out) :: W0,PhiWmWm2
 
 real(wp) :: W0pk,PhiWpk,meanW0x3,meanPhiWx3,sigW0x3,sigPhiWx3
@@ -307,8 +307,8 @@ lprec=size(W0,3)    !assumed to be 2 in this subroutine
 
 
 !BACKGROUND PRECIPITATION
-W0pk = 3e3_wp
-PhiWpk=1e-5_wp
+W0pk = cfg%W0BG
+PhiWpk=cfg%PhiWBG
 !PhiWpk = 1e-3_wp
 do ix3=1,lx3
   do ix2=1,lx2
