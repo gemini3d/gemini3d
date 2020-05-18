@@ -10,17 +10,10 @@ Teinf = 1500.0                ! Teinf:  exospheric electron temperature
 
 &flags
 potsolve = 1      ! solve electrodynamics:   0 - no; 1 - electrostatic; 2 - inductive
-flagperiodic = 0
 flagoutput = 1
-flagcap = 0
-flagdneu = 0
-flagprecfile = 1
-flagE0file = 1
-flagglow = 1
 /
 
 &files
-file_format = 'h5'
 indat_size = 'tests/data/test3d_glow/inputs/simsize.h5'
 indat_grid = 'tests/data/test3d_glow/inputs/simgrid.h5'
 indat_file = 'tests/data/test3d_glow/inputs/initial_conditions.h5'
