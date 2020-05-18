@@ -141,51 +141,45 @@ else
   cfg%flagglow = 0
 endif
 
-!!> EIA (optional)
-!read(u, nml=EIA, iostat=i)
-!if (i/=0) then     ! user wants a non-default setting (defaults set by constructor)
-!  cfg%flagEIA=flagEIA
-!  cfg%v0equator=v0equator
-!else
-!  print*, 'EIA:  ',cfg%flagEIA,cfg%v0equator
-!end if
-!
-!!> neural background (optional)
-!read(u, nml=neutral_BG, iostat=i)
-!if (i/=0) then
-!  cfg%flagneuBG=flagneuBG
-!  cfg%dtneuBG=dtneuBG
-!else
-!  print*, 'neu BG:  ',cfg%flagneuBG,dtneuBG
-!end if
-!
-!!> precip background (optional)
-!read(u, nml=precip_BG, iostat=i)
-!if (i/=0) then
-!  cfg%PhiWBG=PhiWBG
-!  cfg%W0BG=W0BG
-!end if
-!
-!!> parallel current density (optional)
-!read(u, nml=Jpar, iostat=i)
-!if (i/=0) then
-!  cfg%flagJpar=flagJpar
-!end if
-!
-!!> inertial capacitance (optional)
-!read(u, nml=capacitance, iostat=i)
-!if (i/=0) then
-!  !cfg%flagcap=flagcap    !FIXME:  need to regroup this from /flags/
-!  cfg%magcap=magcap
-!end if
-!
-!read(u, nml=diffusion, iostat=i)
-!if (i/=0) then
-!  cfg%diffsolvetype=diffsolvetype
-!  print*, 'diffsolvetype (file):  ',cfg%diffsolvetype
-!else
-!  print*, 'diffsolvetype:  ',cfg%diffsolvetype
-!end if
+!> EIA (optional)
+if (namelist_exists(u,'EIA')) then
+  read(u, nml=EIA, iostat=i)
+  cfg%flagEIA=flagEIA
+  cfg%v0equator=v0equator
+end if
+
+!> neural background (optional)
+if (namelist_exists(u,'neutral_BG')) then
+  read(u, nml=neutral_BG, iostat=i)
+  cfg%flagneuBG=flagneuBG
+  cfg%dtneuBG=dtneuBG
+end if
+
+!> precip background (optional)
+if (namelist_exists(u,'precip_BG')) then
+  read(u, nml=precip_BG, iostat=i)
+  cfg%PhiWBG=PhiWBG
+  cfg%W0BG=W0BG
+end if
+
+!> parallel current density (optional)
+if (namelist_exists(u,'Jpar')) then
+  read(u, nml=Jpar, iostat=i)
+  cfg%flagJpar=flagJpar
+end if
+
+!> inertial capacitance (optional)
+if (namelist_exists(u,'capacitance')) then
+  read(u, nml=capacitance, iostat=i)
+  !cfg%flagcap=flagcap    !FIXME:  need to regroup this from /flags/
+  cfg%magcap=magcap
+end if
+
+!> diffusion solve type (optional)
+if (namelist_exists(u,'diffusion')) then
+  read(u, nml=diffusion, iostat=i)
+  cfg%diffsolvetype=diffsolvetype
+end if
 
 close(u)
 
