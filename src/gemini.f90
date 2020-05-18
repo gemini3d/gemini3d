@@ -4,7 +4,7 @@ Program Gemini3D
 use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
 
 use sanity_check, only : check_finite_output
-use phys_consts, only : lnchem, lwave, lsp, wp, debug, flagneuBG, dtneuBG
+use phys_consts, only : lnchem, lwave, lsp, wp, debug
 use grid, only: grid_size,read_grid,clear_grid,grid_check,lx1,lx2,lx3,lx2all,lx3all
 use mesh, only: curvmesh
 use config, only : read_configfile, gemini_cfg
@@ -198,10 +198,10 @@ do while (t < cfg%tdur)
 
 
   !COMPUTE BACKGROUND NEUTRAL ATMOSPHERE USING MSIS00.
-  if (it==1 .or. flagneuBG .and. t>tneuBG) then     !we dont' throttle for tneuBG so we have to do things this way to not skip over...
+  if (it==1 .or. cfg%flagneuBG .and. t>tneuBG) then     !we dont' throttle for tneuBG so we have to do things this way to not skip over...
     call cpu_time(tstart)
     call neutral_atmos(ymd,UTsec,x%glat,x%glon,x%alt,cfg%activ,nn,Tn)
-    tneuBG=tneuBG+dtneuBG;
+    tneuBG=tneuBG+cfg%dtneuBG;
     if (myid==0) then
       call cpu_time(tfin)
       print *, 'Neutral background at time:  ',t,' calculated in time:  ',tfin-tstart
