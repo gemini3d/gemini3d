@@ -29,4 +29,4 @@ target_link_libraries(ionization PRIVATE const neutral grid mesh timeutils fang 
 
 add_library(precipBCs OBJECT boundary_conditions/precipBCs_mod.f90)
 target_compile_options(precipBCs PRIVATE ${gcc10opts})
-target_link_libraries(precipBCs PRIVATE mpimod reader const grid mesh interp timeutils MPI::MPI_Fortran)
+target_link_libraries(precipBCs PRIVATE mpimod reader const grid mesh interp timeutils MPI::MPI_Fortran config)

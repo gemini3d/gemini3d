@@ -19,7 +19,7 @@ add_subdirectory(sources)
 
 # --- other libs
 add_library(multifluid OBJECT multifluid/multifluid.f90)
-target_link_libraries(multifluid PRIVATE advec calculus collision const diffusion grid mesh ionization mpimod precipBCs sources timeutils)
+target_link_libraries(multifluid PRIVATE advec calculus collision const diffusion grid mesh ionization mpimod precipBCs sources timeutils config)
 
 # --- Main GEMINI executable
 add_executable(gemini.bin gemini.f90)
