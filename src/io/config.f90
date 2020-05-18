@@ -56,7 +56,7 @@ logical :: flagneuBG=.false.                ! whether or not to allow MSIS to be
 real(wp) :: dtneuBG=900._wp                  ! approximate time between MSIS calls
 
 !> background preciptation
-real(wp) :: PhiWBG=1e-5_wp                      ! background total energy flux in mW/m^2  
+real(wp) :: PhiWBG=1e-5_wp                      ! background total energy flux in mW/m^2
 real(wp) :: W0BG=3e3_wp                      ! background characteristic energy for precipitation
 
 !> parallel current calculations
@@ -64,7 +64,7 @@ logical :: flagJpar=.true.                  ! whether or not to compute parallel
 
 !> inertial capacitance
 integer :: flagcap=0_wp               ! use inertial capacitance? 0 - set all to zero, 1 - use ionosphere to compute, 2 - add a magnetospheric part
-real(wp) :: magcap=30._wp        ! value of integrated magnetospheric capacitance to use 
+real(wp) :: magcap=30._wp        ! value of integrated magnetospheric capacitance to use
 
 !> type of diffusion solver to sue
 integer :: diffsolvetype=2       ! 1 - first order backward Euler time stepping; 2 - 2nd order TRBDF2 diffusion solver
@@ -74,6 +74,34 @@ end type gemini_cfg
 character(:), allocatable :: compiler_vendor
 
 contains
+
+
+logical function group_exists(filename, group)
+!! determines if Namelist group exists in file
+!! *** this was backported from cfg_v2 and will be in config_nml.f90 next.
+
+character(*), intent(in) :: filename, group
+integer :: u, i
+character(256) :: line  !< arbitrary length
+
+group_exists = .false.
+
+open(newunit=u, file=filename, status='old', action='read')
+
+do
+  read(u, '(A)', iostat=i) line
+  if(i/=0) exit
+  if (line(1:1) /= '&') cycle
+  if (line(2:) == group) then
+    group_exists = .true.
+    exit
+  end if
+end do
+
+close(u)
+
+end function group_exists
+
 
 subroutine read_configfile(cfg)
 
