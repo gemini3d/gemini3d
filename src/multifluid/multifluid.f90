@@ -198,14 +198,14 @@ do isp=1,lsp
   call thermal_conduct(isp,param,ns(:,:,:,isp),nn,J1,lambda,beta)
 
   call diffusion_prep(isp,x,lambda,beta,ns(:,:,:,isp),param,A,B,C,D,E,Tn,cfg%Teinf)
-      !ZZZ - should be controllable via optional input flag, default to second order???
   select case (cfg%diffsolvetype)
     case (1)
       param=backEuler3D(param,A,B,C,D,E,dt,x)    !1st order method, only use if you are seeing grid-level oscillations in temperatures
     case (2)
       param=TRBDF23D(param,A,B,C,D,E,dt,x)       !2nd order method, should be used for most simulations
     case default
-      error stop 'Unsupported diffusion solver type/mode; should be either 1 or 2.'
+      print*, 'Unsupported diffusion solver type/mode:  ',cfg%diffsolvetype,'.  Should be either 1 or 2.'
+      error stop
   end select
 
   Ts(:,:,:,isp)=param
