@@ -57,7 +57,7 @@ real(wp) :: PhiWBG=0.05                      ! background total energy flux in m
 real(wp) :: W0BG=3e3_wp                      ! background characteristic energy for precipitation
 
 !> parallel current calculations
-logical :: flagJpar=.true.                  ! whether or not to compute parallel current (some simulation setups will give really poor results)
+logical :: flagJpar=.true.                  ! whether or not to compute parallel current (some simulation setups will give really poor results); code ignores this if potential is resolved along the field line since computing Jpar will not be prone to artifacts as it is in th EFL cases...
 
 !> inertial capacitance
 integer :: flagcap               ! use inertial capacitance? 0 - set all to zero, 1 - use ionosphere to compute, 2 - add a magnetospheric part

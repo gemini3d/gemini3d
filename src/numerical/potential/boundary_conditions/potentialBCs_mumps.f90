@@ -10,6 +10,7 @@ use mesh, only: curvmesh
 use interpolation, only : interp1,interp2
 use timeutils, only : dateinc, date_filename
 use reader, only : get_grid2, get_simsize2, get_Efield
+use config, only: gemini_cfg
 
 implicit none (type, external)
 private
@@ -48,20 +49,18 @@ integer, private :: flagdirich_state
 contains
 
 
-subroutine potentialBCs2D_fileinput(dt,dtE0,t,ymd,UTsec,E0dir,&
-                                  x,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3, &
+subroutine potentialBCs2D_fileinput(dt,t,ymd,UTsec,cfg,x,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3, &
                                   Vmaxx3,E01all,E02all,E03all,flagdirich)
 !! A FILE INPUT BASED BOUNDARY CONDITIONS FOR ELECTRIC POTENTIAL OR
 !! FIELD-ALIGNED CURRENT.
 !! NOTE: THIS IS ONLY CALLED BY THE ROOT PROCESS
 
 real(wp), intent(in) :: dt
-real(wp), intent(in) :: dtE0    !cadence at which we are reading in the E0 files
 real(wp), intent(in) :: t
 integer, dimension(3), intent(in) :: ymd    !date for which we wish to calculate perturbations
 real(wp), intent(in) :: UTsec
-character(*), intent(in) :: E0dir       !directory where data are kept
 
+type(gemini_cfg), intent(in) :: cfg
 type(curvmesh), intent(in) :: x
 
 real(wp), dimension(:,:), intent(out), target :: Vminx1,Vmaxx1
@@ -99,7 +98,7 @@ if(t + dt / 2._wp >= tnext) then    !need to load a new file
     ymdnext=ymdprev
     UTsecnext=UTsecprev
 
-    call get_simsize2(E0dir, llon=llon, llat=llat)
+    call get_simsize2(cfg%E0dir, llon=llon, llat=llat)
 
     if (debug) print '(A,2I6)', 'Electric field data has llon,llat size:  ',llon,llat
     if (llon < 1 .or. llat < 1) error stop 'potentialBCs_mumps: grid size must be strictly positive'
@@ -116,7 +115,7 @@ if(t + dt / 2._wp >= tnext) then    !need to load a new file
 
 
     !> NOW READ THE GRID
-    call get_grid2(E0dir, mlonp, mlatp)
+    call get_grid2(cfg%E0dir, mlonp, mlatp)
 
     if (debug) print *, 'Electric field data has mlon,mlat extent:', &
               minval(mlonp(:)), maxval(mlonp(:)), minval(mlatp(:)), maxval(mlatp(:))
@@ -148,8 +147,8 @@ if(t + dt / 2._wp >= tnext) then    !need to load a new file
     endif
     ix3ref=lx3all/3
 
-    ix1ref=minloc(abs(x%rall(:,ix2ref,ix3ref)-Re-300d3),1)
     !! by default the code uses 300km altitude as a reference location, using the center x2,x3 point
+    ix1ref=minloc(abs(x%rall(:,ix2ref,ix3ref)-Re-300d3),1)
     allocate(mloni(lx2all*lx3all),mlati(lx2all*lx3all))
     do ix3=1,lx3all
       do ix2=1,lx2all
@@ -170,10 +169,10 @@ if(t + dt / 2._wp >= tnext) then    !need to load a new file
   if (debug) print *,'potentialBCs_mumps.f90:potentialBCs2D_fileinput: tprev,tnow,tnext:  ',tprev,t+dt/2d0,tnext
   ymdtmp=ymdnext
   UTsectmp=UTsecnext
-  call dateinc(dtE0,ymdtmp,UTsectmp)
+  call dateinc(cfg%dtE0,ymdtmp,UTsectmp)
   !! get the date for "next" params
 
-  call get_Efield(date_filename(E0dir, ymdtmp, UTsectmp), &
+  call get_Efield(date_filename(cfg%E0dir, ymdtmp, UTsectmp), &
     flagdirich_state,E0xp,E0yp,Vminx1p,Vmaxx1p,&
     Vminx2pslice,Vmaxx2pslice,Vminx3pslice,Vmaxx3pslice)
 
@@ -312,7 +311,7 @@ if(t + dt / 2._wp >= tnext) then    !need to load a new file
   UTsecprev=UTsecnext
   ymdprev=ymdnext
 
-  tnext=tprev+dtE0
+  tnext=tprev+cfg%dtE0
   UTsecnext=UTsectmp
   ymdnext=ymdtmp
 end if
@@ -455,12 +454,14 @@ end if
 end subroutine clear_potential_fileinput
 
 
-subroutine potentialBCs2D(UTsec,x,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3, &
+subroutine potentialBCs2D(UTsec,cfg,x,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3, &
                                       Vmaxx3,E01all,E02all,E03all,flagdirich)
 
 !THIS IS A SIMPLE GAUSSIAN POTENTIAL PERTURBATION (IN X1,X2,X3 SPAE)
 
 real(wp), intent(in) :: UTsec
+
+type(gemini_cfg), intent(in) :: cfg
 type(curvmesh), intent(in) :: x
 
 real(wp), dimension(:,:), intent(out), target :: Vminx1,Vmaxx1
@@ -472,9 +473,9 @@ integer, intent(out) :: flagdirich
 real(wp), dimension(1:size(Vmaxx1,1),1:size(Vmaxx1,2)) :: Emaxx1    !pseudo-electric field
 
 real(wp) :: Phipk
-integer :: ix1,ix2,ix3    !grid sizes are borrow from grid module
+integer :: ix1,ix2,ix3    !grid sizes are borrowed from grid module
 integer :: im
-!    integer, parameter :: lmodes=8
+!    integer, parameter :: lmodes=8; this type of thing done from input scripts now...
 real(wp) :: phase
 real(wp), dimension(1:size(Vmaxx1,1)) :: x3dev
 real(wp) :: meanx2,sigx2,meanx3,sigx3,meant,sigt,sigcurv,x30amp,varc    !for setting background field
@@ -520,8 +521,8 @@ Vmaxx3 = 0
 
 
 !PI's EIA code COMPUTE SOURCE/FORCING TERMS FROM BACKGROUND FIELDS, ETC.
-if (flagEIA) then
-  vamp=10d0    !amplitude of vertical drift at equator, should ideally be included as an input parameter
+if (cfg%flagEIA) then
+  vamp=cfg%v0equator    !amplitude of vertical drift at equator, should ideally be included as an input parameter
 
   if (flagswap==0) then    !FIXME:  flagswap should be logical???
     !For 3D or non-swapped 2D the background electric field is zonal for a

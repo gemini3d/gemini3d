@@ -19,7 +19,7 @@ add_subdirectory(io)
 add_subdirectory(temporal)
 
 add_library(collision OBJECT collisions/collisions.f90)
-target_link_libraries(collision PRIVATE const)
+target_link_libraries(collision PRIVATE const config)
 
 if(NOT MPI_OK)
   set_targ_props(calculus collision config const fang fang_run gbsv logging pathlib reader sanity_check timeutils)

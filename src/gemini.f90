@@ -216,9 +216,6 @@ do while (t < cfg%tdur)
       !! this triggers the code to load the neutral frame correspdonding ot the beginning time of the simulation
       if (myid==0) print *, '!!!Attempting initial load of neutral dynamics files!!!' // &
                               ' This is a workaround that fixes the restart code...',t-dt
-!      call neutral_perturb(cfg%interptype,dt,cfg%dtneu,t-cfg%dtneu,ymd,UTsec-cfg%dtneu, &
-!        cfg%sourcedir,cfg%dxn,cfg%drhon,cfg%dzn, &
-!        cfg%sourcemlat,cfg%sourcemlon,x,nn,Tn,vn1,vn2,vn3)
       call neutral_perturb(cfg,dt,cfg%dtneu,t-cfg%dtneu,ymd,UTsec-cfg%dtneu,x,nn,Tn,vn1,vn2,vn3)
     end if
     call neutral_perturb(cfg,dt,cfg%dtneu,t,ymd,UTsec,x,nn,Tn,vn1,vn2,vn3)
@@ -230,9 +227,10 @@ do while (t < cfg%tdur)
 
   !! POTENTIAL SOLUTION
   call cpu_time(tstart)
-  call electrodynamics(it,t,dt,nn,vn2,vn3,Tn,cfg%sourcemlat,ns,Ts,vs1,B1,vs2,vs3,x, &
-                        cfg%potsolve, cfg%flagcap,E1,E2,E3,J1,J2,J3, &
-                        Phiall, cfg%flagE0file, cfg%dtE0, cfg%E0dir,ymd,UTsec)
+!  call electrodynamics(it,t,dt,nn,vn2,vn3,Tn,cfg%sourcemlat,ns,Ts,vs1,B1,vs2,vs3,x, &
+!                        cfg%potsolve, cfg%flagcap,E1,E2,E3,J1,J2,J3, &
+!                        Phiall, cfg%flagE0file, cfg%dtE0, cfg%E0dir,ymd,UTsec)
+  call electrodynamics(it,t,dt,nn,vn2,vn3,Tn,cfg,ns,Ts,vs1,B1,vs2,vs3,x,E1,E2,E3,J1,J2,J3,Phiall,ymd,UTsec)
   if (myid==0 .and. debug) then
     call cpu_time(tfin)
     print *, 'Electrodynamics total solve time:  ',tfin-tstart
@@ -247,6 +245,7 @@ do while (t < cfg%tdur)
     print *, 'Multifluid total solve time:  ',tfin-tstart
   endif
 
+  !> FIXME:  shouldn't this be done for all workers; also how much overhead does this incur every time step???
   !> Sanity check key variables before advancing
   if (myid==0) call check_finite_output(t, myid, vs2,vs3,ns,vs1,Ts,Phiall,J1,J2,J3)
 
