@@ -14,16 +14,16 @@ flagoutput = 2
 /
 
 &files
-indat_size = 'tests/data/test2d_glow/inputs/simsize.h5'
-indat_grid = 'tests/data/test2d_glow/inputs/simgrid.h5'
-indat_file = 'tests/data/test2d_glow/inputs/initial_conditions.h5'
+indat_size = 'tests/data/test2dew_fang/inputs/simsize.h5'
+indat_grid = 'tests/data/test2dew_fang/inputs/simgrid.h5'
+indat_file = 'tests/data/test2dew_fang/inputs/initial_conditions.h5'
 /
 
 &setup
 glat = 67.11
 glon = 212.95
 xdist = 200e3              ! eastward distance (meters)
-ydist = 1000e3               ! northward distance (meters)
+ydist = 0                  ! northward distance (meters)
 alt_min = 80e3              ! minimum altitude (meters)
 alt_max = 1000e3            ! maximum altitude (meters)
 alt_scale = 13.75e3, 20e3, 200e3, 200e3  ! altitude grid scales (meters)
@@ -32,24 +32,18 @@ lyp = 1                     ! number of y-cells
 Bincl = 90                  ! geomagnetic inclination
 nmf = 5e11
 nme = 2e11
-precip_latwidth = 0.25
 precip_lonwidth = 0.25
 Etarg = 50e-3   ! V/m
-Efield_fracwidth = 0.142857
-eqdir = 'tests/data/test2d_eq'
+Efield_lonwidth = 0.142857
+eqdir = 'tests/data/test2dew_eq'
 /
 
 &precip
 dtprec = 5.0
-prec_dir = 'tests/data/test2d_glow/inputs/prec_inputs/'
+prec_dir = 'tests/data/test2dew_fang/inputs/precip/'
 /
 
 &efield
 dtE0 = 1.0
-E0_dir = 'tests/data/test2d_glow/inputs/Efield_inputs/'
-/
-
-&glow
-dtglow = 5.0
-dtglowout = 60.0            ! dtglowout: how often to do Glow file output
+E0_dir = 'tests/data/test2dew_fang/inputs/Efield/'
 /
