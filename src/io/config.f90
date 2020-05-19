@@ -56,7 +56,7 @@ logical :: flagneuBG=.false.                ! whether or not to allow MSIS to be
 real(wp) :: dtneuBG=900._wp                  ! approximate time between MSIS calls
 
 !> background preciptation
-real(wp) :: PhiWBG=1e-5_wp                      ! background total energy flux in mW/m^2
+real(wp) :: PhiWBG=1e-3_wp                      ! background total energy flux in mW/m^2
 real(wp) :: W0BG=3e3_wp                      ! background characteristic energy for precipitation
 
 !> parallel current calculations
@@ -130,6 +130,8 @@ do
   end if
 end do
 
+rewind(u)    ! again reset file pointe - otherwise seems to miss some stuff.
+
 end function group_exists_unit
 
 
@@ -156,6 +158,10 @@ end subroutine read_configfile
 
 
 subroutine read_nml(cfg)
+
+!> Reads simulation configuration file in .nml
+!> Note that it is best to rewind the file before any read operation, otherwise if the file pointer is already
+!  past the group of interest it will (may?) miss that group and return junk.
 
 class(gemini_cfg), intent(inout) :: cfg
 
@@ -218,6 +224,7 @@ cfg%activ = activ
 cfg%tcfl = tcfl
 cfg%Teinf = Teinf
 
+rewind(u)
 read(u, nml=flags, iostat=i)
 call check_nml_io(i, cfg%infile, "flags", compiler_vendor)
 cfg%potsolve = potsolve
@@ -229,9 +236,9 @@ cfg%flagprecfile = flagprecfile
 cfg%flagE0file = flagE0file
 cfg%flagglow = flagglow
 
+rewind(u)
 read(u, nml=files, iostat=i)
 call check_nml_io(i, cfg%infile, "files", compiler_vendor)
-
 !> auto file_format if not specified
 if (len_trim(file_format) > 0) then
   cfg%out_format = trim(file_format)
@@ -239,12 +246,12 @@ else
   file_format = get_suffix(indat_size)
   cfg%out_format = file_format(2:)
 endif
-
 cfg%indatsize = expanduser(indat_size)
 cfg%indatgrid = expanduser(indat_grid)
 cfg%indatfile = expanduser(indat_file)
 
 if (cfg%flagdneu == 1) then
+  rewind(u)
   read(u, nml=neutral_perturb, iostat=i)
   call check_nml_io(i, cfg%infile, "neutral_perturb", compiler_vendor)
   cfg%sourcedir = expanduser(source_dir)
@@ -261,6 +268,7 @@ endif
 
 
 if (cfg%flagprecfile == 1) then
+  rewind(u)
   read(u, nml=precip, iostat=i)
   call check_nml_io(i, cfg%infile, "precip", compiler_vendor)
   cfg%precdir = expanduser(prec_dir)
@@ -270,6 +278,7 @@ else
 endif
 
 if (cfg%flagE0file == 1) then
+  rewind(u)
   read(u, nml=efield, iostat=i)
   call check_nml_io(i, cfg%infile, "efield", compiler_vendor)
   cfg%E0dir = expanduser(E0_dir)
@@ -279,6 +288,7 @@ else
 endif
 
 if (cfg%flagglow == 1) then
+  rewind(u)
   read(u, nml=glow, iostat=i)
   call check_nml_io(i, cfg%infile, "glow", compiler_vendor)
   cfg%dtglow = dtglow
@@ -305,12 +315,14 @@ if (group_exists(u,'precip_BG')) then
   cfg%PhiWBG=PhiWBG
   cfg%W0BG=W0BG
 end if
+!print*, 'precip_BG:  ',cfg%PhiWBG,cfg%W0BG
 
 !> parallel current density (optional)
 if (group_exists(u,'Jpar')) then
   read(u, nml=Jpar, iostat=i)
   cfg%flagJpar=flagJpar
 end if
+!print*, 'Jpar:  ', cfg%flagJpar
 
 !> inertial capacitance (optional)
 if (group_exists(u,'capacitance')) then
