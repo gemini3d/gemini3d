@@ -1,6 +1,11 @@
 #!/usr/bin/env python3
 """
 do a simple test of Fang 2008
+
+This program is typically used from CMake as a unit test for Fang ionization.
+
+It can also be used by a human to plot ionization profiles to compare with the original
+Fang 2008 and Fang 2010 papers.
 """
 import numpy as np
 import subprocess
@@ -10,17 +15,20 @@ import sys
 import io
 import argparse
 
-R = Path(__file__).parent
+Rb = Path(__file__).resolve().parents[2] / "build/src/ionization"
 
 
 def checker(exe: str, doplot: bool, params: dict = None):
+    if not exe:
+        if not Rb.is_dir():
+            raise FileNotFoundError(f"build directory does not exist, did you build Gemini with CMake?  {Rb}")
+        exe = shutil.which("test_fang", path=str(Rb))
+
     if not shutil.which(exe):
-        print("executable", exe, "not found", file=sys.stderr)
+        print("test_fang executable not found:", exe, file=sys.stderr)
         raise SystemExit(77)
 
-    if not params:
-        ret = subprocess.check_output(exe, universal_newlines=True)
-    else:
+    if params:
         ret = subprocess.check_output(
             [
                 exe,
@@ -37,6 +45,8 @@ def checker(exe: str, doplot: bool, params: dict = None):
             ],
             universal_newlines=True,
         )
+    else:
+        ret = subprocess.check_output(exe, universal_newlines=True)
 
     keV = list(map(float, ret.split("\n")[0].split()[1:]))
     dat = np.loadtxt(io.StringIO(ret), skiprows=1, max_rows=191)
@@ -83,7 +93,7 @@ def checker(exe: str, doplot: bool, params: dict = None):
 
 if __name__ == "__main__":
     p = argparse.ArgumentParser()
-    p.add_argument("exe")
+    p.add_argument("exe", help="path to test_fang executable (as called by CMake)", nargs="?")
     p.add_argument("-p", "--plot", help="make plots", action="store_true")
     P = p.parse_args()
 
