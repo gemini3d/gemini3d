@@ -42,9 +42,9 @@ character(:), allocatable :: compiler_vendor
 namelist /base/ ymd, UTsec0, tdur, dtout, activ, tcfl, Teinf
 namelist /files/ file_format, indat_size, indat_grid, indat_file
 namelist /flags/ potsolve, flagperiodic, flagoutput, flagcap, &
-   flagdneu, flagprecfile, flagE0file, flagglow !< FIXME: these last four parameters are ignored, kept temporarily for compatibility, should be removed
 namelist /neutral_perturb/ flagdneu, interptype, sourcemlat, sourcemlon, dtneu, dxn, drhon, dzn, source_dir
 namelist /precip/ dtprec, prec_dir
+flagdneu, flagprecfile, flagE0file, flagglow !< FIXME: these last four parameters are ignored, kept temporarily for compatibility, should be removed
 namelist /efield/ dtE0, E0_dir
 namelist /glow/ dtglow, dtglowout
 namelist /EIA/ flagEIA,v0equator
@@ -94,6 +94,7 @@ cfg%indatfile = expanduser(indat_file)
 
 if (namelist_exists(u, "neutral_perturb", verbose)) then
   cfg%flagdneu = 1
+  rewind(u)
   read(u, nml=neutral_perturb, iostat=i)
   call check_nml_io(i, cfg%infile, "neutral_perturb", compiler_vendor)
   cfg%sourcedir = expanduser(source_dir)
@@ -111,6 +112,7 @@ endif
 
 if (namelist_exists(u, "precip", verbose)) then
   cfg%flagprecfile = 1
+  rewind(u)
   read(u, nml=precip, iostat=i)
   call check_nml_io(i, cfg%infile, "precip", compiler_vendor)
   cfg%precdir = expanduser(prec_dir)
@@ -122,6 +124,7 @@ endif
 
 if (namelist_exists(u, "efield", verbose)) then
   cfg%flagE0file = 1
+  rewind(u)
   read(u, nml=efield, iostat=i)
   call check_nml_io(i, cfg%infile, "efield", compiler_vendor)
   cfg%E0dir = expanduser(E0_dir)
@@ -133,6 +136,7 @@ endif
 
 if (namelist_exists(u, "glow", verbose)) then
   cfg%flagglow = 1
+  rewind(u)
   read(u, nml=glow, iostat=i)
   call check_nml_io(i, cfg%infile, "glow", compiler_vendor)
   cfg%dtglow = dtglow
@@ -143,6 +147,7 @@ endif
 
 !> EIA (optional)
 if (namelist_exists(u,'EIA')) then
+  rewind(u)
   read(u, nml=EIA, iostat=i)
   cfg%flagEIA=flagEIA
   cfg%v0equator=v0equator
@@ -150,6 +155,7 @@ end if
 
 !> neural background (optional)
 if (namelist_exists(u,'neutral_BG')) then
+  rewind(u)
   read(u, nml=neutral_BG, iostat=i)
   cfg%flagneuBG=flagneuBG
   cfg%dtneuBG=dtneuBG
@@ -157,6 +163,7 @@ end if
 
 !> precip background (optional)
 if (namelist_exists(u,'precip_BG')) then
+  rewind(u)
   read(u, nml=precip_BG, iostat=i)
   cfg%PhiWBG=PhiWBG
   cfg%W0BG=W0BG
@@ -164,12 +171,14 @@ end if
 
 !> parallel current density (optional)
 if (namelist_exists(u,'Jpar')) then
+  rewind(u)
   read(u, nml=Jpar, iostat=i)
   cfg%flagJpar=flagJpar
 end if
 
 !> inertial capacitance (optional)
 if (namelist_exists(u,'capacitance')) then
+  rewind(u)
   read(u, nml=capacitance, iostat=i)
   !cfg%flagcap=flagcap    !FIXME:  need to regroup this from /flags/
   cfg%magcap=magcap
@@ -177,6 +186,7 @@ end if
 
 !> diffusion solve type (optional)
 if (namelist_exists(u,'diffusion')) then
+  rewind(u)
   read(u, nml=diffusion, iostat=i)
   cfg%diffsolvetype=diffsolvetype
 end if
