@@ -14,6 +14,10 @@ if(python_ok)
   set_tests_properties(unit:fangIonize PROPERTIES TIMEOUT 10)
 endif(python_ok)
 
+if(NOT MPI_OK)
+  return()
+endif()
+
 if(glow)
   include(${PROJECT_SOURCE_DIR}/cmake/glow.cmake)
 

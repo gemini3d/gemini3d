@@ -1,6 +1,3 @@
-include(${CMAKE_CURRENT_LIST_DIR}/python.cmake)
-
-
 function(python_compare TESTNAME)
 
 set(_outdir ${PROJECT_BINARY_DIR}/test${TESTNAME})

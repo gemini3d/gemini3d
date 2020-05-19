@@ -40,21 +40,23 @@ REQUIRED_FILES ${_test_file}
 TIMEOUT 10)
 
 # --- io
-add_library(io OBJECT io.f90 output.f90
-aurora.f90 aurora_raw.f90 aurora_hdf5.f90 aurora_ncdf.f90
-mag.f90 mag_hdf5.f90 mag_ncdf.f90 mag_raw.f90
-plasma_input.f90 plasma_input_hdf5.f90 plasma_input_ncdf.f90 plasma_input_raw.f90
-plasma_output.f90 plasma_output_hdf5.f90 plasma_output_ncdf.f90 plasma_output_raw.f90)
+if(MPI_OK)
+  add_library(io OBJECT io.f90 output.f90
+    aurora.f90 aurora_raw.f90 aurora_hdf5.f90 aurora_ncdf.f90
+    mag.f90 mag_hdf5.f90 mag_ncdf.f90 mag_raw.f90
+    plasma_input.f90 plasma_input_hdf5.f90 plasma_input_ncdf.f90 plasma_input_raw.f90
+    plasma_output.f90 plasma_output_hdf5.f90 plasma_output_ncdf.f90 plasma_output_raw.f90)
 
-target_link_libraries(io PRIVATE calculus config const reader grid mpimod sanity_check timeutils
- h5fortran::h5fortran nc4fortran::nc4fortran)
+  target_link_libraries(io PRIVATE calculus config const reader grid mpimod sanity_check timeutils
+    h5fortran::h5fortran nc4fortran::nc4fortran)
+endif(MPI_OK)
 
 # --- reader
 add_library(reader OBJECT reader.f90 reader_hdf5.f90 reader_ncdf.f90 reader_raw.f90)
 target_link_libraries(reader PRIVATE const pathlib h5fortran::h5fortran nc4fortran::nc4fortran)
 
 if(netcdf)
-add_executable(test_simsize_nc4 test_simsize_nc4.f90)
-target_link_libraries(test_simsize_nc4 nc4fortran::nc4fortran)
-# add_test(NAME unit:simsize_nc4 COMMAND test_simsize_nc4)
+  add_executable(test_simsize_nc4 test_simsize_nc4.f90)
+  target_link_libraries(test_simsize_nc4 nc4fortran::nc4fortran)
+  # add_test(NAME unit:simsize_nc4 COMMAND test_simsize_nc4)
 endif(netcdf)

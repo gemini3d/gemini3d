@@ -33,6 +33,12 @@ if(NOT f2008submodule)
   message(FATAL_ERROR "Compiler does not support Fortran 2008 SUBMODULE syntax: ${CMAKE_Fortran_COMPILER_ID} ${CMAKE_Fortran_COMPILER_VERSION}")
 endif()
 
+if(no_mpi)
+  message(WARNING "Skipping all MPI portions (most of Gemini) per user no_mpi=true")
+  set(MPI_OK false)
+  return()
+endif()
+
 # Do these before compiler options so options don't goof up finding
 # === OpenMP
 # optional, for possible MUMPS speedup

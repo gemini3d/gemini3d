@@ -1,5 +1,12 @@
-# --- simple tests to help catch broken libs
-add_subdirectory(tests)
+function(set_targ_props)
+
+foreach(t ${ARGV})
+  target_include_directories(${t} INTERFACE ${CMAKE_CURRENT_BINARY_DIR}/include)
+  set_target_properties(${t} PROPERTIES
+    Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include)
+endforeach()
+
+endfunction(set_targ_props)
 
 # --- vendor libraries
 add_subdirectory(vendor/msis00)
@@ -10,14 +17,21 @@ add_subdirectory(ionization)
 add_subdirectory(numerical)
 add_subdirectory(io)
 add_subdirectory(temporal)
-add_subdirectory(neutral)
 
 add_library(collision OBJECT collisions/collisions.f90)
 target_link_libraries(collision PRIVATE const)
 
+if(NOT MPI_OK)
+  set_targ_props(calculus collision config const fang fang_run gbsv logging pathlib reader sanity_check timeutils)
+  return()
+endif()
+
+# simple tests to help catch broken libs
+add_subdirectory(tests)
+
+add_subdirectory(neutral)
 add_subdirectory(sources)
 
-# --- other libs
 add_library(multifluid OBJECT multifluid/multifluid.f90)
 target_link_libraries(multifluid PRIVATE advec calculus collision const diffusion grid mesh ionization mpimod precipBCs sources timeutils)
 
@@ -33,10 +47,4 @@ add_executable(magcalc.bin magcalc.f90)
 target_link_libraries(magcalc.bin PRIVATE config const grid io mesh mpimod pathlib reader sanity_check timeutils)
 set_target_properties(magcalc.bin PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
-# --- set common target properties
-
-foreach(t collision config fang fang_run io ionization gbsv logging multifluid neutral pathlib precipBCs reader sanity_check sources temporal timeutils)
-  target_include_directories(${t} INTERFACE ${CMAKE_CURRENT_BINARY_DIR}/include)
-  set_target_properties(${t} PROPERTIES
-    Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include)
-endforeach()
+set_targ_props(calculus collision config const fang fang_run io ionization gbsv logging multifluid neutral pathlib precipBCs reader sanity_check sources temporal timeutils)

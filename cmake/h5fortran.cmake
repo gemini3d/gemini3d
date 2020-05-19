@@ -10,6 +10,8 @@ if(hdf5)
   if(NOT HDF5OK)
     message(FATAL_ERROR "HDF5 was requested but is not available.")
   endif()
+
+  include(${CMAKE_CURRENT_LIST_DIR}/win32_hdf5.cmake)
 else(hdf5)
   message(VERBOSE " using h5fortran dummy")
 

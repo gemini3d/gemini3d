@@ -1,6 +1,10 @@
 add_library(mesh OBJECT mesh.f90)
 target_link_libraries(mesh PRIVATE const)
 
+if(NOT MPI_OK)
+  return()
+endif()
+
 add_library(grid OBJECT grid.f90 read.f90
 readgrid_hdf5.f90 readgrid_nc4.f90 readgrid_raw.f90)
 target_compile_options(grid PRIVATE ${gcc10opts})

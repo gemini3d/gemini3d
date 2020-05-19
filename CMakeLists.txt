@@ -33,6 +33,8 @@ else()
   set(arith d)
 endif()
 
+option(no_mpi "Don't build anything using MPI--disables Gemini, only a few unit tests run" off)
+
 option(autobuild "autobuild missing Lapack, Scalapack or Mumps" on)
 option(glow "use NCAR GLOW airglow / aurora model" on)
 option(hdf5 "use HDF5 file I/O" on)
@@ -47,19 +49,24 @@ set(FETCHCONTENT_UPDATES_DISCONNECTED off)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules/)
 
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/python.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/h5fortran.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/nc4fortran.cmake)
 
 # do these after h5fortran to avoid h5fortran HDF5OK threads test failure
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/compilers.cmake)
 # first this to get libs
-include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/mumps.cmake)
+if(MPI_OK)
+  include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/mumps.cmake)
+endif()
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/compiler_flags.cmake)
 # this comes last to avoid intermittent failures
 
 # self-test simulations
-include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/test_setup.cmake)
-include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/test_sim.cmake)
+if(MPI_OK)
+  include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/test_setup.cmake)
+  include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/test_sim.cmake)
+endif()
 
 add_subdirectory(src)
 
