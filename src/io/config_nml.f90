@@ -74,7 +74,7 @@ cfg%indatsize = expanduser(indat_size)
 cfg%indatgrid = expanduser(indat_grid)
 cfg%indatfile = expanduser(indat_file)
 
-if (group_exists(cfg%infile, "neutral_perturb")) then
+if (namelist_exists(cfg%infile, "neutral_perturb")) then
   cfg%flagdneu = 1
   open(newunit=u, file=cfg%infile, status='old', action='read')
   read(u, nml=neutral_perturb, iostat=i)
@@ -94,7 +94,7 @@ else
 endif
 
 
-if (group_exists(cfg%infile, "precip")) then
+if (namelist_exists(cfg%infile, "precip")) then
   cfg%flagprecfile = 1
   open(newunit=u, file=cfg%infile, status='old', action='read')
   read(u, nml=precip, iostat=i)
@@ -107,7 +107,7 @@ else
   cfg%precdir = ""
 endif
 
-if (group_exists(cfg%infile, "efield")) then
+if (namelist_exists(cfg%infile, "efield")) then
   cfg%flagE0file = 1
   open(newunit=u, file=cfg%infile, status='old', action='read')
   read(u, nml=efield, iostat=i)
@@ -120,7 +120,7 @@ else
   cfg%E0dir = ""
 endif
 
-if (group_exists(cfg%infile, "glow")) then
+if (namelist_exists(cfg%infile, "glow")) then
   cfg%flagglow = 1
   open(newunit=u, file=cfg%infile, status='old', action='read')
   read(u, nml=glow, iostat=i)
@@ -137,14 +137,14 @@ close(u)
 end procedure read_nml
 
 
-logical function group_exists(filename, group)
-!! determines if Namelist group exists in file
+logical function namelist_exists(filename, nml)
+!! determines if Namelist "nml" exists in file
 
-character(*), intent(in) :: filename, group
+character(*), intent(in) :: filename, nml
 integer :: u, i
 character(256) :: line  !< arbitrary length
 
-group_exists = .false.
+namelist_exists = .false.
 
 open(newunit=u, file=filename, status='old', action='read')
 
@@ -152,35 +152,34 @@ do
   read(u, '(A)', iostat=i) line
   if(i/=0) exit
   if (line(1:1) /= '&') cycle
-  if (line(2:) == group) then
-    group_exists = .true.
+  if (line(2:) == nml) then
+    namelist_exists = .true.
     exit
   end if
 end do
 
 close(u)
 
-end function group_exists
+end function namelist_exists
 
 
-subroutine check_nml_io(i, filename, group, vendor)
+subroutine check_nml_io(i, filename, nml, vendor)
 !! checks for EOF and gives helpful error
 !! this accomodates non-Fortran 2018 error stop with variable character
 
 integer, intent(in) :: i
 character(*), intent(in) :: filename
-character(*), intent(in), optional :: group, vendor
+character(*), intent(in), optional :: nml, vendor
 
-character(:), allocatable :: grp, msg
+character(:), allocatable :: nl, msg
 
 if(i==0) return
 
-grp = ""
-if(present(group)) grp = group
+nl = ""
+if(present(nml)) nl = nml
 
 if (is_iostat_end(i)) then
-  write(stderr,*) 'ERROR: group ' // grp // ': ensure there is a trailing blank line in ' // filename
-  write(stderr,*) 'also, ensure that Namelist groups are read in order: base, flags, files etc'
+  write(stderr,*) 'ERROR: namelist ' // nl // ': ensure there is a trailing blank line in ' // filename
   error stop 5
 endif
 
@@ -207,7 +206,7 @@ endif
 
 if (len(msg)==0) write(stderr,*) "namelist read error code",i
 
-write(stderr,'(A,/,A)') 'ERROR: reading ' // grp // " " // filename, msg
+write(stderr,'(A,/,A)') 'ERROR: reading ' // nl // " " // filename, msg
 error stop 5
 
 end subroutine check_nml_io
