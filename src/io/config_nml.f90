@@ -35,9 +35,7 @@ real(wp) :: PhiWBG,W0BG
 logical :: flagJpar
 logical :: flgcap
 real(wp) :: magcap
-integer :: diffsolvetype
 
-character(:), allocatable :: compiler_vendor
 
 namelist /base/ ymd, UTsec0, tdur, dtout, activ, tcfl, Teinf
 namelist /files/ file_format, indat_size, indat_grid, indat_file
