@@ -13,7 +13,7 @@ def test_nml_bad(tmp_path):
     blank = tmp_path / "foo"
     blank.touch()
     with pytest.raises(KeyError):
-        config.read_nml_group(blank, "base")
+        config.read_namelist(blank, "base")
 
     blank.write_text(
         """
@@ -23,23 +23,29 @@ def test_nml_bad(tmp_path):
 """
     )
     with pytest.raises(KeyError):
-        config.read_nml_group(blank, "base")
+        config.read_namelist(blank, "base")
 
 
-@pytest.mark.parametrize("group", ["base", ("base", "flags", "files", "precip", "efield")])
-def test_nml_group(group):
+def test_nml_exist():
+    assert not config.namelist_exists(Rc / "config.nml", "base2")
 
-    params = config.read_nml_group(Rc / "config.nml", group)
-    if "base" in group:
+    assert config.namelist_exists(Rc / "config.nml", "base")
+
+
+@pytest.mark.parametrize("namelist", ["base", "flags", "files", "precip", "efield"])
+def test_nml_namelist(namelist):
+
+    params = config.read_namelist(Rc / "config.nml", namelist)
+    if "base" in namelist:
         assert params["t0"] == datetime(2013, 2, 20, 5)
 
-    if "files" in group:
+    if "files" in namelist:
         assert params["format"] == "h5"
 
-    if "precip" in group:
+    if "precip" in namelist:
         assert params["dtprec"] == timedelta(seconds=5)
 
-    if "efield" in group:
+    if "efield" in namelist:
         assert params["dtE0"] == timedelta(seconds=1)
 
 

@@ -26,14 +26,14 @@ def runner(pr: T.Dict[str, T.Any]) -> int:
                 raise FileNotFoundError(f"\ntried to initialize simulation but missing expected output file {f}")
             break
 
-    if p.get("flagE0file") == 1:
+    if "E0dir" in p:
         E0dir = p["E0dir"].expanduser().resolve()
         if not E0dir.is_dir():
             model_setup(p["nml"], pr["out_dir"])
             if not E0dir.is_dir():
                 raise FileNotFoundError(E0dir)
 
-    if p.get("flagprecfile") == 1:
+    if "precdir" in p:
         precdir = p["precdir"].expanduser().resolve()
         if not precdir.is_dir():
             model_setup(p["nml"], pr["out_dir"])

@@ -61,9 +61,9 @@ def model_setup_interp(p: T.Dict[str, T.Any]):
     equilibrium_resample(p, xg)
 
     # %% potential boundary conditions
-    if "flagE0file" in p and p["flagE0file"]:
+    if "E0dir" in p:
         Efield_BCs(p, xg)
 
     # %% aurora
-    if "flagprecfile" in p and p["flagprecfile"]:
+    if "precdir" in p:
         particles_BCs(p, xg)

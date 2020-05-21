@@ -1,5 +1,6 @@
 import functools
 import typing as T
+import re
 from pathlib import Path
 from datetime import datetime, timedelta
 
@@ -70,34 +71,39 @@ def read_nml(fn: Path) -> T.Dict[str, T.Any]:
     if fn.is_dir():
         fn = fn / "config.nml"
 
-    groups = ["base", "files", "flags", "setup"]
-    params = read_nml_group(fn, groups)
+    params = {}
+    for n in ("base", "files", "flags", "setup"):
+        params.update(read_namelist(fn, n))
 
-    groups = []
-    if params["flagdneu"]:
-        groups.append("neutral_perturb")
-    if params["flagprecfile"]:
-        groups.append("precip")
-    if params["flagE0file"]:
-        groups.append("efield")
-    if params["flagglow"]:
-        groups.append("glow")
-
-    params.update(read_nml_group(fn, groups))
+    if namelist_exists(fn, "neutral_perturb"):
+        params.update(read_namelist(fn, "neutral_perturb"))
+    if namelist_exists(fn, "precip"):
+        params.update(read_namelist(fn, "precip"))
+    if namelist_exists(fn, "efield"):
+        params.update(read_namelist(fn, "efield"))
+    if namelist_exists(fn, "glow"):
+        params.update(read_namelist(fn, "glow"))
 
     return params
 
 
-def read_nml_group(fn: Path, group: T.Sequence[str]) -> T.Dict[str, T.Any]:
-    """ read a group from an .nml file """
+def namelist_exists(fn: Path, namelist: str) -> bool:
+    """ determines if a namelist exists in a file """
 
-    if isinstance(group, str):
-        groups = tuple([group])
-    else:
-        groups = tuple(group)
+    pat = re.compile(r"^\s*&(\w+)$")
 
-    if not groups:
-        return {}
+    with fn.open("r") as f:
+        for line in f:
+            name_match = pat.match(line)
+            if name_match is not None:
+                if name_match.group(1) == namelist:
+                    return True
+
+    return False
+
+
+def read_namelist(fn: Path, namelist: str) -> T.Dict[str, T.Any]:
+    """ read a namelist from an .nml file """
 
     raw: T.Dict[str, T.Sequence[str]] = {}
 
@@ -105,40 +111,39 @@ def read_nml_group(fn: Path, group: T.Sequence[str]) -> T.Dict[str, T.Any]:
         for line in f:
             ls = line.strip()
             if ls.startswith("&"):
-                # a group name
-                if not ls[1:].startswith(groups):
-                    continue
-            for line in f:
-                if ls.startswith("/"):
-                    # end of group
-                    break
-                vals = line.split("=")
-                if len(vals) != 2:
-                    # not a valid line
+                # a namelist name
+                if ls[1:] != namelist:
                     continue
 
-                key = vals[0].strip()
-                values = [v.strip().replace("'", "").replace('"', "") for v in vals[1].split("!")[0].split(",")]
-                raw[key] = values[0] if len(values) == 1 else values
+                for line in f:
+                    ls = line.strip()
+                    if ls.startswith("/"):
+                        # end of namelist
+                        return parse_namelist(raw, namelist)
+                    if ls.startswith("!"):
+                        # comment
+                        continue
+                    vals = ls.split("=")
+                    if len(vals) != 2:
+                        # not a valid line
+                        continue
 
-    if not raw:
-        raise KeyError(f"did not find Namelist group(s) {groups} in {fn}")
+                    key = vals[0].strip()
+                    values = [v.strip().replace("'", "").replace('"', "") for v in vals[1].split("!")[0].split(",")]
+                    raw[key] = values[0] if len(values) == 1 else values
 
-    return parse_group(raw, groups)
+    raise KeyError(f"did not find Namelist {namelist} in {fn}")
 
 
-def parse_group(raw: T.Dict[str, T.Any], group: T.Sequence[str]) -> T.Dict[str, T.Any]:
+def parse_namelist(raw: T.Dict[str, T.Any], namelist: str) -> T.Dict[str, T.Any]:
     """
     this is Gemini-specific
     don't resolve absolute paths here because that assumes same machine
     """
 
-    if isinstance(group, str):
-        group = [group]
-
     P: T.Dict[str, T.Any] = {}
 
-    if "base" in group:
+    if namelist == "base":
         P["t0"] = datetime(int(raw["ymd"][0]), int(raw["ymd"][1]), int(raw["ymd"][2])) + timedelta(seconds=float(raw["UTsec0"]))
         P["tdur"] = timedelta(seconds=float(raw["tdur"]))
         P["dtout"] = timedelta(seconds=float(raw["dtout"]))
@@ -147,20 +152,18 @@ def parse_group(raw: T.Dict[str, T.Any], group: T.Sequence[str]) -> T.Dict[str, 
         P["Ap"] = float(raw["activ"][2])
         P["tcfl"] = float(raw["tcfl"])
         P["Teinf"] = float(raw["Teinf"])
+    elif namelist == "flags":
+        for k in raw:
+            P[k] = int(raw[k])
+    elif namelist == "files":
+        for k in ("indat_file", "indat_grid", "indat_size"):
+            P[k] = Path(raw[k])
 
-    if "flags" in group:
-        for k in ("potsolve", "flagperiodic", "flagoutput", "flagcap", "flagglow", "flagE0file", "flagdneu", "flagprecfile"):
-            if k in raw:
-                P[k] = int(raw[k])
-            else:
-                P[k] = 0
-
-    if "files" in group:
         if "file_format" in raw:
             P["format"] = raw["file_format"]
         else:
-            # defaults to HDF5
-            P["format"] = "h5"
+            # defaults to type of input
+            P["format"] = P["indat_size"].suffix[1:]
 
         if "realbits" in raw:
             P["realbits"] = int(raw["realbits"])
@@ -169,11 +172,7 @@ def parse_group(raw: T.Dict[str, T.Any], group: T.Sequence[str]) -> T.Dict[str, 
                 P["realbits"] = 64
             else:
                 P["realbits"] = 32
-
-        for k in ("indat_file", "indat_grid", "indat_size"):
-            P[k] = Path(raw[k])
-
-    if "setup" in group:
+    elif namelist == "setup":
         P["alt_scale"] = list(map(float, raw["alt_scale"]))
 
         for k in ("lxp", "lyp"):
@@ -198,8 +197,7 @@ def parse_group(raw: T.Dict[str, T.Any], group: T.Sequence[str]) -> T.Dict[str, 
         for k in ("eqdir",):
             if k in raw:
                 P[k] = Path(raw[k])
-
-    if "neutral_perturb" in group:
+    elif namelist == "neutral_perturb":
         P["interptype"] = int(raw["interptype"])
         P["sourcedir"] = Path(raw["source_dir"])
 
@@ -208,21 +206,18 @@ def parse_group(raw: T.Dict[str, T.Any], group: T.Sequence[str]) -> T.Dict[str, 
                 P[k] = float(raw[k])
             except KeyError:
                 P[k] = NaN
-
-    if "precip" in group:
+    elif namelist == "precip":
         P["dtprec"] = timedelta(seconds=float(raw["dtprec"]))
         P["precdir"] = Path(raw["prec_dir"])
-
-    if "efield" in group:
+    elif namelist == "efield":
         P["dtE0"] = timedelta(seconds=float(raw["dtE0"]))
         P["E0dir"] = Path(raw["E0_dir"])
-
-    if "glow" in group:
+    elif namelist == "glow":
         P["dtglow"] = timedelta(seconds=float(raw["dtglow"]))
         P["dtglowout"] = float(raw["dtglowout"])
 
     if not P:
-        raise ValueError(f"Not sure how to parse NML group {group}")
+        raise ValueError(f"Not sure how to parse NML namelist {namelist}")
 
     return P
 
