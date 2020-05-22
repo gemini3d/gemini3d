@@ -90,14 +90,12 @@ def read_nml(fn: Path) -> T.Dict[str, T.Any]:
 def namelist_exists(fn: Path, namelist: str) -> bool:
     """ determines if a namelist exists in a file """
 
-    pat = re.compile(r"^\s*&(\w+)$")
+    pat = re.compile(r"^\s*&(" + namelist + ")$")
 
     with fn.open("r") as f:
         for line in f:
-            name_match = pat.match(line)
-            if name_match is not None:
-                if name_match.group(1) == namelist:
-                    return True
+            if pat.match(line) is not None:
+                return True
 
     return False
 
@@ -107,30 +105,25 @@ def read_namelist(fn: Path, namelist: str) -> T.Dict[str, T.Any]:
 
     raw: T.Dict[str, T.Sequence[str]] = {}
 
+    nml_pat = re.compile(r"^\s*&(" + namelist + r")")
+    end_pat = re.compile(r"^\s*/\s*$")
+    val_pat = re.compile(r"^\s*(\w+)\s*=\s*['\"]?([^!'\"]*)['\"]?")
+
     with fn.open("r") as f:
         for line in f:
-            ls = line.strip()
-            if ls.startswith("&"):
-                # a namelist name
-                if ls[1:] != namelist:
+            if not nml_pat.match(line):
+                continue
+
+            for line in f:
+                if end_pat.match(line):
+                    # end of namelist
+                    return parse_namelist(raw, namelist)
+                val_mat = val_pat.match(line)
+                if not val_mat:
                     continue
 
-                for line in f:
-                    ls = line.strip()
-                    if ls.startswith("/"):
-                        # end of namelist
-                        return parse_namelist(raw, namelist)
-                    if ls.startswith("!"):
-                        # comment
-                        continue
-                    vals = ls.split("=")
-                    if len(vals) != 2:
-                        # not a valid line
-                        continue
-
-                    key = vals[0].strip()
-                    values = [v.strip().replace("'", "").replace('"', "") for v in vals[1].split("!")[0].split(",")]
-                    raw[key] = values[0] if len(values) == 1 else values
+                key, vals = val_mat.group(1), val_mat.group(2).split(",")
+                raw[key] = vals[0] if len(vals) == 1 else vals
 
     raise KeyError(f"did not find Namelist {namelist} in {fn}")
 
