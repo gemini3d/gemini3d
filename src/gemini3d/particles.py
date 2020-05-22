@@ -44,9 +44,10 @@ def particles_BCs(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]):
     pg["Q"] = np.empty((Nt, pg["llon"], pg["llat"]))
     pg["E0"] = np.empty((Nt, pg["llon"], pg["llat"]))
 
+    # NOTE: in future, E0 could be made time-dependent in config.nml as 1D array
     for i in range(i_on, i_off):
         pg["Q"][i, :, :] = precip_gaussian2d(pg, p["Qprecip"], p["Qprecip_background"])
-        pg["E0"][i, :, :] = 5e3
+        pg["E0"][i, :, :] = p["E0precip"]
 
     # %% CONVERT THE ENERGY TO EV
     # E0it = max(E0it,0.100);

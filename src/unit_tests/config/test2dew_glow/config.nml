@@ -35,6 +35,7 @@ nme = 2e11
 precip_lonwidth = 0.25
 Qprecip = 10
 Qprecip_background = 0.0
+E0precip = 5e3
 Etarg = 50e-3   ! V/m
 Efield_lonwidth = 0.142857
 eqdir = 'tests/data/test2dew_eq'

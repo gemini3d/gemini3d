@@ -183,12 +183,14 @@ def parse_namelist(raw: T.Dict[str, T.Any], namelist: str) -> T.Dict[str, T.Any]
             "nme",
             "precip_latwidth",
             "precip_lonwidth",
+            "Qprecip",
+            "Qprecip_background",
+            "E0precip",
             "Etarg",
+            "Jtarg",
             "Efield_latwidth",
             "Efield_lonwidth",
             # "Eflagdirich",  # future
-            "Qprecip",
-            "Qprecip_background",
         ):
             if k in raw:
                 P[k] = float(raw[k])
