@@ -95,7 +95,8 @@ def Efield_BCs(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]) -> T.Dict[str, T.A
             E["Vmaxx1it"][i, :, :] = pk * erf((E["mlon"] - mlonmean) / mlonsig)[:, None]
         else:
             E["Vmaxx1it"][i, :, :] = pk * (
-                erf((E["mlon"] - mlonmean) / mlonsig)[:, None] * erf((E["mlat"] - mlatmean) / mlatsig)[None, :]
+                erf((E["mlon"] - mlonmean) / mlonsig)[:, None]
+                * erf((E["mlat"] - mlatmean) / mlatsig)[None, :]
             )
 
     # %% check for NaNs

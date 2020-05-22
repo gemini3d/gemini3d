@@ -2,7 +2,7 @@
 requires = ["setuptools", "wheel"]
 
 [tool.black]
-line-length = 132
+line-length = 99
 exclude = '''
 /(
     \.eggs

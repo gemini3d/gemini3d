@@ -31,7 +31,9 @@ if __name__ == "__main__":
     p.add_argument("-gemexe", help="path to desired gemini.bin")
     p.add_argument("-n", "--cpu", help="number of CPU cores", type=int, default=0)
     p.add_argument("-f", "--force", help="force regeneration of simulation", action="store_true")
-    p.add_argument("-out_format", help="override Fortran output file format", choices=["h5", "nc", "raw"])
+    p.add_argument(
+        "-out_format", help="override Fortran output file format", choices=["h5", "nc", "raw"]
+    )
     P = p.parse_args()
 
     dirs = sorted([d for d in TOP_DIR.iterdir() if d.is_dir()])
@@ -39,14 +41,14 @@ if __name__ == "__main__":
         if P.only and d.name not in P.only:
             continue
         params = {
-                "config_file": d / "config.nml",
-                "out_dir": Path(P.out_dir).expanduser().resolve() / d.name,
-                "mpiexec": P.mpiexec,
-                "gemexe": P.gemexe,
-                "force": P.force,
-                "out_format": P.out_format,
-                "cpu_count": P.cpu,
-            }
+            "config_file": d / "config.nml",
+            "out_dir": Path(P.out_dir).expanduser().resolve() / d.name,
+            "mpiexec": P.mpiexec,
+            "gemexe": P.gemexe,
+            "force": P.force,
+            "out_format": P.out_format,
+            "cpu_count": P.cpu,
+        }
 
         ret = gemini3d.job.runner(params)
         if ret != 0:

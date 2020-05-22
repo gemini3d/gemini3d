@@ -51,4 +51,6 @@ def get_package_manager(like: T.List[str] = None) -> str:
     elif {"debian", "ubuntu"}.intersection(like):
         return "apt"
     else:
-        raise ValueError(f"Unknown ID_LIKE={like}, please file bug report or manually specify package manager")
+        raise ValueError(
+            f"Unknown ID_LIKE={like}, please file bug report or manually specify package manager"
+        )

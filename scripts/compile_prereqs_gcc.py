@@ -93,12 +93,17 @@ def netcdf_fortran(dirs: T.Dict[str, Path], env: T.Mapping[str, str] = None, wip
     if sys.platform == "linux":
         netcdf_c = install_dir / "lib/libnetcdf.so"
     elif sys.platform == "win32":
-        print("NetCDF4 on MSYS2 may not work, see https://github.com/Unidata/netcdf-c/issues/554", file=sys.stderr)
+        print(
+            "NetCDF4 on MSYS2 may not work, see https://github.com/Unidata/netcdf-c/issues/554",
+            file=sys.stderr,
+        )
         netcdf_c = install_dir / "bin/libnetcdf.dll"
     elif sys.platform == "darwin":
         netcdf_c = install_dir / "lib/libnetcdf.dylib"
     else:
-        raise NotImplementedError(f"please open a GitHub Issue for your operating system {sys.platform}")
+        raise NotImplementedError(
+            f"please open a GitHub Issue for your operating system {sys.platform}"
+        )
 
     patch = [
         f"-DNETCDF_C_LIBRARY:FILEPATH={netcdf_c}",
@@ -119,7 +124,9 @@ def netcdf_fortran(dirs: T.Dict[str, Path], env: T.Mapping[str, str] = None, wip
 def hdf5(dirs: T.Dict[str, Path], env: T.Mapping[str, str] = None):
     """ build and install HDF5 """
     if os.name == "nt":
-        raise NotImplementedError("Please use binaries from HDF Group for Windows appropriate for your compiler.")
+        raise NotImplementedError(
+            "Please use binaries from HDF Group for Windows appropriate for your compiler."
+        )
 
     hdf5_dir = f"hdf5-{HDF5VERSION}"
     install_dir = dirs["prefix"] / hdf5_dir
@@ -132,7 +139,12 @@ def hdf5(dirs: T.Dict[str, Path], env: T.Mapping[str, str] = None):
     if not env:
         env = get_compilers()
 
-    cmd = nice + ["./configure", f"--prefix={install_dir}", "--enable-fortran", "--enable-build-mode=production"]
+    cmd = nice + [
+        "./configure",
+        f"--prefix={install_dir}",
+        "--enable-fortran",
+        "--enable-build-mode=production",
+    ]
 
     subprocess.check_call(cmd, cwd=source_dir, env=env)
 
@@ -143,7 +155,9 @@ def hdf5(dirs: T.Dict[str, Path], env: T.Mapping[str, str] = None):
 def openmpi(dirs: T.Dict[str, Path], env: T.Mapping[str, str] = None):
     """ build and install OpenMPI """
     if os.name == "nt":
-        raise NotImplementedError("OpenMPI is not available in native Windows. Use MS-MPI instead.")
+        raise NotImplementedError(
+            "OpenMPI is not available in native Windows. Use MS-MPI instead."
+        )
 
     mpi_dir = f"openmpi-{MPIVERSION}"
     install_dir = dirs["prefix"] / mpi_dir
@@ -158,7 +172,13 @@ def openmpi(dirs: T.Dict[str, Path], env: T.Mapping[str, str] = None):
     if not env:
         env = get_compilers()
 
-    cmd = nice + ["./configure", f"--prefix={install_dir}", f"CC={env['CC']}", f"CXX={env['CXX']}", f"FC={env['FC']}"]
+    cmd = nice + [
+        "./configure",
+        f"--prefix={install_dir}",
+        f"CC={env['CC']}",
+        f"CXX={env['CXX']}",
+        f"FC={env['FC']}",
+    ]
 
     subprocess.check_call(cmd, cwd=source_dir, env=env)
 
@@ -236,22 +256,37 @@ def mumps(wipe: bool, dirs: T.Dict[str, Path], buildsys: str, env: T.Mapping[str
         raise ValueError(f"unknown build system {buildsys}")
 
 
-def cmake_build(args: T.List[str], source_dir: Path, build_dir: Path, wipe: bool, env: T.Mapping[str, str], run_test: bool = True):
+def cmake_build(
+    args: T.List[str],
+    source_dir: Path,
+    build_dir: Path,
+    wipe: bool,
+    env: T.Mapping[str, str],
+    run_test: bool = True,
+):
     """ build and install with CMake """
     cmake = cmake_minimum_version("3.13")
     cachefile = build_dir / "CMakeCache.txt"
     if wipe and cachefile.is_file():
         cachefile.unlink()
 
-    subprocess.check_call(nice + [cmake] + args + ["-B", str(build_dir), "-S", str(source_dir)], env=env)
+    subprocess.check_call(
+        nice + [cmake] + args + ["-B", str(build_dir), "-S", str(source_dir)], env=env
+    )
 
-    subprocess.check_call(nice + [cmake, "--build", str(build_dir), "--parallel", "--target", "install"])
+    subprocess.check_call(
+        nice + [cmake, "--build", str(build_dir), "--parallel", "--target", "install"]
+    )
 
     if run_test:
-        subprocess.check_call(nice + ["ctest", "--parallel", "--output-on-failure"], cwd=str(build_dir))
+        subprocess.check_call(
+            nice + ["ctest", "--parallel", "--output-on-failure"], cwd=str(build_dir)
+        )
 
 
-def meson_build(args: T.List[str], source_dir: Path, build_dir: Path, wipe: bool, env: T.Mapping[str, str]) -> int:
+def meson_build(
+    args: T.List[str], source_dir: Path, build_dir: Path, wipe: bool, env: T.Mapping[str, str]
+) -> int:
     """ build and install with Meson """
     meson = shutil.which("meson")
     if not meson:
@@ -260,7 +295,9 @@ def meson_build(args: T.List[str], source_dir: Path, build_dir: Path, wipe: bool
     if wipe and (build_dir / "build.ninja").is_file():
         args.append("--wipe")
 
-    subprocess.check_call(nice + [meson, "setup"] + args + [str(build_dir), str(source_dir)], env=env)
+    subprocess.check_call(
+        nice + [meson, "setup"] + args + [str(build_dir), str(source_dir)], env=env
+    )
 
     for op in ("test", "install"):
         ret = subprocess.run(nice + [meson, op, "-C", str(build_dir)])
@@ -280,7 +317,11 @@ def cmake_minimum_version(min_version: str = None) -> str:
     if not min_version:
         return cmake
 
-    cmake_ver = subprocess.check_output([cmake, "--version"], universal_newlines=True).split("\n")[0].split(" ")[2]
+    cmake_ver = (
+        subprocess.check_output([cmake, "--version"], universal_newlines=True)
+        .split("\n")[0]
+        .split(" ")[2]
+    )
     if pkg_resources.parse_version(cmake_ver) < pkg_resources.parse_version(min_version):
         logging.error(f"CMake {cmake_ver} is less than minimum required {min_version}")
 
@@ -342,7 +383,10 @@ def get_compilers() -> T.Mapping[str, str]:
 if __name__ == "__main__":
     p = ArgumentParser()
     p.add_argument(
-        "libs", help="libraries to compile", choices=["netcdf", "openmpi", "hdf5", "lapack", "scalapack", "mumps"], nargs="+"
+        "libs",
+        help="libraries to compile",
+        choices=["netcdf", "openmpi", "hdf5", "lapack", "scalapack", "mumps"],
+        nargs="+",
     )
     p.add_argument("-prefix", help="toplevel path to install libraries under", default="~/lib_gcc")
     p.add_argument("-workdir", help="toplevel path to where you keep code repos", default="~/code")
@@ -350,7 +394,10 @@ if __name__ == "__main__":
     p.add_argument("-buildsys", help="build system (meson or cmake)", default="cmake")
     P = p.parse_args()
 
-    dirs = {"prefix": Path(P.prefix).expanduser().resolve(), "workdir": Path(P.workdir).expanduser().resolve()}
+    dirs = {
+        "prefix": Path(P.prefix).expanduser().resolve(),
+        "workdir": Path(P.workdir).expanduser().resolve(),
+    }
 
     # Note: HDF5 needs to be before NetCDF
     if "hdf5" in P.libs:

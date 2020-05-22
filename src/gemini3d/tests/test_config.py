@@ -49,7 +49,9 @@ def test_nml_namelist(namelist):
 
 
 @pytest.mark.parametrize(
-    "filename", [Rc / "test2dew_fang", Rc / "test2dew_fang/config.nml", Rc / "config_example.ini"], ids=["path", "nml", "ini"]
+    "filename",
+    [Rc / "test2dew_fang", Rc / "test2dew_fang/config.nml", Rc / "config_example.ini"],
+    ids=["path", "nml", "ini"],
 )
 def test_read_config(filename):
     params = config.read_config(filename)

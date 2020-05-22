@@ -15,7 +15,13 @@ except ModuleNotFoundError:
     plotdiff = None
 
 
-def compare_all(outdir: Path, refdir: Path, tol: typing.Dict[str, float], doplot: bool = False, file_format: str = None) -> int:
+def compare_all(
+    outdir: Path,
+    refdir: Path,
+    tol: typing.Dict[str, float],
+    doplot: bool = False,
+    file_format: str = None,
+) -> int:
     """
     compare two directories across time steps
     """
@@ -40,14 +46,17 @@ def compare_all(outdir: Path, refdir: Path, tol: typing.Dict[str, float], doplot
     t0 = params["t0"]
     times = datetime_range(t0, t0 + params["tdur"], params["dtout"])
     if len(times) <= 1:
-        raise ValueError(f"{outdir} simulation did not run long enough, must run for more than one time step")
+        raise ValueError(
+            f"{outdir} simulation did not run long enough, must run for more than one time step"
+        )
 
     errs = 0
     for i, t in enumerate(times):
         st = f"UTsec {t}"
         A = loadframe(outdir, t, file_format)
         B = loadframe(refdir, t)
-        # don't specify file_format for reference, so that one reference file format can check multiple "out" format
+        # don't specify file_format for reference,
+        # so that one reference file format can check multiple "out" format
 
         names = ["ne", "v1", "v2", "v3", "Ti", "Te", "J1", "J2", "J3"]
         itols = ["N", "V", "V", "V", "T", "T", "J", "J", "J"]
@@ -55,7 +64,9 @@ def compare_all(outdir: Path, refdir: Path, tol: typing.Dict[str, float], doplot
         for k, j in zip(names, itols):
             a = A[k][1]
             b = B[k][1]
-            assert a.shape == b.shape, f"{k} time {i} {t}: ref shape {b.shape} does not match data shape {a.shape}"
+            assert (
+                a.shape == b.shape
+            ), f"{k} time {i} {t}: ref shape {b.shape} does not match data shape {a.shape}"
             if not np.allclose(a, b, tol[f"rtol{j}"], tol[f"atol{j}"], True):
                 errs += 1
                 logging.error(f"{k} {st}   {abs(a - b).max().item():.3e}")

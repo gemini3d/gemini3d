@@ -322,9 +322,13 @@ def geomag2geog(thetat: np.ndarray, phit: np.ndarray) -> T.Tuple[np.ndarray, np.
     phitcorrected[i] = phit[i] + 2 * pi
 
     # thetag2p=acos(cos(thetat).*cos(thetan)-sin(thetat).*sin(thetan).*cos(phit));
-    thetag2p = np.arccos(np.cos(thetat) * np.cos(thetan) - np.sin(thetat) * np.sin(thetan) * np.cos(phitcorrected))
+    thetag2p = np.arccos(
+        np.cos(thetat) * np.cos(thetan) - np.sin(thetat) * np.sin(thetan) * np.cos(phitcorrected)
+    )
 
-    beta = np.arccos((np.cos(thetat) - np.cos(thetag2p) * np.cos(thetan)) / (np.sin(thetag2p) * np.sin(thetan)))
+    beta = np.arccos(
+        (np.cos(thetat) - np.cos(thetag2p) * np.cos(thetan)) / (np.sin(thetag2p) * np.sin(thetan))
+    )
 
     phig2 = np.zeros_like(phitcorrected)
 
@@ -360,8 +364,12 @@ def geog2geomag(lat: np.ndarray, lon: np.ndarray) -> T.Tuple[np.ndarray, np.ndar
     thetagp = pi / 2 - np.radians(lat)
     phig = np.radians(lon)
 
-    thetat = np.arccos(np.cos(thetagp) * np.cos(thetan) + np.sin(thetagp) * np.sin(thetan) * np.cos(phig - phin))
-    argtmp = (np.cos(thetagp) - np.cos(thetat) * np.cos(thetan)) / (np.sin(thetat) * np.sin(thetan))
+    thetat = np.arccos(
+        np.cos(thetagp) * np.cos(thetan) + np.sin(thetagp) * np.sin(thetan) * np.cos(phig - phin)
+    )
+    argtmp = (np.cos(thetagp) - np.cos(thetat) * np.cos(thetan)) / (
+        np.sin(thetat) * np.sin(thetan)
+    )
     alpha = np.arccos(max(min(argtmp, 1), -1))
     phit = np.empty_like(lat)
 
@@ -409,7 +417,9 @@ def grid1d(dist: float, L: int) -> np.ndarray:
     return x
 
 
-def altitude_grid(alt_min: float, alt_max: float, incl_deg: float, d: T.Tuple[float, float, float, float]) -> np.ndarray:
+def altitude_grid(
+    alt_min: float, alt_max: float, incl_deg: float, d: T.Tuple[float, float, float, float]
+) -> np.ndarray:
 
     if alt_min < 0 or alt_max < 0:
         raise ValueError("grid values must be positive")

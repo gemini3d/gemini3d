@@ -94,12 +94,24 @@ def grid2plotfun(grid: typing.Dict[str, np.ndarray]):
 
 
 def plot3D_curv_frames_long(
-    time: datetime, grid: typing.Dict[str, np.ndarray], parm: np.ndarray, name: str, fg: "mplf.Figure", **kwargs
+    time: datetime,
+    grid: typing.Dict[str, np.ndarray],
+    parm: np.ndarray,
+    name: str,
+    fg: "mplf.Figure",
+    **kwargs,
 ):
     raise NotImplementedError
 
 
-def plot2D_curv(time: datetime, grid: typing.Dict[str, np.ndarray], parm: np.ndarray, name: str, fg: "mplf.Figure", **kwargs):
+def plot2D_curv(
+    time: datetime,
+    grid: typing.Dict[str, np.ndarray],
+    parm: np.ndarray,
+    name: str,
+    fg: "mplf.Figure",
+    **kwargs,
+):
     raise NotImplementedError
 
 
@@ -222,7 +234,14 @@ def plot1d3(y: np.ndarray, parm: np.ndarray, name: str, fg: "mplf.Figure", ax: "
     ax.set_ylabel(CB_LBL[name])
 
 
-def plot_interp(time: datetime, grid: typing.Dict[str, np.ndarray], parm: np.ndarray, name: str, fg: "mplf.Figure", **kwargs):
+def plot_interp(
+    time: datetime,
+    grid: typing.Dict[str, np.ndarray],
+    parm: np.ndarray,
+    name: str,
+    fg: "mplf.Figure",
+    **kwargs,
+):
     """
 
     xp:  eastward distance (rads.)
@@ -356,7 +375,9 @@ def plot_interp(time: datetime, grid: typing.Dict[str, np.ndarray], parm: np.nda
             fg.suptitle(f"{name}: {time.isoformat()}  {gitrev()}", y=0.99)
             # arbitrary pick of which emission lines to plot lat/lon slices
             for j, i in enumerate([1, 3, 4, 8]):
-                f = interp.interp2d(grid["x3"][inds3], grid["x2"][inds2], parm[i, :, :], bounds_error=False)
+                f = interp.interp2d(
+                    grid["x3"][inds3], grid["x2"][inds2], parm[i, :, :], bounds_error=False
+                )
                 hi = axs[j].pcolormesh(xp / 1e3, yp / 1e3, f(yp, xp))
                 axs[j].set_title(kwargs["wavelength"][i] + r"$\AA$")
                 fg.colorbar(hi, ax=axs[j], label="Rayleighs")
@@ -391,7 +412,9 @@ def plot_interp(time: datetime, grid: typing.Dict[str, np.ndarray], parm: np.nda
         # JUST PICK AN X3 LOCATION FOR THE MERIDIONAL SLICE PLOT,
         # AND AN ALTITUDE FOR THE LAT./LON. SLICE
         ix3 = lx3 // 2 - 1  # arbitrary slice, to match Matlab
-        f = interp.interp2d(grid["x2"][inds2], grid["x1"][inds1], parm[:, :, ix3], bounds_error=False)
+        f = interp.interp2d(
+            grid["x2"][inds2], grid["x1"][inds1], parm[:, :, ix3], bounds_error=False
+        )
         # CONVERT ANGULAR COORDINATES TO MLAT,MLON
         ix = np.argsort(xp)
         iy = np.argsort(yp)
@@ -411,7 +434,9 @@ def plot_interp(time: datetime, grid: typing.Dict[str, np.ndarray], parm: np.nda
         plot23(xp[ix], yp[iy], parmp[0, ix, :], name, cmap, vmin, vmax, fg, axs[1])
         # %% ALT/LAT SLICE (right panel)
         ix2 = lx2 // 2 - 1  # arbitrary slice, to match Matlab
-        f = interp.interp2d(grid["x3"][inds3], grid["x1"][inds1], parm[:, ix2, :], bounds_error=False)
+        f = interp.interp2d(
+            grid["x3"][inds3], grid["x1"][inds1], parm[:, ix2, :], bounds_error=False
+        )
         hi = plot13(yp[iy], zp, f(yp, zp)[:, iy], name, cmap, vmin, vmax, fg, axs[2])
 
         fg.colorbar(hi, ax=axs, aspect=60, pad=0.01)

@@ -145,7 +145,9 @@ def load_Efield(fn: Path) -> T.Dict[str, T.Any]:
 
     E.update(readgrid2(fn.parent / "simgrid.dat", (E["Nlon"], E["Nlat"])))
 
-    assert ((E["mlat"] >= -90) & (E["mlat"] <= 90)).all(), f"impossible latitude, was file read correctly? {fn}"
+    assert (
+        (E["mlat"] >= -90) & (E["mlat"] <= 90)
+    ).all(), f"impossible latitude, was file read correctly? {fn}"
 
     with fn.open("r") as f:
         """
@@ -194,10 +196,16 @@ def loadframe3d_curv(fn: Path, lxs: T.Sequence[int]) -> T.Dict[str, T.Any]:
         dat["ne"] = (("x1", "x2", "x3"), ns[:, :, :, LSP - 1])
 
         vs1 = read4D(f, LSP, lxs)
-        dat["v1"] = (("x1", "x2", "x3"), (ns[:, :, :, :6] * vs1[:, :, :, :6]).sum(axis=3) / dat["ne"][1])
+        dat["v1"] = (
+            ("x1", "x2", "x3"),
+            (ns[:, :, :, :6] * vs1[:, :, :, :6]).sum(axis=3) / dat["ne"][1],
+        )
 
         Ts = read4D(f, LSP, lxs)
-        dat["Ti"] = (("x1", "x2", "x3"), (ns[:, :, :, :6] * Ts[:, :, :, :6]).sum(axis=3) / dat["ne"][1])
+        dat["Ti"] = (
+            ("x1", "x2", "x3"),
+            (ns[:, :, :, :6] * Ts[:, :, :, :6]).sum(axis=3) / dat["ne"][1],
+        )
         dat["Te"] = (("x1", "x2", "x3"), Ts[:, :, :, LSP - 1].squeeze())
 
         for p in ("J1", "J2", "J3", "v2", "v3"):
@@ -272,7 +280,9 @@ def loadglow_aurmap(f, lxs: T.Sequence[int], lwave: int) -> T.Dict[str, T.Any]:
     """
     if not len(lxs) == 3:
         raise ValueError(f"lxs must have 3 elements, you have lxs={lxs}")
-    raw = np.fromfile(f, np.float64, np.prod(lxs[1:]) * lwave).reshape(np.prod(lxs[1:]) * lwave, order="F")
+    raw = np.fromfile(f, np.float64, np.prod(lxs[1:]) * lwave).reshape(
+        np.prod(lxs[1:]) * lwave, order="F"
+    )
     return {"rayleighs": [("wavelength", "x2", "x3"), raw]}
 
 

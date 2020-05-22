@@ -45,7 +45,15 @@ def download_and_extract(z: T.Dict[str, T.Any], url_ini: Path):
         raise SystemExit(77)
 
 
-def run_test(testname: str, mpiexec: str, exe: str, nml: str, outdir: str, mpi_count: int = None, out_format: str = None):
+def run_test(
+    testname: str,
+    mpiexec: str,
+    exe: str,
+    nml: str,
+    outdir: str,
+    mpi_count: int = None,
+    out_format: str = None,
+):
     """ configure and run a test
     This is usually called from CMake Ctest
     """
@@ -85,7 +93,11 @@ if __name__ == "__main__":
     p.add_argument("nml")
     p.add_argument("outdir")
     p.add_argument("-np", help="force number of MPI images", type=int)
-    p.add_argument("-out_format", help="override config.nml output file format", choices=["h5", "nc", "raw"])
+    p.add_argument(
+        "-out_format", help="override config.nml output file format", choices=["h5", "nc", "raw"]
+    )
     P = p.parse_args()
 
-    run_test(P.testname, P.mpiexec, P.exe, P.nml, P.outdir, mpi_count=P.np, out_format=P.out_format)
+    run_test(
+        P.testname, P.mpiexec, P.exe, P.nml, P.outdir, mpi_count=P.np, out_format=P.out_format
+    )

@@ -53,10 +53,19 @@ def convert3d_curv(infn: Path, outfn: Path, lxs: typing.Sequence[int]):
 
         for p in ("J1", "J2", "J3", "v2", "v3"):
             h.create_dataset(
-                p, data=gemini3d.read3D(f, lxs).astype(float32), chunks=(1, *lxs[1:]), compression="gzip", compression_opts=CLVL
+                p,
+                data=gemini3d.read3D(f, lxs).astype(float32),
+                chunks=(1, *lxs[1:]),
+                compression="gzip",
+                compression_opts=CLVL,
             )
 
-        h.create_dataset("Phitop", data=gemini3d.read2D(f, lxs).astype(float32), compression="gzip", compression_opts=CLVL)
+        h.create_dataset(
+            "Phitop",
+            data=gemini3d.read2D(f, lxs).astype(float32),
+            compression="gzip",
+            compression_opts=CLVL,
+        )
 
 
 def convert3d_curvavg(infn: Path, outfn: Path, lxs: typing.Sequence[int]):
@@ -66,17 +75,28 @@ def convert3d_curvavg(infn: Path, outfn: Path, lxs: typing.Sequence[int]):
 
         for p in ("ne", "v1", "Ti", "Te", "J1", "J2", "J3", "v2", "v3"):
             h.create_dataset(
-                p, data=gemini3d.read3D(f, lxs).astype(float32), chunks=(1, *lxs[1:]), compression="gzip", compression_opts=CLVL
+                p,
+                data=gemini3d.read3D(f, lxs).astype(float32),
+                chunks=(1, *lxs[1:]),
+                compression="gzip",
+                compression_opts=CLVL,
             )
 
-        h.create_dataset("Phitop", data=gemini3d.read2D(f, lxs).astype(float32), compression="gzip", compression_opts=CLVL)
+        h.create_dataset(
+            "Phitop",
+            data=gemini3d.read2D(f, lxs).astype(float32),
+            compression="gzip",
+            compression_opts=CLVL,
+        )
 
 
 if __name__ == "__main__":
     p = argparse.ArgumentParser()
     p.add_argument("indir", help="Gemini .dat file directory")
     p.add_argument("-o", "--outdir", help="directory to write HDF5 files")
-    p.add_argument("--delete", help="delete original file if conversion successful", action="store_true")
+    p.add_argument(
+        "--delete", help="delete original file if conversion successful", action="store_true"
+    )
     P = p.parse_args()
 
     indir = Path(P.indir).expanduser()

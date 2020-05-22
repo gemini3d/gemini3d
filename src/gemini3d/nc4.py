@@ -27,7 +27,11 @@ def get_simsize(path: Path) -> T.Tuple[int, ...]:
             lxs = f["lx"][:]
         elif "lx1" in f.variables:
             if f["lx1"].ndim > 0:
-                lxs = (f["lx1"][:].squeeze()[()], f["lx2"][:].squeeze()[()], f["lx3"][:].squeeze()[()])
+                lxs = (
+                    f["lx1"][:].squeeze()[()],
+                    f["lx2"][:].squeeze()[()],
+                    f["lx3"][:].squeeze()[()],
+                )
             else:
                 lxs = (f["lx1"][()], f["lx2"][()], f["lx3"][()])
         else:
@@ -104,7 +108,16 @@ def write_grid(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]):
 
 
 def _write_var(f, name: str, dims: tuple, value: np.ndarray):
-    g = f.createVariable(name, np.float32, dims, zlib=True, complevel=1, shuffle=True, fletcher32=True, fill_value=np.nan)
+    g = f.createVariable(
+        name,
+        np.float32,
+        dims,
+        zlib=True,
+        complevel=1,
+        shuffle=True,
+        fletcher32=True,
+        fill_value=np.nan,
+    )
     g[:] = value
 
 
@@ -248,7 +261,9 @@ def loadframe3d_curv(fn: Path, lxs: T.Sequence[int]) -> T.Dict[str, T.Any]:
         ns = f["nsall"][:].transpose(p4)
         # np.any() in case neither is an np.ndarray
         if ns.shape[0] != 7 or np.any(ns.shape[1:] != lxs):
-            raise ValueError(f"may have wrong permutation on read. lxs: {lxs}  ns x1,x2,x3: {ns.shape}")
+            raise ValueError(
+                f"may have wrong permutation on read. lxs: {lxs}  ns x1,x2,x3: {ns.shape}"
+            )
         dat["ns"] = (("lsp", "x1", "x2", "x3"), ns)
         vs = f["vs1all"][:].transpose(p4)
         dat["vs"] = (("lsp", "x1", "x2", "x3"), vs)

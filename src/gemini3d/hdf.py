@@ -23,7 +23,11 @@ def get_simsize(path: Path) -> T.Tuple[int, ...]:
             lxs = f["lx"][:]
         elif "lx1" in f:
             if f["lx1"].ndim > 0:
-                lxs = (f["lx1"][:].squeeze()[()], f["lx2"][:].squeeze()[()], f["lx3"][:].squeeze()[()])
+                lxs = (
+                    f["lx1"][:].squeeze()[()],
+                    f["lx2"][:].squeeze()[()],
+                    f["lx3"][:].squeeze()[()],
+                )
             else:
                 lxs = (f["lx1"][()], f["lx2"][()], f["lx3"][()])
         else:
@@ -61,13 +65,31 @@ def write_state(time: datetime, ns: np.ndarray, vs: np.ndarray, Ts: np.ndarray, 
         # we have to reverse axes order and put lsp at the last dim
 
         f.create_dataset(
-            "/ns", data=ns.transpose(p4), dtype=np.float32, compression="gzip", compression_opts=1, shuffle=True, fletcher32=True
+            "/ns",
+            data=ns.transpose(p4),
+            dtype=np.float32,
+            compression="gzip",
+            compression_opts=1,
+            shuffle=True,
+            fletcher32=True,
         )
         f.create_dataset(
-            "/vsx1", data=vs.transpose(p4), dtype=np.float32, compression="gzip", compression_opts=1, shuffle=True, fletcher32=True
+            "/vsx1",
+            data=vs.transpose(p4),
+            dtype=np.float32,
+            compression="gzip",
+            compression_opts=1,
+            shuffle=True,
+            fletcher32=True,
         )
         f.create_dataset(
-            "/Ts", data=Ts.transpose(p4), dtype=np.float32, compression="gzip", compression_opts=1, shuffle=True, fletcher32=True
+            "/Ts",
+            data=Ts.transpose(p4),
+            dtype=np.float32,
+            compression="gzip",
+            compression_opts=1,
+            shuffle=True,
+            fletcher32=True,
         )
 
 
@@ -131,7 +153,18 @@ def write_grid(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]):
     print("write", fn)
     with h5py.File(fn, "w") as h:
         for i in (1, 2, 3):
-            for k in (f"x{i}", f"x{i}i", f"dx{i}b", f"dx{i}h", f"h{i}", f"h{i}x1i", f"h{i}x2i", f"h{i}x3i", f"gx{i}", f"e{i}"):
+            for k in (
+                f"x{i}",
+                f"x{i}i",
+                f"dx{i}b",
+                f"dx{i}h",
+                f"h{i}",
+                f"h{i}x1i",
+                f"h{i}x2i",
+                f"h{i}x3i",
+                f"gx{i}",
+                f"e{i}",
+            ):
                 if xg[k].ndim >= 2:
                     h.create_dataset(
                         f"/{k}",
@@ -145,7 +178,23 @@ def write_grid(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]):
                 else:
                     h[f"/{k}"] = xg[k].astype(np.float32)
 
-        for k in ("alt", "glat", "glon", "Bmag", "I", "nullpts", "er", "etheta", "ephi", "r", "theta", "phi", "x", "y", "z"):
+        for k in (
+            "alt",
+            "glat",
+            "glon",
+            "Bmag",
+            "I",
+            "nullpts",
+            "er",
+            "etheta",
+            "ephi",
+            "r",
+            "theta",
+            "phi",
+            "x",
+            "y",
+            "z",
+        ):
             if xg[k].ndim >= 2:
                 h.create_dataset(
                     f"/{k}",
@@ -270,7 +319,9 @@ def loadframe3d_curv(fn: Path, lxs: T.Sequence[int]) -> T.Dict[str, T.Any]:
     dat: T.Dict[str, T.Any] = {}
 
     with h5py.File(fn, "r") as f:
-        dat["time"] = ymdhourdec2datetime(f["time/ymd"][0], f["time/ymd"][1], f["time/ymd"][2], f["time/UThour"][()])
+        dat["time"] = ymdhourdec2datetime(
+            f["time/ymd"][0], f["time/ymd"][1], f["time/ymd"][2], f["time/UThour"][()]
+        )
 
         if lxs[2] == 1:  # east-west
             p4 = (0, 3, 1, 2)
@@ -282,7 +333,9 @@ def loadframe3d_curv(fn: Path, lxs: T.Sequence[int]) -> T.Dict[str, T.Any]:
         ns = f["/nsall"][:].transpose(p4)
         # np.any() in case neither is an np.ndarray
         if ns.shape[0] != 7 or np.any(ns.shape[1:] != lxs):
-            raise ValueError(f"may have wrong permutation on read. lxs: {lxs}  ns x1,x2,x3: {ns.shape}")
+            raise ValueError(
+                f"may have wrong permutation on read. lxs: {lxs}  ns x1,x2,x3: {ns.shape}"
+            )
         dat["ns"] = (("lsp", "x1", "x2", "x3"), ns)
         vs = f["/vs1all"][:].transpose(p4)
         dat["vs"] = (("lsp", "x1", "x2", "x3"), vs)
@@ -333,7 +386,9 @@ def loadframe3d_curvavg(fn: Path, lxs: T.Sequence[int]) -> T.Dict[str, T.Any]:
     dat: T.Dict[str, T.Any] = {}
 
     with h5py.File(fn, "r") as f:
-        dat["time"] = ymdhourdec2datetime(f["time/ymd"][0], f["time/ymd"][1], f["time/ymd"][2], f["/time/UThour"][()])
+        dat["time"] = ymdhourdec2datetime(
+            f["time/ymd"][0], f["time/ymd"][1], f["time/ymd"][2], f["/time/UThour"][()]
+        )
 
         dat["ne"] = [("x1", "x2", "x3"), f["/neall"][:].transpose(2, 0, 1)]
         dat["v1"] = [("x1", "x2", "x3"), f["/v1avgall"][:].transpose(2, 0, 1)]
