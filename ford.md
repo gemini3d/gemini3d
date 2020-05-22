@@ -1,4 +1,4 @@
-src_dir: ./
+src_dir: ./src
 output_dir: ./docs
 project: GEMINI3D
 project_github: https://github.com/gemini3d/gemini
@@ -12,7 +12,7 @@ exclude: CMakeFortranCompilerId.F
 exclude_dir: archive/
              vendor/
              tests/
-             src/tests/
+             src/unit_tests/
 include:
 display: public
          protected

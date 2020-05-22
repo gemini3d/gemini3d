@@ -104,7 +104,6 @@ def read_namelist(fn: Path, namelist: str) -> T.Dict[str, T.Any]:
     """ read a namelist from an .nml file """
 
     raw: T.Dict[str, T.Sequence[str]] = {}
-
     nml_pat = re.compile(r"^\s*&(" + namelist + r")")
     end_pat = re.compile(r"^\s*/\s*$")
     val_pat = re.compile(r"^\s*(\w+)\s*=\s*['\"]?([^!'\"]*)['\"]?")

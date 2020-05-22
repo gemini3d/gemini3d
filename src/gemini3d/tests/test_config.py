@@ -5,8 +5,7 @@ from datetime import datetime, timedelta
 
 import gemini3d.config as config
 
-R = Path(__file__).resolve().parent
-Rc = R / "config/test2d_fang"
+Rc = Path(__file__).resolve().parent / "config"
 
 
 def test_nml_bad(tmp_path):
@@ -23,11 +22,11 @@ def test_nml_bad(tmp_path):
 """
     )
     with pytest.raises(KeyError):
-        config.read_namelist(blank, "base")
+        config.read_nml_group(blank, "base")
 
 
-def test_nml_exist():
-    assert not config.namelist_exists(Rc / "config.nml", "base2")
+@pytest.mark.parametrize("group", ["base", ("base", "flags", "files", "precip", "efield")])
+def test_nml_group(group):
 
     assert config.namelist_exists(Rc / "config.nml", "base")
 
@@ -35,7 +34,7 @@ def test_nml_exist():
 @pytest.mark.parametrize("namelist", ["base", "flags", "files", "precip", "efield"])
 def test_nml_namelist(namelist):
 
-    params = config.read_namelist(Rc / "config.nml", namelist)
+    params = config.read_namelist(Rc / "test2d_fang/config.nml", namelist)
     if "base" in namelist:
         assert params["t0"] == datetime(2013, 2, 20, 5)
 
@@ -49,7 +48,9 @@ def test_nml_namelist(namelist):
         assert params["dtE0"] == timedelta(seconds=1)
 
 
-@pytest.mark.parametrize("filename", [Rc, Rc / "config.nml", R / "config/config_example.ini"], ids=["path", "nml", "ini"])
+@pytest.mark.parametrize(
+    "filename", [Rc / "test2d_fang", Rc / "test2d_fang/config.nml", Rc / "config_example.ini"], ids=["path", "nml", "ini"]
+)
 def test_read_config(filename):
     params = config.read_config(filename)
     assert params["t0"] == datetime(2013, 2, 20, 5)

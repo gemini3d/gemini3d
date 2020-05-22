@@ -18,6 +18,7 @@ add_subdirectory(numerical)
 add_subdirectory(io)
 add_subdirectory(temporal)
 
+
 add_library(collision OBJECT collisions/collisions.f90)
 target_link_libraries(collision PRIVATE const)
 
@@ -26,12 +27,11 @@ if(NOT MPI_OK)
   return()
 endif()
 
-# simple tests to help catch broken libs
-add_subdirectory(tests)
 
+# --- other libs
+add_subdirectory(unit_tests)
 add_subdirectory(neutral)
 add_subdirectory(sources)
-
 add_library(multifluid OBJECT multifluid/multifluid.f90)
 target_link_libraries(multifluid PRIVATE advec calculus collision const diffusion grid mesh ionization mpimod precipBCs sources timeutils)
 
