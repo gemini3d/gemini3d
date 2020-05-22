@@ -10,11 +10,10 @@ import typing as T
 import sys
 import os
 
-from compile_prereqs_gcc import get_cpu_count, mumps, hdf5, lapack, scalapack
+from compile_prereqs_gcc import mumps, hdf5, lapack, scalapack
 
 # ========= user parameters ======================
 BUILDDIR = "build"
-NJOBS = get_cpu_count()
 # ========= end of user parameters ================
 
 nice = ["nice"] if sys.platform == "linux" else []

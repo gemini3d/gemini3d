@@ -24,7 +24,7 @@ if __name__ == "__main__":
 
     params = {
         "config_file": Path(P.config_file).expanduser(),
-        "out_dir": Path(P.out_dir).expanduser(),
+        "out_dir": Path(P.out_dir).expanduser().resolve(),
         "mpiexec": P.mpiexec,
         "gemexe": P.gemexe,
         "force": P.force,

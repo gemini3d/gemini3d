@@ -21,6 +21,9 @@ jobs:
     - run: python3 -m pip install -e .[tests,lint]
 
     - run: flake8
-    - run: mypy .
+    - run: |
+        mypy .
+        mypy src
+        mypy scripts
 
     - run: pytest

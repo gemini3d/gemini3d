@@ -10,18 +10,17 @@ import typing as T
 import sys
 import os
 
-from compile_prereqs_gcc import get_cpu_count, mumps, hdf5, netcdf_c, netcdf_fortran
+from compile_prereqs_gcc import mumps, hdf5, netcdf_c, netcdf_fortran
 
 # ========= user parameters ======================
 BUILDDIR = "build"
-NJOBS = get_cpu_count()
 # ========= end of user parameters ================
 
 nice = ["nice"] if sys.platform == "linux" else []
 
 
 def get_compilers() -> T.Mapping[str, str]:
-    """ get paths to Intel compilers """
+    """ get paths to compilers """
     env = os.environ
 
     fc_name = "ifort"

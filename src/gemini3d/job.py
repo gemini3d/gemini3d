@@ -23,7 +23,7 @@ def runner(pr: T.Dict[str, T.Any]) -> int:
         if pr["force"] or not f.is_file():
             model_setup(p["nml"], pr["out_dir"])
             if not f.is_file():
-                raise FileNotFoundError(f"\ntried to initialize simulation but missing expected output file {f}")
+                raise FileNotFoundError(f"tried to initialize simulation but missing expected output file {f}")
             break
 
     if "E0dir" in p:
