@@ -155,15 +155,15 @@ def write_state(time: datetime, ns: np.ndarray, vs: np.ndarray, Ts: np.ndarray, 
         _write_var(f, "Ts", ("species", "x3", "x2", "x1"), Ts.transpose(p4))
 
 
-def write_Efield(p: T.Dict[str, T.Any], E: T.Dict[str, np.ndarray]):
+def write_Efield(outdir: Path, E: T.Dict[str, np.ndarray]):
     """
     write Efield to disk
 
     TODO: verify dimensions vs. data vs. Fortran order
     """
 
-    outdir = E["Efield_outdir"]
     print("write E-field data to", outdir)
+    outdir.mkdir(parents=True, exist_ok=True)
 
     with Dataset(outdir / "simsize.nc", "w") as f:
         for k in ("llon", "llat"):
@@ -185,7 +185,7 @@ def write_Efield(p: T.Dict[str, T.Any], E: T.Dict[str, np.ndarray]):
             f.createDimension("lat", E["mlat"].size)
 
             g = f.createVariable("flagdirich", np.int32)
-            g[:] = p["flagdirich"]
+            g[:] = E["flagdirich"]
 
             f.createDimension("ymd", 3)
             g = f.createVariable("ymd", np.int32, "ymd")
@@ -204,15 +204,15 @@ def write_Efield(p: T.Dict[str, T.Any], E: T.Dict[str, np.ndarray]):
                 _write_var(f, k, ("lon",), E[k][i, :])
 
 
-def write_precip(precip: T.Dict[str, np.ndarray]):
+def write_precip(outdir: Path, precip: T.Dict[str, np.ndarray]):
     """
     write precipitation to disk
 
     TODO: verify dimensions vs. data vs. Fortran order
     """
 
-    outdir = precip["precip_outdir"]
     print("write precipitation data to", outdir)
+    outdir.mkdir(parents=True, exist_ok=True)
 
     with Dataset(outdir / "simsize.nc", "w") as f:
         for k in ("llon", "llat"):

@@ -211,7 +211,7 @@ def write_grid(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]):
 
 def load_Efield(fn: Path) -> T.Dict[str, T.Any]:
     """
-    load Efield_inputs files that contain input electric field in V/m
+    load electric field
     """
 
     E: T.Dict[str, np.ndarray] = {}
@@ -238,13 +238,13 @@ def load_Efield(fn: Path) -> T.Dict[str, T.Any]:
     return E
 
 
-def write_Efield(p: T.Dict[str, T.Any], E: T.Dict[str, np.ndarray]):
+def write_Efield(outdir: Path, E: T.Dict[str, np.ndarray]):
     """
     write Efield to disk
     """
 
-    outdir = E["Efield_outdir"]
     print("write E-field data to", outdir)
+    outdir.mkdir(parents=True, exist_ok=True)
 
     with h5py.File(outdir / "simsize.h5", "w") as f:
         f["/llon"] = E["llon"]
@@ -259,7 +259,7 @@ def write_Efield(p: T.Dict[str, T.Any], E: T.Dict[str, np.ndarray]):
 
         # FOR EACH FRAME WRITE A BC TYPE AND THEN OUTPUT BACKGROUND AND BCs
         with h5py.File(fn, "w") as f:
-            f["/flagdirich"] = p["flagdirich"]
+            f["/flagdirich"] = E["flagdirich"]
             f["/time/ymd"] = [t.year, t.month, t.day]
             f["/time/UTsec"] = t.hour * 3600 + t.minute * 60 + t.second + t.microsecond / 1e6
 
@@ -277,10 +277,10 @@ def write_Efield(p: T.Dict[str, T.Any], E: T.Dict[str, np.ndarray]):
                 f[f"/{k}"] = E[k][i, :].astype(np.float32)
 
 
-def write_precip(precip: T.Dict[str, T.Any]):
+def write_precip(outdir: Path, precip: T.Dict[str, T.Any]):
 
-    outdir = precip["precip_outdir"]
     print("write precipitation data to", outdir)
+    outdir.mkdir(parents=True, exist_ok=True)
 
     with h5py.File(outdir / "simsize.h5", "w") as f:
         f["/llon"] = precip["llon"]

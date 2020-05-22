@@ -81,52 +81,56 @@ def write_grid(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]):
         raise ValueError(f'unknown file format {p["format"]}')
 
 
-def write_Efield(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]):
-    """ writes grid to disk
+def write_Efield(E: T.Dict[str, T.Any], outdir: Path, file_format: str):
+    """ writes E-field to disk
 
     Parameters
     ----------
 
-    p: dict
-        simulation parameters
-    xg: dict
-        grid values
+    E: dict
+        E-field values
+    outdir: pathlib.Path
+        directory to write files into
+    file_format: str
+        requested file format to write
     """
 
-    if p["format"] in ("hdf5", "h5"):
+    if file_format in ("hdf5", "h5"):
         if write_Efield_h5 is None:
             raise ImportError("pip install h5py")
-        write_Efield_h5(p, xg)
-    elif p["format"] in ("netcdf", "nc"):
+        write_Efield_h5(outdir, E)
+    elif file_format in ("netcdf", "nc"):
         if write_Efield_nc is None:
             raise ImportError("pip install netcdf4")
-        write_Efield_nc(p, xg)
+        write_Efield_nc(outdir, E)
     else:
-        raise ValueError(f'unknown file format {p["format"]}')
+        raise ValueError(f"unknown file format {file_format}")
 
 
-def write_precip(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]):
-    """ writes grid to disk
+def write_precip(precip: T.Dict[str, T.Any], outdir: Path, file_format: str):
+    """ writes precipitation to disk
 
     Parameters
     ----------
 
-    p: dict
-        simulation parameters
-    xg: dict
-        grid values
+    precip: dict
+        preicipitation values
+    outdir: pathlib.Path
+        directory to write files into
+    file_format: str
+        requested file format to write
     """
 
-    if p["format"] in ("hdf5", "h5"):
+    if file_format in ("hdf5", "h5"):
         if write_precip_h5 is None:
             raise ImportError("pip install h5py")
-        write_precip_h5(xg)
-    elif p["format"] in ("netcdf", "nc"):
+        write_precip_h5(outdir, precip)
+    elif file_format in ("netcdf", "nc"):
         if write_precip_nc is None:
             raise ImportError("pip install netcdf4")
-        write_precip_nc(xg)
+        write_precip_nc(outdir, precip)
     else:
-        raise ValueError(f'unknown file format {p["format"]}')
+        raise ValueError(f'unknown file format {file_format}')
 
 
 def write_state(
