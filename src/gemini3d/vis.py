@@ -120,17 +120,13 @@ def plot12(
 
     if ax is None:
         ax = fg.gca()
-        make_colorbar = True
-    else:
-        make_colorbar = False
 
     hi = ax.pcolormesh(x / 1e3, z / 1e3, parm, cmap=cmap, vmin=vmin, vmax=vmax)
     ax.yaxis.set_major_locator(MultipleLocator(100))
     ax.set_xlabel("eastward dist. (km)")
     ax.set_ylabel("upward dist. (km)")
     ax.axhline(REF_ALT, color="w", linestyle="--", linewidth=2)
-    if make_colorbar:
-        fg.colorbar(hi, ax=ax, label=CB_LBL[name])
+    fg.colorbar(hi, ax=ax, label=CB_LBL[name])
 
     return hi
 
@@ -152,16 +148,12 @@ def plot13(
 
     if ax is None:
         ax = fg.gca()
-        make_colorbar = True
-    else:
-        make_colorbar = False
 
     hi = ax.pcolormesh(y / 1e3, z / 1e3, parm, cmap=cmap, vmin=vmin, vmax=vmax)
     ax.yaxis.set_major_locator(MultipleLocator(100))
     ax.set_xlabel("northward dist. (km)")
     ax.set_ylabel("upward dist. (km)")
-    if make_colorbar:
-        fg.colorbar(hi, ax=ax, label=CB_LBL[name])
+    fg.colorbar(hi, ax=ax, label=CB_LBL[name])
 
     return hi
 
@@ -183,15 +175,11 @@ def plot23(
 
     if ax is None:
         ax = fg.gca()
-        make_colorbar = True
-    else:
-        make_colorbar = False
 
     hi = ax.pcolormesh(x / 1e3, y / 1e3, parm, cmap=cmap, vmin=vmin, vmax=vmax)
     ax.set_xlabel("eastward dist. (km)")
     ax.set_ylabel("northward dist. (km)")
-    if make_colorbar:
-        fg.colorbar(hi, ax=ax, label=CB_LBL[name])
+    fg.colorbar(hi, ax=ax, label=CB_LBL[name])
 
     return hi
 
@@ -292,6 +280,7 @@ def plot_interp(time: datetime, grid: typing.Dict[str, np.ndarray], parm: np.nda
     yp = np.linspace(y.min(), y.max(), lyp) * R_EARTH
     # upward distance [meters]
     zp = np.linspace(z.min(), z.max(), lzp) * 1e3
+
     # %% INTERPOLATE ONTO PLOTTING GRID
     if lxs[2] == 1:  # alt./lon. slice
         ax = fg.gca()
