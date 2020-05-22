@@ -34,7 +34,10 @@ nmf = 5e11
 nme = 2e11
 precip_latwidth = 0.25
 precip_lonwidth = 0.25
+Qprecip = 10
+Qprecip_background = 0.0
 Etarg = 50e-3   ! V/m
+Efield_latwidth = 0
 Efield_lonwidth = 0.142857
 eqdir = 'tests/data/test3d_eq'
 /

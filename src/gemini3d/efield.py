@@ -128,7 +128,7 @@ def Jcurrent_target(E: dict, Nt: int) -> dict:
     return E
 
 
-def Efield_target(E: dict, xg: dict, lx1, lx2: int, lx3: int, Nt: int) -> dict:
+def Efield_target(E: dict, xg: dict, lx1: int, lx2: int, lx3: int, Nt: int) -> dict:
     if E["Etarg"] > 1:
         logging.warning(f"Etarg units V/m -- is {E['Etarg']} V/m realistic?")
 

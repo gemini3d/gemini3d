@@ -130,7 +130,7 @@ def write_precip(precip: T.Dict[str, T.Any], outdir: Path, file_format: str):
             raise ImportError("pip install netcdf4")
         write_precip_nc(outdir, precip)
     else:
-        raise ValueError(f'unknown file format {file_format}')
+        raise ValueError(f"unknown file format {file_format}")
 
 
 def write_state(
