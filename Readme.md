@@ -164,7 +164,7 @@ mpiexec -np <number of processors>  build/gemini.bin <input config file> <output
 for example:
 
 ```sh
-mpiexec -np 4 build/gemini.bin tests/2d_fang/inputs/config.nml /tmp/2d
+mpiexec -np 4 build/gemini.bin tests/2dew_fang/inputs/config.nml /tmp/2dew_fang
 ```
 
 ## Input file format

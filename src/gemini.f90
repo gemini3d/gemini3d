@@ -342,7 +342,7 @@ if (argc < 2) then
   print '(A)', 'GLOW and auroral interfaces by Guy Grubbs'
   print '(A,/)', 'build system and software engineering by Michael Hirsch'
   print *, 'must specify config.nml file to configure simulation and output directory. Example:'
-  print '(/,A,/)', 'mpiexec -np 4 build/gemini.bin initialize/test2d_fang/config.nml /tmp/test2d_fang'
+  print '(/,A,/)', 'mpiexec -np 4 build/gemini.bin ~/simulations/test2dew_fang/inputs/config.nml /tmp/test2dew_fang'
   stop 77
   !! stops with de facto "skip test" return code
 endif
