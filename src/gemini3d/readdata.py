@@ -30,13 +30,16 @@ def readgrid(path: Path, file_format: str = None) -> T.Dict[str, np.ndarray]:
 
     fn = get_grid_filename(path)
 
-    if fn.suffix == ".dat":
+    if not file_format:
+        file_format = fn.suffix[1:]
+
+    if fn.suffix == "dat":
         grid = raw.readgrid(fn)
-    elif fn.suffix == ".h5":
+    elif fn.suffix == "h5":
         if hdf is None:
             raise ModuleNotFoundError("pip install h5py")
         grid = hdf.readgrid(fn)
-    elif fn.suffix == ".nc":
+    elif fn.suffix == "nc":
         if nc4 is None:
             raise ModuleNotFoundError("pip install netcdf4")
         grid = nc4.readgrid(fn)
@@ -151,15 +154,15 @@ def read_Efield(fn: Path) -> T.Dict[str, T.Any]:
 
     fn = Path(fn).expanduser().resolve(strict=True)
 
-    if fn.suffix == ".h5":
+    if fn.suffix == "h5":
         if hdf is None:
             raise ModuleNotFoundError("pip install h5py")
         E = hdf.read_Efield(fn)
-    elif fn.suffix == ".nc":
+    elif fn.suffix == "nc":
         if nc4 is None:
             raise ModuleNotFoundError("pip install netcdf4")
         E = nc4.read_Efield(fn)
-    elif fn.suffix == ".dat":
+    elif fn.suffix == "dat":
         E = raw.read_Efield(fn)
     else:
         raise ValueError(f"Unknown file type {fn}")
@@ -185,11 +188,11 @@ def read_precip(path: Path, times: T.Sequence[datetime], file_format: str) -> T.
         precipitation
     """
 
-    if file_format == ".h5":
+    if file_format == "h5":
         if hdf is None:
             raise ImportError("pip install h5py")
         dat = hdf.read_precip(path, times)
-    elif file_format == ".nc":
+    elif file_format == "nc":
         if nc4 is None:
             raise ImportError("pip install netcdf4")
         dat = nc4.read_precip(path, times)
@@ -204,18 +207,16 @@ def read_state(file: Path,) -> T.Dict[str, T.Any]:
     load inital condition data
     """
 
-    file_format = file.suffix
-
-    if file_format == ".h5":
+    if file.suffix == ".h5":
         if hdf is None:
             raise ImportError("pip install h5py")
         dat = hdf.read_state(file)
-    elif file_format == ".nc":
+    elif file.suffix == ".nc":
         if nc4 is None:
             raise ImportError("pip install netcdf4")
         dat = nc4.read_state(file)
     else:
-        raise ValueError(f"unknown file format {file_format}")
+        raise ValueError(f"unknown file format {file.suffix}")
 
     return dat
 
