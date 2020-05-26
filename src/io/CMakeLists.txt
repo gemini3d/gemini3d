@@ -17,7 +17,7 @@ else()
 endif()
 
 # --- config
-add_library(config OBJECT config.f90 config_nml.f90)
+add_library(config OBJECT config.f90 config_nml.f90 config_ini.f90)
 target_link_libraries(config PRIVATE pathlib const)
 
 if(EXISTS ${PYGEMINI_DIR})
