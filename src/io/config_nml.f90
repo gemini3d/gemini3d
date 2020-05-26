@@ -56,10 +56,6 @@ cfg%potsolve = potsolve
 cfg%flagperiodic = flagperiodic
 cfg%flagoutput = flagoutput
 cfg%flagcap = flagcap
-cfg%flagdneu = flagdneu
-cfg%flagprecfile = flagprecfile
-cfg%flagE0file = flagE0file
-cfg%flagglow = flagglow
 
 rewind(u)
 read(u, nml=files, iostat=i)
@@ -77,7 +73,8 @@ cfg%indatsize = expanduser(indat_size)
 cfg%indatgrid = expanduser(indat_grid)
 cfg%indatfile = expanduser(indat_file)
 
-if (cfg%flagdneu == 1) then
+if (namelist_exists(u, "neutral_perturb", verbose)) then
+  cfg%flagdneu = 1
   read(u, nml=neutral_perturb, iostat=i)
   call check_nml_io(i, cfg%infile, "neutral_perturb", compiler_vendor)
   cfg%sourcedir = expanduser(source_dir)
@@ -93,8 +90,8 @@ else
   cfg%sourcedir = ""
 endif
 
-
-if (cfg%flagprecfile == 1) then
+if (namelist_exists(u, "precip", verbose)) then
+  cfg%flagprecfile = 1
   read(u, nml=precip, iostat=i)
   call check_nml_io(i, cfg%infile, "precip", compiler_vendor)
   cfg%precdir = expanduser(prec_dir)
@@ -104,7 +101,8 @@ else
   cfg%precdir = ""
 endif
 
-if (cfg%flagE0file == 1) then
+if (namelist_exists(u, "efield", verbose)) then
+  cfg%flagE0file = 1
   read(u, nml=efield, iostat=i)
   call check_nml_io(i, cfg%infile, "efield", compiler_vendor)
   cfg%E0dir = expanduser(E0_dir)
@@ -114,7 +112,8 @@ else
   cfg%E0dir = ""
 endif
 
-if (cfg%flagglow == 1) then
+if (namelist_exists(u, "glow", verbose)) then
+  cfg%flagglow = 1
   read(u, nml=glow, iostat=i)
   call check_nml_io(i, cfg%infile, "glow", compiler_vendor)
   cfg%dtglow = dtglow
