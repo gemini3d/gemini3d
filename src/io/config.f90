@@ -32,8 +32,9 @@ end type gemini_cfg
 
 
 interface
-module subroutine read_nml(cfg)
+module subroutine read_nml(cfg, verbose)
 class(gemini_cfg), intent(inout) :: cfg
+logical, intent(in), optional :: verbose
 end subroutine read_nml
 
 module subroutine read_ini(cfg)
@@ -46,9 +47,10 @@ character(:), allocatable :: compiler_vendor
 
 contains
 
-subroutine read_configfile(cfg)
+subroutine read_configfile(cfg, verbose)
 
 class(gemini_cfg), intent(inout) :: cfg
+logical, intent(in), optional :: verbose
 
 !! READS THE INPUT CONFIGURAITON FILE, ASSIGNS VARIABLES FOR FILENAMES, SIZES, ETC.
 integer :: i, realbits, lxp, lyp
@@ -60,7 +62,7 @@ compiler_vendor = get_compiler_vendor()
 !! NOTE: Namelist file groups must be read in order they appear in the Namelist file, or End of File error occurs
 
 if (cfg%infile(len(cfg%infile)-3 : len(cfg%infile)) == '.nml') then
-  call read_nml(cfg)
+  call read_nml(cfg, verbose)
 else
   call read_ini(cfg)
 endif

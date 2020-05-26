@@ -358,7 +358,7 @@ print '(2A,I6,A3,I6,A)', trim(argv), ' Process:  ', myid,' / ',lid-1, ' at ' // 
 call get_command_argument(1,argv)
 cfg%infile = trim(argv)
 
-call read_configfile(cfg)
+call read_configfile(cfg, verbose=.false.)
 
 !> PRINT SOME DIAGNOSIC INFO FROM ROOT
 if (myid==0) then
@@ -366,7 +366,9 @@ if (myid==0) then
   call assert_file_exists(cfg%indatgrid)
   call assert_file_exists(cfg%indatfile)
 
-  print '(A,I6,A1,I0.2,A1,I0.2)', cfg%infile // ' simulation year-month-day is:  ', cfg%ymd(1), '-', cfg%ymd(2),'-',cfg%ymd(3)
+  print *, '******************** input config ****************'
+  print '(A)', cfg%infile
+  print '(A51,I6,A1,I0.2,A1,I0.2)', ' simulation year-month-day is:  ', cfg%ymd(1), '-', cfg%ymd(2),'-',cfg%ymd(3)
   print '(A51,F10.3)', 'start time is:  ',cfg%UTsec0
   print '(A51,F10.3)', 'duration is:  ',cfg%tdur
   print '(A51,F10.3)', 'output every:  ',cfg%dtout
@@ -378,25 +380,35 @@ if (myid==0) then
     print *, 'Neutral disturbance cadence (s):  ',cfg%dtneu
     print *, 'Neutral grid resolution (m):  ',cfg%drhon,cfg%dzn
     print *, 'Neutral disturbance data files located in directory:  ',cfg%sourcedir
+  else
+    print *, "no neutral disturbance specified."
   end if
 
   if (cfg%flagprecfile==1) then
     call assert_directory_exists(cfg%precdir)
     print '(A,F10.3)', 'Precipitation file input cadence (s):  ',cfg%dtprec
     print *, 'Precipitation file input source directory:  ' // cfg%precdir
+  else
+    print *, "no precipitation specified"
   end if
 
   if(cfg%flagE0file==1) then
     call assert_directory_exists(cfg%E0dir)
     print *, 'Electric field file input cadence (s):  ',cfg%dtE0
     print *, 'Electric field file input source directory:  ' // cfg%E0dir
+  else
+    print *, "no Efield specified"
   end if
 
   if (cfg%flagglow==1) then
     print *, 'GLOW enabled for auroral emission calculations.'
     print *, 'GLOW electron transport calculation cadence (s): ', cfg%dtglow
     print *, 'GLOW auroral emission output cadence (s): ', cfg%dtglowout
+  else
+    print *, "GLOW disabled"
   end if
+
+  print *,  '**************** end input config ***************'
 end if
 
 !! default values
@@ -429,6 +441,7 @@ end do
 
 call get_command_argument(2,argv)
 cfg%outdir = trim(argv)
+
 
 end subroutine initial_config
 
