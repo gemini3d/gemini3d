@@ -4,7 +4,8 @@ use, intrinsic:: iso_fortran_env, only: stderr=>error_unit
 
 implicit none (type, external)
 private
-public :: mkdir, copyfile, expanduser, home, get_suffix, filesep_swap, assert_directory_exists, assert_file_exists
+public :: mkdir, copyfile, expanduser, home, get_suffix, filesep_swap, &
+  assert_directory_exists, directory_exists, assert_file_exists
 
 interface  ! pathlib_{unix,windows}.f90
 module integer function copyfile(source, dest) result(istat)
@@ -30,18 +31,23 @@ end function get_suffix
 
 subroutine assert_directory_exists(path)
 !! throw error if directory does not exist
-!! this accomodates non-Fortran 2018 error stop with variable character
 character(*), intent(in) :: path
-logical :: exists
 
-@dir_exist@
-
-if (exists) return
+if (directory_exists(path)) return
 
 write(stderr,*) path // ' directory does not exist'
 error stop
 
 end subroutine assert_directory_exists
+
+
+logical function directory_exists(path) result(exists)
+!! check if directory exists, handling Intel compiler-specific behavior
+character(*), intent(in) :: path
+
+@dir_exist@
+
+end function directory_exists
 
 
 subroutine assert_file_exists(path)

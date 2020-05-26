@@ -29,6 +29,16 @@ if(.not.exists) then
   ierr = copyfile(cfg%indatgrid, cfg%outdir//'/inputs/')
   ierr = copyfile(cfg%indatfile, cfg%outdir//'/inputs/')
 endif
+!! keep these copyfile() to allow running Gemini from command-line without Python / Matlab scripts
+
+!> NOTE: if desired to copy Efield inputs. This would be a lot of files and disk space in general.
+! if(cfg%flagE0file == 1) then
+!   inquire(file=cfg%E0dir//'/simgrid.h5', exist=exists)
+!   if(.not.exists) then
+!
+!   endif
+! endif
+
 
 call gitlog(cfg%outdir // '/gitrev.log')
 
