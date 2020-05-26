@@ -10,18 +10,17 @@ import typing as T
 import sys
 import os
 
-from compile_prereqs_gcc import get_cpu_count, mumps, hdf5, netcdf_c, netcdf_fortran
+from compile_prereqs_gcc import mumps, hdf5, netcdf_c, netcdf_fortran
 
 # ========= user parameters ======================
 BUILDDIR = "build"
-NJOBS = get_cpu_count()
 # ========= end of user parameters ================
 
 nice = ["nice"] if sys.platform == "linux" else []
 
 
 def get_compilers() -> T.Mapping[str, str]:
-    """ get paths to Intel compilers """
+    """ get paths to compilers """
     env = os.environ
 
     fc_name = "ifort"
@@ -53,14 +52,21 @@ def get_compilers() -> T.Mapping[str, str]:
 
 if __name__ == "__main__":
     p = ArgumentParser()
-    p.add_argument("libs", help="libraries to compile", choices=["netcdf", "hdf5", "mumps"], nargs="+")
-    p.add_argument("-prefix", help="toplevel path to install libraries under", default="~/lib_intel")
+    p.add_argument(
+        "libs", help="libraries to compile", choices=["netcdf", "hdf5", "mumps"], nargs="+"
+    )
+    p.add_argument(
+        "-prefix", help="toplevel path to install libraries under", default="~/lib_intel"
+    )
     p.add_argument("-workdir", help="toplevel path to where you keep code repos", default="~/code")
     p.add_argument("-wipe", help="wipe before completely recompiling libs", action="store_true")
     p.add_argument("-buildsys", help="build system (meson or cmake)", default="cmake")
     P = p.parse_args()
 
-    dirs = {"prefix": Path(P.prefix).expanduser().resolve(), "workdir": Path(P.workdir).expanduser().resolve()}
+    dirs = {
+        "prefix": Path(P.prefix).expanduser().resolve(),
+        "workdir": Path(P.workdir).expanduser().resolve(),
+    }
 
     env = get_compilers()
     if "hdf5" in P.libs:
