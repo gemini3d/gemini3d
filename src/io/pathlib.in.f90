@@ -16,12 +16,6 @@ character(*), intent(in) :: path
 end function mkdir
 end interface
 
-interface ! path_exists*.f90
-module subroutine assert_directory_exists(path)
-character(*), intent(in) :: path
-end subroutine assert_directory_exists
-end interface
-
 contains
 
 pure function get_suffix(filename)
@@ -32,6 +26,22 @@ character(:), allocatable :: get_suffix
 get_suffix = filename(index(filename, '.', back=.true.) : len(filename))
 
 end function get_suffix
+
+
+subroutine assert_directory_exists(path)
+!! throw error if directory does not exist
+!! this accomodates non-Fortran 2018 error stop with variable character
+character(*), intent(in) :: path
+logical :: exists
+
+@dir_exist@
+
+if (exists) return
+
+write(stderr,*) path // ' directory does not exist'
+error stop
+
+end subroutine assert_directory_exists
 
 
 subroutine assert_file_exists(path)

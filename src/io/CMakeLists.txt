@@ -4,17 +4,20 @@ add_library(sanity_check OBJECT sanity_check.f90)
 target_link_libraries(sanity_check PRIVATE const)
 
 # --- pathlib
-add_library(pathlib OBJECT pathlib.f90)
+if(CMAKE_Fortran_COMPILER_ID STREQUAL Intel)
+  set(dir_exist "inquire(directory=path, exist=exists)")
+else()
+  set(dir_exist "inquire(file=path, exist=exists)")
+endif()
+configure_file(pathlib.in.f90 pathlib.f90)
+
+add_library(pathlib OBJECT ${CMAKE_CURRENT_BINARY_DIR}/pathlib.f90)
 if(WIN32)
   target_sources(pathlib PRIVATE pathlib_windows.f90)
 else()
   target_sources(pathlib PRIVATE pathlib_unix.f90)
 endif()
-if(CMAKE_Fortran_COMPILER_ID STREQUAL Intel)
-  target_sources(pathlib PRIVATE path_exists_intel.f90)
-else()
-  target_sources(pathlib PRIVATE path_exists.f90)
-endif()
+
 
 # --- config
 add_library(config OBJECT config.f90 config_nml.f90 config_ini.f90)
