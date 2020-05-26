@@ -7,7 +7,7 @@ use phys_consts, only : wp
 
 implicit none (type, external)
 private
-public :: read_configfile, gemini_cfg
+public :: read_configfile, gemini_cfg, get_compiler_vendor
 
 type :: gemini_cfg
 
@@ -43,7 +43,7 @@ end subroutine read_ini
 end interface
 
 
-character(:), allocatable :: compiler_vendor
+
 
 contains
 
@@ -55,8 +55,6 @@ logical, intent(in), optional :: verbose
 !! READS THE INPUT CONFIGURAITON FILE, ASSIGNS VARIABLES FOR FILENAMES, SIZES, ETC.
 integer :: i, realbits, lxp, lyp
 real(wp) :: NaN, glat, glon, xdist, ydist, alt_min, alt_max, alt_scale(4), Bincl, nmf, nme
-
-compiler_vendor = get_compiler_vendor()
 
 !> READ CONFIG FILE FOR THIS SIMULATION
 !! NOTE: Namelist file groups must be read in order they appear in the Namelist file, or End of File error occurs
@@ -85,6 +83,8 @@ do j = 1,size(vendors)
     exit
   endif
 enddo
+
+if(vendor=="GCC") vendor = "GNU"
 
 if(allocated(vendor)) return
 

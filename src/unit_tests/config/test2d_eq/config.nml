@@ -10,13 +10,7 @@ Teinf = 1500.0                ! Teinf:  exospheric electron temperature
 
 &flags
 potsolve = 0      ! solve electrodynamics:   0 - no; 1 - electrostatic; 2 - inductive
-flagperiodic = 0
 flagoutput = 1
-flagcap = 0
-flagdneu = 0
-flagprecfile = 0
-flagE0file = 0
-flagglow = 0
 /
 
 &files

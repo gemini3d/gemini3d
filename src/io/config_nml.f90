@@ -27,6 +27,7 @@ character(4) :: file_format=""  !< need to initialize blank or random invisible 
 real(wp) :: dtE0=0
 integer :: flagdneu, flagprecfile, flagE0file, flagglow !< FIXME: these four parameters are ignored, kept temporarily
 real(wp) :: dtglow=0, dtglowout=0
+character(:), allocatable :: compiler_vendor
 
 namelist /base/ ymd, UTsec0, tdur, dtout, activ, tcfl, Teinf
 namelist /files/ file_format, indat_size, indat_grid, indat_file
@@ -36,6 +37,9 @@ namelist /neutral_perturb/ interptype, sourcemlat, sourcemlon, dtneu, dxn, drhon
 namelist /precip/ dtprec, prec_dir
 namelist /efield/ dtE0, E0_dir
 namelist /glow/ dtglow, dtglowout
+
+
+compiler_vendor = get_compiler_vendor()
 
 open(newunit=u, file=cfg%infile, status='old', action='read')
 
@@ -194,7 +198,7 @@ if (present(vendor)) then
     case (17,18,624,625,626,627,628,680,750,759)
       msg = "namelist file format problem"
     end select
-  case ("GCC")
+  case ("GCC", "GNU")
     select case (i)
     case (5010)
       msg = "mismatch between variable names in namelist and Fortran code, or problem in variable specification in file"

@@ -37,6 +37,11 @@ set_tests_properties(unit:config PROPERTIES
 REQUIRED_FILES ${_test_file}
 TIMEOUT 10)
 
+add_executable(test_compiler_vendor test_compiler_vendor.f90)
+target_link_libraries(test_compiler_vendor config pathlib)
+add_test(NAME unit:compiler_vendor COMMAND $<TARGET_FILE:test_compiler_vendor>)
+set_tests_properties(unit:compiler_vendor PROPERTIES PASS_REGULAR_EXPRESSION ${CMAKE_Fortran_COMPILER_ID})
+
 # --- io
 if(MPI_OK)
   add_library(io OBJECT io.f90 output.f90
