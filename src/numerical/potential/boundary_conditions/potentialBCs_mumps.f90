@@ -167,7 +167,7 @@ if(t + dt / 2._wp >= tnext) then    !need to load a new file
 
   !> GRID INFORMATION EXISTS AT THIS POINT SO START READING IN PRECIP DATA
   !> read in the data from file
-  if (debug) print *,'tprev,tnow,tnext:  ',tprev,t+dt/2d0,tnext
+  if (debug) print *,'potentialBCs_mumps.f90:potentialBCs2D_fileinput: tprev,tnow,tnext:  ',tprev,t+dt/2d0,tnext
   ymdtmp=ymdnext
   UTsectmp=UTsecnext
   call dateinc(dtE0,ymdtmp,UTsectmp)

@@ -148,7 +148,7 @@ if(t+dt / 2._wp>=tnext) then    !need to load a new file
   !GRID INFORMATION EXISTS AT THIS POINT SO START READING IN PRECIP DATA
   if (myid==0) then    !only root reads file data
     !read in the data from file
-    if(debug) print *, 'tprev,tnow,tnext:  ',tprev,t+dt / 2._wp,tnext
+    if(debug) print *, 'precipBCs_mod.f90:precipBCs_fileinput:tprev,tnow,tnext:  ',tprev,t+dt / 2._wp,tnext
     ymdtmp=ymdnext
     UTsectmp=UTsecnext
     call dateinc(dtprec,ymdtmp,UTsectmp)    !get the date for "next" params
@@ -158,10 +158,10 @@ if(t+dt / 2._wp>=tnext) then    !need to load a new file
     if (debug) print *, 'Min/max values for Qp:  ',minval(Qp),maxval(Qp)
     if (debug) print *, 'Min/max values for E0p:  ',minval(E0p),maxval(E0p)
 
-    if(.not. all(ieee_is_finite(Qp))) error stop 'Qp must be finite'
-    if(any(Qp < 0)) error stop 'Qp must be non-negative'
-    if(.not. all(ieee_is_finite(E0p))) error stop 'E0p must be finite'
-    if(any(E0p < 0)) error stop 'E0p must be non-negative'
+    if(.not. all(ieee_is_finite(Qp))) error stop 'precipBCs_mod.f90:precipBCs_fileinput: Qp must be finite'
+    if(any(Qp < 0)) error stop 'precipBCs_mod.f90:precipBCs_fileinput: Qp must be non-negative'
+    if(.not. all(ieee_is_finite(E0p))) error stop 'precipBCs_mod.f90:precipBCs_fileinput: E0p must be finite'
+    if(any(E0p < 0)) error stop 'precipBCs_mod.f90:precipBCs_fileinput: E0p must be non-negative'
 
     !send a full copy of the data to all of the workers
     do iid=1,lid-1

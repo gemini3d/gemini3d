@@ -76,8 +76,11 @@ real(wp) :: tstart,tfin
 
 !> so that random values (including NaN) don't show up in Ghost cells
 nsall = 0
+ns = 0
 vs1all= 0
+vs1 = 0
 Tsall = 0
+Ts = 0
 
 !> SYSTEM SIZES
 lx1=size(ns,1)-4
@@ -121,7 +124,6 @@ if (flagswap==1) then
   !! permute the dimensions so that 2D runs are parallelized
   end block
 else
-  print *,'plasma_input_ncdf:input_root_mpi_nc4: read ns noswap'
   call h5%read('ns', nsall(1:lx1,1:lx2all,1:lx3all,1:lsp))
   call h5%read('vsx1', vs1all(1:lx1,1:lx2all,1:lx3all,1:lsp))
   call h5%read('Ts', Tsall(1:lx1,1:lx2all,1:lx3all,1:lsp))

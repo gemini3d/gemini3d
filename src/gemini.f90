@@ -173,7 +173,7 @@ tglowout = t
 
 do while (t < cfg%tdur)
   !! TIME STEP CALCULATION
-  dtprev=dt
+  dtprev = dt
   call dt_comm(t,tout,tglowout, cfg%flagglow,cfg%tcfl,ns,Ts,vs1,vs2,vs3,B1,B2,B3,x,cfg%potsolve,dt)
   if (it>1) then
     if(dt/dtprev > dtscale) then
@@ -241,10 +241,11 @@ do while (t < cfg%tdur)
   endif
 
   !> Sanity check key variables before advancing
-  if(myid==0) call check_finite_output(t, myid, vs2,vs3,ns,vs1,Ts,Phiall,J1,J2,J3)
+  if (myid==0) call check_finite_output(t, myid, vs2,vs3,ns,vs1,Ts,Phiall,J1,J2,J3)
 
   !> NOW OUR SOLUTION IS FULLY UPDATED SO UPDATE TIME VARIABLES TO MATCH...
-  it=it+1; t=t+dt;
+  it = it + 1
+  t = t + dt
   if (myid==0 .and. debug) print *, 'Moving on to time step (in sec):  ',t,'; end time of simulation:  ',cfg%tdur
   call dateinc(dt,cfg%ymd,UTsec)
 

@@ -12,12 +12,12 @@ module procedure create_outdir
 
 integer :: ierr, u, realbits
 logical :: porcelain, exists
-character(:), allocatable :: input_nml, output_dir, branch, rev, compiler, exe
+character(:), allocatable :: input_nml, output_dir, branch, rev, compiler, compiler_flags, exe
 character(256) :: buf
 
 namelist /files/ input_nml, output_dir,realbits
 namelist /git/ branch, rev, porcelain
-namelist /system/ compiler, exe
+namelist /system/ compiler, compiler_flags, exe
 
 !> MAKE A COPY OF THE INPUT DATA IN THE OUTPUT DIRECTORY
 ierr = mkdir(cfg%outdir//'/inputs')
@@ -29,14 +29,22 @@ if(.not.exists) then
   ierr = copyfile(cfg%indatgrid, cfg%outdir//'/inputs/')
   ierr = copyfile(cfg%indatfile, cfg%outdir//'/inputs/')
 endif
+!! keep these copyfile() to allow running Gemini from command-line without Python / Matlab scripts
+
+!> NOTE: if desired to copy Efield inputs. This would be a lot of files and disk space in general.
+! if(cfg%flagE0file == 1) then
+!   inquire(file=cfg%E0dir//'/simgrid.h5', exist=exists)
+!   if(.not.exists) then
+!
+!   endif
+! endif
+
 
 call gitlog(cfg%outdir // '/gitrev.log')
 
-call compiler_log(cfg%outdir // '/compiler.log')
-
 !> Log to output.nml
 
-!> files group
+!> files namelist
 input_nml = cfg%infile
 output_dir = cfg%outdir
 !! character namelist variables can't be assumed length, but can be allocatable.
@@ -50,7 +58,7 @@ case default
   error stop 'unknown real precision'
 end select
 
-!> git group
+!> git namelist
 branch = ''
 rev = ''
 porcelain = .false.
@@ -65,8 +73,9 @@ if(ierr==0) then
   close(u)
 endif
 
-!> system group
+!> system namelist
 compiler = trim(compiler_version())
+compiler_flags = trim(compiler_options())
 call get_command_argument(0, buf)
 exe = trim(buf)
 

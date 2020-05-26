@@ -947,7 +947,7 @@ end if
 
 if (myid==0) then    !root
   !read in the data from file
-  if(debug) print *, 'tprev,tnow,tnext:  ',tprev,t+dt/2d0,tnext
+  if(debug) print *, 'neutral.f90:read_dneu2D: tprev,tnow,tnext:  ',tprev,t+dt/2,tnext
   ymdtmp=ymdnext
   UTsectmp=UTsecnext
   call dateinc(dtneu,ymdtmp,UTsectmp)    !get the date for "next" params

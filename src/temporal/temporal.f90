@@ -42,10 +42,12 @@ real(wp) :: dttmp
 call dt_calc(tcfl,ns,Ts,vs1,vs2,vs3,B1,B2,B3,x%dl1i,x%dl2i,x%dl3i,potsolve,cour1,cour2,cour3,dt)
 
 if (myid/=0) then
-  call mpi_send(dt,1,mpi_realprec,0,tag%dt,MPI_COMM_WORLD,ierr)   !send what I think dt should be
-  call mpi_recv(dt,1,mpi_realprec,0,tag%dt,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)   !receive roots decision
+  call mpi_send(dt,1,mpi_realprec,0,tag%dt,MPI_COMM_WORLD,ierr)
+  !! send what I think dt should be
+  call mpi_recv(dt,1,mpi_realprec,0,tag%dt,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+  !! receive roots decision
 else
-  !FIGURE OUT GLOBAL DT REQUIRED FOR STABILITY
+  !> FIGURE OUT GLOBAL DT REQUIRED FOR STABILITY
   do iid=1,lid-1
     call mpi_recv(dttmp,1,mpi_realprec,iid,tag%dt,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
 
@@ -64,10 +66,10 @@ else
     if (debug) print *, 'Slowing down for an output...'
   end if
 
-  !DON'T ALLOW ZERO DT
+  !! DON'T ALLOW ZERO DT
   dt = max(dt, 1e-6_wp)
 
-  !SEND GLOBAL DT TO ALL WORKERS
+  !! SEND GLOBAL DT TO ALL WORKERS
   do iid=1,lid-1
     call mpi_send(dt,1,mpi_realprec,iid,tag%dt,MPI_COMM_WORLD,ierr)
   end do
