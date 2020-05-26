@@ -121,7 +121,7 @@ def _write_var(f, name: str, dims: tuple, value: np.ndarray):
     g[:] = value
 
 
-def load_state(fn: Path) -> T.Dict[str, T.Any]:
+def read_state(fn: Path) -> T.Dict[str, T.Any]:
     """
     load initial condition data
     """
@@ -161,6 +161,20 @@ def write_state(time: datetime, ns: np.ndarray, vs: np.ndarray, Ts: np.ndarray, 
         _write_var(f, "ns", ("species", "x3", "x2", "x1"), ns.transpose(p4))
         _write_var(f, "vsx1", ("species", "x3", "x2", "x1"), vs.transpose(p4))
         _write_var(f, "Ts", ("species", "x3", "x2", "x1"), Ts.transpose(p4))
+
+
+def read_Efield(fn: Path) -> T.Dict[str, T.Any]:
+    """
+    load electric field
+    """
+    raise NotImplementedError("TODO: NetCDF4")
+
+
+def read_precip(fn: Path, times: T.Sequence[datetime]) -> T.Dict[str, T.Any]:
+    """
+    load precipitation
+    """
+    raise NotImplementedError("TODO: NetCDF4")
 
 
 def write_Efield(outdir: Path, E: T.Dict[str, np.ndarray]):

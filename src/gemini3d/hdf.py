@@ -36,7 +36,7 @@ def get_simsize(path: Path) -> T.Tuple[int, ...]:
     return lxs
 
 
-def load_state(fn: Path) -> T.Dict[str, T.Any]:
+def read_state(fn: Path) -> T.Dict[str, T.Any]:
     """
     load initial condition data
     """
@@ -218,22 +218,19 @@ def write_grid(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]):
                 h[f"/{k}"] = xg[k].astype(np.float32)
 
 
-def load_Efield(fn: Path) -> T.Dict[str, T.Any]:
+def read_Efield(fn: Path) -> T.Dict[str, T.Any]:
     """
     load electric field
     """
 
-    E: T.Dict[str, np.ndarray] = {}
-
-    sizefn = fn.parent / "simsize.h5"  # NOT the whole sim simsize.dat
-    with h5py.File(sizefn, "r") as f:
-        E["llon"] = f["/llon"][()]
-        E["llat"] = f["/llat"][()]
+    # sizefn = fn.parent / "simsize.h5"  # NOT the whole sim simsize.dat
+    # with h5py.File(sizefn, "r") as f:
+    #     E["llon"] = f["/llon"][()]
+    #     E["llat"] = f["/llat"][()]
 
     gridfn = fn.parent / "simgrid.h5"  # NOT the whole sim simgrid.dat
     with h5py.File(gridfn, "r") as f:
-        E["mlon"] = f["/mlon"][:]
-        E["mlat"] = f["/mlat"][:]
+        E = {"mlon": f["/mlon"][:], "mlat": f["/mlat"][:]}
 
     with h5py.File(fn, "r") as f:
         E["flagdirich"] = f["flagdirich"]
@@ -284,6 +281,28 @@ def write_Efield(outdir: Path, E: T.Dict[str, np.ndarray]):
                 )
             for k in ("Vminx2ist", "Vmaxx2ist", "Vminx3ist", "Vmaxx3ist"):
                 f[f"/{k}"] = E[k][i, :].astype(np.float32)
+
+
+def read_precip(path: Path, times: T.Sequence[datetime]) -> T.Dict[str, T.Any]:
+
+    # with h5py.File(path / "simsize.h5", "r") as f:
+    #     dat["llon"] = f["/llon"][()]
+    #     dat["llat"] = f["/llat"][()]
+
+    with h5py.File(path / "simgrid.h5", "r") as f:
+        dat = {"mlon": f["/mlon"][:], "mlat": f["/mlat"][:]}
+
+    dat["Q"] = []
+    dat["E0"] = []
+
+    for i, t in enumerate(times):
+        fn = path / (datetime2ymd_hourdec(t) + ".h5")
+
+        with h5py.File(fn, "r") as f:
+            for k in ("Q", "E0"):
+                dat[k].append(f[f"/{k}p"][:])
+
+    return dat
 
 
 def write_precip(outdir: Path, precip: T.Dict[str, T.Any]):

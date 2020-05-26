@@ -8,8 +8,15 @@ import sys
 from datetime import datetime
 import typing as T
 
-from .readdata import read_config, loadframe, datetime_range
-from .base import load_state
+from .readdata import (
+    read_config,
+    loadframe,
+    datetime_range,
+    read_precip,
+    read_Efield,
+    read_state,
+    get_frame_filename,
+)
 
 try:
     from .plotdiff import plotdiff
@@ -52,36 +59,84 @@ def compare_all(
 
     output_errs = 0
     if not only or only == "out":
-        output_errs = compare_output(outdir, refdir, tol, times, doplot, file_format)
+        output_errs = compare_output(outdir, refdir, tol, times, file_format, doplot)
 
     input_errs = 0
     if not only or only == "in":
-        input_errs = compare_input(outdir, refdir, times, doplot)
+        input_errs = compare_input(outdir, refdir, times, file_format, doplot)
 
     return output_errs, input_errs
 
 
 def compare_input(
-    outdir: Path, refdir: Path, times: T.Sequence[datetime], doplot: bool = False,
+    outdir: Path,
+    refdir: Path,
+    times: T.Sequence[datetime],
+    file_format: str,
+    doplot: bool = False,
 ) -> int:
 
     ref_params = read_config(refdir / "inputs")
-    ref = load_state(ref_params["indat_file"])
+    ref_indir = refdir / ref_params["indat_file"].parts[-2]
+    ref = read_state(ref_indir / ref_params["indat_file"].name)
 
     new_params = read_config(outdir / "inputs")
-    new = load_state(new_params["indat_file"])
+    new_indir = outdir / new_params["indat_file"].parts[-2]
+    new = read_state(new_indir / new_params["indat_file"].name)
+
+    if not file_format:
+        file_format = new_params["indat_file"].suffix
 
     errs = 0
+    # %% initial conditions
     for k in ref.keys():
         b = ref[k]
         a = new[k]
 
         assert a.shape == b.shape, f"{k}: ref shape {b.shape} does not match data shape {a.shape}"
+
         if not np.allclose(a, b):
             errs += 1
             logging.error(f"{k}  {abs(a - b).max().item():.3e}")
             if doplot and plotdiff is not None:
-                plotdiff(a, b, k, None, outdir, refdir)
+                plotdiff(a, b, k, times[0], outdir, refdir)
+
+    # %% precipitation
+    ref = read_precip(ref_indir / ref_params["precdir"].name, times, file_format)
+    new = read_precip(new_indir / new_params["precdir"].name, times, file_format)
+    for k in ref.keys():
+        b = ref[k]
+        a = new[k]
+
+        if isinstance(b, np.ndarray):
+            assert (
+                a.shape == b.shape
+            ), f"{k}: ref shape {b.shape} does not match data shape {a.shape}"
+        elif isinstance(b, list):
+            assert len(a) == len(b), f"{k}: ref shape {len(b)} does not match data shape {len(a)}"
+
+        if not np.allclose(a, b):
+            errs += 1
+            logging.error(f"{k}  {abs(a - b).max().item():.3e}")
+            if doplot and plotdiff is not None:
+                plotdiff(a, b, k, times[0], outdir, refdir)
+
+    # %% Efield
+    for t in times:
+        ref = read_Efield(get_frame_filename(ref_indir / ref_params["E0dir"].name, t))
+        new = read_Efield(get_frame_filename(new_indir / new_params["E0dir"].name, t))
+        for k in ("Exit", "Eyit", "Vminx1it", "Vmaxx1it"):
+            b = ref[k][1]
+            a = new[k][1]
+
+            assert (
+                a.shape == b.shape
+            ), f"{k}: ref shape {b.shape} does not match data shape {a.shape}"
+            if not np.allclose(a, b):
+                errs += 1
+                logging.error(f"{k}  {abs(a - b).max().item():.3e}")
+                if doplot and plotdiff is not None:
+                    plotdiff(a, b, k, t, outdir, refdir)
 
     return errs
 
@@ -91,8 +146,8 @@ def compare_output(
     refdir: Path,
     tol: T.Dict[str, float],
     times: T.Sequence[datetime],
-    doplot: bool = False,
     file_format: str = None,
+    doplot: bool = False,
 ) -> int:
     """ compare simulation outputs
     """

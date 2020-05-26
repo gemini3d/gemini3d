@@ -127,7 +127,7 @@ def readgrid3(fn: Path, lxs: T.Sequence[int]) -> T.Dict[str, np.ndarray]:
     return grid
 
 
-def load_Efield(fn: Path) -> T.Dict[str, T.Any]:
+def read_Efield(fn: Path) -> T.Dict[str, T.Any]:
     """
     load Efield_inputs files that contain input electric field in V/m
     """

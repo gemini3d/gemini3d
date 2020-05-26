@@ -9,6 +9,12 @@ from .utils import gitrev
 def plotdiff(A: np.ndarray, B: np.ndarray, name: str, time: datetime, outdir: Path, refdir: Path):
     A = A.squeeze()
     B = B.squeeze()
+
+    if A.ndim == 3:
+        if name == "ns" and A.shape[0] == 7:
+            A = A[-1, :, :]
+            B = B[-1, :, :]
+
     if A.ndim != 2 or B.ndim != 2:
         return None
 
@@ -28,10 +34,12 @@ def plotdiff(A: np.ndarray, B: np.ndarray, name: str, time: datetime, outdir: Pa
     fg.colorbar(hi, ax=axs[1])
     axs[1].set_title(str(refdir))
 
-    ttxt = f"{name}  {time.isoformat()}  Git: {gitrev()}"
+    tstr = time.isoformat()
+
+    ttxt = f"{name}  {tstr}  Git: {gitrev()}"
 
     fg.suptitle(ttxt)
 
-    fn = outdir / f"{name}-diff-{time.isoformat().replace(':','')}.png"
+    fn = outdir / f"{name}-diff-{tstr.replace(':','')}.png"
     print("writing", fn)
     fg.savefig(fn)

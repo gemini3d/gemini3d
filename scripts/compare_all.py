@@ -37,7 +37,7 @@ tol = {
 
 
 def main():
-    p = ArgumentParser()
+    p = ArgumentParser(description="Compare simulation file outputs and inputs")
     p.add_argument("outdir", help="directory to compare")
     p.add_argument("refdir", help="reference directory")
     p.add_argument("-p", "--plot", help="make plots of differences", action="store_true")
