@@ -17,23 +17,21 @@ real(wp) :: activ(3)
 real(wp) :: tcfl
 real(wp) :: Teinf
 integer :: potsolve, flagperiodic=0, flagoutput, flagcap=0
-integer :: flagdneu=0
 integer :: interptype
 real(wp) :: sourcemlat,sourcemlon
 real(wp) :: dtneu
 real(wp) :: dxn,drhon,dzn
-integer :: flagprecfile=0
 real(wp) :: dtprec=0
 character(256) :: indat_size, indat_grid, indat_file, source_dir, prec_dir, E0_dir
 character(4) :: file_format=""  !< need to initialize blank or random invisible fouls len_trim>0
-integer :: flagE0file=0
 real(wp) :: dtE0=0
-integer :: flagglow=0
+integer :: flagdneu, flagprecfile, flagE0file, flagglow !< FIXME: these four parameters are ignored, kept temporarily
 real(wp) :: dtglow=0, dtglowout=0
 
 namelist /base/ ymd, UTsec0, tdur, dtout, activ, tcfl, Teinf
 namelist /files/ file_format, indat_size, indat_grid, indat_file
-namelist /flags/ potsolve, flagperiodic, flagoutput, flagcap, flagdneu, flagprecfile, flagE0file, flagglow
+namelist /flags/ potsolve, flagperiodic, flagoutput, flagcap, &
+   flagdneu, flagprecfile, flagE0file, flagglow !< FIXME: these last four parameters are ignored, kept temporarily for compatibility, should be removed
 namelist /neutral_perturb/ interptype, sourcemlat, sourcemlon, dtneu, dxn, drhon, dzn, source_dir
 namelist /precip/ dtprec, prec_dir
 namelist /efield/ dtE0, E0_dir
@@ -125,10 +123,43 @@ else
   cfg%flagglow = 0
 endif
 
-
 close(u)
 
 end procedure read_nml
+
+
+logical function namelist_exists(u, nml, verbose)
+!! determines if Namelist exists in file
+
+character(*), intent(in) :: nml
+integer, intent(in) :: u
+logical, intent(in), optional :: verbose
+
+logical :: debug
+integer :: i
+character(256) :: line  !< arbitrary length
+
+debug = .false.
+if(present(verbose)) debug = verbose
+
+namelist_exists = .false.
+
+rewind(u)
+
+do
+  read(u, '(A)', iostat=i) line
+  if(i/=0) exit
+  if (line(1:1) /= '&') cycle
+  if (line(2:) == nml) then
+    namelist_exists = .true.
+    exit
+  end if
+end do
+rewind(u)
+
+if (debug) print *, 'namelist ', nml, namelist_exists
+
+end function namelist_exists
 
 
 subroutine check_nml_io(i, filename, namelist, vendor)
