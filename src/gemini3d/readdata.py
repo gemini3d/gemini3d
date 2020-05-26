@@ -154,15 +154,15 @@ def read_Efield(fn: Path) -> T.Dict[str, T.Any]:
 
     fn = Path(fn).expanduser().resolve(strict=True)
 
-    if fn.suffix == "h5":
+    if fn.suffix == ".h5":
         if hdf is None:
             raise ModuleNotFoundError("pip install h5py")
         E = hdf.read_Efield(fn)
-    elif fn.suffix == "nc":
+    elif fn.suffix == ".nc":
         if nc4 is None:
             raise ModuleNotFoundError("pip install netcdf4")
         E = nc4.read_Efield(fn)
-    elif fn.suffix == "dat":
+    elif fn.suffix == ".dat":
         E = raw.read_Efield(fn)
     else:
         raise ValueError(f"Unknown file type {fn}")
