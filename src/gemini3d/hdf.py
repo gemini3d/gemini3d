@@ -36,9 +36,19 @@ def get_simsize(path: Path) -> T.Tuple[int, ...]:
     return lxs
 
 
-def write_state(time: datetime, ns: np.ndarray, vs: np.ndarray, Ts: np.ndarray, out_dir: Path):
+def load_state(fn: Path) -> T.Dict[str, T.Any]:
     """
-     WRITE STATE VARIABLE DATA.
+    load initial condition data
+    """
+
+    with h5py.File(fn, "r") as f:
+        return {"ns": f["/ns"][:], "vs": f["/vsx1"][:], "Ts": f["/Ts"][:]}
+
+
+def write_state(time: datetime, ns: np.ndarray, vs: np.ndarray, Ts: np.ndarray, fn: Path):
+    """
+    write STATE VARIABLE initial conditions
+
     NOTE THAT WE don't write ANY OF THE ELECTRODYNAMIC
     VARIABLES SINCE THEY ARE NOT NEEDED TO START THINGS
     UP IN THE FORTRAN CODE.
@@ -54,7 +64,6 @@ def write_state(time: datetime, ns: np.ndarray, vs: np.ndarray, Ts: np.ndarray, 
     need the .transpose() for h5py
     """
 
-    fn = out_dir / "inputs/initial_conditions.h5"
     print("write", fn)
 
     with h5py.File(fn, "w") as f:

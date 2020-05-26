@@ -121,7 +121,16 @@ def _write_var(f, name: str, dims: tuple, value: np.ndarray):
     g[:] = value
 
 
-def write_state(time: datetime, ns: np.ndarray, vs: np.ndarray, Ts: np.ndarray, out_dir: Path):
+def load_state(fn: Path) -> T.Dict[str, T.Any]:
+    """
+    load initial condition data
+    """
+
+    with Dataset(fn, "r") as f:
+        return {"ns": f["/ns"][:], "vs": f["/vsx1"][:], "Ts": f["/Ts"][:]}
+
+
+def write_state(time: datetime, ns: np.ndarray, vs: np.ndarray, Ts: np.ndarray, fn: Path):
     """
      WRITE STATE VARIABLE DATA.
     NOTE THAT WE don't write ANY OF THE ELECTRODYNAMIC
@@ -132,7 +141,6 @@ def write_state(time: datetime, ns: np.ndarray, vs: np.ndarray, Ts: np.ndarray, 
     I.E. THEY SHOULD NOT INCLUDE GHOST CELLS
     """
 
-    fn = out_dir / "inputs/initial_conditions.nc"
     print("write_state:", fn)
 
     with Dataset(fn, "w") as f:

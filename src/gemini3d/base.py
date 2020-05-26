@@ -10,6 +10,7 @@ try:
         get_simsize as get_simsize_h5,
         write_grid as write_grid_h5,
         write_state as write_state_h5,
+        load_state as load_state_h5,
         write_Efield as write_Efield_h5,
         write_precip as write_precip_h5,
     )
@@ -20,6 +21,7 @@ try:
         get_simsize as get_simsize_nc,
         write_grid as write_grid_nc,
         write_state as write_state_nc,
+        load_state as load_state_nc,
         write_Efield as write_Efield_nc,
         write_precip as write_precip_nc,
     )
@@ -134,7 +136,7 @@ def write_precip(precip: T.Dict[str, T.Any], outdir: Path, file_format: str):
 
 
 def write_state(
-    time: datetime, ns: np.ndarray, vs: np.ndarray, Ts: np.ndarray, out_dir: Path, file_format: str
+    time: datetime, ns: np.ndarray, vs: np.ndarray, Ts: np.ndarray, out_file: Path,
 ):
     """
      WRITE STATE VARIABLE DATA.
@@ -146,13 +148,36 @@ def write_state(
     I.E. THEY SHOULD NOT INCLUDE GHOST CELLS
     """
 
-    if file_format in ("hdf5", "h5"):
+    file_format = out_file.suffix
+
+    if file_format == ".h5":
         if write_grid_h5 is None:
             raise ImportError("pip install h5py")
-        write_state_h5(time, ns, vs, Ts, out_dir)
-    elif file_format in ("netcdf", "nc"):
+        write_state_h5(time, ns, vs, Ts, out_file)
+    elif file_format == ".nc":
         if write_grid_nc is None:
             raise ImportError("pip install netcdf4")
-        write_state_nc(time, ns, vs, Ts, out_dir)
+        write_state_nc(time, ns, vs, Ts, out_file)
     else:
         raise ValueError(f"unknown file format {file_format}")
+
+
+def load_state(file: Path,) -> T.Dict[str, T.Any]:
+    """
+    load inital condition data
+    """
+
+    file_format = file.suffix
+
+    if file_format == ".h5":
+        if write_grid_h5 is None:
+            raise ImportError("pip install h5py")
+        dat = load_state_h5(file)
+    elif file_format == ".nc":
+        if write_grid_nc is None:
+            raise ImportError("pip install netcdf4")
+        dat = load_state_nc(file)
+    else:
+        raise ValueError(f"unknown file format {file_format}")
+
+    return dat

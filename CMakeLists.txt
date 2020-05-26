@@ -47,6 +47,9 @@ option(openmp "MUMPS: use OpenMP" off)
 # on: debug, off: normal
 set(FETCHCONTENT_UPDATES_DISCONNECTED off)
 
+# this helps linters e.g. Visual Studio Intellicode work properly
+set(CMAKE_EXPORT_COMPILE_COMMANDS on)
+
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules/)
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/python.cmake)
