@@ -3,6 +3,7 @@ import os
 import logging
 import subprocess
 import shutil
+import sys
 from pathlib import Path
 
 from .mpi import get_mpi_count
@@ -24,7 +25,7 @@ def runner(pr: T.Dict[str, T.Any]) -> int:
             model_setup(p["nml"], pr["out_dir"])
             if not f.is_file():
                 raise FileNotFoundError(
-                    f"\ntried to initialize simulation but missing expected output file {f}"
+                    f"tried to initialize simulation but missing expected output file {f}"
                 )
             break
 
@@ -59,11 +60,15 @@ def runner(pr: T.Dict[str, T.Any]) -> int:
 
     # %% attempt dry run, but don't fail in case intended for HPC
     logging.info("Attempting Gemini dry run of first time step")
-    dryrun_ok = subprocess.run(cmd + ["-dryrun"], stdout=subprocess.DEVNULL).returncode == 0
-    if dryrun_ok:
+    proc = subprocess.run(
+        cmd + ["-dryrun", "-debug"], stdout=subprocess.PIPE, universal_newlines=True
+    )
+    if proc.returncode == 0:
         logging.info("OK: Gemini dry run")
     else:
+        print(proc.stdout, file=sys.stderr)
         logging.error("Gemini dry run failed.")
+        return -1
 
     batcher = hpc_batch_detect()
     if batcher:
@@ -71,13 +76,10 @@ def runner(pr: T.Dict[str, T.Any]) -> int:
         # hpc_submit_job(job_file)
         print("Please examine batch file", job_file, "and when ready submit the job as usual.")
         ret = 0
-    elif dryrun_ok:
+    else:
         print("\nBEGIN Gemini run with command:")
         print(" ".join(cmd), "\n")
         ret = subprocess.run(cmd).returncode
-    else:
-        ret = -1
-        logging.error("Did not run Gemini due to dry run failure")
 
     return ret
 

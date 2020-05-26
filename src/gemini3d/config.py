@@ -104,7 +104,6 @@ def read_namelist(fn: Path, namelist: str) -> T.Dict[str, T.Any]:
     """ read a namelist from an .nml file """
 
     raw: T.Dict[str, T.Sequence[str]] = {}
-
     nml_pat = re.compile(r"^\s*&(" + namelist + r")")
     end_pat = re.compile(r"^\s*/\s*$")
     val_pat = re.compile(r"^\s*(\w+)\s*=\s*['\"]?([^!'\"]*)['\"]?")
@@ -184,8 +183,14 @@ def parse_namelist(raw: T.Dict[str, T.Any], namelist: str) -> T.Dict[str, T.Any]
             "nme",
             "precip_latwidth",
             "precip_lonwidth",
+            "Qprecip",
+            "Qprecip_background",
+            "E0precip",
             "Etarg",
-            "Efield_fracwidth",
+            "Jtarg",
+            "Efield_latwidth",
+            "Efield_lonwidth",
+            # "Eflagdirich",  # future
         ):
             if k in raw:
                 P[k] = float(raw[k])

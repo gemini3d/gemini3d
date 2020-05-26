@@ -44,9 +44,10 @@ def particles_BCs(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]):
     pg["Q"] = np.empty((Nt, pg["llon"], pg["llat"]))
     pg["E0"] = np.empty((Nt, pg["llon"], pg["llat"]))
 
+    # NOTE: in future, E0 could be made time-dependent in config.nml as 1D array
     for i in range(i_on, i_off):
-        pg["Q"][i, :, :] = precip_gaussian2d(pg)
-        pg["E0"][i, :, :] = 5e3
+        pg["Q"][i, :, :] = precip_gaussian2d(pg, p["Qprecip"], p["Qprecip_background"])
+        pg["E0"][i, :, :] = p["E0precip"]
 
     # %% CONVERT THE ENERGY TO EV
     # E0it = max(E0it,0.100);
@@ -57,10 +58,7 @@ def particles_BCs(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]):
     # FORTRAN CODE IN CASE DIFFERENT GRIDS NEED TO BE TRIED.
     # THE EFIELD DATA DO NOT NEED TO BE SMOOTHED.
 
-    pg["precip_outdir"] = p["out_dir"] / "inputs/prec_inputs/"
-    pg["precip_outdir"].mkdir(parents=True, exist_ok=True)
-
-    write_precip(p, pg)
+    write_precip(pg, p["precdir"], p["format"])
 
 
 def precip_grid(xg: dict, p: dict, pg: dict) -> T.Dict[str, T.Any]:
@@ -80,18 +78,39 @@ def precip_grid(xg: dict, p: dict, pg: dict) -> T.Dict[str, T.Any]:
     pg["mlon"] = np.linspace(mlonmin - lonbuf, mlonmax + lonbuf, pg["llon"])
     # pg["MLON"], pg["MLAT"] = np.meshgrid(pg["mlon"], pg["mlat"])
 
-    # %% disturbance width
-    mlat_sigma = p["precip_latwidth"] * (mlatmax - mlatmin)
-    # to avoid divide by zero below
-    pg["mlat_sigma"] = max(mlat_sigma, 0.01)
-    pg["mlon_sigma"] = p["precip_lonwidth"] * (mlonmax - mlonmin)
+    # %% disturbance extents
+    # avoid divide by zero
+    if "precip_latwidth" in p:
+        pg["mlat_sigma"] = max(p["precip_latwidth"] * (mlatmax - mlatmin), 0.01)
+    if "precip_lonwidth" in p:
+        pg["mlon_sigma"] = p["precip_lonwidth"] * (mlonmax - mlonmin)
 
     return pg
 
 
-def precip_gaussian2d(pg: T.Dict[str, T.Any]) -> np.ndarray:
-    return (
-        10
-        * np.exp(-((pg["mlon"][:, None] - pg["mlon"].mean()) ** 2) / (2 * pg["mlon_sigma"] ** 2))
-        * np.exp(-((pg["mlat"][None, :] - pg["mlat"].mean()) ** 2) / (2 * pg["mlat_sigma"] ** 2))
-    )
+def precip_gaussian2d(pg: T.Dict[str, T.Any], Qpeak: float, Qbackground: float) -> np.ndarray:
+
+    if "mlon_sigma" in pg and "mlat_sigma" in pg:
+        Q = (
+            Qpeak
+            * np.exp(
+                -((pg["mlon"][:, None] - pg["mlon"].mean()) ** 2) / (2 * pg["mlon_sigma"] ** 2)
+            )
+            * np.exp(
+                -((pg["mlat"][None, :] - pg["mlat"].mean()) ** 2) / (2 * pg["mlat_sigma"] ** 2)
+            )
+        )
+    elif "mlon_sigma" in pg:
+        Q = Qpeak * np.exp(
+            -((pg["mlon"][:, None] - pg["mlon"].mean()) ** 2) / (2 * pg["mlon_sigma"] ** 2)
+        )
+    elif "mlat_sigma" in pg:
+        Q = Qpeak * np.exp(
+            -((pg["mlat"][None, :] - pg["mlat"].mean()) ** 2) / (2 * pg["mlat_sigma"] ** 2)
+        )
+    else:
+        raise LookupError("precipation must be defined in latitude, longitude or both")
+
+    Q[Q < Qbackground] = Qbackground
+
+    return Q

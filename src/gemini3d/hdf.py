@@ -36,9 +36,19 @@ def get_simsize(path: Path) -> T.Tuple[int, ...]:
     return lxs
 
 
-def write_state(time: datetime, ns: np.ndarray, vs: np.ndarray, Ts: np.ndarray, out_dir: Path):
+def read_state(fn: Path) -> T.Dict[str, T.Any]:
     """
-     WRITE STATE VARIABLE DATA.
+    load initial condition data
+    """
+
+    with h5py.File(fn, "r") as f:
+        return {"ns": f["/ns"][:], "vs": f["/vsx1"][:], "Ts": f["/Ts"][:]}
+
+
+def write_state(time: datetime, ns: np.ndarray, vs: np.ndarray, Ts: np.ndarray, fn: Path):
+    """
+    write STATE VARIABLE initial conditions
+
     NOTE THAT WE don't write ANY OF THE ELECTRODYNAMIC
     VARIABLES SINCE THEY ARE NOT NEEDED TO START THINGS
     UP IN THE FORTRAN CODE.
@@ -54,8 +64,7 @@ def write_state(time: datetime, ns: np.ndarray, vs: np.ndarray, Ts: np.ndarray, 
     need the .transpose() for h5py
     """
 
-    fn = out_dir / "inputs/initial_conditions.h5"
-    print("write", fn)
+    print("hdf:write_state:", fn)
 
     with h5py.File(fn, "w") as f:
         f["/ymd"] = [time.year, time.month, time.day]
@@ -123,14 +132,16 @@ def readgrid(fn: Path) -> T.Dict[str, np.ndarray]:
     return grid
 
 
-def write_grid(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]):
+def write_grid(size_fn: Path, grid_fn: Path, xg: T.Dict[str, T.Any]):
     """ writes grid to disk
 
     Parameters
     ----------
 
-    p: dict
-        simulation parameters
+    size_fn: pathlib.Path
+        file to write
+    grid_fn: pathlib.Path
+        file to write
     xg: dict
         grid values
 
@@ -142,16 +153,12 @@ def write_grid(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]):
     need the .transpose() for h5py
     """
 
-    (p["out_dir"] / "inputs").mkdir(parents=True, exist_ok=True)
-
-    fn = p["out_dir"] / "inputs/simsize.h5"
-    print("write", fn)
-    with h5py.File(fn, "w") as h:
+    print("hdf:write_grid:", size_fn)
+    with h5py.File(size_fn, "w") as h:
         h["/lx"] = xg["lx"]
 
-    fn = p["out_dir"] / "inputs/simgrid.h5"
-    print("write", fn)
-    with h5py.File(fn, "w") as h:
+    print("hdf:write_grid:", grid_fn)
+    with h5py.File(grid_fn, "w") as h:
         for i in (1, 2, 3):
             for k in (
                 f"x{i}",
@@ -209,22 +216,19 @@ def write_grid(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]):
                 h[f"/{k}"] = xg[k].astype(np.float32)
 
 
-def load_Efield(fn: Path) -> T.Dict[str, T.Any]:
+def read_Efield(fn: Path) -> T.Dict[str, T.Any]:
     """
-    load Efield_inputs files that contain input electric field in V/m
+    load electric field
     """
 
-    E: T.Dict[str, np.ndarray] = {}
-
-    sizefn = fn.parent / "simsize.h5"  # NOT the whole sim simsize.dat
-    with h5py.File(sizefn, "r") as f:
-        E["llon"] = f["/llon"][()]
-        E["llat"] = f["/llat"][()]
+    # sizefn = fn.parent / "simsize.h5"  # NOT the whole sim simsize.dat
+    # with h5py.File(sizefn, "r") as f:
+    #     E["llon"] = f["/llon"][()]
+    #     E["llat"] = f["/llat"][()]
 
     gridfn = fn.parent / "simgrid.h5"  # NOT the whole sim simgrid.dat
     with h5py.File(gridfn, "r") as f:
-        E["mlon"] = f["/mlon"][:]
-        E["mlat"] = f["/mlat"][:]
+        E = {"mlon": f["/mlon"][:], "mlat": f["/mlat"][:]}
 
     with h5py.File(fn, "r") as f:
         E["flagdirich"] = f["flagdirich"]
@@ -238,13 +242,10 @@ def load_Efield(fn: Path) -> T.Dict[str, T.Any]:
     return E
 
 
-def write_Efield(p: T.Dict[str, T.Any], E: T.Dict[str, np.ndarray]):
+def write_Efield(outdir: Path, E: T.Dict[str, np.ndarray]):
     """
     write Efield to disk
     """
-
-    outdir = E["Efield_outdir"]
-    print("write E-field data to", outdir)
 
     with h5py.File(outdir / "simsize.h5", "w") as f:
         f["/llon"] = E["llon"]
@@ -259,7 +260,7 @@ def write_Efield(p: T.Dict[str, T.Any], E: T.Dict[str, np.ndarray]):
 
         # FOR EACH FRAME WRITE A BC TYPE AND THEN OUTPUT BACKGROUND AND BCs
         with h5py.File(fn, "w") as f:
-            f["/flagdirich"] = p["flagdirich"]
+            f["/flagdirich"] = E["flagdirich"][i].astype(np.int32)
             f["/time/ymd"] = [t.year, t.month, t.day]
             f["/time/UTsec"] = t.hour * 3600 + t.minute * 60 + t.second + t.microsecond / 1e6
 
@@ -277,10 +278,29 @@ def write_Efield(p: T.Dict[str, T.Any], E: T.Dict[str, np.ndarray]):
                 f[f"/{k}"] = E[k][i, :].astype(np.float32)
 
 
-def write_precip(precip: T.Dict[str, T.Any]):
+def read_precip(path: Path, times: T.Sequence[datetime]) -> T.Dict[str, T.Any]:
 
-    outdir = precip["precip_outdir"]
-    print("write precipitation data to", outdir)
+    # with h5py.File(path / "simsize.h5", "r") as f:
+    #     dat["llon"] = f["/llon"][()]
+    #     dat["llat"] = f["/llat"][()]
+
+    with h5py.File(path / "simgrid.h5", "r") as f:
+        dat = {"mlon": f["/mlon"][:], "mlat": f["/mlat"][:]}
+
+    dat["Q"] = []
+    dat["E0"] = []
+
+    for i, t in enumerate(times):
+        fn = path / (datetime2ymd_hourdec(t) + ".h5")
+
+        with h5py.File(fn, "r") as f:
+            for k in ("Q", "E0"):
+                dat[k].append(f[f"/{k}p"][:])
+
+    return dat
+
+
+def write_precip(outdir: Path, precip: T.Dict[str, T.Any]):
 
     with h5py.File(outdir / "simsize.h5", "w") as f:
         f["/llon"] = precip["llon"]

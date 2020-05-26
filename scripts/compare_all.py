@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
-Compare two directories of simulation outputs
+Compare two directories of simulation outputs AND inputs
 
 the absolute and relative tolerance account for slight IEEE-754 based differences,
 including non-associativity of floating-point arithmetic.
-these parameters are a bit arbitrary.
+these tolerances are a bit arbitrary.
 
 % per MZ Oct 17, 2018:
 % Ti,Te=1 K
@@ -17,8 +17,8 @@ these parameters are a bit arbitrary.
 % ne=1e7 m-3
 % vi,v2,v3=2 m/s
 % J1,J2,J3 = 1e-9
-
 """
+
 from argparse import ArgumentParser
 import gemini3d
 
@@ -37,10 +37,11 @@ tol = {
 
 
 def main():
-    p = ArgumentParser()
+    p = ArgumentParser(description="Compare simulation file outputs and inputs")
     p.add_argument("outdir", help="directory to compare")
     p.add_argument("refdir", help="reference directory")
     p.add_argument("-p", "--plot", help="make plots of differences", action="store_true")
+    p.add_argument("-only", help="only check in or out", choices=["in", "out"])
     p.add_argument(
         "-file_format",
         help="specify file format to read from output dir",
@@ -48,12 +49,16 @@ def main():
     )
     P = p.parse_args()
 
-    errs = gemini3d.compare_all(P.outdir, P.refdir, tol, P.plot, P.file_format)
+    out_errs, in_errs = gemini3d.compare_all(
+        P.outdir, P.refdir, tol, P.plot, P.file_format, P.only
+    )
 
-    if errs:
-        raise SystemExit(f"{errs} compare errors")
+    if out_errs or in_errs:
+        raise SystemExit(f"{out_errs} output errors, {in_errs} input errors")
     else:
-        print(f"OK: Gemini output comparison {P.outdir} {P.refdir}")
+        only = ("out", "in") if not P.only else P.only
+
+        print(f"OK: Gemini {only} comparison {P.outdir} {P.refdir}")
 
 
 if __name__ == "__main__":

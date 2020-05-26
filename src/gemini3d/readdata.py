@@ -5,7 +5,7 @@ https://docs.python.org/3/library/struct.html#struct-format-strings
 import numpy as np
 from pathlib import Path
 from datetime import datetime, timedelta
-import typing
+import typing as T
 
 from . import raw
 from .config import read_config
@@ -24,29 +24,30 @@ except ModuleNotFoundError:
 FILE_FORMATS = [".h5", ".nc", ".dat"]
 
 
-def readgrid(path: Path, file_format: str = None) -> typing.Dict[str, np.ndarray]:
-
-    path = Path(path).expanduser().resolve()
+def readgrid(path: Path, file_format: str = None) -> T.Dict[str, np.ndarray]:
 
     fn = get_grid_filename(path)
 
-    if fn.suffix == ".dat":
-        grid = raw.readgrid(fn)
-    elif fn.suffix == ".h5":
+    if not file_format:
+        file_format = fn.suffix[1:]
+
+    if file_format == "dat":
+        grid = raw.readgrid(fn.with_suffix(".dat"))
+    elif file_format == "h5":
         if hdf is None:
             raise ModuleNotFoundError("pip install h5py")
-        grid = hdf.readgrid(fn)
-    elif fn.suffix == ".nc":
+        grid = hdf.readgrid(fn.with_suffix(".h5"))
+    elif file_format == "nc":
         if nc4 is None:
             raise ModuleNotFoundError("pip install netcdf4")
-        grid = nc4.readgrid(fn)
+        grid = nc4.readgrid(fn.with_suffix(".nc"))
     else:
         raise ValueError(f"Unknown file type {fn}")
 
     return grid
 
 
-def readdata(fn: Path, file_format: str = None) -> typing.Dict[str, typing.Any]:
+def readdata(fn: Path, file_format: str = None) -> T.Dict[str, T.Any]:
     """
     knowing the filename for a simulation time step, read the data for that time step
 
@@ -87,7 +88,10 @@ def readdata(fn: Path, file_format: str = None) -> typing.Dict[str, typing.Any]:
     P = read_config(input_dir)
     P["lxs"] = get_simsize(input_dir)
 
-    if fn.suffix == ".dat":
+    if not file_format:
+        file_format = fn.suffix[1:]
+
+    if file_format == "dat":
         if P["flagoutput"] == 1:
             dat = raw.loadframe3d_curv(fn, P["lxs"])
         elif P["flagoutput"] == 2:
@@ -101,7 +105,7 @@ def readdata(fn: Path, file_format: str = None) -> typing.Dict[str, typing.Any]:
 
         if fn_Efield.is_file():
             dat.update(read_Efield(fn_Efield))
-    elif fn.suffix == ".h5":
+    elif file_format == "h5":
         if hdf is None:
             raise ModuleNotFoundError("pip install h5py")
 
@@ -115,7 +119,7 @@ def readdata(fn: Path, file_format: str = None) -> typing.Dict[str, typing.Any]:
         if fn_aurora.is_file():
             dat.update(hdf.loadglow_aurmap(fn_aurora))
             dat["wavelength"] = wavelength
-    elif fn.suffix == ".nc":
+    elif file_format == "nc":
         if nc4 is None:
             raise ModuleNotFoundError("pip install netcdf4")
 
@@ -135,7 +139,7 @@ def readdata(fn: Path, file_format: str = None) -> typing.Dict[str, typing.Any]:
     return dat
 
 
-def read_Efield(fn: Path) -> typing.Dict[str, typing.Any]:
+def read_Efield(fn: Path, file_format: str = None) -> T.Dict[str, T.Any]:
     """ load Efield data "Efield_inputs"
 
     Parameters
@@ -151,21 +155,77 @@ def read_Efield(fn: Path) -> typing.Dict[str, typing.Any]:
 
     fn = Path(fn).expanduser().resolve(strict=True)
 
-    if fn.suffix == ".dat":
-        E = raw.load_Efield(fn)
-    elif fn.suffix == ".h5":
+    if not file_format:
+        file_format = fn.suffix[1:]
+
+    if file_format == "h5":
         if hdf is None:
             raise ModuleNotFoundError("pip install h5py")
-        E = hdf.load_Efield(fn)
-    elif fn.suffix == ".nc":
-        raise NotImplementedError("TODO: NetCDF4")
+        E = hdf.read_Efield(fn)
+    elif file_format == "nc":
+        if nc4 is None:
+            raise ModuleNotFoundError("pip install netcdf4")
+        E = nc4.read_Efield(fn)
+    elif file_format == "dat":
+        E = raw.read_Efield(fn)
     else:
         raise ValueError(f"Unknown file type {fn}")
 
     return E
 
 
-def datetime_range(start: datetime, stop: datetime, step: timedelta) -> typing.List[datetime]:
+def read_precip(path: Path, times: T.Sequence[datetime], file_format: str) -> T.Dict[str, T.Any]:
+    """ load precipitation to disk
+
+    Parameters
+    ----------
+    path: pathlib.Path
+        directory to read files
+    times: list of datetime.datetime
+        times to load
+    file_format: str
+        file format to read
+
+    Returns
+    -------
+    dat: dict
+        precipitation
+    """
+
+    if file_format == "h5":
+        if hdf is None:
+            raise ImportError("pip install h5py")
+        dat = hdf.read_precip(path, times)
+    elif file_format == "nc":
+        if nc4 is None:
+            raise ImportError("pip install netcdf4")
+        dat = nc4.read_precip(path, times)
+    else:
+        raise ValueError(f"unknown file format {file_format}")
+
+    return dat
+
+
+def read_state(file: Path,) -> T.Dict[str, T.Any]:
+    """
+    load inital condition data
+    """
+
+    if file.suffix == ".h5":
+        if hdf is None:
+            raise ImportError("pip install h5py")
+        dat = hdf.read_state(file)
+    elif file.suffix == ".nc":
+        if nc4 is None:
+            raise ImportError("pip install netcdf4")
+        dat = nc4.read_state(file)
+    else:
+        raise ValueError(f"unknown file format {file.suffix}")
+
+    return dat
+
+
+def datetime_range(start: datetime, stop: datetime, step: timedelta) -> T.List[datetime]:
 
     """
     Generate range of datetime
@@ -187,9 +247,7 @@ def datetime_range(start: datetime, stop: datetime, step: timedelta) -> typing.L
     return [start + i * step for i in range((stop - start) // step)]
 
 
-def loadframe(
-    simdir: Path, time: datetime, file_format: str = None
-) -> typing.Dict[str, typing.Any]:
+def loadframe(simdir: Path, time: datetime, file_format: str = None) -> T.Dict[str, T.Any]:
     """
     This is what users should normally use.
     load a frame of simulation data, automatically selecting the correct

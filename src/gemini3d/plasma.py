@@ -48,7 +48,7 @@ def equilibrium_resample(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]):
     # %% WRITE OUT THE GRID
     write_grid(p, xg)
 
-    write_state(t_eq_end, nsi, vs1i, Tsi, p["out_dir"], p["format"])
+    write_state(t_eq_end, nsi, vs1i, Tsi, p["indat_file"])
 
 
 def model_resample(

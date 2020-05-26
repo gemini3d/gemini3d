@@ -26,8 +26,8 @@ def test_nml_bad(tmp_path):
         config.read_namelist(blank, "base")
 
 
-def test_nml_exist():
-    assert not config.namelist_exists(Rc / "config.nml", "base2")
+@pytest.mark.parametrize("group", ["base", ("base", "flags", "files", "precip", "efield")])
+def test_namelist(group):
 
     assert config.namelist_exists(Rc / "config.nml", "base")
 

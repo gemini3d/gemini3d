@@ -44,31 +44,30 @@ def readgrid(fn: Path) -> T.Dict[str, np.ndarray]:
     raise NotImplementedError("TODO: NetCDF4 simgrid.nc")
 
 
-def write_grid(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]):
+def write_grid(size_fn: Path, grid_fn: Path, xg: T.Dict[str, T.Any]):
     """ writes grid to disk
 
     Parameters
     ----------
 
-    p: dict
-        simulation parameters
+    size_fn: pathlib.Path
+        file to write
+    grid_fn: pathlib.Path
+        file to write
     xg: dict
         grid values
     """
-    (p["out_dir"] / "inputs").mkdir(parents=True, exist_ok=True)
 
-    fn = p["out_dir"] / "inputs/simsize.nc"
-    print("write_grid:", fn)
-    with Dataset(fn, "w") as f:
+    print("nc4:write_grid:", size_fn)
+    with Dataset(size_fn, "w") as f:
         f.createDimension("length", len(xg["lx"]))
         g = f.createVariable("lx", np.int32, ("length",))
         g[:] = xg["lx"]
 
-    fn = p["out_dir"] / "inputs/simgrid.nc"
-    print("write_grid:", fn)
+    print("nc4:write_grid:", grid_fn)
     Ng = 4  # number of ghost cells
 
-    with Dataset(fn, "w") as f:
+    with Dataset(grid_fn, "w") as f:
         f.createDimension("x1ghost", xg["lx"][0] + Ng)
         f.createDimension("x1d", xg["lx"][0] + Ng - 1)
         f.createDimension("x1i", xg["lx"][0] + 1)
@@ -121,7 +120,16 @@ def _write_var(f, name: str, dims: tuple, value: np.ndarray):
     g[:] = value
 
 
-def write_state(time: datetime, ns: np.ndarray, vs: np.ndarray, Ts: np.ndarray, out_dir: Path):
+def read_state(fn: Path) -> T.Dict[str, T.Any]:
+    """
+    load initial condition data
+    """
+
+    with Dataset(fn, "r") as f:
+        return {"ns": f["/ns"][:], "vs": f["/vsx1"][:], "Ts": f["/Ts"][:]}
+
+
+def write_state(time: datetime, ns: np.ndarray, vs: np.ndarray, Ts: np.ndarray, fn: Path):
     """
      WRITE STATE VARIABLE DATA.
     NOTE THAT WE don't write ANY OF THE ELECTRODYNAMIC
@@ -132,8 +140,7 @@ def write_state(time: datetime, ns: np.ndarray, vs: np.ndarray, Ts: np.ndarray, 
     I.E. THEY SHOULD NOT INCLUDE GHOST CELLS
     """
 
-    fn = out_dir / "inputs/initial_conditions.nc"
-    print("write_state:", fn)
+    print("nc4:write_state:", fn)
 
     with Dataset(fn, "w") as f:
         p4 = (0, 3, 2, 1)
@@ -155,15 +162,26 @@ def write_state(time: datetime, ns: np.ndarray, vs: np.ndarray, Ts: np.ndarray, 
         _write_var(f, "Ts", ("species", "x3", "x2", "x1"), Ts.transpose(p4))
 
 
-def write_Efield(p: T.Dict[str, T.Any], E: T.Dict[str, np.ndarray]):
+def read_Efield(fn: Path) -> T.Dict[str, T.Any]:
+    """
+    load electric field
+    """
+    raise NotImplementedError("TODO: NetCDF4")
+
+
+def read_precip(fn: Path, times: T.Sequence[datetime]) -> T.Dict[str, T.Any]:
+    """
+    load precipitation
+    """
+    raise NotImplementedError("TODO: NetCDF4")
+
+
+def write_Efield(outdir: Path, E: T.Dict[str, np.ndarray]):
     """
     write Efield to disk
 
     TODO: verify dimensions vs. data vs. Fortran order
     """
-
-    outdir = E["Efield_outdir"]
-    print("write E-field data to", outdir)
 
     with Dataset(outdir / "simsize.nc", "w") as f:
         for k in ("llon", "llat"):
@@ -185,7 +203,7 @@ def write_Efield(p: T.Dict[str, T.Any], E: T.Dict[str, np.ndarray]):
             f.createDimension("lat", E["mlat"].size)
 
             g = f.createVariable("flagdirich", np.int32)
-            g[:] = p["flagdirich"]
+            g[:] = E["flagdirich"][i]
 
             f.createDimension("ymd", 3)
             g = f.createVariable("ymd", np.int32, "ymd")
@@ -204,15 +222,12 @@ def write_Efield(p: T.Dict[str, T.Any], E: T.Dict[str, np.ndarray]):
                 _write_var(f, k, ("lon",), E[k][i, :])
 
 
-def write_precip(precip: T.Dict[str, np.ndarray]):
+def write_precip(outdir: Path, precip: T.Dict[str, np.ndarray]):
     """
     write precipitation to disk
 
     TODO: verify dimensions vs. data vs. Fortran order
     """
-
-    outdir = precip["precip_outdir"]
-    print("write precipitation data to", outdir)
 
     with Dataset(outdir / "simsize.nc", "w") as f:
         for k in ("llon", "llat"):

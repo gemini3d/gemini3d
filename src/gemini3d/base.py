@@ -3,28 +3,17 @@ import typing as T
 import numpy as np
 from datetime import datetime
 
-from .raw import get_simsize as get_simsize_raw
+from . import raw
 
 try:
-    from .hdf import (
-        get_simsize as get_simsize_h5,
-        write_grid as write_grid_h5,
-        write_state as write_state_h5,
-        write_Efield as write_Efield_h5,
-        write_precip as write_precip_h5,
-    )
+    from . import hdf
 except ModuleNotFoundError:
-    get_simsize_h5 = write_grid_h5 = write_state_h5 = None
+    hdf = None
+
 try:
-    from .nc4 import (
-        get_simsize as get_simsize_nc,
-        write_grid as write_grid_nc,
-        write_state as write_state_nc,
-        write_Efield as write_Efield_nc,
-        write_precip as write_precip_nc,
-    )
+    from . import nc4
 except ModuleNotFoundError:
-    get_simsize_nc = write_grid_nc = write_state_nc = None
+    nc4 = None
 
 Pathlike = T.Union[str, Path]
 
@@ -46,15 +35,15 @@ def get_simsize(path: Pathlike) -> T.Tuple[int, ...]:
         raise FileNotFoundError(path)
 
     if fn.suffix == ".h5":
-        if get_simsize_h5 is None:
+        if hdf is None:
             raise ModuleNotFoundError("pip install h5py")
-        return get_simsize_h5(fn)
+        return hdf.get_simsize(fn)
     elif fn.suffix == ".nc":
-        if get_simsize_nc is None:
+        if nc4 is None:
             raise ModuleNotFoundError("pip install netcdf4")
-        return get_simsize_nc(fn)
+        return nc4.get_simsize(fn)
     else:
-        return get_simsize_raw(fn)
+        return raw.get_simsize(fn)
 
 
 def write_grid(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]):
@@ -67,70 +56,84 @@ def write_grid(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]):
         simulation parameters
     xg: dict
         grid values
+
+    NOTE: we use .with_suffix() in case file_format was overriden by user
+    that allows writing NetCDF4 and HDF5 by scripts using same input files
     """
 
+    p["indat_size"].parent.mkdir(parents=True, exist_ok=True)
+
     if p["format"] in ("hdf5", "h5"):
-        if write_grid_h5 is None:
+        if hdf is None:
             raise ImportError("pip install h5py")
-        write_grid_h5(p, xg)
+        hdf.write_grid(p["indat_size"].with_suffix(".h5"), p["indat_grid"].with_suffix(".h5"), xg)
     elif p["format"] in ("netcdf", "nc"):
-        if write_grid_nc is None:
+        if nc4 is None:
             raise ImportError("pip install netcdf4")
-        write_grid_nc(p, xg)
+        nc4.write_grid(p["indat_size"].with_suffix(".nc"), p["indat_grid"].with_suffix(".nc"), xg)
     else:
         raise ValueError(f'unknown file format {p["format"]}')
 
 
-def write_Efield(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]):
-    """ writes grid to disk
+def write_Efield(E: T.Dict[str, T.Any], outdir: Path, file_format: str):
+    """ writes E-field to disk
 
     Parameters
     ----------
 
-    p: dict
-        simulation parameters
-    xg: dict
-        grid values
+    E: dict
+        E-field values
+    outdir: pathlib.Path
+        directory to write files into
+    file_format: str
+        requested file format to write
     """
 
-    if p["format"] in ("hdf5", "h5"):
-        if write_Efield_h5 is None:
+    print("write E-field data to", outdir)
+    outdir.mkdir(parents=True, exist_ok=True)
+
+    if file_format in ("hdf5", "h5"):
+        if hdf is None:
             raise ImportError("pip install h5py")
-        write_Efield_h5(p, xg)
-    elif p["format"] in ("netcdf", "nc"):
-        if write_Efield_nc is None:
+        hdf.write_Efield(outdir, E)
+    elif file_format in ("netcdf", "nc"):
+        if nc4 is None:
             raise ImportError("pip install netcdf4")
-        write_Efield_nc(p, xg)
+        nc4.write_Efield(outdir, E)
     else:
-        raise ValueError(f'unknown file format {p["format"]}')
+        raise ValueError(f"unknown file format {file_format}")
 
 
-def write_precip(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]):
-    """ writes grid to disk
+def write_precip(precip: T.Dict[str, T.Any], outdir: Path, file_format: str):
+    """ writes precipitation to disk
 
     Parameters
     ----------
-
-    p: dict
-        simulation parameters
-    xg: dict
-        grid values
+    precip: dict
+        preicipitation values
+    outdir: pathlib.Path
+        directory to write files into
+    file_format: str
+        requested file format to write
     """
 
-    if p["format"] in ("hdf5", "h5"):
-        if write_precip_h5 is None:
+    print("write precipitation data to", outdir)
+    outdir.mkdir(parents=True, exist_ok=True)
+
+    if file_format in ("hdf5", "h5"):
+        if hdf is None:
             raise ImportError("pip install h5py")
-        write_precip_h5(xg)
-    elif p["format"] in ("netcdf", "nc"):
-        if write_precip_nc is None:
+        hdf.write_precip(outdir, precip)
+    elif file_format in ("netcdf", "nc"):
+        if nc4 is None:
             raise ImportError("pip install netcdf4")
-        write_precip_nc(xg)
+        nc4.write_precip(outdir, precip)
     else:
-        raise ValueError(f'unknown file format {p["format"]}')
+        raise ValueError(f"unknown file format {file_format}")
 
 
 def write_state(
-    time: datetime, ns: np.ndarray, vs: np.ndarray, Ts: np.ndarray, out_dir: Path, file_format: str
+    time: datetime, ns: np.ndarray, vs: np.ndarray, Ts: np.ndarray, out_file: Path,
 ):
     """
      WRITE STATE VARIABLE DATA.
@@ -142,13 +145,13 @@ def write_state(
     I.E. THEY SHOULD NOT INCLUDE GHOST CELLS
     """
 
-    if file_format in ("hdf5", "h5"):
-        if write_grid_h5 is None:
+    if out_file.suffix == ".h5":
+        if hdf is None:
             raise ImportError("pip install h5py")
-        write_state_h5(time, ns, vs, Ts, out_dir)
-    elif file_format in ("netcdf", "nc"):
-        if write_grid_nc is None:
+        hdf.write_state(time, ns, vs, Ts, out_file.with_suffix(".h5"))
+    elif out_file.suffix == ".nc":
+        if nc4 is None:
             raise ImportError("pip install netcdf4")
-        write_state_nc(time, ns, vs, Ts, out_dir)
+        nc4.write_state(time, ns, vs, Ts, out_file.with_suffix(".nc"))
     else:
-        raise ValueError(f"unknown file format {file_format}")
+        raise ValueError(f"unknown file format {out_file.suffix}")
