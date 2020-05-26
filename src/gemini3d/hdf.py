@@ -290,7 +290,7 @@ def read_precip(path: Path, times: T.Sequence[datetime]) -> T.Dict[str, T.Any]:
     dat["Q"] = []
     dat["E0"] = []
 
-    for i, t in enumerate(times):
+    for t in times:
         fn = path / (datetime2ymd_hourdec(t) + ".h5")
 
         with h5py.File(fn, "r") as f:
