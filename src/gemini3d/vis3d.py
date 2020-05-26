@@ -22,7 +22,12 @@ PLOTFUN = {"scalar": ("ne", "Ti", "Te", "J1", "J2", "J3"), "vector": ("v1", "v2"
 R_EARTH = 6370e3
 
 
-def plotframe(grid: T.Dict[str, np.ndarray], dat: T.Dict[str, T.Any], params: T.Sequence[str] = None, save_dir: Path = None):
+def plotframe(
+    grid: T.Dict[str, np.ndarray],
+    dat: T.Dict[str, T.Any],
+    params: T.Sequence[str] = None,
+    save_dir: Path = None,
+):
     """
     plot plasma quantities in 3D
 
@@ -92,14 +97,17 @@ def scalar(time: datetime, grid: T.Dict[str, np.ndarray], parm: np.ndarray, name
     # yp = np.linspace(y.min(), y.max(), lyp)
     # upward distance [meters]
     # zp = np.linspace(z.min(), z.max(), lzp)
-    # x3, y3, z3 = np.mgrid[xp[0]: xp[-1]: lxp * 1j, yp[0]: yp[-1]: lyp * 1j, zp[0]: zp[-1]: lzp * 1j]  # type: ignore
+    # x3, y3, z3 = np.mgrid[xp[0]: xp[-1]: lxp * 1j,
+    #   yp[0]: yp[-1]: lyp * 1j, zp[0]: zp[-1]: lzp * 1j]  # type: ignore
 
     # non-interpolated
     parm = parm.transpose(1, 2, 0)
     xp = np.linspace(x.min(), x.max(), parm.shape[0])
     yp = np.linspace(y.min(), y.max(), parm.shape[1])
     zp = np.linspace(z.min(), z.max(), parm.shape[2])
-    x3, y3, z3 = np.mgrid[xp[0]: xp[-1]: xp.size * 1j, yp[0]: yp[-1]: yp.size * 1j, zp[0]: zp[-1]: zp.size * 1j]  # type: ignore
+    x3, y3, z3 = np.mgrid[
+        xp[0] : xp[-1] : xp.size * 1j, yp[0] : yp[-1] : yp.size * 1j, zp[0] : zp[-1] : zp.size * 1j
+    ]  # type: ignore
 
     # %% 3-D interpolation for plot
     if ~np.isfinite(parm).all():

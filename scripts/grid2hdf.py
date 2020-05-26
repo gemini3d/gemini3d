@@ -38,25 +38,40 @@ def grid2hdf(infn: Path):
         L = [lxs[0] + 1, lxs[1], lxs[2]]
         for i in (1, 2, 3):
             h.create_dataset(
-                f"h{i}x1i", data=read(f, float64, prod(L)).reshape(L).astype(float32), compression="gzip", compression_opts=CLVL
+                f"h{i}x1i",
+                data=read(f, float64, prod(L)).reshape(L).astype(float32),
+                compression="gzip",
+                compression_opts=CLVL,
             )
         L = [lxs[0], lxs[1] + 1, lxs[2]]
         for i in (1, 2, 3):
             h.create_dataset(
-                f"h{i}x2i", data=read(f, float64, prod(L)).reshape(L).astype(float32), compression="gzip", compression_opts=CLVL
+                f"h{i}x2i",
+                data=read(f, float64, prod(L)).reshape(L).astype(float32),
+                compression="gzip",
+                compression_opts=CLVL,
             )
         L = [lxs[0], lxs[1], lxs[2] + 1]
         for i in (1, 2, 3):
             h.create_dataset(
-                f"h{i}x3i", data=read(f, float64, prod(L)).reshape(L).astype(float32), compression="gzip", compression_opts=CLVL
+                f"h{i}x3i",
+                data=read(f, float64, prod(L)).reshape(L).astype(float32),
+                compression="gzip",
+                compression_opts=CLVL,
             )
         for i in (1, 2, 3):
             h.create_dataset(
-                f"gx{i}", data=read(f, float64, prod(lxs)).reshape(lxs).astype(float32), compression="gzip", compression_opts=CLVL
+                f"gx{i}",
+                data=read(f, float64, prod(lxs)).reshape(lxs).astype(float32),
+                compression="gzip",
+                compression_opts=CLVL,
             )
         for k in ("alt", "glat", "glon", "Bmag"):
             h.create_dataset(
-                k, data=read(f, float64, prod(lxs)).reshape(lxs).astype(float32), compression="gzip", compression_opts=CLVL
+                k,
+                data=read(f, float64, prod(lxs)).reshape(lxs).astype(float32),
+                compression="gzip",
+                compression_opts=CLVL,
             )
         h.create_dataset(
             "Bincl",
@@ -65,7 +80,10 @@ def grid2hdf(infn: Path):
             compression_opts=CLVL,
         )
         h.create_dataset(
-            "nullpts", data=read(f, float64, prod(lxs)).reshape(lxs).astype(float32), compression="gzip", compression_opts=CLVL
+            "nullpts",
+            data=read(f, float64, prod(lxs)).reshape(lxs).astype(float32),
+            compression="gzip",
+            compression_opts=CLVL,
         )
         if f.tell() == infn.stat().st_size:  # not EOF
             return None
@@ -73,22 +91,34 @@ def grid2hdf(infn: Path):
         L = [lxs[0], lxs[1], lxs[2], 3]
         for i in (1, 2, 3):
             h.create_dataset(
-                f"e{i}", data=read(f, float64, prod(L)).reshape(L).astype(float32), compression="gzip", compression_opts=CLVL
+                f"e{i}",
+                data=read(f, float64, prod(L)).reshape(L).astype(float32),
+                compression="gzip",
+                compression_opts=CLVL,
             )
         for k in ("er", "etheta", "ephi"):
             h.create_dataset(
-                k, data=read(f, float64, prod(L)).reshape(L).astype(float32), compression="gzip", compression_opts=CLVL
+                k,
+                data=read(f, float64, prod(L)).reshape(L).astype(float32),
+                compression="gzip",
+                compression_opts=CLVL,
             )
         for k in ("r", "theta", "phi"):
             h.create_dataset(
-                k, data=read(f, float64, prod(lxs)).reshape(lxs).astype(float32), compression="gzip", compression_opts=CLVL
+                k,
+                data=read(f, float64, prod(lxs)).reshape(lxs).astype(float32),
+                compression="gzip",
+                compression_opts=CLVL,
             )
         if f.tell() == infn.stat().st_size:  # not EOF
             return None
 
         for k in ("x", "y", "z"):
             h.create_dataset(
-                k, data=read(f, float64, prod(lxs)).reshape(lxs).astype(float32), compression="gzip", compression_opts=CLVL
+                k,
+                data=read(f, float64, prod(lxs)).reshape(lxs).astype(float32),
+                compression="gzip",
+                compression_opts=CLVL,
             )
 
 

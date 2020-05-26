@@ -49,7 +49,11 @@ def test_nml_namelist(namelist):
         assert params["dtE0"] == timedelta(seconds=1)
 
 
-@pytest.mark.parametrize("filename", [Rc, Rc / "config.nml", R / "config/config_example.ini"], ids=["path", "nml", "ini"])
+@pytest.mark.parametrize(
+    "filename",
+    [Rc, Rc / "config.nml", R / "config/config_example.ini"],
+    ids=["path", "nml", "ini"],
+)
 def test_read_config(filename):
     params = config.read_config(filename)
     assert params["t0"] == datetime(2013, 2, 20, 5)

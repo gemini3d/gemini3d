@@ -187,7 +187,9 @@ def datetime_range(start: datetime, stop: datetime, step: timedelta) -> typing.L
     return [start + i * step for i in range((stop - start) // step)]
 
 
-def loadframe(simdir: Path, time: datetime, file_format: str = None) -> typing.Dict[str, typing.Any]:
+def loadframe(
+    simdir: Path, time: datetime, file_format: str = None
+) -> typing.Dict[str, typing.Any]:
     """
     This is what users should normally use.
     load a frame of simulation data, automatically selecting the correct
@@ -216,7 +218,11 @@ def get_frame_filename(simdir: Path, time: datetime, file_format: str = None) ->
 
     simdir = Path(simdir).expanduser().resolve(True)
 
-    stem = time.strftime("%Y%m%d") + f"_{time.hour*3600 + time.minute*60 + time.second:05d}." + f"{time.microsecond:06d}"[:5]
+    stem = (
+        time.strftime("%Y%m%d")
+        + f"_{time.hour*3600 + time.minute*60 + time.second:05d}."
+        + f"{time.microsecond:06d}"[:5]
+    )
 
     suffixes = [f".{file_format}"] if file_format else FILE_FORMATS
 

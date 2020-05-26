@@ -137,7 +137,9 @@ def parse_namelist(raw: T.Dict[str, T.Any], namelist: str) -> T.Dict[str, T.Any]
     P: T.Dict[str, T.Any] = {}
 
     if namelist == "base":
-        P["t0"] = datetime(int(raw["ymd"][0]), int(raw["ymd"][1]), int(raw["ymd"][2])) + timedelta(seconds=float(raw["UTsec0"]))
+        P["t0"] = datetime(int(raw["ymd"][0]), int(raw["ymd"][1]), int(raw["ymd"][2])) + timedelta(
+            seconds=float(raw["UTsec0"])
+        )
         P["tdur"] = timedelta(seconds=float(raw["tdur"]))
         P["dtout"] = timedelta(seconds=float(raw["dtout"]))
         P["f107a"] = float(raw["activ"][0])

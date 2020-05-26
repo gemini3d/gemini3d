@@ -23,7 +23,9 @@ def runner(pr: T.Dict[str, T.Any]) -> int:
         if pr["force"] or not f.is_file():
             model_setup(p["nml"], pr["out_dir"])
             if not f.is_file():
-                raise FileNotFoundError(f"\ntried to initialize simulation but missing expected output file {f}")
+                raise FileNotFoundError(
+                    f"\ntried to initialize simulation but missing expected output file {f}"
+                )
             break
 
     if "E0dir" in p:
@@ -56,7 +58,7 @@ def runner(pr: T.Dict[str, T.Any]) -> int:
         cmd += ["-out_format", pr["out_format"]]
 
     # %% attempt dry run, but don't fail in case intended for HPC
-    logging.info('Attempting Gemini dry run of first time step')
+    logging.info("Attempting Gemini dry run of first time step")
     dryrun_ok = subprocess.run(cmd + ["-dryrun"], stdout=subprocess.DEVNULL).returncode == 0
     if dryrun_ok:
         logging.info("OK: Gemini dry run")

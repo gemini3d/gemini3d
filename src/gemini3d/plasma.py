@@ -102,9 +102,15 @@ def model_resample(
         assert X2i.shape == tuple(xg["lx"])
 
         for i in range(lsp):
-            nsi[i, :, :, :] = interpn(points=(X1, X2, X3), values=ns[i, :, :, :], xi=(X1i, X2i, X3i), bounds_error=True)
-            vsi[i, :, :, :] = interpn(points=(X1, X2, X3), values=vs[i, :, :, :], xi=(X1i, X2i, X3i), bounds_error=True)
-            Tsi[i, :, :, :] = interpn(points=(X1, X2, X3), values=Ts[i, :, :, :], xi=(X1i, X2i, X3i), bounds_error=True)
+            nsi[i, :, :, :] = interpn(
+                points=(X1, X2, X3), values=ns[i, :, :, :], xi=(X1i, X2i, X3i), bounds_error=True
+            )
+            vsi[i, :, :, :] = interpn(
+                points=(X1, X2, X3), values=vs[i, :, :, :], xi=(X1i, X2i, X3i), bounds_error=True
+            )
+            Tsi[i, :, :, :] = interpn(
+                points=(X1, X2, X3), values=Ts[i, :, :, :], xi=(X1i, X2i, X3i), bounds_error=True
+            )
     elif lx3 == 1:
         # 2-D east-west
         print("interpolating grid for 2-D simulation in x1, x2")
@@ -185,7 +191,9 @@ def check_temperature(T: np.ndarray):
         raise ValueError("too cold maximum temperature")
 
 
-def equilibrium_state(p: T.Dict[str, T.Any], xg: DictArray) -> T.Tuple[np.ndarray, np.ndarray, np.ndarray]:
+def equilibrium_state(
+    p: T.Dict[str, T.Any], xg: DictArray
+) -> T.Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
     generate (arbitrary) initial conditions for a grid.
     NOTE: only works on symmmetric closed grids!
@@ -237,8 +245,12 @@ def equilibrium_state(p: T.Dict[str, T.Any], xg: DictArray) -> T.Tuple[np.ndarra
             z0f = 325e3
             He = 2 * kb * Tn[:, ix2, ix3] / amu / 30 / g[:, ix2, ix3]
             z0e = 120e3
-            ne = chapmana(alt[:, ix2, ix3], p["nmf"], z0f, Hf) + chapmana(alt[:, ix2, ix3], p["nme"], z0e, He)
-            rho = 1 / 2 * np.tanh((alt[:, ix2, ix3] - 200e3) / 45e3) - 1 / 2 * np.tanh((alt[:, ix2, ix3] - 1000e3) / 200e3)
+            ne = chapmana(alt[:, ix2, ix3], p["nmf"], z0f, Hf) + chapmana(
+                alt[:, ix2, ix3], p["nme"], z0e, He
+            )
+            rho = 1 / 2 * np.tanh((alt[:, ix2, ix3] - 200e3) / 45e3) - 1 / 2 * np.tanh(
+                (alt[:, ix2, ix3] - 1000e3) / 200e3
+            )
 
             # has to be .nonzero() as integers not slice is needed.
             inds = (alt[:, ix2, ix3] > z0f).nonzero()[0]
@@ -324,7 +336,9 @@ def equilibrium_state(p: T.Dict[str, T.Any], xg: DictArray) -> T.Tuple[np.ndarra
                 elif xg["r"].ndim == 2:
                     cond = xg["r"][0, 0] > xg["r"][1, 0]
                 else:
-                    raise ValueError("xg['r'] expected to be 3D, possibly with degenerate 2nd or 3rd dimension")
+                    raise ValueError(
+                        "xg['r'] expected to be 3D, possibly with degenerate 2nd or 3rd dimension"
+                    )
                 if cond:
                     iref = inds1[0]
                 else:

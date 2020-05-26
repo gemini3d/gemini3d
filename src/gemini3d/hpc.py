@@ -23,10 +23,12 @@ def hpc_batch_create(batcher: str, out_dir: Path, cmd: T.Sequence[str]) -> Path:
     """
     creates HPC batch scripts for known systems
 
-    assumes that user-specific parameters like account number are already set as environment variables
+    assumes that user-specific parameters like account number are already set
+    as environment variables
     or static configuration files not handled by this scripts.
 
-    This function assumes a script template exists, and it merely appends lines to the end of that template.
+    This function assumes a script template exists, and it merely appends lines
+    to the end of that template.
 
     TODO:
 

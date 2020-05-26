@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """
-installs Gemini prerequisite libraries for CentOS, Debian, Ubuntu, Homebrew and Cygwin, assuming GCC/Gfortran
+installs Gemini prerequisite libraries for:
+CentOS, Debian, Ubuntu, Homebrew and Cygwin
+assuming GCC/Gfortran
 
 Michael Hirsch, Ph.D.
 """
@@ -52,7 +54,9 @@ def main(package_manager: str):
             subprocess.run(["sudo", "apt", "update", "--yes"])
             cmd = ["sudo", "apt", "--yes", "install"] + pkgs["apt"]
         else:
-            raise ValueError(f"Unknown package manager {package_manager}, try installing the prereqs manually")
+            raise ValueError(
+                f"Unknown package manager {package_manager}, try installing the prereqs manually"
+            )
     elif sys.platform == "darwin":
         pkgs = {"brew": ["gcc", "make", "cmake", "lapack", "scalapack", "openmpi", "hdf5"]}
         cmd = ["brew", "install"] + pkgs["brew"]

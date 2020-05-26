@@ -129,7 +129,9 @@ def write_precip(p: T.Dict[str, T.Any], xg: T.Dict[str, T.Any]):
         raise ValueError(f'unknown file format {p["format"]}')
 
 
-def write_state(time: datetime, ns: np.ndarray, vs: np.ndarray, Ts: np.ndarray, out_dir: Path, file_format: str):
+def write_state(
+    time: datetime, ns: np.ndarray, vs: np.ndarray, Ts: np.ndarray, out_dir: Path, file_format: str
+):
     """
      WRITE STATE VARIABLE DATA.
     NOTE THAT WE don't write ANY OF THE ELECTRODYNAMIC

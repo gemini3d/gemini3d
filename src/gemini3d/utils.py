@@ -23,7 +23,9 @@ def gitrev() -> str:
     if not git:
         return ""
 
-    return subprocess.check_output([git, "rev-parse", "--short", "HEAD"], universal_newlines=True).strip()
+    return subprocess.check_output(
+        [git, "rev-parse", "--short", "HEAD"], universal_newlines=True
+    ).strip()
 
 
 def get_cpu_count() -> int:
@@ -55,7 +57,9 @@ def ymdhourdec2datetime(year: int, month: int, day: int, hourdec: float) -> date
     convert year,month,day + decimal hour HH.hhh to time
     """
 
-    return datetime(year, month, day, int(hourdec), int((hourdec * 60) % 60)) + timedelta(seconds=(hourdec * 3600) % 60)
+    return datetime(year, month, day, int(hourdec), int((hourdec * 60) % 60)) + timedelta(
+        seconds=(hourdec * 3600) % 60
+    )
 
 
 def datetime2ymd_hourdec(dt: datetime) -> str:
@@ -63,4 +67,7 @@ def datetime2ymd_hourdec(dt: datetime) -> str:
     convert datetime to ymd_hourdec string for filename stem
     """
 
-    return dt.strftime("%Y%m%d") + f"_{dt.hour*3600 + dt.minute*60 + dt.second + dt.microsecond/1e6:12.6f}"
+    return (
+        dt.strftime("%Y%m%d")
+        + f"_{dt.hour*3600 + dt.minute*60 + dt.second + dt.microsecond/1e6:12.6f}"
+    )

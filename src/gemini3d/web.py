@@ -10,7 +10,9 @@ from pathlib import Path
 Pathlike = T.Union[str, Path]
 
 
-def url_retrieve(url: str, outfile: Pathlike, filehash: T.Sequence[str] = None, overwrite: bool = False):
+def url_retrieve(
+    url: str, outfile: Pathlike, filehash: T.Sequence[str] = None, overwrite: bool = False
+):
     """
     Parameters
     ----------

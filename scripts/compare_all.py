@@ -41,7 +41,11 @@ def main():
     p.add_argument("outdir", help="directory to compare")
     p.add_argument("refdir", help="reference directory")
     p.add_argument("-p", "--plot", help="make plots of differences", action="store_true")
-    p.add_argument("-file_format", help="specify file format to read from output dir", choices=["h5", "nc", "raw"])
+    p.add_argument(
+        "-file_format",
+        help="specify file format to read from output dir",
+        choices=["h5", "nc", "raw"],
+    )
     P = p.parse_args()
 
     errs = gemini3d.compare_all(P.outdir, P.refdir, tol, P.plot, P.file_format)
