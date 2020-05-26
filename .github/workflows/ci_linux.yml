@@ -10,7 +10,6 @@ on:
       - "**.cmake"
       - "**/CMakeLists.txt"
       - ".github/workflows/ci_linux.yml"
-  pull_request:
 
 
 jobs:

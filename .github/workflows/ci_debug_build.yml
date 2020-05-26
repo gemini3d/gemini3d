@@ -9,7 +9,6 @@ on:
       - "**.f90"
       - "**.F90"
       - ".github/workflows/ci_debug_build.yml"
-  pull_request:
 
 
 jobs:
