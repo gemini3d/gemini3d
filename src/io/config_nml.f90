@@ -51,6 +51,7 @@ cfg%activ = activ
 cfg%tcfl = tcfl
 cfg%Teinf = Teinf
 
+rewind(u)
 read(u, nml=flags, iostat=i)
 call check_nml_io(i, cfg%infile, "flags", compiler_vendor)
 cfg%potsolve = potsolve
@@ -62,6 +63,7 @@ cfg%flagprecfile = flagprecfile
 cfg%flagE0file = flagE0file
 cfg%flagglow = flagglow
 
+rewind(u)
 read(u, nml=files, iostat=i)
 call check_nml_io(i, cfg%infile, "files", compiler_vendor)
 
@@ -89,6 +91,7 @@ if (cfg%flagdneu == 1) then
   cfg%dzn = dzn
   cfg%dxn = dxn
 else
+  cfg%flagdneu = 0
   cfg%sourcedir = ""
 endif
 
@@ -99,6 +102,7 @@ if (cfg%flagprecfile == 1) then
   cfg%precdir = expanduser(prec_dir)
   cfg%dtprec = dtprec
 else
+  cfg%flagprecfile = 0
   cfg%precdir = ""
 endif
 
@@ -108,6 +112,7 @@ if (cfg%flagE0file == 1) then
   cfg%E0dir = expanduser(E0_dir)
   cfg%dtE0 = dtE0
 else
+  cfg%flagE0file = 0
   cfg%E0dir = ""
 endif
 
@@ -116,6 +121,8 @@ if (cfg%flagglow == 1) then
   call check_nml_io(i, cfg%infile, "glow", compiler_vendor)
   cfg%dtglow = dtglow
   cfg%dtglowout = dtglowout
+else
+  cfg%flagglow = 0
 endif
 
 
@@ -124,24 +131,23 @@ close(u)
 end procedure read_nml
 
 
-subroutine check_nml_io(i, filename, group, vendor)
+subroutine check_nml_io(i, filename, namelist, vendor)
 !! checks for EOF and gives helpful error
 !! this accomodates non-Fortran 2018 error stop with variable character
 
 integer, intent(in) :: i
 character(*), intent(in) :: filename
-character(*), intent(in), optional :: group, vendor
+character(*), intent(in), optional :: namelist, vendor
 
-character(:), allocatable :: grp, msg
+character(:), allocatable :: nml, msg
 
 if(i==0) return
 
-grp = ""
-if(present(group)) grp = group
+nml = ""
+if(present(namelist)) nml = namelist
 
 if (is_iostat_end(i)) then
-  write(stderr,*) 'ERROR: group ' // grp // ': ensure there is a trailing blank line in ' // filename
-  write(stderr,*) 'also, ensure that Namelist groups are read in order: base, flags, files etc'
+  write(stderr,*) 'ERROR: namelist ' // nml // ': ensure there is a trailing blank line in ' // filename
   error stop 5
 endif
 
@@ -168,7 +174,7 @@ endif
 
 if (len(msg)==0) write(stderr,*) "namelist read error code",i
 
-write(stderr,'(A,/,A)') 'ERROR: reading ' // grp // " " // filename, msg
+write(stderr,'(A,/,A)') 'ERROR: reading namelist ', nml, " from ", filename, " problem: ", msg
 error stop 5
 
 end subroutine check_nml_io
