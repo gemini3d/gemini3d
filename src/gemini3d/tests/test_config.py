@@ -5,8 +5,7 @@ from datetime import datetime, timedelta
 
 import gemini3d.config as config
 
-R = Path(__file__).resolve().parent
-Rc = R / "config/test2d_fang"
+Rc = Path(__file__).resolve().parents[2] / "unit_tests/config"
 
 
 def test_nml_bad(tmp_path):
@@ -29,13 +28,13 @@ def test_nml_bad(tmp_path):
 @pytest.mark.parametrize("group", ["base", ("base", "flags", "files", "precip", "efield")])
 def test_namelist(group):
 
-    assert config.namelist_exists(Rc / "config.nml", "base")
+    assert config.namelist_exists(Rc / "test2d_fang/config.nml", "base")
 
 
 @pytest.mark.parametrize("namelist", ["base", "flags", "files", "precip", "efield"])
 def test_nml_namelist(namelist):
 
-    params = config.read_namelist(Rc / "config.nml", namelist)
+    params = config.read_namelist(Rc / "test2d_fang/config.nml", namelist)
     if "base" in namelist:
         assert params["t0"] == datetime(2013, 2, 20, 5)
 
@@ -51,7 +50,7 @@ def test_nml_namelist(namelist):
 
 @pytest.mark.parametrize(
     "filename",
-    [Rc, Rc / "config.nml", R / "config/config_example.ini"],
+    [Rc / "test2d_fang", Rc / "test2d_fang/config.nml", Rc / "config_example.ini"],
     ids=["path", "nml", "ini"],
 )
 def test_read_config(filename):

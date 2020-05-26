@@ -4,7 +4,7 @@ program test_nml
 implicit none (type, external)
 
 type :: gemini_config
-  integer :: potsolve, flagperiodic, flagoutput, flagcap, flagdneu, flagprecfile, flagE0file, flagglow
+  integer :: potsolve, flagperiodic, flagoutput, flagcap
 end type gemini_config
 
 character(256) :: argv
@@ -12,8 +12,8 @@ integer :: i, u
 character(:), allocatable :: infile
 type(gemini_config) :: cfg
 
-integer :: potsolve, flagperiodic, flagoutput, flagcap, flagdneu, flagprecfile, flagE0file, flagglow
-namelist /flags/ potsolve, flagperiodic, flagoutput, flagcap, flagdneu, flagprecfile, flagE0file, flagglow
+integer :: potsolve, flagperiodic, flagoutput, flagcap
+namelist /flags/ potsolve, flagperiodic, flagoutput, flagcap
 
 call get_command_argument(1, argv, status=i)
 if (i/=0) error stop 77
@@ -26,10 +26,6 @@ cfg%potsolve = potsolve
 cfg%flagperiodic = flagperiodic
 cfg%flagoutput = flagoutput
 cfg%flagcap = flagcap
-cfg%flagdneu = flagdneu
-cfg%flagprecfile = flagprecfile
-cfg%flagE0file = flagE0file
-cfg%flagglow = flagglow
 print *,cfg
 
 close(u)

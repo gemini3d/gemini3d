@@ -1,26 +1,19 @@
 &base
 ymd = 2013,2,20               ! year, month, day
-UTsec0 = 18000.0              ! UTsec0:  start time in UT seconds
-tdur = 300.0                  ! tdur:  duration of simulation in seconds
-dtout = 60.0                  ! dtout: how often to do file output
-activ = 108.9, 111.0, 5       ! activ:  f107a,f107,Ap
-tcfl = 0.9                    ! tcfl:  target cfl number
-Teinf = 1500.0                ! Teinf:  exospheric electron temperature
+UTsec0 = 18000.0              ! start time in UT seconds
+tdur = 300.0                  ! duration of simulation in seconds
+dtout = 60.0                  ! how often to do file output
+activ = 108.9, 111.0, 5       ! f107a,f107,Ap
+tcfl = 0.9                    ! target cfl number
+Teinf = 1500.0                ! exospheric electron temperature
 /
 
 &flags
 potsolve = 1      ! solve electrodynamics:   0 - no; 1 - electrostatic; 2 - inductive
-flagperiodic = 0
 flagoutput = 1
-flagcap = 0
-flagdneu = 0
-flagprecfile = 1
-flagE0file = 1
-flagglow = 0
 /
 
 &files
-file_format = 'h5'
 indat_size = 'tests/data/test3d_fang/inputs/simsize.h5'
 indat_grid = 'tests/data/test3d_fang/inputs/simgrid.h5'
 indat_file = 'tests/data/test3d_fang/inputs/initial_conditions.h5'
@@ -41,8 +34,12 @@ nmf = 5e11
 nme = 2e11
 precip_latwidth = 0.25
 precip_lonwidth = 0.25
+Qprecip = 10
+Qprecip_background = 0.0
+E0precip = 5e3
 Etarg = 50e-3   ! V/m
-Efield_fracwidth = 0.142857
+Efield_latwidth = 0
+Efield_lonwidth = 0.142857
 eqdir = 'tests/data/test3d_eq'
 /
 

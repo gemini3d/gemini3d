@@ -26,9 +26,8 @@ if(NOT MPI_OK)
   return()
 endif()
 
-# simple tests to help catch broken libs
-add_subdirectory(tests)
-
+# --- other libs
+add_subdirectory(unit_tests)
 add_subdirectory(neutral)
 add_subdirectory(sources)
 

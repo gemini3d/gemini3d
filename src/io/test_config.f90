@@ -16,7 +16,7 @@ if (i/=0) error stop 77
 
 cfg%infile = trim(argv)
 
-call read_configfile(cfg)
+call read_configfile(cfg, verbose=.true.)
 
 print *, "OK: config read ",cfg%infile
 
