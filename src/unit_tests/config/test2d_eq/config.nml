@@ -14,7 +14,6 @@ flagoutput = 1
 /
 
 &files
-file_format = 'h5'
 indat_size = 'tests/data/test2d_eq/inputs/simsize.h5'
 indat_grid = 'tests/data/test2d_eq/inputs/simgrid.h5'
 indat_file = 'tests/data/test2d_eq/inputs/initial_conditions.h5'
@@ -24,11 +23,11 @@ indat_file = 'tests/data/test2d_eq/inputs/initial_conditions.h5'
 glat = 67.11
 glon = 212.95
 xdist = 1200e3              ! eastward distance (meters)
-ydist = 600e3               ! northward distance (meters)
+ydist = 0               ! northward distance (meters)
 alt_min = 80e3              ! minimum altitude (meters)
 alt_max = 1000e3            ! maximum altitude (meters)
 alt_scale = 13.75e3, 20e3, 200e3, 200e3  ! altitude grid scales (meters)
-lxp = 15                    ! number of x-cells
+lxp = 16                    ! number of x-cells
 lyp = 1                     ! number of y-cells
 Bincl = 90                  ! geomagnetic inclination
 nmf = 5e11
