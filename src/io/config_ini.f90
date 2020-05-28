@@ -11,7 +11,7 @@ character(256) :: buf
 
 open(newunit=u, file=cfg%infile, status='old', action='read')
 
-read(u,*) cfg%ymd(3), cfg%ymd(2), cfg%ymd(1)
+read(u,*) cfg%ymd0(3), cfg%ymd0(2), cfg%ymd0(1)
 read(u,*) cfg%UTsec0
 read(u,*) cfg%tdur
 read(u,*) cfg%dtout

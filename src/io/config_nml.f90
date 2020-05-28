@@ -6,6 +6,9 @@ contains
 
 
 module procedure read_nml
+!! Reads simulation configuration file in .nml
+!! Note that it is best to rewind the file before any read operation, otherwise if the file pointer is already
+!! past the group of interest it will (may?) miss that group and return junk.
 
 integer :: u, i
 
@@ -25,7 +28,7 @@ real(wp) :: dtprec=0
 character(256) :: indat_size, indat_grid, indat_file, source_dir, prec_dir, E0_dir
 character(4) :: file_format=""  !< need to initialize blank or random invisible fouls len_trim>0
 real(wp) :: dtE0=0
-integer :: flagdneu, flagprecfile, flagE0file, flagglow !< FIXME: these four parameters are ignored, kept temporarily
+integer :: flagdneu, flagprecfile, flagE0file, flagglow !< FIXME: these parameters are ignored, kept temporarily
 real(wp) :: dtglow=0, dtglowout=0
 logical :: flagEIA
 real(wp) :: v0equator
@@ -35,21 +38,23 @@ real(wp) :: PhiWBG,W0BG
 logical :: flagJpar
 logical :: flgcap
 real(wp) :: magcap
+integer :: diffsolvetype
 
+character(5) :: compiler_vendor
 
 namelist /base/ ymd, UTsec0, tdur, dtout, activ, tcfl, Teinf
 namelist /files/ file_format, indat_size, indat_grid, indat_file
-namelist /flags/ potsolve, flagperiodic, flagoutput, flagcap, &
+namelist /flags/ potsolve, flagperiodic, flagoutput, &
+flagcap,flagdneu, flagprecfile, flagE0file, flagglow !< FIXME: these last parameters are ignored, kept temporarily for compatibility, should be removed
 namelist /neutral_perturb/ flagdneu, interptype, sourcemlat, sourcemlon, dtneu, dxn, drhon, dzn, source_dir
 namelist /precip/ dtprec, prec_dir
-flagdneu, flagprecfile, flagE0file, flagglow !< FIXME: these last four parameters are ignored, kept temporarily for compatibility, should be removed
 namelist /efield/ dtE0, E0_dir
 namelist /glow/ dtglow, dtglowout
 namelist /EIA/ flagEIA,v0equator
 namelist /neutral_BG/ flagneuBG,dtneuBG
 namelist /precip_BG/ PhiWBG,W0BG
 namelist /Jpar/ flagJpar
-namelist /capacitance/ flgcap,magcap     ! later need to regroup these in a way that is more logical now there are so many more inputs
+namelist /capacitance/ flagcap,magcap     ! later need to regroup these in a way that is more logical now there are so many more inputs
 namelist /diffusion/ diffsolvetype
 
 compiler_vendor = get_compiler_vendor()
@@ -58,7 +63,7 @@ open(newunit=u, file=cfg%infile, status='old', action='read')
 
 read(u, nml=base, iostat=i)
 call check_nml_io(i, cfg%infile, "base", compiler_vendor)
-cfg%ymd = ymd
+cfg%ymd0 = ymd
 cfg%UTsec0 = UTsec0
 cfg%tdur = tdur
 cfg%dtout = dtout
@@ -72,7 +77,6 @@ call check_nml_io(i, cfg%infile, "flags", compiler_vendor)
 cfg%potsolve = potsolve
 cfg%flagperiodic = flagperiodic
 cfg%flagoutput = flagoutput
-cfg%flagcap = flagcap
 
 rewind(u)
 read(u, nml=files, iostat=i)
@@ -178,7 +182,7 @@ end if
 if (namelist_exists(u,'capacitance')) then
   rewind(u)
   read(u, nml=capacitance, iostat=i)
-  !cfg%flagcap=flagcap    !FIXME:  need to regroup this from /flags/
+  cfg%flagcap=flagcap
   cfg%magcap=magcap
 end if
 
