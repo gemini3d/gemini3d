@@ -407,7 +407,7 @@ do while (t < cfg%tdur)
 
   !COMPUTE MAGNETIC FIELDS
   do ipoints=1,lpoints
-    if (myid == 0) then
+    if (myid == 0 .and. mod(ipoints,100)==0 .and. debug) then
       print *, 'magcalc.f90 --> Computing magnetic field for field point:  ',ipoints,' out of:  ',lpoints
       print *, '            --> ...for time:  ',cfg%ymd,UTsec
     end if
@@ -419,144 +419,17 @@ do while (t < cfg%tdur)
     call halo_end(Rx,Rxend,Rxtop,tag%Rx)
     call halo_end(Ry,Ryend,Rytop,tag%Ry)
     call halo_end(Rz,Rzend,Rztop,tag%Rz)
-!
-!        do ix2=1,lx2
-!          do ix1=1,lx1
-!            if (ieee_is_nan(Rxend(ix1,ix2)) .or. abs(Rxend(ix1,ix2))<Rmin) then
-!              if(myid2/=11) then
-!                print*,'Rx end:  ',myid2,myid3,Rxend(ix1,ix2),ix1,ix2
-!              end if
-!            end if
-!          end do
-!        end do
-!
-!        do ix3=1,lx3
-!          do ix1=1,lx1
-!            if (ieee_is_nan(Rxtop(ix1,ix3)) .or. abs(Rxtop(ix1,ix3))<Rmin) then
-!              if (myid3/=5) then
-!                print*,'Rx top:  ',myid2,myid3,Rxtop(ix1,ix3),ix1,ix3
-!              end if
-!            end if
-!          end do
-!        end do
-
-!
-!    !enforce a regulator on the distance variables to avoid div by zero
-!    where (Rx<Rmin .and. Rx>=0._wp)
-!      Rx=Rmin
-!    end where
-!    where (Ry<Rmin .and. Ry>=0._wp)
-!      Ry=Rmin
-!    end where
-!    where (Rz<Rmin .and. Rz>=0._wp)
-!      Rz=Rmin
-!    end where
-!    where (Rx>-1*Rmin .and. Rx<0._wp)
-!      Rx=-1*Rmin
-!    end where
-!    where (Ry>-1*Rmin .and. Ry<0._wp)
-!      Ry=-1*Rmin
-!    end where
-!    where (Rz>-1*Rmin .and. Rz<0._wp)
-!      Rz=-1*Rmin
-!    end where
-!
-!    where (Rxend<Rmin .and. Rxend>=0._wp)
-!      Rxend=Rmin
-!    end where
-!    where (Ryend<Rmin .and. Ryend>=0._wp)
-!      Ryend=Rmin
-!    end where
-!    where (Rzend<Rmin .and. Rzend>=0._wp)
-!      Rzend=Rmin
-!    end where
-!    where (Rxend>-1*Rmin .and. Rxend<0._wp)
-!      Rxend=-1*Rmin
-!    end where
-!    where (Ryend>-1*Rmin .and. Ryend<0._wp)
-!      Ryend=-1*Rmin
-!    end where
-!    where (Rzend>-1*Rmin .and. Rzend<0._wp)
-!      Rzend=-1*Rmin
-!    end where
-!
-!    where (Rxtop<Rmin .and. Rxtop>=0._wp)
-!      Rxtop=Rmin
-!    end where
-!    where (Rytop<Rmin .and. Rytop>=0._wp)
-!      Rytop=Rmin
-!    end where
-!    where (Rztop<Rmin .and. Rztop>=0._wp)
-!      Rztop=Rmin
-!    end where
-!    where (Rxtop>-1*Rmin .and. Rxtop<0._wp)
-!      Rxtop=-1*Rmin
-!    end where
-!    where (Rytop>-1*Rmin .and. Rytop<0._wp)
-!      Rytop=-1*Rmin
-!    end where
-!    where (Rztop>-1*Rmin .and. Rztop<0._wp)
-!      Rztop=-1*Rmin
-!    end where
-
-!    print*,myid,minval(abs(Rx)),minval(abs(Ry)),minval(abs(Rz)),minval(abs(Rxend)),minval(abs(Ryend)), &
-!            minval(abs(Rzend)),minval(abs(Rxtop)),minval(abs(Rytop)),minval(abs(Rztop))
 
     if (flag2D/=1) then
 !      Rcubed(:,:,:)=(Rx**2._wp+Ry**2._wp+Rz**2._wp)**(3._wp/2._wp)   !this really is R**3
       Rcubed(:,:,:)=(Rx**2._wp+Ry**2._wp+Rz**2._wp+Rmin**2._wp)**(3._wp/2._wp)   !this really is R**3
 
-!      do ix3=1,lx3
-!        do ix2=1,lx2
-!          do ix1=1,lx1
-!            if (ieee_is_nan(Rcubed(ix1,ix2,ix3)) .or. abs(Rcubed(ix1,ix2,ix3))<R3min) then
-!              print*,myid2,myid3,Rcubed(ix1,ix2,ix3),ix1,ix2,ix3
-!            end if
-!          end do
-!        end do
-!      end do
-!      print*,myid,minval(Rcubed)
-
-!      where(Rcubed<R3min)
-!        Rcubed=R3min
-!      end where
       call halo_end(Rcubed,Rcubedend,Rcubedtop,tag%Rcubed)
       if(myid3==lid3-1) Rcubedend=R3min     !< avoids div by zero on the end which is set by the haloing
       if(myid2==lid2-1) Rcubedtop=R3min
 
-        do ix2=1,lx2
-          do ix1=1,lx1
-            if (ieee_is_nan(Rcubedend(ix1,ix2)) .or. abs(Rcubedend(ix1,ix2))<R3min) then
-!              if ( myid2/=11 ) then
-                print*,'end:  ',myid2,myid3,Rcubedend(ix1,ix2),ix1,ix2
-!              end if
-            end if
-          end do
-        end do
-
-        do ix3=1,lx3
-          do ix1=1,lx1
-            if (ieee_is_nan(Rcubedtop(ix1,ix3)) .or. abs(Rcubedtop(ix1,ix3))<R3min) then
-!              if (myid3/=5) then
-                print*,'top:  ',myid2,myid3,Rcubedtop(ix1,ix3),ix1,ix3
-!              end if
-            end if
-          end do
-        end do
-
-!      where(Rcubedtop<R3min)
-!        Rcubedtop=R3min
-!      end where
-!      where(Rcubedend<R3min)
-!        Rcubedend=R3min
-!      end where
-
-      !print*, myid2,myid3,'--> Rcubed:  ',minval(Rcubed),maxval(Rcubed),minval(Rcubedend), &
-      !                                   maxval(Rcubedend),minval(Rcubedtop),minval(Rcubedtop)
 
       !! FIXME: MAY BE MISSING A CORNER POINT HERE???  NO I THINK IT'S OKAY BASED ON SOME SQUARES I DREW, haha...
-
-
       !Bx calculation
       integrand(:,:,:)=mu0/4._wp/pi*(Jy*Rz-Jz*Ry)/Rcubed
       integrandend(:,:)=mu0/4._wp/pi*(Jyend*Rzend-Jzend*Ryend)/Rcubedend
@@ -616,6 +489,8 @@ do while (t < cfg%tdur)
                         sum(integrandavgtop*dVtop(2:lx1,2:lx3))
     else
       Rcubed(:,:,:)=Rx**2+Ry**2    !not really R**3 in 2D, just the denominator of the integrand
+
+!FIXME:  also need a regulator here...
 !      where(Rcubed<R3min)
 !        Rcubed=R3min    !should be R**2???
 !      end where
@@ -653,8 +528,6 @@ do while (t < cfg%tdur)
       !! without dim= input it just sums everything which is what we want
     end if
   end do
-    !print *, myid2,myid3,'  --> Min/max values of field',minval(Br),maxval(Br),minval(Btheta),maxval(Btheta), &
-    !                                           minval(Bphi),maxval(Bphi)
 
 
   !A REDUCE OPERATION IS NEEDED HERE TO COMBINE MAGNETIC FIELDS (LINEAR SUPERPOSITION) FROM ALL WORKERS
