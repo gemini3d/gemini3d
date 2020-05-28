@@ -151,6 +151,7 @@ endif
 if (namelist_exists(u,'EIA')) then
   rewind(u)
   read(u, nml=EIA, iostat=i)
+  call check_nml_io(i, cfg%infile, "EIA", compiler_vendor)
   cfg%flagEIA=flagEIA
   cfg%v0equator=v0equator
 end if
@@ -159,6 +160,7 @@ end if
 if (namelist_exists(u,'neutral_BG')) then
   rewind(u)
   read(u, nml=neutral_BG, iostat=i)
+  call check_nml_io(i, cfg%infile, "neutral_BG", compiler_vendor)
   cfg%flagneuBG=flagneuBG
   cfg%dtneuBG=dtneuBG
 end if
@@ -167,6 +169,7 @@ end if
 if (namelist_exists(u,'precip_BG')) then
   rewind(u)
   read(u, nml=precip_BG, iostat=i)
+  call check_nml_io(i, cfg%infile, "precip_BG", compiler_vendor)
   cfg%PhiWBG=PhiWBG
   cfg%W0BG=W0BG
 end if
@@ -175,6 +178,7 @@ end if
 if (namelist_exists(u,'Jpar')) then
   rewind(u)
   read(u, nml=Jpar, iostat=i)
+  call check_nml_io(i, cfg%infile, "Jpar", compiler_vendor)
   cfg%flagJpar=flagJpar
 end if
 
@@ -182,6 +186,7 @@ end if
 if (namelist_exists(u,'capacitance')) then
   rewind(u)
   read(u, nml=capacitance, iostat=i)
+  call check_nml_io(i, cfg%infile, "capacitance", compiler_vendor)
   cfg%flagcap=flagcap
   cfg%magcap=magcap
 end if
@@ -190,6 +195,7 @@ end if
 if (namelist_exists(u,'diffusion')) then
   rewind(u)
   read(u, nml=diffusion, iostat=i)
+  call check_nml_io(i, cfg%infile, "diffusion", compiler_vendor)
   cfg%diffsolvetype=diffsolvetype
 end if
 
