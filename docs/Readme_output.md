@@ -63,17 +63,6 @@ TEC and magnetic field variations can be calculated as a post-processing step in
 An example of how to plot TEC computed by this script is included in `TECplot_map.m` in Gemini-matlab repo
 
 
-## Auxiliary fortran program
+## Computing magnetic field perturbations
 
-Note that there is also a utility that can compute magnetic fields from the currents calculated by GEMINI.
-This can be run by:
-
-```sh
-mpirun -np 4 ./magcalc /tmp/3d tests/data/test3d/input/magfieldpoints.dat
-```
-
-This will compute magnetic fields over a grid at ground level using currents computed from the 3Dtest simulation.  In order to run this program, you will need to create a set of field points at which the magnetic perturbations will be calculated.  For example, this could be a list of ground stations, a regular mesh, or a set of satellite tracks.
-
-### Visualizing magnetic field perturbations computed by magcalc.f90
-
-The example script `magplot_fort_map.m` shows an example of how to load the results of running magcalc.
+Magnetic field perturbations for a given simulation can be computed, after the fact, using a separate fortran mpi program, magcalc.  Detailed instructions are included in the magcalc readme, [./Readme_magcalc.md](./Readme_magcalc.md).
