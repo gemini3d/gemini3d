@@ -6,7 +6,10 @@ if(nowarn)
 endif()
 
 # static to help avoid missing runtime library issues
-
+# clean out prior libs to avoid false fails
+set(CMAKE_REQUIRED_LIBRARIES)
+set(CMAKE_REQURIED_INCLUDES)
+set(CMAKE_REQUIRED_FLAGS)
 if(CMAKE_Fortran_COMPILER_ID STREQUAL GNU)
   set(CMAKE_REQUIRED_FLAGS -static)
   check_fortran_source_compiles("end" static_ok SRC_EXT f90)
