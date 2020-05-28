@@ -183,4 +183,6 @@ and
 [Gemini-examples](https://github.com/gemini3d/GEMINI-examples)
 contain scripts used for various published and ongoing analyses.
 
-See [Readme_output](./docs/Readme_output.md)
+See [Readme_output](./docs/Readme_output.md) for a description of how to load the simulation output files and the different variable names, meanings, and units.  
+
+An auxiliary program, magcalc.f90, can be used to compute magnetic field perturbations from a complete disturbance simulation.  See [Readme_magcalc](./docs/Readme_magcalc.md) for a full description of how this program works.  
