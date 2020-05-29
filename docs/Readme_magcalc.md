@@ -52,6 +52,13 @@ The example script `magplot_fort_map.m` shows an example of how to load the resu
 One problematic aspect of magcalc is that you have to input the grid size into both the creation and plotting script and they must be consistent.  The corresponds to setting ```ltheta``` and ```lphi``` number of grid point in magnetic longitude and latitude in both the ```magcalc_setup.m``` scripts and ```magplot_fort_map.m``` scripts.  If these variables are not set propoerly the plotting program will not be able to read in, sort, and plot the data.  In the future this can be fixed by having magplot read in the grid size information from the input file that was created for the fortran program.  
 
 
+## Simluation vs. field point resolution
+
+The Biot-Savart law involves both source locations (i.e. the grid the simulated currents are computed on) and field points (independent locations where we wish to evaluate the magnetic field) - see the mathematical formulation document description of the magnetic calculations for equations.  The source location resolution is given by the resolution at which the simulation of the currents has been run.  
+
+The field point grid can typically be *much* coarser particularly if you intend to evaluate currents on the ground - viz. away from the ionospheric source region.  This is a consequence of the fact that higher-order multipole moments (having smaller spatial structures) fall off quickly with distance from the current source such that they do not need to be resolved at far-field points.  Often a grid covering a ground range of mlats and mlons can be just 40 x 40 points and sufficiently resolve most structure.  If you intend to evaluate the magnetic fields in the ionosphere there will be quite a lot of small scale structure and you will want to use a larger grid, e.g. 192 x 192 or perhaps event large depending on the scale of the currents you wish to resolve.  
+
+
 <!--- MZ may add this later
 ## Example HPC queue submission script
 
