@@ -2,7 +2,9 @@
 
 GEMINI includes a auxiliary program - ```magcalc.f90``` - that will compute magnetic field fluctuations (deviations from the Earth's main field) due to currents computed by the model.  Magcalc reads in the output from a *completed* GEMINI disturbance simulation, namely the three components of current density and then uses the Biot-Savart (Ampere's) Law to compute magnetic fields directly from these currents.  Magcalc will work for either 2D or 3D simulations.   
 
-Magcalc is fully parallelized, in particular making use of built-in mpi reduce functionality.  It is recommended that you run magcalc with the same number of processors and mpi image configuration as you ran the main simulation with.  
+Magcalc is fully parallelized, in particular making use of built-in mpi *reduce* functionality.  The full simulation grid is distributed to worker processes (domain parallelization) and each worker compute the piece of the Biot-Savart integral corresponding to their subdomains and all field points at which the field is to be evaluated (as specified by user input).  The root process then collects integral portions from each worker and adds them together to form an estimate of the Biot-Savart integral over the entire grid.  
+
+It is recommended that you run magcalc with the same number of processors and mpi image configuration as you ran the main simulation with.  
 
 
 ## Caveats
@@ -14,7 +16,7 @@ When using magcalc it is important to insure you have configured the GEMINI dist
 flagJpar=.true.
 /
 ```
-in the input configuration .nml file.  If you are using .ini file input then this parameter will be true by default.  While the program will work without a parallel current it may produce results of dubious quality.  
+in the input configuration .nml file.  If you are using .ini file input then this parameter will be true by default and no changes are required.  While the program will work without a parallel current it may produce results of dubious quality.  
 
 
 ## Running magcalc.bin
@@ -43,11 +45,11 @@ Other examples using magcalc setup scripts include:
 The low-resolution Tohoku examples, in particular, is one of the cheapest simulations to run (will run on a laptop in several hours) that will provide a good context in which to compute magnetic field perturbations.  
 
 
-### Visualizing magnetic field perturbations computed by magcalc.f90
+## Visualizing magnetic field perturbations computed by magcalc.f90
 
-The example script `magplot_fort_map.m` shows an example of how to load the results of running magcalc.
+The example script `magplot_fort_map.m` shows an example of how to load the results of running magcalc from a binary file into a MATLAB workspace and then plot these on a mapped grid.
 
-One problematic aspect of magcalc is that you have to input the grid size into both the creation and plotting script and they must be consistent.  Otherwise the plotting program will not be able to read in, sort, and plot the data.  
+One problematic aspect of magcalc is that you have to input the grid size into both the creation and plotting script and they must be consistent.  The corresponds to setting ```ltheta``` and ```lphi``` number of grid point in magnetic longitude and latitude in both the ```magcalc_setup.m``` scripts and ```magplot_fort_map.m``` scripts.  If these variables are not set propoerly the plotting program will not be able to read in, sort, and plot the data.  In the future this can be fixed by having magplot read in the grid size information from the input file that was created for the fortran program.  
 
 
 <!--- MZ may add this later
