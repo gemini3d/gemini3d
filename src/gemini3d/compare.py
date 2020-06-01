@@ -99,10 +99,11 @@ def compare_input(
                 plotdiff(a, b, k, times[0], outdir, refdir)
 
     # %% precipitation
-    if (new_indir / new_params["precdir"].name).is_dir():
+    prec_path = new_indir / new_params["precdir"].name
+    if prec_path.is_dir():
         # often we reuse precipitation inputs without copying over files
         ref = read_precip(ref_indir / ref_params["precdir"].name, times, file_format)
-        new = read_precip(new_indir / new_params["precdir"].name, times, file_format)
+        new = read_precip(prec_path, times, file_format)
         for k in ref.keys():
             b = ref[k]
             a = new[k]
@@ -121,13 +122,19 @@ def compare_input(
                 logging.error(f"{k}  {abs(a - b).max().item():.3e}")
                 if doplot and plotdiff is not None:
                     plotdiff(a, b, k, times[0], outdir, refdir)
+            else:
+                print(f"OK: {k}  {prec_path}")
+    else:
+        print(f"SKIP: precipitation {prec_path}", file=sys.stderr)
 
     # %% Efield
-    if (new_indir / new_params["E0dir"].name).is_dir():
+    efield_errs = 0
+    efield_path = new_indir / new_params["E0dir"].name
+    if efield_path.is_dir():
         # often we reuse Efield inputs without copying over files
         for t in times:
             ref = read_Efield(get_frame_filename(ref_indir / ref_params["E0dir"].name, t))
-            new = read_Efield(get_frame_filename(new_indir / new_params["E0dir"].name, t))
+            new = read_Efield(get_frame_filename(efield_path, t))
             for k in ("Exit", "Eyit", "Vminx1it", "Vmaxx1it"):
                 b = ref[k][1]
                 a = new[k][1]
@@ -136,10 +143,16 @@ def compare_input(
                     a.shape == b.shape
                 ), f"{k}: ref shape {b.shape} does not match data shape {a.shape}"
                 if not np.allclose(a, b):
-                    errs += 1
+                    efield_errs += 1
                     logging.error(f"{k}  {abs(a - b).max().item():.3e}")
                     if doplot and plotdiff is not None:
                         plotdiff(a, b, k, t, outdir, refdir)
+        if efield_errs == 0:
+            print(f"OK: Efield {efield_path}")
+    else:
+        print(f"SKIP: Efield {efield_path}")
+
+    errs += efield_errs
 
     return errs
 
