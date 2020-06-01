@@ -78,9 +78,9 @@ Here ```path``` is the path to the grid data file and ```realbits``` indicates 3
 
 The particular format of the output files is specified by the user in the input config.nml file.  There are three options:
 
-1. full output - output all state variables; very large file sizes will results, but this is required for building initial conditions and for some analysis that require detailed composition and temperature information.  Selecting full output will require a large amount of disk space  - *up to several terabytes per simulation*.  The other use for full output is that it is needed for any kind of simulation milestone/restart functionality.  
-2. average state parameter output - species averaged temperature and velocity; electron density.  Probably best for most uses not requiring a full output of the plasma state.  
-3. density only output - only electron density output.  Best for high-res instability runs where only the density is needed and the output cadence is high.  This choice for output saves an enormous amount of disk space.  
+1. full output (```flagoutput=1``` in the config.nml file) - output all state variables; very large file sizes will results, but this is required for building initial conditions and for some analysis that require detailed composition and temperature information.  Selecting full output will require a large amount of disk space  - *up to several terabytes per simulation*.  The other use for full output is that it is needed for any kind of simulation milestone/restart functionality.  
+2. average state parameter output (```flagoutput=2```) - species averaged temperature and velocity; electron density.  Probably best for most uses not requiring a full output of the plasma state.  
+3. density only output (```flagoutput=3```) - only electron density output.  Best for high-res instability runs where only the density is needed and the output cadence is high.  This choice for output saves an enormous amount of disk space.  
 
 MKSA units are used throughout.
 
@@ -96,11 +96,11 @@ MKSA units are used throughout.
 
 All three dimensional arrays have dimensions ordered as ```x1,x2,x3```, i.e. the first dimension corresponds to the *field-line* coordinate.  
 
-structure xg - members ```xg.x1,2,3``` are the position variables, ```xg.h*``` are the metric factors, ```xg.dx*``` are the finite differences,
+structure xg - members ```xg.x1,2,3``` are the position variables, ```xg.h*``` are the metric factors, ```xg.dx*``` are the finite differences.  For Cartesian coordinates x1 is altitude, x2 is eastward distance, x3 is northward distance (all meters).  
 
 ```xg.glat,glon``` are the latitudes and longitudes (degrees geographic) of each grid point, ```xg.alt``` is the altitude of each grid point.
 
-```xg.r,theta,phi``` - for each grid point:  radial distance (from ctr of Earth), magnetic colatitude (rads.), and magnetic longitude (rads.)
+```xg.r,theta,phi``` - for each grid point:  radial distance (from ctr of Earth), magnetic colatitude (rads.), and magnetic longitude (rads.).  The magnetic pole and moment is hard coded into the grid generation scripts.  
 
 ### Temperature variable
 
@@ -110,7 +110,7 @@ structure xg - members ```xg.x1,2,3``` are the position variables, ```xg.h*``` a
 
 ```ns``` (same indexing as temperature)
 
-### Drifts
+### Parallel to **B** (x1) Drifts
 
 ```vs1``` (same indexing as temperature)
 
@@ -134,3 +134,5 @@ An example of how to plot TEC computed by this script is included in `TECplot_ma
 ## Computing magnetic field perturbations
 
 Magnetic field perturbations for a given simulation can be computed, after the fact, using a separate fortran mpi program, magcalc.  Detailed instructions are included in the magcalc readme, [./Readme_magcalc.md](./Readme_magcalc.md).
+
+

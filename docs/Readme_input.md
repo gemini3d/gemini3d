@@ -11,6 +11,17 @@ A large number of examples (in addition to those included in the main repo) are 
 [GEMINI-scripts](https://github.com/gemini3d/GEMINI-scripts)
 repository.
 
+
+## Grid creation options
+
+Document grid creation details here...
+
+
+## Visualizing the grid
+
+Plotgrid...  But explain how to use it...
+
+
 ## Running with different boundary and initial conditions:
 
 GEMINI requires both initial and boundary conditions to run properly.  Specifically the user must provide a complete initial ionospheric state (density, drift, and temperature for all ionospheric species), along with boundary conditions for the electric potential (in 2D this are the top, bottom, and side potentials; in 3D the topside current density and side wave potentials).  Fluid state variables are given free-flow boundary conditions at the edges of the simulation grid.  The `io` module contains code dealing with input of initial state from file and the `potential_comm` and `potentialBCs_mumps` modules contains contains code dealing with boundary condition input.
@@ -34,6 +45,13 @@ By default these subroutines will be used for boundary conditions if file input 
 The file input is enabled by the appropriate flags (flagprecfile and flagE0file) set in the input `config.nml` file (see Section entitled "Input file format" above).
 All examples included in `initialize/` in both the GEMINI and GEMINI-scripts repositories use this method for setting boundary conditions.
 Note that the user can specify the boundary condition on a different grid from what the simulation is to be run with; in this case GEMINI will just interpolate the given boundary data onto the current simulation grid.
+
+
+### Electric field input files
+
+
+### Precipitation input files
+
 
 ### Initial conditions
 
