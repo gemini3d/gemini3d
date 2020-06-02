@@ -323,7 +323,7 @@ if (cfg%flagcap/=0) then
   J1halo(1:lx1,1:lx2,1:lx3)=E3
   call halo_pot(J1halo,tag%J1,x%flagper,.false.)
   divtmp=grad3D2(J1halo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
-  grad3E=divtmp(1:lx1,1:lx2,1:lx3)
+  grad2E=divtmp(1:lx1,1:lx2,1:lx3)
 
   !differentiate E3 in x3
   J1halo(1:lx1,1:lx2,1:lx3)=E3
