@@ -84,7 +84,7 @@ real(wp), parameter :: dtscale=2.0_wp
 !> INITIALIZE MESSING PASSING VARIABLES, IDS ETC.
 call mpisetup()
 
-call initial_config(cfg, lid2in, lid3in)
+call cli(cfg, lid2in, lid3in)
 !! initial_config is AFTER mpi_setup
 
 !> CHECK THE GRID SIZE AND ESTABLISH A PROCESS GRID
@@ -331,7 +331,7 @@ end block
 contains
 
 
-subroutine initial_config(cfg, lid2in, lid3in)
+subroutine cli(cfg, lid2in, lid3in)
 
 type(gemini_cfg), intent(out) :: cfg
 integer, intent(out) :: lid2in, lid3in
@@ -374,9 +374,9 @@ if (myid==0) then
 
   print *, '******************** input config ****************'
   print '(A)', cfg%infile
-  print '(A51,I6,A1,I0.2,A1,I0.2)', ' simulation year-month-day is:  ', ymd(1), '-', ymd(2),'-',ymd(3)
-  print '(A51,F10.3)', 'start time is:  ',cfg%UTsec0
-  print '(A51,F10.3)', 'duration is:  ',cfg%tdur
+  print '(A51,I6,A1,I0.2,A1,I0.2)', ' start year-month-day:  ', cfg%ymd0(1), '-', cfg%ymd0(2),'-', cfg%ymd0(3)
+  print '(A51,F10.3)', 'start time:  ',cfg%UTsec0
+  print '(A51,F10.3)', 'duration:  ',cfg%tdur
   print '(A51,F10.3)', 'output every:  ',cfg%dtout
   print '(A,/,A,/,A,/,A)', 'gemini.f90: using input data files:', cfg%indatsize, cfg%indatgrid, cfg%indatfile
 
@@ -448,7 +448,6 @@ end do
 call get_command_argument(2,argv)
 cfg%outdir = trim(argv)
 
-
-end subroutine initial_config
+end subroutine cli
 
 end program
