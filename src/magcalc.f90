@@ -78,100 +78,35 @@ real(wp) :: rmean,thetamean
 !! FOR SPECIFYING THE PROCESS GRID
 integer :: lid2in,lid3in
 
-!! FOR HANDLING INPUT
-integer :: argc, ierr
-character(256) :: argv
-logical :: file_exists
-
 !! REGULATOR FOR 1/R^3
 !real(wp), parameter :: R3min=1d11     !works well for 192x192 in situ
 real(wp), parameter :: R3min=1d9
-
-
 real(wp), parameter :: Rmin=5d3
 
+integer :: ierr
 
-!! ## MAIN PROGRAM
-debug=.true.     !FIXME:  hardcode this in for now, needs to be set based on user input...
-
-argc = command_argument_count()
-if (argc < 2) error stop 'magcalc.f90 --> must specify .ini file to configure simulation and location of'// &
-        'output data from simulation (i.e. plasma parameters and fields) and input field point file'
-
+!! --- MAIN PROGRAM
 
 !! INITIALIZE MESSING PASSING VARIABLES, IDS ETC.
 call mpisetup()
-print *, 'magcalc.f90 --> Process:  ',myid,' of:  ',lid-1,' online...'
 
+!> get command line parameters and simulation config
+call cli(cfg, fieldpointfile, lid2in, lid3in)
 
-!READ CONFIG FILE FROM OUTPUT DIRECTORY
-call get_command_argument(1,argv)
-cfg%outdir = trim(argv)
-cfg%infile = cfg%outdir//'/inputs/config.nml'
-inquire(file=cfg%infile,exist=file_exists)    !needed to deal with ini vs. nml inputs...
-if (.not. file_exists) then
-  cfg%infile = cfg%outdir//'/inputs/config.ini'
-end if
-if (myid==0) then
-  print *, 'Simulation data directory:  ', cfg%outdir
-  print *, 'Input config file:  ',cfg%infile
-end if
-call read_configfile(cfg)
-
-!> PRINT SOME DIAGNOSIC INFO FROM ROOT
-if (myid==0) then
-  call assert_file_exists(cfg%indatsize)
-  call assert_file_exists(cfg%indatgrid)
-  call assert_file_exists(cfg%indatfile)
-
-  print '(A,I6,A1,I0.2,A1,I0.2)', cfg%infile // ' simulation year-month-day is:  ',ymd(1),'-',ymd(2),'-',ymd(3)
-  print '(A51,F10.3)', 'start time is:  ',cfg%UTsec0
-  print '(A51,F10.3)', 'duration is:  ',cfg%tdur
-  print '(A51,F10.3)', 'output every:  ',cfg%dtout
-  print '(A,/,A,/,A,/,A)', 'gemini.f90: using input data files:', cfg%indatsize, cfg%indatgrid, cfg%indatfile
-
-  if(cfg%flagdneu==1) then
-    call assert_directory_exists(cfg%sourcedir)
-    print *, 'Neutral disturbance mlat,mlon:  ',cfg%sourcemlat,cfg%sourcemlon
-    print *, 'Neutral disturbance cadence (s):  ',cfg%dtneu
-    print *, 'Neutral grid resolution (m):  ',cfg%drhon,cfg%dzn
-    print *, 'Neutral disturbance data files located in directory:  ',cfg%sourcedir
-  end if
-
-  if (cfg%flagprecfile==1) then
-    call assert_directory_exists(cfg%precdir)
-    print '(A,F10.3)', 'Precipitation file input cadence (s):  ',cfg%dtprec
-    print *, 'Precipitation file input source directory:  ' // cfg%precdir
-  end if
-
-  if(cfg%flagE0file==1) then
-    call assert_directory_exists(cfg%E0dir)
-    print *, 'Electric field file input cadence (s):  ',cfg%dtE0
-    print *, 'Electric field file input source directory:  ' // cfg%E0dir
-  end if
-
-  if (cfg%flagglow==1) then
-    print *, 'GLOW enabled for auroral emission calculations.'
-    print *, 'GLOW electron transport calculation cadence (s): ', cfg%dtglow
-    print *, 'GLOW auroral emission output cadence (s): ', cfg%dtglowout
-  end if
-end if
+print *, 'DEBUG: fieldpointfile: ',fieldpointfile
 
 !ESTABLISH A PROCESS GRID
 !call grid_size(cfg%indatsize)
 !call mpigrid(lx2all,lx3all)    !following grid_size these are in scope
 !!CHECK THE GRID SIZE AND ESTABLISH A PROCESS GRID
 call grid_size(cfg%indatsize)
-if (argc > 2) then   !user specified process grid
-  call get_command_argument(3,argv)
-  read(argv,*) lid2in
-  call get_command_argument(4,argv)
-  read(argv,*) lid3in
+if (lid2in == -1) then
+  !! try to decide the process grid ourself
+  call mpigrid(lx2all,lx3all)
+else
+  !! user specified process grid
   call mpi_manualgrid(lx2all,lx3all,lid2in,lid3in)
-else     !try to decide the process grid ourself
-  call mpigrid(lx2all,lx3all)    !following grid_size these are in scope
 end if
-
 
 !> LOAD UP THE GRID STRUCTURE/MODULE VARS. FOR THIS SIMULATION - THIS ALSO PERMUTES DIMENSIONS OF 2D GRID, IF NEEDED
 if (myid==0) then
@@ -188,12 +123,6 @@ end if
 
 
 ! FIXME:  need to copy the input grid file into the output directory
-
-
-!GRAB THE INFO FOR WHERE THE OUTPUT CALCULATIONS ARE STORED
-call get_command_argument(2,argv)
-fieldpointfile=trim(argv)
-!! this file contains the field points at which we are computing magnetic perturbations, it will be copied into the output directory
 
 
 !SET UP DIRECTORY TO STORE OUTPUT FILES
@@ -314,9 +243,16 @@ allocate(Brall(lpoints),Bthetaall(lpoints),Bphiall(lpoints))
 !! only used by root, but I think workers need to have space allocated for this
 
 !! MAIN LOOP
-UTsec=cfg%UTsec0; it=1; t=0d0; tout=t;
-call dateinc(cfg%dtout,ymd,UTsec)     !skip first file
-it=3                              !don't trigger any special adaptations to filename
+UTsec=cfg%UTsec0
+ymd = cfg%ymd0
+it=1
+t=0
+tout=t
+
+call dateinc(cfg%dtout,ymd,UTsec)
+!! skip first file
+it=3
+!! don't trigger any special adaptations to filename
 do while (t < cfg%tdur)
   !TIME STEP CALCULATION
   dt=cfg%dtout    !only compute magnetic field at times when we've done output
@@ -546,6 +482,13 @@ do while (t < cfg%tdur)
   end if
 
 
+  if (cfg%dryrun) then
+    ierr = mpibreakdown()
+    if (ierr /= 0) error stop 'MAGCALC: dry run MPI shutdown failure'
+    stop "OK: MAGCALC dry run"
+  endif
+
+
   !OUTPUT SHOULD BE DONE FOR EVERY INPUT FILE THAT HAS BEEN READ IN
   if (myid==0) then
     call cpu_time(tstart)
@@ -595,5 +538,121 @@ if (ierr /= 0) then
 endif
 
 print '(/,A)', 'MAGCALC: simulation complete'
+
+
+contains
+
+
+subroutine cli(cfg, fieldpointfile, lid2in, lid3in)
+
+type(gemini_cfg), intent(out) :: cfg
+character(*), intent(out) :: fieldpointfile
+integer, intent(out) :: lid2in, lid3in
+
+integer :: argc, i
+character(256) :: argv
+character(8) :: date
+character(10) :: time
+
+logical :: file_exists
+
+argc = command_argument_count()
+if (argc < 2) then
+  print '(/,A)', 'MAGCALC: by Matthew Zettergren'
+  print '(A,/)', 'build system and software engineering by Michael Hirsch'
+  print '(A)', 'must specify input directory and fieldpoint file. Example:'
+  print '(/,A,/)', 'mpiexec -n 4 build/magcalc.bin test2d_fang test2d_fang/fieldpoint'
+  print '(A)', '-dryrun option allows quick check of first time step'
+  stop 'EOF: MAGCALC'
+  !! stops with de facto "skip test" return code
+endif
+
+call get_command_argument(0, argv)
+call date_and_time(date,time)
+print '(2A,I6,A3,I6,A)', trim(argv), ' Process:  ', myid,' / ',lid-1, ' at ' // date // 'T' // time
+
+
+!> READ CONFIG FILE FROM OUTPUT DIRECTORY
+call get_command_argument(1,argv)
+cfg%outdir = trim(argv)
+cfg%infile = cfg%outdir//'/inputs/config.nml'
+inquire(file=cfg%infile, exist=file_exists)    !needed to deal with ini vs. nml inputs...
+if (.not. file_exists) then
+  cfg%infile = cfg%outdir//'/inputs/config.ini'
+end if
+
+if (myid==0) then
+  print *, 'Simulation data directory:  ', cfg%outdir
+  print *, 'Input config file:  ',cfg%infile
+  print *, 'fieldpoint file: ', fieldpointfile
+end if
+
+call read_configfile(cfg)
+
+!> GRAB THE INFO FOR WHERE THE OUTPUT CALCULATIONS ARE STORED
+call get_command_argument(2,argv)
+fieldpointfile = trim(argv)
+!! this file contains the field points at which we are computing magnetic perturbations, it will be copied into the output directory
+
+!> PRINT SOME DIAGNOSIC INFO FROM ROOT
+if (myid==0) then
+  call assert_file_exists(cfg%indatsize)
+  call assert_file_exists(cfg%indatgrid)
+  call assert_file_exists(cfg%indatfile)
+
+  print '(A,I6,A1,I0.2,A1,I0.2)', cfg%infile // ' start year-month-day:  ',cfg%ymd0(1),'-',cfg%ymd0(2),'-',cfg%ymd0(3)
+  print '(A51,F10.3)', 'start time:  ',cfg%UTsec0
+  print '(A51,F10.3)', 'duration:  ',cfg%tdur
+  print '(A51,F10.3)', 'output every:  ',cfg%dtout
+  print '(A,/,A,/,A,/,A)', 'gemini.f90: using input data files:', cfg%indatsize, cfg%indatgrid, cfg%indatfile
+
+  if(cfg%flagdneu==1) then
+    call assert_directory_exists(cfg%sourcedir)
+    print *, 'Neutral disturbance mlat,mlon:  ',cfg%sourcemlat,cfg%sourcemlon
+    print *, 'Neutral disturbance cadence (s):  ',cfg%dtneu
+    print *, 'Neutral grid resolution (m):  ',cfg%drhon,cfg%dzn
+    print *, 'Neutral disturbance data files located in directory:  ',cfg%sourcedir
+  end if
+
+  if (cfg%flagprecfile==1) then
+    call assert_directory_exists(cfg%precdir)
+    print '(A,F10.3)', 'Precipitation file input cadence (s):  ',cfg%dtprec
+    print *, 'Precipitation file input source directory:  ' // cfg%precdir
+  end if
+
+  if(cfg%flagE0file==1) then
+    call assert_directory_exists(cfg%E0dir)
+    print *, 'Electric field file input cadence (s):  ',cfg%dtE0
+    print *, 'Electric field file input source directory:  ' // cfg%E0dir
+  end if
+
+  if (cfg%flagglow==1) then
+    print *, 'GLOW enabled for auroral emission calculations.'
+    print *, 'GLOW electron transport calculation cadence (s): ', cfg%dtglow
+    print *, 'GLOW auroral emission output cadence (s): ', cfg%dtglowout
+  end if
+end if
+
+!! default values
+lid2in = -1  !< sentinel
+
+do i = 3,argc
+  call get_command_argument(i,argv)
+
+  select case (argv)
+  case ('-d', '-debug')
+    debug = .true.
+  case ('-dryrun')
+    !! this is a no file output test mode that runs one time step then quits
+    !! it helps avoid HPC queuing when a simple setup error exists
+    cfg%dryrun = .true.
+  case ('-manual_grid')
+    call get_command_argument(i+1, argv)
+    read(argv,*) lid2in
+    call get_command_argument(i+2, argv)
+    read(argv,*) lid3in
+  end select
+end do
+end subroutine cli
 
 end program
