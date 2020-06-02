@@ -1,11 +1,12 @@
+program test_scalapack
 ! minimal Scalapack demo
-use, intrinsic :: iso_fortran_env, only: real64
+use, intrinsic :: iso_fortran_env, only: wp => real@realbits@
 
 implicit none (type, external)
 
 integer :: ictxt, myid, nprocs, mycol, myrow, npcol, nprow
-real(real64) :: eps
-real(real64), external :: pdlamch
+real(wp) :: eps
+real(wp), external :: @lamch@
 
 external :: blacs_pinfo, blacs_get, blacs_gridinit, blacs_gridinfo, blacs_gridexit, blacs_exit
 
@@ -19,7 +20,7 @@ call blacs_gridinit(ictxt, "C", nprocs, 1)
 
 call blacs_gridinfo(ictxt, nprow, npcol, myrow, mycol)
 
-eps = pdlamch(ictxt, 'E')
+eps = @lamch@(ictxt, 'E')
 
 if(myrow == mycol) print '(A, F10.6)', "OK: Scalapack Fortran  eps=", eps
 

@@ -5,23 +5,28 @@ COMMAND COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${MPIEXEC_MAX_NUMP
 
 set_tests_properties(unit:mpi_basic PROPERTIES
 TIMEOUT 15
-FIXTURES_SETUP MPIMUMPS)
+FIXTURES_SETUP mpi_fixture)
 
-# ---
+# --- SCALAPACK
 
 if("d" IN_LIST arith)
-  add_executable(gemini_scalapack_d test_scalapack_d.f90)
-  target_link_libraries(gemini_scalapack_d ${SCALAPACK_LIBRARIES} ${LAPACK_LIBRARIES} MPI::MPI_Fortran)
-  target_include_directories(gemini_scalapack_d PRIVATE ${SCALAPACK_INCLUDE_DIRS})
-
-  add_test(NAME unit:scalapack_d COMMAND gemini_scalapack_d)
-  set_tests_properties(unit:scalapack_d PROPERTIES
-  TIMEOUT 15
-  DEPENDS unit:mpi_basic
-  FIXTURES_SETUP MPIMUMPS)
+  set(lamch "pdlamch")
+elseif("s" IN_LIST arith)
+  set(lamch "pslamch")
 endif()
+configure_file(test_scalapack.in.f90 test_scalapack.f90)
+add_executable(gemini_scalapack ${CMAKE_CURRENT_BINARY_DIR}/test_scalapack.f90)
+target_link_libraries(gemini_scalapack ${SCALAPACK_LIBRARIES} ${LAPACK_LIBRARIES} MPI::MPI_Fortran)
+target_include_directories(gemini_scalapack PRIVATE ${SCALAPACK_INCLUDE_DIRS})
 
-# ---
+add_test(NAME unit:scalapack COMMAND gemini_scalapack)
+set_tests_properties(unit:scalapack PROPERTIES
+TIMEOUT 15
+FIXTURES_REQUIRED mpi_fixture
+FIXTURES_SETUP scalapack_fixture)
+
+
+# --- MUMPS
 add_executable(test_mumps test_mumps.f90)
 target_link_libraries(test_mumps mumps_interface MPI::MPI_Fortran)
 
@@ -31,8 +36,7 @@ WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
 set_tests_properties(unit:mumps_basic PROPERTIES
 TIMEOUT 15
-DEPENDS unit:mpi_basic
 PROCESSORS 2
 SKIP_RETURN_CODE 77
 RUN_SERIAL true
-FIXTURES_SETUP MPIMUMPS)
+FIXTURES_REQUIRED scalapack_fixture)
