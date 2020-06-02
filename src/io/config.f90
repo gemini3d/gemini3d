@@ -22,7 +22,8 @@ logical :: nooutput = .false.
 logical :: dryrun = .false.
 
 !> file information (files)
-character(:), allocatable :: infile,outdir,indatsize,indatgrid,indatfile,out_format
+character(:), allocatable :: infile,outdir,indatsize,indatgrid,indatfile,out_format, &
+  fieldpointfile
 
 !> neutral atmospheric perturbations
 integer :: flagdneu                           ! whether or not to include neutral perturbations from input files

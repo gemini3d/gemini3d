@@ -29,8 +29,6 @@ real(wp) :: UTsec
 integer, dimension(3) :: ymd
 !! year, month, day (current)
 
-character(:), allocatable :: fieldpointfile
-
 type(gemini_cfg) :: cfg
 !! most user parameters
 
@@ -91,9 +89,7 @@ integer :: ierr
 call mpisetup()
 
 !> get command line parameters and simulation config
-call cli(cfg, fieldpointfile, lid2in, lid3in)
-
-print *, 'DEBUG: fieldpointfile: ',fieldpointfile
+call cli(cfg, lid2in, lid3in)
 
 !ESTABLISH A PROCESS GRID
 !call grid_size(cfg%indatsize)
@@ -127,7 +123,7 @@ end if
 
 !SET UP DIRECTORY TO STORE OUTPUT FILES
 if (myid==0) then
-  call create_outdir_mag(cfg%outdir,fieldpointfile)
+  call create_outdir_mag(cfg%outdir, cfg%fieldpointfile)
 end if
 
 
@@ -139,7 +135,7 @@ allocate(Jx(lx1,lx2,lx3),Jy(lx1,lx2,lx3),Jz(lx1,lx2,lx3))
 !NOW DEAL WITH THE UNMPRIMED COORDINATES
 block
   integer :: u
-  open(newunit=u,file=fieldpointfile,status='old',form='unformatted',access='stream',action='read')
+  open(newunit=u,file=cfg%fieldpointfile,status='old',form='unformatted',access='stream',action='read')
   read(u) lpoints    !size of coordinates for field points
   if (myid==0) print *, 'magcalc.f90 --> Number of field points:  ',lpoints
   allocate(r(lpoints),theta(lpoints),phi(lpoints))
@@ -543,10 +539,9 @@ print '(/,A)', 'MAGCALC: simulation complete'
 contains
 
 
-subroutine cli(cfg, fieldpointfile, lid2in, lid3in)
+subroutine cli(cfg, lid2in, lid3in)
 
 type(gemini_cfg), intent(out) :: cfg
-character(*), intent(out) :: fieldpointfile
 integer, intent(out) :: lid2in, lid3in
 
 integer :: argc, i
@@ -581,18 +576,19 @@ if (.not. file_exists) then
   cfg%infile = cfg%outdir//'/inputs/config.ini'
 end if
 
+!> GRAB THE INFO FOR WHERE THE OUTPUT CALCULATIONS ARE STORED
+call get_command_argument(2,argv)
+cfg%fieldpointfile = trim(argv)
+!! this file contains the field points at which we are computing magnetic perturbations, it will be copied into the output directory
+
 if (myid==0) then
   print *, 'Simulation data directory:  ', cfg%outdir
   print *, 'Input config file:  ',cfg%infile
-  print *, 'fieldpoint file: ', fieldpointfile
+  print *, 'fieldpoint file: ', cfg%fieldpointfile
 end if
 
 call read_configfile(cfg)
 
-!> GRAB THE INFO FOR WHERE THE OUTPUT CALCULATIONS ARE STORED
-call get_command_argument(2,argv)
-fieldpointfile = trim(argv)
-!! this file contains the field points at which we are computing magnetic perturbations, it will be copied into the output directory
 
 !> PRINT SOME DIAGNOSIC INFO FROM ROOT
 if (myid==0) then
