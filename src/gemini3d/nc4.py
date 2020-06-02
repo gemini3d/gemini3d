@@ -169,7 +169,7 @@ def read_Efield(fn: Path) -> T.Dict[str, T.Any]:
     raise NotImplementedError("TODO: NetCDF4")
 
 
-def read_precip(fn: Path, times: T.Sequence[datetime]) -> T.Dict[str, T.Any]:
+def read_precip(fn: Path) -> T.Dict[str, T.Any]:
     """
     load precipitation
     """

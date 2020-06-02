@@ -47,7 +47,7 @@ def readgrid(path: Path, file_format: str = None) -> T.Dict[str, np.ndarray]:
     return grid
 
 
-def readdata(fn: Path, file_format: str = None) -> T.Dict[str, T.Any]:
+def readdata(fn: Path, file_format: str = None, *, E0dir: Path = None) -> T.Dict[str, T.Any]:
     """
     knowing the filename for a simulation time step, read the data for that time step
 
@@ -82,7 +82,8 @@ def readdata(fn: Path, file_format: str = None) -> T.Dict[str, T.Any]:
 
     fn = Path(fn).expanduser()
     fn_aurora = fn.parent / "aurmaps" / fn.name
-    fn_Efield = fn.parent / "Efield_inputs" / fn.name
+    if E0dir:
+        fn_Efield = E0dir / fn.name
 
     input_dir = fn.parent / "inputs"
     P = read_config(input_dir)
@@ -103,7 +104,7 @@ def readdata(fn: Path, file_format: str = None) -> T.Dict[str, T.Any]:
             dat.update(raw.loadglow_aurmap(fn_aurora, P["lxs"], len(wavelength)))
             dat["wavelength"] = wavelength
 
-        if fn_Efield.is_file():
+        if E0dir and fn_Efield.is_file():
             dat.update(read_Efield(fn_Efield))
     elif file_format == "h5":
         if hdf is None:
@@ -174,15 +175,13 @@ def read_Efield(fn: Path, file_format: str = None) -> T.Dict[str, T.Any]:
     return E
 
 
-def read_precip(path: Path, times: T.Sequence[datetime], file_format: str) -> T.Dict[str, T.Any]:
+def read_precip(fn: Path, file_format: str = None) -> T.Dict[str, T.Any]:
     """ load precipitation to disk
 
     Parameters
     ----------
-    path: pathlib.Path
-        directory to read files
-    times: list of datetime.datetime
-        times to load
+    fn: pathlib.Path
+        path to precipitation file
     file_format: str
         file format to read
 
@@ -192,14 +191,19 @@ def read_precip(path: Path, times: T.Sequence[datetime], file_format: str) -> T.
         precipitation
     """
 
+    fn = Path(fn).expanduser().resolve(strict=True)
+
+    if not file_format:
+        file_format = fn.suffix[1:]
+
     if file_format == "h5":
         if hdf is None:
             raise ImportError("pip install h5py")
-        dat = hdf.read_precip(path, times)
+        dat = hdf.read_precip(fn)
     elif file_format == "nc":
         if nc4 is None:
             raise ImportError("pip install netcdf4")
-        dat = nc4.read_precip(path, times)
+        dat = nc4.read_precip(fn)
     else:
         raise ValueError(f"unknown file format {file_format}")
 
@@ -259,6 +263,8 @@ def loadframe(simdir: Path, time: datetime, file_format: str = None) -> T.Dict[s
         top-level directory of simulation output
     time: datetime.datetime
         time to load from simulation output
+    file_format: str, optional
+        "hdf5", "nc" for hdf5 or netcdf4 respectively
 
     Returns
     -------

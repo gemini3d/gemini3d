@@ -63,13 +63,18 @@ def compare_all(
 
     input_errs = 0
     if not only or only == "in":
-        input_errs = compare_input(outdir, refdir, times, file_format, doplot)
+        input_errs = compare_input(outdir, refdir, tol, times, file_format, doplot)
 
     return output_errs, input_errs
 
 
 def compare_input(
-    outdir: Path, refdir: Path, times: T.Sequence[datetime], file_format: str, doplot: bool = True,
+    outdir: Path,
+    refdir: Path,
+    tol: T.Dict[str, float],
+    times: T.Sequence[datetime],
+    file_format: str,
+    doplot: bool = True,
 ) -> int:
 
     ref_params = read_config(refdir / "inputs")
@@ -85,45 +90,46 @@ def compare_input(
 
     errs = 0
     # %% initial conditions
-    for k in ref.keys():
+    names = ("ns", "Ts", "vs")
+    itols = ("N", "T", "V")
+
+    for k, j in zip(names, itols):
         b = ref[k]
         a = new[k]
 
-        assert a.shape == b.shape, f"{k}: ref shape {b.shape} does not match data shape {a.shape}"
+        assert a.shape == b.shape, f"{k}: ref shape {b.shape} != data shape {a.shape}"
 
-        if not np.allclose(a, b):
+        if not np.allclose(a, b, 0.1 * tol[f"rtol{j}"], 0.1 * tol[f"atol{j}"]):
             errs += 1
-            logging.error(f"{k}  {abs(a - b).max().item():.3e}")
+            logging.error(f"{k}  {err_pct(a, b):.1f} %")
 
             if doplot and plotdiff is not None:
                 plotdiff(a, b, k, times[0], outdir, refdir)
 
     # %% precipitation
+    prec_errs = 0
     prec_path = new_indir / new_params["precdir"].name
     if prec_path.is_dir():
         # often we reuse precipitation inputs without copying over files
-        ref = read_precip(ref_indir / ref_params["precdir"].name, times, file_format)
-        new = read_precip(prec_path, times, file_format)
-        for k in ref.keys():
-            b = ref[k]
-            a = new[k]
+        for t in times:
+            ref = read_precip(
+                get_frame_filename(ref_indir / ref_params["precdir"].name, t), file_format
+            )
+            new = read_precip(get_frame_filename(prec_path, t), file_format)
 
-            if isinstance(b, np.ndarray):
-                assert (
-                    a.shape == b.shape
-                ), f"{k}: ref shape {b.shape} does not match data shape {a.shape}"
-            elif isinstance(b, list):
-                assert len(a) == len(
-                    b
-                ), f"{k}: ref shape {len(b)} does not match data shape {len(a)}"
+            for k in ref.keys():
+                b = np.atleast_1d(ref[k])
+                a = np.atleast_1d(new[k])
 
-            if not np.allclose(a, b):
-                errs += 1
-                logging.error(f"{k}  {abs(a - b).max().item():.3e}")
-                if doplot and plotdiff is not None:
-                    plotdiff(a, b, k, times[0], outdir, refdir)
-            else:
-                print(f"OK: {k}  {prec_path}")
+                assert a.shape == b.shape, f"{k}: ref shape {b.shape} != data shape {a.shape}"
+
+                if not np.allclose(a, b, tol["rtol"], tol["atol"]):
+                    prec_errs += 1
+                    logging.error(f"{k} {t}  {err_pct(a, b):.1f} %")
+                    if doplot and plotdiff is not None:
+                        plotdiff(a, b, k, t, outdir, refdir)
+        if prec_errs == 0:
+            print(f"OK: {k}  {prec_path}")
     else:
         print(f"SKIP: precipitation {prec_path}", file=sys.stderr)
 
@@ -133,18 +139,19 @@ def compare_input(
     if efield_path.is_dir():
         # often we reuse Efield inputs without copying over files
         for t in times:
-            ref = read_Efield(get_frame_filename(ref_indir / ref_params["E0dir"].name, t))
-            new = read_Efield(get_frame_filename(efield_path, t))
+            ref = read_Efield(
+                get_frame_filename(ref_indir / ref_params["E0dir"].name, t), file_format
+            )
+            new = read_Efield(get_frame_filename(efield_path, t), file_format)
             for k in ("Exit", "Eyit", "Vminx1it", "Vmaxx1it"):
                 b = ref[k][1]
                 a = new[k][1]
 
-                assert (
-                    a.shape == b.shape
-                ), f"{k}: ref shape {b.shape} does not match data shape {a.shape}"
-                if not np.allclose(a, b):
+                assert a.shape == b.shape, f"{k}: ref shape {b.shape} != data shape {a.shape}"
+
+                if not np.allclose(a, b, tol["rtol"], tol["atol"]):
                     efield_errs += 1
-                    logging.error(f"{k}  {abs(a - b).max().item():.3e}")
+                    logging.error(f"{k} {t}  {err_pct(a, b):.1f} %")
                     if doplot and plotdiff is not None:
                         plotdiff(a, b, k, t, outdir, refdir)
         if efield_errs == 0:
@@ -155,6 +162,12 @@ def compare_input(
     errs += efield_errs
 
     return errs
+
+
+def err_pct(a: np.ndarray, b: np.ndarray) -> float:
+    """ compute maximum error percent """
+
+    return (abs(a - b).max() / abs(b).max()) * 100
 
 
 def compare_output(
@@ -183,12 +196,12 @@ def compare_output(
         for k, j in zip(names, itols):
             a = A[k][1]
             b = B[k][1]
-            assert (
-                a.shape == b.shape
-            ), f"{k} time {i} {t}: ref shape {b.shape} does not match data shape {a.shape}"
-            if not np.allclose(a, b, tol[f"rtol{j}"], tol[f"atol{j}"], True):
+
+            assert a.shape == b.shape, f"{k} time {i} {t}: shape: ref {b.shape} != data {a.shape}"
+
+            if not np.allclose(a, b, tol[f"rtol{j}"], tol[f"atol{j}"]):
                 errs += 1
-                logging.error(f"{k} {st}   {abs(a - b).max().item():.3e}")
+                logging.error(f"{k} {st}   {err_pct(a, b):.1f}")
                 if doplot and plotdiff is not None:
                     plotdiff(a, b, k, t, outdir, refdir)
         # %% assert time steps have unique output (earth always rotating...)

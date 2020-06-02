@@ -278,24 +278,18 @@ def write_Efield(outdir: Path, E: T.Dict[str, np.ndarray]):
                 f[f"/{k}"] = E[k][i, :].astype(np.float32)
 
 
-def read_precip(path: Path, times: T.Sequence[datetime]) -> T.Dict[str, T.Any]:
+def read_precip(fn: Path) -> T.Dict[str, T.Any]:
 
     # with h5py.File(path / "simsize.h5", "r") as f:
     #     dat["llon"] = f["/llon"][()]
     #     dat["llat"] = f["/llat"][()]
 
-    with h5py.File(path / "simgrid.h5", "r") as f:
+    with h5py.File(fn.parent / "simgrid.h5", "r") as f:
         dat = {"mlon": f["/mlon"][:], "mlat": f["/mlat"][:]}
 
-    dat["Q"] = []
-    dat["E0"] = []
-
-    for t in times:
-        fn = path / (datetime2ymd_hourdec(t) + ".h5")
-
-        with h5py.File(fn, "r") as f:
-            for k in ("Q", "E0"):
-                dat[k].append(f[f"/{k}p"][:])
+    with h5py.File(fn, "r") as f:
+        for k in ("Q", "E0"):
+            dat[k] = f[f"/{k}p"][:]
 
     return dat
 
