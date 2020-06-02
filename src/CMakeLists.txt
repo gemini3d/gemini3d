@@ -41,6 +41,9 @@ target_link_libraries(gemini.bin PRIVATE advec calculus config const collision d
   ${LAPACK_LIBRARIES})  # necessary for self-compiled
 set_target_properties(gemini.bin PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
+add_test(NAME unit:gemini_exe_ok COMMAND $<TARGET_FILE:gemini.bin>)
+set_tests_properties(unit:gemini_exe_ok PROPERTIES PASS_REGULAR_EXPRESSION "EOF: Gemini-3D")
+
 #--------magnetic field calculation executable---------------
 add_executable(magcalc.bin magcalc.f90)
 target_link_libraries(magcalc.bin PRIVATE config const grid io mesh mpimod pathlib reader sanity_check timeutils)
