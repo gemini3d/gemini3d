@@ -140,7 +140,7 @@ def check_gemini_exe(gemexe: Pathlike) -> str:
     gemexe = str(Path(gemexe).resolve())
 
     ret = subprocess.run(gemexe, stdout=subprocess.DEVNULL)
-    if ret.returncode != 77:
+    if ret.returncode != 0:
         raise RuntimeError(
             f"\n{gemexe} was not runnable on your platform. Try recompiling on this computer type."
             "E.g. different HPC nodes may not have the CPU feature sets."

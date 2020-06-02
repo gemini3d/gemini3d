@@ -49,4 +49,7 @@ add_executable(magcalc.bin magcalc.f90)
 target_link_libraries(magcalc.bin PRIVATE config const grid io mesh mpimod pathlib reader sanity_check timeutils)
 set_target_properties(magcalc.bin PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
+add_test(NAME unit:magcalc_exe_ok COMMAND $<TARGET_FILE:magcalc.bin>)
+set_tests_properties(unit:magcalc_exe_ok PROPERTIES PASS_REGULAR_EXPRESSION "EOF: MAGCALC")
+
 set_targ_props(calculus collision config const fang fang_run io ionization gbsv logging multifluid neutral pathlib precipBCs reader sanity_check sources temporal timeutils)
