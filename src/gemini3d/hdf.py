@@ -104,7 +104,7 @@ def write_state(time: datetime, ns: np.ndarray, vs: np.ndarray, Ts: np.ndarray, 
 
 def readgrid(fn: Path) -> T.Dict[str, np.ndarray]:
     """
-    get simulation dimensions
+    get simulation grid
 
     Parameters
     ----------
@@ -221,12 +221,12 @@ def read_Efield(fn: Path) -> T.Dict[str, T.Any]:
     load electric field
     """
 
-    # sizefn = fn.parent / "simsize.h5"  # NOT the whole sim simsize.dat
+    # sizefn = fn.with_name("simsize.h5")  # NOT the whole sim simsize.dat
     # with h5py.File(sizefn, "r") as f:
     #     E["llon"] = f["/llon"][()]
     #     E["llat"] = f["/llat"][()]
 
-    gridfn = fn.parent / "simgrid.h5"  # NOT the whole sim simgrid.dat
+    gridfn = fn.with_name("simgrid.h5")  # NOT the whole sim simgrid.dat
     with h5py.File(gridfn, "r") as f:
         E = {"mlon": f["/mlon"][:], "mlat": f["/mlat"][:]}
 
@@ -284,7 +284,7 @@ def read_precip(fn: Path) -> T.Dict[str, T.Any]:
     #     dat["llon"] = f["/llon"][()]
     #     dat["llat"] = f["/llat"][()]
 
-    with h5py.File(fn.parent / "simgrid.h5", "r") as f:
+    with h5py.File(fn.with_name("simgrid.h5"), "r") as f:
         dat = {"mlon": f["/mlon"][:], "mlat": f["/mlat"][:]}
 
     with h5py.File(fn, "r") as f:

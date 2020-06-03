@@ -5,6 +5,7 @@ NetCDF4 file IO
 from netCDF4 import Dataset
 from pathlib import Path
 import typing as T
+import logging
 import numpy as np
 from datetime import datetime
 
@@ -41,7 +42,33 @@ def get_simsize(path: Path) -> T.Tuple[int, ...]:
 
 
 def readgrid(fn: Path) -> T.Dict[str, np.ndarray]:
-    raise NotImplementedError("TODO: NetCDF4 simgrid.nc")
+    """
+    get simulation grid
+
+    Parameters
+    ----------
+    fn: pathlib.Path
+        filepath to simgrid
+
+    Returns
+    -------
+    grid: dict
+        grid parameters
+    """
+
+    grid: T.Dict[str, T.Any] = {}
+
+    if not fn.is_file():
+        logging.error(f"{fn} grid file is not present. Will try to load rest of data.")
+        return grid
+
+    grid["lxs"] = get_simsize(fn.with_name("simsize.nc"))
+
+    with Dataset(fn, "r") as f:
+        for key in f.variables:
+            grid[key] = f[key][:]
+
+    return grid
 
 
 def write_grid(size_fn: Path, grid_fn: Path, xg: T.Dict[str, T.Any]):
@@ -166,14 +193,40 @@ def read_Efield(fn: Path) -> T.Dict[str, T.Any]:
     """
     load electric field
     """
-    raise NotImplementedError("TODO: NetCDF4")
+
+    # NOT the whole sim simsize
+    # with Dataset(fn.with_name("simsize.nc") , "r") as f:
+    #     E["llon"] = f["/llon"][()]
+    #     E["llat"] = f["/llat"][()]
+
+    with Dataset(fn.with_name("simgrid.nc"), "r") as f:
+        E = {"mlon": f["/mlon"][:], "mlat": f["/mlat"][:]}
+
+    with Dataset(fn, "r") as f:
+        E["flagdirich"] = f["flagdirich"]
+        for p in ("Exit", "Eyit", "Vminx1it", "Vmaxx1it"):
+            E[p] = [("x2", "x3"), f[p][:]]
+        for p in ("Vminx2ist", "Vmaxx2ist"):
+            E[p] = [("x2",), f[p][:]]
+        for p in ("Vminx3ist", "Vmaxx3ist"):
+            E[p] = [("x3",), f[p][:]]
+
+    return E
 
 
 def read_precip(fn: Path) -> T.Dict[str, T.Any]:
-    """
-    load precipitation
-    """
-    raise NotImplementedError("TODO: NetCDF4")
+    # with Dataset(fn.with_name("simsize.nc"), "r") as f:
+    #     dat["llon"] = f["/llon"][()]
+    #     dat["llat"] = f["/llat"][()]
+
+    with Dataset(fn.with_name("simgrid.nc"), "r") as f:
+        dat = {"mlon": f["/mlon"][:], "mlat": f["/mlat"][:]}
+
+    with Dataset(fn, "r") as f:
+        for k in ("Q", "E0"):
+            dat[k] = f[f"/{k}p"][:]
+
+    return dat
 
 
 def write_Efield(outdir: Path, E: T.Dict[str, np.ndarray]):
@@ -256,7 +309,7 @@ def loadframe3d_curv(fn: Path, lxs: T.Sequence[int]) -> T.Dict[str, T.Any]:
     end users should normally use loadframe() instead
     """
 
-    #    grid = readgrid(fn.parent / "inputs/simgrid.h5")
+    #    grid = readgrid(fn.parent / "inputs/simgrid.nc")
     #    dat = xarray.Dataset(
     #        coords={"x1": grid["x1"][2:-2], "x2": grid["x2"][2:-2], "x3": grid["x3"][2:-2]}
     #    )
@@ -322,7 +375,7 @@ def loadframe3d_curvavg(fn: Path, lxs: T.Sequence[int]) -> T.Dict[str, T.Any]:
     fn: pathlib.Path
         filename of this timestep of simulation output
     """
-    #    grid = readgrid(fn.parent / "inputs/simgrid.h5")
+    #    grid = readgrid(fn.parent / "inputs/simgrid.nc")
     #    dat = xarray.Dataset(
     #        coords={"x1": grid["x1"][2:-2], "x2": grid["x2"][2:-2], "x3": grid["x3"][2:-2]}
     #    )
