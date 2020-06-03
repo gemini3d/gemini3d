@@ -40,8 +40,6 @@ logical :: flgcap
 real(wp) :: magcap
 integer :: diffsolvetype
 
-character(5) :: compiler_vendor
-
 namelist /base/ ymd, UTsec0, tdur, dtout, activ, tcfl, Teinf
 namelist /files/ file_format, indat_size, indat_grid, indat_file
 namelist /flags/ potsolve, flagperiodic, flagoutput, &
@@ -57,12 +55,10 @@ namelist /Jpar/ flagJpar
 namelist /capacitance/ flagcap,magcap     ! later need to regroup these in a way that is more logical now there are so many more inputs
 namelist /diffusion/ diffsolvetype
 
-compiler_vendor = get_compiler_vendor()
-
 open(newunit=u, file=cfg%infile, status='old', action='read')
 
 read(u, nml=base, iostat=i)
-call check_nml_io(i, cfg%infile, "base", compiler_vendor)
+call check_nml_io(i, cfg%infile, "base")
 cfg%ymd0 = ymd
 cfg%UTsec0 = UTsec0
 cfg%tdur = tdur
@@ -73,14 +69,14 @@ cfg%Teinf = Teinf
 
 rewind(u)
 read(u, nml=flags, iostat=i)
-call check_nml_io(i, cfg%infile, "flags", compiler_vendor)
+call check_nml_io(i, cfg%infile, "flags")
 cfg%potsolve = potsolve
 cfg%flagperiodic = flagperiodic
 cfg%flagoutput = flagoutput
 
 rewind(u)
 read(u, nml=files, iostat=i)
-call check_nml_io(i, cfg%infile, "files", compiler_vendor)
+call check_nml_io(i, cfg%infile, "files")
 
 !> auto file_format if not specified
 if (len_trim(file_format) > 0) then
@@ -98,7 +94,7 @@ if (namelist_exists(u, "neutral_perturb", verbose)) then
   cfg%flagdneu = 1
   rewind(u)
   read(u, nml=neutral_perturb, iostat=i)
-  call check_nml_io(i, cfg%infile, "neutral_perturb", compiler_vendor)
+  call check_nml_io(i, cfg%infile, "neutral_perturb")
   cfg%sourcedir = expanduser(source_dir)
   cfg%interptype = interptype
   cfg%sourcemlat = sourcemlat
@@ -116,7 +112,7 @@ if (namelist_exists(u, "precip", verbose)) then
   cfg%flagprecfile = 1
   rewind(u)
   read(u, nml=precip, iostat=i)
-  call check_nml_io(i, cfg%infile, "precip", compiler_vendor)
+  call check_nml_io(i, cfg%infile, "precip")
   cfg%precdir = expanduser(prec_dir)
   cfg%dtprec = dtprec
 else
@@ -128,7 +124,7 @@ if (namelist_exists(u, "efield", verbose)) then
   cfg%flagE0file = 1
   rewind(u)
   read(u, nml=efield, iostat=i)
-  call check_nml_io(i, cfg%infile, "efield", compiler_vendor)
+  call check_nml_io(i, cfg%infile, "efield")
   cfg%E0dir = expanduser(E0_dir)
   cfg%dtE0 = dtE0
 else
@@ -140,7 +136,7 @@ if (namelist_exists(u, "glow", verbose)) then
   cfg%flagglow = 1
   rewind(u)
   read(u, nml=glow, iostat=i)
-  call check_nml_io(i, cfg%infile, "glow", compiler_vendor)
+  call check_nml_io(i, cfg%infile, "glow")
   cfg%dtglow = dtglow
   cfg%dtglowout = dtglowout
 else
@@ -151,7 +147,7 @@ endif
 if (namelist_exists(u,'EIA')) then
   rewind(u)
   read(u, nml=EIA, iostat=i)
-  call check_nml_io(i, cfg%infile, "EIA", compiler_vendor)
+  call check_nml_io(i, cfg%infile, "EIA")
   cfg%flagEIA=flagEIA
   cfg%v0equator=v0equator
 end if
@@ -160,7 +156,7 @@ end if
 if (namelist_exists(u,'neutral_BG')) then
   rewind(u)
   read(u, nml=neutral_BG, iostat=i)
-  call check_nml_io(i, cfg%infile, "neutral_BG", compiler_vendor)
+  call check_nml_io(i, cfg%infile, "neutral_BG")
   cfg%flagneuBG=flagneuBG
   cfg%dtneuBG=dtneuBG
 end if
@@ -169,7 +165,7 @@ end if
 if (namelist_exists(u,'precip_BG')) then
   rewind(u)
   read(u, nml=precip_BG, iostat=i)
-  call check_nml_io(i, cfg%infile, "precip_BG", compiler_vendor)
+  call check_nml_io(i, cfg%infile, "precip_BG")
   cfg%PhiWBG=PhiWBG
   cfg%W0BG=W0BG
 end if
@@ -178,7 +174,7 @@ end if
 if (namelist_exists(u,'Jpar')) then
   rewind(u)
   read(u, nml=Jpar, iostat=i)
-  call check_nml_io(i, cfg%infile, "Jpar", compiler_vendor)
+  call check_nml_io(i, cfg%infile, "Jpar")
   cfg%flagJpar=flagJpar
 end if
 
@@ -186,7 +182,7 @@ end if
 if (namelist_exists(u,'capacitance')) then
   rewind(u)
   read(u, nml=capacitance, iostat=i)
-  call check_nml_io(i, cfg%infile, "capacitance", compiler_vendor)
+  call check_nml_io(i, cfg%infile, "capacitance")
   cfg%flagcap=flagcap
   cfg%magcap=magcap
 end if
@@ -195,7 +191,7 @@ end if
 if (namelist_exists(u,'diffusion')) then
   rewind(u)
   read(u, nml=diffusion, iostat=i)
-  call check_nml_io(i, cfg%infile, "diffusion", compiler_vendor)
+  call check_nml_io(i, cfg%infile, "diffusion")
   cfg%diffsolvetype=diffsolvetype
 end if
 
@@ -238,13 +234,13 @@ if (debug) print *, 'namelist ', nml, namelist_exists
 end function namelist_exists
 
 
-subroutine check_nml_io(i, filename, namelist, vendor)
+subroutine check_nml_io(i, filename, namelist)
 !! checks for EOF and gives helpful error
 !! this accomodates non-Fortran 2018 error stop with variable character
 
 integer, intent(in) :: i
 character(*), intent(in) :: filename
-character(*), intent(in), optional :: namelist, vendor
+character(*), intent(in), optional :: namelist
 
 character(:), allocatable :: nml, msg
 
@@ -259,25 +255,24 @@ if (is_iostat_end(i)) then
 endif
 
 msg = ""
-if (present(vendor)) then
-  select case (vendor)
-  case ("Intel")
-    !! https://software.intel.com/en-us/fortran-compiler-developer-guide-and-reference-list-of-run-time-error-messages
-    select case (i)
-    case (19)
-      msg = "mismatch between variable names in namelist and Fortran code, or problem in variable specification in file"
-    case (623)
-      msg = "variable specified in Fortran code missing from Namelist file"
-    case (17,18,624,625,626,627,628,680,750,759)
-      msg = "namelist file format problem"
-    end select
-  case ("GCC", "GNU")
-    select case (i)
-    case (5010)
-      msg = "mismatch between variable names in namelist and Fortran code, or problem in variable specification in file"
-    end select
+select case (get_compiler_vendor())
+case ("Intel")
+  !! https://software.intel.com/en-us/fortran-compiler-developer-guide-and-reference-list-of-run-time-error-messages
+  select case (i)
+  case (19)
+    msg = "mismatch between variable names in namelist and Fortran code, or problem in variable specification in file"
+  case (623)
+    msg = "variable specified in Fortran code missing from Namelist file"
+  case (17,18,624,625,626,627,628,680,750,759)
+    msg = "namelist file format problem"
   end select
-endif
+case ("GCC", "GNU")
+  select case (i)
+  case (5010)
+    msg = "mismatch between variable names in namelist and Fortran code, or problem in variable specification in file"
+  end select
+end select
+
 
 if (len(msg)==0) write(stderr,*) "namelist read error code",i
 

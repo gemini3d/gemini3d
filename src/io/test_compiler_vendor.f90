@@ -4,7 +4,7 @@ use config, only : get_compiler_vendor
 
 implicit none (type, external)
 
-character(:), allocatable :: vendor
+character(5) :: vendor
 
 vendor = get_compiler_vendor()
 

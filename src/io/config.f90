@@ -109,8 +109,8 @@ endif
 end subroutine read_configfile
 
 
-function get_compiler_vendor() result(vendor)
-character(:), allocatable :: vendor
+character(5) function get_compiler_vendor() result(vendor)
+
 character(80) :: cvers
 integer :: i, j
 character(*), parameter :: vendors(2) = [character(5) :: "Intel", "GCC"]
@@ -118,19 +118,17 @@ character(*), parameter :: vendors(2) = [character(5) :: "Intel", "GCC"]
 cvers = compiler_version()
 
 do j = 1,size(vendors)
-  i = index(cvers, trim(vendors(j)))
-  if (i > 0) then
-    vendor = trim(vendors(j))
-    exit
-  endif
-enddo
+  vendor = vendors(j)
+  i = index(cvers, vendor)
+  if (i > 0) exit
+end do
 
-if(vendor=="GCC") vendor = "GNU"
-
-if(allocated(vendor)) return
-
-vendor = ""
-write(stderr,'(A,/,A)') "could not determine compiler vendor from",cvers
+if(vendor=="GCC") then
+  vendor = "GNU"
+elseif(i == 0) then
+  vendor = ""
+  write(stderr,'(A,/,A)') "could not determine compiler vendor from",cvers
+end if
 
 end function get_compiler_vendor
 
