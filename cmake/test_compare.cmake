@@ -10,6 +10,7 @@ if(python_ok AND hdf5)
 
   set_tests_properties(gemini:compare:hdf5:${TESTNAME}:python PROPERTIES
   TIMEOUT 30
+  DEPENDS gemini:hdf5:${TESTNAME}
   REQUIRED_FILES ${_outdir}/inputs/config.nml
   SKIP_RETURN_CODE 77)
 endif()
@@ -21,6 +22,7 @@ if(python_ok AND netcdf)
 
   set_tests_properties(gemini:compare:netcdf:${TESTNAME}:python PROPERTIES
   TIMEOUT 30
+  DEPENDS gemini:netcdf:${TESTNAME}
   REQUIRED_FILES ${_outdir}/inputs/config.nml
   SKIP_RETURN_CODE 77)
 endif()
@@ -38,13 +40,13 @@ set(_reltol 0.15)
 # this large relative tolerance is because h5diff can only do rel or abs, while Python can do both
 # and so h5diff has to be looser for miniscule numerical noise.
 
-if(HDF5_DIFF_EXECUTABLE AND EXISTS "${_outdir}/20130220_18300.000000.h5")
+if(HDF5_DIFF_EXECUTABLE)
   add_test(NAME gemini:compare:${TESTNAME}:h5diff
   COMMAND ${HDF5_DIFF_EXECUTABLE} --relative=${_reltol} ${_outdir}/20130220_18300.000000.h5 ${_refdir}/20130220_18300.000000.h5)
 
   set_tests_properties(gemini:compare:${TESTNAME}:h5diff PROPERTIES
-  TIMEOUT 15
-  REQUIRED_FILES "${_outdir}/20130220_18300.000000.h5;${_refdir}/20130220_18300.000000.h5")
+  DEPENDS gemini:hdf5:${TESTNAME}
+  TIMEOUT 15)
 endif()
 
 endfunction(h5diff_compare)
