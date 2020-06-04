@@ -1,6 +1,5 @@
 name: ci_macos
 env:
-  CI: true
   CMAKE_GENERATOR: Ninja
 
 on:
@@ -16,7 +15,7 @@ jobs:
     runs-on: macos-latest
     steps:
     - uses: actions/checkout@v2
-    - uses: actions/setup-python@v1
+    - uses: actions/setup-python@v2
       with:
         python-version: '3.7'
     # leave as 3.7 to avoid pip install in 3.8 but run in 3.7
@@ -24,7 +23,7 @@ jobs:
     - run: brew install pkg-config ninja lapack open-mpi hdf5 scalapack
 
 # CI is too slow for 3d_glow
-    - run: ctest -S cdash.cmake -E 3d -VV
+    - run: ctest -S setup.cmake -E 3d -VV
       env:
         FC: gfortran-9
         CC: gcc-9

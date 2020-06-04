@@ -64,4 +64,12 @@ if(NOT EXISTS ${CTEST_BINARY_DIRECTORY}/CMakeCache.txt)
 endif()
 ctest_build(BUILD ${CTEST_BINARY_DIRECTORY} CONFIGURATION ${CTEST_BUILD_CONFIGURATION})
 ctest_test(BUILD ${CTEST_BINARY_DIRECTORY})
-ctest_submit()
+
+# using ctest_submit makes error code 0 even if test(s) failed!
+if(DEFINED ENV{CI})
+  set(CI $ENV{CI})
+endif()
+
+if(NOT CI)
+  ctest_submit()
+endif()

@@ -67,7 +67,7 @@ Requirements:
 3. Build Gemini and run self-test
 
   ```sh
-  ctest -S cdash.cmake -VV
+  ctest -S setup.cmake -VV
   ```
 
 GEMINI has self tests that compare the output from a "known" test problem to a reference output.
@@ -183,6 +183,6 @@ and
 [Gemini-examples](https://github.com/gemini3d/GEMINI-examples)
 contain scripts used for various published and ongoing analyses.
 
-See [Readme_output](./docs/Readme_output.md) for a description of how to load the simulation output files and the different variable names, meanings, and units.  
+See [Readme_output](./docs/Readme_output.md) for a description of how to load the simulation output files and the different variable names, meanings, and units.
 
-An auxiliary program, magcalc.f90, can be used to compute magnetic field perturbations from a complete disturbance simulation.  See [Readme_magcalc](./docs/Readme_magcalc.md) for a full description of how this program works.  
+An auxiliary program, magcalc.f90, can be used to compute magnetic field perturbations from a complete disturbance simulation.  See [Readme_magcalc](./docs/Readme_magcalc.md) for a full description of how this program works.

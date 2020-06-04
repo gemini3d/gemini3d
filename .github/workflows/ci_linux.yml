@@ -1,6 +1,4 @@
 name: ci_linux
-env:
-  CI: true
 
 on:
   push:
@@ -18,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - uses: actions/setup-python@v1
+    - uses: actions/setup-python@v2
       with:
         python-version: '3.8'
     - run: pip install -e .
@@ -29,7 +27,7 @@ jobs:
         sudo apt install -yq --no-install-recommends pkg-config gfortran libopenmpi-dev openmpi-bin liblapack-dev libscalapack-openmpi-dev libmumps-dev libhdf5-dev
 
 # CI is too slow for 3d_glow
-    - run: ctest -S cdash.cmake -E 3d -VV
+    - run: ctest -S setup.cmake -E 3d -VV
       env:
         FC: gfortran
 
@@ -61,7 +59,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - uses: actions/setup-python@v1
+    - uses: actions/setup-python@v2
       with:
         python-version: '3.8'
     - run: pip install -e .
@@ -71,6 +69,6 @@ jobs:
         sudo apt update -yq
         sudo apt install -yq --no-install-recommends pkg-config gfortran libopenmpi-dev openmpi-bin
 
-    - run: ctest -S cdash.cmake -E 3d_glow -V
+    - run: ctest -S setup.cmake -E 3d_glow -V
       env:
         FC: gfortran
