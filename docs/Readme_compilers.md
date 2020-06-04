@@ -63,6 +63,14 @@ From the MSYS2 terminal, install GCC and Gfortran by:
 pacman -S mingw-w64-x86_64-gcc-fortran
 ```
 
+other Gemini-required libraries are obtained by:
+
+```sh
+pacman -S mingw-w64-x86_64-hdf5
+pacman -S mingw-w64-x86_64-lapack
+pacman -S mingw-w64-x86_64-scalapack
+```
+
 ## Intel Fortran
 
 Intel compilers are available at no-cost for academic instruction and open-source projects.

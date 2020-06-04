@@ -35,10 +35,10 @@ function(h5diff_compare TESTNAME)
 set(_outdir ${PROJECT_BINARY_DIR}/test${TESTNAME})
 set(_refdir ${PROJECT_SOURCE_DIR}/tests/data/test${TESTNAME})
 
-set(_reltol 0.15)
-# 0.15 <==> 15% relative tolerance
+set(_reltol 0.45)
+# 0.50 <==> 50% relative tolerance
 # this large relative tolerance is because h5diff can only do rel or abs, while Python can do both
-# and so h5diff has to be looser for miniscule numerical noise.
+# and so h5diff has to be much looser for miniscule numerical noise.
 
 if(HDF5_DIFF_EXECUTABLE)
   add_test(NAME gemini:compare:${TESTNAME}:h5diff
