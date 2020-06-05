@@ -414,6 +414,12 @@ if (myid==0) then
     print *, "GLOW disabled"
   end if
 
+  if (cfg%mcadence > 0._wp) then
+    print*, 'Milestone output selected; cadence of:  ',cfg%mcadence
+  else
+    print*, 'Milestone output disabled.'
+  end if
+
   print *,  '**************** end input config ***************'
 end if
 
