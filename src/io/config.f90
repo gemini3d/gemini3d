@@ -71,7 +71,7 @@ real(wp) :: magcap=30._wp        ! value of integrated magnetospheric capacitanc
 integer :: diffsolvetype=2       ! 1 - first order backward Euler time stepping; 2 - 2nd order TRBDF2 diffusion solver
 
 !> milestone output information (default to none, i.e. zero value)
-real(wp) :: mcadence=0._wp
+integer :: mcadence=-1      ! value less than zero switches this off, > zero gives the cadence at which to perform milestone outputs (in terms of number of outputs per milestone)
 
 end type gemini_cfg
 

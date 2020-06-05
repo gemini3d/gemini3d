@@ -39,7 +39,7 @@ logical :: flagJpar
 logical :: flgcap
 real(wp) :: magcap
 integer :: diffsolvetype
-real(wp) :: mcadence
+integer :: mcadence
 
 namelist /base/ ymd, UTsec0, tdur, dtout, activ, tcfl, Teinf
 namelist /files/ file_format, indat_size, indat_grid, indat_file
