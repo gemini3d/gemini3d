@@ -14,10 +14,12 @@ integer :: ierr, u, realbits
 logical :: porcelain, exists
 character(:), allocatable :: input_nml, output_dir, branch, rev, compiler, compiler_flags, exe
 character(256) :: buf
+integer :: mcadence
 
 namelist /files/ input_nml, output_dir,realbits
 namelist /git/ branch, rev, porcelain
 namelist /system/ compiler, compiler_flags, exe
+namelist /milestone/ mcadence
 
 !> MAKE A COPY OF THE INPUT DATA IN THE OUTPUT DIRECTORY
 ierr = mkdir(cfg%outdir//'/inputs')
@@ -79,11 +81,15 @@ compiler_flags = trim(compiler_options())
 call get_command_argument(0, buf)
 exe = trim(buf)
 
+!> milestone namelist
+mcadence=cfg%mcadence
+
 !> let this crash the program if it can't write as an early indicator of output directory problem.
 open(newunit=u, file=cfg%outdir // '/output.nml', status='unknown', action='write')
   write(u, nml=files)
   write(u, nml=git)
   write(u, nml=system)
+  write(u, nml=milestone)
 close(u)
 
 end procedure create_outdir
