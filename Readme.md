@@ -150,6 +150,9 @@ gemini.bin command line options include:
 `-out_format`
 : normally Gemini reads and writes data files in the same format (HDF5, NetCDF4). This option allow one to read in one format (say NetCDF4) while writing HDF5.
 
+`-manual_grid <# x2 images> <# x3 images>`
+: forces the code to adopt a specific domain decomposition in x2 and x3 by using the integers given.  If not specified the code will attempt to find its own x2,x3 decomposition.  The number of grid points in x2 and x3 must be evenly divisible by the number of user-specified images in each direction, respectively.  
+
 ### Number of MPI processes
 
 In general for MPI programs and associated simulations, there may be a minimum number of MPI processes and/or integer multiples that must be met.
@@ -186,3 +189,14 @@ contain scripts used for various published and ongoing analyses.
 See [Readme_output](./docs/Readme_output.md) for a description of how to load the simulation output files and the different variable names, meanings, and units.
 
 An auxiliary program, magcalc.f90, can be used to compute magnetic field perturbations from a complete disturbance simulation.  See [Readme_magcalc](./docs/Readme_magcalc.md) for a full description of how this program works.
+
+
+## List of other associated readmes
+
+1. [Readme_output](./docs/Readme_output.md)
+2. [Readme_input](./docs/Readme_input.md)
+3. [Readme_compilers](./docs/Readme_compilers.md)
+4. [Readme_cmake](./docs/Readme_cmake.md)
+5. [Readme_docs](./docs/Readme_docs.md)
+6. [Readme_mpi](./docs/Readme_mpi.md)
+7. [Readme_magcalc](./docs/Readme_magcalc.md)
