@@ -70,6 +70,9 @@ real(wp) :: magcap=30._wp        ! value of integrated magnetospheric capacitanc
 !> type of diffusion solver to sue
 integer :: diffsolvetype=2       ! 1 - first order backward Euler time stepping; 2 - 2nd order TRBDF2 diffusion solver
 
+!> milestone output information (default to none, i.e. zero value)
+real(wp) :: mcadence=0._wp
+
 end type gemini_cfg
 
 

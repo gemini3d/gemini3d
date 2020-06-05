@@ -40,6 +40,7 @@ logical :: flagJpar
 logical :: flgcap
 real(wp) :: magcap
 integer :: diffsolvetype
+real(wp) :: mcadence
 
 namelist /base/ ymd, UTsec0, tdur, dtout, activ, tcfl, Teinf
 namelist /files/ file_format, indat_size, indat_grid, indat_file
@@ -55,6 +56,7 @@ namelist /precip_BG/ PhiWBG,W0BG
 namelist /Jpar/ flagJpar
 namelist /capacitance/ flagcap,magcap     ! later need to regroup these in a way that is more logical now there are so many more inputs
 namelist /diffusion/ diffsolvetype
+namelist /milestone/ mcadence
 
 open(newunit=u, file=cfg%infile, status='old', action='read')
 
@@ -197,6 +199,14 @@ if (namelist_exists(u,'diffusion')) then
   cfg%diffsolvetype=diffsolvetype
 end if
 
+!> information about milestone outputs
+if (namelist_exists(u,'milestone')) then
+  rewind(u)
+  read(u,nml=milestone,iostat=i)
+  call check_nml_io(i,cfg%infile,"milestone")
+  cfg%mcadence=mcadence
+end if
+
 close(u)
 
 end procedure read_nml
@@ -205,7 +215,7 @@ end procedure read_nml
 logical function namelist_exists(u, nml, verbose)
 !! determines if Namelist exists in file
 
-character(*), intent(in) :: nml
+character(*), intent(in) :: nml    ! FIXME:  is it bad to use a keyword as a variable name?
 integer, intent(in) :: u
 logical, intent(in), optional :: verbose
 
