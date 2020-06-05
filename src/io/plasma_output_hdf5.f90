@@ -53,13 +53,19 @@ call gather_recv(J2,tag%J2,J2all)
 call gather_recv(J3,tag%J3,J3all)
 
 
-!COMPUTE AVERAGE VALUES FOR ION PLASMA PARAMETERS
-v1avgall=sum(nsall(1:lx1,1:lx2all,1:lx3all,1:lsp-1)*vs1all(1:lx1,1:lx2all,1:lx3all,1:lsp-1),4)
-v1avgall=v1avgall/nsall(1:lx1,1:lx2all,1:lx3all,lsp)    !compute averages for output.
-Tavgall=sum(nsall(1:lx1,1:lx2all,1:lx3all,1:lsp-1)*Tsall(1:lx1,1:lx2all,1:lx3all,1:lsp-1),4)
-Tavgall=Tavgall/nsall(1:lx1,1:lx2all,1:lx3all,lsp)    !compute averages for output.
-neall=nsall(1:lx1,1:lx2all,1:lx3all,lsp)
-Teall=Tsall(1:lx1,1:lx2all,1:lx3all,lsp)
+!COMPUTE AVERAGE VALUES FOR ION PLASMA PARAMETERS 
+!> possible bottleneck; should have workers help?
+!> also only compute these if they are actually being output
+if (flagoutput==2 .or. flagoutput==3) then
+  neall=nsall(1:lx1,1:lx2all,1:lx3all,lsp)
+end if
+if (flagoutput==2) then
+  v1avgall=sum(nsall(1:lx1,1:lx2all,1:lx3all,1:lsp-1)*vs1all(1:lx1,1:lx2all,1:lx3all,1:lsp-1),4)
+  v1avgall=v1avgall/nsall(1:lx1,1:lx2all,1:lx3all,lsp)    !compute averages for output.
+  Tavgall=sum(nsall(1:lx1,1:lx2all,1:lx3all,1:lsp-1)*Tsall(1:lx1,1:lx2all,1:lx3all,1:lsp-1),4)
+  Tavgall=Tavgall/nsall(1:lx1,1:lx2all,1:lx3all,lsp)    !compute averages for output.
+  Teall=Tsall(1:lx1,1:lx2all,1:lx3all,lsp)
+end if
 
 
 !> FIGURE OUT THE FILENAME
