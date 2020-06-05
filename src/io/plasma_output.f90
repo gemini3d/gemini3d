@@ -51,6 +51,8 @@ subroutine output_workers_mpi(vs2,vs3,ns,vs1,Ts,J1,J2,J3)
 !------------------------------------------------------------
 !-------SEND COMPLETE DATA FROM WORKERS TO ROOT PROCESS FOR OUTPUT.
 !-------STATE VARS ARE EXPECTED TO INCLUDE GHOST CELLS
+!------- This is the same regardless of what type of output is
+!------- being done.
 !------------------------------------------------------------
 
 real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: vs2,vs3,ns,vs1,Ts
