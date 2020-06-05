@@ -12,11 +12,7 @@ module procedure output_root_stream_mpi_nc4
 !! COLLECT OUTPUT FROM WORKERS AND WRITE TO A FILE USING STREAM I/O.
 !! STATE VARS ARE EXPECTED INCLUDE GHOST CELLS
 
-integer :: lx1,lx2,lx3,lx2all,lx3all,isp
-real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: v2avg,v3avg
-real(wp), dimension(-1:size(Phiall,1)+2,-1:size(Phiall,2)+2,-1:size(Phiall,3)+2,1:lsp) :: nsall,vs1all,Tsall
-real(wp), dimension(1:size(Phiall,1),1:size(Phiall,2),1:size(Phiall,3)) :: v2avgall,v3avgall,v1avgall,Tavgall,neall,Teall
-real(wp), dimension(1:size(Phiall,1),1:size(Phiall,2),1:size(Phiall,3)) :: J1all,J2all,J3all
+integer :: lx1,lx2all,lx3all,isp
 character(:), allocatable :: filenamefull
 
 character(*), parameter :: dims4(4) = [character(7) :: 'x1', 'x2', 'x3', 'species'], &
@@ -27,47 +23,9 @@ type(netcdf_file) :: hout
 
 
 !! SYSTEM SIZES
-! FIXME: should these be pulled from the grid module???
-lx1=size(ns,1)-4
-lx2=size(ns,2)-4
-lx3=size(ns,3)-4
+lx1=size(Phiall,1)
 lx2all=size(Phiall,2)
 lx3all=size(Phiall,3)
-
-
-print *, 'System sizes according to Phiall:  ',lx1,lx2all,lx3all
-!ONLY AVERAGE DRIFTS PERP TO B NEEDED FOR OUTPUT
-v2avg=sum(ns(1:lx1,1:lx2,1:lx3,1:lsp-1)*vs2(1:lx1,1:lx2,1:lx3,1:lsp-1),4)
-v2avg=v2avg/ns(1:lx1,1:lx2,1:lx3,lsp)    !compute averages for output.
-v3avg=sum(ns(1:lx1,1:lx2,1:lx3,1:lsp-1)*vs3(1:lx1,1:lx2,1:lx3,1:lsp-1),4)
-v3avg=v3avg/ns(1:lx1,1:lx2,1:lx3,lsp)
-
-
-!GET THE SUBGRID DATA FORM THE WORKERS
-call gather_recv(v2avg,tag%v2,v2avgall)
-call gather_recv(v3avg,tag%v3,v3avgall)
-call gather_recv(ns,tag%ns,nsall)
-call gather_recv(vs1,tag%vs1,vs1all)
-call gather_recv(Ts,tag%Ts,Tsall)
-
-
-!> RADD--- NEED TO ALSO GATHER FULL GRID ELECTRODYANMICS PARAMTERS FROM WORKERS
-call gather_recv(J1,tag%J1,J1all)
-call gather_recv(J2,tag%J2,J2all)
-call gather_recv(J3,tag%J3,J3all)
-
-
-!COMPUTE AVERAGE VALUES FOR ION PLASMA PARAMETERS
-if (flagoutput==2 .or. flagoutput==3) then
-  neall=nsall(1:lx1,1:lx2all,1:lx3all,lsp)
-end if
-if (flagoutput==2) then
-  v1avgall=sum(nsall(1:lx1,1:lx2all,1:lx3all,1:lsp-1)*vs1all(1:lx1,1:lx2all,1:lx3all,1:lsp-1),4)
-  v1avgall=v1avgall/nsall(1:lx1,1:lx2all,1:lx3all,lsp)    !compute averages for output.
-  Tavgall=sum(nsall(1:lx1,1:lx2all,1:lx3all,1:lsp-1)*Tsall(1:lx1,1:lx2all,1:lx3all,1:lsp-1),4)
-  Tavgall=Tavgall/nsall(1:lx1,1:lx2all,1:lx3all,lsp)    !compute averages for output.
-  Teall=Tsall(1:lx1,1:lx2all,1:lx3all,lsp)
-end if
 
 
 !> FIGURE OUT THE FILENAME
