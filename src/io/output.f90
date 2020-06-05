@@ -15,23 +15,16 @@ logical :: porcelain, exists
 character(:), allocatable :: input_nml, output_dir, &
   git_version, branch, rev, compiler, compiler_flags, exe
 character(256) :: buf
+integer :: mcadence
 
 namelist /files/ input_nml, output_dir,realbits
 namelist /git/ git_version, branch, rev, porcelain
 namelist /system/ compiler, compiler_flags, exe
 namelist /grid/ lid, lid2, lid3, lx1, lx2, lx3, lx2all, lx3all
+namelist /milestone/ mcadence
 
 !> MAKE A COPY OF THE INPUT DATA IN THE OUTPUT DIRECTORY
-!! ----- no longer needed due to new CLI June 2020 --------
-! ierr = mkdir(cfg%outdir//'/inputs')
 
-! inquire(file=cfg%outdir//'/inputs/config.nml', exist=exists)
-! if(.not.exists) then
-!   ierr = copyfile(cfg%infile, cfg%outdir//'/inputs/')
-!   ierr = copyfile(cfg%indatsize, cfg%outdir//'/inputs/')
-!   ierr = copyfile(cfg%indatgrid, cfg%outdir//'/inputs/')
-!   ierr = copyfile(cfg%indatfile, cfg%outdir//'/inputs/')
-! endif
 !! keep these copyfile() to allow running Gemini from command-line without Python / Matlab scripts
 
 !> NOTE: if desired to copy Efield inputs. This would be a lot of files and disk space in general.
@@ -85,12 +78,16 @@ compiler_flags = trim(compiler_options())
 call get_command_argument(0, buf)
 exe = trim(buf)
 
+!> milestone namelist
+mcadence=cfg%mcadence
+
 !> let this crash the program if it can't write as an early indicator of output directory problem.
 open(newunit=u, file=cfg%outdir // '/output.nml', status='unknown', action='write')
   write(u, nml=files)
   write(u, nml=git)
   write(u, nml=system)
   write(u, nml=grid)
+  write(u, nml=milestone)
 close(u)
 
 end procedure create_outdir
