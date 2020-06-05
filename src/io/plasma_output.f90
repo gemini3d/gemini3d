@@ -104,13 +104,14 @@ end subroutine output_workers_mpi
 
 
 module procedure output_plasma
+
 ! subroutine output_plasma(outdir,flagoutput,ymd,UTsec,vs2,vs3,ns,vs1,Ts,Phiall,J1,J2,J3)
 !! A BASIC WRAPPER FOR THE ROOT AND WORKER OUTPUT FUNCTIONS
 !! BOTH ROOT AND WORKERS CALL THIS PROCEDURE SO UNALLOCATED
 !! VARIABLES MUST BE DECLARED AS ALLOCATABLE, INTENT(INOUT)
 
 if (myid == 0) then
-  call output_root_stream_mpi(outdir,flagoutput,ymd,UTsec,vs2,vs3,ns,vs1,Ts,Phiall,J1,J2,J3, out_format)
+  call output_root_stream_mpi(outdir,flagoutput,ymd,UTsec,vs2,vs3,ns,vs1,Ts,Phiall,J1,J2,J3,out_format)
 else
   call output_workers_mpi(vs2,vs3,ns,vs1,Ts,J1,J2,J3)
 end if
@@ -118,7 +119,13 @@ end if
 end procedure output_plasma
 
 
-subroutine output_root_stream_mpi(outdir,flagoutput,ymd,UTsec,vs2,vs3,ns,vs1,Ts,Phiall,J1,J2,J3, out_format)
+subroutine output_root_stream_mpi(outdir,flagoutput,ymd,UTsec,vs2,vs3,ns,vs1,Ts,Phiall,J1,J2,J3,out_format)
+
+!------------------------------------------------------------
+!------- Root needs to gather data and pass to subroutine to
+!------- write to disk in the appropriate format.  
+!------------------------------------------------------------
+
 character(*), intent(in) :: outdir
 character(*), intent(in) :: out_format
 integer, intent(in) :: flagoutput
