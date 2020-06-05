@@ -78,6 +78,10 @@ integer :: lid2in,lid3in
 !> TO CONTROL THROTTLING OF TIME STEP
 real(wp), parameter :: dtscale=2.0_wp
 
+!> Temporary variable for toggling full vs. other output
+integer :: flagoutput
+real(wp) :: tmilestone=0._wp
+
 
 !! MAIN PROGRAM
 
@@ -291,10 +295,21 @@ do while (t < cfg%tdur)
     endif
     !! close enough to warrant an output now...
     if (myid==0 .and. debug) call cpu_time(tstart)
-    call output_plasma(cfg%outdir,cfg%flagoutput,ymd, &
-      UTsec,vs2,vs3,ns,vs1,Ts,Phiall,J1,J2,J3, &
-      cfg%out_format)
-
+    
+    !! We may need to adjust flagoutput if we are hitting a milestone
+    flagoutput=cfg%flagoutput
+    if (cfg%mcadence>0 .and. abs(t-tmilestone) < 1d-5) then
+      flagoutput=1    !force a full output at the milestone
+      call output_plasma(cfg%outdir,flagoutput,ymd, &
+        UTsec,vs2,vs3,ns,vs1,Ts,Phiall,J1,J2,J3, &
+        cfg%out_format)
+      tmilestone=t+cfg%dtout*cfg%mcadence
+      if(myid==0) print*, 'Milestone output triggered.'
+    else
+      call output_plasma(cfg%outdir,flagoutput,ymd, &
+        UTsec,vs2,vs3,ns,vs1,Ts,Phiall,J1,J2,J3, &
+        cfg%out_format)
+    end if
     if (myid==0 .and. debug) then
       call cpu_time(tfin)
       print *, 'Plasma output done for time step:  ',t,' in cpu_time of:  ',tfin-tstart
