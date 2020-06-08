@@ -38,7 +38,7 @@ real(wp), dimension(:), allocatable :: Vminx3isprev,Vminx3isnext,Vmaxx3isprev,Vm
 
 integer, dimension(3) :: ymdprev,ymdnext   !dates for interpolated data
 real(wp) :: UTsecprev,UTsecnext
-real(wp) :: tprev,tnext
+real(wp) :: tprev=0._wp,tnext=0._wp
 
 integer :: ix1ref,ix2ref,ix3ref
 !! reference location along field line closest to reference point of input data (300 km alt. at the grid center)
