@@ -13,9 +13,9 @@ use io, only : input_plasma,create_outdir,output_plasma,create_outdir_aur,output
 use mpimod, only : mpisetup, mpibreakdown, mpi_manualgrid, mpigrid, lid, lid2,lid3,myid,myid2,myid3
 use multifluid, only : fluid_adv
 use neutral, only : neutral_atmos,make_dneu,neutral_perturb,clear_dneu
-use potentialBCs_mumps, only: clear_potential_fileinput
+use potentialBCs_mumps, only: clear_potential_fileinput, potentialBCs2D_fileinput
 use potential_comm,only : electrodynamics
-use precipBCs_mod, only: clear_precip_fileinput
+use precipBCs_mod, only: clear_precip_fileinput, precipBCs_fileinput
 use temporal, only : dt_comm
 use timeutils, only: dateinc
 
@@ -126,8 +126,6 @@ allocate(v1(-1:lx1+2,-1:lx2+2,-1:lx3+2),v2(-1:lx1+2,-1:lx2+2,-1:lx3+2), &
          v3(-1:lx1+2,-1:lx2+2,-1:lx3+2),rhom(-1:lx1+2,-1:lx2+2,-1:lx3+2))
 allocate(E1(lx1,lx2,lx3),E2(lx1,lx2,lx3),E3(lx1,lx2,lx3),J1(lx1,lx2,lx3),J2(lx1,lx2,lx3),J3(lx1,lx2,lx3))
 allocate(nn(lx1,lx2,lx3,lnchem),Tn(lx1,lx2,lx3),vn1(lx1,lx2,lx3), vn2(lx1,lx2,lx3),vn3(lx1,lx2,lx3))
-!call make_precip_fileinput()
-
 
 !> ALLOCATE MEMORY FOR ROOT TO STORE CERTAIN VARS. OVER ENTIRE GRID
 if (myid==0) then
@@ -148,8 +146,6 @@ end if
 call input_plasma(x%x1,x%x2all,x%x3all,cfg%indatsize,cfg%indatfile,ns,vs1,Ts)
 
 
-
-
 !ROOT/WORKERS WILL ASSUME THAT THE MAGNETIC FIELDS AND PERP FLOWS START AT ZERO
 !THIS KEEPS US FROM HAVING TO HAVE FULL-GRID ARRAYS FOR THESE STATE VARS (EXCEPT
 !FOR IN OUTPUT FNS.).  IF A SIMULATIONS IS DONE WITH INTERTIAL CAPACITANCE THERE
@@ -167,7 +163,6 @@ B1(1:lx1,1:lx2,1:lx3) = x%Bmag
 !! to the magnetic field direction (hence zero B2 and B3).
 
 
-
 !> INITIALIZE ELECTRODYNAMIC QUANTITIES FOR POLARIZATION CURRENT
 if (myid==0) Phiall = 0
 !! only root stores entire potential array
@@ -177,6 +172,7 @@ E3 = 0
 vs2 = 0
 vs3 = 0
 
+
 !> Set initial time variables to simulation
 UTsec = cfg%UTsec0
 ymd = cfg%ymd0
@@ -185,6 +181,15 @@ t = 0
 tout = t
 tglowout = t
 tneuBG=t
+
+
+!> Inialize neutral atmosphere, note the use of fortran's weird scoping rules to avoid input args.  Must occur after initial time info setup
+call init_neutrals()
+
+
+!> Initialize auroral inputs; must occur after initial timing info setup
+call init_auroralinput()
+
 do while (t < cfg%tdur)
   !! TIME STEP CALCULATION, requires workers to report their most stringent local stability constraint
   dtprev = dt
@@ -215,12 +220,6 @@ do while (t < cfg%tdur)
   !> GET NEUTRAL PERTURBATIONS FROM ANOTHER MODEL
   if (cfg%flagdneu==1) then
     call cpu_time(tstart)
-    if (it==1) then
-      !! this triggers the code to load the neutral frame correspdonding ot the beginning time of the simulation
-      if (myid==0) print *, '!!!Attempting initial load of neutral dynamics files!!!' // &
-                              ' This is a workaround that fixes the restart code...',t-dt
-      call neutral_perturb(cfg,dt,cfg%dtneu,t-cfg%dtneu,ymd,UTsec-cfg%dtneu,x,nn,Tn,vn1,vn2,vn3)
-    end if
     call neutral_perturb(cfg,dt,cfg%dtneu,t,ymd,UTsec,x,nn,Tn,vn1,vn2,vn3)
     if (myid==0 .and. debug) then
       call cpu_time(tfin)
@@ -238,8 +237,6 @@ do while (t < cfg%tdur)
 
   !> UPDATE THE FLUID VARIABLES
   if (myid==0 .and. debug) call cpu_time(tstart)
-!  call fluid_adv(ns,vs1,Ts,vs2,vs3,J1,E1,cfg%Teinf,t,dt,x,nn,vn1,vn2,vn3,Tn,iver,cfg%activ(2),cfg%activ(1),ymd,UTsec, &
-!    cfg%flagprecfile,cfg%dtprec,cfg%precdir,cfg%flagglow,cfg%dtglow)
   call fluid_adv(ns,vs1,Ts,vs2,vs3,J1,E1,cfg,t,dt,x,nn,vn1,vn2,vn3,Tn,iver,ymd,UTsec)
   if (myid==0 .and. debug) then
     call cpu_time(tfin)
@@ -510,7 +507,7 @@ subroutine init_neutrals()
 call make_dneu()
 
 !! call msis to get an initial neutral background atmosphere
-call cpu_time(tstart)
+if (myid==0) call cpu_time(tstart)
 call neutral_atmos(ymd,UTsec,x%glat,x%glon,x%alt,cfg%activ,nn,Tn,vn1,vn2,vn3)
 tneuBG=tneuBG+cfg%dtneuBG;
 if (myid==0) then
@@ -525,15 +522,59 @@ if (cfg%flagdneu==1) then
   if (myid==0) print*, '!!!Attempting initial load of neutral dynamics files!!!' // &
                            ' This is a workaround to insure compatibility with restarts...',t-dt
   !! We essentially are loading up the data corresponding to halfway betwween -dtneu and t0 (zero)
-  call neutral_perturb(cfg,dt,cfg%dtneu,-1d0*cfg%dtneu,ymd,UTsec-cfg%dtneu,x,nn,Tn,vn1,vn2,vn3)
+  call neutral_perturb(cfg,dt,cfg%dtneu,-1._wp*cfg%dtneu,ymd,UTsec-cfg%dtneu,x,nn,Tn,vn1,vn2,vn3)
   
-  if (myid==0) print*, 'Now loading initial next file...'
+  if (myid==0) print*, 'Now loading initial next file for neutral perturbations...'
   !! Now compute perturbations for the present time (zero), this moves the primed variables in next into prev and then
   !  loads up a current state so that we get a proper interpolation for the first time step.  
   call neutral_perturb(cfg,dt,cfg%dtneu,t,ymd,UTsec,x,nn,Tn,vn1,vn2,vn3)
 end if
-
-
 end subroutine init_neutrals
+
+
+subroutine init_auroralinput()
+
+real(wp), dimension(:,:), allocatable :: Vminx1,Vmaxx1
+real(wp), dimension(:,:), allocatable :: Vminx2,Vmaxx2
+real(wp), dimension(:,:), allocatable :: Vminx3,Vmaxx3
+real(wp), dimension(:,:,:), allocatable :: E01all,E02all,E03all
+integer :: flagdirich
+
+real(wp), dimension(1:size(ns,2)-4,1:size(ns,3)-4,2) :: W0,PhiWmWm2    ! these are only worker-sized, hardcoded 2 precipitation populations...
+
+
+!> initializes the auroral electric field/current and particle inputs to read in a file corresponding to the first time step
+if (myid==0 .and. cfg%flagE0file==1) then    !only root needs these...
+  allocate(Vminx1(1:size(Phiall,2),1:size(Phiall,3)),Vmaxx1(1:size(Phiall,2),1:size(Phiall,3)))
+  allocate(Vminx2(1:size(Phiall,1),1:size(Phiall,3)),Vmaxx2(1:size(Phiall,1),1:size(Phiall,3)))
+  allocate(Vminx3(1:size(Phiall,1),1:size(Phiall,2)),Vmaxx3(1:size(Phiall,1),1:size(Phiall,2)))
+  allocate(E01all(1:size(Phiall,1),1:size(Phiall,2),1:size(Phiall,3)),E02all(1:size(Phiall,1),1:size(Phiall,2),1:size(Phiall,3)), &
+              E03all(1:size(Phiall,1),1:size(Phiall,2),1:size(Phiall,3)))    !background fields
+
+  print*, '!!!Attempting to prime electric field input files...',t-dt
+  !! back up by one dt for each input so that we get a next file that corresponds to the beginning of the simulation
+  call potentialBCs2D_fileinput(dt,-1._wp*cfg%dtE0,ymd,UTsec-cfg%dtE0,cfg,x,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3, &
+                                    Vmaxx3,E01all,E02all,E03all,flagdirich)
+  
+  
+  !! now load first, next frame of input
+  print*, 'Now loading initial next file for electric field input...'
+  call potentialBCs2D_fileinput(dt,t,ymd,UTsec,cfg,x,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3, &
+                                    Vmaxx3,E01all,E02all,E03all,flagdirich)
+
+  deallocate(Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3,Vmaxx3,E01all,E02all,E03all)
+end if
+
+if (cfg%flagprecfile==1) then    !all workers must have this info
+  if (myid==0) print*, '!!!Attmpting to prime precipitation input files...'
+  !! back up by one dtprec to get a next file that is the beginning of the simulation
+  call precipBCs_fileinput(dt,-1._wp*cfg%dtprec,cfg,ymd,UTsec-cfg%dtprec,x,W0,PhiWmWm2)
+
+  if (myid==0) print*, 'Now loading initial next file for precipitation input...'
+  !! now shift next->prev and load a new one corresponding to the first simulation time step
+  call precipBCs_fileinput(dt,t,cfg,ymd,UTsec,x,W0,PhiWmWm2)
+end if
+
+end subroutine init_auroralinput
 
 end program
