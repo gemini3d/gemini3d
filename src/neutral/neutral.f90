@@ -17,17 +17,18 @@ use config, only: gemini_cfg
 
 implicit none (type, external)
 private
-public :: Tnmsis, neutral_atmos, make_dneu, clear_dneu, neutral_perturb
+public :: Tnmsis, neutral_atmos, make_dneu, clear_dneu, neutral_perturb, neutral_update
 
 
 interface ! atmos.f90
-module subroutine neutral_atmos(ymd,UTsecd,glat,glon,alt,activ,nn,Tn)
+module subroutine neutral_atmos(ymd,UTsecd,glat,glon,alt,activ,nn,Tn,vn1,vn2,vn3)
 integer, intent(in) :: ymd(3)
 real(wp), intent(in) :: UTsecd
 real(wp), dimension(:,:,:), intent(in) :: glat,glon,alt
 real(wp), intent(in) :: activ(3)
 real(wp), dimension(1:size(alt,1),1:size(alt,2),1:size(alt,3),lnchem), intent(out) :: nn
 real(wp), dimension(1:size(alt,1),1:size(alt,2),1:size(alt,3)), intent(out) :: Tn
+real(wp), dimension(1:size(alt,1),1:size(alt,2),1:size(alt,3)), intent(out) :: vn1,vn2,vn3
 end subroutine neutral_atmos
 end interface
 
@@ -70,6 +71,9 @@ real(wp), dimension(:,:,:), allocatable, private :: dnOinext,dnN2inext,dnO2inext
 real(wp), private :: tnext
 integer, dimension(3), private :: ymdnext
 real(wp), private :: UTsecnext
+
+!! data at current time level, (centered in time between current time step and next)
+real(wp), dimension(:,:,:), allocatable, protected :: dnOinow,dnN2inow,dnO2inow,dTninow,dvn1inow,dvn2inow,dvn3inow
 
 
 !SPACE TO STORE PROJECTION FACTORS
@@ -151,7 +155,6 @@ real(wp), dimension(:,:,:), intent(out) :: Tn,vn1,vn2,vn3
 integer :: ix1,ix2,ix3,iid!,irhon,izn
 integer, dimension(3) :: ymdtmp
 real(wp) :: UTsectmp
-real(wp), dimension(size(nn,1),size(nn,2),size(nn,3)) :: dnOinow,dnN2inow,dnO2inow,dTninow,dvn1inow,dvn2inow,dvn3inow    !current time step perturbations (centered in time)
 
 
 !CHECK WHETHER WE NEED TO LOAD A NEW FILE
@@ -186,23 +189,14 @@ if (t+dt/2d0>=tnext .or. t<=0d0) then   !negative time means that we need to loa
   tnext=tprev+dtneu
   UTsecnext=UTsectmp
   ymdnext=ymdtmp
+
 end if !done loading frame data...
 
 !Interpolation in time
-call timeinterp_dneu(t,dt,dNOinow,dnN2inow,dnO2inow,dvn1inow,dvn2inow,dvn3inow,dTninow)
+call timeinterp_dneu(t,dt,dnOinow,dnN2inow,dnO2inow,dvn1inow,dvn2inow,dvn3inow,dTninow)
 
 !Add interpolated perturbations to reference atmosphere arrays
-nn(:,:,:,1)=nnmsis(:,:,:,1)+dnOinow
-nn(:,:,:,2)=nnmsis(:,:,:,2)+dnN2inow
-nn(:,:,:,3)=nnmsis(:,:,:,3)+dnO2inow
-nn(:,:,:,1)=max(nn(:,:,:,1),1._wp)
-nn(:,:,:,2)=max(nn(:,:,:,2),1._wp)
-nn(:,:,:,3)=max(nn(:,:,:,3),1._wp)
-Tn=Tnmsis+dTninow
-Tn=max(Tn,50._wp)
-vn1=vn1base+dvn1inow
-vn2=vn2base+dvn2inow
-vn3=vn3base+dvn3inow
+call neutral_update(nn,Tn,vn1,vn2,vn3)
 
 end subroutine neutral_perturb_axisymm
 
@@ -232,7 +226,6 @@ real(wp), dimension(:,:,:), intent(out) :: Tn,vn1,vn2,vn3
 integer :: ix1,ix2,ix3,iid
 integer, dimension(3) :: ymdtmp
 real(wp) :: UTsectmp
-real(wp), dimension(size(nn,1),size(nn,2),size(nn,3)) :: dnOinow,dnN2inow,dnO2inow,dTninow,dvn1inow,dvn2inow,dvn3inow    !current time step perturbations (centered in time)
 
 
 !CHECK WHETHER WE NEED TO LOAD A NEW FILE
@@ -266,23 +259,14 @@ if (t+dt/2d0 >= tnext .or. t <= 0) then
   tnext=tprev+dtneu
   UTsecnext=UTsectmp
   ymdnext=ymdtmp
+
 end if
 
 !Interpolation in time
 call timeinterp_dneu(t,dt,dNOinow,dnN2inow,dnO2inow,dvn1inow,dvn2inow,dvn3inow,dTninow)
 
-!NOW UPDATE THE PROVIDED NEUTRAL ARRAYS
-nn(:,:,:,1)=nnmsis(:,:,:,1)+dnOinow
-nn(:,:,:,2)=nnmsis(:,:,:,2)+dnN2inow
-nn(:,:,:,3)=nnmsis(:,:,:,3)+dnO2inow
-nn(:,:,:,1)=max(nn(:,:,:,1),1._wp)
-nn(:,:,:,2)=max(nn(:,:,:,2),1._wp)
-nn(:,:,:,3)=max(nn(:,:,:,3),1._wp)
-Tn=Tnmsis+dTninow
-Tn=max(Tn,51._wp)
-vn1=vn1base+dvn1inow
-vn2=vn2base+dvn2inow
-vn3=vn3base+dvn3inow
+!> update neutral atmosphere
+call neutral_update(nn,Tn,vn1,vn2,vn3)
 
 end subroutine neutral_perturb_cart
 
@@ -311,7 +295,6 @@ real(wp), dimension(:,:,:), intent(out) :: Tn,vn1,vn2,vn3
 integer :: ix1,ix2,ix3,iid
 integer, dimension(3) :: ymdtmp
 real(wp) :: UTsectmp
-real(wp), dimension(size(nn,1),size(nn,2),size(nn,3)) :: dnOinow,dnN2inow,dnO2inow,dTninow,dvn1inow,dvn2inow,dvn3inow    !current time step perturbations (centered in time)
 
 real(wp) :: starttime,endtime
 
@@ -363,6 +346,7 @@ if (t+dt/2d0>=tnext .or. t<=0d0) then
   tnext=tprev+dtneu
   UTsecnext=UTsectmp
   ymdnext=ymdtmp
+
 end if
 
 !Interpolation in time
@@ -371,19 +355,8 @@ if (myid==0 .and. debug) then
 end if
 call timeinterp_dneu(t,dt,dNOinow,dnN2inow,dnO2inow,dvn1inow,dvn2inow,dvn3inow,dTninow)
 
-
-!NOW UPDATE THE PROVIDED NEUTRAL ARRAYS
-nn(:,:,:,1)=nnmsis(:,:,:,1)+dnOinow
-nn(:,:,:,2)=nnmsis(:,:,:,2)+dnN2inow
-nn(:,:,:,3)=nnmsis(:,:,:,3)+dnO2inow
-nn(:,:,:,1)=max(nn(:,:,:,1),1._wp)
-nn(:,:,:,2)=max(nn(:,:,:,2),1._wp)
-nn(:,:,:,3)=max(nn(:,:,:,3),1._wp)
-Tn=Tnmsis+dTninow
-Tn=max(Tn,51._wp)
-vn1=vn1base+dvn1inow
-vn2=vn2base+dvn2inow
-vn3=vn3base+dvn3inow
+!> update neutral atmosphere
+call neutral_update(nn,Tn,vn1,vn2,vn3)
 
 end subroutine neutral_perturb_3D
 
@@ -1360,6 +1333,42 @@ end if
 end subroutine timeinterp_dneu
 
 
+subroutine neutral_update(nn,Tn,vn1,vn2,vn3)
+
+! adds stored base and perturbation neutral atmospheric parameters (these are module-scope parameters so not needed as input)
+
+real(wp), dimension(:,:,:,:), intent(out) :: nn
+real(wp), dimension(:,:,:), intent(out) :: Tn
+real(wp), dimension(:,:,:), intent(out) :: vn1,vn2,vn3
+
+
+!> background neutral parameters
+nn=nnmsis
+Tn=Tnmsis
+vn1=vn1base
+vn2=vn2base
+vn2=vn3base
+
+!!> perturbations, if used
+!if (allocated(zn)) then
+!  nn(:,:,:,1)=nn(:,:,:,1)+dnOinow
+!  nn(:,:,:,2)=nn(:,:,:,2)+dnN2inow
+!  nn(:,:,:,3)=nn(:,:,:,3)+dnO2inow
+!  nn(:,:,:,1)=max(nn(:,:,:,1),1._wp)
+!  nn(:,:,:,2)=max(nn(:,:,:,2),1._wp)
+!  nn(:,:,:,3)=max(nn(:,:,:,3),1._wp)
+!
+!  Tn=Tn+dTninow
+!  Tn=max(Tn,50._wp)
+!
+!  vn1=vn1+dvn1inow
+!  vn2=vn2+dvn2inow
+!  vn3=vn3+dvn3inow
+!end if
+
+end subroutine neutral_update
+
+
 subroutine slabrange(maxzn,ximat,yimat,zimat,sourcemlat,xnrange,ynrange)
 
 !takes in a subgrid and the max altitude of interest for neutral interpolation and then computes
@@ -1525,6 +1534,8 @@ allocate(dnOinext(lx1,lx2,lx3),dnN2inext(lx1,lx2,lx3),dnO2inext(lx1,lx2,lx3),dvn
          dvn3inext(lx1,lx2,lx3))
 allocate(dvnxinext(lx1,lx2,lx3))
 allocate(nnmsis(lx1,lx2,lx3,lnchem),Tnmsis(lx1,lx2,lx3),vn1base(lx1,lx2,lx3),vn2base(lx1,lx2,lx3),vn3base(lx1,lx2,lx3))
+allocate(dnOinow(lx1,lx2,lx3),dnN2inow(lx1,lx2,lx3),dnO2inow(lx1,lx2,lx3),dvn1inow(lx1,lx2,lx3),dvn2inow(lx1,lx2,lx3), &
+           dvn3inow(lx1,lx2,lx3), dTninow(lx1,lx2,lx3))
 
 !start everyone out at zero
 zi=0d0; rhoi=0d0; yi=0d0;
@@ -1541,6 +1552,7 @@ dnOinext=0d0; dnN2inext=0d0; dnO2inext=0d0; dTninext=0d0; dvnrhoinext=0d0; dvnzi
 dvn1inext=0d0; dvn2inext=0d0; dvn3inext=0d0;
 dvnxinext=0d0
 nnmsis=0d0; Tnmsis=0d0; vn1base=0d0; vn2base=0d0; vn3base=0d0
+dnOinow=0d0; dnN2inow=0d0; dnO2inow=0d0; dTninow=0d0; dvn1inow=0d0; dvn2inow=0d0; dvn3inow=0d0
 
 !now initialize some module variables
 tprev=0d0; tnext=0d0
@@ -1559,6 +1571,7 @@ deallocate(proj_eyp_e1,proj_eyp_e2,proj_eyp_e3)
 deallocate(dnOiprev,dnN2iprev,dnO2iprev,dvnrhoiprev,dvnziprev,dTniprev,dvn1iprev,dvn2iprev,dvn3iprev)
 deallocate(dnOinext,dnN2inext,dnO2inext,dvnrhoinext,dvnzinext,dTninext,dvn1inext,dvn2inext,dvn3inext)
 deallocate(nnmsis,Tnmsis,vn1base,vn2base,vn3base)
+deallocate(dnOinow,dnN2inow,dnO2inow,dTninow,dvn1inow,dvn2inow,dvn3inow)
 
 !check whether any other module variables were allocated and deallocate accordingly
 if (allocated(zn) ) then    !if one is allocated, then they all are

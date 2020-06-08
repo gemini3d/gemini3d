@@ -63,24 +63,26 @@ do ix3=1,lx3
       stl=sec/3600.0+lonnow/15.0
       call gtd7(iyd,sec,altnow,latnow,lonnow,stl,f107a,f107,ap,mass,d,t)
 
-      nn(ix1,ix2,ix3,1)=real(d(2),wp)
-      nn(ix1,ix2,ix3,2)=real(d(3),wp)
-      nn(ix1,ix2,ix3,3)=real(d(4),wp)
-      nn(ix1,ix2,ix3,4)=real(d(7),wp)
-      nn(ix1,ix2,ix3,5)=real(d(8),wp)
+      nnmsis(ix1,ix2,ix3,1)=real(d(2),wp)
+      nnmsis(ix1,ix2,ix3,2)=real(d(3),wp)
+      nnmsis(ix1,ix2,ix3,3)=real(d(4),wp)
+      nnmsis(ix1,ix2,ix3,4)=real(d(7),wp)
+      nnmsis(ix1,ix2,ix3,5)=real(d(8),wp)
 
-      Tn(ix1,ix2,ix3)=real(t(2),wp)
-      nn(ix1,ix2,ix3,6)=4d-1*exp(-3700.0/Tn(ix1,ix2,ix3))*nn(ix1,ix2,ix3,3)+ &
+      Tnmsis(ix1,ix2,ix3)=real(t(2),wp)
+      nnmsis(ix1,ix2,ix3,6)=4d-1*exp(-3700.0/Tn(ix1,ix2,ix3))*nn(ix1,ix2,ix3,3)+ &
                           5d-7*nn(ix1,ix2,ix3,1)   !Mitra, 1968
     end do
   end do
 end do
 
 
-!! UPDATE THE REFERENCE ATMOSPHERE VALUES
-nnmsis = nn
-Tnmsis = Tn
-vn1base = 0; vn2base = 0; vn3base = 0
+!> Could be replaced with HWM at some point, but for now make these zero
+vn1base = 0d0; vn2base = 0d0; vn3base = 0d0
+
+
+!! Update current state with new background and existing perturbations
+call neutral_update(nn,Tn,vn1,vn2,vn3)
 
 end procedure neutral_atmos
 
