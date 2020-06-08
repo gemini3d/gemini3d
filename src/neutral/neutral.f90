@@ -158,7 +158,7 @@ real(wp) :: UTsectmp
 
 
 !CHECK WHETHER WE NEED TO LOAD A NEW FILE
-if (t+dt/2d0>=tnext .or. t<=0d0) then   !negative time means that we need to load the first frame
+if (t+dt/2._wp>=tnext .or. t<=0._wp) then   !negative time means that we need to load the first frame
 
   !IF FIRST LOAD ATTEMPT CREATE A NEUTRAL GRID AND COMPUTE GRID SITES FOR IONOSPHERIC GRID.  Since this needs an input file, I'm leaving it under this condition here
   if (.not. allocated(zn)) then     !means this is the first tiem we've tried to load neutral simulation data, should we check for a previous neutral file to load??? or just assume everything starts at zero?  This needs to somehow check for an existing file under certain conditiosn, maybe if it==1???  Actually we don't even need that we can just check that the neutral grid is allocated (or not)
