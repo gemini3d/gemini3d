@@ -1349,22 +1349,24 @@ vn1=vn1base
 vn2=vn2base
 vn2=vn3base
 
-!!> perturbations, if used
-!if (allocated(zn)) then
-!  nn(:,:,:,1)=nn(:,:,:,1)+dnOinow
-!  nn(:,:,:,2)=nn(:,:,:,2)+dnN2inow
-!  nn(:,:,:,3)=nn(:,:,:,3)+dnO2inow
-!  nn(:,:,:,1)=max(nn(:,:,:,1),1._wp)
-!  nn(:,:,:,2)=max(nn(:,:,:,2),1._wp)
-!  nn(:,:,:,3)=max(nn(:,:,:,3),1._wp)
-!
-!  Tn=Tn+dTninow
-!  Tn=max(Tn,50._wp)
-!
-!  vn1=vn1+dvn1inow
-!  vn2=vn2+dvn2inow
-!  vn3=vn3+dvn3inow
-!end if
+!> perturbations, if used
+if (allocated(zn)) then
+  nn(:,:,:,1)=nn(:,:,:,1)+dnOinow
+  nn(:,:,:,2)=nn(:,:,:,2)+dnN2inow
+  nn(:,:,:,3)=nn(:,:,:,3)+dnO2inow
+  nn(:,:,:,1)=max(nn(:,:,:,1),1._wp)
+  nn(:,:,:,2)=max(nn(:,:,:,2),1._wp)
+  nn(:,:,:,3)=max(nn(:,:,:,3),1._wp)
+  !! note we are not adjust derived densities like NO since it's not clear how they may be related to major
+  !! species perturbations.  
+
+  Tn=Tn+dTninow
+  Tn=max(Tn,50._wp)
+
+  vn1=vn1+dvn1inow
+  vn2=vn2+dvn2inow
+  vn3=vn3+dvn3inow
+end if
 
 end subroutine neutral_update
 

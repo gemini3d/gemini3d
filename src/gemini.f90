@@ -15,7 +15,7 @@ use multifluid, only : fluid_adv
 use neutral, only : neutral_atmos,make_dneu,neutral_perturb,clear_dneu
 use potentialBCs_mumps, only: clear_potential_fileinput
 use potential_comm,only : electrodynamics
-use precipBCs_mod, only: make_precip_fileinput, clear_precip_fileinput
+use precipBCs_mod, only: clear_precip_fileinput
 use temporal, only : dt_comm
 use timeutils, only: dateinc
 
@@ -127,9 +127,7 @@ allocate(v1(-1:lx1+2,-1:lx2+2,-1:lx3+2),v2(-1:lx1+2,-1:lx2+2,-1:lx3+2), &
          v3(-1:lx1+2,-1:lx2+2,-1:lx3+2),rhom(-1:lx1+2,-1:lx2+2,-1:lx3+2))
 allocate(E1(lx1,lx2,lx3),E2(lx1,lx2,lx3),E3(lx1,lx2,lx3),J1(lx1,lx2,lx3),J2(lx1,lx2,lx3),J3(lx1,lx2,lx3))
 allocate(nn(lx1,lx2,lx3,lnchem),Tn(lx1,lx2,lx3),vn1(lx1,lx2,lx3), vn2(lx1,lx2,lx3),vn3(lx1,lx2,lx3))
-call make_dneu()
-!! allocate space for neutral perturbations in case they are used with this run
-call make_precip_fileinput()
+!call make_precip_fileinput()
 
 
 !> ALLOCATE MEMORY FOR ROOT TO STORE CERTAIN VARS. OVER ENTIRE GRID
@@ -151,9 +149,6 @@ end if
 call input_plasma(x%x1,x%x2all,x%x3all,cfg%indatsize,cfg%indatfile,ns,vs1,Ts)
 
 
-!> ZZZ - I think this needs to be changed into a subroutine that basically calls all functions needed to kickstart
-!        the model including primiing input variables, etc...
-
 !ROOT/WORKERS WILL ASSUME THAT THE MAGNETIC FIELDS AND PERP FLOWS START AT ZERO
 !THIS KEEPS US FROM HAVING TO HAVE FULL-GRID ARRAYS FOR THESE STATE VARS (EXCEPT
 !FOR IN OUTPUT FNS.).  IF A SIMULATIONS IS DONE WITH INTERTIAL CAPACITANCE THERE
@@ -170,10 +165,6 @@ B1(1:lx1,1:lx2,1:lx3) = x%Bmag
 !! this assumes that the grid is defined s.t. the x1 direction corresponds
 !! to the magnetic field direction (hence zero B2 and B3).
 
-!Set the neutral drifts to zero at the beginning of the simulation
-vn1=0
-vn2=0
-vn3=0
 
 !> INITIALIZE ELECTRODYNAMIC QUANTITIES FOR POLARIZATION CURRENT
 if (myid==0) Phiall = 0
@@ -184,10 +175,8 @@ E3 = 0
 vs2 = 0
 vs3 = 0
 
-!< ZZZ - end initializing subroutine calls...
 
-
-!> MAIN LOOP
+!> Set initial time variables to simulation
 UTsec = cfg%UTsec0
 ymd = cfg%ymd0
 it = 1
@@ -195,6 +184,15 @@ t = 0
 tout = t
 tglowout = t
 tneuBG=t
+
+
+!> Inialize neutral atmosphere, note the use of fortran's weird scoping rules to avoid input args.
+call init_neutrals()
+
+
+!> Initialize auroral inputs
+!init_auroral()
+
 do while (t < cfg%tdur)
   !! TIME STEP CALCULATION, requires workers to report their most stringent local stability constraint
   dtprev = dt
@@ -225,12 +223,6 @@ do while (t < cfg%tdur)
   !> GET NEUTRAL PERTURBATIONS FROM ANOTHER MODEL
   if (cfg%flagdneu==1) then
     call cpu_time(tstart)
-    if (it==1) then
-      !! this triggers the code to load the neutral frame correspdonding ot the beginning time of the simulation
-      if (myid==0) print *, '!!!Attempting initial load of neutral dynamics files!!!' // &
-                              ' This is a workaround that fixes the restart code...',t-dt
-      call neutral_perturb(cfg,dt,cfg%dtneu,t-cfg%dtneu,ymd,UTsec-cfg%dtneu,x,nn,Tn,vn1,vn2,vn3)
-    end if
     call neutral_perturb(cfg,dt,cfg%dtneu,t,ymd,UTsec,x,nn,Tn,vn1,vn2,vn3)
     if (myid==0 .and. debug) then
       call cpu_time(tfin)
@@ -248,8 +240,6 @@ do while (t < cfg%tdur)
 
   !> UPDATE THE FLUID VARIABLES
   if (myid==0 .and. debug) call cpu_time(tstart)
-!  call fluid_adv(ns,vs1,Ts,vs2,vs3,J1,E1,cfg%Teinf,t,dt,x,nn,vn1,vn2,vn3,Tn,iver,cfg%activ(2),cfg%activ(1),ymd,UTsec, &
-!    cfg%flagprecfile,cfg%dtprec,cfg%precdir,cfg%flagglow,cfg%dtglow)
   call fluid_adv(ns,vs1,Ts,vs2,vs3,J1,E1,cfg,t,dt,x,nn,vn1,vn2,vn3,Tn,iver,ymd,UTsec)
   if (myid==0 .and. debug) then
     call cpu_time(tfin)
@@ -367,9 +357,9 @@ character(10) :: time
 
 argc = command_argument_count()
 if (argc < 2) then
-  print '(/,A,/)', 'GEMINI-3D: by Matthew Zettergren'
-  print '(A)', 'GLOW and auroral interfaces by Guy Grubbs'
-  print '(A,/)', 'build system and software engineering by Michael Hirsch'
+  print '(/,A,/)', 'GEMINI-3D: Numerical implementation by Matthew Zettergren, PhD'
+  print '(A)', 'GLOW and auroral interfaces by Guy Grubbs, PhD'
+  print '(A,/)', 'build system and software engineering by Michael Hirsch, PhD'
   print '(A)', 'must specify config.nml file to configure simulation and output directory. Example:'
   print '(/,A,/)', 'mpiexec -np 4 build/gemini.bin initialize/test2d_fang/config.nml /tmp/test2d_fang'
   print '(A)', '-dryrun option allows quick check of first time step'
@@ -479,5 +469,43 @@ call get_command_argument(2,argv)
 cfg%outdir = trim(argv)
 
 end subroutine cli
+
+
+subroutine init_neutrals()
+
+!> initializes neutral atmosphere by:
+!    1)  allocating storage space
+!    2)  establishing initial background
+!    3)  priming file input so that we have an initial perturbed state to start from (necessary for restart)
+
+!! allocation neutral module scope variables so there is space to store all the file input and do interpolations
+call make_dneu()
+
+!! call msis to get an initial neutral background atmosphere
+call cpu_time(tstart)
+call neutral_atmos(ymd,UTsec,x%glat,x%glon,x%alt,cfg%activ,nn,Tn,vn1,vn2,vn3)
+tneuBG=tneuBG+cfg%dtneuBG;
+if (myid==0) then
+  call cpu_time(tfin)
+  print *, 'Initial neutral background at time:  ',t,' calculated in time:  ',tfin-tstart
+end if
+
+if (cfg%flagdneu==1) then
+  !! Loads the neutral input file corresponding to the first time step of the simulation to prevent the first interpolant
+  !  from being zero and causing issues with restart simulations.  I.e. make sure the neutral buffers are primed for restart
+  !  This requires us to load file input twice, once corresponding to the initial frame and once for the "first, next" frame.  
+  if (myid==0) print*, '!!!Attempting initial load of neutral dynamics files!!!' // &
+                           ' This is a workaround to insure compatibility with restarts...',t-dt
+  !! We essentially are loading up the data corresponding to halfway betwween -dtneu and t0 (zero)
+  call neutral_perturb(cfg,dt,cfg%dtneu,-1d0*cfg%dtneu,ymd,UTsec-cfg%dtneu,x,nn,Tn,vn1,vn2,vn3)
+  
+  if (myid==0) print*, 'Now loading initial next file...'
+  !! Now compute perturbations for the present time (zero), this moves the primed variables in next into prev and then
+  !  loads up a current state so that we get a proper interpolation for the first time step.  
+  call neutral_perturb(cfg,dt,cfg%dtneu,t,ymd,UTsec,x,nn,Tn,vn1,vn2,vn3)
+end if
+
+
+end subroutine init_neutrals
 
 end program

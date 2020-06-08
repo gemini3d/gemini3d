@@ -14,7 +14,7 @@ use config, only: gemini_cfg
 
 implicit none (type, external)
 private
-public :: make_precip_fileinput, clear_precip_fileinput, precipBCs_fileinput, precipBCs
+public :: clear_precip_fileinput, precipBCs_fileinput, precipBCs
 
 external :: mpi_send, mpi_recv
 
@@ -33,7 +33,7 @@ real(wp), dimension(:,:), allocatable, private :: Qiprev,E0iprev,Qinext,E0inext 
 
 integer, dimension(3), private :: ymdprev,ymdnext   !dates for interpolated data
 real(wp), private :: UTsecprev,UTsecnext
-real(wp), private :: tprev,tnext
+real(wp), private :: tprev=0._wp,tnext=0._wp
 
 
 contains
@@ -264,11 +264,11 @@ PhiWmWm2(:,:,2)=Qinow
 end subroutine precipBCs_fileinput
 
 
-subroutine make_precip_fileinput()
-!! INITIALIZE SOME MODULE TIMING VARIABLES
-tprev = 0
-tnext = 0
-end subroutine make_precip_fileinput
+!subroutine make_precip_fileinput()
+!!! INITIALIZE SOME MODULE TIMING VARIABLES
+!tprev = 0
+!tnext = 0
+!end subroutine make_precip_fileinput
 
 
 subroutine clear_precip_fileinput()

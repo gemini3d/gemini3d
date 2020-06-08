@@ -70,8 +70,8 @@ do ix3=1,lx3
       nnmsis(ix1,ix2,ix3,5)=real(d(8),wp)
 
       Tnmsis(ix1,ix2,ix3)=real(t(2),wp)
-      nnmsis(ix1,ix2,ix3,6)=4d-1*exp(-3700.0/Tn(ix1,ix2,ix3))*nn(ix1,ix2,ix3,3)+ &
-                          5d-7*nn(ix1,ix2,ix3,1)   !Mitra, 1968
+      nnmsis(ix1,ix2,ix3,6)=4d-1*exp(-3700.0/Tnmsis(ix1,ix2,ix3))*nnmsis(ix1,ix2,ix3,3)+ &
+                          5d-7*nnmsis(ix1,ix2,ix3,1)   !Mitra, 1968
     end do
   end do
 end do
