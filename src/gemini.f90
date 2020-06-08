@@ -144,7 +144,15 @@ end if
 
 
 !> LOAD ICS AND DISTRIBUTE TO WORKERS (REQUIRES GRAVITY FOR INITIAL GUESSING)
+!> ZZZ - this also should involve setting of Phiall...  Either to zero or what the input file specifies...
+!        does not technically need to be broadcast to workers (since root sets up electrodynamics), but perhaps
+!        should be anyway since that is what the user probably would expect and there is little performance penalty.
 call input_plasma(x%x1,x%x2all,x%x3all,cfg%indatsize,cfg%indatfile,ns,vs1,Ts)
+
+!> ZZZ - I think this needs to be changed into a subroutine that basically calls all functions needed to kickstart
+!        the model including primiing input variables, etc...
+
+
 
 !ROOT/WORKERS WILL ASSUME THAT THE MAGNETIC FIELDS AND PERP FLOWS START AT ZERO
 !THIS KEEPS US FROM HAVING TO HAVE FULL-GRID ARRAYS FOR THESE STATE VARS (EXCEPT
@@ -175,6 +183,9 @@ E2 = 0
 E3 = 0
 vs2 = 0
 vs3 = 0
+
+!< ZZZ - end initializing subroutine calls...
+
 
 !> MAIN LOOP
 UTsec = cfg%UTsec0
@@ -214,7 +225,7 @@ do while (t < cfg%tdur)
   !COMPUTE BACKGROUND NEUTRAL ATMOSPHERE USING MSIS00.
   if (it==1 .or. cfg%flagneuBG .and. t>tneuBG) then     !we dont' throttle for tneuBG so we have to do things this way to not skip over...
     call cpu_time(tstart)
-    call neutral_atmos(ymd,UTsec,x%glat,x%glon,x%alt,cfg%activ,nn,Tn)
+    call neutral_atmos(ymd,UTsec,x%glat,x%glon,x%alt,cfg%activ,nn,Tn,vn1,vn2,vn3)
     tneuBG=tneuBG+cfg%dtneuBG;
     if (myid==0) then
       call cpu_time(tfin)
@@ -376,6 +387,7 @@ character(10) :: time
 
 argc = command_argument_count()
 
+
 if(lid < 1) error stop 'number of MPI processes must be >= 1. Was MPI initialized properly?'
 
 call get_command_argument(0, argv)
@@ -496,7 +508,6 @@ do i = 2,argc
 end do
 
 end subroutine cli
-
 
 subroutine help_cli()
 print '(/,A,/)', 'GEMINI-3D: by Matthew Zettergren'
