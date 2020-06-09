@@ -186,11 +186,12 @@ tneuBG=t
 
 
 !> Inialize neutral atmosphere, note the use of fortran's weird scoping rules to avoid input args.  Must occur after initial time info setup
-call init_neutrals()
+call init_neutrals(dt,cfg,ymd,UTsec,x)
 
 
 !> Initialize auroral inputs; must occur after initial timing info setup
-call init_auroralinput()
+call init_Efieldinput(dt,cfg,ymd,UTsec,x)
+call init_precipinput(dt,cfg,ymd,UTsec,x)
 
 
 do while (t < cfg%tdur)
@@ -471,12 +472,18 @@ cfg%outdir = trim(argv)
 end subroutine cli
 
 
-subroutine init_neutrals()
+subroutine init_neutrals(dt,cfg,ymd,UTsec,x)
 
 !> initializes neutral atmosphere by:
 !    1)  allocating storage space
 !    2)  establishing initial background
 !    3)  priming file input so that we have an initial perturbed state to start from (necessary for restart)
+
+real(wp), intent(in) :: dt
+type(gemini_cfg), intent(in) :: cfg
+integer, dimension(3), intent(in) :: ymd
+real(wp), intent(in) :: UTsec
+type(curvmesh), intent(inout) :: x    ! unit vecs may be deallocated after first setup
 
 !! allocation neutral module scope variables so there is space to store all the file input and do interpolations
 call make_dneu()
@@ -507,15 +514,22 @@ end if
 end subroutine init_neutrals
 
 
-subroutine init_auroralinput()
+subroutine init_Efieldinput(dt,cfg,ymd,UTsec,x)
 
+!> Initialize variables to hold electric field input file data, can be called by any worker but only root does anything
+
+real(wp), intent(in) :: dt
+type(gemini_cfg), intent(in) :: cfg
+integer, dimension(3), intent(in) :: ymd
+real(wp), intent(in) :: UTsec
+type(curvmesh), intent(in) :: x
+
+!! only root needs to allocate these
 real(wp), dimension(:,:), allocatable :: Vminx1,Vmaxx1
 real(wp), dimension(:,:), allocatable :: Vminx2,Vmaxx2
 real(wp), dimension(:,:), allocatable :: Vminx3,Vmaxx3
 real(wp), dimension(:,:,:), allocatable :: E01all,E02all,E03all
 integer :: flagdirich
-
-real(wp), dimension(1:size(ns,2)-4,1:size(ns,3)-4,2) :: W0,PhiWmWm2    ! these are only worker-sized, hardcoded 2 precipitation populations...
 
 
 !> initializes the auroral electric field/current and particle inputs to read in a file corresponding to the first time step
@@ -540,6 +554,22 @@ if (myid==0 .and. cfg%flagE0file==1) then    !only root needs these...
   deallocate(Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3,Vmaxx3,E01all,E02all,E03all)
 end if
 
+end subroutine init_Efieldinput
+
+
+subroutine init_precipinput(dt,cfg,ymd,UTsec,x)
+
+!> initialize variables to hold input file precipitation information, must be called by all workers at the same time
+
+real(wp), intent(in) :: dt
+type(gemini_cfg), intent(in) :: cfg
+integer, dimension(3), intent(in) :: ymd
+real(wp), intent(in) :: UTsec
+type(curvmesh), intent(in) :: x
+
+real(wp), dimension(1:size(ns,2)-4,1:size(ns,3)-4,2) :: W0,PhiWmWm2    ! these are only worker-sized, hardcoded 2 precipitation populations...
+
+
 if (cfg%flagprecfile==1) then    !all workers must have this info
   if (myid==0) print*, '!!!Attmpting to prime precipitation input files...'
   !! back up by one dtprec to get a next file that is the beginning of the simulation
@@ -550,6 +580,6 @@ if (cfg%flagprecfile==1) then    !all workers must have this info
   call precipBCs_fileinput(dt,t,cfg,ymd,UTsec,x,W0,PhiWmWm2)
 end if
 
-end subroutine init_auroralinput
+end subroutine init_precipinput
 
 end program
