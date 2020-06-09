@@ -41,12 +41,6 @@ elseif (lx2all==1) then
   lid2 = 1
 else
   !! 3D simulation
-  !if (modulo(lid,lx3all) /= 0) then
-  !   write (stderr, *) 'mpigrid: 3D grid setup: lx2all, lx3all, lid:',lx2all,lx3all,lid
-  !   error stop 'Grid is not divisible by number of processes (lx3all/lid*lid /= lx3all).'
-  ! end if
-
-
   lid = min(lid, lx3all)
   !! more CPUs than lx3all, reduce used MPI images
 
@@ -66,11 +60,6 @@ else
     lid2=lid2*2
   end do
 end if
-
-
-!FORCE THE CODE TO USE 1D PROCESS GRID
-!lid2=1; lid3=lid;
-
 
 !> THIS PROCESS' LOCATION ON THE GRID
 inds = ID2grid(myid)
