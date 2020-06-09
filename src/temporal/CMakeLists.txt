@@ -17,5 +17,5 @@ add_test(NAME unit:SolarZenithAngle COMMAND $<TARGET_FILE:test_sza>)
 
 if(MPI_OK)
   add_library(temporal OBJECT temporal.f90)
-  target_link_libraries(temporal PRIVATE const mesh mpimod MPI::MPI_Fortran)
+  target_link_libraries(temporal PRIVATE config const mesh mpimod MPI::MPI_Fortran)
 endif(MPI_OK)
