@@ -67,7 +67,6 @@ call checker(N, lx2all=4, lx3all=4, &
   rx2=[1,1,1,2,2,2,2,2,2,2], &
   rx3=[1,2,2,2,2,2,2,2,2,2])
 
-
 print *, 'OK: auto process grid'
 
 
