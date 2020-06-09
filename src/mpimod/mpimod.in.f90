@@ -19,7 +19,8 @@ public :: mpi_tag, myid, myid2, myid3, lid, lid2, lid3, &
   bcast_recv, bcast_recv1d_2, bcast_recv1d_3, bcast_recv3d_x2i, bcast_recv3d_x3i, bcast_recv3d_ghost, &
   gather_send, gather_recv, &
   halo, halo_end, &
-  mpi_comm_world, mpi_status_ignore, mpi_integer, mpi_sum
+  mpi_comm_world, mpi_status_ignore, mpi_integer, mpi_sum, &
+  test_process_number
 
 external :: mpi_finalize, mpi_send, mpi_recv, mpi_isend, mpi_irecv, mpi_waitall
 
@@ -229,24 +230,6 @@ interface halo_end
   module procedure halo_end_23
 end interface halo_end
 
-interface ! mpi_grid.f90
-module subroutine mpigrid(lx2all,lx3all)
-integer, intent(in) :: lx2all,lx3all
-end subroutine mpigrid
-
-module subroutine mpi_manualgrid(lx2all,lx3all,lid2in,lid3in)
-integer, intent(in) :: lx2all,lx3all, lid2in,lid3in
-end subroutine mpi_manualgrid
-
-module integer function grid2id(i2,i3)
-integer, intent(in) :: i2,i3
-end function grid2id
-
-module function ID2grid(ID)
-integer, dimension(2) :: ID2grid
-integer, intent(in) :: ID
-end function id2grid
-end interface
 
 interface ! mpisend.f90
 module subroutine gather_send2D_23(paramtrim,tag)
@@ -469,12 +452,123 @@ slabinds(4)=i3fin
 end function slabinds
 
 
+subroutine mpi_manualgrid(lx2all,lx3all,lid2in,lid3in)
+integer, intent(in) :: lx2all,lx3all, lid2in,lid3in
+integer, dimension(2) :: inds
+
+if (lx2all/lid2in*lid2in /= lx2all) error stop 'user input grid split in x2 will not work'
+if (lx3all/lid3in*lid3in /= lx3all) error stop 'user input grid split in x3 will not work'
+if (lid2in*lid3in /= lid) error stop 'total number of processes not commensurate with x2 and x3 split'
+
+lid2=lid2in
+lid3=lid3in
+
+!THIS PROCESS' LOCATION ON THE GRID
+inds=ID2grid(myid)
+myid2=inds(1)
+myid3=inds(2)
+
+end subroutine mpi_manualgrid
+
+
+subroutine mpigrid(lx2all,lx3all)
+!! Automatically determine the PROCESS GRID
+!! sets value of lid2,lid3 globally
+!! FIXME: should use derived type for these
+!! FIXME: improve algorithm to use more CPU cores (be more effective in finding factors for x2 and x3)
+
+integer, intent(in) :: lx2all,lx3all
+
+integer, dimension(2) :: inds
+
+if (lx3all==1) then
+  !! 2D simulation, NOT swapped, divide in x3
+  lid3 = min(lid, lx2all)
+  lid2 = 1
+elseif (lx2all==1) then
+  !! 2D simulation, SWAP x2 to x3, divide in x3
+  lid3 = min(lid, lx3all)
+  lid2 = 1
+else
+  !! 3D simulation
+  lid = min(lid, lx3all)
+  !! more CPUs than lx3all, reduce used MPI images
+
+  do while(modulo(lx3all, lid) /= 0)
+    lid = lid-1
+  end do
+  !! make number of MPI images a factor of lx3all
+
+  lid2=1
+  lid3=lid
+  do while( ((lid3/2)*2==lid3) .and. (lid3-lid2>lid3 .or. lid3-lid2>lid2) .and. &
+            lx3all/(lid3/2)*(lid3/2)==lx3all .and. lx2all/(lid2*2)*(lid2*2)==lx2all .and. &
+            lid3/2>1)
+  !! ensure that lx3 is divisible by lid3 and lx2 by lid2 and lid3 must be > 1
+
+    lid3=lid3/2
+    lid2=lid2*2
+  end do
+end if
+
+!> THIS PROCESS' LOCATION ON THE GRID
+inds = ID2grid(myid)
+myid2 = inds(1)
+myid3 = inds(2)
+
+end subroutine mpigrid
+
+
+integer function grid2id(i2,i3)
+!! COMPUTES A PROCESS ID FROM A LOCATION ON THE PROCESS GRID
+integer, intent(in) :: i2,i3
+
+grid2ID = i3 * lid2 + i2
+!! this formula assumes that the first element is (i2,i3)=(0,0)
+
+end function grid2id
+
+
+module function ID2grid(ID)
+!! COMPUTES GRID LOCATION FROM A PROCESS ID
+integer, dimension(2) :: ID2grid
+integer, intent(in) :: ID
+
+
+ID2grid(2) = ID / lid2
+!! x3 index into process grid
+ID2grid(1) = ID - ID2grid(2) * lid2
+!! x2 index into process grid
+
+end function ID2grid
+
+
 integer function mpibreakdown() result(ierr)
 !! SHUTS DOWN MPI
 
 call mpi_finalize(ierr)
 
 end function mpibreakdown
+
+
+subroutine test_process_number(N, lx2all, lx3all, rx2, rx3)
+!! this is only for testing. Due to lid being protected, has to be in this module
+!! FIXME: make type for MPI parameters.
+
+integer, intent(in) :: N(:), rx2(:), rx3(:), lx2all, lx3all
+integer :: i
+
+do i = 1,size(N)
+  lid = N(i)
+  call mpigrid(lx2all,lx3all)
+  if (lid2 /= rx2(i) .or. lid3 /= rx3(i)) then
+    write(stderr,'(A,5I4)') 'failed: lx2all,lx3all,lid,N:',lx2all,lx3all,lid,N(i)
+    write(stderr,*) 'expected lid2,lid3', rx2(i), rx3(i), 'but got:',lid2,lid3
+    error stop
+  end if
+end do
+
+end subroutine test_process_number
 
 
 end module mpimod
