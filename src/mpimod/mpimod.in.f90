@@ -426,31 +426,25 @@ end subroutine mpisetup
 
 
 function grid2ID(i2,i3)
+!! COMPUTES A PROCESS ID FROM A LOCATION ON THE PROCESS GRID
 
-  !------------------------------------------------------------
-  !-------COMPUTES A PROCESS ID FROM A LOCATION ON THE PROCESS
-  !-------GRID
-  !------------------------------------------------------------
+integer, intent(in) :: i2,i3
+integer :: grid2ID
 
-  integer, intent(in) :: i2,i3
-  integer :: grid2ID
-
-  grid2ID=i3*lid2+i2    !this formulat assumes that the first element is (i2,i3)=(0,0)
+grid2ID=i3*lid2+i2
+!! this formulat assumes that the first element is (i2,i3)=(0,0)
 
 end function grid2ID
 
 
 function ID2grid(ID)
+!! COMPUTES GRID LOCATION FROM A PROCESS ID
 
-  !------------------------------------------------------------
-  !-------COMPUTES GRID LOCATION FROM A PROCESS ID
-  !------------------------------------------------------------
+integer, intent(in) :: ID
+integer, dimension(2) :: ID2grid
 
-  integer, intent(in) :: ID
-  integer, dimension(2) :: ID2grid
-
-  ID2grid(2)=ID/lid2                !x3 index into process grid
-  ID2grid(1)=ID-ID2grid(2)*lid2     !x2 index into process grid
+ID2grid(2)=ID/lid2                !< x3 index into process grid
+ID2grid(1)=ID-ID2grid(2)*lid2     !< x2 index into process grid
 
 end function ID2grid
 
@@ -493,8 +487,9 @@ integer, dimension(2) :: inds
 logical :: x2div,x3div
 
 
-if (lx3all==1 .or. lx2all==1) then    !this is a 2D simulation so the mpi'd dimenions will get swapped to x3
-  lid3=lid         !just divide in x3
+if (lx3all==1 .or. lx2all==1) then
+  !! this is a 2D simulation so the mpi'd dimenions will get swapped to x3
+  lid3=lid         !< just divide in x3
   lid2=1
 else
   if (lx3all/lid*lid/=lx3all) then
@@ -519,7 +514,7 @@ end if
 !lid2=1; lid3=lid;
 
 
-!THIS PROCESS' LOCATION ON THE GRID
+!> THIS PROCESS' LOCATION ON THE GRID
 inds=ID2grid(myid)
 myid2=inds(1)
 myid3=inds(2)
@@ -531,7 +526,6 @@ end subroutine mpigrid
 
 
 function slabinds(ID,lx2,lx3)
-
 !! GET THE MIN AND MAX X2,X3 INDICES REFERENCING FULL GRID VARIABLE FOR A GIVEN
 !! PROCESS ID
 
@@ -544,17 +538,21 @@ integer, dimension(2) :: inds
 integer, dimension(4) :: slabinds
 
 
-  inds=ID2grid(ID)   !find the location on the process grid for this particular process ID
-  i2=inds(1)          !need process grid location in order to know where to put the incoming data
-  i3=inds(2)
-  i3start=i3*lx3+1   !index (3rd dim) in the full grid variable into which the next chunk of data are to be store
-  i3fin=i3start+lx3-1
-  i2start=i2*lx2+1   !index into 2nd dim of process grid
-  i2fin=i2start+lx2-1
-  slabinds(1)=i2start
-  slabinds(2)=i2fin
-  slabinds(3)=i3start
-  slabinds(4)=i3fin
+inds=ID2grid(ID)
+!! find the location on the process grid for this particular process ID
+i2=inds(1)
+!! need process grid location in order to know where to put the incoming data
+i3=inds(2)
+i3start=i3*lx3+1
+!! index (3rd dim) in the full grid variable into which the next chunk of data are to be store
+i3fin=i3start+lx3-1
+i2start=i2*lx2+1
+!! index into 2nd dim of process grid
+i2fin=i2start+lx2-1
+slabinds(1)=i2start
+slabinds(2)=i2fin
+slabinds(3)=i3start
+slabinds(4)=i3fin
 
 end function slabinds
 
