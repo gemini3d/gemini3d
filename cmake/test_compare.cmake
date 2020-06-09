@@ -31,7 +31,7 @@ endfunction(python_compare)
 
 
 function(h5diff_compare TESTNAME)
-
+# this test is too unreliable and duplicates Python HDF5 test, which is robust.
 set(_outdir ${PROJECT_BINARY_DIR}/test${TESTNAME})
 set(_refdir ${PROJECT_SOURCE_DIR}/tests/data/test${TESTNAME})
 
@@ -53,6 +53,6 @@ endfunction(h5diff_compare)
 
 
 function(compare_gemini_output TESTNAME)
-h5diff_compare(${TESTNAME})
+# h5diff_compare(${TESTNAME})  # too shaky, duplicates python_compare
 python_compare(${TESTNAME})
 endfunction(compare_gemini_output)
