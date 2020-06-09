@@ -15,7 +15,7 @@ use multifluid, only : fluid_adv
 use neutral, only : neutral_atmos,make_dneu,neutral_perturb,clear_dneu,init_neutrals
 use potentialBCs_mumps, only: clear_potential_fileinput, init_Efieldinput
 use potential_comm,only : electrodynamics
-use precipBCs_mod, only: clear_precip_fileinput, precipBCs_fileinput
+use precipBCs_mod, only: clear_precip_fileinput, init_precipinput
 use temporal, only : dt_comm
 use timeutils, only: dateinc
 
@@ -190,8 +190,8 @@ call init_neutrals(dt,t,cfg,ymd,UTsec,x,nn,Tn,vn1,vn2,vn3)
 
 
 !> Initialize auroral inputs; must occur after initial timing info setup
-call init_Efieldinput(dt,cfg,ymd,UTsec,x)
-call init_precipinput(dt,cfg,ymd,UTsec,x)
+call init_Efieldinput(dt,t,cfg,ymd,UTsec,x)
+call init_precipinput(dt,t,cfg,ymd,UTsec,x)
 
 
 do while (t < cfg%tdur)
@@ -471,30 +471,5 @@ cfg%outdir = trim(argv)
 
 end subroutine cli
 
-
-subroutine init_precipinput(dt,cfg,ymd,UTsec,x)
-
-!> initialize variables to hold input file precipitation information, must be called by all workers at the same time
-
-real(wp), intent(in) :: dt
-type(gemini_cfg), intent(in) :: cfg
-integer, dimension(3), intent(in) :: ymd
-real(wp), intent(in) :: UTsec
-type(curvmesh), intent(in) :: x
-
-real(wp), dimension(1:size(ns,2)-4,1:size(ns,3)-4,2) :: W0,PhiWmWm2    ! these are only worker-sized, hardcoded 2 precipitation populations...
-
-
-if (cfg%flagprecfile==1) then    !all workers must have this info
-  if (myid==0) print*, '!!!Attmpting to prime precipitation input files...'
-  !! back up by one dtprec to get a next file that is the beginning of the simulation
-  call precipBCs_fileinput(dt,-1._wp*cfg%dtprec,cfg,ymd,UTsec-cfg%dtprec,x,W0,PhiWmWm2)
-
-  if (myid==0) print*, 'Now loading initial next file for precipitation input...'
-  !! now shift next->prev and load a new one corresponding to the first simulation time step
-  call precipBCs_fileinput(dt,t,cfg,ymd,UTsec,x,W0,PhiWmWm2)
-end if
-
-end subroutine init_precipinput
 
 end program
