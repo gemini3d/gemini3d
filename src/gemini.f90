@@ -90,7 +90,7 @@ call cli(cfg, lid2in, lid3in)
 !> CHECK THE GRID SIZE AND ESTABLISH A PROCESS GRID
 call grid_size(cfg%indatsize)
 
-!mpi gridding cannot be done until we know the grid size
+!> MPI gridding cannot be done until we know the grid size
 if (lid2in==-1) then
   call mpigrid(lx2all, lx3all)
   !! grid_size defines lx2all and lx3all

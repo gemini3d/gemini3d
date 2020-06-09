@@ -471,7 +471,7 @@ inds=ID2grid(myid)
 myid2=inds(1)
 myid3=inds(2)
 
-print '(A,I6,A,I6)', 'Input process grid is x2 by x3 size (in number of processes):',lid2,' by ',lid3
+print '(A,2I6)', 'Input process grid is x2, x3 size (number MPI processes):',lid2,lid3
 print '(A,I6,A,2I6,A)', 'Process:',myid,' is at location:W',myid2,myid3,'on the process grid'
 
 end subroutine mpi_manualgrid
@@ -492,7 +492,7 @@ if (lx3all==1 .or. lx2all==1) then
   lid3=lid         !< just divide in x3
   lid2=1
 else
-  if (lx3all/lid*lid/=lx3all) then
+  if (lx3all / lid*lid /= lx3all) then
     write (stderr, *) 'lx3all:',lx3all,'  lid:',lid
     error stop 'Grid is not divisible by number of processes (lx3all/lid*lid /= lx3all).'
   end if
@@ -502,7 +502,7 @@ else
   do while( ((lid3/2)*2==lid3) .and. (lid3-lid2>lid3 .or. lid3-lid2>lid2) .and. &
            lx3all/(lid3/2)*(lid3/2)==lx3all .and. lx2all/(lid2*2)*(lid2*2)==lx2all .and. &
            lid3/2>1)
-  !! must insure that lx3 is divisible by lid3 and lx2 by lid2 and lid3 must be > 1
+  !! ensure that lx3 is divisible by lid3 and lx2 by lid2 and lid3 must be > 1
 
     lid3=lid3/2
     lid2=lid2*2

@@ -19,6 +19,7 @@ character(256) :: buf
 namelist /files/ input_nml, output_dir,realbits
 namelist /git/ git_version, branch, rev, porcelain
 namelist /system/ compiler, compiler_flags, exe
+namelist /grid/ lid, lid2, lid3, lx1, lx2, lx3, lx2all, lx3all
 
 !> MAKE A COPY OF THE INPUT DATA IN THE OUTPUT DIRECTORY
 ierr = mkdir(cfg%outdir//'/inputs')
@@ -88,6 +89,7 @@ open(newunit=u, file=cfg%outdir // '/output.nml', status='unknown', action='writ
   write(u, nml=files)
   write(u, nml=git)
   write(u, nml=system)
+  write(u, nml=grid)
 close(u)
 
 end procedure create_outdir
