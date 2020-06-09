@@ -14,7 +14,7 @@ use config, only: gemini_cfg
 
 implicit none (type, external)
 private
-public :: clear_precip_fileinput, precipBCs_fileinput, precipBCs
+public :: clear_precip_fileinput, precipBCs_fileinput, precipBCs, init_precipinput
 
 external :: mpi_send, mpi_recv
 
@@ -37,6 +37,32 @@ real(wp), private :: tprev=0._wp,tnext=0._wp
 
 
 contains
+
+
+subroutine init_precipinput(dt,t,cfg,ymd,UTsec,x)
+
+!> initialize variables to hold input file precipitation information, must be called by all workers at the same time
+
+real(wp), intent(in) :: dt,t
+type(gemini_cfg), intent(in) :: cfg
+integer, dimension(3), intent(in) :: ymd
+real(wp), intent(in) :: UTsec
+type(curvmesh), intent(in) :: x
+
+real(wp), dimension(1:x%lx2,1:x%lx3,2) :: W0,PhiWmWm2    ! these are only worker-sized, hardcoded 2 precipitation populations...
+
+
+if (cfg%flagprecfile==1) then    !all workers must have this info
+  if (myid==0) print*, '!!!Attmpting to prime precipitation input files...'
+  !! back up by one dtprec to get a next file that is the beginning of the simulation
+  call precipBCs_fileinput(dt,-1._wp*cfg%dtprec,cfg,ymd,UTsec-cfg%dtprec,x,W0,PhiWmWm2)
+
+  if (myid==0) print*, 'Now loading initial next file for precipitation input...'
+  !! now shift next->prev and load a new one corresponding to the first simulation time step
+  call precipBCs_fileinput(dt,t,cfg,ymd,UTsec,x,W0,PhiWmWm2)
+end if
+
+end subroutine init_precipinput
 
 
 subroutine precipBCs_fileinput(dt,t,cfg,ymd,UTsec,x,W0,PhiWmWm2)

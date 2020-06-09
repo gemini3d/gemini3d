@@ -3,7 +3,7 @@ module potentialBCs_mumps
 use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
 use, intrinsic :: ieee_arithmetic, only : ieee_is_finite
 
-use mpimod, only : mpi_integer, mpi_comm_world, mpi_status_ignore
+use mpimod, only : mpi_integer, mpi_comm_world, mpi_status_ignore, myid
 use phys_consts, only: wp, pi, Re, debug
 use grid, only: lx1, lx2, lx2all, lx3all, gridflag, flagswap
 use mesh, only: curvmesh
@@ -14,7 +14,7 @@ use config, only: gemini_cfg
 
 implicit none (type, external)
 private
-public :: potentialbcs2D, potentialbcs2D_fileinput, clear_potential_fileinput
+public :: potentialbcs2D, potentialbcs2D_fileinput, clear_potential_fileinput, init_Efieldinput
 
 !ALL OF THE FOLLOWING MODULE-SCOPE ARRAYS ARE USED FOR INTERPOLATING PRECIPITATION INPUT FILES (IF USED)
 !It should be noted that all of these will eventually be fullgrid variables since only root does this...
@@ -49,11 +49,11 @@ integer, private :: flagdirich_state
 contains
 
 
-subroutine init_Efieldinput(dt,cfg,ymd,UTsec,x)
+subroutine init_Efieldinput(dt,t,cfg,ymd,UTsec,x)
 
 !> Initialize variables to hold electric field input file data, can be called by any worker but only root does anything
 
-real(wp), intent(in) :: dt
+real(wp), intent(in) :: dt,t
 type(gemini_cfg), intent(in) :: cfg
 integer, dimension(3), intent(in) :: ymd
 real(wp), intent(in) :: UTsec
@@ -69,11 +69,11 @@ integer :: flagdirich
 
 !> initializes the auroral electric field/current and particle inputs to read in a file corresponding to the first time step
 if (myid==0 .and. cfg%flagE0file==1) then    !only root needs these...
-  allocate(Vminx1(1:size(Phiall,2),1:size(Phiall,3)),Vmaxx1(1:size(Phiall,2),1:size(Phiall,3)))
-  allocate(Vminx2(1:size(Phiall,1),1:size(Phiall,3)),Vmaxx2(1:size(Phiall,1),1:size(Phiall,3)))
-  allocate(Vminx3(1:size(Phiall,1),1:size(Phiall,2)),Vmaxx3(1:size(Phiall,1),1:size(Phiall,2)))
-  allocate(E01all(1:size(Phiall,1),1:size(Phiall,2),1:size(Phiall,3)),E02all(1:size(Phiall,1),1:size(Phiall,2),1:size(Phiall,3)), &
-              E03all(1:size(Phiall,1),1:size(Phiall,2),1:size(Phiall,3)))    !background fields
+  allocate(Vminx1(1:x%lx2all,1:x%lx3all),Vmaxx1(1:x%lx2all,1:x%lx3all))
+  allocate(Vminx2(1:x%lx1,1:x%lx3all),Vmaxx2(1:x%lx1,1:x%lx3all))
+  allocate(Vminx3(1:x%lx1,1:x%lx2all),Vmaxx3(1:x%lx1,1:x%lx2all))
+  allocate(E01all(1:x%lx1,1:x%lx2all,1:x%lx3all),E02all(1:x%lx1,1:x%lx2all,1:x%lx3all), &
+              E03all(1:x%lx1,1:x%lx2all,1:x%lx3all))    !background fields
 
   print*, '!!!Attempting to prime electric field input files...',t-dt
   !! back up by one dt for each input so that we get a next file that corresponds to the beginning of the simulation
