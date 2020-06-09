@@ -10,7 +10,7 @@ use mesh, only: curvmesh
 use config, only : read_configfile, gemini_cfg
 use pathlib, only : assert_file_exists, assert_directory_exists
 use io, only : input_plasma,create_outdir,output_plasma,create_outdir_aur,output_aur
-use mpimod, only : mpisetup, mpibreakdown, mpi_manualgrid, mpigrid, lid, myid
+use mpimod, only : mpisetup, mpibreakdown, mpi_manualgrid, mpigrid, lid, lid2,lid3,myid,myid2,myid3
 use multifluid, only : fluid_adv
 use neutral, only : neutral_atmos,make_dneu,neutral_perturb,clear_dneu
 use potentialBCs_mumps, only: clear_potential_fileinput
@@ -94,6 +94,8 @@ call grid_size(cfg%indatsize)
 if (lid2in==-1) then
   call mpigrid(lx2all, lx3all)
   !! grid_size defines lx2all and lx3all
+  print '(A, 2I6)', 'process grid (Number MPI processes) x2, x3:  ',lid2,lid3
+  print '(A, I6, A, 2I6)', 'Process:',myid,' at process grid location:',myid2,myid3
 else
   call mpi_manualgrid(lx2all, lx3all, lid2in, lid3in)
 endif

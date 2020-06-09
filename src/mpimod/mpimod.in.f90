@@ -229,9 +229,26 @@ interface halo_end
   module procedure halo_end_23
 end interface halo_end
 
+interface ! mpi_grid.f90
+module subroutine mpigrid(lx2all,lx3all)
+integer, intent(in) :: lx2all,lx3all
+end subroutine mpigrid
 
-interface ! mpisend
+module subroutine mpi_manualgrid(lx2all,lx3all,lid2in,lid3in)
+integer, intent(in) :: lx2all,lx3all, lid2in,lid3in
+end subroutine mpi_manualgrid
 
+module integer function grid2id(i2,i3)
+integer, intent(in) :: i2,i3
+end function grid2id
+
+module function ID2grid(ID)
+integer, dimension(2) :: ID2grid
+integer, intent(in) :: ID
+end function id2grid
+end interface
+
+interface ! mpisend.f90
 module subroutine gather_send2D_23(paramtrim,tag)
 real(wp), dimension(:,:), intent(in) :: paramtrim
 integer, intent(in) :: tag
@@ -300,12 +317,10 @@ real(wp), dimension(-1:), intent(in) :: paramall
 integer, intent(in) :: tag
 real(wp), dimension(-1:), intent(out) :: param
 end subroutine bcast_send1D_23_2
-
 end interface
 
 
-interface ! mpirecv
-
+interface ! mpirecv.f90
 module subroutine gather_recv2D_23(paramtrim,tag,paramtrimall)
 real(wp), dimension(:,:), intent(in) :: paramtrim
 integer, intent(in) :: tag
@@ -378,12 +393,10 @@ module subroutine bcast_recv3D_x2i_23(paramtrim,tag)
 real(wp), dimension(:,:,:), intent(out) :: paramtrim
 integer, intent(in) :: tag
 end subroutine bcast_recv3D_x2i_23
-
 end interface
 
 
-interface ! mpihalo
-
+interface ! mpihalo.f90
 module subroutine halo_23(param,lhalo,tag,isperiodic)
 real(wp), dimension(-1:,-1:,-1:), intent(inout) :: param
 integer, intent(in) :: lhalo    !number of surrounding grid points to halo with (1 or 2 only)
@@ -397,7 +410,6 @@ real(wp), dimension(:,:), intent(out) :: paramend
 real(wp), dimension(:,:), intent(out) :: paramtop
 integer, intent(in) :: tag
 end subroutine halo_end_23
-
 end interface
 
 
@@ -423,106 +435,6 @@ lid2 = 1
 lid3 = lid
 
 end subroutine mpisetup
-
-
-function grid2ID(i2,i3)
-!! COMPUTES A PROCESS ID FROM A LOCATION ON THE PROCESS GRID
-
-integer, intent(in) :: i2,i3
-integer :: grid2ID
-
-grid2ID=i3*lid2+i2
-!! this formulat assumes that the first element is (i2,i3)=(0,0)
-
-end function grid2ID
-
-
-function ID2grid(ID)
-!! COMPUTES GRID LOCATION FROM A PROCESS ID
-
-integer, intent(in) :: ID
-integer, dimension(2) :: ID2grid
-
-ID2grid(2)=ID/lid2                !< x3 index into process grid
-ID2grid(1)=ID-ID2grid(2)*lid2     !< x2 index into process grid
-
-end function ID2grid
-
-
-subroutine mpi_manualgrid(lx2all,lx3all,lid2in,lid3in)
-
-integer, intent(in) :: lx2all,lx3all
-integer, intent(in) :: lid2in,lid3in
-
-integer, dimension(2) :: inds
-
-
-if (lx2all/lid2in*lid2in/=lx2all) error stop 'user input grid split in x2 will not work'
-
-if (lx3all/lid3in*lid3in/=lx3all) error stop 'user input grid split in x3 will not work'
-
-if (lid2in*lid3in/=lid) error stop 'total number of processes not commensurate with x2 and x3 split'
-
-lid2=lid2in
-lid3=lid3in
-
-!THIS PROCESS' LOCATION ON THE GRID
-inds=ID2grid(myid)
-myid2=inds(1)
-myid3=inds(2)
-
-print '(A,2I6)', 'Input process grid is x2, x3 size (number MPI processes):',lid2,lid3
-print '(A,I6,A,2I6,A)', 'Process:',myid,' is at location:W',myid2,myid3,'on the process grid'
-
-end subroutine mpi_manualgrid
-
-
-subroutine mpigrid(lx2all,lx3all)
-
-!! THIS SUBROUTINE DEFINES A PROCESS GRID, IF REQUIRED
-
-integer, intent(in) :: lx2all,lx3all
-
-integer, dimension(2) :: inds
-logical :: x2div,x3div
-
-
-if (lx3all==1 .or. lx2all==1) then
-  !! this is a 2D simulation so the mpi'd dimenions will get swapped to x3
-  lid3=lid         !< just divide in x3
-  lid2=1
-else
-  if (lx3all / lid*lid /= lx3all) then
-    write (stderr, *) 'lx3all:',lx3all,'  lid:',lid
-    error stop 'Grid is not divisible by number of processes (lx3all/lid*lid /= lx3all).'
-  end if
-
-  lid2=1
-  lid3=lid
-  do while( ((lid3/2)*2==lid3) .and. (lid3-lid2>lid3 .or. lid3-lid2>lid2) .and. &
-           lx3all/(lid3/2)*(lid3/2)==lx3all .and. lx2all/(lid2*2)*(lid2*2)==lx2all .and. &
-           lid3/2>1)
-  !! ensure that lx3 is divisible by lid3 and lx2 by lid2 and lid3 must be > 1
-
-    lid3=lid3/2
-    lid2=lid2*2
-  end do
-end if
-
-
-!FORCE THE CODE TO USE 1D PROCESS GRID
-!lid2=1; lid3=lid;
-
-
-!> THIS PROCESS' LOCATION ON THE GRID
-inds=ID2grid(myid)
-myid2=inds(1)
-myid3=inds(2)
-
-print '(A, 2I6)', 'process grid (Number MPI processes) x2, x3:  ',lid2,lid3
-print '(A, I6, A, 2I6)', 'Process:',myid,' at process grid location:',myid2,myid3
-
-end subroutine mpigrid
 
 
 function slabinds(ID,lx2,lx3)
