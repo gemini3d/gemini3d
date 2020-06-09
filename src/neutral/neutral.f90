@@ -17,7 +17,7 @@ use config, only: gemini_cfg
 
 implicit none (type, external)
 private
-public :: Tnmsis, neutral_atmos, make_dneu, clear_dneu, neutral_perturb, neutral_update
+public :: Tnmsis, neutral_atmos, make_dneu, clear_dneu, neutral_perturb, neutral_update, init_neutrals
 
 
 interface ! atmos.f90
@@ -100,10 +100,57 @@ real(wp), dimension(:,:,:), allocatable, protected :: vn1base,vn2base,vn3base
 contains
 
 
+subroutine init_neutrals(dt,t,cfg,ymd,UTsec,x,nn,Tn,vn1,vn2,vn3)
+
+!> initializes neutral atmosphere by:
+!    1)  allocating storage space
+!    2)  establishing initial background
+!    3)  priming file input so that we have an initial perturbed state to start from (necessary for restart)
+
+real(wp), intent(in) :: dt,t
+type(gemini_cfg), intent(in) :: cfg
+integer, dimension(3), intent(in) :: ymd
+real(wp), intent(in) :: UTsec
+type(curvmesh), intent(inout) :: x    ! unit vecs may be deallocated after first setup
+real(wp), dimension(:,:,:,:), intent(out) :: nn
+real(wp), dimension(:,:,:), intent(out) :: Tn
+real(wp), dimension(:,:,:), intent(out) :: vn1,vn2,vn3
+
+real(wp) :: tstart,tfin
+
+
+!! allocation neutral module scope variables so there is space to store all the file input and do interpolations
+call make_dneu()
+
+!! call msis to get an initial neutral background atmosphere
+if (myid==0) call cpu_time(tstart)
+call neutral_atmos(ymd,UTsec,x%glat,x%glon,x%alt,cfg%activ,nn,Tn,vn1,vn2,vn3)
+if (myid==0) then
+  call cpu_time(tfin)
+  print *, 'Initial neutral background at time:  ',ymd,UTsec,' calculated in time:  ',tfin-tstart
+end if
+
+if (cfg%flagdneu==1) then
+  !! Loads the neutral input file corresponding to the first time step of the simulation to prevent the first interpolant
+  !  from being zero and causing issues with restart simulations.  I.e. make sure the neutral buffers are primed for restart
+  !  This requires us to load file input twice, once corresponding to the initial frame and once for the "first, next" frame.  
+  if (myid==0) print*, '!!!Attempting initial load of neutral dynamics files!!!' // &
+                           ' This is a workaround to insure compatibility with restarts...',UTsec-dt
+  !! We essentially are loading up the data corresponding to halfway betwween -dtneu and t0 (zero)
+  call neutral_perturb(cfg,dt,cfg%dtneu,-1._wp*cfg%dtneu,ymd,UTsec-cfg%dtneu,x,nn,Tn,vn1,vn2,vn3)
+  
+  if (myid==0) print*, 'Now loading initial next file for neutral perturbations...'
+  !! Now compute perturbations for the present time (zero), this moves the primed variables in next into prev and then
+  !  loads up a current state so that we get a proper interpolation for the first time step.  
+  call neutral_perturb(cfg,dt,cfg%dtneu,t,ymd,UTsec,x,nn,Tn,vn1,vn2,vn3)
+end if
+end subroutine init_neutrals
+
+
+subroutine neutral_perturb(cfg,dt,dtneu,t,ymd,UTsec,x,nn,Tn,vn1,vn2,vn3)
+
 !THIS IS  WRAPPER FOR THE NEUTRAL PERTURBATION CODES THAT DO EITHER
 !AXISYMMETRIC OR CARTESIAN OR 3D INTERPOLATION
-!subroutine neutral_perturb(interptype,dt,dtneu,t,ymd,UTsec,neudir,dxn,drhon,dzn,meanlat,meanlong,x,nn,Tn,vn1,vn2,vn3)
-subroutine neutral_perturb(cfg,dt,dtneu,t,ymd,UTsec,x,nn,Tn,vn1,vn2,vn3)
 
 type(gemini_cfg), intent(in) :: cfg
 real(wp), intent(in) :: dt,dtneu
