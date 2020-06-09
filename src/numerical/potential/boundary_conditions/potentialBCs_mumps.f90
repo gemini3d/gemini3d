@@ -49,6 +49,49 @@ integer, private :: flagdirich_state
 contains
 
 
+subroutine init_Efieldinput(dt,cfg,ymd,UTsec,x)
+
+!> Initialize variables to hold electric field input file data, can be called by any worker but only root does anything
+
+real(wp), intent(in) :: dt
+type(gemini_cfg), intent(in) :: cfg
+integer, dimension(3), intent(in) :: ymd
+real(wp), intent(in) :: UTsec
+type(curvmesh), intent(in) :: x
+
+!! only root needs to allocate these
+real(wp), dimension(:,:), allocatable :: Vminx1,Vmaxx1
+real(wp), dimension(:,:), allocatable :: Vminx2,Vmaxx2
+real(wp), dimension(:,:), allocatable :: Vminx3,Vmaxx3
+real(wp), dimension(:,:,:), allocatable :: E01all,E02all,E03all
+integer :: flagdirich
+
+
+!> initializes the auroral electric field/current and particle inputs to read in a file corresponding to the first time step
+if (myid==0 .and. cfg%flagE0file==1) then    !only root needs these...
+  allocate(Vminx1(1:size(Phiall,2),1:size(Phiall,3)),Vmaxx1(1:size(Phiall,2),1:size(Phiall,3)))
+  allocate(Vminx2(1:size(Phiall,1),1:size(Phiall,3)),Vmaxx2(1:size(Phiall,1),1:size(Phiall,3)))
+  allocate(Vminx3(1:size(Phiall,1),1:size(Phiall,2)),Vmaxx3(1:size(Phiall,1),1:size(Phiall,2)))
+  allocate(E01all(1:size(Phiall,1),1:size(Phiall,2),1:size(Phiall,3)),E02all(1:size(Phiall,1),1:size(Phiall,2),1:size(Phiall,3)), &
+              E03all(1:size(Phiall,1),1:size(Phiall,2),1:size(Phiall,3)))    !background fields
+
+  print*, '!!!Attempting to prime electric field input files...',t-dt
+  !! back up by one dt for each input so that we get a next file that corresponds to the beginning of the simulation
+  call potentialBCs2D_fileinput(dt,-1._wp*cfg%dtE0,ymd,UTsec-cfg%dtE0,cfg,x,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3, &
+                                    Vmaxx3,E01all,E02all,E03all,flagdirich)
+  
+  
+  !! now load first, next frame of input
+  print*, 'Now loading initial next file for electric field input...'
+  call potentialBCs2D_fileinput(dt,t,ymd,UTsec,cfg,x,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3, &
+                                    Vmaxx3,E01all,E02all,E03all,flagdirich)
+
+  deallocate(Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3,Vmaxx3,E01all,E02all,E03all)
+end if
+
+end subroutine init_Efieldinput
+
+
 subroutine potentialBCs2D_fileinput(dt,t,ymd,UTsec,cfg,x,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3, &
                                   Vmaxx3,E01all,E02all,E03all,flagdirich)
 !! A FILE INPUT BASED BOUNDARY CONDITIONS FOR ELECTRIC POTENTIAL OR
