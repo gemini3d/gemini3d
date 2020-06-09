@@ -15,6 +15,7 @@ add_subdirectory(vendor/lapack95)  # used by PDEparabolic
 # --- GEMINI
 add_subdirectory(ionization)
 add_subdirectory(numerical)
+add_subdirectory(mpimod)
 add_subdirectory(io)
 add_subdirectory(temporal)
 
@@ -52,4 +53,4 @@ set_target_properties(magcalc.bin PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BI
 add_test(NAME unit:magcalc_exe_ok COMMAND $<TARGET_FILE:magcalc.bin>)
 set_tests_properties(unit:magcalc_exe_ok PROPERTIES PASS_REGULAR_EXPRESSION "EOF: MAGCALC")
 
-set_targ_props(calculus collision config const fang fang_run io ionization gbsv logging multifluid neutral pathlib precipBCs reader sanity_check sources temporal timeutils)
+set_targ_props(calculus collision config const fang fang_run io ionization gbsv logging mpimod multifluid neutral pathlib precipBCs reader sanity_check sources temporal timeutils)

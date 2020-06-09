@@ -18,20 +18,6 @@ if(NOT MPI_OK)
   return()
 endif()
 
-# --- mpi
-if(realbits EQUAL 32)
-  set(mpi_realprec mpi_real)
-else()
-  set(mpi_realprec mpi_double_precision)
-endif()
-
-configure_file(mpimod/mpimod.in.f90 mpimod.f90)
-
-add_library(mpimod OBJECT
-  ${CMAKE_CURRENT_BINARY_DIR}/mpimod.f90
-  mpimod/mpisend.f90 mpimod/mpirecv.f90 mpimod/mpihalo.f90)
-target_link_libraries(mpimod PRIVATE const MPI::MPI_Fortran)
-
 add_subdirectory(diffusion)
 
 # -- more libs
@@ -41,4 +27,4 @@ target_link_libraries(advec PRIVATE const mpimod grid mesh)
 
 add_subdirectory(potential)
 
-set_targ_props(advec calculus const diffusion grid interp mesh mpimod mumps_interface PDEelliptic PDEparabolic potential)
+set_targ_props(advec calculus const diffusion grid interp mesh mumps_interface PDEelliptic PDEparabolic potential)
