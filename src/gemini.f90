@@ -12,7 +12,7 @@ use pathlib, only : assert_file_exists, assert_directory_exists, expanduser
 use io, only : input_plasma,create_outdir,output_plasma,create_outdir_aur,output_aur
 use mpimod, only : mpisetup, mpibreakdown, mpi_manualgrid, mpigrid, lid, lid2,lid3,myid,myid2,myid3
 use multifluid, only : fluid_adv
-use neutral, only : neutral_atmos,make_dneu,neutral_perturb,clear_dneu
+use neutral, only : neutral_atmos,make_dneu,neutral_perturb,clear_dneu,init_neutrals
 use potentialBCs_mumps, only: clear_potential_fileinput, potentialBCs2D_fileinput
 use potential_comm,only : electrodynamics
 use precipBCs_mod, only: clear_precip_fileinput, precipBCs_fileinput
@@ -184,7 +184,7 @@ tneuBG=t
 
 
 !> Inialize neutral atmosphere, note the use of fortran's weird scoping rules to avoid input args.  Must occur after initial time info setup
-call init_neutrals(dt,cfg,ymd,UTsec,x)
+call init_neutrals(dt,t,cfg,ymd,UTsec,x,nn,Tn,vn1,vn2,vn3)
 
 
 !> Initialize auroral inputs; must occur after initial timing info setup
@@ -207,7 +207,7 @@ do while (t < cfg%tdur)
 
 
   !COMPUTE BACKGROUND NEUTRAL ATMOSPHERE USING MSIS00.
-  if (it==1 .or. cfg%flagneuBG .and. t>tneuBG) then     !we dont' throttle for tneuBG so we have to do things this way to not skip over...
+  if ( .not.(it==1) .and. cfg%flagneuBG .and. t>tneuBG) then     !we dont' throttle for tneuBG so we have to do things this way to not skip over...
     call cpu_time(tstart)
     call neutral_atmos(ymd,UTsec,x%glat,x%glon,x%alt,cfg%activ,nn,Tn,vn1,vn2,vn3)
     tneuBG=tneuBG+cfg%dtneuBG;
@@ -496,48 +496,6 @@ print '(A)', '-manual_grid lx2 lx3    defines the number of MPI processes along 
 print '(A)', '  If -manual_grid is not specified, the MPI processes are auto-assigned along x2 and x3.'
 stop 'EOF: Gemini-3D'
 end subroutine help_cli
-
-subroutine init_neutrals(dt,cfg,ymd,UTsec,x)
-
-!> initializes neutral atmosphere by:
-!    1)  allocating storage space
-!    2)  establishing initial background
-!    3)  priming file input so that we have an initial perturbed state to start from (necessary for restart)
-
-real(wp), intent(in) :: dt
-type(gemini_cfg), intent(in) :: cfg
-integer, dimension(3), intent(in) :: ymd
-real(wp), intent(in) :: UTsec
-type(curvmesh), intent(inout) :: x    ! unit vecs may be deallocated after first setup
-
-!! allocation neutral module scope variables so there is space to store all the file input and do interpolations
-call make_dneu()
-
-!! call msis to get an initial neutral background atmosphere
-if (myid==0) call cpu_time(tstart)
-call neutral_atmos(ymd,UTsec,x%glat,x%glon,x%alt,cfg%activ,nn,Tn,vn1,vn2,vn3)
-tneuBG=tneuBG+cfg%dtneuBG;
-if (myid==0) then
-  call cpu_time(tfin)
-  print *, 'Initial neutral background at time:  ',t,' calculated in time:  ',tfin-tstart
-end if
-
-if (cfg%flagdneu==1) then
-  !! Loads the neutral input file corresponding to the first time step of the simulation to prevent the first interpolant
-  !  from being zero and causing issues with restart simulations.  I.e. make sure the neutral buffers are primed for restart
-  !  This requires us to load file input twice, once corresponding to the initial frame and once for the "first, next" frame.  
-  if (myid==0) print*, '!!!Attempting initial load of neutral dynamics files!!!' // &
-                           ' This is a workaround to insure compatibility with restarts...',t-dt
-  !! We essentially are loading up the data corresponding to halfway betwween -dtneu and t0 (zero)
-  call neutral_perturb(cfg,dt,cfg%dtneu,-1._wp*cfg%dtneu,ymd,UTsec-cfg%dtneu,x,nn,Tn,vn1,vn2,vn3)
-  
-  if (myid==0) print*, 'Now loading initial next file for neutral perturbations...'
-  !! Now compute perturbations for the present time (zero), this moves the primed variables in next into prev and then
-  !  loads up a current state so that we get a proper interpolation for the first time step.  
-  call neutral_perturb(cfg,dt,cfg%dtneu,t,ymd,UTsec,x,nn,Tn,vn1,vn2,vn3)
-end if
-end subroutine init_neutrals
-
 
 subroutine init_Efieldinput(dt,cfg,ymd,UTsec,x)
 
