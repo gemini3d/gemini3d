@@ -12,11 +12,12 @@ module procedure create_outdir
 
 integer :: ierr, u, realbits
 logical :: porcelain, exists
-character(:), allocatable :: input_nml, output_dir, branch, rev, compiler, compiler_flags, exe
+character(:), allocatable :: input_nml, output_dir, &
+  git_version, branch, rev, compiler, compiler_flags, exe
 character(256) :: buf
 
 namelist /files/ input_nml, output_dir,realbits
-namelist /git/ branch, rev, porcelain
+namelist /git/ git_version, branch, rev, porcelain
 namelist /system/ compiler, compiler_flags, exe
 
 !> MAKE A COPY OF THE INPUT DATA IN THE OUTPUT DIRECTORY
@@ -59,11 +60,14 @@ case default
 end select
 
 !> git namelist
+git_version = ''
 branch = ''
 rev = ''
 porcelain = .false.
 open(newunit=u, file=cfg%outdir// '/gitrev.log', status='old', action='read', iostat=ierr)
 if(ierr==0) then
+  read(u, '(A256)', iostat=ierr) buf
+  if(ierr==0) git_version = trim(buf)
   read(u, '(A256)', iostat=ierr) buf
   if(ierr==0) branch = trim(buf)
   read(u, '(A256)', iostat=ierr) buf
@@ -91,12 +95,19 @@ end procedure create_outdir
 
 subroutine gitlog(logpath)
 !! logs git branch, hash to file
+!! this works on Windows and Unix
 
 character(*), intent(in) :: logpath
 integer :: ierr
 
+call execute_command_line('git --version > ' // logpath, cmdstat=ierr)
+if(ierr /= 0) then
+  write(stderr, *) 'ERROR: Git not available'
+  return
+endif
+
 !> git branch --show-current requires Git >= 2.22, June 2019
-call execute_command_line('git rev-parse --abbrev-ref HEAD > '// logpath, cmdstat=ierr)
+call execute_command_line('git rev-parse --abbrev-ref HEAD >> '// logpath, cmdstat=ierr)
 if(ierr /= 0) then
   write(stderr, *) 'ERROR: failed to log Git branch'
   return

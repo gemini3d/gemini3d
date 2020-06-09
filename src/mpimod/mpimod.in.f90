@@ -519,8 +519,8 @@ inds=ID2grid(myid)
 myid2=inds(1)
 myid3=inds(2)
 
-print *, 'Proposed process grid is x2 by x3 size (in number of processes):  ',lid2,' by ',lid3
-print *, 'Process:  ',myid,' is at location:  ',myid2,myid3,' on the process grid'
+print '(A, 2I6)', 'process grid (Number MPI processes) x2, x3:  ',lid2,lid3
+print '(A, I6, A, 2I6)', 'Process:',myid,' at process grid location:',myid2,myid3
 
 end subroutine mpigrid
 
