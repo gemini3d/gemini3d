@@ -9,7 +9,7 @@ use grid, only: grid_size,read_grid,clear_grid, lx1,lx2,lx3,lx2all,lx3all
 use mesh, only: curvmesh
 use config, only : read_configfile, gemini_cfg
 use pathlib, only : assert_file_exists, assert_directory_exists, expanduser
-use io, only : input_plasma,create_outdir,output_plasma,create_outdir_aur,output_aur
+use io, only : input_plasma,create_outdir,output_plasma,create_outdir_aur,output_aur,find_lastfile,find_milestone
 use mpimod, only : mpisetup, mpibreakdown, mpi_manualgrid, mpigrid, lid, lid2,lid3,myid,myid2,myid3
 use multifluid, only : fluid_adv
 use neutral, only : neutral_atmos,make_dneu,neutral_perturb,clear_dneu,init_neutrals
@@ -127,6 +127,7 @@ allocate(v1(-1:lx1+2,-1:lx2+2,-1:lx3+2),v2(-1:lx1+2,-1:lx2+2,-1:lx3+2), &
 allocate(E1(lx1,lx2,lx3),E2(lx1,lx2,lx3),E3(lx1,lx2,lx3),J1(lx1,lx2,lx3),J2(lx1,lx2,lx3),J3(lx1,lx2,lx3))
 allocate(nn(lx1,lx2,lx3,lnchem),Tn(lx1,lx2,lx3),vn1(lx1,lx2,lx3), vn2(lx1,lx2,lx3),vn3(lx1,lx2,lx3))
 
+
 !> ALLOCATE MEMORY FOR ROOT TO STORE CERTAIN VARS. OVER ENTIRE GRID
 if (myid==0) then
   allocate(Phiall(lx1,lx2all,lx3all))
@@ -190,6 +191,7 @@ call init_neutrals(dt,t,cfg,ymd,UTsec,x,nn,Tn,vn1,vn2,vn3)
 !> Initialize auroral inputs; must occur after initial timing info setup
 call init_Efieldinput(dt,t,cfg,ymd,UTsec,x)
 call init_precipinput(dt,t,cfg,ymd,UTsec,x)
+
 
 do while (t < cfg%tdur)
   !! TIME STEP CALCULATION, requires workers to report their most stringent local stability constraint

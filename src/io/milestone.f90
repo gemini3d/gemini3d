@@ -1,4 +1,4 @@
-submodule (io:plasma_input) plasma_input_milestone
+submodule (io) milestone
 
 use timeutils, only: date_filename,dateinc
 use h5fortran, only: hdf5_file 
@@ -75,4 +75,4 @@ end do
 
 end procedure find_milestone
 
-end submodule plasma_input_milestone
+end submodule milestone

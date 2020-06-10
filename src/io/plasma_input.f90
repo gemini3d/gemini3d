@@ -51,26 +51,6 @@ character(*), intent(in) :: indatsize, indatfile
 real(wp), dimension(-1:,-1:,-1:,:), intent(out) :: ns,vs1,Ts
 end subroutine input_root_mpi_nc4
 
-module subroutine find_lastfile(ymd0,UTsec0,ymdtarget,UTsectarget,cadence,ymd,UTsec)
-integer, dimension(3), intent(in) :: ymd0
-real(wp), intent(in) :: UTsec0
-integer, dimension(3), intent(in) :: ymdtarget
-real(wp), intent(in) :: UTsectarget
-real(wp), intent(in) :: cadence
-integer, dimension(3), intent(out) :: ymd
-real(wp), intent(out) :: UTsec
-end subroutine find_lastfile
-
-module subroutine find_milestone(path,suffix,ymd0,UTsec0,ymdmile,UTsecmile,filemile)
-character(*), intent(in) :: path
-character(*), intent(in) :: suffix
-integer, dimension(3), intent(in) :: ymd0
-real(wp), intent(in) :: UTsec0
-integer, dimension(3), intent(out) :: ymdmile
-real(wp), intent(out) :: UTsecmile
-character(:), allocatable, intent(out) :: filemile
-end subroutine find_milestone
-
 end interface
 
 contains
