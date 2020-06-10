@@ -8,7 +8,7 @@ use phys_consts, only : lnchem, lwave, lsp, wp, debug
 use grid, only: grid_size,read_grid,clear_grid, lx1,lx2,lx3,lx2all,lx3all
 use mesh, only: curvmesh
 use config, only : read_configfile, gemini_cfg
-use pathlib, only : assert_file_exists, assert_directory_exists, expanduser
+use pathlib, only : assert_file_exists, assert_directory_exists, get_suffix
 use io, only : input_plasma,create_outdir,output_plasma,create_outdir_aur,output_aur,find_lastfile,find_milestone
 use mpimod, only : mpisetup, mpibreakdown, mpi_manualgrid, mpigrid, lid, lid2,lid3,myid,myid2,myid3
 use multifluid, only : fluid_adv
@@ -81,6 +81,11 @@ real(wp), parameter :: dtscale=2.0_wp
 !> Temporary variable for toggling full vs. other output
 integer :: flagoutput
 real(wp) :: tmilestone=0._wp
+
+!> Milestone information
+integer, dimension(3) :: ymdtmp
+real(wp) :: UTsectmp
+character(:), allocatable :: filetmp
 
 
 !! MAIN PROGRAM
@@ -191,6 +196,26 @@ call init_neutrals(dt,t,cfg,ymd,UTsec,x,nn,Tn,vn1,vn2,vn3)
 !> Initialize auroral inputs; must occur after initial timing info setup
 call init_Efieldinput(dt,t,cfg,ymd,UTsec,x)
 call init_precipinput(dt,t,cfg,ymd,UTsec,x)
+
+!FIXME:  some testing to check if we can detect milestone information correctly for a restart simulation
+if (myid==0) then
+  call find_milestone(cfg%outdir,get_suffix(cfg%indatsize),cfg%ymd0,cfg%UTsec0,cfg%dtout,ymdtmp,UTsectmp,filetmp)
+  print*, 'Last milestone found in output directory:  ',ymdtmp,UTsectmp,filetmp
+end if
+
+if (myid==0) then  
+  if (cfg%flagE0file==1) then
+    call find_lastfile(cfg%ymd0,cfg%UTsec0,[2013,02,20],18210._wp,cfg%dtE0,ymdtmp,UTsectmp)
+    print*, 'Last E0 file at cadence:  ',cfg%dtE0,' is:  ',ymdtmp,UTsectmp
+  end if
+
+  if (cfg%flagprecfile==1) then
+    call find_lastfile(cfg%ymd0,cfg%UTsec0,[2013,02,20],18210._wp,cfg%dtprec,ymdtmp,UTsectmp)
+    print*, 'Last precipitation file at cadence:  ',cfg%dtprec,' is:  ',ymdtmp,UTsectmp
+  end if
+end if
+
+error stop
 
 
 do while (t < cfg%tdur)
