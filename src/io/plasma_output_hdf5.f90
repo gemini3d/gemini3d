@@ -50,7 +50,7 @@ if (flagswap/=1) then
       print *, 'INFO:  Input file has selected electron density only output, make sure this is what you really want!'
       call hout%write('neall',    real(neall(1:lx1,1:lx2all,1:lx3all)))
     case default    !output everything
-      print *, 'INFO:  Input file has selected full output, large files may result!'
+      print *, 'INFO:  Input file has selected full output or milestones, large files may result!'
       call hout%write('nsall',    real(nsall(1:lx1,1:lx2all,1:lx3all,:)))
       call hout%write('vs1all',   real(vs1all(1:lx1,1:lx2all,1:lx3all,:)))
       !this is full output of all parameters in 3D
@@ -84,7 +84,7 @@ else
       call hout%write('neall',    real(neall))
 
     case default
-      print *, 'INFO:  Input file has selected full output, large files may result!'
+      print *, 'INFO:  Input file has selected full output or milestones, large files may result!'
 
       call hout%write('nsall',    real(nsall(1:lx1,1:lx2all,1:lx3all,:)))
       call hout%write('vs1all',   real(vs1all(1:lx1,1:lx2all,1:lx3all,:)))
