@@ -144,6 +144,29 @@ if (cfg%flagglow /= 0) then
   iver = 0
 end if
 
+!> Set initial time variables to simulation; this requires detecting whether we are trying to restart a simulation run
+call find_milestone(cfg%outdir,get_suffix(cfg%indatsize),cfg%ymd0,cfg%UTsec0,cfg%dtout,ymdtmp,UTsectmp,filetmp)
+if (myid==0) print*, 'Last milestone found in output directory:  ',ymdtmp,UTsectmp,filetmp
+if ( any(ymdtmp/=cfg%ymd0) .or. abs(UTsectmp-cfg%UTsec0)>cfg%dtout ) then  !! treat this as a restart scenario
+  if (myid==0) then
+    print*, '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
+    print*, '! Restarting simulation from time:  ',ymdtmp,UTsectmp
+    print*, '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
+  end if
+
+  !! Set start variables accordingly
+  UTsec=UTsectmp
+  ymd=ymdtmp
+else !! start at the beginning
+  UTsec = cfg%UTsec0
+  ymd = cfg%ymd0
+end if
+it = 1
+t = 0
+tout = t
+tglowout = t
+tneuBG=t
+
 
 !> LOAD ICS AND DISTRIBUTE TO WORKERS (REQUIRES GRAVITY FOR INITIAL GUESSING)
 !> ZZZ - this also should involve setting of Phiall...  Either to zero or what the input file specifies...
@@ -179,31 +202,12 @@ vs2 = 0
 vs3 = 0
 
 
-!> Set initial time variables to simulation
-UTsec = cfg%UTsec0
-ymd = cfg%ymd0
-it = 1
-t = 0
-tout = t
-tglowout = t
-tneuBG=t
 
 
-!> Inialize neutral atmosphere, note the use of fortran's weird scoping rules to avoid input args.  Must occur after initial time info setup
-call init_neutrals(dt,t,cfg,ymd,UTsec,x,nn,Tn,vn1,vn2,vn3)
-
-
-!> Initialize auroral inputs; must occur after initial timing info setup
-call init_Efieldinput(dt,t,cfg,ymd,UTsec,x)
-call init_precipinput(dt,t,cfg,ymd,UTsec,x)
 
 !FIXME:  some testing to check if we can detect milestone information correctly for a restart simulation
 if (myid==0) then
-  call find_milestone(cfg%outdir,get_suffix(cfg%indatsize),cfg%ymd0,cfg%UTsec0,cfg%dtout,ymdtmp,UTsectmp,filetmp)
-  print*, 'Last milestone found in output directory:  ',ymdtmp,UTsectmp,filetmp
-end if
 
-if (myid==0) then  
   if (cfg%flagE0file==1) then
     call find_lastfile(cfg%ymd0,cfg%UTsec0,[2013,02,20],18210._wp,cfg%dtE0,ymdtmp,UTsectmp)
     print*, 'Last E0 file at cadence:  ',cfg%dtE0,' is:  ',ymdtmp,UTsectmp
@@ -215,8 +219,13 @@ if (myid==0) then
   end if
 end if
 
-error stop
+!> Inialize neutral atmosphere, note the use of fortran's weird scoping rules to avoid input args.  Must occur after initial time info setup
+call init_neutrals(dt,t,cfg,ymd,UTsec,x,nn,Tn,vn1,vn2,vn3)
 
+
+!> Initialize auroral inputs; must occur after initial timing info setup
+call init_Efieldinput(dt,t,cfg,ymd,UTsec,x)
+call init_precipinput(dt,t,cfg,ymd,UTsec,x)
 
 do while (t < cfg%tdur)
   !! TIME STEP CALCULATION, requires workers to report their most stringent local stability constraint
