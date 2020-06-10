@@ -9,7 +9,7 @@ use grid, only: grid_size,read_grid,clear_grid,grid_check,lx1,lx2,lx3,lx2all,lx3
 use mesh, only: curvmesh
 use config, only : read_configfile, gemini_cfg
 use pathlib, only : assert_file_exists, assert_directory_exists
-use io, only : input_plasma,create_outdir,output_plasma,create_outdir_aur,output_aur
+use io, only : input_plasma,create_outdir,output_plasma,create_outdir_aur,output_aur,find_lastfile,find_milestone
 use mpimod, only : mpisetup, mpibreakdown, mpi_manualgrid, mpigrid, lid, myid
 use multifluid, only : fluid_adv
 use neutral, only : neutral_atmos,make_dneu,neutral_perturb,clear_dneu,init_neutrals
