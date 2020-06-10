@@ -145,6 +145,10 @@ if (cfg%flagglow /= 0) then
 end if
 
 !> Set initial time variables to simulation; this requires detecting whether we are trying to restart a simulation run
+!> LOAD ICS AND DISTRIBUTE TO WORKERS (REQUIRES GRAVITY FOR INITIAL GUESSING)
+!> ZZZ - this also should involve setting of Phiall...  Either to zero or what the input file specifies...
+!        does not technically need to be broadcast to workers (since root sets up electrodynamics), but perhaps
+!        should be anyway since that is what the user probably would expect and there is little performance penalty.
 call find_milestone(cfg%outdir,get_suffix(cfg%indatsize),cfg%ymd0,cfg%UTsec0,cfg%dtout,ymdtmp,UTsectmp,filetmp)
 if (myid==0) print*, 'Last milestone found in output directory:  ',ymdtmp,UTsectmp,filetmp
 if ( any(ymdtmp/=cfg%ymd0) .or. abs(UTsectmp-cfg%UTsec0)>cfg%dtout ) then  !! treat this as a restart scenario
@@ -152,27 +156,24 @@ if ( any(ymdtmp/=cfg%ymd0) .or. abs(UTsectmp-cfg%UTsec0)>cfg%dtout ) then  !! tr
     print*, '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
     print*, '! Restarting simulation from time:  ',ymdtmp,UTsectmp
     print*, '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
+    error stop 'Restarting still under development; please clean out the output directory and rerun simulation'
   end if
 
   !! Set start variables accordingly
   UTsec=UTsectmp
   ymd=ymdtmp
+
+
 else !! start at the beginning
   UTsec = cfg%UTsec0
   ymd = cfg%ymd0
+  call input_plasma(x%x1,x%x2all,x%x3all,cfg%indatsize,cfg%indatfile,ns,vs1,Ts)
 end if
 it = 1
 t = 0
 tout = t
 tglowout = t
 tneuBG=t
-
-
-!> LOAD ICS AND DISTRIBUTE TO WORKERS (REQUIRES GRAVITY FOR INITIAL GUESSING)
-!> ZZZ - this also should involve setting of Phiall...  Either to zero or what the input file specifies...
-!        does not technically need to be broadcast to workers (since root sets up electrodynamics), but perhaps
-!        should be anyway since that is what the user probably would expect and there is little performance penalty.
-call input_plasma(x%x1,x%x2all,x%x3all,cfg%indatsize,cfg%indatfile,ns,vs1,Ts)
 
 
 !ROOT/WORKERS WILL ASSUME THAT THE MAGNETIC FIELDS AND PERP FLOWS START AT ZERO
