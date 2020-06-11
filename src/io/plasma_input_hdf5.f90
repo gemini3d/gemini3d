@@ -115,18 +115,18 @@ if (flagswap==1) then
   real(wp), allocatable :: tmp(:,:,:,:)
   allocate(tmp(lx1,lx3all,lx2all,lsp))
   !! end workaround
-  call h5f%read('/ns', tmp)
+  call h5f%read('/nsall', tmp)
   nsall(1:lx1,1:lx2all,1:lx3all,1:lsp) = reshape(tmp,[lx1,lx2all,lx3all,lsp],order=[1,3,2,4])
-  call h5f%read('/vsx1', tmp)
+  call h5f%read('/vs1all', tmp)
   vs1all(1:lx1,1:lx2all,1:lx3all,1:lsp) = reshape(tmp,[lx1,lx2all,lx3all,lsp],order=[1,3,2,4])
-  call h5f%read('/Ts', tmp)
+  call h5f%read('/Tsall', tmp)
   Tsall(1:lx1,1:lx2all,1:lx3all,1:lsp) = reshape(tmp,[lx1,lx2all,lx3all,lsp],order=[1,3,2,4])
   !! permute the dimensions so that 2D runs are parallelized
   end block
 else
-  call h5f%read('/ns', nsall(1:lx1,1:lx2all,1:lx3all,1:lsp))
-  call h5f%read('/vsx1', vs1all(1:lx1,1:lx2all,1:lx3all,1:lsp))
-  call h5f%read('/Ts', Tsall(1:lx1,1:lx2all,1:lx3all,1:lsp))
+  call h5f%read('/nsall', nsall(1:lx1,1:lx2all,1:lx3all,1:lsp))
+  call h5f%read('/vs1all', vs1all(1:lx1,1:lx2all,1:lx3all,1:lsp))
+  call h5f%read('/Tsall', Tsall(1:lx1,1:lx2all,1:lx3all,1:lsp))
 end if
 
 call h5f%finalize()

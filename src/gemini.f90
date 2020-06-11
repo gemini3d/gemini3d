@@ -84,7 +84,7 @@ real(wp) :: tmilestone=0._wp
 
 !> Milestone information
 integer, dimension(3) :: ymdtmp
-real(wp) :: UTsectmp
+real(wp) :: UTsectmp,ttmp,tdur
 character(:), allocatable :: filetmp
 
 
@@ -149,24 +149,28 @@ end if
 !> ZZZ - this also should involve setting of Phiall...  Either to zero or what the input file specifies...
 !        does not technically need to be broadcast to workers (since root sets up electrodynamics), but perhaps
 !        should be anyway since that is what the user probably would expect and there is little performance penalty.
-call find_milestone(cfg%outdir,get_suffix(cfg%indatsize),cfg%ymd0,cfg%UTsec0,cfg%dtout,ymdtmp,UTsectmp,filetmp)
+call find_milestone(cfg%outdir,get_suffix(cfg%indatsize),cfg%ymd0,cfg%UTsec0,cfg%dtout,ttmp,ymdtmp,UTsectmp,filetmp)
 if (myid==0) print*, 'Last milestone found in output directory:  ',ymdtmp,UTsectmp,filetmp
 if ( any(ymdtmp/=cfg%ymd0) .or. abs(UTsectmp-cfg%UTsec0)>cfg%dtout ) then  !! treat this as a restart scenario
   if (myid==0) then
     print*, '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
     print*, '! Restarting simulation from time:  ',ymdtmp,UTsectmp
     print*, '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
-    error stop 'Restarting still under development; please clean out the output directory and rerun simulation'
   end if
 
-  !! Set start variables accordingly
+  !! Set start variables accordingly and read in the milestone
   UTsec=UTsectmp
   ymd=ymdtmp
-
-
+  tdur=cfg%tdur-ttmp    ! subtract off time that has elapsed to milestone
+  if (myid==0) then 
+    print*, 'Treating the following file as initial conditions:  ',filetmp
+    print*, ' full duration:  ',cfg%tdur,'; remaining simulation time:  ',tdur
+  end if
+  call input_plasma(x%x1,x%x2all,x%x3all,cfg%indatsize,filetmp,ns,vs1,Ts)
 else !! start at the beginning
   UTsec = cfg%UTsec0
   ymd = cfg%ymd0
+  tdur = cfg%tdur
   call input_plasma(x%x1,x%x2all,x%x3all,cfg%indatsize,cfg%indatfile,ns,vs1,Ts)
 end if
 it = 1
@@ -228,7 +232,9 @@ call init_neutrals(dt,t,cfg,ymd,UTsec,x,nn,Tn,vn1,vn2,vn3)
 call init_Efieldinput(dt,t,cfg,ymd,UTsec,x)
 call init_precipinput(dt,t,cfg,ymd,UTsec,x)
 
-do while (t < cfg%tdur)
+
+error stop
+do while (t < tdur)
   !! TIME STEP CALCULATION, requires workers to report their most stringent local stability constraint
   dtprev = dt
   call dt_comm(t,tout,tglowout,cfg,ns,Ts,vs1,vs2,vs3,B1,B2,B3,x,dt)

@@ -47,6 +47,7 @@ character(:), allocatable :: fn
 type(hdf5_file) :: h5f
 logical flagexists,flagend,flagmilestone
 integer :: it,lfn
+real(wp) :: tsim
 
 ymd=ymd0
 UTsec=UTsec0
@@ -55,8 +56,10 @@ UTsecmile=UTsec0
 filemile=date_filename(path,ymd0,UTsec0)   !! This presumes the first file output is a milestone, note we don't actually test the situation wheere a first output was not produced...  User should not be restarting in that case...
 flagend=.false.
 it=1
+tsim=0._wp
+tmile=0._wp
 do while ( .not.(flagend) )
-  !! new filename
+  !! new filename, add the 1 if it is the first
   fn=date_filename(path,ymd,UTsec)
   if (it==1) then
     lfn=len(fn)
@@ -74,12 +77,16 @@ do while ( .not.(flagend) )
       ymdmile=ymd
       UTsecmile=UTsec
       filemile=fn 
+      tmile=tsim
     end if
   else
     flagend=.true.    !we've hit the last output file
   end if
+
+  !! next time
   call dateinc(cadence,ymd,UTsec)
   it=it+1
+  tsim=tsim+cadence
 end do
 
 end procedure find_milestone
