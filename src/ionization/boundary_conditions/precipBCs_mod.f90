@@ -7,7 +7,7 @@ use phys_consts, only: pi,wp, debug
 use grid, only : lx1,lx2,lx3,lx3all
 use mesh, only: curvmesh
 use interpolation, only : interp1,interp2
-use timeutils, only : dateinc, date_filename
+use timeutils, only : dateinc, date_filename, find_lastdate
 use mpimod, only: mpi_integer, mpi_comm_world, mpi_status_ignore, &
 lid, mpi_realprec, myid, tag=>mpi_tag
 use config, only: gemini_cfg
@@ -50,16 +50,20 @@ real(wp), intent(in) :: UTsec
 type(curvmesh), intent(in) :: x
 
 real(wp), dimension(1:x%lx2,1:x%lx3,2) :: W0,PhiWmWm2    ! these are only worker-sized, hardcoded 2 precipitation populations...
-
+integer, dimension(3) :: ymdtmp
+real(wp) :: UTsectmp
 
 if (cfg%flagprecfile==1) then    !all workers must have this info
+  !! find the last input data preceding the milestone/initial condition that we start with
+  call find_lastdate(cfg%ymd0,cfg%UTsec0,ymd,UTsec,cfg%dtE0,ymdtmp,UTsectmp)
+
   if (myid==0) print*, '!!!Attmpting to prime precipitation input files...'
   !! back up by one dtprec to get a next file that is the beginning of the simulation
-  call precipBCs_fileinput(dt,-1._wp*cfg%dtprec,cfg,ymd,UTsec-cfg%dtprec,x,W0,PhiWmWm2)
+  call precipBCs_fileinput(dt,-1._wp*cfg%dtprec,cfg,ymd,UTsectmp-cfg%dtprec,x,W0,PhiWmWm2)
 
-  if (myid==0) print*, 'Now loading initial next file for precipitation input...'
-  !! now shift next->prev and load a new one corresponding to the first simulation time step
-  call precipBCs_fileinput(dt,t,cfg,ymd,UTsec,x,W0,PhiWmWm2)
+!  if (myid==0) print*, 'Now loading initial next file for precipitation input...'
+!  !! now shift next->prev and load a new one corresponding to the first simulation time step
+!  call precipBCs_fileinput(dt,t,cfg,ymd,UTsec,x,W0,PhiWmWm2)
 end if
 
 end subroutine init_precipinput

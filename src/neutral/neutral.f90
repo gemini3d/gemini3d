@@ -115,6 +115,8 @@ type(curvmesh), intent(inout) :: x    ! unit vecs may be deallocated after first
 real(wp), dimension(:,:,:,:), intent(out) :: nn
 real(wp), dimension(:,:,:), intent(out) :: Tn
 real(wp), dimension(:,:,:), intent(out) :: vn1,vn2,vn3
+integer, dimension(3) :: ymdtmp
+real(wp) :: UTsectmp
 
 real(wp) :: tstart,tfin
 
@@ -132,7 +134,7 @@ end if
 
 if (cfg%flagdneu==1) then
   !! find the last input data preceding the milestone/initial condition that we start with
-
+  call find_lastdate(cfg%ymd0,cfg%UTsec0,ymd,UTsec,cfg%dtE0,ymdtmp,UTsectmp)
 
   !! Loads the neutral input file corresponding to the "first" time step of the simulation to prevent the first interpolant
   !  from being zero and causing issues with restart simulations.  I.e. make sure the neutral buffers are primed for restart
@@ -140,12 +142,12 @@ if (cfg%flagdneu==1) then
   if (myid==0) print*, '!!!Attempting initial load of neutral dynamics files!!!' // &
                            ' This is a workaround to insure compatibility with restarts...',UTsec-dt
   !! We essentially are loading up the data corresponding to halfway betwween -dtneu and t0 (zero)
-  call neutral_perturb(cfg,dt,cfg%dtneu,-1._wp*cfg%dtneu,ymd,UTsec-cfg%dtneu,x,nn,Tn,vn1,vn2,vn3)
+  call neutral_perturb(cfg,dt,cfg%dtneu,-1._wp*cfg%dtneu,ymd,UTsectmp-cfg%dtneu,x,nn,Tn,vn1,vn2,vn3)  !abs time arg to be < 0
   
-  if (myid==0) print*, 'Now loading initial next file for neutral perturbations...'
-  !! Now compute perturbations for the present time (zero), this moves the primed variables in next into prev and then
-  !  loads up a current state so that we get a proper interpolation for the first time step.  
-  call neutral_perturb(cfg,dt,cfg%dtneu,t,ymd,UTsec,x,nn,Tn,vn1,vn2,vn3)
+!  if (myid==0) print*, 'Now loading initial next file for neutral perturbations...'
+!  !! Now compute perturbations for the present time (zero), this moves the primed variables in next into prev and then
+!  !  loads up a current state so that we get a proper interpolation for the first time step.  
+!  call neutral_perturb(cfg,dt,cfg%dtneu,t,ymd,UTsec,x,nn,Tn,vn1,vn2,vn3)
 end if
 end subroutine init_neutrals
 

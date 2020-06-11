@@ -164,6 +164,7 @@ if ( any(ymdtmp/=cfg%ymd0) .or. abs(UTsectmp-cfg%UTsec0)>cfg%dtout ) then  !! tr
   UTsec=UTsectmp
   ymd=ymdtmp
   tdur=cfg%tdur-ttmp    ! subtract off time that has elapsed to milestone
+  cfg%tdur=tdur         ! just to insure consistency
   if (myid==0) then 
     print*, 'Treating the following file as initial conditions:  ',filetmp
     print*, ' full duration:  ',cfg%tdur,'; remaining simulation time:  ',tdur
@@ -224,15 +225,17 @@ vs3 = 0
 !
 
 !> Inialize neutral atmosphere, note the use of fortran's weird scoping rules to avoid input args.  Must occur after initial time info setup
+if(myid==0) print*, 'Priming neutral input'
 call init_neutrals(dt,t,cfg,ymd,UTsec,x,nn,Tn,vn1,vn2,vn3)
 
-
 !> Initialize auroral inputs; must occur after initial timing info setup
+if(myid==0) print*, 'Priming electric field input'
 call init_Efieldinput(dt,t,cfg,ymd,UTsec,x)
+
+if(myid==0) print*, 'Priming precipitation input'
 call init_precipinput(dt,t,cfg,ymd,UTsec,x)
 
 
-error stop
 do while (t < tdur)
   !! TIME STEP CALCULATION, requires workers to report their most stringent local stability constraint
   dtprev = dt

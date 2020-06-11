@@ -8,7 +8,7 @@ use phys_consts, only: wp, pi, Re, debug
 use grid, only: lx1, lx2, lx2all, lx3all, gridflag, flagswap
 use mesh, only: curvmesh
 use interpolation, only : interp1,interp2
-use timeutils, only : dateinc, date_filename
+use timeutils, only : dateinc, date_filename, find_lastdate
 use reader, only : get_grid2, get_simsize2, get_Efield
 use config, only: gemini_cfg
 
@@ -65,6 +65,8 @@ real(wp), dimension(:,:), allocatable :: Vminx2,Vmaxx2
 real(wp), dimension(:,:), allocatable :: Vminx3,Vmaxx3
 real(wp), dimension(:,:,:), allocatable :: E01all,E02all,E03all
 integer :: flagdirich
+integer, dimension(3) :: ymdtmp
+real(wp) :: UTsectmp
 
 
 !> initializes the auroral electric field/current and particle inputs to read in a file corresponding to the first time step
@@ -75,16 +77,18 @@ if (myid==0 .and. cfg%flagE0file==1) then    !only root needs these...
   allocate(E01all(1:x%lx1,1:x%lx2all,1:x%lx3all),E02all(1:x%lx1,1:x%lx2all,1:x%lx3all), &
               E03all(1:x%lx1,1:x%lx2all,1:x%lx3all))    !background fields
 
+  !! find the last input data preceding the milestone/initial condition that we start with
+  call find_lastdate(cfg%ymd0,cfg%UTsec0,ymd,UTsec,cfg%dtE0,ymdtmp,UTsectmp)
+
   print*, '!!!Attempting to prime electric field input files...',t-dt
   !! back up by one dt for each input so that we get a next file that corresponds to the beginning of the simulation
-  call potentialBCs2D_fileinput(dt,-1._wp*cfg%dtE0,ymd,UTsec-cfg%dtE0,cfg,x,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3, &
-                                    Vmaxx3,E01all,E02all,E03all,flagdirich)
+  call potentialBCs2D_fileinput(dt,-1._wp*cfg%dtE0,ymd,UTsectmp-cfg%dtE0,cfg,x,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3, &
+                                    Vmaxx3,E01all,E02all,E03all,flagdirich)    ! t input only needs to be less than zero...
   
-  
-  !! now load first, next frame of input
-  print*, 'Now loading initial next file for electric field input...'
-  call potentialBCs2D_fileinput(dt,t,ymd,UTsec,cfg,x,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3, &
-                                    Vmaxx3,E01all,E02all,E03all,flagdirich)
+!  !! now load first, next frame of input
+!  print*, 'Now loading initial next file for electric field input...'
+!  call potentialBCs2D_fileinput(dt,t,ymd,UTsec,cfg,x,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3, &
+!                                    Vmaxx3,E01all,E02all,E03all,flagdirich)
 
   deallocate(Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3,Vmaxx3,E01all,E02all,E03all)
 end if
