@@ -8,7 +8,7 @@ use phys_consts, only: wp, lnchem, pi, re, debug
 use grid, only: lx1, lx2, lx3, clear_unitvecs, gridflag
 use mesh, only: curvmesh
 use interpolation, only : interp2, interp3
-use timeutils, only : doy_calc,dateinc, date_filename
+use timeutils, only : doy_calc,dateinc, date_filename, find_lastdate
 use mpimod, only: mpi_integer, mpi_comm_world, mpi_status_ignore, &
 myid, lid, mpi_realprec, tag=>mpi_tag
 use config, only: gemini_cfg
@@ -63,7 +63,7 @@ real(wp), dimension(:,:,:), allocatable, private :: dnOiprev,dnN2iprev,dnO2iprev
                                                    dvn1iprev,dvn2iprev,dvn3iprev,dvnxiprev
 real(wp), private :: tprev
 integer, dimension(3), private :: ymdprev
-!! denoted time corresponding to "prev" interpolated data
+!! time corresponding to "prev" interpolated data
 
 real(wp), private :: UTsecprev
 real(wp), dimension(:,:,:), allocatable, private :: dnOinext,dnN2inext,dnO2inext,dvnrhoinext,dvnzinext, &
@@ -131,7 +131,10 @@ if (myid==0) then
 end if
 
 if (cfg%flagdneu==1) then
-  !! Loads the neutral input file corresponding to the first time step of the simulation to prevent the first interpolant
+  !! find the last input data preceding the milestone/initial condition that we start with
+
+
+  !! Loads the neutral input file corresponding to the "first" time step of the simulation to prevent the first interpolant
   !  from being zero and causing issues with restart simulations.  I.e. make sure the neutral buffers are primed for restart
   !  This requires us to load file input twice, once corresponding to the initial frame and once for the "first, next" frame.  
   if (myid==0) print*, '!!!Attempting initial load of neutral dynamics files!!!' // &

@@ -4,7 +4,7 @@ use, intrinsic :: iso_fortran_env, only: sp=>real32, dp=>real64, int32, int64
 
 implicit none (type, external)
 private
-public :: doy_calc, sza, dateinc, utsec2filestem, date_filename, day_wrap
+public :: doy_calc, sza, dateinc, utsec2filestem, date_filename, day_wrap, find_lastdate
 
 real(wp), parameter :: pi = 4._wp*atan(1._wp)
 
@@ -192,5 +192,42 @@ write(sec_str, '(I5.5, A1, I6.6)') seconds, '.', frac
 write(fn,'(i4,I2.2,I2.2,a13)') year, month, day, '_' // sec_str
 
 end function utsec2filestem
+
+
+subroutine find_lastdate(ymd0,UTsec0,ymdtarget,UTsectarget,cadence,ymd,UTsec)
+
+!> Compute the last date before the target date based on a start date and date cadence.  The
+!  file is assumed to exist and programmer needs to check for existence outside this 
+!  procedure.
+
+integer, dimension(3), intent(in) :: ymd0
+real(wp), intent(in) :: UTsec0
+integer, dimension(3), intent(in) :: ymdtarget
+real(wp), intent(in) :: UTsectarget
+real(wp), intent(in) :: cadence
+integer, dimension(3), intent(out) :: ymd
+real(wp), intent(out) :: UTsec
+
+integer, dimension(3) :: ymdnext
+real(wp) :: UTsecnext
+logical :: flagend
+
+
+ymd=ymd0
+UTsec=UTsec0
+ymdnext=ymd0
+UTsecnext=UTsec0
+flagend=ymdnext(1)>=ymdtarget(1) .and. ymdnext(2)>=ymdtarget(2) .and. ymdnext(3)>=ymdtarget(3) .and. UTsecnext>UTsectarget & 
+          .or. ymdnext(1)>ymdtarget(1) .or. ymdnext(2)>ymdtarget(2) .or. ymdnext(3)>ymdtarget(3) ! in case the first time step is the last before target
+do while ( .not.(flagend) )
+  ymd=ymdnext
+  UTsec=UTsecnext
+  call dateinc(cadence,ymdnext,UTsecnext)
+  flagend=ymdnext(1)>=ymdtarget(1) .and. ymdnext(2)>=ymdtarget(2) .and. ymdnext(3)>=ymdtarget(3) .and. UTsecnext>UTsectarget &
+            .or. ymdnext(1)>ymdtarget(1) .or. ymdnext(2)>ymdtarget(2) .or. ymdnext(3)>ymdtarget(3)
+end do
+! When the loops exits ymd,UTsec have the date of the last output file before the given target time OR the first output file in the case that the target date is before the begin date...
+
+end subroutine find_lastdate
 
 end module timeutils
