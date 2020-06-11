@@ -2,12 +2,14 @@ program test_potential2d
 !! Need program statement for FORD
 !! SOLVE LAPLACE'S EQUATION IN 2D USING PDEelliptic, mumps-based libraries
 
-use mpi, only : mpi_init, mpi_finalize, mpi_comm_rank, mpi_comm_size, mpi_comm_world
+use mpi, only : mpi_init, mpi_comm_rank, mpi_comm_size, mpi_comm_world
 use phys_consts, only: wp,debug,pi
 use PDEelliptic, only: elliptic2D_polarization,elliptic2D_cart,elliptic_workers
 use h5fortran, only: hdf5_file
 
 implicit none (type, external)
+
+external :: mpi_finalize
 
 type(hdf5_file) :: hout
 
@@ -34,25 +36,50 @@ real(wp), dimension(lx2,1) :: Vminx32,Vmaxx32
 real(wp) :: tstart,tfin
 integer :: ierr,myid,lid
 
-real(wp), dimension(lx2,lx3) :: Phi,Phi2squeeze,Phitrue,errorMUMPS,errorMUMPS2
-real(wp), dimension(lx2,1,lx3) :: Phi2    !FA solver requires different shaped arrays...
+real(wp), allocatable, dimension(:,:) :: Phi,Phi2squeeze,Phitrue,errorMUMPS,errorMUMPS2
+real(wp), allocatable, dimension(:,:,:) :: Phi2
+!! FA solver requires different shaped arrays...
 
-real(wp), dimension(lx2,lx3) :: Phi0=1,v2=1,v3=1     !shouldn't be used if D=0
-real(wp), dimension(lx2,lx3) :: A=1,Ap=1,App=0,B=0,C=0,D=0
-real(wp), dimension(lx2,1,lx3) :: A2=1,Ap2=1
+real(wp), allocatable, dimension(:,:) :: Phi0, v2, v3
+!! shouldn't be used if D=0
+real(wp), allocatable, dimension(:,:) :: A, Ap, App, B, C, D
+real(wp), allocatable, dimension(:,:,:) :: A2, Ap2
 
-real(wp), dimension(lx2,lx3) :: srcterm=0
-real(wp), dimension(lx2,1,lx3) :: srcterm2=0
+real(wp), allocatable, dimension(:,:) :: srcterm
+real(wp), allocatable, dimension(:,:,:) :: srcterm2
 logical :: perflag=.false.     !shouldn't be used
 integer :: it=1                !not used
 real(wp) :: dt=1          !not used
 integer :: gridflag=1
 integer :: flagdirich=1        !denoting non-inverted grid...
 
-
 character(*), parameter :: outfile='test_potential2d.h5'
 
-!! mpi starting
+! --- avoid stack issues by using allocatable()
+
+allocate(Phi(lx2,lx3), Phi2squeeze(lx2,lx3), Phitrue(lx2,lx3), errorMUMPS(lx2,lx3), errorMUMPS2(lx2,lx3))
+allocate(Phi2(lx2,1,lx3))
+
+allocate(Phi0(lx2,lx3), v2(lx2,lx3), v3(lx2,lx3))
+allocate(A(lx2,lx3), Ap(lx2,lx3), App(lx2,lx3), B(lx2,lx3), C(lx2,lx3), D(lx2,lx3))
+Phi0=1
+v2=1
+v3=1
+A=1
+Ap=1
+App=0
+B=0
+C=0
+D=0
+
+allocate(A2(lx2,1,lx3), Ap2(lx2,1,lx3))
+A2=1
+Ap2=1
+
+allocate(srcterm(lx2,lx3), srcterm2(lx2,1,lx3))
+srcterm=0
+srcterm2=0
+
 call mpi_init(ierr)
 if (ierr /= 0) error stop 'test_potential2d: MPI init error'
 call mpi_comm_rank(MPI_COMM_WORLD,myid,ierr)
