@@ -99,12 +99,13 @@ integer, dimension(3), intent(out) :: ymd
 real(wp), intent(out) :: UTsec
 end subroutine find_lastfile
 
-module subroutine find_milestone(path,suffix,ymd0,UTsec0,cadence,ymdmile,UTsecmile,filemile)
+module subroutine find_milestone(path,suffix,ymd0,UTsec0,cadence,tmile,ymdmile,UTsecmile,filemile)
 character(*), intent(in) :: path
 character(*), intent(in) :: suffix
 integer, dimension(3), intent(in) :: ymd0
 real(wp), intent(in) :: UTsec0
 real(wp), intent(in) :: cadence
+real(wp), intent(out) :: tmile     !time elapsed from beginning of the simulation to the milestone
 integer, dimension(3), intent(out) :: ymdmile
 real(wp), intent(out) :: UTsecmile
 character(:), allocatable, intent(out) :: filemile
