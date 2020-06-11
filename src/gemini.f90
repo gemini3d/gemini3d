@@ -9,7 +9,7 @@ use grid, only: grid_size,read_grid,clear_grid, lx1,lx2,lx3,lx2all,lx3all
 use mesh, only: curvmesh
 use config, only : read_configfile, gemini_cfg
 use pathlib, only : assert_file_exists, assert_directory_exists, get_suffix
-use io, only : input_plasma,create_outdir,output_plasma,create_outdir_aur,output_aur,find_lastfile,find_milestone
+use io, only : input_plasma,create_outdir,output_plasma,create_outdir_aur,output_aur,find_milestone
 use mpimod, only : mpisetup, mpibreakdown, mpi_manualgrid, mpigrid, lid, lid2,lid3,myid,myid2,myid3
 use multifluid, only : fluid_adv
 use neutral, only : neutral_atmos,make_dneu,neutral_perturb,clear_dneu,init_neutrals
@@ -17,7 +17,7 @@ use potentialBCs_mumps, only: clear_potential_fileinput, init_Efieldinput
 use potential_comm,only : electrodynamics
 use precipBCs_mod, only: clear_precip_fileinput, init_precipinput
 use temporal, only : dt_comm
-use timeutils, only: dateinc
+use timeutils, only: dateinc, find_lastdate
 
 implicit none (type, external)
 
@@ -144,6 +144,7 @@ if (cfg%flagglow /= 0) then
   iver = 0
 end if
 
+
 !> Set initial time variables to simulation; this requires detecting whether we are trying to restart a simulation run
 !> LOAD ICS AND DISTRIBUTE TO WORKERS (REQUIRES GRAVITY FOR INITIAL GUESSING)
 !> ZZZ - this also should involve setting of Phiall...  Either to zero or what the input file specifies...
@@ -207,22 +208,19 @@ vs2 = 0
 vs3 = 0
 
 
-
-
-
-!FIXME:  some testing to check if we can detect milestone information correctly for a restart simulation
-if (myid==0) then
-
-  if (cfg%flagE0file==1) then
-    call find_lastfile(cfg%ymd0,cfg%UTsec0,[2013,02,20],18210._wp,cfg%dtE0,ymdtmp,UTsectmp)
-    print*, 'Last E0 file at cadence:  ',cfg%dtE0,' is:  ',ymdtmp,UTsectmp
-  end if
-
-  if (cfg%flagprecfile==1) then
-    call find_lastfile(cfg%ymd0,cfg%UTsec0,[2013,02,20],18210._wp,cfg%dtprec,ymdtmp,UTsectmp)
-    print*, 'Last precipitation file at cadence:  ',cfg%dtprec,' is:  ',ymdtmp,UTsectmp
-  end if
-end if
+!!FIXME:  some testing to check if we can detect milestone information correctly for a restart simulation
+!if (myid==0) then  
+!  if (cfg%flagE0file==1) then
+!    call find_lastdate(cfg%ymd0,cfg%UTsec0,[2013,02,20],18210._wp,cfg%dtE0,ymdtmp,UTsectmp)
+!    print*, 'Last E0 file at cadence:  ',cfg%dtE0,' is:  ',ymdtmp,UTsectmp
+!  end if
+!
+!  if (cfg%flagprecfile==1) then
+!    call find_lastdate(cfg%ymd0,cfg%UTsec0,[2013,02,20],18210._wp,cfg%dtprec,ymdtmp,UTsectmp)
+!    print*, 'Last precipitation file at cadence:  ',cfg%dtprec,' is:  ',ymdtmp,UTsectmp
+!  end if
+!end if
+!
 
 !> Inialize neutral atmosphere, note the use of fortran's weird scoping rules to avoid input args.  Must occur after initial time info setup
 call init_neutrals(dt,t,cfg,ymd,UTsec,x,nn,Tn,vn1,vn2,vn3)

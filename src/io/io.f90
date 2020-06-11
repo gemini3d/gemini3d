@@ -15,8 +15,7 @@ private
 public :: create_outdir, &
   input_plasma, output_plasma, input_plasma_currents, &
   create_outdir_mag, output_magfields, &
-  create_outdir_aur, output_aur, &
-  find_lastfile,find_milestone
+  create_outdir_aur, output_aur,find_milestone
 
 interface ! aurora.f90
 module subroutine create_outdir_aur(outdir)
@@ -89,16 +88,6 @@ end interface
 
 
 interface ! milestone.f90
-
-module subroutine find_lastfile(ymd0,UTsec0,ymdtarget,UTsectarget,cadence,ymd,UTsec)
-integer, dimension(3), intent(in) :: ymd0
-real(wp), intent(in) :: UTsec0
-integer, dimension(3), intent(in) :: ymdtarget
-real(wp), intent(in) :: UTsectarget
-real(wp), intent(in) :: cadence
-integer, dimension(3), intent(out) :: ymd
-real(wp), intent(out) :: UTsec
-end subroutine find_lastfile
 
 module subroutine find_milestone(path,suffix,ymd0,UTsec0,cadence,tmile,ymdmile,UTsecmile,filemile)
 character(*), intent(in) :: path

@@ -7,35 +7,6 @@ implicit none (type,external)   !! external procedures must be explicitly denote
 
 contains
 
-module procedure find_lastfile
-
-!> Compute the last file before the target date based on a start date and cadence.  The
-!  file is assumed to exist and programmer needs to check for existence outside this 
-!  procedure.
-
-integer, dimension(3) :: ymdnext
-real(wp) :: UTsecnext
-logical :: flagend
-
-
-ymd=ymd0
-UTsec=UTsec0
-ymdnext=ymd0
-UTsecnext=UTsec0
-flagend=ymdnext(1)>=ymdtarget(1) .and. ymdnext(2)>=ymdtarget(2) .and. ymdnext(3)>=ymdtarget(3) .and. UTsecnext>UTsectarget & 
-          .or. ymdnext(1)>ymdtarget(1) .or. ymdnext(2)>ymdtarget(2) .or. ymdnext(3)>ymdtarget(3) ! in case the first time step is the last before target
-do while ( .not.(flagend) )
-  ymd=ymdnext
-  UTsec=UTsecnext
-  call dateinc(cadence,ymdnext,UTsecnext)
-  flagend=ymdnext(1)>=ymdtarget(1) .and. ymdnext(2)>=ymdtarget(2) .and. ymdnext(3)>=ymdtarget(3) .and. UTsecnext>UTsectarget &
-            .or. ymdnext(1)>ymdtarget(1) .or. ymdnext(2)>ymdtarget(2) .or. ymdnext(3)>ymdtarget(3)
-end do
-! When the loops exits ymd,UTsec have the date of the last output file before the given target time OR the first output file in the case that the target date is before the begin date...
-
-end procedure find_lastfile
-
-
 module procedure find_milestone
 
 !> search path having output rate cadence (s) and find the
