@@ -1,15 +1,16 @@
 #!/usr/bin/env python
 """
-runs a job
+CLI scripts
 """
 import argparse
 from pathlib import Path
-import gemini3d.job
 import sys
 from time import monotonic
 
+from .job import runner
 
-if __name__ == "__main__":
+
+def gemini_run():
     p = argparse.ArgumentParser()
     p.add_argument("config_file", help="path to config*.nml file")
     p.add_argument("out_dir", help="simulation output directory")
@@ -36,7 +37,7 @@ if __name__ == "__main__":
 
     tic = monotonic()
     try:
-        ret = gemini3d.job.runner(params)
+        ret = runner(params)
     except FileNotFoundError:
         print(
             "\nA necessary simulation input file was not found."

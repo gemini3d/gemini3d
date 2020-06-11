@@ -96,12 +96,12 @@ If using Homebrew on MacOS, be sure Homebrew's GCC is used instead of AppleClang
 2. run the equilibrium sim:
 
     ```sh
-    python job.py /path_to/config_eq.nml /path_to/sim_eq/
+    gemini_run /path_to/config_eq.nml /path_to/sim_eq/
     ```
 3. create a new config.nml for the actual simulation and run
 
     ```sh
-    python job.py /path_to/config.nml /path_to/sim_out/
+    gemini_run /path_to/config.nml /path_to/sim_out/
     ```
 
 ## Prerequisites
@@ -151,14 +151,14 @@ gemini.bin command line options include:
 : normally Gemini reads and writes data files in the same format (HDF5, NetCDF4). This option allow one to read in one format (say NetCDF4) while writing HDF5.
 
 `-manual_grid <# x2 images> <# x3 images>`
-: forces the code to adopt a specific domain decomposition in x2 and x3 by using the integers given.  If not specified the code will attempt to find its own x2,x3 decomposition.  The number of grid points in x2 and x3 must be evenly divisible by the number of user-specified images in each direction, respectively.  
+: forces the code to adopt a specific domain decomposition in x2 and x3 by using the integers given.  If not specified the code will attempt to find its own x2,x3 decomposition.  The number of grid points in x2 and x3 must be evenly divisible by the number of user-specified images in each direction, respectively.
 
 ### Number of MPI processes
 
 In general for MPI programs and associated simulations, there may be a minimum number of MPI processes and/or integer multiples that must be met.
 The build system generation process automatically sets the maximum number of processes possible based on your CPU core count and grid size.
 
-This can also be done via [job.py](./job.py) `-np` options.
+This can also be done via `gemini_run -np` options.
 
 ```sh
 mpiexec -np <number of processors>  build/gemini.bin <input config file> <output directory>

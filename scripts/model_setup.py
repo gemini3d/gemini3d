@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """
 frontend to simply setup a simulation without running it
-usually job.py would be used instead.
+usually gemini_run would be used instead.
 """
 import argparse
 from gemini.model_setup import model_setup
