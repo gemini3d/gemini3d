@@ -69,5 +69,13 @@ def extract_tar(fn: Pathlike, outpath: Pathlike, overwrite: bool = False):
     if not fn.is_file():
         # tarfile gives confusing error on missing file
         raise FileNotFoundError(fn)
-    with tarfile.open(fn) as z:
-        z.extractall(str(outpath.parent))
+
+    try:
+        with tarfile.open(fn) as z:
+            z.extractall(str(outpath.parent))
+    except Exception as e:
+        raise RuntimeError(
+            f"failed to extract {fn} with error {e}.\n"
+            "This file may be corrupt or system libz may be broken.\n\n"
+            f"Try deleting {fn} or manually extracting it."
+        )
