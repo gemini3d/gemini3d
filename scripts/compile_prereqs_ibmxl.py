@@ -10,7 +10,7 @@ import typing as T
 import sys
 import os
 
-from compile_prereqs_gcc import mumps, hdf5, lapack, scalapack
+import gemini3d.compile_prereqs as gc
 
 # ========= user parameters ======================
 BUILDDIR = "build"
@@ -70,10 +70,10 @@ if __name__ == "__main__":
     }
 
     if "lapack" in P.libs:
-        lapack(P.wipe, dirs, P.buildsys, env=get_compilers())
+        gc.lapack(P.wipe, dirs, P.buildsys, env=get_compilers())
     if "scalapack" in P.libs:
-        scalapack(P.wipe, dirs, P.buildsys, env=get_compilers())
+        gc.scalapack(P.wipe, dirs, P.buildsys, env=get_compilers())
     if "mumps" in P.libs:
-        mumps(P.wipe, dirs, P.buildsys, env=get_compilers())
+        gc.mumps(P.wipe, dirs, P.buildsys, env=get_compilers())
     if "hdf5" in P.libs:
-        hdf5(dirs, env=get_compilers())
+        gc.hdf5(dirs, env=get_compilers())

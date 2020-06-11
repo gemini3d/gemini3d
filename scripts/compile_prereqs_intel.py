@@ -10,11 +10,8 @@ import typing as T
 import sys
 import os
 
-from compile_prereqs_gcc import mumps, hdf5, netcdf_c, netcdf_fortran
+import gemini3d.compile_prereqs as gc
 
-# ========= user parameters ======================
-BUILDDIR = "build"
-# ========= end of user parameters ================
 
 nice = ["nice"] if sys.platform == "linux" else []
 
@@ -70,10 +67,10 @@ if __name__ == "__main__":
 
     env = get_compilers()
     if "hdf5" in P.libs:
-        hdf5(dirs, env=env)
+        gc.hdf5(dirs, env=env)
     if "netcdf" in P.libs:
-        netcdf_c(dirs, env=env, wipe=P.wipe)
-        netcdf_fortran(dirs, env=env, wipe=P.wipe)
+        gc.netcdf_c(dirs, env=env, wipe=P.wipe)
+        gc.netcdf_fortran(dirs, env=env, wipe=P.wipe)
 
     if "mumps" in P.libs:
-        mumps(P.wipe, dirs, P.buildsys, env=env)
+        gc.mumps(P.wipe, dirs, P.buildsys, env=env)
