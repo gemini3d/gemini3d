@@ -109,6 +109,7 @@ if (myid==0) then
   print '(A,2ES11.2)', 'Min/max input velocity:',    minval(vs1(:,:,:,:)), maxval(vs1(:,:,:,:))
   print '(A,2ES11.2)', 'Min/max input temperature:', minval(Ts(:,:,:,:)),  maxval(Ts(:,:,:,:))
   print '(A,2ES11.2)', 'Min/max input electric potential:', minval(Phi(:,:,:)),  maxval(Phi(:,:,:))
+  print '(A,2ES11.2)', 'Min/max input electric potential (full grid):', minval(Phiall(:,:,:)),  maxval(Phiall(:,:,:))
 
   call check_finite_plasma(ns, vs1, Ts)
 else
