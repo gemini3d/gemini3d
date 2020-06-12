@@ -40,7 +40,7 @@ type(curvmesh) :: x
 !> MZ note:  it is likely that there could be a plasma and neutral derived type containing these data...  May be worth considering in a refactor...
 real(wp), dimension(:,:,:,:), allocatable :: ns,vs1,vs2,vs3,Ts
 !! fluid state variables
-real(wp), dimension(:,:,:), allocatable :: E1,E2,E3,J1,J2,J3
+real(wp), dimension(:,:,:), allocatable :: E1,E2,E3,J1,J2,J3,Phi
 !! electrodynamic state variables
 real(wp), dimension(:,:,:), allocatable :: rhov2,rhov3,B1,B2,B3
 !! inductive state vars. (for future use - except for B1 which is used for the background field)
@@ -131,6 +131,7 @@ allocate(rhov2(-1:lx1+2,-1:lx2+2,-1:lx3+2),rhov3(-1:lx1+2,-1:lx2+2,-1:lx3+2),B1(
 allocate(v1(-1:lx1+2,-1:lx2+2,-1:lx3+2),v2(-1:lx1+2,-1:lx2+2,-1:lx3+2), &
          v3(-1:lx1+2,-1:lx2+2,-1:lx3+2),rhom(-1:lx1+2,-1:lx2+2,-1:lx3+2))
 allocate(E1(lx1,lx2,lx3),E2(lx1,lx2,lx3),E3(lx1,lx2,lx3),J1(lx1,lx2,lx3),J2(lx1,lx2,lx3),J3(lx1,lx2,lx3))
+allocate(Phi(lx1,lx2,lx3))
 allocate(nn(lx1,lx2,lx3,lnchem),Tn(lx1,lx2,lx3),vn1(lx1,lx2,lx3), vn2(lx1,lx2,lx3),vn3(lx1,lx2,lx3))
 
 
@@ -169,12 +170,12 @@ if ( any(ymdtmp/=cfg%ymd0) .or. abs(UTsectmp-cfg%UTsec0)>cfg%dtout ) then  !! tr
     print*, 'Treating the following file as initial conditions:  ',filetmp
     print*, ' full duration:  ',cfg%tdur,'; remaining simulation time:  ',tdur
   end if
-  call input_plasma(x%x1,x%x2all,x%x3all,cfg%indatsize,filetmp,ns,vs1,Ts)
+  call input_plasma(x%x1,x%x2all,x%x3all,cfg%indatsize,filetmp,ns,vs1,Ts,Phi,Phiall)
 else !! start at the beginning
   UTsec = cfg%UTsec0
   ymd = cfg%ymd0
   tdur = cfg%tdur
-  call input_plasma(x%x1,x%x2all,x%x3all,cfg%indatsize,cfg%indatfile,ns,vs1,Ts)
+  call input_plasma(x%x1,x%x2all,x%x3all,cfg%indatsize,cfg%indatfile,ns,vs1,Ts,Phi,Phiall)
 end if
 it = 1
 t = 0
@@ -200,9 +201,9 @@ B1(1:lx1,1:lx2,1:lx3) = x%Bmag
 !! to the magnetic field direction (hence zero B2 and B3).
 
 
-!> INITIALIZE ELECTRODYNAMIC QUANTITIES FOR POLARIZATION CURRENT
-if (myid==0) Phiall = 0
-!! only root stores entire potential array
+!!> INITIALIZE ELECTRODYNAMIC QUANTITIES FOR POLARIZATION CURRENT
+!if (myid==0) Phiall = 0
+!!! only root stores entire potential array, now set by input_plasma
 E1 = 0
 E2 = 0
 E3 = 0

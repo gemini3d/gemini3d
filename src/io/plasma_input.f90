@@ -16,12 +16,13 @@ real(wp), intent(in) :: UTsec
 real(wp), dimension(:,:,:), intent(out) :: J1,J2,J3
 end subroutine input_root_currents_raw
 
-module subroutine input_root_mpi_raw(x1,x2all,x3all,indatsize,indatfile,ns,vs1,Ts)
+module subroutine input_root_mpi_raw(x1,x2all,x3all,indatsize,indatfile,ns,vs1,Ts,Phi,Phiall)
 real(wp), dimension(-1:), intent(in) :: x1, x2all, x3all
 character(*), intent(in) :: indatsize, indatfile
 real(wp), dimension(-1:,-1:,-1:,:), intent(out) :: ns,vs1,Ts
+real(wp), dimension(:,:,:), intent(out) :: Phi
+real(wp), dimension(:,:,:), intent(out) :: Phiall
 end subroutine input_root_mpi_raw
-
 
 module subroutine input_root_currents_hdf5(outdir,flagoutput,ymd,UTsec,J1,J2,J3)
 character(*), intent(in) :: outdir
@@ -31,10 +32,12 @@ real(wp), intent(in) :: UTsec
 real(wp), dimension(:,:,:), intent(out) :: J1,J2,J3
 end subroutine input_root_currents_hdf5
 
-module subroutine input_root_mpi_hdf5(x1,x2all,x3all,indatsize,indatfile,ns,vs1,Ts)
+module subroutine input_root_mpi_hdf5(x1,x2all,x3all,indatsize,indatfile,ns,vs1,Ts,Phi,Phiall)
 real(wp), dimension(-1:), intent(in) :: x1, x2all, x3all
 character(*), intent(in) :: indatsize, indatfile
 real(wp), dimension(-1:,-1:,-1:,:), intent(out) :: ns,vs1,Ts
+real(wp), dimension(:,:,:), intent(out) :: Phi
+real(wp), dimension(:,:,:), intent(out) :: Phiall
 end subroutine input_root_mpi_hdf5
 
 module subroutine input_root_currents_nc4(outdir,flagoutput,ymd,UTsec,J1,J2,J3)
@@ -45,10 +48,12 @@ real(wp), intent(in) :: UTsec
 real(wp), dimension(:,:,:), intent(out) :: J1,J2,J3
 end subroutine input_root_currents_nc4
 
-module subroutine input_root_mpi_nc4(x1,x2all,x3all,indatsize,indatfile,ns,vs1,Ts)
+module subroutine input_root_mpi_nc4(x1,x2all,x3all,indatsize,indatfile,ns,vs1,Ts,Phi,Phiall)
 real(wp), dimension(-1:), intent(in) :: x1, x2all, x3all
 character(*), intent(in) :: indatsize, indatfile
 real(wp), dimension(-1:,-1:,-1:,:), intent(out) :: ns,vs1,Ts
+real(wp), dimension(:,:,:), intent(out) :: Phi
+real(wp), dimension(:,:,:), intent(out) :: Phiall
 end subroutine input_root_mpi_nc4
 
 end interface
@@ -87,11 +92,11 @@ if (myid==0) then
   !! ROOT FINDS/CALCULATES INITIAL CONDITIONS AND SENDS TO WORKERS
   select case (get_suffix(indatsize))
   case ('.h5')
-    call input_root_mpi_hdf5(x1,x2,x3all,indatsize,indatfile,ns,vs1,Ts)
-  case ('.nc')
-    call input_root_mpi_nc4(x1,x2,x3all,indatsize,indatfile,ns,vs1,Ts)
+    call input_root_mpi_hdf5(x1,x2,x3all,indatsize,indatfile,ns,vs1,Ts,Phi,Phiall)
+  case ('.nc')   !neither netcdf now raw input support restarting right now
+    call input_root_mpi_nc4(x1,x2,x3all,indatsize,indatfile,ns,vs1,Ts,Phi,Phiall)
   case ('.dat')
-    call input_root_mpi_raw(x1,x2,x3all,indatsize,indatfile,ns,vs1,Ts)
+    call input_root_mpi_raw(x1,x2,x3all,indatsize,indatfile,ns,vs1,Ts,Phi,Phiall)
   case default
     write(stderr,*) 'grid:read:get_grid3: unknown grid format: ' // get_suffix(indatsize)
     error stop 6
@@ -103,11 +108,12 @@ if (myid==0) then
   print '(A,2ES11.2)', 'Min/max input density:',     minval(ns(:,:,:,7)),  maxval(ns(:,:,:,7))
   print '(A,2ES11.2)', 'Min/max input velocity:',    minval(vs1(:,:,:,:)), maxval(vs1(:,:,:,:))
   print '(A,2ES11.2)', 'Min/max input temperature:', minval(Ts(:,:,:,:)),  maxval(Ts(:,:,:,:))
+  print '(A,2ES11.2)', 'Min/max input electric potential:', minval(Phi(:,:,:)),  maxval(Phi(:,:,:))
 
   call check_finite_plasma(ns, vs1, Ts)
 else
   !! WORKERS RECEIVE THE IC DATA FROM ROOT
-  call input_workers_mpi(ns,vs1,Ts)
+  call input_workers_mpi(ns,vs1,Ts,Phi)
 end if
 
 end procedure input_plasma
@@ -145,18 +151,19 @@ call bcast_recv(J3,tag%J3)
 
 end subroutine input_workers_currents
 
-subroutine input_workers_mpi(ns,vs1,Ts)
+subroutine input_workers_mpi(ns,vs1,Ts,Phi)
 
 !------------------------------------------------------------
 !-------RECEIVE INITIAL CONDITIONS FROM ROOT PROCESS
 !------------------------------------------------------------
 
 real(wp), dimension(-1:,-1:,-1:,:), intent(out) :: ns,vs1,Ts
+real(wp), dimension(:,:,:) :: Phi
 
 call bcast_recv(ns,tag%ns)
 call bcast_recv(vs1,tag%vs1)
 call bcast_recv(Ts,tag%Ts)
-
+call bcast_recv(Phi,tag%Phi)
 
 if (.false.) then
   print*, myid
