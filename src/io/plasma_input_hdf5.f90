@@ -38,6 +38,7 @@ if (flagswap==1) then
   J2all = reshape(tmpswap,[lx1,lx2all,lx3all],order=[1,3,2])
   call h5f%read('/J3all', tmpswap)
   J3all = reshape(tmpswap,[lx1,lx2all,lx3all],order=[1,3,2])
+  deallocate(tmpswap)
 else
   !! no need to permute dimensions for 3D simulations
   call h5f%read('/J1all', J1all)
@@ -67,13 +68,15 @@ module procedure input_root_mpi_hdf5
 type(hdf5_file) :: h5f
 
 integer :: lx1,lx2,lx3,lx2all,lx3all,isp
+integer :: ix1
 
 real(wp), dimension(-1:size(x1,1)-2,-1:size(x2all,1)-2,-1:size(x3all,1)-2,1:lsp) :: nsall, vs1all, Tsall
 integer :: lx1in,lx2in,lx3in,u, utrace
 real(wp) :: tin
 real(wp), dimension(3) :: ymdtmp
-
 real(wp) :: tstart,tfin
+real(wp), dimension(:,:), allocatable :: Phislab
+
 
 !> so that random values (including NaN) don't show up in Ghost cells
 nsall = 0
@@ -89,6 +92,10 @@ lx2=size(ns,2)-4
 lx3=size(ns,3)-4
 lx2all=size(x2all)-4
 lx3all=size(x3all)-4
+
+
+allocate(Phislab(1:lx2all,1:lx3all))  !space to store EFL potential
+
 
 !> READ IN FROM FILE, AS OF CURVILINEAR BRANCH THIS IS NOW THE ONLY INPUT OPTION
 call get_simsize3(indatsize, lx1in, lx2in, lx3in)
@@ -110,11 +117,15 @@ call h5f%initialize(indatfile, status='old', action='r')
 
 if (flagswap==1) then
   block
+
   !> NOTE: workaround for intel 2020 segfault--may be a compiler bug
   !real(wp) :: tmp(lx1,lx3all,lx2all,lsp)
   real(wp), allocatable :: tmp(:,:,:,:)
+  real(wp), allocatable :: tmpPhi(:,:)
   allocate(tmp(lx1,lx3all,lx2all,lsp))
+  allocate(tmpPhi(lx3all,lx2all))
   !! end workaround
+
   call h5f%read('/nsall', tmp)
   nsall(1:lx1,1:lx2all,1:lx3all,1:lsp) = reshape(tmp,[lx1,lx2all,lx3all,lsp],order=[1,3,2,4])
   call h5f%read('/vs1all', tmp)
@@ -122,22 +133,43 @@ if (flagswap==1) then
   call h5f%read('/Tsall', tmp)
   Tsall(1:lx1,1:lx2all,1:lx3all,1:lsp) = reshape(tmp,[lx1,lx2all,lx3all,lsp],order=[1,3,2,4])
   !! permute the dimensions so that 2D runs are parallelized
+  if (h5f%exist('/Phiall')) then
+    call h5f%read('Phiall',tmpPhi)
+    Phislab=reshape(tmpPhi,[lx2all,lx3all],order=[2,1])
+  else
+    Phislab=0._wp
+  end if
+  deallocate(tmp,tmpPhi)
   end block
 else
   call h5f%read('/nsall', nsall(1:lx1,1:lx2all,1:lx3all,1:lsp))
   call h5f%read('/vs1all', vs1all(1:lx1,1:lx2all,1:lx3all,1:lsp))
   call h5f%read('/Tsall', Tsall(1:lx1,1:lx2all,1:lx3all,1:lsp))
+  if (h5f%exist('/Phiall')) then
+    call h5f%read('Phiall',Phislab)
+  else
+    Phislab=0._wp
+  end if
 end if
-
 call h5f%finalize()
+
+
+!> Apply EFL approx to compute full grid potential
+do ix1=1,lx1
+  Phiall(ix1,1:lx2all,1:lx3all)=Phislab(1:lx2all,1:lx3all)
+end do
+
 
 !> ROOT BROADCASTS IC DATA TO WORKERS
 call cpu_time(tstart)
 call bcast_send(nsall,tag%ns,ns)
 call bcast_send(vs1all,tag%vs1,vs1)
 call bcast_send(Tsall,tag%Ts,Ts)
+call bcast_send(Phiall,tag%Phi,Phi)
 call cpu_time(tfin)
 print '(A,ES12.3,A)', 'Sent ICs to workers in', tfin-tstart, ' seconds.'
+
+deallocate(Phislab)
 
 end procedure input_root_mpi_hdf5
 

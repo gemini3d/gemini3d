@@ -166,11 +166,17 @@ end if
 close(u)
 end block
 
+!> Don't support restarting potential right now for nc4
+Phiall=0._wp
+Phi=0._wp
+
+
 !> ROOT BROADCASTS IC DATA TO WORKERS
 call cpu_time(tstart)
 call bcast_send(nsall,tag%ns,ns)
 call bcast_send(vs1all,tag%vs1,vs1)
 call bcast_send(Tsall,tag%Ts,Ts)
+call bcast_send(Phiall,tag%Phi,Phi)
 call cpu_time(tfin)
 print *, 'Done sending ICs to workers...  CPU elapsed time:  ',tfin-tstart
 

@@ -53,10 +53,12 @@ end interface
 
 interface ! plasma.f90
 
-module subroutine input_plasma(x1,x2,x3all,indatsize,indatfile,ns,vs1,Ts)
+module subroutine input_plasma(x1,x2,x3all,indatsize,indatfile,ns,vs1,Ts,Phi,Phiall)
 real(wp), dimension(-1:), intent(in) :: x1, x2, x3all
 character(*), intent(in) :: indatsize, indatfile
 real(wp), dimension(-1:,-1:,-1:,:), intent(out) :: ns,vs1,Ts
+real(wp), dimension(:,:,:), intent(out) :: Phi
+real(wp), dimension(:,:,:), intent(inout) :: Phiall   !intent must be inout if unknown allocation status???
 end subroutine input_plasma
 
 module subroutine input_plasma_currents(outdir,out_format,flagoutput,ymd,UTsec,J1,J2,J3)

@@ -47,6 +47,7 @@ print *, 'Min/max current data:  ',minval(J1all),maxval(J1all),minval(J2all),max
 
 call h5%finalize()
 
+
 !> DISTRIBUTE DATA TO WORKERS AND TAKE A PIECE FOR ROOT
 call bcast_send(J1all,tag%J1,J1)
 call bcast_send(J2all,tag%J2,J2)
@@ -131,11 +132,18 @@ end if
 
 call h5%finalize()
 
+
+!> Don't support restarting potential right now for nc4
+Phiall=0._wp
+Phi=0._wp
+
+
 !> ROOT BROADCASTS IC DATA TO WORKERS
 call cpu_time(tstart)
 call bcast_send(nsall,tag%ns,ns)
 call bcast_send(vs1all,tag%vs1,vs1)
 call bcast_send(Tsall,tag%Ts,Ts)
+call bcast_send(Phiall,tag%Phi,Phi)
 call cpu_time(tfin)
 print '(A,ES15.6,A)', 'Sent ICs to workers in', tfin-tstart, ' seconds.'
 
