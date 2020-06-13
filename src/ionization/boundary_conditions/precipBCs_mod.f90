@@ -93,7 +93,7 @@ real(wp) :: W0pk,PhiWpk
 
 UTsectmp = 0
 
-if(t+dt / 2._wp>=tnext .or. t<=0._wp) then    !need to load a new file
+if(t+dt / 2._wp>=tnext .or. t<0._wp) then    !need to load a new file
   if ( .not. allocated(mlonp)) then    !need to read in the grid data from input file
     ymdprev=ymd
     UTsecprev=UTsec

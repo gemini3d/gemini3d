@@ -26,7 +26,7 @@ use config, only: gemini_cfg
 
 implicit none (type, external)
 private
-public :: electrodynamics, halo_pot, potential_sourceterms, pot2perpfield, velocities
+public :: electrodynamics, halo_pot, potential_sourceterms, pot2perpfield, velocities, get_BGEfields
 
 external :: mpi_send, mpi_recv
 
