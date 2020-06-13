@@ -89,11 +89,11 @@ contains
 
 
 subroutine read_configfile(cfg, verbose)
+!! READS THE INPUT CONFIGURAITON FILE, ASSIGNS VARIABLES FOR FILENAMES, SIZES, ETC.
 
 class(gemini_cfg), intent(inout) :: cfg
 logical, intent(in), optional :: verbose
 
-!! READS THE INPUT CONFIGURAITON FILE, ASSIGNS VARIABLES FOR FILENAMES, SIZES, ETC.
 integer :: i, realbits, lxp, lyp
 real(wp) :: NaN, glat, glon, xdist, ydist, alt_min, alt_max, alt_scale(4), Bincl, nmf, nme
 

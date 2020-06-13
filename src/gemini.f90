@@ -342,6 +342,7 @@ integer :: argc, i
 character(256) :: argv
 character(8) :: date
 character(10) :: time
+logical :: exists
 
 argc = command_argument_count()
 if (argc < 2) then
@@ -364,7 +365,12 @@ print '(2A,I6,A3,I6,A)', trim(argv), ' Process:  ', myid,' / ',lid-1, ' at ' // 
 
 !> READ FILE INPUT
 call get_command_argument(1,argv)
-cfg%infile = trim(argv)
+cfg%outdir = trim(argv)
+cfg%infile = cfg%outdir//'/inputs/config.nml'
+inquire(file=cfg%infile, exist=exists)    !needed to deal with ini vs. nml inputs...
+if (.not. exists) then
+  cfg%infile = cfg%outdir//'/inputs/config.ini'
+end if
 
 call read_configfile(cfg, verbose=.false.)
 
@@ -375,7 +381,7 @@ if (myid==0) then
   call assert_file_exists(cfg%indatfile)
 
   print *, '******************** input config ****************'
-  print '(A)', cfg%infile
+  print '(A)', 'simulation directory: ' // cfg%outdir
   print '(A51,I6,A1,I0.2,A1,I0.2)', ' start year-month-day:  ', cfg%ymd0(1), '-', cfg%ymd0(2),'-', cfg%ymd0(3)
   print '(A51,F10.3)', 'start time:  ',cfg%UTsec0
   print '(A51,F10.3)', 'duration:  ',cfg%tdur
@@ -422,7 +428,7 @@ end if
 !! default values
 lid2in = -1  !< sentinel
 
-do i = 3,argc
+do i = 2,argc
   call get_command_argument(i,argv)
 
   select case (argv)
@@ -446,9 +452,6 @@ do i = 3,argc
     read(argv,*) lid3in
   end select
 end do
-
-call get_command_argument(2,argv)
-cfg%outdir = trim(argv)
 
 end subroutine cli
 

@@ -22,15 +22,16 @@ namelist /system/ compiler, compiler_flags, exe
 namelist /grid/ lid, lid2, lid3, lx1, lx2, lx3, lx2all, lx3all
 
 !> MAKE A COPY OF THE INPUT DATA IN THE OUTPUT DIRECTORY
-ierr = mkdir(cfg%outdir//'/inputs')
+!! ----- no longer needed due to new CLI June 2020 --------
+! ierr = mkdir(cfg%outdir//'/inputs')
 
-inquire(file=cfg%outdir//'/inputs/config.nml', exist=exists)
-if(.not.exists) then
-  ierr = copyfile(cfg%infile, cfg%outdir//'/inputs/')
-  ierr = copyfile(cfg%indatsize, cfg%outdir//'/inputs/')
-  ierr = copyfile(cfg%indatgrid, cfg%outdir//'/inputs/')
-  ierr = copyfile(cfg%indatfile, cfg%outdir//'/inputs/')
-endif
+! inquire(file=cfg%outdir//'/inputs/config.nml', exist=exists)
+! if(.not.exists) then
+!   ierr = copyfile(cfg%infile, cfg%outdir//'/inputs/')
+!   ierr = copyfile(cfg%indatsize, cfg%outdir//'/inputs/')
+!   ierr = copyfile(cfg%indatgrid, cfg%outdir//'/inputs/')
+!   ierr = copyfile(cfg%indatfile, cfg%outdir//'/inputs/')
+! endif
 !! keep these copyfile() to allow running Gemini from command-line without Python / Matlab scripts
 
 !> NOTE: if desired to copy Efield inputs. This would be a lot of files and disk space in general.

@@ -76,7 +76,7 @@ def run_test(
 
     # have to get exe as absolute path
     exe_abs = Path(exe).resolve()
-    cmd = [mpiexec, "-np", str(mpi_count), str(exe_abs), nml, outdir]
+    cmd = [mpiexec, "-np", str(mpi_count), str(exe_abs), outdir]
     if out_format:
         cmd += ["-out_format", out_format]
     print(" ".join(cmd))
