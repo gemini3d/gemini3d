@@ -14,7 +14,8 @@ use mpimod, only : mpisetup, mpibreakdown, mpi_manualgrid, mpigrid, lid, myid
 use multifluid, only : fluid_adv
 use neutral, only : neutral_atmos,make_dneu,neutral_perturb,clear_dneu,init_neutrals
 use potentialBCs_mumps, only: clear_potential_fileinput, init_Efieldinput
-use potential_comm,only : electrodynamics
+use potential_comm,only : electrodynamics,pot2perpfield,velocities
+use collisions, only: conductivities
 use precipBCs_mod, only: clear_precip_fileinput, init_precipinput
 use temporal, only : dt_comm
 use timeutils, only: dateinc, find_lastdate
@@ -86,6 +87,10 @@ real(wp) :: tmilestone=0._wp
 integer, dimension(3) :: ymdtmp
 real(wp) :: UTsectmp,ttmp,tdur
 character(:), allocatable :: filetmp
+
+!> For reproducing initial drifts; these are allocated and the deallocated since they can be large
+real(wp), dimension(:,:,:), allocatable :: sig0,sigP,sigH
+real(wp), dimension(:,:,:,:), allocatable :: muP,muH,muPvn,muHvn
 
 
 !! MAIN PROGRAM
@@ -201,30 +206,6 @@ B1(1:lx1,1:lx2,1:lx3) = x%Bmag
 !! to the magnetic field direction (hence zero B2 and B3).
 
 
-!!> INITIALIZE ELECTRODYNAMIC QUANTITIES FOR POLARIZATION CURRENT
-!if (myid==0) Phiall = 0
-!!! only root stores entire potential array, now set by input_plasma
-E1 = 0
-E2 = 0
-E3 = 0
-vs2 = 0
-vs3 = 0
-
-
-!!FIXME:  some testing to check if we can detect milestone information correctly for a restart simulation
-!if (myid==0) then  
-!  if (cfg%flagE0file==1) then
-!    call find_lastdate(cfg%ymd0,cfg%UTsec0,[2013,02,20],18210._wp,cfg%dtE0,ymdtmp,UTsectmp)
-!    print*, 'Last E0 file at cadence:  ',cfg%dtE0,' is:  ',ymdtmp,UTsectmp
-!  end if
-!
-!  if (cfg%flagprecfile==1) then
-!    call find_lastdate(cfg%ymd0,cfg%UTsec0,[2013,02,20],18210._wp,cfg%dtprec,ymdtmp,UTsectmp)
-!    print*, 'Last precipitation file at cadence:  ',cfg%dtprec,' is:  ',ymdtmp,UTsectmp
-!  end if
-!end if
-!
-
 !> Inialize neutral atmosphere, note the use of fortran's weird scoping rules to avoid input args.  Must occur after initial time info setup
 if(myid==0) print*, 'Priming neutral input'
 call init_neutrals(dt,t,cfg,ymd,UTsec,x,nn,Tn,vn1,vn2,vn3)
@@ -237,6 +218,22 @@ if(myid==0) print*, 'Priming precipitation input'
 call init_precipinput(dt,t,cfg,ymd,UTsec,x)
 
 
+!> Recompute electrodynamic quantities needed for restarting
+!! these do not include background
+E1 = 0
+call pot2perpfield(Phi,x,E2,E3)
+!call addBGfield(E2,E3)
+
+!! these must include background, we require all input data fully interpolated to the initial time for this
+if(myid==0) print*, 'Recomputing intial drifts '
+allocate(sig0(lx1,lx2,lx3),sigP(lx1,lx2,lx3),sigH(lx1,lx2,lx3))
+allocate(muP(lx1,lx2,lx3,lsp),muH(lx1,lx2,lx3,lsp),muPvn(lx1,lx2,lx3,lsp),muHvn(lx1,lx2,lx3,lsp))
+call conductivities(nn,Tn,ns,Ts,vs1,B1,sig0,sigP,sigH,muP,muH,muPvn,muHvn)
+call velocities(muP,muH,muPvn,muHvn,E2,E3,vn2,vn3,vs2,vs3)
+deallocate(sig0,sigP,sigH,muP,muH,muPvn,muHvn)
+
+
+!> Main time loop
 do while (t < tdur)
   !! TIME STEP CALCULATION, requires workers to report their most stringent local stability constraint
   dtprev = dt
@@ -368,6 +365,7 @@ call clear_grid(x)
 call clear_dneu()
 call clear_precip_fileinput()
 call clear_potential_fileinput()
+!call clear_BGfield()
 
 
 !! SHUT DOWN MPI
