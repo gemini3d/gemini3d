@@ -14,7 +14,8 @@ use config, only: gemini_cfg
 
 implicit none (type, external)
 private
-public :: potentialbcs2D, potentialbcs2D_fileinput, clear_potential_fileinput, init_Efieldinput
+public :: potentialbcs2D, potentialbcs2D_fileinput, clear_potential_fileinput, init_Efieldinput, &
+            compute_rootBGEfields
 
 !ALL OF THE FOLLOWING MODULE-SCOPE ARRAYS ARE USED FOR INTERPOLATING PRECIPITATION INPUT FILES (IF USED)
 !It should be noted that all of these will eventually be fullgrid variables since only root does this...
@@ -35,6 +36,8 @@ real(wp), dimension(:,:), allocatable :: E0xiprev,E0xinext,E0yiprev,E0yinext    
 real(wp), dimension(:,:), allocatable :: Vminx1iprev,Vminx1inext,Vmaxx1iprev,Vmaxx1inext
 real(wp), dimension(:), allocatable :: Vminx2isprev,Vminx2isnext,Vmaxx2isprev,Vmaxx2isnext
 real(wp), dimension(:), allocatable :: Vminx3isprev,Vminx3isnext,Vmaxx3isprev,Vmaxx3isnext
+
+real(wp), dimension(:,:), allocatable :: E0xinow,E0yinow
 
 integer, dimension(3) :: ymdprev,ymdnext   !dates for interpolated data
 real(wp) :: UTsecprev,UTsecnext
@@ -85,10 +88,10 @@ if (myid==0 .and. cfg%flagE0file==1) then    !only root needs these...
   call potentialBCs2D_fileinput(dt,-1._wp*cfg%dtE0,ymd,UTsectmp-cfg%dtE0,cfg,x,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3, &
                                     Vmaxx3,E01all,E02all,E03all,flagdirich)    ! t input only needs to be less than zero...
   
-!  !! now load first, next frame of input
-!  print*, 'Now loading initial next file for electric field input...'
-!  call potentialBCs2D_fileinput(dt,t,ymd,UTsec,cfg,x,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3, &
-!                                    Vmaxx3,E01all,E02all,E03all,flagdirich)
+  !! now load first, next frame of input
+  print*, 'Now loading initial next file for electric field input...'
+  call potentialBCs2D_fileinput(dt,t,ymd,UTsec,cfg,x,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3, &
+                                    Vmaxx3,E01all,E02all,E03all,flagdirich)
 
   deallocate(Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3,Vmaxx3,E01all,E02all,E03all)
 end if
@@ -96,8 +99,20 @@ end if
 end subroutine init_Efieldinput
 
 
+!subroutine addBGfield(E2,E3)
+!
+!!> take and input field and adds the current background field on top of it
+!
+!real(wp), dimension(:,:,:), intent(in) :: E2,E3
+!
+!
+!
+!end subroutine addBGfield
+
+
 subroutine potentialBCs2D_fileinput(dt,t,ymd,UTsec,cfg,x,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3, &
                                   Vmaxx3,E01all,E02all,E03all,flagdirich)
+
 !! A FILE INPUT BASED BOUNDARY CONDITIONS FOR ELECTRIC POTENTIAL OR
 !! FIELD-ALIGNED CURRENT.
 !! NOTE: THIS IS ONLY CALLED BY THE ROOT PROCESS
@@ -123,13 +138,12 @@ real(wp), dimension(lx2all*lx3all) :: parami
 real(wp), dimension(lx2all,lx3all) :: parami2D
 real(wp), dimension(lx2all) :: parami2    !interpolated parameter with size of lx2
 real(wp), dimension(lx3all) :: parami3
-real(wp), dimension(lx2all,lx3all) :: E0xinow,E0yinow,Vminx1inow,Vmaxx1inow
+real(wp), dimension(lx2all,lx3all) :: Vminx1inow,Vmaxx1inow
 real(wp), dimension(lx3all) :: Vminx2isnow,Vmaxx2isnow
 real(wp), dimension(lx2all) :: Vminx3isnow,Vmaxx3isnow
 real(wp) :: slope
 
 integer :: ix1,ix2,ix3,iid,iflat,ios    !grid sizes are borrowed from grid module
-real(wp) :: h2ref,h3ref
 
 
 !> COMPUTE SOURCE/FORCING TERMS FROM BACKGROUND FIELDS, ETC.
@@ -174,6 +188,7 @@ if(t + dt / 2._wp >= tnext .or. t<=0._wp) then    !need to load a new file
     allocate(Vminx2pslice(llat),Vmaxx2pslice(llat))
     allocate(Vminx3pslice(llon),Vmaxx3pslice(llon))
     allocate(E0xiprev(lx2all,lx3all),E0xinext(lx2all,lx3all),E0yiprev(lx2all,lx3all),E0yinext(lx2all,lx3all))
+    allocate(E0xinow(lx2all,lx3all),E0yinow(lx2all,lx3all))
     allocate(Vminx1iprev(lx2all,lx3all),Vminx1inext(lx2all,lx3all), &
              Vmaxx1iprev(lx2all,lx3all),Vmaxx1inext(lx2all,lx3all), &
              Vminx2isprev(lx3all),Vminx2isnext(lx3all),Vmaxx2isprev(lx3all),Vmaxx2isnext(lx3all), &
@@ -418,18 +433,19 @@ if(debug) then
   end if
 endif
 
-!> LOAD POTENTIAL SOLVER INPUT ARRAYS, FIRST MAP THE ELECTRIC FIELDS
-do ix3=1,lx3all
-  do ix2=1,lx2all
-    h2ref=x%h2all(ix1ref,ix2,ix3)
-    !! define a reference metric factor for a given field line
-    h3ref=x%h3all(ix1ref,ix2,ix3)
-    do ix1=1,lx1
-      E02all(ix1,ix2,ix3)=E0xinow(ix2,ix3)*h2ref/x%h2all(ix1,ix2,ix3)
-      E03all(ix1,ix2,ix3)=E0yinow(ix2,ix3)*h3ref/x%h3all(ix1,ix2,ix3)
-    end do
-  end do
-end do
+!!> LOAD POTENTIAL SOLVER INPUT ARRAYS, FIRST MAP THE ELECTRIC FIELDS
+!do ix3=1,lx3all
+!  do ix2=1,lx2all
+!    h2ref=x%h2all(ix1ref,ix2,ix3)
+!    !! define a reference metric factor for a given field line
+!    h3ref=x%h3all(ix1ref,ix2,ix3)
+!    do ix1=1,lx1
+!      E02all(ix1,ix2,ix3)=E0xinow(ix2,ix3)*h2ref/x%h2all(ix1,ix2,ix3)
+!      E03all(ix1,ix2,ix3)=E0yinow(ix2,ix3)*h3ref/x%h3all(ix1,ix2,ix3)
+!    end do
+!  end do
+!end do
+call compute_rootBGEfields(x,E02all,E03all)
 
 
 !> NOW THE BOUNDARY CONDITIONS
@@ -481,6 +497,43 @@ else
 end if
 
 end subroutine potentialBCs2D_fileinput
+
+
+subroutine compute_rootBGEfields(x,E02all,E03all)
+
+!> Returns a background electric field calculation for use by external program units.  
+!   This requires that all necessary files, etc. have already been loaded into module
+!   variables.  This is only to be called by a root process as it deals with fullgrid
+!   data.  An interface for workers and root is in the top-level potential module.  This
+!   particular bit of code is needed both when setting boundary conditions and also when
+!   initializing background electric field; hence it is a subroutine as opposed to block of code
+
+type(curvmesh), intent(in) :: x
+real(wp), dimension(:,:,:), intent(out) :: E02all,E03all
+
+integer :: ix1,ix2,ix3
+real(wp) :: h2ref,h3ref
+
+
+!! the only danger here is that this routine coudl be called before any module data are loaded
+!   so check just to make sure it isn't being misused in this way
+if (.not. allocated(E0xinow)) error stop  &
+      'potentialBCs:compute_rootBGEfields is trying to access unallocated module data'
+
+!! scale electric fields at some reference point into the full grid
+do ix3=1,lx3all
+  do ix2=1,lx2all
+    h2ref=x%h2all(ix1ref,ix2,ix3)
+    !! define a reference metric factor for a given field line
+    h3ref=x%h3all(ix1ref,ix2,ix3)
+    do ix1=1,lx1
+      E02all(ix1,ix2,ix3)=E0xinow(ix2,ix3)*h2ref/x%h2all(ix1,ix2,ix3)
+      E03all(ix1,ix2,ix3)=E0yinow(ix2,ix3)*h3ref/x%h3all(ix1,ix2,ix3)
+    end do
+  end do
+end do
+
+end subroutine compute_rootBGEfields
 
 
 subroutine clear_potential_fileinput()

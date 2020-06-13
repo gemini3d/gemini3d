@@ -9,11 +9,11 @@ module potential_comm
 use, intrinsic :: ieee_arithmetic
 
 use phys_consts, only: wp, pi, lsp, debug
-use grid, only: flagswap, gridflag
+use grid, only: flagswap, gridflag, lx1,lx2all,lx3all
 use mesh, only: curvmesh
 use collisions, only: conductivities, capacitance
 use calculus, only: div3d, integral3d1, grad3d1, grad3d2, grad3d3, integral3d1_curv_alt
-use potentialBCs_mumps, only: potentialbcs2D, potentialbcs2D_fileinput
+use potentialBCs_mumps, only: potentialbcs2D, potentialbcs2D_fileinput, compute_rootBGEfields
 use potential_mumps, only: potential3D_fieldresolved_decimate, &
                             potential2D_fieldresolved, &
                             potential2D_polarization, &
@@ -26,7 +26,7 @@ use config, only: gemini_cfg
 
 implicit none (type, external)
 private
-public :: electrodynamics, halo_pot
+public :: electrodynamics, halo_pot, potential_sourceterms, pot2perpfield, velocities
 
 external :: mpi_send, mpi_recv
 
@@ -168,26 +168,7 @@ if (cfg%potsolve == 1 .or. cfg%potsolve == 3) then    !electrostatic solve or el
                               E1,E2,E3,J1,J2,J3,Phiall,ymd,UTsec)
   end if
 
-  !DRIFTS - NEED TO INCLUDE ELECTRIC, WIND-DRIVEN, AND GRAVITATIONAL???
-!  if (lx2/=1) then    !full 3D solve, go with the regular formulas
-  if(flagswap/=1) then
-    do isp=1,lsp
-      vs2(1:lx1,1:lx2,1:lx3,isp)=muP(:,:,:,isp)*E2-muH(:,:,:,isp)*E3+muPvn(:,:,:,isp)*vn2-muHvn(:,:,:,isp)*vn3
-      vs3(1:lx1,1:lx2,1:lx3,isp)=muH(:,:,:,isp)*E2+muP(:,:,:,isp)*E3+muHvn(:,:,:,isp)*vn2+muPvn(:,:,:,isp)*vn3
-    end do
-  else                !flip signs on the cross products in 2D.  Note that due to dimension shuffling E2,3 mapping is already handled
-    do isp=1,lsp
-      vs2(1:lx1,1:lx2,1:lx3,isp)=muP(:,:,:,isp)*E2+muH(:,:,:,isp)*E3+muPvn(:,:,:,isp)*vn2+muHvn(:,:,:,isp)*vn3
-      vs3(1:lx1,1:lx2,1:lx3,isp)=-muH(:,:,:,isp)*E2+muP(:,:,:,isp)*E3-muHvn(:,:,:,isp)*vn2+muPvn(:,:,:,isp)*vn3
-    end do
-  end if
-
-!    do isp=1,lsp
-       !! To leading order the ion drifts do not include the polarization parts,
-       !! otherwise it may mess up polarization convective term in the electrodynamics solver...
-!      vs2(1:lx1,1:lx2,1:lx3,isp)=muP(:,:,:,isp)*E2-muH(:,:,:,isp)*E3+ms(isp)/qs(isp)/B1**2*DE2Dt
-!      vs3(1:lx1,1:lx2,1:lx3,isp)=muH(:,:,:,isp)*E2+muP(:,:,:,isp)*E3+ms(isp)/qs(isp)/B1**2*DE3Dt
-!    end do
+  call velocities(muP,muH,muPvn,muHvn,E2,E3,vn2,vn3,vs2,vs3)
 
   call cpu_time(tfin)
 
@@ -204,6 +185,202 @@ else   !null solve; just force everything to zero
 end if
 
 end subroutine electrodynamics_curv
+
+
+subroutine velocities(muP,muH,muPvn,muHvn,E2,E3,vn2,vn3,vs2,vs3)
+
+!> compute steady state drifts resulting from a range of forces.  Can be used
+!   by both root and worker processes
+
+real(wp), dimension(:,:,:,:), intent(in) :: muP,muH,muPvn,muHvn
+real(wp), dimension(:,:,:), intent(in) :: E2,E3,vn2,vn3
+real(wp), dimension(-1:,-1:,-1:,:), intent(out) :: vs2,vs3   !> these have ghost cells
+
+integer :: lx1,lx2,lx3,lsp,isp
+
+
+!> sizes from the mobility coefficients
+lx1=size(muP,1)
+lx2=size(muP,2)
+lx3=size(muP,3)
+lsp=size(muP,4)
+
+
+!> electric field and wind terms for ion drifts
+if(flagswap/=1) then
+  do isp=1,lsp
+    vs2(1:lx1,1:lx2,1:lx3,isp)=muP(:,:,:,isp)*E2-muH(:,:,:,isp)*E3+muPvn(:,:,:,isp)*vn2-muHvn(:,:,:,isp)*vn3
+    vs3(1:lx1,1:lx2,1:lx3,isp)=muH(:,:,:,isp)*E2+muP(:,:,:,isp)*E3+muHvn(:,:,:,isp)*vn2+muPvn(:,:,:,isp)*vn3
+  end do
+else                !flip signs on the cross products in 2D.  Note that due to dimension shuffling E2,3 mapping is already handled
+  do isp=1,lsp
+    vs2(1:lx1,1:lx2,1:lx3,isp)=muP(:,:,:,isp)*E2+muH(:,:,:,isp)*E3+muPvn(:,:,:,isp)*vn2+muHvn(:,:,:,isp)*vn3
+    vs3(1:lx1,1:lx2,1:lx3,isp)=-muH(:,:,:,isp)*E2+muP(:,:,:,isp)*E3-muHvn(:,:,:,isp)*vn2+muPvn(:,:,:,isp)*vn3
+  end do
+end if
+
+
+!    do isp=1,lsp
+       !! To leading order the ion drifts do not include the polarization parts,
+       !! otherwise it may mess up polarization convective term in the electrodynamics solver...
+!      vs2(1:lx1,1:lx2,1:lx3,isp)=muP(:,:,:,isp)*E2-muH(:,:,:,isp)*E3+ms(isp)/qs(isp)/B1**2*DE2Dt
+!      vs3(1:lx1,1:lx2,1:lx3,isp)=muH(:,:,:,isp)*E2+muP(:,:,:,isp)*E3+ms(isp)/qs(isp)/B1**2*DE3Dt
+!    end do
+
+end subroutine velocities
+
+
+subroutine potential_sourceterms(sigP,sigH,E02,E03,vn2,vn3,B1,x,srcterm)
+
+!> Compute source terms for the potential equation to be solved.  Both root and workers
+!   should be able to use this routine
+
+real(wp), dimension(:,:,:), intent(in) :: sigP,sigH
+real(wp), dimension(:,:,:), intent(in) :: E02,E03,vn2,vn3
+real(wp), dimension(:,:,:), intent(in) :: B1
+type(curvmesh), intent(in) :: x
+real(wp), dimension(:,:,:), intent(out) :: srcterm
+
+real(wp), dimension(1:size(E02,1),1:size(E02,2),1:size(E02,3)) :: J1,J2,J3
+real(wp), dimension(0:size(E02,1)+1,0:size(E02,2)+1,0:size(E02,3)+1) :: divtmp
+!! one extra grid point on either end to facilitate derivatives
+real(wp), dimension(-1:size(E02,1)+2,-1:size(E02,2)+2,-1:size(E02,3)+2) :: J1halo,J2halo,J3halo
+!! haloing assumes existence of two ghost cells
+integer :: lx1,lx2,lx3
+
+
+!> sizes from the mobility coefficients
+lx1=size(sigP,1)
+lx2=size(sigP,2)
+lx3=size(sigP,3)
+
+
+!-------
+!CONDUCTION CURRENT BACKGROUND SOURCE TERMS FOR POTENTIAL EQUATION. MUST COME AFTER CALL TO BC CODE.
+J1=0d0    !so this div is only perp components
+if (flagswap==1) then
+  J2=sigP*E02+sigH*E03    !BG x2 current
+  J3=-1*sigH*E02+sigP*E03    !BG x3 current
+else
+  J2=sigP*E02-sigH*E03    !BG x2 current
+  J3=sigH*E02+sigP*E03    !BG x3 current
+end if
+J1halo(1:lx1,1:lx2,1:lx3)=J1
+J2halo(1:lx1,1:lx2,1:lx3)=J2
+J3halo(1:lx1,1:lx2,1:lx3)=J3
+
+call halo_pot(J1halo,tag%J1,x%flagper,.false.)
+call halo_pot(J2halo,tag%J2,x%flagper,.false.)
+call halo_pot(J3halo,tag%J3,x%flagper,.false.)
+
+divtmp=div3D(J1halo(0:lx1+1,0:lx2+1,0:lx3+1),J2halo(0:lx1+1,0:lx2+1,0:lx3+1), &
+             J3halo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
+srcterm=divtmp(1:lx1,1:lx2,1:lx3)
+if (debug .and. myid==0) print *, 'Root has computed background field source terms...',minval(srcterm), maxval(srcterm)
+!-------
+
+
+!-------
+!NEUTRAL WIND SOURCE TERMS FOR POTENTIAL EQUATION, SIMILAR TO ABOVE BLOCK OF CODE
+J1=0d0    !so this div is only perp components
+if (flagswap==1) then
+  J2=-1*sigP*vn3*B1(1:lx1,1:lx2,1:lx3)+sigH*vn2*B1(1:lx1,1:lx2,1:lx3)
+  !! wind x2 current, note that all workers already have a copy of this.
+  J3=sigH*vn3*B1(1:lx1,1:lx2,1:lx3)+sigP*vn2*B1(1:lx1,1:lx2,1:lx3)
+  !! wind x3 current
+else
+  J2=sigP*vn3*B1(1:lx1,1:lx2,1:lx3)+sigH*vn2*B1(1:lx1,1:lx2,1:lx3)
+  !! wind x2 current
+  J3=sigH*vn3*B1(1:lx1,1:lx2,1:lx3)-sigP*vn2*B1(1:lx1,1:lx2,1:lx3)
+  !! wind x3 current
+end if
+J1halo(1:lx1,1:lx2,1:lx3)=J1
+J2halo(1:lx1,1:lx2,1:lx3)=J2
+J3halo(1:lx1,1:lx2,1:lx3)=J3
+
+call halo_pot(J1halo,tag%J1,x%flagper,.false.)
+call halo_pot(J2halo,tag%J2,x%flagper,.false.)
+call halo_pot(J3halo,tag%J3,x%flagper,.false.)
+
+divtmp=div3D(J1halo(0:lx1+1,0:lx2+1,0:lx3+1),J2halo(0:lx1+1,0:lx2+1,0:lx3+1), &
+             J3halo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
+srcterm=srcterm+divtmp(1:lx1,1:lx2,1:lx3)
+if (debug .and. myid==0) print *, 'Root has computed wind source terms...',minval(srcterm),  maxval(srcterm)
+!-------
+
+end subroutine potential_sourceterms
+
+
+subroutine pot2perpfield(Phi,x,E2,E3)
+
+!> computes electric field (perp components only) from a worker potential pattern.  Can
+!   be called by either root or worker processes
+
+real(wp), dimension(:,:,:), intent(in) :: Phi
+type(curvmesh), intent(in) :: x
+real(wp), dimension(:,:,:), intent(out) :: E2,E3
+
+real(wp), dimension(0:size(Phi,1)+1,0:size(Phi,2)+1,0:size(Phi,3)+1) :: divtmp
+!! one extra grid point on either end to facilitate derivatives
+real(wp), dimension(-1:size(Phi,1)+2,-1:size(Phi,2)+2,-1:size(Phi,3)+2) :: J1halo,J2halo,J3halo
+!! haloing assumes existence of two ghost cells
+integer :: lx1,lx2,lx3
+
+
+!> sizes from the mobility coefficients
+lx1=size(Phi,1)
+lx2=size(Phi,2)
+lx3=size(Phi,3)
+
+!CALCULATE PERP FIELDS FROM POTENTIAL
+!      E20all=grad3D2(-1d0*Phi0all,dx2(1:lx2))
+!! causes major memory leak. maybe from arithmetic statement argument?
+!! Left here as a 'lesson learned' (or is it a gfortran bug...)
+!      E30all=grad3D3(-1d0*Phi0all,dx3all(1:lx3all))
+
+!COMPUTE THE 2 COMPONENT OF THE ELECTRIC FIELD
+J1halo(1:lx1,1:lx2,1:lx3)=-1._wp*Phi
+call halo_pot(J1halo,tag%J1,x%flagper,.true.)
+divtmp=grad3D2(J1halo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
+E2=divtmp(1:lx1,1:lx2,1:lx3)
+
+!COMPUTE THE 3 COMPONENT OF THE ELECTRIC FIELD
+J1halo(1:lx1,1:lx2,1:lx3)=-1._wp*Phi
+call halo_pot(J1halo,tag%J1,x%flagper,.false.)
+divtmp=grad3D3(J1halo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
+E3=divtmp(1:lx1,1:lx2,1:lx3)
+!--------
+
+end subroutine pot2perpfield
+
+
+subroutine get_BGEfields(x,E01,E02,E03)
+
+type(curvmesh), intent(in) :: x
+real(wp), dimension(:,:,:), intent(out) :: E01,E02,E03
+
+!> routine to pull the background electric fields from the BCs modules and distribute
+!   them to worker processes; called by both root and worker processes
+
+real(wp), dimension(:,:,:), allocatable :: E01all,E02all,E03all    !space to pull the full dataset out of the module
+
+
+if (myid==0) then
+  allocate(E01all(lx1,lx2all,lx3all),E02all(lx1,lx2all,lx3all),E03all(lx1,lx2all,lx3all))
+  E01all=0._wp
+  call compute_rootBGEfields(x,E02all,E03all)
+
+  call bcast_send(E01all,tag%E01,E01)
+  call bcast_send(E02all,tag%E02,E01)
+  call bcast_send(E03all,tag%E03,E03)
+  deallocate(E01all,E02all,E03all)
+else
+  call bcast_recv(E01,tag%E01)
+  call bcast_recv(E02,tag%E02)
+  call bcast_recv(E03,tag%E03)
+end if
+
+end subroutine get_BGEfields
 
 
 subroutine halo_pot(parmhalo,tagcurrent,flagper,flagdegrade)
@@ -258,6 +435,5 @@ if (.not. flagper) then              !musn't overwrite ghost cells if perioidc i
 end if
 
 end subroutine halo_pot
-
 
 end module potential_comm

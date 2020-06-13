@@ -61,9 +61,9 @@ if (cfg%flagprecfile==1) then    !all workers must have this info
   !! back up by one dtprec to get a next file that is the beginning of the simulation
   call precipBCs_fileinput(dt,-1._wp*cfg%dtprec,cfg,ymd,UTsectmp-cfg%dtprec,x,W0,PhiWmWm2)
 
-!  if (myid==0) print*, 'Now loading initial next file for precipitation input...'
-!  !! now shift next->prev and load a new one corresponding to the first simulation time step
-!  call precipBCs_fileinput(dt,t,cfg,ymd,UTsec,x,W0,PhiWmWm2)
+  if (myid==0) print*, 'Now loading initial next file for precipitation input...'
+  !! now shift next->prev and load a new one corresponding to the first simulation time step
+  call precipBCs_fileinput(dt,t,cfg,ymd,UTsec,x,W0,PhiWmWm2)
 end if
 
 end subroutine init_precipinput
