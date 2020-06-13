@@ -14,7 +14,7 @@ use mpimod, only : mpisetup, mpibreakdown, mpi_manualgrid, mpigrid, lid, myid
 use multifluid, only : fluid_adv
 use neutral, only : neutral_atmos,make_dneu,neutral_perturb,clear_dneu,init_neutrals
 use potentialBCs_mumps, only: clear_potential_fileinput, init_Efieldinput
-use potential_comm,only : electrodynamics,pot2perpfield,velocities
+use potential_comm,only : electrodynamics,pot2perpfield,velocities, get_BGEfields
 use collisions, only: conductivities
 use precipBCs_mod, only: clear_precip_fileinput, init_precipinput
 use temporal, only : dt_comm
@@ -91,6 +91,7 @@ character(:), allocatable :: filetmp
 !> For reproducing initial drifts; these are allocated and the deallocated since they can be large
 real(wp), dimension(:,:,:), allocatable :: sig0,sigP,sigH
 real(wp), dimension(:,:,:,:), allocatable :: muP,muH,muPvn,muHvn
+real(wp), dimension(:,:,:), allocatable :: E01,E02,E03
 
 
 !! MAIN PROGRAM
@@ -222,15 +223,27 @@ call init_precipinput(dt,t,cfg,ymd,UTsec,x)
 !! these do not include background
 E1 = 0
 call pot2perpfield(Phi,x,E2,E3)
-!call addBGfield(E2,E3)
+allocate(E01(lx1,lx2,lx3),E02(lx1,lx2,lx3),E03(lx1,lx2,lx3))
+call get_BGEfields(x,E01,E02,E03)
+if(myid==0) then
+  print*, 'Recomputed initial fields:  '
+  print*, '    ',minval(E01),maxval(E01)
+  print*, '    ',minval(E02),maxval(E02)
+  print*, '    ',minval(E03),maxval(E03)
+end if
 
-!! these must include background, we require all input data fully interpolated to the initial time for this
-if(myid==0) print*, 'Recomputing intial drifts '
 allocate(sig0(lx1,lx2,lx3),sigP(lx1,lx2,lx3),sigH(lx1,lx2,lx3))
 allocate(muP(lx1,lx2,lx3,lsp),muH(lx1,lx2,lx3,lsp),muPvn(lx1,lx2,lx3,lsp),muHvn(lx1,lx2,lx3,lsp))
 call conductivities(nn,Tn,ns,Ts,vs1,B1,sig0,sigP,sigH,muP,muH,muPvn,muHvn)
+E1=E1+E01; E2=E2+E02; E3=E3+E03
 call velocities(muP,muH,muPvn,muHvn,E2,E3,vn2,vn3,vs2,vs3)
 deallocate(sig0,sigP,sigH,muP,muH,muPvn,muHvn)
+deallocate(E01,E02,E03)
+if(myid==0) then
+  print*, 'Recomputed initial drifts:  '
+  print*, '    ',minval(vs2),maxval(vs2)
+  print*, '    ',minval(vs3),maxval(vs3)
+end if
 
 
 !> Main time loop

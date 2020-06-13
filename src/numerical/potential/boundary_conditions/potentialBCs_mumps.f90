@@ -84,30 +84,20 @@ if (myid==0 .and. cfg%flagE0file==1) then    !only root needs these...
   call find_lastdate(cfg%ymd0,cfg%UTsec0,ymd,UTsec,cfg%dtE0,ymdtmp,UTsectmp)
 
   print*, '!!!Attempting to prime electric field input files...',t-dt
-  !! back up by one dt for each input so that we get a next file that corresponds to the beginning of the simulation
+  !! back up by one dt for each input so that we get a next file that corresponds to the first frame before
+  !   this simulation begining
   call potentialBCs2D_fileinput(dt,-1._wp*cfg%dtE0,ymd,UTsectmp-cfg%dtE0,cfg,x,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3, &
                                     Vmaxx3,E01all,E02all,E03all,flagdirich)    ! t input only needs to be less than zero...
   
-  !! now load first, next frame of input
+  !! now load first, next frame of input corresponding to the initial time step.
   print*, 'Now loading initial next file for electric field input...'
-  call potentialBCs2D_fileinput(dt,t,ymd,UTsec,cfg,x,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3, &
+  call potentialBCs2D_fileinput(dt,t-dt,ymd,UTsectmp,cfg,x,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3, &
                                     Vmaxx3,E01all,E02all,E03all,flagdirich)
 
   deallocate(Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3,Vmaxx3,E01all,E02all,E03all)
 end if
 
 end subroutine init_Efieldinput
-
-
-!subroutine addBGfield(E2,E3)
-!
-!!> take and input field and adds the current background field on top of it
-!
-!real(wp), dimension(:,:,:), intent(in) :: E2,E3
-!
-!
-!
-!end subroutine addBGfield
 
 
 subroutine potentialBCs2D_fileinput(dt,t,ymd,UTsec,cfg,x,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3, &
@@ -151,9 +141,17 @@ E01all = 0
 !! do not allow a background parallel field
 
 
+!! Note that the t<0 situation is going to cause the code to assume that ymd,UTsec have exactly
+!   the date/time of the input file that will be loaded...
+
+
 !FILE INPUT FOR THE PERPENDICULAR COMPONENTS OF THE ELECTRIC FIELD (ZONAL - X2, MERIDIONAL - X3)
-if(t + dt / 2._wp >= tnext .or. t<=0._wp) then    !need to load a new file
+if(t + dt / 2._wp >= tnext .or. t<0._wp) then    !need to load a new file
   if ( .not. allocated(mlonp)) then    !need to read in the grid data from input file
+    !! This is awful but it allows the initialization to get the correct files loaded for a restart...
+    tprev=-2._wp*cfg%dtE0
+    tnext=-1._wp*cfg%dtE0
+
     ymdprev=ymd
     UTsecprev=UTsec
     ymdnext=ymdprev
