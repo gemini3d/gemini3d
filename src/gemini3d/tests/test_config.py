@@ -28,13 +28,13 @@ def test_nml_bad(tmp_path):
 @pytest.mark.parametrize("group", ["base", ("base", "flags", "files", "precip", "efield")])
 def test_namelist(group):
 
-    assert config.namelist_exists(Rc / "test2d_fang/config.nml", "base")
+    assert config.namelist_exists(Rc / "config_example.nml", "base")
 
 
 @pytest.mark.parametrize("namelist", ["base", "flags", "files", "precip", "efield"])
 def test_nml_namelist(namelist):
 
-    params = config.read_namelist(Rc / "test2d_fang/config.nml", namelist)
+    params = config.read_namelist(Rc / "config_example.nml", namelist)
     if "base" in namelist:
         assert params["t0"] == datetime(2013, 2, 20, 5)
 
@@ -50,8 +50,8 @@ def test_nml_namelist(namelist):
 
 @pytest.mark.parametrize(
     "filename",
-    [Rc / "test2d_fang", Rc / "test2d_fang/config.nml", Rc / "config_example.ini"],
-    ids=["path", "nml", "ini"],
+    [Rc / "config_example.nml", Rc / "config_example.ini"],
+    ids=["nml", "ini"],
 )
 def test_read_config(filename):
     params = config.read_config(filename)
