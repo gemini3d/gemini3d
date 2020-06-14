@@ -9,6 +9,7 @@ import typing
 import subprocess
 from pathlib import Path
 import typing as T
+import shutil
 
 import gemini3d
 
@@ -49,7 +50,6 @@ def run_test(
     testname: str,
     mpiexec: str,
     exe: str,
-    nml: str,
     outdir: str,
     mpi_count: int = None,
     out_format: str = None,
@@ -67,16 +67,35 @@ def run_test(
 
     gemini3d.extract_zip(z["zip"], z["dir"])
 
-    if not Path(nml).expanduser().is_file():
-        print(f"SKIP: file {nml} does not exist", file=sys.stderr)
-        raise SystemExit(77)
+    outdir = Path(outdir).expanduser().resolve()
+    # prepare simulation output directory
+    input_dir = outdir / "inputs"
+    nml = z["dir"] / "inputs/config.nml"
+    input_dir.mkdir(parents=True, exist_ok=True)
+
+    # a normal, non-test simulation already has all these files in the
+    # output directory. here, we use a reference simulation input data.
+    # the input data generation is tested elsewhere in PyGemini.
+    # Here, we want to test that we can create
+    # data match to reference outputs from reference inputs.
+    shutil.copy2(nml, input_dir)
+    cfg = gemini3d.read_config(nml)
+    shutil.copy2(z["dir"] / cfg["indat_size"], input_dir)
+    shutil.copy2(z["dir"] / cfg["indat_grid"], input_dir)
+    shutil.copy2(z["dir"] / cfg["indat_file"], input_dir)
+    if "precdir" in cfg and not (outdir / cfg["precdir"]).is_dir():
+        shutil.copytree(z["dir"] / cfg["precdir"], outdir / cfg["precdir"])
+    if "E0dir" in cfg and not (outdir / cfg["E0dir"]).is_dir():
+        shutil.copytree(z["dir"] / cfg["E0dir"], outdir / cfg["E0dir"])
+    if "neutral_perturb" in cfg and not (outdir / cfg["sourcedir"]).is_dir():
+        shutil.copytree(z["dir"] / cfg["sourcedir"], outdir / cfg["sourcedir"])
 
     if not mpi_count:
-        mpi_count = gemini3d.get_mpi_count(z["dir"] / "inputs/simsize.h5", 0)
+        mpi_count = gemini3d.get_mpi_count(z["dir"] / cfg["indat_size"], 0)
 
     # have to get exe as absolute path
     exe_abs = Path(exe).resolve()
-    cmd = [mpiexec, "-np", str(mpi_count), str(exe_abs), outdir]
+    cmd = [mpiexec, "-np", str(mpi_count), str(exe_abs), str(outdir)]
     if out_format:
         cmd += ["-out_format", out_format]
     print(" ".join(cmd))
@@ -90,7 +109,6 @@ if __name__ == "__main__":
     p.add_argument("testname")
     p.add_argument("mpiexec")
     p.add_argument("exe")
-    p.add_argument("nml")
     p.add_argument("outdir")
     p.add_argument("-np", help="force number of MPI images", type=int)
     p.add_argument(
@@ -99,5 +117,5 @@ if __name__ == "__main__":
     P = p.parse_args()
 
     run_test(
-        P.testname, P.mpiexec, P.exe, P.nml, P.outdir, mpi_count=P.np, out_format=P.out_format
+        P.testname, P.mpiexec, P.exe, P.outdir, mpi_count=P.np, out_format=P.out_format
     )

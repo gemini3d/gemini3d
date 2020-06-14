@@ -11,6 +11,7 @@ module procedure read_nml
 !! past the group of interest it will (may?) miss that group and return junk.
 
 integer :: u, i
+logical :: exists
 
 integer :: ymd(3)
 real(wp) :: UTsec0
@@ -86,16 +87,17 @@ else
   cfg%out_format = file_format(2:)
 endif
 
-cfg%indatsize = expanduser(indat_size)
-cfg%indatgrid = expanduser(indat_grid)
-cfg%indatfile = expanduser(indat_file)
+!> absolute paths or paths relative to cfg%outdir
+cfg%indatsize = make_absolute(indat_size, cfg%outdir)
+cfg%indatgrid = make_absolute(indat_grid, cfg%outdir)
+cfg%indatfile = make_absolute(indat_file, cfg%outdir)
 
 if (namelist_exists(u, "neutral_perturb", verbose)) then
   cfg%flagdneu = 1
   rewind(u)
   read(u, nml=neutral_perturb, iostat=i)
   call check_nml_io(i, cfg%infile, "neutral_perturb")
-  cfg%sourcedir = expanduser(source_dir)
+  cfg%sourcedir = make_absolute(source_dir, cfg%outdir)
   cfg%interptype = interptype
   cfg%sourcemlat = sourcemlat
   cfg%sourcemlon = sourcemlon
@@ -113,7 +115,7 @@ if (namelist_exists(u, "precip", verbose)) then
   rewind(u)
   read(u, nml=precip, iostat=i)
   call check_nml_io(i, cfg%infile, "precip")
-  cfg%precdir = expanduser(prec_dir)
+  cfg%precdir = make_absolute(prec_dir, cfg%outdir)
   cfg%dtprec = dtprec
 else
   cfg%flagprecfile = 0
@@ -125,7 +127,7 @@ if (namelist_exists(u, "efield", verbose)) then
   rewind(u)
   read(u, nml=efield, iostat=i)
   call check_nml_io(i, cfg%infile, "efield")
-  cfg%E0dir = expanduser(E0_dir)
+  cfg%E0dir = make_absolute(E0_dir, cfg%outdir)
   cfg%dtE0 = dtE0
 else
   cfg%flagE0file = 0
@@ -280,5 +282,6 @@ write(stderr,'(A,/,A)') 'ERROR: reading namelist ', nml, " from ", filename, " p
 error stop 5
 
 end subroutine check_nml_io
+
 
 end submodule config_nml

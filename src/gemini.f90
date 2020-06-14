@@ -8,7 +8,7 @@ use phys_consts, only : lnchem, lwave, lsp, wp, debug
 use grid, only: grid_size,read_grid,clear_grid,grid_check,lx1,lx2,lx3,lx2all,lx3all
 use mesh, only: curvmesh
 use config, only : read_configfile, gemini_cfg
-use pathlib, only : assert_file_exists, assert_directory_exists
+use pathlib, only : assert_file_exists, assert_directory_exists, expanduser
 use io, only : input_plasma,create_outdir,output_plasma,create_outdir_aur,output_aur
 use mpimod, only : mpisetup, mpibreakdown, mpi_manualgrid, mpigrid, lid, lid2,lid3,myid,myid2,myid3
 use multifluid, only : fluid_adv
@@ -345,16 +345,6 @@ character(10) :: time
 logical :: exists
 
 argc = command_argument_count()
-if (argc < 2) then
-  print '(/,A,/)', 'GEMINI-3D: by Matthew Zettergren'
-  print '(A)', 'GLOW and auroral interfaces by Guy Grubbs'
-  print '(A,/)', 'build system and software engineering by Michael Hirsch'
-  print '(A)', 'must specify config.nml file to configure simulation and output directory. Example:'
-  print '(/,A,/)', 'mpiexec -np 4 build/gemini.bin initialize/test2d_fang/config.nml /tmp/test2d_fang'
-  print '(A)', '-dryrun option allows quick check of first time step'
-  stop 'EOF: Gemini-3D'
-  !! stops with de facto "skip test" return code
-endif
 
 if(lid < 1) error stop 'number of MPI processes must be >= 1. Was MPI initialized properly?'
 
@@ -364,8 +354,9 @@ print '(2A,I6,A3,I6,A)', trim(argv), ' Process:  ', myid,' / ',lid-1, ' at ' // 
 
 
 !> READ FILE INPUT
-call get_command_argument(1,argv)
-cfg%outdir = trim(argv)
+call get_command_argument(1, argv, status=i)
+if (i/=0) call help_cli()
+cfg%outdir = expanduser(trim(argv))
 cfg%infile = cfg%outdir//'/inputs/config.nml'
 inquire(file=cfg%infile, exist=exists)    !needed to deal with ini vs. nml inputs...
 if (.not. exists) then
@@ -454,5 +445,18 @@ do i = 2,argc
 end do
 
 end subroutine cli
+
+
+subroutine help_cli()
+print '(/,A,/)', 'GEMINI-3D: by Matthew Zettergren'
+print '(A)', 'GLOW and auroral interfaces by Guy Grubbs'
+print '(A,/)', 'build system and software engineering by Michael Hirsch'
+print '(A)', 'must specify simulation output directory. Example:'
+print '(/,A,/)', '  mpiexec -np 4 build/gemini.bin /path/to/simulation_outputs'
+print '(A)', '-dryrun    allows quick check of first time step'
+print '(A)', '-manual_grid lx2 lx3    defines the number of MPI processes along x2 and x3.'
+print '(A)', '  If -manual_grid is not specified, the MPI processes are auto-assigned along x2 and x3.'
+stop 'EOF: Gemini-3D'
+end subroutine help_cli
 
 end program

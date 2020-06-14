@@ -5,7 +5,8 @@ use, intrinsic:: iso_fortran_env, only: stderr=>error_unit
 implicit none (type, external)
 private
 public :: mkdir, copyfile, expanduser, home, get_suffix, filesep_swap, &
-  assert_directory_exists, directory_exists, assert_file_exists
+  assert_directory_exists, directory_exists, assert_file_exists,&
+  make_absolute
 
 interface  ! pathlib_{unix,windows}.f90
 module integer function copyfile(source, dest) result(istat)
@@ -27,6 +28,40 @@ character(:), allocatable :: get_suffix
 get_suffix = filename(index(filename, '.', back=.true.) : len(filename))
 
 end function get_suffix
+
+
+function make_absolute(path, top_path) result(abspath)
+!! if path is absolute, return expanded path
+!! if path is relative, make absolute path under absolute top_path
+!!
+!! NOTE: To constrain the dimensionality of this problem across operating
+!! systems, we require that:
+!! 1. top_path is known to be absolute
+!! 2. top_path exists
+!! 3. if relative, path already exists
+
+character(:), allocatable :: abspath, rel, top
+logical :: exists
+character(*), intent(in) :: path, top_path
+
+
+rel = expanduser(path)
+top = expanduser(top_path)
+
+if (.not.directory_exists(top)) then
+  write(stderr,*) 'ERROR: pathlib:make_absolute: ',top,' does not exist'
+  error stop
+endif
+
+inquire(file=rel, exist=exists)
+if (exists) then
+  abspath = rel
+else
+  abspath = top // '/' // rel
+endif
+
+
+end function make_absolute
 
 
 subroutine assert_directory_exists(path)
