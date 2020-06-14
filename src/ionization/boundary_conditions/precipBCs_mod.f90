@@ -57,17 +57,30 @@ if (cfg%flagprecfile==1) then    !all workers must have this info
   !! find the last input data preceding the milestone/initial condition that we start with
   call find_lastdate(cfg%ymd0,cfg%UTsec0,ymd,UTsec,cfg%dtE0,ymdtmp,UTsectmp)
 
-  if (myid==0) print*, '!!!Attmpting to prime precipitation input files...'
+  if (myid==0) print*, '!!!Attmpting to prime precipitation input files...',ymdtmp,UTsectmp
   !! back up by two dtprec to so that when we run the fileinput twice we end up with tprev corresponding
   !   to the first time step
-  call precipBCs_fileinput(dt,UTsectmp-UTsec-2._wp*cfg%dtprec,cfg,ymdtmp,UTsectmp-cfg%dtprec,x,W0,PhiWmWm2)
+  tprev=UTsectmp-UTsec-2._wp*cfg%dtprec
+  tnext=tprev+cfg%dtprec
+  call precipBCs_fileinput(dt,tnext+cfg%dtprec/2._wp,cfg,ymdtmp,UTsectmp-cfg%dtprec,x,W0,PhiWmWm2)
+  !time that we interpolate to doesn't matter but it needs to trigger a new read...
 
   if (myid==0) print*, 'Now loading initial next file for precipitation input...'
   !! now shift next->prev and load a new one corresponding to the first simulation time step
-  call precipBCs_fileinput(dt,min(UTsectmp-UTsec,1.e-6_wp),cfg,ymdtmp,UTsectmp,x,W0,PhiWmWm2)
+  call precipBCs_fileinput(dt,0._wp,cfg,ymdtmp,UTsectmp,x,W0,PhiWmWm2)
 end if
 
 end subroutine init_precipinput
+
+
+!subroutine set_tmarkers(tprevtmp,tnexttmp)
+!
+!!> set tprev and tnext to a specified value
+!
+!tprev=tprevtmp
+!tnext=tnexttmp
+!
+!end subroutine 
 
 
 subroutine precipBCs_fileinput(dt,t,cfg,ymd,UTsec,x,W0,PhiWmWm2)
