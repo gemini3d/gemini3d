@@ -1,0 +1,57 @@
+&base
+ymd = 2013,2,20               ! year, month, day
+UTsec0 = 18000.0              ! start time in UT seconds
+tdur = 300.0                  ! duration of simulation in seconds
+dtout = 60.0                  ! how often to do file output
+activ = 108.9, 111.0, 5       ! f107a,f107,Ap
+tcfl = 0.9                    ! target cfl number
+Teinf = 1500.0                ! exospheric electron temperature
+/
+
+&flags
+potsolve = 1      ! solve electrodynamics:   0 - no; 1 - electrostatic; 2 - inductive
+flagoutput = 2
+/
+
+&files
+indat_size = 'inputs/simsize.h5'
+indat_grid = 'inputs/simgrid.h5'
+indat_file = 'inputs/initial_conditions.h5'
+/
+
+&setup
+glat = 67.11
+glon = 212.95
+xdist = 200e3              ! eastward distance (meters)
+ydist = 100e3              ! northward distance (meters)
+alt_min = 80e3              ! minimum altitude (meters)
+alt_max = 1000e3            ! maximum altitude (meters)
+alt_scale = 13.75e3, 20e3, 200e3, 200e3  ! altitude grid scales (meters)
+lxp = 40                    ! number of x-cells
+lyp = 1                     ! number of y-cells
+Bincl = 90                  ! geomagnetic inclination
+nmf = 5e11
+nme = 2e11
+precip_lonwidth = 0.25
+Qprecip = 10
+Qprecip_background = 0.0
+E0precip = 5e3
+Etarg = 50e-3   ! V/m
+Efield_lonwidth = 0.142857
+eqdir = '../test2d_eq'
+/
+
+&precip
+dtprec = 5.0
+prec_dir = 'inputs/prec_inputs/'
+/
+
+&efield
+dtE0 = 1.0
+E0_dir = 'inputs/Efield_inputs/'
+/
+
+&glow
+dtglow = 5.0
+dtglowout = 60.0            ! dtglowout: how often to do Glow file output
+/
