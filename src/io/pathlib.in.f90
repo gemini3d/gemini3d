@@ -80,7 +80,6 @@ logical function directory_exists(path) result(exists)
 !! check if directory exists, handling Intel compiler-specific behavior
 character(*), intent(in) :: path
 
-print *, 'check exist ', path
 @dir_exist@
 
 end function directory_exists
