@@ -370,8 +370,11 @@ if (myid==0) then
   E01all=0._wp
   call compute_rootBGEfields(x,E02all,E03all)
 
+!  print*, 'E02all:  ',minval(E02all),maxval(E02all)
+!  print*, 'E03all:  ',minval(E03all),maxval(E03all)
+
   call bcast_send(E01all,tag%E01,E01)
-  call bcast_send(E02all,tag%E02,E01)
+  call bcast_send(E02all,tag%E02,E02)
   call bcast_send(E03all,tag%E03,E03)
   deallocate(E01all,E02all,E03all)
 else
@@ -379,6 +382,9 @@ else
   call bcast_recv(E02,tag%E02)
   call bcast_recv(E03,tag%E03)
 end if
+
+!print*, myid,minval(E02),maxval(E02), shape(E02)
+!print*, myid,minval(E03),maxval(E03), shape(E03)
 
 end subroutine get_BGEfields
 

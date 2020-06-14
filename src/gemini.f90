@@ -223,10 +223,16 @@ call init_precipinput(dt,t,cfg,ymd,UTsec,x)
 !! these do not include background
 E1 = 0
 call pot2perpfield(Phi,x,E2,E3)
+if(myid==0) then
+  print*, 'Recomputed initial dist. fields:  '
+  print*, '    ',minval(E1),maxval(E1)
+  print*, '    ',minval(E2),maxval(E2)
+  print*, '    ',minval(E3),maxval(E3)
+end if
 allocate(E01(lx1,lx2,lx3),E02(lx1,lx2,lx3),E03(lx1,lx2,lx3))
 call get_BGEfields(x,E01,E02,E03)
 if(myid==0) then
-  print*, 'Recomputed initial fields:  '
+  print*, 'Recomputed initial BG fields:  '
   print*, '    ',minval(E01),maxval(E01)
   print*, '    ',minval(E02),maxval(E02)
   print*, '    ',minval(E03),maxval(E03)
