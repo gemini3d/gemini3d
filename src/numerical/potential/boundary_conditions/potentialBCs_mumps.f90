@@ -90,14 +90,16 @@ if (myid==0 .and. cfg%flagE0file==1) then    !only root needs these...
   !! back up by one dt for each input so that we get a next file that corresponds to the first frame before
   !   this simulation begining
   ! for first call the dummary argument must contain the input file time two levels back
-  call potentialBCs2D_fileinput(dt,(UTsectmp-UTsec)-2._wp*cfg%dtE0,ymdtmp,UTsectmp-cfg%dtE0,cfg,x,Vminx1, &
+  tprev=UTsectmp-UTsec-2._wp*cfg%dtE0
+  tnext=tprev+cfg%dtE0
+  call potentialBCs2D_fileinput(dt,tnext+dt/2._wp,ymdtmp,UTsectmp-cfg%dtE0,cfg,x,Vminx1, &
                                     Vmaxx1,Vminx2,Vmaxx2,Vminx3, &
                                     Vmaxx3,E01all,E02all,E03all,flagdirich)    ! t input only needs to be less than zero...
   
   !! now load first, next frame of input corresponding to the initial time step.  Time input just needs to be negative to 
   !   trigger a file read
   print*, 'Now loading initial next file for electric field input...'
-  call potentialBCs2D_fileinput(dt,min(UTsectmp-UTsec,-1d-6),ymdtmp,UTsectmp,cfg,x, & 
+  call potentialBCs2D_fileinput(dt,0._wp,ymdtmp,UTsectmp,cfg,x, & 
                                     Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3, &
                                     Vmaxx3,E01all,E02all,E03all,flagdirich)
 
@@ -156,11 +158,6 @@ E01all = 0
 if(t + dt / 2._wp >= tnext .or. t<0._wp) then    !need to load a new file
   if ( .not. allocated(mlonp)) then    !need to read in the grid data from input file
     !! This is awful but it allows the initialization to get the correct files loaded for a restart...
-!    tprev=-2._wp*cfg%dtE0
-!    tnext=-1._wp*cfg%dtE0
-    tprev=t    !at first input t must correspond to tprev and be <0
-    tnext=t+cfg%dtE0
-
     ymdprev=ymd
     UTsecprev=UTsec
     ymdnext=ymdprev
@@ -202,6 +199,7 @@ if(t + dt / 2._wp >= tnext .or. t<0._wp) then    !need to load a new file
              Vminx3isprev(lx2all),Vminx3isnext(lx2all),Vmaxx3isprev(lx2all),Vmaxx3isnext(lx2all))
 
     E0xiprev = 0; E0yiprev = 0; E0xinext = 0; E0yinext = 0;
+    E0xinow=0; E0yinow=0;
     !! these need to be initialized so that something sensible happens at the beginning
     Vminx1iprev = 0; Vmaxx1iprev = 0; Vminx1inext = 0; Vmaxx1inext = 0;
     Vminx2isprev = 0; Vmaxx2isprev = 0; Vminx2isnext = 0; Vmaxx2isnext = 0;
