@@ -62,7 +62,7 @@ real(wp) :: tout
 !! time for next output and time between outputs
 real(wp) :: tstart,tfin
 !! temp. vars. for measuring performance of code blocks
-integer :: it,isp
+integer :: it,isp, iupdate
 !! time and species loop indices
 real(wp) :: tneuBG !for testing whether we should re-evaluate neutral background
 
@@ -184,6 +184,16 @@ tout = t
 tglowout = t
 tneuBG=t
 
+!> control update rate from excessive console printing
+!! considering small vs. large simulations
+if (lx1*lx2*lx3 < 20000) then
+  iupdate = 50
+elseif (lx1*lx2*lx3 < 100000) then
+  iupdate = 10
+elseif (lx1*lx2*lx3 < 1000000) then
+  iupdate = 1
+endif
+
 do while (t < cfg%tdur)
   !! TIME STEP CALCULATION, requires workers to report their most stringent local stability constraint
   dtprev = dt
@@ -255,7 +265,7 @@ do while (t < cfg%tdur)
   if (myid==0 .and. debug) print *, 'Moving on to time step (in sec):  ',t,'; end time of simulation:  ',cfg%tdur
   call dateinc(dt,ymd,UTsec)
 
-  if (myid==0 .and. (modulo(it,10) == 0 .or. debug)) then
+  if (myid==0 .and. (modulo(it, iupdate) == 0 .or. debug)) then
     !! print every 10th time step to avoid extreme amounts of console printing
     print '(A,I4,A1,I0.2,A1,I0.2,A1,F12.6,A5,F8.6)', 'Current time ',ymd(1),'-',ymd(2),'-',ymd(3),' ',UTsec,'; dt=',dt
   endif
