@@ -30,29 +30,6 @@ endif()
 endfunction(python_compare)
 
 
-function(h5diff_compare TESTNAME)
-# this test is too unreliable and duplicates Python HDF5 test, which is robust.
-set(_outdir ${PROJECT_BINARY_DIR}/test${TESTNAME})
-set(_refdir ${PROJECT_SOURCE_DIR}/tests/data/test${TESTNAME})
-
-set(_reltol 0.45)
-# 0.50 <==> 50% relative tolerance
-# this large relative tolerance is because h5diff can only do rel or abs, while Python can do both
-# and so h5diff has to be much looser for miniscule numerical noise.
-
-if(HDF5_DIFF_EXECUTABLE)
-  add_test(NAME gemini:compare:${TESTNAME}:h5diff
-  COMMAND ${HDF5_DIFF_EXECUTABLE} --relative=${_reltol} ${_outdir}/20130220_18300.000000.h5 ${_refdir}/20130220_18300.000000.h5)
-
-  set_tests_properties(gemini:compare:${TESTNAME}:h5diff PROPERTIES
-  DEPENDS gemini:hdf5:${TESTNAME}
-  TIMEOUT 15)
-endif()
-
-endfunction(h5diff_compare)
-
-
 function(compare_gemini_output TESTNAME)
-# h5diff_compare(${TESTNAME})  # too shaky, duplicates python_compare
 python_compare(${TESTNAME})
 endfunction(compare_gemini_output)
