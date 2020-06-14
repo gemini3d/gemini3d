@@ -186,11 +186,12 @@ tneuBG=t
 
 !> control update rate from excessive console printing
 !! considering small vs. large simulations
+!! these are arbitrary levels, so feel free to finesse
 if (lx1*lx2*lx3 < 20000) then
   iupdate = 50
 elseif (lx1*lx2*lx3 < 100000) then
   iupdate = 10
-elseif (lx1*lx2*lx3 < 1000000) then
+else
   iupdate = 1
 endif
 
