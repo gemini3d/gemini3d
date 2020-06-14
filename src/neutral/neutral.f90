@@ -141,13 +141,15 @@ if (cfg%flagdneu==1) then
   !  This requires us to load file input twice, once corresponding to the initial frame and once for the "first, next" frame.  
   if (myid==0) print*, '!!!Attempting initial load of neutral dynamics files!!!' // &
                            ' This is a workaround to insure compatibility with restarts...',UTsec-dt
-  !! We essentially are loading up the data corresponding to halfway betwween -dtneu and t0 (zero)
-  call neutral_perturb(cfg,dt,cfg%dtneu,-1._wp*cfg%dtneu,ymd,UTsectmp-cfg%dtneu,x,nn,Tn,vn1,vn2,vn3)  !abs time arg to be < 0
+  !! We essentially are loading up the data corresponding to halfway betwween -dtneu and t0 (zero).  This will load
+  !   two time levels back so when tprev is incremented twice it will be the true tprev corresponding to first time step
+  call neutral_perturb(cfg,dt,cfg%dtneu,UTsectmp-UTsec-2._wp*cfg%dtneu,ymdtmp,UTsectmp-cfg%dtneu, &
+                        x,nn,Tn,vn1,vn2,vn3)  !abs time arg to be < 0
   
   if (myid==0) print*, 'Now loading initial next file for neutral perturbations...'
   !! Now compute perturbations for the present time (zero), this moves the primed variables in next into prev and then
   !  loads up a current state so that we get a proper interpolation for the first time step.  
-  call neutral_perturb(cfg,dt,cfg%dtneu,t,ymd,UTsec,x,nn,Tn,vn1,vn2,vn3)    !t-dt so we land exactly on start time
+  call neutral_perturb(cfg,dt,cfg%dtneu,min(UTsectmp-UTsec,-1.0e-6_wp),ymdtmp,UTsectmp,x,nn,Tn,vn1,vn2,vn3)    !t-dt so we land exactly on start time
 end if
 end subroutine init_neutrals
 

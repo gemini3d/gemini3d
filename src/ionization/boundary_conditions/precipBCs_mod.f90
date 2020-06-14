@@ -58,12 +58,13 @@ if (cfg%flagprecfile==1) then    !all workers must have this info
   call find_lastdate(cfg%ymd0,cfg%UTsec0,ymd,UTsec,cfg%dtE0,ymdtmp,UTsectmp)
 
   if (myid==0) print*, '!!!Attmpting to prime precipitation input files...'
-  !! back up by one dtprec to get a next file that is the beginning of the simulation
-  call precipBCs_fileinput(dt,-1._wp*cfg%dtprec,cfg,ymd,UTsectmp-cfg%dtprec,x,W0,PhiWmWm2)
+  !! back up by two dtprec to so that when we run the fileinput twice we end up with tprev corresponding
+  !   to the first time step
+  call precipBCs_fileinput(dt,UTsectmp-UTsec-2._wp*cfg%dtprec,cfg,ymdtmp,UTsectmp-cfg%dtprec,x,W0,PhiWmWm2)
 
   if (myid==0) print*, 'Now loading initial next file for precipitation input...'
   !! now shift next->prev and load a new one corresponding to the first simulation time step
-  call precipBCs_fileinput(dt,t,cfg,ymd,UTsec,x,W0,PhiWmWm2)
+  call precipBCs_fileinput(dt,min(UTsectmp-UTsec,1.e-6_wp),cfg,ymdtmp,UTsectmp,x,W0,PhiWmWm2)
 end if
 
 end subroutine init_precipinput

@@ -56,6 +56,9 @@ subroutine init_Efieldinput(dt,t,cfg,ymd,UTsec,x)
 
 !> Initialize variables to hold electric field input file data, can be called by any worker but only root does anything
 
+!! This routine was extremely confusing to get right; much of that could probably be alleviated by not have t and ymd,UTsec
+!   assigned independently...
+
 real(wp), intent(in) :: dt,t
 type(gemini_cfg), intent(in) :: cfg
 integer, dimension(3), intent(in) :: ymd
@@ -83,15 +86,19 @@ if (myid==0 .and. cfg%flagE0file==1) then    !only root needs these...
   !! find the last input data preceding the milestone/initial condition that we start with
   call find_lastdate(cfg%ymd0,cfg%UTsec0,ymd,UTsec,cfg%dtE0,ymdtmp,UTsectmp)
 
-  print*, '!!!Attempting to prime electric field input files...',t-dt
+  print*, '!!!Attempting to prime electric field input files...',ymdtmp,UTsectmp
   !! back up by one dt for each input so that we get a next file that corresponds to the first frame before
   !   this simulation begining
-  call potentialBCs2D_fileinput(dt,-1._wp*cfg%dtE0,ymd,UTsectmp-cfg%dtE0,cfg,x,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3, &
+  ! for first call the dummary argument must contain the input file time two levels back
+  call potentialBCs2D_fileinput(dt,(UTsectmp-UTsec)-2._wp*cfg%dtE0,ymdtmp,UTsectmp-cfg%dtE0,cfg,x,Vminx1, &
+                                    Vmaxx1,Vminx2,Vmaxx2,Vminx3, &
                                     Vmaxx3,E01all,E02all,E03all,flagdirich)    ! t input only needs to be less than zero...
   
-  !! now load first, next frame of input corresponding to the initial time step.
+  !! now load first, next frame of input corresponding to the initial time step.  Time input just needs to be negative to 
+  !   trigger a file read
   print*, 'Now loading initial next file for electric field input...'
-  call potentialBCs2D_fileinput(dt,t-dt,ymd,UTsectmp,cfg,x,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3, &
+  call potentialBCs2D_fileinput(dt,min(UTsectmp-UTsec,-1d-6),ymdtmp,UTsectmp,cfg,x, & 
+                                    Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3, &
                                     Vmaxx3,E01all,E02all,E03all,flagdirich)
 
   deallocate(Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3,Vmaxx3,E01all,E02all,E03all)
@@ -149,8 +156,10 @@ E01all = 0
 if(t + dt / 2._wp >= tnext .or. t<0._wp) then    !need to load a new file
   if ( .not. allocated(mlonp)) then    !need to read in the grid data from input file
     !! This is awful but it allows the initialization to get the correct files loaded for a restart...
-    tprev=-2._wp*cfg%dtE0
-    tnext=-1._wp*cfg%dtE0
+!    tprev=-2._wp*cfg%dtE0
+!    tnext=-1._wp*cfg%dtE0
+    tprev=t    !at first input t must correspond to tprev and be <0
+    tnext=t+cfg%dtE0
 
     ymdprev=ymd
     UTsecprev=UTsec
