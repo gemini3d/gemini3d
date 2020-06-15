@@ -183,43 +183,39 @@ endif()
 
 find_package(PkgConfig QUIET)
 
+set(BLACS_INCLUDE_DIR)
+
 if(MKL IN_LIST BLACS_FIND_COMPONENTS)
 
-if(BUILD_SHARED_LIBS)
-  set(_mkltype dynamic)
-else()
-  set(_mkltype static)
-endif()
+  if(BUILD_SHARED_LIBS)
+    set(_mkltype dynamic)
+  else()
+    set(_mkltype static)
+  endif()
 
-if(WIN32)
-  set(_impi impi)
-else()
-  unset(_impi)
-endif()
+  pkg_check_modules(MKL mkl-${_mkltype}-lp64-iomp QUIET)
 
-pkg_check_modules(MKL mkl-${_mkltype}-lp64-iomp QUIET)
-
-if(OpenMPI IN_LIST BLACS_FIND_COMPONENTS)
-  mkl_scala(mkl_blacs_openmpi_lp64)
-  set(BLACS_OpenMPI_FOUND ${BLACS_MKL_FOUND})
-elseif(MPICH IN_LIST BLACS_FIND_COMPONENTS)
-  if(APPLE)
-    mkl_scala(mkl_blacs_mpich_lp64)
-  elseif(WIN32)
-    mkl_scala(mkl_blacs_mpich2_lp64.lib mpi.lib fmpich2.lib)
-  else()  # MPICH linux is just like IntelMPI
+  if(OpenMPI IN_LIST BLACS_FIND_COMPONENTS)
+    mkl_scala(mkl_blacs_openmpi_lp64)
+    set(BLACS_OpenMPI_FOUND ${BLACS_MKL_FOUND})
+  elseif(MPICH IN_LIST BLACS_FIND_COMPONENTS)
+    if(APPLE)
+      mkl_scala(mkl_blacs_mpich_lp64)
+    elseif(WIN32)
+      mkl_scala(mkl_blacs_mpich2_lp64.lib mpi.lib fmpich2.lib)
+    else()  # MPICH linux is just like IntelMPI
+      mkl_scala(mkl_blacs_intelmpi_lp64)
+    endif()
+    set(BLACS_MPICH_FOUND ${BLACS_MKL_FOUND})
+  else()
     mkl_scala(mkl_blacs_intelmpi_lp64)
   endif()
-  set(BLACS_MPICH_FOUND ${BLACS_MKL_FOUND})
-else()
-  mkl_scala(mkl_blacs_intelmpi_lp64 ${_impi})
-endif()
 
-else()
+else(MKL IN_LIST BLACS_FIND_COMPONENTS)
 
-nonmkl()
+  nonmkl()
 
-endif()
+endif(MKL IN_LIST BLACS_FIND_COMPONENTS)
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(BLACS
