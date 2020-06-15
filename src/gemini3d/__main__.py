@@ -8,6 +8,43 @@ import sys
 from time import monotonic
 
 from .job import runner
+from .compare import compare_all
+
+
+def compare_run():
+    tol = {
+        "rtol": 1e-5,
+        "rtolN": 1e-5,
+        "rtolT": 1e-5,
+        "rtolJ": 1e-5,
+        "rtolV": 1e-5,
+        "atol": 1e-8,
+        "atolN": 1e9,
+        "atolT": 100,
+        "atolJ": 1e-7,
+        "atolV": 50,
+    }
+
+    p = argparse.ArgumentParser(description="Compare simulation file outputs and inputs")
+    p.add_argument("outdir", help="directory to compare")
+    p.add_argument("refdir", help="reference directory")
+    p.add_argument("-p", "--plot", help="make plots of differences", action="store_true")
+    p.add_argument("-only", help="only check in or out", choices=["in", "out"])
+    p.add_argument(
+        "-file_format",
+        help="specify file format to read from output dir",
+        choices=["h5", "nc", "raw"],
+    )
+    P = p.parse_args()
+
+    out_errs, in_errs = compare_all(P.outdir, P.refdir, tol, P.plot, P.file_format, P.only)
+
+    if out_errs or in_errs:
+        raise SystemExit(f"{out_errs} output errors, {in_errs} input errors")
+    else:
+        only = ("out", "in") if not P.only else P.only
+
+        print(f"OK: Gemini {only} comparison {P.outdir} {P.refdir}")
 
 
 def gemini_run():

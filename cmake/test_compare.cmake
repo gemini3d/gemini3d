@@ -6,7 +6,7 @@ set(_refdir ${PROJECT_SOURCE_DIR}/tests/data/test${TESTNAME})
 
 if(python_ok AND hdf5)
   add_test(NAME gemini:compare:hdf5:${TESTNAME}:python
-  COMMAND ${Python3_EXECUTABLE} ${PROJECT_SOURCE_DIR}/scripts/compare_all.py ${_outdir} ${_refdir} -file_format h5)
+  COMMAND gemini_compare ${_outdir} ${_refdir} -file_format h5)
 
   set_tests_properties(gemini:compare:hdf5:${TESTNAME}:python PROPERTIES
   TIMEOUT 30
@@ -18,7 +18,7 @@ endif()
 
 if(python_ok AND netcdf)
   add_test(NAME gemini:compare:netcdf:${TESTNAME}:python
-  COMMAND ${Python3_EXECUTABLE} ${PROJECT_SOURCE_DIR}/scripts/compare_all.py ${_outdir} ${_refdir} -file_format nc)
+  COMMAND gemini_compare ${_outdir} ${_refdir} -file_format nc)
 
   set_tests_properties(gemini:compare:netcdf:${TESTNAME}:python PROPERTIES
   TIMEOUT 30
