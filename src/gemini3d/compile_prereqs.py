@@ -47,9 +47,6 @@ def netcdf_c(dirs: T.Dict[str, Path], env: T.Mapping[str, str] = None, wipe: boo
     source_dir = dirs["workdir"] / "netcdf-c"
     build_dir = source_dir / BUILDDIR
 
-    if not env:
-        env = get_compilers()
-
     git_update(source_dir, NETCDF_C_GIT, f"v{NETCDF_C}")
 
     c_args = [
@@ -77,9 +74,6 @@ def netcdf_fortran(dirs: T.Dict[str, Path], env: T.Mapping[str, str] = None, wip
     install_dir = dirs["prefix"] / f"netcdf-{NETCDF_C}"
     source_dir = dirs["workdir"] / "netcdf-fortran"
     build_dir = source_dir / BUILDDIR
-
-    if not env:
-        env = get_compilers()
 
     git_update(source_dir, NETCDF_FORTRAN_GIT, f"v{NETCDF_FORTRAN}")
 
@@ -120,8 +114,6 @@ def hdf5(dirs: T.Dict[str, Path], env: T.Mapping[str, str] = None):
     some systems have broken libz and so have trouble extracting tar.bz2 from Python.
     To avoid this, we git clone the release instead.
     """
-    if not env:
-        env = get_compilers()
 
     if os.name == "nt":
         if "ifort" in env["FC"]:
@@ -181,9 +173,6 @@ def openmpi(dirs: T.Dict[str, Path], env: T.Mapping[str, str] = None):
     url_retrieve(url, tarfn, ("sha1", MPISHA1))
     extract_tar(tarfn, source_dir)
 
-    if not env:
-        env = get_compilers()
-
     cmd = [
         "./configure",
         f"--prefix={install_dir}",
@@ -198,7 +187,7 @@ def openmpi(dirs: T.Dict[str, Path], env: T.Mapping[str, str] = None):
     subprocess.check_call(nice + cmd)
 
 
-def lapack(wipe: bool, dirs: T.Dict[str, Path], buildsys: str, env: T.Mapping[str, str] = None):
+def lapack(wipe: bool, dirs: T.Dict[str, Path], env: T.Mapping[str, str] = None):
     """ build and insall Lapack """
     install_dir = dirs["prefix"] / LAPACK_DIR
     source_dir = dirs["workdir"] / LAPACK_DIR
@@ -206,20 +195,11 @@ def lapack(wipe: bool, dirs: T.Dict[str, Path], buildsys: str, env: T.Mapping[st
 
     git_update(source_dir, LAPACK_GIT)
 
-    if not env:
-        env = get_compilers()
-
-    if buildsys == "cmake":
-        args = [f"-DCMAKE_INSTALL_PREFIX:PATH={install_dir}"]
-        cmake_build(args, source_dir, build_dir, wipe, env=env)
-    elif buildsys == "meson":
-        args = [f"--prefix={dirs['prefix']}"]
-        meson_build(args, source_dir, build_dir, wipe, env=env)
-    else:
-        raise ValueError(f"unknown build system {buildsys}")
+    args = [f"-DCMAKE_INSTALL_PREFIX:PATH={install_dir}"]
+    cmake_build(args, source_dir, build_dir, wipe, env=env)
 
 
-def scalapack(wipe: bool, dirs: T.Dict[str, Path], buildsys: str, env: T.Mapping[str, str] = None):
+def scalapack(wipe: bool, dirs: T.Dict[str, Path], env: T.Mapping[str, str] = None):
     """ build and install Scalapack """
     source_dir = dirs["workdir"] / SCALAPACK_DIR
     build_dir = source_dir / BUILDDIR
@@ -228,20 +208,11 @@ def scalapack(wipe: bool, dirs: T.Dict[str, Path], buildsys: str, env: T.Mapping
 
     lib_args = [f'-DLAPACK_ROOT={dirs["prefix"] / LAPACK_DIR}']
 
-    if not env:
-        env = get_compilers()
-
-    if buildsys == "cmake":
-        args = [f"-DCMAKE_INSTALL_PREFIX:PATH={dirs['prefix'] / SCALAPACK_DIR}"]
-        cmake_build(args + lib_args, source_dir, build_dir, wipe, env=env)
-    elif buildsys == "meson":
-        args = [f"--prefix={dirs['prefix']}"]
-        meson_build(args + lib_args, source_dir, build_dir, wipe, env=env)
-    else:
-        raise ValueError(f"unknown build system {buildsys}")
+    args = [f"-DCMAKE_INSTALL_PREFIX:PATH={dirs['prefix'] / SCALAPACK_DIR}"]
+    cmake_build(args + lib_args, source_dir, build_dir, wipe, env=env)
 
 
-def mumps(wipe: bool, dirs: T.Dict[str, Path], buildsys: str, env: T.Mapping[str, str] = None):
+def mumps(wipe: bool, dirs: T.Dict[str, Path], env: T.Mapping[str, str] = None):
     """ build and install Mumps """
     install_dir = dirs["prefix"] / MUMPS_DIR
     source_dir = dirs["workdir"] / MUMPS_DIR
@@ -252,20 +223,13 @@ def mumps(wipe: bool, dirs: T.Dict[str, Path], buildsys: str, env: T.Mapping[str
 
     git_update(source_dir, MUMPS_GIT)
 
-    if env and env["FC"] == "ifort":
+    if env["FC"] == "ifort":
         lib_args = []
     else:
-        env = get_compilers()
         lib_args = [f"-DSCALAPACK_ROOT:PATH={scalapack_lib}", f"-DLAPACK_ROOT:PATH={lapack_lib}"]
 
-    if buildsys == "cmake":
-        args = [f"-DCMAKE_INSTALL_PREFIX:PATH={install_dir}"]
-        cmake_build(args + lib_args, source_dir, build_dir, wipe, env=env)
-    elif buildsys == "meson":
-        args = [f"--prefix={dirs['prefix']}"]
-        meson_build(args + lib_args, source_dir, build_dir, wipe, env=env)
-    else:
-        raise ValueError(f"unknown build system {buildsys}")
+    args = [f"-DCMAKE_INSTALL_PREFIX:PATH={install_dir}"]
+    cmake_build(args + lib_args, source_dir, build_dir, wipe, env=env)
 
 
 def cmake_build(
@@ -374,13 +338,9 @@ def git_update(path: Path, repo: str, tag: str = None):
             subprocess.check_call([GITEXE, "clone", repo, "--depth", "1", str(path)])
 
 
-def get_compilers() -> T.Mapping[str, str]:
+def get_compilers(fc_name: str, cc_name: str, cxx_name: str) -> T.Mapping[str, str]:
     """ get paths to GCC compilers """
     env = os.environ
-
-    fc_name = "gfortran"
-    cc_name = "gcc"
-    cxx_name = "g++"
 
     fc = env.get("FC", "")
     if fc_name not in fc:
@@ -403,3 +363,20 @@ def get_compilers() -> T.Mapping[str, str]:
     env.update({"FC": fc, "CC": cc, "CXX": cxx})
 
     return env
+
+
+def gcc_compilers() -> T.Mapping[str, str]:
+    return get_compilers("gfortran", "gcc", "g++")
+
+
+def intel_compilers() -> T.Mapping[str, str]:
+
+    fc_name = "ifort"
+    cc_name = "icl" if os.name == "nt" else "icc"
+    cxx_name = "icl" if os.name == "nt" else "icpc"
+
+    return get_compilers(fc_name, cc_name, cxx_name)
+
+
+def ibmxl_compilers() -> T.Mapping[str, str]:
+    return get_compilers("xlf", "xlc", "xlc++")

@@ -116,6 +116,4 @@ if __name__ == "__main__":
     )
     P = p.parse_args()
 
-    run_test(
-        P.testname, P.mpiexec, P.exe, P.outdir, mpi_count=P.np, out_format=P.out_format
-    )
+    run_test(P.testname, P.mpiexec, P.exe, P.outdir, mpi_count=P.np, out_format=P.out_format)

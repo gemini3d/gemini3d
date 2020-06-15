@@ -3,51 +3,10 @@
 Installs prereqs for Gemini program for IBM XL compiler
 """
 
-import shutil
 from pathlib import Path
 from argparse import ArgumentParser
-import typing as T
-import sys
-import os
 
 import gemini3d.compile_prereqs as gc
-
-# ========= user parameters ======================
-BUILDDIR = "build"
-# ========= end of user parameters ================
-
-nice = ["nice"] if sys.platform == "linux" else []
-
-
-def get_compilers() -> T.Mapping[str, str]:
-    """ get paths to compilers """
-    env = os.environ
-
-    fc_name = "xlf"
-    cc_name = "xlc"
-    cxx_name = "xlc++"
-
-    fc = env.get("FC", "")
-    if fc_name not in fc:
-        fc = shutil.which(fc_name)
-    if not fc:
-        raise FileNotFoundError(fc_name)
-
-    cc = env.get("CC", "")
-    if cc_name not in cc:
-        cc = shutil.which(cc_name)
-    if not cc:
-        raise FileNotFoundError(cc_name)
-
-    cxx = env.get("CXX", "")
-    if cxx_name not in cxx:
-        cxx = shutil.which(cxx_name)
-    if not cxx:
-        raise FileNotFoundError(cxx_name)
-
-    env.update({"FC": fc, "CC": cc, "CXX": cxx})
-
-    return env
 
 
 if __name__ == "__main__":
@@ -69,11 +28,13 @@ if __name__ == "__main__":
         "workdir": Path(P.workdir).expanduser().resolve(),
     }
 
+    env = gc.ibmxl_compilers()
+
     if "lapack" in P.libs:
-        gc.lapack(P.wipe, dirs, P.buildsys, env=get_compilers())
+        gc.lapack(P.wipe, dirs, env=env)
     if "scalapack" in P.libs:
-        gc.scalapack(P.wipe, dirs, P.buildsys, env=get_compilers())
+        gc.scalapack(P.wipe, dirs, env=env)
     if "mumps" in P.libs:
-        gc.mumps(P.wipe, dirs, P.buildsys, env=get_compilers())
+        gc.mumps(P.wipe, dirs, env=env)
     if "hdf5" in P.libs:
-        gc.hdf5(dirs, env=get_compilers())
+        gc.hdf5(dirs, env=env)
