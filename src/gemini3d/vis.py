@@ -1,16 +1,19 @@
 from datetime import datetime
 import numpy as np
 import math
+import argparse
 from pathlib import Path
 import scipy.interpolate as interp
 import matplotlib as mpl
 from matplotlib.pyplot import figure
 from matplotlib.ticker import MultipleLocator
-import typing
+import typing as T
 
 from .utils import gitrev
+from .grid import readgrid
+from .readdata import readdata
 
-if typing.TYPE_CHECKING:
+if T.TYPE_CHECKING:
     import matplotlib.axes as mpla
     import matplotlib.figure as mplf
     import matplotlib.collections as mplc
@@ -39,10 +42,62 @@ CB_LBL = {
 PARAMS = ["ne", "v1", "Ti", "Te", "J1", "v2", "v3", "J2", "J3", "Phitop"]
 
 
+def gemini_plot():
+    p = argparse.ArgumentParser()
+    p.add_argument("direc", help="directory to plot")
+    p.add_argument("--mayavi", help="do 3D Mayavi plots", action="store_true")
+    p.add_argument("-s", "--saveplots", help="save plots to data directory", action="store_true")
+    p.add_argument("--only", help="only plot these quantities", nargs="+")
+    p = p.parse_args()
+
+    if p.mayavi:
+        from . import vis3d
+        from mayavi.mlab import show
+    else:
+        from matplotlib.pyplot import show
+
+    direc = Path(p.direc).expanduser().resolve(strict=True)
+    if p.saveplots:
+        from matplotlib.figure import Figure
+
+        fg = Figure(constrained_layout=True)
+        save_dir = direc / "plots"
+        save_dir.mkdir(parents=True, exist_ok=True)
+    else:
+        fg = None
+        save_dir = None
+
+    grid = readgrid(direc)
+
+    flist = sorted(direc.glob("*.h5"))
+    if len(flist) == 0:
+        flist = sorted(direc.glob("*.dat"))
+    # %% loop over files / time
+    for file in flist:
+        try:
+            dat = readdata(file)
+        except Exception as e:
+            print(f"SKIP: {file}   {e}")
+            continue
+        if "mlon" in dat and "mlon" not in grid:
+            grid["mlon"] = dat["mlon"]
+            grid["mlat"] = dat["mlat"]
+
+        if p.mayavi:
+            vis3d.plotframe(grid, dat, params=p.only, save_dir=save_dir)
+        else:
+            plotframe(grid, dat, params=p.only, save_dir=save_dir, fg=fg)
+
+        if p.saveplots:
+            print(f"{dat['time']} => {save_dir}")
+        else:
+            show()
+
+
 def plotframe(
-    grid: typing.Dict[str, np.ndarray],
-    dat: typing.Dict[str, typing.Any],
-    params: typing.Sequence[str] = None,
+    grid: T.Dict[str, np.ndarray],
+    dat: T.Dict[str, T.Any],
+    params: T.Sequence[str] = None,
     save_dir: Path = None,
     fg: "mplf.Figure" = None,
 ):
@@ -67,7 +122,7 @@ def plotframe(
             fg.savefig(save_dir / f"{k}-{time.isoformat().replace(':','')}.png")
 
 
-def grid2plotfun(grid: typing.Dict[str, np.ndarray]):
+def grid2plotfun(grid: T.Dict[str, np.ndarray]):
     plotfun = None
     h1 = grid.get("h1")
     for k in ("lx", "lxs", "lx1"):
@@ -95,7 +150,7 @@ def grid2plotfun(grid: typing.Dict[str, np.ndarray]):
 
 def plot3D_curv_frames_long(
     time: datetime,
-    grid: typing.Dict[str, np.ndarray],
+    grid: T.Dict[str, np.ndarray],
     parm: np.ndarray,
     name: str,
     fg: "mplf.Figure",
@@ -106,7 +161,7 @@ def plot3D_curv_frames_long(
 
 def plot2D_curv(
     time: datetime,
-    grid: typing.Dict[str, np.ndarray],
+    grid: T.Dict[str, np.ndarray],
     parm: np.ndarray,
     name: str,
     fg: "mplf.Figure",
@@ -224,7 +279,7 @@ def plot1d3(y: np.ndarray, parm: np.ndarray, name: str, fg: "mplf.Figure", ax: "
 
 def plot_interp(
     time: datetime,
-    grid: typing.Dict[str, np.ndarray],
+    grid: T.Dict[str, np.ndarray],
     parm: np.ndarray,
     name: str,
     fg: "mplf.Figure",
