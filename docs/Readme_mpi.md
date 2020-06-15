@@ -22,7 +22,12 @@ Currently supported versions of Debian, Ubuntu, CentOS, and Windows Subsystem fo
 * CentOS: `yum install openmpi-devel`
 
 For CentOS, typical HPC will have the ability to switch to a recent GCC verison with matching MPI library.
-If not, use [compile_prereqs](../scripts/compile_prereqs_gcc.py) to compile MPI--it will take about 20 minutes.
+If not, compile MPI--it will take about 20 minutes:
+
+```sh
+gemini_prereqs gcc openmpi
+```
+
 Be sure to select the desired GCC + Gfortran version first.
 
 ```sh

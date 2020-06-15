@@ -5,6 +5,7 @@ import pkg_resources
 import subprocess
 import shutil
 import logging
+import argparse
 from pathlib import Path
 
 from .utils import get_cpu_count
@@ -39,7 +40,59 @@ MUMPS_DIR = "mumps"
 nice = ["nice"] if sys.platform == "linux" else []
 
 
-def netcdf_c(dirs: T.Dict[str, Path], env: T.Mapping[str, str] = None, wipe: bool = False):
+def main():
+    p = argparse.ArgumentParser()
+    p.add_argument(
+        "compiler", help="compiler to build libraries for", choices=["gcc", "intel", "ibmxl"]
+    )
+    p.add_argument(
+        "libs",
+        help="libraries to compile",
+        choices=["netcdf", "openmpi", "hdf5", "lapack", "scalapack", "mumps"],
+        nargs="+",
+    )
+    p.add_argument("-prefix", help="toplevel path to install libraries under", default="~/lib_gcc")
+    p.add_argument("-workdir", help="toplevel path to where you keep code repos", default="~/code")
+    p.add_argument("-wipe", help="wipe before completely recompiling libs", action="store_true")
+    P = p.parse_args()
+
+    dirs = {
+        "prefix": Path(P.prefix).expanduser().resolve(),
+        "workdir": Path(P.workdir).expanduser().resolve(),
+    }
+
+    setup_libs(P.libs, dirs, P.compiler, P.wipe)
+
+
+def setup_libs(libs: T.Sequence[str], dirs: T.Dict[str, Path], compiler: str, wipe: bool):
+
+    if compiler == "gcc":
+        env = gcc_compilers()
+    elif compiler == "intel":
+        env = intel_compilers()
+    elif compiler == "ibmxl":
+        env = ibmxl_compilers()
+    else:
+        raise ValueError(f"unknown compiler {compiler}")
+    # Note: HDF5 needs to be before NetCDF
+    if "hdf5" in libs:
+        hdf5(dirs, env=env)
+    if "netcdf" in libs:
+        netcdf_c(dirs, env=env, wipe=wipe)
+        netcdf_fortran(dirs, env=env, wipe=wipe)
+
+    # Note: OpenMPI needs to be before scalapack and mumps
+    if "openmpi" in libs:
+        openmpi(dirs, env=env)
+    if "lapack" in libs:
+        lapack(wipe, dirs, env=env)
+    if "scalapack" in libs:
+        scalapack(wipe, dirs, env=env)
+    if "mumps" in libs:
+        mumps(wipe, dirs, env=env)
+
+
+def netcdf_c(dirs: T.Dict[str, Path], env: T.Mapping[str, str], wipe: bool = False):
     """ build and install NetCDF-C
     """
 
@@ -67,7 +120,7 @@ def netcdf_c(dirs: T.Dict[str, Path], env: T.Mapping[str, str] = None, wipe: boo
     cmake_build(c_args, source_dir, build_dir, wipe, env=env, run_test=False)
 
 
-def netcdf_fortran(dirs: T.Dict[str, Path], env: T.Mapping[str, str] = None, wipe: bool = False):
+def netcdf_fortran(dirs: T.Dict[str, Path], env: T.Mapping[str, str], wipe: bool = False):
     """ build and install NetCDF-Fortran
     """
 
@@ -109,7 +162,7 @@ def netcdf_fortran(dirs: T.Dict[str, Path], env: T.Mapping[str, str] = None, wip
     cmake_build(f_args, source_dir, build_dir, wipe, env=env, run_test=False)
 
 
-def hdf5(dirs: T.Dict[str, Path], env: T.Mapping[str, str] = None):
+def hdf5(dirs: T.Dict[str, Path], env: T.Mapping[str, str]):
     """ build and install HDF5
     some systems have broken libz and so have trouble extracting tar.bz2 from Python.
     To avoid this, we git clone the release instead.
@@ -156,7 +209,7 @@ Instead of this, it is generally best to use MSYS2 or Windows Subsystem for Linu
     subprocess.check_call(nice + cmd)
 
 
-def openmpi(dirs: T.Dict[str, Path], env: T.Mapping[str, str] = None):
+def openmpi(dirs: T.Dict[str, Path], env: T.Mapping[str, str]):
     """ build and install OpenMPI """
     if os.name == "nt":
         raise NotImplementedError(
@@ -187,7 +240,7 @@ def openmpi(dirs: T.Dict[str, Path], env: T.Mapping[str, str] = None):
     subprocess.check_call(nice + cmd)
 
 
-def lapack(wipe: bool, dirs: T.Dict[str, Path], env: T.Mapping[str, str] = None):
+def lapack(wipe: bool, dirs: T.Dict[str, Path], env: T.Mapping[str, str]):
     """ build and insall Lapack """
     install_dir = dirs["prefix"] / LAPACK_DIR
     source_dir = dirs["workdir"] / LAPACK_DIR
@@ -199,7 +252,7 @@ def lapack(wipe: bool, dirs: T.Dict[str, Path], env: T.Mapping[str, str] = None)
     cmake_build(args, source_dir, build_dir, wipe, env=env)
 
 
-def scalapack(wipe: bool, dirs: T.Dict[str, Path], env: T.Mapping[str, str] = None):
+def scalapack(wipe: bool, dirs: T.Dict[str, Path], env: T.Mapping[str, str]):
     """ build and install Scalapack """
     source_dir = dirs["workdir"] / SCALAPACK_DIR
     build_dir = source_dir / BUILDDIR
@@ -212,7 +265,7 @@ def scalapack(wipe: bool, dirs: T.Dict[str, Path], env: T.Mapping[str, str] = No
     cmake_build(args + lib_args, source_dir, build_dir, wipe, env=env)
 
 
-def mumps(wipe: bool, dirs: T.Dict[str, Path], env: T.Mapping[str, str] = None):
+def mumps(wipe: bool, dirs: T.Dict[str, Path], env: T.Mapping[str, str]):
     """ build and install Mumps """
     install_dir = dirs["prefix"] / MUMPS_DIR
     source_dir = dirs["workdir"] / MUMPS_DIR
