@@ -3,7 +3,7 @@ module calculus
 !NEED TO MORE APPROPRIATELY NAME THE "ALT" DERIVATIVES...
 
 !SIZES USED IN ALL DERIVATIVE PROCEDURES ARE STORED IN GRID MODULE
-use phys_consts, only: wp, debug
+use, intrinsic:: iso_fortran_env, only: wp=>real@realbits@
 use mesh, only : curvmesh
 !! we do not want the full-grid sizes (lx1,lx2,lx3) in scope since we routinely need to do subgrid derivatives
 
@@ -292,7 +292,7 @@ if (lx2<=x%lx2+4) then     !+4 in case we need to differentiate over ghost cells
   dx2=>x%dx2(lbnd:ubnd)
 else if (lx2<=x%lx2all+4) then     !presumes root or some process that has access to ALL full grid variables (normally only root).
   dx2=>x%dx2all(lbnd:ubnd)
-  if (debug) print *, 'DEBUG: Accessing root-only grid information in divergence function grad2D1_curv_alt_23'
+  ! print *, 'DEBUG: Accessing root-only grid information in divergence function grad2D1_curv_alt_23'
 else
   error stop 'Array size is larger than full mesh.'
 end if

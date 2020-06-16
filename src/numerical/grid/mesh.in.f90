@@ -1,6 +1,6 @@
 module mesh
 
-use phys_consts, only: wp
+use, intrinsic:: iso_fortran_env, only: wp=>real@realbits@
 
 implicit none (type, external)
 public

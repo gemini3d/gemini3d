@@ -9,8 +9,9 @@ add_subdirectory(interpolation)
 add_subdirectory(grid)
 
 # --- calculus
+configure_file(calculus/calculus.in.f90 calculus.f90)
 add_library(calculus OBJECT
-  calculus/calculus.f90 calculus/gradient.f90 calculus/integral.f90 calculus/div.f90)
+  ${CMAKE_CURRENT_BINARY_DIR}/calculus.f90 calculus/gradient.f90 calculus/integral.f90 calculus/div.f90)
 target_link_libraries(calculus PRIVATE mesh)
 
 if(NOT MPI_OK)

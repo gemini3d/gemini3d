@@ -1,5 +1,6 @@
-add_library(mesh OBJECT mesh.f90)
-target_link_libraries(mesh PRIVATE const)
+configure_file(mesh.in.f90 mesh.f90)
+add_library(mesh OBJECT ${CMAKE_CURRENT_BINARY_DIR}/mesh.f90)
+
 
 if(NOT MPI_OK)
   return()
