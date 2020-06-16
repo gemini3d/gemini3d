@@ -23,11 +23,12 @@ This file is intended to document development priorities for the GEMINI project.
 	* Resolved potential solutions - decimate parallel grid down to Farley mapping scale for perp resolution then so the solve on that coarse grid then interpolate back up to original grid.  I've had luck with MUMPS solves in reasonable time up to 300 x 300 x 15 grid points which is probably enough to do something interesting with appropriate periodic and Lagrangian grids (moving at E x B).  
 	*  For smallest scale simulations it makes sense to have the simulation able to use a Lagrangian frame of reference to reduce the total number of grid points needed.
 * Option for true coordinates to be used in the computations of magnetic perturbations (instead of flattened-out spherical)
-* Automatic Mesh Refinement
+* Adaptive Mesh Refinement
 	* p4est based; ForestClaw?
 * Two way coupling with MAGIC
 	* High-latitude is the obvious application for this
 * GLOW application on dipole geomagnetic field lines
+* Equatorial spread F simulation, e.g. need to add gravitation drift terms and source terms.  
 
 
 ## Refactoring and/or Cleanup Needed
@@ -99,17 +100,18 @@ This file is intended to document development priorities for the GEMINI project.
 
 ### High Priority
 
-* Include precipitation information (Qp,E0p,mlatp,mlonp variables from precipBCs module) in GEMINI output files.
+* Ability to specify a background neutral atmospheric wind profile that is constant over the entire grid.
+* Include precipitation information (Qp,E0p,mlatp,mlonp variables from precipBCs module) in GEMINI output files?
 * (EFFICIENCY) Exclusion of null points from field aligned advection, thermal conduction, and source terms - could improve performance
-* (Underway) HDF5 file input and output
 * (Underway) Option to run the code in a single precision mode - would help with memory limited systems although it's not clear how this would impact numerics (I've never tested my methods in single precision)
-* Periodically updating background neutral atmosphere - should really be done for simulations more than a few hours long but will affect performance
 
 ### Completed
 
 * (Completed) Parallel domain decomposition in x2 *and* x3 - this is a big task that is likely to be left aside until I can renew funding.  It's also questionable how useful it is at this point where my typical runs are 32-256 cores (although undoubtedly it may become useful for runs with thousands of cores).  I've found good speedup even dividing the x3 dimension into slabs 2 grid points wide; although that means passing essentially all the grid data around via mpi, the large number of operations per slab means that the effective overhead here is not too much to prevent this from being useful.  However, for simulations that run with GLOW this will massively speed things up...
 * (Completed) Add 3Dtest to ctest
-
+* (Completed) HDF5 file input and output
+* (Completed) netcdf input and output
+* (Completed) Periodically updating background neutral atmosphere - should really be done for simulations more than a few hours long but will affect performance
 
 ## Interfaces with other models
 
