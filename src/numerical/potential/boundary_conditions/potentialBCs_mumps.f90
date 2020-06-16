@@ -97,7 +97,7 @@ if (myid==0 .and. cfg%flagE0file==1) then    !only root needs these...
                                     Vmaxx3,E01all,E02all,E03all,flagdirich)    ! t input only needs to be less than zero...
   
   !! now load first, next frame of input corresponding to the initial time step.  Time input just needs to be negative to 
-  !   trigger a file read
+  !   trigger a file read.  This might shoudl correspond to 0-dt/2???
   print*, 'Now loading initial next file for electric field input...'
   call potentialBCs2D_fileinput(dt,0._wp,ymdtmp,UTsectmp,cfg,x, & 
                                     Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3, &
