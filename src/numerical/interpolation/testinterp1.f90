@@ -9,12 +9,12 @@ integer, parameter :: lx1=25, lx2=50
 integer, parameter :: lx1i=200, lx2i=400
 real(wp), parameter :: stride=0.5_wp
 
-real(wp) :: x1(lx1), x2(lx2), f(lx1,lx2), x1i(lx1i), x2i(lx2i), &
-     fi(lx1i,lx2i)  !since only doing x1 interpolation
-
 integer :: ix1,ix2
 
+real(wp), allocatable, dimension(:) :: x1, x2, x1i, x2i
+real(wp), allocatable, dimension(:,:) :: f, fi  !< since only doing x1 interpolation
 
+allocate(x1(lx1), x2(lx2), f(lx1,lx2), x1i(lx1i), x2i(lx2i), fi(lx1i,lx2i))
 
 !grid for original data
 x1=[ ((real(ix1,wp)-1._wp)*stride, ix1=1,lx1) ]

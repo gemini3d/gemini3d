@@ -12,13 +12,18 @@ integer, parameter :: lx1=80, lx2=90, lx3=100
 integer, parameter :: lx1i=256, lx2i=256, lx3i=256
 real, parameter :: stride=0.5
 
-real(wp) :: x1(lx1),x2(lx2),x3(lx3),f(lx1,lx2,lx3)
-real(wp) :: x1i(lx1i),x2i(lx2i),x3i(lx3i),fi(lx1i,lx2i,lx3i)
+real(wp), allocatable, dimension(:) :: x1, x2, x3, x1i, x2i, x3i
+real(wp), allocatable, dimension(:,:,:) :: f, fi
 
-real(wp), dimension(1:lx1i*lx2i*lx3i) :: x1ilist,x2ilist,x3ilist,filist
+real(wp), allocatable, dimension(:) :: x1ilist,x2ilist,x3ilist,filist
 
 integer :: ix1,ix2,ix3,ik, ierr
 
+allocate(x1(lx1), x2(lx2), x3(lx3), f(lx1,lx2,lx3))
+allocate(x1i(lx1i),x2i(lx2i),x3i(lx3i),fi(lx1i,lx2i,lx3i))
+
+allocate(x1ilist(1:lx1i*lx2i*lx3i))
+allocate(x2ilist,x3ilist,filist, mold=x1ilist)
 
 !grid for original data
 x1=[ ((real(ix1,wp)-1._wp)*stride, ix1=1,lx1) ]
