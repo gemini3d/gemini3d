@@ -22,7 +22,7 @@ endif()
 endfunction()
 
 # --- script
-set(pygemini_dir "${PROJECT_SOURCE_DIR}/../pygemini")
+set(pygemini_dir "${PROJECT_SOURCE_DIR}/../pygemini/")
 set(pygemini_url "https://github.com/gemini3d/pygemini")
 
 if(NOT python_ok)
@@ -31,7 +31,15 @@ endif()
 
 if(NOT python_ok)
   clone_if_missing(${pygemini_dir} ${pygemini_url})
-  execute_process(COMMAND ${Python3_EXECUTABLE} setup.py --user develop)
+
+  execute_process(COMMAND ${Python3_EXECUTABLE} setup.py --user develop
+    WORKING_DIRECTORY ${pygemini_dir}
+    RESULT_VARIABLE _ok)
+  if(NOT _ok EQUAL 0)
+    message(WARNING "Problem installing PyGemini. Perhaps try doing this manually: ${pygemini_url}")
+    return()
+  endif()
+
   check_pygemini()
 endif()
 
