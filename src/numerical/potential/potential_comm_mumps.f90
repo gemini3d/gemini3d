@@ -26,7 +26,8 @@ use config, only: gemini_cfg
 
 implicit none (type, external)
 private
-public :: electrodynamics, halo_pot, potential_sourceterms, pot2perpfield, velocities, get_BGEfields
+public :: electrodynamics, halo_pot, potential_sourceterms, pot2perpfield, velocities, get_BGEfields, &
+            acc_perpconductioncurrents,acc_perpwindcurrents
 
 external :: mpi_send, mpi_recv
 
@@ -279,13 +280,15 @@ lx3=size(sigP,3)
 !-------
 !CONDUCTION CURRENT BACKGROUND SOURCE TERMS FOR POTENTIAL EQUATION. MUST COME AFTER CALL TO BC CODE.
 J1=0d0    !so this div is only perp components
-if (flagswap==1) then
-  J2=sigP*E02+sigH*E03    !BG x2 current
-  J3=-1*sigH*E02+sigP*E03    !BG x3 current
-else
-  J2=sigP*E02-sigH*E03    !BG x2 current
-  J3=sigH*E02+sigP*E03    !BG x3 current
-end if
+!if (flagswap==1) then
+!  J2=sigP*E02+sigH*E03    !BG x2 current
+!  J3=-1*sigH*E02+sigP*E03    !BG x3 current
+!else
+!  J2=sigP*E02-sigH*E03    !BG x2 current
+!  J3=sigH*E02+sigP*E03    !BG x3 current
+!end if
+J2=0._wp; J3=0._wp;
+call acc_perpconductioncurrents(sigP,sigH,E02,E03,J2,J2)     !background conduction currents only
 J1halo(1:lx1,1:lx2,1:lx3)=J1
 J2halo(1:lx1,1:lx2,1:lx3)=J2
 J3halo(1:lx1,1:lx2,1:lx3)=J3
@@ -304,17 +307,19 @@ if (debug .and. myid==0) print *, 'Root has computed background field source ter
 !-------
 !NEUTRAL WIND SOURCE TERMS FOR POTENTIAL EQUATION, SIMILAR TO ABOVE BLOCK OF CODE
 J1=0d0    !so this div is only perp components
-if (flagswap==1) then
-  J2=-1*sigP*vn3*B1(1:lx1,1:lx2,1:lx3)+sigH*vn2*B1(1:lx1,1:lx2,1:lx3)
-  !! wind x2 current, note that all workers already have a copy of this.
-  J3=sigH*vn3*B1(1:lx1,1:lx2,1:lx3)+sigP*vn2*B1(1:lx1,1:lx2,1:lx3)
-  !! wind x3 current
-else
-  J2=sigP*vn3*B1(1:lx1,1:lx2,1:lx3)+sigH*vn2*B1(1:lx1,1:lx2,1:lx3)
-  !! wind x2 current
-  J3=sigH*vn3*B1(1:lx1,1:lx2,1:lx3)-sigP*vn2*B1(1:lx1,1:lx2,1:lx3)
-  !! wind x3 current
-end if
+!if (flagswap==1) then
+!  J2=-1*sigP*vn3*B1(1:lx1,1:lx2,1:lx3)+sigH*vn2*B1(1:lx1,1:lx2,1:lx3)
+!  !! wind x2 current, note that all workers already have a copy of this.
+!  J3=sigH*vn3*B1(1:lx1,1:lx2,1:lx3)+sigP*vn2*B1(1:lx1,1:lx2,1:lx3)
+!  !! wind x3 current
+!else
+!  J2=sigP*vn3*B1(1:lx1,1:lx2,1:lx3)+sigH*vn2*B1(1:lx1,1:lx2,1:lx3)
+!  !! wind x2 current
+!  J3=sigH*vn3*B1(1:lx1,1:lx2,1:lx3)-sigP*vn2*B1(1:lx1,1:lx2,1:lx3)
+!  !! wind x3 current
+!end if
+J2=0._wp; J3=0._wp;
+call acc_perpwindcurrents(sigP,sigH,vn2,vn3,B1,J2,J3)
 J1halo(1:lx1,1:lx2,1:lx3)=J1
 J2halo(1:lx1,1:lx2,1:lx3)=J2
 J3halo(1:lx1,1:lx2,1:lx3)=J3
@@ -358,6 +363,60 @@ if (debug) print *, 'Root has computed gravitational source terms...',minval(src
 ! end if
 
 end subroutine potential_sourceterms
+
+
+subroutine acc_perpconductioncurrents(sigP,sigH,E2,E3,J2,J3)
+
+!> ***Accumulate*** conduction currents into the variables J2,J3.  This
+!    routine will not independently add background fields unless they are
+!    already included in E2,3.  The currents are inout meaning that they
+!    must be initialized to zero if you want only the conduction currents,
+!    otherwise this routine just adds to whatever is already in J2,3.
+
+real(wp), dimension(:,:,:), intent(in) :: sigP,sigH
+real(wp), dimension(:,:,:), intent(in) :: E2,E3
+real(wp), dimension(:,:,:), intent(inout) :: J2, J3
+
+
+if (flagswap==1) then
+  J2=J2+sigP*E2+sigH*E3
+  J3=J3-1*sigH*E2+sigP*E3
+else
+  J2=J2+sigP*E2-sigH*E3
+  J3=J3+sigH*E2+sigP*E3
+end if
+
+end subroutine acc_perpconductioncurrents
+
+
+subroutine acc_perpwindcurrents(sigP,sigH,vn2,vn3,B1,J2,J3)
+
+!> ***Accumulate*** wind currents into the variables J2,J3.  See conduction currents
+!    routine for additional caveats.
+
+real(wp), dimension(:,:,:), intent(in) :: sigP,sigH
+real(wp), dimension(:,:,:), intent(in) :: vn2,vn3
+real(wp), dimension(-1:,-1:,-1:), intent(in) :: B1
+real(wp), dimension(:,:,:), intent(inout) :: J2, J3
+
+integer :: lx1,lx2,lx3
+
+
+!> sizes from the conductivities
+lx1=size(sigP,1)
+lx2=size(sigP,2)
+lx3=size(sigP,3)
+
+if (flagswap==1) then
+  J2=J2-sigP*vn3*B1(1:lx1,1:lx2,1:lx3)+sigH*vn2*B1(1:lx1,1:lx2,1:lx3)
+  J3=J3+sigH*vn3*B1(1:lx1,1:lx2,1:lx3)+sigP*vn2*B1(1:lx1,1:lx2,1:lx3)
+else
+  J2=J2+sigP*vn3*B1(1:lx1,1:lx2,1:lx3)+sigH*vn2*B1(1:lx1,1:lx2,1:lx3)
+  J3=J3+sigH*vn3*B1(1:lx1,1:lx2,1:lx3)-sigP*vn2*B1(1:lx1,1:lx2,1:lx3)
+end if
+
+end subroutine acc_perpwindcurrents
+
 
 
 subroutine pot2perpfield(Phi,x,E2,E3)
