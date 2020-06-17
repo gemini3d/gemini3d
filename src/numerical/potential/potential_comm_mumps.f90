@@ -8,8 +8,8 @@ module potential_comm
 
 use, intrinsic :: ieee_arithmetic
 
-use phys_consts, only: wp, pi, lsp, debug
-use grid, only: flagswap, gridflag, lx1,lx2all,lx3all
+use phys_consts, only: wp, pi, lsp, debug, ms, qs
+use grid, only: flagswap, gridflag, lx1,lx2all,lx3all, g1,g2,g3
 use mesh, only: curvmesh
 use collisions, only: conductivities, capacitance
 use calculus, only: div3d, integral3d1, grad3d1, grad3d2, grad3d3, integral3d1_curv_alt
@@ -40,12 +40,13 @@ interface potential_root_mpi
 end interface potential_root_mpi
 
 interface ! potential_worker.f90
-  module subroutine potential_workers_mpi(it,t,dt,sig0,sigP,sigH,incap,vs2,vs3,vn2,vn3,cfg,B1,x, &
-    E1,E2,E3,J1,J2,J3)
-  
+  module subroutine potential_workers_mpi(it,t,dt,sig0,sigP,sigH,sigPgrav,sigHgrav, &
+                                            incap,vs2,vs3,vn2,vn3,cfg,B1,x, &
+                                            E1,E2,E3,J1,J2,J3)
+
   integer, intent(in) :: it
   real(wp), intent(in) :: t,dt
-  real(wp), dimension(:,:,:), intent(in) ::  sig0,sigP,sigH
+  real(wp), dimension(:,:,:), intent(in) ::  sig0,sigP,sigH,sigPgrav,sigHgrav
   real(wp), dimension(:,:,:), intent(in) ::  incap
   real(wp), dimension(-1:,-1:,-1:,:), intent(in) ::  vs2,vs3
   real(wp), dimension(:,:,:), intent(in) ::  vn2,vn3
@@ -59,12 +60,13 @@ interface ! potential_worker.f90
 end interface
 
 interface ! potential_root.f90
-  module subroutine potential_root_mpi_curv(it,t,dt,sig0,sigP,sigH,incap,vs2,vs3,vn2,vn3,cfg,B1,x, &
-    E1,E2,E3,J1,J2,J3,Phiall,ymd,UTsec)
+  module subroutine potential_root_mpi_curv(it,t,dt,sig0,sigP,sigH,sigPgrav,sigHgrav, &
+                                              incap,vs2,vs3,vn2,vn3,cfg,B1,x, &
+                                              E1,E2,E3,J1,J2,J3,Phiall,ymd,UTsec)
   
   integer, intent(in) :: it
   real(wp), intent(in) :: t,dt
-  real(wp), dimension(:,:,:), intent(in) ::  sig0,sigP,sigH
+  real(wp), dimension(:,:,:), intent(in) ::  sig0,sigP,sigH,sigPgrav,sigHgrav
   real(wp), dimension(:,:,:), intent(in) ::  incap
   real(wp), dimension(-1:,-1:,-1:,:), intent(in) ::  vs2,vs3
   real(wp), dimension(:,:,:), intent(in) ::  vn2,vn3
@@ -112,7 +114,7 @@ real(wp), dimension(:,:,:), allocatable, intent(inout) :: Phiall
 integer, dimension(3), intent(in) :: ymd
 real(wp), intent(in) :: UTsec
 
-real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: sig0,sigP,sigH
+real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: sig0,sigP,sigH,sigPgrav,sigHgrav
 real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,1:size(ns,4)) :: muP,muH,muPvn,muHvn
 real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: incap
 real(wp) :: tstart,tfin
@@ -131,7 +133,7 @@ lx3=size(ns,3)-4
 
 !POTENTIAL SOLUTION (IF REQUIRED)
 call cpu_time(tstart)
-call conductivities(nn,Tn,ns,Ts,vs1,B1,sig0,sigP,sigH,muP,muH,muPvn,muHvn)
+call conductivities(nn,Tn,ns,Ts,vs1,B1,sig0,sigP,sigH,muP,muH,muPvn,muHvn,sigPgrav,sigHgrav)
 
 if (cfg%flagcap/=0) then
   call capacitance(ns,B1,cfg,incap)    !> full cfg needed for optional inputs...
@@ -162,9 +164,10 @@ if (cfg%potsolve == 1 .or. cfg%potsolve == 3) then    !electrostatic solve or el
   call cpu_time(tstart)
 
   if (myid/=0) then    !role-specific communication pattern (all-to-root-to-all), workers initiate with sends
-     call potential_workers_mpi(it,t,dt,sig0,sigP,sigH,incap,vs2,vs3,vn2,vn3,cfg,B1,x,E1,E2,E3,J1,J2,J3)
+     call potential_workers_mpi(it,t,dt,sig0,sigP,sigH,sigPgrav,sigHgrav,incap,vs2,vs3, &
+                                 vn2,vn3,cfg,B1,x,E1,E2,E3,J1,J2,J3)
   else
-    call potential_root_mpi(it,t,dt,sig0,sigP,sigH,incap,vs2,vs3,vn2,vn3,cfg,B1,x, &
+    call potential_root_mpi(it,t,dt,sig0,sigP,sigH,sigPgrav,sigHgrav,incap,vs2,vs3,vn2,vn3,cfg,B1,x, &
                               E1,E2,E3,J1,J2,J3,Phiall,ymd,UTsec)
   end if
 
@@ -219,7 +222,25 @@ else                !flip signs on the cross products in 2D.  Note that due to d
   end do
 end if
 
+! if (flag_gravdrift)
+if(flagswap/=1) then
+  do isp=1,lsp
+    vs2(1:lx1,1:lx2,1:lx3,isp)=vs2(1:lx1,1:lx2,1:lx3,isp)+ms(isp)/qs(isp)*(muP(:,:,:,isp)*g2+muH(:,:,:,isp)*g3)
+    vs3(1:lx1,1:lx2,1:lx3,isp)=vs3(1:lx1,1:lx2,1:lx3,isp)+ms(isp)/qs(isp)*(muH(:,:,:,isp)*g2+muP(:,:,:,isp)*g3)
+  end do
+else                !flip signs on the cross products in 2D.  Note that due to dimension shuffling E2,3 mapping is already handled
+  do isp=1,lsp
+    vs2(1:lx1,1:lx2,1:lx3,isp)=vs2(1:lx1,1:lx2,1:lx3,isp)+ms(isp)/qs(isp)*(muP(:,:,:,isp)*g2+muH(:,:,:,isp)*g3)
+    vs3(1:lx1,1:lx2,1:lx3,isp)=vs3(1:lx1,1:lx2,1:lx3,isp)+ms(isp)/qs(isp)*(-muH(:,:,:,isp)*g2+muP(:,:,:,isp)*g3)
+  end do
+end if
+! end if
 
+
+
+!! If it were appropriate this is how polarzations drifts could be computed.  However the particular quasistatic
+!   model that we use explicitly omits this from the drift calculation which is then used in convective term in
+!   polarization current
 !    do isp=1,lsp
        !! To leading order the ion drifts do not include the polarization parts,
        !! otherwise it may mess up polarization convective term in the electrodynamics solver...
