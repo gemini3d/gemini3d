@@ -18,8 +18,8 @@ jobs:
     - uses: actions/checkout@v2
     - uses: actions/setup-python@v2
       with:
-        python-version: '3.6'
-    - run: pip install -e .
+        python-version: '3.7'
+
     - name: Install Ninja
       run: |
         wget https://github.com/ninja-build/ninja/releases/download/v1.10.0/ninja-linux.zip

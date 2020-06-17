@@ -19,7 +19,7 @@ jobs:
       with:
         python-version: '3.7'
     # leave as 3.7 to avoid pip install in 3.8 but run in 3.7
-    - run: python -m pip install -e .
+
     - run: brew install pkg-config ninja lapack open-mpi hdf5 scalapack
 
 # CI is too slow for 3d_glow

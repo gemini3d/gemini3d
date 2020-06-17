@@ -2,7 +2,6 @@
 
 [![DOI](https://zenodo.org/badge/146920930.svg)](https://zenodo.org/badge/latestdoi/146920930)
 [![CDash](./tests/data/CDash.png)](https://my.cdash.org/index.php?project=Gemini3D)
-![ci_python](https://github.com/gemini3d/gemini/workflows/ci_python/badge.svg)
 ![ci_debug_build](https://github.com/gemini3d/gemini/workflows/ci_debug_build/badge.svg)
 ![ci_linux](https://github.com/gemini3d/gemini/workflows/ci_linux/badge.svg)
 ![ci_macos](https://github.com/gemini3d/gemini/workflows/ci_macos/badge.svg)
@@ -49,8 +48,7 @@ Requirements:
 
 * Fortran 2008 compiler (GCC `gfortran` or Intel `ifort`). See [compiler help](./docs/Readme_compilers.md) if needed.
 * MPI: any of OpenMPI, IntelMPI, MPICH, MS-MPI. See [MPI help](./docs/Readme_mpi.md) if needed.
-* [CMake](https://cmake.org/download/) &ge; 3.14
-* [Python](https://docs.conda.io/en/latest/miniconda.html) &ge; 3.6
+* [CMake](https://cmake.org/download/)
 
 1. get the Gemini code
 
@@ -59,12 +57,7 @@ Requirements:
 
   cd gemini
   ```
-2. Setup Gemini and prereqs
-
-  ```sh
-  python3 setup.py develop --user
-  ```
-3. Build Gemini and run self-test
+2. Build Gemini and run self-test
 
   ```sh
   ctest -S setup.cmake -VV
