@@ -360,7 +360,7 @@ call halo_pot(J3halo,tag%J3,x%flagper,.false.)
 divtmp=div3D(J1halo(0:lx1+1,0:lx2+1,0:lx3+1),J2halo(0:lx1+1,0:lx2+1,0:lx3+1), &
              J3halo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
 srcterm=srcterm+divtmp(1:lx1,1:lx2,1:lx3)
-if (debug) print *, 'Root has computed gravitational source terms...',minval(srcterm),  maxval(srcterm)
+if (debug .and. myid==0) print *, 'Root has computed gravitational source terms...',minval(srcterm),  maxval(srcterm)
 !-------
 ! end if
 
