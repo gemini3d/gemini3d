@@ -73,6 +73,9 @@ integer :: diffsolvetype=2       ! 1 - first order backward Euler time stepping;
 !> milestone output information (default to none, i.e. zero value)
 integer :: mcadence=-1      ! value less than zero switches this off, > zero gives the cadence at which to perform milestone outputs (in terms of number of outputs per milestone)
 
+!> gravitational drift terms
+logical :: flaggravdrift=.false.
+
 end type gemini_cfg
 
 

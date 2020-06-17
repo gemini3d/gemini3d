@@ -308,13 +308,6 @@ PhiWmWm2(:,:,2)=Qinow
 end subroutine precipBCs_fileinput
 
 
-!subroutine make_precip_fileinput()
-!!! INITIALIZE SOME MODULE TIMING VARIABLES
-!tprev = 0
-!tnext = 0
-!end subroutine make_precip_fileinput
-
-
 subroutine clear_precip_fileinput()
 
 if(allocated(mlonp)) then

@@ -40,6 +40,7 @@ logical :: flgcap
 real(wp) :: magcap
 integer :: diffsolvetype
 integer :: mcadence
+logical :: flaggravdrift
 
 namelist /base/ ymd, UTsec0, tdur, dtout, activ, tcfl, Teinf
 namelist /files/ file_format, indat_size, indat_grid, indat_file
@@ -56,6 +57,7 @@ namelist /Jpar/ flagJpar
 namelist /capacitance/ flagcap,magcap     ! later need to regroup these in a way that is more logical now there are so many more inputs
 namelist /diffusion/ diffsolvetype
 namelist /milestone/ mcadence
+namelist /gravdrift/ flaggravdrift
 
 open(newunit=u, file=cfg%infile, status='old', action='read')
 
@@ -152,6 +154,8 @@ if (namelist_exists(u,'EIA')) then
   call check_nml_io(i, cfg%infile, "EIA")
   cfg%flagEIA=flagEIA
   cfg%v0equator=v0equator
+else
+  cfg%flagEIA=.false.
 end if
 
 !> neural background (optional)
@@ -161,6 +165,8 @@ if (namelist_exists(u,'neutral_BG')) then
   call check_nml_io(i, cfg%infile, "neutral_BG")
   cfg%flagneuBG=flagneuBG
   cfg%dtneuBG=dtneuBG
+else
+  cfg%flagneuBG=.false.
 end if
 
 !> precip background (optional)
@@ -170,6 +176,9 @@ if (namelist_exists(u,'precip_BG')) then
   call check_nml_io(i, cfg%infile, "precip_BG")
   cfg%PhiWBG=PhiWBG
   cfg%W0BG=W0BG
+else
+  cfg%PhiWBG=1d-3
+  cfg%W0BG=3e3
 end if
 
 !> parallel current density (optional)
@@ -178,6 +187,8 @@ if (namelist_exists(u,'Jpar')) then
   read(u, nml=Jpar, iostat=i)
   call check_nml_io(i, cfg%infile, "Jpar")
   cfg%flagJpar=flagJpar
+else
+  cfg%flagJpar=.false.
 end if
 
 !> inertial capacitance (optional)
@@ -187,22 +198,38 @@ if (namelist_exists(u,'capacitance')) then
   call check_nml_io(i, cfg%infile, "capacitance")
   cfg%flagcap=flagcap
   cfg%magcap=magcap
+else
+  cfg%flagcap=0    !default to zero capacitance
 end if
 
-!> diffusion solve type (optional)
+!> diffusion solve type (optional). i.e. to switch between backward Euler and TRBDF2
 if (namelist_exists(u,'diffusion')) then
   rewind(u)
   read(u, nml=diffusion, iostat=i)
   call check_nml_io(i, cfg%infile, "diffusion")
   cfg%diffsolvetype=diffsolvetype
+else
+  cfg%diffsolvetype=2     !default to TRBDF2 - it almost always works
 end if
 
-!> information about milestone outputs
+!> information about milestone outputs (optional)
 if (namelist_exists(u,'milestone')) then
   rewind(u)
   read(u,nml=milestone,iostat=i)
   call check_nml_io(i,cfg%infile,"milestone")
   cfg%mcadence=mcadence
+else
+  cfg%mcadence=-1     !default to no milestones (<0 is a sentinel value)
+end if
+
+!> whether or not to include gravitational terms in drift and potential source equations
+if (namelist_exists(u,'gravdrift')) then
+  rewind(u)
+  read(u,nml=gravdrift,iostat=i)
+  call check_nml_io(i,cfg%infile,"gravdrift")
+  cfg%flaggravdrift=flaggravdrift
+else
+  cfg%flaggravdrift=.false.     !by default do not include grav currents and drifts
 end if
 
 close(u)

@@ -230,7 +230,10 @@ if(myid==0) then
   print*, '    ',minval(E3),maxval(E3)
 end if
 allocate(E01(lx1,lx2,lx3),E02(lx1,lx2,lx3),E03(lx1,lx2,lx3))
-call get_BGEfields(x,E01,E02,E03)
+E01=0; E02=0; E03=0;
+if (cfg%flagE0file==1) then
+  call get_BGEfields(x,E01,E02,E03)
+end if
 if(myid==0) then
   print*, 'Recomputed initial BG fields:  '
   print*, '    ',minval(E01),maxval(E01)
@@ -489,10 +492,40 @@ if (myid==0) then
     print *, "GLOW disabled"
   end if
 
+  if (cfg%flagEIA) then
+    print*, 'EIA enables with peok equatorial drift:  ',cfg%v0equator
+  else
+    print*, 'EIA disabled'
+  end if
+
+  if (cfg%flagneuBG) then
+    print*, 'Variable background neutral atmosphere enabled at cadence:  ',cfg%dtneuBG
+  else
+    print*, 'Variable background neutral atmosphere disabled.'
+  end if
+
+  print*, 'Background precipitation has total energy flux and energy:  ',cfg%PhiWBG,cfg%W0BG
+
+  if (cfg%flagJpar) then
+    print*, 'Parallel current calculation enabled.'
+  else
+    print*, 'Parallel current calculation disabled.'
+  end if
+
+  print*, 'Inertial capacitance calculation type:  ',cfg%flagcap
+
+  print*, 'Diffusion solve type:  ',cfg%diffsolvetype
+
   if (cfg%mcadence > 0) then
     print*, 'Milestone output selected; cadence (every nth outout) of:  ',cfg%mcadence
   else
     print*, 'Milestone output disabled.'
+  end if
+
+  if (cfg%flaggravdrift) then
+    print*, 'Gravitational drift terms enabled.'
+  else
+    print*, 'Gravitaional drift terms disabled.'
   end if
 
   print *,  '**************** end input config ***************'
