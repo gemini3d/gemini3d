@@ -27,7 +27,7 @@ use config, only: gemini_cfg
 implicit none (type, external)
 private
 public :: electrodynamics, halo_pot, potential_sourceterms, pot2perpfield, velocities, get_BGEfields, &
-            acc_perpconductioncurrents,acc_perpwindcurrents
+            acc_perpconductioncurrents,acc_perpwindcurrents,acc_perpgravcurrents
 
 external :: mpi_send, mpi_recv
 
@@ -340,13 +340,15 @@ if (debug .and. myid==0) print *, 'Root has computed wind source terms...',minva
 !-------
 !GRAVITATIONAL SOURCE TERMS FOR POTENTIAL EQUATION
 J1=0d0    !so this div is only perp components
-if (flagswap==1) then
-  J2=sigPgrav*g2+sigHgrav*g3       !grav x2 current
-  J3=-1*sigHgrav*g2+sigPgrav*g3    !grav x3 current
-else
-  J2=sigPgrav*g2-sigHgrav*g3
-  J3=sigHgrav*g2+sigPgrav*g3
-end if
+!if (flagswap==1) then
+!  J2=sigPgrav*g2+sigHgrav*g3       !grav x2 current
+!  J3=-1*sigHgrav*g2+sigPgrav*g3    !grav x3 current
+!else
+!  J2=sigPgrav*g2-sigHgrav*g3
+!  J3=sigHgrav*g2+sigPgrav*g3
+!end if
+J2=0._wp; J3=0._wp;
+call acc_perpgravcurrents(sigPgrav,sigHgrav,g2,g3,J2,J3)
 J1halo(1:lx1,1:lx2,1:lx3)=J1
 J2halo(1:lx1,1:lx2,1:lx3)=J2
 J3halo(1:lx1,1:lx2,1:lx3)=J3
@@ -417,6 +419,26 @@ end if
 
 end subroutine acc_perpwindcurrents
 
+
+subroutine acc_perpgravcurrents(sigPgrav,sigHgrav,g2,g3,J2,J3)
+
+!> ***Accumulate*** gravitational currents into the variables J2,J3.  See conduction currents
+!    routine for additional caveats.
+
+real(wp), dimension(:,:,:), intent(in) :: sigPgrav,sigHgrav
+real(wp), dimension(:,:,:), intent(in) :: g2,g3
+real(wp), dimension(:,:,:), intent(inout) :: J2, J3
+
+
+if (flagswap==1) then
+  J2=sigPgrav*g2+sigHgrav*g3       !grav x2 current
+  J3=-1*sigHgrav*g2+sigPgrav*g3    !grav x3 current
+else
+  J2=sigPgrav*g2-sigHgrav*g3
+  J3=sigHgrav*g2+sigPgrav*g3
+end if
+
+end subroutine acc_perpgravcurrents
 
 
 subroutine pot2perpfield(Phi,x,E2,E3)
