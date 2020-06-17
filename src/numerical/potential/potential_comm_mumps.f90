@@ -251,12 +251,12 @@ end if
 end subroutine velocities
 
 
-subroutine potential_sourceterms(sigP,sigH,E02,E03,vn2,vn3,B1,x,srcterm)
+subroutine potential_sourceterms(sigP,sigH,sigPgrav,sigHgrav,E02,E03,vn2,vn3,B1,x,srcterm)
 
 !> Compute source terms for the potential equation to be solved.  Both root and workers
 !   should be able to use this routine
 
-real(wp), dimension(:,:,:), intent(in) :: sigP,sigH
+real(wp), dimension(:,:,:), intent(in) :: sigP,sigH,sigPgrav,sigHgrav
 real(wp), dimension(:,:,:), intent(in) :: E02,E03,vn2,vn3
 real(wp), dimension(:,:,:), intent(in) :: B1
 type(curvmesh), intent(in) :: x
@@ -328,6 +328,34 @@ divtmp=div3D(J1halo(0:lx1+1,0:lx2+1,0:lx3+1),J2halo(0:lx1+1,0:lx2+1,0:lx3+1), &
 srcterm=srcterm+divtmp(1:lx1,1:lx2,1:lx3)
 if (debug .and. myid==0) print *, 'Root has computed wind source terms...',minval(srcterm),  maxval(srcterm)
 !-------
+
+
+
+! if (flag_gravdrift)
+!-------
+!GRAVITATIONAL SOURCE TERMS FOR POTENTIAL EQUATION
+J1=0d0    !so this div is only perp components
+if (flagswap==1) then
+  J2=sigPgrav*g2+sigHgrav*g3       !grav x2 current
+  J3=-1*sigHgrav*g2+sigPgrav*g3    !grav x3 current
+else
+  J2=sigPgrav*g2-sigHgrav*g3
+  J3=sigHgrav*g2+sigPgrav*g3
+end if
+J1halo(1:lx1,1:lx2,1:lx3)=J1
+J2halo(1:lx1,1:lx2,1:lx3)=J2
+J3halo(1:lx1,1:lx2,1:lx3)=J3
+
+call halo_pot(J1halo,tag%J1,x%flagper,.false.)
+call halo_pot(J2halo,tag%J2,x%flagper,.false.)
+call halo_pot(J3halo,tag%J3,x%flagper,.false.)
+
+divtmp=div3D(J1halo(0:lx1+1,0:lx2+1,0:lx3+1),J2halo(0:lx1+1,0:lx2+1,0:lx3+1), &
+             J3halo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
+srcterm=srcterm+divtmp(1:lx1,1:lx2,1:lx3)
+if (debug) print *, 'Root has computed gravitational source terms...',minval(srcterm),  maxval(srcterm)
+!-------
+! end if
 
 end subroutine potential_sourceterms
 
