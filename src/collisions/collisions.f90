@@ -194,7 +194,7 @@ end if
 end subroutine thermal_conduct
 
 
-subroutine conductivities(nn,Tn,ns,Ts,vs1,B1,sig0,sigP,sigH,muP,muH,muPvn,muHvn)
+subroutine conductivities(nn,Tn,ns,Ts,vs1,B1,sig0,sigP,sigH,muP,muH,muPvn,muHvn,sigPgrav,sigHgrav)
 
 !------------------------------------------------------------
 !-------COMPUTE THE CONDUCTIVITIES OF THE IONOSPHERE.  STATE
@@ -211,7 +211,7 @@ real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,lsp), intent(ou
 integer :: isp,isp2,lx1,lx2,lx3
 real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: OMs
 real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: nu,nuej,Phisj,Psisj,nutmp,mupar,mubase,rho
-
+real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4), intent(out) :: sigPgrav,sigHgrav
 
 lx1=size(Ts,1)-4
 lx2=size(Ts,2)-4
@@ -262,12 +262,23 @@ sig0=ns(1:lx1,1:lx2,1:lx3,lsp)*qs(lsp)*mupar    !parallel includes only electron
 sigP = 0
 sigH = 0
 do isp=1,lsp
-  rho=ns(1:lx1,1:lx2,1:lx3,isp)*qs(isp)
+  rho=ns(1:lx1,1:lx2,1:lx3,isp)*qs(isp)    !rho is charge density here
   sigP=sigP+rho*muP(:,:,:,isp)
   sigH=sigH+rho*muH(:,:,:,isp)
 end do
 
 !    sigH=max(sigH,0.0_wp)    !to deal with precision issues.  This actually causes errors in Cartesian northern hemisphere grids...
+
+
+!Gravitational "conductivities"
+sigPgrav=0.0_wp
+sigHgrav=0.0_wp
+do isp=1,lsp
+  rho=ns(1:lx1,1:lx2,1:lx3,isp)*ms(isp)     !here, rho is used as mass density
+  sigPgrav=sigP+rho*muP(:,:,:,isp)
+  sigHgrav=sigH+rho*muH(:,:,:,isp)
+end do
+
 end subroutine conductivities
 
 
