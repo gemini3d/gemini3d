@@ -43,8 +43,7 @@ def download_and_extract(z: T.Dict[str, T.Any], url_ini: Path):
         raise SystemExit(77)
     except KeyError as e:
         print(
-            f"SKIP: problem getting reference config from {url_ini} {e}",
-            file=sys.stderr,
+            f"SKIP: problem getting reference config from {url_ini} {e}", file=sys.stderr,
         )
         raise SystemExit(77)
 
@@ -119,12 +118,9 @@ if __name__ == "__main__":
     p.add_argument("outdir")
     p.add_argument("-np", help="force number of MPI images", type=int)
     p.add_argument(
-        "-out_format",
-        help="override config.nml output file format",
-        choices=["h5", "nc", "raw"],
+        "-out_format", help="override config.nml output file format", choices=["h5", "nc", "raw"],
     )
-    p.add_argument("-dryrun", help="only run first time step",
-                   action="store_true")
+    p.add_argument("-dryrun", help="only run first time step", action="store_true")
     P = p.parse_args()
 
     run_test(

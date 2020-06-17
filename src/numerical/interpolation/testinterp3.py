@@ -21,7 +21,7 @@ def compare_interp(fn: Path, doplot: bool = False):
 
         fx1x2x3 = f["/f"][:]
     assert fx1x2x3.shape == (256, 256, 256), f"got shape {fx1x2x3.shape}"
-    assert fx1x2x3.shape == (x1.size, x2.size, x3.size), f"{x1.shape} {x2.shape} {x3.shape}"
+    assert fx1x2x3.shape == (x1.size, x2.size, x3.size,), f"{x1.shape} {x2.shape} {x3.shape}"
 
     if not doplot:
         return None
