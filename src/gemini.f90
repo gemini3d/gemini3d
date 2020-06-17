@@ -171,11 +171,11 @@ if ( any(ymdtmp/=cfg%ymd0) .or. abs(UTsectmp-cfg%UTsec0)>cfg%dtout ) then  !! tr
   UTsec=UTsectmp
   ymd=ymdtmp
   tdur=cfg%tdur-ttmp    ! subtract off time that has elapsed to milestone
-  cfg%tdur=tdur         ! just to insure consistency
   if (myid==0) then 
     print*, 'Treating the following file as initial conditions:  ',filetmp
     print*, ' full duration:  ',cfg%tdur,'; remaining simulation time:  ',tdur
   end if
+  cfg%tdur=tdur         ! just to insure consistency
   call input_plasma(x%x1,x%x2all,x%x3all,cfg%indatsize,filetmp,ns,vs1,Ts,Phi,Phiall)
 else !! start at the beginning
   UTsec = cfg%UTsec0
