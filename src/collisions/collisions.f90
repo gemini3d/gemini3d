@@ -275,8 +275,8 @@ sigPgrav=0.0_wp
 sigHgrav=0.0_wp
 do isp=1,lsp
   rho=ns(1:lx1,1:lx2,1:lx3,isp)*ms(isp)     !here, rho is used as mass density
-  sigPgrav=sigP+rho*muP(:,:,:,isp)
-  sigHgrav=sigH+rho*muH(:,:,:,isp)
+  sigPgrav=sigPgrav+rho*muP(:,:,:,isp)
+  sigHgrav=sigHgrav+rho*muH(:,:,:,isp)
 end do
 
 end subroutine conductivities
