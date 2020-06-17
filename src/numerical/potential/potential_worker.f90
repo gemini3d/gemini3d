@@ -224,7 +224,7 @@ call pot2perpfield(Phi,x,E2,E3)
 
 
 !--------
-!ADD IN BACKGROUND FIELDS BEFORE DISTRIBUTING TO WORKERS
+!ADD IN BACKGROUND FIELDS BEFORE HALOING
 E2=E2+E02
 E3=E3+E03
 !--------
@@ -277,24 +277,12 @@ else       !pure electrostatic solve was done
 end if
 !--------
 
-!-------
-if (flagswap==1) then
-  J2=sigP*E2+sigH*E3    !BG field already added to E above
-  J3=-1*sigH*E2+sigP*E3
-else
-  J2=sigP*E2-sigH*E3    !BG field already added to E above
-  J3=sigH*E2+sigP*E3
-end if
 
-!WHAT I THINK THE NEUTRAL WIND CURRENTS SHOULD BE IN 2D
-if (flagswap==1) then
-  J2=J2-sigP*vn3*B1(1:lx1,1:lx2,1:lx3)+sigH*vn2*B1(1:lx1,1:lx2,1:lx3)
-  J3=J3+sigH*vn3*B1(1:lx1,1:lx2,1:lx3)+sigP*vn2*B1(1:lx1,1:lx2,1:lx3)
-else
-  J2=J2+sigP*vn3*B1(1:lx1,1:lx2,1:lx3)+sigH*vn2*B1(1:lx1,1:lx2,1:lx3)
-  J3=J3+sigH*vn3*B1(1:lx1,1:lx2,1:lx3)-sigP*vn2*B1(1:lx1,1:lx2,1:lx3)
-end if
-!-------
+!--------
+J2=0._wp; J3=0._wp    ! must be zeroed out before we accumulate currents
+call acc_perpconductioncurrents(sigP,sigH,E2,E3,J2,J3)
+call acc_perpwindcurrents(sigP,sigH,vn2,vn3,B1,J2,J3)
+!--------
 
 
 !!!!!!!!
