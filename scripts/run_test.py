@@ -42,7 +42,10 @@ def download_and_extract(z: T.Dict[str, T.Any], url_ini: Path):
         print(f"SKIP: problem downloading reference data {e}", file=sys.stderr)
         raise SystemExit(77)
     except KeyError as e:
-        print(f"SKIP: problem getting reference config from {url_ini} {e}", file=sys.stderr)
+        print(
+            f"SKIP: problem getting reference config from {url_ini} {e}",
+            file=sys.stderr,
+        )
         raise SystemExit(77)
 
 
@@ -50,9 +53,11 @@ def run_test(
     testname: str,
     mpiexec: str,
     exe: str,
-    outdir: str,
+    outdir: Path,
+    *,
     mpi_count: int = None,
     out_format: str = None,
+    dryrun: bool = False,
 ):
     """ configure and run a test
     This is usually called from CMake Ctest
@@ -98,6 +103,8 @@ def run_test(
     cmd = [mpiexec, "-np", str(mpi_count), str(exe_abs), str(outdir)]
     if out_format:
         cmd += ["-out_format", out_format]
+    if dryrun:
+        cmd.append("-dryrun")
     print(" ".join(cmd))
     ret = subprocess.run(cmd, cwd=Rtop)
 
@@ -112,8 +119,20 @@ if __name__ == "__main__":
     p.add_argument("outdir")
     p.add_argument("-np", help="force number of MPI images", type=int)
     p.add_argument(
-        "-out_format", help="override config.nml output file format", choices=["h5", "nc", "raw"]
+        "-out_format",
+        help="override config.nml output file format",
+        choices=["h5", "nc", "raw"],
     )
+    p.add_argument("-dryrun", help="only run first time step",
+                   action="store_true")
     P = p.parse_args()
 
-    run_test(P.testname, P.mpiexec, P.exe, P.outdir, mpi_count=P.np, out_format=P.out_format)
+    run_test(
+        P.testname,
+        P.mpiexec,
+        P.exe,
+        P.outdir,
+        mpi_count=P.np,
+        out_format=P.out_format,
+        dryrun=P.dryrun,
+    )

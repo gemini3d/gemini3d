@@ -6,6 +6,10 @@ function(setup_gemini_test TESTNAME TIMEOUT)
 set(_outdir ${CMAKE_CURRENT_BINARY_DIR}/test${TESTNAME})
 
 if(python_ok AND hdf5)
+
+  add_test(NAME gemini:hdf5:${TESTNAME}:dryrun
+    COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/scripts/run_test.py ${TESTNAME} ${MPIEXEC_EXECUTABLE} $<TARGET_FILE:gemini.bin> ${_outdir} -dryrun)
+
   add_test(NAME gemini:hdf5:${TESTNAME}
     COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/scripts/run_test.py ${TESTNAME} ${MPIEXEC_EXECUTABLE} $<TARGET_FILE:gemini.bin> ${_outdir})
 
@@ -14,11 +18,15 @@ if(python_ok AND hdf5)
     TIMEOUT ${TIMEOUT}
     SKIP_RETURN_CODE 77
     RUN_SERIAL true
+    DEPENDS gemini:hdf5:${TESTNAME}:dryrun
     FIXTURES_REQUIRED MPIMUMPS)
   win32_env(gemini:${TESTNAME})
 endif()
 
 if(python_ok AND netcdf)
+  add_test(NAME gemini:netcdf:${TESTNAME}:dryrun
+    COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/scripts/run_test.py ${TESTNAME} ${MPIEXEC_EXECUTABLE} $<TARGET_FILE:gemini.bin> ${_outdir} -out_format nc -dryrun)
+
   add_test(NAME gemini:netcdf:${TESTNAME}
     COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/scripts/run_test.py ${TESTNAME} ${MPIEXEC_EXECUTABLE} $<TARGET_FILE:gemini.bin> ${_outdir} -out_format nc)
 
@@ -26,6 +34,7 @@ if(python_ok AND netcdf)
     TIMEOUT ${TIMEOUT}
     SKIP_RETURN_CODE 77
     RUN_SERIAL true
+    DEPENDS gemini:netcdf:${TESTNAME}:dryrun
     FIXTURES_REQUIRED MPIMUMPS)
 endif()
 
