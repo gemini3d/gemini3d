@@ -89,8 +89,8 @@ else
 end if
 
 
-!FLAG THE GRID AS PERIODIC, IF REQUESTED; IF SO PERIODICITY WILL BE ASSUMED
-!IN THE X3-DIRECTION, NOTE BOTH ROOT AND WORKERS MUST DO THIS!!!
+!> FLAG THE GRID AS PERIODIC, IF REQUESTED; IF SO PERIODICITY WILL BE ASSUMED
+!> IN THE X3-DIRECTION, NOTE BOTH ROOT AND WORKERS MUST DO THIS!!!
 if (flagperiodic==1) then
   x%flagper=.true.
 else
@@ -98,9 +98,8 @@ else
 end if
 
 
-!DETERMINE THE TYPE OF GRID WE HAVE AND SET AN APPROPRIATE FLAG
-!FIXME:  this needs to be done once, globally and also needs to be more
-!robust...
+!> DETERMINE THE TYPE OF GRID WE HAVE AND SET AN APPROPRIATE FLAG
+!> FIXME:  this needs to be done once, globally and also needs to be more robust...
 if (abs(x%alt(1,1,1)-x%alt(lx1,1,1))<100d3) then    !closed dipole grid
   gridflag=0
 else if (x%alt(1,1,1)>x%alt(2,1,1)) then    !open dipole grid with inverted structure wrt altitude
@@ -108,6 +107,10 @@ else if (x%alt(1,1,1)>x%alt(2,1,1)) then    !open dipole grid with inverted stru
 else    !something different (viz. non-inverted - lowest altitudes at the logical bottom of the grid)
   gridflag=2
 end if
+
+!> Make sure we have a sensible x2,3 decomposition of grid
+!> and that parameters aren't impossible
+call grid_check(x)
 
 end procedure read_grid
 

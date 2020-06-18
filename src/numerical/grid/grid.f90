@@ -31,15 +31,18 @@ integer :: flagswap
 !! have the x2 and x3 dimensions been swapped?
 
 interface ! read.f90
-
 module subroutine read_grid(indatsize,indatgrid,flagperiodic,x)
 character(*), intent(in) :: indatsize,indatgrid
 integer, intent(in) :: flagperiodic
 type(curvmesh), intent(inout) :: x
 end subroutine read_grid
-
 end interface
 
+interface ! check.f90
+module subroutine grid_check(x)
+type(curvmesh), intent(in) :: x
+end subroutine grid_check
+end interface
 
 contains
 
@@ -83,29 +86,6 @@ end do
 print *, 'grid_size_root: full grid size:  ',lx1,lx2all,lx3all
 
 end subroutine grid_size_root
-
-
-subroutine grid_check()
-!! check correct number of MPI images. Help avoid confusing errors or bad simulations
-!! Must be called after both grid size and mpi gridding have been established...
-
-if (lx2all > 1) then
-  if (modulo(lx2all, lid2) /= 0) then
-    write(stderr,'(/,A,I6,A,I6,/)') 'ERROR:grid_size_root: Number of MPI images along x2', lid2, &
-                                    ' not an integer factor of lx2all: ', lx2all
-    error stop
-  endif
-endif
-
-if (lx3all > 1) then
-  if (modulo(lx3all, lid3) /= 0) then
-    write(stderr,'(/,A,I6,A,I6,/)') 'ERROR:grid_size_root: Number of MPI images along x3', lid3, &
-                                    ' not an integer factor of lx3all: ', lx3all
-    error stop
-  endif
-endif
-
-end subroutine grid_check
 
 
 subroutine grid_size_worker()

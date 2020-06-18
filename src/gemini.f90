@@ -5,7 +5,7 @@ use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
 
 use sanity_check, only : check_finite_output
 use phys_consts, only : lnchem, lwave, lsp, wp, debug
-use grid, only: grid_size,read_grid,clear_grid,grid_check,lx1,lx2,lx3,lx2all,lx3all
+use grid, only: grid_size,read_grid,clear_grid, lx1,lx2,lx3,lx2all,lx3all
 use mesh, only: curvmesh
 use config, only : read_configfile, gemini_cfg
 use pathlib, only : assert_file_exists, assert_directory_exists, expanduser
@@ -99,9 +99,6 @@ if (lid2in==-1) then
 else
   call mpi_manualgrid(lx2all, lx3all, lid2in, lid3in)
 endif
-
-!> Make sure we have a sensible x2,3 decomposition of grid
-call grid_check()
 
 !> LOAD UP THE GRID STRUCTURE/MODULE VARS. FOR THIS SIMULATION
 call read_grid(cfg%indatsize,cfg%indatgrid,cfg%flagperiodic, x)
