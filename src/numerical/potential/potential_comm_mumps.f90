@@ -172,7 +172,7 @@ if (cfg%potsolve == 1 .or. cfg%potsolve == 3) then    !electrostatic solve or el
                               E1,E2,E3,J1,J2,J3,Phiall,ymd,UTsec)
   end if
 
-  call velocities(muP,muH,muPvn,muHvn,E2,E3,vn2,vn3,vs2,vs3)
+  call velocities(muP,muH,muPvn,muHvn,E2,E3,vn2,vn3,cfg%flaggravdrift,vs2,vs3)
 
   call cpu_time(tfin)
 
@@ -191,13 +191,14 @@ end if
 end subroutine electrodynamics_curv
 
 
-subroutine velocities(muP,muH,muPvn,muHvn,E2,E3,vn2,vn3,vs2,vs3)
+subroutine velocities(muP,muH,muPvn,muHvn,E2,E3,vn2,vn3,flaggravdrift,vs2,vs3)
 
 !> compute steady state drifts resulting from a range of forces.  Can be used
 !   by both root and worker processes
 
 real(wp), dimension(:,:,:,:), intent(in) :: muP,muH,muPvn,muHvn
 real(wp), dimension(:,:,:), intent(in) :: E2,E3,vn2,vn3
+logical, intent(in) :: flaggravdrift
 real(wp), dimension(-1:,-1:,-1:,:), intent(out) :: vs2,vs3   !> these have ghost cells
 
 integer :: lx1,lx2,lx3,lsp,isp
@@ -223,21 +224,19 @@ else                !flip signs on the cross products in 2D.  Note that due to d
   end do
 end if
 
-! if (flag_gravdrift)
-if(flagswap/=1) then
-  do isp=1,lsp
-    vs2(1:lx1,1:lx2,1:lx3,isp)=vs2(1:lx1,1:lx2,1:lx3,isp)+ms(isp)/qs(isp)*(muP(:,:,:,isp)*g2+muH(:,:,:,isp)*g3)
-    vs3(1:lx1,1:lx2,1:lx3,isp)=vs3(1:lx1,1:lx2,1:lx3,isp)+ms(isp)/qs(isp)*(muH(:,:,:,isp)*g2+muP(:,:,:,isp)*g3)
-  end do
-else                !flip signs on the cross products in 2D.  Note that due to dimension shuffling E2,3 mapping is already handled
-  do isp=1,lsp
-    vs2(1:lx1,1:lx2,1:lx3,isp)=vs2(1:lx1,1:lx2,1:lx3,isp)+ms(isp)/qs(isp)*(muP(:,:,:,isp)*g2+muH(:,:,:,isp)*g3)
-    vs3(1:lx1,1:lx2,1:lx3,isp)=vs3(1:lx1,1:lx2,1:lx3,isp)+ms(isp)/qs(isp)*(-muH(:,:,:,isp)*g2+muP(:,:,:,isp)*g3)
-  end do
+if (flaggravdrift) then
+  if(flagswap/=1) then
+    do isp=1,lsp
+      vs2(1:lx1,1:lx2,1:lx3,isp)=vs2(1:lx1,1:lx2,1:lx3,isp)+ms(isp)/qs(isp)*(muP(:,:,:,isp)*g2+muH(:,:,:,isp)*g3)
+      vs3(1:lx1,1:lx2,1:lx3,isp)=vs3(1:lx1,1:lx2,1:lx3,isp)+ms(isp)/qs(isp)*(muH(:,:,:,isp)*g2+muP(:,:,:,isp)*g3)
+    end do
+  else                !flip signs on the cross products in 2D.  Note that due to dimension shuffling E2,3 mapping is already handled
+    do isp=1,lsp
+      vs2(1:lx1,1:lx2,1:lx3,isp)=vs2(1:lx1,1:lx2,1:lx3,isp)+ms(isp)/qs(isp)*(muP(:,:,:,isp)*g2+muH(:,:,:,isp)*g3)
+      vs3(1:lx1,1:lx2,1:lx3,isp)=vs3(1:lx1,1:lx2,1:lx3,isp)+ms(isp)/qs(isp)*(-muH(:,:,:,isp)*g2+muP(:,:,:,isp)*g3)
+    end do
+  end if
 end if
-! end if
-
-
 
 !! If it were appropriate this is how polarzations drifts could be computed.  However the particular quasistatic
 !   model that we use explicitly omits this from the drift calculation which is then used in convective term in
@@ -252,7 +251,7 @@ end if
 end subroutine velocities
 
 
-subroutine potential_sourceterms(sigP,sigH,sigPgrav,sigHgrav,E02,E03,vn2,vn3,B1,x,srcterm)
+subroutine potential_sourceterms(sigP,sigH,sigPgrav,sigHgrav,E02,E03,vn2,vn3,B1,x,flaggravdrift,srcterm)
 
 !> Compute source terms for the potential equation to be solved.  Both root and workers
 !   should be able to use this routine
@@ -261,6 +260,7 @@ real(wp), dimension(:,:,:), intent(in) :: sigP,sigH,sigPgrav,sigHgrav
 real(wp), dimension(:,:,:), intent(in) :: E02,E03,vn2,vn3
 real(wp), dimension(:,:,:), intent(in) :: B1
 type(curvmesh), intent(in) :: x
+logical, intent(in) :: flaggravdrift
 real(wp), dimension(:,:,:), intent(out) :: srcterm
 
 real(wp), dimension(1:size(E02,1),1:size(E02,2),1:size(E02,3)) :: J1,J2,J3
@@ -280,13 +280,6 @@ lx3=size(sigP,3)
 !-------
 !CONDUCTION CURRENT BACKGROUND SOURCE TERMS FOR POTENTIAL EQUATION. MUST COME AFTER CALL TO BC CODE.
 J1=0d0    !so this div is only perp components
-!if (flagswap==1) then
-!  J2=sigP*E02+sigH*E03    !BG x2 current
-!  J3=-1*sigH*E02+sigP*E03    !BG x3 current
-!else
-!  J2=sigP*E02-sigH*E03    !BG x2 current
-!  J3=sigH*E02+sigP*E03    !BG x3 current
-!end if
 J2=0._wp; J3=0._wp;
 call acc_perpconductioncurrents(sigP,sigH,E02,E03,J2,J2)     !background conduction currents only
 J1halo(1:lx1,1:lx2,1:lx3)=J1
@@ -307,17 +300,6 @@ if (debug .and. myid==0) print *, 'Root has computed background field source ter
 !-------
 !NEUTRAL WIND SOURCE TERMS FOR POTENTIAL EQUATION, SIMILAR TO ABOVE BLOCK OF CODE
 J1=0d0    !so this div is only perp components
-!if (flagswap==1) then
-!  J2=-1*sigP*vn3*B1(1:lx1,1:lx2,1:lx3)+sigH*vn2*B1(1:lx1,1:lx2,1:lx3)
-!  !! wind x2 current, note that all workers already have a copy of this.
-!  J3=sigH*vn3*B1(1:lx1,1:lx2,1:lx3)+sigP*vn2*B1(1:lx1,1:lx2,1:lx3)
-!  !! wind x3 current
-!else
-!  J2=sigP*vn3*B1(1:lx1,1:lx2,1:lx3)+sigH*vn2*B1(1:lx1,1:lx2,1:lx3)
-!  !! wind x2 current
-!  J3=sigH*vn3*B1(1:lx1,1:lx2,1:lx3)-sigP*vn2*B1(1:lx1,1:lx2,1:lx3)
-!  !! wind x3 current
-!end if
 J2=0._wp; J3=0._wp;
 call acc_perpwindcurrents(sigP,sigH,vn2,vn3,B1,J2,J3)
 J1halo(1:lx1,1:lx2,1:lx3)=J1
@@ -336,33 +318,26 @@ if (debug .and. myid==0) print *, 'Root has computed wind source terms...',minva
 
 
 
-! if (flag_gravdrift)
-!-------
-!GRAVITATIONAL SOURCE TERMS FOR POTENTIAL EQUATION
-J1=0d0    !so this div is only perp components
-!if (flagswap==1) then
-!  J2=sigPgrav*g2+sigHgrav*g3       !grav x2 current
-!  J3=-1*sigHgrav*g2+sigPgrav*g3    !grav x3 current
-!else
-!  J2=sigPgrav*g2-sigHgrav*g3
-!  J3=sigHgrav*g2+sigPgrav*g3
-!end if
-J2=0._wp; J3=0._wp;
-call acc_perpgravcurrents(sigPgrav,sigHgrav,g2,g3,J2,J3)
-J1halo(1:lx1,1:lx2,1:lx3)=J1
-J2halo(1:lx1,1:lx2,1:lx3)=J2
-J3halo(1:lx1,1:lx2,1:lx3)=J3
-
-call halo_pot(J1halo,tag%J1,x%flagper,.false.)
-call halo_pot(J2halo,tag%J2,x%flagper,.false.)
-call halo_pot(J3halo,tag%J3,x%flagper,.false.)
-
-divtmp=div3D(J1halo(0:lx1+1,0:lx2+1,0:lx3+1),J2halo(0:lx1+1,0:lx2+1,0:lx3+1), &
-             J3halo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
-srcterm=srcterm+divtmp(1:lx1,1:lx2,1:lx3)
-if (debug .and. myid==0) print *, 'Root has computed gravitational source terms...',minval(srcterm),  maxval(srcterm)
-!-------
-! end if
+if (flaggravdrift) then
+  !-------
+  !GRAVITATIONAL SOURCE TERMS FOR POTENTIAL EQUATION
+  J1=0d0    !so this div is only perp components
+  J2=0._wp; J3=0._wp;
+  call acc_perpgravcurrents(sigPgrav,sigHgrav,g2,g3,J2,J3)
+  J1halo(1:lx1,1:lx2,1:lx3)=J1
+  J2halo(1:lx1,1:lx2,1:lx3)=J2
+  J3halo(1:lx1,1:lx2,1:lx3)=J3
+  
+  call halo_pot(J1halo,tag%J1,x%flagper,.false.)
+  call halo_pot(J2halo,tag%J2,x%flagper,.false.)
+  call halo_pot(J3halo,tag%J3,x%flagper,.false.)
+  
+  divtmp=div3D(J1halo(0:lx1+1,0:lx2+1,0:lx3+1),J2halo(0:lx1+1,0:lx2+1,0:lx3+1), &
+               J3halo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
+  srcterm=srcterm+divtmp(1:lx1,1:lx2,1:lx3)
+  if (debug .and. myid==0) print *, 'Root has computed gravitational source terms...',minval(srcterm),  maxval(srcterm)
+  !-------
+end if
 
 end subroutine potential_sourceterms
 

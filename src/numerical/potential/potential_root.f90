@@ -119,7 +119,7 @@ call bcast_send(Vmaxx1buf,tag%Vmaxx1,Vmaxx1slab)
 
 
 !> Compute source terms
-call potential_sourceterms(sigP,sigH,sigPgrav,sigHgrav,E02,E03,vn2,vn3,B1,x,srcterm)
+call potential_sourceterms(sigP,sigH,sigPgrav,sigHgrav,E02,E03,vn2,vn3,B1,x,cfg%flaggravdrift,srcterm)
 
 
 !!!!!!!!

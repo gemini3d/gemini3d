@@ -72,7 +72,7 @@ call bcast_recv(Vminx1slab,tag%Vminx1)
 call bcast_recv(Vmaxx1slab,tag%Vmaxx1)
 
 
-call potential_sourceterms(sigP,sigH,sigPgrav,sigHgrav,E02,E03,vn2,vn3,B1,x,srcterm)
+call potential_sourceterms(sigP,sigH,sigPgrav,sigHgrav,E02,E03,vn2,vn3,B1,x,cfg%flaggravdrift,srcterm)
 
 
 !    !ZZZ - DEBUG BY GETTING THE ENTIRE SOURCETERM ARRAY
