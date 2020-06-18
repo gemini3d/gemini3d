@@ -188,7 +188,7 @@ if (namelist_exists(u,'Jpar')) then
   call check_nml_io(i, cfg%infile, "Jpar")
   cfg%flagJpar=flagJpar
 else
-  cfg%flagJpar=.false.
+  cfg%flagJpar=.true.
 end if
 
 !> inertial capacitance (optional)
