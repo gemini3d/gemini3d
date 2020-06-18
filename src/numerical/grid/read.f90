@@ -110,7 +110,7 @@ end if
 
 !> Make sure we have a sensible x2,3 decomposition of grid
 !> and that parameters aren't impossible
-call grid_check(x)
+if(myid == 0) call grid_check(x)
 
 end procedure read_grid
 
