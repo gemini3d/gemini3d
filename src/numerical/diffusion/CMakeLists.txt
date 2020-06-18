@@ -24,7 +24,6 @@ add_test(NAME unit:diffusion1 COMMAND $<TARGET_FILE:test_diffusion1d>
 set_tests_properties(unit:diffusion1 PROPERTIES
   TIMEOUT 5
   FIXTURES_SETUP GemDiff)
-win32_env(unit:diffusion1)
 
 if(python_ok)
   add_test(NAME unit:diffusion1:python

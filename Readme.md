@@ -146,6 +146,9 @@ gemini.bin command line options include:
 `-manual_grid <# x2 images> <# x3 images>`
 : forces the code to adopt a specific domain decomposition in x2 and x3 by using the integers given.  If not specified the code will attempt to find its own x2,x3 decomposition.  The number of grid points in x2 and x3 must be evenly divisible by the number of user-specified images in each direction, respectively.
 
+`-dryrun`
+: only run the first time step, do not write any files. This can be useful to diagnose issues not seen in unit tests, particularly issues with gridding. It runs in a few seconds or less than a minute for larger sims, something that can be done before queuing an HPC job.
+
 ### Number of MPI processes
 
 In general for MPI programs and associated simulations, there may be a minimum number of MPI processes and/or integer multiples that must be met.

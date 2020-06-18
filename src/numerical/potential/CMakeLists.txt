@@ -32,7 +32,6 @@ add_test(NAME unit:potential2 COMMAND $<TARGET_FILE:test_potential2d>
   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 set_tests_properties(unit:potential2 PROPERTIES TIMEOUT 30
   FIXTURES_SETUP GemPot)
-win32_env(unit:potential2)
 
 if(python_ok)
   add_test(NAME unit:potential2:python

@@ -1,4 +1,4 @@
-function(win32_env TESTNAME)
+function(win32_hdf5_env)
 # Windows with HDF5 needs this interesting workaround of
 # copying HDF5 dlls to the CMAKE_BINARY_DIR.
 # adding the dll path to PATH should have worked, but didn't.
@@ -26,4 +26,4 @@ if(WIN32 AND CMAKE_Fortran_COMPILER_ID STREQUAL Intel) # for Windows ifort dll
 
 endif()
 
-endfunction(win32_env)
+endfunction(win32_hdf5_env)

@@ -22,7 +22,6 @@ add_test(NAME unit:interp2 COMMAND test_interp2 WORKING_DIRECTORY ${CMAKE_CURREN
 set_tests_properties(unit:interp2 PROPERTIES
   TIMEOUT 15
   FIXTURES_SETUP GemInterp2)
-win32_env(unit:interp2)
 
 add_executable(test_interp3 testinterp3.f90)
 target_link_libraries(test_interp3 PRIVATE const interp h5fortran::h5fortran)
@@ -30,7 +29,6 @@ add_test(NAME unit:interp3 COMMAND test_interp3 WORKING_DIRECTORY ${CMAKE_CURREN
 set_tests_properties(unit:interp3 PROPERTIES
   TIMEOUT 30  # need 30 for slow CPU
   FIXTURES_SETUP GemInterp3)
-win32_env(unit:interp3)
 
 
 if(python_ok)
