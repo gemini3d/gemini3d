@@ -29,7 +29,7 @@ brew install gcc
 Install everything needed for Gemini like:
 
 ```sh
-brew install cmake gcc openmpi lapack scalapack
+brew install cmake gcc hdf5 openmpi lapack scalapack
 ```
 
 If using Homebrew, be sure Homebrew's GCC is used instead of AppleClang or other non-Homebrew compilers so that the Homebrew library ABIs match the compiler ABI.
