@@ -157,13 +157,13 @@ The build system generation process automatically sets the maximum number of pro
 This can also be done via `gemini_run -np` options.
 
 ```sh
-mpiexec -np <number of processors>  build/gemini.bin <input config file> <output directory>
+mpiexec -np <number of processors>  build/gemini.bin <output directory>
 ```
 
 for example:
 
 ```sh
-mpiexec -np 4 build/gemini.bin tests/2d_fang/inputs/config.nml /tmp/2d
+mpiexec -np 4 build/gemini.bin ~/mysim3d/arecibo
 ```
 
 ## Input file format
