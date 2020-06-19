@@ -410,7 +410,9 @@ end if
 J2=0._wp; J3=0._wp    ! must be zeroed out before we accumulate currents
 call acc_perpconductioncurrents(sigP,sigH,E2,E3,J2,J3)
 call acc_perpwindcurrents(sigP,sigH,vn2,vn3,B1,J2,J3)
-call acc_perpgravcurrents(sigPgrav,sigHgrav,g2,g3,J2,J3)
+if (cfg%flaggravdrift) then
+  call acc_perpgravcurrents(sigPgrav,sigHgrav,g2,g3,J2,J3)
+end if
 !--------
 
 
@@ -513,17 +515,17 @@ end if
 
 !R-------
 if (debug) then
-print *, 'Max topside FAC (abs. val.) computed to be:  ',maxval(abs(J1(1,:,:)))    !ZZZ - this rey needsz to be current at the "top"
-print *, 'Max polarization J2,3 (abs. val.) computed to be:  ',maxval(abs(J2pol)), &
-             maxval(abs(J3pol))
-!    print *, 'Max conduction J2,3 (abs. val.) computed to be:  ',maxval(abs(J2)), &
-!                 maxval(abs(J3))
-print *, 'Max conduction J2,3  computed to be:  ',maxval(J2), &
-             maxval(J3)
-print *, 'Min conduction J2,3  computed to be:  ',minval(J2), &
-             minval(J3)
-print *, 'Max conduction J1 (abs. val.) computed to be:  ',maxval(abs(J1))
-print *, 'flagswap:  ',flagswap
+  print *, 'Max topside FAC (abs. val.) computed to be:  ',maxval(abs(J1(1,:,:)))    !ZZZ - this rey needsz to be current at the "top"
+  print *, 'Max polarization J2,3 (abs. val.) computed to be:  ',maxval(abs(J2pol)), &
+               maxval(abs(J3pol))
+  !    print *, 'Max conduction J2,3 (abs. val.) computed to be:  ',maxval(abs(J2)), &
+  !                 maxval(abs(J3))
+  print *, 'Max conduction J2,3  computed to be:  ',maxval(J2), &
+               maxval(J3)
+  print *, 'Min conduction J2,3  computed to be:  ',minval(J2), &
+               minval(J3)
+  print *, 'Max conduction J1 (abs. val.) computed to be:  ',maxval(abs(J1))
+  print *, 'flagswap:  ',flagswap
 endif
 !R-------
 
