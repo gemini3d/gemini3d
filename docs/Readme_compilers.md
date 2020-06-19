@@ -32,6 +32,8 @@ Install everything needed for Gemini like:
 brew install cmake gcc hdf5 openmpi lapack scalapack
 ```
 
+#### Ensure GCC is used instead of Clang
+
 If using Homebrew, be sure Homebrew's GCC is used instead of AppleClang or other non-Homebrew compilers so that the Homebrew library ABIs match the compiler ABI.
 
 ```sh
@@ -41,7 +43,7 @@ FC=gfortran-9 CC=gcc-9 cmake -B build
 If you need to specify MPI compiler wrappers, do like:
 
 ```sh
-cmake -B build -DMPI_ROOT=~/lib_gcc/openmpi-3.1.4
+cmake -B build -DMPI_ROOT=~/lib_gcc/openmpi
 ```
 
 ### Linux
@@ -74,9 +76,11 @@ pacman -S mingw-w64-x86_64-scalapack
 ## Intel Fortran
 
 Intel compilers are available at no-cost for academic instruction and open-source projects.
-You need to have
-[Intel Parallel Studio XE](https://software.intel.com/en-us/parallel-studio-xe)
-that includes IntelMPI, BLACS and SCALAPACK.
+There are several Intel compilers suites, the two known to work with Gemini are:
+
+* [Intel Parallel Studio XE](https://software.intel.com/en-us/parallel-studio-xe) that includes IntelMPI, BLACS and SCALAPACK.
+* Intel oneAPI core + [HPC Toolkit](https://software.intel.com/content/www/us/en/develop/tools/oneapi/hpc-toolkit.html)
+
 Intel Fortran &ge; 19.1 / Parallel Studio &ge; 2020 are generally targeted for Gemini support.
 
 We regularly use the latest release Intel compilers on Linux and Windows.

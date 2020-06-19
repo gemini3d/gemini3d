@@ -28,11 +28,8 @@ If not, compile MPI--it will take about 20 minutes:
 gemini_prereqs gcc openmpi
 ```
 
-Be sure to select the desired GCC + Gfortran version first.
-
-```sh
-python scripts/compile_prereqs_gcc.py openmpi
-```
+The "gemini_prereqs" command comes from
+[PyGemini](https://github.com/gemini3d/pygemini)
 
 ## Windows
 

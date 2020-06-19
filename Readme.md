@@ -107,7 +107,7 @@ checking for compatibility of pre-installed libraries such as Lapack, Scalapack 
 Tested versions include:
 
 * OpenMPI 1.10, 2.1 - 4.0  | IntelMPI 2019 | MS-MPI 10.0
-* MUMPS 4.10, 5.1.2, 5.2.1
+* MUMPS 4.10, 5.1, 5.2, 5.3
   * Mumps &ge; 5.2 recommended to have vastly less verbose console output
 * SCALAPACK 2.0 / 2.1
 * LAPACK95 3.0  (optional)
