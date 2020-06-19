@@ -406,11 +406,11 @@ real(wp), dimension(:,:,:), intent(inout) :: J2, J3
 
 
 if (flagswap==1) then
-  J2=sigPgrav*g2+sigHgrav*g3       !grav x2 current
-  J3=-1*sigHgrav*g2+sigPgrav*g3    !grav x3 current
+  J2=J2+sigPgrav*g2+sigHgrav*g3       !grav x2 current
+  J3=J3-1*sigHgrav*g2+sigPgrav*g3    !grav x3 current
 else
-  J2=sigPgrav*g2-sigHgrav*g3
-  J3=sigHgrav*g2+sigPgrav*g3
+  J2=J2+sigPgrav*g2-sigHgrav*g3
+  J3=J2+sigHgrav*g2+sigPgrav*g3
 end if
 
 end subroutine acc_perpgravcurrents
