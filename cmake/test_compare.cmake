@@ -13,7 +13,7 @@ add_test(NAME gemini:compare:hdf5:${testname}:matlab
   WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
 
 set_tests_properties(gemini:compare:hdf5:${testname}:matlab PROPERTIES
-TIMEOUT 30
+TIMEOUT 120
 DEPENDS gemini:hdf5:${testname}
 REQUIRED_FILES ${outdir}/inputs/config.nml
 SKIP_RETURN_CODE 77)
@@ -28,7 +28,7 @@ if(python_ok AND hdf5)
   COMMAND ${Python3_EXECUTABLE} ${PROJECT_SOURCE_DIR}/scripts/gemini_compare.py ${outdir} ${refdir} -file_format h5)
 
   set_tests_properties(gemini:compare:hdf5:${testname}:python PROPERTIES
-  TIMEOUT 30
+  TIMEOUT 60
   DEPENDS gemini:hdf5:${testname}
   REQUIRED_FILES ${outdir}/inputs/config.nml
   SKIP_RETURN_CODE 77)
@@ -39,7 +39,7 @@ if(python_ok AND netcdf)
   COMMAND ${Python3_EXECUTABLE} ${PROJECT_SOURCE_DIR}/scripts/gemini_compare.py ${outdir} ${refdir} -file_format nc)
 
   set_tests_properties(gemini:compare:netcdf:${testname}:python PROPERTIES
-  TIMEOUT 30
+  TIMEOUT 60
   DEPENDS gemini:netcdf:${testname}
   REQUIRED_FILES ${outdir}/inputs/config.nml
   SKIP_RETURN_CODE 77)
