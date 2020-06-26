@@ -37,12 +37,20 @@ endif()
 if(NOT python_ok)
   clone_if_missing(${pygemini_dir} ${pygemini_url})
 
+  # detect virtualenv
+  # this is how CMake itself works for FindPython3 in Modules/FindPython/Support.cmake
+  if(DEFINED ENV{VIRTUAL_ENV} OR DEFINED ENV{CONDA_PREFIX})
+    set(_pip_args)
+  else()
+    set(_pip_args "--user")
+  endif()
+
   if(NOT EXISTS ${pygemini_dir}/setup.py)
     message(WARNING "Could not find PyGemini setup.py in ${pygemini_dir}")
     return()
   endif()
 
-  execute_process(COMMAND ${Python3_EXECUTABLE} setup.py develop --user
+  execute_process(COMMAND ${Python3_EXECUTABLE} -m pip install -e. ${_pip_args}
     WORKING_DIRECTORY ${pygemini_dir}
     OUTPUT_VARIABLE _log
     ERROR_VARIABLE _log
