@@ -1,6 +1,6 @@
 # Publications Using GEMINI
 
-Since its first appearance in 2012, GEMINI has been used in over 15 publications, and 4 thesis focusing on local-scale ionospheric dynamics.  
+Since its first appearance in 2012, GEMINI has been used in over 15 publications, and 6 theses focusing on local-scale ionospheric dynamics.  
 
 ## Peer-reviewed journal articles
 
@@ -45,6 +45,10 @@ Lee, Y. (2013). A 3-D Model of the Auroral Ionosphere.  MS thesis.  Embry-Riddle
 Burleigh, M. R. (2013). Auroral Ion Upflows: Sources, High Altitude Dynamics, and Neutral Wind Effects.  MS Thesis.  Embry-Riddle Aeronautical University.  [https://commons.erau.edu/cgi/viewcontent.cgi?article=1032&=&context=edt&=&sei-redir=1&referer=https%253A%252F%252Fscholar.google.com%252Fscholar%253Fhl%253Den%2526as_sdt%253D0%25252C10%2526q%253DAuroral%252BIon%252BUpflows%25253A%252BSources%25252C%252BHigh%252BAltitude%252BDynamics%25252C%252Band%252BNeutral%252BWind%252BEffects%2526btnG%253D#search=%22Auroral%20Ion%20Upflows%3A%20Sources%2C%20High%20Altitude%20Dynamics%2C%20Neutral%20Wind%20Effects%22](https://commons.erau.edu/cgi/viewcontent.cgi?article=1032&=&context=edt&=&sei-redir=1&referer=https%253A%252F%252Fscholar.google.com%252Fscholar%253Fhl%253Den%2526as_sdt%253D0%25252C10%2526q%253DAuroral%252BIon%252BUpflows%25253A%252BSources%25252C%252BHigh%252BAltitude%252BDynamics%25252C%252Band%252BNeutral%252BWind%252BEffects%2526btnG%253D#search=%22Auroral%20Ion%20Upflows%3A%20Sources%2C%20High%20Altitude%20Dynamics%2C%20Neutral%20Wind%20Effects%22)
 
 Burleigh, M. R. (2018). Impacts of Anisotropy, Wave Heating, and Neutral Winds on High-Latitude Ionospheric Dynamics.  PhD thesis.  Embry-Riddle Aeronautical University. [https://commons.erau.edu/edt/408/](https://commons.erau.edu/edt/408/)
+
+Clayton, R. E. (2019). Modeling and Reconstruction of in situ Ionospheric Plasma Flow Data near Auroral Arcs Using Auroral Imagery (Doctoral dissertation, Dartmouth College).  [https://search.proquest.com/openview/802782f1dd456be02749cec573a59904/1?pq-origsite=gscholar&cbl=18750&diss=y](https://search.proquest.com/openview/802782f1dd456be02749cec573a59904/1?pq-origsite=gscholar&cbl=18750&diss=y)
+
+Fernandes, P. A. (2015). Measuring the seeds of thermal ion outflow. PhD thesis.  Dartmouth College.[https://search.proquest.com/openview/7f930a06109dfe5dbe519d70ac60e77a/1?pq-origsite=gscholar&cbl=18750&diss=y](https://search.proquest.com/openview/7f930a06109dfe5dbe519d70ac60e77a/1?pq-origsite=gscholar&cbl=18750&diss=y)
 
 Gutow, J. (2020).  Relating Flows and Currents in Auroral Arcs.  Undergraduate Honors Thesis.  Dartmouth College.  
 
