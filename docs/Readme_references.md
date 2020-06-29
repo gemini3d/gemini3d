@@ -1,6 +1,6 @@
 # Publications Using GEMINI
 
-Since its first appearance in 2012, GEMINI has been used in over 15 publications focusing on local-scale ionospheric dynamics.  
+Since its first appearance in 2012, GEMINI has been used in over 15 publications, and 4 thesis focusing on local-scale ionospheric dynamics.  
 
 ## Peer-reviewed journal articles
 
@@ -36,7 +36,7 @@ Deshpande, K. B., & Zettergren, M. D. (2019). Satellite‐Beacon Ionospheric‐S
 
 Inchin, P. A., Snively, J. B., Zettergren, M. D., Komjathy, A., Verkhoglyadova, O. P., & Tulasi Ram, S. (2020). Modeling of Ionospheric Responses to Atmospheric Acoustic and Gravity Waves Driven by the 2015 Nepal 7.8 Gorkha Earthquake. Journal of Geophysical Research: Space Physics, 125(4), e2019JA027200.  [https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/2019JA027200](https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/2019JA027200)
 
-
+Spicher, A., Deshpande, K., Jin, Y., Oksavik, K., Zettergren, M. D., Clausen, L. B., ... & Baddeley, L. On the production of ionospheric irregularities via Kelvin‐Helmholtz instability associated with cusp ow channels. Journal of Geophysical Research: Space Physics, e2019JA027734.  [https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2019JA027734](https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2019JA027734)
 
 ## Theses
 
