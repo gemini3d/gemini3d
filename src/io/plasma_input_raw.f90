@@ -112,9 +112,13 @@ real(wp) :: tin
 real(wp) :: tstart,tfin
 
 !> so that random values (including NaN) don't show up in Ghost cells
-nsall = 0
-vs1all= 0
-Tsall = 0
+nsall = 0._wp
+vs1all= 0._wp
+Tsall = 0._wp
+ns=0._wp
+vs1=0._wp
+Ts=0._wp
+
 
 !> SYSTEM SIZES
 lx1=size(ns,1)-4
@@ -126,7 +130,7 @@ lx3all=size(x3all)-4
 !> READ IN FROM FILE, AS OF CURVILINEAR BRANCH THIS IS NOW THE ONLY INPUT OPTION
 call get_simsize3(indatsize, lx1in, lx2in, lx3in)
 print *, 'Input file has size:  ',lx1in,lx2in,lx3in
-print *, 'Target grid structure has size',lx1,lx2all,lx3all
+print *, 'Target grid structure has size',lx1,lx2all,lx3all,lx2,lx3
 
 if (flagswap==1) then
   print *, '2D simulations grid detected, swapping input file dimension sizes and permuting input arrays'
@@ -166,10 +170,16 @@ end if
 close(u)
 end block
 
-!> Don't support restarting potential right now for nc4
+!> Don't support restarting potential right now for raw input
 Phiall=0._wp
 Phi=0._wp
 
+
+!> Check the parameters (full grid)
+!  print*, 'Full grid parameter synopsis:  '
+!  print '(A,2ES11.2)', 'Min/max input density:',     minval(nsall(:,:,:,7)),  maxval(nsall(:,:,:,7))
+!  print '(A,2ES11.2)', 'Min/max input velocity:',    minval(vs1all(:,:,:,:)), maxval(vs1all(:,:,:,:))
+!  print '(A,2ES11.2)', 'Min/max input temperature:', minval(Tsall(:,:,:,:)),  maxval(Tsall(:,:,:,:))
 
 !> ROOT BROADCASTS IC DATA TO WORKERS
 call cpu_time(tstart)
@@ -179,6 +189,13 @@ call bcast_send(Tsall,tag%Ts,Ts)
 call bcast_send(Phiall,tag%Phi,Phi)
 call cpu_time(tfin)
 print *, 'Done sending ICs to workers...  CPU elapsed time:  ',tfin-tstart
+
+!> Check the parameters (root)
+!  print*, 'Root chunk parameter synopsis:  '
+!  print '(A,2ES11.2)', 'Min/max input density:',     minval(ns(:,:,:,7)),  maxval(ns(:,:,:,7))
+!  print '(A,2ES11.2)', 'Min/max input velocity:',    minval(vs1(:,:,:,:)), maxval(vs1(:,:,:,:))
+!  print '(A,2ES11.2)', 'Min/max input temperature:', minval(Ts(:,:,:,:)),  maxval(Ts(:,:,:,:))
+
 
 end procedure input_root_mpi_raw
 
