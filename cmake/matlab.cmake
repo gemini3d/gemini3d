@@ -15,8 +15,8 @@ if(Matlab_VERSION AND Matlab_VERSION VERSION_LESS 9.6)
 endif()
 
 if(IS_DIRECTORY ${matgemini_dir})
-  message(STATUS "Gemini-Matlab found: ${matgemini_dir}")
-  set(matlab_ok true CACHE BOOL "Gemini-Matlab OK")
+  message(STATUS "MatGemini found: ${matgemini_dir}")
+  set(matlab_ok true CACHE BOOL "MatGemini OK")
 endif()
 
 endfunction(check_matgemini)
@@ -28,8 +28,8 @@ if(NOT Matlab_FOUND)
 endif()
 # keep this in script so it's not scoped in function
 
-set(matgemini_dir "${PROJECT_SOURCE_DIR}/../gemini-matlab/")
-set(matgemini_url "https://github.com/gemini3d/gemini-matlab")
+set(matgemini_dir "${PROJECT_SOURCE_DIR}/../mat_gemini/")
+set(matgemini_url "https://github.com/gemini3d/mat_gemini")
 
 if(NOT matlab_ok)
   clone_if_missing(${matgemini_dir} ${matgemini_url})
