@@ -6,6 +6,7 @@
 set(_opts)
 
 # --- boilerplate follows
+message(STATUS "CMake ${CMAKE_VERSION}")
 if(CMAKE_VERSION VERSION_LESS 3.15)
   message(FATAL_ERROR "Please update CMake >= 3.15")
 endif()
@@ -15,29 +16,10 @@ if(NOT DEFINED CTEST_SITE)
   set(CTEST_SITE ${CMAKE_SYSTEM_NAME})
 endif()
 
-# if compiler specified, deduce its ID
+# test name is Fortran compiler in FC
+# Note: ctest scripts cannot read cache variables like CMAKE_Fortran_COMPILER
 if(DEFINED ENV{FC})
-  set(FC $ENV{FC})
-endif()
-if(DEFINED CMAKE_Fortran_COMPILER)
-  set(FC ${CMAKE_Fortran_COMPILER})
-endif()
-if(DEFINED FC)
-  foreach(c gfortran ifort flang pgfortran nagfor xlf ftn)
-    string(FIND ${FC} ${c} i)
-    if(i GREATER_EQUAL 0)
-      if(c STREQUAL gfortran)
-        execute_process(COMMAND gfortran -dumpversion
-          RESULT_VARIABLE _ret
-          OUTPUT_VARIABLE _vers OUTPUT_STRIP_TRAILING_WHITESPACE)
-        if(_ret EQUAL 0)
-          string(APPEND c "-${_vers}")
-        endif()
-      endif()
-      set(CTEST_BUILD_NAME ${c})
-      break()
-    endif()
-  endforeach()
+  set(CTEST_BUILD_NAME $ENV{FC})
 endif()
 
 if(NOT DEFINED CTEST_BUILD_CONFIGURATION)
@@ -55,10 +37,7 @@ if(NOT DEFINED CTEST_CMAKE_GENERATOR)
     set(CTEST_CMAKE_GENERATOR "Ninja")
   elseif(WIN32)
     set(CTEST_CMAKE_GENERATOR "MinGW Makefiles")
-    set(CTEST_BUILD_FLAGS --parallel)
-  else()
-    set(CTEST_CMAKE_GENERATOR "Unix Makefiles")
-    set(CTEST_BUILD_FLAGS --parallel)
+    set(CTEST_BUILD_FLAGS -j)  # not --parallel as this goes to generator directly
   endif()
 endif()
 
