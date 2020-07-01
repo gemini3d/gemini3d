@@ -27,8 +27,7 @@ jobs:
 
 # CI is too slow for 3d_glow
     - run: ctest -S setup.cmake -E 3d -VV
-      env:
-        FC: gfortran
+
 
   no_mpi:
     runs-on: ubuntu-latest
@@ -43,14 +42,12 @@ jobs:
         sudo apt update -yq
         sudo apt install -yq --no-install-recommends gfortran libhdf5-dev
 
-    - name: build without MPI
-      run: |
-        cmake -B build -Dno_mpi:BOOL=true
-        cmake --build build
+    - name: configure without MPI
+      run: cmake -B build -Dno_mpi:BOOL=true
 
-    - name: test without MPI
-      run: ctest -V
-      working-directory: build
+    - name: build and test without MPI
+      run: ctest -S setup.cmake -V
+
 
   cmakeBuildAllLibs:
     if: false

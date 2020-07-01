@@ -1,6 +1,4 @@
 name: ci_debug_build
-env:
-  CMAKE_GENERATOR: Ninja
 
 on:
   push:
@@ -20,31 +18,18 @@ jobs:
       with:
         python-version: '3.7'
 
-    - name: Install Ninja
-      run: |
-        wget https://github.com/ninja-build/ninja/releases/download/v1.10.0/ninja-linux.zip
-        unzip ninja-linux.zip
     - name: Install prereqs
       run: |
         sudo apt update -yq
         sudo apt install -yq --no-install-recommends gfortran liblapack-dev libscalapack-openmpi-dev libmumps-dev libopenmpi-dev openmpi-bin libhdf5-dev
 
-    - run: cmake -B build -DCMAKE_BUILD_TYPE=Debug -DCMAKE_MAKE_PROGRAM=$(realpath ./ninja)
-      env:
-        FC: gfortran
-    - run: cmake --build build
+    - run: cmake -B build -DCMAKE_BUILD_TYPE=Debug
+
+    - run: ctest -S setup.cmake -R unit -V
     - uses: actions/upload-artifact@v1
       if: failure()
       with:
         name: Linux_CMake_DebugBuildlog
         path: build/CMakeFiles/CMakeError.log
 
-    - run: ctest --parallel --output-on-failure -R unit
-      working-directory: build
-    - run: ctest --parallel --output-on-failure -R 2d_fang
-      working-directory: build
-    - uses: actions/upload-artifact@v1
-      if: failure()
-      with:
-        name: Linux_CMake_DebugTestlog
-        path: build/Testing/Temporary/LastTest.log
+    - run: ctest -S setup.cmake -R 2d_fang -V

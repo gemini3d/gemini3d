@@ -31,12 +31,16 @@ if(NOT DEFINED CTEST_BINARY_DIRECTORY)
   set(CTEST_BINARY_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/build)
 endif()
 
+# CTEST_CMAKE_GENERATOR must be defined in any case here.
 if(NOT DEFINED CTEST_CMAKE_GENERATOR)
   find_program(_gen NAMES ninja ninja-build samu)
   if(_gen)
     set(CTEST_CMAKE_GENERATOR "Ninja")
   elseif(WIN32)
     set(CTEST_CMAKE_GENERATOR "MinGW Makefiles")
+    set(CTEST_BUILD_FLAGS -j)  # not --parallel as this goes to generator directly
+  else()
+    set(CTEST_CMAKE_GENERATOR "Unix Makefiles")
     set(CTEST_BUILD_FLAGS -j)  # not --parallel as this goes to generator directly
   endif()
 endif()

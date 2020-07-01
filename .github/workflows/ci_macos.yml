@@ -1,6 +1,4 @@
 name: ci_macos
-env:
-  CMAKE_GENERATOR: Ninja
 
 on:
   push:
