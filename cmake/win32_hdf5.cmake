@@ -2,12 +2,16 @@ function(win32_hdf5_env)
 # Windows with HDF5 needs this interesting workaround of
 # copying HDF5 dlls to the CMAKE_BINARY_DIR.
 # adding the dll path to PATH should have worked, but didn't.
+#
+# This workaround relies on having environment variable HDF5_ROOT set
 
 if(WIN32 AND CMAKE_Fortran_COMPILER_ID STREQUAL Intel) # for Windows ifort dll
   if(NOT DEFINED HDF5_ROOT)
     if(DEFINED ENV{HDF5_ROOT})
       set(HDF5_ROOT $ENV{HDF5_ROOT})
     else()
+      message(VERBOSE " HDF5 workaround for Windows Intel compiler not applied because HDF5_ROOT environment variable not set.
+      It would be something like C:\Program Files\HDF_Group\HDF5\1.12.0")
       return()
     endif()
   endif()
