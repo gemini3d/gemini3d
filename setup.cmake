@@ -44,20 +44,16 @@ if(NOT DEFINED CTEST_BINARY_DIRECTORY)
 endif()
 
 # CTEST_CMAKE_GENERATOR must be defined in any case here.
-# we ignore CMAKE_GENERATOR environment variable to workaround bugs with CMake.
 if(NOT DEFINED CTEST_CMAKE_GENERATOR)
-  if(WIN32)
-    # Ninja should work with Intel compiler, but there is a CMake bug temporarily preventing this
+  find_program(_gen NAMES ninja ninja-build samu)
+  if(_gen)
+    set(CTEST_CMAKE_GENERATOR "Ninja")
+  elseif(WIN32)
     set(CTEST_CMAKE_GENERATOR "MinGW Makefiles")
     set(CTEST_BUILD_FLAGS -j)  # not --parallel as this goes to generator directly
   else()
-    find_program(_gen NAMES ninja ninja-build samu)
-    if(_gen)
-      set(CTEST_CMAKE_GENERATOR "Ninja")
-    else()
-      set(CTEST_CMAKE_GENERATOR "Unix Makefiles")
-      set(CTEST_BUILD_FLAGS -j)  # not --parallel as this goes to generator directly
-    endif()
+    set(CTEST_CMAKE_GENERATOR "Unix Makefiles")
+    set(CTEST_BUILD_FLAGS -j)  # not --parallel as this goes to generator directly
   endif()
 endif()
 

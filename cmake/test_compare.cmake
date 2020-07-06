@@ -25,7 +25,8 @@ function(python_compare outdir refdir testname)
 
 if(python_ok AND hdf5)
   add_test(NAME gemini:compare:hdf5:${testname}:python
-  COMMAND ${Python3_EXECUTABLE} ${PROJECT_SOURCE_DIR}/scripts/gemini_compare.py ${outdir} ${refdir} -file_format h5)
+  COMMAND ${Python3_EXECUTABLE} ${PROJECT_SOURCE_DIR}/scripts/gemini_compare.py ${outdir} ${refdir} -file_format h5
+  WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
 
   set_tests_properties(gemini:compare:hdf5:${testname}:python PROPERTIES
   TIMEOUT 60

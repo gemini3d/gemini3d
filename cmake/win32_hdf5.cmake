@@ -8,7 +8,7 @@ function(win32_hdf5_env)
 if(WIN32 AND CMAKE_Fortran_COMPILER_ID STREQUAL Intel) # for Windows ifort dll
   if(NOT DEFINED HDF5_ROOT)
     if(DEFINED ENV{HDF5_ROOT})
-      set(HDF5_ROOT $ENV{HDF5_ROOT})
+      file(TO_CMAKE_PATH "$ENV{HDF5_ROOT}" HDF5_ROOT)
     else()
       message(VERBOSE " HDF5 workaround for Windows Intel compiler not applied because HDF5_ROOT environment variable not set.
       It would be something like C:\Program Files\HDF_Group\HDF5\1.12.0")
@@ -17,7 +17,7 @@ if(WIN32 AND CMAKE_Fortran_COMPILER_ID STREQUAL Intel) # for Windows ifort dll
   endif()
 
   # bizarre behavior if not strip quotes
-  string(REPLACE "\"" "" HDF5_ROOT ${HDF5_ROOT})
+  # string(REPLACE "\"" "" HDF5_ROOT ${HDF5_ROOT})
   # This "should" have worked, but the following workaround is needed instead.
   # set_tests_properties(${TESTNAME} PROPERTIES ENVIRONMENT "PATH=${HDF5_ROOT}/bin;$ENV{PATH}")
 

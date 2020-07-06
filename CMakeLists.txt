@@ -26,7 +26,7 @@ project(gemini3d
   LANGUAGES C Fortran  # MUST include C language for Intel / MKL to work
   DESCRIPTION "3-D ionospheric model"
   HOMEPAGE_URL https://github.com/gemini3d/gemini
-  VERSION 0.6.0)
+  VERSION 0.6.1)
 
 enable_testing()
 include(CTest) # for CDash
