@@ -529,7 +529,7 @@ grid2ID = i3 * lid2 + i2
 end function grid2id
 
 
-module function ID2grid(ID)
+pure function ID2grid(ID)
 !! COMPUTES GRID LOCATION FROM A PROCESS ID
 integer, dimension(2) :: ID2grid
 integer, intent(in) :: ID
