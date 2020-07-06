@@ -10,7 +10,9 @@ if(python_ok AND hdf5)
   win32_hdf5_env()
 
   add_test(NAME gemini:hdf5:${TESTNAME}:dryrun
-    COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/scripts/run_test.py ${TESTNAME} ${MPIEXEC_EXECUTABLE} $<TARGET_FILE:gemini.bin> ${_outdir} -dryrun)
+    COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/scripts/run_test.py ${TESTNAME} ${MPIEXEC_EXECUTABLE} $<TARGET_FILE:gemini.bin> ${_outdir} -dryrun
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
+    # NOTE: Working_Diretory is NECESSARY for Windows + Intel + HDF5
 
   set_tests_properties(gemini:hdf5:${TESTNAME}:dryrun PROPERTIES
     TIMEOUT 60
@@ -20,7 +22,9 @@ if(python_ok AND hdf5)
 
 
   add_test(NAME gemini:hdf5:${TESTNAME}
-    COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/scripts/run_test.py ${TESTNAME} ${MPIEXEC_EXECUTABLE} $<TARGET_FILE:gemini.bin> ${_outdir})
+    COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/scripts/run_test.py ${TESTNAME} ${MPIEXEC_EXECUTABLE} $<TARGET_FILE:gemini.bin> ${_outdir}
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
+    # NOTE: Working_Diretory is NECESSARY for Windows + Intel + HDF5
 
   # NOTE: don't use REQUIRED_FILES because it won't let file download if not present.
   set_tests_properties(gemini:hdf5:${TESTNAME} PROPERTIES
