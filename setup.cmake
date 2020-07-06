@@ -7,8 +7,8 @@ set(_opts)
 
 # --- boilerplate follows
 message(STATUS "CMake ${CMAKE_VERSION}")
-if(CMAKE_VERSION VERSION_LESS 3.15)
-  message(FATAL_ERROR "Please update CMake >= 3.15")
+if(CMAKE_VERSION VERSION_LESS 3.14)
+  message(FATAL_ERROR "Please update CMake >= 3.14")
 endif()
 
 # site is OS name
@@ -19,7 +19,19 @@ endif()
 # test name is Fortran compiler in FC
 # Note: ctest scripts cannot read cache variables like CMAKE_Fortran_COMPILER
 if(DEFINED ENV{FC})
-  set(CTEST_BUILD_NAME $ENV{FC})
+  set(FC $ENV{FC})
+  set(CTEST_BUILD_NAME ${FC})
+
+  if(NOT DEFINED ENV{CC})
+    # use same compiler for C and Fortran, which CMake might not do itself
+    if(FC STREQUAL ifort)
+      if(WIN32)
+        set(ENV{CC} icl)
+      else()
+        set(ENV{CC} icc)
+      endif()
+    endif()
+  endif()
 endif()
 
 if(NOT DEFINED CTEST_BUILD_CONFIGURATION)
@@ -32,31 +44,53 @@ if(NOT DEFINED CTEST_BINARY_DIRECTORY)
 endif()
 
 # CTEST_CMAKE_GENERATOR must be defined in any case here.
+# we ignore CMAKE_GENERATOR environment variable to workaround bugs with CMake.
 if(NOT DEFINED CTEST_CMAKE_GENERATOR)
-  find_program(_gen NAMES ninja ninja-build samu)
-  if(_gen)
-    set(CTEST_CMAKE_GENERATOR "Ninja")
-  elseif(WIN32)
+  if(WIN32)
+    # Ninja should work with Intel compiler, but there is a CMake bug temporarily preventing this
     set(CTEST_CMAKE_GENERATOR "MinGW Makefiles")
     set(CTEST_BUILD_FLAGS -j)  # not --parallel as this goes to generator directly
   else()
-    set(CTEST_CMAKE_GENERATOR "Unix Makefiles")
-    set(CTEST_BUILD_FLAGS -j)  # not --parallel as this goes to generator directly
+    find_program(_gen NAMES ninja ninja-build samu)
+    if(_gen)
+      set(CTEST_CMAKE_GENERATOR "Ninja")
+    else()
+      set(CTEST_CMAKE_GENERATOR "Unix Makefiles")
+      set(CTEST_BUILD_FLAGS -j)  # not --parallel as this goes to generator directly
+    endif()
   endif()
 endif()
 
+# -- build and test
 ctest_start("Experimental" ${CTEST_SOURCE_DIRECTORY} ${CTEST_BINARY_DIRECTORY})
-if(NOT EXISTS ${CTEST_BINARY_DIRECTORY}/CMakeCache.txt)
-  ctest_configure(BUILD ${CTEST_BINARY_DIRECTORY} SOURCE ${CTEST_SOURCE_DIRECTORY} OPTIONS "${_opts}")
-endif()
-ctest_build(BUILD ${CTEST_BINARY_DIRECTORY} CONFIGURATION ${CTEST_BUILD_CONFIGURATION})
-ctest_test(BUILD ${CTEST_BINARY_DIRECTORY})
 
-# using ctest_submit makes error code 0 even if test(s) failed!
-if(DEFINED ENV{CI})
-  set(CI $ENV{CI})
+ctest_configure(
+  BUILD ${CTEST_BINARY_DIRECTORY}
+  SOURCE ${CTEST_SOURCE_DIRECTORY}
+  OPTIONS "${_opts}"
+  RETURN_VALUE return_code
+  CAPTURE_CMAKE_ERROR cmake_err)
+
+if(return_code EQUAL 0 AND cmake_err EQUAL 0)
+  ctest_build(
+    BUILD ${CTEST_BINARY_DIRECTORY}
+    CONFIGURATION ${CTEST_BUILD_CONFIGURATION}
+    RETURN_VALUE return_code
+    NUMBER_ERRORS Nerror
+    CAPTURE_CMAKE_ERROR cmake_err
+    )
+else()
+  message(STATUS "SKIP: ctest_build(): returncode: ${return_code}; CMake error code: ${cmake_err}")
 endif()
 
-if(NOT CI)
-  ctest_submit()
+if(return_code EQUAL 0 AND Nerror EQUAL 0 AND cmake_err EQUAL 0)
+  ctest_test(
+  BUILD ${CTEST_BINARY_DIRECTORY}
+  RETURN_VALUE return_code
+  CAPTURE_CMAKE_ERROR ctest_err
+  )
+else()
+  message(STATUS "SKIP: ctest_test(): returncode: ${return_code}; CMake error code: ${cmake_err}")
 endif()
+
+ctest_submit()
