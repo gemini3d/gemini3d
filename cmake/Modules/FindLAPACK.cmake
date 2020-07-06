@@ -286,7 +286,7 @@ endif()
 foreach(s ${_mkl_libs})
   find_library(LAPACK_${s}_LIBRARY
            NAMES ${s}
-           PATHS ENV MKLROOT ENV TBBROOT
+           PATHS ${MKLROOT} ENV TBBROOT
            PATH_SUFFIXES
              lib lib/intel64 lib/intel64_win
              lib/intel64/gcc4.7 ../tbb/lib/intel64/gcc4.7
@@ -296,7 +296,7 @@ foreach(s ${_mkl_libs})
            NO_DEFAULT_PATH)
 
   if(NOT LAPACK_${s}_LIBRARY)
-    message(WARNING "MKL component not found: " ${s})
+    message(STATUS "MKL component not found: " ${s})
     return()
   endif()
 
@@ -310,10 +310,10 @@ endif()
 set(BLAS_LIBRARY PARENT_SCOPE)
 set(LAPACK_LIBRARY ${LAPACK_LIB} PARENT_SCOPE)
 set(LAPACK_INCLUDE_DIR
-  $ENV{MKLROOT}/include
-  $ENV{MKLROOT}/include/intel64/${_mkl_bitflag}lp64
-  ${pc_mkl_INCLUDE_DIRS}
+  ${MKLROOT}/include
+  ${MKLROOT}/include/intel64/${_mkl_bitflag}lp64
   PARENT_SCOPE)
+ # ${pc_mkl_INCLUDE_DIRS} has garbage on Windows
 
 endfunction(find_mkl_libs)
 
@@ -335,7 +335,15 @@ find_package(PkgConfig QUIET)
 # ==== generic MKL variables ====
 
 if(MKL IN_LIST LAPACK_FIND_COMPONENTS)
-  list(APPEND CMAKE_PREFIX_PATH $ENV{MKLROOT}/bin/pkgconfig)
+  # we have to sanitize MKLROOT if it has Windows backslashes (\) otherwise it will break at build time
+  # double-quotes are necessary per CMake to_cmake_path docs.
+  if(WIN32)
+    file(TO_CMAKE_PATH "$ENV{MKLROOT}" MKLROOT)
+  else()
+    set(MKLROOT "$ENV{MKLROOT}")
+  endif()
+
+  list(APPEND CMAKE_PREFIX_PATH ${MKLROOT}/bin/pkgconfig)
 
   if(NOT WIN32)
     find_package(Threads)

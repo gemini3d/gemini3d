@@ -11,7 +11,6 @@ by Michael Hirsch, Ph.D. www.scivision.dev
 Finds SCALAPACK libraries for MKL, OpenMPI and MPICH.
 Intel MKL relies on having environment variable MKLROOT set, typically by sourcing
 mklvars.sh beforehand.
-Intended to work with Intel MKL at least through version 2021.
 
 This module does NOT find LAPACK.
 
@@ -71,7 +70,7 @@ foreach(s ${_mkl_libs})
   find_library(SCALAPACK_${s}_LIBRARY
            NAMES ${s}
            PATHS
-            ENV MKLROOT
+            ${MKLROOT}
             ENV I_MPI_ROOT
             ENV TBBROOT
             ../tbb/lib/intel64/gcc4.7
@@ -85,7 +84,7 @@ foreach(s ${_mkl_libs})
            HINTS ${pc_mkl_LIBRARY_DIRS} ${pc_mkl_LIBDIR}
            NO_DEFAULT_PATH)
   if(NOT SCALAPACK_${s}_LIBRARY)
-    message(WARNING "MKL component not found: " ${s})
+    message(STATUS "MKL component not found: " ${s})
     return()
   endif()
 
@@ -95,18 +94,18 @@ endforeach()
 
 find_path(SCALAPACK_INCLUDE_DIR
   NAMES mkl_scalapack.h
-  PATHS ENV MKLROOT ENV I_MPI_ROOT ENV TBBROOT
+  PATHS ${MKLROOT} ENV I_MPI_ROOT ENV TBBROOT
   PATH_SUFFIXES
     include
     include/intel64/lp64
   HINTS ${pc_mkl_INCLUDE_DIRS})
 
 if(NOT SCALAPACK_INCLUDE_DIR)
-  message(WARNING "MKL Include Dir not found")
+  message(STATUS "MKL Include Dir not found")
   return()
 endif()
 
-list(APPEND SCALAPACK_INCLUDE_DIR ${pc_mkl_INCLUDE_DIRS})
+# list(APPEND SCALAPACK_INCLUDE_DIR ${pc_mkl_INCLUDE_DIRS})  # this is unnecessary, and on Windows injects breaking garbage
 
 set(SCALAPACK_MKL_FOUND true PARENT_SCOPE)
 set(SCALAPACK_LIBRARY ${SCALAPACK_LIBRARY} PARENT_SCOPE)
@@ -138,6 +137,13 @@ if(NOT MKL IN_LIST SCALAPACK_FIND_COMPONENTS)
 endif()
 
 if(MKL IN_LIST SCALAPACK_FIND_COMPONENTS)
+  # we have to sanitize MKLROOT if it has Windows backslashes (\) otherwise it will break at build time
+  # double-quotes are necessary per CMake to_cmake_path docs.
+  if(WIN32)
+    file(TO_CMAKE_PATH "$ENV{MKLROOT}" MKLROOT)
+  else()
+    set(MKLROOT "$ENV{MKLROOT}")
+  endif()
 
   if(OpenMPI IN_LIST SCALAPACK_FIND_COMPONENTS)
     mkl_scala(mkl_scalapack_lp64 mkl_blacs_openmpi_lp64)

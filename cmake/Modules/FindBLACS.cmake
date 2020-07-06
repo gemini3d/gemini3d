@@ -62,7 +62,7 @@ foreach(s ${_mkl_libs})
   find_library(BLACS_${s}_LIBRARY
            NAMES ${s}
            PATHS
-            ENV MKLROOT
+            ${MKLROOT}
             ENV I_MPI_ROOT
             ENV TBBROOT
             ../tbb/lib/intel64/gcc4.7
@@ -76,7 +76,7 @@ foreach(s ${_mkl_libs})
            HINTS ${MKL_LIBRARY_DIRS} ${MKL_LIBDIR}
            NO_DEFAULT_PATH)
   if(NOT BLACS_${s}_LIBRARY)
-    message(WARNING "MKL component not found: " ${s})
+    message(STATUS "MKL component not found: " ${s})
     return()
   endif()
 
@@ -87,7 +87,7 @@ endforeach()
 find_path(BLACS_INCLUDE_DIR
   NAMES mkl_blacs.h
   PATHS
-    ENV MKLROOT
+    ${MKLROOT}
     ENV I_MPI_ROOT
     ENV TBBROOT
   PATH_SUFFIXES
@@ -96,7 +96,7 @@ find_path(BLACS_INCLUDE_DIR
   HINTS ${MKL_INCLUDE_DIRS})
 
 if(NOT BLACS_INCLUDE_DIR)
-  message(WARNING "MKL Include Dir not found")
+  message(STATUS "MKL Include Dir not found")
   return()
 endif()
 
@@ -186,6 +186,13 @@ find_package(PkgConfig QUIET)
 set(BLACS_INCLUDE_DIR)
 
 if(MKL IN_LIST BLACS_FIND_COMPONENTS)
+  # we have to sanitize MKLROOT if it has Windows backslashes (\) otherwise it will break at build time
+  # double-quotes are necessary per CMake to_cmake_path docs.
+  if(WIN32)
+    file(TO_CMAKE_PATH "$ENV{MKLROOT}" MKLROOT)
+  else()
+    set(MKLROOT "$ENV{MKLROOT}")
+  endif()
 
   if(BUILD_SHARED_LIBS)
     set(_mkltype dynamic)
