@@ -7,6 +7,7 @@ FindMUMPS
 
 Finds the MUMPS library.
 Note that MUMPS generally requires SCALAPACK and LAPACK as well.
+PORD is always used, in addition to the optional METIS or SCOTCH, which would be found externally.
 
 COMPONENTS
   s d c z   list one or more. Defaults to ``d``.
@@ -22,6 +23,8 @@ MUMPS_INCLUDE_DIRS
 
 #]=======================================================================]
 
+set(MUMPS_LIBRARY)  # don't endlessly append
+
 function(mumps_libs)
 
 find_path(MUMPS_INCLUDE_DIR
@@ -33,6 +36,7 @@ endif()
 
 find_library(MUMPS_COMMON
              NAMES mumps_common
+             NAMES_PER_DIR
              DOC "MUMPS common libraries")
 if(NOT MUMPS_COMMON)
   return()
@@ -40,6 +44,7 @@ endif()
 
 find_library(PORD
              NAMES pord
+             NAMES_PER_DIR
              DOC "simplest MUMPS ordering library")
 if(NOT PORD)
   return()
@@ -47,7 +52,8 @@ endif()
 
 foreach(comp ${MUMPS_FIND_COMPONENTS})
   find_library(MUMPS_${comp}_lib
-               NAMES ${comp}mumps)
+               NAMES ${comp}mumps
+               NAMES_PER_DIR)
 
   if(NOT MUMPS_${comp}_lib)
     message(WARNING "MUMPS ${comp} not found")
@@ -66,46 +72,29 @@ endif()
 endfunction(mumps_libs)
 
 
-cmake_policy(VERSION 3.3)
-
 if(NOT MUMPS_FIND_COMPONENTS)
   list(APPEND MUMPS_FIND_COMPONENTS d)
 endif()
 
 mumps_libs()
 
-if(MUMPS_LIBRARY)
-  include(CheckFortranSourceCompiles)
-  set(CMAKE_REQUIRED_INCLUDES ${MUMPS_INCLUDE_DIR})
-
-  find_package(LAPACK REQUIRED)
-  find_package(MPI REQUIRED COMPONENTS Fortran)
-  set(CMAKE_REQUIRED_LIBRARIES ${MUMPS_LIBRARY} ${LAPACK_LIBRARIES} MPI::MPI_Fortran)
-
-  # NOTE: These must be in quotes here: "d" "s" or behavior is intermittent not found
-  if("d" IN_LIST MUMPS_FIND_COMPONENTS)
-    check_fortran_source_compiles("include 'dmumps_struc.h'
-    type(DMUMPS_STRUC) :: mumps_par
-    end"
-      MUMPS_OK SRC_EXT f90)
-  elseif("s" IN_LIST MUMPS_FIND_COMPONENTS)
-    check_fortran_source_compiles("include 'smumps_struc.h'
-      type(SMUMPS_STRUC) :: mumps_par
-      end"
-      MUMPS_OK SRC_EXT f90)
-  endif()
-
-endif()
-
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(MUMPS
-  REQUIRED_VARS MUMPS_LIBRARY MUMPS_INCLUDE_DIR # MUMPS_OK
+  REQUIRED_VARS MUMPS_LIBRARY MUMPS_INCLUDE_DIR
   HANDLE_COMPONENTS)
 
 if(MUMPS_FOUND)
-  set(MUMPS_LIBRARIES ${MUMPS_LIBRARY})
-  set(MUMPS_INCLUDE_DIRS ${MUMPS_INCLUDE_DIR})
+# need if _FOUND guard to allow project to autobuild; can't overwrite imported target even if bad
+set(MUMPS_LIBRARIES ${MUMPS_LIBRARY})
+set(MUMPS_INCLUDE_DIRS ${MUMPS_INCLUDE_DIR})
+
+if(NOT TARGET MUMPS::MUMPS)
+  add_library(MUMPS::MUMPS INTERFACE IMPORTED)
+  set_target_properties(MUMPS::MUMPS PROPERTIES
+                        INTERFACE_LINK_LIBRARIES "${MUMPS_LIBRARY}"
+                        INTERFACE_INCLUDE_DIRECTORIES "${MUMPS_INCLUDE_DIR}"
+                      )
 endif()
+endif(MUMPS_FOUND)
 
 mark_as_advanced(MUMPS_INCLUDE_DIR MUMPS_LIBRARY)
-
