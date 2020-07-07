@@ -18,7 +18,6 @@ find_package(MPI REQUIRED COMPONENTS Fortran)
 
 add_executable(testmpi test_mpi.f90)
 target_link_libraries(testmpi PRIVATE MPI::MPI_Fortran)
-target_compile_options(testmpi PRIVATE ${FFLAGS})
 add_test(NAME MPIexist COMMAND testmpi)
 
 set_tests_properties(MPIexist PROPERTIES
@@ -28,10 +27,8 @@ set_tests_properties(MPIexist PROPERTIES
 
 
 add_executable(testmumps test_mumps.f90)
-target_include_directories(testmumps PRIVATE ${MUMPS_INCLUDE_DIRS})
-target_compile_options(testmumps PRIVATE ${FFLAGS})
 target_link_libraries(testmumps PRIVATE
-  ${MUMPS_LIBRARIES} MPI::MPI_Fortran)
+  MUMPS::MUMPS SCALAPACK::SCALAPACK LAPACK::LAPACK MPI::MPI_Fortran)
 
 add_test(NAME MUMPS
   COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${MPIEXEC_MAX_NUMPROCS} $<TARGET_FILE:testmumps>

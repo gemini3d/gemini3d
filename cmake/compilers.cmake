@@ -53,7 +53,8 @@ elseif(CMAKE_Fortran_COMPILER_ID STREQUAL GNU)
   endif()
 
   list(APPEND FFLAGS -fimplicit-none)
-  list(APPEND FFLAGS -Wall -Wpedantic -Wextra)
+  list(APPEND FFLAGS -Wall -Wextra)
+  # -Wpedantic false warnings
 
   if(CMAKE_BUILD_TYPE STREQUAL Debug)
     list(APPEND FFLAGS -fcheck=all)
@@ -62,7 +63,8 @@ elseif(CMAKE_Fortran_COMPILER_ID STREQUAL GNU)
     list(APPEND FFLAGS -Wno-unused-dummy-argument -Wno-unused-variable -Wno-unused-function)
   endif()
 
-  if(CMAKE_Fortran_COMPILER_VERSION VERSION_GREATER_EQUAL 8)
+  # too many false warnings with GCC 9
+  if(CMAKE_Fortran_COMPILER_VERSION VERSION_GREATER_EQUAL 10)
      list(APPEND FFLAGS -std=f2018)
   endif()
 
