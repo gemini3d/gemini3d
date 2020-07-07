@@ -39,7 +39,7 @@ target_link_libraries(multifluid PRIVATE advec calculus collision const diffusio
 add_executable(gemini.bin gemini.f90)
 target_link_libraries(gemini.bin PRIVATE advec calculus config const collision diffusion fang grid io interp ionization gbsv mesh mpimod multifluid
   neutral pathlib PDEelliptic PDEparabolic potential precipBCs reader sanity_check sources temporal timeutils
-  ${LAPACK_LIBRARIES})  # necessary for self-compiled
+  LAPACK::LAPACK)  # necessary for self-compiled
 set_target_properties(gemini.bin PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
 add_test(NAME unit:gemini_exe_ok COMMAND $<TARGET_FILE:gemini.bin>)

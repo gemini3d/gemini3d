@@ -7,6 +7,7 @@ function(check_pygemini)
 # __path__ is always iterable: https://docs.python.org/3/reference/import.html#__path__
 
 execute_process(COMMAND ${Python3_EXECUTABLE} -c "import gemini3d; print(gemini3d.__path__[0])"
+  WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}  # help avoid Intel Windows false import error due to hdf5 .dll in build dir
   OUTPUT_VARIABLE PYGEMINI_DIR
   OUTPUT_STRIP_TRAILING_WHITESPACE
   RESULT_VARIABLE _ok

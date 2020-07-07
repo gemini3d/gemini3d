@@ -2,8 +2,7 @@
 # this is needed because Mumps uses Fortran 95 syntax instead of Fortran 2003 syntax
 configure_file(mumps_ifc.in.f90 mumps_ifc.f90)
 add_library(mumps_interface OBJECT ${CMAKE_CURRENT_BINARY_DIR}/mumps_ifc.f90)
-target_include_directories(mumps_interface PUBLIC ${MUMPS_INCLUDE_DIRS})
-target_link_libraries(mumps_interface PUBLIC ${MUMPS_LIBRARIES})
+target_link_libraries(mumps_interface PUBLIC MUMPS::MUMPS)
 
 add_library(PDEelliptic OBJECT PDEelliptic.f90 elliptic2d.f90 elliptic3d.f90)
 target_link_libraries(PDEelliptic PUBLIC const mpimod mumps_interface MPI::MPI_Fortran)
@@ -21,8 +20,8 @@ endif()
 set(_potential_testfile ${CMAKE_CURRENT_BINARY_DIR}/test_potential2d.h5)
 add_executable(test_potential2d test_potential2D.f90)
 target_link_libraries(test_potential2d const PDEelliptic h5fortran
- ${MUMPS_LIBRARIES} MPI::MPI_Fortran)
- # ${MUMPS_LIBRARIES} MPI::MPI_Fortran is necessary here to get MPI after MUMPS,
+ MUMPS::MUMPS MPI::MPI_Fortran)
+ # MUMPS::MUMPS MPI::MPI_Fortran is necessary here to get MPI after MUMPS,
  # else will not compile on MinGW with Ninja or Make.
  # LINK_INTERFACE_MULTIPLICITY and IMPORTED_LINK_INTERFACE_MULTIPLICITY do not help here.
  # adding INTERFACE to Mumps project didn't help either
