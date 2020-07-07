@@ -38,8 +38,9 @@ target_link_libraries(multifluid PRIVATE advec calculus collision const diffusio
 # --- Main GEMINI executable
 add_executable(gemini.bin gemini.f90)
 target_link_libraries(gemini.bin PRIVATE advec calculus config const collision diffusion fang grid io interp ionization gbsv mesh mpimod multifluid
-  neutral pathlib PDEelliptic PDEparabolic potential precipBCs reader sanity_check sources temporal timeutils
-  SCALAPACK::SCALAPACK LAPACK::LAPACK)  # necessary for self-compiled
+  neutral pathlib PDEelliptic PDEparabolic potential precipBCs reader sanity_check sources temporal timeutils)
+target_link_libraries(gemini.bin PRIVATE MUMPS::MUMPS SCALAPACK::SCALAPACK LAPACK::LAPACK)
+# necessary as separate link_libraries() command to force link orer
 set_target_properties(gemini.bin PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
 add_test(NAME unit:gemini_exe_ok COMMAND $<TARGET_FILE:gemini.bin>)

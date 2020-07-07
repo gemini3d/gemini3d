@@ -18,15 +18,15 @@ if(NOT hdf5)
 endif()
 
 set(_potential_testfile ${CMAKE_CURRENT_BINARY_DIR}/test_potential2d.h5)
+
 add_executable(test_potential2d test_potential2D.f90)
-target_link_libraries(test_potential2d const PDEelliptic h5fortran
- MUMPS::MUMPS SCALAPACK::SCALAPACK LAPACK::LAPACK MPI::MPI_Fortran)
- # MUMPS::MUMPS MPI::MPI_Fortran is necessary here to get MPI after MUMPS,
- # else will not compile on MinGW with Ninja or Make.
- # LINK_INTERFACE_MULTIPLICITY and IMPORTED_LINK_INTERFACE_MULTIPLICITY do not help here.
- # adding INTERFACE to Mumps project didn't help either
- # nor did adding them in cmake/mumps.cmake
- # it seems to have to be right here.
+target_link_libraries(test_potential2d PRIVATE const PDEelliptic h5fortran
+ MUMPS::MUMPS SCALAPACK::SCALAPACK LAPACK::LAPACK MPI::MPI_C MPI::MPI_Fortran)
+# yes, MPI_C is neeced here, else will not compile on MinGW with Ninja or Make.
+# LINK_INTERFACE_MULTIPLICITY and IMPORTED_LINK_INTERFACE_MULTIPLICITY do not help here.
+# adding INTERFACE to Mumps project didn't help either
+# nor did adding them in cmake/mumps.cmake
+# it seems to have to be right here.
 add_test(NAME unit:potential2
   COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${MPIEXEC_MAX_NUMPROCS} $<TARGET_FILE:test_potential2d>
   WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})

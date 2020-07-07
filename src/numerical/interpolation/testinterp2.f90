@@ -6,6 +6,10 @@ use h5fortran, only : hdf5_file
 
 implicit none (type, external)
 
+character(:), allocatable :: infn, outfn
+character(1024) :: argv
+integer :: i
+
 type(hdf5_file) :: hout
 integer, parameter :: lx1=50, lx2=100, lx1i=500, lx2i=1000
 !integer, parameter :: lx1=1000, lx2=1000
@@ -58,9 +62,17 @@ end do
 filist=interp2(x1,x2,f,x1ilist,x2ilist)
 fi=reshape(filist,[lx1i,lx2i])
 
+call get_command_argument(1, argv, status=i)
+if(i/=0) error stop 'please specify input filename'
+infn = trim(argv)
 
+call get_command_argument(2, argv, status=i)
+if(i/=0) error stop 'please specify output filename'
+outfn = trim(argv)
+
+print "(A,/,A,/,A)", "interp2d: Finished test interpolation, writing to ",infn,outfn
 !! dump results to a file so we can check things
-call hout%initialize("input2d.h5", status="replace", action="write")
+call hout%initialize(infn, status="replace", action="write")
 
 call hout%write("/lx1", lx1)
 call hout%write("/lx2", lx2)
@@ -71,7 +83,7 @@ call hout%write("/f", f)
 call hout%finalize()
 
 
-call hout%initialize("output2d.h5", status="replace", action="write")
+call hout%initialize(outfn, status="replace", action="write")
 
 call hout%write("/lx1", lx1i)
 call hout%write("/lx2", lx2i)
@@ -80,6 +92,8 @@ call hout%write("/x2", x2i)
 call hout%write("/f", fi)
 
 call hout%finalize()
+
+print *, "OK: test_interp2d"
 
 end program
 
