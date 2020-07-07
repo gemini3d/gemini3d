@@ -7,7 +7,7 @@ include(FetchContent)
 
 FetchContent_Declare(MUMPS_proj
   GIT_REPOSITORY https://github.com/scivision/mumps.git
-  GIT_TAG v5.3.3.3
+  GIT_TAG v5.3.3.4
   CMAKE_ARGS "-Darith=${arith}" "-Dparallel=true" "-Dmetis=${metis}" "-Dscotch=${scotch}" "-Dopenmp=false"
 )
 
@@ -17,5 +17,4 @@ if(NOT MUMPS_FOUND)
   message(STATUS "AUTOBUILD: MUMPS")
 endif()
 
-set(MUMPS_LIBRARIES mumps::mumps)
 set(MUMPS_FOUND true)

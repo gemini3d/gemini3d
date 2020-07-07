@@ -16,8 +16,7 @@ endif()
 
 # -- verify Lapack links
 
-set(CMAKE_REQUIRED_INCLUDES ${LAPACK_INCLUDE_DIRS})
-set(CMAKE_REQUIRED_LIBRARIES ${LAPACK_LIBRARIES})
+set(CMAKE_REQUIRED_LIBRARIES LAPACK::LAPACK)
 
 if("d" IN_LIST arith)
   set(_code "double precision, external :: disnan; print *, disnan(0.); end")

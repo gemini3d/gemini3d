@@ -69,6 +69,7 @@ set(_mkl_libs ${ARGV})
 foreach(s ${_mkl_libs})
   find_library(SCALAPACK_${s}_LIBRARY
            NAMES ${s}
+           NAMES_PER_DIR
            PATHS
             ${MKLROOT}
             ENV I_MPI_ROOT
@@ -139,11 +140,7 @@ endif()
 if(MKL IN_LIST SCALAPACK_FIND_COMPONENTS)
   # we have to sanitize MKLROOT if it has Windows backslashes (\) otherwise it will break at build time
   # double-quotes are necessary per CMake to_cmake_path docs.
-  if(WIN32)
-    file(TO_CMAKE_PATH "$ENV{MKLROOT}" MKLROOT)
-  else()
-    set(MKLROOT "$ENV{MKLROOT}")
-  endif()
+  file(TO_CMAKE_PATH "$ENV{MKLROOT}" MKLROOT)
 
   if(OpenMPI IN_LIST SCALAPACK_FIND_COMPONENTS)
     mkl_scala(mkl_scalapack_lp64 mkl_blacs_openmpi_lp64)
@@ -166,7 +163,8 @@ elseif(OpenMPI IN_LIST SCALAPACK_FIND_COMPONENTS)
   pkg_check_modules(pc_scalapack scalapack-openmpi QUIET)
 
   find_library(SCALAPACK_LIBRARY
-                NAMES scalapack scalapack-openmpi
+                NAMES scalapack-openmpi scalapack
+                NAMES_PER_DIR
                 HINTS ${pc_scalapack_LIBRARY_DIRS} ${pc_scalapack_LIBDIR})
 
   if(SCALAPACK_LIBRARY)
@@ -179,6 +177,7 @@ elseif(MPICH IN_LIST SCALAPACK_FIND_COMPONENTS)
 
   find_library(SCALAPACK_LIBRARY
                 NAMES scalapack-mpich scalapack-mpich2
+                NAMES_PER_DIR
                 HINTS ${pc_scalapack_LIBRARY_DIRS} ${pc_scalapack_LIBDIR})
 
   if(SCALAPACK_LIBRARY)
@@ -195,12 +194,28 @@ find_package_handle_standard_args(SCALAPACK
   HANDLE_COMPONENTS)
 
 if(SCALAPACK_FOUND)
-  set(SCALAPACK_LIBRARIES ${SCALAPACK_LIBRARY})
-  set(SCALAPACK_INCLUDE_DIRS ${SCALAPACK_INCLUDE_DIR})
+# need if _FOUND guard to allow project to autobuild; can't overwrite imported target even if bad
+set(SCALAPACK_LIBRARIES ${SCALAPACK_LIBRARY})
+set(SCALAPACK_INCLUDE_DIRS ${SCALAPACK_INCLUDE_DIR})
 
-  if(BLACS_FOUND)
-    list(APPEND SCALAPACK_LIBRARIES ${BLACS_LIBRARIES})
+if(BLACS_FOUND)
+  list(APPEND SCALAPACK_LIBRARIES ${BLACS_LIBRARIES})
+  if(NOT TARGET SCALAPACK::BLACS)
+    add_library(SCALAPACK::BLACS INTERFACE IMPORTED)
+    set_target_properties(SCALAPACK::BLACS PROPERTIES
+                          INTERFACE_LINK_LIBRARIES "${BLACS_LIBRARY}"
+                          INTERFACE_INCLUDE_DIRECTORIES "${BLACS_INCLUDE_DIR}"
+                        )
   endif()
 endif()
+
+if(NOT TARGET SCALAPACK::SCALAPACK)
+  add_library(SCALAPACK::SCALAPACK INTERFACE IMPORTED)
+  set_target_properties(SCALAPACK::SCALAPACK PROPERTIES
+                        INTERFACE_LINK_LIBRARIES "${SCALAPACK_LIBRARY}"
+                        INTERFACE_INCLUDE_DIRECTORIES "${SCALAPACK_INCLUDE_DIR}"
+                      )
+endif()
+endif(SCALAPACK_FOUND)
 
 mark_as_advanced(SCALAPACK_LIBRARY SCALAPACK_INCLUDE_DIR)

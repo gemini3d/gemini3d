@@ -61,6 +61,7 @@ set(_mkl_libs ${ARGV})
 foreach(s ${_mkl_libs})
   find_library(BLACS_${s}_LIBRARY
            NAMES ${s}
+           NAMES_PER_DIR
            PATHS
             ${MKLROOT}
             ENV I_MPI_ROOT
@@ -114,7 +115,8 @@ function(nonmkl)
 if(MPICH IN_LIST BLACS_FIND_COMPONENTS)
 
 find_library(BLACS_LIBRARY
-              NAMES blacs-mpich blacs-mpich2)
+              NAMES blacs-mpich blacs-mpich2
+              NAMES_PER_DIR)
 if(BLACS_LIBRARY)
   set(BLACS_MPICH_FOUND true PARENT_SCOPE)
 endif()
@@ -122,7 +124,8 @@ endif()
 elseif(LAM IN_LIST BLACS_FIND_COMPONENTS)
 
 find_library(BLACS_LIBRARY
-              NAMES blacs-lam)
+              NAMES blacs-lam
+              NAMES_PER_DIR)
 if(BLACS_LIBRARY)
   set(BLACS_LAM_FOUND true PARENT_SCOPE)
 endif()
@@ -130,7 +133,8 @@ endif()
 elseif(PVM IN_LIST BLACS_FIND_COMPONENTS)
 
 find_library(BLACS_LIBRARY
-              NAMES blacs-pvm)
+              NAMES blacs-pvm
+              NAMES_PER_DIR)
 if(BLACS_LIBRARY)
   set(BLACS_PVM_FOUND true PARENT_SCOPE)
 endif()
@@ -138,20 +142,23 @@ endif()
 elseif(OpenMPI IN_LIST BLACS_FIND_COMPONENTS)
 
 find_library(BLACS_INIT
-  NAMES blacsF77init blacsF77init-openmpi)
+  NAMES blacsF77init blacsF77init-openmpi
+  NAMES_PER_DIR)
 if(BLACS_INIT)
   list(APPEND BLACS_LIBRARY ${BLACS_INIT})
 endif()
 
 find_library(BLACS_CINIT
-  NAMES blacsCinit blacsCinit-openmpi)
+  NAMES blacsCinit blacsCinit-openmpi
+  NAMES_PER_DIR)
 if(BLACS_CINIT)
   list(APPEND BLACS_LIBRARY ${BLACS_CINIT})
 endif()
 
 # this is the only lib that scalapack/blacs/src provides
 find_library(BLACS_LIB
-  NAMES blacs blacs-mpi blacs-openmpi)
+  NAMES blacs blacs-mpi blacs-openmpi
+  NAMES_PER_DIR)
 if(BLACS_LIB)
   list(APPEND BLACS_LIBRARY ${BLACS_LIB})
 endif()
@@ -188,11 +195,7 @@ set(BLACS_INCLUDE_DIR)
 if(MKL IN_LIST BLACS_FIND_COMPONENTS)
   # we have to sanitize MKLROOT if it has Windows backslashes (\) otherwise it will break at build time
   # double-quotes are necessary per CMake to_cmake_path docs.
-  if(WIN32)
-    file(TO_CMAKE_PATH "$ENV{MKLROOT}" MKLROOT)
-  else()
-    set(MKLROOT "$ENV{MKLROOT}")
-  endif()
+  file(TO_CMAKE_PATH "$ENV{MKLROOT}" MKLROOT)
 
   if(BUILD_SHARED_LIBS)
     set(_mkltype dynamic)
@@ -230,8 +233,17 @@ find_package_handle_standard_args(BLACS
   HANDLE_COMPONENTS)
 
 if(BLACS_FOUND)
-  set(BLACS_INCLUDE_DIRS ${BLACS_INCLUDE_DIR})
-  set(BLACS_LIBRARIES ${BLACS_LIBRARY})
+# need if _FOUND guard to allow project to autobuild; can't overwrite imported target even if bad
+set(BLACS_INCLUDE_DIRS ${BLACS_INCLUDE_DIR})
+set(BLACS_LIBRARIES ${BLACS_LIBRARY})
+
+if(NOT TARGET BLACS::BLACS)
+  add_library(BLACS::BLACS INTERFACE IMPORTED)
+  set_target_properties(BLACS::BLACS PROPERTIES
+                        INTERFACE_LINK_LIBRARIES "${BLACS_LIBRARY}"
+                        INTERFACE_INCLUDE_DIRECTORIES "${BLACS_INCLUDE_DIR}"
+                      )
 endif()
+endif(BLACS_FOUND)
 
 mark_as_advanced(BLACS_LIBRARY BLACS_INCLUDE_DIR)

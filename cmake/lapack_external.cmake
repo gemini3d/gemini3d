@@ -17,7 +17,7 @@ FetchContent_Declare(lapack_proj
 
 FetchContent_MakeAvailable(lapack_proj)
 
-set(LAPACK_LIBRARIES lapack)
-set(BLAS_LIBRARIES blas)
+add_library(LAPACK::LAPACK ALIAS lapack)
+add_library(BLAS::BLAS ALIAS blas)
 set(LAPACK_FOUND true)
 set(BLAS_FOUND true)

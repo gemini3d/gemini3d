@@ -74,6 +74,7 @@ endif()
 foreach(scotch_lib ${Scotch_libs_to_find})
   find_library(Scotch_${scotch_lib}_LIBRARY
     NAMES ${scotch_lib}
+    NAMES_PER_DIR
     PATH_SUFFIXES lib lib32 lib64)
 endforeach()
 
@@ -108,6 +109,17 @@ include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(Scotch
           REQUIRED_VARS Scotch_LIBRARIES Scotch_INCLUDE_DIR)
 
+if(Scotch_FOUND)
+# need if _FOUND guard to allow project to autobuild; can't overwrite imported target even if bad
 set(Scotch_INCLUDE_DIRS ${Scotch_INCLUDE_DIR})
+
+if(NOT TARGET Scotch::Scotch)
+  add_library(Scotch::Scotch INTERFACE IMPORTED)
+  set_target_properties(Scotch::Scotch PROPERTIES
+                        INTERFACE_LINK_LIBRARIES "${Scotch_LIBRARY}"
+                        INTERFACE_INCLUDE_DIRECTORIES "${Scotch_INCLUDE_DIR}"
+                      )
+endif()
+endif(Scotch_FOUND)
 
 mark_as_advanced(Scotch_INCLUDE_DIR)
