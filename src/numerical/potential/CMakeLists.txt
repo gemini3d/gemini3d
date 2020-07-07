@@ -20,7 +20,7 @@ endif()
 set(_potential_testfile ${CMAKE_CURRENT_BINARY_DIR}/test_potential2d.h5)
 add_executable(test_potential2d test_potential2D.f90)
 target_link_libraries(test_potential2d const PDEelliptic h5fortran
- MUMPS::MUMPS MPI::MPI_Fortran)
+ MUMPS::MUMPS SCALAPACK::SCALAPACK LAPACK::LAPACK MPI::MPI_Fortran)
  # MUMPS::MUMPS MPI::MPI_Fortran is necessary here to get MPI after MUMPS,
  # else will not compile on MinGW with Ninja or Make.
  # LINK_INTERFACE_MULTIPLICITY and IMPORTED_LINK_INTERFACE_MULTIPLICITY do not help here.
