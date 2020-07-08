@@ -19,6 +19,7 @@ type(hdf5_file) :: h5f
 logical flagexists,flagend,flagmilestone
 integer :: it,lfn
 real(wp) :: tsim
+logical :: ish5
 
 ymd=ymd0
 UTsec=UTsec0
@@ -29,7 +30,8 @@ flagend=.false.
 it=1
 tsim=0._wp
 tmile=0._wp
-do while ( .not.(flagend) )
+ish5=suffix=='.h5'
+do while ( .not.(flagend) .and. ish5)
   !! new filename, add the 1 if it is the first
   fn=date_filename(path,ymd,UTsec)
   if (it==1) then
@@ -61,5 +63,8 @@ do while ( .not.(flagend) )
 end do
 
 end procedure find_milestone
+
+!! need to add ishdf5 to
+
 
 end submodule milestone
