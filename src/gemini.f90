@@ -159,7 +159,7 @@ end if
 !        does not technically need to be broadcast to workers (since root sets up electrodynamics), but perhaps
 !        should be anyway since that is what the user probably would expect and there is little performance penalty.
 call find_milestone(cfg%outdir,get_suffix(cfg%indatsize),cfg%ymd0,cfg%UTsec0,cfg%dtout,ttmp,ymdtmp,UTsectmp,filetmp)
-if (myid==0) print*, 'Last milestone found in output directory:  ',ymdtmp,UTsectmp,filetmp
+if (myid==0) print*, 'Last milestone (if any)found in output directory:  ',ymdtmp,UTsectmp,filetmp
 if ( any(ymdtmp/=cfg%ymd0) .or. abs(UTsectmp-cfg%UTsec0)>cfg%dtout ) then  !! treat this as a restart scenario
   if (myid==0) then
     print*, '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
