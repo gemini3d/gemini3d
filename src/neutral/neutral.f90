@@ -134,7 +134,7 @@ end if
 
 if (cfg%flagdneu==1) then
   !! find the last input data preceding the milestone/initial condition that we start with
-  call find_lastdate(cfg%ymd0,cfg%UTsec0,ymd,UTsec,cfg%dtE0,ymdtmp,UTsectmp)
+  call find_lastdate(cfg%ymd0,cfg%UTsec0,ymd,UTsec,cfg%dtneu,ymdtmp,UTsectmp)
 
   !! Loads the neutral input file corresponding to the "first" time step of the simulation to prevent the first interpolant
   !  from being zero and causing issues with restart simulations.  I.e. make sure the neutral buffers are primed for restart
