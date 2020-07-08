@@ -117,11 +117,11 @@ real(wp), dimension(:,:,:), intent(in) :: Phiall
 real(wp), dimension(:,:,:), intent(in) :: J1,J2,J3
 
 select case (out_format)
-case ('h5', 'hdf5')
+case ('h5')
   call output_root_stream_mpi_hdf5(outdir,flagoutput,ymd,UTsec,vs2,vs3,ns,vs1,Ts,Phiall,J1,J2,J3)
-case ('nc', 'nc4')
+case ('nc')
   call output_root_stream_mpi_nc4(outdir,flagoutput,ymd,UTsec,vs2,vs3,ns,vs1,Ts,Phiall,J1,J2,J3)
-case ('raw')
+case ('dat')
   call output_root_stream_mpi_raw(outdir,flagoutput,ymd,UTsec,vs2,vs3,ns,vs1,Ts,Phiall,J1,J2,J3)
 case default
   write(stderr,*) 'plasma_output:output_root_stream_api: unknown format' // out_format

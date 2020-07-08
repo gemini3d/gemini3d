@@ -64,11 +64,11 @@ real(wp), dimension(:,:,:), intent(out) :: J1,J2,J3
 
 
 select case(out_format)
-case('raw')
+case('dat')
   call input_root_currents_raw(outdir,flagoutput,ymd,UTsec,J1,J2,J3)
-case('h5', 'hdf5')
+case('h5')
   call input_root_currents_hdf5(outdir,flagoutput,ymd,UTsec,J1,J2,J3)
-case ('nc', 'nc4')
+case ('nc')
   call input_root_currents_nc4(outdir,flagoutput,ymd,UTsec,J1,J2,J3)
 case default
   error stop 'input_root_current: unexpected Gemini input'
@@ -93,7 +93,7 @@ if (myid==0) then
   case ('.dat')
     call input_root_mpi_raw(x1,x2,x3all,indatsize,indatfile,ns,vs1,Ts)
   case default
-    write(stderr,*) 'grid:read:get_grid3: unknown grid format: ' // get_suffix(indatsize)
+    write(stderr,*) 'input_plasma: unknown grid format: ' // get_suffix(indatsize)
     error stop 6
   end select
 

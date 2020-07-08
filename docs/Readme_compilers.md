@@ -75,16 +75,15 @@ pacman -S mingw-w64-x86_64-scalapack
 
 ## Intel Fortran
 
-Intel compilers are available at no-cost for academic instruction and open-source projects.
 There are several Intel compilers suites, the two known to work with Gemini are:
 
 * [Intel Parallel Studio XE](https://software.intel.com/en-us/parallel-studio-xe) that includes IntelMPI, BLACS and SCALAPACK.
-* Intel oneAPI core + [HPC Toolkit](https://software.intel.com/content/www/us/en/develop/tools/oneapi/hpc-toolkit.html)
+* (free) Intel oneAPI core + [HPC Toolkit](https://software.intel.com/content/www/us/en/develop/tools/oneapi/hpc-toolkit.html)
 
-Intel Fortran &ge; 19.1 / Parallel Studio &ge; 2020 are generally targeted for Gemini support.
+Intel Fortran &ge; 19.1 are generally targeted for Gemini support.
 
 We regularly use the latest release Intel compilers on Linux and Windows.
-MacOS with Intel compiler hasn't been tried--let us know.
+MacOS with Intel compiler hasn't been tried yet that we know of.
 
 ### Intel MKL with Gfortran
 

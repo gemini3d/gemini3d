@@ -39,11 +39,11 @@ real(wp), intent(in) :: UTsec
 real(wp), dimension(:,:,:), intent(in) :: iver
 
 select case (out_format)
-case ('raw')
+case ('dat')
   call output_aur_root_raw(outdir,flagglow,ymd,UTsec,iver)
-case ('h5', 'hdf5')
+case ('h5')
   call output_aur_root_hdf5(outdir,flagglow,ymd,UTsec,iver)
-case ('nc', 'nc4')
+case ('nc')
   call output_aur_root_nc4(outdir,flagglow,ymd,UTsec,iver)
 case default
   write(stderr,*) 'aurora:output_aur_root: unknown grid format' // out_format

@@ -49,11 +49,11 @@ end procedure create_outdir_mag
 module procedure output_magfields
 
 select case (out_format)
-case ('raw')
+case ('dat')
   call output_magfields_raw(outdir,ymd,UTsec,Br,Btheta,Bphi)
-case ('h5', 'hdf5')
+case ('h5')
   call output_magfields_hdf5(outdir,ymd,UTsec,Br,Btheta,Bphi)
-case ('nc', 'nc4')
+case ('nc')
   call output_magfields_nc4(outdir,ymd,UTsec,Br,Btheta,Bphi)
 case default
   write(stderr,*) 'mag:output_magfields: unknown file format' // out_format
