@@ -37,11 +37,20 @@ target_link_libraries(multifluid PRIVATE advec calculus collision const diffusio
 
 # --- Main GEMINI executable
 add_executable(gemini.bin gemini.f90)
+set_target_properties(gemini.bin PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 target_link_libraries(gemini.bin PRIVATE advec calculus config const collision diffusion fang grid io interp ionization gbsv mesh mpimod multifluid
   neutral pathlib PDEelliptic PDEparabolic potential precipBCs reader sanity_check sources temporal timeutils)
-target_link_libraries(gemini.bin PRIVATE MUMPS::MUMPS SCALAPACK::SCALAPACK LAPACK::LAPACK)
-# necessary as separate link_libraries() command to force link orer
-set_target_properties(gemini.bin PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+if(NOT APPLE AND CMAKE_Fortran_COMPILER_ID STREQUAL GNU)
+# the gemini.bin linking step can break for "ld" linker due to these getting out of order for gemini.bin
+# making them a group seemed to be the fix.
+# FIXME: should we instead check if the linker is "ld"?
+# We tried every other solution we could think of, and this was the only one that workded.
+# even the quotes must be just like below, and don't use imported targets
+  message(STATUS " Using link group workaround")
+  target_link_libraries(gemini.bin PRIVATE "-Wl,--start-group" ${MUMPS_LIBRARIES} ${SCALAPACK_LIBRARIES} ${LAPACK_LIBRARIES} "-Wl,--end-group")
+else()
+  target_link_libraries(gemini.bin PRIVATE MUMPS::MUMPS SCALAPACK::SCALAPACK LAPACK::LAPACK)
+endif()
 
 add_test(NAME unit:gemini_exe_ok COMMAND $<TARGET_FILE:gemini.bin>)
 set_tests_properties(unit:gemini_exe_ok PROPERTIES PASS_REGULAR_EXPRESSION "EOF: Gemini-3D")
