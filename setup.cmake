@@ -90,3 +90,7 @@ else()
 endif()
 
 ctest_submit()
+
+if(NOT (return_code EQUAL 0 AND Nerror EQUAL 0 AND cmake_err EQUAL 0 AND ctest_err EQUAL 0))
+  message(FATAL_ERROR "Build and test failed.")
+endif()
