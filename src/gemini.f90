@@ -350,7 +350,6 @@ integer :: argc, i
 character(256) :: argv
 character(8) :: date
 character(10) :: time
-logical :: exists
 
 argc = command_argument_count()
 
@@ -365,11 +364,23 @@ print '(2A,I6,A3,I6,A)', trim(argv), ' Process:  ', myid,' / ',lid-1, ' at ' // 
 call get_command_argument(1, argv, status=i)
 if (i/=0) call help_cli()
 cfg%outdir = expanduser(trim(argv))
-cfg%infile = cfg%outdir//'/inputs/config.nml'
-inquire(file=cfg%infile, exist=exists)    !needed to deal with ini vs. nml inputs...
-if (.not. exists) then
-  cfg%infile = cfg%outdir//'/inputs/config.ini'
-end if
+
+find_cfg : block
+logical :: exists
+character(*), parameter :: locs(4) = [character(18) :: "/inputs/config.nml", "/config.nml", "/inputs/config.ini", "/config.ini"]
+character(:), allocatable :: loc
+do i = 1,size(locs)
+  loc = trim(cfg%outdir // locs(i))
+  inquire(file=loc, exist=exists)
+  if (exists) then
+    cfg%infile = loc
+    exit find_cfg
+  endif
+end do
+
+write(stderr,*) 'gemini.bin: could not find config file in ',cfg%outdir
+error stop 6
+end block find_cfg
 
 call read_configfile(cfg, verbose=.false.)
 
