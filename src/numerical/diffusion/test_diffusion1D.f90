@@ -11,7 +11,10 @@ implicit none (type, external)
 
 type(hdf5_file) :: h5f
 integer, parameter :: npts=256,lt=20*5
-character(*), parameter :: outfile='test_diffusion1d.h5'
+
+character(:), allocatable :: outfile
+character(1024) :: argv
+
 character(4) :: ic
 
 real(wp), dimension(npts) :: v1,dx1i
@@ -33,14 +36,16 @@ dx1=x1(0:lx1+2)-x1(-1:lx1+1)
 x1i(1:lx1+1)=0.5*(x1(0:lx1)+x1(1:lx1+1))
 dx1i=x1i(2:lx1+1)-x1i(1:lx1)
 
+call get_command_argument(1, argv, status=ierr)
+if(ierr/=0) error stop 'please specify input filename'
+outfile = trim(argv)
 
 !! write the time, space length adn spatial grid to a file
-print *,'writing ',outfile
 ! open(newunit=u,file=outfile,status='replace')
 ! write(u,*) lt
 ! write(u,*) lx1
 ! call writearray(u,x1)
-call h5f%initialize(outfile, ierr, status='replace')
+call h5f%initialize(outfile, status='replace')
 call h5f%write('/lt', lt, ierr)
 call h5f%write('/lx1', lx1, ierr)
 call h5f%write('/x1', x1, ierr)
@@ -104,7 +109,7 @@ do it=1,lt
 end do
 
 ! close(u)
-call h5f%finalize(ierr)
+call h5f%finalize()
 
 contains
 

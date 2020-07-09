@@ -53,7 +53,8 @@ real(wp) :: dt=1          !not used
 integer :: gridflag=1
 integer :: flagdirich=1        !denoting non-inverted grid...
 
-character(*), parameter :: outfile='test_potential2d.h5'
+character(1024) :: argv
+character(:), allocatable :: outfile
 
 ! --- avoid stack issues by using allocatable()
 
@@ -148,10 +149,12 @@ end if
 
 ! Write some output for visualizations
 if (myid==0) then
+  call get_command_argument(1, argv, status=ierr)
+  if(ierr/=0) error stop 'please specify filename'
+  outfile = trim(argv)
+
   print*, 'Numerical solution range:  ',minval(Phi),maxval(Phi)
   print*, 'Analytical solution range:  ',minval(Phitrue),maxval(Phitrue)
-
-  print *,'Root process is writing ',outfile
 
   call hout%initialize(outfile, status="replace", action="write")
   call hout%write("/lx1", lx1)

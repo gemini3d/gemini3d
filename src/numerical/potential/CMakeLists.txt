@@ -28,8 +28,8 @@ target_link_libraries(test_potential2d PRIVATE const PDEelliptic h5fortran
 # nor did adding them in cmake/mumps.cmake
 # it seems to have to be right here.
 add_test(NAME unit:potential2
-  COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${MPIEXEC_MAX_NUMPROCS} $<TARGET_FILE:test_potential2d>
-  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+  COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${MPIEXEC_MAX_NUMPROCS} $<TARGET_FILE:test_potential2d> ${_potential_testfile}
+  WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
 set_tests_properties(unit:potential2 PROPERTIES TIMEOUT 30
   FIXTURES_SETUP GemPot)
 

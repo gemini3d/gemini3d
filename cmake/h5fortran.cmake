@@ -2,8 +2,8 @@ if(hdf5)
   include(FetchContent)
 
   FetchContent_Declare(h5fortran_proj
-    GIT_REPOSITORY https://github.com/scivision/h5fortran.git
-    GIT_TAG v2.9.3)
+    GIT_REPOSITORY https://github.com/geospace-code/h5fortran.git
+    GIT_TAG v2.10.0)
 
   FetchContent_MakeAvailable(h5fortran_proj)
 
@@ -12,6 +12,7 @@ if(hdf5)
   endif()
 
   include(${CMAKE_CURRENT_LIST_DIR}/win32_hdf5.cmake)
+
 else(hdf5)
   message(VERBOSE " using h5fortran dummy")
 

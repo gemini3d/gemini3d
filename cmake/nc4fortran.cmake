@@ -2,14 +2,13 @@ if(netcdf)
   include(FetchContent)
 
   FetchContent_Declare(nc4fortran_proj
-    GIT_REPOSITORY https://github.com/scivision/nc4fortran.git
+    GIT_REPOSITORY https://github.com/geospace-code/nc4fortran.git
     GIT_TAG v0.4.4)
 
   FetchContent_MakeAvailable(nc4fortran_proj)
 
   if(NOT NCDFOK)
     message(FATAL_ERROR "NetCDF4 was requested but is not available.")
-
   endif()
 else(netcdf)
   message(VERBOSE " using nc4fortran dummy")

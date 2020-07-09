@@ -21,7 +21,8 @@ set(_testfile_interp3 ${CMAKE_CURRENT_BINARY_DIR}/output3d.h5)
 add_executable(test_interp2 testinterp2.f90)
 target_link_libraries(test_interp2 PRIVATE interp const h5fortran::h5fortran)
 add_test(NAME unit:interp2
-  COMMAND $<TARGET_FILE:test_interp2> ${_testfile_interp2in} ${_testfile_interp2})
+  COMMAND $<TARGET_FILE:test_interp2> ${_testfile_interp2in} ${_testfile_interp2}
+  WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
 set_tests_properties(unit:interp2 PROPERTIES
   TIMEOUT 15
   FIXTURES_SETUP GemInterp2)
@@ -29,7 +30,8 @@ set_tests_properties(unit:interp2 PROPERTIES
 add_executable(test_interp3 testinterp3.f90)
 target_link_libraries(test_interp3 PRIVATE const interp h5fortran::h5fortran)
 add_test(NAME unit:interp3
-  COMMAND $<TARGET_FILE:test_interp3> ${_testfile_interp3in} ${_testfile_interp3})
+  COMMAND $<TARGET_FILE:test_interp3> ${_testfile_interp3in} ${_testfile_interp3}
+  WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
 set_tests_properties(unit:interp3 PROPERTIES
   TIMEOUT 30  # need 30 for slow CPU
   FIXTURES_SETUP GemInterp3)

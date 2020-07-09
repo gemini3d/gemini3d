@@ -5,7 +5,7 @@ function(win32_hdf5_env)
 #
 # This workaround relies on having environment variable HDF5_ROOT set
 
-if(WIN32 AND CMAKE_Fortran_COMPILER_ID STREQUAL Intel) # for Windows ifort dll
+if(WIN32 AND MSVC) # for Windows ifort dll
   if(NOT DEFINED HDF5_ROOT)
     if(DEFINED ENV{HDF5_ROOT})
       file(TO_CMAKE_PATH "$ENV{HDF5_ROOT}" HDF5_ROOT)

@@ -18,8 +18,9 @@ target_link_libraries(test_diffusion1d PRIVATE PDEparabolic gbsv const
   LAPACK::LAPACK h5fortran::h5fortran)
 
 # WORKING_DIRECTORY is needed to write output file to repeatable path.
-add_test(NAME unit:diffusion1 COMMAND $<TARGET_FILE:test_diffusion1d>
-  WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+add_test(NAME unit:diffusion1
+  COMMAND $<TARGET_FILE:test_diffusion1d> ${_tmpdifffn}
+  WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
 set_tests_properties(unit:diffusion1 PROPERTIES
   TIMEOUT 5
   FIXTURES_SETUP GemDiff)
