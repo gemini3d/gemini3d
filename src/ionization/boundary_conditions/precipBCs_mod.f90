@@ -72,11 +72,12 @@ if(t+dt / 2._wp>=tnext) then    !need to load a new file
 
     if (myid==0) then    !root process
       !READ IN THE GRID
-      print '(A,/,A)', 'READ precipitation size from:',cfg%precdir
+      print '(/,A,/,A)', 'Precipitation input:','--------------------'
+      print '(A)', 'READ precipitation size from: ' // cfg%precdir
 
       call get_simsize2(cfg%precdir, llon=llon, llat=llat)
 
-      print *, 'Precipitation data has llon,llat size:  ',llon,llat
+      print '(A,2I6)', 'Precipitation size: llon,llat:  ',llon,llat
       if (llon < 1 .or. llat < 1) then
         write(stderr,*) 'ERROR: reading ' // cfg%precdir
         error stop 'precipBCs_mod: precipitation grid size must be strictly positive'
@@ -103,7 +104,7 @@ if(t+dt / 2._wp>=tnext) then    !need to load a new file
       !NOW READ THE GRID
       call get_grid2(cfg%precdir, mlonp, mlatp)
 
-      print *, 'Precipitation data has mlon,mlat extent:  ',minval(mlonp(:)),maxval(mlonp(:)),minval(mlatp(:)), &
+      print '(A,4F9.3)', 'Precipitation mlon,mlat extent:  ',minval(mlonp(:)),maxval(mlonp(:)),minval(mlatp(:)), &
                                                               maxval(mlatp(:))
       if(.not. all(ieee_is_finite(mlonp))) error stop 'mlon must be finite'
       if(.not. all(ieee_is_finite(mlatp))) error stop 'mlat must be finite'

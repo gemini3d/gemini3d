@@ -137,7 +137,7 @@ call bcast_send(nsall,tag%ns,ns)
 call bcast_send(vs1all,tag%vs1,vs1)
 call bcast_send(Tsall,tag%Ts,Ts)
 call cpu_time(tfin)
-print '(A,F10.6,A)', 'Sent ICs to workers in',tfin-tstart, ' seconds.'
+print '(A,ES15.6,A)', 'Sent ICs to workers in', tfin-tstart, ' seconds.'
 
 end procedure input_root_mpi_nc4
 

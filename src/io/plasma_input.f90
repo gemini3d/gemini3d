@@ -99,7 +99,7 @@ if (myid==0) then
 
   !> USER SUPPLIED FUNCTION TO TAKE A REFERENCE PROFILE AND CREATE INITIAL CONDITIONS FOR ENTIRE GRID.
   !> ASSUMING THAT THE INPUT DATA ARE EXACTLY THE CORRECT SIZE (AS IS THE CASE WITH FILE INPUT) THIS IS NOW SUPERFLUOUS
-  print '(/,A,/,A)', 'Initial conditions:','------------------------'
+  print '(/,A,/,A)', 'Initial conditions:','-------------------'
   print '(A,2ES11.2)', 'Min/max input density:',     minval(ns(:,:,:,7)),  maxval(ns(:,:,:,7))
   print '(A,2ES11.2)', 'Min/max input velocity:',    minval(vs1(:,:,:,:)), maxval(vs1(:,:,:,:))
   print '(A,2ES11.2)', 'Min/max input temperature:', minval(Ts(:,:,:,:)),  maxval(Ts(:,:,:,:))

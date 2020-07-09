@@ -271,7 +271,15 @@ do while (t < cfg%tdur)
   if (cfg%dryrun) then
     ierr = mpibreakdown()
     if (ierr /= 0) error stop 'Gemini dry run MPI shutdown failure'
-    stop "OK: Gemini dry run"
+    block
+      character(8) :: date
+      character(10) :: time
+
+      call date_and_time(date,time)
+      print '(/,A)', 'DONE: ' // date(1:4) // '-' // date(5:6) // '-' // date(7:8) // 'T' &
+        // time(1:2) // ':' // time(3:4) // ':' // time(5:)
+      stop "OK: Gemini dry run"
+    end block
   endif
 
   !> File output
@@ -452,13 +460,16 @@ do i = 2,argc
     cfg%nooutput = .true.
   case ('-out_format')
     !! used mostly for debugging--normally should be set as file_format in config.nml
-    call get_command_argument(i+1, argv)
+    call get_command_argument(i+1, argv, status=ierr)
+    if(ierr/=0) error stop 'gemini.bin -out_format {h5,nc,dat} parameter is required'
     cfg%out_format = trim(argv)
     print *,'override output file format: ',cfg%out_format
   case ('-manual_grid')
-    call get_command_argument(i+1, argv)
+    call get_command_argument(i+1, argv, status=ierr)
+    if(ierr/=0) error stop 'gemini.bin -manual_grid lx2 lx3 parameters are required'
     read(argv,*) lid2in
-    call get_command_argument(i+2, argv)
+    call get_command_argument(i+2, argv, status=ierr)
+    if(ierr/=0) error stop 'gemini.bin -manual_grid lx2 lx3 parameters are required'
     read(argv,*) lid3in
   end select
 end do
