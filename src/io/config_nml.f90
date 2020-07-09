@@ -24,7 +24,7 @@ integer :: potsolve, flagperiodic=0, flagoutput, flagcap=0
 integer :: interptype
 real(wp) :: sourcemlat,sourcemlon
 real(wp) :: dtneu
-real(wp) :: dxn,drhon,dzn
+real(wp) :: dxn=0.0,drhon=0.0,dzn=0.0
 real(wp) :: dtprec=0
 character(256) :: indat_size, indat_grid, indat_file, source_dir, prec_dir, E0_dir
 character(4) :: file_format=""  !< need to initialize blank or random invisible fouls len_trim>0
