@@ -8,7 +8,7 @@ use phys_consts, only : lnchem, lwave, lsp, wp, debug
 use grid, only: grid_size,read_grid,clear_grid, lx1,lx2,lx3,lx2all,lx3all
 use mesh, only: curvmesh
 use config, only : read_configfile, gemini_cfg
-use pathlib, only : assert_file_exists, assert_directory_exists, get_suffix
+use pathlib, only : assert_file_exists, assert_directory_exists, expanduser, get_suffix
 use io, only : input_plasma,create_outdir,output_plasma,create_outdir_aur,output_aur,find_milestone
 use mpimod, only : mpisetup, mpibreakdown, mpi_manualgrid, mpigrid, lid, lid2,lid3,myid,myid2,myid3
 use multifluid, only : fluid_adv
@@ -170,7 +170,7 @@ if ( any(ymdtmp/=cfg%ymd0) .or. abs(UTsectmp-cfg%UTsec0)>cfg%dtout ) then  !! tr
   UTsec=UTsectmp
   ymd=ymdtmp
   tdur=cfg%tdur-ttmp    ! subtract off time that has elapsed to milestone
-  if (myid==0) then 
+  if (myid==0) then
     print*, 'Treating the following file as initial conditions:  ',filetmp
     print*, ' full duration:  ',cfg%tdur,'; remaining simulation time:  ',tdur
   end if
@@ -253,6 +253,17 @@ if(myid==0) then
   print*, '    ',minval(vs3),maxval(vs3)
 end if
 
+!> control update rate from excessive console printing
+!! considering small vs. large simulations
+!! these are arbitrary levels, so feel free to finesse
+if (lx1*lx2*lx3 < 20000) then
+  iupdate = 50
+elseif (lx1*lx2*lx3 < 100000) then
+  iupdate = 10
+else
+  iupdate = 1
+endif
+
 
 !> Main time loop
 do while (t < tdur)
@@ -271,7 +282,7 @@ do while (t < tdur)
 
 
   !COMPUTE BACKGROUND NEUTRAL ATMOSPHERE USING MSIS00.
-  if ( .not.(it==1) .and. cfg%flagneuBG .and. t>tneuBG) then     !we dont' throttle for tneuBG so we have to do things this way to not skip over...
+  if ( it/=1 .and. cfg%flagneuBG .and. t>tneuBG) then     !we dont' throttle for tneuBG so we have to do things this way to not skip over...
     call cpu_time(tstart)
     call neutral_atmos(ymd,UTsec,x%glat,x%glon,x%alt,cfg%activ,nn,Tn,vn1,vn2,vn3)
     tneuBG=tneuBG+cfg%dtneuBG;
@@ -346,7 +357,7 @@ do while (t < tdur)
     endif
     !! close enough to warrant an output now...
     if (myid==0 .and. debug) call cpu_time(tstart)
-    
+
     !! We may need to adjust flagoutput if we are hitting a milestone
     flagoutput=cfg%flagoutput
     if (cfg%mcadence>0 .and. abs(t-tmilestone) < 1d-5) then
