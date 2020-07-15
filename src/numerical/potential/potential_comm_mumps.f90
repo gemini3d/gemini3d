@@ -281,7 +281,7 @@ lx3=size(sigP,3)
 !CONDUCTION CURRENT BACKGROUND SOURCE TERMS FOR POTENTIAL EQUATION. MUST COME AFTER CALL TO BC CODE.
 J1=0d0    !so this div is only perp components
 J2=0._wp; J3=0._wp;
-call acc_perpconductioncurrents(sigP,sigH,E02,E03,J2,J2)     !background conduction currents only
+call acc_perpconductioncurrents(sigP,sigH,E02,E03,J2,J3)     !background conduction currents only
 J1halo(1:lx1,1:lx2,1:lx3)=J1
 J2halo(1:lx1,1:lx2,1:lx3)=J2
 J3halo(1:lx1,1:lx2,1:lx3)=J3
