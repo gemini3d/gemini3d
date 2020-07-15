@@ -1409,7 +1409,7 @@ nn=nnmsis
 Tn=Tnmsis
 vn1=vn1base
 vn2=vn2base
-vn2=vn3base
+vn3=vn3base
 
 !> perturbations, if used
 if (allocated(zn)) then
