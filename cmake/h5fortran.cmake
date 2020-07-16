@@ -3,7 +3,7 @@ if(hdf5)
 
   FetchContent_Declare(h5fortran_proj
     GIT_REPOSITORY https://github.com/geospace-code/h5fortran.git
-    GIT_TAG v2.10.1)
+    GIT_TAG v2.10.4)
 
   FetchContent_MakeAvailable(h5fortran_proj)
 
