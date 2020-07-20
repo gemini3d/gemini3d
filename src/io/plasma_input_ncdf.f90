@@ -75,7 +75,7 @@ real(wp) :: tin
 real(wp), dimension(3) :: ymdtmp
 real(wp) :: tstart,tfin
 real(wp), dimension(:,:), allocatable :: Phislab
-real(wp), allocatable :: tmp(:,:,:,:)
+real(wp), allocatable :: tmp(:,:,:,:), tmpPhi(:)
 
 !> so that random values (including NaN) don't show up in Ghost cells
 nsall = 0
