@@ -10,12 +10,12 @@ import subprocess
 from pathlib import Path
 import typing as T
 import shutil
+import importlib.resources
 
 import gemini3d
 
 Rtop = Path(__file__).resolve().parents[1]
 Rtest = Rtop / "tests/data"
-Rpy = Path(gemini3d.__path__[0])
 
 
 def get_test_params(test_name: str, url_file: Path) -> T.Dict[str, T.Any]:
@@ -62,12 +62,11 @@ def run_test(
     This is usually called from CMake Ctest
     """
 
-    url_ini = Rpy / "tests/url.ini"
+    with importlib.resources.path("gemini3d.tests", "url.ini") as url_ini:
+        z = get_test_params(testname, url_ini)
 
-    z = get_test_params(testname, url_ini)
-
-    if not z["dir"].is_dir():
-        download_and_extract(z, url_ini)
+        if not z["dir"].is_dir():
+            download_and_extract(z, url_ini)
 
     gemini3d.extract_zip(z["zip"], z["dir"])
 
