@@ -74,7 +74,7 @@ character(*), intent(in) :: filename
 integer, intent(out) :: iyd,sec,lz
 real(sp), intent(out) :: f107a,f107,apday,ap3
 real(sp), intent(out), allocatable :: glat(:),glon(:),alt(:)
-integer :: u
+integer :: u, i
 
 if(filename == "-") then
   u = stdin
@@ -82,16 +82,30 @@ else
   open(newunit=u, file=filename, status="old", action="read")
 endif
 
-read(u, *) iyd
-read(u, *) sec
-read(u, *) f107a, f107, apday, ap3
-read(u, *) lz
+read(u, *, iostat=i) iyd
+if (i/=0) error stop "iyd: integer yyddd"
+read(u, *, iostat=i) sec
+if (i/=0) error stop "sec: integer seconds since midniight"
+read(u, *, iostat=i) f107a, f107, apday, ap3
+if (i/=0) error stop "expecting: f107a, f107, apday, ap3"
+read(u, *, iostat=i) lz
+if (i/=0) error stop "lz: expecting integer number of altitudes"
 
 call check_lz(lz)
 allocate(glat(lz),glon(lz),alt(lz))
-read(u,*) glat
-read(u,*) glon
-read(u,*) alt
+read(u,*, iostat=i) glat
+if (i/=0)then
+  write(stderr,*) 'read iostat', i
+  error stop "glat: ran out of input elements unexpectedly"
+endif
+
+read(u,*, iostat=i) glon
+if (i/=0) then
+  write(stderr,*) 'read iostat', i
+  error stop "glon: ran out of input elements unexpectedly"
+endif
+read(u,*, iostat=i) alt
+if (i/=0) error stop "alt: ran out of input elements unexpectedly"
 
 if (filename /= "-") close(u)
 
