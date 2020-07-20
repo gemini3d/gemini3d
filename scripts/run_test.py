@@ -15,7 +15,7 @@ import gemini3d
 
 Rtop = Path(__file__).resolve().parents[1]
 Rtest = Rtop / "tests/data"
-Rpy = Path(gemini3d.__file__).resolve().parent
+Rpy = Path(gemini3d.__path__[0])
 
 
 def get_test_params(test_name: str, url_file: Path) -> T.Dict[str, T.Any]:
@@ -57,7 +57,7 @@ def run_test(
     mpi_count: int = None,
     out_format: str = None,
     dryrun: bool = False,
-):
+) -> int:
     """ configure and run a test
     This is usually called from CMake Ctest
     """
@@ -106,8 +106,7 @@ def run_test(
         cmd.append("-dryrun")
     print(" ".join(cmd))
     ret = subprocess.run(cmd, cwd=Rtop)
-
-    raise SystemExit(ret.returncode)
+    return ret.returncode
 
 
 if __name__ == "__main__":
@@ -123,7 +122,7 @@ if __name__ == "__main__":
     p.add_argument("-dryrun", help="only run first time step", action="store_true")
     P = p.parse_args()
 
-    run_test(
+    ret = run_test(
         P.testname,
         P.mpiexec,
         P.exe,
@@ -132,3 +131,5 @@ if __name__ == "__main__":
         out_format=P.out_format,
         dryrun=P.dryrun,
     )
+
+    raise SystemExit(ret)
