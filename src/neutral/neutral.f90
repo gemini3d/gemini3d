@@ -225,7 +225,7 @@ if (t+dt/2._wp>=tnext .or. t<0._wp) then   !negative time means that we need to 
     UTsecnext=UTsecprev
 
     !Create a neutral grid, do some allocations and projections
-    call gridproj_dneu2D(cfg,.false.,x)    !set false to denote not Cartesian...
+    call gridproj_dneu2D(cfg,.false.,x)    !set false to denote not Cartesian; here and below...
   end if
 
   !Read in neutral data from a file
@@ -452,7 +452,10 @@ dhorzn=cfg%drhon
 if (myid==0) then    !root
   print '(A,/,A)', 'Inputting neutral size from:  ',cfg%sourcedir
 
-  call get_simsize3(cfg%sourcedir, lx1=lzn, lx2all=lhorzn)
+  ! bit of a tricky issue here; for neutral input, according to makedneuframes.m, the first integer in the size file is 
+  !  the horizontal grid point count for the input - which get_simsize3 interprets as lx1...
+  !call get_simsize3(cfg%sourcedir, lx1=lzn, lx2all=lhorzn)
+call get_simsize3(cfg%sourcedir, lx1=lhorzn, lx2all=lzn)
 
   print *, 'Neutral data has lhorzn,lz size:  ',lhorzn,lzn,' with spacing dhorzn,dz',dhorzn,cfg%dzn
   if (lhorzn < 1 .or. lzn < 1) then
