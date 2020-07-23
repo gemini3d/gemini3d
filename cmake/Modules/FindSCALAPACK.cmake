@@ -78,7 +78,7 @@ foreach(s ${_mkl_libs})
             ../tbb/lib/intel64/vc_mt
             ../compiler/lib/intel64
            PATH_SUFFIXES
-             lib/intel64 lib/intel64_win
+             lib lib/intel64 lib/intel64_win
              intel64/lib/release
              lib/intel64/gcc4.7
              lib/intel64/vc_mt
@@ -134,7 +134,7 @@ find_package(PkgConfig QUIET)
 # some systems (Ubuntu 16.04) need BLACS explicitly, when it isn't statically compiled into libscalapack
 # other systems (homebrew, Ubuntu 18.04) link BLACS into libscalapack, and don't need BLACS as a separately linked library.
 if(NOT MKL IN_LIST SCALAPACK_FIND_COMPONENTS)
-  find_package(BLACS COMPONENTS ${SCALAPACK_FIND_COMPONENTS})
+  find_package(BLACS COMPONENTS ${SCALAPACK_FIND_COMPONENTS} QUIET)
 endif()
 
 if(MKL IN_LIST SCALAPACK_FIND_COMPONENTS)
@@ -207,12 +207,14 @@ if(BLACS_FOUND)
                           INTERFACE_INCLUDE_DIRECTORIES "${BLACS_INCLUDE_DIR}"
                         )
   endif()
+else()
+  set(BLACS_LIBRARY)
 endif()
 
 if(NOT TARGET SCALAPACK::SCALAPACK)
   add_library(SCALAPACK::SCALAPACK INTERFACE IMPORTED)
   set_target_properties(SCALAPACK::SCALAPACK PROPERTIES
-                        INTERFACE_LINK_LIBRARIES "${SCALAPACK_LIBRARY}"
+                        INTERFACE_LINK_LIBRARIES "${SCALAPACK_LIBRARY};${BLACS_LIBRARY}"
                         INTERFACE_INCLUDE_DIRECTORIES "${SCALAPACK_INCLUDE_DIR}"
                       )
 endif()

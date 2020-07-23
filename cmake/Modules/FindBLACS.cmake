@@ -70,7 +70,7 @@ foreach(s ${_mkl_libs})
             ../tbb/lib/intel64/vc_mt
             ../compiler/lib/intel64
            PATH_SUFFIXES
-             lib/intel64 lib/intel64_win
+             lib lib/intel64 lib/intel64_win
              intel64/lib/release
              lib/intel64/gcc4.7
              lib/intel64/vc_mt

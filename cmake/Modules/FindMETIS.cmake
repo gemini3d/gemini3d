@@ -8,6 +8,11 @@ Michael Hirsch, Ph.D.
 
 Finds the METIS library
 
+Imported Targets
+^^^^^^^^^^^^^^^^
+
+METIS::METIS
+
 Result Variables
 ^^^^^^^^^^^^^^^^
 

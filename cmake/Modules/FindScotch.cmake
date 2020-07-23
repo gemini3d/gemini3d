@@ -22,9 +22,7 @@
 # Results are reported in variables:
 #  Scotch_FOUND           - True if headers and requested libraries were found
 #  Scotch_INCLUDE_DIRS    - scotch include directories
-#  Scotch_LIBRARY_DIRS    - Link directories for scotch libraries
 #  Scotch_LIBRARIES       - scotch component libraries to be linked
-#  Scotch_INTSIZE         - Number of octets occupied by a Scotch_Num
 
 #=============================================================================
 # Copyright 2012-2013 Inria
@@ -44,70 +42,32 @@
 # (To distribute this file outside of Morse, substitute the full
 #  License text for the above reference.)
 
-
-if(Scotch_FIND_COMPONENTS)
-  foreach( component ${Scotch_FIND_COMPONENTS} )
-    if (${component} STREQUAL ESMUMPS)
-      # means we look for esmumps library
-      set(Scotch_LOOK_FOR_ESMUMPS ON)
-    endif()
-  endforeach()
-endif()
-
-
-# Looking for include
-# -------------------
+set(Scotch_LIBRARIES)
 
 find_path(Scotch_INCLUDE_DIR
           NAMES scotch.h
           PATH_SUFFIXES include include/scotch)
 
-# Looking for lib
-# ---------------
-
-set(Scotch_libs_to_find scotch scotcherrexit)
-if (Scotch_LOOK_FOR_ESMUMPS)
-  list(INSERT Scotch_libs_to_find 0 esmumps)
+set(_to_find scotch scotcherrexit)
+if(ESMUMPS IN_LIST Scotch_FIND_COMPONENTS)
+  list(INSERT _to_find 0 esmumps)
 endif()
 
-# call cmake macro to find the lib path
-foreach(scotch_lib ${Scotch_libs_to_find})
-  find_library(Scotch_${scotch_lib}_LIBRARY
-    NAMES ${scotch_lib}
+foreach(_lib ${_to_find})
+  find_library(Scotch_${_lib}_LIBRARY
+    NAMES ${_lib}
     NAMES_PER_DIR
     PATH_SUFFIXES lib lib32 lib64)
+
+  list(APPEND Scotch_LIBRARIES ${Scotch_${_lib}_LIBRARY})
+  mark_as_advanced(Scotch_${_lib}_LIBRARY)
 endforeach()
 
-set(Scotch_LIBRARIES)
-set(Scotch_LIBRARY_DIRS)
-# If found, add path to cmake variable
-# ------------------------------------
-foreach(scotch_lib ${Scotch_libs_to_find})
+mark_as_advanced(Scotch_INCLUDE_DIR)
 
-  if(Scotch_${scotch_lib}_LIBRARY)
-    get_filename_component(${scotch_lib}_lib_path ${Scotch_${scotch_lib}_LIBRARY} PATH)
-    # set cmake variables
-    list(APPEND Scotch_LIBRARIES ${Scotch_${scotch_lib}_LIBRARY})
-    list(APPEND Scotch_LIBRARY_DIRS ${${scotch_lib}_lib_path})
-  else()
-    list(APPEND Scotch_LIBRARIES ${Scotch_${scotch_lib}_LIBRARY})
-    if(NOT Scotch_FIND_QUIETLY)
-      message(WARNING "Looking for scotch -- lib ${scotch_lib} not found")
-    endif()
-  endif()
-
-  mark_as_advanced(Scotch_${scotch_lib}_LIBRARY)
-endforeach()
-
-list(APPEND Scotch_LIBRARY_DIRS ${CMAKE_THREAD_LIBS_INIT})
-list(REMOVE_DUPLICATES Scotch_LIBRARY_DIRS)
-
-
-# check that SCOTCH has been found
-# ---------------------------------
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(Scotch
-          REQUIRED_VARS Scotch_LIBRARIES Scotch_INCLUDE_DIR)
+  REQUIRED_VARS Scotch_LIBRARIES Scotch_INCLUDE_DIR)
 
 if(Scotch_FOUND)
 # need if _FOUND guard to allow project to autobuild; can't overwrite imported target even if bad
@@ -116,10 +76,8 @@ set(Scotch_INCLUDE_DIRS ${Scotch_INCLUDE_DIR})
 if(NOT TARGET Scotch::Scotch)
   add_library(Scotch::Scotch INTERFACE IMPORTED)
   set_target_properties(Scotch::Scotch PROPERTIES
-                        INTERFACE_LINK_LIBRARIES "${Scotch_LIBRARY}"
+                        INTERFACE_LINK_LIBRARIES "${Scotch_LIBRARIES}"
                         INTERFACE_INCLUDE_DIRECTORIES "${Scotch_INCLUDE_DIR}"
                       )
 endif()
 endif(Scotch_FOUND)
-
-mark_as_advanced(Scotch_INCLUDE_DIR)

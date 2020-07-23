@@ -1,11 +1,4 @@
-if(NOT autobuild)
-  message(STATUS "NOT autobuilding Lapack per user -Dautobuild=off")
-  return()
-endif()
-
-if(NOT LAPACK_FOUND)
-  message(STATUS "AUTOBUILD: LAPACK + BLAS")
-endif()
+set(lapack_external true CACHE BOOL "autobuild Lapack")
 
 include(FetchContent)
 
