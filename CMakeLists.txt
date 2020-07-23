@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.15)
 # 3.14 for check_fortran_source_runs & fetchcontent
 # 3.15 for robust Python finding
 
@@ -17,9 +17,6 @@ if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.18)
 endif()
 if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.17)
   cmake_policy(SET CMP0099 NEW)
-endif()
-if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.15)
-  cmake_policy(SET CMP0094 NEW)
 endif()
 
 project(gemini3d
