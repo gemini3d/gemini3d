@@ -51,7 +51,9 @@ do i=1,lz
   stl = sec/3600. + glon(i)/15.
   call gtd7(iyd, real(sec, sp),alt(i),glat(i),glon(i),stl,f107a,f107,ap,mass,d,t)
 
-  if (outfile == '-' .or. outfile(len(outfile)-3:) == ".txt") then
+  if (outfile == '-') then
+    write(u,'(F9.2, 9ES15.6, F9.2)') alt(i),d(1:9),t(2)
+  elseif(outfile(len(outfile)-3:) == ".txt") then
     write(u,'(F9.2, 9ES15.6, F9.2)') alt(i),d(1:9),t(2)
   else
     write(u) alt(i),d(1:9),t(2)
