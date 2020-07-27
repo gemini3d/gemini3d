@@ -63,6 +63,6 @@ ${_msis_lz}
 ")
 endif()
 
-add_test(NAME "MSISsetup" COMMAND $<TARGET_FILE:msis_setup> ${_msis_in} "-" ${_msis_lz})
-set_tests_properties(MSISsetup PROPERTIES
+add_test(NAME unit:MSISsetup COMMAND $<TARGET_FILE:msis_setup> ${_msis_in} "-" ${_msis_lz})
+set_tests_properties(unit:MSISsetup PROPERTIES
   PASS_REGULAR_EXPRESSION "^[ ]*100.00.*110.00.*150.00.*200.00.*862.8.")
