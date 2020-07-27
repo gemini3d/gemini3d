@@ -25,7 +25,7 @@ jobs:
 
     - run: cmake -B build -DCMAKE_BUILD_TYPE=Debug
 
-    - run: ctest -S setup.cmake -R unit -V
+    - run: ctest -S setup.cmake -R unit -VV
     - uses: actions/upload-artifact@v1
       if: failure()
       with:

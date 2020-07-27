@@ -63,6 +63,6 @@ jobs:
         sudo apt update -yq
         sudo apt install -yq --no-install-recommends pkg-config gfortran libopenmpi-dev openmpi-bin
 
+    - run: ctest -S setup.cmake -R unit -V
+
     - run: ctest -S setup.cmake -E 3d_glow -V
-      env:
-        FC: gfortran
