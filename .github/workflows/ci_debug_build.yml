@@ -32,4 +32,4 @@ jobs:
         name: Linux_CMake_DebugBuildlog
         path: build/CMakeFiles/CMakeError.log
 
-    - run: ctest -S setup.cmake -R 2d_fang -V
+    - run: ctest -S setup.cmake -R 2dew_fang -V
