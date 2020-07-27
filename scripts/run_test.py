@@ -62,7 +62,7 @@ def run_test(
     This is usually called from CMake Ctest
     """
 
-    with importlib.resources.path("gemini3d.tests", "url.ini") as url_ini:
+    with importlib.resources.path("gemini3d.tests", "gemini3d_url.ini") as url_ini:
         z = get_test_params(testname, url_ini)
 
         if not z["dir"].is_dir():
