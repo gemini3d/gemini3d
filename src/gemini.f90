@@ -7,7 +7,7 @@ use sanity_check, only : check_finite_output
 use phys_consts, only : lnchem, lwave, lsp, wp, debug
 use grid, only: grid_size,read_grid,clear_grid, lx1,lx2,lx3,lx2all,lx3all
 use mesh, only: curvmesh
-use config, only : read_configfile, gemini_cfg
+use config, only : read_configfile, gemini_cfg, get_compiler_vendor
 use pathlib, only : assert_file_exists, assert_directory_exists, expanduser, get_suffix
 use io, only : input_plasma,create_outdir,output_plasma,create_outdir_aur,output_aur,find_milestone
 use mpimod, only : mpisetup, mpibreakdown, mpi_manualgrid, mpigrid, lid, lid2,lid3,myid,myid2,myid3
@@ -95,6 +95,20 @@ real(wp), dimension(:,:,:), allocatable :: E01,E02,E03
 
 
 !! MAIN PROGRAM
+early_catch : block
+integer i
+character(512) :: argv
+call get_command_argument(1, argv, status=i)
+if (i<0) error stop 'command line truncated, plase file GitHub Issue'
+if (i/=0 .or. argv == '-h' .or. argv == '-help') then
+  print '(A,i4)', argv, i
+  call help_cli()
+endif
+if (argv == '-compiler') then
+  print '(A)', get_compiler_vendor()
+  stop
+endif
+end block early_catch
 
 !> INITIALIZE MESSING PASSING VARIABLES, IDS ETC.
 call mpisetup()
@@ -433,7 +447,7 @@ type(gemini_cfg), intent(out) :: cfg
 integer, intent(out) :: lid2in, lid3in
 
 integer :: argc, i
-character(256) :: argv
+character(512) :: argv
 character(8) :: date
 character(10) :: time
 
@@ -449,7 +463,7 @@ print '(2A,I6,A3,I6,A)', trim(argv), ' Process:  ', myid,' / ',lid-1, ' at ' // 
 
 !> READ FILE INPUT
 call get_command_argument(1, argv, status=i)
-if (i/=0) call help_cli()
+if (i/=0) error stop 'bad command line'
 cfg%outdir = expanduser(trim(argv))
 
 find_cfg : block
@@ -565,6 +579,11 @@ do i = 2,argc
   call get_command_argument(i,argv)
 
   select case (argv)
+  case ('-h', '-help')
+    call help_cli()
+  case ('-compiler')
+    print '(A)', get_compiler_vendor()
+    stop
   case ('-d', '-debug')
     debug = .true.
   case ('-dryrun')
@@ -594,7 +613,8 @@ end subroutine cli
 subroutine help_cli()
 print '(/,A,/)', 'GEMINI-3D: by Matthew Zettergren'
 print '(A)', 'GLOW and auroral interfaces by Guy Grubbs'
-print '(A,/)', 'build system and software engineering by Michael Hirsch'
+print '(A)', 'build system and software engineering by Michael Hirsch'
+print '(A,/)', 'Compiler vendor: '// get_compiler_vendor()
 print '(A)', 'must specify simulation output directory. Example:'
 print '(/,A,/)', '  mpiexec -np 4 build/gemini.bin /path/to/simulation_outputs'
 print '(A)', '-dryrun    allows quick check of first time step'
