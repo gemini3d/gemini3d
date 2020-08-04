@@ -3,7 +3,7 @@ module reader
 
 use, intrinsic :: iso_fortran_env, only: stderr=>error_unit
 use phys_consts, only: wp, debug
-use pathlib, only : get_suffix
+use pathlib, only : get_suffix, get_filename
 
 implicit none (type, external)
 private
@@ -134,47 +134,6 @@ end interface
 
 contains
 
-function get_filename(path, stem) result(fn)
-!! given a path and stem, find the full filename
-!! assuming suffix is
-character(*), intent(in) :: path
-character(*), intent(in), optional :: stem
-
-character(:), allocatable :: fn, stem1
-integer :: i
-logical :: exists
-character(*), parameter :: suffix(3) = [character(4) :: '.h5', '.nc', '.dat' ]
-
-if(present(stem)) then
-  stem1 = '/' // stem
-  !> find suffix location, if it exists
-  i = index(path, '.', back=.true.)
-
-  !> find filename if path specified
-  if (i > 8) then
-    !! has to be nested since no short-circuit logic
-    if (path(i-7:i-1) == stem) then
-      fn = path  !< assuming it's the full path
-      return
-    endif
-  endif
-else
-  stem1 = ''
-endif
-
-do i = 1, size(suffix)
-  fn = path // stem1 // trim(suffix(i))
-  inquire(file=fn, exist=exists)
-  ! print *, 'reader:get_filename: ', fn, exists
-  if (exists) return
-enddo
-
-write(stderr,*) 'ERROR: filename not found in ', path
-fn = ''
-
-end function get_filename
-
-
 subroutine get_simsize2(path, llon, llat)
 character(*), intent(in) :: path
 integer, intent(out) :: llon, llat
@@ -191,7 +150,7 @@ case ('.nc')
 case ('.dat')
   call get_simsize2_raw(fn, llon, llat)
 case default
-  write(stderr,*) 'reader:get_simsize2: unknown file suffix on ' // fn
+  write(stderr,*) 'ERROR:reader:get_simsize2: unknown file suffix on ' // fn
   error stop 6
 end select
 end subroutine get_simsize2
@@ -214,7 +173,7 @@ case ('.nc')
 case ('.dat')
   call get_simsize3_raw(fn, lx1, lx2all, lx3all)
 case default
-  write(stderr,*) 'reader:get_simsize3: unknown file suffix' // fn
+  write(stderr,*) 'ERROR:reader:get_simsize3: unknown file suffix' // fn
   error stop 6
 end select
 end subroutine get_simsize3
@@ -236,7 +195,7 @@ case ('.nc')
 case ('.dat')
   call get_grid2_raw(fn, mlonp, mlatp)
 case default
-  write(stderr,*) 'reader:get_grid2: unknown file suffix on ' // fn
+  write(stderr,*) 'ERROR:reader:get_grid2: unknown file suffix on ' // fn
   error stop 6
 end select
 end subroutine get_grid2
@@ -260,7 +219,7 @@ case ('.nc')
 case ('.dat')
   call get_Efield_raw(fn, flagdirich,E0xp,E0yp,Vminx1p,Vmaxx1p,Vminx2pslice,Vmaxx2pslice,Vminx3pslice,Vmaxx3pslice)
 case default
-  write(stderr,*) 'reader:Efield: unknown file suffix on ' // fn
+  write(stderr,*) 'ERROR:reader:Efield: unknown file suffix on ' // fn
   error stop 6
 end select
 
@@ -284,7 +243,7 @@ case ('.nc')
 case ('.dat')
   call get_precip_raw(fn, Qp, E0p)
 case default
-  write(stderr,*) 'reader:get_precip: unknown file suffix on ' // fn
+  write(stderr,*) 'ERROR:reader:get_precip: unknown file suffix on ' // fn
   error stop 6
 end select
 end subroutine get_precip
@@ -306,7 +265,7 @@ case ('.nc')
 case ('.dat')
   call get_neutral2_raw(fn, dnO,dnN2,dnO2,dvnrho,dvnz,dTn)
 case default
-  write(stderr,*) 'reader:get_neutral2: unknown file suffix' // get_suffix(fn)
+  write(stderr,*) 'ERROR:reader:get_neutral2: unknown file suffix' // get_suffix(fn)
   error stop 6
 end select
 end subroutine get_neutral2
@@ -328,7 +287,7 @@ case ('.nc')
 case ('.dat')
   call get_neutral3_raw(fn, dnOall,dnN2all,dnO2all,dvnxall,dvnrhoall,dvnzall,dTnall)
 case default
-  write(stderr,*) 'reader:get_neutral3: unknown file suffix' // get_suffix(fn)
+  write(stderr,*) 'ERROR:reader:get_neutral3: unknown file suffix' // get_suffix(fn)
   error stop 6
 end select
 end subroutine get_neutral3

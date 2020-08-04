@@ -18,6 +18,10 @@ else()
   target_sources(pathlib PRIVATE pathlib_unix.f90)
 endif()
 
+add_executable(test_pathlib test_pathlib.f90)
+target_link_libraries(test_pathlib pathlib)
+add_test(NAME unit:pathlib COMMAND $<TARGET_FILE:test_pathlib>)
+
 # --- config
 add_library(config OBJECT config.f90 config_nml.f90 config_ini.f90)
 target_link_libraries(config PRIVATE pathlib const)

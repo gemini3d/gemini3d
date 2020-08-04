@@ -6,7 +6,7 @@ implicit none (type, external)
 private
 public :: mkdir, copyfile, expanduser, home, get_suffix, filesep_swap, &
   assert_directory_exists, directory_exists, assert_file_exists,&
-  make_absolute
+  make_absolute, get_filename
 
 interface  ! pathlib_{unix,windows}.f90
 module integer function copyfile(source, dest) result(istat)
@@ -28,6 +28,61 @@ character(:), allocatable :: get_suffix
 get_suffix = filename(index(filename, '.', back=.true.) : len(filename))
 
 end function get_suffix
+
+
+function get_filename(path, stem) result(fn)
+!! given a path and stem, find the full filename
+!! assumes:
+!! 1. "stem" is the file name we wish to find (without suffix or directories)
+!! 2. a file exists with suffix (else error)
+character(*), intent(in) :: path
+character(*), intent(in), optional :: stem
+
+character(:), allocatable :: fn, path1
+integer :: i, L
+logical :: exists
+character(*), parameter :: suffix(3) = [character(4) :: '.h5', '.nc', '.dat' ]
+
+if(len_trim(path) == 0) return
+
+fn = path
+
+if(present(stem)) then
+  if(index(path, stem, back=.true.) == 0) then
+    !> assume we wish to append stem to path
+    fn = path // '/' // stem
+  elseif(index(path, '.', back=.true.) > 4) then
+    !> it's a stem-matching full path with a suffix
+    fn = path
+    inquire(file=fn, exist=exists)
+    if(.not. exists) then
+      write(stderr,*) 'ERROR:pathlib:get_filename: ',fn, ' does not exist'
+      fn = ''
+    endif
+    return
+  endif
+endif
+
+inquire(file=fn, exist=exists)
+if(exists) return
+
+path1 = fn
+
+do i = 1, size(suffix)
+  fn = path1 // trim(suffix(i))
+  inquire(file=fn, exist=exists)
+  ! print *, 'TRACE:get_filename', fn, exists
+  if (exists) return
+enddo
+
+fn = ''
+if(present(stem)) then
+  write(stderr,*) 'ERROR:pathlib:get_filename: ',stem,' not found in ', path
+else
+  write(stderr,*) 'ERROR:pathlib:get_filename: file not found: ',path
+endif
+
+end function get_filename
 
 
 function make_absolute(path, top_path) result(abspath)
