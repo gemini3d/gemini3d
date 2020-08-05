@@ -5,6 +5,7 @@
 ![ci_debug_build](https://github.com/gemini3d/gemini/workflows/ci_debug_build/badge.svg)
 ![ci_linux](https://github.com/gemini3d/gemini/workflows/ci_linux/badge.svg)
 ![ci_macos](https://github.com/gemini3d/gemini/workflows/ci_macos/badge.svg)
+![ci](https://github.com/gemini3d/gemini/workflows/ci_windows/badge.svg)
 
 The GEMINI model (*G*eospace *E*nvironment *M*odel of *I*on-*N*eutral *I*nteractions) is a three-dimensional ionospheric fluid-electrodynamic model.
 GEMINI is used for various scientific studies including:
