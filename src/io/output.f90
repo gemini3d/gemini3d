@@ -23,19 +23,6 @@ namelist /system/ compiler, compiler_flags, exe
 namelist /grid/ lid, lid2, lid3, lx1, lx2, lx3, lx2all, lx3all
 namelist /milestone/ mcadence
 
-!> MAKE A COPY OF THE INPUT DATA IN THE OUTPUT DIRECTORY
-
-!! keep these copyfile() to allow running Gemini from command-line without Python / Matlab scripts
-
-!> NOTE: if desired to copy Efield inputs. This would be a lot of files and disk space in general.
-! if(cfg%flagE0file == 1) then
-!   inquire(file=cfg%E0dir//'/simgrid.h5', exist=exists)
-!   if(.not.exists) then
-!
-!   endif
-! endif
-
-
 call gitlog(cfg%outdir // '/gitrev.log')
 
 !> Log to output.nml
@@ -98,31 +85,31 @@ subroutine gitlog(logpath)
 !! this works on Windows and Unix
 
 character(*), intent(in) :: logpath
-integer :: ierr
+integer :: i,j
 
-call execute_command_line('git --version > ' // logpath, cmdstat=ierr)
-if(ierr /= 0) then
+call execute_command_line('git --version > ' // logpath, cmdstat=i, exitstat=j)
+if(i /= 0 .or. j /= 0) then
   write(stderr, *) 'ERROR: Git not available'
   return
 endif
 
 !> git branch --show-current requires Git >= 2.22, June 2019
-call execute_command_line('git rev-parse --abbrev-ref HEAD >> '// logpath, cmdstat=ierr)
-if(ierr /= 0) then
+call execute_command_line('git rev-parse --abbrev-ref HEAD >> '// logpath, cmdstat=i, exitstat=j)
+if(i /= 0 .or. j /= 0) then
   write(stderr, *) 'ERROR: failed to log Git branch'
   return
 endif
 
 !> write hash
-call execute_command_line('git rev-parse --short HEAD >> '// logpath, cmdstat=ierr)
-if(ierr /= 0) then
+call execute_command_line('git rev-parse --short HEAD >> '// logpath, cmdstat=i, exitstat=j)
+if(i /= 0 .or. j /= 0) then
   write(stderr, *) 'ERROR: failed to log Git hash'
   return
 endif
 
 !> write changed filenames
-call execute_command_line('git status --porcelain >> '// logpath, cmdstat=ierr)
-if(ierr /= 0) then
+call execute_command_line('git status --porcelain >> '// logpath, cmdstat=i, exitstat=j)
+if(i /= 0 .or. j /= 0) then
   write(stderr, *) 'ERROR: failed to log Git filenames'
   return
 endif
