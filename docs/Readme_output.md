@@ -38,7 +38,7 @@ MH - please add commands to load variables into python workspace or whatever it 
 In MATLAB:
 
 ```matlab
-dat=loadframe(direc,ymd,UTsec,flagoutput,mloc,xg,config_file,realbits)
+dat=loadframe(get_frame_filename(direc, ymd, UTsec), flagoutput,mloc,xg,config_file,realbits)
 ```
 This will load into the structure dat all of the plasma information from the simulation frame corresponding to output directory ```direc``` on date (year, month, day) ```ymd``` at time (UT seconds) ```UTsec```.  The remaining arguments are optional and are mainly present to prevent the code from having to reload, e.g. the grid, if it is called repeatedly for different time frames in the same simulation.  The output dat contains fields ```dat.ne,dat.Te,dat.Ti,dat.v1``` etc. corresponding to different calculated variables of interest (see descriptions below).
 
