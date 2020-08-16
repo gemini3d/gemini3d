@@ -11,7 +11,7 @@ if(WIN32 AND MSVC) # for Windows ifort dll
       file(TO_CMAKE_PATH "$ENV{HDF5_ROOT}" HDF5_ROOT)
     else()
       message(VERBOSE " HDF5 workaround for Windows Intel compiler not applied because HDF5_ROOT environment variable not set.
-      It would be something like C:\Program Files\HDF_Group\HDF5\1.12.0")
+      It would be something like C:/Program Files/HDF_Group/HDF5/1.12.0")
       return()
     endif()
   endif()
