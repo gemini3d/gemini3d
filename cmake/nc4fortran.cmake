@@ -1,11 +1,15 @@
 if(netcdf)
-  include(FetchContent)
 
-  FetchContent_Declare(nc4fortran_proj
-    GIT_REPOSITORY https://github.com/geospace-code/nc4fortran.git
-    GIT_TAG v1.0.1)
-
-  FetchContent_MakeAvailable(nc4fortran_proj)
+  find_package(nc4fortran CONFIG)
+  if(nc4fortran_FOUND)
+    include(${nc4fortran_DIR}/nc4fortranTargets.cmake)
+  else()
+    include(FetchContent)
+    FetchContent_Declare(nc4fortran_proj
+      GIT_REPOSITORY https://github.com/geospace-code/nc4fortran.git
+      GIT_TAG v1.0.2)
+    FetchContent_MakeAvailable(nc4fortran_proj)
+  endif()
 
   if(NOT NCDFOK)
     message(FATAL_ERROR "NetCDF4 was requested but is not available.")
