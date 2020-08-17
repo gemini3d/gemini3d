@@ -9,7 +9,7 @@ endif()
 
 
 add_test(NAME gemini:compare:hdf5:${testname}:matlab
-  COMMAND ${Matlab_MAIN_PROGRAM} -batch "setup; compare_all('${outdir}', '${refdir}')"
+  COMMAND ${Matlab_MAIN_PROGRAM} -batch "setup; gemini3d.compare_all('${outdir}', '${refdir}')"
   WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
 
 set_tests_properties(gemini:compare:hdf5:${testname}:matlab PROPERTIES
