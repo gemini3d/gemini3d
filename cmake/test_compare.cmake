@@ -14,7 +14,7 @@ add_test(NAME gemini:compare:hdf5:${testname}:matlab
 
 set_tests_properties(gemini:compare:hdf5:${testname}:matlab PROPERTIES
 TIMEOUT 120
-DEPENDS gemini:hdf5:${testname}
+FIXTURES_REQUIRED hdf5:${testname}
 REQUIRED_FILES ${outdir}/inputs/config.nml
 SKIP_RETURN_CODE 77)
 
@@ -30,7 +30,7 @@ if(python_ok AND hdf5)
 
   set_tests_properties(gemini:compare:hdf5:${testname}:python PROPERTIES
   TIMEOUT 60
-  DEPENDS gemini:hdf5:${testname}
+  FIXTURES_REQUIRED hdf5:${testname}
   REQUIRED_FILES ${outdir}/inputs/config.nml
   SKIP_RETURN_CODE 77)
 endif()
@@ -41,7 +41,7 @@ if(python_ok AND netcdf)
 
   set_tests_properties(gemini:compare:netcdf:${testname}:python PROPERTIES
   TIMEOUT 60
-  DEPENDS gemini:netcdf:${testname}
+  FIXTURES_REQUIRED netcdf:${testname}
   REQUIRED_FILES ${outdir}/inputs/config.nml
   SKIP_RETURN_CODE 77)
 endif()
