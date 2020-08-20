@@ -2,17 +2,14 @@ program test_mpi
 
 use, intrinsic :: iso_fortran_env, only : compiler_version, stderr=>error_unit
 
-use mpi, only : mpi_init, mpi_comm_rank, mpi_comm_size, mpi_comm_world, mpi_real, mpi_real8, &
-  MPI_GET_LIBRARY_VERSION, MPI_MAX_LIBRARY_VERSION_STRING
+implicit none
 
-implicit none (type, external)
-
-external :: mpi_finalize
+include 'mpif.h'
 
 character(6) :: argv
 
 integer :: mrank, msize, vlen, ierr, N
-character(MPI_MAX_LIBRARY_VERSION_STRING) :: version
+character(256) :: version
 !! allocatable character for version does not work
 
 call get_command_argument(1, argv, status=ierr)
@@ -25,8 +22,8 @@ call MPI_COMM_RANK(MPI_COMM_WORLD, mrank, ierr)
 if (ierr /= 0) error stop 'mpi_comm_rank'
 call MPI_COMM_SIZE(MPI_COMM_WORLD, msize, ierr)
 if (ierr /= 0) error stop 'mpi_comm_size'
-call MPI_GET_LIBRARY_VERSION(version, vlen, ierr)
-if (ierr /= 0) error stop 'mpi_get_library_version'
+! call MPI_GET_LIBRARY_VERSION(version, vlen, ierr)
+! if (ierr /= 0) error stop 'mpi_get_library_version'
 
 call MPI_FINALIZE(ierr)
 if (ierr /= 0) error stop 'mpi_finalize'
@@ -37,7 +34,7 @@ if (N /= msize) then
 endif
 
 print '(A,I3,A,I3)', 'Image ', mrank, ' / ', msize-1
-print *, 'MPI library version: ', trim(version)
+!print *, 'MPI library version: ', trim(version)
 
 if(mrank == 0) then
   print '(/,A,/)',compiler_version()

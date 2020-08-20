@@ -3,7 +3,7 @@ module potentialBCs_mumps
 use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
 use, intrinsic :: ieee_arithmetic, only : ieee_is_finite
 
-use mpimod, only : mpi_integer, mpi_comm_world, mpi_status_ignore, myid
+use mpimod, only : myid
 use phys_consts, only: wp, pi, Re, debug
 use grid, only: lx1, lx2, lx2all, lx3all, gridflag, flagswap
 use mesh, only: curvmesh
@@ -95,11 +95,11 @@ if (myid==0 .and. cfg%flagE0file==1) then    !only root needs these...
   call potentialBCs2D_fileinput(dt,tnext+dt/2._wp,ymdtmp,UTsectmp-cfg%dtE0,cfg,x,Vminx1, &
                                     Vmaxx1,Vminx2,Vmaxx2,Vminx3, &
                                     Vmaxx3,E01all,E02all,E03all,flagdirich)    ! t input only needs to be less than zero...
-  
-  !! now load first, next frame of input corresponding to the initial time step.  Time input just needs to be negative to 
+
+  !! now load first, next frame of input corresponding to the initial time step.  Time input just needs to be negative to
   !   trigger a file read.  This might shoudl correspond to 0-dt/2???
   print*, 'Now loading initial next file for electric field input...'
-  call potentialBCs2D_fileinput(dt,0._wp,ymdtmp,UTsectmp,cfg,x, & 
+  call potentialBCs2D_fileinput(dt,0._wp,ymdtmp,UTsectmp,cfg,x, &
                                     Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3, &
                                     Vmaxx3,E01all,E02all,E03all,flagdirich)
 
@@ -506,7 +506,7 @@ end subroutine potentialBCs2D_fileinput
 
 subroutine compute_rootBGEfields(x,E02all,E03all)
 
-!> Returns a background electric field calculation for use by external program units.  
+!> Returns a background electric field calculation for use by external program units.
 !   This requires that all necessary files, etc. have already been loaded into module
 !   variables.  This is only to be called by a root process as it deals with fullgrid
 !   data.  An interface for workers and root is in the top-level potential module.  This
@@ -634,17 +634,17 @@ if (cfg%flagEIA) then
     !vertical drift
     E01all=0d0
     E02all=0d0
-  
+
     do ix3=1,lx3all
       !for each meridional slice define a local time
       glonmer=x%glonall(lx1/2,lx2all/2,ix3)     !just use halfway up in altitude at the magnetic equator
       do while (glonmer<0d0)
         glonmer=glonmer+360d0
       end do
-  
+
       LThrs=UTsec/3600d0+glonmer/15d0                 !Local time of center of meridian
       veltime = sin(2d0*pi*(LThrs-7d0)/24d0)    ! Huba's formulate for velocity amplitude vs. time
-  
+
       do ix2=1,lx2all
         z = x%altall(lx1/2,ix2,ix3)  !Current altitude of center of this flux tube
         do ix1=1,lx1
@@ -661,17 +661,17 @@ if (cfg%flagEIA) then
   else
     E01all=0d0
     E03all=0d0
-  
+
     do ix2=1,lx2all    !for a swapped grid this is longitude
       !for each meridional slice define a local time
       glonmer=x%glonall(lx1/2,ix2,lx3all/2)     !just use halfway up in altitude at the magnetic equator
       do while (glonmer<0d0)
         glonmer=glonmer+360d0
       end do
-  
+
       LThrs=UTsec/3600d0+glonmer/15d0                 !Local time of center of meridian
       veltime = sin(2d0*pi*(LThrs-7d0)/24d0)    ! Huba's formulate for velocity amplitude vs. time
-  
+
       do ix3=1,lx3all     !here this is L-shell
         z = x%altall(lx1/2,ix2,ix3)  !Current altitude of center of this flux tube
         do ix1=1,lx1
@@ -694,7 +694,7 @@ else
   E01all = 0
   E02all = 0
   E03all = 0
-end if 
+end if
 
 end subroutine potentialBCs2D
 

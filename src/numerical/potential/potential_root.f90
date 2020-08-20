@@ -430,11 +430,11 @@ if (lx2/=1 .and. cfg%potsolve ==1) then    !we did a field-integrated solve abov
     J1halo(1:lx1,1:lx2,1:lx3)=J1
     J2halo(1:lx1,1:lx2,1:lx3)=J2
     J3halo(1:lx1,1:lx2,1:lx3)=J3
-  
+
     call halo_pot(J1halo,tag%J1,x%flagper,.false.)
     call halo_pot(J2halo,tag%J2,x%flagper,.false.)
     call halo_pot(J3halo,tag%J3,x%flagper,.false.)
-  
+
     divtmp=div3D(J1halo(0:lx1+1,0:lx2+1,0:lx3+1),J2halo(0:lx1+1,0:lx2+1,0:lx3+1), &
                  J3halo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
     divJperp=x%h1(1:lx1,1:lx2,1:lx3)*x%h2(1:lx1,1:lx2,1:lx3)*x%h3(1:lx1,1:lx2,1:lx3)*divtmp(1:lx1,1:lx2,1:lx3)

@@ -1,6 +1,6 @@
 submodule (mpimod) mpihalo
 
-implicit none (type, external)
+implicit none
 
 contains
 
