@@ -2,14 +2,16 @@ program test_potential2d
 !! Need program statement for FORD
 !! SOLVE LAPLACE'S EQUATION IN 2D USING PDEelliptic, mumps-based libraries
 
-use mpi, only : mpi_init, mpi_comm_rank, mpi_comm_size, mpi_comm_world
+! use mpi, only : mpi_init, mpi_comm_rank, mpi_comm_size, mpi_comm_world
 use phys_consts, only: wp,debug,pi
 use PDEelliptic, only: elliptic2D_polarization,elliptic2D_cart,elliptic_workers
 use h5fortran, only: hdf5_file
 
-implicit none (type, external)
+implicit none !(type, external)
 
-external :: mpi_finalize
+! external :: mpi_finalize
+
+include 'mpif.h'
 
 type(hdf5_file) :: hout
 

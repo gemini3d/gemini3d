@@ -7,6 +7,10 @@ set_tests_properties(unit:mpi_basic PROPERTIES
 TIMEOUT 15
 FIXTURES_SETUP mpi_fixture)
 
+if(no_mpi)
+return()
+endif()
+
 # --- SCALAPACK
 
 if("d" IN_LIST arith)
@@ -23,7 +27,6 @@ set_tests_properties(unit:scalapack PROPERTIES
 TIMEOUT 15
 FIXTURES_REQUIRED mpi_fixture
 FIXTURES_SETUP scalapack_fixture)
-
 
 # --- MUMPS
 add_executable(test_mumps test_mumps.f90)

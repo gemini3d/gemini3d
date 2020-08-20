@@ -1,6 +1,6 @@
 submodule (mpimod) mpirecv
 
-implicit none (type, external)
+implicit none !(type, external)
 
 contains
 

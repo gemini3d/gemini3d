@@ -38,12 +38,18 @@ if(NOT f2008submodule)
 endif()
 
 # Do these before compiler options so options don't goof up finding
-# === OpenMP
-# optional, for possible MUMPS speedup
-if(openmp)
-find_package(OpenMP COMPONENTS C Fortran)
-endif(openmp)
 
 if(mpi)
 include(${CMAKE_CURRENT_LIST_DIR}/mpi.cmake)
-endif(mpi)
+else()
+add_subdirectory(src/vendor/mpi_stubs)
+add_library(MPI::MPI_Fortran ALIAS mpi_stub)
+add_library(MPI::MPI_C ALIAS mpi_stub)
+add_library(SCALAPACK::SCALAPACK ALIAS mpi_stub)
+endif()
+
+# optional, for possible MUMPS speedup
+if(openmp)
+find_package(OpenMP COMPONENTS C Fortran)
+endif()
+

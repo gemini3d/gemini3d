@@ -1,6 +1,6 @@
 submodule (mpimod) mpisend
 
-implicit none (type, external)
+implicit none !(type, external)
 
 contains
 
