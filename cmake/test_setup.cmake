@@ -32,7 +32,7 @@ set_tests_properties(gemini:hdf5:${testname}:dryrun PROPERTIES
 add_test(NAME gemini:hdf5:${testname}
   COMMAND ${_cmd}
   WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
-  # NOTE: Working_Diretory is NECESSARY for Windows + Intel + HDF5
+  # NOTE: Working_Directory is NECESSARY for Windows + Intel + HDF5
 
 # NOTE: don't use REQUIRED_FILES because it won't let file download if not present.
 set_tests_properties(gemini:hdf5:${testname} PROPERTIES

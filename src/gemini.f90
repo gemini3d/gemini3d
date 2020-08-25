@@ -294,7 +294,6 @@ do while (t < tdur)
     end if
   end if
 
-
   !COMPUTE BACKGROUND NEUTRAL ATMOSPHERE USING MSIS00.
   if ( it/=1 .and. cfg%flagneuBG .and. t>tneuBG) then     !we dont' throttle for tneuBG so we have to do things this way to not skip over...
     call cpu_time(tstart)
