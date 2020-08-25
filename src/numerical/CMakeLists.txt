@@ -14,14 +14,9 @@ add_library(calculus OBJECT
   ${CMAKE_CURRENT_BINARY_DIR}/calculus.f90 calculus/gradient.f90 calculus/integral.f90 calculus/div.f90)
 target_link_libraries(calculus PRIVATE mesh)
 
-if(NOT MPI_OK)
-  set_targ_props(calculus const interp mesh)
-  return()
-endif()
+if(mpi)
 
 add_subdirectory(diffusion)
-
-# -- more libs
 
 add_library(advec OBJECT advection/advec_mpi.f90)
 target_link_libraries(advec PRIVATE const mpimod grid mesh)
@@ -29,3 +24,7 @@ target_link_libraries(advec PRIVATE const mpimod grid mesh)
 add_subdirectory(potential)
 
 set_targ_props(advec calculus const diffusion grid interp mesh mumps_interface PDEelliptic PDEparabolic potential)
+
+else(mpi)
+set_targ_props(calculus const interp mesh)
+endif(mpi)

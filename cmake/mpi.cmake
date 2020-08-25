@@ -10,9 +10,9 @@ set(CMAKE_REQUIRED_LIBRARIES MPI::MPI_Fortran Threads::Threads)
 include(CheckFortranSourceCompiles)
 
 # Windows Intel 2019 MPI doesn't yet have mpi_f08
-if(NOT DEFINED MPI_Fortran_OK)
-  check_fortran_source_compiles("use mpi; end" MPI_Fortran_OK SRC_EXT F90)
+check_fortran_source_compiles("use mpi; end" MPI_Fortran_OK SRC_EXT F90)
 
+if(NOT DEFINED MPI_Fortran_OK)
   message(STATUS "Fortran MPI:
   Libs: ${MPI_Fortran_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT}
   Include: ${MPI_Fortran_INCLUDE_DIRS}
@@ -29,8 +29,7 @@ endif()
 set(CMAKE_REQUIRED_LIBRARIES MPI::MPI_C Threads::Threads)
 include(CheckCSourceCompiles)
 
-if(NOT DEFINED MPI_C_OK)
-  check_c_source_compiles("
+check_c_source_compiles("
 #include <mpi.h>
 #ifndef NULL
 #define NULL 0
@@ -41,6 +40,7 @@ int main(void) {
     return 0;}
 " MPI_C_OK)
 
+if(NOT DEFINED MPI_C_OK)
   message(STATUS "C MPI:
   Libs: ${MPI_C_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT}
   Include: ${MPI_C_INCLUDE_DIRS}
@@ -50,10 +50,4 @@ endif()
 
 if(NOT MPI_C_OK)
   message(FATAL_ERROR "MPI C library mpi.h not functioning with ${CMAKE_C_COMPILER_ID} ${CMAKE_C_COMPILER_VERSION}")
-endif()
-
-if(MPI_C_OK AND MPI_Fortran_OK)
-  set(MPI_OK true CACHE BOOL "MPI OK")
-else()
-  set(MPI_OK false CACHE BOOL "MPI Not OK")
 endif()

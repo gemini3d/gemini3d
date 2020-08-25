@@ -1,7 +1,3 @@
-if(NOT MPI_OK)
-  return()
-endif()
-
 if(realbits EQUAL 32)
   set(mpi_realprec mpi_real)
 else()

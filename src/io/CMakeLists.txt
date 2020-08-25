@@ -40,17 +40,17 @@ add_test(NAME unit:compiler_vendor COMMAND $<TARGET_FILE:test_compiler_vendor>)
 set_tests_properties(unit:compiler_vendor PROPERTIES PASS_REGULAR_EXPRESSION ${CMAKE_Fortran_COMPILER_ID})
 
 # --- io
-if(MPI_OK)
-  add_library(io OBJECT io.f90 output.f90
-    aurora.f90 aurora_raw.f90 aurora_hdf5.f90 aurora_ncdf.f90
-    mag.f90 mag_hdf5.f90 mag_ncdf.f90 mag_raw.f90
-    plasma_input.f90 plasma_input_hdf5.f90 plasma_input_ncdf.f90 plasma_input_raw.f90
-    plasma_output.f90 plasma_output_hdf5.f90 plasma_output_ncdf.f90 plasma_output_raw.f90
-    milestone.f90)
+if(mpi)
+add_library(io OBJECT io.f90 output.f90
+  aurora.f90 aurora_raw.f90 aurora_hdf5.f90 aurora_ncdf.f90
+  mag.f90 mag_hdf5.f90 mag_ncdf.f90 mag_raw.f90
+  plasma_input.f90 plasma_input_hdf5.f90 plasma_input_ncdf.f90 plasma_input_raw.f90
+  plasma_output.f90 plasma_output_hdf5.f90 plasma_output_ncdf.f90 plasma_output_raw.f90
+  milestone.f90)
 
-  target_link_libraries(io PRIVATE calculus config const reader grid mpimod sanity_check timeutils
-    h5fortran::h5fortran nc4fortran::nc4fortran)
-endif(MPI_OK)
+target_link_libraries(io PRIVATE calculus config const reader grid mpimod sanity_check timeutils
+  h5fortran::h5fortran nc4fortran::nc4fortran)
+endif(mpi)
 
 # --- reader
 add_library(reader OBJECT reader.f90 reader_hdf5.f90 reader_ncdf.f90 reader_raw.f90)

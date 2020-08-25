@@ -37,17 +37,13 @@ if(NOT f2008submodule)
   message(FATAL_ERROR "Compiler does not support Fortran 2008 SUBMODULE syntax: ${CMAKE_Fortran_COMPILER_ID} ${CMAKE_Fortran_COMPILER_VERSION}")
 endif()
 
-if(NOT mpi)
-  set(MPI_OK false)
-  return()
-endif()
-
 # Do these before compiler options so options don't goof up finding
 # === OpenMP
 # optional, for possible MUMPS speedup
 if(openmp)
-  find_package(OpenMP COMPONENTS C Fortran)
-endif()
+find_package(OpenMP COMPONENTS C Fortran)
+endif(openmp)
 
-# === MPI
+if(mpi)
 include(${CMAKE_CURRENT_LIST_DIR}/mpi.cmake)
+endif(mpi)

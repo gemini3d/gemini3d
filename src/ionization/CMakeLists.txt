@@ -13,7 +13,7 @@ if(python_ok)
   set_tests_properties(unit:fangIonize PROPERTIES TIMEOUT 30)
 endif(python_ok)
 
-if(NOT MPI_OK)
+if(NOT mpi)
   return()
 endif()
 

@@ -15,20 +15,23 @@ add_subdirectory(vendor/lapack95)  # used by PDEparabolic
 # --- GEMINI
 add_subdirectory(ionization)
 add_subdirectory(numerical)
+if(mpi)
 add_subdirectory(mpimod)
+endif(mpi)
 add_subdirectory(io)
 add_subdirectory(temporal)
 
 add_library(collision OBJECT collisions/collisions.f90)
 target_link_libraries(collision PRIVATE const config)
 
-if(NOT MPI_OK)
+if(NOT mpi)
   set_targ_props(calculus collision config const fang fang_run gbsv logging pathlib reader sanity_check timeutils)
   return()
 endif()
 
 # --- other libs
 if(mpi)
+  # keep this if(mpi) because these tests truly use MPI
   add_subdirectory(unit_tests)
 endif()
 
