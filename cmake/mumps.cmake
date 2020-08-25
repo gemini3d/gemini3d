@@ -9,8 +9,10 @@
 
 # --- prereqs
 include(${CMAKE_CURRENT_LIST_DIR}/lapack.cmake)
-include(${CMAKE_CURRENT_LIST_DIR}/scalapack.cmake)
 
+if(mpi)
+  include(${CMAKE_CURRENT_LIST_DIR}/scalapack.cmake)
+endif()
 # --- MUMPS
 
 if(mumps_external)
@@ -52,7 +54,7 @@ if(OpenMP_FOUND)
   list(APPEND MUMPS_LIBRARIES OpenMP::OpenMP_Fortran OpenMP::OpenMP_C)
 endif()
 
-if(mumps_external OR scalapack_external OR lapack_external)
+if(mumps_external OR scalapack_external OR lapack_external OR NOT mpi)
 # pre-build checks can't be used when external library isn't built yet.
   return()
 endif()

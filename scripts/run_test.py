@@ -98,7 +98,10 @@ def run_test(
 
     # have to get exe as absolute path
     exe_abs = Path(exe).resolve()
-    cmd = [mpiexec, "-np", str(mpi_count), str(exe_abs), str(outdir)]
+    if mpiexec:
+        cmd = [mpiexec, "-np", str(mpi_count), str(exe_abs), str(outdir)]
+    else:
+        cmd = [str(exe_abs), str(outdir)]
     if out_format:
         cmd += ["-out_format", out_format]
     if dryrun:
@@ -111,7 +114,7 @@ def run_test(
 if __name__ == "__main__":
     p = argparse.ArgumentParser()
     p.add_argument("testname")
-    p.add_argument("mpiexec")
+    p.add_argument("-mpiexec", help="mpiexec path")
     p.add_argument("exe")
     p.add_argument("outdir")
     p.add_argument("-np", help="force number of MPI images", type=int)

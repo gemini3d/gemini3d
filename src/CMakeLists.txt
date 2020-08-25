@@ -28,7 +28,10 @@ if(NOT MPI_OK)
 endif()
 
 # --- other libs
-add_subdirectory(unit_tests)
+if(mpi)
+  add_subdirectory(unit_tests)
+endif()
+
 add_subdirectory(neutral)
 add_subdirectory(sources)
 
