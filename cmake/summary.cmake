@@ -5,7 +5,7 @@ set_package_properties(MPI PROPERTIES
     DESCRIPTION "OpenMPI, IntelMPI, MPICH and MS-MPI are known to work with GEMINI"
     PURPOSE "MPI is essential to GEMINI for massively parallel computation.")
 
-add_feature_info(WithoutMPI no_mpi "partial build of unit tests only")
+add_feature_info(UseMPI mpi "Use MPI parallelization")
 
 add_feature_info(GLOW glow "airglow / aurora model")
 add_feature_info(HDF5 HDF5OK "file read / write")

@@ -37,7 +37,7 @@ else()
   set(arith d)
 endif()
 
-option(no_mpi "Don't build anything using MPI--disables Gemini, only a few unit tests run" off)
+option(mpi "Use MPI parallelization" on)
 
 option(autobuild "autobuild missing Lapack, Scalapack or Mumps" on)
 option(glow "use NCAR GLOW airglow / aurora model" on)
