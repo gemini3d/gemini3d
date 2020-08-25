@@ -7,7 +7,7 @@ use phys_consts, only: Gconst,Me,Re,wp,red,black
 use reader, only: get_simsize3
 
 use mpimod, only: mpi_integer, mpi_comm_world, mpi_status_ignore, &
-myid, lid, lid2, lid3, tag=>mpi_tag, &
+myid, lid, lid2, lid3, tag=>gemini_mpi, &
 bcast_recv, bcast_send, bcast_recv3D_ghost, bcast_send3D_ghost, bcast_recv3D_x3i, bcast_send3D_x3i, &
 bcast_send3D_x2i,bcast_recv3D_x2i, bcast_send1D_2, bcast_recv1D_2, bcast_send1D_3, bcast_recv1D_3
 

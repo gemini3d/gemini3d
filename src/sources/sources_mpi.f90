@@ -1,6 +1,6 @@
 submodule (sources) sources_mpi
 
-use mpimod, only: myid, tag=>mpi_tag,lid, halo, myid2,myid3,lid2,lid3
+use mpimod, only: myid, tag=>gemini_mpi, lid, halo, myid2,myid3,lid2,lid3
 
 implicit none (type, external)
 

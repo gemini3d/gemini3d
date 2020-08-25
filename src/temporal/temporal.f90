@@ -12,7 +12,7 @@ module temporal
 !/home/zettergm/zettergmdata/GEMINI/temporal/temporal.f90:65:0: warning: unused parameter ‘potsolve’ [-Wunused-parameter]
 
 use phys_consts, only:  kB,mu0,ms,lsp,pi, wp, debug
-use mpimod, only: mpi_realprec, tag=>mpi_tag, lid, myid, MPI_COMM_WORLD,MPI_STATUS_IGNORE
+use mpimod, only: mpi_realprec, tag=>gemini_mpi, lid, myid, MPI_COMM_WORLD,MPI_STATUS_IGNORE
 use mesh, only:  curvmesh
 use config, only: gemini_cfg
 

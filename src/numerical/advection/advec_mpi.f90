@@ -4,7 +4,7 @@ use phys_consts, only: lsp,ms, wp
 use grid, only : gridflag
 use mesh, only: curvmesh
   !! do not import grid sizes in case we want do subgrid advection...
-use mpimod, only: myid, lid, myid2, myid3, lid2, lid3, halo, tag=>mpi_tag
+use mpimod, only: myid, lid, myid2, myid3, lid2, lid3, halo, tag=>gemini_mpi
 
 implicit none (type, external)
 private

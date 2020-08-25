@@ -9,7 +9,7 @@ use mesh, only: curvmesh
 use interpolation, only : interp1,interp2
 use timeutils, only : dateinc, date_filename, find_lastdate
 use mpimod, only: mpi_integer, mpi_comm_world, mpi_status_ignore, &
-lid, mpi_realprec, myid, tag=>mpi_tag
+lid, mpi_realprec, myid, tag=>gemini_mpi
 use config, only: gemini_cfg
 
 implicit none (type, external)
@@ -80,7 +80,7 @@ end subroutine init_precipinput
 !tprev=tprevtmp
 !tnext=tnexttmp
 !
-!end subroutine 
+!end subroutine
 
 
 subroutine precipBCs_fileinput(dt,t,cfg,ymd,UTsec,x,W0,PhiWmWm2)

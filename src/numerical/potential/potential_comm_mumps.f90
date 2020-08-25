@@ -20,7 +20,7 @@ use potential_mumps, only: potential3D_fieldresolved_decimate, &
                             potential2D_polarization_periodic
 use PDEelliptic, only: elliptic_workers
 use mpimod, only: mpi_integer, mpi_comm_world, mpi_status_ignore, &
-lid, lid2, lid3, myid, myid2, myid3, tag=>mpi_tag, &
+lid, lid2, lid3, myid, myid2, myid3, tag=>gemini_mpi, &
 bcast_send, bcast_recv, gather_recv, gather_send, halo
 use config, only: gemini_cfg
 
@@ -53,9 +53,9 @@ interface ! potential_worker.f90
   real(wp), dimension(:,:,:), intent(in) ::  vn2,vn3
   type(gemini_cfg), intent(in) :: cfg
   real(wp), dimension(-1:,-1:,-1:), intent(in) ::  B1
-  
+
   type(curvmesh), intent(in) :: x
-  
+
   real(wp), dimension(:,:,:), intent(out) :: E1,E2,E3,J1,J2,J3
   end subroutine potential_workers_mpi
 end interface
@@ -64,7 +64,7 @@ interface ! potential_root.f90
   module subroutine potential_root_mpi_curv(it,t,dt,sig0,sigP,sigH,sigPgrav,sigHgrav, &
                                               incap,vs2,vs3,vn2,vn3,cfg,B1,x, &
                                               E1,E2,E3,J1,J2,J3,Phiall,ymd,UTsec)
-  
+
   integer, intent(in) :: it
   real(wp), intent(in) :: t,dt
   real(wp), dimension(:,:,:), intent(in) ::  sig0,sigP,sigH,sigPgrav,sigHgrav
@@ -73,9 +73,9 @@ interface ! potential_root.f90
   real(wp), dimension(:,:,:), intent(in) ::  vn2,vn3
   type(gemini_cfg), intent(in) :: cfg
   real(wp), dimension(-1:,-1:,-1:), intent(in) ::  B1
-  
+
   type(curvmesh), intent(in) :: x
-  
+
   real(wp), dimension(:,:,:), intent(out) :: E1,E2,E3,J1,J2,J3
   real(wp), dimension(:,:,:), intent(inout) :: Phiall   !not good form, but I'm lazy...  Forgot what I meant by this...
   integer, dimension(3), intent(in) :: ymd
@@ -327,11 +327,11 @@ if (flaggravdrift) then
   J1halo(1:lx1,1:lx2,1:lx3)=J1
   J2halo(1:lx1,1:lx2,1:lx3)=J2
   J3halo(1:lx1,1:lx2,1:lx3)=J3
-  
+
   call halo_pot(J1halo,tag%J1,x%flagper,.false.)
   call halo_pot(J2halo,tag%J2,x%flagper,.false.)
   call halo_pot(J3halo,tag%J3,x%flagper,.false.)
-  
+
   divtmp=div3D(J1halo(0:lx1+1,0:lx2+1,0:lx3+1),J2halo(0:lx1+1,0:lx2+1,0:lx3+1), &
                J3halo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
   srcterm=srcterm+divtmp(1:lx1,1:lx2,1:lx3)

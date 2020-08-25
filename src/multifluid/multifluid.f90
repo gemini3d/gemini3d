@@ -10,7 +10,7 @@ use diffusion, only:  trbdf23d, diffusion_prep, backEuler3D
 use grid, only: lx1, lx2, lx3, gridflag
 use mesh, only: curvmesh
 use ionization, only: ionrate_glow98, ionrate_fang08, eheating, photoionization
-use mpimod, only: myid, tag=>mpi_tag
+use mpimod, only: myid, tag=>gemini_mpi
 use precipBCs_mod, only: precipBCs_fileinput, precipBCs
 use sources, only: rk2_prep_mpi, srcsenergy, srcsmomentum, srcscontinuity
 use timeutils, only : sza

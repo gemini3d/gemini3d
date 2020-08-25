@@ -16,7 +16,7 @@ use pathlib, only : assert_file_exists, assert_directory_exists
 use io, only : input_plasma_currents,create_outdir_mag,output_magfields
 use mpimod, only: mpi_sum, mpi_comm_world, &
 mpisetup, mpibreakdown, mpigrid, mpi_manualgrid, halo_end, &
-lid, lid2, lid3, myid, myid2, myid3, mpi_realprec, tag=>mpi_tag
+lid, lid2, lid3, myid, myid2, myid3, mpi_realprec, tag=>gemini_mpi
 
 implicit none (type, external)
 

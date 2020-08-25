@@ -10,7 +10,7 @@ use mesh, only: curvmesh
 use interpolation, only : interp2, interp3
 use timeutils, only : doy_calc,dateinc, date_filename, find_lastdate
 use mpimod, only: mpi_integer, mpi_comm_world, mpi_status_ignore, &
-myid, lid, mpi_realprec, tag=>mpi_tag
+myid, lid, mpi_realprec, tag=>gemini_mpi
 use config, only: gemini_cfg
 
 ! also links gtd7 from vendor/msis00/
@@ -138,19 +138,19 @@ if (cfg%flagdneu==1) then
 
   !! Loads the neutral input file corresponding to the "first" time step of the simulation to prevent the first interpolant
   !  from being zero and causing issues with restart simulations.  I.e. make sure the neutral buffers are primed for restart
-  !  This requires us to load file input twice, once corresponding to the initial frame and once for the "first, next" frame. 
+  !  This requires us to load file input twice, once corresponding to the initial frame and once for the "first, next" frame.
   tprev=UTsectmp-UTsec-2._wp*cfg%dtneu
-  tnext=tprev+cfg%dtneu 
+  tnext=tprev+cfg%dtneu
   if (myid==0) print*, '!!!Attempting initial load of neutral dynamics files!!!' // &
                            ' This is a workaround to insure compatibility with restarts...',ymdtmp,UTsectmp
   !! We essentially are loading up the data corresponding to halfway betwween -dtneu and t0 (zero).  This will load
   !   two time levels back so when tprev is incremented twice it will be the true tprev corresponding to first time step
   call neutral_perturb(cfg,dt,cfg%dtneu,tnext+cfg%dtneu/2._wp,ymdtmp,UTsectmp-cfg%dtneu, &
                         x,nn,Tn,vn1,vn2,vn3)  !abs time arg to be < 0
-  
+
   if (myid==0) print*, 'Now loading initial next file for neutral perturbations...'
   !! Now compute perturbations for the present time (zero), this moves the primed variables in next into prev and then
-  !  loads up a current state so that we get a proper interpolation for the first time step.  
+  !  loads up a current state so that we get a proper interpolation for the first time step.
   call neutral_perturb(cfg,dt,cfg%dtneu,0._wp,ymdtmp,UTsectmp,x,nn,Tn,vn1,vn2,vn3)    !t-dt so we land exactly on start time
 end if
 end subroutine init_neutrals
@@ -452,7 +452,7 @@ dhorzn=cfg%drhon
 if (myid==0) then    !root
   print '(A,/,A)', 'Inputting neutral size from:  ',cfg%sourcedir
 
-  ! bit of a tricky issue here; for neutral input, according to makedneuframes.m, the first integer in the size file is 
+  ! bit of a tricky issue here; for neutral input, according to makedneuframes.m, the first integer in the size file is
   !  the horizontal grid point count for the input - which get_simsize3 interprets as lx1...
   !call get_simsize3(cfg%sourcedir, lx1=lzn, lx2all=lhorzn)
 call get_simsize3(cfg%sourcedir, lx1=lhorzn, lx2all=lzn)
@@ -1423,7 +1423,7 @@ if (allocated(zn)) then
   nn(:,:,:,2)=max(nn(:,:,:,2),1._wp)
   nn(:,:,:,3)=max(nn(:,:,:,3),1._wp)
   !! note we are not adjust derived densities like NO since it's not clear how they may be related to major
-  !! species perturbations.  
+  !! species perturbations.
 
   Tn=Tn+dTninow
   Tn=max(Tn,50._wp)
