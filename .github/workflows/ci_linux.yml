@@ -40,10 +40,10 @@ jobs:
     - name: Install packages
       run: |
         sudo apt update -yq
-        sudo apt install -yq --no-install-recommends gfortran libhdf5-dev
+        sudo apt install -yq --no-install-recommends gfortran libhdf5-dev liblapack-dev
 
     - name: configure without MPI
-      run: cmake -B build -Dno_mpi:BOOL=true
+      run: cmake -B build -Dmpi:BOOL=false
 
     - name: build and test without MPI
       run: ctest -S setup.cmake -V
