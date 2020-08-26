@@ -27,10 +27,5 @@ jobs:
 
     - uses: actions/checkout@v2
 
-    - name: configure without MPI
-      run: cmake -B build -Dmpi:BOOL=false
-
-    # - run: ctest -S setup.cmake -VV # avoids missing environment variable weird bugs
-    - run: cmake --build build
-    - run: ctest -V
-      working-directory: build
+    - name: configure and build without MPI
+      run: ctest -S setup.cmake -VV

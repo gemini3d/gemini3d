@@ -3,13 +3,21 @@
 
 # --- Project-specific -Doptions
 # these will be used if the project isn't already configured.
-set(_opts)
+set(_opts "-Dautobuild:BOOL=on")
 
 # --- boilerplate follows
 message(STATUS "CMake ${CMAKE_VERSION}")
 if(CMAKE_VERSION VERSION_LESS 3.14)
   message(FATAL_ERROR "Please update CMake >= 3.14")
 endif()
+
+# we use presence of MPIEXEC as a weak assumption that MPI is OK.
+find_program(_mpiexec NAMES mpiexec)
+if(_mpiexec)
+  list(APPEND _opts "-Dmpi:BOOL=on")
+else()
+  list(APPEND _opts "-Dmpi:BOOL=off")
+endif(_mpiexec)
 
 # site is OS name
 if(NOT DEFINED CTEST_SITE)
@@ -71,6 +79,18 @@ ctest_configure(
   OPTIONS "${_opts}"
   RETURN_VALUE return_code
   CAPTURE_CMAKE_ERROR cmake_err)
+
+# if it's a generator or compiler mismatch, delete cache and try again
+if(NOT cmake_err EQUAL 0)
+  file(REMOVE ${CTEST_BINARY_DIRECTORY}/CMakeCache.txt)
+
+  ctest_configure(
+    BUILD ${CTEST_BINARY_DIRECTORY}
+    SOURCE ${CTEST_SOURCE_DIRECTORY}
+    OPTIONS "${_opts}"
+    RETURN_VALUE return_code
+    CAPTURE_CMAKE_ERROR cmake_err)
+endif()
 
 if(return_code EQUAL 0 AND cmake_err EQUAL 0)
   ctest_build(

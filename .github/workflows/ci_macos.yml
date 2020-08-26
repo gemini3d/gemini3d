@@ -1,6 +1,6 @@
 name: ci_macos
 env:
-  FC: gfortran
+  FC: gfortran-10
   CC: gcc-10
   CMAKE_GENERATOR: Ninja
 
@@ -48,9 +48,6 @@ jobs:
     - run: brew install gcc pkg-config ninja lapack hdf5
 
 # CI is too slow for 3d_glow
-    - name: configure without MPI
-      run: cmake -B build -Dmpi:BOOL=false
-
     - name: build and test without MPI
       run: ctest -S setup.cmake -R unit -VV
 
