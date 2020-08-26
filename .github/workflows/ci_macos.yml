@@ -1,4 +1,8 @@
 name: ci_macos
+env:
+  FC: gfortran
+  CC: gcc-10
+  CMAKE_GENERATOR: Ninja
 
 on:
   push:
@@ -9,7 +13,7 @@ on:
 
 jobs:
 
-  cmake:
+  hdf5:
     runs-on: macos-latest
     steps:
     - uses: actions/checkout@v2
@@ -18,14 +22,12 @@ jobs:
         python-version: '3.7'
     # leave as 3.7 to avoid pip install in 3.8 but run in 3.7
 
-    - run: brew install pkg-config ninja lapack open-mpi hdf5 scalapack
+    - run: brew install gcc pkg-config ninja lapack open-mpi hdf5 scalapack
 
 # CI is too slow for 3d_glow
 
-    - run: ctest -S setup.cmake -R unit -V
-      env:
-        FC: gfortran-9
-        CC: gcc-9
+    - run: ctest -S setup.cmake -R unit -VV
+
     - uses: actions/upload-artifact@v1
       if: failure()
       with:
@@ -33,6 +35,31 @@ jobs:
         path: build/CMakeFiles/CMakeError.log
 
     - run: ctest -S setup.cmake -E 3d -VV
-      env:
-        FC: gfortran-9
-        CC: gcc-9
+
+  no_mpi:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
+      with:
+        python-version: '3.7'
+    # leave as 3.7 to avoid pip install in 3.8 but run in 3.7
+
+    - run: brew install gcc pkg-config ninja lapack hdf5
+
+# CI is too slow for 3d_glow
+    - name: configure without MPI
+      run: cmake -B build -Dmpi:BOOL=false
+
+    - name: build and test without MPI
+      run: ctest -S setup.cmake -R unit -VV
+
+    - uses: actions/upload-artifact@v1
+      if: failure()
+      with:
+        name: MacOS_noMPI_Unit_log
+        path: build/CMakeFiles/CMakeError.log
+
+    - name: 2D test without MPI
+      run: ctest -R 2dew_fang -V
+      working-directory: build
