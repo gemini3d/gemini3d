@@ -1,7 +1,6 @@
 module grid
 
 use, intrinsic:: iso_fortran_env, only: stderr=>error_unit
-use mpi, only : mpi_send, mpi_recv
 
 use mesh, only: curvmesh
 
@@ -17,6 +16,8 @@ implicit none
 private
 public :: lx1,lx2,lx3, lx2all,lx3all, gridflag, flagswap, clear_unitvecs, g1,g2,g3, &
   read_grid, clear_grid, grid_size, grid_check
+
+external :: mpi_send, mpi_recv
 
 integer, protected :: lx1,lx2,lx3,lx2all,lx3all
 !! this is a useful shorthand for most program units using this module,
