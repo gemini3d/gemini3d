@@ -366,6 +366,18 @@ type is (integer(int32))
   type is (integer(int32))
     R = S
   end select
+type is (complex(real32))
+  select type (R)
+  type is (complex(real32))
+    R = S
+  end select
+type is (complex(real64))
+  select type (R)
+  type is (complex(real64))
+    R = S
+  end select
+class default
+  error stop 'unknown data type'
 end select
 end subroutine mumps_copy
 
