@@ -2,7 +2,7 @@ submodule (grid) grid_read
 
 use mpimod, only : mpi_realprec
 
-implicit none (type, external)
+implicit none
 
 interface ! readgrid_*.f90
 module subroutine get_grid3_raw(path, flagswap, x, g1all,g2all,g3all,glatall,Incall,nullptsall,&

@@ -1,10 +1,9 @@
 program test_mpi
 
+use mpi
 use, intrinsic :: iso_fortran_env, only : compiler_version, stderr=>error_unit
 
 implicit none
-
-include 'mpif.h'
 
 character(6) :: argv
 
