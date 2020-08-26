@@ -30,7 +30,7 @@ jobs:
 
 
   no_mpi:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-python@v2
@@ -46,7 +46,7 @@ jobs:
       run: cmake -B build -Dmpi:BOOL=false
 
     - name: build and test without MPI
-      run: ctest -S setup.cmake -V
+      run: ctest -S setup.cmake -VV
 
 
   cmakeBuildAllLibs:
