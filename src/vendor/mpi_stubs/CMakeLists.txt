@@ -6,11 +6,9 @@ add_library(elapse OBJECT elapse.c)
 
 add_library(mpi_f_stub mpi.f90)
 target_link_libraries(mpi_f_stub PRIVATE elapse)
-if(CMAKE_Fortran_COMPILER_ID STREQUAL GNU)
-  target_compile_options(mpi_f_stub PRIVATE -std=legacy)
-endif()
 add_library(MPI::MPI_Fortran ALIAS mpi_f_stub)
 
+# add_library(mpi_f_legacy mpi_legacy.f90)  # use mumps::mpiseq to avoid symbol clashes
 
 add_library(scalapack scalapack.f90 blacs.f90)
 add_library(SCALAPACK::SCALAPACK ALIAS scalapack)
