@@ -13,7 +13,7 @@ target_link_libraries(mpimod PRIVATE const MPI::MPI_Fortran)
 if(NOT mpi)
   # the reason for this is the MPI-1 Fortran 77 linking in MUMPS
   # this seemed to be the easiest way to avoid symbol clases
-  target_link_libraries(mpimod PRIVATE mumps::mpiseq)
+  target_link_libraries(mpimod PRIVATE MUMPS::mpiseq)
 endif()
 
 add_executable(test_excess_mpi test_excess_mpi.f90)
