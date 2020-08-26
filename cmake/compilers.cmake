@@ -40,16 +40,12 @@ endif()
 # Do these before compiler options so options don't goof up finding
 
 if(mpi)
-include(${CMAKE_CURRENT_LIST_DIR}/mpi.cmake)
+  include(${CMAKE_CURRENT_LIST_DIR}/mpi.cmake)
 else()
-add_subdirectory(src/vendor/mpi_stubs)
-add_library(MPI::MPI_Fortran ALIAS mpi_stub)
-add_library(MPI::MPI_C ALIAS mpi_stub)
-add_library(SCALAPACK::SCALAPACK ALIAS mpi_stub)
-endif()
+  add_subdirectory(src/vendor/mpi_stubs)
+endif(mpi)
 
 # optional, for possible MUMPS speedup
 if(openmp)
 find_package(OpenMP COMPONENTS C Fortran)
 endif()
-

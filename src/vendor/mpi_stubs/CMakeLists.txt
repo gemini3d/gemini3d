@@ -1,13 +1,23 @@
-set(CDEFS "Add_")
-# "Add_" works for all modern compilers we tried.
+add_library(mpi_c_stub mpic.c)
+target_include_directories(mpi_c_stub INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
+add_library(MPI::MPI_C ALIAS mpi_c_stub)
 
-add_library(mpi_stub elapse.c mpi.f mpic.c)
-target_compile_definitions(mpi_stub PRIVATE ${CDEFS})
-target_include_directories(mpi_stub INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
-set_target_properties(mpi_stub PROPERTIES
-  Fortran_MODULE_DIRECTORY ${PROJECT_BINARY_DIR}
-  ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
-  LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
+add_library(elapse OBJECT elapse.c)
+
+add_library(mpi_f_stub mpi.f90)
+target_link_libraries(mpi_f_stub PRIVATE elapse)
 if(CMAKE_Fortran_COMPILER_ID STREQUAL GNU)
-  target_compile_options(mpi_stub PRIVATE -std=legacy)
+  target_compile_options(mpi_f_stub PRIVATE -std=legacy -fallow-argument-mismatch)
 endif()
+add_library(MPI::MPI_Fortran ALIAS mpi_f_stub)
+
+
+add_library(scalapack scalapack.f90 blacs.f90)
+add_library(SCALAPACK::SCALAPACK ALIAS scalapack)
+
+foreach(t mpi_f_stub mpi_c_stub scalapack)
+  set_target_properties(${t} PROPERTIES
+    Fortran_MODULE_DIRECTORY ${PROJECT_BINARY_DIR}
+    ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
+    LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
+endforeach()

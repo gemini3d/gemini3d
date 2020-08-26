@@ -7,6 +7,8 @@ Program MagCalc
 use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
 use, intrinsic :: ieee_arithmetic, only : ieee_is_nan
 
+use mpi, only : mpi_reduce
+
 use phys_consts, only : pi,mu0, wp, re, debug
 use grid, only : lx1, lx2, lx3, read_grid, clear_grid, lx2all,lx3all,grid_size
 use mesh, only : curvmesh
@@ -18,9 +20,7 @@ use mpimod, only: mpi_sum, mpi_comm_world, &
 mpisetup, mpibreakdown, mpigrid, mpi_manualgrid, halo_end, &
 lid, lid2, lid3, myid, myid2, myid3, mpi_realprec, tag=>gemini_mpi
 
-implicit none (type, external)
-
-external :: mpi_reduce
+implicit none
 
 !> VARIABLES READ IN FROM CONFIG FILE
 
