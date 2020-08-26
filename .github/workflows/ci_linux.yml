@@ -1,4 +1,8 @@
 name: ci_linux
+env:
+  FC: gfortran
+  CC: gcc
+  CMAKE_GENERATOR: Ninja
 
 on:
   push:
@@ -41,9 +45,6 @@ jobs:
       run: |
         sudo apt update -yq
         sudo apt install -yq --no-install-recommends gfortran ninja-build libhdf5-dev liblapack-dev
-
-    - name: configure without MPI
-      run: cmake -B build -Dmpi:BOOL=false -G Ninja
 
     - name: build and test without MPI
       run: ctest -S setup.cmake -R unit -VV
