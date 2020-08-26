@@ -26,6 +26,7 @@ set_tests_properties(gemini:hdf5:${testname}:dryrun PROPERTIES
   TIMEOUT 60
   SKIP_RETURN_CODE 77
   RUN_SERIAL true
+  FIXTURES_REQUIRED mumps_fixture
   FIXTURES_SETUP hdf5:${testname}:dryrun)
 
 
@@ -39,7 +40,7 @@ set_tests_properties(gemini:hdf5:${testname} PROPERTIES
   TIMEOUT ${TIMEOUT}
   SKIP_RETURN_CODE 77
   RUN_SERIAL true
-  FIXTURES_REQUIRED "hdf5:${testname}:dryrun;mumps_fixture"
+  FIXTURES_REQUIRED hdf5:${testname}:dryrun
   FIXTURES_SETUP hdf5:${testname})
 
 endif(hdf5)
@@ -52,6 +53,7 @@ set_tests_properties(gemini:netcdf:${testname}:dryrun PROPERTIES
   TIMEOUT 60
   SKIP_RETURN_CODE 77
   RUN_SERIAL true
+  FIXTURES_REQUIRED mumps_fixture
   FIXTURES_SETUP netcdf:${testname}:dryrun)
 
 add_test(NAME gemini:netcdf:${testname}
@@ -61,7 +63,7 @@ set_tests_properties(gemini:netcdf:${testname} PROPERTIES
   TIMEOUT ${TIMEOUT}
   SKIP_RETURN_CODE 77
   RUN_SERIAL true
-  FIXTURES_REQUIRED "netcdf:${testname}:dryrun;mumps_fixture"
+  FIXTURES_REQUIRED netcdf:${testname}:dryrun
   FIXTURES_SETUP netcdf:${testname})
 endif(netcdf)
 
