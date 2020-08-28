@@ -180,7 +180,7 @@ See [Readme_input](./docs/Readme_input.md)
 ## Loading and plotting output
 
 GEMINI uses Python for essential interfaces, plotting and analysis.
-The legacy Matlab scripts were moved to
+Matlab scripts relevant to Gemini to
 [mat_gemini repo](https://github.com/gemini3d/mat_gemini).
 
 Only the essential scripts needed to setup a simple example, and plot the results are included in the main GEMINI respository.
