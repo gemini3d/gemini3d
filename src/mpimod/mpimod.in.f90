@@ -11,8 +11,7 @@ use mpi, only: mpi_init, mpi_comm_rank, mpi_comm_size, mpi_comm_world, &
   mpi_status_size, mpi_status_ignore, MPI_PROC_NULL, &
   mpi_realprec=>@mpi_realprec@
 
-implicit none
-
+implicit none (type, external)
 private
 public :: gemini_mpi, myid, myid2, myid3, lid, lid2, lid3, &
   mpi_realprec, mpisetup, mpibreakdown, mpi_manualgrid, mpigrid, id2grid, grid2id, slabinds, &
@@ -92,6 +91,7 @@ integer :: xnrange=99,ynrange=104
 integer :: lx=105,xn=106,yn=107,zn=108,dvnx=109
 
 end type gemini_mpi_tags
+
 
 type(gemini_mpi_tags), protected :: gemini_mpi
 
