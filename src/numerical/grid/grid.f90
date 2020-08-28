@@ -1,5 +1,4 @@
 module grid
-
 use, intrinsic:: iso_fortran_env, only: stderr=>error_unit
 
 use mesh, only: curvmesh
@@ -12,12 +11,12 @@ myid, lid, lid2, lid3, tag=>gemini_mpi, &
 bcast_recv, bcast_send, bcast_recv3D_ghost, bcast_send3D_ghost, bcast_recv3D_x3i, bcast_send3D_x3i, &
 bcast_send3D_x2i,bcast_recv3D_x2i, bcast_send1D_2, bcast_recv1D_2, bcast_send1D_3, bcast_recv1D_3
 
-implicit none
+implicit none (type, external)
 private
 public :: lx1,lx2,lx3, lx2all,lx3all, gridflag, flagswap, clear_unitvecs, g1,g2,g3, &
   read_grid, clear_grid, grid_size, grid_check
 
-external :: mpi_send, mpi_recv
+external :: mpi_recv, mpi_send
 
 integer, protected :: lx1,lx2,lx3,lx2all,lx3all
 !! this is a useful shorthand for most program units using this module,
