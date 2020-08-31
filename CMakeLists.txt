@@ -39,7 +39,7 @@ endif()
 
 option(mpi "Use MPI parallelization" on)
 
-option(autobuild "autobuild missing Lapack, Scalapack or Mumps" off)
+option(autobuild "autobuild missing Lapack, Scalapack or Mumps" on)
 option(glow "use NCAR GLOW airglow / aurora model" on)
 option(hdf5 "use HDF5 file I/O" on)
 option(netcdf "use NetCDF file I/O" off)
