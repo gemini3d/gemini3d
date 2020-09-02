@@ -29,7 +29,7 @@ read(u,'(a256)') buf
 cfg%indatgrid = expanduser(buf)
 read(u,'(a256)') buf
 cfg%indatfile = expanduser(buf)   !< line 14
-cfg%out_format = "raw"
+cfg%out_format = "dat"
 
 !! neutral
 read(u,*, iostat=i) cfg%flagdneu  !< line 15

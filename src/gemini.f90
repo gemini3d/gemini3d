@@ -123,11 +123,11 @@ call grid_size(cfg%indatsize)
 if (lid2in==-1) then
   call mpigrid(lx2all, lx3all)
   !! grid_size defines lx2all and lx3all
-  print '(A, 2I6)', 'process grid (Number MPI processes) x2, x3:  ',lid2,lid3
-  print '(A, I6, A, 2I6)', 'Process:',myid,' at process grid location:',myid2,myid3
 else
   call mpi_manualgrid(lx2all, lx3all, lid2in, lid3in)
 endif
+print '(A, 2I6)', 'process grid (Number MPI processes) x2, x3:  ',lid2,lid3
+print '(A, I6, A, 2I6)', 'Process:',myid,' at process grid location:',myid2,myid3
 
 !> LOAD UP THE GRID STRUCTURE/MODULE VARS. FOR THIS SIMULATION
 call read_grid(cfg%indatsize,cfg%indatgrid,cfg%flagperiodic, x)
