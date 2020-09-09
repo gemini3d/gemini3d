@@ -348,8 +348,10 @@ endif
 
 !--------
 !ADD IN BACKGROUND FIELDS BEFORE HALOING
-E2=E2+E02
-E3=E3+E03
+if (.not. cfg%flaglagrangian) then
+  E2=E2+E02
+  E3=E3+E03
+end if
 !--------
 
 
