@@ -267,7 +267,9 @@ end if
 allocate(sig0(lx1,lx2,lx3),sigP(lx1,lx2,lx3),sigH(lx1,lx2,lx3),sigPgrav(lx1,lx2,lx3),sigHgrav(lx1,lx2,lx3))
 allocate(muP(lx1,lx2,lx3,lsp),muH(lx1,lx2,lx3,lsp),muPvn(lx1,lx2,lx3,lsp),muHvn(lx1,lx2,lx3,lsp))
 call conductivities(nn,Tn,ns,Ts,vs1,B1,sig0,sigP,sigH,muP,muH,muPvn,muHvn,sigPgrav,sigHgrav)
-E1=E1+E01; E2=E2+E02; E3=E3+E03
+if (.not. cfg%flaglagrangian) then    !only add background if we have a stationary (non-Lagrangian) grid
+  E1=E1+E01; E2=E2+E02; E3=E3+E03
+end if
 call velocities(muP,muH,muPvn,muHvn,E2,E3,vn2,vn3,cfg%flaggravdrift,vs2,vs3)
 deallocate(sig0,sigP,sigH,muP,muH,muPvn,muHvn,sigPgrav,sigHgrav)
 deallocate(E01,E02,E03)
@@ -276,6 +278,7 @@ if(myid==0) then
   print*, '    ',minval(vs2),maxval(vs2)
   print*, '    ',minval(vs3),maxval(vs3)
 end if
+
 
 !> control update rate from excessive console printing
 !! considering small vs. large simulations
