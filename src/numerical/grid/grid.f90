@@ -121,6 +121,7 @@ real(wp) :: E2ref,E3ref,Bref
     Bref=x%Bmag(lx1,lx2/2,lx3/2)
     v2grid=E3ref/Bref
     v3grid=-1*E2ref/Bref
+    ! FIXME:  error checking to make sure input is sensible for this???
     do iid=1,lid-1
       call mpi_send(v2grid,1,mpi_realprec,iid,tag%v2grid,MPI_COMM_WORLD,ierr)
       call mpi_send(v3grid,1,mpi_realprec,iid,tag%v3grid,MPI_COMM_WORLD,ierr)
