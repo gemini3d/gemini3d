@@ -41,6 +41,7 @@ real(wp) :: magcap
 integer :: diffsolvetype
 integer :: mcadence
 logical :: flaggravdrift
+logical :: flaglagrangian
 
 namelist /base/ ymd, UTsec0, tdur, dtout, activ, tcfl, Teinf
 namelist /files/ file_format, indat_size, indat_grid, indat_file
@@ -58,6 +59,7 @@ namelist /capacitance/ flagcap,magcap     ! later need to regroup these in a way
 namelist /diffusion/ diffsolvetype
 namelist /milestone/ mcadence
 namelist /gravdrift/ flaggravdrift
+namelist /lagrangian/ flaglagrangian
 
 open(newunit=u, file=cfg%infile, status='old', action='read')
 
@@ -240,6 +242,15 @@ if (namelist_exists(u,'gravdrift')) then
   cfg%flaggravdrift=flaggravdrift
 else
   cfg%flaggravdrift=.false.     !by default do not include grav currents and drifts
+end if
+
+if (namelist_exists(u,'lagrangian')) then
+  rewind(u)
+  read(u,nml=lagrangian,iostat=i)
+  call check_nml_io(i,cfg%infile,"lagrangian")
+  cfg%flaglagrangian=flaglagrangian
+else
+  cfg%flaglagrangian=.false.
 end if
 
 close(u)
