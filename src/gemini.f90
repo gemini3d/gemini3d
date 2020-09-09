@@ -192,6 +192,9 @@ if ( any(ymdtmp/=cfg%ymd0) .or. abs(UTsectmp-cfg%UTsec0)>cfg%dtout ) then  !! tr
   if (tdur <= 1e-6_wp .and. myid==0) error stop 'It appears you are trying to restart a simulation from the final time step!'
 
   cfg%tdur=tdur         ! just to insure consistency
+  if (tdur <= 1e-6_wp .and. myid==0) then
+    error stop 'It appears you are trying to restart a simulation from the final time step!'
+  end if
   call input_plasma(x%x1,x%x2all,x%x3all,cfg%indatsize,filetmp,ns,vs1,Ts,Phi,Phiall)
 else !! start at the beginning
   UTsec = cfg%UTsec0
@@ -573,6 +576,12 @@ if (myid==0) then
     print*, 'Gravitational drift terms enabled.'
   else
     print*, 'Gravitaional drift terms disabled.'
+  end if
+
+  if (cfg%flaglagrangian) then
+    print*, 'Lagrangian grid enabled.'
+  else
+    print*, 'Lagrangian grid disabled'
   end if
 
   print *,  '**************** end input config ***************'

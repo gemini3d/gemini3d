@@ -67,7 +67,7 @@ logical :: flagJpar=.true.                  ! whether or not to compute parallel
 
 !> inertial capacitance
 integer :: flagcap = 0           ! use inertial capacitance? 0 - set all to zero, 1 - use ionosphere to compute, 2 - add a magnetospheric part
-real(wp) :: magcap=30._wp        ! value of integrated magnetospheric capacitance to use
+real(wp) :: magcap=5._wp        ! value of integrated magnetospheric capacitance to use
 
 !> type of diffusion solver to sue
 integer :: diffsolvetype=2       ! 1 - first order backward Euler time stepping; 2 - 2nd order TRBDF2 diffusion solver
@@ -77,6 +77,9 @@ integer :: mcadence=-1      ! value less than zero switches this off, > zero giv
 
 !> gravitational drift terms
 logical :: flaggravdrift=.false.
+
+!> flag for lagrangian grid (assume drifting at E x B/B**2)
+logical :: flaglagrangian=.false.
 
 end type gemini_cfg
 
