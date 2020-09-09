@@ -303,7 +303,7 @@ endif
 
 !> Main time loop
 do while (t < tdur)
-  !! TIME STEP CALCULATION, requires workers to report their most stringent local stability constraint
+  !> TIME STEP CALCULATION, requires workers to report their most stringent local stability constraint
   dtprev = dt
   call dt_comm(t,tout,tglowout,cfg,ns,Ts,vs1,vs2,vs3,B1,B2,B3,x,dt)
   if (it>1) then
@@ -316,7 +316,7 @@ do while (t < tdur)
     end if
   end if
 
-  !COMPUTE BACKGROUND NEUTRAL ATMOSPHERE USING MSIS00.
+  !> COMPUTE BACKGROUND NEUTRAL ATMOSPHERE USING MSIS00.
   if ( it/=1 .and. cfg%flagneuBG .and. t>tneuBG) then     !we dont' throttle for tneuBG so we have to do things this way to not skip over...
     call cpu_time(tstart)
     call neutral_atmos(ymd,UTsec,x%glat,x%glon,x%alt,cfg%activ,nn,Tn,vn1,vn2,vn3)
@@ -326,7 +326,6 @@ do while (t < tdur)
       print *, 'Neutral background at time:  ',t,' calculated in time:  ',tfin-tstart
     end if
   end if
-
 
   !> GET NEUTRAL PERTURBATIONS FROM ANOTHER MODEL
   if (cfg%flagdneu==1) then
@@ -338,7 +337,7 @@ do while (t < tdur)
     endif
   end if
 
-  !! POTENTIAL SOLUTION
+  !> POTENTIAL SOLUTION
   call cpu_time(tstart)
   call electrodynamics(it,t,dt,nn,vn2,vn3,Tn,cfg,ns,Ts,vs1,B1,vs2,vs3,x,E1,E2,E3,J1,J2,J3,Phiall,ymd,UTsec)
   if (myid==0 .and. debug) then
@@ -426,7 +425,7 @@ do while (t < tdur)
 end do
 
 
-!! DEALLOCATE MAIN PROGRAM DATA
+!> DEALLOCATE MAIN PROGRAM DATA
 deallocate(ns,vs1,vs2,vs3,Ts)
 deallocate(E1,E2,E3,J1,J2,J3)
 deallocate(nn,Tn,vn1,vn2,vn3)
@@ -435,7 +434,7 @@ if (myid==0) deallocate(Phiall)
 
 if (cfg%flagglow/=0) deallocate(iver)
 
-!! DEALLOCATE MODULE VARIABLES (MAY HAPPEN AUTOMATICALLY IN F2003???)
+!> DEALLOCATE MODULE VARIABLES (MAY HAPPEN AUTOMATICALLY IN F2003???)
 call clear_grid(x)
 call clear_dneu()
 call clear_precip_fileinput()
@@ -443,7 +442,7 @@ call clear_potential_fileinput()
 !call clear_BGfield()
 
 
-!! SHUT DOWN MPI
+!> SHUT DOWN MPI
 ierr = mpibreakdown()
 
 if (ierr /= 0) then
