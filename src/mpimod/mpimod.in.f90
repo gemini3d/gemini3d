@@ -90,6 +90,8 @@ integer :: Tninf=98
 integer :: xnrange=99,ynrange=104
 integer :: lx=105,xn=106,yn=107,zn=108,dvnx=109
 
+integer :: v2grid=110,v3grid=111
+
 end type gemini_mpi_tags
 
 

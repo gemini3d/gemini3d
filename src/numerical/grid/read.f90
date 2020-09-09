@@ -1,6 +1,6 @@
 submodule (grid) grid_read
 
-use mpimod, only : mpi_realprec
+!use mpimod, only : mpi_realprec
 
 implicit none (type, external)
 

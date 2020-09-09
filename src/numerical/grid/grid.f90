@@ -7,14 +7,14 @@ use phys_consts, only: Gconst,Me,Re,wp,red,black
 use reader, only: get_simsize3
 
 use mpimod, only: mpi_integer, mpi_comm_world, mpi_status_ignore, &
-myid, lid, lid2, lid3, tag=>gemini_mpi, &
+myid, lid, lid2, lid3, tag=>gemini_mpi, mpi_realprec, &
 bcast_recv, bcast_send, bcast_recv3D_ghost, bcast_send3D_ghost, bcast_recv3D_x3i, bcast_send3D_x3i, &
 bcast_send3D_x2i,bcast_recv3D_x2i, bcast_send1D_2, bcast_recv1D_2, bcast_send1D_3, bcast_recv1D_3
 
 implicit none (type, external)
 private
 public :: lx1,lx2,lx3, lx2all,lx3all, gridflag, flagswap, clear_unitvecs, g1,g2,g3, &
-  read_grid, clear_grid, grid_size, grid_check
+  read_grid, clear_grid, grid_size, grid_check, grid_drift
 
 external :: mpi_recv, mpi_send
 
@@ -99,6 +99,38 @@ if (ierr/=0) error stop 'grid_size_worker: lx2all failed mpi_send'
 call mpi_recv(lx3all,1,MPI_INTEGER,0,tag%lx3all,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
 if (ierr/=0) error stop 'grid_size_worker: lx3all failed mpi_send'
 end subroutine grid_size_worker
+
+
+subroutine grid_drift(x,E02,E03,v2grid,v3grid)
+
+!! Compute the speed the grid is moving at given a background electric field
+
+type(curvmesh), intent(in) :: x
+reaL(wp), dimension(:,:,:), intent(in) :: E02,E03
+real(wp), intent(out) :: v2grid,v3grid
+
+integer :: iid,ierr
+real(wp) :: E2ref,E3ref,Bref
+
+  ! Root decides grid drift speed by examining initial background field in this center of its subdomain...
+  ! Bad things will happen if these background fields are not uniform, which by definition they should be BUT
+  ! no error checking is done on input to insure this, I believe.
+  if (myid==0) then 
+    E2ref=E02(lx1,lx2/2,lx3/2)
+    E3ref=E03(lx1,lx2/2,lx3/2)
+    Bref=x%Bmag(lx1,lx2/2,lx3/2)
+    v2grid=E3ref/Bref
+    v3grid=-1*E2ref/Bref
+    do iid=1,lid-1
+      call mpi_send(v2grid,1,mpi_realprec,iid,tag%v2grid,MPI_COMM_WORLD,ierr)
+      call mpi_send(v3grid,1,mpi_realprec,iid,tag%v3grid,MPI_COMM_WORLD,ierr)
+    end do
+  else
+    call mpi_recv(v2grid,1,mpi_realprec,0,tag%v2grid,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+    call mpi_recv(v3grid,1,mpi_realprec,0,tag%v3grid,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+  end if
+
+end subroutine grid_drift
 
 
 subroutine clear_grid(x)

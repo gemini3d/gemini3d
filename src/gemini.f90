@@ -5,7 +5,7 @@ use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
 
 use sanity_check, only : check_finite_output
 use phys_consts, only : lnchem, lwave, lsp, wp, debug
-use grid, only: grid_size,read_grid,clear_grid, lx1,lx2,lx3,lx2all,lx3all
+use grid, only: grid_size,read_grid,clear_grid,grid_drift, lx1,lx2,lx3,lx2all,lx3all
 use mesh, only: curvmesh
 use config, only : read_configfile, gemini_cfg, get_compiler_vendor
 use pathlib, only : assert_file_exists, assert_directory_exists, expanduser, get_suffix
@@ -92,6 +92,9 @@ character(:), allocatable :: filetmp
 real(wp), dimension(:,:,:), allocatable :: sig0,sigP,sigH,sigPgrav,sigHgrav
 real(wp), dimension(:,:,:,:), allocatable :: muP,muH,muPvn,muHvn
 real(wp), dimension(:,:,:), allocatable :: E01,E02,E03
+
+!> Describing Lagrangian grid (if used)
+real(wp) :: v2grid,v3grid
 
 
 !! MAIN PROGRAM
@@ -264,10 +267,16 @@ if(myid==0) then
   print*, '    ',minval(E03),maxval(E03)
 end if
 
+
+!> Recompute drifts and make some decisions about whether to invoke a Lagrangian grid
 allocate(sig0(lx1,lx2,lx3),sigP(lx1,lx2,lx3),sigH(lx1,lx2,lx3),sigPgrav(lx1,lx2,lx3),sigHgrav(lx1,lx2,lx3))
 allocate(muP(lx1,lx2,lx3,lsp),muH(lx1,lx2,lx3,lsp),muPvn(lx1,lx2,lx3,lsp),muHvn(lx1,lx2,lx3,lsp))
 call conductivities(nn,Tn,ns,Ts,vs1,B1,sig0,sigP,sigH,muP,muH,muPvn,muHvn,sigPgrav,sigHgrav)
-if (.not. cfg%flaglagrangian) then    !only add background if we have a stationary (non-Lagrangian) grid
+if (cfg%flaglagrangian) then    ! Lagrangian (moving) grid
+  call grid_drift(x,E02,E03,v2grid,v3grid)
+  if (myid==0) print*, myid,' using Lagrangian grid moving at:  ',v2grid,v3grid
+else                            ! stationary grid
+  v2grid=0._wp; v3grid=0._wp
   E1=E1+E01; E2=E2+E02; E3=E3+E03
 end if
 call velocities(muP,muH,muPvn,muHvn,E2,E3,vn2,vn3,cfg%flaggravdrift,vs2,vs3)
