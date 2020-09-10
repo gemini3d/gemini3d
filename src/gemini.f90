@@ -188,14 +188,21 @@ if ( any(ymdtmp/=cfg%ymd0) .or. abs(UTsectmp-cfg%UTsec0)>cfg%dtout ) then  !! tr
     print*, 'Treating the following file as initial conditions:  ',filetmp
     print*, ' full duration:  ',cfg%tdur,'; remaining simulation time:  ',tdur
   end if
+
+  if (tdur <= 1e-6_wp .and. myid==0) error stop 'It appears you are trying to restart a simulation from the final time step!'
+
   cfg%tdur=tdur         ! just to insure consistency
   call input_plasma(x%x1,x%x2all,x%x3all,cfg%indatsize,filetmp,ns,vs1,Ts,Phi,Phiall)
 else !! start at the beginning
   UTsec = cfg%UTsec0
   ymd = cfg%ymd0
   tdur = cfg%tdur
+
+  if (tdur <= 1e-6_wp .and. myid==0) error stop 'Simulation is of zero time duration'
+
   call input_plasma(x%x1,x%x2all,x%x3all,cfg%indatsize,cfg%indatfile,ns,vs1,Ts,Phi,Phiall)
 end if
+
 it = 1
 t = 0
 tout = t
