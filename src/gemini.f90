@@ -235,7 +235,7 @@ B1(1:lx1,1:lx2,1:lx3) = x%Bmag
 
 !> Inialize neutral atmosphere, note the use of fortran's weird scoping rules to avoid input args.  Must occur after initial time info setup
 if(myid==0) print*, 'Priming neutral input'
-call init_neutrals(dt,t,cfg,ymd,UTsec,x,nn,Tn,vn1,vn2,vn3)
+call init_neutrals(dt,t,cfg,ymd,UTsec,x,v2grid,v3grid,nn,Tn,vn1,vn2,vn3)
 
 !> Initialize auroral inputs; must occur after initial timing info setup
 if(myid==0) print*, 'Priming electric field input'
@@ -319,7 +319,7 @@ do while (t < tdur)
   !> COMPUTE BACKGROUND NEUTRAL ATMOSPHERE USING MSIS00.
   if ( it/=1 .and. cfg%flagneuBG .and. t>tneuBG) then     !we dont' throttle for tneuBG so we have to do things this way to not skip over...
     call cpu_time(tstart)
-    call neutral_atmos(ymd,UTsec,x%glat,x%glon,x%alt,cfg%activ,nn,Tn,vn1,vn2,vn3)
+    call neutral_atmos(ymd,UTsec,x%glat,x%glon,x%alt,cfg%activ,v2grid,v3grid,nn,Tn,vn1,vn2,vn3)
     tneuBG=tneuBG+cfg%dtneuBG;
     if (myid==0) then
       call cpu_time(tfin)
@@ -330,7 +330,7 @@ do while (t < tdur)
   !> GET NEUTRAL PERTURBATIONS FROM ANOTHER MODEL
   if (cfg%flagdneu==1) then
     call cpu_time(tstart)
-    call neutral_perturb(cfg,dt,cfg%dtneu,t,ymd,UTsec,x,nn,Tn,vn1,vn2,vn3)
+    call neutral_perturb(cfg,dt,cfg%dtneu,t,ymd,UTsec,x,v2grid,v3grid,nn,Tn,vn1,vn2,vn3)
     if (myid==0 .and. debug) then
       call cpu_time(tfin)
       print *, 'Neutral perturbations calculated in time:  ',tfin-tstart
