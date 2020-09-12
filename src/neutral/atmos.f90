@@ -46,7 +46,7 @@ sec=floor(UTsecd)
 ap(2)=ap3   !superfluous for now
 
 
-!! ITERATED LAT, LON, ALT DATA
+!> ITERATED LAT, LON, ALT DATA
 call meters(.true.)    !switch to mksa units
 
 do ix3=1,lx3
@@ -81,8 +81,12 @@ end do
 vn1base = 0d0; vn2base = 0d0; vn3base = 0d0
 
 
-!! Update current state with new background and existing perturbations
+!> Update current state with new background and existing perturbations
 call neutral_update(nn,Tn,vn1,vn2,vn3)
+
+!> subtract off grid drift speed (needs to be set to zero if not lagrangian grid)
+vn2=vn2-v2grid
+vn3=vn3-v3grid
 
 end procedure neutral_atmos
 

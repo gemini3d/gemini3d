@@ -21,11 +21,12 @@ public :: Tnmsis, neutral_atmos, make_dneu, clear_dneu, neutral_perturb, neutral
 
 
 interface ! atmos.f90
-module subroutine neutral_atmos(ymd,UTsecd,glat,glon,alt,activ,nn,Tn,vn1,vn2,vn3)
+module subroutine neutral_atmos(ymd,UTsecd,glat,glon,alt,activ,v2grid,v3grid,nn,Tn,vn1,vn2,vn3)
 integer, intent(in) :: ymd(3)
 real(wp), intent(in) :: UTsecd
 real(wp), dimension(:,:,:), intent(in) :: glat,glon,alt
 real(wp), intent(in) :: activ(3)
+real(wp), intent(in) :: v2grid,v3grid
 real(wp), dimension(1:size(alt,1),1:size(alt,2),1:size(alt,3),lnchem), intent(out) :: nn
 real(wp), dimension(1:size(alt,1),1:size(alt,2),1:size(alt,3)), intent(out) :: Tn
 real(wp), dimension(1:size(alt,1),1:size(alt,2),1:size(alt,3)), intent(out) :: vn1,vn2,vn3
@@ -100,7 +101,7 @@ real(wp), dimension(:,:,:), allocatable, protected :: vn1base,vn2base,vn3base
 contains
 
 
-subroutine init_neutrals(dt,t,cfg,ymd,UTsec,x,nn,Tn,vn1,vn2,vn3)
+subroutine init_neutrals(dt,t,cfg,ymd,UTsec,x,v2grid,v3grid,nn,Tn,vn1,vn2,vn3)
 
 !> initializes neutral atmosphere by:
 !    1)  allocating storage space
@@ -112,6 +113,7 @@ type(gemini_cfg), intent(in) :: cfg
 integer, dimension(3), intent(in) :: ymd
 real(wp), intent(in) :: UTsec
 type(curvmesh), intent(inout) :: x    ! unit vecs may be deallocated after first setup
+real(wp), intent(in) :: v2grid,v3grid
 real(wp), dimension(:,:,:,:), intent(out) :: nn
 real(wp), dimension(:,:,:), intent(out) :: Tn
 real(wp), dimension(:,:,:), intent(out) :: vn1,vn2,vn3
@@ -126,7 +128,7 @@ call make_dneu()
 
 !! call msis to get an initial neutral background atmosphere
 if (myid==0) call cpu_time(tstart)
-call neutral_atmos(ymd,UTsec,x%glat,x%glon,x%alt,cfg%activ,nn,Tn,vn1,vn2,vn3)
+call neutral_atmos(ymd,UTsec,x%glat,x%glon,x%alt,cfg%activ,v2grid,v3grid,nn,Tn,vn1,vn2,vn3)
 if (myid==0) then
   call cpu_time(tfin)
   print *, 'Initial neutral background at time:  ',ymd,UTsec,' calculated in time:  ',tfin-tstart
@@ -146,17 +148,17 @@ if (cfg%flagdneu==1) then
   !! We essentially are loading up the data corresponding to halfway betwween -dtneu and t0 (zero).  This will load
   !   two time levels back so when tprev is incremented twice it will be the true tprev corresponding to first time step
   call neutral_perturb(cfg,dt,cfg%dtneu,tnext+cfg%dtneu/2._wp,ymdtmp,UTsectmp-cfg%dtneu, &
-                        x,nn,Tn,vn1,vn2,vn3)  !abs time arg to be < 0
+                        x,v2grid,v3grid,nn,Tn,vn1,vn2,vn3)  !abs time arg to be < 0
 
   if (myid==0) print*, 'Now loading initial next file for neutral perturbations...'
   !! Now compute perturbations for the present time (zero), this moves the primed variables in next into prev and then
   !  loads up a current state so that we get a proper interpolation for the first time step.
-  call neutral_perturb(cfg,dt,cfg%dtneu,0._wp,ymdtmp,UTsectmp,x,nn,Tn,vn1,vn2,vn3)    !t-dt so we land exactly on start time
+  call neutral_perturb(cfg,dt,cfg%dtneu,0._wp,ymdtmp,UTsectmp,x,v2grid,v3grid,nn,Tn,vn1,vn2,vn3)    !t-dt so we land exactly on start time
 end if
 end subroutine init_neutrals
 
 
-subroutine neutral_perturb(cfg,dt,dtneu,t,ymd,UTsec,x,nn,Tn,vn1,vn2,vn3)
+subroutine neutral_perturb(cfg,dt,dtneu,t,ymd,UTsec,x,v2grid,v3grid,nn,Tn,vn1,vn2,vn3)
 
 !THIS IS  WRAPPER FOR THE NEUTRAL PERTURBATION CODES THAT DO EITHER
 !AXISYMMETRIC OR CARTESIAN OR 3D INTERPOLATION
@@ -168,6 +170,7 @@ integer, dimension(3), intent(in) :: ymd     !date for which we wish to calculat
 real(wp), intent(in) :: UTsec
 
 type(curvmesh), intent(inout) :: x                !grid structure  (inout becuase we want to be able to deallocate unit vectors once we are done with them)
+real(wp), intent(in) :: v2grid,v3grid
 real(wp), dimension(:,:,:,:), intent(out) :: nn   !neutral params interpolated to plasma grid at requested time
 real(wp), dimension(:,:,:), intent(out) :: Tn,vn1,vn2,vn3
 
@@ -182,6 +185,10 @@ else if (cfg%interptype==3) then                      !3D interpolation drhon is
 else
   error stop '...Invalid interpolation type specified from input file...'
 end if
+
+!> adjust for the grid drift speed; note we assume this gets sets to zero if not a Lagrangian grid
+vn2=vn2-v2grid
+vn3=vn3-v3grid
 
 end subroutine neutral_perturb
 

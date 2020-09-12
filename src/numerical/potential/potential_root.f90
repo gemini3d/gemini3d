@@ -37,7 +37,7 @@ real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: grad2E,grad3E    
 real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: DE2Dt,DE3Dt   !pol. drift
 real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: J1pol,J2pol,J3pol
 
-real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: E01,E02,E03   !distributed background fields
+real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: E01,E02,E03,E02src,E03src   !distributed background fields
 real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: srcterm,divJperp
 real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: E1prev,E2prev,E3prev
 real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: Phi
@@ -118,9 +118,13 @@ call bcast_send(Vminx1buf,tag%Vminx1,Vminx1slab)
 call bcast_send(Vmaxx1buf,tag%Vmaxx1,Vmaxx1slab)
 
 
-!> Compute source terms
+!> Compute source terms, check Lagrangian flag
+if (cfg%flaglagrangian) then     ! Lagrangian grid, omit background fields from source terms
+  E02src=0._wp; E03src=0._wp
+else                             ! Eulerian grid, use background fields
+  E02src=E02; E03src=E03
+end if
 call potential_sourceterms(sigP,sigH,sigPgrav,sigHgrav,E02,E03,vn2,vn3,B1,x,cfg%flaggravdrift,srcterm)
-
 
 !!!!!!!!
 !-----AT THIS POINT WE MUST DECIDE WHETHER TO DO AN INTEGRATED SOLVE OR A 2D FIELD-RESOLVED SOLVED
