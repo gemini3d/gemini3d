@@ -272,7 +272,7 @@ end if
 allocate(sig0(lx1,lx2,lx3),sigP(lx1,lx2,lx3),sigH(lx1,lx2,lx3),sigPgrav(lx1,lx2,lx3),sigHgrav(lx1,lx2,lx3))
 allocate(muP(lx1,lx2,lx3,lsp),muH(lx1,lx2,lx3,lsp),muPvn(lx1,lx2,lx3,lsp),muHvn(lx1,lx2,lx3,lsp))
 call conductivities(nn,Tn,ns,Ts,vs1,B1,sig0,sigP,sigH,muP,muH,muPvn,muHvn,sigPgrav,sigHgrav)
-if (cfg%flaglagrangian) then    ! Lagrangian (moving) grid
+if (cfg%flaglagrangian) then    ! Lagrangian (moving) grid; compute from input background electric fields
   call grid_drift(x,E02,E03,v2grid,v3grid)
   if (myid==0) print*, myid,' using Lagrangian grid moving at:  ',v2grid,v3grid
 else                            ! stationary grid
@@ -284,8 +284,8 @@ deallocate(sig0,sigP,sigH,muP,muH,muPvn,muHvn,sigPgrav,sigHgrav)
 deallocate(E01,E02,E03)
 if(myid==0) then
   print*, 'Recomputed initial drifts:  '
-  print*, '    ',minval(vs2),maxval(vs2)
-  print*, '    ',minval(vs3),maxval(vs3)
+  print*, '    ',minval(vs2(1:lx1,1:lx2,1:lx3)),maxval(vs2(1:lx1,1:lx2,1:lx3))
+  print*, '    ',minval(vs3(1:lx1,1:lx2,1:lx3)),maxval(vs3(1:lx1,1:lx2,1:lx3))
 end if
 
 
