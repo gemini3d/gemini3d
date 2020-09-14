@@ -20,7 +20,7 @@ real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: grad2E,grad3E    
 real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: DE2Dt,DE3Dt   !pol. drift
 real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: J1pol,J2pol,J3pol
 
-real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: E01,E02,E03   !distributed background fields
+real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: E01,E02,E03,E02src,E03src   !distributed background fields
 real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: srcterm,divJperp
 real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: E1prev,E2prev,E3prev
 real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: Phi
@@ -72,7 +72,14 @@ call bcast_recv(Vminx1slab,tag%Vminx1)
 call bcast_recv(Vmaxx1slab,tag%Vmaxx1)
 
 
-call potential_sourceterms(sigP,sigH,sigPgrav,sigHgrav,E02,E03,vn2,vn3,B1,x,cfg%flaggravdrift,srcterm)
+!> Compute source terms, check Lagrangian flag
+if (cfg%flaglagrangian) then     ! Lagrangian grid, omit background fields from source terms
+  E02src=0._wp; E03src=0._wp
+else                             ! Eulerian grid, use background fields
+  E02src=E02; E03src=E03
+end if
+!call potential_sourceterms(sigP,sigH,sigPgrav,sigHgrav,E02src,E03src,vn2,vn3,B1,x,cfg%flaggravdrift,srcterm)
+srcterm=0._wp
 
 
 !    !ZZZ - DEBUG BY GETTING THE ENTIRE SOURCETERM ARRAY
@@ -208,7 +215,8 @@ E3prev=E3
 !! causes major memory leak. maybe from arithmetic statement argument?
 !! Left here as a 'lesson learned' (or is it a gfortran bug...)
 !      E30all=grad3D3(-1d0*Phi0all,dx3all(1:lx3all))
-call pot2perpfield(Phi,x,E2,E3)
+!FIXME
+!call pot2perpfield(Phi,x,E2,E3)
 !--------
 
 
