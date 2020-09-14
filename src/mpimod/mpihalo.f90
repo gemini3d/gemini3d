@@ -148,6 +148,9 @@ if (.not. (x3begin .and. x3end)) then
   if (idleft/=MPI_PROC_NULL) then
     param(-1:lx1+2,1:lx2,1-lhalo:0)=buffer34
   end if
+else if (isperiodic) then   ! there is the possibility on a periodic grid with lid3=1 that we still need to enforce periodic conditions.  I'm not super pleased about how sloppy the logic is here; may consider cleaning up a bit.  
+  param(-1:lx1+2,1:lx2,1-lhalo:0)=param(-1:lx1+2,1:lx2,lx3-1:lx3)
+  param(-1:lx1+2,1:lx2,lx3+1:lx3+lhalo)=param(-1:lx1+2,1:lx3,1:2)
 end if
 
 !EXCHANGE MESSAGES IN THE X2 DIRECTION OF THE PROCESS GRID
