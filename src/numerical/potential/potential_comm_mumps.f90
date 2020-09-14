@@ -464,12 +464,20 @@ lx3=size(Phi,3)
 !COMPUTE THE 2 COMPONENT OF THE ELECTRIC FIELD
 J1halo(1:lx1,1:lx2,1:lx3)=-1._wp*Phi
 call halo_pot(J1halo,tag%J1,x%flagper,.true.)
+
+print*, myid, 'haloed 2', x%flagper, minval(J1halo(0:lx1+1,0:lx2+1,0:lx3+1)),maxval(J1halo(0:lx1+1,0:lx2+1,0:lx3+1)), &
+          J1halo(1,1,0),J1halo(1,1,lx3+1)
+
 divtmp=grad3D2(J1halo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
 E2=divtmp(1:lx1,1:lx2,1:lx3)
 
 !COMPUTE THE 3 COMPONENT OF THE ELECTRIC FIELD
 J1halo(1:lx1,1:lx2,1:lx3)=-1._wp*Phi
 call halo_pot(J1halo,tag%J1,x%flagper,.false.)
+
+print*, myid, 'haloed 3', x%flagper, minval(J1halo(0:lx1+1,0:lx2+1,0:lx3+1)),maxval(J1halo(0:lx1+1,0:lx2+1,0:lx3+1)), &
+          J1halo(1,1,0),J1halo(1,1,lx3+1)
+
 divtmp=grad3D3(J1halo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
 E3=divtmp(1:lx1,1:lx2,1:lx3)
 !--------
@@ -535,10 +543,16 @@ idright=myid3+1
 iddown=myid2-1
 idup=myid2+1
 
+print*, 'idcheck 1:  ',myid,myid2,myid3,minval(parmhalo(1:lx1,1:lx2,1:lx3)),maxval(parmhalo(1:lx1,1:lx2,1:lx3))
+print*, 'idcheck 1'':  ',myid,myid2,myid3,minval(parmhalo),maxval(parmhalo)
+
 parmhalo(0,1:lx2,1:lx3)=parmhalo(1,1:lx2,1:lx3)
 parmhalo(lx1+1,1:lx2,1:lx3)=parmhalo(lx1,1:lx2,1:lx3)
 
 call halo(parmhalo,1,tagcurrent,flagper)     !this particular type of message passing only needs a single ghost cell
+
+print*, 'idcheck 2:  ',myid,myid2,myid3,minval(parmhalo(1:lx1,1:lx2,1:lx3)),maxval(parmhalo(1:lx1,1:lx2,1:lx3))
+print*, 'idcheck 2'':  ',myid,myid2,myid3,minval(parmhalo),maxval(parmhalo)
 
 if (iddown==-1) then
   if (flagdegrade .and. lx2>1) then     !for whatever reason this fails ctest without checking lx2>1
