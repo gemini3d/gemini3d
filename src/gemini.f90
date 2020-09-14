@@ -258,12 +258,12 @@ print*, myid,minval(Phi),maxval(Phi)
 E1 = 0._wp
 call pot2perpfield(Phi,x,E2,E3)
 !E2=0._wp; E3=0._wp
-if(myid==0) then
-  print*, 'Recomputed initial dist. fields:  '
-  print*, '    ',minval(E1),maxval(E1)
-  print*, '    ',minval(E2),maxval(E2)
-  print*, '    ',minval(E3),maxval(E3)
-end if
+!if(myid==0) then
+  print*, 'Recomputed initial dist. fields:  ',myid
+  print*, '    ',minval(E1),maxval(E1),myid,'1'
+  print*, '    ',minval(E2),maxval(E2),myid,'2'
+  print*, '    ',minval(E3),maxval(E3),myid,'3'
+!end if
 
 allocate(E01(lx1,lx2,lx3),E02(lx1,lx2,lx3),E03(lx1,lx2,lx3))
 E01=0; E02=0; E03=0;
