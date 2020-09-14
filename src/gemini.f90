@@ -216,6 +216,12 @@ tglowout = t
 tneuBG=t
 
 
+!!> Sanity check
+!print*, 'Checking input data...'
+!call check_finite_output(t, myid, vs2,vs3,ns,vs1,Ts,Phiall,J1,J2,J3)
+!print*, 'Initial input okay...'
+
+
 !ROOT/WORKERS WILL ASSUME THAT THE MAGNETIC FIELDS AND PERP FLOWS START AT ZERO
 !THIS KEEPS US FROM HAVING TO HAVE FULL-GRID ARRAYS FOR THESE STATE VARS (EXCEPT
 !FOR IN OUTPUT FNS.).  IF A SIMULATIONS IS DONE WITH INTERTIAL CAPACITANCE THERE
@@ -246,15 +252,19 @@ call init_precipinput(dt,t,cfg,ymd,UTsec,x)
 
 
 !> Recompute electrodynamic quantities needed for restarting
-!! these do not include background
-E1 = 0
+! these do not include background
+
+print*, myid,minval(Phi),maxval(Phi)
+E1 = 0._wp
 call pot2perpfield(Phi,x,E2,E3)
+!E2=0._wp; E3=0._wp
 if(myid==0) then
   print*, 'Recomputed initial dist. fields:  '
   print*, '    ',minval(E1),maxval(E1)
   print*, '    ',minval(E2),maxval(E2)
   print*, '    ',minval(E3),maxval(E3)
 end if
+
 allocate(E01(lx1,lx2,lx3),E02(lx1,lx2,lx3),E03(lx1,lx2,lx3))
 E01=0; E02=0; E03=0;
 if (cfg%flagE0file==1) then
@@ -284,8 +294,8 @@ deallocate(sig0,sigP,sigH,muP,muH,muPvn,muHvn,sigPgrav,sigHgrav)
 deallocate(E01,E02,E03)
 if(myid==0) then
   print*, 'Recomputed initial drifts:  '
-  print*, '    ',minval(vs2(1:lx1,1:lx2,1:lx3)),maxval(vs2(1:lx1,1:lx2,1:lx3))
-  print*, '    ',minval(vs3(1:lx1,1:lx2,1:lx3)),maxval(vs3(1:lx1,1:lx2,1:lx3))
+  print*, '    ',minval(vs2(1:lx1,1:lx2,1:lx3,1:lsp)),maxval(vs2(1:lx1,1:lx2,1:lx3,1:lsp))
+  print*, '    ',minval(vs3(1:lx1,1:lx2,1:lx3,1:lsp)),maxval(vs3(1:lx1,1:lx2,1:lx3,1:lsp))
 end if
 
 
@@ -355,7 +365,7 @@ do while (t < tdur)
 
   !> FIXME:  MZ - shouldn't this be done for all workers; also how much overhead does this incur every time step???
   !> Sanity check key variables before advancing
-  if (myid==0) call check_finite_output(t, myid, vs2,vs3,ns,vs1,Ts,Phiall,J1,J2,J3)
+  call check_finite_output(t, myid, vs2,vs3,ns,vs1,Ts,Phiall,J1,J2,J3)
 
   !> NOW OUR SOLUTION IS FULLY UPDATED SO UPDATE TIME VARIABLES TO MATCH...
   it = it + 1

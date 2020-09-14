@@ -268,7 +268,7 @@ subroutine potential_sourceterms(sigP,sigH,sigPgrav,sigHgrav,E02,E03,vn2,vn3,B1,
 
 real(wp), dimension(:,:,:), intent(in) :: sigP,sigH,sigPgrav,sigHgrav
 real(wp), dimension(:,:,:), intent(in) :: E02,E03,vn2,vn3
-real(wp), dimension(:,:,:), intent(in) :: B1
+real(wp), dimension(-1:,-1:,-1:), intent(in) :: B1     !ghost cells
 type(curvmesh), intent(in) :: x
 logical, intent(in) :: flaggravdrift
 real(wp), dimension(:,:,:), intent(out) :: srcterm
