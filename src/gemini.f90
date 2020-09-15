@@ -216,12 +216,6 @@ tglowout = t
 tneuBG=t
 
 
-!!> Sanity check
-!print*, 'Checking input data...'
-!call check_finite_output(t, myid, vs2,vs3,ns,vs1,Ts,Phiall,J1,J2,J3)
-!print*, 'Initial input okay...'
-
-
 !ROOT/WORKERS WILL ASSUME THAT THE MAGNETIC FIELDS AND PERP FLOWS START AT ZERO
 !THIS KEEPS US FROM HAVING TO HAVE FULL-GRID ARRAYS FOR THESE STATE VARS (EXCEPT
 !FOR IN OUTPUT FNS.).  IF A SIMULATIONS IS DONE WITH INTERTIAL CAPACITANCE THERE
@@ -253,17 +247,14 @@ call init_precipinput(dt,t,cfg,ymd,UTsec,x)
 
 !> Recompute electrodynamic quantities needed for restarting
 ! these do not include background
-
-print*, 'gemini input Phi',myid,minval(Phi),maxval(Phi)
 E1 = 0._wp
 call pot2perpfield(Phi,x,E2,E3)
-!E2=0._wp; E3=0._wp
-!if(myid==0) then
+if(myid==0) then
   print*, 'Recomputed initial dist. fields:  ',myid
   print*, '    gemini ',minval(E1),maxval(E1),myid,'1'
   print*, '    gemini ',minval(E2),maxval(E2),myid,'2'
   print*, '    gemini ',minval(E3),maxval(E3),myid,'3'
-!end if
+end if
 
 allocate(E01(lx1,lx2,lx3),E02(lx1,lx2,lx3),E03(lx1,lx2,lx3))
 E01=0; E02=0; E03=0;
