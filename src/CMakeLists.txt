@@ -25,7 +25,7 @@ add_library(collision OBJECT collisions/collisions.f90)
 target_link_libraries(collision PRIVATE const config)
 
 # --- other libs
-if(mpi)
+if(mpi AND ${PROJECT_NAME}_BUILD_TESTING)
   # keep this if(mpi) because these tests truly use MPI -- don't work with MPI stub
   add_subdirectory(unit_tests)
 endif()

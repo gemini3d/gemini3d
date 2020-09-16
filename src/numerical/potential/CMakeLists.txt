@@ -13,9 +13,7 @@ potential_mumps.f90 potential2d.f90
 boundary_conditions/potentialBCs_mumps.f90)
 target_link_libraries(potential PRIVATE calculus collision const grid mesh interp timeutils PDEelliptic mpimod reader MPI::MPI_Fortran)
 
-if(NOT hdf5)
-  return()
-endif()
+if(hdf5 AND ${PROJECT_NAME}_BUILD_TESTING)
 
 set(_potential_testfile ${CMAKE_CURRENT_BINARY_DIR}/test_potential2d.h5)
 
@@ -40,4 +38,6 @@ if(python_ok)
     REQUIRED_FILES ${_potential_testfile}
     TIMEOUT 10
     FIXTURES_REQUIRED GemPot)
-endif()
+endif(python_ok)
+
+endif(hdf5 AND ${PROJECT_NAME}_BUILD_TESTING)

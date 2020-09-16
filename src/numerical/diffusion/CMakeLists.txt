@@ -4,11 +4,7 @@ target_link_libraries(PDEparabolic PRIVATE const gbsv LAPACK::LAPACK)
 add_library(diffusion OBJECT diffusion.f90)
 target_link_libraries(diffusion PRIVATE const grid mesh PDEparabolic)
 
-if(NOT hdf5)
-  return()
-endif()
-
-# --- tests
+if(hdf5 AND ${PROJECT_NAME}_BUILD_TESTING)
 
 set(_tmpdifffn ${CMAKE_CURRENT_BINARY_DIR}/test_diffusion1d.h5)
 
@@ -33,3 +29,5 @@ if(python_ok)
     REQUIRED_FILES ${_tmpdifffn}
     FIXTURES_REQUIRED GemDiff)
 endif(python_ok)
+
+endif()

@@ -1,6 +1,7 @@
 add_library(interp OBJECT interpolation.f90 interp2d.f90)
 target_link_libraries(interp PRIVATE const)
 
+if(hdf5 AND ${PROJECT_NAME}_BUILD_TESTING)
 # --- tests
 add_executable(test_interp1 testinterp1.f90)
 target_link_libraries(test_interp1 PRIVATE const interp)
@@ -8,10 +9,6 @@ add_test(NAME unit:interp1 COMMAND test_interp1 WORKING_DIRECTORY ${CMAKE_CURREN
 set_tests_properties(unit:interp1 PROPERTIES
   TIMEOUT 10
   FIXTURES_SETUP GemInterp1)
-
-if(NOT hdf5)
-  return()
-endif()
 
 set(_testfile_interp2in ${CMAKE_CURRENT_BINARY_DIR}/input2d.h5)
 set(_testfile_interp2 ${CMAKE_CURRENT_BINARY_DIR}/output2d.h5)
@@ -63,3 +60,5 @@ set_tests_properties(unit:interp3:python PROPERTIES
   FIXTURES_REQUIRED GemInterp3)
 endif(NOT lowRAM)
 endif(python_ok)
+
+endif(hdf5 AND ${PROJECT_NAME}_BUILD_TESTING)

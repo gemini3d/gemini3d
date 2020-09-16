@@ -25,8 +25,11 @@ project(gemini3d
   HOMEPAGE_URL https://github.com/gemini3d/gemini
   VERSION 0.6.1)
 
-enable_testing()
+
 include(CTest) # for CDash
+if(NOT DEFINED ${PROJECT_NAME}_BUILD_TESTING)
+  set(${PROJECT_NAME}_BUILD_TESTING ${BUILD_TESTING})
+endif()
 
 if(realbits EQUAL 32)
   message(VERBOSE " 32-bit real precision")
