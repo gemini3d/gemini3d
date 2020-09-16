@@ -79,7 +79,6 @@ else                             ! Eulerian grid, use background fields
   E02src=E02; E03src=E03
 end if
 call potential_sourceterms(sigP,sigH,sigPgrav,sigHgrav,E02src,E03src,vn2,vn3,B1,x,cfg%flaggravdrift,srcterm)
-!srcterm=0._wp
 
 
 !    !ZZZ - DEBUG BY GETTING THE ENTIRE SOURCETERM ARRAY

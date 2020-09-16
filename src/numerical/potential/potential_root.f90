@@ -125,7 +125,6 @@ else                             ! Eulerian grid, use background fields
   E02src=E02; E03src=E03
 end if
 call potential_sourceterms(sigP,sigH,sigPgrav,sigHgrav,E02src,E03src,vn2,vn3,B1,x,cfg%flaggravdrift,srcterm)
-!srcterm=0._wp
 
 
 !!!!!!!!
@@ -316,7 +315,6 @@ if (debug) print *, 'MUMPS time:  ',tfin-tstart
 
 
 !RADD--- ROOT NEEDS TO PUSH THE POTENTIAL BACK TO ALL WORKERS FOR FURTHER PROCESSING (BELOW)
-!Phiall=0._wp
 call bcast_send(Phiall,tag%Phi,Phi)
 
 

@@ -234,15 +234,27 @@ B1(1:lx1,1:lx2,1:lx3) = x%Bmag
 
 
 !> Inialize neutral atmosphere, note the use of fortran's weird scoping rules to avoid input args.  Must occur after initial time info setup
-if(myid==0) print*, 'Priming neutral input'
-call init_neutrals(dt,t,cfg,ymd,UTsec,x,v2grid,v3grid,nn,Tn,vn1,vn2,vn3)
-
-!> Initialize auroral inputs; must occur after initial timing info setup
 if(myid==0) print*, 'Priming electric field input'
 call init_Efieldinput(dt,t,cfg,ymd,UTsec,x)
 
+allocate(E01(lx1,lx2,lx3),E02(lx1,lx2,lx3),E03(lx1,lx2,lx3))
+E01=0; E02=0; E03=0;
+if (cfg%flagE0file==1) then
+  call get_BGEfields(x,E01,E02,E03)
+end if
+if (cfg%flaglagrangian) then    ! Lagrangian (moving) grid; compute from input background electric fields
+  call grid_drift(x,E02,E03,v2grid,v3grid)
+  if (myid==0) print*, myid,' using Lagrangian grid moving at:  ',v2grid,v3grid
+else                            ! stationary grid
+  v2grid=0._wp; v3grid=0._wp
+  E1=E1+E01; E2=E2+E02; E3=E3+E03
+end if
+
 if(myid==0) print*, 'Priming precipitation input'
 call init_precipinput(dt,t,cfg,ymd,UTsec,x)
+
+if(myid==0) print*, 'Priming neutral input'
+call init_neutrals(dt,t,cfg,ymd,UTsec,x,v2grid,v3grid,nn,Tn,vn1,vn2,vn3)
 
 
 !> Recompute electrodynamic quantities needed for restarting
@@ -254,12 +266,6 @@ if(myid==0) then
   print*, '    gemini ',minval(E1),maxval(E1),myid,'1'
   print*, '    gemini ',minval(E2),maxval(E2),myid,'2'
   print*, '    gemini ',minval(E3),maxval(E3),myid,'3'
-end if
-
-allocate(E01(lx1,lx2,lx3),E02(lx1,lx2,lx3),E03(lx1,lx2,lx3))
-E01=0; E02=0; E03=0;
-if (cfg%flagE0file==1) then
-  call get_BGEfields(x,E01,E02,E03)
 end if
 if(myid==0) then
   print*, 'Recomputed initial BG fields:  '
@@ -273,13 +279,6 @@ end if
 allocate(sig0(lx1,lx2,lx3),sigP(lx1,lx2,lx3),sigH(lx1,lx2,lx3),sigPgrav(lx1,lx2,lx3),sigHgrav(lx1,lx2,lx3))
 allocate(muP(lx1,lx2,lx3,lsp),muH(lx1,lx2,lx3,lsp),muPvn(lx1,lx2,lx3,lsp),muHvn(lx1,lx2,lx3,lsp))
 call conductivities(nn,Tn,ns,Ts,vs1,B1,sig0,sigP,sigH,muP,muH,muPvn,muHvn,sigPgrav,sigHgrav)
-if (cfg%flaglagrangian) then    ! Lagrangian (moving) grid; compute from input background electric fields
-  call grid_drift(x,E02,E03,v2grid,v3grid)
-  if (myid==0) print*, myid,' using Lagrangian grid moving at:  ',v2grid,v3grid
-else                            ! stationary grid
-  v2grid=0._wp; v3grid=0._wp
-  E1=E1+E01; E2=E2+E02; E3=E3+E03
-end if
 call velocities(muP,muH,muPvn,muHvn,E2,E3,vn2,vn3,cfg%flaggravdrift,vs2,vs3)
 deallocate(sig0,sigP,sigH,muP,muH,muPvn,muHvn,sigPgrav,sigHgrav)
 deallocate(E01,E02,E03)
@@ -337,6 +336,7 @@ do while (t < tdur)
       print *, 'Neutral perturbations calculated in time:  ',tfin-tstart
     endif
   end if
+
 
   !> POTENTIAL SOLUTION
   call cpu_time(tstart)
