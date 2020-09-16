@@ -1,5 +1,7 @@
 if(hdf5)
 
+  set(h5fortran_BUILD_TESTING false CACHE BOOL "h5fortran no test")
+
   if(MSVC AND NOT DEFINED HDF5OK)
   include(${CMAKE_CURRENT_LIST_DIR}/win32_hdf5.cmake)
   endif()
@@ -11,7 +13,7 @@ if(hdf5)
     include(FetchContent)
     FetchContent_Declare(h5fortran_proj
       GIT_REPOSITORY https://github.com/geospace-code/h5fortran.git
-      GIT_TAG v3.2.0)
+      GIT_TAG v3.2.2)
 
     FetchContent_MakeAvailable(h5fortran_proj)
   endif()
