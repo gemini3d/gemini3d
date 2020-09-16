@@ -15,8 +15,6 @@ endif(mpi)
 
 if(hdf5)
 
-win32_hdf5_env()
-
 add_test(NAME gemini:hdf5:${testname}:dryrun
   COMMAND ${_cmd} -dryrun
   WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})

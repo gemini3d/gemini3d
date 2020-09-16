@@ -1,6 +1,8 @@
 if(hdf5)
 
+  if(MSVC AND NOT DEFINED HDF5OK)
   include(${CMAKE_CURRENT_LIST_DIR}/win32_hdf5.cmake)
+  endif()
 
   find_package(h5fortran CONFIG)
   if(h5fortran_FOUND)
@@ -9,7 +11,7 @@ if(hdf5)
     include(FetchContent)
     FetchContent_Declare(h5fortran_proj
       GIT_REPOSITORY https://github.com/geospace-code/h5fortran.git
-      GIT_TAG v3.1.0)
+      GIT_TAG v3.2.0)
 
     FetchContent_MakeAvailable(h5fortran_proj)
   endif()
