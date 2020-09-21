@@ -26,7 +26,7 @@ def get_test_params(test_name: str, url_file: Path) -> T.Dict[str, T.Any]:
 
     z = {
         "url": C.get(test_name, "url"),
-        "md5": C.get(test_name, "md5"),
+        "md5": C.get(test_name, "md5", fallback=None),
         "dir": Rtest / f"test{test_name}",
         "zip": Rtest / f"test{test_name}.zip",
     }
