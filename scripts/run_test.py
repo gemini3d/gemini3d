@@ -81,11 +81,22 @@ def run_test(
     # the input data generation is tested elsewhere in PyGemini.
     # Here, we want to test that we can create
     # data match to reference outputs from reference inputs.
-    shutil.copy2(nml, input_dir)
+    if not nml.is_file():
+        shutil.copy2(nml, input_dir)
+
     cfg = gemini3d.read_config(nml)
-    shutil.copy2(z["dir"] / cfg["indat_size"], input_dir)
-    shutil.copy2(z["dir"] / cfg["indat_grid"], input_dir)
-    shutil.copy2(z["dir"] / cfg["indat_file"], input_dir)
+
+    # delete previous test run data to avoid restarting milestone and failing test
+    if (outdir / "output.nml").is_file():
+        stem = cfg["t0"].strftime("%Y%m%d")
+        for f in outdir.glob(f"{stem}*.h5"):
+            f.unlink()
+
+    # copy remaining input files needed
+    if not (z["dir"] / cfg["indat_size"]).is_file():
+        shutil.copy2(z["dir"] / cfg["indat_size"], input_dir)
+        shutil.copy2(z["dir"] / cfg["indat_grid"], input_dir)
+        shutil.copy2(z["dir"] / cfg["indat_file"], input_dir)
     if "precdir" in cfg and not (outdir / cfg["precdir"]).is_dir():
         shutil.copytree(z["dir"] / cfg["precdir"], outdir / cfg["precdir"])
     if "E0dir" in cfg and not (outdir / cfg["E0dir"]).is_dir():
