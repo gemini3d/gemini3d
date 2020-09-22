@@ -11,7 +11,6 @@ add_feature_info(GLOW glow "airglow / aurora model")
 add_feature_info(HDF5 HDF5OK "file read / write")
 add_feature_info(NetCDF4 NCDFOK "file read / write")
 
-add_feature_info(MATLAB matlab_ok "MatGemini Matlab scripts")
 add_feature_info(Python python_ok "simulation generation, HPC script generator and plotting")
 
 add_feature_info(AutoMumps mumps_external "auto-build Mumps")

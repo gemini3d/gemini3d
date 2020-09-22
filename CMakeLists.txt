@@ -25,7 +25,7 @@ project(gemini3d
   HOMEPAGE_URL https://github.com/gemini3d/gemini
   VERSION 0.6.1)
 
-
+enable_testing()  # keep this so BUILD_TESTING=off doesn't remove all tests
 include(CTest) # for CDash
 if(NOT DEFINED ${PROJECT_NAME}_BUILD_TESTING)
   set(${PROJECT_NAME}_BUILD_TESTING ${BUILD_TESTING})

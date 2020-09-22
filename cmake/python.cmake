@@ -36,8 +36,9 @@ if(NOT python_ok)
 endif()
 
 if(NOT python_ok)
-  clone_if_missing(${pygemini_dir} ${pygemini_url})
-
+  if(NOT IS_DIRECTORY ${pygemini_dir})
+    git_download(${pygemini_dir} ${pygemini_url} "main")
+  endif()
   # detect virtualenv
   # this is how CMake itself works for FindPython3 in Modules/FindPython/Support.cmake
   if(DEFINED ENV{VIRTUAL_ENV} OR DEFINED ENV{CONDA_PREFIX})
