@@ -10,7 +10,7 @@ if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
   message(FATAL_ERROR "please set cmake -DCMAKE_INSTALL_PREFIX=~/lib or desired install location")
 endif()
 
-set(_hdf5_bindir ${CMAKE_INSTALL_PREFIX})
+set(_hdf5_bindir ${CMAKE_INSTALL_PREFIX} CACHE PATH "Path to install HDF5 library into")
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/build_hdf5.cmake)
 
