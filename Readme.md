@@ -56,15 +56,26 @@ Requirements:
 1. get the Gemini code
 
   ```sh
-  git clone https://github.com/gemini3d/gemini.git
+  git clone https://github.com/gemini3d/gemini3d.git
 
-  cd gemini
+  cd gemini3d
   ```
 2. Build Gemini and run self-test
 
   ```sh
   ctest -S setup.cmake -VV
   ```
+
+If missing the HDF5 library, or the HDF5 library is incompatible with your compiler version, build HDF5 yourself by:
+
+```sh
+ctest -S scripts/build_hdf5.cmake -VV
+```
+
+which installs HDF5 under ~/lib/hdf5/.
+Then rerun the Gemini3D build commands above.
+
+---
 
 GEMINI has self tests that compare the output from a "known" test problem to a reference output.
 
