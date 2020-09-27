@@ -147,6 +147,11 @@ v0equator = 10.0              ! equatorial peak drift value
 diffsolvetype = 2             ! type of diffusion solver to use:  1 - backward Euler; 2 - TRBDF2
 /
 
+! (optional - off by default)
+&lagrangian
+flaglagrangian=.true.         ! whether or not to have the grid drift at the ExB speed
+/
+
 ```
 
 
