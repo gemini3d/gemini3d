@@ -15,6 +15,8 @@ contains
 
 
 elemental real(wp) function fang2010(Q0_keV, Emono_keV, Tn, massden_gcm3, meanmass_g, g_ms2) result(Qtot)
+!! isotropically precipitating monoenergetic (100 eV to 1 MeV) electrons
+!! https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2010GL045406
 
 real(wp), intent(in) :: Q0_keV, Emono_keV, Tn, massden_gcm3, meanmass_g, g_ms2
 
@@ -22,6 +24,7 @@ real(wp) :: y, H_cm, f
 integer :: i, j
 real(wp), dimension(8) :: C
 
+character(12) :: E0_str
 
 real(wp), parameter :: P(8,4) = reshape( &
 [1.24616_wp,     1.45903_wp,    -2.42269e-1_wp,  5.95459e-2_wp, &
@@ -33,6 +36,10 @@ real(wp), parameter :: P(8,4) = reshape( &
 -6.45454e-1_wp,  8.49555e-4_wp, -4.28581e-2_wp, -2.99302e-3_wp, &
  9.48930e-1_wp,  1.97385e-1_wp, -2.50660e-3_wp, -2.06938e-3_wp], shape(P), order=[2,1])
 
+if (Emono_keV < 0.1 .or. Emono_keV > 1000) then
+  write(E0_str,'(F12.4)') Emono_keV * 1000
+  error stop 'ionize_fang:fang2010: valid E0 range from 100 eV .. 1 MeV: E0 (keV) : ' // E0_str
+endif
 
 !! scale height
 !! Equation (2)
