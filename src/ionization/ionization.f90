@@ -2,7 +2,7 @@ module ionization
 
 use phys_consts, only: elchrg, lsp, kb, mn, re, pi, wp, lwave, debug
 use neutral, only: Tnmsis
-use ionize_fang, only: fang2008
+use ionize_fang, only: fang2008, fang2010
 !! we need the unperturbed msis temperatures to apply the simple chapman theory used by this module
 use grid, only: lx1,lx2,lx3,g1,g2,g3
 use mesh, only: curvmesh
@@ -11,7 +11,7 @@ use mpimod, only: myid,lid,mpi_realprec, tag=>gemini_mpi, MPI_COMM_WORLD,MPI_STA
 
 implicit none (type, external)
 private
-public :: ionrate_fang08, ionrate_glow98, eheating, photoionization
+public :: ionrate_fang, ionrate_glow98, eheating, photoionization
 
 external :: mpi_send, mpi_recv
 
@@ -245,12 +245,13 @@ end do
 end function photoionization
 
 
-pure function ionrate_fang08(W0,PhiWmWm2,alt,nn,Tn)
+pure function ionrate_fang(W0, PhiWmWm2, alt, nn, Tn, flag_fang)
 
 real(wp), dimension(:,:), intent(in) :: W0,PhiWmWm2
 
 real(wp), dimension(:,:,:,:), intent(in) :: nn
 real(wp), dimension(:,:,:), intent(in) :: alt,Tn
+integer, intent(in) :: flag_fang
 
 real(wp) :: W0keV,PhiW
 real(wp), dimension(1:size(nn,1)) :: massden,meanmass
@@ -259,7 +260,7 @@ integer :: ix2,ix3,lx2,lx3
 
 real(wp), dimension(1:size(nn,1),1:size(nn,2),1:size(nn,3)) :: Ptot,PO,PN2,PO2
 
-real(wp), dimension(1:size(nn,1),1:size(nn,2),1:size(nn,3),lsp-1) :: ionrate_fang08
+real(wp), dimension(1:size(nn,1),1:size(nn,2),1:size(nn,3),lsp-1) :: ionrate_fang
 
 
 lx2=size(nn,2)
@@ -282,9 +283,16 @@ if ( maxval(PhiWmWm2) > 0) then   !only compute rates if nonzero flux given
       meanmass=massden/(nn(:,ix2,ix3,1)+nn(:,ix2,ix3,2)+nn(:,ix2,ix3,3))
       !! mean mass per particle [kg]
 
-      !! TOTAL IONIZATION RATE
-      Ptot(:,ix2,ix3) = fang2008(PhiW, W0keV, Tn(:,ix2,ix3), massden/1000, meanmass*1000, g1(:,ix2,ix3)) * 1e6_wp
+      !> TOTAL IONIZATION RATE
       !! [cm^-3 s^-1] => [m^-3 s^-1]
+      select case (flag_fang)
+      case (8, 2008)
+        Ptot(:,ix2,ix3) = fang2008(PhiW, W0keV, Tn(:,ix2,ix3), massden/1000, meanmass*1000, g1(:,ix2,ix3)) * 1e6_wp
+      case (10, 2010)
+        Ptot(:,ix2,ix3) = fang2010(PhiW, W0keV, Tn(:,ix2,ix3), massden/1000, meanmass*1000, g1(:,ix2,ix3)) * 1e6_wp
+      case default
+        error stop 'ERROR:ionization:ionrate_fang: unknown flag_fang'
+      end select
     end do
   end do
 
@@ -294,9 +302,9 @@ if ( maxval(PhiWmWm2) > 0) then   !only compute rates if nonzero flux given
   PN2 = 0
   PO2 = 0
 
-  where (nn(:,:,:,1)+nn(:,:,:,2)+nn(:,:,:,3) > 1e-10_wp )
+  where (nn(:,:,:,1) + nn(:,:,:,2) + nn(:,:,:,3) > 1e-10_wp )
           PN2 = Ptot * 0.94_wp * nn(:,:,:,2) / &
-                           (nn(:,:,:,3)+0.94_wp*nn(:,:,:,2)+0.55_wp*nn(:,:,:,1))
+                           (nn(:,:,:,3) + 0.94_wp*nn(:,:,:,2) + 0.55_wp * nn(:,:,:,1))
 
   endwhere
 
@@ -308,17 +316,17 @@ if ( maxval(PhiWmWm2) > 0) then   !only compute rates if nonzero flux given
 
 
   !SPLIT TOTAL IONIZATION RATE PER VALLANCE JONES, 1973
-  ionrate_fang08(:,:,:,1) = PO+0.33d0*PO2
-  ionrate_fang08(:,:,:,2) = 0
-  ionrate_fang08(:,:,:,3) = 0.76d0*PN2
-  ionrate_fang08(:,:,:,4) = 0.67d0*PO2
-  ionrate_fang08(:,:,:,5) = 0.24d0*PN2
-  ionrate_fang08(:,:,:,6) = 0
+  ionrate_fang(:,:,:,1) = PO + 0.33_wp * PO2
+  ionrate_fang(:,:,:,2) = 0
+  ionrate_fang(:,:,:,3) = 0.76_wp * PN2
+  ionrate_fang(:,:,:,4) = 0.67_wp * PO2
+  ionrate_fang(:,:,:,5) = 0.24_wp * PN2
+  ionrate_fang(:,:,:,6) = 0
 else
-  ionrate_fang08(:,:,:,:) = 0
+  ionrate_fang(:,:,:,:) = 0
 end if
 
-end function ionrate_fang08
+end function ionrate_fang
 
 
 pure function eheating(nn,Tn,ionrate,ns)

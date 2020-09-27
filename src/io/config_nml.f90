@@ -20,7 +20,7 @@ real(wp) :: dtout
 real(wp) :: activ(3)
 real(wp) :: tcfl
 real(wp) :: Teinf
-integer :: potsolve, flagperiodic=0, flagoutput, flagcap=0
+integer :: potsolve, flagperiodic=0, flagoutput, flagcap=0, flag_fang, flagdneu
 integer :: interptype
 real(wp) :: sourcemlat,sourcemlon
 real(wp) :: dtneu
@@ -29,7 +29,6 @@ real(wp) :: dtprec=0
 character(256) :: indat_size, indat_grid, indat_file, source_dir, prec_dir, E0_dir
 character(4) :: file_format=""  !< need to initialize blank or random invisible fouls len_trim>0
 real(wp) :: dtE0=0
-integer :: flagdneu, flagprecfile, flagE0file, flagglow !< FIXME: these parameters are ignored, kept temporarily
 real(wp) :: dtglow=0, dtglowout=0
 logical :: flagEIA
 real(wp) :: v0equator
@@ -45,11 +44,11 @@ logical :: flaggravdrift
 
 namelist /base/ ymd, UTsec0, tdur, dtout, activ, tcfl, Teinf
 namelist /files/ file_format, indat_size, indat_grid, indat_file
-namelist /flags/ potsolve, flagperiodic, flagoutput, &
-flagcap,flagdneu, flagprecfile, flagE0file, flagglow !< FIXME: these last parameters are ignored, kept temporarily for compatibility, should be removed
+namelist /flags/ potsolve, flagperiodic, flagoutput
 namelist /neutral_perturb/ flagdneu, interptype, sourcemlat, sourcemlon, dtneu, dxn, drhon, dzn, source_dir
 namelist /precip/ dtprec, prec_dir
 namelist /efield/ dtE0, E0_dir
+namelist /fang/ flag_fang
 namelist /glow/ dtglow, dtglowout
 namelist /EIA/ flagEIA,v0equator
 namelist /neutral_BG/ flagneuBG,dtneuBG
@@ -136,6 +135,15 @@ if (namelist_exists(u, "efield", verbose)) then
 else
   cfg%flagE0file = 0
   cfg%E0dir = ""
+endif
+
+if (namelist_exists(u, "fang", verbose)) then
+  rewind(u)
+  read(u, nml=fang, iostat=i)
+  call check_nml_io(i, cfg%infile, "fang")
+  cfg%flag_fang = flag_fang
+else
+  cfg%flag_fang = 2008  !< legacy default
 endif
 
 if (namelist_exists(u, "glow", verbose)) then

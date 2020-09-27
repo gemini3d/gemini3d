@@ -9,7 +9,7 @@ use phys_consts, only : wp,pi,qs,lsp,gammas,kB,ms,mindensdiv,mindens,mindensnull
 use diffusion, only:  trbdf23d, diffusion_prep, backEuler3D
 use grid, only: lx1, lx2, lx3, gridflag
 use mesh, only: curvmesh
-use ionization, only: ionrate_glow98, ionrate_fang08, eheating, photoionization
+use ionization, only: ionrate_glow98, ionrate_fang, eheating, photoionization
 use mpimod, only: myid, tag=>gemini_mpi
 use precipBCs_mod, only: precipBCs_fileinput, precipBCs
 use sources, only: rk2_prep_mpi, srcsenergy, srcsmomentum, srcscontinuity
@@ -244,7 +244,7 @@ if (gridflag/=0) then
     !! RUN FANG APPROXIMATION
     do iprec=1,lprec
       !! loop over the different populations of precipitation (2 here?), accumulating production rates
-      Prpreciptmp = ionrate_fang08(W0(:,:,iprec),PhiWmWm2(:,:,iprec),x%alt,nn,Tn)
+      Prpreciptmp = ionrate_fang(W0(:,:,iprec), PhiWmWm2(:,:,iprec), x%alt, nn, Tn, cfg%flag_fang)
       !! calculation based on Fang et al [2008]
       Prprecip=Prprecip+Prpreciptmp
     end do

@@ -71,6 +71,8 @@ elemental real(wp) function fang2008(Q0_keV, E0_keV, Tn, massden_gcm3, meanmass_
 !! Total Ionization Rate by Precipitating Electrons With a
 !! Maxwellian Energy and Isotropic Pitch Angle Distribution
 
+!! valid range of E0: 100 eV to 1 MeV
+
 real(wp), intent(in) :: Q0_keV, E0_keV, Tn, massden_gcm3, meanmass_g, g_ms2
 !! Q0: [keV cm^-2 s^-1]
 !! massden_gcm3: [g cm^-3]
@@ -79,6 +81,8 @@ real(wp), intent(in) :: Q0_keV, E0_keV, Tn, massden_gcm3, meanmass_g, g_ms2
 
 real(wp) :: y, H_cm, f
 integer :: i, j
+
+character(12) :: E0_str
 
 real(wp), dimension(8) :: C
 
@@ -91,6 +95,11 @@ real(wp), parameter :: P(8,4) = reshape( &
  8.83195e-1_wp,  4.31402e-2_wp, -8.33599e-2_wp,  1.02515e-2_wp, &
  1.90953_wp,    -4.74704e-2_wp, -1.80200e-1_wp,  2.46652e-2_wp, &
 -1.29566_wp,    -2.10952e-1_wp,  2.73106e-1_wp, -2.92752e-2_wp], shape(P), order=[2,1])
+
+if (E0_keV < 0.1 .or. E0_keV > 1000) then
+  write(E0_str,'(F12.4)') E0_keV * 1000
+  error stop 'ionize_fang:fang2008: valid E0 range from 100 eV .. 1 MeV: E0 (keV) : ' // E0_str
+endif
 
 !! Equation (3)
 !! scale height
