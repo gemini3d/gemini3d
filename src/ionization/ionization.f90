@@ -114,13 +114,13 @@ pepiO2di=[76.136, 17.944, 6.981, 20.338, 1.437, 0.521, 0.163, 0.052, 0.014, 0.00
 
 
 !IRRADIANCE ACCORDING TO [RICHARDS, 1994]
-Iinf=fref*(1d0+Aeuv*(0.5d0*(f107+f107a)-80d0))
+Iinf=fref*(1._wp+Aeuv*(0.5_wp*(f107+f107a)-80._wp))
 
 
 !GRAVITATIONAL FIELD AND AVERAGE VALUE
 g=sqrt(g1**2+g2**2+g3**2)
 !    gavg=sum(g)/(lx1*lx2*lx3)    !single average value for computing colunn dens.  Interestingly this is a worker average...  Do we need root grav vars. grid mod to prevent tearing?  Should be okay as long as the grid is only sliced along the x3-dimension, BUT it isn't for simulations where arrays get permuted!!!
-gavg=8d0
+gavg=8._wp
 
 Tninf=maxval(Tnmsis)   !set exospheric temperature based on the max value of the background MSIS atmosphere; note this is a worker max
 
@@ -152,13 +152,13 @@ end if
 !O COLUMN DENSITY
 H=kB*Tninf/mn(1)/gavg      !scalar scale height
 bigX=(x%alt+Re)/H          !a reduced altitude
-y=sqrt(bigX/2d0)*abs(cos(chi))
-Chfn=0d0
-where (chi<pi/2d0)    !where does work with array corresponding elements provided they are conformable (e.g. bigX and y in this case)
-!      Chfn=sqrt(pi/2d0*bigX)*exp(y**2)*(1d0-erf(y))    !goodness this creates YUGE errors compared to erfc; left here as a lesson learned
-  Chfn=sqrt(pi/2d0*bigX)*exp(y**2)*erfc(y)
+y=sqrt(bigX/2._wp)*abs(cos(chi))
+Chfn=0
+where (chi<pi/2._wp)    !where does work with array corresponding elements provided they are conformable (e.g. bigX and y in this case)
+!      Chfn=sqrt(pi/2._wp*bigX)*exp(y**2)*(1._wp-erf(y))    !goodness this creates YUGE errors compared to erfc; left here as a lesson learned
+  Chfn=sqrt(pi/2._wp*bigX)*exp(y**2)*erfc(y)
 elsewhere
-  Chfn=sqrt(pi/2d0*bigX)*exp(y**2)*(1d0+erf(y))
+  Chfn=sqrt(pi/2._wp*bigX)*exp(y**2)*(1._wp+erf(y))
 end where
 nOcol=nn(:,:,:,1)*H*Chfn
 
@@ -166,12 +166,12 @@ nOcol=nn(:,:,:,1)*H*Chfn
 !N2 COLUMN DENSITY
 H=kB*Tninf/mn(2)/gavg     !all of these temp quantities need to be recomputed for eacb neutral species being ionized
 bigX=(x%alt+Re)/H
-y=sqrt(bigX/2d0)*abs(cos(chi))
-Chfn=0d0
-where (chi<pi/2d0)
-  Chfn=sqrt(pi/2d0*bigX)*exp(y**2)*erfc(y)
+y=sqrt(bigX/2._wp)*abs(cos(chi))
+Chfn=0
+where (chi<pi/2._wp)
+  Chfn=sqrt(pi/2._wp*bigX)*exp(y**2)*erfc(y)
 elsewhere
-  Chfn=sqrt(pi/2d0*bigX)*exp(y**2)*(1d0+erf(y))
+  Chfn=sqrt(pi/2._wp*bigX)*exp(y**2)*(1._wp+erf(y))
 end where
 nN2col=nn(:,:,:,2)*H*Chfn
 
@@ -179,12 +179,12 @@ nN2col=nn(:,:,:,2)*H*Chfn
 !O2 COLUMN DENSITY
 H=kB*Tninf/mn(3)/gavg
 bigX=(x%alt+Re)/H
-y=sqrt(bigX/2d0)*abs(cos(chi))
-Chfn=0d0
-where (chi<pi/2d0)    !where does work with array corresponding elements provided they are conformable
-  Chfn=sqrt(pi/2d0*bigX)*exp(y**2)*erfc(y)
+y=sqrt(bigX/2._wp)*abs(cos(chi))
+Chfn=0
+where (chi<pi/2._wp)    !where does work with array corresponding elements provided they are conformable
+  Chfn=sqrt(pi/2._wp*bigX)*exp(y**2)*erfc(y)
 elsewhere
-  Chfn=sqrt(pi/2d0*bigX)*exp(y**2)*(1d0+erf(y))
+  Chfn=sqrt(pi/2._wp*bigX)*exp(y**2)*(1._wp+erf(y))
 end where
 nO2col=nn(:,:,:,3)*H*Chfn
 
@@ -200,7 +200,7 @@ photoionization=0
 
 !direct O+ production
 do il=1,ll
-  photoionization(:,:,:,1)=photoionization(:,:,:,1)+nn(:,:,:,1)*Iflux(:,:,:,il)*sigmaO(il)*(1d0+pepiO(il))
+  photoionization(:,:,:,1)=photoionization(:,:,:,1)+nn(:,:,:,1)*Iflux(:,:,:,il)*sigmaO(il)*(1._wp+pepiO(il))
 end do
 
 !direct NO+
@@ -208,22 +208,22 @@ photoionization(:,:,:,2)=0
 
 !direct N2+
 do il=1,ll
-  photoionization(:,:,:,3)=photoionization(:,:,:,3)+nn(:,:,:,2)*Iflux(:,:,:,il)*sigmaN2(il)*brN2i(il)*(1d0+pepiN2i(il))
+  photoionization(:,:,:,3)=photoionization(:,:,:,3)+nn(:,:,:,2)*Iflux(:,:,:,il)*sigmaN2(il)*brN2i(il)*(1._wp+pepiN2i(il))
 end do
 
 !dissociative ionization of N2 leading to N+
 do il=1,ll
-  photoionization(:,:,:,5)=photoionization(:,:,:,5)+nn(:,:,:,2)*Iflux(:,:,:,il)*sigmaN2(il)*brN2di(il)*(1d0+pepiN2di(il))
+  photoionization(:,:,:,5)=photoionization(:,:,:,5)+nn(:,:,:,2)*Iflux(:,:,:,il)*sigmaN2(il)*brN2di(il)*(1._wp+pepiN2di(il))
 end do
 
 !direct O2+
 do il=1,ll
-  photoionization(:,:,:,4)=photoionization(:,:,:,4)+nn(:,:,:,3)*Iflux(:,:,:,il)*sigmaO2(il)*brO2i(il)*(1d0+pepiO2i(il))
+  photoionization(:,:,:,4)=photoionization(:,:,:,4)+nn(:,:,:,3)*Iflux(:,:,:,il)*sigmaO2(il)*brO2i(il)*(1._wp+pepiO2i(il))
 end do
 
 !dissociative ionization of O2 leading to O+
 do il=1,ll
-  photoionization(:,:,:,1)=photoionization(:,:,:,1)+nn(:,:,:,3)*Iflux(:,:,:,il)*sigmaO2(il)*brO2di(il)*(1d0+pepiO2di(il))
+  photoionization(:,:,:,1)=photoionization(:,:,:,1)+nn(:,:,:,3)*Iflux(:,:,:,il)*sigmaO2(il)*brO2di(il)*(1._wp+pepiO2di(il))
 end do
 
 !H+ production
@@ -351,8 +351,8 @@ lx1=size(nn,1)
 lx2=size(nn,2)
 lx3=size(nn,3)
 
-R=log(ns(1:lx1,1:lx2,1:lx3,lsp)/(nn(:,:,:,2)+nn(:,:,:,3)+0.1d0*nn(:,:,:,1)))
-avgenergy=exp(-(12.75d0+6.941d0*R+1.166d0*R**2+0.08034d0*R**3+0.001996d0*R**4))
+R=log(ns(1:lx1,1:lx2,1:lx3,lsp)/(nn(:,:,:,2)+nn(:,:,:,3)+0.1_wp*nn(:,:,:,1)))
+avgenergy=exp(-(12.75_wp+6.941_wp*R+1.166_wp*R**2+0.08034_wp*R**3+0.001996_wp*R**4))
 totionrate=sum(ionrate,4)
 
 eheating=elchrg*avgenergy*totionrate
@@ -414,9 +414,9 @@ if ( maxval(PhiWmWm2) > 0) then   !only compute rates if nonzero flux given
   end do !X coordinate loop
   eheating=eheating*elchrg
 else
-  ionrate(:,:,:,:)=0.0_wp !No Q for incoming electrons, no electron impact
-  eheating(:,:,:)=0.0_wp
-  iver(:,:,:)=0.0_wp
+  ionrate(:,:,:,:)=0 !No Q for incoming electrons, no electron impact
+  eheating(:,:,:)=0
+  iver(:,:,:)=0
 end if
 
 end subroutine ionrate_glow98
