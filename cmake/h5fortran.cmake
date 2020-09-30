@@ -6,20 +6,16 @@ if(hdf5)
   include(${CMAKE_CURRENT_LIST_DIR}/win32_hdf5.cmake)
   endif()
 
-  find_package(h5fortran CONFIG)
+  find_package(h5fortran CONFIG QUIET)
   if(h5fortran_FOUND)
     include(${h5fortran_DIR}/h5fortranTargets.cmake)
   else()
     include(FetchContent)
     FetchContent_Declare(h5fortran_proj
       GIT_REPOSITORY https://github.com/geospace-code/h5fortran.git
-      GIT_TAG v3.2.3)
+      GIT_TAG v3.3.1)
 
     FetchContent_MakeAvailable(h5fortran_proj)
-  endif()
-
-  if(NOT HDF5OK)
-    message(FATAL_ERROR "HDF5 was requested but is not available.")
   endif()
 
 else(hdf5)
