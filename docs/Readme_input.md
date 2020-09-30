@@ -14,7 +14,6 @@ In addition to command line options (see main README), GEMINI requires input fil
 
 Gemini uses Fortran 95 standard NAMELIST files for the input configuration files.
 Gemini will search the input directory location for files will be named like `inputs/config.nml` or `config.nml`.
-GEMINI also uses an older `config.ini` plan text file configuration input, but this will be deprecated in future releases.  
 
 Each simulation needs an input file that specifies location of initial conditions and other pertinent information for the simulation.
 Example config.nml are under the [tests/](./tests/) directory once you've built Gemini and run the self-tests.
@@ -25,9 +24,9 @@ A large number of examples (in addition to those included in the main repo) are 
 repository.
 
 
-### Example config.nml input file 
+### Example config.nml input file
 
-Note that most simulations will not use all of the input options shown here.  Source code reading in these parameters is in `config_nml.f90`.  
+Note that most simulations will not use all of the input options shown here.  Source code reading in these parameters is in `config_nml.f90`.
 
 ```ini
 &base
@@ -77,7 +76,7 @@ eqdir = 'tests/data/test3d_eq'
 /
 
 ! (optional - default off) Include neutral atmospheric perturbation inputs from another model/dataset
-&neutral_perturb 
+&neutral_perturb
 flagdneu = 1                       ! on/off for neutral perturbations:  0 - off; 1 - on
 interptype = 3                     ! how to treat the input neutral data:  1 - axisymmetric; 2 - Cartesian; 3 - 3D Cartesian
 sourcemlat = 44.9397d0             ! magnetic latitude of the source location
@@ -161,8 +160,8 @@ Grid structures, once created, are written to a file using the matlab `writegrid
 
 ```matlab
 writegrid(xg,'directory name here')
-```  
-where the `xg` variable is a structure containing all the expected grid elements.  The writegrid API creates a file with the grid data structure in it as well as a small file containing the size information.  
+```
+where the `xg` variable is a structure containing all the expected grid elements.  The writegrid API creates a file with the grid data structure in it as well as a small file containing the size information.
 
 ### Grid structure requirements
 
@@ -176,7 +175,7 @@ Plotgrid...  But explain how to use it...
 
 ## Neutral data input files
 
-Information about example scripts here to generate input neutral data.  
+Information about example scripts here to generate input neutral data.
 
 ### Neutral input data requirements
 
@@ -195,11 +194,11 @@ PLEASE NOTE that future releases will use Fortran 2008 `submodule`, likely compl
 
 There are two subroutines that can be modified by the user to provide boundary conditions to the code; these are described below. Note that, if any of these are changed, the code needs to be recompiled.
 
-`./ionization/boundary_conditions/precipBCs_mod.f90` - the function `precipBCs' specifies the pattern of electron precipitation, including characteristic energy and total energy flux, over top of grid.  If the user does not specify an input file for precipitation boundary conditions in `config.ini`, then this subroutine will be called to set the boundary.
+`./ionization/boundary_conditions/precipBCs_mod.f90` - the function `precipBCs' specifies the pattern of electron precipitation, including characteristic energy and total energy flux, over top of grid.  If the user does not specify an input file for precipitation boundary conditions in `config.nml`, then this subroutine will be called to set the boundary.
 
-`./numerical/potential/boundary_conditions/potentialBCs_mumps.f90` - boundary conditions for the electric potential or field-aligned current.  The type of input that is being used is specified by the flags in the `config.ini` file for the simulation.  This subroutine will only be called if the user has not specified an input file containing boundary conditions.
+`./numerical/potential/boundary_conditions/potentialBCs_mumps.f90` - boundary conditions for the electric potential or field-aligned current.  The type of input that is being used is specified by the flags in the `config.nml` file for the simulation.  This subroutine will only be called if the user has not specified an input file containing boundary conditions.
 
-By default these subroutines will be used for boundary conditions if file input is not specified in the config.ini input file.  The base GEMINI sets these to be zero potential (or current) and some negligible amount of precipitation.  Note that if you write over these subroutines then the code will use whatever you have put into them if file input is not specified.  This can lead to unintended behavior if ones modifies these and then forgets since the code will continue to use the modifications instead of some baseline.  Because of this issue, and the fact that GEMINI must be rebuilt every time these subroutines are changed, this method of boundary condition input is going to be removed.
+By default these subroutines will be used for boundary conditions if file input is not specified in the config.nml input file.  The base GEMINI sets these to be zero potential (or current) and some negligible amount of precipitation.  Note that if you write over these subroutines then the code will use whatever you have put into them if file input is not specified.  This can lead to unintended behavior if ones modifies these and then forgets since the code will continue to use the modifications instead of some baseline.  Because of this issue, and the fact that GEMINI must be rebuilt every time these subroutines are changed, this method of boundary condition input is going to be removed.
 
 ### File-based input (*recommended*)
 
@@ -207,24 +206,21 @@ The file input is enabled by the appropriate flags (flagprecfile and flagE0file)
 All examples included in `initialize/` in both the GEMINI and GEMINI-scripts repositories use this method for setting boundary conditions.
 Note that the user can specify the boundary condition on a different grid from what the simulation is to be run with; in this case GEMINI will just interpolate the given boundary data onto the current simulation grid.
 
-
 ### Electric field input files requirements
 
-Electric field input files shall contain the following information:  
-
+Electric field input files shall contain the following information:
 
 ### Precipitation input files requirements
 
-Precipitation input files shall contain the following information:  
-
+Precipitation input files shall contain the following information:
 
 ## 7. Initial conditions
 
-GEMINI needs density, drift, and temperature for each species that it simulations over the entire grid for which the simulation is being run as input.  Generally one will use the results of another GEMINI simulation that has been initialized in an arbitrary way but run for a full day to a proper ionospheric equilibrium as this input.  Any equilibrium simulation run this way must use full output (flagoutput=1 in the `config.ini`).  A useful approach for these equilibrium runs is to use a coarser grid so that the simulation completes quickly and then interpolate the results up to fine grid resolution.  An example of an equilibrium setup is given in `./initialize/2Dtest_eq`; note that this basically makes up an initial conditions (using `eqICs.m`) and runs until initial transients have settled.  An example of a script that interpolates the output of an equilibrium run to a finer grid is included with `./initialize/2Dtest`.
+GEMINI needs density, drift, and temperature for each species that it simulations over the entire grid for which the simulation is being run as input.  Generally one will use the results of another GEMINI simulation that has been initialized in an arbitrary way but run for a full day to a proper ionospheric equilibrium as this input.  Any equilibrium simulation run this way must use full output (flagoutput=1 in the `config.nml`).  A useful approach for these equilibrium runs is to use a coarser grid so that the simulation completes quickly and then interpolate the results up to fine grid resolution.  An example of an equilibrium setup is given in `./initialize/2Dtest_eq`; note that this basically makes up an initial conditions (using `eqICs.m`) and runs until initial transients have settled.  An example of a script that interpolates the output of an equilibrium run to a finer grid is included with `./initialize/2Dtest`.
 
 ### Initial condition input file requirements
 
-Initial condition input files shall contain:  
+Initial condition input files shall contain:
 
 
 ## Suggested workflow for creating input file to run a simulation
