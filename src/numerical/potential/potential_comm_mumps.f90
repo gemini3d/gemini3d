@@ -131,11 +131,12 @@ lx2=size(ns,2)-4
 lx3=size(ns,3)-4
 
 
-
 !POTENTIAL SOLUTION (IF REQUIRED)
 call cpu_time(tstart)
 call conductivities(nn,Tn,ns,Ts,vs1,B1,sig0,sigP,sigH,muP,muH,muPvn,muHvn,sigPgrav,sigHgrav)
 
+
+! Error checking for cap. vs. grid types
 if (cfg%flagcap/=0) then
   call capacitance(ns,B1,cfg,incap)    !> full cfg needed for optional inputs...
   if (it==1) then     !check that we don't have an unsupported grid type for doing capacitance
@@ -161,9 +162,11 @@ if (myid==0) then
   end if
 end if
 
+
 if (cfg%potsolve == 1 .or. cfg%potsolve == 3) then    !electrostatic solve or electrostatic alt. solve
   call cpu_time(tstart)
 
+  ! Execute solution for ionospheric potential
   if (myid/=0) then    !role-specific communication pattern (all-to-root-to-all), workers initiate with sends
      call potential_workers_mpi(it,t,dt,sig0,sigP,sigH,sigPgrav,sigHgrav,incap,vs2,vs3, &
                                  vn2,vn3,cfg,B1,x,E1,E2,E3,J1,J2,J3)
@@ -172,6 +175,7 @@ if (cfg%potsolve == 1 .or. cfg%potsolve == 3) then    !electrostatic solve or el
                               E1,E2,E3,J1,J2,J3,Phiall,ymd,UTsec)
   end if
 
+  ! Compute velocity from mobilities and fields
   call velocities(muP,muH,muPvn,muHvn,E2,E3,vn2,vn3,cfg%flaggravdrift,vs2,vs3)
 
   call cpu_time(tfin)
@@ -211,6 +215,7 @@ lx3=size(muP,3)
 lsp=size(muP,4)
 
 
+!! FIXME:  Do we really need separate wind mobility or can we just compute off electrical mobility as done with gravity.  This is necessary because we are not storing the collision frequencies...  For adding pressure terms we may want to just use collision freq. to avoid a bunch of slightly different mobility arrays.  
 !> electric field and wind terms for ion drifts
 if(flagswap/=1) then
   do isp=1,lsp
@@ -224,13 +229,16 @@ else                !flip signs on the cross products in 2D.  Note that due to d
   end do
 end if
 
+!> Pressure/diamagnetic terms (optional)
+
+!> Gravitational drift terms (if required)
 if (flaggravdrift) then
   if(flagswap/=1) then
     do isp=1,lsp
       vs2(1:lx1,1:lx2,1:lx3,isp)=vs2(1:lx1,1:lx2,1:lx3,isp)+ms(isp)/qs(isp)*(muP(:,:,:,isp)*g2+muH(:,:,:,isp)*g3)
       vs3(1:lx1,1:lx2,1:lx3,isp)=vs3(1:lx1,1:lx2,1:lx3,isp)+ms(isp)/qs(isp)*(muH(:,:,:,isp)*g2+muP(:,:,:,isp)*g3)
     end do
-  else                !flip signs on the cross products in 2D.  Note that due to dimension shuffling E2,3 mapping is already handled
+  else
     do isp=1,lsp
       vs2(1:lx1,1:lx2,1:lx3,isp)=vs2(1:lx1,1:lx2,1:lx3,isp)+ms(isp)/qs(isp)*(muP(:,:,:,isp)*g2+muH(:,:,:,isp)*g3)
       vs3(1:lx1,1:lx2,1:lx3,isp)=vs3(1:lx1,1:lx2,1:lx3,isp)+ms(isp)/qs(isp)*(-muH(:,:,:,isp)*g2+muP(:,:,:,isp)*g3)
@@ -253,7 +261,7 @@ end subroutine velocities
 
 subroutine potential_sourceterms(sigP,sigH,sigPgrav,sigHgrav,E02,E03,vn2,vn3,B1,x,flaggravdrift,srcterm)
 
-!> Compute source terms for the potential equation to be solved.  Both root and workers
+!> Compute source terms (inhomogeneous terms) for the potential equation to be solved.  Both root and workers
 !   should be able to use this routine
 
 real(wp), dimension(:,:,:), intent(in) :: sigP,sigH,sigPgrav,sigHgrav
@@ -277,6 +285,8 @@ lx2=size(sigP,2)
 lx3=size(sigP,3)
 
 
+! FIXME:  why not accumulate the currents then only compute divergence once???  Should also just halo once???
+
 !-------
 !CONDUCTION CURRENT BACKGROUND SOURCE TERMS FOR POTENTIAL EQUATION. MUST COME AFTER CALL TO BC CODE.
 J1=0d0    !so this div is only perp components
@@ -298,7 +308,7 @@ if (debug .and. myid==0) print *, 'Root has computed background field source ter
 
 
 !-------
-!NEUTRAL WIND SOURCE TERMS FOR POTENTIAL EQUATION, SIMILAR TO ABOVE BLOCK OF CODE
+!NEUTRAL WIND SOURCE TERMS (current produced by wind dynamo) FOR POTENTIAL EQUATION, SIMILAR TO ABOVE BLOCK OF CODE
 J1=0d0    !so this div is only perp components
 J2=0._wp; J3=0._wp;
 call acc_perpwindcurrents(sigP,sigH,vn2,vn3,B1,J2,J3)
@@ -315,7 +325,6 @@ divtmp=div3D(J1halo(0:lx1+1,0:lx2+1,0:lx3+1),J2halo(0:lx1+1,0:lx2+1,0:lx3+1), &
 srcterm=srcterm+divtmp(1:lx1,1:lx2,1:lx3)
 if (debug .and. myid==0) print *, 'Root has computed wind source terms...',minval(srcterm),  maxval(srcterm)
 !-------
-
 
 
 if (flaggravdrift) then
@@ -338,6 +347,10 @@ if (flaggravdrift) then
   if (debug .and. myid==0) print *, 'Root has computed gravitational source terms...',minval(srcterm),  maxval(srcterm)
   !-------
 end if
+
+
+!> FIXME:  need to add in pressure currents and then take divergence
+
 
 end subroutine potential_sourceterms
 
@@ -414,6 +427,9 @@ else
 end if
 
 end subroutine acc_perpgravcurrents
+
+
+!> acc_pressurecurrents()
 
 
 subroutine pot2perpfield(Phi,x,E2,E3)

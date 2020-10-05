@@ -250,9 +250,11 @@ do isp=1,lsp
   muPvn(:,:,:,isp)=nu**2/(nu**2+OMs**2)
   muHvn(:,:,:,isp)=-1.0_wp*nu*OMs/(nu**2+OMs**2)
 
-  !full mobilities
+  !electrical mobilities
   muP(:,:,:,isp)=mubase*muPvn(:,:,:,isp)           !Pederson
   muH(:,:,:,isp)=mubase*muHvn(:,:,:,isp)       !Hall
+
+  !gravity mobilities???
 end do
 
 
