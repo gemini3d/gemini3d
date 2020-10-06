@@ -1,5 +1,3 @@
-include(${CMAKE_CURRENT_LIST_DIR}/matlab.cmake)
-
 
 function(matlab_compare outdir refdir testname)
 
@@ -49,6 +47,7 @@ function(compare_gemini_output testname)
 set(outdir ${PROJECT_BINARY_DIR}/test${testname})
 set(refdir ${PROJECT_SOURCE_DIR}/tests/data/test${testname})
 
+find_package(Matlab COMPONENTS MAIN_PROGRAM)
 if(Matlab_FOUND)
 matlab_compare(${outdir} ${refdir} ${testname})
 endif()
