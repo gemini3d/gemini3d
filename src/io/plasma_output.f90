@@ -123,7 +123,7 @@ subroutine output_root_stream_mpi(outdir,flagoutput,ymd,UTsec,vs2,vs3,ns,vs1,Ts,
 
 !------------------------------------------------------------
 !------- Root needs to gather data and pass to subroutine to
-!------- write to disk in the appropriate format.  
+!------- write to disk in the appropriate format.
 !------------------------------------------------------------
 
 character(*), intent(in) :: outdir
@@ -176,7 +176,7 @@ call gather_recv(J2,tag%J2,J2all)
 call gather_recv(J3,tag%J3,J3all)
 
 
-!COMPUTE AVERAGE VALUES FOR ION PLASMA PARAMETERS 
+!COMPUTE AVERAGE VALUES FOR ION PLASMA PARAMETERS
 !> possible bottleneck; should have workers help?
 !> also only compute these if they are actually being output
 if (flagoutput==2 .or. flagoutput==3) then
@@ -204,7 +204,7 @@ case ('dat')
                                      Phiall,J1all,J2all,J3all,neall,v1avgall,Tavgall,Teall)
 case default
   write(stderr,*) 'plasma_output:output_root_stream_api: unknown format' // out_format
-  error stop 6
+  error stop 2
 end select
 
 

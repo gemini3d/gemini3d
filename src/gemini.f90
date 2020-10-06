@@ -486,7 +486,7 @@ do i = 1,size(locs)
 end do
 
 write(stderr,*) 'gemini.bin: could not find config file in ',cfg%outdir
-error stop 6
+error stop 2
 end block find_cfg
 
 call read_configfile(cfg, verbose=.false.)

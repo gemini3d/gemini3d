@@ -64,7 +64,7 @@ case ('.nc')
     e1all,e2all,e3all,erall,ethetaall,ephiall,rall,thetaall,phiall)
 case default
   write(stderr,*) 'grid:read:get_grid3: unknown grid format: ' // fmt
-  error stop 6
+  error stop 2
 end select
 
 end subroutine get_grid3

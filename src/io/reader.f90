@@ -151,7 +151,7 @@ case ('.dat')
   call get_simsize2_raw(fn, llon, llat)
 case default
   write(stderr,*) 'ERROR:reader:get_simsize2: unknown file suffix on ' // fn
-  error stop 6
+  error stop 2
 end select
 end subroutine get_simsize2
 
@@ -174,7 +174,7 @@ case ('.dat')
   call get_simsize3_raw(fn, lx1, lx2all, lx3all)
 case default
   write(stderr,*) 'ERROR:reader:get_simsize3: unknown file suffix' // fn
-  error stop 6
+  error stop 2
 end select
 end subroutine get_simsize3
 
@@ -196,7 +196,7 @@ case ('.dat')
   call get_grid2_raw(fn, mlonp, mlatp)
 case default
   write(stderr,*) 'ERROR:reader:get_grid2: unknown file suffix on ' // fn
-  error stop 6
+  error stop 2
 end select
 end subroutine get_grid2
 
@@ -220,7 +220,7 @@ case ('.dat')
   call get_Efield_raw(fn, flagdirich,E0xp,E0yp,Vminx1p,Vmaxx1p,Vminx2pslice,Vmaxx2pslice,Vminx3pslice,Vmaxx3pslice)
 case default
   write(stderr,*) 'ERROR:reader:Efield: unknown file suffix on ' // fn
-  error stop 6
+  error stop 2
 end select
 
 end subroutine get_Efield
@@ -244,7 +244,7 @@ case ('.dat')
   call get_precip_raw(fn, Qp, E0p)
 case default
   write(stderr,*) 'ERROR:reader:get_precip: unknown file suffix on ' // fn
-  error stop 6
+  error stop 2
 end select
 end subroutine get_precip
 
@@ -266,7 +266,7 @@ case ('.dat')
   call get_neutral2_raw(fn, dnO,dnN2,dnO2,dvnrho,dvnz,dTn)
 case default
   write(stderr,*) 'ERROR:reader:get_neutral2: unknown file suffix' // get_suffix(fn)
-  error stop 6
+  error stop 2
 end select
 end subroutine get_neutral2
 
@@ -288,7 +288,7 @@ case ('.dat')
   call get_neutral3_raw(fn, dnOall,dnN2all,dnO2all,dvnxall,dvnrhoall,dvnzall,dTnall)
 case default
   write(stderr,*) 'ERROR:reader:get_neutral3: unknown file suffix' // get_suffix(fn)
-  error stop 6
+  error stop 2
 end select
 end subroutine get_neutral3
 

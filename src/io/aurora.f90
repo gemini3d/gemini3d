@@ -47,7 +47,7 @@ case ('nc')
   call output_aur_root_nc4(outdir,flagglow,ymd,UTsec,iver)
 case default
   write(stderr,*) 'aurora:output_aur_root: unknown grid format' // out_format
-  error stop 6
+  error stop 2
 end select
 
 if(.not. all(ieee_is_finite(iver))) error stop 'iverout: non-finite value(s)'

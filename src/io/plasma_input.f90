@@ -99,7 +99,7 @@ if (myid==0) then
     call input_root_mpi_raw(x1,x2,x3all,indatsize,indatfile,ns,vs1,Ts,Phi,Phiall)
   case default
     write(stderr,*) 'input_plasma: unknown grid format: ' // get_suffix(indatsize)
-    error stop 6
+    error stop 2
   end select
 
   !> USER SUPPLIED FUNCTION TO TAKE A REFERENCE PROFILE AND CREATE INITIAL CONDITIONS FOR ENTIRE GRID.
