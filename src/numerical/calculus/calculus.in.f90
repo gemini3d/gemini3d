@@ -368,7 +368,7 @@ if (lx2<=x%lx2+4) then
 else if (lx2<=x%lx2all+4) then
   !! presumes root or some process that has access to ALL full grid variables (normally only root).
   dx2=>x%dx2all(lbnd:ubnd)
-  print *,   '! Accessing root-only grid information in divergence function grad2D2_curv_23'
+  !print *,   '! Accessing root-only grid information in divergence function grad2D2_curv_23'
 else
   error stop '!!!  Array size is larger than full mesh.'
 end if
@@ -462,7 +462,7 @@ if (lx3<=x%lx3+4) then
 else if (lx3<=x%lx3all+4) then
   !! presumes root or some process that has access to ALL full grid variables (normally only root).
   dx3=>x%dx3all(lbnd:ubnd)
-  print *,   '! Accessing root-only grid information in divergence function grad2D3_curv_alt_23'
+  !print *,   '! Accessing root-only grid information in divergence function grad3D3_curv_alt_23'
 else
   error stop 'Array size is larger than full mesh.'
 end if
