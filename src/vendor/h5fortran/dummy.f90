@@ -45,6 +45,13 @@ exist = .false.
 error stop 'HDF5 / h5fortran not available'
 end function exist
 
+logical function exists(self, dname)
+class(hdf5_file), intent(in)     :: self
+character(*), intent(in)         :: dname
+exists = .false.
+error stop 'HDF5 / h5fortran not available'
+end function exists
+
 subroutine finalize(self, ierr)
 class(hdf5_file), intent(in) :: self
 integer, intent(out), optional :: ierr

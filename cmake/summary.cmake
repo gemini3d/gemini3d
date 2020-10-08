@@ -13,6 +13,7 @@ add_feature_info(NetCDF4 NCDFOK "file read / write")
 
 add_feature_info(Python python_ok "simulation generation, HPC script generator and plotting")
 
+add_feature_info(AutoHDF5 hdf5_external "auto-build HDF5")
 add_feature_info(AutoMumps mumps_external "auto-build Mumps")
 add_feature_info(AutoScalapack scalapack_external "auto-build Scalapack")
 add_feature_info(AutoLapack lapack_external "auto-build Lapack")

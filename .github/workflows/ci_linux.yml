@@ -2,7 +2,6 @@ name: ci_linux
 env:
   FC: gfortran
   CC: gcc
-  CMAKE_GENERATOR: Ninja
 
 on:
   push:
@@ -27,24 +26,19 @@ jobs:
     - name: Install packages
       run: |
         sudo apt update -yq
-        sudo apt install -yq --no-install-recommends pkg-config gfortran libopenmpi-dev openmpi-bin liblapack-dev libscalapack-openmpi-dev libmumps-dev libhdf5-dev
+        sudo apt install -yq --no-install-recommends pkg-config gfortran libopenmpi-dev liblapack-dev libscalapack-openmpi-dev libmumps-dev libhdf5-dev
 
 # CI is too slow for 3d_glow
     - run: ctest -S setup.cmake -E 3d -VV
 
 
-  no_mpi:
-    runs-on: ubuntu-20.04
+  autobuild_no_mpi:
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-python@v2
       with:
         python-version: '3.8'
-
-    - name: Install packages
-      run: |
-        sudo apt update -yq
-        sudo apt install -yq --no-install-recommends gfortran ninja-build libhdf5-dev liblapack-dev
 
     - name: build and test without MPI
       run: ctest -S setup.cmake -R unit -VV
@@ -54,8 +48,7 @@ jobs:
       working-directory: build
 
 
-  cmakeBuildAllLibs:
-    if: false
+  autobuild_mpi:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -66,8 +59,8 @@ jobs:
     - name: Install packages
       run: |
         sudo apt update -yq
-        sudo apt install -yq --no-install-recommends pkg-config gfortran libopenmpi-dev openmpi-bin
+        sudo apt install -yq --no-install-recommends gfortran libopenmpi-dev
 
     - run: ctest -S setup.cmake -R unit -V
 
-    - run: ctest -S setup.cmake -E 3d_glow -V
+    - run: ctest -S setup.cmake -E 3d -V
