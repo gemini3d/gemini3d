@@ -59,7 +59,6 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS on)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules/)
 
-include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/python.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/h5fortran.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/nc4fortran.cmake)
 
@@ -71,6 +70,7 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/compiler_flags.cmake)
 # this comes last to avoid intermittent failures
 
 # self-test simulations
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/python.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/test_setup.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/test_sim.cmake)
 
