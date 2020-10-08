@@ -5,7 +5,7 @@ implicit none (type, external)
 
 type hdf5_file
 contains
-procedure, public :: initialize, read, write, exist, finalize
+procedure, public :: initialize, read, write, exist, exists, ndims, finalize
 end type hdf5_file
 
 contains
@@ -51,6 +51,12 @@ character(*), intent(in)         :: dname
 exists = .false.
 error stop 'HDF5 / h5fortran not available'
 end function exists
+
+integer function ndims(self, dname)
+class(hdf5_file), intent(in) :: self
+character(*), intent(in) :: dname
+error stop 'HDF5 / h5fortran not available'
+end function ndims
 
 subroutine finalize(self, ierr)
 class(hdf5_file), intent(in) :: self
