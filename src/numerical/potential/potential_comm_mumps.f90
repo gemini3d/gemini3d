@@ -133,6 +133,8 @@ lx3=size(ns,3)-4
 
 !POTENTIAL SOLUTION (IF REQUIRED)
 call cpu_time(tstart)
+!> FIXME: instead of muvn output just electrical mobility + total collision freq. then all other terms follow
+! ??? another sigma for pressure term???  Any way to do this without wasting more memory...  Sigmas as 3D arrays so not too bad...
 call conductivities(nn,Tn,ns,Ts,vs1,B1,sig0,sigP,sigH,muP,muH,muPvn,muHvn,sigPgrav,sigHgrav)
 
 
