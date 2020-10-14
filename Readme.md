@@ -103,12 +103,12 @@ If using Homebrew on MacOS, be sure Homebrew's GCC is used instead of AppleClang
 2. run the equilibrium sim:
 
     ```sh
-    gemini_run /path_to/config_eq.nml /path_to/sim_eq/
+    python -m gemini3d.run /path_to/config_eq.nml /path_to/sim_eq/
     ```
 3. create a new config.nml for the actual simulation and run
 
     ```sh
-    gemini_run /path_to/config.nml /path_to/sim_out/
+    python -m gemini3d.run /path_to/config.nml /path_to/sim_out/
     ```
 
 ## Prerequisites
@@ -118,18 +118,12 @@ checking for compatibility of pre-installed libraries such as Lapack, Scalapack 
 
 ### Libraries
 
-Tested versions include:
-
-* OpenMPI 1.10, 2.1 - 4.0  | IntelMPI 2019 | MS-MPI 10.0
-* MUMPS 4.10, 5.1, 5.2, 5.3
-  * Mumps &ge; 5.2 recommended to have vastly less verbose console output
-* SCALAPACK 2.0 / 2.1
-* LAPACK95 3.0  (optional)
-* HDF5 1.8.16 / 1.10 / 1.12
-
 Libraries are auto-built by Gemini when building gemini.bin.
 These will generally yield faster Gemini runtime, since they were optimized for the CPU on your hardware.
-If it's desired to use system libraries, consider [install_prereqs.py](./scripts/install_prereqs.py)
+If it's desired to use:
+
+* system libraries: [PyGemini scripts/install_prereqs.py](https://github.com/gemini3d/pygemini)
+* build/install libraries: `python -m gemini3d.prereqs`
 
 ## Known limitations and issues of GEMINI
 
@@ -172,7 +166,7 @@ gemini.bin command line options include:
 In general for MPI programs and associated simulations, there may be a minimum number of MPI processes and/or integer multiples that must be met.
 The build system generation process automatically sets the maximum number of processes possible based on your CPU core count and grid size.
 
-This can also be done via `gemini_run -np` options.
+This can also be done via `python -m gemini3d.run -np` options.
 
 ```sh
 mpiexec -np <number of processors>  build/gemini.bin <output directory>
