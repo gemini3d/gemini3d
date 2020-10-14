@@ -24,23 +24,16 @@ set_tests_properties(unit:interp2 PROPERTIES
   TIMEOUT 15
   FIXTURES_SETUP GemInterp2)
 
-cmake_host_system_information(RESULT _avail QUERY AVAILABLE_PHYSICAL_MEMORY)
-set(lowRAM false)
-if(_avail LESS 1000)
-  set(lowRAM true)
-endif()
-
 add_executable(test_interp3 testinterp3.f90)
 target_link_libraries(test_interp3 PRIVATE const interp h5fortran::h5fortran)
-if(NOT lowRAM)
 add_test(NAME unit:interp3
   COMMAND $<TARGET_FILE:test_interp3> ${_testfile_interp3in} ${_testfile_interp3}
   WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
 set_tests_properties(unit:interp3 PROPERTIES
   TIMEOUT 60  # need 60 for slow CPU
-  RUN_SERIAL true  # for low RAM systems
+#  RUN_SERIAL true  # for low RAM systems
   FIXTURES_SETUP GemInterp3)
-endif(NOT lowRAM)
+
 
 if(python_ok)
   add_test(NAME unit:interp2:python
@@ -50,15 +43,13 @@ if(python_ok)
     TIMEOUT 30
     FIXTURES_REQUIRED GemInterp2)
 
-if(NOT lowRAM)
 add_test(NAME unit:interp3:python
   COMMAND ${Python3_EXECUTABLE}  ${CMAKE_CURRENT_SOURCE_DIR}/testinterp3.py ${_testfile_interp3})
 set_tests_properties(unit:interp3:python PROPERTIES
   REQUIRED_FILES "${_testfile_interp3};${_testfile_interp3in}"
   TIMEOUT 30
-  RUN_SERIAL true  # due to memory use
+#  RUN_SERIAL true  # due to memory use
   FIXTURES_REQUIRED GemInterp3)
-endif(NOT lowRAM)
 endif(python_ok)
 
 endif(hdf5 AND ${PROJECT_NAME}_BUILD_TESTING)
