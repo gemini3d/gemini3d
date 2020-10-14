@@ -8,9 +8,9 @@ set(_outdir ${CMAKE_CURRENT_BINARY_DIR}/test${testname})
 if(python_ok)
 
 if(mpi)
-  set(_cmd ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/scripts/run_test.py ${testname} -mpiexec ${MPIEXEC_EXECUTABLE} $<TARGET_FILE:gemini.bin> ${_outdir})
+  set(_cmd ${Python3_EXECUTABLE} -m gemini3d.run_test ${testname} -mpiexec ${MPIEXEC_EXECUTABLE} $<TARGET_FILE:gemini.bin> ${_outdir})
 else()
-  set(_cmd ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/scripts/run_test.py ${testname} $<TARGET_FILE:gemini.bin> ${_outdir})
+  set(_cmd ${Python3_EXECUTABLE} -m gemini3d.run_test ${testname} $<TARGET_FILE:gemini.bin> ${_outdir})
 endif(mpi)
 
 if(hdf5)
