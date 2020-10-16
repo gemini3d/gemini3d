@@ -55,6 +55,7 @@ end function exists
 integer function ndims(self, dname)
 class(hdf5_file), intent(in) :: self
 character(*), intent(in) :: dname
+ndims = 0
 error stop 'HDF5 / h5fortran not available'
 end function ndims
 
