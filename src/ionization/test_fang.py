@@ -99,6 +99,10 @@ def checker(exe: str, doplot: bool, params: dict = None):
     ax.semilogx(fang2010_fig4b, alt_km)
     ax.set_ylim(50, 200)
     ax.set_xlim(10, 1e5)
+    ax.set_ylabel("altitude [km]")
+    ax.set_xlabel(r"ionization rate [cm$^{-3}$ s$^{-1}$]")
+    ax.set_title("Figure 4b of Fang 2010")
+    ax.grid(True)
 
 
 if __name__ == "__main__":
