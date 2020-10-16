@@ -48,6 +48,7 @@ integer :: flagglow              ! whether or not to use glow to compute impact 
 real(wp) :: dtglow, dtglowout    ! time step between GLOW updates and outputs for GLOW emissions
 
 integer :: flag_fang=2008   !< configure Fang ionization model
+real(wp), allocatable :: ionizeEbin, ionizeEflux  !< Energy bins (eV) and flux per bin
 
 !! parameters below this line can only be changed via the .nml input format
 !> equatorial ionization anomaly
