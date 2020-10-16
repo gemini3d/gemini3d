@@ -58,5 +58,5 @@ jobs:
         path: build/CMakeFiles/CMakeError.log
 
     - name: 2D test without MPI
-      run: ctest -R 2dew_fang -V
+      run: ctest -R 2dew_fang -VV
       working-directory: build
