@@ -5,7 +5,7 @@ use phys_consts, only: wp, kb
 
 implicit none (type, external)
 private
-public :: fang2008, fang2010, gravity_accel, erg2kev
+public :: fang2008, fang2010, gravity_accel, erg2kev, maxwellian_dnf, kappa_dnf
 
 real(wp), parameter :: deps = 0.035_wp
 real(wp), parameter :: erg2kev = 624150648._wp
@@ -136,6 +136,62 @@ Qtot = Q0_keV / 2._wp / deps / H_cm * f
 !! [cm^-3 s^-1]
 
 end function fang2008
+
+
+elemental real(wp) function maxwellian_dnf(Q0_keV, E0_keV, E)
+!! double Maxwellian differential number flux spectrum
+!! Implements Fang 2010 Eqn. 6
+!! https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2010GL045406
+!! can be used to help generate Figure 4 of Fang 2010
+!!
+!! Fang 2010 refers to https://agupubs.onlinelibrary.wiley.com/doi/10.1029/97JA01728 for double Maxwellian
+!!
+!! E range shown in Figure 4 is 100 eV to 1 MeV
+!!
+!! Parameters:
+!! -----------
+!! Q0: total energy flux [keV cm^-2 s^-1]
+!! E0: characteristic energy [keV]
+!! E: the energy bin being used (log spaced energy grid suggested by Fang 2010) [keV]
+!!
+!! Returns:
+!! -------
+!! differential number flux [keV^-1 cm^-2 s^-1]
+
+real(wp), intent(in) :: Q0_keV, E0_keV, E
+
+maxwellian_dnf = Q0_keV / (2 * E0_keV**3) * E * exp(-E / E0_keV)
+
+end function
+
+
+elemental real(wp) function kappa_dnf(Q0_keV, E0_keV, E, kappa)
+!! Kappa differential number flux spectrum
+!! Implements Fang 2010 Eqn. 7
+!! https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2010GL045406
+!! can be used to help generate Figure 4 of Fang 2010
+!!
+!! kappa is "spectral index" and can range from 1.5..infinity
+!! https://link-springer-com.ezproxy.bu.edu/article/10.1007/s11207-010-9640-2
+!! also used in Spencer Hatch articles.
+!!
+!! E range shown in Figure 4 is 100 eV to 1 MeV
+!!
+!! Parameters:
+!! -----------
+!! Q0: total energy flux [keV cm^-2 s^-1]
+!! E0: characteristic energy [keV]
+!! E: the energy bin being used (log spaced energy grid suggested by Fang 2010) [keV]
+!!
+!! Returns:
+!! -------
+!! differential number flux [keV^-1 cm^-2 s^-1]
+
+real(wp), intent(in) :: Q0_keV, E0_keV, E, kappa
+
+kappa_dnf = Q0_keV / (2 * E0_keV**3) * (kappa - 1)*(kappa - 2) / kappa**2 * E * exp(1 + E /(kappa * E0_keV))**(-kappa - 1)
+
+end function
 
 
 elemental real(wp) function gravity_accel(alt_km)

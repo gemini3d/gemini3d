@@ -58,6 +58,9 @@ def checker(exe: str, doplot: bool, params: dict = None):
     dat = np.loadtxt(io.StringIO(ret), skiprows=191 + 3, max_rows=191)
     ionization_rates10 = dat[:, 1:]
 
+    dat = np.loadtxt(io.StringIO(ret), skiprows=191 * 2 + 7, max_rows=200)
+    fang2010_fig4b = dat[:, 1]
+
     if not params:
         # spot check values
         assert np.isclose(ionization_rates08[89, 0], 2214.052, atol=0.001), "E0: 100eV"
@@ -90,6 +93,11 @@ def checker(exe: str, doplot: bool, params: dict = None):
     ax.grid(True)
     ax.set_title(r"Figure 2 of Fang 2010 by $E_{mono}$ [keV]")
     ax.legend(loc="best")
+    ax.set_xlim(10, 1e5)
+
+    ax = figure().gca()
+    ax.semilogx(fang2010_fig4b, alt_km)
+    ax.set_ylim(50, 200)
     ax.set_xlim(10, 1e5)
 
 
