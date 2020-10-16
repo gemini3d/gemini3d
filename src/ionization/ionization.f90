@@ -114,7 +114,7 @@ pepiO2di=[76.136, 17.944, 6.981, 20.338, 1.437, 0.521, 0.163, 0.052, 0.014, 0.00
 
 
 !IRRADIANCE ACCORDING TO [RICHARDS, 1994]
-Iinf=fref*(1._wp+Aeuv*(0.5_wp*(f107+f107a)-80._wp))
+Iinf=fref*(1 + Aeuv*(0.5_wp*(f107+f107a)-80._wp))
 
 
 !GRAVITATIONAL FIELD AND AVERAGE VALUE
@@ -158,7 +158,7 @@ where (chi<pi/2._wp)    !where does work with array corresponding elements provi
 !      Chfn=sqrt(pi/2._wp*bigX)*exp(y**2)*(1._wp-erf(y))    !goodness this creates YUGE errors compared to erfc; left here as a lesson learned
   Chfn=sqrt(pi/2._wp*bigX)*exp(y**2)*erfc(y)
 elsewhere
-  Chfn=sqrt(pi/2._wp*bigX)*exp(y**2)*(1._wp+erf(y))
+  Chfn=sqrt(pi/2._wp*bigX)*exp(y**2)*(1 + erf(y))
 end where
 nOcol=nn(:,:,:,1)*H*Chfn
 
@@ -171,7 +171,7 @@ Chfn=0
 where (chi<pi/2._wp)
   Chfn=sqrt(pi/2._wp*bigX)*exp(y**2)*erfc(y)
 elsewhere
-  Chfn=sqrt(pi/2._wp*bigX)*exp(y**2)*(1._wp+erf(y))
+  Chfn=sqrt(pi/2._wp*bigX)*exp(y**2)*(1 + erf(y))
 end where
 nN2col=nn(:,:,:,2)*H*Chfn
 
@@ -184,7 +184,7 @@ Chfn=0
 where (chi<pi/2._wp)    !where does work with array corresponding elements provided they are conformable
   Chfn=sqrt(pi/2._wp*bigX)*exp(y**2)*erfc(y)
 elsewhere
-  Chfn=sqrt(pi/2._wp*bigX)*exp(y**2)*(1._wp+erf(y))
+  Chfn=sqrt(pi/2._wp*bigX)*exp(y**2)*(1 + erf(y))
 end where
 nO2col=nn(:,:,:,3)*H*Chfn
 
@@ -200,46 +200,46 @@ photoionization=0
 
 !direct O+ production
 do il=1,ll
-  photoionization(:,:,:,1)=photoionization(:,:,:,1)+nn(:,:,:,1)*Iflux(:,:,:,il)*sigmaO(il)*(1._wp+pepiO(il))
+  photoionization(:,:,:,1)=photoionization(:,:,:,1)+nn(:,:,:,1)*Iflux(:,:,:,il)*sigmaO(il)*(1 + pepiO(il))
 end do
 
 !direct NO+
-photoionization(:,:,:,2)=0
+photoionization(:,:,:,2) = 0
 
 !direct N2+
 do il=1,ll
-  photoionization(:,:,:,3)=photoionization(:,:,:,3)+nn(:,:,:,2)*Iflux(:,:,:,il)*sigmaN2(il)*brN2i(il)*(1._wp+pepiN2i(il))
+  photoionization(:,:,:,3)=photoionization(:,:,:,3)+nn(:,:,:,2)*Iflux(:,:,:,il)*sigmaN2(il)*brN2i(il)*(1 + pepiN2i(il))
 end do
 
 !dissociative ionization of N2 leading to N+
 do il=1,ll
-  photoionization(:,:,:,5)=photoionization(:,:,:,5)+nn(:,:,:,2)*Iflux(:,:,:,il)*sigmaN2(il)*brN2di(il)*(1._wp+pepiN2di(il))
+  photoionization(:,:,:,5)=photoionization(:,:,:,5)+nn(:,:,:,2)*Iflux(:,:,:,il)*sigmaN2(il)*brN2di(il)*(1 + pepiN2di(il))
 end do
 
 !direct O2+
 do il=1,ll
-  photoionization(:,:,:,4)=photoionization(:,:,:,4)+nn(:,:,:,3)*Iflux(:,:,:,il)*sigmaO2(il)*brO2i(il)*(1._wp+pepiO2i(il))
+  photoionization(:,:,:,4)=photoionization(:,:,:,4)+nn(:,:,:,3)*Iflux(:,:,:,il)*sigmaO2(il)*brO2i(il)*(1 + pepiO2i(il))
 end do
 
 !dissociative ionization of O2 leading to O+
 do il=1,ll
-  photoionization(:,:,:,1)=photoionization(:,:,:,1)+nn(:,:,:,3)*Iflux(:,:,:,il)*sigmaO2(il)*brO2di(il)*(1._wp+pepiO2di(il))
+  photoionization(:,:,:,1)=photoionization(:,:,:,1)+nn(:,:,:,3)*Iflux(:,:,:,il)*sigmaO2(il)*brO2di(il)*(1 + pepiO2di(il))
 end do
 
 !H+ production
-photoionization(:,:,:,6)=0
+photoionization(:,:,:,6) = 0
 
 
 !THERE SHOULD BE SOME CODE HERE TO ZERO OUT THE BELOW-GROUND ALTITUDES.
-where (photoionization<0)
-  photoionization=0
+where (photoionization < 0)
+  photoionization = 0
 end where
 do isp=1,lsp-1
   phototmp=photoionization(:,:,:,isp)
   where (x%nullpts>0.9 .and. x%nullpts<1.1)
     phototmp=0
   end where
-  photoionization(:,:,:,isp)=phototmp
+  photoionization(:,:,:,isp) = phototmp
 end do
 
 end function photoionization
