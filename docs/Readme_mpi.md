@@ -25,10 +25,10 @@ For CentOS, typical HPC will have the ability to switch to a recent GCC verison 
 If not, compile MPI--it will take about 20 minutes:
 
 ```sh
-gemini_prereqs gcc openmpi
+python -m gemini3d.prereqs gcc openmpi
 ```
 
-The "gemini_prereqs" command comes from
+The "python -m gemini3d.prereqs" command comes from
 [PyGemini](https://github.com/gemini3d/pygemini)
 
 ## Windows

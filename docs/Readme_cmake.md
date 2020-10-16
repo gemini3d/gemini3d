@@ -51,7 +51,7 @@ cmake --build build
 If you would like to build HDF5 yourself instead of installing it via your package manager, by PyGemini (assuming it was setup during your Gemini3D setup or manually):
 
 ```sh
-gemini_prereqs gcc hdf5
+python -m gemini3d.prereqs gcc hdf5
 ```
 
 ## NetCDF
