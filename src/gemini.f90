@@ -263,9 +263,9 @@ E1 = 0._wp
 call pot2perpfield(Phi,x,E2,E3)
 if(myid==0) then
   print*, 'Recomputed initial dist. fields:  ',myid
-  print*, '    gemini ',minval(E1),maxval(E1),myid,'1'
-  print*, '    gemini ',minval(E2),maxval(E2),myid,'2'
-  print*, '    gemini ',minval(E3),maxval(E3),myid,'3'
+  print*, '    gemini ',minval(E1),maxval(E1)
+  print*, '    gemini ',minval(E2),maxval(E2)
+  print*, '    gemini ',minval(E3),maxval(E3)
 end if
 if(myid==0) then
   print*, 'Recomputed initial BG fields:  '
