@@ -2,6 +2,7 @@ name: ci_linux
 env:
   FC: gfortran
   CC: gcc
+  CMAKE_GENERATOR: Ninja
 
 on:
   push:
@@ -27,6 +28,7 @@ jobs:
       run: |
         sudo apt update -yq
         sudo apt install -yq --no-install-recommends pkg-config gfortran libopenmpi-dev liblapack-dev libscalapack-openmpi-dev libmumps-dev libhdf5-dev
+        python -m pip install ninja
 
 # CI is too slow for 3d_glow
     - run: ctest -S setup.cmake -E 3d -VV
