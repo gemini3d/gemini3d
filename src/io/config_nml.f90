@@ -29,8 +29,8 @@ real(wp) :: dtprec=0
 character(256) :: indat_size, indat_grid, indat_file, source_dir, prec_dir, E0_dir
 character(4) :: file_format=""  !< need to initialize blank or random invisible fouls len_trim>0
 real(wp) :: dtE0=0
-integer :: flag_fang
-real(wp), allocatable :: Ebin, Eflux
+integer :: flag_fang, Nbin
+real(wp), allocatable :: Ebin(:), Eflux(:)
 real(wp) :: dtglow=0, dtglowout=0
 logical :: flagEIA
 real(wp) :: v0equator
@@ -51,7 +51,10 @@ namelist /flags/ potsolve, flagperiodic, flagoutput
 namelist /neutral_perturb/ flagdneu, interptype, sourcemlat, sourcemlon, dtneu, dxn, drhon, dzn, source_dir
 namelist /precip/ dtprec, prec_dir
 namelist /efield/ dtE0, E0_dir
+
+namelist /fang_size/ Nbin
 namelist /fang/ flag_fang, Ebin, Eflux
+
 namelist /glow/ dtglow, dtglowout
 namelist /EIA/ flagEIA,v0equator
 namelist /neutral_BG/ flagneuBG,dtneuBG
@@ -143,11 +146,17 @@ endif
 
 if (namelist_exists(u, "fang", verbose)) then
   rewind(u)
+
+  read(u, nml=fang_size, iostat=i)
+  call check_nml_io(i, cfg%infile, "fang_size")
+  allocate(Ebin(Nbin), Eflux(Nbin))
+
+  rewind(u)
   read(u, nml=fang, iostat=i)
   call check_nml_io(i, cfg%infile, "fang")
   cfg%flag_fang = flag_fang
   !> These energy bin / flux parameters only have effect for Fang 2010, not Fang 2008.
-  !> uses Fortran 2003 auto-allocate on Namelist read and assignment to "cfg" class.
+  !> uses Fortran 2003 auto-allocate on assignment to "cfg" class.
   cfg%ionizeEbin = Ebin
   cfg%ionizeEflux = Eflux
 else
