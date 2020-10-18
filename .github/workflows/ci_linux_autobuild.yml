@@ -1,0 +1,47 @@
+name: ci_linux_autobuild
+env:
+  FC: gfortran
+  CC: gcc
+
+on:
+  push:
+    paths:
+      - "**.cmake"
+      - "**/CMakeLists.txt"
+      - ".github/workflows/ci_linux_autobuild.yml"
+
+
+jobs:
+
+  autobuild_no_mpi:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
+      with:
+        python-version: '3.8'
+
+    - name: build and test without MPI
+      run: ctest -S setup.cmake -R unit -VV
+
+    - name: 2D test without MPI
+      run: ctest -R 2dew_fang -VV
+      working-directory: build
+
+
+  autobuild_mpi:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
+      with:
+        python-version: '3.8'
+
+    - name: Install packages
+      run: |
+        sudo apt update -yq
+        sudo apt install -yq --no-install-recommends gfortran libopenmpi-dev
+
+    - run: ctest -S setup.cmake -R unit -VV
+
+    - run: ctest -S setup.cmake -E 3d -VV
