@@ -5,8 +5,6 @@ env:
 on:
   push:
     paths:
-      - "**.f90"
-      - "**.F90"
       - "**.cmake"
       - "**/CMakeLists.txt"
       - ".github/workflows/ci_windows.yml"
@@ -28,4 +26,4 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: configure and build without MPI
-      run: ctest -S setup.cmake -VV
+      run: ctest -S setup.cmake -E 3d -VV
