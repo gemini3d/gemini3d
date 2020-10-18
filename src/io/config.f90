@@ -108,14 +108,20 @@ logical, intent(in), optional :: verbose
 integer :: i, realbits, lxp, lyp
 real(wp) :: NaN, glat, glon, xdist, ydist, alt_min, alt_max, alt_scale(4), Bincl, nmf, nme
 
+character(:), allocatable :: suffix
+
 !> READ CONFIG FILE FOR THIS SIMULATION
 !! NOTE: Namelist file groups must be read in order they appear in the Namelist file, or End of File error occurs
+suffix = get_suffix(cfg%infile)
 
-if (cfg%infile(len(cfg%infile)-3 : len(cfg%infile)) == '.nml') then
+select case (suffix)
+case ('.nml')
   call read_nml(cfg, verbose)
-else
+case ('.ini')
   call read_ini(cfg)
-endif
+case default
+  error stop 'not sure how to read config file ' // cfg%infile
+end select
 
 end subroutine read_configfile
 
