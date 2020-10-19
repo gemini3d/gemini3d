@@ -252,7 +252,8 @@ if (gridflag/=0) then
     Qeprecip=eheating(nn,Tn,Prprecip,ns)
   else
     !! GLOW USED, AURORA PRODUCED
-    if (int(t/cfg%dtglow)/=int((t+dt)/cfg%dtglow) .or. t<0.1_wp) then
+    if (int(t/cfg%dtglow)/=int((t+dt)/cfg%dtglow) .or. (t<0.1_wp .and. dt<2e-6_wp)) then
+      if (mpi_cfg%myid==0) print*, 'Note:  preparing to call GLOW...  This could take a while if your grid is large...'
       PrprecipG=0; QeprecipG=0; iverG=0;
       call ionrate_glow98(W0,PhiWmWm2,ymd,UTsec,f107,f107a,x%glat(1,:,:),x%glon(1,:,:),x%alt,nn,Tn,ns,Ts, &
                           QeprecipG, iverG, PrprecipG)
