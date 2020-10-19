@@ -10,10 +10,9 @@ contains
 module procedure create_outdir
 !! CREATES OUTPUT DIRECTORY, MOVES CONFIG FILES THERE AND GENERATES A GRID OUTPUT FILE
 
-integer :: ierr, u, realbits
-logical :: porcelain, exists
+integer :: u, realbits
 character(:), allocatable :: input_nml, output_dir, &
-  git_version, branch, rev, compiler, compiler_flags, exe
+  git_version, branch, rev, porcelain, compiler, compiler_flags, exe
 character(256) :: buf
 integer :: mcadence
 
@@ -22,8 +21,6 @@ namelist /git/ git_version, branch, rev, porcelain
 namelist /system/ compiler, compiler_flags, exe
 namelist /grid/ lid, lid2, lid3, lx1, lx2, lx3, lx2all, lx3all
 namelist /milestone/ mcadence
-
-call gitlog(cfg%outdir // '/gitrev.log')
 
 !> Log to output.nml
 
@@ -42,22 +39,10 @@ case default
 end select
 
 !> git namelist
-git_version = ''
-branch = ''
-rev = ''
-porcelain = .false.
-open(newunit=u, file=cfg%outdir// '/gitrev.log', status='old', action='read', iostat=ierr)
-if(ierr==0) then
-  read(u, '(A256)', iostat=ierr) buf
-  if(ierr==0) git_version = trim(buf)
-  read(u, '(A256)', iostat=ierr) buf
-  if(ierr==0) branch = trim(buf)
-  read(u, '(A256)', iostat=ierr) buf
-  if(ierr==0) rev = trim(buf)
-  read(u, '(A256)', iostat=ierr) buf
-  if (len_trim(buf)==0 .or. is_iostat_end(ierr)) porcelain=.true.
-  close(u)
-endif
+git_version = "@git_version@"
+branch = "@git_branch@"
+rev = "@git_rev@"
+porcelain = "@git_porcelain@"
 
 !> system namelist
 compiler = trim(compiler_version())
@@ -78,43 +63,6 @@ open(newunit=u, file=cfg%outdir // '/output.nml', status='unknown', action='writ
 close(u)
 
 end procedure create_outdir
-
-
-subroutine gitlog(logpath)
-!! logs git branch, hash to file
-!! this works on Windows and Unix
-
-character(*), intent(in) :: logpath
-integer :: i,j
-
-call execute_command_line('git --version > ' // logpath, cmdstat=i, exitstat=j)
-if(i /= 0 .or. j /= 0) then
-  write(stderr, *) 'ERROR: Git not available'
-  return
-endif
-
-!> git branch --show-current requires Git >= 2.22, June 2019
-call execute_command_line('git rev-parse --abbrev-ref HEAD >> '// logpath, cmdstat=i, exitstat=j)
-if(i /= 0 .or. j /= 0) then
-  write(stderr, *) 'ERROR: failed to log Git branch'
-  return
-endif
-
-!> write hash
-call execute_command_line('git rev-parse --short HEAD >> '// logpath, cmdstat=i, exitstat=j)
-if(i /= 0 .or. j /= 0) then
-  write(stderr, *) 'ERROR: failed to log Git hash'
-  return
-endif
-
-!> write changed filenames
-call execute_command_line('git status --porcelain >> '// logpath, cmdstat=i, exitstat=j)
-if(i /= 0 .or. j /= 0) then
-  write(stderr, *) 'ERROR: failed to log Git filenames'
-  return
-endif
-
-end subroutine gitlog
 
 
 subroutine compiler_log(logpath)
