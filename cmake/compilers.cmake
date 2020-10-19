@@ -9,9 +9,15 @@ include(CheckFortranCompilerFlag)
 set(CMAKE_REQUIRED_LIBRARIES)
 set(CMAKE_REQURIED_INCLUDES)
 set(CMAKE_REQUIRED_FLAGS)
+
 check_fortran_source_compiles("implicit none (type, external); end" f2018impnone SRC_EXT f90)
 if(NOT f2018impnone)
   message(FATAL_ERROR "Compiler does not support Fortran 2018 IMPLICIT NONE (type, external): ${CMAKE_Fortran_COMPILER_ID} ${CMAKE_Fortran_COMPILER_VERSION}")
+endif()
+
+check_fortran_source_compiles("character :: x; error stop x; end" f2018errorstop SRC_EXT f90)
+if(NOT f2018errorstop)
+  message(FATAL_ERROR "Compiler does not support Fortran 2018 error stop with character variable: ${CMAKE_Fortran_COMPILER_ID} ${CMAKE_Fortran_COMPILER_VERSION}")
 endif()
 
 check_fortran_source_compiles("block; end block; end" f2008block SRC_EXT f90)
