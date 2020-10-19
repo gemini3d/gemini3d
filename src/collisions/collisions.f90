@@ -223,6 +223,8 @@ lx2=size(Ts,2)-4
 lx3=size(Ts,3)-4
 
 
+!> Refactor this code so that it outputs nusn instead of the two "neutral mobilities", this also facilitates pressure terms...
+
 !MOBILITIES
 do isp=1,lsp
 !      OMs=qs(isp)*abs(B1)/ms(isp)

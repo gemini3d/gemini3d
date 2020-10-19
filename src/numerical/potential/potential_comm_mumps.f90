@@ -169,7 +169,8 @@ if (cfg%potsolve == 1 .or. cfg%potsolve == 3) then    !electrostatic solve or el
   call cpu_time(tstart)
 
   ! Execute solution for ionospheric potential
-  if (mpi_cfg%myid/=0) then    !role-specific communication pattern (all-to-root-to-all), workers initiate with sends
+  if (mpi_cfg%myid/=0) then    
+    !! role-specific communication pattern (all-to-root-to-all), workers initiate with sends
      call potential_workers_mpi(it,t,dt,sig0,sigP,sigH,sigPgrav,sigHgrav,incap,vs2,vs3, &
                                  vn2,vn3,cfg,B1,x,E1,E2,E3,J1,J2,J3)
   else
@@ -291,10 +292,23 @@ lx3=size(sigP,3)
 
 !-------
 !CONDUCTION CURRENT BACKGROUND SOURCE TERMS FOR POTENTIAL EQUATION. MUST COME AFTER CALL TO BC CODE.
-J1=0d0    !so this div is only perp components
-J2=0._wp; J3=0._wp;
+J1 = 0                  
+!! so this div is only perp components
+J2 = 0 
+J3 = 0     
+!! for first current term zero everything out
 call acc_perpconductioncurrents(sigP,sigH,E02,E03,J2,J3)     !background conduction currents only
-J1halo(1:lx1,1:lx2,1:lx3)=J1
+if (debug .and. mpi_cfg%myid==0) print *, 'Workers has computed background field currents...'
+call acc_perpwindcurrents(sigP,sigH,vn2,vn3,B1,J2,J3)
+if (debug .and. mpi_cfg%myid==0) print *, 'Workers has computed wind currents...'
+if (flaggravdrift) then
+  call acc_perpgravcurrents(sigPgrav,sigHgrav,g2,g3,J2,J3)
+  if (debug .and. mpi_cfg%myid==0) print *, 'Workers has computed gravitational currents...'
+end if
+!! FIXME:  need to add in pressure currents and then take divergence
+
+J1halo(1:lx1,1:lx2,1:lx3)=J1     
+!! temporary extended arrays to be populated with boundary data
 J2halo(1:lx1,1:lx2,1:lx3)=J2
 J3halo(1:lx1,1:lx2,1:lx3)=J3
 
@@ -305,54 +319,7 @@ call halo_pot(J3halo,tag%J3,x%flagper,.false.)
 divtmp=div3D(J1halo(0:lx1+1,0:lx2+1,0:lx3+1),J2halo(0:lx1+1,0:lx2+1,0:lx3+1), &
              J3halo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
 srcterm=divtmp(1:lx1,1:lx2,1:lx3)
-if (debug .and. mpi_cfg%myid==0) print *, 'Root has computed background field source terms...',minval(srcterm), maxval(srcterm)
 !-------
-
-
-!-------
-!NEUTRAL WIND SOURCE TERMS (current produced by wind dynamo) FOR POTENTIAL EQUATION, SIMILAR TO ABOVE BLOCK OF CODE
-J1=0d0    !so this div is only perp components
-J2=0._wp; J3=0._wp;
-call acc_perpwindcurrents(sigP,sigH,vn2,vn3,B1,J2,J3)
-J1halo(1:lx1,1:lx2,1:lx3)=J1
-J2halo(1:lx1,1:lx2,1:lx3)=J2
-J3halo(1:lx1,1:lx2,1:lx3)=J3
-
-call halo_pot(J1halo,tag%J1,x%flagper,.false.)
-call halo_pot(J2halo,tag%J2,x%flagper,.false.)
-call halo_pot(J3halo,tag%J3,x%flagper,.false.)
-
-divtmp=div3D(J1halo(0:lx1+1,0:lx2+1,0:lx3+1),J2halo(0:lx1+1,0:lx2+1,0:lx3+1), &
-             J3halo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
-srcterm=srcterm+divtmp(1:lx1,1:lx2,1:lx3)
-if (debug .and. mpi_cfg%myid==0) print *, 'Root has computed wind source terms...',minval(srcterm),  maxval(srcterm)
-!-------
-
-
-if (flaggravdrift) then
-  !-------
-  !GRAVITATIONAL SOURCE TERMS FOR POTENTIAL EQUATION
-  J1=0d0    !so this div is only perp components
-  J2=0._wp; J3=0._wp;
-  call acc_perpgravcurrents(sigPgrav,sigHgrav,g2,g3,J2,J3)
-  J1halo(1:lx1,1:lx2,1:lx3)=J1
-  J2halo(1:lx1,1:lx2,1:lx3)=J2
-  J3halo(1:lx1,1:lx2,1:lx3)=J3
-
-  call halo_pot(J1halo,tag%J1,x%flagper,.false.)
-  call halo_pot(J2halo,tag%J2,x%flagper,.false.)
-  call halo_pot(J3halo,tag%J3,x%flagper,.false.)
-
-  divtmp=div3D(J1halo(0:lx1+1,0:lx2+1,0:lx3+1),J2halo(0:lx1+1,0:lx2+1,0:lx3+1), &
-               J3halo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
-  srcterm=srcterm+divtmp(1:lx1,1:lx2,1:lx3)
-  if (debug .and. mpi_cfg%myid==0) print *, 'Root has computed gravitational source terms...',minval(srcterm),  maxval(srcterm)
-  !-------
-end if
-
-
-!> FIXME:  need to add in pressure currents and then take divergence
-
 
 end subroutine potential_sourceterms
 
@@ -431,7 +398,7 @@ end if
 end subroutine acc_perpgravcurrents
 
 
-!> acc_pressurecurrents()
+!> subroutine acc_pressurecurrents(musP,musH,ns,Ts,J2,J3)
 
 
 subroutine pot2perpfield(Phi,x,E2,E3)
@@ -516,7 +483,7 @@ end subroutine get_BGEfields
 
 subroutine halo_pot(parmhalo,tagcurrent,flagper,flagdegrade)
 
-!THIS SUBROUTINE implements A COMMON MESSAGE PASSING pattern USED IN THE COMPUTATION
+!THIS SUBROUTINE REPLICATES A COMMON MESSAGE PASSING SCHEME USED IN THE COMPUTATION
 !OF ELECTRODYNAMICS PARAMETERS THAT RESULT FROM DERIVATIVE (WHICH REQUIRE HALOING)
 
 real(wp), intent(inout), dimension(-1:,-1:,-1:) :: parmhalo
@@ -556,7 +523,8 @@ if (idup==mpi_cfg%lid2) then
     parmhalo(1:lx1,lx2+1,1:lx3)=parmhalo(1:lx1,lx2,1:lx3)
   end if
 end if
-if (.not. flagper) then              !musn't overwrite ghost cells if perioidc is chosen, only if aperiodic...
+if (.not. flagper) then              
+  !! musn't overwrite ghost cells if perioidc is chosen, only if aperiodic...
   if (idleft==-1) then
     parmhalo(1:lx1,1:lx2,0)=parmhalo(1:lx1,1:lx2,1)
   end if
