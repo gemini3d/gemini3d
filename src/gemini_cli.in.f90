@@ -2,10 +2,11 @@ module gemini_cli
 
 use config, only : read_configfile, gemini_cfg, get_compiler_vendor
 use pathlib, only : assert_file_exists, assert_directory_exists, expanduser
+use mpimod, only : mpisetup, mpibreakdown
 
 implicit none (type, external)
 private
-public :: cli, help_cli
+public :: cli
 
 contains
 
@@ -22,8 +23,26 @@ character(512) :: argv
 character(8) :: date
 character(10) :: time
 
+cfg%git_revision = "@git_rev@"
+
 argc = command_argument_count()
 
+call get_command_argument(1, argv, status=i)
+if (i/=0) call help_cli(cfg%git_revision)
+
+select case (argv)
+case ('-h', '-help')
+  call help_cli(cfg%git_revision)
+case ('-compiler')
+  print '(A)', get_compiler_vendor()
+  stop
+case ('-git')
+  print '(A)', cfg%git_revision
+  stop
+end select
+
+!> INITIALIZE MESSING PASSING VARIABLES, IDS ETC.
+call mpisetup()
 
 if(lid < 1) error stop 'number of MPI processes must be >= 1. Was MPI initialized properly?'
 
@@ -157,9 +176,16 @@ do i = 2,argc
 
   select case (argv)
   case ('-h', '-help')
-    call help_cli()
+    ierr = mpibreakdown()
+    if (myid == 0) call help_cli(cfg%git_revision)
+    stop
   case ('-compiler')
-    print '(A)', get_compiler_vendor()
+    ierr = mpibreakdown()
+    if (myid==0) print '(A)', get_compiler_vendor()
+    stop
+  case ('-git')
+    ierr = mpibreakdown()
+    if (myid==0) print '(A)', cfg%git_revision
     stop
   case ('-d', '-debug')
     debug = .true.
@@ -187,8 +213,11 @@ end do
 
 end subroutine cli
 
-subroutine help_cli()
-print '(/,A,/)', 'GEMINI-3D: by Matthew Zettergren'
+subroutine help_cli(git_revision)
+character(*), intent(in) :: git_revision
+
+print '(/,A,/)', 'GEMINI-3D ' // git_revision
+print '(A)', 'by Matthew Zettergren'
 print '(A)', 'GLOW and auroral interfaces by Guy Grubbs'
 print '(A)', 'build system and software engineering by Michael Hirsch'
 print '(A,/)', 'Compiler vendor: '// get_compiler_vendor()

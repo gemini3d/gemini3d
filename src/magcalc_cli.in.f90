@@ -1,7 +1,8 @@
 module magcalc_cli
 
-use config, only : read_configfile, gemini_cfg
-use pathlib, only : assert_file_exists, assert_directory_exists
+use config, only : read_configfile, gemini_cfg, get_compiler_vendor
+use pathlib, only : assert_file_exists, assert_directory_exists, expanduser
+use mpimod, only : mpisetup, mpibreakdown
 
 implicit none (type, external)
 private
@@ -16,23 +17,35 @@ type(gemini_cfg), intent(out) :: cfg
 integer, intent(out) :: lid2in, lid3in
 logical, intent(inout) :: debug
 
-integer :: argc, i
+integer :: argc, i, ierr
 character(256) :: argv
 character(8) :: date
 character(10) :: time
 
 logical :: file_exists
 
+cfg%git_revision = "@git_rev@"
+
 argc = command_argument_count()
-if (argc < 2) then
-  print '(/,A)', 'MAGCALC: by Matthew Zettergren'
-  print '(A,/)', 'build system and software engineering by Michael Hirsch'
-  print '(A)', 'must specify input directory and fieldpoint file. Example:'
-  print '(/,A,/)', 'mpiexec -n 4 build/magcalc.bin test2d_fang test2d_fang/fieldpoint'
-  print '(A)', '-dryrun option allows quick check of first time step'
-  stop 'EOF: MAGCALC'
-  !! stops with de facto "skip test" return code
-endif
+
+call get_command_argument(1, argv, status=i)
+if (i/=0) call help_cli(cfg%git_revision)
+
+select case (argv)
+case ('-h', '-help')
+  call help_cli(cfg%git_revision)
+case ('-compiler')
+  print '(A)', get_compiler_vendor()
+  stop
+case ('-git')
+  print '(A)', cfg%git_revision
+  stop
+end select
+
+!> INITIALIZE MESSING PASSING VARIABLES, IDS ETC.
+call mpisetup()
+
+if(lid < 1) error stop 'number of MPI processes must be >= 1. Was MPI initialized properly?'
 
 call get_command_argument(0, argv)
 call date_and_time(date,time)
@@ -40,14 +53,26 @@ print '(2A,I6,A3,I6,A)', trim(argv), ' Process:  ', myid,' / ',lid-1, ' at ' // 
 
 
 !> READ CONFIG FILE FROM OUTPUT DIRECTORY
-call get_command_argument(1,argv)
-cfg%outdir = trim(argv)
-cfg%infile = cfg%outdir//'/inputs/config.nml'
-inquire(file=cfg%infile, exist=file_exists)    !needed to deal with ini vs. nml inputs...
-if (.not. file_exists) then
-  cfg%infile = cfg%outdir//'/inputs/config.ini'
-end if
+call get_command_argument(1, argv, status=i)
+if (i/=0) error stop 'bad command line'
+cfg%outdir = expanduser(trim(argv))
 
+find_cfg : block
+logical :: exists
+character(*), parameter :: locs(4) = [character(18) :: "/inputs/config.nml", "/config.nml", "/inputs/config.ini", "/config.ini"]
+character(:), allocatable :: loc
+do i = 1,size(locs)
+  loc = trim(cfg%outdir // locs(i))
+  inquire(file=loc, exist=exists)
+  if (exists) then
+    cfg%infile = loc
+    exit find_cfg
+  endif
+end do
+
+error stop 'magcalc.bin: could not find config file in ' // cfg%outdir
+
+end block find_cfg
 !> GRAB THE INFO FOR WHERE THE OUTPUT CALCULATIONS ARE STORED
 call get_command_argument(2,argv)
 cfg%fieldpointfile = trim(argv)
@@ -72,7 +97,7 @@ if (myid==0) then
   print '(A51,F10.3)', 'start time:  ',cfg%UTsec0
   print '(A51,F10.3)', 'duration:  ',cfg%tdur
   print '(A51,F10.3)', 'output every:  ',cfg%dtout
-  print '(A,/,A,/,A,/,A)', 'gemini.f90: using input data files:', cfg%indatsize, cfg%indatgrid, cfg%indatfile
+  print '(A,/,A,/,A,/,A)', 'magcalc.f90: using input data files:', cfg%indatsize, cfg%indatgrid, cfg%indatfile
 
   if(cfg%flagdneu==1) then
     call assert_directory_exists(cfg%sourcedir)
@@ -108,6 +133,18 @@ do i = 3,argc
   call get_command_argument(i,argv)
 
   select case (argv)
+  case ('-h', '-help')
+    ierr = mpibreakdown()
+    if (myid == 0) call help_cli(cfg%git_revision)
+    stop
+  case ('-compiler')
+    ierr = mpibreakdown()
+    if (myid==0) print '(A)', get_compiler_vendor()
+    stop
+  case ('-git')
+    ierr = mpibreakdown()
+    if (myid==0) print '(A)', cfg%git_revision
+    stop
   case ('-d', '-debug')
     debug = .true.
   case ('-dryrun')
@@ -123,5 +160,19 @@ do i = 3,argc
 end do
 
 end subroutine cli
+
+
+subroutine help_cli(git_revision)
+character(*), intent(in) :: git_revision
+
+print '(/,A)', 'MAGCALC ' // git_revision
+print '(A)', 'by Matthew Zettergren'
+print '(A)', 'build system and software engineering by Michael Hirsch'
+print '(A,/)', 'Compiler vendor: '// get_compiler_vendor()
+print '(A)', 'must specify input directory and fieldpoint file. Example:'
+print '(/,A,/)', 'mpiexec -n 4 build/magcalc.bin test2d_fang test2d_fang/fieldpoint'
+print '(A)', '-dryrun option allows quick check of first time step'
+stop 'EOF: MAGCALC'
+end subroutine help_cli
 
 end module magcalc_cli

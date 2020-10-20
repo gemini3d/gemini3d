@@ -20,6 +20,8 @@ include(cmake/options.cmake)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules/)
 
+include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/git_rev.cmake)
+
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/h5fortran.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/nc4fortran.cmake)
 

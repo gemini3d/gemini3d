@@ -25,6 +25,8 @@ logical :: dryrun = .false.
 character(:), allocatable :: infile,outdir,indatsize,indatgrid,indatfile,out_format, &
   fieldpointfile
 
+character(:), allocatable :: git_revision
+
 !> neutral atmospheric perturbations
 integer :: flagdneu                           ! whether or not to include neutral perturbations from input files
 character(:), allocatable :: sourcedir        ! where the neutral input files are located

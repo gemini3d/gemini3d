@@ -1,7 +1,5 @@
 function(git_download root_dir url tag)
 
-find_package(Git REQUIRED)
-
 execute_process(COMMAND ${GIT_EXECUTABLE} clone ${url} ${root_dir}
   RESULT_VARIABLE _gitstat
   TIMEOUT 120)

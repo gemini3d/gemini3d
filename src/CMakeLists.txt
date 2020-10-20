@@ -37,7 +37,8 @@ add_library(multifluid OBJECT multifluid/multifluid.f90)
 target_link_libraries(multifluid PRIVATE advec calculus collision const diffusion grid mesh ionization mpimod precipBCs sources timeutils config)
 
 # --- Main GEMINI executable
-add_executable(gemini.bin gemini.f90 gemini_cli.f90)
+configure_file(gemini_cli.in.f90 gemini_cli.f90 @ONLY)
+add_executable(gemini.bin gemini.f90 ${CMAKE_CURRENT_BINARY_DIR}/gemini_cli.f90)
 set_target_properties(gemini.bin PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 target_link_libraries(gemini.bin PRIVATE advec calculus config const collision diffusion fang grid io interp ionization gbsv mesh mpimod multifluid
   neutral pathlib PDEelliptic PDEparabolic potential precipBCs reader sanity_check sources temporal timeutils)
@@ -47,7 +48,8 @@ add_test(NAME unit:gemini_exe_ok COMMAND $<TARGET_FILE:gemini.bin>)
 set_tests_properties(unit:gemini_exe_ok PROPERTIES PASS_REGULAR_EXPRESSION "EOF: Gemini-3D")
 
 #--------magnetic field calculation executable---------------
-add_executable(magcalc.bin magcalc.f90 magcalc_cli.f90)
+configure_file(magcalc_cli.in.f90 magcalc_cli.f90 @ONLY)
+add_executable(magcalc.bin magcalc.f90 ${CMAKE_CURRENT_BINARY_DIR}/magcalc_cli.f90)
 target_link_libraries(magcalc.bin PRIVATE config const grid io mesh mpimod pathlib reader sanity_check timeutils)
 set_target_properties(magcalc.bin PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 

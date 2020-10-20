@@ -15,7 +15,7 @@ use timeutils, only : dateinc
 use config, only : gemini_cfg
 use io, only : input_plasma_currents,create_outdir_mag,output_magfields
 use mpimod, only: mpi_sum, mpi_comm_world, &
-mpisetup, mpibreakdown, mpigrid, mpi_manualgrid, halo_end, &
+mpibreakdown, mpigrid, mpi_manualgrid, halo_end, &
 lid, lid2, lid3, myid, myid2, myid3, mpi_realprec, tag=>gemini_mpi
 
 implicit none (type, external)
@@ -84,9 +84,6 @@ real(wp), parameter :: Rmin=5d3
 integer :: ierr
 
 !! --- MAIN PROGRAM
-
-!! INITIALIZE MESSING PASSING VARIABLES, IDS ETC.
-call mpisetup()
 
 !> get command line parameters and simulation config
 call cli(myid, lid, cfg, lid2in, lid3in, debug)
