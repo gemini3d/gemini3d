@@ -67,7 +67,10 @@ endif()
 # -- minimal check that MUMPS is linkable
 set(CMAKE_REQUIRED_LIBRARIES MUMPS::MUMPS MPI::MPI_Fortran)
 
-check_fortran_source_compiles("include '${arith}mumps_struc.h'
+check_fortran_source_compiles("
+implicit none (type, external)
+include '${arith}mumps_struc.h'
+external :: ${arith}mumps
 type(${arith}mumps_struc) :: mumps_par
 end"
   MUMPS_link SRC_EXT f90)

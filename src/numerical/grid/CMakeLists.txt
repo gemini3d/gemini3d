@@ -1,4 +1,4 @@
-configure_file(mesh.in.f90 mesh.f90)
+configure_file(mesh.in.f90 mesh.f90 @ONLY)
 add_library(mesh OBJECT ${CMAKE_CURRENT_BINARY_DIR}/mesh.f90)
 
 add_library(grid OBJECT grid.f90 read.f90 check.f90

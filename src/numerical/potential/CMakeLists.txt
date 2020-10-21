@@ -1,6 +1,6 @@
 # make mumps usage precision-agnostic
 # this is needed because Mumps uses Fortran 95 syntax instead of Fortran 2003 syntax
-configure_file(mumps_ifc.in.f90 mumps_ifc.f90)
+configure_file(mumps_ifc.in.f90 mumps_ifc.f90 @ONLY)
 add_library(mumps_interface OBJECT ${CMAKE_CURRENT_BINARY_DIR}/mumps_ifc.f90)
 target_link_libraries(mumps_interface PRIVATE MUMPS::MUMPS)
 

@@ -4,6 +4,6 @@ else()
   set(sgbsv "error stop 'Lapack did not seem to have real32 enabled. File GitHub issue for Gemini'")
 endif()
 
-configure_file(gbsv.in.f90 gbsv.f90)
+configure_file(gbsv.in.f90 gbsv.f90 @ONLY)
 
 add_library(gbsv OBJECT ${CMAKE_CURRENT_BINARY_DIR}/gbsv.f90)

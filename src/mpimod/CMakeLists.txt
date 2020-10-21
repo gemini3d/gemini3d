@@ -4,7 +4,7 @@ else()
   set(mpi_realprec mpi_double_precision)
 endif()
 
-configure_file(mpimod.in.f90 mpimod.f90)
+configure_file(mpimod.in.f90 mpimod.f90 @ONLY)
 
 add_library(mpimod OBJECT
   ${CMAKE_CURRENT_BINARY_DIR}/mpimod.f90

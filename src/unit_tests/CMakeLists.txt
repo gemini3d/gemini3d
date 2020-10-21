@@ -14,7 +14,7 @@ if("d" IN_LIST arith)
 elseif("s" IN_LIST arith)
   set(lamch "pslamch")
 endif()
-configure_file(test_scalapack.in.f90 test_scalapack.f90)
+configure_file(test_scalapack.in.f90 test_scalapack.f90 @ONLY)
 add_executable(gemini_scalapack ${CMAKE_CURRENT_BINARY_DIR}/test_scalapack.f90)
 target_link_libraries(gemini_scalapack SCALAPACK::SCALAPACK LAPACK::LAPACK MPI::MPI_Fortran)
 

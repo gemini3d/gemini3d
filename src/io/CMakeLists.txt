@@ -9,7 +9,7 @@ if(CMAKE_Fortran_COMPILER_ID STREQUAL Intel)
 else()
   set(dir_exist "inquire(file=path, exist=exists)")
 endif()
-configure_file(pathlib.in.f90 pathlib.f90)
+configure_file(pathlib.in.f90 pathlib.f90 @ONLY)
 
 add_library(pathlib OBJECT ${CMAKE_CURRENT_BINARY_DIR}/pathlib.f90)
 if(WIN32)
