@@ -43,21 +43,18 @@ integer :: i, L
 logical :: exists
 character(*), parameter :: suffix(3) = [character(4) :: '.h5', '.nc', '.dat' ]
 
-if(len_trim(path) == 0) return
+fn = trim(path)  !< first to avoid undefined return
 
-fn = trim(path)
+if(len(fn) == 0) return
 
 if(present(stem)) then
-  if(index(path, stem, back=.true.) == 0) then
+  if(index(fn, stem, back=.true.) == 0) then
     !> assume we wish to append stem to path
     fn = fn // '/' // stem
-  elseif(index(path, '.', back=.true.) > 4) then
+  elseif(index(fn, '.', back=.true.) > 4) then
     !> it's a stem-matching full path with a suffix
     inquire(file=fn, exist=exists)
-    if(.not. exists) then
-      write(stderr,*) 'ERROR:pathlib:get_filename: ',fn, ' does not exist'
-      fn = ''
-    endif
+    if(.not. exists) fn = ''
     return
   endif
 endif
