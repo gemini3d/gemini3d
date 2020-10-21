@@ -2,8 +2,8 @@
 function(matlab_compare outdir refdir testname)
 
 add_test(NAME gemini:compare:${testname}:matlab
-  COMMAND ${Matlab_MAIN_PROGRAM} -batch "setup; gemini3d.compare_all('${outdir}', '${refdir}')"
-  WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
+COMMAND ${Matlab_MAIN_PROGRAM} -batch "run('${CMAKE_CURRENT_SOURCE_DIR}/setup.m'); gemini3d.compare_all('${outdir}', '${refdir}')"
+)
 
 set_tests_properties(gemini:compare:${testname}:matlab PROPERTIES
 TIMEOUT 120
