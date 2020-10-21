@@ -199,7 +199,7 @@ end if
 end subroutine thermal_conduct
 
 
-subroutine conductivities(nn,Tn,ns,Ts,vs1,B1,sig0,sigP,sigH,muP,muH,muPvn,muHvn,sigPgrav,sigHgrav)
+subroutine conductivities(nn,Tn,ns,Ts,vs1,B1,sig0,sigP,sigH,muP,muH,nusn,sigPgrav,sigHgrav)
 
 !------------------------------------------------------------
 !-------COMPUTE THE CONDUCTIVITIES OF THE IONOSPHERE.  STATE
@@ -211,11 +211,12 @@ real(wp), dimension(:,:,:), intent(in) :: Tn
 real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns,Ts,vs1
 real(wp), dimension(-1:,-1:,-1:), intent(in) :: B1
 real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4), intent(out) :: sig0,sigP,sigH
-real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,lsp), intent(out) :: muP,muH,muPvn,muHvn
+real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,lsp), intent(out) :: muP,muH
+real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,lsp), intent(out) :: nusn    !defined for each ion species, summed over neutral species
 
 integer :: isp,isp2,lx1,lx2,lx3
 real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: OMs
-real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: nu,nuej,Phisj,Psisj,nutmp,mupar,mubase,rho
+real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: nuej,Phisj,Psisj,nutmp,mupar,mubase,rho
 real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4), intent(out) :: sigPgrav,sigHgrav
 
 lx1=size(Ts,1)-4
@@ -234,14 +235,14 @@ do isp=1,lsp
   !! cyclotron, a negative sign from B1 here is fine for cartesian, but for dipole this should be the magnitude
   !! since the magnetic field is *assumed* to be along the x1-direction
 
-  nu = 0
+  nusn(:,:,:,isp) = 0._wp
   do isp2=1,ln
     call maxwell_colln(isp,isp2,nn,Tn,Ts,nutmp)
-    nu=nu+nutmp
+    nusn(:,:,:,isp)=nusn(:,:,:,isp)+nutmp
   end do
 
   if (isp<lsp) then
-    mubase=qs(isp)/ms(isp)/nu      !parallel mobility
+    mubase=qs(isp)/ms(isp)/nusn(:,:,:,isp)      !parallel mobility
   else
     nuej = 0
     do isp2=1,lsp
@@ -249,17 +250,17 @@ do isp=1,lsp
       nuej=nuej+nutmp
     end do
 
-    mupar=qs(lsp)/ms(lsp)/(nu+nuej)
-    mubase=qs(lsp)/ms(lsp)/nu
+    mupar=qs(lsp)/ms(lsp)/(nusn(:,:,:,isp)+nuej)
+    mubase=qs(lsp)/ms(lsp)/nusn(:,:,:,isp)
   end if
 
-  !modified mobilities for neutral wind calculations
-  muPvn(:,:,:,isp)=nu**2/(nu**2+OMs**2)
-  muHvn(:,:,:,isp)=-1.0_wp*nu*OMs/(nu**2+OMs**2)
+  !modified mobilities for neutral wind calculations; these are deprecated since we output collision freq.
+!  muPvn(:,:,:,isp)=nu**2/(nu**2+OMs**2)
+!  muHvn(:,:,:,isp)=-1.0_wp*nu*OMs/(nu**2+OMs**2)
 
   !electrical mobilities
-  muP(:,:,:,isp)=mubase*muPvn(:,:,:,isp)           !Pederson
-  muH(:,:,:,isp)=mubase*muHvn(:,:,:,isp)       !Hall
+  muP(:,:,:,isp)=mubase*nusn(:,:,:,isp)**2/(nusn(:,:,:,isp)**2+OMs**2)                !Pederson
+  muH(:,:,:,isp)=mubase*-1.0_wp*nusn(:,:,:,isp)*OMs/(nusn(:,:,:,isp)**2+OMs**2)       !Hall
 
   !gravity mobilities???
 end do
