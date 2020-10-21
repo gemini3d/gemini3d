@@ -40,6 +40,7 @@ interface potential_root_mpi
   module procedure potential_root_mpi_curv
 end interface potential_root_mpi
 
+!> FIXME:  need to add mobilities as input if pressure terms are calculated...
 interface ! potential_worker.f90
   module subroutine potential_workers_mpi(it,t,dt,sig0,sigP,sigH,sigPgrav,sigHgrav, &
                                             incap,vs2,vs3,vn2,vn3,cfg,B1,x, &
@@ -60,6 +61,7 @@ interface ! potential_worker.f90
   end subroutine potential_workers_mpi
 end interface
 
+!> FIXME:  mobilities needed from pressure-driven current terms
 interface ! potential_root.f90
   module subroutine potential_root_mpi_curv(it,t,dt,sig0,sigP,sigH,sigPgrav,sigHgrav, &
                                               incap,vs2,vs3,vn2,vn3,cfg,B1,x, &
@@ -266,6 +268,7 @@ end if
 end subroutine velocities
 
 
+!>FIXME:  also needs the mobilities as input now due to pressure current terms.
 subroutine potential_sourceterms(sigP,sigH,sigPgrav,sigHgrav,E02,E03,vn2,vn3,B1,x,flaggravdrift,srcterm)
 
 !> Compute source terms (inhomogeneous terms) for the potential equation to be solved.  Both root and workers
@@ -286,13 +289,11 @@ real(wp), dimension(-1:size(E02,1)+2,-1:size(E02,2)+2,-1:size(E02,3)+2) :: J1hal
 integer :: lx1,lx2,lx3
 
 
-!> sizes from the mobility coefficients
+!> sizes from the conductivity coefficients
 lx1=size(sigP,1)
 lx2=size(sigP,2)
 lx3=size(sigP,3)
 
-
-! FIXME:  why not accumulate the currents then only compute divergence once???  Should also just halo once???
 
 !-------
 !CONDUCTION CURRENT BACKGROUND SOURCE TERMS FOR POTENTIAL EQUATION. MUST COME AFTER CALL TO BC CODE.
@@ -309,7 +310,7 @@ if (flaggravdrift) then
   call acc_perpgravcurrents(sigPgrav,sigHgrav,g2,g3,J2,J3)
   if (debug .and. mpi_cfg%myid==0) print *, 'Workers has computed gravitational currents...'
 end if
-!! FIXME:  need to add in pressure currents and then take divergence
+!> FIXME:  need to add in pressure currents and then take divergence, also need mobilities for pressure currents.
 
 J1halo(1:lx1,1:lx2,1:lx3)=J1     
 !! temporary extended arrays to be populated with boundary data
@@ -402,7 +403,7 @@ end if
 end subroutine acc_perpgravcurrents
 
 
-!> subroutine acc_pressurecurrents(musP,musH,ns,Ts,J2,J3)
+!> subroutine acc_pressurecurrents(muP,muH,ns,Ts,J2,J3)
 
 
 subroutine pot2perpfield(Phi,x,E2,E3)
