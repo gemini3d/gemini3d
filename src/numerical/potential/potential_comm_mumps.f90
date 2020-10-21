@@ -116,7 +116,7 @@ integer, dimension(3), intent(in) :: ymd
 real(wp), intent(in) :: UTsec
 
 real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: sig0,sigP,sigH,sigPgrav,sigHgrav
-real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,1:size(ns,4)) :: muP,muH,muPvn,muHvn
+real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,1:size(ns,4)) :: muP,muH,nusn
 real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: incap
 real(wp) :: tstart,tfin
 
@@ -135,7 +135,7 @@ lx3=size(ns,3)-4
 call cpu_time(tstart)
 !> FIXME: instead of muvn output just electrical mobility + total collision freq. then all other terms follow
 ! ??? another sigma for pressure term???  Any way to do this without wasting more memory...  Sigmas as 3D arrays so not too bad...
-call conductivities(nn,Tn,ns,Ts,vs1,B1,sig0,sigP,sigH,muP,muH,muPvn,muHvn,sigPgrav,sigHgrav)
+call conductivities(nn,Tn,ns,Ts,vs1,B1,sig0,sigP,sigH,muP,muH,nusn,sigPgrav,sigHgrav)
 
 
 ! Error checking for cap. vs. grid types
@@ -179,7 +179,7 @@ if (cfg%potsolve == 1 .or. cfg%potsolve == 3) then    !electrostatic solve or el
   end if
 
   ! Compute velocity from mobilities and fields
-  call velocities(muP,muH,muPvn,muHvn,E2,E3,vn2,vn3,cfg%flaggravdrift,vs2,vs3)
+  call velocities(muP,muH,nusn,E2,E3,vn2,vn3,cfg%flaggravdrift,vs2,vs3)
 
   call cpu_time(tfin)
 
@@ -198,12 +198,12 @@ end if
 end subroutine electrodynamics_curv
 
 
-subroutine velocities(muP,muH,muPvn,muHvn,E2,E3,vn2,vn3,flaggravdrift,vs2,vs3)
+subroutine velocities(muP,muH,nusn,E2,E3,vn2,vn3,flaggravdrift,vs2,vs3)
 
 !> compute steady state drifts resulting from a range of forces.  Can be used
 !   by both root and worker processes
 
-real(wp), dimension(:,:,:,:), intent(in) :: muP,muH,muPvn,muHvn
+real(wp), dimension(:,:,:,:), intent(in) :: muP,muH,nusn
 real(wp), dimension(:,:,:), intent(in) :: E2,E3,vn2,vn3
 logical, intent(in) :: flaggravdrift
 real(wp), dimension(-1:,-1:,-1:,:), intent(out) :: vs2,vs3   !> these have ghost cells
@@ -222,13 +222,17 @@ lsp=size(muP,4)
 !> electric field and wind terms for ion drifts
 if(flagswap/=1) then
   do isp=1,lsp
-    vs2(1:lx1,1:lx2,1:lx3,isp)=muP(:,:,:,isp)*E2-muH(:,:,:,isp)*E3+muPvn(:,:,:,isp)*vn2-muHvn(:,:,:,isp)*vn3
-    vs3(1:lx1,1:lx2,1:lx3,isp)=muH(:,:,:,isp)*E2+muP(:,:,:,isp)*E3+muHvn(:,:,:,isp)*vn2+muPvn(:,:,:,isp)*vn3
+    vs2(1:lx1,1:lx2,1:lx3,isp)=muP(:,:,:,isp)*E2-muH(:,:,:,isp)*E3+ &
+                      (muP(:,:,:,isp)*vn2-muH(:,:,:,isp)*vn3)*(ms(isp)*nusn(:,:,:,isp)/qs(isp))
+    vs3(1:lx1,1:lx2,1:lx3,isp)=muH(:,:,:,isp)*E2+muP(:,:,:,isp)*E3+ &
+                      (muP(:,:,:,isp)*vn2+muH(:,:,:,isp)*vn3)*ms(isp)*nusn(:,:,:,isp)/qs(isp)
   end do
 else                !flip signs on the cross products in 2D.  Note that due to dimension shuffling E2,3 mapping is already handled
   do isp=1,lsp
-    vs2(1:lx1,1:lx2,1:lx3,isp)=muP(:,:,:,isp)*E2+muH(:,:,:,isp)*E3+muPvn(:,:,:,isp)*vn2+muHvn(:,:,:,isp)*vn3
-    vs3(1:lx1,1:lx2,1:lx3,isp)=-muH(:,:,:,isp)*E2+muP(:,:,:,isp)*E3-muHvn(:,:,:,isp)*vn2+muPvn(:,:,:,isp)*vn3
+    vs2(1:lx1,1:lx2,1:lx3,isp)=muP(:,:,:,isp)*E2+muH(:,:,:,isp)*E3+ &
+                      (muP(:,:,:,isp)*vn2+muH(:,:,:,isp)*vn3)*ms(isp)*nusn(:,:,:,isp)/qs(isp)
+    vs3(1:lx1,1:lx2,1:lx3,isp)=-muH(:,:,:,isp)*E2+muP(:,:,:,isp)*E3- &
+                      (muH(:,:,:,isp)*vn2+muP(:,:,:,isp)*vn3)*ms(isp)*nusn(:,:,:,isp)/qs(isp)
   end do
 end if
 

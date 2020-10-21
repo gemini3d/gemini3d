@@ -89,7 +89,7 @@ character(:), allocatable :: filetmp
 
 !> For reproducing initial drifts; these are allocated and the deallocated since they can be large
 real(wp), dimension(:,:,:), allocatable :: sig0,sigP,sigH,sigPgrav,sigHgrav
-real(wp), dimension(:,:,:,:), allocatable :: muP,muH,muPvn,muHvn
+real(wp), dimension(:,:,:,:), allocatable :: muP,muH,nusn
 real(wp), dimension(:,:,:), allocatable :: E01,E02,E03
 
 !> Describing Lagrangian grid (if used)
@@ -257,10 +257,10 @@ end if
 
 !> Recompute drifts and make some decisions about whether to invoke a Lagrangian grid
 allocate(sig0(lx1,lx2,lx3),sigP(lx1,lx2,lx3),sigH(lx1,lx2,lx3),sigPgrav(lx1,lx2,lx3),sigHgrav(lx1,lx2,lx3))
-allocate(muP(lx1,lx2,lx3,lsp),muH(lx1,lx2,lx3,lsp),muPvn(lx1,lx2,lx3,lsp),muHvn(lx1,lx2,lx3,lsp))
-call conductivities(nn,Tn,ns,Ts,vs1,B1,sig0,sigP,sigH,muP,muH,muPvn,muHvn,sigPgrav,sigHgrav)
-call velocities(muP,muH,muPvn,muHvn,E2,E3,vn2,vn3,cfg%flaggravdrift,vs2,vs3)
-deallocate(sig0,sigP,sigH,muP,muH,muPvn,muHvn,sigPgrav,sigHgrav)
+allocate(muP(lx1,lx2,lx3,lsp),muH(lx1,lx2,lx3,lsp),nusn(lx1,lx2,lx3,lsp))
+call conductivities(nn,Tn,ns,Ts,vs1,B1,sig0,sigP,sigH,muP,muH,nusn,sigPgrav,sigHgrav)
+call velocities(muP,muH,nusn,E2,E3,vn2,vn3,cfg%flaggravdrift,vs2,vs3)
+deallocate(sig0,sigP,sigH,muP,muH,nusn,sigPgrav,sigHgrav)
 deallocate(E01,E02,E03)
 if(mpi_cfg%myid==0) then
   print*, 'Recomputed initial drifts:  '
