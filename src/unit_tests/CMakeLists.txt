@@ -36,6 +36,6 @@ set_tests_properties(unit:mumps_basic PROPERTIES
 TIMEOUT 15
 PROCESSORS 2
 SKIP_RETURN_CODE 77
-RUN_SERIAL true
+RESOURCE_LOCK cpu_mpi
 FIXTURES_REQUIRED scalapack_fixture
 FIXTURES_SETUP mumps_fixture)

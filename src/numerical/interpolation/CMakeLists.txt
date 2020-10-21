@@ -31,7 +31,7 @@ add_test(NAME unit:interp3
   WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
 set_tests_properties(unit:interp3 PROPERTIES
   TIMEOUT 60  # need 60 for slow CPU
-#  RUN_SERIAL true  # for low RAM systems
+  RESOURCE_LOCK cpu_ram
   FIXTURES_SETUP GemInterp3)
 
 
@@ -48,7 +48,7 @@ add_test(NAME unit:interp3:python
 set_tests_properties(unit:interp3:python PROPERTIES
   REQUIRED_FILES "${_testfile_interp3};${_testfile_interp3in}"
   TIMEOUT 30
-#  RUN_SERIAL true  # due to memory use
+  RESOURCE_LOCK cpu_ram
   FIXTURES_REQUIRED GemInterp3)
 endif(python_ok)
 
