@@ -356,7 +356,9 @@ do while (t < tdur)
 
   !> FIXME:  MZ - shouldn't this be done for all workers; also how much overhead does this incur every time step???
   !> Sanity check key variables before advancing
-  call check_finite_output(t, myid, vs2,vs3,ns,vs1,Ts,Phiall,J1,J2,J3)
+  !> TODO: taking off `if(myid==0)` makes segfaults when using Matlab on Windows, or with GCC 7.5 on CentOS 7
+  !> at least. Phi is the wrong shape (all 1,1,1 on workers, proper size on root)
+  if (myid==0) call check_finite_output(t, myid, vs2,vs3,ns,vs1,Ts,Phiall,J1,J2,J3)
 
   !> NOW OUR SOLUTION IS FULLY UPDATED SO UPDATE TIME VARIABLES TO MATCH...
   it = it + 1
