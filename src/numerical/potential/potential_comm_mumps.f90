@@ -8,7 +8,7 @@ module potential_comm
 
 use, intrinsic :: ieee_arithmetic
 
-use phys_consts, only: wp, pi, lsp, debug, ms, qs
+use phys_consts, only: wp, pi, lsp, debug, ms, qs, kB
 use grid, only: flagswap, gridflag, lx1,lx2all,lx3all, g1,g2,g3
 use mesh, only: curvmesh
 use collisions, only: conductivities, capacitance
@@ -181,7 +181,7 @@ if (cfg%potsolve == 1 .or. cfg%potsolve == 3) then    !electrostatic solve or el
   end if
 
   ! Compute velocity from mobilities and fields
-  call velocities(muP,muH,nusn,E2,E3,vn2,vn3,cfg%flaggravdrift,vs2,vs3)
+  call velocities(muP,muH,nusn,E2,E3,vn2,vn3,ns,Ts,cfg%flaggravdrift,.true.,vs2,vs3)
 
   call cpu_time(tfin)
 
@@ -200,14 +200,16 @@ end if
 end subroutine electrodynamics_curv
 
 
-subroutine velocities(muP,muH,nusn,E2,E3,vn2,vn3,flaggravdrift,vs2,vs3)
+subroutine velocities(muP,muH,nusn,E2,E3,vn2,vn3,ns,Ts,flaggravdrift,flagdiamagnetic,vs2,vs3)
 
 !> compute steady state drifts resulting from a range of forces.  Can be used
 !   by both root and worker processes
 
 real(wp), dimension(:,:,:,:), intent(in) :: muP,muH,nusn
 real(wp), dimension(:,:,:), intent(in) :: E2,E3,vn2,vn3
+real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns,Ts
 logical, intent(in) :: flaggravdrift
+logical, intent(in) :: flagdiamagnetic
 real(wp), dimension(-1:,-1:,-1:,:), intent(out) :: vs2,vs3   !> these have ghost cells
 
 integer :: lx1,lx2,lx3,lsp,isp
@@ -239,6 +241,29 @@ else                !flip signs on the cross products in 2D.  Note that due to d
 end if
 
 !> Pressure/diamagnetic terms (optional)
+if (flagdiamagnetic) then
+  if(flagswap/=1) then
+    do isp=1,lsp
+      ! compute pressure from n,T
+      pressure=ns(1:lx1,1:lx2,1:lx3,isp)*kB*Ts(1:lx1,1:lx2,1:lx3,isp)
+      ! boundary fill via haloing
+      ! compute gradient x2,x3 components
+      gradpx=grad3D2(pressure,x,1,lx1,1,lx2,1,lx3)
+      gradpy=grad3D3(pressure,x,1,lx1,1,lx2,1,lx3)
+      vs2(1:lx1,1:lx2,1:lx3,isp)=vs2(1:lx1,1:lx2,1:lx3,isp) &
+                -muP/ns(1:lx1,1:lx2,1:lx3,isp)/qs(isp)*gradpx &
+                +muH/ns(1:lx1,1:lx2,1:lx3,isp)/qs(isp)*gradpy
+      vs3(1:lx1,1:lx2,1:lx3,isp)=vs3(1:lx1,1:lx2,1:lx3,isp) &
+                -muH/ns(1:lx1,1:lx2,1:lx3,isp)/qs(isp)*gradpx &
+                -muP/ns(1:lx1,1:lx2,1:lx3,isp)/qs(isp)*gradpy
+    end do
+  else
+    do isp=1,lsp
+      vs2(1:lx1,1:lx2,1:lx3,isp)=vs2(1:lx1,1:lx2,1:lx3,isp)  !!!FIXME:  need to fix signs from odd permutation of coords.
+      vs3(1:lx1,1:lx2,1:lx3,isp)=vs3(1:lx1,1:lx2,1:lx3,isp)
+    end do
+  end if
+end if
 
 !> Gravitational drift terms (if required)
 if (flaggravdrift) then
