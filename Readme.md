@@ -37,7 +37,7 @@ CPU arch support includes Intel / AMD, ARM and IBM POWER.
 GEMINI can run on hardware ranging from a Raspberry Pi to laptop to a high-performance computing (HPC) cluster.
 One could run large 2D or very small 3D simulations (not exceeding a few million grid points) on a quad-core workstation, but may take quite a while to complete.
 
-For large 3D simulations (more than 20M grid points), GEMINI should be run in a cluster environment or a "large" multicore workstation (e.g. 12 or more cores).
+For large 3D simulations (more than 20M grid points), GEMINI should be run in a cluster environment or a "large" multi-core workstation (e.g. 12 or more cores).
 Runtime depends heavily on the grid spacing used, which determines the time step needed to insure stability,
 For example we have found that a 20M grid point simulations takes about  4 hours on 72 Xeon E5 cores.  200M grid point simulations can take up to a week on 256 cores.
 It has generally been found that acceptable performance requires > 1GB memory per core; moreover, a large amount of storage (hundreds of GB to several TB) is needed to store results from large simulations.
@@ -103,6 +103,12 @@ If using Homebrew on MacOS, be sure Homebrew's GCC is used instead of AppleClang
     python -m gemini3d.run /path_to/config.nml /path_to/sim_out/
     ```
 
+### Windows
+
+Occasionally on Windows you may get a system error code `0xc0000005` when trying to run Gemini.
+This typically requires rebooting the Windows computer.
+If this is annoying, please let us know--it happens rarely enough that we're not sure if it's a Microsoft MPI bug or something else.
+
 ## Prerequisites
 
 Gemini uses CMake build system to automatically build the entire software library stack,
@@ -127,7 +133,7 @@ If it's desired to use:
     mumps_par%ICNTL(14)=50
     ```
 4. There are potentially some issues with the way the stability condition is evaluated, i.e. it is computed before the perp. drifts are solved so it is possible when using input data to overrun this especially if your target CFL number is &gt; 0.8 or so.  Some code has been added as of 8/20/2018 to throttle how much dt is allowed to change between time steps and this seems to completely fix this issue, but theoretically it could still happen; however this is probably very unlikely.
-5. Occasionally one will see edge artifacts in either the field -aligned currents or other parameters for non-periodic in x3 solves.  This may be related to the divergence calculations needed for the parallel current (under EFL formulation) and for compression calculations in the multifluid module, but this needs to be investigated further...  This do not appear to affect solutions in the interior of the grid domain and can probably be safely ignored if your region of interest is sufficiently far from the boundary (which is alway good practice anyway).
+5. Occasionally one will see edge artifacts in either the field -aligned currents or other parameters for non-periodic in x3 solves.  This may be related to the divergence calculations needed for the parallel current (under EFL formulation) and for compression calculations in the multifluid module, but this needs to be investigated further...  This do not appear to affect solutions in the interior of the grid domain and can probably be safely ignored if your region of interest is sufficiently far from the boundary (which is always good practice anyway).
 
 ## Command-line options
 
@@ -180,7 +186,7 @@ GEMINI uses Python for essential interfaces, plotting and analysis.
 Matlab scripts relevant to Gemini to
 [mat_gemini repo](https://github.com/gemini3d/mat_gemini).
 
-Only the essential scripts needed to setup a simple example, and plot the results are included in the main GEMINI respository.
+Only the essential scripts needed to setup a simple example, and plot the results are included in the main GEMINI repository.
 The [Gemini-scripts](https://github.com/gemini3d/GEMINI-scripts)
 and
 [Gemini-examples](https://github.com/gemini3d/GEMINI-examples)
@@ -191,7 +197,7 @@ See [Readme_output](./docs/Readme_output.md) for a description of how to load th
 An auxiliary program, magcalc.f90, can be used to compute magnetic field perturbations from a complete disturbance simulation.  See [Readme_magcalc](./docs/Readme_magcalc.md) for a full description of how this program works.
 
 
-## List of other associated readmes
+## List of other associated Readmes
 
 1. [Readme_output](./docs/Readme_output.md)
 2. [Readme_input](./docs/Readme_input.md)
