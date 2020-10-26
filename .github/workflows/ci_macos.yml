@@ -37,6 +37,7 @@ jobs:
     - run: ctest -S setup.cmake -E 3d -VV
 
   no_mpi:
+    needs: hdf5
     runs-on: macos-latest
     steps:
     - uses: actions/checkout@v2

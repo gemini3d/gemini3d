@@ -27,8 +27,73 @@ jobs:
     - name: Install packages
       run: |
         sudo apt update -yq
-        sudo apt install -yq --no-install-recommends pkg-config gfortran libopenmpi-dev liblapack-dev libscalapack-openmpi-dev libmumps-dev libhdf5-dev
+        sudo apt install -yq --no-install-recommends gfortran libopenmpi-dev liblapack-dev libscalapack-openmpi-dev libmumps-dev libhdf5-dev
         python -m pip install ninja
 
 # CI is too slow for 3d_glow
+    - run: ctest -S setup.cmake -E 3d -VV
+
+
+  debug:
+    needs: hdf5
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
+      with:
+        python-version: '3.8'
+
+    - name: Install prereqs
+      run: |
+        sudo apt update -yq
+        sudo apt install -yq --no-install-recommends gfortran libopenmpi-dev liblapack-dev libscalapack-openmpi-dev libmumps-dev libhdf5-dev
+
+    - run: cmake -B build -DCMAKE_BUILD_TYPE=Debug
+
+    - run: ctest -S setup.cmake -R unit -VV
+    - uses: actions/upload-artifact@v1
+      if: failure()
+      with:
+        name: Linux_CMake_DebugBuildlog
+        path: build/CMakeFiles/CMakeError.log
+
+    - run: ctest -S setup.cmake -R 2dew_fang -VV
+
+
+  autobuild_no_mpi:
+    needs: debug
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
+      with:
+        python-version: '3.8'
+
+    - run: python -m pip install ninja
+
+    - name: build and test without MPI
+      run: ctest -S setup.cmake -R unit -VV
+
+    - name: 2D test without MPI
+      run: ctest -R 2dew_fang -VV
+      working-directory: build
+
+
+  autobuild_mpi:
+    needs: debug
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
+      with:
+        python-version: '3.8'
+
+    - name: Install packages
+      run: |
+        sudo apt update -yq
+        sudo apt install -yq --no-install-recommends gfortran libopenmpi-dev
+        python -m pip install ninja
+
+    - run: ctest -S setup.cmake -R unit -VV
+
     - run: ctest -S setup.cmake -E 3d -VV
