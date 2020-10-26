@@ -259,16 +259,15 @@ call init_neutrals(dt,t,cfg,ymd,UTsec,x,v2grid,v3grid,nn,Tn,vn1,vn2,vn3)
 
 !> Recompute electrodynamic quantities needed for restarting
 ! these do not include background
-E1 = 0._wp
+E1 = 0
 call pot2perpfield(Phi,x,E2,E3)
 if(myid==0) then
-  print*, 'Recomputed initial dist. fields:  ',myid
+  print '(A)', 'Recomputed initial dist. fields:'
   print*, '    gemini ',minval(E1),maxval(E1)
   print*, '    gemini ',minval(E2),maxval(E2)
   print*, '    gemini ',minval(E3),maxval(E3)
-end if
-if(myid==0) then
-  print*, 'Recomputed initial BG fields:  '
+
+  print*, 'Recomputed initial BG fields:'
   print*, '    ',minval(E01),maxval(E01)
   print*, '    ',minval(E02),maxval(E02)
   print*, '    ',minval(E03),maxval(E03)
@@ -356,9 +355,7 @@ do while (t < tdur)
 
   !> FIXME:  MZ - shouldn't this be done for all workers; also how much overhead does this incur every time step???
   !> Sanity check key variables before advancing
-  !> TODO: taking off `if(myid==0)` makes segfaults when using Matlab on Windows, or with GCC 7.5 on CentOS 7
-  !> at least. Phi is the wrong shape (all 1,1,1 on workers, proper size on root)
-  if (myid==0) call check_finite_output(t, myid, vs2,vs3,ns,vs1,Ts,Phiall,J1,J2,J3)
+  call check_finite_output(t, myid, vs2,vs3,ns,vs1,Ts, Phi,J1,J2,J3)
 
   !> NOW OUR SOLUTION IS FULLY UPDATED SO UPDATE TIME VARIABLES TO MATCH...
   it = it + 1
