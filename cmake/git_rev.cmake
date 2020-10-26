@@ -20,11 +20,20 @@ string(SUBSTRING ${git_branch} 0 ${_max_len} git_branch)
 endif(git_branch)
 
 # git describe --tags can make CI error fatal: No names found, cannot describe anything.
-execute_process(COMMAND ${GIT_EXECUTABLE} rev-parse --short HEAD
-OUTPUT_VARIABLE git_rev OUTPUT_STRIP_TRAILING_WHITESPACE)
+execute_process(COMMAND ${GIT_EXECUTABLE} describe --tags
+OUTPUT_VARIABLE git_rev OUTPUT_STRIP_TRAILING_WHITESPACE
+RESULT_VARIABLE _err)
+
+if(NOT _err EQUAL 0)
+  execute_process(COMMAND ${GIT_EXECUTABLE} rev-parse --short HEAD
+  OUTPUT_VARIABLE git_rev OUTPUT_STRIP_TRAILING_WHITESPACE)
+endif()
+
 if(git_rev)
-string(SUBSTRING ${git_rev} 0 ${_max_len} git_rev)
+  string(SUBSTRING ${git_rev} 0 ${_max_len} git_rev)
 endif(git_rev)
+
+string(APPEND git_rev " ${PROJECT_VERSION}")
 
 set(git_porcelain .true.)
 execute_process(COMMAND ${GIT_EXECUTABLE} status --porcelain
