@@ -1,6 +1,8 @@
 
 function(matlab_compare outdir refdir testname)
 
+if(hdf5 OR netcdf)
+
 add_test(NAME gemini:compare:${testname}:matlab
 COMMAND ${Matlab_MAIN_PROGRAM} -batch "run('${CMAKE_CURRENT_SOURCE_DIR}/setup.m'); gemini3d.compare_all('${outdir}', '${refdir}')"
 )
@@ -10,6 +12,8 @@ TIMEOUT 120
 FIXTURES_REQUIRED "hdf5:${testname};netcdf:${testname}"
 REQUIRED_FILES ${outdir}/inputs/config.nml
 SKIP_RETURN_CODE 77)
+
+endif()
 
 endfunction(matlab_compare)
 
