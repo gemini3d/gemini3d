@@ -17,6 +17,8 @@ else()
   return()
 endif()
 
+target_link_libraries(SCALAPACK::SCALAPACK INTERFACE LAPACK::LAPACK)
+
 if(lapack_external)
 # can't run prebuild test with external libraries not yet built.
   return()
@@ -27,7 +29,7 @@ endif()
 set(CMAKE_REQUIRED_FLAGS)
 set(CMAKE_REQUIRED_LINK_OPTIONS)
 set(CMAKE_REQUIRED_INCLUDES)
-set(CMAKE_REQUIRED_LIBRARIES SCALAPACK::SCALAPACK LAPACK::LAPACK MPI::MPI_Fortran)
+set(CMAKE_REQUIRED_LIBRARIES SCALAPACK::SCALAPACK MPI::MPI_Fortran)
 # MPI needed for ifort
 include(CheckFortranSourceCompiles)
 

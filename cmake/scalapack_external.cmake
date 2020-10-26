@@ -12,3 +12,5 @@ FetchContent_MakeAvailable(scalapack_proj)
 
 set(SCALAPACK_FOUND true)
 set(BLACS_FOUND true)
+
+target_link_libraries(SCALAPACK::SCALAPACK INTERFACE LAPACK::LAPACK)

@@ -19,8 +19,7 @@ if(hdf5 AND ${PROJECT_NAME}_BUILD_TESTING)
 set(_potential_testfile ${CMAKE_CURRENT_BINARY_DIR}/test_potential2d.h5)
 
 add_executable(test_potential2d test_potential2D.f90)
-target_link_libraries(test_potential2d PRIVATE const PDEelliptic h5fortran::h5fortran
- MUMPS::MUMPS MPI::MPI_C MPI::MPI_Fortran)
+target_link_libraries(test_potential2d PRIVATE const PDEelliptic h5fortran::h5fortran MPI::MPI_C MPI::MPI_Fortran)
 # yes, MPI_C is neeced here, else will not compile on MinGW with Ninja or Make.
 # LINK_INTERFACE_MULTIPLICITY and IMPORTED_LINK_INTERFACE_MULTIPLICITY do not help here.
 # adding INTERFACE to Mumps project didn't help either
