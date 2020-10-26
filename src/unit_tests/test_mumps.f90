@@ -1,10 +1,12 @@
 program test_mumps
 
 use, intrinsic :: iso_fortran_env, only: stderr=>error_unit, i64=>int64, compiler_version, compiler_options
-use mpi
+use mpi, only : mpi_init, mpi_comm_world
 use mumps_interface, only: mumps_struc, mumps_exec
 
-implicit none
+implicit none (type, external)
+
+external :: mpi_finalize
 
 type(mumps_struc) :: mumps_par
 integer :: ierr

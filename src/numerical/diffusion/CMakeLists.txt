@@ -1,5 +1,5 @@
 add_library(PDEparabolic OBJECT PDEparabolic.f90)
-target_link_libraries(PDEparabolic PRIVATE const gbsv LAPACK::LAPACK)
+target_link_libraries(PDEparabolic PRIVATE const gbsv)
 
 add_library(diffusion OBJECT diffusion.f90)
 target_link_libraries(diffusion PRIVATE const grid mesh PDEparabolic)

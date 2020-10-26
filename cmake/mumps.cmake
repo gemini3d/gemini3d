@@ -46,17 +46,18 @@ endif()
 
 if(metis)
   find_package(METIS REQUIRED)
-  list(APPEND _mumps_extra METIS::METIS)
+  target_link_libraries(MUMPS::MUMPS INTERFACE METIS::METIS)
 endif()
 
 if(scotch)
   find_package(Scotch REQUIRED COMPONENTS ESMUMPS)
-  list(APPEND _mumps_extra Scotch::Scotch)
+  target_link_libraries(MUMPS::MUMPS INTERFACE Scotch::Scotch)
 endif()
+
 # rather than appending libraries everywhere, just put them together here.
-list(APPEND MUMPS_LIBRARIES SCALAPACK::SCALAPACK LAPACK::LAPACK ${_mumps_extra})
+target_link_libraries(MUMPS::MUMPS INTERFACE SCALAPACK::SCALAPACK LAPACK::LAPACK)
 if(OpenMP_FOUND)
-  list(APPEND MUMPS_LIBRARIES OpenMP::OpenMP_Fortran OpenMP::OpenMP_C)
+  target_link_libraries(MUMPS::MUMPS INTERFACE OpenMP::OpenMP_Fortran OpenMP::OpenMP_C)
 endif()
 
 if(mumps_external OR scalapack_external OR lapack_external OR NOT mpi)
