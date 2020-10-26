@@ -5,7 +5,7 @@ use, intrinsic:: iso_fortran_env, only: stderr=>error_unit
 implicit none (type, external)
 private
 public :: mkdir, copyfile, expanduser, home, get_suffix, filesep_swap, &
-  assert_directory_exists, directory_exists, assert_file_exists,&
+  assert_directory_exists, assert_file_exists,&
   make_absolute, get_filename
 
 interface  ! pathlib_{unix,windows}.f90
@@ -99,10 +99,7 @@ character(*), intent(in) :: path, top_path
 rel = expanduser(path)
 top = expanduser(top_path)
 
-if (.not.directory_exists(top)) then
-  write(stderr,*) 'ERROR: pathlib:make_absolute: ',top,' does not exist'
-  error stop
-endif
+call assert_directory_exists(top)
 
 inquire(file=rel, exist=exists)
 if (exists) then
@@ -118,27 +115,19 @@ end function make_absolute
 subroutine assert_directory_exists(path)
 !! throw error if directory does not exist
 character(*), intent(in) :: path
+logical :: exists
 
-if (directory_exists(path)) return
+@dir_exist@
 
-write(stderr,*) path // ' directory does not exist'
-error stop
+if (exists) return
+
+error stop 'directory does not exist ' // path
 
 end subroutine assert_directory_exists
 
 
-logical function directory_exists(path) result(exists)
-!! check if directory exists, handling Intel compiler-specific behavior
-character(*), intent(in) :: path
-
-@dir_exist@
-
-end function directory_exists
-
-
 subroutine assert_file_exists(path)
-  !! throw error if file does not exist
-  !! this accomodates non-Fortran 2018 error stop with variable character
+!! throw error if file does not exist
 
 character(*), intent(in) :: path
 logical :: exists
@@ -147,8 +136,7 @@ inquire(file=path, exist=exists)
 
 if (exists) return
 
-write(stderr,'(A)') 'ERROR: file does not exist ' // path
-error stop
+error stop 'ERROR: file does not exist ' // path
 
 end subroutine assert_file_exists
 
