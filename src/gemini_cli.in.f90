@@ -1,5 +1,6 @@
 module gemini_cli
 
+use, intrinsic :: iso_fortran_env, only : compiler_version
 use config, only : read_configfile, gemini_cfg, get_compiler_vendor
 use pathlib, only : assert_file_exists, assert_directory_exists, expanduser
 use mpimod, only : mpisetup, mpibreakdown
@@ -69,7 +70,11 @@ do i = 1,size(locs)
   endif
 end do
 
-error stop 'gemini.bin: could not find config file in ' // cfg%outdir
+if (cfg%outdir(1:1) == "-") then
+  error stop 'gemini.bin: not a known CLI option: ' // cfg%outdir
+else
+  error stop 'gemini.bin: could not find config file in ' // cfg%outdir
+endif
 
 end block find_cfg
 
@@ -220,8 +225,9 @@ print '(/,A,/)', 'GEMINI-3D ' // git_revision
 print '(A)', 'by Matthew Zettergren'
 print '(A)', 'GLOW and auroral interfaces by Guy Grubbs'
 print '(A)', 'build system and software engineering by Michael Hirsch'
-print '(A,/)', 'Compiler vendor: '// get_compiler_vendor()
-print '(A)', 'must specify simulation output directory. Example:'
+print '(A)', 'Compiler vendor: '// get_compiler_vendor()
+print '(A)', 'Compiler version: ' // compiler_version()
+print '(/,A)', 'must specify simulation output directory. Example:'
 print '(/,A,/)', '  mpiexec -np 4 build/gemini.bin /path/to/simulation_outputs'
 print '(A)', '-dryrun    allows quick check of first time step'
 print '(A)', '-manual_grid lx2 lx3    defines the number of MPI processes along x2 and x3.'
