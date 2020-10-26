@@ -125,7 +125,7 @@ else                             ! Eulerian grid, use background fields
   E02src=E02; E03src=E03
 end if
 !> FIXME:  also need mobility input for pressure terms
-call potential_sourceterms(sigP,sigH,sigPgrav,sigHgrav,E02src,E03src,vn2,vn3,B1,x,cfg%flaggravdrift,srcterm)
+call potential_sourceterms(sigP,sigH,sigPgrav,sigHgrav,muP,muH,E02src,E03src,vn2,vn3,B1,ns,Ts,x,cfg%flaggravdrift,srcterm)
 
 
 !!!!!!!!
