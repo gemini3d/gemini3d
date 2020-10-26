@@ -43,17 +43,20 @@ end interface potential_root_mpi
 !> FIXME:  need to add mobilities as input if pressure terms are calculated...
 interface ! potential_worker.f90
   module subroutine potential_workers_mpi(it,t,dt,sig0,sigP,sigH,sigPgrav,sigHgrav, &
-                                            incap,vs2,vs3,vn2,vn3,cfg,B1,x, &
+                                            muP,muH, &
+                                            incap,vs2,vs3,vn2,vn3,cfg,B1,ns,Ts,x, &
                                             E1,E2,E3,J1,J2,J3)
 
   integer, intent(in) :: it
   real(wp), intent(in) :: t,dt
   real(wp), dimension(:,:,:), intent(in) ::  sig0,sigP,sigH,sigPgrav,sigHgrav
+  real(wp), dimension(:,:,:,:), intent(in) :: muP,muH
   real(wp), dimension(:,:,:), intent(in) ::  incap
   real(wp), dimension(-1:,-1:,-1:,:), intent(in) ::  vs2,vs3
   real(wp), dimension(:,:,:), intent(in) ::  vn2,vn3
   type(gemini_cfg), intent(in) :: cfg
   real(wp), dimension(-1:,-1:,-1:), intent(in) ::  B1
+  real(wp), dimension(-1:,-1:,-1:,:), intent(in) ::  ns,Ts
 
   type(curvmesh), intent(in) :: x
 
@@ -64,17 +67,20 @@ end interface
 !> FIXME:  mobilities needed from pressure-driven current terms
 interface ! potential_root.f90
   module subroutine potential_root_mpi_curv(it,t,dt,sig0,sigP,sigH,sigPgrav,sigHgrav, &
-                                              incap,vs2,vs3,vn2,vn3,cfg,B1,x, &
+                                              muP,muH, &
+                                              incap,vs2,vs3,vn2,vn3,cfg,B1,ns,Ts,x, &
                                               E1,E2,E3,J1,J2,J3,Phiall,ymd,UTsec)
 
   integer, intent(in) :: it
   real(wp), intent(in) :: t,dt
   real(wp), dimension(:,:,:), intent(in) ::  sig0,sigP,sigH,sigPgrav,sigHgrav
+  real(wp), dimension(:,:,:,:), intent(in) :: muP,muH
   real(wp), dimension(:,:,:), intent(in) ::  incap
   real(wp), dimension(-1:,-1:,-1:,:), intent(in) ::  vs2,vs3
   real(wp), dimension(:,:,:), intent(in) ::  vn2,vn3
   type(gemini_cfg), intent(in) :: cfg
   real(wp), dimension(-1:,-1:,-1:), intent(in) ::  B1
+  real(wp), dimension(-1:,-1:,-1:,:), intent(in) ::  ns,Ts
 
   type(curvmesh), intent(in) :: x
 
@@ -173,15 +179,15 @@ if (cfg%potsolve == 1 .or. cfg%potsolve == 3) then    !electrostatic solve or el
   ! Execute solution for ionospheric potential
   if (mpi_cfg%myid/=0) then    
     !! role-specific communication pattern (all-to-root-to-all), workers initiate with sends
-     call potential_workers_mpi(it,t,dt,sig0,sigP,sigH,sigPgrav,sigHgrav,incap,vs2,vs3, &
-                                 vn2,vn3,cfg,B1,x,E1,E2,E3,J1,J2,J3)
+     call potential_workers_mpi(it,t,dt,sig0,sigP,sigH,sigPgrav,sigHgrav,muP,muH,incap,vs2,vs3, &
+                                 vn2,vn3,cfg,B1,ns,Ts,x,E1,E2,E3,J1,J2,J3)
   else
-    call potential_root_mpi(it,t,dt,sig0,sigP,sigH,sigPgrav,sigHgrav,incap,vs2,vs3,vn2,vn3,cfg,B1,x, &
+    call potential_root_mpi(it,t,dt,sig0,sigP,sigH,sigPgrav,sigHgrav,muP,muH,incap,vs2,vs3,vn2,vn3,cfg,B1,ns,Ts,x, &
                               E1,E2,E3,J1,J2,J3,Phiall,ymd,UTsec)
   end if
 
   ! Compute velocity from mobilities and fields
-  call velocities(muP,muH,nusn,E2,E3,vn2,vn3,ns,Ts,cfg%flaggravdrift,.true.,vs2,vs3)
+  call velocities(muP,muH,nusn,E2,E3,vn2,vn3,ns,Ts,x,cfg%flaggravdrift,.true.,vs2,vs3)
 
   call cpu_time(tfin)
 
@@ -200,20 +206,22 @@ end if
 end subroutine electrodynamics_curv
 
 
-subroutine velocities(muP,muH,nusn,E2,E3,vn2,vn3,ns,Ts,flaggravdrift,flagdiamagnetic,vs2,vs3)
+subroutine velocities(muP,muH,nusn,E2,E3,vn2,vn3,ns,Ts,x,flaggravdrift,flagdiamagnetic,vs2,vs3)
 
 !> compute steady state drifts resulting from a range of forces.  Can be used
 !   by both root and worker processes
 
 real(wp), dimension(:,:,:,:), intent(in) :: muP,muH,nusn
 real(wp), dimension(:,:,:), intent(in) :: E2,E3,vn2,vn3
-real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns,Ts
+real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns,Ts      !> these must have ghost cells
+type(curvmesh), intent(in) :: x
 logical, intent(in) :: flaggravdrift
 logical, intent(in) :: flagdiamagnetic
 real(wp), dimension(-1:,-1:,-1:,:), intent(out) :: vs2,vs3   !> these have ghost cells
 
 integer :: lx1,lx2,lx3,lsp,isp
-
+real(wp), dimension(-1:size(E2,1)+2,-1:size(E2,2)+2,-1:size(E2,3)+2) :: pressure
+real(wp), dimension(0:size(E2,1)+1,0:size(E2,2)+1,0:size(E2,3)+1) :: gradpx,gradpy
 
 !> sizes from the mobility coefficients
 lx1=size(muP,1)
@@ -247,15 +255,16 @@ if (flagdiamagnetic) then
       ! compute pressure from n,T
       pressure=ns(1:lx1,1:lx2,1:lx3,isp)*kB*Ts(1:lx1,1:lx2,1:lx3,isp)
       ! boundary fill via haloing
+      call halo_pot(pressure,tag%pressure,x%flagper,.false.)
       ! compute gradient x2,x3 components
-      gradpx=grad3D2(pressure,x,1,lx1,1,lx2,1,lx3)
-      gradpy=grad3D3(pressure,x,1,lx1,1,lx2,1,lx3)
+      gradpx=grad3D2(pressure,x,0,lx1+1,0,lx2+1,0,lx3+1)
+      gradpy=grad3D3(pressure,x,0,lx1+1,0,lx2+1,0,lx3+1)
       vs2(1:lx1,1:lx2,1:lx3,isp)=vs2(1:lx1,1:lx2,1:lx3,isp) &
-                -muP/ns(1:lx1,1:lx2,1:lx3,isp)/qs(isp)*gradpx &
-                +muH/ns(1:lx1,1:lx2,1:lx3,isp)/qs(isp)*gradpy
+                -muP/ns(1:lx1,1:lx2,1:lx3,isp)/qs(isp)*gradpx(1:lx1,1:lx2,1:lx3) &
+                +muH/ns(1:lx1,1:lx2,1:lx3,isp)/qs(isp)*gradpy(1:lx1,1:lx2,1:lx3)
       vs3(1:lx1,1:lx2,1:lx3,isp)=vs3(1:lx1,1:lx2,1:lx3,isp) &
-                -muH/ns(1:lx1,1:lx2,1:lx3,isp)/qs(isp)*gradpx &
-                -muP/ns(1:lx1,1:lx2,1:lx3,isp)/qs(isp)*gradpy
+                -muH/ns(1:lx1,1:lx2,1:lx3,isp)/qs(isp)*gradpx(1:lx1,1:lx2,1:lx3) &
+                -muP/ns(1:lx1,1:lx2,1:lx3,isp)/qs(isp)*gradpy(1:lx1,1:lx2,1:lx3)
     end do
   else
     do isp=1,lsp
@@ -294,7 +303,7 @@ end subroutine velocities
 
 
 !>FIXME:  also needs the mobilities as input now due to pressure current terms.
-subroutine potential_sourceterms(sigP,sigH,sigPgrav,sigHgrav,E02,E03,vn2,vn3,B1,x,flaggravdrift,srcterm)
+subroutine potential_sourceterms(sigP,sigH,sigPgrav,sigHgrav,E02,E03,vn2,vn3,B1,ns,Ts,x,flaggravdrift,flagdiamagnetic,srcterm)
 
 !> Compute source terms (inhomogeneous terms) for the potential equation to be solved.  Both root and workers
 !   should be able to use this routine
@@ -302,8 +311,10 @@ subroutine potential_sourceterms(sigP,sigH,sigPgrav,sigHgrav,E02,E03,vn2,vn3,B1,
 real(wp), dimension(:,:,:), intent(in) :: sigP,sigH,sigPgrav,sigHgrav
 real(wp), dimension(:,:,:), intent(in) :: E02,E03,vn2,vn3
 real(wp), dimension(-1:,-1:,-1:), intent(in) :: B1     !ghost cells
+real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns,Ts     !ghost cells
 type(curvmesh), intent(in) :: x
 logical, intent(in) :: flaggravdrift
+logical, intent(in) :: flagdiamagnetic
 real(wp), dimension(:,:,:), intent(out) :: srcterm
 
 real(wp), dimension(1:size(E02,1),1:size(E02,2),1:size(E02,3)) :: J1,J2,J3
@@ -312,6 +323,9 @@ real(wp), dimension(0:size(E02,1)+1,0:size(E02,2)+1,0:size(E02,3)+1) :: divtmp
 real(wp), dimension(-1:size(E02,1)+2,-1:size(E02,2)+2,-1:size(E02,3)+2) :: J1halo,J2halo,J3halo
 !! haloing assumes existence of two ghost cells
 integer :: lx1,lx2,lx3
+
+real(wp), dimension(-1:size(E02,1)+2,-1:size(E02,2)+2,-1:size(E02,3)+2) :: pressure
+real(wp), dimension(0:size(E02,1)+1,0:size(E02,2)+1,0:size(E02,3)+1) :: gradpx,gradpy
 
 
 !> sizes from the conductivity coefficients
@@ -331,6 +345,9 @@ call acc_perpconductioncurrents(sigP,sigH,E02,E03,J2,J3)     !background conduct
 if (debug .and. mpi_cfg%myid==0) print *, 'Workers has computed background field currents...'
 call acc_perpwindcurrents(sigP,sigH,vn2,vn3,B1,J2,J3)
 if (debug .and. mpi_cfg%myid==0) print *, 'Workers has computed wind currents...'
+if (flagdiamagnetic) then
+  call acc_pressurecurrent(muP,muH,ns,Ts,J2,J3) 
+end if
 if (flaggravdrift) then
   call acc_perpgravcurrents(sigPgrav,sigHgrav,g2,g3,J2,J3)
   if (debug .and. mpi_cfg%myid==0) print *, 'Workers has computed gravitational currents...'
@@ -367,6 +384,7 @@ real(wp), dimension(:,:,:), intent(in) :: E2,E3
 real(wp), dimension(:,:,:), intent(inout) :: J2, J3
 
 
+!> FIXME:  need to make consistent with velocity calculations flagswap /= 1
 if (flagswap==1) then
   J2=J2+sigP*E2+sigH*E3
   J3=J3-1*sigH*E2+sigP*E3
@@ -389,7 +407,7 @@ real(wp), dimension(-1:,-1:,-1:), intent(in) :: B1
 real(wp), dimension(:,:,:), intent(inout) :: J2, J3
 
 integer :: lx1,lx2,lx3
-
+integer :: isp
 
 !> sizes from the conductivities
 lx1=size(sigP,1)
@@ -405,6 +423,40 @@ else
 end if
 
 end subroutine acc_perpwindcurrents
+
+
+subroutine acc_pressurecurrent(muH,muP,ns,Ts,J2,J3)
+
+!> ***Accumulate*** pressure currents into the variables J2,J3.  See conduction currents
+!    routine for additional caveats.
+
+real(wp), dimension(:,:,:,:), intent(in) :: muP,muH
+real(wp), dimension(-1:,-1,-1:,:), intent(in) :: ns,Ts
+real(wp), dimension(:,:,:), intent(inout) :: J2, J3
+
+real(wp), dimension(-1:size(E2,1)+2,-1:size(E2,2)+2,-1:size(E2,3)+2) :: pressure
+real(wp), dimension(0:size(E2,1)+1,0:size(E2,2)+1,0:size(E2,3)+1) :: gradpx,gradpy
+
+
+if (flagswap==1) then!FIXME:  update this
+  J2=J2
+  J3=J3
+else   
+  do isp=1,lsp
+    ! compute pressure from n,T
+    pressure=ns(1:lx1,1:lx2,1:lx3,isp)*kB*Ts(1:lx1,1:lx2,1:lx3,isp)
+    ! boundary fill via haloing
+    call halo_pot(pressure,tag%pressure,x%flagper,.false.)
+    ! compute gradient x2,x3 components
+    gradpx=grad3D2(pressure,x,0,lx1+1,0,lx2+1,0,lx3+1)
+    gradpy=grad3D3(pressure,x,0,lx1+1,0,lx2+1,0,lx3+1)
+  
+    J2=J2+muP(:,:,:,isp)*gradpx(1:lx1,1:lx2,1:lx3)-muH(:,:,:,isp)*gradpy(1:lx1,1:lx2,1:lx3)
+    J3=J3+muH(:,:,:,isp)*gradpx(1:lx1,1:lx2,1:lx3)+muP(:,:,:,isp)*gradpy(1:lx1,1:lx2,1:lx3)
+  endo do
+end if
+
+end subroutine acc_pressurecurrents
 
 
 subroutine acc_perpgravcurrents(sigPgrav,sigHgrav,g2,g3,J2,J3)
