@@ -52,7 +52,7 @@ add_library(io OBJECT io.f90 ${CMAKE_CURRENT_BINARY_DIR}/output.f90
   plasma_output.f90 plasma_output_hdf5.f90 plasma_output_ncdf.f90 plasma_output_raw.f90
   milestone.f90)
 
-target_link_libraries(io PRIVATE calculus config const reader grid mpimod sanity_check timeutils
+target_link_libraries(io PRIVATE calculus config const reader grid mpimod pathlib sanity_check timeutils
   h5fortran::h5fortran nc4fortran::nc4fortran)
 
 # --- reader

@@ -8,7 +8,6 @@ use phys_consts, only : lnchem, lwave, lsp, wp, debug
 use grid, only: grid_size,read_grid,clear_grid,grid_drift, lx1,lx2,lx3,lx2all,lx3all
 use mesh, only: curvmesh
 use config, only : gemini_cfg, get_compiler_vendor
-use pathlib, only : get_suffix
 use io, only : input_plasma,create_outdir,output_plasma,create_outdir_aur,output_aur,find_milestone
 use mpimod, only : mpibreakdown, mpi_manualgrid, mpigrid, lid, lid2,lid3,myid,myid2,myid3
 use multifluid, only : fluid_adv
@@ -157,9 +156,9 @@ end if
 !> ZZZ - this also should involve setting of Phiall...  Either to zero or what the input file specifies...
 !        does not technically need to be broadcast to workers (since root sets up electrodynamics), but perhaps
 !        should be anyway since that is what the user probably would expect and there is little performance penalty.
-call find_milestone(cfg%outdir,get_suffix(cfg%indatsize),cfg%ymd0,cfg%UTsec0,cfg%dtout,ttmp,ymdtmp,UTsectmp,filetmp)
-if (myid==0) print*, 'Last milestone (if any)found in output directory:  ',ymdtmp,UTsectmp,filetmp
-if ( any(ymdtmp/=cfg%ymd0) .or. abs(UTsectmp-cfg%UTsec0)>cfg%dtout ) then  !! treat this as a restart scenario
+call find_milestone(cfg, ttmp, ymdtmp, UTsectmp, filetmp)
+
+if ( any(ymdtmp /= cfg%ymd0) .or. abs(UTsectmp-cfg%UTsec0) > cfg%dtout ) then  !! treat this as a restart scenario
   if (myid==0) then
     print*, '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
     print*, '! Restarting simulation from time:  ',ymdtmp,UTsectmp
@@ -178,9 +177,7 @@ if ( any(ymdtmp/=cfg%ymd0) .or. abs(UTsectmp-cfg%UTsec0)>cfg%dtout ) then  !! tr
   if (tdur <= 1e-6_wp .and. myid==0) error stop 'It appears you are trying to restart a simulation from the final time step!'
 
   cfg%tdur=tdur         ! just to insure consistency
-  if (tdur <= 1e-6_wp .and. myid==0) then
-    error stop 'It appears you are trying to restart a simulation from the final time step!'
-  end if
+
   call input_plasma(x%x1,x%x2all,x%x3all,cfg%indatsize,filetmp,ns,vs1,Ts,Phi,Phiall)
 else !! start at the beginning
   UTsec = cfg%UTsec0

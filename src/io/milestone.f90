@@ -1,7 +1,7 @@
 submodule (io) milestone
 
 use timeutils, only: date_filename,dateinc
-use h5fortran, only: hdf5_file 
+use h5fortran, only: h5exist
 
 implicit none (type,external)   !! external procedures must be explicitly denoted thusly
 
@@ -9,58 +9,54 @@ contains
 
 module procedure find_milestone
 
-!> search path having output rate cadence (s) and find the
-!  last file that is a milestone.
-
+!> search path having output rate cadence (s) and find the last file that is a milestone.
 integer, dimension(3) :: ymd
 real(wp) :: UTsec
-character(:), allocatable :: fn
-type(hdf5_file) :: h5f
-logical flagexists,flagend,flagmilestone
+character(:), allocatable :: fn, suffix
+logical :: exists
 integer :: it,lfn
 real(wp) :: tsim
-logical :: ish5
 
-ymd=ymd0
-UTsec=UTsec0
-ymdmile=ymd0
-UTsecmile=UTsec0
-filemile=date_filename(path,ymd0,UTsec0)   !! This presumes the first file output is a milestone, note we don't actually test the situation wheere a first output was not produced...  User should not be restarting in that case...
-flagend=.false.
+ymd = cfg%ymd0
+UTsec = cfg%UTsec0
+ymdmile = cfg%ymd0
+UTsecmile = cfg%UTsec0
+filemile = date_filename(cfg%outdir, ymd, UTsec)   !! This presumes the first file output is a milestone, note we don't actually test the situation wheere a first output was not produced...  User should not be restarting in that case...
+
 it=1
-tsim=0._wp
-tmile=0._wp
-ish5=suffix=='.h5'
-do while ( .not.(flagend) .and. ish5)
+tsim = 0
+tmile = 0
+
+suffix = get_suffix(cfg%indatsize)
+
+if (suffix /= '.h5') return
+
+milesearch : do
   !! new filename, add the 1 if it is the first
-  fn=date_filename(path,ymd,UTsec)
+  fn = date_filename(cfg%outdir, ymd,UTsec)
   if (it==1) then
     lfn=len(fn)
     fn(lfn:lfn)='1'
   end if
   fn=fn // suffix
 
-  !! is the file there
-  inquire(file=fn, exist=flagexists)
-  if ( flagexists ) then
-    call h5f%initialize(fn, status='old', action='r')    ! init hdf5 object instance
-    flagmilestone=h5f%exists('/nsall')
-    call h5f%finalize()    ! destruct hdf5 object instance so it can be reused
-    if (flagmilestone) then
-      ymdmile=ymd
-      UTsecmile=UTsec
-      filemile=fn 
-      tmile=tsim
-    end if
-  else
-    flagend=.true.    !we've hit the last output file
+  inquire(file=fn, exist=exists)
+  if ( .not. exists ) exit milesearch
+  !! last output file
+
+  if (h5exist(fn, '/nsall')) then
+    !! this file is milestone
+    ymdmile=ymd
+    UTsecmile=UTsec
+    filemile=fn
+    tmile=tsim
   end if
 
   !! next time
-  call dateinc(cadence,ymd,UTsec)
+  call dateinc(cfg%dtout, ymd,UTsec)
   it=it+1
-  tsim=tsim+cadence
-end do
+  tsim = tsim + cfg%dtout
+end do milesearch
 
 end procedure find_milestone
 

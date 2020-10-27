@@ -4,7 +4,7 @@ use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
 
 use config, only : gemini_cfg
 use phys_consts, only : kB,ms,pi,lsp,wp,lwave
-use pathlib, only: mkdir, copyfile
+use pathlib, only: mkdir, copyfile, get_suffix
 use mpimod, only: bcast_recv, bcast_send, gather_send, gather_recv,  &
   myid, tag=>gemini_mpi, lid, lid2, lid3
 use grid, only : gridflag,flagswap,lx1,lx2,lx3,lx2all, lx3all
@@ -91,12 +91,8 @@ end interface
 
 interface ! milestone.f90
 
-module subroutine find_milestone(path,suffix,ymd0,UTsec0,cadence,tmile,ymdmile,UTsecmile,filemile)
-character(*), intent(in) :: path
-character(*), intent(in) :: suffix
-integer, dimension(3), intent(in) :: ymd0
-real(wp), intent(in) :: UTsec0
-real(wp), intent(in) :: cadence
+module subroutine find_milestone(cfg, tmile,ymdmile,UTsecmile,filemile)
+class(gemini_cfg), intent(in) :: cfg
 real(wp), intent(out) :: tmile     !time elapsed from beginning of the simulation to the milestone
 integer, dimension(3), intent(out) :: ymdmile
 real(wp), intent(out) :: UTsecmile
