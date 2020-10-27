@@ -2,6 +2,8 @@ submodule (neutral) atmos
 
 use, intrinsic :: iso_fortran_env, only: sp => real32
 
+use timeutils, only : doy_calc
+
 implicit none (type, external)
 
 contains

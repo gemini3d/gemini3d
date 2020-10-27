@@ -3,14 +3,11 @@ module neutral
 use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
 use, intrinsic :: iso_fortran_env, only: stderr=>error_unit
 
-use reader, only : get_simsize3, get_neutral2, get_neutral3
 use phys_consts, only: wp, lnchem, pi, re, debug
-use grid, only: lx1, lx2, lx3, clear_unitvecs, gridflag
+use grid, only: lx1, lx2, lx3
 use mesh, only: curvmesh
-use interpolation, only : interp2, interp3
-use timeutils, only : doy_calc,dateinc, date_filename, find_lastdate
-use mpimod, only: mpi_integer, mpi_comm_world, mpi_status_ignore, &
-myid, lid, mpi_realprec, tag=>gemini_mpi
+use timeutils, only : find_lastdate
+use mpimod, only: myid
 use config, only: gemini_cfg
 
 ! also links gtd7 from vendor/msis00/
@@ -49,8 +46,6 @@ real(wp), dimension(:,:,:), intent(out) :: Tn,vn1,vn2,vn3
 end subroutine neutral_perturb
 
 end interface
-
-external :: mpi_send, mpi_recv
 
 !! ALL ARRAYS THAT FOLLOW ARE USED WHEN INCLUDING NEUTRAL PERTURBATIONS FROM ANOTHER MODEL
 !! ARRAYS TO STORE THE NEUTRAL GRID INFORMATION
