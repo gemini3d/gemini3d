@@ -157,7 +157,7 @@ flaglagrangian=.true.         ! whether or not to have the grid drift at the ExB
 
 ## 2,3. Grid input files
 
-Oneo of the most complicated parts of setting up a new simulation is creating a grid.  Grids are generated from scripts external to the main fortran code and then passes into GEMINI as files.  Generally when setting up a grid, it is likely easiest to work from an existing example in [GEMINI-examples](https://github.com/gemini3d/GEMINI-examples).  In the event that none of the examples suffice as a starting point, the details of grid creations are documented below.
+One of the most complicated parts of setting up a new simulation is creating a grid.  Grids are generated from scripts external to the main fortran code and then passes into GEMINI as files.  Generally when setting up a grid, it is likely easiest to work from an existing example in [GEMINI-examples](https://github.com/gemini3d/GEMINI-examples).  In the event that none of the examples suffice as a starting point, the details of grid creations are documented below.
 
 Document grid creation details here...
 
@@ -180,11 +180,11 @@ Plotgrid...  But explain how to use it...
 
 ## Neutral data input files
 
-Information about example scripts here to generate input neutral data.
+The examples of specifying and saving input neutral data input files are provided in [GEMINI-scripts](https://github.com/gemini3d/gemini-scripts/tree/master/magic/). The folder contains examples for preparation of 2D, 2D-axisymmetric and 3D neutral input files.
 
 ### Neutral input data requirements
 
-Neutral input file data shall contain...
+Neutral input file data shall contain neutral fluid velocities, volumetric perturbations in temperature, and number densities for [O], [N_2] and [O_2]. 2D Cartesian neutral inputs should contain meridional and vertical fluid velocities; 2D axisymmetric neutral inputs shouuld contain radial and vertical fluid velocities; for 3D GEMINI simulations - meridional, zonal and vertical fluid velocities. Neutral particle temperature perturbations represent averaged values over all species.
 
 
 ## 5,6. Running with different boundary and initial conditions:
