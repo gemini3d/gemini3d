@@ -131,17 +131,25 @@ end do
 end subroutine day_wrap
 
 
-pure function date_filename(outdir,ymd,UTsec)  result(filename)
-!! GENERATE A FILENAME STRING OUT OF A GIVEN DATE/TIME
+function date_filename(outdir, ymd, UTsec, first) result(filename)
+!! GENERATE A FILENAME stem OUT OF A GIVEN DATE/TIME
+!! (does not include suffix like .h5)
 
 character(*), intent(in) :: outdir
 integer, intent(in) :: ymd(3)
 class(*), intent(in) :: UTsec
+logical, intent(in), optional :: first
+
 character(:), allocatable :: filename
+character(len=21) :: stem
 
+stem = utsec2filestem(ymd, UTsec)
+if (present(first)) then
+  if (first) stem(21:21) = '1'
+  !! FIXME: eliminate when integer millisecond is implemented
+endif
 
-!> assemble
-filename = outdir // '/' // utsec2filestem(ymd, UTsec)
+filename = outdir // '/' // stem
 
 end function date_filename
 
@@ -197,7 +205,7 @@ end function utsec2filestem
 subroutine find_lastdate(ymd0,UTsec0,ymdtarget,UTsectarget,cadence,ymd,UTsec)
 
 !> Compute the last date before the target date based on a start date and date cadence.  The
-!  file is assumed to exist and programmer needs to check for existence outside this 
+!  file is assumed to exist and programmer needs to check for existence outside this
 !  procedure.
 
 integer, dimension(3), intent(in) :: ymd0
@@ -217,7 +225,7 @@ ymd=ymd0
 UTsec=UTsec0
 ymdnext=ymd0
 UTsecnext=UTsec0
-flagend=ymdnext(1)>=ymdtarget(1) .and. ymdnext(2)>=ymdtarget(2) .and. ymdnext(3)>=ymdtarget(3) .and. UTsecnext>UTsectarget & 
+flagend=ymdnext(1)>=ymdtarget(1) .and. ymdnext(2)>=ymdtarget(2) .and. ymdnext(3)>=ymdtarget(3) .and. UTsecnext>UTsectarget &
           .or. ymdnext(1)>ymdtarget(1) .or. ymdnext(2)>ymdtarget(2) .or. ymdnext(3)>ymdtarget(3) ! in case the first time step is the last before target
 do while ( .not.(flagend) )
   ymd=ymdnext

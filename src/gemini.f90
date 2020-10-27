@@ -158,7 +158,8 @@ end if
 !        should be anyway since that is what the user probably would expect and there is little performance penalty.
 call find_milestone(cfg, ttmp, ymdtmp, UTsectmp, filetmp)
 
-if ( any(ymdtmp /= cfg%ymd0) .or. abs(UTsectmp-cfg%UTsec0) > cfg%dtout ) then  !! treat this as a restart scenario
+if ( ttmp > 0 ) then
+  !! restart scenario
   if (myid==0) then
     print*, '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
     print*, '! Restarting simulation from time:  ',ymdtmp,UTsectmp
@@ -281,7 +282,7 @@ endif
 
 
 !> Main time loop
-do while (t < tdur)
+main : do while (t < tdur)
   !> TIME STEP CALCULATION, requires workers to report their most stringent local stability constraint
   dtprev = dt
   call dt_comm(t,tout,tglowout,cfg,ns,Ts,vs1,vs2,vs3,B1,B2,B3,x,dt)
@@ -367,7 +368,7 @@ do while (t < tdur)
     tout = tout + cfg%dtout
     if (cfg%nooutput .and. myid==0) then
       write(stderr,*) 'WARNING: skipping file output at sim time (sec)',t
-      cycle
+      cycle main
     endif
     !! close enough to warrant an output now...
     if (myid==0 .and. debug) call cpu_time(tstart)
@@ -379,7 +380,7 @@ do while (t < tdur)
       call output_plasma(cfg%outdir,flagoutput,ymd, &
         UTsec,vs2,vs3,ns,vs1,Ts,Phiall,J1,J2,J3, &
         cfg%out_format)
-      tmilestone=t+cfg%dtout*cfg%mcadence
+      tmilestone = t + cfg%dtout * cfg%mcadence
       if(myid==0) print*, 'Milestone output triggered.'
     else
       call output_plasma(cfg%outdir,flagoutput,ymd, &
@@ -402,7 +403,7 @@ do while (t < tdur)
     end if
     tglowout = tglowout + cfg%dtglowout
   end if
-end do
+end do main
 
 
 !> DEALLOCATE MAIN PROGRAM DATA

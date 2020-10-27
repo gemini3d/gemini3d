@@ -13,32 +13,38 @@ module procedure find_milestone
 integer, dimension(3) :: ymd
 real(wp) :: UTsec
 character(:), allocatable :: fn, suffix
-logical :: exists
-integer :: it,lfn
+logical :: exists, first
 real(wp) :: tsim
+
+first = .true.
+tsim = 0
+tmile = 0
 
 ymd = cfg%ymd0
 UTsec = cfg%UTsec0
 ymdmile = cfg%ymd0
 UTsecmile = cfg%UTsec0
-filemile = date_filename(cfg%outdir, ymd, UTsec)   !! This presumes the first file output is a milestone, note we don't actually test the situation wheere a first output was not produced...  User should not be restarting in that case...
-
-it=1
-tsim = 0
-tmile = 0
 
 suffix = get_suffix(cfg%indatsize)
+filemile = date_filename(cfg%outdir, ymd, UTsec, first) // suffix
+!! This presumes the first file output is a milestone.
+!! We don't test the situation wheere a first output was not produced.
+!! User should not be restarting in that case.
+
+if (cfg%mcadence <= 0) then
+!! milestone was not in config.nml
+  inquire(file=filemile, exist=exists)
+ ! error stop filemile
+  if (exists) error stop 'a fresh simulation should not have data in output directory: ' // filemile
+  return
+endif
 
 if (suffix /= '.h5') return
 
 milesearch : do
   !! new filename, add the 1 if it is the first
-  fn = date_filename(cfg%outdir, ymd,UTsec)
-  if (it==1) then
-    lfn=len(fn)
-    fn(lfn:lfn)='1'
-  end if
-  fn=fn // suffix
+  fn = date_filename(cfg%outdir, ymd, UTsec, first) // suffix
+  if (first) first = .false.
 
   inquire(file=fn, exist=exists)
   if ( .not. exists ) exit milesearch
@@ -54,13 +60,9 @@ milesearch : do
 
   !! next time
   call dateinc(cfg%dtout, ymd,UTsec)
-  it=it+1
   tsim = tsim + cfg%dtout
 end do milesearch
 
 end procedure find_milestone
-
-!! need to add ishdf5 to
-
 
 end submodule milestone

@@ -229,9 +229,9 @@ if (namelist_exists(u,'milestone')) then
   rewind(u)
   read(u,nml=milestone,iostat=i)
   call check_nml_io(i,cfg%infile,"milestone")
-  cfg%mcadence=mcadence
+  cfg%mcadence = mcadence
 else
-  cfg%mcadence=-1     !default to no milestones (<0 is a sentinel value)
+  cfg%mcadence = -1     !default to no milestones (<0 is a sentinel value)
 end if
 
 !> whether or not to include gravitational terms in drift and potential source equations
