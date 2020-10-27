@@ -1,5 +1,7 @@
 submodule (neutral) perturb
 
+use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
+
 use grid, only : gridflag
 use interpolation, only : interp2, interp3
 use mpimod, only : mpi_realprec

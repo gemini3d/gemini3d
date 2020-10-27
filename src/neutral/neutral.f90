@@ -1,8 +1,5 @@
 module neutral
 
-use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
-use, intrinsic :: iso_fortran_env, only: stderr=>error_unit
-
 use phys_consts, only: wp, lnchem, pi, re, debug
 use grid, only: lx1, lx2, lx3
 use mesh, only: curvmesh
