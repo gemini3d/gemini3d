@@ -82,11 +82,7 @@ else
 endif
 
 
-open(newunit=u, file=filename, form='formatted', status='old', action='read', iostat=i)
-if (i/=0) then
-  write(stderr, *) 'could not find input file: ',trim(filename)
-  error stop 77
-endif
+open(newunit=u, file=filename, form='formatted', status='old', action='read')
 
 read(u, nml=shape)
 mumps_par%N = N

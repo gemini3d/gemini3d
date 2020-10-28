@@ -12,7 +12,7 @@ character(256) :: argv
 integer :: i
 
 call get_command_argument(1, argv, status=i)
-if (i/=0) error stop 77
+if (i/=0) error stop "please specify .nml file to read"
 
 cfg%infile = trim(argv)
 

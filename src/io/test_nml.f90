@@ -16,7 +16,7 @@ integer :: potsolve, flagperiodic, flagoutput, flagcap
 namelist /flags/ potsolve, flagperiodic, flagoutput, flagcap
 
 call get_command_argument(1, argv, status=i)
-if (i/=0) error stop 77
+if (i/=0) error stop "please specify .nml file to read"
 infile = trim(argv)
 
 open(newunit=u, file=infile, status='old', action='read')

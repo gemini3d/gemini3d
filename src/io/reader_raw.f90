@@ -9,15 +9,8 @@ contains
 
 module procedure get_simsize2_raw
 integer :: u
-logical :: exists
 
 if (debug) print '(A,/,A)', 'READ 2D (B-perp, B-perp) grid size from file:', path
-
-inquire(file=path, exist=exists)
-if (.not.exists) then
-   write(stderr,'(A,/,A)') 'ERROR: reader_raw:get_simsize2: generate grid with script--grid not present: ', path
-   error stop 77
-endif
 
 open(newunit=u, file=path, status='old', form='unformatted', access='stream', action='read')
 read(u) llon,llat
@@ -28,15 +21,8 @@ end procedure get_simsize2_raw
 module procedure get_simsize3_raw
 !! note that these are sizes *including ghost cells*
 integer :: u
-logical :: exists
 
 if (debug) print '(A,/,A)', 'READ 3D (B-parallel, B-perp, B-perp) grid size from file:', path
-
-inquire(file=path, exist=exists)
-if (.not.exists) then
-   write(stderr,'(A,/,A)') 'ERROR: reader_raw:get_simsize3: generate grid with script--grid not present: ', path
-   error stop 77
-endif
 
 open(newunit=u, file=path, status='old', form='unformatted', access='stream', action='read')
 read(u) lx1

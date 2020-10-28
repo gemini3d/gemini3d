@@ -10,15 +10,8 @@ contains
 module procedure get_simsize2_hdf5
 !! get x2 and x3 dimension sizes
 type(hdf5_file) :: hf
-logical :: exists
 
 if (debug) print '(A,/,A)', 'READ 2D (B-perp, B-perp) grid size from file:', path
-
-inquire(file=path, exist=exists)
-if (.not.exists) then
-   write(stderr,'(/,A,/,A,/)') 'ERROR: reader_hdf5:get_simsize2: generate grid with script--grid not present:',path
-   error stop 77
-endif
 
 call hf%initialize(path, status='old',action='r')
 
@@ -52,15 +45,8 @@ module procedure get_simsize3_hdf5
 !! get x1, x2, x3 dimension sizes
 !! sizes include Ghost Cells
 type(hdf5_file) :: hf
-logical :: exists
 
 if (debug) print '(A,/,A)', 'READ 3D (B-parallel, B-perp, B-perp) grid  size from file:', path
-
-inquire(file=path, exist=exists)
-if (.not.exists) then
-   write(stderr,'(A,/,A)') 'ERROR: reader_hdf5:get_simsize3: generate grid with script--grid not present: ', path
-   error stop 77
-endif
 
 call hf%initialize(path, status='old',action='r')
 

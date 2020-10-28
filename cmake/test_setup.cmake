@@ -23,7 +23,6 @@ add_test(NAME gemini:hdf5:${testname}:dryrun
 
 set_tests_properties(gemini:hdf5:${testname}:dryrun PROPERTIES
   TIMEOUT 60
-  SKIP_RETURN_CODE 77
   RESOURCE_LOCK cpu_mpi
   FIXTURES_REQUIRED mumps_fixture
   FIXTURES_SETUP hdf5:${testname}:dryrun)
@@ -37,7 +36,6 @@ add_test(NAME gemini:hdf5:${testname}
 # NOTE: don't use REQUIRED_FILES because it won't let file download if not present.
 set_tests_properties(gemini:hdf5:${testname} PROPERTIES
   TIMEOUT ${TIMEOUT}
-  SKIP_RETURN_CODE 77
   RESOURCE_LOCK cpu_mpi
   FIXTURES_REQUIRED hdf5:${testname}:dryrun
   FIXTURES_SETUP hdf5:${testname})
@@ -50,7 +48,6 @@ add_test(NAME gemini:netcdf:${testname}:dryrun
 
 set_tests_properties(gemini:netcdf:${testname}:dryrun PROPERTIES
   TIMEOUT 60
-  SKIP_RETURN_CODE 77
   RESOURCE_LOCK cpu_mpi
   FIXTURES_REQUIRED mumps_fixture
   FIXTURES_SETUP netcdf:${testname}:dryrun)
@@ -60,7 +57,6 @@ add_test(NAME gemini:netcdf:${testname}
 
 set_tests_properties(gemini:netcdf:${testname} PROPERTIES
   TIMEOUT ${TIMEOUT}
-  SKIP_RETURN_CODE 77
   RESOURCE_LOCK cpu_mpi
   FIXTURES_REQUIRED netcdf:${testname}:dryrun
   FIXTURES_SETUP netcdf:${testname})
