@@ -28,8 +28,13 @@ target_link_libraries(test_potential2d PRIVATE const PDEelliptic h5fortran::h5fo
 add_test(NAME unit:potential2
   COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${MPIEXEC_MAX_NUMPROCS} $<TARGET_FILE:test_potential2d> ${_potential_testfile}
   WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
+if(mpi)
+  set(_nproc ${MPIEXEC_MAX_NUMPROCS})
+else()
+  set(_nproc 1)
+endif()
 set_tests_properties(unit:potential2 PROPERTIES TIMEOUT 30
-  PROCESSORS ${MPIEXEC_MAX_NUMPROCS}
+  PROCESSORS ${_nproc}
   FIXTURES_SETUP GemPot
   RESOURCE_LOCK cpu_mpi)
 
