@@ -5,6 +5,7 @@ implicit none (type, external)
 contains
 
 
+!FIXME:  some default value redundancies below...
 module procedure read_nml
 !! Reads simulation configuration file in .nml
 !! Note that it is best to rewind the file before any read operation, otherwise if the file pointer is already
@@ -42,6 +43,7 @@ integer :: diffsolvetype
 integer :: mcadence
 logical :: flaggravdrift
 logical :: flaglagrangian
+logical :: flagdiamagnetic
 
 namelist /base/ ymd, UTsec0, tdur, dtout, activ, tcfl, Teinf
 namelist /files/ file_format, indat_size, indat_grid, indat_file
@@ -60,6 +62,7 @@ namelist /diffusion/ diffsolvetype
 namelist /milestone/ mcadence
 namelist /gravdrift/ flaggravdrift
 namelist /lagrangian/ flaglagrangian
+namelist /diamagnetic/ flagdiamagnetic
 
 open(newunit=u, file=cfg%infile, status='old', action='read')
 
@@ -244,6 +247,7 @@ else
   cfg%flaggravdrift=.false.     !by default do not include grav currents and drifts
 end if
 
+!> whether or not to allow the grid to drift at the ExB speed
 if (namelist_exists(u,'lagrangian')) then
   rewind(u)
   read(u,nml=lagrangian,iostat=i)
@@ -251,6 +255,16 @@ if (namelist_exists(u,'lagrangian')) then
   cfg%flaglagrangian=flaglagrangian
 else
   cfg%flaglagrangian=.false.
+end if
+
+!> whether or not to use pressure terms in perp momentum
+if (namelist_exists(u,'diamagnetic')) then
+  rewind(u)
+  read(u,nml=diamagnetic,iostat=i)
+  call check_nml_io(i,cfg%infile,"diamagnetic")
+  cfg%flagdiamagnetic=flagdiamagnetic
+else
+  cfg%flagdiamagnetic=.false.
 end if
 
 close(u)
