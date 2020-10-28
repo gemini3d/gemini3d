@@ -30,24 +30,6 @@ include(ProcessorCount)
 ProcessorCount(Ncpu)
 message(STATUS "${Ncpu} CPU cores detected")
 
-# test name is Fortran compiler in FC
-# Note: ctest scripts cannot read cache variables like CMAKE_Fortran_COMPILER
-if(DEFINED ENV{FC})
-  set(FC $ENV{FC})
-  set(CTEST_BUILD_NAME ${FC})
-
-  if(NOT DEFINED ENV{CC})
-    # use same compiler for C and Fortran, which CMake might not do itself
-    if(FC STREQUAL ifort)
-      if(WIN32)
-        set(ENV{CC} icl)
-      else()
-        set(ENV{CC} icc)
-      endif()
-    endif()
-  endif()
-endif()
-
 if(NOT DEFINED CTEST_BUILD_CONFIGURATION)
   set(CTEST_BUILD_CONFIGURATION "Release")
 endif()

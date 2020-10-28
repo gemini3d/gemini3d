@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.15)
 # 3.15 for robust Python finding
 
 include(cmake/policy.cmake)
+include(cmake/compiler_find.cmake)
 
 project(gemini3d
   LANGUAGES C Fortran  # MUST include C language for Intel / MKL to work
@@ -14,6 +15,11 @@ enable_testing()  # keep this so BUILD_TESTING=off doesn't remove all tests
 include(CTest) # for CDash
 if(NOT DEFINED ${PROJECT_NAME}_BUILD_TESTING)
   set(${PROJECT_NAME}_BUILD_TESTING ${BUILD_TESTING})
+endif()
+
+if(NOT CMAKE_Fortran_COMPILER_ID STREQUAL ${CMAKE_C_COMPILER_ID})
+message(FATAL_ERROR "C compiler ${CMAKE_C_COMPILER_ID} does not match Fortran compiler ${CMAKE_Fortran_COMPILER_ID}.
+Set environment variables CC and FC to control compiler selection in general.")
 endif()
 
 include(cmake/options.cmake)
