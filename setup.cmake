@@ -21,7 +21,7 @@ else()
 endif(_mpiexec)
 
 # CTEST_CMAKE_GENERATOR must always be defined
-include(cmake/compiler_find.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/cmake/compiler_find.cmake)
 set(CTEST_CMAKE_GENERATOR $ENV{CMAKE_GENERATOR})
 
 # site is OS name
