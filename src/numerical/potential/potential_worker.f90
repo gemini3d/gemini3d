@@ -79,7 +79,8 @@ else                             ! Eulerian grid, use background fields
   E02src=E02; E03src=E03
 end if
 !> FIXME:  add mobilities needed for pressure terms as inputs
-call potential_sourceterms(sigP,sigH,sigPgrav,sigHgrav,muP,muH,E02src,E03src,vn2,vn3,B1,ns,Ts,x,cfg%flaggravdrift,srcterm)
+call potential_sourceterms(sigP,sigH,sigPgrav,sigHgrav,E02src,E03src,vn2,vn3,B1,muP,muH,ns,Ts,x, &
+                           cfg%flaggravdrift,cfg%flagdiamagnetic,srcterm)
 
 
 !    !ZZZ - DEBUG BY GETTING THE ENTIRE SOURCETERM ARRAY
