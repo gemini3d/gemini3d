@@ -187,7 +187,7 @@ if (cfg%potsolve == 1 .or. cfg%potsolve == 3) then    !electrostatic solve or el
   end if
 
   ! Compute velocity from mobilities and fields
-  call velocities(muP,muH,nusn,E2,E3,vn2,vn3,ns,Ts,x,cfg%flaggravdrift,.true.,vs2,vs3)
+  call velocities(muP,muH,nusn,E2,E3,vn2,vn3,ns,Ts,x,cfg%flaggravdrift,cfg%flagdiamagnetic,vs2,vs3)
 
   call cpu_time(tfin)
 
@@ -260,11 +260,11 @@ if (flagdiamagnetic) then
       gradpx=grad3D2(pressure,x,0,lx1+1,0,lx2+1,0,lx3+1)
       gradpy=grad3D3(pressure,x,0,lx1+1,0,lx2+1,0,lx3+1)
       vs2(1:lx1,1:lx2,1:lx3,isp)=vs2(1:lx1,1:lx2,1:lx3,isp) &
-                -muP/ns(1:lx1,1:lx2,1:lx3,isp)/qs(isp)*gradpx(1:lx1,1:lx2,1:lx3) &
-                +muH/ns(1:lx1,1:lx2,1:lx3,isp)/qs(isp)*gradpy(1:lx1,1:lx2,1:lx3)
+                -muP(1:lx1,1:lx2,1:lx3,isp)/ns(1:lx1,1:lx2,1:lx3,isp)/qs(isp)*gradpx(1:lx1,1:lx2,1:lx3) &
+                +muH(1:lx1,1:lx2,1:lx3,isp)/ns(1:lx1,1:lx2,1:lx3,isp)/qs(isp)*gradpy(1:lx1,1:lx2,1:lx3)
       vs3(1:lx1,1:lx2,1:lx3,isp)=vs3(1:lx1,1:lx2,1:lx3,isp) &
-                -muH/ns(1:lx1,1:lx2,1:lx3,isp)/qs(isp)*gradpx(1:lx1,1:lx2,1:lx3) &
-                -muP/ns(1:lx1,1:lx2,1:lx3,isp)/qs(isp)*gradpy(1:lx1,1:lx2,1:lx3)
+                -muH(1:lx1,1:lx2,1:lx3,isp)/ns(1:lx1,1:lx2,1:lx3,isp)/qs(isp)*gradpx(1:lx1,1:lx2,1:lx3) &
+                -muP(1:lx1,1:lx2,1:lx3,isp)/ns(1:lx1,1:lx2,1:lx3,isp)/qs(isp)*gradpy(1:lx1,1:lx2,1:lx3)
     end do
   else
     do isp=1,lsp
@@ -303,7 +303,8 @@ end subroutine velocities
 
 
 !>FIXME:  also needs the mobilities as input now due to pressure current terms.
-subroutine potential_sourceterms(sigP,sigH,sigPgrav,sigHgrav,E02,E03,vn2,vn3,B1,ns,Ts,x,flaggravdrift,flagdiamagnetic,srcterm)
+subroutine potential_sourceterms(sigP,sigH,sigPgrav,sigHgrav,E02,E03,vn2,vn3,B1,muP,muH,ns,Ts,x, &
+                                 flaggravdrift,flagdiamagnetic,srcterm)
 
 !> Compute source terms (inhomogeneous terms) for the potential equation to be solved.  Both root and workers
 !   should be able to use this routine
@@ -311,6 +312,7 @@ subroutine potential_sourceterms(sigP,sigH,sigPgrav,sigHgrav,E02,E03,vn2,vn3,B1,
 real(wp), dimension(:,:,:), intent(in) :: sigP,sigH,sigPgrav,sigHgrav
 real(wp), dimension(:,:,:), intent(in) :: E02,E03,vn2,vn3
 real(wp), dimension(-1:,-1:,-1:), intent(in) :: B1     !ghost cells
+real(wp), dimension(:,:,:,:), intent(in) :: muP,muH
 real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns,Ts     !ghost cells
 type(curvmesh), intent(in) :: x
 logical, intent(in) :: flaggravdrift
@@ -346,7 +348,7 @@ if (debug .and. mpi_cfg%myid==0) print *, 'Workers has computed background field
 call acc_perpwindcurrents(sigP,sigH,vn2,vn3,B1,J2,J3)
 if (debug .and. mpi_cfg%myid==0) print *, 'Workers has computed wind currents...'
 if (flagdiamagnetic) then
-  call acc_pressurecurrent(muP,muH,ns,Ts,J2,J3) 
+  call acc_pressurecurrents(muP,muH,ns,Ts,x,J2,J3) 
 end if
 if (flaggravdrift) then
   call acc_perpgravcurrents(sigPgrav,sigHgrav,g2,g3,J2,J3)
@@ -425,18 +427,26 @@ end if
 end subroutine acc_perpwindcurrents
 
 
-subroutine acc_pressurecurrent(muH,muP,ns,Ts,J2,J3)
+subroutine acc_pressurecurrents(muH,muP,ns,Ts,x,J2,J3)
 
 !> ***Accumulate*** pressure currents into the variables J2,J3.  See conduction currents
 !    routine for additional caveats.
 
 real(wp), dimension(:,:,:,:), intent(in) :: muP,muH
-real(wp), dimension(-1:,-1,-1:,:), intent(in) :: ns,Ts
+real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns,Ts
+type(curvmesh), intent(in) :: x
 real(wp), dimension(:,:,:), intent(inout) :: J2, J3
 
-real(wp), dimension(-1:size(E2,1)+2,-1:size(E2,2)+2,-1:size(E2,3)+2) :: pressure
-real(wp), dimension(0:size(E2,1)+1,0:size(E2,2)+1,0:size(E2,3)+1) :: gradpx,gradpy
+real(wp), dimension(-1:size(J2,1)+2,-1:size(J2,2)+2,-1:size(J2,3)+2) :: pressure
+real(wp), dimension(0:size(J2,1)+1,0:size(J2,2)+1,0:size(J2,3)+1) :: gradpx,gradpy
 
+integer :: lx1,lx2,lx3,isp
+
+
+!> sizes from the conductivities
+lx1=size(J2,1)
+lx2=size(J2,2)
+lx3=size(J2,3)
 
 if (flagswap==1) then!FIXME:  update this
   J2=J2
@@ -453,7 +463,7 @@ else
   
     J2=J2+muP(:,:,:,isp)*gradpx(1:lx1,1:lx2,1:lx3)-muH(:,:,:,isp)*gradpy(1:lx1,1:lx2,1:lx3)
     J3=J3+muH(:,:,:,isp)*gradpx(1:lx1,1:lx2,1:lx3)+muP(:,:,:,isp)*gradpy(1:lx1,1:lx2,1:lx3)
-  endo do
+  end do
 end if
 
 end subroutine acc_pressurecurrents

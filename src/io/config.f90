@@ -83,6 +83,9 @@ logical :: flaggravdrift=.false.
 !> flag for lagrangian grid (assume drifting at E x B/B**2)
 logical :: flaglagrangian=.false.
 
+!> do we consider pressure terms in perp momentum equations
+logical :: flagdiamagnetic=.false.
+
 end type gemini_cfg
 
 
