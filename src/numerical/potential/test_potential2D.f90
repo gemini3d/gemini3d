@@ -1,5 +1,4 @@
 program test_potential2d
-!! Need program statement for FORD
 !! SOLVE LAPLACE'S EQUATION IN 2D USING PDEelliptic, mumps-based libraries
 
 use mpi, only : mpi_init, mpi_comm_rank, mpi_comm_size, mpi_comm_world
@@ -54,7 +53,6 @@ integer :: gridflag=1
 integer :: flagdirich=1        !denoting non-inverted grid...
 
 character(1024) :: argv
-character(:), allocatable :: outfile
 
 ! --- avoid stack issues by using allocatable()
 
@@ -149,14 +147,13 @@ end if
 
 ! Write some output for visualizations
 if (myid==0) then
-  call get_command_argument(1, argv, status=ierr)
-  if(ierr/=0) error stop 'please specify filename'
-  outfile = trim(argv)
+  call get_command_argument(1, argv)
+  if(argv=="") error stop 'please specify filename'
 
   print*, 'Numerical solution range:  ',minval(Phi),maxval(Phi)
   print*, 'Analytical solution range:  ',minval(Phitrue),maxval(Phitrue)
 
-  call hout%initialize(outfile, status="replace", action="write")
+  call hout%initialize(trim(argv), status="replace", action="write")
   call hout%write("/lx1", lx1)
   call hout%write("/lx2", lx2)
   call hout%write("/lx3", lx3)

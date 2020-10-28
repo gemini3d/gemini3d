@@ -1,16 +1,12 @@
 program testinterp3
-!! Need program statement for FORD
 
 use phys_consts, only: wp,pi
-use interpolation
+use interpolation, only : interp3
 use h5fortran, only: hdf5_file
 
 implicit none (type, external)
 
-character(:), allocatable :: infn, outfn
 character(1024) :: argv
-integer :: i
-
 type(hdf5_file) :: hout
 integer, parameter :: lx1=80, lx2=90, lx3=100
 integer, parameter :: lx1i=256, lx2i=256, lx3i=256
@@ -73,18 +69,13 @@ end do
 filist=interp3(x1,x2,x3,f,x1ilist,x2ilist,x3ilist)
 fi=reshape(filist,[lx1i,lx2i,lx3i])
 
-call get_command_argument(1, argv, status=i)
-if(i/=0) error stop 'please specify input filename'
-infn = trim(argv)
-
-call get_command_argument(2, argv, status=i)
-if(i/=0) error stop 'please specify output filename'
-outfn = trim(argv)
+call get_command_argument(1, argv)
+if(argv=="") error stop 'please specify input filename'
 
 
-print "(A,/,A,/,A)", "interp3d: Finished test interpolation, writing to ",infn,outfn
+print "(A,/,A,/,A)", "interp3d: Finished test interpolation"
 !> dump results to a file so we can check things
-call hout%initialize(infn, status="replace", action="write")
+call hout%initialize(trim(argv), status="replace", action="write")
 
 call hout%write("/lx1", lx1, ierr)
 call hout%write("/lx2", lx2, ierr)
@@ -97,7 +88,10 @@ call hout%write("/f", f, ierr)
 call hout%finalize()
 
 
-call hout%initialize(outfn, status="replace", action="write")
+call get_command_argument(2, argv)
+if(argv=="") error stop 'please specify output filename'
+
+call hout%initialize(trim(argv), status="replace", action="write")
 
 call hout%write("/lx1", lx1i, ierr)
 call hout%write("/lx2", lx2i, ierr)

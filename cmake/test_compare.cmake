@@ -10,8 +10,7 @@ COMMAND ${Matlab_MAIN_PROGRAM} -batch "run('${CMAKE_CURRENT_SOURCE_DIR}/setup.m'
 set_tests_properties(gemini:compare:${testname}:matlab PROPERTIES
 TIMEOUT 120
 FIXTURES_REQUIRED "hdf5:${testname};netcdf:${testname}"
-REQUIRED_FILES ${outdir}/inputs/config.nml
-SKIP_RETURN_CODE 77)
+REQUIRED_FILES ${outdir}/inputs/config.nml)
 
 endif()
 
@@ -28,8 +27,7 @@ WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
 set_tests_properties(gemini:compare:hdf5:${testname}:python PROPERTIES
 TIMEOUT 60
 FIXTURES_REQUIRED hdf5:${testname}
-REQUIRED_FILES ${outdir}/inputs/config.nml
-SKIP_RETURN_CODE 77)
+REQUIRED_FILES ${outdir}/inputs/config.nml)
 endif(hdf5)
 
 if(netcdf)
@@ -39,8 +37,7 @@ COMMAND ${Python3_EXECUTABLE} -m gemini3d.compare ${outdir} ${refdir} -file_form
 set_tests_properties(gemini:compare:netcdf:${testname}:python PROPERTIES
 TIMEOUT 60
 FIXTURES_REQUIRED netcdf:${testname}
-REQUIRED_FILES ${outdir}/inputs/config.nml
-SKIP_RETURN_CODE 77)
+REQUIRED_FILES ${outdir}/inputs/config.nml)
 endif(netcdf)
 
 endfunction(python_compare)

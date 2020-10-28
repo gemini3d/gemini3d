@@ -20,7 +20,7 @@ set(_potential_testfile ${CMAKE_CURRENT_BINARY_DIR}/test_potential2d.h5)
 
 add_executable(test_potential2d test_potential2D.f90)
 target_link_libraries(test_potential2d PRIVATE const PDEelliptic h5fortran::h5fortran MPI::MPI_C MPI::MPI_Fortran)
-# yes, MPI_C is neeced here, else will not compile on MinGW with Ninja or Make.
+# yes, MPI_C is needed here, else will not compile on MinGW with Ninja or Make.
 # LINK_INTERFACE_MULTIPLICITY and IMPORTED_LINK_INTERFACE_MULTIPLICITY do not help here.
 # adding INTERFACE to Mumps project didn't help either
 # nor did adding them in cmake/mumps.cmake
@@ -29,6 +29,7 @@ add_test(NAME unit:potential2
   COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${MPIEXEC_MAX_NUMPROCS} $<TARGET_FILE:test_potential2d> ${_potential_testfile}
   WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
 set_tests_properties(unit:potential2 PROPERTIES TIMEOUT 30
+  PROCESSORS ${MPIEXEC_MAX_NUMPROCS}
   FIXTURES_SETUP GemPot
   RESOURCE_LOCK cpu_mpi)
 
