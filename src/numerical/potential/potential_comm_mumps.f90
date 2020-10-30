@@ -350,7 +350,8 @@ if (debug .and. mpi_cfg%myid==0) print *, 'Workers has computed background field
 call acc_perpwindcurrents(sigP,sigH,vn2,vn3,B1,J2,J3)
 if (debug .and. mpi_cfg%myid==0) print *, 'Workers has computed wind currents...'
 if (flagdiamagnetic) then
-  call acc_pressurecurrents(muP,muH,ns,Ts,x,J2,J3) 
+  call acc_pressurecurrents(muP,muH,ns,Ts,x,J2,J3)
+  if (debug .and. mpi_cfg%myid==0) print *, 'Computed pressure currents...' 
 end if
 if (flaggravdrift) then
   call acc_perpgravcurrents(sigPgrav,sigHgrav,g2,g3,J2,J3)
@@ -389,13 +390,6 @@ real(wp), dimension(:,:,:), intent(inout) :: J2, J3
 
 
 !> FIXME:  need to make consistent with velocity calculations flagswap /= 1
-!if (flagswap==1) then
-!  J2=J2+sigP*E2+sigH*E3
-!  J3=J3-1*sigH*E2+sigP*E3
-!else
-!  J2=J2+sigP*E2-sigH*E3
-!  J3=J3+sigH*E2+sigP*E3
-!end if
 if (flagswap/=1) then
   J2=J2+sigP*E2-sigH*E3
   J3=J3+sigH*E2+sigP*E3
@@ -425,14 +419,8 @@ lx1=size(sigP,1)
 lx2=size(sigP,2)
 lx3=size(sigP,3)
 
-!if (flagswap==1) then
-!  J2=J2-sigP*vn3*B1(1:lx1,1:lx2,1:lx3)+sigH*vn2*B1(1:lx1,1:lx2,1:lx3)
-!  J3=J3+sigH*vn3*B1(1:lx1,1:lx2,1:lx3)+sigP*vn2*B1(1:lx1,1:lx2,1:lx3)
-!else
-!  J2=J2+sigP*vn3*B1(1:lx1,1:lx2,1:lx3)+sigH*vn2*B1(1:lx1,1:lx2,1:lx3)
-!  J3=J3+sigH*vn3*B1(1:lx1,1:lx2,1:lx3)-sigP*vn2*B1(1:lx1,1:lx2,1:lx3)
-!end if
-if (flagswap/=1) then
+if (flagswap/=1) then     
+  !! FIXME:  signs here require some explanation...  Perhaps add to formulation doc?
   J2=J2+sigP*vn3*B1(1:lx1,1:lx2,1:lx3)+sigH*vn2*B1(1:lx1,1:lx2,1:lx3)
   J3=J3+sigH*vn3*B1(1:lx1,1:lx2,1:lx3)-sigP*vn2*B1(1:lx1,1:lx2,1:lx3)
 else    !note signs on Pedersen terms change here (single cross product) but not Hall (double cross product generates cancelling sign changes)
@@ -506,9 +494,6 @@ else
 end if
 
 end subroutine acc_perpgravcurrents
-
-
-!> subroutine acc_pressurecurrents(muP,muH,ns,Ts,J2,J3)
 
 
 subroutine pot2perpfield(Phi,x,E2,E3)
