@@ -14,13 +14,12 @@ on:
 jobs:
 
   hdf5:
-    runs-on: macos-latest
+    runs-on: macos-11.0
     steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-python@v2
       with:
-        python-version: '3.7'
-    # leave as 3.7 to avoid pip install in 3.8 but run in 3.7
+        python-version: '3.8'
 
     - run: brew install gcc pkg-config ninja lapack open-mpi hdf5 scalapack
 
