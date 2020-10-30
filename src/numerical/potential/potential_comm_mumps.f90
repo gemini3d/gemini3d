@@ -250,8 +250,8 @@ if (flagdiamagnetic) then
     do isp=1,lsp
       pressure=ns(1:lx1,1:lx2,1:lx3,isp)*kB*Ts(1:lx1,1:lx2,1:lx3,isp)    ! compute pressure from n,T
       call halo_pot(pressure,tag%pressure,x%flagper,.false.)             ! boundary fill via haloing
-      gradpx=grad3D2(pressure,x,0,lx1+1,0,lx2+1,0,lx3+1)                 ! compute gradient x2,x3 components
-      gradpy=grad3D3(pressure,x,0,lx1+1,0,lx2+1,0,lx3+1)
+      gradpx=grad3D2(pressure(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)                 ! compute gradient x2,x3 components
+      gradpy=grad3D3(pressure(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
       vs2(1:lx1,1:lx2,1:lx3,isp)=vs2(1:lx1,1:lx2,1:lx3,isp) &
                 -muP(1:lx1,1:lx2,1:lx3,isp)/ns(1:lx1,1:lx2,1:lx3,isp)/qs(isp)*gradpx(1:lx1,1:lx2,1:lx3) &
                 +muH(1:lx1,1:lx2,1:lx3,isp)/ns(1:lx1,1:lx2,1:lx3,isp)/qs(isp)*gradpy(1:lx1,1:lx2,1:lx3)
@@ -263,8 +263,8 @@ if (flagdiamagnetic) then
     do isp=1,lsp
       pressure=ns(1:lx1,1:lx2,1:lx3,isp)*kB*Ts(1:lx1,1:lx2,1:lx3,isp)    ! compute pressure from n,T
       call halo_pot(pressure,tag%pressure,x%flagper,.false.)             ! boundary fill via haloing
-      gradpx=grad3D2(pressure,x,0,lx1+1,0,lx2+1,0,lx3+1)                 ! compute gradient x2,x3 components
-      gradpy=grad3D3(pressure,x,0,lx1+1,0,lx2+1,0,lx3+1)
+      gradpx=grad3D2(pressure(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)                 ! compute gradient x2,x3 components
+      gradpy=grad3D3(pressure(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
       vs2(1:lx1,1:lx2,1:lx3,isp)=vs2(1:lx1,1:lx2,1:lx3,isp) &
                 -muP(1:lx1,1:lx2,1:lx3,isp)/ns(1:lx1,1:lx2,1:lx3,isp)/qs(isp)*gradpx(1:lx1,1:lx2,1:lx3) &
                 -muH(1:lx1,1:lx2,1:lx3,isp)/ns(1:lx1,1:lx2,1:lx3,isp)/qs(isp)*gradpy(1:lx1,1:lx2,1:lx3)
@@ -304,7 +304,6 @@ end if
 end subroutine velocities
 
 
-!>FIXME:  also needs the mobilities as input now due to pressure current terms.
 subroutine potential_sourceterms(sigP,sigH,sigPgrav,sigHgrav,E02,E03,vn2,vn3,B1,muP,muH,ns,Ts,x, &
                                  flaggravdrift,flagdiamagnetic,srcterm)
 
@@ -357,7 +356,6 @@ if (flaggravdrift) then
   call acc_perpgravcurrents(sigPgrav,sigHgrav,g2,g3,J2,J3)
   if (debug .and. mpi_cfg%myid==0) print *, 'Workers has computed gravitational currents...'
 end if
-!> FIXME:  need to add in pressure currents and then take divergence, also need mobilities for pressure currents.
 
 J1halo(1:lx1,1:lx2,1:lx3)=J1     
 !! temporary extended arrays to be populated with boundary data
@@ -389,7 +387,6 @@ real(wp), dimension(:,:,:), intent(in) :: E2,E3
 real(wp), dimension(:,:,:), intent(inout) :: J2, J3
 
 
-!> FIXME:  need to make consistent with velocity calculations flagswap /= 1
 if (flagswap/=1) then
   J2=J2+sigP*E2-sigH*E3
   J3=J3+sigH*E2+sigP*E3
@@ -456,8 +453,8 @@ if (flagswap/=1) then
   do isp=1,lsp
     pressure=ns(1:lx1,1:lx2,1:lx3,isp)*kB*Ts(1:lx1,1:lx2,1:lx3,isp)
     call halo_pot(pressure,tag%pressure,x%flagper,.false.)
-    gradpx=grad3D2(pressure,x,0,lx1+1,0,lx2+1,0,lx3+1)
-    gradpy=grad3D3(pressure,x,0,lx1+1,0,lx2+1,0,lx3+1)
+    gradpx=grad3D2(pressure(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
+    gradpy=grad3D3(pressure(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
     J2=J2+muP(:,:,:,isp)*gradpx(1:lx1,1:lx2,1:lx3)-muH(:,:,:,isp)*gradpy(1:lx1,1:lx2,1:lx3)
     J3=J3+muH(:,:,:,isp)*gradpx(1:lx1,1:lx2,1:lx3)+muP(:,:,:,isp)*gradpy(1:lx1,1:lx2,1:lx3)
   end do
@@ -465,8 +462,8 @@ else
   do isp=1,lsp
     pressure=ns(1:lx1,1:lx2,1:lx3,isp)*kB*Ts(1:lx1,1:lx2,1:lx3,isp)
     call halo_pot(pressure,tag%pressure,x%flagper,.false.)
-    gradpx=grad3D2(pressure,x,0,lx1+1,0,lx2+1,0,lx3+1)
-    gradpy=grad3D3(pressure,x,0,lx1+1,0,lx2+1,0,lx3+1)
+    gradpx=grad3D2(pressure(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
+    gradpy=grad3D3(pressure(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
     J2=J2+muP(:,:,:,isp)*gradpx(1:lx1,1:lx2,1:lx3)+muH(:,:,:,isp)*gradpy(1:lx1,1:lx2,1:lx3)
     J3=J3-muH(:,:,:,isp)*gradpx(1:lx1,1:lx2,1:lx3)+muP(:,:,:,isp)*gradpy(1:lx1,1:lx2,1:lx3)
   end do
