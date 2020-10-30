@@ -173,7 +173,7 @@ if (cfg%potsolve == 1 .or. cfg%potsolve == 3) then    !electrostatic solve or el
   call cpu_time(tstart)
 
   ! Execute solution for ionospheric potential
-  if (mpi_cfg%myid/=0) then    
+  if (mpi_cfg%myid/=0) then
     !! role-specific communication pattern (all-to-root-to-all), workers initiate with sends
      call potential_workers_mpi(it,t,dt,sig0,sigP,sigH,sigPgrav,sigHgrav,muP,muH,incap,vs2,vs3, &
                                  vn2,vn3,cfg,B1,ns,Ts,x,E1,E2,E3,J1,J2,J3)
@@ -271,7 +271,7 @@ if (flagdiamagnetic) then
                 -muH(1:lx1,1:lx2,1:lx3,isp)/ns(1:lx1,1:lx2,1:lx3,isp)/qs(isp)*gradpy(1:lx1,1:lx2,1:lx3)
       vs3(1:lx1,1:lx2,1:lx3,isp)=vs3(1:lx1,1:lx2,1:lx3,isp) &
                 +muH(1:lx1,1:lx2,1:lx3,isp)/ns(1:lx1,1:lx2,1:lx3,isp)/qs(isp)*gradpx(1:lx1,1:lx2,1:lx3) &
-                -muP(1:lx1,1:lx2,1:lx3,isp)/ns(1:lx1,1:lx2,1:lx3,isp)/qs(isp)*gradpy(1:lx1,1:lx2,1:lx3)    
+                -muP(1:lx1,1:lx2,1:lx3,isp)/ns(1:lx1,1:lx2,1:lx3,isp)/qs(isp)*gradpy(1:lx1,1:lx2,1:lx3)
     end do
   end if
 end if
@@ -340,25 +340,25 @@ lx3=size(sigP,3)
 
 !-------
 !CONDUCTION CURRENT BACKGROUND SOURCE TERMS FOR POTENTIAL EQUATION. MUST COME AFTER CALL TO BC CODE.
-J1 = 0                  
+J1 = 0
 !! so this div is only perp components
-J2 = 0 
-J3 = 0     
+J2 = 0
+J3 = 0
 !! for first current term zero everything out
 call acc_perpconductioncurrents(sigP,sigH,E02,E03,J2,J3)     !background conduction currents only
 if (debug .and. mpi_cfg%myid==0) print *, 'Workers has computed background field currents...'
 call acc_perpwindcurrents(sigP,sigH,vn2,vn3,B1,J2,J3)
 if (debug .and. mpi_cfg%myid==0) print *, 'Workers has computed wind currents...'
 if (flagdiamagnetic) then
-  call acc_pressurecurrents(muP,muH,ns,Ts,x,J2,J3)
-  if (debug .and. mpi_cfg%myid==0) print *, 'Computed pressure currents...' 
+!  call acc_pressurecurrents(muP,muH,ns,Ts,x,J2,J3)
+  if (debug .and. myid==0) print *, 'Computed pressure currents...'
 end if
 if (flaggravdrift) then
   call acc_perpgravcurrents(sigPgrav,sigHgrav,g2,g3,J2,J3)
   if (debug .and. mpi_cfg%myid==0) print *, 'Workers has computed gravitational currents...'
 end if
 
-J1halo(1:lx1,1:lx2,1:lx3)=J1     
+J1halo(1:lx1,1:lx2,1:lx3)=J1
 !! temporary extended arrays to be populated with boundary data
 J2halo(1:lx1,1:lx2,1:lx3)=J2
 J3halo(1:lx1,1:lx2,1:lx3)=J3
@@ -417,7 +417,7 @@ lx1=size(sigP,1)
 lx2=size(sigP,2)
 lx3=size(sigP,3)
 
-if (flagswap/=1) then     
+if (flagswap/=1) then
   !! FIXME:  signs here require some explanation...  Perhaps add to formulation doc?
   J2=J2+sigP*vn3*B1(1:lx1,1:lx2,1:lx3)+sigH*vn2*B1(1:lx1,1:lx2,1:lx3)
   J3=J3+sigH*vn3*B1(1:lx1,1:lx2,1:lx3)-sigP*vn2*B1(1:lx1,1:lx2,1:lx3)
@@ -459,7 +459,7 @@ if (flagswap/=1) then
     J2=J2+muP(:,:,:,isp)*gradpx(1:lx1,1:lx2,1:lx3)-muH(:,:,:,isp)*gradpy(1:lx1,1:lx2,1:lx3)
     J3=J3+muH(:,:,:,isp)*gradpx(1:lx1,1:lx2,1:lx3)+muP(:,:,:,isp)*gradpy(1:lx1,1:lx2,1:lx3)
   end do
-else   
+else
   do isp=1,lsp
     pressure(1:lx1,1:lx2,1:lx3)=ns(1:lx1,1:lx2,1:lx3,isp)*kB*Ts(1:lx1,1:lx2,1:lx3,isp)
     call halo_pot(pressure,tag%pressure,x%flagper,.false.)
@@ -616,7 +616,7 @@ if (idup==mpi_cfg%lid2) then
     parmhalo(1:lx1,lx2+1,1:lx3)=parmhalo(1:lx1,lx2,1:lx3)
   end if
 end if
-if (.not. flagper) then              
+if (.not. flagper) then
   !! musn't overwrite ghost cells if perioidc is chosen, only if aperiodic...
   if (idleft==-1) then
     parmhalo(1:lx1,1:lx2,0)=parmhalo(1:lx1,1:lx2,1)
