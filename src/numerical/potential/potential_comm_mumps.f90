@@ -40,7 +40,6 @@ interface potential_root_mpi
   module procedure potential_root_mpi_curv
 end interface potential_root_mpi
 
-!> FIXME:  need to add mobilities as input if pressure terms are calculated...
 interface ! potential_worker.f90
   module subroutine potential_workers_mpi(it,t,dt,sig0,sigP,sigH,sigPgrav,sigHgrav, &
                                             muP,muH, &
@@ -64,7 +63,6 @@ interface ! potential_worker.f90
   end subroutine potential_workers_mpi
 end interface
 
-!> FIXME:  mobilities needed from pressure-driven current terms
 interface ! potential_root.f90
   module subroutine potential_root_mpi_curv(it,t,dt,sig0,sigP,sigH,sigPgrav,sigHgrav, &
                                               muP,muH, &
@@ -141,8 +139,6 @@ lx3=size(ns,3)-4
 
 !POTENTIAL SOLUTION (IF REQUIRED)
 call cpu_time(tstart)
-!> FIXME: instead of muvn output just electrical mobility + total collision freq. then all other terms follow
-! ??? another sigma for pressure term???  Any way to do this without wasting more memory...  Sigmas as 3D arrays so not too bad...
 call conductivities(nn,Tn,ns,Ts,vs1,B1,sig0,sigP,sigH,muP,muH,nusn,sigPgrav,sigHgrav)
 
 
@@ -237,27 +233,24 @@ if(flagswap/=1) then
     vs2(1:lx1,1:lx2,1:lx3,isp)=muP(:,:,:,isp)*E2-muH(:,:,:,isp)*E3+ &
                       (muP(:,:,:,isp)*vn2-muH(:,:,:,isp)*vn3)*(ms(isp)*nusn(:,:,:,isp)/qs(isp))
     vs3(1:lx1,1:lx2,1:lx3,isp)=muH(:,:,:,isp)*E2+muP(:,:,:,isp)*E3+ &
-                      (muP(:,:,:,isp)*vn2+muH(:,:,:,isp)*vn3)*ms(isp)*nusn(:,:,:,isp)/qs(isp)
+                      (muH(:,:,:,isp)*vn2+muP(:,:,:,isp)*vn3)*ms(isp)*nusn(:,:,:,isp)/qs(isp)
   end do
-else                !flip signs on the cross products in 2D.  Note that due to dimension shuffling E2,3 mapping is already handled
+else                !flip signs on the cross products in 2D.  Note that due to dimension shuffling E2,3 mapping is already handled.
   do isp=1,lsp
     vs2(1:lx1,1:lx2,1:lx3,isp)=muP(:,:,:,isp)*E2+muH(:,:,:,isp)*E3+ &
                       (muP(:,:,:,isp)*vn2+muH(:,:,:,isp)*vn3)*ms(isp)*nusn(:,:,:,isp)/qs(isp)
-    vs3(1:lx1,1:lx2,1:lx3,isp)=-muH(:,:,:,isp)*E2+muP(:,:,:,isp)*E3- &
-                      (muH(:,:,:,isp)*vn2+muP(:,:,:,isp)*vn3)*ms(isp)*nusn(:,:,:,isp)/qs(isp)
+    vs3(1:lx1,1:lx2,1:lx3,isp)=-muH(:,:,:,isp)*E2+muP(:,:,:,isp)*E3+ &
+                      (-1._wp*muH(:,:,:,isp)*vn2+muP(:,:,:,isp)*vn3)*ms(isp)*nusn(:,:,:,isp)/qs(isp)
   end do
 end if
 
-!> Pressure/diamagnetic terms (optional)
+!> Pressure/diamagnetic terms (if required)
 if (flagdiamagnetic) then
   if(flagswap/=1) then
     do isp=1,lsp
-      ! compute pressure from n,T
-      pressure=ns(1:lx1,1:lx2,1:lx3,isp)*kB*Ts(1:lx1,1:lx2,1:lx3,isp)
-      ! boundary fill via haloing
-      call halo_pot(pressure,tag%pressure,x%flagper,.false.)
-      ! compute gradient x2,x3 components
-      gradpx=grad3D2(pressure,x,0,lx1+1,0,lx2+1,0,lx3+1)
+      pressure=ns(1:lx1,1:lx2,1:lx3,isp)*kB*Ts(1:lx1,1:lx2,1:lx3,isp)    ! compute pressure from n,T
+      call halo_pot(pressure,tag%pressure,x%flagper,.false.)             ! boundary fill via haloing
+      gradpx=grad3D2(pressure,x,0,lx1+1,0,lx2+1,0,lx3+1)                 ! compute gradient x2,x3 components
       gradpy=grad3D3(pressure,x,0,lx1+1,0,lx2+1,0,lx3+1)
       vs2(1:lx1,1:lx2,1:lx3,isp)=vs2(1:lx1,1:lx2,1:lx3,isp) &
                 -muP(1:lx1,1:lx2,1:lx3,isp)/ns(1:lx1,1:lx2,1:lx3,isp)/qs(isp)*gradpx(1:lx1,1:lx2,1:lx3) &
@@ -266,10 +259,18 @@ if (flagdiamagnetic) then
                 -muH(1:lx1,1:lx2,1:lx3,isp)/ns(1:lx1,1:lx2,1:lx3,isp)/qs(isp)*gradpx(1:lx1,1:lx2,1:lx3) &
                 -muP(1:lx1,1:lx2,1:lx3,isp)/ns(1:lx1,1:lx2,1:lx3,isp)/qs(isp)*gradpy(1:lx1,1:lx2,1:lx3)
     end do
-  else
+  else             !coordinates have been swapped so flip signs on the cross product (Hall) terms
     do isp=1,lsp
-      vs2(1:lx1,1:lx2,1:lx3,isp)=vs2(1:lx1,1:lx2,1:lx3,isp)  !!!FIXME:  need to fix signs from odd permutation of coords.
-      vs3(1:lx1,1:lx2,1:lx3,isp)=vs3(1:lx1,1:lx2,1:lx3,isp)
+      pressure=ns(1:lx1,1:lx2,1:lx3,isp)*kB*Ts(1:lx1,1:lx2,1:lx3,isp)    ! compute pressure from n,T
+      call halo_pot(pressure,tag%pressure,x%flagper,.false.)             ! boundary fill via haloing
+      gradpx=grad3D2(pressure,x,0,lx1+1,0,lx2+1,0,lx3+1)                 ! compute gradient x2,x3 components
+      gradpy=grad3D3(pressure,x,0,lx1+1,0,lx2+1,0,lx3+1)
+      vs2(1:lx1,1:lx2,1:lx3,isp)=vs2(1:lx1,1:lx2,1:lx3,isp) &
+                -muP(1:lx1,1:lx2,1:lx3,isp)/ns(1:lx1,1:lx2,1:lx3,isp)/qs(isp)*gradpx(1:lx1,1:lx2,1:lx3) &
+                -muH(1:lx1,1:lx2,1:lx3,isp)/ns(1:lx1,1:lx2,1:lx3,isp)/qs(isp)*gradpy(1:lx1,1:lx2,1:lx3)
+      vs3(1:lx1,1:lx2,1:lx3,isp)=vs3(1:lx1,1:lx2,1:lx3,isp) &
+                +muH(1:lx1,1:lx2,1:lx3,isp)/ns(1:lx1,1:lx2,1:lx3,isp)/qs(isp)*gradpx(1:lx1,1:lx2,1:lx3) &
+                -muP(1:lx1,1:lx2,1:lx3,isp)/ns(1:lx1,1:lx2,1:lx3,isp)/qs(isp)*gradpy(1:lx1,1:lx2,1:lx3)    
     end do
   end if
 end if
@@ -278,7 +279,7 @@ end if
 if (flaggravdrift) then
   if(flagswap/=1) then
     do isp=1,lsp
-      vs2(1:lx1,1:lx2,1:lx3,isp)=vs2(1:lx1,1:lx2,1:lx3,isp)+ms(isp)/qs(isp)*(muP(:,:,:,isp)*g2+muH(:,:,:,isp)*g3)
+      vs2(1:lx1,1:lx2,1:lx3,isp)=vs2(1:lx1,1:lx2,1:lx3,isp)+ms(isp)/qs(isp)*(muP(:,:,:,isp)*g2-muH(:,:,:,isp)*g3)    !FIXME: +muH looks suspicious, I'm changing to (-)
       vs3(1:lx1,1:lx2,1:lx3,isp)=vs3(1:lx1,1:lx2,1:lx3,isp)+ms(isp)/qs(isp)*(muH(:,:,:,isp)*g2+muP(:,:,:,isp)*g3)
     end do
   else
@@ -288,6 +289,7 @@ if (flaggravdrift) then
     end do
   end if
 end if
+
 
 !! If it were appropriate this is how polarzations drifts could be computed.  However the particular quasistatic
 !   model that we use explicitly omits this from the drift calculation which is then used in convective term in
@@ -387,12 +389,19 @@ real(wp), dimension(:,:,:), intent(inout) :: J2, J3
 
 
 !> FIXME:  need to make consistent with velocity calculations flagswap /= 1
-if (flagswap==1) then
-  J2=J2+sigP*E2+sigH*E3
-  J3=J3-1*sigH*E2+sigP*E3
-else
+!if (flagswap==1) then
+!  J2=J2+sigP*E2+sigH*E3
+!  J3=J3-1*sigH*E2+sigP*E3
+!else
+!  J2=J2+sigP*E2-sigH*E3
+!  J3=J3+sigH*E2+sigP*E3
+!end if
+if (flagswap/=1) then
   J2=J2+sigP*E2-sigH*E3
   J3=J3+sigH*E2+sigP*E3
+else
+  J2=J2+sigP*E2+sigH*E3
+  J3=J3-1*sigH*E2+sigP*E3
 end if
 
 end subroutine acc_perpconductioncurrents
@@ -416,12 +425,19 @@ lx1=size(sigP,1)
 lx2=size(sigP,2)
 lx3=size(sigP,3)
 
-if (flagswap==1) then
-  J2=J2-sigP*vn3*B1(1:lx1,1:lx2,1:lx3)+sigH*vn2*B1(1:lx1,1:lx2,1:lx3)
-  J3=J3+sigH*vn3*B1(1:lx1,1:lx2,1:lx3)+sigP*vn2*B1(1:lx1,1:lx2,1:lx3)
-else
+!if (flagswap==1) then
+!  J2=J2-sigP*vn3*B1(1:lx1,1:lx2,1:lx3)+sigH*vn2*B1(1:lx1,1:lx2,1:lx3)
+!  J3=J3+sigH*vn3*B1(1:lx1,1:lx2,1:lx3)+sigP*vn2*B1(1:lx1,1:lx2,1:lx3)
+!else
+!  J2=J2+sigP*vn3*B1(1:lx1,1:lx2,1:lx3)+sigH*vn2*B1(1:lx1,1:lx2,1:lx3)
+!  J3=J3+sigH*vn3*B1(1:lx1,1:lx2,1:lx3)-sigP*vn2*B1(1:lx1,1:lx2,1:lx3)
+!end if
+if (flagswap/=1) then
   J2=J2+sigP*vn3*B1(1:lx1,1:lx2,1:lx3)+sigH*vn2*B1(1:lx1,1:lx2,1:lx3)
   J3=J3+sigH*vn3*B1(1:lx1,1:lx2,1:lx3)-sigP*vn2*B1(1:lx1,1:lx2,1:lx3)
+else    !note signs on Pedersen terms change here (single cross product) but not Hall (double cross product generates cancelling sign changes)
+  J2=J2-sigP*vn3*B1(1:lx1,1:lx2,1:lx3)+sigH*vn2*B1(1:lx1,1:lx2,1:lx3)
+  J3=J3+sigH*vn3*B1(1:lx1,1:lx2,1:lx3)+sigP*vn2*B1(1:lx1,1:lx2,1:lx3)
 end if
 
 end subroutine acc_perpwindcurrents
@@ -448,21 +464,23 @@ lx1=size(J2,1)
 lx2=size(J2,2)
 lx3=size(J2,3)
 
-if (flagswap==1) then!FIXME:  update this
-  J2=J2
-  J3=J3
-else   
+if (flagswap/=1) then
   do isp=1,lsp
-    ! compute pressure from n,T
     pressure=ns(1:lx1,1:lx2,1:lx3,isp)*kB*Ts(1:lx1,1:lx2,1:lx3,isp)
-    ! boundary fill via haloing
     call halo_pot(pressure,tag%pressure,x%flagper,.false.)
-    ! compute gradient x2,x3 components
     gradpx=grad3D2(pressure,x,0,lx1+1,0,lx2+1,0,lx3+1)
     gradpy=grad3D3(pressure,x,0,lx1+1,0,lx2+1,0,lx3+1)
-  
     J2=J2+muP(:,:,:,isp)*gradpx(1:lx1,1:lx2,1:lx3)-muH(:,:,:,isp)*gradpy(1:lx1,1:lx2,1:lx3)
     J3=J3+muH(:,:,:,isp)*gradpx(1:lx1,1:lx2,1:lx3)+muP(:,:,:,isp)*gradpy(1:lx1,1:lx2,1:lx3)
+  end do
+else   
+  do isp=1,lsp
+    pressure=ns(1:lx1,1:lx2,1:lx3,isp)*kB*Ts(1:lx1,1:lx2,1:lx3,isp)
+    call halo_pot(pressure,tag%pressure,x%flagper,.false.)
+    gradpx=grad3D2(pressure,x,0,lx1+1,0,lx2+1,0,lx3+1)
+    gradpy=grad3D3(pressure,x,0,lx1+1,0,lx2+1,0,lx3+1)
+    J2=J2+muP(:,:,:,isp)*gradpx(1:lx1,1:lx2,1:lx3)+muH(:,:,:,isp)*gradpy(1:lx1,1:lx2,1:lx3)
+    J3=J3-muH(:,:,:,isp)*gradpx(1:lx1,1:lx2,1:lx3)+muP(:,:,:,isp)*gradpy(1:lx1,1:lx2,1:lx3)
   end do
 end if
 
@@ -479,12 +497,12 @@ real(wp), dimension(:,:,:), intent(in) :: g2,g3
 real(wp), dimension(:,:,:), intent(inout) :: J2, J3
 
 
-if (flagswap==1) then
-  J2=J2+sigPgrav*g2+sigHgrav*g3       !grav x2 current
-  J3=J3-1*sigHgrav*g2+sigPgrav*g3    !grav x3 current
-else
+if (flagswap/=1) then
   J2=J2+sigPgrav*g2-sigHgrav*g3
   J3=J2+sigHgrav*g2+sigPgrav*g3
+else
+  J2=J2+sigPgrav*g2+sigHgrav*g3       !grav x2 current
+  J3=J3-1*sigHgrav*g2+sigPgrav*g3     !grav x3 current
 end if
 
 end subroutine acc_perpgravcurrents
