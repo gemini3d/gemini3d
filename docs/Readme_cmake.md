@@ -8,7 +8,23 @@ cmake -B build -Doption=true
 cmake -B build -Doption=false
 ```
 
-## Homebrew
+### Windows
+
+If you happen to look inside build/CMakeFiles/CMakeError.log, with MS-MPI you will currently see text like
+
+```
+build/CMakeFiles/FindMPI/test_mpi.f90:2:11:
+
+    2 |       use mpi_f08
+      |           1
+Fatal Error: Cannot open module file 'mpi_f08.mod' for reading at (1): No such file or directory
+compilation terminated.
+```
+
+This is normal because MS-MPI does not yet have MPI-3.
+Gemini3D uses MPI-2 so this is not relevant to Gemini3D.
+
+### MacOS: Homebrew
 
 If using Homebrew on MacOS, be sure Homebrew's GCC is used instead of AppleClang or other non-Homebrew compilers so that the Homebrew library ABIs match the compiler ABI.
 
