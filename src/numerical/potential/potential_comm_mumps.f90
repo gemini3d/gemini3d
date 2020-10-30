@@ -193,7 +193,6 @@ if (cfg%potsolve == 1 .or. cfg%potsolve == 3) then    !electrostatic solve or el
   end if
 
 else if (cfg%potsolve == 2) then  !inductive form of model, could this be subcycled to speed things up?
-  !Do nothing for now...
   error stop 'Inductive solves are not supported yet...'
 else   !null solve; just force everything to zero
   E1=0d0; E2=0d0; E3=0d0; J1=0d0; J2=0d0; J3=0d0;
