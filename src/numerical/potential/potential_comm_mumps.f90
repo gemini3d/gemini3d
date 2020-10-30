@@ -248,7 +248,8 @@ end if
 if (flagdiamagnetic) then
   if(flagswap/=1) then
     do isp=1,lsp
-      pressure=ns(1:lx1,1:lx2,1:lx3,isp)*kB*Ts(1:lx1,1:lx2,1:lx3,isp)    ! compute pressure from n,T
+      pressure(1:lx1,1:lx2,1:lx3)=ns(1:lx1,1:lx2,1:lx3,isp)*kB*Ts(1:lx1,1:lx2,1:lx3,isp)    ! compute pressure from n,T
+!      print*, myid,isp,minval(pressure(1:lx1,1:lx2,1:lx3)),maxval(pressure(1:lx1,1:lx2,1:lx3))
       call halo_pot(pressure,tag%pressure,x%flagper,.false.)             ! boundary fill via haloing
       gradpx=grad3D2(pressure(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)                 ! compute gradient x2,x3 components
       gradpy=grad3D3(pressure(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
@@ -261,7 +262,7 @@ if (flagdiamagnetic) then
     end do
   else             !coordinates have been swapped so flip signs on the cross product (Hall) terms
     do isp=1,lsp
-      pressure=ns(1:lx1,1:lx2,1:lx3,isp)*kB*Ts(1:lx1,1:lx2,1:lx3,isp)    ! compute pressure from n,T
+      pressure(1:lx1,1:lx2,1:lx3)=ns(1:lx1,1:lx2,1:lx3,isp)*kB*Ts(1:lx1,1:lx2,1:lx3,isp)    ! compute pressure from n,T
       call halo_pot(pressure,tag%pressure,x%flagper,.false.)             ! boundary fill via haloing
       gradpx=grad3D2(pressure(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)                 ! compute gradient x2,x3 components
       gradpy=grad3D3(pressure(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
@@ -451,7 +452,7 @@ lx3=size(J2,3)
 
 if (flagswap/=1) then
   do isp=1,lsp
-    pressure=ns(1:lx1,1:lx2,1:lx3,isp)*kB*Ts(1:lx1,1:lx2,1:lx3,isp)
+    pressure(1:lx1,1:lx2,1:lx3)=ns(1:lx1,1:lx2,1:lx3,isp)*kB*Ts(1:lx1,1:lx2,1:lx3,isp)
     call halo_pot(pressure,tag%pressure,x%flagper,.false.)
     gradpx=grad3D2(pressure(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
     gradpy=grad3D3(pressure(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
@@ -460,7 +461,7 @@ if (flagswap/=1) then
   end do
 else   
   do isp=1,lsp
-    pressure=ns(1:lx1,1:lx2,1:lx3,isp)*kB*Ts(1:lx1,1:lx2,1:lx3,isp)
+    pressure(1:lx1,1:lx2,1:lx3)=ns(1:lx1,1:lx2,1:lx3,isp)*kB*Ts(1:lx1,1:lx2,1:lx3,isp)
     call halo_pot(pressure,tag%pressure,x%flagper,.false.)
     gradpx=grad3D2(pressure(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
     gradpy=grad3D3(pressure(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
