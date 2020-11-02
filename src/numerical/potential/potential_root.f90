@@ -418,6 +418,9 @@ end if
 J2=0._wp; J3=0._wp    ! must be zeroed out before we accumulate currents
 call acc_perpconductioncurrents(sigP,sigH,E2,E3,J2,J3)
 call acc_perpwindcurrents(sigP,sigH,vn2,vn3,B1,J2,J3)
+if (cfg%flagdiamagnetic) then
+  call acc_pressurecurrents(muP,muH,ns,Ts,x,J2,J3)
+end if
 if (cfg%flaggravdrift) then
   call acc_perpgravcurrents(sigPgrav,sigHgrav,g2,g3,J2,J3)
 end if
