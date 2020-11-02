@@ -1,7 +1,6 @@
 name: ci_macos
 env:
   FC: gfortran-10
-  CC: gcc-10
   CMAKE_GENERATOR: Ninja
 
 on:
@@ -33,7 +32,8 @@ jobs:
         name: MacOS_CMake_Unit_log
         path: build/CMakeFiles/CMakeError.log
 
-    - run: ctest -S setup.cmake -E 3d -VV
+    - run: ctest -E 3d -V
+      working-directory: build
 
   no_mpi:
     needs: hdf5
@@ -45,7 +45,7 @@ jobs:
         python-version: '3.7'
     # leave as 3.7 to avoid pip install in 3.8 but run in 3.7
 
-    - run: brew install gcc pkg-config ninja lapack hdf5
+    - run: brew install gcc ninja lapack hdf5
 
 # CI is too slow for 3d_glow
     - name: build and test without MPI
@@ -58,5 +58,5 @@ jobs:
         path: build/CMakeFiles/CMakeError.log
 
     - name: 2D test without MPI
-      run: ctest -R 2dew_fang -VV
+      run: ctest -R 2dew_fang -V
       working-directory: build

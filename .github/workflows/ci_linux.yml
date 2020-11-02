@@ -1,7 +1,5 @@
 name: ci_linux
 env:
-  FC: gfortran
-  CC: gcc
   CMAKE_GENERATOR: Ninja
 
 on:
@@ -58,7 +56,8 @@ jobs:
         name: Linux_CMake_DebugBuildlog
         path: build/CMakeFiles/CMakeError.log
 
-    - run: ctest -S setup.cmake -R 2dew_fang -VV
+    - run: ctest -R 2dew_fang -V
+      working-directory: build
 
 
   autobuild_no_mpi:
@@ -97,4 +96,5 @@ jobs:
 
     - run: ctest -S setup.cmake -R unit -VV
 
-    - run: ctest -S setup.cmake -E 3d -VV
+    - run: ctest -E 3d -V
+      working-directory: build
