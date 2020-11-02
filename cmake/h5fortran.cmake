@@ -16,8 +16,6 @@ if(hdf5)
     FetchContent_MakeAvailable(h5fortran_proj)
   endif()
 
-  set(HDF5_FOUND true)
-
 else(hdf5)
   message(VERBOSE " using h5fortran dummy")
 
@@ -25,6 +23,4 @@ else(hdf5)
   target_include_directories(h5fortran INTERFACE ${CMAKE_CURRENT_BINARY_DIR}/include)
   set_target_properties(h5fortran PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include)
   add_library(h5fortran::h5fortran ALIAS h5fortran)
-
-  set(HDF5_FOUND false)
 endif(hdf5)
