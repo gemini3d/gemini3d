@@ -1,8 +1,4 @@
 # Finds Lapack, tests, and if not found or broken, autobuild Lapack
-if(lapack_external)
-  include(${CMAKE_CURRENT_LIST_DIR}/lapack_external.cmake)
-  return()
-endif()
 
 if(autobuild)
   find_package(LAPACK)
@@ -10,41 +6,19 @@ else()
   find_package(LAPACK REQUIRED)
 endif()
 
-if(LAPACK_FOUND)
-  set(lapack_external false CACHE BOOL "autobuild Lapack")
-else()
-  include(${CMAKE_CURRENT_LIST_DIR}/lapack_external.cmake)
-  return()
-endif()
+if(NOT LAPACK_FOUND)
+  set(lapack_external true CACHE BOOL "autobuild Lapack")
 
-# -- verify links
+  include(FetchContent)
 
-set(CMAKE_REQUIRED_FLAGS)
-set(CMAKE_REQUIRED_LINK_OPTIONS)
-set(CMAKE_REQUIRED_INCLUDES)
-set(CMAKE_REQUIRED_LIBRARIES LAPACK::LAPACK)
-include(CheckFortranSourceCompiles)
+  FetchContent_Declare(lapack_proj
+    GIT_REPOSITORY https://github.com/scivision/lapack.git
+    GIT_TAG v3.9.0.2
+    CMAKE_ARGS "-Darith=${arith}"
+  )
 
-if("d" IN_LIST arith)
-  check_fortran_source_compiles("double precision, external :: disnan; print *, disnan(0.); end" LAPACK_real64_link SRC_EXT f90)
-  if(NOT LAPACK_real64_link)
-    message(STATUS "Lapack ${LAPACK_LIBRARIES} not building with ${CMAKE_Fortran_COMPILER_ID} ${CMAKE_Fortran_COMPILER_VERSION}")
-    if(NOT autobuild)
-      message(FATAL_ERROR "autobuild=off, so cannot proceed")
-    endif()
-    include(${CMAKE_CURRENT_LIST_DIR}/lapack_external.cmake)
-    return()
-  endif()
-endif()
+  FetchContent_MakeAvailable(lapack_proj)
 
-if("s" IN_LIST arith)
-  check_fortran_source_compiles("real, external :: sisnan; print *, sisnan(0.); end" LAPACK_real32_link SRC_EXT f90)
-  if(NOT LAPACK_real32_link)
-    message(STATUS "Lapack ${LAPACK_LIBRARIES} not building with ${CMAKE_Fortran_COMPILER_ID} ${CMAKE_Fortran_COMPILER_VERSION}")
-    if(NOT autobuild)
-      message(FATAL_ERROR "autobuild=off, so cannot proceed")
-    endif()
-    include(${CMAKE_CURRENT_LIST_DIR}/lapack_external.cmake)
-    return()
-  endif()
+  add_library(LAPACK::LAPACK ALIAS lapack)
+  add_library(BLAS::BLAS ALIAS blas)
 endif()
