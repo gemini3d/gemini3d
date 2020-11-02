@@ -429,7 +429,7 @@ end if
 end subroutine acc_perpwindcurrents
 
 
-subroutine acc_pressurecurrents(muH,muP,ns,Ts,x,J2,J3)
+subroutine acc_pressurecurrents(muP,muH,ns,Ts,x,J2,J3)
 
 !> ***Accumulate*** pressure currents into the variables J2,J3.  See conduction currents
 !    routine for additional caveats.
@@ -459,6 +459,8 @@ if (flagswap/=1) then
     J2=J2-muP(:,:,:,isp)*gradp2(1:lx1,1:lx2,1:lx3)+muH(:,:,:,isp)*gradp3(1:lx1,1:lx2,1:lx3)
     J3=J3-muH(:,:,:,isp)*gradp2(1:lx1,1:lx2,1:lx3)-muP(:,:,:,isp)*gradp3(1:lx1,1:lx2,1:lx3)
   end do
+!  print *, 'Pedersen Mobility (ions):  ',minval(muP(:,:,:,1:lsp-1)),maxval(muP(:,:,:,1:lsp-1))
+!  print *, 'Pedersen Mobility (electrons):  ',lsp,minval(muP(:,:,:,lsp)),maxval(muP(:,:,:,lsp))
 else
   do isp=1,lsp
     pressure(1:lx1,1:lx2,1:lx3)=ns(1:lx1,1:lx2,1:lx3,isp)*kB*Ts(1:lx1,1:lx2,1:lx3,isp)

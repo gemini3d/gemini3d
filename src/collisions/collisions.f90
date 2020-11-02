@@ -260,6 +260,12 @@ do isp=1,lsp
 
   !electrical mobilities
   muP(:,:,:,isp)=mubase*nusn(:,:,:,isp)**2/(nusn(:,:,:,isp)**2+OMs**2)                !Pederson
+!  if (isp==lsp) then
+!    print*, 'Flipping electron mobility signs:  ',lsp
+!    print*, minval(muP(:,:,:,lsp)),maxval(muP(:,:,:,lsp))
+!    muP(:,:,:,lsp)=-1.0*muP(:,:,:,lsp)
+!    print*, minval(muP(:,:,:,lsp)),maxval(muP(:,:,:,lsp))
+!  end if
   muH(:,:,:,isp)=mubase*-1.0_wp*nusn(:,:,:,isp)*OMs/(nusn(:,:,:,isp)**2+OMs**2)       !Hall
 
   !gravity mobilities???
