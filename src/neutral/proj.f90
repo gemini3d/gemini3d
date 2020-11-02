@@ -4,7 +4,6 @@ use, intrinsic :: iso_fortran_env, only: stderr=>error_unit
 
 use grid, only : clear_unitvecs
 use reader, only : get_simsize3
-use timeutils, only : find_lastdate
 
 implicit none (type, external)
 

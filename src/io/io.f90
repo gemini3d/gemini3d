@@ -4,7 +4,6 @@ use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
 
 use config, only : gemini_cfg
 use phys_consts, only : kB,ms,pi,lsp,wp,lwave
-use pathlib, only: mkdir, copyfile, get_suffix
 use mpimod, only: bcast_recv, bcast_send, gather_send, gather_recv,  &
   myid, tag=>gemini_mpi, lid, lid2, lid3
 use grid, only : gridflag,flagswap,lx1,lx2,lx3,lx2all, lx3all

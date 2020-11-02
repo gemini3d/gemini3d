@@ -5,10 +5,10 @@ use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
 use grid, only : gridflag
 use mpimod, only : mpi_realprec
 use reader, only : get_neutral2, get_neutral3
-use timeutils, only : dateinc, date_filename, find_lastdate
+use timeutils, only : dateinc, date_filename
 
 use mpimod, only: mpi_integer, mpi_comm_world, mpi_status_ignore, &
-myid, lid, tag=>gemini_mpi
+lid, tag=>gemini_mpi
 
 implicit none (type, external)
 

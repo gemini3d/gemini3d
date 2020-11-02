@@ -1,5 +1,7 @@
 submodule (io) io_aurora
 
+use pathlib, only : mkdir
+
 use, intrinsic :: ieee_arithmetic, only : ieee_is_finite
 
 implicit none (type, external)
