@@ -27,7 +27,7 @@ use config, only: gemini_cfg
 implicit none (type, external)
 private
 public :: electrodynamics, halo_pot, potential_sourceterms, pot2perpfield, velocities, get_BGEfields, &
-            acc_perpconductioncurrents,acc_perpwindcurrents,acc_perpgravcurrents
+            acc_perpconductioncurrents,acc_perpwindcurrents,acc_perpgravcurrents,acc_pressurecurrents
 
 external :: mpi_send, mpi_recv
 
@@ -217,7 +217,7 @@ real(wp), dimension(-1:,-1:,-1:,:), intent(out) :: vs2,vs3   !> these have ghost
 
 integer :: lx1,lx2,lx3,lsp,isp
 real(wp), dimension(-1:size(E2,1)+2,-1:size(E2,2)+2,-1:size(E2,3)+2) :: pressure
-real(wp), dimension(0:size(E2,1)+1,0:size(E2,2)+1,0:size(E2,3)+1) :: gradpx,gradpy
+real(wp), dimension(0:size(E2,1)+1,0:size(E2,2)+1,0:size(E2,3)+1) :: gradp2,gradp3
 
 !> sizes from the mobility coefficients
 lx1=size(muP,1)
@@ -251,27 +251,27 @@ if (flagdiamagnetic) then
       pressure(1:lx1,1:lx2,1:lx3)=ns(1:lx1,1:lx2,1:lx3,isp)*kB*Ts(1:lx1,1:lx2,1:lx3,isp)    ! compute pressure from n,T
 !      print*, myid,isp,minval(pressure(1:lx1,1:lx2,1:lx3)),maxval(pressure(1:lx1,1:lx2,1:lx3))
       call halo_pot(pressure,tag%pressure,x%flagper,.false.)             ! boundary fill via haloing
-      gradpx=grad3D2(pressure(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)                 ! compute gradient x2,x3 components
-      gradpy=grad3D3(pressure(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
+      gradp2=grad3D2(pressure(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)                 ! compute gradient x2,x3 components
+      gradp3=grad3D3(pressure(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
       vs2(1:lx1,1:lx2,1:lx3,isp)=vs2(1:lx1,1:lx2,1:lx3,isp) &
-                -muP(1:lx1,1:lx2,1:lx3,isp)/ns(1:lx1,1:lx2,1:lx3,isp)/qs(isp)*gradpx(1:lx1,1:lx2,1:lx3) &
-                +muH(1:lx1,1:lx2,1:lx3,isp)/ns(1:lx1,1:lx2,1:lx3,isp)/qs(isp)*gradpy(1:lx1,1:lx2,1:lx3)
+                -muP(1:lx1,1:lx2,1:lx3,isp)/ns(1:lx1,1:lx2,1:lx3,isp)/qs(isp)*gradp2(1:lx1,1:lx2,1:lx3) &
+                +muH(1:lx1,1:lx2,1:lx3,isp)/ns(1:lx1,1:lx2,1:lx3,isp)/qs(isp)*gradp3(1:lx1,1:lx2,1:lx3)
       vs3(1:lx1,1:lx2,1:lx3,isp)=vs3(1:lx1,1:lx2,1:lx3,isp) &
-                -muH(1:lx1,1:lx2,1:lx3,isp)/ns(1:lx1,1:lx2,1:lx3,isp)/qs(isp)*gradpx(1:lx1,1:lx2,1:lx3) &
-                -muP(1:lx1,1:lx2,1:lx3,isp)/ns(1:lx1,1:lx2,1:lx3,isp)/qs(isp)*gradpy(1:lx1,1:lx2,1:lx3)
+                -muH(1:lx1,1:lx2,1:lx3,isp)/ns(1:lx1,1:lx2,1:lx3,isp)/qs(isp)*gradp2(1:lx1,1:lx2,1:lx3) &
+                -muP(1:lx1,1:lx2,1:lx3,isp)/ns(1:lx1,1:lx2,1:lx3,isp)/qs(isp)*gradp3(1:lx1,1:lx2,1:lx3)
     end do
   else             !coordinates have been swapped so flip signs on the cross product (Hall) terms
     do isp=1,lsp
       pressure(1:lx1,1:lx2,1:lx3)=ns(1:lx1,1:lx2,1:lx3,isp)*kB*Ts(1:lx1,1:lx2,1:lx3,isp)    ! compute pressure from n,T
       call halo_pot(pressure,tag%pressure,x%flagper,.false.)             ! boundary fill via haloing
-      gradpx=grad3D2(pressure(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)                 ! compute gradient x2,x3 components
-      gradpy=grad3D3(pressure(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
+      gradp2=grad3D2(pressure(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)                 ! compute gradient x2,x3 components
+      gradp3=grad3D3(pressure(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
       vs2(1:lx1,1:lx2,1:lx3,isp)=vs2(1:lx1,1:lx2,1:lx3,isp) &
-                -muP(1:lx1,1:lx2,1:lx3,isp)/ns(1:lx1,1:lx2,1:lx3,isp)/qs(isp)*gradpx(1:lx1,1:lx2,1:lx3) &
-                -muH(1:lx1,1:lx2,1:lx3,isp)/ns(1:lx1,1:lx2,1:lx3,isp)/qs(isp)*gradpy(1:lx1,1:lx2,1:lx3)
+                -muP(1:lx1,1:lx2,1:lx3,isp)/ns(1:lx1,1:lx2,1:lx3,isp)/qs(isp)*gradp2(1:lx1,1:lx2,1:lx3) &
+                -muH(1:lx1,1:lx2,1:lx3,isp)/ns(1:lx1,1:lx2,1:lx3,isp)/qs(isp)*gradp3(1:lx1,1:lx2,1:lx3)
       vs3(1:lx1,1:lx2,1:lx3,isp)=vs3(1:lx1,1:lx2,1:lx3,isp) &
-                +muH(1:lx1,1:lx2,1:lx3,isp)/ns(1:lx1,1:lx2,1:lx3,isp)/qs(isp)*gradpx(1:lx1,1:lx2,1:lx3) &
-                -muP(1:lx1,1:lx2,1:lx3,isp)/ns(1:lx1,1:lx2,1:lx3,isp)/qs(isp)*gradpy(1:lx1,1:lx2,1:lx3)
+                +muH(1:lx1,1:lx2,1:lx3,isp)/ns(1:lx1,1:lx2,1:lx3,isp)/qs(isp)*gradp2(1:lx1,1:lx2,1:lx3) &
+                -muP(1:lx1,1:lx2,1:lx3,isp)/ns(1:lx1,1:lx2,1:lx3,isp)/qs(isp)*gradp3(1:lx1,1:lx2,1:lx3)    
     end do
   end if
 end if
@@ -329,7 +329,7 @@ real(wp), dimension(-1:size(E02,1)+2,-1:size(E02,2)+2,-1:size(E02,3)+2) :: J1hal
 integer :: lx1,lx2,lx3
 
 real(wp), dimension(-1:size(E02,1)+2,-1:size(E02,2)+2,-1:size(E02,3)+2) :: pressure
-real(wp), dimension(0:size(E02,1)+1,0:size(E02,2)+1,0:size(E02,3)+1) :: gradpx,gradpy
+real(wp), dimension(0:size(E02,1)+1,0:size(E02,2)+1,0:size(E02,3)+1) :: gradp2,gradp3
 
 
 !> sizes from the conductivity coefficients
@@ -350,8 +350,8 @@ if (debug .and. mpi_cfg%myid==0) print *, 'Workers has computed background field
 call acc_perpwindcurrents(sigP,sigH,vn2,vn3,B1,J2,J3)
 if (debug .and. mpi_cfg%myid==0) print *, 'Workers has computed wind currents...'
 if (flagdiamagnetic) then
-!  call acc_pressurecurrents(muP,muH,ns,Ts,x,J2,J3)
-  if (debug .and. myid==0) print *, 'Computed pressure currents...'
+  call acc_pressurecurrents(muP,muH,ns,Ts,x,J2,J3)
+  if (debug .and. mpi_cfg%myid==0) print *, 'Computed pressure currents...' 
 end if
 if (flaggravdrift) then
   call acc_perpgravcurrents(sigPgrav,sigHgrav,g2,g3,J2,J3)
@@ -440,7 +440,7 @@ type(curvmesh), intent(in) :: x
 real(wp), dimension(:,:,:), intent(inout) :: J2, J3
 
 real(wp), dimension(-1:size(J2,1)+2,-1:size(J2,2)+2,-1:size(J2,3)+2) :: pressure
-real(wp), dimension(0:size(J2,1)+1,0:size(J2,2)+1,0:size(J2,3)+1) :: gradpx,gradpy
+real(wp), dimension(0:size(J2,1)+1,0:size(J2,2)+1,0:size(J2,3)+1) :: gradp2,gradp3
 
 integer :: lx1,lx2,lx3,isp
 
@@ -454,19 +454,19 @@ if (flagswap/=1) then
   do isp=1,lsp
     pressure(1:lx1,1:lx2,1:lx3)=ns(1:lx1,1:lx2,1:lx3,isp)*kB*Ts(1:lx1,1:lx2,1:lx3,isp)
     call halo_pot(pressure,tag%pressure,x%flagper,.false.)
-    gradpx=grad3D2(pressure(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
-    gradpy=grad3D3(pressure(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
-    J2=J2+muP(:,:,:,isp)*gradpx(1:lx1,1:lx2,1:lx3)-muH(:,:,:,isp)*gradpy(1:lx1,1:lx2,1:lx3)
-    J3=J3+muH(:,:,:,isp)*gradpx(1:lx1,1:lx2,1:lx3)+muP(:,:,:,isp)*gradpy(1:lx1,1:lx2,1:lx3)
+    gradp2=grad3D2(pressure(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
+    gradp3=grad3D3(pressure(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
+    J2=J2-muP(:,:,:,isp)*gradp2(1:lx1,1:lx2,1:lx3)+muH(:,:,:,isp)*gradp3(1:lx1,1:lx2,1:lx3)
+    J3=J3-muH(:,:,:,isp)*gradp2(1:lx1,1:lx2,1:lx3)-muP(:,:,:,isp)*gradp3(1:lx1,1:lx2,1:lx3)
   end do
 else
   do isp=1,lsp
     pressure(1:lx1,1:lx2,1:lx3)=ns(1:lx1,1:lx2,1:lx3,isp)*kB*Ts(1:lx1,1:lx2,1:lx3,isp)
     call halo_pot(pressure,tag%pressure,x%flagper,.false.)
-    gradpx=grad3D2(pressure(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
-    gradpy=grad3D3(pressure(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
-    J2=J2+muP(:,:,:,isp)*gradpx(1:lx1,1:lx2,1:lx3)+muH(:,:,:,isp)*gradpy(1:lx1,1:lx2,1:lx3)
-    J3=J3-muH(:,:,:,isp)*gradpx(1:lx1,1:lx2,1:lx3)+muP(:,:,:,isp)*gradpy(1:lx1,1:lx2,1:lx3)
+    gradp2=grad3D2(pressure(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
+    gradp3=grad3D3(pressure(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
+    J2=J2-muP(:,:,:,isp)*gradp2(1:lx1,1:lx2,1:lx3)-muH(:,:,:,isp)*gradp3(1:lx1,1:lx2,1:lx3)
+    J3=J3+muH(:,:,:,isp)*gradp2(1:lx1,1:lx2,1:lx3)-muP(:,:,:,isp)*gradp3(1:lx1,1:lx2,1:lx3)
   end do
 end if
 
@@ -617,7 +617,7 @@ if (idup==mpi_cfg%lid2) then
   end if
 end if
 if (.not. flagper) then
-  !! musn't overwrite ghost cells if perioidc is chosen, only if aperiodic...
+  !! musn't overwrite ghost cells if perioidc is chosen
   if (idleft==-1) then
     parmhalo(1:lx1,1:lx2,0)=parmhalo(1:lx1,1:lx2,1)
   end if
