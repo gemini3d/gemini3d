@@ -62,7 +62,7 @@ else()
   set(_mkltype static)
 endif()
 
-pkg_check_modules(pc_mkl mkl-${_mkltype}-lp64-iomp QUIET)
+pkg_check_modules(pc_mkl mkl-${_mkltype}-lp64-iomp)
 
 set(_mkl_libs ${ARGV})
 
@@ -129,7 +129,7 @@ else()
 endif()
 endif()
 
-find_package(PkgConfig QUIET)
+find_package(PkgConfig)
 
 # some systems (Ubuntu 16.04) need BLACS explicitly, when it isn't statically compiled into libscalapack
 # other systems (homebrew, Ubuntu 18.04) link BLACS into libscalapack, and don't need BLACS as a separately linked library.
@@ -141,6 +141,8 @@ if(MKL IN_LIST SCALAPACK_FIND_COMPONENTS)
   # we have to sanitize MKLROOT if it has Windows backslashes (\) otherwise it will break at build time
   # double-quotes are necessary per CMake to_cmake_path docs.
   file(TO_CMAKE_PATH "$ENV{MKLROOT}" MKLROOT)
+
+  list(APPEND CMAKE_PREFIX_PATH ${MKLROOT}/tools/pkgconfig)
 
   if(OpenMPI IN_LIST SCALAPACK_FIND_COMPONENTS)
     mkl_scala(mkl_scalapack_lp64 mkl_blacs_openmpi_lp64)

@@ -9,7 +9,7 @@ if(hdf5)
     include(FetchContent)
     FetchContent_Declare(h5fortran_proj
       GIT_REPOSITORY https://github.com/geospace-code/h5fortran.git
-      GIT_TAG v3.4.0
+      GIT_TAG v3.4.1
       GIT_SHALLOW true
       UPDATE_DISCONNECTED true)
 
