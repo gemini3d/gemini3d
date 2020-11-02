@@ -31,7 +31,7 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/git_rev.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/h5fortran.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/nc4fortran.cmake)
 
-# do these after h5fortran to avoid h5fortran HDF5OK threads test failure
+# do these after h5fortran to avoid threads test failure
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/compilers.cmake)
 # first this to get libs
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/mumps.cmake)
