@@ -55,4 +55,6 @@ if(NOT MUMPS_FOUND)
   FetchContent_MakeAvailable(MUMPS_proj)
 endif()
 
+if(mpi)
 target_link_libraries(MUMPS::MUMPS INTERFACE SCALAPACK::SCALAPACK LAPACK::LAPACK)
+endif()
