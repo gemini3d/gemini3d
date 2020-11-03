@@ -32,7 +32,7 @@ function(mumps_check)
 
 if(NOT mpiseq IN_LIST MUMPS_FIND_COMPONENTS)
   find_package(MPI COMPONENTS Fortran)
-  find_package(SCALAPACK)
+  find_package(SCALAPACK COMPONENTS ${MUMPS_FIND_COMPONENTS})
 endif()
 
 find_package(LAPACK)
@@ -45,6 +45,7 @@ set(MUMPS_links true)
 foreach(i s d c z)
 
 if("${i}" IN_LIST MUMPS_FIND_COMPONENTS)
+
   check_fortran_source_compiles("
   program test_mumps
   implicit none (type, external)
@@ -53,7 +54,10 @@ if("${i}" IN_LIST MUMPS_FIND_COMPONENTS)
   type(${i}mumps_struc) :: mumps_par
   end program"
     MUMPS_${i}_links SRC_EXT f90)
-  if(NOT MUMPS_${i}_links)
+
+  if(MUMPS_${i}_links)
+    set(MUMPS_${i}_FOUND true PARENT_SCOPE)
+  else()
     set(MUMPS_links false)
   endif()
 endif()

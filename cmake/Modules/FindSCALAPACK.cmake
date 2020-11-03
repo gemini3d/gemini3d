@@ -64,8 +64,8 @@ endif()
 
 set(CMAKE_REQUIRED_FLAGS)
 set(CMAKE_REQUIRED_LINK_OPTIONS)
-set(CMAKE_REQUIRED_INCLUDES ${SCALAPACK_INCLUDE_DIR} ${BLACS_INCLUDE_DIR})
-set(CMAKE_REQUIRED_LIBRARIES ${SCALAPACK_LIBRARY} ${BLACS_LIBRARY} LAPACK::LAPACK MPI::MPI_Fortran)
+set(CMAKE_REQUIRED_INCLUDES ${SCALAPACK_INCLUDE_DIR})
+set(CMAKE_REQUIRED_LIBRARIES ${SCALAPACK_LIBRARY} LAPACK::LAPACK MPI::MPI_Fortran)
 # MPI needed for ifort
 include(CheckFortranSourceCompiles)
 
@@ -73,17 +73,21 @@ set(SCALAPACK_links true)
 
 foreach(i s d c z)
 
-if("${i}" IN_LIST MUMPS_FIND_COMPONENTS)
-check_fortran_source_compiles("
-program test
-implicit none (type, external)
-external :: p${i}lamch
-external :: blacs_pinfo, blacs_get, blacs_gridinit, blacs_gridexit, blacs_exit
-end program"
-  SCALAPACK_${i}_links SRC_EXT f90)
-  if(NOT SCALAPACK_${i}_links)
-    set(SCALAPACK_links false)
-  endif()
+if("${i}" IN_LIST SCALAPACK_FIND_COMPONENTS)
+
+  check_fortran_source_compiles("
+  program test
+  implicit none (type, external)
+  external :: p${i}lamch
+  external :: blacs_pinfo, blacs_get, blacs_gridinit, blacs_gridexit, blacs_exit
+  end program"
+    SCALAPACK_${i}_links SRC_EXT f90)
+
+    if(SCALAPACK_${i}_links)
+      set(SCALAPACK_${i}_FOUND true PARENT_SCOPE)
+    else()
+      set(SCALAPACK_links false)
+    endif()
 endif()
 
 endforeach()
@@ -172,13 +176,13 @@ find_package(PkgConfig)
 
 # some systems (Ubuntu 16.04) need BLACS explicitly, when it isn't statically compiled into libscalapack
 # other systems (homebrew, Ubuntu 18.04) link BLACS into libscalapack, and don't need BLACS as a separately linked library.
-if(NOT MKL IN_LIST SCALAPACK_FIND_COMPONENTS)
-  find_package(BLACS COMPONENTS ${SCALAPACK_FIND_COMPONENTS})
-  if(NOT BLACS_FOUND)
-    set(BLACS_LIBRARY)
-    set(BLACS_INCLUDE_DIR)
-  endif()
-endif()
+# if(NOT MKL IN_LIST SCALAPACK_FIND_COMPONENTS)
+#   find_package(BLACS COMPONENTS ${SCALAPACK_FIND_COMPONENTS})
+#   if(NOT BLACS_FOUND)
+#     set(BLACS_LIBRARY)
+#     set(BLACS_INCLUDE_DIR)
+#   endif()
+# endif()
 
 if(MKL IN_LIST SCALAPACK_FIND_COMPONENTS)
   # we have to sanitize MKLROOT if it has Windows backslashes (\) otherwise it will break at build time
@@ -249,21 +253,21 @@ if(SCALAPACK_FOUND)
 set(SCALAPACK_LIBRARIES ${SCALAPACK_LIBRARY})
 set(SCALAPACK_INCLUDE_DIRS ${SCALAPACK_INCLUDE_DIR})
 
-if(BLACS_FOUND)
-  list(APPEND SCALAPACK_LIBRARIES ${BLACS_LIBRARIES})
-  if(NOT TARGET SCALAPACK::BLACS)
-    add_library(SCALAPACK::BLACS INTERFACE IMPORTED)
-    set_target_properties(SCALAPACK::BLACS PROPERTIES
-                          INTERFACE_LINK_LIBRARIES "${BLACS_LIBRARY}"
-                          INTERFACE_INCLUDE_DIRECTORIES "${BLACS_INCLUDE_DIR}"
-                        )
-  endif()
-endif()
+# if(BLACS_FOUND)
+#   list(APPEND SCALAPACK_LIBRARIES ${BLACS_LIBRARIES})
+#   if(NOT TARGET SCALAPACK::BLACS)
+#     add_library(SCALAPACK::BLACS INTERFACE IMPORTED)
+#     set_target_properties(SCALAPACK::BLACS PROPERTIES
+#                           INTERFACE_LINK_LIBRARIES "${BLACS_LIBRARY}"
+#                           INTERFACE_INCLUDE_DIRECTORIES "${BLACS_INCLUDE_DIR}"
+#                         )
+#   endif()
+# endif()
 
 if(NOT TARGET SCALAPACK::SCALAPACK)
   add_library(SCALAPACK::SCALAPACK INTERFACE IMPORTED)
   set_target_properties(SCALAPACK::SCALAPACK PROPERTIES
-                        INTERFACE_LINK_LIBRARIES "${SCALAPACK_LIBRARY};${BLACS_LIBRARY}"
+                        INTERFACE_LINK_LIBRARIES "${SCALAPACK_LIBRARY}"
                         INTERFACE_INCLUDE_DIRECTORIES "${SCALAPACK_INCLUDE_DIR}"
                       )
 endif()
