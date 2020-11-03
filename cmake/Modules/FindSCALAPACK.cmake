@@ -243,7 +243,7 @@ if(MKL IN_LIST SCALAPACK_FIND_COMPONENTS)
 
 elseif(OpenMPI IN_LIST SCALAPACK_FIND_COMPONENTS)
 
-  pkg_check_modules(pc_scalapack scalapack-openmpi)
+  pkg_search_module(pc_scalapack scalapack-openmpi scalapack)
 
   find_library(SCALAPACK_LIBRARY
                 NAMES scalapack-openmpi scalapack
@@ -256,7 +256,7 @@ elseif(OpenMPI IN_LIST SCALAPACK_FIND_COMPONENTS)
 
 elseif(MPICH IN_LIST SCALAPACK_FIND_COMPONENTS)
 
-  pkg_check_modules(pc_scalapack scalapack-mpich)
+  pkg_search_module(pc_scalapack scalapack-mpich scalapack)
 
   find_library(SCALAPACK_LIBRARY
                 NAMES scalapack-mpich scalapack-mpich2
