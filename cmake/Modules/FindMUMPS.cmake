@@ -40,27 +40,27 @@ find_package(LAPACK)
 set(CMAKE_REQUIRED_INCLUDES ${MUMPS_INCLUDE_DIR} ${SCALAPACK_INCLUDE_DIRS} ${LAPACK_INCLUDE_DIRS} ${MPI_Fortran_INCLUDE_DIRS})
 set(CMAKE_REQUIRED_LIBRARIES ${MUMPS_LIBRARY} ${SCALAPACK_LIBRARIES} ${LAPACK_LIBRARIES} ${MPI_Fortran_LIBRARIES} ${_test_lib})
 
-check_fortran_source_compiles("
-program test_mumps
-implicit none (type, external)
-include 'smumps_struc.h'
-external :: smumps
-type(smumps_struc) :: mumps_par
-end program"
-  MUMPS_real32_links SRC_EXT f90)
+set(MUMPS_links true)
 
-check_fortran_source_compiles("
+foreach(i s d c z)
+
+if("${i}" IN_LIST MUMPS_FIND_COMPONENTS)
+  check_fortran_source_compiles("
   program test_mumps
   implicit none (type, external)
-  include 'dmumps_struc.h'
-  external :: dmumps
-  type(dmumps_struc) :: mumps_par
+  include '${i}mumps_struc.h'
+  external :: ${i}mumps
+  type(${i}mumps_struc) :: mumps_par
   end program"
-    MUMPS_real64_links SRC_EXT f90)
-
-if(MUMPS_real32_links OR MUMPS_real64_links)
-  set(MUMPS_links true PARENT_SCOPE)
+    MUMPS_${i}_links SRC_EXT f90)
+  if(NOT MUMPS_${i}_links)
+    set(MUMPS_links false)
+  endif()
 endif()
+
+endforeach()
+
+set(MUMPS_links ${MUMPS_links} PARENT_SCOPE)
 
 endfunction(check_mumps)
 

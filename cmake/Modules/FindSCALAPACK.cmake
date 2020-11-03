@@ -72,62 +72,27 @@ set(CMAKE_REQUIRED_INCLUDES ${SCALAPACK_INCLUDE_DIR} ${BLACS_INCLUDE_DIR})
 set(CMAKE_REQUIRED_LIBRARIES ${SCALAPACK_LIBRARY} ${BLACS_LIBRARY} LAPACK::LAPACK MPI::MPI_Fortran)
 # MPI needed for ifort
 include(CheckFortranSourceCompiles)
-# SCALAPACK_run with non-default libgfortran.so fails to "run".
-# Is it an issue with LD_LIBRARY_PATH?
-# if so, may be able to pass via CMAKE_REQUIRED_LINK_OPTIONS of check_fortran_source_runs()
-# to underlying try_run() link_options. This would have to be tested on a system where
-# this check currently fails, such as one using a non-default Gfortran.
-include(CheckFortranSourceRuns)
 
-set(_code "
-program test_real32
-use, intrinsic :: iso_fortran_env, only: real32
-implicit none
-integer :: ictxt, myid, nprocs
-real(real32) :: eps
-real(real32), external :: pslamch
+set(SCALAPACK_links true)
+
+foreach(i s d c z)
+
+if("${i}" IN_LIST MUMPS_FIND_COMPONENTS)
+check_fortran_source_compiles("
+program test
+implicit none (type, external)
+external :: p${i}lamch
 external :: blacs_pinfo, blacs_get, blacs_gridinit, blacs_gridexit, blacs_exit
-
-call blacs_pinfo(myid, nprocs)
-call blacs_get(-1, 0, ictxt)
-call blacs_gridinit(ictxt, 'C', nprocs, 1)
-eps = pslamch(ictxt, 'E')
-call blacs_gridexit(ictxt)
-call blacs_exit(0)
-
-end program")
-
-check_fortran_source_compiles(${_code} SCALAPACK_real32_links SRC_EXT f90)
-if(SCALAPACK_real32_links)
-  check_fortran_source_runs(${_code} SCALAPACK_real32_run)
+end program"
+  SCALAPACK_${i}_links SRC_EXT f90)
+  if(NOT SCALAPACK_${i}_links)
+    set(SCALAPACK_links false)
+  endif()
 endif()
 
-set(_code "
-program test_real64
-use, intrinsic :: iso_fortran_env, only: real64
-implicit none
-integer :: ictxt, myid, nprocs
-real(real64) :: eps
-real(real64), external :: pdlamch
-external :: blacs_pinfo, blacs_get, blacs_gridinit, blacs_gridexit, blacs_exit
+endforeach()
 
-call blacs_pinfo(myid, nprocs)
-call blacs_get(-1, 0, ictxt)
-call blacs_gridinit(ictxt, 'C', nprocs, 1)
-eps = pdlamch(ictxt, 'E')
-call blacs_gridexit(ictxt)
-call blacs_exit(0)
-
-end program")
-
-check_fortran_source_compiles(${_code} SCALAPACK_real64_links SRC_EXT f90)
-if(SCALAPACK_real64_links)
-  check_fortran_source_runs(${_code} SCALAPACK_real64_run)
-endif()
-
-if(SCALAPACK_real32_links OR SCALAPACK_real64_links)
-  set(SCALAPACK_links true PARENT_SCOPE)
-endif()
+set(SCALAPACK_links ${SCALAPACK_links} PARENT_SCOPE)
 
 endfunction(check_scalapack)
 
