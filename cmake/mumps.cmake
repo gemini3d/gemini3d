@@ -15,17 +15,19 @@ if(mpi)
 endif()
 # --- MUMPS
 
-if(mumps_external)
-  include(${CMAKE_CURRENT_LIST_DIR}/mumps_external.cmake)
-  return()
-endif()
-
-unset(_mumps_extra)
-
 if(MUMPS_ROOT OR (DEFINED ENV{MUMPS_ROOT}) OR (CMAKE_Fortran_COMPILER_ID STREQUAL GNU))
   set(_comp ${arith})
   if(NOT mpi)
     list(APPEND _comp mpiseq)
+  endif()
+  if(scotch)
+    list(APPEND _comp Scotch)
+  endif()
+  if(metis)
+    list(APPEND _comp METIS)
+  endif()
+  if(OpenMP_FOUND)
+    list(APPEND _comp OpenMP)
   endif()
 
   if(autobuild)
@@ -33,53 +35,24 @@ if(MUMPS_ROOT OR (DEFINED ENV{MUMPS_ROOT}) OR (CMAKE_Fortran_COMPILER_ID STREQUA
   else()
     find_package(MUMPS COMPONENTS ${_comp} REQUIRED)
   endif()
-else()
-  message(VERBOSE "Skipping find_package(MUMPS)")
 endif()
 
-if(MUMPS_FOUND)
-  set(mumps_external false CACHE BOOL "autobuild Mumps")
-else()
-  include(${CMAKE_CURRENT_LIST_DIR}/mumps_external.cmake)
-  return()
+if(NOT MUMPS_FOUND)
+  set(mumps_external true CACHE BOOL "autobuild Mumps")
+
+  # necessary since CMAKE_ARGS is broken in general
+  set(parallel ${mpi} CACHE BOOL "Mumps parallel == Gemini mpi")
+  set(MUMPS_BUILD_TESTING false CACHE BOOL "mumps disable tests")
+
+  include(FetchContent)
+
+  FetchContent_Declare(MUMPS_proj
+    GIT_REPOSITORY https://github.com/scivision/mumps.git
+    GIT_TAG v5.3.5.0
+    CMAKE_ARGS -Darith=${arith} -Dmetis:BOOL=${metis} -Dscotch:BOOL=${scotch} -Dopenmp:BOOL=false
+  )
+
+  FetchContent_MakeAvailable(MUMPS_proj)
 endif()
 
-if(metis)
-  find_package(METIS REQUIRED)
-  target_link_libraries(MUMPS::MUMPS INTERFACE METIS::METIS)
-endif()
-
-if(scotch)
-  find_package(Scotch REQUIRED COMPONENTS ESMUMPS)
-  target_link_libraries(MUMPS::MUMPS INTERFACE Scotch::Scotch)
-endif()
-
-# rather than appending libraries everywhere, just put them together here.
 target_link_libraries(MUMPS::MUMPS INTERFACE SCALAPACK::SCALAPACK LAPACK::LAPACK)
-if(OpenMP_FOUND)
-  target_link_libraries(MUMPS::MUMPS INTERFACE OpenMP::OpenMP_Fortran OpenMP::OpenMP_C)
-endif()
-
-if(mumps_external OR scalapack_external OR lapack_external OR NOT mpi)
-# pre-build checks can't be used when external library isn't built yet.
-  return()
-endif()
-
-# -- minimal check that MUMPS is linkable
-set(CMAKE_REQUIRED_LIBRARIES MUMPS::MUMPS MPI::MPI_Fortran)
-
-check_fortran_source_compiles("
-implicit none (type, external)
-include '${arith}mumps_struc.h'
-external :: ${arith}mumps
-type(${arith}mumps_struc) :: mumps_par
-end"
-  MUMPS_link SRC_EXT f90)
-
-if(NOT MUMPS_link)
-  message(STATUS "MUMPS ${MUMPS_LIBRARIES} not working with ${CMAKE_Fortran_COMPILER_ID} ${CMAKE_Fortran_COMPILER_VERSION}")
-  if(NOT autobuild)
-    message(FATAL_ERROR "autobuild=off, so cannot proceed")
-  endif()
-  include(${CMAKE_CURRENT_LIST_DIR}/mumps_external.cmake)
-endif()

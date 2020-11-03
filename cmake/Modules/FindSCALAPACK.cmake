@@ -61,14 +61,15 @@ if(NOT SCALAPACK_LIBRARY)
 endif()
 
 find_package(MPI COMPONENTS Fortran)
-if(NOT MPI_Fortran_FOUND)
+find_package(LAPACK)
+if(NOT (MPI_Fortran_FOUND AND LAPACK_FOUND))
   return()
 endif()
 
 set(CMAKE_REQUIRED_FLAGS)
 set(CMAKE_REQUIRED_LINK_OPTIONS)
 set(CMAKE_REQUIRED_INCLUDES ${SCALAPACK_INCLUDE_DIR} ${BLACS_INCLUDE_DIR})
-set(CMAKE_REQUIRED_LIBRARIES ${SCALAPACK_LIBRARY} ${BLACS_LIBRARY} MPI::MPI_Fortran)
+set(CMAKE_REQUIRED_LIBRARIES ${SCALAPACK_LIBRARY} ${BLACS_LIBRARY} LAPACK::LAPACK MPI::MPI_Fortran)
 # MPI needed for ifort
 include(CheckFortranSourceCompiles)
 # SCALAPACK_run with non-default libgfortran.so fails to "run".

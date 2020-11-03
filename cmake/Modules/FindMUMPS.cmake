@@ -26,6 +26,45 @@ MUMPS_INCLUDE_DIRS
 
 set(MUMPS_LIBRARY)  # don't endlessly append
 
+# --- functions
+
+function(check_mumps)
+
+if(NOT mpiseq IN_LIST MUMPS_FIND_COMPONENTS)
+  find_package(MPI COMPONENTS Fortran)
+  find_package(SCALAPACK)
+endif()
+
+find_package(LAPACK)
+
+set(CMAKE_REQUIRED_INCLUDES ${MUMPS_INCLUDE_DIR} ${SCALAPACK_INCLUDE_DIRS} ${LAPACK_INCLUDE_DIRS} ${MPI_Fortran_INCLUDE_DIRS})
+set(CMAKE_REQUIRED_LIBRARIES ${MUMPS_LIBRARY} ${SCALAPACK_LIBRARIES} ${LAPACK_LIBRARIES} ${MPI_Fortran_LIBRARIES} ${_test_lib})
+
+check_fortran_source_compiles("
+program test_mumps
+implicit none (type, external)
+include 'smumps_struc.h'
+external :: smumps
+type(smumps_struc) :: mumps_par
+end program"
+  MUMPS_real32_links SRC_EXT f90)
+
+check_fortran_source_compiles("
+  program test_mumps
+  implicit none (type, external)
+  include 'dmumps_struc.h'
+  external :: dmumps
+  type(dmumps_struc) :: mumps_par
+  end program"
+    MUMPS_real64_links SRC_EXT f90)
+
+if(MUMPS_real32_links OR MUMPS_real64_links)
+  set(MUMPS_links true PARENT_SCOPE)
+endif()
+
+endfunction(check_mumps)
+
+
 function(mumps_libs)
 
 find_path(MUMPS_INCLUDE_DIR
@@ -74,8 +113,9 @@ if(mpiseq IN_LIST MUMPS_FIND_COMPONENTS)
   set(MUMPS_mpiseq_INC ${MUMPS_mpiseq_INC} PARENT_SCOPE)
 endif()
 
+set(_ariths s d c z)
 foreach(comp ${MUMPS_FIND_COMPONENTS})
-  if(comp STREQUAL mpiseq)
+  if(NOT "${comp}" IN_LIST _ariths)
     continue()
   endif()
 
@@ -97,16 +137,41 @@ set(MUMPS_INCLUDE_DIR ${MUMPS_INCLUDE_DIR} PARENT_SCOPE)
 
 endfunction(mumps_libs)
 
+# --- main
 
 if(NOT MUMPS_FIND_COMPONENTS)
-  list(APPEND MUMPS_FIND_COMPONENTS d)
+  set(MUMPS_FIND_COMPONENTS d)
 endif()
 
 mumps_libs()
 
+# --- external MUMPS components
+set(_test_lib)
+
+if(METIS IN_LIST MUMPS_FIND_COMPONENTS)
+  find_package(METIS)
+  list(APPEND _test_lib METIS::METIS)
+endif()
+
+if(Scotch IN_LIST MUMPS_FIND_COMPONENTS)
+  find_package(Scotch COMPONENTS ESMUMPS)
+  list(APPEND _test_lib Scotch::Scotch)
+endif()
+
+if(OpenMP IN_LIST MUMPS_FIND_COMPONENTS)
+  find_package(OpenMP COMPONENTS C Fortran)
+  list(APPEND _test_lib OpenMP::OpenMP_Fortran OpenMP::OpenMP_C)
+endif()
+
+# -- minimal check that MUMPS is linkable
+
+check_mumps()
+
+# --- finalize
+
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(MUMPS
-  REQUIRED_VARS MUMPS_LIBRARY MUMPS_INCLUDE_DIR
+  REQUIRED_VARS MUMPS_LIBRARY MUMPS_INCLUDE_DIR MUMPS_links
   HANDLE_COMPONENTS)
 
 if(MUMPS_FOUND)
@@ -123,6 +188,15 @@ if(NOT TARGET MUMPS::MUMPS)
   set_target_properties(MUMPS::MUMPS PROPERTIES
     INTERFACE_LINK_LIBRARIES "${MUMPS_LIBRARY}"
     INTERFACE_INCLUDE_DIRECTORIES "${MUMPS_INCLUDE_DIR}")
+  if(METIS_FOUND)
+    target_link_libraries(MUMPS::MUMPS INTERFACE METIS::METIS)
+  endif()
+  if(Scotch_FOUND)
+    target_link_libraries(MUMPS::MUMPS INTERFACE Scotch::Scotch)
+  endif()
+  if(OpenMP_FOUND)
+    target_link_libraries(MUMPS::MUMPS INTERFACE OpenMP::OpenMP_Fortran OpenMP::OpenMP_C)
+  endif()
 endif()
 
 if(mpiseq IN_LIST MUMPS_FIND_COMPONENTS)
