@@ -54,11 +54,7 @@ set(SCALAPACK_INCLUDE_DIR)
 
 #===== functions
 
-function(check_scalapack)
-
-if(NOT SCALAPACK_LIBRARY)
-  return()
-endif()
+function(scalapack_check)
 
 find_package(MPI COMPONENTS Fortran)
 find_package(LAPACK)
@@ -94,10 +90,10 @@ endforeach()
 
 set(SCALAPACK_links ${SCALAPACK_links} PARENT_SCOPE)
 
-endfunction(check_scalapack)
+endfunction(scalapack_check)
 
 
-function(mkl_scala)
+function(scalapack_mkl)
 
 if(BUILD_SHARED_LIBS)
   set(_mkltype dynamic)
@@ -155,7 +151,7 @@ set(SCALAPACK_MKL_FOUND true PARENT_SCOPE)
 set(SCALAPACK_LIBRARY ${SCALAPACK_LIBRARY} PARENT_SCOPE)
 set(SCALAPACK_INCLUDE_DIR ${SCALAPACK_INCLUDE_DIR} PARENT_SCOPE)
 
-endfunction(mkl_scala)
+endfunction(scalapack_mkl)
 
 # === main
 
@@ -192,19 +188,19 @@ if(MKL IN_LIST SCALAPACK_FIND_COMPONENTS)
   list(APPEND CMAKE_PREFIX_PATH ${MKLROOT}/tools/pkgconfig)
 
   if(OpenMPI IN_LIST SCALAPACK_FIND_COMPONENTS)
-    mkl_scala(mkl_scalapack_lp64 mkl_blacs_openmpi_lp64)
+    scalapack_mkl(mkl_scalapack_lp64 mkl_blacs_openmpi_lp64)
     set(SCALAPACK_OpenMPI_FOUND ${SCALAPACK_MKL_FOUND})
   elseif(MPICH IN_LIST SCALAPACK_FIND_COMPONENTS)
     if(APPLE)
-      mkl_scala(mkl_scalapack_lp64 mkl_blacs_mpich_lp64)
+      scalapack_mkl(mkl_scalapack_lp64 mkl_blacs_mpich_lp64)
     elseif(WIN32)
-      mkl_scala(mkl_scalapack_lp64 mkl_blacs_mpich2_lp64.lib mpi.lib fmpich2.lib)
+      scalapack_mkl(mkl_scalapack_lp64 mkl_blacs_mpich2_lp64.lib mpi.lib fmpich2.lib)
     else()  # MPICH linux is just like IntelMPI
-      mkl_scala(mkl_scalapack_lp64 mkl_blacs_intelmpi_lp64)
+      scalapack_mkl(mkl_scalapack_lp64 mkl_blacs_intelmpi_lp64)
     endif()
     set(SCALAPACK_MPICH_FOUND ${SCALAPACK_MKL_FOUND})
   else()
-    mkl_scala(mkl_scalapack_lp64 mkl_blacs_intelmpi_lp64)
+    scalapack_mkl(mkl_scalapack_lp64 mkl_blacs_intelmpi_lp64)
   endif()
 
 elseif(OpenMPI IN_LIST SCALAPACK_FIND_COMPONENTS)
@@ -237,7 +233,9 @@ endif()
 
 # --- Check that Scalapack links
 
-check_scalapack()
+if(SCALAPACK_LIBRARY)
+  scalapack_check()
+endif()
 
 # --- Finalize
 

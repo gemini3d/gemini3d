@@ -28,7 +28,7 @@ set(MUMPS_LIBRARY)  # don't endlessly append
 
 # --- functions
 
-function(check_mumps)
+function(mumps_check)
 
 if(NOT mpiseq IN_LIST MUMPS_FIND_COMPONENTS)
   find_package(MPI COMPONENTS Fortran)
@@ -62,7 +62,7 @@ endforeach()
 
 set(MUMPS_links ${MUMPS_links} PARENT_SCOPE)
 
-endfunction(check_mumps)
+endfunction(mumps_check)
 
 
 function(mumps_libs)
@@ -145,6 +145,7 @@ endif()
 
 mumps_libs()
 
+if(MUMPS_LIBRARY AND MUMPS_INCLUDE_DIR)
 # --- external MUMPS components
 set(_test_lib)
 
@@ -165,8 +166,9 @@ endif()
 
 # -- minimal check that MUMPS is linkable
 
-check_mumps()
+mumps_check()
 
+endif(MUMPS_LIBRARY AND MUMPS_INCLUDE_DIR)
 # --- finalize
 
 include(FindPackageHandleStandardArgs)
