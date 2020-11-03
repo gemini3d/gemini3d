@@ -47,6 +47,3 @@ NO_SYSTEM_ENVIRONMENT_PATH NO_CMAKE_SYSTEM_PATH)
 if(CC)
   set(ENV{CC} ${CC})
 endif()
-
-
-message(STATUS "${FC}  ${CC}  ${_dir}")

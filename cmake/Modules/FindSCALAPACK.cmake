@@ -54,6 +54,83 @@ set(SCALAPACK_INCLUDE_DIR)
 
 #===== functions
 
+function(check_scalapack)
+
+if(NOT SCALAPACK_LIBRARY)
+  return()
+endif()
+
+find_package(MPI COMPONENTS Fortran)
+if(NOT MPI_Fortran_FOUND)
+  return()
+endif()
+
+set(CMAKE_REQUIRED_FLAGS)
+set(CMAKE_REQUIRED_LINK_OPTIONS)
+set(CMAKE_REQUIRED_INCLUDES ${SCALAPACK_INCLUDE_DIR} ${BLACS_INCLUDE_DIR})
+set(CMAKE_REQUIRED_LIBRARIES ${SCALAPACK_LIBRARY} ${BLACS_LIBRARY} MPI::MPI_Fortran)
+# MPI needed for ifort
+include(CheckFortranSourceCompiles)
+# SCALAPACK_run with non-default libgfortran.so fails to "run".
+# Is it an issue with LD_LIBRARY_PATH?
+# if so, may be able to pass via CMAKE_REQUIRED_LINK_OPTIONS of check_fortran_source_runs()
+# to underlying try_run() link_options. This would have to be tested on a system where
+# this check currently fails, such as one using a non-default Gfortran.
+include(CheckFortranSourceRuns)
+
+set(_code "
+program test_real32
+use, intrinsic :: iso_fortran_env, only: real32
+implicit none
+integer :: ictxt, myid, nprocs
+real(real32) :: eps
+real(real32), external :: pslamch
+external :: blacs_pinfo, blacs_get, blacs_gridinit, blacs_gridexit, blacs_exit
+
+call blacs_pinfo(myid, nprocs)
+call blacs_get(-1, 0, ictxt)
+call blacs_gridinit(ictxt, 'C', nprocs, 1)
+eps = pslamch(ictxt, 'E')
+call blacs_gridexit(ictxt)
+call blacs_exit(0)
+
+end program")
+
+check_fortran_source_compiles(${_code} SCALAPACK_real32_links SRC_EXT f90)
+if(SCALAPACK_real32_links)
+  check_fortran_source_runs(${_code} SCALAPACK_real32_run)
+endif()
+
+set(_code "
+program test_real64
+use, intrinsic :: iso_fortran_env, only: real64
+implicit none
+integer :: ictxt, myid, nprocs
+real(real64) :: eps
+real(real64), external :: pdlamch
+external :: blacs_pinfo, blacs_get, blacs_gridinit, blacs_gridexit, blacs_exit
+
+call blacs_pinfo(myid, nprocs)
+call blacs_get(-1, 0, ictxt)
+call blacs_gridinit(ictxt, 'C', nprocs, 1)
+eps = pdlamch(ictxt, 'E')
+call blacs_gridexit(ictxt)
+call blacs_exit(0)
+
+end program")
+
+check_fortran_source_compiles(${_code} SCALAPACK_real64_links SRC_EXT f90)
+if(SCALAPACK_real64_links)
+  check_fortran_source_runs(${_code} SCALAPACK_real64_run)
+endif()
+
+if(SCALAPACK_real32_links OR SCALAPACK_real64_links)
+  set(SCALAPACK_links true PARENT_SCOPE)
+endif()
+
+endfunction(check_scalapack)
+
+
 function(mkl_scala)
 
 if(BUILD_SHARED_LIBS)
@@ -106,7 +183,7 @@ if(NOT SCALAPACK_INCLUDE_DIR)
   return()
 endif()
 
-# list(APPEND SCALAPACK_INCLUDE_DIR ${pc_mkl_INCLUDE_DIRS})  # this is unnecessary, and on Windows injects breaking garbage
+# pc_mkl_INCLUDE_DIRS on Windows injects breaking garbage
 
 set(SCALAPACK_MKL_FOUND true PARENT_SCOPE)
 set(SCALAPACK_LIBRARY ${SCALAPACK_LIBRARY} PARENT_SCOPE)
@@ -134,7 +211,11 @@ find_package(PkgConfig)
 # some systems (Ubuntu 16.04) need BLACS explicitly, when it isn't statically compiled into libscalapack
 # other systems (homebrew, Ubuntu 18.04) link BLACS into libscalapack, and don't need BLACS as a separately linked library.
 if(NOT MKL IN_LIST SCALAPACK_FIND_COMPONENTS)
-  find_package(BLACS COMPONENTS ${SCALAPACK_FIND_COMPONENTS} QUIET)
+  find_package(BLACS COMPONENTS ${SCALAPACK_FIND_COMPONENTS})
+  if(NOT BLACS_FOUND)
+    set(BLACS_LIBRARY)
+    set(BLACS_INCLUDE_DIR)
+  endif()
 endif()
 
 if(MKL IN_LIST SCALAPACK_FIND_COMPONENTS)
@@ -162,7 +243,7 @@ if(MKL IN_LIST SCALAPACK_FIND_COMPONENTS)
 
 elseif(OpenMPI IN_LIST SCALAPACK_FIND_COMPONENTS)
 
-  pkg_check_modules(pc_scalapack scalapack-openmpi QUIET)
+  pkg_check_modules(pc_scalapack scalapack-openmpi)
 
   find_library(SCALAPACK_LIBRARY
                 NAMES scalapack-openmpi scalapack
@@ -175,7 +256,7 @@ elseif(OpenMPI IN_LIST SCALAPACK_FIND_COMPONENTS)
 
 elseif(MPICH IN_LIST SCALAPACK_FIND_COMPONENTS)
 
-  pkg_check_modules(pc_scalapack scalapack-mpich QUIET)
+  pkg_check_modules(pc_scalapack scalapack-mpich)
 
   find_library(SCALAPACK_LIBRARY
                 NAMES scalapack-mpich scalapack-mpich2
@@ -188,11 +269,15 @@ elseif(MPICH IN_LIST SCALAPACK_FIND_COMPONENTS)
 
 endif()
 
+# --- Check that Scalapack links
+
+check_scalapack()
+
 # --- Finalize
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(SCALAPACK
-  REQUIRED_VARS SCALAPACK_LIBRARY
+  REQUIRED_VARS SCALAPACK_LIBRARY SCALAPACK_links
   HANDLE_COMPONENTS)
 
 if(SCALAPACK_FOUND)
@@ -209,8 +294,6 @@ if(BLACS_FOUND)
                           INTERFACE_INCLUDE_DIRECTORIES "${BLACS_INCLUDE_DIR}"
                         )
   endif()
-else()
-  set(BLACS_LIBRARY)
 endif()
 
 if(NOT TARGET SCALAPACK::SCALAPACK)

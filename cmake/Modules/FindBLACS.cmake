@@ -188,7 +188,7 @@ else()
 endif()
 endif()
 
-find_package(PkgConfig QUIET)
+find_package(PkgConfig)
 
 set(BLACS_INCLUDE_DIR)
 
@@ -197,13 +197,15 @@ if(MKL IN_LIST BLACS_FIND_COMPONENTS)
   # double-quotes are necessary per CMake to_cmake_path docs.
   file(TO_CMAKE_PATH "$ENV{MKLROOT}" MKLROOT)
 
+  list(APPEND CMAKE_PREFIX_PATH ${MKLROOT}/tools/pkgconfig)
+
   if(BUILD_SHARED_LIBS)
     set(_mkltype dynamic)
   else()
     set(_mkltype static)
   endif()
 
-  pkg_check_modules(MKL mkl-${_mkltype}-lp64-iomp QUIET)
+  pkg_check_modules(MKL mkl-${_mkltype}-lp64-iomp)
 
   if(OpenMPI IN_LIST BLACS_FIND_COMPONENTS)
     mkl_scala(mkl_blacs_openmpi_lp64)
