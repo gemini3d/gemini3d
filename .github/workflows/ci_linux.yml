@@ -25,7 +25,7 @@ jobs:
     - name: Install packages
       run: |
         sudo apt update -yq
-        sudo apt install -yq --no-install-recommends gfortran libopenmpi-dev liblapack-dev libscalapack-openmpi-dev libmumps-dev libhdf5-dev
+        sudo apt install -yq --no-install-recommends gfortran libopenmpi-dev openmpi-bin liblapack-dev libscalapack-openmpi-dev libmumps-dev libhdf5-dev
         python -m pip install ninja
 
 # CI is too slow for 3d_glow
@@ -44,7 +44,7 @@ jobs:
     - name: Install prereqs
       run: |
         sudo apt update -yq
-        sudo apt install -yq --no-install-recommends gfortran libopenmpi-dev liblapack-dev libscalapack-openmpi-dev libmumps-dev libhdf5-dev
+        sudo apt install -yq --no-install-recommends gfortran libopenmpi-dev openmpi-bin liblapack-dev libscalapack-openmpi-dev libmumps-dev libhdf5-dev
         python -m pip install ninja
 
     - run: cmake -B build -DCMAKE_BUILD_TYPE=Debug
@@ -88,10 +88,12 @@ jobs:
       with:
         python-version: '3.8'
 
+    # have to have openmpi-bin as unlike full install it's not auto-installed here
+    # libhdf5-dev just to speed up CI
     - name: Install packages
       run: |
         sudo apt update -yq
-        sudo apt install -yq --no-install-recommends gfortran libopenmpi-dev
+        sudo apt install -yq --no-install-recommends gfortran libopenmpi-dev openmpi-bin libhdf5-dev
         python -m pip install ninja
 
     - run: ctest -S setup.cmake -R unit -VV
