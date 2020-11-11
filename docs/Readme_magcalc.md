@@ -25,7 +25,7 @@ Note that there is also a utility that can compute magnetic fields from the curr
 This can be run by:
 
 ```
-mpirun -np 4 ./magcalc.bin /tmp/3d tests/data/test3d/input/magfieldpoints.dat <lid2 lid3> <-debug>
+mpirun -np 4 ./magcalc.bin /tmp/3d tests/data/test3d/input/magfieldpoints.dat -manual_grid <lid2 lid3> <-debug>
 ```
 
 This will compute magnetic fields over a grid at ground level using currents computed from a simulation stored in the directory ```/tmp/3d```.  In order to run this program, you will need to create a set of field points at which the magnetic perturbations will be calculated - these are stored in the input file ```magfieldpoints.dat``` used in the command above.  These could be a list of ground stations (irregular mesh), a regular mesh, or a set of satellite tracks (irregular mesh).  Optional inputs ```lid2 lid3``` are the number of mpi images to be used in the x2 and x3 directions, respectively, while using the ```-debug``` flag will cause the program to print a large amount of debug information to the console - this is useful for troubleshooting potential problems.   
