@@ -150,8 +150,8 @@ if(t+dt / 2._wp>=tnext .or. t<0._wp) then    !need to load a new file
 
       print '(A,4F9.3)', 'Precipitation mlon,mlat extent:  ',minval(mlonp(:)),maxval(mlonp(:)),minval(mlatp(:)), &
                                                               maxval(mlatp(:))
-      if(.not. all(ieee_is_finite(mlonp))) error stop 'mlon must be finite'
-      if(.not. all(ieee_is_finite(mlatp))) error stop 'mlat must be finite'
+      if(.not. all(ieee_is_finite(mlonp))) error stop 'precipBCs_fileinput: mlon must be finite'
+      if(.not. all(ieee_is_finite(mlatp))) error stop 'precipBCs_fileinput: mlat must be finite'
 
       !NOW SEND THE GRID DATA
       do iid=1,lid-1
