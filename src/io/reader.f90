@@ -1,7 +1,8 @@
 module reader
 !! simple file reading procedures
 
-use, intrinsic :: iso_fortran_env, only: stderr=>error_unit
+use, intrinsic :: ieee_arithmetic, only : ieee_is_finite
+
 use phys_consts, only: wp, debug
 use pathlib, only : get_suffix, get_filename
 
@@ -9,7 +10,7 @@ implicit none (type, external)
 private
 public :: get_simsize3, get_simsize2, get_grid2, get_Efield, get_precip, get_neutral2, get_neutral3
 
-interface ! reader_{raw,hdf5,nc4}.f90
+interface !< reader_{raw,hdf5,nc4}.f90
 module subroutine get_simsize2_raw(path, llon, llat)
 character(*), intent(in) :: path
 integer, intent(out) :: llon, llat
@@ -150,8 +151,7 @@ case ('.nc')
 case ('.dat')
   call get_simsize2_raw(fn, llon, llat)
 case default
-  write(stderr,*) 'ERROR:reader:get_simsize2: unknown file suffix on ' // fn
-  error stop 2
+  error stop 'reader:get_simsize2: unknown file suffix on ' // fn
 end select
 end subroutine get_simsize2
 
@@ -173,8 +173,7 @@ case ('.nc')
 case ('.dat')
   call get_simsize3_raw(fn, lx1, lx2all, lx3all)
 case default
-  write(stderr,*) 'ERROR:reader:get_simsize3: unknown file suffix' // fn
-  error stop 2
+  error stop 'ERROR:reader:get_simsize3: unknown file suffix' // fn
 end select
 end subroutine get_simsize3
 
@@ -195,8 +194,7 @@ case ('.nc')
 case ('.dat')
   call get_grid2_raw(fn, mlonp, mlatp)
 case default
-  write(stderr,*) 'ERROR:reader:get_grid2: unknown file suffix on ' // fn
-  error stop 2
+  error stop 'reader:get_grid2: unknown file suffix on ' // fn
 end select
 end subroutine get_grid2
 
@@ -219,8 +217,7 @@ case ('.nc')
 case ('.dat')
   call get_Efield_raw(fn, flagdirich,E0xp,E0yp,Vminx1p,Vmaxx1p,Vminx2pslice,Vmaxx2pslice,Vminx3pslice,Vmaxx3pslice)
 case default
-  write(stderr,*) 'ERROR:reader:Efield: unknown file suffix on ' // fn
-  error stop 2
+  error stop 'reader:Efield: unknown file suffix on ' // fn
 end select
 
 end subroutine get_Efield
@@ -243,9 +240,22 @@ case ('.nc')
 case ('.dat')
   call get_precip_raw(fn, Qp, E0p)
 case default
-  write(stderr,*) 'ERROR:reader:get_precip: unknown file suffix on ' // fn
-  error stop 2
+  error stop 'reader:get_precip: unknown file suffix on ' // fn
 end select
+
+!> sanity check precipitation input
+if(.not. all(ieee_is_finite(Qp))) error stop 'precipBCs_mod.f90:precipBCs_fileinput: Qp must be finite'
+
+if(any(Qp < 0)) error stop 'precipBCs_mod.f90:precipBCs_fileinput: Qp must be non-negative'
+
+if(any(Qp >= 1e-6_wp)) then
+  !! if flux \equiv 0 for this time step, we don't care what E0 is
+  !! We use E0 = NaN to indicate this is a time where particle flux is not specified
+  if(.not. all(ieee_is_finite(E0p))) error stop 'precipBCs_mod.f90:precipBCs_fileinput: E0p must be finite'
+
+  if(any(E0p < 0)) error stop 'precipBCs_mod.f90:precipBCs_fileinput: E0p must be non-negative'
+endif
+
 end subroutine get_precip
 
 
@@ -265,8 +275,7 @@ case ('.nc')
 case ('.dat')
   call get_neutral2_raw(fn, dnO,dnN2,dnO2,dvnrho,dvnz,dTn)
 case default
-  write(stderr,*) 'ERROR:reader:get_neutral2: unknown file suffix' // get_suffix(fn)
-  error stop 2
+  error stop 'reader:get_neutral2: unknown file suffix' // get_suffix(fn)
 end select
 end subroutine get_neutral2
 
@@ -287,8 +296,7 @@ case ('.nc')
 case ('.dat')
   call get_neutral3_raw(fn, dnOall,dnN2all,dnO2all,dvnxall,dvnrhoall,dvnzall,dTnall)
 case default
-  write(stderr,*) 'ERROR:reader:get_neutral3: unknown file suffix' // get_suffix(fn)
-  error stop 2
+  error stop 'reader:get_neutral3: unknown file suffix' // get_suffix(fn)
 end select
 end subroutine get_neutral3
 

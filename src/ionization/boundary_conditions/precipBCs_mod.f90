@@ -1,5 +1,5 @@
 module precipBCs_mod
-use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
+
 use, intrinsic :: ieee_arithmetic, only : ieee_is_finite
 
 use reader, only: get_simsize2, get_precip, get_grid2
@@ -107,8 +107,10 @@ real(wp) :: W0pk,PhiWpk
 
 UTsectmp = 0
 
-if(t+dt / 2._wp>=tnext .or. t<0._wp) then    !need to load a new file
-  if ( .not. allocated(mlonp)) then    !need to read in the grid data from input file
+if(t+dt / 2._wp >= tnext .or. t < 0) then
+  !! need to load a new file
+  if ( .not. allocated(mlonp)) then
+    !! need to read in the grid data from input file
     ymdprev=ymd
     UTsecprev=UTsec
     ymdnext=ymdprev
@@ -122,10 +124,7 @@ if(t+dt / 2._wp>=tnext .or. t<0._wp) then    !need to load a new file
       call get_simsize2(cfg%precdir, llon=llon, llat=llat)
 
       print '(A,2I6)', 'Precipitation size: llon,llat:  ',llon,llat
-      if (llon < 1 .or. llat < 1) then
-        write(stderr,*) 'ERROR: reading ' // cfg%precdir
-        error stop 'precipBCs_mod: precipitation grid size must be strictly positive'
-      endif
+      if (llon < 1 .or. llat < 1) error stop 'precipitation grid size must be strictly positive: ' //  cfg%precdir
 
       !MESSAGE WORKERS WITH GRID INFO
       ierr=0
@@ -189,30 +188,28 @@ if(t+dt / 2._wp>=tnext .or. t<0._wp) then    !need to load a new file
   end if
 
 
-  !GRID INFORMATION EXISTS AT THIS POINT SO START READING IN PRECIP DATA
-  if (myid==0) then    !only root reads file data
-    !read in the data from file
+  !> GRID INFORMATION EXISTS AT THIS POINT SO START READING IN PRECIP DATA
+  if (myid==0) then
+    !! only root reads file data
+    !> read in the data from file
     if(debug) print *, 'precipBCs_mod.f90:precipBCs_fileinput:tprev,tnow,tnext:  ',tprev,t+dt / 2._wp,tnext
-    ymdtmp=ymdnext
-    UTsectmp=UTsecnext
-    call dateinc(cfg%dtprec,ymdtmp,UTsectmp)    !get the date for "next" params
+    ymdtmp = ymdnext
+    UTsectmp = UTsecnext
+    call dateinc(cfg%dtprec, ymdtmp, UTsectmp)
+    !! get the date for "next" params
 
     call get_precip(date_filename(cfg%precdir,ymdtmp,UTsectmp), Qp, E0p)
 
     if (debug) print *, 'Min/max values for Qp:  ',minval(Qp),maxval(Qp)
     if (debug) print *, 'Min/max values for E0p:  ',minval(E0p),maxval(E0p)
 
-    if(.not. all(ieee_is_finite(Qp))) error stop 'precipBCs_mod.f90:precipBCs_fileinput: Qp must be finite'
-    if(any(Qp < 0)) error stop 'precipBCs_mod.f90:precipBCs_fileinput: Qp must be non-negative'
-    if(.not. all(ieee_is_finite(E0p))) error stop 'precipBCs_mod.f90:precipBCs_fileinput: E0p must be finite'
-    if(any(E0p < 0)) error stop 'precipBCs_mod.f90:precipBCs_fileinput: E0p must be non-negative'
-
-    !send a full copy of the data to all of the workers
+    !> send a full copy of the data to all of the workers
     do iid=1,lid-1
       call mpi_send(Qp,llon*llat,mpi_realprec,iid,tag%Qp,MPI_COMM_WORLD,ierr)
       call mpi_send(E0p,llon*llat,mpi_realprec,iid,tag%E0p,MPI_COMM_WORLD,ierr)
     end do
-  else     !workers receive data from root
+  else
+    !! workers receive data from root
     call mpi_recv(Qp,llon*llat,mpi_realprec,0,tag%Qp,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
     call mpi_recv(E0p,llon*llat,mpi_realprec,0,tag%E0p,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
   end if
