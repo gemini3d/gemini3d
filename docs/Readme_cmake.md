@@ -1,11 +1,44 @@
-# build-time options
+# CMake options
 
-CMake build-time options in general are enabled or disabled like
+Note: a common convention is to compile (build) project in the "build/" directory.
+That is, the Gemini.bin executable and other libraries and test executables will be created under gemini3d/build.
+Feel free to use a different directory name if you like.
+
+---
+
+When using a meta-build system like CMake, building a program takes two steps.
+
+1. configure: user specifies options (if any) and CMake determines what compiler options and finds libraries. If libraries are missing, CMake prepares to build them.
+2. build: CMake uses a low-level build system, typically Ninja or GNU Make, to orchestrate the C and Fortran compiler commands in parallel.
+
+If a user makes changes to source code, they need only rerun the build command.
+If a user wishes to change a CMake option, run both commands again.
+
+## Normal Gemini build
+
+Many Gemini3D users do not need any custom options.
+In that case, build Gemini3D from the gemini3d/ directory by:
+
+```sh
+cmake -B build
+
+cmake --build build
+```
+
+## CMake configure
+
+CMake build-time options in general are enabled or disabled at *configure time* like
 
 ```sh
 cmake -B build -Doption=true
 
 cmake -B build -Doption=false
+```
+
+If you've already built Gemini but wish to change a CMake configuration option, you can reconfigure as above, then rebuild:
+
+```sh
+cmake --build build
 ```
 
 ### Windows
