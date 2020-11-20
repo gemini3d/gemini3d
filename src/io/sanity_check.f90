@@ -19,33 +19,35 @@ contains
 
 
 subroutine check_finite_output(time,id, vs2,vs3,ns,vs1,Ts,Phi,J1,J2,J3)
+!! check outputs before proceeding to next time step
 
 real(wp), intent(in) :: time
 integer, intent(in) :: id
 real(wp), intent(in), dimension(:,:,:,:) :: vs2, vs3, ns, vs1, Ts
 real(wp), intent(in), dimension(:,:,:) :: Phi, J1, J2, J3
 
-call check_finite(ns, 'ns', time, id)
-call check_finite(vs1, 'vs1', time, id)
-call check_finite(Ts, 'Ts', time, id)
-call check_finite(J1, 'J1', time, id)
-call check_finite(J2, 'J2', time, id)
-call check_finite(J3, 'J3', time, id)
-call check_finite(vs2, 'vs2', time, id)
-call check_finite(vs3, 'vs3', time, id)
-call check_finite(Phi, 'Phi', time, id)
+call check_finite(ns, 'output: ns', time, id)
+call check_finite(vs1, 'output: vs1', time, id)
+call check_finite(Ts, 'output: Ts', time, id)
+call check_finite(J1, 'output: J1', time, id)
+call check_finite(J2, 'output: J2', time, id)
+call check_finite(J3, 'output: J3', time, id)
+call check_finite(vs2, 'output: vs2', time, id)
+call check_finite(vs3, 'output: vs3', time, id)
+call check_finite(Phi, 'output: Phi', time, id)
 
 end subroutine check_finite_output
 
 
 subroutine check_finite_plasma(ns, vs1, Ts)
+!! check input data--garbage in, garbage out...
 
 real(wp), dimension(:,:,:,:), intent(in) :: ns
 real(wp), dimension(:,:,:,:), intent(in) :: vs1, Ts
 
-call check_finite(ns, 'ns')
-call check_finite(vs1, 'vs1')
-call check_finite(Ts, 'Ts')
+call check_finite(ns, 'input: ns')
+call check_finite(vs1, 'input: vs1')
+call check_finite(Ts, 'input: Ts')
 
 if (any(ns < 0)) then
   write(stderr,'(A,ES15.3)') 'ERROR: negative number density minimum: ',minval(ns)
@@ -148,7 +150,7 @@ character(*), intent(in) :: name
 real(wp), intent(in), optional :: time
 integer, intent(in), optional :: id
 
-write(stderr, '(A)', advance='no') 'sanity_check: non-finite value(s) in variable '// name
+write(stderr, '(A)', advance='no') 'sanity_check: non-finite value(s): '// name
 
 if (present(time) .and. present(id)) write(stderr,*) ' at time: ', time, ' on MPI worker # ', id
 
