@@ -25,6 +25,8 @@ option(netcdf "use NetCDF file I/O" off)
 option(metis "MUMPS: use METIS" off)
 option(scotch "MUMPS: use Scotch" off)
 option(openmp "MUMPS: use OpenMP" off)
+# Matlab checks take much longer than Python, and Python covers much more
+option(matlab "Matlab checks" off)
 
 # on: debug, off: normal
 set(FETCHCONTENT_UPDATES_DISCONNECTED off)

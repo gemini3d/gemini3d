@@ -12,6 +12,7 @@ add_feature_info(GLOW glow "airglow / aurora model")
 add_feature_info(NetCDF4 netcdf "file read / write")
 
 add_feature_info(Python python_ok "simulation generation, HPC script generator and plotting")
+add_feature_info(Matlab Matlab_FOUND "checks not as extensive as Python, and slow")
 
 add_feature_info(HDF5 hdf5 "file read / write")
 add_feature_info(AutoHDF5 hdf5_external "auto-build HDF5")

@@ -48,10 +48,12 @@ function(compare_gemini_output testname)
 set(outdir ${PROJECT_BINARY_DIR}/test${testname})
 set(refdir ${PROJECT_SOURCE_DIR}/tests/data/test${testname})
 
+if(matlab)
 find_package(Matlab COMPONENTS MAIN_PROGRAM)
 if(Matlab_FOUND)
 matlab_compare(${outdir} ${refdir} ${testname})
-endif()
+endif(Matlab_FOUND)
+endif(matlab)
 
 if(python_ok)
 python_compare(${outdir} ${refdir} ${testname})
