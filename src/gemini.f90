@@ -111,8 +111,8 @@ if (lid2in==-1) then
 else
   call mpi_manualgrid(lx2all, lx3all, lid2in, lid3in)
 endif
-print '(A, 2I6)', 'process grid (Number MPI processes) x2, x3:  ',lid2,lid3
-print '(A, I6, A, 2I6)', 'Process:',myid,' at process grid location:',myid2,myid3
+print '(A, I0, A1, I0)', 'process grid (Number MPI processes) x2, x3:  ',lid2, ' ', lid3
+print '(A, I0, A, I0, A1, I0)', 'Process:',myid,' at process grid location: ',myid2,' ',myid3
 
 !> LOAD UP THE GRID STRUCTURE/MODULE VARS. FOR THIS SIMULATION
 call read_grid(cfg%indatsize,cfg%indatgrid,cfg%flagperiodic, x)
@@ -436,7 +436,7 @@ block
   character(10) :: time
 
   call date_and_time(date,time)
-  print '(/,A,I6,A,I6,A)', 'GEMINI normal termination, Process #', myid,' /',lid-1, ' at ' // date // 'T' // time
+  print '(/,A,I0,A,I0,A)', 'GEMINI normal termination, Process # ', myid,' / ',lid-1, ' at ' // date // 'T' // time
 end block
 
 end program
