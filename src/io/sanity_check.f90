@@ -102,8 +102,10 @@ real(wp), intent(in) :: var(:)
 character(*), intent(in) :: name
 real(wp), intent(in), optional :: time
 integer, intent(in), optional :: id
+integer :: N
 
-if (.not.all(ieee_is_finite(var))) call fail(name, time, id)
+N = count(.not.ieee_is_finite(var))
+if (N>0) call fail(name, N, time, id)
 
 end subroutine check_1d
 
@@ -114,8 +116,10 @@ real(wp), intent(in) :: var(:,:)
 character(*), intent(in) :: name
 real(wp), intent(in), optional :: time
 integer, intent(in), optional :: id
+integer :: N
 
-if (.not.all(ieee_is_finite(var))) call fail(name, time, id)
+N = count(.not.ieee_is_finite(var))
+if (N>0) call fail(name, N, time, id)
 
 end subroutine check_2d
 
@@ -126,8 +130,10 @@ real(wp), intent(in) :: var(:,:,:)
 character(*), intent(in) :: name
 real(wp), intent(in), optional :: time
 integer, intent(in), optional :: id
+integer :: N
 
-if (.not.all(ieee_is_finite(var))) call fail(name, time, id)
+N = count(.not.ieee_is_finite(var))
+if (N>0) call fail(name, N, time, id)
 
 end subroutine check_3d
 
@@ -138,19 +144,23 @@ real(wp), intent(in) :: var(:,:,:,:)
 character(*), intent(in) :: name
 real(wp), intent(in), optional :: time
 integer, intent(in), optional :: id
+integer :: N
 
-if (.not.all(ieee_is_finite(var))) call fail(name, time, id)
+N = count(.not.ieee_is_finite(var))
+if (N>0) call fail(name, N, time, id)
 
 end subroutine check_4d
 
 
-subroutine fail(name,time, id)
+subroutine fail(name, N, time, id)
 
 character(*), intent(in) :: name
+integer, intent(in) :: N
 real(wp), intent(in), optional :: time
 integer, intent(in), optional :: id
 
-write(stderr, '(A)', advance='no') 'sanity_check: non-finite value(s): '// name
+
+write(stderr, '(A,I0,A)', advance='no') 'sanity_check: ', N, ' non-finite value(s): '// name
 
 if (present(time) .and. present(id)) write(stderr,*) ' at time: ', time, ' on MPI worker # ', id
 
