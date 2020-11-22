@@ -9,9 +9,8 @@ if(netcdf)
     include(FetchContent)
     FetchContent_Declare(nc4fortran_proj
       GIT_REPOSITORY https://github.com/geospace-code/nc4fortran.git
-      GIT_TAG v1.1.1
-      GIT_SHALLOW true
-      UPDATE_DISCONNECTED true)
+      GIT_TAG v1.1.2
+      GIT_SHALLOW true)
 
     FetchContent_MakeAvailable(nc4fortran_proj)
   endif()
