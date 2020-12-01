@@ -477,7 +477,7 @@ do isp=1,lsp
     Lo(:,:,:,isp)=Lo(:,:,:,isp)+ms(isp)*fact
 
 
-    !FRICTION (neglect vn for now)
+    !FRICTION
     fact=fact*mn(isp2)/3
     Pr(:,:,:,isp)=Pr(:,:,:,isp)+ns(1:lx1,1:lx2,1:lx3,isp)*ms(isp)/(gammas(isp)-1) &
                   *((vs1(1:lx1,1:lx2,1:lx3,isp)-vn1)**2+(vs2(1:lx1,1:lx2,1:lx3,isp)-vn2)**2 &

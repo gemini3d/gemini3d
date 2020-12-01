@@ -161,6 +161,7 @@ Q(:,:,:,lsp) = 0
 !NONSTIFF/NONBALANCE INTERNAL ENERGY SOURCES (RK2 INTEGRATION)
 call cpu_time(tstart)
 do isp=1,lsp
+!do isp=1,lsp-1      !suppress compression for electrons as a test (FIXME)
   call RK2_prep_mpi(isp,x%flagper,vs1,vs2,vs3)    !role-agnostic mpi, all-to-neighbor
 
   divvs = div3D(vs1(0:lx1+1,0:lx2+1,0:lx3+1,isp),&
