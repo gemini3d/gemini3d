@@ -452,42 +452,45 @@ if (lx2/=1 .and. cfg%potsolve ==1) then    !we did a field-integrated solve abov
     if (flagdirich /= 1) then
       !! Neumann conditions, this is boundary location-agnostic since both bottom and top FACs are known
       !! - they have to  be loaded into VVmaxx1 and Vminx1
-      if (debug) print *, 'Nuemann boundaries, integrated from highest altitude down to preserve accuracy...'
+!      if (debug) print *, 'Nuemann boundaries, integrating from highest altitude down to preserve accuracy...'
       if (gridflag==0) then     !closed dipole grid, really would be best off integrating from the source hemisphere
-        if (debug) print *,  'Closed dipole grid; integration starting in source hemisphere (if applicable)...', &
-                       minval(Vmaxx1slab), &
-                       maxval(Vmaxx1slab)
+!        if (debug) print *,  'Closed dipole grid; integration starting in source hemisphere (if applicable)...', &
+!                       minval(Vmaxx1slab), &
+!                       maxval(Vmaxx1slab)
         if (cfg%sourcemlat >= 0) then    !integrate from northern hemisphere
-          if (debug) print *, 'Source is in northern hemisphere (or there is no source)...'
+!          if (debug) print *, 'Source is in northern hemisphere (or there is no source)...'
           J1=integral3D1_curv_alt(divJperp,x,1,lx1)    !int divperp of BG current, go from maxval(x1) to location of interest
           do ix1=1,lx1
             J1(ix1,:,:)= 1/x%h2(ix1,1:lx2,1:lx3)/x%h3(ix1,1:lx2,1:lx3)* &
                              (x%h2(1,1:lx2,1:lx3)*x%h3(1,1:lx2,1:lx3)*Vmaxx1slab+J1(ix1,:,:))
           end do
         else
-          if (debug) print *, 'Source in southern hemisphere...'
+!          if (debug) print *, 'Source in southern hemisphere...'
           J1=integral3D1(divJperp,x,1,lx1)    !int divperp of BG current starting from minx1
           do ix1=1,lx1
             J1(ix1,:,:)= 1/x%h2(ix1,1:lx2,1:lx3)/x%h3(ix1,1:lx2,1:lx3)* &
                              (x%h2(1,1:lx2,1:lx3)*x%h3(1,1:lx2,1:lx3)*Vminx1slab-J1(ix1,:,:))
           end do
         end if
+      ! For open grids always integrate from the bottom (zero current)
       elseif (gridflag==1) then    !this would be an inverted grid, this max altitude corresponds to the min value of x1
-        if (debug) print *,  'Inverted grid; integration starting at min x1 (highest alt. or southern hemisphere)...', &
-                       minval(Vminx1slab), &
-                       maxval(Vminx1slab)
-        J1=integral3D1(divJperp,x,1,lx1)    !int divperp of BG current
-        do ix1=1,lx1
-          J1(ix1,:,:)= 1/x%h2(ix1,1:lx2,1:lx3)/x%h3(ix1,1:lx2,1:lx3)* &
-                           (x%h2(1,1:lx2,1:lx3)*x%h3(1,1:lx2,1:lx3)*Vminx1slab-J1(ix1,:,:))
-        end do
-      else        !minx1 is at teh bottom of the grid to integrate from max x1
-        if (debug) print *,  'Non-inverted grid; integration starting at max x1...', minval(Vmaxx1slab), maxval(Vmaxx1slab)
+!        if (debug) print *,  'Inverted grid; integration starting at min x1 (highest alt. or southern hemisphere)...', &
+!                       minval(Vminx1slab), &
+!                       maxval(Vminx1slab)
         J1=integral3D1_curv_alt(divJperp,x,1,lx1)    !int divperp of BG current, go from maxval(x1) to location of interest
         do ix1=1,lx1
           J1(ix1,:,:)= 1/x%h2(ix1,1:lx2,1:lx3)/x%h3(ix1,1:lx2,1:lx3)* &
                            (x%h2(1,1:lx2,1:lx3)*x%h3(1,1:lx2,1:lx3)*Vmaxx1slab+J1(ix1,:,:))
         end do
+
+      else        !minx1 is at teh bottom of the grid to integrate from max x1
+!        if (debug) print *,  'Non-inverted grid; integration starting at max x1...', minval(Vmaxx1slab), maxval(Vmaxx1slab)
+        J1=integral3D1(divJperp,x,1,lx1)    !int divperp of BG current
+        do ix1=1,lx1
+          J1(ix1,:,:)= 1/x%h2(ix1,1:lx2,1:lx3)/x%h3(ix1,1:lx2,1:lx3)* &
+                           (x%h2(1,1:lx2,1:lx3)*x%h3(1,1:lx2,1:lx3)*Vminx1slab-J1(ix1,:,:))
+        end do
+
       end if
     else
       !! Dirichlet conditions - we need to integrate from the ***lowest altitude***
