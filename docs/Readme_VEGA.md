@@ -67,7 +67,7 @@ module load gcc/8.3.0
 module load openmpi/gcc8/64/3.1.2
 
 # Run the program
-mpirun -np $PBS_NP ./gemini.bin ../GEMINI-examples/initialize/mooreOK3D_hemis/config.nml ../simulations/mooreOK3D_hemis_medres_corrected_control/ -manual_grid 36 10 -debug
+mpirun -np $PBS_NP ./gemini.bin ../simulations/mooreOK3D_hemis_medres_corrected_control/ -manual_grid 36 10 -debug
 ```
 
 This simulation runs an example "mooreOK3D_hemis_medres" using 360 cores split in a process grid of 36x10 in the x2 and x3 directions.  
