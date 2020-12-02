@@ -345,17 +345,19 @@ if (lx2/=1 .and. cfg%potsolve==1) then    !we did a field-integrated solve above
       ! For open grids integrate from the bottom to insure that is zero...
       elseif (gridflag==1) then    !this would be an inverted grid, this max altitude corresponds to the min value of x1
   !          if (debug) print *,  'Inverted grid; integration starting at min x1...',minval(Vminx1slab), maxval(Vminx1slab)
-        J1=integral3D1_curv_alt(divJperp,x,1,lx1)    !int divperp of BG current, go from maxval(x1) to location of interest
-        do ix1=1,lx1
-          J1(ix1,:,:)=1 /x%h2(ix1,1:lx2,1:lx3)/x%h3(ix1,1:lx2,1:lx3)* &
-                           (x%h2(1,1:lx2,1:lx3)*x%h3(1,1:lx2,1:lx3)*Vmaxx1slab+J1(ix1,:,:))
-        end do
-      else        !minx1 is at teh bottom of the grid to integrate from max x1
-  !          if (debug) print *,  'Non-inverted grid; integration starting at max x1...', minval(Vmaxx1slab),  maxval(Vmaxx1slab)
-        J1=integral3D1(divJperp,x,1,lx1)    !int divperp of BG current
+        J1=integral3D1(divJperp,x,1,lx1)    
+        !! int divperp of BG current
         do ix1=1,lx1
           J1(ix1,:,:)=1 /x%h2(ix1,1:lx2,1:lx3)/x%h3(ix1,1:lx2,1:lx3)* &
                            (x%h2(1,1:lx2,1:lx3)*x%h3(1,1:lx2,1:lx3)*Vminx1slab-J1(ix1,:,:))
+        end do
+      else        !minx1 is at teh bottom of the grid to integrate from max x1
+  !          if (debug) print *,  'Non-inverted grid; integration starting at max x1...', minval(Vmaxx1slab),  maxval(Vmaxx1slab)
+        J1=integral3D1_curv_alt(divJperp,x,1,lx1)    
+        !! int divperp of BG current, go from maxval(x1) to location of interest
+        do ix1=1,lx1
+          J1(ix1,:,:)=1 /x%h2(ix1,1:lx2,1:lx3)/x%h3(ix1,1:lx2,1:lx3)* &
+                           (x%h2(1,1:lx2,1:lx3)*x%h3(1,1:lx2,1:lx3)*Vmaxx1slab+J1(ix1,:,:))
         end do
       end if
     else
