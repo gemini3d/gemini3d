@@ -204,3 +204,4 @@ An auxiliary program, magcalc.f90, can be used to compute magnetic field perturb
 5. [Readme_docs](./docs/Readme_docs.md)
 6. [Readme_mpi](./docs/Readme_mpi.md)
 7. [Readme_magcalc](./docs/Readme_magcalc.md)
+8. [Readme_VEGA](./docs/Readme_VEGA.md)
