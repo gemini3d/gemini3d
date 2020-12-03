@@ -23,7 +23,6 @@ A large number of examples (in addition to those included in the main repo) are 
 [GEMINI-examples](https://github.com/gemini3d/GEMINI-examples)
 repository.
 
-
 ### Example config.nml input file
 
 Note that most simulations will not use all of the input options shown here.  Source code reading in these parameters is in `config_nml.f90`.
@@ -151,13 +150,15 @@ diffsolvetype = 2             ! type of diffusion solver to use:  1 - backward E
 &lagrangian
 flaglagrangian=.true.         ! whether or not to have the grid drift at the ExB speed
 /
-
 ```
-
 
 ## 2,3. Grid input files
 
-One of the most complicated parts of setting up a new simulation is creating a grid.  Grids are generated from scripts external to the main fortran code and then passes into GEMINI as files.  Generally when setting up a grid, it is likely easiest to work from an existing example in [GEMINI-examples](https://github.com/gemini3d/GEMINI-examples).  In the event that none of the examples suffice as a starting point, the details of grid creations are documented below.
+One of the most complicated parts of setting up a new simulation is creating a grid.
+Grids are generated from scripts external to the main fortran code and then passes into GEMINI as files.
+Generally when setting up a grid, it is likely easiest to work from an existing example in
+[GEMINI-examples](https://github.com/gemini3d/GEMINI-examples).
+In the event that none of the examples suffice as a starting point, the details of grid creations are documented below.
 
 Document grid creation details here...
 
@@ -166,17 +167,16 @@ Grid structures, once created, are written to a file using the matlab `writegrid
 ```matlab
 writegrid(xg,'directory name here')
 ```
-where the `xg` variable is a structure containing all the expected grid elements.  The writegrid API creates a file with the grid data structure in it as well as a small file containing the size information.
+where the `xg` variable is a structure containing all the expected grid elements.
+The writegrid API creates a file with the grid data structure in it as well as a small file containing the size information.
 
 ### Grid structure requirements
 
 Grid structures, variable `xg` in the example above shall have the following fields...
 
-
 ### Visualizing the grid
 
 Plotgrid...  But explain how to use it...
-
 
 ## Neutral data input files
 
@@ -184,12 +184,15 @@ The examples of specifying and saving input neutral data input files are provide
 
 ### Neutral input data requirements
 
-Neutral input file data shall contain neutral fluid velocities, volumetric perturbations in temperature, and number densities for [O], [N_2] and [O_2]. 2D Cartesian neutral inputs should contain meridional and vertical fluid velocities; 2D axisymmetric neutral inputs shouuld contain radial and vertical fluid velocities; for 3D GEMINI simulations - meridional, zonal and vertical fluid velocities. Neutral particle temperature perturbations represent averaged values over all species.
-
+Neutral input file data shall contain neutral fluid velocities, volumetric perturbations in temperature, and number densities for [O], [N_2] and [O_2].
+2D Cartesian neutral inputs should contain meridional and vertical fluid velocities; 2D axisymmetric neutral inputs should contain radial and vertical fluid velocities; for 3D GEMINI simulations - meridional, zonal and vertical fluid velocities.
+Neutral particle temperature perturbations represent averaged values over all species.
 
 ## 5,6. Running with different boundary and initial conditions:
 
-GEMINI requires both initial and boundary conditions to run properly.  Specifically the user must provide a complete initial ionospheric state (density, drift, and temperature for all ionospheric species), along with boundary conditions for the electric potential (in 2D this are the top, bottom, and side potentials; in 3D the topside current density and side wave potentials).  Fluid state variables are given free-flow boundary conditions at the edges of the simulation grid.  The `io` module contains code dealing with input of initial state from file and the `potential_comm` and `potentialBCs_mumps` modules contains contains code dealing with boundary condition input.
+GEMINI requires both initial and boundary conditions to run properly.  Specifically the user must provide a complete initial ionospheric state (density, drift, and temperature for all ionospheric species), along with boundary conditions for the electric potential (in 2D this are the top, bottom, and side potentials; in 3D the topside current density and side wave potentials).
+Fluid state variables are given free-flow boundary conditions at the edges of the simulation grid.
+The `io` module contains code dealing with input of initial state from file and the `potential_comm` and `potentialBCs_mumps` modules contains contains code dealing with boundary condition input.
 
 There are presently two ways in which the boundary and initial conditions can be set for GEMINI:  subroutine-based input and file-based input.
 
@@ -199,11 +202,17 @@ PLEASE NOTE that future releases will use Fortran 2008 `submodule`, likely compl
 
 There are two subroutines that can be modified by the user to provide boundary conditions to the code; these are described below. Note that, if any of these are changed, the code needs to be recompiled.
 
-`./ionization/boundary_conditions/precipBCs_mod.f90` - the function `precipBCs' specifies the pattern of electron precipitation, including characteristic energy and total energy flux, over top of grid.  If the user does not specify an input file for precipitation boundary conditions in `config.nml`, then this subroutine will be called to set the boundary.
+`./ionization/boundary_conditions/precipBCs_mod.f90` - the function "precipBCs" specifies the pattern of electron precipitation, including characteristic energy and total energy flux, over top of grid.
+If the user does not specify an input file for precipitation boundary conditions in `config.nml`, then this subroutine will be called to set the boundary.
 
-`./numerical/potential/boundary_conditions/potentialBCs_mumps.f90` - boundary conditions for the electric potential or field-aligned current.  The type of input that is being used is specified by the flags in the `config.nml` file for the simulation.  This subroutine will only be called if the user has not specified an input file containing boundary conditions.
+`./numerical/potential/boundary_conditions/potentialBCs_mumps.f90` - boundary conditions for the electric potential or field-aligned current.  The type of input that is being used is specified by the flags in the `config.nml` file for the simulation.
+This subroutine will only be called if the user has not specified an input file containing boundary conditions.
 
-By default these subroutines will be used for boundary conditions if file input is not specified in the config.nml input file.  The base GEMINI sets these to be zero potential (or current) and some negligible amount of precipitation.  Note that if you write over these subroutines then the code will use whatever you have put into them if file input is not specified.  This can lead to unintended behavior if ones modifies these and then forgets since the code will continue to use the modifications instead of some baseline.  Because of this issue, and the fact that GEMINI must be rebuilt every time these subroutines are changed, this method of boundary condition input is going to be removed.
+By default these subroutines will be used for boundary conditions if file input is not specified in the config.nml input file.
+The base GEMINI sets these to be zero potential (or current) and some negligible amount of precipitation.
+Note that if you write over these subroutines then the code will use whatever you have put into them if file input is not specified.
+This can lead to unintended behavior if ones modifies these and then forgets since the code will continue to use the modifications instead of some baseline.
+Because of this issue, and the fact that GEMINI must be rebuilt every time these subroutines are changed, this method of boundary condition input is going to be removed.
 
 ### File-based input (*recommended*)
 
@@ -217,7 +226,31 @@ Electric field input files shall contain the following information:
 
 ### Precipitation input files requirements
 
-Precipitation input files shall contain the following information:
+Precipitation input files shall contain the following variables.
+These variables are one element per grid cell of the inputs/precip/simgrid.h5 file.
+Each time step file has these variables.
+
+```
+E0p: Energy bin
+Qp: Particle flux in this energy bin
+```
+
+the inputs/precip/simgrid.h5 file contains these vector variables:
+
+```
+mlat: magnetic latitude  (-90, 90)
+mlon: magnetic longitude (0, 360)
+```
+
+the inputs/precip/simsize.h5 file contains these scalar variables:
+
+```
+llat: number of latitude cells
+llon: number of longitude cells
+```
+
+The number of cells in the precipitation files is in general different than the number of simulation cells.
+The Fortran code interpolates the precipitation data in space and time.
 
 ## 7. Initial conditions
 
