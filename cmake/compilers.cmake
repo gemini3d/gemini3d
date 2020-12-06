@@ -52,9 +52,11 @@ endif()
 
 if(mpi)
   include(${CMAKE_CURRENT_LIST_DIR}/mpi.cmake)
-else()
-  add_subdirectory(src/vendor/mpi_stubs)
 endif(mpi)
+
+if(NOT mpi)
+  add_subdirectory(src/vendor/mpi_stubs)
+endif(NOT mpi)
 
 # optional, for possible MUMPS speedup
 if(openmp)
