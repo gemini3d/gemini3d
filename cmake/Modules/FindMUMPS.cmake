@@ -100,7 +100,6 @@ if(mpiseq IN_LIST MUMPS_FIND_COMPONENTS)
                NAMES_PER_DIR
                DOC "No-MPI stub library")
   if(NOT MUMPS_mpiseq_LIB)
-    message(WARNING "MUMPS mpiseq not found")
     return()
   endif()
 
@@ -108,7 +107,6 @@ if(mpiseq IN_LIST MUMPS_FIND_COMPONENTS)
             NAMES mpif.h
             DOC "MUMPS mpiseq header")
   if(NOT MUMPS_mpiseq_INC)
-    message(WARNING "MUMPS mpiseq mpif.h not found")
     return()
   endif()
 
