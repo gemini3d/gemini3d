@@ -12,14 +12,6 @@ if(CMAKE_VERSION VERSION_LESS 3.15)
     Try 'pip install -U cmake' or https://cmake.org/download/")
 endif()
 
-# we use presence of MPIEXEC as a weak assumption that MPI is OK.
-find_program(_mpiexec NAMES mpiexec)
-if(_mpiexec)
-  list(APPEND _opts "-Dmpi:BOOL=on")
-else()
-  list(APPEND _opts "-Dmpi:BOOL=off")
-endif(_mpiexec)
-
 # CTEST_CMAKE_GENERATOR must always be defined
 if(NOT DEFINED CTEST_CMAKE_GENERATOR AND CMAKE_VERSION VERSION_GREATER_EQUAL 3.17)
   find_program(_gen NAMES ninja ninja-build samu)

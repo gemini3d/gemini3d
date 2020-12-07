@@ -15,7 +15,17 @@ else()
   set(arith d)
 endif()
 
-option(mpi "Use MPI parallelization" on)
+# If MPIEXEC is not present, no need to link MPI.
+if(NOT DEFINED mpi)
+  find_program(_mpiexec NAMES mpiexec)
+  if(_mpiexec)
+    set(mpi on)
+  else()
+    set(mpi off)
+  endif(_mpiexec)
+endif()
+
+option(mpi "Use MPI parallelization")
 
 option(autobuild "autobuild missing Lapack, Scalapack or Mumps" on)
 option(glow "use NCAR GLOW airglow / aurora model" on)

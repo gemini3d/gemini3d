@@ -1,10 +1,8 @@
 function(check_mpi)
 
-find_package(MPI COMPONENTS C Fortran)
-if(NOT MPI_FOUND)
-  set(mpi false PARENT_SCOPE)
-  return()
-endif()
+find_package(MPI COMPONENTS C Fortran REQUIRED)
+# NOTE: to make this not REQUIRED means making a 2nd target that is used instead of MPI::MPI_Fortran directly
+# this is because the imported targets cannot be overwritten from find_package attempt
 find_package(Threads)
 
 set(CMAKE_REQUIRED_INCLUDES)
@@ -27,8 +25,7 @@ endif()
 check_fortran_source_compiles("use mpi; end" MPI_Fortran_OK SRC_EXT F90)
 
 if(NOT MPI_Fortran_OK)
-  set(mpi false PARENT_SCOPE)
-  return()
+  message(FATAL_ERROR "MPI_Fortran not working. Please use 'cmake -Dmpi=off' option")
 endif()
 
 # --- test C MPI
@@ -55,8 +52,7 @@ int main(void) {
 " MPI_C_OK)
 
 if(NOT MPI_C_OK)
-  set(mpi false PARENT_SCOPE)
-  return()
+  message(FATAL_ERROR "MPI_C not working. Please use 'cmake -Dmpi=off' option")
 endif()
 
 endfunction(check_mpi)
