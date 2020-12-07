@@ -16,6 +16,7 @@ jobs:
 
   hdf5:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-python@v2
@@ -35,6 +36,7 @@ jobs:
   debug:
     needs: hdf5
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-python@v2
@@ -63,6 +65,7 @@ jobs:
   autobuild_no_mpi:
     needs: debug
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-python@v2
@@ -82,6 +85,7 @@ jobs:
   autobuild_mpi:
     needs: debug
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-python@v2
