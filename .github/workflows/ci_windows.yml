@@ -21,9 +21,16 @@ jobs:
     - uses: msys2/setup-msys2@v2
       with:
         update: true
-        install: 'git mingw-w64-x86_64-cmake mingw-w64-x86_64-ninja mingw-w64-x86_64-gcc-fortran mingw-w64-x86_64-hdf5 mingw-w64-x86_64-lapack mingw-w64-x86_64-python-h5py mingw-w64-x86_64-python-scipy'
+        install: >-
+          git
+          mingw-w64-x86_64-cmake
+          mingw-w64-x86_64-ninja
+          mingw-w64-x86_64-gcc-fortran
+          mingw-w64-x86_64-hdf5
+          mingw-w64-x86_64-lapack
+          mingw-w64-x86_64-python-h5py
+          mingw-w64-x86_64-python-scipy
 
     - uses: actions/checkout@v2
 
-    - name: configure and build without MPI
-      run: ctest -S setup.cmake -E 3d -VV
+    - run: ctest -S setup.cmake -E 3d -VV
