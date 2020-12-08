@@ -556,7 +556,6 @@ end function mpibreakdown
 
 subroutine test_process_number(N, lx2all, lx3all, rx2, rx3)
 !! this is only for testing. Due to lid being protected, has to be in this module
-!! FIXME: make type for MPI parameters.
 
 integer, intent(in) :: N(:), rx2(:), rx3(:), lx2all, lx3all
 integer :: i
@@ -565,8 +564,8 @@ do i = 1,size(N)
   lid = N(i)
   call mpigrid(lx2all,lx3all)
   if (lid2 /= rx2(i) .or. lid3 /= rx3(i)) then
-    write(stderr,'(A,5I4)') 'failed: lx2all,lx3all,lid,N:',lx2all,lx3all,lid,N(i)
-    write(stderr,*) 'expected lid2,lid3', rx2(i), rx3(i), 'but got:',lid2,lid3
+    write(stderr,'(A,I0,A1,I0,A1,I0,A1,I0)') 'failed: lx2all,lx3all,lid,N: ', lx2all,' ', lx3all,' ',lid,' ', N(i)
+    write(stderr,'(A,I0,A1,I0,A,I0,A1,I0)') 'expected lid2,lid3 ', rx2(i),' ', rx3(i), ' but got: ',lid2,' ',lid3
     error stop
   end if
 end do

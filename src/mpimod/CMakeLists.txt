@@ -12,7 +12,7 @@ add_library(mpimod OBJECT
 target_link_libraries(mpimod PRIVATE const MPI::MPI_Fortran)
 if(NOT mpi)
   # the reason for this is the MPI-1 Fortran 77 linking in MUMPS
-  # this seemed to be the easiest way to avoid symbol clases
+  # this seemed to be an easy way to avoid symbol clashes
   target_link_libraries(mpimod PRIVATE MUMPS::mpiseq)
 endif()
 
@@ -20,7 +20,7 @@ if(${PROJECT_NAME}_BUILD_TESTING)
 
 add_executable(test_excess_mpi test_excess_mpi.f90)
 target_link_libraries(test_excess_mpi mpimod)
-add_test(NAME unit:mpi:excessCPU COMMAND test_excess_mpi)
+add_test(NAME unit:mpi:excessCPU COMMAND $<TARGET_FILE:test_excess_mpi>)
 set_tests_properties(unit:mpi:excessCPU PROPERTIES TIMEOUT 10)
 
 endif()
