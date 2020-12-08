@@ -32,7 +32,7 @@ filemile = date_filename(cfg%outdir, ymd, UTsec, first) // suffix
 !! We don't test the situation wheere a first output was not produced.
 !! User should not be restarting in that case.
 
-if (cfg%mcadence <= 0) then
+if (cfg%mcadence <= 0 .and. cfg%flagoutput/=1) then      !okay for milestone if full output specified
 !! milestone was not in config.nml
   inquire(file=filemile, exist=exists)
  ! error stop filemile
