@@ -17,7 +17,7 @@ The MATLAB version of this script can be invoked by starting MATLAB and running:
 
 ```matlab
 direc='~/simulations/mysim'
-plotall(direc,{'png','eps'})
+gemini3d.vis.plotall(direc,{'png','eps'})
 ```
 where the latter argument specifies the file type to which matlab will print the plots.
 
@@ -40,9 +40,15 @@ In MATLAB:
 ```matlab
 dat = gemini3d.loadframe(direc, "time", time)
 ```
-This will load into the structure dat all of the plasma information from the simulation frame corresponding to output directory `direc` on time=datetime().  The remaining arguments are optional and are mainly present to prevent the code from having to reload, e.g. the grid, if it is called repeatedly for different time frames in the same simulation.  The output dat contains fields `dat.ne,dat.Te,dat.Ti,dat.v1` etc. corresponding to different calculated variables of interest (see descriptions below).
+This will load into the structure dat all of the plasma information from the simulation frame corresponding to output directory `direc` on time=datetime().  The time variable must be a MATLAB datetime structure; one can be built out of a datevec as follows:
 
-By default the `loadframe` API will not load the grid or simulation configuration information.
+```matlab
+time=datetime([year,month,day,hour,minute,second])
+```
+
+The remaining arguments are optional and are mainly present to prevent the code from having to reload, e.g. the grid, if it is called repeatedly for different time frames in the same simulation.  The output dat contains fields `dat.ne,dat.Te,dat.Ti,dat.v1` etc. corresponding to different calculated variables of interest (see descriptions below).
+
+By default the `loadframe` API will not load the grid or simulation configuration information; these require separate calls to gemini3d.readgrid and gemini3d.read_config.  
 
 To load the simulation information:
 
