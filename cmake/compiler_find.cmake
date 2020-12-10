@@ -9,7 +9,8 @@ set(CMAKE_CONFIGURATION_TYPES "Release;RelWithDebInfo;Debug" CACHE STRING "Build
 # Help CMake find matching compilers, especially needed for MacOS
 
 if(NOT DEFINED ENV{FC})
-  find_program(FC NAMES ifort gfortran gfortran-11 gfortran-10 gfortran-9 gfortran-8 gfortran-7)
+  # temporarily removed ifort, because Intel oneAPI release Dec 8, 2020 is broken for HDF5 and MPI in general.
+  find_program(FC NAMES gfortran gfortran-11 gfortran-10 gfortran-9 gfortran-8 gfortran-7)
   if(FC)
     set(ENV{FC} ${FC})
   endif()
