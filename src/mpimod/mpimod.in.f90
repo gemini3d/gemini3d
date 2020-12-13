@@ -14,7 +14,7 @@ use mpi, only: mpi_init, mpi_comm_rank, mpi_comm_size, mpi_comm_world, &
 implicit none (type, external)
 private
 public :: gemini_mpi, myid, myid2, myid3, lid, lid2, lid3, &
-  mpi_realprec, mpisetup, mpibreakdown, mpi_manualgrid, mpigrid, id2grid, grid2id, slabinds, &
+  mpi_realprec, mpisetup, mpibreakdown, mpi_manualgrid, process_grid_auto, id2grid, grid2id, slabinds, &
   bcast_send,  bcast_send1d_2, bcast_send1d_3, bcast_send3d_x2i, bcast_send3d_x3i, bcast_send3d_ghost, &
   bcast_recv, bcast_recv1d_2, bcast_recv1d_3, bcast_recv3d_x2i, bcast_recv3d_x3i, bcast_recv3d_ghost, &
   gather_send, gather_recv, &
@@ -474,52 +474,97 @@ myid3=inds(2)
 end subroutine mpi_manualgrid
 
 
-subroutine mpigrid(lx2all,lx3all)
+subroutine process_grid_auto(lx2all,lx3all)
 !! Automatically determine the PROCESS GRID
 !! sets value of lid2,lid3 globally
+!!
+!! lid: total number of MPI processes, set by mpi_comm_size (from CLI mpiexec -n).
+!!      Consider lid read-only or weird behavior can result (deadlock, crash)
+!!
 !! FIXME: should use derived type for these
-!! FIXME: improve algorithm to use more CPU cores (be more effective in finding factors for x2 and x3)
 
 integer, intent(in) :: lx2all,lx3all
 
 integer, dimension(2) :: inds
+integer :: i,j,N
 
 if (lx3all==1) then
-  !! 2D simulation, NOT swapped, divide in x3
-  lid3 = min(lid, lx2all)
+  !! 2D simulation in x2, SWAP x2 to x3
+  lid3 = gcd(lid, lx2all)
   lid2 = 1
 elseif (lx2all==1) then
-  !! 2D simulation, SWAP x2 to x3, divide in x3
-  lid3 = min(lid, lx3all)
+  !! 2D simulation in x3
+  lid3 = gcd(lid, lx3all)
   lid2 = 1
 else
   !! 3D simulation
-  lid = min(lid, lx3all)
-  !! more CPUs than lx3all, reduce used MPI images
+  lid2 = 1
+  lid3 = 1
+  N = 1
+  do i = gcd(lid, lx2all),1,-1
+    do j = gcd(lid, lx3all),1,-1
+      if (i*j > lid) cycle
+      if (i*j > N) then
+        N = i*j
+        lid2 = i
+        lid3 = j
+      endif
+    enddo
+  enddo
 
-  do while(modulo(lx3all, lid) /= 0)
-    lid = lid-1
-  end do
-  !! make number of MPI images a factor of lx3all
-
-  lid2=1
-  lid3=lid
-  do while( ((lid3/2)*2==lid3) .and. (lid3-lid2>lid3 .or. lid3-lid2>lid2) .and. &
-            lx3all/(lid3/2)*(lid3/2)==lx3all .and. lx2all/(lid2*2)*(lid2*2)==lx2all .and. &
-            lid3/2>1)
-  !! ensure that lx3 is divisible by lid3 and lx2 by lid2 and lid3 must be > 1
-
-    lid3=lid3/2
-    lid2=lid2*2
-  end do
+  if (modulo(lx2all, lid2) /= 0) then
+    write(stderr,'(A,I0,A,I0)') "ERROR: MPI x2 image count ", lid2, " not a factor of lx2 ", lx2all
+    error stop
+  endif
+  if (modulo(lx3all, lid3) /= 0) then
+    write(stderr,'(A,I0,A,I0)') "ERROR: MPI x2 image count ", lid3, " not a factor of lx3 ", lx3all
+    error stop
+  endif
 end if
+
+!> checks
+if (lx3all > 1 .and. lid3 > lx3all) error stop "lid3 cannot be greater than lx3"
+if (lx2all > 1 .and. lid2 > lx2all) error stop "lid2 cannot be greater than lx2"
+
+if (modulo(lid, lid2) /= 0) then
+  write(stderr,'(A,I0,A,I0)') "ERROR: MPI x2 image count ", lid2, " not a factor of lid ", lid
+  error stop
+endif
+
+if (modulo(lid, lid3) /= 0)  then
+  write(stderr,'(A,I0,A,I0)') "ERROR: MPI x3 image count ", lid3, " not a factor of lid ", lid
+  error stop
+endif
+
+if (lid2*lid3 /= lid) then
+  write(stderr,'(A,I0,A,I0,A1,I0)')  "MPI image count ", lid, " not equal to x2*x3 partition size ", lid2, " ", lid3
+  error stop
+endif
 
 !> THIS PROCESS' LOCATION ON THE GRID
 inds = ID2grid(myid)
 myid2 = inds(1)
 myid3 = inds(2)
 
-end subroutine mpigrid
+end subroutine process_grid_auto
+
+
+pure integer function gcd(a, b)
+integer, intent(in) :: a, b
+integer :: x,y,z
+
+if (a < 1 .or. b < 1) error stop "positive integers only"
+
+x = a
+y = b
+z = modulo(x, y)
+do while (z /= 0)
+  x = y
+  y = z
+  z = modulo(x, y)
+end do
+gcd = y
+end function gcd
 
 
 integer function grid2id(i2,i3)
@@ -554,23 +599,22 @@ call mpi_finalize(ierr)
 end function mpibreakdown
 
 
-subroutine test_process_number(N, lx2all, lx3all, rx2, rx3)
+logical function test_process_number(N, lx2all, lx3all, rx2, rx3) result (ok)
 !! this is only for testing. Due to lid being protected, has to be in this module
 
-integer, intent(in) :: N(:), rx2(:), rx3(:), lx2all, lx3all
-integer :: i
+integer, intent(in) :: N, rx2, rx3, lx2all, lx3all
 
-do i = 1,size(N)
-  lid = N(i)
-  call mpigrid(lx2all,lx3all)
-  if (lid2 /= rx2(i) .or. lid3 /= rx3(i)) then
-    write(stderr,'(A,I0,A1,I0,A1,I0,A1,I0)') 'failed: lx2all,lx3all,lid,N: ', lx2all,' ', lx3all,' ',lid,' ', N(i)
-    write(stderr,'(A,I0,A1,I0,A,I0,A1,I0)') 'expected lid2,lid3 ', rx2(i),' ', rx3(i), ' but got: ',lid2,' ',lid3
-    error stop
-  end if
-end do
+lid = N
+call process_grid_auto(lx2all,lx3all)
 
-end subroutine test_process_number
+ok = (lid2 == rx2 .and. lid3 == rx3)
+
+if (.not. ok) then
+  write(stderr,'(A,I0,A1,I0,A1,I0,A1,I0)') 'failed: lx2all,lx3all,lid,Nimg: ', lx2all,' ', lx3all,' ',lid,' ',N
+  write(stderr,'(A,I0,A1,I0,A,I0,A1,I0)') 'expected lid2,lid3 ', rx2,' ', rx3, ' but got: ',lid2,' ',lid3
+end if
+
+end function test_process_number
 
 
 end module mpimod

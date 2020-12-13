@@ -164,7 +164,7 @@ else
   else
     print *, '3D run'
     lx2=lx2all/lid2
-    !! should divide evenly if generated from mpigrid
+    !! should divide evenly if generated from process_grid
     lx3=lx3all/lid3
   endif
   flagswap=0

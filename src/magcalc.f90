@@ -15,7 +15,7 @@ use timeutils, only : dateinc
 use config, only : gemini_cfg
 use io, only : input_plasma_currents,create_outdir_mag,output_magfields
 use mpimod, only: mpi_sum, mpi_comm_world, &
-mpibreakdown, mpigrid, mpi_manualgrid, halo_end, &
+mpibreakdown, process_grid_auto, mpi_manualgrid, halo_end, &
 lid, lid2, lid3, myid, myid2, myid3, mpi_realprec, tag=>gemini_mpi
 
 implicit none (type, external)
@@ -90,12 +90,12 @@ call cli(myid, lid, cfg, lid2in, lid3in, debug)
 
 !ESTABLISH A PROCESS GRID
 !call grid_size(cfg%indatsize)
-!call mpigrid(lx2all,lx3all)    !following grid_size these are in scope
+!call process_grid_auto(lx2all,lx3all)    !following grid_size these are in scope
 !!CHECK THE GRID SIZE AND ESTABLISH A PROCESS GRID
 call grid_size(cfg%indatsize)
 if (lid2in == -1) then
   !! try to decide the process grid ourself
-  call mpigrid(lx2all,lx3all)
+  call process_grid_auto(lx2all,lx3all)
 else
   !! user specified process grid
   call mpi_manualgrid(lx2all,lx3all,lid2in,lid3in)

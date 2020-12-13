@@ -9,7 +9,7 @@ use grid, only: grid_size,read_grid,clear_grid,grid_drift, lx1,lx2,lx3,lx2all,lx
 use mesh, only: curvmesh
 use config, only : gemini_cfg, get_compiler_vendor
 use io, only : input_plasma,create_outdir,output_plasma,create_outdir_aur,output_aur,find_milestone
-use mpimod, only : mpibreakdown, mpi_manualgrid, mpigrid, lid, lid2,lid3,myid,myid2,myid3
+use mpimod, only : mpibreakdown, mpi_manualgrid, process_grid_auto, lid, lid2,lid3,myid,myid2,myid3
 use multifluid, only : fluid_adv
 use neutral, only : neutral_atmos,make_dneu,neutral_perturb,clear_dneu,init_neutrals
 use potentialBCs_mumps, only: clear_potential_fileinput, init_Efieldinput
@@ -106,7 +106,7 @@ call grid_size(cfg%indatsize)
 
 !> MPI gridding cannot be done until we know the grid size
 if (lid2in==-1) then
-  call mpigrid(lx2all, lx3all)
+  call process_grid_auto(lx2all, lx3all)
   !! grid_size defines lx2all and lx3all
 else
   call mpi_manualgrid(lx2all, lx3all, lid2in, lid3in)
