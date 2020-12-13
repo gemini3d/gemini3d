@@ -105,7 +105,10 @@ else()
   set(_mkltype static)
 endif()
 
-pkg_check_modules(pc_mkl mkl-${_mkltype}-lp64-iomp)
+if(NOT WIN32)
+  # Windows oneAPI crashes here due to bad *.pc
+  pkg_check_modules(pc_mkl mkl-${_mkltype}-lp64-iomp)
+endif()
 
 set(_mkl_libs ${ARGV})
 
