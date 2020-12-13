@@ -8,7 +8,11 @@ on:
       - "**.cmake"
       - "**/CMakeLists.txt"
       - ".github/workflows/ci_windows.yml"
-
+  pull_request:
+    paths:
+      - "**.cmake"
+      - "**/CMakeLists.txt"
+      - ".github/workflows/ci_windows.yml"
 
 jobs:
 

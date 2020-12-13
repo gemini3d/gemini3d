@@ -8,6 +8,11 @@ on:
       - "**.cmake"
       - "**/CMakeLists.txt"
       - ".github/workflows/ci_macos.yml"
+  pull_request:
+    paths:
+      - "**.cmake"
+      - "**/CMakeLists.txt"
+      - ".github/workflows/ci_macos.yml"
 
 jobs:
 
