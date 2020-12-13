@@ -111,69 +111,10 @@ integer, protected :: lid2,lid3,myid2,myid3
 !> Generally it is:
 !>  <optype>_<send,recv><dims>_<mpi dims>_<optional indicator>
 
-!
-!!> THESE INTERFACES OVERLOAD THE MPI GATHER,BROADCAST SUBROUTINES FOR ARRAYS OF DIFFERENT RANKS.
-!!> THESE ARE ALSO USEFUL FOR SUBBING IN DIFFERENT SCENARIOS - 1D VS. 2D MPI DIVISIONS ETC.
-!interface gather_recv
-!  module procedure gather_recv2D_23, gather_recv3D_23, gather_recv4D_23
-!end interface gather_recv
-!
-!interface gather_send
-!  module procedure gather_send2D_23, gather_send3D_23, gather_send4D_23
-!end interface gather_send
-!
-!interface bcast_send
-!  module procedure bcast_send2D_23, bcast_send3D_23, bcast_send4D_23
-!end interface bcast_send
-!
-!interface bcast_recv
-!  module procedure bcast_recv2D_23, bcast_recv3D_23, bcast_recv4D_23
-!end interface bcast_recv
-!
-!interface bcast_send1D_2
-!  module procedure bcast_send1D_23_2
-!end interface bcast_send1D_2
-!interface bcast_recv1D_2
-!  module procedure bcast_recv1D_23_2
-!end interface bcast_recv1D_2
-!
-!interface bcast_send1D_3
-!  module procedure bcast_send1D_23_3
-!end interface bcast_send1D_3
-!interface bcast_recv1D_3
-!  module procedure bcast_recv1D_23_3
-!end interface bcast_recv1D_3
-!
-!!> THIS ALLOWS EASY SWAPPING OF DIFFERENT ROUTINES FOR 3 VS. 23 DIVISIONS
-!interface halo
-!  module procedure halo_23
-!end interface halo
-!interface bcast_send3D_x3i
-!  module procedure bcast_send3D_x3i_23
-!end interface bcast_send3D_x3i
-!interface bcast_recv3D_x3i
-!  module procedure bcast_recv3D_x3i_23
-!end interface bcast_recv3D_x3i
-!
-!interface bcast_send3D_x2i
-!  module procedure bcast_send3D_x2i_23
-!end interface bcast_send3D_x2i
-!interface bcast_recv3D_x2i
-!  module procedure bcast_recv3D_x2i_23
-!end interface bcast_recv3D_x2i
-!
-!interface bcast_send3D_ghost
-!  module procedure bcast_send3D_ghost_23
-!end interface bcast_send3D_ghost
-!interface bcast_recv3D_ghost
-!  module procedure bcast_recv3D_ghost_23
-!end interface bcast_recv3D_ghost
-!
-!interface halo_end
-!  module procedure halo_end_23
-!end interface halo_end
+!> THESE INTERFACES OVERLOAD THE MPI GATHER,BROADCAST SUBROUTINES FOR ARRAYS OF DIFFERENT RANKS.
+!> THESE ARE ALSO USEFUL FOR SUBBING IN DIFFERENT SCENARIOS - 1D VS. 2D MPI DIVISIONS ETC.
 
-
+!> THIS ALLOWS EASY SWAPPING OF DIFFERENT ROUTINES FOR 3 VS. 23 DIVISIONS
 !> THESE INTERFACES OVERLOAD THE MPI GATHER,BROADCAST SUBROUTINES FOR ARRAYS OF DIFFERENT RANKS.
 interface gather_recv
   procedure gather_recv2D_23, gather_recv3D_23, gather_recv4D_23
@@ -480,8 +421,6 @@ subroutine process_grid_auto(lx2all,lx3all)
 !!
 !! lid: total number of MPI processes, set by mpi_comm_size (from CLI mpiexec -n).
 !!      Consider lid read-only or weird behavior can result (deadlock, crash)
-!!
-!! FIXME: should use derived type for these
 
 integer, intent(in) :: lx2all,lx3all
 
@@ -567,7 +506,7 @@ gcd = y
 end function gcd
 
 
-integer function grid2id(i2,i3)
+pure integer function grid2id(i2,i3)
 !! COMPUTES A PROCESS ID FROM A LOCATION ON THE PROCESS GRID
 integer, intent(in) :: i2,i3
 
