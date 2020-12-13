@@ -3,7 +3,7 @@ module potentialBCs_mumps
 use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
 use, intrinsic :: ieee_arithmetic, only : ieee_is_finite
 
-use mpimod, only : myid
+use mpimod, only : mpi_cfg
 use phys_consts, only: wp, pi, Re, debug
 use grid, only: lx1, lx2, lx2all, lx3all, gridflag, flagswap
 use mesh, only: curvmesh
@@ -76,7 +76,7 @@ real(wp) :: UTsectmp
 
 
 !> initializes the auroral electric field/current and particle inputs to read in a file corresponding to the first time step
-if (myid==0 .and. cfg%flagE0file==1) then    !only root needs these...
+if (mpi_cfg%myid==0 .and. cfg%flagE0file==1) then    !only root needs these...
   allocate(Vminx1(1:x%lx2all,1:x%lx3all),Vmaxx1(1:x%lx2all,1:x%lx3all))
   allocate(Vminx2(1:x%lx1,1:x%lx3all),Vmaxx2(1:x%lx1,1:x%lx3all))
   allocate(Vminx3(1:x%lx1,1:x%lx2all),Vmaxx3(1:x%lx1,1:x%lx2all))

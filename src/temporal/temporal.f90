@@ -12,7 +12,7 @@ module temporal
 !/home/zettergm/zettergmdata/GEMINI/temporal/temporal.f90:65:0: warning: unused parameter ‘potsolve’ [-Wunused-parameter]
 
 use phys_consts, only:  kB,mu0,ms,lsp,pi, wp, debug
-use mpimod, only: mpi_realprec, tag=>gemini_mpi, lid, myid, MPI_COMM_WORLD,MPI_STATUS_IGNORE
+use mpimod, only: mpi_realprec, tag=>gemini_mpi, mpi_cfg, MPI_COMM_WORLD,MPI_STATUS_IGNORE
 use mesh, only:  curvmesh
 use config, only: gemini_cfg
 
@@ -42,14 +42,14 @@ real(wp) :: dttmp
 
 call dt_calc(cfg%tcfl,ns,Ts,vs1,vs2,vs3,B1,B2,B3,x%dl1i,x%dl2i,x%dl3i,cfg%potsolve,cour1,cour2,cour3,dt)
 
-if (myid/=0) then
+if (mpi_cfg%myid/=0) then
   call mpi_send(dt,1,mpi_realprec,0,tag%dt,MPI_COMM_WORLD,ierr)
   !! send what I think dt should be
   call mpi_recv(dt,1,mpi_realprec,0,tag%dt,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
   !! receive roots decision
 else
   !> FIGURE OUT GLOBAL DT REQUIRED FOR STABILITY
-  do iid=1,lid-1
+  do iid=1,mpi_cfg%lid-1
     call mpi_recv(dttmp,1,mpi_realprec,iid,tag%dt,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
 
     if (dttmp < dt) dt=dttmp
@@ -71,7 +71,7 @@ else
   dt = max(dt, 1e-6_wp)
 
   !! SEND GLOBAL DT TO ALL WORKERS
-  do iid=1,lid-1
+  do iid=1,mpi_cfg%lid-1
     call mpi_send(dt,1,mpi_realprec,iid,tag%dt,MPI_COMM_WORLD,ierr)
   end do
 

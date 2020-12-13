@@ -13,7 +13,7 @@ use mpi, only: mpi_init, mpi_comm_rank, mpi_comm_size, mpi_comm_world, &
 
 implicit none (type, external)
 private
-public :: gemini_mpi, myid, myid2, myid3, lid, lid2, lid3, &
+public :: gemini_mpi, gemini_mpi_config, mpi_cfg, &
   mpi_realprec, mpisetup, mpibreakdown, mpi_manualgrid, process_grid_auto, id2grid, grid2id, slabinds, &
   bcast_send,  bcast_send1d_2, bcast_send1d_3, bcast_send3d_x2i, bcast_send3d_x3i, bcast_send3d_ghost, &
   bcast_recv, bcast_recv1d_2, bcast_recv1d_3, bcast_recv3d_x2i, bcast_recv3d_x3i, bcast_recv3d_ghost, &
@@ -23,6 +23,7 @@ public :: gemini_mpi, myid, myid2, myid3, lid, lid2, lid3, &
   test_process_number
 
 external :: mpi_finalize, mpi_send, mpi_recv, mpi_isend, mpi_irecv, mpi_waitall
+
 
 type :: gemini_mpi_tags
 
@@ -94,18 +95,20 @@ integer :: v2grid=110,v3grid=111
 
 end type gemini_mpi_tags
 
-
 type(gemini_mpi_tags), protected :: gemini_mpi
+!! A LIST OF TAGS SO THESE DO NOT NEED TO BE EMBEDDED IN EACH SUBROUTINE
 
-!> A LIST OF TAGS SO THESE DO NOT NEED TO BE EMBEDDED IN EACH SUBROUTINE
 
-!> VARIABLES REUSED BY ALL WORKERS AND USING MODULES
-integer, protected :: myid,lid
+type :: gemini_mpi_config
+!! VARIABLES REUSED BY ALL WORKERS AND USING MODULES
+integer:: myid,lid
 !! no external procedure should mess with these (but they need to be able to read them)
 
 !> VARIABLES RELATED TO PROCESS GRID (IF USED)
-integer, protected :: lid2,lid3,myid2,myid3
+integer:: lid2,lid3,myid2,myid3
+end type gemini_mpi_config
 
+type(gemini_mpi_config), protected :: mpi_cfg
 
 !> Some explanation as the the naming convention used in this module is in order at this point.
 !> Generally it is:
@@ -350,16 +353,16 @@ integer :: ierr
 
 call mpi_init(ierr)
 if (ierr/=0) error stop 'mpimod: mpi_init'
-call mpi_comm_rank(MPI_COMM_WORLD,myid,ierr)
+call mpi_comm_rank(MPI_COMM_WORLD, mpi_cfg%myid,ierr)
 if (ierr/=0) error stop 'mpimod: mpi_comm_rank'
-call mpi_comm_size(MPI_COMM_WORLD,lid,ierr)
+call mpi_comm_size(MPI_COMM_WORLD, mpi_cfg%lid,ierr)
 if (ierr/=0) error stop 'mpimod: mpi_comm_size'
 
-if(myid==0) print *, lid, "MPI processes detected"
+if(mpi_cfg%myid==0) print *, mpi_cfg%lid, "MPI processes detected"
 
 !> INITIALIZE, ONLY PARALLELIZING IN X3, GRIDDING FUNCTION MAY CHANGE THIS, IF CALLED.
-lid2 = 1
-lid3 = lid
+mpi_cfg%lid2 = 1
+mpi_cfg%lid3 = mpi_cfg%lid
 
 end subroutine mpisetup
 
@@ -396,21 +399,21 @@ slabinds(4)=i3fin
 end function slabinds
 
 
-subroutine mpi_manualgrid(lx2all,lx3all,lid2in,lid3in)
-integer, intent(in) :: lx2all,lx3all, lid2in,lid3in
+subroutine mpi_manualgrid(lx2all,lx3all,lid2,lid3)
+integer, intent(in) :: lx2all,lx3all, lid2,lid3
 integer, dimension(2) :: inds
 
-if (lx2all/lid2in*lid2in /= lx2all) error stop 'user input grid split in x2 will not work'
-if (lx3all/lid3in*lid3in /= lx3all) error stop 'user input grid split in x3 will not work'
-if (lid2in*lid3in /= lid) error stop 'total number of processes not commensurate with x2 and x3 split'
+if (lx2all/lid2*lid2 /= lx2all) error stop 'user input grid split in x2 will not work'
+if (lx3all/lid3*lid3 /= lx3all) error stop 'user input grid split in x3 will not work'
+if (lid2*lid3 /= mpi_cfg%lid) error stop 'total number of processes not commensurate with x2 and x3 split'
 
-lid2=lid2in
-lid3=lid3in
+mpi_cfg%lid2=lid2
+mpi_cfg%lid3=lid3
 
 !THIS PROCESS' LOCATION ON THE GRID
-inds=ID2grid(myid)
-myid2=inds(1)
-myid3=inds(2)
+inds=ID2grid(mpi_cfg%myid)
+mpi_cfg%myid2=inds(1)
+mpi_cfg%myid3=inds(2)
 
 end subroutine mpi_manualgrid
 
@@ -429,61 +432,62 @@ integer :: i,j,N
 
 if (lx3all==1) then
   !! 2D simulation in x2, SWAP x2 to x3
-  lid3 = gcd(lid, lx2all)
-  lid2 = 1
+  mpi_cfg%lid3 = gcd(mpi_cfg%lid, lx2all)
+  mpi_cfg%lid2 = 1
 elseif (lx2all==1) then
   !! 2D simulation in x3
-  lid3 = gcd(lid, lx3all)
-  lid2 = 1
+  mpi_cfg%lid3 = gcd(mpi_cfg%lid, lx3all)
+  mpi_cfg%lid2 = 1
 else
   !! 3D simulation
-  lid2 = 1
-  lid3 = 1
+  mpi_cfg%lid2 = 1
+  mpi_cfg%lid3 = 1
   N = 1
-  do i = gcd(lid, lx2all),1,-1
-    do j = gcd(lid, lx3all),1,-1
-      if (i*j > lid) cycle
+  do i = gcd(mpi_cfg%lid, lx2all),1,-1
+    do j = gcd(mpi_cfg%lid, lx3all),1,-1
+      if (i*j > mpi_cfg%lid) cycle
       if (i*j > N) then
         N = i*j
-        lid2 = i
-        lid3 = j
+        mpi_cfg%lid2 = i
+        mpi_cfg%lid3 = j
       endif
     enddo
   enddo
 
-  if (modulo(lx2all, lid2) /= 0) then
-    write(stderr,'(A,I0,A,I0)') "ERROR: MPI x2 image count ", lid2, " not a factor of lx2 ", lx2all
+  if (modulo(lx2all, mpi_cfg%lid2) /= 0) then
+    write(stderr,'(A,I0,A,I0)') "ERROR: MPI x2 image count ", mpi_cfg%lid2, " not a factor of lx2 ", lx2all
     error stop
   endif
-  if (modulo(lx3all, lid3) /= 0) then
-    write(stderr,'(A,I0,A,I0)') "ERROR: MPI x2 image count ", lid3, " not a factor of lx3 ", lx3all
+  if (modulo(lx3all, mpi_cfg%lid3) /= 0) then
+    write(stderr,'(A,I0,A,I0)') "ERROR: MPI x2 image count ", mpi_cfg%lid3, " not a factor of lx3 ", lx3all
     error stop
   endif
 end if
 
 !> checks
-if (lx3all > 1 .and. lid3 > lx3all) error stop "lid3 cannot be greater than lx3"
-if (lx2all > 1 .and. lid2 > lx2all) error stop "lid2 cannot be greater than lx2"
+if (lx3all > 1 .and. mpi_cfg%lid3 > lx3all) error stop "lid3 cannot be greater than lx3"
+if (lx2all > 1 .and. mpi_cfg%lid2 > lx2all) error stop "lid2 cannot be greater than lx2"
 
-if (modulo(lid, lid2) /= 0) then
-  write(stderr,'(A,I0,A,I0)') "ERROR: MPI x2 image count ", lid2, " not a factor of lid ", lid
+if (modulo(mpi_cfg%lid, mpi_cfg%lid2) /= 0) then
+  write(stderr,'(A,I0,A,I0)') "ERROR: MPI x2 image count ", mpi_cfg%lid2, " not a factor of lid ", mpi_cfg%lid
   error stop
 endif
 
-if (modulo(lid, lid3) /= 0)  then
-  write(stderr,'(A,I0,A,I0)') "ERROR: MPI x3 image count ", lid3, " not a factor of lid ", lid
+if (modulo(mpi_cfg%lid, mpi_cfg%lid3) /= 0)  then
+  write(stderr,'(A,I0,A,I0)') "ERROR: MPI x3 image count ", mpi_cfg%lid3, " not a factor of lid ", mpi_cfg%lid
   error stop
 endif
 
-if (lid2*lid3 /= lid) then
-  write(stderr,'(A,I0,A,I0,A1,I0)')  "MPI image count ", lid, " not equal to x2*x3 partition size ", lid2, " ", lid3
+if (mpi_cfg%lid2*mpi_cfg%lid3 /= mpi_cfg%lid) then
+  write(stderr,'(A,I0,A,I0,A1,I0)')  "MPI image count ", mpi_cfg%lid, " not equal to x2*x3 partition size ", &
+     mpi_cfg%lid2, " ", mpi_cfg%lid3
   error stop
 endif
 
 !> THIS PROCESS' LOCATION ON THE GRID
-inds = ID2grid(myid)
-myid2 = inds(1)
-myid3 = inds(2)
+inds = ID2grid(mpi_cfg%myid)
+mpi_cfg%myid2 = inds(1)
+mpi_cfg%myid3 = inds(2)
 
 end subroutine process_grid_auto
 
@@ -510,7 +514,7 @@ pure integer function grid2id(i2,i3)
 !! COMPUTES A PROCESS ID FROM A LOCATION ON THE PROCESS GRID
 integer, intent(in) :: i2,i3
 
-grid2ID = i3 * lid2 + i2
+grid2ID = i3 * mpi_cfg%lid2 + i2
 !! this formula assumes that the first element is (i2,i3)=(0,0)
 
 end function grid2id
@@ -522,9 +526,9 @@ integer, dimension(2) :: ID2grid
 integer, intent(in) :: ID
 
 
-ID2grid(2) = ID / lid2
+ID2grid(2) = ID / mpi_cfg%lid2
 !! x3 index into process grid
-ID2grid(1) = ID - ID2grid(2) * lid2
+ID2grid(1) = ID - ID2grid(2) * mpi_cfg%lid2
 !! x2 index into process grid
 
 end function ID2grid
@@ -543,14 +547,14 @@ logical function test_process_number(N, lx2all, lx3all, rx2, rx3) result (ok)
 
 integer, intent(in) :: N, rx2, rx3, lx2all, lx3all
 
-lid = N
+mpi_cfg%lid = N
 call process_grid_auto(lx2all,lx3all)
 
-ok = (lid2 == rx2 .and. lid3 == rx3)
+ok = (mpi_cfg%lid2 == rx2 .and. mpi_cfg%lid3 == rx3)
 
 if (.not. ok) then
-  write(stderr,'(A,I0,A1,I0,A1,I0,A1,I0)') 'failed: lx2all,lx3all,lid,Nimg: ', lx2all,' ', lx3all,' ',lid,' ',N
-  write(stderr,'(A,I0,A1,I0,A,I0,A1,I0)') 'expected lid2,lid3 ', rx2,' ', rx3, ' but got: ',lid2,' ',lid3
+  write(stderr,'(A,I0,A1,I0,A1,I0,A1,I0)') 'failed: lx2all,lx3all,lid,Nimg: ', lx2all,' ', lx3all,' ',mpi_cfg%lid,' ',N
+  write(stderr,'(A,I0,A1,I0,A,I0,A1,I0)') 'expected lid2,lid3 ', rx2,' ', rx3, ' but got: ',mpi_cfg%lid2,' ',mpi_cfg%lid3
 end if
 
 end function test_process_number

@@ -10,7 +10,7 @@ use diffusion, only:  trbdf23d, diffusion_prep, backEuler3D
 use grid, only: lx1, lx2, lx3, gridflag
 use mesh, only: curvmesh
 use ionization, only: ionrate_glow98, ionrate_fang, eheating, photoionization
-use mpimod, only: myid, tag=>gemini_mpi
+use mpimod, only: mpi_cfg, tag=>gemini_mpi
 use precipBCs_mod, only: precipBCs_fileinput, precipBCs
 use sources, only: rk2_prep_mpi, srcsenergy, srcsmomentum, srcscontinuity
 use timeutils, only : sza
@@ -137,7 +137,7 @@ do isp=1,lsp
   rhoes(:,:,:,isp)=param
 end do
 
-if (myid==0 .and. debug) then
+if (mpi_cfg%myid==0 .and. debug) then
   call cpu_time(tfin)
   print *, 'Completed advection substep for time step:  ',t,' in cpu_time of:  ',tfin-tstart
 end if
@@ -182,7 +182,7 @@ end do
 !> NaN check
 if (any(ieee_is_nan(Ts))) error stop 'multifluid:fluid_adv: NaN detected in Ts after div3D()'
 
-if (myid==0 .and. debug) then
+if (mpi_cfg%myid==0 .and. debug) then
   call cpu_time(tfin)
   print *, 'Completed compression substep for time step:  ',t,' in cpu_time of:  ',tfin-tstart
 end if
@@ -212,7 +212,7 @@ do isp=1,lsp
   Ts(:,:,:,isp)=max(Ts(:,:,:,isp),100._wp)
 end do
 
-if (myid==0 .and. debug) then
+if (mpi_cfg%myid==0 .and. debug) then
   call cpu_time(tfin)
   print *, 'Completed energy diffusion substep for time step:  ',t,' in cpu_time of:  ',tfin-tstart
 end if
@@ -264,31 +264,31 @@ if (gridflag/=0) then
   end if
 else
   !! do not compute impact ionization on a closed mesh (presumably there is no source of energetic electrons at these lats.)
-  if (myid==0 .and. debug) then
+  if (mpi_cfg%myid==0 .and. debug) then
     print *, 'Looks like we have a closed grid, so skipping impact ionization for time step:  ',t
   end if
 end if
 
-if (myid==0) then
+if (mpi_cfg%myid==0) then
   if (debug) print *, 'Min/max root electron impact ionization production rates for time:  ',t,' :  ', &
     minval(Prprecip), maxval(Prprecip)
 end if
 
-if ((cfg%flagglow/=0).and.(myid==0)) then
+if ((cfg%flagglow/=0).and.(mpi_cfg%myid==0)) then
   if (debug) print *, 'Min/max 427.8 nm emission column-integrated intensity for time:  ',t,' :  ', &
     minval(iver(:,:,2)), maxval(iver(:,:,2))
 end if
 
 !> now add in photoionization sources
 chi=sza(ymd(1), ymd(2), ymd(3), UTsec,x%glat,x%glon)
-if (myid==0 .and. debug) then
+if (mpi_cfg%myid==0 .and. debug) then
   print *, 'Computing photoionization for time:  ',t,' using sza range of (root only):  ', &
     minval(chi)*180._wp/pi,maxval(chi)*180._wp/pi
 end if
 
 Prpreciptmp=photoionization(x,nn,chi,f107,f107a)
 
-if (myid==0 .and. debug) then
+if (mpi_cfg%myid==0 .and. debug) then
   print *, 'Min/max root photoionization production rates for time:  ',t,' :  ', &
     minval(Prpreciptmp), maxval(Prpreciptmp)
 end if
@@ -318,7 +318,7 @@ do isp=1,lsp
   Ts(:,:,:,isp)=max(Ts(:,:,:,isp),100._wp)
 end do
 
-if (myid==0 .and. debug) then
+if (mpi_cfg%myid==0 .and. debug) then
   call cpu_time(tfin)
   print *, 'Energy sources substep for time step:  ',t,'done in cpu_time of:  ',tfin-tstart
 end if
@@ -337,7 +337,7 @@ do isp=1,lsp-1
   vs1(:,:,:,isp)=rhovs1(:,:,:,isp)/(ms(isp)*max(ns(:,:,:,isp),mindensdiv))
 end do
 
-if (myid==0 .and. debug) then
+if (mpi_cfg%myid==0 .and. debug) then
   call cpu_time(tfin)
   print *, 'Velocity sources substep for time step:  ',t,'done in cpu_time of:  ',tfin-tstart
 end if
@@ -366,7 +366,7 @@ do isp=1,lsp-1
   ns(1:lx1,1:lx2,1:lx3,isp)=paramtrim    !should there be a density floor here???  I think so...
 end do
 
-if (myid==0 .and. debug) then
+if (mpi_cfg%myid==0 .and. debug) then
   call cpu_time(tfin)
   print *, 'Mass sources substep for time step:  ',t,'done in cpu_time of:  ',tfin-tstart
 end if

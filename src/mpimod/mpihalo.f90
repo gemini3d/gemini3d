@@ -56,10 +56,12 @@ lx3=size(param,3)-4
 x3begin=.false.
 x3end=.false.
 
-i3=myid3-1
-i2=myid2
-if (i3==-1) then          !global boundary to my left, assume periodic
-  i3=lid3-1               !lid3-1 is the last process in x3 on the process grid
+i3=mpi_cfg%myid3-1
+i2=mpi_cfg%myid2
+if (i3==-1) then
+  !! global boundary to my left, assume periodic
+  i3=mpi_cfg%lid3-1
+  !! lid3-1 is the last process in x3 on the process grid
   x3begin=.true.
 end if
 idleft=grid2ID(i2,i3)
@@ -69,14 +71,16 @@ if (x3begin .and. .not.(isperiodic)) then
 end if
 
 
-i3=myid3+1
-i2=myid2
-if (i3==lid3) then        !global boundary to my right, assume periodic
+i3=mpi_cfg%myid3+1
+i2=mpi_cfg%myid2
+if (i3==mpi_cfg%lid3) then
+  !! global boundary to my right, assume periodic
   i3=0
   x3end=.true.
 end if
-idright=grid2ID(i2,i3)    !convert the location on process grid into a flat processed ID, The process grid is
-                          !visualized as lid2,lid3 in terms of index order (e.g. the i2 index cycles more quickly
+idright=grid2ID(i2,i3)
+!! convert the location on process grid into a flat processed ID, The process grid is
+!! visualized as lid2,lid3 in terms of index order (e.g. the i2 index cycles more quickly
 if (x3end .and. .not.(isperiodic)) then
   idright=MPI_PROC_NULL
 end if
@@ -85,24 +89,28 @@ end if
 x2begin=.false.
 x2end=.false.
 
-i3=myid3
-i2=myid2-1
-if (i2==-1) then       !global boundary downward, assume periodic
-  i2=lid2-1
+i3=mpi_cfg%myid3
+i2=mpi_cfg%myid2-1
+if (i2==-1) then
+  !! global boundary downward, assume periodic
+  i2=mpi_cfg%lid2-1
   x2begin=.true.
 end if
 iddown=grid2ID(i2,i3)
-if (x2begin) then      !never assume periodic in the x2-direction
+if (x2begin) then
+  !! never assume periodic in the x2-direction
   iddown=MPI_PROC_NULL
 end if
 
-i3=myid3
-i2=myid2+1
-if (i2==lid2) then     !global boundary upward, assume periodic
+i3=mpi_cfg%myid3
+i2=mpi_cfg%myid2+1
+if (i2==mpi_cfg%lid2) then
+  !! global boundary upward, assume periodic
   i2=0
   x2end=.true.
 end if
-idup=grid2ID(i2,i3)    !convert to process ID
+idup=grid2ID(i2,i3)
+!! convert to process ID
 if (x2end) then
   idup=MPI_PROC_NULL
 end if
@@ -224,10 +232,12 @@ lx3=size(param,3)
 x3begin=.false.
 x3end=.false.
 
-i3=myid3-1
-i2=myid2
-if (i3==-1) then          !global boundary to my left, assume periodic
-  i3=lid3-1               !lid3-1 is the last process in x3 on the process grid
+i3=mpi_cfg%myid3-1
+i2=mpi_cfg%myid2
+if (i3==-1) then
+  !! global boundary to my left, assume periodic
+  i3=mpi_cfg%lid3-1
+  !! lid3-1 is the last process in x3 on the process grid
   x3begin=.true.
 end if
 idleft=grid2ID(i2,i3)
@@ -236,14 +246,16 @@ if (x3begin) then     !we are flagged as not wanting periodic boundaries so do n
 end if
 
 
-i3=myid3+1
-i2=myid2
-if (i3==lid3) then        !global boundary to my right, assume periodic
+i3=mpi_cfg%myid3+1
+i2=mpi_cfg%myid2
+if (i3==mpi_cfg%lid3) then
+  !! global boundary to my right, assume periodic
   i3=0
   x3end=.true.
 end if
-idright=grid2ID(i2,i3)    !convert the location on process grid into a flat processed ID, The process grid is
-                          !visualized as lid2,lid3 in terms of index order (e.g. the i2 index cycles more quickly
+idright=grid2ID(i2,i3)
+!! convert the location on process grid into a flat processed ID, The process grid is
+!! visualized as lid2,lid3 in terms of index order (e.g. the i2 index cycles more quickly
 if (x3end) then
   idright=MPI_PROC_NULL
 end if
@@ -252,20 +264,23 @@ end if
 x2begin=.false.
 x2end=.false.
 
-i3=myid3
-i2=myid2-1
-if (i2==-1) then       !global boundary downward, assume periodic
-  i2=lid2-1
+i3=mpi_cfg%myid3
+i2=mpi_cfg%myid2-1
+if (i2==-1) then
+  !! global boundary downward, assume periodic
+  i2=mpi_cfg%lid2-1
   x2begin=.true.
 end if
 iddown=grid2ID(i2,i3)
-if (x2begin) then      !never assume periodic in the x2-direction
+if (x2begin) then
+  !! never assume periodic in the x2-direction
   iddown=MPI_PROC_NULL
 end if
 
-i3=myid3
-i2=myid2+1
-if (i2==lid2) then     !global boundary upward, assume periodic
+i3=mpi_cfg%myid3
+i2=mpi_cfg%myid2+1
+if (i2==mpi_cfg%lid2) then
+  !! global boundary upward, assume periodic
   i2=0
   x2end=.true.
 end if
@@ -302,8 +317,10 @@ end if
 
 
 !ZERO OUT THE ENDS (DO NOT ADD DATA PAST THE GLOBAL EDGE OF THE GRID
-if (myid2==lid2-1) paramtop=0d0    !add nothing on the end since noone is passing leftward to me
-if (myid3==lid3-1) paramend=0d0    !zero out the data at the end of the grid
+if (mpi_cfg%myid2==mpi_cfg%lid2-1) paramtop=0
+!! add nothing on the end since noone is passing leftward to me
+if (mpi_cfg%myid3==mpi_cfg%lid3-1) paramend=0
+!! zero out the data at the end of the grid
 
 end procedure halo_end_23
 

@@ -4,7 +4,7 @@ use phys_consts, only: lsp,ms, wp
 use grid, only : gridflag
 use mesh, only: curvmesh
   !! do not import grid sizes in case we want do subgrid advection...
-use mpimod, only: myid, lid, myid2, myid3, lid2, lid3, halo, tag=>gemini_mpi
+use mpimod, only: mpi_cfg, halo, tag=>gemini_mpi
 
 implicit none (type, external)
 private
@@ -155,7 +155,7 @@ rhoes(lx1+2,:,:,isp)=rhoes(lx1,:,:,isp);
 
 
 !> NOW DEAL WITH ADVECTION ALONG X3; FIRST IDENTIFY MY NEIGHBORS
-idleft=myid-1; idright=myid+1
+idleft=mpi_cfg%myid-1; idright=mpi_cfg%myid+1
 
 
 !> PASS X3 BOUNDARY CONDITIONS WITH GENERIC HALOING ROUTINES
@@ -189,7 +189,7 @@ if (.not. isperiodic) then
     rhoes(:,:,0,isp)=rhoes(:,:,1,isp);
     rhoes(:,:,-1,isp)=rhoes(:,:,1,isp);
   end if
-  if (idright==lid) then
+  if (idright==mpi_cfg%lid) then
     !! my right boundary is the global boundary, assume haloing won't overwrite
     vs3(:,:,lx3+1,isp)=vs3(:,:,lx3,isp)
     !! copy last cell to first ghost (all that's needed since vs3 not advected)
@@ -313,8 +313,8 @@ rhoes(lx1+2,:,:,isp)=rhoes(lx1,:,:,isp);
 
 
 !MZ - collect the x2 boundary conditions here - these are no longer global
-iddown=myid2-1
-idup=myid2+1
+iddown=mpi_cfg%myid2-1
+idup=mpi_cfg%myid2+1
 
 !> NEED TO ALSO PASS THE X2 VELOCITIES SO WE CAN COMPUTE INTERFACE VALUES
 param=vs2(:,:,:,isp)
@@ -335,7 +335,7 @@ if (iddown==-1) then
   rhoes(:,0,:,isp)=rhoes(:,1,:,isp);
   rhoes(:,-1,:,isp)=rhoes(:,1,:,isp);
 end if
-if (idup==lid2) then
+if (idup==mpi_cfg%lid2) then
   vs2(:,lx2+1,:,isp)=vs2(:,lx2,:,isp)
 
   ns(:,lx2+1,:,isp)=ns(:,lx2,:,isp)
@@ -348,7 +348,7 @@ end if
 
 
 !> NOW DEAL WITH ADVECTION ALONG X3; FIRST IDENTIFY MY NEIGHBORS
-idleft=myid3-1; idright=myid3+1
+idleft=mpi_cfg%myid3-1; idright=mpi_cfg%myid3+1
 
 
 !> PASS X3 VELOCITY BOUNDARY CONDITIONS WITH GENERIC HALOING ROUTINES
@@ -386,7 +386,7 @@ if (.not. isperiodic) then
     rhoes(:,:,0,isp)=rhoes(:,:,1,isp);
     rhoes(:,:,-1,isp)=rhoes(:,:,1,isp);
   end if
-  if (idright==lid3) then    !my right boundary is the global boundary, assume haloing won't overwrite
+  if (idright==mpi_cfg%lid3) then    !my right boundary is the global boundary, assume haloing won't overwrite
     vs3(:,:,lx3+1,isp)=vs3(:,:,lx3,isp)    !copy last cell to first ghost (all that's needed since vs3 not advected)
 
     ns(:,:,lx3+1,isp)=ns(:,:,lx3,isp)

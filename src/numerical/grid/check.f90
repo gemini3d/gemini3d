@@ -12,16 +12,16 @@ real(wp) :: tol_inc, tol_inc_big, tol_big
 
 !> check correct number of MPI images along x2 and x3
 if (lx2all > 1) then
-  if (modulo(lx2all, lid2) /= 0) then
-    write(stderr,'(/,A,I6,A,I6,/)') 'ERROR:grid_size_root: Number of MPI images along x2', lid2, &
+  if (modulo(lx2all, mpi_cfg%lid2) /= 0) then
+    write(stderr,'(/,A,I6,A,I6,/)') 'ERROR:grid_size_root: Number of MPI images along x2', mpi_cfg%lid2, &
                                     ' not a factor of lx2all: ', lx2all
     error stop
   endif
 endif
 
 if (lx3all > 1) then
-  if (modulo(lx3all, lid3) /= 0) then
-    write(stderr,'(/,A,I6,A,I6,/)') 'ERROR:grid_size_root: Number of MPI images along x3', lid3, &
+  if (modulo(lx3all, mpi_cfg%lid3) /= 0) then
+    write(stderr,'(/,A,I6,A,I6,/)') 'ERROR:grid_size_root: Number of MPI images along x3', mpi_cfg%lid3, &
                                     ' not a factor of lx3all: ', lx3all
     error stop
   endif

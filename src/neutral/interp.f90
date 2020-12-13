@@ -88,7 +88,7 @@ else
 end if
 
 !MORE DIAG
-if (myid==lid/2) then
+if (mpi_cfg%myid==mpi_cfg%lid/2) then
   print *, 'Min/max values for dnOi:  ',minval(dnOinext),maxval(dnOinext)
   print *, 'Min/max values for dnN2i:  ',minval(dnN2inext),maxval(dnN2inext)
   print *, 'Min/max values for dnO2i:  ',minval(dnO2inext),maxval(dnO2inext)
@@ -114,7 +114,7 @@ else
 end if
 
 !MORE DIAGNOSTICS
-if (myid==lid/2 .and. debug) then
+if (mpi_cfg%myid==mpi_cfg%lid/2 .and. debug) then
   print *, 'Min/max values for dnOi:  ',minval(dnOinext),maxval(dnOinext)
   print *, 'Min/max values for dnN2i:  ',minval(dnN2inext),maxval(dnN2inext)
   print *, 'Min/max values for dnO2i:  ',minval(dnO2inext),maxval(dnO2inext)
@@ -170,14 +170,14 @@ dTninext=reshape(parami,[lx1,lx2,lx3])
 
 
 !MORE DIAG
-if (myid==lid/2 .and. debug) then
-  print *, 'Min/max values for dnOi:  ',myid,minval(dnOinext),maxval(dnOinext)
-  print *, 'Min/max values for dnN2i:  ',myid,minval(dnN2inext),maxval(dnN2inext)
-  print *, 'Min/max values for dnO2i:  ',myid,minval(dnO2inext),maxval(dnO2inext)
-  print *, 'Min/max values for dvrhoi:  ',myid,minval(dvnrhoinext),maxval(dvnrhoinext)
-  print *, 'Min/max values for dvnzi:  ',myid,minval(dvnzinext),maxval(dvnzinext)
-  print *, 'Min/max values for dvnxi:  ',myid,minval(dvnxinext),maxval(dvnxinext)
-  print *, 'Min/max values for dTni:  ',myid,minval(dTninext),maxval(dTninext)
+if (mpi_cfg%myid==mpi_cfg%lid/2 .and. debug) then
+  print *, 'Min/max values for dnOi:  ',mpi_cfg%myid,minval(dnOinext),maxval(dnOinext)
+  print *, 'Min/max values for dnN2i:  ',mpi_cfg%myid,minval(dnN2inext),maxval(dnN2inext)
+  print *, 'Min/max values for dnO2i:  ',mpi_cfg%myid,minval(dnO2inext),maxval(dnO2inext)
+  print *, 'Min/max values for dvrhoi:  ',mpi_cfg%myid,minval(dvnrhoinext),maxval(dvnrhoinext)
+  print *, 'Min/max values for dvnzi:  ',mpi_cfg%myid,minval(dvnzinext),maxval(dvnzinext)
+  print *, 'Min/max values for dvnxi:  ',mpi_cfg%myid,minval(dvnxinext),maxval(dvnxinext)
+  print *, 'Min/max values for dTni:  ',mpi_cfg%myid,minval(dTninext),maxval(dTninext)
 end if
 
 
@@ -192,10 +192,10 @@ dvn3inext=dvnrhoinext*proj_eyp_e3+dvnzinext*proj_ezp_e3+dvnxinext*proj_exp_e3
 
 
 !MORE DIAGNOSTICS
-if (myid==lid/2 .and. debug) then
-  print *, 'Min/max values for dvn1i:  ',myid,minval(dvn1inext),maxval(dvn1inext)
-  print *, 'Min/max values for dvn2i:  ',myid,minval(dvn2inext),maxval(dvn2inext)
-  print *, 'Min/max values for dvn3i:  ',myid,minval(dvn3inext),maxval(dvn3inext)
+if (mpi_cfg%myid==mpi_cfg%lid/2 .and. debug) then
+  print *, 'Min/max values for dvn1i:  ',mpi_cfg%myid,minval(dvn1inext),maxval(dvn1inext)
+  print *, 'Min/max values for dvn2i:  ',mpi_cfg%myid,minval(dvn2inext),maxval(dvn2inext)
+  print *, 'Min/max values for dvn3i:  ',mpi_cfg%myid,minval(dvn3inext),maxval(dvn3inext)
 end if
 
 end procedure spaceinterp_dneu3D
@@ -238,15 +238,15 @@ end do
 
 
 !SOME BASIC DIAGNOSTICS
-if (myid==lid/2 .and. debug) then
-  print *, 'tprev,t,tnext:  ',myid,tprev,t+dt/2d0,tnext
-  print *, 'Min/max values for dnOinow:  ',myid,minval(dnOinow),maxval(dnOinow)
-  print *, 'Min/max values for dnN2inow:  ',myid,minval(dnN2inow),maxval(dnN2inow)
-  print *, 'Min/max values for dnO2inow:  ',myid,minval(dnO2inow),maxval(dnO2inow)
-  print *, 'Min/max values for dvn1inow:  ',myid,minval(dvn1inow),maxval(dvn1inow)
-  print *, 'Min/max values for dvn2inow:  ',myid,minval(dvn2inow),maxval(dvn2inow)
-  print *, 'Min/max values for dvn3inow:  ',myid,minval(dvn3inow),maxval(dvn3inow)
-  print *, 'Min/max values for dTninow:  ',myid,minval(dTninow),maxval(dTninow)
+if (mpi_cfg%myid==mpi_cfg%lid/2 .and. debug) then
+  print *, 'tprev,t,tnext:  ',mpi_cfg%myid,tprev,t+dt/2d0,tnext
+  print *, 'Min/max values for dnOinow:  ',mpi_cfg%myid,minval(dnOinow),maxval(dnOinow)
+  print *, 'Min/max values for dnN2inow:  ',mpi_cfg%myid,minval(dnN2inow),maxval(dnN2inow)
+  print *, 'Min/max values for dnO2inow:  ',mpi_cfg%myid,minval(dnO2inow),maxval(dnO2inow)
+  print *, 'Min/max values for dvn1inow:  ',mpi_cfg%myid,minval(dvn1inow),maxval(dvn1inow)
+  print *, 'Min/max values for dvn2inow:  ',mpi_cfg%myid,minval(dvn2inow),maxval(dvn2inow)
+  print *, 'Min/max values for dvn3inow:  ',mpi_cfg%myid,minval(dvn3inow),maxval(dvn3inow)
+  print *, 'Min/max values for dTninow:  ',mpi_cfg%myid,minval(dTninow),maxval(dTninow)
 end if
 
 end procedure timeinterp_dneu

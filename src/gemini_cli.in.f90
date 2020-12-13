@@ -3,7 +3,7 @@ module gemini_cli
 use, intrinsic :: iso_fortran_env, only : compiler_version
 use config, only : read_configfile, gemini_cfg, get_compiler_vendor
 use pathlib, only : assert_file_exists, assert_directory_exists, expanduser
-use mpimod, only : mpisetup, mpibreakdown
+use mpimod, only : mpisetup, mpibreakdown, mpi_cfg
 
 implicit none (type, external)
 private
@@ -12,11 +12,10 @@ public :: cli
 contains
 
 
-subroutine cli(myid, lid, cfg, lid2in, lid3in, debug)
+subroutine cli(cfg, lid2, lid3, debug)
 
-integer, intent(in) :: myid, lid
 type(gemini_cfg), intent(out) :: cfg
-integer, intent(out) :: lid2in, lid3in
+integer, intent(out) :: lid2, lid3
 logical, intent(inout) :: debug
 
 integer :: argc, i, ierr
@@ -45,11 +44,11 @@ end select
 !> INITIALIZE MESSING PASSING VARIABLES, IDS ETC.
 call mpisetup()
 
-if(lid < 1) error stop 'number of MPI processes must be >= 1. Was MPI initialized properly?'
+if(mpi_cfg%lid < 1) error stop 'number of MPI processes must be >= 1. Was MPI initialized properly?'
 
 call get_command_argument(0, argv)
 call date_and_time(date,time)
-print '(2A,I6,A3,I6,A)', trim(argv), ' Process:  ', myid,' / ',lid-1, ' at ' // date // 'T' // time
+print '(2A,I6,A3,I6,A)', trim(argv), ' Process:  ', mpi_cfg%myid,' / ',mpi_cfg%lid-1, ' at ' // date // 'T' // time
 
 
 !> READ FILE INPUT
@@ -81,7 +80,7 @@ end block find_cfg
 call read_configfile(cfg, verbose=.false.)
 
 !> PRINT SOME DIAGNOSIC INFO FROM ROOT
-if (myid==0) then
+if (mpi_cfg%myid==0) then
   call assert_file_exists(cfg%indatsize)
   call assert_file_exists(cfg%indatgrid)
   call assert_file_exists(cfg%indatfile)
@@ -174,7 +173,7 @@ if (myid==0) then
 end if
 
 !! default values
-lid2in = -1  !< sentinel
+lid2 = -1  !< sentinel
 
 do i = 2,argc
   call get_command_argument(i,argv)
@@ -182,15 +181,15 @@ do i = 2,argc
   select case (argv)
   case ('-h', '-help')
     ierr = mpibreakdown()
-    if (myid == 0) call help_cli(cfg%git_revision)
+    if (mpi_cfg%myid == 0) call help_cli(cfg%git_revision)
     stop
   case ('-compiler')
     ierr = mpibreakdown()
-    if (myid==0) print '(A)', get_compiler_vendor()
+    if (mpi_cfg%myid==0) print '(A)', get_compiler_vendor()
     stop
   case ('-git')
     ierr = mpibreakdown()
-    if (myid==0) print '(A)', cfg%git_revision
+    if (mpi_cfg%myid==0) print '(A)', cfg%git_revision
     stop
   case ('-d', '-debug')
     debug = .true.
@@ -209,10 +208,10 @@ do i = 2,argc
   case ('-manual_grid')
     call get_command_argument(i+1, argv, status=ierr)
     if(ierr/=0) error stop 'gemini.bin -manual_grid lx2 lx3 parameters are required'
-    read(argv,*) lid2in
+    read(argv,*) lid2
     call get_command_argument(i+2, argv, status=ierr)
     if(ierr/=0) error stop 'gemini.bin -manual_grid lx2 lx3 parameters are required'
-    read(argv,*) lid3in
+    read(argv,*) lid3
   end select
 end do
 

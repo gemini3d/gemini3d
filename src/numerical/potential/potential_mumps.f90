@@ -30,7 +30,6 @@ use, intrinsic:: iso_fortran_env, only: stderr=>error_unit, stdout=>output_unit
 use phys_consts, only: wp, debug
 use calculus, only: grad3D1, grad3D2, grad3D3
 use mesh, only: curvmesh
-use mpimod, only: myid
 use interpolation, only: interp1
 use PDEelliptic, only: elliptic3D_cart
 

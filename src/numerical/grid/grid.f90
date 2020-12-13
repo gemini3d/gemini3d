@@ -7,7 +7,7 @@ use phys_consts, only: Gconst,Me,Re,wp,red,black
 use reader, only: get_simsize3
 
 use mpimod, only: mpi_integer, mpi_comm_world, mpi_status_ignore, &
-myid, lid, lid2, lid3, tag=>gemini_mpi, mpi_realprec, &
+mpi_cfg, tag=>gemini_mpi, mpi_realprec, &
 bcast_recv, bcast_send, bcast_recv3D_ghost, bcast_send3D_ghost, bcast_recv3D_x3i, bcast_send3D_x3i, &
 bcast_send3D_x2i,bcast_recv3D_x2i, bcast_send1D_2, bcast_recv1D_2, bcast_send1D_3, bcast_recv1D_3
 
@@ -52,7 +52,7 @@ subroutine grid_size(indatsize)
 
 character(*), intent(in) :: indatsize
 
-if (myid==0) then
+if (mpi_cfg%myid==0) then
   !! root must physically read the size info and pass to workers
   call grid_size_root(indatsize)
 else
@@ -74,7 +74,7 @@ if (lx1 < 1 .or. lx2all < 1 .or. lx3all < 1) then
   error stop 'grid_size_root: grid size must be strictly positive'
 endif
 
-do i = 1,lid-1
+do i = 1,mpi_cfg%lid-1
   call mpi_send(lx1,1,MPI_INTEGER, i, tag%lx1,MPI_COMM_WORLD,ierr)
   if (ierr/=0) error stop 'grid_size_root: lx1 failed mpi_send'
   call mpi_send(lx2all,1,MPI_INTEGER, i, tag%lx2all,MPI_COMM_WORLD,ierr)
@@ -115,14 +115,14 @@ real(wp) :: E2ref,E3ref,Bref
   ! Root decides grid drift speed by examining initial background field in this center of its subdomain...
   ! Bad things will happen if these background fields are not uniform, which by definition they should be BUT
   ! no error checking is done on input to insure this, I believe.
-  if (myid==0) then 
+  if (mpi_cfg%myid==0) then
     E2ref=E02(lx1,lx2/2,lx3/2)
     E3ref=E03(lx1,lx2/2,lx3/2)
     Bref=x%Bmag(lx1,lx2/2,lx3/2)
     v2grid=E3ref/Bref
     v3grid=-1*E2ref/Bref
     ! FIXME:  error checking to make sure input is sensible for this???
-    do iid=1,lid-1
+    do iid=1,mpi_cfg%lid-1
       call mpi_send(v2grid,1,mpi_realprec,iid,tag%v2grid,MPI_COMM_WORLD,ierr)
       call mpi_send(v3grid,1,mpi_realprec,iid,tag%v3grid,MPI_COMM_WORLD,ierr)
     end do
@@ -159,7 +159,7 @@ if(allocated(x%er)) deallocate(x%er,x%etheta,x%ephi)
 
 deallocate(x%dl1i,x%dl2i,x%dl3i)
 
-if (myid == 0) then
+if (mpi_cfg%myid == 0) then
   deallocate(x%x2iall,x%dx2all,x%dx2iall)
   deallocate(x%x3iall,x%dx3all,x%dx3iall)
   deallocate(x%h1all,x%h2all,x%h3all)

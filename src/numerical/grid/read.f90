@@ -82,7 +82,7 @@ module procedure read_grid
 
 
 !> READ IN THE GRID DATA
-if(myid==0) then
+if(mpi_cfg%myid==0) then
   call read_grid_root(indatsize,indatgrid,x)
 else
   call read_grid_workers(x)
@@ -110,7 +110,7 @@ end if
 
 !> Make sure we have a sensible x2,3 decomposition of grid
 !> and that parameters aren't impossible
-if(myid == 0) call grid_check(x)
+if(mpi_cfg%myid == 0) call grid_check(x)
 
 end procedure read_grid
 
@@ -139,7 +139,7 @@ real(wp), dimension(:,:,:,:), allocatable :: e1all,e2all,e3all,erall,ethetaall,e
 real(wp), dimension(:,:,:), allocatable :: mpisendbuf
 real(wp), dimension(:,:,:), allocatable :: mpirecvbuf
 
-!print*, 'Entering read_grid_root', lx1,lx2all,lx3all,lid2,lid3,lx2all/lid2
+!print*, 'Entering read_grid_root', lx1,lx2all,lx3all,mpi_cfg%lid2,mpi_cfg%lid3,lx2all/mpi_cfg%lid2
 
 
 !DETERMINE NUMBER OF SLABS AND CORRESPONDING SIZE FOR EACH WORKER
@@ -153,19 +153,19 @@ if (lx3all==1) then
   lx3all=lx2all; x%lx3all=lx2all;
   lx2=1
   lx2all=1; x%lx2all=1;
-  lx3=lx3all/lid
+  lx3=lx3all/mpi_cfg%lid
   !! use total number of processes since we only divide in one direction here...
   flagswap=1
 else
   if(lx2all==1) then
     print *, '2D run: do not swap x2 and x3 dims.'
     lx2=1
-    lx3=lx3all/lid
+    lx3=lx3all/mpi_cfg%lid
   else
     print *, '3D run'
-    lx2=lx2all/lid2
+    lx2=lx2all/mpi_cfg%lid2
     !! should divide evenly if generated from process_grid
-    lx3=lx3all/lid3
+    lx3=lx3all/mpi_cfg%lid3
   endif
   flagswap=0
 end if
@@ -176,7 +176,7 @@ print '(A,3I6)', 'Grid slab size:  ',lx1,lx2,lx3
 !> COMMUNICATE THE GRID SIZE TO THE WORKERS SO THAT THEY CAN ALLOCATE SPACE
 ierr=0
 !! if this is a root-only simulation we don't want to error out
-do iid=1,lid-1
+do iid=1,mpi_cfg%lid-1
   call mpi_send(lx2,1,MPI_INTEGER,iid,tag%lx2,MPI_COMM_WORLD,ierr)
   !! need to also pass the lx2all size to all workers to they know
   !if (ierr/=0) error stop 'grid:read_grid_root failed mpi_send lx2'
@@ -189,7 +189,7 @@ if (ierr/=0) error stop 'grid:read_grid_root failed mpi_send grid size'
 
 !TELL WORKERS IF WE'VE SWAPPED DIMENSIONS
 ierr=0
-do iid=1,lid-1
+do iid=1,mpi_cfg%lid-1
   call mpi_send(flagswap,1,MPI_INTEGER,iid,tag%swap,MPI_COMM_WORLD,ierr)
   !if (ierr/=0) error stop 'grid:read_grid_root failed mpi_send flagswap'
 end do
@@ -283,7 +283,7 @@ allocate(g1(1:lx1,1:lx2,1:lx3),g2(1:lx1,1:lx2,1:lx3),g3(1:lx1,1:lx2,1:lx3))
 
 !! SEND FULL X1 AND X2 GRIDS TO EACH WORKER (ONLY X3-DIM. IS INVOLVED IN THE MPI
 print*, 'Exchanging grid spacings...'
-do iid=1,lid-1
+do iid=1,mpi_cfg%lid-1
   call mpi_send(x%x1,lx1+4,mpi_realprec,iid,tag%x1,MPI_COMM_WORLD,ierr)
   !if (ierr/=0) error stop 'failed mpi_send x1'
   call mpi_send(x%x2all,lx2all+4,mpi_realprec,iid,tag%x2all,MPI_COMM_WORLD,ierr)
@@ -421,7 +421,7 @@ do ix3=1,lx3
     end do
   end do
 end do
-print *, 'Done computing null grid points...  Process:  ',myid,' has:  ',x%lnull
+print *, 'Done computing null grid points...  Process:  ',mpi_cfg%myid,' has:  ',x%lnull
 
 
 !COMPUTE DIFFERENTIAL DISTANCES ALONG EACH DIRECTION (TO BE USED IN TIME STEP DETERMINATION...
@@ -656,7 +656,7 @@ do ix3=1,lx3
     end do
   end do
 end do
-print *, 'Done computing null grid points...  Process:  ',myid,' has:  ',x%lnull
+print *, 'Done computing null grid points...  Process:  ',mpi_cfg%myid,' has:  ',x%lnull
 
 
 !! COMPUTE DIFFERENTIAL DISTANCES ALONG EACH DIRECTION

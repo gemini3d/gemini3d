@@ -4,7 +4,7 @@ use phys_consts, only: wp, lnchem, pi, re, debug
 use grid, only: lx1, lx2, lx3
 use mesh, only: curvmesh
 use timeutils, only : find_lastdate
-use mpimod, only: myid
+use mpimod, only: mpi_cfg
 use config, only: gemini_cfg
 
 ! also links gtd7 from vendor/msis00/
@@ -136,9 +136,9 @@ real(wp) :: tstart,tfin
 call make_dneu()
 
 !! call msis to get an initial neutral background atmosphere
-if (myid==0) call cpu_time(tstart)
+if (mpi_cfg%myid==0) call cpu_time(tstart)
 call neutral_atmos(ymd,UTsec,x%glat,x%glon,x%alt,cfg%activ,v2grid,v3grid,nn,Tn,vn1,vn2,vn3)
-if (myid==0) then
+if (mpi_cfg%myid==0) then
   call cpu_time(tfin)
   print *, 'Initial neutral background at time:  ',ymd,UTsec,' calculated in time:  ',tfin-tstart
 end if
@@ -152,14 +152,14 @@ if (cfg%flagdneu==1) then
   !  This requires us to load file input twice, once corresponding to the initial frame and once for the "first, next" frame.
   tprev=UTsectmp-UTsec-2._wp*cfg%dtneu
   tnext=tprev+cfg%dtneu
-  if (myid==0) print*, '!!!Attempting initial load of neutral dynamics files!!!' // &
+  if (mpi_cfg%myid==0) print*, '!!!Attempting initial load of neutral dynamics files!!!' // &
                            ' This is a workaround to insure compatibility with restarts...',ymdtmp,UTsectmp
   !! We essentially are loading up the data corresponding to halfway betwween -dtneu and t0 (zero).  This will load
   !   two time levels back so when tprev is incremented twice it will be the true tprev corresponding to first time step
   call neutral_perturb(cfg,dt,cfg%dtneu,tnext+cfg%dtneu/2._wp,ymdtmp,UTsectmp-cfg%dtneu, &
                         x,v2grid,v3grid,nn,Tn,vn1,vn2,vn3)  !abs time arg to be < 0
 
-  if (myid==0) print*, 'Now loading initial next file for neutral perturbations...'
+  if (mpi_cfg%myid==0) print*, 'Now loading initial next file for neutral perturbations...'
   !! Now compute perturbations for the present time (zero), this moves the primed variables in next into prev and then
   !  loads up a current state so that we get a proper interpolation for the first time step.
   call neutral_perturb(cfg,dt,cfg%dtneu,0._wp,ymdtmp,UTsectmp,x,v2grid,v3grid,nn,Tn,vn1,vn2,vn3)    !t-dt so we land exactly on start time

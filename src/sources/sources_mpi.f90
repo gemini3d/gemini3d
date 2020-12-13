@@ -1,6 +1,6 @@
 submodule (sources) sources_mpi
 
-use mpimod, only: myid, tag=>gemini_mpi, lid, halo, myid2,myid3,lid2,lid3
+use mpimod, only: mpi_cfg, tag=>gemini_mpi, halo
 
 implicit none (type, external)
 
@@ -29,8 +29,8 @@ vs1(lx1+1,:,:,isp)=vs1(lx1,:,:,isp)
 
 
 !IDENTIFY MY NEIGHBORS in x2 and x3
-idleft=myid3-1; idright=myid3+1
-iddown=myid2-1; idup=myid2+1
+idleft=mpi_cfg%myid3-1; idright=mpi_cfg%myid3+1
+iddown=mpi_cfg%myid2-1; idup=mpi_cfg%myid2+1
 
 !-- Now halo the interior parts (must happen for every worker since even a worker with a
 !-- global boundary will still have one interior boundary to be haloed.
@@ -52,7 +52,7 @@ if(iddown==-1) then
   vs2(:,0,:,isp)=vs2(:,1,:,isp)
   vs3(:,0,:,isp)=vs3(:,1,:,isp)
 end if
-if(idup==lid2) then
+if(idup==mpi_cfg%lid2) then
   vs1(:,lx2+1,:,isp)=vs1(:,lx2,:,isp)
   vs2(:,lx2+1,:,isp)=vs2(:,lx2,:,isp)
   vs3(:,lx2+1,:,isp)=vs3(:,lx2,:,isp)
@@ -63,7 +63,7 @@ if (.not. isperiodic) then
     vs2(:,:,0,isp)=vs2(:,:,1,isp)
     vs3(:,:,0,isp)=vs3(:,:,1,isp)
   end if
-  if (idright==lid3) then    !right x3 boundary
+  if (idright==mpi_cfg%lid3) then    !right x3 boundary
     vs1(:,:,lx3+1,isp)=vs1(:,:,lx3,isp)
     vs2(:,:,lx3+1,isp)=vs2(:,:,lx3,isp)
     vs3(:,:,lx3+1,isp)=vs3(:,:,lx3,isp)

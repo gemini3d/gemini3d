@@ -5,7 +5,6 @@ Program MagCalc
 !! THIS PROGRAM VERY MUCH MIRRORS THE SETUP OF THE MAIN GEMINI.F90 CODE.
 
 use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
-use, intrinsic :: ieee_arithmetic, only : ieee_is_nan
 
 use magcalc_cli, only : cli
 use phys_consts, only : pi,mu0, wp, re, debug
@@ -16,7 +15,7 @@ use config, only : gemini_cfg
 use io, only : input_plasma_currents,create_outdir_mag,output_magfields
 use mpimod, only: mpi_sum, mpi_comm_world, &
 mpibreakdown, process_grid_auto, mpi_manualgrid, halo_end, &
-lid, lid2, lid3, myid, myid2, myid3, mpi_realprec, tag=>gemini_mpi
+mpi_cfg, mpi_realprec, tag=>gemini_mpi
 
 implicit none (type, external)
 
@@ -86,7 +85,7 @@ integer :: ierr
 !! --- MAIN PROGRAM
 
 !> get command line parameters and simulation config
-call cli(myid, lid, cfg, lid2in, lid3in, debug)
+call cli(cfg, lid2in, lid3in, debug)
 
 !ESTABLISH A PROCESS GRID
 !call grid_size(cfg%indatsize)
@@ -102,7 +101,7 @@ else
 end if
 
 !> LOAD UP THE GRID STRUCTURE/MODULE VARS. FOR THIS SIMULATION - THIS ALSO PERMUTES DIMENSIONS OF 2D GRID, IF NEEDED
-if (myid==0) then
+if (mpi_cfg%myid==0) then
   print*, 'Process grid established; reading in full grid file now...'
 end if
 call read_grid(cfg%indatsize,cfg%indatgrid, cfg%flagperiodic,x)
@@ -119,7 +118,7 @@ end if
 
 
 !SET UP DIRECTORY TO STORE OUTPUT FILES
-if (myid==0) then
+if (mpi_cfg%myid==0) then
   call create_outdir_mag(cfg%outdir, cfg%fieldpointfile)
 end if
 
@@ -134,13 +133,13 @@ block
   integer :: u
   open(newunit=u,file=cfg%fieldpointfile,status='old',form='unformatted',access='stream',action='read')
   read(u) lpoints    !size of coordinates for field points
-  if (myid==0) print *, 'magcalc.f90 --> Number of field points:  ',lpoints
+  if (mpi_cfg%myid==0) print *, 'magcalc.f90 --> Number of field points:  ',lpoints
   allocate(r(lpoints),theta(lpoints),phi(lpoints))
   read(u) r,theta,phi
   close(u)
 end block
 
-if (myid==0) print *, 'magcalc.f90 --> Range of r,theta,phi',minval(r),maxval(r),minval(theta), &
+if (mpi_cfg%myid==0) print *, 'magcalc.f90 --> Range of r,theta,phi',minval(r),maxval(r),minval(theta), &
                            maxval(theta),minval(phi),maxval(phi)
 rmean=sum(r)/size(r)
 thetamean=sum(theta)/size(theta)
@@ -262,7 +261,7 @@ do while (t < cfg%tdur)
 
 
   !FORCE PARALLEL CURRENTS TO ZERO BELOW SOME ALTITUDE LIMIT
-  if(myid==0) print *, 'Zeroing out low altitude currents (these are basically always artifacts)...'
+  if(mpi_cfg%myid==0) print *, 'Zeroing out low altitude currents (these are basically always artifacts)...'
   where (alt<75d3)
     J1=0
     J2=0
@@ -272,8 +271,8 @@ do while (t < cfg%tdur)
 
   !DEAL WITH THE WEIRD EDGE ARTIFACTS THAT WE GET IN THE PARALLEL CURRENT
   !SOMETIMES, THIS IS FOR THE X2 DIRECTION
-  if(myid==0) print *, 'Fixing current edge artifacts...'
-  if (myid3==lid3-1) then
+  if(mpi_cfg%myid==0) print *, 'Fixing current edge artifacts...'
+  if (mpi_cfg%myid3==mpi_cfg%lid3-1) then
     if (lx3>2) then    !do a ZOH
       J1(:,:,lx3-1)=J1(:,:,lx3-2)
       J1(:,:,lx3)=J1(:,:,lx3-2)
@@ -282,7 +281,7 @@ do while (t < cfg%tdur)
       J1(:,:,lx3)=0d0
     end if
   end if
-  if (myid3==0) then
+  if (mpi_cfg%myid3==0) then
     if (lx3>2) then    !do a ZOH
       J1(:,:,1)=J1(:,:,3)
       J1(:,:,2)=J1(:,:,3)
@@ -293,7 +292,7 @@ do while (t < cfg%tdur)
   end if
 
   !X3 EDGES
-  if (myid2==lid2-1) then
+  if (mpi_cfg%myid2==mpi_cfg%lid2-1) then
     if (lx2>2) then    !do a ZOH
       J1(:,lx2-1,:)=J1(:,lx2-2,:)
       J1(:,lx2,:)=J1(:,lx2-2,:)
@@ -302,7 +301,7 @@ do while (t < cfg%tdur)
       J1(:,lx2-1,:)=0d0
     end if
   end if
-  if (myid2==0) then
+  if (mpi_cfg%myid2==0) then
     if (lx2>2) then    !do a ZOH
       J1(:,1,:)=J1(:,3,:)
       J1(:,2,:)=J1(:,3,:)
@@ -315,7 +314,7 @@ do while (t < cfg%tdur)
 
 
   !ROTATE MAGNETIC FIELDS INTO VERTICAL,SOUTH,EAST COMPONENTS
-  if (myid==0) then
+  if (mpi_cfg%myid==0) then
     print *, 'magcalc.f90 --> Rotating currents into geomagnetic coordinates...'
   end if
   Jx=J1*proj_e1er+J2*proj_e2er+J3*proj_e3er                 !vertical
@@ -338,7 +337,7 @@ do while (t < cfg%tdur)
 
   !COMPUTE MAGNETIC FIELDS
   do ipoints=1,lpoints
-    if (myid == 0 .and. mod(ipoints,100)==0 .and. debug) then
+    if (mpi_cfg%myid == 0 .and. mod(ipoints,100)==0 .and. debug) then
       print *, 'magcalc.f90 --> Computing magnetic field for field point:  ',ipoints,' out of:  ',lpoints
       print *, '            --> ...for time:  ',ymd,UTsec
     end if
@@ -356,8 +355,8 @@ do while (t < cfg%tdur)
       Rcubed(:,:,:)=(Rx**2._wp+Ry**2._wp+Rz**2._wp+Rmin**2._wp)**(3._wp/2._wp)   !this really is R**3
 
       call halo_end(Rcubed,Rcubedend,Rcubedtop,tag%Rcubed)
-      if(myid3==lid3-1) Rcubedend=R3min     !< avoids div by zero on the end which is set by the haloing
-      if(myid2==lid2-1) Rcubedtop=R3min
+      if(mpi_cfg%myid3==mpi_cfg%lid3-1) Rcubedend=R3min     !< avoids div by zero on the end which is set by the haloing
+      if(mpi_cfg%myid2==mpi_cfg%lid2-1) Rcubedtop=R3min
 
 
       !! FIXME: MAY BE MISSING A CORNER POINT HERE???  NO I THINK IT'S OKAY BASED ON SOME SQUARES I DREW, haha...
@@ -462,13 +461,13 @@ do while (t < cfg%tdur)
 
 
   !A REDUCE OPERATION IS NEEDED HERE TO COMBINE MAGNETIC FIELDS (LINEAR SUPERPOSITION) FROM ALL WORKERS
-  if (myid ==0) then
+  if (mpi_cfg%myid ==0) then
     if(debug) print *, 'Attempting reduction of magnetic field...'
   end if
   call mpi_reduce(Br,Brall,lpoints,mpi_realprec,MPI_SUM,0,MPI_COMM_WORLD,ierr)
   call mpi_reduce(Btheta,Bthetaall,lpoints,mpi_realprec,MPI_SUM,0,MPI_COMM_WORLD,ierr)
   call mpi_reduce(Bphi,Bphiall,lpoints,mpi_realprec,MPI_SUM,0,MPI_COMM_WORLD,ierr)
-  if (myid == 0) then
+  if (mpi_cfg%myid == 0) then
     if(debug) print *, 'magcalc.f90 --> Reduced magnetic field...'
     if(debug) print *, '  --> Min/max values of reduced field',minval(Brall),maxval(Brall),minval(Bthetaall),maxval(Bthetaall), &
                                                minval(Bphiall),maxval(Bphiall)
@@ -483,7 +482,7 @@ do while (t < cfg%tdur)
 
 
   !OUTPUT SHOULD BE DONE FOR EVERY INPUT FILE THAT HAS BEEN READ IN
-  if (myid==0) then
+  if (mpi_cfg%myid==0) then
     call cpu_time(tstart)
     call output_magfields(cfg%outdir,ymd,UTsec,Brall,Bthetaall,Bphiall,cfg%out_format)   !mag field data already reduced so just root needs to output
     call cpu_time(tfin)
@@ -494,9 +493,9 @@ do while (t < cfg%tdur)
 
   !NOW OUR SOLUTION IS FULLY UPDATED SO UPDATE TIME VARIABLES TO MATCH...
   it=it+1; t=t+dt;
-  if (myid==0 .and. debug) print *, 'magcalc.f90 --> Moving on to time step (in sec):  ',t,'; end time of simulation:  ',cfg%tdur
+  if (mpi_cfg%myid==0 .and. debug) print *, 'magcalc: Moving on to time step (in sec):  ',t,'; end time of simulation:  ',cfg%tdur
   call dateinc(dt,ymd,UTsec)
-  if (myid==0) then
+  if (mpi_cfg%myid==0) then
     print *, 'magcalc.f90 --> Current date',ymd,'Current UT time:  ',UTsec
   end if
 end do
@@ -526,7 +525,7 @@ deallocate(integrandtop,integrandavgtop)
 ierr = mpibreakdown()
 
 if (ierr /= 0) then
-  write(stderr, *) 'MAGCALC: abnormal MPI shutdown code', ierr, 'Process #', myid,' /',lid-1
+  write(stderr, *) 'MAGCALC: abnormal MPI shutdown code', ierr, 'Process #', mpi_cfg%myid,' /',mpi_cfg%lid-1
   error stop
 endif
 

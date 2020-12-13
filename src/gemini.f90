@@ -9,7 +9,7 @@ use grid, only: grid_size,read_grid,clear_grid,grid_drift, lx1,lx2,lx3,lx2all,lx
 use mesh, only: curvmesh
 use config, only : gemini_cfg, get_compiler_vendor
 use io, only : input_plasma,create_outdir,output_plasma,create_outdir_aur,output_aur,find_milestone
-use mpimod, only : mpibreakdown, mpi_manualgrid, process_grid_auto, lid, lid2,lid3,myid,myid2,myid3
+use mpimod, only : mpibreakdown, mpi_manualgrid, process_grid_auto, mpi_cfg
 use multifluid, only : fluid_adv
 use neutral, only : neutral_atmos,make_dneu,neutral_perturb,clear_dneu,init_neutrals
 use potentialBCs_mumps, only: clear_potential_fileinput, init_Efieldinput
@@ -98,7 +98,7 @@ real(wp) :: v2grid,v3grid
 
 !! MAIN PROGRAM
 
-call cli(myid, lid, cfg, lid2in, lid3in, debug)
+call cli(cfg, lid2in, lid3in, debug)
 !! initial_config is AFTER mpi_setup
 
 !> CHECK THE GRID SIZE AND ESTABLISH A PROCESS GRID
@@ -111,8 +111,8 @@ if (lid2in==-1) then
 else
   call mpi_manualgrid(lx2all, lx3all, lid2in, lid3in)
 endif
-print '(A, I0, A1, I0)', 'process grid (Number MPI processes) x2, x3:  ',lid2, ' ', lid3
-print '(A, I0, A, I0, A1, I0)', 'Process:',myid,' at process grid location: ',myid2,' ',myid3
+print '(A, I0, A1, I0)', 'process grid (Number MPI processes) x2, x3:  ',mpi_cfg%lid2, ' ', mpi_cfg%lid3
+print '(A, I0, A, I0, A1, I0)', 'Process:',mpi_cfg%myid,' at process grid location: ',mpi_cfg%myid2,' ',mpi_cfg%myid3
 
 !> LOAD UP THE GRID STRUCTURE/MODULE VARS. FOR THIS SIMULATION
 call read_grid(cfg%indatsize,cfg%indatgrid,cfg%flagperiodic, x)
@@ -121,7 +121,7 @@ call read_grid(cfg%indatsize,cfg%indatgrid,cfg%flagperiodic, x)
 !> CREATE/PREP OUTPUT DIRECTORY AND OUTPUT SIMULATION SIZE AND GRID DATA
 !> ONLY THE ROOT PROCESS WRITES OUTPUT DATA
 
-if (myid==0) then
+if (mpi_cfg%myid==0) then
   call create_outdir(cfg)
   if (cfg%flagglow /= 0) call create_outdir_aur(cfg%outdir)
 end if
@@ -140,7 +140,7 @@ allocate(nn(lx1,lx2,lx3,lnchem),Tn(lx1,lx2,lx3),vn1(lx1,lx2,lx3), vn2(lx1,lx2,lx
 
 
 !> ALLOCATE MEMORY FOR ROOT TO STORE CERTAIN VARS. OVER ENTIRE GRID
-if (myid==0) then
+if (mpi_cfg%myid==0) then
   allocate(Phiall(lx1,lx2all,lx3all))
 end if
 
@@ -160,7 +160,7 @@ call find_milestone(cfg, ttmp, ymdtmp, UTsectmp, filetmp)
 
 if ( ttmp > 0 ) then
   !! restart scenario
-  if (myid==0) then
+  if (mpi_cfg%myid==0) then
     print*, '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
     print*, '! Restarting simulation from time:  ',ymdtmp,UTsectmp
     print*, '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
@@ -170,12 +170,12 @@ if ( ttmp > 0 ) then
   UTsec=UTsectmp
   ymd=ymdtmp
   tdur=cfg%tdur-ttmp    ! subtract off time that has elapsed to milestone
-  if (myid==0) then
+  if (mpi_cfg%myid==0) then
     print*, 'Treating the following file as initial conditions:  ',filetmp
     print*, ' full duration:  ',cfg%tdur,'; remaining simulation time:  ',tdur
   end if
 
-  if (tdur <= 1e-6_wp .and. myid==0) error stop 'It appears you are trying to restart a simulation from the final time step!'
+  if (tdur <= 1e-6_wp .and. mpi_cfg%myid==0) error stop 'Cannot restart simulation from the final time step!'
 
   cfg%tdur=tdur         ! just to insure consistency
 
@@ -185,7 +185,7 @@ else !! start at the beginning
   ymd = cfg%ymd0
   tdur = cfg%tdur
 
-  if (tdur <= 1e-6_wp .and. myid==0) error stop 'Simulation is of zero time duration'
+  if (tdur <= 1e-6_wp .and. mpi_cfg%myid==0) error stop 'Simulation is of zero time duration'
 
   call input_plasma(x%x1,x%x2all,x%x3all,cfg%indatsize,cfg%indatfile,ns,vs1,Ts,Phi,Phiall)
 end if
@@ -215,7 +215,7 @@ B1(1:lx1,1:lx2,1:lx3) = x%Bmag
 
 
 !> Inialize neutral atmosphere, note the use of fortran's weird scoping rules to avoid input args.  Must occur after initial time info setup
-if(myid==0) print*, 'Priming electric field input'
+if(mpi_cfg%myid==0) print*, 'Priming electric field input'
 call init_Efieldinput(dt,t,cfg,ymd,UTsec,x)
 
 allocate(E01(lx1,lx2,lx3),E02(lx1,lx2,lx3),E03(lx1,lx2,lx3))
@@ -225,16 +225,16 @@ if (cfg%flagE0file==1) then
 end if
 if (cfg%flaglagrangian) then    ! Lagrangian (moving) grid; compute from input background electric fields
   call grid_drift(x,E02,E03,v2grid,v3grid)
-  if (myid==0) print*, myid,' using Lagrangian grid moving at:  ',v2grid,v3grid
+  if (mpi_cfg%myid==0) print*, mpi_cfg%myid,' using Lagrangian grid moving at:  ',v2grid,v3grid
 else                            ! stationary grid
   v2grid=0._wp; v3grid=0._wp
   E1=E1+E01; E2=E2+E02; E3=E3+E03
 end if
 
-if(myid==0) print*, 'Priming precipitation input'
+if(mpi_cfg%myid==0) print*, 'Priming precipitation input'
 call init_precipinput(dt,t,cfg,ymd,UTsec,x)
 
-if(myid==0) print*, 'Priming neutral input'
+if(mpi_cfg%myid==0) print*, 'Priming neutral input'
 call init_neutrals(dt,t,cfg,ymd,UTsec,x,v2grid,v3grid,nn,Tn,vn1,vn2,vn3)
 
 
@@ -242,7 +242,7 @@ call init_neutrals(dt,t,cfg,ymd,UTsec,x,v2grid,v3grid,nn,Tn,vn1,vn2,vn3)
 ! these do not include background
 E1 = 0
 call pot2perpfield(Phi,x,E2,E3)
-if(myid==0) then
+if(mpi_cfg%myid==0) then
   print '(A)', 'Recomputed initial dist. fields:'
   print*, '    gemini ',minval(E1),maxval(E1)
   print*, '    gemini ',minval(E2),maxval(E2)
@@ -262,7 +262,7 @@ call conductivities(nn,Tn,ns,Ts,vs1,B1,sig0,sigP,sigH,muP,muH,muPvn,muHvn,sigPgr
 call velocities(muP,muH,muPvn,muHvn,E2,E3,vn2,vn3,cfg%flaggravdrift,vs2,vs3)
 deallocate(sig0,sigP,sigH,muP,muH,muPvn,muHvn,sigPgrav,sigHgrav)
 deallocate(E01,E02,E03)
-if(myid==0) then
+if(mpi_cfg%myid==0) then
   print*, 'Recomputed initial drifts:  '
   print*, '    ',minval(vs2(1:lx1,1:lx2,1:lx3,1:lsp)),maxval(vs2(1:lx1,1:lx2,1:lx3,1:lsp))
   print*, '    ',minval(vs3(1:lx1,1:lx2,1:lx3,1:lsp)),maxval(vs3(1:lx1,1:lx2,1:lx3,1:lsp))
@@ -290,7 +290,7 @@ main : do while (t < tdur)
     if(dt/dtprev > dtscale) then
       !! throttle how quickly we allow dt to increase
       dt=dtscale*dtprev
-      if (myid == 0) then
+      if (mpi_cfg%myid == 0) then
         print '(A,EN14.3)', 'Throttling dt to:  ',dt
       end if
     end if
@@ -301,7 +301,7 @@ main : do while (t < tdur)
     call cpu_time(tstart)
     call neutral_atmos(ymd,UTsec,x%glat,x%glon,x%alt,cfg%activ,v2grid,v3grid,nn,Tn,vn1,vn2,vn3)
     tneuBG=tneuBG+cfg%dtneuBG;
-    if (myid==0) then
+    if (mpi_cfg%myid==0) then
       call cpu_time(tfin)
       print *, 'Neutral background at time:  ',t,' calculated in time:  ',tfin-tstart
     end if
@@ -311,7 +311,7 @@ main : do while (t < tdur)
   if (cfg%flagdneu==1) then
     call cpu_time(tstart)
     call neutral_perturb(cfg,dt,cfg%dtneu,t,ymd,UTsec,x,v2grid,v3grid,nn,Tn,vn1,vn2,vn3)
-    if (myid==0 .and. debug) then
+    if (mpi_cfg%myid==0 .and. debug) then
       call cpu_time(tfin)
       print *, 'Neutral perturbations calculated in time:  ',tfin-tstart
     endif
@@ -321,30 +321,30 @@ main : do while (t < tdur)
   !> POTENTIAL SOLUTION
   call cpu_time(tstart)
   call electrodynamics(it,t,dt,nn,vn2,vn3,Tn,cfg,ns,Ts,vs1,B1,vs2,vs3,x,E1,E2,E3,J1,J2,J3,Phiall,ymd,UTsec)
-  if (myid==0 .and. debug) then
+  if (mpi_cfg%myid==0 .and. debug) then
     call cpu_time(tfin)
     print *, 'Electrodynamics total solve time:  ',tfin-tstart
   endif
 
   !> UPDATE THE FLUID VARIABLES
-  if (myid==0 .and. debug) call cpu_time(tstart)
+  if (mpi_cfg%myid==0 .and. debug) call cpu_time(tstart)
   call fluid_adv(ns,vs1,Ts,vs2,vs3,J1,E1,cfg,t,dt,x,nn,vn1,vn2,vn3,Tn,iver,ymd,UTsec)
-  if (myid==0 .and. debug) then
+  if (mpi_cfg%myid==0 .and. debug) then
     call cpu_time(tfin)
     print *, 'Multifluid total solve time:  ',tfin-tstart
   endif
 
   !> FIXME:  MZ - shouldn't this be done for all workers; also how much overhead does this incur every time step???
   !> Sanity check key variables before advancing
-  call check_finite_output(t, myid, vs2,vs3,ns,vs1,Ts, Phi,J1,J2,J3)
+  call check_finite_output(t, mpi_cfg%myid, vs2,vs3,ns,vs1,Ts, Phi,J1,J2,J3)
 
   !> NOW OUR SOLUTION IS FULLY UPDATED SO UPDATE TIME VARIABLES TO MATCH...
   it = it + 1
   t = t + dt
-  if (myid==0 .and. debug) print *, 'Moving on to time step (in sec):  ',t,'; end time of simulation:  ',cfg%tdur
+  if (mpi_cfg%myid==0 .and. debug) print *, 'Moving on to time step (in sec):  ',t,'; end time of simulation:  ',cfg%tdur
   call dateinc(dt,ymd,UTsec)
 
-  if (myid==0 .and. (modulo(it, iupdate) == 0 .or. debug)) then
+  if (mpi_cfg%myid==0 .and. (modulo(it, iupdate) == 0 .or. debug)) then
     !! print every 10th time step to avoid extreme amounts of console printing
     print '(A,I4,A1,I0.2,A1,I0.2,A1,F12.6,A5,F8.6)', 'Current time ',ymd(1),'-',ymd(2),'-',ymd(3),' ',UTsec,'; dt=',dt
   endif
@@ -366,12 +366,12 @@ main : do while (t < tdur)
   !> File output
   if (abs(t-tout) < 1d-5) then
     tout = tout + cfg%dtout
-    if (cfg%nooutput .and. myid==0) then
+    if (cfg%nooutput .and. mpi_cfg%myid==0) then
       write(stderr,*) 'WARNING: skipping file output at sim time (sec)',t
       cycle main
     endif
     !! close enough to warrant an output now...
-    if (myid==0 .and. debug) call cpu_time(tstart)
+    if (mpi_cfg%myid==0 .and. debug) call cpu_time(tstart)
 
     !! We may need to adjust flagoutput if we are hitting a milestone
     flagoutput=cfg%flagoutput
@@ -381,13 +381,13 @@ main : do while (t < tdur)
         UTsec,vs2,vs3,ns,vs1,Ts,Phiall,J1,J2,J3, &
         cfg%out_format)
       tmilestone = t + cfg%dtout * cfg%mcadence
-      if(myid==0) print*, 'Milestone output triggered.'
+      if(mpi_cfg%myid==0) print*, 'Milestone output triggered.'
     else
       call output_plasma(cfg%outdir,flagoutput,ymd, &
         UTsec,vs2,vs3,ns,vs1,Ts,Phiall,J1,J2,J3, &
         cfg%out_format)
     end if
-    if (myid==0 .and. debug) then
+    if (mpi_cfg%myid==0 .and. debug) then
       call cpu_time(tfin)
       print *, 'Plasma output done for time step:  ',t,' in cpu_time of:  ',tfin-tstart
     endif
@@ -397,7 +397,7 @@ main : do while (t < tdur)
   if ((cfg%flagglow /= 0) .and. (abs(t-tglowout) < 1d-5)) then !same as plasma output
     call cpu_time(tstart)
     call output_aur(cfg%outdir, cfg%flagglow, ymd, UTsec, iver, cfg%out_format)
-    if (myid==0) then
+    if (mpi_cfg%myid==0) then
       call cpu_time(tfin)
       print *, 'Auroral output done for time step:  ',t,' in cpu_time of: ',tfin-tstart
     end if
@@ -411,7 +411,7 @@ deallocate(ns,vs1,vs2,vs3,Ts)
 deallocate(E1,E2,E3,J1,J2,J3)
 deallocate(nn,Tn,vn1,vn2,vn3)
 
-if (myid==0) deallocate(Phiall)
+if (mpi_cfg%myid==0) deallocate(Phiall)
 
 if (cfg%flagglow/=0) deallocate(iver)
 
@@ -427,7 +427,7 @@ call clear_potential_fileinput()
 ierr = mpibreakdown()
 
 if (ierr /= 0) then
-  write(stderr, *) 'GEMINI: abnormal MPI shutdown code', ierr, 'Process #', myid,' /',lid-1
+  write(stderr, *) 'GEMINI: abnormal MPI shutdown code', ierr, 'Process #', mpi_cfg%myid,' /',mpi_cfg%lid-1
   error stop
 endif
 
@@ -436,7 +436,7 @@ block
   character(10) :: time
 
   call date_and_time(date,time)
-  print '(/,A,I0,A,I0,A)', 'GEMINI normal termination, Process # ', myid,' / ',lid-1, ' at ' // date // 'T' // time
+  print '(/,A,I0,A,I0,A)', 'GEMINI normal termination, Process # ', mpi_cfg%myid,' / ',mpi_cfg%lid-1, ' at ' // date // 'T' // time
 end block
 
 end program

@@ -3,12 +3,11 @@ submodule (neutral) perturb
 use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
 
 use grid, only : gridflag
-use mpimod, only : mpi_realprec
 use reader, only : get_neutral2, get_neutral3
 use timeutils, only : dateinc, date_filename
 
-use mpimod, only: mpi_integer, mpi_comm_world, mpi_status_ignore, &
-lid, tag=>gemini_mpi
+use mpimod, only: mpi_realprec, mpi_integer, mpi_comm_world, mpi_status_ignore, &
+mpi_cfg, tag=>gemini_mpi
 
 implicit none (type, external)
 
@@ -113,7 +112,7 @@ if (t+dt/2._wp >= tnext .or. t < 0) then   !negative time means that we need to 
   call read_dneu2D(tprev,tnext,t,dtneu,dt,cfg%sourcedir,ymdtmp,UTsectmp,.false.)
 
   !Spatial interpolatin for the frame we just read in
-  if (myid==0 .and. debug) then
+  if (mpi_cfg%myid==0 .and. debug) then
     print *, 'Spatial interpolation and rotation of vectors for date:  ',ymdtmp,' ',UTsectmp
   end if
   call spaceinterp_dneu2D(.false.)
@@ -186,7 +185,7 @@ if (t+dt/2d0 >= tnext .or. t <= 0) then
   call read_dneu2D(tprev,tnext,t,dtneu,dt,cfg%sourcedir,ymdtmp,UTsectmp,.true.)
 
   !Spatial interpolatin for the frame we just read in
-  if (myid==0 .and. debug) then
+  if (mpi_cfg%myid==0 .and. debug) then
     print *, 'Spatial interpolation and rotation of vectors for date:  ',ymdtmp,' ',UTsectmp
   end if
   call spaceinterp_dneu2D(.true.)
@@ -253,30 +252,30 @@ if (t + dt/2._wp >= tnext .or. t <= 0) then
     UTsecnext=UTsecprev
 
     !Create a neutral grid, do some allocations and projections
-    if (myid==0 .and. debug) then
+    if (mpi_cfg%myid==0 .and. debug) then
       print*, 'Creating a neutral grid...'
     end if
     call gridproj_dneu3D(cfg,x)
   end if
 
   !Read in neutral data from a file
-  if (myid==0 .and. debug) then
+  if (mpi_cfg%myid==0 .and. debug) then
     print*, 'Reading in data from neutral file'
     call cpu_time(starttime)
   end if
   call read_dneu3D(tprev,tnext,t,dtneu,dt,cfg%sourcedir,ymdtmp,UTsectmp)
-  if (myid==0 .and. debug) then
+  if (mpi_cfg%myid==0 .and. debug) then
     call cpu_time(endtime)
     print*, 'Neutral data input required time:  ',endtime-starttime
   end if
 
   !Spatial interpolatin for the frame we just read in
-  if (myid==0 .and. debug) then
+  if (mpi_cfg%myid==0 .and. debug) then
     print *, 'Spatial interpolation and rotation of vectors for date:  ',ymdtmp,' ',UTsectmp
     call cpu_time(starttime)
   end if
   call spaceinterp_dneu3D()
-  if (myid==0 .and. debug) then
+  if (mpi_cfg%myid==0 .and. debug) then
     call cpu_time(endtime)
     print*, 'Spatial interpolation in 3D took time:  ',endtime-starttime
   end if
@@ -293,7 +292,7 @@ if (t + dt/2._wp >= tnext .or. t <= 0) then
 end if
 
 !Interpolation in time
-if (myid==0 .and. debug) then
+if (mpi_cfg%myid==0 .and. debug) then
   print*, 'Interpolating in time'
 end if
 call timeinterp_dneu(t,dt,dNOinow,dnN2inow,dnO2inow,dvn1inow,dvn2inow,dvn3inow,dTninow)
@@ -328,7 +327,7 @@ else
 end if
 
 
-if (myid==0) then    !root
+if (mpi_cfg%myid==0) then    !root
   !read in the data from file
   if(debug) print *, 'neutral.f90:read_dneu2D: tprev,tnow,tnext:  ',tprev,t+dt/2,tnext
   ymdtmp=ymdnext
@@ -355,7 +354,7 @@ if (myid==0) then    !root
   if (.not. all(ieee_is_finite(dTn))) error stop 'dTn: non-finite value(s)'
 
   !send a full copy of the data to all of the workers
-  do iid=1,lid-1
+  do iid=1,mpi_cfg%lid-1
     call mpi_send(dnO,lhorzn*lzn,mpi_realprec,iid,tag%dnO,MPI_COMM_WORLD,ierr)
     call mpi_send(dnN2,lhorzn*lzn,mpi_realprec,iid,tag%dnN2,MPI_COMM_WORLD,ierr)
     call mpi_send(dnO2,lhorzn*lzn,mpi_realprec,iid,tag%dnO2,MPI_COMM_WORLD,ierr)
@@ -375,8 +374,8 @@ end if
 
 
 !DO SPATIAL INTERPOLATION OF EACH PARAMETER (COULD CONSERVE SOME MEMORY BY NOT STORING DVNRHOIPREV AND DVNRHOINEXT, ETC.)
-if (myid==lid/2 .and. debug) then
-  print*, 'neutral data size:  ',lhorzn,lzn,lid
+if (mpi_cfg%myid==mpi_cfg%lid/2 .and. debug) then
+  print*, 'neutral data size:  ',lhorzn,lzn, mpi_cfg%lid
   print *, 'Min/max values for dnO:  ',minval(dnO),maxval(dnO)
   print *, 'Min/max values for dnN:  ',minval(dnN2),maxval(dnN2)
   print *, 'Min/max values for dnO:  ',minval(dnO2),maxval(dnO2)
@@ -409,7 +408,7 @@ real(wp), dimension(:,:,:), allocatable :: parmtmp    !temporary resizable space
 lhorzn=lyn
 
 
-if (myid==0) then    !root
+if (mpi_cfg%myid==0) then    !root
   !read in the data from file
   if(debug) print *, 'tprev,tnow,tnext:  ',tprev,t+dt/2d0,tnext
   ymdtmp=ymdnext
@@ -439,7 +438,7 @@ if (myid==0) then    !root
 
 
   !in the 3D case we cannnot afford to send full grid data and need to instead use neutral subgrid splits defined earlier
-  do iid=1,lid-1
+  do iid=1,mpi_cfg%lid-1
     allocate(parmtmp(lzn,slabsizes(iid,1),slabsizes(iid,2)))    !get space for the parameter for this worker
 
     parmtmp=dnOall(1:lzn,indx(iid,3):indx(iid,4),indx(iid,5):indx(iid,6))
@@ -486,15 +485,15 @@ else     !workers
 end if
 
 
-if (myid==lid/2 .and. debug) then
-  print*, 'neutral data size:  ',myid,lzn,lxn,lyn
-  print *, 'Min/max values for dnO:  ',myid,minval(dnO),maxval(dnO)
-  print *, 'Min/max values for dnN:  ',myid,minval(dnN2),maxval(dnN2)
-  print *, 'Min/max values for dnO2:  ',myid,minval(dnO2),maxval(dnO2)
-  print *, 'Min/max values for dvnx:  ',myid,minval(dvnx),maxval(dvnx)
-  print *, 'Min/max values for dvnrho:  ',myid,minval(dvnrho),maxval(dvnrho)
-  print *, 'Min/max values for dvnz:  ',myid,minval(dvnz),maxval(dvnz)
-  print *, 'Min/max values for dTn:  ',myid,minval(dTn),maxval(dTn)
+if (mpi_cfg%myid==mpi_cfg%lid/2 .and. debug) then
+  print*, 'neutral data size:  ',mpi_cfg%myid,lzn,lxn,lyn
+  print *, 'Min/max values for dnO:  ',mpi_cfg%myid,minval(dnO),maxval(dnO)
+  print *, 'Min/max values for dnN:  ',mpi_cfg%myid,minval(dnN2),maxval(dnN2)
+  print *, 'Min/max values for dnO2:  ',mpi_cfg%myid,minval(dnO2),maxval(dnO2)
+  print *, 'Min/max values for dvnx:  ',mpi_cfg%myid,minval(dvnx),maxval(dvnx)
+  print *, 'Min/max values for dvnrho:  ',mpi_cfg%myid,minval(dvnrho),maxval(dvnrho)
+  print *, 'Min/max values for dvnz:  ',mpi_cfg%myid,minval(dvnz),maxval(dvnz)
+  print *, 'Min/max values for dTn:  ',mpi_cfg%myid,minval(dTn),maxval(dTn)
 !  print*, 'coordinate ranges:  ',minval(zn),maxval(zn),minval(rhon),maxval(rhon),minval(zi),maxval(zi),minval(rhoi),maxval(rhoi)
 end if
 

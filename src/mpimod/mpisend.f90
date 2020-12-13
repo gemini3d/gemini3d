@@ -113,7 +113,7 @@ lxall=size(paramall,1)-4
 lx=size(param,1)-4
 
 
-do iid=1,lid-1
+do iid=1,mpi_cfg%lid-1
   indsgrid=ID2grid(iid)
 
 !  islstart=iid*lx+1
@@ -155,7 +155,7 @@ lxall=size(paramall,1)-4
 lx=size(param,1)-4
 
 
-do iid=1,lid-1
+do iid=1,mpi_cfg%lid-1
   indsgrid=ID2grid(iid)    !compute my location on the process grid
 
 !  islstart=iid*lx+1
@@ -199,7 +199,7 @@ lx3=size(paramtrim,2)
 
 
 !ROOT BROADCASTS IC DATA TO WORKERS
-do iid=1,lid-1
+do iid=1,mpi_cfg%lid-1
 !  islstart=iid*lx3+1
 !  islfin=islstart+lx3-1
   inds=slabinds(iid,lx2,lx3)
@@ -248,7 +248,7 @@ lx3=size(paramtrim,3)
 
 
 !> ROOT BROADCASTS IC DATA TO WORKERS
-do iid=1,lid-1
+do iid=1,mpi_cfg%lid-1
   inds=slabinds(iid,lx2,lx3)
   paramtmp=paramtrimall(1:lx1,inds(1):inds(2),inds(3):inds(4))
   call mpi_send(paramtmp,lx1*lx2*lx3, &
@@ -291,7 +291,7 @@ lx3=size(paramtrim,3)-1    !note that we are interpreting input as an x3i quanti
 
 
 !ROOT BROADCASTS IC DATA TO WORKERS
-do iid=1,lid-1
+do iid=1,mpi_cfg%lid-1
   inds=slabinds(iid,lx2,lx3)
   paramtmp=paramtrimall(:,inds(1):inds(2),inds(3):inds(4)+1)
   !! +1 since this is an x3 interface quantity
@@ -336,7 +336,7 @@ lx3=size(paramtrim,3)
 
 
 !ROOT BROADCASTS IC DATA TO WORKERS
-do iid=1,lid-1
+do iid=1,mpi_cfg%lid-1
   inds=slabinds(iid,lx2,lx3)
   paramtmp=paramtrimall(:,inds(1):inds(2)+1,inds(3):inds(4))
   !! +1 since this is an x3 interface quantity
@@ -377,7 +377,7 @@ lx3=size(param,3)-4
 
 
 !> ROOT BROADCASTS IC DATA TO WORKERS
-do iid=1,lid-1
+do iid=1,mpi_cfg%lid-1
   inds=slabinds(iid,lx2,lx3)
   paramtmp=paramall(:,inds(1)-2:inds(2)+2,inds(3)-2:inds(4)+2)
   call mpi_send(paramtmp,(lx1+4)*(lx2+4)*(lx3+4), &
@@ -418,9 +418,10 @@ lx3=size(param,3)-4
 
 !> ROOT BROADCASTS IC DATA TO WORKERS
 do isp=1,lsp
-  param(:,1:lx2,1:lx3,isp)=paramall(:,1:lx2,1:lx3,isp)    ! roots part of the data
+  param(:,1:lx2,1:lx3,isp)=paramall(:,1:lx2,1:lx3,isp)
+  !! roots part of the data
 
-  do iid=1,lid-1
+  do iid=1,mpi_cfg%lid-1
     inds=slabinds(iid,lx2,lx3)
     paramtmp=paramall(-1:lx1+2,inds(1):inds(2),inds(3):inds(4),isp)
     call mpi_send(paramtmp,(lx1+4)*lx2*lx3, &

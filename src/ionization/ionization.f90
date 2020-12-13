@@ -7,7 +7,7 @@ use ionize_fang, only: fang2008, fang2010
 use grid, only: lx1,lx2,lx3,g1,g2,g3
 use mesh, only: curvmesh
 use timeutils, only: doy_calc
-use mpimod, only: myid,lid,mpi_realprec, tag=>gemini_mpi, MPI_COMM_WORLD,MPI_STATUS_IGNORE
+use mpimod, only: mpi_realprec, mpi_cfg, tag=>gemini_mpi, MPI_COMM_WORLD,MPI_STATUS_IGNORE
 
 implicit none (type, external)
 private
@@ -125,16 +125,16 @@ gavg=8._wp
 Tninf=maxval(Tnmsis)   !set exospheric temperature based on the max value of the background MSIS atmosphere; note this is a worker max
 
 !both g and Tinf need to be computed as average over the entire grid...
-if (myid==0) then     !root
+if (mpi_cfg%myid==0) then     !root
   ierr=0
-  do iid=1,lid-1
+  do iid=1,mpi_cfg%lid-1
       call mpi_recv(Tninftmp,1,mpi_realprec,iid,tag%Tninf,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
       if (Tninf < Tninftmp) Tninf=Tninftmp
   end do
   if (ierr /= 0) error stop 'root failed to mpi_recv Tninf'
 
   ierr=0
-  do iid=1,lid-1
+  do iid=1,mpi_cfg%lid-1
     call mpi_send(Tninf,1,mpi_realprec,iid,tag%Tninf,MPI_COMM_WORLD,ierr)
   end do
   if (ierr /= 0) error stop 'root failed to mpi_send Tninf'

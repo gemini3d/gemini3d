@@ -9,7 +9,7 @@ use mesh, only: curvmesh
 use interpolation, only : interp1,interp2
 use timeutils, only : dateinc, date_filename, find_lastdate
 use mpimod, only: mpi_integer, mpi_comm_world, mpi_status_ignore, &
-lid, mpi_realprec, myid, tag=>gemini_mpi
+mpi_realprec, mpi_cfg, tag=>gemini_mpi
 use config, only: gemini_cfg
 
 implicit none (type, external)
@@ -57,7 +57,7 @@ if (cfg%flagprecfile==1) then    !all workers must have this info
   !! find the last input data preceding the milestone/initial condition that we start with
   call find_lastdate(cfg%ymd0,cfg%UTsec0,ymd,UTsec,cfg%dtE0,ymdtmp,UTsectmp)
 
-  if (myid==0) print*, '!!!Attmpting to prime precipitation input files...',ymdtmp,UTsectmp
+  if (mpi_cfg%myid==0) print*, '!!!Attmpting to prime precipitation input files...',ymdtmp,UTsectmp
   !! back up by two dtprec to so that when we run the fileinput twice we end up with tprev corresponding
   !   to the first time step
   tprev=UTsectmp-UTsec-2._wp*cfg%dtprec
@@ -65,7 +65,7 @@ if (cfg%flagprecfile==1) then    !all workers must have this info
   call precipBCs_fileinput(dt,tnext+cfg%dtprec/2._wp,cfg,ymdtmp,UTsectmp-cfg%dtprec,x,W0,PhiWmWm2)
   !time that we interpolate to doesn't matter but it needs to trigger a new read...
 
-  if (myid==0) print*, 'Now loading initial next file for precipitation input...'
+  if (mpi_cfg%myid==0) print*, 'Now loading initial next file for precipitation input...'
   !! now shift next->prev and load a new one corresponding to the first simulation time step
   call precipBCs_fileinput(dt,0._wp,cfg,ymdtmp,UTsectmp,x,W0,PhiWmWm2)
 end if
@@ -116,7 +116,7 @@ if(t+dt / 2._wp >= tnext .or. t < 0) then
     ymdnext=ymdprev
     UTsecnext=UTsecprev
 
-    if (myid==0) then    !root process
+    if (mpi_cfg%myid==0) then    !root process
       !READ IN THE GRID
       print '(/,A,/,A)', 'Precipitation input:','--------------------'
       print '(A)', 'READ precipitation size from: ' // cfg%precdir
@@ -128,7 +128,7 @@ if(t+dt / 2._wp >= tnext .or. t < 0) then
 
       !MESSAGE WORKERS WITH GRID INFO
       ierr=0
-      do iid=1,lid-1
+      do iid=1,mpi_cfg%lid-1
         call mpi_send(llon,1,MPI_INTEGER,iid,tag%llon,MPI_COMM_WORLD,ierr)
         call mpi_send(llat,1,MPI_INTEGER,iid,tag%llat,MPI_COMM_WORLD,ierr)
       end do
@@ -153,7 +153,7 @@ if(t+dt / 2._wp >= tnext .or. t < 0) then
       if(.not. all(ieee_is_finite(mlatp))) error stop 'precipBCs_fileinput: mlat must be finite'
 
       !NOW SEND THE GRID DATA
-      do iid=1,lid-1
+      do iid=1,mpi_cfg%lid-1
         call mpi_send(mlonp,llon,mpi_realprec,iid,tag%mlon,MPI_COMM_WORLD,ierr)
         call mpi_send(mlatp,llat,mpi_realprec,iid,tag%mlat,MPI_COMM_WORLD,ierr)
       end do
@@ -189,7 +189,7 @@ if(t+dt / 2._wp >= tnext .or. t < 0) then
 
 
   !> GRID INFORMATION EXISTS AT THIS POINT SO START READING IN PRECIP DATA
-  if (myid==0) then
+  if (mpi_cfg%myid==0) then
     !! only root reads file data
     !> read in the data from file
     if(debug) print *, 'precipBCs_mod.f90:precipBCs_fileinput:tprev,tnow,tnext:  ',tprev,t+dt / 2._wp,tnext
@@ -204,7 +204,7 @@ if(t+dt / 2._wp >= tnext .or. t < 0) then
     if (debug) print *, 'Min/max values for E0p:  ',minval(E0p),maxval(E0p)
 
     !> send a full copy of the data to all of the workers
-    do iid=1,lid-1
+    do iid=1,mpi_cfg%lid-1
       call mpi_send(Qp,llon*llat,mpi_realprec,iid,tag%Qp,MPI_COMM_WORLD,ierr)
       call mpi_send(E0p,llon*llat,mpi_realprec,iid,tag%E0p,MPI_COMM_WORLD,ierr)
     end do
@@ -216,7 +216,7 @@ if(t+dt / 2._wp >= tnext .or. t < 0) then
 
 
   !ALL WORKERS DO SPATIAL INTERPOLATION
-  if (myid==0) then
+  if (mpi_cfg%myid==0) then
     if (debug) print *, 'Initiating precipitation spatial interpolations for date:  ',ymdtmp,' ',UTsectmp
   end if
   if (llon==1) then    !source data has singleton size in the longitude dimension
@@ -248,7 +248,7 @@ if(t+dt / 2._wp >= tnext .or. t < 0) then
     E0iprev=E0inext
     E0inext=reshape(parami,[lx2,lx3])
   end if
-  if (myid==lid/2) then
+  if (mpi_cfg%myid==mpi_cfg%lid/2) then
     if (debug) print *, 'Min/max values for Qi:  ',minval(Qinext),maxval(Qinext)
     if (debug) print *, 'Min/max values for E0i:  ',minval(E0inext),maxval(E0inext)
   end if
@@ -278,7 +278,7 @@ end do
 
 
 !SOME BASIC DIAGNOSTICS
-if (myid==lid/2 .and. debug) then
+if (mpi_cfg%myid==mpi_cfg%lid/2 .and. debug) then
   print *, 'tprev,t,tnext:  ',tprev,t+dt/2._wp,tnext
   print *, 'Min/max values for Qinow:  ',minval(Qinow),maxval(Qinow)
   print *, 'Min/max values for E0inow:  ',minval(E0inow),maxval(E0inow)

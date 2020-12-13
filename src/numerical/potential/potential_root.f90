@@ -98,7 +98,7 @@ if (debug) print *, 'Root has computed BCs in time:  ',tfin-tstart
 
 !R--------
 ierr=0
-do iid=1,lid-1    !communicate intent for solve to workers so they know whether or not to call mumps fn.
+do iid=1,mpi_cfg%lid-1    !communicate intent for solve to workers so they know whether or not to call mumps fn.
   call mpi_send(flagdirich,1,MPI_INTEGER,iid,tag%flagdirich,MPI_COMM_WORLD,ierr)
 end do
 if (ierr/=0) error stop 'mpi_send failed to send solve intent'
@@ -265,14 +265,14 @@ if (lx2/=1) then    !either field-resolved 3D or integrated 2D solve for 3D doma
    ! Phiall=elliptic3D_curv(srctermall,sig0scaledall,sigPscaledall,sigHscaledall,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3,Vmaxx3, &
    !                   x,flagdirich,perflag,it)
     if( maxval(abs(Vminx1))>1e-12_wp .or. maxval(abs(Vmaxx1))>1e-12_wp ) then
-      do iid=1,lid-1
+      do iid=1,mpi_cfg%lid-1
         call mpi_send(1,1,MPI_INTEGER,iid,tag%flagdirich,MPI_COMM_WORLD,ierr)
       end do
       Phiall=potential3D_fieldresolved_decimate(srctermall,sig0scaledall,sigPscaledall,sigHscaledall, &
                                  Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3,Vmaxx3, &
                                  x,flagdirich,perflag,it)
     else
-      do iid=1,lid-1
+      do iid=1,mpi_cfg%lid-1
         call mpi_send(0,1,MPI_INTEGER,iid,tag%flagdirich,MPI_COMM_WORLD,ierr)
       end do
         if (debug) print*, 'Boundary conditions too small to require solve, setting everything to zero...'

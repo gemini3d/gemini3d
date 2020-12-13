@@ -15,6 +15,7 @@ character(:), allocatable :: input_nml, output_dir, &
   git_version, branch, rev, porcelain, compiler, compiler_flags, exe
 character(256) :: buf
 integer :: mcadence
+integer :: lid, lid2, lid3
 
 namelist /files/ input_nml, output_dir,realbits
 namelist /git/ git_version, branch, rev, porcelain
@@ -52,6 +53,10 @@ exe = trim(buf)
 
 !> milestone namelist
 mcadence=cfg%mcadence
+
+lid = mpi_cfg%lid
+lid2 = mpi_cfg%lid2
+lid3 = mpi_cfg%lid3
 
 !> let this crash the program if it can't write as an early indicator of output directory problem.
 open(newunit=u, file=cfg%outdir // '/output.nml', status='unknown', action='write')

@@ -74,7 +74,7 @@ module procedure output_aur
 !! BOTH ROOT AND WORKERS CALL THIS PROCEDURE SO UNALLOCATED
 !! VARIABLES MUST BE DECLARED AS ALLOCATABLE, INTENT(INOUT)
 
-if (myid/=0) then
+if (mpi_cfg%myid/=0) then
   call output_aur_workers(iver)
 else
   call output_aur_root(outdir,flagglow,ymd,UTsec,iver, out_format)

@@ -34,7 +34,7 @@ real(wp), dimension(x%lx1,x%lx2,x%lx3) :: zimat,rhoimat,yimat
 dhorzn=cfg%drhon
 
 !Establish the size of the grid based on input file and distribute to workers
-if (myid==0) then    !root
+if (mpi_cfg%myid==0) then    !root
   print '(A,/,A)', 'Inputting neutral size from:  ',cfg%sourcedir
 
   ! bit of a tricky issue here; for neutral input, according to makedneuframes.m, the first integer in the size file is
@@ -47,7 +47,7 @@ call get_simsize3(cfg%sourcedir, lx1=lhorzn, lx2all=lzn)
     write(stderr,*) 'ERROR: reading ' // cfg%sourcedir
     error stop 'neutral:gridproj_dneu2D: grid size must be strictly positive'
   endif
-  do iid=1,lid-1
+  do iid=1,mpi_cfg%lid-1
     call mpi_send(lhorzn,1,MPI_INTEGER,iid,tag%lrho,MPI_COMM_WORLD,ierr)
     call mpi_send(lzn,1,MPI_INTEGER,iid,tag%lz,MPI_COMM_WORLD,ierr)
   end do
@@ -84,7 +84,7 @@ else
 end if
 zn=[ ((real(izn,8)-1._wp)*cfg%dzn, izn=1,lzn) ]
 
-if (myid==0) then
+if (mpi_cfg%myid==0) then
   if (flagcart) then
     print *, 'Creating neutral grid with y,z extent:',minval(yn),maxval(yn),minval(zn),maxval(zn)
   else
@@ -99,7 +99,7 @@ theta1=pi/2d0-cfg%sourcemlat*pi/180d0
 
 
 !Convert plasma simulation grid locations to z,rho values to be used in interoplation.  altitude ~ zi; lat/lon --> rhoi.  Also compute unit vectors and projections
-if (myid==0) then
+if (mpi_cfg%myid==0) then
   print *, 'Computing alt,radial distance values for plasma grid and completing rotations'
 end if
 zimat=x%alt     !vertical coordinate
@@ -226,7 +226,7 @@ call clear_unitvecs(x)
 
 
 !PRINT OUT SOME BASIC INFO ABOUT THE GRID THAT WE'VE LOADED
-if (myid==0 .and. debug) then
+if (mpi_cfg%myid==0 .and. debug) then
   if (flagcart) then
     print *, 'Min/max yn,zn values',minval(yn),maxval(yn),minval(zn),maxval(zn)
     print *, 'Min/max yi,zi values',minval(yi),maxval(yi),minval(zi),maxval(zi)
@@ -273,7 +273,7 @@ theta1=pi/2._wp-cfg%sourcemlat*pi/180._wp
 
 
 !Convert plasma simulation grid locations to z,rho values to be used in interoplation.  altitude ~ zi; lat/lon --> rhoi.  Also compute unit vectors and projections
-if (myid==0) then
+if (mpi_cfg%myid==0) then
   print *, 'Computing alt,radial distance values for plasma grid and completing rotations'
 end if
 zimat=x%alt     !vertical coordinate
@@ -391,20 +391,20 @@ xi=pack(ximat,.true.)
 
 
 !GRID UNIT VECTORS NO LONGER NEEDED ONCE PROJECTIONS ARE CALCULATED, so go ahead and free some space
-if (myid==0) then
+if (mpi_cfg%myid==0) then
   print*, '...Clearing out unit vectors (after projections)...'
 end if
 call clear_unitvecs(x)
 
 
-if(myid==0) then
+if(mpi_cfg%myid==0) then
   print*, 'Projection checking:  ',minval(proj_exp_e1),maxval(proj_exp_e1),minval(proj_exp_e2),maxval(proj_exp_e2), &
                                     minval(proj_exp_e3),maxval(proj_exp_e3)
 end if
 
 
 !Establish the size of the grid based on input file and distribute to workers
-if (myid==0) then    !root
+if (mpi_cfg%myid==0) then    !root
   print '(A,/,A)', 'READ neutral size from:', cfg%sourcedir
 
   call get_simsize3(cfg%sourcedir, lx1=lxnall, lx2all=lynall, lx3all=lzn)
@@ -428,7 +428,7 @@ if (myid==0) then    !root
   print*, '...creating vertical grid and sending to workers...'
   zn=[ ((real(izn,8)-1._wp)*cfg%dzn, izn=1,lzn) ]    !root calculates and distributes but this is the same for all workers - assmes that the max neutral grid extent in altitude is always less than the plasma grid (should almost always be true)
   maxzn=maxval(zn)
-  do iid=1,lid-1
+  do iid=1,mpi_cfg%lid-1
     call mpi_send(lzn,1,MPI_INTEGER,iid,tag%lz,MPI_COMM_WORLD,ierr)
     call mpi_send(zn,lzn,mpi_realprec,iid,tag%zn,MPI_COMM_WORLD,ierr)
   end do
@@ -447,13 +447,13 @@ if (myid==0) then    !root
 
   !calculate the extent of my piece of the grid using max altitude specified for the neutral grid
   call slabrange(maxzn,ximat,yimat,zimat,cfg%sourcemlat,xnrange,ynrange)
-  allocate(extents(0:lid-1,6),indx(0:lid-1,6),slabsizes(0:lid-1,2))
+  allocate(extents(0:mpi_cfg%lid-1,6),indx(0:mpi_cfg%lid-1,6),slabsizes(0:mpi_cfg%lid-1,2))
   extents(0,1:6)=[0._wp,maxzn,xnrange(1),xnrange(2),ynrange(1),ynrange(2)]
 
 
-  !receive extents of each of the other workers: extents(lid,6)
+  !receive extents of each of the other workers: extents(mpi_cfg%lid,6)
   print*, 'Receiving xn and yn ranges from workers...'
-  do iid=1,lid-1
+  do iid=1,mpi_cfg%lid-1
     call mpi_recv(xnrange,2,mpi_realprec,iid,tag%xnrange,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
     call mpi_recv(ynrange,2,mpi_realprec,iid,tag%ynrange,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
     extents(iid,1:6)=[0._wp,maxzn,xnrange(1),xnrange(2),ynrange(1),ynrange(2)]     !need to store values as xnrange overwritten for each worker
@@ -461,10 +461,10 @@ if (myid==0) then    !root
   end do
 
 
-  !find index into into neutral arrays for each worker:  indx(lid,6)
+  !find index into into neutral arrays for each worker:  indx(mpi_cfg%lid,6)
   print*, 'Root grid check:  ',ynall(1),ynall(lynall)
   print*, 'Converting ranges to indices...'
-  do iid=0,lid-1
+  do iid=0,mpi_cfg%lid-1
     call range2inds(extents(iid,1:6),zn,xnall,ynall,indices)
     indx(iid,1:6)=indices
     print*, 'Subgrid indices',iid,indx(iid,:)
@@ -473,7 +473,7 @@ if (myid==0) then    !root
 
   !send each worker the sizes for their particular chunk (all different) and send worker that grid chunk
   print*,'Sending sizes and xn,yn subgrids to workers...'
-  do iid=1,lid-1
+  do iid=1,mpi_cfg%lid-1
     lxn=indx(iid,4)-indx(iid,3)+1
     lyn=indx(iid,6)-indx(iid,5)+1
     slabsizes(iid,1:2)=[lxn,lyn]
@@ -529,11 +529,11 @@ allocate(dnO(lzn,lxn,lyn),dnN2(lzn,lxn,lyn),dnO2(lzn,lxn,lyn),dvnrho(lzn,lxn,lyn
 
 !PRINT OUT SOME BASIC INFO ABOUT THE GRID THAT WE'VE LOADED
 if (debug) then
-  print *, 'Min/max zn,xn,yn values',myid,minval(zn),maxval(zn),minval(xn),maxval(xn),minval(yn),maxval(yn)
-  print *, 'Min/max zi,xi,yi values',myid,minval(zi),maxval(zi),minval(xi),maxval(xi),minval(yi),maxval(yi)
-  !print *, 'Source lat/long:  ',myid,meanlat,meanlong
-  !print *, 'Plasma grid lat range:  ',myid,minval(x%glat(:,:,:)),maxval(x%glat(:,:,:))
-  !print *, 'Plasma grid lon range:  ',myid,minval(x%glon(:,:,:)),maxval(x%glon(:,:,:))
+  print *, 'Min/max zn,xn,yn values',mpi_cfg%myid,minval(zn),maxval(zn),minval(xn),maxval(xn),minval(yn),maxval(yn)
+  print *, 'Min/max zi,xi,yi values',mpi_cfg%myid,minval(zi),maxval(zi),minval(xi),maxval(xi),minval(yi),maxval(yi)
+  !print *, 'Source lat/long:  ',mpi_cfg%myid,meanlat,meanlong
+  !print *, 'Plasma grid lat range:  ',mpi_cfg%myid,minval(x%glat(:,:,:)),maxval(x%glat(:,:,:))
+  !print *, 'Plasma grid lon range:  ',mpi_cfg%myid,minval(x%glon(:,:,:)),maxval(x%glon(:,:,:))
 end if
 
 end procedure gridproj_dneu3D
@@ -669,7 +669,7 @@ end do
 indices(6)=iyn
 
 print*, '!!!!!!!!!!!!!!!!!'
-print*, myid
+print*, mpi_cfg%myid
 print*, ranges
 print*, indices
 print*, lxnall,lynall
