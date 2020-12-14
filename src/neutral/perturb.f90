@@ -7,7 +7,7 @@ use reader, only : get_neutral2, get_neutral3
 use timeutils, only : dateinc, date_filename
 
 use mpimod, only: mpi_realprec, mpi_integer, mpi_comm_world, mpi_status_ignore, &
-mpi_cfg, tag=>gemini_mpi
+tag=>gemini_mpi
 
 implicit none (type, external)
 
