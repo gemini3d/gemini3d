@@ -1,6 +1,4 @@
 name: ci_linux
-env:
-  CMAKE_GENERATOR: Ninja
 
 on:
   push:
@@ -32,9 +30,7 @@ jobs:
     - name: Install packages
       run: |
         sudo apt update -yq
-        # GCC-9 to help catch bugs as other workflows currently default to GCC 10.
-        # this workflow also works with GCC 10 etc.
-        sudo apt install -yq --no-install-recommends gfortran-9 libopenmpi-dev openmpi-bin liblapack-dev libscalapack-openmpi-dev libmumps-dev libhdf5-dev
+        sudo apt install -yq --no-install-recommends gfortran libopenmpi-dev openmpi-bin liblapack-dev libscalapack-openmpi-dev libmumps-dev libhdf5-dev
         python -m pip install ninja
 
 # CI is too slow for 3d_glow
@@ -80,10 +76,12 @@ jobs:
       with:
         python-version: '3.8'
 
-    - run: python -m pip install ninja
-
+# GCC-9 to help catch GCC-9 bugs
     - name: build and test without MPI
       run: ctest -S setup.cmake -R unit -VV
+      env:
+        CC: gcc-9
+        FC: gfortran-9
 
     - name: 2D test without MPI
       run: ctest -R 2dew_fang -VV
