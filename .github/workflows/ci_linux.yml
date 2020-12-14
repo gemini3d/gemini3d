@@ -32,7 +32,9 @@ jobs:
     - name: Install packages
       run: |
         sudo apt update -yq
-        sudo apt install -yq --no-install-recommends gfortran libopenmpi-dev openmpi-bin liblapack-dev libscalapack-openmpi-dev libmumps-dev libhdf5-dev
+        # GCC-9 to help catch bugs as other workflows currently default to GCC 10.
+        # this workflow also works with GCC 10 etc.
+        sudo apt install -yq --no-install-recommends gfortran-9 libopenmpi-dev openmpi-bin liblapack-dev libscalapack-openmpi-dev libmumps-dev libhdf5-dev
         python -m pip install ninja
 
 # CI is too slow for 3d_glow
