@@ -157,8 +157,10 @@ if (.not. (x3begin .and. x3end)) then
     param(-1:lx1+2,1:lx2,1-lhalo:0)=buffer34
   end if
 else if (isperiodic) then   ! there is the possibility on a periodic grid with lid3=1 that we still need to enforce periodic conditions.  Note that this condition is separate from whether or not the workers is the first and last x3 worker...
-  param(-1:lx1+2,1:lx2,1-lhalo:0)=param(-1:lx1+2,1:lx2,lx3-1:lx3)
-  param(-1:lx1+2,1:lx2,lx3+1:lx3+lhalo)=param(-1:lx1+2,1:lx3,1:2)
+  !param(-1:lx1+2,1:lx2,1-lhalo:0)=param(-1:lx1+2,1:lx2,lx3-1:lx3)
+  !param(-1:lx1+2,1:lx2,lx3+1:lx3+lhalo)=param(-1:lx1+2,1:lx3,1:2)  !yikes, wrong size+seg fault if lhalo=1???
+  param(-1:lx1+2,1:lx2,1-lhalo:0)=param(-1:lx1+2,1:lx2,lx3-(lhalo-1):lx3)
+  param(-1:lx1+2,1:lx2,lx3+1:lx3+lhalo)=param(-1:lx1+2,1:lx2,1:lhalo)
 end if
 
 !EXCHANGE MESSAGES IN THE X2 DIRECTION OF THE PROCESS GRID

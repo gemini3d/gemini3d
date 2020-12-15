@@ -516,7 +516,7 @@ end subroutine get_BGEfields
 
 subroutine halo_pot(parmhalo,tagcurrent,flagper,flagdegrade)
 
-!THIS SUBROUTINE REPLICATES A COMMON MESSAGE PASSING SCHEME USED IN THE COMPUTATION
+!THIS SUBROUTINE implements A COMMON MESSAGE PASSING pattern USED IN THE COMPUTATION
 !OF ELECTRODYNAMICS PARAMETERS THAT RESULT FROM DERIVATIVE (WHICH REQUIRE HALOING)
 
 real(wp), intent(inout), dimension(-1:,-1:,-1:) :: parmhalo
@@ -556,7 +556,7 @@ if (idup==mpi_cfg%lid2) then
     parmhalo(1:lx1,lx2+1,1:lx3)=parmhalo(1:lx1,lx2,1:lx3)
   end if
 end if
-if (.not. flagper) then              !musn't overwrite ghost cells if perioidc is chosen
+if (.not. flagper) then              !musn't overwrite ghost cells if perioidc is chosen, only if aperiodic...
   if (idleft==-1) then
     parmhalo(1:lx1,1:lx2,0)=parmhalo(1:lx1,1:lx2,1)
   end if
