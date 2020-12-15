@@ -23,7 +23,7 @@ def read_potential2D(fn: Path, doplot: bool = False):
         Phi = f["/Phi"][:]
         Phi2 = f["/Phi2squeeze"][:]
         Phitrue = f["/Phitrue"][:]
-    assert np.isclose(Phi2[12, 12], 0.00032659, 1e-5), "Potential 2d accuracy"
+    assert np.isclose(Phi2[12, 12], 0.00032659, 1e-3), "Potential 2d accuracy"
     assert lx1 == x1.size
     assert lx2 == x2.size
     assert lx3 == x3.size
