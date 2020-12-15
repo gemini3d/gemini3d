@@ -187,6 +187,7 @@ real(wp), dimension(:), intent(out) :: mlonp, mlatp
 character(:), allocatable :: fn
 
 fn = get_filename(path, 'simgrid')
+if (len_trim(fn) == 0) error stop "reader:grid2 No file found on " // path
 
 select case (get_suffix(fn))
 case ('.h5')
