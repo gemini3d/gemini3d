@@ -232,10 +232,19 @@ subroutine get_precip(path, Qp, E0p)
 character(*), intent(in) :: path
 real(wp), dimension(:,:), intent(out) :: Qp, E0p
 
-character(:), allocatable :: fn
+integer :: i
+character(:), allocatable :: fn, path1
 
-fn = get_filename(path)
-if (len_trim(fn) == 0) error stop "reader:precip No file found on " // path
+path1 = path
+i = len_trim(path1)
+
+fn = get_filename(path1)
+if (len_trim(fn) == 0) then
+  !! workaround for old files like *.000001.h5
+  path1(i:i) = '1'
+  fn = get_filename(path1)
+endif
+if (len_trim(fn) == 0) error stop "reader:precip No file found on " // path1
 
 select case (get_suffix(fn))
 case ('.h5')

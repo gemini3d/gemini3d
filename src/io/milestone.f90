@@ -14,10 +14,9 @@ module procedure find_milestone
 integer, dimension(3) :: ymd
 real(wp) :: UTsec
 character(:), allocatable :: fn, suffix
-logical :: exists, first
+logical :: exists
 real(wp) :: tsim
 
-first = .true.
 tsim = 0
 tmile = 0
 
@@ -27,7 +26,7 @@ ymdmile = cfg%ymd0
 UTsecmile = cfg%UTsec0
 
 suffix = get_suffix(cfg%indatsize)
-filemile = date_filename(cfg%outdir, ymd, UTsec, first) // suffix
+filemile = date_filename(cfg%outdir, ymd, UTsec) // suffix
 !! This presumes the first file output is a milestone.
 !! We don't test the situation wheere a first output was not produced.
 !! User should not be restarting in that case.
@@ -44,8 +43,7 @@ if (suffix /= '.h5') return
 
 milesearch : do
   !! new filename, add the 1 if it is the first
-  fn = date_filename(cfg%outdir, ymd, UTsec, first) // suffix
-  if (first) first = .false.
+  fn = date_filename(cfg%outdir, ymd, UTsec) // suffix
 
   inquire(file=fn, exist=exists)
   if ( .not. exists ) exit milesearch

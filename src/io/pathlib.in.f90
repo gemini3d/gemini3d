@@ -67,7 +67,6 @@ path1 = fn
 do i = 1, size(suffix)
   fn = path1 // trim(suffix(i))
   inquire(file=fn, exist=exists)
-  ! print *, 'TRACE:get_filename', fn, exists
   if (exists) return
 enddo
 

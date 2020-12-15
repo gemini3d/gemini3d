@@ -131,23 +131,18 @@ end do
 end subroutine day_wrap
 
 
-function date_filename(outdir, ymd, UTsec, first) result(filename)
+pure function date_filename(outdir, ymd, UTsec) result(filename)
 !! GENERATE A FILENAME stem OUT OF A GIVEN DATE/TIME
 !! (does not include suffix like .h5)
 
 character(*), intent(in) :: outdir
 integer, intent(in) :: ymd(3)
 class(*), intent(in) :: UTsec
-logical, intent(in), optional :: first
 
 character(:), allocatable :: filename
 character(len=21) :: stem
 
 stem = utsec2filestem(ymd, UTsec)
-if (present(first)) then
-  if (first) stem(21:21) = '1'
-  !! FIXME: eliminate when integer millisecond is implemented
-endif
 
 filename = outdir // '/' // stem
 
@@ -156,15 +151,14 @@ end function date_filename
 
 pure character(21) function utsec2filestem(ymd, UTsec) result(fn)
 !! file stem is exactly 21 characters long, per Matt Z's de facto spec.
-!! FIXME: until we go to integer UTsec (microsec) we round to nearest microsecond
+!! we keep microsecond dummy precision filenames to be legacy compatible
+!! true filename resolution is 10 milliseconds due to real32 7 digits of precision vis 86400 second day.
 integer, intent(in) :: ymd(3)
 class(*), intent(in) :: UTsec
 !! UTC second: real [0.0 .. 86400.0)
-integer(int64) :: usec, seconds, frac
+
 character(12) :: sec_str
-integer(int64), parameter :: million = 1000000_int64
-integer :: year, month, day
-real(dp) :: UTsectmp
+integer :: year, month, day, seconds, millisec, frac
 
 year = ymd(1)
 month = ymd(2)
@@ -172,28 +166,31 @@ day = ymd(3)
 
 select type(UTsec)
   type is (real(sp))
-    usec = nint(UTsec * million, int64)
+    !! round to nearest ten milliseconds
+    millisec = nint(UTsec * 100) * 10
   type is (real(dp))
-    usec = nint(UTsec * million, int64)
+    !! round to nearest ten milliseconds
+    millisec = nint(UTsec * 100) * 10
   type is (integer(int32))
-    usec = int(UTsec, int64) * million
+    millisec = UTsec * 1000
   type is (integer(int64))
-    usec = UTsec * million
+    millisec = int(UTsec) * 1000
   class default
-    error stop "io/formats.f90:utsec2filestem unknown UTsec type"
+    error stop "timeutils.f90:utsec2filestem unknown UTsec type"
 end select
 
-seconds = usec / million
-if (seconds < 0 .or. seconds > 86400) error stop 'io/formats.f90:utsec2filestem did NOT satisfy 0 <= seconds < 86400'
+seconds = millisec / 1000 !< truncate fractional second
+if (seconds < 0 .or. seconds > 86400) error stop 'timeutils.f90::utsec2filestem did NOT satisfy 0 <= seconds < 86400'
 if (seconds == 86400) then
   !> FIXME: This corner case is from not using integers for microseconds
   ! write(stderr,*) 'utsec2filestem: FIXME: patching UTsec=86400 to next day midnight'
   day = day+1
   seconds = 0
-  usec = 0
+  millisec = 0
   call day_wrap(year, month, day)
 endif
-frac = usec - seconds * million
+
+frac = millisec*1000 - seconds * 1000000  !< microseconds
 
 write(sec_str, '(I5.5, A1, I6.6)') seconds, '.', frac
 
