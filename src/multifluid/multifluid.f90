@@ -105,13 +105,13 @@ f107a=cfg%activ(1)
 !CALCULATE THE INTERNAL ENERGY AND MOMENTUM FLUX DENSITIES (ADVECTION AND SOURCE SOLUTIONS ARE DONE IN THESE VARIABLES)
 do isp=1,lsp
   rhovs1(:,:,:,isp)=ns(:,:,:,isp)*ms(isp)*vs1(:,:,:,isp)
-  rhoes(:,:,:,isp)=ns(:,:,:,isp)*kB*Ts(:,:,:,isp)/(gammas(isp)-1._wp)
+  rhoes(:,:,:,isp)=ns(:,:,:,isp)*kB*Ts(:,:,:,isp)/(gammas(isp) - 1)
 end do
 
 
 !ADVECTION SUBSTEP (CONSERVED VARIABLES SHOULD BE UPDATED BEFORE ENTERING)
 call cpu_time(tstart)
-chrgflux=0._wp
+chrgflux = 0
 do isp=1,lsp
   call advec_prep_mpi(isp,x%flagper,ns,rhovs1,vs1,vs2,vs3,rhoes,v1i,v2i,v3i)    !role-agnostic communcation pattern (all-to-neighbors)
 
@@ -155,7 +155,7 @@ do isp=1,lsp-1
   dv1iupdate=v1iupdate(2:lx1+1,:,:)-v1iupdate(1:lx1,:,:)
   Q(:,:,:,isp)=ns(1:lx1,1:lx2,1:lx3,isp)*ms(isp)*0.25_wp*xicon**2*(min(dv1iupdate,0._wp))**2   !note that viscosity does not have/need ghost cells
 end do
-Q(:,:,:,lsp)=0._wp
+Q(:,:,:,lsp) = 0
 
 
 !NONSTIFF/NONBALANCE INTERNAL ENERGY SOURCES (RK2 INTEGRATION)
@@ -172,11 +172,11 @@ do isp=1,lsp
   rhoeshalf = paramtrim - dt/2.0_wp * (paramtrim*(gammas(isp)-1) + Q(:,:,:,isp)) * divvs(1:lx1,1:lx2,1:lx3)
   !! t+dt/2 value of internal energy, use only interior points of divvs for second order accuracy
 
-  paramtrim=paramtrim-dt*(rhoeshalf*(gammas(isp)-1._wp)+Q(:,:,:,isp))*divvs(1:lx1,1:lx2,1:lx3)
+  paramtrim=paramtrim-dt*(rhoeshalf*(gammas(isp) - 1)+Q(:,:,:,isp))*divvs(1:lx1,1:lx2,1:lx3)
   rhoes(1:lx1,1:lx2,1:lx3,isp)=paramtrim
 
-  Ts(:,:,:,isp)=(gammas(isp)-1._wp)/kB*rhoes(:,:,:,isp)/max(ns(:,:,:,isp),mindensdiv)
-  Ts(:,:,:,isp)=max(Ts(:,:,:,isp),100._wp)
+  Ts(:,:,:,isp)=(gammas(isp) - 1)/kB*rhoes(:,:,:,isp)/max(ns(:,:,:,isp),mindensdiv)
+  Ts(:,:,:,isp)=max(Ts(:,:,:,isp), 100._wp)
 end do
 
 !> NaN check
@@ -220,7 +220,7 @@ end if
 !ZZZ - CLEAN TEMPERATURE BEFORE CONVERTING TO INTERNAL ENERGY
 call clean_param(x,3,Ts)
 do isp=1,lsp
-  rhoes(:,:,:,isp)=ns(:,:,:,isp)*kB*Ts(:,:,:,isp)/(gammas(isp)-1._wp)
+  rhoes(:,:,:,isp)=ns(:,:,:,isp)*kB*Ts(:,:,:,isp)/(gammas(isp) - 1)
 end do
 
 
@@ -314,7 +314,7 @@ do isp=1,lsp
   paramtrim=ETD_uncoupled(paramtrim,Pr(:,:,:,isp),Lo(:,:,:,isp),dt)
   rhoes(1:lx1,1:lx2,1:lx3,isp)=paramtrim
 
-  Ts(:,:,:,isp)=(gammas(isp)-1._wp)/kB*rhoes(:,:,:,isp)/max(ns(:,:,:,isp),mindensdiv)
+  Ts(:,:,:,isp)=(gammas(isp) - 1)/kB*rhoes(:,:,:,isp)/max(ns(:,:,:,isp),mindensdiv)
   Ts(:,:,:,isp)=max(Ts(:,:,:,isp),100._wp)
 end do
 
@@ -344,7 +344,7 @@ end if
 
 
 !ELECTRON VELOCITY SOLUTION
-chrgflux=0._wp
+chrgflux = 0
 do isp=1,lsp-1
   chrgflux=chrgflux+ns(1:lx1,1:lx2,1:lx3,isp)*qs(isp)*vs1(1:lx1,1:lx2,1:lx3,isp)
 end do
@@ -466,12 +466,12 @@ select case (paramflag)
 
 !MZ - for reasons I don't understand, this causes ctest to fail...
 !    !ZERO OUT THE GHOST CELL VELOCITIES
-!    param(-1:0,:,:,:)=0._wp
-!    param(lx1+1:lx1+2,:,:,:)=0._wp
-!    param(:,-1:0,:,:)=0._wp
-!    param(:,lx2+1:lx2+2,:,:)=0._wp
-!    param(:,:,-1:0,:)=0._wp
-!    param(:,:,lx4+1:lx3+2,:)=0._wp
+!    param(-1:0,:,:,:)= 0
+!    param(lx1+1:lx1+2,:,:,:)= 0
+!    param(:,-1:0,:,:)= 0
+!    param(:,lx2+1:lx2+2,:,:)= 0
+!    param(:,:,-1:0,:)= 0
+!    param(:,:,lx4+1:lx3+2,:)= 0
   case (3)    !temperature
     param=max(param,100._wp)     !temperature floor
 
@@ -481,7 +481,7 @@ select case (paramflag)
         ix2=x%inull(iinull,2)
         ix3=x%inull(iinull,3)
 
-        param(ix1,ix2,ix3,isp)=100._wp
+        param(ix1,ix2,ix3,isp) = 100
       end do
     end do
 
