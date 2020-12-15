@@ -86,7 +86,7 @@ if (mpi_cfg%myid==0 .and. cfg%flagE0file==1) then    !only root needs these...
   !! find the last input data preceding the milestone/initial condition that we start with
   call find_lastdate(cfg%ymd0,cfg%UTsec0,ymd,UTsec,cfg%dtE0,ymdtmp,UTsectmp)
 
-  print*, '!!!Attempting to prime electric field input files...',ymdtmp,UTsectmp
+  print '(A,I4,I2.2,I2.2,F10.3)', 'init_Efieldinput: Prime electric field input files: ymd,utsec: ',ymdtmp,UTsectmp
   !! back up by one dt for each input so that we get a next file that corresponds to the first frame before
   !   this simulation begining
   ! for first call the dummary argument must contain the input file time two levels back
@@ -97,8 +97,8 @@ if (mpi_cfg%myid==0 .and. cfg%flagE0file==1) then    !only root needs these...
                                     Vmaxx3,E01all,E02all,E03all,flagdirich)    ! t input only needs to be less than zero...
 
   !! now load first, next frame of input corresponding to the initial time step.  Time input just needs to be negative to
-  !   trigger a file read.  This might shoudl correspond to 0-dt/2???
-  print*, 'Now loading initial next file for electric field input...'
+  !   trigger a file read.  This might correspond to 0-dt/2???
+  print*, 'init_Efieldinput: load next file for electric field input',tnext
   call potentialBCs2D_fileinput(dt,0._wp,ymdtmp,UTsectmp,cfg,x, &
                                     Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3, &
                                     Vmaxx3,E01all,E02all,E03all,flagdirich)
