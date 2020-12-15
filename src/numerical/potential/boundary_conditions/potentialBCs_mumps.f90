@@ -17,7 +17,7 @@ private
 public :: potentialbcs2D, potentialbcs2D_fileinput, clear_potential_fileinput, init_Efieldinput, &
             compute_rootBGEfields
 
-!ALL OF THE FOLLOWING MODULE-SCOPE ARRAYS ARE USED FOR INTERPOLATING PRECIPITATION INPUT FILES (IF USED)
+!ALL OF THE FOLLOWING MODULE-SCOPE ARRAYS ARE USED FOR INTERPOLATING electric field INPUT FILES (IF USED)
 !It should be noted that all of these will eventually be fullgrid variables since only root does this...
 real(wp), dimension(:), allocatable :: mlonp
 real(wp), dimension(:), allocatable :: mlatp    !coordinates of electric field data
@@ -49,6 +49,9 @@ integer :: ix1ref,ix2ref,ix3ref
 integer, private :: flagdirich_state
 !! NOTE: holds state of flagdirich between calls, do not delete!
 
+integer, private :: ix1eq=-1  
+!! index for the equatorial location in terms of index into the x%x1 array...
+
 contains
 
 
@@ -56,7 +59,7 @@ subroutine init_Efieldinput(dt,t,cfg,ymd,UTsec,x)
 
 !> Initialize variables to hold electric field input file data, can be called by any worker but only root does anything
 
-!! This routine was extremely confusing to get right; much of that could probably be alleviated by not have t and ymd,UTsec
+!! FIXME:  This routine was extremely confusing to get right; much of that could probably be alleviated by not having t and ymd,UTsec
 !   assigned independently...
 
 real(wp), intent(in) :: dt,t
@@ -562,7 +565,7 @@ end subroutine clear_potential_fileinput
 subroutine potentialBCs2D(UTsec,cfg,x,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3, &
                                       Vmaxx3,E01all,E02all,E03all,flagdirich)
 
-!THIS IS A SIMPLE GAUSSIAN POTENTIAL PERTURBATION (IN X1,X2,X3 SPAE)
+! This is a default routine for setting electromagnetic boundary conditions in cases where user file input is not specified.  It also computes the equatorial vertical drift for the EIA if requested by the user. This routine *could* be modified to hard-code specific conditions in if needed but we really reccommend using file input for that.  
 
 real(wp), intent(in) :: UTsec
 
@@ -627,7 +630,12 @@ Vmaxx3 = 0
 
 !PI's EIA code COMPUTE SOURCE/FORCING TERMS FROM BACKGROUND FIELDS, ETC.
 if (cfg%flagEIA) then
-  vamp=cfg%v0equator    !amplitude of vertical drift at equator, should ideally be included as an input parameter
+  if (ix1eq<=0) then   !recompute the position of the equator in terms of the x1 variable
+    ix1eq=minloc(abs(x%x1),1)    !equator location is that closest to zero in the x1 (q) variable 
+    if (debug) print*, 'equator ix1:  ',ix1eq,x%x1(ix1eq)
+  end if
+
+  vamp=cfg%v0equator    !amplitude of vertical drift at equator from input config.nml file
 
   if (flagswap==0) then    !FIXME:  flagswap should be logical???
     !For 3D or non-swapped 2D the background electric field is zonal for a
@@ -637,7 +645,7 @@ if (cfg%flagEIA) then
 
     do ix3=1,lx3all
       !for each meridional slice define a local time
-      glonmer=x%glonall(lx1/2,lx2all/2,ix3)     !just use halfway up in altitude at the magnetic equator
+      glonmer=x%glonall(ix1eq,lx2all/2,ix3)     !just use halfway up in altitude at the magnetic equator
       do while (glonmer<0d0)
         glonmer=glonmer+360d0
       end do
@@ -646,14 +654,14 @@ if (cfg%flagEIA) then
       veltime = sin(2d0*pi*(LThrs-7d0)/24d0)    ! Huba's formulate for velocity amplitude vs. time
 
       do ix2=1,lx2all
-        z = x%altall(lx1/2,ix2,ix3)  !Current altitude of center of this flux tube
+        z = x%altall(ix1eq,ix2,ix3)  !Current altitude of center of this flux tube
         do ix1=1,lx1
           if (z<=150d3) then
             E03all(ix1,ix2,ix3) = 0d0
           elseif ((z>=150d3) .and. (z<=300d3)) then
-            E03all(ix1,ix2,ix3) = (veltime*vamp*(z-150d3)/150d3)*x%Bmagall(lx1/2,ix2,ix3)    !note vxB is westward so minus cancels with -vxB
+            E03all(ix1,ix2,ix3) = (veltime*vamp*(z-150d3)/150d3)*x%Bmagall(ix1eq,ix2,ix3)    !note vxB is westward so minus cancels with -vxB
           elseif (z>300d3) then
-            E03all(ix1,ix2,ix3) = veltime*vamp*x%Bmagall(lx1/2,ix2,ix3)
+            E03all(ix1,ix2,ix3) = veltime*vamp*x%Bmagall(ix1eq,ix2,ix3)
           end if
         end do
       end do
@@ -664,7 +672,7 @@ if (cfg%flagEIA) then
 
     do ix2=1,lx2all    !for a swapped grid this is longitude
       !for each meridional slice define a local time
-      glonmer=x%glonall(lx1/2,ix2,lx3all/2)     !just use halfway up in altitude at the magnetic equator
+      glonmer=x%glonall(ix1eq,ix2,lx3all/2)     !just use halfway up in altitude at the magnetic equator
       do while (glonmer<0d0)
         glonmer=glonmer+360d0
       end do
@@ -673,14 +681,14 @@ if (cfg%flagEIA) then
       veltime = sin(2d0*pi*(LThrs-7d0)/24d0)    ! Huba's formulate for velocity amplitude vs. time
 
       do ix3=1,lx3all     !here this is L-shell
-        z = x%altall(lx1/2,ix2,ix3)  !Current altitude of center of this flux tube
+        z = x%altall(ix1eq,ix2,ix3)  !Current altitude of center of this flux tube
         do ix1=1,lx1
           if (z<=150d3) then
             E02all(ix1,ix2,ix3) = 0d0
           elseif ((z>=150d3) .and. (z<=300d3)) then
-            E02all(ix1,ix2,ix3) = -1d0*(veltime*vamp*(z-150d3)/150d3)*x%Bmagall(lx1/2,ix2,ix3)    !minus sign to deal with permuted dimensions
+            E02all(ix1,ix2,ix3) = -1d0*(veltime*vamp*(z-150d3)/150d3)*x%Bmagall(ix1eq,ix2,ix3)    !minus sign to deal with permuted dimensions
           elseif (z>300d3) then
-            E02all(ix1,ix2,ix3) = -1d0*veltime*vamp*x%Bmagall(lx1/2,ix2,ix3)
+            E02all(ix1,ix2,ix3) = -1d0*veltime*vamp*x%Bmagall(ix1eq,ix2,ix3)
           end if
         end do
       end do
