@@ -76,7 +76,7 @@ case('h5')
 case ('nc')
   call input_root_currents_nc4(outdir,flagoutput,ymd,UTsec,J1,J2,J3)
 case default
-  error stop 'input_root_current: unexpected Gemini input'
+  error stop 'input_root_current: unexpected Gemini input: ' // out_format
 end select
 
 end subroutine input_root_currents
@@ -98,8 +98,7 @@ if (mpi_cfg%myid==0) then
   case ('.dat')
     call input_root_mpi_raw(x1,x2,x3all,indatsize,indatfile,ns,vs1,Ts,Phi,Phiall)
   case default
-    write(stderr,*) 'input_plasma: unknown grid format: ' // get_suffix(indatsize)
-    error stop 2
+    error stop 'input_plasma: unknown grid format: ' // get_suffix(indatsize)
   end select
 
   !> USER SUPPLIED FUNCTION TO TAKE A REFERENCE PROFILE AND CREATE INITIAL CONDITIONS FOR ENTIRE GRID.
@@ -152,6 +151,7 @@ call bcast_recv(J3,tag%J3)
 
 end subroutine input_workers_currents
 
+
 subroutine input_workers_mpi(ns,vs1,Ts,Phi)
 
 !------------------------------------------------------------
@@ -170,12 +170,11 @@ call bcast_recv(vs1,tag%vs1)
 call bcast_recv(Ts,tag%Ts)
 call bcast_recv(Phi,tag%Phi)
 
-if (.false.) then
-  print*, mpi_cfg%myid
-  print *, 'Min/max input density:  ',     minval(ns(:,:,:,7)),  maxval(ns(:,:,:,7))
-  print *, 'Min/max input velocity:  ',    minval(vs1(:,:,:,:)), maxval(vs1(:,:,:,:))
-  print *, 'Min/max input temperature:  ', minval(Ts(:,:,:,:)),  maxval(Ts(:,:,:,:))
-endif
+! print*, mpi_cfg%myid
+! print *, 'Min/max input density:  ',     minval(ns(:,:,:,7)),  maxval(ns(:,:,:,7))
+! print *, 'Min/max input velocity:  ',    minval(vs1(:,:,:,:)), maxval(vs1(:,:,:,:))
+! print *, 'Min/max input temperature:  ', minval(Ts(:,:,:,:)),  maxval(Ts(:,:,:,:))
+
 
 end subroutine input_workers_mpi
 
