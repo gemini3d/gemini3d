@@ -142,6 +142,7 @@ integer, intent(out) :: llon, llat
 character(:), allocatable :: fn
 
 fn = get_filename(path, 'simsize')
+if (len_trim(fn) == 0) error stop "reader:simsize2 No file found on " // path
 
 select case (get_suffix(fn))
 case ('.h5')
@@ -164,6 +165,7 @@ integer, intent(out), optional :: lx3all
 character(:), allocatable :: fn
 
 fn = get_filename(path, 'simsize')
+if (len_trim(fn) == 0) error stop "reader:simsize3 No file found on " // path
 
 select case (get_suffix(fn))
 case ('.h5')
@@ -208,6 +210,7 @@ real(wp), dimension(:), intent(out) :: Vminx2pslice,Vmaxx2pslice,Vminx3pslice,Vm
 character(:), allocatable :: fn
 
 fn = get_filename(path)
+if (len_trim(fn) == 0) error stop "reader:Efield No file found on " // path
 
 select case (get_suffix(fn))
 case ('.h5')
@@ -231,6 +234,7 @@ real(wp), dimension(:,:), intent(out) :: Qp, E0p
 character(:), allocatable :: fn
 
 fn = get_filename(path)
+if (len_trim(fn) == 0) error stop "reader:precip No file found on " // path
 
 select case (get_suffix(fn))
 case ('.h5')
@@ -266,6 +270,7 @@ real(wp), dimension(:,:,:), intent(out) :: dnO,dnN2,dnO2,dvnrho,dvnz,dTn
 character(:), allocatable :: fn
 
 fn = get_filename(path)
+if (len_trim(fn) == 0) error stop "reader:neutral2 No file found on " // path
 
 select case (get_suffix(fn))
 case ('.h5')
@@ -287,6 +292,7 @@ real(wp), dimension(:,:,:), intent(out) :: dnOall,dnN2all,dnO2all,dvnxall,dvnrho
 character(:), allocatable :: fn
 
 fn = get_filename(path)
+if (len_trim(fn) == 0) error stop "reader:neutral3 No file found on " // path
 
 select case (get_suffix(fn))
 case ('.h5')
