@@ -45,6 +45,9 @@ real(wp), parameter :: Csj(lsp,lsp) = reshape( &
 1.23_wp, 1.25_wp, 1.25_wp, 1.25_wp, 1.23_wp, 0.90_wp,  29.7e-3_wp, &
 54.5_wp, 54.5_wp, 54.5_wp, 54.5_wp, 54.5_wp, 54.5_wp,  38.537_wp], shape(Csj), order=[2,1])
 
+real(wp), parameter :: thermal_coeff(lsp-1) = [0.1019e-12_wp,0.0747e-12_wp,0.0754e-12_wp,0.0701e-12_wp, &
+                                        0.1068e-12_wp,0.3986e-12_wp]
+
 contains
 
 
@@ -179,7 +182,9 @@ lx2=size(Ts,2)-4
 lx3=size(Ts,3)-4
 
 if (isp<lsp) then       !ion species
-  lambda=25.0_wp/8.0_wp*kB**2*Ts(1:lx1,1:lx2,1:lx3)**(5.0_wp/2.0_wp)/ms(isp)/(Csj(isp,isp)*1e-6_wp)
+!  lambda=25.0_wp/8.0_wp*kB**2*Ts(1:lx1,1:lx2,1:lx3)**(5.0_wp/2.0_wp)/ms(isp)/(Csj(isp,isp)*1e-6_wp)
+  ! avoids precision issues by precomputing the transport coefficients (see parameter blocks above)
+  lambda=thermal_coeff(isp)*Ts(1:lx1,1:lx2,1:lx3)**(5.0_wp/2.0_wp)
   beta=0.0
 else                  !electrons
   lambda=elchrg*100.0_wp*7.7e5_wp*Ts(1:lx1,1:lx2,1:lx3)**(5.0_wp/2.0_wp)/ &
