@@ -210,10 +210,10 @@ E3prev=E3
 
 !-------
 !CALCULATE PERP FIELDS FROM POTENTIAL
-!      E20all=grad3D2(-1d0*Phi0all,dx2(1:lx2))
+!      E20all=grad3D2(-Phi0all,dx2(1:lx2))
 !! causes major memory leak. maybe from arithmetic statement argument?
 !! Left here as a 'lesson learned' (or is it a gfortran bug...)
-!      E30all=grad3D3(-1d0*Phi0all,dx3all(1:lx3all))
+!      E30all=grad3D3(-Phi0all,dx3all(1:lx3all))
 call pot2perpfield(Phi,x,E2,E3)
 !--------
 
@@ -273,15 +273,15 @@ if (cfg%flagcap/=0) then
   DE3Dt=(E3-E3prev)/dt+v2*grad2E+v3*grad3E
 
   !convert derivative into polarization current density
-  J1pol=0d0
+  J1pol= 0
   J2pol=incap*DE2Dt
   J3pol=incap*DE3Dt
 else       !pure electrostatic solve was done
-  DE2Dt=0d0
-  DE3Dt=0d0
-  J1pol=0d0
-  J2pol=0d0
-  J3pol=0d0
+  DE2Dt= 0
+  DE3Dt= 0
+  J1pol= 0
+  J2pol= 0
+  J3pol= 0
 end if
 !--------
 
@@ -301,17 +301,17 @@ end if
 if (lx2/=1 .and. cfg%potsolve==1) then    !we did a field-integrated solve above
   !-------
   !NOTE THAT A DIRECT E1ALL CALCULATION WILL GIVE ZERO, SO USE INDIRECT METHOD, AS FOLLOWS
-  J1=0d0
+  J1= 0
 
   if (cfg%flagJpar) then    !user can elect to not compute parallel current; in some low-res cases is it too prone to artifacts to use reliably
     J1halo(1:lx1,1:lx2,1:lx3)=J1
     J2halo(1:lx1,1:lx2,1:lx3)=J2
     J3halo(1:lx1,1:lx2,1:lx3)=J3
-  
+
     call halo_pot(J1halo,tag%J1,x%flagper,.false.)
     call halo_pot(J2halo,tag%J2,x%flagper,.false.)
     call halo_pot(J3halo,tag%J3,x%flagper,.false.)
-  
+
     divtmp=div3D(J1halo(0:lx1+1,0:lx2+1,0:lx3+1),J2halo(0:lx1+1,0:lx2+1,0:lx3+1), &
                  J3halo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
     divJperp=x%h1(1:lx1,1:lx2,1:lx3)*x%h2(1:lx1,1:lx2,1:lx3)*x%h3(1:lx1,1:lx2,1:lx3)*divtmp(1:lx1,1:lx2,1:lx3)
@@ -322,18 +322,18 @@ if (lx2/=1 .and. cfg%potsolve==1) then    !we did a field-integrated solve above
       if (gridflag==0) then     !closed dipole grid, really would be best off integrating from the source hemisphere
   !          if (debug) print *,  'Closed dipole grid; integration starting at max x1...', minval(Vmaxx1slab), &
   !                         maxval(Vmaxx1slab)
-        if (cfg%sourcemlat>=0d0) then    !integrate from northern hemisphere
+        if (cfg%sourcemlat>= 0) then    !integrate from northern hemisphere
   !            if (debug) print *, 'Source is in northern hemisphere (or there is no source)...'
           J1=integral3D1_curv_alt(divJperp,x,1,lx1)    !int divperp of BG current, go from maxval(x1) to location of interest
           do ix1=1,lx1
-            J1(ix1,:,:)=1d0/x%h2(ix1,1:lx2,1:lx3)/x%h3(ix1,1:lx2,1:lx3)* &
+            J1(ix1,:,:)=1 /x%h2(ix1,1:lx2,1:lx3)/x%h3(ix1,1:lx2,1:lx3)* &
                              (x%h2(1,1:lx2,1:lx3)*x%h3(1,1:lx2,1:lx3)*Vmaxx1slab+J1(ix1,:,:))
           end do
         else
   !            if (debug) print *, 'Source in southern hemisphere...'
           J1=integral3D1(divJperp,x,1,lx1)    !int divperp of BG current
           do ix1=1,lx1
-            J1(ix1,:,:)=1d0/x%h2(ix1,1:lx2,1:lx3)/x%h3(ix1,1:lx2,1:lx3)* &
+            J1(ix1,:,:)=1 /x%h2(ix1,1:lx2,1:lx3)/x%h3(ix1,1:lx2,1:lx3)* &
                              (x%h2(1,1:lx2,1:lx3)*x%h3(1,1:lx2,1:lx3)*Vminx1slab-J1(ix1,:,:))
           end do
         end if
@@ -341,20 +341,20 @@ if (lx2/=1 .and. cfg%potsolve==1) then    !we did a field-integrated solve above
   !          if (debug) print *,  'Inverted grid; integration starting at min x1...',minval(Vminx1slab), maxval(Vminx1slab)
         J1=integral3D1(divJperp,x,1,lx1)    !int divperp of BG current
         do ix1=1,lx1
-          J1(ix1,:,:)=1d0/x%h2(ix1,1:lx2,1:lx3)/x%h3(ix1,1:lx2,1:lx3)* &
+          J1(ix1,:,:)=1 /x%h2(ix1,1:lx2,1:lx3)/x%h3(ix1,1:lx2,1:lx3)* &
                            (x%h2(1,1:lx2,1:lx3)*x%h3(1,1:lx2,1:lx3)*Vminx1slab-J1(ix1,:,:))
         end do
       else        !minx1 is at teh bottom of the grid to integrate from max x1
   !          if (debug) print *,  'Non-inverted grid; integration starting at max x1...', minval(Vmaxx1slab),  maxval(Vmaxx1slab)
         J1=integral3D1_curv_alt(divJperp,x,1,lx1)    !int divperp of BG current, go from maxval(x1) to location of interest
         do ix1=1,lx1
-          J1(ix1,:,:)=1d0/x%h2(ix1,1:lx2,1:lx3)/x%h3(ix1,1:lx2,1:lx3)* &
+          J1(ix1,:,:)=1 /x%h2(ix1,1:lx2,1:lx3)/x%h3(ix1,1:lx2,1:lx3)* &
                            (x%h2(1,1:lx2,1:lx3)*x%h3(1,1:lx2,1:lx3)*Vmaxx1slab+J1(ix1,:,:))
         end do
       end if
   !        if (gridflag==2) then
            !! for a cartesian grid in the northern hemisphere (assumed) we have the x1-direction being against the magnetic field...
-  !          J1=-1d0*J1     !ZZZ - very questionable
+  !          J1=-J1     !ZZZ - very questionable
   !        end if
     else
       !! Dirichlet conditions - we need to integrate from the ***lowest altitude***
@@ -363,15 +363,15 @@ if (lx2/=1 .and. cfg%potsolve==1) then    !we did a field-integrated solve above
   !          if (debug) print *, 'Inverted grid detected - integrating logical top downward to compute FAC...'
         J1=integral3D1_curv_alt(divJperp,x,1,lx1)    !int divperp of BG current
         do ix1=1,lx1
-          J1(ix1,:,:)=1d0/x%h2(ix1,1:lx2,1:lx3)/x%h3(ix1,1:lx2,1:lx3)* &
+          J1(ix1,:,:)=1 /x%h2(ix1,1:lx2,1:lx3)/x%h3(ix1,1:lx2,1:lx3)* &
                            (J1(ix1,:,:))    !FAC AT TOP ASSUMED TO BE ZERO
         end do
       else      !non-inverted grid (logical bottom is the lowest altitude - so integrate normy)
   !          if (debug) print *, 'Non-inverted grid detected - integrating logical bottom to top to compute FAC...'
         J1=integral3D1(divJperp,x,1,lx1)    !int divperp of BG current
         do ix1=1,lx1
-          J1(ix1,:,:)=1d0/x%h2(ix1,1:lx2,1:lx3)/x%h3(ix1,1:lx2,1:lx3)* &
-                           (-1d0*J1(ix1,:,:))    !FAC AT THE BOTTOM ASSUMED TO BE ZERO
+          J1(ix1,:,:)=1 /x%h2(ix1,1:lx2,1:lx3)/x%h3(ix1,1:lx2,1:lx3)* &
+                           (-J1(ix1,:,:))    !FAC AT THE BOTTOM ASSUMED TO BE ZERO
         end do
       end if
     end if
@@ -381,9 +381,9 @@ if (lx2/=1 .and. cfg%potsolve==1) then    !we did a field-integrated solve above
 else   !we resolved the field line (either 2D solve or full 3D) so just differentiate normally
 
   !-------
-  Phi=-1d0*Phi
+  Phi=-Phi
   E1=grad3D1(Phi,x,1,lx1,1,lx2,1,lx3)    !no haloing required since x1-derivative
-  Phi=-1d0*Phi
+  Phi=-Phi
   J1=sig0*E1
   !-------
 
