@@ -52,7 +52,7 @@ if (debug) print *, 'Total unknowns and nonzero entries in matrix:  ',lPhi,lent
 !! SEE SECTION 4.5 OF MUMPS USER GUIDE).
 
 !> LOAD UP MATRIX ELEMENTS
-M(:)=0d0
+M(:)=0
 b=pack(srcterm,.true.)           !boundaries overwritten later
 ient=1
 do ix3=1,lx3
@@ -65,7 +65,7 @@ do ix3=1,lx3
         !! BOTTOM GRID POINTS + CORNER, USE NEUMANN HERE, PRESUMABLY ZERO
         ir(ient)=iPhi
         ic(ient)=iPhi
-        M(ient)=-1d0
+        M(ient)=-1
         ient=ient+1
         ir(ient)=iPhi
         ic(ient)=iPhi+1
@@ -79,17 +79,17 @@ do ix3=1,lx3
         if (flagdirich/=0) then
           ir(ient)=iPhi
           ic(ient)=iPhi
-          M(ient)=1d0
+          M(ient)=1
           b(iPhi)=Vmaxx1(ix2,ix3)
           ient=ient+1
         else
           ir(ient)=iPhi
           ic(ient)=iPhi-1
-          M(ient)=-1d0/dx1(lx1)
+          M(ient)=-1/dx1(lx1)
           ient=ient+1
           ir(ient)=iPhi
           ic(ient)=iPhi
-          M(ient)=1d0/dx1(lx1)
+          M(ient)=1/dx1(lx1)
           b(iPhi)=Vmaxx1(ix2,ix3)
           ient=ient+1
         end if
@@ -142,9 +142,9 @@ do ix3=1,lx3
         !> ix1,ix2,ix3
         ir(ient)=iPhi
         ic(ient)=iPhi
-        M(ient)=-1d0*Ac(ix1,ix2,ix3)*(1d0/dx2all(ix2+1)/dx2iall(ix2)+1d0/dx2all(ix2)/dx2iall(ix2))- &
-              Bc(ix1,ix2,ix3)*(1d0/dx3all(ix3+1)/dx3iall(ix3)+1d0/dx3all(ix3)/dx3iall(ix3))- &
-              Cc(ix1,ix2,ix3)*(1d0/dx1(ix1+1)/dx1i(ix1)+1d0/dx1(ix1)/dx1i(ix1))
+        M(ient)=-Ac(ix1,ix2,ix3)*(1/dx2all(ix2+1)/dx2iall(ix2)+1/dx2all(ix2)/dx2iall(ix2))- &
+              Bc(ix1,ix2,ix3)*(1/dx3all(ix3+1)/dx3iall(ix3)+1/dx3all(ix3)/dx3iall(ix3))- &
+              Cc(ix1,ix2,ix3)*(1/dx1(ix1+1)/dx1i(ix1)+1/dx1(ix1)/dx1i(ix1))
         ient=ient+1
 
         !> ix1+1,ix2,ix3

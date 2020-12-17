@@ -189,8 +189,8 @@ if (namelist_exists(u,'precip_BG')) then
   cfg%PhiWBG=PhiWBG
   cfg%W0BG=W0BG
 else
-  cfg%PhiWBG=1d-3
-  cfg%W0BG=3e3
+  cfg%PhiWBG=1e-3_wp
+  cfg%W0BG=3000
 end if
 
 !> parallel current density (optional)
