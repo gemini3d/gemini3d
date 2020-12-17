@@ -25,7 +25,7 @@ lx1=size(f,1)
 
 integral3D1_curv(1,:,:)=0._wp
 do ix1=2,lx1
-  integral3D1_curv(ix1,:,:)=integral3D1_curv(ix1-1,:,:)+0.5d0*(f(ix1,:,:)+f(ix1-1,:,:))*x%dx1(lbnd+ix1-1)
+  integral3D1_curv(ix1,:,:)=integral3D1_curv(ix1-1,:,:)+0.5_wp*(f(ix1,:,:)+f(ix1-1,:,:))*x%dx1(lbnd+ix1-1)
 end do
 end procedure integral3D1_curv
 
@@ -54,7 +54,7 @@ lx1=size(f,1)
 integral3D1_curv_alt(lx1,:,:)=0._wp
 do ix1=lx1-1,1,-1
   !! start from the logical top and sum  downward (keep dx positive since the intent is to integrate from fixed point to top)
-  integral3D1_curv_alt(ix1,:,:)=integral3D1_curv_alt(ix1+1,:,:)+0.5d0*(f(ix1,:,:)+f(ix1+1,:,:))*x%dx1(lbnd+ix1-1+1)
+  integral3D1_curv_alt(ix1,:,:)=integral3D1_curv_alt(ix1+1,:,:)+0.5_wp*(f(ix1,:,:)+f(ix1+1,:,:))*x%dx1(lbnd+ix1-1+1)
   !! +1 since we are starting from top
 end do
 end procedure integral3D1_curv_alt
@@ -78,7 +78,7 @@ lx1=size(f,1)
 
 integral2D1_curv(1,:)=0._wp
 do ix1=2,lx1
-  integral2D1_curv(ix1,:)=integral2D1_curv(ix1-1,:)+0.5d0*(f(ix1,:)+f(ix1-1,:))*x%dx1(lbnd+ix1-1)
+  integral2D1_curv(ix1,:)=integral2D1_curv(ix1-1,:)+0.5_wp*(f(ix1,:)+f(ix1-1,:))*x%dx1(lbnd+ix1-1)
 end do
 end procedure integral2D1_curv
 
@@ -103,7 +103,7 @@ lx2=size(f,1)
 
 integral2D1_curv_alt(1,:)=0._wp
 do ix2=2,lx2
-  integral2D1_curv_alt(ix2,:)=integral2D1_curv_alt(ix2-1,:)+0.5d0*(f(ix2,:)+f(ix2-1,:))*x%dx2(lbnd+ix2-1)
+  integral2D1_curv_alt(ix2,:)=integral2D1_curv_alt(ix2-1,:)+0.5_wp*(f(ix2,:)+f(ix2-1,:))*x%dx2(lbnd+ix2-1)
 end do
 end procedure integral2D1_curv_alt
 
@@ -131,7 +131,7 @@ lx2=size(f,2)
 
 integral2D2_curv(:,1)=0._wp
 do ix2=2,lx2
-  integral2D2_curv(:,ix2)=integral2D2_curv(:,ix2-1)+0.5d0*(f(:,ix2)+f(:,ix2-1))*x%dx2all(lbnd+ix2-1)
+  integral2D2_curv(:,ix2)=integral2D2_curv(:,ix2-1)+0.5_wp*(f(:,ix2)+f(:,ix2-1))*x%dx2all(lbnd+ix2-1)
 end do
 end procedure integral2D2_curv
 
@@ -158,9 +158,8 @@ lx3=size(f,2)
 
 integral2D2_curv_alt(:,1)=0._wp
 do ix3=2,lx3
-  integral2D2_curv_alt(:,ix3)=integral2D2_curv_alt(:,ix3-1)+0.5d0*(f(:,ix3)+f(:,ix3-1))*x%dx3all(lbnd+ix3-1)
+  integral2D2_curv_alt(:,ix3)=integral2D2_curv_alt(:,ix3-1)+0.5_wp*(f(:,ix3)+f(:,ix3-1))*x%dx3all(lbnd+ix3-1)
 end do
 end procedure integral2D2_curv_alt
-
 
 end submodule integral
