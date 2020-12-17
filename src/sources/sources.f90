@@ -380,7 +380,7 @@ Epol1=kB*Ts(1:lx1,1:lx2,1:lx3,lsp)/qs(lsp)*gradlp1
 do ix3=1,lx3
   do ix2=1,lx2
     do ix1=1,lx1
-      if (x%alt(ix1,ix2,ix3)<100e3) then
+      if (x%alt(ix1,ix2,ix3)<100e3_wp) then
         E1filt(ix1,ix2,ix3)=0
       else
         E1filt(ix1,ix2,ix3)=E1(ix1,ix2,ix3)

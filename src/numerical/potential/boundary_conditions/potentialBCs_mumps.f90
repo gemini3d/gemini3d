@@ -49,7 +49,7 @@ integer :: ix1ref,ix2ref,ix3ref
 integer, private :: flagdirich_state
 !! NOTE: holds state of flagdirich between calls, do not delete!
 
-integer, private :: ix1eq=-1  
+integer, private :: ix1eq=-1
 !! index for the equatorial location in terms of index into the x%x1 array...
 
 contains
@@ -218,15 +218,15 @@ if(t + dt / 2._wp >= tnext .or. t < 0) then    !need to load a new file
     ix3ref=lx3all/3
 
     !! by default the code uses 300km altitude as a reference location, using the center x2,x3 point
-    ix1ref=minloc(abs(x%rall(:,ix2ref,ix3ref)-Re-300d3),1)
+    ix1ref=minloc(abs(x%rall(:,ix2ref,ix3ref)-Re-300e3_wp),1)
     allocate(mloni(lx2all*lx3all),mlati(lx2all*lx3all))
     do ix3=1,lx3all
       do ix2=1,lx2all
         iflat=(ix3-1)*lx2all+ix2
-        !mlati(iflat)=90d0-x%thetaall(lx1,ix2,ix3)*180d0/pi
-        !mloni(iflat)=x%phiall(lx1,ix2,ix3)*180d0/pi
-        mlati(iflat)=90d0-x%thetaall(ix1ref,ix2,ix3)*180d0/pi
-        mloni(iflat)=x%phiall(ix1ref,ix2,ix3)*180d0/pi
+        !mlati(iflat)=90-x%thetaall(lx1,ix2,ix3)*180/pi
+        !mloni(iflat)=x%phiall(lx1,ix2,ix3)*180/pi
+        mlati(iflat)=90-x%thetaall(ix1ref,ix2,ix3)*180/pi
+        mloni(iflat)=x%phiall(ix1ref,ix2,ix3)*180/pi
       end do
     end do
     if (debug) print '(A,4F7.2)', 'Grid has mlon,mlat range:  ',minval(mloni),maxval(mloni),minval(mlati),maxval(mlati)
@@ -236,7 +236,7 @@ if(t + dt / 2._wp >= tnext .or. t < 0) then    !need to load a new file
 
   !> GRID INFORMATION EXISTS AT THIS POINT SO START READING IN PRECIP DATA
   !> read in the data from file
-  if (debug) print *,'potentialBCs_mumps.f90:potentialBCs2D_fileinput: tprev,tnow,tnext:  ',tprev,t+dt/2d0,tnext
+  if (debug) print *,'potentialBCs_mumps.f90:potentialBCs2D_fileinput: tprev,tnow,tnext:  ',tprev,t+dt/2,tnext
   ymdtmp=ymdnext
   UTsectmp=UTsecnext
   call dateinc(cfg%dtE0,ymdtmp,UTsectmp)
@@ -394,16 +394,16 @@ if (debug) print *, 'Solve type: ',flagdirich
 do ix3=1,lx3all
   do ix2=1,lx2all
     slope=(E0xinext(ix2,ix3)-E0xiprev(ix2,ix3))/(tnext-tprev)
-    E0xinow(ix2,ix3)=E0xiprev(ix2,ix3)+slope*(t+dt/2d0-tprev)
+    E0xinow(ix2,ix3)=E0xiprev(ix2,ix3)+slope*(t+dt/2-tprev)
 
     slope=(E0yinext(ix2,ix3)-E0yiprev(ix2,ix3))/(tnext-tprev)
-    E0yinow(ix2,ix3)=E0yiprev(ix2,ix3)+slope*(t+dt/2d0-tprev)
+    E0yinow(ix2,ix3)=E0yiprev(ix2,ix3)+slope*(t+dt/2-tprev)
 
     slope=(Vminx1inext(ix2,ix3)-Vminx1iprev(ix2,ix3))/(tnext-tprev)
-    Vminx1inow(ix2,ix3)=Vminx1iprev(ix2,ix3)+slope*(t+dt/2d0-tprev)
+    Vminx1inow(ix2,ix3)=Vminx1iprev(ix2,ix3)+slope*(t+dt/2-tprev)
 
     slope=(Vmaxx1inext(ix2,ix3)-Vmaxx1iprev(ix2,ix3))/(tnext-tprev)
-    Vmaxx1inow(ix2,ix3)=Vmaxx1iprev(ix2,ix3)+slope*(t+dt/2d0-tprev)
+    Vmaxx1inow(ix2,ix3)=Vmaxx1iprev(ix2,ix3)+slope*(t+dt/2-tprev)
   end do
 end do
 if (lx2all/=1 .and. lx3all/=1) then
@@ -427,7 +427,7 @@ end if
 
 !> SOME BASIC DIAGNOSTICS
 if(debug) then
-  print *, 'tprev,t,tnext:  ',tprev,t+dt/2d0,tnext
+  print *, 'tprev,t,tnext:  ',tprev,t+dt/2,tnext
   print *, 'Min/max values for E0xinow:  ',minval(E0xinow),maxval(E0xinow)
   print *, 'Min/max values for E0yinow:  ',minval(E0yinow),maxval(E0yinow)
   print *, 'Min/max values for Vminx1inow:  ',minval(Vminx1inow),maxval(Vminx1inow)
@@ -565,7 +565,7 @@ end subroutine clear_potential_fileinput
 subroutine potentialBCs2D(UTsec,cfg,x,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3, &
                                       Vmaxx3,E01all,E02all,E03all,flagdirich)
 
-! This is a default routine for setting electromagnetic boundary conditions in cases where user file input is not specified.  It also computes the equatorial vertical drift for the EIA if requested by the user. This routine *could* be modified to hard-code specific conditions in if needed but we really reccommend using file input for that.  
+! This is a default routine for setting electromagnetic boundary conditions in cases where user file input is not specified.  It also computes the equatorial vertical drift for the EIA if requested by the user. This routine *could* be modified to hard-code specific conditions in if needed but we really reccommend using file input for that.
 
 real(wp), intent(in) :: UTsec
 
@@ -594,10 +594,10 @@ real(wp) :: vamp,LThrs,veltime,z,glonmer
 
 
 !CALCULATE/SET TOP BOUNDARY CONDITIONS
-sigx2=1d0/20d0*(x%x2all(lx2all)-x%x2all(1))
-meanx2=0.5d0*(x%x2all(1)+x%x2all(lx2all))
-sigx3=1d0/20d0*(x%x3all(lx3all)-x%x3all(1))    !this requires that all workers have a copy of x3all!!!!
-meanx3=0.5d0*(x%x3all(1)+x%x3all(lx3all))
+sigx2=1/20._wp*(x%x2all(lx2all)-x%x2all(1))
+meanx2=0.5_wp*(x%x2all(1)+x%x2all(lx2all))
+sigx3=1/20._wp*(x%x3all(lx3all)-x%x3all(1))    !this requires that all workers have a copy of x3all!!!!
+meanx3=0.5_wp*(x%x3all(1)+x%x3all(lx3all))
 
 if (gridflag/=2) then
   Vtopalt=>Vminx1
@@ -631,7 +631,7 @@ Vmaxx3 = 0
 !PI's EIA code COMPUTE SOURCE/FORCING TERMS FROM BACKGROUND FIELDS, ETC.
 if (cfg%flagEIA) then
   if (ix1eq<=0) then   !recompute the position of the equator in terms of the x1 variable
-    ix1eq=minloc(abs(x%x1),1)    !equator location is that closest to zero in the x1 (q) variable 
+    ix1eq=minloc(abs(x%x1),1)    !equator location is that closest to zero in the x1 (q) variable
     if (debug) print*, 'equator ix1:  ',ix1eq,x%x1(ix1eq)
   end if
 
@@ -640,55 +640,55 @@ if (cfg%flagEIA) then
   if (flagswap==0) then    !FIXME:  flagswap should be logical???
     !For 3D or non-swapped 2D the background electric field is zonal for a
     !vertical drift
-    E01all=0d0
-    E02all=0d0
+    E01all=0
+    E02all=0
 
     do ix3=1,lx3all
       !for each meridional slice define a local time
       glonmer=x%glonall(ix1eq,lx2all/2,ix3)     !just use halfway up in altitude at the magnetic equator
-      do while (glonmer<0d0)
-        glonmer=glonmer+360d0
+      do while (glonmer<0)
+        glonmer=glonmer+360
       end do
 
-      LThrs=UTsec/3600d0+glonmer/15d0                 !Local time of center of meridian
-      veltime = sin(2d0*pi*(LThrs-7d0)/24d0)    ! Huba's formulate for velocity amplitude vs. time
+      LThrs=UTsec/3600+glonmer/15                 !Local time of center of meridian
+      veltime = sin(2*pi*(LThrs-7)/24)    ! Huba's formulate for velocity amplitude vs. time
 
       do ix2=1,lx2all
         z = x%altall(ix1eq,ix2,ix3)  !Current altitude of center of this flux tube
         do ix1=1,lx1
-          if (z<=150d3) then
-            E03all(ix1,ix2,ix3) = 0d0
-          elseif ((z>=150d3) .and. (z<=300d3)) then
-            E03all(ix1,ix2,ix3) = (veltime*vamp*(z-150d3)/150d3)*x%Bmagall(ix1eq,ix2,ix3)    !note vxB is westward so minus cancels with -vxB
-          elseif (z>300d3) then
+          if (z<=150e3_wp) then
+            E03all(ix1,ix2,ix3) = 0
+          elseif ((z>=150e3_wp) .and. (z<=300e3_wp)) then
+            E03all(ix1,ix2,ix3) = (veltime*vamp*(z-150e3_wp)/150e3_wp)*x%Bmagall(ix1eq,ix2,ix3)    !note vxB is westward so minus cancels with -vxB
+          elseif (z>300e3_wp) then
             E03all(ix1,ix2,ix3) = veltime*vamp*x%Bmagall(ix1eq,ix2,ix3)
           end if
         end do
       end do
     end do
   else
-    E01all=0d0
-    E03all=0d0
+    E01all=0
+    E03all=0
 
     do ix2=1,lx2all    !for a swapped grid this is longitude
       !for each meridional slice define a local time
       glonmer=x%glonall(ix1eq,ix2,lx3all/2)     !just use halfway up in altitude at the magnetic equator
-      do while (glonmer<0d0)
-        glonmer=glonmer+360d0
+      do while (glonmer<0)
+        glonmer=glonmer+360
       end do
 
-      LThrs=UTsec/3600d0+glonmer/15d0                 !Local time of center of meridian
-      veltime = sin(2d0*pi*(LThrs-7d0)/24d0)    ! Huba's formulate for velocity amplitude vs. time
+      LThrs=UTsec/3600+glonmer/15                 !Local time of center of meridian
+      veltime = sin(2*pi*(LThrs-7)/24)    ! Huba's formulate for velocity amplitude vs. time
 
       do ix3=1,lx3all     !here this is L-shell
         z = x%altall(ix1eq,ix2,ix3)  !Current altitude of center of this flux tube
         do ix1=1,lx1
-          if (z<=150d3) then
-            E02all(ix1,ix2,ix3) = 0d0
-          elseif ((z>=150d3) .and. (z<=300d3)) then
-            E02all(ix1,ix2,ix3) = -1d0*(veltime*vamp*(z-150d3)/150d3)*x%Bmagall(ix1eq,ix2,ix3)    !minus sign to deal with permuted dimensions
-          elseif (z>300d3) then
-            E02all(ix1,ix2,ix3) = -1d0*veltime*vamp*x%Bmagall(ix1eq,ix2,ix3)
+          if (z<=150e3_wp) then
+            E02all(ix1,ix2,ix3) = 0
+          elseif ((z>=150e3_wp) .and. (z<=300e3_wp)) then
+            E02all(ix1,ix2,ix3) = -(veltime*vamp*(z-150e3_wp)/150e3_wp)*x%Bmagall(ix1eq,ix2,ix3)    !minus sign to deal with permuted dimensions
+          elseif (z>300e3_wp) then
+            E02all(ix1,ix2,ix3) = -veltime*vamp*x%Bmagall(ix1eq,ix2,ix3)
           end if
         end do
       end do
