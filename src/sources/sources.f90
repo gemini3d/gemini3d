@@ -46,8 +46,8 @@ lx1=size(ns,1)-4
 lx2=size(ns,2)-4
 lx3=size(ns,3)-4
 
-Pr=0._wp
-Lo=0._wp
+Pr=0
+Lo=0
 Te=Ts(1:lx1,1:lx2,1:lx3,lsp)    !< Used in calculation of Lo
 dv2=(vs1(1:lx1,1:lx2,1:lx3,1)-vn1)**2+(vs2(1:lx1,1:lx2,1:lx3,1)-vn2)**2+ &
      (vs3(1:lx1,1:lx2,1:lx3,1)-vn3)**2    !gets used several times in this subprogram
@@ -56,132 +56,132 @@ dv2=(vs1(1:lx1,1:lx2,1:lx3,1)-vn1)**2+(vs2(1:lx1,1:lx2,1:lx3,1)-vn2)**2+ &
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!! O+ REACTIONS !!!!!!!!!!!!!!!!!!!!!!
 !O+ + N2 --> NO+ + N
-Teff=28d0/(16d0+28d0)*(16d0*amu/3d0/kB*(dv2) &
+Teff=28/(16+28._wp)*(16*amu/3/kB*(dv2) &
      + Ts(1:lx1,1:lx2,1:lx3,1) -Tn) + Tn
 
 
-where (Teff<=3725d0)
-  kreac=1.71676d-12 &
-    -7.19934d-13*(Teff/300._wp) &
-    +1.33276d-13*(Teff/300._wp)**2 &
-    -9.28213d-15*(Teff/300._wp)**3 &
-    +6.39557d-16*(Teff/300._wp)**4
+where (Teff<=3725)
+  kreac=1.71676e-12_wp &
+    -7.19934e-13_wp*(Teff/300) &
+    +1.33276e-13_wp*(Teff/300)**2 &
+    -9.28213e-15_wp*(Teff/300)**3 &
+    +6.39557e-16_wp*(Teff/300)**4
 end where
-where (Teff>3725d0 .and. Teff<=30000._wp)
-  kreac=-1.52489d-11 &
-    +7.67112d-13*(Teff/300._wp) &
-    +1.19064d-13*(Teff/300._wp)**2 &
-    -1.30858d-15*(Teff/300._wp)**3 &
-    +4.67756d-18*(Teff/300._wp)**4
+where (Teff>3725 .and. Teff<=30000)
+  kreac=-1.52489e-11_wp &
+    +7.67112e-13_wp*(Teff/300) &
+    +1.19064e-13_wp*(Teff/300)**2 &
+    -1.30858e-15_wp*(Teff/300)**3 &
+    +4.67756e-18_wp*(Teff/300)**4
 end where
-where (Teff>30000._wp)
-  kreac=-1.52489d-11 &
-    +7.67112d-13*(100._wp) &
-    +1.19064d-13*(100._wp)**2 &
-    -1.30858d-15*(100._wp)**3 &
-    +4.67756d-18*(100._wp)**4
+where (Teff>30000)
+  kreac=-1.52489e-11_wp &
+    +7.67112e-13_wp*(100) &
+    +1.19064e-13_wp*(100)**2 &
+    -1.30858e-15_wp*(100)**3 &
+    +4.67756e-18_wp*(100)**4
 end where
 
-betanow=kreac*nn(:,:,:,2)*1d-6
+betanow=kreac*nn(:,:,:,2)*1e-6_wp
 Pr(:,:,:,2)=Pr(:,:,:,2)+betanow*ns(1:lx1,1:lx2,1:lx3,1)
 Lo(:,:,:,1)=Lo(:,:,:,1)+betanow
 
 
 !O+ + O2 --> O2+ + O
-Teff=32._wp/(16d0+32._wp)*(16d0*amu/3d0/kB*(dv2) &
+Teff=32/(16+32._wp)*(16*amu/3/kB*(dv2) &
      +Ts(1:lx1,1:lx2,1:lx3,1) -Tn) + Tn
 
-where (Teff<=4800._wp)
-  kreac=2.78932d-11 &
-    -6.92612d-12*(Teff/300._wp) &
-    +8.67684d-13*(Teff/300._wp)**2 &
-    -3.47251d-14*(Teff/300._wp)**3 &
-    +5.07097d-16*(Teff/300._wp)**4
+where (Teff<=4800)
+  kreac=2.78932e-11_wp &
+    -6.92612e-12_wp*(Teff/300) &
+    +8.67684e-13_wp*(Teff/300)**2 &
+    -3.47251e-14_wp*(Teff/300)**3 &
+    +5.07097e-16_wp*(Teff/300)**4
 end where
-where (Teff>4800._wp .and. Teff<=30000._wp)
-  kreac=-1.74046d-11 &
-    +3.02328d-12*(Teff)/300._wp &
-    -2.39214d-15*(Teff/300._wp)**2 &
-    -4.02394d-17*(Teff/300._wp)**3
+where (Teff>4800 .and. Teff<=30000)
+  kreac=-1.74046e-11_wp &
+    +3.02328e-12_wp*Teff/300 &
+    -2.39214e-15_wp*(Teff/300)**2 &
+    -4.02394e-17_wp*(Teff/300)**3
 end where
-where(Teff>30000._wp)
-  kreac=-1.74046d-11 &
-    +3.02328d-12*(100._wp) &
-    -2.39214d-15*(100._wp)**2 &
-    -4.02394d-17*(100._wp)**3
+where(Teff>30000)
+  kreac=-1.74046e-11_wp &
+    +3.02328e-12_wp*100 &
+    -2.39214e-15_wp*100**2 &
+    -4.02394e-17_wp*100**3
 end where
 
-betanow=kreac*nn(:,:,:,3)*1d-6
+betanow=kreac*nn(:,:,:,3)*1e-6_wp
 Pr(:,:,:,4)=Pr(:,:,:,4)+betanow*ns(1:lx1,1:lx2,1:lx3,1)
 Lo(:,:,:,1)=Lo(:,:,:,1)+betanow
 
 
 !O+ + NO --> NO+ + O
-Teff=30._wp/(16d0+30._wp)*(16d0*amu/3d0/kB*(dv2) &
+Teff=30/(16+30._wp)*(16*amu/3/kB*(dv2) &
        + Ts(1:lx1,1:lx2,1:lx3,1) -Tn) + Tn
 
-where (Teff<=3800._wp)
-  kreac=6.40408d-13 &
-    -1.33888d-13*(Teff/300._wp) &
-    +7.65103d-14*(Teff/300._wp)**2 &
-    -3.11509d-15*(Teff/300._wp)**3 &
-    +6.62374d-17*(Teff/300._wp)**4
+where (Teff<=3800)
+  kreac=6.40408e-13_wp &
+    -1.33888e-13_wp*(Teff/300) &
+    +7.65103e-14_wp*(Teff/300)**2 &
+    -3.11509e-15_wp*(Teff/300)**3 &
+    +6.62374e-17_wp*(Teff/300)**4
 end where
-where (Teff>3800._wp .and. Teff<=30000._wp)
-  kreac=-7.48312d-13 &
-    +2.31502d-13*(Teff/300._wp) &
-    +3.07160d-14*(Teff/300._wp)**2 &
-    -2.65436d-16*(Teff/300._wp)**3 &
-    +7.76665d-19*(Teff/300._wp)**4
+where (Teff>3800 .and. Teff<=30000)
+  kreac=-7.48312e-13_wp &
+    +2.31502e-13_wp*(Teff/300) &
+    +3.07160e-14_wp*(Teff/300)**2 &
+    -2.65436e-16_wp*(Teff/300)**3 &
+    +7.76665e-19_wp*(Teff/300)**4
 end where
-where (Teff>30000._wp)
-  kreac=-7.48312d-13 &
-    +2.31502d-13*(100._wp) &
-    +3.07160d-14*(100._wp)**2 &
-    -2.65436d-16*(100._wp)**3 &
-    +7.76665d-19*(100._wp)**4
+where (Teff>30000)
+  kreac=-7.48312e-13_wp &
+    +2.31502e-13_wp*(100) &
+    +3.07160e-14_wp*(100)**2 &
+    -2.65436e-16_wp*(100)**3 &
+    +7.76665e-19_wp*(100)**4
 end where
 
-betanow=kreac*nn(:,:,:,6)*1d-6
+betanow=kreac*nn(:,:,:,6)*1e-6_wp
 Pr(:,:,:,2)=Pr(:,:,:,2)+betanow*ns(1:lx1,1:lx2,1:lx3,1)
 Lo(:,:,:,1)=Lo(:,:,:,1)+betanow
 
 
 !O+ + e --> O + hv
-betanow=3.7d-12*(250._wp/Ts(1:lx1,1:lx2,1:lx3,lsp))**0.7*ns(1:lx1,1:lx2,1:lx3,lsp)*1d-6
+betanow=3.7e-12_wp*(250/Ts(1:lx1,1:lx2,1:lx3,lsp))**0.7*ns(1:lx1,1:lx2,1:lx3,lsp)*1e-6_wp
 Lo(:,:,:,1)=Lo(:,:,:,1)+betanow
 
 
 !N2+ + O --> O+ + N2
-Teff=16d0/(28d0+16d0)*(28d0*amu/3d0/kB*(dv2) &
+Teff=16/(28+16._wp)*(28*amu/3/kB*(dv2) &
        +Ts(1:lx1,1:lx2,1:lx3,3) -Tn) + Tn
 
-where (Teff <= 1500._wp)
-  kreac=1d-11*(300._wp/Teff)**0.23
+where (Teff <= 1500)
+  kreac=1e-11_wp*(300/Teff)**0.23
 elsewhere
-  kreac=3.6d-12*(300._wp/Teff)**(-0.41)
+  kreac=3.6e-12_wp*(300/Teff)**(-0.41)
 end where
 
-betanow=kreac*nn(:,:,:,1)*1d-6
+betanow=kreac*nn(:,:,:,1)*1e-6_wp
 Pr(:,:,:,1)=Pr(:,:,:,1)+betanow*ns(1:lx1,1:lx2,1:lx3,3)
 Lo(:,:,:,3)=Lo(:,:,:,3)+betanow
 
 
 !N+ + O --> O+ + N
-betanow=5d-13*nn(:,:,:,1)*1d-6
+betanow=5e-13_wp*nn(:,:,:,1)*1e-6_wp
 Pr(:,:,:,1)=Pr(:,:,:,1)+betanow*ns(1:lx1,1:lx2,1:lx3,5)
 Lo(:,:,:,5)=Lo(:,:,:,5)+betanow
 
 
 !H+ + O --> O+ + H
 Teff=Ts(1:lx1,1:lx2,1:lx3,6)
-betanow = (6.0d-10)*(8d0/9d0)*(((Teff+Tn/4d0)/(Tn+Teff/16d0))**0.5)*nn(:,:,:,1)*1d-6
+betanow = (6.e-10_wp)*(8/9._wp)*(((Teff+Tn/4)/(Tn+Teff/16))**0.5)*nn(:,:,:,1)*1e-6_wp
 Pr(:,:,:,1)=Pr(:,:,:,1)+betanow*ns(1:lx1,1:lx2,1:lx3,6)
 Lo(:,:,:,6)=Lo(:,:,:,6)+betanow
 
 
 !O+ + H --> H+ + O
-betanow = 6.0d-10*nn(:,:,:,4)*1d-6
+betanow = 6.0e-10_wp*nn(:,:,:,4)*1e-6_wp
 Pr(:,:,:,6)=Pr(:,:,:,6)+betanow*ns(1:lx1,1:lx2,1:lx3,1)
 Lo(:,:,:,1)=Lo(:,:,:,1)+betanow
 
@@ -191,61 +191,61 @@ Lo(:,:,:,1)=Lo(:,:,:,1)+betanow
 
 
 !O2+ + N2 --> NO+ + NO
-betanow=5d-16*nn(:,:,:,3)*1d-6
+betanow=5e-16_wp*nn(:,:,:,3)*1e-6_wp
 Pr(:,:,:,2)=Pr(:,:,:,2)+betanow*ns(1:lx1,1:lx2,1:lx3,4)
 Lo(:,:,:,4)=Lo(:,:,:,4)+betanow
 
 
 !O2+ + N --> NO+ + O
-betanow=1.2d-10*nn(:,:,:,5)*1d-6
+betanow=1.2e-10_wp*nn(:,:,:,5)*1e-6_wp
 Pr(:,:,:,2)=Pr(:,:,:,2)+betanow*ns(1:lx1,1:lx2,1:lx3,4)
 Lo(:,:,:,4)=Lo(:,:,:,4)+betanow
 
 
 !O2+ + NO --> NO+ + O2
-betanow=4.6d-10*nn(:,:,:,6)*1d-6
+betanow=4.6e-10_wp*nn(:,:,:,6)*1e-6_wp
 Pr(:,:,:,2)=Pr(:,:,:,2)+betanow*ns(1:lx1,1:lx2,1:lx3,4)
 Lo(:,:,:,4)=Lo(:,:,:,4)+betanow
 
 
 !N2+ + O --> NO+ + N
-Teff=16d0/(28d0+16d0)*(28d0*amu/3d0/kB*(dv2) &
+Teff=16/(28+16._wp)*(28*amu/3/kB*(dv2) &
        +Ts(1:lx1,1:lx2,1:lx3,3) - Tn) + Tn
 
-where (Teff <= 1500._wp)
-  kreac=1.4d-10*(300._wp/Teff)**0.44
+where (Teff <= 1500)
+  kreac=1.4e-10_wp*(300/Teff)**0.44
 elsewhere
-  kreac=5.2d-11*(300._wp/Teff)**(-0.2)
+  kreac=5.2e-11_wp*(300/Teff)**(-0.2)
 end where
 
-betanow=kreac*nn(:,:,:,1)*1d-6
+betanow=kreac*nn(:,:,:,1)*1e-6_wp
 Pr(:,:,:,2)=Pr(:,:,:,2)+betanow*ns(1:lx1,1:lx2,1:lx3,3)
 Lo(:,:,:,3)=Lo(:,:,:,3)+betanow
 
 
 !N2+ + NO --> NO+ + N2
-betanow=4.1d-10*nn(:,:,:,6)*1d-6
+betanow=4.1e-10_wp*nn(:,:,:,6)*1e-6_wp
 Pr(:,:,:,2)=Pr(:,:,:,2)+betanow*ns(1:lx1,1:lx2,1:lx3,3)
 Lo(:,:,:,3)=Lo(:,:,:,3)+betanow
 
 
 !N+ + O2 --> NO+ + O
-betanow=2.6d-10*nn(:,:,:,3)*1d-6
+betanow=2.6e-10_wp*nn(:,:,:,3)*1e-6_wp
 Pr(:,:,:,2)=Pr(:,:,:,2)+betanow*ns(1:lx1,1:lx2,1:lx3,5)
 Lo(:,:,:,5)=Lo(:,:,:,5)+betanow
 
 
 !NO+ + e --> N + O
-betanow=4.2d-7*(300._wp/Ts(1:lx1,1:lx2,1:lx3,lsp))**0.85*ns(1:lx1,1:lx2,1:lx3,lsp)*1d-6
+betanow=4.2e-7_wp*(300/Ts(1:lx1,1:lx2,1:lx3,lsp))**0.85*ns(1:lx1,1:lx2,1:lx3,lsp)*1e-6_wp
 Lo(:,:,:,2)=Lo(:,:,:,2)+betanow
 
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!! N2+ REACTIONS !!!!!!!!!!!!!!!!!!!!!!
 !N2+ + O2 --> O2+ + N2
-Teff=32._wp/(28d0+32._wp)*(28d0*amu/3d0/kB*(dv2) &
+Teff=32/(28+32._wp)*(28*amu/3/kB*(dv2) &
        +Ts(1:lx1,1:lx2,1:lx3,3) - Tn) + Tn
 
-betanow=5d-11*(300._wp/Teff)*nn(:,:,:,3)*1d-6
+betanow=5e-11_wp*(300/Teff)*nn(:,:,:,3)*1e-6_wp
 Pr(:,:,:,4)=Pr(:,:,:,4)+betanow*ns(1:lx1,1:lx2,1:lx3,3)
 Lo(:,:,:,3)=Lo(:,:,:,3)+betanow
 
@@ -260,7 +260,7 @@ Lo(:,:,:,3)=Lo(:,:,:,3)+betanow
 
 
 !N2+ + e --> N + N
-betanow=1.8d-7*(300._wp/Ts(1:lx1,1:lx2,1:lx3,lsp))**0.39*ns(1:lx1,1:lx2,1:lx3,lsp)*1d-6
+betanow=1.8e-7_wp*(300/Ts(1:lx1,1:lx2,1:lx3,lsp))**0.39*ns(1:lx1,1:lx2,1:lx3,lsp)*1e-6_wp
 Lo(:,:,:,3)=Lo(:,:,:,3)+betanow
 
 
@@ -275,19 +275,19 @@ Lo(:,:,:,3)=Lo(:,:,:,3)+betanow
 
 
 !N+ + O2 --> O2+ + N
-betanow=3.1d-10*nn(:,:,:,3)*1d-6
+betanow=3.1e-10_wp*nn(:,:,:,3)*1e-6_wp
 Pr(:,:,:,4)=Pr(:,:,:,4)+betanow*ns(1:lx1,1:lx2,1:lx3,5)
 Lo(:,:,:,5)=Lo(:,:,:,5)+betanow
 
 
 !O2+ + e- --> O + O
-where (Te <= 1200._wp)
-  kreac=1.95d-7* (300._wp/Te)**0.70! See idl code. this may need annother te term
+where (Te <= 1200)
+  kreac=1.95e-7_wp* (300/Te)**0.70! See idl code. this may need annother te term
 elsewhere
-  kreac=7.38d-8*(1200/Te)**0.56! See idl code. this may need annother te term
+  kreac=7.38e-8_wp*(1200/Te)**0.56! See idl code. this may need annother te term
 end where
 
-betanow=kreac*ns(1:lx1,1:lx2,1:lx3,lsp)*1d-6
+betanow=kreac*ns(1:lx1,1:lx2,1:lx3,lsp)*1e-6_wp
 Lo(:,:,:,4)=Lo(:,:,:,4)+betanow
 
 
@@ -302,7 +302,7 @@ Lo(:,:,:,4)=Lo(:,:,:,4)+betanow
 
 
 !N+ + H --> H+ + N
-betanow = 3.6d-12*nn(:,:,:,4)*1d-6
+betanow = 3.6e-12_wp*nn(:,:,:,4)*1e-6_wp
 Pr(:,:,:,6)=Pr(:,:,:,6)+betanow*ns(1:lx1,1:lx2,1:lx3,5)
 Lo(:,:,:,5)=Lo(:,:,:,5)+betanow
 
@@ -318,7 +318,7 @@ Lo(:,:,:,5)=Lo(:,:,:,5)+betanow
 
 
 !H+ + e --> H + hv
-betanow=3.7d-12*(250/Ts(1:lx1,1:lx2,1:lx3,lsp))**0.7*ns(1:lx1,1:lx2,1:lx3,lsp)*1d-6
+betanow=3.7e-12_wp*(250/Ts(1:lx1,1:lx2,1:lx3,lsp))**0.7*ns(1:lx1,1:lx2,1:lx3,lsp)*1e-6_wp
 Lo(:,:,:,6)=Lo(:,:,:,6)+betanow
 
 end subroutine srcsContinuity
@@ -358,8 +358,8 @@ lx1=size(Ts,1)-4
 lx2=size(Ts,2)-4
 lx3=size(Ts,3)-4
 
-Pr=0._wp
-Lo=0._wp
+Pr=0
+Lo=0
 
 
 !CALCULATE COMMON GEOMETRIC FACTORS USED IN EACH FO THE SPECIES CALCULATIONS
@@ -380,8 +380,8 @@ Epol1=kB*Ts(1:lx1,1:lx2,1:lx3,lsp)/qs(lsp)*gradlp1
 do ix3=1,lx3
   do ix2=1,lx2
     do ix1=1,lx1
-      if (x%alt(ix1,ix2,ix3)<100d3) then
-        E1filt(ix1,ix2,ix3)=0._wp
+      if (x%alt(ix1,ix2,ix3)<100e3) then
+        E1filt(ix1,ix2,ix3)=0
       else
         E1filt(ix1,ix2,ix3)=E1(ix1,ix2,ix3)
       end if
@@ -459,10 +459,10 @@ lx1=size(Ts,1)-4
 lx2=size(Ts,2)-4
 lx3=size(Ts,3)-4
 
-Pr=0._wp
-Lo=0._wp
-iePT=0._wp
-ieLT=0._wp
+Pr=0
+Lo=0
+iePT=0
+ieLT=0
 
 
 !ELASTIC COLLISIONS
@@ -472,14 +472,14 @@ do isp=1,lsp
     call maxwell_colln(isp,isp2,nn,Tn,Ts,nu)
 
     !HEAT TRANSFER
-    fact=2._wp*nu/(ms(isp)+mn(isp2))
-    Pr(:,:,:,isp)=Pr(:,:,:,isp)+ns(1:lx1,1:lx2,1:lx3,isp)*ms(isp)*kB/(gammas(isp)-1._wp)*fact*Tn
+    fact=2*nu/(ms(isp)+mn(isp2))
+    Pr(:,:,:,isp)=Pr(:,:,:,isp)+ns(1:lx1,1:lx2,1:lx3,isp)*ms(isp)*kB/(gammas(isp)-1)*fact*Tn
     Lo(:,:,:,isp)=Lo(:,:,:,isp)+ms(isp)*fact
 
 
     !FRICTION (neglect vn for now)
-    fact=fact*mn(isp2)/3d0
-    Pr(:,:,:,isp)=Pr(:,:,:,isp)+ns(1:lx1,1:lx2,1:lx3,isp)*ms(isp)/(gammas(isp)-1._wp) &
+    fact=fact*mn(isp2)/3
+    Pr(:,:,:,isp)=Pr(:,:,:,isp)+ns(1:lx1,1:lx2,1:lx3,isp)*ms(isp)/(gammas(isp)-1) &
                   *((vs1(1:lx1,1:lx2,1:lx3,isp)-vn1)**2+(vs2(1:lx1,1:lx2,1:lx3,isp)-vn2)**2 &
                   +(vs3(1:lx1,1:lx2,1:lx3,isp)-vn3)**2)*fact     !vn's should be correct shape for this...
   end do
@@ -489,15 +489,15 @@ do isp=1,lsp
     call coulomb_colln(isp,isp2,ns,Ts,vs1,nu,Phisj,Psisj)
 
     !HEAT TRANSFER
-    fact=2._wp*nu*Psisj/(ms(isp)+ms(isp2))
-    Pr(:,:,:,isp)=Pr(:,:,:,isp)+ns(1:lx1,1:lx2,1:lx3,isp)*ms(isp)*kB/(gammas(isp)-1._wp) &
+    fact=2*nu*Psisj/(ms(isp)+ms(isp2))
+    Pr(:,:,:,isp)=Pr(:,:,:,isp)+ns(1:lx1,1:lx2,1:lx3,isp)*ms(isp)*kB/(gammas(isp)-1) &
                   *fact*Ts(1:lx1,1:lx2,1:lx3,isp2)
     Lo(:,:,:,isp)=Lo(:,:,:,isp)+ms(isp)*fact
 
     !FRICTION
-!        fact=2._wp*nu*Phisj/(ms(isp)+ms(isp2))*mn(isp2)/3d0     !this is the error that was causing the runtime problem with -O3 on phys_consts.f90.  Much thanks to Guy Grubbs for finding this longstanding error.
-    fact=2._wp*nu*Phisj/(ms(isp)+ms(isp2))*ms(isp2)/3d0
-    Pr(:,:,:,isp)=Pr(:,:,:,isp)+ns(1:lx1,1:lx2,1:lx3,isp)*ms(isp)/(gammas(isp)-1._wp) &
+!        fact=2*nu*Phisj/(ms(isp)+ms(isp2))*mn(isp2)/3     !this is the error that was causing the runtime problem with -O3 on phys_consts.f90.  Much thanks to Guy Grubbs for finding this longstanding error.
+    fact=2*nu*Phisj/(ms(isp)+ms(isp2))*ms(isp2)/3
+    Pr(:,:,:,isp)=Pr(:,:,:,isp)+ns(1:lx1,1:lx2,1:lx3,isp)*ms(isp)/(gammas(isp)-1) &
                   *((vs1(1:lx1,1:lx2,1:lx3,isp)-vs1(1:lx1,1:lx2,1:lx3,isp2))**2 &
                    +(vs2(1:lx1,1:lx2,1:lx3,isp)-vs2(1:lx1,1:lx2,1:lx3,isp2))**2 &
                    +(vs3(1:lx1,1:lx2,1:lx3,isp)-vs3(1:lx1,1:lx2,1:lx3,isp2))**2)*fact
@@ -506,30 +506,30 @@ end do
 
 
 !INELASTIC COLLISIONS FOR ELECTRONS, ROTATIONAL
-sfact=elchrg/kB*(gammas(lsp)-1._wp);   !cf. S&N 2010, electron energy equatoin section
-nu=sfact*6.9d-14*nn(:,:,:,3)*1d-6/sqrt(Ts(1:lx1,1:lx2,1:lx3,lsp))    !O2 rotational excitation
+sfact=elchrg/kB*(gammas(lsp)-1);   !cf. S&N 2010, electron energy equatoin section
+nu=sfact*6.9e-14_wp*nn(:,:,:,3)*1e-6_wp/sqrt(Ts(1:lx1,1:lx2,1:lx3,lsp))    !O2 rotational excitation
 iePT=nu*Tn
 ieLT=nu
-nu=sfact*2.9d-14*nn(:,:,:,2)*1d-6/sqrt(Ts(1:lx1,1:lx2,1:lx3,lsp))    !N2 rot. exc.
+nu=sfact*2.9e-14_wp*nn(:,:,:,2)*1e-6_wp/sqrt(Ts(1:lx1,1:lx2,1:lx3,lsp))    !N2 rot. exc.
 iePT=iePT+nu*Tn;
 ieLT=ieLT+nu;
 
-f=1.06d4+7.51d3*tanh(1.10d-3*(Ts(1:lx1,1:lx2,1:lx3,lsp)-1800._wp))
-g=3300._wp+1.233d0*(Ts(1:lx1,1:lx2,1:lx3,lsp)-1000._wp)-2.056d-4 &
-  *(Ts(1:lx1,1:lx2,1:lx3,lsp)-1000._wp)*(Ts(1:lx1,1:lx2,1:lx3,lsp)-4000._wp)
-fact=sfact*2.99d-12*nn(:,:,:,2)*1d-6*exp(f*(Ts(1:lx1,1:lx2,1:lx3,lsp)-2000._wp) &
-        /Ts(1:lx1,1:lx2,1:lx3,lsp)/2000._wp)*(exp(-1._wp*g*(Ts(1:lx1,1:lx2,1:lx3,lsp)-Tn) &
-        /Ts(1:lx1,1:lx2,1:lx3,lsp)/Tn)-1._wp)    !N2 vibrational excitation
+f=1.06e4_wp+7.51e3_wp*tanh(1.10e-3_wp*(Ts(1:lx1,1:lx2,1:lx3,lsp)-1800))
+g=3300+1.233_wp*(Ts(1:lx1,1:lx2,1:lx3,lsp)-1000)-2.056e-4_wp &
+  *(Ts(1:lx1,1:lx2,1:lx3,lsp)-1000)*(Ts(1:lx1,1:lx2,1:lx3,lsp)-4000)
+fact=sfact*2.99e-12_wp*nn(:,:,:,2)*1e-6_wp*exp(f*(Ts(1:lx1,1:lx2,1:lx3,lsp)-2000) &
+        /Ts(1:lx1,1:lx2,1:lx3,lsp)/2000)*(exp(-g*(Ts(1:lx1,1:lx2,1:lx3,lsp)-Tn) &
+        /Ts(1:lx1,1:lx2,1:lx3,lsp)/Tn)-1)    !N2 vibrational excitation
 iePT=iePT-max(fact,0._wp);
-f=3300._wp-839d0*sin(1.91d-4*(Ts(1:lx1,1:lx2,1:lx3,lsp)-2700._wp))
-fact=sfact*5.196d-13*nn(:,:,:,3)*1d-6*exp(f*(Ts(1:lx1,1:lx2,1:lx3,lsp)-700._wp) &
-     /Ts(1:lx1,1:lx2,1:lx3,lsp)/700._wp)*(exp(-2770._wp*(Ts(1:lx1,1:lx2,1:lx3,lsp)-Tn) &
-     /Ts(1:lx1,1:lx2,1:lx3,lsp)/Tn)-1._wp)    !O2 vibrational excitation
+f=3300-839*sin(1.91e-4_wp*(Ts(1:lx1,1:lx2,1:lx3,lsp)-2700))
+fact=sfact*5.196e-13_wp*nn(:,:,:,3)*1e-6_wp*exp(f*(Ts(1:lx1,1:lx2,1:lx3,lsp)-700) &
+     /Ts(1:lx1,1:lx2,1:lx3,lsp)/700)*(exp(-2770*(Ts(1:lx1,1:lx2,1:lx3,lsp)-Tn) &
+     /Ts(1:lx1,1:lx2,1:lx3,lsp)/Tn)-1)    !O2 vibrational excitation
 iePT=iePT-max(fact,0._wp);
 
 
 !CORRECT TEMP EXPRESSIONS TO CORRESPOND TO INTERNAL ENERGY SOURCES
-Pr(:,:,:,lsp)=Pr(:,:,:,lsp)+iePT*ns(1:lx1,1:lx2,1:lx3,lsp)*kB/(gammas(lsp)-1._wp)   !Arg, forgot about the damn ghost cells in original code...
+Pr(:,:,:,lsp)=Pr(:,:,:,lsp)+iePT*ns(1:lx1,1:lx2,1:lx3,lsp)*kB/(gammas(lsp)-1)   !Arg, forgot about the damn ghost cells in original code...
 Lo(:,:,:,lsp)=Lo(:,:,:,lsp)+ieLT
 
 end subroutine srcsEnergy
