@@ -54,9 +54,9 @@ call meters(.true.)    !switch to mksa units
 do ix3=1,lx3
   do ix2=1,lx2
     do ix1=1,lx1
-      altnow=real(alt(ix1,ix2,ix3)/1d3,sp)
-      if (altnow<0.0) then
-        altnow = 1._sp     !so that MSIS does not get called with below ground values and so that we set them to something sensible that won't mess up the conductance calculations
+      altnow=real(alt(ix1,ix2,ix3)/1000,sp)
+      if (altnow < 0) then
+        altnow = 1     !so that MSIS does not get called with below ground values and so that we set them to something sensible that won't mess up the conductance calculations
       end if
 
       latnow=real(glat(ix1,ix2,ix3),sp)
@@ -72,15 +72,15 @@ do ix3=1,lx3
       nnmsis(ix1,ix2,ix3,5)=real(d(8),wp)
 
       Tnmsis(ix1,ix2,ix3)=real(t(2),wp)
-      nnmsis(ix1,ix2,ix3,6)=4d-1*exp(-3700.0/Tnmsis(ix1,ix2,ix3))*nnmsis(ix1,ix2,ix3,3)+ &
-                          5d-7*nnmsis(ix1,ix2,ix3,1)   !Mitra, 1968
+      nnmsis(ix1,ix2,ix3,6)=0.4_wp*exp(-3700/Tnmsis(ix1,ix2,ix3))*nnmsis(ix1,ix2,ix3,3)+ &
+                          5e-7_wp*nnmsis(ix1,ix2,ix3,1)   !Mitra, 1968
     end do
   end do
 end do
 
 
 !> Could be replaced with HWM at some point, but for now make these zero
-vn1base = 0d0; vn2base = 0d0; vn3base = 0d0
+vn1base = 0; vn2base = 0; vn3base = 0
 
 
 !> Update current state with new background and existing perturbations
