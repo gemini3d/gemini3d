@@ -118,7 +118,7 @@ rhovs1(:,-1,:,isp)=rhovs1(:,1,:,isp);
 rhovs1(:,lx2+1,:,isp)=rhovs1(:,lx2,:,isp);
 rhovs1(:,lx2+2,:,isp)=rhovs1(:,lx2,:,isp);
 
-rhovs1(0,1:lx2,1:lx3,isp)=2d0*v1i(1,:,:)-vs1(1,1:lx2,1:lx3,isp);
+rhovs1(0,1:lx2,1:lx3,isp)=2*v1i(1,:,:)-vs1(1,1:lx2,1:lx3,isp);
 !! initially these are velocities.
 !! Also loose definition of 'conformable'.
 !! Also corners never get set, but I suppose they aren't really used anyway.
@@ -134,7 +134,7 @@ rhovs1(0,:,lx3+1,isp)=rhovs1(0,:,lx3,isp)
 rhovs1(0,:,lx3+2,isp)=rhovs1(0,:,lx3,isp)
 
 rhovs1(-1,:,:,isp)=rhovs1(0,:,:,isp)+rhovs1(0,:,:,isp)-vs1(1,:,:,isp);
-rhovs1(lx1+1,1:lx2,1:lx3,isp)=2d0*v1i(lx1+1,:,:)-vs1(lx1,1:lx2,1:lx3,isp);
+rhovs1(lx1+1,1:lx2,1:lx3,isp)=2*v1i(lx1+1,:,:)-vs1(lx1,1:lx2,1:lx3,isp);
 rhovs1(lx1+2,:,:,isp)=rhovs1(lx1+1,:,:,isp)+rhovs1(lx1+1,:,:,isp)-vs1(lx1,:,:,isp);
 
 rhovs1(-1:0,:,:,isp)=rhovs1(-1:0,:,:,isp)*ns(-1:0,:,:,isp)*ms(isp)
@@ -205,7 +205,7 @@ end if
 
 
 !> AFTER HALOING CAN COMPUTE THE X3 INTERFACE VELOCITIES NORMALLY
-v3i(:,:,1:lx3+1)=0.5d0*(vs3(1:lx1,1:lx2,0:lx3,isp)+vs3(1:lx1,1:lx2,1:lx3+1,isp))
+v3i(:,:,1:lx3+1)=0.5_wp*(vs3(1:lx1,1:lx2,0:lx3,isp)+vs3(1:lx1,1:lx2,1:lx3+1,isp))
 
 end subroutine advec_prep_mpi_3
 
@@ -294,10 +294,10 @@ end do
 
 
 !FOR X1 MOMENTUM DENSITY
-rhovs1(0,1:lx2,1:lx3,isp)=2d0*v1i(1,:,:)-vs1(1,1:lx2,1:lx3,isp);
+rhovs1(0,1:lx2,1:lx3,isp)=2*v1i(1,:,:)-vs1(1,1:lx2,1:lx3,isp);
 !! initially these are velocities.  Also loose definition of 'conformable'.  Also corners never get set, but I suppose they aren't really used anyway.
 rhovs1(-1,:,:,isp)=rhovs1(0,:,:,isp)+rhovs1(0,:,:,isp)-vs1(1,:,:,isp);
-rhovs1(lx1+1,1:lx2,1:lx3,isp)=2d0*v1i(lx1+1,:,:)-vs1(lx1,1:lx2,1:lx3,isp);
+rhovs1(lx1+1,1:lx2,1:lx3,isp)=2*v1i(lx1+1,:,:)-vs1(lx1,1:lx2,1:lx3,isp);
 rhovs1(lx1+2,:,:,isp)=rhovs1(lx1+1,:,:,isp)+rhovs1(lx1+1,:,:,isp)-vs1(lx1,:,:,isp);
 
 rhovs1(-1:0,:,:,isp)=rhovs1(-1:0,:,:,isp)*ns(-1:0,:,:,isp)*ms(isp)
@@ -400,8 +400,8 @@ end if
 
 
 !> AFTER HALOING CAN COMPUTE THE X3 INTERFACE VELOCITIES NORMALLY
-v2i(:,1:lx2+1,:)=0.5d0*(vs2(1:lx1,0:lx2,1:lx3,isp)+vs2(1:lx1,1:lx2+1,1:lx3,isp))
-v3i(:,:,1:lx3+1)=0.5d0*(vs3(1:lx1,1:lx2,0:lx3,isp)+vs3(1:lx1,1:lx2,1:lx3+1,isp))
+v2i(:,1:lx2+1,:)=0.5_wp*(vs2(1:lx1,0:lx2,1:lx3,isp)+vs2(1:lx1,1:lx2+1,1:lx3,isp))
+v3i(:,:,1:lx3+1)=0.5_wp*(vs3(1:lx1,1:lx2,0:lx3,isp)+vs3(1:lx1,1:lx2,1:lx3+1,isp))
 
 end subroutine advec_prep_mpi_23
 
@@ -679,10 +679,10 @@ end do
 !Slope-limited flux at ***left*** wall of cell ix1.
 !The treatment of slope here (ie the dx1(ix1)) assumes that the grid point is centered within the cell
 do ix1=1,lx1+1
-  if (v1i(ix1) < 0d0) then
-    phi(ix1)=f(ix1)*v1i(ix1) - 0.5d0*v1i(ix1)*(dx1(ix1)+v1i(ix1)/h1i(ix1)*dt)*slope(ix1)
+  if (v1i(ix1) < 0) then
+    phi(ix1)=f(ix1)*v1i(ix1) - 0.5_wp*v1i(ix1)*(dx1(ix1)+v1i(ix1)/h1i(ix1)*dt)*slope(ix1)
   else
-    phi(ix1)=f(ix1-1)*v1i(ix1) + 0.5d0*v1i(ix1)*(dx1(ix1)-v1i(ix1)/h1i(ix1)*dt)*slope(ix1-1)
+    phi(ix1)=f(ix1-1)*v1i(ix1) + 0.5_wp*v1i(ix1)*(dx1(ix1)-v1i(ix1)/h1i(ix1)*dt)*slope(ix1-1)
   end if
 end do
 
