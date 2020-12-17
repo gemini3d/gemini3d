@@ -76,13 +76,13 @@ allocate(dnO(lzn,1,lhorzn),dnN2(lzn,1,lhorzn),dnO2(lzn,1,lhorzn),dvnrho(lzn,1,lh
 
 !Define a grid (input data) by assuming that the spacing is constant
 if (flagcart) then     !Cartesian neutral simulation
-  yn=[ ((real(ihorzn,8)-1._wp)*dhorzn, ihorzn=1,lhorzn) ]
+  yn=[ ((real(ihorzn, wp)-1)*dhorzn, ihorzn=1,lhorzn) ]
   meanyn=sum(yn,1)/size(yn,1)
   yn=yn-meanyn     !the neutral grid should be centered on zero for a cartesian interpolation
 else
-  rhon=[ ((real(ihorzn,8)-1._wp)*dhorzn, ihorzn=1,lhorzn) ]
+  rhon=[ ((real(ihorzn, wp)-1)*dhorzn, ihorzn=1,lhorzn) ]
 end if
-zn=[ ((real(izn,8)-1._wp)*cfg%dzn, izn=1,lzn) ]
+zn=[ ((real(izn, wp)-1)*cfg%dzn, izn=1,lzn) ]
 
 if (mpi_cfg%myid==0) then
   if (flagcart) then
@@ -94,8 +94,8 @@ end if
 
 
 !Neutral source locations specified in input file, here referenced by spherical magnetic coordinates.
-phi1=cfg%sourcemlon*pi/180d0
-theta1=pi/2d0-cfg%sourcemlat*pi/180d0
+phi1=cfg%sourcemlon*pi/180
+theta1=pi/2-cfg%sourcemlat*pi/180
 
 
 !Convert plasma simulation grid locations to z,rho values to be used in interoplation.  altitude ~ zi; lat/lon --> rhoi.  Also compute unit vectors and projections
@@ -426,7 +426,7 @@ if (mpi_cfg%myid==0) then    !root
 
   !calculate the z grid (same for all) and distribute to workers so we can figure out their x-y slabs
   print*, '...creating vertical grid and sending to workers...'
-  zn=[ ((real(izn,8)-1._wp)*cfg%dzn, izn=1,lzn) ]    !root calculates and distributes but this is the same for all workers - assmes that the max neutral grid extent in altitude is always less than the plasma grid (should almost always be true)
+  zn=[ ((real(izn, wp)-1)*cfg%dzn, izn=1,lzn) ]    !root calculates and distributes but this is the same for all workers - assmes that the max neutral grid extent in altitude is always less than the plasma grid (should almost always be true)
   maxzn=maxval(zn)
   do iid=1,mpi_cfg%lid-1
     call mpi_send(lzn,1,MPI_INTEGER,iid,tag%lz,MPI_COMM_WORLD,ierr)
@@ -435,10 +435,10 @@ if (mpi_cfg%myid==0) then    !root
 
 
   !Define a global neutral grid (input data) by assuming that the spacing is constant
-  ynall=[ ((real(iyn,8)-1._wp)*cfg%drhon, iyn=1,lynall) ]
+  ynall=[ ((real(iyn, wp)-1)*cfg%drhon, iyn=1,lynall) ]
   meanyn=sum(ynall,1)/size(ynall,1)
   ynall=ynall-meanyn     !the neutral grid should be centered on zero for a cartesian interpolation
-  xnall=[ ((real(ixn,8)-1._wp)*cfg%dxn, ixn=1,lxnall) ]
+  xnall=[ ((real(ixn, wp)-1)*cfg%dxn, ixn=1,lxnall) ]
   meanxn=sum(xnall,1)/size(xnall,1)
   xnall=xnall-meanxn     !the neutral grid should be centered on zero for a cartesian interpolation
   print *, 'Created full neutral grid with y,z extent:',minval(xnall),maxval(xnall),minval(ynall), &
