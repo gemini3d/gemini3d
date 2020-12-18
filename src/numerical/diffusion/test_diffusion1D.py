@@ -27,7 +27,9 @@ def read_diffusion1D(fn: Path, doplot: bool = False):
             TsBDF2[:, i] = f[f"/TsBDF2{i+1:04d}"][:]
             Tstrue[:, i] = f[f"/TsTrue{i+1:04d}"][:]
 
-    assert np.isclose(TsEuler[12, 12], 0.770938954253086, rtol=0.01), f"1-D Euler diffusion accuracy: truth: {TsEuler[12, 12]}"
+    assert np.isclose(
+        TsEuler[12, 12], 0.770938954253086, rtol=0.01
+    ), f"1-D Euler diffusion accuracy: truth: {TsEuler[12, 12]}"
     assert np.isclose(TsBDF2[12, 12], 0.763236513549944, rtol=0.01), "1-D BDF2 diffusion accuracy"
     assert np.isclose(Tstrue[12, 12], 0.763014494788105, rtol=1e-4), "1-D true diffusion accuracy"
 
