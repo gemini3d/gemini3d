@@ -54,7 +54,7 @@ set(BLACS_LIBRARY)  # don't endlessly append
 
 #===== functions
 
-function(mkl_blacs)
+function(blacs_mkl)
 
 set(_mkl_libs ${ARGV})
 
@@ -107,7 +107,7 @@ set(BLACS_MKL_FOUND true PARENT_SCOPE)
 set(BLACS_LIBRARY ${BLACS_LIBRARY} PARENT_SCOPE)
 set(BLACS_INCLUDE_DIR ${BLACS_INCLUDE_DIR} PARENT_SCOPE)
 
-endfunction(mkl_blacs)
+endfunction(blacs_mkl)
 
 
 function(nonmkl)
@@ -208,19 +208,19 @@ if(MKL IN_LIST BLACS_FIND_COMPONENTS)
   pkg_check_modules(MKL mkl-${_mkltype}-lp64-iomp)
 
   if(OpenMPI IN_LIST BLACS_FIND_COMPONENTS)
-    mkl_scala(mkl_blacs_openmpi_lp64)
+    blacs_mkl(mkl_blacs_openmpi_lp64)
     set(BLACS_OpenMPI_FOUND ${BLACS_MKL_FOUND})
   elseif(MPICH IN_LIST BLACS_FIND_COMPONENTS)
     if(APPLE)
-      mkl_scala(mkl_blacs_mpich_lp64)
+      blacs_mkl(mkl_blacs_mpich_lp64)
     elseif(WIN32)
-      mkl_scala(mkl_blacs_mpich2_lp64.lib mpi.lib fmpich2.lib)
+      blacs_mkl(mkl_blacs_mpich2_lp64.lib mpi.lib fmpich2.lib)
     else()  # MPICH linux is just like IntelMPI
-      mkl_scala(mkl_blacs_intelmpi_lp64)
+      blacs_mkl(mkl_blacs_intelmpi_lp64)
     endif()
     set(BLACS_MPICH_FOUND ${BLACS_MKL_FOUND})
   else()
-    mkl_scala(mkl_blacs_intelmpi_lp64)
+    blacs_mkl(mkl_blacs_intelmpi_lp64)
   endif()
 
 else(MKL IN_LIST BLACS_FIND_COMPONENTS)
