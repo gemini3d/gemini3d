@@ -4,6 +4,7 @@ cmake_minimum_required(VERSION 3.15)
 
 include(cmake/policy.cmake)
 include(cmake/compiler_find.cmake)
+find_c_fortran()
 
 project(gemini3d
   LANGUAGES C Fortran  # MUST include C language for Intel / MKL to work
