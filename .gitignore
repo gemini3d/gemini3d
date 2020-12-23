@@ -14,10 +14,6 @@ __pycache__/
 *.obj
 *.out
 
-# meson
-subprojects/
-!subprojects/*.wrap
-
 *.ilk
 *.pdb
 
