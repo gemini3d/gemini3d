@@ -47,25 +47,31 @@ function(find_c)
 
 if(NOT FC AND DEFINED ENV{FC})
   set(FC $ENV{FC})
-  message(VERBOSE " FC hint: ${FC}")
 endif()
 
-# remember, Apple has "/usr/bin/gcc" which is really clang
-# the technique below is NECESSARY to work on Mac and not find the wrong GCC
-if(FC)
-  get_filename_component(_dir ${FC} DIRECTORY)
-endif()
-# use same compiler for C and Fortran, which CMake might not do itself
-if(FC MATCHES ".*ifort")
-  if(WIN32)
-    set(_name icl)
-  else()
-    set(_name icc)
-  endif()
-elseif(FC MATCHES ".*gfortran")
-  set(_name gcc gcc-11 gcc-10 gcc-9 gcc-8 gcc-7)
+message(VERBOSE " FC hint: ${FC}")
+
+if(DEFINED ENV{CC})
+  set(_name $ENV{CC})
+  set(_dir)
 else()
-  return()
+  # remember, Apple has "/usr/bin/gcc" which is really clang
+  # the technique below is NECESSARY to work on Mac and not find the wrong GCC
+  if(FC)
+    get_filename_component(_dir ${FC} DIRECTORY)
+  endif()
+  # use same compiler for C and Fortran, which CMake might not do itself
+  if(FC MATCHES ".*ifort")
+    if(WIN32)
+      set(_name icl)
+    else()
+      set(_name icc)
+    endif()
+  elseif(FC MATCHES ".*gfortran")
+    set(_name gcc gcc-11 gcc-10 gcc-9 gcc-8 gcc-7)
+  else()
+    return()
+  endif()
 endif()
 
 find_program(CC
