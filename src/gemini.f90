@@ -328,7 +328,7 @@ main : do while (t < tdur)
 
   !> UPDATE THE FLUID VARIABLES
   if (mpi_cfg%myid==0 .and. debug) call cpu_time(tstart)
-  call fluid_adv(ns,vs1,Ts,vs2,vs3,J1,E1,cfg,t,dt,x,nn,vn1,vn2,vn3,Tn,iver,ymd,UTsec)
+  call fluid_adv(ns,vs1,Ts,vs2,vs3,J1,E1,cfg,t,dt,x,nn,vn1,vn2,vn3,Tn,iver,ymd,UTsec, first=it==1)
   if (mpi_cfg%myid==0 .and. debug) then
     call cpu_time(tfin)
     print *, 'Multifluid total solve time:  ',tfin-tstart

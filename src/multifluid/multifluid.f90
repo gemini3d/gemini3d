@@ -28,7 +28,7 @@ real(wp), allocatable, dimension(:,:,:) :: QePrecipG, iverG
 
 contains
 
-subroutine fluid_adv(ns,vs1,Ts,vs2,vs3,J1,E1,cfg,t,dt,x,nn,vn1,vn2,vn3,Tn,iver,ymd,UTsec)
+subroutine fluid_adv(ns,vs1,Ts,vs2,vs3,J1,E1,cfg,t,dt,x,nn,vn1,vn2,vn3,Tn,iver,ymd,UTsec, first)
 !! J1 needed for heat conduction; E1 for momentum equation
 
 !! THIS SUBROUTINE ADVANCES ALL OF THE FLUID VARIABLES BY TIME STEP DT.
@@ -50,6 +50,7 @@ real(wp), dimension(:,:,:,:), intent(in) :: nn
 real(wp), dimension(:,:,:), intent(in) :: vn1,vn2,vn3,Tn
 integer, dimension(3), intent(in) :: ymd
 real(wp), intent(in) :: UTsec
+logical, intent(in) :: first  !< first time step
 
 real(wp), dimension(:,:,:), intent(out) :: iver
 
@@ -253,7 +254,7 @@ if (gridflag/=0) then
     Qeprecip = eheating(nn,Tn,Prprecip,ns)
   else
     !! GLOW USED, AURORA PRODUCED
-    if (int(t/cfg%dtglow)/=int((t+dt)/cfg%dtglow) .or. (t<0.1 .and. dt<2e-6_wp)) then
+    if (int(t/cfg%dtglow)/=int((t+dt)/cfg%dtglow) .or. first) then
       if (mpi_cfg%myid==0) print*, 'Note:  preparing to call GLOW...  This could take a while if your grid is large...'
       PrprecipG=0; QeprecipG=0; iverG=0;
       call ionrate_glow98(W0,PhiWmWm2,ymd,UTsec,f107,f107a,x%glat(1,:,:),x%glon(1,:,:),x%alt,nn,Tn,ns,Ts, &
