@@ -5,7 +5,10 @@
 # these will be used if the project isn't already configured.
 set(_opts "-Dautobuild:BOOL=on")
 
+
 # --- boilerplate follows
+set(CTEST_TEST_TIMEOUT 10)
+
 message(STATUS "CMake ${CMAKE_VERSION}")
 if(CMAKE_VERSION VERSION_LESS 3.15)
   message(FATAL_ERROR "Please update CMake >= 3.15.
