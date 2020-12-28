@@ -16,6 +16,8 @@ use io, only : input_plasma_currents,create_outdir_mag,output_magfields
 use mpimod, only: mpi_sum, mpi_comm_world, &
 mpibreakdown, process_grid_auto, mpi_manualgrid, halo_end, &
 mpi_cfg, mpi_realprec, tag=>gemini_mpi
+use h5fortran, only : hdf5_file
+use pathlib, only : get_suffix
 
 implicit none (type, external)
 
@@ -99,6 +101,8 @@ else
   !! user specified process grid
   call mpi_manualgrid(lx2all,lx3all,lid2in,lid3in)
 end if
+print '(A, I0, A1, I0)', 'process grid (Number MPI processes) x2, x3:  ',mpi_cfg%lid2, ' ', mpi_cfg%lid3
+print '(A, I0, A, I0, A1, I0)', 'Process:',mpi_cfg%myid,' at process grid location: ',mpi_cfg%myid2,' ',mpi_cfg%myid3
 
 !> LOAD UP THE GRID STRUCTURE/MODULE VARS. FOR THIS SIMULATION - THIS ALSO PERMUTES DIMENSIONS OF 2D GRID, IF NEEDED
 if (mpi_cfg%myid==0) then
@@ -131,12 +135,30 @@ allocate(Jx(lx1,lx2,lx3),Jy(lx1,lx2,lx3),Jz(lx1,lx2,lx3))
 !NOW DEAL WITH THE UNMPRIMED COORDINATES
 block
   integer :: u
-  open(newunit=u,file=cfg%fieldpointfile,status='old',form='unformatted',access='stream',action='read')
-  read(u) lpoints    !size of coordinates for field points
-  if (mpi_cfg%myid==0) print *, 'magcalc.f90 --> Number of field points:  ',lpoints
-  allocate(r(lpoints),theta(lpoints),phi(lpoints))
-  read(u) r,theta,phi
-  close(u)
+  type(hdf5_file) :: hf
+  character(:), allocatable :: suffix
+
+  suffix = get_suffix(cfg%indatsize)
+
+  ! raw binary input
+  if (suffix == '.dat') then
+    open(newunit=u,file=cfg%fieldpointfile,status='old',form='unformatted',access='stream',action='read')
+    read(u) lpoints    !size of coordinates for field points
+    if (mpi_cfg%myid==0) print *, 'magcalc.f90 --> Number of field points:  ',lpoints
+    allocate(r(lpoints),theta(lpoints),phi(lpoints))
+    read(u) r,theta,phi
+    close(u)
+  ! hdf5 file input
+  elseif (suffix == '.h5') then
+    call hf%initialize(cfg%fieldpointfile, status='old', action='r')
+  
+    call hf%read('/lpoints',lpoints)
+    allocate(r(lpoints),theta(lpoints),phi(lpoints))
+    call hf%read('/r',r); call hf%read('/theta',theta); call hf%read('/phi',phi);
+  ! something bad happened...
+  else
+    error stop 'unrecognized input field point file type'  
+  end if
 end block
 
 if (mpi_cfg%myid==0) print *, 'magcalc.f90 --> Range of r,theta,phi',minval(r),maxval(r),minval(theta), &

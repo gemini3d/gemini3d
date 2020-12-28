@@ -50,7 +50,7 @@ set_tests_properties(unit:gemini_exe_ok PROPERTIES PASS_REGULAR_EXPRESSION "EOF:
 #--------magnetic field calculation executable---------------
 configure_file(magcalc_cli.in.f90 magcalc_cli.f90 @ONLY)
 add_executable(magcalc.bin magcalc.f90 ${CMAKE_CURRENT_BINARY_DIR}/magcalc_cli.f90)
-target_link_libraries(magcalc.bin PRIVATE config const grid io mesh mpimod pathlib reader sanity_check timeutils)
+target_link_libraries(magcalc.bin PRIVATE config const grid io mesh mpimod pathlib reader sanity_check timeutils h5fortran)
 set_target_properties(magcalc.bin PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
 add_test(NAME unit:magcalc_exe_ok COMMAND $<TARGET_FILE:magcalc.bin>)
