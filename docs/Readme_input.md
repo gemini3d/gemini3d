@@ -165,14 +165,23 @@ Document grid creation details here...
 Grid structures, once created, are written to a file using the matlab `writegrid.m` API to insure that they have the correct file structure and arrangement.  I.e.
 
 ```matlab
-writegrid(xg,'directory name here')
+gemini3d.write.grid(params,xg)
 ```
-where the `xg` variable is a structure containing all the expected grid elements.
+where the `xg` variable is a structure containing all the expected grid elements (see below).  The parameters argument is a structure containing this following fields:
+
+1.  params.indat\_size
+2.  params.indat\_grid
+
+
 The writegrid API creates a file with the grid data structure in it as well as a small file containing the size information.
 
 ### Grid structure requirements
 
-Grid structures, variable `xg` in the example above shall have the following fields...
+Grid structures, variable `xg` in the example above shall have the following fields:  
+
+```MATLAB 
+"x1", "x1i", "dx1b", "dx1h", "x2", "x2i", "dx2b", "dx2h", "x3", "x3i", "dx3b", "dx3h", "h1", "h2", "h3", "h1x1i", "h2x1i", "h3x1i", "h1x2i", "h2x2i", "h3x2i", "h1x3i", "h2x3i", "h3x3i", "gx1", "gx2", "gx3", "Bmag", "I", "nullpts", "e1", "e2", "e3", "er", "etheta", "ephi", "r", "theta", "phi", "x", "y", "z"
+```
 
 ### Visualizing the grid
 
