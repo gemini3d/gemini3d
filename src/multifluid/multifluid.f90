@@ -128,8 +128,8 @@ do isp=1,lsp
     chrgflux=chrgflux+ns(1:lx1,1:lx2,1:lx3,isp)*qs(isp)*vs1(1:lx1,1:lx2,1:lx3,isp)
   else
     ns(:,:,:,lsp)=sum(ns(:,:,:,1:lsp-1),4)
-!      vs1(1:lx1,1:lx2,1:lx3,lsp)=1._wp/ns(1:lx1,1:lx2,1:lx3,lsp)/qs(lsp)*(J1-chrgflux)   !density floor needed???
-    vs1(1:lx1,1:lx2,1:lx3,lsp)=-1._wp/max(ns(1:lx1,1:lx2,1:lx3,lsp),mindensdiv)/qs(lsp)*chrgflux   !really not strictly correct, should include current density
+!      vs1(1:lx1,1:lx2,1:lx3,lsp)=1/ns(1:lx1,1:lx2,1:lx3,lsp)/qs(lsp)*(J1-chrgflux)   !density floor needed???
+    vs1(1:lx1,1:lx2,1:lx3,lsp)=-1/max(ns(1:lx1,1:lx2,1:lx3,lsp),mindensdiv)/qs(lsp)*chrgflux   !really not strictly correct, should include current density
   end if
 
   param=rhoes(:,:,:,isp)
@@ -170,7 +170,7 @@ do isp=1,lsp
   !! diff with one set of ghost cells to preserve second order accuracy over the grid
   paramtrim=rhoes(1:lx1,1:lx2,1:lx3,isp)
 
-  rhoeshalf = paramtrim - dt/2.0_wp * (paramtrim*(gammas(isp)-1) + Q(:,:,:,isp)) * divvs(1:lx1,1:lx2,1:lx3)
+  rhoeshalf = paramtrim - dt/2 * (paramtrim*(gammas(isp)-1) + Q(:,:,:,isp)) * divvs(1:lx1,1:lx2,1:lx3)
   !! t+dt/2 value of internal energy, use only interior points of divvs for second order accuracy
 
   paramtrim=paramtrim-dt*(rhoeshalf*(gammas(isp) - 1)+Q(:,:,:,isp))*divvs(1:lx1,1:lx2,1:lx3)
@@ -209,8 +209,8 @@ do isp=1,lsp
       error stop
   end select
 
-  Ts(:,:,:,isp)=param
-  Ts(:,:,:,isp)=max(Ts(:,:,:,isp),100._wp)
+  Ts(:,:,:,isp) = param
+  Ts(:,:,:,isp) = max(Ts(:,:,:,isp), 100._wp)
 end do
 
 if (mpi_cfg%myid==0 .and. debug) then
@@ -249,11 +249,11 @@ if (gridflag/=0) then
       !! calculation based on Fang et al [2008]
       Prprecip=Prprecip+Prpreciptmp
     end do
-    Prprecip=max(Prprecip,1e-5_wp)
-    Qeprecip=eheating(nn,Tn,Prprecip,ns)
+    Prprecip = max(Prprecip, 1e-5_wp)
+    Qeprecip = eheating(nn,Tn,Prprecip,ns)
   else
     !! GLOW USED, AURORA PRODUCED
-    if (int(t/cfg%dtglow)/=int((t+dt)/cfg%dtglow) .or. (t<0.1_wp .and. dt<2e-6_wp)) then
+    if (int(t/cfg%dtglow)/=int((t+dt)/cfg%dtglow) .or. (t<0.1 .and. dt<2e-6_wp)) then
       if (mpi_cfg%myid==0) print*, 'Note:  preparing to call GLOW...  This could take a while if your grid is large...'
       PrprecipG=0; QeprecipG=0; iverG=0;
       call ionrate_glow98(W0,PhiWmWm2,ymd,UTsec,f107,f107a,x%glat(1,:,:),x%glon(1,:,:),x%alt,nn,Tn,ns,Ts, &
@@ -276,7 +276,7 @@ if (mpi_cfg%myid==0) then
     minval(Prprecip), maxval(Prprecip)
 end if
 
-if ((cfg%flagglow/=0).and.(mpi_cfg%myid==0)) then
+if ((cfg%flagglow /= 0).and.(mpi_cfg%myid == 0)) then
   if (debug) print *, 'Min/max 427.8 nm emission column-integrated intensity for time:  ',t,' :  ', &
     minval(iver(:,:,2)), maxval(iver(:,:,2))
 end if
@@ -285,7 +285,7 @@ end if
 chi=sza(ymd(1), ymd(2), ymd(3), UTsec,x%glat,x%glon)
 if (mpi_cfg%myid==0 .and. debug) then
   print *, 'Computing photoionization for time:  ',t,' using sza range of (root only):  ', &
-    minval(chi)*180._wp/pi,maxval(chi)*180._wp/pi
+    minval(chi)*180/pi, maxval(chi)*180/pi
 end if
 
 Prpreciptmp=photoionization(x,nn,chi,f107,f107a)
@@ -295,16 +295,16 @@ if (mpi_cfg%myid==0 .and. debug) then
     minval(Prpreciptmp), maxval(Prpreciptmp)
 end if
 
-Prpreciptmp=max(Prpreciptmp,1e-5_wp)
+Prpreciptmp = max(Prpreciptmp, 1e-5_wp)
 !! enforce minimum production rate to preserve conditioning for species that rely on constant production
 !! testing should probably be done to see what the best choice is...
 
-Qepreciptmp=eheating(nn,Tn,Prpreciptmp,ns)
+Qepreciptmp = eheating(nn,Tn,Prpreciptmp,ns)
 !! thermal electron heating rate from Swartz and Nisbet, (1978)
 
 !> photoion ionrate and heating calculated seperately, added together with ionrate and heating from Fang or GLOW
-Prprecip=Prprecip+Prpreciptmp
-Qeprecip=Qeprecip+Qepreciptmp
+Prprecip = Prprecip + Prpreciptmp
+Qeprecip = Qeprecip + Qepreciptmp
 
 call srcsEnergy(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,Pr,Lo)
 
@@ -317,7 +317,7 @@ do isp=1,lsp
   rhoes(1:lx1,1:lx2,1:lx3,isp)=paramtrim
 
   Ts(:,:,:,isp)=(gammas(isp) - 1)/kB*rhoes(:,:,:,isp)/max(ns(:,:,:,isp),mindensdiv)
-  Ts(:,:,:,isp)=max(Ts(:,:,:,isp),100._wp)
+  Ts(:,:,:,isp)=max(Ts(:,:,:,isp), 100._wp)
 end do
 
 if (mpi_cfg%myid==0 .and. debug) then
@@ -350,8 +350,8 @@ chrgflux = 0
 do isp=1,lsp-1
   chrgflux=chrgflux+ns(1:lx1,1:lx2,1:lx3,isp)*qs(isp)*vs1(1:lx1,1:lx2,1:lx3,isp)
 end do
-!  vs1(1:lx1,1:lx2,1:lx3,lsp)=1._wp/max(ns(1:lx1,1:lx2,1:lx3,lsp),mindensdiv)/qs(lsp)*(J1-chrgflux)   !density floor needed???
-vs1(1:lx1,1:lx2,1:lx3,lsp)=-1._wp/max(ns(1:lx1,1:lx2,1:lx3,lsp),mindensdiv)/qs(lsp)*chrgflux    !don't bother with FAC contribution...
+!  vs1(1:lx1,1:lx2,1:lx3,lsp)=1/max(ns(1:lx1,1:lx2,1:lx3,lsp),mindensdiv)/qs(lsp)*(J1-chrgflux)   !density floor needed???
+vs1(1:lx1,1:lx2,1:lx3,lsp)=-1/max(ns(1:lx1,1:lx2,1:lx3,lsp),mindensdiv)/qs(lsp)*chrgflux    !don't bother with FAC contribution...
 
 
 !CLEAN VELOCITY
@@ -449,12 +449,12 @@ select case (paramflag)
       do ix3=1,lx3
         do ix2=1,lx2
           ix1beg=1
-          do while(x%nullpts(ix1beg,ix2,ix3)<0.5_wp .and. ix1beg<lx1)     !find the first non-null index for this field line, need to be careful if no null points exist...
+          do while(x%nullpts(ix1beg,ix2,ix3) < 0.5 .and. ix1beg<lx1)     !find the first non-null index for this field line, need to be careful if no null points exist...
             ix1beg=ix1beg+1
           end do
 
           ix1end=ix1beg
-          do while(x%nullpts(ix1end,ix2,ix3)>0.5_wp .and. ix1end<lx1)     !find the first non-null index for this field line
+          do while(x%nullpts(ix1end,ix2,ix3) > 0.5 .and. ix1end<lx1)     !find the first non-null index for this field line
             ix1end=ix1end+1
           end do
 
