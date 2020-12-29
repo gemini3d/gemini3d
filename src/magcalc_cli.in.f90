@@ -17,7 +17,7 @@ type(gemini_cfg), intent(out) :: cfg
 integer, intent(out) :: lid2, lid3
 logical, intent(inout) :: debug
 
-integer :: argc, i, ierr
+integer :: argc, i, iarg, ierr
 character(256) :: argv
 character(8) :: date
 character(10) :: time
@@ -78,11 +78,17 @@ endif
 
 end block find_cfg
 !> GRAB THE INFO FOR WHERE THE OUTPUT CALCULATIONS ARE STORED
-if (command_argument_count() > 1) then
+iarg = 2 !< start of -options
+if (argc > 1) then
   call get_command_argument(2, argv, status=i)
   if (i/=0) error stop 'please specify fieldpoint file'
-  cfg%fieldpointfile = trim(argv)
-else
+  if (argv(1:1) /= "-") then
+    cfg%fieldpointfile = trim(argv)
+    iarg = 3
+  endif
+endif
+
+if (iarg == 2) then
   find_pts : block
   logical :: exists
   character(*), parameter :: exts(2) = [character(3) :: "h5", "dat"]
@@ -159,7 +165,7 @@ end if
 !! default values
 lid2 = -1  !< sentinel
 
-do i = 3,argc
+do i = iarg,argc
   call get_command_argument(i,argv)
 
   select case (argv)
