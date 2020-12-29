@@ -41,7 +41,7 @@ type(curvmesh) :: x
 real(wp), dimension(:,:,:), allocatable :: J1,J2,J3      !electrodynamic state variables
 
 !TEMPORAL VARIABLES
-real(wp) :: t=0._wp,dt      !time from beginning of simulation (s) and time step (s)
+real(wp) :: t=0, dt      !time from beginning of simulation (s) and time step (s)
 real(wp) :: tout    !time for next output and time between outputs
 real(wp) :: tstart,tfin   !temp. vars. for measuring performance of code blocks
 integer :: it,isp        !time and species loop indices

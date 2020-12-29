@@ -76,11 +76,11 @@ real(wp) :: tglowout
 integer :: lid2in,lid3in
 
 !> TO CONTROL THROTTLING OF TIME STEP
-real(wp), parameter :: dtscale=2.0_wp
+real(wp), parameter :: dtscale=2
 
 !> Temporary variable for toggling full vs. other output
 integer :: flagoutput
-real(wp) :: tmilestone=0._wp
+real(wp) :: tmilestone = 0
 
 !> Milestone information
 integer, dimension(3) :: ymdtmp
@@ -227,8 +227,11 @@ if (cfg%flaglagrangian) then    ! Lagrangian (moving) grid; compute from input b
   call grid_drift(x,E02,E03,v2grid,v3grid)
   if (mpi_cfg%myid==0) print*, mpi_cfg%myid,' using Lagrangian grid moving at:  ',v2grid,v3grid
 else                            ! stationary grid
-  v2grid=0._wp; v3grid=0._wp
-  E1=E1+E01; E2=E2+E02; E3=E3+E03
+  v2grid = 0
+  v3grid = 0
+  E1 = E1 + E01
+  E2 = E2 + E02
+  E3 = E3 + E03
 end if
 
 if(mpi_cfg%myid==0) print*, 'Priming precipitation input'
