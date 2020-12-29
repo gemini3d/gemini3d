@@ -46,7 +46,7 @@ The low-resolution Tohoku examples, in particular, is one of the cheapest simula
 
 The example script `magplot_fort_map.m` shows an example of how to load the results of running magcalc from a binary file into a MATLAB workspace and then plot these on a mapped grid.
 
-One problematic aspect of magcalc is that you have to input the grid size into both the creation and plotting script and they must be consistent.  The corresponds to setting `ltheta` and `lphi` number of grid point in magnetic longitude and latitude in both the `gemini3d.model.magcalc()` scripts and `magplot_fort_map.m` scripts.  If these variables are not set propoerly the plotting program will not be able to read in, sort, and plot the data.  In the future this can be fixed by having magplot read in the grid size information from the input file that was created for the fortran program.
+One problematic aspect of magcalc is that you have to input the grid size into both the creation and plotting script and they must be consistent.  The corresponds to setting `ltheta` and `lphi` number of grid point in magnetic longitude and latitude in `gemini3d.model.magcalc()` and `gemini3d.plot.mag_map()`.  If these variables are not set propoerly the plotting program will not be able to read in, sort, and plot the data.  In the future this can be fixed by having magplot read in the grid size information from the input file that was created for the fortran program.
 
 ## Simluation vs. field point resolution
 
