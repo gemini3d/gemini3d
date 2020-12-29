@@ -78,8 +78,34 @@ endif
 
 end block find_cfg
 !> GRAB THE INFO FOR WHERE THE OUTPUT CALCULATIONS ARE STORED
-call get_command_argument(2,argv)
-cfg%fieldpointfile = trim(argv)
+if (command_argument_count() > 1) then
+  call get_command_argument(2, argv, status=i)
+  if (i/=0) error stop 'please specify fieldpoint file'
+  cfg%fieldpointfile = trim(argv)
+else
+  find_pts : block
+  logical :: exists
+  character(*), parameter :: exts(2) = [character(3) :: "h5", "dat"]
+  character(:), allocatable :: loc
+  do i = 1,size(exts)
+    loc = trim(cfg%outdir // "/inputs/magfieldpoints." // exts(i))
+    inquire(file=loc, exist=exists)
+    print*,loc,exists
+    if (exists) then
+      cfg%fieldpointfile = loc
+      exit find_pts
+    endif
+  end do
+
+  if (cfg%outdir(1:1) == "-") then
+    error stop 'magcalc.bin: not a known CLI option: ' // cfg%outdir
+  else
+    error stop 'magcalc.bin: could not find magfieldpoints file in ' // cfg%outdir
+  endif
+
+  end block find_pts
+endif
+
 !! this file contains the field points at which we are computing magnetic perturbations, it will be copied into the output directory
 
 if (mpi_cfg%myid==0) then

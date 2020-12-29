@@ -132,7 +132,7 @@ allocate(J1(lx1,lx2,lx3),J2(lx1,lx2,lx3),J3(lx1,lx2,lx3))
 allocate(Jx(lx1,lx2,lx3),Jy(lx1,lx2,lx3),Jz(lx1,lx2,lx3))
 
 
-!NOW DEAL WITH THE UNMPRIMED COORDINATES
+!NOW DEAL WITH THE UNPRIMED COORDINATES
 block
   integer :: u
   type(hdf5_file) :: hf
@@ -148,14 +148,15 @@ block
     allocate(r(lpoints),theta(lpoints),phi(lpoints))
     read(u) r,theta,phi
     close(u)
-  ! hdf5 file input
   case ('.h5')
+    !! hdf5 file input
     call hf%initialize(cfg%fieldpointfile, status='old', action='r')
 
     call hf%read('/lpoints',lpoints)
-    allocate(r(lpoints),theta(lpoints),phi(lpoints))
-    call hf%read('/r',r); call hf%read('/theta',theta); call hf%read('/phi',phi);
-  ! something bad happened...
+    allocate(r(lpoints), theta(lpoints), phi(lpoints))
+    call hf%read('/r',r)
+    call hf%read('/theta',theta)
+    call hf%read('/phi',phi)
   case default
     error stop 'unrecognized input field point file type'
   end select
@@ -273,12 +274,6 @@ main : do while (t < cfg%tdur)
 
 
   !READ IN THE FULL PLASMA AND FIELD DATA FROM THE OUTPUT FILE (NOTE THAT WE NEED TO KNOW OUTPUT TYPE DONE)
-  if (it==1) then
-    UTsec=UTsec+0.000001_wp
-  end if
-  if (it==2) then
-    UTsec=UTsec-0.000001_wp
-  end if
   call input_plasma_currents(cfg%outdir, cfg%out_format, cfg%flagoutput,ymd,UTsec,J1,J2,J3)    !now everyone has their piece of data
 
 
