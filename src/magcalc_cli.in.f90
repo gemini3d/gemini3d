@@ -96,7 +96,6 @@ if (iarg == 2) then
   do i = 1,size(exts)
     loc = trim(cfg%outdir // "/inputs/magfieldpoints." // exts(i))
     inquire(file=loc, exist=exists)
-    print*,loc,exists
     if (exists) then
       cfg%fieldpointfile = loc
       exit find_pts

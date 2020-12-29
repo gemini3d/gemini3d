@@ -545,6 +545,6 @@ if (ierr /= 0) then
   error stop
 endif
 
-print '(/,A)', 'MAGCALC: simulation complete'
+print '(A)', 'MAGCALC: complete'
 
 end program
