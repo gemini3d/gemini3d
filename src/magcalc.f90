@@ -140,8 +140,8 @@ block
 
   suffix = get_suffix(cfg%indatsize)
 
-  ! raw binary input
-  if (suffix == '.dat') then
+  select case (suffix)
+  case ('.dat')
     open(newunit=u,file=cfg%fieldpointfile,status='old',form='unformatted',access='stream',action='read')
     read(u) lpoints    !size of coordinates for field points
     if (mpi_cfg%myid==0) print *, 'magcalc.f90 --> Number of field points:  ',lpoints
@@ -149,16 +149,16 @@ block
     read(u) r,theta,phi
     close(u)
   ! hdf5 file input
-  elseif (suffix == '.h5') then
+  case ('.h5')
     call hf%initialize(cfg%fieldpointfile, status='old', action='r')
-  
+
     call hf%read('/lpoints',lpoints)
     allocate(r(lpoints),theta(lpoints),phi(lpoints))
     call hf%read('/r',r); call hf%read('/theta',theta); call hf%read('/phi',phi);
   ! something bad happened...
-  else
-    error stop 'unrecognized input field point file type'  
-  end if
+  case default
+    error stop 'unrecognized input field point file type'
+  end select
 end block
 
 if (mpi_cfg%myid==0) print *, 'magcalc.f90 --> Range of r,theta,phi',minval(r),maxval(r),minval(theta), &
@@ -267,7 +267,7 @@ call dateinc(cfg%dtout,ymd,UTsec)
 !! skip first file
 it=3
 !! don't trigger any special adaptations to filename
-do while (t < cfg%tdur)
+main : do while (t < cfg%tdur)
   !TIME STEP CALCULATION
   dt=cfg%dtout    !only compute magnetic field at times when we've done output
 
@@ -284,7 +284,7 @@ do while (t < cfg%tdur)
 
   !FORCE PARALLEL CURRENTS TO ZERO BELOW SOME ALTITUDE LIMIT
   if(mpi_cfg%myid==0) print *, 'Zeroing out low altitude currents (these are basically always artifacts)...'
-  where (alt<75d3)
+  where (alt < 75000)
     J1=0
     J2=0
     J3=0
@@ -373,8 +373,8 @@ do while (t < cfg%tdur)
     call halo_end(Rz,Rzend,Rztop,tag%Rz)
 
     if (flag2D/=1) then
-!      Rcubed(:,:,:)=(Rx**2._wp+Ry**2._wp+Rz**2._wp)**(3._wp/2._wp)   !this really is R**3
-      Rcubed(:,:,:)=(Rx**2._wp+Ry**2._wp+Rz**2._wp+Rmin**2._wp)**(3._wp/2._wp)   !this really is R**3
+!      Rcubed(:,:,:)=(Rx**2 + Ry**2 + Rz**2)**(3._wp/2)   !this really is R**3
+      Rcubed(:,:,:)=(Rx**2 + Ry**2 + Rz**2 + Rmin**2)**(3._wp/2)   !this really is R**3
 
       call halo_end(Rcubed,Rcubedend,Rcubedtop,tag%Rcubed)
       if(mpi_cfg%myid3==mpi_cfg%lid3-1) Rcubedend=R3min     !< avoids div by zero on the end which is set by the haloing
@@ -383,9 +383,9 @@ do while (t < cfg%tdur)
 
       !! FIXME: MAY BE MISSING A CORNER POINT HERE???  NO I THINK IT'S OKAY BASED ON SOME SQUARES I DREW, haha...
       !Bx calculation
-      integrand(:,:,:)=mu0/4._wp/pi*(Jy*Rz-Jz*Ry)/Rcubed
-      integrandend(:,:)=mu0/4._wp/pi*(Jyend*Rzend-Jzend*Ryend)/Rcubedend
-      integrandtop(:,:)=mu0/4._wp/pi*(Jytop*Rztop-Jztop*Rytop)/Rcubedtop
+      integrand(:,:,:)=mu0/4/pi*(Jy*Rz-Jz*Ry)/Rcubed
+      integrandend(:,:)=mu0/4/pi*(Jyend*Rzend-Jzend*Ryend)/Rcubedend
+      integrandtop(:,:)=mu0/4/pi*(Jytop*Rztop-Jztop*Rytop)/Rcubedtop
       integrandavg(:,:,:)=1/8._wp*( integrand(1:lx1-1,1:lx2-1,1:lx3-1) + integrand(2:lx1,1:lx2-1,1:lx3-1) + &
                            integrand(1:lx1-1,2:lx2,1:lx3-1) + integrand(2:lx1,2:lx2,1:lx3-1) + &
                            integrand(1:lx1-1,1:lx2-1,2:lx3) + integrand(2:lx1,1:lx2-1,2:lx3) + &
@@ -510,17 +510,16 @@ do while (t < cfg%tdur)
     call cpu_time(tfin)
    if(debug) print *, 'magcalc.f90 --> Output done for time step:  ',t,' in cpu_time of:  ',tfin-tstart
   end if
-  tout=tout+cfg%dtout
+  tout = tout + cfg%dtout
 
 
   !NOW OUR SOLUTION IS FULLY UPDATED SO UPDATE TIME VARIABLES TO MATCH...
-  it=it+1; t=t+dt;
+  it = it + 1
+  t = t + dt
   if (mpi_cfg%myid==0 .and. debug) print *, 'magcalc: Moving on to time step (in sec):  ',t,'; end time of simulation:  ',cfg%tdur
   call dateinc(dt,ymd,UTsec)
-  if (mpi_cfg%myid==0) then
-    print *, 'magcalc.f90 --> Current date',ymd,'Current UT time:  ',UTsec
-  end if
-end do
+  if (mpi_cfg%myid==0) print *, 'magcalc.f90 --> Current date',ymd,'Current UT time:  ',UTsec
+end do main
 
 
 !! DEALLOCATE MAIN PROGRAM DATA

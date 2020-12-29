@@ -171,7 +171,7 @@ character(*), intent(in) :: git_revision
 
 print '(/,A,/)', 'MAGCALC ' // git_revision
 print '(A)', 'by Matthew Zettergren'
-print '(A)', 'build system and software engineering by Michael Hirsch'
+print '(A)', 'software engineering by Michael Hirsch'
 print '(A)', 'Compiler vendor: '// get_compiler_vendor()
 print '(A)', 'Compiler version: ' // compiler_version()
 print '(/,A)', 'must specify input directory and fieldpoint file. Example:'
