@@ -5,6 +5,7 @@ use config, only : read_configfile, gemini_cfg, get_compiler_vendor
 use pathlib, only : assert_file_exists, assert_directory_exists, expanduser
 use mpimod, only : mpisetup, mpibreakdown, mpi_cfg
 use phys_consts, only : wp
+use timeutils, only : dateinc
 
 implicit none (type, external)
 private
@@ -12,11 +13,15 @@ public :: cli
 
 contains
 
-subroutine cli(cfg, lid2, lid3, debug)
+subroutine cli(cfg, lid2, lid3, debug, ymdstart,UTsecstart,ymdend,UTsecend)
 
 type(gemini_cfg), intent(out) :: cfg
 integer, intent(out) :: lid2, lid3
 logical, intent(inout) :: debug
+integer, dimension(3), intent(out) :: ymdstart
+real(wp), intent(out) :: UTsecstart
+integer, dimension(3), intent(out) :: ymdend
+real(wp), intent(out) :: UTsecend
 
 integer :: argc, i, iarg, ierr
 character(256) :: argv
@@ -24,9 +29,6 @@ character(8) :: date
 character(10) :: time
 
 logical :: file_exists
-
-integer, dimension(3) :: ymdstart,ymdend
-real(wp) :: UTsecstart,UTsecend
 
 
 cfg%git_revision = "@git_rev@"
@@ -223,6 +225,7 @@ do i = iarg,argc
   end select
 end do
 
+! have root report start and end time for user
 if (mpi_cfg%myid==0) then
   print*, 'Start time requested for magcalc:  ',ymdstart,UTsecstart
   print*, 'End time requested for magcalc:  ',ymdend,UTsecend

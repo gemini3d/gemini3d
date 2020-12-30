@@ -10,7 +10,7 @@ use magcalc_cli, only : cli
 use phys_consts, only : pi,mu0, wp, re, debug
 use grid, only : lx1, lx2, lx3, read_grid, clear_grid, lx2all,lx3all,grid_size
 use mesh, only : curvmesh
-use timeutils, only : dateinc
+use timeutils, only : dateinc,find_time_elapsed
 use config, only : gemini_cfg
 use io, only : input_plasma_currents,create_outdir_mag,output_magfields
 use mpimod, only: mpi_sum, mpi_comm_world, &
@@ -73,7 +73,6 @@ real(wp), dimension(:,:), allocatable :: integrandavgtop
 integer :: ix1,ix2,ix3
 real(wp) :: rmean,thetamean
 
-
 !! FOR SPECIFYING THE PROCESS GRID
 integer :: lid2in,lid3in
 
@@ -84,10 +83,38 @@ real(wp), parameter :: Rmin=5d3
 
 integer :: ierr
 
+!! for keeping track of start and end times requested by the user
+integer, dimension(3) :: ymdstart,ymdend,ymdfinal
+real(wp) :: UTsecstart,UTsecend,telend,UTsecfinal
+
+
 !! --- MAIN PROGRAM
 
 !> get command line parameters and simulation config
-call cli(cfg, lid2in, lid3in, debug)
+call cli(cfg,lid2in,lid3in,debug,ymdstart,UTsecstart,ymdend,UTsecend)
+
+
+!> set the duration and start time for the magnetic field calculations based on what is give to cli
+telend=0;
+if (any(ymdstart>0)) then    ! user-specified custom start and end times
+  !! count time elapsed up to the requested start time, using output cadence
+  UTsec=UTsecstart
+  ymd=ymdstart
+else   ! start at the beginning of the simulation
+  UTsec=cfg%UTsec0
+  ymd = cfg%ymd0
+end if
+if (any(ymdend>0)) then    ! user specified end time (exclusive)
+  !! count time elapsed between requested end time and actual simulation end time
+  telend=find_time_elapsed(ymd,UTsec,ymdend,UTsecend,cfg%dtout)
+else    ! assume user wants to run until the end
+  ymdfinal=cfg%ymd0
+  UTsecfinal=cfg%UTsec0
+  call dateinc(cfg%tdur,ymdfinal,UTsecfinal)
+  telend=find_time_elapsed(ymd,UTsec,ymdfinal,UTsecfinal,cfg%dtout)
+end if
+cfg%tdur=telend
+
 
 !ESTABLISH A PROCESS GRID
 !call grid_size(cfg%indatsize)
@@ -117,9 +144,10 @@ else
   flag2D=0
 end if
 
-
 ! FIXME:  need to copy the input grid file into the output directory
 
+! Alert the user as to the total simluation time to be computed by magcalc
+if (mpi_cfg%myid==0) print*, 'Magcalc total simulation time coverage:  ',telend
 
 !SET UP DIRECTORY TO STORE OUTPUT FILES
 if (mpi_cfg%myid==0) then
@@ -258,8 +286,6 @@ allocate(Brall(lpoints),Bthetaall(lpoints),Bphiall(lpoints))
 !! only used by root, but I think workers need to have space allocated for this
 
 !! MAIN LOOP
-UTsec=cfg%UTsec0
-ymd = cfg%ymd0
 it=1
 t=0
 tout=t

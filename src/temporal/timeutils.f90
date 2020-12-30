@@ -4,7 +4,7 @@ use, intrinsic :: iso_fortran_env, only: sp=>real32, dp=>real64, int32, int64
 
 implicit none (type, external)
 private
-public :: doy_calc, sza, dateinc, utsec2filestem, date_filename, day_wrap, find_lastdate
+public :: doy_calc, sza, dateinc, utsec2filestem, date_filename, day_wrap, find_lastdate, find_time_elapsed
 
 real(wp), parameter :: pi = 4._wp*atan(1._wp)
 
@@ -199,7 +199,7 @@ write(fn,'(i4,I2.2,I2.2,a13)') year, month, day, '_' // sec_str
 end function utsec2filestem
 
 
-subroutine find_lastdate(ymd0,UTsec0,ymdtarget,UTsectarget,cadence,ymd,UTsec)
+pure subroutine find_lastdate(ymd0,UTsec0,ymdtarget,UTsectarget,cadence,ymd,UTsec)
 
 !> Compute the last date before the target date based on a start date and date cadence.  The
 !  file is assumed to exist and programmer needs to check for existence outside this
@@ -234,5 +234,31 @@ end do
 ! When the loops exits ymd,UTsec have the date of the last output file before the given target time OR the first output file in the case that the target date is before the begin date...
 
 end subroutine find_lastdate
+
+
+pure function find_time_elapsed(ymdstart,UTsecstart,ymdend,UTsecend,dt) result(telapsed)
+
+! finds the amount of time that has elapsed between a given start and end date, using a given dt increment 
+! the resulting elapsed time will be the smallest multiple of dt that is >= true elapsed time
+
+!! inputs
+integer, dimension(3), intent(in) :: ymdstart,ymdend
+real(wp), intent(in) :: UTsecstart,UTsecend
+reaL(wp), intent(in) :: dt
+
+integer, dimension(3) :: ymdnow
+real(wp) :: UTsecnow
+
+real(wp) :: telapsed  !! output
+
+telapsed=0._wp; ymdnow=ymdstart; UTsecnow=UTsecstart;
+do while (.not. (all(ymdend==ymdnow) .and. UTsecnow>UTsecend) )
+  call dateinc(dt,ymdnow,UTsecnow)
+  telapsed=telapsed+dt
+end do
+telapsed=telapsed-dt
+
+end function find_time_elapsed
+
 
 end module timeutils
