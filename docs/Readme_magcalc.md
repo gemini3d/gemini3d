@@ -10,13 +10,13 @@ It is recommended that you run magcalc with the same number of processors and mp
 
 When using magcalc it is important to insure you have configured the GEMINI disturbance simulation to compute parallel currents by including the lines:
 
-```
+```nml
 &Jpar
 flagJpar=.true.
 /
 ```
 
-in the input configuration .nml file.  If you are using .ini file input then this parameter will be true by default and no changes are required.  While the program will work without a parallel current, it may produce results of dubious quality.
+in the input configuration .nml file.  If you are using .ini file input then this parameter will be true by default and no changes are required.  While the program will work without a parallel current, it may produce results of dubious quality and `magcalc` will list a warning in the console output.  
 
 ## Running magcalc.bin
 
@@ -24,12 +24,20 @@ Note that there is also a utility that can compute magnetic fields from the curr
 This can be run by:
 
 ```sh
-mpirun -np 4 ./magcalc.bin /tmp/3d tests/data/test3d/input/magfieldpoints.dat -manual_grid <lid2 lid3> <-debug>
+mpirun -np 4 ./magcalc.bin /tmp/3d /tmp/3d/inputs/magfieldpoints.dat -manual_grid <lid2> <lid3> <-debug>
 ```
 
-This will compute magnetic fields over a grid at ground level using currents computed from a simulation stored in the directory `/tmp/3d`.  In order to run this program, you will need to create a set of field points at which the magnetic perturbations will be calculated - these are stored in the input file `magfieldpoints.dat` used in the command above.  These could be a list of ground stations (irregular mesh), a regular mesh, or a set of satellite tracks (irregular mesh).  Optional inputs `lid2 lid3` are the number of mpi images to be used in the x2 and x3 directions, respectively, while using the `-debug` flag will cause the program to print a large amount of debug information to the console - this is useful for troubleshooting potential problems.
+This will compute magnetic fields over a grid at ground level using currents computed from a simulation stored in the directory `/tmp/3d`.  In order to run this program, you will need to create a set of field points at which the magnetic perturbations will be calculated - these are stored in the input file `magfieldpoints.dat` used in the command above.  These could be a list of ground stations (irregular mesh), a regular mesh, or a set of satellite tracks (irregular mesh).  Optional inputs `lid2 lid3` are the number of mpi images to be used in the x2 and x3 directions, respectively, while using the `-debug` flag will cause the program to print a large amount of debug information to the console - this is useful for troubleshooting potential problems.  Note that the second argument listing the field point input file is optional so long as that file is named `magfieldpoints.{dat,h5}` and as long as that file is placed in `inputs/` subdirectory of the simulation directory.  
 
 Magcalc is a computationally intensive program and it is suggested that you run it with the same number of mpi images as the corresponding disturbance simulations.  If a large grid was used with your simulation, magcalc will consume a large amount of memory, as well (commensurate with memory use by the base GEMINI program).
+
+There are additional command line argument parameters to magcalc that can be used to specify start and end times for magnetic field calculations; these are steady state so each time step is independent of all others (for a specified current density).  These can invoked via:
+
+```sh
+mpirun -np 4 ./magcalc.bin /tmp/3d -start_time <YYYY> <MM> <DD> <UT_seconds> -end_time <YYYY> <MM> <DD> <UT_seconds>
+```
+
+The start and end time *must* correspond to output times for the simulation.  If no start time is specified `magcalc` will use the start time of the simulation; similary, if no end time is specified `magcalc` will use the simulation end time.  The files procressed by `magcalc` will exclude the start time output file but include the end time output file.
 
 ## Creating input field points for `magcalc`
 

@@ -285,11 +285,18 @@ allocate(Br(lpoints),Btheta(lpoints),Bphi(lpoints))
 allocate(Brall(lpoints),Bthetaall(lpoints),Bphiall(lpoints))
 !! only used by root, but I think workers need to have space allocated for this
 
+! warn user if they are doing a calculation sans parallel current
+if (mpi_cfg%myid==0 .and. .not. (cfg%flagJpar) ) then
+  print*, '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
+  print*, 'magcalc WARNING:  you appear to be computing magnetic fields for a simulation with', &
+             'parallel currents turned off; results are likely to have substantial error!'
+  print*, '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
+end if
+
 !! MAIN LOOP
-it=1
+!it=1
 t=0
 tout=t
-
 call dateinc(cfg%dtout,ymd,UTsec)
 !! skip first file
 it=3
