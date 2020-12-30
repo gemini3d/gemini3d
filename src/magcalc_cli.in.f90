@@ -4,6 +4,7 @@ use, intrinsic :: iso_fortran_env, only : compiler_version
 use config, only : read_configfile, gemini_cfg, get_compiler_vendor
 use pathlib, only : assert_file_exists, assert_directory_exists, expanduser
 use mpimod, only : mpisetup, mpibreakdown, mpi_cfg
+use phys_consts, only : wp
 
 implicit none (type, external)
 private
@@ -23,6 +24,10 @@ character(8) :: date
 character(10) :: time
 
 logical :: file_exists
+
+integer, dimension(3) :: ymdstart,ymdend
+real(wp) :: UTsecstart,UTsecend
+
 
 cfg%git_revision = "@git_rev@"
 
@@ -164,6 +169,12 @@ end if
 !! default values
 lid2 = -1  !< sentinel
 
+ymdstart=[0,0,0]
+UTsecstart=0._wp
+ymdend=[0,0,0]
+UTsecend=0._wp
+
+
 do i = iarg,argc
   call get_command_argument(i,argv)
 
@@ -191,8 +202,31 @@ do i = iarg,argc
     read(argv,*) lid2
     call get_command_argument(i+2, argv)
     read(argv,*) lid3
+  case ('-start_time')
+    call get_command_argument(i+1,argv)
+    read(argv,*) ymdstart(1)
+    call get_command_argument(i+2,argv)
+    read(argv,*) ymdstart(2)
+    call get_command_argument(i+3,argv)
+    read(argv,*) ymdstart(3)
+    call get_command_argument(i+4,argv)
+    read(argv,*) UTsecstart
+  case ('-end_time')
+    call get_command_argument(i+1,argv)
+    read(argv,*) ymdend(1)
+    call get_command_argument(i+2,argv)
+    read(argv,*) ymdend(2)
+    call get_command_argument(i+3,argv)
+    read(argv,*) ymdend(3)
+    call get_command_argument(i+4,argv)
+    read(argv,*) UTsecend
   end select
 end do
+
+if (mpi_cfg%myid==0) then
+  print*, 'Start time requested for magcalc:  ',ymdstart,UTsecstart
+  print*, 'End time requested for magcalc:  ',ymdend,UTsecend
+end if
 
 end subroutine cli
 
