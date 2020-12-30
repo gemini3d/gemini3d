@@ -43,14 +43,5 @@ pacman -S mingw-w64-x86_64-msmpi
 ```
 
 Then install
-[Microsoft MS-MPI](https://docs.microsoft.com/en-us/message-passing-interface/microsoft-mpi-release-notes)
-and
-[setup MS-MPI for Fortran](https://www.scivision.dev/windows-mpi-msys2/).
-
-Windows MSYS2 with MS-MPI requires a one-time setup to build MPI Fortran interface "mpi.mod":
-
-```sh
-cd c:/msys64/mingw64/include
-
-gfortran -fno-range-check -c mpi.f90
-```
+[Microsoft MS-MPI](https://docs.microsoft.com/en-us/message-passing-interface/microsoft-mpi-release-notes),
+which gives `mpiexec`.
