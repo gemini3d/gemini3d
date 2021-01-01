@@ -29,7 +29,6 @@ endif()
 # keep this in script so it's not scoped in function
 
 set(pygemini_dir "${PROJECT_SOURCE_DIR}/../pygemini/")
-set(pygemini_url "https://github.com/gemini3d/pygemini")
 
 if(NOT python_ok)
   check_pygemini()
@@ -37,7 +36,7 @@ endif()
 
 if(NOT python_ok)
   if(NOT IS_DIRECTORY ${pygemini_dir})
-    git_download(${pygemini_dir} ${pygemini_url} "main")
+    git_download(${pygemini_dir} ${gemini_pygemini_url} "main")
   endif()
   # detect virtualenv
   # this is how CMake itself works for FindPython3 in Modules/FindPython/Support.cmake
@@ -62,7 +61,7 @@ if(NOT python_ok)
     message(STATUS "Setup PyGemini in ${pygemini_dir}")
   else()
     message(STATUS "${_ok} ${_log}")
-    message(WARNING "Problem installing PyGemini with ${Python3_EXECUTABLE} in ${pygemini_dir}  Perhaps try doing this manually: ${pygemini_url}")
+    message(WARNING "Problem installing PyGemini with ${Python3_EXECUTABLE} in ${pygemini_dir}  Perhaps try doing this manually: ${gemini_pygemini_url}")
     return()
   endif()
 
@@ -70,5 +69,5 @@ if(NOT python_ok)
 endif()
 
 if(NOT python_ok)
-  message(WARNING "MISSING: PyGemini ${pygemini_url} many self-tests will not work.")
+  message(WARNING "MISSING: PyGemini ${gemini_pygemini_url} many self-tests will not work.")
 endif()

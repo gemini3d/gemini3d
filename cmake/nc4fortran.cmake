@@ -8,8 +8,8 @@ if(netcdf)
   else()
     include(FetchContent)
     FetchContent_Declare(nc4fortran_proj
-      GIT_REPOSITORY https://github.com/geospace-code/nc4fortran.git
-      GIT_TAG v1.1.2
+      GIT_REPOSITORY ${gemini_nc4fortran_url}
+      GIT_TAG ${gemini_nc4fortran_tag}
       GIT_SHALLOW true)
 
     FetchContent_MakeAvailable(nc4fortran_proj)

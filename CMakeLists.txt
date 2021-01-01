@@ -22,24 +22,27 @@ include(cmake/options.cmake)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules/)
 
-include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/git_rev.cmake)
+include(cmake/gemini_libraries.cmake)
 
-include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/h5fortran.cmake)
-include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/nc4fortran.cmake)
+include(cmake/git_rev.cmake)
+# log project metadata
+
+include(cmake/h5fortran.cmake)
+include(cmake/nc4fortran.cmake)
 
 # do these after h5fortran to avoid threads test failure
-include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/compilers.cmake)
+include(cmake/compilers.cmake)
 # first this to get libs
-include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/mumps.cmake)
-include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/compiler_flags.cmake)
+include(cmake/mumps.cmake)
+include(cmake/compiler_flags.cmake)
 # this comes last to avoid intermittent failures
 
 # self-test simulations
-include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/python.cmake)
-include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/test_setup.cmake)
-include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/test_sim.cmake)
+include(cmake/python.cmake)
+include(cmake/test_setup.cmake)
+include(cmake/test_sim.cmake)
 
 add_subdirectory(src)
 
 # summary print
-include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/summary.cmake)
+include(cmake/summary.cmake)
