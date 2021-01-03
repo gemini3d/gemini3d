@@ -1,7 +1,7 @@
 {
-"glow": {"url": "https://github.com/gemini3d/glow.git", "tag": "915592c"},
+"glow": {"url": "https://github.com/gemini3d/glow.git", "tag": "0f5c974a214baab12dbcd36d55c3a30e51f6a99a"},
 "lapack": {"url": "https://github.com/scivision/lapack.git", "tag": "v3.9.0.2"},
-"h5fortran": {"url": "https://github.com/geospace-code/h5fortran.git", "tag": "v3.4.2"},
+"h5fortran": {"url": "https://github.com/geospace-code/h5fortran.git", "tag": "v3.4.4"},
 "mumps": {"url": "https://github.com/scivision/mumps.git", "tag": "v5.3.5.2"},
 "nc4fortran": {"url": "https://github.com/geospace-code/nc4fortran.git", "tag": "v1.1.2"},
 "scalapack": {"url": "https://github.com/scivision/scalapack.git", "tag": "v2.1.0.11"},

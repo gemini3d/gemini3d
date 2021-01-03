@@ -21,7 +21,6 @@ if(NOT DEFINED MPI_Fortran_OK)
   )
 endif()
 
-# Windows Intel 2019 MPI doesn't yet have mpi_f08
 check_fortran_source_compiles("use mpi; end" MPI_Fortran_OK SRC_EXT F90)
 
 if(NOT MPI_Fortran_OK)

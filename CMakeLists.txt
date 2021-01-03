@@ -19,10 +19,9 @@ if(NOT DEFINED ${PROJECT_NAME}_BUILD_TESTING)
 endif()
 
 include(cmake/options.cmake)
+include(cmake/libraries.cmake)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules/)
-
-include(cmake/gemini_libraries.cmake)
 
 include(cmake/git_rev.cmake)
 # log project metadata

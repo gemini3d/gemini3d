@@ -12,8 +12,8 @@ if(NOT LAPACK_FOUND)
   include(FetchContent)
 
   FetchContent_Declare(lapack_proj
-    GIT_REPOSITORY ${gemini_lapack_url}
-    GIT_TAG ${gemini_lapack_tag}
+    GIT_REPOSITORY ${lapack_url}
+    GIT_TAG ${lapack_tag}
     GIT_SHALLOW true
     CMAKE_ARGS "-Darith=${arith}"
   )

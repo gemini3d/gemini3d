@@ -47,8 +47,8 @@ if(NOT MUMPS_FOUND)
   include(FetchContent)
 
   FetchContent_Declare(MUMPS_proj
-    GIT_REPOSITORY ${gemini_mumps_url}
-    GIT_TAG ${gemini_mumps_tag}
+    GIT_REPOSITORY ${mumps_url}
+    GIT_TAG ${mumps_tag}
     GIT_SHALLOW true
     CMAKE_ARGS -Darith=${arith} -Dmetis:BOOL=${metis} -Dscotch:BOOL=${scotch} -Dopenmp:BOOL=false
   )

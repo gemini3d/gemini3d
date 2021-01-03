@@ -8,8 +8,8 @@ if(hdf5)
   else()
     include(FetchContent)
     FetchContent_Declare(h5fortran_proj
-      GIT_REPOSITORY ${gemini_h5fortran_url}
-      GIT_TAG ${gemini_h5fortran_tag}
+      GIT_REPOSITORY ${h5fortran_url}
+      GIT_TAG ${h5fortran_tag}
       GIT_SHALLOW true)
 
     FetchContent_MakeAvailable(h5fortran_proj)

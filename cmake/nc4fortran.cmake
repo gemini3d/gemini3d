@@ -8,8 +8,8 @@ if(netcdf)
   else()
     include(FetchContent)
     FetchContent_Declare(nc4fortran_proj
-      GIT_REPOSITORY ${gemini_nc4fortran_url}
-      GIT_TAG ${gemini_nc4fortran_tag}
+      GIT_REPOSITORY ${nc4fortran_url}
+      GIT_TAG ${nc4fortran_tag}
       GIT_SHALLOW true)
 
     FetchContent_MakeAvailable(nc4fortran_proj)
