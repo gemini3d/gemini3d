@@ -80,12 +80,7 @@ jobs:
       with:
         python-version: '3.8'
 
-# GCC-9 to help catch GCC-9 bugs
-# use Actions env: so it propagates to subprojects, else will get ABI compatibility errors
     - run: cmake -B build
-      env:
-        CC: gcc-9
-        FC: gfortran-9
 
     - run: cmake --build build
 

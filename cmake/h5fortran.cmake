@@ -1,3 +1,4 @@
+# Leave h5fortran as FetchContent as we use wrangle HDF5 library distinctions there
 if(hdf5)
 
   set(h5fortran_BUILD_TESTING false CACHE BOOL "h5fortran no test")
