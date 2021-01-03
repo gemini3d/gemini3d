@@ -33,7 +33,10 @@ jobs:
         sudo apt install -yq --no-install-recommends gfortran libopenmpi-dev openmpi-bin liblapack-dev libscalapack-openmpi-dev libmumps-dev libhdf5-dev
 
 # CI is too slow for 3d_glow
-    - run: ctest -S setup.cmake -E 3d -VV
+    - run: cmake -B build
+    - run: cmake --build build
+    - run: ctest -E 3d --output-on-failure
+      working-directory: build
 
 
   debug:
@@ -52,15 +55,18 @@ jobs:
         sudo apt install -yq --no-install-recommends gfortran libopenmpi-dev openmpi-bin liblapack-dev libscalapack-openmpi-dev libmumps-dev libhdf5-dev
 
     - run: cmake -B build -DCMAKE_BUILD_TYPE=Debug
+    - run: cmake --build build
 
-    - run: ctest -S setup.cmake -R unit -VV
+    - run: ctest -R unit --output-on-failure
+      working-directory: build
+
     - uses: actions/upload-artifact@v1
       if: failure()
       with:
         name: Linux_CMake_DebugBuildlog
         path: build/CMakeFiles/CMakeError.log
 
-    - run: ctest -R 2dew_fang -V
+    - run: ctest -R 2dew_fang --output-on-failure
       working-directory: build
 
 
@@ -75,14 +81,20 @@ jobs:
         python-version: '3.8'
 
 # GCC-9 to help catch GCC-9 bugs
-    - name: build and test without MPI
-      run: ctest -S setup.cmake -R unit -VV
+# use Actions env: so it propagates to subprojects, else will get ABI compatibility errors
+    - run: cmake -B build
       env:
         CC: gcc-9
         FC: gfortran-9
 
+    - run: cmake --build build
+
+    - name: unit tests
+      run: ctest -R unit --output-on-failure
+      working-directory: build
+
     - name: 2D test without MPI
-      run: ctest -R 2dew_fang -VV
+      run: ctest -R 2dew_fang --output-on-failure
       working-directory: build
 
 
