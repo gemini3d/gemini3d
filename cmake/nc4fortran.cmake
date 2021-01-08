@@ -7,12 +7,12 @@ if(netcdf)
     include(${nc4fortran_DIR}/nc4fortranTargets.cmake)
   else()
     include(FetchContent)
-    FetchContent_Declare(nc4fortran_proj
+    FetchContent_Declare(ncproj
       GIT_REPOSITORY ${nc4fortran_url}
       GIT_TAG ${nc4fortran_tag}
       GIT_SHALLOW true)
 
-    FetchContent_MakeAvailable(nc4fortran_proj)
+    FetchContent_MakeAvailable(ncproj)
   endif()
 
   if(NOT TARGET NetCDF::NetCDF_Fortran)
