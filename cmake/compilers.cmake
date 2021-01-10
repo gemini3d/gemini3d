@@ -25,29 +25,6 @@ if(NOT f2018errorstop)
   message(FATAL_ERROR "Compiler does not support Fortran 2018 error stop with character variable: ${CMAKE_Fortran_COMPILER_ID} ${CMAKE_Fortran_COMPILER_VERSION}")
 endif()
 
-check_fortran_source_compiles("block; end block; end" f2008block SRC_EXT f90)
-if(NOT f2008block)
-  message(FATAL_ERROR "Compiler does not support Fortran 2008 BLOCK syntax: ${CMAKE_Fortran_COMPILER_ID} ${CMAKE_Fortran_COMPILER_VERSION}")
-endif()
-
-check_fortran_source_compiles("
-module A
-interface
-module subroutine C
-end subroutine
-end interface
-end module
-submodule (A) B
-contains
-module procedure C
-end procedure
-end submodule
-program D
-end program" f2008submodule SRC_EXT f90)
-if(NOT f2008submodule)
-  message(FATAL_ERROR "Compiler does not support Fortran 2008 SUBMODULE syntax: ${CMAKE_Fortran_COMPILER_ID} ${CMAKE_Fortran_COMPILER_VERSION}")
-endif()
-
 # Do these before compiler options so options don't goof up finding
 
 if(mpi)
