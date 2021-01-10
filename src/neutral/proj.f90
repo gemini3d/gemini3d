@@ -117,10 +117,10 @@ do ix3=1,lx3
 
       !COMPUTE DISTANCES
       gammarads=cos(theta1)*cos(theta2)+sin(theta1)*sin(theta2)*cos(phi1-phi2)     !this is actually cos(gamma)
-      if (gammarads>1._wp) then     !handles weird precision issues in 2D
-        gammarads=1._wp
-      else if (gammarads<-1._wp) then
-        gammarads=-1._wp
+      if (gammarads > 1) then     !handles weird precision issues in 2D
+        gammarads = 1
+      else if (gammarads < -1) then
+        gammarads= -1
       end if
       gammarads=acos(gammarads)                     !angle between source location annd field point (in radians)
       rhoimat(ix1,ix2,ix3)=Re*gammarads    !rho here interpreted as the arc-length defined by angle between epicenter and ``field point''
@@ -129,18 +129,18 @@ do ix3=1,lx3
       theta3=theta2
       phi3=phi1
       gamma1=cos(theta2)*cos(theta3)+sin(theta2)*sin(theta3)*cos(phi2-phi3)
-      if (gamma1>1._wp) then     !handles weird precision issues in 2D
-        gamma1=1._wp
-      else if (gamma1<-1._wp) then
-        gamma1=-1._wp
+      if (gamma1 > 1) then     !handles weird precision issues in 2D
+        gamma1 = 1
+      else if (gamma1 < -1) then
+        gamma1 = -1
       end if
       gamma1=acos(gamma1)
 
       gamma2=cos(theta1)*cos(theta3)+sin(theta1)*sin(theta3)*cos(phi1-phi3)
-      if (gamma2>1._wp) then     !handles weird precision issues in 2D
-        gamma2=1._wp
-      else if (gamma2<-1._wp) then
-        gamma2=-1._wp
+      if (gamma2 > 1) then     !handles weird precision issues in 2D
+        gamma2 = 1
+      else if (gamma2< -1) then
+        gamma2= -1
       end if
       gamma2=acos(gamma2)
 
@@ -179,7 +179,7 @@ do ix3=1,lx3
       proj_ezp_e3(ix1,ix2,ix3)=tmpsca
 
       if (flagcart) then
-        eyp=-1._wp*x%etheta(ix1,ix2,ix3,:)
+        eyp= -x%etheta(ix1,ix2,ix3,:)
 
         tmpvec=eyp*x%e1(ix1,ix2,ix3,:)
         tmpsca=sum(tmpvec)
@@ -193,7 +193,7 @@ do ix3=1,lx3
         tmpsca=sum(tmpvec)
         proj_eyp_e3(ix1,ix2,ix3)=tmpsca
       else
-        erhop=cos(phip)*x%e3(ix1,ix2,ix3,:)+(-1._wp)*sin(phip)*x%etheta(ix1,ix2,ix3,:)     !unit vector for azimuth (referenced from epicenter - not geocenter!!!) in cartesian geocentric-geomagnetic coords.
+        erhop=cos(phip)*x%e3(ix1,ix2,ix3,:) - sin(phip)*x%etheta(ix1,ix2,ix3,:)     !unit vector for azimuth (referenced from epicenter - not geocenter!!!) in cartesian geocentric-geomagnetic coords.
 
         tmpvec=erhop*x%e1(ix1,ix2,ix3,:)
         tmpsca=sum(tmpvec)
@@ -268,8 +268,8 @@ integer, dimension(6) :: indices
 
 
 !Neutral source locations specified in input file, here referenced by spherical magnetic coordinates.
-phi1=cfg%sourcemlon*pi/180._wp
-theta1=pi/2._wp-cfg%sourcemlat*pi/180._wp
+phi1=cfg%sourcemlon*pi/180
+theta1=pi/2 - cfg%sourcemlat*pi/180
 
 
 !Convert plasma simulation grid locations to z,rho values to be used in interoplation.  altitude ~ zi; lat/lon --> rhoi.  Also compute unit vectors and projections
@@ -291,10 +291,10 @@ do ix3=1,lx3
 
       !!COMPUTE DISTANCES - ZZZ possibly superfluous for 3D case???
       !gammarads=cos(theta1)*cos(theta2)+sin(theta1)*sin(theta2)*cos(phi1-phi2)     !this is actually cos(gamma)
-      !if (gammarads>1._wp) then     !handles weird precision issues in 2D
-      !  gammarads=1._wp
-      !else if (gammarads<-1._wp) then
-      !  gammarads=-1._wp
+      !if (gammarads>1) then     !handles weird precision issues in 2D
+      !  gammarads=1
+      !else if (gammarads<-1) then
+      !  gammarads=-1
       !end if
       !gammarads=acos(gammarads)                     !angle between source location annd field point (in radians)
       !rhoimat(ix1,ix2,ix3)=Re*gammarads    !rho here interpreted as the arc-length defined by angle between epicenter and ``field point''
@@ -304,18 +304,18 @@ do ix3=1,lx3
       theta3=theta2
       phi3=phi1
       gamma1=cos(theta2)*cos(theta3)+sin(theta2)*sin(theta3)*cos(phi2-phi3)
-      if (gamma1>1._wp) then     !handles weird precision issues in 2D
-        gamma1=1._wp
-      else if (gamma1<-1._wp) then
-        gamma1=-1._wp
+      if (gamma1 > 1) then     !handles weird precision issues in 2D
+        gamma1 = 1
+      else if (gamma1 < -1) then
+        gamma1 = -1
       end if
       gamma1=acos(gamma1)
 
       gamma2=cos(theta1)*cos(theta3)+sin(theta1)*sin(theta3)*cos(phi1-phi3)
-      if (gamma2>1._wp) then     !handles weird precision issues in 2D
-        gamma2=1._wp
-      else if (gamma2<-1._wp) then
-        gamma2=-1._wp
+      if (gamma2 > 1) then     !handles weird precision issues in 2D
+        gamma2= 1
+      else if (gamma2 < -1) then
+        gamma2= -1
       end if
       gamma2=acos(gamma2)
       xp=Re*gamma1
@@ -324,10 +324,10 @@ do ix3=1,lx3
 
       !COMPUTE COORDIANTES FROM DISTANCES
       if (theta3>theta1) then       !place distances in correct quadrant, here field point (theta3=theta2) is is SOUTHward of source point (theta1), whreas yp is distance northward so throw in a negative sign
-        yp=-1._wp*yp            !do we want an abs here to be safe
+        yp= -yp            !do we want an abs here to be safe
       end if
       if (phi2<phi3) then     !assume we aren't doing a global grid otherwise need to check for wrapping, here field point (phi2) less than soure point (phi3=phi1)
-        xp=-1._wp*xp
+        xp= -xp
       end if
       !phip=atan2(yp,xp)
 
@@ -351,7 +351,7 @@ do ix3=1,lx3
       tmpsca=sum(tmpvec)    !should be zero, but leave it general for now
       proj_ezp_e3(ix1,ix2,ix3)=tmpsca
 
-      eyp=-1._wp*x%etheta(ix1,ix2,ix3,:)
+      eyp= -x%etheta(ix1,ix2,ix3,:)
 
       tmpvec=eyp*x%e1(ix1,ix2,ix3,:)
       tmpsca=sum(tmpvec)
@@ -603,14 +603,14 @@ xnrange(2)=maxval(xitmp)
 
 !situation is more complicated for latitude due to dipole grid, need to determine by L-shell
 if (flagSH) then
-  ix1=minloc(zitmp(:,1,1)-maxzn,1,zitmp(:,1,1)-maxzn>0._wp)    !find the min distance from maxzn subject to constraint that it is > 0, just use the first longitude slice since they will all have the same L-shell-field line relations
+  ix1=minloc(zitmp(:,1,1)-maxzn,1,zitmp(:,1,1)-maxzn > 0)    !find the min distance from maxzn subject to constraint that it is > 0, just use the first longitude slice since they will all have the same L-shell-field line relations
   ynrange(2)=yitmp(ix1,1,1)
-  ix1=minloc(zitmp(:,lx2,1),1,zitmp(:,lx2,1)<0._wp)
+  ix1=minloc(zitmp(:,lx2,1),1,zitmp(:,lx2,1) < 0)
   ynrange(1)=yitmp(ix1,lx2,1)
 else    !things are swapped around in NH
-  ix1=minloc(zitmp(:,1,1)-maxzn,1,zitmp(:,1,1)-maxzn>0._wp)    !find the min distance from maxzn subject to constraint that it is > 0; this is the southernmost edge of the neutral slab we need
+  ix1=minloc(zitmp(:,1,1)-maxzn,1,zitmp(:,1,1)-maxzn > 0)    !find the min distance from maxzn subject to constraint that it is > 0; this is the southernmost edge of the neutral slab we need
   ynrange(1)=yitmp(ix1,1,1)
-  ix1=minloc(zitmp(:,lx2,1),1,zitmp(:,lx2,1)<0._wp)
+  ix1=minloc(zitmp(:,lx2,1),1,zitmp(:,lx2,1) < 0)
   ynrange(2)=yitmp(ix1,lx2,1)
 end if
 

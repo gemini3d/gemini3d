@@ -150,13 +150,13 @@ if (cfg%flagdneu==1) then
   !! Loads the neutral input file corresponding to the "first" time step of the simulation to prevent the first interpolant
   !  from being zero and causing issues with restart simulations.  I.e. make sure the neutral buffers are primed for restart
   !  This requires us to load file input twice, once corresponding to the initial frame and once for the "first, next" frame.
-  tprev=UTsectmp-UTsec-2._wp*cfg%dtneu
+  tprev=UTsectmp-UTsec-2*cfg%dtneu
   tnext=tprev+cfg%dtneu
   if (mpi_cfg%myid==0) print*, '!!!Attempting initial load of neutral dynamics files!!!' // &
                            ' This is a workaround to insure compatibility with restarts...',ymdtmp,UTsectmp
   !! We essentially are loading up the data corresponding to halfway betwween -dtneu and t0 (zero).  This will load
   !   two time levels back so when tprev is incremented twice it will be the true tprev corresponding to first time step
-  call neutral_perturb(cfg,dt,cfg%dtneu,tnext+cfg%dtneu/2._wp,ymdtmp,UTsectmp-cfg%dtneu, &
+  call neutral_perturb(cfg,dt,cfg%dtneu,tnext+cfg%dtneu/2,ymdtmp,UTsectmp-cfg%dtneu, &
                         x,v2grid,v3grid,nn,Tn,vn1,vn2,vn3)  !abs time arg to be < 0
 
   if (mpi_cfg%myid==0) print*, 'Now loading initial next file for neutral perturbations...'
