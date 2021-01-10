@@ -1,6 +1,6 @@
 # ensure no interaction with previous settings
 set(CMAKE_REQUIRED_LIBRARIES)
-set(CMAKE_REQURIED_INCLUDES)
+set(CMAKE_REQUIRED_INCLUDES)
 set(CMAKE_REQUIRED_FLAGS)
 
 include(CheckFortranCompilerFlag)

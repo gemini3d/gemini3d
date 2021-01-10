@@ -12,7 +12,7 @@ include(CheckFortranCompilerFlag)
 
 # clean out prior libs to avoid false fails
 set(CMAKE_REQUIRED_LIBRARIES)
-set(CMAKE_REQURIED_INCLUDES)
+set(CMAKE_REQUIRED_INCLUDES)
 set(CMAKE_REQUIRED_FLAGS)
 
 check_fortran_source_compiles("implicit none (type, external); end" f2018impnone SRC_EXT f90)
