@@ -5,13 +5,13 @@ if(CMAKE_VERSION VERSION_LESS 3.19)
   message(STATUS "Due to CMake < 3.19, using fallback Gemini library versions in ${CMAKE_CURRENT_LIST_FILE}")
 
   set(glow_url https://github.com/gemini3d/glow.git)
-  set(glow_tag 0f5c974a214baab12dbcd36d55c3a30e51f6a99a)
+  set(glow_tag v0.981.0.1)
 
   set(lapack_url https://github.com/scivision/lapack.git)
   set(lapack_tag v3.9.0.2)
 
   set(h5fortran_url https://github.com/geospace-code/h5fortran.git)
-  set(h5fortran_tag v3.4.4)
+  set(h5fortran_tag v3.4.5)
 
   set(mumps_url https://github.com/scivision/mumps.git)
   set(mumps_tag v5.3.5.2)
