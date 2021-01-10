@@ -136,9 +136,9 @@ real(wp) :: tstart,tfin
 call make_dneu()
 
 !! call msis to get an initial neutral background atmosphere
-if (mpi_cfg%myid==0) call cpu_time(tstart)
+if (mpi_cfg%myid == 0) call cpu_time(tstart)
 call neutral_atmos(ymd,UTsec,x%glat,x%glon,x%alt,cfg%activ,v2grid,v3grid,nn,Tn,vn1,vn2,vn3)
-if (mpi_cfg%myid==0) then
+if (mpi_cfg%myid == 0) then
   call cpu_time(tfin)
   print *, 'Initial neutral background at time:  ',ymd,UTsec,' calculated in time:  ',tfin-tstart
 end if
@@ -230,24 +230,58 @@ allocate(dnOinow(lx1,lx2,lx3),dnN2inow(lx1,lx2,lx3),dnO2inow(lx1,lx2,lx3),dvn1in
            dvn3inow(lx1,lx2,lx3), dTninow(lx1,lx2,lx3))
 
 !start everyone out at zero
-zi=0d0; rhoi=0d0; yi=0d0;
-xi=0d0
-proj_erhop_e1=0d0; proj_ezp_e1=0d0;
-proj_erhop_e2=0d0; proj_ezp_e2=0d0;
-proj_erhop_e3=0d0; proj_ezp_e3=0d0;
-proj_eyp_e1=0d0; proj_eyp_e2=0d0; proj_eyp_e3=0d0;
-proj_exp_e1=0d0; proj_exp_e2=0d0; proj_exp_e3=0d0;
-dnOiprev=0d0; dnN2iprev=0d0; dnO2iprev=0d0; dTniprev=0d0; dvnrhoiprev=0d0; dvnziprev=0d0;
-dvn1iprev=0d0; dvn2iprev=0d0; dvn3iprev=0d0;
-dvnxiprev=0d0
-dnOinext=0d0; dnN2inext=0d0; dnO2inext=0d0; dTninext=0d0; dvnrhoinext=0d0; dvnzinext=0d0;
-dvn1inext=0d0; dvn2inext=0d0; dvn3inext=0d0;
-dvnxinext=0d0
-nnmsis=0d0; Tnmsis=0d0; vn1base=0d0; vn2base=0d0; vn3base=0d0
-dnOinow=0d0; dnN2inow=0d0; dnO2inow=0d0; dTninow=0d0; dvn1inow=0d0; dvn2inow=0d0; dvn3inow=0d0
+zi = 0
+rhoi = 0
+yi = 0
+xi = 0
+proj_erhop_e1 = 0
+proj_ezp_e1 = 0
+proj_erhop_e2 = 0
+proj_ezp_e2 = 0
+proj_erhop_e3 = 0
+proj_ezp_e3 = 0
+proj_eyp_e1 = 0
+proj_eyp_e2 = 0
+proj_eyp_e3 = 0
+proj_exp_e1 = 0
+proj_exp_e2 = 0
+proj_exp_e3 = 0
+dnOiprev = 0
+dnN2iprev = 0
+dnO2iprev = 0
+dTniprev = 0
+dvnrhoiprev = 0
+dvnziprev = 0
+dvn1iprev = 0
+dvn2iprev = 0
+dvn3iprev = 0
+dvnxiprev = 0
+dnOinext = 0
+dnN2inext = 0
+dnO2inext = 0
+dTninext = 0
+dvnrhoinext = 0
+dvnzinext = 0
+dvn1inext = 0
+dvn2inext = 0
+dvn3inext = 0
+dvnxinext = 0
+nnmsis = 0
+Tnmsis = 0
+vn1base = 0
+vn2base = 0
+vn3base = 0
+dnOinow = 0
+dnN2inow = 0
+dnO2inow = 0
+dTninow = 0
+dvn1inow = 0
+dvn2inow = 0
+dvn3inow = 0
 
 !now initialize some module variables
-tprev=0d0; tnext=0d0
+tprev = 0
+tnext = 0
 
 end subroutine make_dneu
 
