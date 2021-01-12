@@ -2,15 +2,14 @@
 
 In addition to command line options (see main README), GEMINI requires input file information to specify:
 
-1. simulation configuration
-2. grid size file
-3. grid data strcuture file
-4. neutral inputs
-5. precipitation inputs
-6. electric field inputs
-7. initial conditions
+1. [Simulation Configuration File](#sim_config_file)
+2. [Grid Input Files](#grid_input_files)
+3. [Neutral Inputs](#neutral_input_files)
+4. [Boundary Conditions](#boundary_conditions)
+5. [Initial Conditions](#initial_conditions)
 
-## 1. Simulation configuration file
+<a name="sim_config_file"></a>
+## 1. Simulation Configuration File
 
 Gemini uses Fortran 95 standard NAMELIST files for the input configuration files.
 Gemini will search the input directory location for files will be named like `inputs/config.nml` or `config.nml`.
@@ -27,7 +26,7 @@ repository.
 
 Note that most simulations will not use all of the input options shown here.  Source code reading in these parameters is in `config_nml.f90`.
 
-```ini
+```nml
 &base
 ymd = 2013,2,20               ! year, month, day
 UTsec0 = 18000.0              ! UTsec0:  start time in UT seconds
@@ -61,7 +60,10 @@ xdist = 200e3              ! eastward distance (meters)
 ydist = 200e3               ! northward distance (meters)
 alt_min = 80e3              ! minimum altitude (meters)
 alt_max = 1000e3            ! maximum altitude (meters)
-alt_scale = 13.75e3, 20e3, 200e3, 200e3  ! altitude grid scales (meters)
+alt_scale = 13.75e3, 20e3, 200e3, 200e3  ! parameters controlling nonuniform x1 grid, these are Cartesian and thus altitude
+!> alt_scale = 10e3, 8e3, 500e3, 150e3   ! this is a high-resolution x1 grid; this one has been the default most most of Zettergren's publications that use Cartesian coordinates
+x2parms = 400e3,18.8e3,50e3,100e3        ! parameters controlling nonuniform x2 grid
+x3parms = 400e3,1.625e3,18.5e3,50e3.     ! parameters controlling nonniform x3 grid
 lxp = 20                    ! number of x-cells
 lyp = 18                    ! number of y-cells
 Bincl = 90                  ! geomagnetic inclination
@@ -125,14 +127,14 @@ magcap =  30.0                ! magnetospheric capacitance (Farads)
 mcadence=10                   ! number of outputs per milestone
 /
 
-! (optional - default on) estimate parallel currents or not?
+! (optional - default on)
 &Jpar
-flagJpar=.false.
+flagJpar=.false.              ! estimate parallel currents or not?
 /
 
-! (optional - default off) include gravitational drift terms in the drift equation and potential equation solutions
+! (optional - default off)
 &gravdrift
-flaggravdrift=.true.
+flaggravdrift=.true.          ! include gravitational drift terms in the drift equation and potential equation solutions
 /
 
 ! (optional - default off) control equatorial ionization anomaly
@@ -150,9 +152,15 @@ diffsolvetype = 2             ! type of diffusion solver to use:  1 - backward E
 &lagrangian
 flaglagrangian=.true.         ! whether or not to have the grid drift at the ExB speed
 /
+
+! (optional - off by default)
+&diamagnetic
+flagdiamagnetic=.true.        ! whether or not to compute pressure terms in perp. momentum balance
+/
 ```
 
-## 2,3. Grid input files
+<a name="grid_input_files"></a>
+## 2. Grid Input Files
 
 One of the most complicated parts of setting up a new simulation is creating a grid.
 Grids are generated from scripts external to the main fortran code and then passes into GEMINI as files.
@@ -160,7 +168,31 @@ Generally when setting up a grid, it is likely easiest to work from an existing 
 [GEMINI-examples](https://github.com/gemini3d/GEMINI-examples).
 In the event that none of the examples suffice as a starting point, the details of grid creations are documented below.
 
-Document grid creation details here...
+If using the ```gemini3d.model.setup``` interface in MATLAB or Python, grid creation is controlled through the config.nml file, namely the parameters ```alt_scale,x2parms,x3parms``` under the ```setup``` namelist.  Each of these parameters has a four elements as follows:
+
+```nml
+alt_scale = 
+!> Formula for grid step size:
+!>     dalt = d(1) + d(2) * tanh((alt(end) - d(3)) / d(4));
+<dzref>       ! reference dz
+<A>           ! amp of tanh for degrading resolution, min step size is dzref - A, max is dzref + A
+<z0>          ! distance from "bottom" of grid where we start to degrade resolution
+<ell>         ! transition length of degradation - a tanh(z/ell) profile is used for dz
+```
+
+For the horizontal grid distances (note that below is *not* in proper nml format; use code above is copy/pasting):  
+
+```nml
+x2,{3}parms =
+!> Formula for grid step size:  
+!>   dx = dx0 + dxincr * (1/2+1/2*tanh((x(end)-x2)/ell));
+<degdist>,    ! distance from boundary at which we start to degrade resolution
+<dx0>,        ! min step size for grid
+<dxincr>,     ! max step size *increase* for grid, max grid step size (at the edges) will be dx0 + dxincr
+<ell>         ! transition length of degradation - a tanh(x/ell) profile is used for dx
+```
+
+If using the lower-level ```gemini3d.grid.cart3d``` utility, the parameters above are passed into this function via optional input structure fields (see source code for details).  
 
 Grid structures, once created, are written to a file using the matlab `writegrid.m` API to insure that they have the correct file structure and arrangement.  I.e.
 
@@ -175,19 +207,63 @@ where the `xg` variable is a structure containing all the expected grid elements
 
 The writegrid API creates a file with the grid data structure in it as well as a small file containing the size information.
 
-### Grid structure requirements
+### Grid structure/file requirements
 
-Grid structures, variable `xg` in the example above shall have the following fields:  
+Grid structures, variable `xg` in the example above shall have the following fields and sizes (```lx1``` is the length of the x1 grid, ```lx2``` is the length of the x2 grid, ```lx3``` is the length of the x3 grid).  
 
 ```MATLAB 
-"x1", "x1i", "dx1b", "dx1h", "x2", "x2i", "dx2b", "dx2h", "x3", "x3i", "dx3b", "dx3h", "h1", "h2", "h3", "h1x1i", "h2x1i", "h3x1i", "h1x2i", "h2x2i", "h3x2i", "h1x3i", "h2x3i", "h3x3i", "gx1", "gx2", "gx3", "Bmag", "I", "nullpts", "e1", "e2", "e3", "er", "etheta", "ephi", "r", "theta", "phi", "x", "y", "z"
+"x1",           ! (lx1+4) x1 position variable, including ghost cells
+"x1i",          ! (lx1+1) x1 cell interface positions for non-ghost cells
+"dx1b",         ! (lx1+3) backward differences along the x1-coordinate, excluding first ghost cell
+"dx1h",         ! (lx1) x1 midpoint differences for all non-ghost cells
+"x2",           ! (lx2+4) x2 position variable, including ghost cells
+"x2i",          ! (lx2+1) x2 cell interface positions for non-ghost cells
+"dx2b",         ! (lx2+3) backward differences along the x2-coordinate, excluding first ghost cell
+"dx2h",         ! (lx2) x2 midpoint differences for all non-ghost cells
+"x3",           ! (lx3+4) x3 position variable, including ghost cells
+"x3i",          ! (lx3+1) x3 cell interface positions for non-ghost cells
+"dx3b",         ! (lx3+3) backward differences along the x3-coordinate, excluding first ghost cell
+"dx3h",         ! (lx1) x1 midpoint differences for all non-ghost cells 
+"h1",           ! (lx1+4,lx2+4,lx3+4) metric factor for x1, including in ghost cells
+"h2",           ! (lx1+4,lx2+4,lx3+4) metric factor for x2, including in ghost cells
+"h3",           ! (lx1+4,lx2+4,lx3+4) metric factor for x3, including in ghost cells
+"h1x1i",        ! (lx1+1,lx2,lx3) x1 metric factor at the x1 cell interfaces and x2,3 cell centers
+"h2x1i",        ! (lx1+1,lx2,lx3) x2 metric factor at the x1 cell interfaces and x2,3 cell centers
+"h3x1i",        ! (lx1+1,lx2,lx3) x3 metric factor at the x1 cell interfaces and x2,3 cell centers
+"h1x2i",        ! (lx1,lx2+1,lx3) x1 metric factor at the x2 cell interfaces and x1,3 cell centers
+"h2x2i",        ! (lx1,lx2+1,lx3) x2 metric factor at the x2 cell interfaces and x1,3 cell centers
+"h3x2i",        ! (lx1,lx2+1,lx3) x3 metric factor at the x2 cell interfaces and x1,3 cell centers
+"h1x3i",        ! (lx1,lx2,lx3+1) x1 metric factor at the x3 cell interfaces and x1,2 cell centers
+"h2x3i",        ! (lx1,lx2,lx3+1) x2 metric factor at the x3 cell interfaces and x1,2 cell centers
+"h3x3i",        ! (lx1,lx2,lx3+1) x3 metric factor at the x3 cell interfaces and x1,2 cell centers
+"gx1",          ! gravitational field over the grid (not used?)
+"gx2", 
+"gx3", 
+"Bmag",         ! (lx1,lx2,lx3) the magnitude of the magnetic field at grid points
+"I",            ! (lx2,lx3) the inclination angle of the magnetic field vs. "horizontal" (x2,3) locations on the grid
+"nullpts", 
+"e1", 
+"e2", 
+"e3", 
+"er", 
+"etheta", 
+"ephi", 
+"r", 
+"theta", 
+"phi", 
+"x",
+"y", 
+"z"
 ```
+
+Due to the complicated nature of the grid structure fields, it is *highly* recommended that you use one of the existing functions or user interfaces to create a grid structure and file.  Note also that the number of variables being tracked by the grid means that the grid files will occupy a large amount of storage space, but this prevents the code(s) from having to recompute metric factors, etc.  
 
 ### Visualizing the grid
 
 Plotgrid...  But explain how to use it...
 
-## Neutral data input files
+<a name="neutral_input_files"></a>
+## 3. Neutral data input files
 
 The examples of specifying and saving input neutral data input files are provided in [GEMINI-scripts](https://github.com/gemini3d/gemini-scripts/tree/master/magic/). The folder contains examples for preparation of 2D, 2D-axisymmetric and 3D neutral input files.
 
@@ -197,7 +273,8 @@ Neutral input file data shall contain neutral fluid velocities, volumetric pertu
 2D Cartesian neutral inputs should contain meridional and vertical fluid velocities; 2D axisymmetric neutral inputs should contain radial and vertical fluid velocities; for 3D GEMINI simulations - meridional, zonal and vertical fluid velocities.
 Neutral particle temperature perturbations represent averaged values over all species.
 
-## 5,6. Running with different boundary and initial conditions:
+<a name="boundary_conditions"></a>
+## 4. Boundary Conditions
 
 GEMINI requires both initial and boundary conditions to run properly.  Specifically the user must provide a complete initial ionospheric state (density, drift, and temperature for all ionospheric species), along with boundary conditions for the electric potential (in 2D this are the top, bottom, and side potentials; in 3D the topside current density and side wave potentials).
 Fluid state variables are given free-flow boundary conditions at the edges of the simulation grid.
@@ -229,11 +306,11 @@ The file input is enabled by the appropriate flags (flagprecfile and flagE0file)
 All examples included in `initialize/` in both the GEMINI and GEMINI-scripts repositories use this method for setting boundary conditions.
 Note that the user can specify the boundary condition on a different grid from what the simulation is to be run with; in this case GEMINI will just interpolate the given boundary data onto the current simulation grid.
 
-### Electric field input files requirements
+### Electric field input files requirement
 
 Electric field input files shall contain the following information:
 
-### Precipitation input files requirements
+### Precipitation input files requirement
 
 Precipitation input files shall contain the following variables.
 These variables are one element per grid cell of the inputs/precip/simgrid.h5 file.
@@ -261,13 +338,14 @@ llon: number of longitude cells
 The number of cells in the precipitation files is in general different than the number of simulation cells.
 The Fortran code interpolates the precipitation data in space and time.
 
-## 7. Initial conditions
+<a name="initial_conditions"></a>
+## 5. Initial conditions
 
 GEMINI needs density, drift, and temperature for each species that it simulations over the entire grid for which the simulation is being run as input.  Generally one will use the results of another GEMINI simulation that has been initialized in an arbitrary way but run for a full day to a proper ionospheric equilibrium as this input.  Any equilibrium simulation run this way must use full output (flagoutput=1 in the `config.nml`).  A useful approach for these equilibrium runs is to use a coarser grid so that the simulation completes quickly and then interpolate the results up to fine grid resolution.  An example of an equilibrium setup is given in `./initialize/2Dtest_eq`; note that this basically makes up an initial conditions (using `eqICs.m`) and runs until initial transients have settled.  An example of a script that interpolates the output of an equilibrium run to a finer grid is included with `./initialize/2Dtest`.
 
 ### Initial condition input file requirements
 
-Initial condition input files shall contain:
+Initial condition input files shall contain all input data needed to start a simulation including state variables for all plasma species (density, drift (parallel dimension), and temperature) in SI units.  If using hdf5 input, these variables shall be named ```nsall,vs1all,Tsall```.  
 
 
 ## Suggested workflow for creating input file to run a simulation
