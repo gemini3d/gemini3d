@@ -209,9 +209,10 @@ The writegrid API creates a file with the grid data structure in it as well as a
 
 ### Grid structure/file requirements
 
-Grid structures, variable `xg` in the example above shall have the following fields and sizes (```lx1``` is the length of the x1 grid, ```lx2``` is the length of the x2 grid, ```lx3``` is the length of the x3 grid).  
+Grid structures, variable `xg` in the example above shall have the following fields and sizes (```lx1``` is the length of the x1 grid, ```lx2``` is the length of the x2 grid, ```lx3``` is the length of the x3 grid).
 
 ```MATLAB 
+"lx"            ! (3) number of grid points (excluding ghost cells) in x1,2,3 directions, viz. [lx1,lx2,lx3]
 "x1",           ! (lx1+4) x1 position variable, including ghost cells
 "x1i",          ! (lx1+1) x1 cell interface positions for non-ghost cells
 "dx1b",         ! (lx1+3) backward differences along the x1-coordinate, excluding first ghost cell
@@ -236,27 +237,30 @@ Grid structures, variable `xg` in the example above shall have the following fie
 "h1x3i",        ! (lx1,lx2,lx3+1) x1 metric factor at the x3 cell interfaces and x1,2 cell centers
 "h2x3i",        ! (lx1,lx2,lx3+1) x2 metric factor at the x3 cell interfaces and x1,2 cell centers
 "h3x3i",        ! (lx1,lx2,lx3+1) x3 metric factor at the x3 cell interfaces and x1,2 cell centers
-"gx1",          ! gravitational field over the grid (not used?)
-"gx2", 
-"gx3", 
+"gx1",          ! (lx1,lx2,lx3) x1-component of the gravitational field over the grid
+"gx2",          ! (lx1,lx2,lx3) x2-component of the gravitational field over the grid
+"gx3",          ! (lx1,lx2,lx3) x3-component of the gravitational field over the grid
 "Bmag",         ! (lx1,lx2,lx3) the magnitude of the magnetic field at grid points
 "I",            ! (lx2,lx3) the inclination angle of the magnetic field vs. "horizontal" (x2,3) locations on the grid
-"nullpts", 
-"e1", 
-"e2", 
-"e3", 
-"er", 
-"etheta", 
-"ephi", 
-"r", 
-"theta", 
-"phi", 
-"x",
-"y", 
-"z"
+"nullpts",      ! (lx1,lx2,lx3) a floating point flag (0 or 1) indicating whether the core model code should treat each location as null (not part of the computational domain) or valid (to be used in calculations).  
+"e1",           ! (lx1,lx2,lx3,3) unit vector vs. x1,2,3 in the x1 direction, components in ECEF dipole cartesian coordinates 
+"e2",           ! (lx1,lx2,lx3,3) unit vector in the x2 direction in ECEF dipole cartesian coordinates
+"e3",           ! (lx1,lx2,lx3,3) unit vector in the x3 direction in ECEF dipole cartesian coordinates
+"er",           ! (lx1,lx2,lx3,3) unit vector in the radial direction in ECEF dipole cartesian coordinates
+"etheta",       ! (lx1,lx2,lx3,3) unit vector vs. x1,2,3 in the theta (zenith angle) direction, components in ECEF dipole cartesian coordinates
+"ephi",         ! (lx1,lx2,lx3,3) unit vector vs. x1,2,3 in the phi (zonal) direction, components in ECEF dipole cartesian coordinates
+"r",            ! (lx1,lx2,lx3) radial coordinate (ECEF) as a function of x1,2,3
+"theta",        ! (lx1,lx2,lx3) theta (zenith angle) coordinate as a function of x1,2,3
+"phi",          ! (lx1,lx2,lx3) phi coordinate as a function of x1,2,3
+"x",            ! (lx1,lx2,lx3) x coordinate (ECEF) as a function of x1,2,3
+"y",            ! (lx1,lx2,lx3) y coordinate (ECEF) as a function of x1,2,3
+"z"             ! (lx1,lx2,lx3) z coordinate (ECEF) as a function of x1,2,3
+"glat"          ! (lx1,lx2,lx3) geographic latitude as a function of x1,2,3
+"glon"          ! (lx1,lx2,lx3) geographic longitude as a function of x1,2,3
+"alt"           ! (lx1,lx2,lx3) altitude as a function of x1,2,3
 ```
 
-Due to the complicated nature of the grid structure fields, it is *highly* recommended that you use one of the existing functions or user interfaces to create a grid structure and file.  Note also that the number of variables being tracked by the grid means that the grid files will occupy a large amount of storage space, but this prevents the code(s) from having to recompute metric factors, etc.  
+Not all of these variables will be used by the core model code; nevertheless they should be included in grid files so that postprocessing code can function properly.  Due to the complicated nature of the grid structure fields, it is *highly* recommended that you use one of the existing functions or user interfaces to create a grid structure and file.  Note also that the number of variables being tracked by the grid means that the grid files will occupy a large amount of storage space, but this prevents the code(s) from having to recompute metric factors, etc.  
 
 ### Visualizing the grid
 
