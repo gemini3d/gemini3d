@@ -312,31 +312,63 @@ Note that the user can specify the boundary condition on a different grid from w
 
 ### Electric field input files requirement
 
-Electric field input files shall contain the following information:
+Electric field boundary/background condition input files include the grid over which the user is specifying the precipitation (```simsize.h5```, and ```simgrid.h5```) and the individual frames of input precipitation parameters (named using the datetime of the frame, e.g. ```20110302_01800.000000.h5``` etc.).    
+
+The ```inputs/Efield/simsize.h5``` file contains these scalar variables:
+
+```
+"llat"        ! number of latitude cells
+"llon"        ! number of longitude cells
+```
+
+The inputs/precip/simgrid.h5 file contains these vector variables:
+
+```
+"mlon"        ! (llon) magnetic longitude, units of degrees (0, 360)
+"mlat".       ! (llat) magnetic latitude, units of degrees  (-90, 90)
+```
+
+Each frame electric field input file has variables:  
+
+```
+"Exit"        ! (llon,llat) background electric field x-component (units of V/m in the x2 direction) vs. mlon,mlat
+Eyit          ! (llon,llat) background electric field y-component (V/m in the x3 direction) vs. mlon,mlat
+Vmaxx1it      ! (llon,llat) potential or FAC boundary condition at the location of maximum x1 vs. mlon,mlat
+Vmaxx2ist     ! (llat) potential boundary condition at the location of maximum x2 vs. mlat
+Vmaxx3ist     ! (llon) potential boundary condition at the location of maximum x3 vs. mlon
+Vminx1it      ! (llon,llat) potential or FAC boundary condition at the location of minimum x1 vs. mlon,mlat
+Vminx2ist     ! (llat) potential boundary condition at the location of minimum x2 vs. mlat
+Vminx3ist     ! (llon) potential boundary condition at the location of minimum x3 vs. mlon
+flagdirich    ! (1) whether to treat the data in Vmax{min}x1 arrays as potential (0 value) or FAC (1 value)
+```
+
+In cases where a quasi-electrodynamic solution is done both the electric field and potential will be assumed to go to zero at the lateral (x2,3) boundaries of the model - unless periodic x3 boundary conditions are chosen (these are set in the config.nml file).  
 
 ### Precipitation input files requirement
 
-Precipitation input files shall contain the following variables.
-These variables are one element per grid cell of the inputs/precip/simgrid.h5 file.
-Each time step file has these variables.
+Precipitation input files include the grid over which the user is specifying the precipitation (```simsize.h5``` and ```simgrid.h5```) and the individual frames of input precipitation parameters (named using the datetime of the frame, e.g. ```20110302_01800.000000.h5``` etc.).    
+
+The inputs/precip/simsize.h5 file contains these scalar variables:
 
 ```
-E0p: Energy bin
-Qp: Particle flux in this energy bin
+"llat"        ! number of latitude cells
+"llon"        ! number of longitude cells
 ```
 
-the inputs/precip/simgrid.h5 file contains these vector variables:
+The inputs/precip/simgrid.h5 file contains these vector variables:
 
 ```
-mlat: magnetic latitude  (-90, 90)
-mlon: magnetic longitude (0, 360)
+"mlon"        ! (llon) magnetic longitude, units of degrees (0, 360)
+"mlat"        ! (llat) magnetic latitude, units of degrees  (-90, 90)
 ```
 
-the inputs/precip/simsize.h5 file contains these scalar variables:
+These variables are one element per grid cell of the ```inputs/precip/simgrid.h5``` file.
+
+Each frame precipitation input file has variables:  
 
 ```
-llat: number of latitude cells
-llon: number of longitude cells
+"E0p"         ! (llon,llat) Characteristic energy (Maxwellian differential number flux), units of eV
+"Qp"          ! (llon,llat) Total energy flux in this energy bin, units of W/m^2
 ```
 
 The number of cells in the precipitation files is in general different than the number of simulation cells.
