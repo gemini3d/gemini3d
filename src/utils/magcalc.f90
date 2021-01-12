@@ -86,6 +86,7 @@ integer :: ierr
 !! for keeping track of start and end times requested by the user
 integer, dimension(3) :: ymdstart,ymdend,ymdfinal
 real(wp) :: UTsecstart,UTsecend,telend,UTsecfinal
+real(wp) :: h1avg,h2avg,h3avg
 
 
 !! --- MAIN PROGRAM
@@ -149,6 +150,7 @@ end if
 ! Alert the user as to the total simluation time to be computed by magcalc
 if (mpi_cfg%myid==0) print*, 'Magcalc total simulation time coverage:  ',telend
 
+
 !SET UP DIRECTORY TO STORE OUTPUT FILES
 if (mpi_cfg%myid==0) then
   call create_outdir_mag(cfg%outdir, cfg%fieldpointfile)
@@ -211,34 +213,51 @@ yp(:,:,:)=rmean*x%theta(:,:,:)
 !! the integrations are being treated as Cartesian so flatten out the local spherical coordinates into cartesian, as well
 zp(:,:,:)=rmean*sin(thetamean)*x%phi(:,:,:)
 
-
 !print*, myid2,myid3,'--> field point min/max data:  ',minval(xp),maxval(xp),minval(yp),maxval(yp),minval(zp),maxval(zp)
 
-
-!COMPUTE A SOURCE DIFFERENTIAL VOLUME FOR INTEGRALS
+! differential volumes for source coordinates/integrations
 allocate(dV(lx1,lx2,lx3))
 allocate(dVend(lx1,lx2),Jxend(lx1,lx2),Jyend(lx1,lx2),Jzend(lx1,lx2))
 allocate(Rxend(lx1,lx2),Ryend(lx1,lx2),Rzend(lx1,lx2),Rcubedend(lx1,lx2))
 allocate(integrandend(lx1,lx2),integrandavgend(lx1-1,max(lx2-1,1)))
 
-!should these be size lx3???
 allocate(dVtop(lx1,lx3),Jxtop(lx1,lx3),Jytop(lx1,lx3),Jztop(lx1,lx3))
 allocate(Rxtop(lx1,lx3),Rytop(lx1,lx3),Rztop(lx1,lx3),Rcubedtop(lx1,lx3))
 allocate(integrandtop(lx1,lx3),integrandavgtop(lx1-1,max(lx3-1,1)))
 
+
+! FIXME:  the metric factors need to be averaged to the volume midpoint...
+!> note here that dV's are basically the backward diff volumes; later to be referenced as dV(2:end,2:end,2:end) and so on
 if (flag2D/=1) then   !3D differential volume
   do ix3=1,lx3
     do ix2=1,lx2
       do ix1=1,lx1
-        dV(ix1,ix2,ix3)=x%h1(ix1,ix2,ix3)*x%h2(ix1,ix2,ix3)*x%h3(ix1,ix2,ix3)*x%dx1(ix1)*x%dx2(ix2)*x%dx3(ix3)
+        ! avg h's to ix1-1/2, ix2-1/2, ix3-1/2 grid locations
+        h1avg=1/8._wp*( x%h1(ix1,ix2,ix3) + x%h1(ix1-1,ix2,ix3) + & 
+                   x%h1(ix1,ix2-1,ix3) + x%h1(ix1-1,ix2-1,ix3) + &
+                   x%h1(ix1,ix2,ix3-1) + x%h1(ix1-1,ix2,ix3-1) + &
+                   x%h1(ix1,ix2-1,ix3-1) + x%h1(ix1-1,ix2-1,ix3-1) ) 
+        h2avg=1/8._wp*( x%h2(ix1,ix2,ix3) + x%h2(ix1-1,ix2,ix3) + & 
+                   x%h2(ix1,ix2-1,ix3) + x%h2(ix1-1,ix2-1,ix3) + &
+                   x%h2(ix1,ix2,ix3-1) + x%h2(ix1-1,ix2,ix3-1) + &
+                   x%h2(ix1,ix2-1,ix3-1) + x%h2(ix1-1,ix2-1,ix3-1) ) 
+        h3avg=1/8._wp*( x%h3(ix1,ix2,ix3) + x%h3(ix1-1,ix2,ix3) + & 
+                   x%h3(ix1,ix2-1,ix3) + x%h3(ix1-1,ix2-1,ix3) + &
+                   x%h3(ix1,ix2,ix3-1) + x%h3(ix1-1,ix2,ix3-1) + &
+                   x%h3(ix1,ix2-1,ix3-1) + x%h3(ix1-1,ix2-1,ix3-1) ) 
+        dV(ix1,ix2,ix3)=h1avg*h2avg*h3avg*x%dx1(ix1)*x%dx2(ix2)*x%dx3(ix3)
       end do
     end do
   end do
-else         !plane geometry assumption
+else                  !plane geometry assumption
   do ix3=1,lx3
     do ix2=1,lx2
       do ix1=1,lx1
-        dV(ix1,ix2,ix3)=x%h1(ix1,ix2,ix3)*x%h3(ix1,ix2,ix3)*x%dx1(ix1)*x%dx3(ix3)
+        h1avg=1/4._wp*( x%h1(ix1,ix2,ix3) + x%h1(ix1-1,ix2,ix3) + &
+                    x%h1(ix1,ix2,ix3-1) + x%h1(ix1-1,ix2,ix3-1) )
+        h3avg=1/4._wp*( x%h3(ix1,ix2,ix3) + x%h3(ix1-1,ix2,ix3) + &
+                    x%h3(ix1,ix2,ix3-1) + x%h3(ix1-1,ix2,ix3-1) )
+        dV(ix1,ix2,ix3)=h1avg*h3avg*x%dx1(ix1)*x%dx3(ix3)
       end do
     end do
   end do
@@ -249,11 +268,9 @@ end if
 call halo_end(dV,dVend,dVtop,tag%dV)
 !! need to define the differential volume on the edge of this x3-slab in
 
-
 !print*, myid2,myid3,'--> dV vals.',minval(dV),maxval(dV),minval(dVend),maxval(dVend),minval(dVtop),maxval(dVtop)
 
-
-!> COMPUTE NEEDED PROJECTIONS
+!> Compute projections needed to rotate current density components into magnetic coordinates
 allocate(proj_e1er(lx1,lx2,lx3),proj_e2er(lx1,lx2,lx3),proj_e3er(lx1,lx2,lx3))
 allocate(proj_e1etheta(lx1,lx2,lx3),proj_e2etheta(lx1,lx2,lx3),proj_e3etheta(lx1,lx2,lx3))
 allocate(proj_e1ephi(lx1,lx2,lx3),proj_e2ephi(lx1,lx2,lx3),proj_e3ephi(lx1,lx2,lx3))
@@ -285,13 +302,14 @@ allocate(Br(lpoints),Btheta(lpoints),Bphi(lpoints))
 allocate(Brall(lpoints),Bthetaall(lpoints),Bphiall(lpoints))
 !! only used by root, but I think workers need to have space allocated for this
 
-! warn user if they are doing a calculation sans parallel current
+! warn user if they are doing a calculation sans parallel current, it's debatable whether this should just error out...
 if (mpi_cfg%myid==0 .and. .not. (cfg%flagJpar) ) then
   print*, '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
   print*, 'magcalc WARNING:  you appear to be computing magnetic fields for a simulation with', &
              'parallel currents turned off; results are likely to have substantial error!'
   print*, '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
 end if
+
 
 !! MAIN LOOP
 !it=1
@@ -360,7 +378,6 @@ main : do while (t < cfg%tdur)
       J1(:,2,:)=0
     end if
   end if
-
 
 
   !ROTATE MAGNETIC FIELDS INTO VERTICAL,SOUTH,EAST COMPONENTS
