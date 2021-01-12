@@ -331,15 +331,15 @@ The inputs/precip/simgrid.h5 file contains these vector variables:
 Each frame electric field input file has variables:  
 
 ```
-"Exit"        ! (llon,llat) background electric field x-component (units of V/m in the x2 direction) vs. mlon,mlat
-Eyit          ! (llon,llat) background electric field y-component (V/m in the x3 direction) vs. mlon,mlat
-Vmaxx1it      ! (llon,llat) potential or FAC boundary condition at the location of maximum x1 vs. mlon,mlat
-Vmaxx2ist     ! (llat) potential boundary condition at the location of maximum x2 vs. mlat
-Vmaxx3ist     ! (llon) potential boundary condition at the location of maximum x3 vs. mlon
-Vminx1it      ! (llon,llat) potential or FAC boundary condition at the location of minimum x1 vs. mlon,mlat
-Vminx2ist     ! (llat) potential boundary condition at the location of minimum x2 vs. mlat
-Vminx3ist     ! (llon) potential boundary condition at the location of minimum x3 vs. mlon
-flagdirich    ! (1) whether to treat the data in Vmax{min}x1 arrays as potential (0 value) or FAC (1 value)
+"Exit"          ! (llon,llat) background electric field x-component (units of V/m in the x2 direction) vs. mlon,mlat
+"Eyit"          ! (llon,llat) background electric field y-component (V/m in the x3 direction) vs. mlon,mlat
+"Vmaxx1it"      ! (llon,llat) potential or FAC boundary condition at the location of maximum x1 vs. mlon,mlat
+"Vmaxx2ist"     ! (llat) potential boundary condition at the location of maximum x2 vs. mlat
+"Vmaxx3ist"     ! (llon) potential boundary condition at the location of maximum x3 vs. mlon
+"Vminx1it"      ! (llon,llat) potential or FAC boundary condition at the location of minimum x1 vs. mlon,mlat
+"Vminx2ist"     ! (llat) potential boundary condition at the location of minimum x2 vs. mlat
+"Vminx3ist"     ! (llon) potential boundary condition at the location of minimum x3 vs. mlon
+"flagdirich"    ! (1) whether to treat the data in Vmax{min}x1 arrays as potential (0 value) or FAC (1 value)
 ```
 
 In cases where a quasi-electrodynamic solution is done both the electric field and potential will be assumed to go to zero at the lateral (x2,3) boundaries of the model - unless periodic x3 boundary conditions are chosen (these are set in the config.nml file).  
