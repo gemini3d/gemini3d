@@ -438,7 +438,7 @@ if (mpi_cfg%myid==0) then    !root
   if (.not. all(ieee_is_finite(dTnall))) error stop 'dTnall: non-finite value(s)'
 
 
-  ! FIXME: should we loop through the workers for each parameter first? that way we can overwrite that parameter and also not worry about worker 2 having to block until worker 1 receives all of its data...  The issue is that parmtmp changes size for each worker...
+  ! FIXME: should we loop through the workers for each parameter first? that way we can overwrite that parameter and also not worry about worker 2 having to block until worker 1 receives all of its data...  The issue is that parmtmp changes size for each worker...   Possibly allocated a single linear buffer that can hold the full data and pack that with the data to be sent to avoid memory overhead...
   !in the 3D case we cannnot afford to send full grid data and need to instead use neutral subgrid splits defined earlier
   do iid=1,mpi_cfg%lid-1
     allocate(parmtmp(lzn,slabsizes(iid,1),slabsizes(iid,2)))    !get space for the parameters for this worker
