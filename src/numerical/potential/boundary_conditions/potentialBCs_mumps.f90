@@ -362,18 +362,18 @@ if(t + dt / 2._wp >= tnext .or. t < 0) then    !need to load a new file
   end if
 
   if (debug) then
-  print *, 'Min/max values for E0xi:  ',minval(E0xinext),maxval(E0xinext)
-  print *, 'Min/max values for E0yi:  ',minval(E0yinext),maxval(E0yinext)
-  print *, 'Min/max values for Vminx1i:  ',minval(Vminx1inext),maxval(Vminx1inext)
-  print *, 'Min/max values for Vmaxx1i:  ',minval(Vmaxx1inext),maxval(Vmaxx1inext)
-
-  if (llon/=1 .and. llat/=1) then
-    print *, 'Min/max values for Vminx2i:  ',minval(Vminx2isnext),maxval(Vminx2isnext)
-    print *, 'Min/max values for Vmaxx2i:  ',minval(Vmaxx2isnext),maxval(Vmaxx2isnext)
-    print *, 'Min/max values for Vminx3i:  ',minval(Vminx3isnext),maxval(Vminx3isnext)
-    print *, 'Min/max values for Vmaxx3i:  ',minval(Vmaxx3isnext),maxval(Vmaxx3isnext)
+    print *, 'Min/max values for E0xi:  ',minval(E0xinext),maxval(E0xinext)
+    print *, 'Min/max values for E0yi:  ',minval(E0yinext),maxval(E0yinext)
+    print *, 'Min/max values for Vminx1i:  ',minval(Vminx1inext),maxval(Vminx1inext)
+    print *, 'Min/max values for Vmaxx1i:  ',minval(Vmaxx1inext),maxval(Vmaxx1inext)
+  
+    if (llon/=1 .and. llat/=1) then
+      print *, 'Min/max values for Vminx2i:  ',minval(Vminx2isnext),maxval(Vminx2isnext)
+      print *, 'Min/max values for Vmaxx2i:  ',minval(Vmaxx2isnext),maxval(Vmaxx2isnext)
+      print *, 'Min/max values for Vminx3i:  ',minval(Vminx3isnext),maxval(Vminx3isnext)
+      print *, 'Min/max values for Vmaxx3i:  ',minval(Vmaxx3isnext),maxval(Vmaxx3isnext)
+    end if
   end if
-  endif
 
 
   !> UPDATE OUR CONCEPT OF PREVIOUS AND NEXT TIMES
@@ -441,18 +441,7 @@ if(debug) then
   end if
 endif
 
-!!> LOAD POTENTIAL SOLVER INPUT ARRAYS, FIRST MAP THE ELECTRIC FIELDS
-!do ix3=1,lx3all
-!  do ix2=1,lx2all
-!    h2ref=x%h2all(ix1ref,ix2,ix3)
-!    !! define a reference metric factor for a given field line
-!    h3ref=x%h3all(ix1ref,ix2,ix3)
-!    do ix1=1,lx1
-!      E02all(ix1,ix2,ix3)=E0xinow(ix2,ix3)*h2ref/x%h2all(ix1,ix2,ix3)
-!      E03all(ix1,ix2,ix3)=E0yinow(ix2,ix3)*h3ref/x%h3all(ix1,ix2,ix3)
-!    end do
-!  end do
-!end do
+
 call compute_rootBGEfields(x,E02all,E03all)
 
 

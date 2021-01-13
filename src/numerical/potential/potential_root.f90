@@ -67,7 +67,7 @@ lx3=size(sig0,3)
 lx3all=size(Phiall,3)
 
 
-!USE PREVIOUS MUMPS PERMUTATION (OLD CODE? BUT MIGHT BE WORTH REINSTATING?)
+!> store a cached ordering for later use (improves performance substantially)
 perflag=.true.
 
 
