@@ -361,58 +361,59 @@ end if
 !--------
 
 
-!--------
-!COMPUTE TIME DERIVATIVE NEEDED FOR POLARIZATION CURRENT.  ONLY DO THIS IF WE HAVE SPECIFIC NONZERO INERTIAL CAPACITANCE
-!if (maxval(incap) > 0._wp) then
-!! ZZZ this is really bad needs to be a global test rather than having each worker test since there
-!! is message passing embedded in here and everyone needs to do the same thing!!!
-if (cfg%flagcap/=0) then
-  if (debug) print*, 'Working on polarization currents...'
-
-  !differentiate E2 in x2 (needs haloing)
-  J1halo(1:lx1,1:lx2,1:lx3)=E2
-  call halo_pot(J1halo,tag%J1,x%flagper,.false.)
-  divtmp=grad3D2(J1halo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
-  grad2E=divtmp(1:lx1,1:lx2,1:lx3)
-
-  !Now differentiate E2 in the x3 direction
-  J1halo(1:lx1,1:lx2,1:lx3)=E2
-  call halo_pot(J1halo,tag%J1,x%flagper,.false.)
-  divtmp=grad3D3(J1halo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
-  grad3E=divtmp(1:lx1,1:lx2,1:lx3)
-
-  !total derivative needed to compute the x2 component of the polarization current
-  DE2Dt=(E2-E2prev)/dt+v2*grad2E+v3*grad3E
-
-  !differentiate E3 in x2
-  J1halo(1:lx1,1:lx2,1:lx3)=E3
-  call halo_pot(J1halo,tag%J1,x%flagper,.false.)
-  divtmp=grad3D2(J1halo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
-  grad2E=divtmp(1:lx1,1:lx2,1:lx3)
-
-  !differentiate E3 in x3
-  J1halo(1:lx1,1:lx2,1:lx3)=E3
-  call halo_pot(J1halo,tag%J1,x%flagper,.false.)
-  divtmp=grad3D3(J1halo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
-  grad3E=divtmp(1:lx1,1:lx2,1:lx3)
-
-  !total derivative needed for x3 component of pol. current
-  DE3Dt=(E3-E3prev)/dt+v2*grad2E+v3*grad3E
-
-  !convert derivative to current density
-  J1pol= 0
-  J2pol=incap*DE2Dt
-  J3pol=incap*DE3Dt
-else       !pure electrostatic solve was done
-  if (debug) print*, 'Electrostatics used, skipping polarization current...'
-  DE2Dt= 0
-  DE3Dt= 0
-  J1pol= 0
-  J2pol= 0
-  J3pol= 0
-end if
-!--------
-
+call polarization_currents(cfg,x,dt,incap,E2,E3,E2prev,E3prev,v2,v3,J1pol,J2pol,J3pol)
+!!--------
+!!COMPUTE TIME DERIVATIVE NEEDED FOR POLARIZATION CURRENT.  ONLY DO THIS IF WE HAVE SPECIFIC NONZERO INERTIAL CAPACITANCE
+!!if (maxval(incap) > 0._wp) then
+!!! ZZZ this is really bad needs to be a global test rather than having each worker test since there
+!!! is message passing embedded in here and everyone needs to do the same thing!!!
+!if (cfg%flagcap/=0) then
+!  if (debug) print*, 'Working on polarization currents...'
+!
+!  !differentiate E2 in x2 (needs haloing)
+!  J1halo(1:lx1,1:lx2,1:lx3)=E2
+!  call halo_pot(J1halo,tag%J1,x%flagper,.false.)
+!  divtmp=grad3D2(J1halo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
+!  grad2E=divtmp(1:lx1,1:lx2,1:lx3)
+!
+!  !Now differentiate E2 in the x3 direction
+!  J1halo(1:lx1,1:lx2,1:lx3)=E2
+!  call halo_pot(J1halo,tag%J1,x%flagper,.false.)
+!  divtmp=grad3D3(J1halo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
+!  grad3E=divtmp(1:lx1,1:lx2,1:lx3)
+!
+!  !total derivative needed to compute the x2 component of the polarization current
+!  DE2Dt=(E2-E2prev)/dt+v2*grad2E+v3*grad3E
+!
+!  !differentiate E3 in x2
+!  J1halo(1:lx1,1:lx2,1:lx3)=E3
+!  call halo_pot(J1halo,tag%J1,x%flagper,.false.)
+!  divtmp=grad3D2(J1halo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
+!  grad2E=divtmp(1:lx1,1:lx2,1:lx3)
+!
+!  !differentiate E3 in x3
+!  J1halo(1:lx1,1:lx2,1:lx3)=E3
+!  call halo_pot(J1halo,tag%J1,x%flagper,.false.)
+!  divtmp=grad3D3(J1halo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
+!  grad3E=divtmp(1:lx1,1:lx2,1:lx3)
+!
+!  !total derivative needed for x3 component of pol. current
+!  DE3Dt=(E3-E3prev)/dt+v2*grad2E+v3*grad3E
+!
+!  !convert derivative to current density
+!  J1pol= 0
+!  J2pol=incap*DE2Dt
+!  J3pol=incap*DE3Dt
+!else       !pure electrostatic solve was done
+!  if (debug) print*, 'Electrostatics used, skipping polarization current...'
+!  DE2Dt= 0
+!  DE3Dt= 0
+!  J1pol= 0
+!  J2pol= 0
+!  J3pol= 0
+!end if
+!!--------
+!
 
 !--------
 J2=0._wp; J3=0._wp    ! must be zeroed out before we accumulate currents
@@ -428,107 +429,6 @@ end if
 
 
 call parallel_currents(cfg,x,J2,J3,Vminx1slab,Vmaxx1slab,Phi,sig0,flagdirich,J1,E1)
-!!!!!!!!!
-!!> inputs to this block of code:  cfg,x,J2,3,Vmaxx1slab,Vminx1slab,flagdirich,gridflag
-!!> outputs to code:  J1 
-!!NOW DEAL WITH THE PARALLEL FIELDS AND ALL CURRENTS
-!if (lx2/=1 .and. cfg%potsolve ==1) then    !we did a field-integrated solve above
-!  if (debug) print*, 'Appear to need to differentiate to get J1...'
-!
-!  !-------
-!  !NOTE THAT A DIRECT E1ALL CALCULATION WILL GIVE ZERO, SO USE INDIRECT METHOD, AS FOLLOWS
-!  J1= 0    !a placeholder so that only the perp divergence is calculated - will get overwritten later.
-!!      divJperp=div3D(J1,J2,J3,x,1,lx1,1,lx2,1,lx3)
-!
-!  if (cfg%flagJpar) then   ! user can elect not to compute Jpar, which can be prone to artifacts particularly at low resolution
-!    J1halo(1:lx1,1:lx2,1:lx3)=J1
-!    J2halo(1:lx1,1:lx2,1:lx3)=J2
-!    J3halo(1:lx1,1:lx2,1:lx3)=J3
-!
-!    call halo_pot(J1halo,tag%J1,x%flagper,.false.)
-!    call halo_pot(J2halo,tag%J2,x%flagper,.false.)
-!    call halo_pot(J3halo,tag%J3,x%flagper,.false.)
-!
-!    divtmp=div3D(J1halo(0:lx1+1,0:lx2+1,0:lx3+1),J2halo(0:lx1+1,0:lx2+1,0:lx3+1), &
-!                 J3halo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
-!    divJperp=x%h1(1:lx1,1:lx2,1:lx3)*x%h2(1:lx1,1:lx2,1:lx3)*x%h3(1:lx1,1:lx2,1:lx3)*divtmp(1:lx1,1:lx2,1:lx3)
-!    if (flagdirich /= 1) then
-!      !! Neumann conditions, this is boundary location-agnostic since both bottom and top FACs are known
-!      !! - they have to  be loaded into VVmaxx1 and Vminx1
-!!      if (debug) print *, 'Nuemann boundaries, integrating from highest altitude down to preserve accuracy...'
-!      if (gridflag==0) then     !closed dipole grid, really would be best off integrating from the source hemisphere
-!!        if (debug) print *,  'Closed dipole grid; integration starting in source hemisphere (if applicable)...', &
-!!                       minval(Vmaxx1slab), &
-!!                       maxval(Vmaxx1slab)
-!        if (cfg%sourcemlat >= 0) then    !integrate from northern hemisphere
-!!          if (debug) print *, 'Source is in northern hemisphere (or there is no source)...'
-!          J1=integral3D1_curv_alt(divJperp,x,1,lx1)    !int divperp of BG current, go from maxval(x1) to location of interest
-!          do ix1=1,lx1
-!            J1(ix1,:,:)= 1/x%h2(ix1,1:lx2,1:lx3)/x%h3(ix1,1:lx2,1:lx3)* &
-!                             (x%h2(1,1:lx2,1:lx3)*x%h3(1,1:lx2,1:lx3)*Vmaxx1slab+J1(ix1,:,:))
-!          end do
-!        else
-!!          if (debug) print *, 'Source in southern hemisphere...'
-!          J1=integral3D1(divJperp,x,1,lx1)    !int divperp of BG current starting from minx1
-!          do ix1=1,lx1
-!            J1(ix1,:,:)= 1/x%h2(ix1,1:lx2,1:lx3)/x%h3(ix1,1:lx2,1:lx3)* &
-!                             (x%h2(1,1:lx2,1:lx3)*x%h3(1,1:lx2,1:lx3)*Vminx1slab-J1(ix1,:,:))
-!          end do
-!        end if
-!      ! For open grids always integrate from the bottom (zero current)
-!      elseif (gridflag==1) then    !this would be an inverted grid, this max altitude corresponds to the min value of x1
-!!        if (debug) print *,  'Inverted grid; integration starting at min x1 (highest alt. or southern hemisphere)...', &
-!!                       minval(Vminx1slab), &
-!!                       maxval(Vminx1slab)
-!        J1=integral3D1(divJperp,x,1,lx1)    !int divperp of BG current
-!        do ix1=1,lx1
-!          J1(ix1,:,:)= 1/x%h2(ix1,1:lx2,1:lx3)/x%h3(ix1,1:lx2,1:lx3)* &
-!                           (x%h2(1,1:lx2,1:lx3)*x%h3(1,1:lx2,1:lx3)*Vminx1slab-J1(ix1,:,:))
-!        end do
-!
-!      else        !minx1 is at teh bottom of the grid to integrate from max x1
-!!        if (debug) print *,  'Non-inverted grid; integration starting at max x1...', minval(Vmaxx1slab), maxval(Vmaxx1slab)
-!        J1=integral3D1_curv_alt(divJperp,x,1,lx1)    
-!        !! int divperp of BG current, go from maxval(x1) to location of interest
-!        do ix1=1,lx1
-!          J1(ix1,:,:)= 1/x%h2(ix1,1:lx2,1:lx3)/x%h3(ix1,1:lx2,1:lx3)* &
-!                           (x%h2(1,1:lx2,1:lx3)*x%h3(1,1:lx2,1:lx3)*Vmaxx1slab+J1(ix1,:,:))
-!        end do
-!
-!      end if
-!    else
-!      !! Dirichlet conditions - we need to integrate from the ***lowest altitude***
-!      !! (where FAC is known to be zero, note this is not necessarilty the logical bottom of the grid), upwards (to where it isn't)
-!      if (gridflag/=2) then    !inverted grid (logical top is the lowest altitude)
-!        if (debug) print *, 'Inverted grid detected - integrating logical top downward to compute FAC...'
-!        J1=integral3D1_curv_alt(divJperp,x,1,lx1)    !int divperp of BG current
-!        do ix1=1,lx1
-!          J1(ix1,:,:)= 1/x%h2(ix1,1:lx2,1:lx3)/x%h3(ix1,1:lx2,1:lx3)* &
-!                           (J1(ix1,:,:))    !FAC AT TOP ASSUMED TO BE ZERO
-!        end do
-!      else      !non-inverted grid (logical bottom is the lowest altitude - so integrate normy)
-!        if (debug) print *, 'Non-inverted grid detected - integrating logical bottom to top to compute FAC...'
-!        J1=integral3D1(divJperp,x,1,lx1)    !int divperp of BG current
-!        do ix1=1,lx1
-!          J1(ix1,:,:)= 1/x%h2(ix1,1:lx2,1:lx3)/x%h3(ix1,1:lx2,1:lx3)* &
-!                           (-J1(ix1,:,:))    !FAC AT THE BOTTOM ASSUMED TO BE ZERO
-!        end do
-!      end if
-!    end if
-!    E1=J1/sig0
-!    !-------
-!  end if ! flagJpar
-!else   !we resolved the field line (either 2D solve or full 3D) so just differentiate normally
-!
-!  !-------
-!  Phi=-Phi
-!  E1=grad3D1(Phi,x,1,lx1,1,lx2,1,lx3)    !no haloing required since x1-derivative
-!  Phi=-Phi
-!  J1=sig0*E1
-!  !-------
-!
-!end if
-!!!!!!!!!!
 
 
 !R-------
