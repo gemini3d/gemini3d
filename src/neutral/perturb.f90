@@ -415,6 +415,7 @@ if (mpi_cfg%myid==0) then    !root
   UTsectmp=UTsecnext
   call dateinc(dtneu,ymdtmp,UTsectmp)                !get the date for "next" params
 
+  !FIXME: we probably need to read in and distrubute the input parameters one at a time to reduce memory footprint...
   call get_neutral3(date_filename(neudir,ymdtmp,UTsectmp), &
     dnOall,dnN2all,dnO2all,dvnxall,dvnrhoall,dvnzall,dTnall)
 
@@ -437,9 +438,10 @@ if (mpi_cfg%myid==0) then    !root
   if (.not. all(ieee_is_finite(dTnall))) error stop 'dTnall: non-finite value(s)'
 
 
+  ! FIXME: should we loop through the workers for each parameter first? that way we can overwrite that parameter and also not worry about worker 2 having to block until worker 1 receives all of its data...  The issue is that parmtmp changes size for each worker...
   !in the 3D case we cannnot afford to send full grid data and need to instead use neutral subgrid splits defined earlier
   do iid=1,mpi_cfg%lid-1
-    allocate(parmtmp(lzn,slabsizes(iid,1),slabsizes(iid,2)))    !get space for the parameter for this worker
+    allocate(parmtmp(lzn,slabsizes(iid,1),slabsizes(iid,2)))    !get space for the parameters for this worker
 
     parmtmp=dnOall(1:lzn,indx(iid,3):indx(iid,4),indx(iid,5):indx(iid,6))
     call mpi_send(parmtmp,lzn*slabsizes(iid,1)*slabsizes(iid,2),mpi_realprec,iid,tag%dnO,MPI_COMM_WORLD,ierr)
