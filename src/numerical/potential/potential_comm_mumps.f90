@@ -28,7 +28,7 @@ implicit none (type, external)
 private
 public :: electrodynamics, halo_pot, potential_sourceterms, pot2perpfield, velocities, get_BGEfields, &
             acc_perpconductioncurrents,acc_perpwindcurrents,acc_perpgravcurrents,acc_pressurecurrents, &
-            parallel_currents
+            parallel_currents,polarization_currents
 
 external :: mpi_send, mpi_recv
 
@@ -660,17 +660,84 @@ if (lx2/=1 .and. cfg%potsolve ==1) then    !we did a field-integrated solve for 
     !-------
   end if ! flagJpar
 else   !we resolved the field line (either 2D solve or full 3D) so just differentiate normally
-
   !-------
   E1=grad3D1(Phi,x,1,lx1,1,lx2,1,lx3)    !no haloing required since x1-derivative
   E1=-E1
   J1=sig0*E1
   !-------
-
 end if
 
-
 end subroutine parallel_currents
+
+
+subroutine polarization_currents(cfg,x,dt,incap,E2,E3,E2prev,E3prev,v2,v3,J1pol,J2pol,J3pol)
+
+!> Computes the polarization currents resulting from time-dependence and shearing of the plasma
+
+type(gemini_cfg), intent(in) :: cfg
+type(curvmesh), intent(in) :: x
+real(wp), intent(in) :: dt
+real(wp), dimension(:,:,:), intent(in) :: incap,E2,E3,E2prev,E3prev,v2,v3
+real(wp), dimension(1:size(E2,1),1:size(E2,2),1:size(E2,3)), intent(out) :: J1pol,J2pol,J3pol
+
+! internal work arrays
+integer :: lx1,lx2,lx3
+real(wp), dimension(-1:size(E2,1)+2,-1:size(E2,2)+2,-1:size(E2,3)+2) :: Ehalo
+real(wp), dimension(1:size(E2,1),1:size(E2,2),1:size(E2,3)) :: DE2Dt,DE3Dt,grad2E,grad3E
+real(wp), dimension(0:size(E2,1)+1,0:size(E2,2)+1,0:size(E2,3)+1) :: divtmp
+
+
+!> sizes; should perhaps be imported from the grid module
+lx1=size(E2,1)
+lx2=size(E2,2)
+lx3=size(E2,3)
+
+
+! check whether electrodynamics is being used or not
+if (cfg%flagcap/=0) then
+  !differentiate E2 in x2
+  Ehalo(1:lx1,1:lx2,1:lx3)=E2
+  call halo_pot(Ehalo,tag%J1,x%flagper,.false.)
+  divtmp=grad3D2(Ehalo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
+  grad2E=divtmp(1:lx1,1:lx2,1:lx3)
+
+  !differentiate E2 in x3
+  Ehalo(1:lx1,1:lx2,1:lx3)=E2
+  call halo_pot(Ehalo,tag%J1,x%flagper,.false.)    !likely doesn't need to be haloed again
+  divtmp=grad3D3(Ehalo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
+  grad3E=divtmp(1:lx1,1:lx2,1:lx3)
+
+  !compute total derivative in x2
+  DE2Dt=(E2-E2prev)/dt+v2*grad2E+v3*grad3E
+
+  !differentiate E3 in x2
+  Ehalo(1:lx1,1:lx2,1:lx3)=E3
+  call halo_pot(Ehalo,tag%J1,x%flagper,.false.)
+  divtmp=grad3D2(Ehalo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
+  grad2E=divtmp(1:lx1,1:lx2,1:lx3)
+
+  !differentiate E3 in x3
+  Ehalo(1:lx1,1:lx2,1:lx3)=E3
+  call halo_pot(Ehalo,tag%J1,x%flagper,.false.)    !maybe don't need to halo again???
+  divtmp=grad3D3(Ehalo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
+  grad3E=divtmp(1:lx1,1:lx2,1:lx3)
+
+  !x3 total derivative
+  DE3Dt=(E3-E3prev)/dt+v2*grad2E+v3*grad3E
+
+  !convert derivative into polarization current density
+  J1pol= 0
+  J2pol=incap*DE2Dt
+  J3pol=incap*DE3Dt
+else       !pure electrostatic solve was done, zero out everything
+  DE2Dt= 0
+  DE3Dt= 0
+  J1pol= 0
+  J2pol= 0
+  J3pol= 0
+end if
+
+end subroutine polarization_currents
 
 
 subroutine get_BGEfields(x,E01,E02,E03)
