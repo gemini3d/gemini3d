@@ -26,19 +26,15 @@ integer :: flagdirich
 
 real(wp), dimension(1:size(Phiall,2),1:size(Phiall,3)) :: v2slaball,v3slaball   !stores drift velocs. for pol. current
 
-!   real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: paramtrim    !to hold trimmed magnetic field
 real(wp), dimension(1:size(Phiall,1),1:size(Phiall,2),1:size(Phiall,3)) :: E01all,E02all,E03all    !background fields
-!   real(wp), dimension(1:size(Phiall,1),1:size(Phiall,2),1:size(Phiall,3)) :: divJperpall2,divJperpall3,divJperpall
 !! more work arrays
 
 real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: integrand,sigintegral    !general work array for doing integrals
 
-real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: grad2E,grad3E    !more work arrays for pol. curr.
-real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: DE2Dt,DE3Dt   !pol. drift
 real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: J1pol,J2pol,J3pol
 
 real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: E01,E02,E03,E02src,E03src   !distributed background fields
-real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: srcterm,divJperp
+real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: srcterm!,divJperp
 real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: E1prev,E2prev,E3prev
 real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: Phi
 
@@ -46,11 +42,6 @@ real(wp), dimension(1:size(E1,2),1:size(E1,3)) :: SigPint2,SigPint3,SigHint,inca
 real(wp), dimension(1:size(Phiall,2),1:size(Phiall,3)) :: SigPint2all,SigPint3all,SigHintall,incapintall,srctermintall
 
 real(wp), dimension(1:size(Phiall,2),1:size(Phiall,3)) :: Phislab,Phislab0
-
-real(wp), dimension(0:size(E1,1)+1,0:size(E1,2)+1,0:size(E1,3)+1) :: divtmp
-!! one extra grid point on either end to facilitate derivatives
-real(wp), dimension(-1:size(E1,1)+2,-1:size(E1,2)+2,-1:size(E1,3)+2) :: J1halo,J2halo,J3halo
-!! haloing assumes existence of two ghost cells
 
 real(wp), dimension(1:size(Phiall,1),1:size(Phiall,2),1:size(Phiall,3)) :: sig0scaledall,sigPscaledall,sigHscaledall
 real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: sig0scaled,sigPscaled,sigHscaled
