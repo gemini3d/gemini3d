@@ -27,7 +27,8 @@ use config, only: gemini_cfg
 implicit none (type, external)
 private
 public :: electrodynamics, halo_pot, potential_sourceterms, pot2perpfield, velocities, get_BGEfields, &
-            acc_perpconductioncurrents,acc_perpwindcurrents,acc_perpgravcurrents,acc_pressurecurrents
+            acc_perpconductioncurrents,acc_perpwindcurrents,acc_perpgravcurrents,acc_pressurecurrents, &
+            parallel_currents
 
 external :: mpi_send, mpi_recv
 
@@ -539,6 +540,137 @@ E3=divtmp(1:lx1,1:lx2,1:lx3)
 !--------
 
 end subroutine pot2perpfield
+
+
+subroutine parallel_currents(cfg,x,J2,J3,Vminx1slab,Vmaxx1slab,Phi,sig0,flagdirich,J1,E1)
+
+!> Compute the parallel currents given a potential solution and calculation of perpendicular currents
+
+type(gemini_cfg), intent(in) :: cfg
+type(curvmesh), intent(in) :: x
+real(wp), dimension(:,:,:), intent(in) :: J2,J3
+real(wp), dimension(:,:), intent(in) :: Vminx1slab,Vmaxx1slab
+real(wp), dimension(:,:,:), intent(in) :: Phi
+real(wp), dimension(:,:,:), intent(in) :: sig0
+integer, intent(in) :: flagdirich
+real(wp), dimension(1:size(J2,1),1:size(J2,2),1:size(J2,3)), intent(out) :: J1,E1
+
+!> local work arrays
+integer :: lx1,lx2,lx3
+integer :: ix1
+real(wp), dimension(-1:size(J2,1)+2,-1:size(J2,2)+2,-1:size(J2,3)+2) :: J1halo,J2halo,J3halo
+real(wp), dimension(0:size(J2,1)+1,0:size(J2,2)+1,0:size(J2,3)+1) :: divtmp
+real(wp), dimension(1:size(J2,1),1:size(J2,2),1:size(J2,3)) :: divJperp
+!! haloing assumes existence of two ghost cells
+
+
+!> sizes; should perhaps be imported from the grid module
+lx1=size(J2,1)
+lx2=size(J2,2)
+lx3=size(J2,3)
+
+
+!> inputs to this block of code:  cfg,x,J2,3,Vmaxx1slab,Vminx1slab,flagdirich,gridflag
+!> outputs to code:  J1 
+!NOW DEAL WITH THE PARALLEL FIELDS AND ALL CURRENTS
+if (lx2/=1 .and. cfg%potsolve ==1) then    !we did a field-integrated solve for potential
+  if (debug) print*, 'Appear to need to differentiate to get J1...'
+
+  !-------
+  !NOTE THAT A DIRECT E1ALL CALCULATION WILL GIVE ZERO, SO USE INDIRECT METHOD, AS FOLLOWS
+  J1= 0    !a placeholder so that only the perp divergence is calculated - will get overwritten later.
+!      divJperp=div3D(J1,J2,J3,x,1,lx1,1,lx2,1,lx3)
+
+  if (cfg%flagJpar) then   ! user can elect not to compute Jpar, which can be prone to artifacts particularly at low resolution
+    J1halo(1:lx1,1:lx2,1:lx3)=J1
+    J2halo(1:lx1,1:lx2,1:lx3)=J2
+    J3halo(1:lx1,1:lx2,1:lx3)=J3
+
+    call halo_pot(J1halo,tag%J1,x%flagper,.false.)
+    call halo_pot(J2halo,tag%J2,x%flagper,.false.)
+    call halo_pot(J3halo,tag%J3,x%flagper,.false.)
+
+    divtmp=div3D(J1halo(0:lx1+1,0:lx2+1,0:lx3+1),J2halo(0:lx1+1,0:lx2+1,0:lx3+1), &
+                 J3halo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
+    divJperp=x%h1(1:lx1,1:lx2,1:lx3)*x%h2(1:lx1,1:lx2,1:lx3)*x%h3(1:lx1,1:lx2,1:lx3)*divtmp(1:lx1,1:lx2,1:lx3)
+    if (flagdirich /= 1) then
+      !! Neumann conditions, this is boundary location-agnostic since both bottom and top FACs are known
+      !! - they have to  be loaded into VVmaxx1 and Vminx1
+!      if (debug) print *, 'Nuemann boundaries, integrating from highest altitude down to preserve accuracy...'
+      if (gridflag==0) then     !closed dipole grid, really would be best off integrating from the source hemisphere
+!        if (debug) print *,  'Closed dipole grid; integration starting in source hemisphere (if applicable)...', &
+!                       minval(Vmaxx1slab), &
+!                       maxval(Vmaxx1slab)
+        if (cfg%sourcemlat >= 0) then    !integrate from northern hemisphere
+!          if (debug) print *, 'Source is in northern hemisphere (or there is no source)...'
+          J1=integral3D1_curv_alt(divJperp,x,1,lx1)    !int divperp of BG current, go from maxval(x1) to location of interest
+          do ix1=1,lx1
+            J1(ix1,:,:)= 1/x%h2(ix1,1:lx2,1:lx3)/x%h3(ix1,1:lx2,1:lx3)* &
+                             (x%h2(1,1:lx2,1:lx3)*x%h3(1,1:lx2,1:lx3)*Vmaxx1slab+J1(ix1,:,:))
+          end do
+        else
+!          if (debug) print *, 'Source in southern hemisphere...'
+          J1=integral3D1(divJperp,x,1,lx1)    !int divperp of BG current starting from minx1
+          do ix1=1,lx1
+            J1(ix1,:,:)= 1/x%h2(ix1,1:lx2,1:lx3)/x%h3(ix1,1:lx2,1:lx3)* &
+                             (x%h2(1,1:lx2,1:lx3)*x%h3(1,1:lx2,1:lx3)*Vminx1slab-J1(ix1,:,:))
+          end do
+        end if
+      ! For open grids always integrate from the bottom (zero current)
+      elseif (gridflag==1) then    !this would be an inverted grid, this max altitude corresponds to the min value of x1
+!        if (debug) print *,  'Inverted grid; integration starting at min x1 (highest alt. or southern hemisphere)...', &
+!                       minval(Vminx1slab), &
+!                       maxval(Vminx1slab)
+        J1=integral3D1(divJperp,x,1,lx1)    !int divperp of BG current
+        do ix1=1,lx1
+          J1(ix1,:,:)= 1/x%h2(ix1,1:lx2,1:lx3)/x%h3(ix1,1:lx2,1:lx3)* &
+                           (x%h2(1,1:lx2,1:lx3)*x%h3(1,1:lx2,1:lx3)*Vminx1slab-J1(ix1,:,:))
+        end do
+
+      else        !minx1 is at teh bottom of the grid to integrate from max x1
+!        if (debug) print *,  'Non-inverted grid; integration starting at max x1...', minval(Vmaxx1slab), maxval(Vmaxx1slab)
+        J1=integral3D1_curv_alt(divJperp,x,1,lx1)    
+        !! int divperp of BG current, go from maxval(x1) to location of interest
+        do ix1=1,lx1
+          J1(ix1,:,:)= 1/x%h2(ix1,1:lx2,1:lx3)/x%h3(ix1,1:lx2,1:lx3)* &
+                           (x%h2(1,1:lx2,1:lx3)*x%h3(1,1:lx2,1:lx3)*Vmaxx1slab+J1(ix1,:,:))
+        end do
+
+      end if
+    else
+      !! Dirichlet conditions - we need to integrate from the ***lowest altitude***
+      !! (where FAC is known to be zero, note this is not necessarilty the logical bottom of the grid), upwards (to where it isn't)
+      if (gridflag/=2) then    !inverted grid (logical top is the lowest altitude)
+        if (debug) print *, 'Inverted grid detected - integrating logical top downward to compute FAC...'
+        J1=integral3D1_curv_alt(divJperp,x,1,lx1)    !int divperp of BG current
+        do ix1=1,lx1
+          J1(ix1,:,:)= 1/x%h2(ix1,1:lx2,1:lx3)/x%h3(ix1,1:lx2,1:lx3)* &
+                           (J1(ix1,:,:))    !FAC AT TOP ASSUMED TO BE ZERO
+        end do
+      else      !non-inverted grid (logical bottom is the lowest altitude - so integrate normy)
+        if (debug) print *, 'Non-inverted grid detected - integrating logical bottom to top to compute FAC...'
+        J1=integral3D1(divJperp,x,1,lx1)    !int divperp of BG current
+        do ix1=1,lx1
+          J1(ix1,:,:)= 1/x%h2(ix1,1:lx2,1:lx3)/x%h3(ix1,1:lx2,1:lx3)* &
+                           (-J1(ix1,:,:))    !FAC AT THE BOTTOM ASSUMED TO BE ZERO
+        end do
+      end if
+    end if
+    E1=J1/sig0
+    !-------
+  end if ! flagJpar
+else   !we resolved the field line (either 2D solve or full 3D) so just differentiate normally
+
+  !-------
+  E1=grad3D1(Phi,x,1,lx1,1,lx2,1,lx3)    !no haloing required since x1-derivative
+  E1=-E1
+  J1=sig0*E1
+  !-------
+
+end if
+
+
+end subroutine parallel_currents
 
 
 subroutine get_BGEfields(x,E01,E02,E03)
