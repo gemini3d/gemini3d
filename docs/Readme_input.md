@@ -381,7 +381,14 @@ GEMINI needs density, drift, and temperature for each species that it simulation
 
 ### Initial condition input file requirements
 
-Initial condition input files shall contain all input data needed to start a simulation including state variables for all plasma species (density, drift (parallel dimension), and temperature) in SI units.  If using hdf5 input, these variables shall be named ```nsall,vs1all,Tsall```.  
+Initial condition input files shall contain all input data needed to start a simulation including state variables for all plasma species (density, drift (parallel dimension), and temperature) in SI units.  If using hdf5 input, these variables are to be organized as follows (```lsp``` is the number of species used in the simulations):
+
+ ```
+ "nsall"           ! (lx1,lx2,lx3,lsp) number density of each species over the grid 
+ "vs1all"          ! (lx1,lx2,lx3,lsp) drift velocity parallel to B over the grid (x1-direction)
+ "Tsall"           ! (lx1,lx2,lx3,lsp) tmeperature for each species over the grid
+ "Phiall"          ! (lx2,lx3) electric potential vs. x2 and x3 - may be omitted to default to zero
+ ```  
 
 
 ## Suggested workflow for creating input file to run a simulation
@@ -395,7 +402,7 @@ Initial condition input files shall contain all input data needed to start a sim
 7. Recompile the code with make *only if you are using subroutine based input and boundary conditions* (please note that this functionality will be removed in a later release).  If you are using file-based input then a rebuild is not necessary (this is another benefit of using file-based input)
 8. Run your new simulation
 
-### A note on running two-dimensional simulations
+## A note on running two-dimensional simulations
 
 The code determines 2D vs. 3D runs by the number of x2 or x3 grid points specified in the config.nml input file.
 If the number of x2 grid points is 1, then a 2D run is executed (since message passing in the x3 direction will work normally).
