@@ -53,6 +53,7 @@ lx3=size(sig0,3)
 ! this should always be on by default unless the user wants to turn off and recompile; ~10% savings in mumps time *per time step*
 perflag=.true.
 
+
 !call BGfields_boundaries_worker(flagdirich,E01,E02,E03,Vminx1slab,Vmaxx1slab)
 
 

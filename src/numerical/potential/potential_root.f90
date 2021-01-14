@@ -35,6 +35,7 @@ real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: integrand,siginte
 real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: J1pol,J2pol,J3pol
 
 !real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: E01,E02,E03!,E02src,E03src   !distributed background fields
+
 real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: srcterm!,divJperp
 real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: E1prev,E2prev,E3prev
 real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: Phi
@@ -71,6 +72,7 @@ lx3all=size(Phiall,3)
 !> store a cached ordering for later use (improves performance substantially)
 perflag=.true.
 
+
 !call BGfields_boundaries_root(dt,t,ymd,UTsec,cfg,x, &
 !                                      flagdirich,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3,Vmaxx3, &
 !                                      E01,E02,E03,Vminx1slab,Vmaxx1slab)
@@ -81,6 +83,8 @@ perflag=.true.
 !else                             ! Eulerian grid, use background fields
 !  E02src=E02; E03src=E03
 !end if
+
+
 call potential_sourceterms(sigP,sigH,sigPgrav,sigHgrav,E02src,E03src,vn2,vn3,B1,muP,muH,ns,Ts,x, &
                            cfg%flaggravdrift,cfg%flagdiamagnetic,srcterm)
 
