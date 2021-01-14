@@ -53,7 +53,7 @@ lx3=size(sig0,3)
 ! this should always be on by default unless the user wants to turn off and recompile; ~10% savings in mumps time *per time step*
 perflag=.true.
 
-
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 call mpi_recv(flagdirich,1,MPI_INTEGER,0,tag%flagdirich,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
 if (ierr /= 0) error stop 'dirich'
 
@@ -64,6 +64,7 @@ call bcast_recv(E02,tag%E02)
 call bcast_recv(E03,tag%E03)
 call bcast_recv(Vminx1slab,tag%Vminx1)
 call bcast_recv(Vmaxx1slab,tag%Vmaxx1)
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
 !> Compute source terms, check Lagrangian flag
@@ -235,52 +236,6 @@ end if
 
 
 call polarization_currents(cfg,x,dt,incap,E2,E3,E2prev,E3prev,v2,v3,J1pol,J2pol,J3pol)
-!!--------
-!!COMPUTE TIME DERIVATIVE NEEDED FOR POLARIZATION CURRENT.  ONLY DO THIS IF WE HAVE SPECIFIC NONZERO INERTIAL CAPACITANCE
-!!if (maxval(incap) > 0._wp) then
-!if (cfg%flagcap/=0) then
-!  !differentiate E2 in x2
-!  J1halo(1:lx1,1:lx2,1:lx3)=E2
-!  call halo_pot(J1halo,tag%J1,x%flagper,.false.)
-!  divtmp=grad3D2(J1halo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
-!  grad2E=divtmp(1:lx1,1:lx2,1:lx3)
-!
-!  !differentiate E2 in x3
-!  J1halo(1:lx1,1:lx2,1:lx3)=E2
-!  call halo_pot(J1halo,tag%J1,x%flagper,.false.)    !likely doesn't need to be haloed again
-!  divtmp=grad3D3(J1halo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
-!  grad3E=divtmp(1:lx1,1:lx2,1:lx3)
-!
-!  !compute total derivative in x2
-!  DE2Dt=(E2-E2prev)/dt+v2*grad2E+v3*grad3E
-!
-!  !differentiate E3 in x2
-!  J1halo(1:lx1,1:lx2,1:lx3)=E3
-!  call halo_pot(J1halo,tag%J1,x%flagper,.false.)
-!  divtmp=grad3D2(J1halo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
-!  grad2E=divtmp(1:lx1,1:lx2,1:lx3)
-!
-!  !differentiate E3 in x3
-!  J1halo(1:lx1,1:lx2,1:lx3)=E3
-!  call halo_pot(J1halo,tag%J1,x%flagper,.false.)    !maybe don't need to halo again???
-!  divtmp=grad3D3(J1halo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
-!  grad3E=divtmp(1:lx1,1:lx2,1:lx3)
-!
-!  !x3 total derivative
-!  DE3Dt=(E3-E3prev)/dt+v2*grad2E+v3*grad3E
-!
-!  !convert derivative into polarization current density
-!  J1pol= 0
-!  J2pol=incap*DE2Dt
-!  J3pol=incap*DE3Dt
-!else       !pure electrostatic solve was done
-!  DE2Dt= 0
-!  DE3Dt= 0
-!  J1pol= 0
-!  J2pol= 0
-!  J3pol= 0
-!end if
-!!--------
 
 
 !--------

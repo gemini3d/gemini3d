@@ -71,6 +71,7 @@ lx3all=size(Phiall,3)
 perflag=.true.
 
 
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !R-------
 !! POPULATE BACKGROUND AND BOUNDARY CONDITION ARRAYS
 !! - IDEALLY ROOT ONLY SINCE IT INVOLVES FILE INPUT, since the interpolation is 2D don't distribute to workers...
@@ -107,6 +108,7 @@ call bcast_send(E03all,tag%E03,E03)
 Vmaxx1buf=Vmaxx1; Vminx1buf=Vminx1;
 call bcast_send(Vminx1buf,tag%Vminx1,Vminx1slab)
 call bcast_send(Vmaxx1buf,tag%Vmaxx1,Vmaxx1slab)
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
 !> Compute source terms, check Lagrangian flag
@@ -353,58 +355,7 @@ end if
 
 
 call polarization_currents(cfg,x,dt,incap,E2,E3,E2prev,E3prev,v2,v3,J1pol,J2pol,J3pol)
-!!--------
-!!COMPUTE TIME DERIVATIVE NEEDED FOR POLARIZATION CURRENT.  ONLY DO THIS IF WE HAVE SPECIFIC NONZERO INERTIAL CAPACITANCE
-!!if (maxval(incap) > 0._wp) then
-!!! ZZZ this is really bad needs to be a global test rather than having each worker test since there
-!!! is message passing embedded in here and everyone needs to do the same thing!!!
-!if (cfg%flagcap/=0) then
-!  if (debug) print*, 'Working on polarization currents...'
-!
-!  !differentiate E2 in x2 (needs haloing)
-!  J1halo(1:lx1,1:lx2,1:lx3)=E2
-!  call halo_pot(J1halo,tag%J1,x%flagper,.false.)
-!  divtmp=grad3D2(J1halo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
-!  grad2E=divtmp(1:lx1,1:lx2,1:lx3)
-!
-!  !Now differentiate E2 in the x3 direction
-!  J1halo(1:lx1,1:lx2,1:lx3)=E2
-!  call halo_pot(J1halo,tag%J1,x%flagper,.false.)
-!  divtmp=grad3D3(J1halo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
-!  grad3E=divtmp(1:lx1,1:lx2,1:lx3)
-!
-!  !total derivative needed to compute the x2 component of the polarization current
-!  DE2Dt=(E2-E2prev)/dt+v2*grad2E+v3*grad3E
-!
-!  !differentiate E3 in x2
-!  J1halo(1:lx1,1:lx2,1:lx3)=E3
-!  call halo_pot(J1halo,tag%J1,x%flagper,.false.)
-!  divtmp=grad3D2(J1halo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
-!  grad2E=divtmp(1:lx1,1:lx2,1:lx3)
-!
-!  !differentiate E3 in x3
-!  J1halo(1:lx1,1:lx2,1:lx3)=E3
-!  call halo_pot(J1halo,tag%J1,x%flagper,.false.)
-!  divtmp=grad3D3(J1halo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
-!  grad3E=divtmp(1:lx1,1:lx2,1:lx3)
-!
-!  !total derivative needed for x3 component of pol. current
-!  DE3Dt=(E3-E3prev)/dt+v2*grad2E+v3*grad3E
-!
-!  !convert derivative to current density
-!  J1pol= 0
-!  J2pol=incap*DE2Dt
-!  J3pol=incap*DE3Dt
-!else       !pure electrostatic solve was done
-!  if (debug) print*, 'Electrostatics used, skipping polarization current...'
-!  DE2Dt= 0
-!  DE3Dt= 0
-!  J1pol= 0
-!  J2pol= 0
-!  J3pol= 0
-!end if
-!!--------
-!
+
 
 !--------
 J2=0._wp; J3=0._wp    ! must be zeroed out before we accumulate currents
