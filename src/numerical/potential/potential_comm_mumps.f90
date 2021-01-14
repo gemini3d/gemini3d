@@ -141,10 +141,12 @@ integer :: lx1,lx2,lx3,isp
 integer :: ix1,ix2,ix3,iinull
 real(wp) :: minh1,maxh1,minh2,maxh2,minh3,maxh3
 
-! background variables and boundary conditions
-real(wp), dimension(1:size(ns,2)-4,1:size(ns,3)-4), target :: Vminx1,Vmaxx1     !allow pointer aliases for these vars.
-real(wp), dimension(1:size(ns,1)-4,1:size(ns,3)-4) :: Vminx2,Vmaxx2
-real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4) :: Vminx3,Vmaxx3
+! background variables and boundary conditions, full grid sized variables
+real(wp), dimension(1:x%lx2all,1:x%lx3all), target :: Vminx1,Vmaxx1     !allow pointer aliases for these vars.
+real(wp), dimension(1:x%lx1,1:x%lx3all) :: Vminx2,Vmaxx2
+real(wp), dimension(1:x%lx1,1:x%lx2all) :: Vminx3,Vmaxx3
+
+! slab-sized background variables
 real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: E01,E02,E03,E02src,E03src
 integer :: flagdirich
 real(wp), dimension(1:size(ns,2)-4,1:size(ns,3)-4) :: Vminx1slab,Vmaxx1slab
@@ -167,7 +169,7 @@ if (mpi_cfg%myid==0) then
   end if
 end if
 
-! Error checking for cap. vs. grid types - viz. we do not support capacitive solves on anything other than Cartesian grids
+!> error checking for cap. vs. grid types - viz. we do not support capacitive solves on anything other than Cartesian grids
 if (cfg%flagcap/=0) then      ! some sort of capacitance is being used in the simulation
   call capacitance(ns,B1,cfg,incap)    !> full cfg needed for optional inputs...
   if (it==1) then     !check that we don't have an unsupported grid type for doing capacitance
@@ -220,7 +222,7 @@ if (cfg%potsolve == 1 .or. cfg%potsolve == 3) then    !electrostatic solve or el
 else if (cfg%potsolve == 2) then  !inductive form of model, could this be subcycled to speed things up?
   error stop 'Inductive solves are not supported yet; need funding...'
 else   !null solve; set all disturbance fields and currents to zero; these will be accumulated later if backgrounds are used
-  E1=0d0; E2=0d0; E3=0d0; J1=0d0; J2=0d0; J3=0d0;
+  E1=0._wp; E2=0._wp; E3=0._wp; J1=0._wp; J2=0._wp; J3=0._wp;
 end if
 
 !> update currents with conduction currents due to background electric field
