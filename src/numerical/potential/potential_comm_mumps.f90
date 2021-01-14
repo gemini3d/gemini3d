@@ -45,6 +45,7 @@ interface ! potential_worker.f90
   module subroutine potential_workers_mpi(it,t,dt,sig0,sigP,sigH,sigPgrav,sigHgrav, &
                                             muP,muH, &
                                             incap,vs2,vs3,vn2,vn3,cfg,B1,ns,Ts,x, &
+                                            flagdirich,E02src,E03src,Vminx1slab,Vmaxx1slab, &
                                             E1,E2,E3,J1,J2,J3)
 
   integer, intent(in) :: it
@@ -57,8 +58,10 @@ interface ! potential_worker.f90
   type(gemini_cfg), intent(in) :: cfg
   real(wp), dimension(-1:,-1:,-1:), intent(in) ::  B1
   real(wp), dimension(-1:,-1:,-1:,:), intent(in) ::  ns,Ts
-
   type(curvmesh), intent(in) :: x
+  integer, intent(in) :: flagdirich
+  real(wp), dimension(:,:,:), intent(in) :: E02src,E03src    ! these are BG fields use to compute potential source terms; viz. they need to be zeroed out if there is a lagrangian grid...
+  real(wp), dimension(:,:), intent(in) :: Vminx1slab,Vmaxx1slab
 
   real(wp), dimension(:,:,:), intent(out) :: E1,E2,E3,J1,J2,J3
   end subroutine potential_workers_mpi
@@ -68,6 +71,8 @@ interface ! potential_root.f90
   module subroutine potential_root_mpi_curv(it,t,dt,sig0,sigP,sigH,sigPgrav,sigHgrav, &
                                               muP,muH, &
                                               incap,vs2,vs3,vn2,vn3,cfg,B1,ns,Ts,x, &
+                                              flagdirich,E02src,E03src,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3,Vmaxx3, &
+                                              Vminx1slab,Vmaxx1slab, &
                                               E1,E2,E3,J1,J2,J3,Phiall,ymd,UTsec)
 
   integer, intent(in) :: it
@@ -80,8 +85,13 @@ interface ! potential_root.f90
   type(gemini_cfg), intent(in) :: cfg
   real(wp), dimension(-1:,-1:,-1:), intent(in) ::  B1
   real(wp), dimension(-1:,-1:,-1:,:), intent(in) ::  ns,Ts
-
   type(curvmesh), intent(in) :: x
+  integer, intent(in) :: flagdirich
+  real(wp), dimension(:,:,:), intent(in) :: E02src,E03src
+  real(wp), dimension(:,:), intent(in) :: Vminx1,Vmaxx1
+  real(wp), dimension(:,:), intent(in) :: Vminx2,Vmaxx2
+  real(wp), dimension(:,:), intent(in) :: Vminx3,Vmaxx3
+  real(wp), dimension(:,:), intent(in) :: Vminx1slab,Vmaxx1slab
 
   real(wp), dimension(:,:,:), intent(out) :: E1,E2,E3,J1,J2,J3
   real(wp), dimension(:,:,:), intent(inout) :: Phiall   !not good form, but I'm lazy...  Forgot what I meant by this...
@@ -131,35 +141,23 @@ integer :: lx1,lx2,lx3,isp
 integer :: ix1,ix2,ix3,iinull
 real(wp) :: minh1,maxh1,minh2,maxh2,minh3,maxh3
 
+! background variables and boundary conditions
+real(wp), dimension(1:size(ns,2)-4,1:size(ns,3)-4), target :: Vminx1,Vmaxx1     !allow pointer aliases for these vars.
+real(wp), dimension(1:size(ns,1)-4,1:size(ns,3)-4) :: Vminx2,Vmaxx2
+real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4) :: Vminx3,Vmaxx3
+real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: E01,E02,E03,E02src,E03src
+integer :: flagdirich
+real(wp), dimension(1:size(ns,2)-4,1:size(ns,3)-4) :: Vminx1slab,Vmaxx1slab
 
-!SIZES
+
+!> recompute system sizes from density variable (subtract off ghost cells)
 lx1=size(ns,1)-4
 lx2=size(ns,2)-4
 lx3=size(ns,3)-4
 
-
-!POTENTIAL SOLUTION (IF REQUIRED)
+!> update conductivities and mobilities
 call cpu_time(tstart)
 call conductivities(nn,Tn,ns,Ts,vs1,B1,sig0,sigP,sigH,muP,muH,nusn,sigPgrav,sigHgrav)
-
-
-! Error checking for cap. vs. grid types
-if (cfg%flagcap/=0) then
-  call capacitance(ns,B1,cfg,incap)    !> full cfg needed for optional inputs...
-  if (it==1) then     !check that we don't have an unsupported grid type for doing capacitance
-    minh1=minval(x%h1)
-    maxh1=maxval(x%h1)
-    minh2=minval(x%h2)
-    maxh2=maxval(x%h2)
-    minh3=minval(x%h3)    !is it okay for a worker to bail on a process???
-    maxh3=maxval(x%h3)
-    if (minh1<0.99d0 .or. maxh1>1.01d0 .or. minh2<0.99d0 .or. maxh2>1.01d0 .or. minh3<0.99d0 .or. maxh3>1.01d0) then
-      error stop 'Capacitance is being calculated for possibly unsupported grid type. Please check input file settings.'
-    end if
-  end if
-else
-  incap=0d0
-end if
 call cpu_time(tfin)
 if (mpi_cfg%myid==0) then
   if (cfg%flagcap/=0) then
@@ -169,35 +167,75 @@ if (mpi_cfg%myid==0) then
   end if
 end if
 
+! Error checking for cap. vs. grid types - viz. we do not support capacitive solves on anything other than Cartesian grids
+if (cfg%flagcap/=0) then      ! some sort of capacitance is being used in the simulation
+  call capacitance(ns,B1,cfg,incap)    !> full cfg needed for optional inputs...
+  if (it==1) then     !check that we don't have an unsupported grid type for doing capacitance
+    minh1=minval(x%h1); maxh1=maxval(x%h1);
+    minh2=minval(x%h2); maxh2=maxval(x%h2);
+    minh3=minval(x%h3); maxh3=maxval(x%h3); 
+    if (minh1<0.99d0 .or. maxh1>1.01d0 .or. minh2<0.99d0 .or. maxh2>1.01d0 .or. minh3<0.99d0 .or. maxh3>1.01d0) then
+      error stop 'Capacitance is being calculated for possibly unsupported grid type. Please check input file settings.'
+    end if
+  end if
+else
+  incap=0d0
+end if
 
+!> assign values to the background fields, etc., irrespective of whether or not we do a potential solve
+if (mpi_cfg%myid/=0) then
+  call BGfields_boundaries_worker(flagdirich,E01,E02,E03,Vminx1slab,Vmaxx1slab)
+else
+  call BGfields_boundaries_root(dt,t,ymd,UTsec,cfg,x, &
+                                   flagdirich,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3,Vmaxx3, &
+                                   E01,E02,E03,Vminx1slab,Vmaxx1slab)
+end if
+
+!> Now solve specifically for the *disturbance* potential.  The background electric field will be included in returned electric field and current density values 
 if (cfg%potsolve == 1 .or. cfg%potsolve == 3) then    !electrostatic solve or electrostatic alt. solve
-  call cpu_time(tstart)
+  if (cfg%flaglagrangian) then     ! Lagrangian grid, omit background fields from source terms
+    E02src=0._wp; E03src=0._wp
+  else                             ! Eulerian grid, use background fields
+    E02src=E02; E03src=E03
+  end if
 
-  ! Execute solution for ionospheric potential
+  call cpu_time(tstart)
   if (mpi_cfg%myid/=0) then
     !! role-specific communication pattern (all-to-root-to-all), workers initiate with sends
      call potential_workers_mpi(it,t,dt,sig0,sigP,sigH,sigPgrav,sigHgrav,muP,muH,incap,vs2,vs3, &
-                                 vn2,vn3,cfg,B1,ns,Ts,x,E1,E2,E3,J1,J2,J3)
+                                 vn2,vn3,cfg,B1,ns,Ts,x,flagdirich,E02src,E03src, &
+                                 Vminx1slab,Vmaxx1slab, &
+                                 E1,E2,E3,J1,J2,J3)
   else
     call potential_root_mpi(it,t,dt,sig0,sigP,sigH,sigPgrav,sigHgrav,muP,muH,incap,vs2,vs3,vn2,vn3,cfg,B1,ns,Ts,x, &
+                              flagdirich,E02src,E03src,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3,Vmaxx3, &
+                              Vminx1slab,Vmaxx1slab, &
                               E1,E2,E3,J1,J2,J3,Phiall,ymd,UTsec)
   end if
-
-  ! Compute velocity from mobilities and fields
-  call velocities(muP,muH,nusn,E2,E3,vn2,vn3,ns,Ts,x,cfg%flaggravdrift,cfg%flagdiamagnetic,vs2,vs3)
-
   call cpu_time(tfin)
 
   if (mpi_cfg%myid==0) then
     if (debug) print *, 'Potential solution for time step:  ',t,' took ',tfin-tstart,' seconds...'
-    if (debug) print *, 'Min and max root drift values:  ',minval(vs2),maxval(vs2), minval(vs3),maxval(vs3)
   end if
-
 else if (cfg%potsolve == 2) then  !inductive form of model, could this be subcycled to speed things up?
-  error stop 'Inductive solves are not supported yet...'
-else   !null solve; just force everything to zero
+  error stop 'Inductive solves are not supported yet; need funding...'
+else   !null solve; set all disturbance fields and currents to zero; these will be accumulated later if backgrounds are used
   E1=0d0; E2=0d0; E3=0d0; J1=0d0; J2=0d0; J3=0d0;
-  vs2=0d0; vs3=0d0;
+end if
+
+!> update currents with conduction currents due to background electric field
+call acc_perpconductioncurrents(sigP,sigH,E02,E03,J2,J3)
+
+!> update *total* electric field variable to include background values
+if (.not. cfg%flaglagrangian) then     !only add these in if we are not using a lagrangian grid
+  E2=E2+E02
+  E3=E3+E03
+end if
+
+!> velocities should be computed irrespective of whether a solve was done
+call velocities(muP,muH,nusn,E2,E3,vn2,vn3,ns,Ts,x,cfg%flaggravdrift,cfg%flagdiamagnetic,vs2,vs3)
+if (mpi_cfg%myid==0) then
+  if (debug) print *, 'Min and max root drift values:  ',minval(vs2),maxval(vs2), minval(vs3),maxval(vs3)
 end if
 
 end subroutine electrodynamics_curv

@@ -18,11 +18,12 @@ module procedure potential_root_mpi_curv
 real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: v2,v3
 
 real(wp), dimension(1:size(Phiall,1),1:size(Phiall,2),1:size(Phiall,3)) :: srctermall
-real(wp), dimension(1:size(Phiall,2),1:size(Phiall,3)), target :: Vminx1,Vmaxx1     !allow pointer aliases for these vars.
+
+!real(wp), dimension(1:size(Phiall,2),1:size(Phiall,3)), target :: Vminx1,Vmaxx1     !allow pointer aliases for these vars.
 !real(wp), dimension(1:size(Phiall,2),1:size(Phiall,3)) :: Vminx1buf,Vmaxx1buf
-real(wp), dimension(1:size(Phiall,1),1:size(Phiall,3)) :: Vminx2,Vmaxx2
-real(wp), dimension(1:size(Phiall,1),1:size(Phiall,2)) :: Vminx3,Vmaxx3
-integer :: flagdirich
+!real(wp), dimension(1:size(Phiall,1),1:size(Phiall,3)) :: Vminx2,Vmaxx2
+!real(wp), dimension(1:size(Phiall,1),1:size(Phiall,2)) :: Vminx3,Vmaxx3
+!integer :: flagdirich
 
 real(wp), dimension(1:size(Phiall,2),1:size(Phiall,3)) :: v2slaball,v3slaball   !stores drift velocs. for pol. current
 
@@ -33,7 +34,7 @@ real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: integrand,siginte
 
 real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: J1pol,J2pol,J3pol
 
-real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: E01,E02,E03,E02src,E03src   !distributed background fields
+!real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: E01,E02,E03!,E02src,E03src   !distributed background fields
 real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: srcterm!,divJperp
 real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: E1prev,E2prev,E3prev
 real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: Phi
@@ -50,7 +51,7 @@ logical :: perflag    !MUMPS stuff
 
 real(wp), dimension(1:size(Phiall,3)) :: Vminx2slice,Vmaxx2slice
 real(wp), dimension(1:size(Phiall,2)) :: Vminx3slice,Vmaxx3slice
-real(wp), dimension(1:size(E1,2),1:size(E1,3)) :: Vminx1slab,Vmaxx1slab
+!real(wp), dimension(1:size(E1,2),1:size(E1,3)) :: Vminx1slab,Vmaxx1slab
 real(wp), dimension(1:size(E1,2),1:size(E1,3)) :: v2slab,v3slab
 
 integer :: iid, ierr
@@ -70,17 +71,16 @@ lx3all=size(Phiall,3)
 !> store a cached ordering for later use (improves performance substantially)
 perflag=.true.
 
-call BGfields_boundaries_root(dt,t,ymd,UTsec,cfg,x, &
-                                      flagdirich,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3,Vmaxx3, &
-                                      E01,E02,E03,Vminx1slab,Vmaxx1slab)
+!call BGfields_boundaries_root(dt,t,ymd,UTsec,cfg,x, &
+!                                      flagdirich,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3,Vmaxx3, &
+!                                      E01,E02,E03,Vminx1slab,Vmaxx1slab)
 
-
-!> Compute source terms, check Lagrangian flag
-if (cfg%flaglagrangian) then     ! Lagrangian grid, omit background fields from source terms
-  E02src=0._wp; E03src=0._wp
-else                             ! Eulerian grid, use background fields
-  E02src=E02; E03src=E03
-end if
+!> Compute source terms, check Lagrangian flag to see if we need to include background field sources
+!if (cfg%flaglagrangian) then     ! Lagrangian grid, omit background fields from source terms
+!  E02src=0._wp; E03src=0._wp
+!else                             ! Eulerian grid, use background fields
+!  E02src=E02; E03src=E03
+!end if
 call potential_sourceterms(sigP,sigH,sigPgrav,sigHgrav,E02src,E03src,vn2,vn3,B1,muP,muH,ns,Ts,x, &
                            cfg%flaggravdrift,cfg%flagdiamagnetic,srcterm)
 
@@ -301,8 +301,8 @@ if (debug) then
 print *, 'Max integrated inertial capacitance:  ',maxval(incapintall)
 !print *, 'Max integrated Pedersen conductance (includes metric factors):  ',maxval(SigPint2all)
 !print *, 'Max integrated Hall conductance (includes metric factors):  ',minval(SigHintall), maxval(SigHintall)
-print *, 'Max E2,3 BG and response values are:  ',maxval(E02), maxval(E03),maxval(E2),maxval(E3)
-print *, 'Min E2,3 BG and response values are:  ',minval(E02), minval(E03),minval(E2),minval(E3)
+print *, 'Max E2,3 BG and response values are:  ',maxval(E02src), maxval(E03src),maxval(E2),maxval(E3)
+print *, 'Min E2,3 BG and response values are:  ',minval(E02src), minval(E03src),minval(E2),minval(E3)
 print *, 'Min/Max values of potential:  ',minval(Phi),maxval(Phi)
 print *, 'Min/Max values of full grid potential:  ',minval(Phiall),maxval(Phiall)
 endif
@@ -310,11 +310,11 @@ endif
 
 
 !--------
-!ADD IN BACKGROUND FIELDS BEFORE HALOING
-if (.not. cfg%flaglagrangian) then
-  E2=E2+E02
-  E3=E3+E03
-end if
+!ADD IN BACKGROUND FIELDS BEFORE HALOING - this now handled outside this function
+!if (.not. cfg%flaglagrangian) then
+!  E2=E2+E02
+!  E3=E3+E03
+!end if
 !--------
 
 

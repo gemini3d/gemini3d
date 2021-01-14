@@ -13,13 +13,13 @@ module procedure potential_workers_mpi
 !! POLARIZATION TERMS ARE PASSED BACK TO MAIN FN, EVEN THOUGH
 !! THEY ARE NOT USED (THEY MAY BE IN THE FUTURE)
 
-integer :: flagdirich
+!integer :: flagdirich
 
 real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: paramtrim    !to hold trimmed magnetic field
 
 real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: J1pol,J2pol,J3pol
 
-real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: E01,E02,E03,E02src,E03src   !distributed background fields
+!real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: E01,E02,E03!,E02src,E03src   !distributed background fields
 real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: srcterm!,divJperp
 real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: E1prev,E2prev,E3prev
 real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: Phi
@@ -31,7 +31,7 @@ real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: sig0scaled,sigPsc
 
 logical :: perflag    !MUMPS stuff
 
-real(wp), dimension(1:size(E1,2),1:size(E1,3)) :: Vminx1slab,Vmaxx1slab
+!real(wp), dimension(1:size(E1,2),1:size(E1,3)) :: Vminx1slab,Vmaxx1slab
 
 real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: v2,v3
 real(wp), dimension(1:size(E1,2),1:size(E1,3)) :: v2slab,v3slab
@@ -53,16 +53,15 @@ lx3=size(sig0,3)
 ! this should always be on by default unless the user wants to turn off and recompile; ~10% savings in mumps time *per time step*
 perflag=.true.
 
-call BGfields_boundaries_worker(flagdirich,E01,E02,E03,Vminx1slab,Vmaxx1slab)
+!call BGfields_boundaries_worker(flagdirich,E01,E02,E03,Vminx1slab,Vmaxx1slab)
 
 
 !> Compute source terms, check Lagrangian flag
-if (cfg%flaglagrangian) then     ! Lagrangian grid, omit background fields from source terms
-  E02src=0._wp; E03src=0._wp
-else                             ! Eulerian grid, use background fields
-  E02src=E02; E03src=E03
-end if
-!> FIXME:  add mobilities needed for pressure terms as inputs
+!if (cfg%flaglagrangian) then     ! Lagrangian grid, omit background fields from source terms
+!  E02src=0._wp; E03src=0._wp
+!else                             ! Eulerian grid, use background fields
+!  E02src=E02; E03src=E03
+!end if
 call potential_sourceterms(sigP,sigH,sigPgrav,sigHgrav,E02src,E03src,vn2,vn3,B1,muP,muH,ns,Ts,x, &
                            cfg%flaggravdrift,cfg%flagdiamagnetic,srcterm)
 
@@ -217,10 +216,10 @@ call pot2perpfield(Phi,x,E2,E3)
 
 !--------
 !ADD IN BACKGROUND FIELDS BEFORE HALOING
-if (.not. cfg%flaglagrangian) then
-  E2=E2+E02
-  E3=E3+E03
-end if
+!if (.not. cfg%flaglagrangian) then
+!  E2=E2+E02
+!  E3=E3+E03
+!end if
 !--------
 
 
