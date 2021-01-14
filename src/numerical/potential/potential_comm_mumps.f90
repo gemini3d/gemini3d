@@ -28,7 +28,7 @@ implicit none (type, external)
 private
 public :: electrodynamics, halo_pot, potential_sourceterms, pot2perpfield, velocities, get_BGEfields, &
             acc_perpconductioncurrents,acc_perpwindcurrents,acc_perpgravcurrents,acc_pressurecurrents, &
-            parallel_currents,polarization_currents
+            parallel_currents,polarization_currents,BGfields_boundaries_root,BGfields_boundaries_worker
 
 external :: mpi_send, mpi_recv
 
@@ -201,6 +201,88 @@ else   !null solve; just force everything to zero
 end if
 
 end subroutine electrodynamics_curv
+
+
+subroutine BGfields_boundaries_root(dt,t,ymd,UTsec,cfg,x, &
+                                      flagdirich,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3,Vmaxx3, &
+                                      E01,E02,E03,Vminx1slab,Vmaxx1slab)
+
+!> Root only!  populate arrays for background electric fields and potential/FAC boundary conditions.  If we are root this
+!  involves reading in data from a file or calling a subroutine to fill the arrays and then sending pieces of data
+!  to workers.
+
+real(wp), intent(in) :: dt,t
+integer, dimension(3), intent(in) :: ymd
+real(wp), intent(in) :: UTsec
+type(gemini_cfg), intent(in) :: cfg
+type(curvmesh), intent(in) :: x
+
+integer, intent(out) :: flagdirich
+real(wp), dimension(:,:), intent(out) :: Vminx1,Vmaxx1     !allow pointer aliases for these vars, as required for subroutines internal to potentialBCs.
+real(wp), dimension(:,:), intent(out) :: Vminx2,Vmaxx2
+real(wp), dimension(:,:), intent(out)  :: Vminx3,Vmaxx3
+real(wp), dimension(:,:,:), intent(out) :: E01,E02,E03
+real(wp), dimension(:,:), intent(out) :: Vminx1slab,Vmaxx1slab
+
+!local work arrays
+real(wp), dimension(:,:,:) :: E01all,E02all,E03all     !full grid values not needed by root which will collect a source term computation from all workers...
+
+
+!> either read in the data from a file or use a subroutine to set the array values
+call cpu_time(tstart)
+if (cfg%flagE0file==1) then
+  call potentialBCs2D_fileinput(dt,t,ymd,UTsec,cfg,x,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3,Vmaxx3, &
+                      E01all,E02all,E03all,flagdirich)
+else
+  call potentialBCs2D(UTsec,cfg,x,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3,Vmaxx3, &
+                      E01all,E02all,E03all,flagdirich)     !user needs to manually swap x2 and x3 in this function, e.g. for EIA, etc.
+end if
+call cpu_time(tfin)
+if (debug) print *, 'Root has computed BCs in time:  ',tfin-tstart
+
+ierr=0
+do iid=1,mpi_cfg%lid-1    !communicate intent for solve to workers so they know whether or not to call mumps fn.
+  call mpi_send(flagdirich,1,MPI_INTEGER,iid,tag%flagdirich,MPI_COMM_WORLD,ierr)
+end do
+if (ierr/=0) error stop 'mpi_send failed to send solve intent'
+if (debug) print *, 'Root has communicated type of solve to workers:  ',flagdirich
+
+! Need to broadcast background fields from root
+! Need to also broadcast x1 boundary conditions for source term calculations.
+! This duplicates some code for get_BGEfields, but that is necessary since that lower level routine renormalizes fields using metric factors, which does not need to be done again following a call to potentialBCs
+call bcast_send(E01all,tag%E01,E01)
+call bcast_send(E02all,tag%E02,E02)
+call bcast_send(E03all,tag%E03,E03)
+
+!These are pointer targets so don't assume contiguous in memory - pack them into a buffer to be safe
+Vmaxx1buf=Vmaxx1; Vminx1buf=Vminx1;
+call bcast_send(Vminx1buf,tag%Vminx1,Vminx1slab)
+call bcast_send(Vmaxx1buf,tag%Vmaxx1,Vmaxx1slab)
+
+end subroutine BGfields_boundaries_root
+
+
+subroutine BGfields_boundaries_worker(flagdirich,E01,E02,E03,Vminx1slab,Vmaxx1slab)
+
+!> Worker only!  receive background and boundary condition information from root
+
+integer, intent(out) :: flagdirich
+real(wp), dimension(:,:,:), intent(out) :: E01,E02,E03
+real(wp), dimension(:,:), intent(out) :: Vminx1slab,Vmaxx1slab
+
+
+call mpi_recv(flagdirich,1,MPI_INTEGER,0,tag%flagdirich,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+if (ierr /= 0) error stop 'dirich'
+
+!Need to broadcast background fields from root
+!Need to also broadcast x1 boundary conditions for source term calculations.
+call bcast_recv(E01,tag%E01)
+call bcast_recv(E02,tag%E02)
+call bcast_recv(E03,tag%E03)
+call bcast_recv(Vminx1slab,tag%Vminx1)
+call bcast_recv(Vmaxx1slab,tag%Vmaxx1)
+
+end subroutine BGfields_boundaries_worker
 
 
 subroutine velocities(muP,muH,nusn,E2,E3,vn2,vn3,ns,Ts,x,flaggravdrift,flagdiamagnetic,vs2,vs3)
