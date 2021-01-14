@@ -70,46 +70,48 @@ lx3all=size(Phiall,3)
 !> store a cached ordering for later use (improves performance substantially)
 perflag=.true.
 
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!R-------
-!! POPULATE BACKGROUND AND BOUNDARY CONDITION ARRAYS
-!! - IDEALLY ROOT ONLY SINCE IT INVOLVES FILE INPUT, since the interpolation is 2D don't distribute to workers...
-call cpu_time(tstart)
-if (cfg%flagE0file==1) then
-  call potentialBCs2D_fileinput(dt,t,ymd,UTsec,cfg,x,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3,Vmaxx3, &
-                      E01all,E02all,E03all,flagdirich)
-else
-  call potentialBCs2D(UTsec,cfg,x,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3,Vmaxx3, &
-                      E01all,E02all,E03all,flagdirich)     !user needs to manually swap x2 and x3 in this function, e.g. for EIA, etc.
-end if
-call cpu_time(tfin)
-if (debug) print *, 'Root has computed BCs in time:  ',tfin-tstart
-!R-------
-
-
-!R--------
-ierr=0
-do iid=1,mpi_cfg%lid-1    !communicate intent for solve to workers so they know whether or not to call mumps fn.
-  call mpi_send(flagdirich,1,MPI_INTEGER,iid,tag%flagdirich,MPI_COMM_WORLD,ierr)
-end do
-if (ierr/=0) error stop 'mpi_send failed to send solve intent'
-if (debug) print *, 'Root has communicated type of solve to workers:  ',flagdirich
-!R--------
-
-
-!Need to broadcast background fields from root
-!Need to also broadcast x1 boundary conditions for source term calculations.
-call bcast_send(E01all,tag%E01,E01)
-call bcast_send(E02all,tag%E02,E02)
-call bcast_send(E03all,tag%E03,E03)
-
-!These are pointer targets so don't assume contiguous in memory - pack them into a buffer to be safe
-Vmaxx1buf=Vmaxx1; Vminx1buf=Vminx1;
-call bcast_send(Vminx1buf,tag%Vminx1,Vminx1slab)
-call bcast_send(Vmaxx1buf,tag%Vmaxx1,Vmaxx1slab)
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
+call BGfields_boundaries_root(dt,t,ymd,UTsec,cfg,x, &
+                                      flagdirich,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3,Vmaxx3, &
+                                      E01,E02,E03,Vminx1slab,Vmaxx1slab)
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!R-------
+!!! POPULATE BACKGROUND AND BOUNDARY CONDITION ARRAYS
+!!! - IDEALLY ROOT ONLY SINCE IT INVOLVES FILE INPUT, since the interpolation is 2D don't distribute to workers...
+!call cpu_time(tstart)
+!if (cfg%flagE0file==1) then
+!  call potentialBCs2D_fileinput(dt,t,ymd,UTsec,cfg,x,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3,Vmaxx3, &
+!                      E01all,E02all,E03all,flagdirich)
+!else
+!  call potentialBCs2D(UTsec,cfg,x,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3,Vmaxx3, &
+!                      E01all,E02all,E03all,flagdirich)     !user needs to manually swap x2 and x3 in this function, e.g. for EIA, etc.
+!end if
+!call cpu_time(tfin)
+!if (debug) print *, 'Root has computed BCs in time:  ',tfin-tstart
+!!R-------
+!
+!
+!!R--------
+!ierr=0
+!do iid=1,mpi_cfg%lid-1    !communicate intent for solve to workers so they know whether or not to call mumps fn.
+!  call mpi_send(flagdirich,1,MPI_INTEGER,iid,tag%flagdirich,MPI_COMM_WORLD,ierr)
+!end do
+!if (ierr/=0) error stop 'mpi_send failed to send solve intent'
+!if (debug) print *, 'Root has communicated type of solve to workers:  ',flagdirich
+!!R--------
+!
+!
+!!Need to broadcast background fields from root
+!!Need to also broadcast x1 boundary conditions for source term calculations.
+!call bcast_send(E01all,tag%E01,E01)
+!call bcast_send(E02all,tag%E02,E02)
+!call bcast_send(E03all,tag%E03,E03)
+!
+!!These are pointer targets so don't assume contiguous in memory - pack them into a buffer to be safe
+!Vmaxx1buf=Vmaxx1; Vminx1buf=Vminx1;
+!call bcast_send(Vminx1buf,tag%Vminx1,Vminx1slab)
+!call bcast_send(Vmaxx1buf,tag%Vmaxx1,Vmaxx1slab)
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!
 
 !> Compute source terms, check Lagrangian flag
 if (cfg%flaglagrangian) then     ! Lagrangian grid, omit background fields from source terms
