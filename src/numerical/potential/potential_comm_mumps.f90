@@ -225,10 +225,14 @@ real(wp), dimension(:,:,:), intent(out) :: E01,E02,E03
 real(wp), dimension(:,:), intent(out) :: Vminx1slab,Vmaxx1slab
 
 !local work arrays
-real(wp), dimension(:,:,:) :: E01all,E02all,E03all     !full grid values not needed by root which will collect a source term computation from all workers...
+real(wp), dimension(:,:,:), allocatable :: E01all,E02all,E03all     !full grid values not needed by root which will collect a source term computation from all workers...
+integer :: iid,ierr
+real(wp) :: tstart,tfin
+real(wp), dimension(1:size(Vminx1,1),1:size(Vminx1,2)) :: Vminx1buf,Vmaxx1buf
 
 
 !> either read in the data from a file or use a subroutine to set the array values
+allocate(E01all(lx1,lx2all,lx3all),E02all(lx1,lx2all,lx3all),E03all(lx1,lx2all,lx3all))
 call cpu_time(tstart)
 if (cfg%flagE0file==1) then
   call potentialBCs2D_fileinput(dt,t,ymd,UTsec,cfg,x,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3,Vmaxx3, &
@@ -253,6 +257,7 @@ if (debug) print *, 'Root has communicated type of solve to workers:  ',flagdiri
 call bcast_send(E01all,tag%E01,E01)
 call bcast_send(E02all,tag%E02,E02)
 call bcast_send(E03all,tag%E03,E03)
+deallocate(E01all,E02all,E03all)
 
 !These are pointer targets so don't assume contiguous in memory - pack them into a buffer to be safe
 Vmaxx1buf=Vmaxx1; Vminx1buf=Vminx1;
@@ -269,6 +274,9 @@ subroutine BGfields_boundaries_worker(flagdirich,E01,E02,E03,Vminx1slab,Vmaxx1sl
 integer, intent(out) :: flagdirich
 real(wp), dimension(:,:,:), intent(out) :: E01,E02,E03
 real(wp), dimension(:,:), intent(out) :: Vminx1slab,Vmaxx1slab
+
+! local variables
+integer :: ierr
 
 
 call mpi_recv(flagdirich,1,MPI_INTEGER,0,tag%flagdirich,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
