@@ -19,14 +19,14 @@ real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: v2,v3
 
 real(wp), dimension(1:size(Phiall,1),1:size(Phiall,2),1:size(Phiall,3)) :: srctermall
 real(wp), dimension(1:size(Phiall,2),1:size(Phiall,3)), target :: Vminx1,Vmaxx1     !allow pointer aliases for these vars.
-real(wp), dimension(1:size(Phiall,2),1:size(Phiall,3)) :: Vminx1buf,Vmaxx1buf
+!real(wp), dimension(1:size(Phiall,2),1:size(Phiall,3)) :: Vminx1buf,Vmaxx1buf
 real(wp), dimension(1:size(Phiall,1),1:size(Phiall,3)) :: Vminx2,Vmaxx2
 real(wp), dimension(1:size(Phiall,1),1:size(Phiall,2)) :: Vminx3,Vmaxx3
 integer :: flagdirich
 
 real(wp), dimension(1:size(Phiall,2),1:size(Phiall,3)) :: v2slaball,v3slaball   !stores drift velocs. for pol. current
 
-real(wp), dimension(1:size(Phiall,1),1:size(Phiall,2),1:size(Phiall,3)) :: E01all,E02all,E03all    !background fields
+!real(wp), dimension(1:size(Phiall,1),1:size(Phiall,2),1:size(Phiall,3)) :: E01all,E02all,E03all    !background fields
 !! more work arrays
 
 real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: integrand,sigintegral    !general work array for doing integrals
