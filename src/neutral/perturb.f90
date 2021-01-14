@@ -165,12 +165,9 @@ real(wp) :: UTsectmp
 
 
 !CHECK WHETHER WE NEED TO LOAD A NEW FILE
-if (t+dt/2d0 >= tnext .or. t <= 0) then
+if (t+dt/2d0 >= tnext .or. t < 0) then
   !IF FIRST LOAD ATTEMPT CREATE A NEUTRAL GRID AND COMPUTE GRID SITES FOR IONOSPHERIC GRID.  Since this needs an input file, I'm leaving it under this condition here
   if (.not. allocated(zn)) then     !means this is the first tiem we've tried to load neutral simulation data, should we check for a previous neutral file to load???
-    tprev=t
-    tnext=t+cfg%dtneu
-
     !initialize dates
     ymdprev=ymd
     UTsecprev=UTsec
@@ -239,12 +236,9 @@ real(wp) :: starttime,endtime
 
 
 !CHECK WHETHER WE NEED TO LOAD A NEW FILE
-if (t + dt/2 >= tnext .or. t <= 0) then
+if (t + dt/2 >= tnext .or. t < 0) then
   !IF FIRST LOAD ATTEMPT CREATE A NEUTRAL GRID AND COMPUTE GRID SITES FOR IONOSPHERIC GRID.  Since this needs an input file, I'm leaving it under this condition here
   if (.not. allocated(zn)) then     !means this is the first tiem we've tried to load neutral simulation data, should we check for a previous neutral file to load???
-    tprev=t
-    tnext=t+cfg%dtneu
-
     !initialize dates
     ymdprev=ymd
     UTsecprev=UTsec
@@ -269,7 +263,7 @@ if (t + dt/2 >= tnext .or. t <= 0) then
     print*, 'Neutral data input required time:  ',endtime-starttime
   end if
 
-  !Spatial interpolatin for the frame we just read in
+  !Spatial interpolation for the frame we just read in
   if (mpi_cfg%myid==0 .and. debug) then
     print *, 'Spatial interpolation and rotation of vectors for date:  ',ymdtmp,' ',UTsectmp
     call cpu_time(starttime)
@@ -329,7 +323,6 @@ end if
 
 if (mpi_cfg%myid==0) then    !root
   !read in the data from file
-  if(debug) print *, 'neutral.f90:read_dneu2D: tprev,tnow,tnext:  ',tprev,t+dt/2,tnext
   ymdtmp=ymdnext
   UTsectmp=UTsecnext
   call dateinc(dtneu,ymdtmp,UTsectmp)    !get the date for "next" params
@@ -410,7 +403,6 @@ lhorzn=lyn
 
 if (mpi_cfg%myid==0) then    !root
   !read in the data from file
-  if(debug) print *, 'tprev,tnow,tnext:  ',tprev,t+dt/2d0,tnext
   ymdtmp=ymdnext
   UTsectmp=UTsecnext
   call dateinc(dtneu,ymdtmp,UTsectmp)                !get the date for "next" params
