@@ -54,18 +54,6 @@ lx3=size(sig0,3)
 perflag=.true.
 
 call BGfields_boundaries_worker(flagdirich,E01,E02,E03,Vminx1slab,Vmaxx1slab)
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!call mpi_recv(flagdirich,1,MPI_INTEGER,0,tag%flagdirich,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-!if (ierr /= 0) error stop 'dirich'
-!
-!!Need to broadcast background fields from root
-!!Need to also broadcast x1 boundary conditions for source term calculations.
-!call bcast_recv(E01,tag%E01)
-!call bcast_recv(E02,tag%E02)
-!call bcast_recv(E03,tag%E03)
-!call bcast_recv(Vminx1slab,tag%Vminx1)
-!call bcast_recv(Vmaxx1slab,tag%Vmaxx1)
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
 !> Compute source terms, check Lagrangian flag
