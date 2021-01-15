@@ -14,8 +14,8 @@ PURPOSE "Gemini uses GLOW for modeling of auroral emissions vs. wavelength.")
 
 set_package_properties(HDF5 PROPERTIES
 TYPE RECOMMENDED
-URL "https://www.hdfgroup.org/solutions/hdf5"
-DESCRIPTION "HDF5 file I/O"
+# URL "https://www.hdfgroup.org/solutions/hdf5"
+# DESCRIPTION "HDF5 file I/O"
 PURPOSE "Gemini uses NASA standard format HDF5 files to read and write compressed data.")
 
 set_package_properties(MPI PROPERTIES
@@ -24,23 +24,27 @@ DESCRIPTION "GEMINI uses MPI-2 standard"
 PURPOSE "MPI gives massively parallel computation")
 
 set_package_properties(MUMPS PROPERTIES
+TYPE OPTIONAL
 URL "https://mumps-solver.org/"
 DESCRIPTION "parallel direct sparse solver"
 PURPOSE "MUMPS solves potential")
 
 set_package_properties(SCALAPACK PROPERTIES
+TYPE OPTIONAL
 URL "http://www.netlib.org/scalapack/"
 DESCRIPTION "parallel linear algebra"
 PURPOSE "MUMPS solves potential in parallel using Scalapack")
 
 set_package_properties(LAPACK PROPERTIES
+TYPE REQUIRED
 URL "http://www.netlib.org/lapack/"
 DESCRIPTION "linear algebra library"
 PURPOSE "LAPACK solves parabolic and elliptical partial differential equations")
 
 set_package_properties(Python3 PROPERTIES
-URL "http://www.python.org/"
-DESCRIPTION "Python runtime"
+TYPE RECOMMENDED
+# URL "http://www.python.org/"
+# DESCRIPTION "Python runtime"
 PURPOSE "PyGemini is the standard user interface for Gemini input/output/plotting")
 
 add_feature_info(MPI_gemini mpi "Use MPI parallelization")
