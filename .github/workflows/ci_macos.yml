@@ -1,6 +1,7 @@
 name: ci_macos
 env:
   CMAKE_GENERATOR: Ninja
+  HOMEBREW_NO_INSTALL_CLEANUP: 1
 
 on:
   push:
