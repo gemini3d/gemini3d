@@ -32,7 +32,8 @@ jobs:
 # CI is too slow for 3d_glow
 
     - run: cmake -B build
-      timeout-minutes: 2
+      timeout-minutes: 4
+      # mac is slower to configure
 
     - run: cmake --build build
       timeout-minutes: 5
@@ -56,7 +57,7 @@ jobs:
       # transient CI download speed
 
     - run: cmake -B build
-      timeout-minutes: 2
+      timeout-minutes: 4
 
     - run: cmake --build build
       timeout-minutes: 5
