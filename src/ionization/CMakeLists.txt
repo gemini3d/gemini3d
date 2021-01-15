@@ -2,12 +2,12 @@ add_library(fang OBJECT fang.f90)
 target_link_libraries(fang PRIVATE const)
 
 add_library(fang_run OBJECT fang_run.f90)
-target_link_libraries(fang_run PRIVATE fang msis const)
+target_link_libraries(fang_run PRIVATE fang msis_ifc const)
 
 if(${PROJECT_NAME}_BUILD_TESTING)
 
 add_executable(test_fang test_fang.f90)
-target_link_libraries(test_fang PRIVATE fang fang_run const msis)
+target_link_libraries(test_fang PRIVATE fang fang_run const msis_ifc)
 
 if(python_ok)
   add_test(NAME unit:fangIonize

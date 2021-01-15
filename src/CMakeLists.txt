@@ -10,10 +10,6 @@ endfunction(set_targ_props)
 
 # --- MSISE00 or MSIS 2.0
 add_subdirectory(vendor/msis00)
-if(msis20)
-  # provides gtd8() subroutine
-  include(${PROJECT_SOURCE_DIR}/cmake/msis2.cmake)
-endif()
 
 # --- HWM14
 if(hwm14)
