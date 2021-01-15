@@ -7,6 +7,4 @@ string(APPEND CMAKE_Fortran_FLAGS " /warn:nounused /Qdiag-disable:5268 /Qdiag-di
 #add_link_options(/Qparallel)
 
 # enforce Fortran 2018 standard
-if(CMAKE_Fortran_COMPILER_VERSION VERSION_GREATER_EQUAL 19)
 string(APPEND CMAKE_Fortran_FLAGS " /stand:f18")
-endif()
