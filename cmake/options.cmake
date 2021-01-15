@@ -30,7 +30,8 @@ option(mpi "Use MPI parallelization")
 option(autobuild "autobuild missing Lapack, Scalapack or Mumps" on)
 
 option(glow "use NCAR GLOW airglow / aurora model" on)
-option(msis20 "use MSIS 2.0 (non-commerical, academic only)")
+option(hwm14 "use HWM14 neutral winds model")
+option(msis20 "use MSIS 2.0 neutral atmosphere model")
 
 option(hdf5 "use HDF5 file I/O" on)
 option(netcdf "use NetCDF file I/O" off)

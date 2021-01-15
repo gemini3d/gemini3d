@@ -47,9 +47,13 @@ TYPE RECOMMENDED
 # DESCRIPTION "Python runtime"
 PURPOSE "PyGemini is the standard user interface for Gemini input/output/plotting")
 
+# --- options
+
 add_feature_info(MPI_gemini mpi "Use MPI parallelization")
 
 add_feature_info(GLOW glow "airglow / aurora model")
+add_feature_info(HWM14 hwm14 "HWM14 neutral winds model")
+add_feature_info(MSIS2.0 msis20 "NRL MSIS 2.0 neutral atmosphere model")
 
 add_feature_info(NetCDF4 netcdf "file read / write")
 

@@ -13,6 +13,9 @@ if(CMAKE_VERSION VERSION_LESS 3.19)
   set(h5fortran_url https://github.com/geospace-code/h5fortran.git)
   set(h5fortran_tag v3.4.5)
 
+  set(hwm14_url https://github.com/space-physics/hwm14.git)
+  set(hwm14_tag 357d5c2)
+
   set(msis2_url https://map.nrl.navy.mil/map/pub/nrl/NRLMSIS/NRLMSIS2.0/NRLMSIS2.0.zip)
   set(msis2_sha1 fa817dfee637ec2298a6ec882345d13d0b087a85)
 
@@ -42,6 +45,9 @@ string(JSON lapack_tag GET ${_libj} "lapack" "tag")
 
 string(JSON h5fortran_url GET ${_libj} "h5fortran" "url")
 string(JSON h5fortran_tag GET ${_libj} "h5fortran" "tag")
+
+string(JSON hwm14_url GET ${_libj} "hwm14" "url")
+string(JSON hwm14_tag GET ${_libj} "hwm14" "tag")
 
 string(JSON msis2_url GET ${_libj} "msis2" "url")
 string(JSON msis2_sha1 GET ${_libj} "msis2" "sha1")
