@@ -35,7 +35,8 @@ jobs:
 # CI is too slow for 3d_glow
     - run: cmake -B build
     - run: cmake --build build
-    - run: ctest -E 3d --output-on-failure
+
+    - run: ctest -E 3d --parallel 4 --output-on-failure
       working-directory: build
 
 
@@ -57,16 +58,10 @@ jobs:
     - run: cmake -B build -DCMAKE_BUILD_TYPE=Debug
     - run: cmake --build build
 
-    - run: ctest -R unit --output-on-failure
+    - run: ctest -R unit --parallel 4 --output-on-failure
       working-directory: build
 
-    - uses: actions/upload-artifact@v1
-      if: failure()
-      with:
-        name: Linux_CMake_DebugBuildlog
-        path: build/CMakeFiles/CMakeError.log
-
-    - run: ctest -R 2dew_fang --output-on-failure
+    - run: ctest -R 2dew_fang --parallel 4 --output-on-failure
       working-directory: build
 
 
@@ -81,15 +76,14 @@ jobs:
         python-version: '3.8'
 
     - run: cmake -B build
-
     - run: cmake --build build
 
     - name: unit tests
-      run: ctest -R unit --output-on-failure
+      run: ctest -R unit --parallel 4 --output-on-failure
       working-directory: build
 
     - name: 2D test without MPI
-      run: ctest -R 2dew_fang --output-on-failure
+      run: ctest -R 2dew_fang --parallel 4 --output-on-failure
       working-directory: build
 
 
@@ -112,5 +106,5 @@ jobs:
 
     - run: ctest -S setup.cmake -R unit -VV
 
-    - run: ctest -E 3d -V
+    - run: ctest -E 3d --parallel 4 --output-on-failure
       working-directory: build

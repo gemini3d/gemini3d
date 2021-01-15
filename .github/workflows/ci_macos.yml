@@ -18,7 +18,6 @@ jobs:
 
   hdf5:
     runs-on: macos-latest
-    timeout-minutes: 10
     steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-python@v2
@@ -26,24 +25,24 @@ jobs:
         python-version: '3.8'
 
     - run: brew install gcc ninja lapack open-mpi hdf5 scalapack
+      timeout-minutes: 5
+      # transient CI download speed
 
 # CI is too slow for 3d_glow
 
-    - run: ctest -S setup.cmake -R unit -VV
+    - run: cmake -B build
+      timeout-minutes: 2
 
-    - uses: actions/upload-artifact@v1
-      if: failure()
-      with:
-        name: MacOS_CMake_Unit_log
-        path: build/CMakeFiles/CMakeError.log
+    - run: cmake --build build
+      timeout-minutes: 5
 
-    - run: ctest -E 3d --parallel 2 -V
+    - run: ctest -E 3d --parallel 4 --output-on-failure
       working-directory: build
+      timeout-minutes: 5
 
   no_mpi:
     needs: hdf5
     runs-on: macos-latest
-    timeout-minutes: 10
     steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-python@v2
@@ -52,16 +51,21 @@ jobs:
     # leave as 3.7 to avoid pip install in 3.8 but run in 3.7
 
     - run: brew install gcc ninja lapack hdf5
+      timeout-minutes: 5
+      # transient CI download speed
 
-    - name: build and test without MPI
-      run: ctest -S setup.cmake -R unit -VV
+    - run: cmake -B build
+      timeout-minutes: 2
 
-    - uses: actions/upload-artifact@v1
-      if: failure()
-      with:
-        name: MacOS_noMPI_Unit_log
-        path: build/CMakeFiles/CMakeError.log
+    - run: cmake --build build
+      timeout-minutes: 5
+
+    - name: Unit tests
+      run: ctest -R unit --parallel 4 --output-on-failure
+      working-directory: build
+      timeout-minutes: 2
 
     - name: 2D test without MPI
-      run: ctest -R 2dew_fang --parallel 2 -V
+      run: ctest -R 2dew_fang --parallel 4 --output-on-failure
       working-directory: build
+      timeout-minutes: 5

@@ -38,5 +38,12 @@ jobs:
 
     - uses: actions/checkout@v2
 
-    - run: ctest -S setup.cmake -E 3d -VV
-      timeout-minutes: 10
+    - run: cmake -B build
+      timeout-minutes: 2
+
+    - run: cmake --build build
+      timeout-minutes: 5
+
+    - run: ctest -E 3d --parallel 4 --output-on-failure
+      working-directory: build
+      timeout-minutes: 5
