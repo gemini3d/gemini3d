@@ -28,13 +28,18 @@ endif()
 option(mpi "Use MPI parallelization")
 
 option(autobuild "autobuild missing Lapack, Scalapack or Mumps" on)
+
 option(glow "use NCAR GLOW airglow / aurora model" on)
+option(msis20 "use MSIS 2.0 (non-commerical, academic only)")
+
 option(hdf5 "use HDF5 file I/O" on)
 option(netcdf "use NetCDF file I/O" off)
+
 # MUMPS build options (only used if auto-building MUMPS)
 option(metis "MUMPS: use METIS" off)
 option(scotch "MUMPS: use Scotch" off)
 option(openmp "MUMPS: use OpenMP" off)
+
 # Matlab checks take much longer than Python, and Python covers much more
 option(matlab "Matlab checks" off)
 

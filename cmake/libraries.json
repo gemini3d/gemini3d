@@ -2,6 +2,7 @@
 "glow": {"url": "https://github.com/gemini3d/glow.git", "tag": "v0.981.0.1"},
 "lapack": {"url": "https://github.com/scivision/lapack.git", "tag": "v3.9.0.2"},
 "h5fortran": {"url": "https://github.com/geospace-code/h5fortran.git", "tag": "v3.4.5"},
+"msis2": {"url": "https://map.nrl.navy.mil/map/pub/nrl/NRLMSIS/NRLMSIS2.0/NRLMSIS2.0.zip", "sha1": "fa817dfee637ec2298a6ec882345d13d0b087a85"},
 "mumps": {"url": "https://github.com/scivision/mumps.git", "tag": "v5.3.5.2"},
 "nc4fortran": {"url": "https://github.com/geospace-code/nc4fortran.git", "tag": "v1.1.2"},
 "scalapack": {"url": "https://github.com/scivision/scalapack.git", "tag": "v2.1.0.11"},

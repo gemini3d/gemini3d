@@ -13,6 +13,9 @@ if(CMAKE_VERSION VERSION_LESS 3.19)
   set(h5fortran_url https://github.com/geospace-code/h5fortran.git)
   set(h5fortran_tag v3.4.5)
 
+  set(msis2_url https://map.nrl.navy.mil/map/pub/nrl/NRLMSIS/NRLMSIS2.0/NRLMSIS2.0.zip)
+  set(msis2_sha1 fa817dfee637ec2298a6ec882345d13d0b087a85)
+
   set(mumps_url https://github.com/scivision/mumps.git)
   set(mumps_tag v5.3.5.2)
 
@@ -39,6 +42,9 @@ string(JSON lapack_tag GET ${_libj} "lapack" "tag")
 
 string(JSON h5fortran_url GET ${_libj} "h5fortran" "url")
 string(JSON h5fortran_tag GET ${_libj} "h5fortran" "tag")
+
+string(JSON msis2_url GET ${_libj} "msis2" "url")
+string(JSON msis2_sha1 GET ${_libj} "msis2" "sha1")
 
 string(JSON mumps_url GET ${_libj} "mumps" "url")
 string(JSON mumps_tag GET ${_libj} "mumps" "tag")

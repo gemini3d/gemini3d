@@ -8,8 +8,14 @@ endforeach()
 
 endfunction(set_targ_props)
 
-# --- vendor libraries
+# --- MSISE00 and MSIS 2.0
 add_subdirectory(vendor/msis00)
+if(msis20)
+  # provides gtd8()
+  include(${PROJECT_SOURCE_DIR}/cmake/msis2.cmake)
+endif()
+
+# --- just use one function from LAPACK95
 add_subdirectory(vendor/lapack95)  # used by PDEparabolic
 
 # --- GEMINI
