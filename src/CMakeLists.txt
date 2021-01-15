@@ -47,7 +47,8 @@ target_link_libraries(multifluid PRIVATE advec calculus collision const diffusio
 configure_file(gemini_cli.in.f90 gemini_cli.f90 @ONLY)
 add_executable(gemini.bin gemini.f90 ${CMAKE_CURRENT_BINARY_DIR}/gemini_cli.f90)
 set_target_properties(gemini.bin PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
-target_link_libraries(gemini.bin PRIVATE advec calculus config const collision diffusion fang grid io interp ionization gbsv mesh mpimod multifluid
+target_link_libraries(gemini.bin PRIVATE advec calculus config const collision diffusion fang grid io interp ionization gbsv mesh mpimod
+  msis_ifc multifluid
   neutral pathlib PDEelliptic PDEparabolic potential precipBCs reader sanity_check sources temporal timeutils)
 target_link_libraries(gemini.bin PRIVATE MUMPS::MUMPS)
 

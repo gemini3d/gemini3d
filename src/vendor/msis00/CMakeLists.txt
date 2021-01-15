@@ -41,6 +41,7 @@ if(CMAKE_Fortran_COMPILER_ID STREQUAL GNU)
 endif()
 
 add_library(msis00 msis00_gfortran.f)
+# keep msis00 NOT an OBJECT to avoid having to link it explicitly everywhere
 target_compile_options(msis00 PRIVATE ${msis_flags})
 
 # --- for setting up an equilibrium simulation --
@@ -77,7 +78,12 @@ endfunction(build_msis00)
 
 build_msis00()
 
-add_library(msis_ifc ALIAS msis00)
+add_library(msis_ifc OBJECT msis_interface.f90)
+target_link_libraries(msis_ifc PRIVATE msis00)
+target_include_directories(msis_ifc INTERFACE ${CMAKE_CURRENT_BINARY_DIR}/include)
+set_target_properties(msis_ifc PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include)
+
+
 if(msis20)
   # provides gtd8() subroutine
   include(${PROJECT_SOURCE_DIR}/cmake/msis2.cmake)

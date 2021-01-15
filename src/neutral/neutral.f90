@@ -7,7 +7,7 @@ use timeutils, only : find_lastdate
 use mpimod, only: mpi_cfg
 use config, only: gemini_cfg
 
-! also links gtd7 from vendor/msis00/
+! also links MSIS from vendor/msis00/
 
 implicit none (type, external)
 private
