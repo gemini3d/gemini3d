@@ -15,8 +15,8 @@ public :: Tnmsis, neutral_atmos, make_dneu, clear_dneu, neutral_perturb, neutral
 
 
 interface ! atmos.f90
-module subroutine neutral_atmos(ymd,UTsecd,glat,glon,alt,activ,v2grid,v3grid,nn,Tn,vn1,vn2,vn3)
-integer, intent(in) :: ymd(3)
+module subroutine neutral_atmos(ymd,UTsecd,glat,glon,alt,activ,v2grid,v3grid,nn,Tn,vn1,vn2,vn3, msis_version)
+integer, intent(in) :: ymd(3), msis_version
 real(wp), intent(in) :: UTsecd
 real(wp), dimension(:,:,:), intent(in) :: glat,glon,alt
 real(wp), intent(in) :: activ(3)
@@ -137,7 +137,7 @@ call make_dneu()
 
 !! call msis to get an initial neutral background atmosphere
 if (mpi_cfg%myid == 0) call cpu_time(tstart)
-call neutral_atmos(ymd,UTsec,x%glat,x%glon,x%alt,cfg%activ,v2grid,v3grid,nn,Tn,vn1,vn2,vn3)
+call neutral_atmos(ymd,UTsec,x%glat,x%glon,x%alt,cfg%activ,v2grid,v3grid,nn,Tn,vn1,vn2,vn3, cfg%msis_version)
 if (mpi_cfg%myid == 0) then
   call cpu_time(tfin)
   print *, 'Initial neutral background at time:  ',ymd,UTsec,' calculated in time:  ',tfin-tstart

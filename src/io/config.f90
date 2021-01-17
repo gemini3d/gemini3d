@@ -59,6 +59,7 @@ real(wp) :: v0equator=10._wp      ! max vertical drift of plasma at equator for 
 !> varying neutral atmosphere background
 logical :: flagneuBG=.false.                ! whether or not to allow MSIS to be called to update neutral background
 real(wp) :: dtneuBG=900._wp                  ! approximate time between MSIS calls
+integer :: msis_version
 
 !> background preciptation
 real(wp) :: PhiWBG=1e-3_wp                      ! background total energy flux in mW/m^2

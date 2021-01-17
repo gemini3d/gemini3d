@@ -33,8 +33,11 @@ real(wp) :: dtE0=0
 real(wp) :: dtglow=0, dtglowout=0
 logical :: flagEIA
 real(wp) :: v0equator
-logical :: flagneuBG
+
+logical :: flagneuBG=.false.
 real(wp) :: dtneuBG
+integer :: msis_version = 0
+
 real(wp) :: PhiWBG,W0BG
 logical :: flagJpar
 logical :: flgcap
@@ -54,7 +57,7 @@ namelist /efield/ dtE0, E0_dir
 namelist /fang/ flag_fang
 namelist /glow/ dtglow, dtglowout
 namelist /EIA/ flagEIA,v0equator
-namelist /neutral_BG/ flagneuBG,dtneuBG
+namelist /neutral_BG/ flagneuBG,dtneuBG, msis_version
 namelist /precip_BG/ PhiWBG,W0BG
 namelist /Jpar/ flagJpar
 namelist /capacitance/ flagcap,magcap     ! later need to regroup these in a way that is more logical now there are so many more inputs
@@ -180,6 +183,7 @@ if (namelist_exists(u,'neutral_BG')) then
   call check_nml_io(i, cfg%infile, "neutral_BG")
   cfg%flagneuBG=flagneuBG
   cfg%dtneuBG=dtneuBG
+  cfg%msis_version = msis_version
 else
   cfg%flagneuBG=.false.
 end if

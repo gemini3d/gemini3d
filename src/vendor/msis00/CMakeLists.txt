@@ -85,6 +85,10 @@ set_target_properties(msis_ifc PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_CURRE
 
 
 if(msis20)
-  # provides gtd8() subroutine
-  include(${PROJECT_SOURCE_DIR}/cmake/msis2.cmake)
-endif()
+  # we here use cmake_current_source_dir to allow use from other projects
+  # that start from this CMakeLists.txt by add_subdirectory(../gemini3d/src/vendor/msis00)
+  include(${CMAKE_CURRENT_SOURCE_DIR}/../../../cmake/msis2.cmake)
+  target_link_libraries(msis_ifc PRIVATE msis2)
+else(msis20)
+  target_sources(msis_ifc PRIVATE msis2_dummy.f90)
+endif(msis20)

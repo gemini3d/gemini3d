@@ -1,9 +1,9 @@
 submodule (neutral) atmos
 
-use, intrinsic :: iso_fortran_env, only: sp => real32
+use, intrinsic :: iso_fortran_env, only: sp => real32, stderr=>error_unit
 
 use timeutils, only : doy_calc
-use msis_interface, only : msis_gtd7
+use msis_interface, only : msis_gtd7, msis_gtd8
 
 implicit none (type, external)
 
@@ -43,7 +43,6 @@ sec = floor(UTsecd)
 
 ap(2)=ap3   !superfluous for now
 
-
 !> ITERATED LAT, LON, ALT DATA
 
 do ix3=1,lx3
@@ -54,9 +53,20 @@ do ix3=1,lx3
         altnow = 1     !so that MSIS does not get called with below ground values and so that we set them to something sensible that won't mess up the conductance calculations
       end if
 
-      call msis_gtd7(iyd,sec, &
-        alt_km=altnow, glat=glat(ix1,ix2,ix3), glon=glon(ix1,ix2,ix3), &
-        f107a=activ(1), f107=activ(2), ap7=ap, d=d, T=t, use_meters=.true.)
+      if(msis_version == 0) then
+        call msis_gtd7(iyd, UTsec=sec, &
+          alt_km=altnow, glat=glat(ix1,ix2,ix3), glon=glon(ix1,ix2,ix3), &
+          f107a=activ(1), f107=activ(2), ap7=ap, &
+          d=d, T=t, use_meters=.true.)
+      elseif(msis_version == 20) then
+        call msis_gtd8(doy=real(doy, wp), UTsec=sec, &
+          alt_km=altnow, glat=glat(ix1,ix2,ix3), glon=glon(ix1,ix2,ix3), &
+          f107a=activ(1), f107=activ(2), ap7=ap, &
+          Dn=d, Tn=t)
+      else
+        write(stderr,*) 'ERROR:neutral_atmos: unknown msis version',msis_version,' expected 0 (MSISE00) or 20 (MSIS 2.0)'
+        error stop
+      end if
 
       nnmsis(ix1,ix2,ix3,1)= d(2)
       nnmsis(ix1,ix2,ix3,2)= d(3)
