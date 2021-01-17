@@ -346,8 +346,8 @@ END FUNCTION MPI_WTIME
 !  Utilities to copy data
 
 subroutine mumps_copy(N, S, R)
-class(*), dimension(N), intent(in) :: R
-class(*), dimension(N), intent(out) :: S
+class(*), dimension(N), intent(out) :: R
+class(*), dimension(N), intent(in) :: S
 integer, intent(in) :: N
 
 select type (S)
