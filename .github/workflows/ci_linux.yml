@@ -8,13 +8,6 @@ on:
       - "**.cmake"
       - "**/CMakeLists.txt"
       - ".github/workflows/ci_linux.yml"
-  pull_request:
-    paths:
-      - "**.f90"
-      - "**.F90"
-      - "**.cmake"
-      - "**/CMakeLists.txt"
-      - ".github/workflows/ci_linux.yml"
 
 jobs:
 
