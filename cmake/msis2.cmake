@@ -21,9 +21,7 @@ endif()
 # MSIS 2.0 needs this parm file.
 # From your Fortran code, refer to this file by
 # `call msisinit(parmpath=)` perhaps via CMake configure_file()
-if(NOT EXISTS ${PROJECT_BINARY_DIR}/msis20.parm)
-  file(COPY ${msis2proj_SOURCE_DIR}/msis20.parm DESTINATION ${PROJECT_BINARY_DIR})
-endif()
+file(COPY ${msis2proj_SOURCE_DIR}/msis20.parm DESTINATION ${PROJECT_BINARY_DIR})
 
 if(BUILD_TESTING)
   add_executable(msis2test ${msis2proj_SOURCE_DIR}/msis2.0_test.F90)
@@ -31,5 +29,5 @@ if(BUILD_TESTING)
 
   add_test(NAME MSIS2
     COMMAND $<TARGET_FILE:msis2test>
-    WORKING_DIRECTORY ${msis2proj_BINARY_DIR})
+    WORKING_DIRECTORY ${msis2proj_SOURCE_DIR})
 endif()
