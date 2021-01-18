@@ -5,6 +5,7 @@ module ionrate
 use phys_consts, only: wp
 use, intrinsic:: iso_fortran_env, only: sp=>real32
 use ionize_fang, only: fang2008, fang2010, gravity_accel, erg2kev
+use msis_interface, only : msis_gtd7, msis_gtd8
 
 implicit none (type, external)
 private
@@ -12,55 +13,57 @@ public :: ionization_fang2008, ionization_fang2010
 
 contains
 
-impure elemental real(wp) function ionization_fang2008(Q0_erg, E0_keV, alt_km, f107, f107a, Ap, glat, glon, doy, UTsec) result(Qtot)
+impure elemental real(wp) function ionization_fang2008(Q0_erg, E0_keV, alt_km, f107, f107a, Ap, glat, glon, doy, UTsec, &
+  msis_version) result(Qtot)
 
 real(wp), intent(in) :: Q0_erg, E0_keV, alt_km, f107, f107a, Ap, glat, glon, UTsec
-integer, intent(in) :: doy
+integer, intent(in) :: doy, msis_version
 
 real(wp) :: massden_gcm3, meanmass_g
-real(sp) :: stl, d(9),T(2), sw(25), Ap7(7)
+real(wp) :: d(9),T(2), Ap7(7)
 
-external :: meters, gtd7, tselec
+Ap7 = Ap
 
-!! MSIS setup
-Ap7 = real(Ap, sp)
-stl = real(UTsec/3600 + glon/15, sp)
-call meters(.false.)
-sw = 1
-call tselec(sw)
-call gtd7(doy, real(UTsec, sp), real(alt_km, sp), real(glat, sp), real(glon, sp), stl, &
-          real(f107a, sp), real(f107, sp), Ap7, 48, d, T)
+if(msis_version==0) then
+  call msis_gtd7(doy, UTsec, alt_km, glat, glon, f107a, f107, Ap7, d, T, use_meters=.false.)
+elseif(msis_version==20) then
+  error stop 'TODO: MSIS 2.0 for Fang unit tests'
+else
+  error stop 'expected msis_version == {0,20}'
+endif
+
 massden_gcm3 = d(6)  ! [g cm^-3]
 meanmass_g = massden_gcm3 / (sum(d(1:5)) + sum(d(7:8)))
 
-Qtot = fang2008(Q0_erg*erg2kev, E0_keV, real(T(2), wp), massden_gcm3, meanmass_g, real(gravity_accel(alt_km), wp))
+Qtot = fang2008(Q0_erg*erg2kev, E0_keV, T(2), massden_gcm3, meanmass_g, gravity_accel(alt_km))
 
 end function ionization_fang2008
 
 
-impure elemental real(wp) function ionization_fang2010(Q0_erg, E0_keV, alt_km, f107, f107a, Ap, glat, glon, doy, UTsec) result(Qtot)
+impure elemental real(wp) function ionization_fang2010(Q0_erg, E0_keV, alt_km, f107, f107a, Ap, glat, glon, doy, UTsec, &
+  msis_version) result(Qtot)
 
 real(wp), intent(in) :: Q0_erg, E0_keV, alt_km, f107, f107a, Ap, glat, glon, UTsec
-integer, intent(in) :: doy
+integer, intent(in) :: doy, msis_version
 
 real(wp) :: massden_gcm3, meanmass_g
-real(sp) :: stl, d(9),T(2), sw(25), Ap7(7)
+real(wp) :: d(9),T(2), Ap7(7)
 
-external :: meters, gtd7, tselec
+Ap7 = Ap
 
-!! MSIS setup
-Ap7 = real(Ap, sp)
-stl = real(UTsec/3600 + glon/15, sp)
-call meters(.false.)
-sw = 1
-call tselec(sw)
-call gtd7(doy, real(UTsec, sp), real(alt_km, sp), real(glat, sp), real(glon, sp), stl, &
-          real(f107a, sp), real(f107, sp), Ap7, 48, d, T)
+if(msis_version==0) then
+  call msis_gtd7(doy, UTsec, alt_km, glat, glon, f107a, f107, Ap7, d, T, use_meters=.false.)
+elseif(msis_version==20) then
+  error stop 'TODO: MSIS 2.0 for Fang unit tests'
+else
+  error stop 'expected msis_version == {0,20}'
+endif
+
 massden_gcm3 = d(6)  ! [g cm^-3]
 meanmass_g = massden_gcm3 / (sum(d(1:5)) + sum(d(7:8)))
 
-Qtot = fang2010(Q0_erg*erg2kev, E0_keV, real(T(2), wp), massden_gcm3, meanmass_g, real(gravity_accel(alt_km), wp))
+Qtot = fang2010(Q0_erg*erg2kev, E0_keV, T(2), massden_gcm3, meanmass_g, gravity_accel(alt_km))
 
 end function ionization_fang2010
 
-end module
+end module ionrate

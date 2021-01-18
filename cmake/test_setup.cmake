@@ -17,9 +17,12 @@ endif(mpi)
 if(hdf5)
 
 add_test(NAME gemini:hdf5:${testname}:dryrun
-  COMMAND ${_cmd} -dryrun
-  WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
-  # NOTE: Working_Diretory is NECESSARY for Windows + Intel + HDF5
+  COMMAND ${_cmd} -dryrun)
+# we prefer default WorkingDirectory of PROJECT_BINARY_DIR to make MSIS 2.0 msis20.parm use simpler
+# otherwise, we have to generate source for msis_interface.f90
+
+  # WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
+  # NOTE: WorkingDirectory is NECESSARY for Windows + Intel + ProgramFiles/HDFGroup/HDF5
 
 set_tests_properties(gemini:hdf5:${testname}:dryrun PROPERTIES
   TIMEOUT 60
@@ -29,9 +32,8 @@ set_tests_properties(gemini:hdf5:${testname}:dryrun PROPERTIES
 
 
 add_test(NAME gemini:hdf5:${testname}
-  COMMAND ${_cmd}
-  WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
-  # NOTE: Working_Directory is NECESSARY for Windows + Intel + HDF5
+  COMMAND ${_cmd})
+  # WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
 
 # NOTE: don't use REQUIRED_FILES because it won't let file download if not present.
 set_tests_properties(gemini:hdf5:${testname} PROPERTIES

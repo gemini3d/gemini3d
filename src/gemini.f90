@@ -11,7 +11,10 @@ use config, only : gemini_cfg, get_compiler_vendor
 use io, only : input_plasma,create_outdir,output_plasma,create_outdir_aur,output_aur,find_milestone
 use mpimod, only : mpibreakdown, mpi_manualgrid, process_grid_auto, mpi_cfg
 use multifluid, only : fluid_adv
+
+use msis_interface, only : msisinit
 use neutral, only : neutral_atmos,make_dneu,neutral_perturb,clear_dneu,init_neutrals
+
 use potentialBCs_mumps, only: clear_potential_fileinput, init_Efieldinput
 use potential_comm,only : electrodynamics,pot2perpfield,velocities, get_BGEfields
 use collisions, only: conductivities
@@ -22,6 +25,7 @@ use timeutils, only: dateinc, find_lastdate
 implicit none (type, external)
 
 integer :: ierr
+logical :: exists
 
 !> VARIABLES READ IN FROM CONFIG FILE
 real(wp) :: UTsec
@@ -237,6 +241,14 @@ end if
 if(mpi_cfg%myid==0) print*, 'Priming precipitation input'
 call init_precipinput(dt,t,cfg,ymd,UTsec,x)
 
+!> Neutral atmosphere setup
+if(cfg%msis_version == 20) then
+  inquire(file='msis20.parm', exist=exists)
+  if(.not.exists) error stop 'could not find MSIS 2.0 msis20.parm. ' // &
+    'This should be at gemini3d/build/msis20.parm and run gemini.bin from same directory'
+  call msisinit(parmfile='msis20.parm')
+end if
+
 if(mpi_cfg%myid==0) print*, 'Priming neutral input'
 call init_neutrals(dt,t,cfg,ymd,UTsec,x,v2grid,v3grid,nn,Tn,vn1,vn2,vn3)
 
@@ -302,7 +314,7 @@ main : do while (t < tdur)
   !> COMPUTE BACKGROUND NEUTRAL ATMOSPHERE USING MSIS00.
   if ( it/=1 .and. cfg%flagneuBG .and. t>tneuBG) then     !we dont' throttle for tneuBG so we have to do things this way to not skip over...
     call cpu_time(tstart)
-    call neutral_atmos(ymd,UTsec,x%glat,x%glon,x%alt,cfg%activ,v2grid,v3grid,nn,Tn,vn1,vn2,vn3)
+    call neutral_atmos(ymd,UTsec,x%glat,x%glon,x%alt,cfg%activ,v2grid,v3grid,nn,Tn,vn1,vn2,vn3, cfg%msis_version)
     tneuBG=tneuBG+cfg%dtneuBG;
     if (mpi_cfg%myid==0) then
       call cpu_time(tfin)

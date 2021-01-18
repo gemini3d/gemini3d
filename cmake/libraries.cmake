@@ -1,4 +1,4 @@
-# this reads libraries.json in memory, as a "single source of truth"
+# this reads libraries.json in memory, as a single source of truth
 if(CMAKE_VERSION VERSION_LESS 3.19)
   # FIXME: we should eventually require CMake 3.19 for this and other stability enhancements.
 
@@ -37,29 +37,29 @@ endif()
 # preferred method CMake >= 3.19
 file(READ ${CMAKE_CURRENT_LIST_DIR}/libraries.json _libj)
 
-string(JSON glow_url GET ${_libj} "glow" "url")
-string(JSON glow_tag GET ${_libj} "glow" "tag")
+string(JSON glow_url GET ${_libj} glow url)
+string(JSON glow_tag GET ${_libj} glow tag)
 
-string(JSON lapack_url GET ${_libj} "lapack" "url")
-string(JSON lapack_tag GET ${_libj} "lapack" "tag")
+string(JSON lapack_url GET ${_libj} lapack url)
+string(JSON lapack_tag GET ${_libj} lapack tag)
 
-string(JSON h5fortran_url GET ${_libj} "h5fortran" "url")
-string(JSON h5fortran_tag GET ${_libj} "h5fortran" "tag")
+string(JSON h5fortran_url GET ${_libj} h5fortran url)
+string(JSON h5fortran_tag GET ${_libj} h5fortran tag)
 
-string(JSON hwm14_url GET ${_libj} "hwm14" "url")
-string(JSON hwm14_tag GET ${_libj} "hwm14" "tag")
+string(JSON hwm14_url GET ${_libj} hwm14 url)
+string(JSON hwm14_tag GET ${_libj} hwm14 tag)
 
-string(JSON msis2_url GET ${_libj} "msis2" "url")
-string(JSON msis2_sha1 GET ${_libj} "msis2" "sha1")
+string(JSON msis2_url GET ${_libj} msis2 url)
+string(JSON msis2_sha1 GET ${_libj} msis2 sha1)
 
-string(JSON mumps_url GET ${_libj} "mumps" "url")
-string(JSON mumps_tag GET ${_libj} "mumps" "tag")
+string(JSON mumps_url GET ${_libj} mumps url)
+string(JSON mumps_tag GET ${_libj} mumps tag)
 
-string(JSON nc4fortran_url GET ${_libj} "nc4fortran" "url")
-string(JSON nc4fortran_tag GET ${_libj} "nc4fortran" "tag")
+string(JSON nc4fortran_url GET ${_libj} nc4fortran url)
+string(JSON nc4fortran_tag GET ${_libj} nc4fortran tag)
 
-string(JSON scalapack_url GET ${_libj} "scalapack" "url")
-string(JSON scalapack_tag GET ${_libj} "scalapack" "tag")
+string(JSON scalapack_url GET ${_libj} scalapack url)
+string(JSON scalapack_tag GET ${_libj} scalapack tag)
 
-string(JSON pygemini_url GET ${_libj} "pygemini" "url")
-string(JSON pygemini_tag GET ${_libj} "pygemini" "tag")
+string(JSON pygemini_url GET ${_libj} pygemini url)
+string(JSON pygemini_tag GET ${_libj} pygemini tag)
