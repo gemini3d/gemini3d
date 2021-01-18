@@ -1,6 +1,10 @@
 include(FetchContent)
 
 if(NOT DEFINED msis2_url OR NOT DEFINED msis2_sha1)
+  if(CMAKE_VERSION VERSION_LESS 3.19)
+    message(FATAL_ERROR "CMake >= 3.19 required to use MSIS 2.0")
+  endif()
+
   set(_json_file ${PROJECT_SOURCE_DIR}/cmake/libraries.json)
   if(NOT EXISTS ${_json_file})
     message(FATAL_ERROR "must define msis2_url and msis2_sha1")
