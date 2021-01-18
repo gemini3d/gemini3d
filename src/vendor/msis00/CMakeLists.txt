@@ -47,7 +47,7 @@ target_compile_options(msis00 PRIVATE ${msis_flags})
 # --- for setting up an equilibrium simulation --
 
 add_executable(msis_setup msis_driver.f90)
-target_link_libraries(msis_setup PRIVATE msis00)
+target_link_libraries(msis_setup PRIVATE msis_ifc)
 target_compile_options(msis_setup PRIVATE ${static_flag})
 set_target_properties(msis_setup PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
 
@@ -57,7 +57,7 @@ if(${PROJECT_NAME}_BUILD_TESTING)
 
   if(NOT EXISTS ${_msis_in})
     file(WRITE ${_msis_in} "
-    15123
+    123
     12345
     100, 100, 4, 5
     ${_msis_lz}

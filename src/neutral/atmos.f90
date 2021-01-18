@@ -52,7 +52,7 @@ do ix3=1,lx3
           f107a=activ(1), f107=activ(2), ap7=ap, &
           d=d, T=t, use_meters=.true.)
       elseif(msis_version == 20) then
-        call msis_gtd8(doy=real(doy, wp), UTsec=UTsecd, &
+        call msis_gtd8(doy=doy, UTsec=UTsecd, &
           alt_km=altnow, glat=glat(ix1,ix2,ix3), glon=glon(ix1,ix2,ix3), &
           f107a=activ(1), f107=activ(2), ap7=ap, &
           Dn=d, Tn=t)

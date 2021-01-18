@@ -6,8 +6,8 @@ module msis_interface
 !! We assume MSISE00 is always available, which MSIS 2.0 might not be available.
 
 use msis_calc, only : msiscalc
-use msis_init, only :  msisinit
-use, intrinsic :: iso_fortran_env, only : real32, real64
+use msis_init, only : msisinit
+use, intrinsic :: iso_fortran_env, only : real32, real64, int32
 implicit none (type, external)
 
 interface msis_gtd7
@@ -26,13 +26,26 @@ contains
 subroutine msis_gtd7_r32(doy, UTsec, alt_km,  glat, glon, f107a, f107, Ap7, d, T, use_meters, sw25)
 
 external :: meters, gtd7, tselec
-integer, intent(in) :: doy
+
+class(*), intent(in) :: doy
 real(real32), intent(in) :: UTsec, alt_km, glat, glon, f107, f107a, Ap7(7)
 real(real32), intent(out) :: d(9),T(2)
 logical, intent(in) :: use_meters
 real(real32), intent(in), optional :: sw25(25)
 
 real(real32) :: stl, sw(25)
+integer :: dayOfYear
+
+select type (doy)
+  type is (integer(int32))
+    dayOfYear = doy
+  type is (real(real64))
+    dayOfYear = int(doy)
+  type is (real(real32))
+    dayOfYear = int(doy)
+  class default
+    error stop 'msis_gtd8: doy must be real or integer'
+end select
 
 stl = UTsec/3600 + glon/15
 
@@ -42,7 +55,7 @@ sw = 1
 if (present(sw25)) sw = sw25
 call tselec(sw)
 
-call gtd7(doy, UTsec, alt_km, glat, glon, stl, f107a, f107, Ap7, 48, d, T)
+call gtd7(dayOfYear, UTsec, alt_km, glat, glon, stl, f107a, f107, Ap7, 48, d, T)
 
 end subroutine msis_gtd7_r32
 
@@ -50,13 +63,26 @@ end subroutine msis_gtd7_r32
 subroutine msis_gtd7_r64(doy, UTsec, alt_km, glat, glon, f107a, f107, Ap7, d, T, use_meters, sw25)
 !! adds casting to/from real32
 external :: meters, gtd7, tselec
-integer, intent(in) :: doy
+
+class(*), intent(in) :: doy
 real(real64), intent(in) :: UTsec, alt_km, glat, glon, f107, f107a, Ap7(7)
 real(real64), intent(out) :: d(9),T(2)
 logical, intent(in) :: use_meters
 real(real64), intent(in), optional :: sw25(25)
 
 real(real32) :: sw(25), stl, d32(9), T32(2)
+integer :: dayOfYear
+
+select type (doy)
+  type is (integer(int32))
+    dayOfYear = doy
+  type is (real(real64))
+    dayOfYear = int(doy)
+  type is (real(real32))
+    dayOfYear = int(doy)
+  class default
+    error stop 'msis_gtd8: doy must be real or integer'
+end select
 
 stl = real(UTsec/3600 + glon/15, real32)
 
@@ -66,7 +92,7 @@ sw = 1
 if (present(sw25)) sw = real(sw25, real32)
 call tselec(sw)
 
-call gtd7(doy, real(UTsec, real32), real(alt_km, real32), &
+call gtd7(dayOfYear, real(UTsec, real32), real(alt_km, real32), &
   real(glat, real32), real(glon, real32), real(stl, real32), &
   real(f107a, real32), real(f107, real32), real(Ap7, real32), 48, &
   d32, T32)
@@ -80,12 +106,24 @@ end subroutine msis_gtd7_r64
 subroutine msis_gtd8_r64(doy, UTsec, alt_km, glat, glon, f107a, f107, Ap7, Dn, Tn)
 !! translate MSIS 2.0 to MSISE00 gtd7-like
 !! assume MSIS 2.0 is real32
-real(real64), intent(in) :: doy, UTsec, alt_km, glat, glon, f107a, f107, Ap7(7)
+class(*), intent(in) :: doy
+real(real64), intent(in) :: UTsec, alt_km, glat, glon, f107a, f107, Ap7(7)
 real(real64), intent(out) :: Dn(9), Tn(2)
 
-real(real32) :: D(10), T(2)
+real(real32) :: D(10), T(2), dayOfYear
 
-call msiscalc(day=real(doy, real32), UTsec=real(UTsec, real32), &
+select type (doy)
+  type is (integer(int32))
+    dayOfYear = real(doy, real32)
+  type is (real(real64))
+    dayOfYear = real(doy, real32)
+  type is (real(real32))
+    dayOfYear = doy
+  class default
+    error stop 'msis_gtd8: doy must be real or integer'
+end select
+
+call msiscalc(day=dayOfYear, UTsec=real(UTsec, real32), &
   z=real(alt_km, real32), lat=real(glat, real32), lon=real(glon, real32), &
   SfluxAvg=real(f107a, real32), Sflux=real(f107, real32), ap=real(Ap7, real32), &
   Tn=T(2), Tex=T(1), Dn=D)
@@ -107,16 +145,27 @@ Tn = real(T, real64)
 end subroutine msis_gtd8_r64
 
 
-subroutine msis_gtd8_r32(doy, UTsec, alt_km, glat, glon, f107a, f107, Ap7, Dn, Tn, use_meters)
+subroutine msis_gtd8_r32(doy, UTsec, alt_km, glat, glon, f107a, f107, Ap7, Dn, Tn)
 !! translate MSIS 2.0 to MSISE00 gtd7-like
 !! assume MSIS 2.0 is also real32
-real(real32), intent(in) :: doy, UTsec, alt_km, glat, glon, f107a, f107, Ap7(7)
+class(*), intent(in) :: doy
+real(real32), intent(in) :: UTsec, alt_km, glat, glon, f107a, f107, Ap7(7)
 real(real32), intent(out) :: Dn(9), Tn(2)
-logical, intent(in) :: use_meters
 
-real(real32) :: D(10)
+real(real32) :: D(10), dayOfYear
 
-call msiscalc(day=doy, UTsec=UTsec, &
+select type (doy)
+  type is (integer(int32))
+    dayOfYear = real(doy, real32)
+  type is (real(real64))
+    dayOfYear = real(doy, real32)
+  type is (real(real32))
+    dayOfYear = doy
+  class default
+    error stop 'msis_gtd8: doy must be real or integer'
+end select
+
+call msiscalc(day=dayOfYear, UTsec=UTsec, &
   z=alt_km, lat=glat, lon=glon, &
   SfluxAvg=f107a, Sflux=f107, ap=Ap7, &
   Tn=Tn(2), Tex=Tn(1), Dn=D)
