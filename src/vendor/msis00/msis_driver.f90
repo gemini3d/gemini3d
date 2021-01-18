@@ -3,15 +3,15 @@ program msis_driver
 
 use msis_interface, only : msis_gtd7, msis_gtd8, msisinit
 use h5fortran, only : hdf5_file, hsize_t
-use, intrinsic:: iso_fortran_env, only : sp=>real32, stderr=>error_unit, stdout=>output_unit, stdin=>input_unit
+use, intrinsic:: iso_fortran_env, only : real32, stderr=>error_unit, stdout=>output_unit, stdin=>input_unit
 
 implicit none (type, external)
 
-integer :: i
-real(sp) :: doy,sec,f107a,f107,ap(7),apday,ap3
-real(sp) :: d(9),t(2)
-real(sp), allocatable :: glat(:),glon(:),alt(:)
-integer :: u, msis_version
+integer :: i,j,k
+real(real32) :: doy,sec,f107a,f107, Ap(7)
+real(real32), allocatable, dimension(:,:,:,:) :: Dn, Tn
+real(real32), allocatable, dimension(:,:,:) :: glat, glon, alt
+integer :: u, msis_version, lx1, lx2, lx3
 character(256) :: buf
 character(:), allocatable :: infile,outfile
 
@@ -24,67 +24,136 @@ call get_command_argument(2, buf)
 outfile = trim(buf)
 
 msis_version = 0
-if(command_argument_count() > 3) then
-  call get_command_argument(4, buf)
+if(command_argument_count() > 2) then
+  call get_command_argument(3, buf)
   read(buf, '(I3)') msis_version
 endif
 
 !> select input format
-if (infile == "-" .or. infile(len(infile)-3:) == ".txt") then
-  call get_text_input(infile, doy,sec,f107a,f107,Apday, ap3, glat, glon, alt)
-else
-  call get_binary_input(infile,doy,sec,f107a,f107,Ap, glat, glon, alt)
-endif
-
-!> select output format
-if (outfile == '-') then
-  u = stdout
-elseif(outfile(len(outfile)-3:) == ".txt") then
-  open(newunit=u, file=outfile, status='replace',action='write')
-else
-  open(newunit=u,file=outfile,status='replace',form='unformatted',access='stream', action='write')
-endif
+call input_hdf5(infile,doy,sec,f107a,f107,Ap, glat, glon, alt)
 
 !> Run MSIS
-ap(1:7)=apday
-ap(2)=ap3
+lx1 = size(alt,1)
+lx2 = size(alt,2)
+lx3 = size(alt,3)
+allocate(Dn(lx1,lx2,lx3, 9), Tn(lx1,lx2,lx3, 2))
 
 if(msis_version == 20) call msisinit(parmfile='msis20.parm')
 
-do i=1,size(alt)
+do i=1,lx1
+  do j=1,lx2
+    do k=1,lx3
 
-  if(msis_version == 0) then
-    call msis_gtd7(doy, sec, alt(i), glat(i), glon(i), f107a, f107, Ap, D, T, use_meters=.true.)
-  elseif(msis_version == 20) then
-    call msis_gtd8(doy, sec, alt(i), glat(i), glon(i), f107a, f107, Ap, D, T)
-  else
-    error stop 'expected msis_version = {0,20}'
-  endif
+      if(msis_version == 0) then
+        call msis_gtd7(doy, sec, alt(i,j,k), glat(i,j,k), glon(i,j,k), f107a, f107, Ap, Dn(i,j,k,:), Tn(i,j,k,:), use_meters=.true.)
+      elseif(msis_version == 20) then
+        call msis_gtd8(doy, sec, alt(i,j,k), glat(i,j,k), glon(i,j,k), f107a, f107, Ap, Dn(i,j,k,:), Tn(i,j,k,:))
+      else
+        error stop 'expected msis_version = {0,20}'
+      end if
 
-  if (outfile == '-') then
-    write(u,'(F9.2, 9ES15.6, F9.2)') alt(i),d(1:9),t(2)
-  elseif(outfile(len(outfile)-3:) == ".txt") then
-    write(u,'(F9.2, 9ES15.6, F9.2)') alt(i),d(1:9),t(2)
-  else
-    write(u) alt(i),d(1:9),t(2)
-  endif
+    end do
+  end do
 end do
 
-if (outfile == '-') stop
-
-close(u)
-
-inquire(file=outfile, size=i)
-print *,'msis_setup: wrote ',i,' bytes to ',outfile
-if (i==0) error stop 'msis_setup failed to write file'
+call output_hdf5(outfile, alt, Dn, Tn)
 
 contains
 
-subroutine get_text_input(filename, doy,sec,f107a,f107,apday,ap3, glat, glon, alt)
+
+subroutine input_hdf5(filename,doy,sec,f107a,f107,Ap7, glat, glon, alt)
+!! use binary to reduce file size and read times
+character(*), intent(in) :: filename
+real(real32), intent(out) :: doy,sec,f107a,f107,ap7(7)
+real(real32), intent(out), allocatable :: glat(:,:,:), glon(:,:,:), alt(:,:,:)
+
+type(hdf5_file) :: hf
+integer(hsize_t), allocatable :: dims(:)
+integer:: lx1,lx2,lx3
+
+call hf%initialize(filename, status='old', action='read')
+
+call hf%read("/doy", doy)
+call hf%read("/UTsec", sec)
+call hf%read("/f107a", f107a)
+call hf%read("/f107", f107)
+call hf%read("/Ap", Ap7)
+
+call hf%shape("/glat", dims)
+lx1 = int(dims(1))
+lx2 = int(dims(2))
+lx3 = int(dims(3))
+
+allocate(glat(lx1,lx2,lx3), glon(lx1,lx2,lx3), alt(lx1,lx2,lx3))
+
+call hf%read("/glat", glat)
+call hf%read("/glon", glon)
+call hf%read("/alt", alt)
+
+call hf%finalize()
+
+end subroutine input_hdf5
+
+
+subroutine output_hdf5(filename, alt, Dn, Tn)
 
 character(*), intent(in) :: filename
-real(sp), intent(out) :: doy,sec,f107a,f107,apday,ap3
-real(sp), intent(out), allocatable :: glat(:),glon(:),alt(:)
+real(real32), intent(in) :: alt(:,:,:), Dn(:,:,:,:), Tn(:,:,:,:)
+type(hdf5_file) :: hf
+
+call hf%initialize(filename, status="replace", action="write")
+
+call hf%write("/alt", alt)
+
+call hf%write("/nHe", Dn(:,:,:,1))
+call hf%write("/nO", Dn(:,:,:,2))
+call hf%write("/nN2", Dn(:,:,:,3))
+call hf%write("/nO2", Dn(:,:,:,4))
+call hf%write("/nAr", Dn(:,:,:,5))
+call hf%write("/TotalMassDensity", Dn(:,:,:,6))
+call hf%write("/nH", Dn(:,:,:,7))
+call hf%write("/nN", Dn(:,:,:,8))
+call hf%write("/nOana", Dn(:,:,:,9))
+
+call hf%write("/Tn", Tn(:,:,:,2))
+call hf%write("/Texo", Tn(:,:,:,1))
+
+
+call hf%finalize()
+
+end subroutine output_hdf5
+
+
+! ------- below not used anymore
+
+subroutine output_text(filename, alt, Dn, Tn)
+
+character(*), intent(in) :: filename
+real(real32), intent(in) :: alt(:), Dn(:,:), Tn(:,:)
+logical :: pipe
+
+pipe = filename == '-'
+
+if (pipe) then
+  u = stdout
+else
+  open(newunit=u, file=outfile, status='replace',action='write')
+endif
+
+do i = 1,size(alt)
+  write(u,'(F9.2, 9ES15.6, F9.2)') alt(i), Dn(i,:), Tn(i,2)
+end do
+
+if (outfile /= '-') close(u)
+
+end subroutine output_text
+
+
+subroutine input_text(filename, doy,sec,f107a,f107,apday,ap3, glat, glon, alt)
+
+character(*), intent(in) :: filename
+real(real32), intent(out) :: doy,sec,f107a,f107,apday,ap3
+real(real32), intent(out), allocatable :: glat(:),glon(:),alt(:)
 
 integer :: u, i, lz
 
@@ -121,38 +190,7 @@ if (i/=0) error stop "alt: ran out of input elements unexpectedly"
 
 if (filename /= "-") close(u)
 
-end subroutine get_text_input
-
-
-subroutine get_binary_input(filename,doy,sec,f107a,f107,Ap7, glat, glon, alt)
-!! use binary to reduce file size and read times
-character(*), intent(in) :: filename
-real(sp), intent(out) :: doy,sec,f107a,f107,ap7(7)
-real(sp), intent(out), allocatable :: glat(:),glon(:),alt(:)
-
-type(hdf5_file) :: hf
-integer(hsize_t), allocatable :: dims(:)
-integer:: lz
-
-call hf%initialize(filename, status='old', action='read')
-
-call hf%read("/doy", doy)
-call hf%read("/UTsec", sec)
-call hf%read("/f107a", f107a)
-call hf%read("/f107", f107)
-call hf%read("/Ap", Ap7)
-
-call hf%shape("/glat", dims)
-lz = int(dims(1))
-
-allocate(glat(lz), glon(lz), alt(lz))
-call hf%read("/glat", glat)
-call hf%read("/glon", glon)
-call hf%read("/alt", alt)
-
-call hf%finalize()
-
-end subroutine get_binary_input
+end subroutine input_text
 
 
 subroutine check_lz(lz)
@@ -161,9 +199,9 @@ integer, intent(in) :: lz
 character(256) :: buf
 integer :: i
 
-if (lz<1) error stop 'lz must be positive'
+if (lz < 1) error stop 'lz must be positive'
 
-call get_command_argument(3, buf, status=i)
+call get_command_argument(4, buf, status=i)
 if (i==0) then
   read(buf, *) i
   if (i /= lz) then
