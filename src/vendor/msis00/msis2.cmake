@@ -1,5 +1,16 @@
 include(FetchContent)
 
+if(NOT DEFINED msis2_url OR NOT DEFINED msis2_sha1)
+  set(_json_file ${PROJECT_SOURCE_DIR}/cmake/libraries.json)
+  if(NOT EXISTS ${_json_file})
+    message(FATAL_ERROR "must define msis2_url and msis2_sha1")
+  endif()
+  file(READ ${_json_file} _libj)
+
+  string(JSON msis2_url GET ${_libj} "msis2" "url")
+  string(JSON msis2_sha1 GET ${_libj} "msis2" "sha1")
+endif()
+
 FetchContent_Declare(msis2proj
 URL ${msis2_url}
 URL_HASH SHA1=${msis2_sha1}
