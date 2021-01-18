@@ -16,30 +16,23 @@ module procedure neutral_atmos
 
 integer :: ix1,ix2,ix3,lx1,lx2,lx3
 
-integer :: iyd
-integer :: year,doy,yearshort
-real(wp) :: sec,ap(7),ap3
+integer :: doy
+real(wp) :: ap(7),ap3
 real(wp) :: altnow
 real(wp) :: d(9),t(2)
 
 !   real(wp), dimension(1:size(alt,1),1:size(alt,2),1:size(alt,3)) :: nnow
 !    real(wp), dimension(1:size(alt,1),1:size(alt,2),1:size(alt,3)) :: altalt    !an alternate altitude variable which fixes below ground values to 1km
 
-
 lx1=size(alt,1)
 lx2=size(alt,2)
 lx3=size(alt,3)
 
-
 !! CONVERT DATE INFO INTO EXPECTED FORM AND KIND
-ap= activ(3)
-ap3= activ(3)
+ap = activ(3)
+ap3 = activ(3)
 
-doy=doy_calc(year=ymd(1), month=ymd(2), day=ymd(3))
-
-yearshort = mod(ymd(1), 100)
-iyd = yearshort*1000+doy
-sec = floor(UTsecd)
+doy = doy_calc(year=ymd(1), month=ymd(2), day=ymd(3))
 
 ap(2)=ap3   !superfluous for now
 
@@ -54,12 +47,12 @@ do ix3=1,lx3
       end if
 
       if(msis_version == 0) then
-        call msis_gtd7(iyd, UTsec=sec, &
+        call msis_gtd7(doy=doy, UTsec=UTsecd, &
           alt_km=altnow, glat=glat(ix1,ix2,ix3), glon=glon(ix1,ix2,ix3), &
           f107a=activ(1), f107=activ(2), ap7=ap, &
           d=d, T=t, use_meters=.true.)
       elseif(msis_version == 20) then
-        call msis_gtd8(doy=real(doy, wp), UTsec=sec, &
+        call msis_gtd8(doy=real(doy, wp), UTsec=UTsecd, &
           alt_km=altnow, glat=glat(ix1,ix2,ix3), glon=glon(ix1,ix2,ix3), &
           f107a=activ(1), f107=activ(2), ap7=ap, &
           Dn=d, Tn=t)
