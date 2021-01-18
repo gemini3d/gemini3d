@@ -46,6 +46,9 @@ endif
 !> Run MSIS
 ap(1:7)=apday
 ap(2)=ap3
+
+if(msis_version == 20) call msisinit(parmfile='msis20.parm')
+
 do i=1,lz
 
   if(msis_version == 0) then
