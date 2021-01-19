@@ -62,11 +62,11 @@ real(wp), dimension(:,:,:), allocatable :: integrand,integrandavg
 real(wp), dimension(:,:,:), allocatable :: alt
 real(wp), dimension(:), allocatable :: Br,Btheta,Bphi
 real(wp), dimension(:), allocatable :: Brall,Bthetaall,Bphiall
-real(wp), dimension(:,:), allocatable :: Jxend,Jyend,Jzend,Rxend,Ryend,Rzend,Rcubedend,dVend
+real(wp), dimension(:,:), allocatable :: Jxend,Jyend,Jzend,Rxend,Ryend,Rzend,Rcubedend,dVend,Rmagend
 real(wp), dimension(:,:), allocatable :: integrandend
 real(wp), dimension(:,:), allocatable :: integrandavgend
 
-real(wp), dimension(:,:), allocatable :: Jxtop,Jytop,Jztop,Rxtop,Rytop,Rztop,Rcubedtop,dVtop
+real(wp), dimension(:,:), allocatable :: Jxtop,Jytop,Jztop,Rxtop,Rytop,Rztop,Rcubedtop,dVtop,Rmagtop
 real(wp), dimension(:,:), allocatable :: integrandtop
 real(wp), dimension(:,:), allocatable :: integrandavgtop
 
@@ -219,11 +219,11 @@ zp(:,:,:)=rmean*sin(thetamean)*x%phi(:,:,:)
 ! differential volumes for source coordinates/integrations
 allocate(dV(lx1,lx2,lx3))
 allocate(dVend(lx1,lx2),Jxend(lx1,lx2),Jyend(lx1,lx2),Jzend(lx1,lx2))
-allocate(Rxend(lx1,lx2),Ryend(lx1,lx2),Rzend(lx1,lx2),Rcubedend(lx1,lx2))
+allocate(Rxend(lx1,lx2),Ryend(lx1,lx2),Rzend(lx1,lx2),Rcubedend(lx1,lx2),Rmagend(lx1,lx2))
 allocate(integrandend(lx1,lx2),integrandavgend(lx1-1,max(lx2-1,1)))
 
 allocate(dVtop(lx1,lx3),Jxtop(lx1,lx3),Jytop(lx1,lx3),Jztop(lx1,lx3))
-allocate(Rxtop(lx1,lx3),Rytop(lx1,lx3),Rztop(lx1,lx3),Rcubedtop(lx1,lx3))
+allocate(Rxtop(lx1,lx3),Rytop(lx1,lx3),Rztop(lx1,lx3),Rcubedtop(lx1,lx3),Rmagtop(lx1,lx3))
 allocate(integrandtop(lx1,lx3),integrandavgtop(lx1-1,max(lx3-1,1)))
 
 
@@ -418,7 +418,7 @@ main : do while (t < cfg%tdur)
       print *, '            --> ...for time:  ',ymd,UTsec
     end if
 
-    ! compute r-r'
+    ! compute r-r', including at endpoints needed to fully cover coordinate calculations for all differential volumes
     Rx(:,:,:)=xf(ipoints)-xp(:,:,:)
     Ry(:,:,:)=yf(ipoints)-yp(:,:,:)
     Rz(:,:,:)=zf(ipoints)-zp(:,:,:)
@@ -446,9 +446,37 @@ main : do while (t < cfg%tdur)
     end do
 
 
-    !FIXME:  also need to be averaged using "end" and "top" values for the max x2,x3 edges of this slab...
+    !FIXME:  also need to be averaged using "end" and "top" values for the max x2,x3 edges of this slab... viz. Rmagend/top need
+    !     to be computed from the values of Rxend,Rx, etc...
+    Rmagend=0._wp
+    do ix2=2,lx2
+      do ix1=2,lx1
+        Rmagend(ix1,ix2)=1/8._wp*( sqrt(Rx(ix1,ix2,lx3)**2+Ry(ix1,ix2,lx3)**2+Rz(ix1,ix2,lx3)**2) + &
+                                      sqrt(Rxend(ix1,ix2)**2+Ryend(ix1,ix2)**2+Rzend(ix1,ix2)**2) + &
+                                      sqrt(Rx(ix1,ix2-1,lx3)**2+Ry(ix1,ix2-1,lx3)**2+Rz(ix1,ix2-1,lx3)**2) + &
+                                      sqrt(Rxend(ix1,ix2-1)**2+Ryend(ix1,ix2-1)**2+Rzend(ix1,ix2-1)**2) + &
+                                      sqrt(Rx(ix1-1,ix2,lx3)**2+Ry(ix1-1,ix2,lx3)**2+Rz(ix1-1,ix2,lx3)**2) + &
+                                      sqrt(Rxend(ix1-1,ix2)**2+Ryend(ix1-1,ix2)**2+Rzend(ix1-1,ix2)**2) + &
+                                      sqrt(Rx(ix1-1,ix2-1,lx3)**2+Ry(ix1-1,ix2-1,lx3)**2+Rz(ix1-1,ix2-1,lx3)**2) + &
+                                      sqrt(Rxend(ix1-1,ix2-1)**2+Ryend(ix1-1,ix2-1)**2+Rzend(ix1-1,ix2-1)**2) )
+      end do
+    end do
+    Rmagtop=0._wp
+    do ix3=2,lx3
+      do ix1=2,lx1
+        Rmagtop(ix1,ix3)=1/8._wp*( sqrt(Rx(ix1,ix2,ix3)**2+Ry(ix1,ix2,ix3)**2+Rz(ix1,ix2,ix3)**2) + &
+                                      sqrt(Rx(ix1,ix2,ix3-1)**2+Ry(ix1,ix2,ix3-1)**2+Rz(ix1,ix2,ix3-1)**2) + &
+                                      sqrt(Rxtop(ix1,ix3)**2+Rytop(ix1,ix3)**2+Rztop(ix1,ix3)**2) + &
+                                      sqrt(Rxtop(ix1,ix3-1)**2+Rytop(ix1,ix3-1)**2+Rztop(ix1,ix3-1)**2) + &
+                                      sqrt(Rx(ix1-1,ix2,ix3)**2+Ry(ix1-1,ix2,ix3)**2+Rz(ix1-1,ix2,ix3)**2) + &
+                                      sqrt(Rx(ix1-1,ix2,ix3-1)**2+Ry(ix1-1,ix2,ix3-1)**2+Rz(ix1-1,ix2,ix3-1)**2) + &
+                                      sqrt(Rxtop(ix1-1,ix3)**2+Rytop(ix1-1,ix3)**2+Rztop(ix1-1,ix3)**2) + &
+                                      sqrt(Rxtop(ix1-1,ix3-1)**2+Rytop(ix1-1,ix3-1)**2+Rztop(ix1-1,ix3-1)**2) )
+      end do
+    end do
 
-    !print*, mpi_cfg%myid,' Any problems with Rmag?  ',any(isnan(Rmag))
+
+    !print*, mpi_cfg%myid,' Any problems with Rmag?  ',any(isnan(Rmag)),any(isnan(Rmagend)),any(isnan(Rmagtop))
     !print*, mpi_cfg%myid, 'Min/max vals. for Rmag:  ',minval(Rmag(2:lx1,2:lx2,2:lx3)),maxval(Rmag(2:lx1,2:lx2,2:lx3))
 
 
@@ -456,8 +484,13 @@ main : do while (t < cfg%tdur)
 !      Rcubed(:,:,:)=(Rx**2 + Ry**2 + Rz**2)**(3._wp/2)   !this really is R**3, this has issues with aliasing and div by zero
 !      Rcubed(:,:,:)=(Rx**2 + Ry**2 + Rz**2 + Rmin**2)**(3._wp/2)   !this really is R**3, this addresses aliasing but causes underestimate in the value of the computed magnetic fields.  
       Rcubed=Rmag**3
+      Rcubedend=Rmagend**3
+      Rcubedtop=Rmagtop**3
 
-      call halo_end(Rcubed,Rcubedend,Rcubedtop,tag%Rcubed)
+
+      ! FIXME: to be computed from Rmagend values...
+      !call halo_end(Rcubed,Rcubedend,Rcubedtop,tag%Rcubed)
+      
       if(mpi_cfg%myid3==mpi_cfg%lid3-1) Rcubedend=R3min     !< avoids div by zero on the end which is set by the haloing
       if(mpi_cfg%myid2==mpi_cfg%lid2-1) Rcubedtop=R3min
 
@@ -519,9 +552,9 @@ main : do while (t < cfg%tdur)
 
 
       !Bz
-      integrand(:,:,:)=mu0/4/pi*(Jx*Ry-Jy*Rx)/Rcubed
-      integrandend(:,:)=mu0/4/pi*(Jxend*Ryend-Jyend*Rxend)/Rcubedend
-      integrandtop(:,:)=mu0/4/pi*(Jxtop*Rytop-Jytop*Rxtop)/Rcubedtop
+      integrand(:,:,:)=mu0/4/pi*(Jx*Ry-Jy*Rx)
+      integrandend(:,:)=mu0/4/pi*(Jxend*Ryend-Jyend*Rxend)
+      integrandtop(:,:)=mu0/4/pi*(Jxtop*Rytop-Jytop*Rxtop)
       integrandavg(:,:,:)=1/8._wp*( integrand(1:lx1-1,1:lx2-1,1:lx3-1) + integrand(2:lx1,1:lx2-1,1:lx3-1) + &
                            integrand(1:lx1-1,2:lx2,1:lx3-1) + integrand(2:lx1,2:lx2,1:lx3-1) + &
                            integrand(1:lx1-1,1:lx2-1,2:lx3) + integrand(2:lx1,1:lx2-1,2:lx3) + &
@@ -535,7 +568,7 @@ main : do while (t < cfg%tdur)
       integrandavgtop(:,:)=1/8._wp*( integrand(1:lx1-1,lx2,1:lx3-1) + integrand(2:lx1,lx2,1:lx3-1) + &
                            integrand(1:lx1-1,lx2,2:lx3) + integrand(2:lx1,lx2,2:lx3) )/Rcubed(2:lx1,lx2,2:lx3) + &
                            1/8._wp*(integrandtop(1:lx1-1,1:lx3-1) + integrandtop(2:lx1,1:lx3-1) + &
-                           integrandtop(1:lx1-1,2:lx3) + integrandtop(2:lx1,2:lx3) )/Rcubedend(2:lx1,2:lx3)
+                           integrandtop(1:lx1-1,2:lx3) + integrandtop(2:lx1,2:lx3) )/Rcubedtop(2:lx1,2:lx3)
 
       Bphi(ipoints)=sum(integrandavg*dV(2:lx1,2:lx2,2:lx3))+sum(integrandavgend*dVend(2:lx1,2:lx2))+ &
                         sum(integrandavgtop*dVtop(2:lx1,2:lx3))
