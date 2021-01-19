@@ -245,7 +245,7 @@ if (flag2D/=1) then   !3D differential volume
                    x%h3(ix1,ix2-1,ix3) + x%h3(ix1-1,ix2-1,ix3) + &
                    x%h3(ix1,ix2,ix3-1) + x%h3(ix1-1,ix2,ix3-1) + &
                    x%h3(ix1,ix2-1,ix3-1) + x%h3(ix1-1,ix2-1,ix3-1) ) 
-        dV(ix1,ix2,ix3)=h1avg*h2avg*h3avg*x%dx1(ix1)*x%dx2(ix2)*x%dx3(ix3)
+        dV(ix1,ix2,ix3)=h1avg*h2avg*h3avg*x%dx1(ix1)*x%dx2(ix2)*x%dx3(ix3)      !note use here of backward diffs
       end do
     end do
   end do
@@ -264,9 +264,17 @@ else                  !plane geometry assumption
 end if
 
 
-!> GET END VOLUMES SO THE INTEGRALS ARE 'COMPLETE'
+!> get "end" and "top" pieces for the grid so integrals are not missing any differential volumes
+!   The halo_end routine will pass my "begin" and "bottom" pieces of dV to my neighbors on the process grid
 call halo_end(dV,dVend,dVtop,tag%dV)
 !! need to define the differential volume on the edge of this x3-slab in
+
+!print*, mpi_cfg%myid,' Any problems with dV?  ', any(isnan(dV)),any(isnan(dVend)),any(isnan(dVtop))
+!print*, mpi_cfg%myid,'  failures of generate positive dV:  ',any(dV(2:lx1,2:lx2,2:lx3)<=0),any(dVend(2:lx1,2:lx2)<=0), &
+!                         any(dVtop(2:lx1,2:lx3)<=0)
+!print*, mpi_cfg%myid,'  Min/max edge vals:  ',minval(dVend(2:lx1,2:lx2)),maxval(dVend(2:lx1,2:lx2)), &
+!                         minval(dVtop(2:lx1,2:lx3)),maxval(dVend(2:lx1,2:lx3))
+
 
 !print*, myid2,myid3,'--> dV vals.',minval(dV),maxval(dV),minval(dVend),maxval(dVend),minval(dVtop),maxval(dVtop)
 
@@ -420,7 +428,8 @@ main : do while (t < cfg%tdur)
 
     ! separately compute average distance for the denominator help with regulation issue and accounts for averaging over each differential volumes
     ! FIXME:  seg fault due to i-1 where i==1
-    Rmag=0
+    Rmag=0._wp
+    Rmag=1e9     ! will kill off the edges...
     do ix3=2,lx3
       do ix2=2,lx2
         do ix1=2,lx1
@@ -435,6 +444,12 @@ main : do while (t < cfg%tdur)
         end do
       end do
     end do
+
+
+    !FIXME:  also need to be averaged using "end" and "top" values for the max x2,x3 edges of this slab...
+
+    !print*, mpi_cfg%myid,' Any problems with Rmag?  ',any(isnan(Rmag))
+    !print*, mpi_cfg%myid, 'Min/max vals. for Rmag:  ',minval(Rmag(2:lx1,2:lx2,2:lx3)),maxval(Rmag(2:lx1,2:lx2,2:lx3))
 
 
     if (flag2D/=1) then
@@ -470,6 +485,16 @@ main : do while (t < cfg%tdur)
       Br(ipoints)=sum(integrandavg*dV(2:lx1,2:lx2,2:lx3))+sum(integrandavgend*dVend(2:lx1,2:lx2))+ &
                     sum(integrandavgtop*dVtop(2:lx1,2:lx3))
 
+!      print*, mpi_cfg%myid,' Br issues:  ',Br(ipoints),any(isnan(Rcubed)),any(isnan(Rcubedend)),any(isnan(Rcubedtop)), &
+!               any(isnan(integrandavg)),any(isnan(integrandavgend)),any(isnan(integrandavgtop)),isnan(Br(ipoints))
+!      print*, mpi_cfg%myid,' Sum components:  ',isnan(sum(integrandavg*dV(2:lx1,2:lx2,2:lx3))), &
+!                                               isnan(sum(integrandavgend*dVend(2:lx1,2:lx2))), &
+!                                               isnan(sum(integrandavgtop*dVtop(2:lx1,2:lx3))), any(isnan(dV(2:lx1,2:lx2,2:lx3))), &
+!                                               any(isnan(dVend(2:lx1,2:lx2))),any(isnan(dVtop(2:lx1,2:lx3)))
+!      print*, mpi_cfg%myid,' Min/max integrandavgs:  ',minval(integrandavg),maxval(integrandavg), &
+!                                                       minval(integrandend),maxval(integrandavgend), &
+!                                                       minval(integrandavgtop),maxval(integrandavgtop)
+!
       !By
       integrand(:,:,:)=-mu0/4/pi*(Jx*Rz-Jz*Rx)
       integrandend(:,:)=-mu0/4/pi*(Jxend*Rzend-Jzend*Rxend)
