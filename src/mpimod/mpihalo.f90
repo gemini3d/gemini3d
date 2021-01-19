@@ -205,6 +205,7 @@ end procedure halo_23
 !real(wp), dimension(:,:), intent(out) :: paramtop
 !integer, intent(in) :: tag
 module procedure halo_end_23
+
   !! GENERIC HALOING ROUTINE WHICH PASSES THE BEGINNING OF THE
   !! SLAB TO ITS LEFTWARD (IN X3) NEIGHBOR SO THAT X3 INTEGRATIONS
   !! CAN BE DONE PROPERLY.  PRESENTLY THIS IS JUST USED IN MAGCALC
