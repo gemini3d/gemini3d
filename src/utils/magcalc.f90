@@ -244,7 +244,7 @@ if (flag2D/=1) then   !3D differential volume
         h3avg=1/8._wp*( x%h3(ix1,ix2,ix3) + x%h3(ix1-1,ix2,ix3) + & 
                    x%h3(ix1,ix2-1,ix3) + x%h3(ix1-1,ix2-1,ix3) + &
                    x%h3(ix1,ix2,ix3-1) + x%h3(ix1-1,ix2,ix3-1) + &
-                   x%h3(ix1,ix2-1,ix3-1) + x%h3(ix1-1,ix2-1,ix3-1) ) 
+                   x%h3(ix1,ix2-1,ix3-1) + x%h3(ix1-1,ix2-1,ix3-1) )
         dV(ix1,ix2,ix3)=h1avg*h2avg*h3avg*x%dx1(ix1)*x%dx2(ix2)*x%dx3(ix3)      !note use here of backward diffs
       end do
     end do
@@ -427,27 +427,24 @@ main : do while (t < cfg%tdur)
     call halo_end(Rz,Rzend,Rztop,tag%Rz)
 
     ! separately compute average distance for the denominator help with regulation issue and accounts for averaging over each differential volumes
-    ! FIXME:  seg fault due to i-1 where i==1
     Rmag=0._wp
-    Rmag=1e9     ! will kill off the edges...
     do ix3=2,lx3
       do ix2=2,lx2
         do ix1=2,lx1
-          Rmag(ix1,ix2,ix3)=1/8._wp*( sqrt(Rx(ix1,ix2,ix3)**2+Ry(ix1,ix2,ix3)**2+Rz(ix1,ix2,ix3)**2) + &
-                                      sqrt(Rx(ix1,ix2,ix3-1)**2+Ry(ix1,ix2,ix3-1)**2+Rz(ix1,ix2,ix3-1)**2) + &
-                                      sqrt(Rx(ix1,ix2-1,ix3)**2+Ry(ix1,ix2-1,ix3)**2+Rz(ix1,ix2-1,ix3)**2) + &
-                                      sqrt(Rx(ix1,ix2-1,ix3-1)**2+Ry(ix1,ix2-1,ix3-1)**2+Rz(ix1,ix2-1,ix3-1)**2) + &
-                                      sqrt(Rx(ix1-1,ix2,ix3)**2+Ry(ix1-1,ix2,ix3)**2+Rz(ix1-1,ix2,ix3)**2) + &
-                                      sqrt(Rx(ix1-1,ix2,ix3-1)**2+Ry(ix1-1,ix2,ix3-1)**2+Rz(ix1-1,ix2,ix3-1)**2) + &
-                                      sqrt(Rx(ix1-1,ix2-1,ix3)**2+Ry(ix1-1,ix2-1,ix3)**2+Rz(ix1-1,ix2-1,ix3)**2) + &
-                                      sqrt(Rx(ix1-1,ix2-1,ix3-1)**2+Ry(ix1-1,ix2-1,ix3-1)**2+Rz(ix1-1,ix2-1,ix3-1)**2) )
+          Rmag(ix1,ix2,ix3)=1/8._wp*( sqrt(Rx(ix1,ix2,ix3)**2      +  Ry(ix1,ix2,ix3)**2      +  Rz(ix1,ix2,ix3)**2) + &
+                                      sqrt(Rx(ix1,ix2,ix3-1)**2    +  Ry(ix1,ix2,ix3-1)**2    +  Rz(ix1,ix2,ix3-1)**2) + &
+                                      sqrt(Rx(ix1,ix2-1,ix3)**2    +  Ry(ix1,ix2-1,ix3)**2    +  Rz(ix1,ix2-1,ix3)**2) + &
+                                      sqrt(Rx(ix1,ix2-1,ix3-1)**2  +  Ry(ix1,ix2-1,ix3-1)**2  +  Rz(ix1,ix2-1,ix3-1)**2) + &
+                                      sqrt(Rx(ix1-1,ix2,ix3)**2    +  Ry(ix1-1,ix2,ix3)**2    +  Rz(ix1-1,ix2,ix3)**2) + &
+                                      sqrt(Rx(ix1-1,ix2,ix3-1)**2  +  Ry(ix1-1,ix2,ix3-1)**2  +  Rz(ix1-1,ix2,ix3-1)**2) + &
+                                      sqrt(Rx(ix1-1,ix2-1,ix3)**2  +  Ry(ix1-1,ix2-1,ix3)**2  +  Rz(ix1-1,ix2-1,ix3)**2) + &
+                                      sqrt(Rx(ix1-1,ix2-1,ix3-1)**2+  Ry(ix1-1,ix2-1,ix3-1)**2+  Rz(ix1-1,ix2-1,ix3-1)**2) )
         end do
       end do
     end do
 
 
-    !FIXME:  also need to be averaged using "end" and "top" values for the max x2,x3 edges of this slab... viz. Rmagend/top need
-    !     to be computed from the values of Rxend,Rx, etc...
+    ! end and top values should be added.
     Rmagend=0._wp
     do ix2=2,lx2
       do ix1=2,lx1
@@ -464,20 +461,16 @@ main : do while (t < cfg%tdur)
     Rmagtop=0._wp
     do ix3=2,lx3
       do ix1=2,lx1
-        Rmagtop(ix1,ix3)=1/8._wp*( sqrt(Rx(ix1,ix2,ix3)**2+Ry(ix1,ix2,ix3)**2+Rz(ix1,ix2,ix3)**2) + &
-                                      sqrt(Rx(ix1,ix2,ix3-1)**2+Ry(ix1,ix2,ix3-1)**2+Rz(ix1,ix2,ix3-1)**2) + &
+        Rmagtop(ix1,ix3)=1/8._wp*( sqrt(Rx(ix1,lx2,ix3)**2+Ry(ix1,lx2,ix3)**2+Rz(ix1,lx2,ix3)**2) + &
+                                      sqrt(Rx(ix1,lx2,ix3-1)**2+Ry(ix1,lx2,ix3-1)**2+Rz(ix1,lx2,ix3-1)**2) + &
                                       sqrt(Rxtop(ix1,ix3)**2+Rytop(ix1,ix3)**2+Rztop(ix1,ix3)**2) + &
                                       sqrt(Rxtop(ix1,ix3-1)**2+Rytop(ix1,ix3-1)**2+Rztop(ix1,ix3-1)**2) + &
-                                      sqrt(Rx(ix1-1,ix2,ix3)**2+Ry(ix1-1,ix2,ix3)**2+Rz(ix1-1,ix2,ix3)**2) + &
-                                      sqrt(Rx(ix1-1,ix2,ix3-1)**2+Ry(ix1-1,ix2,ix3-1)**2+Rz(ix1-1,ix2,ix3-1)**2) + &
+                                      sqrt(Rx(ix1-1,lx2,ix3)**2+Ry(ix1-1,lx2,ix3)**2+Rz(ix1-1,lx2,ix3)**2) + &
+                                      sqrt(Rx(ix1-1,lx2,ix3-1)**2+Ry(ix1-1,lx2,ix3-1)**2+Rz(ix1-1,lx2,ix3-1)**2) + &
                                       sqrt(Rxtop(ix1-1,ix3)**2+Rytop(ix1-1,ix3)**2+Rztop(ix1-1,ix3)**2) + &
                                       sqrt(Rxtop(ix1-1,ix3-1)**2+Rytop(ix1-1,ix3-1)**2+Rztop(ix1-1,ix3-1)**2) )
       end do
     end do
-
-
-    !print*, mpi_cfg%myid,' Any problems with Rmag?  ',any(isnan(Rmag)),any(isnan(Rmagend)),any(isnan(Rmagtop))
-    !print*, mpi_cfg%myid, 'Min/max vals. for Rmag:  ',minval(Rmag(2:lx1,2:lx2,2:lx3)),maxval(Rmag(2:lx1,2:lx2,2:lx3))
 
 
     if (flag2D/=1) then
@@ -491,8 +484,6 @@ main : do while (t < cfg%tdur)
       ! FIXME: to be computed from Rmagend values...
       !call halo_end(Rcubed,Rcubedend,Rcubedtop,tag%Rcubed)
       
-      if(mpi_cfg%myid3==mpi_cfg%lid3-1) Rcubedend=R3min     !< avoids div by zero on the end which is set by the haloing
-      if(mpi_cfg%myid2==mpi_cfg%lid2-1) Rcubedtop=R3min
 
 
       !! FIXME: MAY BE MISSING A CORNER POINT HERE???  NO I THINK IT'S OKAY BASED ON SOME SQUARES I DREW, haha...
@@ -518,16 +509,7 @@ main : do while (t < cfg%tdur)
       Br(ipoints)=sum(integrandavg*dV(2:lx1,2:lx2,2:lx3))+sum(integrandavgend*dVend(2:lx1,2:lx2))+ &
                     sum(integrandavgtop*dVtop(2:lx1,2:lx3))
 
-!      print*, mpi_cfg%myid,' Br issues:  ',Br(ipoints),any(isnan(Rcubed)),any(isnan(Rcubedend)),any(isnan(Rcubedtop)), &
-!               any(isnan(integrandavg)),any(isnan(integrandavgend)),any(isnan(integrandavgtop)),isnan(Br(ipoints))
-!      print*, mpi_cfg%myid,' Sum components:  ',isnan(sum(integrandavg*dV(2:lx1,2:lx2,2:lx3))), &
-!                                               isnan(sum(integrandavgend*dVend(2:lx1,2:lx2))), &
-!                                               isnan(sum(integrandavgtop*dVtop(2:lx1,2:lx3))), any(isnan(dV(2:lx1,2:lx2,2:lx3))), &
-!                                               any(isnan(dVend(2:lx1,2:lx2))),any(isnan(dVtop(2:lx1,2:lx3)))
-!      print*, mpi_cfg%myid,' Min/max integrandavgs:  ',minval(integrandavg),maxval(integrandavg), &
-!                                                       minval(integrandend),maxval(integrandavgend), &
-!                                                       minval(integrandavgtop),maxval(integrandavgtop)
-!
+
       !By
       integrand(:,:,:)=-mu0/4/pi*(Jx*Rz-Jz*Rx)
       integrandend(:,:)=-mu0/4/pi*(Jxend*Rzend-Jzend*Rxend)
