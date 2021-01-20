@@ -83,10 +83,6 @@ cd build
 ctest -V
 ```
 
-If using Homebrew on MacOS, be sure Homebrew's GCC is used instead of AppleClang by
-[setting environment variables](./docs/Readme_cmake.md)
-`FC=gfortran-9` and `CC=gcc-9` or build errors will result.
-
 ## How to setup a sim
 
 1. make a [config.nml](./docs/Readme_input.md) with desired parameters for an equilibrium sim.

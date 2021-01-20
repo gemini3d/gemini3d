@@ -42,6 +42,6 @@ From the MSYS2 terminal, install MPI by:
 pacman -S mingw-w64-x86_64-msmpi
 ```
 
-Then install
+Install
 [Microsoft MS-MPI](https://docs.microsoft.com/en-us/message-passing-interface/microsoft-mpi-release-notes),
 which gives `mpiexec`.

@@ -43,7 +43,7 @@ cmake --build build
 
 ### Windows
 
-If you happen to look inside build/CMakeFiles/CMakeError.log, with MS-MPI you will currently see text like
+If you happen to look inside build/CMakeFiles/CMakeError.log, with MS-MPI you will see text like
 
 ```
 build/CMakeFiles/FindMPI/test_mpi.f90:2:11:
@@ -62,16 +62,13 @@ Gemini3D uses MPI-2 so this is not relevant to Gemini3D.
 If using Homebrew on MacOS, be sure Homebrew's GCC is used instead of AppleClang or other non-Homebrew compilers so that the Homebrew library ABIs match the compiler ABI.
 
 ```sh
-FC=gfortran-9 CC=gcc-9 cmake -B build
-
-cmake --build build
+FC=gfortran-10 CC=gcc-10 cmake -B build
 ```
 
 If you always use GCC / Gfortran, set the environment variables in ~/.bashrc or ~/.zshenv like:
 
 ```sh
-export FC=gfortran-9
-export CC=gcc-9
+export FC=gfortran-10 CC=gcc-10
 ```
 
 ## GLOW
@@ -83,8 +80,6 @@ Disable GLOW by:
 
 ```sh
 cmake -B build -Dglow=off
-
-cmake --build build
 ```
 
 ## HDF5
@@ -93,11 +88,10 @@ HDF5 is enabled by default, and disabled by:
 
 ```sh
 cmake -B build -Dhdf5=off
-
-cmake --build build
 ```
 
-If you would like to build HDF5 yourself instead of installing it via your package manager, by PyGemini (assuming it was setup during your Gemini3D setup or manually):
+If desired, build HDF5 manually by
+[PyGemini](https://github.com/gemini3d/pygemini):
 
 ```sh
 python -m gemini3d.prereqs gcc hdf5
@@ -109,6 +103,31 @@ NetCDF is disabled by default, and enabled by:
 
 ```sh
 cmake -B build -Dnetcdf=on
+```
 
-cmake --build build
+## MSIS 2.0
+
+The neutral atmosphere model MSISE00 is used by default.
+To use the newer MSIS 2.0:
+
+```sh
+cmake -B build -Dmsis20=on
+```
+
+Additionally, the simulation config.nml must specify the following to actually use MSIS 2.0:
+
+```ini
+&neutral_BG
+msis_version = 20
+/
+```
+
+Omitting this namelist variable or specifying `msis_version=0` uses MSISE00.
+
+## HWM14
+
+Gemini3D may use the HWM14 horizontal wind model by:
+
+```sh
+cmake -B build -Dhwm14=on
 ```
