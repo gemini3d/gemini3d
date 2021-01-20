@@ -9,9 +9,9 @@ endif()
 
 # use WORKING_DIRECTORY for legacy HPC Git
 execute_process(COMMAND ${GIT_EXECUTABLE} checkout ${tag}
+  WORKING_DIRECTORY ${root_dir}
   RESULT_VARIABLE _gitstat
-  TIMEOUT 30
-  WORKING_DIRECTORY ${root_dir})
+  TIMEOUT 30)
 if(NOT _gitstat STREQUAL 0)
   message(FATAL_ERROR "could not Git checkout ${tag}, return code ${_gitstat}")
 endif()
