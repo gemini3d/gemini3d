@@ -1,5 +1,4 @@
 cmake_minimum_required(VERSION 3.15)
-# 3.14 for check_fortran_source_runs & fetchcontent
 # 3.15 for robust Python finding
 
 include(cmake/policy.cmake)
@@ -7,7 +6,8 @@ include(cmake/compiler_find.cmake)
 find_c_fortran()
 
 project(gemini3d
-  LANGUAGES C Fortran  # MUST include C language for Intel / MKL to work
+  LANGUAGES C Fortran
+  # Gemini3D is Fortran, but external libraries use C, and some find_package need C.
   DESCRIPTION "3-D ionospheric model"
   HOMEPAGE_URL https://github.com/gemini3d/gemini
   VERSION 0.8.0)
@@ -18,13 +18,11 @@ if(NOT DEFINED ${PROJECT_NAME}_BUILD_TESTING)
   set(${PROJECT_NAME}_BUILD_TESTING ${BUILD_TESTING})
 endif()
 
+include(cmake/git_rev.cmake)
 include(cmake/options.cmake)
 include(cmake/libraries.cmake)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules/)
-
-include(cmake/git_rev.cmake)
-# log project metadata
 
 include(cmake/h5fortran.cmake)
 include(cmake/nc4fortran.cmake)
