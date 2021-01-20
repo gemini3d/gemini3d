@@ -36,7 +36,7 @@ endif()
 
 if(NOT python_ok)
   if(NOT IS_DIRECTORY ${pygemini_dir})
-    git_download(${pygemini_dir} ${pygemini_url} ${pygemini_tag})
+    git_download(${pygemini_dir} ${pygemini_git} ${pygemini_tag})
   endif()
   # detect virtualenv
   # this is how CMake itself works for FindPython3 in Modules/FindPython/Support.cmake

@@ -1,8 +1,9 @@
 include(FetchContent)
 
 FetchContent_Declare(msis2proj
-URL ${msis2_url}
+URL ${msis2_zip}
 URL_HASH SHA1=${msis2_sha1}
+TLS_VERIFY true
 UPDATE_DISCONNECTED true
 )
 

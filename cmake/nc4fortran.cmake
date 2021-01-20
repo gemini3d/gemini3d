@@ -8,7 +8,7 @@ if(netcdf)
   else()
     include(FetchContent)
     FetchContent_Declare(ncproj
-      GIT_REPOSITORY ${nc4fortran_url}
+      GIT_REPOSITORY ${nc4fortran_git}
       GIT_TAG ${nc4fortran_tag}
       GIT_SHALLOW true)
 

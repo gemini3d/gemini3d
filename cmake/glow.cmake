@@ -2,7 +2,7 @@
 include(FetchContent)
 
 FetchContent_Declare(GLOW_proj
-  GIT_REPOSITORY ${glow_url}
+  GIT_REPOSITORY ${glow_git}
   GIT_TAG ${glow_tag}
   GIT_SHALLOW true
 )

@@ -46,12 +46,21 @@ if(NOT MUMPS_FOUND)
 
   include(FetchContent)
 
-  FetchContent_Declare(MUMPS_proj
-    GIT_REPOSITORY ${mumps_url}
-    GIT_TAG ${mumps_tag}
-    GIT_SHALLOW true
+  if(GIT_FOUND)
+    FetchContent_Declare(MUMPS_proj
+      GIT_REPOSITORY ${mumps_git}
+      GIT_TAG ${mumps_tag}
+      GIT_SHALLOW true
+      CMAKE_ARGS -Darith=${arith} -Dmetis:BOOL=${metis} -Dscotch:BOOL=${scotch} -Dopenmp:BOOL=false
+    )
+  else(GIT_FOUND)
+    FetchContent_Declare(MUMPS_proj
+    URL ${mumps_zip}
+    TLS_VERIFY true
+    UPDATE_DISCONNECTED true
     CMAKE_ARGS -Darith=${arith} -Dmetis:BOOL=${metis} -Dscotch:BOOL=${scotch} -Dopenmp:BOOL=false
   )
+  endif(GIT_FOUND)
 
   FetchContent_MakeAvailable(MUMPS_proj)
 endif()

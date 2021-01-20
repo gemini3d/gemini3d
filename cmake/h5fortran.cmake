@@ -8,10 +8,18 @@ if(hdf5)
     include(${h5fortran_DIR}/h5fortranTargets.cmake)
   else()
     include(FetchContent)
-    FetchContent_Declare(h5proj
-      GIT_REPOSITORY ${h5fortran_url}
-      GIT_TAG ${h5fortran_tag}
-      GIT_SHALLOW true)
+
+    if(GIT_FOUND)
+      FetchContent_Declare(h5proj
+        GIT_REPOSITORY ${h5fortran_git}
+        GIT_TAG ${h5fortran_tag}
+        GIT_SHALLOW true)
+    else(GIT_FOUND)
+      FetchContent_Declare(h5proj
+        URL ${h5fortran_zip}
+        TLS_VERIFY true
+        UPDATE_DISCONNECTED true)
+    endif(GIT_FOUND)
 
     FetchContent_MakeAvailable(h5proj)
   endif()

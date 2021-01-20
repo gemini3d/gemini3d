@@ -2,7 +2,7 @@
 include(FetchContent)
 
 FetchContent_Declare(hwm14proj
-GIT_REPOSITORY ${hwm14_url}
+GIT_REPOSITORY ${hwm14_git}
 GIT_TAG ${hwm14_tag}
 GIT_SHALLOW true
 )
