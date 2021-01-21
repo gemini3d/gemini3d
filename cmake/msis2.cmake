@@ -1,5 +1,9 @@
 include(FetchContent)
 
+if(CMAKE_VERSION VERSION_LESS 3.19)
+  message(FATAL_ERROR "MSIS 2.0 requires CMake >= 3.19")
+endif()
+
 FetchContent_Declare(msis2proj
 URL ${msis2_zip}
 URL_HASH SHA1=${msis2_sha1}

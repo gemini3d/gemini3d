@@ -35,6 +35,7 @@ include(cmake/compiler_flags.cmake)
 # this comes last to avoid intermittent failures
 
 # self-test simulations
+include(cmake/matlab.cmake)
 include(cmake/python.cmake)
 include(cmake/test_setup.cmake)
 include(cmake/test_sim.cmake)

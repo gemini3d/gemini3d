@@ -4,7 +4,8 @@ function(matlab_compare outdir refdir testname)
 if(hdf5 OR netcdf)
 
 add_test(NAME gemini:compare:${testname}:matlab
-COMMAND ${Matlab_MAIN_PROGRAM} -batch "run('${CMAKE_CURRENT_SOURCE_DIR}/setup.m'); gemini3d.compare_all('${outdir}', '${refdir}')"
+COMMAND ${Matlab_MAIN_PROGRAM} -batch "gemini3d.compare('${outdir}', '${refdir}')"
+WORKING_DIRECTORY ${MATGEMINI_DIR}
 )
 
 set_tests_properties(gemini:compare:${testname}:matlab PROPERTIES
@@ -25,7 +26,7 @@ COMMAND ${Python3_EXECUTABLE} -m gemini3d.compare ${outdir} ${refdir} -file_form
 WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
 
 set_tests_properties(gemini:compare:hdf5:${testname}:python PROPERTIES
-TIMEOUT 60
+TIMEOUT 120
 FIXTURES_REQUIRED hdf5:${testname}
 REQUIRED_FILES ${outdir}/inputs/config.nml)
 endif(hdf5)
@@ -35,7 +36,7 @@ add_test(NAME gemini:compare:netcdf:${testname}:python
 COMMAND ${Python3_EXECUTABLE} -m gemini3d.compare ${outdir} ${refdir} -file_format nc)
 
 set_tests_properties(gemini:compare:netcdf:${testname}:python PROPERTIES
-TIMEOUT 60
+TIMEOUT 120
 FIXTURES_REQUIRED netcdf:${testname}
 REQUIRED_FILES ${outdir}/inputs/config.nml)
 endif(netcdf)
@@ -48,15 +49,12 @@ function(compare_gemini_output testname)
 set(outdir ${PROJECT_BINARY_DIR}/test${testname})
 set(refdir ${PROJECT_SOURCE_DIR}/tests/data/test${testname})
 
-if(matlab)
-find_package(Matlab COMPONENTS MAIN_PROGRAM)
-if(Matlab_FOUND)
+if(MATGEMINI_DIR)
 matlab_compare(${outdir} ${refdir} ${testname})
-endif(Matlab_FOUND)
-endif(matlab)
+endif(MATGEMINI_DIR)
 
-if(python_ok)
+if(PYGEMINI_DIR)
 python_compare(${outdir} ${refdir} ${testname})
-endif()
+endif(PYGEMINI_DIR)
 
 endfunction(compare_gemini_output)

@@ -15,5 +15,7 @@
 
 "nc4fortran": {"git": "https://github.com/geospace-code/nc4fortran.git", "tag": "v1.1.2"},
 "scalapack": {"git": "https://github.com/scivision/scalapack.git", "tag": "v2.1.0.11"},
+
+"matgemini": {"git": "https://github.com/gemini3d/mat_gemini.git", "tag": "master"},
 "pygemini": {"git": "https://github.com/gemini3d/pygemini.git", "tag": "main"}
 }

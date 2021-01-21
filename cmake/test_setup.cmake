@@ -6,7 +6,7 @@ function(setup_gemini_test testname TIMEOUT)
 set(_outdir ${CMAKE_CURRENT_BINARY_DIR}/test${testname})
 set(_refdir ${PROJECT_SOURCE_DIR}/tests/data)
 
-if(python_ok)
+if(PYGEMINI_DIR)
 
 if(mpi)
   set(_cmd ${Python3_EXECUTABLE} -m gemini3d.run_test -mpiexec ${MPIEXEC_EXECUTABLE} ${testname} $<TARGET_FILE:gemini.bin> ${_outdir} ${_refdir})
@@ -64,7 +64,7 @@ set_tests_properties(gemini:netcdf:${testname} PROPERTIES
   FIXTURES_SETUP netcdf:${testname})
 endif(netcdf)
 
-endif(python_ok)
+endif(PYGEMINI_DIR)
 
 compare_gemini_output(${testname})
 
