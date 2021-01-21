@@ -10,4 +10,4 @@ string(APPEND CMAKE_Fortran_FLAGS " -warn nounused -diag-disable 5268 -diag-disa
 add_link_options(-parallel) # without this, error: undefined reference to `__kmpc_begin'
 
 # enforce Fortran 2018 standard
-string(APPEND CMAKE_Fortran_FLAGS " -stand f18")
+# string(APPEND CMAKE_Fortran_FLAGS " -stand f18")  #  too many false warnings
