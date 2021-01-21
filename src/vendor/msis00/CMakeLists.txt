@@ -58,7 +58,7 @@ set_target_properties(msis_ifc PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_CURRE
 # --- for setting up an equilibrium simulation --
 
 add_executable(msis_setup msis_driver.f90)
-target_link_libraries(msis_setup PRIVATE msis_ifc h5fortran::h5fortran)
+target_link_libraries(msis_setup PRIVATE msis_ifc const h5fortran::h5fortran)
 target_compile_options(msis_setup PRIVATE ${static_flag})
 set_target_properties(msis_setup PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
 

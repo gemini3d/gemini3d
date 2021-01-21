@@ -5,6 +5,11 @@ use, intrinsic:: iso_fortran_env, only: wp=>real@realbits@
 implicit none (type, external)
 public
 
+integer, parameter :: comp_lvl = 3
+!! compression level when writing HDF5/NetCDF4 files.
+!! 0 disables compression, 1->9 increasing compression
+!! only 2-D or higher variables are compressed
+
 !> colored output text (for Unix-like systems at least).
 !> It should be compatible across compiler vendors.
 character(5), parameter :: &

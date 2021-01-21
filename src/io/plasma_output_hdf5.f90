@@ -28,7 +28,7 @@ lx3all=size(Phiall,3)
 filenamefull = date_filename(outdir,ymd,UTsec) // '.h5'
 print *, 'HDF5 Output file name:  ', filenamefull
 
-call hout%initialize(filenamefull, status='new',action='w',comp_lvl=1)
+call hout%initialize(filenamefull, status='new',action='w',comp_lvl=comp_lvl)
 
 call hout%write('/time/ymd', ymd)
 call hout%write('/time/UThour',   real(UTsec/3600.))

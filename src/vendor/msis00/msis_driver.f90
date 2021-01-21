@@ -1,6 +1,7 @@
 program msis_driver
 !! will write to stdout if "-" specified, so we avoid printing to console unless file output is used
 
+use phys_consts, only : comp_lvl
 use msis_interface, only : msis_gtd7, msis_gtd8, msisinit
 use h5fortran, only : hdf5_file, hsize_t
 use, intrinsic:: iso_fortran_env, only : real32, stderr=>error_unit, stdout=>output_unit, stdin=>input_unit
@@ -101,7 +102,7 @@ character(*), intent(in) :: filename
 real(real32), intent(in) :: alt(:,:,:), Dn(:,:,:,:), Tn(:,:,:,:)
 type(hdf5_file) :: hf
 
-call hf%initialize(filename, status="replace", action="write")
+call hf%initialize(filename, status="replace", action="write",comp_lvl=comp_lvl)
 
 call hf%write("/alt", alt)
 

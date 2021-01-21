@@ -32,7 +32,7 @@ lx3all=size(Phiall,3)
 filenamefull = date_filename(outdir,ymd,UTsec) // '.nc'
 print *, 'Output file name:  ', filenamefull
 
-call hout%initialize(filenamefull, status='new',action='w',comp_lvl=1)
+call hout%initialize(filenamefull, status='new',action='w',comp_lvl=comp_lvl)
 
 call hout%write('ymd', ymd)
 call hout%write('UThour',UTsec/3600._wp)
