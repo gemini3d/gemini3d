@@ -1,3 +1,5 @@
+add_compile_options(-xHost)  # like -march=native
+
 string(APPEND CMAKE_Fortran_FLAGS " -warn declarations -traceback")  # -warn all or -warn gets mixed with -qopenmp with CMake 3.14.2
 string(APPEND CMAKE_Fortran_FLAGS " -qopenmp")  # undefined reference to `omp_get_max_threads'
 string(APPEND CMAKE_Fortran_FLAGS " -heap-arrays")  # (is this needed on Linux?) stack overflow avoid

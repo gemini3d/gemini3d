@@ -1,4 +1,6 @@
-# workaround: /nologo /libs:dll are set by CMake in cmake_fortran_flags
+add_compile_options(/QxHost)  # like -march=native
+
+# NOTE: /nologo /libs:dll are set by CMake in cmake_fortran_flags
 string(APPEND CMAKE_Fortran_FLAGS " /warn:declarations /traceback")
 string(APPEND CMAKE_Fortran_FLAGS " /Qopenmp")
 string(APPEND CMAKE_Fortran_FLAGS " /heap-arrays")  # necessary for stack overflow avoid, even for 2D
