@@ -9,4 +9,4 @@ string(APPEND CMAKE_Fortran_FLAGS " /warn:nounused /Qdiag-disable:5268 /Qdiag-di
 #add_link_options(/Qparallel)
 
 # enforce Fortran 2018 standard
-string(APPEND CMAKE_Fortran_FLAGS " /stand:f18")
+# string(APPEND CMAKE_Fortran_FLAGS " /stand:f18")  # too many false warnings
