@@ -9,11 +9,11 @@ if(${PROJECT_NAME}_BUILD_TESTING)
 add_executable(test_fang test_fang.f90)
 target_link_libraries(test_fang PRIVATE fang fang_run const msis_ifc)
 
-if(python_ok)
+if(PYGEMINI_DIR)
   add_test(NAME unit:fangIonize
     COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test_fang.py $<TARGET_FILE:test_fang>)
   set_tests_properties(unit:fangIonize PROPERTIES TIMEOUT 30)
-endif(python_ok)
+endif(PYGEMINI_DIR)
 
 endif(${PROJECT_NAME}_BUILD_TESTING)
 

@@ -35,7 +35,7 @@ set_tests_properties(unit:interp3 PROPERTIES
   FIXTURES_SETUP GemInterp3)
 
 
-if(python_ok)
+if(PYGEMINI_DIR)
   add_test(NAME unit:interp2:python
     COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testinterp.py ${_testfile_interp2})
   set_tests_properties(unit:interp2:python PROPERTIES
@@ -50,6 +50,6 @@ set_tests_properties(unit:interp3:python PROPERTIES
   TIMEOUT 30
   RESOURCE_LOCK cpu_ram
   FIXTURES_REQUIRED GemInterp3)
-endif(python_ok)
+endif(PYGEMINI_DIR)
 
 endif(hdf5 AND ${PROJECT_NAME}_BUILD_TESTING)
