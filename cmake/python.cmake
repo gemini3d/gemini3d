@@ -26,7 +26,7 @@ execute_process(COMMAND ${Python3_EXECUTABLE} -c "import gemini3d; import gemini
 
 if(_ok EQUAL 0)
   message(STATUS "PyGemini found: ${PYGEMINI_DIR}")
-  set(PYGEMINI_DIR ${PYGEMINI_DIR} CACHE STRING "PyGemini path")
+  set(PYGEMINI_DIR ${PYGEMINI_DIR} CACHE PATH "PyGemini path")
 endif()
 
 endfunction()
@@ -38,18 +38,17 @@ if(NOT Python3_FOUND)
 endif()
 # keep this in script so it's not scoped in function
 
+FetchContent_Declare(pygemini
+  GIT_REPOSITORY ${pygemini_git}
+  GIT_TAG ${pygemini_tag})
+
+FetchContent_MakeAvailable(pygemini)
+
 if(NOT PYGEMINI_DIR)
   check_pygemini()
 endif()
 
 if(NOT PYGEMINI_DIR)
-
-FetchContent_Declare(pygemini_proj
-  GIT_REPOSITORY ${pygemini_git}
-  GIT_TAG ${pygemini_tag}
-  SOURCE_DIR ${PROJECT_SOURCE_DIR}/../pygemini)
-
-FetchContent_MakeAvailable(pygemini_proj)
 
 # detect virtualenv
 # this is how CMake itself works for FindPython3 in Modules/FindPython/Support.cmake
@@ -59,11 +58,11 @@ else()
   set(_pip_args "--user")
 endif()
 
-execute_process(COMMAND ${Python3_EXECUTABLE} -m pip install -e ${pygemini_proj_SOURCE_DIR} ${_pip_args}
+execute_process(COMMAND ${Python3_EXECUTABLE} -m pip install -e ${pygemini_SOURCE_DIR} ${_pip_args}
   RESULT_VARIABLE _ok)
 
 if(_ok EQUAL 0)
-  message(STATUS "Setup PyGemini in ${pygemini_proj_SOURCE_DIR}")
+  message(STATUS "Setup PyGemini in ${pygemini_SOURCE_DIR}")
 else()
   message(STATUS "Problem installing PyGemini with ${Python3_EXECUTABLE}")
   return()

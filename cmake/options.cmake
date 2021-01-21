@@ -25,6 +25,8 @@ if(NOT DEFINED mpi)
   endif(_mpiexec)
 endif()
 
+option(dev "Gemini developer mode")
+
 option(mpi "Use MPI parallelization")
 
 option(autobuild "autobuild missing Lapack, Scalapack or Mumps" on)
@@ -44,8 +46,12 @@ option(openmp "MUMPS: use OpenMP" off)
 # Matlab checks take much longer than Python, and Python covers much more
 option(matlab "Matlab checks" off)
 
-# on: debug, off: normal
-set(FETCHCONTENT_UPDATES_DISCONNECTED off)
+if(dev)
+  set(FETCHCONTENT_SOURCE_DIR_PYGEMINI ${PROJECT_SOURCE_DIR}/../pygemini CACHE PATH "PyGemini developer path")
+else()
+
+endif()
+
 
 # this helps linters e.g. Visual Studio Intellicode work properly
 set(CMAKE_EXPORT_COMPILE_COMMANDS on)
