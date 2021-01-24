@@ -4,8 +4,8 @@
 "lapack": {"git": "https://github.com/scivision/lapack.git", "tag": "v3.9.0.2",
   "zip": "https://github.com/scivision/lapack/archive/v3.9.0.2.zip"},
 
-"h5fortran": {"git": "https://github.com/geospace-code/h5fortran.git", "tag": "v3.4.5",
-  "zip": "https://github.com/geospace-code/h5fortran/archive/v3.4.5.zip"},
+"h5fortran": {"git": "https://github.com/geospace-code/h5fortran.git", "tag": "v3.4.6",
+  "zip": "https://github.com/geospace-code/h5fortran/archive/v3.4.6.zip"},
 
 "hwm14": {"git": "https://github.com/space-physics/hwm14.git", "tag": "357d5c2"},
 "msis2": {"zip": "https://map.nrl.navy.mil/map/pub/nrl/NRLMSIS/NRLMSIS2.0/NRLMSIS2.0.zip", "sha1": "fa817dfee637ec2298a6ec882345d13d0b087a85"},

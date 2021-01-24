@@ -11,7 +11,7 @@ if(CMAKE_VERSION VERSION_LESS 3.19)
   set(lapack_zip https://github.com/scivision/lapack/archive/v${lapack_tag}.zip)
   set(lapack_git https://github.com/scivision/lapack.git)
 
-  set(h5fortran_tag v3.4.5)
+  set(h5fortran_tag v3.4.6)
   set(h5fortran_zip https://github.com/geospace-code/h5fortran/archive/v${h5fortran_tag}.zip)
   set(h5fortran_git https://github.com/geospace-code/h5fortran.git)
 
