@@ -1,10 +1,11 @@
 cmake_host_system_information(RESULT _ramMiB QUERY TOTAL_PHYSICAL_MEMORY)
 cmake_host_system_information(RESULT _cpu QUERY PROCESSOR_DESCRIPTION)
-math(EXPR _ramGB "${_ramMiB} / 1024")
+math(EXPR _ramGB "${_ramMiB} / 1000")
 message(STATUS "${_ramGB} GB RAM detected on ${CMAKE_HOST_SYSTEM_NAME} with ${_cpu}")
 if(_ramGB LESS 2)
   message(WARNING "Minimum RAM is about 2 GB--some tests or simulations may fail due to small memory (RAM)")
 endif()
+
 
 if(realbits EQUAL 32)
   message(VERBOSE " 32-bit real precision")
