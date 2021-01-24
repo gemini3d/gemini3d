@@ -9,7 +9,7 @@ endforeach()
 endfunction(set_targ_props)
 
 # --- MSISE00 or MSIS 2.0
-add_subdirectory(vendor/msis00)
+add_subdirectory(vendor/nrl_msis)
 
 # --- HWM14
 if(hwm14)
