@@ -30,7 +30,7 @@ jobs:
       timeout-minutes: 5
       # mac is slower to configure
 
-    - run: cmake --build build
+    - run: cmake --build build --parallel
       timeout-minutes: 5
 
     - run: ctest -E 3d --parallel 4 --output-on-failure
@@ -54,7 +54,7 @@ jobs:
     - run: cmake -B build
       timeout-minutes: 5
 
-    - run: cmake --build build
+    - run: cmake --build build --parallel
       timeout-minutes: 5
 
     - name: Unit tests

@@ -36,7 +36,7 @@ jobs:
     - run: cmake -B build
       timeout-minutes: 2
 
-    - run: cmake --build build
+    - run: cmake --build build --parallel
       timeout-minutes: 5
 
     - run: ctest -E 3d --parallel 4 --output-on-failure
