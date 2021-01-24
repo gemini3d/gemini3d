@@ -59,7 +59,3 @@ else()
   set(FETCHCONTENT_UPDATES_DISCONNECTED_NC4FORTRAN true)
   set(FETCHCONTENT_UPDATES_DISCONNECTED_SCALAPACK true)
 endif()
-
-
-# this helps linters e.g. Visual Studio Intellicode work properly
-set(CMAKE_EXPORT_COMPILE_COMMANDS on)
