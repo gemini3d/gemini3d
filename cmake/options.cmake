@@ -45,6 +45,7 @@ option(metis "MUMPS: use METIS" off)
 option(scotch "MUMPS: use Scotch" off)
 option(openmp "MUMPS: use OpenMP" off)
 
+option(python "PyGemini checks" on)
 # Matlab checks take much longer than Python, and Python covers much more
 option(matlab "Matlab checks" off)
 
