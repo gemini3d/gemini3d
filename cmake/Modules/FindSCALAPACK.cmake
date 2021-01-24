@@ -56,7 +56,10 @@ set(SCALAPACK_INCLUDE_DIR)
 
 function(scalapack_check)
 
-find_package(MPI COMPONENTS Fortran)
+if(NOT TARGET MPI::MPI_Fortran)
+  find_package(MPI COMPONENTS Fortran)
+endif()
+
 find_package(LAPACK)
 if(NOT (MPI_Fortran_FOUND AND LAPACK_FOUND))
   return()
@@ -180,7 +183,7 @@ find_package(PkgConfig)
 # some systems (Ubuntu 16.04) need BLACS explicitly, when it isn't statically compiled into libscalapack
 
 if(NOT MKL IN_LIST SCALAPACK_FIND_COMPONENTS)
-  find_package(BLACS COMPONENTS ${SCALAPACK_FIND_COMPONENTS})
+  find_package(BLACS QUIET)
   if(NOT BLACS_FOUND)
     set(BLACS_LIBRARY)
     set(BLACS_INCLUDE_DIR)
