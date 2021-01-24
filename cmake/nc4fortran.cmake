@@ -1,3 +1,5 @@
+include(FetchContent)
+
 if(netcdf)
 
   if(CMAKE_VERSION VERSION_LESS 3.19)
@@ -10,13 +12,11 @@ if(netcdf)
   if(nc4fortran_FOUND)
     include(${nc4fortran_DIR}/nc4fortranTargets.cmake)
   else()
-    include(FetchContent)
-    FetchContent_Declare(ncproj
+    FetchContent_Declare(NC4FORTRAN
       GIT_REPOSITORY ${nc4fortran_git}
-      GIT_TAG ${nc4fortran_tag}
-      GIT_SHALLOW true)
+      GIT_TAG ${nc4fortran_tag})
 
-    FetchContent_MakeAvailable(ncproj)
+    FetchContent_MakeAvailable(NC4FORTRAN)
   endif()
 
   if(NOT TARGET NetCDF::NetCDF_Fortran)

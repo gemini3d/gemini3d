@@ -40,6 +40,7 @@ include(cmake/python.cmake)
 include(cmake/test_setup.cmake)
 include(cmake/test_sim.cmake)
 
+# all Gemini3D source code under this
 add_subdirectory(src)
 
 # summary print

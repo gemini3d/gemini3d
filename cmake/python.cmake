@@ -38,11 +38,10 @@ if(NOT Python3_FOUND)
 endif()
 # keep this in script so it's not scoped in function
 
-FetchContent_Declare(pygemini
+FetchContent_Declare(PYGEMINI
   GIT_REPOSITORY ${pygemini_git}
   GIT_TAG ${pygemini_tag})
-
-FetchContent_MakeAvailable(pygemini)
+FetchContent_MakeAvailable(PYGEMINI)
 
 if(NOT PYGEMINI_DIR)
   check_pygemini()

@@ -7,17 +7,17 @@ if(CMAKE_VERSION VERSION_LESS 3.19)
   set(glow_git https://github.com/gemini3d/glow.git)
   set(glow_tag v0.981.0.1)
 
-  set(lapack_zip https://github.com/scivision/lapack/archive/v3.9.0.2.zip)
-  set(lapack_git https://github.com/scivision/lapack.git)
   set(lapack_tag v3.9.0.2)
+  set(lapack_zip https://github.com/scivision/lapack/archive/v${lapack_tag}.zip)
+  set(lapack_git https://github.com/scivision/lapack.git)
 
-  set(h5fortran_zip https://github.com/geospace-code/h5fortran/archive/v3.4.5.zip)
-  set(h5fortran_git https://github.com/geospace-code/h5fortran.git)
   set(h5fortran_tag v3.4.5)
+  set(h5fortran_zip https://github.com/geospace-code/h5fortran/archive/v${h5fortran_tag}.zip)
+  set(h5fortran_git https://github.com/geospace-code/h5fortran.git)
 
-  set(mumps_zip https://github.com/scivision/mumps/archive/v5.3.5.2.zip)
-  set(mumps_git https://github.com/scivision/mumps.git)
   set(mumps_tag v5.3.5.2)
+  set(mumps_zip https://github.com/scivision/mumps/archive/v${mumps_tag}.zip)
+  set(mumps_git https://github.com/scivision/mumps.git)
 
   set(scalapack_git https://github.com/scivision/scalapack.git)
   set(scalapack_tag v2.1.0.11)

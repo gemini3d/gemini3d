@@ -1,4 +1,5 @@
 # Finds Scalapack, tests, and if not found or broken, autobuild scalapack
+include(FetchContent)
 
 if(autobuild)
   find_package(SCALAPACK)
@@ -9,16 +10,12 @@ endif()
 if(NOT SCALAPACK_FOUND)
   set(scalapack_external true CACHE BOOL "autobuild ScaLapack")
 
-  include(FetchContent)
-
-  FetchContent_Declare(scalapack_proj
+  FetchContent_Declare(SCALAPACK
     GIT_REPOSITORY ${scalapack_git}
     GIT_TAG ${scalapack_tag}
-    GIT_SHALLOW true
-    CMAKE_ARGS "-Darith=${arith}"
-  )
+    CMAKE_ARGS "-Darith=${arith}")
 
-  FetchContent_MakeAvailable(scalapack_proj)
+  FetchContent_MakeAvailable(SCALAPACK)
 endif()
 
 target_link_libraries(SCALAPACK::SCALAPACK INTERFACE LAPACK::LAPACK)

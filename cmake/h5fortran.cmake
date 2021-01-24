@@ -1,27 +1,25 @@
 # Leave h5fortran as FetchContent as we use wrangle HDF5 library distinctions there
-if(hdf5)
 
+include(FetchContent)
+
+if(hdf5)
   set(h5fortran_BUILD_TESTING false CACHE BOOL "h5fortran no test")
 
   find_package(h5fortran CONFIG QUIET)
   if(h5fortran_FOUND)
     include(${h5fortran_DIR}/h5fortranTargets.cmake)
   else()
-    include(FetchContent)
-
     if(GIT_FOUND)
-      FetchContent_Declare(h5proj
+      FetchContent_Declare(H5FORTRAN
         GIT_REPOSITORY ${h5fortran_git}
-        GIT_TAG ${h5fortran_tag}
-        GIT_SHALLOW true)
+        GIT_TAG ${h5fortran_tag})
     else(GIT_FOUND)
-      FetchContent_Declare(h5proj
+      FetchContent_Declare(H5FORTRAN
         URL ${h5fortran_zip}
-        TLS_VERIFY true
-        UPDATE_DISCONNECTED true)
+        TLS_VERIFY true)
     endif(GIT_FOUND)
 
-    FetchContent_MakeAvailable(h5proj)
+    FetchContent_MakeAvailable(H5FORTRAN)
   endif()
 
 else(hdf5)

@@ -11,14 +11,13 @@ if(CMAKE_VERSION VERSION_LESS 3.19)
   message(FATAL_ERROR "MatGemini requires CMake >= 3.19")
 endif()
 
-FetchContent_Declare(matgemini
+FetchContent_Declare(MATGEMINI
   GIT_REPOSITORY ${matgemini_git}
   GIT_TAG ${matgemini_tag})
-
-FetchContent_MakeAvailable(matgemini)
+FetchContent_MakeAvailable(MATGEMINI)
 
 if(NOT MATGEMINI_DIR)
-  execute_process(COMMAND ${Matlab_MAIN_PROGRAM} -batch "run('${CMAKE_CURRENT_SOURCE_DIR}/setup.m'), gemini3d.fileio.expanduser('~');"
+  execute_process(COMMAND ${Matlab_MAIN_PROGRAM} -batch "run('${matgemini_SOURCE_DIR}/setup.m'), gemini3d.fileio.expanduser('~');"
     RESULT_VARIABLE _ok
     TIMEOUT 90)
 

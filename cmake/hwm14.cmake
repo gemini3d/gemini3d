@@ -5,13 +5,10 @@ if(CMAKE_VERSION VERSION_LESS 3.19)
   message(FATAL_ERROR "HWM14 requires CMake >= 3.19")
 endif()
 
-FetchContent_Declare(hwm14proj
-GIT_REPOSITORY ${hwm14_git}
-GIT_TAG ${hwm14_tag}
-GIT_SHALLOW true
-)
-
-FetchContent_MakeAvailable(hwm14proj)
+FetchContent_Declare(HWM14
+  GIT_REPOSITORY ${hwm14_git}
+  GIT_TAG ${hwm14_tag})
+FetchContent_MakeAvailable(HWM14)
 
 add_library(HWM14::HWM14 INTERFACE IMPORTED)
 set_target_properties(HWM14::HWM14 PROPERTIES
