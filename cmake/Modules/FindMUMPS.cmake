@@ -31,8 +31,12 @@ set(MUMPS_LIBRARY)  # don't endlessly append
 function(mumps_check)
 
 if(NOT mpiseq IN_LIST MUMPS_FIND_COMPONENTS)
-  find_package(MPI COMPONENTS Fortran)
-  find_package(SCALAPACK COMPONENTS ${MUMPS_FIND_COMPONENTS})
+  if(NOT TARGET MPI::MPI_Fortran)
+    find_package(MPI COMPONENTS Fortran)
+  endif()
+  if(NOT TARGET SCALAPACK::SCALAPACK)
+    find_package(SCALAPACK)
+  endif()
 endif()
 
 find_package(LAPACK)
