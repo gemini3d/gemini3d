@@ -7,7 +7,7 @@ endif()
 FetchContent_Declare(MSIS2
   URL ${msis2_zip}
   URL_HASH SHA1=${msis2_sha1}
-  TLS_VERIFY true)
+  TLS_VERIFY ON)
 FetchContent_MakeAvailable(MSIS2)
 
 set(_s ${msis2_SOURCE_DIR})  # convenience
