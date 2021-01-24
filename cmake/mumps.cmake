@@ -7,6 +7,8 @@
 # CentOS 6/7 EPEL: yum install mumps-devel
 # Ubuntu / Debian: apt install libmumps-dev
 
+include(FetchContent)
+
 # --- prereqs
 include(${CMAKE_CURRENT_LIST_DIR}/lapack.cmake)
 
@@ -15,7 +17,7 @@ if(mpi)
 endif()
 # --- MUMPS
 
-if(MUMPS_ROOT OR (DEFINED ENV{MUMPS_ROOT}) OR (CMAKE_Fortran_COMPILER_ID STREQUAL GNU))
+if(NOT mumps_external AND (MUMPS_ROOT OR (DEFINED ENV{MUMPS_ROOT}) OR (CMAKE_Fortran_COMPILER_ID STREQUAL GNU)))
   set(_comp ${arith})
   if(NOT mpi)
     list(APPEND _comp mpiseq)
@@ -44,20 +46,16 @@ if(NOT MUMPS_FOUND)
   set(parallel ${mpi} CACHE BOOL "Mumps parallel == Gemini mpi")
   set(MUMPS_BUILD_TESTING false CACHE BOOL "mumps disable tests")
 
-  include(FetchContent)
-
   if(GIT_FOUND)
     FetchContent_Declare(MUMPS_proj
       GIT_REPOSITORY ${mumps_git}
       GIT_TAG ${mumps_tag}
-      GIT_SHALLOW true
       CMAKE_ARGS -Darith=${arith} -Dmetis:BOOL=${metis} -Dscotch:BOOL=${scotch} -Dopenmp:BOOL=false
     )
   else(GIT_FOUND)
     FetchContent_Declare(MUMPS_proj
     URL ${mumps_zip}
     TLS_VERIFY true
-    UPDATE_DISCONNECTED true
     CMAKE_ARGS -Darith=${arith} -Dmetis:BOOL=${metis} -Dscotch:BOOL=${scotch} -Dopenmp:BOOL=false
   )
   endif(GIT_FOUND)

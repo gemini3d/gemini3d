@@ -1,10 +1,12 @@
 # Finds Lapack, tests, and if not found or broken, autobuild Lapack
 include(FetchContent)
 
-if(autobuild)
-  find_package(LAPACK)
-else()
-  find_package(LAPACK REQUIRED)
+if(NOT lapack_external)
+  if(autobuild)
+    find_package(LAPACK)
+  else()
+    find_package(LAPACK REQUIRED)
+  endif()
 endif()
 
 if(NOT LAPACK_FOUND)

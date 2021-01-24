@@ -86,11 +86,11 @@ if("${i}" IN_LIST SCALAPACK_FIND_COMPONENTS)
   end program"
     SCALAPACK_${i}_links SRC_EXT f90)
 
-    if(SCALAPACK_${i}_links)
-      set(SCALAPACK_${i}_FOUND true PARENT_SCOPE)
-    else()
-      set(SCALAPACK_links false)
-    endif()
+  if(SCALAPACK_${i}_links)
+    set(SCALAPACK_${i}_FOUND true PARENT_SCOPE)
+  else()
+    set(SCALAPACK_links false)
+  endif()
 endif()
 
 endforeach()

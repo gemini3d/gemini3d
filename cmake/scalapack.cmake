@@ -1,10 +1,12 @@
 # Finds Scalapack, tests, and if not found or broken, autobuild scalapack
 include(FetchContent)
 
-if(autobuild)
-  find_package(SCALAPACK)
-else()
-  find_package(SCALAPACK REQUIRED)
+if(NOT scalapack_external)
+  if(autobuild)
+    find_package(SCALAPACK)
+  else()
+    find_package(SCALAPACK REQUIRED)
+  endif()
 endif()
 
 if(NOT SCALAPACK_FOUND)
