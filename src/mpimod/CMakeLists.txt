@@ -19,7 +19,7 @@ if(NOT mpi)
 endif()
 
 add_executable(mpi_cli get_mpi_count.f90)
-target_link_libraries(mpi_cli PRIVATE autogrid reader const pathlib)
+target_link_libraries(mpi_cli PRIVATE autogrid reader const pathlib timeutils config)
 set_target_properties(mpi_cli PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
 
 if(${PROJECT_NAME}_BUILD_TESTING)
