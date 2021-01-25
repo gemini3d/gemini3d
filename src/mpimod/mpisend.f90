@@ -114,7 +114,7 @@ lx=size(param,1)-4
 
 
 do iid=1,mpi_cfg%lid-1
-  indsgrid=ID2grid(iid)
+  indsgrid=ID2grid(iid, mpi_cfg%lid2)
 
 !  islstart=iid*lx+1
 !  islfin=islstart+lx-1
@@ -156,7 +156,7 @@ lx=size(param,1)-4
 
 
 do iid=1,mpi_cfg%lid-1
-  indsgrid=ID2grid(iid)    !compute my location on the process grid
+  indsgrid=ID2grid(iid, mpi_cfg%lid2)    !compute my location on the process grid
 
 !  islstart=iid*lx+1
 !  islfin=islstart+lx-1

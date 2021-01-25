@@ -4,7 +4,7 @@ module mpimod
 !!   it is more clear what the structure of the input arrays should be.
 use, intrinsic:: iso_fortran_env, only: stderr=>error_unit
 use phys_consts, only : lsp, wp
-!! code needs to know how many species are being used.
+use autogrid, only : grid_auto, id2grid
 
 use mpi, only: mpi_init, mpi_comm_rank, mpi_comm_size, mpi_comm_world, &
   mpi_integer,mpi_sum, &
@@ -381,7 +381,7 @@ integer, dimension(2) :: inds
 integer, dimension(4) :: slabinds
 
 
-inds=ID2grid(ID)
+inds=ID2grid(ID, mpi_cfg%lid2)
 !! find the location on the process grid for this particular process ID
 i2=inds(1)
 !! need process grid location in order to know where to put the incoming data
@@ -412,103 +412,17 @@ mpi_cfg%lid2=lid2
 mpi_cfg%lid3=lid3
 
 !THIS PROCESS' LOCATION ON THE GRID
-inds=ID2grid(mpi_cfg%myid)
+inds=ID2grid(mpi_cfg%myid, mpi_cfg%lid2)
 mpi_cfg%myid2=inds(1)
 mpi_cfg%myid3=inds(2)
 
 end subroutine mpi_manualgrid
 
 
-subroutine process_grid_auto(lx2all,lx3all)
-!! Automatically determine the PROCESS GRID
-!! sets value of lid2,lid3 globally
-!!
-!! lid: total number of MPI processes, set by mpi_comm_size (from CLI mpiexec -n).
-!!      Consider lid read-only or weird behavior can result (deadlock, crash)
-
-integer, intent(in) :: lx2all,lx3all
-
-integer, dimension(2) :: inds
-integer :: i,j,N
-
-if (lx3all==1) then
-  !! 2D simulation in x2, SWAP x2 to x3
-  mpi_cfg%lid3 = gcd(mpi_cfg%lid, lx2all)
-  mpi_cfg%lid2 = 1
-elseif (lx2all==1) then
-  !! 2D simulation in x3
-  mpi_cfg%lid3 = gcd(mpi_cfg%lid, lx3all)
-  mpi_cfg%lid2 = 1
-else
-  !! 3D simulation
-  mpi_cfg%lid2 = 1
-  mpi_cfg%lid3 = 1
-  N = 1
-  do i = gcd(mpi_cfg%lid, lx2all),1,-1
-    do j = gcd(mpi_cfg%lid, lx3all),1,-1
-      if (i*j > mpi_cfg%lid) cycle
-      if (i*j > N) then
-        N = i*j
-        mpi_cfg%lid2 = i
-        mpi_cfg%lid3 = j
-      endif
-    enddo
-  enddo
-
-  if (modulo(lx2all, mpi_cfg%lid2) /= 0) then
-    write(stderr,'(A,I0,A,I0)') "ERROR: MPI x2 image count ", mpi_cfg%lid2, " not a factor of lx2 ", lx2all
-    error stop
-  endif
-  if (modulo(lx3all, mpi_cfg%lid3) /= 0) then
-    write(stderr,'(A,I0,A,I0)') "ERROR: MPI x2 image count ", mpi_cfg%lid3, " not a factor of lx3 ", lx3all
-    error stop
-  endif
-end if
-
-!> checks
-if (lx3all > 1 .and. mpi_cfg%lid3 > lx3all) error stop "lid3 cannot be greater than lx3"
-if (lx2all > 1 .and. mpi_cfg%lid2 > lx2all) error stop "lid2 cannot be greater than lx2"
-
-if (modulo(mpi_cfg%lid, mpi_cfg%lid2) /= 0) then
-  write(stderr,'(A,I0,A,I0)') "ERROR: MPI x2 image count ", mpi_cfg%lid2, " not a factor of lid ", mpi_cfg%lid
-  error stop
-endif
-
-if (modulo(mpi_cfg%lid, mpi_cfg%lid3) /= 0)  then
-  write(stderr,'(A,I0,A,I0)') "ERROR: MPI x3 image count ", mpi_cfg%lid3, " not a factor of lid ", mpi_cfg%lid
-  error stop
-endif
-
-if (mpi_cfg%lid2*mpi_cfg%lid3 /= mpi_cfg%lid) then
-  write(stderr,'(A,I0,A,I0,A1,I0)')  "MPI image count ", mpi_cfg%lid, " not equal to x2*x3 partition size ", &
-     mpi_cfg%lid2, " ", mpi_cfg%lid3
-  error stop
-endif
-
-!> THIS PROCESS' LOCATION ON THE GRID
-inds = ID2grid(mpi_cfg%myid)
-mpi_cfg%myid2 = inds(1)
-mpi_cfg%myid3 = inds(2)
-
+subroutine process_grid_auto(lx2all, lx3all)
+integer, intent(in) :: lx2all, lx3all
+call grid_auto(lx2all, lx3all, mpi_cfg%lid, mpi_cfg%myid, mpi_cfg%lid2, mpi_cfg%lid3, mpi_cfg%myid2, mpi_cfg%myid3)
 end subroutine process_grid_auto
-
-
-pure integer function gcd(a, b)
-integer, intent(in) :: a, b
-integer :: x,y,z
-
-if (a < 1 .or. b < 1) error stop "positive integers only"
-
-x = a
-y = b
-z = modulo(x, y)
-do while (z /= 0)
-  x = y
-  y = z
-  z = modulo(x, y)
-end do
-gcd = y
-end function gcd
 
 
 pure integer function grid2id(i2,i3)
@@ -519,20 +433,6 @@ grid2ID = i3 * mpi_cfg%lid2 + i2
 !! this formula assumes that the first element is (i2,i3)=(0,0)
 
 end function grid2id
-
-
-pure function ID2grid(ID)
-!! COMPUTES GRID LOCATION FROM A PROCESS ID
-integer, dimension(2) :: ID2grid
-integer, intent(in) :: ID
-
-
-ID2grid(2) = ID / mpi_cfg%lid2
-!! x3 index into process grid
-ID2grid(1) = ID - ID2grid(2) * mpi_cfg%lid2
-!! x2 index into process grid
-
-end function ID2grid
 
 
 integer function mpibreakdown() result(ierr)

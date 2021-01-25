@@ -1,3 +1,5 @@
+add_library(autogrid autogrid.f90)
+
 if(realbits EQUAL 32)
   set(mpi_realprec mpi_real)
 else()
@@ -9,7 +11,7 @@ configure_file(mpimod.in.f90 mpimod.f90 @ONLY)
 add_library(mpimod OBJECT
   ${CMAKE_CURRENT_BINARY_DIR}/mpimod.f90
   mpisend.f90 mpirecv.f90 mpihalo.f90)
-target_link_libraries(mpimod PRIVATE const MPI::MPI_Fortran)
+target_link_libraries(mpimod PRIVATE autogrid const MPI::MPI_Fortran)
 if(NOT mpi)
   # the reason for this is the MPI-1 Fortran 77 linking in MUMPS
   # this seemed to be an easy way to avoid symbol clashes
