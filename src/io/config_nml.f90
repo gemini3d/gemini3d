@@ -36,7 +36,7 @@ real(wp) :: v0equator
 
 logical :: flagneuBG=.false.
 real(wp) :: dtneuBG
-integer :: msis_version = 0
+integer :: msis_version
 
 real(wp) :: PhiWBG,W0BG
 logical :: flagJpar
@@ -66,6 +66,8 @@ namelist /milestone/ mcadence
 namelist /gravdrift/ flaggravdrift
 namelist /lagrangian/ flaglagrangian
 namelist /diamagnetic/ flagdiamagnetic
+
+if(.not. allocated(cfg%outdir)) error stop 'config:config_nml please specify simulation output directory'
 
 open(newunit=u, file=cfg%infile, status='old', action='read')
 
@@ -186,6 +188,7 @@ if (namelist_exists(u,'neutral_BG')) then
   cfg%msis_version = msis_version
 else
   cfg%flagneuBG=.false.
+  cfg%msis_version = 0
 end if
 
 !> precip background (optional)
