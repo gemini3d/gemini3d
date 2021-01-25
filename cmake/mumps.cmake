@@ -46,21 +46,11 @@ if(NOT MUMPS_FOUND)
   set(parallel ${mpi} CACHE BOOL "Mumps parallel == Gemini mpi")
   set(MUMPS_BUILD_TESTING false CACHE BOOL "mumps disable tests")
 
-  if(GIT_FOUND)
-    FetchContent_Declare(MUMPS_proj
-      GIT_REPOSITORY ${mumps_git}
-      GIT_TAG ${mumps_tag}
-      CMAKE_ARGS -Darith=${arith} -Dmetis:BOOL=${metis} -Dscotch:BOOL=${scotch} -Dopenmp:BOOL=false
-    )
-  else(GIT_FOUND)
-    FetchContent_Declare(MUMPS_proj
-    URL ${mumps_zip}
-    TLS_VERIFY true
-    CMAKE_ARGS -Darith=${arith} -Dmetis:BOOL=${metis} -Dscotch:BOOL=${scotch} -Dopenmp:BOOL=false
-  )
-  endif(GIT_FOUND)
-
-  FetchContent_MakeAvailable(MUMPS_proj)
+  FetchContent_Declare(MUMPS
+    GIT_REPOSITORY ${mumps_git}
+    GIT_TAG ${mumps_tag}
+    CMAKE_ARGS -Darith=${arith} -Dmetis:BOOL=${metis} -Dscotch:BOOL=${scotch} -Dopenmp:BOOL=false)
+  FetchContent_MakeAvailable(MUMPS)
 endif()
 
 if(mpi)
