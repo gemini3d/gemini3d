@@ -4,7 +4,7 @@ module mpimod
 !!   it is more clear what the structure of the input arrays should be.
 use, intrinsic:: iso_fortran_env, only: stderr=>error_unit
 use phys_consts, only : lsp, wp
-use autogrid, only : grid_auto, id2grid
+use autogrid, only : grid_auto
 
 use mpi, only: mpi_init, mpi_comm_rank, mpi_comm_size, mpi_comm_world, &
   mpi_integer,mpi_sum, &
@@ -19,8 +19,7 @@ public :: gemini_mpi, gemini_mpi_config, mpi_cfg, &
   bcast_recv, bcast_recv1d_2, bcast_recv1d_3, bcast_recv3d_x2i, bcast_recv3d_x3i, bcast_recv3d_ghost, &
   gather_send, gather_recv, &
   halo, halo_end, &
-  mpi_comm_world, mpi_status_ignore, mpi_integer, mpi_sum, &
-  test_process_number
+  mpi_comm_world, mpi_status_ignore, mpi_integer, mpi_sum
 
 external :: mpi_finalize, mpi_send, mpi_recv, mpi_isend, mpi_irecv, mpi_waitall
 
@@ -421,7 +420,15 @@ end subroutine mpi_manualgrid
 
 subroutine process_grid_auto(lx2all, lx3all)
 integer, intent(in) :: lx2all, lx3all
-call grid_auto(lx2all, lx3all, mpi_cfg%lid, mpi_cfg%myid, mpi_cfg%lid2, mpi_cfg%lid3, mpi_cfg%myid2, mpi_cfg%myid3)
+integer :: inds(2)
+
+call grid_auto(lx2all, lx3all, mpi_cfg%lid, mpi_cfg%lid2, mpi_cfg%lid3)
+
+!> THIS PROCESS' LOCATION ON THE GRID
+inds = ID2grid(mpi_cfg%myid, mpi_cfg%lid2)
+mpi_cfg%myid2 = inds(1)
+mpi_cfg%myid3 = inds(2)
+
 end subroutine process_grid_auto
 
 
@@ -435,30 +442,24 @@ grid2ID = i3 * mpi_cfg%lid2 + i2
 end function grid2id
 
 
+pure function ID2grid(ID, lid2)
+!! COMPUTES GRID LOCATION FROM A PROCESS ID
+integer, dimension(2) :: ID2grid
+integer, intent(in) :: ID, lid2
+
+ID2grid(2) = ID / lid2
+!! x3 index into process grid
+ID2grid(1) = ID - ID2grid(2) * lid2
+!! x2 index into process grid
+
+end function ID2grid
+
+
 integer function mpibreakdown() result(ierr)
 !! SHUTS DOWN MPI
 
 call mpi_finalize(ierr)
 
 end function mpibreakdown
-
-
-logical function test_process_number(N, lx2all, lx3all, rx2, rx3) result (ok)
-!! this is only for testing. Due to lid being protected, has to be in this module
-
-integer, intent(in) :: N, rx2, rx3, lx2all, lx3all
-
-mpi_cfg%lid = N
-call process_grid_auto(lx2all,lx3all)
-
-ok = (mpi_cfg%lid2 == rx2 .and. mpi_cfg%lid3 == rx3)
-
-if (.not. ok) then
-  write(stderr,'(A,I0,A1,I0,A1,I0,A1,I0)') 'failed: lx2all,lx3all,lid,Nimg: ', lx2all,' ', lx3all,' ',mpi_cfg%lid,' ',N
-  write(stderr,'(A,I0,A1,I0,A,I0,A1,I0)') 'expected lid2,lid3 ', rx2,' ', rx3, ' but got: ',mpi_cfg%lid2,' ',mpi_cfg%lid3
-end if
-
-end function test_process_number
-
 
 end module mpimod

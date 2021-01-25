@@ -2,7 +2,7 @@ program test_excess_mpi
 
 use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
 
-use mpimod, only : checker=>test_process_number
+use autogrid, only : checker=>test_process_number
 
 implicit none (type, external)
 
@@ -53,8 +53,8 @@ do i = 1,size(N)
   if (.not. checker(N(i), lx2all=54, lx3all=44, rx2=rx2(i), rx3=rx3(i))) all_ok = .false.
 enddo
 
-if (all_ok) stop 'OK: auto process grid'
+if (.not. all_ok) error stop 'process_grid_auto mismatch'
 
-error stop
+print *, 'OK: auto process grid'
 
 end program
