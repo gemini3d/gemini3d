@@ -8,6 +8,7 @@ Load the necessary modules (cmake, gcc8, and openmpi):
 module load cmake/3.15.5
 module load gcc/8.3.0
 module load openmpi/gcc8/64/3.1.2
+module load python/3.7.7
 ```
 
 Clone the core GEMINI repository, if needed.  Navigate to the location where you want the source code (in this example we will use ~/Projects) and then clone:
