@@ -1,8 +1,7 @@
 Program MagCalc
 !! Need program statement for FORD
-!! THIS IS THE MAIN PROGRAM FOR COMPUTING MAGNETIC FIELDS
-!! FROM OUTPUT FROM A SIMULATIONS DONE BY GEMINI3D.
-!! THIS PROGRAM VERY MUCH MIRRORS THE SETUP OF THE MAIN GEMINI.F90 CODE.
+!!
+!! This program computes magnetic field fluctuations using current density from a gemini output simulation
 
 use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
 
@@ -426,6 +425,11 @@ main : do while (t < cfg%tdur)
     call halo_end(Ry,Ryend,Rytop,tag%Ry)
     call halo_end(Rz,Rzend,Rztop,tag%Rz)
 
+    !print*, 'end:  ',mpi_cfg%myid,maxval(Rxend),maxval(Ryend),maxval(Rzend)
+    !print*, 'top:  ',mpi_cfg%myid,maxval(Rxtop),maxval(Rytop),maxval(Rztop)
+    !print*, 'z-end:  ',mpi_cfg%myid,minval(Rzend),maxval(Rzend)
+    !print*, 'z-top:  ',mpi_cfg%myid,minval(Rztop),maxval(Rztop)
+
     ! separately compute average distance for the denominator help with regulation issue and accounts for averaging over each differential volumes
     Rmag=0._wp
     do ix3=2,lx3
@@ -446,6 +450,7 @@ main : do while (t < cfg%tdur)
 
     ! end and top values should be added.
     Rmagend=0._wp
+    if (mpi_cfg%myid3/=mpi_cfg%lid3-1) then
     do ix2=2,lx2
       do ix1=2,lx1
         Rmagend(ix1,ix2)=1/8._wp*( sqrt(Rx(ix1,ix2,lx3)**2+Ry(ix1,ix2,lx3)**2+Rz(ix1,ix2,lx3)**2) + &
@@ -458,7 +463,9 @@ main : do while (t < cfg%tdur)
                                       sqrt(Rxend(ix1-1,ix2-1)**2+Ryend(ix1-1,ix2-1)**2+Rzend(ix1-1,ix2-1)**2) )
       end do
     end do
+    end if
     Rmagtop=0._wp
+    if (mpi_cfg%myid2/=mpi_cfg%lid2-1) then
     do ix3=2,lx3
       do ix1=2,lx1
         Rmagtop(ix1,ix3)=1/8._wp*( sqrt(Rx(ix1,lx2,ix3)**2+Ry(ix1,lx2,ix3)**2+Rz(ix1,lx2,ix3)**2) + &
@@ -471,6 +478,10 @@ main : do while (t < cfg%tdur)
                                       sqrt(Rxtop(ix1-1,ix3-1)**2+Rytop(ix1-1,ix3-1)**2+Rztop(ix1-1,ix3-1)**2) )
       end do
     end do
+    end if
+
+    !print*, 'Rmagend:  ',minval(Rmagend(2:lx1,2:lx2)),maxval(Rmagend(2:lx1,2:lx2))
+    !print*, 'Rmagtop:  ',minval(Rmagtop(2:lx1,2:lx3)),maxval(Rmagtop(2:lx1,2:lx3))
 
 
     if (flag2D/=1) then
@@ -496,15 +507,21 @@ main : do while (t < cfg%tdur)
                            integrand(1:lx1-1,1:lx2-1,2:lx3) + integrand(2:lx1,1:lx2-1,2:lx3) + &
                            integrand(1:lx1-1,2:lx2,2:lx3) + integrand(2:lx1,2:lx2,2:lx3) )/Rcubed(2:lx1,2:lx2,2:lx3)
 
+      integrandavgend=0._wp
+      if (mpi_cfg%myid3/=mpi_cfg%lid3-1) then
       integrandavgend(:,:)=1/8._wp*( integrand(1:lx1-1,1:lx2-1,lx3) + integrand(2:lx1,1:lx2-1,lx3) + &
                            integrand(1:lx1-1,2:lx2,lx3) + integrand(2:lx1,2:lx2,lx3) )/Rcubed(2:lx1,2:lx2,lx3) + &
                            1/8._wp* (integrandend(1:lx1-1,1:lx2-1) + integrandend(2:lx1,1:lx2-1) + &
                            integrandend(1:lx1-1,2:lx2) + integrandend(2:lx1,2:lx2) )/Rcubedend(2:lx1,2:lx2)
+      end if
 
+      integrandavgtop=0._wp
+      if (mpi_cfg%myid2/=mpi_cfg%lid2-1) then
       integrandavgtop(:,:)=1/8._wp*( integrand(1:lx1-1,lx2,1:lx3-1) + integrand(2:lx1,lx2,1:lx3-1) + &
                            integrand(1:lx1-1,lx2,2:lx3) + integrand(2:lx1,lx2,2:lx3) )/Rcubed(2:lx1,lx2,2:lx3) + &
                            1/8._wp*(integrandtop(1:lx1-1,1:lx3-1) + integrandtop(2:lx1,1:lx3-1) + &
                            integrandtop(1:lx1-1,2:lx3) + integrandtop(2:lx1,2:lx3) )/Rcubedtop(2:lx1,2:lx3)
+      end if
 
       Br(ipoints)=sum(integrandavg*dV(2:lx1,2:lx2,2:lx3))+sum(integrandavgend*dVend(2:lx1,2:lx2))+ &
                     sum(integrandavgtop*dVtop(2:lx1,2:lx3))
@@ -519,15 +536,21 @@ main : do while (t < cfg%tdur)
                            integrand(1:lx1-1,1:lx2-1,2:lx3) + integrand(2:lx1,1:lx2-1,2:lx3) + &
                            integrand(1:lx1-1,2:lx2,2:lx3) + integrand(2:lx1,2:lx2,2:lx3) )/Rcubed(2:lx1,2:lx2,2:lx3)
 
+      integrandavgend=0._wp
+      if (mpi_cfg%myid3/=mpi_cfg%lid3-1) then
       integrandavgend(:,:)=1/8._wp*( integrand(1:lx1-1,1:lx2-1,lx3) + integrand(2:lx1,1:lx2-1,lx3) + &
                            integrand(1:lx1-1,2:lx2,lx3) + integrand(2:lx1,2:lx2,lx3) )/Rcubed(2:lx1,2:lx2,lx3) + &
                            1/8._wp*(integrandend(1:lx1-1,1:lx2-1) + integrandend(2:lx1,1:lx2-1) + &
                            integrandend(1:lx1-1,2:lx2) + integrandend(2:lx1,2:lx2) )/Rcubedend(2:lx1,2:lx2)
+      end if
 
+      integrandavgtop=0._wp
+      if (mpi_cfg%myid2/=mpi_cfg%lid2-1) then
       integrandavgtop(:,:)=1/8._wp*( integrand(1:lx1-1,lx2,1:lx3-1) + integrand(2:lx1,lx2,1:lx3-1) + &
                            integrand(1:lx1-1,lx2,2:lx3) + integrand(2:lx1,lx2,2:lx3) )/Rcubed(2:lx1,lx2,2:lx3) + &
                            1/8._wp*(integrandtop(1:lx1-1,1:lx3-1) + integrandtop(2:lx1,1:lx3-1) + &
                            integrandtop(1:lx1-1,2:lx3) + integrandtop(2:lx1,2:lx3) )/Rcubedtop(2:lx1,2:lx3)
+      end if
 
       Btheta(ipoints)=sum(integrandavg*dV(2:lx1,2:lx2,2:lx3))+sum(integrandavgend*dVend(2:lx1,2:lx2))+ &
                         sum(integrandavgtop*dVtop(2:lx1,2:lx3))
@@ -542,15 +565,21 @@ main : do while (t < cfg%tdur)
                            integrand(1:lx1-1,1:lx2-1,2:lx3) + integrand(2:lx1,1:lx2-1,2:lx3) + &
                            integrand(1:lx1-1,2:lx2,2:lx3) + integrand(2:lx1,2:lx2,2:lx3) )/Rcubed(2:lx1,2:lx2,2:lx3)
 
+      integrandavgend=0._wp
+      if (mpi_cfg%myid3/=mpi_cfg%lid3-1) then
       integrandavgend(:,:)=1/8._wp*( integrand(1:lx1-1,1:lx2-1,lx3) + integrand(2:lx1,1:lx2-1,lx3) + &
                            integrand(1:lx1-1,2:lx2,lx3) + integrand(2:lx1,2:lx2,lx3) )/Rcubed(2:lx1,2:lx2,lx3) + &
                            1/8._wp*(integrandend(1:lx1-1,1:lx2-1) + integrandend(2:lx1,1:lx2-1) + &
                            integrandend(1:lx1-1,2:lx2) + integrandend(2:lx1,2:lx2) )/Rcubedend(2:lx1,2:lx2)
+      end if
 
+      integrandavgtop=0._wp
+      if (mpi_cfg%myid2/=mpi_cfg%lid2-1) then
       integrandavgtop(:,:)=1/8._wp*( integrand(1:lx1-1,lx2,1:lx3-1) + integrand(2:lx1,lx2,1:lx3-1) + &
                            integrand(1:lx1-1,lx2,2:lx3) + integrand(2:lx1,lx2,2:lx3) )/Rcubed(2:lx1,lx2,2:lx3) + &
                            1/8._wp*(integrandtop(1:lx1-1,1:lx3-1) + integrandtop(2:lx1,1:lx3-1) + &
                            integrandtop(1:lx1-1,2:lx3) + integrandtop(2:lx1,2:lx3) )/Rcubedtop(2:lx1,2:lx3)
+      end if
 
       Bphi(ipoints)=sum(integrandavg*dV(2:lx1,2:lx2,2:lx3))+sum(integrandavgend*dVend(2:lx1,2:lx2))+ &
                         sum(integrandavgtop*dVtop(2:lx1,2:lx3))
