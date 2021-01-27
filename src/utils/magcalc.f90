@@ -88,6 +88,8 @@ real(wp) :: UTsecstart,UTsecend,telend,UTsecfinal
 real(wp) :: h1avg,h2avg,h3avg
 real(wp), dimension(:,:,:), allocatable :: Rmag
 
+integer :: u,iid
+character(256) :: filename
 
 !! --- MAIN PROGRAM
 
@@ -268,6 +270,12 @@ end if
 call halo_end(dV,dVend,dVtop,tag%dV)
 !! need to define the differential volume on the edge of this x3-slab in
 
+
+!        write(filename,'(A12,i1,A4)') 'debug_output',mpi_cfg%myid,'.dat'
+!        open(newunit=u,file=filename,status='replace',form='unformatted',access='stream',action='write')
+!        write(u) dV
+!        close(u)
+
 !print*, mpi_cfg%myid,' Any problems with dV?  ', any(isnan(dV)),any(isnan(dVend)),any(isnan(dVtop))
 !print*, mpi_cfg%myid,'  failures of generate positive dV:  ',any(dV(2:lx1,2:lx2,2:lx3)<=0),any(dVend(2:lx1,2:lx2)<=0), &
 !                         any(dVtop(2:lx1,2:lx3)<=0)
@@ -345,11 +353,12 @@ main : do while (t < cfg%tdur)
   end where
 
 
-  !DEAL WITH THE WEIRD EDGE ARTIFACTS THAT WE GET IN THE PARALLEL CURRENT
-  !SOMETIMES, THIS IS FOR THE X2 DIRECTION
+  !! FAC can often have edge artifacts due to boundary being too close to the disturbance being modeled.
+  !  this code will remove these.
+  ! x3 global grid edges
   if(mpi_cfg%myid==0) print *, 'Fixing current edge artifacts...'
   if (mpi_cfg%myid3==mpi_cfg%lid3-1) then
-    if (lx3>2) then    !do a ZOH
+    if (lx3>2) then    !do a ZOH from the 3rd to last cell
       J1(:,:,lx3-1)=J1(:,:,lx3-2)
       J1(:,:,lx3)=J1(:,:,lx3-2)
     else
@@ -358,7 +367,7 @@ main : do while (t < cfg%tdur)
     end if
   end if
   if (mpi_cfg%myid3==0) then
-    if (lx3>2) then    !do a ZOH
+    if (lx3>2) then    !do a ZOH from the 3rd cell
       J1(:,:,1)=J1(:,:,3)
       J1(:,:,2)=J1(:,:,3)
     else
@@ -367,9 +376,9 @@ main : do while (t < cfg%tdur)
     end if
   end if
 
-  !X3 EDGES
+  ! x2 global grid edges
   if (mpi_cfg%myid2==mpi_cfg%lid2-1) then
-    if (lx2>2) then    !do a ZOH
+    if (lx2>2) then
       J1(:,lx2-1,:)=J1(:,lx2-2,:)
       J1(:,lx2,:)=J1(:,lx2-2,:)
     else
@@ -378,7 +387,7 @@ main : do while (t < cfg%tdur)
     end if
   end if
   if (mpi_cfg%myid2==0) then
-    if (lx2>2) then    !do a ZOH
+    if (lx2>2) then
       J1(:,1,:)=J1(:,3,:)
       J1(:,2,:)=J1(:,3,:)
     else
@@ -398,17 +407,44 @@ main : do while (t < cfg%tdur)
 
 !    print *, myid2,myid3,'  --> Min/max values of current',minval(Jx),maxval(Jx),minval(Jy),maxval(Jy), &
 !                                               minval(Jz),maxval(Jz)
-
-
   !GATHER THE END DATA SO WE DON'T LEAVE OUT A POINT IN THE INTEGRATION
   call halo_end(Jx,Jxend,Jxtop,tag%Jx)
   call halo_end(Jy,Jyend,Jytop,tag%Jy)
   call halo_end(Jz,Jzend,Jztop,tag%Jz)
 
-    !print *, myid2,myid3,'  --> Min/max values of end current',minval(Jxend),maxval(Jxend),minval(Jyend),maxval(Jyend), &
-    !                                           minval(Jzend),maxval(Jzend)
-    !print *, myid2,myid3,'  --> Min/max values of top current',minval(Jxtop),maxval(Jxtop),minval(Jytop),maxval(Jytop), &
-    !                                           minval(Jztop),maxval(Jztop)
+
+
+!!    if (ipoints==1) then
+!        write(filename,'(A12,i1,A4)') 'debug_output',mpi_cfg%myid,'.dat'
+!        open(newunit=u,file=filename,status='replace',form='unformatted',access='stream',action='write')
+!        write(u) Jx
+!        close(u)
+!!    end if
+
+!  if (mpi_cfg%myid==2) then
+!    open(newunit=u,file='debug_output2.dat',status='replace',form='unformatted',access='stream',action='write')
+!    write(u) Jx,Jy,Jz
+!    write(u) Jxend,Jyend,Jzend
+!    write(u) Jxtop,Jytop,Jztop
+!    close(u)
+!  end if
+!  if (mpi_cfg%myid==3) then
+!    print*, shape(Jx),shape(Jxend),shape(Jxtop)
+!    print*, shape(Jy),shape(Jyend),shape(Jytop)
+!    print*, shape(Jz),shape(Jzend),shape(Jztop)
+!    open(newunit=u,file='debug_output3.dat',status='replace',form='unformatted',access='stream',action='write')
+!    write(u) Jx,Jy,Jz
+!    write(u) Jxend,Jyend,Jzend
+!    write(u) Jxtop,Jytop,Jztop
+!    close(u)
+!  end if
+
+!  print *, mpi_cfg%myid2,mpi_cfg%myid3,'  --> Min/max values of end current',minval(Jxend),maxval(Jxend), &
+!                                               minval(Jyend),maxval(Jyend), &
+!                                               minval(Jzend),maxval(Jzend)
+!  print *, mpi_cfg%myid2,mpi_cfg%myid3,'  --> Min/max values of top current',minval(Jxtop),maxval(Jxtop), &
+!                                               minval(Jytop),maxval(Jytop), &
+!                                               minval(Jztop),maxval(Jztop)
 
   !COMPUTE MAGNETIC FIELDS
   do ipoints=1,lpoints
@@ -424,11 +460,6 @@ main : do while (t < cfg%tdur)
     call halo_end(Rx,Rxend,Rxtop,tag%Rx)
     call halo_end(Ry,Ryend,Rytop,tag%Ry)
     call halo_end(Rz,Rzend,Rztop,tag%Rz)
-
-    !print*, 'end:  ',mpi_cfg%myid,maxval(Rxend),maxval(Ryend),maxval(Rzend)
-    !print*, 'top:  ',mpi_cfg%myid,maxval(Rxtop),maxval(Rytop),maxval(Rztop)
-    !print*, 'z-end:  ',mpi_cfg%myid,minval(Rzend),maxval(Rzend)
-    !print*, 'z-top:  ',mpi_cfg%myid,minval(Rztop),maxval(Rztop)
 
     ! separately compute average distance for the denominator help with regulation issue and accounts for averaging over each differential volumes
     Rmag=0._wp
@@ -451,37 +482,58 @@ main : do while (t < cfg%tdur)
     ! end and top values should be added.
     Rmagend=0._wp
     if (mpi_cfg%myid3/=mpi_cfg%lid3-1) then
-    do ix2=2,lx2
-      do ix1=2,lx1
-        Rmagend(ix1,ix2)=1/8._wp*( sqrt(Rx(ix1,ix2,lx3)**2+Ry(ix1,ix2,lx3)**2+Rz(ix1,ix2,lx3)**2) + &
-                                      sqrt(Rxend(ix1,ix2)**2+Ryend(ix1,ix2)**2+Rzend(ix1,ix2)**2) + &
-                                      sqrt(Rx(ix1,ix2-1,lx3)**2+Ry(ix1,ix2-1,lx3)**2+Rz(ix1,ix2-1,lx3)**2) + &
-                                      sqrt(Rxend(ix1,ix2-1)**2+Ryend(ix1,ix2-1)**2+Rzend(ix1,ix2-1)**2) + &
-                                      sqrt(Rx(ix1-1,ix2,lx3)**2+Ry(ix1-1,ix2,lx3)**2+Rz(ix1-1,ix2,lx3)**2) + &
-                                      sqrt(Rxend(ix1-1,ix2)**2+Ryend(ix1-1,ix2)**2+Rzend(ix1-1,ix2)**2) + &
-                                      sqrt(Rx(ix1-1,ix2-1,lx3)**2+Ry(ix1-1,ix2-1,lx3)**2+Rz(ix1-1,ix2-1,lx3)**2) + &
-                                      sqrt(Rxend(ix1-1,ix2-1)**2+Ryend(ix1-1,ix2-1)**2+Rzend(ix1-1,ix2-1)**2) )
+      do ix2=2,lx2
+        do ix1=2,lx1
+          Rmagend(ix1,ix2)=1/8._wp*( sqrt(Rx(ix1,ix2,lx3)**2+Ry(ix1,ix2,lx3)**2+Rz(ix1,ix2,lx3)**2) + &
+                                        sqrt(Rxend(ix1,ix2)**2+Ryend(ix1,ix2)**2+Rzend(ix1,ix2)**2) + &
+                                        sqrt(Rx(ix1,ix2-1,lx3)**2+Ry(ix1,ix2-1,lx3)**2+Rz(ix1,ix2-1,lx3)**2) + &
+                                        sqrt(Rxend(ix1,ix2-1)**2+Ryend(ix1,ix2-1)**2+Rzend(ix1,ix2-1)**2) + &
+                                        sqrt(Rx(ix1-1,ix2,lx3)**2+Ry(ix1-1,ix2,lx3)**2+Rz(ix1-1,ix2,lx3)**2) + &
+                                        sqrt(Rxend(ix1-1,ix2)**2+Ryend(ix1-1,ix2)**2+Rzend(ix1-1,ix2)**2) + &
+                                        sqrt(Rx(ix1-1,ix2-1,lx3)**2+Ry(ix1-1,ix2-1,lx3)**2+Rz(ix1-1,ix2-1,lx3)**2) + &
+                                        sqrt(Rxend(ix1-1,ix2-1)**2+Ryend(ix1-1,ix2-1)**2+Rzend(ix1-1,ix2-1)**2) )
+        end do
       end do
-    end do
     end if
     Rmagtop=0._wp
     if (mpi_cfg%myid2/=mpi_cfg%lid2-1) then
-    do ix3=2,lx3
-      do ix1=2,lx1
-        Rmagtop(ix1,ix3)=1/8._wp*( sqrt(Rx(ix1,lx2,ix3)**2+Ry(ix1,lx2,ix3)**2+Rz(ix1,lx2,ix3)**2) + &
-                                      sqrt(Rx(ix1,lx2,ix3-1)**2+Ry(ix1,lx2,ix3-1)**2+Rz(ix1,lx2,ix3-1)**2) + &
-                                      sqrt(Rxtop(ix1,ix3)**2+Rytop(ix1,ix3)**2+Rztop(ix1,ix3)**2) + &
-                                      sqrt(Rxtop(ix1,ix3-1)**2+Rytop(ix1,ix3-1)**2+Rztop(ix1,ix3-1)**2) + &
-                                      sqrt(Rx(ix1-1,lx2,ix3)**2+Ry(ix1-1,lx2,ix3)**2+Rz(ix1-1,lx2,ix3)**2) + &
-                                      sqrt(Rx(ix1-1,lx2,ix3-1)**2+Ry(ix1-1,lx2,ix3-1)**2+Rz(ix1-1,lx2,ix3-1)**2) + &
-                                      sqrt(Rxtop(ix1-1,ix3)**2+Rytop(ix1-1,ix3)**2+Rztop(ix1-1,ix3)**2) + &
-                                      sqrt(Rxtop(ix1-1,ix3-1)**2+Rytop(ix1-1,ix3-1)**2+Rztop(ix1-1,ix3-1)**2) )
+      do ix3=2,lx3
+        do ix1=2,lx1
+          Rmagtop(ix1,ix3)=1/8._wp*( sqrt(Rx(ix1,lx2,ix3)**2+Ry(ix1,lx2,ix3)**2+Rz(ix1,lx2,ix3)**2) + &
+                                        sqrt(Rx(ix1,lx2,ix3-1)**2+Ry(ix1,lx2,ix3-1)**2+Rz(ix1,lx2,ix3-1)**2) + &
+                                        sqrt(Rxtop(ix1,ix3)**2+Rytop(ix1,ix3)**2+Rztop(ix1,ix3)**2) + &
+                                        sqrt(Rxtop(ix1,ix3-1)**2+Rytop(ix1,ix3-1)**2+Rztop(ix1,ix3-1)**2) + &
+                                        sqrt(Rx(ix1-1,lx2,ix3)**2+Ry(ix1-1,lx2,ix3)**2+Rz(ix1-1,lx2,ix3)**2) + &
+                                        sqrt(Rx(ix1-1,lx2,ix3-1)**2+Ry(ix1-1,lx2,ix3-1)**2+Rz(ix1-1,lx2,ix3-1)**2) + &
+                                        sqrt(Rxtop(ix1-1,ix3)**2+Rytop(ix1-1,ix3)**2+Rztop(ix1-1,ix3)**2) + &
+                                        sqrt(Rxtop(ix1-1,ix3-1)**2+Rytop(ix1-1,ix3-1)**2+Rztop(ix1-1,ix3-1)**2) )
+        end do
       end do
-    end do
     end if
 
-    !print*, 'Rmagend:  ',minval(Rmagend(2:lx1,2:lx2)),maxval(Rmagend(2:lx1,2:lx2))
-    !print*, 'Rmagtop:  ',minval(Rmagtop(2:lx1,2:lx3)),maxval(Rmagtop(2:lx1,2:lx3))
+
+!    if (ipoints==1) then
+!        write(filename,'(A12,i1,A4)') 'debug_output',mpi_cfg%myid,'.dat'
+!        open(newunit=u,file=filename,status='replace',form='unformatted',access='stream',action='write')
+!        write(u) Rx,Ry,Rz
+!        close(u)
+!    end if
+
+
+!    if (mpi_cfg%myid==2) then
+!      open(newunit=u,file='debug_outputR2.dat',status='replace',form='unformatted',access='stream',action='write')
+!      write(u) Rmag
+!      write(u) Rmagend
+!      write(u) Rmagtop
+!      close(u)
+!    end if
+!    if (mpi_cfg%myid==3) then
+!      open(newunit=u,file='debug_outputR3.dat',status='replace',form='unformatted',access='stream',action='write')
+!      write(u) Rmag
+!      write(u) Rmagend
+!      write(u) Rmagtop
+!      close(u)
+!    end if
 
 
     if (flag2D/=1) then
@@ -509,18 +561,20 @@ main : do while (t < cfg%tdur)
 
       integrandavgend=0._wp
       if (mpi_cfg%myid3/=mpi_cfg%lid3-1) then
-      integrandavgend(:,:)=1/8._wp*( integrand(1:lx1-1,1:lx2-1,lx3) + integrand(2:lx1,1:lx2-1,lx3) + &
-                           integrand(1:lx1-1,2:lx2,lx3) + integrand(2:lx1,2:lx2,lx3) )/Rcubed(2:lx1,2:lx2,lx3) + &
-                           1/8._wp* (integrandend(1:lx1-1,1:lx2-1) + integrandend(2:lx1,1:lx2-1) + &
-                           integrandend(1:lx1-1,2:lx2) + integrandend(2:lx1,2:lx2) )/Rcubedend(2:lx1,2:lx2)
+!      if (.false.) then
+        integrandavgend(:,:)=1/8._wp*( integrand(1:lx1-1,1:lx2-1,lx3) + integrand(2:lx1,1:lx2-1,lx3) + &
+                             integrand(1:lx1-1,2:lx2,lx3) + integrand(2:lx1,2:lx2,lx3) )/Rcubed(2:lx1,2:lx2,lx3) + &
+                             1/8._wp* (integrandend(1:lx1-1,1:lx2-1) + integrandend(2:lx1,1:lx2-1) + &
+                             integrandend(1:lx1-1,2:lx2) + integrandend(2:lx1,2:lx2) )/Rcubedend(2:lx1,2:lx2)
       end if
 
       integrandavgtop=0._wp
       if (mpi_cfg%myid2/=mpi_cfg%lid2-1) then
-      integrandavgtop(:,:)=1/8._wp*( integrand(1:lx1-1,lx2,1:lx3-1) + integrand(2:lx1,lx2,1:lx3-1) + &
-                           integrand(1:lx1-1,lx2,2:lx3) + integrand(2:lx1,lx2,2:lx3) )/Rcubed(2:lx1,lx2,2:lx3) + &
-                           1/8._wp*(integrandtop(1:lx1-1,1:lx3-1) + integrandtop(2:lx1,1:lx3-1) + &
-                           integrandtop(1:lx1-1,2:lx3) + integrandtop(2:lx1,2:lx3) )/Rcubedtop(2:lx1,2:lx3)
+!      if (.false.) then
+        integrandavgtop(:,:)=1/8._wp*( integrand(1:lx1-1,lx2,1:lx3-1) + integrand(2:lx1,lx2,1:lx3-1) + &
+                             integrand(1:lx1-1,lx2,2:lx3) + integrand(2:lx1,lx2,2:lx3) )/Rcubed(2:lx1,lx2,2:lx3) + &
+                             1/8._wp*(integrandtop(1:lx1-1,1:lx3-1) + integrandtop(2:lx1,1:lx3-1) + &
+                             integrandtop(1:lx1-1,2:lx3) + integrandtop(2:lx1,2:lx3) )/Rcubedtop(2:lx1,2:lx3)
       end if
 
       Br(ipoints)=sum(integrandavg*dV(2:lx1,2:lx2,2:lx3))+sum(integrandavgend*dVend(2:lx1,2:lx2))+ &
@@ -538,18 +592,20 @@ main : do while (t < cfg%tdur)
 
       integrandavgend=0._wp
       if (mpi_cfg%myid3/=mpi_cfg%lid3-1) then
-      integrandavgend(:,:)=1/8._wp*( integrand(1:lx1-1,1:lx2-1,lx3) + integrand(2:lx1,1:lx2-1,lx3) + &
-                           integrand(1:lx1-1,2:lx2,lx3) + integrand(2:lx1,2:lx2,lx3) )/Rcubed(2:lx1,2:lx2,lx3) + &
-                           1/8._wp*(integrandend(1:lx1-1,1:lx2-1) + integrandend(2:lx1,1:lx2-1) + &
-                           integrandend(1:lx1-1,2:lx2) + integrandend(2:lx1,2:lx2) )/Rcubedend(2:lx1,2:lx2)
+!      if (.false.) then
+        integrandavgend(:,:)=1/8._wp*( integrand(1:lx1-1,1:lx2-1,lx3) + integrand(2:lx1,1:lx2-1,lx3) + &
+                             integrand(1:lx1-1,2:lx2,lx3) + integrand(2:lx1,2:lx2,lx3) )/Rcubed(2:lx1,2:lx2,lx3) + &
+                             1/8._wp*(integrandend(1:lx1-1,1:lx2-1) + integrandend(2:lx1,1:lx2-1) + &
+                             integrandend(1:lx1-1,2:lx2) + integrandend(2:lx1,2:lx2) )/Rcubedend(2:lx1,2:lx2)
       end if
 
       integrandavgtop=0._wp
       if (mpi_cfg%myid2/=mpi_cfg%lid2-1) then
-      integrandavgtop(:,:)=1/8._wp*( integrand(1:lx1-1,lx2,1:lx3-1) + integrand(2:lx1,lx2,1:lx3-1) + &
-                           integrand(1:lx1-1,lx2,2:lx3) + integrand(2:lx1,lx2,2:lx3) )/Rcubed(2:lx1,lx2,2:lx3) + &
-                           1/8._wp*(integrandtop(1:lx1-1,1:lx3-1) + integrandtop(2:lx1,1:lx3-1) + &
-                           integrandtop(1:lx1-1,2:lx3) + integrandtop(2:lx1,2:lx3) )/Rcubedtop(2:lx1,2:lx3)
+!      if (.false.) then
+        integrandavgtop(:,:)=1/8._wp*( integrand(1:lx1-1,lx2,1:lx3-1) + integrand(2:lx1,lx2,1:lx3-1) + &
+                             integrand(1:lx1-1,lx2,2:lx3) + integrand(2:lx1,lx2,2:lx3) )/Rcubed(2:lx1,lx2,2:lx3) + &
+                             1/8._wp*(integrandtop(1:lx1-1,1:lx3-1) + integrandtop(2:lx1,1:lx3-1) + &
+                             integrandtop(1:lx1-1,2:lx3) + integrandtop(2:lx1,2:lx3) )/Rcubedtop(2:lx1,2:lx3)
       end if
 
       Btheta(ipoints)=sum(integrandavg*dV(2:lx1,2:lx2,2:lx3))+sum(integrandavgend*dVend(2:lx1,2:lx2))+ &
@@ -567,22 +623,35 @@ main : do while (t < cfg%tdur)
 
       integrandavgend=0._wp
       if (mpi_cfg%myid3/=mpi_cfg%lid3-1) then
-      integrandavgend(:,:)=1/8._wp*( integrand(1:lx1-1,1:lx2-1,lx3) + integrand(2:lx1,1:lx2-1,lx3) + &
-                           integrand(1:lx1-1,2:lx2,lx3) + integrand(2:lx1,2:lx2,lx3) )/Rcubed(2:lx1,2:lx2,lx3) + &
-                           1/8._wp*(integrandend(1:lx1-1,1:lx2-1) + integrandend(2:lx1,1:lx2-1) + &
-                           integrandend(1:lx1-1,2:lx2) + integrandend(2:lx1,2:lx2) )/Rcubedend(2:lx1,2:lx2)
+!      if (.false.) then
+        integrandavgend(:,:)=1/8._wp*( integrand(1:lx1-1,1:lx2-1,lx3) + integrand(2:lx1,1:lx2-1,lx3) + &
+                             integrand(1:lx1-1,2:lx2,lx3) + integrand(2:lx1,2:lx2,lx3) )/Rcubed(2:lx1,2:lx2,lx3) + &
+                             1/8._wp*(integrandend(1:lx1-1,1:lx2-1) + integrandend(2:lx1,1:lx2-1) + &
+                             integrandend(1:lx1-1,2:lx2) + integrandend(2:lx1,2:lx2) )/Rcubedend(2:lx1,2:lx2)
       end if
 
       integrandavgtop=0._wp
       if (mpi_cfg%myid2/=mpi_cfg%lid2-1) then
-      integrandavgtop(:,:)=1/8._wp*( integrand(1:lx1-1,lx2,1:lx3-1) + integrand(2:lx1,lx2,1:lx3-1) + &
-                           integrand(1:lx1-1,lx2,2:lx3) + integrand(2:lx1,lx2,2:lx3) )/Rcubed(2:lx1,lx2,2:lx3) + &
-                           1/8._wp*(integrandtop(1:lx1-1,1:lx3-1) + integrandtop(2:lx1,1:lx3-1) + &
-                           integrandtop(1:lx1-1,2:lx3) + integrandtop(2:lx1,2:lx3) )/Rcubedtop(2:lx1,2:lx3)
+!      if (.false.) then
+        integrandavgtop(:,:)=1/8._wp*( integrand(1:lx1-1,lx2,1:lx3-1) + integrand(2:lx1,lx2,1:lx3-1) + &
+                             integrand(1:lx1-1,lx2,2:lx3) + integrand(2:lx1,lx2,2:lx3) )/Rcubed(2:lx1,lx2,2:lx3) + &
+                             1/8._wp*(integrandtop(1:lx1-1,1:lx3-1) + integrandtop(2:lx1,1:lx3-1) + &
+                             integrandtop(1:lx1-1,2:lx3) + integrandtop(2:lx1,2:lx3) )/Rcubedtop(2:lx1,2:lx3)
       end if
 
       Bphi(ipoints)=sum(integrandavg*dV(2:lx1,2:lx2,2:lx3))+sum(integrandavgend*dVend(2:lx1,2:lx2))+ &
                         sum(integrandavgtop*dVtop(2:lx1,2:lx3))
+
+
+      if (ipoints==lpoints/2) then
+        write(filename,'(A12,i1,A4)') 'debug_output',mpi_cfg%myid,'.dat'
+        open(newunit=u,file=filename,status='replace',form='unformatted',access='stream',action='write')
+        write(u) integrandavg*dV(2:lx1,2:lx2,2:lx3)
+        write(u) integrandavgtop*dVtop(2:lx1,2:lx3)
+        close(u)
+        print*, 'Debug output done...'
+      end if
+
     else
       Rcubed(:,:,:)=Rx**2+Ry**2    !not really R**3 in 2D, just the denominator of the integrand
 
