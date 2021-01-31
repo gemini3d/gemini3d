@@ -4,12 +4,14 @@ include(cmake/policy.cmake)
 include(cmake/compiler_find.cmake)
 find_c_fortran()
 
+file(STRINGS cmake/gemini_version.txt PROJECT_VERSION REGEX "^([0-9]+\.[0-9]+\.[0-9]+)" LIMIT_INPUT 16 LENGTH_MAXIMUM 16 LIMIT_COUNT 1)
+
 project(gemini3d
   LANGUAGES C Fortran
   # Gemini3D is Fortran, but external libraries use C, and some find_package need C.
   DESCRIPTION "3-D ionospheric model"
   HOMEPAGE_URL https://github.com/gemini3d/gemini
-  VERSION 0.8.0)
+  VERSION ${PROJECT_VERSION})
 
 enable_testing()  # keep this so BUILD_TESTING=off doesn't remove all tests
 include(CTest) # for CDash
