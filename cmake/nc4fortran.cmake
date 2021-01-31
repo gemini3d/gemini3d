@@ -2,10 +2,6 @@ include(FetchContent)
 
 if(netcdf)
 
-  if(CMAKE_VERSION VERSION_LESS 3.19)
-    message(FATAL_ERROR "NetCDF4 requires CMake >= 3.19")
-  endif()
-
   set(nc4fortran_BUILD_TESTING false CACHE BOOL "h5fortran no test")
 
   find_package(nc4fortran CONFIG)

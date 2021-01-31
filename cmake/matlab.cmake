@@ -7,10 +7,6 @@ if(NOT Matlab_FOUND)
   return()
 endif()
 
-if(CMAKE_VERSION VERSION_LESS 3.19)
-  message(FATAL_ERROR "MatGemini requires CMake >= 3.19")
-endif()
-
 FetchContent_Declare(MATGEMINI
   GIT_REPOSITORY ${matgemini_git}
   GIT_TAG ${matgemini_tag})
