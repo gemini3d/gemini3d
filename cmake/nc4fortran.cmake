@@ -12,7 +12,13 @@ if(netcdf)
       GIT_REPOSITORY ${nc4fortran_git}
       GIT_TAG ${nc4fortran_tag})
 
-    FetchContent_MakeAvailable(NC4FORTRAN)
+    if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.14)
+      FetchContent_MakeAvailable(NC4FORTRAN)
+    elseif(NOT nc4fortran_POPULATED)
+      FetchContent_Populate(NC4FORTRAN)
+      add_subdirectory(${nc4fortran_SOURCE_DIR} ${nc4fortran_BINARY_DIR})
+    endif()
+
   endif()
 
   if(NOT TARGET NetCDF::NetCDF_Fortran)

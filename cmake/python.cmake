@@ -45,7 +45,13 @@ endif()
 FetchContent_Declare(PYGEMINI
   GIT_REPOSITORY ${pygemini_git}
   GIT_TAG ${pygemini_tag})
-FetchContent_MakeAvailable(PYGEMINI)
+
+if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.14)
+  FetchContent_MakeAvailable(PYGEMINI)
+elseif(NOT pygemini_POPULATED)
+  FetchContent_Populate(PYGEMINI)
+endif()
+
 
 if(NOT PYGEMINI_DIR)
   check_pygemini()
