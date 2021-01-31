@@ -13,7 +13,7 @@ add_subdirectory(vendor/nrl_msis)
 
 # --- HWM14
 if(hwm14)
-  include(${PROJECT_SOURCE_DIR}/cmake/hwm14.cmake)
+  add_subdirectory(vendor/nrl_hwm)
 endif()
 
 # --- just use one function from LAPACK95

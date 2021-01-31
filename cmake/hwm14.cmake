@@ -14,4 +14,8 @@ add_library(HWM14::HWM14 INTERFACE IMPORTED)
 set_target_properties(HWM14::HWM14 PROPERTIES
   INTERFACE_LINK_LIBRARIES hwm14)
 
-# TODO: check that .dat files are in PROJECT_BINARY_DIR
+foreach(f hwm123114.bin dwm07b104i.dat gd2qd.dat)
+  set(p ${hwm14_SOURCE_DIR}/src/hwm14/${f})
+  file(COPY ${p} DESTINATION ${PROJECT_BINARY_DIR})
+  install(FILES ${p} DESTINATION bin)
+endforeach()
