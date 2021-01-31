@@ -18,6 +18,7 @@ target_include_directories(msis2 INTERFACE ${CMAKE_CURRENT_BINARY_DIR}/include)
 
 # MSIS 2.0 needs this parm file.
 file(COPY ${msis2_SOURCE_DIR}/msis20.parm DESTINATION ${PROJECT_BINARY_DIR})
+install(FILES ${msis2_SOURCE_DIR}/msis20.parm DESTINATION bin)
 
 if(${PROJECT}_BUILD_TESTING)
   add_executable(msis2test ${msis2_SOURCE_DIR}/msis2.0_test.F90)
