@@ -13,7 +13,12 @@ if(CMAKE_Fortran_COMPILER_ID STREQUAL Intel)
   if(CMAKE_VERSION VERSION_LESS ${_min})
     message(WARNING "Intel compilers may not work properly with CMake < ${_min}")
   endif()
+elseif(CMAKE_Fortran_COMPILER_ID STREQUAL IntelLLVM)
+  set(_min 3.20)
 
+  if(CMAKE_VERSION VERSION_LESS ${_min})
+    message(WARNING "Intel LLVM compilers may not work properly with CMake < ${_min}")
+  endif()
 endif()
 
 # --- summary

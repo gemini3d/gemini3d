@@ -3,7 +3,7 @@
 
 "lapack": {"git": "https://github.com/scivision/lapack.git", "tag": "v3.9.0.2"},
 
-"h5fortran": {"git": "https://github.com/geospace-code/h5fortran.git", "tag": "v3.4.6"},
+"h5fortran": {"git": "https://github.com/geospace-code/h5fortran.git", "tag": "v3.4.8"},
 
 "hwm14": {"git": "https://github.com/space-physics/hwm14.git", "tag": "357d5c2"},
 "msis2": {"zip": "https://map.nrl.navy.mil/map/pub/nrl/NRLMSIS/NRLMSIS2.0/NRLMSIS2.0.zip", "sha1": "fa817dfee637ec2298a6ec882345d13d0b087a85"},
@@ -13,6 +13,6 @@
 "nc4fortran": {"git": "https://github.com/geospace-code/nc4fortran.git", "tag": "v1.1.2"},
 "scalapack": {"git": "https://github.com/scivision/scalapack.git", "tag": "v2.1.0.12"},
 
-"matgemini": {"git": "https://github.com/gemini3d/mat_gemini.git", "tag": "v4.1.1"},
+"matgemini": {"git": "https://github.com/gemini3d/mat_gemini.git", "tag": "v4.1.2"},
 "pygemini": {"git": "https://github.com/gemini3d/pygemini.git", "tag": "main"}
 }
