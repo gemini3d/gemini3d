@@ -45,7 +45,8 @@ target_compile_options(msis00 PRIVATE ${msis_flags})
 
 # --- build abstract MSIS interface
 
-add_library(msis_ifc OBJECT msis_interface.f90)
+add_library(msis_ifc msis_interface.f90)
+# msis_ifc not OBJECT to avoid linking issues on CMake 3.13
 target_link_libraries(msis_ifc PRIVATE msis00)
 target_include_directories(msis_ifc INTERFACE ${CMAKE_CURRENT_BINARY_DIR}/include)
 set_target_properties(msis_ifc PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include)

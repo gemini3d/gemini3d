@@ -1,9 +1,10 @@
 # make mumps usage precision-agnostic
 # this is needed because Mumps uses Fortran 95 syntax instead of Fortran 2003 syntax
 configure_file(mumps_ifc.in.f90 mumps_ifc.f90 @ONLY)
-add_library(mumps_interface OBJECT ${CMAKE_CURRENT_BINARY_DIR}/mumps_ifc.f90)
-target_link_libraries(mumps_interface PUBLIC MUMPS::MUMPS)
+add_library(mumps_interface ${CMAKE_CURRENT_BINARY_DIR}/mumps_ifc.f90)
+target_link_libraries(mumps_interface PRIVATE MUMPS::MUMPS)
 # must be PUBLIC or gemini.bin[.exe] link will fail with GCC
+# not OBJECT to avoid CMake 3.13 trouble
 
 add_library(PDEelliptic OBJECT PDEelliptic.f90 elliptic2d.f90 elliptic3d.f90)
 target_link_libraries(PDEelliptic PRIVATE const mpimod mumps_interface MPI::MPI_Fortran)

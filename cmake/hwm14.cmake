@@ -4,7 +4,13 @@ include(FetchContent)
 FetchContent_Declare(HWM14
   GIT_REPOSITORY ${hwm14_git}
   GIT_TAG ${hwm14_tag})
-FetchContent_MakeAvailable(HWM14)
+
+if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.14)
+  FetchContent_MakeAvailable(HWM14)
+elseif(NOT hwm14_POPULATED)
+  FetchContent_Populate(HWM14)
+  add_subdirectory(${hwm14_SOURCE_DIR} ${hwm14_BINARY_DIR})
+endif()
 
 add_library(HWM14::HWM14 INTERFACE IMPORTED)
 set_target_properties(HWM14::HWM14 PROPERTIES

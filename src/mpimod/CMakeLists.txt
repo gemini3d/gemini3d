@@ -8,9 +8,10 @@ endif()
 
 configure_file(mpimod.in.f90 mpimod.f90 @ONLY)
 
-add_library(mpimod OBJECT
+add_library(mpimod
   ${CMAKE_CURRENT_BINARY_DIR}/mpimod.f90
   mpisend.f90 mpirecv.f90 mpihalo.f90)
+# not OBJECT to avoid CMake 3.13 trouble
 target_link_libraries(mpimod PRIVATE autogrid const MPI::MPI_Fortran)
 if(NOT mpi)
   # the reason for this is the MPI-1 Fortran 77 linking in MUMPS
@@ -18,8 +19,9 @@ if(NOT mpi)
   target_link_libraries(mpimod PRIVATE MUMPS::mpiseq)
 endif()
 
+# candidate Fortran front end
 add_executable(mpi_cli get_mpi_count.f90)
-target_link_libraries(mpi_cli PRIVATE autogrid reader const pathlib timeutils config)
+target_link_libraries(mpi_cli PRIVATE autogrid reader const pathlib timeutils config h5fortran::h5fortran nc4fortran::nc4fortran)
 set_target_properties(mpi_cli PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
 
 if(${PROJECT_NAME}_BUILD_TESTING)

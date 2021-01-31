@@ -1,5 +1,4 @@
-cmake_minimum_required(VERSION 3.15)
-# 3.15 for robust Python finding
+cmake_minimum_required(VERSION 3.13)
 
 include(cmake/policy.cmake)
 include(cmake/compiler_find.cmake)

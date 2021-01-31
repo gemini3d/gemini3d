@@ -4,7 +4,14 @@ FetchContent_Declare(MSIS2
   URL ${msis2_zip}
   URL_HASH SHA1=${msis2_sha1}
   TLS_VERIFY ON)
-FetchContent_MakeAvailable(MSIS2)
+
+if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.14)
+  FetchContent_MakeAvailable(MSIS2)
+elseif(NOT msis2_POPULATED)
+  FetchContent_Populate(MSIS2)
+  add_subdirectory(${msis2_SOURCE_DIR} ${msis2_BINARY_DIR})
+endif()
+
 
 set(_s ${msis2_SOURCE_DIR})  # convenience
 
