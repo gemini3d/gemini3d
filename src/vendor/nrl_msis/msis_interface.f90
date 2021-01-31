@@ -25,7 +25,7 @@ contains
 
 subroutine msis_gtd7_r32(doy, UTsec, alt_km,  glat, glon, f107a, f107, Ap7, d, T, use_meters, sw25)
 
-external :: meters, gtd7, tselec
+use msise00_gemini, only : meters, gtd7, tselec
 
 class(*), intent(in) :: doy
 real(real32), intent(in) :: UTsec, alt_km, glat, glon, f107, f107a, Ap7(7)
@@ -62,7 +62,7 @@ end subroutine msis_gtd7_r32
 
 subroutine msis_gtd7_r64(doy, UTsec, alt_km, glat, glon, f107a, f107, Ap7, d, T, use_meters, sw25)
 !! adds casting to/from real32
-external :: meters, gtd7, tselec
+use msise00_gemini, only : meters, gtd7, tselec
 
 class(*), intent(in) :: doy
 real(real64), intent(in) :: UTsec, alt_km, glat, glon, f107, f107a, Ap7(7)

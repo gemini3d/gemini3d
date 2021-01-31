@@ -39,15 +39,18 @@ endif()
 
 # --- MSISE00 is always available
 
-add_library(msis00 msis00_gfortran.f)
+add_library(msis00mod msis00_gfortran.f msise00_data.f)
 # keep msis00 NOT an OBJECT to avoid having to link it explicitly everywhere
-target_compile_options(msis00 PRIVATE ${msis_flags})
+target_compile_options(msis00mod PRIVATE ${msis_flags})
+target_include_directories(msis00mod INTERFACE ${CMAKE_CURRENT_BINARY_DIR}/include)
+set_target_properties(msis00mod PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include)
+
 
 # --- build abstract MSIS interface
 
 add_library(msis_ifc msis_interface.f90)
 # msis_ifc not OBJECT to avoid linking issues on CMake 3.13
-target_link_libraries(msis_ifc PRIVATE msis00)
+target_link_libraries(msis_ifc PRIVATE msis00mod)
 target_include_directories(msis_ifc INTERFACE ${CMAKE_CURRENT_BINARY_DIR}/include)
 set_target_properties(msis_ifc PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include)
 
