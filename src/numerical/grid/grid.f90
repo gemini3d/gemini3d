@@ -69,10 +69,7 @@ integer :: i, ierr
 
 call get_simsize3(indatsize, lx1, lx2all, lx3all)
 
-if (lx1 < 1 .or. lx2all < 1 .or. lx3all < 1) then
-  write(stderr,*) 'ERROR: reading ' // indatsize
-  error stop 'grid_size_root: grid size must be strictly positive'
-endif
+if (lx1 < 1 .or. lx2all < 1 .or. lx3all < 1) error stop 'grid_size_root: ' // indatsize // ' grid size must be strictly positive'
 
 do i = 1,mpi_cfg%lid-1
   call mpi_send(lx1,1,MPI_INTEGER, i, tag%lx1,MPI_COMM_WORLD,ierr)

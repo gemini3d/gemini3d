@@ -60,12 +60,10 @@ integer :: i
 !> probably better than creating a temporary array
 do i = 2,size(A)
   if(A(i) - A(i-1) < tol_inc) then
-    write(stderr,*) 'ERROR:grid_check: ',name,' is not monotonic increasing'
-    error stop
+    error stop 'grid_check: ' // name // ' is not monotonic increasing'
   endif
   if(A(i) - A(i-1) > tol_inc_big) then
-    write(stderr,*) 'ERROR:grid_check: ',name,' has too large derivative'
-    error stop
+    error stop 'grid_check: ' // name // ' has too large derivative'
   endif
 end do
 
