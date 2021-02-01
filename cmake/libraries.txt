@@ -2,7 +2,7 @@ glow_git https://github.com/gemini3d/glow.git
 glow_tag v0.981.0.3
 
 lapack_git https://github.com/scivision/lapack.git
-lapack_tag v3.9.0.4
+lapack_tag v3.9.0.3
 
 h5fortran_git https://github.com/geospace-code/h5fortran.git
 h5fortran_tag v3.4.8.1
