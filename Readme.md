@@ -50,7 +50,7 @@ Requirements:
   * Gfortran (GCC)
   * Intel oneAPI HPC Toolkit (free) or Intel Parallel Studio XE
 * MPI: any of OpenMPI, IntelMPI, MPICH, MS-MPI. See [MPI help](./docs/Readme_mpi.md) if needed.
-* [CMake](https://cmake.org/download/)
+* [CMake](https://cmake.org/download/): if your CMake is too old, update by running `cmake -P cmake/install_cmake.cmake` or from Python `pip install cmake`
 
 1. get the Gemini code
 
@@ -62,22 +62,17 @@ Requirements:
 2. Build Gemini and run self-test
 
   ```sh
-  ctest -S setup.cmake -VV
+  cmake -B build
+
+  cmake --build build
   ```
 
----
+Non-default [build options](./docs/Readme_cmake.md) may be used.
 
 GEMINI has self tests that compare the output from a "known" test problem to a reference output.
-
-To use
-[non-default build options](./docs/Readme_cmake.md),
-or to help see what's going wrong if a build fails, do like:
+To help ensure successful simulations, run the self-tests:
 
 ```sh
-cmake -B build
-
-cmake --build build
-
 cd build
 
 ctest -V
