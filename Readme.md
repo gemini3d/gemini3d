@@ -50,7 +50,7 @@ Requirements:
   * Gfortran (GCC)
   * Intel oneAPI HPC Toolkit (free) or Intel Parallel Studio XE
 * MPI: any of OpenMPI, IntelMPI, MPICH, MS-MPI. See [MPI help](./docs/Readme_mpi.md) if needed.
-* [CMake](https://cmake.org/download/): if your CMake is too old, update by running `cmake -P cmake/install_cmake.cmake` or from Python `pip install cmake`
+* [CMake](https://cmake.org/download/): if your CMake is too old, update by running `cmake -P cmake/install_cmake.cmake` or `cmake -P cmake/build_cmake.cmake` or from Python `pip install cmake`
 
 1. get the Gemini code
 
