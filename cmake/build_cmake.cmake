@@ -13,17 +13,16 @@ if(NOT prefix)
   endif()
 endif()
 
-get_filename_component(prefix ${prefix} ABSOLUTE)
-
 set(ver 3.19.4)
 
-message(STATUS "installing CMake ${ver} to ${prefix}")
-
 set(host https://github.com/Kitware/CMake/releases/download/v${ver}/)
-set(stem cmake-3.19.4)
+set(stem cmake-${ver})
 set(name ${stem}.tar.gz)
 
+get_filename_component(prefix ${prefix} ABSOLUTE)
 set(path ${prefix}/${stem})
+
+message(STATUS "installing CMake ${ver} to ${path}")
 
 find_program(cmake NAMES cmake PATHS ${path} PATH_SUFFIXES bin NO_DEFAULT_PATH)
 if(cmake)
@@ -65,7 +64,7 @@ endif()
 file(MAKE_DIRECTORY ${path}/build)
 
 execute_process(
-  COMMAND ${CMAKE_COMMAND} .. -DBUILD_TESTING:BOOL=OFF -DCMAKE_BUILD_TYPE=Release -DCMAKE_USE_OPENSSL:BOOL=ON -DCMAKE_INSTALL_PREFIX:PATH=${prefix}
+  COMMAND ${CMAKE_COMMAND} .. -DBUILD_TESTING:BOOL=OFF -DCMAKE_BUILD_TYPE=Release -DCMAKE_USE_OPENSSL:BOOL=ON -DCMAKE_INSTALL_PREFIX:PATH=${path}
   RESULT_VARIABLE err
   WORKING_DIRECTORY ${path}/build)
 if(NOT err EQUAL 0)

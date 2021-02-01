@@ -15,14 +15,9 @@ if(NOT prefix)
   endif()
 endif()
 
-get_filename_component(prefix ${prefix} ABSOLUTE)
-
 set(ver 3.19.4)
 
-message(STATUS "installing CMake ${ver} to ${prefix}")
-
 set(host https://github.com/Kitware/CMake/releases/download/v${ver}/)
-
 
 if(APPLE)
   message(STATUS "please use Homebrew https://brew.sh to install cmake:  'brew install cmake'
@@ -49,10 +44,13 @@ elseif(WIN32)
 endif()
 
 if(NOT stem)
-  message(FATAL_ERROR "unknown CPU arch ${arch}")
+  message(FATAL_ERROR "unknown CPU arch ${arch}.  Try building CMake from source: 'cmake -P ${CMAKE_CURRENT_LIST_DIR}/build_cmake.cmake'")
 endif()
 
+get_filename_component(prefix ${prefix} ABSOLUTE)
 set(path ${prefix}/${stem})
+
+message(STATUS "installing CMake ${ver} to ${prefix}")
 
 find_program(cmake NAMES cmake PATHS ${path} PATH_SUFFIXES bin NO_DEFAULT_PATH)
 if(cmake)
