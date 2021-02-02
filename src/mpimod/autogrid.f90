@@ -50,6 +50,7 @@ else
       if (i*j < N) cycle
       if (modulo(lx2all, i) /= 0) cycle
       if (modulo(lx3all, j) /= 0) cycle
+      if (lx2all / i == 1 .or. lx3all / j == 1) cycle
       if (abs(i-j) > abs(lid2-lid3)) cycle
 
       N = i*j
@@ -58,7 +59,11 @@ else
       ! print *, i,j
     enddo
   enddo
-  if (N==0) error stop "grid_auto: no factorization found for MPI image partition"
+  if (N==0) then
+    write(stderr,'(A,3I4)') "grid_auto: no non-singular factorization found for MPI image partition. lx2all,lx3all,lid: ",&
+      lx2all,lx3all,lid
+    error stop
+  endif
 end if
 
 call check_partition(lx2all, lx3all, lid, lid2, lid3)
@@ -66,10 +71,12 @@ call check_partition(lx2all, lx3all, lid, lid2, lid3)
 end subroutine grid_auto
 
 
-pure subroutine check_partition(lx2all, lx3all, lid, lid2, lid3)
+subroutine check_partition(lx2all, lx3all, lid, lid2, lid3)
 !! checks grid partitioning for MPI
 integer, intent(in) :: lx2all,lx3all,lid, lid2, lid3
+
 character(6) :: s1,s2
+integer :: lx2, lx3
 
 if (lid < 1 .or. lid2 < 1 .or. lid3 < 1) error stop "MPI image count must be positive"
 
@@ -79,11 +86,13 @@ if (lid2*lid3 /= lid) then
   error stop "autogrid:check_partition MPI image count " // s1 // " not a factor of x2*x3 " // s2
 endif
 
-if (lx2all > 1 .and. lx3all > 1 .and. lid > 4) then
-  if(lid2 == 1 .or. lid3 == 1) then
-    write(s1, '(I6)') lid2
-    write(s2, '(I6)') lid3
-    if(lid2 == 1 .or. lid3 == 1) error stop "3-D grid and > 4 CPU cores cannot have singular MPI axis: x2 " // s1 // " x3 " // s2
+if (lx2all > 1 .and. lx3all > 1) then
+  lx2 = lx2all / lid2
+  lx3 = lx3all / lid3
+  if(lx2 == 1 .or. lx3 == 1) then
+    write(stderr,'(A,/,A,8I4)') "ERROR: 3-D grid cannot have singular MPI axis:","lx2,lx3,lx2all,lx3all,lid2,lid3,lid: ", &
+      lx2, lx3,lx2all,lx3all,lid2,lid3,lid
+    error stop
   endif
 endif
 
@@ -198,6 +207,7 @@ do i = M,2,-1
     f3 = max_gcd(lx3, j)
     if (M < f2 * f3) cycle
     if (f2 * f3 < max_gcd2) cycle
+    if (lx2 / i == 1 .or. lx3 / j == 1) cycle
     if (abs(f2-f3) > abs(t2-t3)) cycle
 
     t2 = f2

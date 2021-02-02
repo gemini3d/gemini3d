@@ -144,12 +144,14 @@ real(wp), dimension(:,:,:), allocatable :: mpirecvbuf
 
 !DETERMINE NUMBER OF SLABS AND CORRESPONDING SIZE FOR EACH WORKER
 !NOTE THAT WE WILL ASSUME THAT THE GRID SIZE IS DIVISIBLE BY NUMBER OF WORKERS AS THIS HAS BEEN CHECKED A FEW LINES BELOW
-x%lx1=lx1; x%lx2all=lx2all; x%lx3all=lx3all;
+x%lx1 = lx1
+x%lx2all = lx2all
+x%lx3all = lx3all
 
 
 !> ADJUST THE SIZES OF THE VARIABLES IF LX3ALL==1, SO THAT THE ALLOCATIONS ARE THE CORRECT SIZE
 if (lx3all==1) then
-  print *, '2D run: **SWAP** x2 and x3 dims'
+  print *, 'read_grid_root: 2D run: **SWAP** x2 and x3 dims'
   lx3all=lx2all; x%lx3all=lx2all;
   lx2=1
   lx2all=1; x%lx2all=1;
@@ -157,21 +159,25 @@ if (lx3all==1) then
   !! use total number of processes since we only divide in one direction here...
   flagswap=1
 else
+  !! non-swapped axes
   if(lx2all==1) then
-    print *, '2D run: do not swap x2 and x3 dims.'
-    lx2=1
-    lx3=lx3all/mpi_cfg%lid
+    print *, 'read_grid_root: 2D run: do not swap x2 and x3 dims.'
+    lx2 = 1
+    lx3 = lx3all/mpi_cfg%lid
   else
-    print *, '3D run'
-    lx2=lx2all/mpi_cfg%lid2
+    print *, 'read_grid_root: 3D run'
     !! should divide evenly if generated from process_grid
-    lx3=lx3all/mpi_cfg%lid3
+    lx2 = lx2all/mpi_cfg%lid2
+    lx3 = lx3all/mpi_cfg%lid3
   endif
   flagswap=0
 end if
 x%lx2=lx2; x%lx3=lx3
 print '(A,3I6)', 'Grid slab size:  ',lx1,lx2,lx3
 
+if(lx2all > 1 .and. lx3all > 1) then
+  if(lx2 == 1 .or. lx3 == 1) error stop "read_grid_root: 3D grids cannot be partitioned with a single MPI image on an axis"
+endif
 
 !> COMMUNICATE THE GRID SIZE TO THE WORKERS SO THAT THEY CAN ALLOCATE SPACE
 ierr=0
@@ -251,7 +257,7 @@ allocate(x%er(1:lx1,1:lx2,1:lx3,1:3),x%etheta(1:lx1,1:lx2,1:lx3,1:3),x%ephi(1:lx
 
 !NOW WE NEED TO READ IN THE FULL GRID DATA AND PUT IT INTO THE STRUCTURE.
 !IF WE HAVE DONE ANY DIMENSION SWAPPING HERE WE NEED TO TAKE THAT INTO ACCOUNT IN THE VARIABLES THAT ARE BEING READ IN
-print *, 'Starting grid input from file: ',indatgrid
+print *, 'read_grid_root: Starting grid input from file: ',indatgrid
 
 allocate(g1all(lx1,lx2all,lx3all), g2all(lx1,lx2all,lx3all), g3all(lx1,lx2all,lx3all))
 !allocate(altall(lx1,lx2all,lx3all), glatall(lx1,lx2all,lx3all), glonall(lx1,lx2all,lx3all))
@@ -271,7 +277,7 @@ else
   !! Note there that the fortran arrays are the correct size, but the input data are not!!!
   !! This means tmp variable and permutes...
 
-  print *, '2D grid: **PERMUTE** x2 and x3 dimensions'
+  print *, 'read_grid_root: 2D grid: **PERMUTE** x2 and x3 dimensions'
 end if
 
 call get_grid3(indatgrid,flagswap,x,g1all,g2all,g3all,glatall,Incall,nullptsall,&
@@ -282,7 +288,7 @@ allocate(g1(1:lx1,1:lx2,1:lx3),g2(1:lx1,1:lx2,1:lx3),g3(1:lx1,1:lx2,1:lx3))
 
 
 !! SEND FULL X1 AND X2 GRIDS TO EACH WORKER (ONLY X3-DIM. IS INVOLVED IN THE MPI
-print*, 'Exchanging grid spacings...'
+print*, 'read_grid_root: Exchanging grid spacings...'
 do iid=1,mpi_cfg%lid-1
   call mpi_send(x%x1,lx1+4,mpi_realprec,iid,tag%x1,MPI_COMM_WORLD,ierr)
   !if (ierr/=0) error stop 'failed mpi_send x1'
@@ -303,24 +309,28 @@ end do
 if (ierr/=0) error stop 'failed mpi_send x grid'
 
 !! NOW SEND THE INFO THAT DEPENDS ON X3 SLAB SIZE
-print*, 'Computing subdomain spacing...'
+print*, 'read_grid_root: Computing subdomain spacing...'
 call bcast_send1D_3(x%x3all,tag%x3,x%x3)
-x%dx3=x%x3(0:lx3+2)-x%x3(-1:lx3+1)     !computing these avoids extra message passing (could be done for other coordinates, as well)
+x%dx3 = x%x3(0:lx3+2)-x%x3(-1:lx3+1)
+!! computing these avoids extra message passing (could be done for other coordinates, as well)
 x%x3i(1:lx3+1)=0.5*(x%x3(0:lx3)+x%x3(1:lx3+1))
 x%dx3i=x%x3i(2:lx3+1)-x%x3i(1:lx3)
 
 
 call bcast_send1D_2(x%x2all,tag%x2,x%x2)
-x%dx2=x%x2(0:lx2+2)-x%x2(-1:lx2+1)     !computing these avoids extra message passing (could be done for other coordinates
-x%x2i(1:lx2+1)=0.5*(x%x2(0:lx2)+x%x2(1:lx2+1))
+x%dx2 = x%x2(0:lx2+2)-x%x2(-1:lx2+1)
+!! computing these avoids extra message passing (could be done for other coordinates
+x%x2i(1:lx2+1) = 0.5*(x%x2(0:lx2)+x%x2(1:lx2+1))
 x%dx2i=x%x2i(2:lx2+1)-x%x2i(1:lx2)
 
 
-print*, 'Dealing with metric factors...'
+print*, 'read_grid_root: Dealing with metric factors...'
 allocate(mpisendbuf(-1:lx1+2,-1:lx2all+2,-1:lx3all+2),mpirecvbuf(-1:lx1+2,-1:lx2+2,-1:lx3+2))
 
-mpisendbuf=x%h1all    !since metric factors are pointers they are not gauranteed to be contiguous in memory so pack them into a buffer that is...
-call bcast_send3D_ghost(mpisendbuf,tag%h1,mpirecvbuf)    !special broadcast subroutine to handle 3D arrays with ghost cells
+mpisendbuf=x%h1all
+!! since metric factors are pointers they are not gauranteed to be contiguous in memory so pack them into a buffer that is...
+call bcast_send3D_ghost(mpisendbuf,tag%h1,mpirecvbuf)
+!! special broadcast subroutine to handle 3D arrays with ghost cells
 x%h1=mpirecvbuf       !store roots slab of metric factors in its grid structure
 mpisendbuf=x%h2all
 call bcast_send3D_ghost(mpisendbuf,tag%h2,mpirecvbuf)
@@ -331,7 +341,8 @@ x%h3=mpirecvbuf
 
 deallocate(mpisendbuf,mpirecvbuf)    !we need different sized buffers below
 
-call bcast_send(x%h1x1iall,tag%h1,x%h1x1i)    !do the weird sizes here (ie. lx1+1) give issues with MPI?  probably...  No because bcast reads the size off of the variable...
+call bcast_send(x%h1x1iall,tag%h1,x%h1x1i)
+!! do the weird sizes here (ie. lx1+1) give issues with MPI?  probably...  No because bcast reads the size off of the variable...
 call bcast_send(x%h2x1iall,tag%h2,x%h2x1i)
 call bcast_send(x%h3x1iall,tag%h3,x%h3x1i)
 
@@ -344,7 +355,7 @@ call bcast_send3D_x3i(x%h2x3iall,tag%h2,x%h2x3i)
 call bcast_send3D_x3i(x%h3x3iall,tag%h3,x%h3x3i)
 
 
-print *, 'Sending gravity, etc...'
+print *, 'read_grid_root: Sending gravity, etc...'
 call bcast_send(g1all,tag%h1,g1)
 call bcast_send(g2all,tag%h2,g2)
 call bcast_send(g3all,tag%h3,g3)
@@ -357,8 +368,9 @@ call bcast_send(x%Bmagall,tag%Bmag,x%Bmag)
 call bcast_send(Incall,tag%inc,x%I)
 call bcast_send(nullptsall,tag%null,x%nullpts)
 
-print *, 'Now sending unit vectors...'
-allocate(mpisendbuf(1:lx1,1:lx2all,1:lx3all),mpirecvbuf(1:lx1,1:lx2,1:lx3))    !why is buffering used/needed here???
+print *, 'read_grid_root: Now sending unit vectors...'
+allocate(mpisendbuf(1:lx1,1:lx2all,1:lx3all),mpirecvbuf(1:lx1,1:lx2,1:lx3))
+!! why is buffering used/needed here???
 do icomp=1,3
   mpisendbuf=e1all(:,:,:,icomp)
   call bcast_send(mpisendbuf,tag%eunit1,mpirecvbuf)
@@ -394,10 +406,10 @@ deallocate(mpisendbuf,mpirecvbuf)
 call bcast_send(rall,tag%r,x%r)
 call bcast_send(thetaall,tag%theta,x%theta)
 call bcast_send(phiall,tag%phi,x%phi)
-print *,  'Done sending slabbed variables to workers...'
+print *,  'read_grid_root: Done sending slabbed variables to workers...'
 
 
-!COUNT THE NUMBER OF NULL GRID POINTS AND GENERATE A LIST OF NULL INDICES FOR LATER USE
+!> COUNT THE NUMBER OF NULL GRID POINTS AND GENERATE A LIST OF NULL INDICES FOR LATER USE
 x%lnull=0;
 do ix3=1,lx3
   do ix2=1,lx2
@@ -421,7 +433,7 @@ do ix3=1,lx3
     end do
   end do
 end do
-print *, 'Done computing null grid points...  Process:  ',mpi_cfg%myid,' has:  ',x%lnull
+print *, 'read_grid_root: Done computing null grid points...  Process:  ',mpi_cfg%myid,' has:  ',x%lnull
 
 
 !COMPUTE DIFFERENTIAL DISTANCES ALONG EACH DIRECTION (TO BE USED IN TIME STEP DETERMINATION...
@@ -472,8 +484,9 @@ end block
 !    end if
 !
 
-!DEALLOCATE ANY FULL GRID VARIABLES THAT ARE NO LONGER NEEDED
-deallocate(g1all,g2all,g3all,glatall,Incall,nullptsall,rall,thetaall,phiall)   !altall and Bmagall now in x structure
+!> DEALLOCATE ANY FULL GRID VARIABLES THAT ARE NO LONGER NEEDED
+deallocate(g1all,g2all,g3all,glatall,Incall,nullptsall,rall,thetaall,phiall)
+!! altall and Bmagall now in x structure
 
 end subroutine read_grid_root
 
