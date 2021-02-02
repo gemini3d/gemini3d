@@ -266,7 +266,7 @@ end if
 
 
 !> get "end" and "top" pieces for the grid so integrals are not missing any differential volumes
-!   The halo_end routine will pass my "begin" and "bottom" pieces of dV to my neighbors on the process grid
+!   The halo_end routine will pass my "begin" and "bottom" pieces of dV to neighbors on the process grid
 call halo_end(dV,dVend,dVtop,tag%dV)
 !! need to define the differential volume on the edge of this x3-slab in
 
@@ -617,9 +617,10 @@ main : do while (t < cfg%tdur)
       integrandend(:,:)=mu0/4/pi*(Jxend*Ryend-Jyend*Rxend)
       integrandtop(:,:)=mu0/4/pi*(Jxtop*Rytop-Jytop*Rxtop)
       integrandavg(:,:,:)=1/8._wp*( integrand(1:lx1-1,1:lx2-1,1:lx3-1) + integrand(2:lx1,1:lx2-1,1:lx3-1) + &
-                           integrand(1:lx1-1,2:lx2,1:lx3-1) + integrand(2:lx1,2:lx2,1:lx3-1) + &
-                           integrand(1:lx1-1,1:lx2-1,2:lx3) + integrand(2:lx1,1:lx2-1,2:lx3) + &
-                           integrand(1:lx1-1,2:lx2,2:lx3) + integrand(2:lx1,2:lx2,2:lx3) )/Rcubed(2:lx1,2:lx2,2:lx3)
+                                    integrand(1:lx1-1,2:lx2,1:lx3-1) + integrand(2:lx1,2:lx2,1:lx3-1) + &
+                                    integrand(1:lx1-1,1:lx2-1,2:lx3) + integrand(2:lx1,1:lx2-1,2:lx3) + &
+                                    integrand(1:lx1-1,2:lx2,2:lx3)   + integrand(2:lx1,2:lx2,2:lx3) )/ &
+                                   Rcubed(2:lx1,2:lx2,2:lx3)
 
       integrandavgend=0._wp
       if (mpi_cfg%myid3/=mpi_cfg%lid3-1) then
@@ -630,24 +631,41 @@ main : do while (t < cfg%tdur)
                              integrandend(1:lx1-1,2:lx2) + integrandend(2:lx1,2:lx2) )/Rcubedend(2:lx1,2:lx2)
       end if
 
+! FIXME: average denominator is already in Rcubedtop, etc. so do a single division...
       integrandavgtop=0._wp
       if (mpi_cfg%myid2/=mpi_cfg%lid2-1) then
 !      if (.false.) then
         integrandavgtop(:,:)=1/8._wp*( integrand(1:lx1-1,lx2,1:lx3-1) + integrand(2:lx1,lx2,1:lx3-1) + &
-                             integrand(1:lx1-1,lx2,2:lx3) + integrand(2:lx1,lx2,2:lx3) )/Rcubed(2:lx1,lx2,2:lx3) + &
-                             1/8._wp*(integrandtop(1:lx1-1,1:lx3-1) + integrandtop(2:lx1,1:lx3-1) + &
-                             integrandtop(1:lx1-1,2:lx3) + integrandtop(2:lx1,2:lx3) )/Rcubedtop(2:lx1,2:lx3)
+                                       integrand(1:lx1-1,lx2,2:lx3)   + integrand(2:lx1,lx2,2:lx3) )/ &
+                                      Rcubed(2:lx1,lx2,2:lx3) + &
+                             1/8._wp*( integrandtop(1:lx1-1,1:lx3-1) + integrandtop(2:lx1,1:lx3-1) + &
+                                       integrandtop(1:lx1-1,2:lx3)   + integrandtop(2:lx1,2:lx3) )/ &
+                                      Rcubedtop(2:lx1,2:lx3)
       end if
 
       Bphi(ipoints)=sum(integrandavg*dV(2:lx1,2:lx2,2:lx3))+sum(integrandavgend*dVend(2:lx1,2:lx2))+ &
                         sum(integrandavgtop*dVtop(2:lx1,2:lx3))
 
 
-      if (ipoints==lpoints/2) then
+      if (ipoints==1) then
         write(filename,'(A12,i1,A4)') 'debug_output',mpi_cfg%myid,'.dat'
         open(newunit=u,file=filename,status='replace',form='unformatted',access='stream',action='write')
-        write(u) integrandavg*dV(2:lx1,2:lx2,2:lx3)
-        write(u) integrandavgtop*dVtop(2:lx1,2:lx3)
+!        write(u) integrandavg*dV(2:lx1,2:lx2,2:lx3)    !bad
+!        write(u) integrandavgtop*dVtop(2:lx1,2:lx3)    !bad
+!        write(u) dV(2:lx1,2:lx2,2:lx3)
+!        write(u) dVtop(2:lx1,2:lx3)
+        write(u) integrandavg    !bad
+!        write(u) integrandavgtop    !bad
+!        write(u) Rmag(2:lx1,2:lx2,2:lx3)
+!        write(u) Rmagtop(2:lx1,2:lx3)
+!        write(u) Rcubed(2:lx1,2:lx2,2:lx3)
+!        write(u) Rcubedtop(2:lx1,2:lx3)
+!        write(u) integrand     !seems likely okay?
+!        write(u) Jx
+!        write(u) Rx
+!        write(u) Ry
+!        write(u) Rz
+!        write(u) Jy
         close(u)
         print*, 'Debug output done...'
       end if
