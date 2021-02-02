@@ -86,7 +86,7 @@ real(wp), private :: UTsecnext
 real(wp), dimension(:,:,:), allocatable, protected :: dnOinow,dnN2inow,dnO2inow,dTninow,dvn1inow,dvn2inow,dvn3inow
 
 
-!SPACE TO STORE PROJECTION FACTORS
+!SPACE TO STORE PROJECTION FACTORS (rotate from magnetic UEN to curv. dipole...)
 real(wp), dimension(:,:,:), allocatable, private :: proj_erhop_e1,proj_ezp_e1,proj_erhop_e2,proj_ezp_e2,proj_erhop_e3,proj_ezp_e3    !these projections are used in the axisymmetric interpolation
 real(wp), dimension(:,:,:), allocatable, private :: proj_eyp_e1,proj_eyp_e2,proj_eyp_e3    !these are for Cartesian projections
 real(wp), dimension(:,:,:), allocatable, private :: proj_exp_e1,proj_exp_e2,proj_exp_e3

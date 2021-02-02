@@ -75,8 +75,11 @@ do ix3=1,lx3
 end do
 
 
-!> Could be replaced with HWM at some point, but for now make these zero
+!> if HWM selected call it similar to MSIS above, if not zero all out (default)
 vn1base = 0; vn2base = 0; vn3base = 0
+
+
+!> need to rotate from HWM basis (appears to be geographic/geodetic) into curv. dipole (e1,e2,e3)
 
 
 !> Update current state with new background and existing perturbations
