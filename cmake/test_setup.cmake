@@ -86,7 +86,7 @@ else(PYGEMINI_DIR)
   endif()
 
   if(mpi)
-    set(_cmd $<TARGET_FILE:mpi_cli> ${_outdir} ${MPIEXEC_MAX_NUMPROCS} $<TARGET_FILE:gemini.bin> ${MPIEXEC_EXECUTABLE})
+    set(_cmd $<TARGET_FILE:gemini3d.run> ${_outdir} ${MPIEXEC_MAX_NUMPROCS} $<TARGET_FILE:gemini.bin> ${MPIEXEC_EXECUTABLE})
   else()
     set(_cmd $<TARGET_FILE:gemini.bin> ${_outdir})
   endif(mpi)

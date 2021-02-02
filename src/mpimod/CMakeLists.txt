@@ -20,9 +20,9 @@ if(NOT mpi)
 endif()
 
 # candidate Fortran front end
-add_executable(mpi_cli get_mpi_count.f90)
-target_link_libraries(mpi_cli PRIVATE autogrid reader const pathlib timeutils config h5fortran::h5fortran nc4fortran::nc4fortran)
-set_target_properties(mpi_cli PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
+add_executable(gemini3d.run get_mpi_count.f90)
+target_link_libraries(gemini3d.run PRIVATE autogrid reader const pathlib timeutils config h5fortran::h5fortran nc4fortran::nc4fortran)
+set_target_properties(gemini3d.run PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
 
 if(${PROJECT_NAME}_BUILD_TESTING)
 

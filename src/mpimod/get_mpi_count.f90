@@ -36,8 +36,8 @@ lid = max_mpi(lx2all, lx3all, Ncpu)
 call grid_auto(lx2all, lx3all, lid, lid2, lid3)
 
 if(argc < 3) then
-  write(buf, '(I6,A)') lid, ' CPU cores would be used. Give path to gemini.bin to run simulation'
-  stop trim(buf)
+  print '(A,I0,A,I0,A,I0)', 'process grid: ', lid, ' = ', lid2, ' x ', lid3
+  stop 'Give path to gemini.bin to run simulation'
 end if
 
 call get_command_argument(3, buf)
@@ -70,7 +70,7 @@ cmd = trim(buf)
 print *, cmd
 call execute_command_line(cmd, exitstat=i)
 
-if(i/=0) error stop 'gemini.bin run failure'
+if (i/=0) error stop 'gemini.bin run failure'
 
 
 contains
