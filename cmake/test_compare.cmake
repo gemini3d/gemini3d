@@ -86,8 +86,7 @@ if(PYGEMINI_DIR)
   python_compare(${outdir} ${refdir} ${testname})
 endif(PYGEMINI_DIR)
 
-if(NOT python AND NOT matlab)
-  fortran_compare(${outdir} ${refdir} ${testname})
-endif()
+# we always test this as it's sub-second runtime
+fortran_compare(${outdir} ${refdir} ${testname})
 
 endfunction(compare_gemini_output)
