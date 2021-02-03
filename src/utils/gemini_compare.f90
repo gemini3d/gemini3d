@@ -3,7 +3,7 @@ program gemini_compare
 !! compares two directories that should have identical data
 !! e.g. for CI
 
-use read_plasma_h5, only : read_plasma_hdf5
+use compare_h5, only : check_plasma_hdf5
 use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
 
 implicit none (type, external)
@@ -11,7 +11,7 @@ implicit none (type, external)
 integer :: i, lx1, lx2all, lx3all, argc
 character(1000) :: buf
 character(:), allocatable :: new_path, ref_path
-logical :: exists
+logical :: exists, all_ok
 
 argc = command_argument_count()
 if(argc /= 2) error stop 'specify top-level simulation path and reference path'
@@ -22,8 +22,11 @@ new_path = trim(buf)
 call get_command_argument(2, buf)
 ref_path = trim(buf)
 
-call read_plasma_hdf5(new_path, ref_path)
+call check_plasma_hdf5(new_path, ref_path, all_ok)
 
-print *, "OK: gemini3d.compare: ", new_path, " == ", ref_path
+
+if (all_ok) stop "OK: gemini3d.compare: " // new_path // " == " // ref_path
+
+error stop "gemini3d.compare FAIL " // new_path // " != " // ref_path
 
 end program

@@ -53,7 +53,8 @@ if(hdf5)
 
   set_tests_properties(gemini:compare:hdf5:${testname} PROPERTIES
   TIMEOUT 60
-  FIXTURES_REQUIRED hdf5:${testname}
+  # FIXTURES_REQUIRED hdf5:${testname}
+  DEPENDS gemini:hdf5:${testname}  # this allows rerunning compare test without simulation
   REQUIRED_FILES "${outdir}/inputs/config.nml;${refdir}/inputs/config.nml")
 
 endif(hdf5)
@@ -65,7 +66,8 @@ if(netcdf)
 
   set_tests_properties(gemini:compare:netcdf:${testname} PROPERTIES
   TIMEOUT 60
-  FIXTURES_REQUIRED netcdf:${testname}
+  # FIXTURES_REQUIRED netcdf:${testname}
+  DEPENDS gemini:netcdf:${testname}  # this allows rerunning compare test without simulation
   REQUIRED_FILES "${outdir}/inputs/config.nml;${refdir}/inputs/config.nml")
 
 endif(netcdf)
