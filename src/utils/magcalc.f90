@@ -77,8 +77,8 @@ integer :: lid2in,lid3in
 
 !! REGULATOR FOR 1/R^3
 !real(wp), parameter :: R3min=1d11     !works well for 192x192 in situ
-real(wp), parameter :: R3min=1d9
-real(wp), parameter :: Rmin=5d3
+!real(wp), parameter :: R3min=1d9
+!real(wp), parameter :: Rmin=5d3
 
 integer :: ierr
 
@@ -271,20 +271,6 @@ call halo_end(dV,dVend,dVtop,tag%dV)
 !! need to define the differential volume on the edge of this x3-slab in
 
 
-!        write(filename,'(A12,i1,A4)') 'debug_output',mpi_cfg%myid,'.dat'
-!        open(newunit=u,file=filename,status='replace',form='unformatted',access='stream',action='write')
-!        write(u) dV
-!        close(u)
-
-!print*, mpi_cfg%myid,' Any problems with dV?  ', any(isnan(dV)),any(isnan(dVend)),any(isnan(dVtop))
-!print*, mpi_cfg%myid,'  failures of generate positive dV:  ',any(dV(2:lx1,2:lx2,2:lx3)<=0),any(dVend(2:lx1,2:lx2)<=0), &
-!                         any(dVtop(2:lx1,2:lx3)<=0)
-!print*, mpi_cfg%myid,'  Min/max edge vals:  ',minval(dVend(2:lx1,2:lx2)),maxval(dVend(2:lx1,2:lx2)), &
-!                         minval(dVtop(2:lx1,2:lx3)),maxval(dVend(2:lx1,2:lx3))
-
-
-!print*, myid2,myid3,'--> dV vals.',minval(dV),maxval(dV),minval(dVend),maxval(dVend),minval(dVtop),maxval(dVtop)
-
 !> Compute projections needed to rotate current density components into magnetic coordinates
 allocate(proj_e1er(lx1,lx2,lx3),proj_e2er(lx1,lx2,lx3),proj_e3er(lx1,lx2,lx3))
 allocate(proj_e1etheta(lx1,lx2,lx3),proj_e2etheta(lx1,lx2,lx3),proj_e3etheta(lx1,lx2,lx3))
@@ -413,39 +399,6 @@ main : do while (t < cfg%tdur)
   call halo_end(Jz,Jzend,Jztop,tag%Jz)
 
 
-
-!!    if (ipoints==1) then
-!        write(filename,'(A12,i1,A4)') 'debug_output',mpi_cfg%myid,'.dat'
-!        open(newunit=u,file=filename,status='replace',form='unformatted',access='stream',action='write')
-!        write(u) Jx
-!        close(u)
-!!    end if
-
-!  if (mpi_cfg%myid==2) then
-!    open(newunit=u,file='debug_output2.dat',status='replace',form='unformatted',access='stream',action='write')
-!    write(u) Jx,Jy,Jz
-!    write(u) Jxend,Jyend,Jzend
-!    write(u) Jxtop,Jytop,Jztop
-!    close(u)
-!  end if
-!  if (mpi_cfg%myid==3) then
-!    print*, shape(Jx),shape(Jxend),shape(Jxtop)
-!    print*, shape(Jy),shape(Jyend),shape(Jytop)
-!    print*, shape(Jz),shape(Jzend),shape(Jztop)
-!    open(newunit=u,file='debug_output3.dat',status='replace',form='unformatted',access='stream',action='write')
-!    write(u) Jx,Jy,Jz
-!    write(u) Jxend,Jyend,Jzend
-!    write(u) Jxtop,Jytop,Jztop
-!    close(u)
-!  end if
-
-!  print *, mpi_cfg%myid2,mpi_cfg%myid3,'  --> Min/max values of end current',minval(Jxend),maxval(Jxend), &
-!                                               minval(Jyend),maxval(Jyend), &
-!                                               minval(Jzend),maxval(Jzend)
-!  print *, mpi_cfg%myid2,mpi_cfg%myid3,'  --> Min/max values of top current',minval(Jxtop),maxval(Jxtop), &
-!                                               minval(Jytop),maxval(Jytop), &
-!                                               minval(Jztop),maxval(Jztop)
-
   !COMPUTE MAGNETIC FIELDS
   do ipoints=1,lpoints
     if (mpi_cfg%myid == 0 .and. mod(ipoints,100)==0 .and. debug) then
@@ -512,41 +465,10 @@ main : do while (t < cfg%tdur)
     end if
 
 
-!    if (ipoints==1) then
-!        write(filename,'(A12,i1,A4)') 'debug_output',mpi_cfg%myid,'.dat'
-!        open(newunit=u,file=filename,status='replace',form='unformatted',access='stream',action='write')
-!        write(u) Rx,Ry,Rz
-!        close(u)
-!    end if
-
-
-!    if (mpi_cfg%myid==2) then
-!      open(newunit=u,file='debug_outputR2.dat',status='replace',form='unformatted',access='stream',action='write')
-!      write(u) Rmag
-!      write(u) Rmagend
-!      write(u) Rmagtop
-!      close(u)
-!    end if
-!    if (mpi_cfg%myid==3) then
-!      open(newunit=u,file='debug_outputR3.dat',status='replace',form='unformatted',access='stream',action='write')
-!      write(u) Rmag
-!      write(u) Rmagend
-!      write(u) Rmagtop
-!      close(u)
-!    end if
-
-
     if (flag2D/=1) then
-!      Rcubed(:,:,:)=(Rx**2 + Ry**2 + Rz**2)**(3._wp/2)   !this really is R**3, this has issues with aliasing and div by zero
-!      Rcubed(:,:,:)=(Rx**2 + Ry**2 + Rz**2 + Rmin**2)**(3._wp/2)   !this really is R**3, this addresses aliasing but causes underestimate in the value of the computed magnetic fields.  
       Rcubed=Rmag**3
       Rcubedend=Rmagend**3
       Rcubedtop=Rmagtop**3
-
-
-      ! FIXME: to be computed from Rmagend values...
-      !call halo_end(Rcubed,Rcubedend,Rcubedtop,tag%Rcubed)
-      
 
 
       !! FIXME: MAY BE MISSING A CORNER POINT HERE???  NO I THINK IT'S OKAY BASED ON SOME SQUARES I DREW, haha...
@@ -561,7 +483,6 @@ main : do while (t < cfg%tdur)
 
       integrandavgend=0._wp
       if (mpi_cfg%myid3/=mpi_cfg%lid3-1) then
-!      if (.false.) then
         integrandavgend(:,:)=1/8._wp*( integrand(1:lx1-1,1:lx2-1,lx3) + integrand(2:lx1,1:lx2-1,lx3) + &
                              integrand(1:lx1-1,2:lx2,lx3) + integrand(2:lx1,2:lx2,lx3) + &
                              integrandend(1:lx1-1,1:lx2-1) + integrandend(2:lx1,1:lx2-1) + &
@@ -570,7 +491,6 @@ main : do while (t < cfg%tdur)
 
       integrandavgtop=0._wp
       if (mpi_cfg%myid2/=mpi_cfg%lid2-1) then
-!      if (.false.) then
         integrandavgtop(:,:)=1/8._wp*( integrand(1:lx1-1,lx2,1:lx3-1) + integrand(2:lx1,lx2,1:lx3-1) + &
                              integrand(1:lx1-1,lx2,2:lx3) + integrand(2:lx1,lx2,2:lx3) + &
                              integrandtop(1:lx1-1,1:lx3-1) + integrandtop(2:lx1,1:lx3-1) + &
@@ -592,7 +512,6 @@ main : do while (t < cfg%tdur)
 
       integrandavgend=0._wp
       if (mpi_cfg%myid3/=mpi_cfg%lid3-1) then
-!      if (.false.) then
         integrandavgend(:,:)=1/8._wp*( integrand(1:lx1-1,1:lx2-1,lx3) + integrand(2:lx1,1:lx2-1,lx3) + &
                              integrand(1:lx1-1,2:lx2,lx3) + integrand(2:lx1,2:lx2,lx3)  + &
                              integrandend(1:lx1-1,1:lx2-1) + integrandend(2:lx1,1:lx2-1) + &
@@ -601,7 +520,6 @@ main : do while (t < cfg%tdur)
 
       integrandavgtop=0._wp
       if (mpi_cfg%myid2/=mpi_cfg%lid2-1) then
-!      if (.false.) then
         integrandavgtop(:,:)=1/8._wp*( integrand(1:lx1-1,lx2,1:lx3-1) + integrand(2:lx1,lx2,1:lx3-1) + &
                              integrand(1:lx1-1,lx2,2:lx3) + integrand(2:lx1,lx2,2:lx3)  + &
                              integrandtop(1:lx1-1,1:lx3-1) + integrandtop(2:lx1,1:lx3-1) + &
@@ -624,7 +542,6 @@ main : do while (t < cfg%tdur)
 
       integrandavgend=0._wp
       if (mpi_cfg%myid3/=mpi_cfg%lid3-1) then
-!      if (.false.) then
         integrandavgend(:,:)=1/8._wp*( integrand(1:lx1-1,1:lx2-1,lx3) + integrand(2:lx1,1:lx2-1,lx3) + &
                              integrand(1:lx1-1,2:lx2,lx3) + integrand(2:lx1,2:lx2,lx3) + &
                              integrandend(1:lx1-1,1:lx2-1) + integrandend(2:lx1,1:lx2-1) + &
@@ -634,7 +551,6 @@ main : do while (t < cfg%tdur)
 ! FIXME: average denominator is already in Rcubedtop, etc. so do a single division...
       integrandavgtop=0._wp
       if (mpi_cfg%myid2/=mpi_cfg%lid2-1) then
-!      if (.false.) then
         integrandavgtop(:,:)=1/8._wp*( integrand(1:lx1-1,lx2,1:lx3-1) + integrand(2:lx1,lx2,1:lx3-1) + &
                                        integrand(1:lx1-1,lx2,2:lx3)   + integrand(2:lx1,lx2,2:lx3) + &
                                        integrandtop(1:lx1-1,1:lx3-1) + integrandtop(2:lx1,1:lx3-1) + &
@@ -644,31 +560,6 @@ main : do while (t < cfg%tdur)
 
       Bphi(ipoints)=sum(integrandavg*dV(2:lx1,2:lx2,2:lx3))+sum(integrandavgend*dVend(2:lx1,2:lx2))+ &
                         sum(integrandavgtop*dVtop(2:lx1,2:lx3))
-
-
-      if (ipoints==1) then
-        write(filename,'(A12,i1,A4)') 'debug_output',mpi_cfg%myid,'.dat'
-        open(newunit=u,file=filename,status='replace',form='unformatted',access='stream',action='write')
-!        write(u) integrandavg*dV(2:lx1,2:lx2,2:lx3)    !bad
-!        write(u) integrandavgtop*dVtop(2:lx1,2:lx3)    !bad
-!        write(u) dV(2:lx1,2:lx2,2:lx3)
-!        write(u) dVtop(2:lx1,2:lx3)
-        write(u) integrandavg    !bad
-        write(u) integrandavgtop    !bad
-!        write(u) Rmag(2:lx1,2:lx2,2:lx3)
-!        write(u) Rmagtop(2:lx1,2:lx3)
-!        write(u) Rcubed(2:lx1,2:lx2,2:lx3)
-!        write(u) Rcubedtop(2:lx1,2:lx3)
-!        write(u) integrand     !seems likely okay?
-!        write(u) Jx
-!        write(u) Rx
-!        write(u) Ry
-!        write(u) Rz
-!        write(u) Jy
-        close(u)
-        print*, 'Debug output done...'
-      end if
-
     else
       Rcubed(:,:,:)=Rx**2+Ry**2    !not really R**3 in 2D, just the denominator of the integrand
 
