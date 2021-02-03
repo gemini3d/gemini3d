@@ -29,7 +29,7 @@ do i = 2, argc
   select case (buf)
   case ('-n')
     call get_command_argument(i+1, buf)
-    read(Ncpu, '(I6)') buf
+    read(buf, '(I6)') Ncpu
   case ('-gemexe')
     call get_command_argument(i+1, buf)
     gem_exe = trim(buf)
@@ -43,9 +43,16 @@ do i = 2, argc
   end select
 end do
 
-if(.not.allocated(gem_exe)) gem_exe = 'gemini.bin'
-inquire(file=gem_exe, exist=exists)
-if(.not.exists) error stop gem_exe // ' is not a file.'
+if(.not.allocated(gem_exe)) then
+  gem_exe = 'gemini.bin'
+  inquire(file=gem_exe, exist=exists)
+  if(.not.exists) gem_exe = "gemini.bin.exe"
+  inquire(file=gem_exe, exist=exists)
+  if(.not.exists) error stop "please specify path to gemini.bin with '-gemexe path/to/gemini.bin'"
+else
+  inquire(file=gem_exe, exist=exists)
+  if(.not.exists) error stop gem_exe // ' is not a file.'
+endif
 
 if(.not.allocated(mpiexec)) mpiexec = 'mpiexec'
 

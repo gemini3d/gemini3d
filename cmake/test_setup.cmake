@@ -68,25 +68,19 @@ if(PYGEMINI_DIR)
 
 else(PYGEMINI_DIR)
 
-  if(CMAKE_VERSION VERSION_LESS 3.19)
-    message(FATAL_ERROR "CMake >= 3.19 is required to run Gemini3D tests without Python")
-  endif()
+  set(_r ${_refdir}/test${testname}/inputs)
 
   if(NOT IS_DIRECTORY ${_outdir})
-    if(IS_DIRECTORY ${_refdir})
-      file(COPY ${_refdir}/test${testname}/inputs DESTINATION ${PROJECT_BINARY_DIR}/test${testname})
-    elseif(EXISTS ${_refdir}/tests/data/test${testname}.zip)
-      file(ARCHIVE_EXTRACT
-        INPUT ${_refdir}/tests/data/test${testname}.zip
-        DESTINATION ${PROJECT_BINARY_DIR})
+    if(IS_DIRECTORY ${_r})
+      file(COPY ${_r} DESTINATION ${PROJECT_BINARY_DIR}/test${testname})
     else()
-      message(STATUS "SKIP: ${testname} data not in ${_refdir}. Run cmake -Ddownload=yes to get ref data.")
-      return()
+      # message(STATUS "SKIP: ${testname} data not in ${_refdir}. Run cmake -Ddownload=yes to get ref data.")
+      # return()
     endif()
   endif()
 
   if(mpi)
-    set(_cmd $<TARGET_FILE:gemini3d.run> ${_outdir} ${MPIEXEC_MAX_NUMPROCS} $<TARGET_FILE:gemini.bin> ${MPIEXEC_EXECUTABLE})
+    set(_cmd $<TARGET_FILE:gemini3d.run> ${_outdir} -n ${MPIEXEC_MAX_NUMPROCS} -gemexe $<TARGET_FILE:gemini.bin> -mpiexe ${MPIEXEC_EXECUTABLE})
   else()
     set(_cmd $<TARGET_FILE:gemini.bin> ${_outdir})
   endif(mpi)

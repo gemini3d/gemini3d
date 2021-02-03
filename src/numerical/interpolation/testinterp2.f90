@@ -3,6 +3,7 @@ program test_interp2
 use phys_consts, only: wp,pi
 use interpolation, only : interp2
 use h5fortran, only : hdf5_file
+use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
 
 implicit none (type, external)
 
@@ -61,6 +62,13 @@ do ix2=1,lx2i
 end do
 filist=interp2(x1,x2,f,x1ilist,x2ilist)
 fi=reshape(filist,[lx1i,lx2i])
+
+!> sanity check
+
+if (any([1000, 500] /= [lx2i, lx1i])) then
+  write(stderr,*) "test_interp2d: lx2i, lx1i", lx2i, lx1i
+  error stop 'interp not expected shape'
+endif
 
 call get_command_argument(1, argv, status=i)
 if(i/=0) error stop 'please specify input filename'

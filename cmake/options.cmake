@@ -31,7 +31,8 @@ option(dev "Gemini developer mode")
 option(mpi "Use MPI parallelization")
 
 option(autobuild "autobuild missing Lapack, Scalapack or Mumps" on)
-option(download "download test reference data (usually this is done by PyGemini automatically)" off)
+
+option(hdf5_external "build HDF5 instead of finding")
 option(lapack_external "build Lapack instead of finding")
 option(scalapack_external "build ScaLapack instead of finding")
 option(mumps_external "build MUMPS instead of finding")
@@ -41,16 +42,16 @@ option(hwm14 "use HWM14 neutral winds model")
 option(msis20 "use MSIS 2.0 neutral atmosphere model")
 
 option(hdf5 "use HDF5 file I/O" on)
-option(netcdf "use NetCDF file I/O" off)
+option(netcdf "use NetCDF file I/O")
 
 # MUMPS build options (only used if auto-building MUMPS)
 option(metis "MUMPS: use METIS" off)
 option(scotch "MUMPS: use Scotch" off)
 option(openmp "MUMPS: use OpenMP" off)
 
-option(python "PyGemini checks" on)
+option(python "PyGemini checks")
 # Matlab checks take much longer than Python, and Python covers much more
-option(matlab "Matlab checks" off)
+option(matlab "Matlab checks")
 
 if(dev)
   set(FETCHCONTENT_SOURCE_DIR_PYGEMINI ${PROJECT_SOURCE_DIR}/../pygemini CACHE PATH "PyGemini developer path")

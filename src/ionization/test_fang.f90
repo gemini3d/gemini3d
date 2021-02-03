@@ -1,9 +1,10 @@
-Program test_fang
+program test_fang
 !! Reproduces data of:
 !! * Figure 3 in https://agupubs.onlinelibrary.wiley.com/doi/10.1029/2008JA013384
 !! * Figure 2 in Fang 2010
 
 use, intrinsic:: iso_fortran_env, only: real32, real64
+use assert, only : assert_allclose
 use phys_consts, only: wp
 use ionrate, only: ionization_fang2008, ionization_fang2010
 
@@ -76,6 +77,12 @@ print '(/,A,25F10.1)', 'alt[km]/Emono[keV]', E0_keV
 do i = 1,size(alt_km)
   print '(F7.1,5F15.3)', alt_km(i), Qtot10(i,:)
 enddo
+
+call assert_allclose(Qtot08(90, 1), 2214.052, atol=0.001, err_msg="E0: 100eV")
+call assert_allclose(Qtot08(18, 5), 9579.046, atol=0.001, err_msg="E0: 1MeV")
+
+call assert_allclose(Qtot10(90, 1), 1192.002, atol=0.001, err_msg="Emono: 100eV")
+call assert_allclose(Qtot10(18, 5), 778.655, atol=0.001, rtol=0.001, err_msg="Emono: 1MeV")
 
 contains
 

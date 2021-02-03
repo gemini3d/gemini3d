@@ -19,36 +19,6 @@ if(NOT mpi)
   target_link_libraries(mpimod PRIVATE MUMPS::mpiseq)
 endif()
 
-# --- Fortran front end
-add_executable(gemini3d.run runner.f90 gemini_runner.f90 get_cpu.f90)
-target_link_libraries(gemini3d.run PRIVATE const config pathlib timeutils autogrid reader h5fortran::h5fortran nc4fortran::nc4fortran)
-set_target_properties(gemini3d.run PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
-set_target_properties(gemini3d.run PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include)
-target_include_directories(gemini3d.run INTERFACE ${CMAKE_CURRENT_BINARY_DIR}/include)
-
-# Ref: https://gitlab.kitware.com/cmake/cmake/-/blob/master/Modules/ProcessorCount.cmake
-# https://gitlab.kitware.com/search?group_id=415&project_id=541&repository_ref=master&scope=blobs&search=GetNumberOfPhysicalCPU&snippets=false
-# shortcomings: hyperthreading may give incorrect result
-if(mpi)
-  if(WIN32)
-    # Windows
-    target_sources(gemini3d.run PRIVATE get_cpu_win.c)
-  else()
-    # MacOS and Linux
-    find_path(hwloc_inc NAMES hwloc.h)
-    find_library(hwloc NAMES hwloc)
-    if(hwloc_inc AND hwloc)
-      target_sources(gemini3d.run PRIVATE get_cpu_hwloc.c)
-      target_include_directories(gemini3d.run PRIVATE ${hwloc_inc})
-      target_link_libraries(gemini3d.run PRIVATE ${hwloc})
-    else()
-      target_sources(gemini3d.run PRIVATE get_cpu_sysconf.c)
-    endif()
-  endif()
-else(mpi)
-  target_sources(gemini3d.run PRIVATE dummy_cpu.c)
-endif(mpi)
-
 #-----
 
 if(${PROJECT_NAME}_BUILD_TESTING)

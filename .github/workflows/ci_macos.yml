@@ -16,15 +16,15 @@ jobs:
     runs-on: macos-latest
     steps:
     - uses: actions/checkout@v2
-    - uses: actions/setup-python@v2
-      with:
-        python-version: '3.8'
 
     - run: brew install gcc ninja lapack open-mpi hdf5 scalapack
       timeout-minutes: 5
       # transient CI download speed
 
 # CI is too slow for 3d_glow
+
+    - run: cmake -Ddownload="2dns_fang;2dew_fang;2dns_glow;2dew_glow" -P cmake/download.cmake
+      timeout-minutes: 2
 
     - run: cmake -B build
       timeout-minutes: 5
@@ -42,14 +42,13 @@ jobs:
     runs-on: macos-latest
     steps:
     - uses: actions/checkout@v2
-    - uses: actions/setup-python@v2
-      with:
-        python-version: '3.7'
-    # leave as 3.7 to avoid pip install in 3.8 but run in 3.7
 
     - run: brew install gcc ninja lapack hdf5
       timeout-minutes: 5
       # transient CI download speed
+
+    - run: cmake -Ddownload="2dew_fang" -P cmake/download.cmake
+      timeout-minutes: 2
 
     - run: cmake -B build
       timeout-minutes: 5

@@ -32,6 +32,9 @@ jobs:
         sudo apt install -yq --no-install-recommends gfortran libopenmpi-dev openmpi-bin liblapack-dev libscalapack-openmpi-dev libmumps-dev libhdf5-dev
 
 # CI is too slow for 3d_glow
+    - run: cmake -Ddownload="2dns_fang;2dew_fang;2dns_glow;2dew_glow" -P cmake/download.cmake
+      timeout-minutes: 2
+
     - run: cmake -B build
     - run: cmake --build build --parallel
 
@@ -45,14 +48,14 @@ jobs:
     timeout-minutes: 5
     steps:
     - uses: actions/checkout@v2
-    - uses: actions/setup-python@v2
-      with:
-        python-version: '3.8'
 
     - name: Install prereqs
       run: |
         sudo apt update -yq
         sudo apt install -yq --no-install-recommends gfortran libopenmpi-dev openmpi-bin liblapack-dev libscalapack-openmpi-dev libmumps-dev libhdf5-dev
+
+    - run: cmake -Ddownload="2dew_fang" -P cmake/download.cmake
+      timeout-minutes: 2
 
     - run: cmake -B build -DCMAKE_BUILD_TYPE=Debug
     - run: cmake --build build --parallel
@@ -70,9 +73,9 @@ jobs:
     timeout-minutes: 10
     steps:
     - uses: actions/checkout@v2
-    - uses: actions/setup-python@v2
-      with:
-        python-version: '3.8'
+
+    - run: cmake -Ddownload="2dew_fang" -P cmake/download.cmake
+      timeout-minutes: 2
 
     - run: cmake -B build
     - run: cmake --build build --parallel
@@ -92,9 +95,6 @@ jobs:
     timeout-minutes: 10
     steps:
     - uses: actions/checkout@v2
-    - uses: actions/setup-python@v2
-      with:
-        python-version: '3.8'
 
     # have to have openmpi-bin as unlike full install it's not auto-installed here
     # libhdf5-dev just to speed up CI
@@ -103,7 +103,14 @@ jobs:
         sudo apt update -yq
         sudo apt install -yq --no-install-recommends gfortran libopenmpi-dev openmpi-bin libhdf5-dev
 
-    - run: ctest -S setup.cmake -R unit -VV
+    - run: cmake -Ddownload="2dns_fang;2dew_fang;2dns_glow;2dew_glow" -P cmake/download.cmake
+      timeout-minutes: 2
+
+    - run: cmake -B build
+    - run: cmake --build build --parallel
+
+    - run: ctest -R unit
+      working-directory: build
 
     - run: ctest -E 3d --parallel 4 --output-on-failure
       working-directory: build

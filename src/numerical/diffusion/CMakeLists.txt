@@ -21,13 +21,13 @@ set_tests_properties(unit:diffusion1 PROPERTIES
   TIMEOUT 5
   FIXTURES_SETUP GemDiff)
 
-if(PYGEMINI_DIR)
+if(Python3_FOUND)
   add_test(NAME unit:diffusion1:python
     COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test_diffusion1D.py ${_tmpdifffn})
   set_tests_properties(unit:diffusion1:python PROPERTIES
     TIMEOUT 10
     REQUIRED_FILES ${_tmpdifffn}
     FIXTURES_REQUIRED GemDiff)
-endif(PYGEMINI_DIR)
+endif(Python3_FOUND)
 
 endif()

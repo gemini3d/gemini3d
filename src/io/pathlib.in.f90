@@ -6,7 +6,7 @@ implicit none (type, external)
 private
 public :: mkdir, copyfile, expanduser, home, get_suffix, filesep_swap, &
   assert_directory_exists, assert_file_exists,&
-  make_absolute, get_filename
+  make_absolute, get_filename, parent, file_name
 
 interface  ! pathlib_{unix,windows}.f90
 module integer function copyfile(source, dest) result(istat)
@@ -28,6 +28,42 @@ character(:), allocatable :: get_suffix
 get_suffix = filename(index(filename, '.', back=.true.) : len(filename))
 
 end function get_suffix
+
+
+pure function parent(instr, filesep)
+
+character(*), intent(in) :: instr
+character(1), intent(in), optional :: filesep
+character(:), allocatable :: parent
+
+character(1) :: sep
+integer :: i
+
+sep = '/'
+if(present(filesep)) sep = filesep
+
+i = scan(instr, sep, back=.true.)
+parent = instr(1:i-1)
+
+end function parent
+
+
+pure function file_name(instr, filesep)
+
+character(*), intent(in) :: instr
+character(1), intent(in), optional :: filesep
+character(:), allocatable :: file_name
+
+character(1) :: sep
+integer :: i
+
+sep = '/'
+if(present(filesep)) sep = filesep
+
+i = scan(instr, sep, back=.true.)
+file_name = instr(i+1:len(instr))
+
+end function file_name
 
 
 function get_filename(path, stem) result(fn)

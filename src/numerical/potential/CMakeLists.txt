@@ -39,13 +39,15 @@ set_tests_properties(unit:potential2 PROPERTIES TIMEOUT 30
   FIXTURES_SETUP GemPot
   RESOURCE_LOCK cpu_mpi)
 
-if(PYGEMINI_DIR)
+if(Python3_FOUND)
+
   add_test(NAME unit:potential2:python
     COMMAND ${Python3_EXECUTABLE}  ${CMAKE_CURRENT_SOURCE_DIR}/test_potential2d.py ${_potential_testfile})
   set_tests_properties(unit:potential2:python PROPERTIES
     REQUIRED_FILES ${_potential_testfile}
     TIMEOUT 10
     FIXTURES_REQUIRED GemPot)
-endif(PYGEMINI_DIR)
+
+endif(Python3_FOUND)
 
 endif(hdf5 AND ${PROJECT_NAME}_BUILD_TESTING)

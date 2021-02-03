@@ -33,12 +33,19 @@ jobs:
 
     - uses: actions/checkout@v2
 
+    - run: cmake -Ddownload="2dew_fang" -P cmake/download.cmake
+      timeout-minutes: 2
+
     - run: cmake -B build
       timeout-minutes: 2
 
     - run: cmake --build build --parallel
       timeout-minutes: 5
 
-    - run: ctest -E 3d --parallel 4 --output-on-failure
+    - run: ctest -R unit --parallel 2 --output-on-failure
+      working-directory: build
+      timeout-minutes: 3
+
+    - run: ctest -R 2dew_fang --parallel 2 --output-on-failure
       working-directory: build
       timeout-minutes: 5

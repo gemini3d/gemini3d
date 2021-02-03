@@ -7,13 +7,14 @@ target_link_libraries(fang_run PRIVATE fang msis_ifc const)
 if(${PROJECT_NAME}_BUILD_TESTING)
 
 add_executable(test_fang test_fang.f90)
-target_link_libraries(test_fang PRIVATE fang fang_run const msis_ifc)
+target_link_libraries(test_fang PRIVATE fang fang_run assert const msis_ifc)
+add_test(NAME unit:fangIonize COMMAND $<TARGET_FILE:test_fang>)
 
-if(PYGEMINI_DIR)
-  add_test(NAME unit:fangIonize
+if(Python3_FOUND)
+  add_test(NAME unit:fangIonize:python
     COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test_fang.py $<TARGET_FILE:test_fang>)
-  set_tests_properties(unit:fangIonize PROPERTIES TIMEOUT 30)
-endif(PYGEMINI_DIR)
+  set_tests_properties(unit:fangIonize:python PROPERTIES TIMEOUT 30)
+endif(Python3_FOUND)
 
 endif(${PROJECT_NAME}_BUILD_TESTING)
 
