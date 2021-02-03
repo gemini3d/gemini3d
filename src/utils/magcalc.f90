@@ -563,8 +563,8 @@ main : do while (t < cfg%tdur)
       if (mpi_cfg%myid3/=mpi_cfg%lid3-1) then
 !      if (.false.) then
         integrandavgend(:,:)=1/8._wp*( integrand(1:lx1-1,1:lx2-1,lx3) + integrand(2:lx1,1:lx2-1,lx3) + &
-                             integrand(1:lx1-1,2:lx2,lx3) + integrand(2:lx1,2:lx2,lx3) )/Rcubed(2:lx1,2:lx2,lx3) + &
-                             1/8._wp* (integrandend(1:lx1-1,1:lx2-1) + integrandend(2:lx1,1:lx2-1) + &
+                             integrand(1:lx1-1,2:lx2,lx3) + integrand(2:lx1,2:lx2,lx3) + &
+                             integrandend(1:lx1-1,1:lx2-1) + integrandend(2:lx1,1:lx2-1) + &
                              integrandend(1:lx1-1,2:lx2) + integrandend(2:lx1,2:lx2) )/Rcubedend(2:lx1,2:lx2)
       end if
 
@@ -572,8 +572,8 @@ main : do while (t < cfg%tdur)
       if (mpi_cfg%myid2/=mpi_cfg%lid2-1) then
 !      if (.false.) then
         integrandavgtop(:,:)=1/8._wp*( integrand(1:lx1-1,lx2,1:lx3-1) + integrand(2:lx1,lx2,1:lx3-1) + &
-                             integrand(1:lx1-1,lx2,2:lx3) + integrand(2:lx1,lx2,2:lx3) )/Rcubed(2:lx1,lx2,2:lx3) + &
-                             1/8._wp*(integrandtop(1:lx1-1,1:lx3-1) + integrandtop(2:lx1,1:lx3-1) + &
+                             integrand(1:lx1-1,lx2,2:lx3) + integrand(2:lx1,lx2,2:lx3) + &
+                             integrandtop(1:lx1-1,1:lx3-1) + integrandtop(2:lx1,1:lx3-1) + &
                              integrandtop(1:lx1-1,2:lx3) + integrandtop(2:lx1,2:lx3) )/Rcubedtop(2:lx1,2:lx3)
       end if
 
@@ -594,8 +594,8 @@ main : do while (t < cfg%tdur)
       if (mpi_cfg%myid3/=mpi_cfg%lid3-1) then
 !      if (.false.) then
         integrandavgend(:,:)=1/8._wp*( integrand(1:lx1-1,1:lx2-1,lx3) + integrand(2:lx1,1:lx2-1,lx3) + &
-                             integrand(1:lx1-1,2:lx2,lx3) + integrand(2:lx1,2:lx2,lx3) )/Rcubed(2:lx1,2:lx2,lx3) + &
-                             1/8._wp*(integrandend(1:lx1-1,1:lx2-1) + integrandend(2:lx1,1:lx2-1) + &
+                             integrand(1:lx1-1,2:lx2,lx3) + integrand(2:lx1,2:lx2,lx3)  + &
+                             integrandend(1:lx1-1,1:lx2-1) + integrandend(2:lx1,1:lx2-1) + &
                              integrandend(1:lx1-1,2:lx2) + integrandend(2:lx1,2:lx2) )/Rcubedend(2:lx1,2:lx2)
       end if
 
@@ -603,8 +603,8 @@ main : do while (t < cfg%tdur)
       if (mpi_cfg%myid2/=mpi_cfg%lid2-1) then
 !      if (.false.) then
         integrandavgtop(:,:)=1/8._wp*( integrand(1:lx1-1,lx2,1:lx3-1) + integrand(2:lx1,lx2,1:lx3-1) + &
-                             integrand(1:lx1-1,lx2,2:lx3) + integrand(2:lx1,lx2,2:lx3) )/Rcubed(2:lx1,lx2,2:lx3) + &
-                             1/8._wp*(integrandtop(1:lx1-1,1:lx3-1) + integrandtop(2:lx1,1:lx3-1) + &
+                             integrand(1:lx1-1,lx2,2:lx3) + integrand(2:lx1,lx2,2:lx3)  + &
+                             integrandtop(1:lx1-1,1:lx3-1) + integrandtop(2:lx1,1:lx3-1) + &
                              integrandtop(1:lx1-1,2:lx3) + integrandtop(2:lx1,2:lx3) )/Rcubedtop(2:lx1,2:lx3)
       end if
 
@@ -626,8 +626,8 @@ main : do while (t < cfg%tdur)
       if (mpi_cfg%myid3/=mpi_cfg%lid3-1) then
 !      if (.false.) then
         integrandavgend(:,:)=1/8._wp*( integrand(1:lx1-1,1:lx2-1,lx3) + integrand(2:lx1,1:lx2-1,lx3) + &
-                             integrand(1:lx1-1,2:lx2,lx3) + integrand(2:lx1,2:lx2,lx3) )/Rcubed(2:lx1,2:lx2,lx3) + &
-                             1/8._wp*(integrandend(1:lx1-1,1:lx2-1) + integrandend(2:lx1,1:lx2-1) + &
+                             integrand(1:lx1-1,2:lx2,lx3) + integrand(2:lx1,2:lx2,lx3) + &
+                             integrandend(1:lx1-1,1:lx2-1) + integrandend(2:lx1,1:lx2-1) + &
                              integrandend(1:lx1-1,2:lx2) + integrandend(2:lx1,2:lx2) )/Rcubedend(2:lx1,2:lx2)
       end if
 
@@ -636,9 +636,8 @@ main : do while (t < cfg%tdur)
       if (mpi_cfg%myid2/=mpi_cfg%lid2-1) then
 !      if (.false.) then
         integrandavgtop(:,:)=1/8._wp*( integrand(1:lx1-1,lx2,1:lx3-1) + integrand(2:lx1,lx2,1:lx3-1) + &
-                                       integrand(1:lx1-1,lx2,2:lx3)   + integrand(2:lx1,lx2,2:lx3) )/ &
-                                      Rcubed(2:lx1,lx2,2:lx3) + &
-                             1/8._wp*( integrandtop(1:lx1-1,1:lx3-1) + integrandtop(2:lx1,1:lx3-1) + &
+                                       integrand(1:lx1-1,lx2,2:lx3)   + integrand(2:lx1,lx2,2:lx3) + &
+                                       integrandtop(1:lx1-1,1:lx3-1) + integrandtop(2:lx1,1:lx3-1) + &
                                        integrandtop(1:lx1-1,2:lx3)   + integrandtop(2:lx1,2:lx3) )/ &
                                       Rcubedtop(2:lx1,2:lx3)
       end if
@@ -655,7 +654,7 @@ main : do while (t < cfg%tdur)
 !        write(u) dV(2:lx1,2:lx2,2:lx3)
 !        write(u) dVtop(2:lx1,2:lx3)
         write(u) integrandavg    !bad
-!        write(u) integrandavgtop    !bad
+        write(u) integrandavgtop    !bad
 !        write(u) Rmag(2:lx1,2:lx2,2:lx3)
 !        write(u) Rmagtop(2:lx1,2:lx3)
 !        write(u) Rcubed(2:lx1,2:lx2,2:lx3)
