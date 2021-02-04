@@ -281,9 +281,11 @@ if(all(isclose(ref, new, rtol, atol))) return
 
 bad = 1
 if(present(derived_name)) then
-  write(stderr,*) "MISMATCH: " // file_name(new_file) // " " // derived_name, maxval(abs(ref - new))
+  write(stderr,'(A,/,A,ES12.3,A,2ES12.3,A,2ES12.3)') "MISMATCH: " // file_name(new_file) // " " // derived_name, &
+    ' max diff:', maxval(abs(ref - new)), ' max & min ref:', maxval(ref), minval(ref), ' max & min new:', maxval(new), minval(new)
 else
-  write(stderr,*) "MISMATCH: " // file_name(new_file) // " " // name, maxval(abs(ref - new))
+  write(stderr,'(A,/,A,ES12.3,A,2ES12.3,A,2ES12.3)') "MISMATCH: " // file_name(new_file) // " " // name, &
+    ' max diff:', maxval(abs(ref - new)), ' max & min ref:', maxval(ref), minval(ref), ' max & min new:', maxval(new), minval(ref)
 endif
 
 
