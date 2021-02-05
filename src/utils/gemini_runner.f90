@@ -43,6 +43,13 @@ do i = 2, argc
   end select
 end do
 
+!> auto CPU count detection
+if(Ncpu == 0) then
+  Ncpu = get_cpu_count()
+  print '(A,I0)', 'Detected CPU count: ', Ncpu
+endif
+
+!> Find gemini.bin, the main program
 if(.not.allocated(gem_exe)) then
   gem_exe = 'gemini.bin'
   inquire(file=gem_exe, exist=exists)
@@ -63,11 +70,6 @@ call clean_output(path)
 
 !> setup run
 call get_simsize3(path // '/inputs', lx1, lx2all, lx3all)
-
-if(Ncpu == 0) then
-  Ncpu = get_cpu_count()
-  print '(A,I0)', 'Detected CPU count: ', Ncpu
-endif
 
 if(Ncpu > 1) then
   lid = max_mpi(lx2all, lx3all, Ncpu)

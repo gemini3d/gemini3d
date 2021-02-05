@@ -7,6 +7,7 @@ FindHWLOC
 Michael Hirsch, Ph.D.
 
 Finds the hwloc library, required by OpenMPI and also useful by itself.
+https://www.open-mpi.org/projects/hwloc/
 
 Imported Targets
 ^^^^^^^^^^^^^^^^
@@ -23,6 +24,7 @@ HWLOC_INCLUDE_DIRS
   dirs to be included
 
 #]=======================================================================]
+include(CheckSymbolExists)
 
 find_package(PkgConfig)
 pkg_check_modules(pc_hwloc hwloc)
@@ -36,10 +38,17 @@ find_path(HWLOC_INCLUDE_DIR
           NAMES hwloc.h
           HINTS ${pc_hwloc_INCLUDE_DIRS})
 
+if(HWLOC_LIBRARY AND HWLOC_INCLUDE_DIR)
+set(CMAKE_REQUIRED_INCLUDES ${HWLOC_INCLUDE_DIR})
+set(CMAKE_REQUIRED_LIBRARIES ${HWLOC_LIBRARY})
+check_symbol_exists(hwloc_topology_load hwloc.h HWLOC_TOPO_LOAD)
+set(CMAKE_REQUIRED_INCLUDES)
+set(CMAKE_REQUIRED_LIBRARIES)
+endif()
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(HWLOC
-    REQUIRED_VARS HWLOC_LIBRARY HWLOC_INCLUDE_DIR)
+    REQUIRED_VARS HWLOC_LIBRARY HWLOC_INCLUDE_DIR HWLOC_TOPO_LOAD)
 
 if(HWLOC_FOUND)
 # need if _FOUND guard to allow project to autobuild; can't overwrite imported target even if bad
