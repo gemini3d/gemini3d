@@ -10,6 +10,7 @@ on:
       - "**/CMakeLists.txt"
       - ".github/workflows/ci_build.yml"
 
+jobs:
 
   linux_no_mpi:
     runs-on: ubuntu-latest
