@@ -1,9 +1,9 @@
 module gemini_cli
 
-use, intrinsic :: iso_fortran_env, only : compiler_version
 use config, only : read_configfile, gemini_cfg, get_compiler_vendor
 use pathlib, only : assert_file_exists, assert_directory_exists, expanduser
 use mpimod, only : mpisetup, mpibreakdown, mpi_cfg
+use help, only : help_gemini_bin
 
 implicit none (type, external)
 private
@@ -28,11 +28,11 @@ cfg%git_revision = "@git_rev@"
 argc = command_argument_count()
 
 call get_command_argument(1, argv, status=i)
-if (i/=0) call help_cli(cfg%git_revision)
+if (i/=0) call help_gemini_bin(cfg%git_revision)
 
 select case (argv)
 case ('-h', '-help')
-  call help_cli(cfg%git_revision)
+  call help_gemini_bin(cfg%git_revision)
 case ('-compiler')
   print '(A)', get_compiler_vendor()
   stop
@@ -187,7 +187,7 @@ do i = 2,argc
   select case (argv)
   case ('-h', '-help')
     ierr = mpibreakdown()
-    if (mpi_cfg%myid == 0) call help_cli(cfg%git_revision)
+    if (mpi_cfg%myid == 0) call help_gemini_bin(cfg%git_revision)
     stop
   case ('-compiler')
     ierr = mpibreakdown()
@@ -222,22 +222,5 @@ do i = 2,argc
 end do
 
 end subroutine cli
-
-subroutine help_cli(git_revision)
-character(*), intent(in) :: git_revision
-
-print '(/,A,/)', 'GEMINI-3D ' // git_revision
-print '(A)', 'by Matthew Zettergren'
-print '(A)', 'GLOW and auroral interfaces by Guy Grubbs'
-print '(A)', 'build system and software engineering by Michael Hirsch'
-print '(A)', 'Compiler vendor: '// get_compiler_vendor()
-print '(A)', 'Compiler version: ' // compiler_version()
-print '(/,A)', 'must specify simulation output directory. Example:'
-print '(/,A,/)', '  mpiexec -np 4 build/gemini.bin /path/to/simulation_outputs'
-print '(A)', '-dryrun    allows quick check of first time step'
-print '(A)', '-manual_grid lx2 lx3    defines the number of MPI processes along x2 and x3.'
-print '(A)', '  If -manual_grid is not specified, the MPI processes are auto-assigned along x2 and x3.'
-stop 'EOF: Gemini-3D'
-end subroutine help_cli
 
 end module gemini_cli

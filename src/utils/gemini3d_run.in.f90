@@ -1,24 +1,28 @@
-program gemini_runner
+program gemini3d_run
 !! for use from terminal/CMake, computes optimal MPI count
 !! for a particular simulation
 
 use runner, only : clean_output, get_cpu_count
 use reader, only: get_simsize3
 use autogrid, only : grid_auto, max_mpi
+use help, only : help_gemini_run
+use config, only : get_compiler_vendor
 use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
 
 implicit none (type, external)
 
 integer :: i, lx1, lx2all, lx3all, lid, lid2, lid3, Ncpu, argc
 character(1000) :: buf
-character(:), allocatable :: path, gem_exe, cmd, mpiexec, extra
+character(:), allocatable :: path, gem_exe, cmd, mpiexec, extra, git_revision
 logical :: exists
 
 Ncpu = 0
 
+git_revision = "@git_rev@"
+
 argc = command_argument_count()
 
-if(argc < 1) error stop 'specify top-level simulation path'
+if(argc < 1) call help_gemini_run(git_revision)
 
 call get_command_argument(1, buf)
 path = trim(buf)
@@ -27,6 +31,14 @@ do i = 2, argc
   call get_command_argument(i, buf)
 
   select case (buf)
+  case ('-h', '-help')
+    call help_gemini_run(git_revision)
+  case ('-compiler')
+    print '(A)', get_compiler_vendor()
+    stop
+  case ('-git')
+    print '(A)', git_revision
+    stop
   case ('-n')
     call get_command_argument(i+1, buf)
     read(buf, '(I6)') Ncpu

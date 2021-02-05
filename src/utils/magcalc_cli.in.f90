@@ -6,6 +6,7 @@ use pathlib, only : assert_file_exists, assert_directory_exists, expanduser
 use mpimod, only : mpisetup, mpibreakdown, mpi_cfg
 use phys_consts, only : wp
 use timeutils, only : dateinc
+use help, only : help_magcalc_bin
 
 implicit none (type, external)
 private
@@ -36,11 +37,11 @@ cfg%git_revision = "@git_rev@"
 argc = command_argument_count()
 
 call get_command_argument(1, argv, status=i)
-if (i/=0) call help_cli(cfg%git_revision)
+if (i/=0) call help_magcalc_bin(cfg%git_revision)
 
 select case (argv)
 case ('-h', '-help')
-  call help_cli(cfg%git_revision)
+  call help_magcalc_bin(cfg%git_revision)
 case ('-compiler')
   print '(A)', get_compiler_vendor()
   stop
@@ -183,7 +184,7 @@ do i = iarg,argc
   select case (argv)
   case ('-h', '-help')
     ierr = mpibreakdown()
-    if (mpi_cfg%myid == 0) call help_cli(cfg%git_revision)
+    if (mpi_cfg%myid == 0) call help_magcalc_bin(cfg%git_revision)
     stop
   case ('-compiler')
     ierr = mpibreakdown()
@@ -232,20 +233,5 @@ if (mpi_cfg%myid==0) then
 end if
 
 end subroutine cli
-
-
-subroutine help_cli(git_revision)
-character(*), intent(in) :: git_revision
-
-print '(/,A,/)', 'MAGCALC ' // git_revision
-print '(A)', 'by Matthew Zettergren'
-print '(A)', 'software engineering by Michael Hirsch'
-print '(A)', 'Compiler vendor: '// get_compiler_vendor()
-print '(A)', 'Compiler version: ' // compiler_version()
-print '(/,A)', 'must specify input directory and fieldpoint file. Example:'
-print '(/,A,/)', 'mpiexec -n 4 build/magcalc.bin test2d_fang test2d_fang/fieldpoint'
-print '(A)', '-dryrun option allows quick check of first time step'
-stop 'EOF: MAGCALC'
-end subroutine help_cli
 
 end module magcalc_cli

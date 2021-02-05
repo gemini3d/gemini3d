@@ -2,10 +2,6 @@ if(NOT ${PROJECT_NAME}_BUILD_TESTING)
   return()
 endif()
 
-add_library(assert assert.f90)
-target_include_directories(assert INTERFACE ${CMAKE_CURRENT_BINARY_DIR}/include)
-set_target_properties(assert PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include)
-
 if(NOT mpi)
 # keep this if(mpi) because these tests truly use MPI -- don't work with MPI stub
   return()

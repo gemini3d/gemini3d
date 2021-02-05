@@ -46,14 +46,14 @@ target_link_libraries(multifluid PRIVATE advec calculus collision const diffusio
 configure_file(gemini_cli.in.f90 gemini_cli.f90 @ONLY)
 add_executable(gemini.bin gemini.f90 ${CMAKE_CURRENT_BINARY_DIR}/gemini_cli.f90)
 set_target_properties(gemini.bin PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
-target_link_libraries(gemini.bin PRIVATE advec calculus config const collision diffusion fang grid io interp ionization gbsv mesh mpimod
+target_link_libraries(gemini.bin PRIVATE advec calculus helpmod config const collision diffusion fang grid io interp ionization gbsv mesh mpimod
   msis_ifc multifluid
   neutral pathlib PDEelliptic PDEparabolic potential precipBCs reader sanity_check sources temporal timeutils)
 target_link_libraries(gemini.bin PRIVATE MUMPS::MUMPS MPI::MPI_Fortran MPI::MPI_C)
 # Note: CMake 3.13 needs MPI linked here explicity to gemini.bin on any OS
 
 add_test(NAME unit:gemini_exe_ok COMMAND $<TARGET_FILE:gemini.bin>)
-set_tests_properties(unit:gemini_exe_ok PROPERTIES PASS_REGULAR_EXPRESSION "EOF: Gemini-3D")
+set_tests_properties(unit:gemini_exe_ok PROPERTIES PASS_REGULAR_EXPRESSION "EOF: gemini.bin")
 
 # --- apply properties
 
