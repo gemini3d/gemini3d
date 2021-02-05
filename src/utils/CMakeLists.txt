@@ -55,12 +55,10 @@ cpu_count()
 
 # --- Gemini compare
 
-if(${PROJECT_NAME}_BUILD_TESTING)
-  add_executable(gemini3d.compare)
-  target_sources(gemini3d.compare PRIVATE gemini_compare.f90 ${CMAKE_CURRENT_SOURCE_DIR}/../io/compare.f90)
-  target_link_libraries(gemini3d.compare PRIVATE assert config reader pathlib timeutils const nc4fortran::nc4fortran h5fortran::h5fortran)
-  target_include_directories(gemini3d.compare PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/include)
-  set_target_properties(gemini3d.compare PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
-    Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include)
-endif()
+add_executable(gemini3d.compare)
+target_sources(gemini3d.compare PRIVATE gemini_compare.f90 ${CMAKE_CURRENT_SOURCE_DIR}/../io/compare.f90)
+target_link_libraries(gemini3d.compare PRIVATE assert config reader pathlib timeutils const nc4fortran::nc4fortran h5fortran::h5fortran)
+target_include_directories(gemini3d.compare PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/include)
+set_target_properties(gemini3d.compare PROPERTIES
+  RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
+  Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include)
