@@ -17,7 +17,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - run: brew install gcc ninja lapack open-mpi hdf5 scalapack
+    - run: cmake -P cmake/gemini_prereq.cmake
       timeout-minutes: 5
       # transient CI download speed
 
@@ -34,34 +34,5 @@ jobs:
       timeout-minutes: 5
 
     - run: ctest -E 3d --parallel 4 --output-on-failure
-      working-directory: build
-      timeout-minutes: 5
-
-  no_mpi:
-    needs: hdf5
-    runs-on: macos-latest
-    steps:
-    - uses: actions/checkout@v2
-
-    - run: brew install gcc ninja lapack hdf5
-      timeout-minutes: 5
-      # transient CI download speed
-
-    - run: cmake -Ddownload="2dew_fang" -P cmake/download.cmake
-      timeout-minutes: 2
-
-    - run: cmake -B build
-      timeout-minutes: 5
-
-    - run: cmake --build build --parallel
-      timeout-minutes: 5
-
-    - name: Unit tests
-      run: ctest -R unit --parallel 4 --output-on-failure
-      working-directory: build
-      timeout-minutes: 2
-
-    - name: 2D test without MPI
-      run: ctest -R 2dew_fang --parallel 4 --output-on-failure
       working-directory: build
       timeout-minutes: 5

@@ -1,5 +1,8 @@
 name: ci_linux
 
+env:
+  DEBIAN_FRONTEND: noninteractive
+
 on:
   push:
     paths:
@@ -29,7 +32,7 @@ jobs:
     - name: Install packages
       run: |
         sudo apt update -yq
-        sudo apt install -yq --no-install-recommends gfortran libopenmpi-dev openmpi-bin liblapack-dev libscalapack-openmpi-dev libmumps-dev libhdf5-dev
+        sudo cmake -P cmake/gemini_prereq.cmake
 
 # CI is too slow for 3d_glow
     - run: cmake -Ddownload="2dns_fang;2dew_fang;2dns_glow;2dew_glow" -P cmake/download.cmake
@@ -52,7 +55,7 @@ jobs:
     - name: Install prereqs
       run: |
         sudo apt update -yq
-        sudo apt install -yq --no-install-recommends gfortran libopenmpi-dev openmpi-bin liblapack-dev libscalapack-openmpi-dev libmumps-dev libhdf5-dev
+        sudo cmake -P cmake/gemini_prereq.cmake
 
     - run: cmake -Ddownload="2dew_fang" -P cmake/download.cmake
       timeout-minutes: 2
@@ -64,53 +67,4 @@ jobs:
       working-directory: build
 
     - run: ctest -R 2dew_fang --parallel 4 --output-on-failure
-      working-directory: build
-
-
-  autobuild_no_mpi:
-    needs: debug
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-    - uses: actions/checkout@v2
-
-    - run: cmake -Ddownload="2dew_fang" -P cmake/download.cmake
-      timeout-minutes: 2
-
-    - run: cmake -B build
-    - run: cmake --build build --parallel
-
-    - name: unit tests
-      run: ctest -R unit --parallel 4 --output-on-failure
-      working-directory: build
-
-    - name: 2D test without MPI
-      run: ctest -R 2dew_fang --parallel 4 --output-on-failure
-      working-directory: build
-
-
-  autobuild_mpi:
-    needs: debug
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-    - uses: actions/checkout@v2
-
-    # have to have openmpi-bin as unlike full install it's not auto-installed here
-    # libhdf5-dev just to speed up CI
-    - name: Install packages
-      run: |
-        sudo apt update -yq
-        sudo apt install -yq --no-install-recommends gfortran libopenmpi-dev openmpi-bin libhdf5-dev
-
-    - run: cmake -Ddownload="2dns_fang;2dew_fang;2dns_glow;2dew_glow" -P cmake/download.cmake
-      timeout-minutes: 2
-
-    - run: cmake -B build
-    - run: cmake --build build --parallel
-
-    - run: ctest -R unit
-      working-directory: build
-
-    - run: ctest -E 3d --parallel 4 --output-on-failure
       working-directory: build
