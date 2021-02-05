@@ -1,44 +1,5 @@
 # We assume MSISE00 is always available, but MSIS 2.0 might not be available.
 
-# ensure no interaction with previous settings
-set(CMAKE_REQUIRED_LIBRARIES)
-set(CMAKE_REQUIRED_INCLUDES)
-set(CMAKE_REQUIRED_FLAGS)
-
-include(CheckFortranCompilerFlag)
-
-# --- MSISE00 and MSIS 2.0 require legacy workaround due to non-standard Fortran code
-check_fortran_compiler_flag(-w nowarn)
-set(msis_flags)
-if(nowarn)
-  set(msis_flags -w)
-endif()
-
-# "static" to help avoid missing runtime library issues when used from Matlab or Python
-
-if(CMAKE_Fortran_COMPILER_ID STREQUAL GNU)
-  set(static_flag -static)
-elseif(CMAKE_Fortran_COMPILER_ID STREQUAL Intel AND NOT WIN32)
-  # this test doesn't fail on Windows, even though the flag is not for Windows
-  set(static_flag -static-intel)
-else()
-  set(static_flag)
-endif()
-if(static_flag)
-  check_fortran_compiler_flag(${static_flag} static_ok)
-endif()
-if(NOT static_ok)
-  set(static_flag)
-endif()
-
-if(CMAKE_Fortran_COMPILER_ID STREQUAL GNU)
-  # Gfortran >= 8 need -Wno-pedantic to allow mismatched array size inhernet to MSIS.
-  # "-w" doesn't disable pedantic
-  list(APPEND msis_flags -std=legacy -Wno-pedantic -fno-implicit-none -Wno-error=array-bounds -fcheck=no-all)
-endif()
-
-# --- MSISE00 is always available
-
 add_library(msis00mod msis00_gfortran.f msise00_data.f)
 # keep msis00 NOT an OBJECT to avoid having to link it explicitly everywhere
 target_compile_options(msis00mod PRIVATE ${msis_flags})
