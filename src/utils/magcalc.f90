@@ -88,7 +88,7 @@ real(wp) :: UTsecstart,UTsecend,telend,UTsecfinal
 real(wp) :: h1avg,h2avg,h3avg
 real(wp), dimension(:,:,:), allocatable :: Rmag
 
-integer :: u,iid
+integer :: iid
 character(256) :: filename
 
 !! --- MAIN PROGRAM
@@ -234,15 +234,15 @@ if (flag2D/=1) then   !3D differential volume
     do ix2=1,lx2
       do ix1=1,lx1
         ! avg h's to ix1-1/2, ix2-1/2, ix3-1/2 grid locations
-        h1avg=1/8._wp*( x%h1(ix1,ix2,ix3) + x%h1(ix1-1,ix2,ix3) + & 
+        h1avg=1/8._wp*( x%h1(ix1,ix2,ix3) + x%h1(ix1-1,ix2,ix3) + &
                    x%h1(ix1,ix2-1,ix3) + x%h1(ix1-1,ix2-1,ix3) + &
                    x%h1(ix1,ix2,ix3-1) + x%h1(ix1-1,ix2,ix3-1) + &
-                   x%h1(ix1,ix2-1,ix3-1) + x%h1(ix1-1,ix2-1,ix3-1) ) 
-        h2avg=1/8._wp*( x%h2(ix1,ix2,ix3) + x%h2(ix1-1,ix2,ix3) + & 
+                   x%h1(ix1,ix2-1,ix3-1) + x%h1(ix1-1,ix2-1,ix3-1) )
+        h2avg=1/8._wp*( x%h2(ix1,ix2,ix3) + x%h2(ix1-1,ix2,ix3) + &
                    x%h2(ix1,ix2-1,ix3) + x%h2(ix1-1,ix2-1,ix3) + &
                    x%h2(ix1,ix2,ix3-1) + x%h2(ix1-1,ix2,ix3-1) + &
-                   x%h2(ix1,ix2-1,ix3-1) + x%h2(ix1-1,ix2-1,ix3-1) ) 
-        h3avg=1/8._wp*( x%h3(ix1,ix2,ix3) + x%h3(ix1-1,ix2,ix3) + & 
+                   x%h2(ix1,ix2-1,ix3-1) + x%h2(ix1-1,ix2-1,ix3-1) )
+        h3avg=1/8._wp*( x%h3(ix1,ix2,ix3) + x%h3(ix1-1,ix2,ix3) + &
                    x%h3(ix1,ix2-1,ix3) + x%h3(ix1-1,ix2-1,ix3) + &
                    x%h3(ix1,ix2,ix3-1) + x%h3(ix1-1,ix2,ix3-1) + &
                    x%h3(ix1,ix2-1,ix3-1) + x%h3(ix1-1,ix2-1,ix3-1) )
