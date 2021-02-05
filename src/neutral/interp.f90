@@ -88,7 +88,7 @@ else
 end if
 
 !MORE DIAG
-if (mpi_cfg%myid==mpi_cfg%lid/2) then
+if (mpi_cfg%myid==mpi_cfg%lid/2 .and. debug) then
   print *, 'Min/max values for dnOi:  ',minval(dnOinext),maxval(dnOinext)
   print *, 'Min/max values for dnN2i:  ',minval(dnN2inext),maxval(dnN2inext)
   print *, 'Min/max values for dnO2i:  ',minval(dnO2inext),maxval(dnO2inext)
