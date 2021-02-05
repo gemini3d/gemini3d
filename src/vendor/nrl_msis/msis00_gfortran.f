@@ -574,7 +574,7 @@ C
       COMMON/GTS3C/TLB,S,DB04,DB16,DB28,DB32,DB40,DB48,DB01,ZA,T0,Z0
      & ,G0,RL,DD,DB14,TR12
       COMMON/MESO7/TN1(5),TN2(4),TN3(5),TGN1(2),TGN2(2),TGN3(2)
-      DIMENSION D(9),T(2),MT(11),AP(1),ALTL(8)
+      DIMENSION D(9),T(2),MT(11),AP(7),ALTL(8)
 
       COMMON/PARM7g/PT(150),PD(150,9),PS(150),PDL(25,2),PTL(100,4),
      $ PMA(100,10),SAM(100)
@@ -964,7 +964,7 @@ C-----------------------------------------------------------------------
 C       CALCULATE G(L) FUNCTION
 C       Upper Thermosphere Parameters
       REAL LAT, LONG
-      DIMENSION P(1),SV(25),AP(1)
+      DIMENSION P(1),SV(25),AP(7)
       COMMON/TTEST/TINF,GB,ROUT,T(15)
       COMMON/CSW/SW(25),ISW,SWC(25)
       COMMON/LPOLY/PLG(9,4),CTLOC,STLOC,C2TLOC,S2TLOC,C3TLOC,S3TLOC,
