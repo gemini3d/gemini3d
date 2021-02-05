@@ -2,9 +2,17 @@ program test_excess_mpi
 
 use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
 
-use autogrid, only : checker=>test_process_number
+use autogrid, only : checker=>test_process_number, max_mpi
 
 implicit none (type, external)
+
+call check_autogrid()
+
+call check_auto_mpi()
+
+contains
+
+subroutine check_autogrid()
 
 integer :: i
 logical :: all_ok
@@ -54,5 +62,34 @@ enddo
 if (.not. all_ok) error stop 'process_grid_auto mismatch'
 
 print *, 'OK: auto process grid'
+
+end subroutine check_autogrid
+
+
+subroutine check_auto_mpi()
+
+integer :: i, j, O
+integer,parameter :: &
+L(3) = [4,16,40], &  !< length of dimension
+N(3) = [4,28,96], & !< number of CPU cores
+M(3,3) = reshape(&    !< expected auto-selected number of MPI images
+[2, 2, 2, &
+ 4, 8, 8, &
+ 4, 20, 20], shape=shape(M), order=[2,1])
+
+if (max_mpi(100,52, 1) /= 1) error stop "gcd(N,1) == 1"
+
+do i = 1,size(L)
+  do j = 1,size(N)
+    O = max_mpi(L(i), 1, N(j))
+    if (O /= M(i,j)) then
+      write(stderr,*) "ERROR:max_mpi",L(i),N(j),M(i,j),O
+      error stop
+    endif
+    if (M(i,j) /= max_mpi(1, L(i), N(j))) error stop
+  enddo
+enddo
+
+end subroutine check_auto_mpi
 
 end program
