@@ -137,16 +137,29 @@ module procedure get_neutral2_hdf5
 type(hdf5_file) :: hf
 real(wp) :: flagtmp
 
+real(wp), dimension(1:size(dnO,1),1:size(dnO,3)) :: buffer     !second dimension is singleton, so read data into a buffer so hdf5 doesn't complain
+integer :: lz,lx,ly
+
+lz=size(dnO,1)
+lx=size(dnO,2)   !should be 1
+ly=size(dnO,3)
+
 if (debug) print *, 'READ neutral 2D data from file: ', path
 
 call hf%initialize(path, status='old',action='r')
 
-call hf%read('/dn0all', dnO)
-call hf%read('/dnN2all', dnN2)
-call hf%read('/dnO2all', dnO2)
-call hf%read('/dvnrhoall', dvnrho)
-call hf%read('/dvnzall', dvnz)
-call hf%read('/dTnall', dTn)
+call hf%read('/dn0all', buffer)
+dnO=reshape(buffer,[lz,1,ly])
+call hf%read('/dnN2all', buffer)
+dnN2=reshape(buffer,[lz,1,ly])
+call hf%read('/dnO2all', buffer)
+dnO2=reshape(buffer,[lz,1,ly])
+call hf%read('/dvnrhoall', buffer)
+dvnrho=reshape(buffer,[lz,1,ly])
+call hf%read('/dvnzall', buffer)
+dvnz=reshape(buffer,[lz,1,ly])
+call hf%read('/dTnall', buffer)
+dTn=reshape(buffer,[lz,1,ly])
 
 call hf%finalize()
 
