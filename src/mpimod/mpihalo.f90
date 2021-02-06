@@ -296,12 +296,15 @@ end if
 !PASS DATA IN X3 DIRECTION
 if (.not. (x3begin .and. x3end)) then
   !! make sure we actually need to pass in this direction, viz. we aren't both the beginning and thend
-  call mpi_isend(param(:,:,1),lx1*lx2,mpi_realprec,idleft,tag,MPI_COMM_WORLD,tmpreq,ierr)
+  allocate(buffer(lx1,lx2))
+  buffer=param(:,:,1)
+  call mpi_isend(buffer,lx1*lx2,mpi_realprec,idleft,tag,MPI_COMM_WORLD,tmpreq,ierr)
   requests(1)=tmpreq
   call mpi_irecv(paramend,lx1*lx2,mpi_realprec,idright,tag,MPI_COMM_WORLD,tmpreq,ierr)
   requests(2)=tmpreq
 
   call mpi_waitall(2,requests,statuses,ierr)
+  deallocate(buffer)
 end if
 
 
