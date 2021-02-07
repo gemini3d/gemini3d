@@ -82,5 +82,5 @@ check_pygemini()
 endif(NOT PYGEMINI_DIR)
 
 if(NOT PYGEMINI_DIR)
-  message(STATUS "MISSING: PyGemini ${pygemini_git}   Many self-tests will not run.")
+  message(STATUS "MISSING: PyGemini ${pygemini_git}")
 endif()

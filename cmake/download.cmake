@@ -45,7 +45,7 @@ endforeach()
 
 endfunction(gemini_download_ref_data)
 
-if(CMAKE_SCRIPT_MODE_FILE)
+if(CMAKE_SCRIPT_MODE_FILE AND NOT CMAKE_PARENT_LIST_FILE)
   if(NOT names)
     message(FATAL_ERROR "specify reference data to download like:
       cmake -Dnames=\"2dns_fang;2dew_fang;3d_fang\" -P cmake/download.cmake")

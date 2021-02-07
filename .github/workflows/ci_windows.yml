@@ -31,9 +31,6 @@ jobs:
 
     - uses: actions/checkout@v2
 
-    - run: cmake -Dnames="2dew_fang" -P cmake/download.cmake
-      timeout-minutes: 2
-
     - run: cmake -B build
       timeout-minutes: 2
 

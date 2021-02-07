@@ -24,8 +24,6 @@ if(_ramGB LESS 2)
 endif()
 
 
-
-
 if(realbits EQUAL 32)
   message(VERBOSE " 32-bit real precision")
   set(arith s)

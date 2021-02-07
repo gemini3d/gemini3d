@@ -22,10 +22,6 @@ jobs:
       # transient CI download speed
 
 # CI is too slow for 3d_glow
-
-    - run: cmake -Dnames="2dns_fang;2dew_fang;2dns_glow;2dew_glow" -P cmake/download.cmake
-      timeout-minutes: 2
-
     - run: cmake -B build
       timeout-minutes: 5
       # mac is slower to configure
