@@ -16,8 +16,19 @@ set(version 2.4.0)
 set(host https://download.open-mpi.org/release/hwloc/v2.4)
 
 if(APPLE)
-  message(FATAL_ERROR "instead use https://brew.sh via 'brew install hwloc'")
-elseif(WIN32)
+  find_program(brew
+    NAMES brew
+    PATHS /usr/local /opt/homeebrew
+    PATH_SUFFIXES bin)
+
+  if(brew)
+    execute_process(COMMAND ${brew} install hwloc)
+  endif()
+
+  return()
+endif()
+
+if(WIN32)
   set(stem hwloc-win64-build-${version})
   set(name ${stem}.zip)
 else()
