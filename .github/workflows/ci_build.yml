@@ -18,7 +18,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - run: cmake -Ddownload="2dew_fang" -P cmake/download.cmake
+    - run: cmake -Dnames="2dew_fang" -P cmake/download.cmake
       timeout-minutes: 2
 
     - run: cmake -B build
@@ -46,7 +46,7 @@ jobs:
         sudo apt update -yq
         sudo apt install -yq --no-install-recommends gfortran libopenmpi-dev openmpi-bin libhdf5-dev
 
-    - run: cmake -Ddownload="2dns_fang;2dew_fang;2dns_glow;2dew_glow" -P cmake/download.cmake
+    - run: cmake -Dnames="2dns_fang;2dew_fang;2dns_glow;2dew_glow" -P cmake/download.cmake
       timeout-minutes: 2
 
     - run: cmake -B build
@@ -70,7 +70,7 @@ jobs:
       timeout-minutes: 5
       # transient CI download speed
 
-    - run: cmake -Ddownload="2dew_fang" -P cmake/download.cmake
+    - run: cmake -Dnames="2dew_fang" -P cmake/download.cmake
       timeout-minutes: 2
 
     - run: cmake -B build

@@ -27,7 +27,7 @@ logical :: exists
 cfg%outdir = path
 cfg%infile = path // '/inputs/config.nml'
 inquire(file=cfg%infile, exist=exists)
-if(.not.exists) error stop 'mpi_cli: not a file: ' // cfg%infile
+if(.not.exists) error stop 'gemini3d.run: not a file: ' // cfg%infile
 
 call read_configfile(cfg)
 

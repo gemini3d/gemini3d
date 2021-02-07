@@ -28,12 +28,10 @@ jobs:
           mingw-w64-x86_64-gcc-fortran
           mingw-w64-x86_64-hdf5
           mingw-w64-x86_64-lapack
-          mingw-w64-x86_64-python-h5py
-          mingw-w64-x86_64-python-scipy
 
     - uses: actions/checkout@v2
 
-    - run: cmake -Ddownload="2dew_fang" -P cmake/download.cmake
+    - run: cmake -Dnames="2dew_fang" -P cmake/download.cmake
       timeout-minutes: 2
 
     - run: cmake -B build

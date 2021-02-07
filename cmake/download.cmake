@@ -1,6 +1,8 @@
 # download reference data like:
 #
-# cmake -Ddownload="2dns_fang;2dew_fang;3d_fang" -P cmake/download.cmake
+# cmake -Dnames="2dns_fang;2dew_fang;3d_fang" -P cmake/download.cmake
+
+function(gemini_download_ref_data names)
 
 if(CMAKE_VERSION VERSION_LESS 3.19)
   file(READ ${CMAKE_CURRENT_LIST_DIR}/gemini3d_url.txt _refj)
@@ -8,19 +10,18 @@ else()
   file(READ ${CMAKE_CURRENT_LIST_DIR}/gemini3d_url.json _refj)
 endif()
 
-
-foreach(d ${download})
+foreach(name ${names})
 
   if(CMAKE_VERSION VERSION_LESS 3.19)
-    string(REGEX MATCH "${d} ([^ \t\r\n]*)" m ${_refj})
+    string(REGEX MATCH "${name} ([^ \t\r\n]*)" m ${_refj})
     set(url ${CMAKE_MATCH_1})
   else()
-    string(JSON url GET ${_refj} ${d} url)
+    string(JSON url GET ${_refj} ${name} url)
   endif()
 
-  set(archive_name test${d}.zip)
+  set(archive_name test${name}.zip)
   set(ref_root ${CMAKE_CURRENT_LIST_DIR}/../tests/data)
-  set(ref_dir ${ref_root}/test${d})
+  set(ref_dir ${ref_root}/test${name})
   set(archive ${ref_root}/${archive_name})
 
   if(EXISTS ${ref_dir}/inputs/config.nml)
@@ -41,3 +42,14 @@ foreach(d ${download})
   endif()
 
 endforeach()
+
+endfunction(gemini_download_ref_data)
+
+if(CMAKE_SCRIPT_MODE_FILE)
+  if(NOT names)
+    message(FATAL_ERROR "specify reference data to download like:
+      cmake -Dnames=\"2dns_fang;2dew_fang;3d_fang\" -P cmake/download.cmake")
+  endif()
+
+  gemini_download_ref_data("${names}")  # must have quotes to pass more than one value
+endif()
