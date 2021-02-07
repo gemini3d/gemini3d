@@ -28,7 +28,7 @@ target_link_libraries(test_potential2d PRIVATE const PDEelliptic MUMPS::MUMPS h5
 # it seems to have to be right here.
 if(mpi)
   add_test(NAME unit:potential2
-    COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${MPIEXEC_MAX_NUMPROCS} $<TARGET_FILE:test_potential2d> ${_potential_testfile}
+    COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${Ncpu} $<TARGET_FILE:test_potential2d> ${_potential_testfile}
     WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
 else()
   add_test(NAME unit:potential2
@@ -37,7 +37,8 @@ else()
 endif()
 set_tests_properties(unit:potential2 PROPERTIES TIMEOUT 30
   FIXTURES_SETUP GemPot
-  RESOURCE_LOCK cpu_mpi)
+  RESOURCE_LOCK cpu_mpi
+  DEPENDS unit:HWLOC)
 
 if(Python3_FOUND)
 

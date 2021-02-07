@@ -80,7 +80,7 @@ else(PYGEMINI_DIR)
   endif()
 
   if(mpi)
-    set(_cmd $<TARGET_FILE:gemini3d.run> ${_outdir} -n ${MPIEXEC_MAX_NUMPROCS} -gemexe $<TARGET_FILE:gemini.bin> -mpiexe ${MPIEXEC_EXECUTABLE})
+    set(_cmd $<TARGET_FILE:gemini3d.run> ${_outdir} -n ${Ncpu} -gemexe $<TARGET_FILE:gemini.bin> -mpiexe ${MPIEXEC_EXECUTABLE})
   else()
     set(_cmd $<TARGET_FILE:gemini.bin> ${_outdir})
   endif(mpi)
@@ -101,7 +101,8 @@ set_tests_properties(gemini:hdf5:${testname}:dryrun PROPERTIES
   TIMEOUT 60
   RESOURCE_LOCK cpu_mpi
   FIXTURES_REQUIRED mumps_fixture
-  FIXTURES_SETUP hdf5:${testname}:dryrun)
+  FIXTURES_SETUP hdf5:${testname}:dryrun
+  DEPENDS "unit:HWLOC;unit:gemini_exe_ok")
 
 
 add_test(NAME gemini:hdf5:${testname}
@@ -113,7 +114,8 @@ set_tests_properties(gemini:hdf5:${testname} PROPERTIES
   TIMEOUT ${TIMEOUT}
   RESOURCE_LOCK cpu_mpi
   FIXTURES_REQUIRED hdf5:${testname}:dryrun
-  FIXTURES_SETUP hdf5:${testname})
+  FIXTURES_SETUP hdf5:${testname}
+  DEPENDS "unit:HWLOC;unit:gemini_exe_ok")
 
 endif(hdf5)
 
@@ -125,7 +127,8 @@ set_tests_properties(gemini:netcdf:${testname}:dryrun PROPERTIES
   TIMEOUT 60
   RESOURCE_LOCK cpu_mpi
   FIXTURES_REQUIRED mumps_fixture
-  FIXTURES_SETUP netcdf:${testname}:dryrun)
+  FIXTURES_SETUP netcdf:${testname}:dryrun
+  DEPENDS "unit:HWLOC;unit:gemini_exe_ok")
 
 add_test(NAME gemini:netcdf:${testname}
   COMMAND ${_cmd} -out_format nc)
@@ -134,7 +137,8 @@ set_tests_properties(gemini:netcdf:${testname} PROPERTIES
   TIMEOUT ${TIMEOUT}
   RESOURCE_LOCK cpu_mpi
   FIXTURES_REQUIRED netcdf:${testname}:dryrun
-  FIXTURES_SETUP netcdf:${testname})
+  FIXTURES_SETUP netcdf:${testname}
+  DEPENDS "unit:HWLOC;unit:gemini_exe_ok")
 endif(netcdf)
 
 compare_gemini_output(${testname})

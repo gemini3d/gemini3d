@@ -1,10 +1,29 @@
+include(ProcessorCount)
+
+function(cmake_cpu_count)
+  # on ARM e.g. Raspberry Pi, the usually reliable cmake_host_system_info gives 1 instead of true count
+  # fallback to less reliable ProcessorCount which does work on Raspberry Pi.
+  ProcessorCount(_ncount)
+  cmake_host_system_information(RESULT Ncpu QUERY NUMBER_OF_PHYSICAL_CORES)
+
+  if(Ncpu EQUAL 1 AND _ncount GREATER 0)
+    set(Ncpu ${_ncount})
+  endif()
+
+  set(Ncpu ${Ncpu} PARENT_SCOPE)
+
+endfunction(cmake_cpu_count)
+cmake_cpu_count()
+
 cmake_host_system_information(RESULT _ramMiB QUERY TOTAL_PHYSICAL_MEMORY)
 cmake_host_system_information(RESULT _cpu QUERY PROCESSOR_DESCRIPTION)
 math(EXPR _ramGB "${_ramMiB} / 1000")
-message(STATUS "${_ramGB} GB RAM detected on ${CMAKE_HOST_SYSTEM_NAME} with ${_cpu}")
+message(STATUS "${_ramGB} GB RAM detected on ${CMAKE_HOST_SYSTEM_NAME} with ${_cpu}.  Detected ${Ncpu} CPU cores.")
 if(_ramGB LESS 2)
   message(WARNING "Minimum RAM is about 2 GB--some tests or simulations may fail due to small memory (RAM)")
 endif()
+
+
 
 
 if(realbits EQUAL 32)

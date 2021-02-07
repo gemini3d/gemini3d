@@ -16,7 +16,8 @@ character(1000) :: buf
 character(:), allocatable :: path, gem_exe, cmd, mpiexec, extra, git_revision
 logical :: exists
 
-Ncpu = 0
+Ncpu = get_cpu_count()
+print '(A,I0)', 'Detected CPU count: ', Ncpu
 
 git_revision = "@git_rev@"
 
@@ -54,12 +55,6 @@ do i = 2, argc
     extra = '-dryrun'
   end select
 end do
-
-!> auto CPU count detection
-if(Ncpu == 0) then
-  Ncpu = get_cpu_count()
-  print '(A,I0)', 'Detected CPU count: ', Ncpu
-endif
 
 !> Find gemini.bin, the main program
 if(.not.allocated(gem_exe)) then

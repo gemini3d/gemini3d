@@ -25,7 +25,9 @@ set_target_properties(gemini3d.run PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT
 set_target_properties(gemini3d.run PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include)
 
 add_test(NAME unit:gemini3d_run_ok COMMAND $<TARGET_FILE:gemini3d.run>)
-set_tests_properties(unit:gemini3d_run_ok PROPERTIES PASS_REGULAR_EXPRESSION "EOF: gemini3d.run")
+set_tests_properties(unit:gemini3d_run_ok PROPERTIES
+  PASS_REGULAR_EXPRESSION "EOF: gemini3d.run"
+  DEPENDS unit:HWLOC)
 
 function(cpu_count)
 # Ref: https://gitlab.kitware.com/cmake/cmake/-/blob/master/Modules/ProcessorCount.cmake
@@ -37,7 +39,15 @@ if(mpi)
   if(HWLOC_FOUND)
     # MSYS2 also has this
     target_sources(gemini3d.run PRIVATE get_cpu_hwloc.c)
+    target_include_directories(gemini3d.run PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
     target_link_libraries(gemini3d.run PRIVATE HWLOC::HWLOC)
+
+    add_executable(test_hwloc test_hwloc.c get_cpu_hwloc.c)
+    target_include_directories(test_hwloc PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+    target_link_libraries(test_hwloc PRIVATE HWLOC::HWLOC)
+    # NOTE: MPIEXEC_MAX_NUMPROCS is fallible, it uses less robust methods than hwloc! Particularly on ARM (Raspberry Pi)
+    add_test(NAME unit:HWLOC COMMAND $<TARGET_FILE:test_hwloc> ${Ncpu})
+
     return()
   endif()
 

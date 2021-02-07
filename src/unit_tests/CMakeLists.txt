@@ -10,11 +10,12 @@ endif()
 add_executable(test_mpi test_mpi.f90)
 target_link_libraries(test_mpi MPI::MPI_Fortran)
 add_test(NAME unit:mpi_basic
-COMMAND COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${MPIEXEC_MAX_NUMPROCS} $<TARGET_FILE:test_mpi> ${MPIEXEC_MAX_NUMPROCS})
+COMMAND COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${Ncpu} $<TARGET_FILE:test_mpi> ${Ncpu})
 
 set_tests_properties(unit:mpi_basic PROPERTIES
 TIMEOUT 15
-PROCESSORS ${MPIEXEC_MAX_NUMPROCS}
+PROCESSORS ${Ncpu}
+DEPENDS unit:HWLOC
 FIXTURES_SETUP mpi_fixture
 RESOURCE_LOCK cpu_mpi)
 
