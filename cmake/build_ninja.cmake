@@ -16,21 +16,36 @@ set(ver 1.10.2)
 set(host https://github.com/ninja-build/ninja/archive/)
 set(name v${ver}.tar.gz)
 
+function(checkup ninja)
+
+get_filename_component(path ${ninja} DIRECTORY)
+set(ep $ENV{PATH})
+if(NOT ep MATCHES ${path})
+  message(STATUS "add to environment variable PATH ${path}")
+endif()
+
+if(NOT DEFINED ENV{CMAKE_GENERATOR})
+  message(STATUS "add environment variable CMAKE_GENERATOR Ninja")
+endif()
+
+if(CMAKE_VERSION VERSION_LESS 3.17)
+  message(STATUS "Must install CMake >= 3.17 to use Ninja:
+    cmake -P ${CMAKE_CURRENT_LIST_DIR}/install_cmake.cmake")
+endif()
+
+endfunction(checkup)
+
 get_filename_component(prefix ${prefix} ABSOLUTE)
 set(path ${prefix}/ninja-${ver})
 
-message(STATUS "installing Ninja ${ver} to ${path}")
-
 find_program(ninja NAMES ninja PATHS ${path} PATH_SUFFIXES bin NO_DEFAULT_PATH)
 if(ninja)
-  get_filename_component(path ${ninja} DIRECTORY)
-  set(ep $ENV{PATH})
   message(STATUS "Ninja ${ver} already at ${ninja}")
-  if(NOT ep MATCHES "${path}")
-    message(STATUS "add to environment variable PATH  ${path}")
-  endif()
+  checkup(${ninja})
   return()
 endif()
+
+message(STATUS "installing Ninja ${ver} to ${path}")
 
 set(archive ${path}/${name})
 
@@ -83,9 +98,8 @@ if(NOT err EQUAL 0)
 endif()
 
 find_program(ninja NAMES ninja PATHS ${path} PATH_SUFFIXES bin NO_DEFAULT_PATH)
-if(ninja)
-  get_filename_component(path ${ninja} DIRECTORY)
-  message(STATUS "add to environment variable PATH ${path}")
-else()
+if(NOT ninja)
   message(FATAL_ERROR "failed to install Ninja from ${archive}")
 endif()
+
+checkup(${ninja})

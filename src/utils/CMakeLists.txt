@@ -34,8 +34,6 @@ function(cpu_count)
 # https://gitlab.kitware.com/search?group_id=415&project_id=541&repository_ref=master&scope=blobs&search=GetNumberOfPhysicalCPU&snippets=false
 # without hwloc, hyperthreading may give incorrect result
 if(mpi)
-  find_package(HWLOC)
-
   if(HWLOC_FOUND)
     # MSYS2 also has this
     target_sources(gemini3d.run PRIVATE get_cpu_hwloc.c)

@@ -62,4 +62,6 @@ endif()
 
 if(mpi)
 target_link_libraries(MUMPS::MUMPS INTERFACE SCALAPACK::SCALAPACK LAPACK::LAPACK)
+
+find_package(HWLOC)
 endif()

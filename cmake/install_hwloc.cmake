@@ -11,17 +11,17 @@ if(NOT prefix)
   endif()
 endif()
 
-set(ver 2.4.0)
+set(version 2.4.0)
 
 set(host https://download.open-mpi.org/release/hwloc/v2.4)
 
 if(APPLE)
   message(FATAL_ERROR "instead use https://brew.sh via 'brew install hwloc'")
 elseif(WIN32)
-  set(stem hwloc-win64-build-${ver})
+  set(stem hwloc-win64-build-${version})
   set(name ${stem}.zip)
 else()
-  set(stem hwloc-${ver})
+  set(stem hwloc-${version})
   set(name ${stem}.tar.bz2)
 endif()
 
@@ -30,7 +30,7 @@ set(url ${host}/${name})
 get_filename_component(prefix ${prefix} ABSOLUTE)
 set(path ${prefix}/${stem})
 
-message(STATUS "installing hwloc ${ver} to ${path}")
+message(STATUS "installing hwloc ${version} to ${path}")
 
 set(archive ${path}/${name})
 
@@ -60,10 +60,11 @@ if(WIN32)
   if(lstopo)
     get_filename_component(pathbin ${lstopo} DIRECTORY)
     message(STATUS "add to environment variable PATH ${pathbin}")
-    message(STATUS "add to environment variable HWLOC_ROOT ${path}/${stem}")
+    message(STATUS "add environment variable HWLOC_ROOT ${path}/${stem}")
   else()
     message(FATAL_ERROR "failed to install Ninja from ${archive}")
   endif()
+
   return()
 endif()
 
@@ -82,7 +83,7 @@ find_program(lstopo NAMES lstopo PATHS ${path} PATH_SUFFIXES bin NO_DEFAULT_PATH
   if(lstopo)
     get_filename_component(pathbin ${lstopo} DIRECTORY)
     message(STATUS "add to environment variable PATH ${pathbin}")
-    message(STATUS "add to environment variable HWLOC_ROOT ${path}")
+    message(STATUS "add environment variable HWLOC_ROOT ${path}")
   else()
     message(FATAL_ERROR "failed to install Ninja from ${archive}")
   endif()

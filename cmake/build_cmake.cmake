@@ -3,7 +3,13 @@
 # cmake -P build_cmake.cmake
 # will install CMake under the user's home directory.
 #
-# this script should work from CMake >= 2.8.12.
+# optionally, specify a specific CMake version like:
+#   cmake -Dversion="3.13.5" -P install_cmake.cmake
+#
+# This script can be used to install CMake >= 2.8.12.2 (e.g. for compatibility tests)
+# old CMake versions have broken file(DOWNLOAD)--they just "download" 0-byte files.
+
+cmake_minimum_required(VERSION 3.7)
 
 if(NOT prefix)
   if(WIN32)
@@ -13,27 +19,42 @@ if(NOT prefix)
   endif()
 endif()
 
-set(ver 3.19.4)
+if(NOT version)
+  set(version 3.19.4)
+endif()
 
-set(host https://github.com/Kitware/CMake/releases/download/v${ver}/)
-set(stem cmake-${ver})
+if(version VERSION_EQUAL 2.8.12)
+  set(version 2.8.12.2)
+endif()
+
+set(host https://github.com/Kitware/CMake/releases/download/v${version}/)
+set(stem cmake-${version})
 set(name ${stem}.tar.gz)
+
+function(checkup exe)
+
+get_filename_component(path ${exe} DIRECTORY)
+set(ep $ENV{PATH})
+if(NOT ep MATCHES ${path})
+  message(STATUS "add to environment variable PATH ${path}")
+endif()
+
+endfunction(checkup)
 
 get_filename_component(prefix ${prefix} ABSOLUTE)
 set(path ${prefix}/${stem})
 
-message(STATUS "installing CMake ${ver} to ${path}")
+
 
 find_program(cmake NAMES cmake PATHS ${path} PATH_SUFFIXES bin NO_DEFAULT_PATH)
 if(cmake)
-  get_filename_component(path ${cmake} DIRECTORY)
-  set(ep $ENV{PATH})
-  message(STATUS "CMake ${ver} already at ${cmake}")
-  if(NOT ep MATCHES "${path}")
-    message(STATUS "add to environment variable PATH  ${path}")
-  endif()
+  message(STATUS "CMake ${version} already at ${cmake}")
+
+  checkup(${cmake})
   return()
 endif()
+
+message(STATUS "installing CMake ${version} to ${path}")
 
 set(archive ${prefix}/${name})
 
@@ -49,7 +70,14 @@ endif()
 if(NOT EXISTS ${archive})
   set(url ${host}${name})
   message(STATUS "download ${url}")
-  file(DOWNLOAD ${url} ${archive} TLS_VERIFY ON SHOW_PROGRESS)
+  file(DOWNLOAD ${url} ${archive} TLS_VERIFY ON)
+
+  if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.14)
+    file(SIZE ${archive} fsize)
+    if(fsize LESS 1000000)
+      message(FATAL_ERROR "failed to download ${url}")
+    endif()
+  endif()
 endif()
 
 if(NOT IS_DIRECTORY ${path})
@@ -84,9 +112,8 @@ if(NOT err EQUAL 0)
 endif()
 
 find_program(cmake NAMES cmake PATHS ${path} PATH_SUFFIXES bin NO_DEFAULT_PATH)
-if(cmake)
-  get_filename_component(path ${cmake} DIRECTORY)
-  message(STATUS "add to environment variable PATH ${path}")
-else()
+if(NOT cmake)
   message(FATAL_ERROR "failed to install CMake from ${archive}")
 endif()
+
+checkup(${cmake})

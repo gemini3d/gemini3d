@@ -21,6 +21,24 @@ elseif(CMAKE_Fortran_COMPILER_ID STREQUAL IntelLLVM)
   endif()
 endif()
 
+# --- recommendations
+
+if(NOT CMAKE_GENERATOR MATCHES Ninja)
+  message(STATUS "Ninja builds/rebuilds much faster than Make for any software project.
+  Recommendation: Install Ninja build system:
+      cmake -P ${CMAKE_CURRENT_LIST_DIR}/install_ninja.cmake")
+endif()
+
+if(CMAKE_VERSION VERSION_LESS 3.17)
+  message(STATUS "Recommendation: Install CMake >= 3.17 by:
+    cmake -P ${CMAKE_CURRENT_LIST_DIR}/install_cmake.cmake")
+endif()
+
+if(NOT HWLOC_FOUND)
+  message(STATUS "Recommendation: consider installing HWLOC for auto-detect CPU count from gemini3d.run:
+    cmake -P ${CMAKE_CURRENT_LIST_DIR}/install_hwloc.cmake")
+endif()
+
 # --- summary
 set_package_properties(Git PROPERTIES
 TYPE REQUIRED
@@ -42,7 +60,7 @@ PURPOSE "Gemini uses NASA standard format HDF5 files to read and write compresse
 
 set_package_properties(MPI PROPERTIES
 TYPE RECOMMENDED
-DESCRIPTION "GEMINI uses MPI-2 standard"
+DESCRIPTION "GEMINI MPI-2 standard parallelization"
 PURPOSE "MPI gives massively parallel computation")
 
 set_package_properties(MUMPS PROPERTIES
@@ -69,12 +87,6 @@ TYPE OPTIONAL
 # DESCRIPTION "Python runtime"
 PURPOSE "PyGemini is the standard user interface for Gemini input/output/plotting")
 
-set_package_properties(LAPACK PROPERTIES
-TYPE REQUIRED
-URL "http://www.netlib.org/lapack/"
-DESCRIPTION "linear algebra library"
-PURPOSE "LAPACK solves parabolic and elliptical partial differential equations")
-
 set_package_properties(HWLOC PROPERTIES
 TYPE RECOMMENDED
 URL "https://www.open-mpi.org/projects/hwloc/"
@@ -84,7 +96,7 @@ PURPOSE "Determine the number of physical CPU cores on the host computer for gem
 # --- options
 
 add_feature_info(DevMode dev "Gemini developer mode")
-add_feature_info(MPI_gemini mpi "Use MPI parallelization")
+add_feature_info(MPI mpi "GEMINI MPI-2 standard parallelization")
 
 add_feature_info(GLOW glow "airglow / aurora model")
 add_feature_info(HWM14 hwm14 "HWM14 neutral winds model")
@@ -96,11 +108,12 @@ add_feature_info(PyGemini PYGEMINI_DIR "simulation generation, HPC script genera
 add_feature_info(MatGemini MATGEMINI_DIR "checks not as extensive as Python, and slow")
 
 add_feature_info(HDF5 hdf5 "file read / write")
-add_feature_info(AutoHDF5 hdf5_external "auto-build HDF5")
+add_feature_info(AutoHDF5 hdf5_external "build HDF5")
 
-add_feature_info(AutoMumps mumps_external "auto-build Mumps")
-add_feature_info(AutoScalapack scalapack_external "auto-build Scalapack")
-add_feature_info(AutoLapack lapack_external "auto-build Lapack")
+add_feature_info(AutoMumps mumps_external "build Mumps")
+add_feature_info(AutoScalapack scalapack_external "build Scalapack")
+add_feature_info(AutoLapack lapack_external "build Lapack")
 
 # print to screen
-feature_summary(WHAT ENABLED_FEATURES PACKAGES_FOUND)
+feature_summary(WHAT ENABLED_FEATURES)
+# PACKAGES_FOUND)

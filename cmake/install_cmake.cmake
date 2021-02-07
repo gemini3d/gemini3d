@@ -2,10 +2,16 @@
 # this handles the most common cases, but doesn't handle corner cases like 64-bit kernel with 32-bit user space
 # CMAKE_HOST_SYSTEM_PROCESSOR, CMAKE_HOST_SYSTEM_NAME don't work in CMake script mode
 #
-# cmake -P install_cmake.cmake
+#   cmake -P install_cmake.cmake
 # will install CMake under the user's home directory.
 #
-# this script should work from CMake >= 2.8.12.
+# optionally, specify a specific CMake version like:
+#   cmake -Dversion="3.13.5" -P install_cmake.cmake
+#
+# This script can be used to install CMake >= 2.8.12.2 (e.g. for compatibility tests)
+# old CMake versions have broken file(DOWNLOAD)--they just "download" 0-byte files.
+
+cmake_minimum_required(VERSION 3.7)
 
 if(NOT prefix)
   if(WIN32)
@@ -15,9 +21,27 @@ if(NOT prefix)
   endif()
 endif()
 
-set(ver 3.19.4)
+if(NOT version)
+  set(version 3.19.4)
+endif()
 
-set(host https://github.com/Kitware/CMake/releases/download/v${ver}/)
+if(version STREQUAL 2.8.12)
+  set(version 2.8.12.2)
+endif()
+
+set(host https://github.com/Kitware/CMake/releases/download/v${version}/)
+
+
+function(checkup exe)
+
+get_filename_component(path ${exe} DIRECTORY)
+set(ep $ENV{PATH})
+if(NOT ep MATCHES ${path})
+  message(STATUS "add to environment variable PATH ${path}")
+endif()
+
+endfunction(checkup)
+
 
 if(APPLE)
   message(STATUS "please use Homebrew https://brew.sh to install cmake:  'brew install cmake'
@@ -25,21 +49,35 @@ if(APPLE)
   return()
 elseif(UNIX)
   execute_process(COMMAND uname -m OUTPUT_VARIABLE arch OUTPUT_STRIP_TRAILING_WHITESPACE)
-  if(arch STREQUAL x86_64)
-    set(stem cmake-${ver}-Linux-x86_64)
+
+  if(version VERSION_LESS 3.1.0)
+    set(stem cmake-${version}-Linux-i386)
+  elseif(arch STREQUAL x86_64)
+    set(stem cmake-${version}-Linux-x86_64)
   elseif(arch STREQUAL aarch64)
-    set(stem cmake-${ver}-Linux-aarch64)
+    set(stem cmake-${version}-Linux-aarch64)
+  else()
+    message(FATAL_ERROR "unknown arch ${arch}.  Try:
+      cmake -P ${CMAKE_CURRENT_LIST_DIR}/build_cmake.cmake")
   endif()
+
   set(name ${stem}.tar.gz)
 elseif(WIN32)
   # https://docs.microsoft.com/en-us/windows/win32/winprog64/wow64-implementation-details?redirectedfrom=MSDN#environment-variables
   # CMake doesn't currently have binary downloads for ARM64 or IA64
   set(arch $ENV{PROCESSOR_ARCHITECTURE})
-  if(arch STREQUAL AMD64)
-    set(stem cmake-${ver}-win64-x64)
+
+  if(version VERSION_LESS 3.6.0)
+    set(stem cmake-${version}-win32-x86)
+  elseif(arch STREQUAL AMD64)
+    set(stem cmake-${version}-win64-x64)
   elseif(arch STREQUAL x86)
-    set(stem cmake-${ver}-win32-x86)
+    set(stem cmake-${version}-win32-x86)
+  else()
+    message(FATAL_ERROR "unknown arch ${arch}.  Try:
+      cmake -P ${CMAKE_CURRENT_LIST_DIR}/build_cmake.cmake")
   endif()
+
   set(name ${stem}.zip)
 endif()
 
@@ -50,22 +88,19 @@ endif()
 get_filename_component(prefix ${prefix} ABSOLUTE)
 set(path ${prefix}/${stem})
 
-message(STATUS "installing CMake ${ver} to ${prefix}")
-
 find_program(cmake NAMES cmake PATHS ${path} PATH_SUFFIXES bin NO_DEFAULT_PATH)
 if(cmake)
-  get_filename_component(path ${cmake} DIRECTORY)
-  set(ep $ENV{PATH})
-  message(STATUS "CMake ${ver} already at ${cmake}")
-  if(NOT ep MATCHES "${path}")
-    message(STATUS "add to environment variable PATH  ${path}")
-  endif()
+  message(STATUS "CMake ${version} already at ${cmake}")
+
+  checkup(${cmake})
   return()
 endif()
 
+message(STATUS "installing CMake ${version} to ${prefix}")
+
 set(archive ${prefix}/${name})
 
-if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.14)
+if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.14)  # CMake < 3.7 compatible
   if(EXISTS ${archive})
     file(SIZE ${archive} fsize)
     if(fsize LESS 1000000)
@@ -77,7 +112,14 @@ endif()
 if(NOT EXISTS ${archive})
   set(url ${host}${name})
   message(STATUS "download ${url}")
-  file(DOWNLOAD ${url} ${archive} TLS_VERIFY ON SHOW_PROGRESS)
+  file(DOWNLOAD ${url} ${archive} TLS_VERIFY ON)
+
+  if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.14)
+    file(SIZE ${archive} fsize)
+    if(fsize LESS 1000000)
+      message(FATAL_ERROR "failed to download ${url}")
+    endif()
+  endif()
 endif()
 
 message(STATUS "extracting to ${path}")
@@ -88,9 +130,8 @@ else()
 endif()
 
 find_program(cmake NAMES cmake PATHS ${path} PATH_SUFFIXES bin NO_DEFAULT_PATH)
-if(cmake)
-  get_filename_component(path ${cmake} DIRECTORY)
-  message(STATUS "add to environment variable PATH ${path}")
-else()
+if(NOT cmake)
   message(FATAL_ERROR "failed to install CMake from ${archive}")
 endif()
+
+checkup(${cmake})
