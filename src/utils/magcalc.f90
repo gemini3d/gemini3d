@@ -69,6 +69,10 @@ real(wp), dimension(:,:), allocatable :: Jxtop,Jytop,Jztop,Rxtop,Rytop,Rztop,Rcu
 real(wp), dimension(:,:), allocatable :: integrandtop
 real(wp), dimension(:,:), allocatable :: integrandavgtop
 
+real(wp), dimension(:,:), allocatable :: xpend,ypend,zpend
+real(wp), dimension(:,:), allocatable :: xptop,yptop,zptop
+
+
 integer :: ix1,ix2,ix3
 real(wp) :: rmean,thetamean
 
@@ -227,6 +231,9 @@ allocate(dVtop(lx1,lx3),Jxtop(lx1,lx3),Jytop(lx1,lx3),Jztop(lx1,lx3))
 allocate(Rxtop(lx1,lx3),Rytop(lx1,lx3),Rztop(lx1,lx3),Rcubedtop(lx1,lx3),Rmagtop(lx1,lx3))
 allocate(integrandtop(lx1,lx3),integrandavgtop(lx1-1,max(lx3-1,1)))
 
+allocate(xpend(lx1,lx2),ypend(lx1,lx2),zpend(lx1,lx2))
+allocate(xptop(lx1,lx3),yptop(lx1,lx3),zptop(lx1,lx3))
+
 
 !> note here that dV's are basically the backward diff volumes; later to be referenced as dV(2:end,2:end,2:end) and so on
 if (flag2D/=1) then   !3D differential volume
@@ -269,6 +276,12 @@ end if
 !   The halo_end routine will pass my "begin" and "bottom" pieces of dV to neighbors on the process grid
 call halo_end(dV,dVend,dVtop,tag%dV)
 !! need to define the differential volume on the edge of this x3-slab in
+
+
+!> now get the "end" and "top" pieces for the source coordinates
+call halo_end(xp,xpend,xptop,tag%Rx)    !just reuse position tag
+call halo_end(yp,ypend,yptop,tag%Ry)
+call halo_end(zp,zpend,zptop,tag%Rz)
 
 
 !> Compute projections needed to rotate current density components into magnetic coordinates
@@ -407,12 +420,21 @@ main : do while (t < cfg%tdur)
     end if
 
     ! compute r-r', including at endpoints needed to fully cover coordinate calculations for all differential volumes
+    ! note that the primed locations can be computed ONCE at the beginning of the simulation which will vastly reduce the amount of message passing
+!    Rx(:,:,:)=xf(ipoints)-xp(:,:,:)
+!    Ry(:,:,:)=yf(ipoints)-yp(:,:,:)
+!    Rz(:,:,:)=zf(ipoints)-zp(:,:,:)
+!    call halo_end(Rx,Rxend,Rxtop,tag%Rx)
+!    call halo_end(Ry,Ryend,Rytop,tag%Ry)
+!    call halo_end(Rz,Rzend,Rztop,tag%Rz)
+
     Rx(:,:,:)=xf(ipoints)-xp(:,:,:)
     Ry(:,:,:)=yf(ipoints)-yp(:,:,:)
     Rz(:,:,:)=zf(ipoints)-zp(:,:,:)
-    call halo_end(Rx,Rxend,Rxtop,tag%Rx)
-    call halo_end(Ry,Ryend,Rytop,tag%Ry)
-    call halo_end(Rz,Rzend,Rztop,tag%Rz)
+    Rxend(:,:)=xf(ipoints)-xpend(:,:); Rxtop(:,:)=xf(ipoints)-xptop(:,:)
+    Ryend(:,:)=yf(ipoints)-ypend(:,:); Rytop(:,:)=yf(ipoints)-yptop(:,:)
+    Rzend(:,:)=zf(ipoints)-zpend(:,:); Rztop(:,:)=zf(ipoints)-zptop(:,:)
+
 
     ! separately compute average distance for the denominator help with regulation issue and accounts for averaging over each differential volumes
     Rmag=0._wp
