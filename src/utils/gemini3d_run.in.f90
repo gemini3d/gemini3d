@@ -81,12 +81,15 @@ if(plan) stop
 !> Find gemini.bin, the main program
 if(.not.allocated(gem_exe)) gem_exe = 'gemini.bin'
 inquire(file=gem_exe, exist=exists)
-if(.not.exists) inquire(file=gem_exe // '.exe', exist=exists)
-if(exists) then
-  gem_exe = gem_exe // '.exe'
-else
-  error stop "please specify path to gemini.bin with '-gemexe path/to/gemini.bin'"
+if(.not.exists) then
+  inquire(file=gem_exe // '.exe', exist=exists)
+  if(exists) then
+    gem_exe = gem_exe // '.exe'
+  endif
 endif
+
+inquire(file=gem_exe, exist=exists)
+if(.not. exists) error stop "please specify path to gemini.bin with '-gemexe path/to/gemini.bin'"
 
 if(.not.allocated(mpiexec)) mpiexec = 'mpiexec'
 
