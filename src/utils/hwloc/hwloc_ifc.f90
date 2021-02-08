@@ -1,4 +1,5 @@
-submodule (runner) sysdet
+module hwloc_ifc
+!! hwloc is vital to accurate detecting of system CPU count
 
 use, intrinsic :: iso_c_binding, only : c_int
 use, intrinsic :: iso_fortran_env, only : int32
@@ -12,11 +13,11 @@ end interface
 
 contains
 
-module procedure get_cpu_count
+integer function get_cpu_count()
 
 get_cpu_count = int(cpu_count_c(), int32)
 
-end procedure get_cpu_count
+end function get_cpu_count
 
 
-end submodule sysdet
+end module hwloc_ifc

@@ -14,6 +14,8 @@ include(${CMAKE_CURRENT_LIST_DIR}/lapack.cmake)
 
 if(mpi)
   include(${CMAKE_CURRENT_LIST_DIR}/scalapack.cmake)
+
+  find_package(HWLOC)  # need here for cmake/summary.cmake scope
 endif()
 # --- MUMPS
 
@@ -62,6 +64,4 @@ endif()
 
 if(mpi)
 target_link_libraries(MUMPS::MUMPS INTERFACE SCALAPACK::SCALAPACK LAPACK::LAPACK)
-
-find_package(HWLOC)
 endif()

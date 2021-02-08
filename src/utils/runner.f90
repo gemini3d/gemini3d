@@ -7,11 +7,6 @@ use pathlib, only : get_suffix
 
 implicit none (type, external)
 
-interface
-module integer function get_cpu_count()
-end function get_cpu_count
-end interface
-
 contains
 
 subroutine clean_output(path)

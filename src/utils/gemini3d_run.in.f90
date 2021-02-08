@@ -2,7 +2,8 @@ program gemini3d_run
 !! for use from terminal/CMake, computes optimal MPI count
 !! for a particular simulation
 
-use runner, only : clean_output, get_cpu_count
+use hwloc_ifc, only : get_cpu_count
+use runner, only : clean_output
 use reader, only: get_simsize3
 use autogrid, only : grid_auto, max_mpi
 use help, only : help_gemini_run
