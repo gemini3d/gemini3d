@@ -31,3 +31,28 @@ add_executable(msis_setup msis_driver.f90)
 target_link_libraries(msis_setup PRIVATE msis_ifc const h5fortran::h5fortran)
 target_compile_options(msis_setup PRIVATE ${static_flag})
 set_target_properties(msis_setup PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
+
+if(${PROJECT_NAME}_BUILD_TESTING)
+
+set(_in ${PROJECT_SOURCE_DIR}/tests/data/msis_test_in.h5)
+set(_out ${CMAKE_CURRENT_BINARY_DIR}/msis_test_out.h5)
+set(_ref ${PROJECT_SOURCE_DIR}/tests/data/msis_test_out.h5)
+
+add_test(NAME unit:msis_setup
+  COMMAND $<TARGET_FILE:msis_setup> ${_in} ${_out} 0)
+set_tests_properties(unit:msis_setup PROPERTIES
+  FIXTURES_SETUP msis_fix
+  REQUIRED_FILES ${_in}
+  TIMEOUT 10)
+
+add_executable(msis_compare test_msis.f90)
+target_link_libraries(msis_compare PRIVATE msis_ifc h5fortran::h5fortran)
+
+add_test(NAME unit:msis_compare
+  COMMAND $<TARGET_FILE:msis_compare> ${_out} ${_ref})
+set_tests_properties(unit:msis_compare PROPERTIES
+  FIXTURES_REQUIRED msis_fix
+  TIMEOUT 10
+  REQUIRED_FILES "${_out};${_ref}")
+
+endif()
