@@ -17,6 +17,8 @@ foreach(name ${names})
     set(url ${CMAKE_MATCH_1})
   else()
     string(JSON url GET ${_refj} ${name} url)
+    # optional checksum
+    string(JSON md5 ERROR_VARIABLE e GET ${_refj} ${name} md5)
   endif()
 
   set(archive_name test${name}.zip)
@@ -29,9 +31,13 @@ foreach(name ${names})
   endif()
 
   if(NOT EXISTS ${archive})
-    message(STATUS "download ${archive}")
-
-    file(DOWNLOAD ${url} ${archive} TLS_VERIFY ON)
+    if(md5)
+      message(STATUS "download ${archive}  MD5: ${md5}")
+      file(DOWNLOAD ${url} ${archive} TLS_VERIFY ON EXPECTED_HASH MD5=${md5})
+    else()
+      message(STATUS "download ${archive}")
+      file(DOWNLOAD ${url} ${archive} TLS_VERIFY ON)
+    endif()
   endif()
 
   message(STATUS "extract ref data to ${ref_dir}")
