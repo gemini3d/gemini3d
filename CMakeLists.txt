@@ -35,14 +35,14 @@ include(cmake/mumps.cmake)
 include(cmake/compiler_flags.cmake)
 # this comes last to avoid intermittent failures
 
-# self-test simulations
+# all Gemini3D source code under this
+add_subdirectory(src)
+
+# self-test simulations -- after all targets for if(TARGET ...)
 include(cmake/matlab.cmake)
 include(cmake/python.cmake)
 include(cmake/test_setup.cmake)
 include(cmake/test_sim.cmake)
-
-# all Gemini3D source code under this
-add_subdirectory(src)
 
 # summary print
 include(cmake/summary.cmake)

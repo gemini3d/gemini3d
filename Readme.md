@@ -48,10 +48,15 @@ To build Gemini and run self-tests takes about 10 minutes on a laptop.
 Requirements:
 
 * Fortran 2008 compiler. See [compiler help](./docs/Readme_compilers.md) if needed.
-  * Gfortran (GCC)
-  * Intel oneAPI HPC Toolkit (free) or Intel Parallel Studio XE
-* MPI: any of OpenMPI, IntelMPI, MPICH, MS-MPI. See [MPI help](./docs/Readme_mpi.md) if needed.
-* [CMake](https://cmake.org/download/): if your CMake is too old, update by running `cmake -P cmake/install_cmake.cmake` or `cmake -P cmake/build_cmake.cmake` or from Python `pip install cmake`
+  * Gfortran / GCC &ge; 7
+  * Intel oneAPI HPC Toolkit (free to use for all)
+* [CMake](https://cmake.org/download/): if your CMake is too old, update by running `cmake -P cmake/install_cmake.cmake` or from Python `pip install cmake`
+* Git: the Gemini3D software stack uses Git to version lock reproducible builds.
+
+Recommended:
+
+* MPI: any of OpenMPI, IntelMPI, MPICH, MS-MPI. See [MPI help](./docs/Readme_mpi.md) if needed. Without MPI, Gemini3D uses one CPU core only.
+* [Ninja](https://ninja-build.org/) will build/rebuild much faster than GNU Make for any software project. `cmake -P cmake/install_ninja.cmake`
 
 1. get the Gemini code
 
@@ -76,7 +81,7 @@ To help ensure successful simulations, run the self-tests:
 ```sh
 cd build
 
-ctest -V
+ctest
 ```
 
 ## How to setup a sim

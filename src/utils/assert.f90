@@ -18,9 +18,7 @@ elemental logical function isclose(actual, desired, rtol, atol, equal_nan)
 !! * desired: value "wanted"
 !! * rtol: relative tolerance
 !! * atol: absolute tolerance
-!! * equal_nan: consider NaN to be equal?
-!!
-!!  rtol overrides atol when both are specified
+!! * equal_nan: consider NaN to be equal
 !!
 !! https://www.python.org/dev/peps/pep-0485/#proposed-implementation
 !! https://github.com/PythonCHB/close_pep/blob/master/is_close.py
@@ -112,10 +110,8 @@ impure elemental subroutine assert_allclose(actual, desired, rtol, atol, equal_n
 !! *  desired: value "wanted"
 !! *  rtol: relative tolerance
 !! *  atol: absolute tolerance
-!! *  equal_nan: consider NaN to be equal?
+!! *  equal_nan: consider NaN to be equal
 !! *  err_msg: message to print on mismatch
-!!
-!! rtol overrides atol when both are specified
 
 class(*), intent(in) :: actual, desired
 class(*), intent(in), optional :: rtol, atol
@@ -146,7 +142,7 @@ end select
 if (present(err_msg)) then
   emsg = err_msg
 else
-  emsg = ''
+  emsg = 'assert: MISMATCH'
 endif
 
 if (.not.isclose(act, des, rtol,atol,equal_nan)) then

@@ -42,6 +42,8 @@ add_subdirectory(sources)
 add_library(multifluid OBJECT multifluid/multifluid.f90)
 target_link_libraries(multifluid PRIVATE advec calculus collision const diffusion grid mesh ionization mpimod precipBCs sources timeutils config)
 
+add_subdirectory(utils)
+
 # --- Main GEMINI executable
 configure_file(gemini_cli.in.f90 gemini_cli.f90 @ONLY)
 add_executable(gemini.bin gemini.f90 ${CMAKE_CURRENT_BINARY_DIR}/gemini_cli.f90)
@@ -53,12 +55,11 @@ target_link_libraries(gemini.bin PRIVATE MUMPS::MUMPS MPI::MPI_Fortran MPI::MPI_
 # Note: CMake 3.13 needs MPI linked here explicity to gemini.bin on any OS
 
 add_test(NAME unit:gemini_exe_ok COMMAND $<TARGET_FILE:gemini.bin>)
-set_tests_properties(unit:gemini_exe_ok PROPERTIES PASS_REGULAR_EXPRESSION "EOF: gemini.bin")
+set_tests_properties(unit:gemini_exe_ok PROPERTIES
+  PASS_REGULAR_EXPRESSION "EOF: gemini.bin"
+  FIXTURES_SETUP gemini_exe_fix
+  FIXTURES_REQUIRED "mumps_fixture;hwloc_fix")
 
 # --- apply properties
 
 set_targ_props(autogrid calculus collision config const fang fang_run io ionization gbsv logging mpimod multifluid neutral pathlib precipBCs reader sanity_check sources temporal timeutils)
-
-# --- extra programs
-
-add_subdirectory(utils)

@@ -6,12 +6,13 @@ function(setup_gemini_test testname TIMEOUT)
 # --- setup test
 set(outdir ${PROJECT_BINARY_DIR}/test${testname})
 set(refroot ${PROJECT_SOURCE_DIR}/tests/data)
-set(refdir ${refroot}/test${testname}/inputs)
+set(refdir ${refroot}/test${testname})
 
 add_test(NAME gemini:${testname}:setup
-  COMMAND ${CMAKE_COMMAND} -Dtestname=${testname} -Doutdir=${outdir} -Drefdir=${refdir} -P ${CMAKE_CURRENT_LIST_DIR}/extract.cmake)
+  COMMAND ${CMAKE_COMMAND} -Dtestname=${testname} -Doutdir=${outdir} -Drefdir=${refdir}/inputs -P ${CMAKE_CURRENT_LIST_DIR}/extract.cmake)
 set_tests_properties(gemini:${testname}:setup PROPERTIES
   FIXTURES_SETUP ${testname}_setup
+  FIXTURES_REQUIRED gemini_exe_fix
   TIMEOUT 180)
 
 # construct command
@@ -38,9 +39,9 @@ add_test(NAME gemini:hdf5:${testname}:dryrun
 set_tests_properties(gemini:hdf5:${testname}:dryrun PROPERTIES
   TIMEOUT 60
   RESOURCE_LOCK cpu_mpi
-  FIXTURES_REQUIRED "mumps_fixture;${testname}_setup"
+  FIXTURES_REQUIRED ${testname}_setup
   FIXTURES_SETUP hdf5:${testname}:dryrun
-  DEPENDS "unit:HWLOC;unit:gemini_exe_ok")
+  REQUIRED_FILES ${outdir}/inputs/config.nml)
 
 
 add_test(NAME gemini:hdf5:${testname} COMMAND ${test_cmd})
@@ -49,9 +50,7 @@ set_tests_properties(gemini:hdf5:${testname} PROPERTIES
   TIMEOUT ${TIMEOUT}
   RESOURCE_LOCK cpu_mpi
   FIXTURES_REQUIRED hdf5:${testname}:dryrun
-  FIXTURES_SETUP hdf5:${testname}
-  DEPENDS "unit:HWLOC;unit:gemini_exe_ok"
-  REQUIRED_FILES ${outdir}/inputs/config.nml)
+  FIXTURES_SETUP hdf5:${testname})
 
 endif(hdf5)
 
@@ -65,7 +64,6 @@ set_tests_properties(gemini:netcdf:${testname}:dryrun PROPERTIES
   RESOURCE_LOCK cpu_mpi
   FIXTURES_REQUIRED "mumps_fixture;${testname}_setup"
   FIXTURES_SETUP netcdf:${testname}:dryrun
-  DEPENDS "unit:HWLOC;unit:gemini_exe_ok"
   REQUIRED_FILES ${outdir}/inputs/config.nml)
 
 add_test(NAME gemini:netcdf:${testname}
@@ -75,10 +73,9 @@ set_tests_properties(gemini:netcdf:${testname} PROPERTIES
   TIMEOUT ${TIMEOUT}
   RESOURCE_LOCK cpu_mpi
   FIXTURES_REQUIRED netcdf:${testname}:dryrun
-  FIXTURES_SETUP netcdf:${testname}
-  DEPENDS "unit:HWLOC;unit:gemini_exe_ok")
+  FIXTURES_SETUP netcdf:${testname})
 endif(netcdf)
 
-compare_gemini_output(${testname})
+compare_gemini_output(${testname} ${outdir} ${refdir})
 
 endfunction(setup_gemini_test)
