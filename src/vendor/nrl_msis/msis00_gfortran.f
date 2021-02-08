@@ -1,5 +1,6 @@
       module msise00_gemini
 C     module to avoid link conflicts
+      use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
       use msise00_data_gemini, only : parm7g, ptm, pdm, pavgm, imr
 
       private
@@ -213,7 +214,9 @@ C         Only calculate nodes if input changed
      $  *TN2(4)*TN2(4)/(PMA(1,3)*PAVGM(3))**2
         TN3(1)=TN2(4)
        ENDIF
-       IF(ALT.GE.ZN3(1)) GOTO 6
+C Including ZN3(1) in the jump condition creates a model coverage gap at that exact altitude
+C       IF(ALT.GE.ZN3(1)) GOTO 6
+       IF(ALT.GT.ZN3(1)) GOTO 6
 C
 C       LOWER STRATOSPHERE AND TROPOSPHERE [below ZN3(1)]
 C         Temperature at nodes and gradients at end nodes
@@ -444,7 +447,7 @@ C         New altitude estimate using scale height
         ENDIF
         GOTO 10
    20 CONTINUE
-      IF(L.EQ.LTEST) WRITE(6,100) PRESS,DIFF
+      IF(L.EQ.LTEST) write(stderr,100) PRESS,DIFF
   100 FORMAT(1X,29HGHP7 NOT CONVERGING FOR PRESS, 1PE12.2,E12.2)
       ALT=Z
 
@@ -964,7 +967,7 @@ C-----------------------------------------------------------------------
 C       CALCULATE G(L) FUNCTION
 C       Upper Thermosphere Parameters
       REAL LAT, LONG
-      DIMENSION P(1),SV(25),AP(7)
+      DIMENSION P(150),SV(25),AP(7)
       COMMON/TTEST/TINF,GB,ROUT,T(15)
       COMMON/CSW/SW(25),ISW,SWC(25)
       COMMON/LPOLY/PLG(9,4),CTLOC,STLOC,C2TLOC,S2TLOC,C3TLOC,S3TLOC,
@@ -1192,7 +1195,7 @@ C        FOR ON, OR 2. FOR MAIN EFFECTS OFF BUT CROSS TERMS ON
 C
 C        To get current values of SW: CALL TRETRV(SW)
 C
-      DIMENSION SV(1),SAV(25),SVV(1)
+      DIMENSION SV(25),SAV(25),SVV(25)
       COMMON/CSW/SW(25),ISW,SWC(25)
       SAVE
       DO 100 I = 1,25
@@ -1218,16 +1221,16 @@ C      VERSION OF GLOBE FOR LOWER ATMOSPHERE 10/26/99
       COMMON/LPOLY/PLG(9,4),CTLOC,STLOC,C2TLOC,S2TLOC,C3TLOC,S3TLOC,
      $ IYR,DAY,DF,DFA,APD,APDF,APT(4),LONG
       COMMON/CSW/SW(25),ISW,SWC(25)
-      DIMENSION P(1),T(14)
+      DIMENSION P(*),T(14)
       SAVE
       DATA DR/1.72142E-2/,DGTR/1.74533E-2/,PSET/2./
       DATA DAYL/-1./,P32,P18,P14,P39/4*-1000./
 C       CONFIRM PARAMETER SET
       IF(P(100).EQ.0) P(100)=PSET
       IF(P(100).NE.PSET) THEN
-        WRITE(6,900) PSET,P(100)
+        write(stderr,900) PSET,P(100)
   900   FORMAT(1X,'WRONG PARAMETER SET FOR GLOB7S',3F10.1)
-        STOP
+        error stop
       ENDIF
       DO 10 J=1,14
         T(J)=0.
@@ -1537,7 +1540,7 @@ C        Y: OUTPUT VALUE
         GOTO 1
       ENDIF
       H=XA(KHI)-XA(KLO)
-      IF(H.EQ.0) WRITE(6,*) 'BAD XA INPUT TO SPLINT'
+      IF(H.EQ.0) write(stderr,*) 'BAD XA INPUT TO SPLINT'
       A=(XA(KHI)-X)/H
       B=(X-XA(KLO))/H
       Y=A*YA(KLO)+B*YA(KHI)+
@@ -1589,7 +1592,8 @@ C          DNET - combined density
       SAVE
       A=ZHM/(XMM-XM)
       IF(DM.GT.0.AND.DD.GT.0) GOTO 5
-        WRITE(6,*) 'DNET LOG ERROR',DM,DD,XM
+        WRITE(stderr,*) 'DNET LOG ERROR',DM,DD,XM
+        error stop
         IF(DD.EQ.0.AND.DM.EQ.0) DD=1.
         IF(DM.EQ.0) GOTO 10
         IF(DD.EQ.0) GOTO 20
