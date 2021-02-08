@@ -38,6 +38,7 @@ print '(A)', 'Compiler vendor: '// get_compiler_vendor()
 print '(A)', 'Compiler version: ' // compiler_version()
 print '(/,A)', 'must specify simulation output directory. Example:'
 print '(/,A,/)', '  build/gemini3d.run /path/to/simulation_outputs'
+print '(A)', '-plan  print MPI partition x2,x3 for given CPU count'
 print '(A)', '-dryrun    allows quick check of first time step'
 print '(A)', '-n   manually specify number of MPI images (default auto-calculate)'
 print '(A)', '-gemexe   path to gemini.bin'

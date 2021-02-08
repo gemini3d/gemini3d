@@ -15,10 +15,12 @@ implicit none (type, external)
 integer :: i, lx1, lx2all, lx3all, lid, lid2, lid3, Ncpu, argc
 character(1000) :: buf
 character(:), allocatable :: path, gem_exe, cmd, mpiexec, extra, git_revision
-logical :: exists
+logical :: exists, plan
+
+plan = .false.
 
 Ncpu = get_cpu_count()
-print '(A,I0)', 'Detected CPU count: ', Ncpu
+print '(A,I0)', 'gemini3d.run: detected CPU count: ', Ncpu
 
 git_revision = "@git_rev@"
 
@@ -54,27 +56,10 @@ do i = 2, argc
     if(.not.exists) error stop mpiexec // ' is not a file.'
   case ('-dryrun')
     extra = '-dryrun'
+  case ('-plan')
+    plan = .true.
   end select
 end do
-
-!> Find gemini.bin, the main program
-if(.not.allocated(gem_exe)) then
-  gem_exe = 'gemini.bin'
-  inquire(file=gem_exe, exist=exists)
-  if(.not.exists) gem_exe = "gemini.bin.exe"
-  inquire(file=gem_exe, exist=exists)
-  if(.not.exists) error stop "please specify path to gemini.bin with '-gemexe path/to/gemini.bin'"
-else
-  inquire(file=gem_exe, exist=exists)
-  if(.not.exists) error stop gem_exe // ' is not a file.'
-endif
-
-if(.not.allocated(mpiexec)) mpiexec = 'mpiexec'
-
-if(.not.allocated(extra)) extra = ''
-
-!> remove old output files
-call clean_output(path)
 
 !> setup run
 call get_simsize3(path // '/inputs', lx1, lx2all, lx3all)
@@ -87,6 +72,28 @@ endif
 
 !> checks consistency
 call grid_auto(lx2all, lx3all, lid, lid2, lid3)
+
+print '(A,I0,A1,I0,A,I0,A1,I0,A,I0)', 'MPI partition of lx2, lx3: ', lx2all, ' ',lx3all, &
+' is lid2, lid3: ',lid2,' ',lid3, ' using total MPI images: ', lid
+
+if(plan) stop
+
+!> Find gemini.bin, the main program
+if(.not.allocated(gem_exe)) gem_exe = 'gemini.bin'
+inquire(file=gem_exe, exist=exists)
+if(.not.exists) inquire(file=gem_exe // '.exe', exist=exists)
+if(exists) then
+  gem_exe = gem_exe // '.exe'
+else
+  error stop "please specify path to gemini.bin with '-gemexe path/to/gemini.bin'"
+endif
+
+if(.not.allocated(mpiexec)) mpiexec = 'mpiexec'
+
+if(.not.allocated(extra)) extra = ''
+
+!> remove old output files
+call clean_output(path)
 
 !> run gemini.bin
 if(lid > 1) then
