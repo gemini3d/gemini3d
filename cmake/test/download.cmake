@@ -1,6 +1,6 @@
 # download reference data like:
 #
-# cmake -Dnames="2dns_fang;2dew_fang;3d_fang" -P cmake/download.cmake
+# cmake -Dnames="2dns_fang;2dew_fang;3d_fang" -P cmake/test/download.cmake
 
 function(gemini_download_ref_data names)
 
@@ -22,7 +22,7 @@ foreach(name ${names})
   endif()
 
   set(archive_name test${name}.zip)
-  set(ref_root ${CMAKE_CURRENT_LIST_DIR}/../tests/data)
+  set(ref_root ${PROJECT_SOURCE_DIR}/tests/data)
   set(ref_dir ${ref_root}/test${name})
   set(archive ${ref_root}/${archive_name})
 
@@ -54,7 +54,7 @@ endfunction(gemini_download_ref_data)
 if(CMAKE_SCRIPT_MODE_FILE AND NOT CMAKE_PARENT_LIST_FILE)
   if(NOT names)
     message(FATAL_ERROR "specify reference data to download like:
-      cmake -Dnames=\"2dns_fang;2dew_fang;3d_fang\" -P cmake/download.cmake")
+      cmake -Dnames=\"2dns_fang;2dew_fang;3d_fang\" -P cmake/test/download.cmake")
   endif()
 
   gemini_download_ref_data("${names}")  # must have quotes to pass more than one value

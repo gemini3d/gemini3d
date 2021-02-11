@@ -18,7 +18,7 @@ set_target_properties(msis_ifc PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_CURRE
 # --- optional MSIS 2.0
 
 if(msis20)
-  include(${PROJECT_SOURCE_DIR}/cmake/msis2.cmake)
+  include(${PROJECT_SOURCE_DIR}/cmake/ext_libs/msis2.cmake)
   target_link_libraries(msis_ifc PRIVATE msis2)
   target_compile_options(msis2 PRIVATE ${msis_flags})
 else(msis20)

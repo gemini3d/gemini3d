@@ -53,7 +53,7 @@ endif()
 # Do these before compiler options so options don't goof up finding
 
 if(mpi)
-  include(${CMAKE_CURRENT_LIST_DIR}/mpi.cmake)
+  include(${PROJECT_SOURCE_DIR}/cmake/ext_libs/mpi.cmake)
 endif(mpi)
 
 if(NOT mpi)

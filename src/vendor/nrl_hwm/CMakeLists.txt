@@ -1,7 +1,7 @@
 # --- build abstract HWM interface
 # default is HWM14
 
-include(${PROJECT_SOURCE_DIR}/cmake/hwm14.cmake)
+include(${PROJECT_SOURCE_DIR}/cmake/ext_libs/hwm14.cmake)
 
 add_library(hwm_ifc OBJECT hwm_interface.f90)
 target_link_libraries(hwm_ifc PRIVATE HWM14::HWM14)

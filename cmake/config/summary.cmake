@@ -26,17 +26,17 @@ endif()
 if(NOT CMAKE_GENERATOR MATCHES Ninja)
   message(STATUS "Ninja builds/rebuilds much faster than Make for any software project.
   Recommendation: Install Ninja build system:
-      cmake -P ${CMAKE_CURRENT_LIST_DIR}/install_ninja.cmake")
+      cmake -P ${PROJECT_SOURCE_DIR}/scripts/install_ninja.cmake")
 endif()
 
 if(CMAKE_VERSION VERSION_LESS 3.17)
   message(STATUS "Recommendation: Install CMake >= 3.17 by:
-    cmake -P ${CMAKE_CURRENT_LIST_DIR}/install_cmake.cmake")
+    cmake -P ${PROJECT_SOURCE_DIR}/scripts/install_cmake.cmake")
 endif()
 
 if(mpi AND NOT HWLOC_FOUND)
   message(STATUS "Recommendation: consider installing HWLOC for auto-detect CPU count from gemini3d.run:
-    cmake -P ${CMAKE_CURRENT_LIST_DIR}/install_hwloc.cmake")
+    cmake -P ${PROJECT_SOURCE_DIR}/scripts/install_hwloc.cmake")
 endif()
 
 # --- summary

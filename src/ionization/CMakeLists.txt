@@ -19,7 +19,7 @@ endif(Python3_FOUND)
 endif(${PROJECT_NAME}_BUILD_TESTING)
 
 if(glow)
-  include(${PROJECT_SOURCE_DIR}/cmake/glow.cmake)
+  include(${PROJECT_SOURCE_DIR}/cmake/ext_libs/glow.cmake)
 
   # DATADIR comes from glow project BUILD_INTERFACE COMPILE_DEFINITIONS
   # this does not seem to work with get_target_property()

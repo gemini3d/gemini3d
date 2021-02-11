@@ -1,5 +1,5 @@
 # this file defines simulation tests.
-# The names of these must match those in cmake/gemini3d_url.json
+# The names of these must match those in cmake/config/gemini3d_url.json
 
 set(sim_timeout 1800)  # seconds to allow simulation tests to run
 

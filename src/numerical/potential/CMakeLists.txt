@@ -33,7 +33,7 @@ target_link_libraries(test_potential2d PRIVATE const h5fortran::h5fortran
 # MPI_C is needed here, else will not compile on MinGW with Ninja or Make.
 # LINK_INTERFACE_MULTIPLICITY and IMPORTED_LINK_INTERFACE_MULTIPLICITY do not help here.
 # adding INTERFACE to Mumps project didn't help either
-# nor did adding them in cmake/mumps.cmake
+# nor did adding them in mumps.cmake
 # it seems to have to be right here.
 if(mpi)
   target_link_libraries(test_potential2d PRIVATE SCALAPACK::SCALAPACK)

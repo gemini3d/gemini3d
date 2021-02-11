@@ -37,6 +37,7 @@ execute_process(COMMAND ${GIT_EXECUTABLE} describe --tags
   OUTPUT_STRIP_TRAILING_WHITESPACE
   RESULT_VARIABLE _err)
 if(NOT _err EQUAL 0)
+  # old Git
   execute_process(COMMAND ${GIT_EXECUTABLE} rev-parse --short HEAD
     WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
     OUTPUT_VARIABLE git_rev
