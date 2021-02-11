@@ -34,7 +34,7 @@ if(CMAKE_VERSION VERSION_LESS 3.17)
     cmake -P ${CMAKE_CURRENT_LIST_DIR}/install_cmake.cmake")
 endif()
 
-if(NOT HWLOC_FOUND)
+if(mpi AND NOT HWLOC_FOUND)
   message(STATUS "Recommendation: consider installing HWLOC for auto-detect CPU count from gemini3d.run:
     cmake -P ${CMAKE_CURRENT_LIST_DIR}/install_hwloc.cmake")
 endif()

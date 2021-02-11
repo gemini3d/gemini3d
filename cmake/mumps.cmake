@@ -47,14 +47,22 @@ endif()
 
 set(mumps_external true CACHE BOOL "build Mumps")
 
+# cache to override mumps option(parallel on)
+set(parallel ${mpi} CACHE BOOL "Mumps parallel = Gemini mpi")
+
 FetchContent_Declare(MUMPS
   GIT_REPOSITORY ${mumps_git}
   GIT_TAG ${mumps_tag}
-  CMAKE_ARGS -Darith=${arith} -Dparallel=${mpi} -Dmetis:BOOL=${metis} -Dscotch:BOOL=${scotch} -Dopenmp:BOOL=false)
+  CMAKE_ARGS -Darith=${arith} -Dmetis:BOOL=${metis} -Dscotch:BOOL=${scotch} -Dopenmp:BOOL=false)
 
 if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.14)
   FetchContent_MakeAvailable(MUMPS)
 elseif(NOT mumps_POPULATED)
   FetchContent_Populate(MUMPS)
   add_subdirectory(${mumps_SOURCE_DIR} ${mumps_BINARY_DIR})
+endif()
+
+if(NOT mpi)
+  add_library(MUMPS::mpiseq INTERFACE IMPORTED)
+  target_link_libraries(MUMPS::mpiseq INTERFACE mpiseq)
 endif()

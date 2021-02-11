@@ -8,7 +8,7 @@ if(NOT mpi)
 endif()
 
 add_executable(test_mpi test_mpi.f90)
-target_link_libraries(test_mpi MPI::MPI_Fortran)
+target_link_libraries(test_mpi PRIVATE MPI::MPI_Fortran)
 add_test(NAME unit:mpi_basic
 COMMAND COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${Ncpu} $<TARGET_FILE:test_mpi> ${Ncpu})
 
@@ -38,7 +38,8 @@ FIXTURES_SETUP scalapack_fixture)
 
 # --- MUMPS
 add_executable(test_mumps test_mumps.f90)
-target_link_libraries(test_mumps PRIVATE mumps_interface MPI::MPI_Fortran)
+target_link_libraries(test_mumps PRIVATE mumps_interface
+  MUMPS::MUMPS SCALAPACK::SCALAPACK LAPACK::LAPACK MPI::MPI_Fortran)
 
 add_test(NAME unit:mumps_basic
 COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} 2 $<TARGET_FILE:test_mumps>

@@ -9,7 +9,8 @@ target_include_directories(helpmod INTERFACE ${CMAKE_CURRENT_BINARY_DIR}/include
 #--------magnetic field calculation executable---------------
 configure_file(magcalc_cli.in.f90 magcalc_cli.f90 @ONLY)
 add_executable(magcalc.bin)
-target_sources(magcalc.bin PRIVATE magcalc.f90 ${CMAKE_CURRENT_BINARY_DIR}/magcalc_cli.f90)
+target_sources(magcalc.bin PRIVATE magcalc.f90 ${CMAKE_CURRENT_BINARY_DIR}/magcalc_cli.f90
+$<TARGET_OBJECTS:autogrid>)
 target_link_libraries(magcalc.bin PRIVATE helpmod config const grid io mesh mpimod pathlib reader sanity_check timeutils h5fortran::h5fortran)
 set_target_properties(magcalc.bin PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
 
