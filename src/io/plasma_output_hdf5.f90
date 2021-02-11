@@ -17,6 +17,9 @@ character(:), allocatable :: filenamefull
 integer :: lx1,lx2all,lx3all,isp
 type(hdf5_file) :: hout
 
+! single precision work arrays
+real, dimension(:,:,:), allocatable :: permarray
+real, dimension(:,:,:,:), allocatable :: permarray4D
 
 !! SYSTEM SIZES
 lx1=size(Phiall,1)
@@ -64,39 +67,56 @@ if (flagswap/=1) then
     end select
 else
 !! 2D simulation that has been swapped around
+  allocate(permarray(lx1,lx3all,lx2all))    !temporary work array that has been permuted  
   select case (flagoutput)
     case (2)    !averaged parameters
-      call hout%write('neall',    real(neall))
-      call hout%write('v1avgall', real(v1avgall))
-      call hout%write('Tavgall',  real(Tavgall))
-      call hout%write('TEall',    real(Teall))
-
-      call hout%write('J1all',    real(J1all))
+      permarray=reshape(real(neall),[lx1,lx3all,lx2all],order=[1,3,2])
+      call hout%write('neall',    permarray)
+      permarray=reshape(real(v1avgall),[lx1,lx3all,lx2all],order=[1,3,2])
+      call hout%write('v1avgall', permarray)
+      permarray=reshape(real(Tavgall),[lx1,lx3all,lx2all],order=[1,3,2])
+      call hout%write('Tavgall',  permarray)
+      permarray=reshape(real(Teall),[lx1,lx3all,lx2all],order=[1,3,2])
+      call hout%write('TEall',    permarray)
+      permarray=reshape(real(J1all),[lx1,lx3all,lx2all],order=[1,3,2])
+      call hout%write('J1all',    permarray)
 
       ! J3,J2 and V3, V2 are swapped
-      call hout%write('J2all',    real(J3all))
-      call hout%write('J3all',    real(J2all))
-      call hout%write('v2avgall', real(v3avgall))
-      call hout%write('v3avgall', real(v2avgall))
+      permarray=reshape(real(J3all),[lx1,lx3all,lx2all],order=[1,3,2])
+      call hout%write('J2all',    permarray)
+      permarray=reshape(real(J2all),[lx1,lx3all,lx2all],order=[1,3,2])
+      call hout%write('J3all',    permarray)
+      permarray=reshape(real(v3avgall),[lx1,lx3all,lx2all],order=[1,3,2])
+      call hout%write('v2avgall', permarray)
+      permarray=reshape(real(v2avgall),[lx1,lx3all,lx2all],order=[1,3,2])
+      call hout%write('v3avgall', permarray)
     case (3)     !electron density only output
       print *, 'INFO:  Input file has selected electron density only output, make sure this is what you really want!'
-
-      call hout%write('neall',    real(neall))
+      permarray=reshape(real(neall),[lx1,lx3all,lx2all],order=[1,3,2])       
+      call hout%write('neall',    permarray)
 
     case default
       print *, 'INFO:  Input file has selected full output or milestones, large files may result!'
 
-      call hout%write('nsall',    real(nsall(1:lx1,1:lx2all,1:lx3all,:)))
-      call hout%write('vs1all',   real(vs1all(1:lx1,1:lx2all,1:lx3all,:)))
-      call hout%write('Tsall',    real(Tsall(1:lx1,1:lx2all,1:lx3all,:)))
+      permarray4D=reshape(real(nsall(1:lx1,1:lx2all,1:lx3all,:)),[lx1,lx3all,lx2all,lsp],order=[1,3,2,4])
+      call hout%write('nsall',    permarray4D)
+      permarray4D=reshape(real(vs1all(1:lx1,1:lx2all,1:lx3all,:)),[lx1,lx3all,lx2all,lsp],order=[1,3,2,4])
+      call hout%write('vs1all',   permarray4D)
+      permarray4D=reshape(real(Tsall(1:lx1,1:lx2all,1:lx3all,:)),[lx1,lx3all,lx2all,lsp],order=[1,3,2,4])
+      call hout%write('Tsall',    permarray4D)
 
-      call hout%write('J1all',    real(J1all))
+      permarray=reshape(real(J1all),[lx1,lx3all,lx2all],order=[1,3,2])
+      call hout%write('J1all',    permarray)
 
       !! NOTE: J3,J2 and V3, V2 are swapped in name like this
-      call hout%write('J2all',    real(J3all))
-      call hout%write('J3all',    real(J2all))
-      call hout%write('v2avgall', real(v3avgall))
-      call hout%write('v3avgall', real(v2avgall))
+      permarray=reshape(real(J3all),[lx1,lx3all,lx2all],order=[1,3,2])
+      call hout%write('J2all',    permarray)
+      permarray=reshape(real(J2all),[lx1,lx3all,lx2all],order=[1,3,2])
+      call hout%write('J3all',    permarray)
+      permarray=reshape(real(v3avgall),[lx1,lx3all,lx2all],order=[1,3,2])
+      call hout%write('v2avgall', permarray)
+      permarray=reshape(real(v2avgall),[lx1,lx3all,lx2all],order=[1,3,2])
+      call hout%write('v3avgall', permarray)
   end select
 end if
 if (gridflag==1) then
