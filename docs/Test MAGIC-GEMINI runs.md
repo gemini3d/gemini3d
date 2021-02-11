@@ -56,14 +56,14 @@ The source function represents a slightly moving (in zonal direction from the ce
  0        vsrcx        = x-axis oscillator velocity
 ```
 
-Simulation outputs are stored in HDF5 files separately for each time step (the data is stored [here](https://www.dropbox.com/sh/z448k1ttjm9ljvx/AADKSWqPtiMuKYxYDmrw8kTHa?dl=0). The animation of fluid dynamics in 3 direction is [here](https://www.dropbox.com/s/pt4lqavc717a90a/MAGIC-movie.mp4?dl=0) and can be replicated using [animation.m](https://www.dropbox.com/s/pt4lqavc717a90a/MAGIC-movie.mp4?dl=0) from the MAGIC simulation folder:
+Simulation outputs are stored in HDF5 files separately for each time step (the data is stored [here](https://www.dropbox.com/sh/z448k1ttjm9ljvx/AADKSWqPtiMuKYxYDmrw8kTHa?dl=0). The animation of fluid dynamics in 3 direction is [here](https://www.dropbox.com/s/pt4lqavc717a90a/MAGIC-movie.mp4?dl=0) and can be replicated using [animation.m](https://www.dropbox.com/s/pt4lqavc717a90a/MAGIC-movie.mp4?dl=0):
 
 ![Screenshot from MAGIC simulation](pics/magicexample.jpg)
 
 <a name="3d_dipole_3d_neutral"></a>
 ## 2. 3D Dipole GEMINI simulation with 3D Cartesian MAGIC input
 
-GEMINI grid is 3D Dipole of the sizeTo prepare GEMINI neutral inputs, run Matlab script ``initialize3DCARD.m`` (``readandoutput3DCART.m`` required).
+GEMINI grid is 3D Dipole of the sizeTo prepare GEMINI neutral inputs, run Matlab script [initialize3DCART.m](https://www.dropbox.com/s/x0xsxr85dcjeg0j/initialize3DCART.m?dl=0) (``readandoutput3DCART.m`` required).
 GEMINI neutral input requires the specification of simulation initial time (UT), time step (sec) and grid structure, as shown below:
 
 ```
@@ -86,7 +86,7 @@ Note, that ``lx1`` is zonal, ``lx2`` - meridional, and ``lx3`` - vertical direct
 <a name="2d_dipole_2d_neutral"></a>
 ## 3. 2D Dipole GEMINI simulation with 2D Cartesian MAGIC input
 
-To prepare GEMINI neutral inputs, run Matlab script ``initialize3DCARD.m`` (``readandoutput3DCART.m`` required).
+To prepare GEMINI neutral inputs, run Matlab script [initialize2DCART.m](https://www.dropbox.com/s/0wfy0ij83mxsisy/initialize2DCART.m?dl=0) (``readandoutput2DCART.m`` required).
 GEMINI neutral input requires the specification of simulation initial time (UT), time step (sec) and grid structure, as shown below:
 
 ```
@@ -108,7 +108,7 @@ Note, that here ``lx1`` is meridional, and ``lx2`` - vertical directions, wherea
 <a name="3d_dipole_2daxi_neutral"></a>
 ## 4. 2D/3D Dipole GEMINI simulation with 2D Axisymmetric MAGIC input
 
-To prepare GEMINI neutral inputs, run Matlab script ``initialize3DCARD.m`` (``readandoutput3DCART.m`` required).
+To prepare GEMINI neutral inputs, run Matlab script [initializeAXISYMMETRIC.m](https://www.dropbox.com/s/1cyrw39ulegoifc/initializeAXISYMMETRIC.m?dl=0) (``readandoutputAXISYMMETRIC.m`` required).
 GEMINI neutral input requires the specification of simulation initial time (UT), time step (sec) and grid structure, as shown below:
 
 ```
