@@ -192,7 +192,7 @@ x2,{3}parms =
 <ell>         ! transition length of degradation - a tanh(x/ell) profile is used for dx
 ```
 
-If using the lower-level ```gemini3d.grid.cart3d``` utility, the parameters above are passed into this function via optional input structure fields (see source code for details).  
+If using the lower-level ```gemini3d.grid.cart3d``` utility, the parameters above are passed into this function via optional input structure fields (see source code for details).  Note that the hyperbolic tangent profiles in x2,3 are mirrored about the x2,3=0 point so that the grid spacing is symmetric about the origin.  
 
 Grid structures, once created, are written to a file using the matlab `writegrid.m` API to insure that they have the correct file structure and arrangement.  I.e.
 
