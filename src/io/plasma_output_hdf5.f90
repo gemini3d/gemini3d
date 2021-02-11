@@ -20,6 +20,7 @@ type(hdf5_file) :: hout
 ! single precision work arrays
 real, dimension(:,:,:), allocatable :: permarray
 real, dimension(:,:,:,:), allocatable :: permarray4D
+real, dimension(:,:), allocatable :: permarray2D
 
 !! SYSTEM SIZES
 lx1=size(Phiall,1)
@@ -121,10 +122,20 @@ else
 end if
 if (gridflag==1) then
   print *, 'Writing topside boundary conditions for inverted-type grid...'
-  call hout%write('Phiall',       real(Phiall(1,:,:)))
+  if (flagswap/=1) then
+    call hout%write('Phiall',       real(Phiall(1,:,:)))
+  else
+    permarray2D=reshape(real(Phiall(1,:,:)),[lx3all,lx2all],order=[2,1])
+    call hout%write('Phiall',permarray2D)
+  end if
 else
   print *, 'Writing topside boundary conditions for non-inverted-type grid...'
-  call hout%write('Phiall',       real(Phiall(lx1,:,:)))
+  if (flagswap/=1) then
+    call hout%write('Phiall',       real(Phiall(lx1,:,:)))
+  else
+    permarray2D=reshape(real(Phiall(lx1,:,:)),[lx3all,lx2all],order=[2,1])
+    call hout%write('Phiall',permarray2D)
+  end if
 end if
 
 call hout%finalize()
