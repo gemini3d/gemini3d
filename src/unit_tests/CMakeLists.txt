@@ -28,7 +28,7 @@ elseif("s" IN_LIST arith)
 endif()
 configure_file(test_scalapack.in.f90 test_scalapack.f90 @ONLY)
 add_executable(gemini_scalapack ${CMAKE_CURRENT_BINARY_DIR}/test_scalapack.f90)
-target_link_libraries(gemini_scalapack PRIVATE SCALAPACK::SCALAPACK MPI::MPI_Fortran)
+target_link_libraries(gemini_scalapack PRIVATE SCALAPACK::SCALAPACK LAPACK::LAPACK MPI::MPI_Fortran)
 
 add_test(NAME unit:scalapack COMMAND $<TARGET_FILE:gemini_scalapack>)
 set_tests_properties(unit:scalapack PROPERTIES
