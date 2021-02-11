@@ -9,21 +9,20 @@ if(NOT scalapack_external)
   endif()
 endif()
 
-if(NOT SCALAPACK_FOUND)
-  set(scalapack_external true CACHE BOOL "build ScaLapack")
-
-  FetchContent_Declare(SCALAPACK
-    GIT_REPOSITORY ${scalapack_git}
-    GIT_TAG ${scalapack_tag}
-    CMAKE_ARGS "-Darith=${arith}")
-
-  if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.14)
-    FetchContent_MakeAvailable(SCALAPACK)
-  elseif(NOT scalapack_POPULATED)
-    FetchContent_Populate(SCALAPACK)
-    add_subdirectory(${scalapack_SOURCE_DIR} ${scalapack_BINARY_DIR})
-  endif()
-
+if(SCALAPACK_FOUND OR TARGET SCALAPACK::SCALAPACK)
+  return()
 endif()
 
-target_link_libraries(SCALAPACK::SCALAPACK INTERFACE LAPACK::LAPACK)
+set(scalapack_external true CACHE BOOL "build ScaLapack")
+
+FetchContent_Declare(SCALAPACK
+  GIT_REPOSITORY ${scalapack_git}
+  GIT_TAG ${scalapack_tag}
+  CMAKE_ARGS -Darith=${arith})
+
+if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.14)
+  FetchContent_MakeAvailable(SCALAPACK)
+elseif(NOT scalapack_POPULATED)
+  FetchContent_Populate(SCALAPACK)
+  add_subdirectory(${scalapack_SOURCE_DIR} ${scalapack_BINARY_DIR})
+endif()

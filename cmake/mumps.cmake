@@ -41,27 +41,20 @@ if(NOT mumps_external AND (MUMPS_ROOT OR (DEFINED ENV{MUMPS_ROOT}) OR (CMAKE_For
   endif()
 endif()
 
-if(NOT MUMPS_FOUND)
-  set(mumps_external true CACHE BOOL "build Mumps")
-
-  # necessary since CMAKE_ARGS is broken in general
-  set(parallel ${mpi} CACHE BOOL "Mumps parallel == Gemini mpi")
-  set(MUMPS_BUILD_TESTING false CACHE BOOL "mumps disable tests")
-
-  FetchContent_Declare(MUMPS
-    GIT_REPOSITORY ${mumps_git}
-    GIT_TAG ${mumps_tag}
-    CMAKE_ARGS -Darith=${arith} -Dmetis:BOOL=${metis} -Dscotch:BOOL=${scotch} -Dopenmp:BOOL=false)
-
-  if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.14)
-    FetchContent_MakeAvailable(MUMPS)
-  elseif(NOT mumps_POPULATED)
-    FetchContent_Populate(MUMPS)
-    add_subdirectory(${mumps_SOURCE_DIR} ${mumps_BINARY_DIR})
-  endif()
-
+if(MUMPS_FOUND OR TARGET MUMPS::MUMPS)
+  return()
 endif()
 
-if(mpi)
-target_link_libraries(MUMPS::MUMPS INTERFACE SCALAPACK::SCALAPACK LAPACK::LAPACK)
+set(mumps_external true CACHE BOOL "build Mumps")
+
+FetchContent_Declare(MUMPS
+  GIT_REPOSITORY ${mumps_git}
+  GIT_TAG ${mumps_tag}
+  CMAKE_ARGS -Darith=${arith} -Dparallel=${mpi} -Dmetis:BOOL=${metis} -Dscotch:BOOL=${scotch} -Dopenmp:BOOL=false)
+
+if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.14)
+  FetchContent_MakeAvailable(MUMPS)
+elseif(NOT mumps_POPULATED)
+  FetchContent_Populate(MUMPS)
+  add_subdirectory(${mumps_SOURCE_DIR} ${mumps_BINARY_DIR})
 endif()
