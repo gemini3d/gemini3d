@@ -5,11 +5,11 @@ function(setup_gemini_test testname TIMEOUT)
 
 # --- setup test
 set(outdir ${PROJECT_BINARY_DIR}/test${testname})
-set(refroot ${PROJECT_SOURCE_DIR}/tests/data)
+set(refroot ${PROJECT_SOURCE_DIR}/test_data)
 set(refdir ${refroot}/test${testname})
 
 add_test(NAME gemini:${testname}:setup
-  COMMAND ${CMAKE_COMMAND} -Dtestname=${testname} -Doutdir=${outdir} -Drefdir=${refdir}/inputs -P ${CMAKE_CURRENT_LIST_DIR}/extract.cmake)
+  COMMAND ${CMAKE_COMMAND} -Dtestname=${testname} -Doutdir:PATH=${outdir} -Drefroot:PATH=${refroot} -P ${CMAKE_CURRENT_LIST_DIR}/download.cmake)
 set_tests_properties(gemini:${testname}:setup PROPERTIES
   FIXTURES_SETUP ${testname}_setup
   FIXTURES_REQUIRED gemini_exe_fix

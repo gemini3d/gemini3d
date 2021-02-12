@@ -1,6 +1,8 @@
 *.job
 *.job.*
 
+test_data/
+
 .vscode/
 *.bz2
 *.u2d

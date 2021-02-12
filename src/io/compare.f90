@@ -100,7 +100,7 @@ character(5), parameter :: varsJ(3) = ['J1all', 'J2all', 'J3all']
 
 real(wp) :: UThour1, UThour2
 integer :: ymd1(3), ymd2(3)
-integer :: lx1, lx2all, lx3all, Nlx1, Nlx2all, Nlx3all, lx2, lx3
+integer :: lx1, lx2all, lx3all, Nlx1, Nlx2all, Nlx3all
 
 bad = 0
 
@@ -110,16 +110,6 @@ call get_simsize3(parent(new_file) // "/inputs", Nlx1, Nlx2all, Nlx3all)
 if(lx1 /= Nlx1) error stop 'lx1 not match ref: ' // new_file
 if(lx2all /= Nlx2all) error stop 'lx2all not match ref: ' // new_file
 if(lx3all /= Nlx3all) error stop 'lx3all not match ref: ' // new_file
-
-if(lx3all /= 1) then
-  !! not swapped
-  lx2 = lx2all
-  lx3 = lx3all
-else
-  !! 2D sim, swapped
-  lx2 = lx3all
-  lx3 = lx2all
-endif
 
 call hnew%initialize(new_file, status='old',action='r')
 call href%initialize(ref_file, status='old',action='r')
@@ -141,45 +131,45 @@ if (abs(UThour1 - UThour2) > 0.01) error stop "UThour not match: " // new_file
 
 if (cfg%flagoutput == 3) then
   !! just electron density
-  bad = bad + check_var('neall', new_file, ref_file, rtolN, atolN, lx1, lx2, lx3)
+  bad = bad + check_var('neall', new_file, ref_file, rtolN, atolN, lx1, lx2all, lx3all)
 
 elseif (cfg%flagoutput == 2) then
 
-  bad = bad + check_var('neall', new_file, ref_file, rtolN, atolN, lx1, lx2, lx3)
+  bad = bad + check_var('neall', new_file, ref_file, rtolN, atolN, lx1, lx2all, lx3all)
 
   do i = 1,size(varsT)
-    bad = bad + check_var(varsT(i), new_file, ref_file, rtolT, atolT, lx1, lx2, lx3)
+    bad = bad + check_var(varsT(i), new_file, ref_file, rtolT, atolT, lx1, lx2all, lx3all)
   enddo
 
   do i = 1,size(varsV)
-    bad = bad + check_var(varsV(i), new_file, ref_file, rtolV, atolV, lx1, lx2, lx3)
+    bad = bad + check_var(varsV(i), new_file, ref_file, rtolV, atolV, lx1, lx2all, lx3all)
   enddo
 
   do i = 1,size(varsJ)
-    bad = bad + check_var(varsJ(i), new_file, ref_file, rtolJ, atolJ, lx1, lx2, lx3)
+    bad = bad + check_var(varsJ(i), new_file, ref_file, rtolJ, atolJ, lx1, lx2all, lx3all)
   enddo
 
 elseif(cfg%flagoutput==1) then
 
   do i = 1,size(varsJ)
-    bad = bad + check_var(varsJ(i), new_file, ref_file, rtolJ, atolJ, lx1, lx2, lx3)
+    bad = bad + check_var(varsJ(i), new_file, ref_file, rtolJ, atolJ, lx1, lx2all, lx3all)
   enddo
 
   do i = 2,size(varsV)
-    bad = bad + check_var(varsV(i), new_file, ref_file, rtolV, atolV, lx1, lx2, lx3)
+    bad = bad + check_var(varsV(i), new_file, ref_file, rtolV, atolV, lx1, lx2all, lx3all)
   enddo
 
   !> Ne
-  bad = bad + check_var('nsall', new_file, ref_file, rtolN, atolN, lx1, lx2, lx3, ionly=lsp, derived_name="ne")
+  bad = bad + check_var('nsall', new_file, ref_file, rtolN, atolN, lx1, lx2all, lx3all, ionly=lsp, derived_name="ne")
 
   !> Te
-  bad = bad + check_var('Tsall', new_file, ref_file, rtolT, atolT, lx1, lx2, lx3, ionly=lsp, derived_name="Te")
+  bad = bad + check_var('Tsall', new_file, ref_file, rtolT, atolT, lx1, lx2all, lx3all, ionly=lsp, derived_name="Te")
 
   !> Ti
-  bad = bad + check_derived('Tsall', "Ti", new_file, ref_file, rtolT, atolT, lx1, lx2, lx3)
+  bad = bad + check_derived('Tsall', "Ti", new_file, ref_file, rtolT, atolT, lx1, lx2all, lx3all)
 
   !> v1
-  bad = bad + check_derived('vs1all', "v1", new_file, ref_file, rtolV, atolV, lx1, lx2, lx3)
+  bad = bad + check_derived('vs1all', "v1", new_file, ref_file, rtolV, atolV, lx1, lx2all, lx3all)
 
 else
   error stop 'unknown flagoutput: ' // file_name(ref_file)
@@ -190,12 +180,12 @@ checker = bad == 0
 end function checker
 
 
-integer function check_derived(name, derived_name, new_file, ref_file, rtol, atol, lx1, lx2, lx3) result(bad)
+integer function check_derived(name, derived_name, new_file, ref_file, rtol, atol, lx1, lx2all, lx3all) result(bad)
 
 character(*), intent(in) :: new_file, ref_file
 character(*), intent(in) :: name, derived_name
 real(wp), intent(in) :: rtol, atol
-integer, intent(in) :: lx1, lx2, lx3
+integer, intent(in) :: lx1, lx2all, lx3all
 
 real, dimension(:,:,:), allocatable :: D_new, D_ref
 real, dimension(:,:,:,:), allocatable :: new, ref, ns_new, ns_ref
@@ -204,9 +194,9 @@ type(hdf5_file) :: hnew, href
 
 bad = 0
 
-allocate(new(lx1, lx2, lx3, lsp), ref(lx1, lx2, lx3, lsp))
-allocate(ns_new(lx1, lx2, lx3, lsp), ns_ref(lx1, lx2, lx3, lsp))
-allocate(D_ref(lx1, lx2, lx3), D_new(lx1, lx2, lx3))
+allocate(new(lx1, lx2all, lx3all, lsp), ref(lx1, lx2all, lx3all, lsp))
+allocate(ns_new(lx1, lx2all, lx3all, lsp), ns_ref(lx1, lx2all, lx3all, lsp))
+allocate(D_ref(lx1, lx2all, lx3all), D_new(lx1, lx2all, lx3all))
 
 call hnew%initialize(new_file, status='old',action='r')
 call href%initialize(ref_file, status='old',action='r')
@@ -234,12 +224,12 @@ write(stderr,*) "MISMATCH: " // file_name(new_file) // " ", derived_name, maxval
 end function check_derived
 
 
-integer function check_var(name, new_file, ref_file, rtol, atol, lx1, lx2, lx3, ionly, derived_name) result(bad)
+integer function check_var(name, new_file, ref_file, rtol, atol, lx1, lx2all, lx3all, ionly, derived_name) result(bad)
 
 character(*), intent(in) :: new_file, ref_file
 character(*), intent(in) :: name
 real(wp), intent(in) :: rtol, atol
-integer, intent(in) :: lx1, lx2, lx3
+integer, intent(in) :: lx1, lx2all, lx3all
 integer, intent(in), optional :: ionly
 character(*), intent(in), optional :: derived_name
 
@@ -249,10 +239,10 @@ real, dimension(:,:,:), allocatable :: new, ref
 real, dimension(:,:,:,:), allocatable :: new4, ref4
 
 if(present(ionly)) then
-  allocate(new4(lx1, lx2, lx3, lsp), ref4(lx1, lx2, lx3, lsp))
+  allocate(new4(lx1, lx2all, lx3all, lsp), ref4(lx1, lx2all, lx3all, lsp))
 endif
 
-allocate(new(lx1, lx2, lx3), ref(lx1, lx2, lx3))
+allocate(new(lx1, lx2all, lx3all), ref(lx1, lx2all, lx3all))
 
 
 bad = 0
