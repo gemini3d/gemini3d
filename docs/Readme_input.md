@@ -47,9 +47,9 @@ flagoutput = 1                ! what information to put in output files:  1 - al
 ! Inputs file locations and format
 &files
 file_format = 'h5'                                                 ! format of the input files
-indat_size = 'tests/data/test3d_glow/inputs/simsize.h5'
-indat_grid = 'tests/data/test3d_glow/inputs/simgrid.h5'
-indat_file = 'tests/data/test3d_glow/inputs/initial_conditions.h5'
+indat_size = 'test_data/test3d_glow/inputs/simsize.h5'
+indat_grid = 'test_data/test3d_glow/inputs/simgrid.h5'
+indat_file = 'test_data/test3d_glow/inputs/initial_conditions.h5'
 /
 
 ! This is only used by some matlab and python input scripts, the main fortran code ignores it
@@ -73,7 +73,7 @@ precip_latwidth = 0.25
 precip_lonwidth = 0.25
 Etarg = 50e-3   ! V/m
 Efield_fracwidth = 0.142857
-eqdir = 'tests/data/test3d_eq'
+eqdir = 'test_data/test3d_eq'
 /
 
 ! (optional - default off) Include neutral atmospheric perturbation inputs from another model/dataset
@@ -93,14 +93,14 @@ source_dir = '../simulations/input/mooreOK_neutrals/'
 &precip
 flagprecfile = 1                   ! use precipitaiton file input:  0 - no; 1 - yes
 dtprec = 5.0                       ! time step between precipitation file inputs
-prec_dir = 'tests/data/test3d_glow/inputs/prec_inputs/'
+prec_dir = 'test_data/test3d_glow/inputs/prec_inputs/'
 /
 
 ! (optional - default off) Include electric field boundary condition inputs from a file
 &efield
 flagE0file = 1                     ! use electric field bounary condition file input:  0 - no; 1 - yes
 dtE0 = 1.0                         ! time step between electric field file inputs
-E0_dir = 'tests/data/test3d_glow/inputs/Efield_inputs/'
+E0_dir = 'test_data/test3d_glow/inputs/Efield_inputs/'
 /
 
 ! (optional - default off) Use glow to compute impact ionization, Cartesian grids only
@@ -171,7 +171,7 @@ In the event that none of the examples suffice as a starting point, the details 
 If using the ```gemini3d.model.setup``` interface in MATLAB or Python, grid creation is controlled through the config.nml file, namely the parameters ```alt_scale,x2parms,x3parms``` under the ```setup``` namelist.  Each of these parameters has a four elements as follows:
 
 ```nml
-alt_scale = 
+alt_scale =
 !> Formula for grid step size:
 !>     dalt = d(1) + d(2) * tanh((alt(end) - d(3)) / d(4));
 <dzref>       ! reference dz
@@ -180,11 +180,11 @@ alt_scale =
 <ell>         ! transition length of degradation - a tanh(z/ell) profile is used for dz
 ```
 
-For the horizontal grid distances (note that below is *not* in proper nml format; use code above is copy/pasting):  
+For the horizontal grid distances (note that below is *not* in proper nml format; use code above is copy/pasting):
 
 ```nml
 x2,{3}parms =
-!> Formula for grid step size:  
+!> Formula for grid step size:
 !>   dx = dx0 + dxincr * (1/2+1/2*tanh((x(end)-x2)/ell));
 <degdist>,    ! distance from boundary at which we start to degrade resolution
 <dx0>,        ! min step size for grid
@@ -192,7 +192,7 @@ x2,{3}parms =
 <ell>         ! transition length of degradation - a tanh(x/ell) profile is used for dx
 ```
 
-If using the lower-level ```gemini3d.grid.cart3d``` utility, the parameters above are passed into this function via optional input structure fields (see source code for details).  Note that the hyperbolic tangent profiles in x2,3 are mirrored about the x2,3=0 point so that the grid spacing is symmetric about the origin.  
+If using the lower-level ```gemini3d.grid.cart3d``` utility, the parameters above are passed into this function via optional input structure fields (see source code for details).  Note that the hyperbolic tangent profiles in x2,3 are mirrored about the x2,3=0 point so that the grid spacing is symmetric about the origin.
 
 Grid structures, once created, are written to a file using the matlab `writegrid.m` API to insure that they have the correct file structure and arrangement.  I.e.
 
@@ -211,7 +211,7 @@ The writegrid API creates a file with the grid data structure in it as well as a
 
 Grid structures, variable `xg` in the example above shall have the following fields and sizes (```lx1``` is the length of the x1 grid, ```lx2``` is the length of the x2 grid, ```lx3``` is the length of the x3 grid).
 
-```MATLAB 
+```MATLAB
 "lx"            ! (3) number of grid points (excluding ghost cells) in x1,2,3 directions, viz. [lx1,lx2,lx3]
 "x1",           ! (lx1+4) x1 position variable, including ghost cells
 "x1i",          ! (lx1+1) x1 cell interface positions for non-ghost cells
@@ -224,7 +224,7 @@ Grid structures, variable `xg` in the example above shall have the following fie
 "x3",           ! (lx3+4) x3 position variable, including ghost cells
 "x3i",          ! (lx3+1) x3 cell interface positions for non-ghost cells
 "dx3b",         ! (lx3+3) backward differences along the x3-coordinate, excluding first ghost cell
-"dx3h",         ! (lx1) x1 midpoint differences for all non-ghost cells 
+"dx3h",         ! (lx1) x1 midpoint differences for all non-ghost cells
 "h1",           ! (lx1+4,lx2+4,lx3+4) metric factor for x1, including in ghost cells
 "h2",           ! (lx1+4,lx2+4,lx3+4) metric factor for x2, including in ghost cells
 "h3",           ! (lx1+4,lx2+4,lx3+4) metric factor for x3, including in ghost cells
@@ -242,8 +242,8 @@ Grid structures, variable `xg` in the example above shall have the following fie
 "gx3",          ! (lx1,lx2,lx3) x3-component of the gravitational field over the grid
 "Bmag",         ! (lx1,lx2,lx3) the magnitude of the magnetic field at grid points
 "I",            ! (lx2,lx3) the inclination angle of the magnetic field vs. "horizontal" (x2,3) locations on the grid
-"nullpts",      ! (lx1,lx2,lx3) a floating point flag (0 or 1) indicating whether the core model code should treat each location as null (not part of the computational domain) or valid (to be used in calculations).  
-"e1",           ! (lx1,lx2,lx3,3) unit vector vs. x1,2,3 in the x1 direction, components in ECEF dipole cartesian coordinates 
+"nullpts",      ! (lx1,lx2,lx3) a floating point flag (0 or 1) indicating whether the core model code should treat each location as null (not part of the computational domain) or valid (to be used in calculations).
+"e1",           ! (lx1,lx2,lx3,3) unit vector vs. x1,2,3 in the x1 direction, components in ECEF dipole cartesian coordinates
 "e2",           ! (lx1,lx2,lx3,3) unit vector in the x2 direction in ECEF dipole cartesian coordinates
 "e3",           ! (lx1,lx2,lx3,3) unit vector in the x3 direction in ECEF dipole cartesian coordinates
 "er",           ! (lx1,lx2,lx3,3) unit vector in the radial direction in ECEF dipole cartesian coordinates
@@ -260,7 +260,7 @@ Grid structures, variable `xg` in the example above shall have the following fie
 "alt"           ! (lx1,lx2,lx3) altitude as a function of x1,2,3
 ```
 
-Not all of these variables will be used by the core model code; nevertheless they should be included in grid files so that postprocessing code can function properly.  Due to the complicated nature of the grid structure fields, it is *highly* recommended that you use one of the existing functions or user interfaces to create a grid structure and file.  Note also that the number of variables being tracked by the grid means that the grid files will occupy a large amount of storage space, but this prevents the code(s) from having to recompute metric factors, etc.  
+Not all of these variables will be used by the core model code; nevertheless they should be included in grid files so that postprocessing code can function properly.  Due to the complicated nature of the grid structure fields, it is *highly* recommended that you use one of the existing functions or user interfaces to create a grid structure and file.  Note also that the number of variables being tracked by the grid means that the grid files will occupy a large amount of storage space, but this prevents the code(s) from having to recompute metric factors, etc.
 
 ### Visualizing the grid
 
@@ -312,7 +312,7 @@ Note that the user can specify the boundary condition on a different grid from w
 
 ### Electric field input files requirement
 
-Electric field boundary/background condition input files include the grid over which the user is specifying the precipitation (```simsize.h5```, and ```simgrid.h5```) and the individual frames of input precipitation parameters (named using the datetime of the frame, e.g. ```20110302_01800.000000.h5``` etc.).    
+Electric field boundary/background condition input files include the grid over which the user is specifying the precipitation (```simsize.h5```, and ```simgrid.h5```) and the individual frames of input precipitation parameters (named using the datetime of the frame, e.g. ```20110302_01800.000000.h5``` etc.).
 
 The ```inputs/Efield/simsize.h5``` file contains these scalar variables:
 
@@ -328,7 +328,7 @@ The inputs/precip/simgrid.h5 file contains these vector variables:
 "mlat".       ! (llat) magnetic latitude, units of degrees  (-90, 90)
 ```
 
-Each frame electric field input file has variables:  
+Each frame electric field input file has variables:
 
 ```
 "Exit"          ! (llon,llat) background electric field x-component (units of V/m in the x2 direction) vs. mlon,mlat
@@ -342,11 +342,11 @@ Each frame electric field input file has variables:
 "flagdirich"    ! (1) whether to treat the data in Vmax{min}x1 arrays as potential (0 value) or FAC (1 value)
 ```
 
-In cases where a quasi-electrodynamic solution is done both the electric field and potential will be assumed to go to zero at the lateral (x2,3) boundaries of the model - unless periodic x3 boundary conditions are chosen (these are set in the config.nml file).  
+In cases where a quasi-electrodynamic solution is done both the electric field and potential will be assumed to go to zero at the lateral (x2,3) boundaries of the model - unless periodic x3 boundary conditions are chosen (these are set in the config.nml file).
 
 ### Precipitation input files requirement
 
-Precipitation input files include the grid over which the user is specifying the precipitation (```simsize.h5``` and ```simgrid.h5```) and the individual frames of input precipitation parameters (named using the datetime of the frame, e.g. ```20110302_01800.000000.h5``` etc.).    
+Precipitation input files include the grid over which the user is specifying the precipitation (```simsize.h5``` and ```simgrid.h5```) and the individual frames of input precipitation parameters (named using the datetime of the frame, e.g. ```20110302_01800.000000.h5``` etc.).
 
 The inputs/precip/simsize.h5 file contains these scalar variables:
 
@@ -364,7 +364,7 @@ The inputs/precip/simgrid.h5 file contains these vector variables:
 
 These variables are one element per grid cell of the ```inputs/precip/simgrid.h5``` file.
 
-Each frame precipitation input file has variables:  
+Each frame precipitation input file has variables:
 
 ```
 "E0p"         ! (llon,llat) Characteristic energy (Maxwellian differential number flux), units of eV
@@ -384,11 +384,11 @@ GEMINI needs density, drift, and temperature for each species that it simulation
 Initial condition input files shall contain all input data needed to start a simulation including state variables for all plasma species (density, drift (parallel dimension), and temperature) in SI units.  If using hdf5 input, these variables are to be organized as follows (```lsp``` is the number of species used in the simulations):
 
  ```
- "nsall"           ! (lx1,lx2,lx3,lsp) number density of each species over the grid 
+ "nsall"           ! (lx1,lx2,lx3,lsp) number density of each species over the grid
  "vs1all"          ! (lx1,lx2,lx3,lsp) drift velocity parallel to B over the grid (x1-direction)
  "Tsall"           ! (lx1,lx2,lx3,lsp) tmeperature for each species over the grid
  "Phiall"          ! (lx2,lx3) electric potential vs. x2 and x3 - may be omitted to default to zero
- ```  
+ ```
 
 
 ## Suggested workflow for creating input file to run a simulation

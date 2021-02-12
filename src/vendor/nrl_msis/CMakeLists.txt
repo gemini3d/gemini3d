@@ -34,9 +34,9 @@ set_target_properties(msis_setup PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_B
 
 if(${PROJECT_NAME}_BUILD_TESTING)
 
-set(_in ${PROJECT_SOURCE_DIR}/tests/data/msis_test_in.h5)
+set(_in ${PROJECT_SOURCE_DIR}/test_data/msis_test_in.h5)
 set(_out ${CMAKE_CURRENT_BINARY_DIR}/msis_test_out.h5)
-set(_ref ${PROJECT_SOURCE_DIR}/tests/data/msis_test_out.h5)
+set(_ref ${PROJECT_SOURCE_DIR}/test_data/msis_test_out.h5)
 
 add_test(NAME unit:msis_setup
   COMMAND $<TARGET_FILE:msis_setup> ${_in} ${_out} 0)
