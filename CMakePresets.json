@@ -31,8 +31,8 @@
       "description": "MacOS: specify GCC version to avoid Clang /usr/bin/gcc",
       "environment": {
         "CC": "gcc-10",
-        "FC": "gfortran-10",
-        "CXX": "g++-10"
+        "CXX": "g++-10",
+        "FC": "gfortran-10"
       }
     },
     {
@@ -44,16 +44,15 @@
     {
       "name": "make",
       "inherits": "build",
-      "displayName": "build all libraries: Linux/MacOS",
+      "displayName": "build all libraries GNU Make: Linux/MacOS",
       "description": "build all libraries with GNU Make on Linux/MacOS",
       "generator": "Unix Makefiles"
     },
     {
       "name": "makemac",
-      "inherits": ["mac", "build"],
+      "inherits": ["make", "mac"],
       "displayName": "build all libraries: MacOS",
-      "description": "build all libraries with GNU Make on MacOS",
-      "generator": "Unix Makefiles"
+      "description": "build all libraries with GNU Make on MacOS"
     },
     {
       "name": "makewin",
@@ -64,15 +63,13 @@
     },
     {
       "name": "intel",
-      "inherits": "build",
+      "inherits": "default",
       "displayName": "Intel oneAPI compiler: Linux/MacOS",
       "description": "build with Intel oneAPI on Linux/MacOS",
       "environment": {
         "CC": "icc",
-        "FC": "ifort",
         "CXX": "icpc",
-        "lapack_external": "off",
-        "scalapack_external": "off",
+        "FC": "ifort",
         "LAPACK_ROOT": "$env{MKLROOT}",
         "SCLAPACK_ROOT": "$env{MKLROOT}",
         "MPI_ROOT": "$env{I_MPI_ROOT}"
@@ -80,7 +77,7 @@
     },
     {
       "name": "intelwin",
-      "inherits": ["intel", "build"],
+      "inherits": "intel",
       "displayName": "Intel oneAPI compiler: Windows",
       "description": "build with Intel oneAPI on Windows",
       "environment": {
@@ -90,13 +87,13 @@
     },
     {
       "name": "intelnext",
-      "inherits": ["intel", "build"],
+      "inherits": "intel",
       "displayName": "FUTURE: Intel oneAPI LLVM",
       "description": "FUTURE: build with Intel oneAPI NextGen LLVM (waiting on Intel official release)",
       "environment": {
         "CC": "icx",
-        "FC": "ifx",
-        "CXX": "icx"
+        "CXX": "icx",
+        "FC": "ifx"
       }
     }
   ]
