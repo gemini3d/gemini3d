@@ -4,6 +4,13 @@ if(CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
   message(FATAL_ERROR "use cmake -B build or similar to avoid building in-source, which is messy")
 endif()
 
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING "Debug or Release")
+endif()
+
+set(CMAKE_CONFIGURATION_TYPES "Release;RelWithDebInfo;Debug" CACHE STRING "Build type selections" FORCE)
+
+
 if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.20)
   # ninja path resolution
   cmake_policy(SET CMP0116 NEW)
