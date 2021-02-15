@@ -50,7 +50,7 @@ $<TARGET_OBJECTS:autogrid> $<TARGET_OBJECTS:PDEelliptic> $<TARGET_OBJECTS:potent
 set_target_properties(gemini.bin PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
 target_link_libraries(gemini.bin PRIVATE advec calculus helpmod config const collision diffusion fang grid io interp ionization gbsv mesh mpimod
   msis_ifc multifluid
-  neutral pathlib PDEparabolic precipBCs reader sanity_check sources temporal timeutils)
+  neutral pathlib PDEparabolic precipBCs reader sanity_check errors sources temporal timeutils)
 target_link_libraries(gemini.bin PRIVATE MUMPS::MUMPS LAPACK::LAPACK MPI::MPI_Fortran MPI::MPI_C)
 # Note: CMake 3.13 needs MPI linked here explicity to gemini.bin on any OS
 if(mpi)
@@ -65,4 +65,4 @@ set_tests_properties(unit:gemini_exe_ok PROPERTIES
 
 # --- apply properties
 
-set_targ_props(calculus collision config const fang fang_run io ionization gbsv logging multifluid neutral pathlib precipBCs reader sanity_check sources temporal timeutils)
+set_targ_props(calculus collision const fang fang_run ionization gbsv multifluid neutral precipBCs sources temporal timeutils)

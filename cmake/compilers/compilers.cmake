@@ -19,10 +19,27 @@ if(NOT f2018impnone)
   message(FATAL_ERROR "Compiler does not support Fortran 2018 IMPLICIT NONE (type, external): ${CMAKE_Fortran_COMPILER_ID} ${CMAKE_Fortran_COMPILER_VERSION}")
 endif()
 
-check_fortran_source_compiles("character :: x; error stop x; end" f2018errorstop SRC_EXT f90)
+check_fortran_source_compiles("program es2018
+character :: x
+error stop x
+end program" f2018errorstop SRC_EXT f90)
 if(NOT f2018errorstop)
   message(FATAL_ERROR "Compiler does not support Fortran 2018 error stop with character variable: ${CMAKE_Fortran_COMPILER_ID} ${CMAKE_Fortran_COMPILER_VERSION}")
 endif()
+
+check_fortran_source_compiles("program f18_assumed_rank
+implicit none (type, external)
+contains
+subroutine ranker(A)
+integer, intent(in) :: A(..)
+select rank(A)
+  rank (0)
+    print *, rank(A)
+  rank default
+    print *, rank(A)
+end select
+end subroutine ranker
+end program" f2018assumed_rank SRC_EXT f90)
 
 # --- MSISE00 and MSIS 2.0 require legacy workaround due to non-standard Fortran code
 # "static" to help avoid missing runtime library issues when used from Matlab or Python

@@ -1,6 +1,25 @@
 add_library(logging OBJECT logging.f90)
 
-add_library(sanity_check OBJECT sanity_check.f90)
+# --- error handling -- dump data to disk
+add_library(errors OBJECT error_stop.f90)
+target_link_libraries(errors PRIVATE const h5fortran::h5fortran)
+
+if(${PROJECT_NAME}_BUILD_TESTING)
+  if(f2018assumed_rank)
+    # easier to use, but needs latest compilers. For dev debugging.
+    add_library(debug_dump OBJECT debug_dump.f90)
+    target_link_libraries(debug_dump PRIVATE const h5fortran::h5fortran)
+  endif(f2018assumed_rank)
+
+  add_executable(test_errors test_errors.f90)
+  target_link_libraries(test_errors PRIVATE errors const)
+
+  add_test(NAME gemini:stop:zero COMMAND $<TARGET_FILE:test_errors> root)
+  set_tests_properties(gemini:stop:zero PROPERTIES WILL_FAIL true)
+  # FIXME: add a follow-on test using Fixtures that read and verify expected file dump
+endif(${PROJECT_NAME}_BUILD_TESTING)
+
+add_library(sanity_check OBJECT sanity_check.f90 $<TARGET_OBJECTS:errors>)
 target_link_libraries(sanity_check PRIVATE const)
 
 # --- pathlib
@@ -64,3 +83,5 @@ if(netcdf AND ${PROJECT_NAME}_BUILD_TESTING)
   target_link_libraries(test_simsize_nc4 nc4fortran::nc4fortran)
   # add_test(NAME unit:simsize_nc4 COMMAND test_simsize_nc4)
 endif()
+
+set_targ_props(config errors io logging pathlib reader sanity_check)
