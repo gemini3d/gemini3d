@@ -349,7 +349,6 @@ main : do while (t < tdur)
     print *, 'Multifluid total solve time:  ',tfin-tstart
   endif
 
-  !> FIXME:  MZ - shouldn't this be done for all workers; also how much overhead does this incur every time step???
   !> Sanity check key variables before advancing
   call check_finite_output(t, mpi_cfg%myid, vs2,vs3,ns,vs1,Ts, Phi,J1,J2,J3)
 
