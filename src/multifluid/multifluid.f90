@@ -427,7 +427,7 @@ select case (paramflag)
     end do
 
 
-    !SET DENSITY TO SOME HARMLESS VALUE
+    !SET DENSITY TO SOME HARMLESS VALUE in the ghost cells
     param(-1:0,:,:,:)=mindensdiv
     param(lx1+1:lx1+2,:,:,:)=mindensdiv
     param(:,-1:0,:,:)=mindensdiv
@@ -487,13 +487,13 @@ select case (paramflag)
     end if
 
 !MZ - for reasons I don't understand, this causes ctest to fail...  Generates segfaults everywhere in the CI (seems like it shouldn't???)...
-!    !ZERO OUT THE GHOST CELL VELOCITIES
-!    param(-1:0,:,:,:)= 0
-!    param(lx1+1:lx1+2,:,:,:)= 0
-!    param(:,-1:0,:,:)= 0
-!    param(:,lx2+1:lx2+2,:,:)= 0
-!    param(:,:,-1:0,:)= 0
-!    param(:,:,lx3+1:lx3+2,:)= 0
+    !ZERO OUT THE GHOST CELL VELOCITIES
+    param(-1:0,:,:,:)= 0
+    param(lx1+1:lx1+2,:,:,:)= 0
+    param(:,-1:0,:,:)= 0
+    param(:,lx2+1:lx2+2,:,:)= 0
+    param(:,:,-1:0,:)= 0
+    param(:,:,lx3+1:lx3+2,:)= 0
   case (3)    !temperature
     param=max(param,100._wp)     !temperature floor
 
@@ -507,7 +507,7 @@ select case (paramflag)
       end do
     end do
 
-    !> SET TEMPS TO SOME NOMINAL VALUE
+    !> SET TEMPS TO SOME NOMINAL VALUE in the ghost cells
     param(-1:0,:,:,:) = 100
     param(lx1+1:lx1+2,:,:,:) = 100
     param(:,-1:0,:,:) = 100
