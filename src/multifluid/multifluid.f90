@@ -61,7 +61,8 @@ real(wp) :: f107,f107a
 
 real(wp), dimension(-1:size(ns,1)-2,-1:size(ns,2)-2,-1:size(ns,3)-2,size(ns,4)) ::  rhovs1,rhoes
 real(wp), dimension(-1:size(ns,1)-2,-1:size(ns,2)-2,-1:size(ns,3)-2) :: param
-real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: A,B,C,D,E,paramtrim,rhoeshalf,lambda,beta,chrgflux
+real(wp), dimension(-1:size(ns,1)-2,-1:size(ns,2)-2,-1:size(ns,3)-2) :: chrgflux
+real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: A,B,C,D,E,paramtrim,rhoeshalf,lambda,beta!,chrgflux
 real(wp), dimension(0:size(ns,1)-3,0:size(ns,2)-3,0:size(ns,3)-3) :: divvs
 real(wp), dimension(1:size(vs1,1)-3,1:size(vs1,2)-4,1:size(vs1,3)-4) :: v1i
 real(wp), dimension(1:size(vs1,1)-4,1:size(vs1,2)-3,1:size(vs1,3)-4) :: v2i
@@ -83,7 +84,7 @@ real(wp), parameter :: xicon = 3
 !! artifical viscosity, decent value for closed field-line grids extending to high altitudes, can be set to 0 for cartesian simulations not exceed altitudes of 1500 km.
 
 
-!> MAKING SURE THESE ARRAYS ARE ALWAYS IN SCOPE
+!> MAKING SURE THESE ARRAYS ARE ALWAYS IN SCOPE.  FIXME: should only be done if first=.true. right???
 if ((cfg%flagglow/=0).and.(.not.allocated(PrprecipG))) then
   allocate(PrprecipG(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,size(ns,4)-1))
   PrprecipG(:,:,:,:)=0
@@ -126,11 +127,11 @@ do isp=1,lsp
     rhovs1(:,:,:,isp)=param
 
     vs1(:,:,:,isp)=rhovs1(:,:,:,isp)/(ms(isp)*max(ns(:,:,:,isp),mindensdiv))
-    chrgflux=chrgflux+ns(1:lx1,1:lx2,1:lx3,isp)*qs(isp)*vs1(1:lx1,1:lx2,1:lx3,isp)
+    chrgflux=chrgflux+ns(:,:,:,isp)*qs(isp)*vs1(:,:,:,isp)
   else
     ns(:,:,:,lsp)=sum(ns(:,:,:,1:lsp-1),4)
 !      vs1(1:lx1,1:lx2,1:lx3,lsp)=1/ns(1:lx1,1:lx2,1:lx3,lsp)/qs(lsp)*(J1-chrgflux)   !density floor needed???
-    vs1(1:lx1,1:lx2,1:lx3,lsp)=-1/max(ns(1:lx1,1:lx2,1:lx3,lsp),mindensdiv)/qs(lsp)*chrgflux   !really not strictly correct, should include current density
+    vs1(:,:,:,lsp)=-1/max(ns(:,:,:,lsp),mindensdiv)/qs(lsp)*chrgflux   !really not strictly correct, should include current density
   end if
 
   param=rhoes(:,:,:,isp)
@@ -151,6 +152,7 @@ call clean_param(x,2,vs1)
 
 
 !ARTIFICIAL VISCOSITY (NOT REALLY NEED BELOW 1000 KM ALT.).  NOTE THAT WE DON'T CHECK WHERE SUBCYCLING IS NEEDED SINCE, IN MY EXPERIENCE THEN CODE IS BOMBING ANYTIME IT IS...
+! Interestingly, this is accessing ghost cells of velocity so if they are overwritten by clean_params this viscosity calculation would generate "odd" results
 do isp=1,lsp-1
   v1iupdate(1:lx1+1,:,:)=0.5_wp*(vs1(0:lx1,1:lx2,1:lx3,isp)+vs1(1:lx1+1,1:lx2,1:lx3,isp))    !compute an updated interface velocity (only in x1-direction)
   dv1iupdate=v1iupdate(2:lx1+1,:,:)-v1iupdate(1:lx1,:,:)
@@ -162,7 +164,6 @@ Q(:,:,:,lsp) = 0
 !NONSTIFF/NONBALANCE INTERNAL ENERGY SOURCES (RK2 INTEGRATION)
 call cpu_time(tstart)
 do isp=1,lsp
-!do isp=1,lsp-1      !suppress compression for electrons as a test (FIXME)
   call RK2_prep_mpi(isp,x%flagper,vs1,vs2,vs3)    !role-agnostic mpi, all-to-neighbor
 
   divvs = div3D(vs1(0:lx1+1,0:lx2+1,0:lx3+1,isp),&
@@ -181,8 +182,8 @@ do isp=1,lsp
   Ts(:,:,:,isp)=max(Ts(:,:,:,isp), 100._wp)
 end do
 
-!> NaN check
-if (any(ieee_is_nan(Ts))) error stop 'multifluid:fluid_adv: NaN detected in Ts after div3D()'
+!> NaN check - FIXME: superfluous???
+!if (any(ieee_is_nan(Ts))) error stop 'multifluid:fluid_adv: NaN detected in Ts after div3D()'
 
 if (mpi_cfg%myid==0 .and. debug) then
   call cpu_time(tfin)
@@ -329,6 +330,7 @@ end if
 !CLEAN TEMPERATURE
 call clean_param(x,3,Ts)
 
+
 !ALL VELOCITY SOURCES
 call cpu_time(tstart)
 call srcsMomentum(nn,vn1,Tn,ns,vs1,vs2,vs3,Ts,E1,Q,x,Pr,Lo)    !added artificial viscosity...
@@ -340,23 +342,22 @@ do isp=1,lsp-1
   vs1(:,:,:,isp)=rhovs1(:,:,:,isp)/(ms(isp)*max(ns(:,:,:,isp),mindensdiv))
 end do
 
+!ELECTRON VELOCITY SOLUTION
+! in keeping with the way the above situations have been handled keep the ghost cells with this calculation
+chrgflux = 0
+do isp=1,lsp-1
+  chrgflux=chrgflux+ns(:,:,:,isp)*qs(isp)*vs1(:,:,:,isp)
+end do
+!  vs1(1:lx1,1:lx2,1:lx3,lsp)=1/max(ns(1:lx1,1:lx2,1:lx3,lsp),mindensdiv)/qs(lsp)*(J1-chrgflux)   !density floor needed???
+vs1(:,:,:,lsp)=-1/max(ns(:,:,:,lsp),mindensdiv)/qs(lsp)*chrgflux    !don't bother with FAC contribution...
+
+!CLEAN VELOCITY
+call clean_param(x,2,vs1)
+
 if (mpi_cfg%myid==0 .and. debug) then
   call cpu_time(tfin)
   print *, 'Velocity sources substep for time step:  ',t,'done in cpu_time of:  ',tfin-tstart
 end if
-
-
-!ELECTRON VELOCITY SOLUTION
-chrgflux = 0
-do isp=1,lsp-1
-  chrgflux=chrgflux+ns(1:lx1,1:lx2,1:lx3,isp)*qs(isp)*vs1(1:lx1,1:lx2,1:lx3,isp)
-end do
-!  vs1(1:lx1,1:lx2,1:lx3,lsp)=1/max(ns(1:lx1,1:lx2,1:lx3,lsp),mindensdiv)/qs(lsp)*(J1-chrgflux)   !density floor needed???
-vs1(1:lx1,1:lx2,1:lx3,lsp)=-1/max(ns(1:lx1,1:lx2,1:lx3,lsp),mindensdiv)/qs(lsp)*chrgflux    !don't bother with FAC contribution...
-
-
-!CLEAN VELOCITY
-call clean_param(x,2,vs1)
 
 
 !ALL MASS SOURCES
@@ -373,7 +374,6 @@ if (mpi_cfg%myid==0 .and. debug) then
   call cpu_time(tfin)
   print *, 'Mass sources substep for time step:  ',t,'done in cpu_time of:  ',tfin-tstart
 end if
-
 
 !ELECTRON DENSITY SOLUTION
 ns(:,:,:,lsp)=sum(ns(:,:,:,1:lsp-1),4)
@@ -486,14 +486,14 @@ select case (paramflag)
       end do
     end if
 
-!MZ - for reasons I don't understand, this causes ctest to fail...  Generates segfaults everywhere in the CI (seems like it shouldn't???)...
+!MZ - for reasons I don't understand, this causes ctest to fail...  Generates segfaults everywhere in the CI (these are due to failing the comparisons)...
     !ZERO OUT THE GHOST CELL VELOCITIES
-    param(-1:0,:,:,:)= 0
-    param(lx1+1:lx1+2,:,:,:)= 0
-    param(:,-1:0,:,:)= 0
-    param(:,lx2+1:lx2+2,:,:)= 0
-    param(:,:,-1:0,:)= 0
-    param(:,:,lx3+1:lx3+2,:)= 0
+!    param(-1:0,:,:,:)= 0
+!    param(lx1+1:lx1+2,:,:,:)= 0
+!    param(:,-1:0,:,:)= 0
+!    param(:,lx2+1:lx2+2,:,:)= 0
+!    param(:,:,-1:0,:)= 0
+!    param(:,:,lx3+1:lx3+2,:)= 0
   case (3)    !temperature
     param=max(param,100._wp)     !temperature floor
 

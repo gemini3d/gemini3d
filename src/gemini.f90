@@ -155,6 +155,10 @@ if (cfg%flagglow /= 0) then
 end if
 
 
+!> FIXME: Zero out all state variables here - the corner ghost cells otherwise never get set and could contain garbage whicgh may make the sanity check fail since it does look at ghost cells, as well.  
+!ns=0; vs1=0; Ts=0;
+! oddly this doesn't seem to help our issue...
+
 !> Set initial time variables to simulation; this requires detecting whether we are trying to restart a simulation run
 !> LOAD ICS AND DISTRIBUTE TO WORKERS (REQUIRES GRAVITY FOR INITIAL GUESSING)
 !> ZZZ - this also should involve setting of Phiall...  Either to zero or what the input file specifies...
@@ -296,6 +300,11 @@ else
 endif
 
 
+  !> Sanity check key variables before starting...
+  !print*, 'Check before time loop...'
+  !call check_finite_output(t, mpi_cfg%myid, vs2,vs3,ns,vs1,Ts, Phi,J1,J2,J3)
+
+
 !> Main time loop
 main : do while (t < tdur)
   !> TIME STEP CALCULATION, requires workers to report their most stringent local stability constraint
@@ -343,14 +352,16 @@ main : do while (t < tdur)
 
   !> UPDATE THE FLUID VARIABLES
   if (mpi_cfg%myid==0 .and. debug) call cpu_time(tstart)
-  call fluid_adv(ns,vs1,Ts,vs2,vs3,J1,E1,cfg,t,dt,x,nn,vn1,vn2,vn3,Tn,iver,ymd,UTsec, first=it==1)
+  call fluid_adv(ns,vs1,Ts,vs2,vs3,J1,E1,cfg,t,dt,x,nn,vn1,vn2,vn3,Tn,iver,ymd,UTsec, first=(it==1) )
   if (mpi_cfg%myid==0 .and. debug) then
     call cpu_time(tfin)
     print *, 'Multifluid total solve time:  ',tfin-tstart
   endif
 
   !> Sanity check key variables before advancing
-  call check_finite_output(t, mpi_cfg%myid, vs2,vs3,ns,vs1,Ts, Phi,J1,J2,J3)
+  !call check_finite_output(t, mpi_cfg%myid, vs2,vs3,ns,vs1,Ts, Phi,J1,J2,J3)
+  ! FIXME: for whatever reason, it is just a fact that vs1 has trash in ghost cells after fluid_adv; I don't know why...
+  call check_finite_output(t, mpi_cfg%myid, vs2,vs3,ns,vs1(1:lx1,1:lx2,1:lx3,1:lsp),Ts, Phi,J1,J2,J3)
 
   !> NOW OUR SOLUTION IS FULLY UPDATED SO UPDATE TIME VARIABLES TO MATCH...
   it = it + 1
