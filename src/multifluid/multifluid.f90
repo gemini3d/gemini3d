@@ -445,36 +445,55 @@ select case (paramflag)
       end do
     end do
 
-    !FORCE THE BORDER CELLS TO BE SAME AS THE FIRST INTERIOR CELL (deals with some issues on dipole grids)
-    do isp=1,lsp
-      do ix3=1,lx3
-        do ix2=1,lx2
-          ix1beg=1
-          do while(x%nullpts(ix1beg,ix2,ix3) < 0.5 .and. ix1beg<lx1)     !find the first non-null index for this field line, need to be careful if no null points exist...
-            ix1beg=ix1beg+1
+    !FORCE THE BORDER CELLS TO BE SAME AS THE FIRST INTERIOR CELL (deals with some issues on dipole grids), skip for non-dipole.
+    if (x%gridflag==0) then      ! closed dipole
+      do isp=1,lsp
+        do ix3=1,lx3
+          do ix2=1,lx2
+            ix1beg=1
+            do while(x%nullpts(ix1beg,ix2,ix3) < 0.5 .and. ix1beg<lx1)     !find the first non-null index for this field line, need to be careful if no null points exist...
+              ix1beg=ix1beg+1
+            end do
+  
+            ix1end=ix1beg
+            do while(x%nullpts(ix1end,ix2,ix3) > 0.5 .and. ix1end<lx1)     !find the first non-null index for this field line
+              ix1end=ix1end+1
+            end do
+  
+            if (ix1beg /= lx1) then    !only do this if we actually have null grid points
+              param(ix1beg,ix2,ix3,isp)=param(ix1beg+1,ix2,ix3,isp)
+            end if
+            if (ix1end /= lx1) then
+              param(ix1end,ix2,ix3,isp)=param(ix1end-1,ix2,ix3,isp)
+            end if
           end do
-
-          ix1end=ix1beg
-          do while(x%nullpts(ix1end,ix2,ix3) > 0.5 .and. ix1end<lx1)     !find the first non-null index for this field line
-            ix1end=ix1end+1
-          end do
-
-          if (ix1beg /= lx1) then    !only do this if we actually have null grid points
-            param(ix1beg,ix2,ix3,isp)=param(ix1beg+1,ix2,ix3,isp)
-            param(ix1end,ix2,ix3,isp)=param(ix1end-1,ix2,ix3,isp)
-          end if
         end do
       end do
-    end do
+    elseif (x%gridflag==1) then     ! open dipole grid, inverted
+      do isp=1,lsp
+        do ix3=1,lx3
+          do ix2=1,lx2
+            ix1end=1
+            do while(x%nullpts(ix1end,ix2,ix3) < 0.5 .and. ix1end<lx1)     !find the first non-null index for this field line
+              ix1end=ix1end+1
+            end do
 
-!MZ - for reasons I don't understand, this causes ctest to fail...
+            if (ix1end /= lx1) then
+              param(ix1end,ix2,ix3,isp)=param(ix1end-1,ix2,ix3,isp)
+            end if
+          end do
+        end do
+      end do
+    end if
+
+!MZ - for reasons I don't understand, this causes ctest to fail...  Generates segfaults everywhere in the CI (seems like it shouldn't???)...
 !    !ZERO OUT THE GHOST CELL VELOCITIES
 !    param(-1:0,:,:,:)= 0
 !    param(lx1+1:lx1+2,:,:,:)= 0
 !    param(:,-1:0,:,:)= 0
 !    param(:,lx2+1:lx2+2,:,:)= 0
 !    param(:,:,-1:0,:)= 0
-!    param(:,:,lx4+1:lx3+2,:)= 0
+!    param(:,:,lx3+1:lx3+2,:)= 0
   case (3)    !temperature
     param=max(param,100._wp)     !temperature floor
 

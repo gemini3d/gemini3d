@@ -102,10 +102,13 @@ end if
 !> FIXME:  this needs to be done once, globally and also needs to be more robust...
 if (abs(x%alt(1,1,1)-x%alt(lx1,1,1))<100d3) then    !closed dipole grid
   gridflag=0
+  x%gridflag=0
 else if (x%alt(1,1,1)>x%alt(2,1,1)) then    !open dipole grid with inverted structure wrt altitude
   gridflag=1
+  x%gridflag=1
 else    !something different (viz. non-inverted - lowest altitudes at the logical bottom of the grid)
   gridflag=2
+  x%gridflag=2
 end if
 
 !> Make sure we have a sensible x2,3 decomposition of grid

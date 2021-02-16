@@ -95,6 +95,9 @@ real(wp), dimension(:,:,:), allocatable :: dl1i,dl2i,dl3i
 !> A FLAG FOR INDICATING WHETHER OR NOT PERIODIC
 logical :: flagper
 
+!> flag for indicated type of grid (0 - closed dipole; 1 - open dipole inverted; 2 - non-inverted)
+integer :: gridflag
+
 end type curvmesh
 
 end module mesh
