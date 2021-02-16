@@ -361,7 +361,9 @@ main : do while (t < tdur)
   !> Sanity check key variables before advancing
   !call check_finite_output(t, mpi_cfg%myid, vs2,vs3,ns,vs1,Ts, Phi,J1,J2,J3)
   ! FIXME: for whatever reason, it is just a fact that vs1 has trash in ghost cells after fluid_adv; I don't know why...
-  call check_finite_output(t, mpi_cfg%myid, vs2,vs3,ns,vs1(1:lx1,1:lx2,1:lx3,1:lsp),Ts, Phi,J1,J2,J3)
+  call check_finite_output(t, mpi_cfg%myid, vs2(1:lx1,1:lx2,1:lx3,1:lsp),vs3(1:lx1,1:lx2,1:lx3,1:lsp), &
+                              ns(1:lx1,1:lx2,1:lx3,1:lsp),vs1(1:lx1,1:lx2,1:lx3,1:lsp), &
+                              Ts(1:lx1,1:lx2,1:lx3,1:lsp), Phi,J1,J2,J3)
 
   !> NOW OUR SOLUTION IS FULLY UPDATED SO UPDATE TIME VARIABLES TO MATCH...
   it = it + 1
