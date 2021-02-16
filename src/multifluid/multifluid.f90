@@ -486,7 +486,7 @@ select case (paramflag)
       end do
     end if
 
-!MZ - for reasons I don't understand, this causes ctest to fail...  Generates segfaults everywhere in the CI (these are due to failing the comparisons)...
+!MZ - for reasons I don't understand, this causes ctest to fail...  Generates segfaults everywhere in the CI (these are due to failing the comparisons)...  Okay so the deal here is that the ghost cell velocity values are used to compute artificial viscosity in fluid_adv, so one cannot clear them out without ruining the solution.  AFAIK no other params have this issue...
     !ZERO OUT THE GHOST CELL VELOCITIES
 !    param(-1:0,:,:,:)= 0
 !    param(lx1+1:lx1+2,:,:,:)= 0
