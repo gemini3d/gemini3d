@@ -12,7 +12,7 @@ if(${PROJECT_NAME}_BUILD_TESTING)
   endif(f2018assumed_rank)
 
   add_executable(test_errors test_errors.f90)
-  target_link_libraries(test_errors PRIVATE errors const)
+  target_link_libraries(test_errors PRIVATE errors const h5fortran::h5fortran)
 
   add_test(NAME gemini:stop:zero COMMAND $<TARGET_FILE:test_errors> root)
   set_tests_properties(gemini:stop:zero PROPERTIES WILL_FAIL true)
