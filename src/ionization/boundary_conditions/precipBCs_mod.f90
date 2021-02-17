@@ -55,7 +55,7 @@ real(wp) :: UTsectmp
 
 if (cfg%flagprecfile==1) then    !all workers must have this info
   !! find the last input data preceding the milestone/initial condition that we start with
-  call find_lastdate(cfg%ymd0,cfg%UTsec0,ymd,UTsec,cfg%dtE0,ymdtmp,UTsectmp)
+  call find_lastdate(cfg%ymd0,cfg%UTsec0,ymd,UTsec,cfg%dtprec,ymdtmp,UTsectmp)
 
   if (mpi_cfg%myid==0) print*, '!!!Attmpting to prime precipitation input files...',ymdtmp,UTsectmp
   !! back up by two dtprec to so that when we run the fileinput twice we end up with tprev corresponding
@@ -176,6 +176,7 @@ if(t+dt / 2._wp >= tnext .or. t < 0) then
     !! these need to be initialized so that something sensible happens at the beginning
 
     !ALL PROCESSES NEED TO DEFINED THE OPINTS THAT THEY WILL BE INTERPOLATING ONTO
+    ! Something to note here is that on a curved grid one must essentially choose a reference location in terms of x1-index.  Here we just use lx1, but obviously this could be changed to any other location...  Because this is hardcoded as lx1, the precipitation input will be spread across the UPPER part of the grid and may not be centered when viewed from, e.g., the 120 km altitude plane...
     allocate(mloni(lx2*lx3),mlati(lx2*lx3))
     do ix3=1,lx3
       do ix2=1,lx2
