@@ -748,9 +748,9 @@ if (lx2/=1 .and. cfg%potsolve ==1) then    !we did a field-integrated solve for 
         end if
       ! For open grids always integrate from the bottom (zero current)
       elseif (gridflag==1) then    !this would be an inverted grid, this max altitude corresponds to the min value of x1
-        if (debug) print *,  'Inverted grid; integration starting at min x1 (highest alt. or southern hemisphere)...', &
-                       minval(Vminx1slab), &
-                       maxval(Vminx1slab)
+!        if (debug) print *,  'Inverted grid; integration starting at min x1 (highest alt. or southern hemisphere)...', &
+!                       minval(Vminx1slab), &
+!                       maxval(Vminx1slab)
         J1=integral3D1(divJperp,x,1,lx1)    !int divperp of BG current
         do ix1=1,lx1
           J1(ix1,:,:)= 1/x%h2(ix1,1:lx2,1:lx3)/x%h3(ix1,1:lx2,1:lx3)* &
