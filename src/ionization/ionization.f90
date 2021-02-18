@@ -395,7 +395,7 @@ if ( maxval(PhiWmWm2) > 0) then   !only compute rates if nonzero flux given
     do ix2=1,lx2
       !W0eV=W0(ix2,ix3) !Eo in eV at upper x,y locations (z,x,y) normally
 
-      if ( maxval(PhiWmWm2(ix2,ix3,:)) <= 0) then    !only compute rates if nonzero flux given *here*
+      if ( maxval(PhiWmWm2(ix2,ix3,:)) <= 0) then    !only compute rates if nonzero flux given *here* (i.e. at this location)
         ionrate(:,ix2,ix3,:) = 0
         eheating(:,ix2,ix3) = 0
         iver(ix2,ix3,:) = 0
