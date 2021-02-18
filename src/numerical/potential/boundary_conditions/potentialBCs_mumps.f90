@@ -481,11 +481,18 @@ else
   Vminx2 = 0
   Vmaxx2 = 0
   if (flagdirich==1) then
-    !! Dirichlet:  needs to be the same as the top corner grid points
-    do ix1=1,lx1
-      Vminx3(ix1,:)=Vmaxx1(:,1)
-      Vmaxx3(ix1,:)=Vmaxx1(:,lx3all)
-    end do
+    !! Dirichlet:  needs to be the same as the physical top corner grid points
+    if (gridflag/=1) then   !non-inverted so logical end is the max alt.
+      do ix1=1,lx1
+        Vminx3(ix1,:)=Vmaxx1(:,1)
+        Vmaxx3(ix1,:)=Vmaxx1(:,lx3all)
+      end do
+    else                    !inverted so logical beginning is max alt.
+      do ix1=1,lx1
+        Vminx3(ix1,:)=Vminx1(:,1)
+        Vmaxx3(ix1,:)=Vminx1(:,lx3all)
+      end do
+    end if
   else
     !! Neumann in x1:  sides are grounded...
     Vminx3 = 0
@@ -588,6 +595,8 @@ meanx2=0.5_wp*(x%x2all(1)+x%x2all(lx2all))
 sigx3=1/20._wp*(x%x3all(lx3all)-x%x3all(1))    !this requires that all workers have a copy of x3all!!!!
 meanx3=0.5_wp*(x%x3all(1)+x%x3all(lx3all))
 
+
+! FIXME: the pointer swapping to deal with top vs. bottom here is confusing; it may be better simple to have the input preparation scripts assign things accordingly.  For this routine right now it doesn't matter since both just zeroed out anyway...
 if (gridflag/=2) then
   Vtopalt=>Vminx1
   Vbotalt=>Vmaxx1

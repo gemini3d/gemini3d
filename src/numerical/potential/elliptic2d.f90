@@ -1042,7 +1042,7 @@ module procedure elliptic2D_cart
 !! * POTENTIAL VARIES IN X1 AND X3. X2 IS NOMINALLY JUST ONE ELEMENT.
 !! * LEFT AND RIGHT BOUNDARIES (IN X3) USE DIRICHLET BOUNARY CONDITIONS
 !! * TOP (ALTITUDE) CAN BE NEUMANN OR DIRICHLET.
-!! * BOTTOM (ALTITUDE) IS ALWAYS DIRICHLET.
+!! * BOTTOM (ALTITUDE) IS ALWAYS Neumann zero current
 !!
 !! This subroutine solves equations of the form:
 !!
@@ -1101,8 +1101,7 @@ do ix3=1,lx3
 
     if (ix1==1) then
     !! (LOGICAL) BOTTOM GRID POINTS + CORNER, USE NEUMANN HERE, PRESUMABLY ZERO.
-    !! ZZZ - potential problem here if we have inverted grid...
-      if (gridflag/=1) then
+      if (gridflag/=1) then     ! non-inverted grid, logical array beginning corresponds to the physical `bottom' of the domain which always will have Neumann zero boundary conditions
         ir(ient)=iPhi
         ic(ient)=iPhi
         M(ient)=-1
@@ -1111,30 +1110,34 @@ do ix3=1,lx3
         ic(ient)=iPhi+1
         M(ient)=1
         !            b(iPhi)=Vminx1(ix3)
-        b(iPhi)= 0    !force bottom current to zero
+        b(iPhi)= 0    !force `bottom' current to zero
         ient=ient+1
-      else
-        if (flagdirich/=0) then    !ZZZ - need to check non-inverted???
+      else                     ! inverted dipole grid, logical beginning of the array corresponds to the physical `top' of the domain; this could have either Neumann or Dirichlet conditions.  
+        if (flagdirich/=0) then
           ir(ient)=iPhi
           ic(ient)=iPhi
           M(ient)=1
-          b(iPhi)=Vmaxx1(1,ix3)
+!          b(iPhi)=Vmaxx1(1,ix3)    ! why max here???  did something get swapped around??? Yep old routines did the swapping...
+          b(iPhi)=Vminx1(1,ix3)  ! new routines always map min/max as specified in input files
           ient=ient+1
         else
           ir(ient)=iPhi
           ic(ient)=iPhi-1
-          M(ient)=-1/dx1(lx1)
+!          M(ient)=-1/dx1(lx1)    ! these may have always been wrong?
+          M(ient)=-1/dx1(2)
           ient=ient+1
           ir(ient)=iPhi
           ic(ient)=iPhi
-          M(ient)=1/dx1(lx1)
-          b(iPhi)=Vmaxx1(1,ix3)
+!          M(ient)=1/dx1(lx1)
+          M(ient)=1/dx1(2)
+!          b(iPhi)=Vmaxx1(1,ix3)    ! old approach
+          b(iPhi)=Vminx1(1,ix3)
           ient=ient+1
         end if
       end if
     elseif (ix1==lx1) then    !(LOGICAL) TOP GRID POINTS + CORNER
-      if (gridflag/=1) then    !non-inverted?
-        if (flagdirich/=0) then    !ZZZ - need to check non-inverted???
+      if (gridflag/=1) then    !non-inverted; logical end of the array corresponding to the physical `top' of the domain
+        if (flagdirich/=0) then
           ir(ient)=iPhi
           ic(ient)=iPhi
           M(ient)=1
@@ -1151,7 +1154,7 @@ do ix3=1,lx3
           b(iPhi)=Vmaxx1(1,ix3)
           ient=ient+1
         end if
-      else
+      else                    ! inverted dipole grid; logical end of the array corresponds to the physical `bottom' of the domain
         ir(ient)=iPhi
         ic(ient)=iPhi
         M(ient)=-1
@@ -1164,7 +1167,7 @@ do ix3=1,lx3
         !! force bottom current to zero
         ient=ient+1
       end if
-    elseif (ix3==1) then      !LEFT BOUNDARY
+    elseif (ix3==1) then      !LEFT BOUNDARY - a note here is that if the user specified dirichlet top conditions these must be same as the corner points otherwise a huge potential difference will result and blow up the simulation  
       ir(ient)=iPhi
       ic(ient)=iPhi
       M(ient)=1.0
