@@ -1,6 +1,11 @@
 include(CheckSymbolExists)
 include(CheckIncludeFile)
 
+if(${PROJECT_NAME}_BUILD_TESTING)
+  add_executable(echo_path echo_path.f90)
+  add_test(NAME debug:EchoEnvVar COMMAND $<TARGET_FILE:echo_path>)
+endif()
+
 add_library(helpmod OBJECT help.f90)
 target_link_libraries(helpmod PRIVATE config)
 set_target_properties(helpmod PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include)

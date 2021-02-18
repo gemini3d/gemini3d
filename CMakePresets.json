@@ -1,100 +1,114 @@
 {
-  "version": 1,
-  "cmakeMinimumRequired": {
-    "major": 3,
-    "minor": 19,
-    "patch": 0
-  },
-  "configurePresets": [
-    {
-      "name": "default",
-      "hidden": true,
-      "binaryDir": "${sourceDir}/build",
-      "generator": "Ninja"
-    },
-    {
-      "name": "build",
-      "inherits": "default",
-      "displayName": "build all libraries",
-      "description": "Build all external libraries (except MPI) without searching for existing libraries.",
-      "cacheVariables": {
-        "lapack_external": "on",
-        "scalapack_external": "on",
-        "mumps_external": "on",
-        "hdf5_external": "on"
-      }
-    },
-    {
-      "name": "mac",
-      "inherits": "default",
-      "displayName": "MacOS GCC",
-      "description": "MacOS: specify GCC version to avoid Clang /usr/bin/gcc",
-      "environment": {
-        "CC": "gcc-10",
-        "CXX": "g++-10",
-        "FC": "gfortran-10"
-      }
-    },
-    {
-      "name": "buildmac",
-      "inherits": ["mac", "build"],
-      "displayName": "build all libraries: MacOS",
-      "description": "build all libraries with MacOS, specifying GCC version to avoid Clang /usr/bin/gcc"
-    },
-    {
-      "name": "make",
-      "inherits": "build",
-      "displayName": "build all libraries GNU Make: Linux/MacOS",
-      "description": "build all libraries with GNU Make on Linux/MacOS",
-      "generator": "Unix Makefiles"
-    },
-    {
-      "name": "makemac",
-      "inherits": ["make", "mac"],
-      "displayName": "build all libraries: MacOS",
-      "description": "build all libraries with GNU Make on MacOS"
-    },
-    {
-      "name": "makewin",
-      "inherits": "build",
-      "displayName": "build all libraries: Windows",
-      "description": "build all libraries with GNU Make on Windows",
-      "generator": "MinGW Makefiles"
-    },
-    {
-      "name": "intel",
-      "inherits": "default",
-      "displayName": "Intel oneAPI compiler: Linux/MacOS",
-      "description": "build with Intel oneAPI on Linux/MacOS",
-      "environment": {
-        "CC": "icc",
-        "CXX": "icpc",
-        "FC": "ifort",
-        "LAPACK_ROOT": "$env{MKLROOT}",
-        "SCLAPACK_ROOT": "$env{MKLROOT}",
-        "MPI_ROOT": "$env{I_MPI_ROOT}"
-      }
-    },
-    {
-      "name": "intelwin",
-      "inherits": "intel",
-      "displayName": "Intel oneAPI compiler: Windows",
-      "description": "build with Intel oneAPI on Windows",
-      "environment": {
-        "CC": "icl",
-        "CXX": "icl"
-      }
-    },
-    {
-      "name": "intelnext",
-      "inherits": "intel",
-      "displayName": "FUTURE: Intel oneAPI LLVM",
-      "description": "FUTURE: build with Intel oneAPI NextGen LLVM (waiting on Intel official release)",
-      "environment": {
-        "CC": "icx",
-        "CXX": "icx",
-        "FC": "ifx"
-      }
-    }
-  ]
+"version": 1,
+"cmakeMinimumRequired": {
+"major": 3,
+"minor": 19,
+"patch": 0
+},
+
+"configurePresets": [
+{
+  "name": "default",
+  "displayName": "build with Ninja",
+  "description": "Ninja is faster and more reliable than Make",
+  "binaryDir": "${sourceDir}/build",
+  "generator": "Ninja"
+},
+{
+  "name": "build",
+  "inherits": "default",
+  "displayName": "build all libraries",
+  "description": "Build all external libraries (except MPI) without searching for existing libraries.",
+  "cacheVariables": {
+    "lapack_external": "on",
+    "scalapack_external": "on",
+    "mumps_external": "on",
+    "hdf5_external": "on"
+  }
+},
+{
+  "name": "mac",
+  "inherits": "default",
+  "displayName": "MacOS GCC",
+  "description": "MacOS: specify GCC version to avoid Clang /usr/bin/gcc",
+  "environment": {
+    "CC": "gcc-10",
+    "CXX": "g++-10",
+    "FC": "gfortran-10"
+  }
+},
+{
+  "name": "buildmac",
+  "inherits": ["mac", "build"],
+  "displayName": "build all libraries: MacOS",
+  "description": "build all libraries with MacOS, specifying GCC version to avoid Clang /usr/bin/gcc"
+},
+{
+  "name": "make",
+  "inherits": "build",
+  "displayName": "build all libraries GNU Make: Linux/MacOS",
+  "description": "build all libraries with GNU Make on Linux/MacOS",
+  "generator": "Unix Makefiles"
+},
+{
+  "name": "makemac",
+  "inherits": ["make", "mac"],
+  "displayName": "build all libraries: MacOS",
+  "description": "build all libraries with GNU Make on MacOS"
+},
+{
+  "name": "makewin",
+  "inherits": "build",
+  "displayName": "build all libraries: Windows",
+  "description": "build all libraries with GNU Make on Windows",
+  "generator": "MinGW Makefiles"
+},
+{
+  "name": "intel",
+  "inherits": "default",
+  "displayName": "Intel oneAPI compiler: Linux/MacOS",
+  "description": "build with Intel oneAPI on Linux/MacOS",
+  "environment": {
+    "CC": "icc",
+    "CXX": "icpc",
+    "FC": "ifort",
+    "LAPACK_ROOT": "$env{MKLROOT}",
+    "SCLAPACK_ROOT": "$env{MKLROOT}",
+    "MPI_ROOT": "$env{I_MPI_ROOT}"
+  }
+},
+{
+  "name": "intelwin",
+  "inherits": "intel",
+  "displayName": "Intel oneAPI compiler: Windows",
+  "description": "build with Intel oneAPI on Windows",
+  "environment": {
+    "CC": "icl",
+    "CXX": "icl"
+  }
+},
+{
+  "name": "intelnext",
+  "inherits": "intel",
+  "displayName": "Intel oneAPI LLVM",
+  "description": "build with Intel oneAPI NextGen LLVM",
+  "environment": {
+    "CC": "icx",
+    "CXX": "icx",
+    "FC": "ifx"
+  }
+}
+]
+
+// "testPresets": [
+//   {
+//     "name": "default",
+//     "configurePreset": "default",
+//     "output": {"outputOnFailure": true},
+//     "execution": {"noTestsAction": "error",
+//       "stopOnFailure": false}
+//   }
+// ]
+
+
 }

@@ -1,6 +1,8 @@
 *.job
 *.job.*
 
+CMakeUserPresets.json
+
 test_data/
 
 .vscode/
