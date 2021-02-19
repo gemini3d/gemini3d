@@ -61,7 +61,7 @@ interface ! potential_worker.f90
   type(curvmesh), intent(in) :: x
   integer, intent(in) :: flagdirich
   real(wp), dimension(:,:,:), intent(in) :: E02src,E03src    ! these are BG fields use to compute potential source terms; viz. they need to be zeroed out if there is a lagrangian grid...
-  real(wp), dimension(:,:), intent(in) :: Vminx1slab,Vmaxx1slab
+  real(wp), dimension(:,:), intent(inout) :: Vminx1slab,Vmaxx1slab    !need to be able to convert into potential normal deriv.
 
   real(wp), dimension(:,:,:), intent(out) :: E1,E2,E3,J1,J2,J3
   end subroutine potential_workers_mpi
@@ -88,10 +88,10 @@ interface ! potential_root.f90
   type(curvmesh), intent(in) :: x
   integer, intent(in) :: flagdirich
   real(wp), dimension(:,:,:), intent(in) :: E02src,E03src
-  real(wp), dimension(:,:), intent(inout) :: Vminx1,Vmaxx1
+  real(wp), dimension(:,:), intent(inout) :: Vminx1,Vmaxx1    !need to be able to convert these into pot. normal deriv.
   real(wp), dimension(:,:), intent(in) :: Vminx2,Vmaxx2
   real(wp), dimension(:,:), intent(in) :: Vminx3,Vmaxx3
-  real(wp), dimension(:,:), intent(in) :: Vminx1slab,Vmaxx1slab
+  real(wp), dimension(:,:), intent(inout) :: Vminx1slab,Vmaxx1slab    !need to be able to convert into pot. normal deriv.
 
   real(wp), dimension(:,:,:), intent(out) :: E1,E2,E3,J1,J2,J3
   real(wp), dimension(:,:,:), intent(inout) :: Phiall   !not good form, but I'm lazy...  Forgot what I meant by this...

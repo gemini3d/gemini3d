@@ -175,7 +175,16 @@ else   !lx1=1 so do a field-resolved 2D solve over x1,x3
   call gather_send(sig0scaled,tag%sig0)
   call gather_send(srcterm,tag%src)
 
-  if (flagdirich==0) call gather_send(sig0,tag%sig0)
+  ! Need to convert current boundary condtion into potential normal derivative
+  if (flagdirich==0) then
+    if (gridflag==1) then
+      Vminx1slab=-x%h1(1,1:lx2,1:lx3)*Vminx1slab/sig0(1,:,:)
+      call gather_send(Vminx1slab,tag%Vminx1)
+    else
+      Vmaxx1slab=-x%h1(lx1,1:lx2,1:lx3)*Vmaxx1slab/sig0(lx1,:,:)
+      call gather_send(Vmaxx1slab,tag%Vmaxx1)
+    end if
+  end if
 
   call elliptic_workers()
 end if
