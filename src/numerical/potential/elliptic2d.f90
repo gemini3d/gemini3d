@@ -1117,23 +1117,16 @@ do ix3=1,lx3
           ir(ient)=iPhi
           ic(ient)=iPhi
           M(ient)=1
-!          b(iPhi)=Vmaxx1(1,ix3)    ! why max here???  did something get swapped around??? Yep old routines did the swapping...
           b(iPhi)=Vminx1(1,ix3)  ! new routines always map min/max as specified in input files
           ient=ient+1
         else
           ir(ient)=iPhi
-!          ic(ient)=iPhi-1
           ic(ient)=iPhi+1
-!!          M(ient)=-1/dx1(lx1)    ! these may have always been wrong?
-!          M(ient)=-1/dx1(2)
           M(ient)=1/dx1(2)
           ient=ient+1
           ir(ient)=iPhi
           ic(ient)=iPhi
-!!          M(ient)=1/dx1(lx1)
-!          M(ient)=1/dx1(2)
           M(ient)=-1/dx1(2)
-!          b(iPhi)=Vmaxx1(1,ix3)    ! old approach
           b(iPhi)=Vminx1(1,ix3)
           ient=ient+1
         end if
