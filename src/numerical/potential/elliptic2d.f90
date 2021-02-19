@@ -1122,7 +1122,8 @@ do ix3=1,lx3
           ient=ient+1
         else
           ir(ient)=iPhi
-          ic(ient)=iPhi-1
+!          ic(ient)=iPhi-1
+          ic(ient)=iPhi+1
 !          M(ient)=-1/dx1(lx1)    ! these may have always been wrong?
           M(ient)=-1/dx1(2)
           ient=ient+1

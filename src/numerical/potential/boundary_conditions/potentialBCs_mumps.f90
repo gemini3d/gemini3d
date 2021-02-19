@@ -454,9 +454,7 @@ do ix3=1,lx3all
 end do
 
 
-!SET REMAINING BOUNDARY CONDITIONS BASED ON WHAT THE TOP IS.  IF WE HAVE A
-!3D GRID THE SIDES ARE GROUNDED AUTOMATICALLY, WHEREAS FOR 2D THEY ARE SET
-!TO TOP VALUE  IF DIRICHLET AND TO TOP VALUE IF DIRICHLET.
+! This forces certain patterns to the boundary conditions to make sure solvers don't get garbage data...
 if (lx2all/=1 .and. lx3all/=1) then
   !! full 3D grid
 !      Vminx2 = 0    !This actualy needs to be different for KHI

@@ -88,7 +88,7 @@ interface ! potential_root.f90
   type(curvmesh), intent(in) :: x
   integer, intent(in) :: flagdirich
   real(wp), dimension(:,:,:), intent(in) :: E02src,E03src
-  real(wp), dimension(:,:), intent(in) :: Vminx1,Vmaxx1
+  real(wp), dimension(:,:), intent(inout) :: Vminx1,Vmaxx1
   real(wp), dimension(:,:), intent(in) :: Vminx2,Vmaxx2
   real(wp), dimension(:,:), intent(in) :: Vminx3,Vmaxx3
   real(wp), dimension(:,:), intent(in) :: Vminx1slab,Vmaxx1slab

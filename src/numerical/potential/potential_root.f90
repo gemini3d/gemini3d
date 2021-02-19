@@ -47,6 +47,7 @@ real(wp), dimension(1:size(Phiall,2),1:size(Phiall,3)) :: Phislab,Phislab0
 
 real(wp), dimension(1:size(Phiall,1),1:size(Phiall,2),1:size(Phiall,3)) :: sig0scaledall,sigPscaledall,sigHscaledall
 real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: sig0scaled,sigPscaled,sigHscaled
+real(wp), dimension(1:size(Phiall,1),1:size(Phiall,2),1:size(Phiall,3)) :: sig0all
 
 logical :: perflag    !MUMPS stuff
 
@@ -264,6 +265,21 @@ else   !lx1=1 so do a field-resolved 2D solve over x1,x3
   call gather_recv(sigPscaled,tag%sigP,sigPscaledall)
   call gather_recv(sig0scaled,tag%sig0,sig0scaledall)
   call gather_recv(srcterm,tag%src,srctermall)
+
+
+  !> Need to get the physical parallel conductivity so that we can convert boundary conditions for solve from current to potential
+  ! Note that it is a little inefficient to have root do this calculation, but if we are in 2D it probably doesn't matter anyway...
+  if (flagdirich==0) then
+    print*, minval(Vminx1),maxval(Vminx1),minval(Vmaxx1),maxval(Vmaxx1)
+    call gather_recv(sig0,tag%sig0,sig0all)
+
+    if (gridflag==1) then    !inverted
+      Vminx1=-x%h1all(1,1:lx2all,1:lx3all)*Vminx1/sig0all(1,:,:)
+    else                !non-inverted
+      Vmaxx1=-x%h1all(lx1,1:lx2all,1:lx3all)*Vmaxx1/sig0all(lx1,:,:)
+    end if
+    print*, minval(Vminx1),maxval(Vminx1),minval(Vmaxx1),maxval(Vmaxx1)
+  end if
 
 
   !! EXECUTE THE SOLVE WITH MUMPS AND SCALED TERMS

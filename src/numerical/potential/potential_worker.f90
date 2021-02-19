@@ -175,6 +175,8 @@ else   !lx1=1 so do a field-resolved 2D solve over x1,x3
   call gather_send(sig0scaled,tag%sig0)
   call gather_send(srcterm,tag%src)
 
+  if (flagdirich==0) call gather_send(sig0,tag%sig0)
+
   call elliptic_workers()
 end if
 !    print *, 'MUMPS time:  ',tfin-tstart
