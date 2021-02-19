@@ -270,7 +270,7 @@ else   !lx1=1 so do a field-resolved 2D solve over x1,x3
   !> Need to get the physical parallel conductivity so that we can convert boundary conditions for solve from current to potential
   ! Note that it is a little inefficient to have root do this calculation, but if we are in 2D it probably doesn't matter anyway...
   if (flagdirich==0) then
-    print*, minval(Vminx1),maxval(Vminx1),minval(Vmaxx1),maxval(Vmaxx1)
+    !print*, minval(Vminx1),maxval(Vminx1),minval(Vmaxx1),maxval(Vmaxx1)
     call gather_recv(sig0,tag%sig0,sig0all)
 
     if (gridflag==1) then    !inverted
@@ -278,7 +278,7 @@ else   !lx1=1 so do a field-resolved 2D solve over x1,x3
     else                !non-inverted
       Vmaxx1=-x%h1all(lx1,1:lx2all,1:lx3all)*Vmaxx1/sig0all(lx1,:,:)
     end if
-    print*, minval(Vminx1),maxval(Vminx1),minval(Vmaxx1),maxval(Vmaxx1)
+    !print*, minval(Vminx1),maxval(Vminx1),minval(Vmaxx1),maxval(Vmaxx1)
   end if
 
 
