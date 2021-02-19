@@ -457,10 +457,6 @@ end do
 ! This forces certain patterns to the boundary conditions to make sure solvers don't get garbage data...
 if (lx2all/=1 .and. lx3all/=1) then
   !! full 3D grid
-!      Vminx2 = 0    !This actualy needs to be different for KHI
-!      Vmaxx2 = 0
-!      Vminx3 = 0
-!      Vmaxx3 = 0
   do ix3=1,lx3all
     do ix1=1,lx1
       Vminx2(ix1,ix3)=Vminx2isnow(ix3)
@@ -594,7 +590,7 @@ sigx3=1/20._wp*(x%x3all(lx3all)-x%x3all(1))    !this requires that all workers h
 meanx3=0.5_wp*(x%x3all(1)+x%x3all(lx3all))
 
 
-! FIXME: the pointer swapping to deal with top vs. bottom here is confusing; it may be better simple to have the input preparation scripts assign things accordingly.  For this routine right now it doesn't matter since both just zeroed out anyway...
+! FIXME: the pointer swapping to deal with top vs. bottom here is confusing/superfluous; it may be better simply to have the input preparation scripts assign things accordingly, which is what we will do from now on.  For this routine right now it doesn't matter since both just zeroed out anyway...
 if (gridflag/=2) then
   Vtopalt=>Vminx1
   Vbotalt=>Vmaxx1

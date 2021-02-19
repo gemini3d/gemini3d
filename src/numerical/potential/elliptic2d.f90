@@ -1047,6 +1047,10 @@ module procedure elliptic2D_cart
 !! This subroutine solves equations of the form:
 !!
 !!    d/dx1(sig0 dV/dx1) + d/dx3(sigP dV/dx3) = srcterm
+!!
+!! The boundary conditions arrays provided to this procedure are assumed to be 
+!! in units of Volts (dirichlet) or V/m (Neumann), meaning any currents need
+!! to be converted into potential normal derivatives prior to calling this.
 
 
 real(wp), dimension(1:size(sig0,1),1:size(sig0,3)) :: sig0h1
@@ -1099,8 +1103,7 @@ do ix3=1,lx3
   do ix1=1,lx1
     iPhi=lx1*(ix3-1)+ix1     !linear index referencing Phi(ix1,ix3) as a column vector.  Also row of big matrix
 
-    if (ix1==1) then
-    !! (LOGICAL) BOTTOM GRID POINTS + CORNER, USE NEUMANN HERE, PRESUMABLY ZERO.
+    if (ix1==1) then    !! (LOGICAL) BOTTOM GRID POINTS + CORNER, USE NEUMANN HERE, PRESUMABLY ZERO.
       if (gridflag/=1) then     ! non-inverted grid, logical array beginning corresponds to the physical `bottom' of the domain which always will have Neumann zero boundary conditions
         ir(ient)=iPhi
         ic(ient)=iPhi
@@ -1121,12 +1124,12 @@ do ix3=1,lx3
           ient=ient+1
         else
           ir(ient)=iPhi
-          ic(ient)=iPhi+1
-          M(ient)=1/dx1(2)
-          ient=ient+1
-          ir(ient)=iPhi
           ic(ient)=iPhi
           M(ient)=-1/dx1(2)
+          ient=ient+1
+          ir(ient)=iPhi
+          ic(ient)=iPhi+1
+          M(ient)=1/dx1(2)
           b(iPhi)=Vminx1(1,ix3)
           ient=ient+1
         end if
@@ -1152,11 +1155,11 @@ do ix3=1,lx3
         end if
       else                    ! inverted dipole grid; logical end of the array corresponds to the physical `bottom' of the domain
         ir(ient)=iPhi
-        ic(ient)=iPhi
+        ic(ient)=iPhi-1
         M(ient)=-1
         ient=ient+1
         ir(ient)=iPhi
-        ic(ient)=iPhi+1
+        ic(ient)=iPhi
         M(ient)=1
         !            b(iPhi)=Vminx1(ix3)
         b(iPhi)=0
