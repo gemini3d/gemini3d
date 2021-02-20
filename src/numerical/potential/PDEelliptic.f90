@@ -52,7 +52,7 @@ real(wp), dimension(size(SigP,1),size(SigP,2)) :: elliptic2D_polarization_period
 end function elliptic2D_polarization_periodic
 
 module function elliptic2D_cart(srcterm,sig0,sigP,Vminx1,Vmaxx1,Vminx3,Vmaxx3,&
-  dx1,dx1i,dx3all,dx3iall,flagdirich,perflag,gridflag,it)
+  dx1,dx1i,dx3all,dx3iall,flagsdirich,perflag,gridflag,it)
 real(wp), dimension(:,:,:), intent(in) :: srcterm,sig0,sigP   !arrays passed in will still have full rank 3
 real(wp), dimension(:,:), intent(in) :: Vminx1,Vmaxx1
 real(wp), dimension(:,:), intent(in) :: Vminx3,Vmaxx3
@@ -60,7 +60,7 @@ real(wp), dimension(0:), intent(in) :: dx1         !backward diffs start at inde
 real(wp), dimension(:), intent(in) :: dx1i         !centered diffs do not include any ghost cells
 real(wp), dimension(0:), intent(in) :: dx3all
 real(wp), dimension(:), intent(in) :: dx3iall
-integer, intent(in) :: flagdirich
+integer, dimension(4), intent(in) :: flagsdirich      ! note this is used to set all of the boundary conditions for this specific routine:  [x1min,x1max,x3min,x3max]
 logical, intent(in) :: perflag
 integer, intent(in) :: gridflag
 integer, intent(in) :: it

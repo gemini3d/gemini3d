@@ -50,7 +50,7 @@ logical :: perflag=.false.     !shouldn't be used
 integer :: it=1                !not used
 real(wp) :: dt=1          !not used
 integer :: gridflag=1
-integer :: flagdirich=1        !denoting non-inverted grid...
+integer, dimension(4), parameter :: flagsdirich=[1,1,1,1]        !denoting all Dirichlet conditions for test problem
 
 character(1024) :: argv
 
@@ -124,7 +124,7 @@ if (myid==0) then
   print*, 'Starting MUMPS solve...'
     Phi=elliptic2D_polarization(srcterm,A,Ap,App,B,C,D,v2,v3,Vminx2,Vmaxx2,Vminx3,Vmaxx3,dt,dx1, &
                                  dx1i,dx2,dx2i,dx3,dx3i,Phi0,perflag,it)
-    Phi2=elliptic2D_cart(srcterm2,A2,Ap2,Vminx22,Vmaxx22,Vminx32,Vmaxx32,dx2,dx2i,dx3,dx3i,flagdirich,perflag,gridflag,it)
+    Phi2=elliptic2D_cart(srcterm2,A2,Ap2,Vminx22,Vmaxx22,Vminx32,Vmaxx32,dx2,dx2i,dx3,dx3i,flagsdirich,perflag,gridflag,it)
     Phi2squeeze(:,:)=Phi2(:,1,:)
   print*, 'MUMPS solve is complete...'
 else

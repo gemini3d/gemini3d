@@ -1063,39 +1063,63 @@ integer, dimension(:), allocatable :: ir,ic
 real(wp), dimension(:), allocatable :: M
 real(wp), dimension(:), allocatable :: b
 real(wp) :: tstart,tfin
+integer :: ibnd,ldirichx1,lneux1,ldirichx3,lneux3
 
 type(MUMPS_STRUC) :: mumps_par
 
+
 !ONLY ROOT NEEDS TO ASSEMBLE THE MATRIX
 !if (myid==0) then
+
+
+! system size
 lx1=size(sig0,1)
 lx3=size(sig0,3)
-lPhi=lx1*lx3
-if (flagdirich==0) then
-  lent=5*(lx1-2)*(lx3-2)+2*lx1+2*(lx3-2)+2*lx3    !first +1 for Neumann bottom, second for Neumann top
-else
-  !        lent=5*(lx1-2)*(lx3-2)+2*lx1+2*(lx3-2)+1    !first +1 for Neumann bottom
-  lent=5*(lx1-2)*(lx3-2)+2*(lx1-2)+2*lx3+lx3
-end if
-allocate(ir(lent),ic(lent),M(lent),b(lPhi))
 
+
+!number of neumann boundaries (x1 and x3) used in this solve
+lneux1=0
+do ibnd=1,2
+  if (flagsdirich(ibnd)==0) lneux1=lneux1+1
+end do
+ldirichx1=2-lneux1
+lneux3=0
+do ibnd=3,4
+  if (flagsdirich(ibnd)==0) lneux3=lneux3+1
+end do
+ldirichx3=2-lneux3
+
+! count the number of matrix entries we need to fill (will depend on type of boundary conditions chosen
+lPhi=lx1*lx3
+!if (flagsdirich==0) then
+!  lent=5*(lx1-2)*(lx3-2)+2*lx1+2*(lx3-2)+2*lx3    !first +1 for Neumann bottom, second for Neumann top
+!else
+!  !        lent=5*(lx1-2)*(lx3-2)+2*lx1+2*(lx3-2)+1    !first +1 for Neumann bottom
+!  lent=5*(lx1-2)*(lx3-2)+2*(lx1-2)+2*lx3+lx3
+!end if
+
+! count matrix entries as follows:  interior points (5 entries each) + # dirich x1 * size + # neumann x1 * size + # dirich x3 * size sans corners + # neumann * size sans corners
+lent=5*(lx1-2)*(lx3-2) + ldirichx1*lx3 + lneux1*2*lx3 + ldirichx3*(lx1-2) + lneux3*2*(lx1-2)
+
+
+! allocate space for our problem
+allocate(ir(lent),ic(lent),M(lent),b(lPhi))
 if (debug) print *, 'MUMPS will attempt a solve of size:  ',lx1,lx3
 if (debug) print *, 'Total unknowns and nonzero entries in matrix:  ',lPhi,lent
+if (debug) print*, 'Number of Neumann boundaries:  ', lneux1,lneux3
+if (debug) print*, 'Number of Dirichlet boundaries:  ', ldirichx1,ldirichx3
 
 
-!AVERAGE CONDUCTANCES TO THE GRID INTERFACE POINTS
+! conductivities need to be averaged to the cell interfaces for the FDE we use
 sig0h1(1,:)=0
 sig0h1(2:lx1,:)=0.5_wp*(sig0(1:lx1-1,1,:)+sig0(2:lx1,1,:))
 sigPh3(:,1)=0
 sigPh3(:,2:lx3)=0.5_wp*(sigP(:,1,1:lx3-1)+sigP(:,1,2:lx3))
 
-!------------------------------------------------------------
-!-------DEFINE A MATRIX USING SPARSE STORAGE (CENTRALIZED
-!-------ASSEMBLED MATRIX INPUT, SEE SECTION 4.5 OF MUMPS USER
-!-------GUIDE).
-!------------------------------------------------------------
 
-!LOAD UP MATRIX ELEMENTS
+! fill elements of matrix to be solved.  we use centralized assembled matrix input as described in mumps user manual section 4.5
+! all of the logic of inverted vs. noninverted grids has been exported to the parent routine; leaving this as a pure applied
+! math procedure with no specific knowledgeo of the ionospheric problem.  
 M(:)=0
 b=pack(srcterm,.true.)           !boundaries overwritten later
 ient=1
@@ -1103,81 +1127,78 @@ do ix3=1,lx3
   do ix1=1,lx1
     iPhi=lx1*(ix3-1)+ix1     !linear index referencing Phi(ix1,ix3) as a column vector.  Also row of big matrix
 
-    if (ix1==1) then    !! (LOGICAL) BOTTOM GRID POINTS + CORNER, USE NEUMANN HERE, PRESUMABLY ZERO.
-      if (gridflag/=1) then     ! non-inverted grid, logical array beginning corresponds to the physical `bottom' of the domain which always will have Neumann zero boundary conditions
+    if (ix1==1) then    !! (LOGICAL) BOTTOM GRID POINTS
+      if (flagsdirich(1)/=0) then
         ir(ient)=iPhi
         ic(ient)=iPhi
-        M(ient)=-1
+        M(ient)=1
+        b(iPhi)=Vminx1(1,ix3)  ! new routines always map min/max as specified in input files
+        ient=ient+1
+      else
+        ir(ient)=iPhi
+        ic(ient)=iPhi
+        M(ient)=-1/dx1(2)
         ient=ient+1
         ir(ient)=iPhi
         ic(ient)=iPhi+1
-        M(ient)=1
-        !            b(iPhi)=Vminx1(ix3)
-        b(iPhi)= 0    !force `bottom' current to zero
+        M(ient)=1/dx1(2)
+        b(iPhi)=Vminx1(1,ix3)
         ient=ient+1
-      else                     ! inverted dipole grid, logical beginning of the array corresponds to the physical `top' of the domain; this could have either Neumann or Dirichlet conditions.  
-        if (flagdirich/=0) then
-          ir(ient)=iPhi
-          ic(ient)=iPhi
-          M(ient)=1
-          b(iPhi)=Vminx1(1,ix3)  ! new routines always map min/max as specified in input files
-          ient=ient+1
-        else
-          ir(ient)=iPhi
-          ic(ient)=iPhi
-          M(ient)=-1/dx1(2)
-          ient=ient+1
-          ir(ient)=iPhi
-          ic(ient)=iPhi+1
-          M(ient)=1/dx1(2)
-          b(iPhi)=Vminx1(1,ix3)
-          ient=ient+1
-        end if
       end if
     elseif (ix1==lx1) then    !(LOGICAL) TOP GRID POINTS + CORNER
-      if (gridflag/=1) then    !non-inverted; logical end of the array corresponding to the physical `top' of the domain
-        if (flagdirich/=0) then
-          ir(ient)=iPhi
-          ic(ient)=iPhi
-          M(ient)=1
-          b(iPhi)=Vmaxx1(1,ix3)
-          ient=ient+1
-        else
-          ir(ient)=iPhi
-          ic(ient)=iPhi-1
-          M(ient)=-1/dx1(lx1)
-          ient=ient+1
-          ir(ient)=iPhi
-          ic(ient)=iPhi
-          M(ient)=1/dx1(lx1)
-          b(iPhi)=Vmaxx1(1,ix3)
-          ient=ient+1
-        end if
-      else                    ! inverted dipole grid; logical end of the array corresponds to the physical `bottom' of the domain
-        ir(ient)=iPhi
-        ic(ient)=iPhi-1
-        M(ient)=-1
-        ient=ient+1
+      if (flagsdirich(2)/=0) then
         ir(ient)=iPhi
         ic(ient)=iPhi
         M(ient)=1
-        !            b(iPhi)=Vminx1(ix3)
-        b(iPhi)=0
-        !! force bottom current to zero
+        b(iPhi)=Vmaxx1(1,ix3)
+        ient=ient+1
+      else
+        ir(ient)=iPhi
+        ic(ient)=iPhi-1
+        M(ient)=-1/dx1(lx1)
+        ient=ient+1
+        ir(ient)=iPhi
+        ic(ient)=iPhi
+        M(ient)=1/dx1(lx1)
+        b(iPhi)=Vmaxx1(1,ix3)
         ient=ient+1
       end if
-    elseif (ix3==1) then      !LEFT BOUNDARY - a note here is that if the user specified dirichlet top conditions these must be same as the corner points otherwise a huge potential difference will result and blow up the simulation  
-      ir(ient)=iPhi
-      ic(ient)=iPhi
-      M(ient)=1.0
-      b(iPhi)=Vminx3(ix1,1)
-      ient=ient+1
+    elseif (ix3==1) then      !LEFT BOUNDARY
+      if (flagsdirich(3)/=0) then
+        ir(ient)=iPhi
+        ic(ient)=iPhi
+        M(ient)=1.0
+        b(iPhi)=Vminx3(ix1,1)
+        ient=ient+1
+      else
+        ir(ient)=iPhi
+        ic(ient)=iPhi
+        M(ient)=-1/dx3all(2)
+        ient=ient+1
+        ir(ient)=iPhi
+        ic(ient)=iPhi+lx1
+        M(ient)=1/dx3all(2)
+        b(iPhi)=Vminx3(ix1,1)
+        ient=ient+1
+      end if
     elseif (ix3==lx3) then    !RIGHT BOUNDARY
-      ir(ient)=iPhi
-      ic(ient)=iPhi
-      M(ient)=1.0
-      b(iPhi)=Vmaxx3(ix1,1)
-      ient=ient+1
+      if (flagsdirich(4)/=0) then
+        ir(ient)=iPhi
+        ic(ient)=iPhi
+        M(ient)=1.0
+        b(iPhi)=Vmaxx3(ix1,1)
+        ient=ient+1
+      else
+        ir(ient)=iPhi
+        ic(ient)=iPhi-lx1
+        M(ient)=-1/dx3all(lx3)
+        ient=ient+1
+        ir(ient)=iPhi
+        ic(ient)=iPhi
+        M(ient)=1/dx3all(lx3)
+        b(iPhi)=Vmaxx3(ix1,1)
+        ient=ient+1
+      end if
     else                      !INTERIOR
       !ix1,ix3-1 grid point in ix1,ix3 equation
       ir(ient)=iPhi

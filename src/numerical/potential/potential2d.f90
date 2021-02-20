@@ -86,24 +86,42 @@ module procedure potential2D_fieldresolved
 !! TOP CAN BE NEUMANN OR DIRICHLET.  BOTTOM (ALTITUDE)
 !! IS ALWAYS ASSUMED TO BE DIRICHLET.
 
-real(wp), dimension(size(Vmaxx1,1),size(Vmaxx1,2)) :: Vmaxx1alt      !in case we need to do some transformations to convert current into potential
 
 integer :: lx1,lx2all,lx3all
+integer, dimension(4) :: flagsdirich
+
 
 lx1=size(sig0,1)
 lx2all=size(sig0,2)
 lx3all=size(sig0,3)
 
-if (flagdirich==0) then      !convert current into potential normal derivative
-  Vmaxx1alt=-1*Vmaxx1*x%h1all(lx1,1:lx2all,1:lx3all)/sig0(lx1,1:lx2all,1:lx3all)
-!  print*, 'Transforming boundary from current...'
-!  print*, shape(Vmaxx1),shape(x%h1all),shape(sig0)
-else                         !Dirichlet boundary conditions, don't change
-  Vmaxx1alt=Vmaxx1
+! This is now set in the parent procedure
+!if (flagdirich==0) then      !convert current into potential normal derivative
+!  Vmaxx1alt=-1*Vmaxx1*x%h1all(lx1,1:lx2all,1:lx3all)/sig0(lx1,1:lx2all,1:lx3all)
+!!  print*, 'Transforming boundary from current...'
+!!  print*, shape(Vmaxx1),shape(x%h1all),shape(sig0)
+!else                         !Dirichlet boundary conditions, don't change
+!  Vmaxx1alt=Vmaxx1
+!end if
+
+
+! Convert ionospheric top boundary conditions (top current or potential) into 4 sides for solver
+if (flagdirich==0) then    ! Neumann top
+  if (gridflag==1) then    !inverted
+    flagsdirich=[0,0,1,1]
+  else
+    flagsdirich=[0,0,1,1]
+  end if
+else                       ! Dirichlet top
+  if (gridflag==1) then    ! inverted
+    flagsdirich=[1,0,1,1]
+  else
+    flagsdirich=[0,1,1,1]
+  end if
 end if
 
-potential2D_fieldresolved=elliptic2D_cart(srcterm,sig0,sigP,Vminx1,Vmaxx1alt,Vminx3,Vmaxx3, &
-                     x%dx1,x%dx1i,x%dx3all,x%dx3iall,flagdirich,perflag,gridflag,it)
+potential2D_fieldresolved=elliptic2D_cart(srcterm,sig0,sigP,Vminx1,Vmaxx1,Vminx3,Vmaxx3, &
+                     x%dx1,x%dx1i,x%dx3all,x%dx3iall,flagsdirich,perflag,gridflag,it)
 
 end procedure potential2D_fieldresolved
 
