@@ -1,6 +1,5 @@
 name: ci_macos
 env:
-  CMAKE_GENERATOR: Ninja
   HOMEBREW_NO_INSTALL_CLEANUP: 1
 
 on:
@@ -22,13 +21,13 @@ jobs:
       # transient CI download speed
 
 # CI is too slow for 3d_glow
-    - run: cmake -B build
+    - run: cmake --preset=ninja
       timeout-minutes: 5
       # mac is slower to configure
 
     - run: cmake --build build --parallel
       timeout-minutes: 5
 
-    - run: ctest -E 3d --parallel 4 --output-on-failure
+    - run: ctest -E 3d --parallel 2 --output-on-failure
       working-directory: build
       timeout-minutes: 5

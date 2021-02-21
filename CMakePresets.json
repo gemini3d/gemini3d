@@ -8,15 +8,23 @@
 
 "configurePresets": [
 {
-  "name": "default",
+  "name": "_default", "hidden": true,
+  "binaryDir": "${sourceDir}/build",
+  "cacheVariables": {"CMAKE_BUILD_TYPE": "Release"}
+},
+{
+  "name": "ninja", "inherits": "_default",
   "displayName": "build with Ninja",
   "description": "Ninja is faster and more reliable than Make",
-  "binaryDir": "${sourceDir}/build",
   "generator": "Ninja"
 },
 {
-  "name": "build",
-  "inherits": "default",
+  "name": "notest", "inherits": "ninja",
+  "displayName": "build with Ninja, omitting self-tests",
+  "cacheVariables": {"BUILD_TESTING": false}
+},
+{
+  "name": "build", "inherits": "ninja",
   "displayName": "build all libraries",
   "description": "Build all external libraries (except MPI) without searching for existing libraries.",
   "cacheVariables": {
@@ -27,10 +35,9 @@
   }
 },
 {
-  "name": "mac",
-  "inherits": "default",
-  "displayName": "MacOS GCC",
-  "description": "MacOS: specify GCC version to avoid Clang /usr/bin/gcc",
+  "name": "gcc10", "inherits": "ninja",
+  "displayName": "GCC-10",
+  "description": "specify GCC-10 -- helpful for MacOS Homebrew to avoid Clang /usr/bin/gcc",
   "environment": {
     "CC": "gcc-10",
     "CXX": "g++-10",
@@ -38,36 +45,32 @@
   }
 },
 {
-  "name": "buildmac",
-  "inherits": ["mac", "build"],
-  "displayName": "build all libraries: MacOS",
-  "description": "build all libraries with MacOS, specifying GCC version to avoid Clang /usr/bin/gcc"
-},
-{
-  "name": "make",
-  "inherits": "build",
-  "displayName": "build all libraries GNU Make: Linux/MacOS",
-  "description": "build all libraries with GNU Make on Linux/MacOS",
+  "name": "make", "inherits": "_default",
+  "displayName": "build with GNU Make: Linux/MacOS",
+  "description": "build with GNU Make on Linux/MacOS",
   "generator": "Unix Makefiles"
 },
 {
-  "name": "makemac",
-  "inherits": ["make", "mac"],
-  "displayName": "build all libraries: MacOS",
-  "description": "build all libraries with GNU Make on MacOS"
+  "name": "makegcc10", "inherits": ["make", "gcc10"],
+  "displayName": "build with GNU Make and GCC",
+  "description": "build with GNU Make and GCC -- useful for MacOS"
 },
 {
-  "name": "makewin",
-  "inherits": "build",
-  "displayName": "build all libraries: Windows",
-  "description": "build all libraries with GNU Make on Windows",
+  "name": "buildgcc10",
+  "inherits": ["gcc10", "build"],
+  "displayName": "build all libraries: GCC10",
+  "description": "build all libraries with GCC10 to avoid Clang /usr/bin/gcc"
+},
+{
+  "name": "makewin", "inherits": "_default",
+  "displayName": "build with GNU Make: Windows",
+  "description": "build with GNU Make on Windows",
   "generator": "MinGW Makefiles"
 },
 {
-  "name": "intel",
-  "inherits": "default",
-  "displayName": "Intel oneAPI compiler: Linux/MacOS",
-  "description": "build with Intel oneAPI on Linux/MacOS",
+  "name": "intel", "inherits": "ninja",
+  "displayName": "Intel Classic compiler: Linux/MacOS",
+  "description": "build with Intel Classic on Linux/MacOS",
   "environment": {
     "CC": "icc",
     "CXX": "icpc",
@@ -78,18 +81,16 @@
   }
 },
 {
-  "name": "intelwin",
-  "inherits": "intel",
-  "displayName": "Intel oneAPI compiler: Windows",
-  "description": "build with Intel oneAPI on Windows",
+  "name": "intelwin", "inherits": "intel",
+  "displayName": "Intel Classic compiler: Windows",
+  "description": "build with Intel Classic on Windows",
   "environment": {
     "CC": "icl",
     "CXX": "icl"
   }
 },
 {
-  "name": "intelnext",
-  "inherits": "intel",
+  "name": "intelnext", "inherits": "intel",
   "displayName": "Intel oneAPI LLVM",
   "description": "build with Intel oneAPI NextGen LLVM",
   "environment": {
