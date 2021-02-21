@@ -16,6 +16,7 @@ contains
 
 
 pure subroutine ghost_bound(A, j1, k1, j2, k2, j3, k3, j4, k4)
+!! "ig" is a priori the 2 ghost cells on each grid cell boundary, for MPI haloing.
 real(wp), intent(in) :: A(..)
 integer, intent(out) :: j1, k1, j2, k2, j3, k3
 integer, intent(out), optional :: j4, k4
@@ -28,18 +29,19 @@ r = rank(A)
 if (r > 4 .or. r < 3) error stop "sanity_check:ghost_bound: only for rank 3,4 for now"
 if (r == 4 .and. .not. (present(j4) .and. present(k4))) error stop "sanity_check:ghost_bound: 4d needs j4, k4"
 
-j1 = lbound(A, 1)
-k1 = ubound(A, 1)
-j2 = lbound(A, 2)
-k2 = ubound(A, 2)
-j3 = lbound(A, 3)
-k3 = ubound(A, 3)
+j1 = lbound(A, 1) + ig
+k1 = ubound(A, 1) - ig
+j2 = lbound(A, 2) + ig
+k2 = ubound(A, 2) - ig
+j3 = lbound(A, 3) + ig
+k3 = ubound(A, 3) - ig
 if (r >= 4) then
-  j4 = lbound(A, 4)
-  k4 = ubound(A, 4)
+  j4 = lbound(A, 4) + ig
+  k4 = ubound(A, 4) - ig
 endif
 
 end subroutine ghost_bound
+
 
 subroutine check_finite_output(t_elapsed, worker_id, vs2,vs3,ns,vs1,Ts,Phi,J1,J2,J3)
 !! check outputs before proceeding to next time step
