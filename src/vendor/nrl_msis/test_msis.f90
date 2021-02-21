@@ -1,11 +1,13 @@
 program test_msis
 
 use, intrinsic :: iso_fortran_env, only : real32
+
 use h5fortran, only : hdf5_file
+use assert, only : assert_allclose
 
 implicit none (type, external)
 
-integer :: argc, i
+integer :: argc
 character(1000) :: argv
 character(:), allocatable :: fnew, fref
 real(real32) :: Dnew(9), Dref(9), Tnew(2), Tref(2), altnew, altref
@@ -22,13 +24,9 @@ fref = trim(argv)
 call reader(fnew, altnew, Dnew, Tnew)
 call reader(fref, altref, Dref, Tref)
 
-do i = 1,size(Tnew)
-  if (abs(Tnew(i) - Tref(i)) > 0.01) error stop "mismatch: Tn"
-enddo
+call assert_allclose(Tnew, Tref, rtol=1e-5, err_msg='mismatch: Tn')
 
-do i = 1,size(Dnew)
-  if (abs(Dnew(i) - Dref(i)) > 0.001*Dref(i)) error stop "mismatch: Dn"
-enddo
+call assert_allclose(Dnew, Dref, rtol=1e-5, err_msg='mismatch: Dn')
 
 contains
 
