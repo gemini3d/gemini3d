@@ -61,17 +61,25 @@ call ghost_bound(ns, i1,k1, i2,k2, i3,k3, i4,k4)
 if (.not.all(ieee_is_finite(ns(i1:k1, i2:k2, i3:k3, i4:k4)))) &
    call error_stop('dump_step.h5', 'output: non-finite Ns', t_elapsed, worker_id, vs2,vs3,ns,vs1,Ts,Phi,J1,J2,J3)
 
+call ghost_bound(vs1, i1,k1, i2,k2, i3,k3, i4,k4)
+
 if (.not.all(ieee_is_finite(vs1(i1:k1, i2:k2, i3:k3, i4:k4)))) &
   call error_stop('dump_step.h5', 'output: non-finite vs1', t_elapsed, worker_id, vs2,vs3,ns,vs1,Ts,Phi,J1,J2,J3)
 
+call ghost_bound(vs2, i1,k1, i2,k2, i3,k3, i4,k4)
+
 if (.not.all(ieee_is_finite(vs2(i1:k1, i2:k2, i3:k3, i4:k4)))) &
   call error_stop('dump_step.h5', 'output: non-finite vs2', t_elapsed, worker_id, vs2,vs3,ns,vs1,Ts,Phi,J1,J2,J3)
+
+call ghost_bound(vs3, i1,k1, i2,k2, i3,k3, i4,k4)
 
 if (.not.all(ieee_is_finite(vs3(i1:k1, i2:k2, i3:k3, i4:k4)))) &
   call error_stop('dump_step.h5', 'output: non-finite vs3', t_elapsed, worker_id, vs2,vs3,ns,vs1,Ts,Phi,J1,J2,J3)
 
 if (.not.all(ieee_is_finite(Ts(i1:k1, i2:k2, i3:k3, i4:k4)))) &
   call error_stop('dump_step.h5', 'output: non-finite Ts', t_elapsed, worker_id, vs2,vs3,ns,vs1,Ts,Phi,J1,J2,J3)
+
+call ghost_bound(J1, i1,k1, i2,k2, i3,k3)
 
 if (.not.all(ieee_is_finite(J1(i1:k1, i2:k2, i3:k3)))) &
   call error_stop('dump_step.h5', 'output: non-finite J1', t_elapsed, worker_id, vs2,vs3,ns,vs1,Ts,Phi,J1,J2,J3)
