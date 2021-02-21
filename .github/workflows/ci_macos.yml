@@ -21,7 +21,7 @@ jobs:
       # transient CI download speed
 
 # CI is too slow for 3d_glow
-    - run: cmake --preset=ninja
+    - run: cmake --preset=gcc10
       timeout-minutes: 5
       # mac is slower to configure
 
