@@ -1,10 +1,23 @@
-if(NOT (CMAKE_Fortran_COMPILER_ID STREQUAL ${CMAKE_C_COMPILER_ID} AND CMAKE_Fortran_COMPILER_VERSION VERSION_EQUAL ${CMAKE_C_COMPILER_VERSION}))
-message(WARNING "C compiler ${CMAKE_C_COMPILER_ID} ${CMAKE_C_COMPILER_VERSION} != Fortran compiler ${CMAKE_Fortran_COMPILER_ID} ${CMAKE_Fortran_COMPILER_VERSION}.
-Set environment variables CC and FC to control compiler selection in general.")
-endif()
-
 include(CheckFortranSourceCompiles)
 include(CheckFortranCompilerFlag)
+
+# check C and Fortran compiler ABI compatibility
+
+if(NOT abi_ok)
+  message(CHECK_START "checking that C and Fortran compilers can link")
+  try_compile(abi_ok ${CMAKE_CURRENT_BINARY_DIR}/abi_check ${CMAKE_CURRENT_LIST_DIR}/abi_check abi_check)
+  if(abi_ok)
+    message(CHECK_PASS "OK")
+  else()
+    message(FATAL ERROR "C compiler {CMAKE_C_COMPILER_ID} {CMAKE_C_COMPILER_VERSION} and Fortran compiler ${CMAKE_Fortran_COMPILER_ID} ${CMAKE_Fortran_COMPILER_VERSION} are ABI-incompatible.")
+  endif()
+endif()
+
+
+
+set(CMAKE_EXPORT_COMPILE_COMMANDS on)
+set(CMAKE_CONFIGURATION_TYPES "Release;RelWithDebInfo;Debug" CACHE STRING "Build type selections")
+
 
 # === check that the compiler has adequate Fortran 2008 support
 # this is to mitigate confusing syntax error messages for new users

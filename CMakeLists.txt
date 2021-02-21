@@ -1,8 +1,4 @@
-cmake_minimum_required(VERSION 3.13)
-
-include(cmake/config/policy.cmake)
-include(cmake/compilers/find.cmake)
-find_c_fortran()
+cmake_minimum_required(VERSION 3.13...3.20)
 
 file(STRINGS cmake/config/gemini_version.txt PROJECT_VERSION
   REGEX "^([0-9]+\.[0-9]+\.[0-9]+)" LIMIT_INPUT 16 LENGTH_MAXIMUM 16 LIMIT_COUNT 1)
