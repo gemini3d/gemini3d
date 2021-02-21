@@ -1,8 +1,8 @@
 {
 "glow": {"git": "https://github.com/gemini3d/glow.git", "tag": "v0.981.0.3"},
 
-"h5fortran": {"git": "https://github.com/geospace-code/h5fortran.git", "tag": "v3.5.0"},
-"nc4fortran": {"git": "https://github.com/geospace-code/nc4fortran.git", "tag": "v1.2.0"},
+"h5fortran": {"git": "https://github.com/geospace-code/h5fortran.git", "tag": "v3.5.1"},
+"nc4fortran": {"git": "https://github.com/geospace-code/nc4fortran.git", "tag": "v1.2.1"},
 
 "hwm14": {"git": "https://github.com/space-physics/hwm14.git", "tag": "cade327803fbfe2c76942bccd842ec5afdcb3541"},
 "msis2": {"zip": "https://map.nrl.navy.mil/map/pub/nrl/NRLMSIS/NRLMSIS2.0/NRLMSIS2.0.zip", "sha1": "fa817dfee637ec2298a6ec882345d13d0b087a85"},

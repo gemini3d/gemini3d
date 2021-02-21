@@ -5,7 +5,7 @@ lapack_git https://github.com/scivision/lapack.git
 lapack_tag v3.9.0.4
 
 h5fortran_git https://github.com/geospace-code/h5fortran.git
-h5fortran_tag v3.5.0
+h5fortran_tag v3.5.1
 
 hwm14_git https://github.com/space-physics/hwm14.git
 hwm14_tag cade327803fbfe2c76942bccd842ec5afdcb3541
@@ -17,7 +17,7 @@ mumps_git https://github.com/scivision/mumps.git
 mumps_tag v5.3.5.6
 
 nc4fortran_git https://github.com/geospace-code/nc4fortran.git
-nc4fortran_tag v1.2.0
+nc4fortran_tag v1.2.1
 
 scalapack_git https://github.com/scivision/scalapack.git
 scalapack_tag v2.1.0.17

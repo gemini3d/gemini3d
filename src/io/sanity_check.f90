@@ -56,7 +56,6 @@ real(wp), intent(in), dimension(:,:,:) :: Phi, J1, J2, J3
 
 integer :: i1, k1, i2, k2, i3, k3, i4, k4
 
-
 call ghost_bound(ns, i1,k1, i2,k2, i3,k3, i4,k4)
 
 if (.not.all(ieee_is_finite(ns(i1:k1, i2:k2, i3:k3, i4:k4)))) &
@@ -95,21 +94,39 @@ subroutine check_finite_plasma(ns, vs1, Ts)
 real(wp), dimension(:,:,:,:), intent(in) :: ns
 real(wp), dimension(:,:,:,:), intent(in) :: vs1, Ts
 
-if (.not.all(ieee_is_finite(ns))) call error_stop('dump_input.h5', 'input:plasma: non-finite Ns', ns, vs1, Ts)
-if (.not.all(ieee_is_finite(vs1))) call error_stop('dump_input.h5', 'input:plasma: non-finite vs1', ns, vs1, Ts)
-if (.not.all(ieee_is_finite(Ts))) call error_stop('dump_input.h5', 'input:plasma: non-finite Ts', ns, vs1, Ts)
+integer :: i1, k1, i2, k2, i3, k3, i4, k4
 
-if (any(ns < 0)) call error_stop('dump_input.h5', 'input:plasma: negative density Ns', ns, vs1, Ts)
+call ghost_bound(ns, i1,k1, i2,k2, i3,k3, i4,k4)
 
-if (maxval(ns) < 1e6) call error_stop('dump_input.h5', 'input:plasma: too low maximum density', ns, vs1, Ts)
+if (.not.all(ieee_is_finite(ns(i1:k1, i2:k2, i3:k3, i4:k4)))) &
+  call error_stop('dump_input.h5', 'input:plasma: non-finite Ns', ns, vs1, Ts)
 
-if (maxval(ns) > 1e16) call error_stop('dump_input.h5', 'input:plasma: too high maximum density', ns, vs1, Ts)
+if (.not.all(ieee_is_finite(vs1(i1:k1, i2:k2, i3:k3, i4:k4)))) &
+   call error_stop('dump_input.h5', 'input:plasma: non-finite vs1', ns, vs1, Ts)
 
-if (any(abs(vs1) > 1e7_wp)) call error_stop ('dump_input.h5', 'input:plasma: drift realativistic', ns, vs1, Ts)
+if (.not.all(ieee_is_finite(Ts(i1:k1, i2:k2, i3:k3, i4:k4)))) &
+  call error_stop('dump_input.h5', 'input:plasma: non-finite Ts', ns, vs1, Ts)
 
-if (any(Ts < 0)) call error_stop ('dump_input.h5', 'input:plasma: negative temperature in Ts', ns, vs1, Ts)
-if (any(Ts > 100000)) call error_stop ('dump_input.h5', 'input:plasma: too hot Ts', ns, vs1, Ts)
-if (maxval(Ts) < 500) call error_stop ('dump_input.h5', 'input:plasma: too cold maximum Ts', ns, vs1, Ts)
+if (any(ns(i1:k1, i2:k2, i3:k3, i4:k4) < 0)) &
+  call error_stop('dump_input.h5', 'input:plasma: negative density Ns', ns, vs1, Ts)
+
+if (maxval(ns(i1:k1, i2:k2, i3:k3, i4:k4)) < 1e6) &
+  call error_stop('dump_input.h5', 'input:plasma: too low maximum density', ns, vs1, Ts)
+
+if (maxval(ns(i1:k1, i2:k2, i3:k3, i4:k4)) > 1e16) &
+  call error_stop('dump_input.h5', 'input:plasma: too high maximum density', ns, vs1, Ts)
+
+if (any(abs(vs1(i1:k1, i2:k2, i3:k3, i4:k4)) > 1e7_wp)) &
+  call error_stop ('dump_input.h5', 'input:plasma: drift realativistic', ns, vs1, Ts)
+
+if (any(Ts(i1:k1, i2:k2, i3:k3, i4:k4) < 0)) &
+  call error_stop ('dump_input.h5', 'input:plasma: negative temperature in Ts', ns, vs1, Ts)
+
+if (any(Ts(i1:k1, i2:k2, i3:k3, i4:k4) > 100000)) &
+  call error_stop ('dump_input.h5', 'input:plasma: too hot Ts', ns, vs1, Ts)
+
+if (maxval(Ts(i1:k1, i2:k2, i3:k3, i4:k4)) < 500) &
+  call error_stop ('dump_input.h5', 'input:plasma: too cold maximum Ts', ns, vs1, Ts)
 
 end subroutine check_finite_plasma
 
@@ -129,9 +146,18 @@ subroutine check_finite_current(J1,J2,J3)
 
 real(wp), intent(in), dimension(:,:,:) :: J1, J2, J3
 
-if (.not.all(ieee_is_finite(J1))) call error_stop('dump_input.h5', 'check_finite_mag: non-finite J1', J1, J2, J3)
-if (.not.all(ieee_is_finite(J2))) call error_stop('dump_input.h5', 'check_finite_mag: non-finite J2', J1, J2, J3)
-if (.not.all(ieee_is_finite(J3))) call error_stop('dump_input.h5', 'check_finite_mag: non-finite J3', J1, J2, J3)
+integer :: i1, k1, i2, k2, i3, k3
+
+call ghost_bound(J1, i1,k1, i2,k2, i3,k3)
+
+if (.not.all(ieee_is_finite(J1(i1:k1, i2:k2, i3:k3)))) &
+  call error_stop('dump_input.h5', 'check_finite_mag: non-finite J1', J1, J2, J3)
+
+if (.not.all(ieee_is_finite(J2(i1:k1, i2:k2, i3:k3)))) &
+  call error_stop('dump_input.h5', 'check_finite_mag: non-finite J2', J1, J2, J3)
+
+if (.not.all(ieee_is_finite(J3(i1:k1, i2:k2, i3:k3)))) &
+  call error_stop('dump_input.h5', 'check_finite_mag: non-finite J3', J1, J2, J3)
 
 end subroutine check_finite_current
 
