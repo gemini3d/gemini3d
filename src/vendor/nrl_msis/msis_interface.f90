@@ -47,15 +47,25 @@ select type (doy)
     error stop 'msis_gtd8: doy must be real or integer'
 end select
 
+!> input validation
+if (dayOfYear < 1 .or. dayOfYear > 366) error stop "valid dayOfYear range is 1..366"
+if (UTsec < 0 .or. UTsec > 86400) error stop "valid UTsec range is 0..86400"
+
+!> input conversion
 stl = UTsec/3600 + glon/15
+
+! print '(A,I0.3,14F8.1)', 'TRACE:MSIS00_bit32: inputs: ',dayOfYear, UTsec, alt_km, glat, glon, stl, f107a, f107, Ap7
 
 call meters(use_meters)
 
 sw = 1
 if (present(sw25)) sw = sw25
+! print '(A,25F4.1)','TRACE:MSIS00_bit32: sw25: ',sw
 call tselec(sw)
 
 call gtd7(dayOfYear, UTsec, alt_km, glat, glon, stl, f107a, f107, Ap7, 48, d, T)
+
+! print *,'TRACE:MSIS00_bit32: d,T:', d,T
 
 end subroutine msis_gtd7_r32
 
@@ -84,6 +94,11 @@ select type (doy)
     error stop 'msis_gtd8: doy must be real or integer'
 end select
 
+!> input validation
+if (dayOfYear < 1 .or. dayOfYear > 366) error stop "valid dayOfYear range is 1..366"
+if (UTsec < 0 .or. UTsec > 86400) error stop "valid UTsec range is 0..86400"
+
+!> input conversion
 stl = real(UTsec/3600 + glon/15, real32)
 
 call meters(use_meters)
@@ -122,6 +137,10 @@ select type (doy)
   class default
     error stop 'msis_gtd8: doy must be real or integer'
 end select
+
+!> input validation
+if (dayOfYear < 1 .or. dayOfYear > 366) error stop "valid dayOfYear range is 1..366"
+if (UTsec < 0 .or. UTsec > 86400) error stop "valid UTsec range is 0..86400"
 
 call msiscalc(day=dayOfYear, UTsec=real(UTsec, real32), &
   z=real(alt_km, real32), lat=real(glat, real32), lon=real(glon, real32), &
@@ -164,6 +183,10 @@ select type (doy)
   class default
     error stop 'msis_gtd8: doy must be real or integer'
 end select
+
+!> input validation
+if (dayOfYear < 1 .or. dayOfYear > 366) error stop "valid dayOfYear range is 1..366"
+if (UTsec < 0 .or. UTsec > 86400) error stop "valid UTsec range is 0..86400"
 
 call msiscalc(day=dayOfYear, UTsec=UTsec, &
   z=alt_km, lat=glat, lon=glon, &
