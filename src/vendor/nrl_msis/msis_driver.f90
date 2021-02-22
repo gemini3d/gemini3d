@@ -4,7 +4,7 @@ program msis_driver
 use phys_consts, only : comp_lvl
 use msis_interface, only : msis_gtd7, msis_gtd8, msisinit
 use h5fortran, only : hdf5_file, hsize_t
-use, intrinsic:: iso_fortran_env, only : real32, stderr=>error_unit, stdout=>output_unit, stdin=>input_unit
+use, intrinsic:: iso_fortran_env, only : real32, real64, stderr=>error_unit, stdout=>output_unit, stdin=>input_unit
 
 implicit none (type, external)
 
@@ -32,6 +32,7 @@ endif
 
 !> select input format
 call input_hdf5(infile,doy,sec,f107a,f107,Ap, glat, glon, alt)
+! print '(A,14F8.1)', 'TRACE:MSIS00_bit32: inputs: ',doy, sec, alt, glat, glon, f107a, f107, Ap
 
 !> Run MSIS
 lx1 = size(alt,1)
@@ -45,13 +46,14 @@ do i=1,lx1
   do j=1,lx2
     do k=1,lx3
 
-      if(msis_version == 0) then
+      select case (msis_version)
+      case (0)
         call msis_gtd7(doy, sec, alt(i,j,k), glat(i,j,k), glon(i,j,k), f107a, f107, Ap, Dn(i,j,k,:), Tn(i,j,k,:), use_meters=.true.)
-      elseif(msis_version == 20) then
+      case (20)
         call msis_gtd8(doy, sec, alt(i,j,k), glat(i,j,k), glon(i,j,k), f107a, f107, Ap, Dn(i,j,k,:), Tn(i,j,k,:))
-      else
+      case default
         error stop 'expected msis_version = {0,20}'
-      end if
+      end select
 
     end do
   end do
@@ -65,7 +67,9 @@ contains
 subroutine input_hdf5(filename,doy,sec,f107a,f107,Ap7, glat, glon, alt)
 !! use binary to reduce file size and read times
 character(*), intent(in) :: filename
-real(real32), intent(out) :: doy,sec,f107a,f107,ap7(7)
+real(real32), intent(inout) :: doy,sec,f107a,f107,ap7(7)
+!! intent(inout) to workaround a GCC-10 MSYS2 -O3 glitch that causes "sec" to be random data when intent(out)
+!! made them all intent(inout) just in case...
 real(real32), intent(out), allocatable :: glat(:,:,:), glon(:,:,:), alt(:,:,:)
 
 type(hdf5_file) :: hf
@@ -75,10 +79,19 @@ integer:: lx1,lx2,lx3
 call hf%initialize(filename, status='old', action='read')
 
 call hf%read("/doy", doy)
+if(doy < 1 .or. doy > 366) error stop 'msis_driver:input_hdf5: 1 <= doy <= 366'
+
 call hf%read("/UTsec", sec)
+if(sec < 0 .or. sec > 86400) error stop 'msis_driver:input_hdf5: 0 <= sec <= 86400'
+
 call hf%read("/f107a", f107a)
+if(f107a < 0) error stop 'msis_driver:input_hdf5: f107a > 0'
+
 call hf%read("/f107", f107)
+if(f107 < 0) error stop 'msis_driver:input_hdf5: f107 > 0'
+
 call hf%read("/Ap", Ap7)
+if(any(Ap < 0)) error stop 'msis_driver:input_hdf5: Ap > 0'
 
 call hf%shape("/glat", dims)
 lx1 = int(dims(1))
@@ -93,6 +106,8 @@ call hf%read("/alt", alt)
 
 call hf%finalize()
 
+! print *, 'TRACE: file input: doy,UTsec ', filename, doy,sec
+
 end subroutine input_hdf5
 
 
@@ -104,20 +119,20 @@ type(hdf5_file) :: hf
 
 call hf%initialize(filename, status="replace", action="write",comp_lvl=comp_lvl)
 
-call hf%write("/alt", alt)
+call hf%write("/alt", alt, compact=.true.)
 
-call hf%write("/nHe", Dn(:,:,:,1))
-call hf%write("/nO", Dn(:,:,:,2))
-call hf%write("/nN2", Dn(:,:,:,3))
-call hf%write("/nO2", Dn(:,:,:,4))
-call hf%write("/nAr", Dn(:,:,:,5))
-call hf%write("/TotalMassDensity", Dn(:,:,:,6))
-call hf%write("/nH", Dn(:,:,:,7))
-call hf%write("/nN", Dn(:,:,:,8))
-call hf%write("/nOana", Dn(:,:,:,9))
+call hf%write("/nHe", Dn(:,:,:,1), compact=.true.)
+call hf%write("/nO", Dn(:,:,:,2), compact=.true.)
+call hf%write("/nN2", Dn(:,:,:,3), compact=.true.)
+call hf%write("/nO2", Dn(:,:,:,4), compact=.true.)
+call hf%write("/nAr", Dn(:,:,:,5), compact=.true.)
+call hf%write("/TotalMassDensity", Dn(:,:,:,6), compact=.true.)
+call hf%write("/nH", Dn(:,:,:,7), compact=.true.)
+call hf%write("/nN", Dn(:,:,:,8), compact=.true.)
+call hf%write("/nOana", Dn(:,:,:,9), compact=.true.)
 
-call hf%write("/Tn", Tn(:,:,:,2))
-call hf%write("/Texo", Tn(:,:,:,1))
+call hf%write("/Tn", Tn(:,:,:,2), compact=.true.)
+call hf%write("/Texo", Tn(:,:,:,1), compact=.true.)
 
 
 call hf%finalize()
