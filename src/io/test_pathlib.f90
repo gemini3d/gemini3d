@@ -12,8 +12,9 @@ logical :: e
 
 !> test get_filename
 
-if(get_filename('') /= '') error stop 'empty 1'
-if(get_filename('','') /= '') error stop 'empty 2'
+if(get_filename(' ') /= '') error stop 'empty 1'
+if(get_filename(' ',' ') /= '') error stop 'empty 2'
+!! " " instead of "" to avoid compile-time glitch error with GCC-10 with -Og
 
 call unlink('test-pathlib.h5')
 
