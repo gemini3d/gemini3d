@@ -85,3 +85,8 @@ else()
   set(FETCHCONTENT_UPDATES_DISCONNECTED_PYGEMINI true)
   set(FETCHCONTENT_UPDATES_DISCONNECTED_SCALAPACK true)
 endif()
+
+# --- auto-ignore build directory
+if(NOT EXISTS ${PROJECT_BINARY_DIR}/.gitignore)
+  file(WRITE ${PROJECT_BINARY_DIR}/.gitignore "*")
+endif()

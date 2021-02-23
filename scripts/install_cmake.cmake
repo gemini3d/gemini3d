@@ -11,7 +11,7 @@
 # This script can be used to install CMake >= 2.8.12.2 (e.g. for compatibility tests)
 # old CMake versions have broken file(DOWNLOAD)--they just "download" 0-byte files.
 
-cmake_minimum_required(VERSION 3.7)
+cmake_minimum_required(VERSION 3.7...3.20)
 
 if(NOT prefix)
   if(WIN32)

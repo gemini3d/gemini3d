@@ -10,7 +10,7 @@ endif()
 execute_process(COMMAND uname -s OUTPUT_VARIABLE id TIMEOUT 5)
 
 if(id MATCHES "MSYS")
-  execute_process(COMMAND pacman -S --needed mingw-w64-x86_64-gcc-fortran mingw-w64-x86_64-ninja mingw-w64-x86_64-hwloc mingw-w64-x86_64-msmpi mingw-w64-x86_64-hdf5 mingw-w64-x86_64-lapack mingw-w64-x86_64-scalapack mingw-w64-x86_64-mumps)
+  execute_process(COMMAND pacman -S --needed mingw-w64-x86_64-gcc-fortran mingw-w64-x86_64-ninja mingw-w64-x86_64-hwloc mingw-w64-x86_64-msmpi mingw-w64-x86_64-hdf5 mingw-w64-x86_64-lapack mingw-w64-x86_64-scalapack)
 elseif(APPLE)
   find_program(brew
     NAMES brew
