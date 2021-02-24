@@ -22,6 +22,10 @@ set_target_properties(magcalc.bin PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_
 add_test(NAME unit:magcalc_exe_ok COMMAND $<TARGET_FILE:magcalc.bin>)
 set_tests_properties(unit:magcalc_exe_ok PROPERTIES PASS_REGULAR_EXPRESSION "EOF: magcalc.bin")
 
+install(TARGETS magcalc.bin
+  EXPORT ${PROJECT_NAME}Targets
+  RUNTIME DESTINATION bin)
+
 # --- gemini3d.run Fortran front end
 add_subdirectory(hwloc)
 
@@ -40,6 +44,10 @@ set_tests_properties(unit:gemini3d_run_ok PROPERTIES
   PASS_REGULAR_EXPRESSION "EOF: gemini3d.run"
   DEPENDS unit:HWLOC)
 
+install(TARGETS gemini3d.run
+  EXPORT ${PROJECT_NAME}Targets
+  RUNTIME DESTINATION bin)
+
 # --- Gemini compare
 
 add_library(assert assert.f90)
@@ -54,3 +62,7 @@ target_include_directories(gemini3d.compare PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/
 set_target_properties(gemini3d.compare PROPERTIES
   RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
   Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include)
+
+install(TARGETS gemini3d.compare
+  EXPORT ${PROJECT_NAME}Targets
+  RUNTIME DESTINATION bin)

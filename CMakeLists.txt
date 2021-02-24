@@ -16,7 +16,7 @@ if(NOT DEFINED ${PROJECT_NAME}_BUILD_TESTING)
   set(${PROJECT_NAME}_BUILD_TESTING ${BUILD_TESTING})
 endif()
 
-include(cmake/git_rev.cmake)
+include(cmake/package/git_rev.cmake)
 include(cmake/config/options.cmake)
 include(cmake/config/libraries.cmake)
 
@@ -43,3 +43,7 @@ include(cmake/test/sim.cmake)
 
 # summary print
 include(cmake/config/summary.cmake)
+
+# packaging
+include(cmake/package/pkgconf.cmake)
+include(cmake/package/install.cmake)

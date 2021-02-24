@@ -63,6 +63,10 @@ set_tests_properties(unit:gemini_exe_ok PROPERTIES
   FIXTURES_SETUP gemini_exe_fix
   FIXTURES_REQUIRED "mumps_fixture;hwloc_fix")
 
+install(TARGETS gemini.bin
+  EXPORT ${PROJECT_NAME}Targets
+  RUNTIME DESTINATION bin)
+
 # --- apply properties
 
 set_targ_props(calculus collision const fang fang_run ionization gbsv multifluid neutral precipBCs sources temporal timeutils)
