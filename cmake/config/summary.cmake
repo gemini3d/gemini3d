@@ -2,23 +2,16 @@ include(FeatureSummary)
 
 # --- warnings
 
+set(_min 3.14.0)
+
 if(CMAKE_Fortran_COMPILER_ID STREQUAL Intel)
-
-  if(WIN32)
-    set(_min 3.19.2)
-  else()
-    set(_min 3.19.3)
-  endif()
-
-  if(CMAKE_VERSION VERSION_LESS ${_min})
-    message(WARNING "Intel compilers may not work properly with CMake < ${_min}")
-  endif()
+  set(_min 3.19.6)
 elseif(CMAKE_Fortran_COMPILER_ID STREQUAL IntelLLVM)
   set(_min 3.20)
+endif()
 
-  if(CMAKE_VERSION VERSION_LESS ${_min})
-    message(WARNING "Intel LLVM compilers may not work properly with CMake < ${_min}")
-  endif()
+if(CMAKE_VERSION VERSION_LESS ${_min})
+  message(WARNING "${CMAKE_Fortran_COMPILER_ID} compilers may not work properly with CMake < ${_min}")
 endif()
 
 # --- recommendations

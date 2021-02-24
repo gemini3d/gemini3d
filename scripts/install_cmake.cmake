@@ -22,7 +22,7 @@ if(NOT prefix)
 endif()
 
 if(NOT version)
-  set(version 3.19.4)
+  set(version 3.19.6)
 endif()
 
 if(version STREQUAL 2.8.12)
