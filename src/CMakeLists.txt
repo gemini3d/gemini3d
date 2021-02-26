@@ -1,7 +1,9 @@
 function(set_targ_props)
 
 foreach(t ${ARGV})
-  target_include_directories(${t} INTERFACE ${CMAKE_CURRENT_BINARY_DIR}/include)
+  target_include_directories(${t} INTERFACE
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
+  $<INSTALL_INTERFACE:include>)
   set_target_properties(${t} PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include)
 endforeach()
 

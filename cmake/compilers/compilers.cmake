@@ -55,22 +55,6 @@ end subroutine ranker
 end program" f2018assumed_rank SRC_EXT f90)
 
 # --- MSISE00 and MSIS 2.0 require legacy workaround due to non-standard Fortran code
-# "static" to help avoid missing runtime library issues when used from Matlab or Python
-
-if(CMAKE_Fortran_COMPILER_ID STREQUAL GNU)
-  set(static_flag -static)
-elseif(CMAKE_Fortran_COMPILER_ID STREQUAL Intel AND NOT WIN32)
-  # this test doesn't fail on Windows, even though the flag is not for Windows
-  set(static_flag -static-intel)
-else()
-  set(static_flag)
-endif()
-if(static_flag)
-  check_fortran_compiler_flag(${static_flag} static_ok)
-endif()
-if(NOT static_ok)
-  set(static_flag)
-endif()
 
 if(CMAKE_Fortran_COMPILER_ID STREQUAL GNU)
   # Gfortran >= 8 need -Wno-pedantic to allow mismatched array size inhernet to MSIS.

@@ -3,10 +3,17 @@
 
 include(${PROJECT_SOURCE_DIR}/cmake/ext_libs/hwm14.cmake)
 
-add_library(hwm_ifc OBJECT hwm_interface.f90)
+add_library(hwm_ifc hwm_interface.f90)
 target_link_libraries(hwm_ifc PRIVATE HWM14::HWM14)
-target_include_directories(hwm_ifc INTERFACE ${CMAKE_CURRENT_BINARY_DIR}/include)
+target_include_directories(hwm_ifc INTERFACE
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
+  $<INSTALL_INTERFACE:include>)
 set_target_properties(hwm_ifc PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include)
+
+install(TARGETS hwm_ifc
+  EXPORT ${PROJECT_NAME}Targets
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib)
 
 if(${PROJECT_NAME}_BUILD_TESTING)
   add_executable(test_hwm test_hwm.f90)

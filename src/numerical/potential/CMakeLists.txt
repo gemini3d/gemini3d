@@ -7,28 +7,25 @@ target_link_libraries(mumps_interface PRIVATE MUMPS::MUMPS)
 # not OBJECT to avoid CMake 3.13 trouble
 
 add_library(PDEelliptic OBJECT
-$<TARGET_OBJECTS:mumps_interface> $<TARGET_OBJECTS:mpimod>
 PDEelliptic.f90 elliptic2d.f90 elliptic3d.f90)
-target_link_libraries(PDEelliptic PRIVATE mpimod const MPI::MPI_Fortran)
+target_link_libraries(PDEelliptic PRIVATE mumps_interface mpimod const MPI::MPI_Fortran)
 
 add_library(potential OBJECT
-$<TARGET_OBJECTS:PDEelliptic> $<TARGET_OBJECTS:const>
 potential_comm_mumps.f90 potential_root.f90 potential_worker.f90
 potential_mumps.f90 potential2d.f90
 boundary_conditions/potentialBCs_mumps.f90)
-target_link_libraries(potential PRIVATE calculus collision grid mesh interp timeutils mpimod reader MPI::MPI_Fortran)
+target_link_libraries(potential PRIVATE PDEelliptic calculus collision grid mesh interp timeutils mpimod reader const MPI::MPI_Fortran)
 
 
-set_targ_props(mumps_interface PDEelliptic potential)
+set_targ_props(PDEelliptic potential)
 
 
 if(hdf5 AND ${PROJECT_NAME}_BUILD_TESTING)
 
 set(_potential_testfile ${CMAKE_CURRENT_BINARY_DIR}/test_potential2d.h5)
 
-add_executable(test_potential2d test_potential2D.f90
-$<TARGET_OBJECTS:PDEelliptic>)
-target_link_libraries(test_potential2d PRIVATE const h5fortran::h5fortran
+add_executable(test_potential2d test_potential2D.f90)
+target_link_libraries(test_potential2d PRIVATE PDEelliptic const h5fortran::h5fortran
   MUMPS::MUMPS LAPACK::LAPACK MPI::MPI_Fortran)
 # MPI_C is needed here, else will not compile on MinGW with Ninja or Make.
 # LINK_INTERFACE_MULTIPLICITY and IMPORTED_LINK_INTERFACE_MULTIPLICITY do not help here.
