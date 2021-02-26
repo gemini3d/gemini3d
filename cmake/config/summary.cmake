@@ -2,7 +2,7 @@ include(FeatureSummary)
 
 # --- warnings
 
-set(_min 3.14.0)
+set(_min 0.0.0)
 
 if(CMAKE_Fortran_COMPILER_ID STREQUAL Intel)
   set(_min 3.19.6)
