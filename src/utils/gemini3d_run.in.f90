@@ -8,7 +8,7 @@ use reader, only: get_simsize3
 use autogrid, only : grid_auto, max_mpi
 use help, only : help_gemini_run
 use config, only : get_compiler_vendor
-use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
+use, intrinsic :: iso_fortran_env, only : stderr=>error_unit, compiler_version
 
 implicit none (type, external)
 
@@ -19,9 +19,6 @@ logical :: exists, plan
 
 plan = .false.
 
-Ncpu = get_cpu_count()
-print '(A,I0)', 'gemini3d.run: detected CPU count: ', Ncpu
-
 git_revision = "@git_rev@"
 
 argc = command_argument_count()
@@ -29,20 +26,33 @@ argc = command_argument_count()
 if(argc < 1) call help_gemini_run(git_revision)
 
 call get_command_argument(1, buf)
+
+if(buf(1:1) == '-') then
+!! not running sim, checking parameters
+  select case(buf)
+  case ('-h', '-help')
+    call help_gemini_run(git_revision)
+  case ('-compiler')
+    print '(A)', get_compiler_vendor()
+  case ('-compiler_version')
+    print '(A)', compiler_version()
+  case ('-git')
+    print '(A)', git_revision
+  end select
+
+  stop
+endif
+
+Ncpu = get_cpu_count()
+print '(A,I0)', 'gemini3d.run: detected CPU count: ', Ncpu
+
 path = trim(buf)
 
 do i = 2, argc
   call get_command_argument(i, buf)
 
   select case (buf)
-  case ('-h', '-help')
-    call help_gemini_run(git_revision)
-  case ('-compiler')
-    print '(A)', get_compiler_vendor()
-    stop
-  case ('-git')
-    print '(A)', git_revision
-    stop
+
   case ('-n')
     call get_command_argument(i+1, buf)
     read(buf, '(I6)') Ncpu
@@ -76,7 +86,7 @@ call grid_auto(lx2all, lx3all, lid, lid2, lid3)
 print '(A,I0,A1,I0,A,I0,A1,I0,A,I0)', 'MPI partition of lx2, lx3: ', lx2all, ' ',lx3all, &
 ' is lid2, lid3: ',lid2,' ',lid3, ' using total MPI images: ', lid
 
-if(plan) stop
+if(plan) stop 'gemini3d.run: plan complete'
 
 !> Find gemini.bin, the main program
 if(.not.allocated(gem_exe)) gem_exe = 'gemini.bin'
