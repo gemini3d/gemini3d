@@ -4,11 +4,7 @@
 # will install Ninja under the user's home directory.
 
 if(NOT prefix)
-  if(WIN32)
-    set(prefix $ENV{USERPROFILE})
-  else()
-    set(prefix $ENV{HOME})
-  endif()
+  get_filename_component(prefix ~ ABSOLUTE)
 endif()
 
 set(ver v1.10.2)

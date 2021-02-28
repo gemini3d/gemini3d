@@ -12,11 +12,7 @@
 cmake_minimum_required(VERSION 3.7...3.20)
 
 if(NOT prefix)
-  if(WIN32)
-    set(prefix $ENV{USERPROFILE})
-  else()
-    set(prefix $ENV{HOME})
-  endif()
+  get_filename_component(prefix ~ ABSOLUTE)
 endif()
 
 if(NOT version)

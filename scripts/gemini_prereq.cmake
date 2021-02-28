@@ -14,7 +14,7 @@ if(id MATCHES "MSYS")
 elseif(APPLE)
   find_program(brew
     NAMES brew
-    PATHS /usr/local /opt/homeebrew
+    PATHS /usr/local /opt/homebrew
     PATH_SUFFIXES bin)
 
   if(NOT brew)

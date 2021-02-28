@@ -4,11 +4,7 @@
 # will install hwloc under the user's home directory.
 
 if(NOT prefix)
-  if(WIN32)
-    set(prefix $ENV{USERPROFILE})
-  else()
-    set(prefix $ENV{HOME})
-  endif()
+  get_filename_component(prefix ~ ABSOLUTE)
 endif()
 
 set(version 2.4.0)
