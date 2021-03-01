@@ -70,6 +70,8 @@ option(python "PyGemini checks")
 # Matlab checks take much longer than Python, and Python covers much more
 option(matlab "Matlab checks")
 
+option(test_shaky "tests that may falsely fail")
+
 if(dev)
   set(FETCHCONTENT_SOURCE_DIR_PYGEMINI ${PROJECT_SOURCE_DIR}/../pygemini CACHE PATH "PyGemini developer path")
   set(FETCHCONTENT_SOURCE_DIR_MATGEMINI ${PROJECT_SOURCE_DIR}/../mat_gemini CACHE PATH "MatGemini developer path")
