@@ -6,6 +6,7 @@ if(hdf5)
 
   find_package(h5fortran CONFIG)
   if(h5fortran_FOUND)
+    find_package(HDF5 COMPONENTS Fortran REQUIRED)
     return()
   endif()
 

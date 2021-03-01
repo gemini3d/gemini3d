@@ -6,6 +6,7 @@ if(netcdf)
 
   find_package(nc4fortran CONFIG)
   if(nc4fortran_FOUND)
+    find_package(NetCDF COMPONENTS Fortran REQUIRED)
     return()
   endif()
 
