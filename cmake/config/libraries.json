@@ -11,6 +11,6 @@
 "scalapack": {"git": "https://github.com/scivision/scalapack.git", "tag": "v2.1.0.17"},
 "lapack": {"git": "https://github.com/scivision/lapack.git", "tag": "v3.9.0.4"},
 
-"matgemini": {"git": "https://github.com/gemini3d/mat_gemini.git", "tag": "v4.1.2"},
+"matgemini": {"git": "https://github.com/gemini3d/mat_gemini.git", "tag": "v4.1.4"},
 "pygemini": {"git": "https://github.com/gemini3d/pygemini.git", "tag": "v1.3.2"}
 }

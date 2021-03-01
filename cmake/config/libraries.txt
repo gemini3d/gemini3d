@@ -23,7 +23,7 @@ scalapack_git https://github.com/scivision/scalapack.git
 scalapack_tag v2.1.0.17
 
 matgemini_git https://github.com/gemini3d/mat_gemini.git
-matgemini_tag v4.1.2
+matgemini_tag v4.1.4
 
 pygemini_git https://github.com/gemini3d/pygemini.git
-pygemini_tag v1.3.0
+pygemini_tag v1.3.2
