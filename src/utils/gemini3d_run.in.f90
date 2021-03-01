@@ -23,9 +23,8 @@ git_revision = "@git_rev@"
 
 argc = command_argument_count()
 
-if(argc < 1) call help_gemini_run(git_revision)
-
-call get_command_argument(1, buf)
+call get_command_argument(1, buf, status=i)
+if (i/=0) call help_gemini_run(git_revision)
 
 if(buf(1:1) == '-') then
 !! not running sim, checking parameters
@@ -38,6 +37,9 @@ if(buf(1:1) == '-') then
     print '(A)', compiler_version()
   case ('-git')
     print '(A)', git_revision
+  case default
+    write(stderr,*) "unknown option: ", trim(buf)
+    call help_gemini_run(git_revision)
   end select
 
   stop
@@ -83,8 +85,9 @@ endif
 !> checks consistency
 call grid_auto(lx2all, lx3all, lid, lid2, lid3)
 
-print '(A,I0,A1,I0,A,I0,A1,I0,A,I0)', 'MPI partition of lx2, lx3: ', lx2all, ' ',lx3all, &
-' is lid2, lid3: ',lid2,' ',lid3, ' using total MPI images: ', lid
+print '(A,I0,A1,I0,A,I0,A1,I0)', 'MPI partition of lx2, lx3: ', lx2all, ' ',lx3all, &
+' is lid2, lid3: ',lid2,' ',lid3
+print '(A,I0)', 'MPI images: ', lid
 
 if(plan) stop 'gemini3d.run: plan complete'
 
