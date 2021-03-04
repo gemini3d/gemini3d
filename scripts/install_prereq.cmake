@@ -1,10 +1,10 @@
 # installs Gemini3D basic prereqs on Linux and MacOS, and Windows with MSYS2
 # use by:
 #
-#  cmake -P scripts/gemini_prereq.cmake
+#  cmake -P scripts/install_prereq.cmake
 
 if(WIN32)
-  message(FATAL_ERROR "Please install Gemini prereqs on Winows via MSYS2 Terminal https://www.msys2.org/")
+  message(FATAL_ERROR "Please install Gemini prereqs on Windows via MSYS2 Terminal https://www.msys2.org/")
 endif()
 
 execute_process(COMMAND uname -s OUTPUT_VARIABLE id TIMEOUT 5)

@@ -16,7 +16,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - run: cmake -P scripts/gemini_prereq.cmake
+    - run: cmake -P scripts/install_prereq.cmake
       timeout-minutes: 5
       # transient CI download speed
 

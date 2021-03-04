@@ -32,7 +32,7 @@ jobs:
     - name: Install packages
       run: |
         sudo apt update -yq
-        sudo cmake -P scripts/gemini_prereq.cmake
+        sudo cmake -P scripts/install_prereq.cmake
 
 # CI is too slow for 3d_glow
     - run: cmake -B build
@@ -52,7 +52,7 @@ jobs:
     - name: Install prereqs
       run: |
         sudo apt update -yq
-        sudo cmake -P scripts/gemini_prereq.cmake
+        sudo cmake -P scripts/install_prereq.cmake
 
     - run: cmake --preset=make -DCMAKE_BUILD_TYPE=Debug
     - run: cmake --build build --parallel
