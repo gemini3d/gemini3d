@@ -20,6 +20,9 @@ Parameters
 ``MKL``
   Intel MKL for MSVC, ICL, ICC, GCC and PGCC. Working with IntelMPI (default Window, Linux), MPICH (default Mac) or OpenMPI (Linux only).
 
+``MKL64``
+  MKL only: 64-bit integers  (default is 32-bit integers)
+
 ``OpenMPI``
   OpenMPI interface
 
@@ -60,9 +63,11 @@ if(NOT TARGET MPI::MPI_Fortran)
   find_package(MPI COMPONENTS Fortran)
 endif()
 
-find_package(LAPACK)
-if(NOT (MPI_Fortran_FOUND AND LAPACK_FOUND))
-  return()
+if(NOT TARGET LAPACK::LAPACK)
+  find_package(LAPACK)
+  if(NOT (MPI_Fortran_FOUND AND LAPACK_FOUND))
+    return()
+  endif()
 endif()
 
 set(CMAKE_REQUIRED_FLAGS)
@@ -110,7 +115,7 @@ endif()
 
 if(NOT WIN32)
   # Windows oneAPI crashes here due to bad *.pc
-  pkg_check_modules(pc_mkl mkl-${_mkltype}-lp64-iomp)
+  pkg_check_modules(pc_mkl mkl-${_mkltype}-${_mkl_bitflag}lp64-iomp)
 endif()
 
 set(_mkl_libs ${ARGV})
@@ -147,7 +152,7 @@ find_path(SCALAPACK_INCLUDE_DIR
   PATHS ${MKLROOT} ENV I_MPI_ROOT ENV TBBROOT
   PATH_SUFFIXES
     include
-    include/intel64/lp64
+    include/intel64/${_mkl_bitflag}lp64
   HINTS ${pc_mkl_INCLUDE_DIRS})
 
 if(NOT SCALAPACK_INCLUDE_DIR)
@@ -197,20 +202,30 @@ if(MKL IN_LIST SCALAPACK_FIND_COMPONENTS)
 
   list(APPEND CMAKE_PREFIX_PATH ${MKLROOT}/tools/pkgconfig)
 
+  if(MKL64 IN_LIST SCALAPACK_FIND_COMPONENTS)
+    set(_mkl_bitflag i)
+  else()
+    set(_mkl_bitflag)
+  endif()
+
   if(OpenMPI IN_LIST SCALAPACK_FIND_COMPONENTS)
-    scalapack_mkl(mkl_scalapack_lp64 mkl_blacs_openmpi_lp64)
+    scalapack_mkl(mkl_scalapack_${_mkl_bitflag}lp64 mkl_blacs_openmpi_${_mkl_bitflag}lp64)
     set(SCALAPACK_OpenMPI_FOUND ${SCALAPACK_MKL_FOUND})
   elseif(MPICH IN_LIST SCALAPACK_FIND_COMPONENTS)
     if(APPLE)
-      scalapack_mkl(mkl_scalapack_lp64 mkl_blacs_mpich_lp64)
+      scalapack_mkl(mkl_scalapack_${_mkl_bitflag}lp64 mkl_blacs_mpich_${_mkl_bitflag}lp64)
     elseif(WIN32)
-      scalapack_mkl(mkl_scalapack_lp64 mkl_blacs_mpich2_lp64.lib mpi.lib fmpich2.lib)
+      scalapack_mkl(mkl_scalapack_${_mkl_bitflag}lp64 mkl_blacs_mpich2_${_mkl_bitflag}lp64.lib mpi.lib fmpich2.lib)
     else()  # MPICH linux is just like IntelMPI
-      scalapack_mkl(mkl_scalapack_lp64 mkl_blacs_intelmpi_lp64)
+      scalapack_mkl(mkl_scalapack_${_mkl_bitflag}lp64 mkl_blacs_intelmpi_${_mkl_bitflag}lp64)
     endif()
     set(SCALAPACK_MPICH_FOUND ${SCALAPACK_MKL_FOUND})
   else()
-    scalapack_mkl(mkl_scalapack_lp64 mkl_blacs_intelmpi_lp64)
+    scalapack_mkl(mkl_scalapack_${_mkl_bitflag}lp64 mkl_blacs_intelmpi_${_mkl_bitflag}lp64)
+  endif()
+
+  if(MKL64 IN_LIST SCALAPACK_FIND_COMPONENTS)
+    set(SCALAPACK_MKL64_FOUND ${SCALAPACK_MKL_FOUND})
   endif()
 
 elseif(OpenMPI IN_LIST SCALAPACK_FIND_COMPONENTS)

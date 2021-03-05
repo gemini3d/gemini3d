@@ -6,7 +6,8 @@ FindMETIS
 -------
 Michael Hirsch, Ph.D.
 
-Finds the METIS library
+Finds the METIS library.
+NOTE: If libparmetis used, libmetis must also be linked.
 
 Imported Targets
 ^^^^^^^^^^^^^^^^
@@ -25,10 +26,14 @@ METIS_INCLUDE_DIRS
 #]=======================================================================]
 
 
-find_library(METIS_LIBRARY
-             NAMES parmetis metis
-             NAMES_PER_DIR
+find_library(PARMETIS_LIBRARY
+             NAMES parmetis
              PATH_SUFFIXES METIS lib libmetis)
+
+find_library(METIS_LIBRARY
+             NAMES metis
+             PATH_SUFFIXES METIS lib libmetis)
+
 
 find_path(METIS_INCLUDE_DIR
           NAMES parmetis.h metis.h
@@ -41,16 +46,22 @@ find_package_handle_standard_args(METIS
 
 if(METIS_FOUND)
 # need if _FOUND guard to allow project to autobuild; can't overwrite imported target even if bad
-set(METIS_LIBRARIES ${METIS_LIBRARY})
+
+if(PARMETIS_LIBRARY)
+  set(METIS_LIBRARIES ${PARMETIS_LIBRARY} ${METIS_LIBRARY})
+else()
+  set(METIS_LIBRARIES ${METIS_LIBRARY})
+endif()
+
 set(METIS_INCLUDE_DIRS ${METIS_INCLUDE_DIR})
 
 if(NOT TARGET METIS::METIS)
   add_library(METIS::METIS INTERFACE IMPORTED)
   set_target_properties(METIS::METIS PROPERTIES
-                        INTERFACE_LINK_LIBRARIES "${METIS_LIBRARY}"
+                        INTERFACE_LINK_LIBRARIES "${METIS_LIBRARIES}"
                         INTERFACE_INCLUDE_DIRECTORIES "${METIS_INCLUDE_DIR}"
                       )
 endif()
 endif(METIS_FOUND)
 
-mark_as_advanced(METIS_INCLUDE_DIR METIS_LIBRARY)
+mark_as_advanced(METIS_INCLUDE_DIR METIS_LIBRARY PARMETIS_LIBRARY)

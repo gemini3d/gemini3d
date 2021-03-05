@@ -222,9 +222,9 @@ if(NOT TARGET MUMPS::MUMPS)
 endif()
 
 if(mpiseq IN_LIST MUMPS_FIND_COMPONENTS)
-  if(NOT TARGET MUMPS::mpiseq)
-    add_library(MUMPS::mpiseq INTERFACE IMPORTED)
-    set_target_properties(MUMPS::mpiseq PROPERTIES
+  if(NOT TARGET MUMPS::MPISEQ)
+    add_library(MUMPS::MPISEQ INTERFACE IMPORTED)
+    set_target_properties(MUMPS::MPISEQ PROPERTIES
       INTERFACE_LINK_LIBRARIES "${MUMPS_mpiseq_LIB}"
       INTERFACE_INCLUDE_DIRECTORIES "${MUMPS_mpiseq_INC}")
   endif()
