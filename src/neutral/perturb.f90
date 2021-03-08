@@ -48,16 +48,21 @@ contains
 module procedure neutral_perturb
 ! subroutine neutral_perturb(cfg,dt,dtneu,t,ymd,UTsec,x,v2grid,v3grid,nn,Tn,vn1,vn2,vn3)
 
-if (cfg%interptype==0) then                           !cartesian interpolation drho inputs (radial distance) will be interpreted as dy (horizontal distance)
+select case (cfg%interptype)
+case (0)
+!! cartesian interpolation
+!! drho inputs (radial distance) interpreted as dy (horizontal distance)
 !  call neutral_perturb_cart(dt,dtneu,t,ymd,UTsec,neudir,drhon,dzn,meanlat,meanlong,x,nn,Tn,vn1,vn2,vn3)
   call neutral_perturb_cart(dt,dtneu,t,ymd,UTsec,cfg,x,nn,Tn,vn1,vn2,vn3)
-else if (cfg%interptype==1) then                      !axisymmetric interpolation
+case (1)
+!! axisymmetric interpolation
   call neutral_perturb_axisymm(dt,dtneu,t,ymd,UTsec,cfg,x,nn,Tn,vn1,vn2,vn3)
-else if (cfg%interptype==3) then                      !3D interpolation drhon is takent to be dyn (northward distance)
+case (3)
+!! 3D interpolation drhon is takent to be dyn (northward distance)
   call neutral_perturb_3D(dt,dtneu,t,ymd,UTsec,cfg,x,nn,Tn,vn1,vn2,vn3)
-else
+case default
   error stop '...Invalid interpolation type specified from input file...'
-end if
+end select
 
 !> adjust for the grid drift speed; note we assume this gets sets to zero if not a Lagrangian grid
 vn2=vn2-v2grid
@@ -165,7 +170,7 @@ real(wp) :: UTsectmp
 
 
 !CHECK WHETHER WE NEED TO LOAD A NEW FILE
-if (t+dt/2d0 >= tnext .or. t < 0) then
+if (t + dt/2 >= tnext .or. t < 0) then
   !IF FIRST LOAD ATTEMPT CREATE A NEUTRAL GRID AND COMPUTE GRID SITES FOR IONOSPHERIC GRID.  Since this needs an input file, I'm leaving it under this condition here
   if (.not. allocated(zn)) then     !means this is the first tiem we've tried to load neutral simulation data, should we check for a previous neutral file to load???
     !initialize dates
@@ -174,20 +179,21 @@ if (t+dt/2d0 >= tnext .or. t < 0) then
     ymdnext=ymdprev
     UTsecnext=UTsecprev
 
-    !Create a neutral grid, do some allocations and projections
-    call gridproj_dneu2D(cfg,.true.,x)    !set true to denote Cartesian...
+    !> Create a neutral grid, do some allocations and projections
+    call gridproj_dneu2D(cfg,.true.,x)
+    !! set true to denote Cartesian...
   end if
 
-  !Read in neutral data from a file
+  !> Read in neutral data from a file
   call read_dneu2D(tprev,tnext,t,dtneu,dt,cfg%sourcedir,ymdtmp,UTsectmp,.true.)
 
-  !Spatial interpolatin for the frame we just read in
+  !> Spatial interpolatin for the frame we just read in
   if (mpi_cfg%myid==0 .and. debug) then
     print *, 'Spatial interpolation and rotation of vectors for date:  ',ymdtmp,' ',UTsectmp
   end if
   call spaceinterp_dneu2D(.true.)
 
-  !UPDATE OUR CONCEPT OF PREVIOUS AND NEXT TIMES
+  !> UPDATE OUR CONCEPT OF PREVIOUS AND NEXT TIMES
   tprev=tnext
   UTsecprev=UTsecnext
   ymdprev=ymdnext
