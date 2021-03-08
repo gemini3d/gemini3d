@@ -1,6 +1,6 @@
 submodule (reader) reader_hdf5
 
-use h5fortran, only: hdf5_file
+use h5fortran, only: hdf5_file, hsize_t
 
 implicit none (type, external)
 
@@ -137,8 +137,11 @@ module procedure get_neutral2_hdf5
 type(hdf5_file) :: hf
 real(wp) :: flagtmp
 
-real(wp), dimension(1:size(dnO,1),1:size(dnO,3)) :: buffer     !second dimension is singleton, so read data into a buffer so hdf5 doesn't complain
+real(wp), dimension(1:size(dnO,1),1:size(dnO,3)) :: buffer
+!! FIXME: second dimension is singleton, so read data into a buffer
+!! This is something that should be corrected in the Matlab/Python scripts writing the files
 integer :: lz,lx,ly
+integer(hsize_t), allocatable :: dims(:)
 
 lz=size(dnO,1)
 lx=size(dnO,2)   !should be 1
@@ -148,18 +151,29 @@ if (debug) print *, 'READ neutral 2D data from file: ', path
 
 call hf%initialize(path, status='old',action='r')
 
-call hf%read('/dn0all', buffer)
-dnO=reshape(buffer,[lz,1,ly])
-call hf%read('/dnN2all', buffer)
-dnN2=reshape(buffer,[lz,1,ly])
-call hf%read('/dnO2all', buffer)
-dnO2=reshape(buffer,[lz,1,ly])
-call hf%read('/dvnrhoall', buffer)
-dvnrho=reshape(buffer,[lz,1,ly])
-call hf%read('/dvnzall', buffer)
-dvnz=reshape(buffer,[lz,1,ly])
-call hf%read('/dTnall', buffer)
-dTn=reshape(buffer,[lz,1,ly])
+call hf%shape("/dn0all", dims)
+if(size(dims) == 3) then
+  call hf%read('/dn0all', dnO)
+  call hf%read('/dnN2all', dnN2)
+  call hf%read('/dnO2all', dnO2)
+  call hf%read('/dvnrhoall', dvnrho)
+  call hf%read('/dvnzall', dvnz)
+  call hf%read('/dTnall', dTn)
+else
+  !! FIXME: workaround, the Matlab script should be fixed to write shape [lz,1,ly]
+  call hf%read('/dn0all', buffer)
+  dnO=reshape(buffer,[lz,1,ly])
+  call hf%read('/dnN2all', buffer)
+  dnN2=reshape(buffer,[lz,1,ly])
+  call hf%read('/dnO2all', buffer)
+  dnO2=reshape(buffer,[lz,1,ly])
+  call hf%read('/dvnrhoall', buffer)
+  dvnrho=reshape(buffer,[lz,1,ly])
+  call hf%read('/dvnzall', buffer)
+  dvnz=reshape(buffer,[lz,1,ly])
+  call hf%read('/dTnall', buffer)
+  dTn=reshape(buffer,[lz,1,ly])
+endif
 
 call hf%finalize()
 
