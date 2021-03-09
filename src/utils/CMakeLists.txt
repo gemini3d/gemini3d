@@ -29,6 +29,23 @@ install(TARGETS magcalc.bin
 # --- gemini3d.run Fortran front end
 add_subdirectory(hwloc)
 
+# --- START Apple M1 workaround
+set(apple_m1_workaround)
+if(APPLE)
+  cmake_host_system_information(RESULT sys_info QUERY OS_NAME OS_PLATFORM)
+  if(sys_info STREQUAL "macOS;arm64")
+    # Apple Silicon M1 workaround for hwloc et al:
+    # https://github.com/open-mpi/hwloc/issues/454
+    cmake_host_system_information(RESULT Nhybrid QUERY NUMBER_OF_PHYSICAL_CORES)
+
+    math(EXPR plan_cpu "${Nhybrid} / 2")  # use only fast cores, else MPI very slow
+
+    set(apple_m1_workaround "print *, 'Apple M1 hybrid CPU count workaround applied.'
+Ncpu = ${plan_cpu}")
+  endif()
+endif(APPLE)
+# --- END Apple M1 workaround
+
 configure_file(gemini3d_run.in.f90 gemini3d_run.f90 @ONLY)
 add_executable(gemini3d.run)
 target_sources(gemini3d.run PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/gemini3d_run.f90 runner.f90)

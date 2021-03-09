@@ -46,6 +46,9 @@ if(buf(1:1) == '-') then
 endif
 
 Ncpu = get_cpu_count()
+
+@apple_m1_workaround@
+
 print '(A,I0)', 'gemini3d.run: detected CPU count: ', Ncpu
 
 path = trim(buf)
