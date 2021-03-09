@@ -3,11 +3,13 @@
 # cmake -P install_hwloc.cmake
 # will install hwloc under the user's home directory.
 
+cmake_minimum_required(VERSION 3.7...3.20)
+
 if(NOT prefix)
   get_filename_component(prefix ~ ABSOLUTE)
 endif()
 
-set(version 2.4.0)
+set(version 2.4.1)
 
 set(host https://download.open-mpi.org/release/hwloc/v2.4)
 

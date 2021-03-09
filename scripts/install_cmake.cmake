@@ -1,3 +1,5 @@
+#!/usr/bin/env -S cmake -P
+
 # this script is to install a recent CMake version
 # this handles the most common cases, but doesn't handle corner cases like 64-bit kernel with 32-bit user space
 # CMAKE_HOST_SYSTEM_PROCESSOR, CMAKE_HOST_SYSTEM_NAME don't work in CMake script mode
@@ -40,9 +42,18 @@ endfunction(checkup)
 
 
 if(APPLE)
-  message(STATUS "please use Homebrew https://brew.sh to install cmake:  'brew install cmake'
-  or use Python  'pip install cmake'")
-  return()
+  find_program(brew
+    NAMES brew
+    PATHS /usr/local /opt/homeebrew
+    PATH_SUFFIXES bin)
+
+  if(brew)
+    execute_process(COMMAND ${brew} install cmake)
+  else(brew)
+    message(STATUS "please use Homebrew https://brew.sh to install cmake:  'brew install cmake'
+    or use Python  'pip install cmake'")
+    return()
+  endif(brew)
 elseif(UNIX)
   execute_process(COMMAND uname -m OUTPUT_VARIABLE arch OUTPUT_STRIP_TRAILING_WHITESPACE)
 

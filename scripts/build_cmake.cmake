@@ -1,6 +1,9 @@
-# this script is to build and install a recent CMake version
+#!/usr/bin/env -S cmake -P
+
+# this script builds and installs a recent CMake version
 #
 # cmake -P build_cmake.cmake
+#
 # will install CMake under the user's home directory.
 #
 # optionally, specify a specific CMake version like:
