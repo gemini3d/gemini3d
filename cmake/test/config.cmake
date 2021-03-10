@@ -9,7 +9,7 @@ set(refroot ${PROJECT_SOURCE_DIR}/test_data)
 set(refdir ${refroot}/test${name})
 
 add_test(NAME gemini:${name}:setup
-  COMMAND ${CMAKE_COMMAND} -Dtestname=${name} -Doutdir:PATH=${outdir} -Drefroot:PATH=${refroot} -P ${CMAKE_CURRENT_LIST_DIR}/download.cmake)
+  COMMAND ${CMAKE_COMMAND} -Dname=${name} -Doutdir:PATH=${outdir} -Drefroot:PATH=${refroot} -P ${CMAKE_CURRENT_LIST_DIR}/download.cmake)
 set_tests_properties(gemini:${name}:setup PROPERTIES
   FIXTURES_SETUP ${name}_setup
   FIXTURES_REQUIRED gemini_exe_fix

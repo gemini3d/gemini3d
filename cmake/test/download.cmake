@@ -80,9 +80,9 @@ file(WRITE ${ref_dir}/md5sum.txt ${_md5})
 endfunction(gemini_download_ref_data)
 
 
-gemini_download_ref_data(${testname})
+gemini_download_ref_data(${name})
 
 if(DEFINED outdir)
-  # copy sim inputs into build/testname/inputs
-  file(COPY ${refroot}/test${testname}/inputs DESTINATION ${outdir})
+  # copy sim inputs into build/test${name}/inputs
+  file(COPY ${refroot}/test${name}/inputs DESTINATION ${outdir})
 endif()

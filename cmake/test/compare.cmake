@@ -1,16 +1,16 @@
 
-function(matlab_compare outdir refdir testname)
+function(matlab_compare outdir refdir name)
 
 if(hdf5 OR netcdf)
 
-add_test(NAME gemini:compare:${testname}:matlab
+add_test(NAME gemini:compare:${name}:matlab
 COMMAND ${Matlab_MAIN_PROGRAM} -batch "gemini3d.compare('${outdir}', '${refdir}')"
 WORKING_DIRECTORY ${MATGEMINI_DIR}
 )
 
-set_tests_properties(gemini:compare:${testname}:matlab PROPERTIES
+set_tests_properties(gemini:compare:${name}:matlab PROPERTIES
 TIMEOUT 120
-FIXTURES_REQUIRED "hdf5:${testname};netcdf:${testname}"
+FIXTURES_REQUIRED "hdf5:${name};netcdf:${name}"
 REQUIRED_FILES "${outdir}/inputs/config.nml;${refdir}/inputs/config.nml"
 LABELS "compare;matlab")
 
@@ -19,16 +19,16 @@ endif()
 endfunction(matlab_compare)
 
 
-function(python_compare outdir refdir testname)
+function(python_compare outdir refdir name)
 
 if(hdf5)
 
-add_test(NAME gemini:compare:hdf5:${testname}:python
+add_test(NAME gemini:compare:hdf5:${name}:python
 COMMAND ${Python3_EXECUTABLE} -m gemini3d.compare ${outdir} ${refdir} -file_format h5)
 
-set_tests_properties(gemini:compare:hdf5:${testname}:python PROPERTIES
+set_tests_properties(gemini:compare:hdf5:${name}:python PROPERTIES
 TIMEOUT 120
-FIXTURES_REQUIRED hdf5:${testname}
+FIXTURES_REQUIRED hdf5:${name}
 REQUIRED_FILES "${outdir}/inputs/config.nml;${refdir}/inputs/config.nml"
 LABELS "compare;python")
 
@@ -36,12 +36,12 @@ endif(hdf5)
 
 if(netcdf)
 
-add_test(NAME gemini:compare:netcdf:${testname}:python
+add_test(NAME gemini:compare:netcdf:${name}:python
 COMMAND ${Python3_EXECUTABLE} -m gemini3d.compare ${outdir} ${refdir} -file_format nc)
 
-set_tests_properties(gemini:compare:netcdf:${testname}:python PROPERTIES
+set_tests_properties(gemini:compare:netcdf:${name}:python PROPERTIES
 TIMEOUT 120
-FIXTURES_REQUIRED netcdf:${testname}
+FIXTURES_REQUIRED netcdf:${name}
 REQUIRED_FILES "${outdir}/inputs/config.nml;${refdir}/inputs/config.nml"
 LABELS "compare;python")
 endif(netcdf)
@@ -49,17 +49,16 @@ endif(netcdf)
 endfunction(python_compare)
 
 
-function(fortran_compare outdir refdir testname)
+function(fortran_compare outdir refdir name)
 
 if(hdf5)
 
-add_test(NAME gemini:compare:hdf5:${testname}
+add_test(NAME gemini:compare:hdf5:${name}
 COMMAND $<TARGET_FILE:gemini3d.compare> ${outdir} ${refdir})
 
-set_tests_properties(gemini:compare:hdf5:${testname} PROPERTIES
+set_tests_properties(gemini:compare:hdf5:${name} PROPERTIES
 TIMEOUT 60
-# FIXTURES_REQUIRED hdf5:${testname}
-DEPENDS gemini:hdf5:${testname}  # this allows rerunning compare test without simulation
+FIXTURES_REQUIRED hdf5:${name}
 REQUIRED_FILES "${outdir}/inputs/config.nml;${refdir}/inputs/config.nml"
 LABELS compare)
 
@@ -67,13 +66,12 @@ endif(hdf5)
 
 if(netcdf)
 
-add_test(NAME gemini:compare:netcdf:${testname}
+add_test(NAME gemini:compare:netcdf:${name}
 COMMAND $<TARGET_FILE:gemini3d.compare> ${outdir} ${refdir})
 
-set_tests_properties(gemini:compare:netcdf:${testname} PROPERTIES
+set_tests_properties(gemini:compare:netcdf:${name} PROPERTIES
 TIMEOUT 60
-# FIXTURES_REQUIRED netcdf:${testname}
-DEPENDS gemini:netcdf:${testname}  # this allows rerunning compare test without simulation
+FIXTURES_REQUIRED netcdf:${name}
 REQUIRED_FILES "${outdir}/inputs/config.nml;${refdir}/inputs/config.nml"
 LABELS compare)
 
@@ -82,18 +80,18 @@ endif(netcdf)
 endfunction(fortran_compare)
 
 
-function(compare_gemini_output testname outdir refdir)
+function(compare_gemini_output name outdir refdir)
 
 if(MATGEMINI_DIR)
-  matlab_compare(${outdir} ${refdir} ${testname})
+  matlab_compare(${outdir} ${refdir} ${name})
 endif(MATGEMINI_DIR)
 
 if(PYGEMINI_DIR)
-  python_compare(${outdir} ${refdir} ${testname})
+  python_compare(${outdir} ${refdir} ${name})
 endif(PYGEMINI_DIR)
 
 if(TARGET gemini3d.compare)
-  fortran_compare(${outdir} ${refdir} ${testname})
+  fortran_compare(${outdir} ${refdir} ${name})
 endif()
 
 endfunction(compare_gemini_output)
