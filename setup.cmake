@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.17...3.20)
+cmake_minimum_required(VERSION 3.18...3.20)
 
 set(CTEST_PROJECT_NAME "Gemini3D")
 set(CTEST_NIGHTLY_START_TIME "01:00:00 UTC")
@@ -32,30 +32,24 @@ if(NOT DEFINED CTEST_BUILD_NAME)
   if(DEFINED ENV{CTEST_BUILD_NAME})
     set(CTEST_BUILD_NAME $ENV{CTEST_BUILD_NAME})
   else()
-    find_program(run_exe
-      NAMES gemini3d.run
-      HINTS ${GEMINI_ROOT} ENV GEMINI_ROOT
-      PATHS ${CTEST_BINARY_DIRECTORY}
-      DOC "Gemini3d.run Fortran front-end")
-    if(run_exe)
-      execute_process(COMMAND ${run_exe} -compiler_version
-        OUTPUT_VARIABLE _compiler_version
-        RESULT_VARIABLE _err
-        TIMEOUT 5
-        OUTPUT_STRIP_TRAILING_WHITESPACE)
-      if(_err EQUAL 0)
-        execute_process(COMMAND ${run_exe} -git
-          OUTPUT_VARIABLE _git_version
-          RESULT_VARIABLE _err
-          TIMEOUT 5
-          OUTPUT_STRIP_TRAILING_WHITESPACE)
-      endif()
-      if(_err EQUAL 0)
-        set(CTEST_BUILD_NAME "${_compiler_version}  ${_git_version}")
-      endif()
-    endif(run_exe)
+    find_program(GIT_EXECUTABLE NAMES git REQUIRED)
+    execute_process(COMMAND ${GIT_EXECUTABLE} describe --tags
+      WORKING_DIRECTORY ${CTEST_SOURCE_DIRECTORY}
+      OUTPUT_VARIABLE git_rev OUTPUT_STRIP_TRAILING_WHITESPACE
+      RESULT_VARIABLE _err)
+    if(NOT _err EQUAL 0)
+      # old Git
+      execute_process(COMMAND ${GIT_EXECUTABLE} rev-parse --short HEAD
+        WORKING_DIRECTORY ${CTEST_SOURCE_DIRECTORY}
+        OUTPUT_VARIABLE git_rev OUTPUT_STRIP_TRAILING_WHITESPACE
+        RESULT_VARIABLE _err)
+    endif()
+    if(_err EQUAL 0)
+      set(CTEST_BUILD_NAME ${git_rev})
+    endif()
   endif()
 endif()
+
 
 # CTEST_CMAKE_GENERATOR must always be defined
 if(NOT DEFINED CTEST_CMAKE_GENERATOR)
