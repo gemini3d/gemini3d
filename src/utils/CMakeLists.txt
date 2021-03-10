@@ -20,7 +20,10 @@ target_link_libraries(magcalc.bin PRIVATE helpmod config const grid io mesh mpim
 set_target_properties(magcalc.bin PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
 
 add_test(NAME unit:magcalc_exe_ok COMMAND $<TARGET_FILE:magcalc.bin>)
-set_tests_properties(unit:magcalc_exe_ok PROPERTIES PASS_REGULAR_EXPRESSION "EOF: magcalc.bin")
+set_tests_properties(unit:magcalc_exe_ok PROPERTIES
+  PASS_REGULAR_EXPRESSION "EOF: magcalc.bin"
+  LABELS unit
+  TIMEOUT 5)
 
 install(TARGETS magcalc.bin
   EXPORT ${PROJECT_NAME}Targets
@@ -59,7 +62,9 @@ set_target_properties(gemini3d.run PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_C
 add_test(NAME unit:gemini3d_run_ok COMMAND $<TARGET_FILE:gemini3d.run>)
 set_tests_properties(unit:gemini3d_run_ok PROPERTIES
   PASS_REGULAR_EXPRESSION "EOF: gemini3d.run"
-  DEPENDS unit:HWLOC)
+  DEPENDS unit:HWLOC
+  LABELS unit
+  TIMEOUT 5)
 
 install(TARGETS gemini3d.run
   EXPORT ${PROJECT_NAME}Targets

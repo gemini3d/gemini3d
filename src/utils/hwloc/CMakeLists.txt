@@ -27,9 +27,13 @@ if(HWLOC_FOUND)
     add_executable(test_hwloc test_hwloc.c get_cpu_hwloc.c)
     target_include_directories(test_hwloc PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
     target_link_libraries(test_hwloc PRIVATE HWLOC::HWLOC)
+    set_target_properties(test_hwloc PROPERTIES LABELS unit)
     # NOTE: MPIEXEC_MAX_NUMPROCS is fallible, it uses less robust methods than hwloc! Particularly on ARM (Raspberry Pi)
     add_test(NAME unit:HWLOC COMMAND $<TARGET_FILE:test_hwloc> ${Ncpu})
-    set_tests_properties(unit:HWLOC PROPERTIES FIXTURES_SETUP hwloc_fix TIMEOUT 10)
+    set_tests_properties(unit:HWLOC PROPERTIES
+      FIXTURES_SETUP hwloc_fix
+      TIMEOUT 10
+      LABELS unit)
   endif()
 
   return()

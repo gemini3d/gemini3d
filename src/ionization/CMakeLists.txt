@@ -8,12 +8,18 @@ if(${PROJECT_NAME}_BUILD_TESTING)
 
 add_executable(test_fang test_fang.f90)
 target_link_libraries(test_fang PRIVATE fang fang_run assert const msis_ifc)
+set_target_properties(test_fang PROPERTIES LABELS unit)
 add_test(NAME unit:fangIonize COMMAND $<TARGET_FILE:test_fang>)
+set_tests_properties(unit:fangIonize PROPERTIES
+  TIMEOUT 10
+  LABELS unit)
 
 if(Python3_FOUND)
   add_test(NAME unit:fangIonize:python
     COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test_fang.py $<TARGET_FILE:test_fang>)
-  set_tests_properties(unit:fangIonize:python PROPERTIES TIMEOUT 30)
+  set_tests_properties(unit:fangIonize:python PROPERTIES
+    TIMEOUT 30
+    LABELS "unit;python")
 endif(Python3_FOUND)
 
 endif(${PROJECT_NAME}_BUILD_TESTING)

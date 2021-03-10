@@ -54,16 +54,19 @@ add_test(NAME unit:msis_setup
   COMMAND $<TARGET_FILE:msis_setup> ${_in} ${_out} 0)
 set_tests_properties(unit:msis_setup PROPERTIES
   FIXTURES_SETUP msis_fix
+  LABELS unit
   REQUIRED_FILES ${_in}
   TIMEOUT 10)
 
 add_executable(msis_compare test_msis.f90)
 target_link_libraries(msis_compare PRIVATE msis_ifc assert h5fortran::h5fortran)
+set_target_properties(msis_compare PROPERTIES LABELS unit)
 
 add_test(NAME unit:msis_compare
   COMMAND $<TARGET_FILE:msis_compare> ${_out} ${_ref})
 set_tests_properties(unit:msis_compare PROPERTIES
   FIXTURES_REQUIRED msis_fix
+  LABELS unit
   TIMEOUT 10
   REQUIRED_FILES "${_out};${_ref}")
 

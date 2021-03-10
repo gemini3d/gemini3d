@@ -11,7 +11,8 @@ WORKING_DIRECTORY ${MATGEMINI_DIR}
 set_tests_properties(gemini:compare:${testname}:matlab PROPERTIES
 TIMEOUT 120
 FIXTURES_REQUIRED "hdf5:${testname};netcdf:${testname}"
-REQUIRED_FILES "${outdir}/inputs/config.nml;${refdir}/inputs/config.nml")
+REQUIRED_FILES "${outdir}/inputs/config.nml;${refdir}/inputs/config.nml"
+LABELS "compare;matlab")
 
 endif()
 
@@ -28,7 +29,8 @@ COMMAND ${Python3_EXECUTABLE} -m gemini3d.compare ${outdir} ${refdir} -file_form
 set_tests_properties(gemini:compare:hdf5:${testname}:python PROPERTIES
 TIMEOUT 120
 FIXTURES_REQUIRED hdf5:${testname}
-REQUIRED_FILES "${outdir}/inputs/config.nml;${refdir}/inputs/config.nml")
+REQUIRED_FILES "${outdir}/inputs/config.nml;${refdir}/inputs/config.nml"
+LABELS "compare;python")
 
 endif(hdf5)
 
@@ -40,7 +42,8 @@ COMMAND ${Python3_EXECUTABLE} -m gemini3d.compare ${outdir} ${refdir} -file_form
 set_tests_properties(gemini:compare:netcdf:${testname}:python PROPERTIES
 TIMEOUT 120
 FIXTURES_REQUIRED netcdf:${testname}
-REQUIRED_FILES "${outdir}/inputs/config.nml;${refdir}/inputs/config.nml")
+REQUIRED_FILES "${outdir}/inputs/config.nml;${refdir}/inputs/config.nml"
+LABELS "compare;python")
 endif(netcdf)
 
 endfunction(python_compare)
@@ -57,7 +60,8 @@ set_tests_properties(gemini:compare:hdf5:${testname} PROPERTIES
 TIMEOUT 60
 # FIXTURES_REQUIRED hdf5:${testname}
 DEPENDS gemini:hdf5:${testname}  # this allows rerunning compare test without simulation
-REQUIRED_FILES "${outdir}/inputs/config.nml;${refdir}/inputs/config.nml")
+REQUIRED_FILES "${outdir}/inputs/config.nml;${refdir}/inputs/config.nml"
+LABELS compare)
 
 endif(hdf5)
 
@@ -70,7 +74,8 @@ set_tests_properties(gemini:compare:netcdf:${testname} PROPERTIES
 TIMEOUT 60
 # FIXTURES_REQUIRED netcdf:${testname}
 DEPENDS gemini:netcdf:${testname}  # this allows rerunning compare test without simulation
-REQUIRED_FILES "${outdir}/inputs/config.nml;${refdir}/inputs/config.nml")
+REQUIRED_FILES "${outdir}/inputs/config.nml;${refdir}/inputs/config.nml"
+LABELS compare)
 
 endif(netcdf)
 

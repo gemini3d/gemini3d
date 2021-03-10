@@ -18,9 +18,12 @@ if(${PROJECT_NAME}_BUILD_TESTING)
     # so we by default omit this test.
     add_executable(test_errors test_errors.f90)
     target_link_libraries(test_errors PRIVATE errors const h5fortran::h5fortran)
+    set_target_properties(test_errors PROPERTEIS LABELS unit)
 
     add_test(NAME gemini:stop:zero COMMAND $<TARGET_FILE:test_errors> root)
-    set_tests_properties(gemini:stop:zero PROPERTIES WILL_FAIL true)
+    set_tests_properties(gemini:stop:zero PROPERTIES
+      WILL_FAIL true
+      LABELS unit)
     # FIXME: add a follow-on test using Fixtures that read and verify expected file dump
   endif()
 
@@ -58,15 +61,20 @@ set(_test_file ${CMAKE_CURRENT_SOURCE_DIR}/../unit_tests/config/config_example.n
 
 if(${PROJECT_NAME}_BUILD_TESTING)
 add_executable(test_namelist test_nml.f90)
+set_target_properties(test_namelist PROPERTIES LABELS unit)
 add_test(NAME unit:namelist COMMAND $<TARGET_FILE:test_namelist> ${_test_file})
 set_tests_properties(unit:namelist PROPERTIES
 REQUIRED_FILES ${_test_file}
+LABELS unit
 TIMEOUT 10)
 
 add_executable(test_compiler_vendor test_compiler_vendor.f90)
 target_link_libraries(test_compiler_vendor config pathlib)
+set_target_properties(test_compiler_vendor PROPERTIES LABELS unit)
 add_test(NAME unit:compiler_vendor COMMAND $<TARGET_FILE:test_compiler_vendor>)
-set_tests_properties(unit:compiler_vendor PROPERTIES PASS_REGULAR_EXPRESSION ${CMAKE_Fortran_COMPILER_ID})
+set_tests_properties(unit:compiler_vendor PROPERTIES
+  PASS_REGULAR_EXPRESSION ${CMAKE_Fortran_COMPILER_ID}
+  LABELS unit)
 endif()
 
 # --- io

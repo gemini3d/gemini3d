@@ -13,6 +13,7 @@ add_test(NAME gemini:${testname}:setup
 set_tests_properties(gemini:${testname}:setup PROPERTIES
   FIXTURES_SETUP ${testname}_setup
   FIXTURES_REQUIRED gemini_exe_fix
+  LABELS setup
   TIMEOUT 180)
 
 # construct command
@@ -41,7 +42,8 @@ set_tests_properties(gemini:hdf5:${testname}:dryrun PROPERTIES
   RESOURCE_LOCK cpu_mpi
   FIXTURES_REQUIRED ${testname}_setup
   FIXTURES_SETUP hdf5:${testname}:dryrun
-  REQUIRED_FILES ${outdir}/inputs/config.nml)
+  REQUIRED_FILES ${outdir}/inputs/config.nml
+  LABELS core)
 
 
 add_test(NAME gemini:hdf5:${testname} COMMAND ${test_cmd})
@@ -50,7 +52,8 @@ set_tests_properties(gemini:hdf5:${testname} PROPERTIES
   TIMEOUT ${TIMEOUT}
   RESOURCE_LOCK cpu_mpi
   FIXTURES_REQUIRED hdf5:${testname}:dryrun
-  FIXTURES_SETUP hdf5:${testname})
+  FIXTURES_SETUP hdf5:${testname}
+  LABELS core)
 
 endif(hdf5)
 
@@ -64,7 +67,8 @@ set_tests_properties(gemini:netcdf:${testname}:dryrun PROPERTIES
   RESOURCE_LOCK cpu_mpi
   FIXTURES_REQUIRED "mumps_fixture;${testname}_setup"
   FIXTURES_SETUP netcdf:${testname}:dryrun
-  REQUIRED_FILES ${outdir}/inputs/config.nml)
+  REQUIRED_FILES ${outdir}/inputs/config.nml
+  LABELS core)
 
 add_test(NAME gemini:netcdf:${testname}
   COMMAND ${test_cmd} -out_format nc)
@@ -73,7 +77,8 @@ set_tests_properties(gemini:netcdf:${testname} PROPERTIES
   TIMEOUT ${TIMEOUT}
   RESOURCE_LOCK cpu_mpi
   FIXTURES_REQUIRED netcdf:${testname}:dryrun
-  FIXTURES_SETUP netcdf:${testname})
+  FIXTURES_SETUP netcdf:${testname}
+  LABELS core)
 endif(netcdf)
 
 compare_gemini_output(${testname} ${outdir} ${refdir})

@@ -4,6 +4,9 @@ set(CTEST_PROJECT_NAME "Gemini3D")
 set(CTEST_NIGHTLY_START_TIME "01:00:00 UTC")
 set(CTEST_MODEL "Experimental")
 set(CTEST_GROUP "GeminiCore")
+set(CTEST_SUBMIT_URL "https://my.cdash.org/submit.php?project=${CTEST_PROJECT_NAME}")
+
+set(CTEST_LABELS_FOR_SUBPROJECTS "unit;python;matlab")
 
 # --- boilerplate follows
 set(CTEST_TEST_TIMEOUT 10)
@@ -50,6 +53,9 @@ if(NOT DEFINED CTEST_BUILD_NAME)
   endif()
 endif()
 
+# for subproject labels
+set(CTEST_USE_LAUNCHERS 1)
+set(ENV{CTEST_USE_LAUNCHERS_DEFAULT} 1)
 
 # CTEST_CMAKE_GENERATOR must always be defined
 if(NOT DEFINED CTEST_CMAKE_GENERATOR)
@@ -95,9 +101,7 @@ cmake_cpu_count()
 # --- CTest Dashboard
 
 set(CTEST_NOTES_FILES "${CTEST_SCRIPT_DIRECTORY}/${CTEST_SCRIPT_NAME}")
-set(CTEST_SUBMIT_URL "https://my.cdash.org/submit.php?project=Gemini3D")
 set(CTEST_SUBMIT_RETRY_COUNT 3)
-set(CTEST_LABELS_FOR_SUBPROJECTS "python;matlab")
 
 ctest_start(${CTEST_MODEL} GROUP ${CTEST_GROUP})
 # ctest_submit(PARTS Notes)
