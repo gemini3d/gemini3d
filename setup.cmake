@@ -6,7 +6,7 @@ set(CTEST_MODEL "Experimental")
 set(CTEST_GROUP "GeminiCore")
 set(CTEST_SUBMIT_URL "https://my.cdash.org/submit.php?project=${CTEST_PROJECT_NAME}")
 
-set(CTEST_LABELS_FOR_SUBPROJECTS "unit;python;matlab")
+set(CTEST_LABELS_FOR_SUBPROJECTS "unit;core;python;matlab")
 
 # --- boilerplate follows
 set(CTEST_TEST_TIMEOUT 10)

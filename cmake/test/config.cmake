@@ -1,17 +1,17 @@
 include(${CMAKE_CURRENT_LIST_DIR}/compare.cmake)
 
 
-function(setup_gemini_test testname TIMEOUT)
+function(setup_gemini_test name TIMEOUT)
 
 # --- setup test
-set(outdir ${PROJECT_BINARY_DIR}/test${testname})
+set(outdir ${PROJECT_BINARY_DIR}/test${name})
 set(refroot ${PROJECT_SOURCE_DIR}/test_data)
-set(refdir ${refroot}/test${testname})
+set(refdir ${refroot}/test${name})
 
-add_test(NAME gemini:${testname}:setup
-  COMMAND ${CMAKE_COMMAND} -Dtestname=${testname} -Doutdir:PATH=${outdir} -Drefroot:PATH=${refroot} -P ${CMAKE_CURRENT_LIST_DIR}/download.cmake)
-set_tests_properties(gemini:${testname}:setup PROPERTIES
-  FIXTURES_SETUP ${testname}_setup
+add_test(NAME gemini:${name}:setup
+  COMMAND ${CMAKE_COMMAND} -Dtestname=${name} -Doutdir:PATH=${outdir} -Drefroot:PATH=${refroot} -P ${CMAKE_CURRENT_LIST_DIR}/download.cmake)
+set_tests_properties(gemini:${name}:setup PROPERTIES
+  FIXTURES_SETUP ${name}_setup
   FIXTURES_REQUIRED gemini_exe_fix
   LABELS setup
   TIMEOUT 180)
@@ -32,55 +32,55 @@ endif()
 
 if(hdf5)
 
-add_test(NAME gemini:hdf5:${testname}:dryrun
+add_test(NAME gemini:hdf5:${name}:dryrun
   COMMAND ${test_cmd} -dryrun)
 # we prefer default WorkingDirectory of PROJECT_BINARY_DIR to make MSIS 2.0 msis20.parm use simpler
 # otherwise, we have to generate source for msis_interface.f90
 
-set_tests_properties(gemini:hdf5:${testname}:dryrun PROPERTIES
+set_tests_properties(gemini:hdf5:${name}:dryrun PROPERTIES
   TIMEOUT 60
   RESOURCE_LOCK cpu_mpi
-  FIXTURES_REQUIRED ${testname}_setup
-  FIXTURES_SETUP hdf5:${testname}:dryrun
+  FIXTURES_REQUIRED ${name}_setup
+  FIXTURES_SETUP hdf5:${name}:dryrun
   REQUIRED_FILES ${outdir}/inputs/config.nml
   LABELS core)
 
 
-add_test(NAME gemini:hdf5:${testname} COMMAND ${test_cmd})
+add_test(NAME gemini:hdf5:${name} COMMAND ${test_cmd})
 
-set_tests_properties(gemini:hdf5:${testname} PROPERTIES
+set_tests_properties(gemini:hdf5:${name} PROPERTIES
   TIMEOUT ${TIMEOUT}
   RESOURCE_LOCK cpu_mpi
-  FIXTURES_REQUIRED hdf5:${testname}:dryrun
-  FIXTURES_SETUP hdf5:${testname}
+  FIXTURES_REQUIRED hdf5:${name}:dryrun
+  FIXTURES_SETUP hdf5:${name}
   LABELS core)
 
 endif(hdf5)
 
 
 if(netcdf)
-add_test(NAME gemini:netcdf:${testname}:dryrun
+add_test(NAME gemini:netcdf:${name}:dryrun
   COMMAND ${test_cmd} -out_format nc -dryrun)
 
-set_tests_properties(gemini:netcdf:${testname}:dryrun PROPERTIES
+set_tests_properties(gemini:netcdf:${name}:dryrun PROPERTIES
   TIMEOUT 60
   RESOURCE_LOCK cpu_mpi
-  FIXTURES_REQUIRED "mumps_fixture;${testname}_setup"
-  FIXTURES_SETUP netcdf:${testname}:dryrun
+  FIXTURES_REQUIRED "mumps_fixture;${name}_setup"
+  FIXTURES_SETUP netcdf:${name}:dryrun
   REQUIRED_FILES ${outdir}/inputs/config.nml
   LABELS core)
 
-add_test(NAME gemini:netcdf:${testname}
+add_test(NAME gemini:netcdf:${name}
   COMMAND ${test_cmd} -out_format nc)
 
-set_tests_properties(gemini:netcdf:${testname} PROPERTIES
+set_tests_properties(gemini:netcdf:${name} PROPERTIES
   TIMEOUT ${TIMEOUT}
   RESOURCE_LOCK cpu_mpi
-  FIXTURES_REQUIRED netcdf:${testname}:dryrun
-  FIXTURES_SETUP netcdf:${testname}
+  FIXTURES_REQUIRED netcdf:${name}:dryrun
+  FIXTURES_SETUP netcdf:${name}
   LABELS core)
 endif(netcdf)
 
-compare_gemini_output(${testname} ${outdir} ${refdir})
+compare_gemini_output(${name} ${outdir} ${refdir})
 
 endfunction(setup_gemini_test)
