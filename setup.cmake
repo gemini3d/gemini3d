@@ -1,33 +1,75 @@
-# run by:
-# ctest -S setup.cmake
+cmake_minimum_required(VERSION 3.17...3.20)
 
-# --- Project-specific -Doptions
-# these will be used if the project isn't already configured.
-set(_opts "-Dautobuild:BOOL=on")
-
+set(CTEST_PROJECT_NAME "Gemini3D")
+set(CTEST_NIGHTLY_START_TIME "01:00:00 UTC")
+set(CTEST_MODEL "Experimental")
+set(CTEST_GROUP "GeminiCore")
 
 # --- boilerplate follows
 set(CTEST_TEST_TIMEOUT 10)
+set(CTEST_OUTPUT_ON_FAILURE true)
 
-message(STATUS "CMake ${CMAKE_VERSION}")
-if(CMAKE_VERSION VERSION_LESS 3.15)
-  message(FATAL_ERROR "Please update CMake >= 3.15.
-    Try 'pip install -U cmake' or https://cmake.org/download/")
+set(CTEST_SOURCE_DIRECTORY ${CTEST_SCRIPT_DIRECTORY})
+if(NOT DEFINED CTEST_BINARY_DIRECTORY)
+  set(CTEST_BINARY_DIRECTORY ${CTEST_SOURCE_DIRECTORY}/build)
+endif()
+
+if(NOT DEFINED CTEST_BUILD_CONFIGURATION)
+  set(CTEST_BUILD_CONFIGURATION "Release")
+endif()
+
+if(NOT DEFINED CTEST_SITE)
+  if(DEFINED ENV{CTEST_SITE})
+    set(CTEST_SITE $ENV{CTEST_SITE})
+  else()
+    cmake_host_system_information(RESULT sys_name QUERY OS_NAME OS_RELEASE OS_VERSION)
+    string(REPLACE ";" " " sys_name ${sys_name})
+    set(CTEST_SITE ${sys_name})
+  endif()
+endif()
+
+if(NOT DEFINED CTEST_BUILD_NAME)
+  if(DEFINED ENV{CTEST_BUILD_NAME})
+    set(CTEST_BUILD_NAME $ENV{CTEST_BUILD_NAME})
+  else()
+    find_program(run_exe
+      NAMES gemini3d.run
+      HINTS ${GEMINI_ROOT} ENV GEMINI_ROOT
+      PATHS ${CTEST_BINARY_DIRECTORY}
+      DOC "Gemini3d.run Fortran front-end")
+    if(run_exe)
+      execute_process(COMMAND ${run_exe} -compiler_version
+        OUTPUT_VARIABLE _compiler_version
+        RESULT_VARIABLE _err
+        TIMEOUT 5
+        OUTPUT_STRIP_TRAILING_WHITESPACE)
+      if(_err EQUAL 0)
+        execute_process(COMMAND ${run_exe} -git
+          OUTPUT_VARIABLE _git_version
+          RESULT_VARIABLE _err
+          TIMEOUT 5
+          OUTPUT_STRIP_TRAILING_WHITESPACE)
+      endif()
+      if(_err EQUAL 0)
+        set(CTEST_BUILD_NAME "${_compiler_version}  ${_git_version}")
+      endif()
+    endif(run_exe)
+  endif()
 endif()
 
 # CTEST_CMAKE_GENERATOR must always be defined
-if(NOT DEFINED CTEST_CMAKE_GENERATOR AND CMAKE_VERSION VERSION_GREATER_EQUAL 3.17)
-  find_program(_gen NAMES ninja ninja-build samu)
-  if(_gen)
-    execute_process(COMMAND ${_gen} --version
-      OUTPUT_VARIABLE _ninja_version
+if(NOT DEFINED CTEST_CMAKE_GENERATOR)
+  find_program(ninja NAMES ninja ninja-build samu)
+  if(ninja)
+    execute_process(COMMAND ${ninja} --version
+      OUTPUT_VARIABLE ninja_version
       OUTPUT_STRIP_TRAILING_WHITESPACE
-      RESULT_VARIABLE _gen_ok
+      RESULT_VARIABLE err
       TIMEOUT 10)
-    if(_gen_ok EQUAL 0 AND _ninja_version VERSION_GREATER_EQUAL 1.10)
-      set(CTEST_CMAKE_GENERATOR "Ninja")
+    if(err EQUAL 0 AND ninja_version VERSION_GREATER_EQUAL 1.10)
+      set(CTEST_CMAKE_GENERATOR Ninja)
     endif()
-  endif(_gen)
+  endif(ninja)
 endif()
 if(NOT DEFINED CTEST_CMAKE_GENERATOR)
   set(CTEST_BUILD_FLAGS -j)  # not --parallel as this goes to generator directly
@@ -38,72 +80,51 @@ if(NOT DEFINED CTEST_CMAKE_GENERATOR)
   endif()
 endif()
 
-# site is OS name
-if(NOT DEFINED CTEST_SITE)
-  set(CTEST_SITE ${CMAKE_SYSTEM_NAME})
-endif()
-
-# parallel test--use ctest_test(PARALLEL_LEVEL ${Ncpu} as setting CTEST_PARALLEL_LEVEL has no effect
+# --- test parallelism is used for setup and plotting
 include(ProcessorCount)
-ProcessorCount(Ncpu)
-message(STATUS "${Ncpu} CPU cores detected")
 
-if(NOT DEFINED CTEST_BUILD_CONFIGURATION)
-  set(CTEST_BUILD_CONFIGURATION "Release")
-endif()
+function(cmake_cpu_count)
+  # on ARM e.g. Raspberry Pi, the usually reliable cmake_host_system_info gives 1 instead of true count
+  # fallback to less reliable ProcessorCount which does work on Raspberry Pi.
+  ProcessorCount(_ncount)
+  cmake_host_system_information(RESULT Ncpu QUERY NUMBER_OF_PHYSICAL_CORES)
 
-set(CTEST_SOURCE_DIRECTORY ${CMAKE_CURRENT_LIST_DIR})
-if(NOT DEFINED CTEST_BINARY_DIRECTORY)
-  set(CTEST_BINARY_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/build)
-endif()
+  if(Ncpu EQUAL 1 AND _ncount GREATER 0)
+    set(Ncpu ${_ncount})
+  endif()
 
-# -- build and test
-ctest_start("Experimental" ${CTEST_SOURCE_DIRECTORY} ${CTEST_BINARY_DIRECTORY})
+  set(Ncpu ${Ncpu} PARENT_SCOPE)
+
+endfunction(cmake_cpu_count)
+cmake_cpu_count()
+
+# --- CTest Dashboard
+
+set(CTEST_NOTES_FILES "${CTEST_SCRIPT_DIRECTORY}/${CTEST_SCRIPT_NAME}")
+set(CTEST_SUBMIT_URL "https://my.cdash.org/submit.php?project=Gemini3D")
+set(CTEST_SUBMIT_RETRY_COUNT 3)
+set(CTEST_LABELS_FOR_SUBPROJECTS "python;matlab")
+
+ctest_start(${CTEST_MODEL} GROUP ${CTEST_GROUP})
+# ctest_submit(PARTS Notes)
 
 ctest_configure(
-  BUILD ${CTEST_BINARY_DIRECTORY}
-  SOURCE ${CTEST_SOURCE_DIRECTORY}
-  OPTIONS "${_opts}"
-  RETURN_VALUE return_code
-  CAPTURE_CMAKE_ERROR cmake_err)
-
-# if it's a generator or compiler mismatch, delete cache and try again
-if(NOT cmake_err EQUAL 0)
-  file(REMOVE ${CTEST_BINARY_DIRECTORY}/CMakeCache.txt)
-
-  ctest_configure(
-    BUILD ${CTEST_BINARY_DIRECTORY}
-    SOURCE ${CTEST_SOURCE_DIRECTORY}
-    OPTIONS "${_opts}"
-    RETURN_VALUE return_code
-    CAPTURE_CMAKE_ERROR cmake_err)
+  RETURN_VALUE _ret
+  CAPTURE_CMAKE_ERROR _err)
+ctest_submit(PARTS Configure)
+if(NOT (_ret EQUAL 0 AND _err EQUAL 0))
+  message(FATAL_ERROR "Configure failed.")
 endif()
 
-if(return_code EQUAL 0 AND cmake_err EQUAL 0)
-  ctest_build(
-    BUILD ${CTEST_BINARY_DIRECTORY}
-    CONFIGURATION ${CTEST_BUILD_CONFIGURATION}
-    RETURN_VALUE return_code
-    NUMBER_ERRORS Nerror
-    CAPTURE_CMAKE_ERROR cmake_err
-    )
-else()
-  message(STATUS "SKIP: ctest_build(): returncode: ${return_code}; CMake error code: ${cmake_err}")
+ctest_build(
+  RETURN_VALUE _ret
+  CAPTURE_CMAKE_ERROR _err)
+ctest_submit(PARTS Build)
+if(NOT (_ret EQUAL 0 AND _err EQUAL 0))
+  message(FATAL_ERROR "Build failed.")
 endif()
 
-if(return_code EQUAL 0 AND Nerror EQUAL 0 AND cmake_err EQUAL 0)
-  ctest_test(
-  BUILD ${CTEST_BINARY_DIRECTORY}
-  RETURN_VALUE return_code
-  CAPTURE_CMAKE_ERROR ctest_err
-  PARALLEL_LEVEL ${Ncpu}
-  )
-else()
-  message(STATUS "SKIP: ctest_test(): returncode: ${return_code}; CMake error code: ${cmake_err}")
-endif()
+ctest_test(PARALLEL_LEVEL ${Ncpu})
+ctest_submit(PARTS Test)
 
-ctest_submit()
-
-if(NOT (return_code EQUAL 0 AND Nerror EQUAL 0 AND cmake_err EQUAL 0 AND ctest_err EQUAL 0))
-  message(FATAL_ERROR "Build and test failed.")
-endif()
+ctest_submit(PARTS Done)
