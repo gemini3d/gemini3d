@@ -17,6 +17,6 @@ target_link_libraries(MPI::MPI_C INTERFACE mpi_c_stub)
 add_library(MPI::MPI_Fortran INTERFACE IMPORTED GLOBAL)
 target_link_libraries(MPI::MPI_Fortran INTERFACE mpi_f_stub)
 
-# add_library(mpi_f_legacy mpi_legacy.f90)  # use MUMPS::mpiseq to avoid symbol clashes
+# add_library(mpi_f_legacy mpi_legacy.f90)  # use MUMPS::MPISEQ to avoid symbol clashes
 
 add_library(scalapack scalapack.f90 blacs.f90)

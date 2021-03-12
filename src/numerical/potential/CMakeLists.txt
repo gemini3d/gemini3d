@@ -25,8 +25,6 @@ if(hdf5 AND ${PROJECT_NAME}_BUILD_TESTING)
 set(_potential_testfile ${CMAKE_CURRENT_BINARY_DIR}/test_potential2d.h5)
 
 add_executable(test_potential2d test_potential2D.f90)
-target_link_libraries(test_potential2d PRIVATE PDEelliptic const h5fortran::h5fortran
-  MUMPS::MUMPS LAPACK::LAPACK MPI::MPI_Fortran)
 set_target_properties(test_potential2d PROPERTIES LABELS unit)
 # MPI_C is needed here, else will not compile on MinGW with Ninja or Make.
 # LINK_INTERFACE_MULTIPLICITY and IMPORTED_LINK_INTERFACE_MULTIPLICITY do not help here.
@@ -34,15 +32,16 @@ set_target_properties(test_potential2d PROPERTIES LABELS unit)
 # nor did adding them in mumps.cmake
 # it seems to have to be right here.
 if(mpi)
-  target_link_libraries(test_potential2d PRIVATE SCALAPACK::SCALAPACK)
+  target_link_libraries(test_potential2d PRIVATE PDEelliptic const h5fortran::h5fortran
+    MUMPS::MUMPS SCALAPACK::SCALAPACK LAPACK::LAPACK MPI::MPI_Fortran)
 
   add_test(NAME unit:potential2
     COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${Ncpu} $<TARGET_FILE:test_potential2d> ${_potential_testfile})
 else()
-
+  target_link_libraries(test_potential2d PRIVATE PDEelliptic const h5fortran::h5fortran
+    MUMPS::MUMPS LAPACK::LAPACK MPI::MPI_Fortran MUMPS::MPISEQ)
   # the reason for this is the MPI-1 Fortran 77 linking in MUMPS
   # this seemed to be an easy way to avoid symbol clashes
-  target_link_libraries(test_potential2d PRIVATE MUMPS::mpiseq)
 
   add_test(NAME unit:potential2
     COMMAND $<TARGET_FILE:test_potential2d> ${_potential_testfile})

@@ -7,7 +7,7 @@
 "hwm14": {"git": "https://github.com/space-physics/hwm14.git", "tag": "cade327803fbfe2c76942bccd842ec5afdcb3541"},
 "msis2": {"zip": "https://map.nrl.navy.mil/map/pub/nrl/NRLMSIS/NRLMSIS2.0/NRLMSIS2.0.zip", "sha1": "fa817dfee637ec2298a6ec882345d13d0b087a85"},
 
-"mumps": {"git": "https://github.com/scivision/mumps.git", "tag": "v5.3.5.7"},
+"mumps": {"git": "https://github.com/scivision/mumps.git", "tag": "v5.3.5.8"},
 "scalapack": {"git": "https://github.com/scivision/scalapack.git", "tag": "v2.1.0.18"},
 "lapack": {"git": "https://github.com/scivision/lapack.git", "tag": "v3.9.0.5"},
 

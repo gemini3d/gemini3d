@@ -61,8 +61,3 @@ elseif(NOT mumps_POPULATED)
   FetchContent_Populate(MUMPS)
   add_subdirectory(${mumps_SOURCE_DIR} ${mumps_BINARY_DIR})
 endif()
-
-if(NOT mpi)
-  add_library(MUMPS::mpiseq INTERFACE IMPORTED)
-  target_link_libraries(MUMPS::mpiseq INTERFACE mpiseq)
-endif()

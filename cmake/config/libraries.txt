@@ -14,7 +14,7 @@ msis2_git https://map.nrl.navy.mil/map/pub/nrl/NRLMSIS/NRLMSIS2.0/NRLMSIS2.0.zip
 msis2_sha1 fa817dfee637ec2298a6ec882345d13d0b087a85
 
 mumps_git https://github.com/scivision/mumps.git
-mumps_tag v5.3.5.7
+mumps_tag v5.3.5.8
 
 nc4fortran_git https://github.com/geospace-code/nc4fortran.git
 nc4fortran_tag v1.2.2

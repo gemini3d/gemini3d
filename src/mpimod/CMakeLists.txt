@@ -17,7 +17,7 @@ target_link_libraries(mpimod PRIVATE const MPI::MPI_Fortran)
 if(NOT mpi)
   # the reason for this is the MPI-1 Fortran 77 linking in MUMPS
   # this seemed to be an easy way to avoid symbol clashes
-  target_link_libraries(mpimod PRIVATE MUMPS::mpiseq)
+  target_link_libraries(mpimod PRIVATE MUMPS::MPISEQ)
 endif()
 
 set_targ_props(autogrid mpimod)
