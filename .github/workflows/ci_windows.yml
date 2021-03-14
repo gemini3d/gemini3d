@@ -1,6 +1,7 @@
 name: ci_windows
 env:
   CMAKE_GENERATOR: Ninja
+  CTEST_SITE: GitHub_Windows
 
 on:
   push:
@@ -31,16 +32,6 @@ jobs:
 
     - uses: actions/checkout@v2
 
-    - run: cmake --preset=ninja
-      timeout-minutes: 2
-
-    - run: cmake --build build --parallel
-      timeout-minutes: 5
-
-    - run: ctest -R unit --parallel 2 --output-on-failure
-      working-directory: build
-      timeout-minutes: 3
-
-    - run: ctest -R 2dew_fang --parallel 2 --output-on-failure
-      working-directory: build
-      timeout-minutes: 5
+    - name: CDash
+      run: ctest -S ci.cmake -V -E 3d
+      timeout-minutes: 20

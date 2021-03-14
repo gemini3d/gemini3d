@@ -1,6 +1,7 @@
 name: ci_macos
 env:
   HOMEBREW_NO_INSTALL_CLEANUP: 1
+  CTEST_SITE: GitHub_MacOS
 
 on:
   push:
@@ -17,17 +18,13 @@ jobs:
     - uses: actions/checkout@v2
 
     - run: cmake -P scripts/install_prereq.cmake
-      timeout-minutes: 5
-      # transient CI download speed
+      timeout-minutes: 10
 
 # CI is too slow for 3d_glow
-    - run: cmake --preset=gcc10
-      timeout-minutes: 5
-      # mac is slower to configure
-
-    - run: cmake --build build --parallel
-      timeout-minutes: 5
-
-    - run: ctest -E 3d --parallel 2 --output-on-failure
-      working-directory: build
-      timeout-minutes: 5
+    - name: CDash
+      run: ctest -S ci.cmake -V -E 3d
+      timeout-minutes: 15
+      env:
+        CC: gcc-10
+        CXX: g++-10
+        FC: gfortran-10
