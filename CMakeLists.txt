@@ -32,6 +32,9 @@ include(cmake/ext_libs/mumps.cmake)
 include(cmake/compilers/flags.cmake)
 # this comes last to avoid intermittent failures
 
+# utility
+include(cmake/SetTargProps.cmake)
+
 # all Gemini3D source code under this
 add_subdirectory(src)
 

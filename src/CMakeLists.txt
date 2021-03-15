@@ -1,15 +1,3 @@
-function(set_targ_props)
-
-foreach(t ${ARGV})
-  target_include_directories(${t} INTERFACE
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
-  $<INSTALL_INTERFACE:include>)
-  set_target_properties(${t} PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include)
-endforeach()
-
-endfunction(set_targ_props)
-
-
 add_subdirectory(unit_tests)
 
 # --- MSISE00 or MSIS 2.0
@@ -53,7 +41,7 @@ set_target_properties(gemini.bin PROPERTIES
   RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
 target_link_libraries(gemini.bin PRIVATE advec calculus helpmod config const collision diffusion fang grid io interp ionization gbsv mesh mpimod
   msis_ifc multifluid
-  neutral pathlib PDEparabolic precipBCs reader sanity_check errors sources temporal timeutils)
+  neutral pathlib PDEparabolic potential precipBCs reader sanity_check errors sources temporal timeutils)
 if(mpi)
   # Note: CMake 3.13 needs MPI linked here explicity to gemini.bin on any OS
   # put libs all in order or you'll get linking error on certain platforms like linux
