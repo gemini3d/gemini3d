@@ -2,13 +2,12 @@
 include(FetchContent)
 
 if(hdf5)
-  set(h5fortran_BUILD_TESTING false CACHE BOOL "h5fortran no test")
-
   find_package(h5fortran CONFIG)
   if(h5fortran_FOUND)
-    find_package(HDF5 COMPONENTS Fortran REQUIRED)
     return()
   endif()
+
+  set(h5fortran_BUILD_TESTING false CACHE BOOL "h5fortran no test")
 
   FetchContent_Declare(H5FORTRAN
     GIT_REPOSITORY ${h5fortran_git}

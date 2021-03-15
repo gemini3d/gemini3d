@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.13...3.20)
 
-file(STRINGS cmake/config/gemini_version.txt PROJECT_VERSION
+file(STRINGS ${CMAKE_CURRENT_SOURCE_DIR}/VERSION PROJECT_VERSION
   REGEX "^([0-9]+\.[0-9]+\.[0-9]+)" LIMIT_INPUT 16 LENGTH_MAXIMUM 16 LIMIT_COUNT 1)
 
 project(gemini3d
