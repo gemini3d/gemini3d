@@ -67,8 +67,6 @@ do i = 2, argc
   case ('-mpiexec')
     call get_command_argument(i+1, buf)
     mpiexec = trim(buf)
-    inquire(file=mpiexec, exist=exists)
-    if(.not.exists) error stop mpiexec // ' is not a file.'
   case ('-dryrun')
     extra = '-dryrun'
   case ('-plan')
@@ -107,7 +105,22 @@ endif
 inquire(file=gem_exe, exist=exists)
 if(.not. exists) error stop "please specify path to gemini.bin with '-gemexe path/to/gemini.bin'"
 
-if(.not.allocated(mpiexec)) mpiexec = 'mpiexec'
+!> check MPIexec
+if(.not.allocated(mpiexec)) then
+  call get_environment_variable("MPI_ROOT", buf, status=i)
+  if (i==0) mpiexec = trim(buf) // "/bin/mpiexec"
+endif
+exists = .false.
+buf = ""
+if(allocated(mpiexec)) then
+  inquire(file=mpiexec, exist=exists)
+  buf = mpiexec
+endif
+if(.not.exists) then
+  write(stderr,"(A)") "WARNING: MPIexec file not found " // trim(buf)
+  write(stderr,"(A)") "If simulation hangs or operates incorrectly, specify -mpiexec option or set MPI_ROOT environment variable."
+  mpiexec = "mpiexec"
+endif
 
 if(.not.allocated(extra)) extra = ''
 
