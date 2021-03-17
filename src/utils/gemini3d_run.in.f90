@@ -45,12 +45,27 @@ if(buf(1:1) == '-') then
   stop
 endif
 
+!> manage CPU count
 Ncpu = get_cpu_count()
 
 @apple_m1_workaround@
 
-print '(A,I0)', 'gemini3d.run: detected CPU count: ', Ncpu
+call get_environment_variable("NSLOTS", buf, status=i)
+if (i==0) then
+  read(buf,'(I6)', iostat=i) Ncpu
+  if (i==0) print '(A,I0)', "gemini3d.run: SGE CPU job count: ", Ncpu
+endif
+if(i/=0) then
+  call get_environment_variable("SLURM_NTASKS", buf, status=i)
+  if(i==0) then
+    read(buf, '(I6)', iostat=i) Ncpu
+    if(i==0) print '(A,I0)', "gemini3d.run: SLURM CPU job count: ", Ncpu
+  endif
+endif
+if (i/=0) print '(A,I0)', 'gemini3d.run: detected CPU count: ', Ncpu
 
+!> simulation data directory
+call get_command_argument(1, buf)
 path = trim(buf)
 
 do i = 2, argc
