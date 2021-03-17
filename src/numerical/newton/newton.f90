@@ -28,10 +28,8 @@ end abstract interface
 
 contains
 
-!> this implmements the exact Newton method for solving a nonlinear equation
-subroutine newton_exact(f,fprime,x0,parms,newtparms,root,it,converged)
-  procedure(objfun), pointer :: f
-  procedure(objfun_deriv), pointer :: fprime
+subroutine newton_exact(f,fprime,x0,parms,newtparms)
+  procedure(), pointer :: f,fprime    ! FIXME:  good form to declare procedure interface here???
   real(wp) :: x0                      ! starting point for newton iteration
   real(wp),dimension(:) :: parms      ! fixed parameters of the newton iteration, f,fprime must accommodate whatever size array is passed in
   type(newtopts) :: newtparms         ! options for the iteration that can be set by the user
