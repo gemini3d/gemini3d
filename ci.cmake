@@ -45,7 +45,8 @@ if(NOT DEFINED CTEST_BINARY_DIRECTORY)
 endif()
 
 if(NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE RelWithDebInfo)
+  # RelWithDebInfo -O2, Release -O3
+  set(CMAKE_BUILD_TYPE Release)
 endif()
 list(APPEND opts -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE})
 
