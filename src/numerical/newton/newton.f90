@@ -11,20 +11,21 @@ type newtopts
   logical :: verbose=.false.
 end type newtopts
 
+!> these interfaced define the types of functions needed to run Newton iterations
+!   need to match custom functions defined in using modules
 abstract interface
   function objfun(x,parms)
-    real(wp) :: x
-    real(wp), dimension(:) :: parms
+    real(wp), intent(in) :: x
+    real(wp), dimension(:), intent(in) :: parms
   end function objfun
 end abstract interface
 
 abstract interface
   function objfun_deriv(x,parms)
-    real(wp) :: x
-    real(wp), dimension(:) :: parms
+    real(wp), intent(:) :: x
+    real(wp), dimension(:), intent(in) :: parms
   end function objfun_deriv
 end abstract interface
-
 
 contains
 
