@@ -59,8 +59,14 @@ COMMAND $<TARGET_FILE:gemini3d.compare> ${outdir} ${refdir})
 set_tests_properties(gemini:compare:hdf5:${name} PROPERTIES
 TIMEOUT 60
 FIXTURES_REQUIRED hdf5:${name}
+RESOURCE_LOCK cpu_mpi
 REQUIRED_FILES "${outdir}/inputs/config.nml;${refdir}/inputs/config.nml"
 LABELS compare)
+
+# resource_lock compare for Windows, which can take 100x longer when run
+# at same time with non-dependent sim runs.
+# it's not a problem to run multiple compare at once, but it is a problem
+# to run gemini3d.compare at same time as gemini.bin, on differet sims
 
 endif(hdf5)
 
