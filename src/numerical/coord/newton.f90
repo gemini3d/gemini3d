@@ -1,7 +1,8 @@
 module newton
 
 !> uses
-use phys_consts, only : wp
+!use phys_consts, only : wp
+integer, parameter :: wp=selected_real_kind(15)
 
 !> a structure def. for containing the options for the newton method procedure
 type newtopts
@@ -14,15 +15,15 @@ end type newtopts
 !> these interfaced define the types of functions needed to run Newton iterations
 !   need to match custom functions defined in using modules
 abstract interface
-  function objfun(x,parms)
+  real(wp) function objfun(x,parms) result(fval)
     real(wp), intent(in) :: x
     real(wp), dimension(:), intent(in) :: parms
   end function objfun
 end abstract interface
 
 abstract interface
-  function objfun_deriv(x,parms)
-    real(wp), intent(:) :: x
+  real(wp) function objfun_deriv(x,parms) result(fprimeval)
+    real(wp), intent(in) :: x
     real(wp), dimension(:), intent(in) :: parms
   end function objfun_deriv
 end abstract interface
@@ -65,7 +66,6 @@ subroutine newton_exact(f,fprime,x0,parms,newtparms,root,it,converged)
     end if
   end do
   it=it-1
-  return
 
 end subroutine newton_exact
 
