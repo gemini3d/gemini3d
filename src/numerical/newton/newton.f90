@@ -1,6 +1,9 @@
 module newton
 
-!> a structure for containing the options for the newton method procedure
+!> uses
+use phys_consts, only : wp
+
+!> a structure def. for containing the options for the newton method procedure
 type newtopts
   real(wp) :: derivtol=1e-18
   integer :: maxit=100
@@ -8,11 +11,27 @@ type newtopts
   logical :: verbose=.false.
 end type newtopts
 
+abstract interface
+  function objfun(x,parms)
+    real(wp) :: x
+    real(wp), dimension(:) :: parms
+  end function objfun
+end abstract interface
+
+abstract interface
+  function objfun_deriv(x,parms)
+    real(wp) :: x
+    real(wp), dimension(:) :: parms
+  end function objfun_deriv
+end abstract interface
+
+
 contains
 
 !> this implmements the exact Newton method for solving a nonlinear equation
 subroutine newton_exact(f,fprime,x0,parms,newtparms,root,it,converged)
-  procedure(), pointer :: f,fprime    ! FIXME:  good form to declare procedure interface here???
+  procedure(objfun), pointer :: f
+  procedure(objfun_deriv), pointer :: fprime
   real(wp) :: x0                      ! starting point for newton iteration
   real(wp),dimension(:) :: parms      ! fixed parameters of the newton iteration, f,fprime must accommodate whatever size array is passed in
   type(newtopts) :: newtparms         ! options for the iteration that can be set by the user
