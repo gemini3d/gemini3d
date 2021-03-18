@@ -1,11 +1,14 @@
 module newton
 
 !> uses
+use, intrinsic :: ISO_Fortran_env,  only : wp=>real64
 !use phys_consts, only : wp
-integer, parameter :: wp=selected_real_kind(15)
 
-!> a structure def. for containing the options for the newton method procedure
-type newtopts
+implicit none (type, external)
+
+
+!> a structure def. for containing the options for the newton method procedure, by default these work okay with dipole grids
+type :: newtopts
   real(wp) :: derivtol=1e-18
   integer :: maxit=100
   real(wp) :: tol=1e-9
@@ -14,51 +17,53 @@ end type newtopts
 
 !> these interfaced define the types of functions needed to run Newton iterations
 !   need to match custom functions defined in using modules
-abstract interface
-  real(wp) function objfun(x,parms) result(fval)
+interface
+  real(wp) module function objfun(x,parms)
     real(wp), intent(in) :: x
     real(wp), dimension(:), intent(in) :: parms
   end function objfun
-end abstract interface
-
-abstract interface
-  real(wp) function objfun_deriv(x,parms) result(fprimeval)
+end interface
+interface
+  real(wp) module function objfun_deriv(x,parms)
     real(wp), intent(in) :: x
     real(wp), dimension(:), intent(in) :: parms
   end function objfun_deriv
-end abstract interface
+end interface
 
 contains
 
 !> this implmements the exact Newton method for solving a nonlinear equation
 subroutine newton_exact(f,fprime,x0,parms,newtparms,root,it,converged)
-  procedure(objfun), pointer :: f
-  procedure(objfun_deriv), pointer :: fprime
-  real(wp) :: x0                      ! starting point for newton iteration
-  real(wp),dimension(:) :: parms      ! fixed parameters of the newton iteration, f,fprime must accommodate whatever size array is passed in
-  type(newtopts) :: newtparms         ! options for the iteration that can be set by the user
-  integer :: it=0
-  logical :: converged=.false.
-  real(wp) :: derivative
+  procedure(objfun), pointer, intent(in) :: f
+  procedure(objfun_deriv), pointer, intent(in) :: fprime
+  real(wp), intent(in) :: x0                      ! starting point for newton iteration
+  real(wp),dimension(:), intent(in) :: parms      ! fixed parameters of the newton iteration, f,fprime must accommodate whatever size array is passed in
+  type(newtopts), intent(in) :: newtparms         ! options for the iteration that can be set by the user
+  real(wp), intent(out) :: root
+  integer, intent(out) :: it
+  logical, intent(out) :: converged
+
+  real(wp) :: fval,derivative
 
 
   ! check starting point is not too close to inflection
-  if (abs(fprime(x0,parms))<newtparm%dervitol) then
+  if (abs(fprime(x0,parms))<newtparms%derivtol) then
     print*, 'Warning:  starting near inflection point, please change initial guess!'
+    it=0; converged=.false.; root=x0;
     return
   end if
 
   ! Newton iteration main loop
-  it=1; root=c0; fval=f(root,parms);
+  it=1; root=x0; fval=f(root,parms);
   do while (.not. converged .and. it <= newtparms%maxit)
     derivative=fprime(root,parms)
-    if (abs(derivative)<newtparm%dervitol) then
+    if (abs(derivative)<newtparms%derivtol) then
       print*, 'Warning:  Encountered inflection point during iteration:  ',it
       return
     else
       root=root-fval/derivative
       fval=f(root,parms)
-      if (verbose) then
+      if (newtparms%verbose) then
         print*, ' Iteration ',it,'; root ',root,' fval ',fval,' derivative ',derivative
       end if
       it=it+1
