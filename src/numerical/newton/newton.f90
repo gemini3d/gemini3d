@@ -35,7 +35,6 @@ subroutine newton_exact(f,fprime,x0,parms,newtparms,root,it,converged)
   real(wp) :: x0                      ! starting point for newton iteration
   real(wp),dimension(:) :: parms      ! fixed parameters of the newton iteration, f,fprime must accommodate whatever size array is passed in
   type(newtopts) :: newtparms         ! options for the iteration that can be set by the user
-
   integer :: it=0
   logical :: converged=.false.
   real(wp) :: derivative
