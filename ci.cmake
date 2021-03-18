@@ -130,17 +130,20 @@ include(ProcessorCount)
 function(cmake_cpu_count)
   # on ARM e.g. Raspberry Pi, the usually reliable cmake_host_system_info gives 1 instead of true count
   # fallback to less reliable ProcessorCount which does work on Raspberry Pi.
-  ProcessorCount(_ncount)
-  cmake_host_system_information(RESULT Ncpu QUERY NUMBER_OF_PHYSICAL_CORES)
 
-  if(Ncpu EQUAL 1 AND _ncount GREATER 0)
-    set(Ncpu ${_ncount})
-  endif()
+ProcessorCount(_ncount)
+cmake_host_system_information(RESULT Ncpu QUERY NUMBER_OF_PHYSICAL_CORES)
 
-  set(Ncpu ${Ncpu} PARENT_SCOPE)
+if(Ncpu EQUAL 1 AND _ncount GREATER 0)
+  set(Ncpu ${_ncount})
+endif()
+
+set(Ncpu ${Ncpu} PARENT_SCOPE)
 
 endfunction(cmake_cpu_count)
+
 cmake_cpu_count()
+message(STATUS "Ncpu = ${Ncpu}")
 
 # --- CTest Dashboard
 
@@ -179,7 +182,7 @@ ctest_configure(
   CAPTURE_CMAKE_ERROR _err)
 ctest_submit(PARTS Configure)
 if(NOT (_ret EQUAL 0 AND _err EQUAL 0))
-  message(FATAL_ERROR "Configure failed.")
+  message(FATAL_ERROR "Configure failed: return ${_ret} cmake return ${_err}")
 endif()
 
 ctest_build(
@@ -193,13 +196,10 @@ endif()
 ctest_test(
   # set PARALLEL_LEVEL here as the global option seems to be ignored
   PARALLEL_LEVEL ${Ncpu}
-  # specify BUILD to avoid random return 255 despite tests passing
-  BUILD ${CTEST_BINARY_DIRECTORY}
   SCHEDULE_RANDOM ON
-  REPEAT UNTIL_PASS:3
+  REPEAT UNTIL_PASS:2
   RETURN_VALUE _ret
-  CAPTURE_CMAKE_ERROR _err
-  )
+  CAPTURE_CMAKE_ERROR _err)
 ctest_submit(PARTS Test)
 
 ctest_submit(
