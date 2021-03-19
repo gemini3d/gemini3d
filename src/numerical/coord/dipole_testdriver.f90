@@ -16,5 +16,8 @@ p=1.2790947
 rcorrect=6803179.761800971
 thetacorrect=1.9891332403471418
 call qp2rtheta(q,p,r,theta)
+print*, 'solution:  r=',r,'; theta=',theta
+print*, 'matlab solution:  r=',rcorrect,'; theta=',thetacorrect
+
 
 end program testdriver
