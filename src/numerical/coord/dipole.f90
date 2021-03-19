@@ -16,8 +16,7 @@ real(wp), parameter :: pi=3.141592
 real(wp), private, parameter :: thetan=11*pi/180
 real(wp), private, parameter :: phin=289*pi/180
 
-! print output
-logical :: verbose=.true.
+type(newtopts), public :: newtparms
 
 contains
 
@@ -30,7 +29,6 @@ subroutine qp2rtheta(q,p,r,theta)
   procedure(objfun), pointer :: f
   procedure(objfun_deriv), pointer :: fprime
   integer :: maxrestart, maxr, r0step
-  type(newtopts) :: newtparms
   integer :: it,ir0
   logical :: converged
 
@@ -42,7 +40,7 @@ subroutine qp2rtheta(q,p,r,theta)
   newtparms%maxit=100
   newtparms%derivtol=1e-18
   newtparms%tol=1e-11
-  newtparms%verbose=.true.
+  newtparms%verbose=.false.
   f=>rpoly
   fprime=>rpoly_deriv
   parms=[q,p]
@@ -54,6 +52,8 @@ subroutine qp2rtheta(q,p,r,theta)
     call newton_exact(f,fprime,r0,parms,newtparms,r,it,converged)
     ir0=ir0+1
   end do
+
+  ! Once we have r can algebraically solve for theta
   theta=qr2theta(q,r)
 
 end subroutine qp2rtheta
