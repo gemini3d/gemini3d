@@ -39,7 +39,7 @@ subroutine qp2rtheta(q,p,r,theta)
   r0step=0.25*Re
   newtparms%maxit=100
   newtparms%derivtol=1e-18
-  newtparms%tol=1e-9
+  newtparms%tol=1e-11
   newtparms%verbose=.false.
   f=>rpoly
   fprime=>rpoly_deriv
@@ -81,6 +81,9 @@ real(wp) function rpoly_deriv(x,parms) result(fval_deriv)
   q=parms(1); p=parms(2);
   fval_deriv=4/Re*q**2*(x/Re)**3 + 1/p/Re
 end function rpoly_deriv
+
+
+elemental real(wp) func
 
 
 end module dipole
