@@ -3,9 +3,9 @@ module dipole
 !> Contains data and subroutines for converting between dipole coordinates and other coordinate systems
 
 ! uses
-use newton, only : newton_exact,objfun,objfun_deriv
+use, intrinsic :: ISO_Fortran_env,  only : wp=>real64
+use newton, only : newtopts,newton_exact,objfun,objfun_deriv
 ! use phys_consts, only : wp,Re,pi
-integer, parameter :: wp=8
 real(wp), parameter :: Re=6370e3
 real(wp), parameter :: pi=3.141592
 
@@ -14,16 +14,49 @@ real(wp), parameter :: pi=3.141592
 real(wp), private, parameter :: thetan=11*pi/180
 real(wp), private, parameter :: phin=289*pi/180
 
-!! procedure declarations
-!module procedure(objfun) :: rpoly
-!module procedure(objfun_derv) :: rpoly_deriv
+!! procedure declarations needed???
+interface
+  module procedure(objfun) :: rpoly
+end interface
+interface
+  module procedure(objfun_derv) :: rpoly_deriv
+end interface
 
 contains
-
 
 subroutine qp2rtheta(q,p,r,theta)
   real(wp), intent(in) :: q,p
   real(wp), intent(out) :: r,theta
+
+  real(wp), dimension(2) :: parms
+  real(wp) :: r0
+  procedure(objfun), pointer :: f
+  procedure(objfun_deriv), pointer :: fprime
+  integer :: maxrestart, maxr, r0step
+  type(newtopts) :: newtparms
+  integer :: it
+  logical :: converged
+
+
+  ! Set parameters of the restart and Newton iterations
+  maxrestart=400
+  maxr=100*Re
+  r0step=0.25*Re
+  newtparms%maxit=100
+  newtparms%derivtol=1e-18
+  newtparms%tol=1e-9
+  newtparms%verbose=.false.
+  f=>rpoly
+  fprime=>rpoly_deriv
+  parms=[q,p]
+
+  ! Newton iterations with restarting (see parameters above for limits) until we get a satisfactory result
+  r=0; converged=.false.; ir0=1;
+  do while (.not. converged .and. ir0<maxrestart .and. (r<=0 .or. r>maxr))
+    r0=(ir0-1)*(r0step)    ! change starting point in increments of 0.25 Re until we get a "good" answer
+    call newton_exact(f,fprime,r0,parms,newtparms,root,it,converged)
+    ir0=ir0+1
+  end do
 
 end subroutine qp2rtheta
 
@@ -35,27 +68,23 @@ elemental real(8) function qr2theta(q,r) result(theta)
 end function qr2theta
 
 
-subroutine rtheta2qp(r,theta,q,p)
-  real(wp), intent(in) :: r,theta
-  real(wp), intent(out) :: q,p
+!subroutine rtheta2qp(r,theta,q,p)
+!  real(wp), intent(in) :: r,theta
+!  real(wp), intent(out) :: q,p
+!
+!
+!end subroutine rtheta2qp
 
 
-end subroutine rtheta2qp
-
-
-module procedure(objfun) rpoly
-  real(wp) :: q,p
-
+module procedure rpoly
   q=parms(1); p=parms(2);
-  fval=q**2*(r/Re)**4 + 1/p*(r/Re) - 1
+  fval=q**2*(x/Re)**4 + 1/p*(x/Re) - 1
 end procedure rpoly
 
 
-module procedure(objfun_deriv) rpoly_deriv
-  real(wp) :: q,p
-
+module procedure rpoly_deriv
   q=parms(1); p=parms(2);
-  fprimeval=4/Re*q**2*(r/Re)**3 + 1/p/Re
+  fprimeval=4/Re*q**2*(x/Re)**3 + 1/p/Re
 end procedure rpoly_deriv
 
 

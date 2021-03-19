@@ -17,14 +17,14 @@ end type newtopts
 
 !> these interfaced define the types of functions needed to run Newton iterations
 !   need to match custom functions defined in using modules
-interface
-  real(wp) module function objfun(x,parms)
+abstract interface
+  real(wp) module function objfun(x,parms) result(fval)
     real(wp), intent(in) :: x
     real(wp), dimension(:), intent(in) :: parms
   end function objfun
 end interface
-interface
-  real(wp) module function objfun_deriv(x,parms)
+abstract interface
+  real(wp) module function objfun_deriv(x,parms) result(fval_deriv)
     real(wp), intent(in) :: x
     real(wp), dimension(:), intent(in) :: parms
   end function objfun_deriv
