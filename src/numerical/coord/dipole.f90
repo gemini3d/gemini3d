@@ -16,19 +16,6 @@ real(wp), parameter :: pi=3.141592
 real(wp), private, parameter :: thetan=11*pi/180
 real(wp), private, parameter :: phin=289*pi/180
 
-!! procedure declarations needed???
-!interface
-!  real(wp) module procedure(objfun) :: rpoly(x,parms) result(fval)
-!    real(wp), intent(in) :: x
-!    real(wp), dimension(:), intent(in) :: parms
-!  end procedure rpoly
-!end interface
-!interface
-!  real(wp) module procedure(objfun_derv) :: rpoly_deriv(x,parms) result(fval_deriv)
-!    real(wp), intent(in) :: x
-!    real(wp), dimension(:), intent(in) :: parms
-!  end procedure rpoly
-!end interface
 
 contains
 
