@@ -53,7 +53,7 @@ subroutine newton_exact(f,fprime,x0,parms,newtparms,root,it,converged)
   end if
 
   ! Newton iteration main loop
-  it=1; root=x0; fval=f(root,parms);
+  it=1; root=x0; fval=f(root,parms); converged=.false.
   do while (.not. converged .and. it <= newtparms%maxit)
     derivative=fprime(root,parms)
     if (abs(derivative)<newtparms%derivtol) then

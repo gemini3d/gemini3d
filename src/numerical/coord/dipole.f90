@@ -16,6 +16,8 @@ real(wp), parameter :: pi=3.141592
 real(wp), private, parameter :: thetan=11*pi/180
 real(wp), private, parameter :: phin=289*pi/180
 
+! print output
+logical :: verbose=.true.
 
 contains
 
@@ -40,7 +42,7 @@ subroutine qp2rtheta(q,p,r,theta)
   newtparms%maxit=100
   newtparms%derivtol=1e-18
   newtparms%tol=1e-11
-  newtparms%verbose=.false.
+  newtparms%verbose=.true.
   f=>rpoly
   fprime=>rpoly_deriv
   parms=[q,p]
@@ -52,6 +54,7 @@ subroutine qp2rtheta(q,p,r,theta)
     call newton_exact(f,fprime,r0,parms,newtparms,r,it,converged)
     ir0=ir0+1
   end do
+  theta=qr2theta(q,r)
 
 end subroutine qp2rtheta
 
@@ -81,9 +84,5 @@ real(wp) function rpoly_deriv(x,parms) result(fval_deriv)
   q=parms(1); p=parms(2);
   fval_deriv=4/Re*q**2*(x/Re)**3 + 1/p/Re
 end function rpoly_deriv
-
-
-elemental real(wp) func
-
 
 end module dipole
