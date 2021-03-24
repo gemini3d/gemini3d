@@ -59,7 +59,7 @@ do i=1,lx1
   end do
 end do
 
-call output_hdf5(outfile, alt, Dn, Tn)
+call output_hdf5(outfile, alt, glat, glon, Dn, Tn)
 
 contains
 
@@ -111,28 +111,31 @@ call hf%finalize()
 end subroutine input_hdf5
 
 
-subroutine output_hdf5(filename, alt, Dn, Tn)
+subroutine output_hdf5(filename, alt, glat, glon, Dn, Tn)
 
 character(*), intent(in) :: filename
-real(real32), intent(in) :: alt(:,:,:), Dn(:,:,:,:), Tn(:,:,:,:)
+real(real32), intent(in), dimension(:,:,:) :: alt, glat, glon
+real(real32), intent(in), dimension(:,:,:,:) :: Dn, Tn
 type(hdf5_file) :: hf
 
-call hf%initialize(filename, status="replace", action="write",comp_lvl=comp_lvl)
+call hf%initialize(filename, status="replace", action="write", comp_lvl=comp_lvl)
 
-call hf%write("/alt", alt, compact=.true.)
+call hf%write("/alt", alt)
+call hf%write("/glat", glat)
+call hf%write("/glon", glon)
 
-call hf%write("/nHe", Dn(:,:,:,1), compact=.true.)
-call hf%write("/nO", Dn(:,:,:,2), compact=.true.)
-call hf%write("/nN2", Dn(:,:,:,3), compact=.true.)
-call hf%write("/nO2", Dn(:,:,:,4), compact=.true.)
-call hf%write("/nAr", Dn(:,:,:,5), compact=.true.)
-call hf%write("/TotalMassDensity", Dn(:,:,:,6), compact=.true.)
-call hf%write("/nH", Dn(:,:,:,7), compact=.true.)
-call hf%write("/nN", Dn(:,:,:,8), compact=.true.)
-call hf%write("/nOana", Dn(:,:,:,9), compact=.true.)
+call hf%write("/nHe", Dn(:,:,:,1))
+call hf%write("/nO", Dn(:,:,:,2))
+call hf%write("/nN2", Dn(:,:,:,3))
+call hf%write("/nO2", Dn(:,:,:,4))
+call hf%write("/nAr", Dn(:,:,:,5))
+call hf%write("/TotalMassDensity", Dn(:,:,:,6))
+call hf%write("/nH", Dn(:,:,:,7))
+call hf%write("/nN", Dn(:,:,:,8))
+call hf%write("/nOana", Dn(:,:,:,9))
 
-call hf%write("/Tn", Tn(:,:,:,2), compact=.true.)
-call hf%write("/Texo", Tn(:,:,:,1), compact=.true.)
+call hf%write("/Tn", Tn(:,:,:,2))
+call hf%write("/Texo", Tn(:,:,:,1))
 
 
 call hf%finalize()
