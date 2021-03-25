@@ -98,7 +98,7 @@ character(7), parameter :: varsT(2) = [character(7) :: 'Tavgall', 'TEall']
 character(8), parameter :: varsV(3) = ['v1avgall', 'v2avgall', 'v3avgall']
 character(5), parameter :: varsJ(3) = ['J1all', 'J2all', 'J3all']
 
-real(wp) :: UThour1, UThour2
+real(wp) :: UThour1, UThour2, UTsec1, UTsec2
 integer :: ymd1(3), ymd2(3)
 integer :: lx1, lx2all, lx3all, Nlx1, Nlx2all, Nlx3all
 
@@ -117,15 +117,23 @@ call href%initialize(ref_file, status='old',action='r')
 call href%read('/time/ymd', ymd1)
 call hnew%read('/time/ymd', ymd2)
 
-if (any(ymd1 /= ymd2)) error stop 'dates did not match: ' // new_file
-
 call href%read('/time/UThour', UThour1)
 call hnew%read('/time/UThour', UThour2)
 
 call hnew%finalize()
 call href%finalize()
 
-if (abs(UThour1 - UThour2) > 0.01) error stop "UThour not match: " // new_file
+!> compare file simulation time
+UTsec1 = UThour1*3600
+UTsec2 = UThour2*3600
+call dateinc(0._wp, ymd1, UTsec1)
+call dateinc(0._wp, ymd2, UTsec2)
+!! sanitize wrapping glitches due to non-integer timebase
+!! due to non-integer timebase, can get hour-wrapping in Fortran code.
+!! This would be fixed someday by using integer microsecond timebase
+
+if (any(ymd1 /= ymd2)) error stop 'dates did not match: ' // new_file
+if (abs(UTsec1 - UTsec2) > 0.1) error stop "UThour not match: " // new_file
 
 ! print *, "flagoutput:", cfg%flagoutput
 
