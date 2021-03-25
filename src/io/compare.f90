@@ -100,9 +100,7 @@ character(5), parameter :: varsJ(3) = ['J1all', 'J2all', 'J3all']
 
 real(wp) :: UThour1, UThour2, UTsec1, UTsec2
 integer :: ymd1(3), ymd2(3)
-integer :: lx1, lx2all, lx3all, Nlx1, Nlx2all, Nlx3all
-
-bad = 0
+integer :: lx1, lx2all, lx3all, Nlx1, Nlx2all, Nlx3all, flagoutput
 
 call get_simsize3(parent(ref_file) // "/inputs", lx1, lx2all, lx3all)
 call get_simsize3(parent(new_file) // "/inputs", Nlx1, Nlx2all, Nlx3all)
@@ -113,6 +111,15 @@ if(lx3all /= Nlx3all) error stop 'lx3all not match ref: ' // new_file
 
 call hnew%initialize(new_file, status='old',action='r')
 call href%initialize(ref_file, status='old',action='r')
+
+flagoutput = -1
+if (hnew%exist("/flagoutput")) then
+  call hnew%read("/flagoutput", flagoutput)
+elseif (href%exist("/flagoutput")) then
+  call href%read("/flagoutput", flagoutput)
+else
+  flagoutput = cfg%flagoutput
+endif
 
 call href%read('/time/ymd', ymd1)
 call hnew%read('/time/ymd', ymd2)
@@ -135,7 +142,7 @@ call dateinc(0._wp, ymd2, UTsec2)
 if (any(ymd1 /= ymd2)) error stop 'dates did not match: ' // new_file
 if (abs(UTsec1 - UTsec2) > 0.1) error stop "UThour not match: " // new_file
 
-! print *, "flagoutput:", cfg%flagoutput
+bad = 0
 
 if (cfg%flagoutput == 3) then
   !! just electron density
