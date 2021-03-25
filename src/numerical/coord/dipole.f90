@@ -18,11 +18,48 @@ real(wp), private, parameter :: phin=289*pi/180
 
 type(newtopts), public :: newtparms
 
-public :: qp2rtheta,rtheta2qp,rpoly,rpoly_deriv
+public :: get_rtheta_2D,get_qp_2D,qp2rtheta,rtheta2qp,rpoly,rpoly_deriv
 private :: qr2theta
 
 contains
 
+!> convert a 1D arrays of q,p (assumed to define a 2D grid) into r,theta on a 2D mesh
+subroutine get_rtheta_2D(q,p,r,theta)
+  real(wp), dimension(:), intent(in) :: q
+  real(wp), dimension(:), intent(in) :: p
+  real(wp), dimension(:,:), intent(out) :: r,theta
+
+  integer :: iq,ip,lq,lp
+
+  lq=size(q,1); lp=size(p,1);
+
+  do iq=1,lq
+    do ip=1,lp
+      call qp2rtheta(q(iq),p(ip),r(iq,ip),theta(iq,ip))
+    end do
+  end do
+end subroutine get_rtheta_2D
+
+
+!> convert a set of r,theta points (2D arrays) to 2D arrays of q,p
+subroutine get_qp_2D(r,theta,q,p)
+  real(wp), dimension(:,:), intent(in) :: r,theta
+  real(wp), dimension(:,:), intent(out) :: q,p
+
+  integer :: i1,i2,ldim1,ldim2
+
+  ldim1=size(r,1); ldim2=size(r,2);  
+
+  do i1=1,ldim1
+    do i2=1,ldim2
+      call rtheta2qp(r(i1,i2),theta(i1,i2),q(i1,i2),p(i1,i2))
+    end do
+  end do
+
+end subroutine get_qp_2D
+
+
+!> convert a single q,p pair into r,theta
 subroutine qp2rtheta(q,p,r,theta)
   real(wp), intent(in) :: q,p
   real(wp), intent(out) :: r,theta
@@ -62,6 +99,7 @@ subroutine qp2rtheta(q,p,r,theta)
 end subroutine qp2rtheta
 
 
+!> convert a single point r,theta to q,p
 subroutine rtheta2qp(r,theta,q,p)
   real(wp), intent(in) :: r,theta
   real(wp), intent(out) :: q,p
@@ -71,14 +109,14 @@ subroutine rtheta2qp(r,theta,q,p)
 
 end subroutine rtheta2qp
 
-
+!> find theta given q,r
 elemental real(wp) function qr2theta(q,r) result(theta)
   real(wp), intent(in) :: q,r
 
   theta=acos(q*(r/Re)**2)
 end function qr2theta
 
-
+!> objective function for newton iterations for solutions of roots for r
 real(wp) function rpoly(x,parms) result(fval)
   real(wp), intent(in) :: x
   real(wp), dimension(:), intent(in) :: parms
@@ -88,7 +126,7 @@ real(wp) function rpoly(x,parms) result(fval)
   fval=q**2*(x/Re)**4 + 1/p*(x/Re) - 1
 end function rpoly
 
-
+!> derivative objective function for newton iterations for roots of r
 real(wp) function rpoly_deriv(x,parms) result(fval_deriv)
   real(wp), intent(in) :: x
   real(wp), dimension(:), intent(in) :: parms
