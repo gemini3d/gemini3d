@@ -18,6 +18,9 @@ real(wp), private, parameter :: phin=289*pi/180
 
 type(newtopts), public :: newtparms
 
+public :: qp2rtheta,rtheta2qp,rpoly,rpoly_deriv
+private :: qr2theta
+
 contains
 
 subroutine qp2rtheta(q,p,r,theta)
@@ -57,6 +60,16 @@ subroutine qp2rtheta(q,p,r,theta)
   theta=qr2theta(q,r)
 
 end subroutine qp2rtheta
+
+
+subroutine rtheta2qp(r,theta,q,p)
+  real(wp), intent(in) :: r,theta
+  real(wp), intent(out) :: q,p
+
+  q=Re**2/r**2*cos(theta)
+  p=r/Re/(sin(theta)**2)
+
+end subroutine rtheta2qp
 
 
 elemental real(wp) function qr2theta(q,r) result(theta)
