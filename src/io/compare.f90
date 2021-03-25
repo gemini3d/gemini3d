@@ -112,7 +112,6 @@ if(lx3all /= Nlx3all) error stop 'lx3all not match ref: ' // new_file
 call hnew%initialize(new_file, status='old',action='r')
 call href%initialize(ref_file, status='old',action='r')
 
-flagoutput = -1
 if (hnew%exist("/flagoutput")) then
   call hnew%read("/flagoutput", flagoutput)
 elseif (href%exist("/flagoutput")) then
