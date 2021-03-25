@@ -34,6 +34,8 @@ print *, 'Output file name:  ', filenamefull
 
 call hout%initialize(filenamefull, status='new',action='w',comp_lvl=comp_lvl)
 
+call hout%write("flagoutput", flagoutput)
+
 call hout%write('ymd', ymd)
 call hout%write('UThour',UTsec/3600._wp)
 

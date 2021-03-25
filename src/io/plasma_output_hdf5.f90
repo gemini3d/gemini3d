@@ -34,6 +34,8 @@ print *, 'HDF5 Output file name:  ', filenamefull
 
 call hout%initialize(filenamefull, status='new',action='w',comp_lvl=comp_lvl)
 
+call hout%write("/flagoutput", flagoutput)
+
 call hout%write('/time/ymd', ymd)
 call hout%write('/time/UThour',   real(UTsec/3600.))
 
@@ -68,7 +70,7 @@ if (flagswap/=1) then
     end select
 else
 !! 2D simulation that has been swapped around
-  allocate(permarray(lx1,lx3all,lx2all))    !temporary work array that has been permuted  
+  allocate(permarray(lx1,lx3all,lx2all))    !temporary work array that has been permuted
   select case (flagoutput)
     case (2)    !averaged parameters
       permarray=reshape(real(neall),[lx1,lx3all,lx2all],order=[1,3,2])
@@ -93,7 +95,7 @@ else
       call hout%write('v3avgall', permarray)
     case (3)     !electron density only output
       print *, 'INFO:  Input file has selected electron density only output, make sure this is what you really want!'
-      permarray=reshape(real(neall),[lx1,lx3all,lx2all],order=[1,3,2])       
+      permarray=reshape(real(neall),[lx1,lx3all,lx2all],order=[1,3,2])
       call hout%write('neall',    permarray)
 
     case default
