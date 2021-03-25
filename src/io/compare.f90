@@ -144,11 +144,12 @@ if (abs(UTsec1 - UTsec2) > 0.1) error stop "UThour not match: " // new_file
 
 bad = 0
 
-if (cfg%flagoutput == 3) then
+select case (flagoutput)
+case (3)
   !! just electron density
   bad = bad + check_var('neall', new_file, ref_file, rtolN, atolN, lx1, lx2all, lx3all)
 
-elseif (cfg%flagoutput == 2) then
+case (2)
 
   bad = bad + check_var('neall', new_file, ref_file, rtolN, atolN, lx1, lx2all, lx3all)
 
@@ -164,7 +165,7 @@ elseif (cfg%flagoutput == 2) then
     bad = bad + check_var(varsJ(i), new_file, ref_file, rtolJ, atolJ, lx1, lx2all, lx3all)
   enddo
 
-elseif(cfg%flagoutput==1) then
+case (1)
 
   do i = 1,size(varsJ)
     bad = bad + check_var(varsJ(i), new_file, ref_file, rtolJ, atolJ, lx1, lx2all, lx3all)
@@ -186,9 +187,9 @@ elseif(cfg%flagoutput==1) then
   !> v1
   bad = bad + check_derived('vs1all', "v1", new_file, ref_file, rtolV, atolV, lx1, lx2all, lx3all)
 
-else
+case default
   error stop 'unknown flagoutput: ' // file_name(ref_file)
-endif
+end select
 
 checker = bad == 0
 
