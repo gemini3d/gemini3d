@@ -17,7 +17,10 @@ rcorrect=6803179.761800971
 thetacorrect=1.9891332403471418
 call qp2rtheta(q,p,r,theta)
 print*, 'solution:  r=',r,'; theta=',theta
-print*, 'matlab solution:  r=',rcorrect,'; theta=',thetacorrect
+print*, 'known good solution:  r=',rcorrect,'; theta=',thetacorrect
 
+if (r-rcorrect>1e-6_wp .or. theta-thetacorrect>1e-6_wp) then
+  error stop ' Excessive error in coordinate conversion!'
+end if
 
 end program newton_testdriver
