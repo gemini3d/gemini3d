@@ -75,8 +75,23 @@ elemental real(wp) function Bmag(r,theta)
   Bmag=mu0*Mmag/4/pi/r**3*sqrt(3*cos(theta)**2+1)
 end function Bmag
 
-!> compute the inclination angle for each geomagnetic field line
+!> compute the inclination angle (degrees) for each geomagnetic field line
+subroutine inclination(er,eq,gridflag,Inc)
+  real(wp), dimension(:,:,:,:), intent(in) :: er,eq
+  integer, intent(in) :: gridflag
+  real(wp), dimension(1:size(er,2),1:size(er,3)), intent(out) :: Inc
+  integer :: lq
+  real(wp), dimension(1:size(er,1),1:size(er,2),1:size(er,3)) :: proj
 
+  lq=size(er,1)
+  proj=sum(er*eq,dim=4)
+  if (gridflag==0) then    ! for a closed grid average over half the domain
+    Inc=sum(proj,dim=1)/real(lq,wp)
+  else                     ! otherwise average over full domain
+    Inc=sum(proj(1:lq/2,:,:),dim=1)/real(lq/2,wp)    ! note use of integer division and casting to real for avging
+  end if
+  Inc=90-min(Inc,pi-Inc)*180._wp/pi
+end subroutine inclination
 
 !> compute a metric factor for q corresponding to a given r,theta,phi ordered triple
 elemental real(wp) function hq(r,theta,phi)
