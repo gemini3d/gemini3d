@@ -184,6 +184,7 @@ if(allocated(x%er)) deallocate(x%er,x%etheta,x%ephi)
 end subroutine clear_unitvecs
 
 
+! FIXME: possibly deprecated???
 subroutine load_grav(alt)
 !! LOAD UP GRAV. FIELD ARRAY.  IT IS EXPECTED THAT
 !! GHOST CELLS WILL HAVE BEEN TRIMMED FROM ARRAYS BEFORE THEY ARE PASSED INTO THIS ROUTINE.
