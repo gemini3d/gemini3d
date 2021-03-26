@@ -39,7 +39,7 @@ end do
 ! provide some indication to the call program as to whether this test passed or not
 maxerrq=maxval(abs(errq))
 maxerrp=maxval(abs(errp))
-print*, ' Test system size:  '
+print*, ' Test system size:  ',lq,lp
 print*, ' Maximum error in computed q and p:  ',maxerrq,maxerrp
 if (maxerrq>1e-6_wp .or. maxerrp>1e-6_wp) error stop ' Excessive error in coordinate conversion!'
 
