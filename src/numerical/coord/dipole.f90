@@ -10,9 +10,13 @@ use newton, only : newtopts,newton_exact,objfun,objfun_deriv
 
 implicit none (type, external)
 
-! use phys_consts, only : wp,Re,pi
-real(wp), parameter :: Re=6370e3
-real(wp), parameter :: pi=3.141592
+! use phys_consts, only : wp,Re,pi,Mmag
+real(wp), parameter ::  Re = 6371.0e3_wp
+real(wp), parameter :: pi = 4.0_wp*atan(1.0_wp)
+real(wp), parameter :: Mmag=7.94e22
+real(wp), parameter :: mu0=4*pi*1e-7
+real(wp), parameter :: Gconst=6.67408e-11_wp     !Universal gravitation constant
+real(wp), parameter :: Me = 5.9722e24_wp
 
 ! magnetic pole location
 real(wp), private, parameter :: thetan=11*pi/180
@@ -20,11 +24,12 @@ real(wp), private, parameter :: phin=289*pi/180
 
 type(newtopts), public :: newtparms
 
-!> these to be dealt with later
+!> these to be dealt with later, once things are done
 !public :: get_rtheta_2D,get_qp_2D,qp2rtheta,rtheta2qp,rpoly,rpoly_deriv,hq
 !private :: qr2theta
 
 !> overload interfaces for unit vectors since we can't handle these with elementals...
+!   The intent here is to be able to call these for a single point OR the entire grid.
 interface er
   module procedure er_scalar
   module procedure er_rank3
@@ -47,6 +52,31 @@ interface ep
 end interface ep
 
 contains
+
+!> compute gravitational field components
+subroutine grav(r,eq,ep,ephi,er,gq,gp,gphi)
+  real(wp), dimension(:,:,:), intent(in) :: r
+  real(wp), dimension(:,:,:,:), intent(in) :: eq,ep,ephi,er
+  real(wp), dimension(1:size(r,1),1:size(r,2),1:size(r,3)), intent(out) :: gq,gp,gphi
+  real(wp), dimension(1:size(r,1),1:size(r,2),1:size(r,3)) :: gr
+  
+  gr=-Gconst*Me/r**2     ! radial component of gravity
+  gq=gr*sum(er*eq,dim=4)
+  gp=gr*sum(er*ep,dim=4)
+  !gphi=gr*sum(er*ephi,dim=4)
+  gphi=0._wp     ! force to zero to avoid really small values from numerical error
+end subroutine grav
+
+
+!> compute the magnetic field strength
+elemental real(wp) function Bmag(r,theta)
+  real(wp), intent(in) :: r,theta
+
+  Bmag=mu0*Mmag/4/pi/r**3*sqrt(3*cos(theta)**2+1)
+end function Bmag
+
+!> compute the inclination angle for each geomagnetic field line
+
 
 !> compute a metric factor for q corresponding to a given r,theta,phi ordered triple
 elemental real(wp) function hq(r,theta,phi)
@@ -205,7 +235,6 @@ subroutine get_qp_2D(r,theta,q,p)
       call rtheta2qp(r(i1,i2),theta(i1,i2),q(i1,i2),p(i1,i2))
     end do
   end do
-
 end subroutine get_qp_2D
 
 
