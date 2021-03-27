@@ -53,6 +53,17 @@ end interface ep
 
 contains
 
+
+!> create a dipole mesh structure out of given q,p,phi spacings
+function make_dipolemesh(q,p,phi) result(x)
+  real(wp), dimension(:), intent(in) :: q
+  real(wp), dimension(:), intent(in) :: p
+  real(wp), dimension(:), intent(in) :: phi
+  type(dipolemesh) :: x
+
+end function make_dipolemesh
+
+
 !> compute gravitational field components
 subroutine grav(r,eq,ep,ephi,er,gq,gp,gphi)
   real(wp), dimension(:,:,:), intent(in) :: r
@@ -75,6 +86,7 @@ elemental real(wp) function Bmag(r,theta)
   Bmag=mu0*Mmag/4/pi/r**3*sqrt(3*cos(theta)**2+1)
 end function Bmag
 
+
 !> compute the inclination angle (degrees) for each geomagnetic field line
 subroutine inclination(er,eq,gridflag,Inc)
   real(wp), dimension(:,:,:,:), intent(in) :: er,eq
@@ -93,6 +105,7 @@ subroutine inclination(er,eq,gridflag,Inc)
   Inc=90-min(Inc,pi-Inc)*180._wp/pi
 end subroutine inclination
 
+
 !> compute a metric factor for q corresponding to a given r,theta,phi ordered triple
 elemental real(wp) function hq(r,theta,phi)
   real(wp), intent(in) :: r,theta,phi
@@ -100,12 +113,14 @@ elemental real(wp) function hq(r,theta,phi)
   hq=r**3/Re**2/(sqrt(1+3*cos(theta)**2))
 end function hq
 
+
 !> compute p metric factor
 elemental real(wp) function hp(r,theta,phi)
   real(wp), intent(in) :: r,theta,phi
 
   hp=Re*sin(theta)**3/(sqrt(1+3*cos(theta)**2))
 end function hp
+
 
 !> compute phi metric factor
 elemental real(wp) function hphi(r,theta,phi)
