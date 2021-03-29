@@ -22,7 +22,26 @@ real(wp), parameter :: Me = 5.9722e24_wp
 real(wp), private, parameter :: thetan=11*pi/180
 real(wp), private, parameter :: phin=289*pi/180
 
+! options structure for Newton iterations
 type(newtopts), public :: newtparms
+
+! class definition for dipolemesh
+type :: dipolemesh
+  integer :: gridflag
+
+  real(wp), dimension(:,:,:), allocatable :: r,theta,phi    ! spherical ECEF coordinates for each grid point
+  real(wp), dimension(:), allocatable :: qint           ! cell interface locations
+  real(wp), dimension(:), allocatable :: pint
+  real(wp), dimension(:), allocatable :: phiint
+  real(wp), dimension(:,:,:), allocatable :: hq,hp,hphi
+  real(wp), dimension(:,:,:), allocatable :: hqqi,hpqi,hphiqi
+  real(wp), dimension(:,:,:), allocatable :: hqpi,hppi,hphipi
+  real(wp), dimension(:,:,:,:), allocatable :: er,etheta,ephi
+  real(wp), dimension(:,:,:,:), allocatable :: eq,ep
+  real(wp), dimension(:,:,:), allocatable :: Bmag
+  real(wp), dimension(:,:,:), allocatable :: gq,gp,gphi
+  real(wp), dimension(:,:), allocatable :: Inc
+end type dipolemesh
 
 !> these to be dealt with later, once things are done
 !public :: get_rtheta_2D,get_qp_2D,qp2rtheta,rtheta2qp,rpoly,rpoly_deriv,hq
@@ -30,42 +49,171 @@ type(newtopts), public :: newtparms
 
 !> overload interfaces for unit vectors since we can't handle these with elementals...
 !   The intent here is to be able to call these for a single point OR the entire grid.
-interface er
+interface get_er
   module procedure er_scalar
   module procedure er_rank3
-end interface
-interface etheta
+end interface get_er
+interface get_etheta
   module procedure etheta_scalar
   module procedure etheta_rank3
-end interface etheta
-interface ephi
+end interface get_etheta
+interface get_ephi
   module procedure ephi_scalar
   module procedure ephi_rank3
-end interface ephi
-interface eq
+end interface get_ephi
+interface get_eq
   module procedure eq_scalar
   module procedure eq_rank3
-end interface eq
-interface ep
+end interface get_eq
+interface get_ep
   module procedure ep_scalar
   module procedure ep_rank3
-end interface ep
+end interface get_ep
 
 contains
 
 
-!> create a dipole mesh structure out of given q,p,phi spacings
+!> create a dipole mesh structure out of given q,p,phi spacings.  We assume here that the input cell center locations
+!   are provide with ghost cells included (note input array indexing in dummy variable declarations.  For new we assume
+!   that the fortran code will precompute and store the "full" grid information to save time (but this uses more memory).  
 function make_dipolemesh(q,p,phi) result(x)
-  real(wp), dimension(:), intent(in) :: q
-  real(wp), dimension(:), intent(in) :: p
-  real(wp), dimension(:), intent(in) :: phi
+  real(wp), dimension(-1:), intent(in) :: q
+  real(wp), dimension(-1:), intent(in) :: p
+  real(wp), dimension(-1:), intent(in) :: phi
   type(dipolemesh) :: x
 
+  integer :: lqg,lpg,lphig,lq,lp,lphi
+  integer :: iq,ip,iphi
+  real(wp), dimension(:,:,:), allocatable :: r,theta,phispher
+  real(wp), dimension(:,:,:), allocatable :: rqint,thetaqint,phiqint
+  real(wp), dimension(:,:,:), allocatable :: rpint,thetapint,phipint
+
+  ! size of arrays, including ghost cells
+  lqg=size(q,1); lpg=size(p,1); lphig=size(phi,1)
+  allocate(r(-1:lqg-2,-1:lpg-2,-1:lphig-2),theta(-1:lqg-2,-1:lpg-2,-1:lphig-2))
+
+  ! array sizes without ghost cells for convenience
+  lq=lqg-4; lp=lpg-4; lphi=lphig-4;
+  allocate(x%qint(1:lq+1),x%pint(1:lp+1),x%phiint(1:lphi+1))     !qint(iq) references the left cell wall location of the ith grid point
+  allocate(phispher(1:lq,1:lp,1:lphi))
+  allocate(rqint(1:lq+1,1:lp,1:lphi),thetaqint(1:lq+1,1:lp,1:lphi),phiqint(1:lq+1,1:lp,1:lphi))    ! these are just temp vars. needed to compute metric factors
+  allocate(rpint(1:lq+1,1:lp,1:lphi),thetapint(1:lq+1,1:lp,1:lphi),phipint(1:lq+1,1:lp,1:lphi))    ! these are just temp vars. needed to compute metric factors
+
+  ! convert the cell centers to spherical ECEF coordinates, then tile for longitude dimension
+  do iq=-1,lqg-2
+    do ip=-1,lpg-2
+      call get_rtheta_2D(q,p,r(:,:,-1),theta(:,:,-1))
+    end do
+  end do
+  do iphi=0,lphig-2     ! tile
+    r(:,:,iphi)=r(:,:,-1)
+    theta(:,:,iphi)=theta(:,:,-1)
+  end do
+  do iphi=1,lphi
+    phispher(:,:,iphi)=phi(iphi)   !scalar assignment should work...
+  end do
+
+  ! compute interface coordinates, both dipole and spherical, can be made directly in the mesh
+  !  objects memory space
+  x%qint(1:lq+1)=1._wp/2._wp*(q(0:lq)+q(1:lq+1))
+  x%pint(1:lq+1)=1._wp/2._wp*(p(0:lp)+p(1:lp+1))
+  x%phiint(1:lq+1)=1._wp/2._wp*(phi(0:lphi)+phi(1:lphi+1))
+
+  ! locations of the cell interfaces in q-dimension (along field lines)
+  do iq=1,lq+1
+    do ip=1,lp
+      call get_rtheta_2D(x%qint,p,rqint(:,:,1),thetaqint(:,:,1))
+    end do
+  end do
+  do iphi=2,lphi
+    rqint(:,:,iphi)=rqint(:,:,1)
+    thetaqint(:,:,iphi)=thetaqint(:,:,1)
+  end do
+
+  ! locations of cell interfaces in p-dimesion (along constant L-shell)
+  do iq=1,lq
+    do ip=1,lp+1
+      call get_rtheta_2D(q,x%pint,rpint(:,:,1),thetapint(:,:,1))
+    end do
+  end do
+  do iphi=2,lphi
+    rpint(:,:,iphi)=rpint(:,:,1)
+    thetapint(:,:,iphi)=thetapint(:,:,1)
+  end do
+
+  ! now assign structure elements and deallocate unneeded temp variables
+  allocate(x%r(1:lq,1:lp,1:lphi),x%theta(1:lq,1:lp,1:lphi),x%phi(1:lq,1:lp,1:lphi))
+  x%r=r(1:lq,1:lp,1:lphi); x%theta=theta(1:lq,1:lp,1:lphi); x%phi=phispher(1:lq,1:lp,1:lphi)
+  deallocate(r,theta,phispher)
+
+  ! compute and store the metric factors
+  allocate(x%hq(1:lq,1:lp,1:lphi),x%hp(1:lq,1:lp,1:lphi),x%hphi(1:lq,1:lp,1:lphi))
+  x%hq=get_hq(x%r,x%theta)
+  x%hp=get_hp(x%r,x%theta)
+  x%hphi=get_hphi(x%r,x%theta)
+
+  ! q cell interface metric factors
+  allocate(x%hqqi(1:lq+1,1:lp,1:lphi),x%hpqi(1:lq+1,1:lp,1:lphi),x%hphiqi(1:lq+1,1:lp,1:lphi))
+  x%hqqi=get_hq(rqint,thetaqint)
+  x%hpqi=get_hp(rqint,thetaqint)
+  x%hphiqi=get_hphi(rqint,thetaqint)
+
+  ! p cell interface metric factors
+  allocate(x%hqpi(1:lq,1:lp,1+1:lphi),x%hppi(1:lq,1:lp+1,1:lphi),x%hphipi(1:lq,1:lp+1,1:lphi))  
+  x%hqpi=get_hq(rpint,thetapint)
+  x%hppi=get_hp(rpint,thetapint)
+  x%hphipi=get_hphi(rpint,thetapint)
+
+  ! we can now deallocate temp interface arrays
+  deallocate(rqint,thetaqint,phiqint,rpint,thetapint,phipint)
+
+  ! spherical ECEF unit vectors (expressed in a Cartesian ECEF basis)
+  allocate(x%er(1:lq,1:lp,1:lphi,3),x%etheta(1:lq,1:lp,1:lphi,3),x%ephi(1:lq,1:lp,1:lphi,3))
+  x%er=get_er(x%r,x%theta,x%phi)
+  x%etheta=get_etheta(x%r,x%theta,x%phi)
+  x%ephi=get_ephi(x%r,x%theta,x%phi)
+
+  ! dipole coordinate system unit vectors (Cart. ECEF)
+  allocate(x%eq(1:lq,1:lp,1:lphi,3),x%ep(1:lq,1:lp,1:lphi,3))
+  x%eq=get_eq(x%r,x%theta,x%phi)
+  x%eq=get_ep(x%r,x%theta,x%phi)
+
+  ! magnetic field magnitude
+  allocate(x%Bmag(1:lq,1:lp,1:lphi))
+  x%Bmag=get_Bmag(x%r,x%theta)
+
+  ! gravity components
+  allocate(x%gq(1:lq,1:lp,1:lphi),x%gp(1:lq,1:lp,1:lphi),x%gphi(1:lq,1:lp,1:lphi))
+  call get_grav(x%r,x%eq,x%ep,x%ephi,x%er,x%gq,x%gp,x%gphi)
+
+  ! FIXME: hardcode grid type for now
+  x%gridflag=0
+
+  ! inclination angle for each field line
+  allocate(x%Inc(1:lp,1:lphi))
+  x%Inc=get_inclination(x%er,x%eq,x%gridflag)
 end function make_dipolemesh
 
 
+!> deallocate space used by mesh (to be called at the end of the program, presumably)
+subroutine de_dipolemesh(x)
+  type(dipolemesh), intent(inout) :: x
+
+  deallocate(x%r,x%theta,x%phi)
+  deallocate(x%qint,x%pint,x%phiint)
+  deallocate(x%hq,x%hp,x%hphi)
+  deallocate(x%hqqi,x%hpqi,x%hphiqi)
+  deallocate(x%hqpi,x%hppi,x%hphipi)
+  deallocate(x%er,x%etheta,x%ephi)
+  deallocate(x%eq,x%ep)
+  deallocate(x%Bmag)
+  deallocate(x%gq,x%gp,x%gphi)
+
+end subroutine de_dipolemesh
+
+
 !> compute gravitational field components
-subroutine grav(r,eq,ep,ephi,er,gq,gp,gphi)
+subroutine get_grav(r,eq,ep,ephi,er,gq,gp,gphi)
   real(wp), dimension(:,:,:), intent(in) :: r
   real(wp), dimension(:,:,:,:), intent(in) :: eq,ep,ephi,er
   real(wp), dimension(1:size(r,1),1:size(r,2),1:size(r,3)), intent(out) :: gq,gp,gphi
@@ -76,22 +224,22 @@ subroutine grav(r,eq,ep,ephi,er,gq,gp,gphi)
   gp=gr*sum(er*ep,dim=4)
   !gphi=gr*sum(er*ephi,dim=4)
   gphi=0._wp     ! force to zero to avoid really small values from numerical error
-end subroutine grav
+end subroutine get_grav
 
 
 !> compute the magnetic field strength
-elemental real(wp) function Bmag(r,theta)
+elemental real(wp) function get_Bmag(r,theta) result(Bmag)
   real(wp), intent(in) :: r,theta
 
   Bmag=mu0*Mmag/4/pi/r**3*sqrt(3*cos(theta)**2+1)
-end function Bmag
+end function get_Bmag
 
 
 !> compute the inclination angle (degrees) for each geomagnetic field line
-subroutine inclination(er,eq,gridflag,Inc)
+function get_inclination(er,eq,gridflag) result(Inc)
   real(wp), dimension(:,:,:,:), intent(in) :: er,eq
   integer, intent(in) :: gridflag
-  real(wp), dimension(1:size(er,2),1:size(er,3)), intent(out) :: Inc
+  real(wp), dimension(1:size(er,2),1:size(er,3)) :: Inc
   integer :: lq
   real(wp), dimension(1:size(er,1),1:size(er,2),1:size(er,3)) :: proj
 
@@ -103,31 +251,31 @@ subroutine inclination(er,eq,gridflag,Inc)
     Inc=sum(proj(1:lq/2,:,:),dim=1)/real(lq/2,wp)    ! note use of integer division and casting to real for avging
   end if
   Inc=90-min(Inc,pi-Inc)*180._wp/pi
-end subroutine inclination
+end function get_inclination
 
 
 !> compute a metric factor for q corresponding to a given r,theta,phi ordered triple
-elemental real(wp) function hq(r,theta,phi)
-  real(wp), intent(in) :: r,theta,phi
+elemental real(wp) function get_hq(r,theta) result(hq)
+  real(wp), intent(in) :: r,theta
 
   hq=r**3/Re**2/(sqrt(1+3*cos(theta)**2))
-end function hq
+end function get_hq
 
 
 !> compute p metric factor
-elemental real(wp) function hp(r,theta,phi)
-  real(wp), intent(in) :: r,theta,phi
+elemental real(wp) function get_hp(r,theta) result(hp)
+  real(wp), intent(in) :: r,theta
 
   hp=Re*sin(theta)**3/(sqrt(1+3*cos(theta)**2))
-end function hp
+end function get_hp
 
 
 !> compute phi metric factor
-elemental real(wp) function hphi(r,theta,phi)
-  real(wp), intent(in) :: r,theta,phi
+elemental real(wp) function get_hphi(r,theta) result(hphi)
+  real(wp), intent(in) :: r,theta
 
   hphi=r*sin(theta)
-end function hphi
+end function get_hphi
 
 
 !> radial unit vector (expressed in ECEF cartesian coodinates, permuted as ix,iy,iz)
@@ -234,6 +382,8 @@ end function ep_rank3
 
 
 !> convert a 1D arrays of q,p (assumed to define a 2D grid) into r,theta on a 2D mesh
+!   this should be agnostic to the array start index; here just remap as 1:size(array,1), etc.
+!   though the dummy argument declarations.  This is necessary due to the way that 
 subroutine get_rtheta_2D(q,p,r,theta)
   real(wp), dimension(:), intent(in) :: q
   real(wp), dimension(:), intent(in) :: p
