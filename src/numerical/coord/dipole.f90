@@ -93,6 +93,7 @@ function make_dipolemesh(q,p,phi) result(x)
   allocate(r(-1:lqg-2,-1:lpg-2,-1:lphig-2),theta(-1:lqg-2,-1:lpg-2,-1:lphig-2))
 
   ! array sizes without ghost cells for convenience
+  print*, ' make_dipolemesh:  allocating space for grid of size:  ',lqg,lpg,lphig
   lq=lqg-4; lp=lpg-4; lphi=lphig-4;
   allocate(x%qint(1:lq+1),x%pint(1:lp+1),x%phiint(1:lphi+1))     !qint(iq) references the left cell wall location of the ith grid point
   allocate(phispher(1:lq,1:lp,1:lphi))
@@ -100,11 +101,8 @@ function make_dipolemesh(q,p,phi) result(x)
   allocate(rpint(1:lq+1,1:lp,1:lphi),thetapint(1:lq+1,1:lp,1:lphi),phipint(1:lq+1,1:lp,1:lphi))    ! these are just temp vars. needed to compute metric factors
 
   ! convert the cell centers to spherical ECEF coordinates, then tile for longitude dimension
-  do iq=-1,lqg-2
-    do ip=-1,lpg-2
-      call get_rtheta_2D(q,p,r(:,:,-1),theta(:,:,-1))
-    end do
-  end do
+  print*, ' make_dipolemesh:  converting cell centers...'
+  call get_rtheta_2D(q,p,r(:,:,-1),theta(:,:,-1))
   do iphi=0,lphig-2     ! tile
     r(:,:,iphi)=r(:,:,-1)
     theta(:,:,iphi)=theta(:,:,-1)
@@ -120,22 +118,16 @@ function make_dipolemesh(q,p,phi) result(x)
   x%phiint(1:lq+1)=1._wp/2._wp*(phi(0:lphi)+phi(1:lphi+1))
 
   ! locations of the cell interfaces in q-dimension (along field lines)
-  do iq=1,lq+1
-    do ip=1,lp
-      call get_rtheta_2D(x%qint,p,rqint(:,:,1),thetaqint(:,:,1))
-    end do
-  end do
+  print*, ' make_dipolemesh:  converting cell interfaces in q...'
+  call get_rtheta_2D(x%qint,p,rqint(:,:,1),thetaqint(:,:,1))
   do iphi=2,lphi
     rqint(:,:,iphi)=rqint(:,:,1)
     thetaqint(:,:,iphi)=thetaqint(:,:,1)
   end do
 
   ! locations of cell interfaces in p-dimesion (along constant L-shell)
-  do iq=1,lq
-    do ip=1,lp+1
-      call get_rtheta_2D(q,x%pint,rpint(:,:,1),thetapint(:,:,1))
-    end do
-  end do
+  print*, ' make_dipolemesh:  converting cell interfaces in p...'
+  call get_rtheta_2D(q,x%pint,rpint(:,:,1),thetapint(:,:,1))
   do iphi=2,lphi
     rpint(:,:,iphi)=rpint(:,:,1)
     thetapint(:,:,iphi)=thetapint(:,:,1)
@@ -147,18 +139,21 @@ function make_dipolemesh(q,p,phi) result(x)
   deallocate(r,theta,phispher)
 
   ! compute and store the metric factors
+  print*, ' make_dipolemesh:  metric factors for cell centers...'
   allocate(x%hq(1:lq,1:lp,1:lphi),x%hp(1:lq,1:lp,1:lphi),x%hphi(1:lq,1:lp,1:lphi))
   x%hq=get_hq(x%r,x%theta)
   x%hp=get_hp(x%r,x%theta)
   x%hphi=get_hphi(x%r,x%theta)
 
   ! q cell interface metric factors
+  print*, ' make_dipolemesh:  metric factors for cell q-interfaces...'
   allocate(x%hqqi(1:lq+1,1:lp,1:lphi),x%hpqi(1:lq+1,1:lp,1:lphi),x%hphiqi(1:lq+1,1:lp,1:lphi))
   x%hqqi=get_hq(rqint,thetaqint)
   x%hpqi=get_hp(rqint,thetaqint)
   x%hphiqi=get_hphi(rqint,thetaqint)
 
   ! p cell interface metric factors
+  print*, ' make_dipolemesh:  metric factors for cell p intefaces...'
   allocate(x%hqpi(1:lq,1:lp,1+1:lphi),x%hppi(1:lq,1:lp+1,1:lphi),x%hphipi(1:lq,1:lp+1,1:lphi))  
   x%hqpi=get_hq(rpint,thetapint)
   x%hppi=get_hp(rpint,thetapint)
@@ -168,21 +163,25 @@ function make_dipolemesh(q,p,phi) result(x)
   deallocate(rqint,thetaqint,phiqint,rpint,thetapint,phipint)
 
   ! spherical ECEF unit vectors (expressed in a Cartesian ECEF basis)
+  print*, ' make_dipolemesh:  spherical ECEF unit vectors...'  
   allocate(x%er(1:lq,1:lp,1:lphi,3),x%etheta(1:lq,1:lp,1:lphi,3),x%ephi(1:lq,1:lp,1:lphi,3))
   x%er=get_er(x%r,x%theta,x%phi)
   x%etheta=get_etheta(x%r,x%theta,x%phi)
   x%ephi=get_ephi(x%r,x%theta,x%phi)
 
   ! dipole coordinate system unit vectors (Cart. ECEF)
+  print*, ' make_dipolemesh:  dipole unit vectors...'  
   allocate(x%eq(1:lq,1:lp,1:lphi,3),x%ep(1:lq,1:lp,1:lphi,3))
   x%eq=get_eq(x%r,x%theta,x%phi)
   x%eq=get_ep(x%r,x%theta,x%phi)
 
   ! magnetic field magnitude
+  print*, ' make_dipolemesh:  magnetic fields...'    
   allocate(x%Bmag(1:lq,1:lp,1:lphi))
   x%Bmag=get_Bmag(x%r,x%theta)
 
   ! gravity components
+  print*, ' make_dipolemesh:  gravity...'
   allocate(x%gq(1:lq,1:lp,1:lphi),x%gp(1:lq,1:lp,1:lphi),x%gphi(1:lq,1:lp,1:lphi))
   call get_grav(x%r,x%eq,x%ep,x%ephi,x%er,x%gq,x%gp,x%gphi)
 
@@ -190,6 +189,7 @@ function make_dipolemesh(q,p,phi) result(x)
   x%gridflag=0
 
   ! inclination angle for each field line
+  print*, ' make_dipolemesh:  inclination angle...'  
   allocate(x%Inc(1:lp,1:lphi))
   x%Inc=get_inclination(x%er,x%eq,x%gridflag)
 end function make_dipolemesh
