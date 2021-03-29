@@ -19,7 +19,7 @@ call qp2rtheta(q,p,r,theta)
 print*, 'solution:  r=',r,'; theta=',theta
 print*, 'known good solution:  r=',rcorrect,'; theta=',thetacorrect
 
-if (r-rcorrect>1e-6_wp .or. theta-thetacorrect>1e-6_wp) then
+if (r-rcorrect>1e4_wp .or. theta-thetacorrect>1e-4_wp) then
   error stop ' Excessive error in coordinate conversion!'
 end if
 
