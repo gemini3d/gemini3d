@@ -18,8 +18,8 @@ real(wp) :: minchkvar,maxchkvar
 
 
 ! define a grid, in reality this would be pull in from a file
-q=[(qlims(1) + (qlims(2)-qlims(1)/lq*(iq-1)),iq=1,lq)]
-p=[(plims(1) + (plims(2)-plims(1)/lp*(ip-1)),ip=1,lp)]
+q=[(qlims(1) + (qlims(2)-qlims(1))/lq*(iq-1),iq=1,lq)]
+p=[(plims(1) + (plims(2)-plims(1))/lp*(ip-1),ip=1,lp)]
 phi=[(philims(1) + (philims(2)-philims(1))/lphi*(iphi-1),iphi=1,lphi)]
 
 ! call grid generation for this grid def.
@@ -28,6 +28,12 @@ x=make_dipolemesh(q,p,phi)
 
 ! now do some basic sanity checks
 print*, 'fullgrid_testdriver:  Starting basic checks...'
+minchkvar=minval(x%q); maxchkvar=maxval(x%q);
+print*, ' fullgrid_testdriver, q:  ',minchkvar,maxchkvar
+minchkvar=minval(x%p); maxchkvar=maxval(x%p);
+print*, ' fullgrid_testdriver, p:  ',minchkvar,maxchkvar
+minchkvar=minval(x%phi); maxchkvar=maxval(x%phi);
+print*, ' fullgrid_testdriver, phi:  ',minchkvar,maxchkvar
 minchkvar=minval(x%er); maxchkvar=maxval(x%er);
 print*, ' fullgrid_testdriver, er:  ',minchkvar,maxchkvar
 minchkvar=minval(x%etheta); maxchkvar=maxval(x%ephi);
@@ -40,6 +46,14 @@ minchkvar=minval(x%ep); maxchkvar=maxval(x%ep);
 print*, ' fullgrid_testdriver, ep:  ',minchkvar,maxchkvar
 minchkvar=minval(x%Bmag); maxchkvar=maxval(x%Bmag);
 print*, ' fullgrid_testdriver, Bmag (nT):  ',minchkvar*1e9,maxchkvar*1e9
+minchkvar=minval(x%gq); maxchkvar=maxval(x%gq);
+print*, ' fullgrid_testdriver, gq:  ',minchkvar,maxchkvar
+minchkvar=minval(x%gp); maxchkvar=maxval(x%gp);
+print*, ' fullgrid_testdriver, gp:  ',minchkvar,maxchkvar
+minchkvar=minval(x%gphi); maxchkvar=maxval(x%gphi);
+print*, ' fullgrid_testdriver, gphi:  ',minchkvar,maxchkvar
+minchkvar=minval(x%Inc); maxchkvar=maxval(x%Inc);
+print*, ' fullgrid_testdriver, Inc:  ',minchkvar,maxchkvar
 
 ! deallocate the grid before ending the program
 print*, 'fullgrid_testdriver:  Deallocating mesh...'

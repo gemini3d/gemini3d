@@ -16,8 +16,8 @@ integer :: iq,ip,irepeat
 
 
 ! define a grid
-q=[(qlims(1) + (qlims(2)-qlims(1)/lq*(iq-1)),iq=1,lq)]
-p=[(plims(1) + (plims(2)-plims(1)/lp*(ip-1)),ip=1,lp)]
+q=[(qlims(1) + (qlims(2)-qlims(1))/lq*(iq-1),iq=1,lq)]
+p=[(plims(1) + (plims(2)-plims(1))/lp*(ip-1),ip=1,lp)]
 
 
 ! test the conversion of a set of grid points
