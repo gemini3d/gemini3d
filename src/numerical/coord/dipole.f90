@@ -253,7 +253,7 @@ function get_inclination(er,eq,gridflag) result(Inc)
   lq=size(er,1)
   proj=sum(er*eq,dim=4)
   if (gridflag==0) then    ! for a closed grid average over half the domain
-    Inc=sum(proj(1:lq/2,:,:),dim=1)/real(lq/2,wp)    ! note use of integer division and casting to real for avging
+    Inc=sum(proj(1:lq/2,:,:),dim=1)/(real(lq,wp)/2._wp)    ! note use of integer division and casting to real for avging
   else                     ! otherwise average over full domain
     Inc=sum(proj,dim=1)/real(lq,wp)
   end if
