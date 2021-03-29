@@ -29,7 +29,10 @@ type(newtopts), public :: newtparms
 type :: dipolemesh
   integer :: gridflag
 
-  real(wp), dimension(:,:,:), allocatable :: r,theta,phi    ! spherical ECEF coordinates for each grid point
+  real(wp), dimension(:), allocatable :: q
+  real(wp), dimension(:), allocatable :: p
+  real(wp), dimension(:), allocatable :: phi
+  real(wp), dimension(:,:,:), allocatable :: r,theta,phispher    ! spherical ECEF coordinates for each grid point
   real(wp), dimension(:), allocatable :: qint           ! cell interface locations
   real(wp), dimension(:), allocatable :: pint
   real(wp), dimension(:), allocatable :: phiint
@@ -90,6 +93,8 @@ function make_dipolemesh(q,p,phi) result(x)
 
   ! size of arrays, including ghost cells
   lqg=size(q,1); lpg=size(p,1); lphig=size(phi,1)
+  allocate(x%q(-1:lqg-2),x%p(-1:lpg-2),x%phi(-1:lphig-2))
+  x%q=q; x%p=p; x%phi=phi;
   allocate(r(-1:lqg-2,-1:lpg-2,-1:lphig-2),theta(-1:lqg-2,-1:lpg-2,-1:lphig-2))
 
   ! array sizes without ghost cells for convenience
@@ -98,7 +103,7 @@ function make_dipolemesh(q,p,phi) result(x)
   allocate(x%qint(1:lq+1),x%pint(1:lp+1),x%phiint(1:lphi+1))     !qint(iq) references the left cell wall location of the ith grid point
   allocate(phispher(1:lq,1:lp,1:lphi))
   allocate(rqint(1:lq+1,1:lp,1:lphi),thetaqint(1:lq+1,1:lp,1:lphi),phiqint(1:lq+1,1:lp,1:lphi))    ! these are just temp vars. needed to compute metric factors
-  allocate(rpint(1:lq+1,1:lp,1:lphi),thetapint(1:lq+1,1:lp,1:lphi),phipint(1:lq+1,1:lp,1:lphi))    ! these are just temp vars. needed to compute metric factors
+  allocate(rpint(1:lq+1,1:lp,1:lphi),thetapint(1:lq+1,1:lp,1:lphi),phipint(1:lq+1,1:lp,1:lphi))
 
   ! convert the cell centers to spherical ECEF coordinates, then tile for longitude dimension
   print*, ' make_dipolemesh:  converting cell centers...'
@@ -134,8 +139,8 @@ function make_dipolemesh(q,p,phi) result(x)
   end do
 
   ! now assign structure elements and deallocate unneeded temp variables
-  allocate(x%r(1:lq,1:lp,1:lphi),x%theta(1:lq,1:lp,1:lphi),x%phi(1:lq,1:lp,1:lphi))
-  x%r=r(1:lq,1:lp,1:lphi); x%theta=theta(1:lq,1:lp,1:lphi); x%phi=phispher(1:lq,1:lp,1:lphi)
+  allocate(x%r(1:lq,1:lp,1:lphi),x%theta(1:lq,1:lp,1:lphi),x%phispher(1:lq,1:lp,1:lphi))
+  x%r=r(1:lq,1:lp,1:lphi); x%theta=theta(1:lq,1:lp,1:lphi); x%phispher=phispher(1:lq,1:lp,1:lphi)
   deallocate(r,theta,phispher)
 
   ! compute and store the metric factors
@@ -165,15 +170,15 @@ function make_dipolemesh(q,p,phi) result(x)
   ! spherical ECEF unit vectors (expressed in a Cartesian ECEF basis)
   print*, ' make_dipolemesh:  spherical ECEF unit vectors...'  
   allocate(x%er(1:lq,1:lp,1:lphi,3),x%etheta(1:lq,1:lp,1:lphi,3),x%ephi(1:lq,1:lp,1:lphi,3))
-  x%er=get_er(x%r,x%theta,x%phi)
-  x%etheta=get_etheta(x%r,x%theta,x%phi)
-  x%ephi=get_ephi(x%r,x%theta,x%phi)
+  x%er=get_er(x%r,x%theta,x%phispher)
+  x%etheta=get_etheta(x%r,x%theta,x%phispher)
+  x%ephi=get_ephi(x%r,x%theta,x%phispher)
 
   ! dipole coordinate system unit vectors (Cart. ECEF)
   print*, ' make_dipolemesh:  dipole unit vectors...'  
   allocate(x%eq(1:lq,1:lp,1:lphi,3),x%ep(1:lq,1:lp,1:lphi,3))
-  x%eq=get_eq(x%r,x%theta,x%phi)
-  x%eq=get_ep(x%r,x%theta,x%phi)
+  x%eq=get_eq(x%r,x%theta,x%phispher)
+  x%ep=get_ep(x%r,x%theta,x%phispher)
 
   ! magnetic field magnitude
   print*, ' make_dipolemesh:  magnetic fields...'    
@@ -199,7 +204,8 @@ end function make_dipolemesh
 subroutine de_dipolemesh(x)
   type(dipolemesh), intent(inout) :: x
 
-  deallocate(x%r,x%theta,x%phi)
+  deallocate(x%q,x%p,x%phi)
+  deallocate(x%r,x%theta,x%phispher)
   deallocate(x%qint,x%pint,x%phiint)
   deallocate(x%hq,x%hp,x%hphi)
   deallocate(x%hqqi,x%hpqi,x%hphiqi)
@@ -208,6 +214,7 @@ subroutine de_dipolemesh(x)
   deallocate(x%eq,x%ep)
   deallocate(x%Bmag)
   deallocate(x%gq,x%gp,x%gphi)
+  deallocate(x%Inc)
 
 end subroutine de_dipolemesh
 
@@ -246,9 +253,9 @@ function get_inclination(er,eq,gridflag) result(Inc)
   lq=size(er,1)
   proj=sum(er*eq,dim=4)
   if (gridflag==0) then    ! for a closed grid average over half the domain
-    Inc=sum(proj,dim=1)/real(lq,wp)
-  else                     ! otherwise average over full domain
     Inc=sum(proj(1:lq/2,:,:),dim=1)/real(lq/2,wp)    ! note use of integer division and casting to real for avging
+  else                     ! otherwise average over full domain
+    Inc=sum(proj,dim=1)/real(lq,wp)
   end if
   Inc=90-min(Inc,pi-Inc)*180._wp/pi
 end function get_inclination
