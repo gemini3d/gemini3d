@@ -15,6 +15,7 @@ real(wp), dimension(2), parameter :: philims=[2.0,2.5]
 integer :: iq,ip,iphi
 type(dipolemesh) :: x
 real(wp) :: minchkvar,maxchkvar
+real(wp), dimension(1:lq-4,1:lp-4,1:lphi-4) :: proj
 
 
 ! define a grid, in reality this would be pull in from a file
@@ -54,6 +55,21 @@ minchkvar=minval(x%gphi); maxchkvar=maxval(x%gphi);
 print*, ' fullgrid_testdriver, gphi:  ',minchkvar,maxchkvar
 minchkvar=minval(x%Inc); maxchkvar=maxval(x%Inc);
 print*, ' fullgrid_testdriver, Inc:  ',minchkvar,maxchkvar
+
+! check orthogonality of the basis vectors
+proj=sum(x%eq*x%ep,dim=4)
+if (any(abs(proj)>1e-4)) error stop '  eq,ep not ortho!!!'
+proj=sum(x%eq*x%ephi,dim=4)
+if (any(abs(proj)>1e-4)) error stop '  eq,ephi not ortho!!!'
+proj=sum(x%ep*x%ephi,dim=4)
+if (any(abs(proj)>1e-4)) error stop '  ep,ephi not ortho!!!'
+proj=sum(x%er*x%etheta,dim=4)
+if (any(proj>1e-4)) error stop '  er,etheta not ortho!!!'
+proj=sum(x%er*x%ephi,dim=4)
+if (any(proj>1e-4)) error stop '  er,ephi not ortho!!!'
+proj=sum(x%etheta*x%ephi,dim=4)
+if (any(proj>1e-4)) error stop '  etheta,ephi not ortho!!!'
+
 
 ! deallocate the grid before ending the program
 print*, 'fullgrid_testdriver:  Deallocating mesh...'
