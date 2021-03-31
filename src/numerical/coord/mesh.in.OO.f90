@@ -1,4 +1,4 @@
-module mesh
+module meshobj
 
 !> This is a base type for defining most general characteristics of a curvlinear mesh; extension define specific coordinate systems.
 !    However, the idea here is to insulate the numerical parts of the program from that so that they can deal exclusively with the
@@ -16,7 +16,7 @@ type :: curvmesh
   integer :: lx1,lx2,lx3,lx2all,lx3all
   !! for program units that may not be able to access module globals
   
-  !!> CURVILINEAR VARIABLES AND DIFFS.
+  !!> CURVILINEAR VARIABLES AND DIFFS.  (private)
   real(wp), dimension(:), allocatable :: x1     ! provided in input file
   real(wp), dimension(:), allocatable :: x1i    ! recomputed by base class once x1 set
   real(wp), dimension(:), pointer :: dx1        ! recomputed by base class from x1
@@ -111,7 +111,78 @@ type :: curvmesh
     procedure :: set_sizes
     procedure :: set_coords
     procedure :: calc_difflengths
+    !procedure :: refine
     final :: destructor
 end type curvmesh
 
-end module mesh
+contains
+  !> assign coordinates to internal variables given some set of input arrays.
+  !   Assume that the data passed in include ghost cells
+  function set_coords(self,x1,x2,x3)
+    class(curvmesh) :: self
+    real(wp), dimension(:), intent(in) :: x1,x2,x3
+
+    self%lx1=size(x1,1)-4
+    self%lx2=size(x2,1)-4
+    self%lx3=size(x3,1)-4  
+    allocate(self%x1(-1:lx1+2),self%x2(-1:lx2+2),self%x3(-1:lx3+2))
+    self%x1=x1; self%x2=x2; self%x3=x3;
+  end function set_coords
+
+  !> compute diffs from given grid spacing
+  function calc_coord_diffs(self)
+    class(curvmesh) :: self
+    integer :: lx1,lx2,lx3
+
+    lx1=self%lx1; lx2=self%lx3; lx3=self%lx3    ! limits indexing verboseness
+
+    allocate(self%dx2(0:lx2+2), self%x2i(1:lx2+1), self%dx2i(1:lx2))    
+    self%dx2 = x%x2(0:lx2+2)-x%x2(-1:lx2+1)       !! computing these avoids extra message passing (could be done for other coordinates
+    self%x2i(1:lx2+1) = 0.5*(x%x2(0:lx2)+x%x2(1:lx2+1))
+    self%dx2i=x%x2i(2:lx2+1)-x%x2i(1:lx2)
+
+    allocate(self%dx3(0:lx3+2), self%x3i(1:lx3+1), self%dx3i(1:lx3))
+    self%dx3 = x%x3(0:lx3+2)-x%x3(-1:lx3+1)
+    self%x3i(1:lx3+1)=0.5_wp*(x%x3(0:lx3)+x%x3(1:lx3+1))
+    self%dx3i=x%x3i(2:lx3+1)-x%x3i(1:lx3)
+  end function calc_coord_diffs
+
+  !> calculate differential lengths (units of m) for CFL calculations
+  function calc_difflengths(self)
+    class(curvmesh) :: self
+    real(wp), dimension(1:lx1,1:lx2,1:lx3) :: tmpdx
+
+
+    allocate(x%dl1i(1:lx1,1:lx2,1:lx3),x%dl2i(1:lx1,1:lx2,1:lx3),x%dl3i(1:lx1,1:lx2,1:lx3))
+    
+    tmpdx=spread(spread(x%dx1i,2,lx2),3,lx3)
+    x%dl1i=tmpdx*x%h1(1:lx1,1:lx2,1:lx3)
+    tmpdx=spread(spread(x%dx2i,1,lx1),3,lx3)
+    x%dl2i=tmpdx*x%h2(1:lx1,1:lx2,1:lx3)
+    tmpdx=spread(spread(x%dx3i,1,lx1),2,lx2)
+    x%dl3i=tmpdx*x%h3(1:lx1,1:lx2,1:lx3)
+    end block
+  end function calc_difflengths
+
+  !> type destructor
+  subroutine destructor(self)
+    class(curvmesh) :: self
+
+    ! deallocation statements here...
+    if (allocated(self%x1)) deallocate(self%x1,self%x2,self%x3)
+    if (allocated(self%dx1)) then
+      deallocate(self%dx1,self%x1i,self%dx1i)
+      deallocate(self%dx2,self%x2i,self%dx2i)
+      deallocate(self%dx3,selfx3i,self%dx3i)
+    end if
+
+    ! extensions will need to deallocate the metric factor arrays
+    select type(self)
+
+    end select
+
+    ! let the user know that the destructor indeed ran
+    print*, '  curvmesh destructor completed successefully'
+  end subroutine destructor
+
+end module meshobj
