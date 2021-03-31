@@ -10,7 +10,7 @@ implicit none (type, external)
 public
 
 !> curvmesh is an overarching dervied type containing functionality and data that is not specific to individual coordinate systems
-!(which are extended types)
+!(which are extended types).
 type :: curvmesh
   !> SIZE INFORMATION.  Specified and set by base class methods
   integer :: lx1,lx2,lx3,lx2all,lx3all
@@ -25,7 +25,7 @@ type :: curvmesh
   
   real(wp), dimension(:), allocatable :: x2
   real(wp), dimension(:), allocatable :: x2i
-  real(wp), dimension(:), pointer :: dx2
+  real(wp), dimension(:), pointer :: dx2        ! these are pointers because they become associated with other pointers (meaning they have to either have the "target" keyword or themselves be pointers
   real(wp), dimension(:), allocatable :: dx2i
   
   real(wp), dimension(:), allocatable :: x3
@@ -107,9 +107,8 @@ type :: curvmesh
   integer, dimension(:,:), allocatable :: inull
 
   contains
-    procedure :: calc_coord_diffs
-    procedure :: set_sizes
     procedure :: set_coords
+    procedure :: calc_coord_diffs
     procedure :: calc_difflengths
     !procedure :: refine
     final :: destructor
@@ -134,52 +133,63 @@ contains
     class(curvmesh) :: self
     integer :: lx1,lx2,lx3
 
-    lx1=self%lx1; lx2=self%lx3; lx3=self%lx3    ! limits indexing verboseness
+    if (.not. allocated(self%x1)) then error stop ' attempting to compute diffs without coordinates!'
+
+    lx1=self%lx1; lx2=self%lx3; lx3=self%lx3    ! limits indexing verboseness, which drives me crazy
+
+    allocate(self%dx1(0:lx1+2), self%x1i(1:lx1+1), self%dx1i(1:lx1))    
+    self%dx1 = self%x1(0:lx1+2)-self%x1(-1:lx1+1)       !! computing these avoids extra message passing (could be done for other coordinates
+    self%x1i(1:lx2+1) = 0.5_wp*(self%x1(0:lx1)+self%x1(1:lx1+1))
+    self%dx1i=self%x1i(2:lx1+1)-self%x1i(1:lx1)
 
     allocate(self%dx2(0:lx2+2), self%x2i(1:lx2+1), self%dx2i(1:lx2))    
-    self%dx2 = x%x2(0:lx2+2)-x%x2(-1:lx2+1)       !! computing these avoids extra message passing (could be done for other coordinates
-    self%x2i(1:lx2+1) = 0.5*(x%x2(0:lx2)+x%x2(1:lx2+1))
-    self%dx2i=x%x2i(2:lx2+1)-x%x2i(1:lx2)
+    self%dx2 = self%x2(0:lx2+2)-self%x2(-1:lx2+1)       !! computing these avoids extra message passing (could be done for other coordinates
+    self%x2i(1:lx2+1) = 0.5_wp*(self%x2(0:lx2)+self%x2(1:lx2+1))
+    self%dx2i=self%x2i(2:lx2+1)-self%x2i(1:lx2)
 
     allocate(self%dx3(0:lx3+2), self%x3i(1:lx3+1), self%dx3i(1:lx3))
-    self%dx3 = x%x3(0:lx3+2)-x%x3(-1:lx3+1)
-    self%x3i(1:lx3+1)=0.5_wp*(x%x3(0:lx3)+x%x3(1:lx3+1))
-    self%dx3i=x%x3i(2:lx3+1)-x%x3i(1:lx3)
+    self%dx3 = self%x3(0:lx3+2)-self%x3(-1:lx3+1)
+    self%x3i(1:lx3+1)=0.5_wp*(self%x3(0:lx3)+self%x3(1:lx3+1))
+    self%dx3i=self%x3i(2:lx3+1)-self%x3i(1:lx3)
   end function calc_coord_diffs
 
   !> calculate differential lengths (units of m) for CFL calculations
   function calc_difflengths(self)
     class(curvmesh) :: self
-    real(wp), dimension(1:lx1,1:lx2,1:lx3) :: tmpdx
+    real(wp), dimension(:,:,:), allocatable :: tmpdx
+    integer :: lx1,lx2,lx3
 
+    if (.not. allocated(self%dx1i) .or. .not. allocated(self%h1)) then
+      error stop ' attempting to compute differential lengths without interface diffs or metric factors!'
+    end if
 
-    allocate(x%dl1i(1:lx1,1:lx2,1:lx3),x%dl2i(1:lx1,1:lx2,1:lx3),x%dl3i(1:lx1,1:lx2,1:lx3))
-    
-    tmpdx=spread(spread(x%dx1i,2,lx2),3,lx3)
-    x%dl1i=tmpdx*x%h1(1:lx1,1:lx2,1:lx3)
-    tmpdx=spread(spread(x%dx2i,1,lx1),3,lx3)
-    x%dl2i=tmpdx*x%h2(1:lx1,1:lx2,1:lx3)
-    tmpdx=spread(spread(x%dx3i,1,lx1),2,lx2)
-    x%dl3i=tmpdx*x%h3(1:lx1,1:lx2,1:lx3)
-    end block
+    lx1=self%lx1; lx2=self%lx3; lx3=self%lx3
+
+    allocate(tmpdx(1:lx1,1:lx2,1:lx3))
+    allocate(self%dl1i(1:lx1,1:lx2,1:lx3),self%dl2i(1:lx1,1:lx2,1:lx3),self%dl3i(1:lx1,1:lx2,1:lx3))
+    tmpdx=spread(spread(self%dx1i,2,lx2),3,lx3)
+    self%dl1i=tmpdx*self%h1(1:lx1,1:lx2,1:lx3)
+    tmpdx=spread(spread(self%dx2i,1,lx1),3,lx3)
+    self%dl2i=tmpdx*self%h2(1:lx1,1:lx2,1:lx3)
+    tmpdx=spread(spread(self%dx3i,1,lx1),2,lx2)
+    self%dl3i=tmpdx*self%h3(1:lx1,1:lx2,1:lx3)
+    deallocate(tmpdx)
   end function calc_difflengths
 
-  !> type destructor
+  !> type destructor; written generally, i.e. as if it is possible some grid pieces are allocated an others are not
   subroutine destructor(self)
     class(curvmesh) :: self
 
-    ! deallocation statements here...
-    if (allocated(self%x1)) deallocate(self%x1,self%x2,self%x3)
-    if (allocated(self%dx1)) then
+    ! deallocation statements here; always check allocated first...
+    if (allocated(self%x1)) deallocate(self%x1,self%x2,self%x3)    ! these are from set_coords
+    if (allocated(self%dx1)) then                                  ! from calc_coord_diffs
       deallocate(self%dx1,self%x1i,self%dx1i)
       deallocate(self%dx2,self%x2i,self%dx2i)
       deallocate(self%dx3,selfx3i,self%dx3i)
     end if
+    if (allocated(self%dl1i)) deallocate(self%dl1i,self%dl2i,self%dl3i)    ! from calc_difflengths
 
     ! extensions will need to deallocate the metric factor arrays
-    select type(self)
-
-    end select
 
     ! let the user know that the destructor indeed ran
     print*, '  curvmesh destructor completed successefully'
