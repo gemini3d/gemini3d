@@ -1,28 +1,37 @@
 # this enables CMake imported target HWM14::HWM14
-include(FetchContent)
+include(ExternalProject)
 
 find_package(hwm14 CONFIG)
 
-if(NOT hwm14_FOUND)
-  FetchContent_Declare(HWM14
-    GIT_REPOSITORY ${hwm14_git}
-    GIT_TAG ${hwm14_tag})
-
-  if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.14)
-    FetchContent_MakeAvailable(HWM14)
-  elseif(NOT hwm14_POPULATED)
-    FetchContent_Populate(HWM14)
-    add_subdirectory(${hwm14_SOURCE_DIR} ${hwm14_BINARY_DIR})
-  endif()
+if(hwm14_FOUND)
+  return()
 endif()
 
-add_library(HWM14::HWM14 INTERFACE IMPORTED)
-set_target_properties(HWM14::HWM14 PROPERTIES
-  INTERFACE_LINK_LIBRARIES hwm14)
+if(NOT DEFINED HWM14_ROOT)
+  set(HWM14_ROOT ${PROJECT_BINARY_DIR}/hwm14)
+endif()
 
-# to avoid modifying HWM14 source code
-foreach(f hwm123114.bin dwm07b104i.dat gd2qd.dat)
-  set(p ${hwm14_SOURCE_DIR}/src/hwm14/${f})
-  file(COPY ${p} DESTINATION ${PROJECT_BINARY_DIR})
-  install(FILES ${p} DESTINATION bin)
-endforeach()
+set(HWM14_LIBRARIES ${HWM14_ROOT}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}hwm14${CMAKE_STATIC_LIBRARY_SUFFIX})
+
+ExternalProject_Add(HWM14
+GIT_REPOSITORY ${hwm14_git}
+GIT_TAG ${hwm14_tag}
+INACTIVITY_TIMEOUT 30
+CONFIGURE_HANDLED_BY_BUILD ON
+CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:PATH=${HWM14_ROOT} -DBUILD_SHARED_LIBS:BOOL=false -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING:BOOL=false
+BUILD_BYPRODUCTS ${HWM14_LIBRARIES}
+)
+
+ExternalProject_Get_property(HWM14 SOURCE_DIR)
+
+ExternalProject_Add_Step(HWM14 hwm_cp1 DEPENDEES update
+COMMAND ${CMAKE_COMMAND} -E copy_if_different ${SOURCE_DIR}/src/hwm14/hwm123114.bin ${PROJECT_BINARY_DIR})
+ExternalProject_Add_Step(HWM14 hwm_cp2 DEPENDEES update
+COMMAND ${CMAKE_COMMAND} -E copy_if_different ${SOURCE_DIR}/src/hwm14/dwm07b104i.dat ${PROJECT_BINARY_DIR})
+ExternalProject_Add_Step(HWM14 hwm_cp3 DEPENDEES update
+COMMAND ${CMAKE_COMMAND} -E copy_if_different ${SOURCE_DIR}/src/hwm14/gd2qd.dat ${PROJECT_BINARY_DIR})
+
+add_library(HWM14::HWM14 INTERFACE IMPORTED)
+target_link_libraries(HWM14::HWM14 INTERFACE ${HWM14_LIBRARIES})
+
+add_dependencies(HWM14::HWM14 HWM14)

@@ -35,7 +35,7 @@ CMAKE_CACHE_ARGS -Darith:STRING=${arith}
 BUILD_BYPRODUCTS ${LAPACK_LIBRARIES}
 )
 
-add_library(LAPACK::LAPACK INTERFACE IMPORTED GLOBAL)
+add_library(LAPACK::LAPACK INTERFACE IMPORTED)
 target_link_libraries(LAPACK::LAPACK INTERFACE "${LAPACK_LIBRARIES}")
 
 # race condition for linking without this

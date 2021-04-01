@@ -8,7 +8,7 @@ h5fortran_git https://github.com/geospace-code/h5fortran.git
 h5fortran_tag v3.6.5
 
 hwm14_git https://github.com/space-physics/hwm14.git
-hwm14_tag cade327803fbfe2c76942bccd842ec5afdcb3541
+hwm14_tag fdc90189712a7c041f089831a7e5e8b3abaf7b0d
 
 msis2_git https://map.nrl.navy.mil/map/pub/nrl/NRLMSIS/NRLMSIS2.0/NRLMSIS2.0.zip
 msis2_sha1 fa817dfee637ec2298a6ec882345d13d0b087a85
