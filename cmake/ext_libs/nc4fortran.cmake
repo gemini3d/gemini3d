@@ -10,6 +10,8 @@ if(netcdf)
     return()
   endif()
 
+  cmake_minimum_required(VERSION 3.19...${CMAKE_MAX_VERSION})
+
   FetchContent_Declare(NC4FORTRAN
     GIT_REPOSITORY ${nc4fortran_git}
     GIT_TAG ${nc4fortran_tag})

@@ -1,3 +1,5 @@
+cmake_minimum_required(VERSION 3.19...${CMAKE_MAX_VERSION})
+
 include(FetchContent)
 
 FetchContent_Declare(MSIS2

@@ -50,7 +50,11 @@ option(dev "Gemini developer mode")
 
 option(mpi "Use MPI parallelization")
 
-option(autobuild "autobuild missing Lapack, Scalapack or Mumps" on)
+if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.19)
+  option(autobuild "autobuild missing libraries" on)
+else()
+  option(autobuild "autobuild missing libraries" off)
+endif()
 
 option(hdf5_external "build HDF5 instead of finding")
 option(lapack_external "build Lapack instead of finding")
@@ -74,6 +78,8 @@ option(python "PyGemini checks")
 option(matlab "Matlab checks")
 
 option(test_shaky "tests that may falsely fail")
+
+set(CMAKE_TLS_VERIFY true)  # for Git and Downloads
 
 if(dev)
   set(FETCHCONTENT_SOURCE_DIR_PYGEMINI ${PROJECT_SOURCE_DIR}/../pygemini CACHE PATH "PyGemini developer path")

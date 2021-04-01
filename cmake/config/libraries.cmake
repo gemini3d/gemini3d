@@ -1,4 +1,4 @@
-set(names glow lapack h5fortran hwm14 msis2 mumps nc4fortran scalapack matgmeini pygemini)
+set(names glow h5fortran)
 
 if(CMAKE_VERSION VERSION_LESS 3.19)
 
@@ -15,6 +15,8 @@ endforeach()
 
 else()
 # CMake >= 3.19
+
+list(APPEND names lapack hwm14 msis2 mumps nc4fortran scalapack matgmeini pygemini)
 
 file(READ ${CMAKE_CURRENT_LIST_DIR}/libraries.json _libj)
 
