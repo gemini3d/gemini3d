@@ -1,5 +1,4 @@
-# Leave GLOW as FetchContent as we use target properties to pass up DATADIR to src/ionization
-include(FetchContent)
+include(ExternalProject)
 
 find_package(glow CONFIG)
 if(glow_FOUND)
