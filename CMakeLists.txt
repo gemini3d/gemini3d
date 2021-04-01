@@ -1,4 +1,6 @@
-cmake_minimum_required(VERSION 3.13...3.20)
+set(CMAKE_MAX_VERSION 3.21)
+
+cmake_minimum_required(VERSION 3.13...${CMAKE_MAX_VERSION})
 
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release CACHE STRING "Debug or Release")
