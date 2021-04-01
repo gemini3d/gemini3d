@@ -47,17 +47,50 @@ endif()
 
 set(mumps_external true CACHE BOOL "build Mumps")
 
-# cache to override mumps option(parallel on)
-set(parallel ${mpi} CACHE BOOL "Mumps parallel = Gemini mpi")
 
-FetchContent_Declare(MUMPS
-  GIT_REPOSITORY ${mumps_git}
-  GIT_TAG ${mumps_tag}
-  CMAKE_ARGS -Darith=${arith} -Dmetis:BOOL=${metis} -Dscotch:BOOL=${scotch} -Dopenmp:BOOL=false)
+if(NOT DEFINED MUMPS_ROOT)
+  set(MUMPS_ROOT ${PROJECT_BINARY_DIR}/mumps)
+endif()
 
-if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.14)
-  FetchContent_MakeAvailable(MUMPS)
-elseif(NOT mumps_POPULATED)
-  FetchContent_Populate(MUMPS)
-  add_subdirectory(${mumps_SOURCE_DIR} ${mumps_BINARY_DIR})
+set(MUMPS_INCLUDE_DIRS ${MUMPS_ROOT}/include)
+set(MUMPS_LIBRARIES)
+
+foreach(a ${arith})
+  list(APPEND MUMPS_LIBRARIES ${MUMPS_ROOT}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}${a}mumps${CMAKE_STATIC_LIBRARY_SUFFIX})
+endforeach()
+
+list(APPEND MUMPS_LIBRARIES
+${MUMPS_ROOT}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}mumps_common${CMAKE_STATIC_LIBRARY_SUFFIX}
+${MUMPS_ROOT}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}pord${CMAKE_STATIC_LIBRARY_SUFFIX})
+
+if(NOT MPI_FOUND)
+  set(MUMPS_MPISEQ_LIBRARIES ${MUMPS_ROOT}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}${a}mpiseq${CMAKE_STATIC_LIBRARY_SUFFIX})
+endif()
+
+ExternalProject_Add(MUMPS
+GIT_REPOSITORY ${mumps_git}
+GIT_TAG ${mumps_tag}
+INACTIVITY_TIMEOUT 30
+CONFIGURE_HANDLED_BY_BUILD ON
+CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:PATH=${MUMPS_ROOT} -DSCALAPACK_ROOT:PATH=${SCALAPACK_ROOT} -DLAPACK_ROOT:PATH=${LAPACK_ROOT} -DBUILD_SHARED_LIBS:BOOL=false -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING:BOOL=false -Dmetis:BOOL=${metis} -Dscotch:BOOL=${scotch} -Dopenmp:BOOL=false -Dparallel:BOOL=${mpi}
+CMAKE_CACHE_ARGS -Darith:STRING=${arith}
+BUILD_BYPRODUCTS ${MUMPS_LIBRARIES} ${MUMPS_MPISEQ_LIBRARIES}
+)
+
+file(MAKE_DIRECTORY ${MUMPS_INCLUDE_DIRS})
+
+add_library(MUMPS::MUMPS INTERFACE IMPORTED GLOBAL)
+target_link_libraries(MUMPS::MUMPS INTERFACE "${MUMPS_LIBRARIES}")
+target_include_directories(MUMPS::MUMPS INTERFACE ${MUMPS_INCLUDE_DIRS})
+
+# race condition for linking without this
+add_dependencies(MUMPS::MUMPS MUMPS)
+
+if(NOT MPI_FOUND)
+  add_library(MUMPS::MPISEQ INTERFACE IMPORTED)
+  target_link_libraries(MUMPS::MPISEQ INTERFACE "${MUMPS_MPISEQ_LIBRARIES}")
+  target_include_directories(MUMPS::MPISEQ INTERFACE ${MUMPS_INCLUDE_DIRS})
+
+  # race condition for linking without this
+  add_dependencies(MUMPS::MPISEQ MUMPS)
 endif()
