@@ -1,5 +1,5 @@
 glow_git https://github.com/gemini3d/glow.git
-glow_tag v0.981.0.5
+glow_tag v0.981.0.6
 
 lapack_git https://github.com/scivision/lapack.git
 lapack_tag v3.9.0.5

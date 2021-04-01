@@ -1,5 +1,5 @@
 {
-"glow": {"git": "https://github.com/gemini3d/glow.git", "tag": "v0.981.0.5"},
+"glow": {"git": "https://github.com/gemini3d/glow.git", "tag": "v0.981.0.6"},
 
 "h5fortran": {"git": "https://github.com/geospace-code/h5fortran.git", "tag": "v3.6.5"},
 "nc4fortran": {"git": "https://github.com/geospace-code/nc4fortran.git", "tag": "v1.2.2"},
