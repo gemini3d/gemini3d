@@ -1,5 +1,5 @@
 # Finds Lapack, tests, and if not found or broken, autobuild Lapack
-include(FetchContent)
+include(ExternalProject)
 
 if(NOT lapack_external)
   if(autobuild)
@@ -16,14 +16,27 @@ endif()
 
 set(lapack_external true CACHE BOOL "build Lapack")
 
-FetchContent_Declare(LAPACK
-  GIT_REPOSITORY ${lapack_git}
-  GIT_TAG ${lapack_tag}
-  CMAKE_ARGS -Darith=${arith})
-
-if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.14)
-  FetchContent_MakeAvailable(LAPACK)
-elseif(NOT lapack_POPULATED)
-  FetchContent_Populate(LAPACK)
-  add_subdirectory(${lapack_SOURCE_DIR} ${lapack_BINARY_DIR})
+if(NOT DEFINED LAPACK_ROOT)
+  set(LAPACK_ROOT ${PROJECT_BINARY_DIR}/lapack)
 endif()
+
+set(LAPACK_LIBRARIES
+${LAPACK_ROOT}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}lapack${CMAKE_STATIC_LIBRARY_SUFFIX}
+${LAPACK_ROOT}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}blas${CMAKE_STATIC_LIBRARY_SUFFIX})
+
+
+ExternalProject_Add(LAPACK
+GIT_REPOSITORY ${lapack_git}
+GIT_TAG ${lapack_tag}
+INACTIVITY_TIMEOUT 30
+CONFIGURE_HANDLED_BY_BUILD ON
+CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:PATH=${LAPACK_ROOT} -DBUILD_SHARED_LIBS:BOOL=false -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING:BOOL=false
+CMAKE_CACHE_ARGS -Darith:STRING=${arith}
+BUILD_BYPRODUCTS ${LAPACK_LIBRARIES}
+)
+
+add_library(LAPACK::LAPACK INTERFACE IMPORTED GLOBAL)
+target_link_libraries(LAPACK::LAPACK INTERFACE "${LAPACK_LIBRARIES}")
+
+# race condition for linking without this
+add_dependencies(LAPACK::LAPACK LAPACK)
