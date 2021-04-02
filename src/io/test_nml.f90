@@ -3,6 +3,14 @@ program test_nml
 
 implicit none (type, external)
 
+call print_nml()
+print *, "OK: read basic namelist file"
+
+contains
+
+
+subroutine print_nml()
+
 type :: gemini_config
   integer :: potsolve, flagperiodic, flagoutput, flagcap
 end type gemini_config
@@ -29,5 +37,7 @@ cfg%flagcap = flagcap
 print *,cfg
 
 close(u)
+
+end subroutine print_nml
 
 end program

@@ -7,7 +7,7 @@ use phys_consts, only : wp
 
 implicit none (type, external)
 private
-public :: read_configfile, gemini_cfg, get_compiler_vendor
+public :: read_configfile, gemini_cfg, get_compiler_vendor, expand_envvar
 
 type :: gemini_cfg
 
@@ -154,5 +154,38 @@ elseif(i == 0) then
 end if
 
 end function get_compiler_vendor
+
+
+function expand_envvar(path, envvar) result(expanded)
+!! replace @...@ string like metabuild system e.g. CMake, based on env var
+!! this function REQUIRES:
+!!
+!! 1. envvar is a defined environment variable
+!! 2. path contains a matching @envvar@ substring
+
+character(:), allocatable :: expanded, substr
+character(*), intent(in) :: path, envvar
+
+integer :: i, L, istat
+character(1000) :: buf
+
+expanded = path
+
+i = index(path, "@")
+if (i < 1) return
+!! nothing to expand
+
+substr = "@" // envvar // "@"
+i = index(path, substr)
+if (i < 1) return
+!! this envvar is not in path, perhaps multiple calls to expand_envvar.
+!! Should this be an error?
+
+call get_environment_variable(envvar, buf, length=L, status=istat)
+if (istat /= 0 .or. L < 1) error stop "environment variable empty or not defined: " // envvar
+
+expanded = path(1:i - 1) // trim(buf) // path(i + len(substr):len(path))
+
+end function expand_envvar
 
 end module config

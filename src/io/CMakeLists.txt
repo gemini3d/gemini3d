@@ -60,6 +60,7 @@ target_link_libraries(config PRIVATE pathlib const)
 set(_test_file ${CMAKE_CURRENT_SOURCE_DIR}/../unit_tests/config/config_example.nml)
 
 if(${PROJECT_NAME}_BUILD_TESTING)
+
 add_executable(test_namelist test_nml.f90)
 set_target_properties(test_namelist PROPERTIES LABELS unit)
 add_test(NAME unit:namelist COMMAND $<TARGET_FILE:test_namelist> ${_test_file})
@@ -69,13 +70,24 @@ LABELS unit
 TIMEOUT 10)
 
 add_executable(test_compiler_vendor test_compiler_vendor.f90)
-target_link_libraries(test_compiler_vendor config pathlib)
+target_link_libraries(test_compiler_vendor PRIVATE config pathlib)
 set_target_properties(test_compiler_vendor PROPERTIES LABELS unit)
 add_test(NAME unit:compiler_vendor COMMAND $<TARGET_FILE:test_compiler_vendor>)
 set_tests_properties(unit:compiler_vendor PROPERTIES
-  PASS_REGULAR_EXPRESSION ${CMAKE_Fortran_COMPILER_ID}
-  LABELS unit)
-endif()
+PASS_REGULAR_EXPRESSION ${CMAKE_Fortran_COMPILER_ID}
+LABELS unit
+TIMEOUT 10)
+
+add_executable(test_expand_envvar test_expand_envvar.f90)
+target_link_libraries(test_expand_envvar PRIVATE config pathlib)
+set_target_properties(test_expand_envvar PROPERTIES LABELS unit)
+add_test(NAME unit:expand_envvar COMMAND $<TARGET_FILE:test_expand_envvar>)
+set_tests_properties(unit:expand_envvar PROPERTIES
+ENVIRONMENT test__gem=hello
+LABELS unit
+TIMEOUT 10)
+
+endif(${PROJECT_NAME}_BUILD_TESTING)
 
 # --- io
 configure_file(output.in.f90 output.f90 @ONLY)
