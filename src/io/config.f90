@@ -182,7 +182,7 @@ if (i < 1) return
 !! Should this be an error?
 
 call get_environment_variable(envvar, buf, length=L, status=istat)
-if (istat /= 0 .or. L < 1) error stop "environment variable empty or not defined: " // envvar
+if (istat /= 0 .or. L < 1) error stop "config:expand_envvar: environment variable empty or not defined: " // envvar
 
 expanded = path(1:i - 1) // trim(buf) // path(i + len(substr):len(path))
 
