@@ -12,6 +12,7 @@ public
 !> curvmesh is an overarching dervied type containing functionality and data that is not specific to individual coordinate systems
 !(which are extended types).
 type :: curvmesh
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Generic properties !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 
   !> SIZE INFORMATION.  Specified and set by base class methods
   integer :: lx1,lx2,lx3,lx2all,lx3all
   !! for program units that may not be able to access module globals
@@ -52,7 +53,8 @@ type :: curvmesh
   !> flag for indicated type of grid (0 - closed dipole; 1 - open dipole inverted; 2 - non-inverted).  Computed by method in generic
   !class
   integer :: gridflag
-  
+ 
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Coordinate system specific properties !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 
   !> METRIC FACTORS.  These are pointers to be assigned/allocated/filled by subclass for specific coordinate system
   real(wp), dimension(:,:,:), pointer :: h1,h2,h3     ! need to be computed by subclass for specific coordinate system
   !! these are the cell-centered metric coefficients
@@ -106,26 +108,36 @@ type :: curvmesh
   !! length of null point index array
   integer, dimension(:,:), allocatable :: inull
 
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Methods !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 
   contains
     procedure :: set_coords
     procedure :: calc_coord_diffs
     procedure :: calc_difflengths
     !procedure :: refine
+    procedure :: init_storage
     final :: destructor
 end type curvmesh
 
 contains
   !> assign coordinates to internal variables given some set of input arrays.
   !   Assume that the data passed in include ghost cells
-  function set_coords(self,x1,x2,x3)
+  function set_coords(self,x1,x2,x3,x2all,x3all)
     class(curvmesh) :: self
     real(wp), dimension(:), intent(in) :: x1,x2,x3
+    real(wp), dimension(:), intent(in) :: x2all,x3all
 
-    self%lx1=size(x1,1)-4
-    self%lx2=size(x2,1)-4
-    self%lx3=size(x3,1)-4  
+    lx1=size(x1,1)-4
+    lx2=size(x2,1)-4
+    lx3=size(x3,1)-4
+    lx2all=size(x2all,1)-4
+    lx3all=size(x3all,1)-4
+    self%lx1=lx1; self%lx2=lx2; self%lx3=lx3
+    self%lx2all=lx2all; self%lx3all=lx3all
+
     allocate(self%x1(-1:lx1+2),self%x2(-1:lx2+2),self%x3(-1:lx3+2))
-    self%x1=x1; self%x2=x2; self%x3=x3;
+    self%x1=x1; self%x2=x2; self%x3=x3
+    allocate(x2all(-1:lx2all+2),x3all(-1:lx3all+2)
+    self%x2all=x2all; self%x3all=x3all
   end function set_coords
 
   !> compute diffs from given grid spacing
@@ -135,7 +147,7 @@ contains
 
     if (.not. allocated(self%x1)) then error stop ' attempting to compute diffs without coordinates!'
 
-    lx1=self%lx1; lx2=self%lx3; lx3=self%lx3    ! limits indexing verboseness, which drives me crazy
+    lx1=self%lx1; lx2=self%lx2; lx3=self%lx3    ! limits indexing verboseness, which drives me crazy
 
     allocate(self%dx1(0:lx1+2), self%x1i(1:lx1+1), self%dx1i(1:lx1))    
     self%dx1 = self%x1(0:lx1+2)-self%x1(-1:lx1+1)       !! computing these avoids extra message passing (could be done for other coordinates
@@ -153,7 +165,7 @@ contains
     self%dx3i=self%x3i(2:lx3+1)-self%x3i(1:lx3)
   end function calc_coord_diffs
 
-  !> calculate differential lengths (units of m) for CFL calculations
+  !> calculate differential lengths (units of m), needed for CFL calculations
   function calc_difflengths(self)
     class(curvmesh) :: self
     real(wp), dimension(:,:,:), allocatable :: tmpdx
@@ -163,7 +175,7 @@ contains
       error stop ' attempting to compute differential lengths without interface diffs or metric factors!'
     end if
 
-    lx1=self%lx1; lx2=self%lx3; lx3=self%lx3
+    lx1=self%lx1; lx2=self%lx2; lx3=self%lx3
 
     allocate(tmpdx(1:lx1,1:lx2,1:lx3))
     allocate(self%dl1i(1:lx1,1:lx2,1:lx3),self%dl2i(1:lx1,1:lx2,1:lx3),self%dl3i(1:lx1,1:lx2,1:lx3))
@@ -176,12 +188,37 @@ contains
     deallocate(tmpdx)
   end function calc_difflengths
 
-  !> type destructor; written generally, i.e. as if it is possible some grid pieces are allocated an others are not
+  !> allocate space for metric factors
+  subroutine init_storage(self)
+    class(curvmesh) :: self
+
+    lx1=self%lx1; lx2=self%lx2; lx3=self%lx3
+
+    if (.not. allocated(self%h1) ) then     ! use this as a proxy for if any other coordinate-specific arrays exist
+      allocate(self%h1(1:lx1,1:lx2,1:lx3),self%h2(1:lx1,1:lx2,1:lx3),self%h3(1:lx1,1:lx2,1:lx3))
+      allocate(self%er(1:lx1,1:lx2,1:lx3),self%etheta(1:lx1,1:lx2,1:lx3),self%ephi(1:lx1,1:lx2,1:lx3))
+      allocate(self%e1(1:lx1,1:lx2,1:lx3),self%e2(1:lx1,1:lx2,1:lx3),self%e3(1:lx1,1:lx2,1:lx3))
+      allocate(self%Bmag(1:lx1,1:lx2,1:lx3),self%I(1:lx2,1:lx3))
+      allocate(self%g1(1:lx1,1:lx2,1:lx3),self%g2(1:lx1,1:lx2,1:lx3),self%g3(1:lx1,1:lx2,1:lx3))
+    else
+      error stop ' attempting to allocated space for coordinate-specific arrays when they already exist!'
+    end if
+  end subroutine init_storage
+
+  !> allocate space for root-only grid quantities
+  subroutine init_storage_root(self)
+    class(curvmesh) :: self
+
+    !fixme:  allocate root storage here; maybe check myid==0???
+
+  end subroutine init_storage_root
+
+  !> type destructor; written generally, viz. as if it is possible some grid pieces are allocated an others are not
   subroutine destructor(self)
     class(curvmesh) :: self
 
     ! deallocation statements here; always check allocated first...
-    if (allocated(self%x1)) deallocate(self%x1,self%x2,self%x3)    ! these are from set_coords
+    if (allocated(self%x1)) deallocate(self%x1,self%x2,self%x3,self%x2all,self%x3all)    ! these are from set_coords
     if (allocated(self%dx1)) then                                  ! from calc_coord_diffs
       deallocate(self%dx1,self%x1i,self%dx1i)
       deallocate(self%dx2,self%x2i,self%dx2i)
@@ -189,7 +226,11 @@ contains
     end if
     if (allocated(self%dl1i)) deallocate(self%dl1i,self%dl2i,self%dl3i)    ! from calc_difflengths
 
-    ! extensions will need to deallocate the metric factor arrays
+    ! coordinate-specific arrays set by type extensions
+    if (allocated(self%h1)) then
+      deallocate(self%h1,self%h2,self%h3,self%er,self%etheta,self%ephi,self%e1,self%e2,self%e3)
+      deallocate(self%g1,self%g2,self%g3)
+    end if
 
     ! let the user know that the destructor indeed ran
     print*, '  curvmesh destructor completed successefully'
