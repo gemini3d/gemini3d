@@ -10,15 +10,10 @@ endif()
 cmake_minimum_required(VERSION 3.19...${CMAKE_VERSION})
 
 FetchContent_Declare(MATGEMINI
-  GIT_REPOSITORY ${matgemini_git}
-  GIT_TAG ${matgemini_tag})
+GIT_REPOSITORY ${matgemini_git}
+GIT_TAG ${matgemini_tag})
 
-if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.14)
-  FetchContent_MakeAvailable(MATGEMINI)
-elseif(NOT matgemini_POPULATED)
-  FetchContent_Populate(MATGEMINI)
-endif()
-
+FetchContent_MakeAvailable(MATGEMINI)
 
 if(NOT MATGEMINI_DIR)
   execute_process(COMMAND ${Matlab_MAIN_PROGRAM} -batch "run('${matgemini_SOURCE_DIR}/setup.m'), gemini3d.fileio.expanduser('~');"

@@ -45,15 +45,10 @@ endif()
 cmake_minimum_required(VERSION 3.19...${CMAKE_VERSION})
 
 FetchContent_Declare(PYGEMINI
-  GIT_REPOSITORY ${pygemini_git}
-  GIT_TAG ${pygemini_tag})
+GIT_REPOSITORY ${pygemini_git}
+GIT_TAG ${pygemini_tag})
 
-if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.14)
-  FetchContent_MakeAvailable(PYGEMINI)
-elseif(NOT pygemini_POPULATED)
-  FetchContent_Populate(PYGEMINI)
-endif()
-
+FetchContent_MakeAvailable(PYGEMINI)
 
 if(NOT PYGEMINI_DIR)
   check_pygemini()

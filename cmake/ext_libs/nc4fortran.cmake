@@ -13,15 +13,11 @@ if(netcdf)
   cmake_minimum_required(VERSION 3.19...${CMAKE_VERSION})
 
   FetchContent_Declare(NC4FORTRAN
-    GIT_REPOSITORY ${nc4fortran_git}
-    GIT_TAG ${nc4fortran_tag})
+  GIT_REPOSITORY ${nc4fortran_git}
+  GIT_TAG ${nc4fortran_tag})
 
-  if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.14)
-    FetchContent_MakeAvailable(NC4FORTRAN)
-  elseif(NOT nc4fortran_POPULATED)
-    FetchContent_Populate(NC4FORTRAN)
-    add_subdirectory(${nc4fortran_SOURCE_DIR} ${nc4fortran_BINARY_DIR})
-  endif()
+  FetchContent_MakeAvailable(NC4FORTRAN)
+
 else(netcdf)
   message(VERBOSE " using nc4fortran dummy")
 

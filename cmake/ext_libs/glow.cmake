@@ -6,7 +6,11 @@ if(glow_FOUND)
 endif()
 
 if(NOT DEFINED GLOW_ROOT)
-  set(GLOW_ROOT ${PROJECT_BINARY_DIR}/glow)
+  if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+    set(GLOW_ROOT ${PROJECT_BINARY_DIR}/glow)
+  else()
+    set(GLOW_ROOT ${CMAKE_INSTALL_PREFIX})
+  endif()
 endif()
 
 set(GLOW_LIBRARIES
