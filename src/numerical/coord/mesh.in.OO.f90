@@ -217,6 +217,8 @@ contains
     if (.not. self%coord_alloc_status ) then     ! use this as a proxy for if any other coordinate-specific arrays exist
       allocate(self%h1(1:lx1,1:lx2,1:lx3),self%h2(1:lx1,1:lx2,1:lx3),self%h3(1:lx1,1:lx2,1:lx3))
       ! fixme: interface metric factors
+      allocate(self%h1x1i(1:lx1+1,1:lx2,1:lx3),self%h2x1i(1:lx1+1,1:lx2,1:lx3),self%h3x1i(1:lx1+1,1:lx2,1:lx3))
+      allocate(self%h1x2i(1:lx1,1:lx2+1,1:lx3),self%h2x2i(1:lx1,1:lx2+1,1:lx3),self%h3x2i(1:lx1,1:lx2+1,1:lx3))
       allocate(self%er(1:lx1,1:lx2,1:lx3,3),self%etheta(1:lx1,1:lx2,1:lx3,3),self%ephi(1:lx1,1:lx2,1:lx3,3))
       allocate(self%e1(1:lx1,1:lx2,1:lx3,3),self%e2(1:lx1,1:lx2,1:lx3,3),self%e3(1:lx1,1:lx2,1:lx3,3))
       allocate(self%Bmag(1:lx1,1:lx2,1:lx3),self%I(1:lx2,1:lx3))
