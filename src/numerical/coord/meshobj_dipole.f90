@@ -83,9 +83,10 @@ contains
 subroutine init_dipolemesh(self)
   class(dipolemesh) :: self
 
+  if (.not. self%xi_alloc_status) error stop ' must have curvilinear coordinates defined prior to call init_dipolemesh()'
+
   ! allocate array space using base type-bound procedure
   call self%calc_coord_diffs()
-  call self%calc_difflengths()
   call self%init_storage()
 
   ! now we must associate pointers for extended type alias variables
@@ -114,7 +115,7 @@ subroutine make_dipolemesh(self)
 
   ! check that pointers are correctly associated, which implies that all space has been allocated :)
   if (.not. associated(self%q)) error stop  & 
-             ' pointers to grid coordiante arrays must be associated prior to make_dipolemesh being called'
+             ' pointers to grid coordiante arrays must be associated prior calling make_dipolemesh()'
 
   ! size of arrays, including ghost cells
   lqg=size(self%q,1); lpg=size(self%p,1); lphig=size(self%phidip,1)
@@ -206,6 +207,10 @@ subroutine make_dipolemesh(self)
   ! inclination angle for each field line
   print*, ' make_dipolemesh:  inclination angle...'  
   self%I=self%calc_inclination(self%er,self%eq,self%gridflag)
+
+  ! now finish by computing differential lengths
+  self%coord_alloc_status=.true.
+  call self%calc_difflengths()
 end subroutine make_dipolemesh
 
 
