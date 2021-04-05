@@ -1,7 +1,7 @@
 program fullgrid_testdriver
 
 use, intrinsic :: ISO_Fortran_env,  only : wp=>real64
-use dipole, only : make_dipolemesh,dipolemesh,de_dipolemesh
+use meshobj_dipole, only : dipolemesh
 
 implicit none
 
@@ -23,9 +23,17 @@ q=[(qlims(1) + (qlims(2)-qlims(1))/lq*(iq-1),iq=1,lq)]
 p=[(plims(1) + (plims(2)-plims(1))/lp*(ip-1),ip=1,lp)]
 phi=[(philims(1) + (philims(2)-philims(1))/lphi*(iphi-1),iphi=1,lphi)]
 
+! grid spec.
+print*, 'fullgrid_testdriver:  Defining curvilinear coordinates...'
+call x%set_coords(q,p,phi,p,phi)
+
+! allocations
+print*, 'fullgrid_testdriver:  Allocating space for coordinate-specific arrays...'
+call x%init_dipolemesh()
+
 ! call grid generation for this grid def.
 print*, 'fullgrid_testdriver:  Calling dipole mesh constructor...'
-x=make_dipolemesh(q,p,phi)
+call x%make_dipolemesh()
 
 ! now do some basic sanity checks
 print*, 'fullgrid_testdriver:  Starting basic checks...'
@@ -53,7 +61,7 @@ minchkvar=minval(x%gp); maxchkvar=maxval(x%gp);
 print*, ' fullgrid_testdriver, gp:  ',minchkvar,maxchkvar
 minchkvar=minval(x%gphi); maxchkvar=maxval(x%gphi);
 print*, ' fullgrid_testdriver, gphi:  ',minchkvar,maxchkvar
-minchkvar=minval(x%Inc); maxchkvar=maxval(x%Inc);
+minchkvar=minval(x%I); maxchkvar=maxval(x%I);
 print*, ' fullgrid_testdriver, Inc:  ',minchkvar,maxchkvar
 
 ! check orthogonality of the basis vectors
@@ -72,7 +80,6 @@ if (any(proj>1e-4)) error stop '  etheta,ephi not ortho!!!'
 
 
 ! deallocate the grid before ending the program
-print*, 'fullgrid_testdriver:  Deallocating mesh...'
-call de_dipolemesh(x)
+print*, 'fullgrid_testdriver:  exiting program; destructor should be called...'
 
 end program fullgrid_testdriver
