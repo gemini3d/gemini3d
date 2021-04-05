@@ -75,6 +75,14 @@ end interface get_ep
 
 contains
 
+!> associate pointers with arrays in base class
+subroutine init(self)
+  type(dipolemesh) :: self
+
+  ! fixme: allocate using base type methods and associate local pointers...
+
+end subroutine init
+
 
 !> create a dipole mesh structure out of given q,p,phi spacings.  We assume here that the input cell center locations
 !   are provide with ghost cells included (note input array indexing in dummy variable declarations.  For new we assume
