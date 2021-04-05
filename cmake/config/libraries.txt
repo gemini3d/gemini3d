@@ -1,5 +1,2 @@
-glow_git https://github.com/gemini3d/glow.git
-glow_tag v0.981.0.6
-
 h5fortran_git https://github.com/geospace-code/h5fortran.git
 h5fortran_tag v3.6.5

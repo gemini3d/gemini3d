@@ -52,8 +52,10 @@ option(mpi "Use MPI parallelization")
 
 if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.19)
   option(autobuild "autobuild missing libraries" on)
+  option(glow "use NCAR GLOW airglow / aurora model" on)
 else()
   option(autobuild "autobuild missing libraries" off)
+  option(glow "use NCAR GLOW airglow / aurora model")
 endif()
 
 option(hdf5_external "build HDF5 instead of finding")
@@ -61,7 +63,7 @@ option(lapack_external "build Lapack instead of finding")
 option(scalapack_external "build ScaLapack instead of finding")
 option(mumps_external "build MUMPS instead of finding")
 
-option(glow "use NCAR GLOW airglow / aurora model" on)
+
 option(hwm14 "use HWM14 neutral winds model")
 option(msis20 "use MSIS 2.0 neutral atmosphere model")
 
