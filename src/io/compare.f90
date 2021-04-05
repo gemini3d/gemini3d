@@ -4,7 +4,7 @@ module compare_h5
 !! any weird bugs causing false positive/negative
 
 use, intrinsic :: ieee_arithmetic, only : ieee_is_finite
-use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
+use, intrinsic :: iso_fortran_env, only : stderr=>error_unit, int64
 use phys_consts, only : wp
 use timeutils, only : date_filename, dateinc
 use config, only : gemini_cfg, read_configfile
@@ -28,33 +28,27 @@ private
 public :: check_plasma_output_hdf5, check_plasma_input_hdf5, check_simsize, check_time, check_grid
 
 interface !< compare_out_h5.f90
-module subroutine check_plasma_output_hdf5(new_path, ref_path, all_ok)
+module logical function check_plasma_output_hdf5(new_path, ref_path, debug)
 character(*), intent(in) :: new_path, ref_path
-logical, intent(out) :: all_ok
-end subroutine check_plasma_output_hdf5
-
+logical, intent(in), optional :: debug
+end function check_plasma_output_hdf5
 end interface
 
 interface !< compare_in_h5.f90
-module subroutine check_plasma_input_hdf5(new_path, ref_path, all_ok)
+module logical function check_plasma_input_hdf5(new_path, ref_path, debug)
 character(*), intent(in) :: new_path, ref_path
-logical, intent(out) :: all_ok
-end subroutine check_plasma_input_hdf5
+logical, intent(in), optional :: debug
+end function check_plasma_input_hdf5
+end interface
 
+interface !< compare_grid_h5.f90
+module logical function check_grid(new_path, ref_path, debug)
+character(*), intent(in) :: new_path, ref_path
+logical, intent(in), optional :: debug
+end function check_grid
 end interface
 
 contains
-
-
-subroutine check_grid(new, ref)
-
-character(*), intent(in) :: new, ref
-
-
-
-
-
-end subroutine check_grid
 
 
 subroutine check_simsize(new, ref, lx1, lx2all, lx3all)
@@ -76,8 +70,8 @@ integer, intent(out) :: lx1, lx2all, lx3all
 
 integer :: R_lx1, R_lx2all, R_lx3all
 
-call get_simsize3(ref // "/inputs", R_lx1, R_lx2all, R_lx3all)
-call get_simsize3(new // "/inputs", lx1, lx2all, lx3all)
+call get_simsize3(ref // "/inputs/simsize.h5", R_lx1, R_lx2all, R_lx3all)
+call get_simsize3(new // "/inputs/simsize.h5", lx1, lx2all, lx3all)
 
 if(lx1 /= R_lx1) error stop 'lx1 != ref: ' // new
 if(lx2all /= R_lx2all) error stop 'lx2all != ref: ' // new

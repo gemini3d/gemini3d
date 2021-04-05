@@ -81,6 +81,7 @@ add_executable(gemini3d.compare)
 target_sources(gemini3d.compare PRIVATE
   gemini_compare.f90
   ${CMAKE_CURRENT_SOURCE_DIR}/../io/compare.f90
+  ${CMAKE_CURRENT_SOURCE_DIR}/../io/compare_grid_h5.f90
   ${CMAKE_CURRENT_SOURCE_DIR}/../io/compare_out_h5.f90
   ${CMAKE_CURRENT_SOURCE_DIR}/../io/compare_in_h5.f90)
 target_link_libraries(gemini3d.compare PRIVATE assert config reader pathlib timeutils const nc4fortran::nc4fortran h5fortran::h5fortran)

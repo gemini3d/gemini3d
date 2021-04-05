@@ -13,11 +13,14 @@ integer :: i, ymd(3), lx1, lx2all, lx3all
 
 real(wp) :: UTsec
 character(:), allocatable :: suffix
-logical :: exists, ok
+logical :: exists, ok, dbug
 
 call check_simsize(new_path, ref_path, lx1, lx2all, lx3all)
 
-all_ok = .true.
+check_plasma_output_hdf5 = .true.
+
+dbug = .false.
+if(present(debug)) dbug = debug
 
 cfg%infile = new_path // '/inputs/config.nml'
 cfg%outdir = '.'  !< not used, just to pass checks
@@ -44,10 +47,10 @@ do
   !! last output file
   new_file = date_filename(new_path, ymd, UTsec) // suffix
 
-  ok = check_out(cfg, new_file, ref_file,  lx1, lx2all, lx3all)
+  ok = check_out(cfg, new_file, ref_file,  lx1, lx2all, lx3all, dbug)
   if(.not. ok) then
     write(stderr,*) "gemini3d.compare: MISMATCHED data at", ymd, UTsec
-    all_ok = .false.
+    check_plasma_output_hdf5 = .false.
   endif
 
   !! next time
@@ -57,11 +60,12 @@ end do
 end procedure check_plasma_output_hdf5
 
 
-logical function check_out(cfg, new_file, ref_file, lx1, lx2all, lx3all)
+logical function check_out(cfg, new_file, ref_file, lx1, lx2all, lx3all, debug)
 
 type(gemini_cfg), intent(in) :: cfg
 character(*), intent(in) :: new_file, ref_file
 integer, intent(in) :: lx1, lx2all, lx3all
+logical, intent(in) :: debug
 
 type(hdf5_file) :: hnew, href
 integer :: i, bad
@@ -94,45 +98,45 @@ bad = 0
 select case (flagoutput)
 case (3)
   !! just electron density
-  bad = bad + check_var('neall', new_file, ref_file, rtolN, atolN, lx1, lx2all, lx3all)
+  bad = bad + check_var('neall', new_file, ref_file, rtolN, atolN, lx1, lx2all, lx3all, debug)
 
 case (2)
 
-  bad = bad + check_var('neall', new_file, ref_file, rtolN, atolN, lx1, lx2all, lx3all)
+  bad = bad + check_var('neall', new_file, ref_file, rtolN, atolN, lx1, lx2all, lx3all, debug)
 
   do i = 1,size(varsT)
-    bad = bad + check_var(varsT(i), new_file, ref_file, rtolT, atolT, lx1, lx2all, lx3all)
+    bad = bad + check_var(varsT(i), new_file, ref_file, rtolT, atolT, lx1, lx2all, lx3all, debug)
   enddo
 
   do i = 1,size(varsV)
-    bad = bad + check_var(varsV(i), new_file, ref_file, rtolV, atolV, lx1, lx2all, lx3all)
+    bad = bad + check_var(varsV(i), new_file, ref_file, rtolV, atolV, lx1, lx2all, lx3all, debug)
   enddo
 
   do i = 1,size(varsJ)
-    bad = bad + check_var(varsJ(i), new_file, ref_file, rtolJ, atolJ, lx1, lx2all, lx3all)
+    bad = bad + check_var(varsJ(i), new_file, ref_file, rtolJ, atolJ, lx1, lx2all, lx3all, debug)
   enddo
 
 case (1)
 
   do i = 1,size(varsJ)
-    bad = bad + check_var(varsJ(i), new_file, ref_file, rtolJ, atolJ, lx1, lx2all, lx3all)
+    bad = bad + check_var(varsJ(i), new_file, ref_file, rtolJ, atolJ, lx1, lx2all, lx3all, debug)
   enddo
 
   do i = 2,size(varsV)
-    bad = bad + check_var(varsV(i), new_file, ref_file, rtolV, atolV, lx1, lx2all, lx3all)
+    bad = bad + check_var(varsV(i), new_file, ref_file, rtolV, atolV, lx1, lx2all, lx3all, debug)
   enddo
 
   !> Ne
-  bad = bad + check_var('nsall', new_file, ref_file, rtolN, atolN, lx1, lx2all, lx3all, ionly=lsp, derived_name="ne")
+  bad = bad + check_var('nsall', new_file, ref_file, rtolN, atolN, lx1, lx2all, lx3all, debug, ionly=lsp, derived_name="ne")
 
   !> Te
-  bad = bad + check_var('Tsall', new_file, ref_file, rtolT, atolT, lx1, lx2all, lx3all, ionly=lsp, derived_name="Te")
+  bad = bad + check_var('Tsall', new_file, ref_file, rtolT, atolT, lx1, lx2all, lx3all, debug, ionly=lsp, derived_name="Te")
 
   !> Ti
-  bad = bad + check_derived('Tsall', "Ti", new_file, ref_file, rtolT, atolT, lx1, lx2all, lx3all)
+  bad = bad + check_derived('Tsall', "Ti", new_file, ref_file, rtolT, atolT, lx1, lx2all, lx3all, debug)
 
   !> v1
-  bad = bad + check_derived('vs1all', "v1", new_file, ref_file, rtolV, atolV, lx1, lx2all, lx3all)
+  bad = bad + check_derived('vs1all', "v1", new_file, ref_file, rtolV, atolV, lx1, lx2all, lx3all, debug)
 
 case default
   error stop 'unknown flagoutput: ' // file_name(ref_file)
@@ -143,12 +147,13 @@ check_out = bad == 0
 end function check_out
 
 
-integer function check_derived(name, derived_name, new_file, ref_file, rtol, atol, lx1, lx2all, lx3all) result(bad)
+integer function check_derived(name, derived_name, new_file, ref_file, rtol, atol, lx1, lx2all, lx3all, debug) result(bad)
 
 character(*), intent(in) :: new_file, ref_file
 character(*), intent(in) :: name, derived_name
 real(wp), intent(in) :: rtol, atol
 integer, intent(in) :: lx1, lx2all, lx3all
+logical, intent(in) :: debug
 
 real, dimension(:,:,:), allocatable :: D_new, D_ref
 real, dimension(:,:,:,:), allocatable :: new, ref, ns_new, ns_ref
@@ -179,7 +184,11 @@ call href%finalize()
 
 D_ref = sum(ns_ref(:,:,:,1:6) * ref(:,:,:,1:6), dim=4) / ns_ref(:,:,:,LSP)
 D_new = sum(ns_new(:,:,:,1:6) * new(:,:,:,1:6), dim=4) / ns_new(:,:,:,LSP)
-if(all(isclose(D_ref, D_new, rtol, atol))) return
+
+if(all(isclose(D_ref, D_new, rtol, atol))) then
+  if(debug) print '(A)', "OK: output: " // derived_name
+  return
+endif
 
 bad = bad + 1
 write(stderr,*) "MISMATCH: " // file_name(new_file) // " ", derived_name, maxval(abs(D_ref - D_new))
@@ -187,12 +196,13 @@ write(stderr,*) "MISMATCH: " // file_name(new_file) // " ", derived_name, maxval
 end function check_derived
 
 
-integer function check_var(name, new_file, ref_file, rtol, atol, lx1, lx2all, lx3all, ionly, derived_name) result(bad)
+integer function check_var(name, new_file, ref_file, rtol, atol, lx1, lx2all, lx3all, debug, ionly, derived_name) result(bad)
 
 character(*), intent(in) :: new_file, ref_file
 character(*), intent(in) :: name
 real(wp), intent(in) :: rtol, atol
 integer, intent(in) :: lx1, lx2all, lx3all
+logical, intent(in) :: debug
 integer, intent(in), optional :: ionly
 character(*), intent(in), optional :: derived_name
 
@@ -230,7 +240,16 @@ call href%finalize()
 if (.not.all(ieee_is_finite(ref))) error stop "NON-FINITE: " // file_name(ref_file) // " " // name
 if (.not.all(ieee_is_finite(new))) error stop "NON-FINITE: " // file_name(new_file) // " " // name
 
-if(all(isclose(ref, new, rtol, atol))) return
+if(all(isclose(ref, new, rtol, atol))) then
+  if(debug) then
+    if (present(derived_name)) then
+      print '(A)', "OK: output: " // derived_name
+    else
+      print '(A)', "OK: output: " // name
+    endif
+  endif
+  return
+endif
 
 bad = 1
 if(present(derived_name)) then
@@ -238,7 +257,7 @@ if(present(derived_name)) then
     ' max diff:', maxval(abs(ref - new)), ' max & min ref:', maxval(ref), minval(ref), ' max & min new:', maxval(new), minval(new)
 else
   write(stderr,'(A,/,A,ES12.3,A,2ES12.3,A,2ES12.3)') "MISMATCH: " // file_name(new_file) // " " // name, &
-    ' max diff:', maxval(abs(ref - new)), ' max & min ref:', maxval(ref), minval(ref), ' max & min new:', maxval(new), minval(ref)
+    ' max diff:', maxval(abs(ref - new)), ' max & min ref:', maxval(ref), minval(ref), ' max & min new:', maxval(new), minval(new)
 endif
 
 end function check_var

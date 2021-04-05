@@ -10,10 +10,12 @@ implicit none (type, external)
 
 integer :: i,j, lx1, lx2all, lx3all, argc
 character(1000) :: buf
-character(6) :: which
+character(10) :: which
 character(:), allocatable :: new_path, ref_path
-logical :: exists, all_ok
+logical :: exists, all_ok, debug
 character(*), parameter :: help = './gemini3d.compare new_dir ref_dir [-which in|out]'
+
+debug = .false.
 
 argc = command_argument_count()
 if(argc < 2) error stop help
@@ -27,6 +29,7 @@ if (i/=0) error stop help
 ref_path = trim(buf)
 
 buf = ""
+which = "in,out"
 if (argc > 2) then
   do j = 3,argc
     call get_command_argument(j, buf, status=i)
@@ -36,6 +39,8 @@ if (argc > 2) then
     case ('-which')
       call get_command_argument(j+1, which, status=i)
       if (i/=0) error stop help
+    case ('-d', '-debug')
+      debug = .true.
     end select
   end do
 endif
@@ -45,14 +50,17 @@ all_ok = .false.
 i = 0
 !! in case .not. which /in {in,out}
 
-i = index(buf, "grid")
-!! we always check grid, but just to not falsely trip no-test error
-call check_grid(new_path, ref_path)
+!! we always check grid
+all_ok = check_grid(new_path, ref_path, debug)
+if (all_ok) then
+  print '(A)', "OK: gemini3d.compare: grid: " // new_path // " == " // ref_path
+else
+  error stop "gemini3d.compare grid: FAIL " // new_path // " != " // ref_path
+endif
 
-
-i = index(buf, "out")
-if (len_trim(buf) == 0 .or. i > 0) then
-  call check_plasma_output_hdf5(new_path, ref_path, all_ok)
+i = index(which, "out")
+if (i > 0) then
+  all_ok = check_plasma_output_hdf5(new_path, ref_path, debug)
 
   if (all_ok) then
     print '(A)', "OK: gemini3d.compare: output: " // new_path // " == " // ref_path
@@ -61,9 +69,9 @@ if (len_trim(buf) == 0 .or. i > 0) then
   endif
 endif
 
-i = index(buf, "in")
-if (len_trim(buf) == 0 .or. i > 0) then
-  call check_plasma_input_hdf5(new_path, ref_path, all_ok)
+i = index(which, "in")
+if (i > 0) then
+  all_ok = check_plasma_input_hdf5(new_path, ref_path, debug)
 
   if (all_ok) then
     print '(A)', "OK: gemini3d.compare: input: " // new_path // " == " // ref_path
@@ -71,10 +79,6 @@ if (len_trim(buf) == 0 .or. i > 0) then
     error stop "gemini3d.compare input: FAIL " // new_path // " != " // ref_path
   endif
 endif
-
-
-if(len_trim(buf) > 0 .and. i < 1) error stop help
-!! ensure at least one test run
 
 print '(A)', "OK: gemini3d.compare: " // new_path
 
