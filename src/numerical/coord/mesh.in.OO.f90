@@ -25,7 +25,7 @@ type :: curvmesh
   
   real(wp), dimension(:), allocatable :: x2
   real(wp), dimension(:), allocatable :: x2i
-  real(wp), dimension(:), pointer :: dx2        ! these are pointers because they become associated with other pointers (meaning they have to either have the "target" keyword or themselves be pointers
+  real(wp), dimension(:), pointer :: dx2        ! this (and similar dx arrays) are pointers because they become associated with other pointers (meaning they have to either have the "target" keyword or themselves be pointers).  These should also be contiguous but I believe that is guaranteed as long as they are assigned through allocate statements (see fortran standard)
   real(wp), dimension(:), allocatable :: dx2i
   
   real(wp), dimension(:), allocatable :: x3
