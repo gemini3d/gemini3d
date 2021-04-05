@@ -1,4 +1,4 @@
-module dipole
+module meshobj_dipole
 
 !> Contains data and subroutines for converting between dipole coordinates and other coordinate systems
 ! Notes:
@@ -6,9 +6,11 @@ module dipole
 
 ! uses
 use, intrinsic :: ISO_Fortran_env,  only : wp=>real64
+use meshobj, only : curvmesh
 use newton, only : newtopts,newton_exact,objfun,objfun_deriv
 
 implicit none (type, external)
+
 
 ! use phys_consts, only : wp,Re,pi,Mmag
 real(wp), parameter ::  Re = 6371.0e3_wp
@@ -25,73 +27,84 @@ real(wp), private, parameter :: phin=289*pi/180
 ! options structure for Newton iterations
 type(newtopts), public :: newtparms
 
-! class definition for dipolemesh
-type :: dipolemesh
-  integer :: gridflag
-
-  real(wp), dimension(:), allocatable :: q
-  real(wp), dimension(:), allocatable :: p
-  real(wp), dimension(:), allocatable :: phi
-  real(wp), dimension(:,:,:), allocatable :: r,theta,phispher    ! spherical ECEF coordinates for each grid point
-  real(wp), dimension(:), allocatable :: qint           ! cell interface locations
-  real(wp), dimension(:), allocatable :: pint
-  real(wp), dimension(:), allocatable :: phiint
-  real(wp), dimension(:,:,:), allocatable :: hq,hp,hphi
-  real(wp), dimension(:,:,:), allocatable :: hqqi,hpqi,hphiqi
-  real(wp), dimension(:,:,:), allocatable :: hqpi,hppi,hphipi
-  real(wp), dimension(:,:,:,:), allocatable :: er,etheta,ephi
-  real(wp), dimension(:,:,:,:), allocatable :: eq,ep
-  real(wp), dimension(:,:,:), allocatable :: Bmag
-  real(wp), dimension(:,:,:), allocatable :: gq,gp,gphi
-  real(wp), dimension(:,:), allocatable :: Inc
-end type dipolemesh
-
 !> these to be dealt with later, once things are done
 !public :: get_rtheta_2D,get_qp_2D,qp2rtheta,rtheta2qp,rpoly,rpoly_deriv,hq
 !private :: qr2theta
 
-!> overload interfaces for unit vectors since we can't handle these with elementals...
-!   The intent here is to be able to call these for a single point OR the entire grid.
-interface get_er
-  module procedure er_scalar
-  module procedure er_rank3
-end interface get_er
-interface get_etheta
-  module procedure etheta_scalar
-  module procedure etheta_rank3
-end interface get_etheta
-interface get_ephi
-  module procedure ephi_scalar
-  module procedure ephi_rank3
-end interface get_ephi
-interface get_eq
-  module procedure eq_scalar
-  module procedure eq_rank3
-end interface get_eq
-interface get_ep
-  module procedure ep_scalar
-  module procedure ep_rank3
-end interface get_ep
+
+! type extension for dipolemesh
+type, extends(curvmesh) :: dipolemesh
+  real(wp), dimension(:), pointer :: q
+  real(wp), dimension(:), pointer :: p
+  real(wp), dimension(:), pointer :: phidip
+  real(wp), dimension(:), pointer :: qint           ! cell interface locations
+  real(wp), dimension(:), pointer :: pint
+  real(wp), dimension(:), pointer :: phiint
+  real(wp), dimension(:,:,:), pointer :: hq,hp,hphi
+  real(wp), dimension(:,:,:), pointer :: hqqi,hpqi,hphiqi
+  real(wp), dimension(:,:,:), pointer :: hqpi,hppi,hphipi
+  real(wp), dimension(:,:,:,:), pointer :: eq,ep
+  real(wp), dimension(:,:,:), pointer :: gq,gp,gphi
+
+  contains
+
+  !> Use generic type-bound procedures here to overload scalar vs. rank 3
+  generic :: calc_er=>er_scalar,er_rank3
+  procedure :: er_scalar,er_rank3
+
+  generic :: calc_etheta=>etheta_scalar,etheta_rank3
+  procedure :: etheta_scalar,etheta_rank3
+
+  generic :: calc_ephi=>ephi_scalar,ephi_rank3
+  procedure :: ephi_scalar,ephi_rank3
+
+  generic :: calc_eq=>eq_scalar,eq_rank3
+  procedure :: eq_scalar,eq_rank3
+
+  generic :: calc_ep=>ep_scalar,ep_rank3
+  procedure :: ep_scalar,ep_rank3
+
+  !> Specific methods
+  procedure :: init_dipolemesh
+  procedure :: make_dipolemesh
+  procedure, private :: calc_grav
+  procedure, private :: calc_Bmag
+  procedure, private :: calc_inclination
+  procedure, private :: calc_hq,calc_hp,calc_hphi
+  procedure, private :: calc_rtheta_2D, calc_qp_2D
+  procedure, private :: qp2rtheta,rtheta2qp,qr2theta
+end type dipolemesh
+
 
 contains
 
-!> associate pointers with arrays in base class
-subroutine init(self)
-  type(dipolemesh) :: self
 
-  ! fixme: allocate using base type methods and associate local pointers...
+!> allocate space and associate pointers with arrays in base class.  must runs set_coords first.
+subroutine init_dipolemesh(self)
+  class(dipolemesh) :: self
 
-end subroutine init
+  ! allocate array space using base type-bound procedure
+  call self%calc_coord_diffs()
+  call self%calc_difflengths()
+  call self%init_storage()
+
+  ! now we must associate pointers for extended type alias variables
+  self%q=>self%x1; self%p=>self%x2; self%phidip=>self%x3
+  self%qint=>self%x1i; self%pint=>self%x2i; self%phiint=>self%x3i
+  self%hq=>self%h1; self%hp=>self%h2; self%hphi=>self%h3
+  self%hqqi=>self%h1x1i; self%hpqi=>self%h2x1i; self%hphiqi=>self%h3x1i
+  self%hqpi=>self%h1x2i; self%hppi=>self%h2x2i; self%hphipi=>self%h3x2i
+  ! fixme: add phi interface metric factors
+  self%eq=>self%e1; self%ep=>self%e2
+  self%gq=>self%g1; self%gp=>self%g2; self%gphi=>self%g3 
+end subroutine init_dipolemesh
 
 
 !> create a dipole mesh structure out of given q,p,phi spacings.  We assume here that the input cell center locations
 !   are provide with ghost cells included (note input array indexing in dummy variable declarations.  For new we assume
 !   that the fortran code will precompute and store the "full" grid information to save time (but this uses more memory).  
-function make_dipolemesh(q,p,phi) result(x)
-  real(wp), dimension(-1:), intent(in) :: q
-  real(wp), dimension(-1:), intent(in) :: p
-  real(wp), dimension(-1:), intent(in) :: phi
-  type(dipolemesh) :: x
+subroutine make_dipolemesh(self) 
+  class(dipolemesh) :: self
 
   integer :: lqg,lpg,lphig,lq,lp,lphi
   integer :: iq,ip,iphi
@@ -99,40 +112,35 @@ function make_dipolemesh(q,p,phi) result(x)
   real(wp), dimension(:,:,:), allocatable :: rqint,thetaqint,phiqint
   real(wp), dimension(:,:,:), allocatable :: rpint,thetapint,phipint
 
+  ! check that pointers are correctly associated, which implies that all space has been allocated :)
+  if (.not. associated(self%q)) error stop  & 
+             ' pointers to grid coordiante arrays must be associated prior to make_dipolemesh being called'
+
   ! size of arrays, including ghost cells
-  lqg=size(q,1); lpg=size(p,1); lphig=size(phi,1)
-  allocate(x%q(-1:lqg-2),x%p(-1:lpg-2),x%phi(-1:lphig-2))
-  x%q=q; x%p=p; x%phi=phi;
+  lqg=size(self%q,1); lpg=size(self%p,1); lphig=size(self%phidip,1)
   allocate(r(-1:lqg-2,-1:lpg-2,-1:lphig-2),theta(-1:lqg-2,-1:lpg-2,-1:lphig-2))
 
   ! array sizes without ghost cells for convenience
   print*, ' make_dipolemesh:  allocating space for grid of size:  ',lqg,lpg,lphig
   lq=lqg-4; lp=lpg-4; lphi=lphig-4;
-  allocate(x%qint(1:lq+1),x%pint(1:lp+1),x%phiint(1:lphi+1))     !qint(iq) references the left cell wall location of the ith grid point
   allocate(phispher(1:lq,1:lp,1:lphi))
   allocate(rqint(1:lq+1,1:lp,1:lphi),thetaqint(1:lq+1,1:lp,1:lphi),phiqint(1:lq+1,1:lp,1:lphi))    ! these are just temp vars. needed to compute metric factors
   allocate(rpint(1:lq+1,1:lp,1:lphi),thetapint(1:lq+1,1:lp,1:lphi),phipint(1:lq+1,1:lp,1:lphi))
 
   ! convert the cell centers to spherical ECEF coordinates, then tile for longitude dimension
   print*, ' make_dipolemesh:  converting cell centers...'
-  call get_rtheta_2D(q,p,r(:,:,-1),theta(:,:,-1))
+  call self%calc_rtheta_2D(self%q,self%p,r(:,:,-1),theta(:,:,-1))
   do iphi=0,lphig-2     ! tile
     r(:,:,iphi)=r(:,:,-1)
     theta(:,:,iphi)=theta(:,:,-1)
   end do
   do iphi=1,lphi
-    phispher(:,:,iphi)=phi(iphi)   !scalar assignment should work...
+    phispher(:,:,iphi)=self%phidip(iphi)   !scalar assignment should work...
   end do
-
-  ! compute interface coordinates, both dipole and spherical, can be made directly in the mesh
-  !  objects memory space
-  x%qint(1:lq+1)=1._wp/2._wp*(q(0:lq)+q(1:lq+1))
-  x%pint(1:lq+1)=1._wp/2._wp*(p(0:lp)+p(1:lp+1))
-  x%phiint(1:lq+1)=1._wp/2._wp*(phi(0:lphi)+phi(1:lphi+1))
 
   ! locations of the cell interfaces in q-dimension (along field lines)
   print*, ' make_dipolemesh:  converting cell interfaces in q...'
-  call get_rtheta_2D(x%qint,p,rqint(:,:,1),thetaqint(:,:,1))
+  call self%calc_rtheta_2D(self%qint,self%p,rqint(:,:,1),thetaqint(:,:,1))
   do iphi=2,lphi
     rqint(:,:,iphi)=rqint(:,:,1)
     thetaqint(:,:,iphi)=thetaqint(:,:,1)
@@ -140,118 +148,94 @@ function make_dipolemesh(q,p,phi) result(x)
 
   ! locations of cell interfaces in p-dimesion (along constant L-shell)
   print*, ' make_dipolemesh:  converting cell interfaces in p...'
-  call get_rtheta_2D(q,x%pint,rpint(:,:,1),thetapint(:,:,1))
+  call self%calc_rtheta_2D(self%q,self%pint,rpint(:,:,1),thetapint(:,:,1))
   do iphi=2,lphi
     rpint(:,:,iphi)=rpint(:,:,1)
     thetapint(:,:,iphi)=thetapint(:,:,1)
   end do
 
   ! now assign structure elements and deallocate unneeded temp variables
-  allocate(x%r(1:lq,1:lp,1:lphi),x%theta(1:lq,1:lp,1:lphi),x%phispher(1:lq,1:lp,1:lphi))
-  x%r=r(1:lq,1:lp,1:lphi); x%theta=theta(1:lq,1:lp,1:lphi); x%phispher=phispher(1:lq,1:lp,1:lphi)
-  deallocate(r,theta,phispher)
+  self%r=r(1:lq,1:lp,1:lphi); self%theta=theta(1:lq,1:lp,1:lphi); self%phi=phispher(1:lq,1:lp,1:lphi)
+  deallocate(r,theta,phispher)   ! done with these variables now
 
   ! compute and store the metric factors
   print*, ' make_dipolemesh:  metric factors for cell centers...'
-  allocate(x%hq(1:lq,1:lp,1:lphi),x%hp(1:lq,1:lp,1:lphi),x%hphi(1:lq,1:lp,1:lphi))
-  x%hq=get_hq(x%r,x%theta)
-  x%hp=get_hp(x%r,x%theta)
-  x%hphi=get_hphi(x%r,x%theta)
+  allocate(self%hq(1:lq,1:lp,1:lphi),self%hp(1:lq,1:lp,1:lphi),self%hphi(1:lq,1:lp,1:lphi))
+  self%hq=self%calc_hq(self%r,self%theta)
+  self%hp=self%calc_hp(self%r,self%theta)
+  self%hphi=self%calc_hphi(self%r,self%theta)
 
   ! q cell interface metric factors
   print*, ' make_dipolemesh:  metric factors for cell q-interfaces...'
-  allocate(x%hqqi(1:lq+1,1:lp,1:lphi),x%hpqi(1:lq+1,1:lp,1:lphi),x%hphiqi(1:lq+1,1:lp,1:lphi))
-  x%hqqi=get_hq(rqint,thetaqint)
-  x%hpqi=get_hp(rqint,thetaqint)
-  x%hphiqi=get_hphi(rqint,thetaqint)
+  self%hqqi=self%calc_hq(rqint,thetaqint)
+  self%hpqi=self%calc_hp(rqint,thetaqint)
+  self%hphiqi=self%calc_hphi(rqint,thetaqint)
 
   ! p cell interface metric factors
   print*, ' make_dipolemesh:  metric factors for cell p intefaces...'
-  allocate(x%hqpi(1:lq,1:lp,1+1:lphi),x%hppi(1:lq,1:lp+1,1:lphi),x%hphipi(1:lq,1:lp+1,1:lphi))  
-  x%hqpi=get_hq(rpint,thetapint)
-  x%hppi=get_hp(rpint,thetapint)
-  x%hphipi=get_hphi(rpint,thetapint)
+  self%hqpi=self%calc_hq(rpint,thetapint)
+  self%hppi=self%calc_hp(rpint,thetapint)
+  self%hphipi=self%calc_hphi(rpint,thetapint)
 
   ! we can now deallocate temp interface arrays
   deallocate(rqint,thetaqint,phiqint,rpint,thetapint,phipint)
 
   ! spherical ECEF unit vectors (expressed in a Cartesian ECEF basis)
   print*, ' make_dipolemesh:  spherical ECEF unit vectors...'  
-  allocate(x%er(1:lq,1:lp,1:lphi,3),x%etheta(1:lq,1:lp,1:lphi,3),x%ephi(1:lq,1:lp,1:lphi,3))
-  x%er=get_er(x%r,x%theta,x%phispher)
-  x%etheta=get_etheta(x%r,x%theta,x%phispher)
-  x%ephi=get_ephi(x%r,x%theta,x%phispher)
+  self%er=self%calc_er(self%r,self%theta,self%phi)
+  self%etheta=self%calc_etheta(self%r,self%theta,self%phi)
+  self%ephi=self%calc_ephi(self%r,self%theta,self%phi)
 
   ! dipole coordinate system unit vectors (Cart. ECEF)
   print*, ' make_dipolemesh:  dipole unit vectors...'  
-  allocate(x%eq(1:lq,1:lp,1:lphi,3),x%ep(1:lq,1:lp,1:lphi,3))
-  x%eq=get_eq(x%r,x%theta,x%phispher)
-  x%ep=get_ep(x%r,x%theta,x%phispher)
+  self%eq=self%calc_eq(self%r,self%theta,self%phi)
+  self%ep=self%calc_ep(self%r,self%theta,self%phi)
+  self%e3=self%ephi
 
   ! magnetic field magnitude
   print*, ' make_dipolemesh:  magnetic fields...'    
-  allocate(x%Bmag(1:lq,1:lp,1:lphi))
-  x%Bmag=get_Bmag(x%r,x%theta)
+  self%Bmag=self%calc_Bmag(self%r,self%theta)
 
   ! gravity components
   print*, ' make_dipolemesh:  gravity...'
-  allocate(x%gq(1:lq,1:lp,1:lphi),x%gp(1:lq,1:lp,1:lphi),x%gphi(1:lq,1:lp,1:lphi))
-  call get_grav(x%r,x%eq,x%ep,x%ephi,x%er,x%gq,x%gp,x%gphi)
+  call self%calc_grav(self%r,self%eq,self%ep,self%ephi,self%er)
 
-  ! FIXME: hardcode grid type for now
-  x%gridflag=0
+  ! fixme: hardcode grid type for now
+  self%gridflag=0
 
   ! inclination angle for each field line
   print*, ' make_dipolemesh:  inclination angle...'  
-  allocate(x%Inc(1:lp,1:lphi))
-  x%Inc=get_inclination(x%er,x%eq,x%gridflag)
-end function make_dipolemesh
-
-
-!> deallocate space used by mesh (to be called at the end of the program, presumably)
-subroutine de_dipolemesh(x)
-  type(dipolemesh), intent(inout) :: x
-
-  deallocate(x%q,x%p,x%phi)
-  deallocate(x%r,x%theta,x%phispher)
-  deallocate(x%qint,x%pint,x%phiint)
-  deallocate(x%hq,x%hp,x%hphi)
-  deallocate(x%hqqi,x%hpqi,x%hphiqi)
-  deallocate(x%hqpi,x%hppi,x%hphipi)
-  deallocate(x%er,x%etheta,x%ephi)
-  deallocate(x%eq,x%ep)
-  deallocate(x%Bmag)
-  deallocate(x%gq,x%gp,x%gphi)
-  deallocate(x%Inc)
-
-end subroutine de_dipolemesh
+  self%I=self%calc_inclination(self%er,self%eq,self%gridflag)
+end subroutine make_dipolemesh
 
 
 !> compute gravitational field components
-subroutine get_grav(r,eq,ep,ephi,er,gq,gp,gphi)
+subroutine calc_grav(self,r,eq,ep,ephi,er)
+  class(dipolemesh) :: self
   real(wp), dimension(:,:,:), intent(in) :: r
   real(wp), dimension(:,:,:,:), intent(in) :: eq,ep,ephi,er
-  real(wp), dimension(1:size(r,1),1:size(r,2),1:size(r,3)), intent(out) :: gq,gp,gphi
   real(wp), dimension(1:size(r,1),1:size(r,2),1:size(r,3)) :: gr
   
   gr=-Gconst*Me/r**2     ! radial component of gravity
-  gq=gr*sum(er*eq,dim=4)
-  gp=gr*sum(er*ep,dim=4)
+  self%gq=gr*sum(self%er*self%eq,dim=4)
+  self%gp=gr*sum(self%er*self%ep,dim=4)
   !gphi=gr*sum(er*ephi,dim=4)
-  gphi=0._wp     ! force to zero to avoid really small values from numerical error
-end subroutine get_grav
+  self%gphi=0._wp     ! force to zero to avoid really small values from numerical error
+end subroutine calc_grav
 
 
 !> compute the magnetic field strength
-elemental real(wp) function get_Bmag(r,theta) result(Bmag)
+elemental real(wp) function calc_Bmag(self,r,theta) result(Bmag)
+  class(dipolemesh), intent(in) :: self
   real(wp), intent(in) :: r,theta
 
   Bmag=mu0*Mmag/4/pi/r**3*sqrt(3*cos(theta)**2+1)
-end function get_Bmag
+end function calc_Bmag
 
 
 !> compute the inclination angle (degrees) for each geomagnetic field line
-function get_inclination(er,eq,gridflag) result(Inc)
+function calc_inclination(self,er,eq,gridflag) result(Inc)
+  class(dipolemesh), intent(in) :: self
   real(wp), dimension(:,:,:,:), intent(in) :: er,eq
   integer, intent(in) :: gridflag
   real(wp), dimension(1:size(er,2),1:size(er,3)) :: Inc
@@ -267,35 +251,39 @@ function get_inclination(er,eq,gridflag) result(Inc)
     Inc=sum(proj,dim=1)/real(lq,wp)
   end if
   Inc=90-min(Inc,pi-Inc)*180._wp/pi
-end function get_inclination
+end function calc_inclination
 
 
 !> compute a metric factor for q corresponding to a given r,theta,phi ordered triple
-elemental real(wp) function get_hq(r,theta) result(hq)
+elemental real(wp) function calc_hq(self,r,theta) result(hq)
+  class(dipolemesh), intent(in) :: self
   real(wp), intent(in) :: r,theta
 
   hq=r**3/Re**2/(sqrt(1+3*cos(theta)**2))
-end function get_hq
+end function calc_hq
 
 
 !> compute p metric factor
-elemental real(wp) function get_hp(r,theta) result(hp)
+elemental real(wp) function calc_hp(self,r,theta) result(hp)
+  class(dipolemesh), intent(in) :: self
   real(wp), intent(in) :: r,theta
 
   hp=Re*sin(theta)**3/(sqrt(1+3*cos(theta)**2))
-end function get_hp
+end function calc_hp
 
 
 !> compute phi metric factor
-elemental real(wp) function get_hphi(r,theta) result(hphi)
+elemental real(wp) function calc_hphi(self,r,theta) result(hphi)
+  class(dipolemesh), intent(in) :: self
   real(wp), intent(in) :: r,theta
 
   hphi=r*sin(theta)
-end function get_hphi
+end function calc_hphi
 
 
 !> radial unit vector (expressed in ECEF cartesian coodinates, permuted as ix,iy,iz)
-function er_scalar(r,theta,phi) result(er)
+function er_scalar(self,r,theta,phi) result(er)
+  class(dipolemesh) :: self
   real(wp), intent(in) :: r,theta,phi
   real(wp), dimension(3) :: er
 
@@ -303,7 +291,8 @@ function er_scalar(r,theta,phi) result(er)
   er(2)=sin(theta)*sin(phi)
   er(3)=cos(theta)
 end function er_scalar
-function er_rank3(r,theta,phi) result(er)
+function er_rank3(self,r,theta,phi) result(er)
+  class(dipolemesh) :: self
   real(wp), dimension(:,:,:), intent(in) :: r,theta,phi
   real(wp), dimension(1:size(r,1),1:size(r,2),1:size(r,3),3) :: er
 
@@ -314,7 +303,8 @@ end function er_rank3
 
 
 !> zenith angle unit vector (expressed in ECEF cartesian coodinates
-function etheta_scalar(r,theta,phi) result(etheta)
+function etheta_scalar(self,r,theta,phi) result(etheta)
+  class(dipolemesh) :: self
   real(wp), intent(in) :: r,theta,phi
   real(wp), dimension(3) :: etheta
 
@@ -322,7 +312,8 @@ function etheta_scalar(r,theta,phi) result(etheta)
   etheta(2)=cos(theta)*sin(phi)
   etheta(3)=-sin(theta)
 end function etheta_scalar
-function etheta_rank3(r,theta,phi) result(etheta)
+function etheta_rank3(self,r,theta,phi) result(etheta)
+  class(dipolemesh) :: self
   real(wp), dimension(:,:,:), intent(in) :: r,theta,phi
   real(wp), dimension(1:size(r,1),1:size(r,2),1:size(r,3),3) :: etheta
 
@@ -333,7 +324,8 @@ end function etheta_rank3
 
 
 !> azimuth angle unit vector (ECEF cart.)
-function ephi_scalar(r,theta,phi) result(ephi)
+function ephi_scalar(self,r,theta,phi) result(ephi)
+  class(dipolemesh) :: self
   real(wp), intent(in) :: r,theta,phi
   real(wp), dimension(3) :: ephi
 
@@ -341,7 +333,8 @@ function ephi_scalar(r,theta,phi) result(ephi)
   ephi(2)=cos(phi)
   ephi(3)=0
 end function ephi_scalar
-function ephi_rank3(r,theta,phi) result(ephi)
+function ephi_rank3(self,r,theta,phi) result(ephi)
+  class(dipolemesh) :: self
   real(wp), dimension(:,:,:), intent(in) :: r,theta,phi
   real(wp), dimension(1:size(r,1),1:size(r,2),1:size(r,3),3) :: ephi
 
@@ -352,7 +345,8 @@ end function ephi_rank3
 
 
 !> unit vector in the q direction
-function eq_scalar(r,theta,phi) result(eq)
+function eq_scalar(self,r,theta,phi) result(eq)
+  class(dipolemesh) :: self
   real(wp), intent(in) :: r,theta,phi
   real(wp), dimension(3) :: eq
   real(wp) :: denom  
@@ -362,7 +356,8 @@ function eq_scalar(r,theta,phi) result(eq)
   eq(2)=-3*cos(theta)*sin(theta)*sin(phi)/denom
   eq(3)=(1-3*cos(theta)**2)/denom   !simplify?
 end function eq_scalar
-function eq_rank3(r,theta,phi) result(eq)
+function eq_rank3(self,r,theta,phi) result(eq)
+  class(dipolemesh) :: self
   real(wp), dimension(:,:,:), intent(in) :: r,theta,phi
   real(wp), dimension(1:size(r,1),1:size(r,2),1:size(r,3),3) :: eq
   real(wp), dimension(1:size(r,1),1:size(r,2),1:size(r,3)) :: denom  
@@ -375,7 +370,8 @@ end function eq_rank3
 
 
 !> unit vector in the p direction
-function ep_scalar(r,theta,phi) result(ep)
+function ep_scalar(self,r,theta,phi) result(ep)
+  class(dipolemesh) :: self
   real(wp), intent(in) :: r,theta,phi
   real(wp), dimension(3) :: ep
   real(wp) :: denom  
@@ -385,7 +381,8 @@ function ep_scalar(r,theta,phi) result(ep)
   ep(2)=(1-3*cos(theta)**2)*sin(phi)/denom
   ep(3)=3*cos(theta)*sin(theta)/denom
 end function ep_scalar
-function ep_rank3(r,theta,phi) result(ep)
+function ep_rank3(self,r,theta,phi) result(ep)
+  class(dipolemesh) :: self
   real(wp), dimension(:,:,:), intent(in) :: r,theta,phi
   real(wp), dimension(1:size(r,1),1:size(r,2),1:size(r,3),3) :: ep
   real(wp), dimension(1:size(r,1),1:size(r,2),1:size(r,3)) :: denom  
@@ -400,7 +397,8 @@ end function ep_rank3
 !> convert a 1D arrays of q,p (assumed to define a 2D grid) into r,theta on a 2D mesh
 !   this should be agnostic to the array start index; here just remap as 1:size(array,1), etc.
 !   though the dummy argument declarations.  This is necessary due to the way that 
-subroutine get_rtheta_2D(q,p,r,theta)
+subroutine calc_rtheta_2D(self,q,p,r,theta)
+  class(dipolemesh) :: self
   real(wp), dimension(:), intent(in) :: q
   real(wp), dimension(:), intent(in) :: p
   real(wp), dimension(:,:), intent(out) :: r,theta
@@ -411,14 +409,15 @@ subroutine get_rtheta_2D(q,p,r,theta)
 
   do iq=1,lq
     do ip=1,lp
-      call qp2rtheta(q(iq),p(ip),r(iq,ip),theta(iq,ip))
+      call self%qp2rtheta(q(iq),p(ip),r(iq,ip),theta(iq,ip))
     end do
   end do
-end subroutine get_rtheta_2D
+end subroutine calc_rtheta_2D
 
 
 !> convert a set of r,theta points (2D arrays) to 2D arrays of q,p
-subroutine get_qp_2D(r,theta,q,p)
+subroutine calc_qp_2D(self,r,theta,q,p)
+  class(dipolemesh) :: self
   real(wp), dimension(:,:), intent(in) :: r,theta
   real(wp), dimension(:,:), intent(out) :: q,p
 
@@ -428,14 +427,15 @@ subroutine get_qp_2D(r,theta,q,p)
 
   do i1=1,ldim1
     do i2=1,ldim2
-      call rtheta2qp(r(i1,i2),theta(i1,i2),q(i1,i2),p(i1,i2))
+      call self%rtheta2qp(r(i1,i2),theta(i1,i2),q(i1,i2),p(i1,i2))
     end do
   end do
-end subroutine get_qp_2D
+end subroutine calc_qp_2D
 
 
 !> convert a single q,p pair into r,theta
-subroutine qp2rtheta(q,p,r,theta)
+subroutine qp2rtheta(self,q,p,r,theta)
+  class(dipolemesh) :: self
   real(wp), intent(in) :: q,p
   real(wp), intent(out) :: r,theta
 
@@ -468,13 +468,14 @@ subroutine qp2rtheta(q,p,r,theta)
   end do
 
   ! Once we have r can algebraically solve for theta
-  theta=qr2theta(q,r)
+  theta=self%qr2theta(q,r)
 
 end subroutine qp2rtheta
 
 
 !> convert a single point r,theta to q,p
-subroutine rtheta2qp(r,theta,q,p)
+subroutine rtheta2qp(self,r,theta,q,p)
+  class(dipolemesh) :: self
   real(wp), intent(in) :: r,theta
   real(wp), intent(out) :: q,p
 
@@ -485,13 +486,16 @@ end subroutine rtheta2qp
 
 
 !> find theta given q,r
-elemental real(wp) function qr2theta(q,r) result(theta)
+elemental real(wp) function qr2theta(self,q,r) result(theta)
+  class(dipolemesh), intent(in) :: self
   real(wp), intent(in) :: q,r
 
   theta=acos(q*(r/Re)**2)
 end function qr2theta
 
 
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! functions for newton methods, not type-bound !!!!!!!!!!!!!!!!!!!!!!!!1
 !> objective function for newton iterations for solutions of roots for r
 real(wp) function rpoly(x,parms) result(fval)
   real(wp), intent(in) :: x
@@ -513,4 +517,6 @@ real(wp) function rpoly_deriv(x,parms) result(fval_deriv)
   fval_deriv=4/Re*q**2*(x/Re)**3 + 1/p/Re
 end function rpoly_deriv
 
-end module dipole
+
+end module meshobj_dipole
+

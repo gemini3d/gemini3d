@@ -166,7 +166,7 @@ contains
 
     allocate(self%dx1(0:lx1+2), self%x1i(1:lx1+1), self%dx1i(1:lx1))    
     self%dx1 = self%x1(0:lx1+2)-self%x1(-1:lx1+1)       !! computing these avoids extra message passing (could be done for other coordinates
-    self%x1i(1:lx2+1) = 0.5_wp*(self%x1(0:lx1)+self%x1(1:lx1+1))
+    self%x1i(1:lx1+1) = 0.5_wp*(self%x1(0:lx1)+self%x1(1:lx1+1))
     self%dx1i=self%x1i(2:lx1+1)-self%x1i(1:lx1)
 
     allocate(self%dx2(0:lx2+2), self%x2i(1:lx2+1), self%dx2i(1:lx2))    
@@ -216,10 +216,12 @@ contains
 
     if (.not. self%coord_alloc_status ) then     ! use this as a proxy for if any other coordinate-specific arrays exist
       allocate(self%h1(1:lx1,1:lx2,1:lx3),self%h2(1:lx1,1:lx2,1:lx3),self%h3(1:lx1,1:lx2,1:lx3))
+      ! fixme: interface metric factors
       allocate(self%er(1:lx1,1:lx2,1:lx3,3),self%etheta(1:lx1,1:lx2,1:lx3,3),self%ephi(1:lx1,1:lx2,1:lx3,3))
       allocate(self%e1(1:lx1,1:lx2,1:lx3,3),self%e2(1:lx1,1:lx2,1:lx3,3),self%e3(1:lx1,1:lx2,1:lx3,3))
       allocate(self%Bmag(1:lx1,1:lx2,1:lx3),self%I(1:lx2,1:lx3))
       allocate(self%g1(1:lx1,1:lx2,1:lx3),self%g2(1:lx1,1:lx2,1:lx3),self%g3(1:lx1,1:lx2,1:lx3))
+      allocate(self%r(1:lx1,1:lx2,1:lx3),self%theta(1:lx1,1:lx2,1:lx3),self%phi(1:lx1,1:lx2,1:lx3))
 
       ! fixme:  there are a number of full-grid arrays that are coordinate specific to be allocated here...
       self%coord_alloc_status=.true.
