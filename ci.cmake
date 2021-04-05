@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.15...3.20)
+cmake_minimum_required(VERSION 3.19...${CMAKE_VERSION})
 
 set(CTEST_PROJECT_NAME "Gemini3D")
 
@@ -7,6 +7,11 @@ set(CTEST_LABELS_FOR_SUBPROJECTS "unit;core;python;matlab")
 set(opts)
 
 # --- boilerplate follows
+
+set(CI false)
+if(DEFINED ENV{CI})
+  set(CI $ENV{CI})
+endif()
 
 set(CTEST_NIGHTLY_START_TIME "01:00:00 UTC")
 set(CTEST_SUBMIT_URL "https://my.cdash.org/submit.php?project=${CTEST_PROJECT_NAME}")
@@ -18,18 +23,11 @@ list(APPEND opts $ENV{CTEST_${CTEST_PROJECT_NAME}_ARGS})
 
 # --- Experimental, Nightly, Continuous
 # https://cmake.org/cmake/help/latest/manual/ctest.1.html#dashboard-client-modes
-if(NOT CTEST_MODEL)
-  if(DEFINED ENV{CTEST_MODEL})
-    set(CTEST_MODEL $ENV{CTEST_MODEL})
-  endif()
+if(NOT CTEST_MODEL AND DEFINED ENV{CTEST_MODEL})
+  set(CTEST_MODEL $ENV{CTEST_MODEL})
 endif()
-if(NOT CTEST_MODEL)
-  if(DEFINED ENV{CI})
-    set(CI $ENV{CI})
-    if(CI)
-      set(CTEST_MODEL "Nightly")
-    endif()
-  endif()
+if(NOT CTEST_MODEL AND CI)
+  set(CTEST_MODEL "Nightly")
 endif()
 if(NOT CTEST_MODEL)
   set(CTEST_MODEL "Experimental")
@@ -131,11 +129,22 @@ function(cmake_cpu_count)
   # on ARM e.g. Raspberry Pi, the usually reliable cmake_host_system_info gives 1 instead of true count
   # fallback to less reliable ProcessorCount which does work on Raspberry Pi.
 
-ProcessorCount(_ncount)
-cmake_host_system_information(RESULT Ncpu QUERY NUMBER_OF_PHYSICAL_CORES)
+cmake_host_system_information(RESULT sys_info QUERY OS_NAME OS_PLATFORM)
+if(sys_info STREQUAL "macOS;arm64")
+  # Apple Silicon M1 workaround for hwloc et al:
+  # https://github.com/open-mpi/hwloc/issues/454
+  cmake_host_system_information(RESULT Nhybrid QUERY NUMBER_OF_PHYSICAL_CORES)
 
-if(Ncpu EQUAL 1 AND _ncount GREATER 0)
-  set(Ncpu ${_ncount})
+  math(EXPR Ncpu "${Nhybrid} / 2")  # use only fast cores, else MPI very slow
+
+  message(STATUS "Apple M1 hybrid CPU count workaround applied.")
+else()
+  ProcessorCount(_ncount)
+  cmake_host_system_information(RESULT Ncpu QUERY NUMBER_OF_PHYSICAL_CORES)
+
+  if(Ncpu EQUAL 1 AND _ncount GREATER 0)
+    set(Ncpu ${_ncount})
+  endif()
 endif()
 
 set(Ncpu ${Ncpu} PARENT_SCOPE)
@@ -143,19 +152,23 @@ set(Ncpu ${Ncpu} PARENT_SCOPE)
 endfunction(cmake_cpu_count)
 
 cmake_cpu_count()
-message(STATUS "Ncpu = ${Ncpu}")
+message(STATUS "using Ncpu = ${Ncpu}")
 
 # --- CTest Dashboard
 
-set(CTEST_NOTES_FILES "${CTEST_SCRIPT_DIRECTORY}/${CTEST_SCRIPT_NAME}")
-set(CTEST_SUBMIT_RETRY_COUNT 3)
+set(CTEST_SUBMIT_RETRY_COUNT 2)
 # avoid auto-detect version control failures on some systems
 set(CTEST_UPDATE_TYPE git)
 set(CTEST_UPDATE_COMMAND git)
 
 ctest_start(${CTEST_MODEL})
+if(CI)
+  ctest_submit(PARTS Start)
+endif(CI)
 
 if(CTEST_MODEL STREQUAL Nightly OR CTEST_MODEL STREQUAL Continuous)
+  ctest_empty_binary_directory(${CTEST_BINARY_DIRECTORY})
+
   # this erases local code changes i.e. anything not "git push" already is lost forever!
   # we try to avoid that by guarding with a Git porcelain check
   execute_process(COMMAND ${GIT_EXECUTABLE} status --porcelain
@@ -180,16 +193,16 @@ ctest_configure(
   OPTIONS "${opts}"
   RETURN_VALUE _ret
   CAPTURE_CMAKE_ERROR _err)
-ctest_submit(PARTS Configure)
 if(NOT (_ret EQUAL 0 AND _err EQUAL 0))
-  message(FATAL_ERROR "Configure failed: return ${_ret} cmake return ${_err}")
+  ctest_submit(BUILD_ID build_id)
+  message(FATAL_ERROR "Configure ${build_id} failed: return ${_ret} cmake return ${_err}")
 endif()
 
 ctest_build(
   RETURN_VALUE _ret
   CAPTURE_CMAKE_ERROR _err)
-ctest_submit(PARTS Build)
 if(NOT (_ret EQUAL 0 AND _err EQUAL 0))
+  ctest_submit(PARTS Build)
   message(FATAL_ERROR "Build failed.")
 endif()
 
@@ -200,11 +213,9 @@ ctest_test(
   REPEAT UNTIL_PASS:2
   RETURN_VALUE _ret
   CAPTURE_CMAKE_ERROR _err)
-ctest_submit(PARTS Test)
 
-ctest_submit(
-  PARTS Done
-  BUILD_ID build_id)
+
+ctest_submit(BUILD_ID build_id)
 
 if(NOT (_ret EQUAL 0 AND _err EQUAL 0))
   message(FATAL_ERROR "Build ${build_id} failed: CTest code ${_ret}, CMake code ${_err}.")
