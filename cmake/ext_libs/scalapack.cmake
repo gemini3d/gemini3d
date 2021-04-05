@@ -16,7 +16,11 @@ endif()
 set(scalapack_external true CACHE BOOL "build ScaLapack")
 
 if(NOT DEFINED SCALAPACK_ROOT)
-  set(SCALAPACK_ROOT ${PROJECT_BINARY_DIR}/scalapack)
+  if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+    set(SCALAPACK_ROOT ${PROJECT_BINARY_DIR}/scalapack)
+  else()
+    set(SCALAPACK_ROOT ${CMAKE_INSTALL_PREFIX})
+  endif()
 endif()
 
 set(SCALAPACK_LIBRARIES

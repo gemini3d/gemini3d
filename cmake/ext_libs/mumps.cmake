@@ -1,5 +1,3 @@
-# MUMPS -- use cmake -DMUMPS_ROOT= for hint.
-#
 # Intel MKL-compiled MUMPS requires at the linker for the main executable:
 # mkl_scalapack_lp64 mkl_blacs_intelmpi_lp64 mkl_intel_lp64 mkl_intel_thread mkl_core
 #
@@ -7,7 +5,7 @@
 # CentOS 6/7 EPEL: yum install mumps-devel
 # Ubuntu / Debian: apt install libmumps-dev
 
-include(FetchContent)
+include(ExternalProject)
 
 # --- prereqs
 include(${CMAKE_CURRENT_LIST_DIR}/lapack.cmake)
@@ -49,7 +47,11 @@ set(mumps_external true CACHE BOOL "build Mumps")
 
 
 if(NOT DEFINED MUMPS_ROOT)
-  set(MUMPS_ROOT ${PROJECT_BINARY_DIR}/mumps)
+  if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+    set(MUMPS_ROOT ${PROJECT_BINARY_DIR}/mumps)
+  else()
+    set(MUMPS_ROOT ${CMAKE_INSTALL_PREFIX})
+  endif()
 endif()
 
 set(MUMPS_INCLUDE_DIRS ${MUMPS_ROOT}/include)

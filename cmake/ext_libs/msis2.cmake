@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.19...${CMAKE_MAX_VERSION})
+cmake_minimum_required(VERSION 3.19...${CMAKE_VERSION})
 
 include(FetchContent)
 
