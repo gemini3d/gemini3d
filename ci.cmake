@@ -167,8 +167,9 @@ if(CI)
 endif(CI)
 
 if(CTEST_MODEL STREQUAL Nightly OR CTEST_MODEL STREQUAL Continuous)
-  ctest_empty_binary_directory(${CTEST_BINARY_DIRECTORY})
-
+  if(IS_DIRECTORY ${CTEST_BINARY_DIRECTORY})
+    ctest_empty_binary_directory(${CTEST_BINARY_DIRECTORY})
+  endif()
   # this erases local code changes i.e. anything not "git push" already is lost forever!
   # we try to avoid that by guarding with a Git porcelain check
   execute_process(COMMAND ${GIT_EXECUTABLE} status --porcelain

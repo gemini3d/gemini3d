@@ -5,6 +5,8 @@ if(glow_FOUND)
   return()
 endif()
 
+cmake_minimum_required(VERSION 3.19...${CMAKE_VERSION})
+
 if(NOT DEFINED GLOW_ROOT)
   if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
     set(GLOW_ROOT ${PROJECT_BINARY_DIR}/glow)

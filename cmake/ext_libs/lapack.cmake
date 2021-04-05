@@ -13,6 +13,7 @@ if(LAPACK_FOUND OR TARGET LAPACK::LAPACK)
   return()
 endif()
 
+cmake_minimum_required(VERSION 3.19...${CMAKE_VERSION})
 
 set(lapack_external true CACHE BOOL "build Lapack")
 
