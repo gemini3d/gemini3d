@@ -13,7 +13,6 @@ real(wp), dimension(2), parameter :: qlims=[-0.5851937,0.5851937]
 real(wp), dimension(2), parameter :: plims=[1.2053761,1.5820779]
 real(wp), dimension(2), parameter :: philims=[2.0,2.5]
 integer :: iq,ip,iphi
-type(dipolemesh) :: x
 real(wp) :: minchkvar,maxchkvar
 real(wp), dimension(1:lq-4,1:lp-4,1:lphi-4) :: proj
 
@@ -22,6 +21,12 @@ real(wp), dimension(1:lq-4,1:lp-4,1:lphi-4) :: proj
 q=[(qlims(1) + (qlims(2)-qlims(1))/lq*(iq-1),iq=1,lq)]
 p=[(plims(1) + (plims(2)-plims(1))/lp*(ip-1),ip=1,lp)]
 phi=[(philims(1) + (philims(2)-philims(1))/lphi*(iphi-1),iphi=1,lphi)]
+
+! oddly the destructor does not get called when the program unit terminates; however by
+!  putting the variable inside the block we cause it to go out of scope before the program
+!  ends and that indeed causes the destructor to get triggered (so we can test it)
+block
+type(dipolemesh) :: x
 
 ! grid spec.
 print*, 'fullgrid_testdriver:  Defining curvilinear coordinates...'
@@ -77,9 +82,9 @@ proj=sum(x%er*x%ephi,dim=4)
 if (any(proj>1e-4)) error stop '  er,ephi not ortho!!!'
 proj=sum(x%etheta*x%ephi,dim=4)
 if (any(proj>1e-4)) error stop '  etheta,ephi not ortho!!!'
-
+end block
 
 ! deallocate the grid before ending the program
-print*, 'fullgrid_testdriver:  exiting program; destructor should be called...'
+print*, 'fullgrid_testdriver:  exiting program; destructor should have been called...'
 
 end program fullgrid_testdriver
