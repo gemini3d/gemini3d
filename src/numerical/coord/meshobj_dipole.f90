@@ -76,6 +76,20 @@ type, extends(curvmesh) :: dipolemesh
 end type dipolemesh
 
 
+!> declarations for submodule functions, apparently these need to be generic interfaces
+interface
+  module function rpoly(x,parms) result(fval)
+    real(wp), intent(in) :: x
+    real(wp), dimension(:), intent(in) :: parms
+    real(wp) :: fval
+  end function rpoly
+  module function rpoly_deriv(x,parms) result(fval_deriv)
+    real(wp), intent(in) :: x
+    real(wp), dimension(:), intent(in) :: parms
+    real(wp) :: fval_deriv
+  end function rpoly_deriv
+end interface
+
 contains
 
 
@@ -497,31 +511,6 @@ elemental real(wp) function qr2theta(self,q,r) result(theta)
 
   theta=acos(q*(r/Re)**2)
 end function qr2theta
-
-
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! functions for newton methods, not type-bound !!!!!!!!!!!!!!!!!!!!!!!!1
-!> objective function for newton iterations for solutions of roots for r
-real(wp) function rpoly(x,parms) result(fval)
-  real(wp), intent(in) :: x
-  real(wp), dimension(:), intent(in) :: parms
-  real(wp) ::  q,p
-
-  q=parms(1); p=parms(2);
-  fval=q**2*(x/Re)**4 + 1/p*(x/Re) - 1
-end function rpoly
-
-
-!> derivative objective function for newton iterations for roots of r
-real(wp) function rpoly_deriv(x,parms) result(fval_deriv)
-  real(wp), intent(in) :: x
-  real(wp), dimension(:), intent(in) :: parms
-  real(wp) :: q,p
-
-  q=parms(1); p=parms(2);
-  fval_deriv=4/Re*q**2*(x/Re)**3 + 1/p/Re
-end function rpoly_deriv
-
 
 end module meshobj_dipole
 
