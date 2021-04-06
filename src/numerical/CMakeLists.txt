@@ -21,4 +21,6 @@ target_link_libraries(advec PRIVATE const mpimod grid mesh)
 
 add_subdirectory(potential)
 
+add_subdirectory(coord)
+
 set_targ_props(advec calculus const diffusion grid interp mesh mumps_interface PDEelliptic PDEparabolic potential)
