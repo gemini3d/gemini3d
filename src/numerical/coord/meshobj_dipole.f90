@@ -71,8 +71,8 @@ type, extends(curvmesh) :: dipolemesh
   procedure, private :: calc_Bmag
   procedure, private :: calc_inclination
   procedure, private :: calc_hq,calc_hp,calc_hphi
-  procedure, private :: calc_rtheta_2D, calc_qp_2D
-  procedure, private :: qp2rtheta,rtheta2qp,qr2theta
+  procedure :: calc_rtheta_2D, calc_qp_2D
+  procedure :: qp2rtheta,rtheta2qp,qr2theta
 end type dipolemesh
 
 
