@@ -7,7 +7,9 @@ use, intrinsic :: ISO_Fortran_env,  only : wp=>real64
 implicit none (type, external)
 
 
-!> a structure def. for containing the options for the newton method procedure, by default these work okay with dipole grids
+!> derived type for containing the options for the newton method procedure, by default 
+!   these work okay with the dipole to spherical conversion problem but can be adjusted
+!   by the user for other applications
 type :: newtopts
   real(wp) :: derivtol=1e-18
   integer :: maxit=100
@@ -16,13 +18,17 @@ type :: newtopts
 end type newtopts
 
 !> these interfaced define the types of functions needed to run Newton iterations
-!   need to match custom functions defined in using modules
+!   need to match custom functions defined in using modules; these are defined so
+!   that there are multiple objective functions (conforming to these patterns) that
+!   can be used with Newton's method.  These are abstract because there are multiple
+!   objective functions (in principle) that can be used with Newton's method
 abstract interface
   real(wp) module function objfun(x,parms) result(fval)
     real(wp), intent(in) :: x
     real(wp), dimension(:), intent(in) :: parms
   end function objfun
 end interface
+!> this is for the derivative of the objective function
 abstract interface
   real(wp) module function objfun_deriv(x,parms) result(fval_deriv)
     real(wp), intent(in) :: x
