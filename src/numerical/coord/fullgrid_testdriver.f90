@@ -39,6 +39,7 @@ call x%init_dipolemesh()
 ! call grid generation for this grid def.
 print*, 'fullgrid_testdriver:  Calling dipole mesh constructor...'
 call x%make_dipolemesh()
+call x%calc_difflengths()
 
 ! now do some basic sanity checks
 print*, 'fullgrid_testdriver:  Starting basic checks...'
@@ -82,6 +83,9 @@ proj=sum(x%er*x%ephi,dim=4)
 if (any(proj>1e-4)) error stop '  er,ephi not ortho!!!'
 proj=sum(x%etheta*x%ephi,dim=4)
 if (any(proj>1e-4)) error stop '  etheta,ephi not ortho!!!'
+
+! test number of null grid points
+print*, ' fullgrid_testdriver, number of null grid points:  ',size(x%inull,1)
 end block
 
 ! deallocate the grid before ending the program

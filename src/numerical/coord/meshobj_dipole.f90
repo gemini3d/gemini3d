@@ -93,6 +93,8 @@ subroutine init_dipolemesh(self)
   ! allocate array space using base type-bound procedure
   call self%calc_coord_diffs()
   call self%init_storage()
+  ! fixme: need to add geographic coord arrays first...
+  !call self%calc_inull()
 
   ! now we must associate pointers for extended type alias variables
   self%q=>self%x1; self%p=>self%x2; self%phidip=>self%x3

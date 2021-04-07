@@ -16,9 +16,12 @@ public
 !   the pointers are always allocated in groups we do not need separate status vars for each array thankfully...
 type :: curvmesh
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Generic properties !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 
-  logical :: xi_alloc_status=.false.    ! pointers are allocated in groups, statuses stored here
+  !> we need to know whether or not different groups of pointers are allocated and the intrinsic only work on allocatables...
+  logical :: xi_alloc_status=.false.
   logical :: dxi_alloc_status=.false. 
   logical :: difflen_alloc_status=.false.
+  logical :: geog_alloc_status=.false.
+  logical :: null_alloc_status=.false.
 
   !> SIZE INFORMATION.  Specified and set by base class methods
   integer :: lx1,lx2,lx3,lx2all,lx3all
@@ -114,7 +117,7 @@ type :: curvmesh
   real(wp), dimension(:,:,:), pointer :: Bmagall
   
   !> DEFINE POINTS TO EXCLUDE FROM NUMERICAL SOLVES?. Pointers
-  real(wp), dimension(:,:,:), pointer :: nullpts
+  logical, dimension(:,:,:), pointer :: nullpts
   !! this could be a logical but I'm going to treat it as real*8
   integer :: lnull
   !! length of null point index array
@@ -125,6 +128,7 @@ type :: curvmesh
     procedure :: set_coords
     procedure :: calc_coord_diffs
     procedure :: calc_difflengths
+    procedure :: calc_inull
     !procedure :: refine
     procedure :: init_storage
     final :: destructor
@@ -155,6 +159,7 @@ contains
     self%xi_alloc_status=.true.
   end subroutine set_coords
 
+
   !> compute diffs from given grid spacing
   subroutine calc_coord_diffs(self)
     class(curvmesh) :: self
@@ -181,6 +186,7 @@ contains
 
     self%dxi_alloc_status=.true.
   end subroutine calc_coord_diffs
+
 
   !> calculate differential lengths (units of m), needed for CFL calculations
   subroutine calc_difflengths(self)
@@ -216,7 +222,6 @@ contains
 
     if (.not. self%coord_alloc_status ) then     ! use this as a proxy for if any other coordinate-specific arrays exist
       allocate(self%h1(1:lx1,1:lx2,1:lx3),self%h2(1:lx1,1:lx2,1:lx3),self%h3(1:lx1,1:lx2,1:lx3))
-      ! fixme: interface metric factors
       allocate(self%h1x1i(1:lx1+1,1:lx2,1:lx3),self%h2x1i(1:lx1+1,1:lx2,1:lx3),self%h3x1i(1:lx1+1,1:lx2,1:lx3))
       allocate(self%h1x2i(1:lx1,1:lx2+1,1:lx3),self%h2x2i(1:lx1,1:lx2+1,1:lx3),self%h3x2i(1:lx1,1:lx2+1,1:lx3))
       allocate(self%er(1:lx1,1:lx2,1:lx3,3),self%etheta(1:lx1,1:lx2,1:lx3,3),self%ephi(1:lx1,1:lx2,1:lx3,3))
@@ -225,20 +230,92 @@ contains
       allocate(self%g1(1:lx1,1:lx2,1:lx3),self%g2(1:lx1,1:lx2,1:lx3),self%g3(1:lx1,1:lx2,1:lx3))
       allocate(self%r(1:lx1,1:lx2,1:lx3),self%theta(1:lx1,1:lx2,1:lx3),self%phi(1:lx1,1:lx2,1:lx3))
 
-      ! fixme:  there are a number of full-grid arrays that are coordinate specific to be allocated here...
+      ! fixme:  there are a number of full-grid arrays that are coordinate specific to be allocated here iff we are root
+
       self%coord_alloc_status=.true.
     else
       error stop ' attempting to allocated space for coordinate-specific arrays when they already exist!'
     end if
   end subroutine init_storage
 
+
   !> allocate space for root-only grid quantities
   subroutine init_storage_root(self)
     class(curvmesh) :: self
 
-    !fixme:  allocate root storage here; maybe check myid==0???
-
+    !fixme:  allocate root storage here; maybe check myid==0???  Need some protection so this does not get
+    !         called from a worker...
   end subroutine init_storage_root
+
+
+  subroutine calc_gridflag(self)
+    class(curvmesh) :: self
+    integer :: lx1,lx2,lx3
+
+    ! error checking
+    if (.not. self%geog_alloc_status) error stop ' attempting to compute gridflag prior to geographic coordinates!'
+
+    ! sizes   
+    lx1=self%lx1; lx2=self%lx2; lx3=self%lx3
+
+    !> DETERMINE THE TYPE OF GRID WE HAVE AND SET AN APPROPRIATE FLAG
+    !> FIXME:  this needs to be done once, globally and also needs to be more robust...
+    if (abs(self%alt(1,1,1)-self%alt(lx1,1,1))<100d3) then    !closed dipole grid
+      self%gridflag=0
+    else if (self%alt(1,1,1)>self%alt(2,1,1)) then    !open dipole grid with inverted structure wrt altitude
+      self%gridflag=1
+    else    !something different (viz. non-inverted - lowest altitudes at the logical bottom of the grid)
+      self%gridflag=2
+    end if
+  end subroutine calc_gridflag
+
+
+  !> compute the number of null grid points and their indices for later use
+  subroutine calc_inull(self)
+    class(curvmesh) :: self
+    integer :: lx1,lx2,lx3
+    integer :: icount,ix1,ix2,ix3
+
+    ! error checking, we require the geographic coords. before this is done
+    if (.not. self%geog_alloc_status) error stop ' attempting to compute null points prior to geographic coordinates!'
+
+    ! sizes   
+    lx1=self%lx1; lx2=self%lx2; lx3=self%lx3
+ 
+    ! set null points for this simulation
+    allocate(self%nullpts(1:lx1,1:lx2,1:lx3))
+    self%nullpts=.false.
+    where (self%alt<80e3_wp) 
+      self%nullpts=.true.
+    end where
+
+    ! count needed storage for null indices
+    self%lnull=0;
+    do ix3=1,lx3
+      do ix2=1,lx2
+        do ix1=1,lx1
+          if(self%nullpts(ix1,ix2,ix3)) self%lnull=self%lnull+1
+        end do
+      end do
+    end do
+    allocate(self%inull(1:self%lnull,1:3))
+    
+    ! store null indices
+    icount=1
+    do ix3=1,lx3
+      do ix2=1,lx2
+        do ix1=1,lx1
+          if(self%nullpts(ix1,ix2,ix3)) then
+            self%inull(icount,:)=[ix1,ix2,ix3]
+            icount=icount+1
+          end if
+        end do
+      end do
+    end do
+
+    self%null_alloc_status=.true.
+  end subroutine calc_inull
+
 
   !> type destructor; written generally, viz. as if it is possible some grid pieces are allocated an others are not
   subroutine destructor(self)
@@ -256,7 +333,13 @@ contains
     ! coordinate-specific arrays set by type extensions
     if (self%coord_alloc_status) then
       deallocate(self%h1,self%h2,self%h3,self%er,self%etheta,self%ephi,self%e1,self%e2,self%e3)
+      deallocate(self%h1x1i,self%h2x1i,self%h3x1i)
+      deallocate(self%h1x2i,self%h2x2i,self%h3x2i)
       deallocate(self%g1,self%g2,self%g3)
+    end if
+
+    if (self%null_alloc_status) then
+      deallocate(self%nullpts,self%inull)
     end if
 
     ! let the user know that the destructor indeed ran
