@@ -27,7 +27,8 @@ real(wp) :: t=0,dt
 real(wp) :: Tsminx1,Tsmaxx1
 
 real(wp), dimension(npts) :: errorEuler,errorBDF2
-
+real(wp), dimension(npts,3) :: abc
+real(wp), dimension(npts) :: y
 
 !! create a grid for the calculation
 x1=[ (real(ix1-1,wp)/real(npts-1,wp), ix1=-1,npts+2) ]
@@ -73,14 +74,12 @@ do it=1,lt
   C(:)=1
   D(:)=lambda(:)
   E(:)=0.0
-  TsEuler(1:lx1)=backEuler1D(TsEuler(1:lx1),A,B,C,D,E,Tsminx1,Tsmaxx1,dt,dx1,dx1i)
+  TsEuler(1:lx1)=backEuler1D(TsEuler(1:lx1),A,B,C,D,E,Tsminx1,Tsmaxx1,dt,dx1,dx1i,coeffs=abc,rhs=y)
   TsBDF2(1:lx1)=TRBDF21D(TsBDF2(1:lx1),A,B,C,D,E,Tsminx1,Tsmaxx1,dt,dx1,dx1i)
   t=t+dt
 
-
   !compute analytical solution to compare
   Tstrue(1:lx1) = exp(-4.0_wp*pi**2*lambda*t)*sin(2.0_wp*pi*x1(1:lx1))+exp(-64.0_wp*pi**2*lambda*t)*sin(8.0_wp*pi*x1(1:lx1))
-
 
   !! output
   ! write(u,*) t
@@ -104,7 +103,7 @@ do it=1,lt
   end if
   if (maxval(abs(errorBDF2)) > 0.05_wp) then
     print*, 'Time step:  ',it,dt
-    error stop 'Excessive error (large max diff) in backward TRBDF2 solution, check time step maybe???'
+    error stop 'Excessive error (large max diff) in TRBDF2 solution, check time step maybe???'
   end if
 end do
 

@@ -216,7 +216,7 @@ call gbsv(M,TRBDF21D,kl=2)
 end function TRBDF21D
 
 
-function backEuler1D(Ts,A,B,C,D,E,Tsminx1,Tsmaxx1,dt,dx1,dx1i)
+function backEuler1D(Ts,A,B,C,D,E,Tsminx1,Tsmaxx1,dt,dx1,dx1i,coeffs,rhs)
 
 !------------------------------------------------------------
 !-------SOLVE A 1D DIFFUSION PROBLEM.  IT IS EXPECTED THAT
@@ -231,13 +231,13 @@ real(wp), dimension(:), intent(in) :: Ts
 real(wp), intent(in) :: Tsminx1, Tsmaxx1, dt
 real(wp), dimension(0:), intent(in) :: dx1   !ith backward difference
 real(wp), dimension(:), intent(in) :: dx1i   !ith centered difference
-integer, parameter :: ll=2                   !number of lower diagonals
+real(wp), dimension(:,:), intent(out), optional :: coeffs
+real(wp), dimension(:), intent(out), optional :: rhs
 
+integer, parameter :: ll=2                   !number of lower diagonals
 real(wp), dimension(3*ll+1,size(Ts)) :: M    !note extra rows for lapack workspace
 real(wp), dimension(size(Ts)) :: Dh
-
 real(wp), dimension(size(Ts)) :: backEuler1D
-
 integer :: ix1,lx1
 
 !------------------------------------------------------------
@@ -321,12 +321,23 @@ backEuler1D(ix1)=Tsmaxx1
 !backEuler1D(ix1)=Tsmaxx1     !here interpreted as -heat flux divided by thermal conductivity...
 !
 
-!! ## DO SOME STUFF TO CALL LAPACK'S BANDED SOLVER
+!> in case we want to output the right-hand side of the system; has to be done here before
+!   the output argument (which stores rhs) is overwritten by the solution.  
+if (present(rhs)) then
+  rhs(1:lx1)=backEuler1D(1:lx1)
+end if
 
+!! ## DO SOME STUFF TO CALL LAPACK'S BANDED SOLVER
 !> BANDED SOLVER (INPUT MATRIX MUST BE SHIFTED 'DOWN' BY KL ROWS)
 call gbsv(M,backEuler1D,kl=2)
 
-end function backEuler1D
+!> this is for if one wants to output the matrix bands for testing purposes
+if (present(coeffs)) then
+  coeffs(1:lx1,1)=M(ll+2,1:lx1)
+  coeffs(1:lx1,2)=M(ll+3,1:lx1)
+  coeffs(1:lx1,3)=M(ll+4,1:lx1)
+end if
 
+end function backEuler1D
 
 end module PDEparabolic
