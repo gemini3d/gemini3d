@@ -64,6 +64,7 @@ type, extends(curvmesh) :: dipolemesh
   procedure, private :: calc_hq,calc_hp,calc_hphi
   procedure :: calc_rtheta_2D, calc_qp_2D
   procedure :: qp2rtheta,rtheta2qp,qr2theta
+  procedure :: geomag2geog, geog2geomag
 end type dipolemesh
 
 
@@ -444,7 +445,7 @@ subroutine calc_qp_2D(self,r,theta,q,p)
   end do
 end subroutine calc_qp_2D
 
-
+! fixme: arguably everything that follows constitutes a set of generic utility routines that shoudl go in the submodule?
 !> convert a single q,p pair into r,theta
 subroutine qp2rtheta(self,q,p,r,theta)
   class(dipolemesh) :: self
@@ -504,6 +505,21 @@ elemental real(wp) function qr2theta(self,q,r) result(theta)
 
   theta=acos(q*(r/Re)**2)
 end function qr2theta
+
+
+!> convert geomagnetic coordinates to geographic
+subroutine geomag2geog(self)
+  class(dipolemesh) :: self
+
+end subroutine geomag2geog
+
+
+!> convert geographic coordinates to geomagnetic
+subroutine geog2geomag(self)
+  class(dipolemesh) :: self
+
+end subroutine geog2geomag
+
 
 end module meshobj_dipole
 
