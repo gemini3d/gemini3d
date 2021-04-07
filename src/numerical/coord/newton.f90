@@ -1,8 +1,8 @@
 module newton
 
-!> uses
-use, intrinsic :: ISO_Fortran_env,  only : wp=>real64
-!use phys_consts, only : wp
+!> uses, basically we need something to tell us what precision is being used for calculations
+!use, intrinsic :: ISO_Fortran_env,  only : wp=>real64
+use phys_consts, only: wp
 
 implicit none (type, external)
 
