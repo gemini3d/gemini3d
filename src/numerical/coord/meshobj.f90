@@ -4,7 +4,6 @@ module meshobj
 !    However, the idea here is to insulate the numerical parts of the program from that so that they can deal exclusively with the
 !    generic metric factors, etc.
 
-!use, intrinsic:: iso_fortran_env, only: wp=>real64
 use phys_consts, only : wp
 implicit none (type, external)
 public
@@ -34,7 +33,7 @@ type :: curvmesh
   
   real(wp), dimension(:), pointer :: x2
   real(wp), dimension(:), pointer :: x2i
-  real(wp), dimension(:), pointer :: dx2        ! this (and similar dx arrays) are pointers because they become associated with other pointers (meaning they have to either have the "target" keyword or themselves be pointers).  These should also be contiguous but I believe that is guaranteed as long as they are assigned through allocate statements (see fortran standard)
+  real(wp), dimension(:), pointer :: dx2        ! this (and similar dx arrays) are pointers because they become associated with other pointers (meaning they have to either have the "target" keyword or themselves be pointers).  These should also be contiguous but I believe that is guaranteed as long as they are assigned through allocate statements (see fortran standard)  derived type arrays cannot be targets so we are forced to declare them as pointers and trust that they are allocated contiguous
   real(wp), dimension(:), pointer :: dx2i
   
   real(wp), dimension(:), pointer :: x3
