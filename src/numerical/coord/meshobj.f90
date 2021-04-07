@@ -4,7 +4,8 @@ module meshobj
 !    However, the idea here is to insulate the numerical parts of the program from that so that they can deal exclusively with the
 !    generic metric factors, etc.
 
-use, intrinsic:: iso_fortran_env, only: wp=>real64
+!use, intrinsic:: iso_fortran_env, only: wp=>real64
+use phys_consts, only : wp
 implicit none (type, external)
 public
 
