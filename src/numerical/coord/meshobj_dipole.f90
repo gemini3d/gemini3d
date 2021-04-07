@@ -5,21 +5,11 @@ module meshobj_dipole
 ! 1) may want to overload the calculation procedures (e.g. for metric factors) so that can accept an index or a spherical coordiante input.
 
 ! uses
-!use, intrinsic :: ISO_Fortran_env,  only : wp=>real64
 use phys_consts, only: wp,Re,pi,Mmag,mu0,Gconst,Me
 use meshobj, only: curvmesh
 use newton, only: newtopts,newton_exact,objfun,objfun_deriv
 
 implicit none (type, external)
-
-
-!! use phys_consts, only : wp,Re,pi,Mmag
-!real(wp), parameter ::  Re = 6371.0e3_wp
-!real(wp), parameter :: pi = 4.0_wp*atan(1.0_wp)
-!real(wp), parameter :: Mmag=7.94e22
-!real(wp), parameter :: mu0=4*pi*1e-7
-!real(wp), parameter :: Gconst=6.67408e-11_wp     !Universal gravitation constant
-!real(wp), parameter :: Me = 5.9722e24_wp
 
 ! magnetic pole location
 real(wp), private, parameter :: thetan=11*pi/180
