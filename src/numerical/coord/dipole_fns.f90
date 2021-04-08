@@ -5,7 +5,7 @@ submodule(meshobj_dipole) dipole_fns
 
 implicit none
 
-! magnetic pole location
+! magnetic pole location in geographic coordinates
 real(wp), parameter :: thetan=11*pi/180
 real(wp), parameter :: phin=289*pi/180
 
@@ -62,7 +62,7 @@ module procedure qr2theta
 end procedure qr2theta
 
 
-!> convert geographic coordinates to geomagnetic
+!> convert geographic coordinates to geomagnetic; do not use at the magnetic pole!!!
 module procedure geog2geomag_rank3
   real(wp), dimension(1:size(glon,1),1:size(glon,2),1:size(glon,3)) :: glonwrap
   real(wp), dimension(1:size(glon,1),1:size(glon,2),1:size(glon,3)) :: thetag
@@ -77,7 +77,6 @@ module procedure geog2geomag_rank3
   argtmp = (cos(thetag)-cos(theta)*cos(thetan))/(sin(theta)*sin(thetan))
   alpha = acos( max(min(argtmp,1._wp),-1._wp) )
 
-  phi=0._wp
   where (phin>phig .and. phin-phig>pi .or. phin<phig .and. phig-phin<pi)
     phi=pi-alpha
   elsewhere
@@ -98,7 +97,6 @@ module procedure geog2geomag_scalar
   argtmp = (cos(thetag)-cos(theta)*cos(thetan))/(sin(theta)*sin(thetan))
   alpha = acos( max(min(argtmp,1._wp),-1._wp) )
 
-  phi=0._wp
   if (phin>phig .and. phin-phig>pi .or. phin<phig .and. phig-phin<pi) then
     phi=pi-alpha
   else
@@ -118,7 +116,6 @@ module procedure geomag2geog_rank3
   argtmp=(cos(theta)-cos(thetag2p)*cos(thetan))/(sin(thetag2p)*sin(thetan))
   beta=acos( max(min(argtmp,1._wp),-1._wp) )     ! deal with slight overshoots depending on precision used...
 
-  phig2=0._wp
   where (phiwrap>pi)
     phig2=phin-beta  
   elsewhere
@@ -141,7 +138,6 @@ module procedure geomag2geog_scalar
   argtmp=(cos(theta)-cos(thetag2p)*cos(thetan))/(sin(thetag2p)*sin(thetan))
   beta=acos( max(min(argtmp,1._wp),-1._wp) )
 
-  phig2=0._wp
   if (phiwrap>pi) then
     phig2=phin-beta  
   else
