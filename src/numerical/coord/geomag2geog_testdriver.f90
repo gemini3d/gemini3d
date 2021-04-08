@@ -19,12 +19,12 @@ real(wp) :: r0test,theta0test,phi0test
 real(wp) :: maxerrr,maxerrtheta,maxerrphi
 
 !> define points of interest
-r0=Re+300e3
-theta0=pi/4
-phi0=pi/6
-rlims=[r0,r0+300e3]
-thetalims=[theta0,theta0+pi/6]
-philims=[phi0,phi0+pi/4]
+r0=Re+80e3
+theta0=pi/36
+phi0=pi/36
+rlims=[r0,r0+900e3]
+thetalims=[theta0,pi-theta0]
+philims=[phi0,2*pi-phi0]
 rarr=[(r0 + (rlims(2)-rlims(1))/lr*(ir-1),ir=1,lr)]
 thetaarr=[(theta0 + (thetalims(2)-thetalims(1))/ltheta*(itheta-1),itheta=1,ltheta)]
 phiarr=[(phi0 + (philims(2)-philims(1))/lphi*(iphi-1),iphi=1,lphi)]
@@ -51,6 +51,7 @@ end if
 !> test a 3D array conversion
 call geomag2geog(phi,theta,glon,glat)
 alt=r2alt(r)
+print*, minval(glon),maxval(glon),minval(glat),maxval(glat)
 call geog2geomag(glon,glat,phitest,thetatest)
 rtest=alt2r(alt)
 maxerrr=maxval(abs(rtest-r))
