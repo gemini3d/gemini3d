@@ -66,10 +66,34 @@ type, extends(curvmesh) :: dipolemesh
 end type dipolemesh
 
 
-!> declarations for submodule functions, apparently these need to be generic interfaces.  These are generally
+!> declarations and interfaces for submodule functions, apparently these need to be generic interfaces.  These are generally
 !   routines that do not directly deal with the derived type data arrays but instead perform very basic calculations
 !   related to the coordinate transformations.  
-interface    ! dipole_fns.f90
+interface geomag2geog
+  module procedure geomag2geog_scalar
+  module procedure geomag2geog_rank3
+end interface geomag2geog
+interface geog2geomag
+  module procedure geog2geomag_scalar
+  module procedure geog2geomag_rank3
+end interface geog2geomag
+interface    ! dipole_fns.f90, spec for submodule functions
+  module subroutine geomag2geog_scalar(phi,theta,glon,glat)
+    real(wp), intent(in) :: phi,theta
+    real(wp), intent(out) :: glon,glat
+  end subroutine geomag2geog_scalar
+  module subroutine geomag2geog_rank3(phi,theta,glon,glat)
+    real(wp), dimension(:,:,:), intent(in) :: phi,theta
+    real(wp), dimension(:,:,:), intent(out) :: glon,glat
+  end subroutine geomag2geog_rank3
+  module subroutine geog2geomag_scalar(glon,glat,phi,theta)
+    real(wp), intent(in) :: glon,glat
+    real(wp), intent(out) :: phi,theta
+  end subroutine geog2geomag_scalar
+  module subroutine geog2geomag_rank3(glon,glat,phi,theta)
+    real(wp), dimension(:,:,:), intent(in) :: glon,glat
+    real(wp), dimension(:,:,:), intent(out) :: phi,theta
+  end subroutine geog2geomag_rank3
   module subroutine qp2rtheta(q,p,r,theta)
     real(wp), intent(in) :: q,p
     real(wp), intent(out) :: r,theta
