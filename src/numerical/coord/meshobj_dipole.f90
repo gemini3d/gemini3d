@@ -11,17 +11,6 @@ use newton, only: newtopts,newton_exact,objfun,objfun_deriv
 
 implicit none (type, external)
 
-! magnetic pole location
-real(wp), private, parameter :: thetan=11*pi/180
-real(wp), private, parameter :: phin=289*pi/180
-
-! options structure for Newton iterations
-type(newtopts), public :: newtparms
-
-!> these to be dealt with later, once things are done
-!public :: get_rtheta_2D,get_qp_2D,qp2rtheta,rtheta2qp,rpoly,rpoly_deriv,hq
-!private :: qr2theta
-
 
 ! type extension for dipolemesh
 type, extends(curvmesh) :: dipolemesh
