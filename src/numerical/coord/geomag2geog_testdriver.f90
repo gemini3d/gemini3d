@@ -20,8 +20,8 @@ real(wp) :: maxerrr,maxerrtheta,maxerrphi
 
 !> define points of interest
 r0=Re+300e3
-theta0=pi/2
-phi0=pi
+theta0=pi/4
+phi0=pi/6
 rlims=[r0,r0+300e3]
 thetalims=[theta0,theta0+pi/6]
 philims=[phi0,phi0+pi/4]
@@ -43,7 +43,7 @@ call geomag2geog(phi0,theta0,glon0,glat0)
 alt0=r2alt(r0)
 call geog2geomag(glon0,glat0,phi0test,theta0test)
 r0test=alt2r(alt0)
-print*, ' phi,theta coordinate diff:  ',abs(phi0-phi0test),abs(theta0-theta0test),abs(r0-r0test)
+print*, ' r,theta,phi coordinate diff:  ',abs(r0-r0test),abs(theta0-theta0test),abs(phi0-phi0test)
 if (abs(phi0-phi0test)>1e-6 .or. abs(theta0-theta0test)>1e-6 .or. abs(r0-r0test)>1e-6) then
   error stop ' excessive error in single point coordinate conversion'
 end if
@@ -56,7 +56,7 @@ rtest=alt2r(alt)
 maxerrr=maxval(abs(rtest-r))
 maxerrtheta=maxval(abs(thetatest-theta))
 maxerrphi=maxval(abs(phitest-phi))
-
+print*, ' r,theta,phi array max diff:  ',maxerrr,maxerrtheta,maxerrphi
 if ( any([maxerrr,maxerrtheta,maxerrphi]>1e-6) ) then
   error stop ' Excessive error in array coordinate conversion!'
 end if
