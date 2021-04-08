@@ -145,6 +145,12 @@ module procedure geomag2geog_scalar
 end procedure geomag2geog_scalar
 
 
+!> convert geocentric distance into altitude (assume spherical Earth but could use other model)
+module procedure r2alt
+  alt=r-Re
+end procedure r2alt
+
+
 !> objective function for newton iterations for solutions of roots for r
 module procedure rpoly
   real(wp) ::  q,p
