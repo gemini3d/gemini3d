@@ -1,6 +1,6 @@
 program grid_testdriver
 
-use, intrinsic :: ISO_Fortran_env,  only : wp=>real64
+use phys_consts, only: wp
 use meshobj_dipole, only : dipolemesh
 
 implicit none
