@@ -32,7 +32,7 @@ endif()
 
 find_program(apt NAMES apt)
 if(apt)
-  execute_process(COMMAND apt install --no-install-recommends gfortran libhwloc-dev libmumps-dev liblapack-dev libscalapack-mpi-dev libopenmpi-dev openmpi-bin libhdf5-dev)
+  execute_process(COMMAND apt install --no-install-recommends ninja-build gfortran libhwloc-dev libmumps-dev liblapack-dev libscalapack-mpi-dev libopenmpi-dev openmpi-bin libhdf5-dev)
   return()
 endif()
 
