@@ -1,7 +1,7 @@
 submodule(meshobj_dipole) dipole_fns
 
 !> This submodule contains the functions for which we need to find roots in order to transform
-!   dipole to spherical coordinates
+!   dipole to spherical coordinates.  This should arguably be its own standalone module...
 
 implicit none
 
@@ -149,6 +149,12 @@ end procedure geomag2geog_scalar
 module procedure r2alt
   alt=r-Re
 end procedure r2alt
+
+
+!> convert altitude to geocentric distance
+module procedure alt2r
+  r=alt+Re
+end procedure alt2r
 
 
 !> objective function for newton iterations for solutions of roots for r
