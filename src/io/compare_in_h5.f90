@@ -1,5 +1,7 @@
 submodule (compare_h5) compare_in_h5
 
+use pathlib, only : parent
+
 implicit none (type, external)
 
 contains
@@ -7,18 +9,15 @@ contains
 module procedure check_plasma_input_hdf5
 
 logical :: dbug
-integer :: lx1, lx2all, lx3all, bad, i
+integer :: bad
 character(:), allocatable :: new_file, ref_file
 
 type(gemini_cfg) :: ref_cfg, cfg
 
-character(6), parameter :: vars(3) = [character(6) :: "nsall", "Tsall", "vs1all"]
+character(6), parameter :: var4(3) = [character(6) :: "nsall", "Tsall", "vs1all"]
 
 dbug = .false.
 if(present(debug)) dbug = debug
-
-!> check sizes
-call check_simsize(new_path, ref_path, lx1, lx2all, lx3all)
 
 !> get input filename
 ref_cfg%infile = new_path // '/inputs/config.nml'
@@ -37,59 +36,58 @@ call check_time(new_file, ref_file)
 
 !> check data
 bad = 0
-do i = 1,size(vars)
 
-  bad = check_var(vars(i), new_file, ref_file, rtol, atol, lx1, lx2all, lx3all, dbug)
-
-end do
+bad = bad + check_4d(new_file, ref_file, new_path, ref_path, var4, dbug)
 
 check_plasma_input_hdf5 = bad == 0
-
 
 end procedure check_plasma_input_hdf5
 
 
-integer function check_var(name, new_file, ref_file, rtol, atol, lx1, lx2all, lx3all, debug) result(bad)
+integer function check_4d(new_file, ref_file, new_path, ref_path, var4, debug)
 
-character(*), intent(in) :: new_file, ref_file
-character(*), intent(in) :: name
-real(wp), intent(in) :: rtol, atol
-integer, intent(in) :: lx1, lx2all, lx3all
+character(*), intent(in) :: new_file, ref_file, new_path, ref_path
+character(*), intent(in) :: var4(:)
 logical, intent(in) :: debug
 
-integer, parameter :: lsp = 7
+type(hdf5_file) :: href, hnew
+integer :: i, lx1, lx2all, lx3all
+real, allocatable :: new4(:,:,:,:), ref4(:,:,:,:)
 
-type(hdf5_file) :: hnew, href
+call check_simsize(new_path, ref_path, lx1, lx2all, lx3all)
 
-real, dimension(:,:,:,:), allocatable :: new, ref
-
-bad = 0
-
-allocate(new(lx1, lx2all, lx3all, lsp), ref(lx1, lx2all, lx3all, lsp))
+check_4d = 0
 
 call hnew%initialize(new_file, status='old',action='r')
 call href%initialize(ref_file, status='old',action='r')
 
-call hnew%read(name, new)
-call href%read(name, ref)
+do i = 1,size(var4)
+
+  allocate(new4(lx1, lx2all, lx3all, lsp), ref4(lx1, lx2all, lx3all, lsp))
+  call hnew%read(var4(i), new4)
+  call href%read(var4(i), ref4)
+
+  if (.not.all(ieee_is_finite(ref4))) error stop "NON-FINITE: " // file_name(ref_file) // " " // var4(i)
+  if (.not.all(ieee_is_finite(new4))) error stop "NON-FINITE: " // file_name(new_file) // " " // var4(i)
+
+  if(all(isclose(ref4, new4, rtol, atol))) then
+    if(debug) print '(A)', "OK: input: " // var4(i)
+  else
+    check_4d = check_4d + 1
+
+    write(stderr,'(A,/,A,ES12.3,A,2ES12.3,A,2ES12.3)') "MISMATCH: " // file_name(new_file) // " " // var4(i), &
+    ' max diff:', maxval(abs(ref4 - new4)), &
+    ' max & min ref:', maxval(ref4), minval(ref4), ' max & min new:', maxval(new4), minval(new4)
+  endif
+
+  deallocate(new4, ref4)
+
+end do
 
 call hnew%finalize()
 call href%finalize()
 
-if (.not.all(ieee_is_finite(ref))) error stop "NON-FINITE: " // file_name(ref_file) // " " // name
-if (.not.all(ieee_is_finite(new))) error stop "NON-FINITE: " // file_name(new_file) // " " // name
+end function check_4d
 
-if(all(isclose(ref, new, rtol, atol))) then
-  if(debug) print '(A)', "OK: input: " // name
-  return
-endif
-
-bad = 1
-
-write(stderr,'(A,/,A,ES12.3,A,2ES12.3,A,2ES12.3)') "MISMATCH: " // file_name(new_file) // " " // name, &
-' max diff:', maxval(abs(ref - new)), ' max & min ref:', maxval(ref), minval(ref), ' max & min new:', maxval(new), minval(new)
-
-
-end function check_var
 
 end submodule compare_in_h5
