@@ -55,18 +55,94 @@ module procedure qr2theta
 end procedure qr2theta
 
 
-!> convert geomagnetic coordinates to geographic
-subroutine geomag2geog(self)
-  class(dipolemesh) :: self
-
-end subroutine geomag2geog
-
-
 !> convert geographic coordinates to geomagnetic
-subroutine geog2geomag(self)
-  class(dipolemesh) :: self
+module procedure geog2geomag_rank3
+  real(wp), dimension(1:size(glon,1),1:size(glon,2),1:size(glon,3)) :: glonwrap
+  real(wp), dimension(1:size(glon,1),1:size(glon,2),1:size(glon,3)) :: thetag
+  real(wp), dimension(1:size(glon,1),1:size(glon,2),1:size(glon,3)) :: phig
+  real(wp), dimension(1:size(glon,1),1:size(glon,2),1:size(glon,3)) :: argtmp,alpha
 
-end subroutine geog2geomag
+  glonwrap=mod(glon,360._wp)
+  thetag=pi/2._wp-glat*pi/180._wp
+  phig=glonwrap*pi/180._wp
+
+  theta = acos(cos(thetag)*cos(thetan)+sin(thetag)*sin(thetan)*cos(phig-phin))
+  argtmp = (cos(thetag)-cos(theta)*cos(thetan))/(sin(theta)*sin(thetan))
+  alpha = acos( max(min(argtmp,1._wp),-1._wp) )
+
+  phi=0._wp
+  where (phin>phig .and. phin-phig>pi .or. phin<phig .and. phig-phin<pi)
+    phi=pi-alpha
+  elsewhere
+    phi=alpha+pi
+  end where
+end procedure geog2geomag_rank3
+module procedure geog2geomag_scalar
+  real(wp) :: glonwrap
+  real(wp) :: thetag
+  real(wp) :: phig
+  real(wp) :: argtmp,alpha
+
+  glonwrap=mod(glon,360._wp)
+  thetag=pi/2._wp-glat*pi/180._wp
+  phig=glonwrap*pi/180._wp
+
+  theta = acos(cos(thetag)*cos(thetan)+sin(thetag)*sin(thetan)*cos(phig-phin))
+  argtmp = (cos(thetag)-cos(theta)*cos(thetan))/(sin(theta)*sin(thetan))
+  alpha = acos( max(min(argtmp,1._wp),-1._wp) )
+
+  phi=0._wp
+  if (phin>phig .and. phin-phig>pi .or. phin<phig .and. phig-phin<pi) then
+    phi=pi-alpha
+  else
+    phi=alpha+pi
+  end if
+end procedure geog2geomag_scalar
+
+
+!> convert geomagnetic coordinates to geographic
+module procedure geomag2geog_rank3
+  real(wp), dimension(1:size(phi,1),1:size(phi,2),1:size(phi,3)) :: thetag2p,thetag2
+  real(wp), dimension(1:size(phi,1),1:size(phi,2),1:size(phi,3)) :: beta
+  real(wp), dimension(1:size(phi,1),1:size(phi,2),1:size(phi,3)) :: phig2,phiwrap
+
+  phiwrap=mod(phi,2*pi)
+  thetag2p=acos(cos(theta)*cos(thetan)-sin(theta)*sin(thetan)*cos(phiwrap))
+  beta=acos( (cos(theta)-cos(thetag2p)*cos(thetan))/(sin(thetag2p)*sin(thetan)) )
+
+  phig2=0._wp
+  where (phiwrap>pi)
+    phig2=phin-beta  
+  elsewhere
+    phig2=phi+beta
+  end where
+  phig2=mod(phig2,2*pi)
+  thetag2=pi/2-thetag2p
+
+  glon=phig2*180._wp/pi
+  glat=thetag2*180._wp/pi
+end procedure geomag2geog_rank3
+module procedure geomag2geog_scalar
+  real(wp) :: thetag2p,thetag2
+  real(wp) :: beta
+  real(wp) :: phig2,phiwrap
+
+  phiwrap=mod(phi,2*pi)
+  thetag2p=acos(cos(theta)*cos(thetan)-sin(theta)*sin(thetan)*cos(phiwrap))
+  beta=acos( (cos(theta)-cos(thetag2p)*cos(thetan))/(sin(thetag2p)*sin(thetan)) )
+
+  phig2=0._wp
+  if (phiwrap>pi) then
+    phig2=phin-beta  
+  else
+    phig2=phi+beta
+  end if
+  phig2=mod(phig2,2*pi)
+  thetag2=pi/2-thetag2p
+
+  glon=phig2*180._wp/pi
+  glat=thetag2*180._wp/pi
+end procedure geomag2geog_scalar
 
 
 !> objective function for newton iterations for solutions of roots for r
