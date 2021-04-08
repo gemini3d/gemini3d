@@ -5,6 +5,13 @@ submodule(meshobj_dipole) dipole_fns
 
 implicit none
 
+! magnetic pole location
+real(wp), parameter :: thetan=11*pi/180
+real(wp), parameter :: phin=289*pi/180
+
+! options structure for Newton iterations
+type(newtopts) :: newtparms
+
 contains
 
 !> convert a single q,p pair into r,theta
@@ -104,17 +111,18 @@ end procedure geog2geomag_scalar
 module procedure geomag2geog_rank3
   real(wp), dimension(1:size(phi,1),1:size(phi,2),1:size(phi,3)) :: thetag2p,thetag2
   real(wp), dimension(1:size(phi,1),1:size(phi,2),1:size(phi,3)) :: beta
-  real(wp), dimension(1:size(phi,1),1:size(phi,2),1:size(phi,3)) :: phig2,phiwrap
+  real(wp), dimension(1:size(phi,1),1:size(phi,2),1:size(phi,3)) :: phig2,phiwrap,argtmp
 
   phiwrap=mod(phi,2*pi)
   thetag2p=acos(cos(theta)*cos(thetan)-sin(theta)*sin(thetan)*cos(phiwrap))
-  beta=acos( (cos(theta)-cos(thetag2p)*cos(thetan))/(sin(thetag2p)*sin(thetan)) )
+  argtmp=(cos(theta)-cos(thetag2p)*cos(thetan))/(sin(thetag2p)*sin(thetan))
+  beta=acos( max(min(argtmp,1._wp),-1._wp) )     ! deal with slight overshoots depending on precision used...
 
   phig2=0._wp
   where (phiwrap>pi)
     phig2=phin-beta  
   elsewhere
-    phig2=phi+beta
+    phig2=phin+beta
   end where
   phig2=mod(phig2,2*pi)
   thetag2=pi/2-thetag2p
@@ -126,16 +134,18 @@ module procedure geomag2geog_scalar
   real(wp) :: thetag2p,thetag2
   real(wp) :: beta
   real(wp) :: phig2,phiwrap
+  real(wp) :: argtmp
 
   phiwrap=mod(phi,2*pi)
   thetag2p=acos(cos(theta)*cos(thetan)-sin(theta)*sin(thetan)*cos(phiwrap))
-  beta=acos( (cos(theta)-cos(thetag2p)*cos(thetan))/(sin(thetag2p)*sin(thetan)) )
+  argtmp=(cos(theta)-cos(thetag2p)*cos(thetan))/(sin(thetag2p)*sin(thetan))
+  beta=acos( max(min(argtmp,1._wp),-1._wp) )
 
   phig2=0._wp
   if (phiwrap>pi) then
     phig2=phin-beta  
   else
-    phig2=phi+beta
+    phig2=phin+beta
   end if
   phig2=mod(phig2,2*pi)
   thetag2=pi/2-thetag2p
