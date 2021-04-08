@@ -2,6 +2,7 @@ name: ci_macos
 env:
   HOMEBREW_NO_INSTALL_CLEANUP: 1
   CTEST_SITE: GitHub_MacOS
+  CTEST_PARALLEL_LEVEL: 3
 
 on:
   push:

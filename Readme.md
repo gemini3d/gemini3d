@@ -78,9 +78,7 @@ GEMINI has self tests that compare the output from a "known" test problem to a r
 To help ensure successful simulations, run the self-tests:
 
 ```sh
-cd build
-
-ctest
+ctest --test-dir build
 ```
 
 ## How to setup a sim
