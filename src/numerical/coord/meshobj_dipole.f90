@@ -94,6 +94,10 @@ interface    ! dipole_fns.f90, spec for submodule functions
     real(wp), dimension(:,:,:), intent(in) :: glon,glat
     real(wp), dimension(:,:,:), intent(out) :: phi,theta
   end subroutine geog2geomag_rank3
+  elemental module function r2alt(r) result(alt)
+    real(wp), intent(in) :: r
+    real(wp) :: alt
+  end function r2alt
   module subroutine qp2rtheta(q,p,r,theta)
     real(wp), intent(in) :: q,p
     real(wp), intent(out) :: r,theta
