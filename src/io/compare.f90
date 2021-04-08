@@ -10,7 +10,7 @@ use timeutils, only : date_filename, dateinc
 use config, only : gemini_cfg, read_configfile
 use h5fortran, only : hdf5_file
 use pathlib, only : get_suffix, file_name
-use reader, only : get_simsize3
+use reader, only : get_simsize3, get_simsize2
 use assert, only : isclose
 
 implicit none (type, external)
@@ -25,7 +25,8 @@ rtolN = 1e-5_wp, atolN = 1e9_wp, &
 rtolT = 1e-5_wp, atolT = 100
 
 private
-public :: check_plasma_output_hdf5, check_plasma_input_hdf5, check_simsize, check_time, check_grid
+public :: check_plasma_output_hdf5, check_plasma_input_hdf5, &
+  check_simsize, check_simsize2, check_time, check_grid
 
 interface !< compare_out_h5.f90
 module logical function check_plasma_output_hdf5(new_path, ref_path, debug)
@@ -78,6 +79,33 @@ if(lx2all /= R_lx2all) error stop 'lx2all != ref: ' // new
 if(lx3all /= R_lx3all) error stop 'lx3all != ref: ' // new
 
 end subroutine check_simsize
+
+
+subroutine check_simsize2(new, ref, lx2, lx3)
+!! check that new simsize == Old_simsize
+!!
+!! parameters
+!! ----------
+!! new: top-level new directory
+!! ref: top-level reference directory
+!!
+!! returns
+!! -------
+!! lx2: # lx2 cells
+!! lx3: # lx3 cells
+
+character(*), intent(in) :: new, ref
+integer, intent(out) :: lx2, lx3
+
+integer :: R_lx2, R_lx3
+
+call get_simsize2(ref // "/simsize.h5", R_lx2, R_lx3)
+call get_simsize2(new // "/simsize.h5", lx2, lx3)
+
+if(lx2 /= R_lx2) error stop 'lx2 != ref: ' // new
+if(lx3 /= R_lx3) error stop 'lx3 != ref: ' // new
+
+end subroutine check_simsize2
 
 
 subroutine check_time(new_file, ref_file)

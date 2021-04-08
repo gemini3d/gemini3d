@@ -11,7 +11,7 @@ type(gemini_cfg) :: cfg
 character(:), allocatable :: new_file, ref_file
 integer :: i, ymd(3), lx1, lx2all, lx3all
 
-real(wp) :: UTsec
+real(wp) :: UTsec, t
 character(:), allocatable :: suffix
 logical :: exists, ok, dbug
 
@@ -29,22 +29,22 @@ call read_configfile(cfg)
 ymd = cfg%ymd0
 UTsec = cfg%UTsec0
 suffix = get_suffix(cfg%indatsize)
+t = 0
 
-ref_file = date_filename(ref_path, ymd, UTsec) // suffix
-inquire(file=ref_file, exist=exists)
-if (.not. exists) then
-  ! skip first file for old sim reference data
-  call dateinc(cfg%dtout, ymd, UTsec)
-  ref_file = date_filename(ref_path, ymd, UTsec) // suffix
-  inquire(file=ref_file, exist=exists)
-  if (.not. exists) error stop "reference data not found in " // ref_path
-endif
+! ref_file = date_filename(ref_path, ymd, UTsec) // suffix
+! inquire(file=ref_file, exist=exists)
+! if (.not. exists) then
+!   ! skip first file for old sim reference data
+!   call dateinc(cfg%dtout, ymd, UTsec)
+!   t = t + cfg%dtout
+!   ref_file = date_filename(ref_path, ymd, UTsec) // suffix
+!   inquire(file=ref_file, exist=exists)
+!   if (.not. exists) error stop "reference data not found in " // ref_path
+! endif
 
-do
+
+do while (t <= cfg%tdur)
   ref_file = date_filename(ref_path, ymd, UTsec) // suffix
-  inquire(file=ref_file, exist=exists)
-  if (.not. exists) exit
-  !! last output file
   new_file = date_filename(new_path, ymd, UTsec) // suffix
 
   ok = check_out(cfg, new_file, ref_file,  lx1, lx2all, lx3all, dbug)
@@ -55,6 +55,7 @@ do
 
   !! next time
   call dateinc(cfg%dtout, ymd, UTsec)
+  t = t + cfg%dtout
 end do
 
 end procedure check_plasma_output_hdf5
@@ -186,7 +187,7 @@ D_ref = sum(ns_ref(:,:,:,1:6) * ref(:,:,:,1:6), dim=4) / ns_ref(:,:,:,LSP)
 D_new = sum(ns_new(:,:,:,1:6) * new(:,:,:,1:6), dim=4) / ns_new(:,:,:,LSP)
 
 if(all(isclose(D_ref, D_new, rtol, atol))) then
-  if(debug) print '(A)', "OK: output: " // derived_name
+  if(debug) print '(A)', "OK: output: " // derived_name // " " // new_file
   return
 endif
 
