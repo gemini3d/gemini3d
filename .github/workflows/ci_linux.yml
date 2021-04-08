@@ -56,6 +56,6 @@ jobs:
         sudo cmake -P scripts/install_prereq.cmake
 
     - run: cmake --preset default -DCMAKE_BUILD_TYPE=Debug
-    - run: cmake --preset default
+    - run: cmake --build --preset default
 
     - run: ctest --preset default -R "(unit|2dew_fang)"
