@@ -63,13 +63,25 @@ type, extends(curvmesh) :: dipolemesh
   procedure, private :: calc_inclination
   procedure, private :: calc_hq,calc_hp,calc_hphi
   procedure :: calc_rtheta_2D, calc_qp_2D
-  procedure :: qp2rtheta,rtheta2qp,qr2theta
-  procedure :: geomag2geog, geog2geomag
 end type dipolemesh
 
 
-!> declarations for submodule functions, apparently these need to be generic interfaces
-interface
+!> declarations for submodule functions, apparently these need to be generic interfaces.  These are generally
+!   routines that do not directly deal with the derived type data arrays but instead perform very basic calculations
+!   related to the coordinate transformations.  
+interface    ! dipole_fns.f90
+  module subroutine qp2rtheta(q,p,r,theta)
+    real(wp), intent(in) :: q,p
+    real(wp), intent(out) :: r,theta
+  end subroutine qp2rtheta
+  module subroutine rtheta2qp(r,theta,q,p)
+    real(wp), intent(in) :: r,theta
+    real(wp), intent(out) :: q,p
+  end subroutine rtheta2qp
+  elemental module function qr2theta(q,r) result(theta)
+    real(wp), intent(in) :: q,r
+    real(wp) :: theta
+  end function qr2theta
   module function rpoly(x,parms) result(fval)
     real(wp), intent(in) :: x
     real(wp), dimension(:), intent(in) :: parms
@@ -422,7 +434,7 @@ subroutine calc_rtheta_2D(self,q,p,r,theta)
 
   do iq=1,lq
     do ip=1,lp
-      call self%qp2rtheta(q(iq),p(ip),r(iq,ip),theta(iq,ip))
+      call qp2rtheta(q(iq),p(ip),r(iq,ip),theta(iq,ip))
     end do
   end do
 end subroutine calc_rtheta_2D
@@ -440,86 +452,10 @@ subroutine calc_qp_2D(self,r,theta,q,p)
 
   do i1=1,ldim1
     do i2=1,ldim2
-      call self%rtheta2qp(r(i1,i2),theta(i1,i2),q(i1,i2),p(i1,i2))
+      call rtheta2qp(r(i1,i2),theta(i1,i2),q(i1,i2),p(i1,i2))
     end do
   end do
 end subroutine calc_qp_2D
-
-! fixme: arguably everything that follows constitutes a set of generic utility routines that shoudl go in the submodule?
-!> convert a single q,p pair into r,theta
-subroutine qp2rtheta(self,q,p,r,theta)
-  class(dipolemesh) :: self
-  real(wp), intent(in) :: q,p
-  real(wp), intent(out) :: r,theta
-
-  real(wp), dimension(2) :: parms
-  real(wp) :: r0
-  procedure(objfun), pointer :: f
-  procedure(objfun_deriv), pointer :: fprime
-  integer :: maxrestart, maxr, r0step
-  integer :: it,ir0
-  logical :: converged
-
-  ! Set parameters of the restart and Newton iterations
-  maxrestart=400
-  maxr=100*Re
-  r0step=0.25*Re
-  newtparms%maxit=100
-  newtparms%derivtol=1e-18
-  newtparms%tol=1e-11
-  newtparms%verbose=.false.
-  f=>rpoly
-  fprime=>rpoly_deriv
-  parms=[q,p]
-
-  ! Newton iterations with restarting (see parameters above for limits) until we get a satisfactory result
-  r=0; converged=.false.; ir0=1;
-  do while (.not. converged .and. ir0<maxrestart .and. (r<=0 .or. r>maxr))
-    r0=(ir0-1)*(r0step)    ! change starting point in increments of 0.25 Re until we get a "good" answer
-    call newton_exact(f,fprime,r0,parms,newtparms,r,it,converged)
-    ir0=ir0+1
-  end do
-
-  ! Once we have r can algebraically solve for theta
-  theta=self%qr2theta(q,r)
-
-end subroutine qp2rtheta
-
-
-!> convert a single point r,theta to q,p
-subroutine rtheta2qp(self,r,theta,q,p)
-  class(dipolemesh) :: self
-  real(wp), intent(in) :: r,theta
-  real(wp), intent(out) :: q,p
-
-  q=Re**2/r**2*cos(theta)
-  p=r/Re/(sin(theta)**2)
-
-end subroutine rtheta2qp
-
-
-!> find theta given q,r
-elemental real(wp) function qr2theta(self,q,r) result(theta)
-  class(dipolemesh), intent(in) :: self
-  real(wp), intent(in) :: q,r
-
-  theta=acos(q*(r/Re)**2)
-end function qr2theta
-
-
-!> convert geomagnetic coordinates to geographic
-subroutine geomag2geog(self)
-  class(dipolemesh) :: self
-
-end subroutine geomag2geog
-
-
-!> convert geographic coordinates to geomagnetic
-subroutine geog2geomag(self)
-  class(dipolemesh) :: self
-
-end subroutine geog2geomag
-
 
 end module meshobj_dipole
 
