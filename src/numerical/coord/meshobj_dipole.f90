@@ -98,6 +98,10 @@ interface    ! dipole_fns.f90, spec for submodule functions
     real(wp), intent(in) :: r
     real(wp) :: alt
   end function r2alt
+  elemental module function alt2r(alt) result(r)
+    real(wp), intent(in) :: alt
+    real(wp) :: r
+  end function alt2r
   module subroutine qp2rtheta(q,p,r,theta)
     real(wp), intent(in) :: q,p
     real(wp), intent(out) :: r,theta
