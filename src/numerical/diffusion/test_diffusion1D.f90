@@ -90,6 +90,8 @@ do it=1,lt
   call h5f%write('/TsEuler'//ic, TsEuler(1:lx1), ierr)
   call h5f%write('/TsBDF2'//ic, TsBDF2(1:lx1), ierr)
   call h5f%write('/TsTrue'//ic, Tstrue(1:lx1), ierr)
+  call h5f%write('/coeffs'//ic,abc,ierr)
+  call h5f%write('/rhs'//ic,y,ierr)
 
   !check the validity of the numerical solutions at this time step
   errorEuler(1:lx1)=TsEuler(1:lx1)-Tstrue(1:lx1)
