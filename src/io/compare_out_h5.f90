@@ -31,20 +31,23 @@ UTsec = cfg%UTsec0
 suffix = get_suffix(cfg%indatsize)
 t = 0
 
-! ref_file = date_filename(ref_path, ymd, UTsec) // suffix
-! inquire(file=ref_file, exist=exists)
-! if (.not. exists) then
-!   ! skip first file for old sim reference data
-!   call dateinc(cfg%dtout, ymd, UTsec)
-!   t = t + cfg%dtout
-!   ref_file = date_filename(ref_path, ymd, UTsec) // suffix
-!   inquire(file=ref_file, exist=exists)
-!   if (.not. exists) error stop "reference data not found in " // ref_path
-! endif
-
-
 do while (t <= cfg%tdur)
   ref_file = date_filename(ref_path, ymd, UTsec) // suffix
+
+  !> FIXME: regenerate the reference data then remove this workaround
+  if(t == 0) then
+    inquire(file=ref_file, exist=exists)
+    if(.not. exists) then
+      ref_file = date_filename(ref_path, ymd, UTsec)
+      i = len_trim(ref_file)
+      ref_file(i:i) = "1"
+      ref_file = ref_file // suffix
+      inquire(file=ref_file, exist=exists)
+      if(.not. exists) error stop "compare: first ref file not found: " // ref_file
+    endif
+  endif
+  !! end workaround
+
   new_file = date_filename(new_path, ymd, UTsec) // suffix
 
   ok = check_out(cfg, new_file, ref_file,  lx1, lx2all, lx3all, dbug)
