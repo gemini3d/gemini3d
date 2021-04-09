@@ -8,6 +8,7 @@ use reader, only: get_simsize3
 use autogrid, only : grid_auto, max_mpi
 use help, only : help_gemini_run
 use config, only : get_compiler_vendor
+use pathlib, only : parent
 use, intrinsic :: iso_fortran_env, only : stderr=>error_unit, compiler_version
 
 implicit none (type, external)
@@ -108,7 +109,10 @@ print '(A,I0)', 'MPI images: ', lid
 if(plan) stop 'gemini3d.run: plan complete'
 
 !> Find gemini.bin, the main program
-if(.not.allocated(gem_exe)) gem_exe = 'gemini.bin'
+if(.not.allocated(gem_exe)) then
+  call get_command_argument(0, buf)
+  gem_exe = trim(parent(buf)) // '/gemini.bin'
+endif
 inquire(file=gem_exe, exist=exists)
 if(.not.exists) then
   inquire(file=gem_exe // '.exe', exist=exists)
