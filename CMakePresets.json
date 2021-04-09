@@ -63,6 +63,7 @@
 {
   "name": "intel", "inherits": "default",
   "displayName": "Intel Classic compiler: Linux/MacOS",
+  "binaryDir": "${sourceDir}/build-intel",
   "environment": {
     "CC": "icc",
     "CXX": "icpc",
@@ -107,6 +108,10 @@
   "execution": {
     "noTestsAction": "error",
     "stopOnFailure": false}
+},
+{
+  "name": "intel", "inherits": "default",
+  "configurePreset": "intel"
 }
 ]
 }
