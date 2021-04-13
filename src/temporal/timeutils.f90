@@ -239,7 +239,7 @@ end subroutine find_lastdate
 
 pure function find_time_elapsed(ymdstart,UTsecstart,ymdend,UTsecend,dt) result(telapsed)
 
-! finds the amount of time that has elapsed between a given start and end date, using a given dt increment 
+! finds the amount of time that has elapsed between a given start and end date, using a given dt increment
 ! the resulting elapsed time will be the smallest multiple of dt that is >= true elapsed time
 
 !! inputs

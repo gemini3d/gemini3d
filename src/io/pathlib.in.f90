@@ -6,7 +6,7 @@ implicit none (type, external)
 private
 public :: mkdir, copyfile, expanduser, home, get_suffix, filesep_swap, &
   assert_directory_exists, assert_file_exists,&
-  make_absolute, get_filename, parent, file_name
+  make_absolute, is_absolute, get_filename, parent, file_name
 
 interface  ! pathlib_{unix,windows}.f90
 module integer function copyfile(source, dest) result(istat)
@@ -16,7 +16,13 @@ end function copyfile
 module integer function mkdir(path) result(istat)
 character(*), intent(in) :: path
 end function mkdir
+
+module logical function is_absolute(path)
+character(*), intent(in) :: path
+end function is_absolute
+
 end interface
+
 
 contains
 
@@ -77,7 +83,7 @@ character(*), intent(in), optional :: stem
 character(:), allocatable :: fn, path1
 integer :: i, L
 logical :: exists
-character(*), parameter :: suffix(3) = [character(4) :: '.h5', '.nc', '.dat' ]
+character(*), parameter :: suffix(3) = [character(4) :: '.h5', '.nc', '.dat']
 
 fn = trim(path)  !< first to avoid undefined return
 
@@ -119,30 +125,22 @@ end function get_filename
 function make_absolute(path, top_path) result(abspath)
 !! if path is absolute, return expanded path
 !! if path is relative, make absolute path under absolute top_path
-!!
-!! NOTE: To constrain the dimensionality of this problem across operating
-!! systems, we require that:
-!! 1. top_path is known to be absolute
-!! 2. top_path exists
-!! 3. if relative, path already exists
 
-character(:), allocatable :: abspath, rel, top
-logical :: exists
+!! NOTE:
+!! 1. can only allocate once when it's a function, it will ignore later allocates
+!! 2. need trim(adjustl()) to sanitize fixed length namelist input
+
+character(:), allocatable :: abspath
+logical :: exists, is_abs
 character(*), intent(in) :: path, top_path
 
-
-rel = expanduser(path)
-top = expanduser(top_path)
-
-call assert_directory_exists(top)
-
-inquire(file=rel, exist=exists)
-if (exists) then
-  abspath = rel
-else
-  abspath = top // '/' // rel
+if (is_absolute(path)) then
+  abspath = expanduser(path)
+  return
 endif
 
+if (.not. is_absolute(top_path)) write(stderr,*) "WARNING: make_absolute: top_path is not absolute: " // top_path
+abspath = expanduser(top_path) // '/' // trim(adjustl(path))
 
 end function make_absolute
 

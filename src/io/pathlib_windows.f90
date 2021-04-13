@@ -4,6 +4,21 @@ implicit none (type, external)
 
 contains
 
+
+module procedure is_absolute
+
+character :: f
+
+is_absolute = .false.
+if(len_trim(path) < 2) return
+
+f = path(1:1)
+is_absolute = ((f >= "a" .and. f <= "z") .or. (f >= "A" .and. f <= "Z") .and. &
+  path(2:2) == ":")
+
+end procedure is_absolute
+
+
 module procedure copyfile
 
 integer :: icstat

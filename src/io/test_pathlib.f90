@@ -1,11 +1,12 @@
 program pathlib_test
 
 use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
-use pathlib, only : get_filename, mkdir
+use pathlib, only : get_filename, mkdir, expanduser, is_absolute, make_absolute
 
 implicit none (type, external)
 
 character(:), allocatable :: fn
+character(16) :: fn2
 integer :: i
 logical :: e
 
@@ -36,22 +37,13 @@ if(get_filename('test-pathlib.h5') /= 'test-pathlib.h5') error stop 'exist full 
 if(get_filename('test-pathlib') /= 'test-pathlib.h5') error stop 'exist stem 1'
 
 fn = get_filename('.', 'test-pathlib')
-if(fn /= './test-pathlib.h5') then
-  write(stderr,*) fn
-  error stop 'exist stem 2'
-endif
+if(fn /= './test-pathlib.h5') error stop 'exist stem 2: ' // fn
 
 fn = get_filename('./test-pathlib', 'test-pathlib')
-if(fn /= './test-pathlib.h5') then
-  write(stderr,*) fn
-  error stop 'exist parts 2'
-endif
+if(fn /= './test-pathlib.h5') error stop 'exist parts 2: ' // fn
 
 fn = get_filename('./test-pathlib.h5', 'test-pathlib')
-if(fn /= './test-pathlib.h5') then
-  write(stderr,*) fn
-  error stop 'exist full 2'
-endif
+if(fn /= './test-pathlib.h5') error stop 'exist full 2: ' // fn
 
 call unlink('test-pathlib.h5')
 
@@ -76,6 +68,26 @@ if (fn /= 'temp1/temp2/test-pathlib.h5') error stop 'exist dir full 2'
 
 fn = get_filename('./temp1/temp2', 'test-pathlib')
 if (fn /= './temp1/temp2/test-pathlib.h5') error stop 'exist dir full 2a'
+
+!> is_absolute, expanduser, make_absolute
+fn = expanduser("~")
+if (fn(1:1) == "/") then
+  if (.not.is_absolute("/")) error stop "is_absolute('/') on Unix should be true"
+  if (is_absolute("c:/")) error stop "is_absolute('c:/') on Unix should be false"
+
+  fn2 = make_absolute("rel", "/foo")
+  if (fn2 /= "/foo/rel") error stop "did not make_absolute Unix /foo/rel, got: " // fn2
+else
+  if (.not.is_absolute("J:/")) error stop "is_absolute('J:/') on Windows should be true"
+  if (.not.is_absolute("j:/")) error stop "is_absolute('j:/') on Windows should be true"
+  if (is_absolute("/")) error stop "is_absolute('/') on Windows should be false"
+
+  fn2 = make_absolute("rel", "j:/foo")
+  if (fn2 /= "j:/foo/rel") error stop "did not make_absolute Windows j:/foo/rel, got: " // fn2
+endif
+
+print *, "OK: pathlib: expanduser,is_absolute"
+
 
 print *, 'OK: pathlib'
 

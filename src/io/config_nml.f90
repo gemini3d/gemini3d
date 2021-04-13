@@ -27,7 +27,7 @@ real(wp) :: sourcemlat,sourcemlon
 real(wp) :: dtneu
 real(wp) :: dxn=0.0,drhon=0.0,dzn=0.0
 real(wp) :: dtprec=0
-character(256) :: indat_size, indat_grid, indat_file, source_dir, prec_dir, E0_dir
+character(1000) :: indat_size, indat_grid, indat_file, source_dir, prec_dir, E0_dir
 character(4) :: file_format=""  !< need to initialize blank or random invisible fouls len_trim>0
 real(wp) :: dtE0=0
 real(wp) :: dtglow=0, dtglowout=0
