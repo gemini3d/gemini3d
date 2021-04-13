@@ -110,7 +110,7 @@ if (namelist_exists(u, "neutral_perturb", verbose)) then
   rewind(u)
   read(u, nml=neutral_perturb, iostat=i)
   call check_nml_io(i, cfg%infile, "neutral_perturb")
-  cfg%sourcedir = make_absolute(expand_envvar(source_dir, "GEMINI_SIMROOT"), cfg%outdir)
+  cfg%sourcedir = expand_envvar(source_dir, "GEMINI_SIMROOT")
   cfg%interptype = interptype
   cfg%sourcemlat = sourcemlat
   cfg%sourcemlon = sourcemlon
