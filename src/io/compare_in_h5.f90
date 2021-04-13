@@ -37,9 +37,13 @@ bad = 0
 
 bad = bad + check_initcond(new_file, ref_file, new_path, ref_path, dbug)
 
-bad = bad + check_precip(new_path, ref_path, cfg, dbug)
+if (cfg%flagprecfile == 1) then
+  bad = bad + check_precip(new_path, ref_path, cfg, dbug)
+endif
 
-bad = bad + check_Efield(new_path, ref_path, cfg, dbug)
+if (cfg%flagE0file == 1) then
+  bad = bad + check_Efield(new_path, ref_path, cfg, dbug)
+endif
 
 check_plasma_input_hdf5 = bad == 0
 
