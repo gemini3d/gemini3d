@@ -169,7 +169,8 @@ character(*), intent(in) :: path, envvar
 integer :: i, L, istat
 character(1000) :: buf
 
-expanded = path
+expanded = expanduser(path)
+!! in case no @var@, and to sanitize fixed width config namelist
 
 i = index(path, "@")
 if (i < 1) return
@@ -184,7 +185,7 @@ if (i < 1) return
 call get_environment_variable(envvar, buf, length=L, status=istat)
 if (istat /= 0 .or. L < 1) error stop "config:expand_envvar: environment variable empty or not defined: " // envvar
 
-expanded = path(1:i - 1) // trim(buf) // path(i + len(substr):len(path))
+expanded = path(1:i - 1) // trim(adjustl(buf)) // path(i + len(substr):len(path))
 
 end function expand_envvar
 
