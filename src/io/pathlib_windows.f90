@@ -13,8 +13,10 @@ is_absolute = .false.
 if(len_trim(path) < 2) return
 
 f = path(1:1)
-is_absolute = ((f >= "a" .and. f <= "z") .or. (f >= "A" .and. f <= "Z") .and. &
+
+is_absolute = (((f >= "a" .and. f <= "z") .or. (f >= "A" .and. f <= "Z")) .and. &
   path(2:2) == ":")
+!! NEED all these parentheses
 
 end procedure is_absolute
 

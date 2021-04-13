@@ -130,17 +130,21 @@ function make_absolute(path, top_path) result(abspath)
 !! 1. can only allocate once when it's a function, it will ignore later allocates
 !! 2. need trim(adjustl()) to sanitize fixed length namelist input
 
-character(:), allocatable :: abspath
+character(:), allocatable :: abspath, p, t
 logical :: exists, is_abs
 character(*), intent(in) :: path, top_path
 
-if (is_absolute(path)) then
-  abspath = expanduser(path)
+p = expanduser(path)
+if (is_absolute(p)) then
+  print *, "TRACE: is_absolute: " // p
+  abspath = p
   return
 endif
 
-if (.not. is_absolute(top_path)) write(stderr,*) "WARNING: make_absolute: top_path is not absolute: " // top_path
-abspath = expanduser(top_path) // '/' // trim(adjustl(path))
+t = expanduser(top_path)
+if (.not. is_absolute(t)) write(stderr,*) "WARNING: make_absolute: top_path is not absolute: " // t
+abspath = t // '/' // p
+print *,"TRACE: make_absolute: " // abspath
 
 end function make_absolute
 
