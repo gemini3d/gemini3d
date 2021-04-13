@@ -136,7 +136,6 @@ character(*), intent(in) :: path, top_path
 
 p = expanduser(path)
 if (is_absolute(p)) then
-  print *, "TRACE: is_absolute: " // p
   abspath = p
   return
 endif
@@ -144,7 +143,6 @@ endif
 t = expanduser(top_path)
 if (.not. is_absolute(t)) write(stderr,*) "WARNING: make_absolute: top_path is not absolute: " // t
 abspath = t // '/' // p
-print *,"TRACE: make_absolute: " // abspath
 
 end function make_absolute
 
