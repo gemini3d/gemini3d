@@ -15,6 +15,10 @@ use assert, only : isclose
 
 implicit none (type, external)
 
+type params
+logical :: matlab = .false., python = .false., debug = .false.
+end type params
+
 integer, parameter :: lsp=7
 
 real(wp), parameter :: &
@@ -26,26 +30,27 @@ rtolT = 1e-5_wp, atolT = 100
 
 private
 public :: check_plasma_output_hdf5, check_plasma_input_hdf5, &
-  check_simsize, check_simsize2, check_time, check_grid
+  check_simsize, check_simsize2, check_time, check_grid, &
+  params
 
 interface !< compare_out_h5.f90
-module logical function check_plasma_output_hdf5(new_path, ref_path, debug)
+module logical function check_plasma_output_hdf5(new_path, ref_path, P)
 character(*), intent(in) :: new_path, ref_path
-logical, intent(in), optional :: debug
+class(params), intent(in) :: P
 end function check_plasma_output_hdf5
 end interface
 
 interface !< compare_in_h5.f90
-module logical function check_plasma_input_hdf5(new_path, ref_path, debug)
+module logical function check_plasma_input_hdf5(new_path, ref_path, P)
 character(*), intent(in) :: new_path, ref_path
-logical, intent(in), optional :: debug
+class(params), intent(in) :: P
 end function check_plasma_input_hdf5
 end interface
 
 interface !< compare_grid_h5.f90
-module logical function check_grid(new_path, ref_path, debug)
+module logical function check_grid(new_path, ref_path, P)
 character(*), intent(in) :: new_path, ref_path
-logical, intent(in), optional :: debug
+class(params), intent(in) :: P
 end function check_grid
 end interface
 

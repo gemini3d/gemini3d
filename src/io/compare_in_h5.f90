@@ -8,14 +8,10 @@ contains
 
 module procedure check_plasma_input_hdf5
 
-logical :: dbug
 integer :: bad
 character(:), allocatable :: new_file, ref_file
 
 type(gemini_cfg) :: ref_cfg, cfg
-
-dbug = .false.
-if(present(debug)) dbug = debug
 
 !> get input filename
 ref_cfg%infile = new_path // '/inputs/config.nml'
@@ -35,14 +31,14 @@ call check_time(new_file, ref_file)
 !> check data
 bad = 0
 
-bad = bad + check_initcond(new_file, ref_file, new_path, ref_path, dbug)
+bad = bad + check_initcond(new_file, ref_file, new_path, ref_path, P%debug)
 
 if (cfg%flagprecfile == 1) then
-  bad = bad + check_precip(new_path, ref_path, cfg, dbug)
+  bad = bad + check_precip(new_path, ref_path, cfg, P)
 endif
 
 if (cfg%flagE0file == 1) then
-  bad = bad + check_Efield(new_path, ref_path, cfg, dbug)
+  bad = bad + check_Efield(new_path, ref_path, cfg, P)
 endif
 
 check_plasma_input_hdf5 = bad == 0
@@ -99,11 +95,11 @@ call href%finalize()
 end function check_initcond
 
 
-integer function check_precip(new_path, ref_path, cfg, debug) result(bad)
+integer function check_precip(new_path, ref_path, cfg, P) result(bad)
 
 character(*), intent(in) :: new_path, ref_path
 class(gemini_cfg), intent(in) :: cfg
-logical, intent(in) :: debug
+class(params), intent(in) :: P
 
 character(3), parameter :: var(*) = [character(3) :: "Qp", "E0p"]
 
@@ -141,7 +137,7 @@ do while (t <= cfg%tdur)
     if (.not.all(ieee_is_finite(new))) error stop "NON-FINITE: " // file_name(new_file) // " " // var(i)
 
     if(all(isclose(ref, new, rtol, atol))) then
-      if(debug) print '(A)', "OK: input:precip " // var(i) // " " // new_file
+      if(P%debug) print '(A)', "OK: input:precip " // var(i) // " " // new_file
     else
       bad = bad + 1
 
@@ -166,11 +162,11 @@ end do
 end function check_precip
 
 
-integer function check_Efield(new_path, ref_path, cfg, debug) result(bad)
+integer function check_Efield(new_path, ref_path, cfg, P) result(bad)
 
 character(*), intent(in) :: new_path, ref_path
 class(gemini_cfg), intent(in) :: cfg
-logical, intent(in) :: debug
+class(params), intent(in) :: P
 
 character(8), parameter :: var(*) = [character(8) :: "Exit", "Eyit", "Vminx1it", "Vmaxx1it"]
 
@@ -208,7 +204,7 @@ do while (t <= cfg%tdur)
     if (.not.all(ieee_is_finite(new))) error stop "NON-FINITE: " // file_name(new_file) // " " // var(i)
 
     if(all(isclose(ref, new, rtol, atol))) then
-      if(debug) print '(A)', "OK: input:precip " // var(i) // " " // new_file
+      if(P%debug) print '(A)', "OK: input:precip " // var(i) // " " // new_file
     else
       bad = bad + 1
 

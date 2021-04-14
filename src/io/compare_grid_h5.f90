@@ -7,7 +7,6 @@ contains
 module procedure check_grid
 
 type(hdf5_file) :: hnew, href
-logical :: dbug
 
 character(:), allocatable :: new_file, ref_file
 
@@ -39,9 +38,6 @@ integer(int64), allocatable :: dims(:)
 
 integer :: i, bad
 
-dbug = .false.
-if(present(debug)) dbug = debug
-
 new_file = new_path // "/inputs/simgrid.h5"
 ref_file = ref_path // "/inputs/simgrid.h5"
 
@@ -54,7 +50,7 @@ do i = 1,size(var1)
   call href%shape(var1(i), dims)
   allocate(A1(dims(1)), B1(dims(1)))
 
-  if(dbug) print '(A,1X,I0,1X,I0)', var1(i), dims, shape(A1)
+  if(P%debug) print '(A,1X,I0,1X,I0)', var1(i), dims, shape(A1)
 
   call hnew%read(var1(i), A1)
   call href%read(var1(i), B1)
@@ -75,7 +71,7 @@ do i = 1,size(var2)
   call href%shape(var2(i), dims)
   allocate(A2(dims(1), dims(2)), B2(dims(1), dims(2)))
 
-  if(dbug) print '(A,1X,2I6,1X,2I6)', var2(i), dims, shape(A2)
+  if(P%debug) print '(A,1X,2I6,1X,2I6)', var2(i), dims, shape(A2)
 
   call hnew%read(var2(i), A2)
   call href%read(var2(i), B2)
@@ -96,7 +92,7 @@ do i = 1,size(var3)
   call href%shape(var3(i), dims)
   allocate(A3(dims(1), dims(2), dims(3)), B3(dims(1), dims(2), dims(3)))
 
-  if(dbug) print '(A,1X,3I6,1X,3I6)', var3(i), dims, shape(A3)
+  if(P%debug) print '(A,1X,3I6,1X,3I6)', var3(i), dims, shape(A3)
 
   call hnew%read(var3(i), A3)
   call href%read(var3(i), B3)
@@ -117,7 +113,7 @@ do i = 1,size(var4)
   call href%shape(var4(i), dims)
   allocate(A4(dims(1), dims(2), dims(3), dims(4)), B4(dims(1), dims(2), dims(3), dims(4)))
 
-  if(dbug) print '(A,1X,4I6,1X,4I6)', var4(i), dims, shape(A4)
+  if(P%debug) print '(A,1X,4I6,1X,4I6)', var4(i), dims, shape(A4)
 
   call hnew%read(var4(i), A4)
   call href%read(var4(i), B4)

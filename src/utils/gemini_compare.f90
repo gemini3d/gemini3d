@@ -3,7 +3,7 @@ program gemini_compare
 !! compares two directories that should have identical data
 !! e.g. for CI
 
-use compare_h5, only : check_plasma_output_hdf5, check_plasma_input_hdf5, check_grid
+use compare_h5, only : check_plasma_output_hdf5, check_plasma_input_hdf5, check_grid, params
 use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
 
 implicit none (type, external)
@@ -12,10 +12,10 @@ integer :: i,j, lx1, lx2all, lx3all, argc
 character(1000) :: buf
 character(10) :: which
 character(:), allocatable :: new_path, ref_path
-logical :: exists, all_ok, debug
+logical :: exists, all_ok
 character(*), parameter :: help = './gemini3d.compare new_dir ref_dir [-which in|out]'
 
-debug = .false.
+type(params) :: P
 
 argc = command_argument_count()
 if(argc < 2) error stop help
@@ -40,7 +40,11 @@ if (argc > 2) then
       call get_command_argument(j+1, which, status=i)
       if (i/=0) error stop help
     case ('-d', '-debug')
-      debug = .true.
+      P%debug = .true.
+    case ('-matlab')
+      P%matlab = .true.
+    case ('-python')
+      P%python = .true.
     end select
   end do
 endif
@@ -51,7 +55,7 @@ i = 0
 !! in case .not. which /in {in,out}
 
 !! we always check grid
-all_ok = check_grid(new_path, ref_path, debug)
+all_ok = check_grid(new_path, ref_path, P)
 if (all_ok) then
   print '(A)', "OK: gemini3d.compare: grid: " // new_path // " == " // ref_path
 else
@@ -60,7 +64,7 @@ endif
 
 i = index(which, "out")
 if (i > 0) then
-  all_ok = check_plasma_output_hdf5(new_path, ref_path, debug)
+  all_ok = check_plasma_output_hdf5(new_path, ref_path, P)
 
   if (all_ok) then
     print '(A)', "OK: gemini3d.compare: output: " // new_path // " == " // ref_path
@@ -71,7 +75,7 @@ endif
 
 i = index(which, "in")
 if (i > 0) then
-  all_ok = check_plasma_input_hdf5(new_path, ref_path, debug)
+  all_ok = check_plasma_input_hdf5(new_path, ref_path, P)
 
   if (all_ok) then
     print '(A)', "OK: gemini3d.compare: input: " // new_path // " == " // ref_path
