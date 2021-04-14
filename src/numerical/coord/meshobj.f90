@@ -8,10 +8,10 @@ use phys_consts, only : wp
 implicit none (type, external)
 public
 
-!> curvmesh is an overarching dervied type containing functionality and data that is not specific to individual coordinate systems
+!> curvmesh is a "top-level" derived type containing functionality and data that is not specific to individual coordinate systems
 !   (which are extended types).  Note that all arrays are pointers because they need to be targets and allocatable AND the fortran
-!   standard does not support have allocatable, target attributed inside a derived type.  Because of this is it not straightforward
-!   to check the allocation status of these arrays (i.e. fortran also does not allow one to check the allocation status of a pointer).  
+!   standard does not support having allocatable, target attributed inside a derived type.  Because of this is it not straightforward
+!   to check the allocation status of these arrays (i.e. fortran also does not allow one to check the allocation status of a pointer). 
 !   Thus the quantities which are not, for sure, allocated need to have an allocation status variable so we can check...  Because
 !   the pointers are always allocated in groups we do not need separate status vars for each array thankfully...
 type :: curvmesh
@@ -54,10 +54,10 @@ type :: curvmesh
   real(wp), dimension(:), pointer :: dx3all
   real(wp), dimension(:), pointer  :: dx3iall
   
-  !> DIFFERENTIAL LENGTH ELEMENTS NEEDED TO COMPUTE COURANT NUMBERS.  Compute by a method in generic class
+  !> differential length elements.  Compute by a method in generic class given metric factors
   real(wp), dimension(:,:,:), pointer :: dl1i,dl2i,dl3i
   
-  !> A FLAG FOR INDICATING WHETHER OR NOT PERIODIC.  set by input files
+  !> flag for indicating whether or not the grid is periodic
   logical :: flagper
   
   !> flag for indicated type of grid (0 - closed dipole; 1 - open dipole inverted; 2 - non-inverted).  Computed by method in generic
@@ -65,7 +65,7 @@ type :: curvmesh
   integer :: gridflag
  
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Coordinate system specific properties !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 
-  !> METRIC FACTORS.  These are pointers to be assigned/allocated/filled by subclass for specific coordinate system
+  !> Metric factors.  These are pointers to be assigned/allocated/filled by type extensions for specific coordinate system
   logical :: coord_alloc_status=.false.    ! single status variable for all coord-specific arrays
 
   real(wp), dimension(:,:,:), pointer :: h1,h2,h3     ! need to be computed by subclass for specific coordinate system
@@ -77,7 +77,7 @@ type :: curvmesh
   real(wp), dimension(:,:,:), pointer :: h1x3i,h2x3i,h3x3i
   !! metric factors at x3 interfaces; dim. 3 has lx3+1
   
-  !ROOT ONLY FULL GRID METRIC FACTORS (WORKERS WILL NOT ALLOCATE).  Again these must have subclass methods to provide allocation and filling
+  !> root only; full grid metric factors.  These must have type-extension bound procedures to provide allocation and filling
   real(wp), dimension(:,:,:), pointer :: h1all,h2all,h3all
   real(wp), dimension(:,:,:), pointer :: h1x1iall,h2x1iall,h3x1iall
   !! dimension 1 has size lx1+1
@@ -87,36 +87,37 @@ type :: curvmesh
   !! dim. 3 has lx3all+1
   
   !> Problem-depedent geometric terms that can be precomputed, e.g. for advection and elliptic equations
-  
-  !> UNIT VECTORS - Pointers.  Subclass methods must allocate and assign values to these.  
+  !! to be added in later if we deem it worthwhile to include these to save computation time and/or memory
+
+  !> unit vectors - Pointers.  Subclass methods must allocate and assign values to these.  
   real(wp), dimension(:,:,:,:), pointer :: e1,e2,e3
   !! unit vectors in curvilinear space (cartesian components)
   real(wp), dimension(:,:,:,:), pointer :: er,etheta,ephi
   !! spherical unit vectors (cartesian components)
   
-  !> GEOMAGNETIC GRID DATA
+  !> geomagnetic grid data, ECEF spherical referenced to dipole axis
   real(wp), dimension(:,:,:), pointer :: r,theta,phi
   !! may be used in the interpolation of neutral perturbations
   
-  !> FULL-GRID GEOMAGNETIC INFORMATION - USED BY ROOT IN INTERPOLATING ELECTRIC FIELD FILE INPUT.  Pointers.  Subclass methods for each
+  !> root only; full grid geomagnetic positions.  Pointers.  Need type-extension bound procedures for each
   !coordinate system must allocate and compute these. 
   real(wp), dimension(:,:,:), pointer :: rall,thetaall,phiall
   
-  !> GEOGRAPHIC DATA; pointers
+  !> geographic data; pointers
   real(wp), dimension(:,:,:), pointer :: glat,glon,alt
   
-  !> MAGNETIC FIELD - THIS IS  PART OF THE GRID SINCE THE COORDINATE SYSTEM USED IS BASED ON THE MAGNETIC FIELD.  Pointers
+  !> magnetic field magnitude and inclination.  Pointers
   real(wp), dimension(:,:,:), pointer :: Bmag
   real(wp), dimension(:,:), pointer :: I
 
   !> Gravitational field
   real(wp), dimension(:,:,:), pointer :: g1,g2,g3
   
-  !> NEED FOR EIA CALCULATIONS.  Pointers
+  !> EIA-required fullgrid data.  Pointers
   real(wp), dimension(:,:,:), pointer :: altall,glonall
   real(wp), dimension(:,:,:), pointer :: Bmagall
   
-  !> DEFINE POINTS TO EXCLUDE FROM NUMERICAL SOLVES?. Pointers
+  !> points that should not be considered part of the numerical domain. Pointers
   logical, dimension(:,:,:), pointer :: nullpts
   !! this could be a logical but I'm going to treat it as real*8
   integer :: lnull
