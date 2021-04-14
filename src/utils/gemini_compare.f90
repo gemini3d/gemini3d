@@ -2,6 +2,9 @@ program gemini_compare
 !! for use from terminal/CMake
 !! compares two directories that should have identical data
 !! e.g. for CI
+!!
+!! if non-finite values, then "error stop"
+!! if the values are mismatched sufficiently, we print a message and optionally plot the difference to PNG file(s).
 
 use compare_h5, only : check_plasma_output_hdf5, check_plasma_input_hdf5, check_grid, params
 use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
