@@ -27,8 +27,8 @@ string(JSON url GET ${_refj} ${name} url)
 string(JSON md5 ERROR_VARIABLE e GET ${_refj} ${name} md5)
 
 set(archive_name test${name}.zip)
-set(ref_dir ${refroot}/test${name})
-set(archive ${refroot}/${archive_name})
+cmake_path(APPEND ref_dir ${refroot} test${name})
+cmake_path(APPEND archive ${refroot} ${archive_name})
 
 # check if extracted data exists and is up to date
 if(EXISTS ${ref_dir}/md5sum.txt AND md5)

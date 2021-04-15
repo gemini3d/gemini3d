@@ -11,7 +11,10 @@
   "name": "default",
   "binaryDir": "${sourceDir}/build",
   "generator": "Ninja",
-  "cacheVariables": {"CMAKE_BUILD_TYPE": "Release"}
+  "cacheVariables": {
+    "CMAKE_BUILD_TYPE": "Release",
+    "package": false
+  }
 },
 {
   "name": "notest", "inherits": "default",
@@ -89,6 +92,13 @@
     "CXX": "icx",
     "FC": "ifx"
   }
+},
+{
+  "name": "regen-package", "inherits": "default",
+  "displayName": "Prepare to regenerate reference data",
+  "cacheVariables": {
+    "package": true
+  }
 }
 ],
 "buildPresets": [
@@ -116,6 +126,14 @@
 {
   "name": "intel", "inherits": "default",
   "configurePreset": "intel"
+},
+{
+  "name": "regen-package", "inherits": "default",
+  "configurePreset": "regen-package",
+  "description": "Regenerates .zstd reference data, by disabling compare",
+  "filter": {
+    "exclude": {"label": "compare"}
+  }
 }
 ]
 }

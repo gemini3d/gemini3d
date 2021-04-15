@@ -1,15 +1,17 @@
 include(${CMAKE_CURRENT_LIST_DIR}/compare.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/RefPackage.cmake)
 
+cmake_path(APPEND ref_json_file ${PROJECT_BINARY_DIR} "upload" "ref_data.json")
 
 function(setup_gemini_test name TIMEOUT)
 
 # --- setup test
-set(outdir ${PROJECT_BINARY_DIR}/test${name})
-set(refroot ${PROJECT_SOURCE_DIR}/test_data)
-set(refdir ${refroot}/test${name})
+cmake_path(APPEND out_dir ${PROJECT_BINARY_DIR} test${name})
+cmake_path(APPEND ref_root ${PROJECT_SOURCE_DIR} test_data)
+cmake_path(APPEND ref_dir ${ref_root} test${name})
 
 add_test(NAME gemini:${name}:setup
-  COMMAND ${CMAKE_COMMAND} -Dname=${name} -Doutdir:PATH=${outdir} -Drefroot:PATH=${refroot} -P ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/download.cmake)
+  COMMAND ${CMAKE_COMMAND} -Dname=${name} -Doutdir:PATH=${out_dir} -Drefroot:PATH=${ref_root} -P ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/download.cmake)
 set_tests_properties(gemini:${name}:setup PROPERTIES
   FIXTURES_SETUP ${name}:setup
   FIXTURES_REQUIRED gemini_exe_fxt
@@ -17,7 +19,7 @@ set_tests_properties(gemini:${name}:setup PROPERTIES
   TIMEOUT 180)
 
 # construct command
-set(test_cmd $<TARGET_FILE:gemini3d.run> ${outdir} -gemexe $<TARGET_FILE:gemini.bin>)
+set(test_cmd $<TARGET_FILE:gemini3d.run> ${out_dir} -gemexe $<TARGET_FILE:gemini.bin>)
 
 if(mpi)
   list(APPEND test_cmd -mpiexec ${MPIEXEC_EXECUTABLE})
@@ -42,7 +44,7 @@ set_tests_properties(gemini:hdf5:${name}:dryrun PROPERTIES
   RESOURCE_LOCK cpu_mpi
   FIXTURES_REQUIRED ${name}:setup
   FIXTURES_SETUP hdf5:${name}:dryrun
-  REQUIRED_FILES ${outdir}/inputs/config.nml
+  REQUIRED_FILES ${out_dir}/inputs/config.nml
   LABELS core)
 
 
@@ -67,7 +69,7 @@ set_tests_properties(gemini:netcdf:${name}:dryrun PROPERTIES
   RESOURCE_LOCK cpu_mpi
   FIXTURES_REQUIRED "mumps_fxt;${name}:setup"
   FIXTURES_SETUP netcdf:${name}:dryrun
-  REQUIRED_FILES ${outdir}/inputs/config.nml
+  REQUIRED_FILES ${out_dir}/inputs/config.nml
   LABELS core)
 
 add_test(NAME gemini:netcdf:${name}
@@ -81,6 +83,10 @@ set_tests_properties(gemini:netcdf:${name} PROPERTIES
   LABELS core)
 endif(netcdf)
 
-compare_gemini_output(${name} ${outdir} ${refdir})
+if(package)
+  ref_package(${out_dir} ${ref_json_file} ${name})
+else()
+  compare_gemini_output(${name} ${out_dir} ${ref_dir})
+endif()
 
 endfunction(setup_gemini_test)

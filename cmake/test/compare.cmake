@@ -59,7 +59,6 @@ COMMAND $<TARGET_FILE:gemini3d.compare> ${outdir} ${refdir})
 set_tests_properties(gemini:compare:hdf5:${name} PROPERTIES
 TIMEOUT 60
 FIXTURES_REQUIRED hdf5:${name}
-FIXTURES_SETUP ${name}:package_fxt
 RESOURCE_LOCK cpu_mpi
 REQUIRED_FILES "${outdir}/inputs/config.nml;${refdir}/inputs/config.nml"
 LABELS compare)
@@ -79,7 +78,6 @@ COMMAND $<TARGET_FILE:gemini3d.compare> ${outdir} ${refdir})
 set_tests_properties(gemini:compare:netcdf:${name} PROPERTIES
 TIMEOUT 60
 FIXTURES_REQUIRED netcdf:${name}
-FIXTURES_SETUP ${name}:package_fxt
 REQUIRED_FILES "${outdir}/inputs/config.nml;${refdir}/inputs/config.nml"
 LABELS compare)
 
