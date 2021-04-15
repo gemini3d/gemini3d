@@ -19,7 +19,7 @@ if(NOT prefix)
 endif()
 
 if(NOT version)
-  set(version 3.20.0)
+  set(version 3.20.1)
 endif()
 
 if(version VERSION_EQUAL 2.8.12)
