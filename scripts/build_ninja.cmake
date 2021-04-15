@@ -5,7 +5,7 @@
 # cmake -P build_cmake.cmake
 # will install Ninja under the user's home directory.
 
-cmake_minimum_required(VERSION 3.7...3.21)
+cmake_minimum_required(VERSION 3.18...${CMAKE_VERSION})
 
 if(NOT prefix)
   get_filename_component(prefix ~ ABSOLUTE)
@@ -28,11 +28,6 @@ if(NOT DEFINED ENV{CMAKE_GENERATOR})
   message(STATUS "add environment variable CMAKE_GENERATOR Ninja")
 endif()
 
-if(CMAKE_VERSION VERSION_LESS 3.17)
-  message(STATUS "Must install CMake >= 3.17 to use Ninja:
-    cmake -P ${CMAKE_CURRENT_LIST_DIR}/install_cmake.cmake")
-endif()
-
 endfunction(checkup)
 
 get_filename_component(prefix ${prefix} ABSOLUTE)
@@ -49,12 +44,10 @@ message(STATUS "installing Ninja ${ver} to ${path}")
 
 set(archive ${path}/${name})
 
-if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.14)
-  if(EXISTS ${archive})
-    file(SIZE ${archive} fsize)
-    if(fsize LESS 10000)
-      file(REMOVE ${archive})
-    endif()
+if(EXISTS ${archive})
+  file(SIZE ${archive} fsize)
+  if(fsize LESS 10000)
+    file(REMOVE ${archive})
   endif()
 endif()
 
@@ -68,11 +61,7 @@ set(src_dir ${path}/ninja-${ver})
 
 if(NOT EXISTS ${src_dir}/ninjaCMakeLists.txt)
   message(STATUS "extracting ${archive} to ${path}")
-  if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.18)
-    file(ARCHIVE_EXTRACT INPUT ${archive} DESTINATION ${path})
-  else()
-    execute_process(COMMAND ${CMAKE_COMMAND} -E tar xf ${archive} WORKING_DIRECTORY ${path})
-  endif()
+  file(ARCHIVE_EXTRACT INPUT ${archive} DESTINATION ${path})
 endif()
 
 file(MAKE_DIRECTORY ${src_dir}/build)

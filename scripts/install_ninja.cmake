@@ -5,7 +5,7 @@
 # cmake -P install_ninja.cmake
 # will install Ninja under the user's home directory.
 
-cmake_minimum_required(VERSION 3.7...3.21)
+cmake_minimum_required(VERSION 3.18...${CMAKE_VERSION})
 
 if(NOT prefix)
   get_filename_component(prefix ~ ABSOLUTE)
@@ -26,11 +26,6 @@ endif()
 
 if(NOT DEFINED ENV{CMAKE_GENERATOR})
   message(STATUS "add environment variable CMAKE_GENERATOR Ninja")
-endif()
-
-if(CMAKE_VERSION VERSION_LESS 3.17)
-  message(STATUS "Must install CMake >= 3.17 to use Ninja:
-    cmake -P ${CMAKE_CURRENT_LIST_DIR}/install_cmake.cmake")
 endif()
 
 endfunction(checkup)
@@ -74,12 +69,10 @@ message(STATUS "installing Ninja ${ver} to ${path}")
 
 set(archive ${path}/${name})
 
-if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.14)
-  if(EXISTS ${archive})
-    file(SIZE ${archive} fsize)
-    if(fsize LESS 10000)
-      file(REMOVE ${archive})
-    endif()
+if(EXISTS ${archive})
+  file(SIZE ${archive} fsize)
+  if(fsize LESS 10000)
+    file(REMOVE ${archive})
   endif()
 endif()
 
@@ -87,20 +80,14 @@ if(NOT EXISTS ${archive})
   set(url ${host}${name})
   message(STATUS "download ${url}")
   file(DOWNLOAD ${url} ${archive} TLS_VERIFY ON)
-  if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.14)
-    file(SIZE ${archive} fsize)
-    if(fsize LESS 10000)
-      message(FATAL_ERROR "failed to download ${url}")
-    endif()
+  file(SIZE ${archive} fsize)
+  if(fsize LESS 10000)
+    message(FATAL_ERROR "failed to download ${url}")
   endif()
 endif()
 
 message(STATUS "extracting to ${path}")
-if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.18)
-  file(ARCHIVE_EXTRACT INPUT ${archive} DESTINATION ${path})
-else()
-  execute_process(COMMAND ${CMAKE_COMMAND} -E tar xf ${archive} WORKING_DIRECTORY ${path})
-endif()
+file(ARCHIVE_EXTRACT INPUT ${archive} DESTINATION ${path})
 
 find_program(ninja NAMES ninja PATHS ${path} PATH_SUFFIXES bin NO_DEFAULT_PATH)
 if(NOT ninja)

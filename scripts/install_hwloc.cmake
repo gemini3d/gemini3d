@@ -3,7 +3,7 @@
 # cmake -P install_hwloc.cmake
 # will install hwloc under the user's home directory.
 
-cmake_minimum_required(VERSION 3.7...3.20)
+cmake_minimum_required(VERSION 3.18...3.20)
 
 if(NOT prefix)
   get_filename_component(prefix ~ ABSOLUTE)
@@ -43,12 +43,10 @@ message(STATUS "installing hwloc ${version} to ${path}")
 
 set(archive ${path}/${name})
 
-if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.14)
-  if(EXISTS ${archive})
-    file(SIZE ${archive} fsize)
-    if(fsize LESS 100000)
-      file(REMOVE ${archive})
-    endif()
+if(EXISTS ${archive})
+  file(SIZE ${archive} fsize)
+  if(fsize LESS 100000)
+    file(REMOVE ${archive})
   endif()
 endif()
 
@@ -58,11 +56,7 @@ if(NOT EXISTS ${archive})
 endif()
 
 message(STATUS "extracting to ${path}")
-if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.18)
-  file(ARCHIVE_EXTRACT INPUT ${archive} DESTINATION ${path})
-else()
-  execute_process(COMMAND ${CMAKE_COMMAND} -E tar xf ${archive} WORKING_DIRECTORY ${path})
-endif()
+file(ARCHIVE_EXTRACT INPUT ${archive} DESTINATION ${path})
 
 if(WIN32)
   find_program(lstopo NAMES lstopo PATHS ${path}/${stem} PATH_SUFFIXES bin NO_DEFAULT_PATH)
