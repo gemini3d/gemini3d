@@ -191,8 +191,10 @@ if(all(isclose(D_ref, D_new, rtol, atol))) then
   return
 endif
 
-bad = bad + 1
+bad = 1
 write(stderr,*) "MISMATCH: " // file_name(new_file) // " ", derived_name, maxval(abs(D_ref - D_new))
+
+call plot_diff(new_file, ref_file, derived_name, P)
 
 end function check_derived
 
