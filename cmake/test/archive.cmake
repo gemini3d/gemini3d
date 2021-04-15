@@ -44,12 +44,18 @@ endif()
 file(MD5 ${out} md5_hash)
 file(READ ${ref_json_file} ref_json)
 # will manually get URL after upload
-string(JSON ref_json SET ${ref_json} ${name} "{}")
-string(JSON ref_json SET ${ref_json} ${name} url \"\")
-string(JSON ref_json SET ${ref_json} ${name} archive \"${archive_name}\")
-string(JSON ref_json SET ${ref_json} ${name} md5 \"${md5_hash}\")
+string(JSON m ERROR_VARIABLE e GET ${ref_json} tests)
+
+if(NOT m)
+  string(JSON ref_json SET ${ref_json} tests "{}")
+endif()
+string(JSON ref_json SET ${ref_json} tests ${name} "{}")
+string(JSON ref_json SET ${ref_json} tests ${name} url \"\")
+string(JSON ref_json SET ${ref_json} tests ${name} archive \"${archive_name}\")
+string(JSON ref_json SET ${ref_json} tests ${name} md5 \"${md5_hash}\")
 file(WRITE ${ref_json_file} ${ref_json})
 
 endfunction(make_archive)
+
 
 make_archive(${in} ${out} ${ref_json_file} ${name})

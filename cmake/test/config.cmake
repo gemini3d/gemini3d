@@ -1,7 +1,6 @@
 include(${CMAKE_CURRENT_LIST_DIR}/compare.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/system_meta.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/RefPackage.cmake)
-
-cmake_path(APPEND ref_json_file ${PROJECT_BINARY_DIR} "upload" "ref_data.json")
 
 function(setup_gemini_test name TIMEOUT)
 

@@ -22,9 +22,9 @@ endif()
 
 file(READ ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/gemini3d_url.json _refj)
 
-string(JSON url GET ${_refj} ${name} url)
+string(JSON url GET ${_refj} tests ${name} url)
 # optional checksum
-string(JSON md5 ERROR_VARIABLE e GET ${_refj} ${name} md5)
+string(JSON md5 ERROR_VARIABLE e GET ${_refj} tests ${name} md5)
 
 set(archive_name test${name}.zip)
 cmake_path(APPEND ref_dir ${refroot} test${name})
