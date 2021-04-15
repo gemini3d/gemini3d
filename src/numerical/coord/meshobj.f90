@@ -230,6 +230,7 @@ contains
       allocate(self%Bmag(1:lx1,1:lx2,1:lx3),self%I(1:lx2,1:lx3))
       allocate(self%g1(1:lx1,1:lx2,1:lx3),self%g2(1:lx1,1:lx2,1:lx3),self%g3(1:lx1,1:lx2,1:lx3))
       allocate(self%r(1:lx1,1:lx2,1:lx3),self%theta(1:lx1,1:lx2,1:lx3),self%phi(1:lx1,1:lx2,1:lx3))
+      allocate(self%alt(1:lx1,1:lx2,1:lx3),self%glon(1:lx1,1:lx2,1:lx3),self%glat(1:lx1,1:lx2,1:lx3))
 
       ! fixme:  there are a number of full-grid arrays that are coordinate specific to be allocated here iff we are root
 
@@ -322,7 +323,7 @@ contains
   subroutine destructor(self)
     type(curvmesh) :: self
 
-    ! deallocation statements here; always check allocated first...
+    ! deallocation statements here; always check allocation status flags first...
     if (self%xi_alloc_status) deallocate(self%x1,self%x2,self%x3,self%x2all,self%x3all)    ! these are from set_coords
     if (self%dxi_alloc_status) then                                  ! from calc_coord_diffs
       deallocate(self%dx1,self%x1i,self%dx1i)
@@ -334,9 +335,12 @@ contains
     ! coordinate-specific arrays set by type extensions
     if (self%coord_alloc_status) then
       deallocate(self%h1,self%h2,self%h3,self%er,self%etheta,self%ephi,self%e1,self%e2,self%e3)
+      deallocate(self%r,self%theta,self%phi)
       deallocate(self%h1x1i,self%h2x1i,self%h3x1i)
       deallocate(self%h1x2i,self%h2x2i,self%h3x2i)
       deallocate(self%g1,self%g2,self%g3)
+      deallocate(self%Bmag,self%I)
+      deallocate(self%alt,self%glon,self%glat)
     end if
 
     if (self%null_alloc_status) then
