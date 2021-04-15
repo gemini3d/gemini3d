@@ -54,8 +54,8 @@ endif()
 add_test(NAME unit:gemini_exe_ok COMMAND $<TARGET_FILE:gemini.bin>)
 set_tests_properties(unit:gemini_exe_ok PROPERTIES
   PASS_REGULAR_EXPRESSION "EOF: gemini.bin"
-  FIXTURES_SETUP gemini_exe_fix
-  FIXTURES_REQUIRED "mumps_fixture;hwloc_fix"
+  FIXTURES_SETUP gemini_exe_fxt
+  FIXTURES_REQUIRED "mumps_fxt;hwloc_fxt"
   LABELS unit)
 
 install(TARGETS gemini.bin

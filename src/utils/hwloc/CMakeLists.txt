@@ -31,7 +31,7 @@ if(HWLOC_FOUND)
     # NOTE: MPIEXEC_MAX_NUMPROCS is fallible, it uses less robust methods than hwloc! Particularly on ARM (Raspberry Pi)
     add_test(NAME unit:HWLOC COMMAND $<TARGET_FILE:test_hwloc> ${Ncpu})
     set_tests_properties(unit:HWLOC PROPERTIES
-      FIXTURES_SETUP hwloc_fix
+      FIXTURES_SETUP hwloc_fxt
       TIMEOUT 10
       LABELS unit)
   endif()

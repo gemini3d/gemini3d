@@ -19,7 +19,7 @@ TIMEOUT 15
 PROCESSORS ${Ncpu}
 LABELS unit
 DEPENDS unit:HWLOC
-FIXTURES_SETUP mpi_fixture
+FIXTURES_SETUP mpi_fxt
 RESOURCE_LOCK cpu_mpi)
 
 # --- SCALAPACK
@@ -38,8 +38,8 @@ add_test(NAME unit:scalapack COMMAND $<TARGET_FILE:gemini_scalapack>)
 set_tests_properties(unit:scalapack PROPERTIES
 TIMEOUT 15
 LABELS unit
-FIXTURES_REQUIRED mpi_fixture
-FIXTURES_SETUP scalapack_fixture)
+FIXTURES_REQUIRED mpi_fxt
+FIXTURES_SETUP scalapack_fxt)
 
 # --- MUMPS
 add_executable(test_mumps test_mumps.f90)
@@ -57,5 +57,5 @@ PROCESSORS 2
 LABELS unit
 RESOURCE_LOCK cpu_mpi
 REQUIRED_FILES ${CMAKE_CURRENT_SOURCE_DIR}/input_simpletest_real.nml
-FIXTURES_REQUIRED scalapack_fixture
-FIXTURES_SETUP mumps_fixture)
+FIXTURES_REQUIRED scalapack_fxt
+FIXTURES_SETUP mumps_fxt)

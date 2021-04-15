@@ -53,7 +53,7 @@ set(_ref ${PROJECT_SOURCE_DIR}/test_data/msis_test_out.h5)
 add_test(NAME unit:msis_setup
   COMMAND $<TARGET_FILE:msis_setup> ${_in} ${_out} 0)
 set_tests_properties(unit:msis_setup PROPERTIES
-  FIXTURES_SETUP msis_fix
+  FIXTURES_SETUP msis_fxt
   LABELS unit
   REQUIRED_FILES ${_in}
   TIMEOUT 10)
@@ -65,7 +65,7 @@ set_target_properties(msis_compare PROPERTIES LABELS unit)
 add_test(NAME unit:msis_compare
   COMMAND $<TARGET_FILE:msis_compare> ${_out} ${_ref})
 set_tests_properties(unit:msis_compare PROPERTIES
-  FIXTURES_REQUIRED msis_fix
+  FIXTURES_REQUIRED msis_fxt
   LABELS unit
   TIMEOUT 10
   REQUIRED_FILES "${_out};${_ref}")
