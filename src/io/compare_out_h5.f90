@@ -209,9 +209,6 @@ character(*), intent(in), optional :: derived_name
 
 type(hdf5_file) :: hnew, href
 
-character(1000) :: cmd
-integer :: ierr1, ierr2
-
 real, dimension(:,:,:), allocatable :: new, ref
 real, dimension(:,:,:,:), allocatable :: new4, ref4
 
@@ -223,8 +220,6 @@ allocate(new(lx1, lx2all, lx3all), ref(lx1, lx2all, lx3all))
 
 
 bad = 0
-ierr1 = 0
-ierr2 = 0
 
 call hnew%initialize(new_file, status='old',action='r')
 call href%initialize(ref_file, status='old',action='r')
@@ -268,23 +263,7 @@ else
 endif
 
 !> optional plotting
-if(P%python) then
-  cmd = "python -m gemini3d.plot.diff " // new_file // " " // ref_file // " " // name(1:2)
-elseif(P%matlab) then
-  cmd = "matlab -batch " // achar(34) // "gemini3d.plot.plotdiff('" // new_file // "', '" // ref_file // "', '" // name(1:2) // &
-    "')" // achar(34)
-endif
-
-call execute_command_line(cmd, exitstat=ierr1, cmdstat=ierr2)
-if(ierr1 /=0 .or. ierr2 /= 0) then
-  if(P%python) then
-    write(stderr,'(A,/,A)') "ERROR: failed to plot diff using PyGemini: ", trim(cmd)
-  elseif(P%matlab) then
-    write(stderr,"(A,/,A,/,A,/,A)") "ERROR: failed to plot diff using MatGemini: ", trim(cmd), &
-      "try putting MatGemini path in user environment variable MATLABPATH. See:", &
-      "https://www.mathworks.com/help/matlab/matlab_env/add-folders-to-matlab-search-path-at-startup.html"
-  endif
-endif
+call plot_diff(new_file, ref_file, name, P)
 
 
 end function check_var

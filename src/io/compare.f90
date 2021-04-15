@@ -31,7 +31,7 @@ rtolT = 1e-5_wp, atolT = 100
 private
 public :: check_plasma_output_hdf5, check_plasma_input_hdf5, &
   check_simsize, check_simsize2, check_time, check_grid, &
-  params
+  params, plot_diff
 
 interface !< compare_out_h5.f90
 module logical function check_plasma_output_hdf5(new_path, ref_path, P)
@@ -56,6 +56,36 @@ end interface
 
 contains
 
+subroutine plot_diff(new_file, ref_file, name, P)
+!! call MatGemini or PyGemini plotdiff()
+character(*), intent(in) :: new_file, ref_file, name
+class(params), intent(in) :: P
+
+character(1000) :: cmd
+integer :: ierr1, ierr2
+
+ierr1 = 0
+ierr2 = 0
+
+if(P%python) then
+  cmd = "python -m gemini3d.plot.diff " // new_file // " " // ref_file // " " // name(1:2)
+elseif(P%matlab) then
+  cmd = "matlab -batch " // achar(34) // "gemini3d.plot.plotdiff('" // new_file // "', '" // ref_file // "', '" // name(1:2) // &
+    "')" // achar(34)
+endif
+
+call execute_command_line(cmd, exitstat=ierr1, cmdstat=ierr2)
+if(ierr1 /=0 .or. ierr2 /= 0) then
+  if(P%python) then
+    write(stderr,'(A,/,A)') "ERROR: failed to plot diff using PyGemini: ", trim(cmd)
+  elseif(P%matlab) then
+    write(stderr,"(A,/,A,/,A,/,A)") "ERROR: failed to plot diff using MatGemini: ", trim(cmd), &
+      "try putting MatGemini path in user environment variable MATLABPATH. See:", &
+      "https://www.mathworks.com/help/matlab/matlab_env/add-folders-to-matlab-search-path-at-startup.html"
+  endif
+endif
+
+end subroutine plot_diff
 
 subroutine check_simsize(new, ref, lx1, lx2all, lx3all)
 !! check that new simsize == Old_simsize
