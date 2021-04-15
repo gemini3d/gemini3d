@@ -16,6 +16,7 @@ on:
 jobs:
 
   cmake313-hdf5:
+    # CMake 3.13 can only do unit tests
     runs-on: ubuntu-latest
     timeout-minutes: 8
     steps:
@@ -26,9 +27,9 @@ jobs:
 
     - name: Get CMake 3.13
       run: |
-        curl -L -O https://github.com/Kitware/CMake/releases/download/v3.13.4/cmake-3.13.4-Linux-x86_64.tar.gz
-        tar -xf cmake-3.13.4-Linux-x86_64.tar.gz
-        echo "${GITHUB_WORKSPACE}/cmake-3.13.4-Linux-x86_64/bin" >> $GITHUB_PATH
+        curl -L -O https://github.com/Kitware/CMake/releases/download/v3.13.5/cmake-3.13.5-Linux-x86_64.tar.gz
+        tar -xf cmake-3.13.5-Linux-x86_64.tar.gz
+        echo "${GITHUB_WORKSPACE}/cmake-3.13.5-Linux-x86_64/bin" >> $GITHUB_PATH
 
     - name: Install packages
       run: |
@@ -39,12 +40,11 @@ jobs:
     - run: cmake -B build
     - run: cmake --build build --parallel
 
-    - run: ctest -E 3d --parallel 4 --output-on-failure
+    - run: ctest -R unit --output-on-failure
       working-directory: build
 
 
   debug:
-    needs: cmake313-hdf5
     runs-on: ubuntu-latest
     timeout-minutes: 8
     steps:
