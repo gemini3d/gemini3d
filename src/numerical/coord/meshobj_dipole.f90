@@ -51,6 +51,7 @@ type, extends(curvmesh) :: dipolemesh
   procedure, private :: calc_Bmag
   procedure, private :: calc_inclination
   procedure, private :: calc_hq,calc_hp,calc_hphi
+  procedure, private :: calc_geographic
   procedure :: calc_rtheta_2D, calc_qp_2D
 end type dipolemesh
 
@@ -200,6 +201,10 @@ subroutine make_dipolemesh(self)
   self%r=r(1:lq,1:lp,1:lphi); self%theta=theta(1:lq,1:lp,1:lphi); self%phi=phispher(1:lq,1:lp,1:lphi)
   deallocate(r,theta,phispher)   ! done with these variables now
 
+  ! compute the geographic coordinates
+  print*, ' make_dipolemesh:  geographic coordinates from magnetic...'
+  call self%calc_geographic(self%r,self%theta,self%phi,self%alt,self%glon,self%glat) 
+
   ! compute and store the metric factors
   print*, ' make_dipolemesh:  metric factors for cell centers...'
   allocate(self%hq(1:lq,1:lp,1:lphi),self%hp(1:lq,1:lp,1:lphi),self%hphi(1:lq,1:lp,1:lphi))
@@ -253,6 +258,17 @@ subroutine make_dipolemesh(self)
   self%coord_alloc_status=.true.
   call self%calc_difflengths()
 end subroutine make_dipolemesh
+
+
+!> compute geographic coordinates of all grid points
+subroutine calc_geographic(self,r,theta,phi,alt,glon,glat)
+  class(dipolemesh), intent(in) :: self
+  real(wp), dimension(:,:,:), intent(in) :: r,theta,phi
+  real(wp), dimension(:,:,:), intent(out) :: alt,glon,glat
+
+  call geomag2geog(phi,theta,glon,glat)
+  alt=r2alt(r)
+end subroutine calc_geographic
 
 
 !> compute gravitational field components

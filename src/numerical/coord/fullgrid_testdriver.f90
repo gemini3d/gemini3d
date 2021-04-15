@@ -68,7 +68,14 @@ print*, ' fullgrid_testdriver, gp:  ',minchkvar,maxchkvar
 minchkvar=minval(x%gphi); maxchkvar=maxval(x%gphi);
 print*, ' fullgrid_testdriver, gphi:  ',minchkvar,maxchkvar
 minchkvar=minval(x%I); maxchkvar=maxval(x%I);
-print*, ' fullgrid_testdriver, Inc:  ',minchkvar,maxchkvar
+print*, ' fullgrid_testdriver, I:  ',minchkvar,maxchkvar
+minchkvar=minval(x%glon); maxchkvar=maxval(x%glon)
+print*, ' fullgrid_testdriver, glon:  ',minchkvar,maxchkvar
+minchkvar=minval(x%glat); maxchkvar=maxval(x%glat)
+print*, ' fullgrid_testdriver, glat:  ',minchkvar,maxchkvar
+minchkvar=minval(x%alt); maxchkvar=maxval(x%alt)
+print*, ' fullgrid_testdriver, alt:  ',minchkvar,maxchkvar
+
 
 ! check orthogonality of the basis vectors
 proj=sum(x%eq*x%ep,dim=4)
