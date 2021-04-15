@@ -17,14 +17,8 @@ endif()
 # --- recommendations
 
 if(NOT CMAKE_GENERATOR MATCHES Ninja)
-  message(STATUS "Ninja builds/rebuilds much faster than Make for any software project.
-  Recommendation: Install Ninja build system:
+  message(STATUS "Recommendation: Install Ninja build system:
       cmake -P ${PROJECT_SOURCE_DIR}/scripts/install_ninja.cmake")
-endif()
-
-if(CMAKE_VERSION VERSION_LESS 3.17)
-  message(STATUS "Recommendation: Install CMake >= 3.17 by:
-    cmake -P ${PROJECT_SOURCE_DIR}/scripts/install_cmake.cmake")
 endif()
 
 if(mpi AND NOT HWLOC_FOUND)

@@ -42,6 +42,13 @@ include(cmake/SetTargProps.cmake)
 # all Gemini3D source code under this
 add_subdirectory(src)
 
+if(CMAKE_VERSION VERSION_LESS 3.19)
+  message(STATUS "*** Gemini3D self-tests require CMake >= 3.19 ***
+  Recommendation: Install latest CMake by:
+    cmake -P ${PROJECT_SOURCE_DIR}/scripts/install_cmake.cmake")
+  return()
+endif()
+
 # self-test simulations -- after all targets for if(TARGET ...)
 include(cmake/ext_libs/matlab.cmake)
 include(cmake/ext_libs/python.cmake)
