@@ -13,7 +13,7 @@ endif(dev)
 
 # avoid backtrace that's unusable without -g
 if(CMAKE_BUILD_TYPE STREQUAL Release)
-  add_compile_options(-fno-backtrace)
+  string(APPEND CMAKE_Fortran_FLAGS " -fno-backtrace")
 endif()
 
 # Wdo-subscript is known to warn on obvious non-problems
