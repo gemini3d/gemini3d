@@ -226,7 +226,8 @@ contains
     lx1=self%lx1; lx2=self%lx2; lx3=self%lx3
 
     if (.not. self%coord_alloc_status ) then     ! use this as a proxy for if any other coordinate-specific arrays exist
-      allocate(self%h1(1:lx1,1:lx2,1:lx3),self%h2(1:lx1,1:lx2,1:lx3),self%h3(1:lx1,1:lx2,1:lx3))
+      !allocate(self%h1(1:lx1,1:lx2,1:lx3),self%h2(1:lx1,1:lx2,1:lx3),self%h3(1:lx1,1:lx2,1:lx3))
+      allocate(self%h1(-1:lx1+2,-1:lx2+2,-1:lx3+2),self%h2(-1:lx1+2,-1:lx2+2,-1:lx3+2),self%h3(-1:lx1+2,-1:lx2+2,-1:lx3+2))
       allocate(self%h1x1i(1:lx1+1,1:lx2,1:lx3),self%h2x1i(1:lx1+1,1:lx2,1:lx3),self%h3x1i(1:lx1+1,1:lx2,1:lx3))
       allocate(self%h1x2i(1:lx1,1:lx2+1,1:lx3),self%h2x2i(1:lx1,1:lx2+1,1:lx3),self%h3x2i(1:lx1,1:lx2+1,1:lx3))
       allocate(self%h1x3i(1:lx1,1:lx2,1:lx3+1),self%h2x3i(1:lx1,1:lx2,1:lx3+1),self%h3x3i(1:lx1,1:lx2,1:lx3+1))
