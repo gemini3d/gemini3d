@@ -9,6 +9,7 @@ integer, parameter :: lq=384+4,lp=96+4,lphi=64+4
 real(wp), dimension(lq) :: q
 real(wp), dimension(lp) :: p
 real(wp), dimension(lphi) :: phi
+! from tohoku20113D_lowres_3Dneu
 real(wp), dimension(2), parameter :: qlims=[-0.5340405,0.5340405]
 real(wp), dimension(2), parameter :: plims=[1.2509838,1.4372374]
 real(wp), dimension(2), parameter :: philims=[3.6126509,3.7240195]
@@ -26,6 +27,7 @@ phi=[(philims(1) + (philims(2)-philims(1))/lphi*(iphi-1),iphi=1,lphi)]
 ! oddly the destructor does not get called when the program unit terminates; however by
 !  putting the variable inside the block we cause it to go out of scope before the program
 !  ends and that indeed causes the destructor to get triggered (so we can test it)
+do while (.true.)
 block
 type(dipolemesh) :: x
 
@@ -109,11 +111,12 @@ if (any(proj>1e-4)) error stop '  etheta,ephi not ortho!!!'
 print*, ' fullgrid_testdriver, number of null grid points:  ',size(x%inull,1)
 
 ! write out the grid data to a file
-path='/Users/zettergm/Downloads/'
+path='/Users/zettergm/Downloads/testgrid/inputs/'
 print*, ' fullgrid_testdriver, writing grid coords. to file...'
 call x%writegrid(path,0)
 call x%writegridall(path,1)
 end block
+end do
 
 ! deallocate the grid before ending the program
 print*, 'fullgrid_testdriver:  exiting program; destructor should have been called...'
