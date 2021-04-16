@@ -370,6 +370,7 @@ contains
     integer, intent(in) :: ID
     type(hdf5_file) :: hf
     character(:), allocatable :: IDstr    ! use auto-allocation
+    real(wp), dimension(:,:,:), allocatable :: realnullpts
 
     ! at a minimum we must have allcated the coordinate arrays
     if (.not. self%xi_alloc_status) error stop ' attempting to write coordinate arrays when they have not been set yet!'
@@ -419,7 +420,13 @@ contains
 
     call hf%write('/Bmag',self%Bmag)
     call hf%write('/I',self%I)
-    call hf%write('/nullpts',self%nullpts)
+    allocate(realnullpts(1:self%lx1,1:self%lx2,1:self%lx3))
+    realnullpts=0.0
+    where (self%nullpts)
+      realnullpts=1._wp
+    end where
+    call hf%write('/nullpts',realnullpts)
+    deallocate(realnullpts)
 
     call hf%write('/e1',self%e1)
     call hf%write('/e2',self%e2)
