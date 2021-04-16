@@ -198,19 +198,19 @@ subroutine make_dipolemesh(self)
     thetapint(:,:,iphi)=thetapint(:,:,1)
   end do
 
+  ! compute and store the metric factors
+  print*, ' make_dipolemesh:  metric factors for cell centers...'
+  self%hq(-1:lq+2,-1:lp+2,-1:lphi+2)=self%calc_hq(r,theta)
+  self%hp(-1:lq+2,-1:lp+2,-1:lphi+2)=self%calc_hp(r,theta)
+  self%hphi(-1:lq+2,-1:lp+2,-1:lphi+2)=self%calc_hphi(r,theta)
+
   ! now assign structure elements and deallocate unneeded temp variables
-  self%r=r(1:lq,1:lp,1:lphi); self%theta=theta(1:lq,1:lp,1:lphi); self%phi=phispher(1:lq,1:lp,1:lphi)
+  self%r=r(1:lq,1:lp,1:lphi); self%theta=theta(1:lq,1:lp,1:lphi); self%phi=phispher(1:lq,1:lp,1:lphi)   ! don't need ghost cells!
   deallocate(r,theta,phispher)   ! done with these variables now
 
   ! compute the geographic coordinates
   print*, ' make_dipolemesh:  geographic coordinates from magnetic...'
   call self%calc_geographic(self%r,self%theta,self%phi,self%alt,self%glon,self%glat) 
-
-  ! compute and store the metric factors
-  print*, ' make_dipolemesh:  metric factors for cell centers...'
-  self%hq=self%calc_hq(self%r,self%theta)
-  self%hp=self%calc_hp(self%r,self%theta)
-  self%hphi=self%calc_hphi(self%r,self%theta)
 
   ! q cell interface metric factors
   print*, ' make_dipolemesh:  metric factors for cell q-interfaces...'
