@@ -16,18 +16,18 @@ public
 !   the pointers are always allocated in groups we do not need separate status vars for each array thankfully...
 type :: curvmesh
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Generic properties !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 
-  !> we need to know whether or not different groups of pointers are allocated and the intrinsic only work on allocatables...
+  !> we need to know whether or not different groups of pointers are allocated and the intrinsic "allocatable" only work on allocatables (not pointers)...
   logical :: xi_alloc_status=.false.
   logical :: dxi_alloc_status=.false. 
   logical :: difflen_alloc_status=.false.
-  logical :: geog_alloc_status=.false.
   logical :: null_alloc_status=.false.
+  logical :: geog_set_status=.false.      ! a distinction here is that geographic coords. get allocated with other arrays, but get set separately
 
-  !> SIZE INFORMATION.  Specified and set by base class methods
+  !> sizes.  Specified and set by base class methods
   integer :: lx1,lx2,lx3,lx2all,lx3all
   !! for program units that may not be able to access module globals
   
-  !!> CURVILINEAR VARIABLES AND DIFFS.  (private)
+  !!> curvilinear vars. and diffs.
   real(wp), dimension(:), pointer :: x1     ! provided in input file
   real(wp), dimension(:), pointer :: x1i    ! recomputed by base class once x1 set
   real(wp), dimension(:), pointer :: dx1        ! recomputed by base class from x1
@@ -61,7 +61,7 @@ type :: curvmesh
   logical :: flagper
   
   !> flag for indicated type of grid (0 - closed dipole; 1 - open dipole inverted; 2 - non-inverted).  Computed by method in generic
-  !class
+  !class once coordinate specific quantitaties are defined
   integer :: gridflag
  
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Coordinate system specific properties !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 
@@ -124,13 +124,13 @@ type :: curvmesh
   !! length of null point index array
   integer, dimension(:,:), pointer :: inull
 
-  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Methods !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! type-bound procedures !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 
   contains
     procedure :: set_coords
     procedure :: calc_coord_diffs
     procedure :: calc_difflengths
     procedure :: calc_inull
-    !procedure :: refine
+    procedure :: calc_gridflag
     procedure :: init_storage
     final :: destructor
 end type curvmesh
@@ -255,18 +255,17 @@ contains
     integer :: lx1,lx2,lx3
 
     ! error checking
-    if (.not. self%geog_alloc_status) error stop ' attempting to compute gridflag prior to geographic coordinates!'
+    if (.not. self%geog_set_status) error stop ' attempting to compute gridflag prior to setting geographic coordinates!'
 
     ! sizes   
     lx1=self%lx1; lx2=self%lx2; lx3=self%lx3
 
-    !> DETERMINE THE TYPE OF GRID WE HAVE AND SET AN APPROPRIATE FLAG
-    !> FIXME:  this needs to be done once, globally and also needs to be more robust...
+    ! grid type, assumes that each worker x1 arrays span the entire altitude range of the grid
     if (abs(self%alt(1,1,1)-self%alt(lx1,1,1))<100d3) then    !closed dipole grid
       self%gridflag=0
-    else if (self%alt(1,1,1)>self%alt(2,1,1)) then    !open dipole grid with inverted structure wrt altitude
+    else if (self%alt(1,1,1)>self%alt(2,1,1)) then            !open dipole grid with inverted structure wrt altitude
       self%gridflag=1
-    else    !something different (viz. non-inverted - lowest altitudes at the logical bottom of the grid)
+    else                                                      !something different (viz. non-inverted - lowest altitudes at the logical bottom of the grid)
       self%gridflag=2
     end if
   end subroutine calc_gridflag
@@ -279,7 +278,7 @@ contains
     integer :: icount,ix1,ix2,ix3
 
     ! error checking, we require the geographic coords. before this is done
-    if (.not. self%geog_alloc_status) error stop ' attempting to compute null points prior to geographic coordinates!'
+    if (.not. self%geog_set_status) error stop ' attempting to compute null points prior to setting geographic coordinates!'
 
     ! sizes   
     lx1=self%lx1; lx2=self%lx2; lx3=self%lx3
@@ -348,7 +347,7 @@ contains
     end if
 
     ! let the user know that the destructor indeed ran
-    print*, '  curvmesh destructor completed successefully'
+    print*, '  curvmesh destructor completed successfully'
   end subroutine destructor
 
 end module meshobj
