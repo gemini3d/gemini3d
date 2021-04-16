@@ -135,7 +135,7 @@ type :: curvmesh
     procedure :: init_storage
     procedure :: writesize
     procedure :: writegrid
-    !procedure :: writegridall
+    procedure :: writegridall
     final :: destructor
 end type curvmesh
 
@@ -229,6 +229,7 @@ contains
       allocate(self%h1(1:lx1,1:lx2,1:lx3),self%h2(1:lx1,1:lx2,1:lx3),self%h3(1:lx1,1:lx2,1:lx3))
       allocate(self%h1x1i(1:lx1+1,1:lx2,1:lx3),self%h2x1i(1:lx1+1,1:lx2,1:lx3),self%h3x1i(1:lx1+1,1:lx2,1:lx3))
       allocate(self%h1x2i(1:lx1,1:lx2+1,1:lx3),self%h2x2i(1:lx1,1:lx2+1,1:lx3),self%h3x2i(1:lx1,1:lx2+1,1:lx3))
+      allocate(self%h1x3i(1:lx1,1:lx2,1:lx3+1),self%h2x3i(1:lx1,1:lx2,1:lx3+1),self%h3x3i(1:lx1,1:lx2,1:lx3+1))
       allocate(self%er(1:lx1,1:lx2,1:lx3,3),self%etheta(1:lx1,1:lx2,1:lx3,3),self%ephi(1:lx1,1:lx2,1:lx3,3))
       allocate(self%e1(1:lx1,1:lx2,1:lx3,3),self%e2(1:lx1,1:lx2,1:lx3,3),self%e3(1:lx1,1:lx2,1:lx3,3))
       allocate(self%Bmag(1:lx1,1:lx2,1:lx3),self%I(1:lx2,1:lx3))
@@ -237,6 +238,7 @@ contains
       allocate(self%alt(1:lx1,1:lx2,1:lx3),self%glon(1:lx1,1:lx2,1:lx3),self%glat(1:lx1,1:lx2,1:lx3))
 
       ! fixme:  there are a number of full-grid arrays that are coordinate specific to be allocated here iff we are root
+      !   OR we can export that to some external procedures that collect the full grid information
 
       self%coord_alloc_status=.true.
     else
@@ -360,6 +362,80 @@ contains
     call hf%write('/x3',self%x3)
     call hf%finalize()
   end subroutine writegrid
+
+
+  subroutine writegridall(self,path,ID)
+    class(curvmesh), intent(in) :: self
+    character(*), intent(in) :: path
+    integer, intent(in) :: ID
+    type(hdf5_file) :: hf
+    character(:), allocatable :: IDstr    ! use auto-allocation
+
+    ! at a minimum we must have allcated the coordinate arrays
+    if (.not. self%xi_alloc_status) error stop ' attempting to write coordinate arrays when they have not been set yet!'
+
+    IDstr=' '
+    write(IDstr,'(i1)') ID
+    call self%writesize(path,ID)
+    call hf%initialize(path//'simgrid'//IDstr//'.h5',status='replace',action='w')
+    call hf%write('/x1',self%x1)
+    call hf%write('/x1i',self%x1i)
+    call hf%write('/dx1b',self%dx1)
+    call hf%write('/dx1h',self%dx1i)
+
+    call hf%write('/x2',self%x2)
+    call hf%write('/x2i',self%x2i)
+    call hf%write('/dx2b',self%dx2)
+    call hf%write('/dx2h',self%dx2i)
+
+    call hf%write('/x3',self%x3)
+    call hf%write('/x3i',self%x3i)
+    call hf%write('/dx3b',self%dx3)
+    call hf%write('/dx3h',self%dx3i)
+
+    call hf%write('/h1',self%h1)
+    call hf%write('/h2',self%h2)
+    call hf%write('/h3',self%h3)
+
+    call hf%write('/h1x1i',self%h1x1i)
+    call hf%write('/h2x1i',self%h2x1i)
+    call hf%write('/h3x1i',self%h3x1i)
+
+    call hf%write('/h1x2i',self%h1x2i)
+    call hf%write('/h2x2i',self%h2x2i)
+    call hf%write('/h3x2i',self%h3x2i)
+
+    call hf%write('/h1x3i',self%h1x3i)
+    call hf%write('/h2x3i',self%h2x3i)
+    call hf%write('/h3x3i',self%h3x3i)
+
+    call hf%write('/gx1',self%g1)
+    call hf%write('/gx2',self%g2)
+    call hf%write('/gx3',self%g3)
+
+    call hf%write('/alt',self%alt)
+    call hf%write('/glon',self%glon)
+    call hf%write('/glat',self%glat)
+
+    call hf%write('/Bmag',self%Bmag)
+    call hf%write('/I',self%I)
+    call hf%write('/nullpts',self%nullpts)
+
+    call hf%write('/e1',self%e1)
+    call hf%write('/e2',self%e2)
+    call hf%write('/e3',self%e3)
+
+    call hf%write('/er',self%er)
+    call hf%write('/etheta',self%etheta)
+    call hf%write('/ephi',self%ephi)
+
+    call hf%write('/r',self%r)
+    call hf%write('/theta',self%theta)
+    call hf%write('/phi',self%phi)
+
+    call hf%finalize()
+
+  end subroutine writegridall
 
 
   !> type destructor; written generally, viz. as if it is possible some grid pieces are allocated an others are not
