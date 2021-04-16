@@ -234,13 +234,6 @@ subroutine make_dipolemesh(self)
   self%hphiphii(1:lq,1:lp,1:lphi)=self%hphi(1:lq,1:lp,1:lphi)
   self%hphiphii(1:lq,1:lp,lphi+1)=self%hphiphii(1:lq,1:lp,lphi)
 
-!  self%hqphii(1:lq,1:lp,1:lphi)=self%hq         ! note these are not a function of x3 so can just copy things across
-!  self%hqphii(1:lq,1:lp,lphi+1)=self%hqphii(1:lq,1:lp,lphi)
-!  self%hpphii(1:lq,1:lp,1:lphi)=self%hp         ! seg faults without indices???!!!,  b/c pointers???
-!  self%hpphii(1:lq,1:lp,lphi+1)=self%hpphii(1:lq,1:lp,lphi)
-!  self%hphiphii(1:lq,1:lp,1:lphi)=self%hphi
-!  self%hphiphii(1:lq,1:lp,lphi+1)=self%hphiphii(1:lq,1:lp,lphi)
-
   ! we can now deallocate temp interface arrays
   deallocate(rqint,thetaqint,phiqint,rpint,thetapint,phipint)
 
@@ -332,7 +325,7 @@ function calc_inclination(self,er,eq,gridflag) result(Inc)
   else                     ! otherwise average over full domain
     Inc=sum(proj,dim=1)/real(lq,wp)
   end if
-  Inc=90-min(Inc,pi-Inc)*180._wp/pi
+  Inc=90._wp-min(Inc,pi-Inc)*180._wp/pi
 end function calc_inclination
 
 
