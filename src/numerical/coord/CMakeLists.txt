@@ -2,7 +2,7 @@ add_library(newton OBJECT newton.f90)
 target_link_libraries(newton PRIVATE const)
 
 add_library(meshobj OBJECT meshobj.f90)
-target_link_libraries(meshobj PRIVATE const)
+target_link_libraries(meshobj PRIVATE const h5fortran::h5fortran)
 
 add_library(meshobj_dipole OBJECT meshobj_dipole.f90 dipole_fns.f90)
 target_link_libraries(meshobj_dipole PRIVATE const meshobj newton)
