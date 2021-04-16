@@ -442,7 +442,6 @@ contains
     call hf%write('/phi',self%phi)
 
     call hf%finalize()
-
   end subroutine writegridall
 
 
