@@ -208,7 +208,7 @@ subroutine make_dipolemesh(self)
 
   ! compute and store the metric factors
   print*, ' make_dipolemesh:  metric factors for cell centers...'
-  allocate(self%hq(1:lq,1:lp,1:lphi),self%hp(1:lq,1:lp,1:lphi),self%hphi(1:lq,1:lp,1:lphi))
+  !allocate(self%hq(1:lq,1:lp,1:lphi),self%hp(1:lq,1:lp,1:lphi),self%hphi(1:lq,1:lp,1:lphi))
   self%hq=self%calc_hq(self%r,self%theta)
   self%hp=self%calc_hp(self%r,self%theta)
   self%hphi=self%calc_hphi(self%r,self%theta)
@@ -226,11 +226,13 @@ subroutine make_dipolemesh(self)
   self%hphipi=self%calc_hphi(rpint,thetapint)
 
   print*, ' make_dipolemesh:  metric factors for cell phi-interfaces...'
-  self%hqphii(1:lq,1:lp,1:lphi)=self%hq                          ! note these are not a function of x3 so can just copy things across
+  print*, shape(self%hqphii),shape(self%hpphii),shape(self%hphiphii)
+  print*, shape(self%hq), shape(self%hp), shape(self%hphi)
+  self%hqphii(1:lq,1:lp,1:lphi)=self%hq(1:lq,1:lp,1:lphi)         ! note these are not a function of x3 so can just copy things across
   self%hqphii(1:lq,1:lp,lphi+1)=self%hqphii(1:lq,1:lp,lphi)
-  self%hpphii(1:lq,1:lp,1:lphi)=self%hp
+  self%hpphii(1:lq,1:lp,1:lphi)=self%hp(1:lq,1:lp,1:lphi)         ! seg faults without indices???!!!,  b/c pointers???
   self%hpphii(1:lq,1:lp,lphi+1)=self%hpphii(1:lq,1:lp,lphi)
-  self%hphiphii(1:lq,1:lp,1:lphi)=self%hphi
+  self%hphiphii(1:lq,1:lp,1:lphi)=self%hphi(1:lq,1:lp,1:lphi)
   self%hphiphii(1:lq,1:lp,lphi+1)=self%hphiphii(1:lq,1:lp,lphi)
 
   ! we can now deallocate temp interface arrays
@@ -260,8 +262,11 @@ subroutine make_dipolemesh(self)
   print*, ' make_dipolemesh:  inclination angle...'  
   self%I=self%calc_inclination(self%er,self%eq,self%gridflag)
 
-  ! now finish by calling procedures from base type
+  ! set the status now that coord. specific calculations are done
   self%coord_alloc_status=.true.
+
+  ! now finish by calling procedures from base type
+  print*, ' make_dipolemesh:  base type-bound procedure calls...'
   call self%calc_difflengths()     ! differential lengths (units of m)
   call self%calc_inull()           ! null points (non computational)
   call self%calc_gridflag()        ! compute and store grid type
