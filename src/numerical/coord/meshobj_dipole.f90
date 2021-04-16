@@ -254,8 +254,8 @@ subroutine make_dipolemesh(self)
   ! now finish by calling procedures from base type
   self%coord_alloc_status=.true.
   call self%calc_difflengths()     ! differential lengths (units of m)
-  call self%calc_inull()
-  call self%calc_gridflag()
+  call self%calc_inull()           ! null points (non computational)
+  call self%calc_gridflag()        ! compute and store grid type
 end subroutine make_dipolemesh
 
 

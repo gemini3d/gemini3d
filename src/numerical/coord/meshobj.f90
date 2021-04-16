@@ -5,6 +5,7 @@ module meshobj
 !    generic metric factors, etc.
 
 use phys_consts, only : wp
+use h5fortran, only : hdf5_file
 implicit none (type, external)
 public
 
@@ -132,6 +133,9 @@ type :: curvmesh
     procedure :: calc_inull
     procedure :: calc_gridflag
     procedure :: init_storage
+    procedure :: writesize
+    procedure :: writegrid
+    !procedure :: writegridall
     final :: destructor
 end type curvmesh
 
@@ -316,6 +320,46 @@ contains
 
     self%null_alloc_status=.true.
   end subroutine calc_inull
+
+
+  !> write the size of the grid to a file
+  subroutine writesize(self,path,ID)
+    class(curvmesh), intent(in) :: self
+    character(*), intent(in) :: path
+    integer, intent(in) :: ID
+    type(hdf5_file) :: hf
+    character(:), allocatable :: IDstr    ! use auto-allocation
+
+    IDstr=' '
+    write(IDstr,'(i1)') ID
+    call hf%initialize(path//'simsize'//IDstr//'.h5',status='replace',action='w')
+    call hf%write('/lx1',self%lx1)
+    call hf%write('/lx2',self%lx2)
+    call hf%write('/lx3',self%lx3)
+    call hf%finalize()
+  end subroutine writesize
+
+
+  !> write grid coordinates (curvilinear only) to a file
+  subroutine writegrid(self,path,ID)
+    class(curvmesh), intent(in) :: self
+    character(*), intent(in) :: path
+    integer, intent(in) :: ID
+    type(hdf5_file) :: hf
+    character(:), allocatable :: IDstr    ! use auto-allocation
+
+    ! at a minimum we must have allcated the coordinate arrays
+    if (.not. self%xi_alloc_status) error stop ' attempting to write coordinate arrays when they have not been set yet!'
+
+    IDstr=' '
+    write(IDstr,'(i1)') ID
+    call self%writesize(path,ID)
+    call hf%initialize(path//'simgrid'//IDstr//'.h5',status='replace',action='w')
+    call hf%write('/x1',self%x1)
+    call hf%write('/x2',self%x2)
+    call hf%write('/x3',self%x3)
+    call hf%finalize()
+  end subroutine writegrid
 
 
   !> type destructor; written generally, viz. as if it is possible some grid pieces are allocated an others are not

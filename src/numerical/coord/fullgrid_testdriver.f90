@@ -15,6 +15,7 @@ real(wp), dimension(2), parameter :: philims=[2.0,2.5]
 integer :: iq,ip,iphi
 real(wp) :: minchkvar,maxchkvar
 real(wp), dimension(1:lq-4,1:lp-4,1:lphi-4) :: proj
+character(:), allocatable :: path    !use auto-allocation feature
 
 
 ! define a grid, in reality this would be pull in from a file
@@ -106,6 +107,11 @@ if (any(proj>1e-4)) error stop '  etheta,ephi not ortho!!!'
 
 ! test number of null grid points
 print*, ' fullgrid_testdriver, number of null grid points:  ',size(x%inull,1)
+
+! write out the grid data to a file
+path='/Users/zettergm/Downloads/'
+print*, ' fullgrid_testdriver, writing grid coords. to file...'
+call x%writegrid(path,0)
 end block
 
 ! deallocate the grid before ending the program
