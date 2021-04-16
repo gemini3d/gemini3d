@@ -20,14 +20,18 @@ character(:), allocatable :: path    !use auto-allocation feature
 
 
 ! define a grid, in reality this would be pull in from a file
-q=[(qlims(1) + (qlims(2)-qlims(1))/lq*(iq-1),iq=1,lq)]
-p=[(plims(1) + (plims(2)-plims(1))/lp*(ip-1),ip=1,lp)]
-phi=[(philims(1) + (philims(2)-philims(1))/lphi*(iphi-1),iphi=1,lphi)]
+q=[(qlims(1) + (qlims(2)-qlims(1))/(lq-1)*(iq-1),iq=1,lq)]
+p=[(plims(1) + (plims(2)-plims(1))/(lp-1)*(ip-1),ip=1,lp)]
+phi=[(philims(1) + (philims(2)-philims(1))/(lphi-1)*(iphi-1),iphi=1,lphi)]
+
+! test min/max coordinate limits
+!print*, qlims
+!print*, minval(q),maxval(q)
 
 ! oddly the destructor does not get called when the program unit terminates; however by
 !  putting the variable inside the block we cause it to go out of scope before the program
 !  ends and that indeed causes the destructor to get triggered (so we can test it)
-do while (.true.)
+!!do while (.true.)
 block
 type(dipolemesh) :: x
 
@@ -116,7 +120,7 @@ print*, ' fullgrid_testdriver, writing grid coords. to file...'
 call x%writegrid(path,0)
 call x%writegridall(path,1)
 end block
-end do
+!!end do
 
 ! deallocate the grid before ending the program
 print*, 'fullgrid_testdriver:  exiting program; destructor should have been called...'
