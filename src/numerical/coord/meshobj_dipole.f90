@@ -208,7 +208,6 @@ subroutine make_dipolemesh(self)
 
   ! compute and store the metric factors
   print*, ' make_dipolemesh:  metric factors for cell centers...'
-  !allocate(self%hq(1:lq,1:lp,1:lphi),self%hp(1:lq,1:lp,1:lphi),self%hphi(1:lq,1:lp,1:lphi))
   self%hq=self%calc_hq(self%r,self%theta)
   self%hp=self%calc_hp(self%r,self%theta)
   self%hphi=self%calc_hphi(self%r,self%theta)
@@ -226,14 +225,21 @@ subroutine make_dipolemesh(self)
   self%hphipi=self%calc_hphi(rpint,thetapint)
 
   print*, ' make_dipolemesh:  metric factors for cell phi-interfaces...'
-  print*, shape(self%hqphii),shape(self%hpphii),shape(self%hphiphii)
-  print*, shape(self%hq), shape(self%hp), shape(self%hphi)
+  !print*, shape(self%hqphii),shape(self%hpphii),shape(self%hphiphii)
+  !print*, shape(self%hq), shape(self%hp), shape(self%hphi)
   self%hqphii(1:lq,1:lp,1:lphi)=self%hq(1:lq,1:lp,1:lphi)         ! note these are not a function of x3 so can just copy things across
   self%hqphii(1:lq,1:lp,lphi+1)=self%hqphii(1:lq,1:lp,lphi)
   self%hpphii(1:lq,1:lp,1:lphi)=self%hp(1:lq,1:lp,1:lphi)         ! seg faults without indices???!!!,  b/c pointers???
   self%hpphii(1:lq,1:lp,lphi+1)=self%hpphii(1:lq,1:lp,lphi)
   self%hphiphii(1:lq,1:lp,1:lphi)=self%hphi(1:lq,1:lp,1:lphi)
   self%hphiphii(1:lq,1:lp,lphi+1)=self%hphiphii(1:lq,1:lp,lphi)
+
+!  self%hqphii(1:lq,1:lp,1:lphi)=self%hq         ! note these are not a function of x3 so can just copy things across
+!  self%hqphii(1:lq,1:lp,lphi+1)=self%hqphii(1:lq,1:lp,lphi)
+!  self%hpphii(1:lq,1:lp,1:lphi)=self%hp         ! seg faults without indices???!!!,  b/c pointers???
+!  self%hpphii(1:lq,1:lp,lphi+1)=self%hpphii(1:lq,1:lp,lphi)
+!  self%hphiphii(1:lq,1:lp,1:lphi)=self%hphi
+!  self%hphiphii(1:lq,1:lp,lphi+1)=self%hphiphii(1:lq,1:lp,lphi)
 
   ! we can now deallocate temp interface arrays
   deallocate(rqint,thetaqint,phiqint,rpint,thetapint,phipint)
