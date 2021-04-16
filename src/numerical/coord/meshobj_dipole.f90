@@ -23,6 +23,7 @@ type, extends(curvmesh) :: dipolemesh
   real(wp), dimension(:,:,:), pointer :: hq,hp,hphi
   real(wp), dimension(:,:,:), pointer :: hqqi,hpqi,hphiqi
   real(wp), dimension(:,:,:), pointer :: hqpi,hppi,hphipi
+  real(wp), dimension(:,:,:), pointer :: hqphii,hpphii,hphiphii
   real(wp), dimension(:,:,:,:), pointer :: eq,ep
   real(wp), dimension(:,:,:), pointer :: gq,gp,gphi
 
@@ -137,7 +138,7 @@ subroutine init_dipolemesh(self)
   self%hq=>self%h1; self%hp=>self%h2; self%hphi=>self%h3
   self%hqqi=>self%h1x1i; self%hpqi=>self%h2x1i; self%hphiqi=>self%h3x1i
   self%hqpi=>self%h1x2i; self%hppi=>self%h2x2i; self%hphipi=>self%h3x2i
-  ! fixme: add phi interface metric factors
+  self%hqphii=>self%h1x3i; self%hpphii=>self%h2x3i; self%hphiphii=>self%h3x3i
   self%eq=>self%e1; self%ep=>self%e2
   self%gq=>self%g1; self%gp=>self%g2; self%gphi=>self%g3 
 end subroutine init_dipolemesh
@@ -219,10 +220,18 @@ subroutine make_dipolemesh(self)
   self%hphiqi=self%calc_hphi(rqint,thetaqint)
 
   ! p cell interface metric factors
-  print*, ' make_dipolemesh:  metric factors for cell p intefaces...'
+  print*, ' make_dipolemesh:  metric factors for cell p-intefaces...'
   self%hqpi=self%calc_hq(rpint,thetapint)
   self%hppi=self%calc_hp(rpint,thetapint)
   self%hphipi=self%calc_hphi(rpint,thetapint)
+
+  print*, ' make_dipolemesh:  metric factors for cell phi-interfaces...'
+  self%hqphii(1:lq,1:lp,1:lphi)=self%hq                          ! note these are not a function of x3 so can just copy things across
+  self%hqphii(1:lq,1:lp,lphi+1)=self%hqphii(1:lq,1:lp,lphi)
+  self%hpphii(1:lq,1:lp,1:lphi)=self%hp
+  self%hpphii(1:lq,1:lp,lphi+1)=self%hpphii(1:lq,1:lp,lphi)
+  self%hphiphii(1:lq,1:lp,1:lphi)=self%hphi
+  self%hphiphii(1:lq,1:lp,lphi+1)=self%hphiphii(1:lq,1:lp,lphi)
 
   ! we can now deallocate temp interface arrays
   deallocate(rqint,thetaqint,phiqint,rpint,thetapint,phipint)
