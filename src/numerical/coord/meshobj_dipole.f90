@@ -257,10 +257,6 @@ subroutine make_dipolemesh(self)
   print*, ' make_dipolemesh:  gravity...'
   call self%calc_grav(self%r,self%eq,self%ep,self%ephi,self%er)
 
-  ! inclination angle for each field line
-  print*, ' make_dipolemesh:  inclination angle...'  
-  self%I=self%calc_inclination(self%er,self%eq,self%gridflag)
-
   ! set the status now that coord. specific calculations are done
   self%coord_alloc_status=.true.
 
@@ -269,6 +265,10 @@ subroutine make_dipolemesh(self)
   call self%calc_difflengths()     ! differential lengths (units of m)
   call self%calc_inull()           ! null points (non computational)
   call self%calc_gridflag()        ! compute and store grid type
+
+  ! inclination angle for each field line; awkwardly this must go after gridflag is set...
+  print*, ' make_dipolemesh:  inclination angle...'  
+  self%I=self%calc_inclination(self%er,self%eq,self%gridflag)
 end subroutine make_dipolemesh
 
 
