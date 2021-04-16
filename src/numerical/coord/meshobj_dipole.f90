@@ -247,27 +247,27 @@ subroutine make_dipolemesh(self)
   print*, ' make_dipolemesh:  gravity...'
   call self%calc_grav(self%r,self%eq,self%ep,self%ephi,self%er)
 
-  ! fixme: hardcode grid type for now
-  self%gridflag=0
-
   ! inclination angle for each field line
   print*, ' make_dipolemesh:  inclination angle...'  
   self%I=self%calc_inclination(self%er,self%eq,self%gridflag)
 
-  ! now finish by computing differential lengths
+  ! now finish by calling procedures from base type
   self%coord_alloc_status=.true.
-  call self%calc_difflengths()
+  call self%calc_difflengths()     ! differential lengths (units of m)
+  call self%calc_inull()
+  call self%calc_gridflag()
 end subroutine make_dipolemesh
 
 
 !> compute geographic coordinates of all grid points
 subroutine calc_geographic(self,r,theta,phi,alt,glon,glat)
-  class(dipolemesh), intent(in) :: self
+  class(dipolemesh) :: self
   real(wp), dimension(:,:,:), intent(in) :: r,theta,phi
   real(wp), dimension(:,:,:), intent(out) :: alt,glon,glat
 
   call geomag2geog(phi,theta,glon,glat)
   alt=r2alt(r)
+  self%geog_set_status=.true.
 end subroutine calc_geographic
 
 

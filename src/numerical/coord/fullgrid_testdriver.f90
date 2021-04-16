@@ -28,6 +28,8 @@ phi=[(philims(1) + (philims(2)-philims(1))/lphi*(iphi-1),iphi=1,lphi)]
 block
 type(dipolemesh) :: x
 
+
+!!!! grid setup and init
 ! grid spec.
 print*, 'fullgrid_testdriver:  Defining curvilinear coordinates...'
 call x%set_coords(q,p,phi,p,phi)
@@ -39,10 +41,21 @@ call x%init_dipolemesh()
 ! call grid generation for this grid def.
 print*, 'fullgrid_testdriver:  Calling dipole mesh constructor...'
 call x%make_dipolemesh()
-call x%calc_difflengths()
+
+! now some generic methods that can be called once coordinate data are filled in
+!print*, 'fullgrid_testdriver:  Setting generic mesh object grid metadata'
+!call x%calc_difflengths()
+!call x%calc_inull()
+!call x%calc_gridflag()
+!!!! end grid setup and init
+
+! check variable allocation and set status
+print*, "fullgrid_testdriver:  allocation statuses..."
+print*, x%xi_alloc_status,x%dxi_alloc_status,x%difflen_alloc_status,x%null_alloc_status,x%geog_set_status
 
 ! now do some basic sanity checks
 print*, 'fullgrid_testdriver:  Starting basic checks...'
+print*, 'fullgrid_testdriver:  grid type...',x%gridflag
 minchkvar=minval(x%q); maxchkvar=maxval(x%q);
 print*, ' fullgrid_testdriver, q:  ',minchkvar,maxchkvar
 minchkvar=minval(x%p); maxchkvar=maxval(x%p);
