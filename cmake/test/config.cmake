@@ -5,9 +5,9 @@ include(${CMAKE_CURRENT_LIST_DIR}/RefPackage.cmake)
 function(setup_gemini_test name TIMEOUT)
 
 # --- setup test
-cmake_path(APPEND out_dir ${PROJECT_BINARY_DIR} test${name})
+cmake_path(APPEND out_dir ${PROJECT_BINARY_DIR} ${name})
 cmake_path(APPEND ref_root ${PROJECT_SOURCE_DIR} test_data)
-cmake_path(APPEND ref_dir ${ref_root} test${name})
+cmake_path(APPEND ref_dir ${ref_root} ${name})
 
 add_test(NAME gemini:${name}:setup
   COMMAND ${CMAKE_COMMAND} -Dname=${name} -Doutdir:PATH=${out_dir} -Drefroot:PATH=${ref_root} -P ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/download.cmake)

@@ -1,0 +1,57 @@
+{
+  "library" :
+  {
+    "lapack" : "/home/michael/code/gemini3d/build/local/lib/liblapack.a,/home/michael/code/gemini3d/build/local/lib/libblas.a,-pthread",
+    "mpi" : "/home/michael/lib_gcc/openmpi-4.1.0/lib/libmpi.so",
+    "mumps" : "/home/michael/code/gemini3d/build/local/lib/libdmumps.a,/home/michael/code/gemini3d/build/local/lib/libmumps_common.a,/home/michael/code/gemini3d/build/local/lib/libpord.a",
+    "scalapack" : "/home/michael/code/gemini3d/build/local/lib/libscalapack.a,/home/michael/code/gemini3d/build/local/lib/libblacs.a"
+  },
+  "system" :
+  {
+    "c_compiler" : "GNU:8.4.1",
+    "cmake_version" : "3.20.1",
+    "cpu" : "32 core Intel(R) Xeon(R) Gold 6226R CPU @ 2.90GHz",
+    "fortran_compiler" : "GNU:8.4.1",
+    "memory_ram_MB" : 772419,
+    "operating_system" : "Linux"
+  },
+  "tests" :
+  {
+    "2dew_fang" :
+    {
+      "archive" : "2dew_fang.zstd",
+      "md5" : "14e331f7608f15ac325ecc9a1bf1cdb2",
+      "url" : "https://www.dropbox.com/s/nv0v791mk69dodc/2dew_fang.zstd?dl=0"
+    },
+    "2dew_glow" :
+    {
+      "archive" : "2dew_glow.zstd",
+      "md5" : "b4e4d2eac6429e875c38514c20f99d89",
+      "url" : "https://www.dropbox.com/s/ke52xnmef7ej21g/2dew_glow.zstd?dl=0"
+    },
+    "2dns_fang" :
+    {
+      "archive" : "2dns_fang.zstd",
+      "md5" : "f183de882136389fa6e4dc9e139eb7d3",
+      "url" : "https://www.dropbox.com/s/uzzqutibtp29xu0/2dns_fang.zstd?dl=0"
+    },
+    "2dns_glow" :
+    {
+      "archive" : "2dns_glow.zstd",
+      "md5" : "321b519a8db2202ea45bc3f7c3ee77a5",
+      "url" : "https://www.dropbox.com/s/y73uuw8csfh0m28/2dns_glow.zstd?dl=0"
+    },
+    "3d_fang" :
+    {
+      "archive" : "3d_fang.zstd",
+      "md5" : "ac015377efa209eabe6de2916bf8b785",
+      "url" : "https://www.dropbox.com/s/6vz7crvzk1iz0ju/3d_fang.zstd?dl=0"
+    },
+    "3d_glow" :
+    {
+      "archive" : "3d_glow.zstd",
+      "md5" : "17c6b3e21f3e6b554cc809d2c7e49645",
+      "url" : "https://www.dropbox.com/s/c9uqxd2x2pw3otv/3d_glow.zstd?dl=0"
+    }
+  }
+}

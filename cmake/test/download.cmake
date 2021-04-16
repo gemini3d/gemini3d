@@ -20,14 +20,13 @@ if(NOT refroot)
   message(FATAL_ERROR "must provide 'refroot' e.g. \${PROJECT_SOURCE_DIR}/test_data")
 endif()
 
-file(READ ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/gemini3d_url.json _refj)
+file(READ ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/ref_data.json _refj)
 
 string(JSON url GET ${_refj} tests ${name} url)
+string(JSON archive_name GET ${_refj} tests ${name} archive)
 # optional checksum
 string(JSON md5 ERROR_VARIABLE e GET ${_refj} tests ${name} md5)
 
-set(archive_name test${name}.zip)
-cmake_path(APPEND ref_dir ${refroot} test${name})
 cmake_path(APPEND archive ${refroot} ${archive_name})
 
 # check if extracted data exists and is up to date
@@ -42,7 +41,7 @@ elseif(IS_DIRECTORY ${ref_dir})
   return()
 endif()
 
-# check if archive .zip up to date
+# check if archive up to date
 if(NOT EXISTS ${archive})
   download_archive(${url} ${archive})
 endif()
@@ -52,17 +51,19 @@ if(NOT _md5 STREQUAL ${md5})
 endif()
 
 message(STATUS "extract ref data to ${ref_dir}")
-file(ARCHIVE_EXTRACT INPUT ${archive} DESTINATION ${refroot})
+file(ARCHIVE_EXTRACT INPUT ${archive} DESTINATION ${ref_dir})
 
 file(MD5 ${archive} _md5)
 file(WRITE ${ref_dir}/md5sum.txt ${_md5})
 
 endfunction(gemini_download_ref_data)
 
+# scripted part, needs to be in this order
+
+cmake_path(APPEND ref_dir ${refroot} ${name})
 
 gemini_download_ref_data(${name})
 
-if(DEFINED outdir)
-  # copy sim inputs into build/test${name}/inputs
-  file(COPY ${refroot}/test${name}/inputs DESTINATION ${outdir})
-endif()
+# copy sim inputs into build/${name}/inputs
+message(STATUS "TRACE: ${ref_dir} ${outdir}")
+file(COPY ${ref_dir}/inputs DESTINATION ${outdir})
