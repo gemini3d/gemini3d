@@ -112,6 +112,7 @@ print*, ' fullgrid_testdriver, number of null grid points:  ',size(x%inull,1)
 path='/Users/zettergm/Downloads/'
 print*, ' fullgrid_testdriver, writing grid coords. to file...'
 call x%writegrid(path,0)
+call x%writegridall(path,1)
 end block
 
 ! deallocate the grid before ending the program
