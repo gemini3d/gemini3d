@@ -5,13 +5,13 @@ use meshobj_dipole, only : dipolemesh
 
 implicit none
 
-integer, parameter :: lq=256,lp=192,lphi=128
+integer, parameter :: lq=384+4,lp=96+4,lphi=64+4
 real(wp), dimension(lq) :: q
 real(wp), dimension(lp) :: p
 real(wp), dimension(lphi) :: phi
-real(wp), dimension(2), parameter :: qlims=[-0.5851937,0.5851937]
-real(wp), dimension(2), parameter :: plims=[1.2053761,1.5820779]
-real(wp), dimension(2), parameter :: philims=[2.0,2.5]
+real(wp), dimension(2), parameter :: qlims=[-0.5340405,0.5340405]
+real(wp), dimension(2), parameter :: plims=[1.2509838,1.4372374]
+real(wp), dimension(2), parameter :: philims=[3.6126509,3.7240195]
 integer :: iq,ip,iphi
 real(wp) :: minchkvar,maxchkvar
 real(wp), dimension(1:lq-4,1:lp-4,1:lphi-4) :: proj
