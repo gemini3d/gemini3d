@@ -168,8 +168,8 @@ subroutine make_dipolemesh(self)
   print*, ' make_dipolemesh:  allocating space for grid of size:  ',lqg,lpg,lphig
   lq=lqg-4; lp=lpg-4; lphi=lphig-4;
   allocate(phispher(1:lq,1:lp,1:lphi))
-  allocate(rqint(1:lq+1,1:lp,1:lphi),thetaqint(1:lq+1,1:lp,1:lphi),phiqint(1:lq+1,1:lp,1:lphi))    ! these are just temp vars. needed to compute metric factors
-  allocate(rpint(1:lq+1,1:lp,1:lphi),thetapint(1:lq+1,1:lp,1:lphi),phipint(1:lq+1,1:lp,1:lphi))
+  allocate(rqint(1:lq+1,1:lp,1:lphi),thetaqint(1:lq+1,1:lp,1:lphi))    ! these are just temp vars. needed to compute metric factors
+  allocate(rpint(1:lq,1:lp+1,1:lphi),thetapint(1:lq,1:lp+1,1:lphi))
 
   ! convert the cell centers to spherical ECEF coordinates, then tile for longitude dimension
   print*, ' make_dipolemesh:  converting cell centers...'
@@ -184,7 +184,7 @@ subroutine make_dipolemesh(self)
 
   ! locations of the cell interfaces in q-dimension (along field lines)
   print*, ' make_dipolemesh:  converting cell interfaces in q...'
-  call self%calc_rtheta_2D(self%qint,self%p,rqint(:,:,1),thetaqint(:,:,1))
+  call self%calc_rtheta_2D(self%qint,self%p(1:lq),rqint(:,:,1),thetaqint(:,:,1))
   do iphi=2,lphi
     rqint(:,:,iphi)=rqint(:,:,1)
     thetaqint(:,:,iphi)=thetaqint(:,:,1)
@@ -192,13 +192,13 @@ subroutine make_dipolemesh(self)
 
   ! locations of cell interfaces in p-dimesion (along constant L-shell)
   print*, ' make_dipolemesh:  converting cell interfaces in p...'
-  call self%calc_rtheta_2D(self%q,self%pint,rpint(:,:,1),thetapint(:,:,1))
+  call self%calc_rtheta_2D(self%q(1:lq),self%pint,rpint(:,:,1),thetapint(:,:,1))
   do iphi=2,lphi
     rpint(:,:,iphi)=rpint(:,:,1)
     thetapint(:,:,iphi)=thetapint(:,:,1)
   end do
 
-  ! compute and store the metric factors
+  ! compute and store the metric factors; these include ghost cells
   print*, ' make_dipolemesh:  metric factors for cell centers...'
   self%hq(-1:lq+2,-1:lp+2,-1:lphi+2)=self%calc_hq(r,theta)
   self%hp(-1:lq+2,-1:lp+2,-1:lphi+2)=self%calc_hp(r,theta)
@@ -235,7 +235,7 @@ subroutine make_dipolemesh(self)
   self%hphiphii(1:lq,1:lp,lphi+1)=self%hphiphii(1:lq,1:lp,lphi)
 
   ! we can now deallocate temp interface arrays
-  deallocate(rqint,thetaqint,phiqint,rpint,thetapint,phipint)
+  deallocate(rqint,thetaqint,rpint,thetapint)
 
   ! spherical ECEF unit vectors (expressed in a Cartesian ECEF basis)
   print*, ' make_dipolemesh:  spherical ECEF unit vectors...'  
