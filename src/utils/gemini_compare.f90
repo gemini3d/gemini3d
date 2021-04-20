@@ -16,7 +16,7 @@ character(1000) :: buf
 character(10) :: which
 character(:), allocatable :: new_path, ref_path
 logical :: exists, all_ok
-character(*), parameter :: help = './gemini3d.compare new_dir ref_dir [-which in|out]'
+character(*), parameter :: help = './gemini3d.compare new_dir ref_dir [-which in|out] [-python|-matlab]'
 
 type(params) :: P
 
