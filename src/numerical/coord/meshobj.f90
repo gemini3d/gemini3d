@@ -149,27 +149,23 @@ type, abstract :: curvmesh
     procedure(calc_procedure), deferred :: calc_Bmag
     procedure(calc_procedure), deferred :: calc_inclination
     procedure(calc_procedure), deferred :: calc_geographic
-    procedure(calc_procedure), deferred :: calc_h1
-    procedure(calc_procedure), deferred :: calc_h2
-    procedure(calc_procedure), deferred :: calc_h3
-    generic :: calc_er=>calc_er_scalar,calc_er_rank3
-    procedure(calc_procedure), deferred :: calc_er_scalar
-    procedure(calc_procedure), deferred :: calc_er_rank3
-    generic :: calc_etheta=>calc_etheta_scalar,calc_etheta_rank3
-    procedure(calc_procedure), deferred :: calc_etheta_scalar
-    procedure(calc_procedure), deferred :: calc_etheta_rank3
-    generic :: calc_ephi=>calc_ephi_scalar,calc_ephi_rank3
-    procedure(calc_procedure), deferred :: calc_ephi_scalar
-    procedure(calc_procedure), deferred :: calc_ephi_rank3
-    generic :: calc_e1=>calc_e1_scalar,calc_e1_rank3
-    procedure(calc_procedure), deferred :: calc_e1_scalar
-    procedure(calc_procedure), deferred :: calc_e1_rank3
-    generic :: calc_e2=>calc_e2_scalar,calc_e2_rank3
-    procedure(calc_procedure), deferred :: calc_e2_scalar
-    procedure(calc_procedure), deferred :: calc_e2_rank3
-    generic :: calc_e3=>calc_e3_scalar,calc_e3_rank3
-    procedure(calc_procedure), deferred :: calc_e3_scalar
-    procedure(calc_procedure), deferred :: calc_e3_rank3
+    !generic :: calc_er=>calc_er_scalar,calc_er_rank3
+    procedure(calc_procedure), deferred :: calc_er
+    !generic :: calc_etheta=>calc_etheta_scalar,calc_etheta_rank3
+    procedure(calc_procedure), deferred :: calc_etheta
+    !generic :: calc_ephi=>calc_ephi_scalar,calc_ephi_rank3
+    procedure(calc_procedure), deferred :: calc_ephi
+    !generic :: calc_e1=>calc_e1_scalar,calc_e1_rank3
+    procedure(calc_procedure), deferred :: calc_e1
+    !generic :: calc_e2=>calc_e2_scalar,calc_e2_rank3
+    procedure(calc_procedure), deferred :: calc_e2
+    !generic :: calc_e3=>calc_e3_scalar,calc_e3_rank3
+    procedure(calc_procedure), deferred :: calc_e3
+
+    !! these bindings have different interfaces due to evaluation of metric factors at cell centers vs. interfaces
+    procedure(calc_metric), deferred, nopass :: calc_h1
+    procedure(calc_metric), deferred, nopass :: calc_h2
+    procedure(calc_metric), deferred, nopass :: calc_h3
 end type curvmesh
 
 
@@ -180,6 +176,12 @@ abstract interface
     import curvmesh
     class(curvmesh), intent(inout) :: self
   end subroutine calc_procedure
+  function calc_metric(coord1,coord2,coord3) result(hval)
+    import wp
+    real(wp), dimension(:,:,:), pointer, intent(in) :: coord1,coord2,coord3    ! because these will be aliased (readability) should be pointers
+    real(wp), dimension(lbound(coord1,1):ubound(coord1,1),lbound(coord1,2):ubound(coord1,2), &
+                        lbound(coord1,3):ubound(coord1,3)) :: hval   ! arrays may not start at index 1
+  end function calc_metric
 end interface
 
 
@@ -487,38 +489,5 @@ contains
 
     call hf%finalize()
   end subroutine writegridall
-
-
-!  !> type destructor; written generally, viz. as if it is possible some grid pieces are allocated an others are not
-!  subroutine destructor(self)
-!    type(curvmesh) :: self
-!
-!    ! deallocation statements here; always check allocation status flags first...
-!    if (self%xi_alloc_status) deallocate(self%x1,self%x2,self%x3,self%x2all,self%x3all)    ! these are from set_coords
-!    if (self%dxi_alloc_status) then                                  ! from calc_coord_diffs
-!      deallocate(self%dx1,self%x1i,self%dx1i)
-!      deallocate(self%dx2,self%x2i,self%dx2i)
-!      deallocate(self%dx3,self%x3i,self%dx3i)
-!    end if
-!    if (self%difflen_alloc_status) deallocate(self%dl1i,self%dl2i,self%dl3i)    ! from calc_difflengths
-!
-!    ! coordinate-specific arrays set by type extensions
-!    if (self%coord_alloc_status) then
-!      deallocate(self%h1,self%h2,self%h3,self%er,self%etheta,self%ephi,self%e1,self%e2,self%e3)
-!      deallocate(self%r,self%theta,self%phi)
-!      deallocate(self%h1x1i,self%h2x1i,self%h3x1i)
-!      deallocate(self%h1x2i,self%h2x2i,self%h3x2i)
-!      deallocate(self%g1,self%g2,self%g3)
-!      deallocate(self%Bmag,self%I)
-!      deallocate(self%alt,self%glon,self%glat)
-!    end if
-!
-!    if (self%null_alloc_status) then
-!      deallocate(self%nullpts,self%inull)
-!    end if
-!
-!    ! let the user know that the destructor indeed ran
-!    print*, '  curvmesh destructor completed successfully'
-!  end subroutine destructor
 
 end module meshobj
