@@ -28,32 +28,28 @@ type, extends(curvmesh) :: dipolemesh
   real(wp), dimension(:,:,:), pointer :: gq,gp,gphi
 
   contains
-
-  !> Use generic type-bound procedures here to overload scalar vs. rank 3
-  generic :: calc_er=>er_scalar,er_rank3
-  procedure :: er_scalar,er_rank3
-
-  generic :: calc_etheta=>etheta_scalar,etheta_rank3
-  procedure :: etheta_scalar,etheta_rank3
-
-  generic :: calc_ephi=>ephi_scalar,ephi_rank3
-  procedure :: ephi_scalar,ephi_rank3
-
-  generic :: calc_eq=>eq_scalar,eq_rank3
-  procedure :: eq_scalar,eq_rank3
-
-  generic :: calc_ep=>ep_scalar,ep_rank3
-  procedure :: ep_scalar,ep_rank3
-
-  !> Specific methods
-  procedure :: init_dipolemesh
-  procedure :: make_dipolemesh
-  procedure, private :: calc_grav
-  procedure, private :: calc_Bmag
-  procedure, private :: calc_inclination
-  procedure, private :: calc_hq,calc_hp,calc_hphi
-  procedure, private :: calc_geographic
-  procedure :: calc_rtheta_2D, calc_qp_2D
+    !> Specific methods
+    procedure :: init_dipolemesh
+    procedure :: make_dipolemesh
+    procedure :: calc_rtheta_2D, calc_qp_2D
+  
+    procedure :: calc_er_scalar=>calc_er_scalar_dipole
+    procedure :: calc_er_rank3=>calc_er_rank3_dipole
+    procedure :: calc_etheta_scalar=>calc_etheta_scalar_dipole
+    procedure :: calc_etheta_rank3=>calc_etheta_rank3_dipole
+    procedure :: calc_ephi_scalar=>calc_ephi_scalar_dipole
+    procedure :: calc_ephi_rank3=>calc_ephi_scalar_rank3
+    procedure :: calc_e1_scalar=>calc_eq_scalar
+    procedure :: calc_e1_rank3=>calc_eq_rank3
+    procedure :: calc_e2_scalar=>calc_ep_scalar
+    procedure :: calc_e2_rank3=>calc_ep_rank3
+    procedure :: calc_grav=>calc_grav_dipole
+    procedure :: calc_Bmag=>calc_Bmag_dipole
+    procedure :: calc_inclination=>calc_inclination_dipole
+    procedure :: calc_h1=>calc_hq
+    procedure :: calc_h2=>calc_hp
+    procedure :: calc_h3=>calc_hphi
+    procedure :: calc_geographic=>calc_geographic_dipole
 end type dipolemesh
 
 
@@ -132,7 +128,8 @@ subroutine init_dipolemesh(self)
   ! fixme: need to add geographic coord arrays first...
   !call self%calc_inull()
 
-  ! now we must associate pointers for extended type alias variables
+  ! now we must associate pointers for extended type alias variables.  This is mostly done in order
+  !  to have more readable code.
   self%q=>self%x1; self%p=>self%x2; self%phidip=>self%x3
   self%qint=>self%x1i; self%pint=>self%x2i; self%phiint=>self%x3i
   self%hq=>self%h1; self%hp=>self%h2; self%hphi=>self%h3
@@ -273,7 +270,7 @@ end subroutine make_dipolemesh
 
 
 !> compute geographic coordinates of all grid points
-subroutine calc_geographic(self,r,theta,phi,alt,glon,glat)
+subroutine calc_geographic_dipole(self,r,theta,phi,alt,glon,glat)
   class(dipolemesh) :: self
   real(wp), dimension(:,:,:), intent(in) :: r,theta,phi
   real(wp), dimension(:,:,:), intent(out) :: alt,glon,glat
@@ -281,11 +278,11 @@ subroutine calc_geographic(self,r,theta,phi,alt,glon,glat)
   call geomag2geog(phi,theta,glon,glat)
   alt=r2alt(r)
   self%geog_set_status=.true.
-end subroutine calc_geographic
+end subroutine calc_geographic_dipole
 
 
 !> compute gravitational field components
-subroutine calc_grav(self,r,eq,ep,ephi,er)
+subroutine calc_grav_dipole(self,r,eq,ep,ephi,er)
   class(dipolemesh) :: self
   real(wp), dimension(:,:,:), intent(in) :: r
   real(wp), dimension(:,:,:,:), intent(in) :: eq,ep,ephi,er
@@ -296,20 +293,20 @@ subroutine calc_grav(self,r,eq,ep,ephi,er)
   self%gp=gr*sum(self%er*self%ep,dim=4)
   !gphi=gr*sum(er*ephi,dim=4)
   self%gphi=0._wp     ! force to zero to avoid really small values from numerical error
-end subroutine calc_grav
+end subroutine calc_grav_dipole
 
 
 !> compute the magnetic field strength
-elemental real(wp) function calc_Bmag(self,r,theta) result(Bmag)
+elemental real(wp) function calc_Bmag_dipole(self,r,theta) result(Bmag)
   class(dipolemesh), intent(in) :: self
   real(wp), intent(in) :: r,theta
 
   Bmag=mu0*Mmag/4/pi/r**3*sqrt(3*cos(theta)**2+1)
-end function calc_Bmag
+end function calc_Bmag_dipole
 
 
 !> compute the inclination angle (degrees) for each geomagnetic field line
-function calc_inclination(self,er,eq,gridflag) result(Inc)
+function calc_inclination_dipole(self,er,eq,gridflag) result(Inc)
   class(dipolemesh), intent(in) :: self
   real(wp), dimension(:,:,:,:), intent(in) :: er,eq
   integer, intent(in) :: gridflag
@@ -326,7 +323,7 @@ function calc_inclination(self,er,eq,gridflag) result(Inc)
     Inc=sum(proj,dim=1)/real(lq,wp)
   end if
   Inc=90._wp-min(Inc,pi-Inc)*180._wp/pi
-end function calc_inclination
+end function calc_inclination_dipole
 
 
 !> compute a metric factor for q corresponding to a given r,theta,phi ordered triple
@@ -357,7 +354,7 @@ end function calc_hphi
 
 
 !> radial unit vector (expressed in ECEF cartesian coodinates, permuted as ix,iy,iz)
-function er_scalar(self,r,theta,phi) result(er)
+function calc_er_scalar_dipole(self,r,theta,phi) result(er)
   class(dipolemesh) :: self
   real(wp), intent(in) :: r,theta,phi
   real(wp), dimension(3) :: er
@@ -365,8 +362,8 @@ function er_scalar(self,r,theta,phi) result(er)
   er(1)=sin(theta)*cos(phi)
   er(2)=sin(theta)*sin(phi)
   er(3)=cos(theta)
-end function er_scalar
-function er_rank3(self,r,theta,phi) result(er)
+end function calc_er_scalar_dipole
+function calc_er_rank3_dipole(self,r,theta,phi) result(er)
   class(dipolemesh) :: self
   real(wp), dimension(:,:,:), intent(in) :: r,theta,phi
   real(wp), dimension(1:size(r,1),1:size(r,2),1:size(r,3),3) :: er
@@ -374,11 +371,11 @@ function er_rank3(self,r,theta,phi) result(er)
   er(:,:,:,1)=sin(theta)*cos(phi)
   er(:,:,:,2)=sin(theta)*sin(phi)
   er(:,:,:,3)=cos(theta)
-end function er_rank3
+end function calc_er_rank3_dipole
 
 
 !> zenith angle unit vector (expressed in ECEF cartesian coodinates
-function etheta_scalar(self,r,theta,phi) result(etheta)
+function calc_etheta_scalar_dipole(self,r,theta,phi) result(etheta)
   class(dipolemesh) :: self
   real(wp), intent(in) :: r,theta,phi
   real(wp), dimension(3) :: etheta
@@ -386,8 +383,8 @@ function etheta_scalar(self,r,theta,phi) result(etheta)
   etheta(1)=cos(theta)*cos(phi)
   etheta(2)=cos(theta)*sin(phi)
   etheta(3)=-sin(theta)
-end function etheta_scalar
-function etheta_rank3(self,r,theta,phi) result(etheta)
+end function calc_etheta_scalar_dipole
+function calc_etheta_rank3_dipole(self,r,theta,phi) result(etheta)
   class(dipolemesh) :: self
   real(wp), dimension(:,:,:), intent(in) :: r,theta,phi
   real(wp), dimension(1:size(r,1),1:size(r,2),1:size(r,3),3) :: etheta
@@ -395,11 +392,11 @@ function etheta_rank3(self,r,theta,phi) result(etheta)
   etheta(:,:,:,1)=cos(theta)*cos(phi)
   etheta(:,:,:,2)=cos(theta)*sin(phi)
   etheta(:,:,:,3)=-sin(theta)
-end function etheta_rank3
+end function calc_etheta_rank3_dipole
 
 
 !> azimuth angle unit vector (ECEF cart.)
-function ephi_scalar(self,r,theta,phi) result(ephi)
+function calc_ephi_scalar_dipole(self,r,theta,phi) result(ephi)
   class(dipolemesh) :: self
   real(wp), intent(in) :: r,theta,phi
   real(wp), dimension(3) :: ephi
@@ -407,8 +404,8 @@ function ephi_scalar(self,r,theta,phi) result(ephi)
   ephi(1)=-sin(phi)
   ephi(2)=cos(phi)
   ephi(3)=0
-end function ephi_scalar
-function ephi_rank3(self,r,theta,phi) result(ephi)
+end function calc_ephi_scalar_dipole
+function calc_ephi_rank3_dipole(self,r,theta,phi) result(ephi)
   class(dipolemesh) :: self
   real(wp), dimension(:,:,:), intent(in) :: r,theta,phi
   real(wp), dimension(1:size(r,1),1:size(r,2),1:size(r,3),3) :: ephi
@@ -416,11 +413,11 @@ function ephi_rank3(self,r,theta,phi) result(ephi)
   ephi(:,:,:,1)=-sin(phi)
   ephi(:,:,:,2)=cos(phi)
   ephi(:,:,:,3)=0
-end function ephi_rank3
+end function calc_ephi_rank3_dipole
 
 
 !> unit vector in the q direction
-function eq_scalar(self,r,theta,phi) result(eq)
+function calc_eq_scalar(self,r,theta,phi) result(eq)
   class(dipolemesh) :: self
   real(wp), intent(in) :: r,theta,phi
   real(wp), dimension(3) :: eq
@@ -430,8 +427,8 @@ function eq_scalar(self,r,theta,phi) result(eq)
   eq(1)=-3*cos(theta)*sin(theta)*cos(phi)/denom
   eq(2)=-3*cos(theta)*sin(theta)*sin(phi)/denom
   eq(3)=(1-3*cos(theta)**2)/denom   !simplify?
-end function eq_scalar
-function eq_rank3(self,r,theta,phi) result(eq)
+end function calc_eq_scalar
+function calc_eq_rank3(self,r,theta,phi) result(eq)
   class(dipolemesh) :: self
   real(wp), dimension(:,:,:), intent(in) :: r,theta,phi
   real(wp), dimension(1:size(r,1),1:size(r,2),1:size(r,3),3) :: eq
@@ -441,11 +438,11 @@ function eq_rank3(self,r,theta,phi) result(eq)
   eq(:,:,:,1)=-3*cos(theta)*sin(theta)*cos(phi)/denom
   eq(:,:,:,2)=-3*cos(theta)*sin(theta)*sin(phi)/denom
   eq(:,:,:,3)=(1-3*cos(theta)**2)/denom   !simplify?
-end function eq_rank3
+end function calc_eq_rank3
 
 
 !> unit vector in the p direction
-function ep_scalar(self,r,theta,phi) result(ep)
+function calc_ep_scalar(self,r,theta,phi) result(ep)
   class(dipolemesh) :: self
   real(wp), intent(in) :: r,theta,phi
   real(wp), dimension(3) :: ep
@@ -455,8 +452,8 @@ function ep_scalar(self,r,theta,phi) result(ep)
   ep(1)=(1-3*cos(theta)**2)*cos(phi)/denom
   ep(2)=(1-3*cos(theta)**2)*sin(phi)/denom
   ep(3)=3*cos(theta)*sin(theta)/denom
-end function ep_scalar
-function ep_rank3(self,r,theta,phi) result(ep)
+end function calc_ep_scalar
+function calc_ep_rank3(self,r,theta,phi) result(ep)
   class(dipolemesh) :: self
   real(wp), dimension(:,:,:), intent(in) :: r,theta,phi
   real(wp), dimension(1:size(r,1),1:size(r,2),1:size(r,3),3) :: ep
@@ -466,7 +463,7 @@ function ep_rank3(self,r,theta,phi) result(ep)
   ep(:,:,:,1)=(1-3*cos(theta)**2)*cos(phi)/denom
   ep(:,:,:,2)=(1-3*cos(theta)**2)*sin(phi)/denom
   ep(:,:,:,3)=3*cos(theta)*sin(theta)/denom
-end function ep_rank3
+end function calc_ep_rank3
 
 
 !> convert a 1D arrays of q,p (assumed to define a 2D grid) into r,theta on a 2D mesh
