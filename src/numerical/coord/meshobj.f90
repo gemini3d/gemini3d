@@ -15,6 +15,12 @@ public
 !   to check the allocation status of these arrays (i.e. fortran also does not allow one to check the allocation status of a pointer). 
 !   Thus the quantities which are not, for sure, allocated need to have an allocation status variable so we can check...  Because
 !   the pointers are always allocated in groups we do not need separate status vars for each array thankfully...
+!
+!  Note that the deferred bindings all have the single argument of self so any data used to compute whatever quantity is desired must
+!   be stored in the derived type.  This is done to avoid long, potentially superfluous argument lists that may contain extraneous information, 
+!   e.g. if a coordinate is not needed to compute a metric factor and similar situations.  Any operation that needs more input should be
+!   defined as a type-bound procedure in any extensions to this abstract type.  This also means that error checking needs to be done in the
+!   extended type to insure that the data needed for a given calculation exist.
 type, abstract :: curvmesh
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Generic properties !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 
   !> we need to know whether or not different groups of pointers are allocated and the intrinsic "allocatable" only work on allocatables (not pointers)...
@@ -139,79 +145,41 @@ type, abstract :: curvmesh
     !final :: destructor   ! an abstract type cannot have a final procedure, as the final procedure must act on a type and not polymorhpic object
 
     !! deferred bindings and associated generic interfaces
-    procedure(calc_gravfield), deferred :: calc_grav
-    procedure(calc_Bfieldmag), deferred :: calc_Bmag
-    procedure(calc_inc), deferred :: calc_inclination
-    procedure(calc_geog), deferred :: calc_geographic
-
-    procedure(calc_metricfac), deferred :: calc_h1
-    procedure(calc_metricfac), deferred :: calc_h2
-    procedure(calc_metricfac), deferred :: calc_h3
-
+    procedure(calc_procedure), deferred :: calc_grav
+    procedure(calc_procedure), deferred :: calc_Bmag
+    procedure(calc_procedure), deferred :: calc_inclination
+    procedure(calc_procedure), deferred :: calc_geographic
+    procedure(calc_procedure), deferred :: calc_h1
+    procedure(calc_procedure), deferred :: calc_h2
+    procedure(calc_procedure), deferred :: calc_h3
     generic :: calc_er=>calc_er_scalar,calc_er_rank3
-    procedure(calc_unitvec_scalar), deferred :: calc_er_scalar
-    procedure(calc_unitvec_rank3), deferred :: calc_er_rank3
+    procedure(calc_procedure), deferred :: calc_er_scalar
+    procedure(calc_procedure), deferred :: calc_er_rank3
     generic :: calc_etheta=>calc_etheta_scalar,calc_etheta_rank3
-    procedure(calc_unitvec_scalar), deferred :: calc_etheta_scalar
-    procedure(calc_unitvec_rank3), deferred :: calc_etheta_rank3
+    procedure(calc_procedure), deferred :: calc_etheta_scalar
+    procedure(calc_procedure), deferred :: calc_etheta_rank3
     generic :: calc_ephi=>calc_ephi_scalar,calc_ephi_rank3
-    procedure(calc_unitvec_scalar), deferred :: calc_ephi_scalar
-    procedure(calc_unitvec_rank3), deferred :: calc_ephi_rank3
+    procedure(calc_procedure), deferred :: calc_ephi_scalar
+    procedure(calc_procedure), deferred :: calc_ephi_rank3
     generic :: calc_e1=>calc_e1_scalar,calc_e1_rank3
-    procedure(calc_unitvec_scalar), deferred :: calc_e1_scalar
-    procedure(calc_unitvec_rank3), deferred :: calc_e1_rank3
+    procedure(calc_procedure), deferred :: calc_e1_scalar
+    procedure(calc_procedure), deferred :: calc_e1_rank3
     generic :: calc_e2=>calc_e2_scalar,calc_e2_rank3
-    procedure(calc_unitvec_scalar), deferred :: calc_e2_scalar
-    procedure(calc_unitvec_rank3), deferred :: calc_e2_rank3
+    procedure(calc_procedure), deferred :: calc_e2_scalar
+    procedure(calc_procedure), deferred :: calc_e2_rank3
     generic :: calc_e3=>calc_e3_scalar,calc_e3_rank3
-    procedure(calc_unitvec_scalar), deferred :: calc_e3_scalar
-    procedure(calc_unitvec_rank3), deferred :: calc_e3_rank3
+    procedure(calc_procedure), deferred :: calc_e3_scalar
+    procedure(calc_procedure), deferred :: calc_e3_rank3
 end type curvmesh
 
 
-!> interfaces for deferred bindings
+!> interfaces for deferred bindings, note all should operate on data in self - this provides maximum flexibility
+!   for the extension to use whatever data it needs to compute the various grid quantities
 abstract interface
-  function calc_unitvec_scalar(self,r,theta,phi) result(unitvec)
-    import curvmesh,wp
-    class(curvmesh) :: self
-    real(wp), intent(in) :: r,theta,phi
-    real(wp), dimension(3) :: unitvec
-  end function calc_unitvec_scalar
-  function calc_unitvec_rank3(self,r,theta,phi) result(ephi)
-    import curvmesh,wp
-    class(curvmesh) :: self
-    real(wp), dimension(:,:,:), intent(in) :: r,theta,phi
-    real(wp), dimension(1:size(r,1),1:size(r,2),1:size(r,3),3) :: ephi
-  end function calc_unitvec_rank3
-  elemental real(wp) function calc_metricfac(self,r,theta,phi) result(hfac)
-    import curvmesh,wp
-    class(curvmesh), intent(in) :: self
-    real(wp), intent(in) :: r,theta,phi
-  end function calc_metricfac
-  subroutine calc_gravfield(self,r,eq,ep,ephi,er)
-    import curvmesh,wp
-    class(curvmesh) :: self
-    real(wp), dimension(:,:,:), intent(in) :: r
-    real(wp), dimension(:,:,:,:), intent(in) :: eq,ep,ephi,er
-  end subroutine calc_gravfield
-  elemental real(wp) function calc_Bfieldmag(self,r,theta) result(Bmag)
-    import curvmesh,wp
-    class(curvmesh), intent(in) :: self
-    real(wp), intent(in) :: r,theta
-  end function calc_Bfieldmag
-  function calc_inc(self,er,eq,gridflag) result(Inc)
-    import curvmesh,wp
-    class(curvmesh), intent(in) :: self
-    real(wp), dimension(:,:,:,:), intent(in) :: er,eq
-    integer, intent(in) :: gridflag
-    real(wp), dimension(1:size(er,2),1:size(er,3)) :: Inc
-  end function calc_inc
-  subroutine calc_geog(self,r,theta,phi,alt,glon,glat)
-    import curvmesh,wp
-    class(curvmesh) :: self
-    real(wp), dimension(:,:,:), intent(in) :: r,theta,phi
-    real(wp), dimension(:,:,:), intent(out) :: alt,glon,glat
-  end subroutine calc_geog
+  subroutine calc_procedure(self)
+    import curvmesh
+    class(curvmesh), intent(inout) :: self
+  end subroutine calc_procedure
 end interface
 
 
