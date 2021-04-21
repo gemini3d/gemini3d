@@ -24,7 +24,7 @@ type, extends(curvmesh) :: dipolemesh
   real(wp), dimension(:,:,:), pointer :: hqqi,hpqi,hphiqi
   real(wp), dimension(:,:,:), pointer :: hqpi,hppi,hphipi
   real(wp), dimension(:,:,:), pointer :: hqphii,hpphii,hphiphii
-  real(wp), dimension(:,:,:,:), pointer :: eq,ep
+  real(wp), dimension(:,:,:,:), pointer :: eq,ep,ephidip
   real(wp), dimension(:,:,:), pointer :: gq,gp,gphi
 
   contains
@@ -32,26 +32,24 @@ type, extends(curvmesh) :: dipolemesh
     procedure :: init_dipolemesh
     procedure :: make_dipolemesh
     procedure :: calc_rtheta_2D, calc_qp_2D
-  
-    procedure :: calc_er_scalar=>calc_er_scalar_dipole
-    procedure :: calc_er_rank3=>calc_er_rank3_dipole
-    procedure :: calc_etheta_scalar=>calc_etheta_scalar_dipole
-    procedure :: calc_etheta_rank3=>calc_etheta_rank3_dipole
-    procedure :: calc_ephi_scalar=>calc_ephi_scalar_dipole
-    procedure :: calc_ephi_rank3=>calc_ephi_scalar_rank3
-    procedure :: calc_e1_scalar=>calc_eq_scalar
-    procedure :: calc_e1_rank3=>calc_eq_rank3
-    procedure :: calc_e2_scalar=>calc_ep_scalar
-    procedure :: calc_e2_rank3=>calc_ep_rank3
-    procedure :: calc_e3_scalar=>calc_ephidip_scalar
-    procedure :: calc_e3_rank3=>calc_ephidip_rank3
+ 
+    !> Bind deferred procedures 
+    procedure :: calc_er=>calc_er_spher
+    procedure :: calc_etheta=>calc_etheta_spher
+    procedure :: calc_ephi=>calc_ephi_spher
+    procedure :: calc_e1=>calc_eq
+    procedure :: calc_e2=>calc_ep
+    procedure :: calc_e3=>calc_ephi_dip
     procedure :: calc_grav=>calc_grav_dipole
     procedure :: calc_Bmag=>calc_Bmag_dipole
     procedure :: calc_inclination=>calc_inclination_dipole
-    procedure :: calc_h1=>calc_hq
-    procedure :: calc_h2=>calc_hp
-    procedure :: calc_h3=>calc_hphi
+    procedure, nopass :: calc_h1=>calc_hq
+    procedure, nopass :: calc_h2=>calc_hp
+    procedure, nopass :: calc_h3=>calc_hphi_dip
     procedure :: calc_geographic=>calc_geographic_dipole
+    
+    !> type deallocations, etc.
+    final :: destructor
 end type dipolemesh
 
 
@@ -138,7 +136,7 @@ subroutine init_dipolemesh(self)
   self%hqqi=>self%h1x1i; self%hpqi=>self%h2x1i; self%hphiqi=>self%h3x1i
   self%hqpi=>self%h1x2i; self%hppi=>self%h2x2i; self%hphipi=>self%h3x2i
   self%hqphii=>self%h1x3i; self%hpphii=>self%h2x3i; self%hphiphii=>self%h3x3i
-  self%eq=>self%e1; self%ep=>self%e2
+  self%eq=>self%e1; self%ep=>self%e2; self%ephidip=>self%e3
   self%gq=>self%g1; self%gp=>self%g2; self%gphi=>self%g3 
 end subroutine init_dipolemesh
 
@@ -151,9 +149,9 @@ subroutine make_dipolemesh(self)
 
   integer :: lqg,lpg,lphig,lq,lp,lphi
   integer :: iq,ip,iphi
-  real(wp), dimension(:,:,:), allocatable :: r,theta,phispher
-  real(wp), dimension(:,:,:), allocatable :: rqint,thetaqint,phiqint
-  real(wp), dimension(:,:,:), allocatable :: rpint,thetapint,phipint
+  real(wp), dimension(:,:,:), pointer :: r,theta,phispher     ! so these can serve as targets
+  real(wp), dimension(:,:,:), pointer :: rqint,thetaqint,phiqint
+  real(wp), dimension(:,:,:), pointer :: rpint,thetapint,phipint
 
   ! check that pointers are correctly associated, which implies that all space has been allocated :)
   if (.not. associated(self%q)) error stop  & 
@@ -199,29 +197,28 @@ subroutine make_dipolemesh(self)
 
   ! compute and store the metric factors; these need to include ghost cells
   print*, ' make_dipolemesh:  metric factors for cell centers...'
-  self%hq(-1:lq+2,-1:lp+2,-1:lphi+2)=self%calc_h1(r,theta)
-  self%hp(-1:lq+2,-1:lp+2,-1:lphi+2)=self%calc_h2(r,theta)
-  self%hphi(-1:lq+2,-1:lp+2,-1:lphi+2)=self%calc_h3(r,theta)
+  self%hq(-1:lq+2,-1:lp+2,-1:lphi+2)=self%calc_h1(r,theta,phispher)
+  self%hp(-1:lq+2,-1:lp+2,-1:lphi+2)=self%calc_h2(r,theta,phispher)
+  self%hphi(-1:lq+2,-1:lp+2,-1:lphi+2)=self%calc_h3(r,theta,phispher)
 
   ! now assign structure elements and deallocate unneeded temp variables
   self%r=r(1:lq,1:lp,1:lphi); self%theta=theta(1:lq,1:lp,1:lphi); self%phi=phispher(1:lq,1:lp,1:lphi)   ! don't need ghost cells!
-  deallocate(r,theta,phispher)   ! done with these variables now
 
   ! compute the geographic coordinates
   print*, ' make_dipolemesh:  geographic coordinates from magnetic...'
-  call self%calc_geographic(self%r,self%theta,self%phi,self%alt,self%glon,self%glat) 
+  call self%calc_geographic() 
 
   ! q cell interface metric factors
   print*, ' make_dipolemesh:  metric factors for cell q-interfaces...'
-  self%hqqi=self%calc_h1(rqint,thetaqint)
-  self%hpqi=self%calc_h2(rqint,thetaqint)
-  self%hphiqi=self%calc_h3(rqint,thetaqint)
+  self%hqqi=self%calc_h1(rqint,thetaqint,phispher)
+  self%hpqi=self%calc_h2(rqint,thetaqint,phispher)
+  self%hphiqi=self%calc_h3(rqint,thetaqint,phispher)
 
   ! p cell interface metric factors
   print*, ' make_dipolemesh:  metric factors for cell p-intefaces...'
-  self%hqpi=self%calc_h1(rpint,thetapint)
-  self%hppi=self%calc_h2(rpint,thetapint)
-  self%hphipi=self%calc_h3(rpint,thetapint)
+  self%hqpi=self%calc_h1(rpint,thetapint,phispher)
+  self%hppi=self%calc_h2(rpint,thetapint,phispher)
+  self%hphipi=self%calc_h3(rpint,thetapint,phispher)
 
   print*, ' make_dipolemesh:  metric factors for cell phi-interfaces...'
   !print*, shape(self%hqphii),shape(self%hpphii),shape(self%hphiphii)
@@ -233,28 +230,29 @@ subroutine make_dipolemesh(self)
   self%hphiphii(1:lq,1:lp,1:lphi)=self%hphi(1:lq,1:lp,1:lphi)
   self%hphiphii(1:lq,1:lp,lphi+1)=self%hphiphii(1:lq,1:lp,lphi)
 
-  ! we can now deallocate temp interface arrays
+  ! we can now deallocate temp position pointers
+  deallocate(r,theta,phispher)
   deallocate(rqint,thetaqint,rpint,thetapint)
 
   ! spherical ECEF unit vectors (expressed in a Cartesian ECEF basis)
   print*, ' make_dipolemesh:  spherical ECEF unit vectors...'  
-  self%er=self%calc_er(self%r,self%theta,self%phi)
-  self%etheta=self%calc_etheta(self%r,self%theta,self%phi)
-  self%ephi=self%calc_ephi(self%r,self%theta,self%phi)
+  call self%calc_er()
+  call self%calc_etheta()
+  call self%calc_ephi()
 
   ! dipole coordinate system unit vectors (Cart. ECEF)
   print*, ' make_dipolemesh:  dipole unit vectors...'  
-  self%eq=self%calc_e1(self%r,self%theta,self%phi)
-  self%ep=self%calc_e2(self%r,self%theta,self%phi)
-  self%e3=self%ephi
+  call self%calc_e1()
+  call self%calc_e2()
+  call self%calc_e3()
 
   ! magnetic field magnitude
   print*, ' make_dipolemesh:  magnetic fields...'    
-  self%Bmag=self%calc_Bmag(self%r,self%theta)
+  call self%calc_Bmag()
 
   ! gravity components
   print*, ' make_dipolemesh:  gravity...'
-  call self%calc_grav(self%r,self%eq,self%ep,self%ephi,self%er)
+  call self%calc_grav()
 
   ! set the status now that coord. specific calculations are done
   self%coord_alloc_status=.true.
@@ -267,7 +265,7 @@ subroutine make_dipolemesh(self)
 
   ! inclination angle for each field line; awkwardly this must go after gridflag is set...
   print*, ' make_dipolemesh:  inclination angle...'  
-  self%I=self%calc_inclination(self%er,self%eq,self%gridflag)
+  call self%calc_inclination()
 end subroutine make_dipolemesh
 
 
@@ -286,11 +284,11 @@ end subroutine calc_geographic_dipole
 !> compute gravitational field components
 subroutine calc_grav_dipole(self)
   class(dipolemesh), intent(inout) :: self
-  real(wp), dimension(1:size(self%r,1),1:size(self%r,2),1:size(self%r,3)) :: gr
+  real(wp), dimension(1:self%lx1,1:self%lx2,1:self%lx3) :: gr
  
   ! fixme: error checking?
  
-  gr=-Gconst*Me/r**2     ! radial component of gravity
+  gr=-Gconst*Me/self%r**2     ! radial component of gravity
   self%gq=gr*sum(self%er*self%eq,dim=4)
   self%gp=gr*sum(self%er*self%ep,dim=4)
   !gphi=gr*sum(er*ephi,dim=4)
@@ -311,56 +309,68 @@ end subroutine calc_Bmag_dipole
 !> compute the inclination angle (degrees) for each geomagnetic field line
 subroutine calc_inclination_dipole(self)
   class(dipolemesh), intent(inout) :: self
-  real(wp), dimension(1:size(er,2),1:size(er,3)) :: Inc
+  real(wp), dimension(1:self%lx2,1:self%lx3) :: Inc
   integer :: lq
-  real(wp), dimension(1:size(er,1),1:size(er,2),1:size(er,3)) :: proj
+  real(wp), dimension(1:self%lx1,1:self%lx2,1:self%lx3) :: proj
 
   ! fixme: error checking
 
   lq=size(self%er,1)
   proj=sum(self%er*self%eq,dim=4)
   proj=acos(proj)
-  if (gridflag==0) then    ! for a closed grid average over half the domain
-    self%Inc=sum(proj(1:lq/2,:,:),dim=1)/(real(lq,wp)/2._wp)    ! note use of integer division and casting to real for avging
+  if (self%gridflag==0) then    ! for a closed grid average over half the domain
+    self%I=sum(proj(1:lq/2,:,:),dim=1)/(real(lq,wp)/2._wp)    ! note use of integer division and casting to real for avging
   else                     ! otherwise average over full domain
-    self%Inc=sum(proj,dim=1)/real(lq,wp)
+    self%I=sum(proj,dim=1)/real(lq,wp)
   end if
-  self%Inc=90._wp-min(self%Inc,pi-self%Inc)*180._wp/pi
+  self%I=90._wp-min(self%I,pi-self%I)*180._wp/pi
 end subroutine calc_inclination_dipole
 
 
 !> compute metric factors for q 
-subroutine calc_hq(self)
-  class(dipolemesh), intent(inout) :: self
+function calc_hq(coord1,coord2,coord3) result(hval)
+  real(wp), dimension(:,:,:), pointer, intent(in) :: coord1,coord2,coord3
+  real(wp), dimension(lbound(coord1,1):ubound(coord1,1),lbound(coord1,2):ubound(coord1,2), &
+                      lbound(coord1,3):ubound(coord1,3)) :: hval
+  real(wp), dimension(:,:,:), pointer :: r,theta,phi
 
   ! fixme: error checking
 
-  self%hq=self%r**3/Re**2/(sqrt(1+3*cos(self%theta)**2))
-end subroutine calc_hq
+  r=>coord1; theta=>coord1; phi=>coord3;
+  hval=r**3/Re**2/(sqrt(1+3*cos(theta)**2))
+end function calc_hq
 
 
 !> compute p metric factors
-subroutine calc_hp(self)
-  class(dipolemesh), intent(inout) :: self
+function calc_hp(coord1,coord2,coord3) result(hval)
+  real(wp), dimension(:,:,:), pointer, intent(in) :: coord1,coord2,coord3
+  real(wp), dimension(lbound(coord1,1):ubound(coord1,1),lbound(coord1,2):ubound(coord1,2), &
+                      lbound(coord1,3):ubound(coord1,3)) :: hval
+  real(wp), dimension(:,:,:), pointer :: r,theta,phi
 
   ! fixme: error checkign
 
-  self%hp=Re*sin(self%theta)**3/(sqrt(1+3*cos(self%theta)**2))
+  r=>coord1; theta=>coord1; phi=>coord3;
+  hval=Re*sin(theta)**3/(sqrt(1+3*cos(theta)**2))
 end function calc_hp
 
 
 !> compute phi metric factor
-subroutine calc_hphi(self)
-  class(dipolemesh), intent(inout) :: self
+function calc_hphi_dip(coord1,coord2,coord3) result(hval)
+  real(wp), dimension(:,:,:), pointer, intent(in) :: coord1,coord2,coord3
+  real(wp), dimension(lbound(coord1,1):ubound(coord1,1),lbound(coord1,2):ubound(coord1,2), &
+                      lbound(coord1,3):ubound(coord1,3)) :: hval
+  real(wp), dimension(:,:,:), pointer :: r,theta,phi
 
   ! fixme: error checking
 
-  self%hphi=self%r*sin(self%theta)
-end subroutine calc_hphi
+  r=>coord1; theta=>coord1; phi=>coord3;
+  hval=r*sin(theta)
+end function calc_hphi_dip
 
 
 !> radial unit vector (expressed in ECEF cartesian coodinates, components permuted as ix,iy,iz)
-subroutine calc_er_rank3_dipole(self)
+subroutine calc_er_spher(self)
   class(dipolemesh), intent(inout) :: self
 
   ! fixme: error checking
@@ -368,11 +378,11 @@ subroutine calc_er_rank3_dipole(self)
   self%er(:,:,:,1)=sin(self%theta)*cos(self%phi)
   self%er(:,:,:,2)=sin(self%theta)*sin(self%phi)
   self%er(:,:,:,3)=cos(self%theta)
-end subroutine calc_er_rank3_dipole
+end subroutine calc_er_spher
 
 
 !> zenith angle unit vector (expressed in ECEF cartesian coodinates
-subroutine calc_etheta_scalar_dipole(self)
+subroutine calc_etheta_spher(self)
   class(dipolemesh), intent(inout) :: self
 
   ! fixme: error checking
@@ -380,11 +390,11 @@ subroutine calc_etheta_scalar_dipole(self)
   self%etheta(:,:,:,1)=cos(self%theta)*cos(self%phi)
   self%etheta(:,:,:,2)=cos(self%theta)*sin(self%phi)
   self%etheta(:,:,:,3)=-sin(self%theta)
-end subroutine calc_etheta_rank3_dipole
+end subroutine calc_etheta_spher
 
 
 !> azimuth angle unit vector (ECEF cart.)
-subrtouine calc_ephi_rank3_dipole(self)
+subroutine calc_ephi_spher(self)
   class(dipolemesh), intent(inout) :: self
 
   ! fixme: error checking
@@ -392,13 +402,13 @@ subrtouine calc_ephi_rank3_dipole(self)
   self%ephi(:,:,:,1)=-sin(self%phi)
   self%ephi(:,:,:,2)=cos(self%phi)
   self%ephi(:,:,:,3)=0
-end subroutine calc_ephi_rank3_dipole
+end subroutine calc_ephi_spher
 
 
 !> unit vector in the q direction
-subroutine calc_eq_scalar(self)
+subroutine calc_eq(self)
   class(dipolemesh), intent(inout) :: self
-  real(wp), dimension(1:size(self%r,1),1:size(self%r,2),1:size(self%r,3)) :: denom  
+  real(wp), dimension(1:self%lx1,1:self%lx2,1:self%lx3) :: denom  
 
   ! fixme: error checking
 
@@ -406,11 +416,11 @@ subroutine calc_eq_scalar(self)
   self%eq(:,:,:,1)=-3*cos(self%theta)*sin(self%theta)*cos(self%phi)/denom
   self%eq(:,:,:,2)=-3*cos(self%theta)*sin(self%theta)*sin(self%phi)/denom
   self%eq(:,:,:,3)=(1-3*cos(self%theta)**2)/denom   !simplify?
-end subroutine calc_eq_rank3
+end subroutine calc_eq
 
 
 !> unit vector in the p direction
-subroutine calc_ep_rank3(self)
+subroutine calc_ep(self)
   class(dipolemesh), intent(inout) :: self
   real(wp), dimension(1:self%lx1,1:self%lx2,1:self%lx3) :: denom  
 
@@ -420,20 +430,17 @@ subroutine calc_ep_rank3(self)
   self%ep(:,:,:,1)=(1-3*cos(self%theta)**2)*cos(self%phi)/denom
   self%ep(:,:,:,2)=(1-3*cos(self%theta)**2)*sin(self%phi)/denom
   self%ep(:,:,:,3)=3*cos(self%theta)*sin(self%theta)/denom
-end subroutine calc_ep_rank3
+end subroutine calc_ep
 
 
 !> unit vector in the phi direction
-subroutine calc_ephidip_rank3(self)
+subroutine calc_ephi_dip(self)
   class(dipolemesh), intent(inout) :: self
 
   ! fixme: error checking
 
-  denom=sqrt(1+3*cos(self%theta)**2)
-  self%ephi(:,:,:,1)=(1-3*cos(self%theta)**2)*cos(self%phi)/denom
-  self%ephi(:,:,:,2)=(1-3*cos(self%theta)**2)*sin(self%phi)/denom
-  self%ephi(:,:,:,3)=3*cos(self%theta)*sin(self%theta)/denom
-end subroutine calc_ephidip_rank3
+  self%ephidip=self%ephi
+end subroutine calc_ephi_dip
 
 
 !> convert a 1D arrays of q,p (assumed to define a 2D grid) into r,theta on a 2D mesh
@@ -473,6 +480,39 @@ subroutine calc_qp_2D(self,r,theta,q,p)
     end do
   end do
 end subroutine calc_qp_2D
+
+
+!> type destructor; written generally, viz. as if it is possible some grid pieces are allocated an others are not
+subroutine destructor(self)
+  type(dipolemesh) :: self
+
+  ! deallocation statements here; always check allocation status flags first...
+  if (self%xi_alloc_status) deallocate(self%x1,self%x2,self%x3,self%x2all,self%x3all)    ! these are from set_coords
+  if (self%dxi_alloc_status) then                                  ! from calc_coord_diffs
+    deallocate(self%dx1,self%x1i,self%dx1i)
+    deallocate(self%dx2,self%x2i,self%dx2i)
+    deallocate(self%dx3,self%x3i,self%dx3i)
+  end if
+  if (self%difflen_alloc_status) deallocate(self%dl1i,self%dl2i,self%dl3i)    ! from calc_difflengths
+
+  ! coordinate-specific arrays set by type extensions
+  if (self%coord_alloc_status) then
+    deallocate(self%h1,self%h2,self%h3,self%er,self%etheta,self%ephi,self%e1,self%e2,self%e3)
+    deallocate(self%r,self%theta,self%phi)
+    deallocate(self%h1x1i,self%h2x1i,self%h3x1i)
+    deallocate(self%h1x2i,self%h2x2i,self%h3x2i)
+    deallocate(self%g1,self%g2,self%g3)
+    deallocate(self%Bmag,self%I)
+    deallocate(self%alt,self%glon,self%glat)
+  end if
+
+  if (self%null_alloc_status) then
+    deallocate(self%nullpts,self%inull)
+  end if
+
+  ! let the user know that the destructor indeed ran
+  print*, '  dipolemesh destructor completed successfully'
+end subroutine destructor
 
 end module meshobj_dipole
 
