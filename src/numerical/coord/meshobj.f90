@@ -142,6 +142,7 @@ type, abstract :: curvmesh
     procedure :: writesize              ! write a simsize.h5 file for this local grid
     procedure :: writegrid              ! write curvilinear coordinates to simgrid.h5
     procedure :: writegridall           ! write all mesh arrays to simgrid.h5
+    procedure :: dissociate_pointers    ! clear out memory and reset allocation flags
     !final :: destructor   ! an abstract type cannot have a final procedure, as the final procedure must act on a type and not polymorhpic object
 
     !! deferred bindings and associated generic interfaces
@@ -489,5 +490,46 @@ contains
 
     call hf%finalize()
   end subroutine writegridall
+
+
+  !> deallocate space associated with pointers and set appropriate flags
+  subroutine dissociate_pointers(self)
+    class(curvmesh), intent(inout) :: self
+  
+    ! deallocation statements here; always check allocation status flags first...
+    if (self%xi_alloc_status) then
+      deallocate(self%x1,self%x2,self%x3,self%x2all,self%x3all)    ! these are from set_coords
+      self%xi_alloc_status=.false.
+    end if
+    if (self%dxi_alloc_status) then                                  ! from calc_coord_diffs
+      deallocate(self%dx1,self%x1i,self%dx1i)
+      deallocate(self%dx2,self%x2i,self%dx2i)
+      deallocate(self%dx3,self%x3i,self%dx3i)
+      self%dxi_alloc_status=.false.
+    end if
+    if (self%difflen_alloc_status) then
+      deallocate(self%dl1i,self%dl2i,self%dl3i)    ! from calc_difflengths
+      self%difflen_alloc_status=.false.
+    end if  
+
+    ! coordinate-specific arrays set by type extensions
+    if (self%coord_alloc_status) then
+      deallocate(self%h1,self%h2,self%h3,self%er,self%etheta,self%ephi,self%e1,self%e2,self%e3)
+      deallocate(self%r,self%theta,self%phi)
+      deallocate(self%h1x1i,self%h2x1i,self%h3x1i)
+      deallocate(self%h1x2i,self%h2x2i,self%h3x2i)
+      deallocate(self%g1,self%g2,self%g3)
+      deallocate(self%Bmag,self%I)
+      deallocate(self%alt,self%glon,self%glat)
+      self%coord_alloc_status=.false.
+      self%geog_set_status=.false.
+    end if
+  
+    if (self%null_alloc_status) then
+      deallocate(self%nullpts,self%inull)
+      self%null_alloc_status=.false.
+    end if
+
+  end subroutine dissociate_pointers
 
 end module meshobj
