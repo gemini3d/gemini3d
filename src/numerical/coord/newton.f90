@@ -22,19 +22,32 @@ end type newtopts
 !   that there are multiple objective functions (conforming to these patterns) that
 !   can be used with Newton's method.  These are abstract because there are multiple
 !   objective functions (in principle) that can be used with Newton's method
+!abstract interface
+!  real(wp) module function objfun(x,parms) result(fval)
+!    real(wp), intent(in) :: x
+!    real(wp), dimension(:), intent(in) :: parms
+!  end function objfun
+!end interface
+!!> this is for the derivative of the objective function
+!abstract interface
+!  real(wp) module function objfun_deriv(x,parms) result(fval_deriv)
+!    real(wp), intent(in) :: x
+!    real(wp), dimension(:), intent(in) :: parms
+!  end function objfun_deriv
+!end interface
 abstract interface
-  real(wp) module function objfun(x,parms) result(fval)
+  real(wp) function objfun(x,parms) result(fval)
+    import wp
     real(wp), intent(in) :: x
     real(wp), dimension(:), intent(in) :: parms
   end function objfun
-end interface
-!> this is for the derivative of the objective function
-abstract interface
-  real(wp) module function objfun_deriv(x,parms) result(fval_deriv)
+  real(wp) function objfun_deriv(x,parms) result(fval_deriv)
+    import wp
     real(wp), intent(in) :: x
     real(wp), dimension(:), intent(in) :: parms
   end function objfun_deriv
 end interface
+
 
 contains
 
