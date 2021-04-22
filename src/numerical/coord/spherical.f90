@@ -7,7 +7,7 @@ implicit none (type, external)
 contains
 
 !> radial unit vector (expressed in ECEF cartesian coodinates, components permuted as ix,iy,iz)
-function calc_er_spher(theta,phi) result(er)
+function er_spherical(theta,phi) result(er)
   real(wp), dimension(:,:,:), intent(in) :: theta,phi
   real(wp), dimension(1:size(theta,1),1:size(theta,2),1:size(theta,3),3) :: er
 
@@ -16,11 +16,11 @@ function calc_er_spher(theta,phi) result(er)
   er(:,:,:,1)=sin(theta)*cos(phi)
   er(:,:,:,2)=sin(theta)*sin(phi)
   er(:,:,:,3)=cos(theta)
-end function calc_er_spher
+end function er_spherical
 
 
 !> zenith angle unit vector (expressed in ECEF cartesian coodinates
-subroutine calc_etheta_spher(theta,phi) result(etheta)
+function etheta_spherical(theta,phi) result(etheta)
   real(wp), dimension(:,:,:), intent(in) :: theta,phi
   real(wp), dimension(1:size(theta,1),1:size(theta,2),1:size(theta,3),3) :: etheta
 
@@ -29,18 +29,18 @@ subroutine calc_etheta_spher(theta,phi) result(etheta)
   etheta(:,:,:,1)=cos(theta)*cos(phi)
   etheta(:,:,:,2)=cos(theta)*sin(phi)
   etheta(:,:,:,3)=-sin(theta)
-end subroutine calc_etheta_spher
+end function etheta_spherical
 
 !> azimuth angle unit vector (ECEF cart.)
-subroutine calc_ephi_spher(theta,phi) result(ephi)
+function ephi_spherical(theta,phi) result(ephi)
   real(wp), dimension(:,:,:), intent(in) :: theta,phi
-  real(wp), dimension(1:size(theta,1),1:size(theta,2),1:size(theta,3),3) :: etheta
+  real(wp), dimension(1:size(theta,1),1:size(theta,2),1:size(theta,3),3) :: ephi
 
   ! fixme: error checking
 
   ephi(:,:,:,1)=-sin(phi)
   ephi(:,:,:,2)=cos(phi)
   ephi(:,:,:,3)=0
-end subroutine calc_ephi_spher
+end function ephi_spherical
 
 end module spherical
