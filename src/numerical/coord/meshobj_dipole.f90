@@ -8,7 +8,8 @@ module meshobj_dipole
 use phys_consts, only: wp,Re,pi,Mmag,mu0,Gconst,Me
 use meshobj, only: curvmesh
 use newton, only: newtopts,newton_exact,objfun,objfun_deriv
-use spehricak, only: calc_er_spher,calc_ethete_spher,calc_ephi_spher
+use spherical, only: er_spherical,etheta_spherical,ephi_spherical
+use geomagnetic, only: geog2geomag,geomag2geog,r2alt,alt2r
 
 implicit none (type, external)
 
@@ -56,40 +57,8 @@ end type dipolemesh
 
 !> declarations and interfaces for submodule functions, apparently these need to be generic interfaces.  These are generally
 !   routines that do not directly deal with the derived type data arrays but instead perform very basic calculations
-!   related to the coordinate transformations.  
-interface geomag2geog
-  module procedure geomag2geog_scalar
-  module procedure geomag2geog_rank3
-end interface geomag2geog
-interface geog2geomag
-  module procedure geog2geomag_scalar
-  module procedure geog2geomag_rank3
-end interface geog2geomag
-interface    ! dipole_fns.f90, spec for submodule functions
-  module subroutine geomag2geog_scalar(phi,theta,glon,glat)
-    real(wp), intent(in) :: phi,theta
-    real(wp), intent(out) :: glon,glat
-  end subroutine geomag2geog_scalar
-  module subroutine geomag2geog_rank3(phi,theta,glon,glat)
-    real(wp), dimension(:,:,:), intent(in) :: phi,theta
-    real(wp), dimension(:,:,:), intent(out) :: glon,glat
-  end subroutine geomag2geog_rank3
-  module subroutine geog2geomag_scalar(glon,glat,phi,theta)
-    real(wp), intent(in) :: glon,glat
-    real(wp), intent(out) :: phi,theta
-  end subroutine geog2geomag_scalar
-  module subroutine geog2geomag_rank3(glon,glat,phi,theta)
-    real(wp), dimension(:,:,:), intent(in) :: glon,glat
-    real(wp), dimension(:,:,:), intent(out) :: phi,theta
-  end subroutine geog2geomag_rank3
-  elemental module function r2alt(r) result(alt)
-    real(wp), intent(in) :: r
-    real(wp) :: alt
-  end function r2alt
-  elemental module function alt2r(alt) result(r)
-    real(wp), intent(in) :: alt
-    real(wp) :: r
-  end function alt2r
+!   related to specifically dipole coordinate transformations.  
+interface    ! dipole_fns.f90
   module subroutine qp2rtheta(q,p,r,theta)
     real(wp), intent(in) :: q,p
     real(wp), intent(out) :: r,theta
@@ -119,7 +88,7 @@ contains
 
 !> allocate space and associate pointers with arrays in base class.  must runs set_coords first.
 subroutine init_dipolemesh(self)
-  class(dipolemesh) :: self
+  class(dipolemesh), intent(inout) :: self
 
   if (.not. self%xi_alloc_status) error stop ' must have curvilinear coordinates defined prior to call init_dipolemesh()'
 
@@ -146,7 +115,7 @@ end subroutine init_dipolemesh
 !   are provide with ghost cells included (note input array indexing in dummy variable declarations.  For new we assume
 !   that the fortran code will precompute and store the "full" grid information to save time (but this uses more memory).  
 subroutine make_dipolemesh(self) 
-  class(dipolemesh) :: self
+  class(dipolemesh), intent(inout) :: self
 
   integer :: lqg,lpg,lphig,lq,lp,lphi
   integer :: iq,ip,iphi
@@ -176,7 +145,7 @@ subroutine make_dipolemesh(self)
     r(:,:,iphi)=r(:,:,-1)
     theta(:,:,iphi)=theta(:,:,-1)
   end do
-  do iphi=1,lphi
+  do iphi=-1,lphig-2
     phispher(:,:,iphi)=self%phidip(iphi)   !scalar assignment should work...
   end do
 
@@ -336,8 +305,7 @@ function calc_hq(coord1,coord2,coord3) result(hval)
   real(wp), dimension(:,:,:), pointer :: r,theta,phi
 
   ! fixme: error checking
-
-  r=>coord1; theta=>coord1; phi=>coord3;
+  r=>coord1; theta=>coord2; phi=>coord3;
   hval=r**3/Re**2/(sqrt(1+3*cos(theta)**2))
 end function calc_hq
 
@@ -351,7 +319,7 @@ function calc_hp(coord1,coord2,coord3) result(hval)
 
   ! fixme: error checkign
 
-  r=>coord1; theta=>coord1; phi=>coord3;
+  r=>coord1; theta=>coord2; phi=>coord3;
   hval=Re*sin(theta)**3/(sqrt(1+3*cos(theta)**2))
 end function calc_hp
 
@@ -365,7 +333,7 @@ function calc_hphi_dip(coord1,coord2,coord3) result(hval)
 
   ! fixme: error checking
 
-  r=>coord1; theta=>coord1; phi=>coord3;
+  r=>coord1; theta=>coord2; phi=>coord3;
   hval=r*sin(theta)
 end function calc_hphi_dip
 
@@ -376,9 +344,7 @@ subroutine calc_er_spher(self)
 
   ! fixme: error checking
 
-  self%er(:,:,:,1)=sin(self%theta)*cos(self%phi)
-  self%er(:,:,:,2)=sin(self%theta)*sin(self%phi)
-  self%er(:,:,:,3)=cos(self%theta)
+  self%er=er_spherical(self%theta,self%phi)
 end subroutine calc_er_spher
 
 
@@ -388,9 +354,7 @@ subroutine calc_etheta_spher(self)
 
   ! fixme: error checking
 
-  self%etheta(:,:,:,1)=cos(self%theta)*cos(self%phi)
-  self%etheta(:,:,:,2)=cos(self%theta)*sin(self%phi)
-  self%etheta(:,:,:,3)=-sin(self%theta)
+  self%etheta=etheta_spherical(self%theta,self%phi)
 end subroutine calc_etheta_spher
 
 
@@ -400,9 +364,7 @@ subroutine calc_ephi_spher(self)
 
   ! fixme: error checking
 
-  self%ephi(:,:,:,1)=-sin(self%phi)
-  self%ephi(:,:,:,2)=cos(self%phi)
-  self%ephi(:,:,:,3)=0
+  self%ephi=ephi_spherical(self%theta,self%phi)
 end subroutine calc_ephi_spher
 
 
