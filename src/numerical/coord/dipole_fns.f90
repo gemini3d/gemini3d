@@ -1,13 +1,9 @@
 submodule(meshobj_dipole) dipole_fns
 
 !> This submodule contains the functions for which we need to find roots in order to transform
-!   dipole to spherical coordinates.  This should arguably be its own standalone module...
+!   dipole to spherical coordinates.
 
-implicit none
-
-! magnetic pole location in geographic coordinates
-real(wp), parameter :: thetan=11*pi/180
-real(wp), parameter :: phin=289*pi/180
+implicit none (type, external)
 
 ! options structure for Newton iterations
 type(newtopts) :: newtparms
@@ -60,107 +56,6 @@ end procedure rtheta2qp
 module procedure qr2theta
   theta=acos(q*(r/Re)**2)
 end procedure qr2theta
-
-
-!> convert geographic coordinates to geomagnetic; do not use at the magnetic pole!!!
-module procedure geog2geomag_rank3
-  real(wp), dimension(1:size(glon,1),1:size(glon,2),1:size(glon,3)) :: glonwrap
-  real(wp), dimension(1:size(glon,1),1:size(glon,2),1:size(glon,3)) :: thetag
-  real(wp), dimension(1:size(glon,1),1:size(glon,2),1:size(glon,3)) :: phig
-  real(wp), dimension(1:size(glon,1),1:size(glon,2),1:size(glon,3)) :: argtmp,alpha
-
-  glonwrap=mod(glon,360._wp)
-  thetag=pi/2._wp-glat*pi/180._wp
-  phig=glonwrap*pi/180._wp
-
-  theta = acos(cos(thetag)*cos(thetan)+sin(thetag)*sin(thetan)*cos(phig-phin))
-  argtmp = (cos(thetag)-cos(theta)*cos(thetan))/(sin(theta)*sin(thetan))
-  alpha = acos( max(min(argtmp,1._wp),-1._wp) )
-
-  where (phin>phig .and. phin-phig>pi .or. phin<phig .and. phig-phin<pi)
-    phi=pi-alpha
-  elsewhere
-    phi=alpha+pi
-  end where
-end procedure geog2geomag_rank3
-module procedure geog2geomag_scalar
-  real(wp) :: glonwrap
-  real(wp) :: thetag
-  real(wp) :: phig
-  real(wp) :: argtmp,alpha
-
-  glonwrap=mod(glon,360._wp)
-  thetag=pi/2._wp-glat*pi/180._wp
-  phig=glonwrap*pi/180._wp
-
-  theta = acos(cos(thetag)*cos(thetan)+sin(thetag)*sin(thetan)*cos(phig-phin))
-  argtmp = (cos(thetag)-cos(theta)*cos(thetan))/(sin(theta)*sin(thetan))
-  alpha = acos( max(min(argtmp,1._wp),-1._wp) )
-
-  if (phin>phig .and. phin-phig>pi .or. phin<phig .and. phig-phin<pi) then
-    phi=pi-alpha
-  else
-    phi=alpha+pi
-  end if
-end procedure geog2geomag_scalar
-
-
-!> convert geomagnetic coordinates to geographic
-module procedure geomag2geog_rank3
-  real(wp), dimension(1:size(phi,1),1:size(phi,2),1:size(phi,3)) :: thetag2p,thetag2
-  real(wp), dimension(1:size(phi,1),1:size(phi,2),1:size(phi,3)) :: beta
-  real(wp), dimension(1:size(phi,1),1:size(phi,2),1:size(phi,3)) :: phig2,phiwrap,argtmp
-
-  phiwrap=mod(phi,2*pi)
-  thetag2p=acos(cos(theta)*cos(thetan)-sin(theta)*sin(thetan)*cos(phiwrap))
-  argtmp=(cos(theta)-cos(thetag2p)*cos(thetan))/(sin(thetag2p)*sin(thetan))
-  beta=acos( max(min(argtmp,1._wp),-1._wp) )     ! deal with slight overshoots depending on precision used...
-
-  where (phiwrap>pi)
-    phig2=phin-beta  
-  elsewhere
-    phig2=phin+beta
-  end where
-  phig2=mod(phig2,2*pi)
-  thetag2=pi/2-thetag2p
-
-  glon=phig2*180._wp/pi
-  glat=thetag2*180._wp/pi
-end procedure geomag2geog_rank3
-module procedure geomag2geog_scalar
-  real(wp) :: thetag2p,thetag2
-  real(wp) :: beta
-  real(wp) :: phig2,phiwrap
-  real(wp) :: argtmp
-
-  phiwrap=mod(phi,2*pi)
-  thetag2p=acos(cos(theta)*cos(thetan)-sin(theta)*sin(thetan)*cos(phiwrap))
-  argtmp=(cos(theta)-cos(thetag2p)*cos(thetan))/(sin(thetag2p)*sin(thetan))
-  beta=acos( max(min(argtmp,1._wp),-1._wp) )
-
-  if (phiwrap>pi) then
-    phig2=phin-beta  
-  else
-    phig2=phin+beta
-  end if
-  phig2=mod(phig2,2*pi)
-  thetag2=pi/2-thetag2p
-
-  glon=phig2*180._wp/pi
-  glat=thetag2*180._wp/pi
-end procedure geomag2geog_scalar
-
-
-!> convert geocentric distance into altitude (assume spherical Earth but could use other model)
-module procedure r2alt
-  alt=r-Re
-end procedure r2alt
-
-
-!> convert altitude to geocentric distance
-module procedure alt2r
-  r=alt+Re
-end procedure alt2r
 
 
 !> objective function for newton iterations for solutions of roots for r
