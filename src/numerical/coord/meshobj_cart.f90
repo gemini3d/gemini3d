@@ -5,6 +5,7 @@ module meshobj_cart
 ! uses
 use phys_consts, only: wp,Re,pi,Mmag,mu0,Gconst,Me
 use meshobj, only: curvmesh
+use spherical, only: er_spherical,etheta_spherical,ephi_spherical
 
 implicit none (type, external)
 
@@ -86,36 +87,14 @@ interface    ! dipole_fns.f90, spec for submodule functions
     real(wp), intent(in) :: alt
     real(wp) :: r
   end function alt2r
-  module subroutine qp2rtheta(q,p,r,theta)
-    real(wp), intent(in) :: q,p
-    real(wp), intent(out) :: r,theta
-  end subroutine qp2rtheta
-  module subroutine rtheta2qp(r,theta,q,p)
-    real(wp), intent(in) :: r,theta
-    real(wp), intent(out) :: q,p
-  end subroutine rtheta2qp
-  elemental module function qr2theta(q,r) result(theta)
-    real(wp), intent(in) :: q,r
-    real(wp) :: theta
-  end function qr2theta
-  module function rpoly(x,parms) result(fval)
-    real(wp), intent(in) :: x
-    real(wp), dimension(:), intent(in) :: parms
-    real(wp) :: fval
-  end function rpoly
-  module function rpoly_deriv(x,parms) result(fval_deriv)
-    real(wp), intent(in) :: x
-    real(wp), dimension(:), intent(in) :: parms
-    real(wp) :: fval_deriv
-  end function rpoly_deriv
 end interface
 
 contains
 
 
 !> allocate space and associate pointers with arrays in base class.  must runs set_coords first.
-subroutine init_dipolemesh(self)
-  class(dipolemesh) :: self
+subroutine init_cartmesh(self)
+  class(cartmesh), intent(inout) :: self
 
   if (.not. self%xi_alloc_status) error stop ' must have curvilinear coordinates defined prior to call init_dipolemesh()'
 
@@ -127,22 +106,22 @@ subroutine init_dipolemesh(self)
 
   ! now we must associate pointers for extended type alias variables.  This is mostly done in order
   !  to have more readable code.
-  self%q=>self%x1; self%p=>self%x2; self%phidip=>self%x3
-  self%qint=>self%x1i; self%pint=>self%x2i; self%phiint=>self%x3i
-  self%hq=>self%h1; self%hp=>self%h2; self%hphi=>self%h3
-  self%hqqi=>self%h1x1i; self%hpqi=>self%h2x1i; self%hphiqi=>self%h3x1i
-  self%hqpi=>self%h1x2i; self%hppi=>self%h2x2i; self%hphipi=>self%h3x2i
-  self%hqphii=>self%h1x3i; self%hpphii=>self%h2x3i; self%hphiphii=>self%h3x3i
-  self%eq=>self%e1; self%ep=>self%e2; self%ephidip=>self%e3
-  self%gq=>self%g1; self%gp=>self%g2; self%gphi=>self%g3 
-end subroutine init_dipolemesh
+  self%z=>self%x1; self%x=>self%x2; self%y=>self%x3
+  self%zint=>self%x1i; self%xint=>self%x2i; self%yint=>self%x3i
+  self%hz=>self%h1; self%hx=>self%h2; self%hy=>self%h3
+  self%hzzi=>self%h1x1i; self%hxzi=>self%h2x1i; self%hyzi=>self%h3x1i
+  self%hzxi=>self%h1x2i; self%hxxi=>self%h2x2i; self%hyxi=>self%h3x2i
+  self%hzyi=>self%h1x3i; self%hxyi=>self%h2x3i; self%hyyi=>self%h3x3i
+  self%ez=>self%e1; self%ex=>self%e2; self%ey=>self%e3
+  self%gz=>self%g1; self%gx=>self%g2; self%gy=>self%g3 
+end subroutine init_cartmesh
 
 
 !> create a dipole mesh structure out of given q,p,phi spacings.  We assume here that the input cell center locations
 !   are provide with ghost cells included (note input array indexing in dummy variable declarations.  For new we assume
 !   that the fortran code will precompute and store the "full" grid information to save time (but this uses more memory).  
-subroutine make_dipolemesh(self) 
-  class(dipolemesh) :: self
+subroutine make_cartmesh(self) 
+  class(cartmesh), intent(inout) :: self
 
   integer :: lqg,lpg,lphig,lq,lp,lphi
   integer :: iq,ip,iphi
@@ -263,7 +242,7 @@ subroutine make_dipolemesh(self)
   ! inclination angle for each field line; awkwardly this must go after gridflag is set...
   print*, ' make_dipolemesh:  inclination angle...'  
   call self%calc_inclination()
-end subroutine make_dipolemesh
+end subroutine make_cartmesh
 
 
 !> compute geographic coordinates of all grid points
@@ -372,9 +351,7 @@ subroutine calc_er_spher(self)
 
   ! fixme: error checking
 
-  self%er(:,:,:,1)=sin(self%theta)*cos(self%phi)
-  self%er(:,:,:,2)=sin(self%theta)*sin(self%phi)
-  self%er(:,:,:,3)=cos(self%theta)
+  self%er=er_spherical(self%theta,self%phi)
 end subroutine calc_er_spher
 
 
@@ -384,9 +361,7 @@ subroutine calc_etheta_spher(self)
 
   ! fixme: error checking
 
-  self%etheta(:,:,:,1)=cos(self%theta)*cos(self%phi)
-  self%etheta(:,:,:,2)=cos(self%theta)*sin(self%phi)
-  self%etheta(:,:,:,3)=-sin(self%theta)
+  self%etheta=etheta_spherical(self%theta,self%phi)
 end subroutine calc_etheta_spher
 
 
@@ -396,9 +371,7 @@ subroutine calc_ephi_spher(self)
 
   ! fixme: error checking
 
-  self%ephi(:,:,:,1)=-sin(self%phi)
-  self%ephi(:,:,:,2)=cos(self%phi)
-  self%ephi(:,:,:,3)=0
+  self%ephi=ephi_spherical(self%theta,self%phi)
 end subroutine calc_ephi_spher
 
 
