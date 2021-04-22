@@ -48,12 +48,6 @@ call x%init_dipolemesh()
 ! call grid generation for this grid def.
 print*, 'fullgrid_testdriver:  Calling dipole mesh constructor...'
 call x%make_dipolemesh()
-
-! now some generic methods that can be called once coordinate data are filled in
-!print*, 'fullgrid_testdriver:  Setting generic mesh object grid metadata'
-!call x%calc_difflengths()
-!call x%calc_inull()
-!call x%calc_gridflag()
 !!!! end grid setup and init
 
 ! check variable allocation and set status
