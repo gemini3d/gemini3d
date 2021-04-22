@@ -1,7 +1,7 @@
 program geomag2geog_testdriver
 
 use phys_consts, only: wp,Re,pi
-use meshobj_dipole, only : geomag2geog,geog2geomag,r2alt,alt2r
+use geomagnetic, only : geomag2geog,geog2geomag,r2alt,alt2r
 
 implicit none
 

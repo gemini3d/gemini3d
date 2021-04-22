@@ -31,7 +31,7 @@ phi=[(philims(1) + (philims(2)-philims(1))/(lphi-1)*(iphi-1),iphi=1,lphi)]
 ! oddly the destructor does not get called when the program unit terminates; however by
 !  putting the variable inside the block we cause it to go out of scope before the program
 !  ends and that indeed causes the destructor to get triggered (so we can test it)
-do while (.true.)
+!!do while (.true.)
 block
 type(dipolemesh) :: x
 
@@ -43,11 +43,11 @@ call x%set_coords(q,p,phi,p,phi)
 
 ! allocations
 print*, 'fullgrid_testdriver:  Allocating space for coordinate-specific arrays...'
-call x%init_dipolemesh()
+call x%init()
 
 ! call grid generation for this grid def.
 print*, 'fullgrid_testdriver:  Calling dipole mesh constructor...'
-call x%make_dipolemesh()
+call x%make()
 !!!! end grid setup and init
 
 ! check variable allocation and set status
@@ -114,6 +114,6 @@ print*, ' fullgrid_testdriver, writing grid coords. to file...'
 call x%writegrid(path,0)
 call x%writegridall(path,1)
 end block
-end do
+!!end do
 
 end program fullgrid_testdriver
