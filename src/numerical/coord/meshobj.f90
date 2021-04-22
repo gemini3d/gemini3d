@@ -9,7 +9,7 @@ use h5fortran, only : hdf5_file
 implicit none (type, external)
 public
 
-!> curvmesh is a "top-level" derived type containing functionality and data that is not specific to individual coordinate systems
+!> curvmesh is an abstract type containing functionality and data that is not specific to individual coordinate systems
 !   (which are extended types).  Note that all arrays are pointers because they need to be targets and allocatable AND the fortran
 !   standard does not support having allocatable, target attributed inside a derived type.  Because of this is it not straightforward
 !   to check the allocation status of these arrays (i.e. fortran also does not allow one to check the allocation status of a pointer). 
@@ -146,24 +146,22 @@ type, abstract :: curvmesh
     !final :: destructor   ! an abstract type cannot have a final procedure, as the final procedure must act on a type and not polymorhpic object
 
     !! deferred bindings and associated generic interfaces
+    procedure(initmake), deferred :: init
+    procedure(initmake), deferred :: make
     procedure(calc_procedure), deferred :: calc_grav
     procedure(calc_procedure), deferred :: calc_Bmag
     procedure(calc_procedure), deferred :: calc_inclination
     procedure(calc_procedure), deferred :: calc_geographic
-    !generic :: calc_er=>calc_er_scalar,calc_er_rank3
     procedure(calc_procedure), deferred :: calc_er
-    !generic :: calc_etheta=>calc_etheta_scalar,calc_etheta_rank3
     procedure(calc_procedure), deferred :: calc_etheta
-    !generic :: calc_ephi=>calc_ephi_scalar,calc_ephi_rank3
     procedure(calc_procedure), deferred :: calc_ephi
-    !generic :: calc_e1=>calc_e1_scalar,calc_e1_rank3
     procedure(calc_procedure), deferred :: calc_e1
-    !generic :: calc_e2=>calc_e2_scalar,calc_e2_rank3
     procedure(calc_procedure), deferred :: calc_e2
-    !generic :: calc_e3=>calc_e3_scalar,calc_e3_rank3
     procedure(calc_procedure), deferred :: calc_e3
 
     !! these bindings have different interfaces due to evaluation of metric factors at cell centers vs. interfaces
+    !   because the return value may need to be assigned to different member arrays this should be a function that
+    !   does not pass in or operate on its object.
     procedure(calc_metric), deferred, nopass :: calc_h1
     procedure(calc_metric), deferred, nopass :: calc_h2
     procedure(calc_metric), deferred, nopass :: calc_h3
@@ -173,13 +171,17 @@ end type curvmesh
 !> interfaces for deferred bindings, note all should operate on data in self - this provides maximum flexibility
 !   for the extension to use whatever data it needs to compute the various grid quantities
 abstract interface
+  subroutine initmake(self)
+    import curvmesh
+    class(curvmesh), intent(inout) :: self
+  end subroutine initmake
   subroutine calc_procedure(self)
     import curvmesh
     class(curvmesh), intent(inout) :: self
   end subroutine calc_procedure
   function calc_metric(coord1,coord2,coord3) result(hval)
     import wp
-    real(wp), dimension(:,:,:), pointer, intent(in) :: coord1,coord2,coord3    ! because these will be aliased (readability) should be pointers
+    real(wp), dimension(:,:,:), pointer, intent(in) :: coord1,coord2,coord3    ! because these will be aliased (readability) so should be pointers, e.g. x,y,z or r,theta,phi
     real(wp), dimension(lbound(coord1,1):ubound(coord1,1),lbound(coord1,2):ubound(coord1,2), &
                         lbound(coord1,3):ubound(coord1,3)) :: hval   ! arrays may not start at index 1
   end function calc_metric
