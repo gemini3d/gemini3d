@@ -1,57 +1,53 @@
-module meshobj_dipole
+module meshobj_cart
 
-!> Contains data and subroutines for converting between dipole coordinates and other coordinate systems
-! Notes:
-! 1) may want to overload the calculation procedures (e.g. for metric factors) so that can accept an index or a spherical coordiante input.
+!> Contains data and subroutines for managing a Cartesian mesh
 
 ! uses
 use phys_consts, only: wp,Re,pi,Mmag,mu0,Gconst,Me
 use meshobj, only: curvmesh
-use newton, only: newtopts,newton_exact,objfun,objfun_deriv
-use spehricak, only: calc_er_spher,calc_ethete_spher,calc_ephi_spher
 
 implicit none (type, external)
 
 
 ! type extension for dipolemesh
-type, extends(curvmesh) :: dipolemesh
-  real(wp), dimension(:), pointer :: q
-  real(wp), dimension(:), pointer :: p
-  real(wp), dimension(:), pointer :: phidip
-  real(wp), dimension(:), pointer :: qint           ! cell interface locations
-  real(wp), dimension(:), pointer :: pint
-  real(wp), dimension(:), pointer :: phiint
-  real(wp), dimension(:,:,:), pointer :: hq,hp,hphi
-  real(wp), dimension(:,:,:), pointer :: hqqi,hpqi,hphiqi
-  real(wp), dimension(:,:,:), pointer :: hqpi,hppi,hphipi
-  real(wp), dimension(:,:,:), pointer :: hqphii,hpphii,hphiphii
-  real(wp), dimension(:,:,:,:), pointer :: eq,ep,ephidip
-  real(wp), dimension(:,:,:), pointer :: gq,gp,gphi
+type, extends(curvmesh) :: cartmesh
+  real(wp), dimension(:), pointer :: z
+  real(wp), dimension(:), pointer :: x
+  real(wp), dimension(:), pointer :: y
+  real(wp), dimension(:), pointer :: zint           ! cell interface locations
+  real(wp), dimension(:), pointer :: xint
+  real(wp), dimension(:), pointer :: yint
+  real(wp), dimension(:,:,:), pointer :: hz,hx,hy
+  real(wp), dimension(:,:,:), pointer :: hzzi,hxzi,hyzi
+  real(wp), dimension(:,:,:), pointer :: hzxi,hxxi,hyxi
+  real(wp), dimension(:,:,:), pointer :: hzyi,hxyi,hyyi
+  real(wp), dimension(:,:,:,:), pointer :: ez,ex,ey
+  real(wp), dimension(:,:,:), pointer :: gz,gx,gy
 
   contains
-    !> Specific methods
+    !> type-bound procs. for dipole meshes
     procedure :: calc_rtheta_2D, calc_qp_2D
  
     !> Bind deferred procedures 
-    procedure :: init=>init_dipolemesh
-    procedure :: make=>make_dipolemesh
+    procedure :: init=>init_cartmesh
+    procedure :: make=>make_cartmesh
     procedure :: calc_er=>calc_er_spher
     procedure :: calc_etheta=>calc_etheta_spher
     procedure :: calc_ephi=>calc_ephi_spher
-    procedure :: calc_e1=>calc_eq
-    procedure :: calc_e2=>calc_ep
-    procedure :: calc_e3=>calc_ephi_dip
-    procedure :: calc_grav=>calc_grav_dipole
-    procedure :: calc_Bmag=>calc_Bmag_dipole
-    procedure :: calc_inclination=>calc_inclination_dipole
-    procedure, nopass :: calc_h1=>calc_hq
-    procedure, nopass :: calc_h2=>calc_hp
-    procedure, nopass :: calc_h3=>calc_hphi_dip
-    procedure :: calc_geographic=>calc_geographic_dipole
+    procedure :: calc_e1=>calc_ez
+    procedure :: calc_e2=>calc_ex
+    procedure :: calc_e3=>calc_ey
+    procedure :: calc_grav=>calc_grav_cart
+    procedure :: calc_Bmag=>calc_Bmag_cart
+    procedure :: calc_inclination=>calc_inclination_cart
+    procedure, nopass :: calc_h1=>calc_hz
+    procedure, nopass :: calc_h2=>calc_hx
+    procedure, nopass :: calc_h3=>calc_hy
+    procedure :: calc_geographic=>calc_geographic_cart
     
-    !> type deallocations, etc.
+    !> type deallocations, reset flags, etc.
     final :: destructor
-end type dipolemesh
+end type cartmesh
 
 
 !> declarations and interfaces for submodule functions, apparently these need to be generic interfaces.  These are generally
@@ -491,5 +487,5 @@ subroutine destructor(self)
   print*, '  dipolemesh destructor completed successfully'
 end subroutine destructor
 
-end module meshobj_dipole
+end module meshobj_cart
 
