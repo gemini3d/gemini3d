@@ -24,7 +24,7 @@ p=[(plims(1) + (plims(2)-plims(1))/lp*(ip-1),ip=1,lp)]
 
 ! initialize object so we can call its type-bound procedures
 call x%set_coords(q,p,phi,p,phi)
-call x%init_dipolemesh()
+call x%init()
 
 ! test the conversion of a set of grid points
 do irepeat=1,3    ! do mulitple times as would be require for a full grid generation (to compare times against scripts)
