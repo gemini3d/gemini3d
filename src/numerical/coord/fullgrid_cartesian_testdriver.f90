@@ -5,11 +5,11 @@ use meshobj_cart, only : cartmesh
 
 implicit none
 
-integer, parameter :: lz=384+4,lx=96+4,ly=64+4     !+4 for ghost cells
-real(wp), parameter :: glonctr=141._wp,glatctr=69._wp
-real(wp), dimension(2), parameter :: zlims=[80e3,1000e3]
-real(wp), dimension(2), parameter :: xlims=[-100e3,100e3]
-real(wp), dimension(2), parameter :: ylims=[-50e3,50e3]
+integer, parameter :: lz=98+4,lx=128+4,ly=144+4     !+4 for ghost cells
+real(wp), parameter :: glonctr=207.7_wp,glatctr=65.8_wp
+real(wp), dimension(2), parameter :: zlims=[6.2062e+04,9.6794e+05]
+real(wp), dimension(2), parameter :: xlims=[-1.5215e+06,1.5215e+06]
+real(wp), dimension(2), parameter :: ylims=[-2.0559e+05,2.0559e+05]
 real(wp), dimension(lz) :: z
 real(wp), dimension(lx) :: xcart
 real(wp), dimension(ly) :: y
