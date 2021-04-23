@@ -11,7 +11,7 @@ use geomagnetic, only: geog2geomag,geomag2geog,r2alt,alt2r
 implicit none (type, external)
 
 
-! type extension for dipolemesh
+! type extension for cartmesh
 type, extends(curvmesh) :: cartmesh
   real(wp), dimension(:), pointer :: z
   real(wp), dimension(:), pointer :: x
@@ -29,7 +29,7 @@ type, extends(curvmesh) :: cartmesh
   real(wp) :: glonctr,glatctr     ! center of the grid in geographic lat/lon
 
   contains
-    !> type-bound procs. for dipole meshes
+    !> type-bound procs. for cart meshes
     procedure :: set_center
  
     !> Bind deferred procedures 
@@ -61,7 +61,7 @@ contains
 subroutine init_cartmesh(self)
   class(cartmesh), intent(inout) :: self
 
-  if (.not. self%xi_alloc_status) error stop ' must have curvilinear coordinates defined prior to call init_dipolemesh()'
+  if (.not. self%xi_alloc_status) error stop ' must have curvilinear coordinates defined prior to call init_cartmesh()'
 
   ! allocate array space using base type-bound procedure
   call self%calc_coord_diffs()
@@ -82,7 +82,7 @@ subroutine init_cartmesh(self)
 end subroutine init_cartmesh
 
 
-!> create a dipole mesh structure out of given q,p,phi spacings.  We assume here that the input cell center locations
+!> create a cart mesh structure out of given q,p,phi spacings.  We assume here that the input cell center locations
 !   are provide with ghost cells included (note input array indexing in dummy variable declarations.  For new we assume
 !   that the fortran code will precompute and store the "full" grid information to save time (but this uses more memory).  
 subroutine make_cartmesh(self) 
@@ -90,11 +90,12 @@ subroutine make_cartmesh(self)
   integer :: lzg,lxg,lyg,lz,lx,ly
   integer :: iz,ix,iy
   real(wp), dimension(:,:,:), pointer :: r,theta,phispher     ! so these can serve as targets, as needed by metric factor calculations
+  real(wp) :: phictr,thetactr
   real(wp) :: gamma2,gamma1
 
   ! check that pointers are correctly associated, which implies that all space has been allocated :)
   if (.not. associated(self%z)) error stop  & 
-             ' pointers to grid coordiante arrays must be associated prior calling make_dipolemesh()'
+             ' pointers to grid coordiante arrays must be associated prior calling make_cartmesh()'
 
   ! size of arrays, including ghost cells
   lzg=size(self%z,1); lxg=size(self%x,1); lyg=size(self%y,1)
@@ -102,25 +103,26 @@ subroutine make_cartmesh(self)
   allocate(phispher(-1:lzg-2,-1:lxg-2,-1:lyg-2))
   
   ! array sizes without ghost cells for convenience
-  print*, ' make_dipolemesh:  allocating space for grid of size:  ',lzg,lxg,lyg
+  print*, ' make_cartmesh:  allocating space for grid of size:  ',lzg,lxg,lyg
   lz=lzg-4; lx=lxg-4; ly=lyg-4;
 
   ! convert the cell centers to spherical ECEF coordinates, then tile for longitude dimension
-  print*, ' make_dipolemesh:  converting cell centers to spherical coordinates...'
+  print*, ' make_cartmesh:  converting cell centers to spherical coordinates...'
   call geog2geomag(self%glonctr,self%glatctr,phictr,thetactr)
+  print*, ' make_cartmesh:  grid center glon,glat,phi,theta',self%glonctr,self%glatctr,phictr,thetactr
 
   ! radial distance from Earth's center
   do iy=-1,ly+2
     do ix=-1,lx+2
       do iz=-1,lz+2
-        r(iz,ix,iy)=Re+z(iz)
+        r(iz,ix,iy)=Re+self%z(iz)
       end do
     end do
   end do
 
   ! northward angular distance
   do iy=-1,ly+2
-    gamma2=y(iy)/Re                  ! must retain sign(y)
+    gamma2=self%y(iy)/Re                  ! must retain sign(y)
     do ix=-1,lx+2
       do iz=-1,lz+2
         theta(iz,ix,iy)=thetactr-gamma2  ! minus because theta is positive south (y runs positive north)
@@ -131,7 +133,7 @@ subroutine make_cartmesh(self)
   ! eastward angular distance
   do iy=-1,ly+2
     do ix=-1,lx+2
-      gamma1=x(ix)/Re/sin(thetactr)
+      gamma1=self%x(ix)/Re/sin(thetactr)
       do iz=-1,lz+2
         phispher(iz,ix,iy)=phictr+gamma1
       end do
@@ -139,68 +141,68 @@ subroutine make_cartmesh(self)
   end do
 
   ! now assign structure elements and deallocate unneeded temp variables
-  self%r=r(1:lz,1:lx,1:ly); self%theta=theta(1:lz,1:lx,1:ly); self%phi=phispher(1:lx,1:lx,1:ly)   ! don't need ghost cells!
+  self%r=r(1:lz,1:lx,1:ly); self%theta=theta(1:lz,1:lx,1:ly); self%phi=phispher(1:lz,1:lx,1:ly)   ! don't need ghost cells!
   deallocate(r,theta,phispher)
 
   ! compute the geographic coordinates
-  print*, ' make_dipolemesh:  geographic coordinates from magnetic...'
+  print*, ' make_cartmesh:  geographic coordinates from magnetic...'
   call self%calc_geographic() 
 
   ! compute and store the metric factors; these need to include ghost cells
   !  these are function calls because I have to bind the deferred procedures...
-  print*, ' make_dipolemesh:  metric factors for cell centers...'
+  print*, ' make_cartmesh:  metric factors for cell centers...'
   self%hz(-1:lz+2,-1:lx+2,-1:ly+2)=self%calc_h1(r,theta,phispher)
   self%hx(-1:lz+2,-1:lx+2,-1:ly+2)=self%calc_h2(r,theta,phispher)
   self%hy(-1:lz+2,-1:lx+2,-1:ly+2)=self%calc_h3(r,theta,phispher)
 
   ! q cell interface metric factors
-  print*, ' make_dipolemesh:  metric factors for cell q-interfaces...'
+  print*, ' make_cartmesh:  metric factors for cell q-interfaces...'
   self%hzzi=1._wp
   self%hxzi=1._wp
   self%hyzi=1._wp
 
   ! p cell interface metric factors
-  print*, ' make_dipolemesh:  metric factors for cell p-intefaces...'
+  print*, ' make_cartmesh:  metric factors for cell p-intefaces...'
   self%hzxi=1._wp
   self%hxxi=1._wp
   self%hyxi=1._wp
 
-  print*, ' make_dipolemesh:  metric factors for cell phi-interfaces...'
+  print*, ' make_cartmesh:  metric factors for cell phi-interfaces...'
   self%hzyi=1._wp
   self%hxyi=1._wp
   self%hyyi=1._wp
 
   ! spherical ECEF unit vectors (expressed in a Cartesian ECEF basis)
-  print*, ' make_dipolemesh:  spherical ECEF unit vectors...'  
+  print*, ' make_cartmesh:  spherical ECEF unit vectors...'  
   call self%calc_er()
   call self%calc_etheta()
   call self%calc_ephi()
 
-  ! dipole coordinate system unit vectors (Cart. ECEF)
-  print*, ' make_dipolemesh:  dipole unit vectors...'  
+  ! cart coordinate system unit vectors (Cart. ECEF)
+  print*, ' make_cartmesh:  cartesian unit vectors...'  
   call self%calc_e1()
   call self%calc_e2()
   call self%calc_e3()
 
   ! magnetic field magnitude
-  print*, ' make_dipolemesh:  magnetic fields...'    
+  print*, ' make_cartmesh:  magnetic fields...'    
   call self%calc_Bmag()
 
   ! gravity components
-  print*, ' make_dipolemesh:  gravity...'
+  print*, ' make_cartmesh:  gravity...'
   call self%calc_grav()
 
   ! set the status now that coord. specific calculations are done
   self%coord_alloc_status=.true.
 
   ! now finish by calling procedures from base abstract type
-  print*, ' make_dipolemesh:  base type-bound procedure calls...'
+  print*, ' make_cartmesh:  base type-bound procedure calls...'
   call self%calc_difflengths()     ! differential lengths (units of m)
   call self%calc_inull()           ! null points (non computational)
   call self%calc_gridflag()        ! compute and store grid type
 
   ! inclination angle for each field line; awkwardly this must go after gridflag is set...
-  print*, ' make_dipolemesh:  inclination angle...'  
+  print*, ' make_cartmesh:  inclination angle...'  
   call self%calc_inclination()
 end subroutine make_cartmesh
 
@@ -217,7 +219,7 @@ end subroutine set_center
 
 !> compute geographic coordinates of all grid points
 subroutine calc_geographic_cart(self)
-  class(dipolemesh), intent(inout) :: self
+  class(cartmesh), intent(inout) :: self
 
   ! fixme: error checking?
 
@@ -229,7 +231,7 @@ end subroutine calc_geographic_cart
 
 !> compute gravitational field components
 subroutine calc_grav_cart(self)
-  class(dipolemesh), intent(inout) :: self
+  class(cartmesh), intent(inout) :: self
   real(wp), dimension(1:self%lx1,1:self%lx2,1:self%lx3) :: gr
  
   ! fixme: error checking?
@@ -240,25 +242,26 @@ subroutine calc_grav_cart(self)
 end subroutine calc_grav_cart
 
 
-!> compute the magnetic field strength
+!> compute the magnetic field strength.  For cartesian grids assume constant
 subroutine calc_Bmag_cart(self)
-  class(dipolemesh), intent(inout) :: self
+  class(cartmesh), intent(inout) :: self
 
   ! fixme: error checking
 
-  self%Bmag=mu0*Mmag/4/pi/self%r**3*sqrt(3*cos(self%theta)**2+1)
+  !self%Bmag=mu0*Mmag/4/pi/self%r**3*sqrt(3*cos(self%theta)**2+1)
+  self%Bmag=50000.e-9_wp
 end subroutine calc_Bmag_cart
 
 
 !> compute the inclination angle (degrees) for each geomagnetic field line
 !   for a Cartesian grid the only thing that really makes any sense is 90 degrees
-subroutine calc_inclination_dipole(self)
-  class(dipolemesh), intent(inout) :: self
+subroutine calc_inclination_cart(self)
+  class(cartmesh), intent(inout) :: self
 
   ! fixme: error checking
 
   self%I=90._wp
-end subroutine calc_inclination_dipole
+end subroutine calc_inclination_cart
 
 
 !> compute metric factors for q 
@@ -305,7 +308,7 @@ end function calc_hy
 
 !> radial unit vector (expressed in ECEF cartesian coodinates, components permuted as ix,iy,iz)
 subroutine calc_er_spher(self)
-  class(dipolemesh), intent(inout) :: self
+  class(cartmesh), intent(inout) :: self
 
   ! fixme: error checking
 
@@ -315,7 +318,7 @@ end subroutine calc_er_spher
 
 !> zenith angle unit vector (expressed in ECEF cartesian coodinates
 subroutine calc_etheta_spher(self)
-  class(dipolemesh), intent(inout) :: self
+  class(cartmesh), intent(inout) :: self
 
   ! fixme: error checking
 
@@ -325,7 +328,7 @@ end subroutine calc_etheta_spher
 
 !> azimuth angle unit vector (ECEF cart.)
 subroutine calc_ephi_spher(self)
-  class(dipolemesh), intent(inout) :: self
+  class(cartmesh), intent(inout) :: self
 
   ! fixme: error checking
 
@@ -335,7 +338,7 @@ end subroutine calc_ephi_spher
 
 !> unit vector in the z direction
 subroutine calc_ez(self)
-  class(dipolemesh), intent(inout) :: self
+  class(cartmesh), intent(inout) :: self
 
   ! fixme: error checking
 
@@ -345,7 +348,7 @@ end subroutine calc_ez
 
 !> unit vector in the p direction
 subroutine calc_ex(self)
-  class(dipolemesh), intent(inout) :: self
+  class(cartmesh), intent(inout) :: self
 
   ! fixme: error checking
 
@@ -355,7 +358,7 @@ end subroutine calc_ex
 
 !> unit vector in the phi direction
 subroutine calc_ey(self)
-  class(dipolemesh), intent(inout) :: self
+  class(cartmesh), intent(inout) :: self
 
   ! fixme: error checking
 
@@ -365,7 +368,7 @@ end subroutine calc_ey
 
 !> type destructor; written generally, viz. as if it is possible some grid pieces are allocated an others are not
 subroutine destructor(self)
-  type(dipolemesh) :: self
+  type(cartmesh) :: self
 
   call self%dissociate_pointers()
   print*, '  cartmesh destructor completed successfully'

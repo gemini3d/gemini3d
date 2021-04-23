@@ -1,4 +1,4 @@
-program fullgrid_testdriver
+program fullgrid_dipole_testdriver
 
 use phys_consts, only: wp
 use meshobj_dipole, only : dipolemesh
@@ -109,11 +109,12 @@ if (any(proj>1e-4)) error stop '  etheta,ephi not ortho!!!'
 print*, ' fullgrid_testdriver, number of null grid points:  ',size(x%inull,1)
 
 ! write out the grid data to a file
-path='/Users/zettergm/Downloads/testgrid/inputs/'
-print*, ' fullgrid_testdriver, writing grid coords. to file...'
+path='./dipole/'
+call system('mkdir '//path)
+print*, ' fullgrid_testdriver, writing grid coords. to:  ',path
 call x%writegrid(path,0)
 call x%writegridall(path,1)
 end block
 !!end do
 
-end program fullgrid_testdriver
+end program fullgrid_dipole_testdriver
