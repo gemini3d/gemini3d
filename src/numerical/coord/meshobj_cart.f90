@@ -249,7 +249,7 @@ subroutine calc_Bmag_cart(self)
   ! fixme: error checking
 
   !self%Bmag=mu0*Mmag/4/pi/self%r**3*sqrt(3*cos(self%theta)**2+1)
-  self%Bmag=50000.e-9_wp
+  self%Bmag=-50000.e-9_wp
 end subroutine calc_Bmag_cart
 
 
