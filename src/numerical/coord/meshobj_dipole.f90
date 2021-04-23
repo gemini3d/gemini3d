@@ -139,7 +139,7 @@ subroutine make_dipolemesh(self)
   allocate(rpint(1:lq,1:lp+1,1:lphi),thetapint(1:lq,1:lp+1,1:lphi))
 
   ! convert the cell centers to spherical ECEF coordinates, then tile for longitude dimension
-  print*, ' make_dipolemesh:  converting cell centers...'
+  print*, ' make_dipolemesh:  converting cell centers to spherical coordinates...'
   call self%calc_rtheta_2D(self%q,self%p,r(:,:,-1),theta(:,:,-1))
   do iphi=0,lphig-2     ! tile
     r(:,:,iphi)=r(:,:,-1)
@@ -279,7 +279,6 @@ end subroutine calc_Bmag_dipole
 !> compute the inclination angle (degrees) for each geomagnetic field line
 subroutine calc_inclination_dipole(self)
   class(dipolemesh), intent(inout) :: self
-  real(wp), dimension(1:self%lx2,1:self%lx3) :: Inc
   integer :: lq
   real(wp), dimension(1:self%lx1,1:self%lx2,1:self%lx3) :: proj
 
