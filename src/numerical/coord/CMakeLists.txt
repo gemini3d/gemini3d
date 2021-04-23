@@ -10,9 +10,11 @@ target_link_libraries(geomagnetic PRIVATE const)
 add_library(meshobj OBJECT meshobj.f90)
 target_link_libraries(meshobj PRIVATE const h5fortran::h5fortran)
 
-# fixme: wonky dependencies???
 add_library(meshobj_dipole OBJECT meshobj_dipole.f90 dipole_fns.f90)
 target_link_libraries(meshobj_dipole PRIVATE const meshobj newton spherical geomagnetic)
+
+add_library(meshobj_cart OBJECT meshobj_cart.f90)
+target_link_libraries(meshobj_cart PRIVATE const meshobj spherical geomagnetic)
 
 add_executable(newton_testdriver newton_testdriver.f90)
 target_link_libraries(newton_testdriver PRIVATE const newton meshobj meshobj_dipole newton spherical geomagnetic)
@@ -25,3 +27,6 @@ target_link_libraries(grid_testdriver PRIVATE const meshobj meshobj_dipole newto
 
 add_executable(fullgrid_dipole_testdriver fullgrid_dipole_testdriver.f90)
 target_link_libraries(fullgrid_dipole_testdriver PRIVATE const meshobj meshobj_dipole newton spherical geomagnetic)
+
+add_executable(fullgrid_cartesian_testdriver fullgrid_cartesian_testdriver.f90)
+target_link_libraries(fullgrid_cartesian_testdriver PRIVATE const meshobj meshobj_cart newton spherical geomagnetic)
