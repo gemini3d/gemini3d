@@ -5,7 +5,7 @@
 # cmake -P build_cmake.cmake
 # will install Ninja under the user's home directory.
 
-cmake_minimum_required(VERSION 3.18...${CMAKE_VERSION})
+cmake_minimum_required(VERSION 3.19...${CMAKE_VERSION})
 
 if(NOT prefix)
   get_filename_component(prefix ~ ABSOLUTE)
@@ -68,23 +68,14 @@ file(MAKE_DIRECTORY ${src_dir}/build)
 
 execute_process(
   COMMAND ${CMAKE_COMMAND} .. -DBUILD_TESTING:BOOL=OFF -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX:PATH=${path}
-  RESULT_VARIABLE err
-  WORKING_DIRECTORY ${src_dir}/build)
-if(NOT err EQUAL 0)
-  message(FATAL_ERROR "failed to configure Ninja")
-endif()
+  WORKING_DIRECTORY ${src_dir}/build
+  COMMAND_ERROR_IS_FATAL ANY)
 
 execute_process(COMMAND ${CMAKE_COMMAND} --build ${src_dir}/build --parallel
-  RESULT_VARIABLE err)
-if(NOT err EQUAL 0)
-  message(FATAL_ERROR "failed to build Ninja")
-endif()
+COMMAND_ERROR_IS_FATAL ANY)
 
 execute_process(COMMAND ${CMAKE_COMMAND} --install ${src_dir}/build
-  RESULT_VARIABLE err)
-if(NOT err EQUAL 0)
-  message(FATAL_ERROR "failed to install Ninja")
-endif()
+COMMAND_ERROR_IS_FATAL ANY)
 
 find_program(ninja NAMES ninja PATHS ${path} PATH_SUFFIXES bin NO_DEFAULT_PATH)
 if(NOT ninja)

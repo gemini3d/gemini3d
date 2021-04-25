@@ -44,7 +44,7 @@ endfunction(checkup)
 if(APPLE)
   find_program(brew
     NAMES brew
-    PATHS /usr/local /opt/homeebrew
+    PATHS /usr/local /opt/homebrew
     PATH_SUFFIXES bin)
 
   if(brew)
