@@ -2,9 +2,9 @@ cmake_minimum_required(VERSION 3.13...3.20)
 
 function(download_archive url archive)
 
-if(md5)
-  message(STATUS "download ${archive}  MD5: ${md5}")
-  file(DOWNLOAD ${url} ${archive} TLS_VERIFY ON EXPECTED_HASH MD5=${md5})
+if(sha256)
+  message(STATUS "download ${archive}  sha256: ${sha256}")
+  file(DOWNLOAD ${url} ${archive} TLS_VERIFY ON EXPECTED_HASH SHA256=${sha256})
 else()
   message(STATUS "download ${archive}")
   file(DOWNLOAD ${url} ${archive} TLS_VERIFY ON)
@@ -25,19 +25,19 @@ file(READ ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/ref_data.json _refj)
 string(JSON url GET ${_refj} tests ${name} url)
 string(JSON archive_name GET ${_refj} tests ${name} archive)
 # optional checksum
-string(JSON md5 ERROR_VARIABLE e GET ${_refj} tests ${name} md5)
+string(JSON sha256 ERROR_VARIABLE e GET ${_refj} tests ${name} sha256)
 
 cmake_path(APPEND archive ${refroot} ${archive_name})
 
 # check if extracted data exists and is up to date
-if(EXISTS ${ref_dir}/md5sum.txt AND md5)
-  file(STRINGS ${ref_dir}/md5sum.txt _md5 REGEX "[a-f0-9]" LIMIT_INPUT 32 LENGTH_MAXIMUM 32 LIMIT_COUNT 1)
+if(EXISTS ${ref_dir}/sha256sum.txt AND sha256)
+  file(STRINGS ${ref_dir}/sha256sum.txt _sha256 REGEX "[a-f0-9]" LIMIT_INPUT 32 LENGTH_MAXIMUM 32 LIMIT_COUNT 1)
 
-  if(_md5 STREQUAL ${md5})
+  if(_sha256 STREQUAL ${sha256})
     return()
   endif()
 elseif(IS_DIRECTORY ${ref_dir})
-  # missing md5, do trivial check
+  # missing has, do trivial check
   return()
 endif()
 
@@ -45,16 +45,16 @@ endif()
 if(NOT EXISTS ${archive})
   download_archive(${url} ${archive})
 endif()
-file(MD5 ${archive} _md5)
-if(NOT _md5 STREQUAL ${md5})
+file(SHA256 ${archive} _sha256)
+if(NOT _sha256 STREQUAL ${sha256})
   download_archive(${url} ${archive})
 endif()
 
 message(STATUS "extract ref data to ${ref_dir}")
 file(ARCHIVE_EXTRACT INPUT ${archive} DESTINATION ${ref_dir})
 
-file(MD5 ${archive} _md5)
-file(WRITE ${ref_dir}/md5sum.txt ${_md5})
+file(SHA256 ${archive} _sha256)
+file(WRITE ${ref_dir}/sha256sum.txt ${_sha256})
 
 endfunction(gemini_download_ref_data)
 

@@ -19,39 +19,39 @@
   {
     "2dew_fang" :
     {
-      "archive" : "2dew_fang.zstd",
-      "md5" : "14e331f7608f15ac325ecc9a1bf1cdb2",
-      "url" : "https://www.dropbox.com/s/nv0v791mk69dodc/2dew_fang.zstd?dl=0"
+      "archive" : "2dew_fang.zst",
+      "sha256" : "861d7fa93f33907414d57dbecaf9d0b0beecde25cfa7932901c1c4d8d449a346",
+      "url" : "https://www.dropbox.com/s/p2x3wqp14jqlvn6/2dew_fang.zst?dl=1"
     },
     "2dew_glow" :
     {
-      "archive" : "2dew_glow.zstd",
-      "md5" : "b4e4d2eac6429e875c38514c20f99d89",
-      "url" : "https://www.dropbox.com/s/ke52xnmef7ej21g/2dew_glow.zstd?dl=0"
+      "archive" : "2dew_glow.zst",
+      "sha256" : "bee10da9ce97650423d18d0e59c1540b9e8fc42f4be1f11e495c94544645514e",
+      "url" : "https://www.dropbox.com/s/ei7nplk2rm7xf39/2dew_glow.zst?dl=1"
     },
     "2dns_fang" :
     {
-      "archive" : "2dns_fang.zstd",
-      "md5" : "f183de882136389fa6e4dc9e139eb7d3",
-      "url" : "https://www.dropbox.com/s/uzzqutibtp29xu0/2dns_fang.zstd?dl=0"
+      "archive" : "2dns_fang.zst",
+      "sha256" : "51a6061a739890f133ebe07e3f5772a39e456cc73b5c32a19b1a600bb18c5168",
+      "url" : "https://www.dropbox.com/s/1xpbp51ay0flwpg/2dns_fang.zst?dl=1"
     },
     "2dns_glow" :
     {
-      "archive" : "2dns_glow.zstd",
-      "md5" : "321b519a8db2202ea45bc3f7c3ee77a5",
-      "url" : "https://www.dropbox.com/s/y73uuw8csfh0m28/2dns_glow.zstd?dl=0"
+      "archive" : "2dns_glow.zst",
+      "sha256" : "2c7dd2d7640cf9ca7f2b651f424c433aa10fbea1ce5337c5b9a30c38444f274c",
+      "url" : "https://www.dropbox.com/s/1m7mscs0g3uuhim/2dns_glow.zst?dl=1"
     },
     "3d_fang" :
     {
-      "archive" : "3d_fang.zstd",
-      "md5" : "ac015377efa209eabe6de2916bf8b785",
-      "url" : "https://www.dropbox.com/s/6vz7crvzk1iz0ju/3d_fang.zstd?dl=0"
+      "archive" : "3d_fang.zst",
+      "sha256" : "790fcc91645cfd7b77d9cbd209b6640bb4c29e34a3a268b881d6f407f7f2908f",
+      "url" : "https://www.dropbox.com/s/5p0p0soihl6dbwi/3d_fang.zst?dl=1"
     },
     "3d_glow" :
     {
-      "archive" : "3d_glow.zstd",
-      "md5" : "17c6b3e21f3e6b554cc809d2c7e49645",
-      "url" : "https://www.dropbox.com/s/c9uqxd2x2pw3otv/3d_glow.zstd?dl=0"
+      "archive" : "3d_glow.zst",
+      "sha256" : "822fd1ad80a90ea78e3136d854a87411a5506edec332244564e2b8faccb86b11",
+      "url" : "https://www.dropbox.com/s/8p6h6a5u1nn653i/3d_glow.zst?dl=1"
     }
   }
 }
