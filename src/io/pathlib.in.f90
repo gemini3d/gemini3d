@@ -4,7 +4,8 @@ use, intrinsic:: iso_fortran_env, only: stderr=>error_unit
 
 implicit none (type, external)
 private
-public :: mkdir, copyfile, expanduser, home, get_suffix, filesep_swap, &
+public :: mkdir, copyfile, expanduser, home, get_suffix, &
+  filesep_windows, filesep_unix, &
   assert_directory_exists, assert_file_exists,&
   make_absolute, is_absolute, get_filename, parent, file_name
 
@@ -176,48 +177,67 @@ error stop 'ERROR: file does not exist ' // path
 end subroutine assert_file_exists
 
 
-function filesep_swap(path) result(swapped)
-!! swaps '/' to '\' for Windows systems
+function filesep_windows(path) result(swapped)
+!! '/' => '\' for Windows systems
 
 character(*), intent(in) :: path
 character(len(path)) :: swapped
 integer :: i
 
 swapped = path
-do
-  i = index(swapped, '/')
-  if (i == 0) exit
+i = index(swapped, '/')
+do while (i > 0)
   swapped(i:i) = char(92)
+  i = index(swapped, '/')
 end do
 
-end function filesep_swap
+end function filesep_windows
 
 
-function expanduser(indir)
+function filesep_unix(path) result(swapped)
+!! '\' => '/'
+
+character(*), intent(in) :: path
+character(len(path)) :: swapped
+integer :: i
+
+swapped = path
+i = index(swapped, char(92))
+do while (i > 0)
+  swapped(i:i) = '/'
+  i = index(swapped, char(92))
+end do
+
+end function filesep_unix
+
+
+function expanduser(in) result (out)
 !! resolve home directory as Fortran does not understand tilde
 !! works for Linux, Mac, Windows, etc.
-character(:), allocatable :: expanduser, homedir
-character(*), intent(in) :: indir
+character(:), allocatable :: out, homedir
+character(*), intent(in) :: in
 
-if (len_trim(indir) < 1 .or. indir(1:1) /= '~') then
+out = filesep_unix(in)
+
+if (len_trim(out) < 1 .or. out(1:1) /= '~') then
   !! nothing to expand
-  expanduser = trim(adjustl(indir))
+  out = trim(adjustl(out))
   return
 endif
 
 homedir = home()
 if (len_trim(homedir) == 0) then
   !! could not determine the home directory
-  expanduser = trim(adjustl(indir))
+  out = trim(adjustl(out))
   return
 endif
 
-if (len_trim(indir) < 3) then
+if (len_trim(out) < 3) then
   !! ~ or ~/
-  expanduser = homedir
+  out = homedir
 else
   !! ~/...
-  expanduser = homedir // trim(adjustl(indir(3:)))
+  out = homedir // trim(adjustl(out(3:)))
 endif
 
 end function expanduser

@@ -54,7 +54,7 @@ print '(2A,I6,A3,I6,A)', trim(argv), ' Process:  ', mpi_cfg%myid,' / ',mpi_cfg%l
 !> READ FILE INPUT
 call get_command_argument(1, argv, status=i)
 if (i/=0) error stop 'bad command line'
-cfg%outdir = expanduser(trim(argv))
+cfg%outdir = expanduser(argv)
 
 find_cfg : block
 logical :: exists
