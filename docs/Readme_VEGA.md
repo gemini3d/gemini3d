@@ -5,7 +5,7 @@ GEMINI must be built from a session on the login node as it requires git.  The b
 Load the necessary modules (cmake, gcc8, and openmpi):
 
 ```bash
-module load cmake/3.15.5
+module load cmake/3.20.0
 module load gcc/8.3.0
 module load openmpi/gcc8/64/3.1.2
 module load python/3.7.7
