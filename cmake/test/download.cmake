@@ -1,14 +1,9 @@
-cmake_minimum_required(VERSION 3.13...3.20)
+cmake_minimum_required(VERSION 3.13...${CMAKE_VERSION})
 
-function(download_archive url archive)
+function(download_archive url archive hash)
 
-if(sha256)
-  message(STATUS "download ${archive}  sha256: ${sha256}")
-  file(DOWNLOAD ${url} ${archive} EXPECTED_HASH SHA256=${sha256})
-else()
-  message(STATUS "download ${archive}")
-  file(DOWNLOAD ${url} ${archive})
-endif()
+message(STATUS "DOWNLOAD: ${archive}  sha256: ${hash}")
+file(DOWNLOAD ${url} ${archive} EXPECTED_HASH SHA256=${hash})
 
 endfunction(download_archive)
 
@@ -24,37 +19,37 @@ file(READ ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/ref_data.json _refj)
 
 string(JSON url GET ${_refj} tests ${name} url)
 string(JSON archive_name GET ${_refj} tests ${name} archive)
-# optional checksum
-string(JSON sha256 ERROR_VARIABLE e GET ${_refj} tests ${name} sha256)
+string(JSON hash GET ${_refj} tests ${name} sha256)
 
 cmake_path(APPEND archive ${refroot} ${archive_name})
 
 # check if extracted data exists and is up to date
-if(EXISTS ${ref_dir}/sha256sum.txt AND sha256)
-  file(STRINGS ${ref_dir}/sha256sum.txt _sha256 REGEX "[a-f0-9]" LIMIT_INPUT 32 LENGTH_MAXIMUM 32 LIMIT_COUNT 1)
+if(EXISTS ${ref_dir}/sha256sum.txt)
+  file(STRINGS ${ref_dir}/sha256sum.txt _hash REGEX "[a-f0-9]" LIMIT_INPUT 64 LENGTH_MAXIMUM 64 LIMIT_COUNT 1)
 
-  if(_sha256 STREQUAL ${sha256})
+  if(_hash STREQUAL ${hash})
     return()
+  else()
+    message(STATUS "${name}: hash mismatch: expected ${hash} != ${_hash}")
   endif()
-elseif(IS_DIRECTORY ${ref_dir})
-  # missing has, do trivial check
-  return()
+else()
+  message(STATUS "${name}: missing hash file, seeing if we need to download and/or extract")
 endif()
 
 # check if archive up to date
 if(NOT EXISTS ${archive})
-  download_archive(${url} ${archive})
+  download_archive(${url} ${archive} ${hash})
 endif()
-file(SHA256 ${archive} _sha256)
-if(NOT _sha256 STREQUAL ${sha256})
+file(SHA256 ${archive} _hash)
+if(NOT _hash STREQUAL ${hash})
   download_archive(${url} ${archive})
 endif()
 
-message(STATUS "extract ref data to ${ref_dir}")
+message(STATUS "EXTRACT: ${name}: ${archive} => ${ref_dir}")
 file(ARCHIVE_EXTRACT INPUT ${archive} DESTINATION ${ref_dir})
 
-file(SHA256 ${archive} _sha256)
-file(WRITE ${ref_dir}/sha256sum.txt ${_sha256})
+file(SHA256 ${archive} _hash)
+file(WRITE ${ref_dir}/sha256sum.txt ${_hash})
 
 endfunction(gemini_download_ref_data)
 
@@ -65,5 +60,4 @@ cmake_path(APPEND ref_dir ${refroot} ${name})
 gemini_download_ref_data(${name})
 
 # copy sim inputs into build/${name}/inputs
-message(STATUS "TRACE: ${ref_dir} ${outdir}")
 file(COPY ${ref_dir}/inputs DESTINATION ${outdir})

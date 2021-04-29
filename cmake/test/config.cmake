@@ -9,12 +9,11 @@ cmake_path(APPEND out_dir ${PROJECT_BINARY_DIR} ${name})
 cmake_path(APPEND ref_root ${PROJECT_SOURCE_DIR} test_data)
 cmake_path(APPEND ref_dir ${ref_root} ${name})
 
-add_test(NAME gemini:${name}:setup
+add_test(NAME ${name}:download
   COMMAND ${CMAKE_COMMAND} -Dname=${name} -Doutdir:PATH=${out_dir} -Drefroot:PATH=${ref_root} -P ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/download.cmake)
-set_tests_properties(gemini:${name}:setup PROPERTIES
-  FIXTURES_SETUP ${name}:setup
-  FIXTURES_REQUIRED gemini_exe_fxt
-  LABELS setup
+set_tests_properties(${name}:download PROPERTIES
+  FIXTURES_SETUP ${name}:download_fxt
+  LABELS download
   TIMEOUT 180)
 
 # construct command
@@ -41,7 +40,7 @@ add_test(NAME gemini:hdf5:${name}:dryrun
 set_tests_properties(gemini:hdf5:${name}:dryrun PROPERTIES
   TIMEOUT 60
   RESOURCE_LOCK cpu_mpi
-  FIXTURES_REQUIRED ${name}:setup
+  FIXTURES_REQUIRED "gemini_exe_fxt;${name}:download_fxt"
   FIXTURES_SETUP hdf5:${name}:dryrun
   REQUIRED_FILES ${out_dir}/inputs/config.nml
   LABELS core)
@@ -66,7 +65,7 @@ add_test(NAME gemini:netcdf:${name}:dryrun
 set_tests_properties(gemini:netcdf:${name}:dryrun PROPERTIES
   TIMEOUT 60
   RESOURCE_LOCK cpu_mpi
-  FIXTURES_REQUIRED "mumps_fxt;${name}:setup"
+  FIXTURES_REQUIRED "gemini_exe_fxt;${name}:download_fxt"
   FIXTURES_SETUP netcdf:${name}:dryrun
   REQUIRED_FILES ${out_dir}/inputs/config.nml
   LABELS core)
