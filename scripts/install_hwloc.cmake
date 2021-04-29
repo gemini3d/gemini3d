@@ -3,7 +3,9 @@
 # cmake -P install_hwloc.cmake
 # will install hwloc under the user's home directory.
 
-cmake_minimum_required(VERSION 3.18...3.20)
+cmake_minimum_required(VERSION 3.18...${CMAKE_VERSION})
+
+set(CMAKE_TLS_VERIFY true)
 
 if(NOT prefix)
   get_filename_component(prefix ~ ABSOLUTE)
@@ -52,7 +54,7 @@ endif()
 
 if(NOT EXISTS ${archive})
   message(STATUS "download ${url}")
-  file(DOWNLOAD ${url} ${archive} TLS_VERIFY ON)
+  file(DOWNLOAD ${url} ${archive})
 endif()
 
 message(STATUS "extracting to ${path}")

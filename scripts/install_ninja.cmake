@@ -7,6 +7,8 @@
 
 cmake_minimum_required(VERSION 3.18...${CMAKE_VERSION})
 
+set(CMAKE_TLS_VERIFY true)
+
 if(NOT prefix)
   get_filename_component(prefix ~ ABSOLUTE)
 endif()
@@ -79,7 +81,7 @@ endif()
 if(NOT EXISTS ${archive})
   set(url ${host}${name})
   message(STATUS "download ${url}")
-  file(DOWNLOAD ${url} ${archive} TLS_VERIFY ON)
+  file(DOWNLOAD ${url} ${archive})
   file(SIZE ${archive} fsize)
   if(fsize LESS 10000)
     message(FATAL_ERROR "failed to download ${url}")

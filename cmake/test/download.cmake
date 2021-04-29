@@ -4,10 +4,10 @@ function(download_archive url archive)
 
 if(sha256)
   message(STATUS "download ${archive}  sha256: ${sha256}")
-  file(DOWNLOAD ${url} ${archive} TLS_VERIFY ON EXPECTED_HASH SHA256=${sha256})
+  file(DOWNLOAD ${url} ${archive} EXPECTED_HASH SHA256=${sha256})
 else()
   message(STATUS "download ${archive}")
-  file(DOWNLOAD ${url} ${archive} TLS_VERIFY ON)
+  file(DOWNLOAD ${url} ${archive})
 endif()
 
 endfunction(download_archive)

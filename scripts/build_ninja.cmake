@@ -7,6 +7,8 @@
 
 cmake_minimum_required(VERSION 3.19...${CMAKE_VERSION})
 
+set(CMAKE_TLS_VERIFY true)
+
 if(NOT prefix)
   get_filename_component(prefix ~ ABSOLUTE)
 endif()
@@ -54,7 +56,7 @@ endif()
 if(NOT EXISTS ${archive})
   set(url ${host}${name})
   message(STATUS "download ${url}")
-  file(DOWNLOAD ${url} ${archive} TLS_VERIFY ON)
+  file(DOWNLOAD ${url} ${archive})
 endif()
 
 set(src_dir ${path}/ninja-${ver})
