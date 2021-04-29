@@ -9,7 +9,7 @@ set(arith "s;d")
 # NOTE: lists must be passed via CMAKE_CACHE_ARGS using -Dvar:STRING=${var}
 # the variable type must be included e.g. STRING
 
-set(EP_UPDATE_DISCONNECTED true)
+set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY EP_UPDATE_DISCONNECTED true)
 
 include(ExternalProject)
 
