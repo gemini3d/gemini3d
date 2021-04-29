@@ -10,7 +10,7 @@ WORKING_DIRECTORY ${MATGEMINI_DIR}
 
 set_tests_properties(gemini:compare:${name}:matlab PROPERTIES
 TIMEOUT 120
-FIXTURES_REQUIRED "hdf5:${name};netcdf:${name}"
+FIXTURES_REQUIRED "hdf5:${name}:run_fxt;netcdf:${name}:run_fxt"
 REQUIRED_FILES "${outdir}/inputs/config.nml;${refdir}/inputs/config.nml"
 LABELS "compare;matlab")
 
@@ -28,7 +28,7 @@ COMMAND ${Python3_EXECUTABLE} -m gemini3d.compare ${outdir} ${refdir} -file_form
 
 set_tests_properties(gemini:compare:hdf5:${name}:python PROPERTIES
 TIMEOUT 120
-FIXTURES_REQUIRED hdf5:${name}
+FIXTURES_REQUIRED hdf5:${name}:run_fxt
 REQUIRED_FILES "${outdir}/inputs/config.nml;${refdir}/inputs/config.nml"
 LABELS "compare;python")
 
@@ -41,7 +41,7 @@ COMMAND ${Python3_EXECUTABLE} -m gemini3d.compare ${outdir} ${refdir} -file_form
 
 set_tests_properties(gemini:compare:netcdf:${name}:python PROPERTIES
 TIMEOUT 120
-FIXTURES_REQUIRED netcdf:${name}
+FIXTURES_REQUIRED netcdf:${name}:run_fxt
 REQUIRED_FILES "${outdir}/inputs/config.nml;${refdir}/inputs/config.nml"
 LABELS "compare;python")
 endif(netcdf)
@@ -58,7 +58,7 @@ COMMAND $<TARGET_FILE:gemini3d.compare> ${outdir} ${refdir})
 
 set_tests_properties(gemini:compare:hdf5:${name} PROPERTIES
 TIMEOUT 60
-FIXTURES_REQUIRED hdf5:${name}
+FIXTURES_REQUIRED hdf5:${name}:run_fxt
 RESOURCE_LOCK cpu_mpi
 REQUIRED_FILES "${outdir}/inputs/config.nml;${refdir}/inputs/config.nml"
 LABELS compare)
@@ -77,7 +77,7 @@ COMMAND $<TARGET_FILE:gemini3d.compare> ${outdir} ${refdir})
 
 set_tests_properties(gemini:compare:netcdf:${name} PROPERTIES
 TIMEOUT 60
-FIXTURES_REQUIRED netcdf:${name}
+FIXTURES_REQUIRED netcdf:${name}:run_fxt
 REQUIRED_FILES "${outdir}/inputs/config.nml;${refdir}/inputs/config.nml"
 LABELS compare)
 

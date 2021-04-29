@@ -52,7 +52,7 @@ set_tests_properties(gemini:hdf5:${name} PROPERTIES
   TIMEOUT ${TIMEOUT}
   RESOURCE_LOCK cpu_mpi
   FIXTURES_REQUIRED hdf5:${name}:dryrun
-  FIXTURES_SETUP hdf5:${name}
+  FIXTURES_SETUP hdf5:${name}:run_fxt
   LABELS core)
 
 endif(hdf5)
@@ -77,7 +77,7 @@ set_tests_properties(gemini:netcdf:${name} PROPERTIES
   TIMEOUT ${TIMEOUT}
   RESOURCE_LOCK cpu_mpi
   FIXTURES_REQUIRED netcdf:${name}:dryrun
-  FIXTURES_SETUP netcdf:${name}
+  FIXTURES_SETUP netcdf:${name}:run_fxt
   LABELS core)
 endif(netcdf)
 
