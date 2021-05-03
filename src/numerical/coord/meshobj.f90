@@ -28,9 +28,11 @@ type, abstract :: curvmesh
   !> we need to know whether or not different groups of pointers are allocated and the intrinsic "allocatable" only work on allocatables (not pointers)...
   logical :: xi_alloc_status=.false.
   logical :: dxi_alloc_status=.false. 
+  logical :: dxi_alloc_status_root=.false.
   logical :: difflen_alloc_status=.false.
   logical :: null_alloc_status=.false.
-  logical :: geog_set_status=.false.      ! a distinction here is that geographic coords. get allocated with other arrays, but get set separately
+  logical :: geog_set_status=.false.      ! geographic coords. get allocated with other arrays, but get set separately
+  logical :: coord_set_status_root=.false.
 
   !> sizes.  Specified and set by base class methods
   integer :: lx1,lx2,lx3,lx2all,lx3all
@@ -77,6 +79,7 @@ type, abstract :: curvmesh
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Coordinate system specific properties !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 
   !> Metric factors.  These are pointers to be assigned/allocated/filled by type extensions for specific coordinate system
   logical :: coord_alloc_status=.false.    ! single status variable for all coord-specific arrays
+  logical :: coord_alloc_status_root=.false.
 
   real(wp), dimension(:,:,:), pointer :: h1,h2,h3     ! need to be computed by subclass for specific coordinate system
   !! these are the cell-centered metric coefficients
@@ -142,16 +145,19 @@ type, abstract :: curvmesh
     procedure :: calc_inull             ! compute null points
     procedure :: calc_gridflag          ! compute the type of grid we have
     procedure :: init_storage           ! allocate space for coordinate specific arrays
+    procedure :: init_storage_root
     procedure :: writesize              ! write a simsize.h5 file for this local grid
     procedure :: writegrid              ! write curvilinear coordinates to simgrid.h5
     procedure :: writegridall           ! write all mesh arrays to simgrid.h5
     procedure :: dissociate_pointers    ! clear out memory and reset allocation flags
     procedure :: calc_geographic        ! convert to geographic coordinates
+    procedure :: set_root               ! set fullgrid variables that have been gathered from workers to root
     !final :: destructor   ! an abstract type cannot have a final procedure, as the final procedure must act on a type and not polymorhpic object
 
     !! deferred bindings and associated generic interfaces
     procedure(initmake), deferred :: init
     procedure(initmake), deferred :: make
+    ! note there is no make_root procedure as this requires message passing and needs to be done outside this type
     procedure(calc_procedure), deferred :: calc_grav
     procedure(calc_procedure), deferred :: calc_Bmag
     procedure(calc_procedure), deferred :: calc_inclination
@@ -217,7 +223,33 @@ contains
   end subroutine set_coords
 
 
-  !> compute diffs from given grid spacing
+  subroutine set_root(self,h1all,h2all,h3all, &
+                      h1x1iall,h2x1iall,h3x1iall, &
+                      h1x2iall,h2x2iall,h3x2iall, &
+                      h1x3iall,h2x3iall,h3x3iall, &
+                      rall,thetaall,phiall, &
+                      altall,Bmagall,glonall)
+    class(curvmesh) :: self
+    real(wp), dimension(-1:,-1:,-1:), intent(in) :: h1all,h2all,h3all
+    real(wp), dimension(:,:,:), intent(in) :: h1x1iall,h2x1iall,h3x1iall
+    real(wp), dimension(:,:,:), intent(in) :: h1x2iall,h2x2iall,h3x2iall
+    real(wp), dimension(:,:,:), intent(in) :: h1x3iall,h2x3iall,h3x3iall
+    real(wp), dimension(:,:,:), intent(in) :: rall,thetaall,phiall
+    real(wp), dimension(:,:,:), intent(in) :: altall,Bmagall,glonall
+
+    if (.not. self%coord_alloc_status_root) error stop ' attempting to set root params. before allocating!'
+
+    self%h1all=h1all; self%h2all=h2all; self%h3all=h3all;
+    self%h1x1iall=h1x1iall; self%h2x1iall=h2x1iall; self%h3x1iall=h3x1iall;
+    self%h1x2iall=h1x2iall; self%h2x2iall=h2x2iall; self%h3x2iall=h3x2iall;
+    self%h1x3iall=h1x3iall; self%h2x3iall=h2x3iall; self%h3x3iall=h3x3iall;
+    self%rall=rall; self%thetaall=thetaall; self%phiall=phiall;
+    self%altall=altall; self%Bmagall=Bmagall; self%glonall=glonall
+    self%coord_set_status_root=.true.
+  end subroutine set_root
+
+
+  !> compute diffs from given grid spacing.  Note that no one except for root needs full grid diffs.
   subroutine calc_coord_diffs(self)
     class(curvmesh) :: self
     integer :: lx1,lx2,lx3
@@ -245,6 +277,27 @@ contains
   end subroutine calc_coord_diffs
 
 
+  subroutine calc_coord_diffs_root(self)
+    class(curvmesh), intent(inout) :: self
+    integer :: lx1,lx2all,lx3all
+
+    if (.not. self%xi_alloc_status) error stop ' attempting to compute root diffs without coordinates!'
+
+    lx1=self%lx1; lx2all=self%lx2all; lx3all=self%lx3all    ! limits indexing verboseness, which drives me crazy
+
+    allocate(self%x2iall(-1:lx2all),self%dx2all(0:lx2all+2),self%dx2iall(1:lx2all))
+    self%dx2all = self%x2all(0:lx2all+2)-self%x2all(-1:lx2all+1)
+    self%x2iall(1:lx2all+1) = 0.5_wp*(self%x2all(0:lx2all)+self%x2all(1:lx2all+1))
+    self%dx2iall=self%x2iall(2:lx2all+1)-self%x2iall(1:lx2all)
+    allocate(self%x3iall(-1:lx3all),self%dx3all(0:lx3all+2),self%dx3iall(1:lx3all))
+    self%dx3all = self%x3all(0:lx3all+2)-self%x3all(-1:lx3all+1)
+    self%x3iall(1:lx3all+1)=0.5_wp*(self%x3all(0:lx3all)+self%x3all(1:lx3all+1))
+    self%dx3iall=self%x3iall(2:lx3all+1)-self%x3iall(1:lx3all)
+
+    self%dxi_alloc_status_root=.true.
+  end subroutine calc_coord_diffs_root
+
+
   !> calculate differential lengths (units of m), needed for CFL calculations
   subroutine calc_difflengths(self)
     class(curvmesh) :: self
@@ -270,7 +323,8 @@ contains
     self%difflen_alloc_status=.true.
   end subroutine calc_difflengths
 
-  !> allocate space for metric factors
+
+  !> allocate space for metric factors, unit vectors, and transformations
   subroutine init_storage(self)
     class(curvmesh) :: self
     integer :: lx1,lx2,lx3
@@ -295,7 +349,7 @@ contains
 
       self%coord_alloc_status=.true.
     else
-      error stop ' attempting to allocated space for coordinate-specific arrays when they already exist!'
+      error stop ' attempting to allocate space for coordinate-specific arrays when they already exist!'
     end if
   end subroutine init_storage
 
@@ -303,9 +357,30 @@ contains
   !> allocate space for root-only grid quantities
   subroutine init_storage_root(self)
     class(curvmesh) :: self
+    integer :: lx1,lx2all,lx3all
 
     !fixme:  allocate root storage here; maybe check myid==0???  Need some protection so this does not get
-    !         called from a worker...
+    !         called from a worker...  Assume for now the calling procedure provides that.
+
+    lx1=self%lx1; lx2all=self%lx2all; lx3all=self%lx3all;
+
+    if (.not. self%coord_alloc_status_root) then
+      allocate(self%h1all(-1:lx1+2,-1:lx2all+2,-1:lx3all+2),self%h2all(-1:lx1+2,-1:lx2all+2,-1:lx3all+2), &
+         self%h3all(-1:lx1+2,-1:lx2all+2,-1:lx3all+2))
+      allocate(self%h1x1iall(1:lx1+1,1:lx2all,1:lx3all),self%h2x1iall(1:lx1+1,1:lx2all,1:lx3all), &
+                 self%h3x1iall(1:lx1+1,1:lx2all,1:lx3all))
+      allocate(self%h1x2iall(1:lx1,1:lx2all+1,1:lx3all),self%h2x2iall(1:lx1,1:lx2all+1,1:lx3all), &
+                 self%h3x2iall(1:lx1,1:lx2all+1,1:lx3all))
+      allocate(self%h1x3iall(1:lx1,1:lx2all,1:lx3all+1),self%h2x3iall(1:lx1,1:lx2all,1:lx3all+1), &
+                 self%h3x3iall(1:lx1,1:lx2all,1:lx3all+1))
+      allocate(self%rall(1:lx1,1:lx2all,1:lx3all),self%thetaall(1:lx1,1:lx2all,1:lx3all),self%phiall(1:lx1,1:lx2all,1:lx3all))
+      allocate(self%altall(1:lx1,1:lx2all,1:lx3all),self%Bmagall(1:lx1,1:lx2all,1:lx3all))
+      allocate(self%glonall(1:lx1,1:lx2all,1:lx3all))
+
+      self%coord_alloc_status_root=.true.
+    else
+      error stop ' attempting to allocate space for root-only arrays when they already exist!'
+    end if
   end subroutine init_storage_root
 
 
@@ -524,6 +599,11 @@ contains
       deallocate(self%dx3,self%x3i,self%dx3i)
       self%dxi_alloc_status=.false.
     end if
+    if (self%dxi_alloc_status_root) then
+      deallocate(self%dx2all,self%x2iall,self%dx2iall)
+      deallocate(self%dx3all,self%x3iall,self%dx3iall)
+      self%dxi_alloc_status_root=.false.
+    end if
     if (self%difflen_alloc_status) then
       deallocate(self%dl1i,self%dl2i,self%dl3i)    ! from calc_difflengths
       self%difflen_alloc_status=.false.
@@ -541,12 +621,25 @@ contains
       self%coord_alloc_status=.false.
       self%geog_set_status=.false.
     end if
-  
+    if (self%coord_alloc_status_root) then
+      deallocate(self%h1all,self%h2all,self%h3all)
+      deallocate(self%h1x1iall,self%h2x1iall,self%h3x1iall)
+      deallocate(self%h1x2iall,self%h2x2iall,self%h3x2iall)
+      deallocate(self%h1x3iall,self%h2x3iall,self%h3x3iall)
+      deallocate(self%rall,self%thetaall,self%phiall)
+      deallocate(self%altall,self%Bmagall)
+      deallocate(self%glonall)
+      self%coord_alloc_status_root=.false.
+      self%coord_set_status_root=.false.
+    end if
     if (self%null_alloc_status) then
       deallocate(self%nullpts,self%inull)
       self%null_alloc_status=.false.
     end if
-
   end subroutine dissociate_pointers
+
+  ! FIXME:  it may make sense to have a procedure to clear unit vectors here to conserve some memory
+
+  ! FIXME:  also have some way to clear the fullgrid metric factors once they are dealt with?
 
 end module meshobj
