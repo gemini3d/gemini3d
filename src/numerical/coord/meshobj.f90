@@ -6,6 +6,8 @@ module meshobj
 
 use phys_consts, only : wp
 use h5fortran, only : hdf5_file
+use geomagnetic, only: geog2geomag,geomag2geog,r2alt,alt2r
+
 implicit none (type, external)
 public
 
@@ -45,7 +47,8 @@ type, abstract :: curvmesh
   real(wp), dimension(:), pointer :: x2i
   real(wp), dimension(:), pointer :: dx2        ! this (and similar dx arrays) are pointers because they become associated with other pointers (meaning they have to either have the "target" keyword or themselves be pointers).  These should also be contiguous but I believe that is guaranteed as long as they are assigned through allocate statements (see fortran standard)  derived type arrays cannot be targets so we are forced to declare them as pointers and trust that they are allocated contiguous
   real(wp), dimension(:), pointer :: dx2i
-  
+
+  !> this are fullgrid but possibly carried around by workers too since 1D arrays? 
   real(wp), dimension(:), pointer :: x3
   real(wp), dimension(:), pointer :: x3i
   real(wp), dimension(:), pointer :: dx3
@@ -143,6 +146,7 @@ type, abstract :: curvmesh
     procedure :: writegrid              ! write curvilinear coordinates to simgrid.h5
     procedure :: writegridall           ! write all mesh arrays to simgrid.h5
     procedure :: dissociate_pointers    ! clear out memory and reset allocation flags
+    procedure :: calc_geographic        ! convert to geographic coordinates
     !final :: destructor   ! an abstract type cannot have a final procedure, as the final procedure must act on a type and not polymorhpic object
 
     !! deferred bindings and associated generic interfaces
@@ -151,7 +155,6 @@ type, abstract :: curvmesh
     procedure(calc_procedure), deferred :: calc_grav
     procedure(calc_procedure), deferred :: calc_Bmag
     procedure(calc_procedure), deferred :: calc_inclination
-    procedure(calc_procedure), deferred :: calc_geographic
     procedure(calc_procedure), deferred :: calc_er
     procedure(calc_procedure), deferred :: calc_etheta
     procedure(calc_procedure), deferred :: calc_ephi
@@ -372,6 +375,18 @@ contains
 
     self%null_alloc_status=.true.
   end subroutine calc_inull
+
+
+  !> compute geographic coordinates of all grid points
+  subroutine calc_geographic(self)
+    class(curvmesh), intent(inout) :: self
+  
+    ! fixme: error checking?
+  
+    call geomag2geog(self%phi,self%theta,self%glon,self%glat)
+    self%alt=r2alt(self%r)
+    self%geog_set_status=.true.
+  end subroutine calc_geographic
 
 
   !> write the size of the grid to a file
