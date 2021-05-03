@@ -47,7 +47,6 @@ type, extends(curvmesh) :: cartmesh
     procedure, nopass :: calc_h1=>calc_hz
     procedure, nopass :: calc_h2=>calc_hx
     procedure, nopass :: calc_h3=>calc_hy
-    procedure :: calc_geographic=>calc_geographic_cart
     
     !> type deallocations, reset flags, etc.
     final :: destructor
@@ -215,18 +214,6 @@ subroutine set_center(self,glon,glat)
   self%glonctr=glon
   self%glatctr=glat
 end subroutine set_center
-
-
-!> compute geographic coordinates of all grid points
-subroutine calc_geographic_cart(self)
-  class(cartmesh), intent(inout) :: self
-
-  ! fixme: error checking?
-
-  call geomag2geog(self%phi,self%theta,self%glon,self%glat)
-  self%alt=r2alt(self%r)
-  self%geog_set_status=.true.
-end subroutine calc_geographic_cart
 
 
 !> compute gravitational field components
