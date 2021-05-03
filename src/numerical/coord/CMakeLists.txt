@@ -30,3 +30,7 @@ target_link_libraries(fullgrid_dipole_testdriver PRIVATE const meshobj meshobj_d
 
 add_executable(fullgrid_cartesian_testdriver fullgrid_cartesian_testdriver.f90)
 target_link_libraries(fullgrid_cartesian_testdriver PRIVATE const meshobj meshobj_cart newton spherical geomagnetic)
+
+add_executable(fullgrid_dipole_testdriver_root fullgrid_dipole_testdriver_root.f90)
+target_link_libraries(fullgrid_dipole_testdriver_root PRIVATE const meshobj meshobj_dipole newton spherical geomagnetic)
+

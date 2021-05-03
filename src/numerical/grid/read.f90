@@ -205,16 +205,15 @@ end do
 
 if (ierr/=0) error stop 'grid:read_grid_root failed mpi_send flagswap'
 
+
 !ALLOCATE SPACE FOR ROOTS SLAB OF DATA
 allocate(x%x1(-1:lx1+2))
 allocate(x%dx1i(lx1),x%x1i(lx1+1),x%dx1(0:lx1+2))
-
 
 !FULL GRID X2 VARIABLE
 allocate(x%x2all(-1:lx2all+2))
 allocate(x%dx2all(0:lx2all+2))
 allocate(x%dx2iall(lx2all),x%x2iall(lx2all+1))
-
 
 !FULL-GRID X3-VARIABLE
 allocate(x%x3all(-1:lx3all+2))
@@ -233,6 +232,7 @@ allocate(x%h1x3iall(1:lx1,1:lx2all,1:lx3all+1),x%h2x3iall(1:lx1,1:lx2all,1:lx3al
 allocate(x%rall(1:lx1,1:lx2all,1:lx3all),x%thetaall(1:lx1,1:lx2all,1:lx3all),x%phiall(1:lx1,1:lx2all,1:lx3all))
 allocate(x%altall(1:lx1,1:lx2all,1:lx3all),x%Bmagall(1:lx1,1:lx2all,1:lx3all))
 allocate(x%glonall(1:lx1,1:lx2all,1:lx3all))
+
 
 !DETERMINE AND ALLOCATE SPACE NEEDED FOR ROOT SUBGRIDS (WORKERS USE SIMILAR ALLOCATE STATEMENTS)
 allocate(x%x3(-1:lx3+2))
