@@ -9,7 +9,6 @@ use phys_consts, only: wp,Re,pi,Mmag,mu0,Gconst,Me
 use meshobj, only: curvmesh
 use newton, only: newtopts,newton_exact,objfun,objfun_deriv
 use spherical, only: er_spherical,etheta_spherical,ephi_spherical
-use geomagnetic, only: geog2geomag,geomag2geog,r2alt,alt2r
 
 implicit none (type, external)
 
@@ -48,7 +47,6 @@ type, extends(curvmesh) :: dipolemesh
     procedure, nopass :: calc_h1=>calc_hq
     procedure, nopass :: calc_h2=>calc_hp
     procedure, nopass :: calc_h3=>calc_hphi_dip
-    procedure :: calc_geographic=>calc_geographic_dipole
     
     !> type deallocations, etc.
     final :: destructor
@@ -237,18 +235,6 @@ subroutine make_dipolemesh(self)
   print*, ' make_dipolemesh:  inclination angle...'  
   call self%calc_inclination()
 end subroutine make_dipolemesh
-
-
-!> compute geographic coordinates of all grid points
-subroutine calc_geographic_dipole(self)
-  class(dipolemesh), intent(inout) :: self
-
-  ! fixme: error checking?
-
-  call geomag2geog(self%phi,self%theta,self%glon,self%glat)
-  self%alt=r2alt(self%r)
-  self%geog_set_status=.true.
-end subroutine calc_geographic_dipole
 
 
 !> compute gravitational field components
