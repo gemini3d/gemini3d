@@ -5,90 +5,42 @@ submodule (grid) grid_read
 implicit none (type, external)
 
 interface ! readgrid_*.f90
-  module subroutine get_grid3_raw(path, flagswap, x, g1all,g2all,g3all,glatall,Incall,nullptsall,&
-    e1all,e2all,e3all,erall,ethetaall,ephiall,rall,thetaall,phiall)
+  module subroutine get_grid3_coords_raw(path,x1,x2,x3,x2all,x3all)
     character(*), intent(in) :: path
-    integer, intent(in) :: flagswap
-    class(curvmesh), intent(inout) :: x
-    real(wp), intent(out), dimension(:,:,:) :: g1all,g2all,g3all,glatall,nullptsall,rall,thetaall,phiall
-    real(wp), intent(out), dimension(:,:) :: Incall
-    real(wp), intent(out), dimension(:,:,:,:) :: e1all,e2all,e3all,erall,ethetaall,ephiall
+    real(wp), dimension(:), intent(out) :: x1,x2,x3,x2all,x3all
   end subroutine get_grid3_raw
 
-  module subroutine get_grid3_hdf5(path, flagswap, x, g1all,g2all,g3all,glatall,Incall,nullptsall,&
-    e1all,e2all,e3all,erall,ethetaall,ephiall,rall,thetaall,phiall)
+  module subroutine get_grid3_coords_hdf5(path,x1,x2,x3,x2all,x3all)
     character(*), intent(in) :: path
-    integer, intent(in) :: flagswap
-    class(curvmesh), intent(inout) :: x
-    real(wp), intent(out), dimension(:,:,:) :: g1all,g2all,g3all,glatall,nullptsall,rall,thetaall,phiall
-    real(wp), intent(out), dimension(:,:) :: Incall
-    real(wp), intent(out), dimension(:,:,:,:) :: e1all,e2all,e3all,erall,ethetaall,ephiall
+    real(wp), dimension(:), intent(out) :: x1,x2,x3,x2all,x3all
   end subroutine get_grid3_hdf5
 
-  module subroutine get_grid3_nc4(path, flagswap, x, g1all,g2all,g3all,glatall,Incall,nullptsall,&
-    e1all,e2all,e3all,erall,ethetaall,ephiall,rall,thetaall,phiall)
+  module subroutine get_grid3_coords_nc4(path,x1,x2,x3,x2all,x3all)
     character(*), intent(in) :: path
-    integer, intent(in) :: flagswap
-    type(curvmesh), intent(inout) :: x
-    real(wp), intent(out), dimension(:,:,:) :: g1all,g2all,g3all,glatall,nullptsall,rall,thetaall,phiall
-    real(wp), intent(out), dimension(:,:) :: Incall
-    real(wp), intent(out), dimension(:,:,:,:) :: e1all,e2all,e3all,erall,ethetaall,ephiall
+    real(wp), dimension(:), intent(out) :: x1,x2,x3,x2all,x3all
   end subroutine get_grid3_nc4
 end interface
 
 contains
-
-subroutine get_grid3(path, flagswap, x, g1all,g2all,g3all,glatall,Incall,nullptsall,&
-  e1all,e2all,e3all,erall,ethetaall,ephiall,rall,thetaall,phiall)
-!! switchyard file format
-character(*), intent(in) :: path
-integer, intent(in) :: flagswap
-type(curvmesh), intent(inout) :: x
-real(wp), intent(out), dimension(:,:,:) :: g1all,g2all,g3all,glatall,nullptsall,rall,thetaall,phiall
-real(wp), intent(out), dimension(:,:) :: Incall
-real(wp), intent(out), dimension(:,:,:,:) :: e1all,e2all,e3all,erall,ethetaall,ephiall
-
-character(:), allocatable :: fmt
-
-fmt = path(index(path, '.', back=.true.) : len(path))
-
-select case (fmt)
-case ('.dat')
-  call get_grid3_raw(path, flagswap, x, g1all,g2all,g3all,glatall,Incall,nullptsall,&
-    e1all,e2all,e3all,erall,ethetaall,ephiall,rall,thetaall,phiall)
-case ('.h5')
-  call get_grid3_hdf5(path, flagswap, x, g1all,g2all,g3all,glatall,Incall,nullptsall,&
-    e1all,e2all,e3all,erall,ethetaall,ephiall,rall,thetaall,phiall)
-case ('.nc')
-  call get_grid3_nc4(path, flagswap, x, g1all,g2all,g3all,glatall,Incall,nullptsall,&
-    e1all,e2all,e3all,erall,ethetaall,ephiall,rall,thetaall,phiall)
-case default
-  write(stderr,*) 'grid:read:get_grid3: unknown grid format: ' // fmt
-  error stop 2
-end select
-
-end subroutine get_grid3
-
 
 !> Read in the grid information and prep grid object.  Note that there are also module-scope variables
 !   that are (redundantly, for convenience) defined based on the grid structure and this procedure 
 !   must also set those.  
 module procedure read_grid
 ! subroutine read_grid(indatsize,indatgrid,flagperiodic,x)
+  real(wp), dimension(:), allocatable :: x1,x2,x3,x2all,x3all
+  integer :: gridtype
 
-!> Read file information for grid; here just the coordinate arrays
-!   we also need some information from the input file about what type
-!   of grid (e.g. dipole or cartesian) is to be generated.  These routines
-!   will also set grid-level array sizes.
-  if(mpi_cfg%myid==0) then
-    call read_grid_root(indatsize,indatgrid,x1,x2,x3,x2all,x3all)
-  else
-    call read_grid_workers(x1,x2,x3,x2all,x3all)
-  end if
+  call set_subgrid_sizes() 
+  allocate(x1(-1:lx1+2),x2(-1:lx2+2),x3(-1:lx3+2),x2all(-1:lx2all+2),x3all(-1:lx3all+2))
+  call get_grid3_coords(indatgrid,x1,x2,x3,x2all,x3all)
+
+  ! FIXME: hardcode grid type for now
+  gridtype=1
   
   !> Declare grid type that we are dealing with; note lack of matching deallocate assume
   !   that the compiler will deal with it automatically
-  select case (gridflag)
+  select case (gridtype)
     case(0)    ! cartesian
       allocate(cartmesh::x) 
     case(1)    ! dipole
@@ -99,12 +51,13 @@ module procedure read_grid
 
   !> Create the grid object
   call x%set_coords(x1,x2,x3,x2all,x3all)    ! store coordinate arrays
+  deallocate(x1,x2,x3,x2all,x3all)
   call x%init()                              ! allocate space for subgrid variables
   call x%make()                              ! fill auxiliary arrays
   
   !> We need to collect the info for root's fullgrid variables
   if (mpi_cfg%myid==0) then
-    call x%init_storage_root()                ! now we have space in type to store full-grid arrays
+    call x%init_storage_root()                ! now we have space in type to store full-grid arrays for gather
     call gather_grid_root(x%h1,x%h2,x%h3, &
                           x%h1x1i,x%h2x1i,x%h3x1i, &
                           x%h1x2i,x%h2x2i,x%h3x2i, &
@@ -143,121 +96,52 @@ module procedure read_grid
 end procedure read_grid
 
 
-!> Read in basic coordinates and grid type (if present) from input file
-subroutine read_grid_root(indatsize,indatgrid,x)
+subroutine set_subgrid_size()
 
-!------------------------------------------------------------
-!--------SOME CODE DUPLICATION WITH WORKER VERSION - CAN WE
-!--------CREATE A COMMON SUBROUTINE THAT ALLOCATES SOME VARS?
-!--------THE GRID SIZES MUST ALREADY BE DEFINED IN TEH MODULE
-!--------, PROBABLY FROM CALLING GRID_SIZE
-!------------------------------------------------------------
-
-  character(*), intent(in) :: indatsize,indatgrid
-  class(curvmesh), intent(inout) :: x    !does this need to be inout?  I think if anything is unallocated, it does...
-  integer u,ierr,iid,ix1,ix2,ix3,icount,icomp!,itell
-  
-  !print*, 'Entering read_grid_root', lx1,lx2all,lx3all,mpi_cfg%lid2,mpi_cfg%lid3,lx2all/mpi_cfg%lid2
-  
-  
-  !DETERMINE NUMBER OF SLABS AND CORRESPONDING SIZE FOR EACH WORKER
-  !NOTE THAT WE WILL ASSUME THAT THE GRID SIZE IS DIVISIBLE BY NUMBER OF WORKERS AS THIS HAS BEEN CHECKED A FEW LINES BELOW
-  x%lx1 = lx1
-  x%lx2all = lx2all
-  x%lx3all = lx3all
-  
-  
-  !> ADJUST THE SIZES OF THE VARIABLES IF LX3ALL==1, SO THAT THE ALLOCATIONS ARE THE CORRECT SIZE
-  if (lx3all==1) then
-    print *, 'read_grid_root: 2D run: **SWAP** x2 and x3 dims'
-    lx3all=lx2all; x%lx3all=lx2all;
-    lx2=1
-    lx2all=1; x%lx2all=1;
-    lx3=lx3all/mpi_cfg%lid
-    !! use total number of processes since we only divide in one direction here...
-    flagswap=1
+  !! use only non-swapped axes
+  if(lx2all==1) then
+    print *, 'get_subgrid_size: 2D run with singleton x2'
+    lx2 = 1
+    lx3 = lx3all/mpi_cfg%lid
+  else if (lx3all==1) then
+    print*, 'get_subgrid_size:  2D run with singleton x3'
+    lx3=1
+    lx2=lx2all/mpi_cfg%lid
   else
-    !! non-swapped axes
-    if(lx2all==1) then
-      print *, 'read_grid_root: 2D run: do not swap x2 and x3 dims.'
-      lx2 = 1
-      lx3 = lx3all/mpi_cfg%lid
-    else
-      print *, 'read_grid_root: 3D run'
-      !! should divide evenly if generated from process_grid
-      lx2 = lx2all/mpi_cfg%lid2
-      lx3 = lx3all/mpi_cfg%lid3
-    endif
-    flagswap=0
+    print *, 'get_subgrid_size: 3D run'
+    !! should divide evenly if generated from process_grid
+    lx2 = lx2all/mpi_cfg%lid2
+    lx3 = lx3all/mpi_cfg%lid3
   end if
-  x%lx2=lx2; x%lx3=lx3
-  print '(A,3I6)', 'Grid slab size:  ',lx1,lx2,lx3
-  
+
+  ! FIXME: right now just force this to zero so later swap-specific code does not get triggered (eventually needs to be removed)
+  flagswap=0
+
   if(lx2all > 1 .and. lx3all > 1) then
     if(lx2 == 1 .or. lx3 == 1) error stop "read_grid_root: 3D grids cannot be partitioned with a single MPI image on an axis"
-  endif
-  
-  !> COMMUNICATE THE GRID SIZE TO THE WORKERS SO THAT THEY CAN ALLOCATE SPACE
-  ierr=0
-  !! if this is a root-only simulation we don't want to error out
-  do iid=1,mpi_cfg%lid-1
-    call mpi_send(lx2,1,MPI_INTEGER,iid,tag%lx2,MPI_COMM_WORLD,ierr)
-    !! need to also pass the lx2all size to all workers to they know
-    !if (ierr/=0) error stop 'grid:read_grid_root failed mpi_send lx2'
-  
-    call mpi_send(lx3,1,MPI_INTEGER,iid,tag%lx3,MPI_COMM_WORLD,ierr)
-    !if (ierr/=0) error stop 'grid:read_grid_root failed mpi_send lx3'
-  end do
-  if (ierr/=0) error stop 'grid:read_grid_root failed mpi_send grid size'
-  
-  !TELL WORKERS IF WE'VE SWAPPED DIMENSIONS
-  ierr=0
-  do iid=1,mpi_cfg%lid-1
-    call mpi_send(flagswap,1,MPI_INTEGER,iid,tag%swap,MPI_COMM_WORLD,ierr)
-    !if (ierr/=0) error stop 'grid:read_grid_root failed mpi_send flagswap'
-  end do
-  if (ierr/=0) error stop 'grid:read_grid_root failed mpi_send flagswap'
-  
-  
-  ! FIXME: at this point we are ready to read in coordinates...
-  print *, 'read_grid_root: Starting grid input from file: ',indatgrid
-  
-  call get_grid3(indatgrid,flagswap,x,g1all,g2all,g3all,glatall,Incall,nullptsall,&
-    e1all,e2all,e3all,erall,ethetaall,ephiall,rall,thetaall,phiall)   !altall and Bmagall now in grid structure (if root)
-  
-  !! ALLOCATE SPACE FOR ROOTS SUBGRID GRAVITATIONAL FIELD
-  allocate(g1(1:lx1,1:lx2,1:lx3),g2(1:lx1,1:lx2,1:lx3),g3(1:lx1,1:lx2,1:lx3))
-end subroutine read_grid_root
+  end if
+end subroutine get_subgrid_size
 
 
-subroutine read_grid_workers(x)
+subroutine get_grid3_coords(path,x1,x2,x3,x2all,x3all)
+  character(*), intent(in) :: path
+  real(wp), dimension(:), intent(out) :: x1,x2,x3,x2all,x3all
 
-class(curvmesh), intent(inout) :: x
-integer :: ix1,ix2,ix3,icount,icomp, ierr
+  character(:), allocatable :: fmt
 
-!GET ROOTS MESSAGE WITH THE SIZE OF THE GRID WE ARE TO RECEIVE
-call mpi_recv(lx2,1,MPI_INTEGER,0,tag%lx2,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-if (ierr/=0) error stop 'failed mpi_recv lx2'
-call mpi_recv(lx3,1,MPI_INTEGER,0,tag%lx3,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-if (ierr/=0) error stop 'failed mpi_recv lx3'
-
-x%lx1=lx1; x%lx2=lx2; x%lx2all=lx2all; x%lx3all=lx3all; x%lx3=lx3
-
-!ROOT NEEDS TO TELL US WHETHER WE'VE SWAPPED DIMENSIONS SINCE THIS AFFECTS HOW CURRENTS ARE COMPUTED
-call mpi_recv(flagswap,1,MPI_INTEGER,0,tag%swap,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-if (ierr/=0) error stop 'failed mpi_recv flagswap'
-
-if (flagswap==1) then
-  x%lx3all=lx2all
-  x%lx2all=lx3all
-  lx2all=x%lx2all
-  lx3all=x%lx3all
-end if
-
-!ALLOCATE SPACE FOR WORKER'S GRAVITATIONAL FIELD
-allocate(g1(1:lx1,1:lx2,1:lx3),g2(1:lx1,1:lx2,1:lx3),g3(1:lx1,1:lx2,1:lx3))
-
-end subroutine read_grid_workers
+  fmt = path(index(path, '.', back=.true.) : len(path))
+  select case (fmt)
+    case ('.dat')
+      call get_grid3_coords_raw(path,x1,x2,x3,x2all,x3all)
+    case ('.h5')
+      call get_grid3_coords_hdf5(path,x1,x2,x3,x2all,x3all)
+    case ('.nc')
+      call get_grid3_coords_nc4(path,x1,x2,x3,x2all,x3all)
+    case default
+      write(stderr,*) 'grid:read:get_grid3: unknown grid format: ' // fmt
+      error stop 2
+  end select 
+end subroutine get_grid3_coords
 
 
 !> pull full grid vars. from workers into root arrays
