@@ -22,7 +22,7 @@ integer, protected :: lx1,lx2,lx3,lx2all,lx3all
 !! this is a useful shorthand for most program units using this module,
 !! occasionally a program unit needs to define its own size in which case an only statement
 !! is required when using this module.
-real(wp), dimension(:,:,:), allocatable, protected :: g1,g2,g3
+real(wp), dimension(:,:,:), pointer, protected :: g1,g2,g3
 !! gravity, not to be modified by a procedure outside this module
 integer, protected :: gridflag
 !! for cataloguing the type of grid that we are using, open, closed, inverted, etc.  0 - closed dipole, 1 - inverted open, 2 - standard open.
