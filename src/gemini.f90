@@ -36,9 +36,8 @@ integer, dimension(3) :: ymd
 type(gemini_cfg) :: cfg
 !! holds many user simulation parameters
 
-!> GRID STRUCTURE
-type(curvmesh) :: x
-!! structure containg grid locations, finite differences, etc.:  see grid module for details
+!> grid type (polymorphic) containing geometric information and associate procedures
+class(curvmesh), allocatable :: x
 
 !> STATE VARIABLES
 !> MZ note:  it is likely that there could be a plasma and neutral derived type containing these data...  May be worth considering in a refactor...
@@ -165,7 +164,6 @@ end if
 !        does not technically need to be broadcast to workers (since root sets up electrodynamics), but perhaps
 !        should be anyway since that is what the user probably would expect and there is little performance penalty.
 call find_milestone(cfg, ttmp, ymdtmp, UTsectmp, filetmp)
-
 if ( ttmp > 0 ) then
   !! restart scenario
   if (mpi_cfg%myid==0) then
