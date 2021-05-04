@@ -224,6 +224,8 @@ contains
   end subroutine set_coords
 
 
+  !> Set full grid arrays needed for some numerical parts - these need to be gathered by
+  !   a wrapping module/procedure and then passed to this procedure.
   subroutine set_root(self,h1all,h2all,h3all, &
                       h1x1iall,h2x1iall,h3x1iall, &
                       h1x2iall,h2x2iall,h3x2iall, &
