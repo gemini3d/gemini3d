@@ -131,8 +131,8 @@ real(wp) :: E2ref,E3ref,Bref
 end subroutine grid_drift
 
 
+!> FIXME: DEP
 subroutine clear_grid(x)
-!! DEALLOCATES GRID VARIABLES.
 
 type(curvmesh), intent(inout) :: x
 
@@ -173,6 +173,7 @@ call clear_grav()
 end subroutine clear_grid
 
 
+!> FIXME: DEP
 subroutine clear_unitvecs(x)
 !! DEALLOCATE GRID UNIT VECTORS, WHICH TAKE UP A LOT OF MEMORY
 
