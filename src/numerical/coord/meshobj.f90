@@ -152,6 +152,7 @@ type, abstract :: curvmesh
     procedure :: dissociate_pointers    ! clear out memory and reset allocation flags
     procedure :: calc_geographic        ! convert to geographic coordinates
     procedure :: set_root               ! set fullgrid variables that have been gathered from workers to root
+    procedure :: set_periodic           ! set the flag which labels grid as periodic vs. aperiodic
     !final :: destructor   ! an abstract type cannot have a final procedure, as the final procedure must act on a type and not polymorhpic object
 
     !! deferred bindings and associated generic interfaces
@@ -247,6 +248,18 @@ contains
     self%altall=altall; self%Bmagall=Bmagall; self%glonall=glonall
     self%coord_set_status_root=.true.
   end subroutine set_root
+
+
+  subroutine set_periodic(self,flagperiodic)
+    class(curvmesh), intent(inout) :: self
+    integer, intent(in) :: flagperiodic
+    
+    if (flagperiodic==1) then
+      self%flagper=.true.
+    else
+      self%flagper=.false.
+    end if
+  end subroutine set_periodic
 
 
   !> compute diffs from given grid spacing.  Note that no one except for root needs full grid diffs.
