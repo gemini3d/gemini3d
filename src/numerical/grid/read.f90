@@ -70,15 +70,9 @@ end select
 end subroutine get_grid3
 
 
+!> Read in the grid information and prepare grid object
 module procedure read_grid
 ! subroutine read_grid(indatsize,indatgrid,flagperiodic,x)
-!! READS GRID INFORMATION FROM FILE AND ALLOCATES
-!! GRID STRUCTURE.  NOTE THAT THE INPUT FILE DOES NOT,
-!! BY DEFAULT INCLUDE THE GHOST CELLS.  THIS FUNCTION
-!! IS A WRAPPER WHICH PASSES WORK OFF TO APPROPRIATE
-!! SUBROUTINE DEPENDING ON WHETHER IT IS CALLED BY ROOT
-!! OR NOT.   THIS SUBRoutINE ALSO CLASSIFIES THE GRID.
-
 
 
 !> READ IN THE GRID DATA
