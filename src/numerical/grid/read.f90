@@ -5,14 +5,14 @@ submodule (grid) grid_read
 implicit none (type, external)
 
 interface ! readgrid_*.f90
-  module subroutine get_grid3_coords_raw(path,x1,x2,x3,x2all,x3all)
+  module subroutine get_grid3_coords_raw(path,x1,x2all,x3all)
     character(*), intent(in) :: path
-    real(wp), dimension(:), intent(out) :: x1,x2,x3,x2all,x3all
+    real(wp), dimension(:), intent(out) :: x1,x2all,x3all
   end subroutine get_grid3_raw
 
-  module subroutine get_grid3_coords_hdf5(path,x1,x2,x3,x2all,x3all)
+  module subroutine get_grid3_coords_hdf5(path,x1,x2all,x3all)
     character(*), intent(in) :: path
-    real(wp), dimension(:), intent(out) :: x1,x2,x3,x2all,x3all
+    real(wp), dimension(:), intent(out) :: x1,x2all,x3all
   end subroutine get_grid3_hdf5
 
   module subroutine get_grid3_coords_nc4(path,x1,x2,x3,x2all,x3all)
@@ -30,15 +30,27 @@ module procedure read_grid
 ! subroutine read_grid(indatsize,indatgrid,flagperiodic,x)
   real(wp), dimension(:), allocatable :: x1,x2,x3,x2all,x3all
   integer :: gridtype
+  integer :: islstart,islfin
 
-  call set_subgrid_sizes() 
-  allocate(x1(-1:lx1+2),x2(-1:lx2+2),x3(-1:lx3+2),x2all(-1:lx2all+2),x3all(-1:lx3all+2))
-  call get_grid3_coords(indatgrid,x1,x2,x3,x2all,x3all)
+  call set_subgrid_sizes()    ! everyone computes what the size of their subgrid should be
+  allocate(x1(-1:lx1+2),x2(-1:lx2+2),x3(-1:lx3+2),x2all(-1:lx2all+2),x3all(-1:lx3all+2))   ! tmp space for coords from file
+  call get_grid3_coords(indatgrid,x1,x2all,x3all)
 
-  ! FIXME: hardcode grid type for now
+  !> each worker needs to set their specific subgrid coordinates
+  indsgrid=ID2grid(iid, mpi_cfg%lid2)     !compute my location on the process grid
+  !! x2
+  islstart=indsgrid(1)*lx2+1              !piece of grid that corresponds to my x3 position
+  islfin=islstart+lx2-1
+  x2=x2all(islstart-2:islfin+2)
+  !! x3
+  islstart=indsgrid(2)*lx3+1              !piece of grid that corresponds to my x3 position
+  islfin=islstart+lx3-1
+  x3=x3all(islstart-2:islfin+2)
+
+  ! FIXME: hardcode grid type for now OR compute it from the coordinates??
   gridtype=1
   
-  !> Declare grid type that we are dealing with; note lack of matching deallocate assume
+  !> Declare grid type that we are dealing with; note lack of matching deallocates assume
   !   that the compiler will deal with it automatically
   select case (gridtype)
     case(0)    ! cartesian

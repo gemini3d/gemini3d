@@ -116,8 +116,6 @@ lx=size(param,1)-4
 do iid=1,mpi_cfg%lid-1
   indsgrid=ID2grid(iid, mpi_cfg%lid2)
 
-!  islstart=iid*lx+1
-!  islfin=islstart+lx-1
   islstart=indsgrid(1)*lx+1
   islfin=islstart+lx-1
 
@@ -143,7 +141,7 @@ module procedure bcast_send1D_23_3
 !-------SUBROUTINE IS TO BE CALLED BY ROOT TO DO A BROADCAST
 !-------
 !-------THIS VERSION WORKS ON 1D ARRAYS THAT ARE REPRESENTING
-!-------THE X2-DIRECTION
+!-------THE X3-DIRECTION
 !------------------------------------------------------------
 
 integer :: ierr
@@ -158,8 +156,6 @@ lx=size(param,1)-4
 do iid=1,mpi_cfg%lid-1
   indsgrid=ID2grid(iid, mpi_cfg%lid2)    !compute my location on the process grid
 
-!  islstart=iid*lx+1
-!  islfin=islstart+lx-1
   islstart=indsgrid(2)*lx+1    !send piece of grid that corresponds to my x3 position
   islfin=islstart+lx-1
 
