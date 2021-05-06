@@ -22,7 +22,7 @@ use collisions, only:  thermal_conduct
 use phys_consts, only : wp,pi,qs,lsp,gammas,kB,ms,mindensdiv,mindens,mindensnull, debug
 use diffusion, only:  trbdf23d, diffusion_prep, backEuler3D
 use grid, only: lx1, lx2, lx3, gridflag
-use mesh, only: curvmesh
+use meshobj, only: curvmesh
 use ionization, only: ionrate_glow98, ionrate_fang, eheating, photoionization
 use mpimod, only: mpi_cfg, tag=>gemini_mpi
 use precipBCs_mod, only: precipBCs_fileinput, precipBCs
@@ -57,7 +57,7 @@ real(wp), dimension(:,:,:), intent(inout) :: E1
 type(gemini_cfg), intent(in) :: cfg
 real(wp), intent(in) :: t,dt
 
-type(curvmesh), intent(in) :: x
+class(curvmesh), intent(in) :: x
 !! grid structure variable
 
 real(wp), dimension(:,:,:,:), intent(in) :: nn
@@ -408,7 +408,7 @@ subroutine clean_param(x,paramflag,param)
 !-------POSSIBLE NULL ARTIFACTS AT BOUNDARIES
 !------------------------------------------------------------
 
-type(curvmesh), intent(in) :: x
+class(curvmesh), intent(in) :: x
 integer, intent(in) :: paramflag
 real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: param     !note that this is 4D and is meant to include ghost cells
 
@@ -465,12 +465,12 @@ select case (paramflag)
         do ix3=1,lx3
           do ix2=1,lx2
             ix1beg=1
-            do while(x%nullpts(ix1beg,ix2,ix3) < 0.5 .and. ix1beg<lx1)     !find the first non-null index for this field line, need to be careful if no null points exist...
+            do while( (.not. x%nullpts(ix1beg,ix2,ix3)) .and. ix1beg<lx1)     !find the first non-null index for this field line, need to be careful if no null points exist...
               ix1beg=ix1beg+1
             end do
 
             ix1end=ix1beg
-            do while(x%nullpts(ix1end,ix2,ix3) > 0.5 .and. ix1end<lx1)     !find the first non-null index for this field line
+            do while(x%nullpts(ix1end,ix2,ix3) .and. ix1end<lx1)     !find the first non-null index for this field line
               ix1end=ix1end+1
             end do
 
@@ -488,7 +488,7 @@ select case (paramflag)
         do ix3=1,lx3
           do ix2=1,lx2
             ix1end=1
-            do while(x%nullpts(ix1end,ix2,ix3) < 0.5 .and. ix1end<lx1)     !find the first non-null index for this field line
+            do while((.not. x%nullpts(ix1end,ix2,ix3)) .and. ix1end<lx1)     !find the first non-null index for this field line
               ix1end=ix1end+1
             end do
 

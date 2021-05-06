@@ -4,7 +4,7 @@ module diffusion
 
 use phys_consts, only: kB,lsp,gammas,mindensdiv, wp
 !! sizes are not imported in case we want to do subgrid diffusion
-use mesh, only : curvmesh
+use meshobj, only : curvmesh
 use grid, only : gridflag
 use PDEparabolic, only : backEuler1D,TRBDF21D
 
@@ -31,7 +31,7 @@ pure subroutine diffusion_prep(isp,x,lambda,betacoeff,ns,T,A,B,C,D,E,Tn,Teinf)
 !! Note: done on a per species basis. This is never called over the full grid
 
 integer, intent(in) :: isp
-type(curvmesh), intent(in) :: x
+class(curvmesh), intent(in) :: x
 real(wp), dimension(:,:,:), intent(in) :: lambda,betacoeff
 
 real(wp), dimension(-1:,-1:,-1:), intent(in) :: ns
@@ -100,7 +100,7 @@ function backEuler3D_curv(f,A,B,C,D,E,dt,x)
 real(wp), dimension(:,:,:), intent(in) :: A,B,C,D,E   !trimmed to grid size
 real(wp), dimension(-1:,-1:,-1:), intent(in) :: f    !expected to include ghosts
 real(wp), intent(in) :: dt
-type(curvmesh), intent(in) :: x
+class(curvmesh), intent(in) :: x
 
 integer :: ix1,ix2,ix3,lx1,lx2,lx3
 real(wp),dimension(size(f,1)-4) :: fx1slice
@@ -143,7 +143,7 @@ real(wp), dimension(:,:,:), intent(in) :: A,B,C,D,E
 real(wp), dimension(-1:,-1:,-1:), intent(in) :: f
 
 real(wp), intent(in) :: dt
-type(curvmesh), intent(in) :: x
+class(curvmesh), intent(in) :: x
 
 integer :: ix1,ix2,ix3,lx1,lx2,lx3
 real(wp),dimension(size(f,1)-4) :: fx1slice

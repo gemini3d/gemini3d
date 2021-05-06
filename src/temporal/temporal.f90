@@ -13,7 +13,7 @@ module temporal
 
 use phys_consts, only:  kB,mu0,ms,lsp,pi, wp, debug
 use mpimod, only: mpi_realprec, tag=>gemini_mpi, mpi_cfg, MPI_COMM_WORLD,MPI_STATUS_IGNORE
-use mesh, only:  curvmesh
+use meshobj, only:  curvmesh
 use config, only: gemini_cfg
 
 implicit none (type, external)
@@ -32,7 +32,7 @@ real(wp), intent(in) :: t,tout,tglowout
 type(gemini_cfg), intent(in) :: cfg
 real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns,Ts,vs1,vs2,vs3
 real(wp),  dimension(-1:,-1:,-1:), intent(in) :: B1,B2,B3
-type(curvmesh), intent(in) :: x
+class(curvmesh), intent(in) :: x
 real(wp), intent(out) :: dt
 
 real(wp), dimension(lsp) :: cour1,cour2,cour3

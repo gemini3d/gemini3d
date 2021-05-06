@@ -5,7 +5,7 @@ use neutral, only: Tnmsis
 use ionize_fang, only: fang2008, fang2010
 !! we need the unperturbed msis temperatures to apply the simple chapman theory used by this module
 use grid, only: lx1,lx2,lx3,g1,g2,g3
-use mesh, only: curvmesh
+use meshobj, only: curvmesh
 use timeutils, only: doy_calc
 use mpimod, only: mpi_realprec, mpi_cfg, tag=>gemini_mpi, MPI_COMM_WORLD,MPI_STATUS_IGNORE
 
@@ -38,7 +38,7 @@ function photoionization(x,nn,chi,f107,f107a)
 !-------COMPUTE PHOTOIONIZATION RATES PER SOLOMON ET AL, 2005
 !------------------------------------------------------------
 
-type(curvmesh), intent(in) :: x
+class(curvmesh), intent(in) :: x
 real(wp), dimension(:,:,:,:), intent(in) :: nn
 !real(wp), dimension(:,:,:), intent(in) :: Tn
 real(wp), dimension(:,:,:), intent(in) :: chi
@@ -236,7 +236,8 @@ where (photoionization < 0)
 end where
 do isp=1,lsp-1
   phototmp=photoionization(:,:,:,isp)
-  where (x%nullpts>0.9 .and. x%nullpts<1.1)
+!  where (x%nullpts>0.9 .and. x%nullpts<1.1)
+  where(x%nullpts)
     phototmp=0
   end where
   photoionization(:,:,:,isp) = phototmp

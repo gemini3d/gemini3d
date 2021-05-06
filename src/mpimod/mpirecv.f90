@@ -120,11 +120,90 @@ do isp=1,lsp
                   mpi_realprec,iid,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
     !! receive chunk of data into buffer
     inds=slabinds(iid,lx2,lx3)
-    paramall(-1:lx1+2,inds(1):inds(2),inds(3):inds(4),isp)=paramtmp(-1:lx1+2,1:lx2,1:lx3)    !note the inclusion of x1 ghost cells
+    paramall(-1:lx1+2,inds(1):inds(2),inds(3):inds(4),isp)=paramtmp(-1:lx1+2,1:lx2,1:lx3)    !note the inclusion of x2,3 ghost cells
   end do
 end do
 
 end procedure gather_recv4D_23
+
+
+!> root gathers full grid data from workers - 3D arrays ***with*** ghost cells)
+module procedure gather_recv3D_ghost_23
+  integer :: ierr
+  integer :: lx1,lx2,lx3
+  integer :: iid
+  real(wp), dimension(-1:size(param,1)-2,-1:size(param,2)-2,-1:size(param,3)-2) :: paramtmp
+  integer, dimension(4) :: inds
+  
+  !> note here that param has ghost cells
+  lx1=size(param,1)-4
+  lx2=size(param,2)-4
+  lx3=size(param,3)-4
+  
+  paramall(-1:lx1+2,-1:lx2+2,-1:lx3+2)=param(-1:lx1+2,-1:lx2+2,-1:lx3+2)
+  !! root records his own piece of the grid into full grid variable
+
+  do iid=1,mpi_cfg%lid-1
+    !! must loop over all processes in the grid, don't enter loop if only root is present
+    call mpi_recv(paramtmp,(lx1+4)*(lx2+4)*(lx3+4), &
+                  mpi_realprec,iid,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+    !! recieve chunk of data into buffer
+    inds=slabinds(iid,lx2,lx3)
+    paramall(-1:lx1+2,inds(1)-2:inds(2)+2,inds(3)-2:inds(4)+2)=paramtmp(-1:lx1+2,-1:lx2+2,-1:lx3+2)    !note the inclusion of x2,3 ghost cells
+  end do
+end procedure gather_recv3D_ghost_23
+
+
+module procedure gather_recv3D_x2i_23
+  integer :: ierr
+  integer :: lx1,lx2,lx3
+  integer :: iid
+  real(wp), dimension(1:size(param,1),1:size(param,2)+1,1:size(param,3)) :: paramtmp
+  integer, dimension(4) :: inds
+  
+  !> note here that param has ghost cells
+  lx1=size(param,1)
+  lx2=size(param,2)-1    ! input data has extra interface for x2
+  lx3=size(param,3)
+  
+  paramall(1:lx1,1:lx2+1,1:lx3)=param(1:lx1,1:lx2+1,1:lx3)
+  !! root records his own piece of the grid into full grid variable
+
+  do iid=1,mpi_cfg%lid-1
+    !! must loop over all processes in the grid, don't enter loop if only root is present
+    call mpi_recv(paramtmp,(lx1)*(lx2+1)*(lx3), &
+                  mpi_realprec,iid,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+    !! recieve chunk of data into buffer
+    inds=slabinds(iid,lx2,lx3)
+    paramall(1:lx1,inds(1):inds(2)+1,inds(3):inds(4))=paramtmp(1:lx1,1:lx2+1,1:lx3)    !note the inclusion of x2,3 ghost cells
+  end do
+end procedure gather_recv3D_x2i_23
+
+
+module procedure gather_recv3D_x3i_23
+  integer :: ierr
+  integer :: lx1,lx2,lx3
+  integer :: iid
+  real(wp), dimension(1:size(param,1),1:size(param,2),1:size(param,3)+1) :: paramtmp
+  integer, dimension(4) :: inds
+  
+  !> note here that param has ghost cells
+  lx1=size(param,1)
+  lx2=size(param,2)
+  lx3=size(param,3)-1    ! x3 interface
+  
+  paramall(1:lx1,1:lx2,1:lx3+1)=param(1:lx1,1:lx2,1:lx3+1)
+  !! root records his own piece of the grid into full grid variable
+
+  do iid=1,mpi_cfg%lid-1
+    !! must loop over all processes in the grid, don't enter loop if only root is present
+    call mpi_recv(paramtmp,(lx1)*(lx2)*(lx3+1), &
+                  mpi_realprec,iid,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+    !! recieve chunk of data into buffer
+    inds=slabinds(iid,lx2,lx3)
+    paramall(1:lx1,inds(1):inds(2),inds(3):inds(4)+1)=paramtmp(1:lx1,1:lx2,1:lx3+1)    !note the inclusion of x2,3 ghost cells
+  end do
+end procedure gather_recv3D_x3i_23
 
 
 module procedure bcast_recv1D_old3

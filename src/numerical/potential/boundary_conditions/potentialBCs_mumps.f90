@@ -6,7 +6,7 @@ use, intrinsic :: ieee_arithmetic, only : ieee_is_finite
 use mpimod, only : mpi_cfg
 use phys_consts, only: wp, pi, Re, debug
 use grid, only: lx1, lx2, lx2all, lx3all, gridflag, flagswap
-use mesh, only: curvmesh
+use meshobj, only: curvmesh
 use interpolation, only : interp1,interp2
 use timeutils, only : dateinc, date_filename, find_lastdate
 use reader, only : get_grid2, get_simsize2, get_Efield
@@ -66,7 +66,7 @@ real(wp), intent(in) :: dt,t
 type(gemini_cfg), intent(in) :: cfg
 integer, dimension(3), intent(in) :: ymd
 real(wp), intent(in) :: UTsec
-type(curvmesh), intent(in) :: x
+class(curvmesh), intent(in) :: x
 
 !! only root needs to allocate these
 real(wp), dimension(:,:), allocatable :: Vminx1,Vmaxx1
@@ -125,7 +125,7 @@ integer, dimension(3), intent(in) :: ymd    !date for which we wish to calculate
 real(wp), intent(in) :: UTsec
 
 type(gemini_cfg), intent(in) :: cfg
-type(curvmesh), intent(in) :: x
+class(curvmesh), intent(in) :: x
 
 real(wp), dimension(:,:), intent(out), target :: Vminx1,Vmaxx1
 real(wp), dimension(:,:), intent(out) :: Vminx2,Vmaxx2
@@ -506,7 +506,7 @@ subroutine compute_rootBGEfields(x,E02all,E03all)
 !   particular bit of code is needed both when setting boundary conditions and also when
 !   initializing background electric field; hence it is a subroutine as opposed to block of code
 
-type(curvmesh), intent(in) :: x
+class(curvmesh), intent(in) :: x
 real(wp), dimension(:,:,:), intent(out) :: E02all,E03all
 
 integer :: ix1,ix2,ix3
@@ -560,7 +560,7 @@ subroutine potentialBCs2D(UTsec,cfg,x,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3, &
 real(wp), intent(in) :: UTsec
 
 type(gemini_cfg), intent(in) :: cfg
-type(curvmesh), intent(in) :: x
+class(curvmesh), intent(in) :: x
 
 real(wp), dimension(:,:), intent(out), target :: Vminx1,Vmaxx1
 real(wp), dimension(:,:), intent(out) :: Vminx2,Vmaxx2

@@ -87,6 +87,58 @@ end do
 end procedure gather_send4D_23
 
 
+!> send our data to root, ***including*** ghost cells
+module procedure gather_send3D_ghost_23
+!! THIS SUBROUTINE BROADCASTS DATA FROM A FULL GRID ARRAY
+!!ON ROOT PROCESS TO ALL WORKERS' SUB-GRID ARRAYS.
+!!
+!! SUBROUTINE IS TO BE CALLED BY ROOT TO DO A BROADCAST
+!!
+!! THIS VERSION WORKS ON 3D ARRAYS WHICH INCLUDE GHOST CELLS
+  integer :: ierr
+  integer :: lx1,lx2,lx3
+  
+  !> note here that param has ghost cells
+  lx1=size(param,1)-4
+  lx2=size(param,2)-4
+  lx3=size(param,3)-4
+  
+  !> workers send their slab of data to root
+  call mpi_send(param,(lx1+4)*(lx2+4)*(lx3+4), &
+               mpi_realprec,0,tag,MPI_COMM_WORLD,ierr)
+end procedure gather_send3D_ghost_23
+
+
+module procedure gather_send3D_x2i_23
+  integer :: ierr
+  integer :: lx1,lx2,lx3
+  
+  !> note here that param has ghost cells
+  lx1=size(param,1)
+  lx2=size(param,2)-1     ! this dim has extra interface val.
+  lx3=size(param,3)
+  
+  !> workers send their slab of data to root
+  call mpi_send(param,(lx1)*(lx2+1)*(lx3), &
+               mpi_realprec,0,tag,MPI_COMM_WORLD,ierr)
+end procedure gather_send3D_x2i_23
+
+
+module procedure gather_send3D_x3i_23
+  integer :: ierr
+  integer :: lx1,lx2,lx3
+  
+  !> note here that param has ghost cells
+  lx1=size(param,1)
+  lx2=size(param,2)
+  lx3=size(param,3)-1
+  
+  !> workers send their slab of data to root
+  call mpi_send(param,(lx1)*(lx2)*(lx3+1), &
+               mpi_realprec,0,tag,MPI_COMM_WORLD,ierr)
+end procedure gather_send3D_x3i_23
+
+
 !subroutine bcast_send1D_23_2(paramall,tag,param)
 !real(wp), dimension(-1:), intent(in) :: paramall
 !integer, intent(in) :: tag
@@ -360,30 +412,27 @@ module procedure bcast_send3D_ghost_23
 !!
 !! THIS VERSION WORKS ON 3D ARRAYS WHICH INCLUDE GHOST CELLS
 
-integer :: ierr
-integer :: lx1,lx2,lx3
-integer :: iid,islstart,islfin
-integer, dimension(4) :: inds
-real(wp), dimension(-1:size(param,1)-2,-1:size(param,2)-2,-1:size(param,3)-2) :: paramtmp
-
-!> note here that param has ghost cells
-lx1=size(param,1)-4
-lx2=size(param,2)-4
-lx3=size(param,3)-4
-
-
-!> ROOT BROADCASTS IC DATA TO WORKERS
-do iid=1,mpi_cfg%lid-1
-  inds=slabinds(iid,lx2,lx3)
-  paramtmp=paramall(:,inds(1)-2:inds(2)+2,inds(3)-2:inds(4)+2)
-  call mpi_send(paramtmp,(lx1+4)*(lx2+4)*(lx3+4), &
-               mpi_realprec,iid,tag,MPI_COMM_WORLD,ierr)
-end do
-
-
-!> ROOT TAKES A SLAB OF DATA
-param=paramall(:,-1:lx2+2,-1:lx3+2)
-
+  integer :: ierr
+  integer :: lx1,lx2,lx3
+  integer :: iid,islstart,islfin
+  integer, dimension(4) :: inds
+  real(wp), dimension(-1:size(param,1)-2,-1:size(param,2)-2,-1:size(param,3)-2) :: paramtmp
+  
+  !> note here that param has ghost cells
+  lx1=size(param,1)-4
+  lx2=size(param,2)-4
+  lx3=size(param,3)-4
+  
+  !> ROOT BROADCASTS IC DATA TO WORKERS
+  do iid=1,mpi_cfg%lid-1
+    inds=slabinds(iid,lx2,lx3)
+    paramtmp=paramall(:,inds(1)-2:inds(2)+2,inds(3)-2:inds(4)+2)
+    call mpi_send(paramtmp,(lx1+4)*(lx2+4)*(lx3+4), &
+                 mpi_realprec,iid,tag,MPI_COMM_WORLD,ierr)
+  end do
+  
+  !> ROOT TAKES A SLAB OF DATA
+  param=paramall(:,-1:lx2+2,-1:lx3+2)
 end procedure bcast_send3D_ghost_23
 
 
