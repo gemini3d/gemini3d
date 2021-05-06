@@ -2,7 +2,7 @@ submodule (neutral:perturb) proj
 
 use, intrinsic :: iso_fortran_env, only: stderr=>error_unit
 
-use grid, only : clear_unitvecs
+!use grid, only : clear_unitvecs
 use reader, only : get_simsize3
 
 implicit none (type, external)
@@ -222,7 +222,7 @@ end if
 
 
 !GRID UNIT VECTORS NO LONGER NEEDED ONCE PROJECTIONS ARE CALCULATED...
-call clear_unitvecs(x)
+!call clear_unitvecs(x)
 
 
 !PRINT OUT SOME BASIC INFO ABOUT THE GRID THAT WE'VE LOADED
@@ -394,7 +394,7 @@ xi=pack(ximat,.true.)
 if (mpi_cfg%myid==0) then
   print*, '...Clearing out unit vectors (after projections)...'
 end if
-call clear_unitvecs(x)
+!call clear_unitvecs(x)
 
 
 if(mpi_cfg%myid==0) then

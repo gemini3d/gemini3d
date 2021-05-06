@@ -4,7 +4,7 @@ module calculus
 
 !SIZES USED IN ALL DERIVATIVE PROCEDURES ARE STORED IN GRID MODULE
 use, intrinsic:: iso_fortran_env, only: wp=>real@realbits@
-use mesh, only : curvmesh
+use meshobj, only : curvmesh
 !! we do not want the full-grid sizes (lx1,lx2,lx3) in scope since we routinely need to do subgrid derivatives
 
 implicit none (type, external)
@@ -56,114 +56,108 @@ end interface integral2D2
 
 
 interface ! gradient.f90
-
-module function grad3D1_curv_3(f,x,lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3)
-real(wp), dimension(:,:,:), intent(in) :: f
-type(curvmesh), intent(in) :: x
-integer, intent(in) :: lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3    !upper and lower bounds on the mesh indices for this derivative
-real(wp), dimension(1:size(f,1),1:size(f,2),1:size(f,3)) :: grad3D1_curv_3
-end function grad3D1_curv_3
-
-module function grad3D1_curv_23(f,x,lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3)
-real(wp), dimension(:,:,:), intent(in) :: f
-type(curvmesh), intent(in) :: x
-integer, intent(in) :: lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3    !upper and lower bounds on the mesh indices for this derivative
-real(wp), dimension(1:size(f,1),1:size(f,2),1:size(f,3)) :: grad3D1_curv_23
-end function grad3D1_curv_23
-
-module function grad3D2_curv_3(f,x,lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3)
-real(wp), dimension(:,:,:), intent(in) :: f
-type(curvmesh), intent(in) :: x
-integer, intent(in) :: lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3
-real(wp), dimension(1:size(f,1),1:size(f,2),1:size(f,3)) :: grad3D2_curv_3
-end function grad3D2_curv_3
-
-module function grad3D2_curv_23(f,x,lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3)
-real(wp), dimension(:,:,:), intent(in) :: f
-type(curvmesh), intent(in) :: x
-integer, intent(in) :: lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3
-real(wp), dimension(1:size(f,1),1:size(f,2),1:size(f,3)) :: grad3D2_curv_23
-end function grad3D2_curv_23
-
-module function grad3D3_curv_3(f,x,lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3)
-real(wp), dimension(:,:,:), intent(in) :: f
-type(curvmesh), intent(in) :: x
-integer, intent(in) :: lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3
-real(wp), dimension(1:size(f,1),1:size(f,2),1:size(f,3)) :: grad3D3_curv_3
-end function grad3D3_curv_3
-
-module function grad3D3_curv_23(f,x,lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3)
-real(wp), dimension(:,:,:), intent(in) :: f
-type(curvmesh), intent(in) :: x
-integer, intent(in) :: lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3
-real(wp), dimension(1:size(f,1),1:size(f,2),1:size(f,3)) :: grad3D3_curv_23
-end function grad3D3_curv_23
-
+  module function grad3D1_curv_3(f,x,lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3)
+    real(wp), dimension(:,:,:), intent(in) :: f
+    class(curvmesh), intent(in) :: x
+    integer, intent(in) :: lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3    !upper and lower bounds on the mesh indices for this derivative
+    real(wp), dimension(1:size(f,1),1:size(f,2),1:size(f,3)) :: grad3D1_curv_3
+  end function grad3D1_curv_3
+  
+  module function grad3D1_curv_23(f,x,lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3)
+    real(wp), dimension(:,:,:), intent(in) :: f
+    class(curvmesh), intent(in) :: x
+    integer, intent(in) :: lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3    !upper and lower bounds on the mesh indices for this derivative
+    real(wp), dimension(1:size(f,1),1:size(f,2),1:size(f,3)) :: grad3D1_curv_23
+  end function grad3D1_curv_23
+  
+  module function grad3D2_curv_3(f,x,lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3)
+    real(wp), dimension(:,:,:), intent(in) :: f
+    class(curvmesh), intent(in) :: x
+    integer, intent(in) :: lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3
+    real(wp), dimension(1:size(f,1),1:size(f,2),1:size(f,3)) :: grad3D2_curv_3
+  end function grad3D2_curv_3
+  
+  module function grad3D2_curv_23(f,x,lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3)
+    real(wp), dimension(:,:,:), intent(in) :: f
+    class(curvmesh), intent(in) :: x
+    integer, intent(in) :: lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3
+    real(wp), dimension(1:size(f,1),1:size(f,2),1:size(f,3)) :: grad3D2_curv_23
+  end function grad3D2_curv_23
+  
+  module function grad3D3_curv_3(f,x,lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3)
+    real(wp), dimension(:,:,:), intent(in) :: f
+    class(curvmesh), intent(in) :: x
+    integer, intent(in) :: lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3
+    real(wp), dimension(1:size(f,1),1:size(f,2),1:size(f,3)) :: grad3D3_curv_3
+  end function grad3D3_curv_3
+  
+  module function grad3D3_curv_23(f,x,lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3)
+    real(wp), dimension(:,:,:), intent(in) :: f
+    class(curvmesh), intent(in) :: x
+    integer, intent(in) :: lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3
+    real(wp), dimension(1:size(f,1),1:size(f,2),1:size(f,3)) :: grad3D3_curv_23
+  end function grad3D3_curv_23
 end interface
 
 interface  ! integral.f90
-
-module pure function integral3D1_curv(f,x,lbnd,ubnd)
-real(wp), dimension(:,:,:), intent(in) :: f
-type(curvmesh), intent(in) :: x
-integer, intent(in) :: lbnd,ubnd    !no upper bound used, but could be for error checking
-real(wp), dimension(1:size(f,1),1:size(f,2),1:size(f,3)) :: integral3D1_curv
-end function integral3D1_curv
-
-module pure function integral3D1_curv_alt(f,x,lbnd,ubnd)
-real(wp), dimension(:,:,:), intent(in) :: f
-type(curvmesh), intent(in) :: x
-integer, intent(in) :: lbnd,ubnd    !no upper bound used, but could be for error checking
-real(wp), dimension(1:size(f,1),1:size(f,2),1:size(f,3)) :: integral3D1_curv_alt
-end function integral3D1_curv_alt
-
-module pure function integral2D1_curv(f,x,lbnd,ubnd)
-real(wp), dimension(:,:), intent(in) :: f
-type(curvmesh), intent(in) :: x
-integer, intent(in) :: lbnd,ubnd
-real(wp), dimension(1:size(f,1),1:size(f,2)) :: integral2D1_curv
-end function integral2D1_curv
-
-module pure function integral2D1_curv_alt(f,x,lbnd,ubnd)
-real(wp), dimension(:,:), intent(in) :: f
-type(curvmesh), intent(in) :: x
-integer, intent(in) :: lbnd,ubnd
-real(wp), dimension(1:size(f,1),1:size(f,2)) :: integral2D1_curv_alt
-end function integral2D1_curv_alt
-
-module pure function integral2D2_curv(f,x,lbnd,ubnd)
-real(wp), dimension(:,:), intent(in) :: f
-type(curvmesh), intent(in) :: x
-integer, intent(in) :: lbnd,ubnd
-real(wp), dimension(1:size(f,1),1:size(f,2)) :: integral2D2_curv
-end function integral2D2_curv
-
-module pure function integral2D2_curv_alt(f,x,lbnd,ubnd)
-real(wp), dimension(:,:), intent(in) :: f
-type(curvmesh), intent(in) :: x
-integer, intent(in) :: lbnd,ubnd
-real(wp), dimension(1:size(f,1),1:size(f,2)) :: integral2D2_curv_alt
-end function integral2D2_curv_alt
-
+  module pure function integral3D1_curv(f,x,lbnd,ubnd)
+    real(wp), dimension(:,:,:), intent(in) :: f
+    class(curvmesh), intent(in) :: x
+    integer, intent(in) :: lbnd,ubnd    !no upper bound used, but could be for error checking
+    real(wp), dimension(1:size(f,1),1:size(f,2),1:size(f,3)) :: integral3D1_curv
+  end function integral3D1_curv
+  
+  module pure function integral3D1_curv_alt(f,x,lbnd,ubnd)
+    real(wp), dimension(:,:,:), intent(in) :: f
+    class(curvmesh), intent(in) :: x
+    integer, intent(in) :: lbnd,ubnd    !no upper bound used, but could be for error checking
+    real(wp), dimension(1:size(f,1),1:size(f,2),1:size(f,3)) :: integral3D1_curv_alt
+  end function integral3D1_curv_alt
+  
+  module pure function integral2D1_curv(f,x,lbnd,ubnd)
+    real(wp), dimension(:,:), intent(in) :: f
+    class(curvmesh), intent(in) :: x
+    integer, intent(in) :: lbnd,ubnd
+    real(wp), dimension(1:size(f,1),1:size(f,2)) :: integral2D1_curv
+  end function integral2D1_curv
+  
+  module pure function integral2D1_curv_alt(f,x,lbnd,ubnd)
+    real(wp), dimension(:,:), intent(in) :: f
+    class(curvmesh), intent(in) :: x
+    integer, intent(in) :: lbnd,ubnd
+    real(wp), dimension(1:size(f,1),1:size(f,2)) :: integral2D1_curv_alt
+  end function integral2D1_curv_alt
+  
+  module pure function integral2D2_curv(f,x,lbnd,ubnd)
+    real(wp), dimension(:,:), intent(in) :: f
+    class(curvmesh), intent(in) :: x
+    integer, intent(in) :: lbnd,ubnd
+    real(wp), dimension(1:size(f,1),1:size(f,2)) :: integral2D2_curv
+  end function integral2D2_curv
+  
+  module pure function integral2D2_curv_alt(f,x,lbnd,ubnd)
+    real(wp), dimension(:,:), intent(in) :: f
+    class(curvmesh), intent(in) :: x
+    integer, intent(in) :: lbnd,ubnd
+    real(wp), dimension(1:size(f,1),1:size(f,2)) :: integral2D2_curv_alt
+  end function integral2D2_curv_alt
 end interface
 
 interface ! div.f90
-
-module function div3D_curv_23(f1,f2,f3,x,lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3)
-real(wp), dimension(:,:,:), intent(in) :: f1,f2,f3
-!! regardless of what has been passed into the function here, we assume these start at 1
-type(curvmesh), intent(in) :: x
-integer, intent(in) :: lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3
-real(wp), dimension(1:size(f1,1),1:size(f1,2),1:size(f1,3)) :: div3D_curv_23
-end function div3D_curv_23
-
-module function div3D_curv_3(f1,f2,f3,x,lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3)
-real(wp), dimension(:,:,:), intent(in) :: f1,f2,f3
-type(curvmesh), intent(in) :: x
-integer, intent(in) :: lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3
-real(wp), dimension(1:size(f1,1),1:size(f1,2),1:size(f1,3)) :: div3D_curv_3
-end function div3D_curv_3
-
+  module function div3D_curv_23(f1,f2,f3,x,lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3)
+    real(wp), dimension(:,:,:), intent(in) :: f1,f2,f3
+    !! regardless of what has been passed into the function here, we assume these start at 1
+    class(curvmesh), intent(in) :: x
+    integer, intent(in) :: lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3
+    real(wp), dimension(1:size(f1,1),1:size(f1,2),1:size(f1,3)) :: div3D_curv_23
+  end function div3D_curv_23
+  
+  module function div3D_curv_3(f1,f2,f3,x,lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3)
+    real(wp), dimension(:,:,:), intent(in) :: f1,f2,f3
+    class(curvmesh), intent(in) :: x
+    integer, intent(in) :: lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3
+    real(wp), dimension(1:size(f1,1),1:size(f1,2),1:size(f1,3)) :: div3D_curv_3
+  end function div3D_curv_3
 end interface
 
 
@@ -214,7 +208,7 @@ pure function grad2D1_curv(f,x,lbnd,ubnd)
 !! THEY ARE PASSED INTO THIS ROUTINE
 
 real(wp), dimension(:,:), intent(in) :: f
-type(curvmesh), intent(in) :: x
+class(curvmesh), intent(in) :: x
 integer, intent(in) :: lbnd,ubnd
 
 integer :: ix2,lx1,lx2
@@ -241,7 +235,7 @@ pure function grad2D1_curv_alt_3(f,x,lbnd,ubnd)
 !! THEY ARE PASSED INTO THIS ROUTINE
 
 real(wp), dimension(:,:), intent(in) :: f
-type(curvmesh), intent(in) :: x
+class(curvmesh), intent(in) :: x
 integer, intent(in) :: lbnd,ubnd
 
 integer :: ix2,lx1,lx2
@@ -270,7 +264,7 @@ function grad2D1_curv_alt_23(f,x,lbnd,ubnd)
 !may need to explicitly check that we aren't differentiating over lx2=1???
 
 real(wp), dimension(:,:), intent(in) :: f
-type(curvmesh), intent(in) :: x
+class(curvmesh), intent(in) :: x
 integer, intent(in) :: lbnd,ubnd
 
 integer :: ix3,lx2,lx3
@@ -315,7 +309,7 @@ pure function grad2D2_curv(f,x,lbnd,ubnd)
 !! THEY ARE PASSED INTO THIS ROUTINE
 
 real(wp), dimension(:,:), intent(in) :: f
-type(curvmesh), intent(in) :: x
+class(curvmesh), intent(in) :: x
 integer, intent(in) :: lbnd,ubnd
 
 integer :: ix1,lx1,lx2
@@ -345,7 +339,7 @@ function grad2D2_curv_23(f,x,lbnd,ubnd)
 !! THEY ARE PASSED INTO THIS ROUTINE
 
 real(wp), dimension(:,:), intent(in) :: f
-type(curvmesh), intent(in) :: x
+class(curvmesh), intent(in) :: x
 integer, intent(in) :: lbnd,ubnd
 
 integer :: ix1,lx1,lx2
@@ -398,7 +392,7 @@ pure function grad2D3_curv(f,x,lbnd,ubnd)
 !! SHOULD BE USED FOR THE DERIVATIVE.
 
 real(wp), dimension(:,:), intent(in) :: f
-type(curvmesh), intent(in) :: x
+class(curvmesh), intent(in) :: x
 integer, intent(in) :: lbnd,ubnd
 
 integer :: ix1,lx1,lx3
@@ -437,7 +431,7 @@ function grad2D3_curv_23(f,x,lbnd,ubnd)
 !! SHOULD BE USED FOR THE DERIVATIVE.
 
 real(wp), dimension(:,:), intent(in) :: f
-type(curvmesh), intent(in) :: x
+class(curvmesh), intent(in) :: x
 integer, intent(in) :: lbnd,ubnd
 
 integer :: ix2,lx2,lx3
@@ -493,7 +487,7 @@ pure function grad3D3_curv_periodic(f,x,lbnd,ubnd)
 !! THIS FUNCTION IS ONLY VALID WITH CARTESIAN GRIDS.
 
 real(wp), dimension(:,:,:), intent(in) :: f
-type(curvmesh), intent(in) :: x
+class(curvmesh), intent(in) :: x
 integer, intent(in) :: lbnd,ubnd
 
 integer :: ix1,ix2,lx1,lx2,lx3
@@ -551,7 +545,7 @@ pure function grad2D3_curv_periodic(f,x,lbnd,ubnd)
 
 
 real(wp), dimension(:,:), intent(in) :: f
-type(curvmesh), intent(in) :: x
+class(curvmesh), intent(in) :: x
 integer, intent(in) :: lbnd,ubnd
 
 integer :: ix1,lx1,lx3

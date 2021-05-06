@@ -29,7 +29,7 @@ use, intrinsic:: iso_fortran_env, only: stderr=>error_unit, stdout=>output_unit
 
 use phys_consts, only: wp, debug
 use calculus, only: grad3D1, grad3D2, grad3D3
-use mesh, only: curvmesh
+use meshobj, only: curvmesh
 use interpolation, only: interp1
 use PDEelliptic, only: elliptic3D_cart
 
@@ -46,7 +46,7 @@ real(wp), dimension(:,:), intent(in) :: srcterm,SigP2,SigP3,SigH,Cm,v2,v3
 real(wp), dimension(:), intent(in) :: Vminx2,Vmaxx2
 real(wp), dimension(:), intent(in) :: Vminx3,Vmaxx3
 real(wp), intent(in) :: dt
-type(curvmesh), intent(in) :: x
+class(curvmesh), intent(in) :: x
 real(wp), dimension(:,:), intent(in) :: Phi0
 logical, intent(in) :: perflag
 integer, intent(in) :: it
@@ -58,7 +58,7 @@ real(wp), dimension(:,:), intent(in) :: srcterm,SigP,SigH,Cm,v2,v3
 real(wp), dimension(:), intent(in) :: Vminx2,Vmaxx2
 real(wp), dimension(:), intent(in) :: Vminx3,Vmaxx3
 real(wp), intent(in) :: dt
-type(curvmesh), intent(in) :: x
+class(curvmesh), intent(in) :: x
 real(wp), dimension(:,:), intent(in) :: Phi0
 logical, intent(in) :: perflag
 integer, intent(in) :: it
@@ -69,7 +69,7 @@ module function potential2D_fieldresolved(srcterm,sig0,sigP,Vminx1,Vmaxx1,Vminx3
 real(wp), dimension(:,:,:), intent(in) :: srcterm,sig0,sigP   !arrays passed in will still have full rank 3
 real(wp), dimension(:,:), intent(in) :: Vminx1,Vmaxx1
 real(wp), dimension(:,:), intent(in) :: Vminx3,Vmaxx3
-type(curvmesh), intent(in) :: x
+class(curvmesh), intent(in) :: x
 integer, intent(in) :: flagdirich
 logical, intent(in) :: perflag
 integer, intent(in) :: it
@@ -93,7 +93,7 @@ real(wp), dimension(:,:,:), intent(in) :: srcterm,sig0,sigP,sigH
 real(wp), dimension(:,:), intent(in) :: Vminx1,Vmaxx1
 real(wp), dimension(:,:), intent(in) :: Vminx2,Vmaxx2
 real(wp), dimension(:,:), intent(in) :: Vminx3,Vmaxx3
-type(curvmesh), intent(in) :: x
+class(curvmesh), intent(in) :: x
 integer, intent(in) :: flagdirich
 logical, intent(in) :: perflag
 integer, intent(in) :: it
