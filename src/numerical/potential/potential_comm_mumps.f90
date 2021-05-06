@@ -10,7 +10,7 @@ use, intrinsic :: ieee_arithmetic
 
 use phys_consts, only: wp, pi, lsp, debug, ms, qs, kB
 use grid, only: flagswap, gridflag, lx1,lx2all,lx3all, g1,g2,g3
-use mesh, only: curvmesh
+use meshobj, only: curvmesh
 use collisions, only: conductivities, capacitance
 use calculus, only: div3d, integral3d1, grad3d1, grad3d2, grad3d3, integral3d1_curv_alt
 use potentialBCs_mumps, only: potentialbcs2D, potentialbcs2D_fileinput, compute_rootBGEfields
@@ -58,7 +58,7 @@ interface ! potential_worker.f90
   type(gemini_cfg), intent(in) :: cfg
   real(wp), dimension(-1:,-1:,-1:), intent(in) ::  B1
   real(wp), dimension(-1:,-1:,-1:,:), intent(in) ::  ns,Ts
-  type(curvmesh), intent(in) :: x
+  class(curvmesh), intent(in) :: x
   integer, intent(in) :: flagdirich
   real(wp), dimension(:,:,:), intent(in) :: E02src,E03src    ! these are BG fields use to compute potential source terms; viz. they need to be zeroed out if there is a lagrangian grid...
   real(wp), dimension(:,:), intent(inout) :: Vminx1slab,Vmaxx1slab    !need to be able to convert into potential normal deriv.
@@ -85,7 +85,7 @@ interface ! potential_root.f90
   type(gemini_cfg), intent(in) :: cfg
   real(wp), dimension(-1:,-1:,-1:), intent(in) ::  B1
   real(wp), dimension(-1:,-1:,-1:,:), intent(in) ::  ns,Ts
-  type(curvmesh), intent(in) :: x
+  class(curvmesh), intent(in) :: x
   integer, intent(in) :: flagdirich
   real(wp), dimension(:,:,:), intent(in) :: E02src,E03src
   real(wp), dimension(:,:), intent(inout) :: Vminx1,Vmaxx1    !need to be able to convert these into pot. normal deriv.
@@ -125,7 +125,7 @@ type(gemini_cfg), intent(in) :: cfg
 real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns,Ts,vs1
 real(wp), dimension(-1:,-1:,-1:), intent(in) :: B1
 real(wp), dimension(-1:,-1:,-1:,:), intent(inout) ::  vs2,vs3
-type(curvmesh), intent(in) :: x
+class(curvmesh), intent(in) :: x
 real(wp), dimension(:,:,:), intent(out) :: E1,E2,E3,J1,J2,J3
 real(wp), dimension(:,:,:), allocatable, intent(inout) :: Phiall
 !! inout since it may not be allocated or deallocated in this procedure
@@ -255,7 +255,7 @@ real(wp), intent(in) :: dt,t
 integer, dimension(3), intent(in) :: ymd
 real(wp), intent(in) :: UTsec
 type(gemini_cfg), intent(in) :: cfg
-type(curvmesh), intent(in) :: x
+class(curvmesh), intent(in) :: x
 
 integer, intent(out) :: flagdirich
 real(wp), dimension(:,:), intent(out) :: Vminx1,Vmaxx1     !allow pointer aliases for these vars, as required for subroutines internal to potentialBCs.
@@ -341,7 +341,7 @@ subroutine velocities(muP,muH,nusn,E2,E3,vn2,vn3,ns,Ts,x,flaggravdrift,flagdiama
 real(wp), dimension(:,:,:,:), intent(in) :: muP,muH,nusn
 real(wp), dimension(:,:,:), intent(in) :: E2,E3,vn2,vn3
 real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns,Ts      !> these must have ghost cells
-type(curvmesh), intent(in) :: x
+class(curvmesh), intent(in) :: x
 logical, intent(in) :: flaggravdrift
 logical, intent(in) :: flagdiamagnetic
 real(wp), dimension(-1:,-1:,-1:,:), intent(out) :: vs2,vs3   !> these have ghost cells
@@ -447,7 +447,7 @@ real(wp), dimension(:,:,:), intent(in) :: E02,E03,vn2,vn3
 real(wp), dimension(-1:,-1:,-1:), intent(in) :: B1     !ghost cells
 real(wp), dimension(:,:,:,:), intent(in) :: muP,muH
 real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns,Ts     !ghost cells
-type(curvmesh), intent(in) :: x
+class(curvmesh), intent(in) :: x
 logical, intent(in) :: flaggravdrift
 logical, intent(in) :: flagdiamagnetic
 real(wp), dimension(:,:,:), intent(out) :: srcterm
@@ -567,7 +567,7 @@ subroutine acc_pressurecurrents(muP,muH,ns,Ts,x,J2,J3)
 
 real(wp), dimension(:,:,:,:), intent(in) :: muP,muH
 real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns,Ts
-type(curvmesh), intent(in) :: x
+class(curvmesh), intent(in) :: x
 real(wp), dimension(:,:,:), intent(inout) :: J2, J3
 
 real(wp), dimension(-1:size(J2,1)+2,-1:size(J2,2)+2,-1:size(J2,3)+2) :: pressure
@@ -633,7 +633,7 @@ subroutine pot2perpfield(Phi,x,E2,E3)
 !   be called by either root or worker processes
 
 real(wp), dimension(:,:,:), intent(in) :: Phi
-type(curvmesh), intent(in) :: x
+class(curvmesh), intent(in) :: x
 real(wp), dimension(:,:,:), intent(out) :: E2,E3
 
 real(wp), dimension(0:size(Phi,1)+1,0:size(Phi,2)+1,0:size(Phi,3)+1) :: divtmp
@@ -677,7 +677,7 @@ subroutine parallel_currents(cfg,x,J2,J3,Vminx1slab,Vmaxx1slab,Phi,sig0,flagdiri
 !> Compute the parallel currents given a potential solution and calculation of perpendicular currents
 
 type(gemini_cfg), intent(in) :: cfg
-type(curvmesh), intent(in) :: x
+class(curvmesh), intent(in) :: x
 real(wp), dimension(:,:,:), intent(in) :: J2,J3
 real(wp), dimension(:,:), intent(in) :: Vminx1slab,Vmaxx1slab
 real(wp), dimension(:,:,:), intent(in) :: Phi
@@ -805,7 +805,7 @@ subroutine polarization_currents(cfg,x,dt,incap,E2,E3,E2prev,E3prev,v2,v3,J1pol,
 !> Computes the polarization currents resulting from time-dependence and shearing of the plasma
 
 type(gemini_cfg), intent(in) :: cfg
-type(curvmesh), intent(in) :: x
+class(curvmesh), intent(in) :: x
 real(wp), intent(in) :: dt
 real(wp), dimension(:,:,:), intent(in) :: incap,E2,E3,E2prev,E3prev,v2,v3
 real(wp), dimension(1:size(E2,1),1:size(E2,2),1:size(E2,3)), intent(out) :: J1pol,J2pol,J3pol
@@ -872,7 +872,7 @@ end subroutine polarization_currents
 
 subroutine get_BGEfields(x,E01,E02,E03)
 
-type(curvmesh), intent(in) :: x
+class(curvmesh), intent(in) :: x
 real(wp), dimension(:,:,:), intent(out) :: E01,E02,E03
 
 !> routine to pull the background electric fields from the BCs modules and distribute

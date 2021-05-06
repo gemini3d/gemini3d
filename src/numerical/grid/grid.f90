@@ -7,9 +7,11 @@ use meshobj_cart, only: cartmesh
 use phys_consts, only: Gconst,Me,Re,wp,red,black
 use reader, only: get_simsize3
 use mpimod, only: mpi_integer, mpi_comm_world, mpi_status_ignore, &
-mpi_cfg, tag=>gemini_mpi, mpi_realprec, &
-bcast_recv, bcast_send, bcast_recv3D_ghost, bcast_send3D_ghost, bcast_recv3D_x3i, bcast_send3D_x3i, &
-bcast_send3D_x2i,bcast_recv3D_x2i, bcast_send1D_2, bcast_recv1D_2, bcast_send1D_3, bcast_recv1D_3
+  mpi_cfg, tag=>gemini_mpi, mpi_realprec, &
+  bcast_recv, bcast_send, bcast_recv3D_ghost, bcast_send3D_ghost, bcast_recv3D_x3i, bcast_send3D_x3i, &
+  bcast_send3D_x2i,bcast_recv3D_x2i, bcast_send1D_2, bcast_recv1D_2, bcast_send1D_3, bcast_recv1D_3, &
+  gather_send3D_ghost,gather_send3D_x2i,gather_send3D_x3i,gather_recv3D_ghost,gather_recv3D_x2i,gather_recv3D_x3i, &
+  gather_send,gather_recv,ID2grid
 
 implicit none (type, external)
 private
@@ -33,7 +35,7 @@ interface ! read.f90
   module subroutine read_grid(indatsize,indatgrid,flagperiodic,x)
     character(*), intent(in) :: indatsize,indatgrid
     integer, intent(in) :: flagperiodic
-    class(curvmesh), intent(inout) :: x
+    class(curvmesh), allocatable, intent(inout) :: x
   end subroutine read_grid
 end interface
 
@@ -98,7 +100,7 @@ end subroutine grid_size_worker
 subroutine grid_drift(x,E02,E03,v2grid,v3grid)
 !! Compute the speed the grid is moving at given a background electric field
 
-  type(curvmesh), intent(in) :: x
+  class(curvmesh), intent(in) :: x
   reaL(wp), dimension(:,:,:), intent(in) :: E02,E03
   real(wp), intent(out) :: v2grid,v3grid
   integer :: iid,ierr

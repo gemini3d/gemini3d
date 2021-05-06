@@ -17,12 +17,12 @@ interface ! proj.f90
 module subroutine gridproj_dneu2D(cfg,flagcart,x)
 type(gemini_cfg), intent(in) :: cfg
 logical, intent(in) :: flagcart
-type(curvmesh), intent(inout) :: x
+class(curvmesh), intent(inout) :: x
 end subroutine gridproj_dneu2D
 
 module subroutine gridproj_dneu3D(cfg,x)
 type(gemini_cfg), intent(in) :: cfg
-type(curvmesh), intent(inout) :: x
+class(curvmesh), intent(inout) :: x
 end subroutine gridproj_dneu3D
 end interface
 
@@ -89,7 +89,7 @@ integer, dimension(3), intent(in) :: ymd    !date for which we wish to calculate
 real(wp), intent(in) :: UTsec
 type(gemini_cfg), intent(in) :: cfg
 
-type(curvmesh), intent(inout) :: x         !grid structure  (inout because we want to be able to deallocate unit vectors once we are done with them)
+class(curvmesh), intent(inout) :: x         !grid structure  (inout because we want to be able to deallocate unit vectors once we are done with them)
 real(wp), dimension(:,:,:,:), intent(out) :: nn   !neutral params interpolated to plasma grid at requested time
 real(wp), dimension(:,:,:), intent(out) :: Tn,vn1,vn2,vn3
 
@@ -160,7 +160,7 @@ integer, dimension(3), intent(in) :: ymd    !date for which we wish to calculate
 real(wp), intent(in) :: UTsec
 type(gemini_cfg), intent(in) :: cfg
 
-type(curvmesh), intent(inout) :: x         !grid structure  (inout because we want to be able to deallocate unit vectors once we are done with them)
+class(curvmesh), intent(inout) :: x         !grid structure  (inout because we want to be able to deallocate unit vectors once we are done with them)
 real(wp), dimension(:,:,:,:), intent(out) :: nn   !neutral params interpolated to plasma grid at requested time
 real(wp), dimension(:,:,:), intent(out) :: Tn,vn1,vn2,vn3
 
@@ -230,7 +230,7 @@ integer, dimension(3), intent(in) :: ymd    !date for which we wish to calculate
 real(wp), intent(in) :: UTsec
 type(gemini_cfg), intent(in) :: cfg
 
-type(curvmesh), intent(inout) :: x         !grid structure  (inout because we want to be able to deallocate unit vectors once we are done with them)
+class(curvmesh), intent(inout) :: x         !grid structure  (inout because we want to be able to deallocate unit vectors once we are done with them)
 real(wp), dimension(:,:,:,:), intent(out) :: nn   !neutral params interpolated to plasma grid at requested time
 real(wp), dimension(:,:,:), intent(out) :: Tn,vn1,vn2,vn3
 

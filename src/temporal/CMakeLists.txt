@@ -2,7 +2,7 @@ add_library(timeutils OBJECT timeutils.f90)
 target_link_libraries(timeutils PRIVATE const)
 
 add_library(temporal OBJECT temporal.f90)
-target_link_libraries(temporal PRIVATE config const mesh mpimod MPI::MPI_Fortran)
+target_link_libraries(temporal PRIVATE config const meshobj mpimod MPI::MPI_Fortran)
 
 # --- unit tests
 if(${PROJECT_NAME}_BUILD_TESTING)

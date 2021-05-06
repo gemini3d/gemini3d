@@ -7,8 +7,8 @@ use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
 
 use magcalc_cli, only : cli
 use phys_consts, only : pi,mu0, wp, re, debug
-use grid, only : lx1, lx2, lx3, read_grid, clear_grid, lx2all,lx3all,grid_size
-use mesh, only : curvmesh
+use grid, only : lx1, lx2, lx3, read_grid, lx2all,lx3all,grid_size
+use meshobj, only : curvmesh
 use timeutils, only : dateinc,find_time_elapsed
 use config, only : gemini_cfg
 use io, only : input_plasma_currents,create_outdir_mag,output_magfields
@@ -33,7 +33,7 @@ type(gemini_cfg) :: cfg
 !! most user parameters
 
 !! GRID STRUCTURE
-type(curvmesh) :: x
+class(curvmesh), allocatable :: x
 !! structure containing grid locations, finite differences, etc.:  see grid module for details
 
 !STATE VARIABLES
@@ -303,7 +303,7 @@ proj_e3ephi(:,:,:)=sum(x%e3*x%ephi,4)
 
 
 !> DEALLOCATE GRID MODULE VARIABLES TO SAVE MEMORY (PROGRAM DOESN'T ACTUALLY NEED THESE ONCE X,Y,Z CREATED
-call clear_grid(x)
+!call clear_grid(x)
 deallocate(r,theta,phi)
 
 
