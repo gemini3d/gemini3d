@@ -2,7 +2,7 @@ module advec_mpi
 
 use phys_consts, only: lsp,ms, wp
 use grid, only : gridflag
-use mesh, only: curvmesh
+use meshobj, only: curvmesh
   !! do not import grid sizes in case we want do subgrid advection...
 use mpimod, only: mpi_cfg, halo, tag=>gemini_mpi
 
@@ -426,7 +426,7 @@ real(wp), dimension(:,:,:), intent(in) :: v1i
 real(wp), dimension(:,:,:), intent(in) :: v2i
 real(wp), dimension(:,:,:), intent(in) :: v3i
 real(wp), intent(in) :: dt
-type(curvmesh), intent(in) :: x
+class(curvmesh), intent(in) :: x
 integer, intent(in) :: frank    !f's rank so that we know which metric coeffs to use.
 
 integer :: ix1,ix2,ix3,lx1,lx2,lx3
@@ -536,7 +536,7 @@ real(wp), dimension(:,:,:), intent(in) :: v1i
 real(wp), dimension(:,:,:), intent(in) :: v2i
 real(wp), dimension(:,:,:), intent(in) :: v3i
 real(wp), intent(in) :: dt
-type(curvmesh), intent(in) :: x
+class(curvmesh), intent(in) :: x
 integer, intent(in) :: frank    !f's rank so that we know which metric coeffs to use.
 integer, intent(in) :: tagf
 

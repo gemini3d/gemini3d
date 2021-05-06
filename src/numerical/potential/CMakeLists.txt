@@ -14,7 +14,7 @@ add_library(potential OBJECT
 potential_comm_mumps.f90 potential_root.f90 potential_worker.f90
 potential_mumps.f90 potential2d.f90
 boundary_conditions/potentialBCs_mumps.f90)
-target_link_libraries(potential PRIVATE PDEelliptic calculus collision grid mesh interp timeutils mpimod reader const MPI::MPI_Fortran)
+target_link_libraries(potential PRIVATE PDEelliptic calculus collision grid meshobj interp timeutils mpimod reader const MPI::MPI_Fortran)
 
 
 set_targ_props(PDEelliptic potential)

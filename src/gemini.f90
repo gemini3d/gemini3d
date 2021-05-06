@@ -5,8 +5,8 @@ use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
 use gemini_cli, only : cli
 use sanity_check, only : check_finite_output
 use phys_consts, only : lnchem, lwave, lsp, wp, debug
-use grid, only: grid_size,read_grid,clear_grid,grid_drift, lx1,lx2,lx3,lx2all,lx3all
-use mesh, only: curvmesh
+use grid, only: grid_size,read_grid,grid_drift, lx1,lx2,lx3,lx2all,lx3all
+use meshobj, only: curvmesh
 use config, only : gemini_cfg, get_compiler_vendor
 use io, only : input_plasma,create_outdir,output_plasma,create_outdir_aur,output_aur,find_milestone
 use mpimod, only : mpibreakdown, mpi_manualgrid, process_grid_auto, mpi_cfg
@@ -438,7 +438,7 @@ if (mpi_cfg%myid==0) deallocate(Phiall)
 if (cfg%flagglow/=0) deallocate(iver)
 
 !> DEALLOCATE MODULE VARIABLES (MAY HAPPEN AUTOMATICALLY IN F2003???)
-call clear_grid(x)
+!call clear_grid(x)
 call clear_dneu()
 call clear_precip_fileinput()
 call clear_potential_fileinput()

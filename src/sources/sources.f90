@@ -3,7 +3,7 @@ module sources
 use calculus, only : grad3d1
 use collisions, only:  maxwell_colln, coulomb_colln
 use phys_consts, only: wp, lsp, amu, kb, qs, ln, ms, gammas, elchrg, mn
-use mesh, only : curvmesh
+use meshobj, only : curvmesh
 use grid, only : g1
 
 implicit none (type, external)
@@ -339,7 +339,7 @@ real(wp), dimension(:,:,:), intent(in) :: vn1,Tn
 real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns,vs1,vs2,vs3,Ts
 real(wp), dimension(:,:,:), intent(in) :: E1
 real(wp), dimension(:,:,:,:), intent(in) :: Q
-type(curvmesh), intent(in) :: x
+class(curvmesh), intent(in) :: x
 
 real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4,lsp), intent(out) :: Pr,Lo
 

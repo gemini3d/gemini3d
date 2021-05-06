@@ -5,7 +5,7 @@ use, intrinsic :: ieee_arithmetic, only : ieee_is_finite
 use reader, only: get_simsize2, get_precip, get_grid2
 use phys_consts, only: pi,wp, debug
 use grid, only : lx1,lx2,lx3,lx3all
-use mesh, only: curvmesh
+use meshobj, only: curvmesh
 use interpolation, only : interp1,interp2
 use timeutils, only : dateinc, date_filename, find_lastdate
 use mpimod, only: mpi_integer, mpi_comm_world, mpi_status_ignore, &
@@ -47,7 +47,7 @@ real(wp), intent(in) :: dt,t
 type(gemini_cfg), intent(in) :: cfg
 integer, dimension(3), intent(in) :: ymd
 real(wp), intent(in) :: UTsec
-type(curvmesh), intent(in) :: x
+class(curvmesh), intent(in) :: x
 
 real(wp), dimension(1:x%lx2,1:x%lx3,2) :: W0,PhiWmWm2    ! these are only worker-sized, hardcoded 2 precipitation populations...
 integer, dimension(3) :: ymdtmp
@@ -93,7 +93,7 @@ integer, dimension(3), intent(in) :: ymd
 real(wp), intent(in) :: UTsec
 real(wp), dimension(:,:,:), intent(out) :: W0,PhiWmWm2
 !! last dimension is the number of particle populations
-type(curvmesh), intent(in) :: x
+class(curvmesh), intent(in) :: x
 
 integer :: ios, ierr
 integer :: iid,iflat,ix2,ix3
@@ -328,7 +328,7 @@ subroutine precipBCs(t,x,cfg,W0,PhiWmWm2)
 !------------------------------------------------------------
 
 real(wp), intent(in) :: t
-type(curvmesh), intent(in) :: x
+class(curvmesh), intent(in) :: x
 type(gemini_cfg), intent(in) :: cfg
 real(wp), dimension(:,:,:), intent(out) :: W0,PhiWmWm2
 

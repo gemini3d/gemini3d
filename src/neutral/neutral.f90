@@ -2,7 +2,7 @@ module neutral
 
 use phys_consts, only: wp, lnchem, pi, re, debug
 use grid, only: lx1, lx2, lx3
-use mesh, only: curvmesh
+use meshobj, only: curvmesh
 use timeutils, only : find_lastdate
 use mpimod, only: mpi_cfg
 use config, only: gemini_cfg
@@ -36,7 +36,7 @@ real(wp), intent(in) :: t
 integer, dimension(3), intent(in) :: ymd     !date for which we wish to calculate perturbations
 real(wp), intent(in) :: UTsec
 
-type(curvmesh), intent(inout) :: x                !grid structure  (inout becuase we want to be able to deallocate unit vectors once we are done with them)
+class(curvmesh), intent(inout) :: x                !grid structure  (inout becuase we want to be able to deallocate unit vectors once we are done with them)
 real(wp), intent(in) :: v2grid,v3grid
 real(wp), dimension(:,:,:,:), intent(out) :: nn   !neutral params interpolated to plasma grid at requested time
 real(wp), dimension(:,:,:), intent(out) :: Tn,vn1,vn2,vn3
@@ -121,7 +121,7 @@ real(wp), intent(in) :: dt,t
 type(gemini_cfg), intent(in) :: cfg
 integer, dimension(3), intent(in) :: ymd
 real(wp), intent(in) :: UTsec
-type(curvmesh), intent(inout) :: x    ! unit vecs may be deallocated after first setup
+class(curvmesh), intent(inout) :: x    ! unit vecs may be deallocated after first setup
 real(wp), intent(in) :: v2grid,v3grid
 real(wp), dimension(:,:,:,:), intent(out) :: nn
 real(wp), dimension(:,:,:), intent(out) :: Tn

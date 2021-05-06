@@ -8,17 +8,17 @@ interface ! readgrid_*.f90
   module subroutine get_grid3_coords_raw(path,x1,x2all,x3all)
     character(*), intent(in) :: path
     real(wp), dimension(:), intent(out) :: x1,x2all,x3all
-  end subroutine get_grid3_raw
+  end subroutine get_grid3_coords_raw
 
   module subroutine get_grid3_coords_hdf5(path,x1,x2all,x3all)
     character(*), intent(in) :: path
     real(wp), dimension(:), intent(out) :: x1,x2all,x3all
-  end subroutine get_grid3_hdf5
+  end subroutine get_grid3_coords_hdf5
 
-  module subroutine get_grid3_coords_nc4(path,x1,x2,x3,x2all,x3all)
+  module subroutine get_grid3_coords_nc4(path,x1,x2all,x3all)
     character(*), intent(in) :: path
-    real(wp), dimension(:), intent(out) :: x1,x2,x3,x2all,x3all
-  end subroutine get_grid3_nc4
+    real(wp), dimension(:), intent(out) :: x1,x2all,x3all
+  end subroutine get_grid3_coords_nc4
 end interface
 
 contains
@@ -31,8 +31,10 @@ module procedure read_grid
   real(wp), dimension(:), allocatable :: x1,x2,x3,x2all,x3all
   integer :: gridtype
   integer :: islstart,islfin
+  integer, dimension(2) :: indsgrid
+  integer iid
 
-  call set_subgrid_sizes()    ! everyone computes what the size of their subgrid should be
+  call set_subgrid_size()    ! everyone computes what the size of their subgrid should be
   allocate(x1(-1:lx1+2),x2(-1:lx2+2),x3(-1:lx3+2),x2all(-1:lx2all+2),x3all(-1:lx3all+2))   ! tmp space for coords from file
   call get_grid3_coords(indatgrid,x1,x2all,x3all)
 
@@ -75,7 +77,7 @@ module procedure read_grid
                           x%h1x2i,x%h2x2i,x%h3x2i, &
                           x%h1x2i,x%h2x3i,x%h3x3i, &
                           x%r,x%theta,x%phi, &
-                          x%alt,x%Bmag,x%glon &
+                          x%alt,x%Bmag,x%glon, &
                           x%h1all,x%h2all,x%h3all, &
                           x%h1x1iall,x%h2x1iall,x%h3x1iall, &
                           x%h1x2iall,x%h2x2iall,x%h3x2iall, &
@@ -132,23 +134,23 @@ subroutine set_subgrid_size()
   if(lx2all > 1 .and. lx3all > 1) then
     if(lx2 == 1 .or. lx3 == 1) error stop "read_grid_root: 3D grids cannot be partitioned with a single MPI image on an axis"
   end if
-end subroutine get_subgrid_size
+end subroutine set_subgrid_size
 
 
-subroutine get_grid3_coords(path,x1,x2,x3,x2all,x3all)
+subroutine get_grid3_coords(path,x1,x2all,x3all)
   character(*), intent(in) :: path
-  real(wp), dimension(:), intent(out) :: x1,x2,x3,x2all,x3all
+  real(wp), dimension(:), intent(out) :: x1,x2all,x3all
 
   character(:), allocatable :: fmt
 
   fmt = path(index(path, '.', back=.true.) : len(path))
   select case (fmt)
     case ('.dat')
-      call get_grid3_coords_raw(path,x1,x2,x3,x2all,x3all)
+      call get_grid3_coords_raw(path,x1,x2all,x3all)
     case ('.h5')
-      call get_grid3_coords_hdf5(path,x1,x2,x3,x2all,x3all)
+      call get_grid3_coords_hdf5(path,x1,x2all,x3all)
     case ('.nc')
-      call get_grid3_coords_nc4(path,x1,x2,x3,x2all,x3all)
+      call get_grid3_coords_nc4(path,x1,x2all,x3all)
     case default
       write(stderr,*) 'grid:read:get_grid3: unknown grid format: ' // fmt
       error stop 2
@@ -160,13 +162,13 @@ end subroutine get_grid3_coords
 subroutine gather_grid_root(h1,h2,h3, &
                         h1x1i,h2x1i,h3x1i, &
                         h1x2i,h2x2i,h3x2i, &
-                        h1x2i,h2x3i,h3x3i, &
+                        h1x3i,h2x3i,h3x3i, &
                         r,theta,phi, &
-                        alt,Bmag,glon &
+                        alt,Bmag,glon, &
                         h1all,h2all,h3all, &
                         h1x1iall,h2x1iall,h3x1iall, &
                         h1x2iall,h2x2iall,h3x2iall, &
-                        h1x2iall,h2x3iall,h3x3iall, &
+                        h1x3iall,h2x3iall,h3x3iall, &
                         rall,thetaall,phiall, &
                         altall,Bmagall,glonall)
   real(wp), dimension(:,:,:), intent(in) :: h1,h2,h3
@@ -205,14 +207,14 @@ subroutine gather_grid_root(h1,h2,h3, &
   call gather_recv(alt,tag%alt,altall)
   call gather_recv(Bmag,tag%Bmag,Bmagall)
   call gather_recv(glon,tag%glon,glonall)
-end subroutien gather_grid_root
+end subroutine gather_grid_root
 
 
 !> send full grid vars. to root
 subroutine gather_grid_workers(h1,h2,h3, &
                         h1x1i,h2x1i,h3x1i, &
                         h1x2i,h2x2i,h3x2i, &
-                        h1x2i,h2x3i,h3x3i, &
+                        h1x3i,h2x3i,h3x3i, &
                         r,theta,phi, &
                         alt,Bmag,glon)
   real(wp), dimension(:,:,:), intent(in) :: h1,h2,h3
