@@ -8,7 +8,9 @@ if(hdf5)
 
   if(NOT DEFINED h5fortran_ROOT)
     if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-      set(h5fortran_ROOT ${CMAKE_INSTALL_PREFIX})
+        set(h5fortran_ROOT ${PROJECT_BINARY_DIR})
+      else()
+        set(h5fortran_ROOT ${CMAKE_INSTALL_PREFIX})
     endif()
   endif()
 
@@ -17,7 +19,7 @@ if(hdf5)
 
   ExternalProject_Add(H5FORTRAN
     GIT_REPOSITORY ${h5fortran_git}
-    GIT_TAG ${h5fortran_tag})
+    GIT_TAG ${h5fortran_tag}
     UPDATE_DISCONNECTED ${EP_UPDATE_DISCONNECTED}
     CMAKE_ARGS -Dhdf5_external:BOOL=${hdf5_external} -DCMAKE_INSTALL_PREFIX:PATH=${LAPACK_ROOT} -DBUILD_SHARED_LIBS:BOOL=false -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING:BOOL=false
     BUILD_BYPRODUCTS ${h5fortran_LIBRARIES}
