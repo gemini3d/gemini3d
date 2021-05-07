@@ -7,6 +7,8 @@
 cmake_minimum_required(VERSION 3.20...${CMAKE_VERSION})
 
 set(opts)
+set(tgt msis_setup)
+
 set(CTEST_USE_LAUNCHERS 1)
 set(CTEST_TEST_TIMEOUT 10)
 set(CTEST_OUTPUT_ON_FAILURE true)
@@ -43,13 +45,15 @@ if(NOT (_ret EQUAL 0 AND _err EQUAL 0))
 endif()
 
 # ensure that rebuild works
-ctest_build(RETURN_VALUE _ret
+ctest_build(TARGET ${tgt}
+RETURN_VALUE _ret
 CAPTURE_CMAKE_ERROR _err)
 if(NOT (_ret EQUAL 0 AND _err EQUAL 0))
   message(FATAL_ERROR "Build failed: return cod ${_ret} CMake Error ${_err}")
 endif()
 
-ctest_build(RETURN_VALUE _ret
+ctest_build(TARGET ${tgt}
+RETURN_VALUE _ret
 CAPTURE_CMAKE_ERROR _err)
 if(NOT (_ret EQUAL 0 AND _err EQUAL 0))
   message(FATAL_ERROR "RE-Build failed: return cod ${_ret} CMake Error ${_err}")
