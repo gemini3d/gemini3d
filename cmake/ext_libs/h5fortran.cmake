@@ -1,5 +1,4 @@
-# Leave h5fortran as FetchContent as we use wrangle HDF5 library distinctions there
-include(FetchContent)
+include(ExternalProject)
 
 if(hdf5)
   find_package(h5fortran CONFIG)
@@ -7,18 +6,35 @@ if(hdf5)
     return()
   endif()
 
-  set(h5fortran_BUILD_TESTING false CACHE BOOL "h5fortran no test")
+  if(NOT DEFINED h5fortran_ROOT)
+    if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+      set(h5fortran_ROOT ${CMAKE_INSTALL_PREFIX})
+    endif()
+  endif()
 
-  FetchContent_Declare(H5FORTRAN
+  set(h5fortran_INCLUDE_DIRS ${CMAKE_CURRENT_BINARY_DIR}/include)
+  set(h5fortran_LIBRARIES ${h5fortran_ROOT}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}h5fortran${CMAKE_STATIC_LIBRARY_SUFFIX})
+
+  ExternalProject_Add(H5FORTRAN
     GIT_REPOSITORY ${h5fortran_git}
     GIT_TAG ${h5fortran_tag})
+    UPDATE_DISCONNECTED ${EP_UPDATE_DISCONNECTED}
+    CMAKE_ARGS -Dhdf5_external:BOOL=${hdf5_external} -DCMAKE_INSTALL_PREFIX:PATH=${LAPACK_ROOT} -DBUILD_SHARED_LIBS:BOOL=false -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING:BOOL=false
+    BUILD_BYPRODUCTS ${h5fortran_LIBRARIES}
+    INACTIVITY_TIMEOUT 30
+    CONFIGURE_HANDLED_BY_BUILD ON
+    )
 
-  if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.14)
-    FetchContent_MakeAvailable(H5FORTRAN)
-  elseif(NOT h5fortran_POPULATED)
-    FetchContent_Populate(H5FORTRAN)
-    add_subdirectory(${h5fortran_SOURCE_DIR} ${h5fortran_BINARY_DIR})
-  endif()
+  file(MAKE_DIRECTORY ${h5fortran_INCLUDE_DIRS})
+
+  add_library(h5fortran::h5fortran INTERFACE IMPORTED)
+  target_link_libraries(h5fortran::h5fortran INTERFACE ${h5fortran_LIBRARIES})
+  target_include_directories(h5fortran::h5fortran INTERFACE ${h5fortran_INCLUDE_DIRS})
+
+  # race condition for linking without this
+  add_dependencies(h5fortran::h5fortran H5FORTRAN)
+
+
 else(hdf5)
   message(VERBOSE " using h5fortran dummy")
 
