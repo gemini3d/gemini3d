@@ -1,7 +1,7 @@
 {
 "glow": {"git": "https://github.com/gemini3d/glow.git", "tag": "v0.981.0.8"},
 
-"h5fortran": {"git": "https://github.com/geospace-code/h5fortran.git", "tag": "v3.6.7"},
+"h5fortran": {"git": "https://github.com/geospace-code/h5fortran.git", "tag": "v3.6.8"},
 "nc4fortran": {"git": "https://github.com/geospace-code/nc4fortran.git", "tag": "v1.2.4"},
 
 "hwm14": {"git": "https://github.com/space-physics/hwm14.git", "tag": "fdc90189712a7c041f089831a7e5e8b3abaf7b0d"},
