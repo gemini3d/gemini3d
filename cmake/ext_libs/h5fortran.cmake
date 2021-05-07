@@ -21,6 +21,13 @@ if(hdf5)
         set(h5fortran_ROOT ${CMAKE_INSTALL_PREFIX})
     endif()
   endif()
+  if(HDF5_FOUND)
+    set(HDF5_ROOT ${HDF5_INCLUDE_DIR}/..)
+  else()
+    set(HDF5_ROOT ${h5fortran_ROOT})
+  endif()
+
+  message(VERBOSE "HDF5_ROOT: ${HDF5_ROOT}")
 
   set(h5fortran_INCLUDE_DIRS ${CMAKE_CURRENT_BINARY_DIR}/include)
   set(h5fortran_LIBRARIES ${h5fortran_ROOT}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}h5fortran${CMAKE_STATIC_LIBRARY_SUFFIX})
