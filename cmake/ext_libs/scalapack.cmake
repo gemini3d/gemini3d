@@ -13,8 +13,6 @@ if(SCALAPACK_FOUND OR TARGET SCALAPACK::SCALAPACK)
   return()
 endif()
 
-cmake_minimum_required(VERSION 3.19...${CMAKE_VERSION})
-
 set(scalapack_external true CACHE BOOL "build ScaLapack")
 
 if(NOT SCALAPACK_ROOT)

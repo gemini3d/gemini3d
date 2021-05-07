@@ -7,8 +7,6 @@ if(hwm14_FOUND)
   return()
 endif()
 
-cmake_minimum_required(VERSION 3.19...${CMAKE_VERSION})
-
 if(NOT HWM14_ROOT)
   if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
     set(HWM14_ROOT ${PROJECT_BINARY_DIR})

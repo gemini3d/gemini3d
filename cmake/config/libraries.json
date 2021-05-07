@@ -3,6 +3,12 @@
 
 "h5fortran": {"git": "https://github.com/geospace-code/h5fortran.git", "tag": "v3.6.8"},
 "nc4fortran": {"git": "https://github.com/geospace-code/nc4fortran.git", "tag": "v1.2.4"},
+"zlib": {"url": "https://zlib.net/zlib1211.zip",
+  "sha256": "d7510a8ee1918b7d0cad197a089c0a2cd4d6df05fee22389f67f115e738b178d"},
+"hdf5": {"url": "https://github.com/HDFGroup/hdf5/archive/hdf5-1_10_7.zip",
+  "sha256": "89ea0b117c27a8f7587e601b65fa1427b28db3a6ee66ffff0178509514128f18",
+  "git": "https://github.com/HDFGroup/hdf5.git",
+  "tag": "1.10/master"},
 
 "hwm14": {"git": "https://github.com/space-physics/hwm14.git", "tag": "fdc90189712a7c041f089831a7e5e8b3abaf7b0d"},
 "msis2": {"zip": "https://map.nrl.navy.mil/map/pub/nrl/NRLMSIS/NRLMSIS2.0/NRLMSIS2.0.zip", "sha1": "fa817dfee637ec2298a6ec882345d13d0b087a85"},

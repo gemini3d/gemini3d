@@ -42,8 +42,6 @@ if(NOT Python3_FOUND)
 endif()
 # keep this in script so it's not scoped in function
 
-cmake_minimum_required(VERSION 3.19...${CMAKE_VERSION})
-
 FetchContent_Declare(PYGEMINI
 GIT_REPOSITORY ${pygemini_git}
 GIT_TAG ${pygemini_tag})
