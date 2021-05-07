@@ -47,9 +47,9 @@ cmake_minimum_required(VERSION 3.19...${CMAKE_VERSION})
 
 set(mumps_external true CACHE BOOL "build Mumps")
 
-if(NOT DEFINED MUMPS_ROOT)
+if(NOT MUMPS_ROOT)
   if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-    set(MUMPS_ROOT ${PROJECT_BINARY_DIR}/mumps)
+    set(MUMPS_ROOT ${PROJECT_BINARY_DIR})
   else()
     set(MUMPS_ROOT ${CMAKE_INSTALL_PREFIX})
   endif()

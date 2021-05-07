@@ -7,9 +7,9 @@ endif()
 
 cmake_minimum_required(VERSION 3.19...${CMAKE_VERSION})
 
-if(NOT DEFINED GLOW_ROOT)
+if(NOT GLOW_ROOT)
   if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-    set(GLOW_ROOT ${PROJECT_BINARY_DIR}/glow)
+    set(GLOW_ROOT ${PROJECT_BINARY_DIR})
   else()
     set(GLOW_ROOT ${CMAKE_INSTALL_PREFIX})
   endif()

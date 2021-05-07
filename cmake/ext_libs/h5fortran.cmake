@@ -6,7 +6,7 @@ if(hdf5)
     return()
   endif()
 
-  if(NOT DEFINED h5fortran_ROOT)
+  if(NOT h5fortran_ROOT)
     if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
         set(h5fortran_ROOT ${PROJECT_BINARY_DIR})
       else()
