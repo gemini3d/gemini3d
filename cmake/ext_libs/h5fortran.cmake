@@ -11,7 +11,7 @@ if(hdf5)
   endif()
 
   if(NOT HDF5_FOUND OR hdf5_external)
-    include(cmake/build_hdf5.cmake)
+    include(${CMAKE_CURRENT_LIST_DIR}/build_hdf5.cmake)
   endif()
 
   if(NOT h5fortran_ROOT)
