@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.19...${CMAKE_VERSION})
 
 set(CTEST_PROJECT_NAME "Gemini3D")
-
 set(CTEST_LABELS_FOR_SUBPROJECTS "unit;core;python;matlab")
 
 set(opts)
@@ -15,6 +14,7 @@ endif()
 
 set(CTEST_NIGHTLY_START_TIME "01:00:00 UTC")
 set(CTEST_SUBMIT_URL "https://my.cdash.org/submit.php?project=${CTEST_PROJECT_NAME}")
+set(CTEST_USE_LAUNCHERS 1)
 
 # ctest -S doesn't have a way to pass -Dvar:type=value, so do this via env var
 # cannot pass in lists--use CMakePresets.json for list variables. Example:
@@ -88,79 +88,8 @@ if(NOT DEFINED CTEST_BUILD_NAME)
 endif()
 
 
-set(CTEST_USE_LAUNCHERS 1)
-
-# --- find generator
-function(find_generator)
-
-find_program(ninja NAMES ninja ninja-build samu)
-
-if(ninja)
-  execute_process(COMMAND ${ninja} --version
-    OUTPUT_VARIABLE ninja_version OUTPUT_STRIP_TRAILING_WHITESPACE
-    RESULT_VARIABLE err
-    TIMEOUT 5)
-  if(err EQUAL 0 AND ninja_version VERSION_GREATER_EQUAL 1.10)
-    set(CTEST_CMAKE_GENERATOR Ninja)
-  endif()
-endif(ninja)
-
-if(NOT DEFINED CTEST_CMAKE_GENERATOR)
-  set(CTEST_BUILD_FLAGS -j)  # not --parallel as this goes to generator directly
-  if(WIN32)
-    set(CTEST_CMAKE_GENERATOR "MinGW Makefiles")
-  else()
-    set(CTEST_CMAKE_GENERATOR "Unix Makefiles")
-  endif()
-endif()
-
-set(CTEST_CMAKE_GENERATOR ${CTEST_CMAKE_GENERATOR} PARENT_SCOPE)
-
-endfunction(find_generator)
-
-if(NOT DEFINED CTEST_CMAKE_GENERATOR)
-  if(DEFINED ENV{CMAKE_GENERATOR})
-    set(CTEST_CMAKE_GENERATOR $ENV{CMAKE_GENERATOR})
-  else()
-    find_generator()
-  endif()
-endif()
-
-# --- test parallelism
-include(ProcessorCount)
-
-function(cmake_cpu_count)
-  # on ARM e.g. Raspberry Pi, the usually reliable cmake_host_system_info gives 1 instead of true count
-  # fallback to less reliable ProcessorCount which does work on Raspberry Pi.
-
-cmake_host_system_information(RESULT sys_info QUERY OS_NAME OS_PLATFORM)
-if(sys_info STREQUAL "macOS;arm64")
-  # Apple Silicon M1 workaround for hwloc et al:
-  # https://github.com/open-mpi/hwloc/issues/454
-  cmake_host_system_information(RESULT Nhybrid QUERY NUMBER_OF_PHYSICAL_CORES)
-
-  math(EXPR Ncpu "${Nhybrid} / 2")  # use only fast cores, else MPI very slow
-
-  message(STATUS "Apple M1 hybrid CPU count workaround applied.")
-else()
-  ProcessorCount(_ncount)
-  cmake_host_system_information(RESULT Ncpu QUERY NUMBER_OF_PHYSICAL_CORES)
-
-  if(Ncpu EQUAL 1 AND _ncount GREATER 0)
-    set(Ncpu ${_ncount})
-  endif()
-endif()
-
-set(Ncpu ${Ncpu} PARENT_SCOPE)
-
-endfunction(cmake_cpu_count)
-
-if(DEFINED ENV{CTEST_PARALLEL_LEVEL})
-  set(Ncpu $ENV{CTEST_PARALLEL_LEVEL})
-else()
-  cmake_cpu_count()
-endif()
-message(STATUS "using Ncpu = ${Ncpu}")
+include(cmake/find_generator.cmake)
+include(cmake/cpu_count.cmake)
 
 # --- CTest Dashboard
 
