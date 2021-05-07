@@ -13,13 +13,11 @@ if(SCALAPACK_FOUND OR TARGET SCALAPACK::SCALAPACK)
   return()
 endif()
 
-cmake_minimum_required(VERSION 3.19...${CMAKE_VERSION})
-
 set(scalapack_external true CACHE BOOL "build ScaLapack")
 
-if(NOT DEFINED SCALAPACK_ROOT)
+if(NOT SCALAPACK_ROOT)
   if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-    set(SCALAPACK_ROOT ${PROJECT_BINARY_DIR}/scalapack)
+    set(SCALAPACK_ROOT ${PROJECT_BINARY_DIR})
   else()
     set(SCALAPACK_ROOT ${CMAKE_INSTALL_PREFIX})
   endif()

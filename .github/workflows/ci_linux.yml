@@ -15,8 +15,7 @@ on:
 
 jobs:
 
-  cmake313-hdf5:
-    # CMake 3.13 can only do unit tests
+  cmake-hdf5:
     runs-on: ubuntu-latest
     timeout-minutes: 8
     steps:
@@ -25,23 +24,16 @@ jobs:
       with:
         python-version: '3.8'
 
-    - name: Get CMake 3.13
-      run: |
-        curl -L -O https://github.com/Kitware/CMake/releases/download/v3.13.5/cmake-3.13.5-Linux-x86_64.tar.gz
-        tar -xf cmake-3.13.5-Linux-x86_64.tar.gz
-        echo "${GITHUB_WORKSPACE}/cmake-3.13.5-Linux-x86_64/bin" >> $GITHUB_PATH
-
     - name: Install packages
       run: |
         sudo apt update -yq
         sudo cmake -P scripts/install_prereq.cmake
 
 # CI is too slow for 3d_glow
-    - run: cmake -B build
+    - run: cmake --preset default
     - run: cmake --build build --parallel
 
-    - run: ctest -R unit --output-on-failure
-      working-directory: build
+    - run: ctest --preset default -E 3d
 
 
   debug:
@@ -56,6 +48,6 @@ jobs:
         sudo cmake -P scripts/install_prereq.cmake
 
     - run: cmake --preset default -DCMAKE_BUILD_TYPE=Debug
-    - run: cmake --build --preset default
+    - run: cmake --build build --parallel
 
     - run: ctest --preset default -R "(unit|2dew_fang)"

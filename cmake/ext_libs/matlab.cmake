@@ -7,8 +7,6 @@ if(NOT Matlab_FOUND)
   return()
 endif()
 
-cmake_minimum_required(VERSION 3.19...${CMAKE_VERSION})
-
 FetchContent_Declare(MATGEMINI
 GIT_REPOSITORY ${matgemini_git}
 GIT_TAG ${matgemini_tag})

@@ -13,13 +13,11 @@ if(LAPACK_FOUND OR TARGET LAPACK::LAPACK)
   return()
 endif()
 
-cmake_minimum_required(VERSION 3.19...${CMAKE_VERSION})
-
 set(lapack_external true CACHE BOOL "build Lapack")
 
-if(NOT DEFINED LAPACK_ROOT)
+if(NOT LAPACK_ROOT)
   if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-    set(LAPACK_ROOT ${PROJECT_BINARY_DIR}/lapack)
+    set(LAPACK_ROOT ${PROJECT_BINARY_DIR})
   else()
     set(LAPACK_ROOT ${CMAKE_INSTALL_PREFIX})
   endif()

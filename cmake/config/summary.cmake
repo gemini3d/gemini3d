@@ -2,16 +2,8 @@ include(FeatureSummary)
 
 # --- warnings
 
-set(_min 0.0.0)
-
-if(CMAKE_Fortran_COMPILER_ID STREQUAL Intel)
-  set(_min 3.19.6)
-elseif(CMAKE_Fortran_COMPILER_ID STREQUAL IntelLLVM)
-  set(_min 3.20)
-endif()
-
-if(CMAKE_VERSION VERSION_LESS ${_min})
-  message(WARNING "${CMAKE_Fortran_COMPILER_ID} compilers may not work properly with CMake < ${_min}")
+if(CMAKE_VERSION VERSION_LESS 3.20)
+  message(WARNING "${CMAKE_Fortran_COMPILER_ID} compilers may not work properly with CMake < 3.20")
 endif()
 
 # --- recommendations

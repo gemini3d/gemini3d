@@ -1,5 +1,4 @@
-# Leave h5fortran as FetchContent as we use wrangle HDF5 library distinctions there
-include(FetchContent)
+include(ExternalProject)
 
 if(hdf5)
   find_package(h5fortran CONFIG)
@@ -7,18 +6,53 @@ if(hdf5)
     return()
   endif()
 
-  set(h5fortran_BUILD_TESTING false CACHE BOOL "h5fortran no test")
-
-  FetchContent_Declare(H5FORTRAN
-    GIT_REPOSITORY ${h5fortran_git}
-    GIT_TAG ${h5fortran_tag})
-
-  if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.14)
-    FetchContent_MakeAvailable(H5FORTRAN)
-  elseif(NOT h5fortran_POPULATED)
-    FetchContent_Populate(H5FORTRAN)
-    add_subdirectory(${h5fortran_SOURCE_DIR} ${h5fortran_BINARY_DIR})
+  if(NOT hdf5_external)
+    find_package(HDF5 COMPONENTS Fortran HL)
   endif()
+
+  if(NOT HDF5_FOUND OR hdf5_external)
+    include(cmake/build_hdf5.cmake)
+  endif()
+
+  if(NOT h5fortran_ROOT)
+    if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+        set(h5fortran_ROOT ${PROJECT_BINARY_DIR})
+      else()
+        set(h5fortran_ROOT ${CMAKE_INSTALL_PREFIX})
+    endif()
+  endif()
+  if(HDF5_FOUND)
+    set(HDF5_ROOT ${HDF5_INCLUDE_DIR}/..)
+  else()
+    set(HDF5_ROOT ${h5fortran_ROOT})
+  endif()
+
+  message(VERBOSE "HDF5_ROOT: ${HDF5_ROOT}")
+
+  set(h5fortran_INCLUDE_DIRS ${CMAKE_CURRENT_BINARY_DIR}/include)
+  set(h5fortran_LIBRARIES ${h5fortran_ROOT}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}h5fortran${CMAKE_STATIC_LIBRARY_SUFFIX})
+
+  ExternalProject_Add(H5FORTRAN
+    GIT_REPOSITORY ${h5fortran_git}
+    GIT_TAG ${h5fortran_tag}
+    UPDATE_DISCONNECTED ${EP_UPDATE_DISCONNECTED}
+    CMAKE_ARGS -DHDF5_ROOT:PATH=${HDF5_ROOT} -DCMAKE_INSTALL_PREFIX:PATH=${h5fortran_ROOT} -DBUILD_SHARED_LIBS:BOOL=false -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING:BOOL=false
+    BUILD_BYPRODUCTS ${h5fortran_LIBRARIES}
+    INACTIVITY_TIMEOUT 30
+    CONFIGURE_HANDLED_BY_BUILD ON
+    )
+
+  file(MAKE_DIRECTORY ${h5fortran_INCLUDE_DIRS})
+
+  add_library(h5fortran::h5fortran INTERFACE IMPORTED)
+  target_link_libraries(h5fortran::h5fortran INTERFACE ${h5fortran_LIBRARIES})
+  target_include_directories(h5fortran::h5fortran INTERFACE ${h5fortran_INCLUDE_DIRS})
+
+  # race condition for linking without this
+  add_dependencies(h5fortran::h5fortran H5FORTRAN)
+
+  target_link_libraries(h5fortran::h5fortran INTERFACE HDF5::HDF5)
+
 else(hdf5)
   message(VERBOSE " using h5fortran dummy")
 

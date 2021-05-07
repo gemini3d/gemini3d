@@ -1,2 +1,0 @@
-h5fortran_git https://github.com/geospace-code/h5fortran.git
-h5fortran_tag v3.6.8
