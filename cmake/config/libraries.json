@@ -1,8 +1,8 @@
 {
 "glow": {"git": "https://github.com/gemini3d/glow.git", "tag": "v0.981.0.8"},
 
-"h5fortran": {"git": "https://github.com/geospace-code/h5fortran.git", "tag": "v3.6.8"},
-"nc4fortran": {"git": "https://github.com/geospace-code/nc4fortran.git", "tag": "v1.2.4"},
+"h5fortran": {"git": "https://github.com/geospace-code/h5fortran.git", "tag": "v3.6.9"},
+"nc4fortran": {"git": "https://github.com/geospace-code/nc4fortran.git", "tag": "v1.2.5"},
 "zlib": {
   "url": "https://zlib.net/zlib1211.zip",
   "sha256": "d7510a8ee1918b7d0cad197a089c0a2cd4d6df05fee22389f67f115e738b178d"
