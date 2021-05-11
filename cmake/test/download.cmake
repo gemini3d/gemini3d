@@ -42,7 +42,7 @@ if(NOT EXISTS ${archive})
 endif()
 file(SHA256 ${archive} _hash)
 if(NOT _hash STREQUAL ${hash})
-  download_archive(${url} ${archive})
+  download_archive(${url} ${archive} ${hash})
 endif()
 
 message(STATUS "EXTRACT: ${name}: ${archive} => ${ref_dir}")
