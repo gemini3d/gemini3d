@@ -76,7 +76,12 @@ option(matlab "Matlab checks")
 
 option(test_shaky "tests that may falsely fail")
 
-set(CMAKE_TLS_VERIFY true)  # for Git and Downloads
+if(NOT DEFINED CMAKE_TLS_VERIFY)
+  set(CMAKE_TLS_VERIFY true)  # for Git and Downloads
+endif()
+if(NOT CMAKE_TLS_VERIFY)
+  message(STATUS "CMake HTTPS TLS verification OFF per user request.")
+endif()
 
 if(dev)
   set(FETCHCONTENT_SOURCE_DIR_PYGEMINI ${PROJECT_SOURCE_DIR}/../pygemini CACHE PATH "PyGemini developer path")
