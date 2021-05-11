@@ -2,6 +2,11 @@ include(${CMAKE_CURRENT_LIST_DIR}/compare.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/system_meta.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/RefPackage.cmake)
 
+include(${CMAKE_CURRENT_LIST_DIR}/../CheckTLS.cmake)
+check_tls()
+# this helps diagnose TLS download errors due to system/CMake TLS problems
+
+
 function(setup_gemini_test name TIMEOUT)
 
 # --- setup test

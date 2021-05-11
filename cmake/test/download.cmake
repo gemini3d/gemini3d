@@ -1,3 +1,5 @@
+cmake_minimum_required(VERSION 3.19)
+
 function(download_archive url archive hash)
 
 message(STATUS "DOWNLOAD: ${url} => ${archive}  sha256: ${hash}")
