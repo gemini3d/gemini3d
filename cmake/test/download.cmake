@@ -1,5 +1,3 @@
-cmake_minimum_required(VERSION 3.13...${CMAKE_VERSION})
-
 function(download_archive url archive hash)
 
 message(STATUS "DOWNLOAD: ${archive}  sha256: ${hash}")
@@ -42,7 +40,7 @@ if(NOT EXISTS ${archive})
 endif()
 file(SHA256 ${archive} _hash)
 if(NOT _hash STREQUAL ${hash})
-  download_archive(${url} ${archive} ${hash})
+  download_archive(${url} ${archive} $)
 endif()
 
 message(STATUS "EXTRACT: ${name}: ${archive} => ${ref_dir}")
