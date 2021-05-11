@@ -1,6 +1,6 @@
 function(download_archive url archive hash)
 
-message(STATUS "DOWNLOAD: ${archive}  sha256: ${hash}")
+message(STATUS "DOWNLOAD: ${url} => ${archive}  sha256: ${hash}")
 file(DOWNLOAD ${url} ${archive} EXPECTED_HASH SHA256=${hash})
 
 endfunction(download_archive)
