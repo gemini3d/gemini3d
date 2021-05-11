@@ -10,7 +10,7 @@
 # optionally, specify a specific CMake version like:
 #   cmake -Dversion="3.13.5" -P install_cmake.cmake
 #
-# This script can be used to install CMake >= 2.8.12.2 (e.g. for compatibility tests)
+# This script can be used to install CMake >= 3.7.
 # old CMake versions have broken file(DOWNLOAD)--they just "download" 0-byte files.
 
 cmake_minimum_required(VERSION 3.7...${CMAKE_VERSION})
@@ -25,11 +25,34 @@ if(NOT version)
   set(version 3.20.2)
 endif()
 
-if(version STREQUAL 2.8.12)
-  set(version 2.8.12.2)
+if(version VERSION_LESS 3.7)
+  set(version 3.7.2)
 endif()
 
 set(host https://github.com/Kitware/CMake/releases/download/v${version}/)
+
+function(check_tls)
+# some CMake may not have SSL/TLS enabled, or may have missing/broken system certificates.
+# this is a publicly-usable service (as per their TOS)
+
+set(url https://www.howsmyssl.com/a/check)
+set(temp ${CMAKE_CURRENT_LIST_DIR}/test_ssl.json)
+
+file(DOWNLOAD ${url} ${temp} INACTIVITY_TIMEOUT 5)
+file(READ ${temp} json)
+
+if(CMAKE_VERSION VERSION_LESS 3.19)
+  string(REGEX MATCH "(\"rating\":\"Probably Okay\")" rating ${json})
+else()
+  string(JSON rating ERROR_VARIABLE e GET ${json} rating)
+endif()
+
+message(STATUS "TLS status: ${rating}")
+if(NOT rating)
+  message(WARNING "TLS seems to be broken on your system. Download will probably fail.  ${rating}")
+endif()
+
+endfunction(check_tls)
 
 
 function(checkup exe)
@@ -42,6 +65,8 @@ endif()
 
 endfunction(checkup)
 
+
+check_tls()
 
 if(APPLE)
   find_program(brew
@@ -59,9 +84,7 @@ if(APPLE)
 elseif(UNIX)
   execute_process(COMMAND uname -m OUTPUT_VARIABLE arch OUTPUT_STRIP_TRAILING_WHITESPACE)
 
-  if(version VERSION_LESS 3.1.0)
-    set(stem cmake-${version}-Linux-i386)
-  elseif(arch STREQUAL x86_64)
+  if(arch STREQUAL x86_64)
     if(version VERSION_LESS 3.20)
       set(stem cmake-${version}-Linux-x86_64)
     else()
@@ -84,9 +107,7 @@ elseif(WIN32)
   # CMake doesn't currently have binary downloads for ARM64 or IA64
   set(arch $ENV{PROCESSOR_ARCHITECTURE})
 
-  if(version VERSION_LESS 3.6.0)
-    set(stem cmake-${version}-win32-x86)
-  elseif(arch STREQUAL AMD64)
+  if(arch STREQUAL AMD64)
     if(version VERSION_LESS 3.20)
       set(stem cmake-${version}-win64-x64)
     else()
@@ -125,7 +146,7 @@ message(STATUS "installing CMake ${version} to ${prefix}")
 
 set(archive ${prefix}/${name})
 
-if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.14)
+if(NOT CMAKE_VERSION VERSION_LESS 3.14)
   if(EXISTS ${archive})
     file(SIZE ${archive} fsize)
     if(fsize LESS 1000000)
@@ -137,9 +158,9 @@ endif()
 if(NOT EXISTS ${archive})
   set(url ${host}${name})
   message(STATUS "download ${url}")
-  file(DOWNLOAD ${url} ${archive})
+  file(DOWNLOAD ${url} ${archive} INACTIVITY_TIMEOUT 5)
 
-  if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.14)
+  if(NOT CMAKE_VERSION VERSION_LESS 3.14)
     file(SIZE ${archive} fsize)
     if(fsize LESS 1000000)
       message(FATAL_ERROR "failed to download ${url}")
@@ -148,10 +169,10 @@ if(NOT EXISTS ${archive})
 endif()
 
 message(STATUS "extracting to ${path}")
-if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.18)
-  file(ARCHIVE_EXTRACT INPUT ${archive} DESTINATION ${prefix})
-else()
+if(CMAKE_VERSION VERSION_LESS 3.18)
   execute_process(COMMAND ${CMAKE_COMMAND} -E tar xf ${archive} WORKING_DIRECTORY ${prefix})
+else()
+  file(ARCHIVE_EXTRACT INPUT ${archive} DESTINATION ${prefix})
 endif()
 
 find_program(cmake NAMES cmake PATHS ${path} PATH_SUFFIXES bin NO_DEFAULT_PATH)
