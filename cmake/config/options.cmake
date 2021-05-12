@@ -64,6 +64,7 @@ option(msis20 "use MSIS 2.0 neutral atmosphere model")
 
 option(hdf5 "use HDF5 file I/O" on)
 option(netcdf "use NetCDF file I/O")
+option(zlib_legacy "use unmaintained ZLIB 1.x")
 
 # MUMPS build options (only used if auto-building MUMPS)
 option(metis "MUMPS: use METIS" off)
