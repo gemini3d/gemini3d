@@ -1,5 +1,8 @@
 cmake_minimum_required(VERSION 3.19)
 
+include(${CMAKE_CURRENT_LIST_DIR}/../CheckTLS.cmake)
+check_tls()
+
 function(download_archive url archive hash)
 
 message(STATUS "DOWNLOAD: ${url} => ${archive}  sha256: ${hash}")
