@@ -12,6 +12,8 @@ if(hdf5)
 
   if(NOT HDF5_FOUND OR hdf5_external)
     include(${CMAKE_CURRENT_LIST_DIR}/build_hdf5.cmake)
+  else()
+    add_custom_target(HDF5)
   endif()
 
   if(NOT h5fortran_ROOT)
@@ -39,6 +41,7 @@ if(hdf5)
     BUILD_BYPRODUCTS ${h5fortran_LIBRARIES}
     INACTIVITY_TIMEOUT 15
     CONFIGURE_HANDLED_BY_BUILD ON
+    DEPENDS HDF5
     )
 
   file(MAKE_DIRECTORY ${h5fortran_INCLUDE_DIRS})
