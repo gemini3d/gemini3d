@@ -141,6 +141,7 @@ type, abstract :: curvmesh
   contains
     procedure :: set_coords             ! initialize general curvilinear coordinates and mesh sizes
     procedure :: calc_coord_diffs       ! compute bwd and midpoint diffs from coordinates
+    procedure :: calc_coord_diffs_root  ! coordinate diffs for root fullgrid
     procedure :: calc_difflengths       ! compute differential lengths
     procedure :: calc_inull             ! compute null points
     procedure :: calc_gridflag          ! compute the type of grid we have

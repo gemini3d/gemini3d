@@ -69,7 +69,7 @@ call x%set_root(tmpghostall,tmpghostall,tmpghostall, &
                 tmpghost3,tmpghost3,tmpghost3, &
                 tmp,tmp,tmp, &
                 tmp,tmp,tmp)
-
+call x%calc_coord_diffs_root()
 !!!! end grid setup and init
 
 ! check variable allocation and set status
