@@ -3,12 +3,10 @@
 configure_file(mumps_ifc.in.f90 mumps_ifc.f90 @ONLY)
 add_library(mumps_interface OBJECT ${CMAKE_CURRENT_BINARY_DIR}/mumps_ifc.f90)
 target_link_libraries(mumps_interface PRIVATE MUMPS::MUMPS)
-# must be PUBLIC or gemini.bin[.exe] link will fail with GCC
-# not OBJECT to avoid CMake 3.13 trouble
 
 add_library(PDEelliptic OBJECT
 PDEelliptic.f90 elliptic2d.f90 elliptic3d.f90)
-target_link_libraries(PDEelliptic PRIVATE mumps_interface mpimod const MPI::MPI_Fortran)
+target_link_libraries(PDEelliptic PRIVATE mpimod const mumps_interface MUMPS::MUMPS)
 
 add_library(potential OBJECT
 potential_comm_mumps.f90 potential_root.f90 potential_worker.f90
@@ -24,7 +22,8 @@ if(hdf5 AND ${PROJECT_NAME}_BUILD_TESTING)
 
 set(_potential_testfile ${CMAKE_CURRENT_BINARY_DIR}/test_potential2d.h5)
 
-add_executable(test_potential2d test_potential2D.f90)
+add_executable(test_potential2d test_potential2D.f90 $<TARGET_OBJECTS:PDEelliptic>)
+target_include_directories(test_potential2d PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/include)
 set_target_properties(test_potential2d PROPERTIES LABELS unit)
 # MPI_C is needed here, else will not compile on MinGW with Ninja or Make.
 # LINK_INTERFACE_MULTIPLICITY and IMPORTED_LINK_INTERFACE_MULTIPLICITY do not help here.
@@ -32,8 +31,10 @@ set_target_properties(test_potential2d PROPERTIES LABELS unit)
 # nor did adding them in mumps.cmake
 # it seems to have to be right here.
 if(mpi)
-  target_link_libraries(test_potential2d PRIVATE PDEelliptic const h5fortran::h5fortran
-    MUMPS::MUMPS SCALAPACK::SCALAPACK LAPACK::LAPACK MPI::MPI_Fortran)
+  # test_potential2d has been an intermittent source of link-order issues,
+  # where mpi gets linked in the middle instead of at the end.
+  # the TARGET_OBJECTS etc in this directory are a careful effort to avoid this problem
+  target_link_libraries(test_potential2d PRIVATE const h5fortran::h5fortran MUMPS::MUMPS SCALAPACK::SCALAPACK LAPACK::LAPACK MPI::MPI_Fortran)
 
   add_test(NAME unit:potential2
     COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${Ncpu} $<TARGET_FILE:test_potential2d> ${_potential_testfile})
