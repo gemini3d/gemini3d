@@ -39,7 +39,7 @@ module procedure read_grid
   call get_grid3_coords(indatgrid,x1,x2all,x3all)
 
   !> each worker needs to set their specific subgrid coordinates
-  indsgrid=ID2grid(iid, mpi_cfg%lid2)     !compute my location on the process grid
+  indsgrid=ID2grid(mpi_cfg%myid, mpi_cfg%lid2)     !compute my location on the process grid
   !! x2
   islstart=indsgrid(1)*lx2+1              !piece of grid that corresponds to my x3 position
   islfin=islstart+lx2-1
@@ -85,6 +85,7 @@ module procedure read_grid
                           x%rall,x%thetaall,x%phiall, &
                           x%altall,x%Bmagall,x%glonall)     
     !! note that we can fill arrays manually with our own routines rather than use x%set_root, saves temp arrays and memory
+    call x%calc_coord_diffs_root()
   else
     !! gather
     call gather_grid_workers(x%h1,x%h2,x%h3, &

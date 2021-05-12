@@ -298,11 +298,6 @@ else
 endif
 
 
-  !> Sanity check key variables before starting...
-  !print*, 'Check before time loop...'
-  !call check_finite_output(t, mpi_cfg%myid, vs2,vs3,ns,vs1,Ts, Phi,J1,J2,J3)
-
-
 !> Main time loop
 main : do while (t < tdur)
   !> TIME STEP CALCULATION, requires workers to report their most stringent local stability constraint
