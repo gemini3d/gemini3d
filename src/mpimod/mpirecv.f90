@@ -158,7 +158,7 @@ module procedure gather_recv3D_x2i_23
   integer :: ierr
   integer :: lx1,lx2,lx3
   integer :: iid
-  real(wp), dimension(1:size(param,1),1:size(param,2)+1,1:size(param,3)) :: paramtmp
+  real(wp), dimension(1:size(param,1),1:size(param,2),1:size(param,3)) :: paramtmp
   integer, dimension(4) :: inds
   
   !> note here that param has ghost cells
@@ -184,7 +184,7 @@ module procedure gather_recv3D_x3i_23
   integer :: ierr
   integer :: lx1,lx2,lx3
   integer :: iid
-  real(wp), dimension(1:size(param,1),1:size(param,2),1:size(param,3)+1) :: paramtmp
+  real(wp), dimension(1:size(param,1),1:size(param,2),1:size(param,3)) :: paramtmp
   integer, dimension(4) :: inds
   
   !> note here that param has ghost cells

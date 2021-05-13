@@ -360,9 +360,6 @@ contains
       allocate(self%r(1:lx1,1:lx2,1:lx3),self%theta(1:lx1,1:lx2,1:lx3),self%phi(1:lx1,1:lx2,1:lx3))
       allocate(self%alt(1:lx1,1:lx2,1:lx3),self%glon(1:lx1,1:lx2,1:lx3),self%glat(1:lx1,1:lx2,1:lx3))
 
-      ! fixme:  there are a number of full-grid arrays that are coordinate specific to be allocated here iff we are root
-      !   OR we can export that to some external procedures that collect the full grid information
-
       self%coord_alloc_status=.true.
     else
       error stop ' attempting to allocate space for coordinate-specific arrays when they already exist!'
