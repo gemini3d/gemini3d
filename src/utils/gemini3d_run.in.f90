@@ -111,7 +111,12 @@ if(plan) stop 'gemini3d.run: plan complete'
 !> Find gemini.bin, the main program
 if(.not.allocated(gem_exe)) then
   call get_command_argument(0, buf)
-  gem_exe = trim(parent(buf)) // '/gemini.bin'
+  if (len_trim(parent(buf)) > 0) then
+    gem_exe = trim(parent(buf)) // '/gemini.bin'
+  else
+    !! running from the same directory
+    gem_exe = "gemini.bin"
+  endif
 endif
 inquire(file=gem_exe, exist=exists)
 if(.not.exists) then
@@ -122,7 +127,8 @@ if(.not.exists) then
 endif
 
 inquire(file=gem_exe, exist=exists)
-if(.not. exists) error stop "please specify path to gemini.bin with '-gemexe path/to/gemini.bin'"
+if(.not. exists) error stop "did not find " // gem_exe // &
+  " -- please specify path to gemini.bin with '-gemexe path/to/gemini.bin'"
 
 !> check MPIexec
 if(.not.allocated(mpiexec)) then

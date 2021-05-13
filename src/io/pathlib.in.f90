@@ -37,20 +37,18 @@ get_suffix = filename(index(filename, '.', back=.true.) : len(filename))
 end function get_suffix
 
 
-pure function parent(instr, filesep)
+pure function parent(instr)
 
 character(*), intent(in) :: instr
-character(1), intent(in), optional :: filesep
 character(:), allocatable :: parent
 
-character(1) :: sep
+character(len(instr)) :: work
 integer :: i
 
-sep = '/'
-if(present(filesep)) sep = filesep
+work = filesep_unix(instr)
 
-i = scan(instr, sep, back=.true.)
-parent = instr(1:i-1)
+i = scan(work, "/", back=.true.)
+parent = work(1:i-1)
 
 end function parent
 
@@ -177,7 +175,7 @@ error stop 'ERROR: file does not exist ' // path
 end subroutine assert_file_exists
 
 
-function filesep_windows(path) result(swapped)
+pure function filesep_windows(path) result(swapped)
 !! '/' => '\' for Windows systems
 
 character(*), intent(in) :: path
@@ -194,7 +192,7 @@ end do
 end function filesep_windows
 
 
-function filesep_unix(path) result(swapped)
+pure function filesep_unix(path) result(swapped)
 !! '\' => '/'
 
 character(*), intent(in) :: path
