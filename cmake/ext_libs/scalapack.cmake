@@ -15,7 +15,8 @@ endif()
 
 set(scalapack_external true CACHE BOOL "build ScaLapack")
 
-if(LAPACK_FOUND OR NOT lapack_external)
+if(NOT TARGET LAPACK)
+  # acquired by find_package instead of ExternalProject, so make dummy target
   add_custom_target(LAPACK)
 endif()
 

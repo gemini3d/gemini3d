@@ -45,7 +45,8 @@ endif()
 
 set(mumps_external true CACHE BOOL "build Mumps")
 
-if(SCALAPACK_FOUND OR NOT scalapack_external)
+if(NOT TARGET SCALAPACK)
+  # acquired by find_package instead of ExternalProject, so make dummy target
   add_custom_target(SCALAPACK)
 endif()
 
