@@ -70,6 +70,9 @@ module procedure read_grid
   call x%make()                              ! fill auxiliary arrays
   
   !> We need to collect the info for root's fullgrid variables
+  print*, 'subgrid metric',mpi_cfg%myid,minval(x%h2x1i),maxval(x%h2x1i)
+  print*, 'subgrid theta',mpi_cfg%myid,minval(x%theta),maxval(x%theta)
+
   print*, '...collecting full mesh variables...'
   if (mpi_cfg%myid==0) then
     call x%init_storage_root()                ! now we have space in type to store full-grid arrays for gather
@@ -87,30 +90,30 @@ module procedure read_grid
                           x%altall,x%Bmagall,x%glonall)     
     !! note that we can fill arrays manually with our own routines rather than use x%set_root, saves temp arrays and memory
     call x%calc_coord_diffs_root()
-    print*, 'Fullgrid tests...'
-    print*, minval(x%h1all),maxval(x%h1all), shape(x%h1all)
-    print*, minval(x%h2all),maxval(x%h2all), shape(x%h2all)
-    print*, minval(x%h3all),maxval(x%h3all), shape(x%h3all)
+    !print*, 'Fullgrid tests...'
+    !print*, minval(x%h1all),maxval(x%h1all), shape(x%h1all)
+    !print*, minval(x%h2all),maxval(x%h2all), shape(x%h2all)
+    !print*, minval(x%h3all),maxval(x%h3all), shape(x%h3all)
 
     print*, minval(x%h1x1iall),maxval(x%h1x1iall), shape(x%h1x1iall)
     print*, minval(x%h2x1iall),maxval(x%h2x1iall), shape(x%h2x1iall)
     print*, minval(x%h3x1iall),maxval(x%h3x1iall), shape(x%h3x1iall)
 
-    print*, minval(x%h1x2iall),maxval(x%h1x2iall)
-    print*, minval(x%h2x2iall),maxval(x%h2x2iall)
-    print*, minval(x%h3x2iall),maxval(x%h3x2iall)
+    !print*, minval(x%h1x2iall),maxval(x%h1x2iall)
+    !print*, minval(x%h2x2iall),maxval(x%h2x2iall)
+    !print*, minval(x%h3x2iall),maxval(x%h3x2iall)
 
-    print*, minval(x%h1x3iall),maxval(x%h1x3iall)
-    print*, minval(x%h2x3iall),maxval(x%h2x3iall)
-    print*, minval(x%h3x3iall),maxval(x%h3x3iall)
+    !print*, minval(x%h1x3iall),maxval(x%h1x3iall)
+    !print*, minval(x%h2x3iall),maxval(x%h2x3iall)
+    !print*, minval(x%h3x3iall),maxval(x%h3x3iall)
 
-    print*, minval(x%rall),maxval(x%rall)
-    print*, minval(x%thetaall),maxval(x%thetaall)
-    print*, minval(x%phiall),maxval(x%phiall)
+    !print*, minval(x%rall),maxval(x%rall)
+    !print*, minval(x%thetaall),maxval(x%thetaall)
+    !print*, minval(x%phiall),maxval(x%phiall)
 
-    print*, minval(x%altall),maxval(x%altall)
-    print*, minval(x%Bmagall),maxval(x%Bmagall)
-    print*, minval(x%glonall),maxval(x%glonall)
+    !print*, minval(x%altall),maxval(x%altall)
+    !print*, minval(x%Bmagall),maxval(x%Bmagall)
+    !print*, minval(x%glonall),maxval(x%glonall)
   else
     !! gather
     call gather_grid_workers(x%h1,x%h2,x%h3, &
