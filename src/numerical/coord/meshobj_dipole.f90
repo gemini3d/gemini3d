@@ -93,8 +93,6 @@ subroutine init_dipolemesh(self)
   ! allocate array space using base type-bound procedure
   call self%calc_coord_diffs()
   call self%init_storage()
-  ! fixme: need to add geographic coord arrays first...
-  !call self%calc_inull()
 
   ! now we must associate pointers for extended type alias variables.  This is mostly done in order
   !  to have more readable code.
@@ -149,7 +147,7 @@ subroutine make_dipolemesh(self)
 
   ! locations of the cell interfaces in q-dimension (along field lines)
   print*, ' make_dipolemesh:  converting cell interfaces in q...'
-  call self%calc_rtheta_2D(self%qint,self%p(1:lq),rqint(:,:,1),thetaqint(:,:,1))
+  call self%calc_rtheta_2D(self%qint,self%p(1:lp),rqint(:,:,1),thetaqint(:,:,1))
   do iphi=2,lphi
     rqint(:,:,iphi)=rqint(:,:,1)
     thetaqint(:,:,iphi)=thetaqint(:,:,1)
