@@ -49,7 +49,7 @@ module procedure read_grid
   islfin=islstart+lx3-1
   x3=x3all(islstart-2:islfin+2)
 
-  ! FIXME: hardcode grid type for now OR compute it from the coordinates??
+  ! FIXME: hardcode grid type for now; compute it from the coordinates eventually??
   gridtype=1
   
   !> Declare grid type that we are dealing with; note lack of matching deallocates assume
@@ -70,28 +70,53 @@ module procedure read_grid
   call x%make()                              ! fill auxiliary arrays
   
   !> We need to collect the info for root's fullgrid variables
+  print*, '...collecting full mesh variables...'
   if (mpi_cfg%myid==0) then
     call x%init_storage_root()                ! now we have space in type to store full-grid arrays for gather
     call gather_grid_root(x%h1,x%h2,x%h3, &
                           x%h1x1i,x%h2x1i,x%h3x1i, &
                           x%h1x2i,x%h2x2i,x%h3x2i, &
-                          x%h1x2i,x%h2x3i,x%h3x3i, &
+                          x%h1x3i,x%h2x3i,x%h3x3i, &
                           x%r,x%theta,x%phi, &
                           x%alt,x%Bmag,x%glon, &
                           x%h1all,x%h2all,x%h3all, &
                           x%h1x1iall,x%h2x1iall,x%h3x1iall, &
                           x%h1x2iall,x%h2x2iall,x%h3x2iall, &
-                          x%h1x2iall,x%h2x3iall,x%h3x3iall, &
+                          x%h1x3iall,x%h2x3iall,x%h3x3iall, &
                           x%rall,x%thetaall,x%phiall, &
                           x%altall,x%Bmagall,x%glonall)     
     !! note that we can fill arrays manually with our own routines rather than use x%set_root, saves temp arrays and memory
     call x%calc_coord_diffs_root()
+    print*, 'Fullgrid tests...'
+    print*, minval(x%h1all),maxval(x%h1all), shape(x%h1all)
+    print*, minval(x%h2all),maxval(x%h2all), shape(x%h2all)
+    print*, minval(x%h3all),maxval(x%h3all), shape(x%h3all)
+
+    print*, minval(x%h1x1iall),maxval(x%h1x1iall), shape(x%h1x1iall)
+    print*, minval(x%h2x1iall),maxval(x%h2x1iall), shape(x%h2x1iall)
+    print*, minval(x%h3x1iall),maxval(x%h3x1iall), shape(x%h3x1iall)
+
+    print*, minval(x%h1x2iall),maxval(x%h1x2iall)
+    print*, minval(x%h2x2iall),maxval(x%h2x2iall)
+    print*, minval(x%h3x2iall),maxval(x%h3x2iall)
+
+    print*, minval(x%h1x3iall),maxval(x%h1x3iall)
+    print*, minval(x%h2x3iall),maxval(x%h2x3iall)
+    print*, minval(x%h3x3iall),maxval(x%h3x3iall)
+
+    print*, minval(x%rall),maxval(x%rall)
+    print*, minval(x%thetaall),maxval(x%thetaall)
+    print*, minval(x%phiall),maxval(x%phiall)
+
+    print*, minval(x%altall),maxval(x%altall)
+    print*, minval(x%Bmagall),maxval(x%Bmagall)
+    print*, minval(x%glonall),maxval(x%glonall)
   else
     !! gather
     call gather_grid_workers(x%h1,x%h2,x%h3, &
                           x%h1x1i,x%h2x1i,x%h3x1i, &
                           x%h1x2i,x%h2x2i,x%h3x2i, &
-                          x%h1x2i,x%h2x3i,x%h3x3i, &
+                          x%h1x3i,x%h2x3i,x%h3x3i, &
                           x%r,x%theta,x%phi, &
                           x%alt,x%Bmag,x%glon)
   end if
@@ -189,25 +214,37 @@ subroutine gather_grid_root(h1,h2,h3, &
   call gather_recv3D_ghost(h2,tag%h2,h2all)
   call gather_recv3D_ghost(h3,tag%h3,h3all)
 
+  print*, 1
+
   call gather_recv(h1x1i,tag%h1,h1x1iall)
   call gather_recv(h2x1i,tag%h2,h2x1iall)
   call gather_recv(h3x1i,tag%h3,h3x1iall)
+
+  print*, 2
 
   call gather_recv3D_x2i(h1x2i,tag%h1,h1x2iall)
   call gather_recv3D_x2i(h2x2i,tag%h2,h2x2iall)
   call gather_recv3D_x2i(h3x2i,tag%h3,h3x2iall)
 
+  print*, 3
+
   call gather_recv3D_x3i(h1x3i,tag%h1,h1x3iall)
   call gather_recv3D_x3i(h2x3i,tag%h2,h2x3iall)
   call gather_recv3D_x3i(h3x3i,tag%h3,h3x3iall)
+
+  print*, 4
 
   call gather_recv(r,tag%r,rall)
   call gather_recv(theta,tag%theta,thetaall)
   call gather_recv(phi,tag%phi,phiall)
 
+  print*, 5
+
   call gather_recv(alt,tag%alt,altall)
   call gather_recv(Bmag,tag%Bmag,Bmagall)
   call gather_recv(glon,tag%glon,glonall)
+
+  print*, 6
 end subroutine gather_grid_root
 
 
