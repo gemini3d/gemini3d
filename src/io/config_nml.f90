@@ -315,7 +315,7 @@ end function namelist_exists
 
 subroutine check_nml_io(i, filename, namelist)
 !! checks for EOF and gives helpful error
-!! this accomodates non-Fortran 2018 error stop with variable character
+!! this accommodates non-Fortran 2018 error stop with variable character
 
 integer, intent(in) :: i
 character(*), intent(in) :: filename

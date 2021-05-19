@@ -324,7 +324,7 @@ end if
 
 !ZERO OUT THE ENDS (DO NOT ADD DATA PAST THE GLOBAL EDGE OF THE GRID
 if (mpi_cfg%myid2==mpi_cfg%lid2-1) paramtop=0
-!! add nothing on the end since noone is passing leftward to me, FIXME: need to account for periodic???
+!! add nothing on the end since no one is passing leftward to me, FIXME: need to account for periodic???
 if (mpi_cfg%myid3==mpi_cfg%lid3-1) paramend=0
 !! zero out the data at the end of the grid
 

@@ -15,7 +15,7 @@ module procedure gridproj_dneu2D
 !Also allocate module-scope variables for storing neutral perturbations read in from input files.
 
 !whether or not the input data are to be interpreted as Cartesian
-!inout to allow deallocation of unit vectors once we are done with them, should consider exporting this to another functino to be called from main program to avoid having x writeable...
+!inout to allow deallocation of unit vectors once we are done with them, should consider exporting this to another function to be called from main program to avoid having x writeable...
 
 real(wp) :: dhorzn           !neutral grid spacing in horizontal "rho or y" and vertical directions
 integer :: lhorzn
@@ -148,11 +148,11 @@ do ix3=1,lx3
       yp=Re*gamma2     !this will likely always be positive, since we are using center of earth as our origin, so this should be interpreted as distance as opposed to displacement
 
 
-      !COMPUTE COORDIANTES FROM DISTANCES
+      !COMPUTE COORDINATES FROM DISTANCES
       if (theta3>theta1) then       !place distances in correct quadrant, here field point (theta3=theta2) is is SOUTHward of source point (theta1), whreas yp is distance northward so throw in a negative sign
         yp = -yp            !do we want an abs here to be safe
       end if
-      if (phi2<phi3) then     !assume we aren't doing a global grid otherwise need to check for wrapping, here field point (phi2) less than soure point (phi3=phi1)
+      if (phi2<phi3) then     !assume we aren't doing a global grid otherwise need to check for wrapping, here field point (phi2) less than source point (phi3=phi1)
         xp = -xp
       end if
       phip=atan2(yp,xp)
@@ -249,7 +249,7 @@ module procedure gridproj_dneu3D
 !Read in the grid for the neutral data and project unit vectors into the appropriiate directions.
 !Also allocate module-scope variables for storing neutral perturbations read in from input files.
 
-!inout to allow deallocation of unit vectors once we are done with them, should consider exporting this to another functino to be called from main program to avoid having x writeable...
+!inout to allow deallocation of unit vectors once we are done with them, should consider exporting this to another function to be called from main program to avoid having x writeable...
 
 real(wp) :: meanyn
 real(wp) :: meanxn
@@ -322,11 +322,11 @@ do ix3=1,lx3
       yp=Re*gamma2     !this will likely always be positive, since we are using center of earth as our origin, so this should be interpreted as distance as opposed to displacement
 
 
-      !COMPUTE COORDIANTES FROM DISTANCES
+      !COMPUTE COORDINATES FROM DISTANCES
       if (theta3>theta1) then       !place distances in correct quadrant, here field point (theta3=theta2) is is SOUTHward of source point (theta1), whreas yp is distance northward so throw in a negative sign
         yp= -yp            !do we want an abs here to be safe
       end if
-      if (phi2<phi3) then     !assume we aren't doing a global grid otherwise need to check for wrapping, here field point (phi2) less than soure point (phi3=phi1)
+      if (phi2<phi3) then     !assume we aren't doing a global grid otherwise need to check for wrapping, here field point (phi2) less than source point (phi3=phi1)
         xp= -xp
       end if
       !phip=atan2(yp,xp)
@@ -497,7 +497,7 @@ if (mpi_cfg%myid==0) then    !root
   xn=xnall(indx(0,3):indx(0,4))
   yn=ynall(indx(0,5):indx(0,6))
 else                 !workers
-  !get teh z-grid from root so we know what the max altitude we have to deal with will be
+  !get the z-grid from root so we know what the max altitude we have to deal with will be
   call mpi_recv(lzn,1,MPI_INTEGER,0,tag%lz,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
   allocate(zn(lzn))
   call mpi_recv(zn,lzn,mpi_realprec,0,tag%zn,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)

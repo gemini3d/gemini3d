@@ -106,7 +106,7 @@ contains
 
 
 subroutine read_configfile(cfg, verbose)
-!! READS THE INPUT CONFIGURAITON FILE, ASSIGNS VARIABLES FOR FILENAMES, SIZES, ETC.
+!! READS THE INPUT CONFIGURATION FILE, ASSIGNS VARIABLES FOR FILENAMES, SIZES, ETC.
 
 class(gemini_cfg), intent(inout) :: cfg
 logical, intent(in), optional :: verbose

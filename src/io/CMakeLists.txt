@@ -18,7 +18,7 @@ if(${PROJECT_NAME}_BUILD_TESTING)
     # so we by default omit this test.
     add_executable(test_errors test_errors.f90)
     target_link_libraries(test_errors PRIVATE errors const h5fortran::h5fortran)
-    set_target_properties(test_errors PROPERTEIS LABELS unit)
+    set_target_properties(test_errors PROPERTIES LABELS unit)
 
     add_test(NAME gemini:stop:zero COMMAND $<TARGET_FILE:test_errors> root)
     set_tests_properties(gemini:stop:zero PROPERTIES

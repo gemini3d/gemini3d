@@ -76,7 +76,7 @@ else
   block
   real(wp), dimension(1:lx1,1:lx3all+1,1:lx2all) :: htmp
   read(u) htmp
-  x%h1x3iall=reshape(htmp,[lx1,lx2all,lx3all+1],order=[1,3,2])    !Note also that the x2 interface from teh input file is x3i in this simulation
+  x%h1x3iall=reshape(htmp,[lx1,lx2all,lx3all+1],order=[1,3,2])    !Note also that the x2 interface from the input file is x3i in this simulation
   read(u) htmp
   x%h3x3iall=reshape(htmp,[lx1,lx2all,lx3all+1],order=[1,3,2])
   read(u) htmp

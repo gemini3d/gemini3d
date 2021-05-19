@@ -81,7 +81,7 @@ real(wp), dimension(1:size(vs1,1)-4,1:size(vs1,2)-4,1:size(vs1,3)-4) :: dv1iupda
 !! interface diffs. for art. visc.
 real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,size(ns,4)) :: Q
 real(wp), parameter :: xicon = 3
-!! artifical viscosity, decent value for closed field-line grids extending to high altitudes, can be set to 0 for cartesian simulations not exceed altitudes of 1500 km.
+!! artificial viscosity, decent value for closed field-line grids extending to high altitudes, can be set to 0 for cartesian simulations not exceed altitudes of 1500 km.
 
 
 !> MAKING SURE THESE ARRAYS ARE ALWAYS IN SCOPE.  FIXME: should only be done if first=.true. right???
@@ -115,7 +115,7 @@ end do
 call cpu_time(tstart)
 chrgflux = 0
 do isp=1,lsp
-  call advec_prep_mpi(isp,x%flagper,ns,rhovs1,vs1,vs2,vs3,rhoes,v1i,v2i,v3i)    !role-agnostic communcation pattern (all-to-neighbors)
+  call advec_prep_mpi(isp,x%flagper,ns,rhovs1,vs1,vs2,vs3,rhoes,v1i,v2i,v3i)    !role-agnostic communication pattern (all-to-neighbors)
 
   if(isp<lsp) then   !electron info found from charge neutrality and current density
     param=ns(:,:,:,isp)
@@ -304,7 +304,7 @@ Prpreciptmp = max(Prpreciptmp, 1e-5_wp)
 Qepreciptmp = eheating(nn,Tn,Prpreciptmp,ns)
 !! thermal electron heating rate from Swartz and Nisbet, (1978)
 
-!> photoion ionrate and heating calculated seperately, added together with ionrate and heating from Fang or GLOW
+!> photoion ionrate and heating calculated separately, added together with ionrate and heating from Fang or GLOW
 Prprecip = Prprecip + Prpreciptmp
 Qeprecip = Qeprecip + Qepreciptmp
 

@@ -170,7 +170,7 @@ call gather_recv(vs1,tag%vs1,vs1all)
 call gather_recv(Ts,tag%Ts,Tsall)
 
 
-!> RADD--- NEED TO ALSO GATHER FULL GRID ELECTRODYANMICS PARAMTERS FROM WORKERS
+!> RADD--- NEED TO ALSO GATHER FULL GRID ELECTRODYANMICS PARAMETERS FROM WORKERS
 call gather_recv(J1,tag%J1,J1all)
 call gather_recv(J2,tag%J2,J2all)
 call gather_recv(J3,tag%J3,J3all)

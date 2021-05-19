@@ -98,7 +98,7 @@ prec_dir = 'test_data/test3d_glow/inputs/prec_inputs/'
 
 ! (optional - default off) Include electric field boundary condition inputs from a file
 &efield
-flagE0file = 1                     ! use electric field bounary condition file input:  0 - no; 1 - yes
+flagE0file = 1                     ! use electric field boundary condition file input:  0 - no; 1 - yes
 dtE0 = 1.0                         ! time step between electric field file inputs
 E0_dir = 'test_data/test3d_glow/inputs/Efield_inputs/'
 /
@@ -122,7 +122,7 @@ flagcap = 2                   ! whether to use ionospheric capacitance in the so
 magcap =  30.0                ! magnetospheric capacitance (Farads)
 /
 
-! (optional - defult off) whether or not to do milestone outputs; only works with h5 file output
+! (optional - default off) whether or not to do milestone outputs; only works with h5 file output
 &milestone
 mcadence=10                   ! number of outputs per milestone
 /

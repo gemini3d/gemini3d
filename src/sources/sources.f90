@@ -282,9 +282,9 @@ Lo(:,:,:,5)=Lo(:,:,:,5)+betanow
 
 !O2+ + e- --> O + O
 where (Te <= 1200)
-  kreac=1.95e-7_wp* (300/Te)**0.70! See idl code. this may need annother te term
+  kreac=1.95e-7_wp* (300/Te)**0.70! See idl code. this may need another te term
 elsewhere
-  kreac=7.38e-8_wp*(1200/Te)**0.56! See idl code. this may need annother te term
+  kreac=7.38e-8_wp*(1200/Te)**0.56! See idl code. this may need another te term
 end where
 
 betanow=kreac*ns(1:lx1,1:lx2,1:lx3,lsp)*1e-6_wp
@@ -362,7 +362,7 @@ Pr=0
 Lo=0
 
 
-!CALCULATE COMMON GEOMETRIC FACTORS USED IN EACH FO THE SPECIES CALCULATIONS
+!CALCULATE COMMON GEOMETRIC FACTORS USED IN EACH OF THE SPECIES CALCULATIONS
 h1h2h3=x%h1(1:lx1,1:lx2,1:lx3)*x%h2(1:lx1,1:lx2,1:lx3)*x%h3(1:lx1,1:lx2,1:lx3)
 tmpderiv=grad3D1(x%h2(0:lx1+1,1:lx2,1:lx3),x,0,lx1+1,1,lx2,1,lx3)
 dh3dx1=tmpderiv(1:lx1,1:lx2,1:lx3)
@@ -376,7 +376,7 @@ gradlp1=grad3D1(log(pressure),x,1,lx1,1,lx2,1,lx3)
 Epol1=kB*Ts(1:lx1,1:lx2,1:lx3,lsp)/qs(lsp)*gradlp1
 
 
-!THE FIELD INTEGRATED SOLVE ELECTRIC FIELDS ARE NOT RELIABLE BELOW 100KM - AT LEAST NOT ENOGUH TO USE IN THIS CALCULATION
+!THE FIELD INTEGRATED SOLVE ELECTRIC FIELDS ARE NOT RELIABLE BELOW 100KM - AT LEAST NOT ENOUGH TO USE IN THIS CALCULATION
 do ix3=1,lx3
   do ix2=1,lx2
     do ix1=1,lx1

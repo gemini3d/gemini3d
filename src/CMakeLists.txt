@@ -43,7 +43,7 @@ target_link_libraries(gemini.bin PRIVATE advec calculus helpmod config const col
   msis_ifc multifluid
   neutral pathlib PDEparabolic potential precipBCs reader sanity_check errors sources temporal timeutils)
 if(mpi)
-  # Note: CMake 3.13 needs MPI linked here explicity to gemini.bin on any OS
+  # Note: CMake 3.13 needs MPI linked here explicitly to gemini.bin on any OS
   # put libs all in order or you'll get linking error on certain platforms like linux
   # due to scalapack linked after lapack and blas
   target_link_libraries(gemini.bin PRIVATE MUMPS::MUMPS SCALAPACK::SCALAPACK LAPACK::LAPACK MPI::MPI_Fortran MPI::MPI_C)

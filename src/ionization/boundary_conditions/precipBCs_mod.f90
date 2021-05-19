@@ -242,7 +242,7 @@ if(t+dt / 2._wp >= tnext .or. t < 0) then
     E0inext=reshape(parami,[lx2,lx3])
   else     !source data is fully 2D
     parami=interp2(mlonp,mlatp,Qp,mloni,mlati)     !interp to temp var.
-    Qiprev=Qinext                       !save new pervious
+    Qiprev=Qinext                       !save new previous
     Qinext=reshape(parami,[lx2,lx3])    !overwrite next with new interpolated input
 
     parami=interp2(mlonp,mlatp,E0p,mloni,mlati)

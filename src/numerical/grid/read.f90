@@ -123,7 +123,7 @@ subroutine read_grid_root(indatsize,indatgrid,x)
 !------------------------------------------------------------
 !--------SOME CODE DUPLICATION WITH WORKER VERSION - CAN WE
 !--------CREATE A COMMON SUBROUTINE THAT ALLOCATES SOME VARS?
-!--------THE GRID SIZES MUST ALREADY BE DEFINED IN TEH MODULE
+!--------THE GRID SIZES MUST ALREADY BE DEFINED IN THE MODULE
 !--------, PROBABLY FROM CALLING GRID_SIZE
 !------------------------------------------------------------
 
@@ -298,7 +298,7 @@ do iid=1,mpi_cfg%lid-1
   call mpi_send(x%x2all,lx2all+4,mpi_realprec,iid,tag%x2all,MPI_COMM_WORLD,ierr)
   !if (ierr/=0) error stop 'failed mpi_send x2all'
   call mpi_send(x%x3all,lx3all+4,mpi_realprec,iid,tag%x3all,MPI_COMM_WORLD,ierr)
-  !! workers may need a copy of this, e.g. for boudnary conditions
+  !! workers may need a copy of this, e.g. for boundary conditions
   !if (ierr/=0) error stop 'failed mpi_send x3all'
 
   call mpi_send(x%dx1,lx1+3,mpi_realprec,iid,tag%x1,MPI_COMM_WORLD,ierr)
@@ -331,7 +331,7 @@ print*, 'read_grid_root: Dealing with metric factors...'
 allocate(mpisendbuf(-1:lx1+2,-1:lx2all+2,-1:lx3all+2),mpirecvbuf(-1:lx1+2,-1:lx2+2,-1:lx3+2))
 
 mpisendbuf=x%h1all
-!! since metric factors are pointers they are not gauranteed to be contiguous in memory so pack them into a buffer that is...
+!! since metric factors are pointers they are not guaranteed to be contiguous in memory so pack them into a buffer that is...
 call bcast_send3D_ghost(mpisendbuf,tag%h1,mpirecvbuf)
 !! special broadcast subroutine to handle 3D arrays with ghost cells
 x%h1=mpirecvbuf       !store roots slab of metric factors in its grid structure
@@ -453,8 +453,8 @@ x%dl3i=tmpdx*x%h3(1:lx1,1:lx2,1:lx3)
 end block
 
 !    !THIS CODE BLOCK HAS ROOT "PARROT" THE GRID TO A FILE FOR DEBUGGING PURPOSES.
-!    !THIS BLOCK MUST BE HERE DUE TO THE FACT MANY OF HTE ALL-GRID VARIABLES ARE ONLY
-!    !IN SCOPE INSIDE THIS FUNCITON BEFORE THE DEALLOCATE STATEMENT BELOW
+!    !THIS BLOCK MUST BE HERE DUE TO THE FACT MANY OF THE ALL-GRID VARIABLES ARE ONLY
+!    !IN SCOPE INSIDE THIS FUNCTION BEFORE THE DEALLOCATE STATEMENT BELOW
 !    open(newunit=outunit,file='testsize.dat',status='replace',form='unformatted', &
 !         access='stream', action='write')
 !    write(outunit) lx1,lx2,lx3all    !note that these sizes exxclude ghost cells

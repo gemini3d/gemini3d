@@ -1,0 +1,3 @@
+[codespell]
+skip = */.git,*/.mypy_cache,*/build,*/src/vendor
+ignore-words-list = Te,inout,htmp,activ,DEPENDEES,parm,parms

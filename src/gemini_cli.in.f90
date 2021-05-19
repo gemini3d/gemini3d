@@ -158,7 +158,7 @@ if (mpi_cfg%myid==0) then
   print*, 'Diffusion solve type:  ',cfg%diffsolvetype
 
   if (cfg%mcadence > 0) then
-    print*, 'Milestone output selected; cadence (every nth outout) of:  ',cfg%mcadence
+    print*, 'Milestone output selected; cadence (every nth output) of:  ',cfg%mcadence
   else
     print*, 'Milestone output disabled.'
   end if

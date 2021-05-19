@@ -119,7 +119,7 @@ Iinf=fref*(1 + Aeuv*(0.5_wp*(f107+f107a)-80._wp))
 
 !GRAVITATIONAL FIELD AND AVERAGE VALUE
 g=sqrt(g1**2+g2**2+g3**2)
-!    gavg=sum(g)/(lx1*lx2*lx3)    !single average value for computing colunn dens.  Interestingly this is a worker average...  Do we need root grav vars. grid mod to prevent tearing?  Should be okay as long as the grid is only sliced along the x3-dimension, BUT it isn't for simulations where arrays get permuted!!!
+!    gavg=sum(g)/(lx1*lx2*lx3)    !single average value for computing column dens.  Interestingly this is a worker average...  Do we need root grav vars. grid mod to prevent tearing?  Should be okay as long as the grid is only sliced along the x3-dimension, BUT it isn't for simulations where arrays get permuted!!!
 gavg=8._wp
 
 Tninf=maxval(Tnmsis)   !set exospheric temperature based on the max value of the background MSIS atmosphere; note this is a worker max

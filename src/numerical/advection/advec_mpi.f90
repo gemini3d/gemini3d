@@ -358,7 +358,7 @@ call halo(param,1,tag%vs3BC,isperiodic)
 vs3(:,:,:,isp)=param
 
 
-!> these will now be haloed internal ot the advection routines, viz. all advected quantities are haloed withine advection
+!> these will now be haloed internal to the advection routines, viz. all advected quantities are haloed withine advection
 !param2=ns(:,:,:,isp)
 !call halo(param2,2,tag%nsBC)
 !ns(:,:,:,isp)=param2

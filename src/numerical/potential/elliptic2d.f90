@@ -62,7 +62,7 @@ if (debug) print *, 'Total unknowns and nonzero entries in matrix:  ',lPhi,lent
 !PREP INPUT DATA FOR SOLUTION OF SYSTEM
 SigPh2(1,:)= 0
 SigPh2(2:lx2,:)=0.5_wp*(SigP2(1:lx2-1,:)+SigP2(2:lx2,:))
-!! note the different conductiances here ot be associated with derivatives in different directions
+!! note the different conductiances here to be associated with derivatives in different directions
 SigPh3(:,1)= 0
 SigPh3(:,2:lx3)=0.5_wp*(SigP3(:,1:lx3-1)+SigP3(:,2:lx3))
 Cmh2(1,:)= 0
@@ -550,7 +550,7 @@ lPhi=lx2*lx3
 !! static model
 !      lent=17*(lx2-2)*(lx3A-2)+2*lx2+2*(lx3-2)-3*2*(lx2-2)-3*2*(lx3-2)
 !! interior+boundary-x3_adj-x2_adj.  Note that are 3 sets of entries for each adjacent point.
-!! The x3 adjacent points do not need to be removed in teh case of periodic boundary conditions.
+!! The x3 adjacent points do not need to be removed in the case of periodic boundary conditions.
 !! This is technicall correct, but a bit misleading, I think.
 !! Shouldn't it be lent=17*(lx2-2)*(lx3-2)+2*(lx2-2)+2*lx3-3*2*(lx2-2)-3*2*(lx3-2)???????
 !      lent=17*(lx2-2)*(lx3+1-2)+2*(lx3+1)+3*(lx2-2)-3*2*(lx3+1-2)
@@ -925,7 +925,7 @@ do ix3=1,lx3
     ix3tmp=mod(ix3+2-1,lx3)+1
     ix2tmp=ix2
     ic(ient)=lx2*(ix3tmp-1)+ix2tmp
-    !              ic(ient)=iPhi+2*lx2-lPhi+1    !substract grid size to wrap around to the beginning
+    !              ic(ient)=iPhi+2*lx2-lPhi+1    !subtract grid size to wrap around to the beginning
     !            else
     !              ic(ient)=iPhi+2*lx2
     !            end if
@@ -1017,7 +1017,7 @@ end if
 !IF WE HAVE DONE A PERIODIC SOLVE, THE LAST GRID POINT NEEDS TO BE IGNORED WHEN WE RESHAPE THE POTENTIAL ARRAY.
 
 tmpresults=reshape(mumps_par%RHS,[lx2,lx3])
-elliptic2D_polarization_periodic=tmpresults(1:lx2,1:lx3)    !sort of superfluous now that hte solve size is the same as the grid
+elliptic2D_polarization_periodic=tmpresults(1:lx2,1:lx3)    !sort of superfluous now that the solve size is the same as the grid
 
 if (debug) print *, 'Now attempting deallocations...'
 
@@ -1040,7 +1040,7 @@ module procedure elliptic2D_cart
 !! ASSUME THAT:
 !! * WE ARE RESOLVING THE POTENTIAL ALONG THE FIELD LINE
 !! * POTENTIAL VARIES IN X1 AND X3. X2 IS NOMINALLY JUST ONE ELEMENT.
-!! * LEFT AND RIGHT BOUNDARIES (IN X3) USE DIRICHLET BOUNARY CONDITIONS
+!! * LEFT AND RIGHT BOUNDARIES (IN X3) USE DIRICHLET BOUNDARY CONDITIONS
 !! * TOP (ALTITUDE) CAN BE NEUMANN OR DIRICHLET.
 !! * BOTTOM (ALTITUDE) IS ALWAYS Neumann zero current
 !!

@@ -88,7 +88,7 @@ end procedure read_ini
 
 subroutine check_ini_io(i, filename)
 !! checks for EOF and gives helpful error
-!! this accomodates non-Fortran 2018 error stop with variable character
+!! this accommodates non-Fortran 2018 error stop with variable character
 
 integer, intent(in) :: i
 character(*), intent(in) :: filename

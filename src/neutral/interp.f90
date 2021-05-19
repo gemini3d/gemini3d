@@ -104,7 +104,7 @@ dvn1iprev=dvn1inext   !save the old data
 dvn2iprev=dvn2inext
 dvn3iprev=dvn3inext
 if(flagcart) then
-  dvn1inext=dvnrhoinext*proj_eyp_e1+dvnzinext*proj_ezp_e1    !apply projection to complete rotation into dipole coordinates; drhoi interpreted here at teh y component (northward)
+  dvn1inext=dvnrhoinext*proj_eyp_e1+dvnzinext*proj_ezp_e1    !apply projection to complete rotation into dipole coordinates; drhoi interpreted here at the y component (northward)
   dvn2inext=dvnrhoinext*proj_eyp_e2+dvnzinext*proj_ezp_e2
   dvn3inext=dvnrhoinext*proj_eyp_e3+dvnzinext*proj_ezp_e3
 else
@@ -186,7 +186,7 @@ end if
 dvn1iprev=dvn1inext   !save the old data for the rotated vectors
 dvn2iprev=dvn2inext
 dvn3iprev=dvn3inext
-dvn1inext=dvnrhoinext*proj_eyp_e1+dvnzinext*proj_ezp_e1+dvnxinext*proj_exp_e1    !apply projection to complete rotation into dipole coordinates; drhoi interpreted here at teh y component (northward)
+dvn1inext=dvnrhoinext*proj_eyp_e1+dvnzinext*proj_ezp_e1+dvnxinext*proj_exp_e1    !apply projection to complete rotation into dipole coordinates; drhoi interpreted here at the y component (northward)
 dvn2inext=dvnrhoinext*proj_eyp_e2+dvnzinext*proj_ezp_e2+dvnxinext*proj_exp_e2
 dvn3inext=dvnrhoinext*proj_eyp_e3+dvnzinext*proj_ezp_e3+dvnxinext*proj_exp_e3
 

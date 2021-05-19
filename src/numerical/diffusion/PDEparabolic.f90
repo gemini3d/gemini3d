@@ -262,7 +262,7 @@ backEuler1D(ix1)=Tsminx1
 !M(ll+3,ix1)=-1/dx1(ix1+1)       !main diagonal denoted temperature at this grid point... 1*Ts,i=Tsminx1
 !M(ll+2,ix1+1)=1/dx1(ix1+1)      !1st super diagonal
 !M(ll+1,ix1+2)=0                 !2nd super diagonal
-!backEuler1D(ix1)=Tsminx1          !here this is not intepreted as temperature, but instead the -heat flux divided by thermal conductivity
+!backEuler1D(ix1)=Tsminx1          !here this is not interpreted as temperature, but instead the -heat flux divided by thermal conductivity
 !
 
 

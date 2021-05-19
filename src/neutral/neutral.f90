@@ -27,7 +27,7 @@ real(wp), dimension(1:size(alt,1),1:size(alt,2),1:size(alt,3)), intent(out) :: v
 end subroutine neutral_atmos
 end interface
 
-interface ! pertub.f90
+interface ! perturb.f90
 
 module subroutine neutral_perturb(cfg,dt,dtneu,t,ymd,UTsec,x,v2grid,v3grid,nn,Tn,vn1,vn2,vn3)
 type(gemini_cfg), intent(in) :: cfg
@@ -36,7 +36,7 @@ real(wp), intent(in) :: t
 integer, dimension(3), intent(in) :: ymd     !date for which we wish to calculate perturbations
 real(wp), intent(in) :: UTsec
 
-type(curvmesh), intent(inout) :: x                !grid structure  (inout becuase we want to be able to deallocate unit vectors once we are done with them)
+type(curvmesh), intent(inout) :: x                !grid structure  (inout because we want to be able to deallocate unit vectors once we are done with them)
 real(wp), intent(in) :: v2grid,v3grid
 real(wp), dimension(:,:,:,:), intent(out) :: nn   !neutral params interpolated to plasma grid at requested time
 real(wp), dimension(:,:,:), intent(out) :: Tn,vn1,vn2,vn3

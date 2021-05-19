@@ -21,7 +21,7 @@ module procedure grad3D1_curv_3
 !-------
 !-------ONE ISSUE ADDRESSED HERE IS THAT THE METRIC FACTORS NEED TO KNOW
 !-------WHAT PART OF THE GRID THAT THEY ARE BEING USED OVER...  IE
-!-------IF ANY OF THESE IS FULL GRID THEN THE HALL VERSIONS SHOUDL
+!-------IF ANY OF THESE IS FULL GRID THEN THE HALL VERSIONS SHOULD
 !-------SHOULD BE USED FOR THE METRIC FACTORS...
 !------------------------------------------------------------
 
@@ -51,7 +51,7 @@ end if
 !CHOOSE THE METRIC FACTORS VARIABLES BASED ON THE SIZE OF THE X3-VARIABLE, ALSO RECAST SO THE
 !INDICES USED FOR F CAN ALSO BE USED IN THE METRIC FACTOR AND DX VARIABLE
 !Can avoid wasting memory and copying of metric factor arrays by recoding with pointers
-!Unfortunately a pointer is not gauranteed to be contiguous in memory so I'm not sure this is the way to go
+!Unfortunately a pointer is not guaranteed to be contiguous in memory so I'm not sure this is the way to go
 if (lx3<=x%lx3+4) then
   h1=>x%h1(lbnd1:ubnd1,lbnd2:ubnd2,lbnd3:ubnd3)
 else if (lx3<=x%lx3all+4) then
@@ -97,7 +97,7 @@ module procedure grad3D1_curv_23
 !-------
 !-------ONE ISSUE ADDRESSED HERE IS THAT THE METRIC FACTORS NEED TO KNOW
 !-------WHAT PART OF THE GRID THAT THEY ARE BEING USED OVER...  IE
-!-------IF ANY OF THESE IS FULL GRID THEN THE HALL VERSIONS SHOUDL
+!-------IF ANY OF THESE IS FULL GRID THEN THE HALL VERSIONS SHOULD
 !-------SHOULD BE USED FOR THE METRIC FACTORS...
 !------------------------------------------------------------
 
@@ -127,7 +127,7 @@ end if
 !CHOOSE THE METRIC FACTORS VARIABLES BASED ON THE SIZE OF THE X3-VARIABLE, ALSO RECAST SO THE
 !INDICES USED FOR F CAN ALSO BE USED IN THE METRIC FACTOR AND DX VARIABLE
 !Can avoid wasting memory and copying of metric factor arrays by recoding with pointers
-!Unfortunately a pointer is not gauranteed to be contiguous in memory so I'm not sure this is the way to go
+!Unfortunately a pointer is not guaranteed to be contiguous in memory so I'm not sure this is the way to go
 if (lx3<=x%lx3+4) then
   h1=>x%h1(lbnd1:ubnd1,lbnd2:ubnd2,lbnd3:ubnd3)
 else if (lx3<=x%lx3all+4) then
@@ -296,7 +296,7 @@ end if
 !CHOOSE THE METRIC FACTORS VARIABLES BASED ON THE SIZE OF THE X3-VARIABLE, ALSO RECAST SO THE
 !INDICES USED FOR F CAN ALSO BE USED IN THE METRIC FACTOR AND DX VARIABLE
 !Can avoid wasting memory and copying of metric factor arrays by recoding with pointers
-!Unfortunately a pointer is not gauranteed to be contiguous in memory so I'm not sure this is the way to go
+!Unfortunately a pointer is not guaranteed to be contiguous in memory so I'm not sure this is the way to go
 if (lx3<=x%lx3+4) then
   h3=>x%h3(lbnd1:ubnd1,lbnd2:ubnd2,lbnd3:ubnd3)
   dx3=>x%dx3(lbnd3:ubnd3)
@@ -354,7 +354,7 @@ if (x%lx3>1) then    !only differentiate if we have non-singleton dimension, oth
   !CHOOSE THE METRIC FACTORS VARIABLES BASED ON THE SIZE OF THE X3-VARIABLE, ALSO RECAST SO THE
   !INDICES USED FOR F CAN ALSO BE USED IN THE METRIC FACTOR AND DX VARIABLE
   !Can avoid wasting memory and copying of metric factor arrays by recoding with pointers
-  !Unfortunately a pointer is not gauranteed to be contiguous in memory so I'm not sure this is the way to go
+  !Unfortunately a pointer is not guaranteed to be contiguous in memory so I'm not sure this is the way to go
   if (lx3<=x%lx3+4) then
     h3=>x%h3(lbnd1:ubnd1,lbnd2:ubnd2,lbnd3:ubnd3)
     dx3=>x%dx3(lbnd3:ubnd3)

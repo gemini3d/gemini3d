@@ -175,7 +175,7 @@ else   !lx1=1 so do a field-resolved 2D solve over x1,x3
   call gather_send(sig0scaled,tag%sig0)
   call gather_send(srcterm,tag%src)
 
-  ! Need to convert current boundary condtion into potential normal derivative
+  ! Need to convert current boundary condition into potential normal derivative
   if (flagdirich==0) then
     if (gridflag==1) then
       Vminx1slab=-x%h1(1,1:lx2,1:lx3)*Vminx1slab/sig0(1,:,:)

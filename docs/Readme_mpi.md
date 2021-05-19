@@ -21,7 +21,7 @@ Currently supported versions of Debian, Ubuntu, CentOS, and Windows Subsystem fo
 * Ubuntu / Debian / Windows Subsystem for Linux: `apt install libopenmpi-dev openmpi-bin`
 * CentOS: `yum install openmpi-devel`
 
-For CentOS, typical HPC will have the ability to switch to a recent GCC verison with matching MPI library.
+For CentOS, typical HPC will have the ability to switch to a recent GCC version with matching MPI library.
 If not, compile MPI--it will take about 20 minutes:
 
 ```sh

@@ -37,7 +37,7 @@ There are additional command line argument parameters to magcalc that can be use
 mpirun -np 4 ./magcalc.bin /tmp/3d -start_time <YYYY> <MM> <DD> <UT_seconds> -end_time <YYYY> <MM> <DD> <UT_seconds>
 ```
 
-The start and end time *must* correspond to output times for the simulation.  If no start time is specified `magcalc` will use the start time of the simulation; similary, if no end time is specified `magcalc` will use the simulation end time.  The files procressed by `magcalc` will exclude the start time output file but include the end time output file.
+The start and end time *must* correspond to output times for the simulation.  If no start time is specified `magcalc` will use the start time of the simulation; similarly, if no end time is specified `magcalc` will use the simulation end time.  The files procressed by `magcalc` will exclude the start time output file but include the end time output file.
 
 ## Creating input field points for `magcalc`
 

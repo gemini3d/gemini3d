@@ -20,7 +20,7 @@ external :: mpi_recv, mpi_send
 
 integer, protected :: lx1,lx2,lx3,lx2all,lx3all
 !! this is a useful shorthand for most program units using this module,
-!! occassionally a program unit needs to define its own size in which case an only statement
+!! occasionally a program unit needs to define its own size in which case an only statement
 !! is required when using this module.
 
 real(wp), dimension(:,:,:), allocatable, protected :: g1,g2,g3

@@ -16,7 +16,7 @@ if (doy_calc(2015,2,28) /= 59) error stop 'doy_calc day 59'
 
 if (doy_calc(2012,2,29) /= 60) error stop 'doy_calc leap day 60'
 
-if (doy_calc(2000,2,29) /= 60) error stop 'doy_calc millenium leap day 60'
+if (doy_calc(2000,2,29) /= 60) error stop 'doy_calc millennium leap day 60'
 
 if (doy_calc(1900,3,1) /= 60) error stop 'doy_calc 1900 NO leap day 60'
 

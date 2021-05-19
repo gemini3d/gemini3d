@@ -40,7 +40,7 @@ call get_command_argument(1, argv, status=ierr)
 if(ierr/=0) error stop 'please specify input filename'
 outfile = trim(argv)
 
-!! write the time, space length adn spatial grid to a file
+!! write the time, space length and spatial grid to a file
 ! open(newunit=u,file=outfile,status='replace')
 ! write(u,*) lt
 ! write(u,*) lx1
@@ -60,7 +60,7 @@ lambda(:)=1.0_wp     !thermal conductivity
 dt=0.05*1/8.0_wp**2/pi**2/maxval(lambda)
 
 
-!! time interations
+!! time iterations
 do it=1,lt
   write(ic, '(I4.4)') it
   !boundary values

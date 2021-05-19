@@ -69,7 +69,7 @@ end do
 filist=interp3(x1,x2,x3,f,x1ilist,x2ilist,x3ilist)
 fi=reshape(filist,[lx1i,lx2i,lx3i])
 
-!> sanity chechk
+!> sanity check
 
 if (any([256, 256, 256] /= [lx1i,lx2i,lx3i])) error stop "test_interp3d: not expected shape"
 

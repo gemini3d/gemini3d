@@ -757,7 +757,7 @@ if (lx2/=1 .and. cfg%potsolve ==1) then    !we did a field-integrated solve for 
                            (x%h2(1,1:lx2,1:lx3)*x%h3(1,1:lx2,1:lx3)*Vminx1slab-J1(ix1,:,:))
         end do
 
-      else        !minx1 is at teh bottom of the grid to integrate from max x1
+      else        !minx1 is at the bottom of the grid to integrate from max x1
 !        if (debug) print *,  'Non-inverted grid; integration starting at max x1...', minval(Vmaxx1slab), maxval(Vmaxx1slab)
         J1=integral3D1_curv_alt(divJperp,x,1,lx1)    
         !! int divperp of BG current, go from maxval(x1) to location of interest
@@ -948,7 +948,7 @@ if (idup==mpi_cfg%lid2) then
   end if
 end if
 if (.not. flagper) then
-  !! musn't overwrite ghost cells if perioidc is chosen
+  !! mustn't overwrite ghost cells if perioidc is chosen
   if (idleft==-1) then
     parmhalo(1:lx1,1:lx2,0)=parmhalo(1:lx1,1:lx2,1)
   end if

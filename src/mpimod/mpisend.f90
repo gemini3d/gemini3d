@@ -297,7 +297,7 @@ do iid=1,mpi_cfg%lid-1
   !! +1 since this is an x3 interface quantity
   call mpi_send(paramtmp,lx1*lx2*(lx3+1), &
                mpi_realprec,iid,tag,MPI_COMM_WORLD,ierr)
-  !! note the +1 since thes are interface quantities (and need to overlap b/t workers)
+  !! note the +1 since these are interface quantities (and need to overlap b/t workers)
 end do
 
 
@@ -342,7 +342,7 @@ do iid=1,mpi_cfg%lid-1
   !! +1 since this is an x3 interface quantity
   call mpi_send(paramtmp,lx1*(lx2+1)*lx3, &
                mpi_realprec,iid,tag,MPI_COMM_WORLD,ierr)
-  !! note the +1 since thes are interface quantities (and need to overlap b/t workers)
+  !! note the +1 since these are interface quantities (and need to overlap b/t workers)
 end do
 
 

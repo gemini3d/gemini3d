@@ -89,7 +89,7 @@ integer, dimension(3), intent(in) :: ymd    !date for which we wish to calculate
 real(wp), intent(in) :: UTsec
 type(gemini_cfg), intent(in) :: cfg
 
-type(curvmesh), intent(inout) :: x         !grid structure  (inout becuase we want to be able to deallocate unit vectors once we are done with them)
+type(curvmesh), intent(inout) :: x         !grid structure  (inout because we want to be able to deallocate unit vectors once we are done with them)
 real(wp), dimension(:,:,:,:), intent(out) :: nn   !neutral params interpolated to plasma grid at requested time
 real(wp), dimension(:,:,:), intent(out) :: Tn,vn1,vn2,vn3
 
@@ -102,7 +102,7 @@ real(wp) :: UTsectmp
 if (t+dt/2 >= tnext .or. t < 0) then   !negative time means that we need to load the first frame
 
   !IF FIRST LOAD ATTEMPT CREATE A NEUTRAL GRID AND COMPUTE GRID SITES FOR IONOSPHERIC GRID.  Since this needs an input file, I'm leaving it under this condition here
-  if (.not. allocated(zn)) then     !means this is the first tiem we've tried to load neutral simulation data, should we check for a previous neutral file to load??? or just assume everything starts at zero?  This needs to somehow check for an existing file under certain conditiosn, maybe if it==1???  Actually we don't even need that we can just check that the neutral grid is allocated (or not)
+  if (.not. allocated(zn)) then     !means this is the first time we've tried to load neutral simulation data, should we check for a previous neutral file to load??? or just assume everything starts at zero?  This needs to somehow check for an existing file under certain conditiosn, maybe if it==1???  Actually we don't even need that we can just check that the neutral grid is allocated (or not)
     !initialize dates
     ymdprev=ymd
     UTsecprev=UTsec
@@ -160,7 +160,7 @@ integer, dimension(3), intent(in) :: ymd    !date for which we wish to calculate
 real(wp), intent(in) :: UTsec
 type(gemini_cfg), intent(in) :: cfg
 
-type(curvmesh), intent(inout) :: x         !grid structure  (inout becuase we want to be able to deallocate unit vectors once we are done with them)
+type(curvmesh), intent(inout) :: x         !grid structure  (inout because we want to be able to deallocate unit vectors once we are done with them)
 real(wp), dimension(:,:,:,:), intent(out) :: nn   !neutral params interpolated to plasma grid at requested time
 real(wp), dimension(:,:,:), intent(out) :: Tn,vn1,vn2,vn3
 
@@ -172,7 +172,7 @@ real(wp) :: UTsectmp
 !CHECK WHETHER WE NEED TO LOAD A NEW FILE
 if (t + dt/2 >= tnext .or. t < 0) then
   !IF FIRST LOAD ATTEMPT CREATE A NEUTRAL GRID AND COMPUTE GRID SITES FOR IONOSPHERIC GRID.  Since this needs an input file, I'm leaving it under this condition here
-  if (.not. allocated(zn)) then     !means this is the first tiem we've tried to load neutral simulation data, should we check for a previous neutral file to load???
+  if (.not. allocated(zn)) then     !means this is the first time we've tried to load neutral simulation data, should we check for a previous neutral file to load???
     !initialize dates
     ymdprev=ymd
     UTsecprev=UTsec
@@ -230,7 +230,7 @@ integer, dimension(3), intent(in) :: ymd    !date for which we wish to calculate
 real(wp), intent(in) :: UTsec
 type(gemini_cfg), intent(in) :: cfg
 
-type(curvmesh), intent(inout) :: x         !grid structure  (inout becuase we want to be able to deallocate unit vectors once we are done with them)
+type(curvmesh), intent(inout) :: x         !grid structure  (inout because we want to be able to deallocate unit vectors once we are done with them)
 real(wp), dimension(:,:,:,:), intent(out) :: nn   !neutral params interpolated to plasma grid at requested time
 real(wp), dimension(:,:,:), intent(out) :: Tn,vn1,vn2,vn3
 
@@ -244,7 +244,7 @@ real(wp) :: starttime,endtime
 !CHECK WHETHER WE NEED TO LOAD A NEW FILE
 if (t + dt/2 >= tnext .or. t < 0) then
   !IF FIRST LOAD ATTEMPT CREATE A NEUTRAL GRID AND COMPUTE GRID SITES FOR IONOSPHERIC GRID.  Since this needs an input file, I'm leaving it under this condition here
-  if (.not. allocated(zn)) then     !means this is the first tiem we've tried to load neutral simulation data, should we check for a previous neutral file to load???
+  if (.not. allocated(zn)) then     !means this is the first time we've tried to load neutral simulation data, should we check for a previous neutral file to load???
     !initialize dates
     ymdprev=ymd
     UTsecprev=UTsec
@@ -413,7 +413,7 @@ if (mpi_cfg%myid==0) then    !root
   UTsectmp=UTsecnext
   call dateinc(dtneu,ymdtmp,UTsectmp)                !get the date for "next" params
 
-  !FIXME: we probably need to read in and distrubute the input parameters one at a time to reduce memory footprint...
+  !FIXME: we probably need to read in and distribute the input parameters one at a time to reduce memory footprint...
   call get_neutral3(date_filename(neudir,ymdtmp,UTsectmp), &
     dnOall,dnN2all,dnO2all,dvnxall,dvnrhoall,dvnzall,dTnall)
 
@@ -437,7 +437,7 @@ if (mpi_cfg%myid==0) then    !root
 
 
   ! FIXME: should we loop through the workers for each parameter first? that way we can overwrite that parameter and also not worry about worker 2 having to block until worker 1 receives all of its data...  The issue is that parmtmp changes size for each worker...   Possibly allocated a single linear buffer that can hold the full data and pack that with the data to be sent to avoid repeated allocation and deallocations...  Can we also interleave interpolation with the message passing???
-  !in the 3D case we cannnot afford to send full grid data and need to instead use neutral subgrid splits defined earlier
+  !in the 3D case we cannot afford to send full grid data and need to instead use neutral subgrid splits defined earlier
   do iid=1,mpi_cfg%lid-1
     allocate(parmtmp(lzn,slabsizes(iid,1),slabsizes(iid,2)))    !get space for the parameters for this worker
 

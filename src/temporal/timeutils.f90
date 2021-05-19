@@ -204,7 +204,7 @@ pure subroutine find_lastdate(ymd0,UTsec0,ymdtarget,UTsectarget,cadence,ymd,UTse
 !> Compute the last date before the target date based on a start date and date cadence.  The
 !  file is assumed to exist and programmer needs to check for existence outside this
 !  procedure.
-! FIXME:  this will occassionally hang and may need to be re-examined at some point...
+! FIXME:  this will occasionally hang and may need to be re-examined at some point...
 
 integer, dimension(3), intent(in) :: ymd0
 real(wp), intent(in) :: UTsec0

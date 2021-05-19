@@ -163,7 +163,7 @@ if (lx2/=1) then    !either field-resolved 3D or integrated 2D solve for 3D doma
         Phislab=potential2D_polarization(srctermintall,SigPint2all,SigPint3all,SigHintall,incapintall,v2slaball,v3slaball, &
                                  Vminx2slice,Vmaxx2slice,Vminx3slice,Vmaxx3slice, &
                                  dt,x,Phislab0,perflag,it)
-        !! note tha this solver is only valid for cartesian meshes, unless the inertial capacitance is set to zero
+        !! note that this solver is only valid for cartesian meshes, unless the inertial capacitance is set to zero
       else
         if (debug) print *, '!!!User selected periodic solve...'
         Phislab = potential2D_polarization_periodic(srctermintall,SigPint2all,SigHintall,incapintall,v2slaball,v3slaball, &
@@ -182,7 +182,7 @@ if (lx2/=1) then    !either field-resolved 3D or integrated 2D solve for 3D doma
       Phislab=Vmaxx1
       !! potential is whatever user specifies, since we assume equipotential field lines,
       !! it doesn't really matter whether we use Vmaxx1 or Vminx1.
-      !! Note however, tha thte boundary conditions subroutines should explicitly
+      !! Note however, that the boundary conditions subroutines should explicitly
       !! set these to be equal with Dirichlet conditions, for consistency.
       if (debug) print *, 'Dirichlet conditions selected with field-integrated solve. Copying BCs along x1-direction...'
       !R------

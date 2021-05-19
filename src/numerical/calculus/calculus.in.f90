@@ -511,7 +511,7 @@ if(lx3 == x%lx3all) then
     do ix1=1,lx1
 !          grad3D3_curv_periodic(ix1,ix2,1)=(f(ix1,ix2,2)-f(ix1,ix2,1))/x%dx3all(lbnd+1)
       grad3D3_curv_periodic(ix1,ix2,1) = (f(ix1,ix2,2)-f(ix1,ix2,lx3))/(x%dx3all(lbnd+1)+x%dx3all(lbnd))
-      !! this assumes that the backward difference for hte first cell has been set the the same
+      !! this assumes that the backward difference for the first cell has been set the the same
       !! as the forward difference for the final cell, i.e. x%dx3all(lbnd)==x%dx3all(ubnd+1).
       !! In general when doing periodic grids it is probably best to hard code all of the differences
       !! outside the domain to be equal (or to use uniform meshes)
@@ -566,7 +566,7 @@ if (lx3 == x%lx3all) then
   do ix1=1,lx1
 !        grad2D3_curv_periodic(ix1,1)=(f(ix1,2)-f(ix1,1))/x%dx3all(lbnd+1)
     grad2D3_curv_periodic(ix1,1) = (f(ix1,2)-f(ix1,lx3))/(x%dx3all(lbnd+1)+x%dx3all(lbnd))
-    !! this assumes that the backward difference for hte first cell has been set
+    !! this assumes that the backward difference for the first cell has been set
     !! the same as the forward difference for the final cell, i.e. x%dx3all(lbnd)==x%dx3all(ubnd+1).
     !! In general when doing periodic grids it is probably best to hard code all of the differences
     !! outside the domain to be equal (or to use uniform meshes)

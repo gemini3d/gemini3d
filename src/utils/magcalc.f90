@@ -34,7 +34,7 @@ type(gemini_cfg) :: cfg
 
 !! GRID STRUCTURE
 type(curvmesh) :: x
-!! structure containg grid locations, finite differences, etc.:  see grid module for details
+!! structure containing grid locations, finite differences, etc.:  see grid module for details
 
 !STATE VARIABLES
 real(wp), dimension(:,:,:), allocatable :: J1,J2,J3      !electrodynamic state variables

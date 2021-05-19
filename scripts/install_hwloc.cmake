@@ -1,4 +1,4 @@
-# this script is to install hwloc, to identify host CPU paramters for gemini3d.run
+# this script is to install hwloc, to identify host CPU parameters for gemini3d.run
 #
 # cmake -P install_hwloc.cmake
 # will install hwloc under the user's home directory.

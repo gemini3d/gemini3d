@@ -47,7 +47,7 @@ module procedure gather_recv3D_23
 !!
 !! THIS VERSION WORKS ON 3D ARRAYS WHICH DO NOT INCLUDE
 !! ANY GHOST CELLS!!!!
-!! THIS VERION ALSO WORKS ON A PROCESS GRID
+!! THIS VERSION ALSO WORKS ON A PROCESS GRID
 
 integer :: ierr
 integer :: lx1,lx2,lx3,lx2all,lx3all
@@ -72,7 +72,7 @@ do iid=1,mpi_cfg%lid-1
   !! must loop over all processes in the grid, don't enter loop if only root is present
   call mpi_recv(paramtmp,lx1*lx2*lx3, &          !note no ghost cells!!!
                 mpi_realprec,iid,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-  !! recieve chunk of data into buffer
+  !! receive chunk of data into buffer
   inds=slabinds(iid,lx2,lx3)
   paramtrimall(1:lx1,inds(1):inds(2),inds(3):inds(4))=paramtmp    !note the exclusion of the ghost cells
 end do
@@ -118,7 +118,7 @@ do isp=1,lsp
     !! must loop over all processes in the grid, don't enter loop if only root is present
     call mpi_recv(paramtmp,(lx1+4)*lx2*lx3, &
                   mpi_realprec,iid,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-    !! recieve chunk of data into buffer
+    !! receive chunk of data into buffer
     inds=slabinds(iid,lx2,lx3)
     paramall(-1:lx1+2,inds(1):inds(2),inds(3):inds(4),isp)=paramtmp(-1:lx1+2,1:lx2,1:lx3)    !note the inclusion of x1 ghost cells
   end do

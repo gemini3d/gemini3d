@@ -91,7 +91,7 @@ if (mpi_cfg%myid==0 .and. cfg%flagE0file==1) then    !only root needs these...
 
   print '(A,I4,I2.2,I2.2,F10.3)', 'init_Efieldinput: Prime electric field input files: ymd,utsec: ',ymdtmp,UTsectmp
   !! back up by one dt for each input so that we get a next file that corresponds to the first frame before
-  !   this simulation begining
+  !   this simulation beginning
   ! for first call the dummary argument must contain the input file time two levels back
   tprev=UTsectmp-UTsec-2._wp*cfg%dtE0
   tnext=tprev+cfg%dtE0
@@ -319,7 +319,7 @@ if(t + dt / 2._wp >= tnext .or. t < 0) then    !need to load a new file
     !! source data is 2D
     if (debug) print *, 'Executing full lat/lon interpolation...'
     parami=interp2(mlonp,mlatp,E0xp,mloni,mlati)     !interp to temp var.
-    E0xiprev=E0xinext                       !save new pervious
+    E0xiprev=E0xinext                       !save new previous
     E0xinext=reshape(parami,[lx2all,lx3all])    !overwrite next with new interpolated input
 
     parami=interp2(mlonp,mlatp,E0yp,mloni,mlati)
@@ -513,7 +513,7 @@ integer :: ix1,ix2,ix3
 real(wp) :: h2ref,h3ref
 
 
-!! the only danger here is that this routine coudl be called before any module data are loaded
+!! the only danger here is that this routine could be called before any module data are loaded
 !   so check just to make sure it isn't being misused in this way
 if (.not. allocated(E0xinow)) error stop  &
       'potentialBCs:compute_rootBGEfields is trying to access unallocated module data'
@@ -555,7 +555,7 @@ end subroutine clear_potential_fileinput
 subroutine potentialBCs2D(UTsec,cfg,x,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3, &
                                       Vmaxx3,E01all,E02all,E03all,flagdirich)
 
-! This is a default routine for setting electromagnetic boundary conditions in cases where user file input is not specified.  It also computes the equatorial vertical drift for the EIA if requested by the user. This routine *could* be modified to hard-code specific conditions in if needed but we really reccommend using file input for that.
+! This is a default routine for setting electromagnetic boundary conditions in cases where user file input is not specified.  It also computes the equatorial vertical drift for the EIA if requested by the user. This routine *could* be modified to hard-code specific conditions in if needed but we really recommend using file input for that.
 
 real(wp), intent(in) :: UTsec
 
@@ -701,7 +701,7 @@ end subroutine potentialBCs2D
 
 impure elemental subroutine assert_file_exists(path)
 !! throw error if file does not exist
-!! this accomodates non-Fortran 2018 error stop with variable character
+!! this accommodates non-Fortran 2018 error stop with variable character
 
 character(*), intent(in) :: path
 logical :: exists

@@ -39,7 +39,7 @@ end if
 !CHOOSE THE METRIC FACTORS VARIABLES BASED ON THE SIZE OF THE X3-VARIABLE, ALSO RECAST SO THE
 !INDICES USED FOR F CAN ALSO BE USED IN THE METRIC FACTOR AND DX VARIABLE
 !Can avoid wasting memory and copying of metric factor arrays by recoding with pointers
-!Unfortunately a pointer is not gauranteed to be contiguous in memory so there may be a performance hit in doing this...
+!Unfortunately a pointer is not guaranteed to be contiguous in memory so there may be a performance hit in doing this...
 dx1=>x%dx1(lbnd1:ubnd1)
 dx2=>x%dx2(lbnd2:ubnd2)
 if (lx3<=x%lx3+4) then     !+4 in case we need to differentiate over ghost cells, e.g. in compression terms
@@ -59,7 +59,7 @@ end if
 
 
 !REASSIGNING POINTERS AS SUBARRAYS TO BE DIFFERENCED PRODUCED CLEAN CODE (BELOW), BUT NOW REQUIRES THAT WE OFFSET
-!ARRAY INDICES FOR THE POINTER VARIABLES, SINCE, BY DEFAULT, THEY START AT 1...  ACTUALLY THIS SHOUDL NOT BE THE CASE
+!ARRAY INDICES FOR THE POINTER VARIABLES, SINCE, BY DEFAULT, THEY START AT 1...  ACTUALLY THIS SHOULD NOT BE THE CASE
 !SINCE EVERYTHING IS GETTING OFFSET (F UPON BEING PASSED INTO THIS FUNCTION AND THEN DIFFERENTIALS IN THE POINTER
 !ASSIGNMENTS...
 
@@ -148,7 +148,7 @@ end if
 !CHOOSE THE METRIC FACTORS VARIABLES BASED ON THE SIZE OF THE X3-VARIABLE, ALSO RECAST SO THE
 !INDICES USED FOR F CAN ALSO BE USED IN THE METRIC FACTOR AND DX VARIABLE
 !Can avoid wasting memory and copying of metric factor arrays by recoding with pointers
-!Unfortunately a pointer is not gauranteed to be contiguous in memory so there may be a performance hit in doing this...
+!Unfortunately a pointer is not guaranteed to be contiguous in memory so there may be a performance hit in doing this...
 dx1=>x%dx1(lbnd1:ubnd1)
 if (lx3<=x%lx3+4 .and. lx2<=x%lx2+4) then     !+4 in case we need to differentiate over ghost cells, e.g. in compression terms
   h1=>x%h1(lbnd1:ubnd1,lbnd2:ubnd2,lbnd3:ubnd3)
@@ -168,7 +168,7 @@ else
 end if
 
 !REASSIGNING POINTERS AS SUBARRAYS TO BE DIFFERENCED PRODUCED CLEAN CODE (BELOW), BUT NOW REQUIRES THAT WE OFFSET
-!ARRAY INDICES FOR THE POINTER VARIABLES, SINCE, BY DEFAULT, THEY START AT 1...  ACTUALLY THIS SHOUDL NOT BE THE CASE
+!ARRAY INDICES FOR THE POINTER VARIABLES, SINCE, BY DEFAULT, THEY START AT 1...  ACTUALLY THIS SHOULD NOT BE THE CASE
 !SINCE EVERYTHING IS GETTING OFFSET (F UPON BEING PASSED INTO THIS FUNCTION AND THEN DIFFERENTIALS IN THE POINTER
 !ASSIGNMENTS...
 

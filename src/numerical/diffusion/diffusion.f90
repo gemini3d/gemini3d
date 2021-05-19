@@ -94,7 +94,7 @@ end subroutine diffusion_prep
 
 function backEuler3D_curv(f,A,B,C,D,E,dt,x)
 !! SOLVE A 3D SEQUENCE OF 1D DIFFUSION PROBLEMS.
-!! GHOST CELLS ARE ACCOMODATED AS THEY PROVIDE
+!! GHOST CELLS ARE ACCOMMODATED AS THEY PROVIDE
 !! A CONVENIENT MEMORY SPACE FOR BOUNDARY CONDITIONS.
 
 real(wp), dimension(:,:,:), intent(in) :: A,B,C,D,E   !trimmed to grid size
@@ -129,7 +129,7 @@ end function backEuler3D_curv
 function TRBDF23D_curv(f,A,B,C,D,E,dt,x)
 
 !! SOLVE A 3D SEQUENCE OF 1D DIFFUSION PROBLEMS.
-!! GHOST CELLS ARE ACCOMODATED AS THEY PROVIDE
+!! GHOST CELLS ARE ACCOMMODATED AS THEY PROVIDE
 !! A CONVENIENT MEMORY SPACE FOR BOUNDARY CONDITIONS.
 !!
 !! Note that this function also plays the role of abstracting
