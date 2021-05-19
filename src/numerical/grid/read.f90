@@ -77,10 +77,6 @@ module procedure read_grid
   call x%make()                              ! fill auxiliary arrays
   
   !> We need to collect the info for root's fullgrid variables
-  print*, 'subgrid metric',mpi_cfg%myid,minval(x%h2x1i),maxval(x%h2x1i)
-  print*, 'subgrid theta',mpi_cfg%myid,minval(x%theta),maxval(x%theta)
-
-  print*, '...collecting full mesh variables...'
   if (mpi_cfg%myid==0) then
     call x%init_storage_root()                ! now we have space in type to store full-grid arrays for gather
     call gather_grid_root(x%h1,x%h2,x%h3, &
@@ -200,37 +196,26 @@ subroutine gather_grid_root(h1,h2,h3, &
   call gather_recv3D_ghost(h2,tag%h2,h2all)
   call gather_recv3D_ghost(h3,tag%h3,h3all)
 
-  print*, 1
-
   call gather_recv(h1x1i,tag%h1,h1x1iall)
   call gather_recv(h2x1i,tag%h2,h2x1iall)
   call gather_recv(h3x1i,tag%h3,h3x1iall)
-
-  print*, 2
 
   call gather_recv3D_x2i(h1x2i,tag%h1,h1x2iall)
   call gather_recv3D_x2i(h2x2i,tag%h2,h2x2iall)
   call gather_recv3D_x2i(h3x2i,tag%h3,h3x2iall)
 
-  print*, 3
-
   call gather_recv3D_x3i(h1x3i,tag%h1,h1x3iall)
   call gather_recv3D_x3i(h2x3i,tag%h2,h2x3iall)
   call gather_recv3D_x3i(h3x3i,tag%h3,h3x3iall)
-
-  print*, 4
 
   call gather_recv(r,tag%r,rall)
   call gather_recv(theta,tag%theta,thetaall)
   call gather_recv(phi,tag%phi,phiall)
 
-  print*, 5
-
   call gather_recv(alt,tag%alt,altall)
   call gather_recv(Bmag,tag%Bmag,Bmagall)
   call gather_recv(glon,tag%glon,glonall)
 
-  print*, 6
 end subroutine gather_grid_root
 
 
