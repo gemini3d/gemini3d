@@ -50,7 +50,14 @@ module procedure read_grid
   x3=x3all(islstart-2:islfin+2)
 
   ! FIXME: hardcode grid type for now; compute it from the coordinates eventually??
-  gridtype=1
+  !! right now we just have Cartesian and dipole so it's easy to detect based on x2
+  if (maxval(abs(x2))<100) then     !dipole
+    gridtype=1
+    print*, ' Detected dipole grid...'
+  else
+    gridtype=0
+    print*, 'Detected Cartesian grid...'
+  end if
   
   !> Declare grid type that we are dealing with; note lack of matching deallocates assume
   !   that the compiler will deal with it automatically
@@ -90,30 +97,6 @@ module procedure read_grid
                           x%altall,x%Bmagall,x%glonall)     
     !! note that we can fill arrays manually with our own routines rather than use x%set_root, saves temp arrays and memory
     call x%calc_coord_diffs_root()
-    !print*, 'Fullgrid tests...'
-    !print*, minval(x%h1all),maxval(x%h1all), shape(x%h1all)
-    !print*, minval(x%h2all),maxval(x%h2all), shape(x%h2all)
-    !print*, minval(x%h3all),maxval(x%h3all), shape(x%h3all)
-
-    print*, minval(x%h1x1iall),maxval(x%h1x1iall), shape(x%h1x1iall)
-    print*, minval(x%h2x1iall),maxval(x%h2x1iall), shape(x%h2x1iall)
-    print*, minval(x%h3x1iall),maxval(x%h3x1iall), shape(x%h3x1iall)
-
-    !print*, minval(x%h1x2iall),maxval(x%h1x2iall)
-    !print*, minval(x%h2x2iall),maxval(x%h2x2iall)
-    !print*, minval(x%h3x2iall),maxval(x%h3x2iall)
-
-    !print*, minval(x%h1x3iall),maxval(x%h1x3iall)
-    !print*, minval(x%h2x3iall),maxval(x%h2x3iall)
-    !print*, minval(x%h3x3iall),maxval(x%h3x3iall)
-
-    !print*, minval(x%rall),maxval(x%rall)
-    !print*, minval(x%thetaall),maxval(x%thetaall)
-    !print*, minval(x%phiall),maxval(x%phiall)
-
-    !print*, minval(x%altall),maxval(x%altall)
-    !print*, minval(x%Bmagall),maxval(x%Bmagall)
-    !print*, minval(x%glonall),maxval(x%glonall)
   else
     !! gather
     call gather_grid_workers(x%h1,x%h2,x%h3, &
