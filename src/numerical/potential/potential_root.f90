@@ -57,7 +57,7 @@ real(wp), dimension(1:size(Phiall,2)) :: Vminx3slice,Vmaxx3slice
 real(wp), dimension(1:size(E1,2),1:size(E1,3)) :: v2slab,v3slab
 
 integer :: iid, ierr
-integer :: ix1,ix2,ix3,lx1,lx2,lx3,lx3all
+integer :: ix1,ix2,ix3,lx1,lx2,lx2all,lx3,lx3all
 integer :: idleft,idright,iddown,idup
 
 real(wp) :: tstart,tfin
@@ -67,6 +67,7 @@ real(wp) :: tstart,tfin
 lx1=size(sig0,1)
 lx2=size(sig0,2)
 lx3=size(sig0,3)
+lx2all=size(Phiall,2)
 lx3all=size(Phiall,3)
 
 
@@ -93,7 +94,7 @@ call potential_sourceterms(sigP,sigH,sigPgrav,sigHgrav,E02src,E03src,vn2,vn3,B1,
 !!!!!!!!
 !-----AT THIS POINT WE MUST DECIDE WHETHER TO DO AN INTEGRATED SOLVE OR A 2D FIELD-RESOLVED SOLVED
 !-----DECIDE BASED ON THE SIZE OF THE X2 DIMENSION
-if (lx2/=1) then    !either field-resolved 3D or integrated 2D solve for 3D domain
+if (lx2all/=1 .and. lx3all/=1) then    !either field-resolved 3D or integrated 2D solve for 3D domain
   if (cfg%potsolve == 1) then    !2D, field-integrated solve
     if (debug) print *, 'Beginning field-integrated solve...'
 
@@ -243,9 +244,8 @@ if (lx2/=1) then    !either field-resolved 3D or integrated 2D solve for 3D doma
     end if
     !R------
   end if
-else   !lx1=1 so do a field-resolved 2D solve over x1,x3
+else   !lx2 or lx3=1 so do a field-resolved 2D solve over x1,x3
   if (debug) print *, 'Beginning field-resolved 2D solve...  Type;  ',flagdirich
-
 
   !-------
   !PRODUCE SCALED CONDUCTIVITIES TO PASS TO SOLVER, ALSO SCALED SOURCE TERM
@@ -283,8 +283,15 @@ else   !lx1=1 so do a field-resolved 2D solve over x1,x3
   !! EXECUTE THE SOLVE WITH MUMPS AND SCALED TERMS
   !! NOTE THE LACK OF A SPECIAL CASE HERE TO CHANGE THE POTENTIAL PROBLEM
   !! - ONLY THE HALL TERM CHANGES (SINCE RELATED TO EXB) BUT THAT DOESN'T APPEAR IN THIS EQN!
-  Phiall=potential2D_fieldresolved(srctermall,sig0scaledall,sigPscaledall,Vminx1,Vmaxx1,Vminx3,Vmaxx3, &
-                    x,flagdirich,perflag,it)
+  if (lx3all==1) then
+    Phiall=potential2D_fieldresolved(srctermall,sig0scaledall,sigPscaledall,Vminx1,Vmaxx1,Vminx2,Vmaxx2, &
+                      x,flagdirich,perflag,it)
+  else if (lx2all==1) then
+    Phiall=potential2D_fieldresolved(srctermall,sig0scaledall,sigPscaledall,Vminx1,Vmaxx1,Vminx3,Vmaxx3, &
+                      x,flagdirich,perflag,it)
+  else
+    error stop '  potential_mumps.f90:  incorrect gridswap value!!!'
+  end if
 end if
 if (debug) print *, 'MUMPS time:  ',tfin-tstart
 !!!!!!!!!
