@@ -120,8 +120,14 @@ else                       ! Dirichlet top
   end if
 end if
 
-potential2D_fieldresolved=elliptic2D_cart(srcterm,sig0,sigP,Vminx1,Vmaxx1,Vminx3,Vmaxx3, &
-                     x%dx1,x%dx1i,x%dx3all,x%dx3iall,flagsdirich,perflag,gridflag,it)
+! FIXME: need to choose coordinates x2,x3 based on the grid size
+if (x%lx2all==1) then
+  potential2D_fieldresolved=elliptic2D_cart(srcterm,sig0,sigP,Vminx1,Vmaxx1,Vminx3,Vmaxx3, &
+                       x%dx1,x%dx1i,x%dx3all,x%dx3iall,flagsdirich,perflag,gridflag,it)
+else if (x%lx3all==1) then
+  potential2D_fieldresolved=elliptic2D_cart(srcterm,sig0,sigP,Vminx1,Vmaxx1,Vminx3,Vmaxx3, &
+                       x%dx1,x%dx1i,x%dx2all,x%dx2iall,flagsdirich,perflag,gridflag,it)
+end if
 
 end procedure potential2D_fieldresolved
 

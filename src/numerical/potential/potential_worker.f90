@@ -74,7 +74,7 @@ call potential_sourceterms(sigP,sigH,sigPgrav,sigHgrav,E02src,E03src,vn2,vn3,B1,
 !!!!!!!!
 !-----AT THIS POINT WE MUST DECIDE WHETHER TO DO AN INTEGRATED SOLVE OR A 2D FIELD-RESOLVED SOLVED
 !-----DECIDE BASED ON THE SIZE OF THE X2 DIMENSION
-if (lx2/=1) then    !either field-resolved 3D or integrated 2D solve for 3D domain
+if (lx2/=1 .and. lx3/=1) then    !either field-resolved 3D or integrated 2D solve for 3D domain
   if (cfg%potsolve == 1) then    !2D, field-integrated solve
     !-------
     !INTEGRATE CONDUCTANCES AND CAPACITANCES FOR SOLVER COEFFICIENTS

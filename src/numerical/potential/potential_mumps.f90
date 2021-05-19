@@ -40,42 +40,41 @@ public :: potential3D_fieldresolved_decimate, potential2D_polarization, potentia
 integer, dimension(:), pointer, protected, save :: mumps_perm   !cached permutation, unclear whether save is necessary...
 
 interface ! potential2d.f90
-module function potential2D_polarization(srcterm,SigP2,SigP3,SigH,Cm,v2,v3,Vminx2,Vmaxx2,Vminx3,Vmaxx3,dt,x,Phi0,perflag,it)
-real(wp), dimension(:,:), intent(in) :: srcterm,SigP2,SigP3,SigH,Cm,v2,v3
-!! ZZZ - THESE WILL NEED TO BE MODIFIED CONDUCTIVITIES, AND WE'LL NEED THREE OF THEM
-real(wp), dimension(:), intent(in) :: Vminx2,Vmaxx2
-real(wp), dimension(:), intent(in) :: Vminx3,Vmaxx3
-real(wp), intent(in) :: dt
-class(curvmesh), intent(in) :: x
-real(wp), dimension(:,:), intent(in) :: Phi0
-logical, intent(in) :: perflag
-integer, intent(in) :: it
-real(wp), dimension(size(SigP2,1),size(SigP2,2)) :: potential2D_polarization
-end function potential2D_polarization
-
-module function potential2D_polarization_periodic(srcterm,SigP,SigH,Cm,v2,v3,Vminx2,Vmaxx2,Vminx3,Vmaxx3,dt,x,Phi0,perflag,it)
-real(wp), dimension(:,:), intent(in) :: srcterm,SigP,SigH,Cm,v2,v3
-real(wp), dimension(:), intent(in) :: Vminx2,Vmaxx2
-real(wp), dimension(:), intent(in) :: Vminx3,Vmaxx3
-real(wp), intent(in) :: dt
-class(curvmesh), intent(in) :: x
-real(wp), dimension(:,:), intent(in) :: Phi0
-logical, intent(in) :: perflag
-integer, intent(in) :: it
-real(wp), dimension(size(SigP,1),size(SigP,2)) :: potential2D_polarization_periodic
-end function potential2D_polarization_periodic
-
-module function potential2D_fieldresolved(srcterm,sig0,sigP,Vminx1,Vmaxx1,Vminx3,Vmaxx3,x,flagdirich,perflag,it)
-real(wp), dimension(:,:,:), intent(in) :: srcterm,sig0,sigP   !arrays passed in will still have full rank 3
-real(wp), dimension(:,:), intent(in) :: Vminx1,Vmaxx1
-real(wp), dimension(:,:), intent(in) :: Vminx3,Vmaxx3
-class(curvmesh), intent(in) :: x
-integer, intent(in) :: flagdirich
-logical, intent(in) :: perflag
-integer, intent(in) :: it
-real(wp), dimension(size(sig0,1),1,size(sig0,3)) :: potential2D_fieldresolved
-end function potential2D_fieldresolved
-
+  module function potential2D_polarization(srcterm,SigP2,SigP3,SigH,Cm,v2,v3,Vminx2,Vmaxx2,Vminx3,Vmaxx3,dt,x,Phi0,perflag,it)
+    real(wp), dimension(:,:), intent(in) :: srcterm,SigP2,SigP3,SigH,Cm,v2,v3
+    !! ZZZ - THESE WILL NEED TO BE MODIFIED CONDUCTIVITIES, AND WE'LL NEED THREE OF THEM
+    real(wp), dimension(:), intent(in) :: Vminx2,Vmaxx2
+    real(wp), dimension(:), intent(in) :: Vminx3,Vmaxx3
+    real(wp), intent(in) :: dt
+    class(curvmesh), intent(in) :: x
+    real(wp), dimension(:,:), intent(in) :: Phi0
+    logical, intent(in) :: perflag
+    integer, intent(in) :: it
+    real(wp), dimension(size(SigP2,1),size(SigP2,2)) :: potential2D_polarization
+  end function potential2D_polarization
+  
+  module function potential2D_polarization_periodic(srcterm,SigP,SigH,Cm,v2,v3,Vminx2,Vmaxx2,Vminx3,Vmaxx3,dt,x,Phi0,perflag,it)
+    real(wp), dimension(:,:), intent(in) :: srcterm,SigP,SigH,Cm,v2,v3
+    real(wp), dimension(:), intent(in) :: Vminx2,Vmaxx2
+    real(wp), dimension(:), intent(in) :: Vminx3,Vmaxx3
+    real(wp), intent(in) :: dt
+    class(curvmesh), intent(in) :: x
+    real(wp), dimension(:,:), intent(in) :: Phi0
+    logical, intent(in) :: perflag
+    integer, intent(in) :: it
+    real(wp), dimension(size(SigP,1),size(SigP,2)) :: potential2D_polarization_periodic
+  end function potential2D_polarization_periodic
+  
+  module function potential2D_fieldresolved(srcterm,sig0,sigP,Vminx1,Vmaxx1,Vminx3,Vmaxx3,x,flagdirich,perflag,it)
+    real(wp), dimension(:,:,:), intent(in) :: srcterm,sig0,sigP   !arrays passed in will still have full rank 3
+    real(wp), dimension(:,:), intent(in) :: Vminx1,Vmaxx1
+    real(wp), dimension(:,:), intent(in) :: Vminx3,Vmaxx3
+    class(curvmesh), intent(in) :: x
+    integer, intent(in) :: flagdirich
+    logical, intent(in) :: perflag
+    integer, intent(in) :: it
+    real(wp), dimension(size(sig0,1),size(sig0,2),size(sig0,3)) :: potential2D_fieldresolved
+  end function potential2D_fieldresolved
 end interface
 
 contains
