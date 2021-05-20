@@ -7,127 +7,139 @@ implicit none (type, external)
 contains
 
 module procedure spaceinterp_dneu2D
+  !must take into account the type of interpolation that is being done
+  
+  integer :: lhorzn
+  real(wp), dimension(:,:), allocatable :: tmpinterp
+  real(wp), dimension(lx1*lx2*lx3) :: parami    !work array for temp storage of interpolated data, note sizes taken from grid module data
+  logical :: flag2
+  real(wp), dimension(:), allocatable :: coord2n,coord2i
+  
+  
+  ! Array for packing neutral data
+  if (flagcart) then
+    lhorzn=lyn
+  else
+    lhorzn=lrhon
+  end if
+  allocate(tmpinterp(lzn,lhorzn))
+  
+  ! find the singleton dimension
+!  if (lx2/=1) then
+!    flag2=.true.
+!  else if (lx3/=1) then
+    flag2=.false.
+!  else
+!    error stop ' spaceinterp_dneu2D:  cannot determine singleton dimension!!!'
+!  end if
 
-!must take into account the type of interpolation that is being done
+  ! set up pointer alias for second coordinate to reduce repetition
+  if (flagcart) then
+    allocate(coord2n(size(yn,1)),coord2i(size(yi,1)))
+    coord2n=yn
+    coord2i=yi
+  else
+    allocate(coord2n(size(rhon,1)),coord2i(size(rhoi,1)))
+    coord2n=rhon
+    coord2i=rhoi
+  end if
 
-
-integer :: lhorzn
-real(wp), dimension(:,:), allocatable :: tmpinterp
-real(wp), dimension(lx1*lx2*lx3) :: parami    !work array for temp storage of interpolated data, note sizes taken from grid module data
-
-
-!Array for packing neutral data
-if (flagcart) then
-  lhorzn=lyn
-else
-  lhorzn=lrhon
-end if
-allocate(tmpinterp(lzn,lhorzn))
-
-
-if(flagcart) then
-  tmpinterp=dnO(:,1,:)                    !pack into 2D array for interp2
-  parami=interp2(zn,yn,tmpinterp,zi,yi)         !interp to temp var.
+  ! interpolate input neutral data
+  if (flag2) then
+    print*, 'non singleton second dim',shape(dnO)
+    tmpinterp=dnO(:,:,1)
+  else
+    print*, 'non singleton third dim'
+    tmpinterp=dnO(:,1,:)                    !pack into 2D array for interp2
+  end if
+  parami=interp2(zn,coord2n,tmpinterp,zi,coord2i)         !interp to temp var.
   dnOiprev=dnOinext                       !save new previous
   dnOinext=reshape(parami,[lx1,lx2,lx3])  !overwrite next with new interpolated input
 
-  tmpinterp=dnN2(:,1,:)
-  parami=interp2(zn,yn,tmpinterp,zi,yi)
+  if (flag2) then
+    tmpinterp=dnN2(:,:,1)  
+  else
+    tmpinterp=dnN2(:,1,:)
+  end if
+  parami=interp2(zn,coord2n,tmpinterp,zi,coord2i)
   dnN2iprev=dnN2inext
   dnN2inext=reshape(parami,[lx1,lx2,lx3])
 
-  tmpinterp=dnO2(:,1,:)
-  parami=interp2(zn,yn,tmpinterp,zi,yi)
+  if (flag2) then
+    tmpinterp=dnO2(:,:,1)
+  else  
+    tmpinterp=dnO2(:,1,:)
+  end if
+  parami=interp2(zn,coord2n,tmpinterp,zi,coord2i)
   dnO2iprev=dnO2inext
   dnO2inext=reshape(parami,[lx1,lx2,lx3])
 
-  tmpinterp=dvnrho(:,1,:)
-  parami=interp2(zn,yn,tmpinterp,zi,yi)
+  if (flag2) then
+    tmpinterp=dvnrho(:,:,1)
+  else
+    tmpinterp=dvnrho(:,1,:)
+  end if
+  parami=interp2(zn,coord2n,tmpinterp,zi,coord2i)
   dvnrhoiprev=dvnrhoinext    !interpreted as y-component in this (cartesian) function
   dvnrhoinext=reshape(parami,[lx1,lx2,lx3])
 
-  tmpinterp=dvnz(:,1,:)
-  parami=interp2(zn,yn,tmpinterp,zi,yi)
+  if (flag2) then
+    tmpinterp=dvnz(:,:,1)
+  else 
+    tmpinterp=dvnz(:,1,:)
+  end if
+  parami=interp2(zn,coord2n,tmpinterp,zi,coord2i)
   dvnziprev=dvnzinext
   dvnzinext=reshape(parami,[lx1,lx2,lx3])
-
-  tmpinterp=dTn(:,1,:)
-  parami=interp2(zn,yn,tmpinterp,zi,yi)
+ 
+  if (flag2) then
+    tmpinterp=dTn(:,:,1)
+  else 
+    tmpinterp=dTn(:,1,:)
+  end if
+  parami=interp2(zn,coord2n,tmpinterp,zi,coord2i)
   dTniprev=dTninext
   dTninext=reshape(parami,[lx1,lx2,lx3])
-else
-  tmpinterp=dnO(:,1,:)
-  parami=interp2(zn,rhon,tmpinterp,zi,rhoi)     !interp to temp var.
-  dnOiprev=dnOinext                       !save new previous
-  dnOinext=reshape(parami,[lx1,lx2,lx3])  !overwrite next with new interpolated input
 
-  tmpinterp=dnN2(:,1,:)
-  parami=interp2(zn,rhon,tmpinterp,zi,rhoi)
-  dnN2iprev=dnN2inext
-  dnN2inext=reshape(parami,[lx1,lx2,lx3])
-
-  tmpinterp=dnO2(:,1,:)
-  parami=interp2(zn,rhon,tmpinterp,zi,rhoi)
-  dnO2iprev=dnO2inext
-  dnO2inext=reshape(parami,[lx1,lx2,lx3])
-
-  tmpinterp=dvnrho(:,1,:)
-  parami=interp2(zn,rhon,tmpinterp,zi,rhoi)
-  dvnrhoiprev=dvnrhoinext
-  dvnrhoinext=reshape(parami,[lx1,lx2,lx3])
-
-  tmpinterp=dvnz(:,1,:)
-  parami=interp2(zn,rhon,tmpinterp,zi,rhoi)
-  dvnziprev=dvnzinext
-  dvnzinext=reshape(parami,[lx1,lx2,lx3])
-
-  tmpinterp=dTn(:,1,:)
-  parami=interp2(zn,rhon,tmpinterp,zi,rhoi)
-  dTniprev=dTninext
-  dTninext=reshape(parami,[lx1,lx2,lx3])
-end if
-
-!MORE DIAG
-if (mpi_cfg%myid==mpi_cfg%lid/2 .and. debug) then
-  print *, 'Min/max values for dnOi:  ',minval(dnOinext),maxval(dnOinext)
-  print *, 'Min/max values for dnN2i:  ',minval(dnN2inext),maxval(dnN2inext)
-  print *, 'Min/max values for dnO2i:  ',minval(dnO2inext),maxval(dnO2inext)
-  print *, 'Min/max values for dvrhoi:  ',minval(dvnrhoinext),maxval(dvnrhoinext)
-  print *, 'Min/max values for dvnzi:  ',minval(dvnzinext),maxval(dvnzinext)
-  print *, 'Min/max values for dTni:  ',minval(dTninext),maxval(dTninext)
-end if
-
-
-!ROTATE VECTORS INTO X1 X2 DIRECTIONS (Need to include unit vectors with grid
-!structure)
-dvn1iprev=dvn1inext   !save the old data
-dvn2iprev=dvn2inext
-dvn3iprev=dvn3inext
-if(flagcart) then
-  dvn1inext=dvnrhoinext*proj_eyp_e1+dvnzinext*proj_ezp_e1    !apply projection to complete rotation into dipole coordinates; drhoi interpreted here at the y component (northward)
-  dvn2inext=dvnrhoinext*proj_eyp_e2+dvnzinext*proj_ezp_e2
-  dvn3inext=dvnrhoinext*proj_eyp_e3+dvnzinext*proj_ezp_e3
-else
-  dvn1inext=dvnrhoinext*proj_erhop_e1+dvnzinext*proj_ezp_e1    !apply projection to complete rotation into dipole coordinates
-  dvn2inext=dvnrhoinext*proj_erhop_e2+dvnzinext*proj_ezp_e2
-  dvn3inext=dvnrhoinext*proj_erhop_e3+dvnzinext*proj_ezp_e3
-end if
-
-!MORE DIAGNOSTICS
-if (mpi_cfg%myid==mpi_cfg%lid/2 .and. debug) then
-  print *, 'Min/max values for dnOi:  ',minval(dnOinext),maxval(dnOinext)
-  print *, 'Min/max values for dnN2i:  ',minval(dnN2inext),maxval(dnN2inext)
-  print *, 'Min/max values for dnO2i:  ',minval(dnO2inext),maxval(dnO2inext)
-  print *, 'Min/max values for dvn1i:  ',minval(dvn1inext),maxval(dvn1inext)
-  print *, 'Min/max values for dvn2i:  ',minval(dvn2inext),maxval(dvn2inext)
-  print *, 'Min/max values for dvn3i:  ',minval(dvn3inext),maxval(dvn3inext)
-  print *, 'Min/max values for dTni:  ',minval(dTninext),maxval(dTninext)
-end if
-
-
-!CLEAR ALLOCATED VARS
-deallocate(tmpinterp)
-
+  ! diagnostic print for debugging
+  if (mpi_cfg%myid==mpi_cfg%lid/2 .and. debug) then
+    print *, 'Min/max values for dnOi:  ',minval(dnOinext),maxval(dnOinext)
+    print *, 'Min/max values for dnN2i:  ',minval(dnN2inext),maxval(dnN2inext)
+    print *, 'Min/max values for dnO2i:  ',minval(dnO2inext),maxval(dnO2inext)
+    print *, 'Min/max values for dvrhoi:  ',minval(dvnrhoinext),maxval(dvnrhoinext)
+    print *, 'Min/max values for dvnzi:  ',minval(dvnzinext),maxval(dvnzinext)
+    print *, 'Min/max values for dTni:  ',minval(dTninext),maxval(dTninext)
+  end if
+  
+  !ROTATE VECTORS INTO X1 X2 DIRECTIONS (Need to include unit vectors with grid
+  !structure)
+  dvn1iprev=dvn1inext   !save the old data
+  dvn2iprev=dvn2inext
+  dvn3iprev=dvn3inext
+  if(flagcart) then
+    dvn1inext=dvnrhoinext*proj_eyp_e1+dvnzinext*proj_ezp_e1    !apply projection to complete rotation into dipole coordinates; drhoi interpreted here at teh y component (northward)
+    dvn2inext=dvnrhoinext*proj_eyp_e2+dvnzinext*proj_ezp_e2
+    dvn3inext=dvnrhoinext*proj_eyp_e3+dvnzinext*proj_ezp_e3
+  else
+    dvn1inext=dvnrhoinext*proj_erhop_e1+dvnzinext*proj_ezp_e1    !apply projection to complete rotation into dipole coordinates
+    dvn2inext=dvnrhoinext*proj_erhop_e2+dvnzinext*proj_ezp_e2
+    dvn3inext=dvnrhoinext*proj_erhop_e3+dvnzinext*proj_ezp_e3
+  end if
+  
+  !MORE DIAGNOSTICS
+  if (mpi_cfg%myid==mpi_cfg%lid/2 .and. debug) then
+    print *, 'Min/max values for dnOi:  ',minval(dnOinext),maxval(dnOinext)
+    print *, 'Min/max values for dnN2i:  ',minval(dnN2inext),maxval(dnN2inext)
+    print *, 'Min/max values for dnO2i:  ',minval(dnO2inext),maxval(dnO2inext)
+    print *, 'Min/max values for dvn1i:  ',minval(dvn1inext),maxval(dvn1inext)
+    print *, 'Min/max values for dvn2i:  ',minval(dvn2inext),maxval(dvn2inext)
+    print *, 'Min/max values for dvn3i:  ',minval(dvn3inext),maxval(dvn3inext)
+    print *, 'Min/max values for dTni:  ',minval(dTninext),maxval(dTninext)
+  end if
+  
+  !CLEAR ALLOCATED VARS
+  deallocate(tmpinterp)
+  deallocate(coord2n,coord2i)
 end procedure spaceinterp_dneu2D
 
 
