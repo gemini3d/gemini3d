@@ -47,8 +47,8 @@ end interface
 !! ALL ARRAYS THAT FOLLOW ARE USED WHEN INCLUDING NEUTRAL PERTURBATIONS FROM ANOTHER MODEL
 !! ARRAYS TO STORE THE NEUTRAL GRID INFORMATION
 !! as long as the neutral module is in scope these persist and do not require a "save"; this variable only used by the axisymmetric interpolation
-real(wp), dimension(:), allocatable, private :: rhon     !used for axisymmetric 2D simulations
-real(wp), dimension(:), allocatable, private :: yn    !used in cartesian 2D and 3D interpolation
+real(wp), dimension(:), allocatable, target, private :: rhon     !used for axisymmetric 2D simulations, aliased by pointers
+real(wp), dimension(:), allocatable, target, private :: yn    !used in cartesian 2D and 3D interpolation
 real(wp), dimension(:), allocatable, private :: zn
 real(wp), dimension(:), allocatable, private :: xn    !for 3D cartesian interpolation
 integer, private :: lrhon,lzn,lyn,lxn
@@ -93,7 +93,8 @@ real(wp), dimension(:,:,:), allocatable, private :: proj_exp_e1,proj_exp_e2,proj
 
 
 !PLASMA GRID ZI AND RHOI LOCATIONS FOR INTERPOLATIONS
-real(wp), dimension(:), allocatable, private :: zi,yi,xi,rhoi    !this is to be a flat listing of sites on the, rhoi only used in axisymmetric and yi only in cartesian
+real(wp), dimension(:), allocatable, private :: zi,xi    !this is to be a flat listing of sites on the, rhoi only used in axisymmetric and yi only in cartesian
+real(wp), dimension(:), allocatable, target, private :: yi,rhoi
 
 
 !USED FOR 3D INTERPOLATION WHERE WORKER DIVISIONS ARE COMPLICATED (note that the first dim starts at zero so it matches mpi ID)
