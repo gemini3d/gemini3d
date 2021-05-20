@@ -1,12 +1,14 @@
 include(ExternalProject)
 
 if(hdf5)
-  find_package(h5fortran CONFIG)
-  if(h5fortran_FOUND)
-    return()
-  endif()
 
   if(NOT hdf5_external)
+    # h5fortran inside if() because h5fortran config calls find_package(HDF5)
+    find_package(h5fortran CONFIG)
+    if(h5fortran_FOUND)
+      return()
+    endif()
+
     find_package(HDF5 COMPONENTS Fortran HL)
   endif()
 
@@ -37,7 +39,7 @@ if(hdf5)
   ExternalProject_Add(H5FORTRAN
     GIT_REPOSITORY ${h5fortran_git}
     GIT_TAG ${h5fortran_tag}
-    CMAKE_ARGS -DHDF5_ROOT:PATH=${HDF5_ROOT} -DCMAKE_INSTALL_PREFIX:PATH=${h5fortran_ROOT} -DBUILD_SHARED_LIBS:BOOL=false -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING:BOOL=false
+    CMAKE_ARGS -DZLIB_ROOT:PATH=${HDF5_ROOT} -DHDF5_ROOT:PATH=${HDF5_ROOT} -DCMAKE_INSTALL_PREFIX:PATH=${h5fortran_ROOT} -DBUILD_SHARED_LIBS:BOOL=false -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING:BOOL=false
     BUILD_BYPRODUCTS ${h5fortran_LIBRARIES}
     INACTIVITY_TIMEOUT 15
     CONFIGURE_HANDLED_BY_BUILD ON

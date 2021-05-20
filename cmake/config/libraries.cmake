@@ -16,10 +16,9 @@ endforeach()
 
 # Zlib special case to allow fallback
 if(zlib_legacy)
-  set(_n zlib1)
+  string(JSON zlib_url GET ${_libj} zlib1 url)
+  string(JSON zlib_sha256 GET ${_libj} zlib1 sha256)
 else()
-  set(_n zlib2)
+  string(JSON zlib_git GET ${_libj} zlib2 git)
+  string(JSON zlib_tag GET ${_libj} zlib2 tag)
 endif()
-
-string(JSON zlib_url GET ${_libj} ${_n} url)
-string(JSON zlib_sha256 GET ${_libj} ${_n} sha256)
