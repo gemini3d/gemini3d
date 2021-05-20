@@ -11,7 +11,8 @@ module procedure get_grid3_coords_raw
 
   integer :: u
   character(:), allocatable :: fn
-  
+  integer :: stat  
+
   if (index(path, 'simgrid.dat') /= 0) then
     fn = path
   else
@@ -25,6 +26,16 @@ module procedure get_grid3_coords_raw
   read(u) x1
   read(u) x2all
   read(u) x3all
+
+  !! check whether center location is include in file
+  read(u,iostat=stat) glonctr
+  if (stat<0) then
+    read(u) glatctr
+  else
+    print*, 'Default center grid'
+    glonctr=0._wp
+    glatctr=0._wp 
+  end if
 end procedure get_grid3_coords_raw
 
 

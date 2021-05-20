@@ -26,12 +26,7 @@ type, extends(curvmesh) :: cartmesh
   real(wp), dimension(:,:,:,:), pointer :: ez,ex,ey
   real(wp), dimension(:,:,:), pointer :: gz,gx,gy
 
-  real(wp) :: glonctr,glatctr     ! center of the grid in geographic lat/lon
-
   contains
-    !> type-bound procs. for cart meshes
-    procedure :: set_center
- 
     !> Bind deferred procedures 
     procedure :: init=>init_cartmesh
     procedure :: make=>make_cartmesh
@@ -204,16 +199,6 @@ subroutine make_cartmesh(self)
   print*, ' make_cartmesh:  inclination angle...'  
   call self%calc_inclination()
 end subroutine make_cartmesh
-
-
-!> this sets the geographic center of the mesh; must be called prior to make()
-subroutine set_center(self,glon,glat)
-  class(cartmesh), intent(inout) :: self
-  real(wp), intent(in) :: glon,glat
-
-  self%glonctr=glon
-  self%glatctr=glat
-end subroutine set_center
 
 
 !> compute gravitational field components
