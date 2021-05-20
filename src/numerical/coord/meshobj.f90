@@ -137,6 +137,9 @@ type, abstract :: curvmesh
   !! length of null point index array
   integer, dimension(:,:), pointer :: inull
 
+  !> for floating coordinate systems we must define an aboslute center position in geographic coordinates
+  real(wp) :: glonctr,glatctr
+
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! type-bound procedures !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 
   contains
     procedure :: set_coords             ! initialize general curvilinear coordinates and mesh sizes
@@ -154,6 +157,7 @@ type, abstract :: curvmesh
     procedure :: calc_geographic        ! convert to geographic coordinates
     procedure :: set_root               ! set fullgrid variables that have been gathered from workers to root
     procedure :: set_periodic           ! set the flag which labels grid as periodic vs. aperiodic
+    procedure :: set_center             ! set the center of the grid (only needed for "floating" coordinate systems)
     !final :: destructor   ! an abstract type cannot have a final procedure, as the final procedure must act on a type and not polymorhpic object
 
     !! deferred bindings and associated generic interfaces
@@ -396,7 +400,18 @@ contains
     end if
   end subroutine init_storage_root
 
+  
+  !> this sets the geographic center of the mesh; must be called prior to make()
+  subroutine set_center(self,glon,glat)
+    class(curvmesh), intent(inout) :: self
+    real(wp), intent(in) :: glon,glat
+  
+    self%glonctr=glon
+    self%glatctr=glat
+  end subroutine set_center
 
+
+  !> determine what type of grid we have
   subroutine calc_gridflag(self)
     class(curvmesh) :: self
     integer :: lx1,lx2,lx3

@@ -5,19 +5,22 @@ submodule (grid) grid_read
 implicit none (type, external)
 
 interface ! readgrid_*.f90
-  module subroutine get_grid3_coords_raw(path,x1,x2all,x3all)
+  module subroutine get_grid3_coords_raw(path,x1,x2all,x3all,glonctr,glatctr)
     character(*), intent(in) :: path
     real(wp), dimension(:), intent(out) :: x1,x2all,x3all
+    real(wp) :: glonctr,glatctr
   end subroutine get_grid3_coords_raw
 
-  module subroutine get_grid3_coords_hdf5(path,x1,x2all,x3all)
+  module subroutine get_grid3_coords_hdf5(path,x1,x2all,x3all,glonctr,glatctr)
     character(*), intent(in) :: path
     real(wp), dimension(:), intent(out) :: x1,x2all,x3all
+    real(wp) :: glonctr,glatctr
   end subroutine get_grid3_coords_hdf5
 
-  module subroutine get_grid3_coords_nc4(path,x1,x2all,x3all)
+  module subroutine get_grid3_coords_nc4(path,x1,x2all,x3all,glonctr,glatctr)
     character(*), intent(in) :: path
     real(wp), dimension(:), intent(out) :: x1,x2all,x3all
+    real(wp) :: glonctr,glatctr
   end subroutine get_grid3_coords_nc4
 end interface
 
@@ -33,10 +36,11 @@ module procedure read_grid
   integer :: islstart,islfin
   integer, dimension(2) :: indsgrid
   integer iid
+  real(wp) :: glonctr,glatctr
 
   call set_subgrid_size()    ! everyone computes what the size of their subgrid should be
   allocate(x1(-1:lx1+2),x2(-1:lx2+2),x3(-1:lx3+2),x2all(-1:lx2all+2),x3all(-1:lx3all+2))   ! tmp space for coords from file
-  call get_grid3_coords(indatgrid,x1,x2all,x3all)
+  call get_grid3_coords(indatgrid,x1,x2all,x3all,glonctr,glatctr)   ! only need ctr location for certain grid types
 
   !> each worker needs to set their specific subgrid coordinates
   indsgrid=ID2grid(mpi_cfg%myid, mpi_cfg%lid2)     !compute my location on the process grid
@@ -61,9 +65,11 @@ module procedure read_grid
   
   !> Declare grid type that we are dealing with; note lack of matching deallocates assume
   !   that the compiler will deal with it automatically
+  !  Also set the grid center position if not already dictated by the coordinate system
   select case (gridtype)
     case(0)    ! cartesian
-      allocate(cartmesh::x) 
+      allocate(cartmesh::x)
+      call x%set_center(glonctr,glatctr)
     case(1)    ! dipole
       allocate(dipolemesh::x)
     case default
@@ -145,20 +151,21 @@ subroutine set_subgrid_size()
 end subroutine set_subgrid_size
 
 
-subroutine get_grid3_coords(path,x1,x2all,x3all)
+subroutine get_grid3_coords(path,x1,x2all,x3all,glonctr,glatctr)
   character(*), intent(in) :: path
   real(wp), dimension(:), intent(out) :: x1,x2all,x3all
+  real(wp) :: glonctr,glatctr
 
   character(:), allocatable :: fmt
 
   fmt = path(index(path, '.', back=.true.) : len(path))
   select case (fmt)
     case ('.dat')
-      call get_grid3_coords_raw(path,x1,x2all,x3all)
+      call get_grid3_coords_raw(path,x1,x2all,x3all,glonctr,glatctr)
     case ('.h5')
-      call get_grid3_coords_hdf5(path,x1,x2all,x3all)
+      call get_grid3_coords_hdf5(path,x1,x2all,x3all,glonctr,glatctr)
     case ('.nc')
-      call get_grid3_coords_nc4(path,x1,x2all,x3all)
+      call get_grid3_coords_nc4(path,x1,x2all,x3all,glonctr,glatctr)
     case default
       write(stderr,*) 'grid:read:get_grid3: unknown grid format: ' // fmt
       error stop 2
