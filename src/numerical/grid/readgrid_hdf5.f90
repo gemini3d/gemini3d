@@ -1,7 +1,7 @@
 submodule (grid:grid_read) readgrid_hdf5
 
 use phys_consts, only: debug
-use h5fortran, only: hdf5_file
+use h5fortran, only: hdf5_file,h5exist
 
 implicit none (type, external)
 
@@ -29,6 +29,14 @@ module procedure get_grid3_coords_hdf5
   call hout%read('/x2', x2all)
   call hout%read('/x3', x3all)
 
+  if (h5exist(fn, '/glonctr')) then
+    call hout%read('/glonctr',glonctr)
+    call hout%read('/glatctr',glatctr)
+  else
+    print*, ' Default center grid'
+    glonctr=0._wp
+    glatctr=0._wp
+  end if
 end procedure get_grid3_coords_hdf5
 
 
