@@ -15,40 +15,37 @@ public :: Tnmsis, neutral_atmos, make_dneu, clear_dneu, neutral_perturb, neutral
 
 
 interface ! atmos.f90
-module subroutine neutral_atmos(ymd,UTsecd,glat,glon,alt,activ,v2grid,v3grid,nn,Tn,vn1,vn2,vn3, msis_version)
-integer, intent(in) :: ymd(3), msis_version
-real(wp), intent(in) :: UTsecd
-real(wp), dimension(:,:,:), intent(in) :: glat,glon,alt
-real(wp), intent(in) :: activ(3)
-real(wp), intent(in) :: v2grid,v3grid
-real(wp), dimension(1:size(alt,1),1:size(alt,2),1:size(alt,3),lnchem), intent(out) :: nn
-real(wp), dimension(1:size(alt,1),1:size(alt,2),1:size(alt,3)), intent(out) :: Tn
-real(wp), dimension(1:size(alt,1),1:size(alt,2),1:size(alt,3)), intent(out) :: vn1,vn2,vn3
-end subroutine neutral_atmos
+  module subroutine neutral_atmos(ymd,UTsecd,glat,glon,alt,activ,v2grid,v3grid,nn,Tn,vn1,vn2,vn3, msis_version)
+    integer, intent(in) :: ymd(3), msis_version
+    real(wp), intent(in) :: UTsecd
+    real(wp), dimension(:,:,:), intent(in) :: glat,glon,alt
+    real(wp), intent(in) :: activ(3)
+    real(wp), intent(in) :: v2grid,v3grid
+    real(wp), dimension(1:size(alt,1),1:size(alt,2),1:size(alt,3),lnchem), intent(out) :: nn
+    real(wp), dimension(1:size(alt,1),1:size(alt,2),1:size(alt,3)), intent(out) :: Tn
+    real(wp), dimension(1:size(alt,1),1:size(alt,2),1:size(alt,3)), intent(out) :: vn1,vn2,vn3
+  end subroutine neutral_atmos
 end interface
 
 interface ! pertub.f90
-
-module subroutine neutral_perturb(cfg,dt,dtneu,t,ymd,UTsec,x,v2grid,v3grid,nn,Tn,vn1,vn2,vn3)
-type(gemini_cfg), intent(in) :: cfg
-real(wp), intent(in) :: dt,dtneu
-real(wp), intent(in) :: t
-integer, dimension(3), intent(in) :: ymd     !date for which we wish to calculate perturbations
-real(wp), intent(in) :: UTsec
-
-class(curvmesh), intent(inout) :: x                !grid structure  (inout becuase we want to be able to deallocate unit vectors once we are done with them)
-real(wp), intent(in) :: v2grid,v3grid
-real(wp), dimension(:,:,:,:), intent(out) :: nn   !neutral params interpolated to plasma grid at requested time
-real(wp), dimension(:,:,:), intent(out) :: Tn,vn1,vn2,vn3
-end subroutine neutral_perturb
-
+  module subroutine neutral_perturb(cfg,dt,dtneu,t,ymd,UTsec,x,v2grid,v3grid,nn,Tn,vn1,vn2,vn3)
+    type(gemini_cfg), intent(in) :: cfg
+    real(wp), intent(in) :: dt,dtneu
+    real(wp), intent(in) :: t
+    integer, dimension(3), intent(in) :: ymd     !date for which we wish to calculate perturbations
+    real(wp), intent(in) :: UTsec
+    class(curvmesh), intent(inout) :: x                !grid structure  (inout becuase we want to be able to deallocate unit vectors once we are done with them)
+    real(wp), intent(in) :: v2grid,v3grid
+    real(wp), dimension(:,:,:,:), intent(out) :: nn   !neutral params interpolated to plasma grid at requested time
+    real(wp), dimension(:,:,:), intent(out) :: Tn,vn1,vn2,vn3
+  end subroutine neutral_perturb
 end interface
 
 !! ALL ARRAYS THAT FOLLOW ARE USED WHEN INCLUDING NEUTRAL PERTURBATIONS FROM ANOTHER MODEL
 !! ARRAYS TO STORE THE NEUTRAL GRID INFORMATION
 !! as long as the neutral module is in scope these persist and do not require a "save"; this variable only used by the axisymmetric interpolation
-real(wp), dimension(:), allocatable, private :: rhon     !used for axisymmetric 2D simulations
-real(wp), dimension(:), allocatable, private :: yn    !used in cartesian 2D and 3D interpolation
+real(wp), dimension(:), allocatable, target, private :: rhon     !used for axisymmetric 2D simulations, aliased by pointers
+real(wp), dimension(:), allocatable, target, private :: yn    !used in cartesian 2D and 3D interpolation
 real(wp), dimension(:), allocatable, private :: zn
 real(wp), dimension(:), allocatable, private :: xn    !for 3D cartesian interpolation
 integer, private :: lrhon,lzn,lyn,lxn
@@ -93,7 +90,8 @@ real(wp), dimension(:,:,:), allocatable, private :: proj_exp_e1,proj_exp_e2,proj
 
 
 !PLASMA GRID ZI AND RHOI LOCATIONS FOR INTERPOLATIONS
-real(wp), dimension(:), allocatable, private :: zi,yi,xi,rhoi    !this is to be a flat listing of sites on the, rhoi only used in axisymmetric and yi only in cartesian
+real(wp), dimension(:), allocatable, private :: zi,xi    !this is to be a flat listing of sites on the, rhoi only used in axisymmetric and yi only in cartesian
+real(wp), dimension(:), allocatable, target, private :: yi,rhoi
 
 
 !USED FOR 3D INTERPOLATION WHERE WORKER DIVISIONS ARE COMPLICATED (note that the first dim starts at zero so it matches mpi ID)

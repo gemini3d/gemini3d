@@ -14,33 +14,31 @@ implicit none (type, external)
 external :: mpi_send, mpi_recv
 
 interface ! proj.f90
-module subroutine gridproj_dneu2D(cfg,flagcart,x)
-type(gemini_cfg), intent(in) :: cfg
-logical, intent(in) :: flagcart
-class(curvmesh), intent(inout) :: x
-end subroutine gridproj_dneu2D
-
-module subroutine gridproj_dneu3D(cfg,x)
-type(gemini_cfg), intent(in) :: cfg
-class(curvmesh), intent(inout) :: x
-end subroutine gridproj_dneu3D
+  module subroutine gridproj_dneu2D(cfg,flagcart,x)
+    type(gemini_cfg), intent(in) :: cfg
+    logical, intent(in) :: flagcart
+    class(curvmesh), intent(inout) :: x
+  end subroutine gridproj_dneu2D
+  
+  module subroutine gridproj_dneu3D(cfg,x)
+    type(gemini_cfg), intent(in) :: cfg
+    class(curvmesh), intent(inout) :: x
+  end subroutine gridproj_dneu3D
 end interface
 
 
 interface ! interp.f90
+  module subroutine spaceinterp_dneu2D(flagcart)
+    logical, intent(in) :: flagcart
+  end subroutine spaceinterp_dneu2D
 
-module subroutine spaceinterp_dneu2D(flagcart)
-logical, intent(in) :: flagcart
-end subroutine spaceinterp_dneu2D
+  module subroutine spaceinterp_dneu3D()
+  end subroutine spaceinterp_dneu3D
 
-module subroutine spaceinterp_dneu3D()
-end subroutine spaceinterp_dneu3D
-
-module subroutine timeinterp_dneu(t,dt,dNOinow,dnN2inow,dnO2inow,dvn1inow,dvn2inow,dvn3inow,dTninow)
-real(wp), intent(in) :: t,dt
-real(wp), dimension(:,:,:), intent(out) :: dNOinow,dnN2inow,dnO2inow,dvn1inow,dvn2inow,dvn3inow,dTninow
-end subroutine timeinterp_dneu
-
+  module subroutine timeinterp_dneu(t,dt,dNOinow,dnN2inow,dnO2inow,dvn1inow,dvn2inow,dvn3inow,dTninow)
+    real(wp), intent(in) :: t,dt
+    real(wp), dimension(:,:,:), intent(out) :: dNOinow,dnN2inow,dnO2inow,dvn1inow,dvn2inow,dvn3inow,dTninow
+  end subroutine timeinterp_dneu
 end interface
 
 contains
@@ -498,8 +496,5 @@ if (mpi_cfg%myid==mpi_cfg%lid/2 .and. debug) then
 end if
 
 end subroutine read_dneu3D
-
-
-
 
 end submodule perturb
