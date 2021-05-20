@@ -1033,6 +1033,7 @@ call MUMPS_exec(mumps_par)
 
 end procedure elliptic2D_polarization_periodic
 
+
 ! FIXME:  x3 below really refers to whatever the second non-singleton dimension is...
 module procedure elliptic2D_cart
 !! SOLVE IONOSPHERIC POTENTIAL EQUATION IN 2D USING MUMPS.
