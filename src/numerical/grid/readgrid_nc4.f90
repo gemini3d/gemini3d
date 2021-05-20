@@ -29,6 +29,14 @@ module procedure get_grid3_coords_nc4
   call hout%read('x2', x2all)
   call hout%read('x3', x3all)
 
+  if (hout%exist('/glonctr')) then
+    call hout%read('/glonctr',glonctr)
+    call hout%read('/glatctr',glatctr)
+  else
+    print*, ' Default center grid'
+    glonctr=0._wp
+    glatctr=0._wp
+  end if
 end procedure get_grid3_coords_nc4
 
 
