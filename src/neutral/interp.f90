@@ -28,7 +28,7 @@ module procedure spaceinterp_dneu2D
 !  if (lx2/=1) then
 !    flag2=.true.
 !  else if (lx3/=1) then
-    flag2=.false.
+    flag2=.false.    ! note that because of packing below it doesn't matter whether the singleton dim is 2 or 3 so always leave it as 3...
 !  else
 !    error stop ' spaceinterp_dneu2D:  cannot determine singleton dimension!!!'
 !  end if
@@ -46,10 +46,8 @@ module procedure spaceinterp_dneu2D
 
   ! interpolate input neutral data
   if (flag2) then
-    print*, 'non singleton second dim',shape(dnO)
     tmpinterp=dnO(:,:,1)
   else
-    print*, 'non singleton third dim'
     tmpinterp=dnO(:,1,:)                    !pack into 2D array for interp2
   end if
   parami=interp2(zn,coord2n,tmpinterp,zi,coord2i)         !interp to temp var.

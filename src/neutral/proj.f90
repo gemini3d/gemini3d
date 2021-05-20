@@ -108,7 +108,7 @@ do ix3=1,lx3
     do ix1=1,lx1
       !INTERPOLATION BASED ON GEOMAGNETIC COORDINATES
       theta2=x%theta(ix1,ix2,ix3)                    !field point zenith angle
-      if (lx2/=1) then
+      if (lx2/=1 .and. lx3/=1) then
         phi2=x%phi(ix1,ix2,ix3)                      !field point azimuth, full 3D calculation
       else
         phi2=phi1                                    !assume the longitude is the samem as the source in 2D, i.e. assume the source epicenter is in the meridian of the grid
