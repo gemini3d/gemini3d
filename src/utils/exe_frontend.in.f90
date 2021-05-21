@@ -25,13 +25,13 @@ git_revision = "@git_rev@"
 argc = command_argument_count()
 
 call get_command_argument(1, buf, status=i)
-if (i/=0) call help_gemini_run(git_revision)
+if (i/=0) call help_run(git_revision)
 
 if(buf(1:1) == '-') then
 !! not running sim, checking parameters
   select case(buf)
   case ('-h', '-help')
-    call help_gemini_run(git_revision)
+    call help_run(git_revision)
   case ('-compiler')
     print '(A)', get_compiler_vendor()
   case ('-compiler_version')
@@ -40,7 +40,7 @@ if(buf(1:1) == '-') then
     print '(A)', git_revision
   case default
     write(stderr,*) "unknown option: ", trim(buf)
-    call help_gemini_run(git_revision)
+    call help_run(git_revision)
   end select
 
   stop
@@ -227,6 +227,19 @@ stop 'EOF: gemini.bin'
 end subroutine help_gemini_bin
 
 
+subroutine help_run(git_revision)
+
+character(*), intent(in) :: git_revision
+character(1000) :: buf
+
+call get_command_argument(0, buf)
+if(index(buf, "gemini3d.run") > 0) call help_gemini_run(git_revision)
+if(index(buf, "magcalc.run") > 0) call help_magcalc_run(git_revision)
+
+error stop "help_run: unknown runner"
+
+end subroutine help_run
+
 subroutine help_gemini_run(git_revision)
 
 character(*), intent(in) :: git_revision
@@ -257,5 +270,23 @@ print '(/,A,/)', 'mpiexec -n 4 build/magcalc.bin test2d_fang test2d_fang/fieldpo
 print '(A)', '-dryrun option allows quick check of first time step'
 stop 'EOF: magcalc.bin'
 end subroutine help_magcalc_bin
+
+subroutine help_magcalc_run(git_revision)
+
+character(*), intent(in) :: git_revision
+
+print '(/,A,/)', 'GEMINI-3D: magcalc.run ' // git_revision
+print '(A)', 'Compiler vendor: '// get_compiler_vendor()
+print '(A)', 'Compiler version: ' // compiler_version()
+print '(/,A)', 'must specify simulation output directory. Example:'
+print '(/,A,/)', '  build/magcalc.run /path/to/simulation_outputs'
+print '(A)', '-plan  print MPI partition x2,x3 for given CPU count'
+print '(A)', '-dryrun    allows quick check of first time step'
+print '(A)', '-n   manually specify number of MPI images (default auto-calculate)'
+print '(A)', '-exe   path to magcalc.bin'
+print '(A)', '-mpiexec   path to mpiexec'
+stop 'EOF: magcalc.run'
+
+end subroutine help_magcalc_run
 
 end module exe_frontend

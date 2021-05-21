@@ -51,6 +51,7 @@ target_link_libraries(exe_frontend PRIVATE config hwloc_ifc hwloc_c pathlib)
 set_target_properties(exe_frontend PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include)
 target_include_directories(exe_frontend INTERFACE ${CMAKE_CURRENT_BINARY_DIR}/include)
 
+# --- gemini3d.run
 add_executable(gemini3d.run gemini3d_run.f90 runner.f90)
 target_link_libraries(gemini3d.run PRIVATE exe_frontend const config timeutils autogrid reader h5fortran::h5fortran nc4fortran::nc4fortran)
 if(HWLOC_FOUND)
@@ -66,7 +67,24 @@ set_tests_properties(unit:gemini3d_run_ok PROPERTIES
   LABELS unit
   TIMEOUT 5)
 
-install(TARGETS gemini3d.run
+# --- magcalc.run
+
+add_executable(magcalc.run magcalc_run.f90)
+target_link_libraries(magcalc.run PRIVATE exe_frontend config const autogrid reader h5fortran::h5fortran nc4fortran::nc4fortran)
+if(HWLOC_FOUND)
+  target_link_libraries(magcalc.run PRIVATE HWLOC::HWLOC)
+endif()
+set_target_properties(magcalc.run PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
+set_target_properties(magcalc.run PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include)
+
+add_test(NAME unit:magcalc_run_ok COMMAND $<TARGET_FILE:magcalc.run>)
+set_tests_properties(unit:magcalc_run_ok PROPERTIES
+  PASS_REGULAR_EXPRESSION "EOF: magcalc.run"
+  DEPENDS unit:HWLOC
+  LABELS unit
+  TIMEOUT 5)
+
+install(TARGETS gemini3d.run magcalc.run
   EXPORT ${PROJECT_NAME}Targets
   RUNTIME DESTINATION bin)
 
