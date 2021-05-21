@@ -305,11 +305,11 @@ contains
 
     lx1=self%lx1; lx2all=self%lx2all; lx3all=self%lx3all    ! limits indexing verboseness, which drives me crazy
 
-    allocate(self%x2iall(-1:lx2all),self%dx2all(0:lx2all+2),self%dx2iall(1:lx2all))
+    allocate(self%x2iall(1:lx2all+1),self%dx2all(0:lx2all+2),self%dx2iall(1:lx2all))
     self%dx2all = self%x2all(0:lx2all+2)-self%x2all(-1:lx2all+1)
     self%x2iall(1:lx2all+1) = 0.5_wp*(self%x2all(0:lx2all)+self%x2all(1:lx2all+1))
     self%dx2iall=self%x2iall(2:lx2all+1)-self%x2iall(1:lx2all)
-    allocate(self%x3iall(-1:lx3all),self%dx3all(0:lx3all+2),self%dx3iall(1:lx3all))
+    allocate(self%x3iall(1:lx3all+1),self%dx3all(0:lx3all+2),self%dx3iall(1:lx3all))
     self%dx3all = self%x3all(0:lx3all+2)-self%x3all(-1:lx3all+1)
     self%x3iall(1:lx3all+1)=0.5_wp*(self%x3all(0:lx3all)+self%x3all(1:lx3all+1))
     self%dx3iall=self%x3iall(2:lx3all+1)-self%x3iall(1:lx3all)
