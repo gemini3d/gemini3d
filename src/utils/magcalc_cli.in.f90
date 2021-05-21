@@ -6,7 +6,7 @@ use pathlib, only : assert_file_exists, assert_directory_exists, expanduser
 use mpimod, only : mpisetup, mpibreakdown, mpi_cfg
 use phys_consts, only : wp
 use timeutils, only : dateinc
-use help, only : help_magcalc_bin
+use exe_frontend, only : help_magcalc_bin
 
 implicit none (type, external)
 private

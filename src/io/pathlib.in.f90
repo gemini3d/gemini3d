@@ -146,16 +146,20 @@ abspath = t // '/' // p
 end function make_absolute
 
 
-subroutine assert_directory_exists(path)
-!! throw error if directory does not exist
+logical function directory_exists(path) result(exists)
+!! except for Intel compiler, cannot distinguish file from directory
 character(*), intent(in) :: path
-logical :: exists
 
 @dir_exist@
 
-if (exists) return
+end function directory_exists
 
-error stop 'directory does not exist ' // path
+
+subroutine assert_directory_exists(path)
+!! throw error if directory does not exist
+character(*), intent(in) :: path
+
+if (.not. directory_exists(path)) error stop 'directory does not exist ' // path
 
 end subroutine assert_directory_exists
 
@@ -168,9 +172,7 @@ logical :: exists
 
 inquire(file=path, exist=exists)
 
-if (exists) return
-
-error stop 'ERROR: file does not exist ' // path
+if (.not. exists) error stop 'file does not exist ' // path
 
 end subroutine assert_file_exists
 

@@ -3,7 +3,7 @@ module gemini_cli
 use config, only : read_configfile, gemini_cfg, get_compiler_vendor
 use pathlib, only : assert_file_exists, assert_directory_exists, expanduser
 use mpimod, only : mpisetup, mpibreakdown, mpi_cfg
-use help, only : help_gemini_bin
+use exe_frontend, only : help_gemini_bin
 
 implicit none (type, external)
 private

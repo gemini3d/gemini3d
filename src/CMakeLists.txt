@@ -39,7 +39,7 @@ add_executable(gemini.bin gemini.f90 ${CMAKE_CURRENT_BINARY_DIR}/gemini_cli.f90
 $<TARGET_OBJECTS:autogrid> $<TARGET_OBJECTS:PDEelliptic> $<TARGET_OBJECTS:potential>)
 set_target_properties(gemini.bin PROPERTIES
   RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
-target_link_libraries(gemini.bin PRIVATE advec calculus helpmod config const collision diffusion fang grid io interp ionization gbsv mesh mpimod
+target_link_libraries(gemini.bin PRIVATE exe_frontend advec calculus config const collision diffusion fang grid io interp ionization gbsv mesh mpimod
   msis_ifc multifluid
   neutral pathlib PDEparabolic potential precipBCs reader sanity_check errors sources temporal timeutils)
 if(mpi)

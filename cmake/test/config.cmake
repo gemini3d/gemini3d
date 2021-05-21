@@ -18,7 +18,7 @@ set_tests_properties(${name}:download PROPERTIES
   TIMEOUT 180)
 
 # construct command
-set(test_cmd $<TARGET_FILE:gemini3d.run> ${out_dir} -gemexe $<TARGET_FILE:gemini.bin>)
+set(test_cmd $<TARGET_FILE:gemini3d.run> ${out_dir} -exe $<TARGET_FILE:gemini.bin>)
 
 if(mpi)
   list(APPEND test_cmd -mpiexec ${MPIEXEC_EXECUTABLE})
