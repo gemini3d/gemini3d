@@ -4,7 +4,7 @@ use, intrinsic :: ieee_arithmetic, only : ieee_is_finite
 
 use reader, only: get_simsize2, get_precip, get_grid2
 use phys_consts, only: pi,wp, debug
-use grid, only : lx1,lx2,lx3,lx3all
+use grid, only : lx1,lx2,lx3
 use meshobj, only: curvmesh
 use interpolation, only : interp1,interp2
 use timeutils, only : dateinc, date_filename, find_lastdate
@@ -185,6 +185,7 @@ if(t+dt / 2._wp >= tnext .or. t < 0) then
         mloni(iflat)=x%phi(lx1,ix2,ix3)*180._wp/pi
       end do
     end do
+    print*, 'Sim grid extent mlon,mlat:  ',minval(mloni),maxval(mloni),minval(mlati),maxval(mlati)
 
   end if
 
@@ -203,6 +204,9 @@ if(t+dt / 2._wp >= tnext .or. t < 0) then
 
     if (debug) print *, 'Min/max values for Qp:  ',minval(Qp),maxval(Qp)
     if (debug) print *, 'Min/max values for E0p:  ',minval(E0p),maxval(E0p)
+    if (debug) print*, 'array shapes:  ',shape(E0p),shape(Qp)
+    if (debug) print*, 'array vals:  ',Qp(1,1),Qp(50,1),mlonp(1),mlonp(50)
+
 
     !> send a full copy of the data to all of the workers
     do iid=1,mpi_cfg%lid-1
@@ -278,6 +282,10 @@ do ix3=1,lx3
 end do
 
 
+!> debug printing
+if (debug) print*, 'subarray vals:  ',mpi_cfg%myid,mloni(1),mloni(lx2),Qinow(1,1),Qinow(lx2,1),maxval(Qinow)
+
+
 !SOME BASIC DIAGNOSTICS
 if (mpi_cfg%myid==mpi_cfg%lid/2 .and. debug) then
   print *, 'tprev,t,tnext:  ',tprev,t+dt/2._wp,tnext
@@ -315,7 +323,6 @@ if(allocated(mlonp)) then
     deallocate(precdatp)
   end if
 end if
-
 end subroutine clear_precip_fileinput
 
 

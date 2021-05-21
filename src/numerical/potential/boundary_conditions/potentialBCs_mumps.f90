@@ -210,7 +210,7 @@ if(t + dt / 2._wp >= tnext .or. t < 0) then    !need to load a new file
 
 
     !ALL PROCESSES NEED TO DEFINE THE POINTS THAT THEY WILL BE INTERPOLATING ONTO
-    if (lx2all > 1) then ! 3D sim
+    if (lx2all > 1 .and. lx3all>1) then ! 3D sim
       ix2ref = lx2all/2      !note integer division
     else
       ix2ref = 1
