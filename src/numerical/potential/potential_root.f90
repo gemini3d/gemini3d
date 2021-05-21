@@ -280,6 +280,14 @@ else   !lx2 or lx3=1 so do a field-resolved 2D solve over x1,x3
   end if
 
 
+!> check boundaries
+!print*, minval(Vminx2),maxval(Vmaxx2)
+!print*, minval(Vmaxx2),maxval(Vmaxx2)
+!print*, minval(Vminx3),maxval(Vmaxx3)
+!print*, minval(Vmaxx3),maxval(Vmaxx3)
+
+
+
   !! EXECUTE THE SOLVE WITH MUMPS AND SCALED TERMS
   !! NOTE THE LACK OF A SPECIAL CASE HERE TO CHANGE THE POTENTIAL PROBLEM
   !! - ONLY THE HALL TERM CHANGES (SINCE RELATED TO EXB) BUT THAT DOESN'T APPEAR IN THIS EQN!
