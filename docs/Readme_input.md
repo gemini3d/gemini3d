@@ -307,7 +307,7 @@ Because of this issue, and the fact that GEMINI must be rebuilt every time these
 ### File-based input (*recommended*)
 
 The file input is enabled by the appropriate flags (flagprecfile and flagE0file) set in the input `config.nml` file (see Section entitled [Example input config.nml file](#Example-config.nml-input-file)).
-All examples included in `initialize/` in both the GEMINI and GEMINI-scripts repositories use this method for setting boundary conditions.
+All examples included in `init/` in both the GEMINI and GEMINI-scripts repositories use this method for setting boundary conditions.
 Note that the user can specify the boundary condition on a different grid from what the simulation is to be run with; in this case GEMINI will just interpolate the given boundary data onto the current simulation grid.
 
 ### Electric field input files requirement
@@ -377,7 +377,11 @@ The Fortran code interpolates the precipitation data in space and time.
 <a name="initial_conditions"></a>
 ## 5. Initial conditions
 
-GEMINI needs density, drift, and temperature for each species that it simulations over the entire grid for which the simulation is being run as input.  Generally one will use the results of another GEMINI simulation that has been initialized in an arbitrary way but run for a full day to a proper ionospheric equilibrium as this input.  Any equilibrium simulation run this way must use full output (flagoutput=1 in the `config.nml`).  A useful approach for these equilibrium runs is to use a coarser grid so that the simulation completes quickly and then interpolate the results up to fine grid resolution.  An example of an equilibrium setup is given in `./initialize/2Dtest_eq`; note that this basically makes up an initial conditions (using `eqICs.m`) and runs until initial transients have settled.  An example of a script that interpolates the output of an equilibrium run to a finer grid is included with `./initialize/2Dtest`.
+GEMINI needs density, drift, and temperature for each species that it simulations over the entire grid for which the simulation is being run as input.  Generally one will use the results of another GEMINI simulation that has been initialized in an arbitrary way but run for a full day to a proper ionospheric equilibrium as this input.  Any equilibrium simulation run this way must use full output (flagoutput=1 in the `config.nml`).  A useful approach for these equilibrium runs is to use a coarser grid so that the simulation completes quickly and then interpolate the results up to fine grid resolution.  An example of a 2D equilibrium
+[config.nml](https://github.com/gemini3d/gemci/tree/main/cfg/equilibrium/mini2dew_eq):
+note that this basically makes up initial conditions and runs until initial transients have settled.
+An example
+[config.nml](https://github.com/gemini3d/gemci/tree/main/cfg/hourly/mini2dew_fang) interpolates the output of an equilibrium run to a finer grid.
 
 ### Initial condition input file requirements
 
@@ -390,13 +394,12 @@ Initial condition input files shall contain all input data needed to start a sim
  "Phiall"          ! (lx2,lx3) electric potential vs. x2 and x3 - may be omitted to default to zero
  ```
 
-
 ## Suggested workflow for creating input file to run a simulation
 
-1. Create initial conditions for equilibrium simulation -  Several examples of equilibrium setups are included in the ./initialize directory; these end with `_eq`.  These are all based off of the general scripts `./setup/model_setup.m` and related scripts.  In general this equilbrium simulation will set the date, location, and geomagnetic conditions for the background ionospheric state for later perturbation simulations.
-2. Run an equilibrium simulation at low resolution to obtain a background ionosphere.  See examples in ./initialize ending in `_eq`
-3. Generate a grid - Several examples of grid generation scripts adapted to particular problems are given in the `initialize/` directory of the repo (see list above for an example).  In particular, for 2Dtest and 3Dtest there is a script that reads in an equilbirum simulation, creates a fine resolution mesh, and then interpolates the equilibrium data onto that fine mesh.
-4. Interpolate the equilibrium results on to a high resolution grid and create new input files for full resolution - See examples in the ./initialize/ directories not ending in `_eq`.  These are all based off of the general `./setup/model_setup_interp.m` script.
+1. Create initial conditions for equilibrium simulation -  Several examples of equilibrium [config.nml](https://github.com/gemini3d/gemci/tree/main/cfg/equilibrium).  These are all based off of the general scripts `./setup/model_setup.m` and related scripts.  In general this equilbrium simulation will set the date, location, and geomagnetic conditions for the background ionospheric state for later perturbation simulations.
+2. Run an equilibrium simulation at low resolution to obtain a background ionosphere.
+3. Generate a grid - Several examples of grid generation scripts: see list above for an example.  From Matlab or Python, the gemini3d.model.setup() reads in an equilbirum simulation, creates a fine resolution mesh, and then interpolates the equilibrium data onto that fine mesh.
+4. Interpolate the equilibrium results on to a high resolution grid and create new input files for full resolution.
 5. Set up boundary conditions for potential, if required - see section of this document on boundary conditions
 6. Set up precipitation boundary conditions, if required -  see section of this document on boundary conditions
 7. Recompile the code with make *only if you are using subroutine based input and boundary conditions* (please note that this functionality will be removed in a later release).  If you are using file-based input then a rebuild is not necessary (this is another benefit of using file-based input)
