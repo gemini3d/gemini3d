@@ -794,6 +794,7 @@ else   !we resolved the field line (either 2D solve or full 3D) so just differen
   E1=grad3D1(Phi,x,1,lx1,1,lx2,1,lx3)    !no haloing required since x1-derivative
   E1=-E1
   J1=sig0*E1
+  !print*, 'parallel fields:  ',maxval(abs(E1))
   !-------
 end if
 
