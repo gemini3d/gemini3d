@@ -202,10 +202,10 @@ if(t+dt / 2._wp >= tnext .or. t < 0) then
 
     call get_precip(date_filename(cfg%precdir,ymdtmp,UTsectmp), Qp, E0p)
 
-    if (debug) print *, 'Min/max values for Qp:  ',minval(Qp),maxval(Qp)
-    if (debug) print *, 'Min/max values for E0p:  ',minval(E0p),maxval(E0p)
-    if (debug) print*, 'array shapes:  ',shape(E0p),shape(Qp)
-    if (debug) print*, 'array vals:  ',Qp(1,1),Qp(50,1),mlonp(1),mlonp(50)
+ !   if (debug) print *, 'Min/max values for Qp:  ',minval(Qp),maxval(Qp)
+ !   if (debug) print *, 'Min/max values for E0p:  ',minval(E0p),maxval(E0p)
+ !   if (debug) print*, 'array shapes:  ',shape(E0p),shape(Qp)
+ !   if (debug) print*, 'array vals:  ',Qp(1,1),Qp(50,1),mlonp(1),mlonp(50)
 
 
     !> send a full copy of the data to all of the workers
@@ -283,7 +283,7 @@ end do
 
 
 !> debug printing
-if (debug) print*, 'subarray vals:  ',mpi_cfg%myid,mloni(1),mloni(lx2),Qinow(1,1),Qinow(lx2,1),maxval(Qinow)
+!if (debug) print*, 'subarray vals:  ',mpi_cfg%myid,mloni(1),mloni(lx2),Qinow(1,1),Qinow(lx2,1),maxval(Qinow)
 
 
 !SOME BASIC DIAGNOSTICS

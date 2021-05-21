@@ -477,20 +477,39 @@ else
   if (flagdirich==1) then
     !! Dirichlet:  needs to be the same as the physical top corner grid points
     if (gridflag/=1) then   !non-inverted so logical end is the max alt.
-      do ix1=1,lx1
-        Vminx3(ix1,:)=Vmaxx1(:,1)
-        Vmaxx3(ix1,:)=Vmaxx1(:,lx3all)
-      end do
+      if (lx2all==1) then
+        do ix1=1,lx1
+          Vminx3(ix1,:)=Vmaxx1(:,1)
+          Vmaxx3(ix1,:)=Vmaxx1(:,lx3all)
+        end do
+      else
+        do ix1=1,lx1
+          Vminx2(ix1,:)=Vmaxx1(1,:)
+          Vmaxx2(ix1,:)=Vmaxx1(lx2all,:)
+        end do
+      end if
     else                    !inverted so logical beginning is max alt.
-      do ix1=1,lx1
-        Vminx3(ix1,:)=Vminx1(:,1)
-        Vmaxx3(ix1,:)=Vminx1(:,lx3all)
-      end do
+      if (lx2all==1) then
+        do ix1=1,lx1
+          Vminx3(ix1,:)=Vminx1(:,1)
+          Vmaxx3(ix1,:)=Vminx1(:,lx3all)
+        end do
+      else
+        do ix1=1,lx1
+          Vminx2(ix1,:)=Vminx1(1,:)
+          Vmaxx2(ix1,:)=Vminx1(lx2all,:)
+        end do
+      end if
     end if
   else
     !! Neumann in x1:  sides are grounded...
-    Vminx3 = 0
-    Vmaxx3 = 0
+    if (lx2all==1) then
+      Vminx3 = 0
+      Vmaxx3 = 0
+    else
+      Vminx2=0
+      Vmaxx2=0
+    end if
   end if
 end if
 
