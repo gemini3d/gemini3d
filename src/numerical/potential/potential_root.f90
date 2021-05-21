@@ -281,10 +281,10 @@ else   !lx2 or lx3=1 so do a field-resolved 2D solve over x1,x3
 
 
 !> check boundaries
-!print*, minval(Vminx2),maxval(Vmaxx2)
-!print*, minval(Vmaxx2),maxval(Vmaxx2)
-!print*, minval(Vminx3),maxval(Vmaxx3)
-!print*, minval(Vmaxx3),maxval(Vmaxx3)
+print*, minval(Vminx2),maxval(Vminx2)
+print*, minval(Vmaxx2),maxval(Vmaxx2)
+print*, minval(Vminx3),maxval(Vminx3)
+print*, minval(Vmaxx3),maxval(Vmaxx3)
 
 
 

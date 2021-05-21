@@ -407,7 +407,7 @@ do ix3=1,lx3all
   end do
 end do
 if (lx2all/=1 .and. lx3all/=1) then
-  !! full 3D grid need to also handle lateral boundaries
+  !! full 3D grid need to also handle lateral boundaries; for 2D grids these will be set automatically later (or not used)
   do ix3=1,lx3all
     slope=(Vminx2isnext(ix3)-Vminx2isprev(ix3))/(tnext-tprev)
     Vminx2isnow(ix3)=Vminx2isprev(ix3)+slope*(t+dt/2-tprev)
@@ -482,11 +482,15 @@ else
           Vminx3(ix1,:)=Vmaxx1(:,1)
           Vmaxx3(ix1,:)=Vmaxx1(:,lx3all)
         end do
+        Vminx2=0
+        Vmaxx2=0
       else
         do ix1=1,lx1
           Vminx2(ix1,:)=Vmaxx1(1,:)
           Vmaxx2(ix1,:)=Vmaxx1(lx2all,:)
         end do
+        Vminx3=0
+        Vmaxx3=0
       end if
     else                    !inverted so logical beginning is max alt.
       if (lx2all==1) then
@@ -494,11 +498,15 @@ else
           Vminx3(ix1,:)=Vminx1(:,1)
           Vmaxx3(ix1,:)=Vminx1(:,lx3all)
         end do
+        Vminx2=0
+        Vmaxx2=0
       else
         do ix1=1,lx1
           Vminx2(ix1,:)=Vminx1(1,:)
           Vmaxx2(ix1,:)=Vminx1(lx2all,:)
         end do
+        Vminx3=0
+        Vmaxx3=0
       end if
     end if
   else
