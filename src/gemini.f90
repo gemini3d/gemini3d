@@ -397,8 +397,8 @@ main : do while (t < tdur)
   !> File output
   if (abs(t-tout) < 1d-5) then
     tout = tout + cfg%dtout
-    if (cfg%nooutput .and. mpi_cfg%myid==0) then
-      write(stderr,*) 'WARNING: skipping file output at sim time (sec)',t
+    if (cfg%nooutput ) then
+      if (mpi_cfg%myid==0) write(stderr,*) 'WARNING: skipping file output at sim time (sec)',t
       cycle main
     endif
     !! close enough to warrant an output now...
