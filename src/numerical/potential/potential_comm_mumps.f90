@@ -703,7 +703,7 @@ lx3=size(J2,3)
 !> inputs to this block of code:  cfg,x,J2,3,Vmaxx1slab,Vminx1slab,flagdirich,gridflag
 !> outputs to code:  J1 
 !NOW DEAL WITH THE PARALLEL FIELDS AND ALL CURRENTS
-if (lx2/=1 .and. cfg%potsolve ==1) then    !we did a field-integrated solve for potential
+if (lx2/=1 .and. lx3/=1 .and. cfg%potsolve ==1) then    !we did a field-integrated solve for potential
   if (debug) print*, 'Appear to need to differentiate to get J1...'
 
   !-------
