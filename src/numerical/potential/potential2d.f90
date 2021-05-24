@@ -120,7 +120,7 @@ else                       ! Dirichlet top
   end if
 end if
 
-! FIXME: need to choose coordinates x2,x3 based on the grid size
+! FIXME: need to choose coordinates x2,x3 based on the grid size, note BC's already swapped
 if (x%lx2all==1) then
   !print*, '2D, x1-x3 solve chosen'
   potential2D_fieldresolved=elliptic2D_cart(srcterm,sig0,sigP,Vminx1,Vmaxx1,Vminx3,Vmaxx3, &
