@@ -3,7 +3,6 @@ program magcalc_run
 !! for a particular simulation
 
 use exe_frontend, only : cli_parser, get_Ncpu
-use runner, only : clean_output
 use reader, only: get_simsize3
 use autogrid, only : grid_auto, max_mpi
 use, intrinsic :: iso_fortran_env, only : stderr=>error_unit, compiler_version

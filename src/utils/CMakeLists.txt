@@ -18,7 +18,7 @@ add_test(NAME unit:magcalc_exe_ok COMMAND $<TARGET_FILE:magcalc.bin>)
 set_tests_properties(unit:magcalc_exe_ok PROPERTIES
   PASS_REGULAR_EXPRESSION "EOF: magcalc.bin"
   LABELS unit
-  TIMEOUT 5)
+  TIMEOUT 10)
 
 install(TARGETS magcalc.bin
   EXPORT ${PROJECT_NAME}Targets
@@ -65,7 +65,7 @@ set_tests_properties(unit:gemini3d_run_ok PROPERTIES
   PASS_REGULAR_EXPRESSION "EOF: gemini3d.run"
   DEPENDS unit:HWLOC
   LABELS unit
-  TIMEOUT 5)
+  TIMEOUT 10)
 
 # --- magcalc.run
 
@@ -82,7 +82,7 @@ set_tests_properties(unit:magcalc_run_ok PROPERTIES
   PASS_REGULAR_EXPRESSION "EOF: magcalc.run"
   DEPENDS unit:HWLOC
   LABELS unit
-  TIMEOUT 5)
+  TIMEOUT 10)
 
 install(TARGETS gemini3d.run magcalc.run
   EXPORT ${PROJECT_NAME}Targets
