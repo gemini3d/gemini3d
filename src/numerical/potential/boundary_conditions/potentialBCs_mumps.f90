@@ -212,10 +212,17 @@ if(t + dt / 2._wp >= tnext .or. t < 0) then    !need to load a new file
     !ALL PROCESSES NEED TO DEFINE THE POINTS THAT THEY WILL BE INTERPOLATING ONTO
     if (lx2all > 1 .and. lx3all>1) then ! 3D sim
       ix2ref = lx2all/2      !note integer division
-    else
+      ix3ref = lx3all/2
+    else if (lx2all==1 .and. lx3all>1) then
       ix2ref = 1
+      ix3ref=lx3all/2
+    else if (lx2all>1 .and. lx3all==1) then
+      ix2ref=lx2all/2
+      ix3ref=1
+    else
+      error stop 'Unable to orient boundary conditions for electric potential'
     endif
-    ix3ref=lx3all/3
+
 
     !! by default the code uses 300km altitude as a reference location, using the center x2,x3 point
     ix1ref=minloc(abs(x%rall(:,ix2ref,ix3ref)-Re-300e3_wp),1)
