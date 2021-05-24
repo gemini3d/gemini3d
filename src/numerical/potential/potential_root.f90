@@ -61,6 +61,7 @@ integer :: ix1,ix2,ix3,lx1,lx2,lx2all,lx3,lx3all
 integer :: idleft,idright,iddown,idup
 
 real(wp) :: tstart,tfin
+integer :: u
 
 
 !SIZES - PERHAPS SHOULD BE TAKEN FROM GRID MODULE INSTEAD OF RECOMPUTED?
@@ -300,6 +301,13 @@ else   !lx2 or lx3=1 so do a field-resolved 2D solve over x1,x3
   else
     error stop '  potential_mumps.f90:  incorrect gridswap value!!!'
   end if
+
+  !print*, shape(Phiall)
+  !open(newunit=u,file='./Phiall.dat',action='write',access='stream')
+  !write(u) Phiall
+  !close(u)
+  !error stop 'Phiall debug output...'
+
 end if
 if (debug) print *, 'MUMPS time:  ',tfin-tstart
 !!!!!!!!!

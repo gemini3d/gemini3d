@@ -1126,11 +1126,12 @@ if (debug) print*, 'Number of Dirichlet boundaries:  ', ldirichx1,ldirichx3
 allocate(sig0h1(lx1,l2nddim),sigPh3(lx1,l2nddim))
 sig0h1(1,:)=0
 sigPh3(:,1)=0
-sig0h1(2:lx1,:)=0.5_wp*(sig0(1:lx1-1,:,1)+sig0(2:lx1,:,1))
 if (flag2) then
   sigPh3(:,2:l2nddim)=0.5_wp*(sigP(:,1:l2nddim-1,1)+sigP(:,2:l2nddim,1))
+  sig0h1(2:lx1,:)=0.5_wp*(sig0(1:lx1-1,:,1)+sig0(2:lx1,:,1))
 else
   sigPh3(:,2:l2nddim)=0.5_wp*(sigP(:,1,1:l2nddim-1)+sigP(:,1,2:l2nddim))
+  sig0h1(2:lx1,:)=0.5_wp*(sig0(1:lx1-1,1,:)+sig0(2:lx1,1,:))
 end if
 
 ! fill elements of matrix to be solved.  we use centralized assembled matrix input as described in mumps user manual section 4.5

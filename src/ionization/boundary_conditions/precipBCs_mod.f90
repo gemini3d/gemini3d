@@ -185,7 +185,7 @@ if(t+dt / 2._wp >= tnext .or. t < 0) then
         mloni(iflat)=x%phi(lx1,ix2,ix3)*180._wp/pi
       end do
     end do
-    print*, 'Sim grid extent mlon,mlat:  ',minval(mloni),maxval(mloni),minval(mlati),maxval(mlati)
+    !print*, 'Sim grid extent mlon,mlat:  ',minval(mloni),maxval(mloni),minval(mlati),maxval(mlati)
 
   end if
 
