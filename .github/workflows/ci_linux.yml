@@ -31,7 +31,7 @@ jobs:
 
 # CI is too slow for 3d_glow
     - run: cmake --preset default
-    - run: cmake --build build --parallel
+    - run: cmake --build build
 
     - run: ctest --preset default -E 3d
 
@@ -47,7 +47,7 @@ jobs:
         sudo apt update -yq
         sudo cmake -P scripts/install_prereq.cmake
 
-    - run: cmake --preset default -DCMAKE_BUILD_TYPE=Debug
-    - run: cmake --build build --parallel
+    - run: cmake --preset debug
+    - run: cmake --build build
 
     - run: ctest --preset default -R "(unit|2dew_fang)"
