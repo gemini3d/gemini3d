@@ -19,14 +19,31 @@ jobs:
     - uses: actions/checkout@v2
 
     - run: cmake -P scripts/install_prereq.cmake
-      timeout-minutes: 10
+      timeout-minutes: 15
 
 # CI is too slow for 3d_glow
-    - run: cmake --preset default
+    - name: Debug configure
+      run: cmake --preset debug
       env:
         CC: gcc-10
         CXX: g++-10
         FC: gfortran-10
 
+    - name: Debug build
       run: cmake --build build
+
+    - name: Debug test
+      run: ctest --preset default -E 3d
+
+    - name: Release configure
+      run: cmake --preset default
+      env:
+        CC: gcc-10
+        CXX: g++-10
+        FC: gfortran-10
+
+    - name: Release build
+      run: cmake --build build
+
+    - name: Release test
       run: ctest --preset default -E 3d
