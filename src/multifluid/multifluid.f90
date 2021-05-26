@@ -1,3 +1,17 @@
+! Copyright 2021 Matthew Zettergren
+
+! Licensed under the Apache License, Version 2.0 (the "License");
+! you may not use this file except in compliance with the License.
+! You may obtain a copy of the License at
+!
+!   http://www.apache.org/licenses/LICENSE-2.0
+
+! Unless required by applicable law or agreed to in writing, software
+! distributed under the License is distributed on an "AS IS" BASIS,
+! WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+! See the License for the specific language governing permissions and
+! limitations under the License.
+
 module multifluid
 
 use, intrinsic :: ieee_arithmetic, only : ieee_is_nan
@@ -454,12 +468,12 @@ select case (paramflag)
             do while(x%nullpts(ix1beg,ix2,ix3) < 0.5 .and. ix1beg<lx1)     !find the first non-null index for this field line, need to be careful if no null points exist...
               ix1beg=ix1beg+1
             end do
-  
+
             ix1end=ix1beg
             do while(x%nullpts(ix1end,ix2,ix3) > 0.5 .and. ix1end<lx1)     !find the first non-null index for this field line
               ix1end=ix1end+1
             end do
-  
+
             if (ix1beg /= lx1) then    !only do this if we actually have null grid points
               param(ix1beg,ix2,ix3,isp)=param(ix1beg+1,ix2,ix3,isp)
             end if
