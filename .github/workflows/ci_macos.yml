@@ -22,10 +22,11 @@ jobs:
       timeout-minutes: 10
 
 # CI is too slow for 3d_glow
-    - name: CDash
-      run: ctest -S ci.cmake -V -E 3d
-      timeout-minutes: 15
+    - run: cmake --preset default
       env:
         CC: gcc-10
         CXX: g++-10
         FC: gfortran-10
+
+      run: cmake --build build
+      run: ctest --preset default -E 3d
