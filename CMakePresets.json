@@ -21,6 +21,10 @@
   "cacheVariables": {"CMAKE_BUILD_TYPE": "Debug"}
 },
 {
+  "name": "multi", "inherits": "default",
+  "generator": "Ninja Multi-Config"
+},
+{
   "name": "notest", "inherits": "default",
   "displayName": "omit self-tests",
   "cacheVariables": {"BUILD_TESTING": false}
@@ -90,6 +94,16 @@
     "configurePreset": "default"
   },
   {
+    "name": "release",
+    "configurePreset": "multi",
+    "configuration": "Release"
+  },
+  {
+    "name": "debug",
+    "configurePreset": "multi",
+    "configuration": "Debug"
+  },
+  {
     "name": "intel",
     "configurePreset": "intel"
   }
@@ -106,6 +120,16 @@
     "noTestsAction": "error",
     "stopOnFailure": false
   }
+},
+{
+  "name": "release",
+  "configurePreset": "multi",
+  "configuration": "Release"
+},
+{
+  "name": "debug",
+  "configurePreset": "multi",
+  "configuration": "Debug"
 },
 {
   "name": "intel", "inherits": "default",

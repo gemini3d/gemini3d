@@ -30,24 +30,21 @@ jobs:
         sudo apt update -yq
         sudo cmake -P scripts/install_prereq.cmake
 
-    - name: Debug configure
-      run: cmake --preset debug
+    - name: Configure multi
+      run: cmake --preset multi
 
     - name: Debug build
-      run: cmake --build build
+      run: cmake --build --preset debug
 
     - name: Debug test
-      run: ctest --preset default -R "(unit|2dew_fang)"
+      run: ctest --preset debug -R "(unit|2dew_fang|2dns_fang)"
 
-
-    - name: Release configure
-      run: cmake --preset default
 
     - name: Release build
-      run: cmake --build build
+      run: cmake --build --preset release
 
     - name: Release test
-      run: ctest --preset default -E 3d
+      run: ctest --preset release -E 3d
 
 
 
@@ -68,24 +65,21 @@ jobs:
     - run: cmake -P scripts/install_prereq.cmake
       timeout-minutes: 15
 
-    - name: Debug configure
-      run: cmake --preset debug
+    - name: Configure multi
+      run: cmake --preset multi
 
     - name: Debug build
-      run: cmake --build build
+      run: cmake --build --preset debug
 
     - name: Debug test
-      run: ctest --preset default -R "(unit|2dew_fang)"
+      run: ctest --preset debug -R "(unit|2dew_fang|2dns_fang)"
 
-
-    - name: Release configure
-      run: cmake --preset default
 
     - name: Release build
-      run: cmake --build build
+      run: cmake --build --preset release
 
     - name: Release test
-      run: ctest --preset default -E 3d
+      run: ctest --preset release -E 3d
 
 
   windows_no_mpi:
@@ -113,21 +107,18 @@ jobs:
 
     - uses: actions/checkout@v2
 
-    - name: Debug configure
-      run: cmake --preset debug
+    - name: Configure multi
+      run: cmake --preset multi
 
     - name: Debug build
-      run: cmake --build build
+      run: cmake --build --preset debug
 
     - name: Debug test
-      run: ctest --preset default -R "(unit|2dew_fang)"
+      run: ctest --preset debug -R "(unit|2dew_fang|2dns_fang)"
 
-
-    - name: Release Configure
-      run: cmake --preset default
 
     - name: Release build
-      run: cmake --build build
+      run: cmake --build --preset release
 
     - name: Release test
-      run: ctest --preset default -E 3d
+      run: ctest --preset release -E 3d
