@@ -67,4 +67,5 @@ install(TARGETS gemini.bin
 
 # --- apply properties
 
-set_targ_props(calculus collision const fang fang_run ionization gbsv multifluid neutral precipBCs sources temporal timeutils)
+set_targ_props(calculus collision const fang fang_run ionization gbsv multifluid neutral precipBCs sources temporal timeutils
+gemini.bin)
