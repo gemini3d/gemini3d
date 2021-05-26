@@ -23,4 +23,4 @@ add_subdirectory(potential)
 
 add_subdirectory(coord)
 
-set_targ_props(advec calculus const diffusion grid interp meshobj meshobj_cart meshobj_dipole mumps_interface PDEelliptic PDEparabolic potential)
+set_targ_props(advec calculus const diffusion grid interp mumps_interface PDEelliptic PDEparabolic potential)
