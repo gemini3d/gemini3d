@@ -16,7 +16,7 @@ endif()
 
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS on)
-set(CMAKE_CONFIGURATION_TYPES "Release;RelWithDebInfo;Debug" CACHE STRING "Build type selections")
+set(CMAKE_CONFIGURATION_TYPES "Release;Debug" CACHE STRING "Build type selections")
 
 
 # === check that the compiler has adequate Fortran 2008 support
