@@ -114,4 +114,4 @@ install(TARGETS gemini3d.compare
   RUNTIME DESTINATION bin)
 
 
-set_targ_props(exe_frontend)
+set_targ_props(exe_frontend magcalc.bin)
