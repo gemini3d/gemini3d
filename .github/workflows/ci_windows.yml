@@ -14,7 +14,7 @@ on:
 jobs:
 
   no_mpi:
-    timeout-minutes: 15
+    timeout-minutes: 20
     runs-on: windows-latest
     defaults:
       run:
@@ -33,6 +33,21 @@ jobs:
 
     - uses: actions/checkout@v2
 
-    - run: cmake --preset default
-    - run: cmake --build build
-    - run: ctest --preset default -E 3d
+    - name: Release Configure
+      run: cmake --preset default
+
+    - name: Release build
+      run: cmake --build build
+
+    - name: Release test
+      run: ctest --preset default -E 3d
+
+
+    - name: Debug configure
+      run: cmake --preset debug
+
+    - name: Debug build
+      run: cmake --build build
+
+    - name: Debug test
+      run: ctest --preset default -E 3d
