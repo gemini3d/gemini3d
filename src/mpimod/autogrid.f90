@@ -29,9 +29,11 @@ if(lid == 1) then
 endif
 
 if (lx3all==1) then
-  !! 2D simulation in x2, SWAP x2 to x3
-  lid3 = gcd(lid, lx2all)
-  lid2 = 1
+!  !! 2D simulation in x2, SWAP x2 to x3
+!  lid3 = gcd(lid, lx2all)
+!  lid2 = 1
+  lid3 = 1
+  lid2 =  gcd(lid, lx2all)
 elseif (lx2all==1) then
   !! 2D simulation in x3
   lid3 = gcd(lid, lx3all)
