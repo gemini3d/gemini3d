@@ -1,0 +1,133 @@
+name: ci
+
+on:
+  push:
+    paths:
+      - "**.f90"
+      - "**.F90"
+      - "**.cmake"
+      - "**/CMakeLists.txt"
+      - ".github/workflows/ci.yml"
+
+jobs:
+
+  linux:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    env:
+      DEBIAN_FRONTEND: noninteractive
+      CTEST_PARALLEL_LEVEL: 2
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
+      with:
+        python-version: '3.8'
+
+    - name: Install packages
+      run: |
+        sudo apt update -yq
+        sudo cmake -P scripts/install_prereq.cmake
+
+    - name: Debug configure
+      run: cmake --preset debug
+
+    - name: Debug build
+      run: cmake --build build
+
+    - name: Debug test
+      run: ctest --preset default -R "(unit|2dew_fang)"
+
+
+    - name: Release configure
+      run: cmake --preset default
+
+    - name: Release build
+      run: cmake --build build
+
+    - name: Release test
+      run: ctest --preset default -E 3d
+
+
+
+  macos:
+    runs-on: macos-latest
+    needs: linux
+
+    env:
+      HOMEBREW_NO_INSTALL_CLEANUP: 1
+      CTEST_PARALLEL_LEVEL: 3
+      CC: gcc-11
+      CXX: g++-11
+      FC: gfortran-11
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - run: cmake -P scripts/install_prereq.cmake
+      timeout-minutes: 15
+
+    - name: Debug configure
+      run: cmake --preset debug
+
+    - name: Debug build
+      run: cmake --build build
+
+    - name: Debug test
+      run: ctest --preset default -R "(unit|2dew_fang)"
+
+
+    - name: Release configure
+      run: cmake --preset default
+
+    - name: Release build
+      run: cmake --build build
+
+    - name: Release test
+      run: ctest --preset default -E 3d
+
+
+  windows_no_mpi:
+    timeout-minutes: 20
+    runs-on: windows-latest
+    needs: linux
+
+    env:
+      CTEST_PARALLEL_LEVEL: 2
+
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+    - uses: msys2/setup-msys2@v2
+      with:
+        update: true
+        install: >-
+          git
+          mingw-w64-x86_64-cmake
+          mingw-w64-x86_64-ninja
+          mingw-w64-x86_64-gcc-fortran
+          mingw-w64-x86_64-hdf5
+          mingw-w64-x86_64-lapack
+
+    - uses: actions/checkout@v2
+
+    - name: Debug configure
+      run: cmake --preset debug
+
+    - name: Debug build
+      run: cmake --build build
+
+    - name: Debug test
+      run: ctest --preset default -R "(unit|2dew_fang)"
+
+
+    - name: Release Configure
+      run: cmake --preset default
+
+    - name: Release build
+      run: cmake --build build
+
+    - name: Release test
+      run: ctest --preset default -E 3d

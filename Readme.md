@@ -2,9 +2,7 @@
 
 [![DOI](https://zenodo.org/badge/146920930.svg)](https://zenodo.org/badge/latestdoi/146920930)
 [![CDash](./test_data/CDash.png)](https://my.cdash.org/index.php?project=Gemini3D)
-![ci_linux](https://github.com/gemini3d/gemini/workflows/ci_linux/badge.svg)
-![ci_macos](https://github.com/gemini3d/gemini/workflows/ci_macos/badge.svg)
-![ci_windows](https://github.com/gemini3d/gemini/workflows/ci_windows/badge.svg)
+![ci](https://github.com/gemini3d/gemini/workflows/ci/badge.svg)
 
 The GEMINI model (*G*eospace *E*nvironment *M*odel of *I*on-*N*eutral *I*nteractions) is a three-dimensional ionospheric fluid-electrodynamic model.
 GEMINI is used for various scientific studies including:
