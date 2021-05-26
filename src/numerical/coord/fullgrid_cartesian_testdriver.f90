@@ -6,10 +6,10 @@ use meshobj_cart, only : cartmesh
 implicit none
 
 integer, parameter :: lz=98+4,lx=128+4,ly=144+4     !+4 for ghost cells
-real(wp), parameter :: glonctr=207.7_wp,glatctr=65.8_wp
+real(wp), parameter :: glonctr=265.1678_wp,glatctr=75.6975_wp
 real(wp), dimension(2), parameter :: zlims=[6.2062e+04,9.6794e+05]
-real(wp), dimension(2), parameter :: xlims=[-1.5215e+06,1.5215e+06]
-real(wp), dimension(2), parameter :: ylims=[-2.0559e+05,2.0559e+05]
+real(wp), dimension(2), parameter :: xlims=[-3.2650e+05,3.2650e+05]
+real(wp), dimension(2), parameter :: ylims=[-4.6417e+04,4.6417e+04]
 real(wp), dimension(lz) :: z
 real(wp), dimension(lx) :: xcart
 real(wp), dimension(ly) :: y
