@@ -17,6 +17,10 @@
   }
 },
 {
+  "name": "debug", "inherits": "default",
+  "cacheVariables": {"CMAKE_BUILD_TYPE": "Debug"}
+},
+{
   "name": "notest", "inherits": "default",
   "displayName": "omit self-tests",
   "cacheVariables": {"BUILD_TESTING": false}
