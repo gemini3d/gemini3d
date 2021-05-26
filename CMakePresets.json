@@ -122,12 +122,12 @@
   }
 },
 {
-  "name": "release",
+  "name": "release", "inherits": "default",
   "configurePreset": "multi",
   "configuration": "Release"
 },
 {
-  "name": "debug",
+  "name": "debug", "inherits": "default",
   "configurePreset": "multi",
   "configuration": "Debug"
 },
