@@ -84,6 +84,10 @@ if(NOT CMAKE_TLS_VERIFY)
   message(STATUS "CMake HTTPS TLS verification OFF per user request.")
 endif()
 
+# this is a default so if someone makes a new module, they aren't confused by compiler errors.
+# normally to keep things clean we'd use my `set_targ_props(newtarg)`
+set(CMAKE_Fortran_MODULE_DIRECTORY ${PROJECT_BINARY_DIR}/include)
+
 if(dev)
   set(FETCHCONTENT_SOURCE_DIR_PYGEMINI ${PROJECT_SOURCE_DIR}/../pygemini CACHE PATH "PyGemini developer path")
   set(FETCHCONTENT_SOURCE_DIR_MATGEMINI ${PROJECT_SOURCE_DIR}/../mat_gemini CACHE PATH "MatGemini developer path")
