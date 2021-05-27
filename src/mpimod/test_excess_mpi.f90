@@ -26,7 +26,7 @@ rx3 = [1,2,4,5,8,10,20,40]
 N   = [1,2,4,5,8,10,20,40]
 do i = 1,size(N)
   if (.not. checker(N(i), lx2all=1, lx3all=40, rx2=rx2(i), rx3=rx3(i))) all_ok = .false.
-  if (.not. checker(N(i), lx2all=40, lx3all=1, rx2=rx2(i), rx3=rx3(i))) all_ok = .false.
+  if (.not. checker(N(i), lx2all=40, lx3all=1, rx2=rx3(i), rx3=rx2(i))) all_ok = .false.
 enddo
 
 !> 3D
