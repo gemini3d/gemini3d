@@ -43,98 +43,34 @@ integer :: u
 open(newunit=u,file=filenamefull,status='replace',form='unformatted',access='stream',action='write')    !has no problem with > 2GB output files
 write(u) real(ymd,wp),UTsec/3600._wp    !no matter what we must output date and time
 
-if (flagswap/=1) then
-  select case (flagoutput)
-    case (2)    !output ISR-like average parameters
-      write(u) &
-        neall(1:lx1,1:lx2all,1:lx3all), &
-        v1avgall(1:lx1,1:lx2all,1:lx3all), &    !output of ISR-like parameters (ne,Ti,Te,v1,etc.)
-        Tavgall(1:lx1,1:lx2all,1:lx3all),&
-        Teall(1:lx1,1:lx2all,1:lx3all),&
-        J1all(1:lx1,1:lx2all,1:lx3all), &
-        J2all(1:lx1,1:lx2all,1:lx3all), &
-        J3all(1:lx1,1:lx2all,1:lx3all),&
-        v2avgall(1:lx1,1:lx2all,1:lx3all),&
-        v3avgall(1:lx1,1:lx2all,1:lx3all)
-    case (3)     !just electron density
-      print *, '!!!NOTE:  Input file has selected electron density only output, make sure this is what you really want!'
-      write(u) neall(1:lx1,1:lx2all,1:lx3all)
-    case default    !output everything
-      print *, '!!!NOTE:  Input file has selected full output, large files may result!'
-      write(u) &
-        nsall(1:lx1,1:lx2all,1:lx3all,:),&
-        vs1all(1:lx1,1:lx2all,1:lx3all,:), &    !this is full output of all parameters in 3D
-        Tsall(1:lx1,1:lx2all,1:lx3all,:),&
-        J1all(1:lx1,1:lx2all,1:lx3all),&
-        J2all(1:lx1,1:lx2all,1:lx3all), &
-        J3all(1:lx1,1:lx2all,1:lx3all),&
-        v2avgall(1:lx1,1:lx2all,1:lx3all),&
-        v3avgall(1:lx1,1:lx2all,1:lx3all)
-    end select
-else
-!! 2D simulation for which arrays were permuted
-  print *, '!!!NOTE:  Permuting arrays prior to output...'
-  select case (flagoutput)
-    case (2)    !averaged parameters
-      allocate(permarray(lx1,lx3all,lx2all))    !temporary work array that has been permuted
-      permarray=reshape(neall,[lx1,lx3all,lx2all],order=[1,3,2])
-      write(u) permarray
-      permarray=reshape(v1avgall,[lx1,lx3all,lx2all],order=[1,3,2])
-      write(u) permarray
-      permarray=reshape(Tavgall,[lx1,lx3all,lx2all],order=[1,3,2])
-      write(u) permarray
-      permarray=reshape(Teall,[lx1,lx3all,lx2all],order=[1,3,2])
-      write(u) permarray
-      permarray=reshape(J1all,[lx1,lx3all,lx2all],order=[1,3,2])
-      write(u) permarray
-      permarray=reshape(J3all,[lx1,lx3all,lx2all],order=[1,3,2])    !Note that components need to be swapped too
-      write(u) permarray
-      permarray=reshape(J2all,[lx1,lx3all,lx2all],order=[1,3,2])
-      write(u) permarray
-      permarray=reshape(v3avgall,[lx1,lx3all,lx2all],order=[1,3,2])    !Note swapping of components
-      write(u) permarray
-      permarray=reshape(v2avgall,[lx1,lx3all,lx2all],order=[1,3,2])
-      write(u) permarray
-      deallocate(permarray)
-    case (3)     !electron density only output
-      print *, '!!!NOTE:  Input file has selected electron density only output, make sure this is what you really want!'
-      allocate(permarray(lx1,lx3all,lx2all))    !temporary work array that has been permuted
-      permarray=reshape(neall,[lx1,lx3all,lx2all],order=[1,3,2])
-      write(u) permarray
-      deallocate(permarray)
-    case default
-      print *, '!!!NOTE:  Input file has selected full output, large files may result!'
-      allocate(permarray(lx1,lx3all,lx2all))    !temporary work array that has been permuted
-      allocate(tmparray(lx1,lx2all,lx3all))
-      do isp=1,lsp
-        tmparray=nsall(1:lx1,1:lx2all,1:lx3all,isp)
-        permarray=reshape(tmparray,[lx1,lx3all,lx2all],order=[1,3,2])
-        write(u) permarray
-      end do
-      do isp=1,lsp
-        tmparray=vs1all(1:lx1,1:lx2all,1:lx3all,isp)
-        permarray=reshape(tmparray,[lx1,lx3all,lx2all],order=[1,3,2])
-        write(u) permarray
-      end do
-      do isp=1,lsp
-        tmparray=Tsall(1:lx1,1:lx2all,1:lx3all,isp)
-        permarray=reshape(tmparray,[lx1,lx3all,lx2all],order=[1,3,2])
-        write(u) permarray
-      end do
-      permarray=reshape(J1all,[lx1,lx3all,lx2all],order=[1,3,2])
-      write(u) permarray
-      permarray=reshape(J3all,[lx1,lx3all,lx2all],order=[1,3,2])    !Note that components need to be swapped too
-      write(u) permarray
-      permarray=reshape(J2all,[lx1,lx3all,lx2all],order=[1,3,2])
-      write(u) permarray
-      permarray=reshape(v3avgall,[lx1,lx3all,lx2all],order=[1,3,2])    !Note swapping of components
-      write(u) permarray
-      permarray=reshape(v2avgall,[lx1,lx3all,lx2all],order=[1,3,2])
-      write(u) permarray
-      deallocate(permarray)
-      deallocate(tmparray)
-  end select
-end if
+select case (flagoutput)
+  case (2)    !output ISR-like average parameters
+    write(u) &
+      neall(1:lx1,1:lx2all,1:lx3all), &
+      v1avgall(1:lx1,1:lx2all,1:lx3all), &    !output of ISR-like parameters (ne,Ti,Te,v1,etc.)
+      Tavgall(1:lx1,1:lx2all,1:lx3all),&
+      Teall(1:lx1,1:lx2all,1:lx3all),&
+      J1all(1:lx1,1:lx2all,1:lx3all), &
+      J2all(1:lx1,1:lx2all,1:lx3all), &
+      J3all(1:lx1,1:lx2all,1:lx3all),&
+      v2avgall(1:lx1,1:lx2all,1:lx3all),&
+      v3avgall(1:lx1,1:lx2all,1:lx3all)
+  case (3)     !just electron density
+    print *, '!!!NOTE:  Input file has selected electron density only output, make sure this is what you really want!'
+    write(u) neall(1:lx1,1:lx2all,1:lx3all)
+  case default    !output everything
+    print *, '!!!NOTE:  Input file has selected full output, large files may result!'
+    write(u) &
+      nsall(1:lx1,1:lx2all,1:lx3all,:),&
+      vs1all(1:lx1,1:lx2all,1:lx3all,:), &    !this is full output of all parameters in 3D
+      Tsall(1:lx1,1:lx2all,1:lx3all,:),&
+      J1all(1:lx1,1:lx2all,1:lx3all),&
+      J2all(1:lx1,1:lx2all,1:lx3all), &
+      J3all(1:lx1,1:lx2all,1:lx3all),&
+      v2avgall(1:lx1,1:lx2all,1:lx3all),&
+      v3avgall(1:lx1,1:lx2all,1:lx3all)
+end select
+
 if (gridflag==1) then
   print *, 'Writing topside boundary conditions for inverted-type grid...'
   write(u)  Phiall(1,:,:)

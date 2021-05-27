@@ -143,7 +143,7 @@ subroutine set_subgrid_size()
   end if
 
   ! FIXME: right now just force this to zero so later swap-specific code does not get triggered (eventually needs to be removed)
-  flagswap=0
+  !flagswap=0
 
   if(lx2all > 1 .and. lx3all > 1) then
     if(lx2 == 1 .or. lx3 == 1) error stop "read_grid_root: 3D grids cannot be partitioned with a single MPI image on an axis"
