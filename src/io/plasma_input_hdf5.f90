@@ -126,7 +126,7 @@ if (flagswap==1) then
   !! permute the dimensions so that 2D runs are parallelized
   if (hf%exist('/Phiall')) then
     if (hf%ndims('/Phiall') == 1) then
-      print *, size(phislab)
+      print *, size(Phislab)
       allocate(tmpPhi(lx3all))
       call hf%read('/Phiall',tmpPhi)
       if (size(Phislab, 1) /= 1) then
@@ -135,7 +135,7 @@ if (flagswap==1) then
       endif
       Phislab(1, :) = tmpPhi
     else
-      print *,size(phislab)
+      print *,size(Phislab)
       allocate(tmpPhi2(lx3all, lx2all))
       call hf%read('/Phiall',tmpPhi2)
       Phislab = reshape(tmpPhi2,[lx2all,lx3all], order=[2,1])
@@ -151,13 +151,22 @@ else
   call hf%read('/Tsall', Tsall(1:lx1,1:lx2all,1:lx3all,1:lsp))
   if (hf%exist('/Phiall')) then
     if (hf%ndims('/Phiall') == 1) then
-      allocate(tmpPhi(lx3all))
+      if (lx2all==1) then
+        allocate(tmpPhi(lx3all))
+      else
+        allocate(tmpPhi(lx2all))
+      end if
       call hf%read('/Phiall', tmpPhi)
-      if (size(Phislab, 1) /= 1) then
-        write(stderr,*) 'Phislab shape',shape(Phislab)
-        error stop 'Phislab x2 /= 1'
-      endif
-      Phislab(1,:) = tmpPhi
+      ! FIXME: MH please delete if you are okay with this
+      !if (size(Phislab, 1) /= 1) then
+      !  write(stderr,*) 'Phislab shape',shape(Phislab)
+      !  error stop 'Phislab x2 /= 1'
+      !endif
+      if (lx2all==1) then
+        Phislab(1,:) = tmpPhi
+      else
+        Phislab(:,1)=tmpPhi
+      end if
     else
       call hf%read('/Phiall', Phislab)
     endif

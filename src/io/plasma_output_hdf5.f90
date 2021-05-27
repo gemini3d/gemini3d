@@ -122,6 +122,7 @@ else
       call hout%write('v3avgall', permarray)
   end select
 end if
+
 if (gridflag==1) then
   print *, 'Writing topside boundary conditions for inverted-type grid...'
   if (flagswap/=1) then
