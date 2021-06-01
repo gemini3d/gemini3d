@@ -1,5 +1,6 @@
 program fullgrid_dipole_testdriver_root
 
+use, intrinsic :: iso_fortran_env, only : int64
 use phys_consts, only: wp
 use meshobj_dipole, only : dipolemesh
 
@@ -16,24 +17,36 @@ real(wp), dimension(2), parameter :: qlims=[-0.5340405,0.5340405]
 real(wp), dimension(2), parameter :: plims=[1.2509838,1.4372374]
 real(wp), dimension(2), parameter :: philims=[3.6126509,3.7240195]
 integer :: iq,ip,iphi
+integer :: ierr
 real(wp) :: minchkvar,maxchkvar
 real(wp), dimension(1:lq-4,1:lp-4,1:lphi-4) :: proj
+integer(int64) :: mem_bytes, Bel
 
 character(:), allocatable :: path
 
 real(wp), allocatable, dimension(:,:,:) :: tmp, tmpghost1, tmpghost2, tmpghost3, tmpghostall
 
-allocate(tmp(lq-4,2*(lp-4),2*(lphi-4)))
-allocate(tmpghost1(lq-4+1,2*(lp-4),2*(lphi-4)))
-allocate(tmpghost2(lq-4,2*(lp-4)+1,2*(lphi-4)))
-allocate(tmpghost3(lq-4,2*(lp-4),2*(lphi-4)+1))
-allocate(tmpghostall(-1:(lq-4)+2,-1:2*(lp-4)+2,-1:2*(lphi-4)+2))
+allocate(tmp(lq-4,2*(lp-4),2*(lphi-4)), &
+tmpghost1(lq-4+1,2*(lp-4),2*(lphi-4)), &
+tmpghost2(lq-4,2*(lp-4)+1,2*(lphi-4)), &
+tmpghost3(lq-4,2*(lp-4),2*(lphi-4)+1), &
+tmpghostall(-1:(lq-4)+2,-1:2*(lp-4)+2,-1:2*(lphi-4)+2), &
+stat=ierr)
+
+if(ierr /= 0) error stop "failed to allocate memory. May need to try a smaller test grid"
+
 tmp = 0
 tmpghost1 = 0
 tmpghost2 = 0
 tmpghost3 = 0
 tmpghostall = 0
 
+!> estimate memory used
+Bel = storage_size(q, kind=int64) / 8
+
+mem_bytes = Bel * 2 * (6 * size(tmp, kind=int64) + 3 * size(tmpghostall, kind=int64) +  &
+  3 * size(tmpghost1, kind=int64) + 3 * size(tmpghost2, kind=int64) + 3 * size(tmpghost3, kind=int64))
+print *, "estimated memory used (Megabytes): ", mem_bytes / 1000000
 ! define a grid, in reality this would be pulled in from a file
 q=[(qlims(1) + (qlims(2)-qlims(1))/(lq-1)*(iq-1),iq=1,lq)]
 p=[(plims(1) + (plims(2)-plims(1))/(lp-1)*(ip-1),ip=1,lp)]
