@@ -3,7 +3,7 @@ program grid_testdriver
 use phys_consts, only: wp
 use meshobj_dipole, only : dipolemesh
 
-implicit none
+implicit none (type, external)
 
 integer, parameter :: lq=1024,lp=1024
 real(wp), dimension(lq) :: q

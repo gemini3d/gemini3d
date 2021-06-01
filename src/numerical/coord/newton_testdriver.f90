@@ -3,7 +3,7 @@ program newton_testdriver
 use phys_consts, only: wp
 use meshobj_dipole, only : qp2rtheta
 
-implicit none
+implicit none (type, external)
 
 real(wp),dimension(1) :: q,p,phi
 real(wp) :: r=0,theta=0

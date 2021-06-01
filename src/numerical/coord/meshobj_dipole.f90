@@ -31,8 +31,8 @@ type, extends(curvmesh) :: dipolemesh
   contains
     !> Specific methods
     procedure :: calc_rtheta_2D, calc_qp_2D
- 
-    !> Bind deferred procedures 
+
+    !> Bind deferred procedures
     procedure :: init=>init_dipolemesh
     procedure :: make=>make_dipolemesh
     procedure :: calc_er=>calc_er_spher
@@ -47,7 +47,7 @@ type, extends(curvmesh) :: dipolemesh
     procedure, nopass :: calc_h1=>calc_hq
     procedure, nopass :: calc_h2=>calc_hp
     procedure, nopass :: calc_h3=>calc_hphi_dip
-    
+
     !> type deallocations, etc.
     final :: destructor
 end type dipolemesh
@@ -55,7 +55,7 @@ end type dipolemesh
 
 !> declarations and interfaces for submodule functions, apparently these need to be generic interfaces.  These are generally
 !   routines that do not directly deal with the derived type data arrays but instead perform very basic calculations
-!   related to specifically dipole coordinate transformations.  
+!   related to specifically dipole coordinate transformations.
 interface    ! dipole_fns.f90
   module subroutine qp2rtheta(q,p,r,theta)
     real(wp), intent(in) :: q,p
@@ -65,7 +65,7 @@ interface    ! dipole_fns.f90
     real(wp), intent(in) :: r,theta
     real(wp), intent(out) :: q,p
   end subroutine rtheta2qp
-  elemental module function qr2theta(q,r) result(theta)
+  module elemental function qr2theta(q,r) result(theta)
     real(wp), intent(in) :: q,r
     real(wp) :: theta
   end function qr2theta
@@ -103,14 +103,14 @@ subroutine init_dipolemesh(self)
   self%hqpi=>self%h1x2i; self%hppi=>self%h2x2i; self%hphipi=>self%h3x2i
   self%hqphii=>self%h1x3i; self%hpphii=>self%h2x3i; self%hphiphii=>self%h3x3i
   self%eq=>self%e1; self%ep=>self%e2; self%ephidip=>self%e3
-  self%gq=>self%g1; self%gp=>self%g2; self%gphi=>self%g3 
+  self%gq=>self%g1; self%gp=>self%g2; self%gphi=>self%g3
 end subroutine init_dipolemesh
 
 
 !> create a dipole mesh structure out of given q,p,phi spacings.  We assume here that the input cell center locations
 !   are provide with ghost cells included (note input array indexing in dummy variable declarations.  For new we assume
-!   that the fortran code will precompute and store the "full" grid information to save time (but this uses more memory).  
-subroutine make_dipolemesh(self) 
+!   that the fortran code will precompute and store the "full" grid information to save time (but this uses more memory).
+subroutine make_dipolemesh(self)
   class(dipolemesh), intent(inout) :: self
 
   integer :: lqg,lpg,lphig,lq,lp,lphi
@@ -120,14 +120,14 @@ subroutine make_dipolemesh(self)
   real(wp), dimension(:,:,:), pointer :: rpint,thetapint,phipint
 
   ! check that pointers are correctly associated, which implies that all space has been allocated :)
-  if (.not. associated(self%q)) error stop  & 
+  if (.not. associated(self%q)) error stop  &
              ' pointers to grid coordiante arrays must be associated prior calling make_dipolemesh()'
 
   ! size of arrays, including ghost cells
   lqg=size(self%q,1); lpg=size(self%p,1); lphig=size(self%phidip,1)
   allocate(r(-1:lqg-2,-1:lpg-2,-1:lphig-2),theta(-1:lqg-2,-1:lpg-2,-1:lphig-2))
   allocate(phispher(-1:lqg-2,-1:lpg-2,-1:lphig-2))
-  
+
 ! array sizes without ghost cells for convenience
   print*, ' make_dipolemesh:  allocating space for grid of size:  ',lqg,lpg,lphig
   lq=lqg-4; lp=lpg-4; lphi=lphig-4;
@@ -172,7 +172,7 @@ subroutine make_dipolemesh(self)
 
   ! compute the geographic coordinates
   print*, ' make_dipolemesh:  geographic coordinates from magnetic...'
-  call self%calc_geographic() 
+  call self%calc_geographic()
 
   ! q cell interface metric factors
   print*, ' make_dipolemesh:  metric factors for cell q-interfaces...'
@@ -201,19 +201,19 @@ subroutine make_dipolemesh(self)
   deallocate(rqint,thetaqint,rpint,thetapint)
 
   ! spherical ECEF unit vectors (expressed in a Cartesian ECEF basis)
-  print*, ' make_dipolemesh:  spherical ECEF unit vectors...'  
+  print*, ' make_dipolemesh:  spherical ECEF unit vectors...'
   call self%calc_er()
   call self%calc_etheta()
   call self%calc_ephi()
 
   ! dipole coordinate system unit vectors (Cart. ECEF)
-  print*, ' make_dipolemesh:  dipole unit vectors...'  
+  print*, ' make_dipolemesh:  dipole unit vectors...'
   call self%calc_e1()
   call self%calc_e2()
   call self%calc_e3()
 
   ! magnetic field magnitude
-  print*, ' make_dipolemesh:  magnetic fields...'    
+  print*, ' make_dipolemesh:  magnetic fields...'
   call self%calc_Bmag()
 
   ! gravity components
@@ -230,7 +230,7 @@ subroutine make_dipolemesh(self)
   call self%calc_gridflag()        ! compute and store grid type
 
   ! inclination angle for each field line; awkwardly this must go after gridflag is set...
-  print*, ' make_dipolemesh:  inclination angle...'  
+  print*, ' make_dipolemesh:  inclination angle...'
   call self%calc_inclination()
 end subroutine make_dipolemesh
 
@@ -239,9 +239,9 @@ end subroutine make_dipolemesh
 subroutine calc_grav_dipole(self)
   class(dipolemesh), intent(inout) :: self
   real(wp), dimension(1:self%lx1,1:self%lx2,1:self%lx3) :: gr
- 
+
   ! fixme: error checking?
- 
+
   gr=-Gconst*Me/self%r**2     ! radial component of gravity
   self%gq=gr*sum(self%er*self%eq,dim=4)
   self%gp=gr*sum(self%er*self%ep,dim=4)
@@ -280,7 +280,7 @@ subroutine calc_inclination_dipole(self)
 end subroutine calc_inclination_dipole
 
 
-!> compute metric factors for q 
+!> compute metric factors for q
 function calc_hq(coord1,coord2,coord3) result(hval)
   real(wp), dimension(:,:,:), pointer, intent(in) :: coord1,coord2,coord3
   real(wp), dimension(lbound(coord1,1):ubound(coord1,1),lbound(coord1,2):ubound(coord1,2), &
@@ -354,7 +354,7 @@ end subroutine calc_ephi_spher
 !> unit vector in the q direction
 subroutine calc_eq(self)
   class(dipolemesh), intent(inout) :: self
-  real(wp), dimension(1:self%lx1,1:self%lx2,1:self%lx3) :: denom  
+  real(wp), dimension(1:self%lx1,1:self%lx2,1:self%lx3) :: denom
 
   ! fixme: error checking
 
@@ -368,7 +368,7 @@ end subroutine calc_eq
 !> unit vector in the p direction
 subroutine calc_ep(self)
   class(dipolemesh), intent(inout) :: self
-  real(wp), dimension(1:self%lx1,1:self%lx2,1:self%lx3) :: denom  
+  real(wp), dimension(1:self%lx1,1:self%lx2,1:self%lx3) :: denom
 
   ! fixme: error checking
 
@@ -391,7 +391,7 @@ end subroutine calc_ephi_dip
 
 !> convert a 1D arrays of q,p (assumed to define a 2D grid) into r,theta on a 2D mesh
 !   this should be agnostic to the array start index; here just remap as 1:size(array,1), etc.
-!   though the dummy argument declarations.  This is necessary due to the way that 
+!   though the dummy argument declarations.  This is necessary due to the way that
 subroutine calc_rtheta_2D(self,q,p,r,theta)
   class(dipolemesh) :: self
   real(wp), dimension(:), intent(in) :: q
@@ -418,7 +418,7 @@ subroutine calc_qp_2D(self,r,theta,q,p)
 
   integer :: i1,i2,ldim1,ldim2
 
-  ldim1=size(r,1); ldim2=size(r,2);  
+  ldim1=size(r,1); ldim2=size(r,2);
 
   do i1=1,ldim1
     do i2=1,ldim2
@@ -437,4 +437,3 @@ subroutine destructor(self)
 end subroutine destructor
 
 end module meshobj_dipole
-
