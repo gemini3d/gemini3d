@@ -43,7 +43,7 @@ target_link_libraries(fullgrid_dipole_testdriver_root PRIVATE const meshobj mesh
 
 foreach(t newton_testdriver geomag2geog_testdriver grid_testdriver fullgrid_dipole_testdriver fullgrid_cartesian_testdriver fullgrid_dipole_testdriver_root)
 
-  add_test(NAME ${t} COMMAND $<TARGET_FILE:${t}>)
+  add_test(NAME "unit:${t}" COMMAND $<TARGET_FILE:${t}>)
 
   set_tests_properties(${t} PROPERTIES
     TIMEOUT 10
