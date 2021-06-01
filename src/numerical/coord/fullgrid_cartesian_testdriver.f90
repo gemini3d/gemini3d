@@ -3,7 +3,7 @@ program fullgrid_cartesian_testdriver
 use phys_consts, only: wp
 use meshobj_cart, only : cartmesh
 
-implicit none
+implicit none (type, external)
 
 integer, parameter :: lz=98+4,lx=128+4,ly=144+4     !+4 for ghost cells
 real(wp), parameter :: glonctr=207.7_wp,glatctr=65.8_wp

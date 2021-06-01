@@ -3,7 +3,7 @@ program fullgrid_dipole_testdriver
 use phys_consts, only: wp
 use meshobj_dipole, only : dipolemesh
 
-implicit none
+implicit none (type, external)
 
 integer, parameter :: lq=384+4,lp=96+4,lphi=64+4
 real(wp), dimension(lq) :: q

@@ -3,7 +3,7 @@ program fullgrid_dipole_testdriver_root
 use phys_consts, only: wp
 use meshobj_dipole, only : dipolemesh
 
-implicit none
+implicit none (type, external)
 
 integer, parameter :: lq=384+4,lp=96+4,lphi=64+4
 real(wp), dimension(lq) :: q
@@ -18,13 +18,21 @@ real(wp), dimension(2), parameter :: philims=[3.6126509,3.7240195]
 integer :: iq,ip,iphi
 real(wp) :: minchkvar,maxchkvar
 real(wp), dimension(1:lq-4,1:lp-4,1:lphi-4) :: proj
-character(:), allocatable :: path    !use auto-allocation feature
-real(wp), dimension(lq-4,2*(lp-4),2*(lphi-4)) :: tmp=0._wp
-real(wp), dimension(lq-4+1,2*(lp-4),2*(lphi-4)) :: tmpghost1=0._wp
-real(wp), dimension(lq-4,2*(lp-4)+1,2*(lphi-4)) :: tmpghost2=0._wp
-real(wp), dimension(lq-4,2*(lp-4),2*(lphi-4)+1) :: tmpghost3=0._wp
-real(wp), dimension(-1:(lq-4)+2,-1:2*(lp-4)+2,-1:2*(lphi-4)+2) :: tmpghostall=0._wp
 
+character(:), allocatable :: path
+
+real(wp), allocatable, dimension(:,:,:) :: tmp, tmpghost1, tmpghost2, tmpghost3, tmpghostall
+
+allocate(tmp(lq-4,2*(lp-4),2*(lphi-4)))
+allocate(tmpghost1(lq-4+1,2*(lp-4),2*(lphi-4)))
+allocate(tmpghost2(lq-4,2*(lp-4)+1,2*(lphi-4)))
+allocate(tmpghost3(lq-4,2*(lp-4),2*(lphi-4)+1))
+allocate(tmpghostall(-1:(lq-4)+2,-1:2*(lp-4)+2,-1:2*(lphi-4)+2))
+tmp = 0
+tmpghost1 = 0
+tmpghost2 = 0
+tmpghost3 = 0
+tmpghostall = 0
 
 ! define a grid, in reality this would be pulled in from a file
 q=[(qlims(1) + (qlims(2)-qlims(1))/(lq-1)*(iq-1),iq=1,lq)]
@@ -41,7 +49,6 @@ phiall=[(philims(1) + (philims(2)-philims(1))/(lphi-1)*(iphi-1),iphi=1,2*(lphi-4
 !!do while (.true.)
 block
 type(dipolemesh) :: x
-
 
 !!!! grid setup and init
 ! grid spec.
