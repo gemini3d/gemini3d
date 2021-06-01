@@ -6,17 +6,17 @@ implicit none (type, external)
 private
 public :: mkdir, copyfile, expanduser, home, get_suffix, &
   filesep_windows, filesep_unix, &
-  assert_directory_exists, assert_file_exists,&
+  directory_exists, assert_directory_exists, assert_file_exists,&
   make_absolute, is_absolute, get_filename, parent, file_name
 
 interface  ! pathlib_{unix,windows}.f90
-module integer function copyfile(source, dest) result(istat)
+module subroutine copyfile(source, dest)
 character(*), intent(in) :: source, dest
-end function copyfile
+end subroutine copyfile
 
-module integer function mkdir(path) result(istat)
+module subroutine mkdir(path)
 character(*), intent(in) :: path
-end function mkdir
+end subroutine mkdir
 
 module logical function is_absolute(path)
 character(*), intent(in) :: path

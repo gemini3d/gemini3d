@@ -57,7 +57,7 @@ if(get_filename('./test-pathlib', 'test-pathlib') /= './test-pathlib.nc') error 
 
 call unlink('test-pathlib.nc')
 
-i = mkdir('temp1/temp2')
+call mkdir('temp1/temp2')
 call unlink('temp1/temp2/test-pathlib.h5')
 fn = get_filename('temp1/temp2', 'test-pathlib')
 if (fn /= '') error stop 'non-exist dir'

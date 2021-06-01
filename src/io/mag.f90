@@ -40,9 +40,9 @@ module procedure create_outdir_mag
 integer :: ierr
 
 !NOTE HERE THAT WE INTERPRET OUTDIR AS THE BASE DIRECTORY CONTAINING SIMULATION OUTPUT
-ierr = mkdir(outdir//'/magfields/')
-! ierr = mkdir(outdir//'/magfields/input/')
-! ierr = copyfile(fieldpointfile, outdir//'/magfields/input/magfieldpoints.dat')
+call mkdir(outdir//'/magfields/')
+! call mkdir(outdir//'/magfields/input/')
+! call copyfile(fieldpointfile, outdir//'/magfields/input/magfieldpoints.dat')
 
 end procedure create_outdir_mag
 
