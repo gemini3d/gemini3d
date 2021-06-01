@@ -15,24 +15,26 @@ end procedure is_absolute
 
 module procedure copyfile
 
-integer :: icstat
+integer :: i, j
 !! https://linux.die.net/man/1/cp
 character(*), parameter ::  CMD='cp -rf '
 
-call execute_command_line(CMD // source // ' ' // dest, exitstat=istat, cmdstat=icstat)
-if (istat == 0 .and. icstat /= 0) istat = icstat
+call execute_command_line(CMD // source // ' ' // dest, exitstat=i, cmdstat=j)
+if (i /= 0 .or. j /= 0) error stop "could not copy " // source // " => " // dest
 
 end procedure copyfile
 
 
 module procedure mkdir
 !! create a directory, with parents if needed
-integer :: icstat
+integer :: i, j
 
 character(*), parameter ::  CMD='mkdir -p '
 
-call execute_command_line(CMD // path, exitstat=istat, cmdstat=icstat)
-if (istat == 0 .and. icstat /= 0) istat = icstat
+if(directory_exists(path)) return
+
+call execute_command_line(CMD // path, exitstat=i, cmdstat=j)
+if (i /= 0 .or. j /= 0) error stop "could not create directory " // path
 
 end procedure mkdir
 

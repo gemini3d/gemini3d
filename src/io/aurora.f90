@@ -58,10 +58,9 @@ end subroutine output_aur_root
 module procedure create_outdir_aur
 !subroutine create_outdir_aur(outdir)
 !! CREATES OUTPUT DIRECTORY FOR Auroral CALCULATIONS
-integer :: ierr
 
 !NOTE HERE THAT WE INTERPRET OUTDIR AS THE BASE DIRECTORY CONTAINING SIMULATION OUTPUT
-ierr = mkdir(outdir//'/aurmaps/')
+call mkdir(outdir//'/aurmaps/')
 
 end procedure create_outdir_aur
 

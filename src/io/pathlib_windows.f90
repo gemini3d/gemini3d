@@ -23,24 +23,26 @@ end procedure is_absolute
 
 module procedure copyfile
 
-integer :: icstat
+integer :: i,j
 !! https://docs.microsoft.com/en-us/windows-server/administration/windows-commands/copy
 character(*), parameter :: CMD='copy /y '
 
-call execute_command_line(CMD // filesep_windows(source) // ' ' // filesep_windows(dest), exitstat=istat, cmdstat=icstat)
-if (istat == 0 .and. icstat /= 0) istat = icstat
+call execute_command_line(CMD // filesep_windows(source) // ' ' // filesep_windows(dest), exitstat=i, cmdstat=j)
+if (i /= 0 .or. j /= 0) error stop "could not copy " // source // " => " // dest
 
 end procedure copyfile
 
 
 module procedure mkdir
 !! create a directory, with parents if needed
-integer :: icstat
+integer :: i,j
 !! https://docs.microsoft.com/en-us/windows-server/administration/windows-commands/md
 character(*), parameter :: CMD='mkdir '
 
-call execute_command_line(CMD // filesep_windows(path), exitstat=istat, cmdstat=icstat)
-if (istat == 0 .and. icstat /= 0) istat = icstat
+if(directory_exists(path)) return
+
+call execute_command_line(CMD // filesep_windows(path), exitstat=i, cmdstat=j)
+if (i /= 0 .or. j /= 0) error stop "could not create directory " // path
 
 end procedure mkdir
 
