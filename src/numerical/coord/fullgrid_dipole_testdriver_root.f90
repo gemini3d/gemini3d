@@ -17,14 +17,22 @@ real(wp), dimension(2), parameter :: qlims=[-0.5340405,0.5340405]
 real(wp), dimension(2), parameter :: plims=[1.2509838,1.4372374]
 real(wp), dimension(2), parameter :: philims=[3.6126509,3.7240195]
 integer :: iq,ip,iphi
-integer :: ierr
+integer :: ierr, i, N
 real(wp) :: minchkvar,maxchkvar
 real(wp), dimension(1:lq-4,1:lp-4,1:lphi-4) :: proj
 integer(int64) :: mem_bytes, Bel
 
 character(:), allocatable :: path
+character(10) :: argv
 
 real(wp), allocatable, dimension(:,:,:) :: tmp, tmpghost1, tmpghost2, tmpghost3, tmpghostall
+
+!> estimate memory used
+Bel = storage_size(q, kind=int64) / 8
+
+mem_bytes = Bel * 2 * (6 * size(tmp, kind=int64) + 3 * size(tmpghostall, kind=int64) +  &
+  3 * size(tmpghost1, kind=int64) + 3 * size(tmpghost2, kind=int64) + 3 * size(tmpghost3, kind=int64))
+print *, "estimated memory used (Megabytes): ", mem_bytes / 1000000
 
 allocate(tmp(lq-4,2*(lp-4),2*(lphi-4)), &
 tmpghost1(lq-4+1,2*(lp-4),2*(lphi-4)), &
@@ -41,12 +49,13 @@ tmpghost2 = 0
 tmpghost3 = 0
 tmpghostall = 0
 
-!> estimate memory used
-Bel = storage_size(q, kind=int64) / 8
+N = 1
+if(command_argument_count() >= 1) then
+  call get_command_argument(1, argv, status=i)
+  if (i/=0) error stop "first argument is number of loops"
+  read(argv,'(I4)') N
+endif
 
-mem_bytes = Bel * 2 * (6 * size(tmp, kind=int64) + 3 * size(tmpghostall, kind=int64) +  &
-  3 * size(tmpghost1, kind=int64) + 3 * size(tmpghost2, kind=int64) + 3 * size(tmpghost3, kind=int64))
-print *, "estimated memory used (Megabytes): ", mem_bytes / 1000000
 ! define a grid, in reality this would be pulled in from a file
 q=[(qlims(1) + (qlims(2)-qlims(1))/(lq-1)*(iq-1),iq=1,lq)]
 p=[(plims(1) + (plims(2)-plims(1))/(lp-1)*(ip-1),ip=1,lp)]
@@ -59,7 +68,10 @@ phiall=[(philims(1) + (philims(2)-philims(1))/(lphi-1)*(iphi-1),iphi=1,2*(lphi-4
 ! oddly the destructor does not get called when the program unit terminates; however by
 !  putting the variable inside the block we cause it to go out of scope before the program
 !  ends and that indeed causes the destructor to get triggered (so we can test it)
-!!do while (.true.)
+main : do i = 1,N
+!! we loop N times to help ensure memory isn't leaking,
+!! that we free appropriate variables upon destruction
+
 block
 type(dipolemesh) :: x
 
@@ -93,11 +105,17 @@ call x%calc_coord_diffs_root()
 !!!! end grid setup and init
 
 ! check variable allocation and set status
-print*, "fullgrid_testdriver:  allocation statuses..."
-print*, x%xi_alloc_status,x%dxi_alloc_status,x%dxi_alloc_status_root,x%difflen_alloc_status,x%null_alloc_status,x%geog_set_status
-print*, x%coord_alloc_status,x%coord_alloc_status_root
+if (.not. x%xi_alloc_status) error stop "xi alloc false"
+if (.not. x%dxi_alloc_status) error stop "dxi alloc false"
+if (.not. x%dxi_alloc_status_root) error stop "dxi_root alloc false"
+if (.not. x%difflen_alloc_status) error stop "difflen alloc false"
+if (.not. x%null_alloc_status) error stop "null alloc false"
+if (.not. x%geog_set_status) error stop "geog alloc false"
+if (.not. x%coord_alloc_status) error stop "coord alloc false"
+if (.not. x%coord_alloc_status_root) error stop "coord_root alloc false"
 
 end block
-!!end do
+
+end do main
 
 end program fullgrid_dipole_testdriver_root
