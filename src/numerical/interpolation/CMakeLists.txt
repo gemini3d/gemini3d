@@ -1,3 +1,5 @@
+set_directory_properties(PROPERTIES LABELS interpolation)
+
 add_library(interp OBJECT interpolation.f90 interp2d.f90)
 target_link_libraries(interp PRIVATE const)
 
@@ -5,7 +7,6 @@ if(hdf5 AND ${PROJECT_NAME}_BUILD_TESTING)
 # --- tests
 add_executable(test_interp1 testinterp1.f90)
 target_link_libraries(test_interp1 PRIVATE const interp)
-set_target_properties(test_interp1 PROPERTIES LABELS unit)
 add_test(NAME unit:interp1 COMMAND test_interp1 WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 set_tests_properties(unit:interp1 PROPERTIES
   TIMEOUT 10
@@ -19,7 +20,6 @@ set(_testfile_interp3 ${CMAKE_CURRENT_BINARY_DIR}/output3d.h5)
 
 add_executable(test_interp2 testinterp2.f90)
 target_link_libraries(test_interp2 PRIVATE interp const h5fortran::h5fortran)
-set_target_properties(test_interp2 PROPERTIES LABELS unit)
 add_test(NAME unit:interp2
   COMMAND $<TARGET_FILE:test_interp2> ${_testfile_interp2in} ${_testfile_interp2}
   WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
@@ -30,7 +30,6 @@ set_tests_properties(unit:interp2 PROPERTIES
 
 add_executable(test_interp3 testinterp3.f90)
 target_link_libraries(test_interp3 PRIVATE const interp h5fortran::h5fortran)
-set_target_properties(test_interp3 PROPERTIES LABELS unit)
 add_test(NAME unit:interp3
   COMMAND $<TARGET_FILE:test_interp3> ${_testfile_interp3in} ${_testfile_interp3}
   WORKING_DIRECTORY ${PROJECT_BINARY_DIR})

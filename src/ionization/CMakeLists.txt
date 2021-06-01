@@ -1,3 +1,5 @@
+set_directory_properties(PROPERTIES LABELS ionization)
+
 add_library(fang OBJECT fang.f90)
 target_link_libraries(fang PRIVATE const)
 
@@ -8,7 +10,6 @@ if(${PROJECT_NAME}_BUILD_TESTING)
 
 add_executable(test_fang test_fang.f90)
 target_link_libraries(test_fang PRIVATE fang fang_run assert const msis_ifc)
-set_target_properties(test_fang PROPERTIES LABELS unit)
 add_test(NAME unit:fangIonize COMMAND $<TARGET_FILE:test_fang>)
 set_tests_properties(unit:fangIonize PROPERTIES
   TIMEOUT 10
