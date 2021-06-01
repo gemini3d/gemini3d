@@ -1,3 +1,5 @@
+set_directory_properties(PROPERTIES LABELS coord)
+
 add_library(newton OBJECT newton.f90)
 target_link_libraries(newton PRIVATE const)
 
@@ -16,7 +18,11 @@ target_link_libraries(meshobj_dipole PRIVATE const meshobj newton spherical geom
 add_library(meshobj_cart OBJECT meshobj_cart.f90)
 target_link_libraries(meshobj_cart PRIVATE const meshobj spherical geomagnetic)
 
-if(BUILD_TESTING)
+set_targ_props(meshobj meshobj_cart meshobj_dipole newton spherical geomagnetic)
+
+# --- coord self-tests
+
+if(${PROJECT_NAME}_BUILD_TESTING)
 add_executable(newton_testdriver newton_testdriver.f90)
 target_link_libraries(newton_testdriver PRIVATE const newton meshobj meshobj_dipole newton spherical geomagnetic)
 
@@ -34,6 +40,16 @@ target_link_libraries(fullgrid_cartesian_testdriver PRIVATE const meshobj meshob
 
 add_executable(fullgrid_dipole_testdriver_root fullgrid_dipole_testdriver_root.f90)
 target_link_libraries(fullgrid_dipole_testdriver_root PRIVATE const meshobj meshobj_dipole newton spherical geomagnetic)
-endif(BUILD_TESTING)
 
-set_targ_props(meshobj meshobj_cart meshobj_dipole newton spherical geomagnetic)
+foreach(t newton_testdriver geomag2geog_testdriver grid_testdriver fullgrid_dipole_testdriver fullgrid_cartesian_testdriver fullgrid_dipole_testdriver_root)
+
+  add_test(NAME ${t} COMMAND $<TARGET_FILE:${t}>)
+
+  set_tests_properties(${t} PROPERTIES
+    TIMEOUT 10
+    LABELS "unit"
+    )
+
+endforeach()
+
+endif()

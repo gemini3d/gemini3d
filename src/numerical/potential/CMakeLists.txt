@@ -24,7 +24,7 @@ set(_potential_testfile ${CMAKE_CURRENT_BINARY_DIR}/test_potential2d.h5)
 
 add_executable(test_potential2d test_potential2D.f90 $<TARGET_OBJECTS:PDEelliptic>)
 target_include_directories(test_potential2d PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/include)
-set_target_properties(test_potential2d PROPERTIES LABELS unit)
+set_target_properties(test_potential2d PROPERTIES LABELS "unit;potential")
 # MPI_C is needed here, else will not compile on MinGW with Ninja or Make.
 # LINK_INTERFACE_MULTIPLICITY and IMPORTED_LINK_INTERFACE_MULTIPLICITY do not help here.
 # adding INTERFACE to Mumps project didn't help either
@@ -51,7 +51,7 @@ endif()
 set_tests_properties(unit:potential2 PROPERTIES TIMEOUT 30
   FIXTURES_SETUP GemPot
   RESOURCE_LOCK cpu_mpi
-  LABELS unit
+  LABELS "unit;potential"
   DEPENDS unit:HWLOC)
 
 
@@ -62,7 +62,7 @@ if(Python3_FOUND)
   set_tests_properties(unit:potential2:python PROPERTIES
     REQUIRED_FILES ${_potential_testfile}
     TIMEOUT 10
-    LABELS "unit;python"
+    LABELS "unit;python;potential"
     FIXTURES_REQUIRED GemPot)
 
 endif(Python3_FOUND)
