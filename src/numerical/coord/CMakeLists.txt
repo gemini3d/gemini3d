@@ -46,7 +46,7 @@ foreach(t newton_testdriver geomag2geog_testdriver grid_testdriver fullgrid_dipo
   add_test(NAME "unit:${t}" COMMAND $<TARGET_FILE:${t}>)
 
   set_tests_properties(${t} PROPERTIES
-    TIMEOUT 10
+    TIMEOUT 30
     LABELS "unit"
     )
 
