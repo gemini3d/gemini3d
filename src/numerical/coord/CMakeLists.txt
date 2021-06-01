@@ -33,10 +33,10 @@ add_executable(grid_testdriver grid_testdriver.f90)
 target_link_libraries(grid_testdriver PRIVATE const meshobj meshobj_dipole newton spherical geomagnetic)
 
 add_executable(fullgrid_dipole_testdriver fullgrid_dipole_testdriver.f90)
-target_link_libraries(fullgrid_dipole_testdriver PRIVATE const meshobj meshobj_dipole newton spherical geomagnetic)
+target_link_libraries(fullgrid_dipole_testdriver PRIVATE const pathlib meshobj meshobj_dipole newton spherical geomagnetic)
 
 add_executable(fullgrid_cartesian_testdriver fullgrid_cartesian_testdriver.f90)
-target_link_libraries(fullgrid_cartesian_testdriver PRIVATE const meshobj meshobj_cart newton spherical geomagnetic)
+target_link_libraries(fullgrid_cartesian_testdriver PRIVATE const pathlib meshobj meshobj_cart newton spherical geomagnetic)
 
 add_executable(fullgrid_dipole_testdriver_root fullgrid_dipole_testdriver_root.f90)
 target_link_libraries(fullgrid_dipole_testdriver_root PRIVATE const meshobj meshobj_dipole newton spherical geomagnetic)
@@ -51,5 +51,8 @@ foreach(t newton_testdriver geomag2geog_testdriver grid_testdriver fullgrid_dipo
     )
 
 endforeach()
+
+set_tests_properties(unit:fullgrid_dipole_testdriver_root PROPERTIES
+RESOURCE_LOCK cpu_ram)
 
 endif()

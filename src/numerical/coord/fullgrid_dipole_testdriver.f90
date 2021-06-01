@@ -1,5 +1,6 @@
 program fullgrid_dipole_testdriver
 
+use pathlib, only : mkdir
 use phys_consts, only: wp
 use meshobj_dipole, only : dipolemesh
 
@@ -110,7 +111,7 @@ print*, ' fullgrid_testdriver, number of null grid points:  ',size(x%inull,1)
 
 ! write out the grid data to a file
 path='./dipole/'
-call system('mkdir '//path)
+call mkdir(path)
 print*, ' fullgrid_testdriver, writing grid coords. to:  ',path
 call x%writegrid(path,0)
 call x%writegridall(path,1)
