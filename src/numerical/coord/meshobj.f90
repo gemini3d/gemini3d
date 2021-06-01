@@ -14,20 +14,20 @@ public
 !> curvmesh is an abstract type containing functionality and data that is not specific to individual coordinate systems
 !   (which are extended types).  Note that all arrays are pointers because they need to be targets and allocatable AND the fortran
 !   standard does not support having allocatable, target attributed inside a derived type.  Because of this is it not straightforward
-!   to check the allocation status of these arrays (i.e. fortran also does not allow one to check the allocation status of a pointer). 
+!   to check the allocation status of these arrays (i.e. fortran also does not allow one to check the allocation status of a pointer).
 !   Thus the quantities which are not, for sure, allocated need to have an allocation status variable so we can check...  Because
 !   the pointers are always allocated in groups we do not need separate status vars for each array thankfully...
 !
 !  Note that the deferred bindings all have the single argument of self so any data used to compute whatever quantity is desired must
-!   be stored in the derived type.  This is done to avoid long, potentially superfluous argument lists that may contain extraneous information, 
+!   be stored in the derived type.  This is done to avoid long, potentially superfluous argument lists that may contain extraneous information,
 !   e.g. if a coordinate is not needed to compute a metric factor and similar situations.  Any operation that needs more input should be
 !   defined as a type-bound procedure in any extensions to this abstract type.  This also means that error checking needs to be done in the
 !   extended type to insure that the data needed for a given calculation exist.
 type, abstract :: curvmesh
-  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Generic properties !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Generic properties !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> we need to know whether or not different groups of pointers are allocated and the intrinsic "allocatable" only work on allocatables (not pointers)...
   logical :: xi_alloc_status=.false.
-  logical :: dxi_alloc_status=.false. 
+  logical :: dxi_alloc_status=.false.
   logical :: dxi_alloc_status_root=.false.
   logical :: difflen_alloc_status=.false.
   logical :: null_alloc_status=.false.
@@ -37,46 +37,46 @@ type, abstract :: curvmesh
   !> sizes.  Specified and set by base class methods
   integer :: lx1,lx2,lx3,lx2all,lx3all
   !! for program units that may not be able to access module globals
-  
+
   !!> curvilinear vars. and diffs.
   real(wp), dimension(:), pointer :: x1     ! provided in input file
   real(wp), dimension(:), pointer :: x1i    ! recomputed by base class once x1 set
   real(wp), dimension(:), pointer :: dx1        ! recomputed by base class from x1
   !! because sub arrays need to be assigned to aliases in calculus module program units
   real(wp), dimension(:), pointer :: dx1i   ! recomputed by base class from interface locations (themselves recomputed)
-  
+
   real(wp), dimension(:), pointer :: x2
   real(wp), dimension(:), pointer :: x2i
   real(wp), dimension(:), pointer :: dx2        ! this (and similar dx arrays) are pointers because they become associated with other pointers (meaning they have to either have the "target" keyword or themselves be pointers).  These should also be contiguous but I believe that is guaranteed as long as they are assigned through allocate statements (see fortran standard)  derived type arrays cannot be targets so we are forced to declare them as pointers and trust that they are allocated contiguous
   real(wp), dimension(:), pointer :: dx2i
 
-  !> this are fullgrid but possibly carried around by workers too since 1D arrays? 
+  !> this are fullgrid but possibly carried around by workers too since 1D arrays?
   real(wp), dimension(:), pointer :: x3
   real(wp), dimension(:), pointer :: x3i
   real(wp), dimension(:), pointer :: dx3
   real(wp), dimension(:), pointer :: dx3i
-  
+
   real(wp), dimension(:), pointer :: x2all
   real(wp), dimension(:), pointer  :: x2iall
   real(wp), dimension(:), pointer :: dx2all
   real(wp), dimension(:), pointer  :: dx2iall
-  
+
   real(wp), dimension(:), pointer :: x3all
   real(wp), dimension(:), pointer  :: x3iall
   real(wp), dimension(:), pointer :: dx3all
   real(wp), dimension(:), pointer  :: dx3iall
-  
+
   !> differential length elements.  Compute by a method in generic class given metric factors
   real(wp), dimension(:,:,:), pointer :: dl1i,dl2i,dl3i
-  
+
   !> flag for indicating whether or not the grid is periodic
   logical :: flagper
-  
+
   !> flag for indicated type of grid (0 - closed dipole; 1 - open dipole inverted; 2 - non-inverted).  Computed by method in generic
   !class once coordinate specific quantitaties are defined
   integer :: gridflag
- 
-  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Coordinate system specific properties !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 
+
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Coordinate system specific properties !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Metric factors.  These are pointers to be assigned/allocated/filled by type extensions for specific coordinate system
   logical :: coord_alloc_status=.false.    ! single status variable for all coord-specific arrays
   logical :: coord_alloc_status_root=.false.
@@ -89,7 +89,7 @@ type, abstract :: curvmesh
   !! metric factors at x2 interfaces; dim. 2 has lx2+1
   real(wp), dimension(:,:,:), pointer :: h1x3i,h2x3i,h3x3i
   !! metric factors at x3 interfaces; dim. 3 has lx3+1
-  
+
   !> root only; full grid metric factors.  These must have type-extension bound procedures to provide allocation and filling
   real(wp), dimension(:,:,:), pointer :: h1all,h2all,h3all
   real(wp), dimension(:,:,:), pointer :: h1x1iall,h2x1iall,h3x1iall
@@ -98,38 +98,38 @@ type, abstract :: curvmesh
   !! dim. 2 has lx2all+1
   real(wp), dimension(:,:,:), pointer :: h1x3iall,h2x3iall,h3x3iall
   !! dim. 3 has lx3all+1
-  
+
   !> Problem-depedent geometric terms that can be precomputed, e.g. for advection and elliptic equations
   !! to be added in later if we deem it worthwhile to include these to save computation time and/or memory
 
-  !> unit vectors - Pointers.  Subclass methods must allocate and assign values to these.  
+  !> unit vectors - Pointers.  Subclass methods must allocate and assign values to these.
   real(wp), dimension(:,:,:,:), pointer :: e1,e2,e3
   !! unit vectors in curvilinear space (cartesian components)
   real(wp), dimension(:,:,:,:), pointer :: er,etheta,ephi
   !! spherical unit vectors (cartesian components)
-  
+
   !> geomagnetic grid data, ECEF spherical referenced to dipole axis
   real(wp), dimension(:,:,:), pointer :: r,theta,phi
   !! may be used in the interpolation of neutral perturbations
-  
+
   !> root only; full grid geomagnetic positions.  Pointers.  Need type-extension bound procedures for each
-  !coordinate system must allocate and compute these. 
+  !coordinate system must allocate and compute these.
   real(wp), dimension(:,:,:), pointer :: rall,thetaall,phiall
-  
+
   !> geographic data; pointers
   real(wp), dimension(:,:,:), pointer :: glat,glon,alt
-  
+
   !> magnetic field magnitude and inclination.  Pointers
   real(wp), dimension(:,:,:), pointer :: Bmag
   real(wp), dimension(:,:), pointer :: I
 
   !> Gravitational field
   real(wp), dimension(:,:,:), pointer :: g1,g2,g3
-  
+
   !> EIA-required fullgrid data.  Pointers
   real(wp), dimension(:,:,:), pointer :: altall,glonall
   real(wp), dimension(:,:,:), pointer :: Bmagall
-  
+
   !> points that should not be considered part of the numerical domain. Pointers
   logical, dimension(:,:,:), pointer :: nullpts
   !! this could be a logical but I'm going to treat it as real*8
@@ -140,7 +140,7 @@ type, abstract :: curvmesh
   !> for floating coordinate systems we must define an aboslute center position in geographic coordinates
   real(wp) :: glonctr,glatctr
 
-  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! type-bound procedures !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! type-bound procedures !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   contains
     procedure :: set_coords             ! initialize general curvilinear coordinates and mesh sizes
     procedure :: calc_coord_diffs       ! compute bwd and midpoint diffs from coordinates
@@ -247,12 +247,24 @@ contains
 
     if (.not. self%coord_alloc_status_root) error stop ' attempting to set root params. before allocating!'
 
-    self%h1all=h1all; self%h2all=h2all; self%h3all=h3all;
-    self%h1x1iall=h1x1iall; self%h2x1iall=h2x1iall; self%h3x1iall=h3x1iall;
-    self%h1x2iall=h1x2iall; self%h2x2iall=h2x2iall; self%h3x2iall=h3x2iall;
-    self%h1x3iall=h1x3iall; self%h2x3iall=h2x3iall; self%h3x3iall=h3x3iall;
-    self%rall=rall; self%thetaall=thetaall; self%phiall=phiall;
-    self%altall=altall; self%Bmagall=Bmagall; self%glonall=glonall
+    self%h1all=h1all
+    self%h2all=h2all
+    self%h3all=h3all
+    self%h1x1iall=h1x1iall
+    self%h2x1iall=h2x1iall
+    self%h3x1iall=h3x1iall
+    self%h1x2iall=h1x2iall
+    self%h2x2iall=h2x2iall
+    self%h3x2iall=h3x2iall
+    self%h1x3iall=h1x3iall
+    self%h2x3iall=h2x3iall
+    self%h3x3iall=h3x3iall
+    self%rall=rall
+    self%thetaall=thetaall
+    self%phiall=phiall
+    self%altall=altall
+    self%Bmagall=Bmagall
+    self%glonall=glonall
     self%coord_set_status_root=.true.
   end subroutine set_root
 
@@ -260,7 +272,7 @@ contains
   subroutine set_periodic(self,flagperiodic)
     class(curvmesh), intent(inout) :: self
     integer, intent(in) :: flagperiodic
-    
+
     if (flagperiodic==1) then
       self%flagper=.true.
     else
@@ -278,12 +290,12 @@ contains
 
     lx1=self%lx1; lx2=self%lx2; lx3=self%lx3    ! limits indexing verboseness, which drives me crazy
 
-    allocate(self%dx1(0:lx1+2), self%x1i(1:lx1+1), self%dx1i(1:lx1))    
+    allocate(self%dx1(0:lx1+2), self%x1i(1:lx1+1), self%dx1i(1:lx1))
     self%dx1 = self%x1(0:lx1+2)-self%x1(-1:lx1+1)       !! computing these avoids extra message passing (could be done for other coordinates
     self%x1i(1:lx1+1) = 0.5_wp*(self%x1(0:lx1)+self%x1(1:lx1+1))
     self%dx1i=self%x1i(2:lx1+1)-self%x1i(1:lx1)
 
-    allocate(self%dx2(0:lx2+2), self%x2i(1:lx2+1), self%dx2i(1:lx2))    
+    allocate(self%dx2(0:lx2+2), self%x2i(1:lx2+1), self%dx2i(1:lx2))
     self%dx2 = self%x2(0:lx2+2)-self%x2(-1:lx2+1)       !! computing these avoids extra message passing (could be done for other coordinates
     self%x2i(1:lx2+1) = 0.5_wp*(self%x2(0:lx2)+self%x2(1:lx2+1))
     self%dx2i=self%x2i(2:lx2+1)-self%x2i(1:lx2)
@@ -400,12 +412,12 @@ contains
     end if
   end subroutine init_storage_root
 
-  
+
   !> this sets the geographic center of the mesh; must be called prior to make()
   subroutine set_center(self,glon,glat)
     class(curvmesh), intent(inout) :: self
     real(wp), intent(in) :: glon,glat
-  
+
     self%glonctr=glon
     self%glatctr=glat
   end subroutine set_center
@@ -419,7 +431,7 @@ contains
     ! error checking
     if (.not. self%geog_set_status) error stop ' attempting to compute gridflag prior to setting geographic coordinates!'
 
-    ! sizes   
+    ! sizes
     lx1=self%lx1; lx2=self%lx2; lx3=self%lx3
 
     ! grid type, assumes that each worker x1 arrays span the entire altitude range of the grid
@@ -442,13 +454,13 @@ contains
     ! error checking, we require the geographic coords. before this is done
     if (.not. self%geog_set_status) error stop ' attempting to compute null points prior to setting geographic coordinates!'
 
-    ! sizes   
+    ! sizes
     lx1=self%lx1; lx2=self%lx2; lx3=self%lx3
- 
+
     ! set null points for this simulation
     allocate(self%nullpts(1:lx1,1:lx2,1:lx3))
     self%nullpts=.false.
-    where (self%alt<80e3_wp) 
+    where (self%alt<80e3_wp)
       self%nullpts=.true.
     end where
 
@@ -462,7 +474,7 @@ contains
       end do
     end do
     allocate(self%inull(1:self%lnull,1:3))
-    
+
     ! store null indices
     icount=1
     do ix3=1,lx3
@@ -483,9 +495,9 @@ contains
   !> compute geographic coordinates of all grid points
   subroutine calc_geographic(self)
     class(curvmesh), intent(inout) :: self
-  
+
     ! fixme: error checking?
-  
+
     call geomag2geog(self%phi,self%theta,self%glon,self%glat)
     self%alt=r2alt(self%r)
     self%geog_set_status=.true.
@@ -615,7 +627,7 @@ contains
   !> deallocate space associated with pointers and set appropriate flags
   subroutine dissociate_pointers(self)
     class(curvmesh), intent(inout) :: self
-  
+
     ! deallocation statements here; always check allocation status flags first...
     if (self%xi_alloc_status) then
       deallocate(self%x1,self%x2,self%x3,self%x2all,self%x3all)    ! these are from set_coords
@@ -635,7 +647,7 @@ contains
     if (self%difflen_alloc_status) then
       deallocate(self%dl1i,self%dl2i,self%dl3i)    ! from calc_difflengths
       self%difflen_alloc_status=.false.
-    end if  
+    end if
 
     ! coordinate-specific arrays set by type extensions
     if (self%coord_alloc_status) then
