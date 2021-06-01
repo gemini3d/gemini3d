@@ -27,13 +27,6 @@ character(10) :: argv
 
 real(wp), allocatable, dimension(:,:,:) :: tmp, tmpghost1, tmpghost2, tmpghost3, tmpghostall
 
-!> estimate memory used
-Bel = storage_size(q, kind=int64) / 8
-
-mem_bytes = Bel * 2 * (6 * size(tmp, kind=int64) + 3 * size(tmpghostall, kind=int64) +  &
-  3 * size(tmpghost1, kind=int64) + 3 * size(tmpghost2, kind=int64) + 3 * size(tmpghost3, kind=int64))
-print *, "estimated memory used (Megabytes): ", mem_bytes / 1000000
-
 allocate(tmp(lq-4,2*(lp-4),2*(lphi-4)), &
 tmpghost1(lq-4+1,2*(lp-4),2*(lphi-4)), &
 tmpghost2(lq-4,2*(lp-4)+1,2*(lphi-4)), &
@@ -42,6 +35,13 @@ tmpghostall(-1:(lq-4)+2,-1:2*(lp-4)+2,-1:2*(lphi-4)+2), &
 stat=ierr)
 
 if(ierr /= 0) error stop "failed to allocate memory. May need to try a smaller test grid"
+
+!> estimate memory used
+Bel = storage_size(q, kind=int64) / 8
+
+mem_bytes = Bel * 2 * (6 * size(tmp, kind=int64) + 3 * size(tmpghostall, kind=int64) +  &
+  3 * size(tmpghost1, kind=int64) + 3 * size(tmpghost2, kind=int64) + 3 * size(tmpghost3, kind=int64))
+print *, "estimated memory used (Megabytes): ", mem_bytes / 1000000
 
 tmp = 0
 tmpghost1 = 0
