@@ -28,8 +28,8 @@ PURPOSE "Git is used to auto-download the packages comprising Gemini.")
 set_package_properties(GLOW PROPERTIES
 TYPE OPTIONAL
 URL "https://www2.hao.ucar.edu/modeling/glow/code"
-DESCRIPTION "NCAR GLOW model"
-PURPOSE "Gemini uses GLOW for modeling of auroral emissions vs. wavelength.")
+DESCRIPTION "NCAR GLOW model")
+#PURPOSE "Gemini uses GLOW for modeling of auroral emissions vs. wavelength.")
 
 set_package_properties(HDF5 PROPERTIES
 TYPE RECOMMENDED
@@ -39,8 +39,8 @@ PURPOSE "Gemini uses NASA standard format HDF5 files to read and write compresse
 
 set_package_properties(MPI PROPERTIES
 TYPE RECOMMENDED
-DESCRIPTION "GEMINI MPI-2 standard parallelization"
-PURPOSE "MPI gives massively parallel computation")
+DESCRIPTION "GEMINI MPI-2 standard parallelization")
+#PURPOSE "MPI gives massively parallel computation")
 
 set_package_properties(MUMPS PROPERTIES
 TYPE RECOMMENDED
