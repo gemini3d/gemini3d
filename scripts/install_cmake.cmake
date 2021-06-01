@@ -22,7 +22,7 @@ if(NOT prefix)
 endif()
 
 if(NOT version)
-  set(version 3.20.2)
+  set(version 3.20.3)
 endif()
 
 if(version VERSION_LESS 3.7)
