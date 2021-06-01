@@ -1,3 +1,5 @@
+set_directory_properties(PROPERTIES LABELS hwm)
+
 # --- build abstract HWM interface
 # default is HWM14
 

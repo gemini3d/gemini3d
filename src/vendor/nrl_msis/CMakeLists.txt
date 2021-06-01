@@ -1,3 +1,5 @@
+set_directory_properties(PROPERTIES LABELS msis)
+
 # We assume MSISE00 is always available, but MSIS 2.0 might not be available.
 
 add_library(msis00mod msis00_gfortran.f msise00_data.f)
@@ -60,7 +62,6 @@ set_tests_properties(unit:msis_setup PROPERTIES
 
 add_executable(msis_compare test_msis.f90)
 target_link_libraries(msis_compare PRIVATE msis_ifc assert h5fortran::h5fortran)
-set_target_properties(msis_compare PROPERTIES LABELS unit)
 
 add_test(NAME unit:msis_compare
   COMMAND $<TARGET_FILE:msis_compare> ${_out} ${_ref})
