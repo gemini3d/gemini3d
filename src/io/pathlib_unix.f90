@@ -7,8 +7,13 @@ contains
 
 module procedure is_absolute
 
+character(:), allocatable  :: buf
+
 is_absolute = .false.
-if(len_trim(path) > 0) is_absolute = path(1:1) == "/"
+
+buf = expanduser(path)
+
+if(len_trim(buf) > 0) is_absolute = buf(1:1) == "/"
 
 end procedure is_absolute
 
@@ -19,7 +24,12 @@ integer :: i, j
 !! https://linux.die.net/man/1/cp
 character(*), parameter ::  CMD='cp -rf '
 
-call execute_command_line(CMD // source // ' ' // dest, exitstat=i, cmdstat=j)
+character(:), allocatable  :: s,d
+
+s = expanduser(source)
+d = expanduser(dest)
+
+call execute_command_line(CMD // s // ' ' // d, exitstat=i, cmdstat=j)
 if (i /= 0 .or. j /= 0) error stop "could not copy " // source // " => " // dest
 
 end procedure copyfile
@@ -31,9 +41,13 @@ integer :: i, j
 
 character(*), parameter ::  CMD='mkdir -p '
 
-if(directory_exists(path)) return
+character(:), allocatable  :: buf
 
-call execute_command_line(CMD // path, exitstat=i, cmdstat=j)
+buf = expanduser(path)
+
+if(directory_exists(buf)) return
+
+call execute_command_line(CMD // buf, exitstat=i, cmdstat=j)
 if (i /= 0 .or. j /= 0) error stop "could not create directory " // path
 
 end procedure mkdir

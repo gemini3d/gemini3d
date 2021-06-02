@@ -149,6 +149,9 @@ end function make_absolute
 logical function directory_exists(path) result(exists)
 !! except for Intel compiler, cannot distinguish file from directory
 character(*), intent(in) :: path
+character(:), allocatable  :: buf
+
+buf = expanduser(path)
 
 @dir_exist@
 
@@ -170,7 +173,7 @@ subroutine assert_file_exists(path)
 character(*), intent(in) :: path
 logical :: exists
 
-inquire(file=path, exist=exists)
+inquire(file=expanduser(path), exist=exists)
 
 if (.not. exists) error stop 'file does not exist ' // path
 
