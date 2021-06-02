@@ -48,11 +48,9 @@ foreach(t newton_testdriver geomag2geog_testdriver grid_testdriver fullgrid_dipo
   set_tests_properties(unit:${t} PROPERTIES
     TIMEOUT 30
     LABELS "unit"
+    RESOURCE_LOCK cpu_ram
     )
 
 endforeach()
-
-set_tests_properties(unit:fullgrid_dipole_testdriver unit:fullgrid_dipole_testdriver_root PROPERTIES
-RESOURCE_LOCK cpu_ram)
 
 endif()
