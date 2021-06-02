@@ -52,7 +52,7 @@ foreach(t newton_testdriver geomag2geog_testdriver grid_testdriver fullgrid_dipo
 
 endforeach()
 
-set_tests_properties(unit:fullgrid_dipole_testdriver_root PROPERTIES
+set_tests_properties(unit:fullgrid_dipole_testdriver unit:fullgrid_dipole_testdriver_root PROPERTIES
 RESOURCE_LOCK cpu_ram)
 
 endif()
