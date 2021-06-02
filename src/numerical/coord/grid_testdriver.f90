@@ -12,11 +12,13 @@ real(wp), dimension(2) :: qlims=[-0.5851937,0.5851937]
 real(wp), dimension(2) :: plims=[1.2053761,1.5820779]
 real(wp), dimension(1) :: phi=[3.14]
 
-real(wp), dimension(lq,lp) :: r,theta,qtest,ptest,errq,errp
+real(wp), dimension(:,:), allocatable :: r,theta,qtest,ptest,errq,errp
 real(wp) :: maxerrq,maxerrp
 integer :: iq,ip,irepeat
 type(dipolemesh) :: x     ! dummy object to allow us to access methods for coodinate conversion
 
+allocate(r(lq,lp))
+allocate(theta,qtest,ptest,errq,errp, mold=r)
 
 ! define a grid
 q=[(qlims(1) + (qlims(2)-qlims(1))/lq*(iq-1),iq=1,lq)]

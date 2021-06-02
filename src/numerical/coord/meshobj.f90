@@ -477,8 +477,8 @@ contains
 
 
   !> compute the number of null grid points and their indices for later use
-  subroutine calc_inull(self)
-    class(curvmesh) :: self
+  pure subroutine calc_inull(self)
+    class(curvmesh), intent(inout) :: self
     integer :: lx1,lx2,lx3
     integer :: icount,ix1,ix2,ix3
 
@@ -524,7 +524,7 @@ contains
 
 
   !> compute geographic coordinates of all grid points
-  subroutine calc_geographic(self)
+  pure subroutine calc_geographic(self)
     class(curvmesh), intent(inout) :: self
 
     ! fixme: error checking?
