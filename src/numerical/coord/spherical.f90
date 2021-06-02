@@ -7,7 +7,7 @@ implicit none (type, external)
 contains
 
 !> radial unit vector (expressed in ECEF cartesian coodinates, components permuted as ix,iy,iz)
-function er_spherical(theta,phi) result(er)
+pure function er_spherical(theta,phi) result(er)
   real(wp), dimension(:,:,:), intent(in) :: theta,phi
   real(wp), dimension(1:size(theta,1),1:size(theta,2),1:size(theta,3),3) :: er
 
@@ -20,7 +20,7 @@ end function er_spherical
 
 
 !> zenith angle unit vector (expressed in ECEF cartesian coodinates
-function etheta_spherical(theta,phi) result(etheta)
+pure function etheta_spherical(theta,phi) result(etheta)
   real(wp), dimension(:,:,:), intent(in) :: theta,phi
   real(wp), dimension(1:size(theta,1),1:size(theta,2),1:size(theta,3),3) :: etheta
 
@@ -32,7 +32,7 @@ function etheta_spherical(theta,phi) result(etheta)
 end function etheta_spherical
 
 !> azimuth angle unit vector (ECEF cart.)
-function ephi_spherical(theta,phi) result(ephi)
+pure function ephi_spherical(theta,phi) result(ephi)
   real(wp), dimension(:,:,:), intent(in) :: theta,phi
   real(wp), dimension(1:size(theta,1),1:size(theta,2),1:size(theta,3),3) :: ephi
 

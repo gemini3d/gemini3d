@@ -13,8 +13,8 @@ real(wp) :: rcorrect=0,thetacorrect=0
 q(1)=-0.35615504
 p(1)=1.2790947
 phi(1)=3.14
-rcorrect=6803179.761800971
-thetacorrect=1.9891332403471418
+rcorrect=6803179.761800971_wp
+thetacorrect=1.9891332403471418_wp
 call qp2rtheta(q(1),p(1),r,theta)
 print*, 'solution:  r=',r,'; theta=',theta
 print*, 'known good solution:  r=',rcorrect,'; theta=',thetacorrect

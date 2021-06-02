@@ -1,13 +1,13 @@
 module newton
 
 !> uses, basically we need something to tell us what precision is being used for calculations
-!use, intrinsic :: ISO_Fortran_env,  only : wp=>real64
+use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
 use phys_consts, only: wp
 
 implicit none (type, external)
 
 
-!> derived type for containing the options for the newton method procedure, by default 
+!> derived type for containing the options for the newton method procedure, by default
 !   these work okay with the dipole to spherical conversion problem but can be adjusted
 !   by the user for other applications
 type :: newtopts
@@ -53,7 +53,7 @@ subroutine newton_exact(f,fprime,x0,parms,newtparms,root,it,converged)
 
   ! check starting point is not too close to inflection
   if (abs(fprime(x0,parms))<newtparms%derivtol) then
-    print*, 'Warning:  starting near inflection point, please change initial guess!'
+    write(stderr,*) 'Warning:  starting near inflection point, please change initial guess!'
     it=0; converged=.false.; root=x0;
     return
   end if
@@ -63,7 +63,7 @@ subroutine newton_exact(f,fprime,x0,parms,newtparms,root,it,converged)
   do while (.not. converged .and. it <= newtparms%maxit)
     derivative=fprime(root,parms)
     if (abs(derivative)<newtparms%derivtol) then
-      print*, 'Warning:  Encountered inflection point during iteration:  ',it
+      write(stderr,*) 'Warning:  Encountered inflection point during iteration:  ',it
       return
     else
       root=root-fval/derivative
