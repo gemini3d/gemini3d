@@ -3,6 +3,7 @@ submodule (neutral:perturb) proj
 use, intrinsic :: iso_fortran_env, only: stderr=>error_unit
 
 use grid, only : clear_unitvecs
+use mpi2_shim, only : mpi_recv_int32_scalar, mpi_send_int32_scalar
 use reader, only : get_simsize3
 
 implicit none (type, external)
@@ -48,12 +49,12 @@ call get_simsize3(cfg%sourcedir, lx1=lhorzn, lx2all=lzn)
     error stop 'neutral:gridproj_dneu2D: grid size must be strictly positive'
   endif
   do iid=1,mpi_cfg%lid-1
-    call mpi_send(lhorzn,1,MPI_INTEGER,iid,tag%lrho,MPI_COMM_WORLD,ierr)
-    call mpi_send(lzn,1,MPI_INTEGER,iid,tag%lz,MPI_COMM_WORLD,ierr)
+    call mpi_send_int32_scalar(lhorzn,iid,tag%lrho,MPI_COMM_WORLD,ierr)
+    call mpi_send_int32_scalar(lzn,iid,tag%lz,MPI_COMM_WORLD,ierr)
   end do
 else                 !workers
-  call mpi_recv(lhorzn,1,MPI_INTEGER,0,tag%lrho,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-  call mpi_recv(lzn,1,MPI_INTEGER,0,tag%lz,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+  call mpi_recv_int32_scalar(lhorzn,0,tag%lrho,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+  call mpi_recv_int32_scalar(lzn,0,tag%lz,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
 end if
 
 
@@ -429,7 +430,7 @@ if (mpi_cfg%myid==0) then    !root
   zn=[ ((real(izn, wp)-1)*cfg%dzn, izn=1,lzn) ]    !root calculates and distributes but this is the same for all workers - assmes that the max neutral grid extent in altitude is always less than the plasma grid (should almost always be true)
   maxzn=maxval(zn)
   do iid=1,mpi_cfg%lid-1
-    call mpi_send(lzn,1,MPI_INTEGER,iid,tag%lz,MPI_COMM_WORLD,ierr)
+    call mpi_send_int32_scalar(lzn,iid,tag%lz,MPI_COMM_WORLD,ierr)
     call mpi_send(zn,lzn,mpi_realprec,iid,tag%zn,MPI_COMM_WORLD,ierr)
   end do
 
@@ -477,8 +478,8 @@ if (mpi_cfg%myid==0) then    !root
     lxn=indx(iid,4)-indx(iid,3)+1
     lyn=indx(iid,6)-indx(iid,5)+1
     slabsizes(iid,1:2)=[lxn,lyn]
-    call mpi_send(lyn,1,MPI_INTEGER,iid,tag%lrho,MPI_COMM_WORLD,ierr)
-    call mpi_send(lxn,1,MPI_INTEGER,iid,tag%lx,MPI_COMM_WORLD,ierr)
+    call mpi_send_int32_scalar(lyn,iid,tag%lrho,MPI_COMM_WORLD,ierr)
+    call mpi_send_int32_scalar(lxn,iid,tag%lx,MPI_COMM_WORLD,ierr)
     allocate(xn(lxn),yn(lyn))
     xn=xnall(indx(iid,3):indx(iid,4))
     yn=ynall(indx(iid,5):indx(iid,6))
@@ -498,7 +499,7 @@ if (mpi_cfg%myid==0) then    !root
   yn=ynall(indx(0,5):indx(0,6))
 else                 !workers
   !get the z-grid from root so we know what the max altitude we have to deal with will be
-  call mpi_recv(lzn,1,MPI_INTEGER,0,tag%lz,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+  call mpi_recv_int32_scalar(lzn,0,tag%lz,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
   allocate(zn(lzn))
   call mpi_recv(zn,lzn,mpi_realprec,0,tag%zn,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
   maxzn=maxval(zn)
@@ -514,8 +515,8 @@ else                 !workers
 
 
   !receive my sizes from root, allocate then receive my pieces of the grid
-  call mpi_recv(lxn,1,MPI_INTEGER,0,tag%lx,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-  call mpi_recv(lyn,1,MPI_INTEGER,0,tag%lrho,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+  call mpi_recv_int32_scalar(lxn,0,tag%lx,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+  call mpi_recv_int32_scalar(lyn,0,tag%lrho,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
   allocate(xn(lxn),yn(lyn))
   call mpi_recv(xn,lxn,mpi_realprec,0,tag%xn,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
   call mpi_recv(yn,lyn,mpi_realprec,0,tag%yn,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)

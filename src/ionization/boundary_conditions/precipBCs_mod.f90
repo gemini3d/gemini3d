@@ -5,6 +5,7 @@ use, intrinsic :: ieee_arithmetic, only : ieee_is_finite
 use reader, only: get_simsize2, get_precip, get_grid2
 use phys_consts, only: pi,wp, debug
 use grid, only : lx1,lx2,lx3,lx3all
+use mpi2_shim, only : mpi_send, mpi_recv
 use mesh, only: curvmesh
 use interpolation, only : interp1,interp2
 use timeutils, only : dateinc, date_filename, find_lastdate
@@ -16,7 +17,6 @@ implicit none (type, external)
 private
 public :: clear_precip_fileinput, precipBCs_fileinput, precipBCs, init_precipinput
 
-external :: mpi_send, mpi_recv
 
 !ALL OF THE FOLLOWING MODULE-SCOPE ARRAYS ARE USED FOR INTERPOLATING PRECIPITATION INPUT FILES (IF USED)
 real(wp), dimension(:), allocatable, private :: mlonp
@@ -93,7 +93,7 @@ integer, dimension(3), intent(in) :: ymd
 real(wp), intent(in) :: UTsec
 real(wp), dimension(:,:,:), intent(out) :: W0,PhiWmWm2
 !! last dimension is the number of particle populations
-type(curvmesh), intent(in) :: x
+class(curvmesh), intent(in) :: x
 
 integer :: ios, ierr
 integer :: iid,iflat,ix2,ix3
@@ -328,7 +328,7 @@ subroutine precipBCs(t,x,cfg,W0,PhiWmWm2)
 !------------------------------------------------------------
 
 real(wp), intent(in) :: t
-type(curvmesh), intent(in) :: x
+class(curvmesh), intent(in) :: x
 type(gemini_cfg), intent(in) :: cfg
 real(wp), dimension(:,:,:), intent(out) :: W0,PhiWmWm2
 

@@ -186,11 +186,11 @@ endif
 ierr=0
 !! if this is a root-only simulation we don't want to error out
 do iid=1,mpi_cfg%lid-1
-  call mpi_send(lx2,1,MPI_INTEGER,iid,tag%lx2,MPI_COMM_WORLD,ierr)
+  call mpi_send_int32_scalar(lx2, iid,tag%lx2,MPI_COMM_WORLD,ierr)
   !! need to also pass the lx2all size to all workers to they know
   !if (ierr/=0) error stop 'grid:read_grid_root failed mpi_send lx2'
 
-  call mpi_send(lx3,1,MPI_INTEGER,iid,tag%lx3,MPI_COMM_WORLD,ierr)
+  call mpi_send_int32_scalar(lx3, iid,tag%lx3,MPI_COMM_WORLD,ierr)
   !if (ierr/=0) error stop 'grid:read_grid_root failed mpi_send lx3'
 end do
 
@@ -199,7 +199,7 @@ if (ierr/=0) error stop 'grid:read_grid_root failed mpi_send grid size'
 !TELL WORKERS IF WE'VE SWAPPED DIMENSIONS
 ierr=0
 do iid=1,mpi_cfg%lid-1
-  call mpi_send(flagswap,1,MPI_INTEGER,iid,tag%swap,MPI_COMM_WORLD,ierr)
+  call mpi_send_int32_scalar(flagswap, iid,tag%swap,MPI_COMM_WORLD,ierr)
   !if (ierr/=0) error stop 'grid:read_grid_root failed mpi_send flagswap'
 end do
 
@@ -501,15 +501,15 @@ type(curvmesh), intent(inout) :: x
 integer :: ix1,ix2,ix3,icount,icomp, ierr
 
 !GET ROOTS MESSAGE WITH THE SIZE OF THE GRID WE ARE TO RECEIVE
-call mpi_recv(lx2,1,MPI_INTEGER,0,tag%lx2,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+call mpi_recv_int32_scalar(lx2, 0,tag%lx2,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
 if (ierr/=0) error stop 'failed mpi_recv lx2'
-call mpi_recv(lx3,1,MPI_INTEGER,0,tag%lx3,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+call mpi_recv_int32_scalar(lx3, 0,tag%lx3,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
 if (ierr/=0) error stop 'failed mpi_recv lx3'
 
 x%lx1=lx1; x%lx2=lx2; x%lx2all=lx2all; x%lx3all=lx3all; x%lx3=lx3
 
 !ROOT NEEDS TO TELL US WHETHER WE'VE SWAPPED DIMENSIONS SINCE THIS AFFECTS HOW CURRENTS ARE COMPUTED
-call mpi_recv(flagswap,1,MPI_INTEGER,0,tag%swap,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+call mpi_recv_int32_scalar(flagswap, 0,tag%swap,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
 if (ierr/=0) error stop 'failed mpi_recv flagswap'
 
 if (flagswap==1) then

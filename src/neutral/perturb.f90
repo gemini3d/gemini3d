@@ -3,6 +3,7 @@ submodule (neutral) perturb
 use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
 
 use grid, only : gridflag
+use mpi2_shim, only : mpi_recv, mpi_send
 use reader, only : get_neutral2, get_neutral3
 use timeutils, only : dateinc, date_filename
 
@@ -11,18 +12,16 @@ tag=>gemini_mpi
 
 implicit none (type, external)
 
-external :: mpi_send, mpi_recv
-
 interface ! proj.f90
 module subroutine gridproj_dneu2D(cfg,flagcart,x)
 type(gemini_cfg), intent(in) :: cfg
 logical, intent(in) :: flagcart
-type(curvmesh), intent(inout) :: x
+class(curvmesh), intent(inout) :: x
 end subroutine gridproj_dneu2D
 
 module subroutine gridproj_dneu3D(cfg,x)
 type(gemini_cfg), intent(in) :: cfg
-type(curvmesh), intent(inout) :: x
+class(curvmesh), intent(inout) :: x
 end subroutine gridproj_dneu3D
 end interface
 
@@ -498,8 +497,5 @@ if (mpi_cfg%myid==mpi_cfg%lid/2 .and. debug) then
 end if
 
 end subroutine read_dneu3D
-
-
-
 
 end submodule perturb

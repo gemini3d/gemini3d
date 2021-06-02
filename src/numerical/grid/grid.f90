@@ -1,6 +1,8 @@
 module grid
 use, intrinsic:: iso_fortran_env, only: stderr=>error_unit
 
+use mpi2_shim, only : mpi_send_int32_scalar, mpi_recv_int32_scalar, mpi_send, mpi_recv
+
 use mesh, only: curvmesh
 
 use phys_consts, only: Gconst,Me,Re,wp,red,black
@@ -15,8 +17,6 @@ implicit none (type, external)
 private
 public :: lx1,lx2,lx3, lx2all,lx3all, gridflag, flagswap, clear_unitvecs, g1,g2,g3, &
   read_grid, clear_grid, grid_size, grid_check, grid_drift
-
-external :: mpi_recv, mpi_send
 
 integer, protected :: lx1,lx2,lx3,lx2all,lx3all
 !! this is a useful shorthand for most program units using this module,
@@ -72,11 +72,11 @@ call get_simsize3(indatsize, lx1, lx2all, lx3all)
 if (lx1 < 1 .or. lx2all < 1 .or. lx3all < 1) error stop 'grid_size_root: ' // indatsize // ' grid size must be strictly positive'
 
 do i = 1,mpi_cfg%lid-1
-  call mpi_send(lx1,1,MPI_INTEGER, i, tag%lx1,MPI_COMM_WORLD,ierr)
+  call mpi_send_int32_scalar(lx1, i, tag%lx1,MPI_COMM_WORLD,ierr)
   if (ierr/=0) error stop 'grid_size_root: lx1 failed mpi_send'
-  call mpi_send(lx2all,1,MPI_INTEGER, i, tag%lx2all,MPI_COMM_WORLD,ierr)
+  call mpi_send_int32_scalar(lx2all, i, tag%lx2all,MPI_COMM_WORLD,ierr)
   if (ierr/=0) error stop 'grid_size_root: lx2all failed mpi_send'
-  call mpi_send(lx3all,1,MPI_INTEGER, i, tag%lx3all,MPI_COMM_WORLD,ierr)
+  call mpi_send_int32_scalar(lx3all, i, tag%lx3all,MPI_COMM_WORLD,ierr)
   if (ierr/=0) error stop 'grid_size_root: lx3all failed mpi_send'
 end do
 
@@ -89,12 +89,12 @@ subroutine grid_size_worker()
 
 integer :: ierr
 
-call mpi_recv(lx1,1,MPI_INTEGER,0,tag%lx1,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-if (ierr/=0) error stop 'grid_size_worker: lx1 failed mpi_send'
-call mpi_recv(lx2all,1,MPI_INTEGER,0,tag%lx2all,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-if (ierr/=0) error stop 'grid_size_worker: lx2all failed mpi_send'
-call mpi_recv(lx3all,1,MPI_INTEGER,0,tag%lx3all,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-if (ierr/=0) error stop 'grid_size_worker: lx3all failed mpi_send'
+call mpi_recv_int32_scalar(lx1,0,tag%lx1,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+if (ierr/=0) error stop 'grid_size_worker: lx1'
+call mpi_recv_int32_scalar(lx2all,0,tag%lx2all,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+if (ierr/=0) error stop 'grid_size_worker: lx2all'
+call mpi_recv_int32_scalar(lx3all,0,tag%lx3all,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+if (ierr/=0) error stop 'grid_size_worker: lx3all'
 end subroutine grid_size_worker
 
 
