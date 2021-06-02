@@ -14,10 +14,12 @@ real(wp), dimension(lphi) :: phi
 real(wp), dimension(2), parameter :: qlims=[-0.5340405,0.5340405]
 real(wp), dimension(2), parameter :: plims=[1.2509838,1.4372374]
 real(wp), dimension(2), parameter :: philims=[3.6126509,3.7240195]
-integer :: iq,ip,iphi
+integer :: iq,ip,iphi, i
 real(wp) :: minchkvar,maxchkvar
 real(wp), dimension(1:lq-4,1:lp-4,1:lphi-4) :: proj
-character(:), allocatable :: path    !use auto-allocation feature
+
+character(:), allocatable :: path
+character(1000) :: argv
 
 
 ! define a grid, in reality this would be pull in from a file
@@ -109,12 +111,17 @@ if (any(proj>1e-4)) error stop '  etheta,ephi not ortho!!!'
 ! test number of null grid points
 print*, ' fullgrid_testdriver, number of null grid points:  ',size(x%inull,1)
 
-! write out the grid data to a file
-path='./dipole/'
-call mkdir(path)
-print*, ' fullgrid_testdriver, writing grid coords. to:  ',path
-call x%writegrid(path,0)
-call x%writegridall(path,1)
+!> optionally, write out the grid data to a file
+if (command_argument_count() >= 1) then
+  call get_command_argument(1, argv, status=i)
+  if (i /= 0) error stop "could not get user file write path"
+  path = trim(argv)
+  call mkdir(path)
+  print*, ' fullgrid_testdriver, writing grid coords. to:  ',path
+  call x%writegrid(path,0)
+  call x%writegridall(path,1)
+endif
+
 end block
 !!end do
 
