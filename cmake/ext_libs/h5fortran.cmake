@@ -25,13 +25,22 @@ if(hdf5)
         set(h5fortran_ROOT ${CMAKE_INSTALL_PREFIX})
     endif()
   endif()
+
   if(HDF5_FOUND)
     set(HDF5_ROOT ${HDF5_INCLUDE_DIR}/..)
   else()
     set(HDF5_ROOT ${h5fortran_ROOT})
   endif()
 
-  message(VERBOSE "HDF5_ROOT: ${HDF5_ROOT}")
+  find_package(ZLIB)
+  if(ZLIB_FOUND)
+    set(ZLIB_ROOT ${ZLIB_INCLUDE_DIRS}/..)
+  else()
+    set(ZLIB_ROOT ${h5fortran_ROOT})
+  endif()
+
+  message(STATUS "HDF5_ROOT: ${HDF5_ROOT}")
+  message(STATUS "ZLIB_ROOT: ${ZLIB_ROOT}")
 
   set(h5fortran_INCLUDE_DIRS ${CMAKE_CURRENT_BINARY_DIR}/include)
   set(h5fortran_LIBRARIES ${h5fortran_ROOT}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}h5fortran${CMAKE_STATIC_LIBRARY_SUFFIX})
@@ -39,7 +48,7 @@ if(hdf5)
   ExternalProject_Add(H5FORTRAN
     GIT_REPOSITORY ${h5fortran_git}
     GIT_TAG ${h5fortran_tag}
-    CMAKE_ARGS -DZLIB_ROOT:PATH=${HDF5_ROOT} -DHDF5_ROOT:PATH=${HDF5_ROOT} -DCMAKE_INSTALL_PREFIX:PATH=${h5fortran_ROOT} -DBUILD_SHARED_LIBS:BOOL=false -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING:BOOL=false
+    CMAKE_ARGS -DZLIB_ROOT:PATH=${ZLIB_ROOT} -DHDF5_ROOT:PATH=${HDF5_ROOT} -DCMAKE_INSTALL_PREFIX:PATH=${h5fortran_ROOT} -DBUILD_SHARED_LIBS:BOOL=false -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING:BOOL=false
     BUILD_BYPRODUCTS ${h5fortran_LIBRARIES}
     INACTIVITY_TIMEOUT 15
     CONFIGURE_HANDLED_BY_BUILD ON
