@@ -396,16 +396,24 @@ contains
 
     if (.not. self%coord_alloc_status ) then     ! use this as a proxy for if any other coordinate-specific arrays exist
       !allocate(self%h1(1:lx1,1:lx2,1:lx3),self%h2(1:lx1,1:lx2,1:lx3),self%h3(1:lx1,1:lx2,1:lx3))
-      allocate(self%h1(-1:lx1+2,-1:lx2+2,-1:lx3+2),self%h2(-1:lx1+2,-1:lx2+2,-1:lx3+2),self%h3(-1:lx1+2,-1:lx2+2,-1:lx3+2))
-      allocate(self%h1x1i(1:lx1+1,1:lx2,1:lx3),self%h2x1i(1:lx1+1,1:lx2,1:lx3),self%h3x1i(1:lx1+1,1:lx2,1:lx3))
-      allocate(self%h1x2i(1:lx1,1:lx2+1,1:lx3),self%h2x2i(1:lx1,1:lx2+1,1:lx3),self%h3x2i(1:lx1,1:lx2+1,1:lx3))
-      allocate(self%h1x3i(1:lx1,1:lx2,1:lx3+1),self%h2x3i(1:lx1,1:lx2,1:lx3+1),self%h3x3i(1:lx1,1:lx2,1:lx3+1))
-      allocate(self%er(1:lx1,1:lx2,1:lx3,3),self%etheta(1:lx1,1:lx2,1:lx3,3),self%ephi(1:lx1,1:lx2,1:lx3,3))
-      allocate(self%e1(1:lx1,1:lx2,1:lx3,3),self%e2(1:lx1,1:lx2,1:lx3,3),self%e3(1:lx1,1:lx2,1:lx3,3))
-      allocate(self%Bmag(1:lx1,1:lx2,1:lx3),self%I(1:lx2,1:lx3))
-      allocate(self%g1(1:lx1,1:lx2,1:lx3),self%g2(1:lx1,1:lx2,1:lx3),self%g3(1:lx1,1:lx2,1:lx3))
-      allocate(self%r(1:lx1,1:lx2,1:lx3),self%theta(1:lx1,1:lx2,1:lx3),self%phi(1:lx1,1:lx2,1:lx3))
-      allocate(self%alt(1:lx1,1:lx2,1:lx3),self%glon(1:lx1,1:lx2,1:lx3),self%glat(1:lx1,1:lx2,1:lx3))
+      allocate(self%h1(-1:lx1+2,-1:lx2+2,-1:lx3+2))
+      allocate(self%h2, self%h3, mold=self%h1)
+
+      allocate(self%h1x1i(1:lx1+1,1:lx2,1:lx3))
+      allocate(self%h2x1i, self%h3x1i, mold=self%h1x1i)
+
+      allocate(self%h1x2i(1:lx1,1:lx2+1,1:lx3))
+      allocate(self%h2x2i, self%h3x2i, mold=self%h1x2i)
+
+      allocate(self%h1x3i(1:lx1,1:lx2,1:lx3+1))
+      allocate(self%h2x3i,self%h3x3i, mold=self%h1x3i)
+
+      allocate(self%er(1:lx1,1:lx2,1:lx3,3))
+      allocate(self%etheta, self%ephi, self%e1, self%e2, self%e3, mold=self%er)
+
+      allocate(self%I(1:lx2,1:lx3))
+      allocate(self%Bmag(1:lx1,1:lx2,1:lx3))
+      allocate(self%g1, self%g2, self%g3, self%r, self%theta, self%phi, self%alt, self%glon, self%glat, mold=self%Bmag)
 
       self%coord_alloc_status=.true.
     else
@@ -425,17 +433,20 @@ contains
     lx1=self%lx1; lx2all=self%lx2all; lx3all=self%lx3all;
 
     if (.not. self%coord_alloc_status_root) then
-      allocate(self%h1all(-1:lx1+2,-1:lx2all+2,-1:lx3all+2),self%h2all(-1:lx1+2,-1:lx2all+2,-1:lx3all+2), &
-         self%h3all(-1:lx1+2,-1:lx2all+2,-1:lx3all+2))
-      allocate(self%h1x1iall(1:lx1+1,1:lx2all,1:lx3all),self%h2x1iall(1:lx1+1,1:lx2all,1:lx3all), &
-                 self%h3x1iall(1:lx1+1,1:lx2all,1:lx3all))
-      allocate(self%h1x2iall(1:lx1,1:lx2all+1,1:lx3all),self%h2x2iall(1:lx1,1:lx2all+1,1:lx3all), &
-                 self%h3x2iall(1:lx1,1:lx2all+1,1:lx3all))
-      allocate(self%h1x3iall(1:lx1,1:lx2all,1:lx3all+1),self%h2x3iall(1:lx1,1:lx2all,1:lx3all+1), &
-                 self%h3x3iall(1:lx1,1:lx2all,1:lx3all+1))
-      allocate(self%rall(1:lx1,1:lx2all,1:lx3all),self%thetaall(1:lx1,1:lx2all,1:lx3all),self%phiall(1:lx1,1:lx2all,1:lx3all))
-      allocate(self%altall(1:lx1,1:lx2all,1:lx3all),self%Bmagall(1:lx1,1:lx2all,1:lx3all))
-      allocate(self%glonall(1:lx1,1:lx2all,1:lx3all))
+      allocate(self%h1all(-1:lx1+2,-1:lx2all+2,-1:lx3all+2))
+      allocate(self%h2all, self%h3all, mold=self%h1all)
+
+      allocate(self%h1x1iall(1:lx1+1,1:lx2all,1:lx3all))
+      allocate(self%h2x1iall, self%h3x1iall, mold=self%h1x1iall)
+
+      allocate(self%h1x2iall(1:lx1,1:lx2all+1,1:lx3all))
+      allocate(self%h2x2iall, self%h3x2iall, mold=self%h1x2iall)
+
+      allocate(self%h1x3iall(1:lx1,1:lx2all,1:lx3all+1))
+      allocate(self%h2x3iall, self%h3x3iall, mold=self%h1x3iall)
+
+      allocate(self%rall(1:lx1,1:lx2all,1:lx3all))
+      allocate(self%thetaall, self%phiall, self%altall, self%Bmagall, self%glonall, mold=self%rall)
 
       self%coord_alloc_status_root=.true.
     else
