@@ -11,12 +11,13 @@ real(wp), dimension(2) :: rlims, thetalims, philims
 real(wp), dimension(lr) :: rarr
 real(wp), dimension(ltheta) :: thetaarr
 real(wp), dimension(lphi) :: phiarr
-real(wp), dimension(lr,ltheta,lphi) :: r,theta,phi
-real(wp), dimension(lr,ltheta,lphi) :: glon,glat,alt
-real(wp), dimension(lr,ltheta,lphi) :: rtest,thetatest,phitest
+real(wp), dimension(:,:,:), allocatable :: r,theta,phi,  glon,glat,alt, rtest,thetatest,phitest
 real(wp) :: r0,theta0,phi0,glon0,glat0,alt0
 real(wp) :: r0test,theta0test,phi0test
 real(wp) :: maxerrr,maxerrtheta,maxerrphi
+
+allocate(r(lr,ltheta,lphi))
+allocate(theta, phi, glon, glat, alt, rtest, thetatest, phitest, mold=r)
 
 !> define points of interest
 r0=Re+80e3
@@ -58,8 +59,6 @@ maxerrr=maxval(abs(rtest-r))
 maxerrtheta=maxval(abs(thetatest-theta))
 maxerrphi=maxval(abs(phitest-phi))
 print*, ' r,theta,phi array max diff:  ',maxerrr,maxerrtheta,maxerrphi
-if ( any([maxerrr,maxerrtheta,maxerrphi]>1e-6) ) then
-  error stop ' Excessive error in array coordinate conversion!'
-end if
+if ( any([maxerrr,maxerrtheta,maxerrphi]>1e-6) ) error stop ' Excessive error in array coordinate conversion!'
 
 end program geomag2geog_testdriver

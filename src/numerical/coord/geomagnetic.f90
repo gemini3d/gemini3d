@@ -25,7 +25,7 @@ contains
 !> convert geomagnetic coordinates to geographic
 subroutine geog2geomag_rank3(glon,glat,phi,theta)
   real(wp), dimension(:,:,:), intent(in) :: glon,glat
-  real(wp), dimension(:,:,:), intent(out) :: phi,theta  
+  real(wp), dimension(:,:,:), intent(out) :: phi,theta
   real(wp), dimension(1:size(glon,1),1:size(glon,2),1:size(glon,3)) :: glonwrap
   real(wp), dimension(1:size(glon,1),1:size(glon,2),1:size(glon,3)) :: thetag
   real(wp), dimension(1:size(glon,1),1:size(glon,2),1:size(glon,3)) :: phig
@@ -45,6 +45,8 @@ subroutine geog2geomag_rank3(glon,glat,phi,theta)
     phi=alpha+pi
   end where
 end subroutine geog2geomag_rank3
+
+
 subroutine geog2geomag_scalar(glon,glat,phi,theta)
   real(wp), intent(in) :: glon,glat
   real(wp), intent(out) :: phi,theta
@@ -54,8 +56,8 @@ subroutine geog2geomag_scalar(glon,glat,phi,theta)
   real(wp) :: argtmp,alpha
 
   glonwrap=mod(glon,360._wp)
-  thetag=pi/2._wp-glat*pi/180._wp
-  phig=glonwrap*pi/180._wp
+  thetag = pi/2 - glat*pi/180
+  phig = glonwrap*pi/180
 
   theta = acos(cos(thetag)*cos(thetan)+sin(thetag)*sin(thetan)*cos(phig-phin))
   argtmp = (cos(thetag)-cos(theta)*cos(thetan))/(sin(theta)*sin(thetan))
@@ -83,7 +85,7 @@ subroutine geomag2geog_rank3(phi,theta,glon,glat)
   beta=acos( max(min(argtmp,1._wp),-1._wp) )     ! deal with slight overshoots depending on precision used...
 
   where (phiwrap>pi)
-    phig2=phin-beta  
+    phig2=phin-beta
   elsewhere
     phig2=phin+beta
   end where
@@ -107,7 +109,7 @@ subroutine geomag2geog_scalar(phi,theta,glon,glat)
   beta=acos( max(min(argtmp,1._wp),-1._wp) )
 
   if (phiwrap>pi) then
-    phig2=phin-beta  
+    phig2=phin-beta
   else
     phig2=phin+beta
   end if
