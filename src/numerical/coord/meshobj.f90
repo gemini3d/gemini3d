@@ -11,21 +11,32 @@ use geomagnetic, only: geog2geomag,geomag2geog,r2alt,alt2r
 implicit none (type, external)
 public
 
-!> curvmesh is an abstract type containing functionality and data that is not specific to individual coordinate systems
-!   (which are extended types).  Note that all arrays are pointers because they need to be targets and allocatable AND the fortran
-!   standard does not support having allocatable, target attributed inside a derived type.  Because of this is it not straightforward
-!   to check the allocation status of these arrays (i.e. fortran also does not allow one to check the allocation status of a pointer).
-!   Thus the quantities which are not, for sure, allocated need to have an allocation status variable so we can check...  Because
-!   the pointers are always allocated in groups we do not need separate status vars for each array thankfully...
+!> curvmesh is an abstract type containing functionality and data that is not specific to individual
+!   coordinate systems
+!   (which are extended types).  Note that all arrays are pointers because they need to be targets
+!   and allocatable AND the fortran
+!   standard does not support having allocatable, target attributed inside a derived type.  Because
+!   of this is it not straightforward
+!   to check the allocation status of these arrays (i.e. fortran also does not allow one to check
+!   the allocation status of a pointer).
+!   Thus the quantities which are not, for sure, allocated need to have an allocation status
+!   variable so we can check...  Because
+!   the pointers are always allocated in groups we do not need separate status vars for each array
+!   thankfully...
 !
-!  Note that the deferred bindings all have the single argument of self so any data used to compute whatever quantity is desired must
-!   be stored in the derived type.  This is done to avoid long, potentially superfluous argument lists that may contain extraneous information,
-!   e.g. if a coordinate is not needed to compute a metric factor and similar situations.  Any operation that needs more input should be
-!   defined as a type-bound procedure in any extensions to this abstract type.  This also means that error checking needs to be done in the
+!  Note that the deferred bindings all have the single argument of self so any data used to compute
+!   whatever quantity is desired must
+!   be stored in the derived type.  This is done to avoid long, potentially superfluous argument
+!   lists that may contain extraneous information,
+!   e.g. if a coordinate is not needed to compute a metric factor and similar situations.  Any
+!   operation that needs more input should be
+!   defined as a type-bound procedure in any extensions to this abstract type.  This also means that
+!   error checking needs to be done in the
 !   extended type to insure that the data needed for a given calculation exist.
 type, abstract :: curvmesh
-  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Generic properties !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> we need to know whether or not different groups of pointers are allocated and the intrinsic "allocatable" only work on allocatables (not pointers)...
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Generic properties !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> we need to know whether or not different groups of pointers are allocated and the intrinsic
+  !  "allocatable" only work on allocatables (not pointers)...
   logical :: xi_alloc_status=.false.
   logical :: dxi_alloc_status=.false.
   logical :: dxi_alloc_status_root=.false.
@@ -47,7 +58,12 @@ type, abstract :: curvmesh
 
   real(wp), dimension(:), pointer :: x2
   real(wp), dimension(:), pointer :: x2i
-  real(wp), dimension(:), pointer :: dx2        ! this (and similar dx arrays) are pointers because they become associated with other pointers (meaning they have to either have the "target" keyword or themselves be pointers).  These should also be contiguous but I believe that is guaranteed as long as they are assigned through allocate statements (see fortran standard)  derived type arrays cannot be targets so we are forced to declare them as pointers and trust that they are allocated contiguous
+  real(wp), dimension(:), pointer :: dx2
+  !! this (and similar dx arrays) are pointers because they become associated with
+  !! other pointers (must either have the "target" keyword or are themselves pointers).
+  !! These should also be contiguous but I believe that is guaranteed as long as they are assigned
+  !! through allocate statements (see fortran standard)  derived type arrays cannot be targets so we
+  !! are forced to declare them as pointers and trust that they are allocated contiguous
   real(wp), dimension(:), pointer :: dx2i
 
   !> this are fullgrid but possibly carried around by workers too since 1D arrays?
@@ -72,12 +88,14 @@ type, abstract :: curvmesh
   !> flag for indicating whether or not the grid is periodic
   logical :: flagper
 
-  !> flag for indicated type of grid (0 - closed dipole; 1 - open dipole inverted; 2 - non-inverted).  Computed by method in generic
-  !class once coordinate specific quantitaties are defined
+  !> flag for indicated type of grid (0 - closed dipole; 1 - open dipole inverted; 2 - non-inverted).
+  !! Computed by method in generic
+  !! class once coordinate specific quantitaties are defined
   integer :: gridflag
 
-  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Coordinate system specific properties !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Metric factors.  These are pointers to be assigned/allocated/filled by type extensions for specific coordinate system
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Coordinate system specific properties !!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Metric factors.  These are pointers to be assigned/allocated/filled by type extensions for
+  !! specific coordinate system
   logical :: coord_alloc_status=.false.    ! single status variable for all coord-specific arrays
   logical :: coord_alloc_status_root=.false.
 
@@ -90,7 +108,8 @@ type, abstract :: curvmesh
   real(wp), dimension(:,:,:), pointer :: h1x3i,h2x3i,h3x3i
   !! metric factors at x3 interfaces; dim. 3 has lx3+1
 
-  !> root only; full grid metric factors.  These must have type-extension bound procedures to provide allocation and filling
+  !> root only; full grid metric factors.  These must have type-extension bound procedures to
+  !> provide allocation and filling
   real(wp), dimension(:,:,:), pointer :: h1all,h2all,h3all
   real(wp), dimension(:,:,:), pointer :: h1x1iall,h2x1iall,h3x1iall
   !! dimension 1 has size lx1+1
@@ -99,8 +118,10 @@ type, abstract :: curvmesh
   real(wp), dimension(:,:,:), pointer :: h1x3iall,h2x3iall,h3x3iall
   !! dim. 3 has lx3all+1
 
-  !> Problem-depedent geometric terms that can be precomputed, e.g. for advection and elliptic equations
-  !! to be added in later if we deem it worthwhile to include these to save computation time and/or memory
+  !> Problem-depedent geometric terms that can be precomputed, e.g. for advection and elliptic
+  !! equations
+  !! to be added in later if we deem it worthwhile to include these to save computation time and/or
+  !! memory
 
   !> unit vectors - Pointers.  Subclass methods must allocate and assign values to these.
   real(wp), dimension(:,:,:,:), pointer :: e1,e2,e3
@@ -112,7 +133,8 @@ type, abstract :: curvmesh
   real(wp), dimension(:,:,:), pointer :: r,theta,phi
   !! may be used in the interpolation of neutral perturbations
 
-  !> root only; full grid geomagnetic positions.  Pointers.  Need type-extension bound procedures for each
+  !> root only; full grid geomagnetic positions.  Pointers.  Need type-extension bound procedures
+  !! for each
   !coordinate system must allocate and compute these.
   real(wp), dimension(:,:,:), pointer :: rall,thetaall,phiall
 
@@ -137,10 +159,11 @@ type, abstract :: curvmesh
   !! length of null point index array
   integer, dimension(:,:), pointer :: inull
 
-  !> for floating coordinate systems we must define an aboslute center position in geographic coordinates
+  !> for floating coordinate systems we must define an aboslute center position in geographic
+  !! coordinates
   real(wp) :: glonctr,glatctr
 
-  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! type-bound procedures !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! type-bound procedures !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   contains
     procedure :: set_coords             ! initialize general curvilinear coordinates and mesh sizes
     procedure :: calc_coord_diffs       ! compute bwd and midpoint diffs from coordinates
@@ -158,12 +181,15 @@ type, abstract :: curvmesh
     procedure :: set_root               ! set fullgrid variables that have been gathered from workers to root
     procedure :: set_periodic           ! set the flag which labels grid as periodic vs. aperiodic
     procedure :: set_center             ! set the center of the grid (only needed for "floating" coordinate systems)
-    !final :: destructor   ! an abstract type cannot have a final procedure, as the final procedure must act on a type and not polymorhpic object
+    !final :: destructor
+    !! an abstract type cannot have a final procedure, as the final procedure
+    !! must act on a type and not polymorhpic object
 
     !! deferred bindings and associated generic interfaces
     procedure(initmake), deferred :: init
     procedure(initmake), deferred :: make
-    ! note there is no make_root procedure as this requires message passing and needs to be done outside this type
+    !! There is no make_root procedure as this requires message passing and needs to be done outside
+    !! this type
     procedure(calc_procedure), deferred :: calc_grav
     procedure(calc_procedure), deferred :: calc_Bmag
     procedure(calc_procedure), deferred :: calc_inclination
@@ -174,8 +200,10 @@ type, abstract :: curvmesh
     procedure(calc_procedure), deferred :: calc_e2
     procedure(calc_procedure), deferred :: calc_e3
 
-    !! these bindings have different interfaces due to evaluation of metric factors at cell centers vs. interfaces
-    !   because the return value may need to be assigned to different member arrays this should be a function that
+    !! these bindings have different interfaces due to evaluation of metric factors at cell centers
+    !! vs. interfaces
+    !   because the return value may need to be assigned to different member arrays this should be a
+    !!   function that
     !   does not pass in or operate on its object.
     procedure(calc_metric), deferred, nopass :: calc_h1
     procedure(calc_metric), deferred, nopass :: calc_h2
@@ -183,8 +211,8 @@ type, abstract :: curvmesh
 end type curvmesh
 
 
-!> interfaces for deferred bindings, note all should operate on data in self - this provides maximum flexibility
-!   for the extension to use whatever data it needs to compute the various grid quantities
+!> interfaces for deferred bindings, note all should operate on data in self - this provides maximum
+!! flexibility for the extension to use whatever data it needs to compute the various grid quantities
 abstract interface
   subroutine initmake(self)
     import curvmesh
@@ -196,7 +224,8 @@ abstract interface
   end subroutine calc_procedure
   function calc_metric(coord1,coord2,coord3) result(hval)
     import wp
-    real(wp), dimension(:,:,:), pointer, intent(in) :: coord1,coord2,coord3    ! because these will be aliased (readability) so should be pointers, e.g. x,y,z or r,theta,phi
+    real(wp), dimension(:,:,:), pointer, intent(in) :: coord1,coord2,coord3
+    !!! because these will be aliased (readability) so should be pointers, e.g. x,y,z or r,theta,phi
     real(wp), dimension(lbound(coord1,1):ubound(coord1,1),lbound(coord1,2):ubound(coord1,2), &
                         lbound(coord1,3):ubound(coord1,3)) :: hval   ! arrays may not start at index 1
   end function calc_metric
@@ -291,12 +320,14 @@ contains
     lx1=self%lx1; lx2=self%lx2; lx3=self%lx3    ! limits indexing verboseness, which drives me crazy
 
     allocate(self%dx1(0:lx1+2), self%x1i(1:lx1+1), self%dx1i(1:lx1))
-    self%dx1 = self%x1(0:lx1+2)-self%x1(-1:lx1+1)       !! computing these avoids extra message passing (could be done for other coordinates
+    self%dx1 = self%x1(0:lx1+2)-self%x1(-1:lx1+1)
+    !! computing these avoids extra message passing (could be done for other coordinates
     self%x1i(1:lx1+1) = 0.5_wp*(self%x1(0:lx1)+self%x1(1:lx1+1))
     self%dx1i=self%x1i(2:lx1+1)-self%x1i(1:lx1)
 
     allocate(self%dx2(0:lx2+2), self%x2i(1:lx2+1), self%dx2i(1:lx2))
-    self%dx2 = self%x2(0:lx2+2)-self%x2(-1:lx2+1)       !! computing these avoids extra message passing (could be done for other coordinates
+    self%dx2 = self%x2(0:lx2+2)-self%x2(-1:lx2+1)
+    !! computing these avoids extra message passing (could be done for other coordinates
     self%x2i(1:lx2+1) = 0.5_wp*(self%x2(0:lx2)+self%x2(1:lx2+1))
     self%dx2i=self%x2i(2:lx2+1)-self%x2i(1:lx2)
 
@@ -514,7 +545,7 @@ contains
 
     IDstr=' '
     write(IDstr,'(i1)') ID
-    call hf%initialize(path//'simsize'//IDstr//'.h5',status='replace',action='w')
+    call hf%initialize(path//'/simsize'//IDstr//'.h5',status='replace',action='w')
     call hf%write('/lx1',self%lx1)
     call hf%write('/lx2',self%lx2)
     call hf%write('/lx3',self%lx3)
@@ -536,7 +567,7 @@ contains
     IDstr=' '
     write(IDstr,'(i1)') ID
     call self%writesize(path,ID)
-    call hf%initialize(path//'simgrid'//IDstr//'.h5',status='replace',action='w')
+    call hf%initialize(path//'/simgrid'//IDstr//'.h5',status='replace',action='w')
     call hf%write('/x1',self%x1)
     call hf%write('/x2',self%x2)
     call hf%write('/x3',self%x3)
@@ -558,7 +589,7 @@ contains
     IDstr=' '
     write(IDstr,'(i1)') ID
     call self%writesize(path,ID)
-    call hf%initialize(path//'simgrid'//IDstr//'.h5',status='replace',action='w')
+    call hf%initialize(path//'/simgrid'//IDstr//'.h5',status='replace',action='w')
     call hf%write('/x1',self%x1)
     call hf%write('/x1i',self%x1i)
     call hf%write('/dx1b',self%dx1)
