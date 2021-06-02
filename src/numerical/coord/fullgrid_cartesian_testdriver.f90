@@ -14,11 +14,14 @@ real(wp), dimension(2), parameter :: ylims=[-2.0559e+05,2.0559e+05]
 real(wp), dimension(lz) :: z
 real(wp), dimension(lx) :: xcart
 real(wp), dimension(ly) :: y
-integer :: iz,ix,iy
+integer :: iz,ix,iy, i
 real(wp) :: minchkvar,maxchkvar
-real(wp), dimension(1:lz-4,1:lx-4,1:ly-4) :: proj
-character(:), allocatable :: path                  !use auto-allocation feature
+real(wp), dimension(:,:,:), allocatable :: proj
 
+character(:), allocatable :: path
+character(1000) :: argv
+
+allocate(proj(1:lz-4,1:lx-4,1:ly-4))
 
 ! define a grid, this will include ghost cells
 z=[(zlims(1) + (zlims(2)-zlims(1))/(lz-1)*(iz-1),iz=1,lz)]
@@ -51,8 +54,8 @@ call x%make()
 !!!! end grid setup and init
 
 ! check variable allocation and set status
-print*, "fullgrid_testdriver:  allocation statuses..."
-print*, x%xi_alloc_status,x%dxi_alloc_status,x%difflen_alloc_status,x%null_alloc_status,x%geog_set_status
+if(.not. all([x%xi_alloc_status,x%dxi_alloc_status,x%difflen_alloc_status,x%null_alloc_status,x%geog_set_status])) &
+  error stop "allocation failure"
 
 ! now do some basic sanity checks
 print*, 'fullgrid_testdriver:  Starting basic checks...'
@@ -102,11 +105,16 @@ print*, ' fullgrid_testdriver, alt:  ',minchkvar,maxchkvar
 print*, ' fullgrid_testdriver, number of null grid points:  ',size(x%inull,1)
 
 ! write out the grid data to a file
-path='./cartesian/'
-call mkdir(path)
-print*, ' fullgrid_testdriver, writing grid coords. to:  ',path
-call x%writegrid(path,0)
-call x%writegridall(path,1)
+if (command_argument_count() >= 1) then
+  call get_command_argument(1, argv, status=i)
+  if (i /= 0) error stop "could not get user file write path"
+  path = trim(argv)
+  call mkdir(path)
+  print*, ' fullgrid_testdriver, writing grid coords. to:  ',path
+  call x%writegrid(path,0)
+  call x%writegridall(path,1)
+endif
+
 end block
 !!end do
 

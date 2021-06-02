@@ -16,11 +16,12 @@ real(wp), dimension(2), parameter :: plims=[1.2509838,1.4372374]
 real(wp), dimension(2), parameter :: philims=[3.6126509,3.7240195]
 integer :: iq,ip,iphi, i
 real(wp) :: minchkvar,maxchkvar
-real(wp), dimension(1:lq-4,1:lp-4,1:lphi-4) :: proj
+real(wp), dimension(:,:,:), allocatable :: proj
 
 character(:), allocatable :: path
 character(1000) :: argv
 
+allocate(proj(1:lq-4,1:lp-4,1:lphi-4))
 
 ! define a grid, in reality this would be pull in from a file
 q=[(qlims(1) + (qlims(2)-qlims(1))/(lq-1)*(iq-1),iq=1,lq)]
@@ -54,8 +55,8 @@ call x%make()
 !!!! end grid setup and init
 
 ! check variable allocation and set status
-print*, "fullgrid_testdriver:  allocation statuses..."
-print*, x%xi_alloc_status,x%dxi_alloc_status,x%difflen_alloc_status,x%null_alloc_status,x%geog_set_status
+if(.not. (x%xi_alloc_status .and. x%dxi_alloc_status .and. x%difflen_alloc_status .and. x%null_alloc_status .and. &
+  x%geog_set_status)) error stop "failed to allocate"
 
 ! now do some basic sanity checks
 print*, 'fullgrid_testdriver:  Starting basic checks...'
