@@ -38,7 +38,7 @@ endif()
 
 string(JSON ref_json SET ${ref_json} gemini3d version \"${git_rev}\")
 string(JSON ref_json SET ${ref_json} gemini3d git_branch \"${git_branch}\")
-string(JSON ref_json SET ${ref_json} gemini3d git_porcelain \"${git_porcelain}\")
+string(JSON ref_json SET ${ref_json} gemini3d git_porcelain ${git_porcelain})
 
 # check if tag exists, create if not
 string(JSON m ERROR_VARIABLE e GET ${ref_json} library)
