@@ -328,10 +328,7 @@ if(i==0) return
 nml = ""
 if(present(namelist)) nml = namelist
 
-if (is_iostat_end(i)) then
-  write(stderr,*) 'ERROR: namelist ' // nml // ': ensure there is a trailing blank line in ' // filename
-  error stop 5
-endif
+if (is_iostat_end(i)) error stop "namelist " // nml // ': ensure there is a trailing blank line in ' // filename
 
 msg = ""
 select case (get_compiler_vendor())
@@ -355,8 +352,7 @@ end select
 
 if (len(msg)==0) write(stderr,*) "namelist read error code",i
 
-write(stderr,'(A,/,A)') 'ERROR: reading namelist ', nml, " from ", filename, " problem: ", msg
-error stop 5
+error stop 'namelist ' // nml // " from " // filename // " problem: " // msg
 
 end subroutine check_nml_io
 

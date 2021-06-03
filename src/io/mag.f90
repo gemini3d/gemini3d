@@ -57,8 +57,7 @@ case ('h5')
 case ('nc')
   call output_magfields_nc4(outdir,ymd,UTsec,Br,Btheta,Bphi)
 case default
-  write(stderr,*) 'mag:output_magfields: unknown file format' // out_format
-  error stop 2
+  error stop 'mag:output_magfields: unknown file format' // out_format
 end select
 
 call check_finite_mag(Br, Btheta, Bphi)
