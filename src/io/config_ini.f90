@@ -95,10 +95,7 @@ character(*), intent(in) :: filename
 
 if (is_iostat_end(i)) return
 
-if (i /= 0) then
-write(stderr,*) 'ERROR: problem reading ' // filename
-error stop 5
-endif
+if (i /= 0) error stop 'ERROR: problem reading ' // filename
 
 end subroutine check_ini_io
 
