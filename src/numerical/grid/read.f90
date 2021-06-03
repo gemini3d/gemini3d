@@ -4,84 +4,22 @@ submodule (grid) grid_read
 
 implicit none (type, external)
 
-interface ! readgrid_*.f90
-  module subroutine get_grid3_coords_raw(path,x1,x2all,x3all,glonctr,glatctr)
-    character(*), intent(in) :: path
-    real(wp), dimension(:), intent(out) :: x1,x2all,x3all
-    real(wp) :: glonctr,glatctr
-  end subroutine get_grid3_coords_raw
-
-  module subroutine get_grid3_coords_hdf5(path,x1,x2all,x3all,glonctr,glatctr)
-    character(*), intent(in) :: path
-    real(wp), dimension(:), intent(out) :: x1,x2all,x3all
-    real(wp) :: glonctr,glatctr
-  end subroutine get_grid3_coords_hdf5
-
-  module subroutine get_grid3_coords_nc4(path,x1,x2all,x3all,glonctr,glatctr)
-    character(*), intent(in) :: path
-    real(wp), dimension(:), intent(out) :: x1,x2all,x3all
-    real(wp) :: glonctr,glatctr
-  end subroutine get_grid3_coords_nc4
-end interface
-
 contains
 
 !> Read in the grid information and prep grid object.  Note that there are also module-scope variables
-!   that are (redundantly, for convenience) defined based on the grid structure and this procedure 
-!   must also set those.  
-module procedure read_grid
+!   that are (redundantly, for convenience) defined based on the grid structure and this procedure
+!   must also set those.
+module procedure read_grid_cart
 ! subroutine read_grid(indatsize,indatgrid,flagperiodic,x)
-  real(wp), dimension(:), allocatable :: x1,x2,x3,x2all,x3all
-  integer :: gridtype
-  integer :: islstart,islfin
-  integer, dimension(2) :: indsgrid
-  integer iid
-  real(wp) :: glonctr,glatctr
 
-  call set_subgrid_size()    ! everyone computes what the size of their subgrid should be
-  allocate(x1(-1:lx1+2),x2(-1:lx2+2),x3(-1:lx3+2),x2all(-1:lx2all+2),x3all(-1:lx3all+2))   ! tmp space for coords from file
-  call get_grid3_coords(indatgrid,x1,x2all,x3all,glonctr,glatctr)   ! only need ctr location for certain grid types
-
-  !> each worker needs to set their specific subgrid coordinates
-  indsgrid=ID2grid(mpi_cfg%myid, mpi_cfg%lid2)     !compute my location on the process grid
-  !! x2
-  islstart=indsgrid(1)*lx2+1              !piece of grid that corresponds to my x3 position
-  islfin=islstart+lx2-1
-  x2=x2all(islstart-2:islfin+2)
-  !! x3
-  islstart=indsgrid(2)*lx3+1              !piece of grid that corresponds to my x3 position
-  islfin=islstart+lx3-1
-  x3=x3all(islstart-2:islfin+2)
-
-  ! FIXME: hardcode grid type for now; compute it from the coordinates eventually??
-  !! right now we just have Cartesian and dipole so it's easy to detect based on x2
-  if (maxval(abs(x2))<100) then     !dipole
-    gridtype=1
-    print*, ' Detected dipole grid...'
-  else
-    gridtype=0
-    print*, 'Detected Cartesian grid...'
-  end if
-  
-  !> Declare grid type that we are dealing with; note lack of matching deallocates assume
-  !   that the compiler will deal with it automatically
-  !  Also set the grid center position if not already dictated by the coordinate system
-  select case (gridtype)
-    case(0)    ! cartesian
-      allocate(cartmesh::x)
-      call x%set_center(glonctr,glatctr)
-    case(1)    ! dipole
-      allocate(dipolemesh::x)
-    case default
-      error stop ' invalid mesh type specified; cannot instantiate!'
-  end select
+  call x%set_center(glonctr,glatctr)
 
   !> Create the grid object
   call x%set_coords(x1,x2,x3,x2all,x3all)    ! store coordinate arrays
-  deallocate(x1,x2,x3,x2all,x3all)
+
   call x%init()                              ! allocate space for subgrid variables
   call x%make()                              ! fill auxiliary arrays
-  
+
   !> We need to collect the info for root's fullgrid variables
   if (mpi_cfg%myid==0) then
     call x%init_storage_root()                ! now we have space in type to store full-grid arrays for gather
@@ -96,7 +34,7 @@ module procedure read_grid
                           x%h1x2iall,x%h2x2iall,x%h3x2iall, &
                           x%h1x3iall,x%h2x3iall,x%h3x3iall, &
                           x%rall,x%thetaall,x%phiall, &
-                          x%altall,x%Bmagall,x%glonall)     
+                          x%altall,x%Bmagall,x%glonall)
     !! note that we can fill arrays manually with our own routines rather than use x%set_root, saves temp arrays and memory
     call x%calc_coord_diffs_root()
   else
@@ -108,69 +46,74 @@ module procedure read_grid
                           x%r,x%theta,x%phi, &
                           x%alt,x%Bmag,x%glon)
   end if
-  
+
   !> Assign periodic or not based on user input
   call x%set_periodic(flagperiodic)
-  
+
   !> Set flags for module scope vars.
   gridflag=x%gridflag
-  
+
   !> Set gravitational fields for module scope vars., use pointers to avoid duplicating data
   g1=>x%g1; g2=>x%g2; g3=>x%g3
-  
+
   !> Make sure we have a sensible x2,3 decomposition of grid
   !> and that parameters aren't impossible
   if(mpi_cfg%myid == 0) call grid_check(x)
-end procedure read_grid
+end procedure read_grid_cart
 
 
-subroutine set_subgrid_size()
+module procedure read_grid_dipole
+! subroutine read_grid(indatsize,indatgrid,flagperiodic,x)
 
-  !! use only non-swapped axes
-  if(lx2all==1) then
-    print *, 'get_subgrid_size: 2D run with singleton x2'
-    lx2 = 1
-    lx3 = lx3all/mpi_cfg%lid
-  else if (lx3all==1) then
-    print*, 'get_subgrid_size:  2D run with singleton x3'
-    lx3=1
-    lx2=lx2all/mpi_cfg%lid
+  !> Create the grid object
+  call x%set_coords(x1,x2,x3,x2all,x3all)    ! store coordinate arrays
+
+  call x%init()                              ! allocate space for subgrid variables
+  call x%make()                              ! fill auxiliary arrays
+
+  !> We need to collect the info for root's fullgrid variables
+  if (mpi_cfg%myid==0) then
+    call x%init_storage_root()                ! now we have space in type to store full-grid arrays for gather
+    call gather_grid_root(x%h1,x%h2,x%h3, &
+                          x%h1x1i,x%h2x1i,x%h3x1i, &
+                          x%h1x2i,x%h2x2i,x%h3x2i, &
+                          x%h1x3i,x%h2x3i,x%h3x3i, &
+                          x%r,x%theta,x%phi, &
+                          x%alt,x%Bmag,x%glon, &
+                          x%h1all,x%h2all,x%h3all, &
+                          x%h1x1iall,x%h2x1iall,x%h3x1iall, &
+                          x%h1x2iall,x%h2x2iall,x%h3x2iall, &
+                          x%h1x3iall,x%h2x3iall,x%h3x3iall, &
+                          x%rall,x%thetaall,x%phiall, &
+                          x%altall,x%Bmagall,x%glonall)
+    !! note that we can fill arrays manually with our own routines rather than use x%set_root, saves temp arrays and memory
+    call x%calc_coord_diffs_root()
   else
-    print *, 'get_subgrid_size: 3D run'
-    !! should divide evenly if generated from process_grid
-    lx2 = lx2all/mpi_cfg%lid2
-    lx3 = lx3all/mpi_cfg%lid3
+    !! gather
+    call gather_grid_workers(x%h1,x%h2,x%h3, &
+                          x%h1x1i,x%h2x1i,x%h3x1i, &
+                          x%h1x2i,x%h2x2i,x%h3x2i, &
+                          x%h1x3i,x%h2x3i,x%h3x3i, &
+                          x%r,x%theta,x%phi, &
+                          x%alt,x%Bmag,x%glon)
   end if
 
-  ! FIXME: right now just force this to zero so later swap-specific code does not get triggered (eventually needs to be removed)
-  !flagswap=0
+  !> Assign periodic or not based on user input
+  call x%set_periodic(flagperiodic)
 
-  if(lx2all > 1 .and. lx3all > 1) then
-    if(lx2 == 1 .or. lx3 == 1) error stop "read_grid_root: 3D grids cannot be partitioned with a single MPI image on an axis"
-  end if
-end subroutine set_subgrid_size
+  !> Set flags for module scope vars.
+  gridflag=x%gridflag
 
+  !> Set gravitational fields for module scope vars., use pointers to avoid duplicating data
+  g1=>x%g1; g2=>x%g2; g3=>x%g3
 
-subroutine get_grid3_coords(path,x1,x2all,x3all,glonctr,glatctr)
-  character(*), intent(in) :: path
-  real(wp), dimension(:), intent(out) :: x1,x2all,x3all
-  real(wp) :: glonctr,glatctr
+  !> Make sure we have a sensible x2,3 decomposition of grid
+  !> and that parameters aren't impossible
+  if(mpi_cfg%myid == 0) call grid_check(x)
+end procedure read_grid_dipole
 
-  character(:), allocatable :: fmt
+!--------------------------------------------------------------------------------------------------
 
-  fmt = path(index(path, '.', back=.true.) : len(path))
-  select case (fmt)
-    case ('.dat')
-      call get_grid3_coords_raw(path,x1,x2all,x3all,glonctr,glatctr)
-    case ('.h5')
-      call get_grid3_coords_hdf5(path,x1,x2all,x3all,glonctr,glatctr)
-    case ('.nc')
-      call get_grid3_coords_nc4(path,x1,x2all,x3all,glonctr,glatctr)
-    case default
-      write(stderr,*) 'grid:read:get_grid3: unknown grid format: ' // fmt
-      error stop 2
-  end select 
-end subroutine get_grid3_coords
 
 
 !> pull full grid vars. from workers into root arrays
