@@ -1,6 +1,6 @@
 function(ref_package data_dir ref_json_file name)
 
-set(ARC_TYPE zstd)
+set(ARC_TYPE zst)
 
 cmake_path(GET ref_json_file PARENT_PATH arc_dir)
 cmake_path(APPEND archive ${arc_dir} ${name}.${ARC_TYPE})
