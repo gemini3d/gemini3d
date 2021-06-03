@@ -49,9 +49,12 @@ else()
 endif()
 
 if(${PROJECT_NAME}_BUILD_TESTING)
-add_executable(test_pathlib test_pathlib.f90)
-target_link_libraries(test_pathlib pathlib)
-add_test(NAME unit:pathlib COMMAND $<TARGET_FILE:test_pathlib>)
+  add_executable(test_pathlib test_pathlib.f90)
+  target_link_libraries(test_pathlib PRIVATE pathlib)
+  add_test(NAME unit:pathlib COMMAND $<TARGET_FILE:test_pathlib>)
+  set_tests_properties(unit:pathlib PROPERTIES
+    LABELS unit
+    TIMEOUT 10)
 endif()
 
 # --- config
@@ -105,7 +108,7 @@ target_link_libraries(reader PRIVATE const pathlib h5fortran::h5fortran nc4fortr
 
 if(netcdf AND ${PROJECT_NAME}_BUILD_TESTING)
   add_executable(test_simsize_nc4 test_simsize_nc4.f90)
-  target_link_libraries(test_simsize_nc4 nc4fortran::nc4fortran)
+  target_link_libraries(test_simsize_nc4 PRIVATE nc4fortran::nc4fortran)
   # add_test(NAME unit:simsize_nc4 COMMAND test_simsize_nc4)
 endif()
 
