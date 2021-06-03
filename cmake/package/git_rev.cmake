@@ -9,7 +9,7 @@ find_package(Git)
 set(_max_len 80) # arbitrary limit, so as not to exceed maximum 132 character Fortran line length.
 set(git_branch)
 set(git_rev)
-set(git_porcelain .false.)
+set(git_porcelain false)
 
 if(NOT GIT_FOUND)
   return()
@@ -54,7 +54,7 @@ else()
 endif()
 string(APPEND git_rev " ${PROJECT_VERSION}")
 
-set(git_porcelain .true.)
+set(git_porcelain true)
 execute_process(COMMAND ${GIT_EXECUTABLE} status --porcelain
   WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
   OUTPUT_VARIABLE _porcelain
@@ -62,10 +62,10 @@ execute_process(COMMAND ${GIT_EXECUTABLE} status --porcelain
   RESULT_VARIABLE _err
   TIMEOUT 10)
 if(_porcelain)
-  set(git_porcelain .false.)
+  set(git_porcelain false)
 endif(_porcelain)
 if(NOT _err EQUAL 0)
-  set(git_porcelain .false.)
+  set(git_porcelain false)
 endif()
 
 message(STATUS "${PROJECT_NAME}  git revision: ${git_rev}  git_branch: ${git_branch}  git_porcelain: ${git_porcelain}")
