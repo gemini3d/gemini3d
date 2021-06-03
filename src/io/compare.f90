@@ -72,6 +72,8 @@ if(P%python) then
 elseif(P%matlab) then
   cmd = "matlab -batch " // achar(34) // "gemini3d.plot.plotdiff('" // new_file // "', '" // ref_file // "', '" // name(1:2) // &
     "')" // achar(34)
+else
+  return
 endif
 
 call execute_command_line(cmd, exitstat=ierr1, cmdstat=ierr2)
@@ -86,6 +88,7 @@ if(ierr1 /=0 .or. ierr2 /= 0) then
 endif
 
 end subroutine plot_diff
+
 
 subroutine check_simsize(new, ref, lx1, lx2all, lx3all)
 !! check that new simsize == Old_simsize
