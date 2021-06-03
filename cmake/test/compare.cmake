@@ -66,7 +66,7 @@ LABELS compare)
 # resource_lock compare for Windows, which can take 100x longer when run
 # at same time with non-dependent sim runs.
 # it's not a problem to run multiple compare at once, but it is a problem
-# to run gemini3d.compare at same time as gemini.bin, on differet sims
+# to run gemini3d.compare at same time as gemini.bin, even on different sims
 
 endif(hdf5)
 
