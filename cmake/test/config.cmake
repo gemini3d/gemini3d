@@ -22,11 +22,6 @@ set(test_cmd $<TARGET_FILE:gemini3d.run> ${out_dir} -exe $<TARGET_FILE:gemini.bi
 
 if(mpi)
   list(APPEND test_cmd -mpiexec ${MPIEXEC_EXECUTABLE})
-
-  if(NOT HWLOC_FOUND)
-    # hwloc is probably the most accurate way to determine CPU count--fallback to CMake count.
-    list(APPEND test_cmd -n ${Ncpu})
-  endif()
 endif()
 
 
