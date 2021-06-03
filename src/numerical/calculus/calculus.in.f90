@@ -62,35 +62,35 @@ interface ! gradient.f90
     integer, intent(in) :: lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3    !upper and lower bounds on the mesh indices for this derivative
     real(wp), dimension(1:size(f,1),1:size(f,2),1:size(f,3)) :: grad3D1_curv_3
   end function grad3D1_curv_3
-  
+
   module function grad3D1_curv_23(f,x,lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3)
     real(wp), dimension(:,:,:), intent(in) :: f
     class(curvmesh), intent(in) :: x
     integer, intent(in) :: lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3    !upper and lower bounds on the mesh indices for this derivative
     real(wp), dimension(1:size(f,1),1:size(f,2),1:size(f,3)) :: grad3D1_curv_23
   end function grad3D1_curv_23
-  
+
   module function grad3D2_curv_3(f,x,lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3)
     real(wp), dimension(:,:,:), intent(in) :: f
     class(curvmesh), intent(in) :: x
     integer, intent(in) :: lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3
     real(wp), dimension(1:size(f,1),1:size(f,2),1:size(f,3)) :: grad3D2_curv_3
   end function grad3D2_curv_3
-  
+
   module function grad3D2_curv_23(f,x,lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3)
     real(wp), dimension(:,:,:), intent(in) :: f
     class(curvmesh), intent(in) :: x
     integer, intent(in) :: lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3
     real(wp), dimension(1:size(f,1),1:size(f,2),1:size(f,3)) :: grad3D2_curv_23
   end function grad3D2_curv_23
-  
+
   module function grad3D3_curv_3(f,x,lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3)
     real(wp), dimension(:,:,:), intent(in) :: f
     class(curvmesh), intent(in) :: x
     integer, intent(in) :: lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3
     real(wp), dimension(1:size(f,1),1:size(f,2),1:size(f,3)) :: grad3D3_curv_3
   end function grad3D3_curv_3
-  
+
   module function grad3D3_curv_23(f,x,lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3)
     real(wp), dimension(:,:,:), intent(in) :: f
     class(curvmesh), intent(in) :: x
@@ -106,35 +106,35 @@ interface  ! integral.f90
     integer, intent(in) :: lbnd,ubnd    !no upper bound used, but could be for error checking
     real(wp), dimension(1:size(f,1),1:size(f,2),1:size(f,3)) :: integral3D1_curv
   end function integral3D1_curv
-  
+
   module pure function integral3D1_curv_alt(f,x,lbnd,ubnd)
     real(wp), dimension(:,:,:), intent(in) :: f
     class(curvmesh), intent(in) :: x
     integer, intent(in) :: lbnd,ubnd    !no upper bound used, but could be for error checking
     real(wp), dimension(1:size(f,1),1:size(f,2),1:size(f,3)) :: integral3D1_curv_alt
   end function integral3D1_curv_alt
-  
+
   module pure function integral2D1_curv(f,x,lbnd,ubnd)
     real(wp), dimension(:,:), intent(in) :: f
     class(curvmesh), intent(in) :: x
     integer, intent(in) :: lbnd,ubnd
     real(wp), dimension(1:size(f,1),1:size(f,2)) :: integral2D1_curv
   end function integral2D1_curv
-  
+
   module pure function integral2D1_curv_alt(f,x,lbnd,ubnd)
     real(wp), dimension(:,:), intent(in) :: f
     class(curvmesh), intent(in) :: x
     integer, intent(in) :: lbnd,ubnd
     real(wp), dimension(1:size(f,1),1:size(f,2)) :: integral2D1_curv_alt
   end function integral2D1_curv_alt
-  
+
   module pure function integral2D2_curv(f,x,lbnd,ubnd)
     real(wp), dimension(:,:), intent(in) :: f
     class(curvmesh), intent(in) :: x
     integer, intent(in) :: lbnd,ubnd
     real(wp), dimension(1:size(f,1),1:size(f,2)) :: integral2D2_curv
   end function integral2D2_curv
-  
+
   module pure function integral2D2_curv_alt(f,x,lbnd,ubnd)
     real(wp), dimension(:,:), intent(in) :: f
     class(curvmesh), intent(in) :: x
@@ -151,7 +151,7 @@ interface ! div.f90
     integer, intent(in) :: lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3
     real(wp), dimension(1:size(f1,1),1:size(f1,2),1:size(f1,3)) :: div3D_curv_23
   end function div3D_curv_23
-  
+
   module function div3D_curv_3(f1,f2,f3,x,lbnd1,ubnd1,lbnd2,ubnd2,lbnd3,ubnd3)
     real(wp), dimension(:,:,:), intent(in) :: f1,f2,f3
     class(curvmesh), intent(in) :: x
@@ -588,10 +588,10 @@ real(wp), intent(in) :: nmax,alt0
 
 real(wp), dimension(1:size(alt,1),1:size(alt,2),1:size(alt,3)) :: chapman_a
 
-chapman_a=nmax*exp(0.5_wp*(1.0_wp-(alt-alt0)/H-exp(-(alt-alt0)/H)))
+chapman_a=nmax*exp(0.5_wp*(1 - (alt-alt0)/H-exp(-(alt-alt0)/H)))
 
-where (chapman_a<1.0_wp)
-  chapman_a=1.0_wp
+where (chapman_a < 1)
+  chapman_a = 1
 end where
 
 end function chapman_a

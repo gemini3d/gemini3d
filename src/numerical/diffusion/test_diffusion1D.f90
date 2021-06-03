@@ -52,13 +52,13 @@ call h5f%write('/lx1', lx1, ierr)
 call h5f%write('/x1', x1, ierr)
 
 !! initial conditions
-TsEuler(-1:lx1+2)=sin(2.0_wp*pi*x1(-1:lx1+2))+sin(8.0_wp*pi*x1(-1:lx1+2))
+TsEuler(-1:lx1+2)=sin(2*pi*x1(-1:lx1+2))+sin(8*pi*x1(-1:lx1+2))
 TsBDF2=TsEuler
-lambda(:)=1.0_wp     !thermal conductivity
+lambda(:)=1     !thermal conductivity
 
 
 !! typical diffusion time, make our time step a fraction of this
-dt=0.05*1/8.0_wp**2/pi**2/maxval(lambda)
+dt=0.05/8**2/pi**2/maxval(lambda)
 
 
 !! time iterations
@@ -79,7 +79,7 @@ do it=1,lt
   t=t+dt
 
   !compute analytical solution to compare
-  Tstrue(1:lx1) = exp(-4.0_wp*pi**2*lambda*t)*sin(2.0_wp*pi*x1(1:lx1))+exp(-64.0_wp*pi**2*lambda*t)*sin(8.0_wp*pi*x1(1:lx1))
+  Tstrue(1:lx1) = exp(-4 *pi**2*lambda*t)*sin(2 *pi*x1(1:lx1))+exp(-64 *pi**2*lambda*t)*sin(8 *pi*x1(1:lx1))
 
   !! output
   ! write(u,*) t

@@ -8,14 +8,14 @@ contains
 
 module procedure spaceinterp_dneu2D
   !must take into account the type of interpolation that is being done
-  
+
   integer :: lhorzn
   real(wp), dimension(:,:), allocatable :: tmpinterp
   real(wp), dimension(lx1*lx2*lx3) :: parami    !work array for temp storage of interpolated data, note sizes taken from grid module data
   logical :: flag2
   real(wp), dimension(:), allocatable :: coord2n,coord2i
-  
-  
+
+
   ! Array for packing neutral data
   if (flagcart) then
     lhorzn=lyn
@@ -23,7 +23,7 @@ module procedure spaceinterp_dneu2D
     lhorzn=lrhon
   end if
   allocate(tmpinterp(lzn,lhorzn))
-  
+
   ! find the singleton dimension
 !  if (lx2/=1) then
 !    flag2=.true.
@@ -55,7 +55,7 @@ module procedure spaceinterp_dneu2D
   dnOinext=reshape(parami,[lx1,lx2,lx3])  !overwrite next with new interpolated input
 
   if (flag2) then
-    tmpinterp=dnN2(:,:,1)  
+    tmpinterp=dnN2(:,:,1)
   else
     tmpinterp=dnN2(:,1,:)
   end if
@@ -65,7 +65,7 @@ module procedure spaceinterp_dneu2D
 
   if (flag2) then
     tmpinterp=dnO2(:,:,1)
-  else  
+  else
     tmpinterp=dnO2(:,1,:)
   end if
   parami=interp2(zn,coord2n,tmpinterp,zi,coord2i)
@@ -83,16 +83,16 @@ module procedure spaceinterp_dneu2D
 
   if (flag2) then
     tmpinterp=dvnz(:,:,1)
-  else 
+  else
     tmpinterp=dvnz(:,1,:)
   end if
   parami=interp2(zn,coord2n,tmpinterp,zi,coord2i)
   dvnziprev=dvnzinext
   dvnzinext=reshape(parami,[lx1,lx2,lx3])
- 
+
   if (flag2) then
     tmpinterp=dTn(:,:,1)
-  else 
+  else
     tmpinterp=dTn(:,1,:)
   end if
   parami=interp2(zn,coord2n,tmpinterp,zi,coord2i)
@@ -108,7 +108,7 @@ module procedure spaceinterp_dneu2D
     print *, 'Min/max values for dvnzi:  ',minval(dvnzinext),maxval(dvnzinext)
     print *, 'Min/max values for dTni:  ',minval(dTninext),maxval(dTninext)
   end if
-  
+
   !ROTATE VECTORS INTO X1 X2 DIRECTIONS (Need to include unit vectors with grid
   !structure)
   dvn1iprev=dvn1inext   !save the old data
@@ -123,7 +123,7 @@ module procedure spaceinterp_dneu2D
     dvn2inext=dvnrhoinext*proj_erhop_e2+dvnzinext*proj_ezp_e2
     dvn3inext=dvnrhoinext*proj_erhop_e3+dvnzinext*proj_ezp_e3
   end if
-  
+
   !MORE DIAGNOSTICS
   if (mpi_cfg%myid==mpi_cfg%lid/2 .and. debug) then
     print *, 'Min/max values for dnOi:  ',minval(dnOinext),maxval(dnOinext)
@@ -134,7 +134,7 @@ module procedure spaceinterp_dneu2D
     print *, 'Min/max values for dvn3i:  ',minval(dvn3inext),maxval(dvn3inext)
     print *, 'Min/max values for dTni:  ',minval(dTninext),maxval(dTninext)
   end if
-  
+
   !CLEAR ALLOCATED VARS
   deallocate(tmpinterp)
   deallocate(coord2n,coord2i)
@@ -223,25 +223,25 @@ do ix3=1,lx3
   do ix2=1,lx2
     do ix1=1,lx1
       slope=(dnOinext(ix1,ix2,ix3)-dnOiprev(ix1,ix2,ix3))/(tnext-tprev)
-      dnOinow(ix1,ix2,ix3)=dnOiprev(ix1,ix2,ix3)+slope*(t+dt/2.0_wp-tprev)
+      dnOinow(ix1,ix2,ix3)=dnOiprev(ix1,ix2,ix3)+slope*(t+dt/2 -tprev)
 
       slope=(dnN2inext(ix1,ix2,ix3)-dnN2iprev(ix1,ix2,ix3))/(tnext-tprev)
-      dnN2inow(ix1,ix2,ix3)=dnN2iprev(ix1,ix2,ix3)+slope*(t+dt/2.0_wp-tprev)
+      dnN2inow(ix1,ix2,ix3)=dnN2iprev(ix1,ix2,ix3)+slope*(t+dt/2 -tprev)
 
       slope=(dnO2inext(ix1,ix2,ix3)-dnO2iprev(ix1,ix2,ix3))/(tnext-tprev)
-      dnO2inow(ix1,ix2,ix3)=dnO2iprev(ix1,ix2,ix3)+slope*(t+dt/2.0_wp-tprev)
+      dnO2inow(ix1,ix2,ix3)=dnO2iprev(ix1,ix2,ix3)+slope*(t+dt/2 -tprev)
 
       slope=(dvn1inext(ix1,ix2,ix3)-dvn1iprev(ix1,ix2,ix3))/(tnext-tprev)
-      dvn1inow(ix1,ix2,ix3)=dvn1iprev(ix1,ix2,ix3)+slope*(t+dt/2.0_wp-tprev)
+      dvn1inow(ix1,ix2,ix3)=dvn1iprev(ix1,ix2,ix3)+slope*(t+dt/2 -tprev)
 
       slope=(dvn2inext(ix1,ix2,ix3)-dvn2iprev(ix1,ix2,ix3))/(tnext-tprev)
-      dvn2inow(ix1,ix2,ix3)=dvn2iprev(ix1,ix2,ix3)+slope*(t+dt/2.0_wp-tprev)
+      dvn2inow(ix1,ix2,ix3)=dvn2iprev(ix1,ix2,ix3)+slope*(t+dt/2 -tprev)
 
       slope=(dvn3inext(ix1,ix2,ix3)-dvn3iprev(ix1,ix2,ix3))/(tnext-tprev)
-      dvn3inow(ix1,ix2,ix3)=dvn3iprev(ix1,ix2,ix3)+slope*(t+dt/2.0_wp-tprev)
+      dvn3inow(ix1,ix2,ix3)=dvn3iprev(ix1,ix2,ix3)+slope*(t+dt/2 -tprev)
 
       slope=(dTninext(ix1,ix2,ix3)-dTniprev(ix1,ix2,ix3))/(tnext-tprev)
-      dTninow(ix1,ix2,ix3)=dTniprev(ix1,ix2,ix3)+slope*(t+dt/2.0_wp-tprev)
+      dTninow(ix1,ix2,ix3)=dTniprev(ix1,ix2,ix3)+slope*(t+dt/2 -tprev)
     end do
   end do
 end do
