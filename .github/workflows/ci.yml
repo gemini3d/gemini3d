@@ -33,18 +33,25 @@ jobs:
     - name: Configure multi
       run: cmake --preset multi
 
+
     - name: Debug build
       run: cmake --build --preset debug
 
-    - name: Debug test
-      run: ctest --preset debug -R "(unit|2dew_fang|2dns_fang)"
+    - name: Debug unit test
+      run: ctest --preset debug -L unit
+
+    - name: Debug core test
+      run: ctest --preset debug -LE unit -R "(2dew_fang|2dns_fang)"
 
 
     - name: Release build
       run: cmake --build --preset release
 
-    - name: Release test
-      run: ctest --preset release -E 3d
+    - name: Release unit test
+      run: ctest --preset release -L unit
+
+    - name: Release core test
+      run: ctest --preset release -LE unit -E 3d
 
 
 
@@ -68,18 +75,25 @@ jobs:
     - name: Configure multi
       run: cmake --preset multi
 
+
     - name: Debug build
       run: cmake --build --preset debug
 
-    - name: Debug test
-      run: ctest --preset debug -R "(unit|2dew_fang|2dns_fang)"
+    - name: Debug unit test
+      run: ctest --preset debug -L unit
+
+    - name: Debug core test
+      run: ctest --preset debug -LE unit -R "(2dew_fang|2dns_fang)"
 
 
     - name: Release build
       run: cmake --build --preset release
 
-    - name: Release test
-      run: ctest --preset release -E 3d
+    - name: Release unit test
+      run: ctest --preset release -L unit
+
+    - name: Release core test
+      run: ctest --preset release -LE unit -E 3d
 
 
   windows_no_mpi:
@@ -110,15 +124,22 @@ jobs:
     - name: Configure multi
       run: cmake --preset multi
 
+
     - name: Debug build
       run: cmake --build --preset debug
 
-    - name: Debug test
-      run: ctest --preset debug -R "(unit|2dew_fang|2dns_fang)"
+    - name: Debug unit test
+      run: ctest --preset debug -L unit
+
+    - name: Debug core test
+      run: ctest --preset debug -LE unit -R "(2dew_fang|2dns_fang)"
 
 
     - name: Release build
       run: cmake --build --preset release
 
-    - name: Release test
-      run: ctest --preset release -E 3d
+    - name: Release unit test
+      run: ctest --preset release -L unit
+
+    - name: Release core test
+      run: ctest --preset release -LE unit -E 3d
