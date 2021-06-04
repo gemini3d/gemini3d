@@ -1,17 +1,40 @@
 program pathlib_test
 
 use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
-use pathlib, only : get_filename, mkdir, expanduser, is_absolute, make_absolute
+use pathlib, only : get_filename, mkdir, expanduser, is_absolute, make_absolute, directory_exists
 
 implicit none (type, external)
 
-character(:), allocatable :: fn
-character(16) :: fn2
+call test_get_filename()
+
+call test_expanduser_absolute()
+
+call test_directory_exists()
+
+
+contains
+
+
+subroutine test_directory_exists()
+
+integer :: i
+
+if(.not.(directory_exists('.'))) error stop "did not detect '.' as directory"
+
+open(newunit=i, file='test-pathlib.h5', status='replace')
+close(i)
+if((directory_exists('test-pathlib.h5'))) error stop "detected file as directory"
+call unlink('test-pathlib.h5')
+
+print *," OK: pathlib: directory_exists"
+end subroutine test_directory_exists
+
+
+subroutine test_get_filename()
+
+character(:), allocatable:: fn
 integer :: i
 logical :: e
-
-
-!> test get_filename
 
 if(get_filename(' ') /= '') error stop 'empty 1'
 if(get_filename(' ',' ') /= '') error stop 'empty 2'
@@ -69,7 +92,14 @@ if (fn /= 'temp1/temp2/test-pathlib.h5') error stop 'exist dir full 2'
 fn = get_filename('./temp1/temp2', 'test-pathlib')
 if (fn /= './temp1/temp2/test-pathlib.h5') error stop 'exist dir full 2a'
 
-!> is_absolute, expanduser, make_absolute
+end subroutine test_get_filename
+
+
+subroutine test_expanduser_absolute()
+
+character(:), allocatable:: fn
+character(16) :: fn2
+
 fn = expanduser("~")
 if (fn(1:1) == "/") then
   if (.not.is_absolute("/")) error stop "is_absolute('/') on Unix should be true"
@@ -87,11 +117,8 @@ else
 endif
 
 print *, "OK: pathlib: expanduser,is_absolute"
+end subroutine test_expanduser_absolute
 
-
-print *, 'OK: pathlib'
-
-contains
 
 subroutine unlink(path)
 character(*), intent(in) :: path
