@@ -68,7 +68,7 @@ ierr1 = 0
 ierr2 = 0
 
 if(P%python) then
-  cmd = "python -m gemini3d.plot.diff " // new_file // " " // ref_file // " " // name(1:2)
+  cmd = "python -m gemini3d.compare " // new_file // " " // ref_file // " -plot -name " // name(1:2)
 elseif(P%matlab) then
   cmd = "matlab -batch " // achar(34) // "gemini3d.plot.plotdiff('" // new_file // "', '" // ref_file // "', '" // name(1:2) // &
     "')" // achar(34)
