@@ -106,6 +106,15 @@
   {
     "name": "intel",
     "configurePreset": "intel"
+  },
+  {
+    "name": "intelwin",
+    "configurePreset": "intelwin"
+  },
+  {
+    "name": "core",
+    "configurePreset": "default",
+    "targets": ["gemini.bin", "gemini3d.run", "gemini3d.compare"]
   }
 ],
 "testPresets": [
