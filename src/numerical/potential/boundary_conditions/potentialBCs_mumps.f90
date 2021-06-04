@@ -227,8 +227,6 @@ subroutine potentialBCs2D_fileinput(dt,t,ymd,UTsec,cfg,x,Vminx1,Vmaxx1,Vminx2,Vm
       do ix3=1,lx3all
         do ix2=1,lx2all
           iflat=(ix3-1)*lx2all+ix2
-          !mlati(iflat)=90-x%thetaall(lx1,ix2,ix3)*180/pi
-          !mloni(iflat)=x%phiall(lx1,ix2,ix3)*180/pi
           mlati(iflat)=90-x%thetaall(ix1ref,ix2,ix3)*180/pi
           mloni(iflat)=x%phiall(ix1ref,ix2,ix3)*180/pi
         end do

@@ -33,7 +33,7 @@ module procedure get_grid3_coords_hdf5
     call hout%read('/glonctr',glonctr)
     call hout%read('/glatctr',glatctr)
   else
-    print*, ' Default center grid'
+    print*, ' !!!!!!!!!!!!!!!!!!!!!!!  Default center grid, this is probably bad !!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
     glonctr=0._wp
     glatctr=0._wp
   end if
