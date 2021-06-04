@@ -34,18 +34,21 @@ add_library(sanity_check OBJECT sanity_check.f90 $<TARGET_OBJECTS:errors>)
 target_link_libraries(sanity_check PRIVATE const)
 
 # --- pathlib
-if(CMAKE_Fortran_COMPILER_ID STREQUAL Intel)
-  set(dir_exist "inquire(directory=path, exist=exists)")
-else()
-  set(dir_exist "inquire(file=path, exist=exists)")
-endif()
-configure_file(pathlib.in.f90 pathlib.f90 @ONLY)
+add_library(pathlib OBJECT pathlib.f90)
 
-add_library(pathlib OBJECT ${CMAKE_CURRENT_BINARY_DIR}/pathlib.f90)
 if(WIN32)
   target_sources(pathlib PRIVATE pathlib_windows.f90)
 else()
   target_sources(pathlib PRIVATE pathlib_unix.f90)
+endif()
+
+if(CMAKE_Fortran_COMPILER_ID STREQUAL Intel)
+  target_sources(pathlib PRIVATE pathlib_intel.f90)
+elseif(CMAKE_Fortran_COMPILER_ID STREQUAL GNU)
+  target_sources(pathlib PRIVATE pathlib_gcc.f90)
+else()
+  message(WARNING "pathlib_dummy: better to write pathlib_gcc-like routine for compiler ${CMAKE_Fortran_COMPILER_ID}")
+  target_sources(pathlib PRIVATE pathlib_dummy.f90)
 endif()
 
 if(${PROJECT_NAME}_BUILD_TESTING)
