@@ -73,7 +73,7 @@ endif()
 if(NOT EXISTS ${archive})
   set(url ${host}${name})
   message(STATUS "download ${url}")
-  file(DOWNLOAD ${url} ${archive})
+  file(DOWNLOAD ${url} ${archive} INACTIVITY_TIMEOUT 15)
 
   if(NOT CMAKE_VERSION VERSION_LESS 3.14)
     file(SIZE ${archive} fsize)

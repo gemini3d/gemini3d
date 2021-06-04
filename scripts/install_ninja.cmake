@@ -81,7 +81,7 @@ endif()
 if(NOT EXISTS ${archive})
   set(url ${host}${name})
   message(STATUS "download ${url}")
-  file(DOWNLOAD ${url} ${archive})
+  file(DOWNLOAD ${url} ${archive} INACTIVITY_TIMEOUT 15)
   file(SIZE ${archive} fsize)
   if(fsize LESS 10000)
     message(FATAL_ERROR "failed to download ${url}")
@@ -91,9 +91,11 @@ endif()
 message(STATUS "extracting to ${path}")
 file(ARCHIVE_EXTRACT INPUT ${archive} DESTINATION ${path})
 
-find_program(ninja NAMES ninja PATHS ${path} PATH_SUFFIXES bin NO_DEFAULT_PATH)
-if(NOT ninja)
-  message(FATAL_ERROR "failed to install Ninja from ${archive}")
-endif()
+find_program(ninja
+  NAMES ninja
+  PATHS ${path}
+  PATH_SUFFIXES bin
+  NO_DEFAULT_PATH
+  REQUIRED)
 
 checkup(${ninja})

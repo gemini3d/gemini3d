@@ -56,7 +56,7 @@ endif()
 if(NOT EXISTS ${archive})
   set(url ${host}${name})
   message(STATUS "download ${url}")
-  file(DOWNLOAD ${url} ${archive})
+  file(DOWNLOAD ${url} ${archive} INACTIVITY_TIMEOUT 15)
 endif()
 
 set(src_dir ${path}/ninja-${ver})
@@ -79,9 +79,11 @@ COMMAND_ERROR_IS_FATAL ANY)
 execute_process(COMMAND ${CMAKE_COMMAND} --install ${src_dir}/build
 COMMAND_ERROR_IS_FATAL ANY)
 
-find_program(ninja NAMES ninja PATHS ${path} PATH_SUFFIXES bin NO_DEFAULT_PATH)
-if(NOT ninja)
-  message(FATAL_ERROR "failed to install Ninja from ${archive}")
-endif()
+find_program(ninja
+  NAMES ninja
+  PATHS ${path}
+  PATH_SUFFIXES bin
+  NO_DEFAULT_PATH
+  REQUIRED)
 
 checkup(${ninja})
