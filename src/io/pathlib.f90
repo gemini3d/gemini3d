@@ -24,6 +24,12 @@ end function is_absolute
 
 end interface
 
+interface !< pathlib_{intel,gcc}.f90
+module logical function directory_exists(path) result(exists)
+character(*), intent(in) :: path
+end function directory_exists
+end interface
+
 
 contains
 
@@ -144,18 +150,6 @@ if (.not. is_absolute(t)) write(stderr,*) "WARNING: make_absolute: top_path is n
 abspath = t // '/' // p
 
 end function make_absolute
-
-
-logical function directory_exists(path) result(exists)
-!! except for Intel compiler, cannot distinguish file from directory
-character(*), intent(in) :: path
-character(:), allocatable  :: buf
-
-buf = expanduser(path)
-
-@dir_exist@
-
-end function directory_exists
 
 
 subroutine assert_directory_exists(path)
