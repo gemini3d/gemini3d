@@ -29,9 +29,12 @@ include(CheckSymbolExists)
 find_package(PkgConfig)
 pkg_check_modules(pc_hwloc hwloc)
 
+# NOTE: the "lib*" are for Windows Intel compiler.
+# CMake won't look for lib prefix automatically.
 
 find_library(HWLOC_LIBRARY
-             NAMES hwloc
+             NAMES hwloc libhwloc
+             NAMES_PER_DIR
              HINTS ${pc_hwloc_LIBRARY_DIRS} ${pc_hwloc_LIBDIR})
 
 find_path(HWLOC_INCLUDE_DIR

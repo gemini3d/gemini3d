@@ -3,7 +3,7 @@
 # cmake -P install_hwloc.cmake
 # will install hwloc under the user's home directory.
 
-cmake_minimum_required(VERSION 3.18...${CMAKE_VERSION})
+cmake_minimum_required(VERSION 3.19...${CMAKE_VERSION})
 
 set(CMAKE_TLS_VERIFY true)
 
@@ -54,42 +54,38 @@ endif()
 
 if(NOT EXISTS ${archive})
   message(STATUS "download ${url}")
-  file(DOWNLOAD ${url} ${archive})
+  file(DOWNLOAD ${url} ${archive} INACTIVITY_TIMEOUT 15)
 endif()
 
 message(STATUS "extracting to ${path}")
-file(ARCHIVE_EXTRACT INPUT ${archive} DESTINATION ${path})
+file(ARCHIVE_EXTRACT INPUT ${archive} DESTINATION ${prefix})
+
+
+function(check_hwloc)
+
+find_program(lstopo
+    NAMES lstopo
+    PATHS ${path}
+    PATH_SUFFIXES bin
+    NO_DEFAULT_PATH
+    REQUIRED)
+
+  get_filename_component(pathbin ${lstopo} DIRECTORY)
+  message(STATUS "add to environment variable PATH ${pathbin}")
+  message(STATUS "add environment variable HWLOC_ROOT ${path}")
+
+endfunction(check_hwloc)
 
 if(WIN32)
-  find_program(lstopo NAMES lstopo PATHS ${path}/${stem} PATH_SUFFIXES bin NO_DEFAULT_PATH)
-  if(lstopo)
-    get_filename_component(pathbin ${lstopo} DIRECTORY)
-    message(STATUS "add to environment variable PATH ${pathbin}")
-    message(STATUS "add environment variable HWLOC_ROOT ${path}/${stem}")
-  else()
-    message(FATAL_ERROR "failed to install from ${archive}")
-  endif()
-
+  check_hwloc()
   return()
 endif()
 
 message(STATUS "Building HWLOC")
-if(NOT EXISTS ${path}/${stem}/Makefile)
-  execute_process(COMMAND ./configure --prefix=${path} WORKING_DIRECTORY ${path}/${stem})
+if(NOT EXISTS ${path}/Makefile)
+  execute_process(COMMAND ./configure --prefix=${path} WORKING_DIRECTORY ${path} COMMAND_ERROR_IS_FATAL ANY)
 endif()
-execute_process(COMMAND make -j -C ${path}/${stem})
-execute_process(COMMAND make install -C ${path}/${stem} RESULT_VARIABLE err)
+execute_process(COMMAND make -j -C ${path} COMMAND_ERROR_IS_FATAL ANY)
+execute_process(COMMAND make install -C ${path} COMMAND_ERROR_IS_FATAL ANY)
 
-if(NOT err EQUAL 0)
-  message(FATAL_ERROR "Hwloc failed to build via autotools")
-endif()
-
-find_program(lstopo NAMES lstopo PATHS ${path} PATH_SUFFIXES bin NO_DEFAULT_PATH)
-  if(lstopo)
-    get_filename_component(pathbin ${lstopo} DIRECTORY)
-    message(STATUS "add to environment variable PATH ${pathbin}")
-    message(STATUS "add environment variable HWLOC_ROOT ${path}")
-  else()
-    message(FATAL_ERROR "failed to install from ${archive}")
-  endif()
-  return()
+check_hwloc()
