@@ -7,6 +7,10 @@ endif()
 
 function(check_pygemini)
 
+if(PYGEMINI_DIR)
+  return()
+endif()
+
 # Python3::Interpreter does NOT work, use ${Python3_EXECUTABLE}
 
 # __path__ is always iterable: https://docs.python.org/3/reference/import.html#__path__
@@ -35,47 +39,8 @@ endif()
 
 endfunction()
 
-# --- script
+
 find_package(Python3 COMPONENTS Interpreter)
-if(NOT Python3_FOUND)
-  return()
-endif()
-# keep this in script so it's not scoped in function
-
-FetchContent_Declare(PYGEMINI
-GIT_REPOSITORY ${pygemini_git}
-GIT_TAG ${pygemini_tag})
-
-FetchContent_MakeAvailable(PYGEMINI)
-
-if(NOT PYGEMINI_DIR)
+if(Python3_FOUND)
   check_pygemini()
-endif()
-
-if(NOT PYGEMINI_DIR)
-
-# detect virtualenv
-# this is how CMake itself works for FindPython3 in Modules/FindPython/Support.cmake
-if(DEFINED ENV{VIRTUAL_ENV}) # OR DEFINED ENV{CONDA_PREFIX})  # intel python HPC admin install
-  set(_pip_args)
-else()
-  set(_pip_args "--user")
-endif()
-
-execute_process(COMMAND ${Python3_EXECUTABLE} -m pip install -e ${pygemini_SOURCE_DIR} ${_pip_args}
-  RESULT_VARIABLE _ok)
-
-if(_ok EQUAL 0)
-  message(STATUS "Setup PyGemini in ${pygemini_SOURCE_DIR}")
-else()
-  message(STATUS "Problem installing PyGemini with ${Python3_EXECUTABLE}")
-  return()
-endif()
-
-check_pygemini()
-
-endif(NOT PYGEMINI_DIR)
-
-if(NOT PYGEMINI_DIR)
-  message(STATUS "MISSING: PyGemini ${pygemini_git}")
 endif()
