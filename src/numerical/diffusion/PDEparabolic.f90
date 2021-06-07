@@ -329,10 +329,11 @@ if (present(rhs)) then
 end if
 
 !> this is for if one wants to output the matrix bands for testing purposes
+coeffs=0._wp
 if (present(coeffs)) then
-  coeffs(1:lx1,1)=M(ll+4,1:lx1)    ! sub, a
+  coeffs(2:lx1,1)=M(ll+4,1:lx1-1)    ! sub, a
   coeffs(1:lx1,2)=M(ll+3,1:lx1)    ! main, b
-  coeffs(1:lx1,3)=M(ll+2,1:lx1)    ! super, c
+  coeffs(1:lx1-1,3)=M(ll+2,2:lx1)    ! super, c
 end if
 
 !! ## DO SOME STUFF TO CALL LAPACK'S BANDED SOLVER
