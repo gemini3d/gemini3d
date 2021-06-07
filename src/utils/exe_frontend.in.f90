@@ -3,7 +3,7 @@ module exe_frontend
 use, intrinsic :: iso_fortran_env, only : compiler_version, stderr=>error_unit
 use config, only : get_compiler_vendor
 use hwloc_ifc, only : get_cpu_count
-use pathlib, only : parent, assert_directory_exists
+use pathlib, only : parent, assert_directory_exists, expanduser
 
 implicit none (type, external)
 
@@ -186,25 +186,36 @@ character(*), intent(in) :: exe
 character(:), allocatable :: mpiexec
 
 character(1000) :: buf
-integer :: i
-logical :: exists
+integer :: i, L
 
-mpiexec = exe
-if(len_trim(mpiexec) == 0) then
-  call get_environment_variable("MPI_ROOT", buf, status=i)
-  if (i==0) mpiexec = trim(buf) // "/bin/mpiexec"
+mpiexec = ""
+
+if(len_trim(exe) > 0) then
+  if(check_mpiexec(expanduser(exe))) mpiexec = exe
+else
+  call get_environment_variable("MPI_ROOT", buf, length=L, status=i)
+  if (i==0 .and. L>0) then
+    if(check_mpiexec(expanduser(buf) // "/bin/mpiexec")) mpiexec = expanduser(buf) // "/bin/mpiexec"
+  endif
 endif
 
-exists = .false.
-if(len_trim(mpiexec) > 0) inquire(file=mpiexec, exist=exists)
-
-if(.not.exists) then
-  write(stderr,"(A)") "WARNING: MPIexec file not found " // mpiexec
-  write(stderr,"(A)") "If simulation hangs or operates incorrectly, specify -mpiexec option or set MPI_ROOT environment variable."
-  mpiexec = "mpiexec"
-endif
+if(len_trim(mpiexec) == 0) mpiexec = "mpiexec"
 
 end function find_mpiexec
+
+
+logical function check_mpiexec(exe) result(ok)
+
+character(*), intent(in) :: exe
+
+inquire(file=exe, exist=ok)
+
+if(ok) return
+
+write(stderr,"(A)") "MPIexec file not found " // exe
+write(stderr,"(A)") "If simulation hangs or operates incorrectly, specify -mpiexec option or set MPI_ROOT environment variable."
+
+end function check_mpiexec
 
 
 subroutine help_gemini_bin(git_revision)
