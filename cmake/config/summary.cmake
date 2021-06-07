@@ -84,7 +84,6 @@ add_feature_info(MSIS2.0 msis20 "NRL MSIS 2.0 neutral atmosphere model")
 add_feature_info(NetCDF4 netcdf "file read / write")
 
 add_feature_info(PyGemini PYGEMINI_DIR "simulation generation, HPC script generator and plotting")
-add_feature_info(MatGemini MATGEMINI_DIR "checks not as extensive as Python, and slow")
 
 add_feature_info(HDF5 hdf5 "file read / write")
 add_feature_info(AutoHDF5 hdf5_external "build HDF5")
