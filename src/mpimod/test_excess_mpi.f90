@@ -38,6 +38,13 @@ do i = 1,size(N)
   if (.not. checker(N(i), lx2all=8, lx3all=12, rx2=rx2(i), rx3=rx3(i))) all_ok = .false.
 enddo
 
+rx2 = [1,1,2,3,2, 3]
+rx3 = [1,2,2,2,4, 4]
+N   = [1,2,4,6,8,12]
+do i = 1,size(N)
+  if (.not. checker(N(i), lx2all=6, lx3all=8, rx2=rx2(i), rx3=rx3(i))) all_ok = .false.
+enddo
+
 rx2 = [1,1,2,5,2, 4, 5, 5, 10]
 rx3 = [1,2,2,1,4, 4, 4, 8,  8]
 N   = [1,2,4,5,8,16,20,40, 80]
@@ -77,7 +84,9 @@ M(3,3) = reshape(&    !< expected auto-selected number of MPI images
  4, 8, 8, &
  4, 20, 20], shape=shape(M), order=[2,1])
 
-if (max_mpi(100,52, 1) /= 1) error stop "gcd(N,1) == 1"
+if (max_mpi(100,52, 1) /= 1) error stop "gcd(N,1) /= 1"
+
+if (max_mpi(6, 8, 32) /= 12) error stop "max_mpi(6,8,32) /= 12"
 
 do i = 1,size(L)
   do j = 1,size(N)
@@ -86,9 +95,11 @@ do i = 1,size(L)
       write(stderr,*) "ERROR:max_mpi",L(i),N(j),M(i,j),O
       error stop
     endif
-    if (M(i,j) /= max_mpi(1, L(i), N(j))) error stop
+    if (M(i,j) /= max_mpi(1, L(i), N(j))) error stop 'max_mpi value error'
   enddo
 enddo
+
+print *, "OK: max_mpi"
 
 end subroutine check_auto_mpi
 

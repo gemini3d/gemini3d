@@ -52,13 +52,14 @@ else
       if (i*j < N) cycle
       if (modulo(lx2all, i) /= 0) cycle
       if (modulo(lx3all, j) /= 0) cycle
+      ! print *, "trying ", i, j,  N
       if (lx2all / i == 1 .or. lx3all / j == 1) cycle
       if (abs(i-j) > abs(lid2-lid3)) cycle
 
       N = i*j
       lid2 = i
       lid3 = j
-      ! print *, i,j
+      ! print *, "found ", i,j, " trying to find better"
     enddo
   enddo
   if (N==0) then
@@ -157,13 +158,13 @@ integer function max_mpi(lx2, lx3, max_cpu)
 !! goal is to find the highest x2 + x3 to maximum CPU core count
 integer, intent(in) :: lx2, lx3, max_cpu
 
-!> divide by 2 to ensure MPI partition has at least 2 per axis
+!> divide by 2 to ensure MPI partition has at least 2 per axis--for 2D and 3D
 if (lx3 == 1) then
   max_mpi = max_gcd(lx2/2, max_cpu)
 elseif (lx2 == 1) then
   max_mpi = max_gcd(lx3/2, max_cpu)
 else
-  max_mpi = max_gcd2(lx2, lx3, max_cpu)
+  max_mpi = max_gcd2(lx2/2, lx3/2, max_cpu)
 end if
 
 end function max_mpi
