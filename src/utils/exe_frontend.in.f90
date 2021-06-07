@@ -39,7 +39,7 @@ if(buf(1:1) == '-') then
   case ('-git')
     print '(A)', git_revision
   case default
-    write(stderr,*) "unknown option: ", trim(buf)
+    write(stderr,*) "Gemini3D: unknown option: ", trim(buf)
     call help_run(git_revision)
   end select
 
@@ -58,9 +58,12 @@ Ncpu = 0
 
 do i = 2, argc
   call get_command_argument(i, buf)
+  if(buf(1:1) /= "-") cycle  !< assume previous option was a -flag
 
   select case (buf)
 
+  case ('-h', '-help')
+    call help_run(git_revision)
   case ('-n')
     call get_command_argument(i+1, buf)
     read(buf, '(I6)') Ncpu
@@ -75,6 +78,8 @@ do i = 2, argc
     extra = '-dryrun'
   case ('-plan')
     plan = .true.
+  case default
+    write(stderr,*) "Gemini3D: unknown option: ", trim(buf)
   end select
 end do
 
