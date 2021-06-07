@@ -247,7 +247,7 @@ lx1=size(Ts)
 Dh(1)=0
 Dh(2:lx1)=0.5*(D(1:lx1-1)+D(2:lx1))         !ith left cell wall thermal conductivity
 backEuler1D(:)=Ts(:)/dt+E(:)                !boundaries to be overwritten later...
-
+M=0._wp
 
 ! check whether D or N
 !> MINX1 BOUNDARY, Dirichlet BCS
@@ -312,6 +312,7 @@ M(ll+5,ix1-2)=0
 M(ll+4,ix1-1)=0
 M(ll+3,ix1)=1
 backEuler1D(ix1)=Tsmaxx1
+
 !
 !!Neumann conditions...
 !ix1=lx1
@@ -327,16 +328,16 @@ if (present(rhs)) then
   rhs(1:lx1)=backEuler1D(1:lx1)
 end if
 
+!> this is for if one wants to output the matrix bands for testing purposes
+if (present(coeffs)) then
+  coeffs(1:lx1,1)=M(ll+4,1:lx1)    ! sub, a
+  coeffs(1:lx1,2)=M(ll+3,1:lx1)    ! main, b
+  coeffs(1:lx1,3)=M(ll+2,1:lx1)    ! super, c
+end if
+
 !! ## DO SOME STUFF TO CALL LAPACK'S BANDED SOLVER
 !> BANDED SOLVER (INPUT MATRIX MUST BE SHIFTED 'DOWN' BY KL ROWS)
 call gbsv(M,backEuler1D,kl=2)
-
-!> this is for if one wants to output the matrix bands for testing purposes
-if (present(coeffs)) then
-  coeffs(1:lx1,1)=M(ll+2,1:lx1)
-  coeffs(1:lx1,2)=M(ll+3,1:lx1)
-  coeffs(1:lx1,3)=M(ll+4,1:lx1)
-end if
 
 end function backEuler1D
 

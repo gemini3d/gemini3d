@@ -38,7 +38,7 @@ x1i(1:lx1+1)=0.5*(x1(0:lx1)+x1(1:lx1+1))
 dx1i=x1i(2:lx1+1)-x1i(1:lx1)
 
 call get_command_argument(1, argv, status=ierr)
-if(ierr/=0) error stop 'please specify input filename'
+if(ierr/=0) error stop 'please specify output filename'
 outfile = trim(argv)
 
 !! write the time, space length and spatial grid to a file
