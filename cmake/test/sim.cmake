@@ -5,10 +5,10 @@ set(sim_timeout 1800)  # seconds to allow simulation tests to run
 
 # --- setup tests
 
-set(_tests 2dns_fang 2dew_fang 3d_fang)
+set(_tests mini2dns_fang mini2dew_fang mini3d_fang)
 
 if(glow)
-  list(APPEND _tests 2dns_glow 2dew_glow 3d_glow)
+  list(APPEND _tests mini2dns_glow mini2dew_glow mini3d_glow)
 endif(glow)
 
 foreach(_s ${_tests})

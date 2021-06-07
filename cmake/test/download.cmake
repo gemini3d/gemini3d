@@ -11,12 +11,7 @@ file(DOWNLOAD ${url} ${archive} EXPECTED_HASH SHA256=${hash})
 endfunction(download_archive)
 
 
-function(gemini_download_ref_data name)
-
-# sanity check to avoid making mess
-if(NOT refroot)
-  message(FATAL_ERROR "must provide 'refroot' e.g. \${PROJECT_SOURCE_DIR}/test_data")
-endif()
+function(gemini_download_ref_data name refroot)
 
 file(READ ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/ref_data.json _refj)
 
@@ -60,7 +55,7 @@ endfunction(gemini_download_ref_data)
 
 cmake_path(APPEND ref_dir ${refroot} ${name})
 
-gemini_download_ref_data(${name})
+gemini_download_ref_data(${name} ${refroot})
 
 # copy sim inputs into build/${name}/inputs
 file(COPY ${ref_dir}/inputs DESTINATION ${outdir})
