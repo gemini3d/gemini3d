@@ -77,12 +77,7 @@ option(matlab "Matlab checks")
 
 option(test_shaky "tests that may falsely fail")
 
-if(NOT DEFINED CMAKE_TLS_VERIFY)
-  set(CMAKE_TLS_VERIFY true)  # for Git and Downloads
-endif()
-if(NOT CMAKE_TLS_VERIFY)
-  message(STATUS "CMake HTTPS TLS verification OFF per user request.")
-endif()
+set(CMAKE_TLS_VERIFY true)  # for Git and Downloads
 
 # this is a default so if someone makes a new module, they aren't confused by compiler errors.
 # normally to keep things clean we'd use my `set_targ_props(newtarg)`
