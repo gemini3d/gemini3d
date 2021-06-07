@@ -213,10 +213,10 @@ do i = 2,argc
     print *,'override output file format: ',cfg%out_format
   case ('-manual_grid')
     call get_command_argument(i+1, argv, status=ierr)
-    if(ierr/=0) error stop 'gemini.bin -manual_grid lx2 lx3 parameters are required'
+    if(ierr/=0) error stop '-manual_grid lx2 lx3 parameters are required. lx2 missing'
     read(argv,*) lid2
     call get_command_argument(i+2, argv, status=ierr)
-    if(ierr/=0) error stop 'gemini.bin -manual_grid lx2 lx3 parameters are required'
+    if(ierr/=0) error stop '-manual_grid lx2 lx3 parameters are required. lx3 missing'
     read(argv,*) lid3
   end select
 end do

@@ -172,11 +172,10 @@ end if
 !! default values
 lid2 = -1  !< sentinel
 
-ymdstart=[0,0,0]
-UTsecstart=0._wp
-ymdend=[0,0,0]
-UTsecend=0._wp
-
+ymdstart = [0,0,0]
+UTsecstart = 0
+ymdend = [0,0,0]
+UTsecend = 0
 
 do i = iarg,argc
   call get_command_argument(i,argv)
@@ -201,28 +200,38 @@ do i = iarg,argc
     !! it helps avoid HPC queuing when a simple setup error exists
     cfg%dryrun = .true.
   case ('-manual_grid')
-    call get_command_argument(i+1, argv)
-    read(argv,*) lid2
-    call get_command_argument(i+2, argv)
-    read(argv,*) lid3
+    call get_command_argument(i+1, argv, status=ierr)
+    if(ierr/=0) error stop '-manual_grid lx2 lx3 parameters are required. lx2 missing'
+    read(argv, '(I6)') lid2
+    call get_command_argument(i+2, argv, status=ierr)
+    if(ierr/=0) error stop '-manual_grid lx2 lx3 parameters are required. lx3 missing'
+    read(argv, '(I6)') lid3
   case ('-start_time')
-    call get_command_argument(i+1,argv)
-    read(argv,*) ymdstart(1)
-    call get_command_argument(i+2,argv)
-    read(argv,*) ymdstart(2)
-    call get_command_argument(i+3,argv)
-    read(argv,*) ymdstart(3)
-    call get_command_argument(i+4,argv)
-    read(argv,*) UTsecstart
+    call get_command_argument(i+1, argv, status=ierr)
+    if(ierr/=0) error stop '-start_time year month day UTsec parameters are required. year missing'
+    read(argv, '(I4)') ymdstart(1)
+    call get_command_argument(i+2, argv, status=ierr)
+    if(ierr/=0) error stop '-start_time year month day UTsec parameters are required. month missing'
+    read(argv, '(I2)') ymdstart(2)
+    call get_command_argument(i+3, argv, status=ierr)
+    if(ierr/=0) error stop '-start_time year month day UTsec parameters are required. day missing'
+    read(argv, '(I2)') ymdstart(3)
+    call get_command_argument(i+4,argv, status=ierr)
+    if(ierr/=0) error stop '-start_time year month day UTsec parameters are required. UTsec [0..86400) missing'
+    read(argv, '(F9.3)') UTsecstart
   case ('-end_time')
-    call get_command_argument(i+1,argv)
-    read(argv,*) ymdend(1)
-    call get_command_argument(i+2,argv)
-    read(argv,*) ymdend(2)
-    call get_command_argument(i+3,argv)
-    read(argv,*) ymdend(3)
-    call get_command_argument(i+4,argv)
-    read(argv,*) UTsecend
+    call get_command_argument(i+1, argv, status=ierr)
+    if(ierr/=0) error stop '-end_time year month day UTsec parameters are required. year missing'
+    read(argv, '(I4)') ymdend(1)
+    call get_command_argument(i+2, argv, status=ierr)
+    if(ierr/=0) error stop '-end_time year month day UTsec parameters are required. month missing'
+    read(argv, '(I2)') ymdend(2)
+    call get_command_argument(i+3, argv, status=ierr)
+    if(ierr/=0) error stop '-end_time year month day UTsec parameters are required. day missing'
+    read(argv, '(I2)') ymdend(3)
+    call get_command_argument(i+4, argv, status=ierr)
+    if(ierr/=0) error stop '-end_time year month day UTsec parameters are required. UTsec [0..86400) missing'
+    read(argv, '(F9.3)') UTsecend
   end select
 end do
 

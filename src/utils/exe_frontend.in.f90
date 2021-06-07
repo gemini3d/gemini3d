@@ -18,7 +18,7 @@ character(:), allocatable, intent(out) :: path, exe, mpiexec, extra
 
 character(:), allocatable :: git_revision
 character(1000) :: buf
-integer :: argc, i
+integer :: argc, i, ierr
 
 git_revision = "@git_rev@"
 
@@ -74,10 +74,42 @@ do i = 2, argc
   case ('-mpiexec')
     call get_command_argument(i+1, buf)
     mpiexec = trim(buf)
-  case ('-dryrun')
-    extra = '-dryrun'
   case ('-plan')
     plan = .true.
+  !> options passed to child executable
+  case ('-dryrun', '-debug', '-nooutput')
+    !! flags with no parameters
+    extra = extra // ' ' // trim(buf)
+  case ('-out_format')
+    !! flags with one parameter
+    extra = extra // ' ' // trim(buf)
+    call get_command_argument(i+1, buf, status=ierr)
+    if(ierr /= 0) error stop trim(buf) // " missing parameter"
+    extra = extra // ' ' // trim(buf)
+  case ('-manual_grid')
+    !! flags with two parameters
+    extra = extra // ' ' // trim(buf)
+    call get_command_argument(i+1, buf, status=ierr)
+    if(ierr /= 0) error stop trim(buf) // " missing parameter 1/2"
+    extra = extra // ' ' // trim(buf)
+    call get_command_argument(i+2, buf, status=ierr)
+    if(ierr /= 0) error stop trim(buf) // " missing parameter 2/2"
+    extra = extra // ' ' // trim(buf)
+  case ('-start_time', '-end_time')
+    !! flags with four parameters
+    extra = extra // ' ' // trim(buf)
+    call get_command_argument(i+1, buf, status=ierr)
+    if(ierr /= 0) error stop trim(buf) // " missing parameter 1/4"
+    extra = extra // ' ' // trim(buf)
+    call get_command_argument(i+2, buf, status=ierr)
+    if(ierr /= 0) error stop trim(buf) // " missing parameter 2/4"
+    extra = extra // ' ' // trim(buf)
+    call get_command_argument(i+3, buf, status=ierr)
+    if(ierr /= 0) error stop trim(buf) // " missing parameter 3/4"
+    extra = extra // ' ' // trim(buf)
+    call get_command_argument(i+4, buf, status=ierr)
+    if(ierr /= 0) error stop trim(buf) // " missing parameter 4/4"
+    extra = extra // ' ' // trim(buf)
   case default
     write(stderr,*) "Gemini3D: unknown option: ", trim(buf)
   end select
