@@ -53,7 +53,7 @@
 
 "matgemini": {
   "git": "https://github.com/gemini3d/mat_gemini.git",
-  "tag": "v4.1.6"
+  "tag": "v5.0.1"
 },
 "pygemini": {
   "git": "https://github.com/gemini3d/pygemini.git",
