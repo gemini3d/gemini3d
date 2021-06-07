@@ -1,5 +1,3 @@
-include(FetchContent)
-
 if(NOT python)
   unset(PYGEMINI_DIR CACHE)
   return()
