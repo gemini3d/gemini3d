@@ -6,7 +6,9 @@ target_link_libraries(PDEparabolic PRIVATE const gbsv)
 add_library(diffusion OBJECT diffusion.f90)
 target_link_libraries(diffusion PRIVATE const grid meshobj PDEparabolic)
 
-if(hdf5 AND ${PROJECT_NAME}_BUILD_TESTING)
+if(NOT (hdf5 AND ${PROJECT_NAME}_BUILD_TESTING))
+  return()
+endif()
 
 set(_tmpdifffn ${CMAKE_CURRENT_BINARY_DIR}/test_diffusion1d.h5)
 
@@ -22,6 +24,10 @@ set_tests_properties(unit:diffusion1 PROPERTIES
   TIMEOUT 5
   LABELS unit
   FIXTURES_SETUP GemDiff)
+if(test_dll_path)
+  set_tests_properties(unit:diffusion1 PROPERTIES
+    ENVIRONMENT "PATH=${test_dll_path}")
+endif()
 
 if(Python3_FOUND)
   add_test(NAME unit:diffusion1:python
@@ -32,5 +38,3 @@ if(Python3_FOUND)
     REQUIRED_FILES ${_tmpdifffn}
     FIXTURES_REQUIRED GemDiff)
 endif(Python3_FOUND)
-
-endif()

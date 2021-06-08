@@ -34,10 +34,12 @@ include(cmake/compilers/compilers.cmake)
 # first this to get libs
 include(cmake/ext_libs/mumps.cmake)
 include(cmake/compilers/flags.cmake)
-# this comes last to avoid intermittent failures
+# flags.cmake comes last to avoid intermittent failures
 
 # utility
 include(cmake/SetTargProps.cmake)
+# unit test DLL paths
+include(cmake/test/lib_path.cmake)
 
 # all Gemini3D source code under this
 add_subdirectory(src)

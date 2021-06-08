@@ -3,7 +3,10 @@ set_directory_properties(PROPERTIES LABELS interpolation)
 add_library(interp OBJECT interpolation.f90 interp2d.f90)
 target_link_libraries(interp PRIVATE const)
 
-if(hdf5 AND ${PROJECT_NAME}_BUILD_TESTING)
+if(NOT (hdf5 AND ${PROJECT_NAME}_BUILD_TESTING))
+  return()
+endif()
+
 # --- tests
 add_executable(test_interp1 testinterp1.f90)
 target_link_libraries(test_interp1 PRIVATE const interp)
@@ -39,6 +42,11 @@ set_tests_properties(unit:interp3 PROPERTIES
   RESOURCE_LOCK cpu_ram
   FIXTURES_SETUP GemInterp3)
 
+if(test_dll_path)
+  set_tests_properties(unit:interp2 unit:interp3 PROPERTIES
+    ENVIRONMENT "PATH=${test_dll_path}")
+endif()
+
 
 if(Python3_FOUND)
 
@@ -60,5 +68,3 @@ set_tests_properties(unit:interp3:python PROPERTIES
   FIXTURES_REQUIRED GemInterp3)
 
 endif(Python3_FOUND)
-
-endif(hdf5 AND ${PROJECT_NAME}_BUILD_TESTING)

@@ -61,6 +61,11 @@ set_tests_properties(unit:gemini_exe_ok PROPERTIES
   FIXTURES_REQUIRED "mumps_fxt;hwloc_fxt"
   LABELS unit)
 
+if(test_dll_path)
+  set_tests_properties(unit:gemini_exe_ok PROPERTIES
+    ENVIRONMENT "PATH=${test_dll_path}")
+endif()
+
 install(TARGETS gemini.bin
   EXPORT ${PROJECT_NAME}Targets
   RUNTIME DESTINATION bin)

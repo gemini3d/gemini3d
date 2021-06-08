@@ -20,7 +20,9 @@ target_link_libraries(potential PRIVATE PDEelliptic calculus collision grid mesh
 set_targ_props(PDEelliptic potential)
 
 
-if(hdf5 AND ${PROJECT_NAME}_BUILD_TESTING)
+if(NOT (hdf5 AND ${PROJECT_NAME}_BUILD_TESTING))
+  return()
+endif()
 
 set(_potential_testfile ${CMAKE_CURRENT_BINARY_DIR}/test_potential2d.h5)
 
@@ -50,12 +52,16 @@ else()
     COMMAND $<TARGET_FILE:test_potential2d> ${_potential_testfile})
 
 endif()
+
 set_tests_properties(unit:potential2 PROPERTIES TIMEOUT 30
   FIXTURES_SETUP GemPot
   RESOURCE_LOCK cpu_mpi
   LABELS "unit"
   DEPENDS unit:HWLOC)
-
+if(test_dll_path)
+  set_tests_properties(unit:potential2 PROPERTIES
+    ENVIRONMENT "PATH=${test_dll_path}")
+endif()
 
 if(Python3_FOUND)
 
@@ -68,5 +74,3 @@ if(Python3_FOUND)
     FIXTURES_REQUIRED GemPot)
 
 endif(Python3_FOUND)
-
-endif(hdf5 AND ${PROJECT_NAME}_BUILD_TESTING)

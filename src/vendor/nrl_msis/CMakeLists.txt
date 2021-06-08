@@ -71,4 +71,9 @@ set_tests_properties(unit:msis_compare PROPERTIES
   TIMEOUT 10
   REQUIRED_FILES "${_out};${_ref}")
 
+if(test_dll_path)
+  set_tests_properties(unit:msis_setup unit:msis_compare PROPERTIES
+    ENVIRONMENT "PATH=${test_dll_path}")
+endif()
+
 endif()

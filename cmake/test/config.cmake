@@ -51,6 +51,11 @@ set_tests_properties(gemini:hdf5:${name} PROPERTIES
   FIXTURES_SETUP hdf5:${name}:run_fxt
   LABELS core)
 
+if(test_dll_path)
+  set_tests_properties(gemini:hdf5:${name}:dryrun gemini:hdf5:${name} PROPERTIES
+    ENVIRONMENT "PATH=${test_dll_path}")
+endif()
+
 endif(hdf5)
 
 

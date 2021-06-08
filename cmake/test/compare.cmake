@@ -42,6 +42,11 @@ RESOURCE_LOCK cpu_mpi
 REQUIRED_FILES "${outdir}/inputs/config.nml;${refdir}/inputs/config.nml"
 LABELS compare)
 
+if(test_dll_path)
+  set_tests_properties(gemini:compare:hdf5:${name} PROPERTIES
+    ENVIRONMENT "PATH=${test_dll_path}")
+endif()
+
 # resource_lock compare for Windows, which can take 100x longer when run
 # at same time with non-dependent sim runs.
 # it's not a problem to run multiple compare at once, but it is a problem

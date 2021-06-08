@@ -89,6 +89,12 @@ install(TARGETS gemini3d.run magcalc.run
   EXPORT ${PROJECT_NAME}Targets
   RUNTIME DESTINATION bin)
 
+
+if(test_dll_path)
+  set_tests_properties(unit:magcalc_exe_ok unit:magcalc_run_ok unit:gemini3d_run_ok PROPERTIES
+    ENVIRONMENT "PATH=${test_dll_path}")
+endif()
+
 # --- Gemini compare
 
 add_library(assert assert.f90)

@@ -22,7 +22,10 @@ set_targ_props(meshobj meshobj_cart meshobj_dipole newton spherical geomagnetic)
 
 # --- coord self-tests
 
-if(${PROJECT_NAME}_BUILD_TESTING)
+if(NOT ${PROJECT_NAME}_BUILD_TESTING)
+  return()
+endif()
+
 add_executable(newton_testdriver newton_testdriver.f90)
 target_link_libraries(newton_testdriver PRIVATE const newton meshobj meshobj_dipole newton spherical geomagnetic)
 
@@ -52,9 +55,12 @@ foreach(t newton_testdriver geomag2geog_testdriver grid_testdriver fullgrid_dipo
 
 endforeach()
 
+if(test_dll_path)
+  set_tests_properties(unit:fullgrid_dipole_testdriver unit:fullgrid_dipole_testdriver_root unit:fullgrid_cartesian_testdriver unit:grid_testdriver unit:newton_testdriver PROPERTIES
+    ENVIRONMENT "PATH=${test_dll_path}")
+endif()
+
 if(host_ramGB LESS 8)
   set_tests_properties(unit:fullgrid_cartesian_testdriver unit:fullgrid_dipole_testdriver unit:fullgrid_dipole_testdriver_root PROPERTIES
   RESOURCE_LOCK cpu_ram)
-endif()
-
 endif()
