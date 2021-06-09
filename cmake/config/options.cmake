@@ -72,6 +72,8 @@ option(scotch "MUMPS: use Scotch" off)
 option(openmp "MUMPS: use OpenMP" off)
 
 option(python "PyGemini checks")
+# Matlab checks take much longer than Python, and Python covers much more
+option(matlab "Matlab checks")
 
 option(test_shaky "tests that may falsely fail")
 
@@ -82,10 +84,12 @@ set(CMAKE_TLS_VERIFY true)  # for Git and Downloads
 set(CMAKE_Fortran_MODULE_DIRECTORY ${PROJECT_BINARY_DIR}/include)
 
 if(dev)
-
+  set(FETCHCONTENT_SOURCE_DIR_MATGEMINI ${PROJECT_SOURCE_DIR}/../mat_gemini CACHE PATH "MatGemini developer path")
 else()
   set_directory_properties(PROPERTIES EP_UPDATE_DISCONNECTED true)
+  set(FETCHCONTENT_UPDATES_DISCONNECTED_MATGEMINI true)
   set(FETCHCONTENT_UPDATES_DISCONNECTED_MSIS2 true)
+  set(FETCHCONTENT_UPDATES_DISCONNECTED_PYGEMINI true)
 endif()
 
 # --- auto-ignore build directory
