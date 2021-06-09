@@ -52,8 +52,13 @@ if(CMAKE_VERSION VERSION_LESS 3.20)
 endif()
 
 # self-test simulations -- after all targets for if(TARGET ...)
-include(cmake/ext_libs/matlab.cmake)
-include(cmake/ext_libs/python.cmake)
+if(matlab)
+  include(cmake/ext_libs/matlab.cmake)
+endif(matlab)
+if(python)
+  include(cmake/ext_libs/python.cmake)
+endif(python)
+
 include(cmake/test/config.cmake)
 include(cmake/test/sim.cmake)
 

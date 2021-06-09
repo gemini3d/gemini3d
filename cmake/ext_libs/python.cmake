@@ -1,13 +1,4 @@
-if(NOT python)
-  unset(PYGEMINI_DIR CACHE)
-  return()
-endif()
-
 function(check_pygemini)
-
-if(PYGEMINI_DIR)
-  return()
-endif()
 
 # Python3::Interpreter does NOT work, use ${Python3_EXECUTABLE}
 
@@ -39,6 +30,6 @@ endfunction()
 
 
 find_package(Python3 COMPONENTS Interpreter)
-if(Python3_FOUND)
+if(Python3_FOUND AND NOT PYGEMINI_DIR)
   check_pygemini()
 endif()

@@ -83,13 +83,15 @@ set(CMAKE_TLS_VERIFY true)  # for Git and Downloads
 # normally to keep things clean we'd use my `set_targ_props(newtarg)`
 set(CMAKE_Fortran_MODULE_DIRECTORY ${PROJECT_BINARY_DIR}/include)
 
-if(dev)
+if(EXISTS ${PROJECT_SOURCE_DIR}/../mat_gemini/setup.m)
   set(FETCHCONTENT_SOURCE_DIR_MATGEMINI ${PROJECT_SOURCE_DIR}/../mat_gemini CACHE PATH "MatGemini developer path")
+endif()
+
+if(dev)
+
 else()
   set_directory_properties(PROPERTIES EP_UPDATE_DISCONNECTED true)
-  set(FETCHCONTENT_UPDATES_DISCONNECTED_MATGEMINI true)
   set(FETCHCONTENT_UPDATES_DISCONNECTED_MSIS2 true)
-  set(FETCHCONTENT_UPDATES_DISCONNECTED_PYGEMINI true)
 endif()
 
 # --- auto-ignore build directory
