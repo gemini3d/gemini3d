@@ -273,9 +273,59 @@ The examples of specifying and saving input neutral data input files are provide
 
 ### Neutral input data requirements
 
-Neutral input file data shall contain neutral fluid velocities, volumetric perturbations in temperature, and number densities for [O], [N_2] and [O_2].
-2D Cartesian neutral inputs should contain meridional and vertical fluid velocities; 2D axisymmetric neutral inputs should contain radial and vertical fluid velocities; for 3D GEMINI simulations - meridional, zonal and vertical fluid velocities.
-Neutral particle temperature perturbations represent averaged values over all species.
+Neutral input file data shall contain neutral fluid velocities, volumetric perturbations in temperature, and number densities for [O], [N<sub>2</sub>] and [O<sub>2</sub>].
+2D Cartesian neutral inputs should contain meridional and vertical fluid velocities as:
+
+```
+'/dnOall'       % O perturbations
+'/dnN2all'      % N2 perturbations
+'/dnO2all'      % O2 perturbations
+'/dvnrhoall'    % dvnrhoall - fluid velocity in meridional direction or radial in Axisymmetric simulations
+'/dvnzall'      % dvnzall - fluid velocity in vertical direction
+'/dTnall'       % Temperature perturbations
+```
+These are stored in files named with the datetime corresponding to each neutral input frame, i.e. ```YYYYMMDD_SSSSS.SSSSSS.h5``` ("S" represents UT seconds with microsecond accuracy).  These arrays as permuted/indexed as:
+
+```
+dnOall(altitude,horizontal)
+```
+
+A ```simsize.h5``` input file is also required and has two variables:
+
+```
+'/lx1'          % number of *horizontal* (either radial or meridional) neutral input grid points
+'/lx2'          % number of *vertical* neutral input grid points
+```
+
+2D axisymmetric neutral inputs should contain radial and vertical fluid velocities, stored in the same variables as for the 2D Cartesian input above.
+
+For 3D GEMINI simulations the velocities have meridional, zonal, and vertical components:
+
+```
+'/dn0all'         % O perturbations
+'/dnN2all'        % N2 perturbations
+'/dnO2all'        % O2 perturbations
+'/dvnxall'        % Zonal fluid velocity (positive east)
+'/dvnrhoall'      % Meridional fluid velocity (positive north)
+'/dvnzall'        % Vertical velocity (positive upward)
+'/dTnall'         % Temperature perturbations
+```
+
+These arrays are permuted as:
+
+```
+dnOall(altitude,zonal,meridional)
+```
+
+The 3D neutral input simsize file is organized as:
+
+```
+'/lx1'      % number of zonal grid points
+'/lx2'      % number of meridional points
+'/lx3'      % number of vertical grid points
+```
+
+Neutral particle temperature perturbations in these input files are averaged over all species.
 
 <a name="boundary_conditions"></a>
 ## 4. Boundary Conditions
