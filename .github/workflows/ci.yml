@@ -54,6 +54,43 @@ jobs:
       run: ctest --preset release -LE unit -E 3d
 
 
+  linux-gcc7:
+    needs: linux
+    runs-on: ubuntu-18.04
+    timeout-minutes: 10
+
+    env:
+      DEBIAN_FRONTEND: noninteractive
+      CTEST_PARALLEL_LEVEL: 2
+      CC: gcc-7
+      CXX: g++-7
+      FC: gfortran-7
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
+      with:
+        python-version: '3.8'
+
+    - name: Install packages
+      run: |
+        sudo apt update -yq
+        sudo cmake -P scripts/install_prereq.cmake
+        echo "${HOME}/ninja-v1.10.2" >> $GITHUB_PATH
+
+
+    - name: Configure multi
+      run: cmake --preset multi
+
+    - name: Release build
+      run: cmake --build --preset release
+
+    - name: Release unit test
+      run: ctest --preset release -L unit
+
+    - name: Release core test
+      run: ctest --preset release -LE unit -E 3d
+
 
   macos:
     runs-on: macos-latest

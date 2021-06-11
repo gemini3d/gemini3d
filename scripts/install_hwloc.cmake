@@ -22,7 +22,8 @@ if(APPLE)
     PATH_SUFFIXES bin)
 
   if(brew)
-    execute_process(COMMAND ${brew} install hwloc)
+    execute_process(COMMAND ${brew} install hwloc
+      COMMAND_ERROR_IS_FATAL ANY)
   endif()
 
   return()
@@ -83,9 +84,12 @@ endif()
 
 message(STATUS "Building HWLOC")
 if(NOT EXISTS ${path}/Makefile)
-  execute_process(COMMAND ./configure --prefix=${path} WORKING_DIRECTORY ${path} COMMAND_ERROR_IS_FATAL ANY)
+  execute_process(COMMAND ./configure --prefix=${path} WORKING_DIRECTORY ${path}
+    COMMAND_ERROR_IS_FATAL ANY)
 endif()
-execute_process(COMMAND make -j -C ${path} COMMAND_ERROR_IS_FATAL ANY)
-execute_process(COMMAND make install -C ${path} COMMAND_ERROR_IS_FATAL ANY)
+execute_process(COMMAND make -j -C ${path}
+  COMMAND_ERROR_IS_FATAL ANY)
+execute_process(COMMAND make install -C ${path}
+  COMMAND_ERROR_IS_FATAL ANY)
 
 check_hwloc()

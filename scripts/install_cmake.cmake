@@ -82,7 +82,10 @@ if(APPLE)
     return()
   endif(brew)
 elseif(UNIX)
-  execute_process(COMMAND uname -m OUTPUT_VARIABLE arch OUTPUT_STRIP_TRAILING_WHITESPACE)
+  execute_process(COMMAND uname -m
+    OUTPUT_VARIABLE arch
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    TIMEOUT 5)
 
   if(arch STREQUAL x86_64)
     if(version VERSION_LESS 3.20)

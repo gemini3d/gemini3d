@@ -33,12 +33,20 @@ endif()
 endfunction(checkup)
 
 if(APPLE)
-  execute_process(COMMAND uname -m OUTPUT_VARIABLE arch OUTPUT_STRIP_TRAILING_WHITESPACE)
+  execute_process(COMMAND uname -m
+    OUTPUT_VARIABLE arch
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    TIMEOUT 5
+    COMMAND_ERROR_IS_FATAL ANY)
   if(arch STREQUAL x86_64)
     set(stem ninja-mac)
   endif()
 elseif(UNIX)
-  execute_process(COMMAND uname -m OUTPUT_VARIABLE arch OUTPUT_STRIP_TRAILING_WHITESPACE)
+  execute_process(COMMAND uname -m
+    OUTPUT_VARIABLE arch
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    TIMEOUT 5
+    COMMAND_ERROR_IS_FATAL ANY)
   if(arch STREQUAL x86_64)
     set(stem ninja-linux)
   endif()
