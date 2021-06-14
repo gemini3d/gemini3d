@@ -13,10 +13,13 @@ if(NOT prefix)
   get_filename_component(prefix ~ ABSOLUTE)
 endif()
 
-set(ver 1.10.2)
+if(NOT version)
+  file(STRINGS ${CMAKE_CURRENT_LIST_DIR}/NINJA_VERSION version
+   REGEX "^([0-9]+\.[0-9]+\.[0-9]+)" LIMIT_INPUT 16 LENGTH_MAXIMUM 16 LIMIT_COUNT 1)
+endif()
 
 set(host https://github.com/ninja-build/ninja/archive/)
-set(name v${ver}.tar.gz)
+set(name v${version}.tar.gz)
 
 function(checkup ninja)
 
@@ -33,16 +36,16 @@ endif()
 endfunction(checkup)
 
 get_filename_component(prefix ${prefix} ABSOLUTE)
-set(path ${prefix}/ninja-${ver})
+set(path ${prefix}/ninja-${version})
 
 find_program(ninja NAMES ninja PATHS ${path} PATH_SUFFIXES bin NO_DEFAULT_PATH)
 if(ninja)
-  message(STATUS "Ninja ${ver} already at ${ninja}")
+  message(STATUS "Ninja ${version} already at ${ninja}")
   checkup(${ninja})
   return()
 endif()
 
-message(STATUS "installing Ninja ${ver} to ${path}")
+message(STATUS "installing Ninja ${version} to ${path}")
 
 set(archive ${path}/${name})
 
@@ -59,7 +62,7 @@ if(NOT EXISTS ${archive})
   file(DOWNLOAD ${url} ${archive} INACTIVITY_TIMEOUT 15)
 endif()
 
-set(src_dir ${path}/ninja-${ver})
+set(src_dir ${path}/ninja-${version})
 
 if(NOT EXISTS ${src_dir}/ninjaCMakeLists.txt)
   message(STATUS "extracting ${archive} to ${path}")
