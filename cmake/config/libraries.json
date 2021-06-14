@@ -10,7 +10,7 @@
 },
 "nc4fortran": {
   "git": "https://github.com/geospace-code/nc4fortran.git",
-  "tag": "v1.2.6"
+  "tag": "v1.3.0"
 },
 "zlib1": {
   "url": "https://zlib.net/zlib1211.zip",

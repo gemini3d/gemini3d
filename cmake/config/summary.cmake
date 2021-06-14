@@ -9,8 +9,9 @@ endif()
 # --- recommendations
 
 if(NOT CMAKE_GENERATOR MATCHES Ninja)
-  message(STATUS "Recommendation: Install Ninja build system:
-      cmake -P ${PROJECT_SOURCE_DIR}/scripts/install_ninja.cmake")
+  message(VERBOSE "Recommendation: Install Ninja build system:
+      cmake -P ${PROJECT_SOURCE_DIR}/scripts/install_ninja.cmake
+  Then, set environment variable CMAKE_GENERATOR=Ninja")
 endif()
 
 if(mpi AND NOT HWLOC_FOUND)
