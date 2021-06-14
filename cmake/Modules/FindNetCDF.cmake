@@ -141,21 +141,6 @@ if(netCDF_FOUND)
   set(NetCDF_C_INCLUDE_DIR "${netCDF_INCLUDE_DIR}")
   set(NetCDF_C_LIBRARY "${netCDF_LIBRARIES}")
   set(NetCDF_VERSION "${NetCDFVersion}")
-
-  add_library(NetCDF::NetCDF_C INTERFACE IMPORTED)
-  if (TARGET "netCDF::netcdf")
-      # 4.7.3
-    set_target_properties(NetCDF::NetCDF_C PROPERTIES
-      INTERFACE_LINK_LIBRARIES "netCDF::netcdf")
-  elseif (TARGET "netcdf")
-    set_target_properties(NetCDF::NetCDF_C PROPERTIES
-      INTERFACE_LINK_LIBRARIES "netcdf")
-  else()
-    set_target_properties(NetCDF::NetCDF_C PROPERTIES
-      INTERFACE_LINK_LIBRARIES "${netCDF_LIBRARIES}")
-  endif()
-  set_target_properties(NetCDF::NetCDF_C PROPERTIES
-      INTERFACE_INCLUDE_DIRECTORIES "${NetCDF_C_INCLUDE_DIR}")
 endif(netCDF_FOUND)
 
 # 2. manual search for Fortran (and C if needed) using optional pkg-config
@@ -199,7 +184,17 @@ if(NetCDF_FOUND)
   if(NOT TARGET NetCDF::NetCDF_C)
     add_library(NetCDF::NetCDF_C INTERFACE IMPORTED)
     set_target_properties(NetCDF::NetCDF_C PROPERTIES
-                          INTERFACE_LINK_LIBRARIES "${NetCDF_C_LIBRARY}"
                           INTERFACE_INCLUDE_DIRECTORIES "${NetCDF_C_INCLUDE_DIR}")
+    if (TARGET "netCDF::netcdf")
+        # 4.7.3
+      set_target_properties(NetCDF::NetCDF_C PROPERTIES
+        INTERFACE_LINK_LIBRARIES "netCDF::netcdf")
+    elseif (TARGET "netcdf")
+      set_target_properties(NetCDF::NetCDF_C PROPERTIES
+        INTERFACE_LINK_LIBRARIES "netcdf")
+    else()
+      set_target_properties(NetCDF::NetCDF_C PROPERTIES
+        INTERFACE_LINK_LIBRARIES "${NetCDF_C_LIBRARY}")
+    endif()
   endif()
 endif()
