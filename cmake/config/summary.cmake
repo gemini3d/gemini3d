@@ -19,7 +19,7 @@ if(mpi AND NOT HWLOC_FOUND)
     cmake -P ${PROJECT_SOURCE_DIR}/scripts/install_hwloc.cmake")
 endif()
 
-if(CMAKE_Fortran_COMPILER_ID STREQUAL GNU AND CMAKE_Fortran_COMPILER_VERSION VERSION_LESS 7.6.0)
+if(CMAKE_Fortran_COMPILER_ID STREQUAL GNU AND CMAKE_Fortran_COMPILER_VERSION VERSION_LESS 7.5.0)
   message(WARNING "GCC older than 7.5.0 has bugs that are likely to cause Gemini3D (and other modern programs) to fail to build.")
 endif()
 
