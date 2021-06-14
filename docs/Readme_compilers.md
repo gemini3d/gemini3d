@@ -5,10 +5,15 @@ GEMINI requires a Fortran compiler that handles standard Fortran syntax includin
 * submodule
 * block
 
-These compilers work easily with GEMINI3D on Linux, MacOS and Windows:
+These compilers are known to work easily with GEMINI3D on Linux, MacOS and Windows:
 
-* Gfortran &ge; 7
-* Intel oneAPI core + [HPC Toolkit](https://software.intel.com/content/www/us/en/develop/tools/oneapi/hpc-toolkit.html)
+* Gfortran (GCC): 7.5, 8.5, 9.3, 10.3, 11.1
+* Intel oneAPI 2021.x core + [HPC Toolkit](https://software.intel.com/content/www/us/en/develop/tools/oneapi/hpc-toolkit.html)
+* Intel Parallel Studio XE (PSXE) 2020 (Intel Fortran 19.1). PSXE has been deprecated and replaced by oneAPI and we no longer test with PSXE.
+
+Note: some older point releases of GCC are known to be broken (example: GCC 7.4 and 8.1 are broken in general).
+Currently, GCC 9 is the oldest version maintained by the GCC devs.
+GCC 6 and older are missing critically needed features for modern Fortran projects.
 
 ## Linux
 
