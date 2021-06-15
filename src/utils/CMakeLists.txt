@@ -21,10 +21,6 @@ set_tests_properties(unit:magcalc_exe_ok PROPERTIES
   LABELS unit
   TIMEOUT 10)
 
-install(TARGETS magcalc.bin
-  EXPORT ${PROJECT_NAME}Targets
-  RUNTIME DESTINATION bin)
-
 # --- gemini3d.run Fortran front end
 add_subdirectory(hwloc)
 
@@ -85,11 +81,6 @@ set_tests_properties(unit:magcalc_run_ok PROPERTIES
   LABELS unit
   TIMEOUT 10)
 
-install(TARGETS gemini3d.run magcalc.run
-  EXPORT ${PROJECT_NAME}Targets
-  RUNTIME DESTINATION bin)
-
-
 if(test_dll_path)
   set_tests_properties(unit:magcalc_exe_ok unit:magcalc_run_ok unit:gemini3d_run_ok PROPERTIES
     ENVIRONMENT "PATH=${test_dll_path}")
@@ -115,7 +106,8 @@ set_target_properties(gemini3d.compare PROPERTIES
   RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
   Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include)
 
-install(TARGETS gemini3d.compare
+
+install(TARGETS magcalc.bin gemini3d.run magcalc.run gemini3d.compare
   EXPORT ${PROJECT_NAME}Targets
   RUNTIME DESTINATION bin)
 

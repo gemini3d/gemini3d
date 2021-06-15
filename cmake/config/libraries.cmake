@@ -1,6 +1,6 @@
 set(_names glow hwm14 msis2
 lapack mumps scalapack
-matgmeini pygemini
+matgemini
 nc4fortran h5fortran hdf5)
 
 file(READ ${CMAKE_CURRENT_LIST_DIR}/libraries.json _libj)
