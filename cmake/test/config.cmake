@@ -89,3 +89,30 @@ else()
 endif()
 
 endfunction(setup_gemini_test)
+
+
+function(setup_magcalc_test name)
+
+cmake_path(APPEND out_dir ${PROJECT_BINARY_DIR} ${name})
+
+add_test(NAME magcalc:${name}:setup
+  COMMAND ${Python3_EXECUTABLE} -m gemini3d.magcalc ${out_dir})
+set_tests_properties(magcalc:${name}:setup PROPERTIES
+  FIXTURES_REQUIRED hdf5:${name}:run_fxt
+  FIXTURES_SETUP magcalc:${name}:setup
+  TIMEOUT 30)
+
+add_test(NAME magcalc:${name} COMMAND $<TARGET_FILE:magcalc.run> ${out_dir})
+set_tests_properties(magcalc:${name} PROPERTIES
+  RESOURCE_LOCK cpu_mpi
+  DEPENDS unit:HWLOC
+  FIXTURES_REQUIRED magcalc:${name}:setup
+  LABELS core
+  TIMEOUT 60)
+
+if(test_dll_path)
+  set_tests_properties(magcalc:${name} PROPERTIES
+    ENVIRONMENT "PATH=${test_dll_path}")
+endif()
+
+endfunction(setup_magcalc_test)
