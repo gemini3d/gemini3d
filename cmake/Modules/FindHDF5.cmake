@@ -250,7 +250,7 @@ if(HDF5_Fortran_FOUND)
 
 set(CMAKE_REQUIRED_INCLUDES ${HDF5_Fortran_INCLUDE_DIR} ${HDF5_INCLUDE_DIR})
 
-include(CheckFortranSourceCompiles)
+include(CheckSourceCompiles)
 set(_code "program test_minimal
 use hdf5, only : h5open_f, h5close_f
 use h5lt, only : h5ltmake_dataset_f
@@ -261,11 +261,11 @@ if (i /= 0) error stop 'could not open hdf5 library'
 call h5close_f(i)
 if (i /= 0) error stop
 end")
-check_fortran_source_compiles(${_code} HDF5_Fortran_links SRC_EXT f90)
+check_source_compiles(Fortran ${_code} HDF5_Fortran_links)
 
 if(HDF5_Fortran_links AND CMAKE_VERSION VERSION_GREATER_EQUAL 3.14)
-  include(CheckFortranSourceRuns)
-  check_fortran_source_runs(${_code} HDF5_runs SRC_EXT f90)
+  include(CheckSourceRuns)
+  check_source_runs(Fortran ${_code} HDF5_runs)
 endif()
 
 endif(HDF5_Fortran_FOUND)
@@ -275,7 +275,6 @@ if(HDF5_C_FOUND)
 
 set(CMAKE_REQUIRED_INCLUDES ${HDF5_INCLUDE_DIR})
 
-include(CheckCSourceCompiles)
 set(_code "
 #include \"hdf5.h\"
 
@@ -284,7 +283,7 @@ hid_t f = H5Fcreate (\"junk.h5\", H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
 herr_t status = H5Fclose (f);
 return 0;
 }")
-check_c_source_compiles("${_code}" HDF5_C_links)
+check_source_compiles(C "${_code}" HDF5_C_links)
 
 set(HDF5_links ${HDF5_C_links})
 

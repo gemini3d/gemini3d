@@ -68,9 +68,9 @@ set(CMAKE_REQUIRED_FLAGS)
 set(CMAKE_REQUIRED_INCLUDES ${NetCDF_C_INCLUDE_DIR})
 set(CMAKE_REQUIRED_LIBRARIES ${NetCDF_C_LIBRARY})
 
-include(CheckCSourceCompiles)
-check_c_source_compiles("
-#include <netcdf.h>
+include(CheckSourceCompiles)
+check_source_compiles(C
+"#include <netcdf.h>
 #include <stdio.h>
 
 int main(void){
@@ -118,8 +118,7 @@ set(CMAKE_REQUIRED_FLAGS)
 set(CMAKE_REQUIRED_INCLUDES ${NetCDF_Fortran_INCLUDE_DIR})
 set(CMAKE_REQUIRED_LIBRARIES ${NetCDF_Fortran_LIBRARY})
 
-include(CheckFortranSourceCompiles)
-check_fortran_source_compiles("use netcdf; end" NetCDF_Fortran_links SRC_EXT f90)
+check_source_compiles(Fortran "use netcdf; end" NetCDF_Fortran_links)
 
 if(NOT NetCDF_Fortran_links)
   return()

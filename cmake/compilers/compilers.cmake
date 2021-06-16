@@ -1,5 +1,5 @@
-include(CheckFortranSourceCompiles)
-include(CheckFortranCompilerFlag)
+include(CheckSourceCompiles)
+include(CheckCompilerFlag)
 
 # check C and Fortran compiler ABI compatibility
 
@@ -27,20 +27,25 @@ set(CMAKE_REQUIRED_LIBRARIES)
 set(CMAKE_REQUIRED_INCLUDES)
 set(CMAKE_REQUIRED_FLAGS)
 
-check_fortran_source_compiles("implicit none (type, external); end" f2018impnone SRC_EXT f90)
+check_source_compiles(Fortran
+"implicit none (type, external); end"
+f2018impnone)
 if(NOT f2018impnone)
   message(FATAL_ERROR "Compiler does not support Fortran 2018 IMPLICIT NONE (type, external): ${CMAKE_Fortran_COMPILER_ID} ${CMAKE_Fortran_COMPILER_VERSION}")
 endif()
 
-check_fortran_source_compiles("program es2018
+check_source_compiles(Fortran
+"program es2018
 character :: x
 error stop x
-end program" f2018errorstop SRC_EXT f90)
+end program"
+f2018errorstop)
 if(NOT f2018errorstop)
   message(FATAL_ERROR "Compiler does not support Fortran 2018 error stop with character variable: ${CMAKE_Fortran_COMPILER_ID} ${CMAKE_Fortran_COMPILER_VERSION}")
 endif()
 
-check_fortran_source_compiles("program f18_assumed_rank
+check_source_compiles(Fortran
+"program f18_assumed_rank
 implicit none (type, external)
 contains
 subroutine ranker(A)
@@ -52,7 +57,8 @@ select rank(A)
     print *, rank(A)
 end select
 end subroutine ranker
-end program" f2018assumed_rank SRC_EXT f90)
+end program"
+f2018assumed_rank)
 
 # --- MSISE00 and MSIS 2.0 require legacy workaround due to non-standard Fortran code
 

@@ -1,4 +1,4 @@
-include(CheckFortranSourceCompiles)
+include(CheckSourceCompiles)
 
 function(check_mpi)
 
@@ -18,11 +18,12 @@ if(NOT DEFINED MPI_Fortran_OK)
   )
 endif()
 
-check_fortran_source_compiles("use mpi
+check_source_compiles(Fortran
+"use mpi
 integer :: i
 call mpi_init(i)
 call mpi_finalize(i)
-end" MPI_Fortran_OK SRC_EXT F90)
+end" MPI_Fortran_OK)
 
 if(NOT MPI_Fortran_OK)
   message(FATAL_ERROR "MPI_Fortran not working.")
@@ -40,8 +41,8 @@ if(NOT DEFINED MPI_C_OK)
   )
 endif()
 
-check_c_source_compiles("
-#include <mpi.h>
+check_source_compiles(C
+"#include <mpi.h>
 #ifndef NULL
 #define NULL 0
 #endif
