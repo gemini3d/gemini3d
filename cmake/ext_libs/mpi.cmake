@@ -32,7 +32,6 @@ endif()
 # --- test C MPI
 
 set(CMAKE_REQUIRED_LIBRARIES MPI::MPI_C Threads::Threads)
-include(CheckCSourceCompiles)
 
 if(NOT DEFINED MPI_C_OK)
   message(STATUS "C MPI:
