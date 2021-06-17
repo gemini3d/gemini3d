@@ -18,7 +18,7 @@ if(NOT version)
    REGEX "^([0-9]+\.[0-9]+\.[0-9]+)" LIMIT_INPUT 16 LENGTH_MAXIMUM 16 LIMIT_COUNT 1)
 endif()
 
-set(host https://github.com/ninja-build/ninja/releases/download/${version}/)
+set(host https://github.com/ninja-build/ninja/releases/download/v${version}/)
 
 
 function(checkup ninja)
