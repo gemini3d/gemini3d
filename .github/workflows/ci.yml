@@ -76,7 +76,7 @@ jobs:
       run: |
         sudo apt update -yq
         sudo cmake -P scripts/install_prereq.cmake
-        echo "${HOME}/ninja-v1.10.2" >> $GITHUB_PATH
+        echo "${HOME}/ninja-1.10.2" >> $GITHUB_PATH
 
 
     - name: Configure multi
