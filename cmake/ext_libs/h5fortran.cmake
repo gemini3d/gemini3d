@@ -19,11 +19,7 @@ if(hdf5)
   endif()
 
   if(NOT h5fortran_ROOT)
-    if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-        set(h5fortran_ROOT ${PROJECT_BINARY_DIR})
-      else()
-        set(h5fortran_ROOT ${CMAKE_INSTALL_PREFIX})
-    endif()
+    set(h5fortran_ROOT ${CMAKE_INSTALL_PREFIX})
   endif()
 
   if(HDF5_FOUND)

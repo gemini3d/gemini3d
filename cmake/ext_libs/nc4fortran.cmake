@@ -10,11 +10,7 @@ if(netcdf)
   find_package(NetCDF REQUIRED COMPONENTS Fortran)
 
   if(NOT nc4fortran_ROOT)
-    if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-        set(nc4fortran_ROOT ${PROJECT_BINARY_DIR})
-      else()
-        set(nc4fortran_ROOT ${CMAKE_INSTALL_PREFIX})
-    endif()
+    set(nc4fortran_ROOT ${CMAKE_INSTALL_PREFIX})
   endif()
 
   if(NOT DEFINED NetCDF_ROOT)

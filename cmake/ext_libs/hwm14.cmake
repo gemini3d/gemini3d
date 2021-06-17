@@ -8,11 +8,7 @@ if(hwm14_FOUND)
 endif()
 
 if(NOT HWM14_ROOT)
-  if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-    set(HWM14_ROOT ${PROJECT_BINARY_DIR})
-  else()
-    set(HWM14_ROOT ${CMAKE_INSTALL_PREFIX})
-  endif()
+  set(HWM14_ROOT ${CMAKE_INSTALL_PREFIX})
 endif()
 
 set(HWM14_LIBRARIES ${HWM14_ROOT}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}hwm14${CMAKE_STATIC_LIBRARY_SUFFIX})
@@ -29,11 +25,7 @@ CONFIGURE_HANDLED_BY_BUILD ON
 ExternalProject_Get_property(HWM14 SOURCE_DIR)
 
 ExternalProject_Add_Step(HWM14 hwm_cp1 DEPENDEES update
-COMMAND ${CMAKE_COMMAND} -E copy_if_different ${SOURCE_DIR}/src/hwm14/hwm123114.bin ${PROJECT_BINARY_DIR})
-ExternalProject_Add_Step(HWM14 hwm_cp2 DEPENDEES update
-COMMAND ${CMAKE_COMMAND} -E copy_if_different ${SOURCE_DIR}/src/hwm14/dwm07b104i.dat ${PROJECT_BINARY_DIR})
-ExternalProject_Add_Step(HWM14 hwm_cp3 DEPENDEES update
-COMMAND ${CMAKE_COMMAND} -E copy_if_different ${SOURCE_DIR}/src/hwm14/gd2qd.dat ${PROJECT_BINARY_DIR})
+COMMAND ${CMAKE_COMMAND} -E copy_if_different ${SOURCE_DIR}/src/hwm14/hwm123114.bin ${SOURCE_DIR}/src/hwm14/dwm07b104i.dat ${SOURCE_DIR}/src/hwm14/gd2qd.dat ${PROJECT_BINARY_DIR})
 
 add_library(HWM14::HWM14 INTERFACE IMPORTED)
 target_link_libraries(HWM14::HWM14 INTERFACE ${HWM14_LIBRARIES})
