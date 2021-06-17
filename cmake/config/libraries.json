@@ -39,11 +39,11 @@
 
 "mumps": {
   "git": "https://github.com/scivision/mumps.git",
-  "tag": "v5.4.0.1"
+  "tag": "v5.4.0.2"
 },
 "scalapack": {
   "git": "https://github.com/scivision/scalapack.git",
-  "tag": "v2.1.0.20"
+  "tag": "v2.1.0.21"
 },
 "lapack": {
   "git": "https://github.com/scivision/lapack.git",
