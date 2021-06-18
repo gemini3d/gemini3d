@@ -386,19 +386,20 @@ end interface
 
 
 interface ! mpihalo.f90
-module subroutine halo_23(param,lhalo,tag,isperiodic)
-real(wp), dimension(-1:,-1:,-1:), intent(inout) :: param
-integer, intent(in) :: lhalo    !number of surrounding grid points to halo with (1 or 2 only)
-integer, intent(in) :: tag
-logical, intent(in) :: isperiodic
-end subroutine halo_23
-
-module subroutine halo_end_23(param,paramend,paramtop,tag)
-real(wp), dimension(:,:,:), intent(inout) :: param
-real(wp), dimension(:,:), intent(out) :: paramend
-real(wp), dimension(:,:), intent(out) :: paramtop
-integer, intent(in) :: tag
-end subroutine halo_end_23
+  module subroutine halo_23(param,lhalo,tag,isperiodic)
+    real(wp), dimension(-1:,-1:,-1:), intent(inout) :: param
+    integer, intent(in) :: lhalo    !number of surrounding grid points to halo with (1 or 2 only)
+    integer, intent(in) :: tag
+    logical, intent(in) :: isperiodic
+  end subroutine halo_23
+  
+  module subroutine halo_end_23(param,paramend,paramtop,paramcorner,tag)
+    real(wp), dimension(:,:,:), intent(inout) :: param
+    real(wp), dimension(:,:), intent(out) :: paramend
+    real(wp), dimension(:,:), intent(out) :: paramtop
+    real(wp), dimension(:), intent(out) :: paramcorner
+    integer, intent(in) :: tag
+  end subroutine halo_end_23
 end interface
 
 
