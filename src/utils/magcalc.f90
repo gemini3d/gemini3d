@@ -242,7 +242,6 @@ allocate(dVcorner(lx1),xpcorner(lx1),ypcorner(lx1),zpcorner(lx1),Jxcorner(lx1),J
 allocate(Rxcorner(lx1),Rycorner(lx1),Rzcorner(lx1))
 allocate(integrandcorner(lx1))
 
-
 !> note here that dV's are basically the backward diff volumes; later to be referenced as dV(2:end,2:end,2:end) and so on.
 if (flag2D/=1) then   !3D differential volume
   do ix3=1,lx3
