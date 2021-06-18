@@ -68,6 +68,7 @@ real(wp), dimension(:,:), allocatable :: integrandavgend
 real(wp), dimension(:,:), allocatable :: Jxtop,Jytop,Jztop,Rxtop,Rytop,Rztop,Rcubedtop,dVtop,Rmagtop
 real(wp), dimension(:,:), allocatable :: integrandtop
 real(wp), dimension(:,:), allocatable :: integrandavgtop
+real(wp), dimension(:), allocatable :: integrandcorner
 
 real(wp), dimension(:,:), allocatable :: xpend,ypend,zpend
 real(wp), dimension(:,:), allocatable :: xptop,yptop,zptop
@@ -239,6 +240,7 @@ allocate(xptop(lx1,lx3),yptop(lx1,lx3),zptop(lx1,lx3))
 allocate(dVcorner(lx1),xpcorner(lx1),ypcorner(lx1),zpcorner(lx1),Jxcorner(lx1),Jycorner(lx1),Jzcorner(lx1), &
            Rmagcorner(lx1),Rcubedcorner(lx1))
 allocate(Rxcorner(lx1),Rycorner(lx1),Rzcorner(lx1))
+allocate(integrandcorner(lx1))
 
 
 !> note here that dV's are basically the backward diff volumes; later to be referenced as dV(2:end,2:end,2:end) and so on.
@@ -519,6 +521,7 @@ main : do while (t < cfg%tdur)
       integrand(:,:,:)=mu0/4/pi*(Jy*Rz-Jz*Ry)        ! numerator (to be averaged separately from the denominator
       integrandend(:,:)=mu0/4/pi*(Jyend*Rzend-Jzend*Ryend)
       integrandtop(:,:)=mu0/4/pi*(Jytop*Rztop-Jztop*Rytop)
+      integrandcorner(:)=mu0/4/pi*(Jycorner*Rzcorner-Jzcorner*Rycorner)
       integrandavg(:,:,:)=1/8._wp*( integrand(1:lx1-1,1:lx2-1,1:lx3-1) + integrand(2:lx1,1:lx2-1,1:lx3-1) + &
                            integrand(1:lx1-1,2:lx2,1:lx3-1) + integrand(2:lx1,2:lx2,1:lx3-1) + &
                            integrand(1:lx1-1,1:lx2-1,2:lx3) + integrand(2:lx1,1:lx2-1,2:lx3) + &
@@ -548,6 +551,7 @@ main : do while (t < cfg%tdur)
       integrand(:,:,:)=-mu0/4/pi*(Jx*Rz-Jz*Rx)
       integrandend(:,:)=-mu0/4/pi*(Jxend*Rzend-Jzend*Rxend)
       integrandtop(:,:)=-mu0/4/pi*(Jxtop*Rztop-Jztop*Rxtop)
+      integrandcorner(:)=-mu0/4/pi*(Jxcorner*Rzcorner-Jzcorner*Rxcorner)
       integrandavg(:,:,:)=1/8._wp*( integrand(1:lx1-1,1:lx2-1,1:lx3-1) + integrand(2:lx1,1:lx2-1,1:lx3-1) + &
                            integrand(1:lx1-1,2:lx2,1:lx3-1) + integrand(2:lx1,2:lx2,1:lx3-1) + &
                            integrand(1:lx1-1,1:lx2-1,2:lx3) + integrand(2:lx1,1:lx2-1,2:lx3) + &
@@ -577,6 +581,7 @@ main : do while (t < cfg%tdur)
       integrand(:,:,:)=mu0/4/pi*(Jx*Ry-Jy*Rx)
       integrandend(:,:)=mu0/4/pi*(Jxend*Ryend-Jyend*Rxend)
       integrandtop(:,:)=mu0/4/pi*(Jxtop*Rytop-Jytop*Rxtop)
+      integrandcorner(:)=mu0/4/pi*(Jxcorner*Rycorner-Jycorner*Rxcorner)
       integrandavg(:,:,:)=1/8._wp*( integrand(1:lx1-1,1:lx2-1,1:lx3-1) + integrand(2:lx1,1:lx2-1,1:lx3-1) + &
                                     integrand(1:lx1-1,2:lx2,1:lx3-1) + integrand(2:lx1,2:lx2,1:lx3-1) + &
                                     integrand(1:lx1-1,1:lx2-1,2:lx3) + integrand(2:lx1,1:lx2-1,2:lx3) + &
@@ -591,7 +596,6 @@ main : do while (t < cfg%tdur)
                              integrandend(1:lx1-1,2:lx2) + integrandend(2:lx1,2:lx2) )/Rcubedend(2:lx1,2:lx2)
       end if
 
-! FIXME: average denominator is already in Rcubedtop, etc. so do a single division...
       integrandavgtop=0._wp
       if (mpi_cfg%myid2/=mpi_cfg%lid2-1) then
         integrandavgtop(:,:)=1/8._wp*( integrand(1:lx1-1,lx2,1:lx3-1) + integrand(2:lx1,lx2,1:lx3-1) + &
@@ -718,6 +722,7 @@ deallocate(integrandtop,integrandavgtop)
 deallocate(dVcorner,xpcorner,ypcorner,zpcorner,Jxcorner,Jycorner,Jzcorner, &
            Rmagcorner,Rcubedcorner)
 deallocate(Rxcorner,Rycorner,Rzcorner)
+deallocate(integrandcorner)
 
 
 !! SHUT DOWN MPI
