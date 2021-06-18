@@ -72,6 +72,8 @@ real(wp), dimension(:,:), allocatable :: integrandavgtop
 real(wp), dimension(:,:), allocatable :: xpend,ypend,zpend
 real(wp), dimension(:,:), allocatable :: xptop,yptop,zptop
 
+real(wp), dimension(:), allocatable :: dVcorner,xpcorner,ypcorner,zpcorner,Jxcorner,Jycorner,Jzcorner,Rmagcorner,Rcubedcorner
+real(wp), dimension(:), allocatable :: Rxcorner,Rycorner,Rzcorner
 
 integer :: ix1,ix2,ix3
 real(wp) :: rmean,thetamean
@@ -234,8 +236,12 @@ allocate(integrandtop(lx1,lx3),integrandavgtop(lx1-1,max(lx3-1,1)))
 allocate(xpend(lx1,lx2),ypend(lx1,lx2),zpend(lx1,lx2))
 allocate(xptop(lx1,lx3),yptop(lx1,lx3),zptop(lx1,lx3))
 
+allocate(dVcorner(lx1),xpcorner(lx1),ypcorner(lx1),zpcorner(lx1),Jxcorner(lx1),Jycorner(lx1),Jzcorner(lx1), &
+           Rmagcorner(lx1),Rcubedcorner(lx1))
+allocate(Rxcorner(lx1),Rycorner(lx1),Rzcorner(lx1))
 
-!> note here that dV's are basically the backward diff volumes; later to be referenced as dV(2:end,2:end,2:end) and so on
+
+!> note here that dV's are basically the backward diff volumes; later to be referenced as dV(2:end,2:end,2:end) and so on.
 if (flag2D/=1) then   !3D differential volume
   do ix3=1,lx3
     do ix2=1,lx2
@@ -272,16 +278,17 @@ else                  !plane geometry assumption
 end if
 
 
+! FIXME: does this need message passing???  Seems like these coudl be computed locally since the ghost cell metric factors and differentials are already stored by workers...
 !> get "end" and "top" pieces for the grid so integrals are not missing any differential volumes
 !   The halo_end routine will pass my "begin" and "bottom" pieces of dV to neighbors on the process grid
-call halo_end(dV,dVend,dVtop,tag%dV)
+call halo_end(dV,dVend,dVtop,dVcorner,tag%dV)
 !! need to define the differential volume on the edge of this x3-slab in
 
 
 !> now get the "end" and "top" pieces for the source coordinates
-call halo_end(xp,xpend,xptop,tag%Rx)    !just reuse position tag
-call halo_end(yp,ypend,yptop,tag%Ry)
-call halo_end(zp,zpend,zptop,tag%Rz)
+call halo_end(xp,xpend,xptop,xpcorner,tag%Rx)    !just reuse position tag
+call halo_end(yp,ypend,yptop,ypcorner,tag%Ry)
+call halo_end(zp,zpend,zptop,zpcorner,tag%Rz)
 
 
 !> Compute projections needed to rotate current density components into magnetic coordinates
@@ -407,9 +414,9 @@ main : do while (t < cfg%tdur)
 !    print *, myid2,myid3,'  --> Min/max values of current',minval(Jx),maxval(Jx),minval(Jy),maxval(Jy), &
 !                                               minval(Jz),maxval(Jz)
   !GATHER THE END DATA SO WE DON'T LEAVE OUT A POINT IN THE INTEGRATION
-  call halo_end(Jx,Jxend,Jxtop,tag%Jx)
-  call halo_end(Jy,Jyend,Jytop,tag%Jy)
-  call halo_end(Jz,Jzend,Jztop,tag%Jz)
+  call halo_end(Jx,Jxend,Jxtop,Jxcorner,tag%Jx)
+  call halo_end(Jy,Jyend,Jytop,Jycorner,tag%Jy)
+  call halo_end(Jz,Jzend,Jztop,Jzcorner,tag%Jz)
 
 
   !COMPUTE MAGNETIC FIELDS
@@ -441,14 +448,14 @@ main : do while (t < cfg%tdur)
     do ix3=2,lx3
       do ix2=2,lx2
         do ix1=2,lx1
-          Rmag(ix1,ix2,ix3)=1/8._wp*( sqrt(Rx(ix1,ix2,ix3)**2      +  Ry(ix1,ix2,ix3)**2      +  Rz(ix1,ix2,ix3)**2) + &
-                                      sqrt(Rx(ix1,ix2,ix3-1)**2    +  Ry(ix1,ix2,ix3-1)**2    +  Rz(ix1,ix2,ix3-1)**2) + &
-                                      sqrt(Rx(ix1,ix2-1,ix3)**2    +  Ry(ix1,ix2-1,ix3)**2    +  Rz(ix1,ix2-1,ix3)**2) + &
-                                      sqrt(Rx(ix1,ix2-1,ix3-1)**2  +  Ry(ix1,ix2-1,ix3-1)**2  +  Rz(ix1,ix2-1,ix3-1)**2) + &
-                                      sqrt(Rx(ix1-1,ix2,ix3)**2    +  Ry(ix1-1,ix2,ix3)**2    +  Rz(ix1-1,ix2,ix3)**2) + &
-                                      sqrt(Rx(ix1-1,ix2,ix3-1)**2  +  Ry(ix1-1,ix2,ix3-1)**2  +  Rz(ix1-1,ix2,ix3-1)**2) + &
-                                      sqrt(Rx(ix1-1,ix2-1,ix3)**2  +  Ry(ix1-1,ix2-1,ix3)**2  +  Rz(ix1-1,ix2-1,ix3)**2) + &
-                                      sqrt(Rx(ix1-1,ix2-1,ix3-1)**2+  Ry(ix1-1,ix2-1,ix3-1)**2+  Rz(ix1-1,ix2-1,ix3-1)**2) )
+          Rmag(ix1,ix2,ix3)=1/8._wp*( sqrt(Rx(ix1,ix2,ix3)**2      +  Ry(ix1,ix2,ix3)**2      +  Rz(ix1,ix2,ix3)**2) + &       ! i,j,k
+                                      sqrt(Rx(ix1,ix2,ix3-1)**2    +  Ry(ix1,ix2,ix3-1)**2    +  Rz(ix1,ix2,ix3-1)**2) + &     ! i,j,k-1
+                                      sqrt(Rx(ix1,ix2-1,ix3)**2    +  Ry(ix1,ix2-1,ix3)**2    +  Rz(ix1,ix2-1,ix3)**2) + &     ! i,j-1,k
+                                      sqrt(Rx(ix1,ix2-1,ix3-1)**2  +  Ry(ix1,ix2-1,ix3-1)**2  +  Rz(ix1,ix2-1,ix3-1)**2) + &   ! i,j-1,k-1
+                                      sqrt(Rx(ix1-1,ix2,ix3)**2    +  Ry(ix1-1,ix2,ix3)**2    +  Rz(ix1-1,ix2,ix3)**2) + &     ! i-1,j,k
+                                      sqrt(Rx(ix1-1,ix2,ix3-1)**2  +  Ry(ix1-1,ix2,ix3-1)**2  +  Rz(ix1-1,ix2,ix3-1)**2) + &   ! i-1,j,k-1
+                                      sqrt(Rx(ix1-1,ix2-1,ix3)**2  +  Ry(ix1-1,ix2-1,ix3)**2  +  Rz(ix1-1,ix2-1,ix3)**2) + &   ! i-1,j-1,k
+                                      sqrt(Rx(ix1-1,ix2-1,ix3-1)**2+  Ry(ix1-1,ix2-1,ix3-1)**2+  Rz(ix1-1,ix2-1,ix3-1)**2) )   ! i-1,j-1,k-1
         end do
       end do
     end do
@@ -486,11 +493,25 @@ main : do while (t < cfg%tdur)
       end do
     end if
 
+ 
+    ! corner cell distance to be computed
+    ! FIXME: check that we actually have a corner point
+    do ix1=2,lx1
+      Rmagcorner=1/8._wp*( sqrt(Rxcorner(ix1)**2      +  Rycorner(ix1)**2      +  Rzcorner(ix1)**2) + &                        ! i,j,k
+                                sqrt(Rxtop(ix1,lx3)**2    +  Rytop(ix1,lx3)**2    +  Rztop(ix1,lx3)**2) + &                ! i,j,k-1
+                                sqrt(Rxend(ix1,lx2)**2    +  Ryend(ix1,lx2)**2    +  Rzend(ix1,lx2)**2) + &                ! i,j-1,k
+                                sqrt(Rx(ix1,lx2,lx3)**2  +  Ry(ix1,lx2,lx3)**2  +  Rz(ix1,lx2,lx3)**2) + &                       ! i,j-1,k-1
+                                sqrt(Rxcorner(ix1-1)**2    +  Rycorner(ix1-1)**2    +  Rzcorner(ix1-1)**2) + &                   ! i-1,j,k
+                                sqrt(Rxtop(ix1-1,lx3)**2  +  Rytop(ix1-1,lx3)**2  +  Rztop(ix1-1,lx3)**2) + &              ! i-1,j,k-1
+                                sqrt(Rxend(ix1-1,lx2)**2  +  Ryend(ix1-1,lx2)**2  +  Rzend(ix1-1,lx2)**2) + &              ! i-1,j-1,k
+                                sqrt(Rx(ix1-1,lx2,lx3)**2+  Ry(ix1-1,lx2,lx3)**2+  Rz(ix1-1,lx2,lx3)**2) )                       ! i-1,j-1,k-1
+    end do
 
     if (flag2D/=1) then
       Rcubed=Rmag**3
       Rcubedend=Rmagend**3
       Rcubedtop=Rmagtop**3
+      Rcubedcorner=Rmagcorner**3
 
 
       !! FIXME: MAY BE MISSING A CORNER POINT HERE???  NO I THINK IT'S OKAY BASED ON SOME SQUARES I DREW, haha...
@@ -589,7 +610,7 @@ main : do while (t < cfg%tdur)
 !      where(Rcubed<R3min)
 !        Rcubed=R3min    !should be R**2???
 !      end where
-      call halo_end(Rcubed,Rcubedend,Rcubedtop,tag%Rcubed)
+      call halo_end(Rcubed,Rcubedend,Rcubedtop,Rcubedcorner,tag%Rcubed)    ! corner not used here...
       !! DO WE NEED TO CHECK HERE FOR DIV BY ZERO???
       !! ALSO IN 2D WE KNOW THAT WE ARE ONLY DIVIDED IN THE 3 DIMENSION SO THERE IS NO NEED TO WORRY ABOUT ADDING A 'TOP' ETC.
 
@@ -694,6 +715,10 @@ deallocate(dVend,Jxend,Jyend,Jzend,Rxend,Ryend,Rzend)
 deallocate(integrandend,integrandavgend)
 deallocate(dVtop,Jxtop,Jytop,Jztop,Rxtop,Rytop,Rztop)
 deallocate(integrandtop,integrandavgtop)
+deallocate(dVcorner,xpcorner,ypcorner,zpcorner,Jxcorner,Jycorner,Jzcorner, &
+           Rmagcorner,Rcubedcorner)
+deallocate(Rxcorner,Rycorner,Rzcorner)
+
 
 !! SHUT DOWN MPI
 ierr = mpibreakdown()
