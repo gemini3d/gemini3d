@@ -6,6 +6,11 @@ These debugging features make Gemini3D runs take significantly longer, but may h
 If one wishes to frequently switch between Release and Debug builds, we suggest the "Multi config" section below.
 Otherwise, switching from Debug to Release or vice versa requires reconfiguring the CMake project each time, which can be tedious if done frequently--and you may forget which mode you're in.
 
+Note: the "--preset" option is using
+[CMake presets](https://cmake.org/cmake/help/latest/manual/cmake-presets.7.html)
+to manipulate several CMake flags via CMakePresets.json file, including
+[CMAKE_BUILD_TYPE](https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html).
+
 ## Single config (must reconfigure manually to switch)
 
 By default, Gemini3D builds with full optimizations in Release mode.
@@ -30,14 +35,19 @@ cmake --build build
 
 ## Multi config (fast debug/release switching)
 
-In general, we recommend developers use the [Ninja backend](https://github.com/ninja-build/ninja/releases), which may be installed simply by "pip install ninja", or "brew install ninja", or by downloading, extracting, and adding the *ninja executable directory* to PATH environment variable.
+In general, we recommend developers use the
+[Ninja](https://github.com/ninja-build/ninja/releases)
+[CMake generator](https://cmake.org/cmake/help/latest/manual/cmake-generators.7.html).
+Ninja is installed simply by "pip install ninja", or "brew install ninja", or by downloading, extracting, and adding the *ninja executable directory* to PATH environment variable.
 Ninja offers a significant build speedup, and allows switching rapidly between "debug" and "release" modes, where "release" is highly optimized for fastest run.
 
 ```sh
 cmake --preset multi
 ```
 
-sets up CMake in "Ninja Multi Config" mode, which allows switching between Debug and Release at build time.
+sets up CMake using
+[Ninja Multi Config](https://cmake.org/cmake/help/latest/generator/Ninja%20Multi-Config.html)
+generator, which allows switching between Debug and Release builds at build time.
 CMake sets up distinct build directories "build/Debug" and "build/Release" housing the binaries, akin to ordinary CMake builds.
 
 Specify which to build like:

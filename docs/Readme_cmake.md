@@ -41,7 +41,6 @@ If you've already built Gemini but wish to change a CMake configuration option, 
 cmake --build build
 ```
 
-
 Those adding or modifying Gemini3D code itself may be interested in [Debug builds](./Readme_debug.md).
 
 ### MacOS
