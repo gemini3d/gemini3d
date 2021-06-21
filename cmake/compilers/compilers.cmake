@@ -73,12 +73,10 @@ endif()
 # Do these before compiler options so options don't goof up finding
 
 if(mpi)
-  include(${PROJECT_SOURCE_DIR}/cmake/ext_libs/mpi.cmake)
-endif(mpi)
-
-if(NOT mpi)
+  find_package(MPI COMPONENTS C Fortran REQUIRED)
+else()
   add_subdirectory(src/vendor/mpi_stubs)
-endif(NOT mpi)
+endif()
 
 # optional, for possible MUMPS speedup
 if(openmp)

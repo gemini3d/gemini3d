@@ -80,6 +80,14 @@ CONFIGURE_HANDLED_BY_BUILD ON
 DEPENDS SCALAPACK
 )
 
+ExternalProject_Get_property(MUMPS SOURCE_DIR)
+
+# FIXME: patch with FindMPI.cmake
+# (remove when updated with new FindMPI.cmaake)
+ExternalProject_Add_Step(MUMPS patch_find_mpi DEPENDEES patch
+COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_CURRENT_LIST_DIR}/../Modules/FindMPI.cmake ${SOURCE_DIR}/cmake/Modules/)
+
+
 file(MAKE_DIRECTORY ${MUMPS_INCLUDE_DIRS})
 
 add_library(MUMPS::MUMPS INTERFACE IMPORTED)

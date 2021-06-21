@@ -40,6 +40,14 @@ CONFIGURE_HANDLED_BY_BUILD ON
 DEPENDS LAPACK
 )
 
+ExternalProject_Get_property(SCALAPACK SOURCE_DIR)
+
+# FIXME: patch with FindMPI.cmake
+# (remove when updated with new FindMPI.cmaake)
+ExternalProject_Add_Step(SCALAPACK patch_find_mpi DEPENDEES patch
+COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_CURRENT_LIST_DIR}/../Modules/FindMPI.cmake ${SOURCE_DIR}/cmake/Modules/)
+
+
 add_library(SCALAPACK::SCALAPACK INTERFACE IMPORTED)
 target_link_libraries(SCALAPACK::SCALAPACK INTERFACE "${SCALAPACK_LIBRARIES}")
 
