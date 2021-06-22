@@ -70,69 +70,78 @@ endfunction(checkup)
 check_tls()
 
 if(APPLE)
-  find_program(brew
-    NAMES brew
-    PATHS /usr/local /opt/homebrew
-    PATH_SUFFIXES bin)
 
-  if(brew)
-    execute_process(COMMAND ${brew} install cmake)
-  else(brew)
-    message(STATUS "please use Homebrew https://brew.sh to install cmake:  'brew install cmake'
-    or use Python  'pip install cmake'")
-    return()
-  endif(brew)
-elseif(UNIX)
-  execute_process(COMMAND uname -m
-    OUTPUT_VARIABLE arch
-    OUTPUT_STRIP_TRAILING_WHITESPACE
-    TIMEOUT 5)
+find_program(brew
+  NAMES brew
+  PATHS /usr/local /opt/homebrew
+  PATH_SUFFIXES bin)
 
-  if(arch STREQUAL x86_64)
-    if(version VERSION_LESS 3.20)
-      set(stem cmake-${version}-Linux-x86_64)
-    else()
-      set(stem cmake-${version}-linux-x86_64)
-    endif()
-  elseif(arch STREQUAL aarch64)
-    if(version VERSION_LESS 3.20)
-      set(stem cmake-${version}-Linux-aarch64)
-    else()
-      set(stem cmake-${version}-linux-aarch64)
-    endif()
+if(brew)
+  execute_process(COMMAND ${brew} install cmake)
+else(brew)
+  message(STATUS "please use Homebrew https://brew.sh to install cmake:
+    brew install cmake
+  or use Python:
+    pip install cmake")
+endif(brew)
+
+return()
+
+endif(APPLE)
+
+
+if(UNIX)
+
+execute_process(COMMAND uname -m
+  OUTPUT_VARIABLE arch
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+  TIMEOUT 5)
+
+if(arch STREQUAL x86_64)
+  if(version VERSION_LESS 3.20)
+    set(stem cmake-${version}-Linux-x86_64)
   else()
-    message(FATAL_ERROR "unknown arch ${arch}.  Try:
-      cmake -P ${CMAKE_CURRENT_LIST_DIR}/build_cmake.cmake")
+    set(stem cmake-${version}-linux-x86_64)
   endif()
+elseif(arch STREQUAL aarch64)
+  if(version VERSION_LESS 3.20)
+    set(stem cmake-${version}-Linux-aarch64)
+  else()
+    set(stem cmake-${version}-linux-aarch64)
+  endif()
+endif()
 
-  set(name ${stem}.tar.gz)
+set(name ${stem}.tar.gz)
+
 elseif(WIN32)
-  # https://docs.microsoft.com/en-us/windows/win32/winprog64/wow64-implementation-details?redirectedfrom=MSDN#environment-variables
-  # CMake doesn't currently have binary downloads for ARM64 or IA64
-  set(arch $ENV{PROCESSOR_ARCHITECTURE})
 
-  if(arch STREQUAL AMD64)
-    if(version VERSION_LESS 3.20)
-      set(stem cmake-${version}-win64-x64)
-    else()
-      set(stem cmake-${version}-windows-x86_64)
-    endif()
-  elseif(arch STREQUAL x86)
-    if(version VERSION_LESS 3.20)
-      set(stem cmake-${version}-win32-x86)
-    else()
-      set(stem cmake-${version}-windows-i386)
-    endif()
+# https://docs.microsoft.com/en-us/windows/win32/winprog64/wow64-implementation-details?redirectedfrom=MSDN#environment-variables
+# CMake doesn't currently have binary downloads for ARM64 or IA64
+set(arch $ENV{PROCESSOR_ARCHITECTURE})
+
+if(arch STREQUAL AMD64)
+  if(version VERSION_LESS 3.20)
+    set(stem cmake-${version}-win64-x64)
   else()
-    message(FATAL_ERROR "unknown arch ${arch}.  Try:
-      cmake -P ${CMAKE_CURRENT_LIST_DIR}/build_cmake.cmake")
+    set(stem cmake-${version}-windows-x86_64)
   endif()
+elseif(arch STREQUAL x86)
+  if(version VERSION_LESS 3.20)
+    set(stem cmake-${version}-win32-x86)
+  else()
+    set(stem cmake-${version}-windows-i386)
+  endif()
+endif()
 
-  set(name ${stem}.zip)
+set(name ${stem}.zip)
+
 endif()
 
 if(NOT stem)
-  message(FATAL_ERROR "unknown CPU arch ${arch}.  Try building CMake from source: 'cmake -P ${CMAKE_CURRENT_LIST_DIR}/build_cmake.cmake'")
+  message(FATAL_ERROR "unknown CPU arch ${arch}.  Try building CMake from source:
+    cmake -P ${CMAKE_CURRENT_LIST_DIR}/build_cmake.cmake
+  or use Python:
+    pip install cmake")
 endif()
 
 get_filename_component(prefix ${prefix} ABSOLUTE)
