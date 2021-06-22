@@ -95,12 +95,13 @@ endif()
 find_program(MAKE_COMMAND NAMES make REQUIRED)
 
 # find tempdir, as cannot extract and install to same directory
+# https://systemd.io/TEMPORARY_DIRECTORIES/
 if(DEFINED ENV{TMPDIR})
   set(tmpdir $ENV{TMPDIR})
-elseif(IS_DIRECTORY /tmp)
-  set(tmpdir /tmp)
 elseif(IS_DIRECTORY /var/tmp)
   set(tmpdir /var/tmp)
+elseif(IS_DIRECTORY /tmp)
+  set(tmpdir /tmp)
 else()
   set(tmpdir ${prefix}/build)
 endif()
