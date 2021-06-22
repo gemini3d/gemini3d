@@ -69,6 +69,7 @@ real(wp), dimension(:,:), allocatable :: Jxtop,Jytop,Jztop,Rxtop,Rytop,Rztop,Rcu
 real(wp), dimension(:,:), allocatable :: integrandtop
 real(wp), dimension(:,:), allocatable :: integrandavgtop
 real(wp), dimension(:), allocatable :: integrandcorner
+real(wp), dimension(:), allocatable :: integrandavgcorner
 
 real(wp), dimension(:,:), allocatable :: xpend,ypend,zpend
 real(wp), dimension(:,:), allocatable :: xptop,yptop,zptop
@@ -241,6 +242,7 @@ allocate(dVcorner(lx1),xpcorner(lx1),ypcorner(lx1),zpcorner(lx1),Jxcorner(lx1),J
            Rmagcorner(lx1),Rcubedcorner(lx1))
 allocate(Rxcorner(lx1),Rycorner(lx1),Rzcorner(lx1))
 allocate(integrandcorner(lx1))
+allocate(integrandavgcorner(lx1-1))
 
 !> note here that dV's are basically the backward diff volumes; later to be referenced as dV(2:end,2:end,2:end) and so on.
 if (flag2D/=1) then   !3D differential volume
@@ -278,19 +280,16 @@ else                  !plane geometry assumption
   end do
 end if
 
-
 ! FIXME: does this need message passing???  Seems like these coudl be computed locally since the ghost cell metric factors and differentials are already stored by workers...
 !> get "end" and "top" pieces for the grid so integrals are not missing any differential volumes
 !   The halo_end routine will pass my "begin" and "bottom" pieces of dV to neighbors on the process grid
 call halo_end(dV,dVend,dVtop,dVcorner,tag%dV)
 !! need to define the differential volume on the edge of this x3-slab in
 
-
 !> now get the "end" and "top" pieces for the source coordinates
 call halo_end(xp,xpend,xptop,xpcorner,tag%Rx)    !just reuse position tag
 call halo_end(yp,ypend,yptop,ypcorner,tag%Ry)
 call halo_end(zp,zpend,zptop,zpcorner,tag%Rz)
-
 
 !> Compute projections needed to rotate current density components into magnetic coordinates
 allocate(proj_e1er(lx1,lx2,lx3),proj_e2er(lx1,lx2,lx3),proj_e3er(lx1,lx2,lx3))
@@ -442,6 +441,9 @@ main : do while (t < cfg%tdur)
     Rxend(:,:)=xf(ipoints)-xpend(:,:); Rxtop(:,:)=xf(ipoints)-xptop(:,:)
     Ryend(:,:)=yf(ipoints)-ypend(:,:); Rytop(:,:)=yf(ipoints)-yptop(:,:)
     Rzend(:,:)=zf(ipoints)-zpend(:,:); Rztop(:,:)=zf(ipoints)-zptop(:,:)
+    Rxcorner(:)=xf(ipoints)-xpcorner(:)
+    Rycorner(:)=yf(ipoints)-ypcorner(:)
+    Rzcorner(:)=zf(ipoints)-zpcorner(:)
 
 
     ! separately compute average distance for the denominator help with regulation issue and accounts for averaging over each differential volumes
@@ -496,17 +498,28 @@ main : do while (t < cfg%tdur)
 
  
     ! corner cell distance to be computed
-    ! FIXME: check that we actually have a corner point
-    do ix1=2,lx1
-      Rmagcorner=1/8._wp*( sqrt(Rxcorner(ix1)**2      +  Rycorner(ix1)**2      +  Rzcorner(ix1)**2) + &                        ! i,j,k
-                                sqrt(Rxtop(ix1,lx3)**2    +  Rytop(ix1,lx3)**2    +  Rztop(ix1,lx3)**2) + &                ! i,j,k-1
-                                sqrt(Rxend(ix1,lx2)**2    +  Ryend(ix1,lx2)**2    +  Rzend(ix1,lx2)**2) + &                ! i,j-1,k
-                                sqrt(Rx(ix1,lx2,lx3)**2  +  Ry(ix1,lx2,lx3)**2  +  Rz(ix1,lx2,lx3)**2) + &                       ! i,j-1,k-1
-                                sqrt(Rxcorner(ix1-1)**2    +  Rycorner(ix1-1)**2    +  Rzcorner(ix1-1)**2) + &                   ! i-1,j,k
-                                sqrt(Rxtop(ix1-1,lx3)**2  +  Rytop(ix1-1,lx3)**2  +  Rztop(ix1-1,lx3)**2) + &              ! i-1,j,k-1
-                                sqrt(Rxend(ix1-1,lx2)**2  +  Ryend(ix1-1,lx2)**2  +  Rzend(ix1-1,lx2)**2) + &              ! i-1,j-1,k
-                                sqrt(Rx(ix1-1,lx2,lx3)**2+  Ry(ix1-1,lx2,lx3)**2+  Rz(ix1-1,lx2,lx3)**2) )                       ! i-1,j-1,k-1
-    end do
+    Rmagcorner=0._wp
+    if (mpi_cfg%myid3/=mpi_cfg%lid3-1 .and. mpi_cfg%myid2/=mpi_cfg%lid2-1) then
+      do ix1=2,lx1
+        Rmagcorner(ix1)=1/8._wp*( sqrt(Rxcorner(ix1)**2      +  Rycorner(ix1)**2      +  Rzcorner(ix1)**2) + &                    ! i,j,k
+                                  sqrt(Rxtop(ix1,lx3)**2    +  Rytop(ix1,lx3)**2    +  Rztop(ix1,lx3)**2) + &                ! i,j,k-1
+                                  sqrt(Rxend(ix1,lx2)**2    +  Ryend(ix1,lx2)**2    +  Rzend(ix1,lx2)**2) + &                ! i,j-1,k
+                                  sqrt(Rx(ix1,lx2,lx3)**2  +  Ry(ix1,lx2,lx3)**2  +  Rz(ix1,lx2,lx3)**2) + &                 ! i,j-1,k-1
+                                  sqrt(Rxcorner(ix1-1)**2    +  Rycorner(ix1-1)**2    +  Rzcorner(ix1-1)**2) + &             ! i-1,j,k
+                                  sqrt(Rxtop(ix1-1,lx3)**2  +  Rytop(ix1-1,lx3)**2  +  Rztop(ix1-1,lx3)**2) + &              ! i-1,j,k-1
+                                  sqrt(Rxend(ix1-1,lx2)**2  +  Ryend(ix1-1,lx2)**2  +  Rzend(ix1-1,lx2)**2) + &              ! i-1,j-1,k
+                                  sqrt(Rx(ix1-1,lx2,lx3)**2+  Ry(ix1-1,lx2,lx3)**2+  Rz(ix1-1,lx2,lx3)**2) )                 ! i-1,j-1,k-1
+      end do
+    end if
+
+    !if (ipoints==1) then
+    !  print*, 'R',mpi_cfg%myid,minval(Rmagcorner),maxval(Rmagcorner)
+    !  if (mpi_cfg%myid==0) then
+    !    do ix1=1,lx1 
+    !      print*, 'R array',Rmagcorner(ix1),Rxcorner(ix1),Rycorner(ix1),Rzcorner(ix1)
+    !    end do
+    !  end if
+    !end if
 
     if (flag2D/=1) then
       Rcubed=Rmag**3
@@ -516,6 +529,7 @@ main : do while (t < cfg%tdur)
 
 
       !! FIXME: MAY BE MISSING A CORNER POINT HERE???  NO I THINK IT'S OKAY BASED ON SOME SQUARES I DREW, haha...
+      ! FIXME:  not okay...
       !Bx calculation
       integrand(:,:,:)=mu0/4/pi*(Jy*Rz-Jz*Ry)        ! numerator (to be averaged separately from the denominator
       integrandend(:,:)=mu0/4/pi*(Jyend*Rzend-Jzend*Ryend)
@@ -542,8 +556,17 @@ main : do while (t < cfg%tdur)
                              integrandtop(1:lx1-1,2:lx3) + integrandtop(2:lx1,2:lx3) )/Rcubedtop(2:lx1,2:lx3)
       end if
 
+      integrandavgcorner=0._wp
+      if (mpi_cfg%myid3/=mpi_cfg%lid3-1 .and. mpi_cfg%myid2/=mpi_cfg%lid2-1) then
+        integrandavgcorner(:)=1/8._wp*( integrandcorner(1:lx1-1) + integrandcorner(2:lx1) + &
+                                       integrandend(1:lx1-1,lx2) + integrandend(2:lx1,lx2) + &
+                                       integrandtop(1:lx1-1,lx3) + integrandtop(2:lx1,lx3) + &
+                                       integrand(1:lx1-1,lx2,lx3) + integrand(2:lx1,lx2,lx3) &
+                                       )/Rcubedcorner(2:lx1)
+      end if
+
       Br(ipoints)=sum(integrandavg*dV(2:lx1,2:lx2,2:lx3))+sum(integrandavgend*dVend(2:lx1,2:lx2))+ &
-                    sum(integrandavgtop*dVtop(2:lx1,2:lx3))
+                    sum(integrandavgtop*dVtop(2:lx1,2:lx3))+sum(integrandavgcorner*dVcorner(2:lx1))
 
 
       !By
@@ -572,8 +595,17 @@ main : do while (t < cfg%tdur)
                              integrandtop(1:lx1-1,2:lx3) + integrandtop(2:lx1,2:lx3) )/Rcubedtop(2:lx1,2:lx3)
       end if
 
+      integrandavgcorner=0._wp
+      if (mpi_cfg%myid3/=mpi_cfg%lid3-1 .and. mpi_cfg%myid2/=mpi_cfg%lid2-1) then
+        integrandavgcorner(:)=1/8._wp*( integrandcorner(1:lx1-1) + integrandcorner(2:lx1) + &
+                                       integrandend(1:lx1-1,lx2) + integrandend(2:lx1,lx2) + &
+                                       integrandtop(1:lx1-1,lx3) + integrandtop(2:lx1,lx3) + &
+                                       integrand(1:lx1-1,lx2,lx3) + integrand(2:lx1,lx2,lx3) &
+                                       )/Rcubedcorner(2:lx1)
+      end if
+
       Btheta(ipoints)=sum(integrandavg*dV(2:lx1,2:lx2,2:lx3))+sum(integrandavgend*dVend(2:lx1,2:lx2))+ &
-                        sum(integrandavgtop*dVtop(2:lx1,2:lx3))
+                        sum(integrandavgtop*dVtop(2:lx1,2:lx3))+sum(integrandavgcorner*dVcorner(2:lx1))
 
 
       !Bz
@@ -604,8 +636,17 @@ main : do while (t < cfg%tdur)
                                       Rcubedtop(2:lx1,2:lx3)
       end if
 
+      integrandavgcorner=0._wp
+      if (mpi_cfg%myid3/=mpi_cfg%lid3-1 .and. mpi_cfg%myid2/=mpi_cfg%lid2-1) then
+        integrandavgcorner(:)=1/8._wp*( integrandcorner(1:lx1-1) + integrandcorner(2:lx1) + &
+                                       integrandend(1:lx1-1,lx2) + integrandend(2:lx1,lx2) + &
+                                       integrandtop(1:lx1-1,lx3) + integrandtop(2:lx1,lx3) + &
+                                       integrand(1:lx1-1,lx2,lx3) + integrand(2:lx1,lx2,lx3) &
+                                       )/Rcubedcorner(2:lx1)
+      end if
+
       Bphi(ipoints)=sum(integrandavg*dV(2:lx1,2:lx2,2:lx3))+sum(integrandavgend*dVend(2:lx1,2:lx2))+ &
-                        sum(integrandavgtop*dVtop(2:lx1,2:lx3))
+                        sum(integrandavgtop*dVtop(2:lx1,2:lx3))+sum(integrandavgcorner*dVcorner(2:lx1))
     else
       Rcubed(:,:,:)=Rx**2+Ry**2    !not really R**3 in 2D, just the denominator of the integrand
 

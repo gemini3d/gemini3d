@@ -337,12 +337,12 @@ module procedure halo_end_23
   end if
 
   ! corner data passing if necessary
-  if (.not. (downleft .and. upright)) then    ! single process "corner" case, lol; don't send to self
+  if (.not. (x2begin .and. x2end .and. x3begin .and. x3end)) then    ! single process "corner" case, lol; don't send to self
     allocate(buffercorner(lx1))
     buffercorner=param(:,1,1)     ! force data into a contiguous buffer
-    call mpi_isend(buffercorner,1,mpi_realprec,iddownleft,tag,MPI_COMM_WORLD,tmpreq,ierr)
+    call mpi_isend(buffercorner,lx1,mpi_realprec,iddownleft,tag,MPI_COMM_WORLD,tmpreq,ierr)
     requests(1)=tmpreq
-    call mpi_irecv(paramcorner,1,mpi_realprec,idupright,tag,MPI_COMM_WORLD,tmpreq,ierr)
+    call mpi_irecv(paramcorner,lx1,mpi_realprec,idupright,tag,MPI_COMM_WORLD,tmpreq,ierr)
     requests(2)=tmpreq
   
     call mpi_waitall(2,requests,statuses,ierr)
@@ -350,10 +350,11 @@ module procedure halo_end_23
   end if
   
   !zero out ghost cells if past the end of the full simulation grid
-  if (mpi_cfg%myid2==mpi_cfg%lid2-1) paramtop=0
+  if (mpi_cfg%myid2==mpi_cfg%lid2-1) paramtop=0._wp
   !! add nothing on the end since no one is passing leftward to me, FIXME: need to account for periodic???
-  if (mpi_cfg%myid3==mpi_cfg%lid3-1) paramend=0
+  if (mpi_cfg%myid3==mpi_cfg%lid3-1) paramend=0._wp
   !! zero out the data at the end of the grid
+  if (mpi_cfg%myid2==mpi_cfg%lid2-1 .or. mpi_cfg%myid3==mpi_cfg%lid3-1) paramcorner=0._wp
 end procedure halo_end_23
 
 
