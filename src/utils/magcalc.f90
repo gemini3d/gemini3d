@@ -318,7 +318,7 @@ deallocate(r,theta,phi)
 allocate(Rx(lx1,lx2,lx3),Ry(lx1,lx2,lx3),Rz(lx1,lx2,lx3))
 allocate(Rmag(lx1,lx2,lx3))
 allocate(Rcubed(lx1,lx2,lx3))
-allocate(integrand(lx1,lx2,lx3),integrandavg(lx1-1,max(lx2-1,1),lx3-1))
+allocate(integrand(lx1,lx2,lx3),integrandavg(lx1-1,max(lx2-1,1),max(lx3-1,1)))
 !! latter is cell centered hence -1 in size, max is needed to prevent zero sized array
 allocate(Br(lpoints),Btheta(lpoints),Bphi(lpoints))
 allocate(Brall(lpoints),Bthetaall(lpoints),Bphiall(lpoints))
@@ -775,4 +775,66 @@ endif
 
 print '(A)', 'MAGCALC: complete'
 
+contains    ! declare integral functions as internal subprograms; too specific to be used elsewhere.  Also they access data from the main program unti because I don't feel like including these are arguments.  
+  function integrate3D(integrand,integrandend,integrandtop,integrandcorner)
+    real(wp), dimension(:,:,:), intent(in) :: integrand
+    real(wp), dimension(:,:), intent(in) :: integrandend
+    real(wp), dimension(:,:), intent(in) :: integrandtop
+    real(wp), dimension(:), intent(in) :: integrandcorner
+  
+    real(wp), dimension(:,:,:), allocatable :: integrandavg
+    real(wp), dimension(:,:), allocatable :: integrandavgend,integrandavgtop
+    real(wp), dimension(:), allocatable :: integrandavgcorner
+
+    real(wp) :: integrate3D
+
+    ! main program data used (but not modified)
+    ! mpi_cfg, Rcubed*, dV*
+  
+    integer :: lx1,lx2,lx3
+  
+    lx1=size(integrand,1); lx2=size(integrand,2); lx3=size(integrand,3);
+  
+    allocate(integrandavg(lx1-1,max(lx2-1,1),max(lx3-1,1)), &
+             integrandavgend(lx1-1,max(lx2-1,1)), &
+             integrandavgtop(lx1-1,max(lx3-1,1)), &
+             integrandavgcorner(lx1-1) )
+  
+    integrandavg(:,:,:)=1/8._wp*( integrand(1:lx1-1,1:lx2-1,1:lx3-1) + integrand(2:lx1,1:lx2-1,1:lx3-1) + &
+                                  integrand(1:lx1-1,2:lx2,1:lx3-1) + integrand(2:lx1,2:lx2,1:lx3-1) + &
+                                  integrand(1:lx1-1,1:lx2-1,2:lx3) + integrand(2:lx1,1:lx2-1,2:lx3) + &
+                                  integrand(1:lx1-1,2:lx2,2:lx3)   + integrand(2:lx1,2:lx2,2:lx3) )/ &
+                                 Rcubed(2:lx1,2:lx2,2:lx3)
+  
+    integrandavgend=0._wp
+    if (mpi_cfg%myid3/=mpi_cfg%lid3-1) then
+      integrandavgend(:,:)=1/8._wp*( integrand(1:lx1-1,1:lx2-1,lx3) + integrand(2:lx1,1:lx2-1,lx3) + &
+                           integrand(1:lx1-1,2:lx2,lx3) + integrand(2:lx1,2:lx2,lx3) + &
+                           integrandend(1:lx1-1,1:lx2-1) + integrandend(2:lx1,1:lx2-1) + &
+                           integrandend(1:lx1-1,2:lx2) + integrandend(2:lx1,2:lx2) )/Rcubedend(2:lx1,2:lx2)
+    end if
+  
+    integrandavgtop=0._wp
+    if (mpi_cfg%myid2/=mpi_cfg%lid2-1) then
+      integrandavgtop(:,:)=1/8._wp*( integrand(1:lx1-1,lx2,1:lx3-1) + integrand(2:lx1,lx2,1:lx3-1) + &
+                                     integrand(1:lx1-1,lx2,2:lx3)   + integrand(2:lx1,lx2,2:lx3) + &
+                                     integrandtop(1:lx1-1,1:lx3-1) + integrandtop(2:lx1,1:lx3-1) + &
+                                     integrandtop(1:lx1-1,2:lx3)   + integrandtop(2:lx1,2:lx3) )/ &
+                                    Rcubedtop(2:lx1,2:lx3)
+    end if
+  
+    integrandavgcorner=0._wp
+    if (mpi_cfg%myid3/=mpi_cfg%lid3-1 .and. mpi_cfg%myid2/=mpi_cfg%lid2-1) then
+      integrandavgcorner(:)=1/8._wp*( integrandcorner(1:lx1-1) + integrandcorner(2:lx1) + &
+                                     integrandend(1:lx1-1,lx2) + integrandend(2:lx1,lx2) + &
+                                     integrandtop(1:lx1-1,lx3) + integrandtop(2:lx1,lx3) + &
+                                     integrand(1:lx1-1,lx2,lx3) + integrand(2:lx1,lx2,lx3) &
+                                     )/Rcubedcorner(2:lx1)
+    end if
+  
+    integrate3D=sum(integrandavg*dV(2:lx1,2:lx2,2:lx3))+sum(integrandavgend*dVend(2:lx1,2:lx2))+ &
+                      sum(integrandavgtop*dVtop(2:lx1,2:lx3))+sum(integrandavgcorner*dVcorner(2:lx1))
+  
+    deallocate(integrandavg,integrandavgend,integrandavgtop,integrandavgcorner)
+  end function integrate3D
 end program
