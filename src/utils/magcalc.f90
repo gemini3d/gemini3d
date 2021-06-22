@@ -383,7 +383,7 @@ main : do while (t < cfg%tdur)
     Rxcorner(:)=xf(ipoints)-xpcorner(:)
     Rycorner(:)=yf(ipoints)-ypcorner(:)
     Rzcorner(:)=zf(ipoints)-zpcorner(:)
-    call calcRmag(Rx,Ry,Rx,Rxend,Ryend,Rzend,Rxtop,Rytop,Rztop,Rxcorner,Rycorner,Rzcorner, &
+    call calcRmag(Rx,Ry,Rz,Rxend,Ryend,Rzend,Rxtop,Rytop,Rztop,Rxcorner,Rycorner,Rzcorner, &
                     Rmag,Rmagend,Rmagtop,Rmagcorner)
 
     if (flag2D/=1) then
@@ -442,7 +442,6 @@ main : do while (t < cfg%tdur)
       integrand(:,:,:)=mu0/4/pi*2*(Jx*Ry-Jy*Rx)
       integrandend(:,:)=mu0/4/pi*2*(Jxend*Ryend-Jyend*Rxend)/Rcubedend
       Bphi(ipoints) = integrate2D(integrand,integrandend)
-      !! without dim= input it just sums everything which is what we want
     end if
   end do
 
@@ -501,12 +500,12 @@ deallocate(Rcubed)
 deallocate(Rmag)
 deallocate(Rcubedend)
 deallocate(Rcubedtop)
-deallocate(integrand,integrandavg)
+deallocate(integrand)
 deallocate(Br,Btheta,Bphi)
 deallocate(dVend,Jxend,Jyend,Jzend,Rxend,Ryend,Rzend)
-deallocate(integrandend,integrandavgend)
+deallocate(integrandend)
 deallocate(dVtop,Jxtop,Jytop,Jztop,Rxtop,Rytop,Rztop)
-deallocate(integrandtop,integrandavgtop)
+deallocate(integrandtop)
 deallocate(dVcorner,xpcorner,ypcorner,zpcorner,Jxcorner,Jycorner,Jzcorner, &
            Rmagcorner,Rcubedcorner)
 deallocate(Rxcorner,Rycorner,Rzcorner)
@@ -528,8 +527,11 @@ print '(A)', 'MAGCALC: complete'
 contains    ! declare integral functions as internal subprograms; too specific to be used elsewhere.  Also they access data from the main program unti because I don't feel like including these are arguments.  
   subroutine fixJ(J1,J2,J3)
     ! host program data used (but not modified)
-    ! mpi_cfg
+    ! mpi_cfg, alt
     real(wp), dimension(:,:,:), intent(inout) :: J1,J2,J3
+    integer :: lx1,lx2,lx3
+
+    lx1=size(J1,1); lx2=size(J2,2); lx3=size(J3,3);
 
     !FORCE PARALLEL CURRENTS TO ZERO BELOW SOME ALTITUDE LIMIT
     if(mpi_cfg%myid==0) print *, 'Zeroing out low altitude currents (these are basically always artifacts)...'
@@ -596,6 +598,9 @@ contains    ! declare integral functions as internal subprograms; too specific t
     real(wp), dimension(:,:,:), intent(out) :: Rmag
     real(wp), dimension(:,:), intent(out) :: Rmagend,Rmagtop
     real(wp), dimension(:), intent(out) :: Rmagcorner
+    integer :: ix1,ix2,ix3,lx1,lx2,lx3
+
+    lx1=size(Rx,1); lx2=size(Rx,2); lx3=size(Rx,3);
 
     ! separately compute average distance for the denominator help with regulation issue and accounts for averaging over each differential volumes
     Rmag=0._wp
