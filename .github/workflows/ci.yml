@@ -99,8 +99,6 @@ jobs:
     env:
       HOMEBREW_NO_INSTALL_CLEANUP: 1
       CTEST_PARALLEL_LEVEL: 3
-      CC: gcc-11
-      CXX: g++-11
       FC: gfortran-11
 
     steps:
