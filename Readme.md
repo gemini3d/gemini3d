@@ -4,8 +4,7 @@
 [![CDash](./test_data/CDash.png)](https://my.cdash.org/index.php?project=Gemini3D)
 ![ci](https://github.com/gemini3d/gemini/workflows/ci/badge.svg)
 
-The GEMINI model (*G*eospace *E*nvironment *M*odel of *I*on-*N*eutral *I*nteractions) is a three-dimensional ionospheric fluid-electrodynamic model.
-GEMINI is used for various scientific studies including:
+The GEMINI model (*G*eospace *E*nvironment *M*odel of *I*on-*N*eutral *I*nteractions) is a three-dimensional ionospheric fluid-electrodynamic model written (mostly) in object-oriented fortran (2008+ standard).  GEMINI is used for various scientific studies including:
 
 * effects of auroras on the terrestrial ionosphere
 * natural hazard effects on the space environment
@@ -22,7 +21,7 @@ Please open a
 [GitHub Issue](https://github.com/gemini3d/gemini/issues)
 if you experience difficulty with GEMINI.
 
-Generally, the Git `master` branch has the current development version and is the best place to start, while more thoroughly-tested releases happen regularly.
+Generally, the Git `main` branch has the current development version and is the best place to start, while more thoroughly-tested releases happen regularly.
 Specific releases corresponding to published results are generally noted in the corresponding journal article.
 
 ## Platform agnostic
