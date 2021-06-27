@@ -8,6 +8,7 @@
   "generator": "Ninja",
   "cacheVariables": {
     "CMAKE_BUILD_TYPE": "Release",
+    "CMAKE_INSTALL_PREFIX": "${sourceDir}/build",
     "package": false
   }
 },
