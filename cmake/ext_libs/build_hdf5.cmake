@@ -11,7 +11,11 @@ include(ExternalProject)
 
 # need to be sure _ROOT isn't empty, defined is not enough
 if(NOT HDF5_ROOT)
-  set(HDF5_ROOT ${CMAKE_INSTALL_PREFIX})
+  if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+    set(HDF5_ROOT ${PROJECT_BINARY_DIR} CACHE PATH "HDF5_ROOT")
+  else()
+    set(HDF5_ROOT ${CMAKE_INSTALL_PREFIX})
+  endif()
 endif()
 
 set(HDF5_LIBRARIES)
@@ -22,7 +26,9 @@ endforeach()
 set(HDF5_INCLUDE_DIRS ${HDF5_ROOT}/include)
 
 # --- Zlib
-set(zlib_root -DHDF5_ENABLE_Z_LIB_SUPPORT:BOOL=ON -DZLIB_USE_EXTERNAL:BOOL=OFF)
+set(zlib_root
+-DHDF5_ENABLE_Z_LIB_SUPPORT:BOOL=ON
+-DZLIB_USE_EXTERNAL:BOOL=OFF)
 
 if(TARGET ZLIB::ZLIB)
   add_custom_target(ZLIB)
@@ -32,14 +38,43 @@ endif()
 # --- HDF5
 # https://forum.hdfgroup.org/t/issues-when-using-hdf5-as-a-git-submodule-and-using-cmake-with-add-subdirectory/7189/2
 
-ExternalProject_Add(HDF5
-URL ${hdf5_url}
-URL_HASH SHA256=${hdf5_sha256}
-CONFIGURE_HANDLED_BY_BUILD ON
-INACTIVITY_TIMEOUT 15
-CMAKE_ARGS ${zlib_root} -DCMAKE_INSTALL_PREFIX:PATH=${HDF5_ROOT} -DHDF5_GENERATE_HEADERS:BOOL=false -DHDF5_DISABLE_COMPILER_WARNINGS:BOOL=true -DBUILD_SHARED_LIBS:BOOL=false -DCMAKE_BUILD_TYPE=Release -DHDF5_BUILD_FORTRAN:BOOL=true -DHDF5_BUILD_CPP_LIB:BOOL=false -DHDF5_BUILD_TOOLS:BOOL=false -DBUILD_TESTING:BOOL=false -DHDF5_BUILD_EXAMPLES:BOOL=false
-BUILD_BYPRODUCTS ${HDF5_LIBRARIES}
-DEPENDS ZLIB)
+set(hdf5_cmake_args
+${zlib_root}
+-DCMAKE_INSTALL_PREFIX:PATH=${HDF5_ROOT}
+-DHDF5_GENERATE_HEADERS:BOOL=false
+-DHDF5_DISABLE_COMPILER_WARNINGS:BOOL=true
+-DBUILD_SHARED_LIBS:BOOL=false
+-DCMAKE_BUILD_TYPE=Release
+-DHDF5_BUILD_FORTRAN:BOOL=true
+-DHDF5_BUILD_CPP_LIB:BOOL=false
+-DHDF5_BUILD_TOOLS:BOOL=true
+-DBUILD_TESTING:BOOL=false
+-DHDF5_BUILD_EXAMPLES:BOOL=false)
+
+if(hdf5_parallel)
+  find_package(MPI REQUIRED COMPONENTS C)
+  list(APPEND hdf5_cmake_args -DHDF5_ENABLE_PARALLEL:BOOL=true)
+else()
+  list(APPEND hdf5_cmake_args -DHDF5_ENABLE_PARALLEL:BOOL=false)
+endif()
+
+if(CMAKE_VERSION VERSION_LESS 3.20)
+  ExternalProject_Add(HDF5
+  URL ${hdf5_url}
+  URL_HASH SHA256=${hdf5_sha256}
+  CMAKE_ARGS ${hdf5_cmake_args}
+  BUILD_BYPRODUCTS ${HDF5_LIBRARIES}
+  DEPENDS ZLIB)
+else()
+  ExternalProject_Add(HDF5
+  URL ${hdf5_url}
+  URL_HASH SHA256=${hdf5_sha256}
+  CMAKE_ARGS ${hdf5_cmake_args}
+  BUILD_BYPRODUCTS ${HDF5_LIBRARIES}
+  DEPENDS ZLIB
+  CONFIGURE_HANDLED_BY_BUILD ON
+  INACTIVITY_TIMEOUT 15)
+endif()
 
 # --- imported target
 
