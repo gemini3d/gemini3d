@@ -13,7 +13,7 @@
 # This script can be used to install CMake >= 3.7.
 # old CMake versions have broken file(DOWNLOAD)--they just "download" 0-byte files.
 
-cmake_minimum_required(VERSION 3.7...${CMAKE_VERSION})
+cmake_minimum_required(VERSION 3.7...3.21)
 
 set(CMAKE_TLS_VERIFY true)
 
@@ -21,13 +21,9 @@ if(NOT prefix)
   get_filename_component(prefix ~ ABSOLUTE)
 endif()
 
-if(NOT version)
-  file(STRINGS ${CMAKE_CURRENT_LIST_DIR}/CMAKE_VERSION version
-   REGEX "^([0-9]+\.[0-9]+\.[0-9]+)" LIMIT_INPUT 16 LENGTH_MAXIMUM 16 LIMIT_COUNT 1)
-endif()
-
 if(version VERSION_LESS 3.7)
-  set(version 3.7.2)
+  file(STRINGS ${CMAKE_CURRENT_LIST_DIR}/CMAKE_VERSION version
+    REGEX "^([0-9]+\.[0-9]+\.[0-9]+)" LIMIT_INPUT 16 LENGTH_MAXIMUM 16 LIMIT_COUNT 1)
 endif()
 
 set(host https://github.com/Kitware/CMake/releases/download/v${version}/)
