@@ -15,13 +15,21 @@ endif()
 
 set(scalapack_external true CACHE BOOL "build ScaLapack")
 
+if(CMAKE_VERSION VERSION_LESS 3.20)
+  message(FATAL_ERROR "SCALAPACK autobuild requires CMake >= 3.20")
+endif()
+
 if(NOT TARGET LAPACK)
   # acquired by find_package instead of ExternalProject, so make dummy target
   add_custom_target(LAPACK)
 endif()
 
 if(NOT SCALAPACK_ROOT)
-  set(SCALAPACK_ROOT ${CMAKE_INSTALL_PREFIX})
+  if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+    set(SCALAPACK_ROOT ${PROJECT_BINARY_DIR} CACHE PATH "default ROOT")
+  else()
+    set(SCALAPACK_ROOT ${CMAKE_INSTALL_PREFIX})
+  endif()
 endif()
 
 set(SCALAPACK_LIBRARIES
@@ -37,8 +45,7 @@ CMAKE_CACHE_ARGS -Darith:STRING=${arith}
 BUILD_BYPRODUCTS ${SCALAPACK_LIBRARIES}
 INACTIVITY_TIMEOUT 15
 CONFIGURE_HANDLED_BY_BUILD ON
-DEPENDS LAPACK
-)
+DEPENDS LAPACK)
 
 add_library(SCALAPACK::SCALAPACK INTERFACE IMPORTED)
 target_link_libraries(SCALAPACK::SCALAPACK INTERFACE "${SCALAPACK_LIBRARIES}")

@@ -3,10 +3,15 @@
 #
 #  cmake -P scripts/install_prereq.cmake
 
-cmake_minimum_required(VERSION 3.7...3.20)
+cmake_minimum_required(VERSION 3.7...3.21)
 
 if(WIN32)
   message(FATAL_ERROR "Please install Gemini prereqs on Windows via MSYS2 Terminal https://www.msys2.org/")
+endif()
+
+if(CMAKE_VERSION VERSION_LESS 3.19)
+  message(FATAL_ERROR "Please first update CMake via
+    cmake -P ${CMAKE_CURRENT_LIST_DIR}/install_cmake.cmake")
 endif()
 
 function(check_ninja)

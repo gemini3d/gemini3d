@@ -45,13 +45,21 @@ endif()
 
 set(mumps_external true CACHE BOOL "build Mumps")
 
+if(CMAKE_VERSION VERSION_LESS 3.20)
+  message(FATAL_ERROR "MUMPS autobuild requires CMake >= 3.20")
+endif()
+
 if(NOT TARGET SCALAPACK)
   # acquired by find_package instead of ExternalProject, so make dummy target
   add_custom_target(SCALAPACK)
 endif()
 
 if(NOT MUMPS_ROOT)
-  set(MUMPS_ROOT ${CMAKE_INSTALL_PREFIX})
+  if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+    set(MUMPS_ROOT ${PROJECT_BINARY_DIR} CACHE PATH "default ROOT")
+  else()
+    set(MUMPS_ROOT ${CMAKE_INSTALL_PREFIX})
+  endif()
 endif()
 
 set(MUMPS_INCLUDE_DIRS ${MUMPS_ROOT}/include)
@@ -77,8 +85,7 @@ CMAKE_CACHE_ARGS -Darith:STRING=${arith}
 BUILD_BYPRODUCTS ${MUMPS_LIBRARIES} ${MUMPS_MPISEQ_LIBRARIES}
 INACTIVITY_TIMEOUT 15
 CONFIGURE_HANDLED_BY_BUILD ON
-DEPENDS SCALAPACK
-)
+DEPENDS SCALAPACK)
 
 file(MAKE_DIRECTORY ${MUMPS_INCLUDE_DIRS})
 

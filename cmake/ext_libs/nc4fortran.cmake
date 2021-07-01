@@ -10,7 +10,11 @@ if(netcdf)
   find_package(NetCDF REQUIRED COMPONENTS Fortran)
 
   if(NOT nc4fortran_ROOT)
-    set(nc4fortran_ROOT ${CMAKE_INSTALL_PREFIX})
+    if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+      set(nc4fortran_ROOT ${PROJECT_BINARY_DIR} CACHE PATH "default ROOT")
+    else()
+      set(nc4fortran_ROOT ${CMAKE_INSTALL_PREFIX})
+    endif()
   endif()
 
   if(NOT DEFINED NetCDF_ROOT)
@@ -21,14 +25,21 @@ if(netcdf)
   set(nc4fortran_INCLUDE_DIRS ${CMAKE_CURRENT_BINARY_DIR}/include)
   set(nc4fortran_LIBRARIES ${nc4fortran_ROOT}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}nc4fortran${CMAKE_STATIC_LIBRARY_SUFFIX})
 
-  ExternalProject_Add(NC4FORTRAN
-    GIT_REPOSITORY ${nc4fortran_git}
-    GIT_TAG ${nc4fortran_tag}
-    CMAKE_ARGS -DNetCDF_ROOT:PATH=${NetCDF_ROOT} -DCMAKE_INSTALL_PREFIX:PATH=${nc4fortran_ROOT} -DBUILD_SHARED_LIBS:BOOL=false -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING:BOOL=false
-    BUILD_BYPRODUCTS ${nc4fortran_LIBRARIES}
-    INACTIVITY_TIMEOUT 15
-    CONFIGURE_HANDLED_BY_BUILD ON
-    )
+  if(CMAKE_VERSION VERSION_LESS 3.20)
+    ExternalProject_Add(NC4FORTRAN
+      GIT_REPOSITORY ${nc4fortran_git}
+      GIT_TAG ${nc4fortran_tag}
+      CMAKE_ARGS -DNetCDF_ROOT:PATH=${NetCDF_ROOT} -DCMAKE_INSTALL_PREFIX:PATH=${nc4fortran_ROOT} -DBUILD_SHARED_LIBS:BOOL=false -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING:BOOL=false
+      BUILD_BYPRODUCTS ${nc4fortran_LIBRARIES})
+  else()
+    ExternalProject_Add(NC4FORTRAN
+      GIT_REPOSITORY ${nc4fortran_git}
+      GIT_TAG ${nc4fortran_tag}
+      CMAKE_ARGS -DNetCDF_ROOT:PATH=${NetCDF_ROOT} -DCMAKE_INSTALL_PREFIX:PATH=${nc4fortran_ROOT} -DBUILD_SHARED_LIBS:BOOL=false -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING:BOOL=false
+      BUILD_BYPRODUCTS ${nc4fortran_LIBRARIES}
+      INACTIVITY_TIMEOUT 15
+      CONFIGURE_HANDLED_BY_BUILD ON)
+  endif()
 
   file(MAKE_DIRECTORY ${nc4fortran_INCLUDE_DIRS})
 
