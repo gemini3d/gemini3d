@@ -1,7 +1,7 @@
 include(CheckSymbolExists)
 include(CheckIncludeFile)
 
-if(${PROJECT_NAME}_BUILD_TESTING)
+if(BUILD_TESTING)
   add_executable(echo_path echo_path.f90)
   add_test(NAME debug:EchoEnvVar COMMAND $<TARGET_FILE:echo_path>)
 endif()

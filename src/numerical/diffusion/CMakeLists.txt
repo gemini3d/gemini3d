@@ -6,7 +6,7 @@ target_link_libraries(PDEparabolic PRIVATE const gbsv)
 add_library(diffusion OBJECT diffusion.f90)
 target_link_libraries(diffusion PRIVATE const grid meshobj PDEparabolic)
 
-if(NOT (hdf5 AND ${PROJECT_NAME}_BUILD_TESTING))
+if(NOT (hdf5 AND BUILD_TESTING))
   return()
 endif()
 

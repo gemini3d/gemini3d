@@ -66,7 +66,7 @@ if(CMAKE_Fortran_COMPILER_ID STREQUAL GNU)
   # Gfortran >= 8 need -Wno-pedantic to allow mismatched array size inhernet to MSIS.
   # "-w" doesn't disable pedantic
   set(msis_flags -w -std=legacy -Wno-pedantic -fno-implicit-none -Wno-error=array-bounds -fcheck=no-all)
-elseif(CMAKE_Fortran_COMPILER_ID STREQUAL Intel OR CMAKE_Fortran_COMPILER_ID STREQUAL IntelLLVM)
+elseif(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
   set(msis_flags -nowarn)
 endif()
 

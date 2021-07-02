@@ -7,7 +7,7 @@ add_library(temporal OBJECT temporal.f90)
 target_link_libraries(temporal PRIVATE config const meshobj mpimod MPI::MPI_Fortran)
 
 # --- unit tests
-if(${PROJECT_NAME}_BUILD_TESTING)
+if(BUILD_TESTING)
 
   add_executable(test_formats test_formats.f90)
   target_link_libraries(test_formats PRIVATE timeutils const)

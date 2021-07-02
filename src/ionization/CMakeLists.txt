@@ -6,7 +6,7 @@ target_link_libraries(fang PRIVATE const)
 add_library(fang_run OBJECT fang_run.f90)
 target_link_libraries(fang_run PRIVATE fang msis_ifc const)
 
-if(${PROJECT_NAME}_BUILD_TESTING)
+if(BUILD_TESTING)
 
 add_executable(test_fang test_fang.f90)
 target_link_libraries(test_fang PRIVATE fang fang_run assert const msis_ifc)
@@ -23,7 +23,7 @@ if(Python3_FOUND)
     LABELS "unit;python")
 endif(Python3_FOUND)
 
-endif(${PROJECT_NAME}_BUILD_TESTING)
+endif(BUILD_TESTING)
 
 if(glow)
   include(${PROJECT_SOURCE_DIR}/cmake/ext_libs/glow.cmake)

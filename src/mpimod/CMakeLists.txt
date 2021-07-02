@@ -24,7 +24,7 @@ set_targ_props(autogrid mpimod)
 
 #-----
 
-if(${PROJECT_NAME}_BUILD_TESTING)
+if(BUILD_TESTING)
 
 add_executable(test_excess_mpi test_excess_mpi.f90)
 target_link_libraries(test_excess_mpi PRIVATE autogrid)

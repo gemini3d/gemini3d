@@ -20,7 +20,7 @@ target_link_libraries(potential PRIVATE PDEelliptic calculus collision grid mesh
 set_targ_props(PDEelliptic potential)
 
 
-if(NOT (hdf5 AND ${PROJECT_NAME}_BUILD_TESTING))
+if(NOT (hdf5 AND BUILD_TESTING))
   return()
 endif()
 

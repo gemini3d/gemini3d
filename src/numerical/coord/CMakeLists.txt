@@ -22,7 +22,7 @@ set_targ_props(meshobj meshobj_cart meshobj_dipole newton spherical geomagnetic)
 
 # --- coord self-tests
 
-if(NOT ${PROJECT_NAME}_BUILD_TESTING)
+if(NOT BUILD_TESTING)
   return()
 endif()
 

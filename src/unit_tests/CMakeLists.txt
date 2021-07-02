@@ -1,6 +1,6 @@
 set_directory_properties(PROPERTIES LABELS unit)
 
-if(NOT ${PROJECT_NAME}_BUILD_TESTING)
+if(NOT BUILD_TESTING)
   return()
 endif()
 

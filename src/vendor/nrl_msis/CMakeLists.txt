@@ -31,10 +31,7 @@ else(msis20)
   target_sources(msis_ifc PRIVATE msis2_dummy.f90)
 endif(msis20)
 
-install(TARGETS msis_ifc msis00mod
-  EXPORT ${PROJECT_NAME}Targets
-  LIBRARY DESTINATION lib
-  ARCHIVE DESTINATION lib)
+install(TARGETS msis_ifc msis00mod EXPORT ${PROJECT_NAME}Targets)
 
 # --- for setting up an equilibrium simulation
 
@@ -46,7 +43,7 @@ install(TARGETS msis_setup
   EXPORT ${PROJECT_NAME}Targets
   RUNTIME DESTINATION bin)
 
-if(${PROJECT_NAME}_BUILD_TESTING)
+if(BUILD_TESTING)
 
 set(_in ${PROJECT_SOURCE_DIR}/test_data/msis_test_in.h5)
 set(_out ${CMAKE_CURRENT_BINARY_DIR}/msis_test_out.h5)

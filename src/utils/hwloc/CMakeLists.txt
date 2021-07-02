@@ -23,7 +23,7 @@ if(HWLOC_FOUND)
   target_include_directories(hwloc_c PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
   target_link_libraries(hwloc_c PRIVATE HWLOC::HWLOC)
 
-  if(${PROJECT_NAME}_BUILD_TESTING)
+  if(BUILD_TESTING)
     add_executable(test_hwloc test_hwloc.c get_cpu_hwloc.c)
     target_include_directories(test_hwloc PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
     target_link_libraries(test_hwloc PRIVATE HWLOC::HWLOC)

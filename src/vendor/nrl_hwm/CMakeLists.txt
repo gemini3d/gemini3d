@@ -12,12 +12,9 @@ target_include_directories(hwm_ifc INTERFACE
   $<INSTALL_INTERFACE:include>)
 set_target_properties(hwm_ifc PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include)
 
-install(TARGETS hwm_ifc
-  EXPORT ${PROJECT_NAME}Targets
-  LIBRARY DESTINATION lib
-  ARCHIVE DESTINATION lib)
+install(TARGETS hwm_ifc EXPORT ${PROJECT_NAME}Targets)
 
-if(${PROJECT_NAME}_BUILD_TESTING)
+if(BUILD_TESTING)
   add_executable(test_hwm test_hwm.f90)
   target_link_libraries(test_hwm PRIVATE hwm_ifc)
   set_target_properties(test_hwm PROPERTIES

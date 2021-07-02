@@ -6,7 +6,7 @@ add_library(logging OBJECT logging.f90)
 add_library(errors OBJECT error_stop.f90)
 target_link_libraries(errors PRIVATE const h5fortran::h5fortran)
 
-if(${PROJECT_NAME}_BUILD_TESTING)
+if(BUILD_TESTING)
   if(f2018assumed_rank)
     # easier to use, but needs latest compilers. For dev debugging.
     add_library(debug_dump OBJECT debug_dump.f90)
@@ -28,7 +28,7 @@ if(${PROJECT_NAME}_BUILD_TESTING)
     # FIXME: add a follow-on test using Fixtures that read and verify expected file dump
   endif()
 
-endif(${PROJECT_NAME}_BUILD_TESTING)
+endif(BUILD_TESTING)
 
 add_library(sanity_check OBJECT sanity_check.f90 $<TARGET_OBJECTS:errors>)
 target_link_libraries(sanity_check PRIVATE const)
@@ -51,7 +51,7 @@ else()
   target_sources(pathlib PRIVATE pathlib_dummy.f90)
 endif()
 
-if(${PROJECT_NAME}_BUILD_TESTING)
+if(BUILD_TESTING)
   add_executable(test_pathlib test_pathlib.f90)
   target_link_libraries(test_pathlib PRIVATE pathlib)
   add_test(NAME unit:pathlib COMMAND $<TARGET_FILE:test_pathlib>)
@@ -66,7 +66,7 @@ target_link_libraries(config PRIVATE pathlib const)
 
 set(_test_file ${CMAKE_CURRENT_SOURCE_DIR}/../unit_tests/config/config_example.nml)
 
-if(${PROJECT_NAME}_BUILD_TESTING)
+if(BUILD_TESTING)
 
 add_executable(test_namelist test_nml.f90)
 add_test(NAME unit:namelist COMMAND $<TARGET_FILE:test_namelist> ${_test_file})
@@ -91,7 +91,7 @@ ENVIRONMENT test__gem=hello
 LABELS unit
 TIMEOUT 10)
 
-endif(${PROJECT_NAME}_BUILD_TESTING)
+endif(BUILD_TESTING)
 
 # --- io
 configure_file(output.in.f90 output.f90 @ONLY)
@@ -109,7 +109,7 @@ target_link_libraries(io PRIVATE calculus config const reader grid mpimod pathli
 add_library(reader OBJECT reader.f90 reader_hdf5.f90 reader_ncdf.f90 reader_raw.f90)
 target_link_libraries(reader PRIVATE const pathlib h5fortran::h5fortran nc4fortran::nc4fortran)
 
-if(netcdf AND ${PROJECT_NAME}_BUILD_TESTING)
+if(netcdf AND BUILD_TESTING)
   add_executable(test_simsize_nc4 test_simsize_nc4.f90)
   target_link_libraries(test_simsize_nc4 PRIVATE nc4fortran::nc4fortran)
   # add_test(NAME unit:simsize_nc4 COMMAND test_simsize_nc4)

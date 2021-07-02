@@ -16,9 +16,6 @@ project(gemini3d
 
 enable_testing()  # keep this so BUILD_TESTING=off doesn't remove all tests
 include(CTest) # for CDash
-if(NOT DEFINED ${PROJECT_NAME}_BUILD_TESTING)
-  set(${PROJECT_NAME}_BUILD_TESTING ${BUILD_TESTING})
-endif()
 
 include(cmake/package/git_rev.cmake)
 include(cmake/config/options.cmake)
