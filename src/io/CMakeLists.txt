@@ -42,7 +42,7 @@ else()
   target_sources(pathlib PRIVATE pathlib_unix.f90)
 endif()
 
-if(CMAKE_Fortran_COMPILER_ID STREQUAL Intel)
+if(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
   target_sources(pathlib PRIVATE pathlib_intel.f90)
 elseif(CMAKE_Fortran_COMPILER_ID STREQUAL GNU)
   target_sources(pathlib PRIVATE pathlib_gcc.f90)

@@ -3,7 +3,7 @@ if(CMAKE_VERSION VERSION_LESS 3.20)
   return()
 endif()
 
-if(NOT (WIN32 AND CMAKE_Fortran_COMPILER_ID STREQUAL Intel))
+if(NOT MSVC)
   message(DEBUG "SKIP: test_dll_path")
   return()
 endif()
