@@ -186,7 +186,7 @@ block
     close(u)
   case ('.h5')
     !! hdf5 file input
-    call hf%initialize(cfg%fieldpointfile, status='old', action='r')
+    call hf%open(cfg%fieldpointfile, status='old', action='r')
 
     call hf%read('/lpoints',lpoints)
     allocate(r(lpoints), theta(lpoints), phi(lpoints))

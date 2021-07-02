@@ -155,8 +155,8 @@ integer :: ymd1(3), ymd2(3)
 
 type(hdf5_file) :: hnew, href
 
-call hnew%initialize(new_file, status='old',action='r')
-call href%initialize(ref_file, status='old',action='r')
+call hnew%open(new_file, status='old',action='r')
+call href%open(ref_file, status='old',action='r')
 
 call href%read('/time/ymd', ymd1)
 call hnew%read('/time/ymd', ymd2)
@@ -173,8 +173,8 @@ else
   error stop "check_time: did not find UTsec or UThour in " // ref_file
 endif
 
-call hnew%finalize()
-call href%finalize()
+call hnew%close()
+call href%close()
 
 !> compare file simulation time
 

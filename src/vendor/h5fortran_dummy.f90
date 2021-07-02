@@ -5,12 +5,12 @@ implicit none (type, external)
 
 type hdf5_file
 contains
-procedure, public :: initialize, read, write, exist, exists, ndims, finalize
+procedure, public :: open, read, write, exist, exists, ndims, close
 end type hdf5_file
 
 contains
 
-subroutine initialize(self,filename,ierr, status,action,comp_lvl,chunk_size,verbose)
+subroutine open(self,filename,ierr, status,action,comp_lvl,chunk_size,verbose)
 class(hdf5_file), intent(inout)    :: self
 character(*), intent(in)           :: filename
 integer, intent(out), optional     :: ierr
@@ -20,7 +20,7 @@ integer, intent(in), optional      :: comp_lvl
 class(*), intent(in), optional     :: chunk_size(7)
 logical, intent(in), optional      :: verbose
 error stop 'HDF5 / h5fortran not available'
-end subroutine initialize
+end subroutine open
 
 subroutine read(self, dname, value, ierr)
 class(hdf5_file), intent(in)     :: self
@@ -59,10 +59,10 @@ ndims = 0
 error stop 'HDF5 / h5fortran not available'
 end function ndims
 
-subroutine finalize(self, ierr)
+subroutine close(self, ierr)
 class(hdf5_file), intent(in) :: self
 integer, intent(out), optional :: ierr
 error stop 'HDF5 / h5fortran not available'
-end subroutine finalize
+end subroutine close
 
 end module h5fortran

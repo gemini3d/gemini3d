@@ -10,6 +10,7 @@ integer, parameter :: lx1i=200, lx2i=400
 real(wp), parameter :: stride=0.5_wp
 
 integer :: ix1,ix2
+integer :: u
 
 real(wp), allocatable, dimension(:) :: x1, x2, x1i, x2i
 real(wp), allocatable, dimension(:,:) :: f, fi  !< since only doing x1 interpolation
@@ -38,20 +39,14 @@ do ix2=1,lx2
 end do
 
 !dump results to a file so we can check things
-block
-  integer :: u
-  open(newunit=u,file='input1D.dat',status='replace',form='unformatted',access='stream', action='write')
-  write(u) lx1,lx2
-  write(u) x1,x2,f
-  close(u)
-end block
+open(newunit=u,file='input1D.dat',status='replace',form='unformatted',access='stream', action='write')
+write(u) lx1,lx2
+write(u) x1,x2,f
+close(u)
 
-block
-  integer :: u
-  open(newunit=u,file='output1D.dat',status='replace',form='unformatted',access='stream', action='write')
-  write(u) lx1i,lx2
-  write(u) x1i,x2,fi   !since only interpolating in x1
-  close(u)
-end block
+open(newunit=u,file='output1D.dat',status='replace',form='unformatted',access='stream', action='write')
+write(u) lx1i,lx2
+write(u) x1i,x2,fi   !since only interpolating in x1
+close(u)
 
 end program

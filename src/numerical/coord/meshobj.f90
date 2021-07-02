@@ -546,11 +546,11 @@ contains
 
     IDstr=' '
     write(IDstr,'(i1)') ID
-    call hf%initialize(path//'/simsize'//IDstr//'.h5',status='replace',action='w')
+    call hf%open(path//'/simsize'//IDstr//'.h5',status='replace',action='w')
     call hf%write('/lx1',self%lx1)
     call hf%write('/lx2',self%lx2)
     call hf%write('/lx3',self%lx3)
-    call hf%finalize()
+    call hf%close()
   end subroutine writesize
 
 
@@ -571,11 +571,11 @@ contains
     IDstr=' '
     write(IDstr,'(i1)') ID
     call self%writesize(path,ID)
-    call hf%initialize(path//'/simgrid'//IDstr//'.h5',status='replace',action='w')
+    call hf%open(path//'/simgrid'//IDstr//'.h5',status='replace',action='w')
     call hf%write('/x1',self%x1)
     call hf%write('/x2',self%x2)
     call hf%write('/x3',self%x3)
-    call hf%finalize()
+    call hf%close()
   end subroutine writegrid
 
 
@@ -593,7 +593,7 @@ contains
     IDstr=' '
     write(IDstr,'(i1)') ID
     call self%writesize(path,ID)
-    call hf%initialize(path//'/simgrid'//IDstr//'.h5',status='replace',action='w')
+    call hf%open(path//'/simgrid'//IDstr//'.h5',status='replace',action='w')
     call hf%write('/x1',self%x1)
     call hf%write('/x1i',self%x1i)
     call hf%write('/dx1b',self%dx1)
@@ -655,7 +655,7 @@ contains
     call hf%write('/theta',self%theta)
     call hf%write('/phi',self%phi)
 
-    call hf%finalize()
+    call hf%close()
   end subroutine writegridall
 
 

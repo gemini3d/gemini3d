@@ -17,13 +17,13 @@ character(:), allocatable :: filenamefull
 filenamefull = date_filename(outdir // '/magfields/',ymd,UTsec) // '.nc'
 print *, '  Output file name (magnetic fields):  ',filenamefull
 
-call hout%initialize(filenamefull, status='unknown',action='rw',comp_lvl=comp_lvl)
+call hout%open(filenamefull, status='unknown',action='rw',comp_lvl=comp_lvl)
 
 call hout%write('magfields/Br', Br)
 call hout%write('magfields/Btheta', Btheta)
 call hout%write('magfields/Bphi', Bphi)
 
-call hout%finalize()
+call hout%close()
 
 end procedure output_magfields_nc4
 

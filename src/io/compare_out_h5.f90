@@ -78,8 +78,8 @@ character(5), parameter :: varsJ(3) = ['J1all', 'J2all', 'J3all']
 
 integer :: flagoutput
 
-call hnew%initialize(new_file, status='old',action='r')
-call href%initialize(ref_file, status='old',action='r')
+call hnew%open(new_file, status='old',action='r')
+call href%open(ref_file, status='old',action='r')
 
 if (hnew%exist("/flagoutput")) then
   call hnew%read("/flagoutput", flagoutput)
@@ -89,8 +89,8 @@ else
   flagoutput = cfg%flagoutput
 endif
 
-call hnew%finalize()
-call href%finalize()
+call hnew%close()
+call href%close()
 
 call check_time(new_file, ref_file)
 
@@ -167,8 +167,8 @@ allocate(new(lx1, lx2all, lx3all, lsp), ref(lx1, lx2all, lx3all, lsp))
 allocate(ns_new(lx1, lx2all, lx3all, lsp), ns_ref(lx1, lx2all, lx3all, lsp))
 allocate(D_ref(lx1, lx2all, lx3all), D_new(lx1, lx2all, lx3all))
 
-call hnew%initialize(new_file, status='old',action='r')
-call href%initialize(ref_file, status='old',action='r')
+call hnew%open(new_file, status='old',action='r')
+call href%open(ref_file, status='old',action='r')
 
 call href%read('nsall', ns_ref)
 call hnew%read('nsall', ns_new)
@@ -180,8 +180,8 @@ call href%read(name, ref)
 if (.not.all(ieee_is_finite(new))) error stop "NON-FINITE: " // file_name(new_file) // " " // name
 if (.not.all(ieee_is_finite(ref))) error stop "NON-FINITE: " // file_name(ref_file) // " " // name
 
-call hnew%finalize()
-call href%finalize()
+call hnew%close()
+call href%close()
 
 D_ref = sum(ns_ref(:,:,:,1:6) * ref(:,:,:,1:6), dim=4) / ns_ref(:,:,:,LSP)
 D_new = sum(ns_new(:,:,:,1:6) * new(:,:,:,1:6), dim=4) / ns_new(:,:,:,LSP)
@@ -223,8 +223,8 @@ allocate(new(lx1, lx2all, lx3all), ref(lx1, lx2all, lx3all))
 
 bad = 0
 
-call hnew%initialize(new_file, status='old',action='r')
-call href%initialize(ref_file, status='old',action='r')
+call hnew%open(new_file, status='old',action='r')
+call href%open(ref_file, status='old',action='r')
 
 if(present(ionly)) then
   call hnew%read(name, new4)
@@ -237,8 +237,8 @@ else
   call href%read(name, ref)
 endif
 
-call hnew%finalize()
-call href%finalize()
+call hnew%close()
+call href%close()
 
 if (.not.all(ieee_is_finite(ref))) error stop "NON-FINITE: " // file_name(ref_file) // " " // name
 if (.not.all(ieee_is_finite(new))) error stop "NON-FINITE: " // file_name(new_file) // " " // name

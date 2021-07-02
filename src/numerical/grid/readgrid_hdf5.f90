@@ -52,7 +52,7 @@ end procedure get_grid3_coords_hdf5
 !  endif
 !  if (debug) print '(A,/,A)', 'READ 3D (B-parallel, B-perp, B-perp) grid:', fn
 !
-!  call hout%initialize(fn, status='old',action='r')
+!  call hout%open(fn, status='old',action='r')
 !
 !  !> reads common to 2D and 3D
 !
@@ -249,7 +249,7 @@ end procedure get_grid3_coords_hdf5
 !    end block
 !  endif
 !
-!  call hout%finalize()
+!  call hout%close()
 !
 !  x%rall = rall
 !  x%thetaall = thetaall

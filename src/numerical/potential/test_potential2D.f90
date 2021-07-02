@@ -153,7 +153,7 @@ if (myid==0) then
   print*, 'Numerical solution range:  ',minval(Phi),maxval(Phi)
   print*, 'Analytical solution range:  ',minval(Phitrue),maxval(Phitrue)
 
-  call hout%initialize(trim(argv), status="replace", action="write")
+  call hout%open(trim(argv), status="replace", action="write")
   call hout%write("/lx1", lx1)
   call hout%write("/lx2", lx2)
   call hout%write("/lx3", lx3)
@@ -163,7 +163,7 @@ if (myid==0) then
   call hout%write("/Phi", Phi)
   call hout%write("/Phi2squeeze", Phi2squeeze)
   call hout%write("/Phitrue", Phitrue)
-  call hout%finalize()
+  call hout%close()
 
   print*, '1:  Max error over grid:  ',maxval(abs(errorMUMPS))
   print*, '2:  Max error over grid:  ',maxval(abs(errorMUMPS2))

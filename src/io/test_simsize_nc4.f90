@@ -18,12 +18,12 @@ call get_command_argument(1, buf)
 
 path = trim(buf)
 
-call hf%initialize(path, status='old', action='r')
+call hf%open(path, status='old', action='r')
 
 call hf%read("lx", lx)
 
 print *,lx
 
-call hf%finalize()
+call hf%close()
 
 end program
