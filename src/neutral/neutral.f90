@@ -107,10 +107,10 @@ real(wp), dimension(:,:,:,:), allocatable, protected :: nnmsis
 real(wp), dimension(:,:,:), allocatable, protected :: Tnmsis
 real(wp), dimension(:,:,:), allocatable, protected :: vn1base,vn2base,vn3base
 
-!! projection factors for converting vectors mag->geo; e.g. defining rotation matrix
-real(wp), dimension(:,:,:), allocatable :: proj_er_erg,proj_er_ethetag,proj_er_phig
-real(wp), dimension(:,:,:), allocatable :: proj_etheta_erg,proj_etheta_ethetag,proj_etheta_phig
-real(wp), dimension(:,:,:), allocatable :: proj_ephi_erg,proj_ephi_ethetag,proj_ephi_phig
+!! projection factors for converting vectors mag->geo; e.g. defining rotation matrix from geographic coords into
+real(wp), dimension(:,:,:), allocatable :: proj_ealt_e1,proj_ealt_e2,proj_ealt_e3
+real(wp), dimension(:,:,:), allocatable :: proj_eglat_e1,proj_eglat_e2,proj_eglat_e3
+real(wp), dimension(:,:,:), allocatable :: proj_eglon_e1,proj_eglon_e2,proj_eglon_e3
 
 contains
 
