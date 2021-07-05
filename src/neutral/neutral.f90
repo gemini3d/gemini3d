@@ -1,6 +1,6 @@
 module neutral
 
-use phys_consts, only: wp, lnchem, pi, re, debug
+use phys_consts, only: wp, lnchem, pi, Re, debug
 use grid, only: lx1, lx2, lx3
 use meshobj, only: curvmesh
 use timeutils, only : find_lastdate
@@ -15,33 +15,31 @@ public :: Tnmsis, neutral_atmos, make_dneu, clear_dneu, neutral_perturb, neutral
 
 
 interface ! atmos.f90
-module subroutine neutral_atmos(ymd,UTsecd,glat,glon,alt,activ,v2grid,v3grid,nn,Tn,vn1,vn2,vn3, msis_version)
-integer, intent(in) :: ymd(3), msis_version
-real(wp), intent(in) :: UTsecd
-real(wp), dimension(:,:,:), intent(in) :: glat,glon,alt
-real(wp), intent(in) :: activ(3)
-real(wp), intent(in) :: v2grid,v3grid
-real(wp), dimension(1:size(alt,1),1:size(alt,2),1:size(alt,3),lnchem), intent(out) :: nn
-real(wp), dimension(1:size(alt,1),1:size(alt,2),1:size(alt,3)), intent(out) :: Tn
-real(wp), dimension(1:size(alt,1),1:size(alt,2),1:size(alt,3)), intent(out) :: vn1,vn2,vn3
-end subroutine neutral_atmos
+  module subroutine neutral_atmos(ymd,UTsecd,glat,glon,alt,activ,v2grid,v3grid,nn,Tn,vn1,vn2,vn3, msis_version)
+  integer, intent(in) :: ymd(3), msis_version
+  real(wp), intent(in) :: UTsecd
+  real(wp), dimension(:,:,:), intent(in) :: glat,glon,alt
+  real(wp), intent(in) :: activ(3)
+  real(wp), intent(in) :: v2grid,v3grid
+  real(wp), dimension(1:size(alt,1),1:size(alt,2),1:size(alt,3),lnchem), intent(out) :: nn
+  real(wp), dimension(1:size(alt,1),1:size(alt,2),1:size(alt,3)), intent(out) :: Tn
+  real(wp), dimension(1:size(alt,1),1:size(alt,2),1:size(alt,3)), intent(out) :: vn1,vn2,vn3
+  end subroutine neutral_atmos
 end interface
 
 interface ! perturb.f90
-
-module subroutine neutral_perturb(cfg,dt,dtneu,t,ymd,UTsec,x,v2grid,v3grid,nn,Tn,vn1,vn2,vn3)
-type(gemini_cfg), intent(in) :: cfg
-real(wp), intent(in) :: dt,dtneu
-real(wp), intent(in) :: t
-integer, dimension(3), intent(in) :: ymd     !date for which we wish to calculate perturbations
-real(wp), intent(in) :: UTsec
-
-class(curvmesh), intent(inout) :: x                !grid structure  (inout becuase we want to be able to deallocate unit vectors once we are done with them)
-real(wp), intent(in) :: v2grid,v3grid
-real(wp), dimension(:,:,:,:), intent(out) :: nn   !neutral params interpolated to plasma grid at requested time
-real(wp), dimension(:,:,:), intent(out) :: Tn,vn1,vn2,vn3
-end subroutine neutral_perturb
-
+  module subroutine neutral_perturb(cfg,dt,dtneu,t,ymd,UTsec,x,v2grid,v3grid,nn,Tn,vn1,vn2,vn3)
+  type(gemini_cfg), intent(in) :: cfg
+  real(wp), intent(in) :: dt,dtneu
+  real(wp), intent(in) :: t
+  integer, dimension(3), intent(in) :: ymd     !date for which we wish to calculate perturbations
+  real(wp), intent(in) :: UTsec
+  
+  class(curvmesh), intent(inout) :: x                !grid structure  (inout becuase we want to be able to deallocate unit vectors once we are done with them)
+  real(wp), intent(in) :: v2grid,v3grid
+  real(wp), dimension(:,:,:,:), intent(out) :: nn   !neutral params interpolated to plasma grid at requested time
+  real(wp), dimension(:,:,:), intent(out) :: Tn,vn1,vn2,vn3
+  end subroutine neutral_perturb
 end interface
 
 !! ALL ARRAYS THAT FOLLOW ARE USED WHEN INCLUDING NEUTRAL PERTURBATIONS FROM ANOTHER MODEL
@@ -53,12 +51,10 @@ real(wp), dimension(:), allocatable, private :: zn
 real(wp), dimension(:), allocatable, private :: xn    !for 3D cartesian interpolation
 integer, private :: lrhon,lzn,lyn,lxn
 
-
 !! STORAGE FOR NEUTRAL SIMULATION DATA.
 ! These will be singleton in the second dimension (longitude) in the case of 2D interpolation...
 !! THESE ARE INCLUDED AS MODULE VARIATIONS TO AVOID HAVING TO REALLOCATE AND DEALLOCIATE EACH TIME WE NEED TO INTERP
 real(wp), dimension(:,:,:), allocatable, private :: dnO,dnN2,dnO2,dvnrho,dvnz,dvnx,dTn
-
 
 !!full grid parameters for root to store input from files.
 real(wp), dimension(:), allocatable, private :: xnall
@@ -66,7 +62,6 @@ real(wp), dimension(:), allocatable, private :: ynall
 integer, private :: lxnall,lynall
 
 real(wp), dimension(:,:,:), allocatable, private :: dnOall,dnN2all,dnO2all,dvnrhoall,dvnzall,dvnxall,dTnall
-
 
 !ARRAYS TO STORE NEUTRAL DATA THAT HAS BEEN INTERPOLATED
 real(wp), dimension(:,:,:), allocatable, private :: dnOiprev,dnN2iprev,dnO2iprev,dvnrhoiprev,dvnziprev,dTniprev, &
@@ -85,7 +80,6 @@ real(wp), private :: UTsecnext
 !! data at current time level, (centered in time between current time step and next)
 real(wp), dimension(:,:,:), allocatable, protected :: dnOinow,dnN2inow,dnO2inow,dTninow,dvn1inow,dvn2inow,dvn3inow
 
-
 !SPACE TO STORE PROJECTION FACTORS (rotate from magnetic UEN to curv. dipole...)
 real(wp), dimension(:,:,:), allocatable, private :: proj_erhop_e1,proj_ezp_e1,proj_erhop_e2,proj_ezp_e2,proj_erhop_e3,proj_ezp_e3    !these projections are used in the axisymmetric interpolation
 real(wp), dimension(:,:,:), allocatable, private :: proj_eyp_e1,proj_eyp_e2,proj_eyp_e3    !these are for Cartesian projections
@@ -96,12 +90,10 @@ real(wp), dimension(:,:,:), allocatable, private :: proj_exp_e1,proj_exp_e2,proj
 real(wp), dimension(:), allocatable, private :: zi,xi    !this is to be a flat listing of sites on the, rhoi only used in axisymmetric and yi only in cartesian
 real(wp), dimension(:), allocatable, target, private :: yi,rhoi
 
-
 !USED FOR 3D INTERPOLATION WHERE WORKER DIVISIONS ARE COMPLICATED (note that the first dim starts at zero so it matches mpi ID)
 real(wp), dimension(:,:), private, allocatable :: extents    !roots array that is used to store min/max x,y,z of each works
 integer, dimension(:,:), private, allocatable :: indx       !roots array that contain indices for each workers needed piece of the neutral data
 integer, dimension(:,:), private, allocatable :: slabsizes
-
 
 !! BASE MSIS ATMOSPHERIC STATE ON WHICH TO APPLY PERTURBATIONS
 real(wp), dimension(:,:,:,:), allocatable, protected :: nnmsis

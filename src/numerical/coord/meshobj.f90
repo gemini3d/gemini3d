@@ -11,28 +11,19 @@ use geomagnetic, only: geog2geomag,geomag2geog,r2alt,alt2r
 implicit none (type, external)
 public
 
-!> curvmesh is an abstract type containing functionality and data that is not specific to individual
-!   coordinate systems
-!   (which are extended types).  Note that all arrays are pointers because they need to be targets
-!   and allocatable AND the fortran
-!   standard does not support having allocatable, target attributed inside a derived type.  Because
-!   of this is it not straightforward
+!> curvmesh is an abstract type containing functionality and data that is not specific to individual coordinate systems
+!   (which are extended types).  Note that all arrays are pointers because they need to be targets and allocatable AND the fortran
+!   standard does not support having allocatable, target attributed inside a derived type.  Because of this is it not straightforward
 !   to check the allocation status of these arrays (i.e. fortran also does not allow one to check
-!   the allocation status of a pointer).
-!   Thus the quantities which are not, for sure, allocated need to have an allocation status
-!   variable so we can check...  Because
-!   the pointers are always allocated in groups we do not need separate status vars for each array
+!   the allocation status of a pointer).  Thus the quantities which are not, for sure, allocated need to have an allocation status
+!   variable so we can check...  Because the pointers are always allocated in groups we do not need separate status vars for each array
 !   thankfully...
 !
-!  Note that the deferred bindings all have the single argument of self so any data used to compute
-!   whatever quantity is desired must
-!   be stored in the derived type.  This is done to avoid long, potentially superfluous argument
-!   lists that may contain extraneous information,
+!  Note that the deferred bindings all have the single argument of self so any data used to compute whatever quantity is desired must
+!   be stored in the derived type.  This is done to avoid long, potentially superfluous argument lists that may contain extraneous information,
 !   e.g. if a coordinate is not needed to compute a metric factor and similar situations.  Any
-!   operation that needs more input should be
-!   defined as a type-bound procedure in any extensions to this abstract type.  This also means that
-!   error checking needs to be done in the
-!   extended type to insure that the data needed for a given calculation exist.
+!   operation that needs more input should be defined as a type-bound procedure in any extensions to this abstract type.  This also means that
+!   error checking needs to be done in the extended type to insure that the data needed for a given calculation exist.
 type, abstract :: curvmesh
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Generic properties !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> we need to know whether or not different groups of pointers are allocated and the intrinsic
@@ -66,12 +57,12 @@ type, abstract :: curvmesh
   !! are forced to declare them as pointers and trust that they are allocated contiguous
   real(wp), dimension(:), pointer :: dx2i
 
-  !> this are fullgrid but possibly carried around by workers too since 1D arrays?
   real(wp), dimension(:), pointer :: x3
   real(wp), dimension(:), pointer :: x3i
   real(wp), dimension(:), pointer :: dx3
   real(wp), dimension(:), pointer :: dx3i
 
+  !> these are fullgrid but possibly carried around by workers too since 1D arrays?
   real(wp), dimension(:), pointer :: x2all
   real(wp), dimension(:), pointer  :: x2iall
   real(wp), dimension(:), pointer :: dx2all
@@ -89,8 +80,7 @@ type, abstract :: curvmesh
   logical :: flagper
 
   !> flag for indicated type of grid (0 - closed dipole; 1 - open dipole inverted; 2 - non-inverted).
-  !! Computed by method in generic
-  !! class once coordinate specific quantitaties are defined
+  !! Computed by method in abstract type once coordinate specific quantitaties are computed by extension.
   integer :: gridflag
 
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Coordinate system specific properties !!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -562,6 +552,9 @@ contains
     call hf%write('/lx3',self%lx3)
     call hf%finalize()
   end subroutine writesize
+
+
+  !> FIXME: need procedure to compute (but not store) and geographic coordinate unit vectors
 
 
   !> write grid coordinates (curvilinear only) to a file
