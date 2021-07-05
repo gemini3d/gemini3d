@@ -4,9 +4,10 @@ module meshobj
 !    However, the idea here is to insulate the numerical parts of the program from that so that they can deal exclusively with the
 !    generic metric factors, etc.
 
-use phys_consts, only : wp
+use phys_consts, only : wp,pi
 use h5fortran, only : hdf5_file
 use geomagnetic, only: geog2geomag,geomag2geog,r2alt,alt2r
+use spherical, only: er_spherical,etheta_spherical,ephi_spherical
 
 implicit none (type, external)
 public
@@ -574,6 +575,37 @@ contains
   end subroutine calc_geographic
 
 
+  !> procedure to compute (but not store - external arrays provided as input) and geographic coordinate unit vectors
+  !    This works on a full spatial arrays worth of data.  
+  pure subroutine calc_unitvec_geo(self,erg,ethetag,ephig)
+    class(curvmesh), intent(in) :: self
+    real(wp), dimension(:,:,:,:), intent(out) :: erg,ethetag,ephig
+    integer :: lx1,lx2,lx3
+    real(wp), dimension(:,:,:), allocatable :: thetag,phig    ! geographic spherical coords
+
+    if ( .not. self%geog_set_status) error stop 'geographic coords. must be set prior to & 
+                                                 computing unit vectors'
+
+    ! sizes
+    lx1=self%lx1; lx2=self%lx2; lx3=self%lx3
+
+    ! space for spherical coordinate computed from lat./long
+    allocate(thetag(lx1,lx2,lx3),phig(lx1,lx2,lx3))
+    
+    ! spherical geographic positions
+    thetag=pi/2._wp-self%glat(1:lx1,1:lx2,1:lx3)*pi/180._wp
+    phig=self%glon(1:lx1,1:lx2,1:lx3)*pi/180._wp
+
+    ! conversion to spherical (geo) unit vectors
+    erg(1:lx1,1:lx2,1:lx3,1:3)=er_spherical(thetag,phig)
+    ethetag(1:lx1,1:lx2,1:lx3,1:3)=etheta_spherical(thetag,phig)
+    ephig(1:lx1,1:lx2,1:lx3,1:3)=ephi_spherical(thetag,phig)
+
+    ! cleanup position arrays
+    deallocate(thetag,phig)
+  end subroutine calc_unitvec_geo
+
+
   !> write the size of the grid to a file
   subroutine writesize(self,path,ID)
     class(curvmesh), intent(in) :: self
@@ -590,9 +622,6 @@ contains
     call hf%write('/lx3',self%lx3)
     call hf%close()
   end subroutine writesize
-
-
-  !> FIXME: need procedure to compute (but not store) and geographic coordinate unit vectors
 
 
   !> write grid coordinates (curvilinear only) to a file
