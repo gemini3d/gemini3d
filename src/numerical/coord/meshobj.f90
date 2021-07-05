@@ -577,9 +577,9 @@ contains
 
   !> procedure to compute (but not store - external arrays provided as input) and geographic coordinate unit vectors
   !    This works on a full spatial arrays worth of data.  
-  pure subroutine calc_unitvec_geo(self,erg,ethetag,ephig)
+  pure subroutine calc_unitvec_geo(self,ealt,eglat,eglon)
     class(curvmesh), intent(in) :: self
-    real(wp), dimension(:,:,:,:), intent(out) :: erg,ethetag,ephig
+    real(wp), dimension(:,:,:,:), intent(out) :: ealt,eglat,eglon
     integer :: lx1,lx2,lx3
     real(wp), dimension(:,:,:), allocatable :: thetag,phig    ! geographic spherical coords
 
@@ -597,9 +597,10 @@ contains
     phig=self%glon(1:lx1,1:lx2,1:lx3)*pi/180._wp
 
     ! conversion to spherical (geo) unit vectors
-    erg(1:lx1,1:lx2,1:lx3,1:3)=er_spherical(thetag,phig)
-    ethetag(1:lx1,1:lx2,1:lx3,1:3)=etheta_spherical(thetag,phig)
-    ephig(1:lx1,1:lx2,1:lx3,1:3)=ephi_spherical(thetag,phig)
+    ealt(1:lx1,1:lx2,1:lx3,1:3)=er_spherical(thetag,phig)
+    eglat(1:lx1,1:lx2,1:lx3,1:3)=etheta_spherical(thetag,phig)
+    eglat(1:lx1,1:lx2,1:lx3,1:3)=-1*eglat(1:lx1,1:lx2,1:lx3,1:3)    ! glat direction is opposite of spherical geo theta
+    eglon(1:lx1,1:lx2,1:lx3,1:3)=ephi_spherical(thetag,phig)
 
     ! cleanup position arrays
     deallocate(thetag,phig)
