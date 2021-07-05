@@ -20,7 +20,7 @@ module procedure get_grid3_coords_hdf5
   endif
   if (debug) print '(A,/,A)', 'READ 3D (B-parallel, B-perp, B-perp) grid:', fn
 
-  call hf % initialize(fn, status='old',action='r')
+  call hf%open(fn, status='old',action='r')
 
   !> reads common to 2D and 3D
 
@@ -35,7 +35,7 @@ module procedure get_grid3_coords_hdf5
   call hf%read('/glonctr',glonctr)
   call hf%read('/glatctr',glatctr)
 
-  call hf % finalize()
+  call hf%close()
 
 end procedure get_grid3_coords_hdf5
 
