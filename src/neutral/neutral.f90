@@ -93,7 +93,6 @@ real(wp), dimension(:,:,:), allocatable, private :: proj_erhop_e1,proj_ezp_e1,pr
 real(wp), dimension(:,:,:), allocatable, private :: proj_eyp_e1,proj_eyp_e2,proj_eyp_e3    !these are for Cartesian projections
 real(wp), dimension(:,:,:), allocatable, private :: proj_exp_e1,proj_exp_e2,proj_exp_e3
 
-
 !PLASMA GRID ZI AND RHOI LOCATIONS FOR INTERPOLATIONS
 real(wp), dimension(:), allocatable, private :: zi,xi    !this is to be a flat listing of sites on the, rhoi only used in axisymmetric and yi only in cartesian
 real(wp), dimension(:), allocatable, target, private :: yi,rhoi
@@ -107,6 +106,11 @@ integer, dimension(:,:), private, allocatable :: slabsizes
 real(wp), dimension(:,:,:,:), allocatable, protected :: nnmsis
 real(wp), dimension(:,:,:), allocatable, protected :: Tnmsis
 real(wp), dimension(:,:,:), allocatable, protected :: vn1base,vn2base,vn3base
+
+!! projection factors for converting vectors mag->geo; e.g. defining rotation matrix
+real(wp), dimension(:,:,:), allocatable :: proj_er_erg,proj_er_ethetag,proj_er_phig
+real(wp), dimension(:,:,:), allocatable :: proj_etheta_erg,proj_etheta_ethetag,proj_etheta_phig
+real(wp), dimension(:,:,:), allocatable :: proj_ephi_erg,proj_ephi_ethetag,proj_ephi_phig
 
 contains
 
