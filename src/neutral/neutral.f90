@@ -204,7 +204,7 @@ if (allocated(zn)) then
   nn(:,:,:,1)=max(nn(:,:,:,1),1._wp)
   nn(:,:,:,2)=max(nn(:,:,:,2),1._wp)
   nn(:,:,:,3)=max(nn(:,:,:,3),1._wp)
-  !! note we are not adjust derived densities like NO since it's not clear how they may be related to major
+  !! note we are not adjusting derived densities like NO since it's not clear how they may be related to major
   !! species perturbations.
 
   Tn=Tn+dTninow
@@ -218,8 +218,42 @@ end if
 end subroutine neutral_update
 
 
-subroutine make_dneu()
+!> rotate winds from geographic to model native coordinate system (x1,x2,x3)
+subroutine rotate_geo2native(vnalt,vnglat,vnglon,x,vn1,vn2,vn3)
+  real(wp), dimension(:,:,:), intent(in) :: vnalt,vnglat,vnglon
+  class(curvmesh), intent(in) :: x
+  real(wp), dimension(:,:,:), intent(out) :: vn1,vn2,vn3
+  real(wp), dimension(1:size(vnalt,1),1:size(vnalt,2),1:size(vnalt,3)) :: ealt,eglat,eglon
+  integer :: lx1,lx2,lx3
 
+  !> if first time called then allocate space for projections and compute
+  if (.not. allocated(proj_ealt_e1) then
+    call x%calc_unitvec_geo(ealt,eglat,eglon)
+
+    lx1=size(vnalt,1); lx2=size(vnalt,2); lx3=size(vnalt,3);
+    allocate(proj_ealt_e1(lx1,lx2,lx3),proj_eglat_e1(lx1,lx2,lx3),proj_eglon_e1(lx1,lx2,lx3))
+    allocate(proj_ealt_e2(lx1,lx2,lx3),proj_eglat_e2(lx1,lx2,lx3),proj_eglon_e2(lx1,lx2,lx3))
+    allocate(proj_ealt_e3(lx1,lx2,lx3),proj_eglat_e3(lx1,lx2,lx3),proj_eglon_e3(lx1,lx2,lx3))
+
+    proj_ealt_e1=sum(ealt*x%e1,4)
+    proj_eglat_e1=sum(eglat*x%e1,4)
+    proj_eglon_e1=sum(eglon*x%e1,4)
+    proj_ealt_e2=sum(ealt*x%e2,4)
+    proj_eglat_e2=sum(eglat*x%e2,4)
+    proj_eglon_e2=sum(eglon*x%e2,4)
+    proj_ealt_e3=sum(ealt*x%e3,4)
+    proj_eglat_e3=sum(eglat*x%e3,4)
+    proj_eglon_e3=sum(eglon*x%e3,4)
+  end if
+
+  !> rotate vectors into model native coordinate system
+  vn1=vnalt*proj_ealt_e1+vnglat*proj_eglat_e1+vnglon*proj_eglon_e1
+  vn2=vnalt*proj_ealt_e2+vnglat*proj_eglat_e2+vnglon*proj_eglon_e2
+  vn3=vnalt*proj_ealt_e3+vnglat*proj_eglat_e3+vnglon*proj_eglon_e3
+end subroutine rotate_geo2native
+
+
+subroutine make_dneu()
 !ZZZ - could make this take in type of neutral interpolation and do allocations accordingly
 
 !allocate and compute plasma grid z,rho locations and space to save neutral perturbation variables and projection factors
@@ -335,6 +369,11 @@ end if
 if (allocated(xnall)) then
   deallocate(xnall,ynall)
   deallocate(dnOall,dnN2all,dnO2all,dvnxall,dvnrhoall,dvnzall,dTnall)
+end if
+if (allocated(proj_ealt_e1) then
+  deallocate(proj_ealt_e1,proj_eglat_e1,proj_eglon_e1)
+  deallocate(proj_ealt_e2,proj_eglat_e2,proj_eglon_e2)
+  deallocate(proj_ealt_e3,proj_eglat_e3,proj_eglon_e3)
 end if
 
 end subroutine clear_dneu
