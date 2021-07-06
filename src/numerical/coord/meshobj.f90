@@ -172,6 +172,7 @@ type, abstract :: curvmesh
     procedure :: set_root               ! set fullgrid variables that have been gathered from workers to root
     procedure :: set_periodic           ! set the flag which labels grid as periodic vs. aperiodic
     procedure :: set_center             ! set the center of the grid (only needed for "floating" coordinate systems)
+    procedure :: calc_unitvec_geo       ! compute geographic unit vectors over the grid
     !final :: destructor
     !! an abstract type cannot have a final procedure, as the final procedure
     !! must act on a type and not polymorhpic object
