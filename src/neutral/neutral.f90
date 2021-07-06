@@ -223,11 +223,11 @@ subroutine rotate_geo2native(vnalt,vnglat,vnglon,x,vn1,vn2,vn3)
   real(wp), dimension(:,:,:), intent(in) :: vnalt,vnglat,vnglon
   class(curvmesh), intent(in) :: x
   real(wp), dimension(:,:,:), intent(out) :: vn1,vn2,vn3
-  real(wp), dimension(1:size(vnalt,1),1:size(vnalt,2),1:size(vnalt,3)) :: ealt,eglat,eglon
+  real(wp), dimension(1:size(vnalt,1),1:size(vnalt,2),1:size(vnalt,3),3) :: ealt,eglat,eglon
   integer :: lx1,lx2,lx3
 
   !> if first time called then allocate space for projections and compute
-  if (.not. allocated(proj_ealt_e1) then
+  if (.not. allocated(proj_ealt_e1)) then
     call x%calc_unitvec_geo(ealt,eglat,eglon)
 
     lx1=size(vnalt,1); lx2=size(vnalt,2); lx3=size(vnalt,3);
@@ -370,7 +370,7 @@ if (allocated(xnall)) then
   deallocate(xnall,ynall)
   deallocate(dnOall,dnN2all,dnO2all,dvnxall,dvnrhoall,dvnzall,dTnall)
 end if
-if (allocated(proj_ealt_e1) then
+if (allocated(proj_ealt_e1)) then
   deallocate(proj_ealt_e1,proj_eglat_e1,proj_eglon_e1)
   deallocate(proj_ealt_e2,proj_eglat_e2,proj_eglon_e2)
   deallocate(proj_ealt_e3,proj_eglat_e3,proj_eglon_e3)
