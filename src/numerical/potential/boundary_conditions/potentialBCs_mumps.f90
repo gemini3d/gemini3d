@@ -664,8 +664,7 @@ subroutine potentialBCs2D(UTsec,cfg,x,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3, &
     vamp=cfg%v0equator    !amplitude of vertical drift at equator from input config.nml file
 
     E01all=0
-    E03all=0
-
+    E02all=0
     do ix2=1,lx2all    !for a swapped grid this is longitude
       !for each meridional slice define a local time
       glonmer=x%glonall(ix1eq,ix2,lx3all/2)     !just use halfway up in altitude at the magnetic equator
@@ -680,11 +679,11 @@ subroutine potentialBCs2D(UTsec,cfg,x,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3, &
         z = x%altall(ix1eq,ix2,ix3)  !Current altitude of center of this flux tube
         do ix1=1,lx1
           if (z<=150e3_wp) then
-            E02all(ix1,ix2,ix3) = 0
+            E03all(ix1,ix2,ix3) = 0
           elseif ((z>=150e3_wp) .and. (z<=300e3_wp)) then
-            E02all(ix1,ix2,ix3) = -(veltime*vamp*(z-150e3_wp)/150e3_wp)*x%Bmagall(ix1eq,ix2,ix3)    !minus sign to deal with permuted dimensions
+            E03all(ix1,ix2,ix3) = -(veltime*vamp*(z-150e3_wp)/150e3_wp)*x%Bmagall(ix1eq,ix2,ix3)    !minus sign to deal with permuted dimensions
           elseif (z>300e3_wp) then
-            E02all(ix1,ix2,ix3) = -veltime*vamp*x%Bmagall(ix1eq,ix2,ix3)
+            E03all(ix1,ix2,ix3) = -veltime*vamp*x%Bmagall(ix1eq,ix2,ix3)
           end if
         end do
       end do
