@@ -31,7 +31,7 @@ module procedure output_root_stream_mpi_hdf5
   filenamefull = date_filename(outdir,ymd,UTsec) // '.h5'
   print *, 'HDF5 Output file name:  ', filenamefull
 
-  call hout%open(filenamefull, status='new',action='w',comp_lvl=comp_lvl)
+  call hout%open(filenamefull, action='w',comp_lvl=comp_lvl)
 
   call hout%write("/flagoutput", flagoutput)
 

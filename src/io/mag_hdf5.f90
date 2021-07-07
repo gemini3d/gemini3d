@@ -17,7 +17,7 @@ character(:), allocatable :: filenamefull
 filenamefull = date_filename(outdir // '/magfields/',ymd,UTsec) // '.h5'
 print *, '  Output file name (magnetic fields):  ',filenamefull
 
-call hout%open(filenamefull, status='unknown',action='rw', comp_lvl=comp_lvl)
+call hout%open(filenamefull, action='rw', comp_lvl=comp_lvl)
 
 call hout%write('/magfields/Br',     real(Br))
 call hout%write('/magfields/Btheta', real(Btheta))

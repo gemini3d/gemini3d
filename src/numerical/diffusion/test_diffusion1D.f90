@@ -46,7 +46,7 @@ outfile = trim(argv)
 ! write(u,*) lt
 ! write(u,*) lx1
 ! call writearray(u,x1)
-call h5f%open(outfile, status='replace')
+call h5f%open(outfile, action='w')
 call h5f%write('/lt', lt, ierr)
 call h5f%write('/lx1', lx1, ierr)
 call h5f%write('/x1', x1, ierr)

@@ -10,11 +10,10 @@ end type hdf5_file
 
 contains
 
-subroutine open(self,filename,ierr, status,action,comp_lvl,chunk_size,verbose)
+subroutine open(self,filename,ierr, action,comp_lvl,chunk_size,verbose)
 class(hdf5_file), intent(inout)    :: self
 character(*), intent(in)           :: filename
 integer, intent(out), optional     :: ierr
-character(*), intent(in), optional :: status
 character(*), intent(in), optional :: action
 integer, intent(in), optional      :: comp_lvl
 class(*), intent(in), optional     :: chunk_size(7)

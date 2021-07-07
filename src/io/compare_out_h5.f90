@@ -78,8 +78,8 @@ character(5), parameter :: varsJ(3) = ['J1all', 'J2all', 'J3all']
 
 integer :: flagoutput
 
-call hnew%open(new_file, status='old',action='r')
-call href%open(ref_file, status='old',action='r')
+call hnew%open(new_file, action='r')
+call href%open(ref_file, action='r')
 
 if (hnew%exist("/flagoutput")) then
   call hnew%read("/flagoutput", flagoutput)
@@ -167,8 +167,8 @@ allocate(new(lx1, lx2all, lx3all, lsp), ref(lx1, lx2all, lx3all, lsp))
 allocate(ns_new(lx1, lx2all, lx3all, lsp), ns_ref(lx1, lx2all, lx3all, lsp))
 allocate(D_ref(lx1, lx2all, lx3all), D_new(lx1, lx2all, lx3all))
 
-call hnew%open(new_file, status='old',action='r')
-call href%open(ref_file, status='old',action='r')
+call hnew%open(new_file, action='r')
+call href%open(ref_file, action='r')
 
 call href%read('nsall', ns_ref)
 call hnew%read('nsall', ns_new)
@@ -223,8 +223,8 @@ allocate(new(lx1, lx2all, lx3all), ref(lx1, lx2all, lx3all))
 
 bad = 0
 
-call hnew%open(new_file, status='old',action='r')
-call href%open(ref_file, status='old',action='r')
+call hnew%open(new_file, action='r')
+call href%open(ref_file, action='r')
 
 if(present(ionly)) then
   call hnew%read(name, new4)

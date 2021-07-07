@@ -43,8 +43,8 @@ ref_file = ref_path // "/inputs/simgrid.h5"
 
 bad = 0
 
-call hnew%open(new_file, status='old',action='r')
-call href%open(ref_file, status='old',action='r')
+call hnew%open(new_file, action='r')
+call href%open(ref_file, action='r')
 
 do i = 1,size(var1)
   call href%shape(var1(i), dims)

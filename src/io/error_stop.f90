@@ -42,7 +42,7 @@ real(wp), dimension(:), intent(in) :: Br, Btheta, Bphi
 
 type (hdf5_file) :: h
 
-call h%open(filename, status="replace", action="write")
+call h%open(filename, action="w")
 call h%write("/Br", Br)
 call h%write("/Btheta", Btheta)
 call h%write("/Bphi", Bphi)
@@ -61,7 +61,7 @@ real(wp), dimension(:,:,:), intent(in) :: J1, J2, J3
 
 type (hdf5_file) :: h
 
-call h%open(filename, status="replace", action="write")
+call h%open(filename, action="w")
 call h%write("/J1", J1)
 call h%write("/J2", J2)
 call h%write("/J3", J3)
@@ -80,7 +80,7 @@ real(wp), dimension(:,:,:,:), intent(in) :: ns, vs1, Ts
 
 type (hdf5_file) :: h
 
-call h%open(filename, status="replace", action="write")
+call h%open(filename, action="w")
 call h%write("/vs1", vs1)
 call h%write("/ns", ns)
 call h%write("/Ts", Ts)
@@ -104,7 +104,7 @@ real(wp), intent(in), dimension(:,:,:) :: Phi, J1, J2, J3
 
 type (hdf5_file) :: h
 
-call h%open(filename, status="replace", action="write")
+call h%open(filename, action="w")
 call h%write("/worker_id", worker_id)
 call h%write("/time/elapsed_seconds", t_elapsed)
 call h%write("/vs2", vs2)
@@ -132,7 +132,7 @@ real(wp), dimension(:,:,:), intent(in) :: J1,J2,J3
 
 type (hdf5_file) :: h
 
-call h%open(filename, status="replace", action="write")
+call h%open(filename, action="w")
 call h%write("/vs1", vs1)
 call h%write("/vs2", vs2)
 call h%write("/vs3", vs3)
@@ -166,7 +166,7 @@ real(wp), dimension(:,:,:), intent(in) :: neall,v1avgall,Tavgall,Teall
 
 type (hdf5_file) :: h
 
-call h%open(filename, status="replace", action="write")
+call h%open(filename, action="w")
 call h%write("/flagoutput", flagoutput)
 call h%write("/time/ymd", ymd)
 call h%write("/time/UTsec", UTsec)

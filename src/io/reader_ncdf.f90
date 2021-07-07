@@ -13,7 +13,7 @@ type(netcdf_file) :: hf
 
 if (debug) print '(A,/,A)', 'READ 2D (B-perp, B-perp) grid size from file:', path
 
-call hf%open(path, status='old',action='r')
+call hf%open(path, action='r')
 
 !> scripts can use variety of variable names
 if(hf%exist('llat')) then
@@ -49,7 +49,7 @@ integer :: lx(3)
 
 if (debug) print '(A,/,A)', 'READ 3D (B-parallel, B-perp, B-perp) grid  size from file:', path
 
-call hf%open(path, status='old',action='r')
+call hf%open(path, action='r')
 
 if (hf%exist("lx1")) then
   call hf%read('lx1', lx1)
@@ -77,7 +77,7 @@ type(netcdf_file) :: hf
 
 if (debug) print '(A,/,A)', 'READ 2D (B-perp, B-perp) grid:', path
 
-call hf%open(path, status='old',action='r')
+call hf%open(path, action='r')
 call hf%read('mlon', mlonp)
 call hf%read('mlat', mlatp)
 call hf%close()
@@ -91,7 +91,7 @@ real(wp) :: flagtmp
 
 if (debug) print *, 'READ electric field data from file:  ',path
 
-call hf%open(path, status='old',action='r')
+call hf%open(path, action='r')
 call hf%read('flagdirich', flagdirich)
 call hf%read('Exit', E0xp)
 call hf%read('Eyit', E0yp)
@@ -115,7 +115,7 @@ real(wp) :: flagtmp
 
 if (debug) print *, 'READ precipitation data from file: ',path
 
-call hf%open(path, status='old',action='r')
+call hf%open(path, action='r')
 
 call hf%read('Qp', Qp)
 call hf%read('E0p', E0p)
@@ -131,7 +131,7 @@ real(wp) :: flagtmp
 
 if (debug) print *, 'READ neutral 2D data from file: ', path
 
-call hf%open(path, status='old',action='r')
+call hf%open(path, action='r')
 
 call hf%read('dn0all', dnO)
 call hf%read('dnN2all', dnN2)
@@ -151,7 +151,7 @@ real(wp) :: flagtmp
 
 if (debug) print *, 'READ neutral 3D data from file:  ',path
 
-call hf%open(path, status='old',action='r')
+call hf%open(path, action='r')
 
 call hf%read('dn0all', dnOall)
 call hf%read('dnN2all', dnN2all)

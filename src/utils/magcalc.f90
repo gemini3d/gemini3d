@@ -190,7 +190,7 @@ block
     close(u)
   case ('.h5')
     !! hdf5 file input
-    call hf%open(cfg%fieldpointfile, status='old', action='r')
+    call hf%open(cfg%fieldpointfile, action='r')
 
     call hf%read('/lpoints',lpoints)
     allocate(r(lpoints), theta(lpoints), phi(lpoints))
@@ -524,7 +524,7 @@ print '(A)', 'MAGCALC: complete'
 
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-contains    ! declare integral functions as internal subprograms; too specific to be used elsewhere.  Also they access data from the main program unti because I don't feel like including these are arguments.  
+contains    ! declare integral functions as internal subprograms; too specific to be used elsewhere.  Also they access data from the main program unti because I don't feel like including these are arguments.
   subroutine fixJ(J1,J2,J3)
     ! host program data used (but not modified)
     ! mpi_cfg, alt
@@ -540,7 +540,7 @@ contains    ! declare integral functions as internal subprograms; too specific t
       J2=0
       J3=0
     end where
-    
+
     !! FAC can often have edge artifacts due to boundary being too close to the disturbance being modeled.
     !  this code will remove these.
     ! x3 global grid edges
@@ -563,7 +563,7 @@ contains    ! declare integral functions as internal subprograms; too specific t
         J1(:,:,2)=0
       end if
     end if
-  
+
     ! x2 global grid edges
     if (mpi_cfg%myid2==mpi_cfg%lid2-1) then
       if (lx2>2) then
@@ -650,7 +650,7 @@ contains    ! declare integral functions as internal subprograms; too specific t
         end do
       end do
     end if
- 
+
     ! corner cell distance to be computed
     Rmagcorner=0._wp
     if (mpi_cfg%myid3/=mpi_cfg%lid3-1 .and. mpi_cfg%myid2/=mpi_cfg%lid2-1) then
@@ -680,20 +680,20 @@ contains    ! declare integral functions as internal subprograms; too specific t
     real(wp), dimension(:), allocatable :: integrandavgcorner
     integer :: lx1,lx2,lx3
     real(wp) :: integrate3D
-  
+
     lx1=size(integrand,1); lx2=size(integrand,2); lx3=size(integrand,3);
-  
+
     allocate(integrandavg(lx1-1,max(lx2-1,1),max(lx3-1,1)), &
              integrandavgend(lx1-1,max(lx2-1,1)), &
              integrandavgtop(lx1-1,max(lx3-1,1)), &
              integrandavgcorner(lx1-1) )
-  
+
     integrandavg(:,:,:)=1/8._wp*( integrand(1:lx1-1,1:lx2-1,1:lx3-1) + integrand(2:lx1,1:lx2-1,1:lx3-1) + &
                                   integrand(1:lx1-1,2:lx2,1:lx3-1) + integrand(2:lx1,2:lx2,1:lx3-1) + &
                                   integrand(1:lx1-1,1:lx2-1,2:lx3) + integrand(2:lx1,1:lx2-1,2:lx3) + &
                                   integrand(1:lx1-1,2:lx2,2:lx3)   + integrand(2:lx1,2:lx2,2:lx3) )/ &
                                  Rcubed(2:lx1,2:lx2,2:lx3)
-  
+
     integrandavgend=0._wp
     if (mpi_cfg%myid3/=mpi_cfg%lid3-1) then
       integrandavgend(:,:)=1/8._wp*( integrand(1:lx1-1,1:lx2-1,lx3) + integrand(2:lx1,1:lx2-1,lx3) + &
@@ -701,7 +701,7 @@ contains    ! declare integral functions as internal subprograms; too specific t
                            integrandend(1:lx1-1,1:lx2-1) + integrandend(2:lx1,1:lx2-1) + &
                            integrandend(1:lx1-1,2:lx2) + integrandend(2:lx1,2:lx2) )/Rcubedend(2:lx1,2:lx2)
     end if
-  
+
     integrandavgtop=0._wp
     if (mpi_cfg%myid2/=mpi_cfg%lid2-1) then
       integrandavgtop(:,:)=1/8._wp*( integrand(1:lx1-1,lx2,1:lx3-1) + integrand(2:lx1,lx2,1:lx3-1) + &
@@ -710,7 +710,7 @@ contains    ! declare integral functions as internal subprograms; too specific t
                                      integrandtop(1:lx1-1,2:lx3)   + integrandtop(2:lx1,2:lx3) )/ &
                                     Rcubedtop(2:lx1,2:lx3)
     end if
-  
+
     integrandavgcorner=0._wp
     if (mpi_cfg%myid3/=mpi_cfg%lid3-1 .and. mpi_cfg%myid2/=mpi_cfg%lid2-1) then
       integrandavgcorner(:)=1/8._wp*( integrandcorner(1:lx1-1) + integrandcorner(2:lx1) + &
@@ -719,10 +719,10 @@ contains    ! declare integral functions as internal subprograms; too specific t
                                      integrand(1:lx1-1,lx2,lx3) + integrand(2:lx1,lx2,lx3) &
                                      )/Rcubedcorner(2:lx1)
     end if
-  
+
     integrate3D=sum(integrandavg*dV(2:lx1,2:lx2,2:lx3))+sum(integrandavgend*dVend(2:lx1,2:lx2))+ &
                       sum(integrandavgtop*dVtop(2:lx1,2:lx3))+sum(integrandavgcorner*dVcorner(2:lx1))
-  
+
     deallocate(integrandavg,integrandavgend,integrandavgtop,integrandavgcorner)
   end function integrate3D
 

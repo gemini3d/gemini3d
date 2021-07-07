@@ -76,7 +76,7 @@ type(hdf5_file) :: hf
 integer(hsize_t), allocatable :: dims(:)
 integer:: lx1,lx2,lx3
 
-call hf%open(filename, status='old', action='read')
+call hf%open(filename, action='read')
 
 call hf%read("/doy", doy)
 if(doy < 1 .or. doy > 366) error stop 'msis_driver:input_hdf5: 1 <= doy <= 366'
@@ -118,7 +118,7 @@ real(real32), intent(in), dimension(:,:,:) :: alt, glat, glon
 real(real32), intent(in), dimension(:,:,:,:) :: Dn, Tn
 type(hdf5_file) :: hf
 
-call hf%open(filename, status="replace", action="write", comp_lvl=comp_lvl)
+call hf%open(filename, action="w", comp_lvl=comp_lvl)
 
 call hf%write("/alt", alt)
 call hf%write("/glat", glat)

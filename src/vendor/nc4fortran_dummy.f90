@@ -10,11 +10,10 @@ end type netcdf_file
 
 contains
 
-subroutine open(self,filename,ierr, status,action,comp_lvl)
+subroutine open(self,filename,ierr, action,comp_lvl)
 class(netcdf_file), intent(inout)  :: self
 character(*), intent(in)           :: filename
 integer, intent(out), optional     :: ierr
-character(*), intent(in), optional :: status
 character(*), intent(in), optional :: action
 integer, intent(in), optional      :: comp_lvl
 error stop 'NetCDF4 / nc4fortran not available'

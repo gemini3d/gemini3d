@@ -155,8 +155,8 @@ integer :: ymd1(3), ymd2(3)
 
 type(hdf5_file) :: hnew, href
 
-call hnew%open(new_file, status='old',action='r')
-call href%open(ref_file, status='old',action='r')
+call hnew%open(new_file, action='r')
+call href%open(ref_file, action='r')
 
 call href%read('/time/ymd', ymd1)
 call hnew%read('/time/ymd', ymd2)

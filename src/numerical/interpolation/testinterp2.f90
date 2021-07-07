@@ -80,7 +80,7 @@ outfn = trim(argv)
 
 print "(A,/,A,/,A)", "interp2d: Finished test interpolation, writing to ",infn,outfn
 !! dump results to a file so we can check things
-call hout%open(infn, status="replace", action="write")
+call hout%open(infn, action="w")
 
 call hout%write("/lx1", lx1)
 call hout%write("/lx2", lx2)
@@ -91,7 +91,7 @@ call hout%write("/f", f)
 call hout%close()
 
 
-call hout%open(outfn, status="replace", action="write")
+call hout%open(outfn, action="w")
 
 call hout%write("/lx1", lx1i)
 call hout%write("/lx2", lx2i)

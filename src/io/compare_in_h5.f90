@@ -62,8 +62,8 @@ call check_simsize(new_path, ref_path, lx1, lx2all, lx3all)
 
 bad = 0
 
-call hnew%open(new_file, status='old',action='r')
-call href%open(ref_file, status='old',action='r')
+call hnew%open(new_file, action='r')
+call href%open(ref_file, action='r')
 
 do i = 1,size(var)
 
@@ -124,8 +124,8 @@ do while (t <= cfg%tdur)
   new_file = date_filename(new_path // "/" // cfg%precdir, ymd, UTsec) // suffix
   ref_file = date_filename(ref_path // "/" // cfg%precdir, ymd, UTsec) // suffix
 
-  call hnew%open(new_file, status='old',action='r')
-  call href%open(ref_file, status='old',action='r')
+  call hnew%open(new_file, action='r')
+  call href%open(ref_file, action='r')
 
   do i = 1,size(var)
 
@@ -191,8 +191,8 @@ do while (t <= cfg%tdur)
   new_file = date_filename(new_path // "/" // cfg%E0dir, ymd, UTsec) // suffix
   ref_file = date_filename(ref_path // "/" // cfg%E0dir, ymd, UTsec) // suffix
 
-  call hnew%open(new_file, status='old',action='r')
-  call href%open(ref_file, status='old',action='r')
+  call hnew%open(new_file, action='r')
+  call href%open(ref_file, action='r')
   do i = 1,size(var)
 
 

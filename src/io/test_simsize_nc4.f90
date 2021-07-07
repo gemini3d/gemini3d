@@ -18,7 +18,7 @@ call get_command_argument(1, buf)
 
 path = trim(buf)
 
-call hf%open(path, status='old', action='r')
+call hf%open(path, action='r')
 
 call hf%read("lx", lx)
 

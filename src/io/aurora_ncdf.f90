@@ -22,7 +22,7 @@ module procedure output_aur_root_nc4
   real(wp), dimension(1:lx2all,1:lx3all,1:lwave) :: iverout  !< output array in the order scripts expect
   integer :: iwave
 
-  character(:), allocatable :: outdir_composite, filenamefull, fstatus
+  character(:), allocatable :: outdir_composite, filenamefull
 
   !! gather output from workers
   do iwave=1,lwave
@@ -35,8 +35,8 @@ module procedure output_aur_root_nc4
   outdir_composite=outdir//'/aurmaps/'
   filenamefull=date_filename(outdir_composite,ymd,UTsec) // '.nc'
   print *, 'Output file name (auroral maps):  ',filenamefull
-  fstatus = 'new'
-  call hout%open(filenamefull, status=fstatus,action='rw',comp_lvl=comp_lvl)
+
+  call hout%open(filenamefull, action='rw',comp_lvl=comp_lvl)
 
   !! write data to file
   call hout%write('iverout', iverout)

@@ -80,7 +80,7 @@ if(argv=="") error stop 'please specify input filename'
 
 print "(A,/,A,/,A)", "interp3d: Finished test interpolation"
 !> dump results to a file so we can check things
-call hout%open(trim(argv), status="replace", action="write")
+call hout%open(trim(argv), action="w")
 
 call hout%write("/lx1", lx1, ierr)
 call hout%write("/lx2", lx2, ierr)
@@ -96,7 +96,7 @@ call hout%close()
 call get_command_argument(2, argv)
 if(argv=="") error stop 'please specify output filename'
 
-call hout%open(trim(argv), status="replace", action="write")
+call hout%open(trim(argv), action="w")
 
 call hout%write("/lx1", lx1i, ierr)
 call hout%write("/lx2", lx2i, ierr)

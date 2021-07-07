@@ -6,11 +6,11 @@
 
 "h5fortran": {
   "git": "https://github.com/geospace-code/h5fortran.git",
-  "tag": "v4.0.2"
+  "tag": "v4.1.0"
 },
 "nc4fortran": {
   "git": "https://github.com/geospace-code/nc4fortran.git",
-  "tag": "v1.3.2"
+  "tag": "v1.4.0"
 },
 "zlib1": {
   "url": "https://zlib.net/zlib1211.zip",

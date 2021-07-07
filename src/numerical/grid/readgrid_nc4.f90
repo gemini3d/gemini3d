@@ -20,7 +20,7 @@ module procedure get_grid3_coords_nc4
   endif
   if (debug) print '(A,/,A)', 'READ 3D (B-parallel, B-perp, B-perp) grid:', fn
 
-  call hf%open(fn, status='old',action='r')
+  call hf%open(fn, action='r')
 
   !> reads common to 2D and 3D
 
@@ -52,7 +52,7 @@ end procedure get_grid3_coords_nc4
 !  endif
 !  if (debug) print '(A,/,A)', 'READ 3D (B-parallel, B-perp, B-perp) grid:', fn
 !
-!  call hout%open(fn, status='old',action='r')
+!  call hout%open(fn, action='r')
 !
 !  !> reads common to 2D and 3D
 !

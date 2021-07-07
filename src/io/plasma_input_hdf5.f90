@@ -23,7 +23,7 @@ module procedure input_root_currents_hdf5
   filenamefull = date_filename(outdir,ymd,UTsec) // '.h5'
   print *, 'Input file name for current densities:  ', filenamefull
 
-  call hf%open(filenamefull, status='old', action='r')
+  call hf%open(filenamefull, action='r')
 
   !> LOAD THE DATA
   !> PERMUTE THE ARRAYS IF NECESSARY
@@ -91,7 +91,7 @@ module procedure input_root_mpi_hdf5
          '- use a script to interpolate up/down to the simulation grid'
   end if
 
-  call hf%open(indatfile, status='old', action='r')
+  call hf%open(indatfile, action='r')
 
   call hf%read('/nsall', nsall(1:lx1,1:lx2all,1:lx3all,1:lsp))
   call hf%read('/vs1all', vs1all(1:lx1,1:lx2all,1:lx3all,1:lsp))
