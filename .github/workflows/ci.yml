@@ -76,6 +76,7 @@ jobs:
       run: |
         sudo apt update -yq
         sudo cmake -P scripts/install_prereq.cmake
+        cmake -P scripts/install_ninja.cmake
         echo "${HOME}/ninja-1.10.2" >> $GITHUB_PATH
 
 
