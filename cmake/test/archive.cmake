@@ -1,7 +1,7 @@
 function(make_archive in out ref_json_file name)
 
-get_filename_component(in ${in} ABSOLUTE)
-get_filename_component(out ${out} ABSOLUTE)
+cmake_path(ABSOLUTE_PATH in NORMALIZE)
+cmake_path(ABSOLUTE_PATH out NORMALIZE)
 cmake_path(GET out EXTENSION LAST_ONLY ARC_TYPE)
 cmake_path(GET out FILENAME archive_name)
 

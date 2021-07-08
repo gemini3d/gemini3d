@@ -1,7 +1,4 @@
 # Windows MSVC-based exe's (including Intel compiler on Windows) need DLL's on PATH.
-if(CMAKE_VERSION VERSION_LESS 3.20)
-  return()
-endif()
 
 if(NOT MSVC)
   message(DEBUG "SKIP: test_dll_path")

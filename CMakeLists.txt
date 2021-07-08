@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.19...3.21)
+cmake_minimum_required(VERSION 3.20...3.21)
 
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release CACHE STRING "Debug or Release")
@@ -40,13 +40,6 @@ include(cmake/test/lib_path.cmake)
 
 # all Gemini3D source code under this
 add_subdirectory(src)
-
-if(CMAKE_VERSION VERSION_LESS 3.20)
-  message(STATUS "*** Gemini3D self-tests require CMake >= 3.20 ***
-  Recommendation: Install latest CMake by:
-    cmake -P ${PROJECT_SOURCE_DIR}/scripts/install_cmake.cmake")
-  return()
-endif()
 
 # self-test simulations -- after all targets for if(TARGET ...)
 if(matlab)

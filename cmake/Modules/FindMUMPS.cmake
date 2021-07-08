@@ -275,15 +275,6 @@ if(NOT TARGET MUMPS::MUMPS)
   set_target_properties(MUMPS::MUMPS PROPERTIES
     INTERFACE_LINK_LIBRARIES "${MUMPS_LIBRARY}"
     INTERFACE_INCLUDE_DIRECTORIES "${MUMPS_INCLUDE_DIR}")
-  if(METIS_FOUND)
-    target_link_libraries(MUMPS::MUMPS INTERFACE METIS::METIS)
-  endif()
-  if(Scotch_FOUND)
-    target_link_libraries(MUMPS::MUMPS INTERFACE Scotch::Scotch)
-  endif()
-  if(OpenMP_FOUND)
-    target_link_libraries(MUMPS::MUMPS INTERFACE OpenMP::OpenMP_Fortran OpenMP::OpenMP_C)
-  endif()
 endif()
 
 if(mpiseq IN_LIST MUMPS_FIND_COMPONENTS)

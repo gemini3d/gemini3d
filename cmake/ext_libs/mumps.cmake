@@ -50,10 +50,6 @@ endif()
 
 set(mumps_external true CACHE BOOL "build Mumps")
 
-if(CMAKE_VERSION VERSION_LESS 3.20)
-  message(FATAL_ERROR "MUMPS autobuild requires CMake >= 3.20")
-endif()
-
 if(NOT TARGET SCALAPACK)
   # acquired by find_package instead of ExternalProject, so make dummy target
   add_custom_target(SCALAPACK)

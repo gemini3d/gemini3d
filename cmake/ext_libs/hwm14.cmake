@@ -7,10 +7,6 @@ if(hwm14_FOUND)
   return()
 endif()
 
-if(CMAKE_VERSION VERSION_LESS 3.20)
-  message(FATAL_ERROR "HWM14 requires CMake >= 3.20")
-endif()
-
 if(NOT HWM14_ROOT)
   if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
     set(HWM14_ROOT ${PROJECT_BINARY_DIR} CACHE PATH "default ROOT")

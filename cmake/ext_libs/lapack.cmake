@@ -15,10 +15,6 @@ endif()
 
 set(lapack_external true CACHE BOOL "build Lapack")
 
-if(CMAKE_VERSION VERSION_LESS 3.20)
-  message(FATAL_ERROR "LAPACK autobuild requires CMake >= 3.20")
-endif()
-
 if(NOT LAPACK_ROOT)
   if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
     set(LAPACK_ROOT ${PROJECT_BINARY_DIR} CACHE PATH "default ROOT")

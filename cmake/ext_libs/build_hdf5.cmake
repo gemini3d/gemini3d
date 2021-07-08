@@ -58,23 +58,14 @@ else()
   list(APPEND hdf5_cmake_args -DHDF5_ENABLE_PARALLEL:BOOL=false)
 endif()
 
-if(CMAKE_VERSION VERSION_LESS 3.20)
-  ExternalProject_Add(HDF5
-  URL ${hdf5_url}
-  URL_HASH SHA256=${hdf5_sha256}
-  CMAKE_ARGS ${hdf5_cmake_args}
-  BUILD_BYPRODUCTS ${HDF5_LIBRARIES}
-  DEPENDS ZLIB)
-else()
-  ExternalProject_Add(HDF5
-  URL ${hdf5_url}
-  URL_HASH SHA256=${hdf5_sha256}
-  CMAKE_ARGS ${hdf5_cmake_args}
-  BUILD_BYPRODUCTS ${HDF5_LIBRARIES}
-  DEPENDS ZLIB
-  CONFIGURE_HANDLED_BY_BUILD ON
-  INACTIVITY_TIMEOUT 15)
-endif()
+ExternalProject_Add(HDF5
+URL ${hdf5_url}
+URL_HASH SHA256=${hdf5_sha256}
+CMAKE_ARGS ${hdf5_cmake_args}
+BUILD_BYPRODUCTS ${HDF5_LIBRARIES}
+DEPENDS ZLIB
+CONFIGURE_HANDLED_BY_BUILD ON
+INACTIVITY_TIMEOUT 15)
 
 # --- imported target
 

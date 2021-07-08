@@ -1,7 +1,7 @@
 # for systems where you can't use "cmake -P scripts/install_prereq.cmake"
 # this project builds the prereqs
 
-cmake_minimum_required(VERSION 3.19...${CMAKE_VERSION})
+cmake_minimum_required(VERSION 3.20...3.21)
 
 project(BuildGeminiPrereq LANGUAGES C Fortran)
 

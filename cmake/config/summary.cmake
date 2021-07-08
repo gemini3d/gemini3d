@@ -1,11 +1,5 @@
 include(FeatureSummary)
 
-# --- warnings
-
-if(CMAKE_VERSION VERSION_LESS 3.20)
-  message(WARNING "${CMAKE_Fortran_COMPILER_ID} compilers may not work properly with CMake < 3.20")
-endif()
-
 # --- recommendations
 
 if(NOT CMAKE_GENERATOR MATCHES Ninja)

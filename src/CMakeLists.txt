@@ -53,6 +53,12 @@ if(mpi)
 else()
   target_link_libraries(gemini.bin PRIVATE MUMPS::MUMPS LAPACK::LAPACK MPI::MPI_Fortran MPI::MPI_C)
 endif()
+if(OpenMP_FOUND)
+  target_link_libraries(gemini.bin PRIVATE OpenMP::OpenMP_Fortran)
+endif()
+if(Scotch_FOUND)
+  target_link_libraries(gemini.bin PRIVATE Scotch::Scotch)
+endif()
 
 add_test(NAME unit:gemini_exe_ok COMMAND $<TARGET_FILE:gemini.bin>)
 set_tests_properties(unit:gemini_exe_ok PROPERTIES
