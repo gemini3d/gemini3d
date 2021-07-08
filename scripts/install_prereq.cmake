@@ -25,8 +25,8 @@ function(check_ninja)
   endif()
 
   if(NOT ninja OR ninja_ver VERSION_LESS 1.10.0)
-    execute_process(COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/install_ninja.cmake
-      COMMAND_ERROR_IS_FATAL ANY)
+    message(STATUS "Please install Ninja via
+     cmake -P ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/install_ninja.cmake")
   endif()
 endfunction(check_ninja)
 
