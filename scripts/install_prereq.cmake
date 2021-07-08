@@ -33,8 +33,7 @@ endfunction(check_ninja)
 execute_process(COMMAND uname -s OUTPUT_VARIABLE id TIMEOUT 5)
 
 if(id MATCHES "MSYS")
-  execute_process(COMMAND pacman -S --needed mingw-w64-x86_64-gcc-fortran mingw-w64-x86_64-ninja mingw-w64-x86_64-hwloc mingw-w64-x86_64-msmpi mingw-w64-x86_64-hdf5 mingw-w64-x86_64-lapack mingw-w64-x86_64-scalapack
-    COMMAND_ERROR_IS_FATAL ANY)
+  execute_process(COMMAND pacman -S --needed mingw-w64-x86_64-gcc-fortran mingw-w64-x86_64-ninja mingw-w64-x86_64-hwloc mingw-w64-x86_64-msmpi mingw-w64-x86_64-hdf5 mingw-w64-x86_64-lapack mingw-w64-x86_64-scalapack)
   return()
 endif()
 
@@ -48,8 +47,7 @@ if(APPLE)
     message(FATAL_ERROR "We generally suggest installing Homebrew package manager https://brew.sh")
   endif()
 
-  execute_process(COMMAND ${brew} install gcc ninja cmake hwloc lapack scalapack openmpi hdf5
-    COMMAND_ERROR_IS_FATAL ANY)
+  execute_process(COMMAND ${brew} install gcc ninja cmake hwloc lapack scalapack openmpi hdf5)
   return()
 endif()
 
@@ -71,8 +69,7 @@ endif()
 
 find_program(pacman NAMES pacman)
 if(pacman)
-  execute_process(COMMAND pacman -S --needed gcc-fortran ninja hwloc openmpi hdf5 lapack scalapack mumps
-    COMMAND_ERROR_IS_FATAL ANY)
+  execute_process(COMMAND pacman -S --needed gcc-fortran ninja hwloc openmpi hdf5 lapack scalapack mumps)
 
   check_ninja()
   return()
