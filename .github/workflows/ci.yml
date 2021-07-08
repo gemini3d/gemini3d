@@ -160,7 +160,7 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: Configure multi
-      run: cmake --preset multi
+      run: cmake -Dmpi=no --preset multi
 
 
     - name: Debug build
