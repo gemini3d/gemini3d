@@ -228,7 +228,8 @@ elseif(OpenMPI IN_LIST SCALAPACK_FIND_COMPONENTS)
   find_library(SCALAPACK_LIBRARY
                 NAMES scalapack-openmpi scalapack
                 NAMES_PER_DIR
-                HINTS ${pc_scalapack_LIBRARY_DIRS} ${pc_scalapack_LIBDIR})
+                HINTS ${pc_scalapack_LIBRARY_DIRS} ${pc_scalapack_LIBDIR}
+                PATH_SUFFIXES openmpi/lib mpich/lib)
 
   if(SCALAPACK_LIBRARY)
     set(SCALAPACK_OpenMPI_FOUND true)
@@ -241,7 +242,8 @@ elseif(MPICH IN_LIST SCALAPACK_FIND_COMPONENTS)
   find_library(SCALAPACK_LIBRARY
                 NAMES scalapack-mpich scalapack-mpich2
                 NAMES_PER_DIR
-                HINTS ${pc_scalapack_LIBRARY_DIRS} ${pc_scalapack_LIBDIR})
+                HINTS ${pc_scalapack_LIBRARY_DIRS} ${pc_scalapack_LIBDIR}
+                PATH_SUFFIXES openmpi/lib mpich/lib)
 
   if(SCALAPACK_LIBRARY)
     set(SCALAPACK_MPICH_FOUND true)
