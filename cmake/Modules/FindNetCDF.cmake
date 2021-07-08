@@ -40,6 +40,8 @@ Search details:
 
 #]=======================================================================]
 
+include(CheckSourceCompiles)
+
 function(netcdf_c)
 
 if(PkgConfig_FOUND AND NOT NetCDF_C_LIBRARY)
@@ -68,7 +70,6 @@ set(CMAKE_REQUIRED_FLAGS)
 set(CMAKE_REQUIRED_INCLUDES ${NetCDF_C_INCLUDE_DIR})
 set(CMAKE_REQUIRED_LIBRARIES ${NetCDF_C_LIBRARY})
 
-include(CheckSourceCompiles)
 check_source_compiles(C
 "#include <netcdf.h>
 #include <stdio.h>
