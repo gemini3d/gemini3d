@@ -137,6 +137,7 @@ else()
   find_library(PORD
     NAMES pord mumps_pord
     NAMES_PER_DIR
+    PATH_SUFFIXES openmpi/lib mpich/lib
     DOC "simplest MUMPS ordering library")
 endif()
 if(NOT PORD)
