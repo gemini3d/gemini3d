@@ -33,22 +33,9 @@ else()
   set(arith d)
 endif()
 
-# If MPIEXEC is not present, no need to link MPI.
-if(NOT DEFINED mpi)
-  find_program(_mpiexec
-    NAMES mpiexec
-    HINTS ${MPI_ROOT} ENV MPI_ROOT
-    PATH_SUFFIXES bin)
-  if(_mpiexec)
-    set(mpi on)
-  else()
-    set(mpi off)
-  endif(_mpiexec)
-endif()
-
 option(dev "Gemini developer mode")
 
-option(mpi "Use MPI parallelization")
+option(mpi "Use MPI parallelization" on)
 
 option(autobuild "autobuild missing libraries" on)
 option(glow "use NCAR GLOW airglow / aurora model" on)
