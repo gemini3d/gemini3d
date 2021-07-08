@@ -26,9 +26,8 @@ if(APPLE)
   if(brew)
     execute_process(COMMAND ${brew} install hwloc
       COMMAND_ERROR_IS_FATAL ANY)
+    return()
   endif()
-
-  return()
 endif()
 
 if(WIN32)
