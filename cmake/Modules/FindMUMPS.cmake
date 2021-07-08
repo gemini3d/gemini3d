@@ -82,29 +82,62 @@ function(mumps_libs)
 # to allow MKL using user-built MUMPS with `cmake -DMUMPS_ROOT=~/lib_intel/mumps`
 
 if(DEFINED ENV{MKLROOT})
-  find_path(MUMPS_INCLUDE_DIR NAMES mumps_compat.h NO_DEFAULT_PATH HINTS ${MUMPS_ROOT} PATH_SUFFIXES include DOC "MUMPS common header")
+  find_path(MUMPS_INCLUDE_DIR
+    NAMES mumps_compat.h
+    NO_DEFAULT_PATH
+    HINTS ${MUMPS_ROOT}
+    PATH_SUFFIXES include
+    DOC "MUMPS common header")
 else()
-  find_path(MUMPS_INCLUDE_DIR NAMES mumps_compat.h DOC "MUMPS common header")
+  find_path(MUMPS_INCLUDE_DIR
+    NAMES mumps_compat.h
+    PATH_SUFFIXES include include/MUMPS include/openmpi-x86_64 include/mpich-x86_64
+    DOC "MUMPS common header")
 endif()
 if(NOT MUMPS_INCLUDE_DIR)
   return()
 endif()
 
 if(DEFINED ENV{MKLROOT})
-  find_library(MUMPS_COMMON NAMES mumps_common NO_DEFAULT_PATH HINTS ${MUMPS_ROOT} PATH_SUFFIXES lib DOC "MUMPS common libraries")
+  find_library(MUMPS_COMMON
+    NAMES mumps_common
+    NO_DEFAULT_PATH
+    HINTS ${MUMPS_ROOT}
+    PATH_SUFFIXES lib
+    DOC "MUMPS common libraries")
 elseif(mpiseq IN_LIST MUMPS_FIND_COMPONENTS)
-  find_library(MUMPS_COMMON NAMES mumps_common mumps_common_seq NAMES_PER_DIR DOC "MUMPS common libraries")
+  find_library(MUMPS_COMMON
+    NAMES mumps_common mumps_common_seq
+    NAMES_PER_DIR
+    DOC "MUMPS no-MPI common libraries")
+elseif(OpenMP IN_LIST MUMPS_FIND_COMPONENTS)
+  find_library(MUMPS_COMMON
+    NAMES mumps_common mumpso_common mumps_common_shm
+    NAMES_PER_DIR
+    DOC "MUMPS no-MPI common libraries")
 else()
-  find_library(MUMPS_COMMON NAMES mumps_common mumps_common_mpi NAMES_PER_DIR DOC "MUMPS common libraries")
+  find_library(MUMPS_COMMON
+    NAMES mumps_common mumps_common_mpi
+    NAMES_PER_DIR
+    PATH_SUFFIXES lib openmpi/lib mpich/lib
+    DOC "MUMPS MPI common libraries")
 endif()
 if(NOT MUMPS_COMMON)
   return()
 endif()
 
 if(DEFINED ENV{MKLROOT})
-  find_library(PORD NAMES pord NO_DEFAULT_PATH HINTS ${MUMPS_ROOT} PATH_SUFFIXES lib DOC "simplest MUMPS ordering library")
+  find_library(PORD
+    NAMES pord
+    NO_DEFAULT_PATH
+    HINTS ${MUMPS_ROOT}
+    PATH_SUFFIXES lib
+    DOC "simplest MUMPS ordering library")
 else()
-  find_library(PORD NAMES pord mumps_pord NAMES_PER_DIR DOC "simplest MUMPS ordering library")
+  find_library(PORD
+    NAMES pord mumps_pord
+    NAMES_PER_DIR
+    DOC "simplest MUMPS ordering library")
 endif()
 if(NOT PORD)
   return()
@@ -121,9 +154,17 @@ if(mpiseq IN_LIST MUMPS_FIND_COMPONENTS)
   endif()
 
   if(DEFINED ENV{MKLROOT})
-    find_path(MUMPS_mpiseq_INC NAMES mpif.h NO_DEFAULT_PATH HINTS ${MUMPS_ROOT} PATH_SUFFIXES include DOC "MUMPS mpiseq header")
+    find_path(MUMPS_mpiseq_INC
+      NAMES mpif.h
+      NO_DEFAULT_PATH
+      HINTS ${MUMPS_ROOT}
+      PATH_SUFFIXES include
+      DOC "MUMPS mpiseq header")
   else()
-    find_path(MUMPS_mpiseq_INC NAMES mpif.h PATH_SUFFIXES include/mumps/mpi_seq DOC "MUMPS mpiseq header")
+    find_path(MUMPS_mpiseq_INC
+      NAMES mpif.h
+      PATH_SUFFIXES include include/MUMPS include/mumps/mpi_seq
+      DOC "MUMPS mpiseq header")
   endif()
   if(NOT MUMPS_mpiseq_INC)
     return()
@@ -141,11 +182,28 @@ foreach(comp ${MUMPS_FIND_COMPONENTS})
   endif()
 
   if(DEFINED ENV{MKLROOT})
-    find_library(MUMPS_${comp}_lib NAMES ${comp}mumps NO_DEFAULT_PATH HINTS ${MUMPS_ROOT} PATH_SUFFIXES lib DOC "MUMPS precision-specific")
+    find_library(MUMPS_${comp}_lib
+      NAMES ${comp}mumps
+      NO_DEFAULT_PATH
+      HINTS ${MUMPS_ROOT}
+      PATH_SUFFIXES lib
+      DOC "MUMPS precision-specific")
   elseif(mpiseq IN_LIST MUMPS_FIND_COMPONENTS)
-    find_library(MUMPS_${comp}_lib NAMES ${comp}mumps ${comp}mumps_seq NAMES_PER_DIR DOC "MUMPS precision-specific")
+    find_library(MUMPS_${comp}_lib
+      NAMES ${comp}mumps ${comp}mumps_seq
+      NAMES_PER_DIR
+      DOC "MUMPS no-MPI precision-specific")
+  elseif(OpenMP IN_LIST MUMPS_FIND_COMPONENTS)
+    find_library(MUMPS_${comp}_lib
+      NAMES ${comp}mumpso ${comp}mumps_shm ${comp}mumps
+      NAMES_PER_DIR
+      DOC "MUMPS OpenMP precision-specific")
   else()
-    find_library(MUMPS_${comp}_lib NAMES ${comp}mumps ${comp}mumps_mpi NAMES_PER_DIR DOC "MUMPS precision-specific")
+    find_library(MUMPS_${comp}_lib
+      NAMES ${comp}mumps ${comp}mumps_mpi
+      NAMES_PER_DIR
+      PATH_SUFFIXES lib openmpi/lib mpich/lib
+      DOC "MUMPS precision-specific")
   endif()
 
   if(NOT MUMPS_${comp}_lib)
