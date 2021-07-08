@@ -234,16 +234,19 @@ set(_test_lib)
 if(METIS IN_LIST MUMPS_FIND_COMPONENTS)
   find_package(METIS)
   list(APPEND _test_lib METIS::METIS)
+  set(MUMPS_METIS_FOUND true)
 endif()
 
 if(Scotch IN_LIST MUMPS_FIND_COMPONENTS)
   find_package(Scotch COMPONENTS ESMUMPS)
   list(APPEND _test_lib Scotch::Scotch)
+  set(MUMPS_Scotch_FOUND true)
 endif()
 
 if(OpenMP IN_LIST MUMPS_FIND_COMPONENTS)
   find_package(OpenMP COMPONENTS C Fortran)
   list(APPEND _test_lib OpenMP::OpenMP_Fortran OpenMP::OpenMP_C)
+  set(MUMPS_OpenMP_FOUND true)
 endif()
 
 # -- minimal check that MUMPS is linkable

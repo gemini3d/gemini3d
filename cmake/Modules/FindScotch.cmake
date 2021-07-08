@@ -30,7 +30,7 @@
 # Copyright 2012-2013 Mathieu Faverge
 # Copyright 2012      Cedric Castagnede
 # Copyright 2013      Florent Pruvost
-# (C) 2018 Michael Hirsch, Ph.D.
+# (C) 2018 Michael Hirsch
 #
 # Distributed under the OSI-approved BSD License (the "License");
 # see accompanying file MORSE-Copyright.txt for details.
@@ -48,26 +48,30 @@ find_path(Scotch_INCLUDE_DIR
           NAMES scotch.h
           PATH_SUFFIXES include include/scotch)
 
-set(_to_find scotch scotcherrexit)
-if(ESMUMPS IN_LIST Scotch_FIND_COMPONENTS)
-  list(INSERT _to_find 0 esmumps)
-endif()
-
-foreach(_lib ${_to_find})
+foreach(_lib scotch scotcherrexit)
   find_library(Scotch_${_lib}_LIBRARY
-    NAMES ${_lib}
-    NAMES_PER_DIR
-    PATH_SUFFIXES lib lib32 lib64)
+    NAMES ${_lib})
 
   list(APPEND Scotch_LIBRARIES ${Scotch_${_lib}_LIBRARY})
   mark_as_advanced(Scotch_${_lib}_LIBRARY)
 endforeach()
 
+if(ESMUMPS IN_LIST Scotch_FIND_COMPONENTS)
+  find_library(Scotch_esmumps_LIBRARY
+    NAMES esmumps)
+
+  list(APPEND Scotch_LIBRARIES ${Scotch_esmumps_LIBRARY})
+  if(Scotch_esmumps_LIBRARY)
+    set(Scotch_ESMUMPS_FOUND true)
+  endif()
+endif()
+
 mark_as_advanced(Scotch_INCLUDE_DIR)
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(Scotch
-  REQUIRED_VARS Scotch_LIBRARIES Scotch_INCLUDE_DIR)
+  REQUIRED_VARS Scotch_LIBRARIES Scotch_INCLUDE_DIR
+  HANDLE_COMPONENTS)
 
 if(Scotch_FOUND)
 # need if _FOUND guard to allow project to autobuild; can't overwrite imported target even if bad

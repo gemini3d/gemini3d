@@ -22,12 +22,17 @@ if(NOT mumps_external AND (MUMPS_ROOT OR (DEFINED ENV{MUMPS_ROOT}) OR (CMAKE_For
   if(NOT mpi)
     list(APPEND _comp mpiseq)
   endif()
-  if(scotch)
+
+  find_package(Scotch)
+  if(Scotch_FOUND)
     list(APPEND _comp Scotch)
   endif()
-  if(metis)
+
+  find_package(METIS)
+  if(METIS_FOUND)
     list(APPEND _comp METIS)
   endif()
+
   if(OpenMP_FOUND)
     list(APPEND _comp OpenMP)
   endif()
