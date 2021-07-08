@@ -24,23 +24,6 @@ set_tests_properties(unit:magcalc_exe_ok PROPERTIES
 # --- gemini3d.run Fortran front end
 add_subdirectory(hwloc)
 
-# --- START Apple M1 workaround
-set(apple_m1_workaround)
-if(APPLE)
-  cmake_host_system_information(RESULT sys_info QUERY OS_NAME OS_PLATFORM)
-  if(sys_info STREQUAL "macOS;arm64")
-    # Apple Silicon M1 workaround for hwloc et al:
-    # https://github.com/open-mpi/hwloc/issues/454
-    cmake_host_system_information(RESULT Nhybrid QUERY NUMBER_OF_PHYSICAL_CORES)
-
-    math(EXPR plan_cpu "${Nhybrid} / 2")  # use only fast cores, else MPI very slow
-
-    set(apple_m1_workaround "print *, 'Apple M1 hybrid CPU count workaround applied.'
-Ncpu = ${plan_cpu}")
-  endif()
-endif(APPLE)
-# --- END Apple M1 workaround
-
 configure_file(exe_frontend.in.f90 exe_frontend.f90 @ONLY)
 
 add_library(exe_frontend ${CMAKE_CURRENT_BINARY_DIR}/exe_frontend.f90)

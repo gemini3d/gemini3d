@@ -147,8 +147,6 @@ endif
 if (i/=0) then
   Ncpu = get_cpu_count()
 
-  @apple_m1_workaround@
-
   print '(A,I0)', 'gemini3d.run: detected CPU count: ', Ncpu
 endif
 
