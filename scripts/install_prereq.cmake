@@ -16,13 +16,15 @@ endif()
 
 function(check_ninja)
   find_program(ninja NAMES ninja)
-  execute_process(COMMAND ninja --version
-    OUTPUT_STRIP_TRAILING_WHITESPACE
-    TIMEOUT 5
-    OUTPUT_VARIABLE _ver
-    COMMAND_ERROR_IS_FATAL ANY)
+  if(ninja)
+    execute_process(COMMAND ninja --version
+      OUTPUT_STRIP_TRAILING_WHITESPACE
+      TIMEOUT 5
+      OUTPUT_VARIABLE ninja_ver)
+    # don't fail output
+  endif()
 
-  if(_ver VERSION_LESS 1.10.0)
+  if(NOT ninja OR ninja_ver VERSION_LESS 1.10.0)
     execute_process(COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/install_ninja.cmake
       COMMAND_ERROR_IS_FATAL ANY)
   endif()
