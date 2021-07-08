@@ -59,6 +59,10 @@ endif()
 if(Scotch_FOUND)
   target_link_libraries(gemini.bin PRIVATE Scotch::Scotch)
 endif()
+if(METIS_FOUND)
+  target_link_libraries(gemini.bin PRIVATE METIS::METIS)
+endif()
+# same link logic applied to src/unit_tests/test_mumps
 
 add_test(NAME unit:gemini_exe_ok COMMAND $<TARGET_FILE:gemini.bin>)
 set_tests_properties(unit:gemini_exe_ok PROPERTIES

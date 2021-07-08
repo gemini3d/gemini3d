@@ -15,15 +15,22 @@
 #               [COMPONENTS <comp1> <comp2> ...] # dependencies
 #              )
 #
-#  COMPONENTS can be some of the following:
-#   - ESMUMPS: to activate detection of Scotch with the esmumps interface
+#  COMPONENTS:
+#
+#  * ESMUMPS: detect Scotch esmumps interface
+#  * parallel: detect parallel (MPI) Scotch
 #
 # This module finds headers and scotch library.
 # Results are reported in variables:
 #  Scotch_FOUND           - True if headers and requested libraries were found
 #  Scotch_INCLUDE_DIRS    - scotch include directories
 #  Scotch_LIBRARIES       - scotch component libraries to be linked
-
+#
+# Imported Targets
+# ^^^^^^^^^^^^^^^^
+#
+# Scotch::Scotch
+#
 #=============================================================================
 # Copyright 2012-2013 Inria
 # Copyright 2012-2013 Emmanuel Agullo
@@ -39,34 +46,43 @@
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 # See the License for more information.
 #=============================================================================
-# (To distribute this file outside of Morse, substitute the full
-#  License text for the above reference.)
 
 set(Scotch_LIBRARIES)
 
 find_path(Scotch_INCLUDE_DIR
-          NAMES scotch.h
-          PATH_SUFFIXES include include/scotch)
+  NAMES scotch.h
+  PATH_SUFFIXES scotch openmpi openmpi-x86_64 mpich-x86_64)
+mark_as_advanced(Scotch_INCLUDE_DIR)
 
-foreach(_lib scotch scotcherrexit)
+# need plain scotch when using ptscotch
+set(scotch_names scotch scotcherr)
+if(ESMUMPS IN_LIST Scotch_FIND_COMPONENTS)
+  list(PREPEND scotch_names esmumps)
+endif()
+
+if(parallel IN_LIST Scotch_FIND_COMPONENTS)
+  list(PREPEND scotch_names ptscotch ptscotcherr)
+  if(ESMUMPS IN_LIST Scotch_FIND_COMPONENTS)
+    list(PREPEND scotch_names ptesmumps)
+  endif()
+endif()
+
+foreach(_lib ${scotch_names})
   find_library(Scotch_${_lib}_LIBRARY
-    NAMES ${_lib})
+    NAMES ${_lib}
+    PATH_SUFFIXES openmpi/lib mpich/lib)
 
   list(APPEND Scotch_LIBRARIES ${Scotch_${_lib}_LIBRARY})
   mark_as_advanced(Scotch_${_lib}_LIBRARY)
 endforeach()
 
-if(ESMUMPS IN_LIST Scotch_FIND_COMPONENTS)
-  find_library(Scotch_esmumps_LIBRARY
-    NAMES esmumps)
-
-  list(APPEND Scotch_LIBRARIES ${Scotch_esmumps_LIBRARY})
-  if(Scotch_esmumps_LIBRARY)
-    set(Scotch_ESMUMPS_FOUND true)
-  endif()
+if(Scotch_ptesmumps_LIBRARY OR Scotch_esmumps_LIBRARY)
+  set(Scotch_ESMUMPS_FOUND true)
 endif()
 
-mark_as_advanced(Scotch_INCLUDE_DIR)
+if(Scotch_ptscotch_LIBRARY)
+  set(Scotch_parallel_FOUND true)
+endif()
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(Scotch

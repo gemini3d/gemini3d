@@ -7,7 +7,7 @@ FindMUMPS
 
 Finds the MUMPS library.
 Note that MUMPS generally requires SCALAPACK and LAPACK as well.
-PORD is always used, in addition to the optional METIS or SCOTCH, which would be found externally.
+PORD is always used, in addition to the optional Scotch + METIS.
 
 COMPONENTS
   s d c z   list one or more. Defaults to ``d``.
@@ -91,7 +91,7 @@ if(DEFINED ENV{MKLROOT})
 else()
   find_path(MUMPS_INCLUDE_DIR
     NAMES mumps_compat.h
-    PATH_SUFFIXES include include/MUMPS include/openmpi-x86_64 include/mpich-x86_64
+    PATH_SUFFIXES MUMPS openmpi-x86_64 mpich-x86_64
     DOC "MUMPS common header")
 endif()
 if(NOT MUMPS_INCLUDE_DIR)
@@ -119,7 +119,7 @@ else()
   find_library(MUMPS_COMMON
     NAMES mumps_common mumps_common_mpi
     NAMES_PER_DIR
-    PATH_SUFFIXES lib openmpi/lib mpich/lib
+    PATH_SUFFIXES openmpi/lib mpich/lib
     DOC "MUMPS MPI common libraries")
 endif()
 if(NOT MUMPS_COMMON)
@@ -145,9 +145,17 @@ endif()
 
 if(mpiseq IN_LIST MUMPS_FIND_COMPONENTS)
   if(DEFINED ENV{MKLROOT})
-    find_library(MUMPS_mpiseq_LIB NAMES mpiseq NO_DEFAULT_PATH HINTS ${MUMPS_ROOT} PATH_SUFFIXES lib DOC "No-MPI stub library")
+    find_library(MUMPS_mpiseq_LIB
+      NAMES mpiseq
+      NO_DEFAULT_PATH
+      HINTS ${MUMPS_ROOT}
+      PATH_SUFFIXES lib
+      DOC "No-MPI stub library")
   else()
-    find_library(MUMPS_mpiseq_LIB NAMES mpiseq mumps_mpi_seq NAMES_PER_DIR DOC "No-MPI stub library")
+    find_library(MUMPS_mpiseq_LIB
+    NAMES mpiseq mumps_mpi_seq
+    NAMES_PER_DIR
+    DOC "No-MPI stub library")
   endif()
   if(NOT MUMPS_mpiseq_LIB)
     return()
@@ -163,7 +171,7 @@ if(mpiseq IN_LIST MUMPS_FIND_COMPONENTS)
   else()
     find_path(MUMPS_mpiseq_INC
       NAMES mpif.h
-      PATH_SUFFIXES include include/MUMPS include/mumps/mpi_seq
+      PATH_SUFFIXES MUMPS mumps/mpi_seq
       DOC "MUMPS mpiseq header")
   endif()
   if(NOT MUMPS_mpiseq_INC)
@@ -202,7 +210,7 @@ foreach(comp ${MUMPS_FIND_COMPONENTS})
     find_library(MUMPS_${comp}_lib
       NAMES ${comp}mumps ${comp}mumps_mpi
       NAMES_PER_DIR
-      PATH_SUFFIXES lib openmpi/lib mpich/lib
+      PATH_SUFFIXES openmpi/lib mpich/lib
       DOC "MUMPS precision-specific")
   endif()
 
@@ -231,15 +239,12 @@ if(MUMPS_LIBRARY AND MUMPS_INCLUDE_DIR)
 # --- external MUMPS components
 set(_test_lib)
 
-if(METIS IN_LIST MUMPS_FIND_COMPONENTS)
-  find_package(METIS)
-  list(APPEND _test_lib METIS::METIS)
-  set(MUMPS_METIS_FOUND true)
-endif()
-
 if(Scotch IN_LIST MUMPS_FIND_COMPONENTS)
-  find_package(Scotch COMPONENTS ESMUMPS)
-  list(APPEND _test_lib Scotch::Scotch)
+  find_package(Scotch COMPONENTS parallel ESMUMPS)
+  # METIS is required when using Scotch
+  find_package(METIS COMPONENTS parallel)
+
+  list(APPEND _test_lib Scotch::Scotch METIS::METIS)
   set(MUMPS_Scotch_FOUND true)
 endif()
 

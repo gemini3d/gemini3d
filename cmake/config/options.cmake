@@ -67,7 +67,6 @@ option(netcdf "use NetCDF file I/O")
 option(zlib_legacy "use unmaintained ZLIB 1.x")
 
 # MUMPS build options (only used if auto-building MUMPS)
-option(metis "MUMPS: use METIS" off)
 option(scotch "MUMPS: use Scotch" off)
 option(openmp "MUMPS: use OpenMP" off)
 

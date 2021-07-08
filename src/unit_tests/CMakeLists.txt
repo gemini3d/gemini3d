@@ -43,6 +43,16 @@ FIXTURES_SETUP scalapack_fxt)
 add_executable(test_mumps test_mumps.f90)
 target_link_libraries(test_mumps PRIVATE mumps_interface
   MUMPS::MUMPS SCALAPACK::SCALAPACK LAPACK::LAPACK MPI::MPI_Fortran)
+if(OpenMP_FOUND)
+  target_link_libraries(test_mumps PRIVATE OpenMP::OpenMP_Fortran)
+endif()
+if(Scotch_FOUND)
+  target_link_libraries(test_mumps PRIVATE Scotch::Scotch)
+endif()
+if(METIS_FOUND)
+  target_link_libraries(test_mumps PRIVATE METIS::METIS)
+endif()
+# same link logic applied to gemini.bin
 
 add_test(NAME unit:mumps_basic
 COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} 2 $<TARGET_FILE:test_mumps>

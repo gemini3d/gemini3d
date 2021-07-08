@@ -146,9 +146,7 @@ endforeach()
 find_path(SCALAPACK_INCLUDE_DIR
   NAMES mkl_scalapack.h
   PATHS ${MKLROOT} ENV I_MPI_ROOT ENV TBBROOT
-  PATH_SUFFIXES
-    include
-    include/intel64/${_mkl_bitflag}lp64
+  PATH_SUFFIXES intel64/${_mkl_bitflag}lp64
   HINTS ${pc_mkl_INCLUDE_DIRS})
 
 if(NOT SCALAPACK_INCLUDE_DIR)
