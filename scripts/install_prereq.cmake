@@ -53,18 +53,16 @@ endif()
 
 find_program(apt NAMES apt)
 if(apt)
-  execute_process(COMMAND apt install --no-install-recommends ninja-build gfortran libhwloc-dev libmumps-dev liblapack-dev libscalapack-mpi-dev libopenmpi-dev openmpi-bin libhdf5-dev
-    COMMAND_ERROR_IS_FATAL ANY)
-
+  execute_process(COMMAND apt install --no-install-recommends ninja-build gfortran libhwloc-dev libmumps-dev liblapack-dev libscalapack-mpi-dev libopenmpi-dev openmpi-bin libhdf5-dev)
+  # don't check return code as can be non-zero if packages already installed
   check_ninja()
   return()
 endif()
 
 find_program(yum NAMES yum)
 if(yum)
-  execute_process(COMMAND yum install epel-release gcc-gfortran hwloc-devel MUMPS-openmpi-devel lapack-devel scalapack-openmpi-devel openmpi-devel hdf5-devel
-    COMMAND_ERROR_IS_FATAL ANY)
-
+  execute_process(COMMAND yum install epel-release gcc-gfortran hwloc-devel MUMPS-openmpi-devel lapack-devel scalapack-openmpi-devel openmpi-devel hdf5-devel)
+  # don't check return code as can be non-zero if packages already installed
   check_ninja()
   return()
 endif()
