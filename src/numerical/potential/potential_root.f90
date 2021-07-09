@@ -177,7 +177,7 @@ module procedure potential_root_mpi_curv
         !Vminx2slice=Vminx2(lx1,:)    !slice the boundaries into expected shape
         !Vmaxx2slice=Vmaxx2(lx1,:)
         Vminx2slice=-1d0*intJ2all(lx1,1,:)/SigPintstarall(1,:)                         !this is sigP for going with the x2 electric field
-        Vmaxx2slice=-1d0*intJ2all(lx1,1,:)/SigPintstarall(lx2all,:)                    !make the current equal to low-latitude boundary, not that the conductance may change
+        Vmaxx2slice=-1d0*intJ2all(lx1,1,:)/SigPintstarall(lx2all,:)                    !make the current equal to low-latitude boundary, note that the conductance may change; It's not clear why this was chosen, Yokoyama takes the min of the N-S boundar currents.
 
         Vminx3slice=Vminx3(lx1,:)
         Vmaxx3slice=Vmaxx3(lx1,:)
