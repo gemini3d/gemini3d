@@ -2,7 +2,7 @@ submodule (neutral) atmos
 
 use, intrinsic :: iso_fortran_env, only: sp => real32, stderr=>error_unit
 
-use timeutils, only : doy_calc
+use timeutils, only : ymd2doy
 use msis_interface, only : msis_gtd7, msis_gtd8
 
 implicit none (type, external)
@@ -32,7 +32,7 @@ lx3=size(alt,3)
 ap = activ(3)
 ap3 = activ(3)
 
-doy = doy_calc(year=ymd(1), month=ymd(2), day=ymd(3))
+doy = ymd2doy(year=ymd(1), month=ymd(2), day=ymd(3))
 
 ap(2)=ap3   !superfluous for now
 

@@ -4,7 +4,7 @@ use, intrinsic :: iso_fortran_env, only: sp=>real32, dp=>real64, int32, int64
 
 implicit none (type, external)
 private
-public :: doy_calc, sza, dateinc, utsec2filestem, date_filename, day_wrap, find_lastdate, find_time_elapsed
+public :: ymd2doy, sza, dateinc, utsec2filestem, date_filename, day_wrap, find_lastdate, find_time_elapsed
 
 real(wp), parameter :: pi = 4._wp*atan(1._wp)
 
@@ -27,7 +27,7 @@ days = monthdays(month)
 end function daysmonth
 
 
-elemental integer function doy_calc(year, month, day) result(doy)
+elemental integer function ymd2doy(year, month, day) result(doy)
 
 integer, intent(in) :: year, month, day
 integer :: i
@@ -41,7 +41,7 @@ enddo
 
 doy = doy + day
 
-end function doy_calc
+end function ymd2doy
 
 
 elemental function sza(year, month, day, UTsec,glat,glon)
@@ -59,8 +59,8 @@ real(wp) :: doy,soldecrad
 real(wp) :: lonrad,LThrs,latrad,hrang
 
 !> SOLAR DECLINATION ANGLE
-doy=doy_calc(year, month, day)
-soldecrad=-23.44_wp*cos(tau/365._wp*(doy+10)) * pi/180
+doy = ymd2doy(year, month, day)
+soldecrad = -23.44_wp*cos(tau/365._wp*(doy+10)) * pi/180
 
 !> HOUR ANGLE
 lonrad=glon*pi/180
