@@ -52,12 +52,9 @@ contains
 
 
 subroutine maxwell_colln(isp,isp2,nn,Tn,Ts,nusn)
-
-!------------------------------------------------------------
-!-------COMPUTE MAXWELL COLLISIONS OF ISP WITH ISP2.  ION
-!-------TEMPERATURE/DENSITY ARRAYS EXPECTED TO INCLUDE GHOST CELLS
-!------------------------------------------------------------
-!-------Note that it is done on a per species basis
+!! COMPUTE MAXWELL COLLISIONS OF ISP WITH ISP2.  ION
+!! TEMPERATURE/DENSITY ARRAYS EXPECTED TO INCLUDE GHOST CELLS
+!! Note that it is done on a per species basis
 
 integer, intent(in) :: isp,isp2
 real(wp), dimension(:,:,:,:), intent(in) :: nn
@@ -76,20 +73,24 @@ lx2=size(Ts,2)-4
 lx3=size(Ts,3)-4
 
 
-if (isp<lsp) then    !ion-neutral
-  if (Csn(isp,isp2)<0.0) then    !resonant
+if (isp<lsp) then
+!! ion-neutral
+  if (Csn(isp,isp2) < 0) then
+  !! resonant
     if (isp==1 .and. isp2==4) then
-      Teff=Tn+Ts(1:lx1,1:lx2,1:lx3,isp)/16.0
+      Teff=Tn+Ts(1:lx1,1:lx2,1:lx3,isp) / 16
       nusn=C2sn1(isp,isp2)*Teff**0.5*nn(:,:,:,isp2)*1e-6_wp
     else
       Teff=0.5*(Tn+Ts(1:lx1,1:lx2,1:lx3,isp))
-      nusn=C2sn1(isp,isp2)*(1.0-C2sn2(isp,isp2)*log10(Teff))**2.0* &
+      nusn=C2sn1(isp,isp2)*(1 - C2sn2(isp,isp2)*log10(Teff))**2 * &
            (Teff**0.5)*nn(:,:,:,isp2)*1e-6_wp
     end if
-  else    !nonresonant
+  else
+  !! nonresonant
     nusn=Csn(isp,isp2)*nn(:,:,:,isp2)*1e-6_wp
   end if
-else    !electron-neutral
+else
+!! electron-neutral
   Teff=Ts(1:lx1,1:lx2,1:lx3,isp)
 
   select case (isp2)
@@ -111,14 +112,11 @@ end subroutine maxwell_colln
 
 
 pure subroutine coulomb_colln(isp,isp2,ns,Ts,vs1,nusj,Phisj,Psisj)
-
-!------------------------------------------------------------
-!-------COMPUTE COULOMB COLLISIONS OF ISP WITH ISP2.
-!-------TEMPERATURE/DENSITY ARRAYS EXPECTED TO INCLUDE GHOST CELLS
-!-------NOTE THAT OTHER PIECES OF THE CODE REQUIRE SELF COLLISIONS
-!-------TO BE ZERO TO YIELD CORRECT OUTPUT (SOURCES.MOD)
-!------------------------------------------------------------
-!-------Note that it is done on a per species basis
+!! COMPUTE COULOMB COLLISIONS OF ISP WITH ISP2.
+!! TEMPERATURE/DENSITY ARRAYS EXPECTED TO INCLUDE GHOST CELLS
+!! NOTE THAT OTHER PIECES OF THE CODE REQUIRE SELF COLLISIONS
+!! TO BE ZERO TO YIELD CORRECT OUTPUT (SOURCES.MOD)
+!! Note that it is done on a per species basis
 
 integer, intent(in) :: isp,isp2
 real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns,Ts,vs1
@@ -136,7 +134,8 @@ lx1=size(Ts,1)-4
 lx2=size(Ts,2)-4
 lx3=size(Ts,3)-4
 
-if (isp==isp2) then     !zero out all self collision terms (would need to be changed if non-Maxwellian distribution used).
+if (isp==isp2) then
+!! zero out all self collision terms (would need to be changed if non-Maxwellian distribution used).
   nusj = 0
   Phisj = 0
   Psisj = 0
@@ -159,12 +158,9 @@ end subroutine coulomb_colln
 
 
 pure subroutine thermal_conduct(isp,Ts,ns,nn,J1,lambda,beta)
-
-!------------------------------------------------------------
-!-------COMPUTE THERMAL CONDUCTIVITY.  TEMPERATURE ARRAY
-!-------IS EXPECTED TO INCLUDE GHOST CELLS
-!------------------------------------------------------------
-!-------Note that it is done on a per species basis
+!! COMPUTE THERMAL CONDUCTIVITY.
+!! TEMPERATURE ARRAY IS EXPECTED TO INCLUDE GHOST CELLS
+!! Note that it is done on a per species basis
 
 integer, intent(in) :: isp
 real(wp), dimension(-1:,-1:,-1:), intent(in) :: Ts,ns
@@ -181,9 +177,10 @@ lx1=size(Ts,1)-4
 lx2=size(Ts,2)-4
 lx3=size(Ts,3)-4
 
-if (isp<lsp) then       !ion species
+if (isp<lsp) then
+!! ion species
 !  lambda=25.0_wp/8 * kB**2*Ts(1:lx1,1:lx2,1:lx3)**(5.0_wp/2)/ms(isp)/(Csj(isp,isp)*1e-6_wp)
-  ! avoids precision issues by precomputing the transport coefficients (see parameter blocks above)
+  !! avoids precision issues by precomputing the transport coefficients (see parameter blocks above)
   lambda=thermal_coeff(isp)*Ts(1:lx1,1:lx2,1:lx3)**(5.0_wp/2)
   beta=0.0
 else                  !electrons
@@ -200,11 +197,8 @@ end subroutine thermal_conduct
 
 
 subroutine conductivities(nn,Tn,ns,Ts,vs1,B1,sig0,sigP,sigH,muP,muH,nusn,sigPgrav,sigHgrav)
-
-!------------------------------------------------------------
-!-------COMPUTE THE CONDUCTIVITIES OF THE IONOSPHERE.  STATE
-!-------VARS. INCLUDE GHOST CELLS
-!------------------------------------------------------------
+!! COMPUTE THE CONDUCTIVITIES OF THE IONOSPHERE.  STATE
+!! VARS. INCLUDE GHOST CELLS
 
 real(wp), dimension(:,:,:,:), intent(in) :: nn
 real(wp), dimension(:,:,:), intent(in) :: Tn
@@ -254,7 +248,8 @@ do isp=1,lsp
     mubase=qs(lsp)/ms(lsp)/nusn(:,:,:,isp)
   end if
 
-  !modified mobilities for neutral wind calculations; these are deprecated since we output collision freq.
+  !! modified mobilities for neutral wind calculations.
+  !! these are deprecated since we output collision freq.
 !  muPvn(:,:,:,isp)=nu**2/(nu**2+OMs**2)
 !  muHvn(:,:,:,isp)= -nu*OMs/(nu**2+OMs**2)
 
@@ -272,25 +267,30 @@ do isp=1,lsp
 end do
 
 
-!CONDUCTIVITIES
-sig0=ns(1:lx1,1:lx2,1:lx3,lsp)*qs(lsp)*mupar    !parallel includes only electrons...
+!> CONDUCTIVITIES
+sig0=ns(1:lx1,1:lx2,1:lx3,lsp)*qs(lsp)*mupar
+!! parallel includes only electrons...
 
 sigP = 0
 sigH = 0
 do isp=1,lsp
-  rho=ns(1:lx1,1:lx2,1:lx3,isp)*qs(isp)    !rho is charge density here
+  rho=ns(1:lx1,1:lx2,1:lx3,isp)*qs(isp)
+  !! rho is charge density here
   sigP=sigP+rho*muP(:,:,:,isp)
   sigH=sigH+rho*muH(:,:,:,isp)
 end do
 
-!    sigH=max(sigH,0.0_wp)    !to deal with precision issues.  This actually causes errors in Cartesian northern hemisphere grids...
+!    sigH=max(sigH,0.0_wp)
+!! to deal with precision issues.
+!! This actually causes errors in Cartesian northern hemisphere grids...
 
 
 !Gravitational "conductivities"
 sigPgrav = 0
 sigHgrav = 0
 do isp=1,lsp
-  rho=ns(1:lx1,1:lx2,1:lx3,isp)*ms(isp)     !here, rho is used as mass density
+  rho=ns(1:lx1,1:lx2,1:lx3,isp)*ms(isp)
+  !! here, rho is used as mass density
   sigPgrav=sigPgrav+rho*muP(:,:,:,isp)
   sigHgrav=sigHgrav+rho*muH(:,:,:,isp)
 end do
@@ -299,11 +299,8 @@ end subroutine conductivities
 
 
 subroutine capacitance(ns,B1,cfg,incap)
-
-!------------------------------------------------------------
-!-------COMPUTE THE INERTIAL CAPACITANCE OF THE IONOSPHERE.
-!-------DENSITY/MAG FIELD STATE VARIABLE INCLUDES GHOST CELLS.
-!------------------------------------------------------------
+!! COMPUTE THE INERTIAL CAPACITANCE OF THE IONOSPHERE.
+!! DENSITY/MAG FIELD STATE VARIABLE INCLUDES GHOST CELLS.
 
 real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns
 real(wp), dimension(-1:,-1:,-1:), intent(in) :: B1
