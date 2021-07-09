@@ -2,7 +2,7 @@ program test_dayrollover
 !! test day rollover
 use, intrinsic :: iso_fortran_env, only: real32, real64, stderr=>error_unit
 use phys_consts, only: wp
-use timeutils, only: dateinc, doy_calc, day_wrap
+use timeutils, only: dateinc, ymd2doy, day_wrap
 
 implicit none (type, external)
 
@@ -10,17 +10,17 @@ integer :: ymd(3), year, month, day
 real(wp) :: dtsec, UTsec
 
 !> leap year tests
-if (doy_calc(2015,1,1) /= 1) error stop 'doy_calc day 1'
+if (ymd2doy(2015,1,1) /= 1) error stop 'ymd2doy day 1'
 
-if (doy_calc(2015,2,28) /= 59) error stop 'doy_calc day 59'
+if (ymd2doy(2015,2,28) /= 59) error stop 'ymd2doy day 59'
 
-if (doy_calc(2012,2,29) /= 60) error stop 'doy_calc leap day 60'
+if (ymd2doy(2012,2,29) /= 60) error stop 'ymd2doy leap day 60'
 
-if (doy_calc(2000,2,29) /= 60) error stop 'doy_calc millennium leap day 60'
+if (ymd2doy(2000,2,29) /= 60) error stop 'ymd2doy millennium leap day 60'
 
-if (doy_calc(1900,3,1) /= 60) error stop 'doy_calc 1900 NO leap day 60'
+if (ymd2doy(1900,3,1) /= 60) error stop 'ymd2doy 1900 NO leap day 60'
 
-if (doy_calc(2100,3,1) /= 60) error stop 'doy_calc 2100 NO leap day 60'
+if (ymd2doy(2100,3,1) /= 60) error stop 'ymd2doy 2100 NO leap day 60'
 
 !> day rollover checks
 year = 2000

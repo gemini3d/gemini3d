@@ -32,6 +32,6 @@ ExternalProject_Add_Step(HWM14 hwm_cp1 DEPENDEES update
 COMMAND ${CMAKE_COMMAND} -E copy_if_different ${SOURCE_DIR}/src/hwm14/hwm123114.bin ${SOURCE_DIR}/src/hwm14/dwm07b104i.dat ${SOURCE_DIR}/src/hwm14/gd2qd.dat ${PROJECT_BINARY_DIR})
 
 add_library(HWM14::HWM14 INTERFACE IMPORTED)
-target_link_libraries(HWM14::HWM14 INTERFACE ${HWM14_LIBRARIES})
+target_link_libraries(HWM14::HWM14 INTERFACE "${HWM14_LIBRARIES}")
 
 add_dependencies(HWM14::HWM14 HWM14)

@@ -4,9 +4,7 @@ add_subdirectory(unit_tests)
 add_subdirectory(vendor/nrl_msis)
 
 # --- HWM14
-if(hwm14)
-  add_subdirectory(vendor/nrl_hwm)
-endif()
+add_subdirectory(vendor/nrl_hwm)
 
 # --- just use one function from LAPACK95
 add_subdirectory(vendor/lapack95)  # used by PDEparabolic
