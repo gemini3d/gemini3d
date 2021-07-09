@@ -111,7 +111,7 @@ integer, intent(in) :: dayOfYear
 real(real32), intent(in) ::  UTsec, alt_km, glat, glon, Ap
 real(real32), intent(out) :: DW2(2)
 
-real :: Ap2(2)
+real(real32) :: Ap2(2)
 
 Ap2(2) = Ap
 
