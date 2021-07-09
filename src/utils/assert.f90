@@ -1,155 +1,157 @@
 module assert
 
-use, intrinsic:: iso_fortran_env, only: stderr=>error_unit, real64, real32
-use, intrinsic:: ieee_arithmetic, only: ieee_is_finite, ieee_is_nan
+use, intrinsic:: iso_fortran_env, only: sp=>real32, dp=>real64, stderr=>error_unit
+use, intrinsic:: ieee_arithmetic
 
 implicit none (type, external)
-
 private
+public :: isclose, assert_isclose
 
-public :: isclose, assert_allclose
+interface isclose
+module procedure isclose_32, isclose_64
+end interface isclose
+
+interface assert_isclose
+module procedure assert_isclose_32, assert_isclose_64
+end interface assert_isclose
 
 contains
 
-elemental logical function isclose(actual, desired, rtol, atol, equal_nan)
-!! ## inputs
-!!
-!! * actual: value "measured"
-!! * desired: value "wanted"
-!! * rtol: relative tolerance
-!! * atol: absolute tolerance
-!! * equal_nan: consider NaN to be equal
-!!
-!! https://www.python.org/dev/peps/pep-0485/#proposed-implementation
-!! https://github.com/PythonCHB/close_pep/blob/master/is_close.py
+elemental logical function isclose_32(actual, desired, rtol, atol, equal_nan) result (isclose)
+! inputs
+! ------
+! actual: value "measured"
+! desired: value "wanted"
+! rtol: relative tolerance
+! atol: absolute tolerance
+! equal_nan: consider NaN to be equal?
+!
+!  rtol overrides atol when both are specified
+!
+! https://www.python.org/dev/peps/pep-0485/#proposed-implementation
+! https://github.com/PythonCHB/close_pep/blob/master/is_close.py
 
-class(*), intent(in) :: actual, desired
-class(*), intent(in), optional :: rtol, atol
+real(sp), intent(in) :: actual, desired
+real(sp), intent(in), optional :: rtol, atol
 logical, intent(in), optional :: equal_nan
 
-real(real64) :: r,a, act, des
+real(sp) :: r,a
 logical :: n
-
-isclose = .false. !< ensure it's defined
-
-!> INSTEAD OF merge(), since non present values aren't defined.
-r = 1e-6
-a = 1e-12
+! this is appropriate INSTEAD OF merge(), since non present values aren't defined.
+r = 1e-5_sp
+a = 0
 n = .false.
-
-select type (actual)
-type is (real(real32))
-  act = real(actual, real32)
-type is (real(real64))
-  act = actual
-class default
-  error stop "assert: actual must be real32 or real64"
-end select
-
-select type (desired)
-type is (real(real32))
-  des = real(desired, real32)
-type is (real(real64))
-  des = desired
-class default
-  error stop "assert: desired must be real32 or real64"
-end select
-
-if (present(rtol)) then
-  select type (rtol)
-  type is (real(real64))
-    r = rtol
-  type is (real(real32))
-    r = real(rtol, real64)
-  class default
-    error stop "assert: rtol needs real32 or real64"
-  end select
-endif
-
-if (present(atol)) then
-  select type (atol)
-  type is (real(real64))
-    a = atol
-  type is (real(real32))
-    a = real(atol, real64)
-  class default
-    error stop "assert: atol needs real32 or real64"
-  end select
-endif
-
+if (present(rtol)) r = rtol
+if (present(atol)) a = atol
 if (present(equal_nan)) n = equal_nan
 
-!print*,r,a,n,act,des
+!print*,r,a,n,actual,desired
 
-!> sanity check
-if ((r < 0).or.(a < 0)) error stop 'improper tolerances specified'
-!> simplest case -- too unlikely, especially for arrays?
-!isclose = (act == des)
-!if (isclose) return
+!--- sanity check
+if ((r < 0).or.(a < 0)) error stop 'invalid tolerance parameter(s)'
+!--- equal nan
+isclose = n.and.(ieee_is_nan(actual).and.ieee_is_nan(desired))
+if (isclose) return
+!--- Inf /= Inf, unequal NaN
+if (.not.ieee_is_finite(actual) .or. .not.ieee_is_finite(desired)) return
+!--- floating point closeness check
+isclose = abs(actual-desired) <= max(r * max(abs(actual), abs(desired)), a)
 
-!> equal nan
-if (n) then ! fortran is NOT short circuit logic in general
-  isclose = (ieee_is_nan(act) .and. ieee_is_nan(des))
-  if (isclose) return
-endif
-
-!> Inf /= -Inf, unequal NaN
-if (.not.ieee_is_finite(act) .or. .not.ieee_is_finite(des)) return
-
-!> floating point closeness check
-isclose = abs(act-des) <= max(r * max(abs(act), abs(des)), a)
-
-end function isclose
+end function isclose_32
 
 
-impure elemental subroutine assert_allclose(actual, desired, rtol, atol, equal_nan, err_msg)
+elemental logical function isclose_64(actual, desired, rtol, atol, equal_nan) result (isclose)
+! inputs
+! ------
+! actual: value "measured"
+! desired: value "wanted"
+! rtol: relative tolerance
+! atol: absolute tolerance
+! equal_nan: consider NaN to be equal?
+!
+!  rtol overrides atol when both are specified
+!
+! https://www.python.org/dev/peps/pep-0485/#proposed-implementation
+! https://github.com/PythonCHB/close_pep/blob/master/is_close.py
 
-!! ## inputs
-!!
-!! *  actual: value "measured"
-!! *  desired: value "wanted"
-!! *  rtol: relative tolerance
-!! *  atol: absolute tolerance
-!! *  equal_nan: consider NaN to be equal
-!! *  err_msg: message to print on mismatch
+real(dp), intent(in) :: actual, desired
+real(dp), intent(in), optional :: rtol, atol
+logical, intent(in), optional :: equal_nan
 
-class(*), intent(in) :: actual, desired
-class(*), intent(in), optional :: rtol, atol
+real(dp) :: r,a
+logical :: n
+! this is appropriate INSTEAD OF merge(), since non present values aren't defined.
+r = 1e-5_dp
+a = 0
+n = .false.
+if (present(rtol)) r = rtol
+if (present(atol)) a = atol
+if (present(equal_nan)) n = equal_nan
+
+!print*,r,a,n,actual,desired
+
+!--- sanity check
+if ((r < 0).or.(a < 0)) error stop 'invalid tolerance parameter(s)'
+!--- equal nan
+isclose = n.and.(ieee_is_nan(actual).and.ieee_is_nan(desired))
+if (isclose) return
+!--- Inf /= Inf, unequal NaN
+if (.not.ieee_is_finite(actual) .or. .not.ieee_is_finite(desired)) return
+!--- floating point closeness check
+isclose = abs(actual-desired) <= max(r * max(abs(actual), abs(desired)), a)
+
+end function isclose_64
+
+
+impure elemental subroutine assert_isclose_64(actual, desired, rtol, atol, equal_nan, err_msg)
+! inputs
+! ------
+! actual: value "measured"
+! desired: value "wanted"
+! rtol: relative tolerance
+! atol: absolute tolerance
+! equal_nan: consider NaN to be equal?
+! err_msg: message to print on mismatch
+!
+! rtol overrides atol when both are specified
+
+real(dp), intent(in) :: actual, desired
+real(dp), intent(in), optional :: rtol, atol
 logical, intent(in), optional :: equal_nan
 character(*), intent(in), optional :: err_msg
-character(:), allocatable :: emsg
 
-real(real64) :: act, des
-
-select type (actual)
-type is (real(real32))
-  act = real(actual, real32)
-type is (real(real64))
-  act = actual
-class default
-  error stop "assert: actual must be real32 or real64"
-end select
-
-select type (desired)
-type is (real(real32))
-  des = real(desired, real32)
-type is (real(real64))
-  des = desired
-class default
-  error stop "assert: desired must be real32 or real64"
-end select
-
-if (present(err_msg)) then
-  emsg = err_msg
-else
-  emsg = 'assert: MISMATCH'
-endif
-
-if (.not.isclose(act, des, rtol,atol,equal_nan)) then
-  write(stderr,*) emsg // ': actual',act,'desired',des
+if (.not.isclose(actual,desired,rtol,atol,equal_nan)) then
+  if (present(err_msg)) write(stderr,'(A)', advance='no') err_msg
+  write(stderr,*) ': actual',actual,'desired',desired
   error stop
 endif
 
-end subroutine assert_allclose
+end subroutine assert_isclose_64
+
+
+impure elemental subroutine assert_isclose_32(actual, desired, rtol, atol, equal_nan, err_msg)
+! inputs
+! ------
+! actual: value "measured"
+! desired: value "wanted"
+! rtol: relative tolerance
+! atol: absolute tolerance
+! equal_nan: consider NaN to be equal?
+! err_msg: message to print on mismatch
+!
+! rtol overrides atol when both are specified
+
+real(sp), intent(in) :: actual, desired
+real(sp), intent(in), optional :: rtol, atol
+logical, intent(in), optional :: equal_nan
+character(*), intent(in), optional :: err_msg
+
+if (.not.isclose(actual,desired,rtol,atol,equal_nan)) then
+  if (present(err_msg)) write(stderr,'(A)', advance='no') err_msg
+  write(stderr,*) ': actual',actual,'desired',desired
+  error stop
+endif
+
+end subroutine assert_isclose_32
 
 end module assert
