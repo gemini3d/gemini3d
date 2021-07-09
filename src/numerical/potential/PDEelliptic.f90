@@ -50,6 +50,24 @@ interface ! elliptic2d.f90
     integer, intent(in) :: it
     real(wp), dimension(size(SigP,1),size(SigP,2)) :: elliptic2D_polarization_periodic
   end function elliptic2D_polarization_periodic
+
+  module function elliptic2D_polarization_periodic_Neu(srcterm,SigP,SigH,gradSigH2,gradSigH3,Cm,v2,v3,Vminx2,Vmaxx2, &
+      Vminx3,Vmaxx3,dt,dx1,dx1i,dx2all,dx2iall,dx3all,dx3iall,Phi0,perflag,it)
+    real(wp), dimension(:,:), intent(in) :: srcterm,SigP,SigH,gradSigH2,gradSigH3,Cm,v2,v3
+    real(wp), dimension(:), intent(in) :: Vminx2,Vmaxx2
+    real(wp), dimension(:), intent(in) :: Vminx3,Vmaxx3
+    real(wp), intent(in) :: dt
+    real(wp), dimension(0:), intent(in) :: dx1         !backward diffs start at index zero due to ghost cells
+    real(wp), dimension(:), intent(in) :: dx1i         !centered diffs do not include any ghost cells
+    real(wp), dimension(0:), intent(in) :: dx2all
+    real(wp), dimension(:), intent(in) :: dx2iall
+    real(wp), dimension(0:), intent(in) :: dx3all
+    real(wp), dimension(:), intent(in) :: dx3iall
+    real(wp), dimension(:,:), intent(in) :: Phi0
+    logical, intent(in) :: perflag
+    integer, intent(in) :: it
+    real(wp), dimension(size(SigP,1),size(SigP,2)) :: elliptic2D_polarization_periodic_Neu
+  end function elliptic2D_polarization_periodic_Neu
   
   module function elliptic2D_cart(srcterm,sig0,sigP,Vminx1,Vmaxx1,Vminx3,Vmaxx3,&
       dx1,dx1i,dx3all,dx3iall,flagsdirich,perflag,gridflag,it)

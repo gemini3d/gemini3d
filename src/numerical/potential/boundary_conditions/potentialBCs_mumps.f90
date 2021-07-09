@@ -143,7 +143,7 @@ subroutine potentialBCs2D_fileinput(dt,t,ymd,UTsec,cfg,x,Vminx1,Vmaxx1,Vminx2,Vm
   real(wp) :: slope
   
   integer :: ix1,ix2,ix3,iid,iflat,ios    !grid sizes are borrowed from grid module
-  
+  real(wp) :: h2ref,h3ref  
   
   !> COMPUTE SOURCE/FORCING TERMS FROM BACKGROUND FIELDS, ETC.
   E01all = 0
@@ -445,7 +445,20 @@ subroutine potentialBCs2D_fileinput(dt,t,ymd,UTsec,cfg,x,Vminx1,Vmaxx1,Vminx2,Vm
   
   
   call compute_rootBGEfields(x,E02all,E03all)
-  
+ 
+
+  !LOAD POTENTIAL SOLVER INPUT ARRAYS, FIRST MAP THE ELECTRIC FIELDS
+  do ix3=1,lx3all
+    do ix2=1,lx2all
+      h2ref=x%h2all(ix1ref,ix2,ix3)    !define a reference metric factor for a given field line
+      h3ref=x%h3all(ix1ref,ix2,ix3)
+      do ix1=1,lx1
+        E02all(ix1,ix2,ix3)=E0xinow(ix2,ix3)*h2ref/x%h2all(ix1,ix2,ix3)
+        E03all(ix1,ix2,ix3)=E0yinow(ix2,ix3)*h3ref/x%h3all(ix1,ix2,ix3)
+      end do
+    end do
+  end do
+ 
   
   !> NOW THE BOUNDARY CONDITIONS
   do ix3=1,lx3all

@@ -61,6 +61,11 @@ module procedure potential_root_mpi_curv
   
   real(wp) :: tstart,tfin
   integer :: u
+
+  !! Perkins-specific variables
+  real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: J2prev
+  real(wp), dimension(1:size(E1,2),1:size(E1,3)) :: SigPintstar
+  real(wp), dimension(1:size(Phiall,2),1:size(Phiall,3)) :: SigPintstarall
   
   
   !SIZES - PERHAPS SHOULD BE TAKEN FROM GRID MODULE INSTEAD OF RECOMPUTED?
@@ -69,6 +74,10 @@ module procedure potential_root_mpi_curv
   lx3=size(sig0,3)
   lx2all=size(Phiall,2)
   lx3all=size(Phiall,3)
+
+
+  !> PkI:  save the previous solution for current density
+  J2prev=J2
   
   
   !> store a cached ordering for later use (improves performance substantially)
@@ -108,6 +117,11 @@ module procedure potential_root_mpi_curv
       sigintegral=integral3D1(integrand,x,1,lx1)
       SigPint3=sigintegral(lx1,:,:)
   
+      !! PkI
+      integrand=sigP*x%h1(1:lx1,1:lx2,1:lx3)/x%h2(1:lx1,1:lx2,1:lx3)
+      sigintegral=integral3D1(integrand,x,1,lx1)
+      SigPintstar=sigintegral(lx1,:,:)
+
       integrand=x%h1(1:lx1,1:lx2,1:lx3)*sigH
       sigintegral=integral3D1(integrand,x,1,lx1)
       SigHint=sigintegral(lx1,:,:)
@@ -145,12 +159,22 @@ module procedure potential_root_mpi_curv
         call gather_recv(SigHint,tag%SigHint,SigHintall)
         call gather_recv(v2slab,tag%v2electro,v2slaball)
         call gather_recv(v3slab,tag%v3electro,v3slaball)
-  
+
+        !! PkI
+        call gather_recv(SigPintstar,tagSigPint2,SigPintstarall)
+        call gather_recv(J2prev,tagJ2,J2prevall)
+        print*, minval(J2prevall),maxval(J2prevall)
+        print*, minval(SigPintstarall),maxval(SigPintstarall) 
   
         !R------
         !EXECUTE FIELD-INTEGRATED SOLVE
-        Vminx2slice=Vminx2(lx1,:)    !slice the boundaries into expected shape
-        Vmaxx2slice=Vmaxx2(lx1,:)
+
+        !! PkI
+        !Vminx2slice=Vminx2(lx1,:)    !slice the boundaries into expected shape
+        !Vmaxx2slice=Vmaxx2(lx1,:)
+        Vminx2slice=-1d0*intJ2all(lx1,1,:)/SigPintstarall(1,:)                         !this is sigP for going with the x2 electric field
+        Vmaxx2slice=-1d0*intJ2all(lx1,1,:)/SigPintstarall(lx2all,:)                    !make the current equal to low-latitude boundary, not that the conductance may change
+
         Vminx3slice=Vminx3(lx1,:)
         Vmaxx3slice=Vmaxx3(lx1,:)
         Phislab0=Phiall(lx1,:,:)    !root already possess the fullgrid potential from prior solves...

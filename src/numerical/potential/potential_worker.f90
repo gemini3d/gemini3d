@@ -41,12 +41,20 @@ module procedure potential_workers_mpi
   real(wp) :: tstart,tfin
   
   integer :: flagsolve
+
+  !! PkI
+  real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: J2prev
+  real(wp), dimension(1:size(E1,2),1:size(E1,3)) :: SigPintstar
   
   
   !SIZES - PERHAPS SHOULD BE TAKEN FROM GRID MODULE INSTEAD OF RECOMPUTED?
   lx1=size(sig0,1)
   lx2=size(sig0,2)
   lx3=size(sig0,3)
+
+
+  !! PkI:  last time step current should be saved
+  J2prev=J2
   
   
   ! this should always be on by default unless the user wants to turn off and recompile; ~10% savings in mumps time *per time step*
@@ -84,6 +92,11 @@ module procedure potential_workers_mpi
       integrand=sigP*x%h1(1:lx1,1:lx2,1:lx3)*x%h2(1:lx1,1:lx2,1:lx3)/x%h3(1:lx1,1:lx2,1:lx3)
       sigintegral=integral3D1(integrand,x,1,lx1)
       SigPint3=sigintegral(lx1,:,:)
+
+      !! PkI
+      integrand=sigP*x%h1(1:lx1,1:lx2,1:lx3)/x%h2(1:lx1,1:lx2,1:lx3)
+      sigintegral=integral3D1(integrand,x,1,lx1)
+      SigPintstar=sigintegral(lx1,:,:)
   
       integrand=x%h1(1:lx1,1:lx2,1:lx3)*sigH
       sigintegral=integral3D1(integrand,x,1,lx1)
@@ -119,6 +132,10 @@ module procedure potential_workers_mpi
   !          v2slab=vs2(lx1,1:lx2,1:lx3,1); v3slab=vs3(lx1,1:lx2,1:lx3,1);
         !! need to pick out the ExB drift here (i.e. the drifts from highest altitudes);
         !! but this is only valid for Cartesian, so it's okay for the foreseeable future
+
+        !! PkI
+        call gather_send(SigPintstar,tagSigPint2)
+        call gather_send(J2prev,tagJ2)
   
   
         call elliptic_workers()    !workers do not need any specific info about the problem (that all resides with root who will redistribute)
