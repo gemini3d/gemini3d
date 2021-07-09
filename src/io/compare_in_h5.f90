@@ -75,7 +75,7 @@ do i = 1,size(var)
   if (.not.all(ieee_is_finite(ref4))) error stop "NON-FINITE: " // file_name(ref_file) // " " // var(i)
   if (.not.all(ieee_is_finite(new4))) error stop "NON-FINITE: " // file_name(new_file) // " " // var(i)
 
-  if(all(isclose(ref4, new4, rtol, atol))) then
+  if(all(isclose(ref4, new4, real(rtol), real(atol)))) then
     if(debug) print '(A)', "OK: input: " // var(i)
   else
     bad = bad + 1
@@ -136,7 +136,7 @@ do while (t <= cfg%tdur)
     if (.not.all(ieee_is_finite(ref))) error stop "NON-FINITE: " // file_name(ref_file) // " " // var(i)
     if (.not.all(ieee_is_finite(new))) error stop "NON-FINITE: " // file_name(new_file) // " " // var(i)
 
-    if(all(isclose(ref, new, rtol, atol))) then
+    if(all(isclose(ref, new, real(rtol), real(atol)))) then
       if(P%debug) print '(A)', "OK: input:precip " // var(i) // " " // new_file
     else
       bad = bad + 1
@@ -203,7 +203,7 @@ do while (t <= cfg%tdur)
     if (.not.all(ieee_is_finite(ref))) error stop "NON-FINITE: " // file_name(ref_file) // " " // var(i)
     if (.not.all(ieee_is_finite(new))) error stop "NON-FINITE: " // file_name(new_file) // " " // var(i)
 
-    if(all(isclose(ref, new, rtol, atol))) then
+    if(all(isclose(ref, new, real(rtol), real(atol)))) then
       if(P%debug) print '(A)', "OK: input:precip " // var(i) // " " // new_file
     else
       bad = bad + 1

@@ -55,7 +55,7 @@ do i = 1,size(var1)
   call hnew%read(var1(i), A1)
   call href%read(var1(i), B1)
 
-  if(.not.all(isclose(B1, A1, rtol, atol))) then
+  if(.not.all(isclose(B1, A1, real(rtol), real(atol)))) then
 
     bad = bad + 1
 
@@ -76,7 +76,7 @@ do i = 1,size(var2)
   call hnew%read(var2(i), A2)
   call href%read(var2(i), B2)
 
-  if(.not.all(isclose(B2, A2, rtol, atol))) then
+  if(.not.all(isclose(B2, A2, real(rtol), real(atol)))) then
 
     bad = bad + 1
 
@@ -97,7 +97,7 @@ do i = 1,size(var3)
   call hnew%read(var3(i), A3)
   call href%read(var3(i), B3)
 
-  if(.not.all(isclose(B3, A3, rtol, atol))) then
+  if(.not.all(isclose(B3, A3, real(rtol), real(atol)))) then
 
     bad = bad + 1
 
@@ -118,7 +118,7 @@ do i = 1,size(var4)
   call hnew%read(var4(i), A4)
   call href%read(var4(i), B4)
 
-  if(.not.all(isclose(B4, A4, rtol, atol))) then
+  if(.not.all(isclose(B4, A4, real(rtol), real(atol)))) then
 
     bad = bad + 1
 

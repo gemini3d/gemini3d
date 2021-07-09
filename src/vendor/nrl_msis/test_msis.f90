@@ -3,7 +3,7 @@ program test_msis
 use, intrinsic :: iso_fortran_env, only : real32
 
 use h5fortran, only : hdf5_file
-use assert, only : assert_allclose
+use assert, only : assert_isclose
 
 implicit none (type, external)
 
@@ -24,9 +24,9 @@ fref = trim(argv)
 call reader(fnew, altnew, Dnew, Tnew)
 call reader(fref, altref, Dref, Tref)
 
-call assert_allclose(Tnew, Tref, rtol=1e-5, err_msg='mismatch: Tn')
+call assert_isclose(Tnew, Tref, rtol=1e-5, err_msg='mismatch: Tn')
 
-call assert_allclose(Dnew, Dref, rtol=1e-5, err_msg='mismatch: Dn')
+call assert_isclose(Dnew, Dref, rtol=1e-5, err_msg='mismatch: Dn')
 
 contains
 

@@ -186,7 +186,7 @@ call href%close()
 D_ref = sum(ns_ref(:,:,:,1:6) * ref(:,:,:,1:6), dim=4) / ns_ref(:,:,:,LSP)
 D_new = sum(ns_new(:,:,:,1:6) * new(:,:,:,1:6), dim=4) / ns_new(:,:,:,LSP)
 
-if(all(isclose(D_ref, D_new, rtol, atol))) then
+if(all(isclose(D_ref, D_new, real(rtol), real(atol)))) then
   if(P%debug) print '(A)', "OK: output: " // derived_name // " " // new_file
   return
 endif
@@ -243,7 +243,7 @@ call href%close()
 if (.not.all(ieee_is_finite(ref))) error stop "NON-FINITE: " // file_name(ref_file) // " " // name
 if (.not.all(ieee_is_finite(new))) error stop "NON-FINITE: " // file_name(new_file) // " " // name
 
-if(all(isclose(ref, new, rtol, atol))) then
+if(all(isclose(ref, new, real(rtol), real(atol)))) then
   if(P%debug) then
     if (present(derived_name)) then
       print '(A)', "OK: output: " // derived_name

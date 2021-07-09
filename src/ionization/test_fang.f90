@@ -4,7 +4,7 @@ program test_fang
 !! * Figure 2 in Fang 2010
 
 use, intrinsic:: iso_fortran_env, only: real32, real64
-use assert, only : assert_allclose
+use assert, only : assert_isclose
 use phys_consts, only: wp
 use ionrate, only: ionization_fang2008, ionization_fang2010
 
@@ -78,11 +78,11 @@ do i = 1,size(alt_km)
   print '(F7.1,5F15.3)', alt_km(i), Qtot10(i,:)
 enddo
 
-call assert_allclose(Qtot08(90, 1), 2214.052, atol=0.001, err_msg="E0: 100eV")
-call assert_allclose(Qtot08(18, 5), 9579.046, atol=0.001, err_msg="E0: 1MeV")
+call assert_isclose(Qtot08(90, 1), 2214.052_wp, atol=0.001_wp, err_msg="E0: 100eV")
+call assert_isclose(Qtot08(18, 5), 9579.046_wp, atol=0.001_wp, err_msg="E0: 1MeV")
 
-call assert_allclose(Qtot10(90, 1), 1192.002, atol=0.001, err_msg="Emono: 100eV")
-call assert_allclose(Qtot10(18, 5), 778.655, atol=0.001, rtol=0.001, err_msg="Emono: 1MeV")
+call assert_isclose(Qtot10(90, 1), 1192.002_wp, atol=0.001_wp, err_msg="Emono: 100eV")
+call assert_isclose(Qtot10(18, 5), 778.655_wp, atol=0.001_wp, rtol=0.001_wp, err_msg="Emono: 1MeV")
 
 contains
 
