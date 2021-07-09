@@ -22,3 +22,8 @@ if(NOT rating STREQUAL "Probably Okay")
 endif()
 
 endfunction(check_tls)
+
+if(CMAKE_SCRIPT_MODE_FILE)
+  set(CMAKE_MESSAGE_LOG_LEVEL VERBOSE)
+  check_tls()
+endif()
