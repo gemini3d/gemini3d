@@ -11,10 +11,11 @@ use config, only: gemini_cfg
 
 implicit none (type, external)
 private
-public :: Tnmsis, neutral_atmos, make_dneu, clear_dneu, neutral_perturb, neutral_update, init_neutrals
+public :: Tnmsis, neutral_atmos, make_dneu, clear_dneu, neutral_perturb, neutral_update, init_neutrals, &
+  neutral_winds, rotate_geo2native
 
 
-interface ! atmos.f90
+interface !< atmos.f90
   module subroutine neutral_atmos(ymd,UTsecd,glat,glon,alt,activ,v2grid,v3grid,nn,Tn,vn1,vn2,vn3, msis_version)
   integer, intent(in) :: ymd(3), msis_version
   real(wp), intent(in) :: UTsecd
@@ -30,7 +31,7 @@ interface ! atmos.f90
   end subroutine neutral_atmos
 end interface
 
-interface ! perturb.f90
+interface !< perturb.f90
   module subroutine neutral_perturb(cfg,dt,dtneu,t,ymd,UTsec,x,v2grid,v3grid,nn,Tn,vn1,vn2,vn3)
   type(gemini_cfg), intent(in) :: cfg
   real(wp), intent(in) :: dt,dtneu
@@ -48,6 +49,15 @@ interface ! perturb.f90
   real(wp), dimension(:,:,:), intent(inout) :: Tn,vn1,vn2,vn3
   !! intent(out)
   end subroutine neutral_perturb
+end interface
+
+interface !< wind.f90
+  module subroutine neutral_winds(ymd, UTsec, Ap, x, vn1, vn2, vn3)
+  integer, intent(in) :: ymd(3)
+  real(wp), intent(in) :: UTsec, Ap
+  class(curvmesh), intent(in) :: x
+  real(wp), dimension(1:size(x%alt,1),1:size(x%alt,2),1:size(x%alt,3)), intent(inout) :: vn1,vn2,vn3
+  end subroutine neutral_winds
 end interface
 
 !! ALL ARRAYS THAT FOLLOW ARE USED WHEN INCLUDING NEUTRAL PERTURBATIONS FROM ANOTHER MODEL

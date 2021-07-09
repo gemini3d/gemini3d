@@ -6,7 +6,7 @@ use ionize_fang, only: fang2008, fang2010
 !! we need the unperturbed msis temperatures to apply the simple chapman theory used by this module
 use grid, only: lx1,lx2,lx3,g1,g2,g3
 use meshobj, only: curvmesh
-use timeutils, only: doy_calc
+use timeutils, only: ymd2doy
 use mpimod, only: mpi_realprec, mpi_cfg, tag=>gemini_mpi, MPI_COMM_WORLD,MPI_STATUS_IGNORE
 
 implicit none (type, external)
@@ -395,7 +395,7 @@ lx3=size(nn,3)
 !! zero flux should really be checked per field line
 if ( maxval(PhiWmWm2) > 0) then   !only compute rates if nonzero flux given
 
-  date_doy = modulo(ymd(1), 100)*1000 + doy_calc(ymd(1), ymd(2), ymd(3))
+  date_doy = modulo(ymd(1), 100)*1000 + ymd2doy(ymd(1), ymd(2), ymd(3))
   !! date in format needed by GLOW (yyddd)
   do ix3=1,lx3
     do ix2=1,lx2
