@@ -18,12 +18,19 @@ jobs:
     env:
       DEBIAN_FRONTEND: noninteractive
       CTEST_PARALLEL_LEVEL: 2
+      cmake_version: 3.21.0-rc3
 
     steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-python@v2
       with:
         python-version: '3.8'
+
+    # FIXME: till CMake 3.21 is released, we need to use the following
+    - run: |
+        pip install cmakeutils
+        python -m cmakeutils.cmake_setup ${cmake_version} --prefix ${HOME}/.local
+        echo "${HOME}/.local/cmake-${cmake_version}-linux-x86_64/bin" >> $GITHUB_PATH
 
     - name: Install packages
       run: |
@@ -38,20 +45,26 @@ jobs:
       run: cmake --build --preset debug
 
     - name: Debug unit test
-      run: ctest --preset debug -L unit
+      run: ctest --preset debug -L unit --output-junit test-debug-unit.xml
 
     - name: Debug core test
-      run: ctest --preset debug -LE unit -R "(2dew_fang|2dns_fang)"
+      run: ctest --preset debug -LE unit -R "(2dew_fang|2dns_fang)" --output-junit test-debug-core.xml
 
 
     - name: Release build
       run: cmake --build --preset release
 
     - name: Release unit test
-      run: ctest --preset release -L unit
+      run: ctest --preset release -L unit --output-junit test-release-unit.xml
 
     - name: Release core test
-      run: ctest --preset release -LE unit -E 3d
+      run: ctest --preset release -LE unit -E 3d --output-junit test-release-core.xml
+
+    - name: Publish Unit Test Results
+      uses: EnricoMi/publish-unit-test-result-action@v1
+      if: always()
+      with:
+        files: build/test-*.xml
 
 
   linux-gcc7:
