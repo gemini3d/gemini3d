@@ -134,8 +134,8 @@ module procedure potential_workers_mpi
         !! but this is only valid for Cartesian, so it's okay for the foreseeable future
 
         !! PkI
-        call gather_send(SigPintstar,tagSigPint2)
-        call gather_send(J2prev,tagJ2)
+        call gather_send(SigPintstar,tag%SigPint2)
+        call gather_send(J2prev,tag%J2)
   
   
         call elliptic_workers()    !workers do not need any specific info about the problem (that all resides with root who will redistribute)

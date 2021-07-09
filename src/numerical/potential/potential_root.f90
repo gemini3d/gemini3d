@@ -62,8 +62,10 @@ module procedure potential_root_mpi_curv
   real(wp) :: tstart,tfin
   integer :: u
 
-  !! Perkins-specific variables
+  !! PkI-specific variables
   real(wp), dimension(1:size(E1,1),1:size(E1,2),1:size(E1,3)) :: J2prev
+  real(wp), dimension(1:size(Phiall,1),1:size(Phiall,2),1:size(Phiall,3)) :: J2prevall
+  real(wp), dimension(1:size(Phiall,1),1:size(Phiall,2),1:size(Phiall,3)) :: integrandall,intJ2all
   real(wp), dimension(1:size(E1,2),1:size(E1,3)) :: SigPintstar
   real(wp), dimension(1:size(Phiall,2),1:size(Phiall,3)) :: SigPintstarall
   
@@ -161,8 +163,8 @@ module procedure potential_root_mpi_curv
         call gather_recv(v3slab,tag%v3electro,v3slaball)
 
         !! PkI
-        call gather_recv(SigPintstar,tagSigPint2,SigPintstarall)
-        call gather_recv(J2prev,tagJ2,J2prevall)
+        call gather_recv(SigPintstar,tag%SigPint2,SigPintstarall)
+        call gather_recv(J2prev,tag%J2,J2prevall)
         print*, minval(J2prevall),maxval(J2prevall)
         print*, minval(SigPintstarall),maxval(SigPintstarall) 
   
@@ -170,6 +172,8 @@ module procedure potential_root_mpi_curv
         !EXECUTE FIELD-INTEGRATED SOLVE
 
         !! PkI
+        integrandall=x%h1all(1:lx1,1:lx2all,1:lx3all)*J2prevall
+        intJ2all=integral3D1(integrandall,x,1,lx1)    !equivalent surface current for ionosphere
         !Vminx2slice=Vminx2(lx1,:)    !slice the boundaries into expected shape
         !Vmaxx2slice=Vmaxx2(lx1,:)
         Vminx2slice=-1d0*intJ2all(lx1,1,:)/SigPintstarall(1,:)                         !this is sigP for going with the x2 electric field
