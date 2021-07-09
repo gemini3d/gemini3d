@@ -1,18 +1,25 @@
 set_directory_properties(PROPERTIES LABELS hwm)
 
+add_library(hwm_ifc)
+set_target_properties(hwm_ifc PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include)
+target_include_directories(hwm_ifc INTERFACE
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
+  $<INSTALL_INTERFACE:include>)
+
+install(TARGETS hwm_ifc EXPORT ${PROJECT_NAME}Targets)
+
+if(NOT hwm14)
+  target_sources(hwm_ifc PRIVATE dummy.f90)
+  return()
+endif()
+
 # --- build abstract HWM interface
 # default is HWM14
 
 include(${PROJECT_SOURCE_DIR}/cmake/ext_libs/hwm14.cmake)
 
-add_library(hwm_ifc hwm_interface.f90)
+target_sources(hwm_ifc PRIVATE hwm_interface.f90)
 target_link_libraries(hwm_ifc PRIVATE HWM14::HWM14)
-target_include_directories(hwm_ifc INTERFACE
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
-  $<INSTALL_INTERFACE:include>)
-set_target_properties(hwm_ifc PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include)
-
-install(TARGETS hwm_ifc EXPORT ${PROJECT_NAME}Targets)
 
 if(BUILD_TESTING)
   add_executable(test_hwm test_hwm.f90)

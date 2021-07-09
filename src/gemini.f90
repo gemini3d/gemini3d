@@ -27,7 +27,7 @@ use mpimod, only : mpibreakdown, mpi_manualgrid, process_grid_auto, mpi_cfg
 use multifluid, only : fluid_adv
 
 use msis_interface, only : msisinit
-use neutral, only : neutral_atmos,make_dneu,neutral_perturb,clear_dneu,init_neutrals
+use neutral, only : neutral_atmos,make_dneu,neutral_perturb,clear_dneu,init_neutrals, neutral_winds
 
 use potentialBCs_mumps, only: clear_potential_fileinput, init_Efieldinput
 use potential_comm,only : electrodynamics,pot2perpfield,velocities, get_BGEfields
@@ -268,9 +268,13 @@ end if
 if(mpi_cfg%myid==0) print*, 'Priming neutral input'
 call init_neutrals(dt,t,cfg,ymd,UTsec,x,v2grid,v3grid,nn,Tn,vn1,vn2,vn3)
 
+!> Horizontal wind model initialization
+call neutral_winds(ymd, UTsec, Ap=cfg%activ(3), x=x, vn1=vn1, vn2=vn2, vn3=vn3)
+!! we sum the horizontal wind with the background state vector
+!! if HWM14 is disabled, neutral_winds returns the background state vector unmodified
 
 !> Recompute electrodynamic quantities needed for restarting
-! these do not include background
+!> these do not include background
 E1 = 0
 call pot2perpfield(Phi,x,E2,E3)
 if(mpi_cfg%myid==0) then
