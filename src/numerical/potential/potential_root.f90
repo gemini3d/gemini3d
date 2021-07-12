@@ -195,7 +195,10 @@ module procedure potential_root_mpi_curv
           !! note that this solver is only valid for cartesian meshes, unless the inertial capacitance is set to zero
         else
           if (debug) print *, '!!!User selected periodic solve...'
-          Phislab = potential2D_polarization_periodic(srctermintall,SigPint2all,SigHintall,incapintall,v2slaball,v3slaball, &
+!          Phislab = potential2D_polarization_periodic(srctermintall,SigPint2all,SigHintall,incapintall,v2slaball,v3slaball, &
+!                                     Vminx2slice,Vmaxx2slice,Vminx3slice,Vmaxx3slice, &
+!                                     dt,x,Phislab0,perflag,it)
+          Phislab = potential2D_polarization_periodic_Neu(srctermintall,SigPint2all,SigHintall,incapintall,v2slaball,v3slaball, &
                                      Vminx2slice,Vmaxx2slice,Vminx3slice,Vmaxx3slice, &
                                      dt,x,Phislab0,perflag,it)
           !! !note that either sigPint2 or 3 will work since this must be cartesian...
