@@ -33,7 +33,7 @@ target_include_directories(exe_frontend INTERFACE ${CMAKE_CURRENT_BINARY_DIR}/in
 
 # --- gemini3d.run
 add_executable(gemini3d.run gemini3d_run.f90 runner.f90)
-target_link_libraries(gemini3d.run PRIVATE exe_frontend const config timeutils autogrid reader h5fortran::h5fortran nc4fortran::nc4fortran)
+target_link_libraries(gemini3d.run PRIVATE exe_frontend const config timeutils autogrid reader pathlib h5fortran::h5fortran nc4fortran::nc4fortran)
 if(HWLOC_FOUND)
   target_link_libraries(gemini3d.run PRIVATE HWLOC::HWLOC)
 endif()

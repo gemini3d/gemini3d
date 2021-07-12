@@ -33,33 +33,7 @@ endif(BUILD_TESTING)
 add_library(sanity_check OBJECT sanity_check.f90 $<TARGET_OBJECTS:errors>)
 target_link_libraries(sanity_check PRIVATE const)
 
-# --- pathlib
-add_library(pathlib OBJECT pathlib.f90)
-
-if(WIN32)
-  target_sources(pathlib PRIVATE pathlib_windows.f90)
-else()
-  target_sources(pathlib PRIVATE pathlib_unix.f90)
-endif()
-
-if(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
-  target_sources(pathlib PRIVATE pathlib_intel.f90)
-elseif(CMAKE_Fortran_COMPILER_ID STREQUAL GNU)
-  target_sources(pathlib PRIVATE pathlib_gcc.f90)
-else()
-  message(WARNING "pathlib_dummy: better to write pathlib_gcc-like routine for compiler ${CMAKE_Fortran_COMPILER_ID}")
-  target_sources(pathlib PRIVATE pathlib_dummy.f90)
-endif()
-
-if(BUILD_TESTING)
-  add_executable(test_pathlib test_pathlib.f90)
-  target_link_libraries(test_pathlib PRIVATE pathlib)
-  add_test(NAME unit:pathlib COMMAND $<TARGET_FILE:test_pathlib>)
-  set_tests_properties(unit:pathlib PROPERTIES
-    LABELS unit
-    TIMEOUT 10)
-endif()
-
+add_subdirectory(pathlib)
 # --- config
 add_library(config OBJECT config.f90 config_nml.f90 config_ini.f90)
 target_link_libraries(config PRIVATE pathlib const)
@@ -115,4 +89,4 @@ if(netcdf AND BUILD_TESTING)
   # add_test(NAME unit:simsize_nc4 COMMAND test_simsize_nc4)
 endif()
 
-set_targ_props(config errors io logging pathlib reader sanity_check)
+set_targ_props(config errors io logging reader sanity_check)
