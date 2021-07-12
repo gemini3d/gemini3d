@@ -35,7 +35,8 @@ use PDEelliptic, only: elliptic3D_cart
 
 implicit none (type, external)
 private
-public :: potential3D_fieldresolved_decimate, potential2D_polarization, potential2D_polarization_periodic, potential2D_fieldresolved
+public :: potential3D_fieldresolved_decimate, potential2D_polarization, potential2D_polarization_periodic, &
+             potential2D_polarization_periodic_Neu,potential2D_fieldresolved
 
 integer, dimension(:), pointer, protected, save :: mumps_perm   !cached permutation, unclear whether save is necessary...
 
@@ -64,6 +65,18 @@ interface ! potential2d.f90
     integer, intent(in) :: it
     real(wp), dimension(size(SigP,1),size(SigP,2)) :: potential2D_polarization_periodic
   end function potential2D_polarization_periodic
+
+  module function potential2D_polarization_periodic_Neu(srcterm,SigP,SigH,Cm,v2,v3,Vminx2,Vmaxx2,Vminx3,Vmaxx3,dt,x,Phi0,perflag,it)
+    real(wp), dimension(:,:), intent(in) :: srcterm,SigP,SigH,Cm,v2,v3
+    real(wp), dimension(:), intent(in) :: Vminx2,Vmaxx2
+    real(wp), dimension(:), intent(in) :: Vminx3,Vmaxx3
+    real(wp), intent(in) :: dt
+    class(curvmesh), intent(in) :: x
+    real(wp), dimension(:,:), intent(in) :: Phi0
+    logical, intent(in) :: perflag
+    integer, intent(in) :: it
+    real(wp), dimension(size(SigP,1),size(SigP,2)) :: potential2D_polarization_periodic_Neu
+  end function potential2D_polarization_periodic_Neu
   
   module function potential2D_fieldresolved(srcterm,sig0,sigP,Vminx1,Vmaxx1,Vminx3,Vmaxx3,x,flagdirich,perflag,it)
     real(wp), dimension(:,:,:), intent(in) :: srcterm,sig0,sigP   !arrays passed in will still have full rank 3

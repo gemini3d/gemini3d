@@ -9,7 +9,8 @@ use phys_consts, only: wp, debug
 
 implicit none (type, external)
 private
-public :: elliptic3D_cart,elliptic2D_cart,elliptic2D_polarization,elliptic2D_polarization_periodic,&
+public :: elliptic3D_cart,elliptic2D_cart,elliptic2D_polarization, &
+  elliptic2D_polarization_periodic,elliptic2D_polarization_periodic_Neu,&
   elliptic_workers, check_mumps_status, quiet_mumps
 
 interface ! elliptic2d.f90

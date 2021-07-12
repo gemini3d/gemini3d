@@ -2,7 +2,7 @@ submodule (potential_mumps) potential2d
 
 use grid, only: gridflag
 use calculus, only : grad2D1_curv_alt, grad2D3, grad2D3_curv_periodic
-use PDEelliptic, only: elliptic2D_polarization,elliptic2D_polarization_periodic,elliptic2D_cart
+use PDEelliptic, only: elliptic2D_polarization,elliptic2D_polarization_periodic,elliptic2D_polarization_periodic_Neu,elliptic2D_cart
 
 implicit none (type, external)
 
@@ -75,6 +75,41 @@ potential2D_polarization_periodic=elliptic2D_polarization_periodic(srcterm,SigP,
                           x%dx3iall,Phi0,perflag,it)
 
 end procedure potential2D_polarization_periodic
+
+
+module procedure potential2D_polarization_periodic_Neu
+
+!! SOLVE IONOSPHERIC POTENTIAL EQUATION IN 2D USING MUMPS
+!! INCLUDES FULL OF POLARIZATION CURRENT, INCLUDING CONVECTIVE
+!! TERMS.  VELOCITIES SHOULD BE TRIMMED (WITHOUT GHOST CELLS).
+!! THIS VERSION OF THE *INTEGRATED* POTENTIAL SOLVER OBVIATES
+!! ALL OTHERS SINCE A PURELY ELECTRSTATIC FORM CAN BE RECOVERED
+!! BY ZEROING OUT THE INERTIAL CAPACITANCE.
+!!
+!! THIS FORM IS INTENDED TO  WORK WITH CARTESIAN MESHES ONLY.
+!! NOTE THAT THE FULL GRID VARIABLES (X%DX3ALL, ETC.) MUST
+!! BE USED HERE!!!
+!!
+!! THIS FUNCTION WORKS ON A PERIODIC MESH BY USING A CIRCULANT MATRIX
+
+real(wp), dimension(1:size(SigP,1),1:size(SigP,2)+1) :: gradSigH2,gradSigH3
+
+integer :: lx2,lx3
+
+
+lx2=x%lx2all    !use full grid sizes
+lx3=x%lx3all
+
+!ZZZ - THESE NEED TO BE CHANGED INTO CIRCULAR/PERIODIC DERIVATIVES FOR THE X3 DIRECTION
+gradSigH2=grad2D1_curv_alt(SigH,x,1,lx2)   !note the alt since we need to use dx2 as differential...  Tricky bug/feature
+gradSigH3=grad2D3_curv_periodic(SigH,x,1,lx3)    !circular difference
+
+
+potential2D_polarization_periodic_Neu=elliptic2D_polarization_periodic_Neu(srcterm,SigP,SigH,gradSigH2,gradSigH3, &
+                          Cm,v2,v3,Vminx2,Vmaxx2,Vminx3,Vmaxx3,dt,x%dx1,x%dx1i,x%dx2all,x%dx2iall,x%dx3all, &
+                          x%dx3iall,Phi0,perflag,it)
+
+end procedure potential2D_polarization_periodic_Neu
 
 
 module procedure potential2D_fieldresolved
