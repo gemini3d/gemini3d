@@ -197,6 +197,7 @@ block
     call hf%read('/r',r)
     call hf%read('/theta',theta)
     call hf%read('/phi',phi)
+    call hf%close()
   case default
     error stop 'unrecognized input field point file type'
   end select
