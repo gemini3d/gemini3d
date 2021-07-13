@@ -30,7 +30,7 @@
 
 "hwm14": {
   "git": "https://github.com/space-physics/hwm14.git",
-  "tag": "fdc90189712a7c041f089831a7e5e8b3abaf7b0d"
+  "tag": "v1.0.0"
 },
 "msis2": {
   "zip": "https://map.nrl.navy.mil/map/pub/nrl/NRLMSIS/NRLMSIS2.0/NRLMSIS2.0.zip",
