@@ -27,7 +27,7 @@ type, extends(curvmesh) :: cartmesh
   real(wp), dimension(:,:,:), pointer :: gz,gx,gy
 
   contains
-    !> Bind deferred procedures 
+    !> Bind deferred procedures
     procedure :: init=>init_cartmesh
     procedure :: make=>make_cartmesh
     procedure :: calc_er=>calc_er_spher
@@ -42,7 +42,7 @@ type, extends(curvmesh) :: cartmesh
     procedure, nopass :: calc_h1=>calc_hz
     procedure, nopass :: calc_h2=>calc_hx
     procedure, nopass :: calc_h3=>calc_hy
-    
+
     !> type deallocations, reset flags, etc.
     final :: destructor
 end type cartmesh
@@ -72,14 +72,14 @@ subroutine init_cartmesh(self)
   self%hzxi=>self%h1x2i; self%hxxi=>self%h2x2i; self%hyxi=>self%h3x2i
   self%hzyi=>self%h1x3i; self%hxyi=>self%h2x3i; self%hyyi=>self%h3x3i
   self%ez=>self%e1; self%ex=>self%e2; self%ey=>self%e3
-  self%gz=>self%g1; self%gx=>self%g2; self%gy=>self%g3 
+  self%gz=>self%g1; self%gx=>self%g2; self%gy=>self%g3
 end subroutine init_cartmesh
 
 
 !> create a cart mesh structure out of given q,p,phi spacings.  We assume here that the input cell center locations
 !   are provide with ghost cells included (note input array indexing in dummy variable declarations.  For new we assume
-!   that the fortran code will precompute and store the "full" grid information to save time (but this uses more memory).  
-subroutine make_cartmesh(self) 
+!   that the fortran code will precompute and store the "full" grid information to save time (but this uses more memory).
+subroutine make_cartmesh(self)
   class(cartmesh), intent(inout) :: self
   integer :: lzg,lxg,lyg,lz,lx,ly
   integer :: iz,ix,iy
@@ -88,16 +88,21 @@ subroutine make_cartmesh(self)
   real(wp) :: gamma2,gamma1
 
   ! check that pointers are correctly associated, which implies that all space has been allocated :)
-  if (.not. associated(self%z)) error stop  & 
+  if (.not. associated(self%z)) error stop  &
              ' pointers to grid coordiante arrays must be associated prior calling make_cartmesh()'
 
   ! size of arrays, including ghost cells
-  lzg=size(self%z,1); lxg=size(self%x,1); lyg=size(self%y,1)
-  allocate(r(-1:lzg-2,-1:lxg-2,-1:lyg-2),theta(-1:lzg-2,-1:lxg-2,-1:lyg-2))
+  lzg = size(self%z, 1)
+  if(lzg < 1) error stop "lzg must be strictly positive"
+  lxg = size(self%x, 1)
+  if(lxg < 1) error stop "lxg must be strictly positive"
+  lyg = size(self%y, 1)
+  if(lyg < 1) error stop "lyg must be strictly positive"
+  allocate(r(-1:lzg-2,-1:lxg-2,-1:lyg-2), theta(-1:lzg-2,-1:lxg-2,-1:lyg-2))
   allocate(phispher(-1:lzg-2,-1:lxg-2,-1:lyg-2))
-  
+
   ! array sizes without ghost cells for convenience
-  print*, ' make_cartmesh:  allocating space for grid of size:  ',lzg,lxg,lyg
+  print '(A,1X,I0,1X,I0,1X,I0)', ' make_cartmesh:  allocating space for grid of size:  ',lzg,lxg,lyg
   lz=lzg-4; lx=lxg-4; ly=lyg-4;
 
   ! convert the cell centers to spherical ECEF coordinates, then tile for longitude dimension
@@ -140,7 +145,7 @@ subroutine make_cartmesh(self)
 
   ! compute the geographic coordinates
   print*, ' make_cartmesh:  geographic coordinates from magnetic...'
-  call self%calc_geographic() 
+  call self%calc_geographic()
 
   ! compute and store the metric factors; these need to include ghost cells
   !  these are function calls because I have to bind the deferred procedures...
@@ -167,19 +172,19 @@ subroutine make_cartmesh(self)
   self%hyyi=1._wp
 
   ! spherical ECEF unit vectors (expressed in a Cartesian ECEF basis)
-  print*, ' make_cartmesh:  spherical ECEF unit vectors...'  
+  print*, ' make_cartmesh:  spherical ECEF unit vectors...'
   call self%calc_er()
   call self%calc_etheta()
   call self%calc_ephi()
 
   ! cart coordinate system unit vectors (Cart. ECEF)
-  print*, ' make_cartmesh:  cartesian unit vectors...'  
+  print*, ' make_cartmesh:  cartesian unit vectors...'
   call self%calc_e1()
   call self%calc_e2()
   call self%calc_e3()
 
   ! magnetic field magnitude
-  print*, ' make_cartmesh:  magnetic fields...'    
+  print*, ' make_cartmesh:  magnetic fields...'
   call self%calc_Bmag()
 
   ! gravity components
@@ -196,7 +201,7 @@ subroutine make_cartmesh(self)
   call self%calc_gridflag()        ! compute and store grid type
 
   ! inclination angle for each field line; awkwardly this must go after gridflag is set...
-  print*, ' make_cartmesh:  inclination angle...'  
+  print*, ' make_cartmesh:  inclination angle...'
   call self%calc_inclination()
 end subroutine make_cartmesh
 
@@ -205,9 +210,9 @@ end subroutine make_cartmesh
 subroutine calc_grav_cart(self)
   class(cartmesh), intent(inout) :: self
   real(wp), dimension(1:self%lx1,1:self%lx2,1:self%lx3) :: gr
- 
+
   ! fixme: error checking?
- 
+
   self%gz=-Gconst*Me/self%r**2     ! radial component of gravity
   self%gx=0._wp
   self%gy=0._wp
@@ -236,7 +241,7 @@ subroutine calc_inclination_cart(self)
 end subroutine calc_inclination_cart
 
 
-!> compute metric factors for q 
+!> compute metric factors for q
 function calc_hz(coord1,coord2,coord3) result(hval)
   real(wp), dimension(:,:,:), pointer, intent(in) :: coord1,coord2,coord3
   real(wp), dimension(lbound(coord1,1):ubound(coord1,1),lbound(coord1,2):ubound(coord1,2), &
@@ -347,4 +352,3 @@ subroutine destructor(self)
 end subroutine destructor
 
 end module meshobj_cart
-
