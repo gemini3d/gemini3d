@@ -12,11 +12,11 @@ use config, only: gemini_cfg
 implicit none (type, external)
 private
 public :: Tnmsis, neutral_atmos, make_dneu, clear_dneu, neutral_perturb, neutral_update, init_neutrals, &
-  neutral_winds, rotate_geo2native
+  neutral_winds, rotate_geo2native, neutral_denstemp_update, neutral_wind_update
 
 
 interface !< atmos.f90
-  module subroutine neutral_atmos(ymd,UTsecd,glat,glon,alt,activ,v2grid,v3grid,nn,Tn,vn1,vn2,vn3, msis_version)
+  module subroutine neutral_atmos(ymd,UTsecd,glat,glon,alt,activ,nn,Tn,msis_version)
     integer, intent(in) :: ymd(3), msis_version
     real(wp), intent(in) :: UTsecd
     real(wp), dimension(:,:,:), intent(in) :: glat,glon,alt
@@ -52,10 +52,11 @@ interface !< perturb.f90
 end interface
 
 interface !< wind.f90
-  module subroutine neutral_winds(ymd, UTsec, Ap, x, vn1, vn2, vn3)
+  module subroutine neutral_winds(ymd, UTsec, Ap, x, v2grid, v3grid, vn1, vn2, vn3)
     integer, intent(in) :: ymd(3)
     real(wp), intent(in) :: UTsec, Ap
     class(curvmesh), intent(in) :: x
+    real(wp), intent(in) :: v2grid,v3grid
     real(wp), dimension(1:size(x%alt,1),1:size(x%alt,2),1:size(x%alt,3)), intent(inout) :: vn1,vn2,vn3
   end subroutine neutral_winds
 end interface
@@ -124,93 +125,94 @@ real(wp), dimension(:,:,:), allocatable :: proj_eglon_e1,proj_eglon_e2,proj_eglo
 
 contains
 
-
-subroutine init_neutrals(dt,t,cfg,ymd,UTsec,x,v2grid,v3grid,nn,Tn,vn1,vn2,vn3)
-
 !> initializes neutral atmosphere by:
 !    1)  allocating storage space
 !    2)  establishing initial background for density, temperature, and winds
 !    3)  priming file input so that we have an initial perturbed state to start from (necessary for restart)
-
-real(wp), intent(in) :: dt,t
-type(gemini_cfg), intent(in) :: cfg
-integer, dimension(3), intent(in) :: ymd
-real(wp), intent(in) :: UTsec
-class(curvmesh), intent(inout) :: x
-!! unit vecs may be deallocated after first setup
-real(wp), intent(in) :: v2grid,v3grid
-real(wp), dimension(:,:,:,:), intent(inout) :: nn
+subroutine init_neutrals(dt,t,cfg,ymd,UTsec,x,v2grid,v3grid,nn,Tn,vn1,vn2,vn3)
+  real(wp), intent(in) :: dt,t
+  type(gemini_cfg), intent(in) :: cfg
+  integer, dimension(3), intent(in) :: ymd
+  real(wp), intent(in) :: UTsec
+  class(curvmesh), intent(inout) :: x    ! unit vecs may be deallocated after first setup
+  real(wp), intent(in) :: v2grid,v3grid
+  real(wp), dimension(:,:,:,:), intent(inout) :: nn
 !! intent(out)
-real(wp), dimension(:,:,:), intent(inout) :: Tn
+  real(wp), dimension(:,:,:), intent(inout) :: Tn
 !! intent(out)
-real(wp), dimension(:,:,:), intent(inout) :: vn1,vn2,vn3
+  real(wp), dimension(:,:,:), intent(inout) :: vn1,vn2,vn3
 !! intent(out)
-integer, dimension(3) :: ymdtmp
-real(wp) :: UTsectmp
-
-real(wp) :: tstart,tfin
-
-
-!! allocation neutral module scope variables so there is space to store all the file input and do interpolations
-call make_dneu()
-
-!! call msis to get an initial neutral background atmosphere
-if (mpi_cfg%myid == 0) call cpu_time(tstart)
-call neutral_atmos(ymd,UTsec,x%glat,x%glon,x%alt,cfg%activ,v2grid,v3grid,nn,Tn,vn1,vn2,vn3, cfg%msis_version)
-if (mpi_cfg%myid == 0) then
-  call cpu_time(tfin)
-  print *, 'Initial neutral density and temperature (from MSIS) at time:  ',ymd,UTsec,' calculated in time:  ',tfin-tstart
-end if
-
-!> Horizontal wind model initialization/background
-if (mpi_cfg%myid == 0) call cpu_time(tstart)
-call neutral_winds(ymd, UTsec, Ap=cfg%activ(3), x=x, vn1=vn1, vn2=vn2, vn3=vn3)
-!! we sum the horizontal wind with the background state vector
-!! if HWM14 is disabled, neutral_winds returns the background state vector unmodified
-if (mpi_cfg%myid == 0) then
-  call cpu_time(tfin)
-  print *, 'Initial neutral winds (from HWM) at time:  ',ymd,UTsec,' calculated in time:  ',tfin-tstart
-end if
-
-if (cfg%flagdneu==1) then
-  !! find the last input data preceding the milestone/initial condition that we start with
-  call find_lastdate(cfg%ymd0,cfg%UTsec0,ymd,UTsec,cfg%dtneu,ymdtmp,UTsectmp)
-
-  !! Loads the neutral input file corresponding to the "first" time step of the simulation to prevent the first interpolant
-  !  from being zero and causing issues with restart simulations.  I.e. make sure the neutral buffers are primed for restart
-  !  This requires us to load file input twice, once corresponding to the initial frame and once for the "first, next" frame.
-  tprev=UTsectmp-UTsec-2*cfg%dtneu
-  tnext=tprev+cfg%dtneu
-  if (mpi_cfg%myid==0) print*, '!!!Attempting initial load of neutral dynamics files!!!' // &
-                           ' This is a workaround to insure compatibility with restarts...',ymdtmp,UTsectmp
-  !! We essentially are loading up the data corresponding to halfway betwween -dtneu and t0 (zero).  This will load
-  !   two time levels back so when tprev is incremented twice it will be the true tprev corresponding to first time step
-  call neutral_perturb(cfg,dt,cfg%dtneu,tnext+cfg%dtneu/2,ymdtmp,UTsectmp-cfg%dtneu, &
-                        x,v2grid,v3grid,nn,Tn,vn1,vn2,vn3)  !abs time arg to be < 0
-
-  if (mpi_cfg%myid==0) print*, 'Now loading initial next file for neutral perturbations...'
-  !! Now compute perturbations for the present time (zero), this moves the primed variables in next into prev and then
-  !  loads up a current state so that we get a proper interpolation for the first time step.
-  call neutral_perturb(cfg,dt,cfg%dtneu,0._wp,ymdtmp,UTsectmp,x,v2grid,v3grid,nn,Tn,vn1,vn2,vn3)    !t-dt so we land exactly on start time
-end if
+  integer, dimension(3) :: ymdtmp
+  real(wp) :: UTsectmp
+  real(wp) :: tstart,tfin
+  
+  !! allocation neutral module scope variables so there is space to store all the file input and do interpolations
+  call make_dneu()
+  
+  !! call msis to get an initial neutral background atmosphere
+  if (mpi_cfg%myid == 0) call cpu_time(tstart)
+  call neutral_atmos(ymd,UTsec,x%glat,x%glon,x%alt,cfg%activ,nn,Tn,cfg%msis_version)
+  if (mpi_cfg%myid == 0) then
+    call cpu_time(tfin)
+    print *, 'Initial neutral density and temperature (from MSIS) at time:  ',ymd,UTsec,' calculated in time:  ',tfin-tstart
+  end if
+  
+  !> Horizontal wind model initialization/background
+  if (mpi_cfg%myid == 0) call cpu_time(tstart)
+  call neutral_winds(ymd, UTsec, Ap=cfg%activ(3), x=x, v2grid=v2grid,v3grid=v3grid,vn1=vn1, vn2=vn2, vn3=vn3)
+  !! we sum the horizontal wind with the background state vector
+  !! if HWM14 is disabled, neutral_winds returns the background state vector unmodified
+  if (mpi_cfg%myid == 0) then
+    call cpu_time(tfin)
+    print *, 'Initial neutral winds (from HWM) at time:  ',ymd,UTsec,' calculated in time:  ',tfin-tstart
+  end if
+  
+  if (cfg%flagdneu==1) then
+    !! find the last input data preceding the milestone/initial condition that we start with
+    call find_lastdate(cfg%ymd0,cfg%UTsec0,ymd,UTsec,cfg%dtneu,ymdtmp,UTsectmp)
+  
+    !! Loads the neutral input file corresponding to the "first" time step of the simulation to prevent the first interpolant
+    !  from being zero and causing issues with restart simulations.  I.e. make sure the neutral buffers are primed for restart
+    !  This requires us to load file input twice, once corresponding to the initial frame and once for the "first, next" frame.
+    tprev=UTsectmp-UTsec-2*cfg%dtneu
+    tnext=tprev+cfg%dtneu
+    if (mpi_cfg%myid==0) print*, '!!!Attempting initial load of neutral dynamics files!!!' // &
+                             ' This is a workaround to insure compatibility with restarts...',ymdtmp,UTsectmp
+    !! We essentially are loading up the data corresponding to halfway betwween -dtneu and t0 (zero).  This will load
+    !   two time levels back so when tprev is incremented twice it will be the true tprev corresponding to first time step
+    call neutral_perturb(cfg,dt,cfg%dtneu,tnext+cfg%dtneu/2,ymdtmp,UTsectmp-cfg%dtneu, &
+                          x,v2grid,v3grid,nn,Tn,vn1,vn2,vn3)  !abs time arg to be < 0
+  
+    if (mpi_cfg%myid==0) print*, 'Now loading initial next file for neutral perturbations...'
+    !! Now compute perturbations for the present time (zero), this moves the primed variables in next into prev and then
+    !  loads up a current state so that we get a proper interpolation for the first time step.
+    call neutral_perturb(cfg,dt,cfg%dtneu,0._wp,ymdtmp,UTsectmp,x,v2grid,v3grid,nn,Tn,vn1,vn2,vn3)    !t-dt so we land exactly on start time
+  end if
 end subroutine init_neutrals
 
 
-!> Adds stored base (viz. background) and perturbation neutral atmospheric parameters (these are module-scope parameters so not needed as input)
+!> update density, temperature, and winds
 subroutine neutral_update(nn,Tn,vn1,vn2,vn3,v2grid,v3grid)
   real(wp), dimension(:,:,:,:), intent(inout) :: nn
   real(wp), dimension(:,:,:), intent(inout) :: Tn
   real(wp), dimension(:,:,:), intent(inout) :: vn1,vn2,vn3
   real(wp) :: v2grid,v3grid
+
+  call neutral_denstemp_update(nn,Tn)
+  call neutral_wind_update(vn1,vn2,vn3,v2grid,v3grid)
+end subroutine neutral_update
+
+
+!> Adds stored base (viz. background) and perturbation neutral atmospheric density
+subroutine neutral_denstemp_update(nn,Tn)
+  real(wp), dimension(:,:,:,:), intent(out) :: nn
+  real(wp), dimension(:,:,:), intent(out) :: Tn
   
   !> background neutral parameters
   nn=nnmsis
   Tn=Tnmsis
-  vn1=vn1base
-  vn2=vn2base
-  vn3=vn3base
   
-  !> perturbations, if used
+  !> add perturbations, if used
   if (allocated(zn)) then
     nn(:,:,:,1)=nn(:,:,:,1)+dnOinow
     nn(:,:,:,2)=nn(:,:,:,2)+dnN2inow
@@ -223,7 +225,22 @@ subroutine neutral_update(nn,Tn,vn1,vn2,vn3,v2grid,v3grid)
   
     Tn=Tn+dTninow
     Tn=max(Tn,50._wp)
+  end if
+end subroutine neutral_denstemp_update
+
+
+!> update wind variables with background and perturbation quantities
+subroutine neutral_wind_update(vn1,vn2,vn3,v2grid,v3grid)
+  real(wp), dimension(:,:,:), intent(out) :: vn1,vn2,vn3
+  real(wp) :: v2grid,v3grid
   
+  !> background neutral parameters
+  vn1=vn1base
+  vn2=vn2base
+  vn3=vn3base
+  
+  !> perturbations, if used
+  if (allocated(zn)) then
     vn1=vn1+dvn1inow
     vn2=vn2+dvn2inow
     vn3=vn3+dvn3inow
@@ -232,7 +249,8 @@ subroutine neutral_update(nn,Tn,vn1,vn2,vn3,v2grid,v3grid)
   !> subtract off grid drift speed (needs to be set to zero if not lagrangian grid)
   vn2=vn2-v2grid
   vn3=vn3-v3grid
-end subroutine neutral_update
+end subroutine neutral_wind_update
+
 
 
 !> rotate winds from geographic to model native coordinate system (x1,x2,x3)

@@ -63,9 +63,8 @@ case default
   error stop '...Invalid interpolation type specified from input file...'
 end select
 
-!> adjust for the grid drift speed; note we assume this gets sets to zero if not a Lagrangian grid
-vn2=vn2-v2grid
-vn3=vn3-v3grid
+!Add interpolated perturbations to reference atmosphere arrays
+call neutral_update(nn,Tn,vn1,vn2,vn3,v2grid,v3grid)
 
 end procedure neutral_perturb
 
@@ -139,9 +138,6 @@ end if !done loading frame data...
 !Interpolation in time
 call timeinterp_dneu(t,dt,dnOinow,dnN2inow,dnO2inow,dvn1inow,dvn2inow,dvn3inow,dTninow)
 
-!Add interpolated perturbations to reference atmosphere arrays
-call neutral_update(nn,Tn,vn1,vn2,vn3)
-
 end subroutine neutral_perturb_axisymm
 
 
@@ -213,9 +209,6 @@ end if
 
 !Interpolation in time
 call timeinterp_dneu(t,dt,dNOinow,dnN2inow,dnO2inow,dvn1inow,dvn2inow,dvn3inow,dTninow)
-
-!> update neutral atmosphere
-call neutral_update(nn,Tn,vn1,vn2,vn3)
 
 end subroutine neutral_perturb_cart
 
@@ -307,9 +300,6 @@ if (mpi_cfg%myid==0 .and. debug) then
   print*, 'Interpolating in time'
 end if
 call timeinterp_dneu(t,dt,dNOinow,dnN2inow,dnO2inow,dvn1inow,dvn2inow,dvn3inow,dTninow)
-
-!> update neutral atmosphere
-call neutral_update(nn,Tn,vn1,vn2,vn3)
 
 end subroutine neutral_perturb_3D
 
