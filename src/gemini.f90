@@ -265,13 +265,8 @@ if(cfg%msis_version == 20) then
   call msisinit(parmfile='msis20.parm')
 end if
 
-if(mpi_cfg%myid==0) print*, 'Priming neutral input'
+if(mpi_cfg%myid==0) print*, 'Computing background and priming neutral perturbation input (if used)'
 call init_neutrals(dt,t,cfg,ymd,UTsec,x,v2grid,v3grid,nn,Tn,vn1,vn2,vn3)
-
-!> Horizontal wind model initialization
-call neutral_winds(ymd, UTsec, Ap=cfg%activ(3), x=x, vn1=vn1, vn2=vn2, vn3=vn3)
-!! we sum the horizontal wind with the background state vector
-!! if HWM14 is disabled, neutral_winds returns the background state vector unmodified
 
 !> Recompute electrodynamic quantities needed for restarting
 !> these do not include background
@@ -335,6 +330,7 @@ main : do while (t < tdur)
   if ( it/=1 .and. cfg%flagneuBG .and. t>tneuBG) then     !we dont' throttle for tneuBG so we have to do things this way to not skip over...
     call cpu_time(tstart)
     call neutral_atmos(ymd,UTsec,x%glat,x%glon,x%alt,cfg%activ,v2grid,v3grid,nn,Tn,vn1,vn2,vn3, cfg%msis_version)
+    call neutral_winds(ymd, UTsec, Ap=cfg%activ(3), x=x, vn1=vn1, vn2=vn2, vn3=vn3)
     tneuBG=tneuBG+cfg%dtneuBG;
     if (mpi_cfg%myid==0) then
       call cpu_time(tfin)

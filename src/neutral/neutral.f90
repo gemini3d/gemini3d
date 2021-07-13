@@ -17,46 +17,46 @@ public :: Tnmsis, neutral_atmos, make_dneu, clear_dneu, neutral_perturb, neutral
 
 interface !< atmos.f90
   module subroutine neutral_atmos(ymd,UTsecd,glat,glon,alt,activ,v2grid,v3grid,nn,Tn,vn1,vn2,vn3, msis_version)
-  integer, intent(in) :: ymd(3), msis_version
-  real(wp), intent(in) :: UTsecd
-  real(wp), dimension(:,:,:), intent(in) :: glat,glon,alt
-  real(wp), intent(in) :: activ(3)
-  real(wp), intent(in) :: v2grid,v3grid
-  real(wp), dimension(1:size(alt,1),1:size(alt,2),1:size(alt,3),lnchem), intent(inout) :: nn
-  !! intent(out)
-  real(wp), dimension(1:size(alt,1),1:size(alt,2),1:size(alt,3)), intent(inout) :: Tn
-  !! intent(out)
-  real(wp), dimension(1:size(alt,1),1:size(alt,2),1:size(alt,3)), intent(inout) :: vn1,vn2,vn3
-  !! intent(out)
+    integer, intent(in) :: ymd(3), msis_version
+    real(wp), intent(in) :: UTsecd
+    real(wp), dimension(:,:,:), intent(in) :: glat,glon,alt
+    real(wp), intent(in) :: activ(3)
+    real(wp), intent(in) :: v2grid,v3grid
+    real(wp), dimension(1:size(alt,1),1:size(alt,2),1:size(alt,3),lnchem), intent(inout) :: nn
+    !! intent(out)
+    real(wp), dimension(1:size(alt,1),1:size(alt,2),1:size(alt,3)), intent(inout) :: Tn
+    !! intent(out)
+    real(wp), dimension(1:size(alt,1),1:size(alt,2),1:size(alt,3)), intent(inout) :: vn1,vn2,vn3
+    !! intent(out)
   end subroutine neutral_atmos
 end interface
 
 interface !< perturb.f90
   module subroutine neutral_perturb(cfg,dt,dtneu,t,ymd,UTsec,x,v2grid,v3grid,nn,Tn,vn1,vn2,vn3)
-  type(gemini_cfg), intent(in) :: cfg
-  real(wp), intent(in) :: dt,dtneu
-  real(wp), intent(in) :: t
-  integer, dimension(3), intent(in) :: ymd
-  !! date for which we wish to calculate perturbations
-  real(wp), intent(in) :: UTsec
-
-  class(curvmesh), intent(inout) :: x
-  !! grid structure  (inout becuase we want to be able to deallocate unit vectors once we are done with them)
-  real(wp), intent(in) :: v2grid,v3grid
-  real(wp), dimension(:,:,:,:), intent(inout) :: nn
-  !! intent(out)
-  !! neutral params interpolated to plasma grid at requested time
-  real(wp), dimension(:,:,:), intent(inout) :: Tn,vn1,vn2,vn3
-  !! intent(out)
+    type(gemini_cfg), intent(in) :: cfg
+    real(wp), intent(in) :: dt,dtneu
+    real(wp), intent(in) :: t
+    integer, dimension(3), intent(in) :: ymd
+    !! date for which we wish to calculate perturbations
+    real(wp), intent(in) :: UTsec
+  
+    class(curvmesh), intent(inout) :: x
+    !! grid structure  (inout becuase we want to be able to deallocate unit vectors once we are done with them)
+    real(wp), intent(in) :: v2grid,v3grid
+    real(wp), dimension(:,:,:,:), intent(inout) :: nn
+    !! intent(out)
+    !! neutral params interpolated to plasma grid at requested time
+    real(wp), dimension(:,:,:), intent(inout) :: Tn,vn1,vn2,vn3
+    !! intent(out)
   end subroutine neutral_perturb
 end interface
 
 interface !< wind.f90
   module subroutine neutral_winds(ymd, UTsec, Ap, x, vn1, vn2, vn3)
-  integer, intent(in) :: ymd(3)
-  real(wp), intent(in) :: UTsec, Ap
-  class(curvmesh), intent(in) :: x
-  real(wp), dimension(1:size(x%alt,1),1:size(x%alt,2),1:size(x%alt,3)), intent(inout) :: vn1,vn2,vn3
+    integer, intent(in) :: ymd(3)
+    real(wp), intent(in) :: UTsec, Ap
+    class(curvmesh), intent(in) :: x
+    real(wp), dimension(1:size(x%alt,1),1:size(x%alt,2),1:size(x%alt,3)), intent(inout) :: vn1,vn2,vn3
   end subroutine neutral_winds
 end interface
 
@@ -129,7 +129,7 @@ subroutine init_neutrals(dt,t,cfg,ymd,UTsec,x,v2grid,v3grid,nn,Tn,vn1,vn2,vn3)
 
 !> initializes neutral atmosphere by:
 !    1)  allocating storage space
-!    2)  establishing initial background
+!    2)  establishing initial background for density, temperature, and winds
 !    3)  priming file input so that we have an initial perturbed state to start from (necessary for restart)
 
 real(wp), intent(in) :: dt,t
@@ -159,7 +159,17 @@ if (mpi_cfg%myid == 0) call cpu_time(tstart)
 call neutral_atmos(ymd,UTsec,x%glat,x%glon,x%alt,cfg%activ,v2grid,v3grid,nn,Tn,vn1,vn2,vn3, cfg%msis_version)
 if (mpi_cfg%myid == 0) then
   call cpu_time(tfin)
-  print *, 'Initial neutral background at time:  ',ymd,UTsec,' calculated in time:  ',tfin-tstart
+  print *, 'Initial neutral density and temperature (from MSIS) at time:  ',ymd,UTsec,' calculated in time:  ',tfin-tstart
+end if
+
+!> Horizontal wind model initialization/background
+if (mpi_cfg%myid == 0) call cpu_time(tstart)
+call neutral_winds(ymd, UTsec, Ap=cfg%activ(3), x=x, vn1=vn1, vn2=vn2, vn3=vn3)
+!! we sum the horizontal wind with the background state vector
+!! if HWM14 is disabled, neutral_winds returns the background state vector unmodified
+if (mpi_cfg%myid == 0) then
+  call cpu_time(tfin)
+  print *, 'Initial neutral winds (from HWM) at time:  ',ymd,UTsec,' calculated in time:  ',tfin-tstart
 end if
 
 if (cfg%flagdneu==1) then
@@ -186,45 +196,42 @@ end if
 end subroutine init_neutrals
 
 
-subroutine neutral_update(nn,Tn,vn1,vn2,vn3)
-
-!! adds stored base and perturbation neutral atmospheric parameters
-!!  these are module-scope parameters so not needed as input
-
-real(wp), dimension(:,:,:,:), intent(inout) :: nn
-!! intent(out)
-real(wp), dimension(:,:,:), intent(inout) :: Tn
-!! intent(out)
-real(wp), dimension(:,:,:), intent(inout) :: vn1,vn2,vn3
-!! intent(out)
-
-
-!> background neutral parameters
-nn=nnmsis
-Tn=Tnmsis
-vn1=vn1base
-vn2=vn2base
-vn3=vn3base
-
-!> perturbations, if used
-if (allocated(zn)) then
-  nn(:,:,:,1)=nn(:,:,:,1)+dnOinow
-  nn(:,:,:,2)=nn(:,:,:,2)+dnN2inow
-  nn(:,:,:,3)=nn(:,:,:,3)+dnO2inow
-  nn(:,:,:,1)=max(nn(:,:,:,1),1._wp)
-  nn(:,:,:,2)=max(nn(:,:,:,2),1._wp)
-  nn(:,:,:,3)=max(nn(:,:,:,3),1._wp)
-  !! note we are not adjusting derived densities like NO since it's not clear how they may be related to major
-  !! species perturbations.
-
-  Tn=Tn+dTninow
-  Tn=max(Tn,50._wp)
-
-  vn1=vn1+dvn1inow
-  vn2=vn2+dvn2inow
-  vn3=vn3+dvn3inow
-end if
-
+!> Adds stored base (viz. background) and perturbation neutral atmospheric parameters (these are module-scope parameters so not needed as input)
+subroutine neutral_update(nn,Tn,vn1,vn2,vn3,v2grid,v3grid)
+  real(wp), dimension(:,:,:,:), intent(inout) :: nn
+  real(wp), dimension(:,:,:), intent(inout) :: Tn
+  real(wp), dimension(:,:,:), intent(inout) :: vn1,vn2,vn3
+  real(wp) :: v2grid,v3grid
+  
+  !> background neutral parameters
+  nn=nnmsis
+  Tn=Tnmsis
+  vn1=vn1base
+  vn2=vn2base
+  vn3=vn3base
+  
+  !> perturbations, if used
+  if (allocated(zn)) then
+    nn(:,:,:,1)=nn(:,:,:,1)+dnOinow
+    nn(:,:,:,2)=nn(:,:,:,2)+dnN2inow
+    nn(:,:,:,3)=nn(:,:,:,3)+dnO2inow
+    nn(:,:,:,1)=max(nn(:,:,:,1),1._wp)
+    nn(:,:,:,2)=max(nn(:,:,:,2),1._wp)
+    nn(:,:,:,3)=max(nn(:,:,:,3),1._wp)
+    !! note we are not adjusting derived densities like NO since it's not clear how they may be related to major
+    !! species perturbations.
+  
+    Tn=Tn+dTninow
+    Tn=max(Tn,50._wp)
+  
+    vn1=vn1+dvn1inow
+    vn2=vn2+dvn2inow
+    vn3=vn3+dvn3inow
+  end if
+  
+  !> subtract off grid drift speed (needs to be set to zero if not lagrangian grid)
+  vn2=vn2-v2grid
+  vn3=vn3-v3grid
 end subroutine neutral_update
 
 
