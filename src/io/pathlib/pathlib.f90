@@ -129,25 +129,21 @@ end function get_filename
 
 function make_absolute(path, top_path) result(abspath)
 !! if path is absolute, return expanded path
-!! if path is relative, make absolute path under absolute top_path
+!! if path is relative, top_path / path
 
-!! NOTE:
-!! 1. can only allocate once when it's a function, it will ignore later allocates
-!! 2. need trim(adjustl()) to sanitize fixed length namelist input
+!! NOTE: can only allocate once when it's a function, it will ignore later allocates
+!! NOTE: only idempotent if top_path is absolute
 
-character(:), allocatable :: abspath, p, t
+character(:), allocatable :: abspath, p
 logical :: exists, is_abs
 character(*), intent(in) :: path, top_path
 
 p = expanduser(path)
 if (is_absolute(p)) then
   abspath = p
-  return
+else
+  abspath = expanduser(top_path) // '/' // p
 endif
-
-t = expanduser(top_path)
-if (.not. is_absolute(t)) write(stderr,*) "WARNING: make_absolute: top_path is not absolute: " // t
-abspath = t // '/' // p
 
 end function make_absolute
 
