@@ -28,8 +28,6 @@ real(wp), dimension(:,:,:), pointer, protected :: g1,g2,g3
 !! gravity, not to be modified by a procedure outside this module
 integer, protected :: gridflag
 !! for cataloguing the type of grid that we are using, open, closed, inverted, etc.  0 - closed dipole, 1 - inverted open, 2 - standard open.
-!integer :: flagswap
-!! have the x2 and x3 dimensions been swapped?
 
 interface ! read.f90
   module subroutine read_grid_cart(indatsize,indatgrid,flagperiodic,x, x1,x2,x3,x2all,x3all,glonctr,glatctr)
@@ -90,18 +88,24 @@ real(wp) :: glonctr,glatctr
 !!   that the compiler will deal with it automatically
 !!  Also set the grid center position if not already dictated by the coordinate system
 
-call set_subgrid_size()    ! everyone computes what the size of their subgrid should be
-allocate(x1(-1:lx1+2),x2(-1:lx2+2),x3(-1:lx3+2),x2all(-1:lx2all+2),x3all(-1:lx3all+2))   ! tmp space for coords from file
-call get_grid3_coords(indatgrid,x1,x2all,x3all,glonctr,glatctr)   ! only need ctr location for certain grid types
+call set_subgrid_size(lx2all, lx3all, lx2, lx3)
+!! everyone computes what the size of their subgrid should be
+allocate(x1(-1:lx1+2), x2(-1:lx2+2), x3(-1:lx3+2), x2all(-1:lx2all+2), x3all(-1:lx3all+2))
+!! tmp space for coords from file
+call get_grid3_coords(indatgrid,x1,x2all,x3all, glonctr,glatctr)
+!! only need ctr location for certain grid types
 
 !> each worker needs to set their specific subgrid coordinates
-indsgrid=ID2grid(mpi_cfg%myid, mpi_cfg%lid2)     !compute my location on the process grid
-!! x2
-islstart=indsgrid(1)*lx2+1              !piece of grid that corresponds to my x3 position
+indsgrid=ID2grid(mpi_cfg%myid, mpi_cfg%lid2)
+!! compute my location on the process grid
+!> x2
+islstart=indsgrid(1)*lx2+1
+!! piece of grid that corresponds to my x3 position
 islfin=islstart+lx2-1
 x2=x2all(islstart-2:islfin+2)
-!! x3
-islstart=indsgrid(2)*lx3+1              !piece of grid that corresponds to my x3 position
+!> x3
+islstart=indsgrid(2)*lx3+1
+!! piece of grid that corresponds to my x3 position
 islfin=islstart+lx3-1
 x3=x3all(islstart-2:islfin+2)
 
@@ -138,9 +142,17 @@ subroutine get_grid3_coords(path,x1,x2all,x3all,glonctr,glatctr)
     case default
       error stop 'grid:read:get_grid3: unknown grid format: ' // fmt
   end select
+
+  if(size(x1) < 1) error stop 'grid:get_grid3_coords: size(x1) must be strictly positive'
+  if(size(x2all) < 1) error stop 'grid:get_grid3_coords: size(x2all) must be strictly positive'
+  if(size(x3all) < 1) error stop 'grid:get_grid3_coords: size(x3all) must be strictly positive'
 end subroutine get_grid3_coords
 
-subroutine set_subgrid_size()
+
+subroutine set_subgrid_size(lx2all, lx3all, lx2, lx3)
+  integer, intent(in) :: lx2all, lx3all
+  integer, intent(out) :: lx2, lx3
+
   !! use only non-swapped axes
   if(lx2all==1) then
     print *, 'get_subgrid_size: 2D run with singleton x2'
@@ -157,8 +169,11 @@ subroutine set_subgrid_size()
     lx3 = lx3all/mpi_cfg%lid3
   end if
 
-  ! FIXME: right now just force this to zero so later swap-specific code does not get triggered (eventually needs to be removed)
-  !flagswap=0
+  if(lx1 < 1) error stop 'grid:set_subgrid_size: lx1 must be strictly positive'
+  if(lx2 < 1) error stop 'grid:set_subgrid_size: lx2 must be strictly positive'
+  if(lx3 < 1) error stop 'grid:set_subgrid_size: lx3 must be strictly positive'
+  if(lx2all < lx2) error stop 'grid:set_subgrid_size: lx2all must be > lx2'
+  if(lx3all < lx3) error stop 'grid:set_subgrid_size: lx3all must be > lx3'
 
   if(lx2all > 1 .and. lx3all > 1) then
     if(lx2 == 1 .or. lx3 == 1) error stop "read_grid_root: 3D grids cannot be partitioned with a single MPI image on an axis"
