@@ -223,12 +223,14 @@ end interface
 
 
 contains
-  !> assign coordinates to internal variables given some set of input arrays.
-  !   Assume that the data passed in include ghost cells
+
   subroutine set_coords(self,x1,x2,x3,x2all,x3all)
-    class(curvmesh) :: self
+  !! assign coordinates to internal variables given some set of input arrays.
+  !!  Assume that the data passed in include ghost cells
+    class(curvmesh), intent(inout) :: self
     real(wp), dimension(:), intent(in) :: x1,x2,x3
     real(wp), dimension(:), intent(in) :: x2all,x3all
+
     integer :: lx1,lx2,lx3,lx2all,lx3all
 
     lx1=size(x1,1)-4
@@ -236,27 +238,40 @@ contains
     lx3=size(x3,1)-4
     lx2all=size(x2all,1)-4
     lx3all=size(x3all,1)-4
-    self%lx1=lx1; self%lx2=lx2; self%lx3=lx3
-    self%lx2all=lx2all; self%lx3all=lx3all
 
-    allocate(self%x1(-1:lx1+2),self%x2(-1:lx2+2),self%x3(-1:lx3+2))
-    self%x1=x1; self%x2=x2; self%x3=x3
-    allocate(self%x2all(-1:lx2all+2),self%x3all(-1:lx3all+2))
-    self%x2all=x2all; self%x3all=x3all
+    if(lx1 < 1) error stop 'meshobj:set_coords: lx1 must be strictly positive'
+    if(lx2 < 1) error stop 'meshobj:set_coords: lx2 must be strictly positive'
+    if(lx3 < 1) error stop 'meshobj:set_coords: lx3 must be strictly positive'
+    if(lx2all < lx2) error stop 'meshobj:set_coords: lx2all must be > lx2'
+    if(lx3all < lx3) error stop 'meshobj:set_coords: lx3all must be > lx3'
+
+    self%lx1=lx1
+    self%lx2=lx2
+    self%lx3=lx3
+    self%lx2all=lx2all
+    self%lx3all=lx3all
+
+    allocate(self%x1(-1:lx1+2), self%x2(-1:lx2+2), self%x3(-1:lx3+2))
+    self%x1=x1
+    self%x2=x2
+    self%x3=x3
+    allocate(self%x2all(-1:lx2all+2), self%x3all(-1:lx3all+2))
+    self%x2all=x2all
+    self%x3all=x3all
 
     self%xi_alloc_status=.true.
   end subroutine set_coords
 
 
-  !> Set full grid arrays needed for some numerical parts - these need to be gathered by
-  !   a wrapping module/procedure and then passed to this procedure.
   subroutine set_root(self,h1all,h2all,h3all, &
                       h1x1iall,h2x1iall,h3x1iall, &
                       h1x2iall,h2x2iall,h3x2iall, &
                       h1x3iall,h2x3iall,h3x3iall, &
                       rall,thetaall,phiall, &
                       altall,Bmagall,glonall)
-    class(curvmesh) :: self
+  !! Set full grid arrays needed for some numerical parts - these need to be gathered by
+  !!   a wrapping module/procedure and then passed to this procedure.
+    class(curvmesh), intent(inout) :: self
     real(wp), dimension(-1:,-1:,-1:), intent(in) :: h1all,h2all,h3all
     real(wp), dimension(:,:,:), intent(in) :: h1x1iall,h2x1iall,h3x1iall
     real(wp), dimension(:,:,:), intent(in) :: h1x2iall,h2x2iall,h3x2iall
