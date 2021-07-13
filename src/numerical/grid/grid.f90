@@ -49,19 +49,19 @@ end interface
 interface ! readgrid_*.f90
   module subroutine get_grid3_coords_raw(path,x1,x2all,x3all,glonctr,glatctr)
     character(*), intent(in) :: path
-    real(wp), dimension(:), intent(out) :: x1,x2all,x3all
+    real(wp), dimension(:), intent(inout) :: x1,x2all,x3all
     real(wp) :: glonctr,glatctr
   end subroutine get_grid3_coords_raw
 
   module subroutine get_grid3_coords_hdf5(path,x1,x2all,x3all,glonctr,glatctr)
     character(*), intent(in) :: path
-    real(wp), dimension(:), intent(out) :: x1,x2all,x3all
+    real(wp), dimension(:), intent(inout) :: x1,x2all,x3all
     real(wp) :: glonctr,glatctr
   end subroutine get_grid3_coords_hdf5
 
   module subroutine get_grid3_coords_nc4(path,x1,x2all,x3all,glonctr,glatctr)
     character(*), intent(in) :: path
-    real(wp), dimension(:), intent(out) :: x1,x2all,x3all
+    real(wp), dimension(:), intent(inout) :: x1,x2all,x3all
     real(wp) :: glonctr,glatctr
   end subroutine get_grid3_coords_nc4
 end interface
@@ -126,7 +126,7 @@ end subroutine read_grid
 
 subroutine get_grid3_coords(path,x1,x2all,x3all,glonctr,glatctr)
   character(*), intent(in) :: path
-  real(wp), dimension(:), intent(out) :: x1,x2all,x3all
+  real(wp), dimension(:), intent(inout) :: x1,x2all,x3all
   real(wp) :: glonctr,glatctr
 
   character(:), allocatable :: fmt
