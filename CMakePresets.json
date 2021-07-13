@@ -40,6 +40,9 @@
   "name": "intel", "inherits": "default",
   "displayName": "Intel Classic compiler: Linux/MacOS",
   "binaryDir": "${sourceDir}/build-intel",
+  "cacheVariables": {
+    "CMAKE_INSTALL_PREFIX": "${sourceDir}/build-intel"
+  },
   "environment": {
     "CC": "icc",
     "CXX": "icpc",
@@ -62,7 +65,6 @@
   "displayName": "Intel oneAPI LLVM",
   "environment": {
     "CC": "icx",
-    "CXX": "icx",
     "FC": "ifx"
   }
 },
