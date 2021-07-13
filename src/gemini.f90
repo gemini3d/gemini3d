@@ -329,8 +329,8 @@ main : do while (t < tdur)
   !> COMPUTE BACKGROUND NEUTRAL ATMOSPHERE USING MSIS00.
   if ( it/=1 .and. cfg%flagneuBG .and. t>tneuBG) then     !we dont' throttle for tneuBG so we have to do things this way to not skip over...
     call cpu_time(tstart)
-    call neutral_atmos(ymd,UTsec,x%glat,x%glon,x%alt,cfg%activ,v2grid,v3grid,nn,Tn,vn1,vn2,vn3, cfg%msis_version)
-    call neutral_winds(ymd, UTsec, Ap=cfg%activ(3), x=x, vn1=vn1, vn2=vn2, vn3=vn3)
+    call neutral_atmos(ymd,UTsec,x%glat,x%glon,x%alt,cfg%activ,nn,Tn,cfg%msis_version)
+    call neutral_winds(ymd, UTsec, Ap=cfg%activ(3), x=x, v2grid=v2grid,v3grid=v3grid,vn1=vn1, vn2=vn2, vn3=vn3)
     tneuBG=tneuBG+cfg%dtneuBG;
     if (mpi_cfg%myid==0) then
       call cpu_time(tfin)

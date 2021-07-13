@@ -27,10 +27,13 @@ module procedure neutral_winds
   
   call rotate_geo2native(vnalt=Walt, vnglat=Wmeridional, vnglon=Wzonal,x=x, vn1=v1, vn2=v2, vn3=v3)
  
-  !! FIXME: need to use neutral_update to do this... 
-  vn1 = vn1 + v1
-  vn2 = vn2 + v2
-  vn3 = vn3 + v3
+  !! update module background winds 
+  vn1base = v1
+  vn2base = v2
+  vn3base = v3
+
+  !! update GEMINI wind variables
+  call neutral_wind_update(vn1,vn2,vn3,v2grid,v3grid)
 end procedure neutral_winds
 
 end submodule wind

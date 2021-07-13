@@ -73,7 +73,7 @@ module procedure neutral_atmos
   !! see winds submodule for HWM handling
   
   !> Update current state with new background and existing perturbations, if used
-  call neutral_update(nn,Tn,vn1,vn2,vn3,v2grid,v3grid)
+  call neutral_denstemp_update(nn,Tn)
 end procedure neutral_atmos
 
 end submodule atmos
