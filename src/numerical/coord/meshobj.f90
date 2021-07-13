@@ -302,12 +302,19 @@ contains
 
   !> compute diffs from given grid spacing.  Note that no one except for root needs full grid diffs.
   subroutine calc_coord_diffs(self)
-    class(curvmesh) :: self
+    class(curvmesh), intent(inout) :: self
+
     integer :: lx1,lx2,lx3
 
     if (.not. self%xi_alloc_status) error stop ' attempting to compute diffs without coordinates!'
 
-    lx1=self%lx1; lx2=self%lx2; lx3=self%lx3    ! limits indexing verboseness, which drives me crazy
+    lx1=self%lx1
+    lx2=self%lx2
+    lx3=self%lx3
+
+    if(lx1 < 1) error stop 'meshobj:calc_coord_diffs: lx1 must be strictly positive'
+    if(lx2 < 1) error stop 'meshobj:calc_coord_diffs: lx2 must be strictly positive'
+    if(lx3 < 1) error stop 'meshobj:calc_coord_diffs: lx3 must be strictly positive'
 
     allocate(self%dx1(0:lx1+2), self%x1i(1:lx1+1), self%dx1i(1:lx1))
     self%dx1 = self%x1(0:lx1+2)-self%x1(-1:lx1+1)
@@ -332,11 +339,18 @@ contains
 
   subroutine calc_coord_diffs_root(self)
     class(curvmesh), intent(inout) :: self
+
     integer :: lx1,lx2all,lx3all
 
     if (.not. self%xi_alloc_status) error stop ' attempting to compute root diffs without coordinates!'
 
-    lx1=self%lx1; lx2all=self%lx2all; lx3all=self%lx3all    ! limits indexing verboseness, which drives me crazy
+    lx1=self%lx1
+    lx2all=self%lx2all
+    lx3all=self%lx3all
+
+    if(lx1 < 1) error stop 'meshobj:calc_coord_diffs_root: lx1 must be strictly positive'
+    if(lx2all < 1) error stop 'meshobj:calc_coord_diffs_root: lx2all must be strictly positive'
+    if(lx3all < 1) error stop 'meshobj:calc_coord_diffs_root: lx3all must be strictly positive'
 
     allocate(self%x2iall(1:lx2all+1),self%dx2all(0:lx2all+2),self%dx2iall(1:lx2all))
     self%dx2all = self%x2all(0:lx2all+2)-self%x2all(-1:lx2all+1)
@@ -379,36 +393,39 @@ contains
 
   !> allocate space for metric factors, unit vectors, and transformations
   subroutine init_storage(self)
-    class(curvmesh) :: self
+    class(curvmesh), intent(inout) :: self
+
     integer :: lx1,lx2,lx3
 
     lx1=self%lx1; lx2=self%lx2; lx3=self%lx3
 
-    if (.not. self%coord_alloc_status ) then     ! use this as a proxy for if any other coordinate-specific arrays exist
-      !allocate(self%h1(1:lx1,1:lx2,1:lx3),self%h2(1:lx1,1:lx2,1:lx3),self%h3(1:lx1,1:lx2,1:lx3))
-      allocate(self%h1(-1:lx1+2,-1:lx2+2,-1:lx3+2))
-      allocate(self%h2, self%h3, mold=self%h1)
+    if(lx1 < 1) error stop 'meshobj:init_storage: lx1 must be strictly positive'
+    if(lx2 < 1) error stop 'meshobj:init_storage: lx2 must be strictly positive'
+    if(lx3 < 1) error stop 'meshobj:init_storage: lx3 must be strictly positive'
 
-      allocate(self%h1x1i(1:lx1+1,1:lx2,1:lx3))
-      allocate(self%h2x1i, self%h3x1i, mold=self%h1x1i)
+    if (self%coord_alloc_status) error stop 'attempting to allocate space for coordinate-specific arrays when they already exist!'
+    !! use this as a proxy for if any other coordinate-specific arrays exist
+    !allocate(self%h1(1:lx1,1:lx2,1:lx3),self%h2(1:lx1,1:lx2,1:lx3),self%h3(1:lx1,1:lx2,1:lx3))
+    allocate(self%h1(-1:lx1+2,-1:lx2+2,-1:lx3+2))
+    allocate(self%h2, self%h3, mold=self%h1)
 
-      allocate(self%h1x2i(1:lx1,1:lx2+1,1:lx3))
-      allocate(self%h2x2i, self%h3x2i, mold=self%h1x2i)
+    allocate(self%h1x1i(1:lx1+1,1:lx2,1:lx3))
+    allocate(self%h2x1i, self%h3x1i, mold=self%h1x1i)
 
-      allocate(self%h1x3i(1:lx1,1:lx2,1:lx3+1))
-      allocate(self%h2x3i,self%h3x3i, mold=self%h1x3i)
+    allocate(self%h1x2i(1:lx1,1:lx2+1,1:lx3))
+    allocate(self%h2x2i, self%h3x2i, mold=self%h1x2i)
 
-      allocate(self%er(1:lx1,1:lx2,1:lx3,3))
-      allocate(self%etheta, self%ephi, self%e1, self%e2, self%e3, mold=self%er)
+    allocate(self%h1x3i(1:lx1,1:lx2,1:lx3+1))
+    allocate(self%h2x3i,self%h3x3i, mold=self%h1x3i)
 
-      allocate(self%I(1:lx2,1:lx3))
-      allocate(self%Bmag(1:lx1,1:lx2,1:lx3))
-      allocate(self%g1, self%g2, self%g3, self%r, self%theta, self%phi, self%alt, self%glon, self%glat, mold=self%Bmag)
+    allocate(self%er(1:lx1,1:lx2,1:lx3,3))
+    allocate(self%etheta, self%ephi, self%e1, self%e2, self%e3, mold=self%er)
 
-      self%coord_alloc_status=.true.
-    else
-      error stop ' attempting to allocate space for coordinate-specific arrays when they already exist!'
-    end if
+    allocate(self%I(1:lx2,1:lx3))
+    allocate(self%Bmag(1:lx1,1:lx2,1:lx3))
+    allocate(self%g1, self%g2, self%g3, self%r, self%theta, self%phi, self%alt, self%glon, self%glat, mold=self%Bmag)
+
+    self%coord_alloc_status=.true.
   end subroutine init_storage
 
 
