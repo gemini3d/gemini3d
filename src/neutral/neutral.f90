@@ -239,21 +239,7 @@ subroutine rotate_geo2native(vnalt,vnglat,vnglon,x,vn1,vn2,vn3)
   !> if first time called then allocate space for projections and compute
   if (.not. allocated(proj_ealt_e1)) then
     call x%calc_unitvec_geo(ealt,eglat,eglon)
-
-    lx1=size(vnalt,1); lx2=size(vnalt,2); lx3=size(vnalt,3);
-    allocate(proj_ealt_e1(lx1,lx2,lx3),proj_eglat_e1(lx1,lx2,lx3),proj_eglon_e1(lx1,lx2,lx3))
-    allocate(proj_ealt_e2(lx1,lx2,lx3),proj_eglat_e2(lx1,lx2,lx3),proj_eglon_e2(lx1,lx2,lx3))
-    allocate(proj_ealt_e3(lx1,lx2,lx3),proj_eglat_e3(lx1,lx2,lx3),proj_eglon_e3(lx1,lx2,lx3))
-
-    proj_ealt_e1=sum(ealt*x%e1,4)
-    proj_eglat_e1=sum(eglat*x%e1,4)
-    proj_eglon_e1=sum(eglon*x%e1,4)
-    proj_ealt_e2=sum(ealt*x%e2,4)
-    proj_eglat_e2=sum(eglat*x%e2,4)
-    proj_eglon_e2=sum(eglon*x%e2,4)
-    proj_ealt_e3=sum(ealt*x%e3,4)
-    proj_eglat_e3=sum(eglat*x%e3,4)
-    proj_eglon_e3=sum(eglon*x%e3,4)
+    call store_geo2native_projections(x,ealt,eglat,eglon)
   end if
 
   !> rotate vectors into model native coordinate system
@@ -261,6 +247,45 @@ subroutine rotate_geo2native(vnalt,vnglat,vnglon,x,vn1,vn2,vn3)
   vn2=vnalt*proj_ealt_e2+vnglat*proj_eglat_e2+vnglon*proj_eglon_e2
   vn3=vnalt*proj_ealt_e3+vnglat*proj_eglat_e3+vnglon*proj_eglon_e3
 end subroutine rotate_geo2native
+
+
+!> compute projections for rotating winds geographic to native coordinate system
+subroutine store_geo2native_projections(x,ealt,eglat,eglon,rotmat)
+  class(curvmesh), intent(in) :: x
+  real(wp), dimension(:,:,:,:), intent(in) :: ealt,eglat,eglon
+  real(wp), dimension(:,:,:,:,:), intent(out), optional :: rotmat    ! for debugging purposes
+  integer :: ix1,ix2,ix3,lx1,lx2,lx3
+
+  !! allocate module-scope space for the projection factors
+  lx1=size(ealt,1); lx2=size(ealt,2); lx3=size(ealt,3);
+  allocate(proj_ealt_e1(lx1,lx2,lx3),proj_eglat_e1(lx1,lx2,lx3),proj_eglon_e1(lx1,lx2,lx3))
+  allocate(proj_ealt_e2(lx1,lx2,lx3),proj_eglat_e2(lx1,lx2,lx3),proj_eglon_e2(lx1,lx2,lx3))
+  allocate(proj_ealt_e3(lx1,lx2,lx3),proj_eglat_e3(lx1,lx2,lx3),proj_eglon_e3(lx1,lx2,lx3))
+
+  !! compute projections (dot products of unit vectors)
+  proj_ealt_e1=sum(ealt*x%e1,4)
+  proj_eglat_e1=sum(eglat*x%e1,4)
+  proj_eglon_e1=sum(eglon*x%e1,4)
+  proj_ealt_e2=sum(ealt*x%e2,4)
+  proj_eglat_e2=sum(eglat*x%e2,4)
+  proj_eglon_e2=sum(eglon*x%e2,4)
+  proj_ealt_e3=sum(ealt*x%e3,4)
+  proj_eglat_e3=sum(eglat*x%e3,4)
+  proj_eglon_e3=sum(eglon*x%e3,4)
+
+  !! store the rotation matrix to convert geo to native if the user wants it
+  if (present(rotmat)) then
+    do ix3=1,lx3
+      do ix2=1,lx2
+        do ix1=1,lx1
+          rotmat(1,1:3,ix1,ix2,ix3)=[proj_ealt_e1(ix1,ix2,ix3),proj_eglat_e1(ix1,ix2,ix3),proj_eglon_e1(ix1,ix2,ix3)]
+          rotmat(2,1:3,ix1,ix2,ix3)=[proj_ealt_e2(ix1,ix2,ix3),proj_eglat_e2(ix1,ix2,ix3),proj_eglon_e2(ix1,ix2,ix3)]
+          rotmat(3,1:3,ix1,ix2,ix3)=[proj_ealt_e3(ix1,ix2,ix3),proj_eglat_e3(ix1,ix2,ix3),proj_eglon_e3(ix1,ix2,ix3)]
+        end do
+      end do
+    end do
+  end if
+end subroutine store_geo2native_projections
 
 
 subroutine make_dneu()
