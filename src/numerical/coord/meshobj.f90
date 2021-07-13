@@ -446,34 +446,37 @@ contains
 
   !> allocate space for root-only grid quantities
   subroutine init_storage_root(self)
-    class(curvmesh) :: self
+    class(curvmesh), intent(inout) :: self
     integer :: lx1,lx2all,lx3all
 
     !fixme:  allocate root storage here; maybe check myid==0???  Need some protection so this does not get
     !         called from a worker...  Assume for now the calling procedure provides that.
 
-    lx1=self%lx1; lx2all=self%lx2all; lx3all=self%lx3all;
+    lx1=self%lx1
+    lx2all=self%lx2all
+    lx3all=self%lx3all
 
-    if (.not. self%coord_alloc_status_root) then
-      allocate(self%h1all(-1:lx1+2,-1:lx2all+2,-1:lx3all+2))
-      allocate(self%h2all, self%h3all, mold=self%h1all)
+    if(lx1 < 1) error stop 'meshobj:init_storage_root: lx1 must be strictly positive'
+    if(lx2all < 1) error stop 'meshobj:init_storage_root: lx2all must be strictly positive'
+    if(lx3all < 1) error stop 'meshobj:init_storage_root: lx3all must be strictly positive'
 
-      allocate(self%h1x1iall(1:lx1+1,1:lx2all,1:lx3all))
-      allocate(self%h2x1iall, self%h3x1iall, mold=self%h1x1iall)
+    if (self%coord_alloc_status_root) error stop 'attempting to allocate space for root-only arrays when they already exist!'
+    allocate(self%h1all(-1:lx1+2,-1:lx2all+2,-1:lx3all+2))
+    allocate(self%h2all, self%h3all, mold=self%h1all)
 
-      allocate(self%h1x2iall(1:lx1,1:lx2all+1,1:lx3all))
-      allocate(self%h2x2iall, self%h3x2iall, mold=self%h1x2iall)
+    allocate(self%h1x1iall(1:lx1+1,1:lx2all,1:lx3all))
+    allocate(self%h2x1iall, self%h3x1iall, mold=self%h1x1iall)
 
-      allocate(self%h1x3iall(1:lx1,1:lx2all,1:lx3all+1))
-      allocate(self%h2x3iall, self%h3x3iall, mold=self%h1x3iall)
+    allocate(self%h1x2iall(1:lx1,1:lx2all+1,1:lx3all))
+    allocate(self%h2x2iall, self%h3x2iall, mold=self%h1x2iall)
 
-      allocate(self%rall(1:lx1,1:lx2all,1:lx3all))
-      allocate(self%thetaall, self%phiall, self%altall, self%Bmagall, self%glonall, mold=self%rall)
+    allocate(self%h1x3iall(1:lx1,1:lx2all,1:lx3all+1))
+    allocate(self%h2x3iall, self%h3x3iall, mold=self%h1x3iall)
 
-      self%coord_alloc_status_root=.true.
-    else
-      error stop ' attempting to allocate space for root-only arrays when they already exist!'
-    end if
+    allocate(self%rall(1:lx1,1:lx2all,1:lx3all))
+    allocate(self%thetaall, self%phiall, self%altall, self%Bmagall, self%glonall, mold=self%rall)
+
+    self%coord_alloc_status_root=.true.
   end subroutine init_storage_root
 
 
@@ -489,19 +492,22 @@ contains
 
   !> determine what type of grid we have
   subroutine calc_gridflag(self)
-    class(curvmesh) :: self
+    class(curvmesh), intent(inout) :: self
+
     integer :: lx1,lx2,lx3
 
     ! error checking
     if (.not. self%geog_set_status) error stop ' attempting to compute gridflag prior to setting geographic coordinates!'
 
     ! sizes
-    lx1=self%lx1; lx2=self%lx2; lx3=self%lx3
+    lx1=self%lx1
+    lx2=self%lx2
+    lx3=self%lx3
 
     ! grid type, assumes that each worker x1 arrays span the entire altitude range of the grid
-    if (abs(self%alt(1,1,1)-self%alt(lx1,1,1))<100d3) then    !closed dipole grid
+    if (abs(self%alt(1,1,1)-self%alt(lx1,1,1)) < 100e3_wp) then    !closed dipole grid
       self%gridflag=0
-    else if (self%alt(1,1,1)>self%alt(2,1,1)) then            !open dipole grid with inverted structure wrt altitude
+    else if (self%alt(1,1,1) > self%alt(2,1,1)) then            !open dipole grid with inverted structure wrt altitude
       self%gridflag=1
     else                                                      !something different (viz. non-inverted - lowest altitudes at the logical bottom of the grid)
       self%gridflag=2
@@ -524,7 +530,7 @@ contains
     ! set null points for this simulation
     allocate(self%nullpts(1:lx1,1:lx2,1:lx3))
     self%nullpts=.false.
-    where (self%alt<80e3_wp)
+    where (self%alt < 80e3_wp)
       self%nullpts=.true.
     end where
 
@@ -578,7 +584,7 @@ contains
 
     IDstr=' '
     write(IDstr,'(i1)') ID
-    call hf%open(path//'/simsize'//IDstr//'.h5',status='replace',action='w')
+    call hf%open(path//'/simsize'//IDstr//'.h5', action='w')
     call hf%write('/lx1',self%lx1)
     call hf%write('/lx2',self%lx2)
     call hf%write('/lx3',self%lx3)
@@ -603,7 +609,7 @@ contains
     IDstr=' '
     write(IDstr,'(i1)') ID
     call self%writesize(path,ID)
-    call hf%open(path//'/simgrid'//IDstr//'.h5',status='replace',action='w')
+    call hf%open(path//'/simgrid'//IDstr//'.h5', action='w')
     call hf%write('/x1',self%x1)
     call hf%write('/x2',self%x2)
     call hf%write('/x3',self%x3)
@@ -625,7 +631,7 @@ contains
     IDstr=' '
     write(IDstr,'(i1)') ID
     call self%writesize(path,ID)
-    call hf%open(path//'/simgrid'//IDstr//'.h5',status='replace',action='w')
+    call hf%open(path//'/simgrid'//IDstr//'.h5', action='w')
     call hf%write('/x1',self%x1)
     call hf%write('/x1i',self%x1i)
     call hf%write('/dx1b',self%dx1)
