@@ -240,18 +240,21 @@ subroutine make_dipolemesh(self)
 end subroutine make_dipolemesh
 
 
-!> compute gravitational field components
 subroutine calc_grav_dipole(self)
+!! compute gravitational field components
   class(dipolemesh), intent(inout) :: self
-  real(wp), dimension(1:self%lx1,1:self%lx2,1:self%lx3) :: gr
 
-  ! fixme: error checking?
+  real(wp), dimension(1:self%lx1, 1:self%lx2, 1:self%lx3) :: gr
 
-  gr=-Gconst*Me/self%r**2     ! radial component of gravity
-  self%gq=gr*sum(self%er*self%eq,dim=4)
-  self%gp=gr*sum(self%er*self%ep,dim=4)
+  if(any(shape(gr) < 1)) error stop "meshobj_dipole:calc_grav_dipole: lx1,lx2,lx3 must be strictly positive"
+
+  gr = -Gconst*Me / self%r**2
+  !! radial component of gravity
+  self%gq = gr*sum(self%er*self%eq, dim=4)
+  self%gp = gr*sum(self%er*self%ep, dim=4)
   !gphi=gr*sum(er*ephi,dim=4)
-  self%gphi=0._wp     ! force to zero to avoid really small values from numerical error
+  self%gphi = 0
+  !! force to zero to avoid really small values from numerical error
 end subroutine calc_grav_dipole
 
 
@@ -265,23 +268,27 @@ subroutine calc_Bmag_dipole(self)
 end subroutine calc_Bmag_dipole
 
 
-!> compute the inclination angle (degrees) for each geomagnetic field line
 subroutine calc_inclination_dipole(self)
+!! compute the inclination angle (degrees) for each geomagnetic field line
   class(dipolemesh), intent(inout) :: self
-  integer :: lq
-  real(wp), dimension(1:self%lx1,1:self%lx2,1:self%lx3) :: proj
 
-  ! fixme: error checking
+  integer :: lq
+  real(wp), dimension(1:self%lx1, 1:self%lx2, 1:self%lx3) :: proj
+
+  if(any(shape(proj) < 1)) error stop "meshobj_dipole:calc_inclination_dipole: lx1,lx2,lx3 must be strictly positive"
 
   lq=size(self%er,1)
   proj=sum(self%er*self%eq,dim=4)
   proj=acos(proj)
-  if (self%gridflag==0) then    ! for a closed grid average over half the domain
-    self%I=sum(proj(1:lq/2,:,:),dim=1)/(real(lq,wp)/2._wp)    ! note use of integer division and casting to real for avging
-  else                     ! otherwise average over full domain
-    self%I=sum(proj,dim=1)/real(lq,wp)
+  if (self%gridflag==0) then
+    !! for a closed grid average over half the domain
+    self%I = sum(proj(1:lq/2,:,:), dim=1) / (real(lq, wp)/2)
+    !! note use of integer division and casting to real for avging
+  else
+    !! otherwise average over full domain
+    self%I = sum(proj,dim=1) / real(lq, wp)
   end if
-  self%I=90._wp-min(self%I,pi-self%I)*180._wp/pi
+  self%I= 90 - min(self%I, pi-self%I) * 180/pi
 end subroutine calc_inclination_dipole
 
 
