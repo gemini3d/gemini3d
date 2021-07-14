@@ -25,7 +25,7 @@ if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
     set(prefix ~/lib)
   endif()
 
-  get_filename_component(prefix ${prefix} ABSOLUTE)
+  file(REAL_PATH ${prefix} prefix EXPAND_TILDE)
   set(CMAKE_INSTALL_PREFIX ${prefix} CACHE PATH "top-level install path" FORCE)
 endif()
 
