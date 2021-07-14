@@ -60,10 +60,14 @@ interface ! potential_worker.f90
   real(wp), dimension(-1:,-1:,-1:,:), intent(in) ::  ns,Ts
   class(curvmesh), intent(in) :: x
   integer, intent(in) :: flagdirich
-  real(wp), dimension(:,:,:), intent(in) :: E02src,E03src    ! these are BG fields use to compute potential source terms; viz. they need to be zeroed out if there is a lagrangian grid...
-  real(wp), dimension(:,:), intent(inout) :: Vminx1slab,Vmaxx1slab    !need to be able to convert into potential normal deriv.
+  real(wp), dimension(:,:,:), intent(in) :: E02src,E03src
+  !! these are BG fields use to compute potential source terms
+  !! viz. they need to be zeroed out if there is a lagrangian grid...
+  real(wp), dimension(:,:), intent(inout) :: Vminx1slab,Vmaxx1slab
+  !! need to be able to convert into potential normal deriv.
 
-  real(wp), dimension(:,:,:), intent(out) :: E1,E2,E3,J1,J2,J3
+  real(wp), dimension(:,:,:), intent(inout) :: E1,E2,E3,J1,J2,J3
+  !! intent(out)
   end subroutine potential_workers_mpi
 end interface
 
@@ -93,8 +97,10 @@ interface !< potential_root.f90
   real(wp), dimension(:,:), intent(in) :: Vminx3,Vmaxx3
   real(wp), dimension(:,:), intent(inout) :: Vminx1slab,Vmaxx1slab    !need to be able to convert into pot. normal deriv.
 
-  real(wp), dimension(:,:,:), intent(out) :: E1,E2,E3,J1,J2,J3
-  real(wp), dimension(:,:,:), intent(inout) :: Phiall   !not good form, but I'm lazy...  Forgot what I meant by this...
+  real(wp), dimension(:,:,:), intent(inout) :: E1,E2,E3,J1,J2,J3
+  !! intent(out)
+  real(wp), dimension(:,:,:), intent(inout) :: Phiall
+  !! not good form, but I'm lazy...  Forgot what I meant by this...
   integer, dimension(3), intent(in) :: ymd
   real(wp), intent(in) :: UTsec
   end subroutine potential_root_mpi_curv
@@ -125,7 +131,8 @@ subroutine electrodynamics_curv(it,t,dt,nn,vn2,vn3,Tn,cfg,ns,Ts,vs1,B1,vs2,vs3,x
   real(wp), dimension(-1:,-1:,-1:), intent(in) :: B1
   real(wp), dimension(-1:,-1:,-1:,:), intent(inout) ::  vs2,vs3
   class(curvmesh), intent(in) :: x
-  real(wp), dimension(:,:,:), intent(out) :: E1,E2,E3,J1,J2,J3
+  real(wp), dimension(:,:,:), intent(inout) :: E1,E2,E3,J1,J2,J3
+  !! intent(out)
   real(wp), dimension(:,:,:), allocatable, intent(inout) :: Phiall
   !! inout since it may not be allocated or deallocated in this procedure
   integer, dimension(3), intent(in) :: ymd
@@ -255,11 +262,17 @@ subroutine BGfields_boundaries_root(dt,t,ymd,UTsec,cfg,x, &
   class(curvmesh), intent(in) :: x
 
   integer, intent(out) :: flagdirich
-  real(wp), dimension(:,:), intent(out) :: Vminx1,Vmaxx1     !allow pointer aliases for these vars, as required for subroutines internal to potentialBCs.
-  real(wp), dimension(:,:), intent(out) :: Vminx2,Vmaxx2
-  real(wp), dimension(:,:), intent(out)  :: Vminx3,Vmaxx3
-  real(wp), dimension(:,:,:), intent(out) :: E01,E02,E03
-  real(wp), dimension(:,:), intent(out) :: Vminx1slab,Vmaxx1slab
+  real(wp), dimension(:,:), intent(inout) :: Vminx1,Vmaxx1
+  !! intent(out)
+  !! allow pointer aliases for these vars, as required for subroutines internal to potentialBCs.
+  real(wp), dimension(:,:), intent(inout) :: Vminx2,Vmaxx2
+  !! intent(out)
+  real(wp), dimension(:,:), intent(inout)  :: Vminx3,Vmaxx3
+  !! intent(out)
+  real(wp), dimension(:,:,:), intent(inout) :: E01,E02,E03
+  !! intent(out)
+  real(wp), dimension(:,:), intent(inout) :: Vminx1slab,Vmaxx1slab
+  !! intent(out)
 
   !local work arrays
   real(wp), dimension(:,:,:), allocatable :: E01all,E02all,E03all     !full grid values not needed by root which will collect a source term computation from all workers...
@@ -307,8 +320,10 @@ subroutine BGfields_boundaries_worker(flagdirich,E01,E02,E03,Vminx1slab,Vmaxx1sl
   !> Worker only!  receive background and boundary condition information from root
 
   integer, intent(out) :: flagdirich
-  real(wp), dimension(:,:,:), intent(out) :: E01,E02,E03
-  real(wp), dimension(:,:), intent(out) :: Vminx1slab,Vmaxx1slab
+  real(wp), dimension(:,:,:), intent(inout) :: E01,E02,E03
+  !! intent(out)
+  real(wp), dimension(:,:), intent(inout) :: Vminx1slab,Vmaxx1slab
+  !! intent(out)
 
   ! local variables
   integer :: ierr
@@ -333,11 +348,14 @@ subroutine velocities(muP,muH,nusn,E2,E3,vn2,vn3,ns,Ts,x,flaggravdrift,flagdiama
 
   real(wp), dimension(:,:,:,:), intent(in) :: muP,muH,nusn
   real(wp), dimension(:,:,:), intent(in) :: E2,E3,vn2,vn3
-  real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns,Ts      !> these must have ghost cells
+  real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns,Ts
+  !! these must have ghost cells
   class(curvmesh), intent(in) :: x
   logical, intent(in) :: flaggravdrift
   logical, intent(in) :: flagdiamagnetic
-  real(wp), dimension(-1:,-1:,-1:,:), intent(out) :: vs2,vs3   !> these have ghost cells
+  real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: vs2,vs3
+  !! intent(out)
+  !! these have ghost cells
 
   integer :: lx1,lx2,lx3,lsp,isp
   real(wp), dimension(-1:size(E2,1)+2,-1:size(E2,2)+2,-1:size(E2,3)+2) :: pressure
@@ -420,7 +438,8 @@ subroutine potential_sourceterms(sigP,sigH,sigPgrav,sigHgrav,E02,E03,vn2,vn3,B1,
   class(curvmesh), intent(in) :: x
   logical, intent(in) :: flaggravdrift
   logical, intent(in) :: flagdiamagnetic
-  real(wp), dimension(:,:,:), intent(out) :: srcterm
+  real(wp), dimension(:,:,:), intent(inout) :: srcterm
+  !! intent(out)
 
   real(wp), dimension(1:size(E02,1),1:size(E02,2),1:size(E02,3)) :: J1,J2,J3
   real(wp), dimension(0:size(E02,1)+1,0:size(E02,2)+1,0:size(E02,3)+1) :: divtmp
@@ -568,7 +587,8 @@ subroutine pot2perpfield(Phi,x,E2,E3)
 
   real(wp), dimension(:,:,:), intent(in) :: Phi
   class(curvmesh), intent(in) :: x
-  real(wp), dimension(:,:,:), intent(out) :: E2,E3
+  real(wp), dimension(:,:,:), intent(inout) :: E2,E3
+  !! intent(out)
 
   real(wp), dimension(0:size(Phi,1)+1,0:size(Phi,2)+1,0:size(Phi,3)+1) :: divtmp
   !! one extra grid point on either end to facilitate derivatives
@@ -615,7 +635,8 @@ subroutine parallel_currents(cfg,x,J2,J3,Vminx1slab,Vmaxx1slab,Phi,sig0,flagdiri
   real(wp), dimension(:,:,:), intent(in) :: Phi
   real(wp), dimension(:,:,:), intent(in) :: sig0
   integer, intent(in) :: flagdirich
-  real(wp), dimension(1:size(J2,1),1:size(J2,2),1:size(J2,3)), intent(out) :: J1,E1
+  real(wp), dimension(1:size(J2,1),1:size(J2,2),1:size(J2,3)), intent(inout) :: J1,E1
+  !! intent(out)
 
   !> local work arrays
   integer :: lx1,lx2,lx3
@@ -739,7 +760,8 @@ subroutine polarization_currents(cfg,x,dt,incap,E2,E3,E2prev,E3prev,v2,v3,J1pol,
   class(curvmesh), intent(in) :: x
   real(wp), intent(in) :: dt
   real(wp), dimension(:,:,:), intent(in) :: incap,E2,E3,E2prev,E3prev,v2,v3
-  real(wp), dimension(1:size(E2,1),1:size(E2,2),1:size(E2,3)), intent(out) :: J1pol,J2pol,J3pol
+  real(wp), dimension(1:size(E2,1),1:size(E2,2),1:size(E2,3)), intent(inout) :: J1pol,J2pol,J3pol
+  !! intent(out)
 
   ! internal work arrays
   integer :: lx1,lx2,lx3
@@ -802,7 +824,8 @@ end subroutine polarization_currents
 
 subroutine get_BGEfields(x,E01,E02,E03)
   class(curvmesh), intent(in) :: x
-  real(wp), dimension(:,:,:), intent(out) :: E01,E02,E03
+  real(wp), dimension(:,:,:), intent(inout) :: E01,E02,E03
+  !! intent(out)
 
   !> routine to pull the background electric fields from the BCs modules and distribute
   !   them to worker processes; called by both root and worker processes
