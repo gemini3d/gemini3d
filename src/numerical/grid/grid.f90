@@ -235,7 +235,8 @@ subroutine grid_drift(x,E02,E03,v2grid,v3grid)
 
   class(curvmesh), intent(in) :: x
   reaL(wp), dimension(:,:,:), intent(in) :: E02,E03
-  real(wp), intent(out) :: v2grid,v3grid
+  real(wp), intent(inout) :: v2grid,v3grid
+  !! intent(out)
   integer :: iid,ierr
   real(wp) :: E2ref,E3ref,Bref
 
