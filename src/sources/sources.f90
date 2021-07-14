@@ -37,7 +37,8 @@ real(wp), dimension(:,:,:,:), intent(in) :: nn
 real(wp), dimension(:,:,:), intent(in) :: vn1,vn2,vn3,Tn
 real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns,vs1,vs2,vs3,Ts
 
-real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4,lsp), intent(out) :: Pr,Lo
+real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4,lsp), intent(inout) :: Pr,Lo
+!! intent(out)
 
 real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: betanow,kreac,Teff,Te,dv2
 integer :: lx1,lx2,lx3
@@ -341,7 +342,8 @@ real(wp), dimension(:,:,:), intent(in) :: E1
 real(wp), dimension(:,:,:,:), intent(in) :: Q
 class(curvmesh), intent(in) :: x
 
-real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4,lsp), intent(out) :: Pr,Lo
+real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4,lsp), intent(inout) :: Pr,Lo
+!! intent(out)
 
 integer :: lx1,lx2,lx3,isp,isp2
 real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: nu,Phisj,Psisj
@@ -448,7 +450,8 @@ real(wp), dimension(:,:,:,:), intent(in) :: nn
 real(wp), dimension(:,:,:), intent(in) :: vn1,vn2,vn3,Tn
 real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns,vs1,vs2,vs3,Ts
 
-real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4,lsp), intent(out) :: Pr,Lo
+real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4,lsp), intent(inout) :: Pr,Lo
+!! intent(out)
 
 integer :: ix1,ix2,ix3,lx1,lx2,lx3,isp,isp2
 real(wp), dimension(size(Ts,1)-4,size(Ts,2)-4,size(Ts,3)-4) :: nu,Phisj,Psisj

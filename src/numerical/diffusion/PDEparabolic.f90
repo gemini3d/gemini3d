@@ -231,8 +231,10 @@ real(wp), dimension(:), intent(in) :: Ts
 real(wp), intent(in) :: Tsminx1, Tsmaxx1, dt
 real(wp), dimension(0:), intent(in) :: dx1   !ith backward difference
 real(wp), dimension(:), intent(in) :: dx1i   !ith centered difference
-real(wp), dimension(:,:), intent(out), optional :: coeffs
-real(wp), dimension(:), intent(out), optional :: rhs
+real(wp), dimension(:,:), intent(inout), optional :: coeffs
+!! intent(out)
+real(wp), dimension(:), intent(inout), optional :: rhs
+!! intent(out)
 
 integer, parameter :: ll=2                   !number of lower diagonals
 real(wp), dimension(3*ll+1,size(Ts)) :: M    !note extra rows for lapack workspace
@@ -322,7 +324,7 @@ backEuler1D(ix1)=Tsmaxx1
 !
 
 !> in case we want to output the right-hand side of the system; has to be done here before
-!   the output argument (which stores rhs) is overwritten by the solution.  
+!   the output argument (which stores rhs) is overwritten by the solution.
 if (present(rhs)) then
   rhs(1:lx1)=backEuler1D(1:lx1)
 end if
