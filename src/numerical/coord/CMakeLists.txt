@@ -27,7 +27,7 @@ if(NOT BUILD_TESTING)
 endif()
 
 add_executable(newton_testdriver newton_testdriver.f90)
-target_link_libraries(newton_testdriver PRIVATE const newton meshobj meshobj_dipole newton spherical geomagnetic)
+target_link_libraries(newton_testdriver PRIVATE const newton meshobj meshobj_dipole spherical geomagnetic)
 
 add_executable(geomag2geog_testdriver geomag2geog_testdriver.f90)
 target_link_libraries(geomag2geog_testdriver PRIVATE const geomagnetic)
