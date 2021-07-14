@@ -135,12 +135,12 @@ subroutine gather_grid_root(h1,h2,h3, &
   real(wp), dimension(:,:,:), intent(in) :: h1x3i,h2x3i,h3x3i
   real(wp), dimension(:,:,:), intent(in) :: r,theta,phi
   real(wp), dimension(:,:,:), intent(in) :: alt,Bmag,glon
-  real(wp), dimension(:,:,:), intent(out) :: h1all,h2all,h3all
-  real(wp), dimension(:,:,:), intent(out) :: h1x1iall,h2x1iall,h3x1iall
-  real(wp), dimension(:,:,:), intent(out) :: h1x2iall,h2x2iall,h3x2iall
-  real(wp), dimension(:,:,:), intent(out) :: h1x3iall,h2x3iall,h3x3iall
-  real(wp), dimension(:,:,:), intent(out) :: rall,thetaall,phiall
-  real(wp), dimension(:,:,:), intent(out) :: altall,Bmagall,glonall
+  real(wp), dimension(:,:,:), intent(inout) :: h1all,h2all,h3all
+  real(wp), dimension(:,:,:), intent(inout) :: h1x1iall,h2x1iall,h3x1iall
+  real(wp), dimension(:,:,:), intent(inout) :: h1x2iall,h2x2iall,h3x2iall
+  real(wp), dimension(:,:,:), intent(inout) :: h1x3iall,h2x3iall,h3x3iall
+  real(wp), dimension(:,:,:), intent(inout) :: rall,thetaall,phiall
+  real(wp), dimension(:,:,:), intent(inout) :: altall,Bmagall,glonall
 
   call gather_recv3D_ghost(h1,tag%h1,h1all)
   call gather_recv3D_ghost(h2,tag%h2,h2all)
