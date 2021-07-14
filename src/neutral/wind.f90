@@ -12,10 +12,10 @@ module procedure neutral_winds
   integer :: i1,i2,i3, dayOfYear
   
   dayOfYear = ymd2doy(ymd(1), ymd(2), ymd(3))
-  
-  x3: do i1 = 1,size(x%alt,3)
+ 
+  x3: do i3 = 1,size(x%alt,3)
     x2: do i2 = 1,size(x%alt,2)
-      x1: do i3 = 1,size(x%alt,1)
+      x1: do i1 = 1,size(x%alt,1)
         call hwm_14(dayOfYear, UTsec, &
           alt_km=x%alt(i1,i2,i3)/1.0e3, glat=x%glat(i1,i2,i3), glon=x%glon(i1,i2,i3), Ap=Ap, &
           Wmeridional=Wmeridional(i1,i2,i3), Wzonal=Wzonal(i1,i2,i3))
