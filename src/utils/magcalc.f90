@@ -596,15 +596,19 @@ contains    ! declare integral functions as internal subprograms; too specific t
     real(wp), dimension(:,:,:), intent(in) :: Rx,Ry,Rz
     real(wp), dimension(:,:), intent(in) :: Rxend,Ryend,Rzend,Rxtop,Rytop,Rztop
     real(wp), dimension(:), intent(in) :: Rxcorner,Rycorner,Rzcorner
-    real(wp), dimension(:,:,:), intent(out) :: Rmag
-    real(wp), dimension(:,:), intent(out) :: Rmagend,Rmagtop
-    real(wp), dimension(:), intent(out) :: Rmagcorner
+    real(wp), dimension(:,:,:),intent(inout) :: Rmag
+    !! intent(out)
+    real(wp), dimension(:,:),intent(inout) :: Rmagend,Rmagtop
+    !! intent(out)
+    real(wp), dimension(:),intent(inout) :: Rmagcorner
+    !! intent(out)
     integer :: ix1,ix2,ix3,lx1,lx2,lx3
 
     lx1=size(Rx,1); lx2=size(Rx,2); lx3=size(Rx,3);
 
-    ! separately compute average distance for the denominator help with regulation issue and accounts for averaging over each differential volumes
-    Rmag=0._wp
+    !! separately compute average distance for the denominator help with regulation issue and
+    !! accounts for averaging over each differential volumes
+    Rmag = 0
     do ix3=2,lx3
       do ix2=2,lx2
         do ix1=2,lx1
@@ -621,7 +625,7 @@ contains    ! declare integral functions as internal subprograms; too specific t
     end do
 
     ! end and top values should be added.
-    Rmagend=0._wp
+    Rmagend = 0
     if (mpi_cfg%myid3/=mpi_cfg%lid3-1) then
       do ix2=2,lx2
         do ix1=2,lx1
@@ -636,7 +640,7 @@ contains    ! declare integral functions as internal subprograms; too specific t
         end do
       end do
     end if
-    Rmagtop=0._wp
+    Rmagtop = 0
     if (mpi_cfg%myid2/=mpi_cfg%lid2-1) then
       do ix3=2,lx3
         do ix1=2,lx1
@@ -653,7 +657,7 @@ contains    ! declare integral functions as internal subprograms; too specific t
     end if
 
     ! corner cell distance to be computed
-    Rmagcorner=0._wp
+    Rmagcorner = 0
     if (mpi_cfg%myid3/=mpi_cfg%lid3-1 .and. mpi_cfg%myid2/=mpi_cfg%lid2-1) then
       do ix1=2,lx1
         Rmagcorner(ix1)=1/8._wp*( sqrt(Rxcorner(ix1)**2      +  Rycorner(ix1)**2      +  Rzcorner(ix1)**2) + &                    ! i,j,k
@@ -695,7 +699,7 @@ contains    ! declare integral functions as internal subprograms; too specific t
                                   integrand(1:lx1-1,2:lx2,2:lx3)   + integrand(2:lx1,2:lx2,2:lx3) )/ &
                                  Rcubed(2:lx1,2:lx2,2:lx3)
 
-    integrandavgend=0._wp
+    integrandavgend = 0
     if (mpi_cfg%myid3/=mpi_cfg%lid3-1) then
       integrandavgend(:,:)=1/8._wp*( integrand(1:lx1-1,1:lx2-1,lx3) + integrand(2:lx1,1:lx2-1,lx3) + &
                            integrand(1:lx1-1,2:lx2,lx3) + integrand(2:lx1,2:lx2,lx3) + &
@@ -703,7 +707,7 @@ contains    ! declare integral functions as internal subprograms; too specific t
                            integrandend(1:lx1-1,2:lx2) + integrandend(2:lx1,2:lx2) )/Rcubedend(2:lx1,2:lx2)
     end if
 
-    integrandavgtop=0._wp
+    integrandavgtop = 0
     if (mpi_cfg%myid2/=mpi_cfg%lid2-1) then
       integrandavgtop(:,:)=1/8._wp*( integrand(1:lx1-1,lx2,1:lx3-1) + integrand(2:lx1,lx2,1:lx3-1) + &
                                      integrand(1:lx1-1,lx2,2:lx3)   + integrand(2:lx1,lx2,2:lx3) + &
@@ -712,7 +716,7 @@ contains    ! declare integral functions as internal subprograms; too specific t
                                     Rcubedtop(2:lx1,2:lx3)
     end if
 
-    integrandavgcorner=0._wp
+    integrandavgcorner = 0
     if (mpi_cfg%myid3/=mpi_cfg%lid3-1 .and. mpi_cfg%myid2/=mpi_cfg%lid2-1) then
       integrandavgcorner(:)=1/8._wp*( integrandcorner(1:lx1-1) + integrandcorner(2:lx1) + &
                                      integrandend(1:lx1-1,lx2) + integrandend(2:lx1,lx2) + &
