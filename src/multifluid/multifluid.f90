@@ -66,7 +66,8 @@ integer, dimension(3), intent(in) :: ymd
 real(wp), intent(in) :: UTsec
 logical, intent(in) :: first  !< first time step
 
-real(wp), dimension(:,:,:), intent(out) :: iver
+real(wp), dimension(:,:,:), intent(inout) :: iver
+!! intent(out)
 
 integer :: isp
 real(wp) :: tstart,tfin

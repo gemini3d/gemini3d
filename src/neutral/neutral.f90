@@ -21,9 +21,12 @@ interface ! atmos.f90
   real(wp), dimension(:,:,:), intent(in) :: glat,glon,alt
   real(wp), intent(in) :: activ(3)
   real(wp), intent(in) :: v2grid,v3grid
-  real(wp), dimension(1:size(alt,1),1:size(alt,2),1:size(alt,3),lnchem), intent(out) :: nn
-  real(wp), dimension(1:size(alt,1),1:size(alt,2),1:size(alt,3)), intent(out) :: Tn
-  real(wp), dimension(1:size(alt,1),1:size(alt,2),1:size(alt,3)), intent(out) :: vn1,vn2,vn3
+  real(wp), dimension(1:size(alt,1),1:size(alt,2),1:size(alt,3),lnchem), intent(inout) :: nn
+  !! intent(out)
+  real(wp), dimension(1:size(alt,1),1:size(alt,2),1:size(alt,3)), intent(inout) :: Tn
+  !! intent(out)
+  real(wp), dimension(1:size(alt,1),1:size(alt,2),1:size(alt,3)), intent(inout) :: vn1,vn2,vn3
+  !! intent(out)
   end subroutine neutral_atmos
 end interface
 
@@ -32,13 +35,18 @@ interface ! perturb.f90
   type(gemini_cfg), intent(in) :: cfg
   real(wp), intent(in) :: dt,dtneu
   real(wp), intent(in) :: t
-  integer, dimension(3), intent(in) :: ymd     !date for which we wish to calculate perturbations
+  integer, dimension(3), intent(in) :: ymd
+  !! date for which we wish to calculate perturbations
   real(wp), intent(in) :: UTsec
-  
-  class(curvmesh), intent(inout) :: x                !grid structure  (inout becuase we want to be able to deallocate unit vectors once we are done with them)
+
+  class(curvmesh), intent(inout) :: x
+  !! grid structure  (inout becuase we want to be able to deallocate unit vectors once we are done with them)
   real(wp), intent(in) :: v2grid,v3grid
-  real(wp), dimension(:,:,:,:), intent(out) :: nn   !neutral params interpolated to plasma grid at requested time
-  real(wp), dimension(:,:,:), intent(out) :: Tn,vn1,vn2,vn3
+  real(wp), dimension(:,:,:,:), intent(inout) :: nn
+  !! intent(out)
+  !! neutral params interpolated to plasma grid at requested time
+  real(wp), dimension(:,:,:), intent(inout) :: Tn,vn1,vn2,vn3
+  !! intent(out)
   end subroutine neutral_perturb
 end interface
 
@@ -114,11 +122,15 @@ real(wp), intent(in) :: dt,t
 type(gemini_cfg), intent(in) :: cfg
 integer, dimension(3), intent(in) :: ymd
 real(wp), intent(in) :: UTsec
-class(curvmesh), intent(inout) :: x    ! unit vecs may be deallocated after first setup
+class(curvmesh), intent(inout) :: x
+!! unit vecs may be deallocated after first setup
 real(wp), intent(in) :: v2grid,v3grid
-real(wp), dimension(:,:,:,:), intent(out) :: nn
-real(wp), dimension(:,:,:), intent(out) :: Tn
-real(wp), dimension(:,:,:), intent(out) :: vn1,vn2,vn3
+real(wp), dimension(:,:,:,:), intent(inout) :: nn
+!! intent(out)
+real(wp), dimension(:,:,:), intent(inout) :: Tn
+!! intent(out)
+real(wp), dimension(:,:,:), intent(inout) :: vn1,vn2,vn3
+!! intent(out)
 integer, dimension(3) :: ymdtmp
 real(wp) :: UTsectmp
 
@@ -162,11 +174,15 @@ end subroutine init_neutrals
 
 subroutine neutral_update(nn,Tn,vn1,vn2,vn3)
 
-! adds stored base and perturbation neutral atmospheric parameters (these are module-scope parameters so not needed as input)
+!! adds stored base and perturbation neutral atmospheric parameters
+!!  these are module-scope parameters so not needed as input
 
-real(wp), dimension(:,:,:,:), intent(out) :: nn
-real(wp), dimension(:,:,:), intent(out) :: Tn
-real(wp), dimension(:,:,:), intent(out) :: vn1,vn2,vn3
+real(wp), dimension(:,:,:,:), intent(inout) :: nn
+!! intent(out)
+real(wp), dimension(:,:,:), intent(inout) :: Tn
+!! intent(out)
+real(wp), dimension(:,:,:), intent(inout) :: vn1,vn2,vn3
+!! intent(out)
 
 
 !> background neutral parameters
