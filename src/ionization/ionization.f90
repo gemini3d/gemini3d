@@ -21,8 +21,10 @@ module subroutine glow_run(W0,PhiWmWm2,date_doy,UTsec,xf107,xf107a,xlat,xlon,alt
 
 real(wp), dimension(:), intent(in) :: W0,PhiWmWm2,alt,Tn
 real(wp), dimension(:,:), intent(in) :: nn,ns,Ts
-real(wp), dimension(:,:), intent(out) :: ionrate
-real(wp), dimension(:), intent(out) :: eheating, iver
+real(wp), dimension(:,:), intent(inout) :: ionrate
+!! intent(out)
+real(wp), dimension(:), intent(inout) :: eheating, iver
+!! intent(out)
 real(wp), intent(in) :: UTsec, xlat, xlon, xf107, xf107a
 integer, intent(in) :: date_doy
 
@@ -377,9 +379,12 @@ real(wp), dimension(:,:,:,:), intent(in) :: nn
 real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns,Ts
 real(wp), dimension(:,:,:), intent(in) :: alt,Tn
 
-real(wp), dimension(1:size(nn,1),1:size(nn,2),1:size(nn,3)), intent(out) :: eheating
-real(wp), dimension(1:size(nn,2),1:size(nn,3),lwave), intent(out) :: iver
-real(wp), dimension(1:size(nn,1),1:size(nn,2),1:size(nn,3),lsp-1), intent(out) :: ionrate
+real(wp), dimension(1:size(nn,1),1:size(nn,2),1:size(nn,3)), intent(inout) :: eheating
+!! intent(out)
+real(wp), dimension(1:size(nn,2),1:size(nn,3),lwave), intent(inout) :: iver
+!! intent(out)
+real(wp), dimension(1:size(nn,1),1:size(nn,2),1:size(nn,3),lsp-1), intent(inout) :: ionrate
+!! intent(out)
 
 integer :: ix2,ix3,lx1,lx2,lx3,date_doy
 

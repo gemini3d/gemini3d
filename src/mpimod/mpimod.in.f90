@@ -126,7 +126,7 @@ interface gather_recv
 end interface gather_recv
 
 interface gather_recv3D_ghost
-  procedure gather_recv3D_ghost_23 
+  procedure gather_recv3D_ghost_23
 end interface gather_recv3D_ghost
 
 interface gather_recv3D_x2i
@@ -142,7 +142,7 @@ interface gather_send
 end interface gather_send
 
 interface gather_send3D_ghost
-  procedure gather_send3D_ghost_23 
+  procedure gather_send3D_ghost_23
 end interface gather_send3D_ghost
 
 interface gather_send3D_x2i
@@ -209,84 +209,93 @@ interface ! mpisend.f90
     real(wp), dimension(:,:), intent(in) :: paramtrim
     integer, intent(in) :: tag
   end subroutine gather_send2D_23
-  
+
   module subroutine gather_send3D_23(paramtrim,tag)
     real(wp), dimension(:,:,:), intent(in) :: paramtrim
     integer, intent(in) :: tag
   end subroutine gather_send3D_23
-  
+
   module subroutine gather_send4D_23(param,tag)
     real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: param
     integer, intent(in) :: tag
   end subroutine gather_send4D_23
-  
+
   module subroutine gather_send3D_ghost_23(param,tag)
     real(wp), dimension(-1:,-1:,-1:), intent(in) :: param
-    integer, intent(in) :: tag 
+    integer, intent(in) :: tag
   end subroutine gather_send3D_ghost_23
 
   module subroutine gather_send3D_x2i_23(param,tag)
     real(wp), dimension(:,:,:), intent(in) :: param
-    integer, intent(in) :: tag 
+    integer, intent(in) :: tag
   end subroutine gather_send3D_x2i_23
 
   module subroutine gather_send3D_x3i_23(param,tag)
     real(wp), dimension(:,:,:), intent(in) :: param
-    integer, intent(in) :: tag 
+    integer, intent(in) :: tag
   end subroutine gather_send3D_x3i_23
 
   module subroutine bcast_send1D_23(paramall,tag,param)
     real(wp), dimension(-1:), intent(in) :: paramall
     integer, intent(in) :: tag
-    real(wp), dimension(-1:), intent(out) :: param
+    real(wp), dimension(-1:), intent(inout) :: param
+    !! intent(out)
   end subroutine bcast_send1D_23
-  
+
   module subroutine bcast_send2D_23(paramtrimall,tag,paramtrim)
     real(wp), dimension(:,:), intent(in) :: paramtrimall
     integer, intent(in) :: tag
-    real(wp), dimension(:,:), intent(out) :: paramtrim
+    real(wp), dimension(:,:), intent(inout) :: paramtrim
+    !! intent(out)
   end subroutine bcast_send2D_23
-  
+
   module subroutine bcast_send3D_23(paramtrimall,tag,paramtrim)
     real(wp), dimension(:,:,:), intent(in) :: paramtrimall
     integer, intent(in) :: tag
-    real(wp), dimension(:,:,:), intent(out) :: paramtrim
+    real(wp), dimension(:,:,:), intent(inout) :: paramtrim
+    !! intent(out)
   end subroutine bcast_send3D_23
-  
+
   module subroutine bcast_send4D_23(paramall,tag,param)
     real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: paramall
     integer, intent(in) :: tag
-    real(wp), dimension(-1:,-1:,-1:,:), intent(out) :: param
+    real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: param
+    !! intent(out)
   end subroutine bcast_send4D_23
-  
+
   module subroutine bcast_send3D_x3i_23(paramtrimall,tag,paramtrim)
     real(wp), dimension(:,:,:), intent(in) :: paramtrimall
     integer, intent(in) :: tag
-    real(wp), dimension(:,:,:), intent(out) :: paramtrim
+    real(wp), dimension(:,:,:), intent(inout) :: paramtrim
+    !! intent(out)
   end subroutine bcast_send3D_x3i_23
-  
+
   module subroutine bcast_send3D_ghost_23(paramall,tag,param)
     real(wp), dimension(-1:,-1:,-1:), intent(in) :: paramall
     integer, intent(in) :: tag
-    real(wp), dimension(-1:,-1:,-1:), intent(out) :: param
+    real(wp), dimension(-1:,-1:,-1:), intent(inout) :: param
+    !! intent(out)
   end subroutine bcast_send3D_ghost_23
-  
+
   module subroutine bcast_send3D_x2i_23(paramtrimall,tag,paramtrim)
     real(wp), dimension(:,:,:), intent(in) :: paramtrimall
     integer, intent(in) :: tag
-    real(wp), dimension(:,:,:), intent(out) :: paramtrim
+    real(wp), dimension(:,:,:), intent(inout) :: paramtrim
+    !! intent(out)
   end subroutine bcast_send3D_x2i_23
-  
+
   module subroutine bcast_send1D_23_3(paramall,tag,param)
     real(wp), dimension(-1:), intent(in) :: paramall
     integer, intent(in) :: tag
-    real(wp), dimension(-1:), intent(out) :: param
+    real(wp), dimension(-1:), intent(inout) :: param
+    !! intent(out)
   end subroutine bcast_send1D_23_3
-  
+
   module subroutine bcast_send1D_23_2(paramall,tag,param)
     real(wp), dimension(-1:), intent(in) :: paramall
     integer, intent(in) :: tag
-    real(wp), dimension(-1:), intent(out) :: param
+    real(wp), dimension(-1:), intent(inout) :: param
+    !! intent(out)
   end subroutine bcast_send1D_23_2
 end interface
 
@@ -295,91 +304,108 @@ interface ! mpirecv.f90
   module subroutine gather_recv2D_23(paramtrim,tag,paramtrimall)
     real(wp), dimension(:,:), intent(in) :: paramtrim
     integer, intent(in) :: tag
-    real(wp), dimension(:,:), intent(out) :: paramtrimall
+    real(wp), dimension(:,:), intent(inout) :: paramtrimall
+    !! intent(out)
   end subroutine gather_recv2D_23
-  
+
   module subroutine gather_recv3D_23(paramtrim,tag,paramtrimall)
     real(wp), dimension(:,:,:), intent(in) :: paramtrim
     integer, intent(in) :: tag
-    real(wp), dimension(:,:,:), intent(out) :: paramtrimall
+    real(wp), dimension(:,:,:), intent(inout) :: paramtrimall
+    !! intent(out)
   end subroutine gather_recv3D_23
-  
+
   module subroutine gather_recv4D_23(param,tag,paramall)
     real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: param
     integer, intent(in) :: tag
-    real(wp), dimension(-1:,-1:,-1:,:), intent(out) :: paramall
+    real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: paramall
+    !! intent(out)
   end subroutine gather_recv4D_23
 
   module subroutine gather_recv3D_ghost_23(param,tag,paramall)
     real(wp), dimension(-1:,-1:,-1:), intent(in) :: param
     integer, intent(in) :: tag
-    real(wp), dimension(-1:,-1:,-1:), intent(out) :: paramall
-  end subroutine gather_recv3D_ghost_23  
+    real(wp), dimension(-1:,-1:,-1:), intent(inout) :: paramall
+    !! intent(out)
+  end subroutine gather_recv3D_ghost_23
 
   module subroutine gather_recv3D_x2i_23(param,tag,paramall)
     real(wp), dimension(:,:,:), intent(in) :: param
     integer, intent(in) :: tag
-    real(wp), dimension(:,:,:), intent(out) :: paramall    
+    real(wp), dimension(:,:,:), intent(inout) :: paramall
+    !! intent(out)
   end subroutine gather_recv3D_x2i_23
 
   module subroutine gather_recv3D_x3i_23(param,tag,paramall)
     real(wp), dimension(:,:,:), intent(in) :: param
     integer, intent(in) :: tag
-    real(wp), dimension(:,:,:), intent(out) :: paramall    
+    real(wp), dimension(:,:,:), intent(inout) :: paramall
+    !! intent(out)
   end subroutine gather_recv3D_x3i_23
 
   module subroutine bcast_recv1D_23(param,tag)
-    real(wp), dimension(-1:), intent(out) :: param
+    real(wp), dimension(-1:), intent(inout) :: param
+    !! intent(out)
     integer, intent(in) :: tag
   end subroutine bcast_recv1D_23
-  
+
   module subroutine bcast_recv2D_23(paramtrim,tag)
-    real(wp), dimension(:,:), intent(out) :: paramtrim
+    real(wp), dimension(:,:), intent(inout) :: paramtrim
+    !! intent(out)
     integer, intent(in) :: tag
   end subroutine bcast_recv2D_23
-  
+
   module subroutine bcast_recv3D_23(paramtrim,tag)
-    real(wp), dimension(:,:,:), intent(out) :: paramtrim
+    real(wp), dimension(:,:,:), intent(inout) :: paramtrim
+    !! intent(out)
     integer, intent(in) :: tag
   end subroutine bcast_recv3D_23
-  
+
   module subroutine bcast_recv4D_23(param,tag)
-    real(wp), dimension(-1:,-1:,-1:,:), intent(out) :: param
+    real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: param
+    !! intent(out)
     integer, intent(in) :: tag
   end subroutine bcast_recv4D_23
-  
+
   module subroutine bcast_recv3D_x3i_23(paramtrim,tag)
-    real(wp), dimension(:,:,:), intent(out) :: paramtrim
+    real(wp), dimension(:,:,:), intent(inout) :: paramtrim
+    !! intent(out)
     integer, intent(in) :: tag
   end subroutine bcast_recv3D_x3i_23
-  
+
   module subroutine bcast_recv3D_ghost_23(param,tag)
-    real(wp), dimension(-1:,-1:,-1:), intent(out) :: param
+    real(wp), dimension(-1:,-1:,-1:), intent(inout) :: param
+    !! intent(out)
     integer, intent(in) :: tag
   end subroutine bcast_recv3D_ghost_23
-  
+
   module subroutine bcast_recv1D_old3(param,tag)
-    real(wp), dimension(-1:), intent(out) :: param
+    real(wp), dimension(-1:), intent(inout) :: param
+    !! intent(out)
     integer, intent(in) :: tag
   end subroutine bcast_recv1D_old3
-  
+
   module subroutine bcast_recv1D_23_2(param,tag)
-    real(wp), dimension(-1:), intent(out) :: param
+    real(wp), dimension(-1:), intent(inout) :: param
+    !! intent(out)
     integer, intent(in) :: tag
   end subroutine bcast_recv1D_23_2
-  
+
   module subroutine bcast_recv1D_23_3(param,tag)
-    real(wp), dimension(-1:), intent(out) :: param
+    real(wp), dimension(-1:), intent(inout) :: param
+    !! intent(out)
     integer, intent(in) :: tag
   end subroutine bcast_recv1D_23_3
-  
+
   module subroutine bcast_recv2D_23_3(paramtrim,tag)
-    real(wp), dimension(:,:), intent(out) :: paramtrim
+    real(wp), dimension(:,:), intent(inout) :: paramtrim
+    !! intent(out)
     integer, intent(in) :: tag
   end subroutine bcast_recv2D_23_3
-  
+
   module subroutine bcast_recv3D_x2i_23(paramtrim,tag)
-    real(wp), dimension(:,:,:), intent(out) :: paramtrim
+    real(wp), dimension(:,:,:), intent(inout) :: paramtrim
+    !! intent(out)
     integer, intent(in) :: tag
   end subroutine bcast_recv3D_x2i_23
 end interface
@@ -392,12 +418,15 @@ interface ! mpihalo.f90
     integer, intent(in) :: tag
     logical, intent(in) :: isperiodic
   end subroutine halo_23
-  
+
   module subroutine halo_end_23(param,paramend,paramtop,paramcorner,tag)
     real(wp), dimension(:,:,:), intent(inout) :: param
-    real(wp), dimension(:,:), intent(out) :: paramend
-    real(wp), dimension(:,:), intent(out) :: paramtop
-    real(wp), dimension(:), intent(out) :: paramcorner
+    real(wp), dimension(:,:), intent(inout) :: paramend
+    !! intent(out)
+    real(wp), dimension(:,:), intent(inout) :: paramtop
+    !! intent(out)
+    real(wp), dimension(:), intent(inout) :: paramcorner
+    !! intent(out)
     integer, intent(in) :: tag
   end subroutine halo_end_23
 end interface
