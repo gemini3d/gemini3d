@@ -51,8 +51,8 @@ do iphi=1,lphi-4
   do ip=1,lp-4
     do iq=1,lq-4
       matnow=rotmats(1:3,1:3,iq,ip,iphi)
-      eyetest=matmul(matnow,transpose(matnow))
-      eyeerr=sum(abs(eyetest-eye))    ! aggregate error evaluation
+      eyetest=matmul(matnow,transpose(matnow))     ! rotations are unitary so R*R.transpose() should be identity...
+      eyeerr=sum(abs(eyetest-eye))                 ! aggregate error evaluation
       if (debug) call printmats()
       if (eyeerr > errthresh) then
         print*, 'Excessive deviation from unitary:  ',eyeerr
