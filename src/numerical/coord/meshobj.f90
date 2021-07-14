@@ -578,9 +578,9 @@ contains
 
   !> procedure to compute (but not store - external arrays provided as input) and geographic coordinate unit vectors
   !    This works on a full spatial arrays worth of data.  
-  pure subroutine calc_unitvec_geo(self,ealt,eglat,eglon)
+  pure subroutine calc_unitvec_geo(self,ealt,eglon,eglat)
     class(curvmesh), intent(in) :: self
-    real(wp), dimension(:,:,:,:), intent(out) :: ealt,eglat,eglon
+    real(wp), dimension(:,:,:,:), intent(out) :: ealt,eglon,eglat
     integer :: lx1,lx2,lx3
     real(wp), dimension(:,:,:), allocatable :: thetag,phig    ! geographic spherical coords
 
@@ -599,9 +599,9 @@ contains
 
     ! conversion to spherical (geo) unit vectors
     ealt(1:lx1,1:lx2,1:lx3,1:3)=er_spherical(thetag,phig)
+    eglon(1:lx1,1:lx2,1:lx3,1:3)=ephi_spherical(thetag,phig)
     eglat(1:lx1,1:lx2,1:lx3,1:3)=etheta_spherical(thetag,phig)
     eglat(1:lx1,1:lx2,1:lx3,1:3)=-1*eglat(1:lx1,1:lx2,1:lx3,1:3)    ! glat direction is opposite of spherical geo theta
-    eglon(1:lx1,1:lx2,1:lx3,1:3)=ephi_spherical(thetag,phig)
 
     ! cleanup position arrays
     deallocate(thetag,phig)
