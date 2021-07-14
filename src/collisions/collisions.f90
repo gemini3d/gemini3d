@@ -61,8 +61,8 @@ real(wp), dimension(:,:,:,:), intent(in) :: nn
 real(wp), dimension(:,:,:), intent(in) :: Tn
 real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: Ts
 
-real(wp), dimension(1:size(Tn,1),1:size(Tn,2),1:size(Tn,3)), &
-          intent(out) :: nusn
+real(wp), dimension(1:size(Tn,1),1:size(Tn,2),1:size(Tn,3)), intent(inout) :: nusn
+!! intent(out)
 
 integer :: lx1,lx2,lx3
 real(wp) :: mred
@@ -121,9 +121,8 @@ pure subroutine coulomb_colln(isp,isp2,ns,Ts,vs1,nusj,Phisj,Psisj)
 integer, intent(in) :: isp,isp2
 real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns,Ts,vs1
 
-real(wp), dimension(1:size(Ts,1)-4,1:size(Ts,2)-4,1:size(Ts,3)-4), &
-          intent(out) :: nusj,Phisj,Psisj
-
+real(wp), dimension(1:size(Ts,1)-4,1:size(Ts,2)-4,1:size(Ts,3)-4), intent(inout) :: nusj,Phisj,Psisj
+!! intent(out)
 integer :: lx1,lx2,lx3
 real(wp) :: mred
 real(wp),dimension(1:size(Ts,1)-4,1:size(Ts,2)-4,1:size(Ts,3)-4) &
@@ -168,7 +167,8 @@ real(wp), dimension(-1:,-1:,-1:), intent(in) :: Ts,ns
 real(wp), dimension(1:size(Ts,1)-4,1:size(Ts,2)-4,1:size(Ts,3)-4,ln), intent(in) :: nn
 real(wp), dimension(1:size(Ts,1)-4,1:size(Ts,2)-4,1:size(Ts,3)-4), intent(in) :: J1
 
-real(wp), dimension(1:size(Ts,1)-4,1:size(Ts,2)-4,1:size(Ts,3)-4), intent(out) :: lambda,beta
+real(wp), dimension(1:size(Ts,1)-4,1:size(Ts,2)-4,1:size(Ts,3)-4), intent(inout) :: lambda,beta
+!! intent(out)
 
 integer :: lx1,lx2,lx3
 
@@ -204,14 +204,19 @@ real(wp), dimension(:,:,:,:), intent(in) :: nn
 real(wp), dimension(:,:,:), intent(in) :: Tn
 real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns,Ts,vs1
 real(wp), dimension(-1:,-1:,-1:), intent(in) :: B1
-real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4), intent(out) :: sig0,sigP,sigH
-real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,lsp), intent(out) :: muP,muH
-real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,lsp), intent(out) :: nusn    !defined for each ion species, summed over neutral species
+real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4), intent(inout) :: sig0,sigP,sigH
+!! intent(out)
+real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,lsp), intent(inout) :: muP,muH
+!! intent(out)
+real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4,lsp), intent(inout) :: nusn
+!! intent(out)
+!! defined for each ion species, summed over neutral species
+real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4), intent(inout) :: sigPgrav,sigHgrav
+!! intent(out)
 
 integer :: isp,isp2,lx1,lx2,lx3
 real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: OMs
 real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4) :: nuej,Phisj,Psisj,nutmp,mupar,mubase,rho
-real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4), intent(out) :: sigPgrav,sigHgrav
 
 lx1=size(Ts,1)-4
 lx2=size(Ts,2)-4
@@ -305,7 +310,8 @@ subroutine capacitance(ns,B1,cfg,incap)
 real(wp), dimension(-1:,-1:,-1:,:), intent(in) :: ns
 real(wp), dimension(-1:,-1:,-1:), intent(in) :: B1
 type(gemini_cfg), intent(in) :: cfg
-real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4), intent(out) :: incap
+real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4), intent(inout) :: incap
+!! intent(out)
 
 integer :: lx1,lx2,lx3,isp
 

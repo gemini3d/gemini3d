@@ -20,7 +20,7 @@ interface ! aurora.f90
   module subroutine create_outdir_aur(outdir)
     character(*), intent(in) :: outdir
   end subroutine create_outdir_aur
-  
+
   module subroutine output_aur(outdir,flagglow,ymd,UTsec,iver, out_format)
     character(*), intent(in) :: outdir, out_format
     integer, intent(in) :: flagglow
@@ -28,18 +28,18 @@ interface ! aurora.f90
     real(wp), intent(in) :: UTsec
     real(wp), dimension(:,:,:), intent(in) :: iver
   end subroutine output_aur
-  
+
   module subroutine output_aur_workers(iver)
     real(wp), dimension(:,:,:), intent(in) :: iver
   end subroutine output_aur_workers
 end interface
-    
+
 interface ! mag.f90
   module subroutine create_outdir_mag(outdir,fieldpointfile)
     character(*), intent(in) :: outdir
     character(*), intent(in) :: fieldpointfile
   end subroutine create_outdir_mag
-  
+
   module subroutine output_magfields(outdir,ymd,UTsec,Br,Btheta,Bphi, out_format)
     character(*), intent(in) :: outdir, out_format
     integer, intent(in) :: ymd(3)
@@ -52,19 +52,23 @@ interface ! plasma.f90
   module subroutine input_plasma(x1,x2,x3all,indatsize,indatfile,ns,vs1,Ts,Phi,Phiall)
     real(wp), dimension(-1:), intent(in) :: x1, x2, x3all
     character(*), intent(in) :: indatsize, indatfile
-    real(wp), dimension(-1:,-1:,-1:,:), intent(out) :: ns,vs1,Ts
-    real(wp), dimension(:,:,:), intent(out) :: Phi
-    real(wp), dimension(:,:,:), intent(inout) :: Phiall   !intent must be inout if unknown allocation status???
+    real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: ns,vs1,Ts
+    !! intent(out)
+    real(wp), dimension(:,:,:), intent(inout) :: Phi
+    !! intent(out)
+    real(wp), dimension(:,:,:), intent(inout) :: Phiall
+    !! intent(out)
   end subroutine input_plasma
-  
+
   module subroutine input_plasma_currents(outdir,out_format,flagoutput,ymd,UTsec,J1,J2,J3)
     character(*), intent(in) :: outdir, out_format
     integer, intent(in) :: flagoutput
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
-    real(wp), dimension(:,:,:), intent(out) :: J1,J2,J3
+    real(wp), dimension(:,:,:), intent(inout) :: J1,J2,J3
+    !! intent(out)
   end subroutine input_plasma_currents
-  
+
   module subroutine output_plasma(outdir,flagoutput,ymd,UTsec,vs2,vs3,ns,vs1,Ts,Phiall,J1,J2,J3, out_format)
     character(*), intent(in) :: outdir, out_format
     integer, intent(in) :: flagoutput
@@ -85,7 +89,8 @@ end interface
 interface ! milestone.f90
   module subroutine find_milestone(cfg, tmile,ymdmile,UTsecmile,filemile)
     class(gemini_cfg), intent(in) :: cfg
-    real(wp), intent(out) :: tmile     !time elapsed from beginning of the simulation to the milestone
+    real(wp), intent(out) :: tmile
+    !! time elapsed from beginning of the simulation to the milestone
     integer, dimension(3), intent(out) :: ymdmile
     real(wp), intent(out) :: UTsecmile
     character(:), allocatable, intent(out) :: filemile
