@@ -12,7 +12,7 @@ use config, only: gemini_cfg
 implicit none (type, external)
 private
 public :: Tnmsis, neutral_atmos, make_dneu, clear_dneu, neutral_perturb, neutral_update, init_neutrals, &
-  neutral_winds, rotate_geo2native, neutral_denstemp_update, neutral_wind_update
+  neutral_winds, rotate_geo2native, neutral_denstemp_update, neutral_wind_update, store_geo2native_projections
 
 
 interface !< atmos.f90
@@ -252,7 +252,6 @@ subroutine neutral_wind_update(vn1,vn2,vn3,v2grid,v3grid)
 end subroutine neutral_wind_update
 
 
-
 !> rotate winds from geographic to model native coordinate system (x1,x2,x3)
 subroutine rotate_geo2native(vnalt,vnglat,vnglon,x,vn1,vn2,vn3)
   real(wp), dimension(:,:,:), intent(in) :: vnalt,vnglat,vnglon
@@ -263,8 +262,8 @@ subroutine rotate_geo2native(vnalt,vnglat,vnglon,x,vn1,vn2,vn3)
 
   !> if first time called then allocate space for projections and compute
   if (.not. allocated(proj_ealt_e1)) then
-    call x%calc_unitvec_geo(ealt,eglat,eglon)
-    call store_geo2native_projections(x,ealt,eglat,eglon)
+    call x%calc_unitvec_geo(ealt,eglon,eglat)
+    call store_geo2native_projections(x,ealt,eglon,eglat)
   end if
 
   !> rotate vectors into model native coordinate system
@@ -275,9 +274,9 @@ end subroutine rotate_geo2native
 
 
 !> compute projections for rotating winds geographic to native coordinate system
-subroutine store_geo2native_projections(x,ealt,eglat,eglon,rotmat)
+subroutine store_geo2native_projections(x,ealt,eglon,eglat,rotmat)
   class(curvmesh), intent(in) :: x
-  real(wp), dimension(:,:,:,:), intent(in) :: ealt,eglat,eglon
+  real(wp), dimension(:,:,:,:), intent(in) :: ealt,eglon,eglat
   real(wp), dimension(:,:,:,:,:), intent(out), optional :: rotmat    ! for debugging purposes
   integer :: ix1,ix2,ix3,lx1,lx2,lx3
 
