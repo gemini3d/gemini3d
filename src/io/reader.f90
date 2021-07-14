@@ -48,87 +48,105 @@ end subroutine get_simsize3_nc4
 
 module subroutine get_grid2_raw(path, mlonp, mlatp)
 character(*), intent(in) :: path
-real(wp), dimension(:), intent(out) :: mlonp, mlatp
+real(wp), dimension(:), intent(inout) :: mlonp, mlatp
+!! intent(out)
 end subroutine get_grid2_raw
 
 module subroutine get_grid2_hdf5(path, mlonp, mlatp)
 character(*), intent(in) :: path
-real(wp), dimension(:), intent(out) :: mlonp, mlatp
+real(wp), dimension(:), intent(inout) :: mlonp, mlatp
+!! intent(out)
 end subroutine get_grid2_hdf5
 
 module subroutine get_grid2_nc4(path, mlonp, mlatp)
 character(*), intent(in) :: path
-real(wp), dimension(:), intent(out) :: mlonp, mlatp
+real(wp), dimension(:), intent(inout) :: mlonp, mlatp
+!! intent(out)
 end subroutine get_grid2_nc4
 
 
 module subroutine get_Efield_raw(path, flagdirich,E0xp,E0yp,Vminx1p,Vmaxx1p,Vminx2pslice,Vmaxx2pslice,Vminx3pslice,Vmaxx3pslice)
 character(*), intent(in) :: path
 integer, intent(out) :: flagdirich
-real(wp), dimension(:,:), intent(out) :: E0xp,E0yp,Vminx1p,Vmaxx1p
-real(wp), dimension(:), intent(out) :: Vminx2pslice,Vmaxx2pslice,Vminx3pslice,Vmaxx3pslice
+real(wp), dimension(:,:), intent(inout) :: E0xp,E0yp,Vminx1p,Vmaxx1p
+!! intent(out)
+real(wp), dimension(:), intent(inout) :: Vminx2pslice,Vmaxx2pslice,Vminx3pslice,Vmaxx3pslice
+!! intent(out)
 end subroutine get_Efield_raw
 
 module subroutine get_Efield_hdf5(path, flagdirich,E0xp,E0yp,Vminx1p,Vmaxx1p,Vminx2pslice,Vmaxx2pslice,Vminx3pslice,Vmaxx3pslice)
 character(*), intent(in) :: path
 integer, intent(out) :: flagdirich
-real(wp), dimension(:,:), intent(out) :: E0xp,E0yp,Vminx1p,Vmaxx1p
-real(wp), dimension(:), intent(out) :: Vminx2pslice,Vmaxx2pslice,Vminx3pslice,Vmaxx3pslice
+real(wp), dimension(:,:), intent(inout) :: E0xp,E0yp,Vminx1p,Vmaxx1p
+!! intent(out)
+real(wp), dimension(:), intent(inout) :: Vminx2pslice,Vmaxx2pslice,Vminx3pslice,Vmaxx3pslice
+!! intent(out)
 end subroutine get_Efield_hdf5
 
 module subroutine get_Efield_nc4(path, flagdirich,E0xp,E0yp,Vminx1p,Vmaxx1p,Vminx2pslice,Vmaxx2pslice,Vminx3pslice,Vmaxx3pslice)
 character(*), intent(in) :: path
 integer, intent(out) :: flagdirich
-real(wp), dimension(:,:), intent(out) :: E0xp,E0yp,Vminx1p,Vmaxx1p
-real(wp), dimension(:), intent(out) :: Vminx2pslice,Vmaxx2pslice,Vminx3pslice,Vmaxx3pslice
+real(wp), dimension(:,:), intent(inout) :: E0xp,E0yp,Vminx1p,Vmaxx1p
+!! intent(out)
+real(wp), dimension(:), intent(inout) :: Vminx2pslice,Vmaxx2pslice,Vminx3pslice,Vmaxx3pslice
+!! intent(out)
 end subroutine get_Efield_nc4
 
 
 module subroutine get_precip_raw(path, Qp, E0p)
 character(*), intent(in) :: path
-real(wp), dimension(:,:), intent(out) :: Qp, E0p
+real(wp), dimension(:,:), intent(inout) :: Qp, E0p
+!! intent(out)
 end subroutine get_precip_raw
 
 module subroutine get_precip_hdf5(path, Qp, E0p)
 character(*), intent(in) :: path
-real(wp), dimension(:,:), intent(out) :: Qp, E0p
+real(wp), dimension(:,:), intent(inout) :: Qp, E0p
+!! intent(out)
 end subroutine get_precip_hdf5
 
 module subroutine get_precip_nc4(path, Qp, E0p)
 character(*), intent(in) :: path
-real(wp), dimension(:,:), intent(out) :: Qp, E0p
+real(wp), dimension(:,:), intent(inout) :: Qp, E0p
+!! intent(out)
 end subroutine get_precip_nc4
 
 
 module subroutine get_neutral2_raw(path, dnO,dnN2,dnO2,dvnrho,dvnz,dTn)
 character(*), intent(in) :: path
-real(wp), dimension(:,:,:), intent(out) :: dnO,dnN2,dnO2,dvnrho,dvnz,dTn
+real(wp), dimension(:,:,:), intent(inout) :: dnO,dnN2,dnO2,dvnrho,dvnz,dTn
+!! intent(out)
 end subroutine get_neutral2_raw
 
 module subroutine get_neutral2_hdf5(path, dnO,dnN2,dnO2,dvnrho,dvnz,dTn)
 character(*), intent(in) :: path
-real(wp), dimension(:,:,:), intent(out) :: dnO,dnN2,dnO2,dvnrho,dvnz,dTn
+real(wp), dimension(:,:,:), intent(inout) :: dnO,dnN2,dnO2,dvnrho,dvnz,dTn
+!! intent(out)
 end subroutine get_neutral2_hdf5
 
 module subroutine get_neutral2_nc4(path, dnO,dnN2,dnO2,dvnrho,dvnz,dTn)
 character(*), intent(in) :: path
-real(wp), dimension(:,:,:), intent(out) :: dnO,dnN2,dnO2,dvnrho,dvnz,dTn
+real(wp), dimension(:,:,:), intent(inout) :: dnO,dnN2,dnO2,dvnrho,dvnz,dTn
+!! intent(out)
 end subroutine get_neutral2_nc4
 
 
 module subroutine get_neutral3_raw(path, dnOall,dnN2all,dnO2all,dvnxall,dvnrhoall,dvnzall,dTnall)
 character(*), intent(in) :: path
-real(wp), dimension(:,:,:), intent(out) :: dnOall,dnN2all,dnO2all,dvnxall,dvnrhoall,dvnzall,dTnall
+real(wp), dimension(:,:,:), intent(inout) :: dnOall,dnN2all,dnO2all,dvnxall,dvnrhoall,dvnzall,dTnall
+!! intent(out)
 end subroutine get_neutral3_raw
 
 module subroutine get_neutral3_hdf5(path, dnOall,dnN2all,dnO2all,dvnxall,dvnrhoall,dvnzall,dTnall)
 character(*), intent(in) :: path
-real(wp), dimension(:,:,:), intent(out) :: dnOall,dnN2all,dnO2all,dvnxall,dvnrhoall,dvnzall,dTnall
+real(wp), dimension(:,:,:), intent(inout) :: dnOall,dnN2all,dnO2all,dvnxall,dvnrhoall,dvnzall,dTnall
+!! intent(out)
 end subroutine get_neutral3_hdf5
 
 module subroutine get_neutral3_nc4(path, dnOall,dnN2all,dnO2all,dvnxall,dvnrhoall,dvnzall,dTnall)
 character(*), intent(in) :: path
-real(wp), dimension(:,:,:), intent(out) :: dnOall,dnN2all,dnO2all,dvnxall,dvnrhoall,dvnzall,dTnall
+real(wp), dimension(:,:,:), intent(inout) :: dnOall,dnN2all,dnO2all,dvnxall,dvnrhoall,dvnzall,dTnall
+!! intent(out)
 end subroutine get_neutral3_nc4
 
 end interface
@@ -182,7 +200,8 @@ end subroutine get_simsize3
 
 subroutine get_grid2(path, mlonp, mlatp)
 character(*), intent(in) :: path
-real(wp), dimension(:), intent(out) :: mlonp, mlatp
+real(wp), dimension(:), intent(inout) :: mlonp, mlatp
+!! intent(out)
 
 character(:), allocatable :: fn
 
@@ -205,8 +224,10 @@ end subroutine get_grid2
 subroutine get_Efield(path, flagdirich,E0xp,E0yp,Vminx1p,Vmaxx1p,Vminx2pslice,Vmaxx2pslice,Vminx3pslice,Vmaxx3pslice)
 character(*), intent(in) :: path
 integer, intent(out) :: flagdirich
-real(wp), dimension(:,:), intent(out) :: E0xp,E0yp,Vminx1p,Vmaxx1p
-real(wp), dimension(:), intent(out) :: Vminx2pslice,Vmaxx2pslice,Vminx3pslice,Vmaxx3pslice
+real(wp), dimension(:,:), intent(inout) :: E0xp,E0yp,Vminx1p,Vmaxx1p
+!! intent(out)
+real(wp), dimension(:), intent(inout) :: Vminx2pslice,Vmaxx2pslice,Vminx3pslice,Vmaxx3pslice
+!! intent(out)
 
 character(:), allocatable :: fn
 
@@ -230,7 +251,8 @@ end subroutine get_Efield
 subroutine get_precip(path, Qp, E0p)
 !! Qp, E0p are (llon, llat)
 character(*), intent(in) :: path
-real(wp), dimension(:,:), intent(out) :: Qp, E0p
+real(wp), dimension(:,:), intent(inout) :: Qp, E0p
+!! intent(out)
 
 integer :: i
 character(:), allocatable :: fn, path1
@@ -275,7 +297,8 @@ end subroutine get_precip
 
 subroutine get_neutral2(path, dnO,dnN2,dnO2,dvnrho,dvnz,dTn)
 character(*), intent(in) :: path
-real(wp), dimension(:,:,:), intent(out) :: dnO,dnN2,dnO2,dvnrho,dvnz,dTn
+real(wp), dimension(:,:,:), intent(inout) :: dnO,dnN2,dnO2,dvnrho,dvnz,dTn
+!! intent(out)
 
 character(:), allocatable :: fn
 
@@ -297,7 +320,8 @@ end subroutine get_neutral2
 
 subroutine get_neutral3(path, dnOall,dnN2all,dnO2all,dvnxall,dvnrhoall,dvnzall,dTnall)
 character(*), intent(in) :: path
-real(wp), dimension(:,:,:), intent(out) :: dnOall,dnN2all,dnO2all,dvnxall,dvnrhoall,dvnzall,dTnall
+real(wp), dimension(:,:,:), intent(inout) :: dnOall,dnN2all,dnO2all,dvnxall,dvnrhoall,dvnzall,dTnall
+!! intent(out)
 
 character(:), allocatable :: fn
 
