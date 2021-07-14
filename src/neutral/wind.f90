@@ -10,14 +10,17 @@ contains
 module procedure neutral_winds
   real(wp), dimension(1:size(x%alt,1),1:size(x%alt,2),1:size(x%alt,3)) :: Wmeridional, Wzonal, Walt, v1, v2, v3
   integer :: i1,i2,i3, dayOfYear
+  real(wp) :: altnow
   
   dayOfYear = ymd2doy(ymd(1), ymd(2), ymd(3))
  
   x3: do i3 = 1,size(x%alt,3)
     x2: do i2 = 1,size(x%alt,2)
       x1: do i1 = 1,size(x%alt,1)
+        altnow=x%alt(i1,i2,i3)/1.0e3
+        if (altnow<0.0) altnow=1.0
         call hwm_14(dayOfYear, UTsec, &
-          alt_km=x%alt(i1,i2,i3)/1.0e3, glat=x%glat(i1,i2,i3), glon=x%glon(i1,i2,i3), Ap=Ap, &
+          alt_km=altnow, glat=x%glat(i1,i2,i3), glon=x%glon(i1,i2,i3), Ap=Ap, &
           Wmeridional=Wmeridional(i1,i2,i3), Wzonal=Wzonal(i1,i2,i3))
       end do x1
     end do x2
