@@ -17,9 +17,13 @@ subroutine advec_prep(isp,ns,rhovs1,vs1,vs2,vs3,rhoes,v1i,v2i,v3i)
 integer, intent(in) :: isp
 real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: ns,rhovs1,vs1,vs2,vs3,rhoes
 
-real(wp), dimension(1:size(vs1,1)-3,1:size(vs1,2)-4,1:size(vs1,3)-4), intent(out) :: v1i   !why is size specified here???
-real(wp), dimension(1:size(vs1,1)-4,1:size(vs1,2)-3,1:size(vs1,3)-4), intent(out) :: v2i
-real(wp), dimension(1:size(vs1,1)-4,1:size(vs1,2)-4,1:size(vs1,3)-3), intent(out) :: v3i
+real(wp), dimension(1:size(vs1,1)-3,1:size(vs1,2)-4,1:size(vs1,3)-4), intent(inout) :: v1i
+!! intent(out)
+!! why is size specified here???
+real(wp), dimension(1:size(vs1,1)-4,1:size(vs1,2)-3,1:size(vs1,3)-4), intent(inout) :: v2i
+!! intent(out)
+real(wp), dimension(1:size(vs1,1)-4,1:size(vs1,2)-4,1:size(vs1,3)-3), intent(inout) :: v3i
+!! intent(out)
 
 real(wp), parameter :: vellim=2000.0
 !    real(wp), parameter :: vellim=0.0

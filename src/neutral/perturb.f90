@@ -19,7 +19,7 @@ interface ! proj.f90
     logical, intent(in) :: flagcart
     class(curvmesh), intent(inout) :: x
   end subroutine gridproj_dneu2D
-  
+
   module subroutine gridproj_dneu3D(cfg,x)
     type(gemini_cfg), intent(in) :: cfg
     class(curvmesh), intent(inout) :: x
@@ -37,7 +37,8 @@ interface ! interp.f90
 
   module subroutine timeinterp_dneu(t,dt,dNOinow,dnN2inow,dnO2inow,dvn1inow,dvn2inow,dvn3inow,dTninow)
     real(wp), intent(in) :: t,dt
-    real(wp), dimension(:,:,:), intent(out) :: dNOinow,dnN2inow,dnO2inow,dvn1inow,dvn2inow,dvn3inow,dTninow
+    real(wp), dimension(:,:,:), intent(inout) :: dNOinow,dnN2inow,dnO2inow,dvn1inow,dvn2inow,dvn3inow,dTninow
+    !! intent(out)
   end subroutine timeinterp_dneu
 end interface
 
@@ -87,9 +88,13 @@ integer, dimension(3), intent(in) :: ymd    !date for which we wish to calculate
 real(wp), intent(in) :: UTsec
 type(gemini_cfg), intent(in) :: cfg
 
-class(curvmesh), intent(inout) :: x         !grid structure  (inout because we want to be able to deallocate unit vectors once we are done with them)
-real(wp), dimension(:,:,:,:), intent(out) :: nn   !neutral params interpolated to plasma grid at requested time
-real(wp), dimension(:,:,:), intent(out) :: Tn,vn1,vn2,vn3
+class(curvmesh), intent(inout) :: x
+!! grid structure  (inout because we want to be able to deallocate unit vectors once we are done with them)
+real(wp), dimension(:,:,:,:), intent(inout) :: nn
+!! intent(out)
+!! neutral params interpolated to plasma grid at requested time
+real(wp), dimension(:,:,:), intent(inout) :: Tn,vn1,vn2,vn3
+!! intent(out)
 
 integer :: ix1,ix2,ix3,iid!,irhon,izn
 integer, dimension(3) :: ymdtmp
@@ -158,9 +163,13 @@ integer, dimension(3), intent(in) :: ymd    !date for which we wish to calculate
 real(wp), intent(in) :: UTsec
 type(gemini_cfg), intent(in) :: cfg
 
-class(curvmesh), intent(inout) :: x         !grid structure  (inout because we want to be able to deallocate unit vectors once we are done with them)
-real(wp), dimension(:,:,:,:), intent(out) :: nn   !neutral params interpolated to plasma grid at requested time
-real(wp), dimension(:,:,:), intent(out) :: Tn,vn1,vn2,vn3
+class(curvmesh), intent(inout) :: x
+!! grid structure  (inout because we want to be able to deallocate unit vectors once we are done with them)
+real(wp), dimension(:,:,:,:), intent(inout) :: nn
+!! intent(out)
+!! neutral params interpolated to plasma grid at requested time
+real(wp), dimension(:,:,:), intent(inout) :: Tn,vn1,vn2,vn3
+!! intent(out)
 
 integer :: ix1,ix2,ix3,iid
 integer, dimension(3) :: ymdtmp
@@ -228,9 +237,13 @@ integer, dimension(3), intent(in) :: ymd    !date for which we wish to calculate
 real(wp), intent(in) :: UTsec
 type(gemini_cfg), intent(in) :: cfg
 
-class(curvmesh), intent(inout) :: x         !grid structure  (inout because we want to be able to deallocate unit vectors once we are done with them)
-real(wp), dimension(:,:,:,:), intent(out) :: nn   !neutral params interpolated to plasma grid at requested time
-real(wp), dimension(:,:,:), intent(out) :: Tn,vn1,vn2,vn3
+class(curvmesh), intent(inout) :: x
+!! grid structure  (inout because we want to be able to deallocate unit vectors once we are done with them)
+real(wp), dimension(:,:,:,:), intent(inout) :: nn
+!! intent(out)
+!! neutral params interpolated to plasma grid at requested time
+real(wp), dimension(:,:,:), intent(inout) :: Tn,vn1,vn2,vn3
+!! intent(out)
 
 integer :: ix1,ix2,ix3,iid
 integer, dimension(3) :: ymdtmp
@@ -307,9 +320,12 @@ subroutine read_dneu2D(tprev,tnext,t,dtneu,dt,neudir,ymdtmp,UTsectmp,flagcart)
 ! in a module-scope variable for later use
 ! This version is for 2D source neutral data
 
-real(wp), intent(in) :: tprev,tnext,t,dtneu,dt        !times of previous input frame,next frame and then current time
-character(*), intent(in) :: neudir                    !directory where neutral simulation data is kept
-integer, dimension(3), intent(out) :: ymdtmp          !storage space for incrementing date without overwriting ymdnext...
+real(wp), intent(in) :: tprev,tnext,t,dtneu,dt
+!! times of previous input frame,next frame and then current time
+character(*), intent(in) :: neudir
+!! directory where neutral simulation data is kept
+integer, dimension(3), intent(out) :: ymdtmp
+!! storage space for incrementing date without overwriting ymdnext...
 real(wp), intent(out) :: UTsectmp
 logical, intent(in) :: flagcart
 
@@ -391,9 +407,12 @@ subroutine read_dneu3D(tprev,tnext,t,dtneu,dt,neudir,ymdtmp,UTsectmp)
 ! in a module-scope variable for later use
 ! this version is for 3D neutral source data
 
-real(wp), intent(in) :: tprev,tnext,t,dtneu,dt        !times of previous input frame,next frame and then current time
-character(*), intent(in) :: neudir                    !directory where neutral simulation data is kept
-integer, dimension(3), intent(out) :: ymdtmp          !storage space for incrementing date without overwriting ymdnext...
+real(wp), intent(in) :: tprev,tnext,t,dtneu,dt
+!! times of previous input frame,next frame and then current time
+character(*), intent(in) :: neudir
+!! directory where neutral simulation data is kept
+integer, dimension(3), intent(out) :: ymdtmp
+!! storage space for incrementing date without overwriting ymdnext...
 real(wp), intent(out) :: UTsectmp
 
 
