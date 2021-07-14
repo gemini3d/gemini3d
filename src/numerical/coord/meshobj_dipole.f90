@@ -408,7 +408,7 @@ subroutine calc_rtheta_2D(self,q,p,r,theta)
   class(dipolemesh) :: self
   real(wp), dimension(:), intent(in) :: q
   real(wp), dimension(:), intent(in) :: p
-  real(wp), dimension(:,:), intent(out) :: r,theta
+  real(wp), dimension(:,:), intent(inout) :: r,theta
 
   integer :: iq,ip,lq,lp
 
@@ -426,7 +426,7 @@ end subroutine calc_rtheta_2D
 subroutine calc_qp_2D(self,r,theta,q,p)
   class(dipolemesh) :: self
   real(wp), dimension(:,:), intent(in) :: r,theta
-  real(wp), dimension(:,:), intent(out) :: q,p
+  real(wp), dimension(:,:), intent(inout) :: q,p
 
   integer :: i1,i2,ldim1,ldim2
 
