@@ -201,8 +201,10 @@ end procedure halo_23
 
 !subroutine halo_end_23(param,paramend,paramtop,tag)
 !real(wp), dimension(:,:,:), intent(inout) :: param
-!real(wp), dimension(:,:), intent(out) :: paramend
-!real(wp), dimension(:,:), intent(out) :: paramtop
+!real(wp), dimension(:,:), intent(inout) :: paramend
+!! intent(out)
+!real(wp), dimension(:,:), intent(inout) :: paramtop
+!! intent(out)
 !integer, intent(in) :: tag
 module procedure halo_end_23
   !! GENERIC HALOING ROUTINE WHICH PASSES THE BEGINNING OF THE
@@ -213,25 +215,25 @@ module procedure halo_end_23
   integer :: lx1,lx2,lx3,ihalo
   integer :: idleft,idright,iddown,idup,iddownleft,idupright
   integer :: i2,i3
-  
+
   integer, dimension(2) :: requests
   integer, dimension(MPI_STATUS_SIZE,4) :: statuses
   integer :: tmpreq
-  
+
   real(wp) :: tstart,tfin
   logical :: x2begin,x2end,x3begin,x3end,downleft,upright
   real(wp), dimension(:,:), allocatable :: buffer
   real(wp), dimension(:), allocatable :: buffercorner
-  
+
   !system sizes based off of input data
   lx1=size(param,1)
   lx2=size(param,2)
   lx3=size(param,3)
-  
+
   !identify neighbors in x3, we send our data "left" (i3-1) and receive from our "right" (i3+1)
   x3begin=.false.
   x3end=.false.
-  
+
   i3=mpi_cfg%myid3-1
   i2=mpi_cfg%myid2
   if (i3==-1) then
@@ -244,7 +246,7 @@ module procedure halo_end_23
   if (x3begin) then     !we are flagged as not wanting periodic boundaries so do nothing (overwrite idleft to send to NULL process
     idleft=MPI_PROC_NULL
   end if
-  
+
   i3=mpi_cfg%myid3+1
   i2=mpi_cfg%myid2
   if (i3==mpi_cfg%lid3) then
@@ -258,11 +260,11 @@ module procedure halo_end_23
   if (x3end) then
     idright=MPI_PROC_NULL
   end if
-  
+
   !identify x2 neighbor processes
   x2begin=.false.
   x2end=.false.
-  
+
   i3=mpi_cfg%myid3
   i2=mpi_cfg%myid2-1
   if (i2==-1) then
@@ -275,7 +277,7 @@ module procedure halo_end_23
     !! never assume periodic in the x2-direction
     iddown=MPI_PROC_NULL
   end if
-  
+
   i3=mpi_cfg%myid3
   i2=mpi_cfg%myid2+1
   if (i2==mpi_cfg%lid2) then
@@ -308,7 +310,7 @@ module procedure halo_end_23
   else
     idupright=MPI_PROC_NULL
   end if
- 
+
   !data passing in x3, if appropriate
   if (.not. (x3begin .and. x3end)) then   ! for singleton process grid along x3; do not want to try to send to self...
     !! make sure we actually need to pass in this direction, viz. we aren't both the beginning and thend
@@ -318,11 +320,11 @@ module procedure halo_end_23
     requests(1)=tmpreq
     call mpi_irecv(paramend,lx1*lx2,mpi_realprec,idright,tag,MPI_COMM_WORLD,tmpreq,ierr)
     requests(2)=tmpreq
-  
+
     call mpi_waitall(2,requests,statuses,ierr)
     deallocate(buffer)
   end if
-  
+
   !data passing in x2, if appropriate
   if (.not. (x2begin .and. x2end)) then    ! for singleton process grid along x2; dont' send to self
     allocate(buffer(lx1,lx3))
@@ -331,7 +333,7 @@ module procedure halo_end_23
     requests(1)=tmpreq
     call mpi_irecv(paramtop,lx1*lx3,mpi_realprec,idup,tag,MPI_COMM_WORLD,tmpreq,ierr)
     requests(2)=tmpreq
-  
+
     call mpi_waitall(2,requests,statuses,ierr)
     deallocate(buffer)
   end if
@@ -344,11 +346,11 @@ module procedure halo_end_23
     requests(1)=tmpreq
     call mpi_irecv(paramcorner,lx1,mpi_realprec,idupright,tag,MPI_COMM_WORLD,tmpreq,ierr)
     requests(2)=tmpreq
-  
+
     call mpi_waitall(2,requests,statuses,ierr)
     deallocate(buffercorner)
   end if
-  
+
   !zero out ghost cells if past the end of the full simulation grid
   if (mpi_cfg%myid2==mpi_cfg%lid2-1) paramtop=0._wp
   !! add nothing on the end since no one is passing leftward to me, FIXME: need to account for periodic???

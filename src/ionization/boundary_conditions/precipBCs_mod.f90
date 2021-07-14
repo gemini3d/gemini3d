@@ -91,7 +91,8 @@ type(gemini_cfg), intent(in) :: cfg
 integer, dimension(3), intent(in) :: ymd
 !! date for which we wish to calculate perturbations
 real(wp), intent(in) :: UTsec
-real(wp), dimension(:,:,:), intent(out) :: W0,PhiWmWm2
+real(wp), dimension(:,:,:), intent(inout) :: W0,PhiWmWm2
+!! intent(out)
 !! last dimension is the number of particle populations
 class(curvmesh), intent(in) :: x
 
@@ -337,7 +338,8 @@ subroutine precipBCs(t,x,cfg,W0,PhiWmWm2)
 real(wp), intent(in) :: t
 class(curvmesh), intent(in) :: x
 type(gemini_cfg), intent(in) :: cfg
-real(wp), dimension(:,:,:), intent(out) :: W0,PhiWmWm2
+real(wp), dimension(:,:,:), intent(inout) :: W0,PhiWmWm2
+!! intent(out)
 
 real(wp) :: W0pk,PhiWpk,meanW0x3,meanPhiWx3,sigW0x3,sigPhiWx3
 real(wp) :: sigx2,meanx3,sigx3,x30amp,varc,meanx2,x2enve,sigt,meant
