@@ -5,24 +5,22 @@ use meshobj_dipole, only : dipolemesh
 
 implicit none (type, external)
 
-integer, parameter :: lq=1024,lp=1024
-real(wp), dimension(lq) :: q
-real(wp), dimension(lp) :: p
-real(wp), dimension(2) :: qlims=[-0.5851937,0.5851937]
-real(wp), dimension(2) :: plims=[1.2053761,1.5820779]
-real(wp), dimension(1) :: phi=[3.14]
+integer, parameter :: lq=1024,lp=1024, lphi = 8
+real(wp) :: q(lq), p(lp), phi(lphi)
+real(wp), dimension(2) :: qlims=[-0.5851937,0.5851937], plims=[1.2053761,1.5820779], philim=[-6, 6]
 
 real(wp), dimension(:,:), allocatable :: r,theta,qtest,ptest,errq,errp
 real(wp) :: maxerrq,maxerrp
-integer :: iq,ip,irepeat
+integer :: iq,ip,irepeat, i
 type(dipolemesh) :: x     ! dummy object to allow us to access methods for coodinate conversion
 
 allocate(r(lq,lp))
 allocate(theta,qtest,ptest,errq,errp, mold=r)
 
 ! define a grid
-q=[(qlims(1) + (qlims(2)-qlims(1))/lq*(iq-1),iq=1,lq)]
-p=[(plims(1) + (plims(2)-plims(1))/lp*(ip-1),ip=1,lp)]
+q=[(qlims(1) + (qlims(2)-qlims(1))/lq*(i-1), i=1,lq)]
+p=[(plims(1) + (plims(2)-plims(1))/lp*(i-1), i=1,lp)]
+phi = [(philim(1) + (philim(2)-philim(1))/lphi*(i-1), i=1,lphi)]
 
 ! initialize object so we can call its type-bound procedures
 call x%set_coords(q,p,phi,p,phi)
