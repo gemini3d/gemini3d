@@ -5,13 +5,13 @@
 # cmake -P build_cmake.cmake
 # will install Ninja under the user's home directory.
 
-cmake_minimum_required(VERSION 3.19...3.21)
-
-set(CMAKE_TLS_VERIFY true)
+cmake_minimum_required(VERSION 3.20...3.21)
 
 if(NOT prefix)
-  get_filename_component(prefix ~ ABSOLUTE)
+  set(prefix "~")
 endif()
+
+set(CMAKE_TLS_VERIFY true)
 
 if(NOT version)
   file(STRINGS ${CMAKE_CURRENT_LIST_DIR}/NINJA_VERSION version
@@ -23,10 +23,13 @@ set(name v${version}.tar.gz)
 
 function(checkup ninja)
 
-get_filename_component(path ${ninja} DIRECTORY)
+cmake_path(GET ninja PARENT_PATH ninja_path)
+
 set(ep $ENV{PATH})
-if(NOT ep MATCHES ${path})
-  message(STATUS "add to environment variable PATH ${path}")
+cmake_path(CONVERT "${ep}" TO_CMAKE_PATH_LIST ep NORMALIZE)
+
+if(NOT ${ninja_path} IN_LIST ep)
+  message(STATUS "add to environment variable PATH ${ninja_path}")
 endif()
 
 if(NOT DEFINED ENV{CMAKE_GENERATOR})
@@ -35,7 +38,7 @@ endif()
 
 endfunction(checkup)
 
-get_filename_component(prefix ${prefix} ABSOLUTE)
+file(REAL_PATH ${prefix} prefix EXPAND_TILDE)
 set(path ${prefix}/ninja-${version})
 
 find_program(ninja NAMES ninja PATHS ${path} PATH_SUFFIXES bin NO_DEFAULT_PATH)
@@ -72,7 +75,7 @@ endif()
 file(MAKE_DIRECTORY ${src_dir}/build)
 
 execute_process(
-  COMMAND ${CMAKE_COMMAND} .. -DBUILD_TESTING:BOOL=OFF -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX:PATH=${path}
+  COMMAND ${CMAKE_COMMAND} .. -DBUILD_TESTING:BOOL=OFF -DCMAKE_BUILD_TYPE=Release --install-prefix ${path}
   WORKING_DIRECTORY ${src_dir}/build
   COMMAND_ERROR_IS_FATAL ANY)
 

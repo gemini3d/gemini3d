@@ -1,8 +1,8 @@
-cmake_minimum_required(VERSION 3.19...3.21)
+cmake_minimum_required(VERSION 3.20...3.21)
 
 set(version 1.5.0)
 
-get_filename_component(CMAKE_INSTALL_PREFIX ~/zstd-${version} ABSOLUTE)
+set(prefix "~/zstd-${version}")
 
 set(CMAKE_TLS_VERIFY true)
 
@@ -16,7 +16,7 @@ else()
   set(tmpdir ~/tmp)
 endif()
 
-get_filename_component(tmpdir ${tmpdir} ABSOLUTE)
+file(REAL_PATH ${tmpdir} tmpdir EXPAND_TILDE)
 
 set(name zstd-${version}.tar.gz)
 set(archive ${tmpdir}/${name})
@@ -30,7 +30,7 @@ if(NOT IS_DIRECTORY ${src})
   file(ARCHIVE_EXTRACT INPUT ${archive} DESTINATION ${tmpdir})
 endif()
 
-execute_process(COMMAND ${CMAKE_COMMAND} -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX} -S ${src} -B ${build}
+execute_process(COMMAND ${CMAKE_COMMAND} --install-prefix ${prefix} -S ${src} -B ${build}
 COMMAND_ERROR_IS_FATAL ANY)
 
 execute_process(COMMAND ${CMAKE_COMMAND} --build ${build} --parallel

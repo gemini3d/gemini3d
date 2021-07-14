@@ -3,13 +3,11 @@
 # cmake -P install_hwloc.cmake
 # will install hwloc under the user's home directory.
 
-cmake_minimum_required(VERSION 3.19...3.21)
+cmake_minimum_required(VERSION 3.20...3.21)
 
 set(CMAKE_TLS_VERIFY true)
 
-if(NOT prefix)
-  get_filename_component(prefix ~ ABSOLUTE)
-endif()
+set(prefix "~")
 
 set(version 2.5.0)
 
@@ -47,7 +45,7 @@ endif()
 
 set(url ${host}${name})
 
-get_filename_component(prefix ${prefix} ABSOLUTE)
+file(REAL_PATH ${prefix} prefix EXPAND_TILDE)
 set(path ${prefix}/${stem})
 
 message(STATUS "installing hwloc ${version} to ${path}")
@@ -78,7 +76,8 @@ find_program(lstopo
   NO_DEFAULT_PATH
   REQUIRED)
 
-get_filename_component(pathbin ${lstopo} DIRECTORY)
+
+cmake_path(GET lstopo PARENT_PATH pathbin)
 message(STATUS "add to environment variable PATH ${pathbin}")
 message(STATUS "add environment variable HWLOC_ROOT ${path}")
 
