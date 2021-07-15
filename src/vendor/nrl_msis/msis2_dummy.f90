@@ -1,36 +1,19 @@
 module msis_calc
 
-use, intrinsic :: iso_fortran_env, only : real64, real32, stderr=>error_unit
+use, intrinsic :: iso_fortran_env, only : real32, stderr=>error_unit
 implicit none (type, external)
-
-interface msiscalc
-  procedure msiscalc_r32, msiscalc_r64
-end interface msiscalc
 
 contains
 
-subroutine msiscalc_r32(day,utsec,z,lat,lon,sfluxavg,sflux,ap,tn,dn,tex)
+subroutine msiscalc(day,utsec,z,lat,lon,sfluxavg,sflux,ap,tn,dn,tex)
 
-real(real32) :: day,utsec,z,lat,lon,sfluxavg,sflux,ap(7)
-real(real32) :: tn, dn(10)
-real(real32) :: tex
+class(*) :: day,utsec,z,lat,lon,sfluxavg,sflux,ap(7), tn, dn(10), tex
 
 write(stderr,*) 'ERROR: to use MSIS 2.0 requires "cmake -B build -Dmsis20=yes"'
 error stop 20
 
-end subroutine msiscalc_r32
+end subroutine msiscalc
 
-
-subroutine msiscalc_r64(day,utsec,z,lat,lon,sfluxavg,sflux,ap,tn,dn,tex)
-
-real(real64) :: day,utsec,z,lat,lon,sfluxavg,sflux,ap(7)
-real(real64) :: tn, dn(10)
-real(real64) :: tex
-
-write(stderr,*) 'ERROR: to use MSIS 2.0 requires "cmake -B build -Dmsis20=yes"'
-error stop 20
-
-end subroutine msiscalc_r64
 
 end module msis_calc
 
