@@ -68,9 +68,9 @@ subroutine input_hdf5(filename,doy,sec,f107a,f107,Ap7, glat, glon, alt)
 !! use binary to reduce file size and read times
 character(*), intent(in) :: filename
 real(real32), intent(inout) :: doy,sec,f107a,f107,ap7(7)
-!! intent(inout) to workaround a GCC-10 MSYS2 -O3 glitch that causes "sec" to be random data when intent(out)
-!! made them all intent(inout) just in case...
-real(real32), intent(out), allocatable :: glat(:,:,:), glon(:,:,:), alt(:,:,:)
+!! intent(out)
+real(real32), intent(inout), allocatable :: glat(:,:,:), glon(:,:,:), alt(:,:,:)
+!! intent(out)
 
 type(hdf5_file) :: hf
 integer(hsize_t), allocatable :: dims(:)
