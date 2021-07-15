@@ -91,8 +91,7 @@ set_target_properties(gemini3d.compare PROPERTIES
 
 
 install(TARGETS magcalc.bin gemini3d.run magcalc.run gemini3d.compare
-  EXPORT ${PROJECT_NAME}Targets
-  RUNTIME DESTINATION bin)
+  EXPORT ${PROJECT_NAME}Targets)
 
 
 set_targ_props(exe_frontend magcalc.bin)

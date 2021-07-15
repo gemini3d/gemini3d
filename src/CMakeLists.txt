@@ -77,8 +77,7 @@ if(test_dll_path)
 endif()
 
 install(TARGETS gemini.bin
-  EXPORT ${PROJECT_NAME}Targets
-  RUNTIME DESTINATION bin)
+  EXPORT ${PROJECT_NAME}Targets)
 
 # --- apply properties
 

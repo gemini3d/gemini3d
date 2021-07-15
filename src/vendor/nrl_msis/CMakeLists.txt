@@ -39,9 +39,7 @@ add_executable(msis_setup msis_driver.f90)
 target_link_libraries(msis_setup PRIVATE msis_ifc const h5fortran::h5fortran)
 set_target_properties(msis_setup PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
 
-install(TARGETS msis_setup
-  EXPORT ${PROJECT_NAME}Targets
-  RUNTIME DESTINATION bin)
+install(TARGETS msis_setup EXPORT ${PROJECT_NAME}Targets)
 
 if(BUILD_TESTING)
 
