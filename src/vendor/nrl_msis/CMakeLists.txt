@@ -43,28 +43,38 @@ install(TARGETS msis_setup EXPORT ${PROJECT_NAME}Targets)
 
 if(BUILD_TESTING)
 
-set(_in ${PROJECT_SOURCE_DIR}/test_data/msis_test_in.h5)
-set(_out ${CMAKE_CURRENT_BINARY_DIR}/msis_test_out.h5)
-set(_ref ${PROJECT_SOURCE_DIR}/test_data/msis_test_out.h5)
+set(msis_in ${CMAKE_CURRENT_BINARY_DIR}/msis_test_in.h5)
+set(msis_out ${CMAKE_CURRENT_BINARY_DIR}/msis_test_out.h5)
+set(msis_ref ${PROJECT_SOURCE_DIR}/test_data/msis_test_out.h5)
+
+add_executable(msis_generate test_gen_in.f90)
+target_link_libraries(msis_generate PRIVATE h5fortran::h5fortran)
+add_test(NAME unit:msis_generate
+  COMMAND $<TARGET_FILE:msis_generate> ${msis_in})
+set_tests_properties(unit:msis_generate PROPERTIES
+  FIXTURES_SETUP msis_gen_fxt
+  LABELS unit
+  TIMEOUT 10)
 
 add_test(NAME unit:msis_setup
-  COMMAND $<TARGET_FILE:msis_setup> ${_in} ${_out} 0)
+  COMMAND $<TARGET_FILE:msis_setup> ${msis_in} ${msis_out} 0)
 set_tests_properties(unit:msis_setup PROPERTIES
   FIXTURES_SETUP msis_fxt
+  FIXTURES_REQUIRED msis_gen_fxt
   LABELS unit
-  REQUIRED_FILES ${_in}
+  REQUIRED_FILES ${msis_in}
   TIMEOUT 10)
 
 add_executable(msis_compare test_msis.f90)
 target_link_libraries(msis_compare PRIVATE msis_ifc assert h5fortran::h5fortran)
 
 add_test(NAME unit:msis_compare
-  COMMAND $<TARGET_FILE:msis_compare> ${_out} ${_ref})
+  COMMAND $<TARGET_FILE:msis_compare> ${msis_out} ${msis_ref})
 set_tests_properties(unit:msis_compare PROPERTIES
   FIXTURES_REQUIRED msis_fxt
   LABELS unit
   TIMEOUT 10
-  REQUIRED_FILES "${_out};${_ref}")
+  REQUIRED_FILES "${msis_out};${msis_ref}")
 
 if(test_dll_path)
   set_tests_properties(unit:msis_setup unit:msis_compare PROPERTIES
