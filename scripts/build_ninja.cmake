@@ -38,7 +38,11 @@ endif()
 
 endfunction(checkup)
 
-file(REAL_PATH ${prefix} prefix EXPAND_TILDE)
+if(CMAKE_VERSION VERSION_LESS 3.21)
+  get_filename_component(prefix ${prefix} ABSOLUTE)
+else()
+  file(REAL_PATH ${prefix} prefix EXPAND_TILDE)
+endif()
 set(path ${prefix}/ninja-${version})
 
 find_program(ninja NAMES ninja PATHS ${path} PATH_SUFFIXES bin NO_DEFAULT_PATH)
@@ -75,7 +79,7 @@ endif()
 file(MAKE_DIRECTORY ${src_dir}/build)
 
 execute_process(
-  COMMAND ${CMAKE_COMMAND} .. -DBUILD_TESTING:BOOL=OFF -DCMAKE_BUILD_TYPE=Release --install-prefix ${path}
+  COMMAND ${CMAKE_COMMAND} .. -DBUILD_TESTING:BOOL=OFF -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX:PATH=${path}
   WORKING_DIRECTORY ${src_dir}/build
   COMMAND_ERROR_IS_FATAL ANY)
 

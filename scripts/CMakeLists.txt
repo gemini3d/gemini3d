@@ -25,7 +25,11 @@ if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
     set(prefix ~/lib)
   endif()
 
-  file(REAL_PATH ${prefix} prefix EXPAND_TILDE)
+  if(CMAKE_VERSION VERSION_LESS 3.21)
+    get_filename_component(prefix ${prefix} ABSOLUTE)
+  else()
+    file(REAL_PATH ${prefix} prefix EXPAND_TILDE)
+  endif()
   set(CMAKE_INSTALL_PREFIX ${prefix} CACHE PATH "top-level install path" FORCE)
 endif()
 

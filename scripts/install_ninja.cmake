@@ -71,7 +71,11 @@ endif()
 
 set(name ${stem}.zip)
 
-file(REAL_PATH ${prefix} prefix EXPAND_TILDE)
+if(CMAKE_VERSION VERSION_LESS 3.21)
+  get_filename_component(prefix ${prefix} ABSOLUTE)
+else()
+  file(REAL_PATH ${prefix} prefix EXPAND_TILDE)
+endif()
 set(path ${prefix}/ninja-${version})
 
 find_program(ninja NAMES ninja PATHS ${path} PATH_SUFFIXES bin NO_DEFAULT_PATH)

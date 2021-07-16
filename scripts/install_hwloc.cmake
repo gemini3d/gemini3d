@@ -45,7 +45,11 @@ endif()
 
 set(url ${host}${name})
 
-file(REAL_PATH ${prefix} prefix EXPAND_TILDE)
+if(CMAKE_VERSION VERSION_LESS 3.21)
+  get_filename_component(prefix ${prefix} ABSOLUTE)
+else()
+  file(REAL_PATH ${prefix} prefix EXPAND_TILDE)
+endif()
 set(path ${prefix}/${stem})
 
 message(STATUS "installing hwloc ${version} to ${path}")
