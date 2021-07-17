@@ -3,11 +3,12 @@ submodule (neutral) perturb
 use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
 
 use grid, only : gridflag
-use reader, only : get_neutral2, get_neutral3
+use reader, only : get_neutral2
 use timeutils, only : dateinc, date_filename
 
 use mpimod, only: mpi_realprec, mpi_integer, mpi_comm_world, mpi_status_ignore, &
 tag=>gemini_mpi
+use h5fortran, only: hdf5_file
 
 implicit none (type, external)
 
@@ -405,14 +406,13 @@ integer, dimension(3), intent(out) :: ymdtmp
 !! storage space for incrementing date without overwriting ymdnext...
 real(wp), intent(out) :: UTsectmp
 
-
 integer :: iid,ierr
 integer :: lhorzn                        !number of horizontal grid points
-real(wp), dimension(:,:,:), allocatable :: parmtmp    !temporary resizable space for subgrid neutral data
+real(wp), dimension(:,:,:), allocatable :: paramall
+type(hdf5_file) :: hf
 
 
 lhorzn=lyn
-
 
 if (mpi_cfg%myid==0) then    !root
   !read in the data from file
@@ -421,37 +421,45 @@ if (mpi_cfg%myid==0) then    !root
   call dateinc(dtneu,ymdtmp,UTsectmp)                !get the date for "next" params
 
   !FIXME: we probably need to read in and distribute the input parameters one at a time to reduce memory footprint...
-  call get_neutral3(date_filename(neudir,ymdtmp,UTsectmp), &
-    dnOall,dnN2all,dnO2all,dvnxall,dvnrhoall,dvnzall,dTnall)
+  !call get_neutral3(date_filename(neudir,ymdtmp,UTsectmp), &
+  !  dnOall,dnN2all,dnO2all,dvnxall,dvnrhoall,dvnzall,dTnall)
 
-  if (debug) then
-    print *, 'Min/max values for dnOall:  ',minval(dnOall),maxval(dnOall)
-    print *, 'Min/max values for dnNall:  ',minval(dnN2all),maxval(dnN2all)
-    print *, 'Min/max values for dnO2all:  ',minval(dnO2all),maxval(dnO2all)
-    print *, 'Min/max values for dvnxall:  ',minval(dvnxall),maxval(dvnxall)
-    print *, 'Min/max values for dvnrhoall:  ',minval(dvnrhoall),maxval(dvnrhoall)
-    print *, 'Min/max values for dvnzall:  ',minval(dvnzall),maxval(dvnzall)
-    print *, 'Min/max values for dTnall:  ',minval(dTnall),maxval(dTnall)
-  endif
-
-  if (.not. all(ieee_is_finite(dnOall))) error stop 'dnOall: non-finite value(s)'
-  if (.not. all(ieee_is_finite(dnN2all))) error stop 'dnN2all: non-finite value(s)'
-  if (.not. all(ieee_is_finite(dnO2all))) error stop 'dnO2all: non-finite value(s)'
-  if (.not. all(ieee_is_finite(dvnxall))) error stop 'dvnxall: non-finite value(s)'
-  if (.not. all(ieee_is_finite(dvnrhoall))) error stop 'dvnrhoall: non-finite value(s)'
-  if (.not. all(ieee_is_finite(dvnzall))) error stop 'dvnzall: non-finite value(s)'
-  if (.not. all(ieee_is_finite(dTnall))) error stop 'dTnall: non-finite value(s)'
-
-
-  ! FIXME: should we loop through the workers for each parameter first? that way we can overwrite that parameter and also not worry about worker 2 having to block until worker 1 receives all of its data...  The issue is that parmtmp changes size for each worker...   Possibly allocated a single linear buffer that can hold the full data and pack that with the data to be sent to avoid repeated allocation and deallocations...  Can we also interleave interpolation with the message passing???
   !in the 3D case we cannot afford to send full grid data and need to instead use neutral subgrid splits defined earlier
-  call dneu_root2workers(dnOall,tag%dnO,dnO)
-  call dneu_root2workers(dnN2all,tag%dnN2,dnN2)
+  allocate(paramall(lzn,lxnall,lynall))     ! space to store a single neutral input parameter
+  if (debug) print *, 'READ neutral 3D data from file: ',date_filename(neudir,ymdtmp,UTsectmp)
+  call hf%open(date_filename(neudir,ymdtmp,UTsectmp), action='r')
+
+  call hf%read('/dn0all', paramall)
+  if (.not. all(ieee_is_finite(paramall))) error stop 'dnOall: non-finite value(s)'
+  if (debug) print*, 'Min/max values for dnOall:  ',minval(paramall),maxval(paramall)    
+  call dneu_root2workers(paramall,tag%dnO,dnO)
+  call hf%read('/dnN2all', paramall)
+  if (.not. all(ieee_is_finite(paramall))) error stop 'dnN2all: non-finite value(s)'
+  if (debug) print*, 'Min/max values for dnN2all:  ',minval(paramall),maxval(paramall)    
+  call dneu_root2workers(paramall,tag%dnN2,dnN2)
+  call hf%read('/dnO2all', paramall)
+  if (.not. all(ieee_is_finite(paramall))) error stop 'dnO2all: non-finite value(s)'
+  if (debug) print*, 'Min/max values for dnO2all:  ',minval(paramall),maxval(paramall)    
   call dneu_root2workers(dnO2all,tag%dnO2,dnO2)
-  call dneu_root2workers(dTnall,tag%dTn,dTn)
-  call dneu_root2workers(dvnrhoall,tag%dvnrho,dvnrho)
-  call dneu_root2workers(dvnzall,tag%dvnz,dvnz)
-  call dneu_root2workers(dvnxall,tag%dvnx,dvnx)
+  call hf%read('/Tnall', paramall)
+  if (.not. all(ieee_is_finite(paramall))) error stop 'dTnall: non-finite value(s)'
+  if (debug) print*, 'Min/max values for dTnall:  ',minval(paramall),maxval(paramall)    
+  call dneu_root2workers(paramall,tag%dTn,dTn)
+  call hf%read('/dvnrhoall', paramall)
+  if (.not. all(ieee_is_finite(paramall))) error stop 'dvnrhoall: non-finite value(s)'
+  if (debug) print*, 'Min/max values for dvnrhoall:  ',minval(paramall),maxval(paramall)    
+  call dneu_root2workers(paramall,tag%dvnrho,dvnrho)
+  call hf%read('/dvnzall', paramall)
+  if (.not. all(ieee_is_finite(paramall))) error stop 'dvnzall: non-finite value(s)'
+  if (debug) print*, 'Min/max values for dvnzall:  ',minval(paramall),maxval(paramall)    
+  call dneu_root2workers(paramall,tag%dvnz,dvnz)
+  call hf%read('/dvnxall', paramall)
+  if (.not. all(ieee_is_finite(paramall))) error stop 'dvnxall: non-finite value(s)'
+  if (debug) print*, 'Min/max values for dvnxall:  ',minval(paramall),maxval(paramall)    
+  call dneu_root2workers(paramall,tag%dvnx,dvnx)
+
+  call hf%close()
+  deallocate(paramall)
 else     !workers
   !receive a subgrid copy of the data from root
   call dneu_workers_from_root(tag%dnO,dnO)
