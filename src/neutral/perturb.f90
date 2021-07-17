@@ -9,6 +9,7 @@ use timeutils, only : dateinc, date_filename
 use mpimod, only: mpi_realprec, mpi_integer, mpi_comm_world, mpi_status_ignore, &
 tag=>gemini_mpi
 use h5fortran, only: hdf5_file
+use pathlib, only: get_suffix
 
 implicit none (type, external)
 
@@ -420,6 +421,7 @@ integer :: iid,ierr
 integer :: lhorzn                        !number of horizontal grid points
 real(wp), dimension(:,:,:), allocatable :: paramall
 type(hdf5_file) :: hf
+character(:), allocatable :: fn
 
 
 lhorzn=lyn
@@ -436,8 +438,13 @@ if (mpi_cfg%myid==0) then    !root
 
   !in the 3D case we cannot afford to send full grid data and need to instead use neutral subgrid splits defined earlier
   allocate(paramall(lzn,lxnall,lynall))     ! space to store a single neutral input parameter
-  if (debug) print *, 'READ neutral 3D data from file: ',date_filename(neudir,ymdtmp,UTsectmp)
-  call hf%open(date_filename(neudir,ymdtmp,UTsectmp), action='r')
+  fn=date_filename(neudir,ymdtmp,UTsectmp)
+  if (debug) print *, 'READ neutral 3D data from file: ',fn
+  if (get_suffix(fn)=='.h5') then
+    call hf%open(fn, action='r')
+  else
+    error stop '3D neutral input only supported for hdf5 files; please regenerate input'
+  end if
 
   call hf%read('/dn0all', paramall)
   if (.not. all(ieee_is_finite(paramall))) error stop 'dnOall: non-finite value(s)'
