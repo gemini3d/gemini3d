@@ -52,25 +52,16 @@ module procedure neutral_winds
     vn3base(i1,i2,i3)=0.0
   end do
 
-  !! taper the parallel winds toward the null points to avoid artifacts
-!  do i2=1,lx2
-!    do i3=1,lx3
-!      !! identify first and last non-null grid points for this field line
-!      ix1beg=1
-!      do while( (.not. x%nullpts(ix1beg,i2,i3)) .and. ix1beg<lx1)     !find the first non-null index for this field line, need to be careful if no null points exist...
-!        ix1beg=ix1beg+1
-!      end do
-!      ix1end=ix1beg
-!      do while(x%nullpts(ix1end,i2,i3) .and. ix1end<lx1)     !find the first non-null index for this field line
-!        ix1end=ix1end+1
-!      end do
-!
-!      vn1base(ix1beg,i2,i3)=vn1base(ix1beg+2,i2,i3)*1.0/3.0
-!      vn1base(ix1beg+1,i2,i3)=vn1base(ix1beg+2,i2,i3)*2.0/3.0
-!      vn1base(ix1end,i2,i3)=vn1base(ix1end-2,i2,i3)*1.0/3.0
-!      vn1base(ix1end-1,i2,i3)=vn1base(ix1end-2,i2,i3)*2.0/3.0
-!    end do
-!  end do
+  !! taper winds according to altitude.  If this is not done there seems to be an issue where poorly resolved
+  !!  drifts in the lower E-region cause stability problems.  Generally speaking, it's not too bad to omit field-
+  !!  aligned drifts in the E-region since most of the dynamical behavior there is driven by the field-perp winds
+  !!  (which are retained).  That being said, this could have implications, e.g. for spE modeling so perhaps should
+  !!  be revisited in the future.  
+  do i2=1,lx2
+    do i3=1,lx3
+      vn1base(1:lx1,i2,i3)=vn1base(1:lx1,i2,i3)*(0.5 + 0.5*tanh((x%alt(1:lx1,i2,i3)-150e3)/10e3))
+    end do
+  end do  
 
   !! we really don't resolve mesosphere properly so kill off those winds, these probably don't contribute much to currents???
   !where (x%alt<120e3)
@@ -78,13 +69,6 @@ module procedure neutral_winds
     !vn2base=0.0
     !vn3base=0.0
   !end where
-
-  !! taper winds according to altitude, seems to work best...
-  do i2=1,lx2
-    do i3=1,lx3
-      vn1base(1:lx1,i2,i3)=vn1base(1:lx1,i2,i3)*(0.5 + 0.5*tanh((x%alt(1:lx1,i2,i3)-150e3)/10e3))
-    end do
-  end do  
 
   !! force parallel winds to zero to avoid issues...
   !vn1base=0.0     ! it appears to be the case that the parallel drift drives hte model crazy...
