@@ -455,63 +455,21 @@ if (mpi_cfg%myid==0) then    !root
 
   ! FIXME: should we loop through the workers for each parameter first? that way we can overwrite that parameter and also not worry about worker 2 having to block until worker 1 receives all of its data...  The issue is that parmtmp changes size for each worker...   Possibly allocated a single linear buffer that can hold the full data and pack that with the data to be sent to avoid repeated allocation and deallocations...  Can we also interleave interpolation with the message passing???
   !in the 3D case we cannot afford to send full grid data and need to instead use neutral subgrid splits defined earlier
-  do iid=1,mpi_cfg%lid-1
-    allocate(parmtmp(lzn,slabsizes(iid,1),slabsizes(iid,2)))    !get space for the parameters for this worker
-
-    parmtmp=dnOall(1:lzn,indx(iid,3):indx(iid,4),indx(iid,5):indx(iid,6))
-    !call mpi_send(parmtmp,lzn*slabsizes(iid,1)*slabsizes(iid,2),mpi_realprec,iid,tag%dnO,MPI_COMM_WORLD,ierr)
-    call dneu_root2workers(parmtmp,tag%dnO,dnO)
-
-    parmtmp=dnN2all(1:lzn,indx(iid,3):indx(iid,4),indx(iid,5):indx(iid,6))
-    !call mpi_send(parmtmp,lzn*slabsizes(iid,1)*slabsizes(iid,2),mpi_realprec,iid,tag%dnN2,MPI_COMM_WORLD,ierr)
-    call dneu_root2workers(parmtmp,tag%dnN2,dnN2)
-
-    parmtmp=dnO2all(1:lzn,indx(iid,3):indx(iid,4),indx(iid,5):indx(iid,6))
-    !call mpi_send(parmtmp,lzn*slabsizes(iid,1)*slabsizes(iid,2),mpi_realprec,iid,tag%dnO2,MPI_COMM_WORLD,ierr)
-    call dneu_root2workers(parmtmp,tag%dnO2,dnO2)
-
-    parmtmp=dTnall(1:lzn,indx(iid,3):indx(iid,4),indx(iid,5):indx(iid,6))
-    !call mpi_send(parmtmp,lzn*slabsizes(iid,1)*slabsizes(iid,2),mpi_realprec,iid,tag%dTn,MPI_COMM_WORLD,ierr)
-    call dneu_root2workers(parmtmp,tag%dTn,dTn)
-
-    parmtmp=dvnrhoall(1:lzn,indx(iid,3):indx(iid,4),indx(iid,5):indx(iid,6))
-    !call mpi_send(parmtmp,lzn*slabsizes(iid,1)*slabsizes(iid,2),mpi_realprec,iid,tag%dvnrho,MPI_COMM_WORLD,ierr)
-    call dneu_root2workers(parmtmp,tag%dvnrho,dvnrho)
-
-    parmtmp=dvnzall(1:lzn,indx(iid,3):indx(iid,4),indx(iid,5):indx(iid,6))
-    !call mpi_send(parmtmp,lzn*slabsizes(iid,1)*slabsizes(iid,2),mpi_realprec,iid,tag%dvnz,MPI_COMM_WORLD,ierr)
-    call dneu_root2workers(parmtmp,tag%dvnz,dvnz)
-
-    parmtmp=dvnxall(1:lzn,indx(iid,3):indx(iid,4),indx(iid,5):indx(iid,6))
-    !call mpi_send(parmtmp,lzn*slabsizes(iid,1)*slabsizes(iid,2),mpi_realprec,iid,tag%dvnx,MPI_COMM_WORLD,ierr)
-    call dneu_root2workers(parmtmp,tag%dvnx,dvnx)
-
-    deallocate(parmtmp)
-  end do
-
-  !root needs to grab its piece of data
-  !dnO=dnOall(1:lzn,indx(0,3):indx(0,4),indx(0,5):indx(0,6))
-  !dnN2=dnN2all(1:lzn,indx(0,3):indx(0,4),indx(0,5):indx(0,6))
-  !dnO2=dnO2all(1:lzn,indx(0,3):indx(0,4),indx(0,5):indx(0,6))
-  !dTn=dTnall(1:lzn,indx(0,3):indx(0,4),indx(0,5):indx(0,6))
-  !dvnrho=dvnrhoall(1:lzn,indx(0,3):indx(0,4),indx(0,5):indx(0,6))
-  !dvnz=dvnzall(1:lzn,indx(0,3):indx(0,4),indx(0,5):indx(0,6))
-  !dvnx=dvnxall(1:lzn,indx(0,3):indx(0,4),indx(0,5):indx(0,6))
+  call dneu_root2workers(dnOall,tag%dnO,dnO)
+  call dneu_root2workers(dnN2all,tag%dnN2,dnN2)
+  call dneu_root2workers(dnO2all,tag%dnO2,dnO2)
+  call dneu_root2workers(dTnall,tag%dTn,dTn)
+  call dneu_root2workers(dvnrhoall,tag%dvnrho,dvnrho)
+  call dneu_root2workers(dvnzall,tag%dvnz,dvnz)
+  call dneu_root2workers(dvnxall,tag%dvnx,dvnx)
 else     !workers
   !receive a subgrid copy of the data from root
-  !call mpi_recv(dnO,lzn*lxn*lyn,mpi_realprec,0,tag%dnO,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
   call dneu_workers_from_root(tag%dnO,dnO)
-  !call mpi_recv(dnN2,lzn*lxn*lyn,mpi_realprec,0,tag%dnN2,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
   call dneu_workers_from_root(tag%dnN2,dnN2)
-  !call mpi_recv(dnO2,lzn*lxn*lyn,mpi_realprec,0,tag%dnO2,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
   call dneu_workers_from_root(tag%dnO2,dnO2)  
-  !call mpi_recv(dTn,lzn*lxn*lyn,mpi_realprec,0,tag%dTn,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
   call dneu_workers_from_root(tag%dTn,dTn)
-  !call mpi_recv(dvnrho,lzn*lxn*lyn,mpi_realprec,0,tag%dvnrho,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
   call dneu_workers_from_root(tag%dvnrho,dvnrho)
-  !call mpi_recv(dvnz,lzn*lxn*lyn,mpi_realprec,0,tag%dvnz,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
   call dneu_workers_from_root(tag%dvnz,dvnz)
-  !call mpi_recv(dvnx,lzn*lxn*lyn,mpi_realprec,0,tag%dvnx,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
   call dneu_workers_from_root(tag%dvnx,dvnx)
 end if
 
