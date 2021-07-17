@@ -438,7 +438,7 @@ if (mpi_cfg%myid==0) then    !root
 
   !in the 3D case we cannot afford to send full grid data and need to instead use neutral subgrid splits defined earlier
   allocate(paramall(lzn,lxnall,lynall))     ! space to store a single neutral input parameter
-  fn=date_filename(neudir,ymdtmp,UTsectmp)
+  fn=date_filename(neudir,ymdtmp,UTsectmp)//'.h5'
   if (debug) print *, 'READ neutral 3D data from file: ',fn
   if (get_suffix(fn)=='.h5') then
     call hf%open(fn, action='r')
@@ -458,7 +458,7 @@ if (mpi_cfg%myid==0) then    !root
   if (.not. all(ieee_is_finite(paramall))) error stop 'dnO2all: non-finite value(s)'
   if (debug) print*, 'Min/max values for dnO2all:  ',minval(paramall),maxval(paramall)    
   call dneu_root2workers(dnO2all,tag%dnO2,dnO2)
-  call hf%read('/Tnall', paramall)
+  call hf%read('/dTnall', paramall)
   if (.not. all(ieee_is_finite(paramall))) error stop 'dTnall: non-finite value(s)'
   if (debug) print*, 'Min/max values for dTnall:  ',minval(paramall),maxval(paramall)    
   call dneu_root2workers(paramall,tag%dTn,dTn)
