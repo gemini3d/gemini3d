@@ -79,6 +79,7 @@ module procedure neutral_winds
     !vn3base=0.0
   !end where
 
+  !! taper winds according to altitude, seems to work best...
   do i2=1,lx2
     do i3=1,lx3
       vn1base(1:lx1,i2,i3)=vn1base(1:lx1,i2,i3)*(0.5 + 0.5*tanh((x%alt(1:lx1,i2,i3)-100e3)/5e3))
