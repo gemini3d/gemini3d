@@ -74,7 +74,7 @@ module procedure neutral_winds
 
   !! we really don't resolve mesosphere properly so kill off those winds, these probably don't contribute much to currents???
   !where (x%alt<120e3)
-    vn1base=0.0
+    !vn1base=0.0
     !vn2base=0.0
     !vn3base=0.0
   !end where
@@ -82,7 +82,7 @@ module procedure neutral_winds
   !! taper winds according to altitude, seems to work best...
   do i2=1,lx2
     do i3=1,lx3
-      vn1base(1:lx1,i2,i3)=vn1base(1:lx1,i2,i3)*(0.5 + 0.5*tanh((x%alt(1:lx1,i2,i3)-100e3)/5e3))
+      vn1base(1:lx1,i2,i3)=vn1base(1:lx1,i2,i3)*(0.5 + 0.5*tanh((x%alt(1:lx1,i2,i3)-150e3)/10e3))
     end do
   end do  
 
