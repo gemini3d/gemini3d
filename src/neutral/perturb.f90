@@ -459,46 +459,60 @@ if (mpi_cfg%myid==0) then    !root
     allocate(parmtmp(lzn,slabsizes(iid,1),slabsizes(iid,2)))    !get space for the parameters for this worker
 
     parmtmp=dnOall(1:lzn,indx(iid,3):indx(iid,4),indx(iid,5):indx(iid,6))
-    call mpi_send(parmtmp,lzn*slabsizes(iid,1)*slabsizes(iid,2),mpi_realprec,iid,tag%dnO,MPI_COMM_WORLD,ierr)
+    !call mpi_send(parmtmp,lzn*slabsizes(iid,1)*slabsizes(iid,2),mpi_realprec,iid,tag%dnO,MPI_COMM_WORLD,ierr)
+    call dneu_root2workers(parmtmp,tag%dnO,dnO)
 
     parmtmp=dnN2all(1:lzn,indx(iid,3):indx(iid,4),indx(iid,5):indx(iid,6))
-    call mpi_send(parmtmp,lzn*slabsizes(iid,1)*slabsizes(iid,2),mpi_realprec,iid,tag%dnN2,MPI_COMM_WORLD,ierr)
+    !call mpi_send(parmtmp,lzn*slabsizes(iid,1)*slabsizes(iid,2),mpi_realprec,iid,tag%dnN2,MPI_COMM_WORLD,ierr)
+    call dneu_root2workers(parmtmp,tag%dnN2,dnN2)
 
     parmtmp=dnO2all(1:lzn,indx(iid,3):indx(iid,4),indx(iid,5):indx(iid,6))
-    call mpi_send(parmtmp,lzn*slabsizes(iid,1)*slabsizes(iid,2),mpi_realprec,iid,tag%dnO2,MPI_COMM_WORLD,ierr)
+    !call mpi_send(parmtmp,lzn*slabsizes(iid,1)*slabsizes(iid,2),mpi_realprec,iid,tag%dnO2,MPI_COMM_WORLD,ierr)
+    call dneu_root2workers(parmtmp,tag%dnO2,dnO2)
 
     parmtmp=dTnall(1:lzn,indx(iid,3):indx(iid,4),indx(iid,5):indx(iid,6))
-    call mpi_send(parmtmp,lzn*slabsizes(iid,1)*slabsizes(iid,2),mpi_realprec,iid,tag%dTn,MPI_COMM_WORLD,ierr)
+    !call mpi_send(parmtmp,lzn*slabsizes(iid,1)*slabsizes(iid,2),mpi_realprec,iid,tag%dTn,MPI_COMM_WORLD,ierr)
+    call dneu_root2workers(parmtmp,tag%dTn,dTn)
 
     parmtmp=dvnrhoall(1:lzn,indx(iid,3):indx(iid,4),indx(iid,5):indx(iid,6))
-    call mpi_send(parmtmp,lzn*slabsizes(iid,1)*slabsizes(iid,2),mpi_realprec,iid,tag%dvnrho,MPI_COMM_WORLD,ierr)
+    !call mpi_send(parmtmp,lzn*slabsizes(iid,1)*slabsizes(iid,2),mpi_realprec,iid,tag%dvnrho,MPI_COMM_WORLD,ierr)
+    call dneu_root2workers(parmtmp,tag%dvnrho,dvnrho)
 
     parmtmp=dvnzall(1:lzn,indx(iid,3):indx(iid,4),indx(iid,5):indx(iid,6))
-    call mpi_send(parmtmp,lzn*slabsizes(iid,1)*slabsizes(iid,2),mpi_realprec,iid,tag%dvnz,MPI_COMM_WORLD,ierr)
+    !call mpi_send(parmtmp,lzn*slabsizes(iid,1)*slabsizes(iid,2),mpi_realprec,iid,tag%dvnz,MPI_COMM_WORLD,ierr)
+    call dneu_root2workers(parmtmp,tag%dvnz,dvnz)
 
     parmtmp=dvnxall(1:lzn,indx(iid,3):indx(iid,4),indx(iid,5):indx(iid,6))
-    call mpi_send(parmtmp,lzn*slabsizes(iid,1)*slabsizes(iid,2),mpi_realprec,iid,tag%dvnx,MPI_COMM_WORLD,ierr)
+    !call mpi_send(parmtmp,lzn*slabsizes(iid,1)*slabsizes(iid,2),mpi_realprec,iid,tag%dvnx,MPI_COMM_WORLD,ierr)
+    call dneu_root2workers(parmtmp,tag%dvnx,dvnx)
 
     deallocate(parmtmp)
   end do
 
   !root needs to grab its piece of data
-  dnO=dnOall(1:lzn,indx(0,3):indx(0,4),indx(0,5):indx(0,6))
-  dnN2=dnN2all(1:lzn,indx(0,3):indx(0,4),indx(0,5):indx(0,6))
-  dnO2=dnO2all(1:lzn,indx(0,3):indx(0,4),indx(0,5):indx(0,6))
-  dTn=dTnall(1:lzn,indx(0,3):indx(0,4),indx(0,5):indx(0,6))
-  dvnrho=dvnrhoall(1:lzn,indx(0,3):indx(0,4),indx(0,5):indx(0,6))
-  dvnz=dvnzall(1:lzn,indx(0,3):indx(0,4),indx(0,5):indx(0,6))
-  dvnx=dvnxall(1:lzn,indx(0,3):indx(0,4),indx(0,5):indx(0,6))
+  !dnO=dnOall(1:lzn,indx(0,3):indx(0,4),indx(0,5):indx(0,6))
+  !dnN2=dnN2all(1:lzn,indx(0,3):indx(0,4),indx(0,5):indx(0,6))
+  !dnO2=dnO2all(1:lzn,indx(0,3):indx(0,4),indx(0,5):indx(0,6))
+  !dTn=dTnall(1:lzn,indx(0,3):indx(0,4),indx(0,5):indx(0,6))
+  !dvnrho=dvnrhoall(1:lzn,indx(0,3):indx(0,4),indx(0,5):indx(0,6))
+  !dvnz=dvnzall(1:lzn,indx(0,3):indx(0,4),indx(0,5):indx(0,6))
+  !dvnx=dvnxall(1:lzn,indx(0,3):indx(0,4),indx(0,5):indx(0,6))
 else     !workers
   !receive a subgrid copy of the data from root
-  call mpi_recv(dnO,lzn*lxn*lyn,mpi_realprec,0,tag%dnO,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-  call mpi_recv(dnN2,lzn*lxn*lyn,mpi_realprec,0,tag%dnN2,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-  call mpi_recv(dnO2,lzn*lxn*lyn,mpi_realprec,0,tag%dnO2,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-  call mpi_recv(dTn,lzn*lxn*lyn,mpi_realprec,0,tag%dTn,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-  call mpi_recv(dvnrho,lzn*lxn*lyn,mpi_realprec,0,tag%dvnrho,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-  call mpi_recv(dvnz,lzn*lxn*lyn,mpi_realprec,0,tag%dvnz,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-  call mpi_recv(dvnx,lzn*lxn*lyn,mpi_realprec,0,tag%dvnx,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+  !call mpi_recv(dnO,lzn*lxn*lyn,mpi_realprec,0,tag%dnO,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+  call dneu_workers_from_root(tag%dnO,dnO)
+  !call mpi_recv(dnN2,lzn*lxn*lyn,mpi_realprec,0,tag%dnN2,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+  call dneu_workers_from_root(tag%dnN2,dnN2)
+  !call mpi_recv(dnO2,lzn*lxn*lyn,mpi_realprec,0,tag%dnO2,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+  call dneu_workers_from_root(tag%dnO2,dnO2)  
+  !call mpi_recv(dTn,lzn*lxn*lyn,mpi_realprec,0,tag%dTn,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+  call dneu_workers_from_root(tag%dTn,dTn)
+  !call mpi_recv(dvnrho,lzn*lxn*lyn,mpi_realprec,0,tag%dvnrho,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+  call dneu_workers_from_root(tag%dvnrho,dvnrho)
+  !call mpi_recv(dvnz,lzn*lxn*lyn,mpi_realprec,0,tag%dvnz,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+  call dneu_workers_from_root(tag%dvnz,dvnz)
+  !call mpi_recv(dvnx,lzn*lxn*lyn,mpi_realprec,0,tag%dvnx,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+  call dneu_workers_from_root(tag%dvnx,dvnx)
 end if
 
 
@@ -515,5 +529,35 @@ if (mpi_cfg%myid==mpi_cfg%lid/2 .and. debug) then
 end if
 
 end subroutine read_dneu3D
+
+
+!> transfer single state parameter data from root to workers (viz. "broadcast")
+subroutine dneu_root2workers(paramall,tag,param)
+  real(wp), dimension(:,:,:), intent(in) :: paramall
+  integer, intent(in) :: tag
+  real(wp), dimension(:,:,:), intent(inout) :: param  
+  integer :: iid,ierr
+  real(wp), dimension(:,:,:), allocatable :: parmtmp
+
+  do iid=1,mpi_cfg%lid-1
+    allocate(parmtmp(lzn,slabsizes(iid,1),slabsizes(iid,2)))    !get space for the parameters for this worker
+
+    parmtmp=paramall(1:lzn,indx(iid,3):indx(iid,4),indx(iid,5):indx(iid,6))
+    call mpi_send(parmtmp,lzn*slabsizes(iid,1)*slabsizes(iid,2),mpi_realprec,iid,tag,MPI_COMM_WORLD,ierr)
+
+    deallocate(parmtmp)
+  end do
+  param=paramall(1:lzn,indx(0,3):indx(0,4),indx(0,5):indx(0,6))
+end subroutine dneu_root2workers
+
+
+!> get a chunk of neutral data from root
+subroutine dneu_workers_from_root(tag,param)
+  integer, intent(in) :: tag
+  real(wp), dimension(:,:,:), intent(inout) :: param
+  integer :: ierr
+
+  call mpi_recv(param,lzn*lxn*lyn,mpi_realprec,0,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+end subroutine dneu_workers_from_root
 
 end submodule perturb

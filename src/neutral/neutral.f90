@@ -69,6 +69,7 @@ real(wp), dimension(:), allocatable, private :: xnall
 real(wp), dimension(:), allocatable, private :: ynall
 integer, private :: lxnall,lynall
 
+!! FIXME: really do not need to store these, particularly all at once...
 real(wp), dimension(:,:,:), allocatable, private :: dnOall,dnN2all,dnO2all,dvnrhoall,dvnzall,dvnxall,dTnall
 
 !ARRAYS TO STORE NEUTRAL DATA THAT HAS BEEN INTERPOLATED
