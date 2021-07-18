@@ -434,6 +434,8 @@ if (allocated(xn)) then
 end if
 if (allocated(xnall)) then
   deallocate(xnall,ynall)
+end if
+if (allocated(dnOall)) then    !! 3D input doesn't allocate this so check independent of coord-all
   deallocate(dnOall,dnN2all,dnO2all,dvnxall,dvnrhoall,dvnzall,dTnall)
 end if
 if (allocated(proj_ealt_e1)) then
