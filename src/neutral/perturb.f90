@@ -9,7 +9,7 @@ use timeutils, only : dateinc, date_filename
 use mpimod, only: mpi_realprec, mpi_integer, mpi_comm_world, mpi_status_ignore, &
 tag=>gemini_mpi
 use h5fortran, only: hdf5_file
-use pathlib, only: get_suffix
+use pathlib, only: get_suffix,get_filename
 
 implicit none (type, external)
 
@@ -428,7 +428,8 @@ if (mpi_cfg%myid==0) then    !root
 
   !in the 3D case we cannot afford to send full grid data and need to instead use neutral subgrid splits defined earlier
   allocate(paramall(lzn,lxnall,lynall))     ! space to store a single neutral input parameter
-  fn=date_filename(neudir,ymdtmp,UTsectmp)//'.h5'
+  fn=date_filename(neudir,ymdtmp,UTsectmp)
+  fn=get_filename(fn)
   if (debug) print *, 'READ neutral 3D data from file: ',fn
   if (get_suffix(fn)=='.h5') then
     call hf%open(fn, action='r')
