@@ -68,6 +68,7 @@ jobs:
 
 
   linux-gcc7:
+    # NOTE: GCC < 7.5 is not supported by Gemini in general
     needs: linux
     runs-on: ubuntu-18.04
     timeout-minutes: 10
