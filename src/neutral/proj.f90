@@ -420,8 +420,9 @@ if (mpi_cfg%myid==0) then    !root
   allocate(rhon(1))        !not used in Cartesian or 3D code so just set to something; could likely be left unallocated
   allocate(xnall(lxnall))
   allocate(ynall(lynall))
-  allocate(dnOall(lzn,lxnall,lynall),dnN2all(lzn,lxnall,lynall),dnO2all(lzn,lxnall,lynall),dvnrhoall(lzn,lxnall,lynall), &
-              dvnzall(lzn,lxnall,lynall),dvnxall(lzn,lxnall,lynall),dTnall(lzn,lxnall,lynall))    !ZZZ - note that these might be deallocated after each read to clean up memory management a bit...
+  !! 3D will not longer support storing fullgrid variables; wastes too much memory
+  !allocate(dnOall(lzn,lxnall,lynall),dnN2all(lzn,lxnall,lynall),dnO2all(lzn,lxnall,lynall),dvnrhoall(lzn,lxnall,lynall), &
+  !            dvnzall(lzn,lxnall,lynall),dvnxall(lzn,lxnall,lynall),dTnall(lzn,lxnall,lynall))    !ZZZ - note that these might be deallocated after each read to clean up memory management a bit...
 
 
   !calculate the z grid (same for all) and distribute to workers so we can figure out their x-y slabs
