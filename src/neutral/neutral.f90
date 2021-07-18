@@ -21,12 +21,9 @@ interface !< atmos.f90
     real(wp), intent(in) :: UTsecd
     real(wp), dimension(:,:,:), intent(in) :: glat,glon,alt
     real(wp), intent(in) :: activ(3)
-    real(wp), intent(in) :: v2grid,v3grid
     real(wp), dimension(1:size(alt,1),1:size(alt,2),1:size(alt,3),lnchem), intent(inout) :: nn
     !! intent(out)
     real(wp), dimension(1:size(alt,1),1:size(alt,2),1:size(alt,3)), intent(inout) :: Tn
-    !! intent(out)
-    real(wp), dimension(1:size(alt,1),1:size(alt,2),1:size(alt,3)), intent(inout) :: vn1,vn2,vn3
     !! intent(out)
   end subroutine neutral_atmos
 end interface
