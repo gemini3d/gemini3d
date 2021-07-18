@@ -457,7 +457,7 @@ if (mpi_cfg%myid==0) then    !root
   call hf%read('/dnO2all', paramall)
   if (.not. all(ieee_is_finite(paramall))) error stop 'dnO2all: non-finite value(s)'
   if (debug) print*, 'Min/max values for dnO2all:  ',minval(paramall),maxval(paramall)    
-  call dneu_root2workers(dnO2all,tag%dnO2,dnO2)
+  call dneu_root2workers(paramall,tag%dnO2,dnO2)
   call hf%read('/dTnall', paramall)
   if (.not. all(ieee_is_finite(paramall))) error stop 'dTnall: non-finite value(s)'
   if (debug) print*, 'Min/max values for dTnall:  ',minval(paramall),maxval(paramall)    
