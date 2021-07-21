@@ -89,6 +89,13 @@ dxn = 2d3                          ! (only required if 3D) neutral grid step in 
 source_dir = '../simulations/input/mooreOK_neutrals/'
 /
 
+! (optional - default off) allow neutral background atmosphere to change during simulation
+&neutral_BG
+flagneuBG = .true.       ! on or off
+dtneuBG = 1800.0         ! how often to call MSIS and HWM (if applicable)
+msis_version = 0         ! 0 or 20; which MSIS version to use, MSIS00 or MSIS 2.0
+/
+
 ! (optional - default off) Include disturbance precipitation based on file inputs
 &precip
 flagprecfile = 1                   ! use precipitaiton file input:  0 - no; 1 - yes
