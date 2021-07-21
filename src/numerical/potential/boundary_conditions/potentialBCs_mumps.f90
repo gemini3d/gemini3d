@@ -223,8 +223,8 @@ subroutine potentialBCs2D_fileinput(dt,t,ymd,UTsec,cfg,x,Vminx1,Vmaxx1,Vminx2,Vm
       else
         error stop 'Unable to orient boundary conditions for electric potential'
       endif
-  
-  
+
+
       !! by default the code uses 300km altitude as a reference location, using the center x2,x3 point
       ix1ref=minloc(abs(x%rall(:,ix2ref,ix3ref)-Re-300e3_wp),1)
       allocate(mloni(lx2all*lx3all),mlati(lx2all*lx3all))
@@ -238,8 +238,8 @@ subroutine potentialBCs2D_fileinput(dt,t,ymd,UTsec,cfg,x,Vminx1,Vmaxx1,Vminx2,Vm
       if (debug) print '(A,4F7.2)', 'Grid has mlon,mlat range:  ',minval(mloni),maxval(mloni),minval(mlati),maxval(mlati)
       if (debug) print *, 'Grid has size:  ',iflat
     end if
-  
-  
+
+
     !> GRID INFORMATION EXISTS AT THIS POINT SO START READING IN PRECIP DATA
     !> read in the data from file
     if (debug) print *,'potentialBCs_mumps.f90:potentialBCs2D_fileinput: tprev,tnow,tnext:  ',tprev,t+dt/2,tnext
