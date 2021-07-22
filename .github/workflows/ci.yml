@@ -1,5 +1,9 @@
 name: ci
 
+env:
+  CMAKE_BUILD_PARALLEL_LEVEL: 3
+  CTEST_PARALLEL_LEVEL: 2
+
 on:
   push:
     paths:
@@ -17,20 +21,12 @@ jobs:
 
     env:
       DEBIAN_FRONTEND: noninteractive
-      CTEST_PARALLEL_LEVEL: 2
-      cmake_version: 3.21.0-rc3
 
     steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-python@v2
       with:
         python-version: '3.8'
-
-    # FIXME: till CMake 3.21 is released, we need to use the following
-    - run: |
-        pip install cmakeutils
-        python -m cmakeutils.cmake_setup ${cmake_version} --prefix ${HOME}/.local
-        echo "${HOME}/.local/cmake-${cmake_version}-linux-x86_64/bin" >> $GITHUB_PATH
 
     - name: Install packages
       run: |
@@ -39,7 +35,6 @@ jobs:
 
     - name: Configure multi
       run: cmake --preset multi
-
 
     - name: Debug build
       run: cmake --build --preset debug
@@ -75,7 +70,6 @@ jobs:
 
     env:
       DEBIAN_FRONTEND: noninteractive
-      CTEST_PARALLEL_LEVEL: 2
       CC: gcc-7
       CXX: g++-7
       FC: gfortran-7
@@ -113,7 +107,6 @@ jobs:
 
     env:
       HOMEBREW_NO_INSTALL_CLEANUP: 1
-      CTEST_PARALLEL_LEVEL: 3
       FC: gfortran-11
 
     steps:
@@ -124,7 +117,6 @@ jobs:
 
     - name: Configure multi
       run: cmake --preset multi
-
 
     - name: Debug build
       run: cmake --build --preset debug

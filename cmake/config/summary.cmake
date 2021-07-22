@@ -9,8 +9,7 @@ if(NOT CMAKE_GENERATOR MATCHES Ninja)
 endif()
 
 if(mpi AND NOT HWLOC_FOUND)
-  message(STATUS "Recommendation: consider installing HWLOC for auto-detect CPU count from gemini3d.run:
-    cmake -P ${PROJECT_SOURCE_DIR}/scripts/install_hwloc.cmake")
+  message(STATUS "Recommendation: consider installing HWLOC for auto-detect CPU count from gemini3d.run")
 endif()
 
 if(CMAKE_Fortran_COMPILER_ID STREQUAL GNU AND CMAKE_Fortran_COMPILER_VERSION VERSION_LESS 7.5.0)

@@ -1,11 +1,10 @@
 {
-  "version": 2,
+  "version": 3,
 
 "configurePresets": [
 {
   "name": "default",
   "binaryDir": "${sourceDir}/build",
-  "generator": "Ninja",
   "cacheVariables": {
     "CMAKE_BUILD_TYPE": "Release",
     "CMAKE_INSTALL_PREFIX": "${sourceDir}/build",
@@ -45,19 +44,14 @@
   },
   "environment": {
     "CC": "icc",
-    "CXX": "icpc",
-    "FC": "ifort",
-    "LAPACK_ROOT": "$env{MKLROOT}",
-    "SCALAPACK_ROOT": "$env{MKLROOT}",
-    "MPI_ROOT": "$env{I_MPI_ROOT}"
+    "FC": "ifort"
   }
 },
 {
   "name": "intelwin", "inherits": "intel",
   "displayName": "Intel Classic compiler: Windows",
   "environment": {
-    "CC": "icl",
-    "CXX": "icl"
+    "CC": "icl"
   }
 },
 {
