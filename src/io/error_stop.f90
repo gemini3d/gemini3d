@@ -49,7 +49,7 @@ call h%write("/Bphi", Bphi)
 call h%write("/info", info)
 call h%close()
 
-error stop info
+error stop info // " dumped to " // filename
 
 end subroutine dump_mag
 
@@ -68,7 +68,7 @@ call h%write("/J3", J3)
 call h%write("/info", info)
 call h%close()
 
-error stop info
+error stop info // " dumped to " // filename
 
 end subroutine dump_J
 
@@ -87,7 +87,7 @@ call h%write("/Ts", Ts)
 call h%write("/info", info)
 call h%close()
 
-error stop info
+error stop info // " dumped to " // filename
 
 end subroutine dump_input
 
@@ -104,6 +104,8 @@ real(wp), intent(in), dimension(:,:,:) :: Phi, J1, J2, J3
 
 type (hdf5_file) :: h
 
+character(6) :: wid
+
 call h%open(filename, action="w")
 call h%write("/worker_id", worker_id)
 call h%write("/time/elapsed_seconds", t_elapsed)
@@ -119,7 +121,9 @@ call h%write("/J3", J3)
 call h%write("/info", info)
 call h%close()
 
-error stop info
+write(wid, "(I0)") worker_id
+
+error stop info // " worker " // trim(wid) // " dumped to " // filename
 
 end subroutine dump_step
 
@@ -144,7 +148,7 @@ call h%write("/J3", J3)
 call h%write("/info", info)
 call h%close()
 
-error stop info
+error stop info // " dumped to " // filename
 
 end subroutine dump_worker
 
@@ -186,7 +190,7 @@ call h%write("/Teall", Teall)
 call h%write("/info", info)
 call h%close()
 
-error stop info
+error stop info // " dumped to " // filename
 
 end subroutine dump_root
 

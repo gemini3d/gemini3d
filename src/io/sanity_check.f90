@@ -56,44 +56,48 @@ integer, intent(in) :: worker_id
 real(wp), intent(in), dimension(:,:,:,:) :: vs2, vs3, ns, vs1, Ts
 real(wp), intent(in), dimension(:,:,:) :: Phi, J1, J2, J3
 
+character(:), allocatable :: dumpfn
+
 integer :: i1, k1, i2, k2, i3, k3, i4, k4
+
+dumpfn = "dump_step.h5"
 
 call ghost_bound(ns, i1,k1, i2,k2, i3,k3, i4,k4)
 
 if (.not.all(ieee_is_finite(ns(i1:k1, i2:k2, i3:k3, i4:k4)))) &
-   call error_stop('dump_step.h5', 'output: non-finite Ns', t_elapsed, worker_id, vs2,vs3,ns,vs1,Ts,Phi,J1,J2,J3)
+   call error_stop(dumpfn, 'output: non-finite Ns', t_elapsed, worker_id, vs2,vs3,ns,vs1,Ts,Phi,J1,J2,J3)
 
 call ghost_bound(vs1, i1,k1, i2,k2, i3,k3, i4,k4)
 
 if (.not.all(ieee_is_finite(vs1(i1:k1, i2:k2, i3:k3, i4:k4)))) &
-  call error_stop('dump_step.h5', 'output: non-finite vs1', t_elapsed, worker_id, vs2,vs3,ns,vs1,Ts,Phi,J1,J2,J3)
+  call error_stop(dumpfn, 'output: non-finite vs1', t_elapsed, worker_id, vs2,vs3,ns,vs1,Ts,Phi,J1,J2,J3)
 
 call ghost_bound(vs2, i1,k1, i2,k2, i3,k3, i4,k4)
 
 if (.not.all(ieee_is_finite(vs2(i1:k1, i2:k2, i3:k3, i4:k4)))) &
-  call error_stop('dump_step.h5', 'output: non-finite vs2', t_elapsed, worker_id, vs2,vs3,ns,vs1,Ts,Phi,J1,J2,J3)
+  call error_stop(dumpfn, 'output: non-finite vs2', t_elapsed, worker_id, vs2,vs3,ns,vs1,Ts,Phi,J1,J2,J3)
 
 call ghost_bound(vs3, i1,k1, i2,k2, i3,k3, i4,k4)
 
 if (.not.all(ieee_is_finite(vs3(i1:k1, i2:k2, i3:k3, i4:k4)))) &
-  call error_stop('dump_step.h5', 'output: non-finite vs3', t_elapsed, worker_id, vs2,vs3,ns,vs1,Ts,Phi,J1,J2,J3)
+  call error_stop(dumpfn, 'output: non-finite vs3', t_elapsed, worker_id, vs2,vs3,ns,vs1,Ts,Phi,J1,J2,J3)
 
 if (.not.all(ieee_is_finite(Ts(i1:k1, i2:k2, i3:k3, i4:k4)))) &
-  call error_stop('dump_step.h5', 'output: non-finite Ts', t_elapsed, worker_id, vs2,vs3,ns,vs1,Ts,Phi,J1,J2,J3)
+  call error_stop(dumpfn, 'output: non-finite Ts', t_elapsed, worker_id, vs2,vs3,ns,vs1,Ts,Phi,J1,J2,J3)
 
 call ghost_bound(J1, i1,k1, i2,k2, i3,k3)
 
 if (.not.all(ieee_is_finite(J1(i1:k1, i2:k2, i3:k3)))) &
-  call error_stop('dump_step.h5', 'output: non-finite J1', t_elapsed, worker_id, vs2,vs3,ns,vs1,Ts,Phi,J1,J2,J3)
+  call error_stop(dumpfn, 'output: non-finite J1', t_elapsed, worker_id, vs2,vs3,ns,vs1,Ts,Phi,J1,J2,J3)
 
 if (.not.all(ieee_is_finite(J2(i1:k1, i2:k2, i3:k3)))) &
-  call error_stop('dump_step.h5', 'output: non-finite J2', t_elapsed, worker_id, vs2,vs3,ns,vs1,Ts,Phi,J1,J2,J3)
+  call error_stop(dumpfn, 'output: non-finite J2', t_elapsed, worker_id, vs2,vs3,ns,vs1,Ts,Phi,J1,J2,J3)
 
 if (.not.all(ieee_is_finite(J3(i1:k1, i2:k2, i3:k3)))) &
-  call error_stop('dump_step.h5', 'output: non-finite J3', t_elapsed, worker_id, vs2,vs3,ns,vs1,Ts,Phi,J1,J2,J3)
+  call error_stop(dumpfn, 'output: non-finite J3', t_elapsed, worker_id, vs2,vs3,ns,vs1,Ts,Phi,J1,J2,J3)
 
 if (.not.all(ieee_is_finite(Phi(i1:k1, i2:k2, i3:k3)))) &
-  call error_stop('dump_step.h5', 'output: non-finite Phi', t_elapsed, worker_id, vs2,vs3,ns,vs1,Ts,Phi,J1,J2,J3)
+  call error_stop(dumpfn, 'output: non-finite Phi', t_elapsed, worker_id, vs2,vs3,ns,vs1,Ts,Phi,J1,J2,J3)
 
 end subroutine check_finite_output
 
@@ -106,37 +110,41 @@ real(wp), dimension(:,:,:,:), intent(in) :: vs1, Ts
 
 integer :: i1, k1, i2, k2, i3, k3, i4, k4
 
+character(:), allocatable :: dumpfn
+
+dumpfn = "dump_input.h5"
+
 call ghost_bound(ns, i1,k1, i2,k2, i3,k3, i4,k4)
 
 if (.not.all(ieee_is_finite(ns(i1:k1, i2:k2, i3:k3, i4:k4)))) &
-  call error_stop('dump_input.h5', 'input:plasma: non-finite Ns', ns, vs1, Ts)
+  call error_stop(dumpfn, 'input:plasma: non-finite Ns', ns, vs1, Ts)
 
 if (.not.all(ieee_is_finite(vs1(i1:k1, i2:k2, i3:k3, i4:k4)))) &
-   call error_stop('dump_input.h5', 'input:plasma: non-finite vs1', ns, vs1, Ts)
+   call error_stop(dumpfn, 'input:plasma: non-finite vs1', ns, vs1, Ts)
 
 if (.not.all(ieee_is_finite(Ts(i1:k1, i2:k2, i3:k3, i4:k4)))) &
-  call error_stop('dump_input.h5', 'input:plasma: non-finite Ts', ns, vs1, Ts)
+  call error_stop(dumpfn, 'input:plasma: non-finite Ts', ns, vs1, Ts)
 
 if (any(ns(i1:k1, i2:k2, i3:k3, i4:k4) < 0)) &
-  call error_stop('dump_input.h5', 'input:plasma: negative density Ns', ns, vs1, Ts)
+  call error_stop(dumpfn, 'input:plasma: negative density Ns', ns, vs1, Ts)
 
 if (maxval(ns(i1:k1, i2:k2, i3:k3, i4:k4)) < 1e6) &
-  call error_stop('dump_input.h5', 'input:plasma: too low maximum density', ns, vs1, Ts)
+  call error_stop(dumpfn, 'input:plasma: too low maximum density', ns, vs1, Ts)
 
 if (maxval(ns(i1:k1, i2:k2, i3:k3, i4:k4)) > 1e16) &
-  call error_stop('dump_input.h5', 'input:plasma: too high maximum density', ns, vs1, Ts)
+  call error_stop(dumpfn, 'input:plasma: too high maximum density', ns, vs1, Ts)
 
 if (any(abs(vs1(i1:k1, i2:k2, i3:k3, i4:k4)) > 1e7_wp)) &
-  call error_stop ('dump_input.h5', 'input:plasma: drift realativistic', ns, vs1, Ts)
+  call error_stop (dumpfn, 'input:plasma: drift realativistic', ns, vs1, Ts)
 
 if (any(Ts(i1:k1, i2:k2, i3:k3, i4:k4) < 0)) &
-  call error_stop ('dump_input.h5', 'input:plasma: negative temperature in Ts', ns, vs1, Ts)
+  call error_stop (dumpfn, 'input:plasma: negative temperature in Ts', ns, vs1, Ts)
 
 if (any(Ts(i1:k1, i2:k2, i3:k3, i4:k4) > 100000)) &
-  call error_stop ('dump_input.h5', 'input:plasma: too hot Ts', ns, vs1, Ts)
+  call error_stop (dumpfn, 'input:plasma: too hot Ts', ns, vs1, Ts)
 
 if (maxval(Ts(i1:k1, i2:k2, i3:k3, i4:k4)) < 500) &
-  call error_stop ('dump_input.h5', 'input:plasma: too cold maximum Ts', ns, vs1, Ts)
+  call error_stop (dumpfn, 'input:plasma: too cold maximum Ts', ns, vs1, Ts)
 
 end subroutine check_finite_plasma
 
@@ -145,12 +153,16 @@ subroutine check_finite_mag(Br, Btheta, Bphi)
 
 real(wp), dimension(:), intent(in) :: Br, Btheta, Bphi
 
+character(:), allocatable :: dumpfn
+
+dumpfn = "dump_mag.h5"
+
 if (.not.all(ieee_is_finite(Br))) &
-  call error_stop('dump_input.h5', 'check_finite_mag: non-finite Br', Br, Btheta, Bphi)
+  call error_stop(dumpfn, 'check_finite_mag: non-finite Br', Br, Btheta, Bphi)
 if (.not.all(ieee_is_finite(Btheta))) &
-  call error_stop('dump_input.h5', 'check_finite_mag: non-finite Btheta', Br, Btheta, Bphi)
+  call error_stop(dumpfn, 'check_finite_mag: non-finite Btheta', Br, Btheta, Bphi)
 if (.not.all(ieee_is_finite(Bphi))) &
-  call error_stop('dump_input.h5', 'check_finite_mag: non-finite Bphi', Br, Btheta, Bphi)
+  call error_stop(dumpfn, 'check_finite_mag: non-finite Bphi', Br, Btheta, Bphi)
 
 end subroutine check_finite_mag
 
@@ -161,16 +173,20 @@ real(wp), intent(in), dimension(:,:,:) :: J1, J2, J3
 
 integer :: i1, k1, i2, k2, i3, k3
 
+character(:), allocatable :: dumpfn
+
+dumpfn = "dump_current.h5"
+
 call ghost_bound(J1, i1,k1, i2,k2, i3,k3)
 
 if (.not.all(ieee_is_finite(J1(i1:k1, i2:k2, i3:k3)))) &
-  call error_stop('dump_input.h5', 'check_finite_mag: non-finite J1', J1, J2, J3)
+  call error_stop(dumpfn, 'check_finite_mag: non-finite J1', J1, J2, J3)
 
 if (.not.all(ieee_is_finite(J2(i1:k1, i2:k2, i3:k3)))) &
-  call error_stop('dump_input.h5', 'check_finite_mag: non-finite J2', J1, J2, J3)
+  call error_stop(dumpfn, 'check_finite_mag: non-finite J2', J1, J2, J3)
 
 if (.not.all(ieee_is_finite(J3(i1:k1, i2:k2, i3:k3)))) &
-  call error_stop('dump_input.h5', 'check_finite_mag: non-finite J3', J1, J2, J3)
+  call error_stop(dumpfn, 'check_finite_mag: non-finite J3', J1, J2, J3)
 
 end subroutine check_finite_current
 
