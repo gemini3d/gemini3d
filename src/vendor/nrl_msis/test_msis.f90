@@ -39,7 +39,7 @@ real(real32), intent(out) :: alt, Dn(9), Tn(2)
 real(real32) :: buf(1,1,1)  !< a priori for test file
 type(hdf5_file) :: hf
 
-call hf%open(file, action="read")
+call hf%open(file, action="r")
 
 call hf%read("/alt", buf)
 alt = buf(1,1,1)

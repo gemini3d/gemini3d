@@ -76,7 +76,7 @@ type(hdf5_file) :: hf
 integer(hsize_t), allocatable :: dims(:)
 integer:: lx1,lx2,lx3
 
-call hf%open(filename, action='read')
+call hf%open(filename, action='r')
 
 call hf%read("/doy", doy)
 if(doy < 1 .or. doy > 366) error stop 'msis_driver:input_hdf5: 1 <= doy <= 366'
