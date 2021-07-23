@@ -145,9 +145,12 @@ subroutine check_finite_mag(Br, Btheta, Bphi)
 
 real(wp), dimension(:), intent(in) :: Br, Btheta, Bphi
 
-if (.not.all(ieee_is_finite(Br))) call error_stop('dump_input.h5', 'check_finite_mag: non-finite Br', Br, Btheta, Bphi)
-if (.not.all(ieee_is_finite(Btheta))) call error_stop('dump_input.h5', 'check_finite_mag: non-finite Btheta', Br, Btheta, Bphi)
-if (.not.all(ieee_is_finite(Bphi))) call error_stop('dump_input.h5', 'check_finite_mag: non-finite Bphi', Br, Btheta, Bphi)
+if (.not.all(ieee_is_finite(Br))) &
+  call error_stop('dump_input.h5', 'check_finite_mag: non-finite Br', Br, Btheta, Bphi)
+if (.not.all(ieee_is_finite(Btheta))) &
+  call error_stop('dump_input.h5', 'check_finite_mag: non-finite Btheta', Br, Btheta, Bphi)
+if (.not.all(ieee_is_finite(Bphi))) &
+  call error_stop('dump_input.h5', 'check_finite_mag: non-finite Bphi', Br, Btheta, Bphi)
 
 end subroutine check_finite_mag
 

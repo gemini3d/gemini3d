@@ -57,7 +57,7 @@ rank (6)
 rank (7)
   call h5write(filename, name, value)
 rank default
-  write(stderr,*) "Error: debug_dump:h5dump: h5fortran does not handle ", name, " of rank ", rank(value)
+  write(stderr, '(A,I0)') "Error: debug_dump:h5dump: h5fortran does not handle " // name // " of rank: ", rank(value)
 end select
 
 end subroutine dumper

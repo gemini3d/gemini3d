@@ -6,29 +6,25 @@ add_library(logging OBJECT logging.f90)
 add_library(errors OBJECT error_stop.f90)
 target_link_libraries(errors PRIVATE const h5fortran::h5fortran)
 
-if(BUILD_TESTING)
-  if(f2018assumed_rank)
-    # easier to use, but needs latest compilers. For dev debugging.
-    add_library(debug_dump OBJECT debug_dump.f90)
-    target_link_libraries(debug_dump PRIVATE const h5fortran::h5fortran)
-    set_target_properties(debug_dump PROPERTIES EXCLUDE_FROM_ALL true)
-  endif(f2018assumed_rank)
+if(f2018assumed_rank)
+  add_library(debug_dump OBJECT debug_dump.f90)
+  target_link_libraries(debug_dump PRIVATE const h5fortran::h5fortran)
+  set_target_properties(debug_dump PROPERTIES EXCLUDE_FROM_ALL true)
+endif()
 
-  if(test_shaky)
-    # this test sometimes causes a segfault on exit, which breaks CTest WILL_FAIL
-    # this is a long-standing open issue with CMake et al,
-    # so we by default omit this test.
-    add_executable(test_errors test_errors.f90)
-    target_link_libraries(test_errors PRIVATE errors const h5fortran::h5fortran)
+if(BUILD_TESTING AND test_shaky)
+  # this test sometimes causes a segfault on exit, which breaks CTest WILL_FAIL
+  # this is a long-standing open issue with CMake et al,
+  # so we by default omit this test.
+  add_executable(test_errors test_errors.f90)
+  target_link_libraries(test_errors PRIVATE errors const h5fortran::h5fortran)
 
-    add_test(NAME gemini:stop:zero COMMAND $<TARGET_FILE:test_errors> root)
-    set_tests_properties(gemini:stop:zero PROPERTIES
-      WILL_FAIL true
-      LABELS unit)
-    # FIXME: add a follow-on test using Fixtures that read and verify expected file dump
-  endif()
-
-endif(BUILD_TESTING)
+  add_test(NAME gemini:stop:zero COMMAND $<TARGET_FILE:test_errors> root)
+  set_tests_properties(gemini:stop:zero PROPERTIES
+    WILL_FAIL true
+    LABELS unit)
+  # FIXME: add a follow-on test using Fixtures that read and verify expected file dump
+endif()
 
 add_library(sanity_check OBJECT sanity_check.f90 $<TARGET_OBJECTS:errors>)
 target_link_libraries(sanity_check PRIVATE const)
