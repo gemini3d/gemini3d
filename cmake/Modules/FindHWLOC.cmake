@@ -54,7 +54,6 @@ find_package_handle_standard_args(HWLOC
     REQUIRED_VARS HWLOC_LIBRARY HWLOC_INCLUDE_DIR HWLOC_TOPO_LOAD)
 
 if(HWLOC_FOUND)
-# need if _FOUND guard to allow project to autobuild; can't overwrite imported target even if bad
 set(HWLOC_LIBRARIES ${HWLOC_LIBRARY})
 set(HWLOC_INCLUDE_DIRS ${HWLOC_INCLUDE_DIR})
 

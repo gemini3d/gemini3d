@@ -259,6 +259,45 @@ set(CMAKE_REQUIRED_INCLUDES ${MPI_C_INCLUDE_DIR})
 set(CMAKE_REQUIRED_LIBRARIES ${MPI_C_LIBRARY})
 list(APPEND CMAKE_REQUIRED_LIBRARIES ${CMAKE_THREAD_LIBS_INIT})
 
+if(NOT EXISTS ${CMAKE_CURRENT_BINARY_DIR}/find_mpi/get_mpi_version.c)
+file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/find_mpi/get_mpi_version.c
+[=[
+#include <mpi.h>
+#include <stdio.h>
+
+int main(void) {
+int version, subversion;
+
+int ierr = MPI_Get_version(&version, &subversion);
+if (ierr != 0) return 1;
+printf("%d.%d\n", version, subversion);
+
+return 0;
+}
+]=]
+)
+endif()
+
+if(NOT MPI_VERSION)
+  message(CHECK_START "Checking MPI API level")
+  try_run(mpi_run_code mpi_build_code
+    ${CMAKE_CURRENT_BINARY_DIR}/find_mpi/build
+    ${CMAKE_CURRENT_BINARY_DIR}/find_mpi/get_mpi_version.c
+    CMAKE_FLAGS -DINCLUDE_DIRECTORIES=${MPI_C_INCLUDE_DIR}
+    LINK_OPTIONS ${MPI_C_LINK_FLAGS}
+    LINK_LIBRARIES ${MPI_C_LIBRARY}
+    RUN_OUTPUT_VARIABLE MPI_VERSION
+  )
+  string(STRIP "${MPI_VERSION}" MPI_VERSION)
+  if(mpi_build_code AND mpi_run_code EQUAL 0)
+    message(CHECK_PASS "${MPI_VERSION}")
+  else()
+    message(CHECK_FAIL "MPI API not detected")
+    return()
+  endif()
+  set(MPI_VERSION ${MPI_VERSION} CACHE STRING "MPI API level")
+endif()
+
 check_c_source_compiles("
 #include <mpi.h>
 #ifndef NULL
@@ -556,9 +595,6 @@ find_program(MPIEXEC_EXECUTABLE
 )
 
 # like factory FindMPI, always find MPI_C
-if(NOT C IN_LIST MPI_FIND_COMPONENTS)
-  list(APPEND MPI_FIND_COMPONENTS C)
-endif()
 find_c()
 
 if(CXX IN_LIST MPI_FIND_COMPONENTS)
@@ -572,6 +608,7 @@ endif()
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(MPI
   REQUIRED_VARS MPIEXEC_EXECUTABLE
+  VERSION_VAR MPI_VERSION
   HANDLE_COMPONENTS)
 
 if(MPI_C_FOUND)
@@ -627,6 +664,22 @@ if(MPI_FOUND)
   set(MPIEXEC_NUMPROC_FLAG "-n"  CACHE STRING "Flag used by MPI to specify the number of processes for mpiexec; the next option will be the number of processes.")
   cmake_host_system_information(RESULT _n QUERY NUMBER_OF_PHYSICAL_CORES)
   set(MPIEXEC_MAX_NUMPROCS "${_n}" CACHE STRING "Maximum number of processors available to run MPI applications.")
+
+  message(VERBOSE "FindMPI results:
+    MPI_C_COMPILER: ${MPI_C_COMPILER}
+    MPI_C_LIBRARIES: ${MPI_C_LIBRARIES}
+    MPI_C_INCLUDE_DIRS: ${MPI_C_INCLUDE_DIRS}
+    MPI_C_LINK_FLAGS: ${MPI_C_LINK_FLAGS}
+
+    MPI_Fortran_COMPILER: ${MPI_Fortran_COMPILER}
+    MPI_Fortran_LIBRARIES: ${MPI_Fortran_LIBRARIES}
+    MPI_Fortran_INCLUDE_DIRS: ${MPI_Fortran_INCLUDE_DIRS}
+    MPI_Fortran_LINK_FLAGS: ${MPI_Fortran_LINK_FLAGS}
+
+    MPIEXEC_EXECUTABLE: ${MPIEXEC_EXECUTABLE}
+    MPIEXEC_MAX_NUMPROCS: ${MPIEXEC_MAX_NUMPROCS}
+    MPI_VERSION: ${MPI_VERSION}
+    ")
 endif()
 
 mark_as_advanced(MPI_Fortran_LIBRARY MPI_Fortran_INCLUDE_DIR MPI_C_LIBRARY MPI_C_INCLUDE_DIR
