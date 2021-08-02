@@ -95,7 +95,7 @@ if(HDF5_IS_PARALLEL)
   endif()
   find_package(MPI COMPONENTS ${mpi_comp})
 
-  if(MPI_C_FOUND)
+  if(MPI_FOUND)
     set(HDF5_parallel_FOUND true PARENT_SCOPE)
   endif()
 endif()
