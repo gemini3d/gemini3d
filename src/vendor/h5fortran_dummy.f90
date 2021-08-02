@@ -1,12 +1,16 @@
 module h5fortran
 !! this is a dummy interface that errors intentionally
 
+use, intrinsic :: iso_fortran_env, only: hsize_t => int64
+
 implicit none (type, external)
 
 type hdf5_file
 contains
-procedure, public :: open, read, write, exist, exists, ndims, close
+procedure, public :: open, read, write, exist, ndims, shape, close
 end type hdf5_file
+
+
 
 contains
 
@@ -44,24 +48,31 @@ exist = .false.
 error stop 'HDF5 / h5fortran not available'
 end function exist
 
-logical function exists(self, dname)
-class(hdf5_file), intent(in)     :: self
-character(*), intent(in)         :: dname
-exists = .false.
-error stop 'HDF5 / h5fortran not available'
-end function exists
-
 integer function ndims(self, dname)
 class(hdf5_file), intent(in) :: self
 character(*), intent(in) :: dname
-ndims = 0
+ndims = -1
 error stop 'HDF5 / h5fortran not available'
 end function ndims
+
+subroutine shape(self, dname, dims)
+class(hdf5_file), intent(in) :: self
+character(*), intent(in) :: dname
+integer(hsize_t), intent(out), allocatable :: dims(:)
+allocate(dims(0))
+error stop 'HDF5 / h5fortran not available'
+end subroutine shape
 
 subroutine close(self, ierr)
 class(hdf5_file), intent(in) :: self
 integer, intent(out), optional :: ierr
 error stop 'HDF5 / h5fortran not available'
 end subroutine close
+
+logical function h5exist(filename, dname)
+character(*), intent(in) :: filename, dname
+h5exist = .false.
+error stop 'HDF5 / h5fortran not available'
+end function h5exist
 
 end module h5fortran

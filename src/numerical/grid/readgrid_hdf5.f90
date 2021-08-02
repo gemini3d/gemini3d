@@ -1,7 +1,7 @@
 submodule (grid:grid_read) readgrid_hdf5
 
 use phys_consts, only: debug
-use h5fortran, only: hdf5_file,h5exist
+use h5fortran, only: hdf5_file
 
 implicit none (type, external)
 

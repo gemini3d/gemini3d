@@ -33,6 +33,10 @@ endif(msis20)
 
 install(TARGETS msis_ifc msis00mod EXPORT ${PROJECT_NAME}Targets)
 
+if(NOT hdf5)
+  return()
+endif()
+
 # --- for setting up an equilibrium simulation
 
 add_executable(msis_setup msis_driver.f90)
