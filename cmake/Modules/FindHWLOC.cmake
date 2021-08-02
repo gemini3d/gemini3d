@@ -42,16 +42,30 @@ find_path(HWLOC_INCLUDE_DIR
           HINTS ${pc_hwloc_INCLUDE_DIRS})
 
 if(HWLOC_LIBRARY AND HWLOC_INCLUDE_DIR)
-set(CMAKE_REQUIRED_INCLUDES ${HWLOC_INCLUDE_DIR})
-set(CMAKE_REQUIRED_LIBRARIES ${HWLOC_LIBRARY})
-check_symbol_exists(hwloc_topology_load hwloc.h HWLOC_TOPO_LOAD)
+  set(CMAKE_REQUIRED_INCLUDES ${HWLOC_INCLUDE_DIR})
+  set(CMAKE_REQUIRED_LIBRARIES ${HWLOC_LIBRARY})
+  check_symbol_exists(hwloc_topology_load hwloc.h HWLOC_TOPO_LOAD)
+endif()
+
+if(HWLOC_TOPO_LOAD)
+  find_file(hwloc_conf
+    NAMES config.h
+    PATH_SUFFIXES hwloc/autogen)
+
+  file(STRINGS ${hwloc_conf} _def
+  REGEX "^[ \t]*#[ \t]*define[ \t]+HWLOC_VERSION[ \t]+" )
+  if("${_def}" MATCHES "HWLOC_VERSION[ \t]+\"([0-9]+\\.[0-9]+\\.[0-9]+)?\"" )
+    set(HWLOC_VERSION "${CMAKE_MATCH_1}" )
+  endif()
+endif()
+
 set(CMAKE_REQUIRED_INCLUDES)
 set(CMAKE_REQUIRED_LIBRARIES)
-endif()
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(HWLOC
-    REQUIRED_VARS HWLOC_LIBRARY HWLOC_INCLUDE_DIR HWLOC_TOPO_LOAD)
+    REQUIRED_VARS HWLOC_LIBRARY HWLOC_INCLUDE_DIR HWLOC_TOPO_LOAD
+    VERSION_VAR HWLOC_VERSION)
 
 if(HWLOC_FOUND)
 set(HWLOC_LIBRARIES ${HWLOC_LIBRARY})

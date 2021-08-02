@@ -206,8 +206,8 @@ find_program(MPI_C_COMPILER
   NAMES ${wrap_name}
   HINTS ${_hints}
   NAMES_PER_DIR
-  PATHS /usr/lib64
-  PATH_SUFFIXES bin openmpi/bin mpich/bin
+  PATHS ${_binpref}
+  PATH_SUFFIXES ${_binsuf}
   )
 if(MPI_C_COMPILER)
   get_filename_component(_wrap_hint ${MPI_C_COMPILER} DIRECTORY)
@@ -235,7 +235,7 @@ foreach(n ${names})
   find_library(MPI_C_${n}_LIBRARY
     NAMES ${n}
     HINTS ${lib_dirs} ${_wrap_hint} ${pc_mpi_c_LIBRARY_DIRS} ${pc_mpi_c_LIBDIR} ${_hints}
-    PATH_SUFFIXES release openmpi/lib mpich/lib
+    PATH_SUFFIXES ${_lsuf}
   )
   if(MPI_C_${n}_LIBRARY)
     list(APPEND MPI_C_LIBRARY ${MPI_C_${n}_LIBRARY})
@@ -358,8 +358,8 @@ find_program(MPI_CXX_COMPILER
   NAMES ${wrap_name}
   HINTS ${_hints}
   NAMES_PER_DIR
-  PATHS /usr/lib64
-  PATH_SUFFIXES bin openmpi/bin mpich/bin
+  PATHS ${_binpref}
+  PATH_SUFFIXES ${_binsuf}
   )
 if(MPI_CXX_COMPILER)
   get_filename_component(_wrap_hint ${MPI_CXX_COMPILER} DIRECTORY)
@@ -387,7 +387,7 @@ foreach(n ${names})
   find_library(MPI_CXX_${n}_LIBRARY
     NAMES ${n}
     HINTS ${lib_dirs} ${_wrap_hint} ${pc_mpi_cxx_LIBRARY_DIRS} ${pc_mpi_cxx_LIBDIR} ${_hints}
-    PATH_SUFFIXES release openmpi/lib mpich/lib
+    PATH_SUFFIXES ${_lsuf}
   )
   if(MPI_CXX_${n}_LIBRARY)
     list(APPEND MPI_CXX_LIBRARY ${MPI_CXX_${n}_LIBRARY})
@@ -472,8 +472,8 @@ find_program(MPI_Fortran_COMPILER
   NAMES ${wrap_name}
   HINTS ${_hints}
   NAMES_PER_DIR
-  PATHS /usr/lib64
-  PATH_SUFFIXES bin openmpi/bin mpich/bin
+  PATHS ${_binpref}
+  PATH_SUFFIXES ${_binsuf}
   )
 if(MPI_Fortran_COMPILER)
   get_filename_component(_wrap_hint ${MPI_Fortran_COMPILER} DIRECTORY)
@@ -501,7 +501,7 @@ foreach(n ${names})
   find_library(MPI_Fortran_${n}_LIBRARY
     NAMES ${n}
     HINTS ${lib_dirs} ${_wrap_hint} ${pc_mpi_f_LIBRARY_DIRS} ${pc_mpi_f_LIBDIR} ${_hints}
-    PATH_SUFFIXES release openmpi/lib mpich/lib
+    PATH_SUFFIXES ${_lsuf}
   )
   if(MPI_Fortran_${n}_LIBRARY)
     list(APPEND MPI_Fortran_LIBRARY ${MPI_Fortran_${n}_LIBRARY})
@@ -586,12 +586,16 @@ if(WIN32 AND NOT CMAKE_C_COMPILER_ID MATCHES Intel)
   list(APPEND _hints_inc $ENV{MSMPI_INC})
 endif()
 
+set(_lsuf release openmpi/lib mpich/lib)
+set(_binpref /usr/lib64)
+set(_binsuf bin openmpi/bin mpich/bin)
+
 # must have MPIexec to be worthwhile (de facto standard is mpiexec)
 find_program(MPIEXEC_EXECUTABLE
   NAMES mpiexec mpirun orterun
   HINTS ${_hints} $ENV{MSMPI_BIN}
-  PATHS /usr/lib64
-  PATH_SUFFIXES bin openmpi/bin mpich/bin
+  PATHS ${_binpref}
+  PATH_SUFFIXES ${_binsuf}
 )
 
 # like factory FindMPI, always find MPI_C
