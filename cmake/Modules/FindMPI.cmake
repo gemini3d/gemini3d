@@ -98,8 +98,8 @@ list(TRANSFORM _Lflags STRIP)
 set(_flags ${_Lflags})
 
 # check if compiler absolute path is first element and remove
-if(${raw} MATCHES "^/")
-  if(${_flags} MATCHES "^/")
+if("${raw}" MATCHES "^/")
+  if("${_flags}" MATCHES "^/")
     list(REMOVE_AT _flags 0)
   endif()
 endif()
@@ -161,7 +161,7 @@ foreach(_p IN LISTS _vars)
 endforeach()
 
 # check if compiler absolute path is first element and remove
-if(${raw} MATCHES "^/")
+if("${raw}" MATCHES "^/")
   list(REMOVE_AT _v 0)
 endif()
 
@@ -181,7 +181,7 @@ function(find_c)
 set(MPI_C_LIBRARY)
 
 if(WIN32)
-  if(CMAKE_C_COMPILER_ID MATCHES Intel)
+  if(CMAKE_C_COMPILER_ID MATCHES "^Intel")
     set(names impi)
   else()
     set(names msmpi)
@@ -196,7 +196,7 @@ if(NOT MPI_C_COMPILER)
   pkg_search_module(pc_mpi_c ompi-c)
 endif()
 
-if(CMAKE_C_COMPILER_ID MATCHES Intel)
+if(CMAKE_C_COMPILER_ID MATCHES "^Intel")
   set(wrap_name mpiicc mpiicc.bat)
 else()
   set(wrap_name mpicc mpicc.openmpi mpicc.mpich)
@@ -331,7 +331,7 @@ function(find_cxx)
 set(MPI_CXX_LIBRARY)
 
 if(WIN32)
-  if(CMAKE_CXX_COMPILER_ID MATCHES Intel)
+  if(CMAKE_CXX_COMPILER_ID MATCHES "^Intel")
     set(names impi)
   else()
     set(names msmpi)
@@ -348,7 +348,7 @@ if(NOT MPI_CXX_COMPILER)
   pkg_search_module(pc_mpi_cxx ompi-cxx)
 endif()
 
-if(CMAKE_CXX_COMPILER_ID MATCHES Intel)
+if(CMAKE_CXX_COMPILER_ID MATCHES "^Intel")
   set(wrap_name mpiicpc mpiicpc.bat)
 else()
   set(wrap_name mpicxx mpicxx.openmpi mpicxx.mpich)
@@ -444,7 +444,7 @@ function(find_fortran)
 set(MPI_Fortran_LIBRARY)
 
 if(WIN32)
-  if(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
+  if(CMAKE_Fortran_COMPILER_ID MATCHES "^Intel")
     set(names impi)
   else()
     set(names msmpi)
@@ -462,7 +462,7 @@ if(NOT MPI_Fortran_COMPILER)
   pkg_search_module(pc_mpi_f ompi-fort)
 endif()
 
-if(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
+if(CMAKE_Fortran_COMPILER_ID MATCHES "^Intel")
   set(wrap_name mpiifort mpiifort.bat)
 else()
   set(wrap_name mpifort mpifc mpifort.openmpi mpifort.mpich)
@@ -527,7 +527,7 @@ if(NOT MPI_Fortran_INCLUDE_DIR)
   return()
 endif()
 
-if(WIN32 AND NOT CMAKE_Fortran_COMPILER_ID MATCHES Intel)
+if(WIN32 AND NOT CMAKE_Fortran_COMPILER_ID MATCHES "^Intel")
   find_path(MPI_Fortran_INCLUDE_EXTRA
     NAMES mpifptr.h
     HINTS ${inc_dirs} ${_wrap_hint} ${pc_mpi_f_INCLUDE_DIRS} ${_hints} ${_hints_inc}
@@ -576,12 +576,12 @@ find_package(PkgConfig)
 find_package(Threads)
 
 # Intel MPI, which works with non-Intel compilers on Linux
-if((CMAKE_SYSTEM_NAME STREQUAL Linux OR CMAKE_C_COMPILER_ID MATCHES Intel) AND
+if((CMAKE_SYSTEM_NAME STREQUAL Linux OR CMAKE_C_COMPILER_ID MATCHES "^Intel") AND
       DEFINED ENV{I_MPI_ROOT})
   list(APPEND _hints $ENV{I_MPI_ROOT})
 endif()
 
-if(WIN32 AND NOT CMAKE_C_COMPILER_ID MATCHES Intel)
+if(WIN32 AND NOT CMAKE_C_COMPILER_ID MATCHES "^Intel")
   list(APPEND _hints $ENV{MSMPI_LIB64})
   list(APPEND _hints_inc $ENV{MSMPI_INC})
 endif()
