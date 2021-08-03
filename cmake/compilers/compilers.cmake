@@ -46,6 +46,7 @@ if(NOT f2018errorstop)
   message(FATAL_ERROR "Compiler does not support Fortran 2018 error stop with character variable: ${CMAKE_Fortran_COMPILER_ID} ${CMAKE_Fortran_COMPILER_VERSION}")
 endif()
 
+if(dev)
 check_source_compiles(Fortran
 "program f18_assumed_rank
 implicit none (type, external)
@@ -61,6 +62,7 @@ end select
 end subroutine ranker
 end program"
 f2018assumed_rank)
+endif(dev)
 
 # --- MSISE00 and MSIS 2.0 require legacy workaround due to non-standard Fortran code
 
