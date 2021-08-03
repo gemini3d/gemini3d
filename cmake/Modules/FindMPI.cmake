@@ -292,7 +292,10 @@ if(NOT MPI_VERSION)
   if(mpi_build_code AND mpi_run_code EQUAL 0)
     message(CHECK_PASS "${MPI_VERSION}")
   else()
-    message(CHECK_FAIL "MPI API not detected")
+    message(CHECK_FAIL "MPI API not detected with:
+MPI_C_LIBRARY: ${MPI_C_LIBRARY}
+MPI_C_INCLUDE_DIR: ${MPI_C_INCLUDE_DIR}
+MPI_C_LINK_FLAGS: ${MPI_C_LINK_FLAGS}")
     return()
   endif()
   set(MPI_VERSION ${MPI_VERSION} CACHE STRING "MPI API level")
