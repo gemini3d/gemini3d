@@ -23,6 +23,12 @@ include(cmake/config/libraries.cmake)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules/)
 
+if(mpi)
+  find_package(MPI COMPONENTS C Fortran REQUIRED)
+else()
+  add_subdirectory(src/vendor/mpi_stubs)
+endif()
+
 include(cmake/ext_libs/h5fortran.cmake)
 include(cmake/ext_libs/nc4fortran.cmake)
 
