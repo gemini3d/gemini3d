@@ -210,8 +210,8 @@ find_program(MPI_C_COMPILER
   PATH_SUFFIXES ${_binsuf}
   )
 if(MPI_C_COMPILER)
-  get_filename_component(_wrap_hint ${MPI_C_COMPILER} DIRECTORY)
-  get_filename_component(_wrap_hint ${_wrap_hint} DIRECTORY)
+  get_filename_component(mpi_root ${MPI_C_COMPILER} DIRECTORY)
+  get_filename_component(mpi_root ${mpi_root} DIRECTORY)
 
   get_flags(${MPI_C_COMPILER} c_raw)
   if(c_raw)
@@ -234,7 +234,7 @@ foreach(n ${names})
 
   find_library(MPI_C_${n}_LIBRARY
     NAMES ${n}
-    HINTS ${lib_dirs} ${_wrap_hint} ${pc_mpi_c_LIBRARY_DIRS} ${pc_mpi_c_LIBDIR} ${_hints}
+    HINTS ${lib_dirs} ${mpi_root} ${pc_mpi_c_LIBRARY_DIRS} ${pc_mpi_c_LIBDIR} ${_hints}
     PATH_SUFFIXES ${_lsuf}
   )
   if(MPI_C_${n}_LIBRARY)
@@ -248,7 +248,7 @@ endif()
 
 find_path(MPI_C_INCLUDE_DIR
   NAMES mpi.h
-  HINTS ${inc_dirs} ${_wrap_hint} ${pc_mpi_c_INCLUDE_DIRS} ${_hints} ${_hints_inc}
+  HINTS ${inc_dirs} ${mpi_root} ${pc_mpi_c_INCLUDE_DIRS} ${_hints} ${_hints_inc}
   PATH_SUFFIXES ${mpi_incsuf}
 )
 if(NOT MPI_C_INCLUDE_DIR)
@@ -366,8 +366,8 @@ find_program(MPI_CXX_COMPILER
   PATH_SUFFIXES ${_binsuf}
   )
 if(MPI_CXX_COMPILER)
-  get_filename_component(_wrap_hint ${MPI_CXX_COMPILER} DIRECTORY)
-  get_filename_component(_wrap_hint ${_wrap_hint} DIRECTORY)
+  get_filename_component(mpi_root ${MPI_CXX_COMPILER} DIRECTORY)
+  get_filename_component(mpi_root ${mpi_root} DIRECTORY)
 
   get_flags(${MPI_CXX_COMPILER} cxx_raw)
   if(cxx_raw)
@@ -390,7 +390,7 @@ foreach(n ${names})
 
   find_library(MPI_CXX_${n}_LIBRARY
     NAMES ${n}
-    HINTS ${lib_dirs} ${_wrap_hint} ${pc_mpi_cxx_LIBRARY_DIRS} ${pc_mpi_cxx_LIBDIR} ${_hints}
+    HINTS ${lib_dirs} ${mpi_root} ${pc_mpi_cxx_LIBRARY_DIRS} ${pc_mpi_cxx_LIBDIR} ${_hints}
     PATH_SUFFIXES ${_lsuf}
   )
   if(MPI_CXX_${n}_LIBRARY)
@@ -404,7 +404,7 @@ endif()
 
 find_path(MPI_CXX_INCLUDE_DIR
   NAMES mpi.h
-  HINTS ${inc_dirs} ${_wrap_hint} ${pc_mpi_cxx_INCLUDE_DIRS} ${_hints} ${_hints_inc}
+  HINTS ${inc_dirs} ${mpi_root} ${pc_mpi_cxx_INCLUDE_DIRS} ${_hints} ${_hints_inc}
   PATH_SUFFIXES ${mpi_incsuf}
 )
 if(NOT MPI_CXX_INCLUDE_DIR)
@@ -481,8 +481,8 @@ find_program(MPI_Fortran_COMPILER
   PATH_SUFFIXES ${_binsuf}
   )
 if(MPI_Fortran_COMPILER)
-  get_filename_component(_wrap_hint ${MPI_Fortran_COMPILER} DIRECTORY)
-  get_filename_component(_wrap_hint ${_wrap_hint} DIRECTORY)
+  get_filename_component(mpi_root ${MPI_Fortran_COMPILER} DIRECTORY)
+  get_filename_component(mpi_root ${mpi_root} DIRECTORY)
 
   get_flags(${MPI_Fortran_COMPILER} f_raw)
   if(f_raw)
@@ -505,7 +505,7 @@ foreach(n ${names})
 
   find_library(MPI_Fortran_${n}_LIBRARY
     NAMES ${n}
-    HINTS ${lib_dirs} ${_wrap_hint} ${pc_mpi_f_LIBRARY_DIRS} ${pc_mpi_f_LIBDIR} ${_hints}
+    HINTS ${lib_dirs} ${mpi_root} ${pc_mpi_f_LIBRARY_DIRS} ${pc_mpi_f_LIBDIR} ${_hints}
     PATH_SUFFIXES ${_lsuf}
   )
   if(MPI_Fortran_${n}_LIBRARY)
@@ -524,7 +524,7 @@ endif()
 
 find_path(MPI_Fortran_INCLUDE_DIR
   NAMES mpi.mod
-  HINTS ${inc_dirs} ${_wrap_hint} ${pc_mpi_f_INCLUDE_DIRS} ${_hints} ${_hints_inc}
+  HINTS ${inc_dirs} ${mpi_root} ${pc_mpi_f_INCLUDE_DIRS} ${_hints} ${_hints_inc}
   PATH_SUFFIXES lib ${_msuf}
   # yes, openmpi puts .mod files into lib/
 )
@@ -535,7 +535,7 @@ endif()
 if(WIN32 AND NOT CMAKE_Fortran_COMPILER_ID MATCHES "^Intel")
   find_path(MPI_Fortran_INCLUDE_EXTRA
     NAMES mpifptr.h
-    HINTS ${inc_dirs} ${_wrap_hint} ${pc_mpi_f_INCLUDE_DIRS} ${_hints} ${_hints_inc}
+    HINTS ${inc_dirs} ${mpi_root} ${pc_mpi_f_INCLUDE_DIRS} ${_hints} ${_hints_inc}
     PATH_SUFFIXES x64
   )
 
