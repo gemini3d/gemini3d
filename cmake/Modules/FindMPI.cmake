@@ -593,11 +593,15 @@ if(WIN32 AND NOT CMAKE_C_COMPILER_ID MATCHES "^Intel")
 endif()
 
 set(_lsuf release openmpi/lib mpich/lib)
-set(_binpref /usr/lib64)
 set(_binsuf bin openmpi/bin mpich/bin)
 
 if(UNIX)
+  set(_binpref /usr/lib64)
+else()
+  set(_binpref $ENV{MINGWROOT} $ENV{MSMPI_BIN})
+endif()
 
+if(UNIX)
   execute_process(COMMAND uname -m
     OUTPUT_VARIABLE arch
     OUTPUT_STRIP_TRAILING_WHITESPACE
@@ -608,13 +612,12 @@ if(UNIX)
   elseif(arch STREQUAL aarch64)
     set(mpi_incsuf openmpi-aarch64 mpich-aarch64)
   endif()
-
 endif(UNIX)
 
 # must have MPIexec to be worthwhile (de facto standard is mpiexec)
 find_program(MPIEXEC_EXECUTABLE
   NAMES mpiexec mpirun orterun
-  HINTS ${_hints} $ENV{MSMPI_BIN}
+  HINTS ${_hints}
   PATHS ${_binpref}
   PATH_SUFFIXES ${_binsuf}
 )
