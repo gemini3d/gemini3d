@@ -14,6 +14,10 @@ type, abstract :: inputdata
   !! a name for our dataset
   character, dimension(:), allocatable :: dataname='DEFAULT'
 
+  !! flag for allocation statuses
+  logical :: flagsizes=.false.
+  logical :: flagalloc=.false.
+
   !! here we store data that have already been received but not yet interpolated
   real(wp), dimension(:), pointer :: coord1,coord2,coord3     ! coordinates for the source data (interpolant coords)
   integer :: lc1,lc2,lc3                                      ! dataset length along the 3 coordinate axes
@@ -34,7 +38,7 @@ type, abstract :: inputdata
   real(wp), dimension(:,:,:,:), pointer :: data2Dax12i,data2dax13i   !2D arrays varying along 1,2 and 1,3 axes 
   integer :: l2Dax23,l2Dax12,l2Dax13
   real(wp), dimension(:,:,:,:,:), pointer :: data3Di                 ! array for storing series of 3D data
-  integer :: lparm3D
+  integer :: l3D
   real(wp), dimension(:,:,:), pointer :: coord1i,coord2i,coord3i     ! coordinates of the interpolation sites
   integer :: lc1i,lc2i,lc3i                                          ! dataset length along the 3 coordinate axes
 
@@ -93,6 +97,59 @@ abstract interface
 end interface
 
 contains
+  !> Load/store size variables
+  function set_sizes(self,lc1,lc2,lc3, &
+                     l0D, &
+                     l1Dax1,l1Dax2,l1Dax3, &
+                     l2Dax23,l2Dax12,l2Dax13, &
+                     l3D, &
+                     x)
+    class(inputdata), intent(inout) :: self
+    integer, intent(in) :: lc1,lc2,lc3      ! input data sizes
+    integer, intent(in) :: l0D
+    integer, intent(in) :: l1Dax1,l1Dax2,l1Dax3
+    integer, intent(in) :: l2Dax23,l2Dax12,l2Dax13
+    intgeer, intent(in) :: l3D
+    class(curvmesh), intent(in) :: x        ! sizes for interpolation sites taken from grid
+
+    ! coordinate axis sizes for input data
+    self%lc1=lc1; self%lc2=lc2; self%lc3=lc3;
+
+    ! number of different types of data
+    self%l0D=l0D
+    self%l1Dax1=l1Dax1; self%l1Dax2=l1Dax2; self%l1Dax3=l1Dax3;
+    self%l2Dax23=l2Dax23; self%l2Dax12=l2Dax12; self%l2Dax13=l2Dax13;
+    self%l3D=l3D
+
+    ! coordinate axis sizes for interpolation sites
+    self%lc1i=x%lx1; self%lc2i=x%lx2; self%lc3i=x%lx3;
+
+    ! flag sizes as assigned
+    self%flagsizes=.true.
+  end function set_sizes
+
+
+  !> allocate space to store inputdata
+  
+
+  !> set the dataset names
+  function set_name(self,datasetstr)
+    class(inputdata), intent(inout) :: self
+    character, dimension(:), intent(in) :: datasetstr
+
+    self%dataname=datasetstr
+  end function set_name
+
+
+  !> set the cadence of the dataset
+  function set_cadence(self,dtdata)
+    class(inputdata), intent(inout) :: self
+    real(wp), intent(in) :: dtdata
+
+    self%dt=dtdata
+  end function set_cadence
+
+
   !> "prime" data at the beginning of the simulation so that proper inputs can be derived/interpolated for the first time step
   !     Note that we need to separate any activity that isn't directly related to input data (e.g. background states, etc.) from 
   !     this routine so that it purely acts on properties of the inputdata class/type
@@ -161,7 +218,8 @@ contains
     
       !Spatial interpolation for the frame we just read in
       if (mpi_cfg%myid==0 .and. debug) then
-        print *, 'Spatial interpolation and rotations (if necessary) for dataset:  ',self%dataname,' for date:  ',ymdtmp,' ',UTsectmp
+        print *, 'Spatial interpolation and rotations (if necessary) for dataset:  ', &
+                      self%dataname,' for date:  ',ymdtmp,' ',UTsectmp
       end if
       call self%spaceinterp()
     
