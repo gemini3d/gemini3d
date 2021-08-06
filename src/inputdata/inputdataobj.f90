@@ -23,8 +23,8 @@ type, abstract :: inputdata
   integer :: lc1,lc2,lc3                                      ! dataset length along the 3 coordinate axes
   real(wp), dimension(:), pointer :: data0D
   real(wp), dimension(:,:), pointer :: data1Dax1,data1Dax2,data1Dax3
-  real(wp), dimension(:,:), pointer :: data2Dax23,data2Dax12,data2Dax13
-  real(wp), dimension(:,:,:), pointer :: data3D
+  real(wp), dimension(:,:,:), pointer :: data2Dax23,data2Dax12,data2Dax13
+  real(wp), dimension(:,:,:,:), pointer :: data3D
 
   !! here we store data that have already been spatially interpolated
   real(wp), dimension(:,:), pointer :: data0Di                    ! array for storing a "stack" of scalar data (only interpolated in time)
@@ -58,8 +58,8 @@ type, abstract :: inputdata
 
   contains
     !! top-level user-intended
+    procedure(initproc), deferred :: init        ! get up object for first time step:  call init_storage, call prime_data, set data cadence
     procedure :: update                          ! check to see if new file needs to be read and read accordingly (will need to call deferred loaddata)
-    procedure(makeproc), deferred :: make        ! get up object for first time step:  call init_storage, call prime_data, set data cadence
 
     !! internal/fine-grained control
     procedure :: set_sizes             ! initiate sizes for coordinate axes and number of datasets of different dimensionality
@@ -80,11 +80,11 @@ end type inputdata
 
 !> interfaces for deferred procedures
 abstract interface
-  subroutine makeproc(self)
+  subroutine initproc(self)
     import inputdata
     class(inputdata), intent(inout) :: self
-  end subroutine makeproc
-  subroutine coordsetproc(self,cfg,x)
+  end subroutine initproc
+  subroutine coordisetproc(self,cfg,x)
     import inputdata
     class(inputdata), intent(inout) :: self
     type(gemini_cfg), intent(in) :: cfg
@@ -109,7 +109,7 @@ contains
     integer, intent(in) :: l0D
     integer, intent(in) :: l1Dax1,l1Dax2,l1Dax3
     integer, intent(in) :: l2Dax23,l2Dax12,l2Dax13
-    intgeer, intent(in) :: l3D
+    integer, intent(in) :: l3D
     class(curvmesh), intent(in) :: x        ! sizes for interpolation sites taken from grid
 
     ! coordinate axis sizes for input data
@@ -130,7 +130,48 @@ contains
 
 
   !> allocate space to store inputdata
-  
+  function init_storage(self)
+    class(inputdata), intent(inout) :: self
+    integer :: lc1,lc2,lc3
+    integer :: lc1i,lc2i,lc3i
+    integer :: l0D
+    integer :: l1Dax1,l1Dax2,l1Dax3
+    integer :: l2Dax23,l2Dax12,l2Dax13
+    integer :: l3D
+
+    ! check sizes are set
+    if (.not. self%flagsizes) error stop 'inpudata:init_storage(); must set sizes before allocations...'
+
+    ! local size variables for convenience
+    lc1=self%lc1; lc2=self%lc2; lc3=self%lc3;
+    lc1i=self%lc1i; lc2i=self%lc2i; lc3i=self%lc3i;
+    l0D=self%l0D
+    l1Dax1=self%l1Dax1; l1Dax2=self%l1Dax2; l1Dax3=self%l1Dax3;
+    l2Dax23=self%l2Dax23; l2Dax12=self%l2Dax12; l2Dax13=self%l2Dax13;
+    l3D=self%l3D
+
+    ! allocate object arrays for input data at a reference time.  FIXME: do we even need to store this perm. or can be local to
+    ! load_data?
+    allocate(self%data0D(l0D))
+    allocate(self%data1Dax1(lc1,l1Dax1), self%data1Dax2(lc2,l1Dax2), self%data1Dax3(lc3,l1Dax3))
+    allocate(self%data2Dax23(lc2,lc3,l2Dax23), self%data2Dax12(lc1,lc2,l2Dax12), self%data2Dax13(lc1,lc3,l2Dax13))
+    allocate(self%data3D(lc1,lc2,lc3,l3D))
+
+    ! allocate object arrays for interpolation sites at reference times
+    allocate(self%data0Di(l0D,2))
+    allocate(self%data1Dax1i(lc1i,l1Dax1,2), self%data1Dax2i(lc2i,l1Dax2,2), self%data1Dax3i(lc3i,l1Dax3,2))
+    allocate(self%data2Dax23i(lc2i,lc3i,l2Dax23,2), self%data2Dax12i(lc1i,lc2i,l2Dax12,2), self%data2Dax13i(lc1i,lc3i,l2Dax13i))
+    allocate(self%data3Di(lc1i,lc2i,lc3i,l3D,2))
+
+    ! allocate object arrays at interpolation sites for current time.  FIXME: do we even need to store permanently?
+    allocate(self%data0Di(l0D))
+    allocate(self%data1Dax1i(lc1i,l1Dax1), self%data1Dax2i(lc2i,l1Dax2), self%data1Dax3i(lc3i,l1Dax3))
+    allocate(self%data2Dax23i(lc2i,lc3i,l2Dax23), self%data2Dax12i(lc1i,lc2i,l2Dax12), self%data2Dax13i(lc1i,lc3i,l2Dax13i))
+    allocate(self%data3Di(lc1i,lc2i,lc3i,l3D))
+
+    self%flagalloc=.true.
+  end function init_storage
+
 
   !> set the dataset names
   function set_name(self,datasetstr)
@@ -412,4 +453,27 @@ contains
     !> update current time in object
     self%tnow=t+dt/2
   end subroutine timeinterp
+
+
+  !> deallocate memory for array data
+  subroutine dissociate_pointers(self)
+    class(inputdata), intent(inout) :: self
+
+    deallocate(self%data0D)
+    deallocate(self%data1Dax1, self%data1Dax2, self%data1Dax3)
+    deallocate(self%data2Dax23, self%data2Dax12, self%data2Dax13)
+    deallocate(self%data3D)
+
+    deallocate(self%data0Di)
+    deallocate(self%data1Dax1i, self%data1Dax2i, self%data1Dax3i)
+    deallocate(self%data2Dax23i, self%data2Dax12i, self%data2Dax13i)
+    deallocate(self%data3Di)
+
+    deallocate(self%data0Di)
+    deallocate(self%data1Dax1i, self%data1Dax2i, self%data1Dax3i)
+    deallocate(self%data2Dax23i, self%data2Dax12i, self%data2Dax13i)
+    deallocate(self%data3Di)
+
+    self%flagalloc=.false.
+  end subroutine dissociate_pointers
 end module inputdataobj
