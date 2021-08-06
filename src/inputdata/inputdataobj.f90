@@ -11,13 +11,16 @@ public
 
 !> this is a generic class for an data object being input into the model and interpolated in space and time
 type, abstract :: inputdata
+  !! a name for our dataset
+  character, dimension(:), allocatable :: dataname='DEFAULT'
+
   !! here we store data that have already been received but not yet interpolated
   real(wp), dimension(:), pointer :: coord1,coord2,coord3     ! coordinates for the source data (interpolant coords)
   integer :: lc1,lc2,lc3                                      ! dataset length along the 3 coordinate axes
   real(wp), dimension(:), pointer :: data0D
   real(wp), dimension(:,:), pointer :: data1Dax1,data1Dax2,data1Dax3
   real(wp), dimension(:,:), pointer :: data2Dax23,data2Dax12,data2Dax13
-  real(wp), dimension(:,:), pointer :: data3D
+  real(wp), dimension(:,:,:), pointer :: data3D
 
   !! here we store data that have already been spatially interpolated
   real(wp), dimension(:,:), pointer :: data0Di                    ! array for storing a "stack" of scalar data (only interpolated in time)
@@ -45,17 +48,20 @@ type, abstract :: inputdata
 
   real(wp), dimension(2) :: tref                                     ! times for two input frames bracketting current time
   real(wp) :: tnow                                                   ! time corresponding to data in *now arrays, viz current time insofar as this object knows
-  real(wp) :: dt
+  real(wp) :: dt                                                     ! time step for *this input data object*
+  integer, dimension(3,2) :: ymdref                                     ! last dim is for prev,next
+  real(wp), dimension(2) :: UTsecref
 
   contains
     !! top-level user-intended
     procedure :: update                          ! check to see if new file needs to be read and read accordingly (will need to call deferred loaddata)
-    procedure(makeproc), deferred :: make        ! get up object for first time step:  call init_storage, call prime_data
+    procedure(makeproc), deferred :: make        ! get up object for first time step:  call init_storage, call prime_data, set data cadence
 
     !! internal/fine-grained control
     procedure :: set_sizes             ! initiate sizes for coordinate axes and number of datasets of different dimensionality
     procedure :: set_coords            ! fill interpolant coordinate arrays
     procedure :: set_cadence           ! fill dt variable for this instance of input
+    procedure :: set_name              ! assign a character string name to our dataset
     procedure :: init_storage          ! wrapper routine to set up arrays once sizes are known/set
     procedure :: spaceinterp           ! interpolate spatially
     procedure :: timeinterp            ! interpolate in time based on data presently loaded into spatial arrays
@@ -63,7 +69,7 @@ type, abstract :: inputdata
     procedure :: prime_data            ! load data buffers so that the object is ready for the first time step
 
     !! internal, data kind specific
-    procedure(coordsetproc), deferred :: set_coordsi       ! use grid data to compute coordinates of the interpolation sites
+    procedure(coordisetproc), deferred :: set_coordsi       ! use grid data to compute coordinates of the interpolation sites
     procedure(loadproc), deferred :: load_data             ! read data from file (possibly one array at a time) and spatially interpolate and store it in the appropriate arrays
 end type inputdata
 
@@ -74,11 +80,12 @@ abstract interface
     import inputdata
     class(inputdata), intent(inout) :: self
   end subroutine makeproc
-  subroutine coordsetproc(self,x)
+  subroutine coordsetproc(self,cfg,x)
     import inputdata
     class(inputdata), intent(inout) :: self
+    type(gemini_cfg), intent(in) :: cfg
     class(curvmesh), intent(in)  :: x
-  end subroutine coordsetproc
+  end subroutine coordisetproc
   subroutine loadproc(self)
     import inputdata
     class(inputdata), intent(inout) :: self
@@ -121,10 +128,55 @@ contains
   end subroutine prime_data
 
 
-  subroutine update(self)
+  !> wrapper routine to execute various steps needed to update input data to present time
+  subroutine update(self,t,dtmodel,sourcedir,x,ymd,UTsec)
     class(inputdata), intent(inout) :: self
+    real(wp), intent(in) :: t,dtmodel
+    integer, dimension(3), intent(in) :: ymd    !date for which we wish to calculate perturbations
+    real(wp), intent(in) :: UTsec
+    character, dimension(:), intent(in) :: sourcedir
+    class(curvmesh), intent(inout) :: x
     
-
+    integer :: ix1,ix2,ix3,iid!,irhon,izn
+    integer, dimension(3) :: ymdtmp
+    real(wp) :: UTsectmp
+    
+    
+    !! see if we need to load new data into the buffer; negative time means that we need to load the first frame
+    if (t+dtmodel/2 >= t(2) .or. t < 0) then       
+      !IF FIRST LOAD ATTEMPT CREATE A NEUTRAL GRID AND COMPUTE GRID SITES FOR IONOSPHERIC GRID.  Since this needs an input file, I'm leaving it under this condition here
+      if (.not. allocated(zn)) then     !means this is the first time we've tried to load neutral simulation data, should we check for a previous neutral file to load??? or just assume everything starts at zero?  This needs to somehow check for an existing file under certain conditiosn, maybe if it==1???  Actually we don't even need that we can just check that the neutral grid is allocated (or not)
+        !initialize dates
+        self%ymdref(:,1)=ymd
+        self%UTsecref(1)=UTsec
+        self%ymdref(:,2)=ymdref(:,1)
+        self%UTsec(2)=UTsec(1)
+    
+        !Create a neutral grid, do some allocations and projections
+        call self%set_coordi(cfg,x)    ! FIXME: how to differentiate between 2D cart vs. axisymmetric?  Need separate objects, extensions of an extension probably...
+      end if
+    
+      !Read in neutral data from a file
+      call self%load_data(t,dt,sourcedir,ymdtmp,UTsectmp)   !FIXME: need to differentiate between different types of 2D grids e.g. via subtype extensions perhaps?
+    
+      !Spatial interpolation for the frame we just read in
+      if (mpi_cfg%myid==0 .and. debug) then
+        print *, 'Spatial interpolation and rotations (if necessary) for dataset:  ',self%dataname,' for date:  ',ymdtmp,' ',UTsectmp
+      end if
+      call self%spaceinterp()
+    
+      !UPDATE OUR CONCEPT OF PREVIOUS AND NEXT TIMES
+      self%tref(1)=self%tref(2)
+      self%UTsecref(1)=self%UTsecref(2)
+      self%ymdref(:,1)=self%ymdref(:,2)
+    
+      self%tref(2)=self%tref(1)+self%dt
+      self%UTsecref(2)=UTsectmp
+      self%ymdref(:,2)=ymdtmp
+    end if !done loading frame data...
+    
+    !Interpolation in time
+    call self%timeinterp(t,dtmodel)
   end subroutine update
 
 
