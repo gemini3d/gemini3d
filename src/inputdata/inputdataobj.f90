@@ -3,9 +3,11 @@ module inputdataobj
 use phys_consts, only : wp
 use meshobj, only : curvmesh
 use interpolation, only : interp1,interp2,interp3
+use timeutils, only : dateinc, date_filename, find_lastdate
 
 implicit none (type, external)
 public
+
 
 !> this is a generic class for an data object being input into the model and interpolated in space and time
 type, abstract :: inputdata
@@ -16,7 +18,6 @@ type, abstract :: inputdata
   real(wp), dimension(:,:), pointer :: data1Dax1,data1Dax2,data1Dax3
   real(wp), dimension(:,:), pointer :: data2Dax23,data2Dax12,data2Dax13
   real(wp), dimension(:,:), pointer :: data3D
-
 
   !! here we store data that have already been spatially interpolated
   real(wp), dimension(:,:), pointer :: data0Di                    ! array for storing a "stack" of scalar data (only interpolated in time)
@@ -34,6 +35,7 @@ type, abstract :: inputdata
   real(wp), dimension(:,:,:), pointer :: coord1i,coord2i,coord3i     ! coordinates of the interpolation sites
   integer :: lc1i,lc2i,lc3i                                          ! dataset length along the 3 coordinate axes
 
+  !! these are the input data arrays interpolated in time to the present (presuming we've called update/timeinterp
   real(wp), dimension(:), pointer :: data0Dinow 
   real(wp), dimension(:,:), pointer :: data1Dax1inow
   real(wp), dimension(:,:), pointer :: data1Dax2inow,data1Dax3inow
@@ -43,28 +45,36 @@ type, abstract :: inputdata
 
   real(wp), dimension(2) :: tref                                     ! times for two input frames bracketting current time
   real(wp) :: tnow                                                   ! time corresponding to data in *now arrays, viz current time insofar as this object knows
+  real(wp) :: dt
 
   contains
-    procedure :: setsizes              ! initiate sizes for coordinate axes and number of datasets of different dimensionality
-    procedure :: setcoords             ! fill interpolant coordinate arrays
-    procedure :: init_storage          ! wrapper routine to set up arrays once sizes are known/set
-    procedure :: update                ! check to see if new file needs to be read and read accordingly (will need to call deferred loaddata)
-    procedure :: timeinterp            ! interpolate in time based on data presently loaded into spatial arrays
-    procedure :: spaceinterp           ! interpolate spatially
-    procedure :: dissociate_pointers   ! clear out memory and reset and allocation status flags
+    !! top-level user-intended
+    procedure :: update                          ! check to see if new file needs to be read and read accordingly (will need to call deferred loaddata)
+    procedure(makeproc), deferred :: make        ! get up object for first time step:  call init_storage, call prime_data
 
-    procedure(initproc), deferred :: init                 ! create storage (sub), and prime data as needed
-    procedure(coordsetproc), deferred :: setcoordsi       ! use grid data to compute coordinates of the interpolation sites
-    procedure(loadproc), deferred :: loaddata             ! read data from file (possibly one array at a time) and spatially interpolate and store it in the appropriate arrays
+    !! internal/fine-grained control
+    procedure :: set_sizes             ! initiate sizes for coordinate axes and number of datasets of different dimensionality
+    procedure :: set_coords            ! fill interpolant coordinate arrays
+    procedure :: set_cadence           ! fill dt variable for this instance of input
+    procedure :: init_storage          ! wrapper routine to set up arrays once sizes are known/set
+    procedure :: spaceinterp           ! interpolate spatially
+    procedure :: timeinterp            ! interpolate in time based on data presently loaded into spatial arrays
+    procedure :: dissociate_pointers   ! clear out memory and reset and allocation status flags
+    procedure :: prime_data            ! load data buffers so that the object is ready for the first time step
+
+    !! internal, data kind specific
+    procedure(coordsetproc), deferred :: set_coordsi       ! use grid data to compute coordinates of the interpolation sites
+    procedure(loadproc), deferred :: load_data             ! read data from file (possibly one array at a time) and spatially interpolate and store it in the appropriate arrays
 end type inputdata
+
 
 !> interfaces for deferred procedures
 abstract interface
-  subroutine initproc(self)
+  subroutine makeproc(self)
     import inputdata
     class(inputdata), intent(inout) :: self
-  end subroutine init
-  subroutine (coordsetproc(self,x)
+  end subroutine makeproc
+  subroutine coordsetproc(self,x)
     import inputdata
     class(inputdata), intent(inout) :: self
     class(curvmesh), intent(in)  :: x
@@ -76,6 +86,48 @@ abstract interface
 end interface
 
 contains
+  !> "prime" data at the beginning of the simulation so that proper inputs can be derived/interpolated for the first time step
+  !     Note that we need to separate any activity that isn't directly related to input data (e.g. background states, etc.) from 
+  !     this routine so that it purely acts on properties of the inputdata class/type
+  subroutine prime_data(self,cfg,x,dtdata)
+    class(inputdata), intent(inout) :: self
+    type(gemini_cfg), intent(in) :: cfg      ! need start date, etc. of the simulation to prime
+    class(curvmesh), intent(in) :: x         ! must have the grid to call update
+    real(wp), intent(in) :: dtdata           ! need time step for *this* general data input
+    integer, dimension(3) :: ymdprev,ymdnext   !dates for interpolated data
+    real(wp) :: UTsecprev,UTsecnext
+
+    !! find the last input data preceding the milestone/initial condition that we start with
+    call find_lastdate(cfg%ymd0,cfg%UTsec0,ymd,UTsec,dtdata,ymdtmp,UTsectmp)
+  
+    !! Loads the neutral input file corresponding to the "first" time step of the simulation to prevent the first interpolant
+    !  from being zero and causing issues with restart simulations.  I.e. make sure the neutral buffers are primed for restart
+    !  This requires us to load file input twice, once corresponding to the initial frame and once for the "first, next" frame.
+    self%t(1)=UTsectmp-UTsec-2*dtdata
+    self%t(2)=tprev+dtdata
+    !if (mpi_cfg%myid==0) print*, '!!!Attempting initial load of neutral dynamics files!!!' // &
+    !                         ' This is a workaround to insure compatibility with restarts...',ymdtmp,UTsectmp
+    !! We essentially are loading up the data corresponding to halfway betwween -dtneu and t0 (zero).  This will load
+    !   two time levels back so when tprev is incremented twice it will be the true tprev corresponding to first time step
+    call self%update(cfg,dt,dtdata,self%t(2)+dtdata/2,ymdtmp,UTsectmp-dtdata, &
+                          x,v2grid,v3grid,nn,Tn,vn1,vn2,vn3)  !abs time arg to be < 0
+    ! FIXME: need to get rid of background arrays, etc. and have the neutral_update part done outside of this type/class
+  
+    !if (mpi_cfg%myid==0) print*, 'Now loading initial next file for neutral perturbations...'
+    !! Now compute perturbations for the present time (zero), this moves the primed variables in next into prev and then
+    !  loads up a current state so that we get a proper interpolation for the first time step.
+    call self%update(cfg,dt,dtdata,0._wp,ymdtmp,UTsectmp,x,v2grid,v3grid,nn,Tn,vn1,vn2,vn3)    !t-dt so we land exactly on start time
+    ! FIXME: need to get rid of background arrays, etc. and have the neutral_update part done outside of this type/class
+  end subroutine prime_data
+
+
+  subroutine update(self)
+    class(inputdata), intent(inout) :: self
+    
+
+  end subroutine update
+
+
   !> use data stored in input arrays to interpolate onto grid sites for "next" dataset
   subroutine spaceinterp(self)
     class(inputdata),intent(inout) :: self
@@ -154,7 +206,7 @@ contains
   end subroutine spaceinterp
 
 
-  !> interpolate data in time
+  !> interpolate data in time (requires first loading and interpolating in space)
   subroutine timeinterp(self,t,dt)
     class(inputdata), intent(inout) :: self
     real(wp), intent(in) :: t
