@@ -228,6 +228,7 @@ find_program(MPI_C_COMPILER
   NAMES_PER_DIR
   PATHS ${_binpref}
   PATH_SUFFIXES ${mpi_binsuf}
+  DOC "MPI C compiler wrapper"
   )
 if(MPI_C_COMPILER)
   cmake_path(GET MPI_C_COMPILER PARENT_PATH mpi_root)
@@ -293,22 +294,33 @@ if(NOT MPI_VERSION)
     LINK_OPTIONS ${MPI_C_LINK_FLAGS}
     LINK_LIBRARIES ${MPI_C_LIBRARY}
     RUN_OUTPUT_VARIABLE MPI_VERSION_STRING
+    COMPILE_OUTPUT_VARIABLE mpi_vers_build_out
   )
 
-  if(mpi_build_code AND mpi_run_code EQUAL 0)
-    if("${MPI_VERSION_STRING}" MATCHES "CMAKE_MPI_VERSION ([0-9]+\\.[0-9]+)")
-      set(MPI_VERSION ${CMAKE_MATCH_1} CACHE STRING "MPI API level")
-      message(CHECK_PASS "${MPI_VERSION}")
-    endif()
+  if(NOT mpi_build_code)
+    message(CHECK_FAIL "MPI_VERSION test failed to build:
+    ${mpi_vers_build_out}"
+    )
+    return()
   endif()
+
+  # We don't if(mpi_run_code EQUAL 0) as some platforms / MPI libs don't precisely
+  # return 0. The regex should be enough.
+  if("${MPI_VERSION_STRING}" MATCHES "CMAKE_MPI_VERSION ([0-9]+\\.[0-9]+)")
+    set(MPI_VERSION ${CMAKE_MATCH_1} CACHE STRING "MPI API level")
+    message(CHECK_PASS "${MPI_VERSION}")
+  endif()
+
 
   if(NOT MPI_VERSION)
     message(CHECK_FAIL "MPI API not detected with:
       MPI_C_LIBRARY: ${MPI_C_LIBRARY}
       MPI_C_INCLUDE_DIR: ${MPI_C_INCLUDE_DIR}
-      MPI_C_LINK_FLAGS: ${MPI_C_LINK_FLAGS}"
+      MPI_C_LINK_FLAGS: ${MPI_C_LINK_FLAGS}
+      Run output: ${MPI_VERSION_STRING}
+      Run return code: ${mpi_run_code}
+      "
     )
-    return()
   endif()
 endif()
 
@@ -370,6 +382,7 @@ find_program(MPI_CXX_COMPILER
   NAMES_PER_DIR
   PATHS ${_binpref}
   PATH_SUFFIXES ${mpi_binsuf}
+  DOC "MPI C++ compiler wrapper"
   )
 if(MPI_CXX_COMPILER)
   cmake_path(GET MPI_CXX_COMPILER PARENT_PATH mpi_root)
@@ -472,6 +485,7 @@ find_program(MPI_Fortran_COMPILER
   NAMES_PER_DIR
   PATHS ${_binpref}
   PATH_SUFFIXES ${mpi_binsuf}
+  DOC "MPI Fortran compiler wrapper"
   )
 if(MPI_Fortran_COMPILER)
   cmake_path(GET MPI_Fortran_COMPILER PARENT_PATH mpi_root)
@@ -604,6 +618,7 @@ find_program(MPIEXEC_EXECUTABLE
   HINTS ${pc_mpi_c_PREFIX} ${_hints}
   PATHS ${_binpref}
   PATH_SUFFIXES ${mpi_binsuf}
+  DOC "Runs an MPI program"
 )
 
 # like factory FindMPI, always find MPI_C
