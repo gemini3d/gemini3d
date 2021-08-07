@@ -14,12 +14,14 @@ public
 type, abstract :: inputdata
   !! a name for our dataset
   character, dimension(:), allocatable :: dataname='DEFAULT'
+  character, dimension(:), allocatable :: sourcdir
 
   !! flag for allocation statuses
   logical :: flagsizes=.false.
   logical :: flagalloc=.false.
   logical :: flagprimed=.false.
   logical :: flagcadence=.false.
+  logical :: flagsource=.false.
 
   !! here we store data that have already been received but not yet interpolated
   real(wp), dimension(:), pointer :: coord1,coord2,coord3     ! coordinates for the source data (interpolant coords)
@@ -70,6 +72,7 @@ type, abstract :: inputdata
     procedure :: set_coords            ! fill interpolant coordinate arrays
     procedure :: set_cadence           ! fill dt variable for this instance of input
     procedure :: set_name              ! assign a character string name to our dataset
+    procedure :: set_source            ! set the source directory for the input data
     procedure :: init_storage          ! wrapper routine to set up arrays once sizes are known/set
     procedure :: spaceinterp           ! interpolate spatially
     procedure :: timeinterp            ! interpolate in time based on data presently loaded into spatial arrays
@@ -78,8 +81,9 @@ type, abstract :: inputdata
 
     !! internal, data kind specific
     procedure(coordisetproc), deferred :: set_coordsi       ! use grid data to compute coordinates of the interpolation sites
-    procedure(loadproc), deferred :: load_data             ! read data from file (possibly one array at a time) and spatially interpolate and store it in the appropriate arrays
-    procedure(loadgrid), deferred :: load_grid
+    procedure(loadproc), deferred :: load_size          ! get size information from source data directory
+    procedure(loadproc), deferred :: load_data              ! read data from file (possibly one array at a time) and spatially interpolate and store it in the appropriate arrays
+    procedure(loadproc), deferred :: load_grid              ! get grid information from source data directory
 end type inputdata
 
 
@@ -88,13 +92,21 @@ abstract interface
   subroutine initproc(self,cfg,sourcedir,x,dtdata,ymd,UTsec)
     import inputdata
     class(inputdata), intent(inout) :: self
+    type(gemini_cfg), intent(in) :: cfg
+    character, dimension(:), intent(in) :: sourcedir
+    class(curvmesh), intent(in) :: x
+    real(wp), intent(in) :: dtdata
+    integer, dimension(3), intent(in) :: ymd
+    real(wp), intent(in) :: UTsec
   end subroutine initproc
+
   subroutine coordisetproc(self,cfg,x)
     import inputdata
     class(inputdata), intent(inout) :: self
     type(gemini_cfg), intent(in) :: cfg
     class(curvmesh), intent(in)  :: x
   end subroutine coordisetproc
+
   subroutine loadproc(self)
     import inputdata
     class(inputdata), intent(inout) :: self
@@ -197,6 +209,16 @@ contains
   end function set_cadence
 
 
+  !> set the source directory location
+  function set_sourcedir(self,sourcedir)
+    class(inpudata), intent(inout) :: self
+    character, dimension(:), intent(in) :: sourcedir
+
+    self%sourcedir=sourcedir
+    flagsource=.true.
+  end function set_sourcedir
+
+
   !> "prime" data at the beginning of the simulation so that proper inputs can be derived/interpolated for the first time step
   !     Note that we need to separate any activity that isn't directly related to input data (e.g. background states, etc.) from 
   !     this routine so that it purely acts on properties of the inputdata class/type
@@ -240,27 +262,24 @@ contains
 
 
   !> wrapper routine to execute various steps needed to update input data to present time
-  subroutine update(self,cfg,sourcedir,dtmodel,dtdata,t,x,ymd,UTsec)
+  subroutine update(self,cfg,dtmodel,dtdata,t,x,ymd,UTsec)
     class(inputdata), intent(inout) :: self
     type(gemini_cfg), intent(in) :: cfg
-    character, dimension(:), intent(in) :: sourcedir
-    real(wp), intent(in) :: dtmodel,dtdata,t    ! need both model and input data time stepping
-    class(curvmesh), intent(inout) :: x
+    real(wp), intent(in) :: dtmodel,dtdata    ! need both model and input data time stepping
+    real(wp), intent(in) :: t                 ! simulation absoluate time for which perturabation is to be computed
+    class(curvmesh), intent(inout) :: x         ! mesh object
     integer, dimension(3), intent(in) :: ymd    ! date for which we wish to calculate perturbations
-    real(wp), intent(in) :: UTsec
+    real(wp), intent(in) :: UTsec               ! UT seconds for which we with to compute perturbations
     
     integer :: ix1,ix2,ix3,iid!,irhon,izn
     integer, dimension(3) :: ymdtmp
     real(wp) :: UTsectmp
 
-    !! check that we have allocated array space
+    !! basic error checking
     if (.not. self%flagalloc) error stop 'inputdata:update() - must allocate array space prior to update...'
+    if (.not. self%flagcadence) error stop 'inputdata:update() - must define cadence first...'
+    if (.not. self%flagsource) error stop 'inputdata:update() - must define source data directory...'
 
-    !! must check that we primed the data first, if not called by user then call it here...
-    if (.not. self%flagprimed) error stop 'inputdata:update() - must prime data first...'
-
-    !! FIXME: check that self%dt is correctly set???  Or should we check that some flaginit is true?
-    
     !! see if we need to load new data into the buffer; negative time means that we need to load the first frame
     if (t+dtmodel/2 >= t(2) .or. t < 0) then       
       !IF FIRST LOAD ATTEMPT CREATE A NEUTRAL GRID AND COMPUTE GRID SITES FOR IONOSPHERIC GRID.  Since this needs an input file, I'm leaving it under this condition here
@@ -269,19 +288,21 @@ contains
         self%ymdref(:,1)=ymd
         self%UTsecref(1)=UTsec
         self%ymdref(:,2)=ymdref(:,1)
-        self%UTsec(2)=UTsec(1)
+        self%UTsecref(2)=self%UTsecref(1)
     
         !Create a neutral grid, do some allocations and projections
         call self%set_coordi(cfg,x)    ! cfg needed to convey optional parameters about how the input data are to be
                                        !interpreted
       end if
-    
+   
+      ! time/date increments for next file to be read???, e..g setting tmp vars???
+
       !Read in neutral data from a file
-      call self%load_data(t,dt,sourcedir,ymdtmp,UTsectmp)
+      call self%load_data(t,dt,ymdtmp,UTsectmp)
     
       !Spatial interpolation for the frame we just read in
       if (mpi_cfg%myid==0 .and. debug) then
-        print *, 'Spatial interpolation and rotations (if necessary) for dataset:  ', &
+        print *, 'Spatial interpolation and rotations (if applicable) for dataset:  ', &
                       self%dataname,' for date:  ',ymdtmp,' ',UTsectmp
       end if
       call self%spaceinterp()
