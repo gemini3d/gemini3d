@@ -17,6 +17,7 @@ type, abstract :: inputdata
   !! flag for allocation statuses
   logical :: flagsizes=.false.
   logical :: flagalloc=.false.
+  logical :: flagprimed=.false.
 
   !! here we store data that have already been received but not yet interpolated
   real(wp), dimension(:), pointer :: coord1,coord2,coord3     ! coordinates for the source data (interpolant coords)
@@ -57,7 +58,7 @@ type, abstract :: inputdata
   real(wp), dimension(2) :: UTsecref
 
   contains
-    !! top-level user-intended
+    !! top-level user-intended procedures; goal is to have only these called to interact with object
     procedure(initproc), deferred :: init        ! get up object for first time step:  call init_storage, call prime_data, set data cadence
     procedure :: update                          ! check to see if new file needs to be read and read accordingly (will need to call deferred loaddata)
 
@@ -194,53 +195,66 @@ contains
   !> "prime" data at the beginning of the simulation so that proper inputs can be derived/interpolated for the first time step
   !     Note that we need to separate any activity that isn't directly related to input data (e.g. background states, etc.) from 
   !     this routine so that it purely acts on properties of the inputdata class/type
-  subroutine prime_data(self,cfg,x,dtdata)
+  subroutine prime_data(self,cfg,x,ymd,UTsec,dtdata)
     class(inputdata), intent(inout) :: self
     type(gemini_cfg), intent(in) :: cfg      ! need start date, etc. of the simulation to prime
     class(curvmesh), intent(in) :: x         ! must have the grid to call update
-    real(wp), intent(in) :: dtdata           ! need time step for *this* general data input
-    integer, dimension(3) :: ymdprev,ymdnext   !dates for interpolated data
+    integer, dimension(3), intent(in) :: ymd ! date from which we need to prime input data
+    real(wp), intent(in) :: UTsec            ! time from which we need to prime input data
+    real(wp), intent(in) :: dtdata           ! time step for *this* general data input
+    integer, dimension(3) :: ymdprev,ymdnext
     real(wp) :: UTsecprev,UTsecnext
 
     if (.not. self%flagalloc) error stop 'inputdata:prime_data() - must allocate data arrays prior to priming'
 
     !! find the last input data preceding the milestone/initial condition that we start with
+    !    The arguments here coorespond to start datetime of simulations, time of first step for this run (different
+    !    if doing a restart) and then the tmp vars which are the time of the last input file.  dtdata is cadence.
     call find_lastdate(cfg%ymd0,cfg%UTsec0,ymd,UTsec,dtdata,ymdtmp,UTsectmp)
   
     !! Loads the neutral input file corresponding to the "first" time step of the simulation to prevent the first interpolant
     !  from being zero and causing issues with restart simulations.  I.e. make sure the neutral buffers are primed for restart
     !  This requires us to load file input twice, once corresponding to the initial frame and once for the "first, next" frame.
-    self%t(1)=UTsectmp-UTsec-2*dtdata
-    self%t(2)=tprev+dtdata
+    ! FIXME: need to keep self%ymd, etc. in sync?
+    self%tref(1)=UTsectmp-UTsec-2*dtdata
+    self%tref(2)=self%tref(1)+dtdata
     !if (mpi_cfg%myid==0) print*, '!!!Attempting initial load of neutral dynamics files!!!' // &
     !                         ' This is a workaround to insure compatibility with restarts...',ymdtmp,UTsectmp
     !! We essentially are loading up the data corresponding to halfway betwween -dtneu and t0 (zero).  This will load
     !   two time levels back so when tprev is incremented twice it will be the true tprev corresponding to first time step
-    call self%update(cfg,dt,dtdata,self%t(2)+dtdata/2,ymdtmp,UTsectmp-dtdata, &
-                          x,v2grid,v3grid,nn,Tn,vn1,vn2,vn3)  !abs time arg to be < 0
-    ! FIXME: need to get rid of background arrays, etc. and have the neutral_update part done outside of this type/class
-  
+    call self%update(cfg,dt,dtdata,self%tref(2)+dtdata/2,ymdtmp,UTsectmp-dtdata)  !abs time arg to be < 0
+    ! FIXME: dtdata is reall self%dt...
+
     !if (mpi_cfg%myid==0) print*, 'Now loading initial next file for neutral perturbations...'
     !! Now compute perturbations for the present time (zero), this moves the primed variables in next into prev and then
     !  loads up a current state so that we get a proper interpolation for the first time step.
-    call self%update(cfg,dt,dtdata,0._wp,ymdtmp,UTsectmp,x,v2grid,v3grid,nn,Tn,vn1,vn2,vn3)    !t-dt so we land exactly on start time
-    ! FIXME: need to get rid of background arrays, etc. and have the neutral_update part done outside of this type/class
+    call self%update(cfg,dt,dtdata,0._wp,ymdtmp,UTsectmp,x)    !t-dt so we land exactly on start time
+
+    self%flagprimed=.true.
   end subroutine prime_data
 
 
   !> wrapper routine to execute various steps needed to update input data to present time
-  subroutine update(self,t,dtmodel,sourcedir,x,ymd,UTsec)
+  subroutine update(self,cfg,sourcedir,dtmodel,dtdata,t,x,ymd,UTsec)
     class(inputdata), intent(inout) :: self
-    real(wp), intent(in) :: t,dtmodel
-    integer, dimension(3), intent(in) :: ymd    !date for which we wish to calculate perturbations
-    real(wp), intent(in) :: UTsec
+    type(gemini_cfg), intent(in) :: cfg
     character, dimension(:), intent(in) :: sourcedir
+    real(wp), intent(in) :: dtmodel,dtdata,t    ! need both model and input data time stepping
     class(curvmesh), intent(inout) :: x
+    integer, dimension(3), intent(in) :: ymd    ! date for which we wish to calculate perturbations
+    real(wp), intent(in) :: UTsec
     
     integer :: ix1,ix2,ix3,iid!,irhon,izn
     integer, dimension(3) :: ymdtmp
     real(wp) :: UTsectmp
-    
+
+    !! check that we have allocated array space
+    if (.not. self%flagalloc) error stop 'inputdata:update() - must allocate array space prior to update...'
+
+    !! must check that we primed the data first, if not called by user then call it here...
+    if (.not. self%flagprimed) error stop 'inputdata:update() - must prime data first...'
+
+    !! FIXME: check that self%dt is correctly set???  Or should we check that some flaginit is true?
     
     !! see if we need to load new data into the buffer; negative time means that we need to load the first frame
     if (t+dtmodel/2 >= t(2) .or. t < 0) then       
@@ -253,11 +267,12 @@ contains
         self%UTsec(2)=UTsec(1)
     
         !Create a neutral grid, do some allocations and projections
-        call self%set_coordi(cfg,x)    ! FIXME: how to differentiate between 2D cart vs. axisymmetric?  Need separate objects, extensions of an extension probably...
+        call self%set_coordi(cfg,x)    ! cfg needed to convey optional parameters about how the input data are to be
+                                       !interpreted
       end if
     
       !Read in neutral data from a file
-      call self%load_data(t,dt,sourcedir,ymdtmp,UTsectmp)   !FIXME: need to differentiate between different types of 2D grids e.g. via subtype extensions perhaps?
+      call self%load_data(t,dt,sourcedir,ymdtmp,UTsectmp)
     
       !Spatial interpolation for the frame we just read in
       if (mpi_cfg%myid==0 .and. debug) then
@@ -457,7 +472,7 @@ contains
   end subroutine timeinterp
 
 
-  !> deallocate memory for array data
+  !> deallocate memory and dissociated pointers for generic array data
   subroutine dissociate_pointers(self)
     class(inputdata), intent(inout) :: self
 
@@ -477,5 +492,6 @@ contains
     deallocate(self%data3Di)
 
     self%flagalloc=.false.
+    self%flagprimed=.false.
   end subroutine dissociate_pointers
 end module inputdataobj
