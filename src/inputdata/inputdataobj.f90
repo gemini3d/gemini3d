@@ -59,7 +59,8 @@ type, abstract :: inputdata
 
   contains
     !! top-level user-intended procedures; goal is to have only these called to interact with object
-    procedure(initproc), deferred :: init        ! get up object for first time step:  call init_storage, call prime_data, set data cadence
+    procedure(initproc), deferred :: init        ! set up object for first time step:  call read in grid, set sizes, init_storage,
+                                                 !   call prime_data, set data cadence based on some input
     procedure :: update                          ! check to see if new file needs to be read and read accordingly (will need to call deferred loaddata)
 
     !! internal/fine-grained control
