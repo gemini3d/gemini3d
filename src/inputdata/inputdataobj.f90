@@ -202,6 +202,8 @@ contains
     integer, dimension(3) :: ymdprev,ymdnext   !dates for interpolated data
     real(wp) :: UTsecprev,UTsecnext
 
+    if (.not. self%flagalloc) error stop 'inputdata:prime_data() - must allocate data arrays prior to priming'
+
     !! find the last input data preceding the milestone/initial condition that we start with
     call find_lastdate(cfg%ymd0,cfg%UTsec0,ymd,UTsec,dtdata,ymdtmp,UTsectmp)
   
