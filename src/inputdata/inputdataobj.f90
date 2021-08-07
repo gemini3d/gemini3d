@@ -1,6 +1,7 @@
 module inputdataobj
 
 use phys_consts, only : wp
+use config, only: gemini_cfg
 use meshobj, only : curvmesh
 use interpolation, only : interp1,interp2,interp3
 use timeutils, only : dateinc, date_filename, find_lastdate
@@ -18,6 +19,7 @@ type, abstract :: inputdata
   logical :: flagsizes=.false.
   logical :: flagalloc=.false.
   logical :: flagprimed=.false.
+  logical :: flagcadence=.false.
 
   !! here we store data that have already been received but not yet interpolated
   real(wp), dimension(:), pointer :: coord1,coord2,coord3     ! coordinates for the source data (interpolant coords)
@@ -77,12 +79,13 @@ type, abstract :: inputdata
     !! internal, data kind specific
     procedure(coordisetproc), deferred :: set_coordsi       ! use grid data to compute coordinates of the interpolation sites
     procedure(loadproc), deferred :: load_data             ! read data from file (possibly one array at a time) and spatially interpolate and store it in the appropriate arrays
+    procedure(loadgrid), deferred :: load_grid
 end type inputdata
 
 
 !> interfaces for deferred procedures
 abstract interface
-  subroutine initproc(self)
+  subroutine initproc(self,cfg,sourcedir,x,dtdata,ymd,UTsec)
     import inputdata
     class(inputdata), intent(inout) :: self
   end subroutine initproc
@@ -190,46 +193,47 @@ contains
     real(wp), intent(in) :: dtdata
 
     self%dt=dtdata
+    self%flagcadence=.true.
   end function set_cadence
 
 
   !> "prime" data at the beginning of the simulation so that proper inputs can be derived/interpolated for the first time step
   !     Note that we need to separate any activity that isn't directly related to input data (e.g. background states, etc.) from 
   !     this routine so that it purely acts on properties of the inputdata class/type
-  subroutine prime_data(self,cfg,x,ymd,UTsec,dtdata)
+  subroutine prime_data(self,cfg,x,ymd,UTsec)
     class(inputdata), intent(inout) :: self
     type(gemini_cfg), intent(in) :: cfg      ! need start date, etc. of the simulation to prime
     class(curvmesh), intent(in) :: x         ! must have the grid to call update
     integer, dimension(3), intent(in) :: ymd ! date from which we need to prime input data
     real(wp), intent(in) :: UTsec            ! time from which we need to prime input data
-    real(wp), intent(in) :: dtdata           ! time step for *this* general data input
     integer, dimension(3) :: ymdprev,ymdnext
     real(wp) :: UTsecprev,UTsecnext
 
+    !! do some really basic error checking
     if (.not. self%flagalloc) error stop 'inputdata:prime_data() - must allocate data arrays prior to priming'
+    if (.not. self%flagcadence) error stop 'inputdata:prime_data() - must specify data cadence before priming'
 
     !! find the last input data preceding the milestone/initial condition that we start with
     !    The arguments here coorespond to start datetime of simulations, time of first step for this run (different
     !    if doing a restart) and then the tmp vars which are the time of the last input file.  dtdata is cadence.
-    call find_lastdate(cfg%ymd0,cfg%UTsec0,ymd,UTsec,dtdata,ymdtmp,UTsectmp)
+    call find_lastdate(cfg%ymd0,cfg%UTsec0,ymd,UTsec,self%dt,ymdtmp,UTsectmp)
   
     !! Loads the neutral input file corresponding to the "first" time step of the simulation to prevent the first interpolant
     !  from being zero and causing issues with restart simulations.  I.e. make sure the neutral buffers are primed for restart
     !  This requires us to load file input twice, once corresponding to the initial frame and once for the "first, next" frame.
     ! FIXME: need to keep self%ymd, etc. in sync?
-    self%tref(1)=UTsectmp-UTsec-2*dtdata
-    self%tref(2)=self%tref(1)+dtdata
+    self%tref(1)=UTsectmp-UTsec-2*self%dt
+    self%tref(2)=self%tref(1)+self%dt
     !if (mpi_cfg%myid==0) print*, '!!!Attempting initial load of neutral dynamics files!!!' // &
     !                         ' This is a workaround to insure compatibility with restarts...',ymdtmp,UTsectmp
     !! We essentially are loading up the data corresponding to halfway betwween -dtneu and t0 (zero).  This will load
     !   two time levels back so when tprev is incremented twice it will be the true tprev corresponding to first time step
-    call self%update(cfg,dt,dtdata,self%tref(2)+dtdata/2,ymdtmp,UTsectmp-dtdata)  !abs time arg to be < 0
-    ! FIXME: dtdata is reall self%dt...
+    call self%update(cfg,dt,self%dt,self%tref(2)+self%dt/2,ymdtmp,UTsectmp-self%dt)  !abs time arg to be < 0
 
     !if (mpi_cfg%myid==0) print*, 'Now loading initial next file for neutral perturbations...'
     !! Now compute perturbations for the present time (zero), this moves the primed variables in next into prev and then
     !  loads up a current state so that we get a proper interpolation for the first time step.
-    call self%update(cfg,dt,dtdata,0._wp,ymdtmp,UTsectmp,x)    !t-dt so we land exactly on start time
+    call self%update(cfg,dt,self%dt,0._wp,ymdtmp,UTsectmp,x)    !t-dt so we land exactly on start time
 
     self%flagprimed=.true.
   end subroutine prime_data
