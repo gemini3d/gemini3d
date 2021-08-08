@@ -44,7 +44,7 @@ type, abstract :: inputdata
   integer :: l2Dax23,l2Dax12,l2Dax13
   real(wp), dimension(:,:,:,:,:), pointer :: data3Di                 ! array for storing series of 3D data
   integer :: l3D
-  real(wp), dimension(:,:,:), pointer :: coord1i,coord2i,coord3i     ! coordinates of the interpolation sites
+  real(wp), dimension(:), pointer :: coord1i,coord2i,coord3i         ! coordinates of the interpolation sites, these are flat arrays (rank 1)
   integer :: lc1i,lc2i,lc3i                                          ! dataset length along the 3 coordinate axes
 
   !! these are the input data arrays interpolated in time to the present (presuming we've called update/timeinterp
@@ -141,6 +141,11 @@ contains
     ! coordinate axis sizes for interpolation sites
     self%lc1i=x%lx1; self%lc2i=x%lx2; self%lc3i=x%lx3;
 
+    ! check that the user is trying something sensible
+    if (lc1==1 .and. lc1i/=1 .or. lc2==1 .and. lc2i/=1 .or. lc3==1 .and. lc3i/=1) then
+      error stop 'inputdata:set_sizes() - singleton dimensions must be same for source and destination.'
+    end if
+
     ! flag sizes as assigned
     self%flagsizes=.true.
   end function set_sizes
@@ -166,6 +171,12 @@ contains
     l1Dax1=self%l1Dax1; l1Dax2=self%l1Dax2; l1Dax3=self%l1Dax3;
     l2Dax23=self%l2Dax23; l2Dax12=self%l2Dax12; l2Dax13=self%l2Dax13;
     l3D=self%l3D
+
+    ! input data coordinate arrays (presume plaid)
+    allocate(self%coord1(lc1),self%coord2(lc2),self%coord3(lc3))
+
+    ! interpolation site arrays (note these are flat, i.e. rank 1)
+    allocate(self%coord1i(lc1i*lc2i*lc3i),self%coord2i(lc1i*lc2i*lc3i),self%coord3i(lc1i*lc2i*lc3i))
 
     ! allocate object arrays for input data at a reference time.  FIXME: do we even need to store this perm. or can be local to
     ! load_data?
@@ -222,10 +233,11 @@ contains
   !> "prime" data at the beginning of the simulation so that proper inputs can be derived/interpolated for the first time step
   !     Note that we need to separate any activity that isn't directly related to input data (e.g. background states, etc.) from 
   !     this routine so that it purely acts on properties of the inputdata class/type
-  subroutine prime_data(self,cfg,x,ymd,UTsec)
+  subroutine prime_data(self,cfg,x,dtmodel,ymd,UTsec)
     class(inputdata), intent(inout) :: self
     type(gemini_cfg), intent(in) :: cfg      ! need start date, etc. of the simulation to prime
     class(curvmesh), intent(in) :: x         ! must have the grid to call update
+    real(wp), intent(in) :: dtmodel             ! model time and time step
     integer, dimension(3), intent(in) :: ymd ! date from which we need to prime input data
     real(wp), intent(in) :: UTsec            ! time from which we need to prime input data
     integer, dimension(3) :: ymdprev,ymdnext
@@ -234,6 +246,7 @@ contains
     !! do some really basic error checking
     if (.not. self%flagalloc) error stop 'inputdata:prime_data() - must allocate data arrays prior to priming'
     if (.not. self%flagcadence) error stop 'inputdata:prime_data() - must specify data cadence before priming'
+    print*, '  Priming dataset:  ',self%dataname
 
     !! find the last input data preceding the milestone/initial condition that we start with
     !    The arguments here coorespond to start datetime of simulations, time of first step for this run (different
@@ -243,29 +256,29 @@ contains
     !! Loads the neutral input file corresponding to the "first" time step of the simulation to prevent the first interpolant
     !  from being zero and causing issues with restart simulations.  I.e. make sure the neutral buffers are primed for restart
     !  This requires us to load file input twice, once corresponding to the initial frame and once for the "first, next" frame.
-    ! FIXME: need to keep self%ymd, etc. in sync?
+    ! FIXME: need to keep self%ymd, etc. in sync?  Update will do this?  YES
     self%tref(1)=UTsectmp-UTsec-2*self%dt
     self%tref(2)=self%tref(1)+self%dt
     !if (mpi_cfg%myid==0) print*, '!!!Attempting initial load of neutral dynamics files!!!' // &
     !                         ' This is a workaround to insure compatibility with restarts...',ymdtmp,UTsectmp
     !! We essentially are loading up the data corresponding to halfway betwween -dtneu and t0 (zero).  This will load
     !   two time levels back so when tprev is incremented twice it will be the true tprev corresponding to first time step
-    call self%update(cfg,dt,self%dt,self%tref(2)+self%dt/2,ymdtmp,UTsectmp-self%dt)  !abs time arg to be < 0
+    call self%update(cfg,dtmodel,self%tref(2)+self%dt/2,x,ymdtmp,UTsectmp-self%dt)  !abs time arg to be < 0
 
     !if (mpi_cfg%myid==0) print*, 'Now loading initial next file for neutral perturbations...'
     !! Now compute perturbations for the present time (zero), this moves the primed variables in next into prev and then
     !  loads up a current state so that we get a proper interpolation for the first time step.
-    call self%update(cfg,dt,self%dt,0._wp,ymdtmp,UTsectmp,x)    !t-dt so we land exactly on start time
+    call self%update(cfg,dtmodel,0._wp,x,ymdtmp,UTsectmp)    !t-dt so we land exactly on start time
 
     self%flagprimed=.true.
   end subroutine prime_data
 
 
   !> wrapper routine to execute various steps needed to update input data to present time
-  subroutine update(self,cfg,dtmodel,dtdata,t,x,ymd,UTsec)
+  subroutine update(self,cfg,dtmodel,t,x,ymd,UTsec)
     class(inputdata), intent(inout) :: self
     type(gemini_cfg), intent(in) :: cfg
-    real(wp), intent(in) :: dtmodel,dtdata    ! need both model and input data time stepping
+    real(wp), intent(in) :: dtmodel    ! need both model and input data time stepping
     real(wp), intent(in) :: t                 ! simulation absoluate time for which perturabation is to be computed
     class(curvmesh), intent(inout) :: x         ! mesh object
     integer, dimension(3), intent(in) :: ymd    ! date for which we wish to calculate perturbations
@@ -291,7 +304,7 @@ contains
         self%UTsecref(2)=self%UTsecref(1)
     
         !Create a neutral grid, do some allocations and projections
-        call self%set_coordi(cfg,x)    ! cfg needed to convey optional parameters about how the input data are to be
+        call self%set_coordsi(cfg,x)    ! cfg needed to convey optional parameters about how the input data are to be
                                        !interpreted
       end if
    
@@ -322,7 +335,8 @@ contains
   end subroutine update
 
 
-  !> use data stored in input arrays to interpolate onto grid sites for "next" dataset
+  !> use data stored in input arrays to interpolate onto grid sites for "next" dataset.  There may be a need here to
+  !    accommodate singleton dimension naturally to void having to define extensions for different types of interp...
   subroutine spaceinterp(self)
     class(inputdata),intent(inout) :: self
     integer :: iparm
@@ -358,43 +372,99 @@ contains
       deallocate(tempdata)
     end if
 
-    !> 2D arrays varying along the 2,3 axes
+    !> 2D arrays varying along the 2,3 axes; be sure to check singleton axes and change interp accordingly
     if (associated(data2Dax23i)) then
       allocate(tempdata(self%lc2i*self%lc3i))
-      do iparm=1,l2D23
-        tempdata(:)=interp2(coord2,coord3,data2Dax23(:,:,iparm),coord2i,coord3i)
-        self%data2Dax23i(:,:,iparm,2)=reshape(tempdata,[lc2i,lc3i])
-      end do
+      if (lc2>1 .and. lc3>1) then    ! normal 2D dataset
+        do iparm=1,l2D23
+          tempdata(:)=interp2(coord2,coord3,data2Dax23(:,:,iparm),coord2i,coord3i)
+          self%data2Dax23i(:,:,iparm,2)=reshape(tempdata,[lc2i,lc3i])
+        end do
+      else if (lc2>1 .and. lc3==1) then
+        do iparm=1,l2D23
+          tempdata(:)=interp1(coord2,pack(data2Dax23(:,:,iparm),.true.),coord2i)
+          self%data2Dax23i(:,:,iparm,2)=reshape(tempdata,[lc2i,lc3i])
+        end do
+      else if (lc2==1 .and. lc3>1) then
+        do iparm=1,l2D23
+          tempdata(:)=interp1(coord3,pack(data2Dax23(:,:,iparm),.true.),coord3i)
+          self%data2Dax23i(:,:,iparm,2)=reshape(tempdata,[lc2i,lc3i])
+        end do
+      else
+        error stop 'inputdata:spaceinterp() - cannot determine type of interpolation for data2Dax23'
+      end if
       deallocate(tempdata)
     end if
 
     !> 2D arrays varying along the 1,2 axes
     if (associated(data2Dax12i)) then
       allocate(tempdata(self%lc1i*self%lc2i))
-      do iparm=1,l2D12
-        tempdata(:)=interp2(coord1,coord2,data2Dax12(:,:,iparm),coord1i,coord2i)
-        self%data2Dax12i(:,:,iparm,2)=reshape(tempdata,[lc1i,lc2i])
-      end do
+      if (lc1>1 .and. lc2>1) then
+        do iparm=1,l2D12
+          tempdata(:)=interp2(coord1,coord2,data2Dax12(:,:,iparm),coord1i,coord2i)
+          self%data2Dax12i(:,:,iparm,2)=reshape(tempdata,[lc1i,lc2i])
+        end do
+      else if (lc1>1 .and. lc2==1) then
+        do iparm=1,l2D12
+          tempdata(:)=interp1(coord1,pack(data2Dax12(:,:,iparm),.true.),coord1i)
+          self%data2Dax12i(:,:,iparm,2)=reshape(tempdata,[lc1i,lc2i])
+        end do
+      else if (lc1==1 .and. lc2>1) then
+        do iparm=1,l2D12
+          tempdata(:)=interp1(coord2,pack(data2Dax12(:,:,iparm),.true.),coord2i)
+          self%data2Dax12i(:,:,iparm,2)=reshape(tempdata,[lc1i,lc2i])
+        end do
+      else
+        error stop 'inputdata:spaceinterp() - cannot determine type of interpolation for data2Dax12'
+      end if
       deallocate(tempdata)
     end if
 
     !> 2D arrays varying along the 1,3 axes
     if (associated(data2Dax13i)) then
       allocate(tempdata(self%lc1i*self%lc3i))
-      do iparm=1,l2D13
-        tempdata(:)=interp2(coord1,coord3,data2Dax13(:,:,iparm),coord1i,coord3i)
-        self%data2Dax13i(:,:,iparm,2)=reshape(tempdata,[lc1i,lc3i])
-      end do
+      if (lc1>1 .and. lc3>1) then
+        do iparm=1,l2D13
+          tempdata(:)=interp2(coord1,coord3,data2Dax13(:,:,iparm),coord1i,coord3i)
+          self%data2Dax13i(:,:,iparm,2)=reshape(tempdata,[lc1i,lc3i])
+        end do
+      else if (lc1>1 .and. lc3==1) then
+        do iparm=1,l2D13
+          tempdata(:)=interp2(coord1,pack(data2Dax13(:,:,iparm),.true.),coord1i)
+          self%data2Dax13i(:,:,iparm,2)=reshape(tempdata,[lc1i,lc3i])
+        end do
+      else if (lc1==1 .and. lc3>1) then
+        do iparm=1,l2D13
+          tempdata(:)=interp2(coord3,pack(data2Dax13(:,:,iparm),.true.),coord3i)
+          self%data2Dax13i(:,:,iparm,2)=reshape(tempdata,[lc1i,lc3i])
+        end do
+      else
+        error stop 'inputdata:spaceinterp() - cannot determine type of interpolation for data2Dax13'
+      end if
       deallocate(tempdata)
     end if
 
-    !> 3D arrays varying along all axes (obv.)
+    !> 3D arrays varying along all axes, check for singleton axes...
     if (associated(data3Di)) then
       allocate(tempdata(self%lc1i*self%lc2i*self%lc3i))
-      do iparm=1,l3D
-        tempdata(:)=interp3(coord1,coord2,coord3,data3D(:,:,:,iparm),coord1i,coord2i,coord3i)
-        self%data3Di(:,:,:,iparm,2)=reshape(tempdata,[lc1i,lc2i,lc3i])
-      end do
+      if (lc1>1 .and. lc2>1 .and. lc3>1) then
+        do iparm=1,l3D
+          tempdata(:)=interp3(coord1,coord2,coord3,data3D(:,:,:,iparm),coord1i,coord2i,coord3i)
+          self%data3Di(:,:,:,iparm,2)=reshape(tempdata,[lc1i,lc2i,lc3i])
+        end do
+      else if (lc1>1 .and. lc2>1 .and. lc3==1) then
+        do iparm=1,l3D
+          tempdata(:)=interp2(coord1,coord2,pack(data3D(:,:,:,iparm),.true.),coord1i,coord2i,)
+          self%data3Di(:,:,:,iparm,2)=reshape(tempdata,[lc1i,lc2i,lc3i])
+        end do
+      else if (lc1>1 .and. lc2==1 .and. lc3>1) then
+        do iparm=1,l3D
+          tempdata(:)=interp2(coord1,coord3,pack(data3D(:,:,:,iparm),.true.),coord1i,coord3i,)
+          self%data3Di(:,:,:,iparm,2)=reshape(tempdata,[lc1i,lc2i,lc3i])
+        end do
+      else
+        error stop 'inputdata:spaceinterp() - cannot determine type of interpolation for data3D'
+      end if
       deallocate(tempdata)
     end if 
   end subroutine spaceinterp
@@ -516,6 +586,9 @@ contains
     deallocate(self%data1Dax1i, self%data1Dax2i, self%data1Dax3i)
     deallocate(self%data2Dax23i, self%data2Dax12i, self%data2Dax13i)
     deallocate(self%data3Di)
+
+    deallocate(coord1,coord2,coord3)
+    deallocate(coord1i,coord2i,coord3i)
 
     self%flagalloc=.false.
     self%flagprimed=.false.
