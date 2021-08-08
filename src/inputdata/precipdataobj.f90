@@ -1,18 +1,25 @@
 module precipdataobj
 
-use phys_consts, only: wp
+use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
+use phys_consts, only: wp,debug
 use inputdataobj, only: inputdata,initproc,coordsisetproc,loadproc
 use meshobj, only: curvmesh
 use config, only: gemini_cfg
 use reader, only: get_simsize2,get_grid2,get_precip
+use mpimod, only: mpi_integer,mpi_comm_world,mpi_status_ignore,mpi_realprec,mpi_cfg,tag=>gemini_mpi
 
 implicit none (type, external)
+
+external :: mpi_send,mpi_recv
 
 type, extends(inputdata) :: precipdata
   ! coordinate for input precipitation data, and storage
   real(wp), dimension(:), pointer :: mlonp,mlatp
   integer, pointer :: llon,llat
   real(wp), dimension(:,:), pointer :: Qp,E0p
+  real(wp), dimension(:,:), pointer :: Qpiprev,E0piprev
+  real(wp), dimension(:,:), pointer :: Qpinext,E0pinext
+  real(wp), dimension(:,:), pointer :: Qpinow,E0pinow
 
   contains
     procedure(initproc) :: init=>init_precip
@@ -57,45 +64,22 @@ contains
     self%mlonp=>self%coord2; self%mlatp=>self%coord3;
     call self%load_grid()
 
-    ! set input data array pointers to faciliate easy to read input code.  It's important to note that
-    !   
-    if (llon>1 .and. llat>1) then      ! full 2D input arrays
-      Qp=>data2Dax23(:,:,1)
-      E0p=>data2Dax23(:,:,2)
-      Qpiprev=>data2Dax23i(:,:,1,1)
-      Qpinext=>data2Dax23i(:,:,1,2)
-      E0iprev=>data2Dax23i(:,:,2,1)
-      E0inext=>data2Dax23i(:,:,2,2)
-      Qpinow=>data2Dax23inow(:,:,1)
-      E0inow=>data2Dax23inow(:,:,2)
-    else if (llon==1 .and. llat>1) then    ! alt/lat simulation, data vary along 3rd axis
-      Qp=>data1Dax3(:,1)
-      E0p=>data1Dax3(:,2)
-      Qpiprev=>data1Dax3i(:,1,1)
-      Qpinext=>data1Dax3i(:,1,2)
-      E0iprev=>data1Dax3i(:,2,1)
-      E0inext=>data1Dax3i(:,2,2)
-      Qpinow=>data1Dax3inow(:,1)
-      E0inow=>data1Dax3inow(:,2)
-    else if (llat==1 .and. llon>1) then    ! alt/lon simulation, input data vary along 2nd axis
-      Qp=>data1Dax2(:,1)
-      E0p=>data1Dax2(:,2)
-      Qpiprev=>data1Dax2i(:,1,1)
-      Qpinext=>data1Dax2i(:,1,2)
-      E0iprev=>data1Dax2i(:,2,1)
-      E0inext=>data1Dax2i(:,2,2)
-      Qpinow=>data1Dax2inow(:,1)
-      E0inow=>data1Dax2inow(:,2)
-    else
-      error stop 'precipdata:init_precip() - unsupported input file size configuration'
-    end if
+    ! set input data array pointers to faciliate easy to read input code.
+    Qp=>data2Dax23(:,:,1)
+    E0p=>data2Dax23(:,:,2)
+    Qpiprev=>data2Dax23i(:,:,1,1)
+    Qpinext=>data2Dax23i(:,:,1,2)
+    E0iprev=>data2Dax23i(:,:,2,1)
+    E0inext=>data2Dax23i(:,:,2,2)
+    Qpinow=>data2Dax23inow(:,:,1)
+    E0inow=>data2Dax23inow(:,:,2)
 
     ! prime input data
     call self%prime_data(cfg,x,ymd,UTsec)
   end subroutine init_precip
 
 
-  !> get the input grid size from file, all workers will just call this
+  !> get the input grid size from file, all workers will just call this sicne this is a one-time thing
   subroutine load_size_precip(self)
     class(precipdata), intent(inout) :: self
 
@@ -112,7 +96,7 @@ contains
   end subroutine load_size_precip
 
 
-  !> get the grid information from a file, all workers will just call this
+  !> get the grid information from a file, all workers will just call this since one-time
   subroutine load_grid_precip(self)
     class(precipdata), intent(inout) :: self
 
@@ -125,9 +109,52 @@ contains
     if(.not. all(ieee_is_finite(self%mlatp))) error stop 'precipBCs_fileinput: mlat must be finite'
   end subroutine load_grid_precip
 
+
+  subroutine set_coordsi_precip(self,x)
+    class(precipdata), intent(inout) :: self
+    class(curvmesh), intent(in) :: x
+    integer :: ix2,ix3,iflat
+
+    do ix3=1,x%lx3
+      do ix2=1,x%lx2
+        iflat=(ix3-1)*x%lx2+ix2
+        self%coord2i(iflat)=x%phi(x%lx1,ix2,ix3)*180._wp/pi
+        self%coord3i(iflat)=90._wp - x%theta(lx1,ix2,ix3)*180._wp/pi
+      end do
+    end do
+  end subroutine set_coordsi_precip
+
+
+  !> have root read in next input frame data and distribute to parallel workers
   subroutine load_data_precip(self)
     class(precipdata), intent(inout) :: self
 
-    call get_precip(date_filename(self%sourcedir,ymd,UTsec))
+    !! this read must be done repeatedly through simulation so have only root do file io
+    if (mpi_cfg%myid==0) then
+      if(debug) print *, 'precipdata:load_data_precip() - tprev,tnow,tnext:  ',tprev,t+dt / 2._wp,tnext
+      ! read in the data for the "next" frame from file
+      ymdtmp = self%ymdref(:,2)
+      UTsectmp = self%UTsecref(2)
+      call dateinc(self%dt, ymdtmp, UTsectmp)
+      call get_precip(date_filename(self%sourcedir,ymdtmp,UTsectmp), self%Qp, self%E0p)
+  
+      ! send a full copy of the data to all of the workers
+      do iid=1,mpi_cfg%lid-1
+        call mpi_send(self%Qp,self%llon*self%llat,mpi_realprec,iid,tag%Qp,MPI_COMM_WORLD,ierr)
+        call mpi_send(self%E0p,self%llon*self%llat,mpi_realprec,iid,tag%E0p,MPI_COMM_WORLD,ierr)
+      end do
+    else
+      ! workers receive data from root
+      call mpi_recv(self%Qp,self%llon*self%llat,mpi_realprec,0,tag%Qp,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+      call mpi_recv(self%E0p,self%llon*self%llat,mpi_realprec,0,tag%E0p,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+    end if
   end subroutine load_data_precip
+
+
+  !> destructor needs to clear memory out
+  subroutine destructor(self)
+    type(precipdata), intent(inout) :: self
+
+    call self%dissociate_pointers()
+  end subroutine destructor
 end module precipdataobj
