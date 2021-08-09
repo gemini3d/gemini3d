@@ -27,19 +27,19 @@ HWLOC_INCLUDE_DIRS
 include(CheckSymbolExists)
 
 find_package(PkgConfig)
-pkg_check_modules(pc_hwloc hwloc)
+pkg_search_module(pc_hwloc hwloc)
 
 # NOTE: the "lib*" are for Windows Intel compiler.
 # CMake won't look for lib prefix automatically.
 
 find_library(HWLOC_LIBRARY
-             NAMES hwloc libhwloc
-             NAMES_PER_DIR
-             HINTS ${pc_hwloc_LIBRARY_DIRS} ${pc_hwloc_LIBDIR})
+  NAMES hwloc libhwloc
+  NAMES_PER_DIR
+  HINTS ${pc_hwloc_LIBRARY_DIRS} ${pc_hwloc_LIBDIR})
 
 find_path(HWLOC_INCLUDE_DIR
-          NAMES hwloc.h
-          HINTS ${pc_hwloc_INCLUDE_DIRS})
+  NAMES hwloc.h
+  HINTS ${pc_hwloc_INCLUDE_DIRS})
 
 if(HWLOC_LIBRARY AND HWLOC_INCLUDE_DIR)
   set(CMAKE_REQUIRED_INCLUDES ${HWLOC_INCLUDE_DIR})
@@ -50,12 +50,17 @@ endif()
 if(HWLOC_TOPO_LOAD)
   find_file(hwloc_conf
     NAMES config.h
-    PATH_SUFFIXES hwloc/autogen)
+    HINTS ${HWLOC_INCLUDE_DIR} ${pc_hwloc_INCLUDE_DIRS}
+    PATH_SUFFIXES hwloc/autogen
+    DOC "HWLOC configuration header"
+  )
 
-  file(STRINGS ${hwloc_conf} _def
-  REGEX "^[ \t]*#[ \t]*define[ \t]+HWLOC_VERSION[ \t]+" )
-  if("${_def}" MATCHES "HWLOC_VERSION[ \t]+\"([0-9]+\\.[0-9]+\\.[0-9]+)?\"" )
-    set(HWLOC_VERSION "${CMAKE_MATCH_1}" )
+  if(hwloc_conf)
+    file(STRINGS ${hwloc_conf} _def
+    REGEX "^[ \t]*#[ \t]*define[ \t]+HWLOC_VERSION[ \t]+" )
+    if("${_def}" MATCHES "HWLOC_VERSION[ \t]+\"([0-9]+\\.[0-9]+\\.[0-9]+)?\"")
+      set(HWLOC_VERSION "${CMAKE_MATCH_1}")
+    endif()
   endif()
 endif()
 
@@ -80,4 +85,4 @@ if(NOT TARGET HWLOC::HWLOC)
 endif()
 endif(HWLOC_FOUND)
 
-mark_as_advanced(HWLOC_INCLUDE_DIR HWLOC_LIBRARY)
+mark_as_advanced(HWLOC_INCLUDE_DIR HWLOC_LIBRARY HWLOC_TOPO_LOAD)
