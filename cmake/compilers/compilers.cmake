@@ -73,6 +73,3 @@ if(CMAKE_Fortran_COMPILER_ID STREQUAL GNU)
 elseif(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
   set(msis_flags -nowarn)
 endif()
-
-# Do these before compiler options so options don't goof up finding
-find_package(OpenMP COMPONENTS C Fortran)
