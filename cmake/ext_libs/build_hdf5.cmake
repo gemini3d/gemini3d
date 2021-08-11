@@ -83,11 +83,8 @@ add_dependencies(HDF5::HDF5 HDF5)
 
 target_link_libraries(HDF5::HDF5 INTERFACE ZLIB::ZLIB)
 
-set(THREADS_PREFER_PTHREAD_FLAG true)
 find_package(Threads)
-if(Threads_FOUND)
-  target_link_libraries(HDF5::HDF5 INTERFACE Threads::Threads)
-endif(Threads_FOUND)
+target_link_libraries(HDF5::HDF5 INTERFACE ${CMAKE_THREAD_LIBS_INIT})
 
 # libdl and libm are needed on some systems--don't remove
 target_link_libraries(HDF5::HDF5 INTERFACE ${CMAKE_DL_LIBS})

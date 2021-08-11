@@ -111,7 +111,7 @@ add_dependencies(MUMPS::MUMPS MUMPS)
 
 if(NOT MPI_FOUND)
   add_library(MUMPS::MPISEQ INTERFACE IMPORTED)
-  target_link_libraries(MUMPS::MPISEQ INTERFACE "${MUMPS_MPISEQ_LIBRARIES}")
+  target_link_libraries(MUMPS::MPISEQ INTERFACE "${MUMPS_MPISEQ_LIBRARIES}" ${CMAKE_THREAD_LIBS_INIT})
   target_include_directories(MUMPS::MPISEQ INTERFACE ${MUMPS_INCLUDE_DIRS})
 
   # race condition for linking without this
