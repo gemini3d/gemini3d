@@ -35,12 +35,6 @@ if(mpi)
   # where mpi gets linked in the middle instead of at the end.
   # the TARGET_OBJECTS etc in this directory are a careful effort to avoid this problem
   target_link_libraries(test_potential2d PRIVATE const h5fortran::h5fortran MUMPS::MUMPS SCALAPACK::SCALAPACK LAPACK::LAPACK MPI::MPI_Fortran)
-  if(Scotch_FOUND)
-    target_link_libraries(test_potential2d PRIVATE Scotch::Scotch)
-  endif()
-  if(METIS_FOUND)
-    target_link_libraries(test_potential2d PRIVATE METIS::METIS)
-  endif()
 
   add_test(NAME unit:potential2
     COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${Ncpu} $<TARGET_FILE:test_potential2d> ${_potential_testfile})
@@ -52,6 +46,11 @@ else()
 
   add_test(NAME unit:potential2
     COMMAND $<TARGET_FILE:test_potential2d> ${_potential_testfile})
+endif()
+
+if(Scotch_FOUND)
+  target_link_libraries(test_potential2d PRIVATE Scotch::Scotch)
+  target_link_libraries(test_potential2d PRIVATE METIS::METIS)
 endif()
 
 set_tests_properties(unit:potential2 PROPERTIES TIMEOUT 30

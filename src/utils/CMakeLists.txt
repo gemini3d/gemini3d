@@ -18,6 +18,9 @@ target_sources(magcalc.bin PRIVATE magcalc.f90 ${CMAKE_CURRENT_BINARY_DIR}/magca
 target_link_libraries(magcalc.bin PRIVATE exe_frontend
   pathlib sanity_check errors config timeutils const hwloc_ifc hwloc_c nc4fortran::nc4fortran h5fortran::h5fortran)
 target_link_libraries(magcalc.bin PRIVATE MPI::MPI_Fortran)
+if(NOT mpi)
+  target_link_libraries(magcalc.bin PRIVATE MUMPS::MPISEQ)
+endif()
 set_target_properties(magcalc.bin PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
 
 add_test(NAME unit:magcalc_exe_ok COMMAND $<TARGET_FILE:magcalc.bin>)

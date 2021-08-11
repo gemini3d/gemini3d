@@ -45,8 +45,6 @@ target_link_libraries(test_mumps PRIVATE mumps_interface
   MUMPS::MUMPS SCALAPACK::SCALAPACK LAPACK::LAPACK MPI::MPI_Fortran)
 if(Scotch_FOUND)
   target_link_libraries(test_mumps PRIVATE Scotch::Scotch)
-endif()
-if(METIS_FOUND)
   target_link_libraries(test_mumps PRIVATE METIS::METIS)
 endif()
 # same link logic applied to gemini.bin

@@ -34,13 +34,14 @@ add_subdirectory(utils)
 # --- Main GEMINI executable
 configure_file(gemini_cli.in.f90 gemini_cli.f90 @ONLY)
 add_executable(gemini.bin gemini.f90 ${CMAKE_CURRENT_BINARY_DIR}/gemini_cli.f90
-$<TARGET_OBJECTS:autogrid> $<TARGET_OBJECTS:PDEelliptic> $<TARGET_OBJECTS:potential>)
+  $<TARGET_OBJECTS:autogrid> $<TARGET_OBJECTS:PDEelliptic> $<TARGET_OBJECTS:potential>
+  $<TARGET_OBJECTS:mpimod> $<TARGET_OBJECTS:io>
+)
 set_target_properties(gemini.bin PROPERTIES
   RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
 target_link_libraries(gemini.bin PRIVATE advec calculus config const collision diffusion fang grid io interp ionization gbsv
   meshobj meshobj_cart meshobj_dipole spherical newton geomagnetic
   exe_frontend
-  mpimod
   msis_ifc multifluid
   neutral pathlib PDEparabolic potential precipBCs reader sanity_check errors sources temporal timeutils
   hwloc_ifc hwloc_c)
@@ -54,8 +55,6 @@ else()
 endif()
 if(Scotch_FOUND)
   target_link_libraries(gemini.bin PRIVATE Scotch::Scotch)
-endif()
-if(METIS_FOUND)
   target_link_libraries(gemini.bin PRIVATE METIS::METIS)
 endif()
 # same link logic applied to src/unit_tests/test_mumps

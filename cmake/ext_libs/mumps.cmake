@@ -23,13 +23,11 @@ if(NOT mumps_external AND (MUMPS_ROOT OR (DEFINED ENV{MUMPS_ROOT}) OR (CMAKE_For
     list(APPEND _comp mpiseq)
   endif()
 
-  if(mpi)
-    find_package(Scotch COMPONENTS parallel ESMUMPS)
-    # must also use METIS when using Scotch
-    find_package(METIS COMPONENTS parallel)
-    if(Scotch_FOUND)
-      list(APPEND _comp Scotch)
-    endif()
+  find_package(Scotch COMPONENTS parallel ESMUMPS)
+  # must also use METIS when using Scotch
+  find_package(METIS COMPONENTS parallel)
+  if(Scotch_FOUND)
+    list(APPEND _comp Scotch)
   endif()
 
   if(autobuild)
