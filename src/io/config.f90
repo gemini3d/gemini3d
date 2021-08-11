@@ -156,34 +156,37 @@ end if
 end function get_compiler_vendor
 
 
-function expand_envvar(path, envvar) result(expanded)
-!! replace @...@ string like metabuild system e.g. CMake, based on env var
-!! this function REQUIRES:
+function expand_envvar(path) result(expanded)
+!! replace @...@ string like metabuild system e.g. CMake, based on environment variable.
 !!
-!! 1. envvar is a defined environment variable
-!! 2. path contains a matching @envvar@ substring
+!! NOTE: only expands the first @envvar@ substring. Nest calls if mutliple @envvar@ substrings
 
-character(:), allocatable :: expanded, substr
-character(*), intent(in) :: path, envvar
+character(*), intent(in) :: path
 
-integer :: i, L, istat
+character(:), allocatable :: expanded, substr, envvar
+
+integer :: i0, i1
+integer :: L, istat
 character(1000) :: buf
 
 expanded = expanduser(path)
 
-i = index(path, "@")
-if (i < 1) return
+i0 = index(path, "@")
+if (i0 < 1) return
+i0 = i0
 
-substr = "@" // envvar // "@"
-i = index(path, substr)
-if (i < 1) return
-!! this envvar is not in path, perhaps multiple calls to expand_envvar.
-!! Should this be an error?
+i1 = index(path(i0+1:), "@")
+if (i1 < 1) return  !< a single @ without a matching @
+i1 = i0 + i1
+
+envvar = path(i0+1:i1-1)
+if(len_trim(envvar) == 0) return  !< only blanks in envvar
 
 call get_environment_variable(envvar, buf, length=L, status=istat)
-if (istat /= 0 .or. L < 1) error stop "config:expand_envvar: environment variable empty or not defined: " // envvar
+if(istat /= 0) error stop "config:expand_envvar: environment variable not defined: " // envvar
+if(L < 1) error stop "config:expand_envvar: environment variable empty: " // envvar
 
-expanded = path(1:i - 1) // trim(adjustl(buf)) // path(i + len(substr):len(path))
+expanded = path(:i0-1) // trim(adjustl(buf)) // path(i1+1:)
 
 end function expand_envvar
 

@@ -15,7 +15,7 @@ subroutine test_expand_envvar()
 character(*), parameter :: str="abc@test__gem@xyz"
 character(11) :: ret
 
-ret = expand_envvar(str, "test__gem")
+ret = expand_envvar(str)
 
 if (ret /= "abchelloxyz") error stop "expand_envar: expected abchelloxyz, got " // ret
 
