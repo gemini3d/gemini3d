@@ -88,6 +88,7 @@ set(mumps_args
 -Dscotch:BOOL=${scotch}
 -Dopenmp:BOOL=false
 -Dparallel:BOOL=${mpi}
+-Dautobuild:BOOL=false
 )
 
 ExternalProject_Add(MUMPS
