@@ -456,7 +456,9 @@ if(HDF5_parallel_FOUND)
 
   end program")
 
-  message(CHECK_START "Checking Fortran HDF5 MPI h5pset_fapl_mpio_f")
+  if(NOT DEFINED HDF5_Fortran_links)
+    message(STATUS "Checking Fortran HDF5 MPI h5pset_fapl_mpio_f")
+  endif()
 else()
   set(src "program test_minimal
   use hdf5, only : h5open_f, h5close_f
@@ -466,16 +468,13 @@ else()
   call h5open_f(i)
   call h5close_f(i)
   end program")
-  message(CHECK_START "Checking Fortran HDF5 serial h5open_f")
 endif()
 
-check_source_compiles(Fortran ${src} HDF5_Fortran_links SRC_EXT f90)
+check_source_compiles(Fortran ${src} HDF5_Fortran_links)
 
 if(NOT HDF5_Fortran_links)
-  message(CHECK_FAIL "not found")
   return()
 endif()
-message(CHECK_PASS "found")
 
 endif(HDF5_Fortran_FOUND)
 
