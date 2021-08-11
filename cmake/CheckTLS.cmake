@@ -5,25 +5,23 @@ function(check_tls)
 # this is a publicly-usable service (as per their TOS)
 
 set(url https://www.howsmyssl.com/a/check)
-cmake_path(APPEND temp ${PROJECT_BINARY_DIR} check_tls.json)
+cmake_path(APPEND tls_check_file ${PROJECT_BINARY_DIR} check_tls.json)
 
-if(NOT EXISTS ${temp})
-  message(STATUS "CheckTLS: ${url} => ${temp}")
-  file(DOWNLOAD ${url} ${temp} INACTIVITY_TIMEOUT 5)
+if(EXISTS ${tls_check_file})
+  # we've already checked this computer's TLS configuration.
+  return()
 endif()
 
-file(READ ${temp} json)
+message(STATUS "CheckTLS: ${url} => ${tls_check_file}")
+file(DOWNLOAD ${url} ${tls_check_file} INACTIVITY_TIMEOUT 10)
+
+file(READ ${tls_check_file} json)
 
 string(JSON rating ERROR_VARIABLE e GET ${json} rating)
 
-message(VERBOSE "TLS status: ${rating}")
+message(STATUS "TLS status: ${rating}")
 if(NOT rating STREQUAL "Probably Okay")
   message(WARNING "TLS seems to be broken on your system. Download will probably fail.  ${rating}")
 endif()
 
 endfunction(check_tls)
-
-if(CMAKE_SCRIPT_MODE_FILE)
-  set(CMAKE_MESSAGE_LOG_LEVEL VERBOSE)
-  check_tls()
-endif()
