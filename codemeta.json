@@ -4,18 +4,18 @@
     "license": "https://spdx.org/licenses/Apache-2.0",
     "codeRepository": "https://github.com/gemini3d/gemini",
     "contIntegration": "https://github.com/gemini3d/gemini/actions",
-    "dateModified": "2021-01-19",
+    "dateModified": "2021-08-01",
     "downloadUrl": "https://github.com/gemini3d/gemini/releases",
     "issueTracker": "https://github.com/gemini3d/gemini/issues",
     "name": "Gemini3D",
-    "version": "0.8.0",
+    "version": "1.0.0",
     "identifier": "10.5281/zenodo.3813224",
     "description": "Ionospheric fluid electrodynamic model",
     "applicationCategory": "Simulation",
     "developmentStatus": "active",
     "funder": {
         "@type": "Organization",
-        "name": "NSF, NASA"
+        "name": "NSF, NASA, DARPA"
     },
     "keywords": [
         "ionosphere",
