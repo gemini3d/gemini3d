@@ -20,8 +20,6 @@ if(NOT mpi)
   target_link_libraries(mpimod PRIVATE MUMPS::MPISEQ)
 endif()
 
-set_targ_props(autogrid mpimod)
-
 #-----
 
 if(BUILD_TESTING)

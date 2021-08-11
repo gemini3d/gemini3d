@@ -79,5 +79,3 @@ if(test_dll_path)
 endif()
 
 endif()
-
-set_targ_props(msis00mod msis_ifc)

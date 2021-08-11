@@ -17,9 +17,6 @@ boundary_conditions/potentialBCs_mumps.f90)
 target_link_libraries(potential PRIVATE PDEelliptic calculus collision grid meshobj interp timeutils mpimod reader const MPI::MPI_Fortran)
 
 
-set_targ_props(PDEelliptic potential)
-
-
 if(NOT (hdf5 AND BUILD_TESTING))
   return()
 endif()
@@ -27,7 +24,6 @@ endif()
 set(_potential_testfile ${CMAKE_CURRENT_BINARY_DIR}/test_potential2d.h5)
 
 add_executable(test_potential2d test_potential2D.f90 $<TARGET_OBJECTS:PDEelliptic>)
-target_include_directories(test_potential2d PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/include)
 set_target_properties(test_potential2d PROPERTIES LABELS "unit")
 # MPI_C is needed here, else will not compile on MinGW with Ninja or Make.
 # LINK_INTERFACE_MULTIPLICITY and IMPORTED_LINK_INTERFACE_MULTIPLICITY do not help here.

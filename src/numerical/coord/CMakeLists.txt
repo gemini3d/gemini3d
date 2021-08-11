@@ -18,8 +18,6 @@ target_link_libraries(meshobj_dipole PRIVATE const meshobj newton spherical geom
 add_library(meshobj_cart OBJECT meshobj_cart.f90)
 target_link_libraries(meshobj_cart PRIVATE const meshobj spherical geomagnetic)
 
-set_targ_props(meshobj meshobj_cart meshobj_dipole newton spherical geomagnetic)
-
 # --- coord self-tests
 
 if(NOT BUILD_TESTING)

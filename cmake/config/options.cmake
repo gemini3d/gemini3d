@@ -65,8 +65,7 @@ option(test_shaky "tests that may falsely fail")
 
 set(CMAKE_TLS_VERIFY true)  # for Git and Downloads
 
-# this is a default so if someone makes a new module, they aren't confused by compiler errors.
-# normally to keep things clean we'd use my `set_targ_props(newtarg)`
+# to make Gemini3D more usable by external programs, put all Fortran .mod generated module files in a single directory.
 set(CMAKE_Fortran_MODULE_DIRECTORY ${PROJECT_BINARY_DIR}/include)
 
 if(EXISTS ${PROJECT_SOURCE_DIR}/../mat_gemini/setup.m)

@@ -15,5 +15,3 @@ add_executable(test_proj test_proj.f90
 target_include_directories(test_proj PRIVATE ${PROJECT_BINARY_DIR}/include)
 target_link_libraries(test_proj PRIVATE config const reader
 hwm_ifc msis_ifc timeutils pathlib mpimod const MPI::MPI_Fortran)
-
-set_targ_props(neutral)

@@ -26,5 +26,3 @@ if(BUILD_TESTING)
     LABELS unit
     TIMEOUT 10)
 endif()
-
-set_targ_props(pathlib)

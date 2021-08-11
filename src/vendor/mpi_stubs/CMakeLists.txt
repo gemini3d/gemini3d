@@ -5,8 +5,6 @@ add_library(elapse OBJECT elapse.c)
 target_include_directories(elapse INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
 
 add_library(mpi_f_stub mpi.f90 $<TARGET_OBJECTS:elapse>)
-target_include_directories(mpi_f_stub INTERFACE ${CMAKE_CURRENT_BINARY_DIR}/include)
-set_target_properties(mpi_f_stub PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include)
 
 # --- what you'll link to
 

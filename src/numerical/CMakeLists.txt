@@ -18,5 +18,3 @@ target_link_libraries(advec PRIVATE const mpimod grid meshobj)
 add_subdirectory(potential)
 
 add_subdirectory(coord)
-
-set_targ_props(advec const diffusion grid interp mumps_interface PDEelliptic PDEparabolic potential)

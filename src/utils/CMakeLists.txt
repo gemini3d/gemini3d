@@ -87,14 +87,9 @@ target_sources(gemini3d.compare PRIVATE
 target_link_libraries(gemini3d.compare PRIVATE assert config reader pathlib timeutils const
   nc4fortran::nc4fortran h5fortran::h5fortran MPI::MPI_Fortran)
 
-target_include_directories(gemini3d.compare PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/include)
 set_target_properties(gemini3d.compare PROPERTIES
-  RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
-  Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include)
+  RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
 
 
 install(TARGETS magcalc.bin gemini3d.run magcalc.run gemini3d.compare
   EXPORT ${PROJECT_NAME}Targets)
-
-
-set_targ_props(assert exe_frontend magcalc.bin gemini3d.run magcalc.run)

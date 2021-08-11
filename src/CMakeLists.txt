@@ -74,8 +74,3 @@ endif()
 
 install(TARGETS gemini.bin
   EXPORT ${PROJECT_NAME}Targets)
-
-# --- apply properties
-
-set_targ_props(calculus collision const fang fang_run ionization gbsv multifluid neutral precipBCs sources temporal timeutils
-gemini.bin)

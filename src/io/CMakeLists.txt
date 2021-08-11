@@ -84,5 +84,3 @@ if(netcdf AND BUILD_TESTING)
   target_link_libraries(test_simsize_nc4 PRIVATE nc4fortran::nc4fortran)
   # add_test(NAME unit:simsize_nc4 COMMAND test_simsize_nc4)
 endif()
-
-set_targ_props(config errors io logging reader sanity_check)

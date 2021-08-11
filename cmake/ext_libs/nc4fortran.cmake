@@ -48,7 +48,5 @@ else(netcdf)
   message(VERBOSE " using nc4fortran dummy")
 
   add_library(nc4fortran ${CMAKE_CURRENT_SOURCE_DIR}/src/vendor/nc4fortran_dummy.f90)
-  target_include_directories(nc4fortran INTERFACE ${CMAKE_CURRENT_BINARY_DIR}/include)
-  set_target_properties(nc4fortran PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include)
   add_library(nc4fortran::nc4fortran ALIAS nc4fortran)
 endif(netcdf)

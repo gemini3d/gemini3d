@@ -73,7 +73,5 @@ else(hdf5)
   message(VERBOSE " using h5fortran dummy")
 
   add_library(h5fortran ${CMAKE_CURRENT_SOURCE_DIR}/src/vendor/h5fortran_dummy.f90)
-  target_include_directories(h5fortran INTERFACE ${CMAKE_CURRENT_BINARY_DIR}/include)
-  set_target_properties(h5fortran PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include)
   add_library(h5fortran::h5fortran ALIAS h5fortran)
 endif(hdf5)

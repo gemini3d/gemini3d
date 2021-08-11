@@ -3,8 +3,6 @@
 # without hwloc, hyperthreading may give incorrect result
 
 add_library(hwloc_ifc OBJECT hwloc_ifc.f90)
-set_target_properties(hwloc_ifc PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include)
-target_include_directories(hwloc_ifc INTERFACE ${CMAKE_CURRENT_BINARY_DIR}/include)
 target_link_libraries(hwloc_ifc PRIVATE hwloc_c)
 
 # separate C object lib to avoid compiler warnings from C <-> Fortran add_compile_options etc.

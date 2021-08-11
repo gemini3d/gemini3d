@@ -1,10 +1,6 @@
 set_directory_properties(PROPERTIES LABELS hwm)
 
 add_library(hwm_ifc)
-set_target_properties(hwm_ifc PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include)
-target_include_directories(hwm_ifc INTERFACE
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
-  $<INSTALL_INTERFACE:include>)
 
 install(TARGETS hwm_ifc EXPORT ${PROJECT_NAME}Targets)
 
