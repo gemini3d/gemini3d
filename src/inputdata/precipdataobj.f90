@@ -11,6 +11,7 @@ use mpimod, only: mpi_integer,mpi_comm_world,mpi_status_ignore,mpi_realprec,mpi_
 implicit none (type, external)
 
 external :: mpi_send,mpi_recv
+public :: precipdata
 
 type, extends(inputdata) :: precipdata
   ! coordinate for input precipitation data, and storage
@@ -122,6 +123,8 @@ contains
         self%coord3i(iflat)=90._wp - x%theta(lx1,ix2,ix3)*180._wp/pi
       end do
     end do
+
+    self%flagcoordsi=.true.
   end subroutine set_coordsi_precip
 
 
