@@ -27,22 +27,24 @@ if(NOT BUILD_TESTING)
 endif()
 
 add_executable(newton_testdriver newton_testdriver.f90)
-target_link_libraries(newton_testdriver PRIVATE const newton meshobj meshobj_dipole spherical geomagnetic)
+target_link_libraries(newton_testdriver PRIVATE newton spherical geomagnetic meshobj_dipole meshobj const MPI::MPI_Fortran)
 
 add_executable(geomag2geog_testdriver geomag2geog_testdriver.f90)
-target_link_libraries(geomag2geog_testdriver PRIVATE const geomagnetic)
+target_link_libraries(geomag2geog_testdriver PRIVATE geomagnetic const)
 
 add_executable(grid_testdriver grid_testdriver.f90)
-target_link_libraries(grid_testdriver PRIVATE const meshobj meshobj_dipole newton spherical geomagnetic)
+target_link_libraries(grid_testdriver PRIVATE newton spherical geomagnetic meshobj_dipole meshobj const MPI::MPI_Fortran)
+# MPI link is in case HDF5 library is parallel
 
 add_executable(fullgrid_dipole_testdriver fullgrid_dipole_testdriver.f90)
-target_link_libraries(fullgrid_dipole_testdriver PRIVATE const pathlib meshobj meshobj_dipole newton spherical geomagnetic)
+target_link_libraries(fullgrid_dipole_testdriver PRIVATE newton spherical geomagnetic meshobj_dipole meshobj pathlib const MPI::MPI_Fortran)
+# MPI link is in case HDF5 library is parallel
 
 add_executable(fullgrid_cartesian_testdriver fullgrid_cartesian_testdriver.f90)
-target_link_libraries(fullgrid_cartesian_testdriver PRIVATE const pathlib meshobj meshobj_cart newton spherical geomagnetic)
+target_link_libraries(fullgrid_cartesian_testdriver PRIVATE newton spherical geomagnetic meshobj_cart meshobj pathlib const MPI::MPI_Fortran)
 
 add_executable(fullgrid_dipole_testdriver_root fullgrid_dipole_testdriver_root.f90)
-target_link_libraries(fullgrid_dipole_testdriver_root PRIVATE const meshobj meshobj_dipole newton spherical geomagnetic)
+target_link_libraries(fullgrid_dipole_testdriver_root PRIVATE newton spherical geomagnetic meshobj_dipole meshobj const MPI::MPI_Fortran)
 
 foreach(t newton_testdriver geomag2geog_testdriver grid_testdriver fullgrid_dipole_testdriver fullgrid_cartesian_testdriver fullgrid_dipole_testdriver_root)
 

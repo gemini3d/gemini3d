@@ -2,7 +2,8 @@ function(set_targ_props)
 
 foreach(t ${ARGV})
 
-  get_target_property(_bin ${t} BINARY_DIR)
+  # get_target_property(_bin ${t} BINARY_DIR)
+  set(_bin ${PROJECT_BINARY_DIR})
 
   target_include_directories(${t} INTERFACE
   $<BUILD_INTERFACE:${_bin}/include>

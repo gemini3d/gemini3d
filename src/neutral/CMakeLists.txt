@@ -6,6 +6,14 @@ timeutils MPI::MPI_Fortran
 h5fortran::h5fortran)
 
 # self-tests
-add_executable(test_proj test_proj.f90)
-target_link_libraries(test_proj PRIVATE pathlib const newton meshobj meshobj_dipole spherical geomagnetic neutral config const reader grid interp mpimod hwm_ifc msis_ifc timeutils autogrid MPI::MPI_Fortran)
+add_executable(test_proj test_proj.f90
+  $<TARGET_OBJECTS:newton> $<TARGET_OBJECTS:spherical> $<TARGET_OBJECTS:geomagnetic>
+  $<TARGET_OBJECTS:meshobj> $<TARGET_OBJECTS:meshobj_cart> $<TARGET_OBJECTS:meshobj_dipole>
+  $<TARGET_OBJECTS:grid> $<TARGET_OBJECTS:autogrid>
+  $<TARGET_OBJECTS:neutral> $<TARGET_OBJECTS:interp>
+)
+target_include_directories(test_proj PRIVATE ${PROJECT_BINARY_DIR}/include)
+target_link_libraries(test_proj PRIVATE config const reader
+hwm_ifc msis_ifc timeutils pathlib mpimod const MPI::MPI_Fortran)
 
+set_targ_props(neutral)

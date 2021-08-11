@@ -39,9 +39,6 @@ if(mpi)
   # where mpi gets linked in the middle instead of at the end.
   # the TARGET_OBJECTS etc in this directory are a careful effort to avoid this problem
   target_link_libraries(test_potential2d PRIVATE const h5fortran::h5fortran MUMPS::MUMPS SCALAPACK::SCALAPACK LAPACK::LAPACK MPI::MPI_Fortran)
-  if(OpenMP_FOUND)
-    target_link_libraries(test_potential2d PRIVATE OpenMP::OpenMP_Fortran)
-  endif()
   if(Scotch_FOUND)
     target_link_libraries(test_potential2d PRIVATE Scotch::Scotch)
   endif()

@@ -42,7 +42,8 @@ target_link_libraries(gemini.bin PRIVATE advec calculus config const collision d
   exe_frontend
   mpimod
   msis_ifc multifluid
-  neutral pathlib PDEparabolic potential precipBCs reader sanity_check errors sources temporal timeutils)
+  neutral pathlib PDEparabolic potential precipBCs reader sanity_check errors sources temporal timeutils
+  hwloc_ifc hwloc_c)
 if(mpi)
   # Note: CMake 3.13 needs MPI linked here explicitly to gemini.bin on any OS
   # put libs all in order or you'll get linking error on certain platforms like linux
