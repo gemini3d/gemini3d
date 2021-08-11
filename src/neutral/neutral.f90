@@ -150,7 +150,7 @@ subroutine init_neutrals(dt,t,cfg,ymd,UTsec,x,v2grid,v3grid,nn,Tn,vn1,vn2,vn3)
   
   !! call msis to get an initial neutral background atmosphere
   if (mpi_cfg%myid == 0) call cpu_time(tstart)
-  call neutral_atmos(ymd,UTsec,x%glat,x%glon,x%alt,cfg%activ,nn,Tn,cfg%msis_version)
+  call neutral_atmos(cfg%ymd0,cfg%UTsec0,x%glat,x%glon,x%alt,cfg%activ,nn,Tn,cfg%msis_version)
   if (mpi_cfg%myid == 0) then
     call cpu_time(tfin)
     print *, 'Initial neutral density and temperature (from MSIS) at time:  ',ymd,UTsec,' calculated in time:  ',tfin-tstart
@@ -158,7 +158,7 @@ subroutine init_neutrals(dt,t,cfg,ymd,UTsec,x,v2grid,v3grid,nn,Tn,vn1,vn2,vn3)
   
   !> Horizontal wind model initialization/background
   if (mpi_cfg%myid == 0) call cpu_time(tstart)
-  call neutral_winds(ymd, UTsec, Ap=cfg%activ(3), x=x, v2grid=v2grid,v3grid=v3grid,vn1=vn1, vn2=vn2, vn3=vn3)
+  call neutral_winds(cfg%ymd0, cfg%UTsec0, Ap=cfg%activ(3), x=x, v2grid=v2grid,v3grid=v3grid,vn1=vn1, vn2=vn2, vn3=vn3)
   !! we sum the horizontal wind with the background state vector
   !! if HWM14 is disabled, neutral_winds returns the background state vector unmodified
   if (mpi_cfg%myid == 0) then
