@@ -32,14 +32,15 @@ if(NOT mumps_external AND (MUMPS_ROOT OR (DEFINED ENV{MUMPS_ROOT}) OR (CMAKE_For
     endif()
   endif()
 
-  if(NOT mpi AND OpenMP_FOUND)
-    list(APPEND _comp OpenMP)
-  endif()
-
   if(autobuild)
     find_package(MUMPS COMPONENTS ${_comp})
   else()
     find_package(MUMPS COMPONENTS ${_comp} REQUIRED)
+  endif()
+
+  if(MUMPS_FOUND AND MUMPS_HAVE_OPENMP)
+    find_package(OpenMP COMPONENTS C Fortran REQUIRED)
+    target_link_libraries(MUMPS::MUMPS INTERFACE OpenMP::OpenMP_Fortran OpenMP::OpenMP_C)
   endif()
 endif()
 
