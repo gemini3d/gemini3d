@@ -101,16 +101,16 @@ else
 endif
 
 !> absolute paths or paths relative to cfg%outdir
-cfg%indatsize = make_absolute(indat_size, cfg%outdir)
-cfg%indatgrid = make_absolute(indat_grid, cfg%outdir)
-cfg%indatfile = make_absolute(indat_file, cfg%outdir)
+cfg%indatsize = make_absolute(expand_envvar(indat_size), cfg%outdir)
+cfg%indatgrid = make_absolute(expand_envvar(indat_grid), cfg%outdir)
+cfg%indatfile = make_absolute(expand_envvar(indat_file), cfg%outdir)
 
 if (namelist_exists(u, "neutral_perturb", verbose)) then
   cfg%flagdneu = 1
   rewind(u)
   read(u, nml=neutral_perturb, iostat=i)
   call check_nml_io(i, cfg%infile, "neutral_perturb")
-  cfg%sourcedir = make_absolute(source_dir, cfg%outdir)
+  cfg%sourcedir = make_absolute(expand_envvar(source_dir), cfg%outdir)
   cfg%interptype = interptype
   cfg%sourcemlat = sourcemlat
   cfg%sourcemlon = sourcemlon
@@ -128,7 +128,7 @@ if (namelist_exists(u, "precip", verbose)) then
   rewind(u)
   read(u, nml=precip, iostat=i)
   call check_nml_io(i, cfg%infile, "precip")
-  cfg%precdir = make_absolute(prec_dir, cfg%outdir)
+  cfg%precdir = make_absolute(expand_envvar(prec_dir), cfg%outdir)
   cfg%dtprec = dtprec
 else
   cfg%flagprecfile = 0
@@ -140,7 +140,7 @@ if (namelist_exists(u, "efield", verbose)) then
   rewind(u)
   read(u, nml=efield, iostat=i)
   call check_nml_io(i, cfg%infile, "efield")
-  cfg%E0dir = make_absolute(E0_dir, cfg%outdir)
+  cfg%E0dir = make_absolute(expand_envvar(E0_dir), cfg%outdir)
   cfg%dtE0 = dtE0
 else
   cfg%flagE0file = 0
