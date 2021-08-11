@@ -87,7 +87,6 @@ jobs:
         cmake -P scripts/install_ninja.cmake
         echo "${HOME}/ninja-1.10.2" >> $GITHUB_PATH
 
-
     - name: Configure multi
       run: cmake --preset multi
 
@@ -99,6 +98,62 @@ jobs:
 
     - name: Release core test
       run: ctest --preset release -LE unit -E 3d
+
+
+  linux-intel-oneapi:
+    needs: linux
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
+      with:
+        python-version: '3.8'
+
+    - name: Intel Apt repository
+      timeout-minutes: 1
+      run: |
+        wget https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB
+        sudo apt-key add GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB
+        rm GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB
+        echo "deb https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
+        sudo apt-get update
+
+    - name: Install Intel oneAPI
+      timeout-minutes: 5
+      run: sudo apt-get install intel-oneapi-compiler-fortran intel-oneapi-compiler-dpcpp-cpp-and-cpp-classic intel-oneapi-mpi intel-oneapi-mpi-devel intel-oneapi-mkl ninja-build
+
+    - name: Setup Intel oneAPI environment
+      run: |
+        source /opt/intel/oneapi/setvars.sh
+        printenv >> $GITHUB_ENV
+
+    - name: Configure multi
+      env:
+        CC: icx
+        FC: ifort
+        MPI_ROOT: ${{ env.I_MPI_ROOT }}
+      run: cmake --preset multi
+
+    - name: Debug build
+      run: cmake --build --preset debug
+
+    - name: Debug unit test
+      run: ctest --preset debug -L unit --output-junit test-debug-unit-oneapi.xml
+
+    - name: Debug core test
+      run: ctest --preset debug -LE unit -R "(2dew_fang|2dns_fang)" --output-junit test-debug-core-oneapi.xml
+
+
+    - name: Release build
+      run: cmake --build --preset release
+
+    - name: Release unit test
+      run: ctest --preset release -L unit --output-junit test-release-unit-oneapi.xml
+
+    - name: Release core test
+      run: ctest --preset release -LE unit -E 3d --output-junit test-release-core-oneapi.xml
 
 
   macos:
