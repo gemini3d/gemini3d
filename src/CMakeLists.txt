@@ -30,6 +30,7 @@ add_library(multifluid OBJECT multifluid/multifluid.f90)
 target_link_libraries(multifluid PRIVATE advec calculus collision const diffusion grid meshobj ionization mpimod precipBCs sources timeutils config)
 
 add_subdirectory(utils)
+add_subdirectory(inputdata)
 
 # --- Main GEMINI executable
 configure_file(gemini_cli.in.f90 gemini_cli.f90 @ONLY)
