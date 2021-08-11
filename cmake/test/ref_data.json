@@ -1,73 +1,60 @@
 {
-  "gemini3d" :
-  {
-    "version" : "v1.0.0-13-g43dbe6e0 1.0.0"
-  },
-  "library" : {},
-  "system" :
-  {
-    "cmake_build_type" : "Release",
-    "cmake_version" : "3.20.3",
-    "cpu" : "32 core Intel(R) Xeon(R) Gold 6226R CPU @ 2.90GHz",
-    "fortran_compiler" : "GCC version 8.5.0 20210514 (Red Hat 8.5.0-1)",
-    "memory_ram_MB" : 772419,
-    "operating_system" : "Linux"
-  },
   "tests" :
+{
+  "mini2dew_eq" :
   {
-    "mini2dew_eq" :
-    {
-      "archive" : "mini2dew_eq.zst",
-      "sha256" : "5f5b476087f04bc1b1faf84d6f5c17206209ac1bb86cb5dc3db4cc55e8c7a879",
-      "url" : "https://www.dropbox.com/s/gybkq81i65qx2jx/mini2dew_eq.zst?dl=1"
-    },
-    "mini2dew_fang" :
-    {
-      "archive" : "mini2dew_fang.zst",
-      "sha256" : "f45952df9e28404bd57f664a81b37a616f620e361c5c3460dc8713711f641c34",
-      "url" : "https://www.dropbox.com/s/2kd1fdn1txca01g/mini2dew_fang.zst?dl=1"
-    },
-    "mini2dew_glow" :
-    {
-      "archive" : "mini2dew_glow.zst",
-      "sha256" : "60ab93e1de87def6a0fa2f752f604631128dc9c938421abc9fb99f5bdbf22fac",
-      "url" : "https://www.dropbox.com/s/35tbbvayaeyplsl/mini2dew_glow.zst?dl=1"
-    },
-    "mini2dns_eq" :
-    {
-      "archive" : "mini2dns_eq.zst",
-      "sha256" : "db729d3336b92e5978976b89b95f27e5cb82db8789e286a00e956aae8605e952",
-      "url" : "https://www.dropbox.com/s/at90zbgnwrl2g1q/mini2dns_eq.zst?dl=1"
-    },
-    "mini2dns_fang" :
-    {
-      "archive" : "mini2dns_fang.zst",
-      "sha256" : "6f7682d62a6456634a4e07b8c2ebfd8a54cbb2bb4f306ab2e3f5418a6e51ffda",
-      "url" : "https://www.dropbox.com/s/lk3ib91eimjub9f/mini2dns_fang.zst?dl=1"
-    },
-    "mini2dns_glow" :
-    {
-      "archive" : "mini2dns_glow.zst",
-      "sha256" : "f3b8ea1d8116c1c52c738c5172693590ce7be9c9cf5c8bf44f910a3bb1ecd468",
-      "url" : "https://www.dropbox.com/s/i46kx98v5ufcar7/mini2dns_glow.zst?dl=1"
-    },
-    "mini3d_eq" :
-    {
-      "archive" : "mini3d_eq.zst",
-      "sha256" : "9c5c974c4beb12e6e674578002a30a4b050c54d77c36a231b351ba1059570590",
-      "url" : "https://www.dropbox.com/s/07ti0qk87bmc379/mini3d_eq.zst?dl=1"
-    },
-    "mini3d_fang" :
-    {
-      "archive" : "mini3d_fang.zst",
-      "sha256" : "07d6babc9bace55863ed97f7af284ceefb2502baf3b072837901ff4749a36854",
-      "url" : "https://www.dropbox.com/s/68e7jypddyoxefg/mini3d_fang.zst?dl=1"
-    },
-    "mini3d_glow" :
-    {
-      "archive" : "mini3d_glow.zst",
-      "sha256" : "5825b8d12da638d3bac9dbf2c9586172486b4f6f423be9d90ce8a9023b0eeba8",
-      "url" : "https://www.dropbox.com/s/h3hr23ov38pksud/mini3d_glow.zst?dl=1"
-    }
+    "archive" : "mini2dew_eq.zst",
+    "sha256" : "16ad74776e6eb70ce91c2fc1100dd1b8528c02af82d32c787714a078ad783ac5",
+    "url" : "https://www.dropbox.com/s/52jpynqsarfd2f8/mini2dew_eq.zst?dl=1"
+  },
+  "mini2dew_fang" :
+  {
+    "archive" : "mini2dew_fang.zst",
+    "sha256" : "ca09ac5c4941ffcd0191ddf302b07995cd92fd762cbc07a7b29bcac38235a3d1",
+    "url" : "https://www.dropbox.com/s/r0ubkm7f3ejdta3/mini2dew_fang.zst?dl=1"
+  },
+  "mini2dew_glow" :
+  {
+    "archive" : "mini2dew_glow.zst",
+    "sha256" : "c76bbadecdf277fe4f503b67536e12f422b00cf5ef27fef0936463d16cf5b4f0",
+    "url" : "https://www.dropbox.com/s/n6xxu82judq2959/mini2dew_glow.zst?dl=1"
+  },
+  "mini2dns_eq" :
+  {
+    "archive" : "mini2dns_eq.zst",
+    "sha256" : "015bb155a80e36704f83502b333e41ccf75b8d714f77f84c0341a0e6e329d2df",
+    "url" : "https://www.dropbox.com/s/93oler7jfz5vewf/mini2dns_eq.zst?dl=1"
+  },
+  "mini2dns_fang" :
+  {
+    "archive" : "mini2dns_fang.zst",
+    "sha256" : "84a873f86bd95094775657a7f7fd1dae70acac391edd8267198bec6abad47549",
+    "url" : "https://www.dropbox.com/s/m2h36q6q9ra35im/mini2dns_fang.zst?dl=1"
+  },
+  "mini2dns_glow" :
+  {
+    "archive" : "mini2dns_glow.zst",
+    "sha256" : "8d4e430a53ab07716dbebcfb95d03c1206ad71b9414d0bd82e70fb38635909e9",
+    "url" : "https://www.dropbox.com/s/c0tfg7eb93y3ohh/mini2dns_glow.zst?dl=1"
+  },
+  "mini3d_eq" :
+  {
+    "archive" : "mini3d_eq.zst",
+    "sha256" : "d48650f69618c25712fc3a5f9e3365b80945dc81cfac0001e10e1386d4be5a66",
+    "url" : "https://www.dropbox.com/s/4rw6g7z8k8hmmeo/mini3d_eq.zst?dl=1"
+  },
+  "mini3d_fang" :
+  {
+    "archive" : "mini3d_fang.zst",
+    "sha256" : "3894cbebff059f2fd8f6901d5d72742fee84906108db8db02dad174b42d6523d",
+    "url" : "https://www.dropbox.com/s/nps2lpbq484nikz/mini3d_fang.zst?dl=1"
+  },
+  "mini3d_glow" :
+  {
+    "archive" : "mini3d_glow.zst",
+    "sha256" : "559582df1f646b957e053a8df5c1c324e5933a45b1707d610d567ea7935c015c",
+    "url" : "https://www.dropbox.com/s/ohr3bza88wy7oht/mini3d_glow.zst?dl=1"
+  }
+
   }
 }
