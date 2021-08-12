@@ -17,8 +17,6 @@ if(NOT ZLIB_DLL)
   set(ZLIB_DLL ${ZLIB_ROOT})
 endif()
 
-message(STATUS "${ZLIB_DLL}")
-
 if(ZLIB_DLL)
   list(APPEND test_dll_path ${ZLIB_DLL})
 endif()
