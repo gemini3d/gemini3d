@@ -30,21 +30,7 @@ if(hdf5)
     endif()
   endif()
 
-  if(HDF5_FOUND)
-    cmake_path(GET HDF5_INCLUDE_DIRS PARENT_PATH HDF5_ROOT)
-  else()
-    set(HDF5_ROOT ${h5fortran_ROOT})
-  endif()
-
   find_package(ZLIB)
-  if(ZLIB_FOUND)
-    cmake_path(GET ZLIB_INCLUDE_DIRS PARENT_PATH ZLIB_ROOT)
-  else()
-    set(ZLIB_ROOT ${h5fortran_ROOT})
-  endif()
-
-  message(STATUS "HDF5_ROOT: ${HDF5_ROOT}")
-  message(STATUS "ZLIB_ROOT: ${ZLIB_ROOT}")
 
   set(h5fortran_INCLUDE_DIRS ${CMAKE_CURRENT_BINARY_DIR}/include)
   set(h5fortran_LIBRARIES ${h5fortran_ROOT}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}h5fortran${CMAKE_STATIC_LIBRARY_SUFFIX})
