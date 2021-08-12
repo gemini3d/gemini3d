@@ -2,12 +2,9 @@
 # note: the use of "lib" vs. CMAKE_STATIC_LIBRARY_PREFIX is deliberate based on the particulars of these libraries
 # across Intel Fortran on Windows vs. Gfortran on Windows vs. Linux.
 
-set(hdf5_external true CACHE BOOL "autobuild HDF5")
-
-set(HDF5_VERSION 1.10.7)
-# for user information, not used by ExternalProject itself
-
 include(ExternalProject)
+
+set(hdf5_external true CACHE BOOL "autobuild HDF5")
 
 # need to be sure _ROOT isn't empty, defined is not enough
 if(NOT HDF5_ROOT)
@@ -41,21 +38,32 @@ endif()
 set(hdf5_cmake_args
 ${zlib_root}
 -DCMAKE_INSTALL_PREFIX:PATH=${HDF5_ROOT}
+-DCMAKE_MODULE_PATH:PATH=${CMAKE_MODULE_PATH}
 -DHDF5_GENERATE_HEADERS:BOOL=false
 -DHDF5_DISABLE_COMPILER_WARNINGS:BOOL=true
+-DBUILD_STATIC_LIBS:BOOL=true
 -DBUILD_SHARED_LIBS:BOOL=false
 -DCMAKE_BUILD_TYPE=Release
 -DHDF5_BUILD_FORTRAN:BOOL=true
 -DHDF5_BUILD_CPP_LIB:BOOL=false
--DHDF5_BUILD_TOOLS:BOOL=true
 -DBUILD_TESTING:BOOL=false
--DHDF5_BUILD_EXAMPLES:BOOL=false)
+-DHDF5_BUILD_EXAMPLES:BOOL=false
+-DUSE_LIBAEC:bool=true
+)
 
 if(hdf5_parallel)
   find_package(MPI REQUIRED COMPONENTS C)
-  list(APPEND hdf5_cmake_args -DHDF5_ENABLE_PARALLEL:BOOL=true)
+  list(APPEND hdf5_cmake_args
+    -DHDF5_ENABLE_PARALLEL:BOOL=true
+    -DHDF5_BUILD_TOOLS:BOOL=false)
+    # https://github.com/HDFGroup/hdf5/issues/818  for broken ph5diff
+  if(MPI_ROOT)
+    list(APPEND hdf5_cmake_args -DMPI_ROOT:PATH=${MPI_ROOT})
+  endif()
 else()
-  list(APPEND hdf5_cmake_args -DHDF5_ENABLE_PARALLEL:BOOL=false)
+  list(APPEND hdf5_cmake_args
+    -DHDF5_ENABLE_PARALLEL:BOOL=false
+    -DHDF5_BUILD_TOOLS:BOOL=true)
 endif()
 
 ExternalProject_Add(HDF5
