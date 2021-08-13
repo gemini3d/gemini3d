@@ -47,24 +47,19 @@ jobs:
         source /opt/intel/oneapi/setvars.sh
         printenv >> $GITHUB_ENV
 
-    - name: Configure multi
-      run: cmake --preset multi
+# HDF5 library doesn't install correctly with Ninja Multi-config
+# CMake Error at fortran/src/cmake_install.cmake:61 (file):
+#  file INSTALL cannot find
+#  "build/HDF5-prefix/src/HDF5-build/bin/static/Debug/h5fortran_types.mod":
 
-    - name: Debug build
-      run: cmake --build --preset debug
+    - name: CMake Configure
+      run: cmake --preset intel
 
-    - name: Debug unit test
-      run: ctest --preset debug -L unit --output-junit test-debug-unit-oneapi.xml
+    - name: CMake build
+      run: cmake --build --preset intel
 
-    - name: Debug core test
-      run: ctest --preset debug -LE unit -R "(2dew_fang|2dns_fang)" --output-junit test-debug-core-oneapi.xml
+    - name: unit test
+      run: ctest --preset intel -L unit --output-junit test-unit-oneapi.xml
 
-
-    - name: Release build
-      run: cmake --build --preset release
-
-    - name: Release unit test
-      run: ctest --preset release -L unit --output-junit test-release-unit-oneapi.xml
-
-    - name: Release core test
-      run: ctest --preset release -LE unit -E 3d --output-junit test-release-core-oneapi.xml
+    - name: Core test
+      run: ctest --preset intel -LE unit -E 3d --output-junit test-core-oneapi.xml
