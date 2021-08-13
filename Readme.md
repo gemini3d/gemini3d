@@ -1,8 +1,8 @@
 # GEMINI
 
 [![DOI](https://zenodo.org/badge/146920930.svg)](https://zenodo.org/badge/latestdoi/146920930)
-[![CDash](./test_data/CDash.png)](https://my.cdash.org/index.php?project=Gemini3D)
-![ci](https://github.com/gemini3d/gemini/workflows/ci/badge.svg)
+![gcc](https://github.com/gemini3d/gemini/workflows/ci/badge.svg)
+[![intel-oneapi](https://github.com/gemini3d/gemini3d/actions/workflows/intel-oneapi.yml/badge.svg)](https://github.com/gemini3d/gemini3d/actions/workflows/intel-oneapi.yml)
 
 The GEMINI model (*G*eospace *E*nvironment *M*odel of *I*on-*N*eutral *I*nteractions) is a three-dimensional ionospheric fluid-electrodynamic model written (mostly) in object-oriented fortran (2008+ standard).  GEMINI is used for various scientific studies including:
 
