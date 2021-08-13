@@ -114,10 +114,8 @@ set(_mkl_libs ${ARGV})
 foreach(s ${_mkl_libs})
   find_library(SCALAPACK_${s}_LIBRARY
            NAMES ${s}
-           PATHS ${MKLROOT} ENV I_MPI_ROOT
-           PATH_SUFFIXES
-             lib/intel64
-             lib/release
+           PATHS ${MKLROOT}
+           PATH_SUFFIXES lib/intel64
            HINTS ${pc_mkl_LIBRARY_DIRS} ${pc_mkl_LIBDIR}
            NO_DEFAULT_PATH)
   if(NOT SCALAPACK_${s}_LIBRARY)
@@ -167,7 +165,7 @@ if(MKL IN_LIST SCALAPACK_FIND_COMPONENTS)
 
   # find MKL MPI binding
   if(WIN32)
-    scalapack_mkl(mkl_scalapack_${_mkl_bitflag}lp64 mkl_blacs_intelmpi_${_mkl_bitflag}lp64 impi)
+    scalapack_mkl(mkl_scalapack_${_mkl_bitflag}lp64 mkl_blacs_intelmpi_${_mkl_bitflag}lp64)
   elseif(APPLE)
     scalapack_mkl(mkl_scalapack_${_mkl_bitflag}lp64 mkl_blacs_mpich_${_mkl_bitflag}lp64)
   else()
