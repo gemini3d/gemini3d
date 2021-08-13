@@ -104,20 +104,15 @@ else()
   set(_mkltype static)
 endif()
 
-if(NOT WIN32)
-  # Windows oneAPI crashes here due to bad *.pc
-  pkg_check_modules(pc_mkl mkl-${_mkltype}-${_mkl_bitflag}lp64-iomp)
-endif()
-
 set(_mkl_libs ${ARGV})
 
 foreach(s ${_mkl_libs})
   find_library(SCALAPACK_${s}_LIBRARY
-           NAMES ${s}
-           PATHS ${MKLROOT}
-           PATH_SUFFIXES lib/intel64
-           HINTS ${pc_mkl_LIBRARY_DIRS} ${pc_mkl_LIBDIR}
-           NO_DEFAULT_PATH)
+    NAMES ${s}
+    HINTS ${MKLROOT}
+    PATH_SUFFIXES lib/intel64
+    NO_DEFAULT_PATH
+  )
   if(NOT SCALAPACK_${s}_LIBRARY)
     return()
   endif()
@@ -127,8 +122,10 @@ endforeach()
 
 find_path(SCALAPACK_INCLUDE_DIR
   NAMES mkl_scalapack.h
-  PATHS ${MKLROOT}
-  HINTS ${pc_mkl_INCLUDE_DIRS})
+  HINTS ${MKLROOT}
+  PATH_SUFFIXES include
+  NO_DEFAULT_PATH
+)
 
 if(NOT SCALAPACK_INCLUDE_DIR)
   return()
@@ -148,14 +145,10 @@ if(NOT MKL IN_LIST SCALAPACK_FIND_COMPONENTS AND DEFINED ENV{MKLROOT})
   list(APPEND SCALAPACK_FIND_COMPONENTS MKL)
 endif()
 
-find_package(PkgConfig)
-
 if(MKL IN_LIST SCALAPACK_FIND_COMPONENTS)
   # we have to sanitize MKLROOT if it has Windows backslashes (\) otherwise it will break at build time
   # double-quotes are necessary per CMake to_cmake_path docs.
   file(TO_CMAKE_PATH "$ENV{MKLROOT}" MKLROOT)
-
-  list(APPEND CMAKE_PREFIX_PATH ${MKLROOT}/tools/pkgconfig)
 
   if(MKL64 IN_LIST SCALAPACK_FIND_COMPONENTS)
     set(_mkl_bitflag i)
@@ -177,6 +170,8 @@ if(MKL IN_LIST SCALAPACK_FIND_COMPONENTS)
   endif()
 
 else()
+
+  find_package(PkgConfig)
 
   pkg_search_module(pc_scalapack scalapack-openmpi scalapack-mpich scalapack)
 
