@@ -114,18 +114,10 @@ set(_mkl_libs ${ARGV})
 foreach(s ${_mkl_libs})
   find_library(SCALAPACK_${s}_LIBRARY
            NAMES ${s}
-           PATHS
-            ${MKLROOT}
-            ENV I_MPI_ROOT
-            ENV TBBROOT
-            ../tbb/lib/intel64/gcc4.7
-            ../tbb/lib/intel64/vc_mt
-            ../compiler/lib/intel64
+           PATHS ${MKLROOT} ENV I_MPI_ROOT
            PATH_SUFFIXES
-             lib lib/intel64 lib/intel64_win
-             intel64/lib/release
-             lib/intel64/gcc4.7
-             lib/intel64/vc_mt
+             lib/intel64
+             lib/release
            HINTS ${pc_mkl_LIBRARY_DIRS} ${pc_mkl_LIBDIR}
            NO_DEFAULT_PATH)
   if(NOT SCALAPACK_${s}_LIBRARY)
@@ -135,11 +127,9 @@ foreach(s ${_mkl_libs})
   list(APPEND SCALAPACK_LIBRARY ${SCALAPACK_${s}_LIBRARY})
 endforeach()
 
-
 find_path(SCALAPACK_INCLUDE_DIR
   NAMES mkl_scalapack.h
-  PATHS ${MKLROOT} ENV I_MPI_ROOT ENV TBBROOT
-  PATH_SUFFIXES intel64/${_mkl_bitflag}lp64
+  PATHS ${MKLROOT}
   HINTS ${pc_mkl_INCLUDE_DIRS})
 
 if(NOT SCALAPACK_INCLUDE_DIR)
@@ -175,20 +165,13 @@ if(MKL IN_LIST SCALAPACK_FIND_COMPONENTS)
     set(_mkl_bitflag)
   endif()
 
-  # find which MPI binding is used: IntelMPI, OpenMPI, or MPICH
-
-  scalapack_mkl(mkl_scalapack_${_mkl_bitflag}lp64 mkl_blacs_intelmpi_${_mkl_bitflag}lp64)
-  if(NOT SCALAPACK_MKL_FOUND)
-    scalapack_mkl(mkl_scalapack_${_mkl_bitflag}lp64 mkl_blacs_openmpi_${_mkl_bitflag}lp64)
-  endif()
-  if(NOT SCALAPACK_MKL_FOUND)
-    if(APPLE)
-      scalapack_mkl(mkl_scalapack_${_mkl_bitflag}lp64 mkl_blacs_mpich_${_mkl_bitflag}lp64)
-    elseif(WIN32)
-      scalapack_mkl(mkl_scalapack_${_mkl_bitflag}lp64 mkl_blacs_mpich2_${_mkl_bitflag}lp64.lib mpi.lib fmpich2.lib)
-    else()  # MPICH linux is just like IntelMPI
-      scalapack_mkl(mkl_scalapack_${_mkl_bitflag}lp64 mkl_blacs_intelmpi_${_mkl_bitflag}lp64)
-    endif()
+  # find MKL MPI binding
+  if(WIN32)
+    scalapack_mkl(mkl_scalapack_${_mkl_bitflag}lp64 mkl_blacs_intelmpi_${_mkl_bitflag}lp64 impi)
+  elseif(APPLE)
+    scalapack_mkl(mkl_scalapack_${_mkl_bitflag}lp64 mkl_blacs_mpich_${_mkl_bitflag}lp64)
+  else()
+    scalapack_mkl(mkl_scalapack_${_mkl_bitflag}lp64 mkl_blacs_intelmpi_${_mkl_bitflag}lp64)
   endif()
 
   if(MKL64 IN_LIST SCALAPACK_FIND_COMPONENTS)
@@ -200,10 +183,10 @@ else()
   pkg_search_module(pc_scalapack scalapack-openmpi scalapack-mpich scalapack)
 
   find_library(SCALAPACK_LIBRARY
-                NAMES scalapack scalapack-openmpi scalapack-mpich scalapack-mpich2
-                NAMES_PER_DIR
-                HINTS ${pc_scalapack_LIBRARY_DIRS} ${pc_scalapack_LIBDIR}
-                PATH_SUFFIXES openmpi/lib mpich/lib
+    NAMES scalapack scalapack-openmpi scalapack-mpich
+    NAMES_PER_DIR
+    HINTS ${pc_scalapack_LIBRARY_DIRS} ${pc_scalapack_LIBDIR}
+    PATH_SUFFIXES openmpi/lib mpich/lib
   )
 
 endif()

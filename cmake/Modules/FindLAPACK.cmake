@@ -259,11 +259,7 @@ foreach(s ${_mkl_libs})
   find_library(LAPACK_${s}_LIBRARY
            NAMES ${s}
            PATHS ${MKLROOT} ENV TBBROOT
-           PATH_SUFFIXES
-             lib lib/intel64 lib/intel64_win
-             lib/intel64/gcc4.7 ../tbb/lib/intel64/gcc4.7
-             lib/intel64/vc_mt ../tbb/lib/intel64/vc_mt
-             ../compiler/lib/intel64
+           PATH_SUFFIXES lib/intel64
            HINTS ${pc_mkl_LIBRARY_DIRS} ${pc_mkl_LIBDIR}
            NO_DEFAULT_PATH)
 
@@ -335,7 +331,7 @@ if(MKL IN_LIST LAPACK_FIND_COMPONENTS)
     endif()
   endif()
 
-  unset(_tbb)
+  set(_tbb)
   if(TBB IN_LIST LAPACK_FIND_COMPONENTS)
     list(APPEND _mkl_libs mkl_tbb_thread mkl_core)
     set(_tbb tbb stdc++)
