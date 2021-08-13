@@ -7,7 +7,6 @@ string(APPEND CMAKE_Fortran_FLAGS " -heap-arrays")  # (is this needed on Linux?)
 #string(APPEND CMAKE_Fortran_FLAGS_DEBUG " -debug extended -check all -fpe0 -fp-stack-check")
 string(APPEND CMAKE_Fortran_FLAGS_DEBUG " -check bounds")
 string(APPEND CMAKE_Fortran_FLAGS " -warn nounused -diag-disable 5268 -diag-disable 7712")
-add_link_options(-parallel) # without this, error: undefined reference to `__kmpc_begin'
 
 # enforce Fortran 2018 standard
 # string(APPEND CMAKE_Fortran_FLAGS " -stand f18")  #  too many false warnings
