@@ -12,10 +12,11 @@ public
 
 !> this is a generic class for an data object being input into the model and interpolated in space and time
 type, abstract :: inputdata
-  character, dimension(:), allocatable :: dataname     ! string description of dataset
-  character, dimension(:), allocatable :: sourcedir    ! source location containing data input files
+  character(:), allocatable :: dataname     ! string description of dataset
+  character(:), allocatable :: sourcedir    ! source location containing data input files
 
   !! flag for allocation statuses
+  logical :: flagdatasize=.false.
   logical :: flagsizes=.false.
   logical :: flagalloc=.false.
   logical :: flagprimed=.false.
@@ -25,7 +26,7 @@ type, abstract :: inputdata
 
   !! here we store data that have already been received but not yet interpolated
   real(wp), dimension(:), pointer :: coord1,coord2,coord3     ! coordinates for the source data (interpolant coords)
-  integer :: lc1,lc2,lc3                                      ! dataset length along the 3 coordinate axes
+  integer, pointer :: lc1,lc2,lc3                                      ! dataset length along the 3 coordinate axes
   real(wp), dimension(:), pointer :: data0D
   real(wp), dimension(:,:), pointer :: data1Dax1,data1Dax2,data1Dax3
   real(wp), dimension(:,:,:), pointer :: data2Dax23,data2Dax12,data2Dax13
@@ -81,20 +82,21 @@ type, abstract :: inputdata
 
     !! internal, data kind specific
     procedure(coordisetproc), deferred :: set_coordsi       ! use grid data to compute coordinates of the interpolation sites
-    procedure(loadproc), deferred :: load_size          ! get size information from source data directory
+    procedure(loadgridsizeproc), deferred :: load_size          ! get size information from source data directory
     procedure(loadproc), deferred :: load_data              ! read data from file (possibly one array at a time) and spatially interpolate and store it in the appropriate arrays
-    procedure(loadproc), deferred :: load_grid              ! get grid information from source data directory
+    procedure(loadgridsizeproc), deferred :: load_grid              ! get grid information from source data directory
 end type inputdata
 
 
 !> interfaces for deferred procedures
 abstract interface
-  subroutine initproc(self,cfg,sourcedir,x,dtdata,ymd,UTsec)
+  subroutine initproc(self,cfg,sourcedir,x,dtmodel,dtdata,ymd,UTsec)
     import inputdata,wp,curvmesh,gemini_cfg
     class(inputdata), intent(inout) :: self
     type(gemini_cfg), intent(in) :: cfg
-    character, dimension(:), intent(in) :: sourcedir
+    character(*), intent(in) :: sourcedir
     class(curvmesh), intent(in) :: x
+    real(wp), intent(in) :: dtmodel
     real(wp), intent(in) :: dtdata
     integer, dimension(3), intent(in) :: ymd
     real(wp), intent(in) :: UTsec
@@ -107,30 +109,37 @@ abstract interface
     class(curvmesh), intent(in)  :: x
   end subroutine coordisetproc
 
-  subroutine loadproc(self)
+  subroutine loadproc(self,t,dtmodel)
+    import inputdata,wp
+    class(inputdata), intent(inout) :: self
+    real(wp), intent(in) :: t,dtmodel
+  end subroutine loadproc
+
+  subroutine loadgridsizeproc(self)
     import inputdata
     class(inputdata), intent(inout) :: self
-  end subroutine loadproc
+  end subroutine loadgridsizeproc
 end interface
 
 contains
   !> Load/store size variables
-  subroutine set_sizes(self,lc1,lc2,lc3, &
+  subroutine set_sizes(self, &
                      l0D, &
                      l1Dax1,l1Dax2,l1Dax3, &
                      l2Dax23,l2Dax12,l2Dax13, &
                      l3D, &
                      x)
     class(inputdata), intent(inout) :: self
-    integer, intent(in) :: lc1,lc2,lc3      ! input data sizes
     integer, intent(in) :: l0D
     integer, intent(in) :: l1Dax1,l1Dax2,l1Dax3
     integer, intent(in) :: l2Dax23,l2Dax12,l2Dax13
     integer, intent(in) :: l3D
     class(curvmesh), intent(in) :: x        ! sizes for interpolation sites taken from grid
 
+    ! Note:  these should be set by load_data deferred procedure
     ! coordinate axis sizes for input data
-    self%lc1=lc1; self%lc2=lc2; self%lc3=lc3;
+    !self%lc1=lc1; self%lc2=lc2; self%lc3=lc3;
+    if (.not. self%flagdatasize) error stop 'inpudata:set_sizes() - must set input datasize first using load_size()'
 
     ! number of different types of data
     self%l0D=l0D
@@ -205,7 +214,7 @@ contains
   !> set the dataset names
   subroutine set_name(self,datasetstr)
     class(inputdata), intent(inout) :: self
-    character, dimension(:), intent(in) :: datasetstr
+    character(*), intent(in) :: datasetstr
 
     self%dataname=datasetstr
   end subroutine set_name
@@ -224,7 +233,7 @@ contains
   !> set the source directory location
   subroutine set_source(self,sourcedir)
     class(inputdata), intent(inout) :: self
-    character, dimension(:), intent(in) :: sourcedir
+    character(*), intent(in) :: sourcedir
 
     self%sourcedir=sourcedir
     self%flagsource=.true.
@@ -324,9 +333,8 @@ contains
                                        !interpreted
       end if
    
-      ! time/date increments for next file to be read???, e..g setting tmp vars???
       !Read in neutral data from a file
-      call self%load_data(t,dtmodel,ymdtmp,UTsectmp)
+      call self%load_data(t,dtmodel)
     
       !Spatial interpolation for the frame we just read in
       !if (mpi_cfg%myid==0 .and. debug) then
