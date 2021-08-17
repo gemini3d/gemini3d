@@ -1,5 +1,8 @@
 module precipdataobj
 
+! type extension for file-based precipitation data input.  Assumes parallel communication between root/workers for data
+! distribution.  
+
 use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
 use phys_consts, only: wp,debug,pi
 use inputdataobj, only: inputdata
@@ -53,8 +56,8 @@ contains
     call self%set_name(strname)
 
     ! read the simulation size from the source directory and allocate arrays
-    allocate(self%lc1,self%lc2,self%lc3)
-    self%llon=>self%lc2; self%llat=>self%lc3
+    allocate(self%lc1,self%lc2,self%lc3)      ! these are pointers
+    self%llon=>self%lc2; self%llat=>self%lc3;
     call self%load_size()
     call self%set_sizes(0, &
                        0,0,0, &
@@ -68,7 +71,7 @@ contains
     self%mlonp=>self%coord2; self%mlatp=>self%coord3;
     call self%load_grid()
 
-    ! set input data array pointers to faciliate easy to read input code; these may or may not be used
+    ! set input data array pointers to faciliate easy to read input code; these may or may not be helpful to user
     self%Qp=>self%data2Dax23(:,:,1)
     self%E0p=>self%data2Dax23(:,:,2)
     self%Qpiprev=>self%data2Dax23i(:,:,1,1)
