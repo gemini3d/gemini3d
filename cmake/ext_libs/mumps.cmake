@@ -18,25 +18,23 @@ endif()
 # --- MUMPS
 
 if(NOT mumps_external AND (MUMPS_ROOT OR (DEFINED ENV{MUMPS_ROOT}) OR (CMAKE_Fortran_COMPILER_ID STREQUAL GNU)))
-  set(_comp ${arith})
+  set(mumps_comp ${arith})
   if(NOT mpi)
-    list(APPEND _comp mpiseq)
-  endif()
-
-  find_package(Scotch COMPONENTS parallel ESMUMPS)
-  # must also use METIS when using Scotch
-  find_package(METIS COMPONENTS parallel)
-  if(Scotch_FOUND)
-    list(APPEND _comp Scotch)
+    list(APPEND mumps_comp mpiseq)
   endif()
 
   if(autobuild)
-    find_package(MUMPS COMPONENTS ${_comp})
+    find_package(MUMPS COMPONENTS ${mumps_comp})
   else()
-    find_package(MUMPS COMPONENTS ${_comp} REQUIRED)
+    find_package(MUMPS COMPONENTS ${mumps_comp} REQUIRED)
   endif()
 
-  if(MUMPS_FOUND AND MUMPS_HAVE_OPENMP)
+  if(MUMPS_HAVE_Scotch)
+    find_package(Scotch COMPONENTS parallel ESMUMPS REQUIRED)
+    find_package(METIS COMPONENTS parallel REQUIRED)
+  endif()
+
+  if(MUMPS_HAVE_OPENMP)
     find_package(OpenMP COMPONENTS C Fortran REQUIRED)
     target_link_libraries(MUMPS::MUMPS INTERFACE OpenMP::OpenMP_Fortran OpenMP::OpenMP_C)
   endif()
