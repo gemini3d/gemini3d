@@ -39,5 +39,5 @@ endif(glow)
 target_link_libraries(ionization PRIVATE const neutral grid meshobj timeutils fang mpimod MPI::MPI_Fortran)
 
 add_library(precipBCs OBJECT boundary_conditions/precipBCs_mod.f90)
-target_compile_options(precipBCs PRIVATE ${gcc10opts})
+target_compile_options(precipBCs PRIVATE ${gfortran_opts})
 target_link_libraries(precipBCs PRIVATE mpimod reader const grid meshobj interp timeutils config MPI::MPI_Fortran )

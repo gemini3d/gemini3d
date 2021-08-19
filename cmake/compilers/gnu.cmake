@@ -39,5 +39,5 @@ endif()
 
 check_compiler_flag(Fortran -fallow-argument-mismatch allow_mismatch_args)
 if(allow_mismatch_args)
-  set(gcc10opts -fallow-argument-mismatch)
+  set(gfortran_opts -fallow-argument-mismatch)
 endif()
