@@ -23,7 +23,7 @@ MUMPS_INCLUDE_DIRS
   dirs to be included
 
 MUMPS_HAVE_OPENMP
-  MUMPS is using OPENMP and thus user programs must link OPENMP as well.
+  MUMPS is using OpenMP and thus user programs must link OpenMP as well.
 
 MUMPS_HAVE_Scotch
   MUMPS is using Scotch/METIS and thus user programs must link Scotch/METIS as well.
