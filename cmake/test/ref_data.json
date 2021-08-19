@@ -1,60 +1,59 @@
 {
   "tests" :
-{
-  "mini2dew_eq" :
   {
-    "archive" : "mini2dew_eq.zst",
-    "sha256" : "16ad74776e6eb70ce91c2fc1100dd1b8528c02af82d32c787714a078ad783ac5",
-    "url" : "https://www.dropbox.com/s/52jpynqsarfd2f8/mini2dew_eq.zst?dl=1"
-  },
-  "mini2dew_fang" :
-  {
-    "archive" : "mini2dew_fang.zst",
-    "sha256" : "ca09ac5c4941ffcd0191ddf302b07995cd92fd762cbc07a7b29bcac38235a3d1",
-    "url" : "https://www.dropbox.com/s/r0ubkm7f3ejdta3/mini2dew_fang.zst?dl=1"
-  },
-  "mini2dew_glow" :
-  {
-    "archive" : "mini2dew_glow.zst",
-    "sha256" : "c76bbadecdf277fe4f503b67536e12f422b00cf5ef27fef0936463d16cf5b4f0",
-    "url" : "https://www.dropbox.com/s/n6xxu82judq2959/mini2dew_glow.zst?dl=1"
-  },
-  "mini2dns_eq" :
-  {
-    "archive" : "mini2dns_eq.zst",
-    "sha256" : "015bb155a80e36704f83502b333e41ccf75b8d714f77f84c0341a0e6e329d2df",
-    "url" : "https://www.dropbox.com/s/93oler7jfz5vewf/mini2dns_eq.zst?dl=1"
-  },
-  "mini2dns_fang" :
-  {
-    "archive" : "mini2dns_fang.zst",
-    "sha256" : "84a873f86bd95094775657a7f7fd1dae70acac391edd8267198bec6abad47549",
-    "url" : "https://www.dropbox.com/s/m2h36q6q9ra35im/mini2dns_fang.zst?dl=1"
-  },
-  "mini2dns_glow" :
-  {
-    "archive" : "mini2dns_glow.zst",
-    "sha256" : "8d4e430a53ab07716dbebcfb95d03c1206ad71b9414d0bd82e70fb38635909e9",
-    "url" : "https://www.dropbox.com/s/c0tfg7eb93y3ohh/mini2dns_glow.zst?dl=1"
-  },
-  "mini3d_eq" :
-  {
-    "archive" : "mini3d_eq.zst",
-    "sha256" : "d48650f69618c25712fc3a5f9e3365b80945dc81cfac0001e10e1386d4be5a66",
-    "url" : "https://www.dropbox.com/s/4rw6g7z8k8hmmeo/mini3d_eq.zst?dl=1"
-  },
-  "mini3d_fang" :
-  {
-    "archive" : "mini3d_fang.zst",
-    "sha256" : "3894cbebff059f2fd8f6901d5d72742fee84906108db8db02dad174b42d6523d",
-    "url" : "https://www.dropbox.com/s/nps2lpbq484nikz/mini3d_fang.zst?dl=1"
-  },
-  "mini3d_glow" :
-  {
-    "archive" : "mini3d_glow.zst",
-    "sha256" : "559582df1f646b957e053a8df5c1c324e5933a45b1707d610d567ea7935c015c",
-    "url" : "https://www.dropbox.com/s/ohr3bza88wy7oht/mini3d_glow.zst?dl=1"
-  }
-
+    "mini2dew_eq" :
+    {
+      "archive" : "mini2dew_eq.zst",
+      "sha256" : "16ad74776e6eb70ce91c2fc1100dd1b8528c02af82d32c787714a078ad783ac5",
+      "url" : "https://www.dropbox.com/s/52jpynqsarfd2f8/mini2dew_eq.zst?dl=1"
+    },
+    "mini2dew_fang" :
+    {
+      "archive" : "mini2dew_fang.zst",
+      "sha256" : "ca09ac5c4941ffcd0191ddf302b07995cd92fd762cbc07a7b29bcac38235a3d1",
+      "url" : "https://www.dropbox.com/s/r0ubkm7f3ejdta3/mini2dew_fang.zst?dl=1"
+    },
+    "mini2dew_glow" :
+    {
+      "archive" : "mini2dew_glow.zst",
+      "sha256" : "c76bbadecdf277fe4f503b67536e12f422b00cf5ef27fef0936463d16cf5b4f0",
+      "url" : "https://www.dropbox.com/s/n6xxu82judq2959/mini2dew_glow.zst?dl=1"
+    },
+    "mini2dns_eq" :
+    {
+      "archive" : "mini2dns_eq.zst",
+      "sha256" : "015bb155a80e36704f83502b333e41ccf75b8d714f77f84c0341a0e6e329d2df",
+      "url" : "https://www.dropbox.com/s/93oler7jfz5vewf/mini2dns_eq.zst?dl=1"
+    },
+    "mini2dns_fang" :
+    {
+      "archive" : "mini2dns_fang.zst",
+      "sha256" : "84a873f86bd95094775657a7f7fd1dae70acac391edd8267198bec6abad47549",
+      "url" : "https://www.dropbox.com/s/m2h36q6q9ra35im/mini2dns_fang.zst?dl=1"
+    },
+    "mini2dns_glow" :
+    {
+      "archive" : "mini2dns_glow.zst",
+      "sha256" : "8d4e430a53ab07716dbebcfb95d03c1206ad71b9414d0bd82e70fb38635909e9",
+      "url" : "https://www.dropbox.com/s/c0tfg7eb93y3ohh/mini2dns_glow.zst?dl=1"
+    },
+    "mini3d_eq" :
+    {
+      "archive" : "mini3d_eq.zst",
+      "sha256" : "d48650f69618c25712fc3a5f9e3365b80945dc81cfac0001e10e1386d4be5a66",
+      "url" : "https://www.dropbox.com/s/4rw6g7z8k8hmmeo/mini3d_eq.zst?dl=1"
+    },
+    "mini3d_fang" :
+    {
+      "archive" : "mini3d_fang.zst",
+      "sha256" : "3894cbebff059f2fd8f6901d5d72742fee84906108db8db02dad174b42d6523d",
+      "url" : "https://www.dropbox.com/s/nps2lpbq484nikz/mini3d_fang.zst?dl=1"
+    },
+    "mini3d_glow" :
+    {
+      "archive" : "mini3d_glow.zst",
+      "sha256" : "559582df1f646b957e053a8df5c1c324e5933a45b1707d610d567ea7935c015c",
+      "url" : "https://www.dropbox.com/s/ohr3bza88wy7oht/mini3d_glow.zst?dl=1"
+    }
   }
 }
