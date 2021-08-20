@@ -21,7 +21,8 @@ else(msis20)
   target_sources(msis_ifc PRIVATE msis2_dummy.f90)
 endif(msis20)
 
-install(TARGETS msis_ifc msis00mod EXPORT ${PROJECT_NAME}Targets)
+# cmake bug? Object library not a good idea for msis 2.0 as have to specify everywhere
+# install(TARGETS msis_ifc msis00mod EXPORT ${PROJECT_NAME}Targets)
 
 if(NOT hdf5)
   return()

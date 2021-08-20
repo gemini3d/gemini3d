@@ -2,7 +2,7 @@ include(FetchContent)
 
 FetchContent_Declare(MSIS2
 URL ${msis2_zip}
-URL_HASH SHA1=${msis2_sha1})
+URL_HASH SHA256=${msis2_sha256})
 
 FetchContent_MakeAvailable(MSIS2)
 
