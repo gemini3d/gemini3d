@@ -18,6 +18,7 @@ public :: clear_precip_fileinput, precipBCs_fileinput, precipBCs, init_precipinp
 
 external :: mpi_send, mpi_recv
 
+! FIXME: comment out variables and replace with a precipidata object
 !ALL OF THE FOLLOWING MODULE-SCOPE ARRAYS ARE USED FOR INTERPOLATING PRECIPITATION INPUT FILES (IF USED)
 real(wp), dimension(:), allocatable, private :: mlonp
 real(wp), dimension(:), allocatable, private :: mlatp    !coordinates of precipitation data
@@ -38,10 +39,9 @@ real(wp), private :: tprev=0._wp,tnext=0._wp
 
 contains
 
-
-subroutine init_precipinput(dt,t,cfg,ymd,UTsec,x)
-
+! FIXME: initialize object, e.g. call eprecip%init()
 !> initialize variables to hold input file precipitation information, must be called by all workers at the same time
+subroutine init_precipinput(dt,t,cfg,ymd,UTsec,x)
 
 real(wp), intent(in) :: dt,t
 type(gemini_cfg), intent(in) :: cfg
@@ -83,6 +83,7 @@ end subroutine init_precipinput
 !end subroutine
 
 
+! FIXME: this should be a simple call to update, e.g. call eprecip%update()
 subroutine precipBCs_fileinput(dt,t,cfg,ymd,UTsec,x,W0,PhiWmWm2)
 
 real(wp), intent(in) :: dt
