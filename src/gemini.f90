@@ -32,7 +32,7 @@ use neutral, only : neutral_atmos,make_dneu,neutral_perturb,clear_dneu,init_neut
 use potentialBCs_mumps, only: clear_potential_fileinput, init_Efieldinput
 use potential_comm,only : electrodynamics,pot2perpfield,velocities, get_BGEfields
 use collisions, only: conductivities
-use precipBCs_mod, only: clear_precip_fileinput, init_precipinput
+use precipBCs_mod, only: init_precipinput
 use temporal, only : dt_comm
 use timeutils, only: dateinc, find_lastdate
 
@@ -254,6 +254,7 @@ else                            ! stationary grid
   E3 = E3 + E03
 end if
 
+!> Precipitation input setup
 if(mpi_cfg%myid==0) print*, 'Priming precipitation input'
 call init_precipinput(dt,t,cfg,ymd,UTsec,x)
 
@@ -449,7 +450,8 @@ if (cfg%flagglow/=0) deallocate(iver)
 !> DEALLOCATE MODULE VARIABLES (MAY HAPPEN AUTOMATICALLY IN F2003???)
 !call clear_grid(x)
 call clear_dneu()
-call clear_precip_fileinput()
+! now taken care of by an object destructor...
+!call clear_precip_fileinput()
 call clear_potential_fileinput()
 !call clear_BGfield()
 

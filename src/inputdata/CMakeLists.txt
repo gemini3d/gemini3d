@@ -1,4 +1,4 @@
-set_directory_properties(PROPERTIES LABELS inpudata)
+set_directory_properties(PROPERTIES LABELS inputdata)
 
 add_library(inputdata OBJECT inputdataobj.f90)
 target_link_libraries(inputdata PRIVATE const config meshobj interp timeutils)
