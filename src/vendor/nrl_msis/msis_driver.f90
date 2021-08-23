@@ -14,7 +14,9 @@ real(real32), allocatable, dimension(:,:,:,:) :: Dn, Tn
 real(real32), allocatable, dimension(:,:,:) :: glat, glon, alt
 integer :: u, msis_version, lx1, lx2, lx3
 character(256) :: buf
+logical :: exists
 character(:), allocatable :: infile,outfile
+character(*), parameter :: parmfile = 'msis20.parm'
 
 !> user options
 if (command_argument_count() < 2) error stop 'msis_setup: must specify input and output filenames'
@@ -30,6 +32,12 @@ if(command_argument_count() > 2) then
   read(buf, '(I3)') msis_version
 endif
 
+!> ensure MSIS 2.0 setup OK
+if(msis_version == 20) then
+  inquire(file=parmfile, exist=exists)
+  if (.not. exists) error stop parmfile // " not found, required by MSIS 2.0"
+endif
+
 !> select input format
 call input_hdf5(infile,doy,sec,f107a,f107,Ap, glat, glon, alt)
 ! print '(A,14F8.1)', 'TRACE:MSIS00_bit32: inputs: ',doy, sec, alt, glat, glon, f107a, f107, Ap
@@ -40,7 +48,7 @@ lx2 = size(alt,2)
 lx3 = size(alt,3)
 allocate(Dn(lx1,lx2,lx3, 9), Tn(lx1,lx2,lx3, 2))
 
-if(msis_version == 20) call msisinit(parmfile='msis20.parm')
+if(msis_version == 20) call msisinit(parmfile=parmfile)
 
 do i=1,lx1
   do j=1,lx2
