@@ -67,7 +67,7 @@ do i=1,lx1
   end do
 end do
 
-call output_hdf5(outfile, alt, glat, glon, Dn, Tn)
+call output_hdf5(outfile, alt, glat, glon, Dn, Tn, msis_version)
 
 contains
 
@@ -119,15 +119,18 @@ call hf%close()
 end subroutine input_hdf5
 
 
-subroutine output_hdf5(filename, alt, glat, glon, Dn, Tn)
+subroutine output_hdf5(filename, alt, glat, glon, Dn, Tn, msis_version)
 
 character(*), intent(in) :: filename
 real(real32), intent(in), dimension(:,:,:) :: alt, glat, glon
 real(real32), intent(in), dimension(:,:,:,:) :: Dn, Tn
+integer, intent(in) :: msis_version
+
 type(hdf5_file) :: hf
 
 call hf%open(filename, action="w", comp_lvl=comp_lvl)
 
+call hf%write("/msis_version", msis_version)
 call hf%write("/alt", alt)
 call hf%write("/glat", glat)
 call hf%write("/glon", glon)
