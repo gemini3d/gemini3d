@@ -274,33 +274,35 @@ contains
     ! fIXME: unused variables
 
     !! do some really basic error checking
-    if (.not. self%flagalloc) error stop 'inputdata:prime_data() - must allocate data arrays prior to priming'
-    if (.not. self%flagcadence) error stop 'inputdata:prime_data() - must specify data cadence before priming'
-    print*, '  Priming dataset:  ',self%dataname
-
-    !! find the last input data preceding the milestone/initial condition that we start with
-    !    The arguments here coorespond to start datetime of simulations, time of first step for this run (different
-    !    if doing a restart) and then the tmp vars which are the time of the last input file.  dtdata is cadence.
-    call find_lastdate(cfg%ymd0,cfg%UTsec0,ymd,UTsec,self%dt,ymdtmp,UTsectmp)
+    if (cfg%flagprecfile==1) then
+      if (.not. self%flagalloc) error stop 'inputdata:prime_data() - must allocate data arrays prior to priming'
+      if (.not. self%flagcadence) error stop 'inputdata:prime_data() - must specify data cadence before priming'
+      print*, '  Priming dataset:  ',self%dataname
   
-    !! Loads the neutral input file corresponding to the "first" time step of the simulation to prevent the first interpolant
-    !  from being zero and causing issues with restart simulations.  I.e. make sure the neutral buffers are primed for restart
-    !  This requires us to load file input twice, once corresponding to the initial frame and once for the "first, next" frame.
-    ! FIXME: need to keep self%ymd, etc. in sync?  Update will do this?  YES
-    self%tref(1)=UTsectmp-UTsec-2*self%dt
-    self%tref(2)=self%tref(1)+self%dt
-    !if (mpi_cfg%myid==0) print*, '!!!Attempting initial load of neutral dynamics files!!!' // &
-    !                         ' This is a workaround to insure compatibility with restarts...',ymdtmp,UTsectmp
-    !! We essentially are loading up the data corresponding to halfway betwween -dtneu and t0 (zero).  This will load
-    !   two time levels back so when tprev is incremented twice it will be the true tprev corresponding to first time step
-    call self%update(cfg,dtmodel,self%tref(2)+self%dt/2,x,ymdtmp,UTsectmp-self%dt)  !abs time arg to be < 0
-
-    !if (mpi_cfg%myid==0) print*, 'Now loading initial next file for neutral perturbations...'
-    !! Now compute perturbations for the present time (zero), this moves the primed variables in next into prev and then
-    !  loads up a current state so that we get a proper interpolation for the first time step.
-    call self%update(cfg,dtmodel,0._wp,x,ymdtmp,UTsectmp)    !t-dt so we land exactly on start time
-
-    self%flagprimed=.true.
+      !! find the last input data preceding the milestone/initial condition that we start with
+      !    The arguments here coorespond to start datetime of simulations, time of first step for this run (different
+      !    if doing a restart) and then the tmp vars which are the time of the last input file.  dtdata is cadence.
+      call find_lastdate(cfg%ymd0,cfg%UTsec0,ymd,UTsec,self%dt,ymdtmp,UTsectmp)
+    
+      !! Loads the neutral input file corresponding to the "first" time step of the simulation to prevent the first interpolant
+      !  from being zero and causing issues with restart simulations.  I.e. make sure the neutral buffers are primed for restart
+      !  This requires us to load file input twice, once corresponding to the initial frame and once for the "first, next" frame.
+      ! FIXME: need to keep self%ymd, etc. in sync?  Update will do this?  YES
+      self%tref(1)=UTsectmp-UTsec-2*self%dt
+      self%tref(2)=self%tref(1)+self%dt
+      !if (mpi_cfg%myid==0) print*, '!!!Attempting initial load of neutral dynamics files!!!' // &
+      !                         ' This is a workaround to insure compatibility with restarts...',ymdtmp,UTsectmp
+      !! We essentially are loading up the data corresponding to halfway betwween -dtneu and t0 (zero).  This will load
+      !   two time levels back so when tprev is incremented twice it will be the true tprev corresponding to first time step
+      call self%update(cfg,dtmodel,self%tref(2)+self%dt/2,x,ymdtmp,UTsectmp-self%dt)  !abs time arg to be < 0
+  
+      !if (mpi_cfg%myid==0) print*, 'Now loading initial next file for neutral perturbations...'
+      !! Now compute perturbations for the present time (zero), this moves the primed variables in next into prev and then
+      !  loads up a current state so that we get a proper interpolation for the first time step.
+      call self%update(cfg,dtmodel,0._wp,x,ymdtmp,UTsectmp)    !t-dt so we land exactly on start time
+  
+      self%flagprimed=.true.
+    end if
   end subroutine prime_data
 
 
@@ -322,6 +324,7 @@ contains
     if (.not. self%flagalloc) error stop 'inputdata:update() - must allocate array space prior to update...'
     if (.not. self%flagcadence) error stop 'inputdata:update() - must define cadence first...'
     if (.not. self%flagsource) error stop 'inputdata:update() - must define source data directory...'
+    !print*, ymd,UTsec,t,t+dtmodel/2,self%tref(1),self%tref(2)
 
     !! see if we need to load new data into the buffer; negative time means that we need to load the first frame
     if (t+dtmodel/2 >= self%tref(2) .or. t < 0) then       
@@ -383,6 +386,7 @@ contains
 
     !> 1D arrays varying along the 1-axis
     if (self%l1Dax1>0) then
+      self%data1Dax1i(:,:,1)=self%data1Dax1i(:,:,2)     ! save old data!!!
       allocate(tempdata(self%lc1i))
       do iparm=1,self%l1Dax1
         tempdata(:)=interp1(coord1,self%data1Dax1(:,iparm),coord1i)
@@ -393,6 +397,7 @@ contains
 
     !> 1D arrays varying along the 2-axis
     if (self%l1Dax2>0) then
+      self%data1Dax2i(:,:,1)=self%data1Dax2i(:,:,2)
       allocate(tempdata(self%lc2i))
       do iparm=1,self%l1Dax2
         tempdata(:)=interp1(coord2,self%data1Dax2(:,iparm),coord2i)
@@ -403,6 +408,7 @@ contains
 
     !> 1D arrays varying along the 3-axis
     if (self%l1Dax3>0) then
+      self%data1Dax3i(:,:,1)=self%data1Dax3i(:,:,2)
       allocate(tempdata(self%lc3i))
       do iparm=1,self%l1Dax3
         tempdata(:)=interp1(coord3,self%data1Dax3(:,iparm),coord3i)
@@ -413,6 +419,7 @@ contains
 
     !> 2D arrays varying along the 2,3 axes; be sure to check singleton axes and change interp shape accordingly
     if (self%l2Dax23>0) then
+      self%data2Dax23i(:,:,:,1)=self%data2Dax23i(:,:,:,2)
       if (lc2>1 .and. lc3>1) then    ! normal 2D dataset
         allocate(tempdata(self%lc2i*self%lc3i))
         do iparm=1,self%l2Dax23
@@ -441,6 +448,7 @@ contains
 
     !> 2D arrays varying along the 1,2 axes
     if (self%l2Dax12>0) then
+      self%data2Dax12i(:,:,:,1)=self%data2Dax12i(:,:,:,2)
       if (lc1>1 .and. lc2>1) then
         allocate(tempdata(self%lc1i*self%lc2i))
         do iparm=1,self%l2Dax12
@@ -469,6 +477,7 @@ contains
 
     !> 2D arrays varying along the 1,3 axes
     if (self%l2Dax13>0) then
+      self%data2Dax13i(:,:,:,1)=self%data2Dax13i(:,:,:,1)
       if (lc1>1 .and. lc3>1) then
         allocate(tempdata(self%lc1i*self%lc3i))
         do iparm=1,self%l2Dax13
@@ -497,6 +506,7 @@ contains
 
     !> 3D arrays varying along all axes, check for singleton axes...
     if (self%l3D>0) then
+      self%data3Di(:,:,:,:,1)=self%data3Di(:,:,:,:,2)
       if (lc1>1 .and. lc2>1 .and. lc3>1) then
         allocate(tempdata(self%lc1i*self%lc2i*self%lc3i))
         do iparm=1,self%l3D

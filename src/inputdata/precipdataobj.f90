@@ -111,8 +111,6 @@ contains
                        0, &
                        x )
     call self%init_storage()
-    self%data2Dax23i(:,:,1,1)=0.0      ! initialize arrays used by this particular datatype, i.e. prev entries need to start at zero
-    self%data2dax23i(:,:,2,1)=100.0
     call self%set_cadence(dtdata)
 
     ! set local pointers grid pointers and assign input data grid
@@ -128,9 +126,10 @@ contains
     self%E0pinext=>self%data2Dax23i(:,:,2,2)
     self%Qpinow=>self%data2Dax23inow(:,:,1)
     self%E0pinow=>self%data2Dax23inow(:,:,2)
-
-    print*, shape(self%coord2), shape(self%coord3)
-    print*, shape(self%coord2i), shape(self%coord3i)
+    self%Qpiprev=0.0
+    self%Qpinext=0.0
+    self%E0piprev=100.0
+    self%E0pinext=100.0
 
     ! prime input data
     call self%prime_data(cfg,x,dtmodel,ymd,UTsec)
@@ -211,8 +210,8 @@ contains
     !! this read must be done repeatedly through simulation so have only root do file io
     if (mpi_cfg%myid==0) then
       !print *, 'precipdata:load_data_precip() - tprev,tnow,tnext:  ',self%tref(1),t+dtmodel / 2._wp,self%tref(2)
-      print*, '  date and time:  ',self%ymdref(:,2),self%UTsecref(2)
-      print*, '  precip filename:  ',date_filename(self%sourcedir,self%ymdref(:,2),self%UTsecref(2))
+      print*, '  date and time:  ',ymdtmp,UTsectmp
+      print*, '  precip filename:  ',date_filename(self%sourcedir,ymdtmp,UTsectmp)
       ! read in the data for the "next" frame from file
       call get_precip(date_filename(self%sourcedir,ymdtmp,UTsectmp), self%Qp, self%E0p)
   
