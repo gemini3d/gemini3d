@@ -210,7 +210,7 @@ contains
 
     !! this read must be done repeatedly through simulation so have only root do file io
     if (mpi_cfg%myid==0) then
-      print *, 'precipdata:load_data_precip() - tprev,tnow,tnext:  ',self%tref(1),t+dtmodel / 2._wp,self%tref(2)
+      !print *, 'precipdata:load_data_precip() - tprev,tnow,tnext:  ',self%tref(1),t+dtmodel / 2._wp,self%tref(2)
       print*, '  date and time:  ',self%ymdref(:,2),self%UTsecref(2)
       print*, '  precip filename:  ',date_filename(self%sourcedir,self%ymdref(:,2),self%UTsecref(2))
       ! read in the data for the "next" frame from file

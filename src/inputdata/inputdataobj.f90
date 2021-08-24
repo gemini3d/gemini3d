@@ -334,31 +334,19 @@ contains
         self%UTsecref(2)=self%UTsecref(1)
     
         !Create a neutral grid, do some allocations and projections
-        print*, 'inputdata:update() - setting target interpolation coords...',self%ymdref(:,2),self%UTsecref(2)
         call self%set_coordsi(cfg,x)    ! cfg needed to convey optional parameters about how the input data are to be
                                        !interpreted
       end if
    
       !Read in neutral data from a file
       call self%load_data(t,dtmodel,ymdtmp,UTsectmp)
-      print*, 'inputdata:update() - loading new file...',ymdtmp,UTsectmp
-      print*, minval(self%data2Dax23(:,:,1)),maxval(self%data2Dax23(:,:,1))
-      print*, minval(self%data2Dax23(:,:,2)),maxval(self%data2Dax23(:,:,2))
     
       !Spatial interpolation for the frame we just read in
       !if (mpi_cfg%myid==0 .and. debug) then
-        print *, 'Spatial interpolation and rotations (if applicable) for dataset:  ', &
-                      self%dataname,' for date:  ',self%ymdref(:,2),' ',self%UTsecref(2)
-        print*, self%lc1,self%lc2,self%lc3,self%lc1i,self%lc2i,self%lc3i
+        !print *, 'Spatial interpolation and rotations (if applicable) for dataset:  ', &
+        !              self%dataname,' for date:  ',self%ymdref(:,2),' ',self%UTsecref(2)
       !end if
       call self%spaceinterp()
-      print*, 'inputdata:update() - spatial interpolation information, prev:  ', &
-                  minval(self%data2Dax23i(:,:,1,1)),maxval(self%data2Dax23i(:,:,1,1)), &
-                  minval(self%data2Dax23i(:,:,2,1)),maxval(self%data2Dax23i(:,:,2,1))
-      print*, 'inputdata:update() - spatial interpolation information, next:  ', &
-                  minval(self%data2Dax23i(:,:,1,2)),maxval(self%data2Dax23i(:,:,1,2)), &
-                  minval(self%data2Dax23i(:,:,2,2)),maxval(self%data2Dax23i(:,:,2,2))
-      
     
       !UPDATE OUR CONCEPT OF PREVIOUS AND NEXT TIMES
       self%tref(1)=self%tref(2)
@@ -372,9 +360,6 @@ contains
     
     !Interpolation in time
     call self%timeinterp(t,dtmodel)
-    print*, 'inputdata:update() - temporal interpolation information:  ', &
-                 minval(self%data2Dax23inow(:,:,1)),maxval(self%data2Dax23inow(:,:,1)), &
-                 minval(self%data2Dax23inow(:,:,2)),maxval(self%data2Dax23inow(:,:,2))
   end subroutine update
 
 
@@ -443,7 +428,6 @@ contains
         end do
         deallocate(tempdata)
       else if (lc2==1 .and. lc3>1) then
-        print*, '...x3 non-singleton dim...'
         allocate(tempdata(self%lc3i))
         do iparm=1,self%l2Dax23
           tempdata(:)=interp1(coord3,self%data2Dax23(1,:,iparm),coord3i)
@@ -558,7 +542,6 @@ contains
 
     ! convenience vars
     lc1i=self%lc1i; lc2i=self%lc2i; lc3i=self%lc3i;
-    print*, 'inpudata:timeinterp()',lc1i,lc2i,lc3i,self%l2Dax23,self%tref(:),t,dt
 
     !> interpolate scalars in time, never enter loop for params of 0 size
     do iparm=1,self%l0D
