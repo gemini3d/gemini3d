@@ -5,9 +5,9 @@
 {
   "name": "default",
   "binaryDir": "${sourceDir}/build",
+  "installDir": "${sourceDir}/build",
   "cacheVariables": {
     "CMAKE_BUILD_TYPE": "Release",
-    "CMAKE_INSTALL_PREFIX": "${sourceDir}/build",
     "package": false
   }
 },
@@ -38,9 +38,7 @@
   "name": "intel", "inherits": "default",
   "displayName": "Intel Classic compiler: Linux/MacOS",
   "binaryDir": "${sourceDir}/build-intel",
-  "cacheVariables": {
-    "CMAKE_INSTALL_PREFIX": "${sourceDir}/build-intel"
-  },
+  "installDir": "${sourceDir}/build-intel",
   "environment": {
     "CC": "icx",
     "FC": "ifort"
