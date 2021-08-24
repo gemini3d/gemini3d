@@ -67,8 +67,14 @@ subroutine precipBCs_fileinput(dtmodel,t,cfg,ymd,UTsec,x,W0,PhiWmWm2)
 
   ! disturbance precipitation from file input
   call eprecip%update(cfg,dtmodel,t,x,ymd,UTsec)
-  W0(:,:,2)=eprecip%E0pinow
-  PhiWmWm2(:,:,2)=eprecip%Qpinow
+  W0(:,:,2)=eprecip%E0pinow(:,:)
+  PhiWmWm2(:,:,2)=eprecip%Qpinow(:,:)
+
+  ! FIXME: some debug info for testing
+  print*, ' precipBCs - data held in object:  ',minval(eprecip%data2Dax23inow(:,:,1)), maxval(eprecip%data2Dax23inow(:,:,1)), &
+                minval(eprecip%data2Dax23inow(:,:,2)),maxval(eprecip%data2Dax23inow(:,:,2))
+  print*, ' precipBCs - data passed to GEMINI:  ',minval(W0(:,:,2)), maxval(W0(:,:,2)), &
+                minval(PhiWmWm2(:,:,2)),maxval(PhiWmWm2(:,:,2))
 end subroutine precipBCs_fileinput
 
 
