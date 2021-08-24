@@ -109,10 +109,12 @@ abstract interface
     class(curvmesh), intent(in)  :: x
   end subroutine coordisetproc
 
-  subroutine loadproc(self,t,dtmodel)
+  subroutine loadproc(self,t,dtmodel,ymdtmp,UTsectmp)
     import inputdata,wp
     class(inputdata), intent(inout) :: self
     real(wp), intent(in) :: t,dtmodel
+    integer, dimension(3), intent(inout) :: ymdtmp
+    real(wp), intent(inout) :: UTsectmp
   end subroutine loadproc
 
   subroutine loadgridsizeproc(self)
@@ -122,7 +124,8 @@ abstract interface
 end interface
 
 contains
-  !> Load/store size variables
+  !> Load/store size variables.  By default this is going to get the sizes for the interpolated data from the grid.  If this
+  !    is not the desired behavior then the type extension should override this procedure.  
   subroutine set_sizes(self, &
                      l0D, &
                      l1Dax1,l1Dax2,l1Dax3, &
@@ -182,6 +185,8 @@ contains
     l2Dax23=self%l2Dax23; l2Dax12=self%l2Dax12; l2Dax13=self%l2Dax13;
     l3D=self%l3D
 
+    ! NOTE: type extensions are reponsible for zeroing out any arrays they will use...
+
     ! input data coordinate arrays (presume plaid)
     allocate(self%coord1(lc1),self%coord2(lc2),self%coord3(lc3))
 
@@ -202,10 +207,10 @@ contains
     allocate(self%data3Di(lc1i,lc2i,lc3i,l3D,2))
 
     ! allocate object arrays at interpolation sites for current time.  FIXME: do we even need to store permanently?
-    allocate(self%data0Di(l0D,2))
-    allocate(self%data1Dax1i(lc1i,l1Dax1,2), self%data1Dax2i(lc2i,l1Dax2,2), self%data1Dax3i(lc3i,l1Dax3,2))
-    allocate(self%data2Dax23i(lc2i,lc3i,l2Dax23,2), self%data2Dax12i(lc1i,lc2i,l2Dax12,2), self%data2Dax13i(lc1i,lc3i,l2Dax13,2))
-    allocate(self%data3Di(lc1i,lc2i,lc3i,l3D,2))
+    allocate(self%data0Dinow(l0D))
+    allocate(self%data1Dax1inow(lc1i,l1Dax1), self%data1Dax2inow(lc2i,l1Dax2), self%data1Dax3inow(lc3i,l1Dax3))
+    allocate(self%data2Dax23inow(lc2i,lc3i,l2Dax23), self%data2Dax12inow(lc1i,lc2i,l2Dax12), self%data2Dax13inow(lc1i,lc3i,l2Dax13))
+    allocate(self%data3Dinow(lc1i,lc2i,lc3i,l3D))
 
     self%flagalloc=.true.
   end subroutine init_storage
@@ -310,7 +315,7 @@ contains
     real(wp), intent(in) :: UTsec               ! UT seconds for which we with to compute perturbations
     
     integer :: ix1,ix2,ix3,iid!,irhon,izn
-    integer, dimension(3) :: ymdtmp
+    integer, dimension(3) :: ymdtmp          ! these hold the incremented date following reading of new file
     real(wp) :: UTsectmp
 
     !! basic error checking
@@ -329,12 +334,16 @@ contains
         self%UTsecref(2)=self%UTsecref(1)
     
         !Create a neutral grid, do some allocations and projections
+        print*, 'inputdata:update() - setting target interpolation coords...',self%ymdref(:,2),self%UTsecref(2)
         call self%set_coordsi(cfg,x)    ! cfg needed to convey optional parameters about how the input data are to be
                                        !interpreted
       end if
    
       !Read in neutral data from a file
-      call self%load_data(t,dtmodel)
+      call self%load_data(t,dtmodel,ymdtmp,UTsectmp)
+      print*, 'inputdata:update() - loading new file...',ymdtmp,UTsectmp
+      print*, minval(self%data2Dax23(:,:,1)),maxval(self%data2Dax23(:,:,1))
+      print*, minval(self%data2Dax23(:,:,2)),maxval(self%data2Dax23(:,:,2))
     
       !Spatial interpolation for the frame we just read in
       !if (mpi_cfg%myid==0 .and. debug) then
@@ -343,6 +352,13 @@ contains
         print*, self%lc1,self%lc2,self%lc3,self%lc1i,self%lc2i,self%lc3i
       !end if
       call self%spaceinterp()
+      print*, 'inputdata:update() - spatial interpolation information, prev:  ', &
+                  minval(self%data2Dax23i(:,:,1,1)),maxval(self%data2Dax23i(:,:,1,1)), &
+                  minval(self%data2Dax23i(:,:,2,1)),maxval(self%data2Dax23i(:,:,2,1))
+      print*, 'inputdata:update() - spatial interpolation information, next:  ', &
+                  minval(self%data2Dax23i(:,:,1,2)),maxval(self%data2Dax23i(:,:,1,2)), &
+                  minval(self%data2Dax23i(:,:,2,2)),maxval(self%data2Dax23i(:,:,2,2))
+      
     
       !UPDATE OUR CONCEPT OF PREVIOUS AND NEXT TIMES
       self%tref(1)=self%tref(2)
@@ -356,6 +372,9 @@ contains
     
     !Interpolation in time
     call self%timeinterp(t,dtmodel)
+    print*, 'inputdata:update() - temporal interpolation information:  ', &
+                 minval(self%data2Dax23inow(:,:,1)),maxval(self%data2Dax23inow(:,:,1)), &
+                 minval(self%data2Dax23inow(:,:,2)),maxval(self%data2Dax23inow(:,:,2))
   end subroutine update
 
 
@@ -378,106 +397,118 @@ contains
     coord1i=>self%coord1i; coord2i=>self%coord2i; coord3i=>self%coord3i;
 
     !> 1D arrays varying along the 1-axis
-    allocate(tempdata(self%lc1i))
-    do iparm=1,self%l1Dax1
-      tempdata(:)=interp1(coord1,self%data1Dax1(:,iparm),coord1i)
-      self%data1Dax1i(:,iparm,2)=tempdata(:)
-    end do
-    deallocate(tempdata)
+    if (self%l1Dax1>0) then
+      allocate(tempdata(self%lc1i))
+      do iparm=1,self%l1Dax1
+        tempdata(:)=interp1(coord1,self%data1Dax1(:,iparm),coord1i)
+        self%data1Dax1i(:,iparm,2)=tempdata(:)
+      end do
+      deallocate(tempdata)
+    end if
 
     !> 1D arrays varying along the 2-axis
-    allocate(tempdata(self%lc2i))
-    do iparm=1,self%l1Dax2
-      tempdata(:)=interp1(coord2,self%data1Dax2(:,iparm),coord2i)
-      self%data1Dax2i(:,iparm,2)=tempdata(:)
-    end do
-    deallocate(tempdata)
+    if (self%l1Dax2>0) then
+      allocate(tempdata(self%lc2i))
+      do iparm=1,self%l1Dax2
+        tempdata(:)=interp1(coord2,self%data1Dax2(:,iparm),coord2i)
+        self%data1Dax2i(:,iparm,2)=tempdata(:)
+      end do
+      deallocate(tempdata)
+    end if
 
     !> 1D arrays varying along the 3-axis
-    allocate(tempdata(self%lc3i))
-    do iparm=1,self%l1Dax3
-      tempdata(:)=interp1(coord3,self%data1Dax3(:,iparm),coord3i)
-      self%data1Dax3i(:,iparm,2)=tempdata(:)
-    end do
-    deallocate(tempdata)
-
-    !> 2D arrays varying along the 2,3 axes; be sure to check singleton axes and change interp accordingly
-    if (lc2>1 .and. lc3>1) then    ! normal 2D dataset
-      allocate(tempdata(self%lc2i*self%lc3i))
-      do iparm=1,self%l2Dax23
-        tempdata(:)=interp2(coord2,coord3,self%data2Dax23(:,:,iparm),coord2i,coord3i)
-        self%data2Dax23i(:,:,iparm,2)=reshape(tempdata,[lc2i,lc3i])
-      end do
-      deallocate(tempdata)
-    else if (lc2>1 .and. lc3==1) then
-      allocate(tempdata(self%lc2i))
-      do iparm=1,self%l2Dax23
-        tempdata(:)=interp1(coord2,self%data2Dax23(:,1,iparm),coord2i)
-        self%data2Dax23i(:,:,iparm,2)=reshape(tempdata,[lc2i,lc3i])
-      end do
-      deallocate(tempdata)
-    else if (lc2==1 .and. lc3>1) then
-      print*, '...x3 non-singleton dim...'
+    if (self%l1Dax3>0) then
       allocate(tempdata(self%lc3i))
-      do iparm=1,self%l2Dax23
-        tempdata(:)=interp1(coord3,self%data2Dax23(1,:,iparm),coord3i)
-        self%data2Dax23i(:,:,iparm,2)=reshape(tempdata,[lc2i,lc3i])
+      do iparm=1,self%l1Dax3
+        tempdata(:)=interp1(coord3,self%data1Dax3(:,iparm),coord3i)
+        self%data1Dax3i(:,iparm,2)=tempdata(:)
       end do
       deallocate(tempdata)
-    else
-      error stop 'inputdata:spaceinterp() - cannot determine type of interpolation for data2Dax23'
+    end if
+
+    !> 2D arrays varying along the 2,3 axes; be sure to check singleton axes and change interp shape accordingly
+    if (self%l2Dax23>0) then
+      if (lc2>1 .and. lc3>1) then    ! normal 2D dataset
+        allocate(tempdata(self%lc2i*self%lc3i))
+        do iparm=1,self%l2Dax23
+          tempdata(:)=interp2(coord2,coord3,self%data2Dax23(:,:,iparm),coord2i,coord3i)
+          self%data2Dax23i(:,:,iparm,2)=reshape(tempdata,[lc2i,lc3i])
+        end do
+        deallocate(tempdata)
+      else if (lc2>1 .and. lc3==1) then
+        allocate(tempdata(self%lc2i))
+        do iparm=1,self%l2Dax23
+          tempdata(:)=interp1(coord2,self%data2Dax23(:,1,iparm),coord2i)
+          self%data2Dax23i(:,:,iparm,2)=reshape(tempdata,[lc2i,lc3i])
+        end do
+        deallocate(tempdata)
+      else if (lc2==1 .and. lc3>1) then
+        print*, '...x3 non-singleton dim...'
+        allocate(tempdata(self%lc3i))
+        do iparm=1,self%l2Dax23
+          tempdata(:)=interp1(coord3,self%data2Dax23(1,:,iparm),coord3i)
+          self%data2Dax23i(:,:,iparm,2)=reshape(tempdata,[lc2i,lc3i])
+        end do
+        deallocate(tempdata)
+      else
+        error stop 'inputdata:spaceinterp() - cannot determine type of interpolation for data2Dax23'
+      end if
     end if
 
     !> 2D arrays varying along the 1,2 axes
-    if (lc1>1 .and. lc2>1) then
-      allocate(tempdata(self%lc1i*self%lc2i))
-      do iparm=1,self%l2Dax12
-        tempdata(:)=interp2(coord1,coord2,self%data2Dax12(:,:,iparm),coord1i,coord2i)
-        self%data2Dax12i(:,:,iparm,2)=reshape(tempdata,[lc1i,lc2i])
-      end do
-      deallocate(tempdata)
-    else if (lc1>1 .and. lc2==1) then
-      allocate(tempdata(self%lc1i))
-      do iparm=1,self%l2Dax12
-        tempdata(:)=interp1(coord1,self%data2Dax12(:,1,iparm),coord1i)
-        self%data2Dax12i(:,:,iparm,2)=reshape(tempdata,[lc1i,lc2i])
-      end do
-      deallocate(tempdata)
-    else if (lc1==1 .and. lc2>1) then
-      allocate(tempdata(self%lc2i))
-      do iparm=1,self%l2Dax12
-        tempdata(:)=interp1(coord2,self%data2Dax12(1,:,iparm),coord2i)
-        self%data2Dax12i(:,:,iparm,2)=reshape(tempdata,[lc1i,lc2i])
-      end do
-      deallocate(tempdata)
-    else
-      error stop 'inputdata:spaceinterp() - cannot determine type of interpolation for data2Dax12'
+    if (self%l2Dax12>0) then
+      if (lc1>1 .and. lc2>1) then
+        allocate(tempdata(self%lc1i*self%lc2i))
+        do iparm=1,self%l2Dax12
+          tempdata(:)=interp2(coord1,coord2,self%data2Dax12(:,:,iparm),coord1i,coord2i)
+          self%data2Dax12i(:,:,iparm,2)=reshape(tempdata,[lc1i,lc2i])
+        end do
+        deallocate(tempdata)
+      else if (lc1>1 .and. lc2==1) then
+        allocate(tempdata(self%lc1i))
+        do iparm=1,self%l2Dax12
+          tempdata(:)=interp1(coord1,self%data2Dax12(:,1,iparm),coord1i)
+          self%data2Dax12i(:,:,iparm,2)=reshape(tempdata,[lc1i,lc2i])
+        end do
+        deallocate(tempdata)
+      else if (lc1==1 .and. lc2>1) then
+        allocate(tempdata(self%lc2i))
+        do iparm=1,self%l2Dax12
+          tempdata(:)=interp1(coord2,self%data2Dax12(1,:,iparm),coord2i)
+          self%data2Dax12i(:,:,iparm,2)=reshape(tempdata,[lc1i,lc2i])
+        end do
+        deallocate(tempdata)
+      else
+        error stop 'inputdata:spaceinterp() - cannot determine type of interpolation for data2Dax12'
+      end if
     end if
 
     !> 2D arrays varying along the 1,3 axes
-    if (lc1>1 .and. lc3>1) then
-      allocate(tempdata(self%lc1i*self%lc3i))
-      do iparm=1,self%l2Dax13
-        tempdata(:)=interp2(coord1,coord3,self%data2Dax13(:,:,iparm),coord1i,coord3i)
-        self%data2Dax13i(:,:,iparm,2)=reshape(tempdata,[lc1i,lc3i])
-      end do
-      deallocate(tempdata)
-    else if (lc1>1 .and. lc3==1) then
-      allocate(tempdata(self%lc1i))
-      do iparm=1,self%l2Dax13
-        tempdata(:)=interp1(coord1,self%data2Dax13(:,1,iparm),coord1i)
-        self%data2Dax13i(:,:,iparm,2)=reshape(tempdata,[lc1i,lc3i])
-      end do
-      deallocate(tempdata)
-    else if (lc1==1 .and. lc3>1) then
-      allocate(tempdata(self%lc3i))
-      do iparm=1,self%l2Dax13
-        tempdata(:)=interp1(coord3,self%data2Dax13(1,:,iparm),coord3i)
-        self%data2Dax13i(:,:,iparm,2)=reshape(tempdata,[lc1i,lc3i])
-      end do
-      deallocate(tempdata)
-    else
-      error stop 'inputdata:spaceinterp() - cannot determine type of interpolation for data2Dax13'
+    if (self%l2Dax13>0) then
+      if (lc1>1 .and. lc3>1) then
+        allocate(tempdata(self%lc1i*self%lc3i))
+        do iparm=1,self%l2Dax13
+          tempdata(:)=interp2(coord1,coord3,self%data2Dax13(:,:,iparm),coord1i,coord3i)
+          self%data2Dax13i(:,:,iparm,2)=reshape(tempdata,[lc1i,lc3i])
+        end do
+        deallocate(tempdata)
+      else if (lc1>1 .and. lc3==1) then
+        allocate(tempdata(self%lc1i))
+        do iparm=1,self%l2Dax13
+          tempdata(:)=interp1(coord1,self%data2Dax13(:,1,iparm),coord1i)
+          self%data2Dax13i(:,:,iparm,2)=reshape(tempdata,[lc1i,lc3i])
+        end do
+        deallocate(tempdata)
+      else if (lc1==1 .and. lc3>1) then
+        allocate(tempdata(self%lc3i))
+        do iparm=1,self%l2Dax13
+          tempdata(:)=interp1(coord3,self%data2Dax13(1,:,iparm),coord3i)
+          self%data2Dax13i(:,:,iparm,2)=reshape(tempdata,[lc1i,lc3i])
+        end do
+        deallocate(tempdata)
+      else
+        error stop 'inputdata:spaceinterp() - cannot determine type of interpolation for data2Dax13'
+      end if
     end if
 
     !> 3D arrays varying along all axes, check for singleton axes...
@@ -527,6 +558,7 @@ contains
 
     ! convenience vars
     lc1i=self%lc1i; lc2i=self%lc2i; lc3i=self%lc3i;
+    print*, 'inpudata:timeinterp()',lc1i,lc2i,lc3i,self%l2Dax23,self%tref(:),t,dt
 
     !> interpolate scalars in time, never enter loop for params of 0 size
     do iparm=1,self%l0D

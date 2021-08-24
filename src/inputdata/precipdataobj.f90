@@ -27,6 +27,10 @@ type, extends(inputdata) :: precipdata
   real(wp), dimension(:,:), pointer :: Qpinow,E0pinow
 
   contains
+    ! overriding procedures
+    procedure :: set_sizes=>set_sizes_precip 
+
+    ! deferred bindings
     procedure :: init=>init_precip
     procedure :: set_coordsi=>set_coordsi_precip
     procedure :: load_data=>load_data_precip
@@ -36,6 +40,48 @@ type, extends(inputdata) :: precipdata
 end type precipdata
 
 contains
+  !> need to override set_sizes so to account for fact that target interpolation is to a 2D grid, by default object will
+  !    assume 3D and get the sizes from the simulation grid
+  subroutine set_sizes_precip(self, &
+                     l0D, &
+                     l1Dax1,l1Dax2,l1Dax3, &
+                     l2Dax23,l2Dax12,l2Dax13, &
+                     l3D, &
+                     x)
+    class(precipdata), intent(inout) :: self
+    integer, intent(in) :: l0D
+    integer, intent(in) :: l1Dax1,l1Dax2,l1Dax3
+    integer, intent(in) :: l2Dax23,l2Dax12,l2Dax13
+    integer, intent(in) :: l3D
+    class(curvmesh), intent(in) :: x        ! sizes for interpolation sites taken from grid
+
+    ! Note:  these should be set by load_data deferred procedure
+    ! coordinate axis sizes for input data
+    !self%lc1=lc1; self%lc2=lc2; self%lc3=lc3;
+    if (.not. self%flagdatasize) error stop 'inpudata:set_sizes() - must set input datasize first using load_size()'
+
+    ! number of different types of data
+    self%l0D=l0D
+    self%l1Dax1=l1Dax1; self%l1Dax2=l1Dax2; self%l1Dax3=l1Dax3;
+    self%l2Dax23=l2Dax23; self%l2Dax12=l2Dax12; self%l2Dax13=l2Dax13;
+    self%l3D=l3D
+
+    ! coordinate axis sizes for interpolation sites
+    self%lc1i=1;       ! note this dataset has a 2D target interpolation grid 
+    self%lc2i=x%lx2; self%lc3i=x%lx3;
+
+    ! check that the user is trying something sensible
+    if (self%lc1==1 .and. self%lc1i/=1 .or. self%lc2==1 .and. self%lc2i/=1 &
+            .or. self%lc3==1 .and. self%lc3i/=1) then
+      error stop 'inputdata:set_sizes() - singleton dimensions must be same for source and destination.'
+    end if
+
+    ! flag sizes as assigned
+    self%flagsizes=.true.
+  end subroutine set_sizes_precip  
+  
+
+
   !> set pointers to appropriate data arrays (taking into account dimensionality of the problem) and prime everything
   !    so we are ready to call self%update()
   !  After this procedure is called all pointer aliases are set and can be used; internal to this procedure pay attention
@@ -65,6 +111,8 @@ contains
                        0, &
                        x )
     call self%init_storage()
+    self%data2Dax23i(:,:,1,1)=0.0      ! initialize arrays used by this particular datatype, i.e. prev entries need to start at zero
+    self%data2dax23i(:,:,2,1)=100.0
     call self%set_cadence(dtdata)
 
     ! set local pointers grid pointers and assign input data grid
@@ -148,21 +196,24 @@ contains
 
 
   !> have root read in next input frame data and distribute to parallel workers
-  subroutine load_data_precip(self,t,dtmodel)
+  subroutine load_data_precip(self,t,dtmodel,ymdtmp,UTsectmp)
     class(precipdata), intent(inout) :: self
     real(wp), intent(in) :: t,dtmodel
-
-    integer, dimension(3) :: ymdtmp
-    real(wp) :: UTsectmp
+    integer, dimension(3), intent(inout) :: ymdtmp
+    real(wp), intent(inout) :: UTsectmp
     integer :: iid,ierr
+
+    !! all workers should update the date
+    ymdtmp = self%ymdref(:,2)
+    UTsectmp = self%UTsecref(2)
+    call dateinc(self%dt, ymdtmp, UTsectmp)
 
     !! this read must be done repeatedly through simulation so have only root do file io
     if (mpi_cfg%myid==0) then
-      if(debug) print *, 'precipdata:load_data_precip() - tprev,tnow,tnext:  ',self%tref(1),t+dtmodel / 2._wp,self%tref(2)
+      print *, 'precipdata:load_data_precip() - tprev,tnow,tnext:  ',self%tref(1),t+dtmodel / 2._wp,self%tref(2)
+      print*, '  date and time:  ',self%ymdref(:,2),self%UTsecref(2)
+      print*, '  precip filename:  ',date_filename(self%sourcedir,self%ymdref(:,2),self%UTsecref(2))
       ! read in the data for the "next" frame from file
-      ymdtmp = self%ymdref(:,2)
-      UTsectmp = self%UTsecref(2)
-      call dateinc(self%dt, ymdtmp, UTsectmp)
       call get_precip(date_filename(self%sourcedir,ymdtmp,UTsectmp), self%Qp, self%E0p)
   
       ! send a full copy of the data to all of the workers
