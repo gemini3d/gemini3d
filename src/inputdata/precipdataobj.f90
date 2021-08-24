@@ -81,6 +81,9 @@ contains
     self%Qpinow=>self%data2Dax23inow(:,:,1)
     self%E0pinow=>self%data2Dax23inow(:,:,2)
 
+    print*, shape(self%coord2), shape(self%coord3)
+    print*, shape(self%coord2i), shape(self%coord3i)
+
     ! prime input data
     call self%prime_data(cfg,x,dtmodel,ymd,UTsec)
   end subroutine init_precip
@@ -103,6 +106,9 @@ contains
      print*, '  precipitation grid size must be strictly positive: ' //  self%sourcedir
      error stop
     end if
+
+    ! set dim 1 size to null since inherently not used
+    self%lc1=0
 
     ! flag to denote input data size is set
     self%flagdatasize=.true.

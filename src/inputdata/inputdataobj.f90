@@ -339,7 +339,8 @@ contains
       !Spatial interpolation for the frame we just read in
       !if (mpi_cfg%myid==0 .and. debug) then
         print *, 'Spatial interpolation and rotations (if applicable) for dataset:  ', &
-                      self%dataname,' for date:  ',ymdtmp,' ',UTsectmp
+                      self%dataname,' for date:  ',self%ymdref(:,2),' ',self%UTsecref(2)
+        print*, self%lc1,self%lc2,self%lc3,self%lc1i,self%lc2i,self%lc3i
       !end if
       call self%spaceinterp()
     
@@ -416,6 +417,7 @@ contains
       end do
       deallocate(tempdata)
     else if (lc2==1 .and. lc3>1) then
+      print*, '...x3 non-singleton dim...'
       allocate(tempdata(self%lc3i))
       do iparm=1,self%l2Dax23
         tempdata(:)=interp1(coord3,self%data2Dax23(1,:,iparm),coord3i)
