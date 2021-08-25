@@ -190,9 +190,6 @@ function(find_hdf5_fortran)
 
 hdf5_fortran_wrap(hdf5_lib_dirs hdf5_inc_dirs)
 
-message(STATUS "HDF5_lib_dirs: ${hdf5_lib_dirs}
-HDF5_inc_dirs: ${hdf5_inc_dirs}")
-
 set(_names hdf5_fortran)
 set(_hl_names hdf5_hl_fortran hdf5hl_fortran)
 set(_hl_stub_names hdf5_hl_f90cstub)
