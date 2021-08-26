@@ -19,9 +19,6 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
-    env:
-      DEBIAN_FRONTEND: noninteractive
-
     steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-python@v2
@@ -69,7 +66,6 @@ jobs:
     timeout-minutes: 10
 
     env:
-      DEBIAN_FRONTEND: noninteractive
       CC: gcc-7
       CXX: g++-7
       FC: gfortran-7
@@ -98,6 +94,34 @@ jobs:
 
     - name: Release core test
       run: ctest --preset release -LE unit -E 3d
+
+  MSIS-20:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
+      with:
+        python-version: '3.8'
+
+    - name: Install packages
+      run: |
+        sudo apt update -yq
+        sudo cmake -P scripts/install_prereq.cmake
+
+    - name: Configure release
+      run: cmake --preset default -Dmsis20:BOOL=true
+
+    - name: Build release
+      run: cmake --build --preset default
+
+    - name: Release unit test
+      run: ctest --preset default -L unit
+
+    - name: Release core test
+      run: ctest --preset default -LE unit -E 3d
+
 
   macos:
     runs-on: macos-latest
