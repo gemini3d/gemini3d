@@ -31,8 +31,11 @@ endif()
 # --- for setting up an equilibrium simulation
 
 add_executable(msis_setup msis_driver.f90)
-target_link_libraries(msis_setup PRIVATE msis_ifc const h5fortran::h5fortran MPI::MPI_Fortran)
+target_link_libraries(msis_setup PRIVATE msis_ifc const h5fortran::h5fortran)
 set_target_properties(msis_setup PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
+if(HDF5_HAVE_PARALLEL)
+  target_link_libraries(msis_setup PRIVATE MPI::MPI_Fortran)
+endif()
 
 install(TARGETS msis_setup EXPORT ${PROJECT_NAME}Targets)
 
@@ -43,8 +46,10 @@ set(msis_out ${CMAKE_CURRENT_BINARY_DIR}/msis_test_out.h5)
 set(msis_ref ${PROJECT_SOURCE_DIR}/test_data/msis_test_out.h5)
 
 add_executable(msis_generate test_gen_in.f90)
-target_link_libraries(msis_generate PRIVATE h5fortran::h5fortran MPI::MPI_Fortran)
-# MPI link is in case HDF5 library is parallel
+target_link_libraries(msis_generate PRIVATE h5fortran::h5fortran)
+if(HDF5_HAVE_PARALLEL)
+  target_link_libraries(msis_generate PRIVATE MPI::MPI_Fortran)
+endif()
 
 add_test(NAME unit:msis_generate
   COMMAND $<TARGET_FILE:msis_generate> ${msis_in})
@@ -63,8 +68,10 @@ set_tests_properties(unit:msis_setup PROPERTIES
   TIMEOUT 10)
 
 add_executable(msis_compare test_msis.f90)
-target_link_libraries(msis_compare PRIVATE msis_ifc assert h5fortran::h5fortran MPI::MPI_Fortran)
-# MPI link is in case HDF5 library is parallel
+target_link_libraries(msis_compare PRIVATE msis_ifc assert h5fortran::h5fortran)
+if(HDF5_HAVE_PARALLEL)
+  target_link_libraries(msis_compare PRIVATE MPI::MPI_Fortran)
+endif()
 
 add_test(NAME unit:msis_compare
   COMMAND $<TARGET_FILE:msis_compare> ${msis_out} ${msis_ref})
