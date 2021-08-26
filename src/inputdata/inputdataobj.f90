@@ -45,6 +45,8 @@ type, abstract :: inputdata
   integer :: l2Dax23,l2Dax12,l2Dax13
   real(wp), dimension(:,:,:,:,:), pointer :: data3Di                 ! array for storing series of 3D data
   integer :: l3D
+
+  !! by default we have one set of target coordinates; extension can define others, if needed
   real(wp), dimension(:), pointer :: coord1i,coord2i,coord3i         ! coordinates of the interpolation sites, these are flat arrays (rank 1)
   integer :: lc1i,lc2i,lc3i                                          ! dataset length along the 3 coordinate axes
 
@@ -376,7 +378,7 @@ contains
     real(wp), dimension(:), pointer :: coord1,coord2,coord3
     real(wp), dimension(:), pointer :: coord1i,coord2i,coord3i
 
-    ! FIXME: needs some error checking
+    ! FIXME: possibly needs some more error checking
 
     ! for convenience
     lc1i=self%lc1i; lc2i=self%lc2i; lc3i=self%lc3i;
