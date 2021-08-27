@@ -46,9 +46,15 @@ type, abstract :: inputdata
   real(wp), dimension(:,:,:,:,:), pointer :: data3Di                 ! array for storing series of 3D data
   integer :: l3D
 
-  !! by default we have one set of target coordinates; extension can define others, if needed
-  real(wp), dimension(:), pointer :: coord1i,coord2i,coord3i         ! coordinates of the interpolation sites, these are flat arrays (rank 1)
-  integer :: lc1i,lc2i,lc3i                                          ! dataset length along the 3 coordinate axes
+  !! by default we have one set of target coordinates; extension can define others, if needed; note these are "flat" arrays (rank 1)
+  real(wp), dimension(:), pointer :: coord1i,coord2i,coord3i             ! coordinates of the interpolation sites, full 3D, size lc1i*lc2i*lc3i
+  real(wp), dimension(:), pointer :: coord1iax1                          ! 1D target coords for variations along axis 1
+  real(wp), dimension(:), pointer :: coord2iax2                          ! 1D target coords for variations along axis 2
+  real(wp), dimension(:), pointer :: coord3iax3                          ! 1D target coords for variations along axis 3
+  real(wp), dimension(:), pointer :: coord2iax23,coord3iax23             ! 2D target along axes 2,3
+  real(wp), dimension(:), pointer :: coord1iax12,coord2iax12             ! 2D target along axes 1,2
+  real(wp), dimension(:), pointer :: coord1iax13,coord3iax13             ! 2D target along axes 1,3
+  integer :: lc1i,lc2i,lc3i                                              ! dataset length along the 3 coordinate axes
 
   !! these are the input data arrays interpolated in time to the present (presuming we've called update/timeinterp
   real(wp), dimension(:), pointer :: data0Dinow 
@@ -192,8 +198,13 @@ contains
     ! input data coordinate arrays (presume plaid)
     allocate(self%coord1(lc1),self%coord2(lc2),self%coord3(lc3))
 
-    ! interpolation site arrays (note these are flat, i.e. rank 1)
+    ! interpolation site arrays (note these are flat, i.e. rank 1), if one needed to save space by not allocating unused block
+    !   could override this procedure...
     allocate(self%coord1i(lc1i*lc2i*lc3i),self%coord2i(lc1i*lc2i*lc3i),self%coord3i(lc1i*lc2i*lc3i))
+    allocate(self%coord1iax1(lc1i),self%coord2iax2(lc2i),self%coord3iax3(lc3i))
+    allocate(self%coord2iax23(lc2i*lc3i),self%coord3iax23(lc2i*lc3i))
+    allocate(self%coord1iax13(lc1i*lc3i),self%coord3iax13(lc1i*lc3i))
+    allocate(self%coord1iax12(lc1i*lc2i),self%coord2iax12(lc1i*lc2i))
 
     ! allocate object arrays for input data at a reference time.  FIXME: do we even need to store this perm. or can be local to
     ! load_data?
@@ -377,6 +388,10 @@ contains
     integer :: lc1i,lc2i,lc3i,lc1,lc2,lc3
     real(wp), dimension(:), pointer :: coord1,coord2,coord3
     real(wp), dimension(:), pointer :: coord1i,coord2i,coord3i
+    real(wp), dimension(:), pointer :: coord1iax1,coord2iax2,coord3iax3
+    real(wp), dimension(:), pointer :: coord2iax23,coord3iax23
+    real(wp), dimension(:), pointer :: coord1iax12,coord2iax12
+    real(wp), dimension(:), pointer :: coord1iax13,coord3iax13
 
     ! FIXME: possibly needs some more error checking
 
@@ -385,13 +400,17 @@ contains
     lc1=self%lc1; lc2=self%lc2; lc3=self%lc3;
     coord1=>self%coord1; coord2=>self%coord2; coord3=>self%coord3;
     coord1i=>self%coord1i; coord2i=>self%coord2i; coord3i=>self%coord3i;
+    coord1iax1=>self%coord1iax1; coord2iax2=>self%coord2iax2; coord3iax3=>self%coord3iax3;
+    coord2iax23=>self%coord2iax23; coord3iax23=>self%coord3iax23;
+    coord1iax12=>self%coord1iax12; coord2iax12=>self%coord2iax12;
+    coord1iax13=>self%coord1iax13; coord3iax13=>self%coord3iax13;
 
     !> 1D arrays varying along the 1-axis
     if (self%l1Dax1>0) then
       self%data1Dax1i(:,:,1)=self%data1Dax1i(:,:,2)     ! save old data!!!
       allocate(tempdata(self%lc1i))
       do iparm=1,self%l1Dax1
-        tempdata(:)=interp1(coord1,self%data1Dax1(:,iparm),coord1i)
+        tempdata(:)=interp1(coord1,self%data1Dax1(:,iparm),coord1iax1)
         self%data1Dax1i(:,iparm,2)=tempdata(:)
       end do
       deallocate(tempdata)
@@ -402,7 +421,7 @@ contains
       self%data1Dax2i(:,:,1)=self%data1Dax2i(:,:,2)
       allocate(tempdata(self%lc2i))
       do iparm=1,self%l1Dax2
-        tempdata(:)=interp1(coord2,self%data1Dax2(:,iparm),coord2i)
+        tempdata(:)=interp1(coord2,self%data1Dax2(:,iparm),coord2iax2)
         self%data1Dax2i(:,iparm,2)=tempdata(:)
       end do
       deallocate(tempdata)
@@ -413,7 +432,7 @@ contains
       self%data1Dax3i(:,:,1)=self%data1Dax3i(:,:,2)
       allocate(tempdata(self%lc3i))
       do iparm=1,self%l1Dax3
-        tempdata(:)=interp1(coord3,self%data1Dax3(:,iparm),coord3i)
+        tempdata(:)=interp1(coord3,self%data1Dax3(:,iparm),coord3iax3)
         self%data1Dax3i(:,iparm,2)=tempdata(:)
       end do
       deallocate(tempdata)
@@ -425,21 +444,21 @@ contains
       if (lc2>1 .and. lc3>1) then    ! normal 2D dataset
         allocate(tempdata(self%lc2i*self%lc3i))
         do iparm=1,self%l2Dax23
-          tempdata(:)=interp2(coord2,coord3,self%data2Dax23(:,:,iparm),coord2i,coord3i)
+          tempdata(:)=interp2(coord2,coord3,self%data2Dax23(:,:,iparm),coord2iax23,coord3iax23)
           self%data2Dax23i(:,:,iparm,2)=reshape(tempdata,[lc2i,lc3i])
         end do
         deallocate(tempdata)
       else if (lc2>1 .and. lc3==1) then
         allocate(tempdata(self%lc2i))
         do iparm=1,self%l2Dax23
-          tempdata(:)=interp1(coord2,self%data2Dax23(:,1,iparm),coord2i)
+          tempdata(:)=interp1(coord2,self%data2Dax23(:,1,iparm),coord2iax23)
           self%data2Dax23i(:,:,iparm,2)=reshape(tempdata,[lc2i,lc3i])
         end do
         deallocate(tempdata)
       else if (lc2==1 .and. lc3>1) then
         allocate(tempdata(self%lc3i))
         do iparm=1,self%l2Dax23
-          tempdata(:)=interp1(coord3,self%data2Dax23(1,:,iparm),coord3i)
+          tempdata(:)=interp1(coord3,self%data2Dax23(1,:,iparm),coord3iax23)
           self%data2Dax23i(:,:,iparm,2)=reshape(tempdata,[lc2i,lc3i])
         end do
         deallocate(tempdata)
@@ -454,21 +473,21 @@ contains
       if (lc1>1 .and. lc2>1) then
         allocate(tempdata(self%lc1i*self%lc2i))
         do iparm=1,self%l2Dax12
-          tempdata(:)=interp2(coord1,coord2,self%data2Dax12(:,:,iparm),coord1i,coord2i)
+          tempdata(:)=interp2(coord1,coord2,self%data2Dax12(:,:,iparm),coord1iax12,coord2iax12)
           self%data2Dax12i(:,:,iparm,2)=reshape(tempdata,[lc1i,lc2i])
         end do
         deallocate(tempdata)
       else if (lc1>1 .and. lc2==1) then
         allocate(tempdata(self%lc1i))
         do iparm=1,self%l2Dax12
-          tempdata(:)=interp1(coord1,self%data2Dax12(:,1,iparm),coord1i)
+          tempdata(:)=interp1(coord1,self%data2Dax12(:,1,iparm),coord1iax12)
           self%data2Dax12i(:,:,iparm,2)=reshape(tempdata,[lc1i,lc2i])
         end do
         deallocate(tempdata)
       else if (lc1==1 .and. lc2>1) then
         allocate(tempdata(self%lc2i))
         do iparm=1,self%l2Dax12
-          tempdata(:)=interp1(coord2,self%data2Dax12(1,:,iparm),coord2i)
+          tempdata(:)=interp1(coord2,self%data2Dax12(1,:,iparm),coord2iax12)
           self%data2Dax12i(:,:,iparm,2)=reshape(tempdata,[lc1i,lc2i])
         end do
         deallocate(tempdata)
@@ -483,21 +502,21 @@ contains
       if (lc1>1 .and. lc3>1) then
         allocate(tempdata(self%lc1i*self%lc3i))
         do iparm=1,self%l2Dax13
-          tempdata(:)=interp2(coord1,coord3,self%data2Dax13(:,:,iparm),coord1i,coord3i)
+          tempdata(:)=interp2(coord1,coord3,self%data2Dax13(:,:,iparm),coord1iax13,coord3iax13)
           self%data2Dax13i(:,:,iparm,2)=reshape(tempdata,[lc1i,lc3i])
         end do
         deallocate(tempdata)
       else if (lc1>1 .and. lc3==1) then
         allocate(tempdata(self%lc1i))
         do iparm=1,self%l2Dax13
-          tempdata(:)=interp1(coord1,self%data2Dax13(:,1,iparm),coord1i)
+          tempdata(:)=interp1(coord1,self%data2Dax13(:,1,iparm),coord1iax13)
           self%data2Dax13i(:,:,iparm,2)=reshape(tempdata,[lc1i,lc3i])
         end do
         deallocate(tempdata)
       else if (lc1==1 .and. lc3>1) then
         allocate(tempdata(self%lc3i))
         do iparm=1,self%l2Dax13
-          tempdata(:)=interp1(coord3,self%data2Dax13(1,:,iparm),coord3i)
+          tempdata(:)=interp1(coord3,self%data2Dax13(1,:,iparm),coord3iax13)
           self%data2Dax13i(:,:,iparm,2)=reshape(tempdata,[lc1i,lc3i])
         end do
         deallocate(tempdata)

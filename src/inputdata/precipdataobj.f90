@@ -182,11 +182,12 @@ contains
     class(curvmesh), intent(in) :: x
     integer :: ix2,ix3,iflat
 
+    ! set full 2D target coordinates along axes 2,3 - these are the only targets we have for precipitation data
     do ix3=1,x%lx3
       do ix2=1,x%lx2
         iflat=(ix3-1)*x%lx2+ix2
-        self%coord2i(iflat)=x%phi(x%lx1,ix2,ix3)*180._wp/pi
-        self%coord3i(iflat)=90._wp - x%theta(x%lx1,ix2,ix3)*180._wp/pi
+        self%coord2iax23(iflat)=x%phi(x%lx1,ix2,ix3)*180._wp/pi
+        self%coord3iax23(iflat)=90._wp - x%theta(x%lx1,ix2,ix3)*180._wp/pi
       end do
     end do
 
