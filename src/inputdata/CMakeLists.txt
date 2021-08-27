@@ -7,4 +7,4 @@ add_library(precipdata OBJECT precipdataobj.f90)
 target_link_libraries(precipdata PRIVATE const config meshobj interp timeutils mpimod inputdata MPI::MPI_Fortran)
 
 add_library(efielddata OBJECT efielddataobj.f90)
-target_link_libraries(efielddata PRIVE const config grid meshobj interp timeutils inputdata)
+target_link_libraries(efielddata PRIVATE const config grid meshobj interp timeutils inputdata)

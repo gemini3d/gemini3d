@@ -29,7 +29,7 @@ use multifluid, only : fluid_adv
 use msis_interface, only : msisinit
 use neutral, only : neutral_atmos,make_dneu,neutral_perturb,clear_dneu,init_neutrals, neutral_winds
 
-use potentialBCs_mumps, only: clear_potential_fileinput, init_Efieldinput
+use potentialBCs_mumps, only: init_Efieldinput
 use potential_comm,only : electrodynamics,pot2perpfield,velocities, get_BGEfields
 use collisions, only: conductivities
 use precipBCs_mod, only: init_precipinput
@@ -452,7 +452,7 @@ if (cfg%flagglow/=0) deallocate(iver)
 call clear_dneu()
 ! now taken care of by an object destructor...
 !call clear_precip_fileinput()
-call clear_potential_fileinput()
+!call clear_potential_fileinput()
 !call clear_BGfield()
 
 
