@@ -14,6 +14,7 @@ add_test(NAME ${name}:download
   COMMAND ${CMAKE_COMMAND} -Dname=${name} -Doutdir:PATH=${out_dir} -Drefroot:PATH=${ref_root} -P ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/download.cmake)
 set_tests_properties(${name}:download PROPERTIES
   FIXTURES_SETUP ${name}:download_fxt
+  RESOURCE_LOCK download_lock  # avoid anti-leeching transient failures
   LABELS download
   TIMEOUT 180)
 
