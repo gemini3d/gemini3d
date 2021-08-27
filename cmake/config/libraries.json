@@ -6,7 +6,7 @@
 
 "h5fortran": {
   "git": "https://github.com/geospace-code/h5fortran.git",
-  "tag": "v4.2.2"
+  "tag": "v4.2.3"
 },
 "nc4fortran": {
   "git": "https://github.com/geospace-code/nc4fortran.git",
@@ -39,15 +39,15 @@
 
 "mumps": {
   "git": "https://github.com/scivision/mumps.git",
-  "tag": "885cb524deb60f38965af78dd3fec25f483a78bf"
+  "tag": "v5.4.1.1"
 },
 "scalapack": {
   "git": "https://github.com/scivision/scalapack.git",
-  "tag": "1f567182ca3213f034409c6b1625473ff949590b"
+  "tag": "v2.1.0.27"
 },
 "lapack": {
   "git": "https://github.com/scivision/lapack.git",
-  "tag": "v3.10.0.0"
+  "tag": "v3.10.0.1"
 },
 
 "matgemini": {
