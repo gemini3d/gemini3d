@@ -67,7 +67,7 @@ contains
     self%l3D=l3D
 
     ! coordinate axis sizes for interpolation sites
-    self%lc1i=1;       ! note this dataset has a 2D target interpolation grid 
+    self%lc1i=x%lx1;       ! note this dataset has a 2D target interpolation grid 
     self%lc2i=x%lx2; self%lc3i=x%lx3;
 
     ! check that the user is trying something sensible

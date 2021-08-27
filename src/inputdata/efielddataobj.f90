@@ -10,6 +10,7 @@ use inputdataobj, only: inputdata
 use meshobj, only: curvmesh
 use config, only: gemini_cfg
 use reader, only: get_simsize2,get_grid2,get_efield
+!! note that only root uses this data object since this concerns the potential solver
 !use mpimod, only: mpi_integer,mpi_comm_world,mpi_status_ignore,mpi_realprec,mpi_cfg,tag=>gemini_mpi
 use timeutils, only: dateinc,date_filename
 use grid, only: lx1,lx2,lx2all,lx3,lx3all,gridflag
@@ -249,17 +250,28 @@ contains
     endif
 
     !! by default the code uses 300km altitude as a reference location, using the center x2,x3 point
+    !! These are the coordinates for inputs varying along axes 2,3
     ix1ref=minloc(abs(x%rall(:,ix2ref,ix3ref)-Re-300e3_wp),1)
     do ix3=1,lx3all
       do ix2=1,lx2all
         iflat=(ix3-1)*lx2all+ix2
-        self%coord3i(iflat)=90-x%thetaall(ix1ref,ix2,ix3)*180/pi
-        self%coord2i(iflat)=x%phiall(ix1ref,ix2,ix3)*180/pi
+        self%coord3iax23(iflat)=90-x%thetaall(ix1ref,ix2,ix3)*180/pi
+        self%coord2iax23(iflat)=x%phiall(ix1ref,ix2,ix3)*180/pi
       end do
     end do
     if (debug) print '(A,4F7.2)', 'Grid has mlon,mlat range:  ',minval(self%coord2i),maxval(self%coord2i), &
                                      minval(self%coord3i),maxval(self%coord3i)
     if (debug) print *, 'Grid has size:  ',iflat
+
+    !! for electric field input data we also have some things that vary along axis 3 only
+    do ix3=1,x%lx3all
+      self%coord3iax3(ix3)=90-x%thetaall(ix1ref,ix2,ix3)*180/pi
+    end do
+
+    !! for BCs varing along axis 2 only
+    do ix2=1,x%lx2all
+      self%coord2iax2(ix2)=x%phiall(ix1ref,ix2,ix3)*180/pi
+    end do
 
     !! mark coordinates as set
     self%flagcoordsi=.true.
