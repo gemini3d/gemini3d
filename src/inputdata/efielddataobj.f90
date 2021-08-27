@@ -49,6 +49,7 @@ type, extends(inputdata) :: efielddata
   contains
     ! overriding procedures
     procedure :: set_sizes=>set_sizes_efield
+    procedure :: init_storage=>init_storage_efield    ! override to change to global grid sizes...
 
     ! deferred bindings
     procedure :: init=>init_efield
