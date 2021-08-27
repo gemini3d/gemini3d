@@ -1,12 +1,23 @@
-cmake_minimum_required(VERSION 3.19)
+cmake_minimum_required(VERSION 3.19...3.21)
 
 include(${CMAKE_CURRENT_LIST_DIR}/../CheckTLS.cmake)
 check_tls()
 
-function(download_archive url archive hash)
+function(download_archive url archive exp_hash)
 
-message(STATUS "DOWNLOAD: ${url} => ${archive}  sha256: ${hash}")
-file(DOWNLOAD ${url} ${archive} EXPECTED_HASH SHA256=${hash})
+message(STATUS "DOWNLOAD: ${url} => ${archive}  sha256: ${exp_hash}")
+file(DOWNLOAD ${url} ${archive} INACTIVITY_TIMEOUT 15)
+file(SHA256 ${archive} hash)
+
+if(hash STREQUAL ${exp_hash})
+  return()
+endif()
+
+if(hash STREQUAL "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855")
+  message(FATAL_ERROR "${url} failed to download: ${archive} is an empty file.")
+endif()
+
+message(FATAL_ERROR "${url} failed to download ${archive}")
 
 endfunction(download_archive)
 
