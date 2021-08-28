@@ -91,6 +91,9 @@ subroutine potentialBCs2D_fileinput(dtmodel,t,ymd,UTsec,cfg,x,Vminx1,Vmaxx1,Vmin
   !! now we need to take data in the efield object and map along the field lines
   call compute_rootBGEfields(x,E02all,E03all)
 
+  !! object double flag to int
+  flagdirich=nint(efield%flagdirich)
+
   !! set boundary condition output arguments based on object data
   do ix3=1,lx3all
     do ix2=1,lx2all
@@ -165,9 +168,6 @@ subroutine potentialBCs2D_fileinput(dtmodel,t,ymd,UTsec,cfg,x,Vminx1,Vmaxx1,Vmin
       end if
     end if
   end if
-
-  !! lastly cast object double flag to int
-  flagdirich=nint(efield%flagdirich)
 end subroutine potentialBCs2D_fileinput
 
 

@@ -49,7 +49,6 @@ type, extends(inputdata) :: efielddata
   contains
     ! overriding procedures
     procedure :: set_sizes=>set_sizes_efield
-    procedure :: init_storage=>init_storage_efield    ! override to change to global grid sizes...
 
     ! deferred bindings
     procedure :: init=>init_efield
@@ -88,8 +87,8 @@ contains
     self%l3D=l3D
 
     ! coordinate axis sizes for interpolation states
-    self%lc1i=1;       ! note this dataset has 1D and 2D target interpolation grid 
-    self%lc2i=x%lx2; self%lc3i=x%lx3;
+    self%lc1i=x%lx1;       ! note this dataset has 1D and 2D target interpolation grid 
+    self%lc2i=x%lx2all; self%lc3i=x%lx3all;
 
     ! check that the user is trying something sensible
     if (self%lc1==1 .and. self%lc1i/=1 .or. self%lc2==1 .and. self%lc2i/=1 &
@@ -204,7 +203,7 @@ contains
 
     print '(A,2I6)', 'Precipitation size: llon,llat:  ',self%llon,self%llat
     if (self%llon < 1 .or. self%llat < 1) then
-     print*, '  precipitation grid size must be strictly positive: ' //  self%sourcedir
+     print*, '  efielddata grid size must be strictly positive: ' //  self%sourcedir
      error stop
     end if
 
@@ -266,12 +265,12 @@ contains
 
     !! for electric field input data we also have some things that vary along axis 3 only
     do ix3=1,x%lx3all
-      self%coord3iax3(ix3)=90-x%thetaall(ix1ref,ix2,ix3)*180/pi
+      self%coord3iax3(ix3)=90-x%thetaall(ix1ref,1,ix3)*180/pi     ! default to ix2=1 side of the grid
     end do
 
     !! for BCs varing along axis 2 only
     do ix2=1,x%lx2all
-      self%coord2iax2(ix2)=x%phiall(ix1ref,ix2,ix3)*180/pi
+      self%coord2iax2(ix2)=x%phiall(ix1ref,ix2,1)*180/pi          ! default to ix3=1 side of the grid
     end do
 
     !! mark coordinates as set
@@ -294,12 +293,15 @@ contains
     call dateinc(self%dt, ymdtmp, UTsectmp)
 
     !! this read must be done repeatedly through simulation so have only root do file io
+    print*, '  date and time:  ',ymdtmp,UTsectmp
+    print*, '  efield filename:  ',date_filename(self%sourcedir,ymdtmp,UTsectmp)
     call get_Efield(date_filename(self%sourcedir, ymdtmp, UTsectmp), &
       flagdirich_int,self%E0xp,self%E0yp,self%Vminx1p,self%Vmaxx1p,&
       self%Vminx2pslice,self%Vmaxx2pslice,self%Vminx3pslice,self%Vmaxx3pslice)
     self%flagdirich=real(flagdirich_int,wp)
 
     if (debug) then
+      print*, ' Solve type:  ', self%flagdirich
       print *, 'Min/max values for E0xp:  ',minval(self%E0xp),maxval(self%E0xp)
       print *, 'Min/max values for E0yp:  ',minval(self%E0yp),maxval(self%E0yp)
       print *, 'Min/max values for Vminx1p:  ',minval(self%Vminx1p),maxval(self%Vminx1p)
