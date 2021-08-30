@@ -48,7 +48,7 @@ else()
     COMMAND $<TARGET_FILE:test_potential2d> ${_potential_testfile})
 endif()
 
-if(Scotch_FOUND)
+if(MUMPS_HAVE_Scotch)
   target_link_libraries(test_potential2d PRIVATE Scotch::Scotch)
   target_link_libraries(test_potential2d PRIVATE METIS::METIS)
 endif()

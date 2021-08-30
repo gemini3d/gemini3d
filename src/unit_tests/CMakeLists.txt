@@ -43,7 +43,7 @@ FIXTURES_SETUP scalapack_fxt)
 add_executable(test_mumps test_mumps.f90)
 target_link_libraries(test_mumps PRIVATE mumps_interface
   MUMPS::MUMPS SCALAPACK::SCALAPACK LAPACK::LAPACK MPI::MPI_Fortran)
-if(Scotch_FOUND)
+if(MUMPS_HAVE_Scotch)
   target_link_libraries(test_mumps PRIVATE Scotch::Scotch)
   target_link_libraries(test_mumps PRIVATE METIS::METIS)
 endif()
