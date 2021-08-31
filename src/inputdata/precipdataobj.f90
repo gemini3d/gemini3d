@@ -126,6 +126,8 @@ contains
     self%E0pinext=>self%data2Dax23i(:,:,2,2)
     self%Qpinow=>self%data2Dax23inow(:,:,1)
     self%E0pinow=>self%data2Dax23inow(:,:,2)
+
+    ! must initialize prev state or else the first set of data will not be interpolated correctly
     self%Qpiprev=0.0
     self%Qpinext=0.0
     self%E0piprev=100.0
