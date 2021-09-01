@@ -8,3 +8,10 @@ target_link_libraries(precipdata PRIVATE const config meshobj interp timeutils m
 
 add_library(efielddata OBJECT efielddataobj.f90)
 target_link_libraries(efielddata PRIVATE const config grid meshobj interp timeutils inputdata)
+
+add_library(neutraldata OBJECT neutraldataobj.f90)
+target_link_libraries(neutraldata PRIVATE const inputdata)
+
+add_library(neutraldata3D OBJECT neutraldata3Dobj.f90 neuslab.f90)
+target_link_libraries(neutraldata3D PRIVATE const config grid meshobj interp timeutils neutraldata inputdata MPI::MPI_Fortran)
+
