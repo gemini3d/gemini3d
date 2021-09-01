@@ -24,7 +24,12 @@ type, extends(neutraldata) :: neutraldata3D
   ! projection factors needed to rotate input data onto grid
   real(wp), dimension(:,:,:), allocatable :: proj_ezp_e1,proj_ezp_e2,proj_ezp_e3    !these projections are used in the axisymmetric interpolation
   real(wp), dimension(:,:,:), allocatable :: proj_eyp_e1,proj_eyp_e2,proj_eyp_e3    !these are for Cartesian projections
-  real(wp), dimension(:,:,:), allocatable :: proj_exp_e1,proj_exp_e2,proj_exp_e3 
+  real(wp), dimension(:,:,:), allocatable :: proj_exp_e1,proj_exp_e2,proj_exp_e3
+
+  ! mpi-related information on subgrid extents and indices
+  real(wp), dimension(:,:), allocatable :: extents    !roots array that is used to store min/max x,y,z of each works
+  integer, dimension(:,:), allocatable :: indx        !roots array that contain indices for each workers needed piece of the neutral data
+  integer, dimension(:,:), allocatable :: slabsizes  
   contains
     ! replacement for gridsize and gridload
     procedure :: load_sizeandgrid_neu3D
@@ -37,8 +42,8 @@ type, extends(neutraldata) :: neutraldata3D
     ! bindings for deferred procedures
     procedure :: init=>init_neu3D
     procedure :: load_data=>load_data_neu3D
-    procedure :: load_grid=>null()    ! these procedure pointers must be set to somethign since deferred but we have other ways of setting source grid...
-    procedure :: load_size=>null()  
+    procedure :: load_grid=>load_grid_neu3D    ! does nothing see load_sizeandgrid_neu3D()
+    procedure :: load_size=>load_size_neu3D    ! does nothing "
     procedure :: set_coordsi=>set_coordsi_neu3D
 
     ! destructor
@@ -72,7 +77,7 @@ end interface
 
 contains
   !> initialize storage for this type of neutral input data
-  subroutine init_neu3D(self,sourcedir,dtneu)
+  subroutine init_neu3D(self,cfg,sourcedir,dtmodel,dtdata,ymd,UTsec)
     class(neutraldata3D), intent(inout) :: self
     character, dimension(:), intent(in) :: sourcedir
     integer :: lc1,lc2,lc3
@@ -89,7 +94,7 @@ contains
     allocate(self%lc1,self%lc2,self%lc3)           ! these are pointers
     self%lzn=>lc1; self%lxn=>lc2; self%lyn=>lc3;   ! these referenced while reading size and grid data
     self%zn=>self%coord1; self%xn=>self%coord2; self%yn=>self%coord3;
-    call self%load_sizeandgrid_neu3D()
+    call self%load_sizeandgrid_neu3D(cfg)          ! cfg needed to form source neutral grid
     call self%set_sizes( &
              0, &          ! number scalar parts to dataset
              0, 0, 0, &    ! number 1D data along each axis
@@ -99,7 +104,7 @@ contains
 
     ! allocate space for arrays
     call self%init_storage()
-    call self%set_cadence(dtneu)
+    call self%set_cadence(dtdata)
 
     ! set aliases to point to correct source data arrays
     self%dnO=>self%data3D(:,:,:,1)
@@ -191,19 +196,35 @@ contains
   end subroutine init_storage
 
 
+  !> do nothing stub
+  subroutine load_size_neu3D(self)
+    class(neutraldata3D), intent(in) :: self
+
+  end subroutine load_size_neu3D
+
+
+  !> do nothing
+  subroutine load_grid_neu3D(self)
+    class(neutraldata3D), intent(in) :: self
+
+  end subroutine load_grid_neu3D
+
+
   !> load source data size and grid information and communicate to worker processes.  Note that this routine will allocate sizes for source coordinate
   !    grids in constrast with other inputdata type extensions which have separate load_size, allocate, and load_grid procedures.  
-  subroutine load_sizeandgrid_neu3D(self)
+  subroutine load_sizeandgrid_neu3D(self,cfg)
     class(neutraldata3D), intent(inout) :: self
+    type(gemini_cfg), intent(in) :: cfg
     real(wp), dimension(:), allocatable :: zn,xnall,ynall    ! space to store input grid data while it is distributed to workers
     integer :: ix1,ix2,ix3,ihorzn,izn,iid,ierr
+    integer, dimension(:,:) :: extents
 
 
     !Establish the size of the grid based on input file and distribute to workers
     if (mpi_cfg%myid==0) then    !root
-      print '(A,/,A)', 'READ neutral size from:', cfg%sourcedir
+      print '(A,/,A)', 'READ neutral size from:', self%sourcedir
     
-      call get_simsize3(cfg%sourcedir, lx1=lxnall, lx2all=lynall, lx3all=lzn)
+      call get_simsize3(self%sourcedir, lx1=lxnall, lx2all=lynall, lx3all=lzn)
     
       print *, 'Neutral data has lx,ly,lz size:  ',lxnall,lynall,lzn,' with spacing dx,dy,dz',cfg%dxn,cfg%drhon,cfg%dzn
       if (lxnall < 1 .or. lynall < 1 .or. lzn < 1) then
@@ -240,7 +261,7 @@ contains
     
       !calculate the extent of my piece of the grid using max altitude specified for the neutral grid
       call slabrange(maxzn,ximat,yimat,zimat,cfg%sourcemlat,xnrange,ynrange)
-      allocate(extents(0:mpi_cfg%lid-1,6),indx(0:mpi_cfg%lid-1,6),slabsizes(0:mpi_cfg%lid-1,2))
+      allocate(self%extents(0:mpi_cfg%lid-1,6),self%indx(0:mpi_cfg%lid-1,6),self%slabsizes(0:mpi_cfg%lid-1,2))
       extents(0,1:6)=[0._wp,maxzn,xnrange(1),xnrange(2),ynrange(1),ynrange(2)]
     
       !receive extents of each of the other workers: extents(mpi_cfg%lid,6)
@@ -556,12 +577,34 @@ contains
     ! execute a basic update
     call self%update_simple(cfg,dtmodel,t,x,ymd,UTsec)
 
-    ! now we need to rotate velocity fields
+    ! now we need to rotate velocity fields following interpolation (they are magnetic ENU prior to this step)
     call self%rotate_winds()
   end subroutine update
 
 
-  
+  !> This subroutine takes winds in the vn
+  subroutine rotate_winds(self)
+    class(neutraldata3D), intent(inout) :: self
+    integer :: ix1,ix2,ix3
+    real(wp) :: vnx,vny,vnz
+
+    ! do rotations one grid point at a time to cut down on temp storage needed
+    do ix3=1,self%lc3i
+      do ix2=1,self%lc2i
+        do ix1=1,self%lc3i
+          vnz=self%dvn1inext(ix1,ix2,ix3)
+          vnx=self%dvn2inext(ix1,ix2,ix3)
+          vny=self%dvn3inext(ix1,ix2,ix3)
+          self%dvn1inext(ix1,ix2,ix3)=vnz*self%proj_ezp_e1(ix1,ix2,ix3) + vnx*self%proj_exp_e1(ix1,ix2,ix3) + &
+                                        vny*self%proj_eyp_e1(ix1,ix2,ix3)
+          self%dvn2inext(ix1,ix2,ix3)=vnz*self%proj_ezp_e2(ix1,ix2,ix3) + vnx*self%proj_exp_e2(ix1,ix2,ix3) + &
+                                        vny*self%proj_eyp_e2(ix1,ix2,ix3)
+          self%dvn3inext(ix1,ix2,ix3)=vnz*self%proj_ezp_e3(ix1,ix2,ix3) + vnx*self%proj_exp_e3(ix1,ix2,ix3) + &
+                                        vny*self%proj_eyp_e3(ix1,ix2,ix3)
+        end do
+      end do
+    end do
+  end subroutine rotate_winds
 
 
   !> destructor for when object goes out of scope
@@ -574,6 +617,7 @@ contains
     ! now arrays specific to this extension
     deallocate(self%proj_ezp_e1,self%proj_ezp_e2,self%proj_ezp_e3)
     deallocate(self%proj_eyp_e1,self%proj_eyp_e2,self%proj_eyp_e3)
-    deallocate(self%proj_exp_e1,self%proj_exp_e2,self%proj_exp_e3) 
+    deallocate(self%proj_exp_e1,self%proj_exp_e2,self%proj_exp_e3)
+    deallocate(self%extents,self%indx,self%slabsizes)
   end subroutine destructor
 end module neutraldata3Dobj
