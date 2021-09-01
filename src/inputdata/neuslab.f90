@@ -148,12 +148,4 @@ contains
   
     call mpi_recv(param,lzn*lxn*lyn,mpi_realprec,0,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
   end procedure dneu_workers_from_root
-
-
-  !> get a chunk of neutral data from root
-  module procedure dneu_workers_from_root
-    integer :: ierr
-  
-    call mpi_recv(param,lzn*lxn*lyn,mpi_realprec,0,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-  end procedure dneu_workers_from_root
 end submodule neuslab
