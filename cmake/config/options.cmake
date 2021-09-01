@@ -90,3 +90,14 @@ if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
   # will not take effect without FORCE
   set(CMAKE_INSTALL_PREFIX ${PROJECT_BINARY_DIR} CACHE PATH "Install top-level directory" FORCE)
 endif()
+
+# --- detect MacPorts and hint its location
+# this helps avoid issues with Anaconda overriding HDF5 with its broken compiler wrapper
+if(APPLE)
+  if(NOT DEFINED ENV{HOMEBREW_PREFIX} AND NOT DEFINED ENV{MACPORTS_PREFIX})
+    find_program(MACPORTS NAMES port)
+    if(MACPORTS)
+      cmake_path(GET MACPORTS PARENT_PATH MACPORTS_PREFIX)
+    endif()
+  endif()
+endif()
