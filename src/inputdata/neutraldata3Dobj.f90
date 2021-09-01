@@ -1,7 +1,14 @@
 module neutraldata3Dobj
 
 use phys_consts, only: wp
+use inputdataobj, only: inputdata
 use neutraldataobj, only: neutraldata
+use meshobj, only: curvmesh
+use config, only: gemini_cfg
+use reader, only: get_simsize2,get_grid2,get_precip
+use mpimod, only: mpi_integer,mpi_comm_world,mpi_status_ignore,mpi_realprec,mpi_cfg,tag=>gemini_mpi
+use timeutils, only: dateinc,date_filename
+
 implicit none (type,external)
 
 
@@ -33,6 +40,7 @@ type, extends(neutraldata) :: neutraldata3D
     procedure :: load_size=>null()  
     procedure :: set_coordsi=>set_coordsi_neu3D
 
+    ! destructor
     final :: destructor
 end type neutraldata3D
 
@@ -383,43 +391,43 @@ contains
     
           tmpvec=ezp*x%e2(ix1,ix2,ix3,:)
           tmpsca=sum(tmpvec)
-          proj_ezp_e2(ix1,ix2,ix3)=tmpsca
+          self%proj_ezp_e2(ix1,ix2,ix3)=tmpsca
     
           tmpvec=ezp*x%e1(ix1,ix2,ix3,:)
           tmpsca=sum(tmpvec)
-          proj_ezp_e1(ix1,ix2,ix3)=tmpsca
+          self%proj_ezp_e1(ix1,ix2,ix3)=tmpsca
     
           tmpvec=ezp*x%e3(ix1,ix2,ix3,:)
           tmpsca=sum(tmpvec)    !should be zero, but leave it general for now
-          proj_ezp_e3(ix1,ix2,ix3)=tmpsca
+          self%proj_ezp_e3(ix1,ix2,ix3)=tmpsca
     
           eyp= -x%etheta(ix1,ix2,ix3,:)
     
           tmpvec=eyp*x%e1(ix1,ix2,ix3,:)
           tmpsca=sum(tmpvec)
-          proj_eyp_e1(ix1,ix2,ix3)=tmpsca
+          self%proj_eyp_e1(ix1,ix2,ix3)=tmpsca
     
           tmpvec=eyp*x%e2(ix1,ix2,ix3,:)
           tmpsca=sum(tmpvec)
-          proj_eyp_e2(ix1,ix2,ix3)=tmpsca
+          self%proj_eyp_e2(ix1,ix2,ix3)=tmpsca
     
           tmpvec=eyp*x%e3(ix1,ix2,ix3,:)
           tmpsca=sum(tmpvec)
-          proj_eyp_e3(ix1,ix2,ix3)=tmpsca
+          self%proj_eyp_e3(ix1,ix2,ix3)=tmpsca
     
           exprm=x%ephi(ix1,ix2,ix3,:)   !for 3D interpolation need to have a unit vector/projection onto x-direction (longitude)
     
           tmpvec=exprm*x%e1(ix1,ix2,ix3,:)
           tmpsca=sum(tmpvec)
-          proj_exp_e1(ix1,ix2,ix3)=tmpsca
+          self%proj_exp_e1(ix1,ix2,ix3)=tmpsca
     
           tmpvec=exprm*x%e2(ix1,ix2,ix3,:)
           tmpsca=sum(tmpvec)
-          proj_exp_e2(ix1,ix2,ix3)=tmpsca
+          self%proj_exp_e2(ix1,ix2,ix3)=tmpsca
     
           tmpvec=exprm*x%e3(ix1,ix2,ix3,:)
           tmpsca=sum(tmpvec)
-          proj_exp_e3(ix1,ix2,ix3)=tmpsca
+          self%proj_exp_e3(ix1,ix2,ix3)=tmpsca
         end do
       end do
     end do
