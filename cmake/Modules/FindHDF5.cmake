@@ -350,6 +350,7 @@ endif()
 
 find_program(HDF5_Fortran_COMPILER_EXECUTABLE
   NAMES ${wrapper_names}
+  NAMES_PER_DIR
   HINTS ENV HOMEBREW_PREFIX
   PATHS ${hdf5_binpref}
   PATH_SUFFIXES ${hdf5_binsuf}
@@ -387,6 +388,7 @@ set(inc_dirs)
 
 find_program(HDF5_CXX_COMPILER_EXECUTABLE
   NAMES h5c++ h5c++-64
+  NAMES_PER_DIR
   HINTS ENV HOMEBREW_PREFIX
   PATHS ${hdf5_binpref}
   PATH_SUFFIXES ${hdf5_binsuf}
@@ -421,8 +423,11 @@ if(NOT parallel IN_LIST HDF5_FIND_COMPONENTS)
   list(PREPEND wrapper_names h5cc h5cc-64)
 endif()
 
+# NOTE: NAMES_PER_DIR is important to help override Anaconda's nuisance, broken h5cc
+
 find_program(HDF5_C_COMPILER_EXECUTABLE
   NAMES ${wrapper_names}
+  NAMES_PER_DIR
   HINTS ENV HOMEBREW_PREFIX
   PATHS ${hdf5_binpref}
   PATH_SUFFIXES ${hdf5_binsuf}
