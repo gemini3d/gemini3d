@@ -87,6 +87,8 @@ type, abstract :: inputdata
     procedure :: timeinterp            ! interpolate in time based on data presently loaded into spatial arrays
     procedure :: dissociate_pointers   ! clear out memory and reset and allocation status flags
     procedure :: prime_data            ! load data buffers so that the object is ready for the first time step
+    procedure :: update_simple         ! basic update steps needed for almost any datasets kind
+    procedure :: init_storage_simple   ! basic allocations needed for most datasets
 
     !! internal, data kind specific
     procedure(coordisetproc), deferred :: set_coordsi       ! use grid data to compute coordinates of the interpolation sites
@@ -172,8 +174,16 @@ contains
   end subroutine set_sizes
 
 
-  !> allocate space to store inputdata
+  !> wrapper for allocations, should be overridden by type extensions if needed
   subroutine init_storage(self)
+    class(inputdata), intent(inout) :: self
+
+    call self%init_storage_simple()
+  end subroutine init_storage
+
+
+  !> allocate space to store inputdata
+  subroutine init_storage_simple(self)
     class(inputdata), intent(inout) :: self
     integer :: lc1,lc2,lc3
     integer :: lc1i,lc2i,lc3i
@@ -226,7 +236,7 @@ contains
     allocate(self%data3Dinow(lc1i,lc2i,lc3i,l3D))
 
     self%flagalloc=.true.
-  end subroutine init_storage
+  end subroutine init_storage_simple
 
 
   !> set the dataset names
@@ -319,8 +329,22 @@ contains
   end subroutine prime_data
 
 
-  !> wrapper routine to execute various steps needed to update input data to present time
+  !> default wrapper for updates, extension can override as needed or just adopt this default
   subroutine update(self,cfg,dtmodel,t,x,ymd,UTsec)
+    class(inputdata), intent(inout) :: self
+    type(gemini_cfg), intent(in) :: cfg
+    real(wp), intent(in) :: dtmodel    ! need both model and input data time stepping
+    real(wp), intent(in) :: t                 ! simulation absoluate time for which perturabation is to be computed
+    class(curvmesh), intent(in) :: x         ! mesh object
+    integer, dimension(3), intent(in) :: ymd    ! date for which we wish to calculate perturbations
+    real(wp), intent(in) :: UTsec               ! UT seconds for which we with to compute perturbations
+
+    call self%update_simple(cfg,dtmodel,t,x,ymd,UTsec)
+  end subroutine update
+
+
+  !> routine to execute various steps needed to update input data to present time
+  subroutine update_simple(self,cfg,dtmodel,t,x,ymd,UTsec)
     class(inputdata), intent(inout) :: self
     type(gemini_cfg), intent(in) :: cfg
     real(wp), intent(in) :: dtmodel    ! need both model and input data time stepping
@@ -376,7 +400,7 @@ contains
     
     !Interpolation in time
     call self%timeinterp(t,dtmodel)
-  end subroutine update
+  end subroutine update_simple
 
 
   !> use data stored in input arrays to interpolate onto grid sites for "next" dataset.  There may be a need here to
