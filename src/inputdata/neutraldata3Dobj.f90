@@ -22,12 +22,18 @@ type, extends(neutraldata) :: neutraldata3D
     ! replacement for gridsize and gridload
     procedure :: load_sizeandgrid_neu3D
 
+    ! overriding procedures
+    procedure :: update
+    procedure :: init_storage
+
     ! bindings for deferred procedures
     procedure :: init=>init_neu3D
     procedure :: load_data=>load_data_neu3D
     procedure :: load_grid=>null()    ! these procedure pointers must be set to somethign since deferred but we have other ways of setting source grid...
     procedure :: load_size=>null()  
     procedure :: set_coordsi=>set_coordsi_neu3D
+
+    final :: destructor
 end type neutraldata3D
 
 
@@ -114,7 +120,7 @@ contains
 
 
   !> create storage for arrays needed specifically for 3D neutral input calculations, overrides the base class procedure
-  subroutine init_storage_neu3D(self)
+  subroutine init_storage(self)
     class(neutraldata3D), intent(inout) :: self
     integer :: lc1,lc2,lc3
     integer :: lc1i,lc2i,lc3i
@@ -167,11 +173,14 @@ contains
     allocate(self%data3Dinow(lc1i,lc2i,lc3i,l3D))
 
     ! geometric projections for vectors
+    allocate(self%proj_ezp_e1(lc1i,lc2i,lc3i),self%proj_ezp_e2(lc1i,lc2i,lc3i),self%proj_ezp_e3(lc1i,lc2i,lc3i))
+    allocate(self%proj_eyp_e1(lc1i,lc2i,lc3i),self%proj_eyp_e2(lc1i,lc2i,lc3i),self%proj_eyp_e3(lc1i,lc2i,lc3i))
+    allocate(self%proj_exp_e1(lc1i,lc2i,lc3i),self%proj_exp_e2(lc1i,lc2i,lc3i),self%proj_exp_e3(lc1i,lc2i,lc3i)) 
 
     ! other things to be added? 
 
     self%flagalloc=.true.
-  end subroutine init_storage_neu3D
+  end subroutine init_storage
 
 
   !> load source data size and grid information and communicate to worker processes.  Note that this routine will allocate sizes for source coordinate
@@ -524,4 +533,36 @@ contains
     !  print*, 'coordinate ranges:  ',minval(zn),maxval(zn),minval(rhon),maxval(rhon),minval(zi),maxval(zi),minval(rhoi),maxval(rhoi)
     end if
   end subroutine load_data_neu3D
+
+
+  !> overriding procedure for updating neutral atmos (need additional rotation steps)
+  subroutine update(self,cfg,dtmodel,t,x,ymd,UTsec)
+    class(inputdata), intent(inout) :: self
+    type(gemini_cfg), intent(in) :: cfg
+    real(wp), intent(in) :: dtmodel             ! need both model and input data time stepping
+    real(wp), intent(in) :: t                   ! simulation absoluate time for which perturabation is to be computed
+    class(curvmesh), intent(in) :: x            ! mesh object
+    integer, dimension(3), intent(in) :: ymd    ! date for which we wish to calculate perturbations
+    real(wp), intent(in) :: UTsec               ! UT seconds for which we with to compute perturbations
+
+    ! execute a basic update
+    call self%update_simple(cfg,dtmodel,t,x,ymd,UTsec)
+
+    ! now we need to rotate velocity fields
+    
+  end subroutine update
+
+
+  !> destructor for when object goes out of scope
+  subroutine destructor(self)
+    type(neutraldata3D) :: self
+
+    ! deallocate arrays from base class
+    call self%dissociate_pointers()
+
+    ! now arrays specific to this extension
+    deallocate(self%proj_ezp_e1,self%proj_ezp_e2,self%proj_ezp_e3)
+    deallocate(self%proj_eyp_e1,self%proj_eyp_e2,self%proj_eyp_e3)
+    deallocate(self%proj_exp_e1,self%proj_exp_e2,self%proj_exp_e3) 
+  end subroutine destructor
 end module neutraldata3Dobj
