@@ -28,6 +28,7 @@ type, extends(neutraldata) :: neutraldata3D
   contains
     ! replacement for gridsize and gridload
     procedure :: load_sizeandgrid_neu3D
+    procedure :: rotate_winds
 
     ! overriding procedures
     procedure :: update
@@ -98,7 +99,6 @@ contains
 
     ! allocate space for arrays
     call self%init_storage()
-    call self%init_stoarge_neu3D()     ! additional work array space for 3D neutral input, may want to override base class init_storage so that we can pre-initialized the source data coordinates and not have the dealloc and realloc...
     call self%set_cadence(dtneu)
 
     ! set aliases to point to correct source data arrays
@@ -557,8 +557,11 @@ contains
     call self%update_simple(cfg,dtmodel,t,x,ymd,UTsec)
 
     ! now we need to rotate velocity fields
-    
+    call self%rotate_winds()
   end subroutine update
+
+
+  
 
 
   !> destructor for when object goes out of scope
