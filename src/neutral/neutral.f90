@@ -121,6 +121,9 @@ real(wp), dimension(:,:,:), allocatable :: proj_ealt_e1,proj_ealt_e2,proj_ealt_e
 real(wp), dimension(:,:,:), allocatable :: proj_eglat_e1,proj_eglat_e2,proj_eglat_e3
 real(wp), dimension(:,:,:), allocatable :: proj_eglon_e1,proj_eglon_e2,proj_eglon_e3
 
+!! new module variables for OO refactor
+class(neutraldata), allocatable :: atmosperturb
+
 contains
 
 !> initializes neutral atmosphere by:
@@ -165,27 +168,17 @@ subroutine init_neutrals(dt,t,cfg,ymd,UTsec,x,v2grid,v3grid,nn,Tn,vn1,vn2,vn3)
     call cpu_time(tfin)
     print *, 'Initial neutral winds (from HWM) at time:  ',ymd,UTsec,' calculated in time:  ',tfin-tstart
   end if
-  
+
+
+  !! perform an initialization
   if (cfg%flagdneu==1) then
-    !! find the last input data preceding the milestone/initial condition that we start with
-    call find_lastdate(cfg%ymd0,cfg%UTsec0,ymd,UTsec,cfg%dtneu,ymdtmp,UTsectmp)
+    !! allocate correct type, FIXME: no shunt to 3D
+    select case (cfc%interptype)
+    case default
+      allocate(neutraldata3D::atmosperturb)
+    end select case
   
-    !! Loads the neutral input file corresponding to the "first" time step of the simulation to prevent the first interpolant
-    !  from being zero and causing issues with restart simulations.  I.e. make sure the neutral buffers are primed for restart
-    !  This requires us to load file input twice, once corresponding to the initial frame and once for the "first, next" frame.
-    tprev=UTsectmp-UTsec-2*cfg%dtneu
-    tnext=tprev+cfg%dtneu
-    if (mpi_cfg%myid==0) print*, '!!!Attempting initial load of neutral dynamics files!!!' // &
-                             ' This is a workaround to insure compatibility with restarts...',ymdtmp,UTsectmp
-    !! We essentially are loading up the data corresponding to halfway betwween -dtneu and t0 (zero).  This will load
-    !   two time levels back so when tprev is incremented twice it will be the true tprev corresponding to first time step
-    call neutral_perturb(cfg,dt,cfg%dtneu,tnext+cfg%dtneu/2,ymdtmp,UTsectmp-cfg%dtneu, &
-                          x,v2grid,v3grid,nn,Tn,vn1,vn2,vn3)  !abs time arg to be < 0
-  
-    if (mpi_cfg%myid==0) print*, 'Now loading initial next file for neutral perturbations...'
-    !! Now compute perturbations for the present time (zero), this moves the primed variables in next into prev and then
-    !  loads up a current state so that we get a proper interpolation for the first time step.
-    call neutral_perturb(cfg,dt,cfg%dtneu,0._wp,ymdtmp,UTsectmp,x,v2grid,v3grid,nn,Tn,vn1,vn2,vn3)    !t-dt so we land exactly on start time
+    call atmosperturb%init(cfg,cft%neudir,x,dt,cfg%dtneu,ymd,UTsec)
   end if
 end subroutine init_neutrals
 
