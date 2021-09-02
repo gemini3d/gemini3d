@@ -15,7 +15,11 @@ contains
     integer :: ix1tmp
     logical :: flagSH
     integer :: ix1
-    
+    integer :: lx1,lx2,lx3
+   
+    ! compute sizes from input arrays
+    lx1=size(zimat,1); lx2=size(zimat,2); lx3=size(zimat,3);
+
     !in what hemisphere is our source?
     if (sourcemlat<=0) then
       flagSH=.true.
@@ -77,6 +81,10 @@ contains
   module procedure range2inds
     real(wp) :: minzn,maxzn,minxn,maxxn,minyn,maxyn
     integer :: ixn,iyn
+    integer :: lzn,lxnall,lynall
+
+    ! pick off sizes for later use
+    lzn=size(zn,1); lxnall=size(xnall,1); lynall=size(ynall,1);
     
     !for clarity
     minzn=ranges(1)
@@ -129,6 +137,7 @@ contains
   module procedure dneu_root2workers
     integer :: iid,ierr
     real(wp), dimension(:,:,:), allocatable :: parmtmp
+    integer :: lzn
  
     lzn=size(paramall,1)
  

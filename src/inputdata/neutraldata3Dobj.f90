@@ -13,6 +13,7 @@ use timeutils, only: dateinc,date_filename
 use h5fortran, only: hdf5_file
 use reader, only : get_simsize3
 use pathlib, only: get_suffix,get_filename
+use grid, only: gridflag
 
 implicit none (type,external)
 external :: mpi_send,mpi_recv
@@ -64,11 +65,12 @@ end type neutraldata3D
 
 !> interfaces for submodule "utility" procedures
 interface ! neuslab.f90
-  module subroutine slabrange(maxzn,ximat,yimat,zimat,sourcemlat,xnrange,ynrange)
+  module subroutine slabrange(maxzn,ximat,yimat,zimat,sourcemlat,xnrange,ynrange,gridflag)
     real(wp), intent(in) :: maxzn
     real(wp), dimension(:,:,:), intent(in) :: ximat,yimat,zimat
     real(wp), intent(in) :: sourcemlat
     real(wp), dimension(2), intent(out) :: xnrange,ynrange     !for min and max
+    integer, intent(in) :: gridflag
   end subroutine slabrange
   module subroutine  range2inds(ranges,zn,xnall,ynall,indices)
     real(wp), dimension(6), intent(in) :: ranges
@@ -78,8 +80,8 @@ interface ! neuslab.f90
   module subroutine dneu_root2workers(paramall,tag,slabsizes,indx,param)
     real(wp), dimension(:,:,:), intent(in) :: paramall
     integer, intent(in) :: tag
-    integer, dimension(:,:), intent(in) :: slabsizes
-    integer, dimension(:,:), intent(in) :: indx
+    integer, dimension(0:,:), intent(in) :: slabsizes
+    integer, dimension(0:,:), intent(in) :: indx
     real(wp), dimension(:,:,:), intent(inout) :: param
   end subroutine dneu_root2workers
   module subroutine dneu_workers_from_root(tag,param)
@@ -285,9 +287,8 @@ contains
       print *, 'Created full neutral grid with y,z extent:',minval(self%xnall),maxval(self%xnall),minval(self%ynall), &
                     maxval(self%ynall),minval(self%zn),maxval(self%zn)
    
-      ! FIXME: need to make ximat, etc. visible to this routine 
       ! calculate the extent of my piece of the grid using max altitude specified for the neutral grid
-      call slabrange(maxzn,self%ximat,self%yimat,self%zimat,cfg%sourcemlat,xnrange,ynrange)
+      call slabrange(maxzn,self%ximat,self%yimat,self%zimat,cfg%sourcemlat,xnrange,ynrange,gridflag)
       allocate(self%extents(0:mpi_cfg%lid-1,6),self%indx(0:mpi_cfg%lid-1,6),self%slabsizes(0:mpi_cfg%lid-1,2))
       self%extents(0,1:6)=[0._wp,maxzn,xnrange(1),xnrange(2),ynrange(1),ynrange(2)]
     
@@ -344,7 +345,7 @@ contains
       maxzn=maxval(self%zn)
     
       !calculate the extent of my grid
-      call slabrange(maxzn,self%ximat,self%yimat,self%zimat,cfg%sourcemlat,xnrange,ynrange)
+      call slabrange(maxzn,self%ximat,self%yimat,self%zimat,cfg%sourcemlat,xnrange,ynrange,gridflag)
     
       !send ranges to root
       call mpi_send(xnrange,2,mpi_realprec,0,tag%xnrange,MPI_COMM_WORLD,ierr)
