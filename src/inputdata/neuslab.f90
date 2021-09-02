@@ -129,7 +129,9 @@ contains
   module procedure dneu_root2workers
     integer :: iid,ierr
     real(wp), dimension(:,:,:), allocatable :: parmtmp
-  
+ 
+    lzn=size(paramall,1)
+ 
     do iid=1,mpi_cfg%lid-1
       allocate(parmtmp(lzn,slabsizes(iid,1),slabsizes(iid,2)))    !get space for the parameters for this worker
   
@@ -144,8 +146,9 @@ contains
   
   !> get a chunk of neutral data from root
   module procedure dneu_workers_from_root
-    integer :: ierr
-  
+    integer :: ierr,lzn,lxn,lyn
+ 
+    lzn=size(param,1); lxn=size(param,2); lyn=size(param,3);
     call mpi_recv(param,lzn*lxn*lyn,mpi_realprec,0,tag,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
   end procedure dneu_workers_from_root
 end submodule neuslab

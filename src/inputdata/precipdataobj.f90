@@ -13,7 +13,6 @@ use mpimod, only: mpi_integer,mpi_comm_world,mpi_status_ignore,mpi_realprec,mpi_
 use timeutils, only: dateinc,date_filename
 
 implicit none (type, external)
-
 external :: mpi_send,mpi_recv
 public :: precipdata
 
