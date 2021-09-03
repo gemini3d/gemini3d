@@ -27,8 +27,9 @@ type, extends(neutraldata) :: neutraldata3D
   real(wp), dimension(:), pointer :: xnall,ynall
   integer :: lxnall,lynall
 
-  ! work arrays needed by various procedures
+  ! work arrays needed by various procedures re: target coordinates
   real(wp), dimension(:,:,:), allocatable :: ximat,yimat,zimat
+  real(wp), dimension(:), pointer :: zi,xi,yi
 
   ! source data pointers
   real(wp), dimension(:,:,:), pointer :: dnO,dnN2,dnO2,dvnz,dvnx,dvny,dTn
@@ -114,7 +115,8 @@ contains
     allocate(self%lc1,self%lc2,self%lc3)           ! these are pointers
     self%lzn=>self%lc1; self%lxn=>self%lc2; self%lyn=>self%lc3;   ! these referenced while reading size and grid data
     self%zn=>self%coord1; self%xn=>self%coord2; self%yn=>self%coord3;
-    call self%set_coordsi(cfg,x)
+    self%zi=>self%coord1i; self%xi=>self%coord2i; self%zi=>self%coord3i;
+    call self%set_coordsi(cfg,x)                   ! since this preceeds init_storage it must do the work of allocating some spaces
     call self%load_sizeandgrid_neu3D(cfg)          ! cfg needed to form source neutral grid
     call self%set_sizes( &
              0, &          ! number scalar parts to dataset
@@ -181,7 +183,8 @@ contains
 
     ! interpolation site arrays (note these are flat, i.e. rank 1), if one needed to save space by not allocating unused block
     !   could override this procedure...
-    allocate(self%coord1i(lc1i*lc2i*lc3i),self%coord2i(lc1i*lc2i*lc3i),self%coord3i(lc1i*lc2i*lc3i))
+    !allocate(self%coord1i(lc1i*lc2i*lc3i),self%coord2i(lc1i*lc2i*lc3i),self%coord3i(lc1i*lc2i*lc3i))
+    ! note this must be done elsewhere...
     allocate(self%coord1iax1(lc1i),self%coord2iax2(lc2i),self%coord3iax3(lc3i))
     allocate(self%coord2iax23(lc2i*lc3i),self%coord3iax23(lc2i*lc3i))
     allocate(self%coord1iax13(lc1i*lc3i),self%coord3iax13(lc1i*lc3i))
@@ -205,13 +208,6 @@ contains
     allocate(self%data1Dax1inow(lc1i,l1Dax1), self%data1Dax2inow(lc2i,l1Dax2), self%data1Dax3inow(lc3i,l1Dax3))
     allocate(self%data2Dax23inow(lc2i,lc3i,l2Dax23), self%data2Dax12inow(lc1i,lc2i,l2Dax12), self%data2Dax13inow(lc1i,lc3i,l2Dax13))
     allocate(self%data3Dinow(lc1i,lc2i,lc3i,l3D))
-
-    ! geometric projections for vectors
-    allocate(self%proj_ezp_e1(lc1i,lc2i,lc3i),self%proj_ezp_e2(lc1i,lc2i,lc3i),self%proj_ezp_e3(lc1i,lc2i,lc3i))
-    allocate(self%proj_eyp_e1(lc1i,lc2i,lc3i),self%proj_eyp_e2(lc1i,lc2i,lc3i),self%proj_eyp_e3(lc1i,lc2i,lc3i))
-    allocate(self%proj_exp_e1(lc1i,lc2i,lc3i),self%proj_exp_e2(lc1i,lc2i,lc3i),self%proj_exp_e3(lc1i,lc2i,lc3i)) 
-
-    ! other things to be added? 
 
     self%flagalloc=.true.
   end subroutine init_storage
@@ -370,15 +366,18 @@ contains
     real(wp) :: meanxn
     real(wp) :: theta1,phi1,theta2,phi2,gammarads,theta3,phi3,gamma1,gamma2,phip
     real(wp) :: xp,yp
-    real(wp), dimension(3) :: erhop,ezp,eyp,tmpvec,exprm
+    real(wp), dimension(3) :: ezp,eyp,tmpvec,exprm
     real(wp) :: tmpsca
     integer :: ix1,ix2,ix3,iyn,izn,ixn,iid,ierr
-    real(wp), dimension(x%lx1,x%lx2,x%lx3) :: zimat,yimat,ximat     ! temp arrays to hold target locations
     real(wp), dimension(:), pointer :: xi,yi,zi                     ! these are pointers into the base class data arrays
 
 
-    ! Alias target locations for clarity of code
-    zi=>self%coord1i; xi=>self%coord2i; yi=>self%coord3i;
+    ! Space for mats and projects in object
+    allocate(self%coord1i(x%lx1*x%lx2*x%lx3),self%coord2i(x%lx1*x%lx2*x%lx3),self%coord3i(x%lx1*x%lx2*x%lx3))
+    allocate(self%ximat(x%lx1,x%lx2,x%lx3),self%yimat(x%lx1,x%lx2,x%lx3),self%zimat(x%lx1,x%lx2,x%lx3))
+    allocate(self%proj_ezp_e1(x%lx1,x%lx2,x%lx3),self%proj_ezp_e2(x%lx1,x%lx2,x%lx3),self%proj_ezp_e3(x%lx1,x%lx2,x%lx3))
+    allocate(self%proj_eyp_e1(x%lx1,x%lx2,x%lx3),self%proj_eyp_e2(x%lx1,x%lx2,x%lx3),self%proj_eyp_e3(x%lx1,x%lx2,x%lx3))
+    allocate(self%proj_exp_e1(x%lx1,x%lx2,x%lx3),self%proj_exp_e2(x%lx1,x%lx2,x%lx3),self%proj_exp_e3(x%lx1,x%lx2,x%lx3)) 
 
     !Neutral source locations specified in input file, here referenced by spherical magnetic coordinates.
     phi1=cfg%sourcemlon*pi/180
@@ -387,6 +386,8 @@ contains
     !Convert plasma simulation grid locations to z,rho values to be used in interoplation.  altitude ~ zi; lat/lon --> rhoi.  Also compute unit vectors and projections
     if (mpi_cfg%myid==0) then
       print *, 'Computing alt,radial distance values for plasma grid and completing rotations'
+      print*, ' shape target:  ',shape(self%ximat),shape(self%yimat),shape(self%zimat)
+      print*, ' share vecs:  ',shape(self%proj_ezp_e1)
     end if
     self%zimat=x%alt     !vertical coordinate
     do ix3=1,x%lx3
@@ -479,9 +480,12 @@ contains
     end do
     
     !Assign values for flat lists of grid points
-    zi=pack(zimat,.true.)     !create a flat list of grid points to be used by interpolation functions
-    yi=pack(yimat,.true.)
-    xi=pack(ximat,.true.)
+    if (mpi_cfg%myid==0) then
+      print*, '...Packing interpolation target points...'
+    end if
+    self%zi=pack(self%zimat,.true.)     !create a flat list of grid points to be used by interpolation functions
+    self%yi=pack(self%yimat,.true.)
+    self%xi=pack(self%ximat,.true.)
 
     ! FIXME: do we need to have the new grid code clear its unit vectors?  Or maybe this isn't a huge waste of memory???
     if (mpi_cfg%myid==0) then
@@ -646,5 +650,6 @@ contains
     deallocate(self%proj_exp_e1,self%proj_exp_e2,self%proj_exp_e3)
     deallocate(self%extents,self%indx,self%slabsizes)
     deallocate(self%xnall,self%ynall)
+    deallocate(self%ximat,self%yimat,self%zimat)
   end subroutine destructor
 end module neutraldata3Dobj
