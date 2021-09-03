@@ -231,7 +231,6 @@ real(wp), intent(in) :: t
 integer, dimension(3), intent(in) :: ymd    !date for which we wish to calculate perturbations
 real(wp), intent(in) :: UTsec
 type(gemini_cfg), intent(in) :: cfg
-
 class(curvmesh), intent(inout) :: x
 !! grid structure  (inout because we want to be able to deallocate unit vectors once we are done with them)
 real(wp), dimension(:,:,:,:), intent(inout) :: nn
@@ -240,68 +239,7 @@ real(wp), dimension(:,:,:,:), intent(inout) :: nn
 real(wp), dimension(:,:,:), intent(inout) :: Tn,vn1,vn2,vn3
 !! intent(out)
 
-integer :: ix1,ix2,ix3,iid
-integer, dimension(3) :: ymdtmp
-real(wp) :: UTsectmp
-
-real(wp) :: starttime,endtime
-
-
-!CHECK WHETHER WE NEED TO LOAD A NEW FILE
-if (t + dt/2 >= tnext .or. t < 0) then
-  !IF FIRST LOAD ATTEMPT CREATE A NEUTRAL GRID AND COMPUTE GRID SITES FOR IONOSPHERIC GRID.  Since this needs an input file, I'm leaving it under this condition here
-  if (.not. allocated(zn)) then     !means this is the first time we've tried to load neutral simulation data, should we check for a previous neutral file to load???
-    !initialize dates
-    ymdprev=ymd
-    UTsecprev=UTsec
-    ymdnext=ymdprev
-    UTsecnext=UTsecprev
-
-    !Create a neutral grid, do some allocations and projections
-    if (mpi_cfg%myid==0 .and. debug) then
-      print*, 'Creating a neutral grid...'
-    end if
-    call gridproj_dneu3D(cfg,x)
-  end if
-
-  !Read in neutral data from a file
-  if (mpi_cfg%myid==0 .and. debug) then
-    print*, 'Reading in data from neutral file'
-    call cpu_time(starttime)
-  end if
-  call read_dneu3D(tprev,tnext,t,dtneu,dt,cfg%sourcedir,ymdtmp,UTsectmp)
-  if (mpi_cfg%myid==0 .and. debug) then
-    call cpu_time(endtime)
-    print*, 'Neutral data input required time:  ',endtime-starttime
-  end if
-
-  !Spatial interpolation for the frame we just read in
-  if (mpi_cfg%myid==0 .and. debug) then
-    print *, 'Spatial interpolation and rotation of vectors for date:  ',ymdtmp,' ',UTsectmp
-    call cpu_time(starttime)
-  end if
-  call spaceinterp_dneu3D()
-  if (mpi_cfg%myid==0 .and. debug) then
-    call cpu_time(endtime)
-    print*, 'Spatial interpolation in 3D took time:  ',endtime-starttime
-  end if
-
-  !UPDATE OUR CONCEPT OF PREVIOUS AND NEXT TIMES
-  tprev=tnext
-  UTsecprev=UTsecnext
-  ymdprev=ymdnext
-
-  tnext=tprev+dtneu
-  UTsecnext=UTsectmp
-  ymdnext=ymdtmp
-
-end if
-
-!Interpolation in time
-if (mpi_cfg%myid==0 .and. debug) then
-  print*, 'Interpolating in time'
-end if
-call timeinterp_dneu(t,dt,dNOinow,dnN2inow,dnO2inow,dvn1inow,dvn2inow,dvn3inow,dTninow)
+call atmosperturb%update(cfg,dt,t,x,ymd,UTsec)
 
 end subroutine neutral_perturb_3D
 

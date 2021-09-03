@@ -3,6 +3,7 @@ target_compile_options(neutral PRIVATE ${gfortran_opts})
 target_link_libraries(neutral PRIVATE config const reader pathlib grid meshobj interp mpimod
 hwm_ifc msis_ifc
 timeutils
+neutraldata neutraldata3D
 h5fortran::h5fortran
 MPI::MPI_Fortran)
 
