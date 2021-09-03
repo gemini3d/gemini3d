@@ -42,6 +42,7 @@ set_target_properties(gemini.bin PROPERTIES
   RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
 target_link_libraries(gemini.bin PRIVATE advec calculus config const collision diffusion fang grid io interp ionization gbsv
   inputdata precipdata efielddata
+  neutraldata neutraldata3D
   meshobj meshobj_cart meshobj_dipole spherical newton geomagnetic
   exe_frontend
   msis_ifc multifluid
