@@ -14,4 +14,4 @@ target_link_libraries(neutraldata PRIVATE const inputdata)
 
 add_library(neutraldata3D OBJECT neutraldata3Dobj.f90 neuslab.f90)
 target_link_libraries(neutraldata3D PRIVATE const config grid meshobj interp timeutils neutraldata inputdata MPI::MPI_Fortran h5fortran::h5fortran)
-
+target_compile_options(neutraldata3D PRIVATE ${gfortran_opts})
