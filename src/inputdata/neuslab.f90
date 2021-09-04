@@ -26,7 +26,7 @@ contains
     else
       flagSH=.false.
     end if
-    
+
     !peel the grid in half (source hemisphere if closed dipole)
     if (gridflag==0) then    !closed dipole grid
     
@@ -59,7 +59,8 @@ contains
     !the min and max x are simply determined by longitude...
     xnrange(1)=minval(xitmp)
     xnrange(2)=maxval(xitmp)
-    
+   
+
     !situation is more complicated for latitude due to dipole grid, need to determine by L-shell
     if (flagSH) then
       ix1=minloc(zitmp(:,1,1)-maxzn,1,zitmp(:,1,1)-maxzn > 0)    !find the min distance from maxzn subject to constraint that it is > 0, just use the first longitude slice since they will all have the same L-shell-field line relations
@@ -70,6 +71,9 @@ contains
       ix1=minloc(zitmp(:,1,1)-maxzn,1,zitmp(:,1,1)-maxzn > 0)    !find the min distance from maxzn subject to constraint that it is > 0; this is the southernmost edge of the neutral slab we need
       ynrange(1)=yitmp(ix1,1,1)
       ix1=minloc(zitmp(:,lx2,1),1,zitmp(:,lx2,1) < 0)
+
+      print*, shape(yitmp),maxzn,ix1,lx1tmp
+
       ynrange(2)=yitmp(ix1,lx2,1)
     end if
     
