@@ -365,9 +365,11 @@ contains
       self%xn=>self%coord2; self%yn=>self%coord3;        ! input data coordinates
 
       ! recieve data from root
-      call mpi_recv(self%xn,lxn,mpi_realprec,0,tag%xn,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-      call mpi_recv(self%yn,lyn,mpi_realprec,0,tag%yn,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+      call mpi_recv(self%xn,self%lxn,mpi_realprec,0,tag%xn,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+      call mpi_recv(self%yn,self%lyn,mpi_realprec,0,tag%yn,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
     end if 
+
+    self%flagdatasize=.true.
   end subroutine load_sizeandgrid_neu3D
 
 
@@ -566,6 +568,11 @@ contains
       !read in the data from file
       ymdtmp = self%ymdref(:,2)
       UTsectmp = self%UTsecref(2)
+
+      print*, '  Attempting preload time:  ',self%ymdref(:,2),self%UTsecref(2)
+      print*, '  Attempting preload time:  ',ymdtmp,UTsectmp
+      print*, '  Attempting preload time:  ',ymdtmp,UTsectmp
+
       call dateinc(self%dt,ymdtmp,UTsectmp)                !get the date for "next" params
     
       !FIXME: we probably need to read in and distribute the input parameters one at a time to reduce memory footprint...
@@ -574,6 +581,9 @@ contains
     
       !in the 3D case we cannot afford to send full grid data and need to instead use neutral subgrid splits defined earlier
       allocate(paramall(self%lzn,self%lxnall,self%lynall))     ! space to store a single neutral input parameter
+
+      print*, '  Attempting load time:  ',ymdtmp,UTsectmp
+
       fn=date_filename(self%sourcedir,ymdtmp,UTsectmp)
       fn=get_filename(fn)
       if (debug) print *, 'READ neutral 3D data from file: ',fn
@@ -651,6 +661,7 @@ contains
     real(wp), intent(in) :: UTsec               ! UT seconds for which we with to compute perturbations
 
     ! execute a basic update
+    print*, 'pre-update',ymd,UTsec
     call self%update_simple(cfg,dtmodel,t,x,ymd,UTsec)
 
     ! now we need to rotate velocity fields following interpolation (they are magnetic ENU prior to this step)
