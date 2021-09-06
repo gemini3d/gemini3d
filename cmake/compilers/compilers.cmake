@@ -66,10 +66,19 @@ endif(dev)
 
 # --- MSISE00 and MSIS 2.0 require legacy workaround due to non-standard Fortran code
 
+set(msis_flags)
+set(msis20_flags)
 if(CMAKE_Fortran_COMPILER_ID STREQUAL GNU)
   # Gfortran >= 8 need -Wno-pedantic to allow mismatched array size inhernet to MSIS.
   # "-w" doesn't disable pedantic
   set(msis_flags -w -std=legacy -Wno-pedantic -fno-implicit-none -Wno-error=array-bounds -fcheck=no-all)
-elseif(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
-  set(msis_flags -nowarn)
+  set(msis20_flags -w -Wno-error=array-bounds -fcheck=no-all)
+elseif(CMAKE_Fortran_COMPILER_ID MATCHES "^Intel")
+  if(WIN32)
+    set(msis_flags /nowarn)
+    set(msis20_flags /nowarn)
+  else()
+    set(msis_flags -nowarn)
+    set(msis20_flags -nowarn)
+  endif()
 endif()
