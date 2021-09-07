@@ -24,6 +24,7 @@ type, abstract :: inputdata
   logical :: flagsource=.false.         ! source directory for data set
   logical :: flagcoordsi=.false.        ! interpolation sites set
   logical :: flagforcenative=.false.    ! force all interpolations to be done with native array rank rather than detecting singleton
+  logical :: flagdoinput=.false.        ! extensions need to define how they know whether or not they need to do file input
 
   !! here we store data that have already been received but not yet interpolated
   real(wp), dimension(:), pointer :: coord1,coord2,coord3     ! coordinates for the source data (interpolant coords)
@@ -303,7 +304,7 @@ contains
     ! fIXME: unused variables
 
     !! do some really basic error checking
-    if (cfg%flagprecfile==1) then
+    if (self%flagdoinput) then
       if (.not. self%flagalloc) error stop 'inputdata:prime_data() - must allocate data arrays prior to priming'
       if (.not. self%flagcadence) error stop 'inputdata:prime_data() - must specify data cadence before priming'
       print*, '  Priming dataset:  ',self%dataname
@@ -530,7 +531,7 @@ contains
 
     !> 2D arrays varying along the 1,3 axes
     if (self%l2Dax13>0) then
-      self%data2Dax13i(:,:,:,1)=self%data2Dax13i(:,:,:,1)
+      self%data2Dax13i(:,:,:,1)=self%data2Dax13i(:,:,:,2)
       if (lc1>1 .and. lc3>1 .or. self%flagforcenative) then
         allocate(tempdata(self%lc1i*self%lc3i))
         do iparm=1,self%l2Dax13
@@ -565,6 +566,10 @@ contains
         do iparm=1,self%l3D
           tempdata(:)=interp3(coord1,coord2,coord3,self%data3D(:,:,:,iparm),coord1i,coord2i,coord3i)
           self%data3Di(:,:,:,iparm,2)=reshape(tempdata,[lc1i,lc2i,lc3i])
+          !print*, iparm,minval(tempdata),maxval(tempdata)
+          !print*, minval(coord1),maxval(coord1)
+          !print*, minval(coord2),maxval(coord2)
+          !print*, minval(coord3),maxval(coord3)
         end do
         deallocate(tempdata)
       else if (lc1>1 .and. lc2>1 .and. lc3==1) then
