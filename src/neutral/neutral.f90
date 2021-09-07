@@ -215,7 +215,7 @@ subroutine neutral_denstemp_update(nn,Tn)
   Tn=Tnmsis
   
   !> add perturbations, if used
-  if (allocated(zn)) then
+!  if (allocated(zn)) then
     nn(:,:,:,1)=nn(:,:,:,1)+dnOinow
     nn(:,:,:,2)=nn(:,:,:,2)+dnN2inow
     nn(:,:,:,3)=nn(:,:,:,3)+dnO2inow
@@ -227,7 +227,7 @@ subroutine neutral_denstemp_update(nn,Tn)
   
     Tn=Tn+dTninow
     Tn=max(Tn,50._wp)
-  end if
+!  end if
 end subroutine neutral_denstemp_update
 
 
@@ -242,11 +242,11 @@ subroutine neutral_wind_update(vn1,vn2,vn3,v2grid,v3grid)
   vn3=vn3base
   
   !> perturbations, if used
-  if (allocated(zn)) then
+!  if (allocated(zn)) then
     vn1=vn1+dvn1inow
     vn2=vn2+dvn2inow
     vn3=vn3+dvn3inow
-  end if
+!  end if
   
   !> subtract off grid drift speed (needs to be set to zero if not lagrangian grid)
   vn2=vn2-v2grid
