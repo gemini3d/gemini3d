@@ -103,12 +103,15 @@ contains
     real(wp), intent(in) :: UTsec                       ! target time of initiation 
     integer :: lc1,lc2,lc3
     character(:), allocatable :: strname    ! allow auto-allocate for strings   
+
+    ! force 3D interpolation regardless of working subarray size
+    self%flagforcenative=.true.
  
     ! tell our object where its data are and give the dataset a name
     call self%set_source(sourcedir)
     strname='neutral perturbations (3D)'
     call self%set_name(strname)
-    print*, self%dataname,self%sourcedir
+    call self%set_cadence(dtdata)
 
     ! set sizes, we have 7 arrays all 3D (irrespective of 2D vs. 3D neutral input).  for 3D neutral input
     !    the situation is more complicated that for other datasets because you cannot compute the number of
@@ -126,7 +129,6 @@ contains
 
     ! allocate space for arrays
     call self%init_storage()
-    call self%set_cadence(dtdata)
 
     ! set aliases to point to correct source data arrays
     self%dnO=>self%data3D(:,:,:,1)
@@ -148,6 +150,10 @@ contains
     self%dvn2iprev=0
     self%dvn3iprev=0
     self%dTniprev=0
+
+    ! set to start time of simulation
+    self%ymdref(:,1)=cfg%ymd0; self%ymdref(:,2)=cfg%ymd0;
+    self%UTsecref(1)=cfg%UTsec0; self%UTsecref(2)=cfg%UTsec0;
 
     ! prime input data
     call self%prime_data(cfg,x,dtmodel,ymd,UTsec)
@@ -569,9 +575,9 @@ contains
       ymdtmp = self%ymdref(:,2)
       UTsectmp = self%UTsecref(2)
 
-      print*, '  Attempting preload time:  ',self%ymdref(:,2),self%UTsecref(2)
-      print*, '  Attempting preload time:  ',ymdtmp,UTsectmp
-      print*, '  Attempting preload time:  ',ymdtmp,UTsectmp
+      !print*, '  Attempting preload time:  ',self%ymdref(:,1),self%UTsecref(1)
+      !print*, '  Attempting preload time:  ',self%ymdref(:,2),self%UTsecref(2)
+      !print*, '  Attempting preload time:  ',ymdtmp,UTsectmp
 
       call dateinc(self%dt,ymdtmp,UTsectmp)                !get the date for "next" params
     
@@ -661,7 +667,7 @@ contains
     real(wp), intent(in) :: UTsec               ! UT seconds for which we with to compute perturbations
 
     ! execute a basic update
-    print*, 'pre-update',ymd,UTsec
+    !print*, 'pre-update simple',ymd,UTsec,t,dtmodel,self%ymdref(:,1),self%ymdref(:,2)
     call self%update_simple(cfg,dtmodel,t,x,ymd,UTsec)
 
     ! now we need to rotate velocity fields following interpolation (they are magnetic ENU prior to this step)
