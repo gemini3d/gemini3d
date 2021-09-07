@@ -112,6 +112,7 @@ contains
     strname='neutral perturbations (3D)'
     call self%set_name(strname)
     call self%set_cadence(dtdata)
+    self%flagdoinput=cfg%flagdneu/=0
 
     ! set sizes, we have 7 arrays all 3D (irrespective of 2D vs. 3D neutral input).  for 3D neutral input
     !    the situation is more complicated that for other datasets because you cannot compute the number of
@@ -127,7 +128,7 @@ contains
              7, &          ! number 3D datasets
              x)
 
-    ! allocate space for arrays
+    ! allocate space for arrays, note for neutrals some of this has already happened so there is an overloaded procedure
     call self%init_storage()
 
     ! set aliases to point to correct source data arrays
@@ -184,7 +185,7 @@ contains
     ! NOTE: type extensions are reponsible for zeroing out any arrays they will use...
 
     ! input data coordinate arrays (presume plaid)
-    allocate(self%coord1(lc1),self%coord2(lc2),self%coord3(lc3))
+    !allocate(self%coord1(lc1),self%coord2(lc2),self%coord3(lc3))
 
     ! interpolation site arrays (note these are flat, i.e. rank 1), if one needed to save space by not allocating unused block
     !   could override this procedure...
@@ -373,7 +374,10 @@ contains
       ! recieve data from root
       call mpi_recv(self%xn,self%lxn,mpi_realprec,0,tag%xn,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
       call mpi_recv(self%yn,self%lyn,mpi_realprec,0,tag%yn,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-    end if 
+    end if
+
+    print*, mpi_cfg%myid,minval(self%coord1),maxval(self%coord1),minval(self%coord2),maxval(self%coord2), &
+                           minval(self%coord3),maxval(self%coord3)
 
     self%flagdatasize=.true.
   end subroutine load_sizeandgrid_neu3D
@@ -548,6 +552,9 @@ contains
     !call clear_unitvecs(x)
     
     if(mpi_cfg%myid==0) then
+      print*, 'Interpolation coords:  ',minval(self%zi),maxval(self%zi), &
+                                        minval(self%xi),maxval(self%xi), &
+                                        minval(self%yi),maxval(self%yi)
       print*, 'Projection checking:  ',minval(self%proj_exp_e1),maxval(self%proj_exp_e1), &
                                        minval(self%proj_exp_e2),maxval(self%proj_exp_e2), &
                                        minval(self%proj_exp_e3),maxval(self%proj_exp_e3)
@@ -672,6 +679,27 @@ contains
 
     ! now we need to rotate velocity fields following interpolation (they are magnetic ENU prior to this step)
     call self%rotate_winds()
+
+    if (mpi_cfg%myid==mpi_cfg%lid/2 .and. debug) then
+      print*, 'neutral data size:  ',mpi_cfg%myid,self%lzn,self%lxn,self%lyn
+      print*, ''
+      print *, 'Min/max values for dnOinext:  ',mpi_cfg%myid,minval(self%dnOinext),maxval(self%dnOinext)
+      print *, 'Min/max values for dnNinext:  ',mpi_cfg%myid,minval(self%dnN2inext),maxval(self%dnN2inext)
+      print *, 'Min/max values for dnO2inext:  ',mpi_cfg%myid,minval(self%dnO2inext),maxval(self%dnO2inext)
+      print *, 'Min/max values for dvn1inext:  ',mpi_cfg%myid,minval(self%dvn1inext),maxval(self%dvn1inext)
+      print *, 'Min/max values for dvn2inext:  ',mpi_cfg%myid,minval(self%dvn2inext),maxval(self%dvn2inext)
+      print *, 'Min/max values for dvn3inext:  ',mpi_cfg%myid,minval(self%dvn3inext),maxval(self%dvn3inext)
+      print *, 'Min/max values for dTninext:  ',mpi_cfg%myid,minval(self%dTninext),maxval(self%dTninext)
+      print*, ''
+      print *, 'Min/max values for dnOinow:  ',mpi_cfg%myid,minval(self%dnOinow),maxval(self%dnOinow)
+      print *, 'Min/max values for dnNinow:  ',mpi_cfg%myid,minval(self%dnN2inow),maxval(self%dnN2inow)
+      print *, 'Min/max values for dnO2inow:  ',mpi_cfg%myid,minval(self%dnO2inow),maxval(self%dnO2inow)
+      print *, 'Min/max values for dvn1inow:  ',mpi_cfg%myid,minval(self%dvn1inow),maxval(self%dvn1inow)
+      print *, 'Min/max values for dvn2inow:  ',mpi_cfg%myid,minval(self%dvn2inow),maxval(self%dvn2inow)
+      print *, 'Min/max values for dvn3inow:  ',mpi_cfg%myid,minval(self%dvn3inow),maxval(self%dvn3inow)
+      print *, 'Min/max values for dTninow:  ',mpi_cfg%myid,minval(self%dTninow),maxval(self%dTninow)
+    !  print*, 'coordinate ranges:  ',minval(zn),maxval(zn),minval(rhon),maxval(rhon),minval(zi),maxval(zi),minval(rhoi),maxval(rhoi)
+    end if
   end subroutine update
 
 

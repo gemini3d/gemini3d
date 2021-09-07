@@ -119,6 +119,7 @@ contains
     call self%set_source(sourcedir)
     strname='electron precipitation'
     call self%set_name(strname)
+    self%flagdoinput=cfg%flagE0file/=0
 
     ! read the simulation size from the source directory and allocate arrays
     allocate(self%lc1,self%lc2,self%lc3)      ! these are pointers
