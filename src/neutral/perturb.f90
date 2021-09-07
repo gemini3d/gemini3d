@@ -240,6 +240,21 @@ real(wp), dimension(:,:,:), intent(inout) :: Tn,vn1,vn2,vn3
 !! intent(out)
 
 call atmosperturb%update(cfg,dt,t,x,ymd,UTsec)
+dnOinow=atmosperturb%dnOinow
+dnN2inow=atmosperturb%dnN2inow
+dnO2inow=atmosperturb%dnO2inow
+dvn1inow=atmosperturb%dvn1inow
+dvn2inow=atmosperturb%dvn2inow
+dvn3inow=atmosperturb%dvn3inow
+dTninow=atmosperturb%dTninow
+
+!print*, minval(dnOinow),maxval(dnOinow)
+!print*, minval(dnN2inow),maxval(dnN2inow)
+!print*, minval(dnO2inow),maxval(dnO2inow)
+!print*, minval(dvn1inow),maxval(dvn1inow)
+!print*, minval(dvn2inow),maxval(dvn2inow)
+!print*, minval(dvn3inow),maxval(dvn3inow)
+!print*, minval(dTninow),maxval(dTninow)
 
 end subroutine neutral_perturb_3D
 
