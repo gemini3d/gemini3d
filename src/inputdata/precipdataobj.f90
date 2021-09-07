@@ -132,6 +132,10 @@ contains
     self%E0piprev=100.0
     self%E0pinext=100.0
 
+    ! set to start time of simulation
+    self%ymdref(:,1)=cfg%ymd0; self%ymdref(:,2)=cfg%ymd0;
+    self%UTsecref(1)=cfg%UTsec0; self%UTsecref(2)=cfg%UTsec0;
+
     ! prime input data
     call self%prime_data(cfg,x,dtmodel,ymd,UTsec)
   end subroutine init_precip

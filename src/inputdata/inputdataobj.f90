@@ -15,14 +15,15 @@ type, abstract :: inputdata
   character(:), allocatable :: dataname     ! string description of dataset
   character(:), allocatable :: sourcedir    ! source location containing data input files
 
-  !! flag for allocation statuses
-  logical :: flagdatasize=.false.
-  logical :: flagsizes=.false.
-  logical :: flagalloc=.false.
-  logical :: flagprimed=.false.
-  logical :: flagcadence=.false.
-  logical :: flagsource=.false.
-  logical :: flagcoordsi=.false.
+  !! flags to aid error checking
+  logical :: flagdatasize=.false.       ! input data sizes set
+  logical :: flagsizes=.false.          ! all sizes set
+  logical :: flagalloc=.false.          ! space for data allocated
+  logical :: flagprimed=.false.         ! initial setup of input data files (priming)
+  logical :: flagcadence=.false.        ! time cadence of input has been set
+  logical :: flagsource=.false.         ! source directory for data set
+  logical :: flagcoordsi=.false.        ! interpolation sites set
+  logical :: flagforcenative=.false.    ! force all interpolations to be done with native array rank rather than detecting singleton
 
   !! here we store data that have already been received but not yet interpolated
   real(wp), dimension(:), pointer :: coord1,coord2,coord3     ! coordinates for the source data (interpolant coords)
@@ -166,7 +167,12 @@ contains
     ! check that the user is trying something sensible
     if (self%lc1==1 .and. self%lc1i/=1 .or. self%lc2==1 .and. self%lc2i/=1 &
             .or. self%lc3==1 .and. self%lc3i/=1) then
-      error stop 'inputdata:set_sizes() - singleton dimensions must be same for source and destination.'
+      if (self%flagforcenative) then
+        print*, '  Warning:  native array rank forced for interpolations...'
+      else
+        print*, '  Dataset:  ',self%dataname,'  ',self%lc1,self%lc1i,self%lc2,self%lc2i,self%lc3,self%lc3i
+        error stop 'inputdata:set_sizes() - singleton dimensions must be same for source and destination.'
+      end if
     end if
 
     ! flag sizes as assigned
@@ -351,7 +357,7 @@ contains
     real(wp), intent(in) :: t                 ! simulation absoluate time for which perturabation is to be computed
     class(curvmesh), intent(in) :: x         ! mesh object
     integer, dimension(3), intent(in) :: ymd    ! date for which we wish to calculate perturbations
-    real(wp), intent(in) :: UTsec               ! UT seconds for which we with to compute perturbations
+    real(wp), intent(in) :: UTsec               ! UT seconds for which we compute perturbations
     
     integer :: ix1,ix2,ix3,iid!,irhon,izn
     integer, dimension(3) :: ymdtmp          ! these hold the incremented date following reading of new file
@@ -361,7 +367,9 @@ contains
     if (.not. self%flagalloc) error stop 'inputdata:update() - must allocate array space prior to update...'
     if (.not. self%flagcadence) error stop 'inputdata:update() - must define cadence first...'
     if (.not. self%flagsource) error stop 'inputdata:update() - must define source data directory...'
-    !print*, ymd,UTsec,t,t+dtmodel/2,self%tref(1),self%tref(2)
+
+    !print*, 'entering update',ymd,UTsec,t,t+dtmodel/2,self%tref(1),self%tref(2)
+    !print*, '    ',self%ymdref(:,1),self%UTsecref(1),self%ymdref(:,2),self%UTsecref(2)
 
     !! see if we need to load new data into the buffer; negative time means that we need to load the first frame
     if (t+dtmodel/2 >= self%tref(2) .or. t < 0) then       
@@ -465,7 +473,7 @@ contains
     !> 2D arrays varying along the 2,3 axes; be sure to check singleton axes and change interp shape accordingly
     if (self%l2Dax23>0) then
       self%data2Dax23i(:,:,:,1)=self%data2Dax23i(:,:,:,2)
-      if (lc2>1 .and. lc3>1) then    ! normal 2D dataset
+      if (lc2>1 .and. lc3>1 .or. self%flagforcenative) then    ! normal 2D dataset
         allocate(tempdata(self%lc2i*self%lc3i))
         do iparm=1,self%l2Dax23
           tempdata(:)=interp2(coord2,coord3,self%data2Dax23(:,:,iparm),coord2iax23,coord3iax23)
@@ -494,7 +502,7 @@ contains
     !> 2D arrays varying along the 1,2 axes
     if (self%l2Dax12>0) then
       self%data2Dax12i(:,:,:,1)=self%data2Dax12i(:,:,:,2)
-      if (lc1>1 .and. lc2>1) then
+      if (lc1>1 .and. lc2>1 .or. self%flagforcenative) then
         allocate(tempdata(self%lc1i*self%lc2i))
         do iparm=1,self%l2Dax12
           tempdata(:)=interp2(coord1,coord2,self%data2Dax12(:,:,iparm),coord1iax12,coord2iax12)
@@ -523,7 +531,7 @@ contains
     !> 2D arrays varying along the 1,3 axes
     if (self%l2Dax13>0) then
       self%data2Dax13i(:,:,:,1)=self%data2Dax13i(:,:,:,1)
-      if (lc1>1 .and. lc3>1) then
+      if (lc1>1 .and. lc3>1 .or. self%flagforcenative) then
         allocate(tempdata(self%lc1i*self%lc3i))
         do iparm=1,self%l2Dax13
           tempdata(:)=interp2(coord1,coord3,self%data2Dax13(:,:,iparm),coord1iax13,coord3iax13)
@@ -552,7 +560,7 @@ contains
     !> 3D arrays varying along all axes, check for singleton axes...
     if (self%l3D>0) then
       self%data3Di(:,:,:,:,1)=self%data3Di(:,:,:,:,2)
-      if (lc1>1 .and. lc2>1 .and. lc3>1) then
+      if (lc1>1 .and. lc2>1 .and. lc3>1 .or. self%flagforcenative) then
         allocate(tempdata(self%lc1i*self%lc2i*self%lc3i))
         do iparm=1,self%l3D
           tempdata(:)=interp3(coord1,coord2,coord3,self%data3D(:,:,:,iparm),coord1i,coord2i,coord3i)
