@@ -78,7 +78,6 @@ contains
     ! flag sizes as assigned
     self%flagsizes=.true.
   end subroutine set_sizes_precip  
-  
 
 
   !> set pointers to appropriate data arrays (taking into account dimensionality of the problem) and prime everything
@@ -133,9 +132,9 @@ contains
     self%E0piprev=100.0
     self%E0pinext=100.0
 
-    ! set to start time of simulation
-    self%ymdref(:,1)=cfg%ymd0; self%ymdref(:,2)=cfg%ymd0;
-    self%UTsecref(1)=cfg%UTsec0; self%UTsecref(2)=cfg%UTsec0;
+    ! set to start time of simulation - will be set first time update is called
+    !self%ymdref(:,1)=cfg%ymd0; self%ymdref(:,2)=cfg%ymd0;
+    !self%UTsecref(1)=cfg%UTsec0; self%UTsecref(2)=cfg%UTsec0;
 
     ! prime input data
     call self%prime_data(cfg,x,dtmodel,ymd,UTsec)

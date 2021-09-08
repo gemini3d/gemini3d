@@ -152,9 +152,9 @@ contains
     self%dvn3iprev=0
     self%dTniprev=0
 
-    ! set to start time of simulation
-    self%ymdref(:,1)=cfg%ymd0; self%ymdref(:,2)=cfg%ymd0;
-    self%UTsecref(1)=cfg%UTsec0; self%UTsecref(2)=cfg%UTsec0;
+    ! set to start time of simulation - not needed since assigned by update on first call.  FIXME: a bit messy
+    !self%ymdref(:,1)=cfg%ymd0; self%ymdref(:,2)=cfg%ymd0;
+    !self%UTsecref(1)=cfg%UTsec0; self%UTsecref(2)=cfg%UTsec0;
 
     ! prime input data
     call self%prime_data(cfg,x,dtmodel,ymd,UTsec)
@@ -531,17 +531,16 @@ contains
     character(:), allocatable :: fn
         
     lhorzn=self%lyn
-    
+    ymdtmp = self%ymdref(:,2)
+    UTsectmp = self%UTsecref(2)
+    call dateinc(self%dt,ymdtmp,UTsectmp)                !get the date for "next" params
+
+    !read in the data from file
     if (mpi_cfg%myid==0) then    !root
-      !read in the data from file
-      ymdtmp = self%ymdref(:,2)
-      UTsectmp = self%UTsecref(2)
-      call dateinc(self%dt,ymdtmp,UTsectmp)                !get the date for "next" params
-    
       !in the 3D case we cannot afford to send full grid data and need to instead use neutral subgrid splits defined earlier
       allocate(paramall(self%lzn,self%lxnall,self%lynall))     ! space to store a single neutral input parameter
 
-      print*, '  Attempting load time:  ',ymdtmp,UTsectmp
+      print*, '  date and time (neutral3D):  ',ymdtmp,UTsectmp
 
       fn=date_filename(self%sourcedir,ymdtmp,UTsectmp)
       fn=get_filename(fn)
@@ -596,7 +595,6 @@ contains
     
     
     if (mpi_cfg%myid==mpi_cfg%lid/2 .and. debug) then
-      print*, 'neutral data size:  ',mpi_cfg%myid,self%lzn,self%lxn,self%lyn
       print *, 'Min/max values for dnO:  ',mpi_cfg%myid,minval(self%dnO),maxval(self%dnO)
       print *, 'Min/max values for dnN:  ',mpi_cfg%myid,minval(self%dnN2),maxval(self%dnN2)
       print *, 'Min/max values for dnO2:  ',mpi_cfg%myid,minval(self%dnO2),maxval(self%dnO2)
@@ -626,7 +624,9 @@ contains
     call self%rotate_winds()
 
     if (mpi_cfg%myid==mpi_cfg%lid/2 .and. debug) then
+      print*, ''
       print*, 'neutral data size:  ',mpi_cfg%myid,self%lzn,self%lxn,self%lyn
+      print*, 'neutral data time:  ',ymd,UTsec
       print*, ''
       print *, 'Min/max values for dnOinext:  ',mpi_cfg%myid,minval(self%dnOinext),maxval(self%dnOinext)
       print *, 'Min/max values for dnNinext:  ',mpi_cfg%myid,minval(self%dnN2inext),maxval(self%dnN2inext)

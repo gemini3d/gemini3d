@@ -25,6 +25,7 @@ type, abstract :: inputdata
   logical :: flagcoordsi=.false.        ! interpolation sites set
   logical :: flagforcenative=.false.    ! force all interpolations to be done with native array rank rather than detecting singleton
   logical :: flagdoinput=.false.        ! extensions need to define how they know whether or not they need to do file input
+  logical :: flagfirst=.true.           ! true prior to performing first update
 
   !! here we store data that have already been received but not yet interpolated
   real(wp), dimension(:), pointer :: coord1,coord2,coord3     ! coordinates for the source data (interpolant coords)
@@ -375,13 +376,15 @@ contains
     !! see if we need to load new data into the buffer; negative time means that we need to load the first frame
     if (t+dtmodel/2 >= self%tref(2) .or. t < 0) then       
       !IF FIRST LOAD ATTEMPT CREATE A NEUTRAL GRID AND COMPUTE GRID SITES FOR IONOSPHERIC GRID.  Since this needs an input file, I'm leaving it under this condition here
-      if (.not. self%flagcoordsi) then     !means this is the first time we've tried to load neutral simulation data, should we check for a previous neutral file to load??? or just assume everything starts at zero?  This needs to somehow check for an existing file under certain conditiosn, maybe if it==1???  Actually we don't even need that we can just check that the neutral grid is allocated (or not)
+      if (self%flagfirst) then
         !initialize dates
         self%ymdref(:,1)=ymd
         self%UTsecref(1)=UTsec
         self%ymdref(:,2)=self%ymdref(:,1)
         self%UTsecref(2)=self%UTsecref(1)
-    
+        self%flagfirst=.false.
+      end if
+      if (.not. self%flagcoordsi) then     !means this is the first time we've tried to load neutral simulation data, should we check for a previous neutral file to load??? or just assume everything starts at zero?  This needs to somehow check for an existing file under certain conditiosn, maybe if it==1???  Actually we don't even need that we can just check that the neutral grid is allocated (or not)    
         !Create a neutral grid, do some allocations and projections
         call self%set_coordsi(cfg,x)    ! cfg needed to convey optional parameters about how the input data are to be
                                        !interpreted
@@ -566,10 +569,6 @@ contains
         do iparm=1,self%l3D
           tempdata(:)=interp3(coord1,coord2,coord3,self%data3D(:,:,:,iparm),coord1i,coord2i,coord3i)
           self%data3Di(:,:,:,iparm,2)=reshape(tempdata,[lc1i,lc2i,lc3i])
-          !print*, iparm,minval(tempdata),maxval(tempdata)
-          !print*, minval(coord1),maxval(coord1)
-          !print*, minval(coord2),maxval(coord2)
-          !print*, minval(coord3),maxval(coord3)
         end do
         deallocate(tempdata)
       else if (lc1>1 .and. lc2>1 .and. lc3==1) then

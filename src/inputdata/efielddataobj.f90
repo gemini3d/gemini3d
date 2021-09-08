@@ -185,9 +185,9 @@ contains
     self%Vminx3isprev=0.0
     self%Vmaxx3isprev=0.0
 
-    ! set to start time of simulation
-    self%ymdref(:,1)=cfg%ymd0; self%ymdref(:,2)=cfg%ymd0;
-    self%UTsecref(1)=cfg%UTsec0; self%UTsecref(2)=cfg%UTsec0;
+    ! set to start time of simulation - set the first time update is called
+    !self%ymdref(:,1)=cfg%ymd0; self%ymdref(:,2)=cfg%ymd0;
+    !self%UTsecref(1)=cfg%UTsec0; self%UTsecref(2)=cfg%UTsec0;
 
     ! prime input data
     call self%prime_data(cfg,x,dtmodel,ymd,UTsec)
