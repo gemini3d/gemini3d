@@ -60,6 +60,9 @@ interface !< wind.f90
   end subroutine neutral_winds
 end interface
 
+! flag to check whether to apply neutral perturbations
+logical :: flagneuperturb=.false.
+
 !! ALL ARRAYS THAT FOLLOW ARE USED WHEN INCLUDING NEUTRAL PERTURBATIONS FROM ANOTHER MODEL
 !! ARRAYS TO STORE THE NEUTRAL GRID INFORMATION
 !! as long as the neutral module is in scope these persist and do not require a "save"; this variable only used by the axisymmetric interpolation
@@ -174,12 +177,16 @@ subroutine init_neutrals(dt,t,cfg,ymd,UTsec,x,v2grid,v3grid,nn,Tn,vn1,vn2,vn3)
 
   !! perform an initialization for the perturbation quantities
   if (cfg%flagdneu==1) then
-    !! allocate correct type, FIXME: eventuallly no shunt to 3D
+    ! set flag denoted neutral perturbations
+    flagneuperturb=.true.
+
+    ! allocate correct type, FIXME: eventuallly no shunt to 3D
     select case (cfg%interptype)
     case default
       allocate(neutraldata3D::atmosperturb)
     end select
-  
+
+    ! call object init procedure
     call atmosperturb%init(cfg,cfg%sourcedir,x,dt,cfg%dtneu,ymd,UTsec)
   end if
 end subroutine init_neutrals
@@ -189,15 +196,12 @@ end subroutine init_neutrals
 subroutine neutral_update(nn,Tn,vn1,vn2,vn3,v2grid,v3grid)
   !! adds stored base and perturbation neutral atmospheric parameters
   !!  these are module-scope parameters so not needed as input
-
-
   real(wp), dimension(:,:,:,:), intent(inout) :: nn
   !! intent(out)  
   real(wp), dimension(:,:,:), intent(inout) :: Tn
   !! intent(out)
   real(wp), dimension(:,:,:), intent(inout) :: vn1,vn2,vn3
   !! intent(out)
-
   real(wp) :: v2grid,v3grid
 
   call neutral_denstemp_update(nn,Tn)
@@ -215,7 +219,7 @@ subroutine neutral_denstemp_update(nn,Tn)
   Tn=Tnmsis
   
   !> add perturbations, if used
-!  if (allocated(zn)) then
+  if (flagneuperturb) then
     nn(:,:,:,1)=nn(:,:,:,1)+dnOinow
     nn(:,:,:,2)=nn(:,:,:,2)+dnN2inow
     nn(:,:,:,3)=nn(:,:,:,3)+dnO2inow
@@ -227,7 +231,7 @@ subroutine neutral_denstemp_update(nn,Tn)
   
     Tn=Tn+dTninow
     Tn=max(Tn,50._wp)
-!  end if
+  end if
 end subroutine neutral_denstemp_update
 
 
@@ -242,11 +246,11 @@ subroutine neutral_wind_update(vn1,vn2,vn3,v2grid,v3grid)
   vn3=vn3base
   
   !> perturbations, if used
-!  if (allocated(zn)) then
+  if (flagneuperturb) then
     vn1=vn1+dvn1inow
     vn2=vn2+dvn2inow
     vn3=vn3+dvn3inow
-!  end if
+  end if
   
   !> subtract off grid drift speed (needs to be set to zero if not lagrangian grid)
   vn2=vn2-v2grid
