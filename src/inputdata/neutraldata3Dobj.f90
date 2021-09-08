@@ -540,7 +540,7 @@ contains
       !in the 3D case we cannot afford to send full grid data and need to instead use neutral subgrid splits defined earlier
       allocate(paramall(self%lzn,self%lxnall,self%lynall))     ! space to store a single neutral input parameter
 
-      print*, '  date and time (neutral3D):  ',ymdtmp,UTsectmp
+      !print*, '  date and time (neutral3D):  ',ymdtmp,UTsectmp
 
       fn=date_filename(self%sourcedir,ymdtmp,UTsectmp)
       fn=get_filename(fn)
