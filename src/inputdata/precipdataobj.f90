@@ -182,6 +182,7 @@ contains
   end subroutine load_grid_precip
 
 
+  !> set target coordinates for interpolation sights
   subroutine set_coordsi_precip(self,cfg,x)
     class(precipdata), intent(inout) :: self
     type(gemini_cfg), intent(in) :: cfg     ! presently not used but possibly eventually?
