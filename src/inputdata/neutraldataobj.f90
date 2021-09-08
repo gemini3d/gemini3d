@@ -18,6 +18,7 @@ type, extends(inputdata), abstract :: neutraldata
                                            dTninow
   contains
     procedure :: setptrs_grid
+    procedure :: dissociate_neutral_pointers
 end type neutraldata
 
 contains
@@ -52,4 +53,18 @@ contains
     self%dvn3inow=>self%data3Dinow(:,:,:,6)
     self%dTninow=>self%data3Dinow(:,:,:,7)
   end subroutine setptrs_grid
+
+ 
+  !> nullify neutral pointers (dealloc should occur from base class); unclear whether fortran standard automatically
+  !    calls for setting pointers to null vs. undefined.
+  subroutine dissociate_neutral_pointers(self)
+    class(neutraldata), intent(inout) :: self
+
+    nullify(self%dnOiprev,self%dnN2iprev,self%dnO2iprev,self%dvn1iprev,self%dvn2iprev,self%dvn3iprev, &
+                                           self%dTniprev)
+    nullify(self%dnOinext,self%dnN2inext,self%dnO2inext,self%dvn1inext,self%dvn2inext,self%dvn3inext, &
+                                           self%dTninext)
+    nullify(self%dnOinow,self%dnN2inow,self%dnO2inow,self%dvn1inow,self%dvn2inow,self%dvn3inow, &
+                                           self%dTninow)
+  end subroutine dissociate_neutral_pointers  
 end module neutraldataobj
