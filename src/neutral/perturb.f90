@@ -220,8 +220,11 @@ subroutine neutral_perturb_3D(dt,dtneu,t,ymd,UTsec,cfg,x,nn,Tn,vn1,vn2,vn3)
   !! neutral params interpolated to plasma grid at requested time
   real(wp), dimension(:,:,:), intent(inout) :: Tn,vn1,vn2,vn3
   !! intent(out)
-  
+ 
+  ! advance object state
   call atmosperturb%update(cfg,dt,t,x,ymd,UTsec)
+
+  ! copy object data into module variables used in neutral_update()
   dnOinow=atmosperturb%dnOinow
   dnN2inow=atmosperturb%dnN2inow
   dnO2inow=atmosperturb%dnO2inow
