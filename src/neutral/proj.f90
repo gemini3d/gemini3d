@@ -40,7 +40,7 @@ if (mpi_cfg%myid==0) then    !root
   ! bit of a tricky issue here; for neutral input, according to makedneuframes.m, the first integer in the size file is
   !  the horizontal grid point count for the input - which get_simsize3 interprets as lx1...
   !call get_simsize3(cfg%sourcedir, lx1=lzn, lx2all=lhorzn)
-call get_simsize3(cfg%sourcedir, lx1=lhorzn, lx2all=lzn)
+  call get_simsize3(cfg%sourcedir, lx1=lhorzn, lx2all=lzn)
 
   print *, 'Neutral data has lhorzn,lz size:  ',lhorzn,lzn,' with spacing dhorzn,dz',dhorzn,cfg%dzn
   if (lhorzn < 1 .or. lzn < 1) then

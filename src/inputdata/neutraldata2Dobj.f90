@@ -22,27 +22,19 @@ public :: neutraldata2D
 !> type definition for 3D neutral data
 type, extends(neutraldata) :: neutraldata2D
   ! source data coordinate pointers
-  real(wp), dimension(:), pointer :: xn,yn,zn
-  integer, pointer :: lxn,lyn,lzn
-  real(wp), dimension(:), allocatable :: xnall,ynall
-  integer :: lxnall,lynall
+  real(wp), dimension(:), pointer :: horzn,zn
+  integer, pointer :: lhorzn,lzn
 
   ! work arrays needed by various procedures re: target coordinates
-  real(wp), dimension(:,:,:), allocatable :: ximat,yimat,zimat
-  real(wp), dimension(:), pointer :: zi,xi,yi
+  real(wp), dimension(:,:,:), allocatable :: horzimat,zimat
+  real(wp), dimension(:), pointer :: zi,horzi
 
-  ! source data pointers
+  ! source data pointers, note we only have *horizontal* wind components here
   real(wp), dimension(:,:,:), pointer :: dnO,dnN2,dnO2,dvnz,dvnhorzn,dTn
 
   ! projection factors needed to rotate input data onto grid
   real(wp), dimension(:,:,:), allocatable :: proj_ezp_e1,proj_ezp_e2,proj_ezp_e3    
-  real(wp), dimension(:,:,:), allocatable :: proj_eyp_e1,proj_eyp_e2,proj_eyp_e3
-  real(wp), dimension(:,:,:), allocatable :: proj_exp_e1,proj_exp_e2,proj_exp_e3
-
-  ! mpi-related information on subgrid extents and indices, only used on the root process; otherwise ignored
-  real(wp), dimension(:,:), allocatable :: extents    ! min/max x,y,z of each worker
-  integer, dimension(:,:), allocatable :: indx        ! indices for each workers' pieces of the neutral data
-  integer, dimension(:,:), allocatable :: slabsizes  
+  real(wp), dimension(:,:,:), allocatable :: proj_ehorzp_e1,proj_ehorzp_e2,proj_ehorzp_e3
   contains
     ! replacement for gridsize and gridload
     procedure :: load_sizeandgrid_neu2D
