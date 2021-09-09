@@ -1,4 +1,4 @@
-module neutraldata3Dobj
+module neutraldata2Dobj
 
 use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
 use, intrinsic :: iso_fortran_env, only: stderr=>error_unit
@@ -17,10 +17,10 @@ use grid, only: gridflag
 
 implicit none (type,external)
 external :: mpi_send,mpi_recv
-public :: neutraldata3D
+public :: neutraldata2D
 
 !> type definition for 3D neutral data
-type, extends(neutraldata) :: neutraldata3D
+type, extends(neutraldata) :: neutraldata2D
   ! source data coordinate pointers
   real(wp), dimension(:), pointer :: xn,yn,zn
   integer, pointer :: lxn,lyn,lzn
@@ -32,7 +32,7 @@ type, extends(neutraldata) :: neutraldata3D
   real(wp), dimension(:), pointer :: zi,xi,yi
 
   ! source data pointers
-  real(wp), dimension(:,:,:), pointer :: dnO,dnN2,dnO2,dvnz,dvnx,dvny,dTn
+  real(wp), dimension(:,:,:), pointer :: dnO,dnN2,dnO2,dvnz,dvnhorzn,dTn
 
   ! projection factors needed to rotate input data onto grid
   real(wp), dimension(:,:,:), allocatable :: proj_ezp_e1,proj_ezp_e2,proj_ezp_e3    
@@ -45,7 +45,7 @@ type, extends(neutraldata) :: neutraldata3D
   integer, dimension(:,:), allocatable :: slabsizes  
   contains
     ! replacement for gridsize and gridload
-    procedure :: load_sizeandgrid_neu3D
+    procedure :: load_sizeandgrid_neu2D
     procedure :: rotate_winds
 
     ! overriding procedures
@@ -53,47 +53,19 @@ type, extends(neutraldata) :: neutraldata3D
     procedure :: init_storage
 
     ! bindings for deferred procedures
-    procedure :: init=>init_neu3D
-    procedure :: load_data=>load_data_neu3D
-    procedure :: load_grid=>load_grid_neu3D    ! stub, does nothing see load_sizeandgrid_neu3D()
-    procedure :: load_size=>load_size_neu3D    ! stub, does nothing "
-    procedure :: set_coordsi=>set_coordsi_neu3D
+    procedure :: init=>init_neu2D
+    procedure :: load_data=>load_data_neu2D
+    procedure :: load_grid=>load_grid_neu2D    ! stub, does nothing see load_sizeandgrid_neu3D()
+    procedure :: load_size=>load_size_neu2D    ! stub, does nothing "
+    procedure :: set_coordsi=>set_coordsi_neu2D
 
     ! destructor
     final :: destructor
-end type neutraldata3D
-
-
-!> interfaces for submodule "utility" procedures
-interface ! neuslab.f90
-  module subroutine slabrange(maxzn,ximat,yimat,zimat,sourcemlat,xnrange,ynrange,gridflag)
-    real(wp), intent(in) :: maxzn
-    real(wp), dimension(:,:,:), intent(in) :: ximat,yimat,zimat
-    real(wp), intent(in) :: sourcemlat
-    real(wp), dimension(2), intent(out) :: xnrange,ynrange     !for min and max
-    integer, intent(in) :: gridflag
-  end subroutine slabrange
-  module subroutine  range2inds(ranges,zn,xnall,ynall,indices)
-    real(wp), dimension(6), intent(in) :: ranges
-    real(wp), dimension(:), intent(in) :: zn,xnall,ynall
-    integer, dimension(6), intent(out) :: indices
-  end subroutine range2inds
-  module subroutine dneu_root2workers(paramall,tag,slabsizes,indx,param)
-    real(wp), dimension(:,:,:), intent(in) :: paramall
-    integer, intent(in) :: tag
-    integer, dimension(0:,:), intent(in) :: slabsizes
-    integer, dimension(0:,:), intent(in) :: indx
-    real(wp), dimension(:,:,:), intent(inout) :: param
-  end subroutine dneu_root2workers
-  module subroutine dneu_workers_from_root(tag,param)
-    integer, intent(in) :: tag
-    real(wp), dimension(:,:,:), intent(inout) :: param
-  end subroutine dneu_workers_from_root
-end interface
+end type neutraldata2D
 
 contains
   !> initialize storage for this type of neutral input data
-  subroutine init_neu3D(self,cfg,sourcedir,x,dtmodel,dtdata,ymd,UTsec)
+  subroutine init_neu2D(self,cfg,sourcedir,x,dtmodel,dtdata,ymd,UTsec)
     class(neutraldata3D), intent(inout) :: self
     type(gemini_cfg), intent(in) :: cfg
     character(*), intent(in) :: sourcedir
@@ -125,7 +97,7 @@ contains
              0, &          ! number scalar parts to dataset
              0, 0, 0, &    ! number 1D data along each axis
              0, 0, 0, &    ! number 2D data
-             7, &          ! number 3D datasets
+             7, &          ! number 3D datasets, for neutraldata2D we have singleton dimensions for 2D input
              x)          ! The main purpose of this is to set the number of 3D datasets (other params already set)
 
     ! allocate space for arrays, note for neutrals some of this has already happened so there is an overloaded procedure
@@ -158,7 +130,7 @@ contains
 
     ! prime input data
     call self%prime_data(cfg,x,dtmodel,ymd,UTsec)
-  end subroutine init_neu3D
+  end subroutine init_neu2D
 
 
   !> create storage for arrays needed specifically for 3D neutral input calculations, overrides the base class procedure
@@ -182,7 +154,7 @@ contains
     l2Dax23=self%l2Dax23; l2Dax12=self%l2Dax12; l2Dax13=self%l2Dax13;
     l3D=self%l3D
 
-    ! NOTE: type extensions are reponsible for zeroing out any arrays they will use...
+    ! NOTE: type extensions are reponsible for zeroing out any arrays they will use in their own init() bindings
 
     ! input data coordinate arrays are set by load_gridandsize()
 
@@ -216,24 +188,25 @@ contains
 
 
   !> do nothing stub
-  subroutine load_size_neu3D(self)
+  subroutine load_size_neu2D(self)
     class(neutraldata3D), intent(inout) :: self
 
   end subroutine load_size_neu3D
 
 
   !> do nothing stub
-  subroutine load_grid_neu3D(self)
+  subroutine load_grid_neu2D(self)
     class(neutraldata3D), intent(inout) :: self
 
   end subroutine load_grid_neu3D
 
 
+  !! FIXME: may be specific to axisymmetric vs. cartesian
   !> load source data size and grid information and communicate to worker processes.  
   !    Note that this routine will allocate sizes for source coordinates grids in constrast 
   !    with other inputdata type extensions which have separate load_size, allocate, and 
   !    load_grid procedures.  
-  subroutine load_sizeandgrid_neu3D(self,cfg)
+  subroutine load_sizeandgrid_neu2D(self,cfg)
     class(neutraldata3D), intent(inout) :: self
     type(gemini_cfg), intent(in) :: cfg
     real(wp), dimension(:), allocatable :: xn,yn             ! for root to break off pieces of the entire grid array
@@ -246,131 +219,70 @@ contains
     integer :: lxn,lyn
     real(wp) :: meanxn,meanyn
 
-    if (mpi_cfg%myid==0) then    !root must establish the size of the grid based on input file and distribute to workers
-      print '(A,/,A)', 'READ neutral size from:', self%sourcedir
-      call get_simsize3(self%sourcedir, lx1=self%lxnall, lx2all=self%lynall, lx3all=self%lzn)
-      print *, 'Neutral data has lx,ly,lz size:  ',self%lxnall,self%lynall,self%lzn, &
-                   ' with spacing dx,dy,dz',cfg%dxn,cfg%drhon,cfg%dzn
-      if (self%lxnall < 1 .or. self%lynall < 1 .or. self%lzn < 1) then
+    !horizontal grid spacing
+    dhorzn=cfg%drhon
+    
+    !Establish the size of the grid based on input file and distribute to workers
+    if (mpi_cfg%myid==0) then    !root
+      print '(A,/,A)', 'Inputting neutral size from:  ',self%sourcedir
+    
+    ! bit of a tricky issue here; for neutral input, according to makedneuframes.m, the first integer in the size file is
+    !  the horizontal grid point count for the input - which get_simsize3 interprets as lx1...
+    call get_simsize3(cfg%sourcedir, lx1=lhorzn, lx2all=lzn)
+    
+      print *, 'Neutral data has lhorzn,lz size:  ',lhorzn,lzn,' with spacing dhorzn,dz',dhorzn,cfg%dzn
+      if (lhorzn < 1 .or. lzn < 1) then
         write(stderr,*) 'ERROR: reading ' // self%sourcedir
-        error stop 'neutral:gridproj_dneu3D: grid size must be strictly positive'
+        error stop 'neutral:gridproj_dneu2D: grid size must be strictly positive'
       endif
-    
-      ! allocate space for target coordinate and bind alias
-      allocate(self%coord1(self%lzn))
-      self%zn=>self%coord1
-      allocate(self%xnall(self%lxnall))
-      allocate(self%ynall(self%lynall))
-      
-      !calculate the z grid (same for all) and distribute to workers so we can figure out their x-y slabs
-      print*, '...creating vertical grid and sending to workers...'
-      self%zn=[ ((real(izn, wp)-1)*cfg%dzn, izn=1,self%lzn) ]    !root calculates and distributes but this is the same for all workers - assmes that the max neutral grid extent in altitude is always less than the plasma grid (should almost always be true)
-      maxzn=maxval(self%zn)
       do iid=1,mpi_cfg%lid-1
-        call mpi_send(self%lzn,1,MPI_INTEGER,iid,tag%lz,MPI_COMM_WORLD,ierr)
-        call mpi_send(self%zn,self%lzn,mpi_realprec,iid,tag%zn,MPI_COMM_WORLD,ierr)
+        call mpi_send(lhorzn,1,MPI_INTEGER,iid,tag%lrho,MPI_COMM_WORLD,ierr)
+        call mpi_send(lzn,1,MPI_INTEGER,iid,tag%lz,MPI_COMM_WORLD,ierr)
       end do
-    
-      !Define a neutral grid (input data) x,y extent by assuming that the spacing is constant
-      self%ynall=[ ((real(iyn, wp)-1)*cfg%drhon, iyn=1,self%lynall) ]
-      meanyn=sum(self%ynall,1)/size(self%ynall,1)
-      self%ynall=self%ynall-meanyn     !the neutral grid should be centered on zero for a cartesian interpolation
-      self%xnall=[ ((real(ixn, wp)-1)*cfg%dxn, ixn=1,self%lxnall) ]
-      meanxn=sum(self%xnall,1)/size(self%xnall,1)
-      self%xnall=self%xnall-meanxn     !the neutral grid should be centered on zero for a cartesian interpolation
-      print *, 'Created full neutral grid with y,z extent:',minval(self%xnall),maxval(self%xnall),minval(self%ynall), &
-                    maxval(self%ynall),minval(self%zn),maxval(self%zn)
-   
-      ! calculate the extents of root grid using max altitude specified for the neutral grid
-      call slabrange(maxzn,self%ximat,self%yimat,self%zimat,cfg%sourcemlat,xnrange,ynrange,gridflag)
-      allocate(self%extents(0:mpi_cfg%lid-1,6),self%indx(0:mpi_cfg%lid-1,6),self%slabsizes(0:mpi_cfg%lid-1,2))
-      self%extents(0,1:6)=[0._wp,maxzn,xnrange(1),xnrange(2),ynrange(1),ynrange(2)]
-    
-      !receive extents of each of the other workers: extents(mpi_cfg%lid,6)
-      print*, 'Receiving xn and yn ranges from workers...'
-      do iid=1,mpi_cfg%lid-1
-        call mpi_recv(xnrange,2,mpi_realprec,iid,tag%xnrange,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-        call mpi_recv(ynrange,2,mpi_realprec,iid,tag%ynrange,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-        self%extents(iid,1:6)=[0._wp,maxzn,xnrange(1),xnrange(2),ynrange(1),ynrange(2)]     !need to store values as xnrange overwritten for each worker
-        print*, 'Subgrid extents:  ',iid,self%extents(iid,:)
-      end do
-    
-      !find index into into neutral arrays for each worker:  indx(mpi_cfg%lid,6)
-      print*, 'Root grid check:  ',self%ynall(1),self%ynall(self%lynall)
-      print*, 'Converting ranges to indices...'
-      do iid=0,mpi_cfg%lid-1
-        call range2inds(self%extents(iid,1:6),self%zn,self%xnall,self%ynall,indices)
-        self%indx(iid,1:6)=indices
-        print*, 'Subgrid indices',iid,self%indx(iid,:)
-      end do
-    
-      !send each worker the sizes for their particular chunk (all different) and send worker that grid chunk
-      print*,'Sending sizes and xn,yn subgrids to workers...'
-      do iid=1,mpi_cfg%lid-1
-        lxn=self%indx(iid,4)-self%indx(iid,3)+1
-        lyn=self%indx(iid,6)-self%indx(iid,5)+1
-        self%slabsizes(iid,1:2)=[lxn,lyn]
-        call mpi_send(lyn,1,MPI_INTEGER,iid,tag%lrho,MPI_COMM_WORLD,ierr)
-        call mpi_send(lxn,1,MPI_INTEGER,iid,tag%lx,MPI_COMM_WORLD,ierr)
-        allocate(xn(lxn),yn(lyn))
-        xn=self%xnall(self%indx(iid,3):self%indx(iid,4))
-        yn=self%ynall(self%indx(iid,5):self%indx(iid,6))
-        call mpi_send(xn,lxn,mpi_realprec,iid,tag%xn,MPI_COMM_WORLD,ierr)
-        call mpi_send(yn,lyn,mpi_realprec,iid,tag%yn,MPI_COMM_WORLD,ierr)
-        deallocate(xn,yn)
-      end do
-    
-      !have root store its part to the full neutral grid
-      print*, 'Root is picking out its own subgrid...'
-      self%lxn=self%indx(0,4)-self%indx(0,3)+1
-      self%lyn=self%indx(0,6)-self%indx(0,5)+1
-      self%slabsizes(0,1:2)=[self%lxn,self%lyn]
-
-      ! allocate space and bind alias
-      allocate(self%coord2(self%lxn),self%coord3(self%lyn))
-      self%xn=>self%coord2; self%yn=>self%coord3;        ! input data coordinates
-
-      ! store source coordinates
-      self%xn=self%xnall(self%indx(0,3):self%indx(0,4))
-      self%yn=self%ynall(self%indx(0,5):self%indx(0,6))
     else                 !workers
-      !get the z-grid from root so we know what the max altitude we have to deal with will be
-      call mpi_recv(self%lzn,1,MPI_INTEGER,0,tag%lz,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-
-      ! allocate space for target coordinate and bind alias
-      allocate(self%coord1(self%lzn))
-      self%zn=>self%coord1
-
-      ! receive data from root
-      call mpi_recv(self%zn,self%lzn,mpi_realprec,0,tag%zn,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-      maxzn=maxval(self%zn)
+      call mpi_recv(lhorzn,1,MPI_INTEGER,0,tag%lrho,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+      call mpi_recv(lzn,1,MPI_INTEGER,0,tag%lz,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+    end if
     
-      !calculate the extent of my grid
-      call slabrange(maxzn,self%ximat,self%yimat,self%zimat,cfg%sourcemlat,xnrange,ynrange,gridflag)
+    !Everyone must allocate space for the grid of input data
+    allocate(zn(lzn))    !these are module-scope variables
+    if (flagcart) then
+      allocate(rhon(1))  !not used in Cartesian code so just set to something
+      allocate(yn(lhorzn))
+      lyn=lhorzn
+    else
+      allocate(rhon(lhorzn))
+      allocate(yn(1))    !not used in the axisymmetric code so just initialize to something
+      lrhon=lhorzn
+    end if
     
-      !send ranges to root
-      call mpi_send(xnrange,2,mpi_realprec,0,tag%xnrange,MPI_COMM_WORLD,ierr)
-      call mpi_send(ynrange,2,mpi_realprec,0,tag%ynrange,MPI_COMM_WORLD,ierr)
+    !Note that the second dimension ("longitude") is singleton so that we are able to also use these vars for 3D input
+    allocate(dnO(lzn,1,lhorzn),dnN2(lzn,1,lhorzn),dnO2(lzn,1,lhorzn),dvnrho(lzn,1,lhorzn),dvnz(lzn,1,lhorzn),dTn(lzn,1,lhorzn))
     
-      !receive my sizes from root, allocate then receive my pieces of the grid
-      call mpi_recv(self%lxn,1,MPI_INTEGER,0,tag%lx,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-      call mpi_recv(self%lyn,1,MPI_INTEGER,0,tag%lrho,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-
-      ! at this point we can allocate space for the source coordinates and bind aliases as needed
-      allocate(self%coord2(self%lxn),self%coord3(self%lyn))
-      self%xn=>self%coord2; self%yn=>self%coord3;        ! input data coordinates
-
-      ! recieve data from root
-      call mpi_recv(self%xn,self%lxn,mpi_realprec,0,tag%xn,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
-      call mpi_recv(self%yn,self%lyn,mpi_realprec,0,tag%yn,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+    !Define a grid (input data) by assuming that the spacing is constant
+    if (flagcart) then     !Cartesian neutral simulation
+      yn=[ ((real(ihorzn, wp)-1)*dhorzn, ihorzn=1,lhorzn) ]
+      meanyn=sum(yn,1)/size(yn,1)
+      yn=yn-meanyn     !the neutral grid should be centered on zero for a cartesian interpolation
+    else
+      rhon=[ ((real(ihorzn, wp)-1)*dhorzn, ihorzn=1,lhorzn) ]
+    end if
+    zn=[ ((real(izn, wp)-1)*cfg%dzn, izn=1,lzn) ]
+    
+    if (mpi_cfg%myid==0) then
+      if (flagcart) then
+        print *, 'Creating neutral grid with y,z extent:',minval(yn),maxval(yn),minval(zn),maxval(zn)
+      else
+        print *, 'Creating neutral grid with rho,z extent:  ',minval(rhon),maxval(rhon),minval(zn),maxval(zn)
+      end if
     end if
 
     self%flagdatasize=.true.
-  end subroutine load_sizeandgrid_neu3D
+  end subroutine load_sizeandgrid_neu2D
 
 
   !> set coordinates for target interpolation points; for neutral inputs we are forced to do some of the property array allocations here
-  subroutine set_coordsi_neu3D(self,cfg,x)
+  subroutine set_coordsi_neu2D(self,cfg,x)
     class(neutraldata3D), intent(inout) :: self
     type(gemini_cfg), intent(in) :: cfg
     class(curvmesh), intent(in) :: x
@@ -391,28 +303,34 @@ contains
 
     !Neutral source locations specified in input file, here referenced by spherical magnetic coordinates.
     phi1=cfg%sourcemlon*pi/180
-    theta1=pi/2 - cfg%sourcemlat*pi/180
+    theta1=pi/2-cfg%sourcemlat*pi/180
     
     !Convert plasma simulation grid locations to z,rho values to be used in interoplation.  altitude ~ zi; lat/lon --> rhoi.  Also compute unit vectors and projections
     if (mpi_cfg%myid==0) then
       print *, 'Computing alt,radial distance values for plasma grid and completing rotations'
     end if
-
-    self%zimat=x%alt     !vertical coordinate is just altitude array already stored in grid object
-    do ix3=1,x%lx3
-      do ix2=1,x%lx2
-        do ix1=1,x%lx1
-          ! interpolation based on geomag
+    zimat=x%alt     !vertical coordinate
+    do ix3=1,lx3
+      do ix2=1,lx2
+        do ix1=1,lx1
+          !INTERPOLATION BASED ON GEOMAGNETIC COORDINATES
           theta2=x%theta(ix1,ix2,ix3)                    !field point zenith angle
-
-          !print*, ' center NS set',shape(self%zi),shape(self%zimat),theta2,x%theta(ix1,ix2,ix3)
-
-          if (x%lx2/=1) then
+          if (lx2/=1 .and. lx3/=1) then
             phi2=x%phi(ix1,ix2,ix3)                      !field point azimuth, full 3D calculation
           else
             phi2=phi1                                    !assume the longitude is the samem as the source in 2D, i.e. assume the source epicenter is in the meridian of the grid
           end if
- 
+    
+          !COMPUTE DISTANCES
+          gammarads=cos(theta1)*cos(theta2)+sin(theta1)*sin(theta2)*cos(phi1-phi2)     !this is actually cos(gamma)
+          if (gammarads > 1) then     !handles weird precision issues in 2D
+            gammarads = 1
+          else if (gammarads < -1) then
+            gammarads= -1
+          end if
+          gammarads=acos(gammarads)                     !angle between source location annd field point (in radians)
+          rhoimat(ix1,ix2,ix3)=Re*gammarads    !rho here interpreted as the arc-length defined by angle between epicenter and ``field point''
+    
           !we need a phi locationi (not spherical phi, but azimuth angle from epicenter), as well, but not for interpolation - just for doing vector rotations
           theta3=theta2
           phi3=phi1
@@ -423,103 +341,110 @@ contains
             gamma1 = -1
           end if
           gamma1=acos(gamma1)
-
+    
           gamma2=cos(theta1)*cos(theta3)+sin(theta1)*sin(theta3)*cos(phi1-phi3)
           if (gamma2 > 1) then     !handles weird precision issues in 2D
-            gamma2= 1
-          else if (gamma2 < -1) then
+            gamma2 = 1
+          else if (gamma2< -1) then
             gamma2= -1
           end if
           gamma2=acos(gamma2)
+    
           xp=Re*gamma1
           yp=Re*gamma2     !this will likely always be positive, since we are using center of earth as our origin, so this should be interpreted as distance as opposed to displacement
     
-          ! coordinates from distances
+          !COMPUTE COORDINATES FROM DISTANCES
           if (theta3>theta1) then       !place distances in correct quadrant, here field point (theta3=theta2) is is SOUTHward of source point (theta1), whreas yp is distance northward so throw in a negative sign
-            yp= -yp            !do we want an abs here to be safe
+            yp = -yp            !do we want an abs here to be safe
           end if
           if (phi2<phi3) then     !assume we aren't doing a global grid otherwise need to check for wrapping, here field point (phi2) less than source point (phi3=phi1)
-            xp= -xp
+            xp = -xp
           end if
-
-          self%ximat(ix1,ix2,ix3)=xp     !eastward distance
-          self%yimat(ix1,ix2,ix3)=yp     !northward distance
+          phip=atan2(yp,xp)
+    
+          if(flagcart) then
+            yimat(ix1,ix2,ix3)=yp
+          end if
     
           !PROJECTIONS FROM NEUTURAL GRID VECTORS TO PLASMA GRID VECTORS
           !projection factors for mapping from axisymmetric to dipole (go ahead and compute projections so we don't have to do it repeatedly as sim runs
           ezp=x%er(ix1,ix2,ix3,:)
-    
           tmpvec=ezp*x%e2(ix1,ix2,ix3,:)
           tmpsca=sum(tmpvec)
-          self%proj_ezp_e2(ix1,ix2,ix3)=tmpsca
+          proj_ezp_e2(ix1,ix2,ix3)=tmpsca
     
           tmpvec=ezp*x%e1(ix1,ix2,ix3,:)
           tmpsca=sum(tmpvec)
-          self%proj_ezp_e1(ix1,ix2,ix3)=tmpsca
+          proj_ezp_e1(ix1,ix2,ix3)=tmpsca
     
           tmpvec=ezp*x%e3(ix1,ix2,ix3,:)
           tmpsca=sum(tmpvec)    !should be zero, but leave it general for now
-          self%proj_ezp_e3(ix1,ix2,ix3)=tmpsca
+          proj_ezp_e3(ix1,ix2,ix3)=tmpsca
     
-          eyp= -x%etheta(ix1,ix2,ix3,:)
+          if (flagcart) then
+            eyp= -x%etheta(ix1,ix2,ix3,:)
     
-          tmpvec=eyp*x%e1(ix1,ix2,ix3,:)
-          tmpsca=sum(tmpvec)
-          self%proj_eyp_e1(ix1,ix2,ix3)=tmpsca
+            tmpvec=eyp*x%e1(ix1,ix2,ix3,:)
+            tmpsca=sum(tmpvec)
+            proj_eyp_e1(ix1,ix2,ix3)=tmpsca
     
-          tmpvec=eyp*x%e2(ix1,ix2,ix3,:)
-          tmpsca=sum(tmpvec)
-          self%proj_eyp_e2(ix1,ix2,ix3)=tmpsca
+            tmpvec=eyp*x%e2(ix1,ix2,ix3,:)
+            tmpsca=sum(tmpvec)
+            proj_eyp_e2(ix1,ix2,ix3)=tmpsca
     
-          tmpvec=eyp*x%e3(ix1,ix2,ix3,:)
-          tmpsca=sum(tmpvec)
-          self%proj_eyp_e3(ix1,ix2,ix3)=tmpsca
+            tmpvec=eyp*x%e3(ix1,ix2,ix3,:)
+            tmpsca=sum(tmpvec)
+            proj_eyp_e3(ix1,ix2,ix3)=tmpsca
+          else
+            erhop=cos(phip)*x%e3(ix1,ix2,ix3,:) - sin(phip)*x%etheta(ix1,ix2,ix3,:)     !unit vector for azimuth (referenced from epicenter - not geocenter!!!) in cartesian geocentric-geomagnetic coords.
     
-          exprm=x%ephi(ix1,ix2,ix3,:)   !for 3D interpolation need to have a unit vector/projection onto x-direction (longitude)
+            tmpvec=erhop*x%e1(ix1,ix2,ix3,:)
+            tmpsca=sum(tmpvec)
+            proj_erhop_e1(ix1,ix2,ix3)=tmpsca
     
-          tmpvec=exprm*x%e1(ix1,ix2,ix3,:)
-          tmpsca=sum(tmpvec)
-          self%proj_exp_e1(ix1,ix2,ix3)=tmpsca
+            tmpvec=erhop*x%e2(ix1,ix2,ix3,:)
+            tmpsca=sum(tmpvec)
+            proj_erhop_e2(ix1,ix2,ix3)=tmpsca
     
-          tmpvec=exprm*x%e2(ix1,ix2,ix3,:)
-          tmpsca=sum(tmpvec)
-          self%proj_exp_e2(ix1,ix2,ix3)=tmpsca
-    
-          tmpvec=exprm*x%e3(ix1,ix2,ix3,:)
-          tmpsca=sum(tmpvec)
-          self%proj_exp_e3(ix1,ix2,ix3)=tmpsca
+            tmpvec=erhop*x%e3(ix1,ix2,ix3,:)
+            tmpsca=sum(tmpvec)
+            proj_erhop_e3(ix1,ix2,ix3)=tmpsca
+          end if
         end do
       end do
     end do
     
     !Assign values for flat lists of grid points
-    if (mpi_cfg%myid==0) then
-      print*, '...Packing interpolation target points...'
+    zi=pack(zimat,.true.)     !create a flat list of grid points to be used by interpolation ffunctions
+    if (flagcart) then
+      yi=pack(yimat,.true.)
+    else
+      rhoi=pack(rhoimat,.true.)
     end if
-    self%zi=pack(self%zimat,.true.)     !create a flat list of grid points to be used by interpolation functions
-    self%yi=pack(self%yimat,.true.)
-    self%xi=pack(self%ximat,.true.)
-
-    ! FIXME: do we need to have the new grid code clear its unit vectors?  Or maybe this isn't a huge waste of memory???
-    if (mpi_cfg%myid==0) then
-      print*, '...Clearing out unit vectors (after projections)...'
-    end if
+    
+    !GRID UNIT VECTORS NO LONGER NEEDED ONCE PROJECTIONS ARE CALCULATED...
     !call clear_unitvecs(x)
     
-    if(mpi_cfg%myid==0) then
-      print*, 'Interpolation coords:  ',minval(self%zi),maxval(self%zi), &
-                                        minval(self%xi),maxval(self%xi), &
-                                        minval(self%yi),maxval(self%yi)
-      print*, 'Projection checking:  ',minval(self%proj_exp_e1),maxval(self%proj_exp_e1), &
-                                       minval(self%proj_exp_e2),maxval(self%proj_exp_e2), &
-                                       minval(self%proj_exp_e3),maxval(self%proj_exp_e3)
-    end if
+    !PRINT OUT SOME BASIC INFO ABOUT THE GRID THAT WE'VE LOADED
+    if (mpi_cfg%myid==0 .and. debug) then
+      if (flagcart) then
+        print *, 'Min/max yn,zn values',minval(yn),maxval(yn),minval(zn),maxval(zn)
+        print *, 'Min/max yi,zi values',minval(yi),maxval(yi),minval(zi),maxval(zi)
+      else
+        print *, 'Min/max rhon,zn values',minval(rhon),maxval(rhon),minval(zn),maxval(zn)
+        print *, 'Min/max rhoi,zi values',minval(rhoi),maxval(rhoi),minval(zi),maxval(zi)
+      end if
     
+      print *, 'Source lat/long:  ',cfg%sourcemlat,cfg%sourcemlon
+      print *, 'Plasma grid lat range:  ',minval(x%glat(:,:,:)),maxval(x%glat(:,:,:))
+      print *, 'Plasma grid lon range:  ',minval(x%glon(:,:,:)),maxval(x%glon(:,:,:))
+    end if
+
     self%flagcoordsi=.true.
-  end subroutine set_coordsi_neu3D
+  end subroutine set_coordsi_neu2D
 
 
-  subroutine load_data_neu3D(self,t,dtmodel,ymdtmp,UTsectmp)
+  subroutine load_data_neu2D(self,t,dtmodel,ymdtmp,UTsectmp)
     class(neutraldata3D), intent(inout) :: self
     real(wp), intent(in) :: t,dtmodel
     integer, dimension(3), intent(inout) :: ymdtmp
@@ -535,76 +460,63 @@ contains
     UTsectmp = self%UTsecref(2)
     call dateinc(self%dt,ymdtmp,UTsectmp)                !get the date for "next" params
 
-    !read in the data from file
+    if (flagcart) then
+      lhorzn=lyn
+    else
+      lhorzn=lrhon
+    end if
+    
     if (mpi_cfg%myid==0) then    !root
-      !in the 3D case we cannot afford to send full grid data and need to instead use neutral subgrid splits defined earlier
-      allocate(paramall(self%lzn,self%lxnall,self%lynall))     ! space to store a single neutral input parameter
-
-      !print*, '  date and time (neutral3D):  ',ymdtmp,UTsectmp
-
-      fn=date_filename(self%sourcedir,ymdtmp,UTsectmp)
-      fn=get_filename(fn)
-      if (debug) print *, 'READ neutral 3D data from file: ',fn
-      if (get_suffix(fn)=='.h5') then
-        call hf%open(fn, action='r')
-      else
-        error stop '3D neutral input only supported for hdf5 files; please regenerate input'
-      end if
+      call get_neutral2(date_filename(self%sourcedir,ymdtmp,UTsectmp), &
+        self%dnO,self%dnN2,self%dnO2,self%dvnrho,self%dvnz,self%dTn)
     
-      call hf%read('/dn0all', paramall)
-      if (.not. all(ieee_is_finite(paramall))) error stop 'dnOall: non-finite value(s)'
-      if (debug) print*, 'Min/max values for dnOall:  ',minval(paramall),maxval(paramall)    
-      call dneu_root2workers(paramall,tag%dnO,self%slabsizes,self%indx,self%dnO)
-      call hf%read('/dnN2all', paramall)
-      if (.not. all(ieee_is_finite(paramall))) error stop 'dnN2all: non-finite value(s)'
-      if (debug) print*, 'Min/max values for dnN2all:  ',minval(paramall),maxval(paramall)    
-      call dneu_root2workers(paramall,tag%dnN2,self%slabsizes,self%indx,self%dnN2)
-      call hf%read('/dnO2all', paramall)
-      if (.not. all(ieee_is_finite(paramall))) error stop 'dnO2all: non-finite value(s)'
-      if (debug) print*, 'Min/max values for dnO2all:  ',minval(paramall),maxval(paramall)    
-      call dneu_root2workers(paramall,tag%dnO2,self%slabsizes,self%indx,self%dnO2)
-      call hf%read('/dTnall', paramall)
-      if (.not. all(ieee_is_finite(paramall))) error stop 'dTnall: non-finite value(s)'
-      if (debug) print*, 'Min/max values for dTnall:  ',minval(paramall),maxval(paramall)    
-      call dneu_root2workers(paramall,tag%dTn,self%slabsizes,self%indx,self%dTn)
-      call hf%read('/dvnrhoall', paramall)
-      if (.not. all(ieee_is_finite(paramall))) error stop 'dvnrhoall: non-finite value(s)'
-      if (debug) print*, 'Min/max values for dvnrhoall:  ',minval(paramall),maxval(paramall)    
-      call dneu_root2workers(paramall,tag%dvnrho,self%slabsizes,self%indx,self%dvny)
-      call hf%read('/dvnzall', paramall)
-      if (.not. all(ieee_is_finite(paramall))) error stop 'dvnzall: non-finite value(s)'
-      if (debug) print*, 'Min/max values for dvnzall:  ',minval(paramall),maxval(paramall)    
-      call dneu_root2workers(paramall,tag%dvnz,self%slabsizes,self%indx,self%dvnz)
-      call hf%read('/dvnxall', paramall)
-      if (.not. all(ieee_is_finite(paramall))) error stop 'dvnxall: non-finite value(s)'
-      if (debug) print*, 'Min/max values for dvnxall:  ',minval(paramall),maxval(paramall)    
-      call dneu_root2workers(paramall,tag%dvnx,self%slabsizes,self%indx,self%dvnx)
+      if (debug) then
+        print *, 'Min/max values for dnO:  ',minval(self%dnO),maxval(self%dnO)
+        print *, 'Min/max values for dnN:  ',minval(self%dnN2),maxval(self%dnN2)
+        print *, 'Min/max values for dnO:  ',minval(self%dnO2),maxval(self%dnO2)
+        print *, 'Min/max values for dvnrho:  ',minval(self%dvnrho),maxval(self%dvnrho)
+        print *, 'Min/max values for dvnz:  ',minval(self%dvnz),maxval(self%dvnz)
+        print *, 'Min/max values for dTn:  ',minval(self%dTn),maxval(self%dTn)
+      endif
     
-      call hf%close()
-      deallocate(paramall)
+      if (.not. all(ieee_is_finite(self%dnO))) error stop 'dnO: non-finite value(s)'
+      if (.not. all(ieee_is_finite(self%dnN2))) error stop 'dnN2: non-finite value(s)'
+      if (.not. all(ieee_is_finite(self%dnO2))) error stop 'dnO2: non-finite value(s)'
+      if (.not. all(ieee_is_finite(self%dvnrho))) error stop 'dvnrho: non-finite value(s)'
+      if (.not. all(ieee_is_finite(self%dvnz))) error stop 'dvnz: non-finite value(s)'
+      if (.not. all(ieee_is_finite(self%dTn))) error stop 'dTn: non-finite value(s)'
+    
+      !send a full copy of the data to all of the workers
+      do iid=1,mpi_cfg%lid-1
+        call mpi_send(self%dnO,lhorzn*lzn,mpi_realprec,iid,tag%dnO,MPI_COMM_WORLD,ierr)
+        call mpi_send(self%dnN2,lhorzn*lzn,mpi_realprec,iid,tag%dnN2,MPI_COMM_WORLD,ierr)
+        call mpi_send(self%dnO2,lhorzn*lzn,mpi_realprec,iid,tag%dnO2,MPI_COMM_WORLD,ierr)
+        call mpi_send(self%dTn,lhorzn*lzn,mpi_realprec,iid,tag%dTn,MPI_COMM_WORLD,ierr)
+        call mpi_send(self%dvnrho,lhorzn*lzn,mpi_realprec,iid,tag%dvnrho,MPI_COMM_WORLD,ierr)
+        call mpi_send(self%dvnz,lhorzn*lzn,mpi_realprec,iid,tag%dvnz,MPI_COMM_WORLD,ierr)
+      end do
     else     !workers
-      !receive a subgrid copy of the data from root
-      call dneu_workers_from_root(tag%dnO,self%dnO)
-      call dneu_workers_from_root(tag%dnN2,self%dnN2)
-      call dneu_workers_from_root(tag%dnO2,self%dnO2)  
-      call dneu_workers_from_root(tag%dTn,self%dTn)
-      call dneu_workers_from_root(tag%dvnrho,self%dvny)
-      call dneu_workers_from_root(tag%dvnz,self%dvnz)
-      call dneu_workers_from_root(tag%dvnx,self%dvnx)
+      !receive a full copy of the data from root
+      call mpi_recv(self%dnO,lhorzn*lzn,mpi_realprec,0,tag%dnO,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+      call mpi_recv(self%dnN2,lhorzn*lzn,mpi_realprec,0,tag%dnN2,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+      call mpi_recv(self%dnO2,lhorzn*lzn,mpi_realprec,0,tag%dnO2,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+      call mpi_recv(self%dTn,lhorzn*lzn,mpi_realprec,0,tag%dTn,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+      call mpi_recv(self%dvnrho,lhorzn*lzn,mpi_realprec,0,tag%dvnrho,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+      call mpi_recv(self%dvnz,lhorzn*lzn,mpi_realprec,0,tag%dvnz,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
     end if
     
-    
+    !DO SPATIAL INTERPOLATION OF EACH PARAMETER (COULD CONSERVE SOME MEMORY BY NOT STORING DVNRHOIPREV AND DVNRHOINEXT, ETC.)
     if (mpi_cfg%myid==mpi_cfg%lid/2 .and. debug) then
-      print *, 'Min/max values for dnO:  ',mpi_cfg%myid,minval(self%dnO),maxval(self%dnO)
-      print *, 'Min/max values for dnN:  ',mpi_cfg%myid,minval(self%dnN2),maxval(self%dnN2)
-      print *, 'Min/max values for dnO2:  ',mpi_cfg%myid,minval(self%dnO2),maxval(self%dnO2)
-      print *, 'Min/max values for dvnx:  ',mpi_cfg%myid,minval(self%dvnx),maxval(self%dvnx)
-      print *, 'Min/max values for dvnrho:  ',mpi_cfg%myid,minval(self%dvny),maxval(self%dvny)
-      print *, 'Min/max values for dvnz:  ',mpi_cfg%myid,minval(self%dvnz),maxval(self%dvnz)
-      print *, 'Min/max values for dTn:  ',mpi_cfg%myid,minval(self%dTn),maxval(self%dTn)
-    !  print*, 'coordinate ranges:  ',minval(zn),maxval(zn),minval(rhon),maxval(rhon),minval(zi),maxval(zi),minval(rhoi),maxval(rhoi)
+      print*, 'neutral data size:  ',lhorzn,lzn, mpi_cfg%lid
+      print *, 'Min/max values for dnO:  ',minval(self%dnO),maxval(self%dnO)
+      print *, 'Min/max values for dnN:  ',minval(self%dnN2),maxval(self%dnN2)
+      print *, 'Min/max values for dnO:  ',minval(self%dnO2),maxval(self%dnO2)
+      print *, 'Min/max values for dvnrho:  ',minval(self%dvnrho),maxval(self%dvnrho)
+      print *, 'Min/max values for dvnz:  ',minval(self%dvnz),maxval(self%dvnz)
+      print *, 'Min/max values for dTn:  ',minval(self%dTn),maxval(self%dTn)
+      !print*, 'coordinate ranges:  ',minval(zn),maxval(zn),minval(rhon),maxval(rhon),minval(zi),maxval(zi),minval(rhoi),maxval(rhoi)
     end if
-  end subroutine load_data_neu3D
+  end subroutine load_data_neu2D
 
 
   !> overriding procedure for updating neutral atmos (need additional rotation steps)
@@ -675,7 +587,7 @@ contains
 
   !> destructor for when object goes out of scope
   subroutine destructor(self)
-    type(neutraldata3D) :: self
+    type(neutraldata2D) :: self
 
     ! deallocate arrays from base inputdata class
     call self%dissociate_pointers()
