@@ -1,0 +1,9 @@
+@@ -264,7 +264,7 @@
+
+   ! Input variables
+   real(kind=rp), intent(in)  :: x             !Location at which splines are to be evaluated
+-  real(kind=rp), intent(in)  :: nodes(0:30)   !Spline node locations
++  real(kind=rp), intent(in)  :: nodes(0:29)   !Spline node locations
+   integer, intent(in)        :: nd            !Number of spline nodes minus one (0:nd)
+   integer, intent(in)        :: kmax          !Maximum order (up to 6 allowed) of evaluated splines
+   real(kind=rp), intent(in)  :: eta(0:30,2:6) !Array of precomputed weights for recursion (reciprocals of node differences)

@@ -2,7 +2,8 @@ include(FetchContent)
 
 FetchContent_Declare(MSIS2
 URL ${msis2_zip}
-URL_HASH SHA256=${msis2_sha256})
+URL_HASH SHA256=${msis2_sha256}
+)
 
 FetchContent_MakeAvailable(MSIS2)
 
@@ -30,3 +31,43 @@ if(${PROJECT}_BUILD_TESTING)
     COMMAND $<TARGET_FILE:msis2test>
     WORKING_DIRECTORY ${msis2_SOURCE_DIR})
 endif()
+
+# patching API MSIS
+
+if(msis_patched)
+  return()
+endif()
+
+set(msis_orig ${msis2_SOURCE_DIR}/msis_calc.F90)
+set(msis_patch ${PROJECT_SOURCE_DIR}/src/vendor/nrl_msis/msis_api.patch)
+# API patch
+if(WIN32)
+  find_program(WSL NAMES wsl REQUIRED)
+
+  execute_process(COMMAND ${WSL} wslpath ${msis_orig}
+    TIMEOUT 5
+    OUTPUT_VARIABLE msis_orig_path
+    COMMAND_ERROR_IS_FATAL ANY
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+  )
+
+  execute_process(COMMAND ${WSL} wslpath ${msis_patch}
+    TIMEOUT 5
+    OUTPUT_VARIABLE msis_patch_path
+    COMMAND_ERROR_IS_FATAL ANY
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+  )
+
+  execute_process(COMMAND ${WSL} patch ${msis_orig_path} ${msis_patch_path}
+    TIMEOUT 10
+    COMMAND_ERROR_IS_FATAL ANY
+  )
+else()
+  find_program(PATCH NAMES patch REQUIRED)
+  execute_process(COMMAND ${PATCH} ${msis_orig} ${msis_patch}
+    TIMEOUT 10
+    COMMAND_ERROR_IS_FATAL ANY
+  )
+endif()
+
+set(msis_patched true CACHE BOOL "MSIS is patched")
