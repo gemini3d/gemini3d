@@ -8,19 +8,19 @@ use neutraldata2Dobj, only neutradata2D
 implicit none (type, external)
 
 !> type extension for neutral 2D axisymmetric input data
-type, extends(neutraldata2D) :: neutraldata2Daxisymm
-  integer, pointer :: lrhon
-  real(wp), dimension(:), pointer :: rhon
-  real(wp), dimension(:), pointer :: rhoi
+type, extends(neutraldata2D) :: neutraldata2Dcart
+  integer, pointer :: lyn
+  real(wp), dimension(:), pointer :: yn
+  real(wp), dimension(:), pointer :: yi
 
   contains
-    procedure :: init=>init_neu2Daxisymm
-    procedure :: load_sizeandgrid_neu2D=>load_sizeandgrid_neu2dDaxisymm
-    procedure :: set_coordsi=>set_coordsi_neu2Daxisymm
-end type neutraldata2Daxisymm
+    procedure :: init=>init_neu2Dcart
+    procedure :: load_sizeandgrid_neu2D=>load_sizeandgrid_neu2Dcart
+    procedure :: set_coordsi=>set_coordsi_neu2Dcart
+end type neutraldata2Dcart
 
 contains
-  subroutine init_neu2Daxisymm(self,cfg,sourcedir,x,dtmodel,dtdata,ymd,UTsec)
+  subroutine init_neu2Dcart(self,cfg,sourcedir,x,dtmodel,dtdata,ymd,UTsec)
     class(neutraldata2Daxisymm), intent(inout) :: self
     type(gemini_cfg), intent(in) :: cfg
     character(*), intent(in) :: sourcedir
@@ -34,19 +34,19 @@ contains
     call self%init_neu2D_simple(self,cfg,sourcedir,x,dtmodel,dtdata,ymd,UTsec)
 
     ! append type of interp. to dataname
-    strname=self%dataname//' axisymmetric'     ! append type of 2D interpolation to name
+    strname=self%dataname//' Cartesian'     ! append type of 2D interpolation to name
     call self%set_name(strname)                ! overwrite generic neutral 2D data name
 
     ! bind axisymmetric specific pointers for convenience, in case they are needed elsewhere
-    self%lrhon=>self%lhorzn
-    self%rhon=>self%horzn
-    self%rhoi=>self%horzi
-  end subroutine init_neu2Daxisymm
+    self%lyn=>self%lhorzn
+    self%yn=>self%horzn
+    self%yi=>self%horzi
+  end subroutine init_neu2Dcart
 
 
   !! FIXME:  currently hardcoded for axisymmetric coords.  Needs to be specific to coordinate system.  
   !> set coordinates for target interpolation points; for neutral inputs we are forced to do some of the property array allocations here
-  subroutine set_coordsi_neu2Daxisymm(self,cfg,x)
+  subroutine set_coordsi_neu2Dcart(self,cfg,x)
     class(neutraldata3D), intent(inout) :: self
     type(gemini_cfg), intent(in) :: cfg
     class(curvmesh), intent(in) :: x
@@ -55,7 +55,6 @@ contains
     real(wp), dimension(3) :: ezp,eyp,tmpvec,exprm
     real(wp) :: tmpsca
     integer :: ix1,ix2,ix3,iyn,izn,ixn,iid,ierr
-
 
     ! Space for coordinate sites and projections in neutraldata3D object
     allocate(self%coord1i(x%lx1*x%lx2*x%lx3),self%coord3i(x%lx1*x%lx2*x%lx3))
@@ -85,49 +84,46 @@ contains
           end if
     
           !COMPUTE DISTANCES
-          gammarads=cos(theta1)*cos(theta2)+sin(theta1)*sin(theta2)*cos(phi1-phi2)     !this is actually cos(gamma)
-          if (gammarads > 1) then     !handles weird precision issues in 2D
-            gammarads = 1
-          else if (gammarads < -1) then
-            gammarads= -1
-          end if
-          gammarads=acos(gammarads)                     !angle between source location annd field point (in radians)
-          rhoimat(ix1,ix2,ix3)=Re*gammarads    !rho here interpreted as the arc-length defined by angle between epicenter and ``field point''
+          !gammarads=cos(theta1)*cos(theta2)+sin(theta1)*sin(theta2)*cos(phi1-phi2)     !this is actually cos(gamma)
+          !if (gammarads > 1) then     !handles weird precision issues in 2D
+          !  gammarads = 1
+          !else if (gammarads < -1) then
+          !  gammarads= -1
+          !end if
+          !gammarads=acos(gammarads)                     !angle between source location annd field point (in radians)
+          !rhoimat(ix1,ix2,ix3)=Re*gammarads    !rho here interpreted as the arc-length defined by angle between epicenter and ``field point''
     
-!          !we need a phi locationi (not spherical phi, but azimuth angle from epicenter), as well, but not for interpolation - just for doing vector rotations
-!          theta3=theta2
-!          phi3=phi1
-!          gamma1=cos(theta2)*cos(theta3)+sin(theta2)*sin(theta3)*cos(phi2-phi3)
-!          if (gamma1 > 1) then     !handles weird precision issues in 2D
-!            gamma1 = 1
-!          else if (gamma1 < -1) then
-!            gamma1 = -1
-!          end if
-!          gamma1=acos(gamma1)
-!    
-!          gamma2=cos(theta1)*cos(theta3)+sin(theta1)*sin(theta3)*cos(phi1-phi3)
-!          if (gamma2 > 1) then     !handles weird precision issues in 2D
-!            gamma2 = 1
-!          else if (gamma2< -1) then
-!            gamma2= -1
-!          end if
-!          gamma2=acos(gamma2)
-!    
-!          xp=Re*gamma1
-!          yp=Re*gamma2     !this will likely always be positive, since we are using center of earth as our origin, so this should be interpreted as distance as opposed to displacement
-!    
-!          !COMPUTE COORDINATES FROM DISTANCES
-!          if (theta3>theta1) then       !place distances in correct quadrant, here field point (theta3=theta2) is is SOUTHward of source point (theta1), whreas yp is distance northward so throw in a negative sign
-!            yp = -yp            !do we want an abs here to be safe
-!          end if
-!          if (phi2<phi3) then     !assume we aren't doing a global grid otherwise need to check for wrapping, here field point (phi2) less than source point (phi3=phi1)
-!            xp = -xp
-!          end if
-!          phip=atan2(yp,xp)
-!    
-!          if(flagcart) then
-!            yimat(ix1,ix2,ix3)=yp
-!          end if
+          !we need a phi locationi (not spherical phi, but azimuth angle from epicenter), as well, but not for interpolation - just for doing vector rotations
+          theta3=theta2
+          phi3=phi1
+          gamma1=cos(theta2)*cos(theta3)+sin(theta2)*sin(theta3)*cos(phi2-phi3)
+          if (gamma1 > 1) then     !handles weird precision issues in 2D
+            gamma1 = 1
+          else if (gamma1 < -1) then
+            gamma1 = -1
+          end if
+          gamma1=acos(gamma1)
+    
+          gamma2=cos(theta1)*cos(theta3)+sin(theta1)*sin(theta3)*cos(phi1-phi3)
+          if (gamma2 > 1) then     !handles weird precision issues in 2D
+            gamma2 = 1
+          else if (gamma2< -1) then
+            gamma2= -1
+          end if
+          gamma2=acos(gamma2)
+    
+          xp=Re*gamma1
+          yp=Re*gamma2     !this will likely always be positive, since we are using center of earth as our origin, so this should be interpreted as distance as opposed to displacement
+    
+          !COMPUTE COORDINATES FROM DISTANCES
+          if (theta3>theta1) then       !place distances in correct quadrant, here field point (theta3=theta2) is is SOUTHward of source point (theta1), whreas yp is distance northward so throw in a negative sign
+            yp = -yp            !do we want an abs here to be safe
+          end if
+          if (phi2<phi3) then     !assume we aren't doing a global grid otherwise need to check for wrapping, here field point (phi2) less than source point (phi3=phi1)
+            xp = -xp
+          end if
+          phip=atan2(yp,xp)
+          self%horzimat(ix1,ix2,ix3)=yp
     
           !PROJECTIONS FROM NEUTURAL GRID VECTORS TO PLASMA GRID VECTORS
           !projection factors for mapping from axisymmetric to dipole (go ahead and compute projections so we don't have to do it repeatedly as sim runs
@@ -144,67 +140,41 @@ contains
           tmpsca=sum(tmpvec)    !should be zero, but leave it general for now
           self%proj_ezp_e3(ix1,ix2,ix3)=tmpsca
     
-          !if (flagcart) then
-          !  eyp= -x%etheta(ix1,ix2,ix3,:)
-          !
-          !  tmpvec=eyp*x%e1(ix1,ix2,ix3,:)
-          !  tmpsca=sum(tmpvec)
-          !  proj_eyp_e1(ix1,ix2,ix3)=tmpsca
-          !
-          !  tmpvec=eyp*x%e2(ix1,ix2,ix3,:)
-          !  tmpsca=sum(tmpvec)
-          !  proj_eyp_e2(ix1,ix2,ix3)=tmpsca
-          !
-          !  tmpvec=eyp*x%e3(ix1,ix2,ix3,:)
-          !  tmpsca=sum(tmpvec)
-          !  proj_eyp_e3(ix1,ix2,ix3)=tmpsca
-          !else
-            erhop=cos(phip)*x%e3(ix1,ix2,ix3,:) - sin(phip)*x%etheta(ix1,ix2,ix3,:)     !unit vector for azimuth (referenced from epicenter - not geocenter!!!) in cartesian geocentric-geomagnetic coords.
-    
-            tmpvec=erhop*x%e1(ix1,ix2,ix3,:)
-            tmpsca=sum(tmpvec)
-            self%proj_ehorzp_e1(ix1,ix2,ix3)=tmpsca
-    
-            tmpvec=erhop*x%e2(ix1,ix2,ix3,:)
-            tmpsca=sum(tmpvec)
-            self%proj_ehorzp_e2(ix1,ix2,ix3)=tmpsca
-    
-            tmpvec=erhop*x%e3(ix1,ix2,ix3,:)
-            tmpsca=sum(tmpvec)
-            self%proj_ehorzp_e3(ix1,ix2,ix3)=tmpsca
-          !end if
+          eyp= -x%etheta(ix1,ix2,ix3,:)
+          
+          tmpvec=eyp*x%e1(ix1,ix2,ix3,:)
+          tmpsca=sum(tmpvec)
+          self%proj_ehorzp_e1(ix1,ix2,ix3)=tmpsca
+        
+          tmpvec=eyp*x%e2(ix1,ix2,ix3,:)
+          tmpsca=sum(tmpvec)
+          self%proj_ehorzp_e2(ix1,ix2,ix3)=tmpsca
+        
+          tmpvec=eyp*x%e3(ix1,ix2,ix3,:)
+          tmpsca=sum(tmpvec)
+          self%proj_ehorzp_e3(ix1,ix2,ix3)=tmpsca
         end do
       end do
     end do
     
     !Assign values for flat lists of grid points
     self%zi=pack(self%zimat,.true.)     !create a flat list of grid points to be used by interpolation ffunctions
-    !if (flagcart) then
-    !  yi=pack(yimat,.true.)
-    !else
-      horzi=pack(horzimat,.true.)
-    !end if
+    self%horzi=pack(self%horzimat,.true.)
     
     !GRID UNIT VECTORS NO LONGER NEEDED ONCE PROJECTIONS ARE CALCULATED...
     !call clear_unitvecs(x)
     
     !PRINT OUT SOME BASIC INFO ABOUT THE GRID THAT WE'VE LOADED
     if (mpi_cfg%myid==0 .and. debug) then
-      !if (flagcart) then
-      !  print *, 'Min/max yn,zn values',minval(yn),maxval(yn),minval(zn),maxval(zn)
-      !  print *, 'Min/max yi,zi values',minval(yi),maxval(yi),minval(zi),maxval(zi)
-      !else
-        print *, 'Min/max rhon,zn values',minval(self%horzn),maxval(self%horzn),minval(self%zn),maxval(self%zn)
-        print *, 'Min/max rhoi,zi values',minval(self%horzi),maxval(self%horzi),minval(self%zi),maxval(self%zi)
-      !end if
-    
+      print *, 'Min/max yn,zn values',minval(self%yn),maxval(self%yn),minval(self%zn),maxval(self%zn)
+      print *, 'Min/max yi,zi values',minval(self%yi),maxval(self%yi),minval(self%zi),maxval(self%zi)
       print *, 'Source lat/long:  ',cfg%sourcemlat,cfg%sourcemlon
       print *, 'Plasma grid lat range:  ',minval(x%glat(:,:,:)),maxval(x%glat(:,:,:))
       print *, 'Plasma grid lon range:  ',minval(x%glon(:,:,:)),maxval(x%glon(:,:,:))
     end if
 
     self%flagcoordsi=.true.
-  end subroutine set_coordsi_neu2Daxisymm
+  end subroutine set_coordsi_neu2Dcart
 
 
   !! FIXME: may be specific to axisymmetric vs. cartesian
@@ -253,35 +223,19 @@ contains
     
     !Everyone must allocate space for the grid of input data
     allocate(self%zn(self%lzn))    !these are module-scope variables
-    !if (flagcart) then
-    !  allocate(rhon(1))  !not used in Cartesian code so just set to something
     allocate(self%horzn(self%lhorzn))    ! FIXME: default to axisymmetric?
-    !  lyn=lhorzn
-    !else
-    !  allocate(rhon(lhorzn))
-    !  allocate(yn(1))    !not used in the axisymmetric code so just initialize to something
-    !  lrhon=lhorzn
-    !end if
     
     !Note that the second dimension ("longitude") is singleton so that we are able to also use these vars for 3D input
     !allocate(dnO(lzn,1,lhorzn),dnN2(lzn,1,lhorzn),dnO2(lzn,1,lhorzn),dvnrho(lzn,1,lhorzn),dvnz(lzn,1,lhorzn),dTn(lzn,1,lhorzn))
     
     !Define a grid (input data) by assuming that the spacing is constant
-    !if (flagcart) then     !Cartesian neutral simulation
-    !  yn=[ ((real(ihorzn, wp)-1)*dhorzn, ihorzn=1,lhorzn) ]
-    !  meanyn=sum(yn,1)/size(yn,1)
-    !  yn=yn-meanyn     !the neutral grid should be centered on zero for a cartesian interpolation
-    !else
     self%horzn=[ ((real(ihorzn, wp)-1)*dhorzn, ihorzn=1,lhorzn) ]
-    !end if
+    meanhorzn=sum(yn,1)/size(yn,1)
+    self%horzn=self%horznn-meanhornn     !the neutral grid should be centered on zero for a cartesian interpolation
     self%zn=[ ((real(izn, wp)-1)*cfg%dzn, izn=1,lzn) ]
     
     if (mpi_cfg%myid==0) then
-    !  if (flagcart) then
-    !    print *, 'Creating neutral grid with y,z extent:',minval(yn),maxval(yn),minval(zn),maxval(zn)
-    !  else
-        print *, 'Creating neutral grid with rho,z extent:  ',minval(self%horzn),maxval(self%horzn),minval(self%zn),maxval(self%zn)
-    !  end if
+      print *, 'Creating neutral grid with y,z extent:',minval(self%yn),maxval(self%yn),minval(self%zn),maxval(self%zn)
     end if
 
     self%flagdatasize=.true.

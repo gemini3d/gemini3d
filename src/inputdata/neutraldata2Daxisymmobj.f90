@@ -92,7 +92,7 @@ contains
             gammarads= -1
           end if
           gammarads=acos(gammarads)                     !angle between source location annd field point (in radians)
-          rhoimat(ix1,ix2,ix3)=Re*gammarads    !rho here interpreted as the arc-length defined by angle between epicenter and ``field point''
+          self%horzimat(ix1,ix2,ix3)=Re*gammarads    !rho here interpreted as the arc-length defined by angle between epicenter and ``field point''
     
 !          !we need a phi locationi (not spherical phi, but azimuth angle from epicenter), as well, but not for interpolation - just for doing vector rotations
 !          theta3=theta2
