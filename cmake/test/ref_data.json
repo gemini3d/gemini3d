@@ -54,6 +54,18 @@
       "archive" : "mini3d_glow.zst",
       "sha256" : "559582df1f646b957e053a8df5c1c324e5933a45b1707d610d567ea7935c015c",
       "url" : "https://www.dropbox.com/s/ohr3bza88wy7oht/mini3d_glow.zst?dl=1"
+    },
+    "mini2dns_msis2_eq" :
+    {
+      "archive" : "mini2dns_msis2_eq.zst",
+      "sha256" : "d65ea205e68014acab9676d091f5eb00441bdfc78640e75cb1e2b6aa679c53bb",
+      "url" : "https://www.dropbox.com/s/urwgggilw1h7fm0/mini2dns_msis2_eq.zst?dl=1"
+    },
+    "mini3d_msis2_eq" :
+    {
+      "archive" : "mini3d_msis2_eq.zst",
+      "sha256" : "453ad100dc1f177bd3de3f1f814a3676bc8affe399a2053822a7656f46dde22a",
+      "url" : "https://www.dropbox.com/s/wgylit93qukufjq/mini3d_msis2_eq.zst?dl=1"
     }
   }
 }
