@@ -9,7 +9,7 @@ implicit none (type, external)
 
 !> type extension for neutral 2D axisymmetric input data
 type, extends(neutraldata2D) :: neutraldata2Daxisymm
-  real(wp), dimension(:), pointer :: lrhon
+  integer, pointer :: lrhon
   real(wp), dimension(:), pointer :: rhon
   real(wp), dimension(:), pointer :: rhoi
 
@@ -37,8 +37,10 @@ contains
     strname=self%dataname//' axisymmetric'     ! append type of 2D interpolation to name
     call self%set_name(strname)                ! overwrite generic neutral 2D data name
 
-    ! bind axisymmetric specific pointers for convenience
-    
+    ! bind axisymmetric specific pointers for convenience, in case they are needed elsewhere
+    self%lrhon=>self%lhorzn
+    self%rhon=>self%horzn
+    self%rhoi=>self%horzi
   end subroutine init_neu2Daxisymm
 
 
