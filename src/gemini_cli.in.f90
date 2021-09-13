@@ -1,5 +1,6 @@
 module gemini_cli
 
+use mpi, only : mpi_init
 use config, only : read_configfile, gemini_cfg, get_compiler_vendor
 use pathlib, only : expanduser
 use mpimod, only : mpisetup, mpibreakdown, mpi_cfg
@@ -43,6 +44,9 @@ case ('-git')
 end select
 
 !> INITIALIZE MESSING PASSING VARIABLES, IDS ETC.
+call mpi_init(ierr)
+if (ierr/=0) error stop 'mpimod: mpi_init'
+!! keep mpi_init out of mpisetup for libgemini, where the calling program does MPI_init
 call mpisetup()
 
 if(mpi_cfg%lid < 1) error stop 'number of MPI processes must be >= 1. Was MPI initialized properly?'
@@ -66,6 +70,7 @@ call check_input_files(cfg)
 !! default values
 lid2 = -1  !< sentinel
 
+!> simple but effective command line parsing
 do i = 2,argc
   call get_command_argument(i,argv)
 

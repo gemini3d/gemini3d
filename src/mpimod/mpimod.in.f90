@@ -6,7 +6,7 @@ use, intrinsic:: iso_fortran_env, only: stderr=>error_unit
 use phys_consts, only : lsp, wp
 use autogrid, only : grid_auto
 
-use mpi, only: mpi_init, mpi_comm_rank, mpi_comm_size, mpi_comm_world, &
+use mpi, only: mpi_comm_rank, mpi_comm_size, mpi_comm_world, &
   mpi_integer,mpi_sum, &
   mpi_status_size, mpi_status_ignore, MPI_PROC_NULL, &
   mpi_realprec=>@mpi_realprec@
@@ -440,11 +440,9 @@ subroutine mpisetup()
 
 integer :: ierr
 
-call mpi_init(ierr)
-if (ierr/=0) error stop 'mpimod: mpi_init'
-call mpi_comm_rank(MPI_COMM_WORLD, mpi_cfg%myid,ierr)
+call mpi_comm_rank(MPI_COMM_WORLD, mpi_cfg%myid, ierr)
 if (ierr/=0) error stop 'mpimod: mpi_comm_rank'
-call mpi_comm_size(MPI_COMM_WORLD, mpi_cfg%lid,ierr)
+call mpi_comm_size(MPI_COMM_WORLD, mpi_cfg%lid, ierr)
 if (ierr/=0) error stop 'mpimod: mpi_comm_size'
 
 if(mpi_cfg%myid==0) print *, mpi_cfg%lid, "MPI processes detected"
