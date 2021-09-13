@@ -33,7 +33,7 @@ add_subdirectory(utils)
 
 # --- Main GEMINI executable
 configure_file(gemini_cli.in.f90 gemini_cli.f90 @ONLY)
-add_executable(gemini.bin gemini.f90 ${CMAKE_CURRENT_BINARY_DIR}/gemini_cli.f90
+add_executable(gemini.bin gemini.f90 gemini_init.f90 ${CMAKE_CURRENT_BINARY_DIR}/gemini_cli.f90
   $<TARGET_OBJECTS:autogrid> $<TARGET_OBJECTS:PDEelliptic> $<TARGET_OBJECTS:potential>
   $<TARGET_OBJECTS:mpimod> $<TARGET_OBJECTS:io>
 )

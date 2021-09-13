@@ -4,6 +4,7 @@ use config, only : read_configfile, gemini_cfg, get_compiler_vendor
 use pathlib, only : assert_file_exists, assert_directory_exists, expanduser
 use mpimod, only : mpisetup, mpibreakdown, mpi_cfg
 use exe_frontend, only : help_gemini_bin
+use gemini_init, only : find_config
 
 implicit none (type, external)
 private
@@ -56,26 +57,7 @@ call get_command_argument(1, argv, status=i)
 if (i/=0) error stop 'bad command line'
 cfg%outdir = expanduser(argv)
 
-find_cfg : block
-logical :: exists
-character(*), parameter :: locs(4) = [character(18) :: "/inputs/config.nml", "/config.nml", "/inputs/config.ini", "/config.ini"]
-character(:), allocatable :: loc
-do i = 1,size(locs)
-  loc = trim(cfg%outdir // locs(i))
-  inquire(file=loc, exist=exists)
-  if (exists) then
-    cfg%infile = loc
-    exit find_cfg
-  endif
-end do
-
-if (cfg%outdir(1:1) == "-") then
-  error stop 'gemini.bin: not a known CLI option: ' // cfg%outdir
-else
-  error stop 'gemini.bin: could not find config file in ' // cfg%outdir
-endif
-
-end block find_cfg
+call find_config(cfg)
 
 call read_configfile(cfg, verbose=.false.)
 
