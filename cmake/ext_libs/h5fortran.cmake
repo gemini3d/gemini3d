@@ -32,7 +32,7 @@ if(hdf5)
 
   find_package(ZLIB)
 
-  set(h5fortran_INCLUDE_DIRS ${CMAKE_CURRENT_BINARY_DIR}/include)
+  set(h5fortran_INCLUDE_DIRS ${h5fortran_ROOT}/include)
   set(h5fortran_LIBRARIES ${h5fortran_ROOT}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}h5fortran${CMAKE_STATIC_LIBRARY_SUFFIX})
 
   set(h5fortran_args

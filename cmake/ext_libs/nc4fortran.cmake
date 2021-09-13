@@ -22,7 +22,7 @@ if(netcdf)
   endif()
   message(VERBOSE "NetCDF_ROOT: ${NetCDF_ROOT}")
 
-  set(nc4fortran_INCLUDE_DIRS ${CMAKE_CURRENT_BINARY_DIR}/include)
+  set(nc4fortran_INCLUDE_DIRS ${nc4fortran_ROOT}/include)
   set(nc4fortran_LIBRARIES ${nc4fortran_ROOT}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}nc4fortran${CMAKE_STATIC_LIBRARY_SUFFIX})
 
   set(nc4fortran_args
