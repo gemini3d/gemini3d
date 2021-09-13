@@ -30,6 +30,7 @@ if(HWLOC_FOUND)
     set_tests_properties(unit:HWLOC PROPERTIES
       FIXTURES_SETUP hwloc_fxt
       TIMEOUT 10
+      PROCESSORS 1
       LABELS unit)
   endif()
 
