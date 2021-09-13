@@ -28,8 +28,15 @@ CONFIGURE_HANDLED_BY_BUILD ON
 
 ExternalProject_Get_property(HWM14 SOURCE_DIR)
 
+
+set(hwm14_dat_files
+${SOURCE_DIR}/src/hwm14/hwm123114.bin
+${SOURCE_DIR}/src/hwm14/dwm07b104i.dat
+${SOURCE_DIR}/src/hwm14/gd2qd.dat
+)
 ExternalProject_Add_Step(HWM14 hwm_cp1 DEPENDEES update
-COMMAND ${CMAKE_COMMAND} -E copy_if_different ${SOURCE_DIR}/src/hwm14/hwm123114.bin ${SOURCE_DIR}/src/hwm14/dwm07b104i.dat ${SOURCE_DIR}/src/hwm14/gd2qd.dat ${PROJECT_BINARY_DIR})
+COMMAND ${CMAKE_COMMAND} -E copy_if_different ${hwm14_dat_files} ${PROJECT_BINARY_DIR})
+install(FILES ${hwm14_dat_files} DESTINATION bin)
 
 add_library(HWM14::HWM14 INTERFACE IMPORTED)
 target_link_libraries(HWM14::HWM14 INTERFACE "${HWM14_LIBRARIES}")
