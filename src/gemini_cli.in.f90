@@ -1,10 +1,10 @@
 module gemini_cli
 
 use config, only : read_configfile, gemini_cfg, get_compiler_vendor
-use pathlib, only : assert_file_exists, assert_directory_exists, expanduser
+use pathlib, only : expanduser
 use mpimod, only : mpisetup, mpibreakdown, mpi_cfg
 use exe_frontend, only : help_gemini_bin
-use gemini_init, only : find_config
+use gemini_init, only : find_config, check_input_files
 
 implicit none (type, external)
 private
@@ -61,104 +61,7 @@ call find_config(cfg)
 
 call read_configfile(cfg, verbose=.false.)
 
-!> PRINT SOME DIAGNOSIC INFO FROM ROOT
-if (mpi_cfg%myid==0) then
-  call assert_file_exists(cfg%indatsize)
-  call assert_file_exists(cfg%indatgrid)
-  call assert_file_exists(cfg%indatfile)
-
-  print *, '******************** input config ****************'
-  print '(A)', 'simulation directory: ' // cfg%outdir
-  print '(A51,I6,A1,I0.2,A1,I0.2)', ' start year-month-day:  ', cfg%ymd0(1), '-', cfg%ymd0(2),'-', cfg%ymd0(3)
-  print '(A51,F10.3)', 'start time:  ',cfg%UTsec0
-  print '(A51,F10.3)', 'duration:  ',cfg%tdur
-  print '(A51,F10.3)', 'output every:  ',cfg%dtout
-  print '(A,/,A,/,A,/,A)', 'gemini.f90: using input data files:', cfg%indatsize, cfg%indatgrid, cfg%indatfile
-
-  if(cfg%flagdneu==1) then
-    call assert_directory_exists(cfg%sourcedir)
-    print *, 'Neutral disturbance mlat,mlon:  ',cfg%sourcemlat,cfg%sourcemlon
-    print *, 'Neutral disturbance cadence (s):  ',cfg%dtneu
-    print *, 'Neutral grid resolution (m):  ',cfg%drhon,cfg%dzn
-    print *, 'Neutral disturbance data files located in directory:  ',cfg%sourcedir
-  else
-    print *, "no neutral disturbance specified."
-  end if
-
-  if (cfg%flagprecfile==1) then
-    call assert_directory_exists(cfg%precdir)
-    print '(A,F10.3)', 'Precipitation file input cadence (s):  ',cfg%dtprec
-    print *, 'Precipitation file input source directory:  ' // cfg%precdir
-  else
-    print *, "no precipitation specified"
-  end if
-
-  if(cfg%flagE0file==1) then
-    call assert_directory_exists(cfg%E0dir)
-    print *, 'Electric field file input cadence (s):  ',cfg%dtE0
-    print *, 'Electric field file input source directory:  ' // cfg%E0dir
-  else
-    print *, "no Efield specified"
-  end if
-
-  if (cfg%flagglow==1) then
-    print *, 'GLOW enabled for auroral emission calculations.'
-    print *, 'GLOW electron transport calculation cadence (s): ', cfg%dtglow
-    print *, 'GLOW auroral emission output cadence (s): ', cfg%dtglowout
-  else
-    print *, "GLOW disabled"
-  end if
-
-  if (cfg%msis_version==20) then
-    print *, 'MSIS 2.0 enabled for neutral atmosphere calculations.'
-  else
-    print *, "MSISE00 enabled for neutral atmosphere calculations."
-  end if
-
-  if (cfg%flagEIA) then
-    print*, 'EIA enables with peok equatorial drift:  ',cfg%v0equator
-  else
-    print*, 'EIA disabled'
-  end if
-
-  if (cfg%flagneuBG) then
-    print*, 'Variable background neutral atmosphere enabled at cadence:  ',cfg%dtneuBG
-  else
-    print*, 'Variable background neutral atmosphere disabled.'
-  end if
-
-  print*, 'Background precipitation has total energy flux and energy:  ',cfg%PhiWBG,cfg%W0BG
-
-  if (cfg%flagJpar) then
-    print*, 'Parallel current calculation enabled.'
-  else
-    print*, 'Parallel current calculation disabled.'
-  end if
-
-  print*, 'Inertial capacitance calculation type:  ',cfg%flagcap
-
-  print*, 'Diffusion solve type:  ',cfg%diffsolvetype
-
-  if (cfg%mcadence > 0) then
-    print*, 'Milestone output selected; cadence (every nth output) of:  ',cfg%mcadence
-  else
-    print*, 'Milestone output disabled.'
-  end if
-
-  if (cfg%flaggravdrift) then
-    print*, 'Gravitational drift terms enabled.'
-  else
-    print*, 'Gravitaional drift terms disabled.'
-  end if
-
-  if (cfg%flaglagrangian) then
-    print*, 'Lagrangian grid enabled.'
-  else
-    print*, 'Lagrangian grid disabled'
-  end if
-
-  print *,  '**************** end input config ***************'
-end if
+call check_input_files(cfg)
 
 !! default values
 lid2 = -1  !< sentinel
