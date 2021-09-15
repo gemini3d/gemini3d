@@ -12,7 +12,6 @@ add_library(mpimod OBJECT
   ${CMAKE_CURRENT_BINARY_DIR}/mpimod.f90
   $<TARGET_OBJECTS:autogrid>
   mpisend.f90 mpirecv.f90 mpihalo.f90)
-# not OBJECT to avoid CMake 3.13 trouble
 target_link_libraries(mpimod PRIVATE const MPI::MPI_Fortran)
 if(NOT mpi)
   # the reason for this is the MPI-1 Fortran 77 linking in MUMPS

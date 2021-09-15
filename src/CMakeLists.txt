@@ -31,29 +31,49 @@ target_link_libraries(multifluid PRIVATE advec calculus collision const diffusio
 
 add_subdirectory(utils)
 
-# --- Main GEMINI executable
-
-
+# --- Main GEMINI3D library
 configure_file(gemini_cli.in.f90 gemini_cli.f90 @ONLY)
-add_executable(gemini.bin gemini.f90 libgemini.f90 gemini_init.f90 ${CMAKE_CURRENT_BINARY_DIR}/gemini_cli.f90
-  $<TARGET_OBJECTS:autogrid> $<TARGET_OBJECTS:PDEelliptic> $<TARGET_OBJECTS:potential>
-  $<TARGET_OBJECTS:mpimod> $<TARGET_OBJECTS:io>
+
+add_library(gemini3d
+libgemini.f90 gemini_init.f90 ${CMAKE_CURRENT_BINARY_DIR}/gemini_cli.f90
+)
+set_target_properties(gemini3d PROPERTIES
+ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
+LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
+)
+foreach(l
+  advec calculus config const collision diffusion fang interp ionization gbsv
+  meshobj meshobj_cart meshobj_dipole spherical newton geomagnetic
+  msis_ifc multifluid
+  neutral
+  pathlib
+  PDEparabolic precipBCs reader sanity_check errors sources temporal timeutils
+  exe_frontend
+  grid io PDEelliptic potential mpimod
+  )
+  target_link_libraries(gemini3d PUBLIC
+  #$<TARGET_OBJECTS:${l}>
+  ${l}
+  )
+endforeach()
+target_link_libraries(gemini3d PRIVATE MPI::MPI_Fortran)
+
+# --- Gemini.bin minimal main program
+add_executable(gemini.bin gemini_main.f90
 )
 set_target_properties(gemini.bin PROPERTIES
-  RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
-target_link_libraries(gemini.bin PRIVATE advec calculus config const collision diffusion fang grid io interp ionization gbsv
-  meshobj meshobj_cart meshobj_dipole spherical newton geomagnetic
-  exe_frontend
-  msis_ifc multifluid
-  neutral pathlib PDEparabolic potential precipBCs reader sanity_check errors sources temporal timeutils
-  hwloc_ifc hwloc_c)
+RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
+)
+target_link_libraries(gemini.bin PRIVATE
+gemini3d
+autogrid
+hwloc_ifc hwloc_c
+)
+
 if(mpi)
-  # Note: CMake 3.13 needs MPI linked here explicitly to gemini.bin on any OS
-  # put libs all in order or you'll get linking error on certain platforms like linux
-  # due to scalapack linked after lapack and blas
-  target_link_libraries(gemini.bin PRIVATE MUMPS::MUMPS SCALAPACK::SCALAPACK LAPACK::LAPACK MPI::MPI_Fortran MPI::MPI_C)
+  target_link_libraries(gemini.bin PRIVATE MUMPS::MUMPS SCALAPACK::SCALAPACK LAPACK::LAPACK MPI::MPI_Fortran)
 else()
-  target_link_libraries(gemini.bin PRIVATE MUMPS::MUMPS LAPACK::LAPACK MPI::MPI_Fortran MPI::MPI_C)
+  target_link_libraries(gemini.bin PRIVATE MUMPS::MUMPS LAPACK::LAPACK MPI::MPI_Fortran)
 endif()
 if(MUMPS_HAVE_Scotch)
   target_link_libraries(gemini.bin PRIVATE Scotch::Scotch)
