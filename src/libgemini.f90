@@ -140,6 +140,7 @@ else
   block
     character(Lout_dir) :: buf
     integer :: i
+    buf = "" !< ensure buf has no garbage characters
 
     do i = 1, Lout_dir
       if (out_dir(i) == c_null_char) exit

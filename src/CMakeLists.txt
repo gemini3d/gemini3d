@@ -58,7 +58,7 @@ foreach(l
 endforeach()
 target_link_libraries(gemini3d PRIVATE MPI::MPI_Fortran)
 
-# --- Gemini.bin minimal main program
+# --- Gemini.bin minimal main Fortran program
 add_executable(gemini.bin gemini_main.f90
 )
 set_target_properties(gemini.bin PROPERTIES
@@ -95,3 +95,23 @@ endif()
 
 install(TARGETS gemini.bin
   EXPORT ${PROJECT_NAME}Targets)
+
+
+# --- Gemini_c.bin
+# This is an example of a C/C++ main program, instead of or in addition to the main Fortran gemini.bin
+# this could be used as a starting point for C/C++ programs that use the GEMINI3D API
+
+if(NOT mpi)
+  message(STATUS "SKIP: GEMINI3D C program requires MPI")
+  return()
+endif()
+
+add_executable(gemini_c.bin gemini_main.c)
+set_target_properties(gemini_c.bin PROPERTIES
+RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
+)
+target_link_libraries(gemini_c.bin PRIVATE
+gemini3d
+autogrid
+hwloc_ifc hwloc_c
+MUMPS::MUMPS SCALAPACK::SCALAPACK LAPACK::LAPACK MPI::MPI_Fortran)
