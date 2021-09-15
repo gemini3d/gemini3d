@@ -1,11 +1,10 @@
 module gemini_cli
 
 use mpi, only : mpi_init
-use config, only : read_configfile, gemini_cfg, get_compiler_vendor
+use config, only : gemini_cfg, get_compiler_vendor
 use pathlib, only : expanduser
-use mpimod, only : mpisetup, mpibreakdown, mpi_cfg
+use mpimod, only : mpibreakdown, mpi_cfg
 use exe_frontend, only : help_gemini_bin
-use gemini_init, only : find_config, check_input_files
 
 implicit none (type, external)
 private
@@ -43,13 +42,6 @@ case ('-git')
   stop
 end select
 
-!> INITIALIZE MESSING PASSING VARIABLES, IDS ETC.
-call mpi_init(ierr)
-if (ierr/=0) error stop 'mpimod: mpi_init'
-!! keep mpi_init out of mpisetup for libgemini, where the calling program does MPI_init
-call mpisetup()
-
-if(mpi_cfg%lid < 1) error stop 'number of MPI processes must be >= 1. Was MPI initialized properly?'
 
 call get_command_argument(0, argv)
 call date_and_time(date,time)
@@ -61,11 +53,6 @@ call get_command_argument(1, argv, status=i)
 if (i/=0) error stop 'bad command line'
 cfg%outdir = expanduser(argv)
 
-call find_config(cfg)
-
-call read_configfile(cfg, verbose=.false.)
-
-call check_input_files(cfg)
 
 !! default values
 lid2 = -1  !< sentinel
