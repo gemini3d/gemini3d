@@ -9,11 +9,10 @@ use inputdataobj, only: inputdata
 use neutraldataobj, only: neutraldata
 use meshobj, only: curvmesh
 use config, only: gemini_cfg
-use reader, only: get_simsize2,get_grid2,get_precip
+use reader, only: get_grid2,get_neutral2
 use mpimod, only: mpi_integer,mpi_comm_world,mpi_status_ignore,mpi_realprec,mpi_cfg,tag=>gemini_mpi
 use timeutils, only: dateinc,date_filename
 use h5fortran, only: hdf5_file
-use reader, only : get_simsize3
 use pathlib, only: get_suffix,get_filename
 use grid, only: gridflag
 
@@ -25,7 +24,7 @@ public :: neutraldata2D
 type, extends(neutraldata), abstract :: neutraldata2D
   ! source data coordinate pointers
   real(wp), dimension(:), pointer :: horzn,zn
-  integer, pointer :: lhorzn,lzn
+  integer, pointer :: lhorzn,lxn,lzn        ! lxn not used but still bound
 
   ! work arrays needed by various procedures re: target coordinates
   real(wp), dimension(:,:,:), allocatable :: horzimat,zimat
@@ -39,7 +38,7 @@ type, extends(neutraldata), abstract :: neutraldata2D
   real(wp), dimension(:,:,:), allocatable :: proj_ehorzp_e1,proj_ehorzp_e2,proj_ehorzp_e3
   contains
     ! replacement for gridsize and gridload
-    procedure, deferred :: load_sizeandgrid_neu2D
+    procedure(loadneu2D), deferred :: load_sizeandgrid_neu2D
     procedure :: rotate_winds
     procedure :: init_neu2D_simple
 
@@ -55,9 +54,17 @@ type, extends(neutraldata), abstract :: neutraldata2D
     ! defer to type extensions
     !procedure :: set_coordsi=>set_coordsi_neu2D
 
-    ! destructor
-    final :: destructor
+    ! clean up some of the pointers
+    procedure :: dissociate_neutral2D_pointers
 end type neutraldata2D
+
+interface
+  subroutine loadneu2D(self,cfg)
+    import neutraldata2D,gemini_cfg
+    class(neutraldata2D), intent(inout) :: self
+    type(gemini_cfg), intent(in) :: cfg
+  end subroutine loadneu2D
+end interface
 
 contains
   !> initialize storage for this type of neutral input data
@@ -88,7 +95,7 @@ contains
     allocate(self%lc1,self%lc2,self%lc3)                                     ! these are pointers, even though scalar
     self%lzn=>self%lc1; self%lxn=>self%lc2; self%lhorzn=>self%lc3;              ! these referenced while reading size and grid data
     call self%set_coordsi(cfg,x)                   ! since this preceeds init_storage it must do the work of allocating some spaces
-    call self%load_sizeandgrid_neu3D(cfg)          ! cfg needed to form source neutral grid
+    call self%load_sizeandgrid_neu2D(cfg)          ! cfg needed to form source neutral grid
     call self%set_sizes( &
              0, &          ! number scalar parts to dataset
              0, 0, 0, &    ! number 1D data along each axis
@@ -130,7 +137,7 @@ contains
 
   !> create storage for arrays needed specifically for 3D neutral input calculations, overrides the base class procedure
   subroutine init_storage(self)
-    class(neutraldata3D), intent(inout) :: self
+    class(neutraldata2D), intent(inout) :: self
     integer :: lc1,lc2,lc3
     integer :: lc1i,lc2i,lc3i
     integer :: l0D
@@ -184,21 +191,21 @@ contains
 
   !> do nothing stub
   subroutine load_size_neu2D(self)
-    class(neutraldata3D), intent(inout) :: self
+    class(neutraldata2D), intent(inout) :: self
 
   end subroutine load_size_neu2D
 
 
   !> do nothing stub
   subroutine load_grid_neu2D(self)
-    class(neutraldata3D), intent(inout) :: self
+    class(neutraldata2D), intent(inout) :: self
 
   end subroutine load_grid_neu2D
 
 
   !> Load 2D neutral data from file.  Should work regardless of whether axisymmetric or cartesian input used.
   subroutine load_data_neu2D(self,t,dtmodel,ymdtmp,UTsectmp)
-    class(neutraldata3D), intent(inout) :: self
+    class(neutraldata2D), intent(inout) :: self
     real(wp), intent(in) :: t,dtmodel
     integer, dimension(3), intent(inout) :: ymdtmp
     real(wp), intent(inout) :: UTsectmp
@@ -276,7 +283,7 @@ contains
 
   !> overriding procedure for updating neutral atmos (need additional rotation steps)
   subroutine update(self,cfg,dtmodel,t,x,ymd,UTsec)
-    class(neutraldata3D), intent(inout) :: self
+    class(neutraldata2D), intent(inout) :: self
     type(gemini_cfg), intent(in) :: cfg
     real(wp), intent(in) :: dtmodel             ! need both model and input data time stepping
     real(wp), intent(in) :: t                   ! simulation absoluate time for which perturabation is to be computed
@@ -293,7 +300,7 @@ contains
     ! print some diagnostic data once the udpate has occurred
     if (mpi_cfg%myid==mpi_cfg%lid/2 .and. debug) then
       print*, ''
-      print*, 'neutral data size:  ',mpi_cfg%myid,self%lzn,self%lxn,self%lyn
+      print*, 'neutral data size:  ',mpi_cfg%myid,self%lzn,self%lxn,self%lhorzn
       print*, 'neutral data time:  ',ymd,UTsec
       print*, ''
       print *, 'Min/max values for dnOinext:  ',mpi_cfg%myid,minval(self%dnOinext),maxval(self%dnOinext)
@@ -319,7 +326,7 @@ contains
   !      grid object for this simulation.  Provided that the horizontal projections have been computed
   !      correctly the same rotation can be used for axisymmetric and cartesian.
   subroutine rotate_winds(self)
-    class(neutraldata3D), intent(inout) :: self
+    class(neutraldata2D), intent(inout) :: self
     integer :: ix1,ix2,ix3
     real(wp) :: vnhorz,vnz
 
@@ -331,20 +338,19 @@ contains
           vnz=self%dvn1inext(ix1,ix2,ix3)
           vnhorz=self%dvn3inext(ix1,ix2,ix3)
           self%dvn1inext(ix1,ix2,ix3)=vnz*self%proj_ezp_e1(ix1,ix2,ix3) + &
-                                        vnhorz*self%proj_eyp_e1(ix1,ix2,ix3)
+                                        vnhorz*self%proj_ehorzp_e1(ix1,ix2,ix3)
           self%dvn2inext(ix1,ix2,ix3)=vnz*self%proj_ezp_e2(ix1,ix2,ix3) + &
-                                        vnhorz*self%proj_eyp_e2(ix1,ix2,ix3)
+                                        vnhorz*self%proj_ehorzp_e2(ix1,ix2,ix3)
           self%dvn3inext(ix1,ix2,ix3)=vnz*self%proj_ezp_e3(ix1,ix2,ix3) + &
-                                        vnhorz*self%proj_eyp_e3(ix1,ix2,ix3)
+                                        vnhorz*self%proj_ehorzp_e3(ix1,ix2,ix3)
         end do
       end do
     end do
   end subroutine rotate_winds
 
-
   !> destructor for when object goes out of scope
-  subroutine destructor(self)
-    type(neutraldata2D) :: self
+  subroutine dissociate_neutral2D_pointers(self)
+    class(neutraldata2D) :: self
 
     ! deallocate arrays from base inputdata class
     call self%dissociate_pointers()
@@ -361,5 +367,5 @@ contains
     nullify(self%horzi,self%zi);
     nullify(self%horzn,self%zn);
     nullify(self%dnO,self%dnN2,self%dnO2,self%dvnz,self%dvnhorz,self%dTn)
-  end subroutine destructor
-end module neutraldata3Dobj
+  end subroutine dissociate_neutral2D_pointers
+end module neutraldata2Dobj
