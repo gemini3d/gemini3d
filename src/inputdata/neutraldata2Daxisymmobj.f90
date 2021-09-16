@@ -1,9 +1,10 @@
 module neutraldata2Daxisymmobj
 
 use phys_consts, only: wp,debug,pi,Re
+use meshobj, only: curvmesh
 use inputdataobj, only: inputdata
 use neutraldataobj, only: neutraldata
-use neutraldata2Dobj, only neutradata2D
+use neutraldata2Dobj, only: neutradata2D
 
 implicit none (type, external)
 
