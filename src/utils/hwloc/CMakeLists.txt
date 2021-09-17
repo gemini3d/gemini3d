@@ -2,11 +2,16 @@
 # https://gitlab.kitware.com/search?group_id=415&project_id=541&repository_ref=master&scope=blobs&search=GetNumberOfPhysicalCPU&snippets=false
 # without hwloc, hyperthreading may give incorrect result
 
-add_library(hwloc_ifc OBJECT hwloc_ifc.f90)
+add_library(hwloc_ifc hwloc_ifc.f90)
 target_link_libraries(hwloc_ifc PRIVATE hwloc_c)
 
-# separate C object lib to avoid compiler warnings from C <-> Fortran add_compile_options etc.
-add_library(hwloc_c OBJECT)
+# separate C lib to avoid compiler warnings from C <-> Fortran add_compile_options etc.
+add_library(hwloc_c)
+
+install(TARGETS hwloc_ifc hwloc_c
+  EXPORT ${PROJECT_NAME}Targets
+)
+
 
 if(NOT mpi)
   target_sources(hwloc_c PRIVATE dummy_cpu.c)
@@ -52,7 +57,3 @@ else()
   message(STATUS "did not find libhwloc or sysconf. gemini3d.run -n Ncpu option will be needed for those using it.")
   target_sources(hwloc_c PRIVATE dummy_cpu.c)
 endif()
-
-install(TARGETS hwloc_ifc
-  EXPORT ${PROJECT_NAME}Targets
-)
