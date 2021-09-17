@@ -118,5 +118,7 @@ autogrid
 hwloc_ifc hwloc_c
 MUMPS::MUMPS SCALAPACK::SCALAPACK LAPACK::LAPACK MPI::MPI_Fortran)
 
+install(FILES gemini3d.h TYPE INCLUDE)
+
 # NOTE: gemini_c.bin does not yet have unit testing, as we are deciding whether to make it a separate example
 # or even in a separate project. See https://github.com/gemini3d/libgemini
