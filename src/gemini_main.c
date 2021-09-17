@@ -17,10 +17,11 @@ if (argc < 2) {
   return 1;
 }
 
+int Lpath_max = 10000;
 int L = strlen(argv[1]);
-if(L > 2048) {
-  // arbitrary maximum path length
-  perror("simulation output directory too long path name");
+if(L > Lpath_max) {
+  // arbitrary maximum path length--10000 is not referred to anywhere else in the program.
+  fprintf(stderr, "Gemini3D simulation output directory: path length > %d", Lpath_max);
   return 1;
 }
 L++; // for null terminator
