@@ -17,6 +17,10 @@ if(msis20)
   include(${PROJECT_SOURCE_DIR}/cmake/ext_libs/msis2.cmake)
   target_link_libraries(msis_ifc PRIVATE msis2)
   target_compile_options(msis2 PRIVATE ${msis20_flags})
+
+  install(TARGETS msis2
+    EXPORT ${PROJECT_NAME}Targets
+  )
 else(msis20)
   target_sources(msis_ifc PRIVATE msis2_dummy.f90)
 endif(msis20)
