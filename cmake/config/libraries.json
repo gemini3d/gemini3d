@@ -29,7 +29,7 @@
 },
 
 "hwm14": {
-  "git": "https://github.com/space-physics/hwm14.git",
+  "git": "https://github.com/gemini3d/hwm14.git",
   "tag": "v1.0.0"
 },
 "msis2": {
