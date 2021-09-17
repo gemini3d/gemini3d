@@ -67,7 +67,8 @@ namelist /gravdrift/ flaggravdrift
 namelist /lagrangian/ flaglagrangian
 namelist /diamagnetic/ flagdiamagnetic
 
-if(.not. allocated(cfg%outdir)) error stop 'config:config_nml please specify simulation output directory'
+if(.not. allocated(cfg%outdir)) error stop 'gemini3d:config:config_nml please specify simulation output directory'
+if(.not. allocated(cfg%infile)) error stop 'gemini3d:config:config_nml please specify simulation configuration file config.nml'
 
 open(newunit=u, file=cfg%infile, status='old', action='read')
 
