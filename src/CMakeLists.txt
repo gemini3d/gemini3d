@@ -32,6 +32,10 @@ target_link_libraries(multifluid PRIVATE advec calculus collision const diffusio
 add_subdirectory(utils)
 
 # --- Main GEMINI3D library
+install(TARGETS msis00mod nc4fortran hwloc_ifc hwloc_c mumps_interface
+  EXPORT ${PROJECT_NAME}Targets
+)
+
 configure_file(gemini_cli.in.f90 gemini_cli.f90 @ONLY)
 
 add_library(gemini3d
@@ -51,12 +55,23 @@ foreach(l
   exe_frontend
   grid io PDEelliptic potential mpimod
   )
+
+  install(TARGETS ${l}
+    EXPORT ${PROJECT_NAME}Targets
+  )
+
   target_link_libraries(gemini3d PUBLIC
-  #$<TARGET_OBJECTS:${l}>
-  ${l}
+  $<BUILD_INTERFACE:${l}>
+  $<INSTALL_INTERFACE:${l}>
+  #${l}
   )
 endforeach()
 target_link_libraries(gemini3d PRIVATE MPI::MPI_Fortran)
+
+
+
+install(TARGETS gemini3d
+  EXPORT ${PROJECT_NAME}Targets)
 
 # --- Gemini.bin minimal main Fortran program
 add_executable(gemini.bin gemini_main.f90
