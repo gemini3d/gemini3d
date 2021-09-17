@@ -61,9 +61,9 @@ foreach(l
   )
 
   target_link_libraries(gemini3d PUBLIC
-  $<BUILD_INTERFACE:${l}>
-  $<INSTALL_INTERFACE:${l}>
-  #${l}
+  # $<BUILD_INTERFACE:${l}>
+  # $<INSTALL_INTERFACE:${l}>
+  ${l}
   )
 endforeach()
 target_link_libraries(gemini3d PRIVATE MPI::MPI_Fortran)
