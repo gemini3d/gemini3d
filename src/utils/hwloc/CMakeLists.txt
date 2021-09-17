@@ -52,3 +52,7 @@ else()
   message(STATUS "did not find libhwloc or sysconf. gemini3d.run -n Ncpu option will be needed for those using it.")
   target_sources(hwloc_c PRIVATE dummy_cpu.c)
 endif()
+
+install(TARGETS hwloc_ifc
+  EXPORT ${PROJECT_NAME}Targets
+)

@@ -54,6 +54,7 @@ foreach(l
   PDEparabolic precipBCs reader sanity_check errors sources temporal timeutils
   exe_frontend
   grid io PDEelliptic potential mpimod
+  autogrid
   )
 
   install(TARGETS ${l}
@@ -81,7 +82,6 @@ RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
 )
 target_link_libraries(gemini.bin PRIVATE
 gemini3d
-autogrid
 hwloc_ifc hwloc_c
 )
 
@@ -129,7 +129,6 @@ LINKER_LANGUAGE C
 # LINKER_LANGUAGE needed for Intel compilers
 target_link_libraries(gemini_c.bin PRIVATE
 gemini3d
-autogrid
 hwloc_ifc hwloc_c
 MUMPS::MUMPS SCALAPACK::SCALAPACK LAPACK::LAPACK MPI::MPI_Fortran)
 
