@@ -109,7 +109,9 @@ endif()
 add_executable(gemini_c.bin gemini_main.c)
 set_target_properties(gemini_c.bin PROPERTIES
 RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
+LINKER_LANGUAGE C
 )
+# LINKER_LANGUAGE needed for Intel compilers
 target_link_libraries(gemini_c.bin PRIVATE
 gemini3d
 autogrid
