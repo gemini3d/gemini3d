@@ -1,12 +1,18 @@
 module neutraldata2Daxisymmobj
 
+use, intrinsic :: iso_fortran_env, only: stderr=>error_unit
 use phys_consts, only: wp,debug,pi,Re
 use meshobj, only: curvmesh
+use config, only: gemini_cfg
 use inputdataobj, only: inputdata
 use neutraldataobj, only: neutraldata
-use neutraldata2Dobj, only: neutradata2D
+use neutraldata2Dobj, only: neutraldata2D
+use reader, only: get_simsize3
+use mpimod, only: mpi_cfg,tag=>gemini_mpi
 
 implicit none (type, external)
+external :: mpi_send,mpi_recv,MPI_INTEGER,MPI_COMM_WORLD,MPI_STATUS_IGNORE
+public :: neutraldata2Daxisymm
 
 !> type extension for neutral 2D axisymmetric input data
 type, extends(neutraldata2D) :: neutraldata2Daxisymm
@@ -16,8 +22,9 @@ type, extends(neutraldata2D) :: neutraldata2Daxisymm
 
   contains
     procedure :: init=>init_neu2Daxisymm
-    procedure :: load_sizeandgrid_neu2D=>load_sizeandgrid_neu2dDaxisymm
+    procedure :: load_sizeandgrid_neu2D=>load_sizeandgrid_neu2Daxisymm
     procedure :: set_coordsi=>set_coordsi_neu2Daxisymm
+    final :: destructor
 end type neutraldata2Daxisymm
 
 contains
@@ -32,7 +39,7 @@ contains
     character(:), allocatable :: strname
 
     ! basic init for any 2D neutral input
-    call self%init_neu2D_simple(self,cfg,sourcedir,x,dtmodel,dtdata,ymd,UTsec)
+    call self%init_neu2D_simple(cfg,sourcedir,x,dtmodel,dtdata,ymd,UTsec)
 
     ! append type of interp. to dataname
     strname=self%dataname//' axisymmetric'     ! append type of 2D interpolation to name
@@ -48,17 +55,17 @@ contains
   !! FIXME:  currently hardcoded for axisymmetric coords.  Needs to be specific to coordinate system.  
   !> set coordinates for target interpolation points; for neutral inputs we are forced to do some of the property array allocations here
   subroutine set_coordsi_neu2Daxisymm(self,cfg,x)
-    class(neutraldata3D), intent(inout) :: self
+    class(neutraldata2Daxisymm), intent(inout) :: self
     type(gemini_cfg), intent(in) :: cfg
     class(curvmesh), intent(in) :: x
     real(wp) :: theta1,phi1,theta2,phi2,gammarads,theta3,phi3,gamma1,gamma2,phip
     real(wp) :: xp,yp
-    real(wp), dimension(3) :: ezp,eyp,tmpvec,exprm
+    real(wp), dimension(3) :: ezp,erhop,tmpvec,exprm
     real(wp) :: tmpsca
     integer :: ix1,ix2,ix3,iyn,izn,ixn,iid,ierr
 
 
-    ! Space for coordinate sites and projections in neutraldata3D object
+    ! Space for coordinate sites and projections in neutraldata2D object
     allocate(self%coord1i(x%lx1*x%lx2*x%lx3),self%coord3i(x%lx1*x%lx2*x%lx3))
     self%zi=>self%coord1i; self%horzi=>self%coord3i;     ! coordinates of interpolation sites
     allocate(self%horzimat(x%lx1,x%lx2,x%lx3),self%zimat(x%lx1,x%lx2,x%lx3))
@@ -73,13 +80,13 @@ contains
     if (mpi_cfg%myid==0) then
       print *, 'Computing alt,radial distance values for plasma grid and completing rotations'
     end if
-    zimat=x%alt     !vertical coordinate
-    do ix3=1,lx3
-      do ix2=1,lx2
-        do ix1=1,lx1
+    self%zimat=x%alt     !vertical coordinate
+    do ix3=1,x%lx3
+      do ix2=1,x%lx2
+        do ix1=1,x%lx1
           !INTERPOLATION BASED ON GEOMAGNETIC COORDINATES
           theta2=x%theta(ix1,ix2,ix3)                    !field point zenith angle
-          if (lx2/=1 .and. lx3/=1) then
+          if (x%lx2/=1 .and. x%lx3/=1) then
             phi2=x%phi(ix1,ix2,ix3)                      !field point azimuth, full 3D calculation
           else
             phi2=phi1                                    !assume the longitude is the samem as the source in 2D, i.e. assume the source epicenter is in the meridian of the grid
@@ -183,7 +190,7 @@ contains
     !if (flagcart) then
     !  yi=pack(yimat,.true.)
     !else
-      horzi=pack(horzimat,.true.)
+      self%horzi=pack(self%horzimat,.true.)
     !end if
     
     !GRID UNIT VECTORS NO LONGER NEEDED ONCE PROJECTIONS ARE CALCULATED...
@@ -213,8 +220,8 @@ contains
   !    Note that this routine will allocate sizes for source coordinates grids in constrast 
   !    with other inputdata type extensions which have separate load_size, allocate, and 
   !    load_grid procedures.  
-  subroutine load_sizeandgrid_neu2D(self,cfg)
-    class(neutraldata3D), intent(inout) :: self
+  subroutine load_sizeandgrid_neu2Daxisymm(self,cfg)
+    class(neutraldata2Daxisymm), intent(inout) :: self
     type(gemini_cfg), intent(in) :: cfg
     real(wp), dimension(:), allocatable :: xn,yn             ! for root to break off pieces of the entire grid array
     integer :: ix1,ix2,ix3,ihorzn,izn,iid,ierr
@@ -225,6 +232,7 @@ contains
     integer :: ixn,iyn
     integer :: lxn,lyn
     real(wp) :: meanxn,meanyn
+    real(wp) :: dhorzn
 
     !horizontal grid spacing
     dhorzn=cfg%drhon
@@ -239,7 +247,7 @@ contains
     self%lxn=1     ! treat as a 3D dataset with singleton dimension along x
     
       print *, 'Neutral data has lhorzn,lz size:  ',self%lhorzn,self%lzn,' with spacing dhorzn,dz',dhorzn,cfg%dzn
-      if (lhorzn < 1 .or. lzn < 1) then
+      if (self%lhorzn < 1 .or. self%lzn < 1) then
         write(stderr,*) 'ERROR: reading ' // self%sourcedir
         error stop 'neutral:gridproj_dneu2D: grid size must be strictly positive'
       endif
@@ -273,9 +281,9 @@ contains
     !  meanyn=sum(yn,1)/size(yn,1)
     !  yn=yn-meanyn     !the neutral grid should be centered on zero for a cartesian interpolation
     !else
-    self%horzn=[ ((real(ihorzn, wp)-1)*dhorzn, ihorzn=1,lhorzn) ]
+    self%horzn=[ ((real(ihorzn, wp)-1)*dhorzn, ihorzn=1,self%lhorzn) ]
     !end if
-    self%zn=[ ((real(izn, wp)-1)*cfg%dzn, izn=1,lzn) ]
+    self%zn=[ ((real(izn, wp)-1)*cfg%dzn, izn=1,self%lzn) ]
     
     if (mpi_cfg%myid==0) then
     !  if (flagcart) then
@@ -286,5 +294,15 @@ contains
     end if
 
     self%flagdatasize=.true.
-  end subroutine load_sizeandgrid_neu2D
+  end subroutine load_sizeandgrid_neu2Daxisymm
+
+  subroutine destructor(self)
+    type(neutraldata2Daxisymm), intent(inout) :: self
+
+    ! de facto neutral2D destructor takes care of most everything
+    call self%dissociate_neutral2D_pointers()
+
+    ! now extension-specific quantities
+    nullify(self%lrhon,self%rhon,self%rhoi)
+  end subroutine destructor
 end module neutraldata2Daxisymmobj
