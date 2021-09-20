@@ -11,7 +11,7 @@ use reader, only: get_simsize3
 use mpimod, only: mpi_cfg,tag=>gemini_mpi
 
 implicit none (type, external)
-external :: mpi_send,mpi_recv
+external :: mpi_send,mpi_recv,MPI_INTEGER,MPI_COMM_WORLD,MPI_STATUS_IGNORE
 public :: neutraldata2Dcart
 
 !> type extension for neutral 2D axisymmetric input data
