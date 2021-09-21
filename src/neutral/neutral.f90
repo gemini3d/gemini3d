@@ -8,6 +8,8 @@ use mpimod, only: mpi_cfg
 use config, only: gemini_cfg
 use neutraldataobj, only: neutraldata
 use neutraldata3Dobj, only: neutraldata3D
+use neutraldata2Daxisymmobj, only: neutraldata2Daxisymm
+use neutraldata2Dcartobj, only: neutraldata2Dcart
 
 ! also links MSIS from vendor/msis00/
 
@@ -182,8 +184,14 @@ subroutine init_neutrals(dt,t,cfg,ymd,UTsec,x,v2grid,v3grid,nn,Tn,vn1,vn2,vn3)
 
     ! allocate correct type, FIXME: eventuallly no shunt to 3D
     select case (cfg%interptype)
-    case default
+    case (0)
+      allocate(neutraldata2Dcart::atmosperturb)
+    case (1)
+      allocate(neutraldata2Daxisymm::atmosperturb)
+    case (3)
       allocate(neutraldata3D::atmosperturb)
+    case default
+      error stop 'non-standard neutral interpolation type chosen in config.nml...'
     end select
 
     ! call object init procedure
