@@ -44,6 +44,7 @@ contains
     ! append type of interp. to dataname
     strname=self%dataname//' axisymmetric'     ! append type of 2D interpolation to name
     call self%set_name(strname)                ! overwrite generic neutral 2D data name
+    print*, '...update to dataset name:  ',self%dataname
 
     ! bind axisymmetric specific pointers for convenience, in case they are needed elsewhere
     self%lrhon=>self%lhorzn
@@ -261,36 +262,15 @@ contains
     end if
     
     !Everyone must allocate space for the grid of input data
-    allocate(self%zn(self%lzn))    !these are module-scope variables
-    !if (flagcart) then
-    !  allocate(rhon(1))  !not used in Cartesian code so just set to something
-    allocate(self%horzn(self%lhorzn))    ! FIXME: default to axisymmetric?
-    !  lyn=lhorzn
-    !else
-    !  allocate(rhon(lhorzn))
-    !  allocate(yn(1))    !not used in the axisymmetric code so just initialize to something
-    !  lrhon=lhorzn
-    !end if
-    
-    !Note that the second dimension ("longitude") is singleton so that we are able to also use these vars for 3D input
-    !allocate(dnO(lzn,1,lhorzn),dnN2(lzn,1,lhorzn),dnO2(lzn,1,lhorzn),dvnrho(lzn,1,lhorzn),dvnz(lzn,1,lhorzn),dTn(lzn,1,lhorzn))
-    
-    !Define a grid (input data) by assuming that the spacing is constant
-    !if (flagcart) then     !Cartesian neutral simulation
-    !  yn=[ ((real(ihorzn, wp)-1)*dhorzn, ihorzn=1,lhorzn) ]
-    !  meanyn=sum(yn,1)/size(yn,1)
-    !  yn=yn-meanyn     !the neutral grid should be centered on zero for a cartesian interpolation
-    !else
+    allocate(self%coord1(self%lzn))    !these are module-scope variables
+    allocate(self%coord2(self%lhorzn))    ! FIXME: default to axisymmetric?
+    self%zn=>self%coord1; self%horzn=>self%coord2;
+    self%rhon=>self%coord2
     self%horzn=[ ((real(ihorzn, wp)-1)*dhorzn, ihorzn=1,self%lhorzn) ]
-    !end if
     self%zn=[ ((real(izn, wp)-1)*cfg%dzn, izn=1,self%lzn) ]
     
     if (mpi_cfg%myid==0) then
-    !  if (flagcart) then
-    !    print *, 'Creating neutral grid with y,z extent:',minval(yn),maxval(yn),minval(zn),maxval(zn)
-    !  else
-        print *, 'Creating neutral grid with rho,z extent:  ',minval(self%horzn),maxval(self%horzn),minval(self%zn),maxval(self%zn)
-    !  end if
+      print *, 'Creating neutral grid with rho,z extent:  ',minval(self%horzn),maxval(self%horzn),minval(self%zn),maxval(self%zn)
     end if
 
     self%flagdatasize=.true.
