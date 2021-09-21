@@ -16,8 +16,6 @@ use timeutils, only: dateinc,date_filename
 use grid, only: lx1,lx2,lx2all,lx3,lx3all,gridflag
 
 implicit none (type, external)
-
-external :: mpi_send,mpi_recv
 public :: efielddata
 
 type, extends(inputdata) :: efielddata
@@ -283,7 +281,7 @@ contains
   end subroutine set_coordsi_efield
 
 
-  !> have root read in next input frame data and distribute to parallel workers
+  !> have root read in data from a file (only root manipulates this object)
   subroutine load_data_efield(self,t,dtmodel,ymdtmp,UTsectmp)
     class(efielddata), intent(inout) :: self
     real(wp), intent(in) :: t,dtmodel
@@ -297,7 +295,7 @@ contains
     UTsectmp = self%UTsecref(2)
     call dateinc(self%dt, ymdtmp, UTsectmp)
 
-    !! this read must be done repeatedly through simulation so have only root do file io
+    !! all workers read data out of this file
     print*, '  date and time:  ',ymdtmp,UTsectmp
     print*, '  efield filename:  ',date_filename(self%sourcedir,ymdtmp,UTsectmp)
     call get_Efield(date_filename(self%sourcedir, ymdtmp, UTsectmp), &

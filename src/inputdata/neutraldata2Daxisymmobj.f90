@@ -8,10 +8,10 @@ use inputdataobj, only: inputdata
 use neutraldataobj, only: neutraldata
 use neutraldata2Dobj, only: neutraldata2D
 use reader, only: get_simsize3
-use mpimod, only: mpi_cfg,tag=>gemini_mpi
+use mpimod, only: mpi_integer,mpi_comm_world,mpi_status_ignore,mpi_realprec,mpi_cfg,tag=>gemini_mpi
 
 implicit none (type, external)
-external :: mpi_send,mpi_recv,MPI_INTEGER,MPI_COMM_WORLD,MPI_STATUS_IGNORE
+external :: mpi_send,mpi_recv
 public :: neutraldata2Daxisymm
 
 !> type extension for neutral 2D axisymmetric input data
