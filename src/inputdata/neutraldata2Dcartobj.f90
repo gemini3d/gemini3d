@@ -231,13 +231,10 @@ contains
     end if
     
     !Everyone must allocate space for the grid of input data
-    allocate(self%zn(self%lzn))    !these are module-scope variables
-    allocate(self%horzn(self%lhorzn))    ! FIXME: default to axisymmetric?
-    
-    !Note that the second dimension ("longitude") is singleton so that we are able to also use these vars for 3D input
-    !allocate(dnO(lzn,1,lhorzn),dnN2(lzn,1,lhorzn),dnO2(lzn,1,lhorzn),dvnrho(lzn,1,lhorzn),dvnz(lzn,1,lhorzn),dTn(lzn,1,lhorzn))
-    
-    !Define a grid (input data) by assuming that the spacing is constant
+    allocate(self%coord1(self%lzn))    !these are module-scope variables
+    allocate(self%coord2(self%lhorzn))    ! FIXME: default to axisymmetric?
+    self%zn=>self%coord1; self%horzn=>self%coord2;   
+    self%yn=>self%coord2    ! just in case needed
     self%horzn=[ ((real(ihorzn, wp)-1)*dhorzn, ihorzn=1,self%lhorzn) ]
     meanhorzn=sum(yn,1)/size(yn,1)
     self%horzn=self%horzn-meanhorzn     !the neutral grid should be centered on zero for a cartesian interpolation
