@@ -297,7 +297,6 @@ contains
     call self%rotate_winds()
 
     ! print some diagnostic data once the udpate has occurred
-    print*, shape(self%dnOinow),shape(self%dnOinext)
     if (mpi_cfg%myid==mpi_cfg%lid/2 .and. debug) then
       print*, ''
       print*, 'neutral data size:  ',mpi_cfg%myid,self%lzn,self%lhorzn,self%lxn
