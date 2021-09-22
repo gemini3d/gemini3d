@@ -192,7 +192,6 @@ contains
   subroutine load_sizeandgrid_neu2Dcart(self,cfg)
     class(neutraldata2Dcart), intent(inout) :: self
     type(gemini_cfg), intent(in) :: cfg
-    real(wp), dimension(:), allocatable :: xn,yn             ! for root to break off pieces of the entire grid array
     integer :: ix1,ix2,ix3,ihorzn,izn,iid,ierr
     integer :: lxntmp,lyntmp                                   ! local copies for root, eventually these need to be stored in object
     real(wp) :: maxzn
@@ -236,7 +235,7 @@ contains
     self%zn=>self%coord1; self%horzn=>self%coord2;   
     self%yn=>self%coord2    ! just in case needed
     self%horzn=[ ((real(ihorzn, wp)-1)*dhorzn, ihorzn=1,self%lhorzn) ]
-    meanhorzn=sum(yn,1)/size(yn,1)
+    meanhorzn=sum(self%horzn,1)/size(self%horzn,1)
     self%horzn=self%horzn-meanhorzn     !the neutral grid should be centered on zero for a cartesian interpolation
     self%zn=[ ((real(izn, wp)-1)*cfg%dzn, izn=1,self%lzn) ]
     
