@@ -229,6 +229,7 @@ contains
 
     !horizontal grid spacing
     dhorzn=cfg%drhon
+    self%lxn=1     ! treat as a 3D dataset with singleton dimension along x
     
     !Establish the size of the grid based on input file and distribute to workers
     if (mpi_cfg%myid==0) then    !root
@@ -237,7 +238,6 @@ contains
     ! bit of a tricky issue here; for neutral input, according to makedneuframes.m, the first integer in the size file is
     !  the horizontal grid point count for the input - which get_simsize3 interprets as lx1...
     call get_simsize3(cfg%sourcedir, lx1=self%lhorzn, lx2all=self%lzn)
-    self%lxn=1     ! treat as a 3D dataset with singleton dimension along x
     
       print *, 'Neutral data has lhorzn,lz size:  ',self%lhorzn,self%lzn,' with spacing dhorzn,dz',dhorzn,cfg%dzn
       if (self%lhorzn < 1 .or. self%lzn < 1) then
