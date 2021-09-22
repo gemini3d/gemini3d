@@ -93,7 +93,9 @@ contains
     !    the situation is more complicated that for other datasets because you cannot compute the number of
     !    source grid points for each worker until you have root compute the entire grid and slice everything up
     allocate(self%lc1,self%lc2,self%lc3)                                     ! these are pointers, even though scalar
-    self%lzn=>self%lc1; self%lxn=>self%lc2; self%lhorzn=>self%lc3;              ! these referenced while reading size and grid data
+    !! this is a bit tricky because the inpudata class wants non-singleton dimension to be the same; here lc1,lc2
+    self%lzn=>self%lc1; self%lhorzn=>self%lc2; 
+    self%lxn=>self%lc3                             ! these referenced while reading size and grid data
     call self%set_coordsi(cfg,x)                   ! since this preceeds init_storage it must do the work of allocating some spaces
     call self%load_sizeandgrid_neu2D(cfg)          ! cfg needed to form source neutral grid
     call self%set_sizes( &
@@ -101,7 +103,7 @@ contains
              0, 0, 0, &    ! number 1D data along each axis
              0, 0, 0, &    ! number 2D data along pairs of axes
              6, &          ! number 3D datasets, for neutraldata2D we have singleton dimensions for 2D input
-             x)          ! The main purpose of this is to set the number of 3D datasets (other params already set)
+             x)            ! The main purpose of this is to set the number of 3D datasets (other params already set)
 
     ! allocate space for arrays, note for neutrals some of this has already happened so there is an overloaded procedure
     call self%init_storage()
@@ -177,13 +179,15 @@ contains
     allocate(self%data0Di(l0D,2))
     allocate(self%data1Dax1i(lc1i,l1Dax1,2), self%data1Dax2i(lc2i,l1Dax2,2), self%data1Dax3i(lc3i,l1Dax3,2))
     allocate(self%data2Dax23i(lc2i,lc3i,l2Dax23,2), self%data2Dax12i(lc1i,lc2i,l2Dax12,2), self%data2Dax13i(lc1i,lc3i,l2Dax13,2))
-    allocate(self%data3Di(lc1i,lc2i,lc3i,l3D,2))
+    !allocate(self%data3Di(lc1i,lc2i,lc3i,l3D,2))
+    allocate(self%data3Di(lc1i,lc2i,lc3i,l3D+1,2))     ! note extra parameter for three vector components!!!
 
     ! allocate object arrays at interpolation sites for current time.  FIXME: do we even need to store permanently?
     allocate(self%data0Dinow(l0D))
     allocate(self%data1Dax1inow(lc1i,l1Dax1), self%data1Dax2inow(lc2i,l1Dax2), self%data1Dax3inow(lc3i,l1Dax3))
     allocate(self%data2Dax23inow(lc2i,lc3i,l2Dax23), self%data2Dax12inow(lc1i,lc2i,l2Dax12), self%data2Dax13inow(lc1i,lc3i,l2Dax13))
-    allocate(self%data3Dinow(lc1i,lc2i,lc3i,l3D))
+!    allocate(self%data3Dinow(lc1i,lc2i,lc3i,l3D))
+    allocate(self%data3Dinow(lc1i,lc2i,lc3i,l3D+1))    ! +1 because even with 2D input we still need to track 3 comps.
 
     self%flagalloc=.true.
   end subroutine init_storage
@@ -222,16 +226,10 @@ contains
     UTsectmp = self%UTsecref(2)
     call dateinc(self%dt,ymdtmp,UTsectmp)                !get the date for "next" params
 
-!    if (flagcart) then
-!      lhorzn=lyn
-!    else
-!      lhorzn=lrhon
-!    end if
-    
     if (mpi_cfg%myid==0) then    !root
       call get_neutral2(date_filename(self%sourcedir,ymdtmp,UTsectmp), &
         self%dnO,self%dnN2,self%dnO2,self%dvnhorz,self%dvnz,self%dTn)
-    
+
       if (debug) then
         print *, 'Min/max values for dnO:  ',minval(self%dnO),maxval(self%dnO)
         print *, 'Min/max values for dnN:  ',minval(self%dnN2),maxval(self%dnN2)
@@ -294,17 +292,19 @@ contains
     ! execute a basic update
     call self%update_simple(cfg,dtmodel,t,x,ymd,UTsec)
 
+    ! FIXME: more efficient to rotate only when a read/interpolate in space is done?
     ! now we need to rotate velocity fields following interpolation (they are magnetic ENU prior to this step)
     call self%rotate_winds()
 
     ! print some diagnostic data once the udpate has occurred
+    print*, shape(self%dnOinow),shape(self%dnOinext)
     if (mpi_cfg%myid==mpi_cfg%lid/2 .and. debug) then
       print*, ''
-      print*, 'neutral data size:  ',mpi_cfg%myid,self%lzn,self%lxn,self%lhorzn
+      print*, 'neutral data size:  ',mpi_cfg%myid,self%lzn,self%lhorzn,self%lxn
       print*, 'neutral data time:  ',ymd,UTsec
       print*, ''
       print *, 'Min/max values for dnOinext:  ',mpi_cfg%myid,minval(self%dnOinext),maxval(self%dnOinext)
-      print *, 'Min/max values for dnNinext:  ',mpi_cfg%myid,minval(self%dnN2inext),maxval(self%dnN2inext)
+      print *, 'Min/max values for dnN2inext:  ',mpi_cfg%myid,minval(self%dnN2inext),maxval(self%dnN2inext)
       print *, 'Min/max values for dnO2inext:  ',mpi_cfg%myid,minval(self%dnO2inext),maxval(self%dnO2inext)
       print *, 'Min/max values for dvn1inext:  ',mpi_cfg%myid,minval(self%dvn1inext),maxval(self%dvn1inext)
       print *, 'Min/max values for dvn2inext:  ',mpi_cfg%myid,minval(self%dvn2inext),maxval(self%dvn2inext)
@@ -312,7 +312,7 @@ contains
       print *, 'Min/max values for dTninext:  ',mpi_cfg%myid,minval(self%dTninext),maxval(self%dTninext)
       print*, ''
       print *, 'Min/max values for dnOinow:  ',mpi_cfg%myid,minval(self%dnOinow),maxval(self%dnOinow)
-      print *, 'Min/max values for dnNinow:  ',mpi_cfg%myid,minval(self%dnN2inow),maxval(self%dnN2inow)
+      print *, 'Min/max values for dnN2inow:  ',mpi_cfg%myid,minval(self%dnN2inow),maxval(self%dnN2inow)
       print *, 'Min/max values for dnO2inow:  ',mpi_cfg%myid,minval(self%dnO2inow),maxval(self%dnO2inow)
       print *, 'Min/max values for dvn1inow:  ',mpi_cfg%myid,minval(self%dvn1inow),maxval(self%dvn1inow)
       print *, 'Min/max values for dvn2inow:  ',mpi_cfg%myid,minval(self%dvn2inow),maxval(self%dvn2inow)
@@ -335,11 +335,11 @@ contains
     do ix3=1,self%lc3i
       do ix2=1,self%lc2i
         do ix1=1,self%lc3i
-          vnz=self%dvn1inext(ix1,ix2,ix3)
-          vnhorz=self%dvn3inext(ix1,ix2,ix3)
-          self%dvn1inext(ix1,ix2,ix3)=vnz*self%proj_ezp_e1(ix1,ix2,ix3) + &
+          vnz=self%dvn1inow(ix1,ix2,ix3)
+          vnhorz=self%dvn2inow(ix1,ix2,ix3)
+          self%dvn1inow(ix1,ix2,ix3)=vnz*self%proj_ezp_e1(ix1,ix2,ix3) + &
                                         vnhorz*self%proj_ehorzp_e1(ix1,ix2,ix3)
-          self%dvn2inext(ix1,ix2,ix3)=vnz*self%proj_ezp_e2(ix1,ix2,ix3) + &
+          self%dvn2inow(ix1,ix2,ix3)=vnz*self%proj_ezp_e2(ix1,ix2,ix3) + &
                                         vnhorz*self%proj_ehorzp_e2(ix1,ix2,ix3)
           self%dvn3inext(ix1,ix2,ix3)=vnz*self%proj_ezp_e3(ix1,ix2,ix3) + &
                                         vnhorz*self%proj_ehorzp_e3(ix1,ix2,ix3)

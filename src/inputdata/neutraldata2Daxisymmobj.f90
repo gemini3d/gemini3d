@@ -67,8 +67,8 @@ contains
 
 
     ! Space for coordinate sites and projections in neutraldata2D object
-    allocate(self%coord1i(x%lx1*x%lx2*x%lx3),self%coord3i(x%lx1*x%lx2*x%lx3))
-    self%zi=>self%coord1i; self%horzi=>self%coord3i;     ! coordinates of interpolation sites
+    allocate(self%coord1i(x%lx1*x%lx2*x%lx3),self%coord2i(x%lx1*x%lx2*x%lx3))
+    self%zi=>self%coord1i; self%horzi=>self%coord2i;     ! coordinates of interpolation sites
     allocate(self%horzimat(x%lx1,x%lx2,x%lx3),self%zimat(x%lx1,x%lx2,x%lx3))
     allocate(self%proj_ezp_e1(x%lx1,x%lx2,x%lx3),self%proj_ezp_e2(x%lx1,x%lx2,x%lx3),self%proj_ezp_e3(x%lx1,x%lx2,x%lx3))
     allocate(self%proj_ehorzp_e1(x%lx1,x%lx2,x%lx3),self%proj_ehorzp_e2(x%lx1,x%lx2,x%lx3),self%proj_ehorzp_e3(x%lx1,x%lx2,x%lx3))
@@ -185,28 +185,20 @@ contains
         end do
       end do
     end do
+
+    print*, '  Done computing interpolation sites and rotations...'
     
     !Assign values for flat lists of grid points
     self%zi=pack(self%zimat,.true.)     !create a flat list of grid points to be used by interpolation ffunctions
-    !if (flagcart) then
-    !  yi=pack(yimat,.true.)
-    !else
-      self%horzi=pack(self%horzimat,.true.)
-    !end if
+    self%horzi=pack(self%horzimat,.true.)
+
+    print*, '  Done packing arrays...'
     
-    !GRID UNIT VECTORS NO LONGER NEEDED ONCE PROJECTIONS ARE CALCULATED...
     !call clear_unitvecs(x)
     
     !PRINT OUT SOME BASIC INFO ABOUT THE GRID THAT WE'VE LOADED
     if (mpi_cfg%myid==0 .and. debug) then
-      !if (flagcart) then
-      !  print *, 'Min/max yn,zn values',minval(yn),maxval(yn),minval(zn),maxval(zn)
-      !  print *, 'Min/max yi,zi values',minval(yi),maxval(yi),minval(zi),maxval(zi)
-      !else
-        print *, 'Min/max rhon,zn values',minval(self%horzn),maxval(self%horzn),minval(self%zn),maxval(self%zn)
-        print *, 'Min/max rhoi,zi values',minval(self%horzi),maxval(self%horzi),minval(self%zi),maxval(self%zi)
-      !end if
-    
+      print *, 'Min/max rhoi,zi values',minval(self%horzi),maxval(self%horzi),minval(self%zi),maxval(self%zi)
       print *, 'Source lat/long:  ',cfg%sourcemlat,cfg%sourcemlon
       print *, 'Plasma grid lat range:  ',minval(x%glat(:,:,:)),maxval(x%glat(:,:,:))
       print *, 'Plasma grid lon range:  ',minval(x%glon(:,:,:)),maxval(x%glon(:,:,:))
@@ -260,6 +252,7 @@ contains
       call mpi_recv(self%lhorzn,1,MPI_INTEGER,0,tag%lrho,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
       call mpi_recv(self%lzn,1,MPI_INTEGER,0,tag%lz,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
     end if
+    self%lrhon=>self%lhorzn
     
     !Everyone must allocate space for the grid of input data
     allocate(self%coord1(self%lzn))    !these are module-scope variables
