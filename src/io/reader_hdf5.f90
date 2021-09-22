@@ -131,15 +131,16 @@ module procedure get_neutral2_hdf5
 type(hdf5_file) :: hf
 real(wp) :: flagtmp
 
-real(wp), dimension(1:size(dnO,1),1:size(dnO,3)) :: buffer
+real(wp), dimension(1:size(dnO,1),1:size(dnO,2)) :: buffer
 !! FIXME: second dimension is singleton, so read data into a buffer
 !! This is something that should be corrected in the Matlab/Python scripts writing the files
+!! FIXME (MZ): inputdata refactor uses dim=3 as the singleton so this needed to be patched accordingly
 integer :: lz,lx,ly
 integer(hsize_t), allocatable :: dims(:)
 
 lz=size(dnO,1)
-lx=size(dnO,2)   !should be 1
-ly=size(dnO,3)
+lx=size(dnO,3)   !should be 1
+ly=size(dnO,2)
 
 if (debug) print *, 'READ neutral 2D data from file: ', path
 
@@ -156,17 +157,17 @@ if(size(dims) == 3) then
 else
   !! FIXME: workaround, the Matlab script should be fixed to write shape [lz,1,ly]
   call hf%read('/dn0all', buffer)
-  dnO=reshape(buffer,[lz,1,ly])
+  dnO=reshape(buffer,[lz,ly,1])
   call hf%read('/dnN2all', buffer)
-  dnN2=reshape(buffer,[lz,1,ly])
+  dnN2=reshape(buffer,[lz,ly,1])
   call hf%read('/dnO2all', buffer)
-  dnO2=reshape(buffer,[lz,1,ly])
+  dnO2=reshape(buffer,[lz,ly,1])
   call hf%read('/dvnrhoall', buffer)
-  dvnrho=reshape(buffer,[lz,1,ly])
+  dvnrho=reshape(buffer,[lz,ly,1])
   call hf%read('/dvnzall', buffer)
-  dvnz=reshape(buffer,[lz,1,ly])
+  dvnz=reshape(buffer,[lz,ly,1])
   call hf%read('/dTnall', buffer)
-  dTn=reshape(buffer,[lz,1,ly])
+  dTn=reshape(buffer,[lz,ly,1])
 endif
 
 call hf%close()

@@ -620,6 +620,7 @@ contains
     ! execute a basic update
     call self%update_simple(cfg,dtmodel,t,x,ymd,UTsec)
 
+    ! FIXME: more efficient to rotate the winds only when interpolations are done...
     ! now we need to rotate velocity fields following interpolation (they are magnetic ENU prior to this step)
     call self%rotate_winds()
 
@@ -658,14 +659,14 @@ contains
     do ix3=1,self%lc3i
       do ix2=1,self%lc2i
         do ix1=1,self%lc3i
-          vnz=self%dvn1inext(ix1,ix2,ix3)
-          vnx=self%dvn2inext(ix1,ix2,ix3)
-          vny=self%dvn3inext(ix1,ix2,ix3)
-          self%dvn1inext(ix1,ix2,ix3)=vnz*self%proj_ezp_e1(ix1,ix2,ix3) + vnx*self%proj_exp_e1(ix1,ix2,ix3) + &
+          vnz=self%dvn1inow(ix1,ix2,ix3)
+          vnx=self%dvn2inow(ix1,ix2,ix3)
+          vny=self%dvn3inow(ix1,ix2,ix3)
+          self%dvn1inow(ix1,ix2,ix3)=vnz*self%proj_ezp_e1(ix1,ix2,ix3) + vnx*self%proj_exp_e1(ix1,ix2,ix3) + &
                                         vny*self%proj_eyp_e1(ix1,ix2,ix3)
-          self%dvn2inext(ix1,ix2,ix3)=vnz*self%proj_ezp_e2(ix1,ix2,ix3) + vnx*self%proj_exp_e2(ix1,ix2,ix3) + &
+          self%dvn2inow(ix1,ix2,ix3)=vnz*self%proj_ezp_e2(ix1,ix2,ix3) + vnx*self%proj_exp_e2(ix1,ix2,ix3) + &
                                         vny*self%proj_eyp_e2(ix1,ix2,ix3)
-          self%dvn3inext(ix1,ix2,ix3)=vnz*self%proj_ezp_e3(ix1,ix2,ix3) + vnx*self%proj_exp_e3(ix1,ix2,ix3) + &
+          self%dvn3inow(ix1,ix2,ix3)=vnz*self%proj_ezp_e3(ix1,ix2,ix3) + vnx*self%proj_exp_e3(ix1,ix2,ix3) + &
                                         vny*self%proj_eyp_e3(ix1,ix2,ix3)
         end do
       end do
