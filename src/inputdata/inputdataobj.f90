@@ -24,6 +24,7 @@ type, abstract :: inputdata
   logical :: flagsource=.false.         ! source directory for data set
   logical :: flagcoordsi=.false.        ! interpolation sites set
   logical :: flagforcenative=.false.    ! force all interpolations to be done with native array rank rather than detecting singleton
+  logical :: flagallow2D3D=.false.      ! allow a dataset to interpolate 2D to 3D
   logical :: flagdoinput=.false.        ! extensions need to define how they know whether or not they need to do file input
   logical :: flagfirst=.true.           ! true prior to performing first update
 
@@ -171,6 +172,8 @@ contains
             .or. self%lc3==1 .and. self%lc3i/=1) then
       if (self%flagforcenative) then
         print*, '  Warning:  native array rank forced for interpolations...'
+      else if (self%flagallow2D3D) then
+        print*, '  Warning:  allowing 2D to 3D spatial interpolations...'
       else
         print*, '  Dataset:  ',self%dataname,'  ',self%lc1,self%lc1i,self%lc2,self%lc2i,self%lc3,self%lc3i
         error stop 'inputdata:set_sizes() - singleton dimensions must be same for source and destination.'
@@ -576,21 +579,21 @@ contains
         end do
         deallocate(tempdata)
       else if (lc1>1 .and. lc2>1 .and. lc3==1) then
-        allocate(tempdata(self%lc1i*self%lc2i))
+        allocate(tempdata(self%lc1i*self%lc2i*self%lc3i))
         do iparm=1,self%l3D
           tempdata(:)=interp2(coord1,coord2,self%data3D(:,:,1,iparm),coord1i,coord2i)
           self%data3Di(:,:,:,iparm,2)=reshape(tempdata,[lc1i,lc2i,lc3i])
         end do
         deallocate(tempdata)
       else if (lc1>1 .and. lc2==1 .and. lc3>1) then
-        allocate(tempdata(self%lc1i*self%lc3i))
+        allocate(tempdata(self%lc1i*self%lc2i*self%lc3i))
         do iparm=1,self%l3D
           tempdata(:)=interp2(coord1,coord3,self%data3D(:,1,:,iparm),coord1i,coord3i)
           self%data3Di(:,:,:,iparm,2)=reshape(tempdata,[lc1i,lc2i,lc3i])
         end do
         deallocate(tempdata)
       else if (lc1==1 .and. lc2>1 .and. lc3>1) then
-        allocate(tempdata(self%lc2i*self%lc3i))
+        allocate(tempdata(self%lc1i*self%lc2i*self%lc3i))
         do iparm=1,self%l3D
           tempdata(:)=interp2(coord2,coord3,self%data3D(1,:,:,iparm),coord2i,coord3i)
           self%data3Di(:,:,:,iparm,2)=reshape(tempdata,[lc1i,lc2i,lc3i])
