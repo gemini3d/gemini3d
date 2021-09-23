@@ -25,7 +25,7 @@ real(wp), parameter :: &
 rtol = 1e-3_wp,  atol = 1e-8_wp, &
 rtolJ = 0.01_wp, atolJ = 1e-8_wp, &
 rtolV = 1e-3_wp, atolV = 10, &
-rtolN = 1e-3_wp, atolN = 1e8_wp, &
+rtolN = 1e-3_wp, atolN = 1e9_wp, &
 rtolT = 1e-3_wp, atolT = 10
 
 private
