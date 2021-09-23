@@ -1,4 +1,4 @@
-add_library(neutral OBJECT neutral.f90 atmos.f90 interp.f90 perturb.f90 proj.f90 wind.f90)
+add_library(neutral OBJECT neutral.f90 atmos.f90 wind.f90)
 target_compile_options(neutral PRIVATE ${gfortran_opts})
 target_link_libraries(neutral PRIVATE config const reader pathlib grid meshobj interp mpimod
 hwm_ifc msis_ifc
