@@ -114,7 +114,7 @@ contains
     self%dnO2=>self%data3D(:,:,:,3)
     self%dvnz=>self%data3D(:,:,:,4)
     self%dvnhorz=>self%data3D(:,:,:,5)
-    self%dTn=>self%data3D(:,:,:,6)
+    self%dTn=>self%data3D(:,:,:,6)    ! note this gets interpolated into a variable bound to vn3i, so need to adjust during rotations
 
     ! call to base class procedure to set pointers for prev,now,next (must already have space allocated)
     call self%setptrs_grid()
@@ -327,21 +327,24 @@ contains
   subroutine rotate_winds(self)
     class(neutraldata2D), intent(inout) :: self
     integer :: ix1,ix2,ix3
-    real(wp) :: vnhorz,vnz
+    real(wp) :: vnhorz,vnz,Tn
 
     ! do rotations one grid point at a time to cut down on temp storage needed.  Note that until this point there
-    !   shoudl be only zero data stored in vn2 since this class is for 2D data input.
+    !   shoudl be only zero data stored in vn3 since this class is for 2D data input, instead temperature
+    !   gets stored in the dvn3i variables.  
     do ix3=1,self%lc3i
       do ix2=1,self%lc2i
         do ix1=1,self%lc3i
           vnz=self%dvn1inow(ix1,ix2,ix3)
           vnhorz=self%dvn2inow(ix1,ix2,ix3)
+          Tn=self%dvn3inow(ix1,ix2,ix3)    ! need to save because it will get overwritten in rotation
           self%dvn1inow(ix1,ix2,ix3)=vnz*self%proj_ezp_e1(ix1,ix2,ix3) + &
                                         vnhorz*self%proj_ehorzp_e1(ix1,ix2,ix3)
           self%dvn2inow(ix1,ix2,ix3)=vnz*self%proj_ezp_e2(ix1,ix2,ix3) + &
                                         vnhorz*self%proj_ehorzp_e2(ix1,ix2,ix3)
-          self%dvn3inext(ix1,ix2,ix3)=vnz*self%proj_ezp_e3(ix1,ix2,ix3) + &
+          self%dvn3inow(ix1,ix2,ix3)=vnz*self%proj_ezp_e3(ix1,ix2,ix3) + &
                                         vnhorz*self%proj_ehorzp_e3(ix1,ix2,ix3)
+          self%dTninow(ix1,ix2,ix3)=Tn     ! assign saved temperature into correct slot in "output" variables
         end do
       end do
     end do

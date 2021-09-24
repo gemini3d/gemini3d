@@ -22,11 +22,11 @@ end type params
 integer, parameter :: lsp=7
 
 real(wp), parameter :: &
-rtol = 1e-3_wp,  atol = 1e-8_wp, &
+rtol = 1e-2_wp,  atol = 1e-8_wp, &
 rtolJ = 0.01_wp, atolJ = 1e-8_wp, &
-rtolV = 1e-3_wp, atolV = 10, &
-rtolN = 1e-3_wp, atolN = 1e9_wp, &
-rtolT = 1e-3_wp, atolT = 10
+rtolV = 1e-2_wp, atolV = 10, &
+rtolN = 1e-2_wp, atolN = 1e9_wp, &
+rtolT = 1e-2_wp, atolT = 10
 
 private
 public :: check_plasma_output_hdf5, check_plasma_input_hdf5, &
