@@ -60,7 +60,7 @@ COMMAND $<TARGET_FILE:gemini3d.compare> ${outdir} ${refdir})
 set_tests_properties(gemini:compare:hdf5:${name} PROPERTIES
 TIMEOUT 60
 FIXTURES_REQUIRED hdf5:${name}:run_fxt
-RESOURCE_LOCK cpu_mpi
+RESOURCE_LOCK $<$<BOOL:${WIN32}>:cpu_mpi>
 REQUIRED_FILES "${outdir}/inputs/config.nml;${refdir}/inputs/config.nml"
 LABELS compare)
 
