@@ -10,7 +10,7 @@ contains
 module procedure neutral_winds
   real(wp), dimension(1:size(x%alt,1),1:size(x%alt,2),1:size(x%alt,3)) :: Wmeridional, Wzonal, Walt, v1, v2, v3
   integer :: i1,i2,i3, dayOfYear
-  real(wp) :: altnow
+  real(wp) :: altnow,glonnow
   integer :: iinull
   integer :: lx1,lx2,lx3,ix1beg,ix1end
   
@@ -25,8 +25,13 @@ module procedure neutral_winds
       x1: do i1 = 1,lx1
         altnow=x%alt(i1,i2,i3)/1.0e3
         if (altnow<0.0) altnow=1.0
+        if (x%flagper) then
+          glonnow=x%glon(i1,i2,1)
+        else
+          glonnow=x%glon(i1,i2,i3)
+        end if
         call hwm_14(dayOfYear, UTsec, &
-          alt_km=altnow, glat=x%glat(i1,i2,i3), glon=x%glon(i1,i2,i3), Ap=Ap, &
+          alt_km=altnow, glat=x%glat(i1,i2,i3), glon=glonnow, Ap=Ap, &
           Wmeridional=Wmeridional(i1,i2,i3), Wzonal=Wzonal(i1,i2,i3))
       end do x1
     end do x2
