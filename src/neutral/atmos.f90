@@ -16,7 +16,7 @@ module procedure neutral_atmos
   integer :: ix1,ix2,ix3,lx1,lx2,lx3
   integer :: doy
   real(wp) :: ap(7),ap3
-  real(wp) :: altnow,glonnow
+  real(wp) :: altnow,glonnow,glatnow
   real(wp) :: d(9),t(2)
     !   real(wp), dimension(1:size(alt,1),1:size(alt,2),1:size(alt,3)) :: nnow
   !    real(wp), dimension(1:size(alt,1),1:size(alt,2),1:size(alt,3)) :: altalt    !an alternate altitude variable which fixes below ground values to 1km
@@ -36,16 +36,20 @@ module procedure neutral_atmos
   do ix3=1,lx3
     do ix2=1,lx2
       do ix1=1,lx1
-        altnow= alt(ix1,ix2,ix3)/1000
-        if (altnow < 0.0) then
-          altnow = 1.0     !so that MSIS does not get called with below ground values and so that we set them to something sensible that won't mess up the conductance calculations
-        end if
         if (flagperiodic) then
           glonnow=glon(ix1,ix2,1)
+          glatnow=glat(ix1,ix2,1)
+          altnow=alt(ix1,ix2,1)/1000
         else
           glonnow=glon(ix1,ix2,ix3)
+          glatnow=glat(ix1,ix2,ix3)
+          altnow= alt(ix1,ix2,ix3)/1000
         end if
-  
+
+        if (altnow < 0.0) then
+          altnow = 1.0     !so that MSIS does not get called with below ground values and so that we set them to something sensible that won't mess up the conductance calculations
+        end if 
+
         if(msis_version == 0) then
           call msis_gtd7(doy=doy, UTsec=UTsecd, &
             alt_km=altnow, glat=glat(ix1,ix2,ix3), glon=glonnow, &

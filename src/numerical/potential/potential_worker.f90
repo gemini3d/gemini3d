@@ -63,7 +63,7 @@ module procedure potential_workers_mpi
   !  E02src=E02; E03src=E03
   !end if
   call potential_sourceterms(sigP,sigH,sigPgrav,sigHgrav,E02src,E03src,vn2,vn3,B1,muP,muH,ns,Ts,x, &
-                             cfg%flaggravdrift,cfg%flagdiamagnetic,srcterm)
+                             cfg%flaggravdrift,cfg%flagdiamagnetic,cfg%flagnodivJ0,srcterm)
   
   
   !    !ZZZ - DEBUG BY GETTING THE ENTIRE SOURCETERM ARRAY
