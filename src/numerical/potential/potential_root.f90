@@ -88,7 +88,7 @@ module procedure potential_root_mpi_curv
   
   
   call potential_sourceterms(sigP,sigH,sigPgrav,sigHgrav,E02src,E03src,vn2,vn3,B1,muP,muH,ns,Ts,x, &
-                             cfg%flaggravdrift,cfg%flagdiamagnetic,srcterm)
+                             cfg%flaggravdrift,cfg%flagdiamagnetic,cfg%nodivJ0,srcterm)
   
   
   !!!!!!!!

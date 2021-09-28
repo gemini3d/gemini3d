@@ -404,7 +404,7 @@ contains
   
   
   subroutine potential_sourceterms(sigP,sigH,sigPgrav,sigHgrav,E02,E03,vn2,vn3,B1,muP,muH,ns,Ts,x, &
-                                   flaggravdrift,flagdiamagnetic,srcterm)
+                                   flaggravdrift,flagdiamagnetic,flagnodivJ0,srcterm)
     !> Compute source terms (inhomogeneous terms) for the potential equation to be solved.  Both root and workers
     !   should be able to use this routine
     real(wp), dimension(:,:,:), intent(in) :: sigP,sigH,sigPgrav,sigHgrav
@@ -417,6 +417,7 @@ contains
     class(curvmesh), intent(in) :: x
     logical, intent(in) :: flaggravdrift
     logical, intent(in) :: flagdiamagnetic
+    logical, intent(in) :: flagnodivJ0
     real(wp), dimension(:,:,:), intent(inout) :: srcterm
     !! intent(out)
     real(wp), dimension(1:size(E02,1),1:size(E02,2),1:size(E02,3)) :: J1,J2,J3
@@ -442,9 +443,11 @@ contains
     J2 = 0
     J3 = 0
     !! for first current term zero everything out
-    call acc_perpconductioncurrents(sigP,sigH,E02,E03,J2,J3)     !background conduction currents only
-    if (debug .and. mpi_cfg%myid==0) print *, 'Workers has computed background field currents...'
-    call acc_perpwindcurrents(sigP,sigH,vn2,vn3,B1,J2,J3)
+    if (flagnodivJ0) then
+      call acc_perpconductioncurrents(sigP,sigH,E02,E03,J2,J3)     !background conduction currents only
+      if (debug .and. mpi_cfg%myid==0) print *, 'Workers has computed background field currents...'
+    end if
+    call acc_perpwindcurrents(sigP,sigH,vn2,vn3,B1,J2,J3)     ! always include wind effects
     if (debug .and. mpi_cfg%myid==0) print *, 'Workers has computed wind currents...'
     if (flagdiamagnetic) then
       call acc_pressurecurrents(muP,muH,ns,Ts,x,J2,J3)

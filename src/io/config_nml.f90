@@ -47,6 +47,7 @@ integer :: mcadence
 logical :: flaggravdrift
 logical :: flaglagrangian
 logical :: flagdiamagnetic
+logical :: flagnodivJ0
 
 namelist /base/ ymd, UTsec0, tdur, dtout, activ, tcfl, Teinf
 namelist /files/ file_format, indat_size, indat_grid, indat_file
@@ -66,6 +67,7 @@ namelist /milestone/ mcadence
 namelist /gravdrift/ flaggravdrift
 namelist /lagrangian/ flaglagrangian
 namelist /diamagnetic/ flagdiamagnetic
+namelist /nodivJ0/ flagnodivJ0
 
 if(.not. allocated(cfg%outdir)) error stop 'config:config_nml please specify simulation output directory'
 
@@ -272,6 +274,15 @@ if (namelist_exists(u,'diamagnetic')) then
   cfg%flagdiamagnetic=flagdiamagnetic
 else
   cfg%flagdiamagnetic=.false.
+end if
+
+if (namelist_exists(u,'nodivJ0')) then
+  rewind(u)
+  read(u,nml=nodivJ0,iostat=i)
+  call check_nml_io(i,cfg%infile,"nodivJ0")
+  cfg%flagnodivJ0=flagnodivJ0
+else
+  cfg%flagnodivJ0=.false.
 end if
 
 close(u)
