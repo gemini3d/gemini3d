@@ -25,25 +25,34 @@ use mpi, only : mpi_init
 
 implicit none (type, external)
 
-character(kind=c_char) :: out_dir(1)
+type, bind(C) :: c_params
+logical(c_bool) :: fortran_cli
+logical(c_bool) :: debug
+logical(c_bool) :: dryrun
+character(kind=c_char) :: out_dir(1000)
+end type c_params
+
+
 integer(c_int) :: lid2in, lid3in
-logical(c_bool) :: use_cli
 
 character(8) :: date
 character(10) :: time
 
 integer :: ierr
 
+type(c_params) :: p
+
 !> INITIALIZE MESSING PASSING VARIABLES, IDS ETC.
 call mpi_init(ierr)
 if (ierr/=0) error stop 'gemini.bin: failed mpi_init'
 
-out_dir = c_null_char
+p%fortran_cli = .true.
+p%out_dir(1) = c_null_char
+
 lid2in = -1
 lid3in = -1
-use_cli = .true.
-!! out_dir, lid2in, lid3in, are ignored when use_cli=.true.
-call gemini_main(out_dir, len(out_dir, c_int), lid2in, lid3in, use_cli)
+!! out_dir, lid2in, lid3in, are ignored when fortran_cli=.true.
+call gemini_main(p, lid2in, lid3in)
 
 !> SHUT DOWN MPI
 ierr = mpibreakdown()

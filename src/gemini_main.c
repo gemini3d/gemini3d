@@ -10,6 +10,8 @@
 
 int main(int argc, char **argv) {
 
+struct params s;
+
 int ierr = MPI_Init(&argc, &argv);
 
 if (argc < 2) {
@@ -17,24 +19,42 @@ if (argc < 2) {
   return 1;
 }
 
-int Lpath_max = 10000;
 int L = strlen(argv[1]);
-if(L > Lpath_max) {
-  // arbitrary maximum path length--10000 is not referred to anywhere else in the program.
-  fprintf(stderr, "Gemini3D simulation output directory: path length > %d", Lpath_max);
+if(L > LMAX) {
+  fprintf(stderr, "Gemini3D simulation output directory: path length > %d", LMAX);
   return 1;
 }
 L++; // for null terminator
 
-char *out_dir = (char *)malloc(L);
-if (out_dir != NULL) {
-  strcpy(out_dir, argv[1]);
+strcpy(s.out_dir, argv[1]);
+
+s.fortran_cli = false;
+s.debug = false;
+s.dryrun = false;
+int lid2in = -1, lid3in = -1;
+
+for (int i = 2; i < argc; i++) {
+  if (strcmp(argv[i], "-d") == 0 || strcmp(argv[i], "-debug") == 0) s.debug = true;
+  if (strcmp(argv[i], "-dryrun") == 0) s.dryrun = true;
+  if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "-help") == 0) {
+    MPI_Finalize();
+    printf("Gemini3D - C-frontend for ionospheric 3D simulation\n");
+    return 0;
+  }
+  if (strcmp(argv[i], "-manual_grid") == 0) {
+    lid2in = atoi(argv[i]);
+    if (argc < i+1) {
+      perror("-manual_grid lid2in lid3in");
+      return 1;
+    }
+  }
 }
 
-int lid2in = -1, lid3in = -1;
-bool fortran_cli = false;
 
-gemini_main(out_dir, &L, &lid2in, &lid3in, &fortran_cli);
+
+
+
+gemini_main(s, &lid2in, &lid3in);
 
 ierr = MPI_Finalize();
 

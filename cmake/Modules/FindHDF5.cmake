@@ -423,8 +423,6 @@ if(NOT parallel IN_LIST HDF5_FIND_COMPONENTS)
   list(PREPEND wrapper_names h5cc h5cc-64)
 endif()
 
-# NOTE: NAMES_PER_DIR is important to help override Anaconda's nuisance, broken h5cc
-
 find_program(HDF5_C_COMPILER_EXECUTABLE
   NAMES ${wrapper_names}
   NAMES_PER_DIR
@@ -576,6 +574,11 @@ if(NOT HDF5_ROOT AND DEFINED ENV{HDF5_ROOT})
   set(HDF5_ROOT $ENV{HDF5_ROOT})
 endif()
 
+# Conda causes numerous problems with finding HDF5, so exclude from search
+if(DEFINED ENV{CONDA_PREFIX})
+  list(APPEND CMAKE_IGNORE_PATH $ENV{CONDA_PREFIX}/bin $ENV{CONDA_PREFIX}/lib $ENV{CONDA_PREFIX}/include)
+endif()
+
 # we don't use pkg-config names because some distros pkg-config for HDF5 is broken
 # however at least the paths are often correct
 find_package(PkgConfig)
@@ -638,6 +641,11 @@ check_hdf5_link()
 
 set(CMAKE_REQUIRED_LIBRARIES)
 set(CMAKE_REQUIRED_INCLUDES)
+
+# pop off ignored paths so rest of script can find Python
+list(POP_BACK CMAKE_IGNORE_PATH)
+list(POP_BACK CMAKE_IGNORE_PATH)
+list(POP_BACK CMAKE_IGNORE_PATH)
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(HDF5

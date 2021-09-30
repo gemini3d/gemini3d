@@ -42,21 +42,22 @@ use timeutils, only: dateinc, find_lastdate
 
 implicit none (type, external)
 
+type, bind(C) :: c_params
+logical(c_bool) :: fortran_cli
+logical(c_bool) :: debug
+logical(c_bool) :: dryrun
+character(kind=c_char) :: out_dir(1000)
+end type c_params
+
 contains
 
 
-subroutine gemini_main(out_dir, Lout_dir, lid2in, lid3in, use_cli)  bind(C, name="gemini_main")
+subroutine gemini_main(p, lid2in, lid3in)  bind(C)
 !! NOTE: if use_cli=.true., then {out_dir, lid2in, lid3in} are ignored and CLI is used instead.
-!!
-!! the 'name="gemini_main"' is implicit, but put explicitly here for clarity and
-!! for if someone wanted to change the name C/C++ sees.
 
-character(kind=c_char), intent(in) :: out_dir(Lout_dir)
-integer(c_int), intent(in) :: Lout_dir
+type(c_params), intent(in) :: p
 !! output directory for Gemini3D to write simulation data to (can be large files GB, TB, ...)
 integer(c_int), intent(inout) :: lid2in, lid3in  !< inout to allow optional CLI
-!! FOR HANDLING OUTPUT
-logical(c_bool), intent(in) :: use_cli
 
 integer :: ierr
 logical :: exists
@@ -134,19 +135,22 @@ call mpisetup()
 
 if(mpi_cfg%lid < 1) error stop 'number of MPI processes must be >= 1. Was MPI initialized properly?'
 
-if(use_cli) then
+if(p%fortran_cli) then
   call cli(cfg, lid2in, lid3in, debug)
 else
   block
-    character(Lout_dir) :: buf
+    character(size(p%out_dir)) :: buf
     integer :: i
     buf = "" !< ensure buf has no garbage characters
 
-    do i = 1, Lout_dir
-      if (out_dir(i) == c_null_char) exit
-      buf(i:i) = out_dir(i)
+    do i = 1, len(buf)
+      if (p%out_dir(i) == c_null_char) exit
+      buf(i:i) = p%out_dir(i)
     enddo
     cfg%outdir = expanduser(buf)
+
+    cfg%dryrun = p%dryrun
+    debug = p%debug
   end block
 endif
 
