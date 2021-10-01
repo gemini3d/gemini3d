@@ -36,7 +36,7 @@
 },
 {
   "name": "intel", "inherits": "default",
-  "displayName": "Intel Classic compiler: Linux/MacOS",
+  "displayName": "Intel compiler",
   "binaryDir": "${sourceDir}/build-intel",
   "installDir": "${sourceDir}/build-intel",
   "environment": {
