@@ -46,7 +46,7 @@ for (int i = 2; i < argc; i++) {
   if (strcmp(argv[i], "-dryrun") == 0) s.dryrun = true;
   if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "-help") == 0) {
     MPI_Finalize();
-    printf("Gemini3D: C-frontend for ionospheric 3D simulation\n");
+    help_gemini_bin();
     return 0;
   }
   if (strcmp(argv[i], "-manual_grid") == 0) {

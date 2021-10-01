@@ -16,31 +16,28 @@ logical, intent(out) :: plan
 integer, intent(out) :: Ncpu
 character(:), allocatable, intent(out) :: path, exe, mpiexec, extra
 
-character(:), allocatable :: git_revision
 character(1000) :: buf
 integer :: argc, i, j, ierr
-
-git_revision = "@git_rev@"
 
 argc = command_argument_count()
 
 call get_command_argument(1, buf, status=i)
-if (i/=0) call help_run(git_revision)
+if (i/=0) call help_run()
 
 if(buf(1:1) == '-') then
 !! not running sim, checking parameters
   select case(buf)
   case ('-h', '-help')
-    call help_run(git_revision)
+    call help_run()
   case ('-compiler')
     print '(A)', get_compiler_vendor()
   case ('-compiler_version')
     print '(A)', compiler_version()
   case ('-git')
-    print '(A)', git_revision
+    print '(A)', "@git_rev@"
   case default
     write(stderr,*) "Gemini3D: unknown option: ", trim(buf)
-    call help_run(git_revision)
+    call help_run()
   end select
 
   stop
@@ -63,7 +60,7 @@ do i = 2, argc
   select case (buf)
 
   case ('-h', '-help')
-    call help_run(git_revision)
+    call help_run()
   case ('-n')
     call get_command_argument(i+1, buf)
     read(buf, '(I6)') Ncpu
@@ -245,11 +242,9 @@ write(stderr,"(A)") "If simulation hangs or operates incorrectly, specify -mpiex
 end function check_mpiexec
 
 
-subroutine help_gemini_bin(git_revision)
+subroutine help_gemini_bin() bind(C)
 
-character(*), intent(in) :: git_revision
-
-print '(/,A,/)', 'GEMINI-3D: gemini.bin ' // git_revision
+print '(/,A,/)', 'GEMINI-3D: gemini.bin ' // "@git_rev@"
 print '(A)', 'by Matthew Zettergren'
 print '(A)', 'GLOW and auroral interfaces by Guy Grubbs'
 print '(A)', 'build system and software engineering by Michael Hirsch'
@@ -265,24 +260,21 @@ stop 'EOF: gemini.bin'
 end subroutine help_gemini_bin
 
 
-subroutine help_run(git_revision)
+subroutine help_run()
 
-character(*), intent(in) :: git_revision
 character(1000) :: buf
 
 call get_command_argument(0, buf)
-if(index(buf, "gemini3d.run") > 0) call help_gemini_run(git_revision)
-if(index(buf, "magcalc.run") > 0) call help_magcalc_run(git_revision)
+if(index(buf, "gemini3d.run") > 0) call help_gemini_run()
+if(index(buf, "magcalc.run") > 0) call help_magcalc_run()
 
 error stop "help_run: unknown runner"
 
 end subroutine help_run
 
-subroutine help_gemini_run(git_revision)
+subroutine help_gemini_run()
 
-character(*), intent(in) :: git_revision
-
-print '(/,A,/)', 'GEMINI-3D: gemini3d.run ' // git_revision
+print '(/,A,/)', 'GEMINI-3D: gemini3d.run ' // "@git_rev@"
 print '(A)', 'Compiler vendor: '// get_compiler_vendor()
 print '(A)', 'Compiler version: ' // compiler_version()
 print '(/,A)', 'must specify simulation output directory. Example:'
@@ -297,10 +289,9 @@ stop 'EOF: gemini3d.run'
 end subroutine help_gemini_run
 
 
-subroutine help_magcalc_bin(git_revision)
-character(*), intent(in) :: git_revision
+subroutine help_magcalc_bin()
 
-print '(/,A,/)', 'GEMINI-3D: magcalc.bin ' // git_revision
+print '(/,A,/)', 'GEMINI-3D: magcalc.bin ' // "@git_rev@"
 print '(A)', 'Compiler vendor: '// get_compiler_vendor()
 print '(A)', 'Compiler version: ' // compiler_version()
 print '(/,A)', 'must specify input directory and fieldpoint file. Example:'
@@ -309,11 +300,9 @@ print '(A)', '-dryrun option allows quick check of first time step'
 stop 'EOF: magcalc.bin'
 end subroutine help_magcalc_bin
 
-subroutine help_magcalc_run(git_revision)
+subroutine help_magcalc_run()
 
-character(*), intent(in) :: git_revision
-
-print '(/,A,/)', 'GEMINI-3D: magcalc.run ' // git_revision
+print '(/,A,/)', 'GEMINI-3D: magcalc.run ' // "@git_rev@"
 print '(A)', 'Compiler vendor: '// get_compiler_vendor()
 print '(A)', 'Compiler version: ' // compiler_version()
 print '(/,A)', 'must specify simulation output directory. Example:'

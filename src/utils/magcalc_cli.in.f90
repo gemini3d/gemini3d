@@ -37,11 +37,11 @@ cfg%git_revision = "@git_rev@"
 argc = command_argument_count()
 
 call get_command_argument(1, argv, status=i)
-if (i/=0) call help_magcalc_bin(cfg%git_revision)
+if (i/=0) call help_magcalc_bin()
 
 select case (argv)
 case ('-h', '-help')
-  call help_magcalc_bin(cfg%git_revision)
+  call help_magcalc_bin()
 case ('-compiler')
   print '(A)', get_compiler_vendor()
   stop
@@ -183,7 +183,7 @@ do i = iarg,argc
   select case (argv)
   case ('-h', '-help')
     ierr = mpibreakdown()
-    if (mpi_cfg%myid == 0) call help_magcalc_bin(cfg%git_revision)
+    if (mpi_cfg%myid == 0) call help_magcalc_bin()
     stop
   case ('-compiler')
     ierr = mpibreakdown()
