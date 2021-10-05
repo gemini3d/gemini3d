@@ -52,12 +52,12 @@ module procedure neutral_atmos
 
         if(msis_version == 0) then
           call msis_gtd7(doy=doy, UTsec=UTsecd, &
-            alt_km=altnow, glat=glat(ix1,ix2,ix3), glon=glonnow, &
+            alt_km=altnow, glat=glatnow, glon=glonnow, &
             f107a=activ(1), f107=activ(2), ap7=ap, &
             d=d, T=t, use_meters=.true.)
         elseif(msis_version == 20) then
           call msis_gtd8(doy=doy, UTsec=UTsecd, &
-            alt_km=altnow, glat=glat(ix1,ix2,ix3), glon=glonnow, &
+            alt_km=altnow, glat=glatnow, glon=glonnow, &
             f107a=activ(1), f107=activ(2), ap7=ap, &
             Dn=d, Tn=t)
         else
