@@ -34,7 +34,7 @@ module procedure neutral_winds
         end if
         if (altnow<0.0) altnow=1.0
         call hwm_14(dayOfYear, UTsec, &
-          alt_km=altnow, glat=x%glat(i1,i2,i3), glon=glonnow, Ap=Ap, &
+          alt_km=altnow, glat=glatnow, glon=glonnow, Ap=Ap, &
           Wmeridional=Wmeridional(i1,i2,i3), Wzonal=Wzonal(i1,i2,i3))
       end do x1
     end do x2
