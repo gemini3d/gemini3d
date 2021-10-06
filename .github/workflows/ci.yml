@@ -32,7 +32,7 @@ jobs:
     - name: Install packages
       run: |
         sudo apt update -yq
-        sudo cmake -P scripts/install_prereq.cmake
+        sudo $(cmake -P scripts/requirements.cmake 2>&1)
 
     - name: Configure multi
       run: cmake --preset multi
@@ -83,7 +83,7 @@ jobs:
     - name: Install packages
       run: |
         sudo apt update -yq
-        sudo cmake -P scripts/install_prereq.cmake
+        sudo $(cmake -P scripts/requirements.cmake 2>&1)
         cmake -P scripts/install_ninja.cmake
         echo "${HOME}/ninja-1.10.2" >> $GITHUB_PATH
 
@@ -99,6 +99,7 @@ jobs:
     - name: Release core test
       run: ctest --preset release -LE unit -E 3d
 
+
   MSIS-20:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -112,7 +113,7 @@ jobs:
     - name: Install packages
       run: |
         sudo apt update -yq
-        sudo cmake -P scripts/install_prereq.cmake
+        sudo $(cmake -P scripts/requirements.cmake 2>&1)
 
     - name: Configure release
       run: cmake --preset default -Dmsis20:BOOL=true
@@ -138,7 +139,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - run: cmake -P scripts/install_prereq.cmake
+    - run: $(cmake -P scripts/requirements.cmake 2>&1)
       timeout-minutes: 15
 
     - name: Configure multi
