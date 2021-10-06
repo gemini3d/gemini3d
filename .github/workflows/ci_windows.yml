@@ -1,0 +1,51 @@
+# FIXME: MUMPS 5.4.0, 5.4.1 need patch requiring WSL. Once MUMPS fixes itself in upstream, reenable this workflow.
+
+windows_no_mpi:
+    if: ${{ false }}
+    # it's tricky to install mpiexec automatically on Windows (see p4est)
+    # thus it's convenient to use Windows as a no-MPI, no-hwloc test case
+    timeout-minutes: 20
+    runs-on: windows-latest
+
+    env:
+      CTEST_PARALLEL_LEVEL: 2
+
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+    - uses: msys2/setup-msys2@v2
+      with:
+        update: true
+        install: >-
+          git
+          mingw-w64-x86_64-cmake
+          mingw-w64-x86_64-ninja
+          mingw-w64-x86_64-gcc-fortran
+          mingw-w64-x86_64-hdf5
+          mingw-w64-x86_64-lapack
+
+    - uses: actions/checkout@v2
+
+    - name: Configure multi
+      run: cmake -Dmpi=no --preset multi
+
+
+    - name: Debug build
+      run: cmake --build --preset debug
+
+    - name: Debug unit test
+      run: ctest --preset debug -L unit
+
+    - name: Debug core test
+      run: ctest --preset debug -LE unit -R "(2dew_fang|2dns_fang)"
+
+
+    - name: Release build
+      run: cmake --build --preset release
+
+    - name: Release unit test
+      run: ctest --preset release -L unit
+
+    - name: Release core test
+      run: ctest --preset release -LE unit -E 3d

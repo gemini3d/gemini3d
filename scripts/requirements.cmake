@@ -36,11 +36,15 @@ endif()
 
 execute_process(COMMAND uname -s OUTPUT_VARIABLE id TIMEOUT 5)
 
-find_program(apt NAMES apt)
-find_program(yum NAMES yum)
-find_program(pacman NAMES pacman)
-find_program(brew NAMES brew)
-find_program(port NAMES port)
+if(APPLE)
+  # avoids MacOS-only tools with conflicting names
+  find_program(brew NAMES brew)
+  find_program(port NAMES port)
+else()
+  find_program(apt NAMES apt)
+  find_program(yum NAMES yum)
+  find_program(pacman NAMES pacman)
+endif()
 
 if(apt)
   read_prereqs("apt")
