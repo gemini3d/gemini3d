@@ -121,6 +121,8 @@ loopx3: do ix3=1,lx3
 
     !! INTERIOR LOCATION
     !> ix2-1,ix3-2 grid point
+    !>>  because we are one interior point in for x3, ix3-2 is "before" the boundary; we'll assume it's at the
+    !>>  same potential.  Effectively the electric field is assumed to go to zero at the boundary.  
     coeff=-Cm(ix2,ix3-1)*v2(ix2,ix3-1)/ &
     ( (dx3all(ix3)+dx3all(ix3+1))*(dx3all(ix3-1)+dx3all(ix3))*(dx2all(ix2)+dx2all(ix2+1)) )
     if (ix3==2) then    !out of bounds, use nearest BC, and add to known vector
@@ -615,8 +617,6 @@ do ix3=1,lx3
     endif
 
     !! TREAT AS AN INTERIOR LOCATION, THIS INCLUDE X3 EDGES NOW SINCE PERIODIC,CIRCULANT
-
-
     !! ZZZ - NEED TO WRAP INDICES AROUND:  X 1)
     !! matrix row/column entries; 2) references to dx3i*(anything but ix3);  3) references to conductances/bcs/etc.
 
