@@ -5,14 +5,15 @@
 
 cmake_minimum_required(VERSION 3.7...3.21)
 
-if(WIN32)
-  message(FATAL_ERROR "Please install Gemini prereqs on Windows via MSYS2 Terminal https://www.msys2.org/")
-endif()
-
 if(CMAKE_VERSION VERSION_LESS 3.20)
   message(FATAL_ERROR "Please first update CMake via
     cmake -P ${CMAKE_CURRENT_LIST_DIR}/install_cmake.cmake")
 endif()
+
+set(prereq_file ${CMAKE_CURRENT_LIST_DIR}/../requirements.json)
+cmake_path(ABSOLUTE_PATH prereq_file NORMALIZE)
+
+# --- helper functions
 
 function(check_ninja)
   find_program(ninja NAMES ninja)
@@ -30,11 +31,10 @@ function(check_ninja)
   endif()
 endfunction(check_ninja)
 
-# read prereqs
 
 function(read_prereqs sys_id)
 
-  file(READ ${CMAKE_CURRENT_LIST_DIR}/prereqs.json json)
+  file(READ ${prereq_file} json)
 
   set(prereqs)
   string(JSON N LENGTH ${json} ${sys_id})
@@ -49,7 +49,7 @@ function(read_prereqs sys_id)
 
 endfunction(read_prereqs)
 
-# detect platform
+# --- main program
 
 execute_process(COMMAND uname -s OUTPUT_VARIABLE id TIMEOUT 5)
 
@@ -100,3 +100,6 @@ if(pacman)
   check_ninja()
   return()
 endif()
+
+message(FATAL_ERROR "Unable to find package manager. Gemini3D will try to build libraries needed upon build.
+Refer to package list in ${prereq_file}")
