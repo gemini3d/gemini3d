@@ -7,11 +7,15 @@ env:
 on:
   push:
     paths:
+      - "**.c"
       - "**.f90"
       - "**.F90"
       - "**.cmake"
       - "**/CMakeLists.txt"
       - ".github/workflows/ci.yml"
+# paths ignore starting with "!"
+      - "!docs/**"
+
 
 jobs:
 

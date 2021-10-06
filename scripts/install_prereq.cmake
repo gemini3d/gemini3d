@@ -9,7 +9,7 @@ if(WIN32)
   message(FATAL_ERROR "Please install Gemini prereqs on Windows via MSYS2 Terminal https://www.msys2.org/")
 endif()
 
-if(CMAKE_VERSION VERSION_LESS 3.19)
+if(CMAKE_VERSION VERSION_LESS 3.20)
   message(FATAL_ERROR "Please first update CMake via
     cmake -P ${CMAKE_CURRENT_LIST_DIR}/install_cmake.cmake")
 endif()
@@ -30,10 +30,32 @@ function(check_ninja)
   endif()
 endfunction(check_ninja)
 
+# read prereqs
+
+function(read_prereqs sys_id)
+
+  file(READ ${CMAKE_CURRENT_LIST_DIR}/prereqs.json json)
+
+  set(prereqs)
+  string(JSON N LENGTH ${json} ${sys_id})
+  math(EXPR N "${N}-1")
+  foreach(i RANGE ${N})
+    string(JSON _u GET ${json} ${sys_id} ${i})
+    list(APPEND prereqs ${_u})
+  endforeach()
+
+  string(REPLACE ";" " " prereqs "${prereqs}")
+  set(prereqs ${prereqs} PARENT_SCOPE)
+
+endfunction(read_prereqs)
+
+# detect platform
+
 execute_process(COMMAND uname -s OUTPUT_VARIABLE id TIMEOUT 5)
 
-if(id MATCHES "MSYS")
-  execute_process(COMMAND pacman -S --needed mingw-w64-x86_64-gcc-fortran mingw-w64-x86_64-ninja mingw-w64-x86_64-hwloc mingw-w64-x86_64-msmpi mingw-w64-x86_64-hdf5 mingw-w64-x86_64-lapack mingw-w64-x86_64-scalapack)
+if(id MATCHES "^MSYS")
+  read_prereqs("msys2")
+  execute_process(COMMAND pacman -S --needed ${prereqs})
   return()
 endif()
 
@@ -47,13 +69,15 @@ if(APPLE)
     message(FATAL_ERROR "We generally suggest installing Homebrew package manager https://brew.sh")
   endif()
 
-  execute_process(COMMAND ${brew} install gcc ninja cmake hwloc lapack scalapack openmpi hdf5)
+  read_prereqs("brew")
+  execute_process(COMMAND ${brew} install ${prereqs})
   return()
 endif()
 
 find_program(apt NAMES apt)
 if(apt)
-  execute_process(COMMAND apt install --no-install-recommends ninja-build gfortran libhwloc-dev libmumps-dev liblapack-dev libscalapack-mpi-dev libopenmpi-dev openmpi-bin libhdf5-dev)
+  read_prereqs("apt")
+  execute_process(COMMAND apt install --no-install-recommends ${prereqs})
   # don't check return code as can be non-zero if packages already installed
   check_ninja()
   return()
@@ -61,7 +85,8 @@ endif()
 
 find_program(yum NAMES yum)
 if(yum)
-  execute_process(COMMAND yum install epel-release gcc-gfortran hwloc-devel MUMPS-openmpi-devel lapack-devel scalapack-openmpi-devel openmpi-devel hdf5-devel)
+  read_prereqs("yum")
+  execute_process(COMMAND yum install ${prereqs})
   # don't check return code as can be non-zero if packages already installed
   check_ninja()
   return()
@@ -69,7 +94,8 @@ endif()
 
 find_program(pacman NAMES pacman)
 if(pacman)
-  execute_process(COMMAND pacman -S --needed gcc-fortran ninja hwloc openmpi hdf5 lapack scalapack mumps)
+  read_prereqs("pacman")
+  execute_process(COMMAND pacman -S --needed ${prereqs})
 
   check_ninja()
   return()

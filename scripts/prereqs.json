@@ -1,0 +1,7 @@
+{
+  "apt": ["ninja-build", "gfortran", "libhwloc-dev", "libmumps-dev", "liblapack-dev", "libscalapack-mpi-dev", "libopenmpi-dev", "openmpi-bin", "libhdf5-dev"],
+  "yum": ["epel-release", "gcc-gfortran", "hwloc-devel", "MUMPS-openmpi-devel", "lapack-devel", "scalapack-openmpi-devel", "openmpi-devel", "hdf5-devel"],
+  "pacman": ["gcc-fortran", "ninja", "hwloc", "openmpi", "hdf5", "lapack", "scalapack", "mumps"],
+  "brew": ["gcc", "ninja", "hwloc", "lapack", "scalapack", "openmpi", "hdf5"],
+  "msys2": ["mingw-w64-x86_64-gcc-fortran", "mingw-w64-x86_64-ninja", "mingw-w64-x86_64-hwloc", "mingw-w64-x86_64-msmpi", "mingw-w64-x86_64-hdf5", "mingw-w64-x86_64-lapack", "mingw-w64-x86_64-scalapack"]
+}
