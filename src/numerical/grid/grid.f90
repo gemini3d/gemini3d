@@ -75,53 +75,52 @@ end interface
 contains
 
 subroutine read_grid(indatsize,indatgrid,flagperiodic,x)
-character(*), intent(in) :: indatsize,indatgrid
-integer, intent(in) :: flagperiodic
-class(curvmesh), allocatable, intent(inout) :: x
-
-real(wp), dimension(:), allocatable :: x1,x2,x3,x2all,x3all
-integer :: islstart,islfin
-integer, dimension(2) :: indsgrid
-integer iid
-real(wp) :: glonctr,glatctr
-!! Declare grid type that we are dealing with; note lack of matching deallocates assume
-!!   that the compiler will deal with it automatically
-!!  Also set the grid center position if not already dictated by the coordinate system
-
-call set_subgrid_size(lx2all, lx3all, lx2, lx3)
-!! everyone computes what the size of their subgrid should be
-allocate(x1(-1:lx1+2), x2(-1:lx2+2), x3(-1:lx3+2), x2all(-1:lx2all+2), x3all(-1:lx3all+2))
-!! tmp space for coords from file
-call get_grid3_coords(indatgrid,x1,x2all,x3all, glonctr,glatctr)
-!! only need ctr location for certain grid types
-
-!> each worker needs to set their specific subgrid coordinates
-indsgrid=ID2grid(mpi_cfg%myid, mpi_cfg%lid2)
-!! compute my location on the process grid
-!> x2
-islstart=indsgrid(1)*lx2+1
-!! piece of grid that corresponds to my x3 position
-islfin=islstart+lx2-1
-x2=x2all(islstart-2:islfin+2)
-!> x3
-islstart=indsgrid(2)*lx3+1
-!! piece of grid that corresponds to my x3 position
-islfin=islstart+lx3-1
-x3=x3all(islstart-2:islfin+2)
-
-
-!! FIXME: hardcode grid type for now; compute it from the coordinates eventually??
-!! right now we just have Cartesian and dipole so it's easy to detect based on x2
-if (maxval(abs(x2))<100) then
-  print*, ' Detected dipole grid...'
-  allocate(dipolemesh::x)
-  call read_grid_dipole(indatsize,indatgrid,flagperiodic,x,x1,x2,x3,x2all,x3all)
-else
-  print*, 'Detected Cartesian grid...'
-  allocate(cartmesh::x)
-  call read_grid_cart(indatsize,indatgrid,flagperiodic,x,x1,x2,x3,x2all,x3all,glonctr,glatctr)
-end if
-
+  character(*), intent(in) :: indatsize,indatgrid
+  integer, intent(in) :: flagperiodic
+  class(curvmesh), allocatable, intent(inout) :: x
+  
+  real(wp), dimension(:), allocatable :: x1,x2,x3,x2all,x3all
+  integer :: islstart,islfin
+  integer, dimension(2) :: indsgrid
+  integer iid
+  real(wp) :: glonctr,glatctr
+  !! Declare grid type that we are dealing with; note lack of matching deallocates assume
+  !!   that the compiler will deal with it automatically
+  !!  Also set the grid center position if not already dictated by the coordinate system
+  
+  call set_subgrid_size(lx2all, lx3all, lx2, lx3)
+  !! everyone computes what the size of their subgrid should be
+  allocate(x1(-1:lx1+2), x2(-1:lx2+2), x3(-1:lx3+2), x2all(-1:lx2all+2), x3all(-1:lx3all+2))
+  !! tmp space for coords from file
+  call get_grid3_coords(indatgrid,x1,x2all,x3all, glonctr,glatctr)
+  !! only need ctr location for certain grid types
+  
+  !> each worker needs to set their specific subgrid coordinates
+  indsgrid=ID2grid(mpi_cfg%myid, mpi_cfg%lid2)
+  !! compute my location on the process grid
+  !> x2
+  islstart=indsgrid(1)*lx2+1
+  !! piece of grid that corresponds to my x3 position
+  islfin=islstart+lx2-1
+  x2=x2all(islstart-2:islfin+2)
+  !> x3
+  islstart=indsgrid(2)*lx3+1
+  !! piece of grid that corresponds to my x3 position
+  islfin=islstart+lx3-1
+  x3=x3all(islstart-2:islfin+2)
+  
+  
+  !! FIXME: hardcode grid type for now; compute it from the coordinates eventually??
+  !! right now we just have Cartesian and dipole so it's easy to detect based on x2
+  if (maxval(abs(x2))<100) then
+    print*, ' Detected dipole grid...'
+    allocate(dipolemesh::x)
+    call read_grid_dipole(indatsize,indatgrid,flagperiodic,x,x1,x2,x3,x2all,x3all)
+  else
+    print*, 'Detected Cartesian grid...'
+    allocate(cartmesh::x)
+    call read_grid_cart(indatsize,indatgrid,flagperiodic,x,x1,x2,x3,x2all,x3all,glonctr,glatctr)
+  end if
 end subroutine read_grid
 
 subroutine get_grid3_coords(path,x1,x2all,x3all,glonctr,glatctr)
