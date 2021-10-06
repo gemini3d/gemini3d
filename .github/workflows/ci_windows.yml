@@ -1,6 +1,26 @@
 # FIXME: MUMPS 5.4.0, 5.4.1 need patch requiring WSL. Once MUMPS fixes itself in upstream, reenable this workflow.
 
-windows_no_mpi:
+name: ci_windows
+
+env:
+  CMAKE_BUILD_PARALLEL_LEVEL: 3
+  CTEST_PARALLEL_LEVEL: 2
+
+on:
+  push:
+    paths:
+      - "**.f90"
+      - "**.F90"
+      - "**.cmake"
+      - "**/CMakeLists.txt"
+      - ".github/workflows/ci_windows.yml"
+# paths ignore starting with "!"
+      - "!docs/**"
+      - "!scripts/**"
+
+jobs:
+
+  windows_no_mpi:
     if: ${{ false }}
     # it's tricky to install mpiexec automatically on Windows (see p4est)
     # thus it's convenient to use Windows as a no-MPI, no-hwloc test case
