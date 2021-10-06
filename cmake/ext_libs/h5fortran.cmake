@@ -4,10 +4,11 @@ if(hdf5)
 
   if(NOT hdf5_external)
     # h5fortran inside if() because h5fortran config calls find_package(HDF5)
-    find_package(h5fortran CONFIG)
-    if(h5fortran_FOUND)
-      return()
-    endif()
+    # disabled h5fortran search for now because we're undergoing rapid devel soon for MPI.
+    # find_package(h5fortran CONFIG)
+    # if(h5fortran_FOUND)
+    #   return()
+    # endif()
 
     if(autobuild)
       find_package(HDF5 COMPONENTS Fortran)
@@ -66,7 +67,7 @@ if(hdf5)
   target_link_libraries(h5fortran::h5fortran INTERFACE HDF5::HDF5)
 
 else(hdf5)
-  message(VERBOSE " using h5fortran dummy")
+  message(VERBOSE "using h5fortran dummy")
 
   add_library(h5fortran ${CMAKE_CURRENT_SOURCE_DIR}/src/vendor/h5fortran_dummy.f90)
   add_library(h5fortran::h5fortran ALIAS h5fortran)
