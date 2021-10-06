@@ -308,12 +308,21 @@ contains
   subroutine set_periodic(self,flagperiodic)
     class(curvmesh), intent(inout) :: self
     integer, intent(in) :: flagperiodic
+    integer :: ix3
 
+    ! flag appropriately
     if (flagperiodic==1) then
       self%flagper=.true.
     else
       self%flagper=.false.
     end if
+
+    ! force periodicity in geographic locations
+    do ix3=2,self%lx3
+      self%glat(:,:,ix3)=self%glat(:,:,1)
+      self%glon(:,:,ix3)=self%glon(:,:,1)
+      self%alt(:,:,ix3)=self%alt(:,:,1)
+    end do
   end subroutine set_periodic
 
 
