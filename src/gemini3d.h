@@ -1,6 +1,10 @@
 #ifndef GEMINI3D_H
 #define GEMINI3D_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 enum { LMAX = 1000 };
 
 struct params {
@@ -15,5 +19,9 @@ struct params {
 extern void gemini_main(struct params *, int*, int*);
 
 extern void help_gemini_bin();
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
