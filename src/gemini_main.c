@@ -60,7 +60,7 @@ for (int i = 2; i < argc; i++) {
   }
 }
 
-gemini_main(s, &lid2in, &lid3in);
+gemini_main(&s, &lid2in, &lid3in);
 
 ierr = MPI_Finalize();
 

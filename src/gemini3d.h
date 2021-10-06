@@ -12,7 +12,7 @@ struct params {
 };
 
 
-extern void gemini_main(struct params, int*, int*);
+extern void gemini_main(struct params *, int*, int*);
 
 extern void help_gemini_bin();
 
