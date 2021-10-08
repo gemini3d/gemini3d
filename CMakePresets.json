@@ -5,7 +5,6 @@
 {
   "name": "default",
   "binaryDir": "${sourceDir}/build",
-  "installDir": "${sourceDir}/build",
   "cacheVariables": {
     "CMAKE_BUILD_TYPE": "Release",
     "package": false
@@ -38,7 +37,6 @@
   "name": "intel", "inherits": "default",
   "displayName": "Intel compiler",
   "binaryDir": "${sourceDir}/build-intel",
-  "installDir": "${sourceDir}/build-intel",
   "environment": {
     "CC": "icx",
     "FC": "ifort"
