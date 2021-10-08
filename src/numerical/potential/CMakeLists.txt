@@ -25,7 +25,13 @@ set(_potential_testfile ${CMAKE_CURRENT_BINARY_DIR}/test_potential2d.h5)
 
 add_executable(test_potential2d test_potential2D.f90 $<TARGET_OBJECTS:PDEelliptic>)
 set_target_properties(test_potential2d PROPERTIES LABELS "unit")
-# MPI_C is needed here, else will not compile on MinGW with Ninja or Make.
+target_link_libraries(test_potential2d PRIVATE const h5fortran::h5fortran MUMPS::MUMPS
+$<$<BOOL:mpi>:SCALAPACK::SCALAPACK>
+LAPACK::LAPACK MPI::MPI_Fortran
+$<$<NOT:$<BOOL:mpi>>:MUMPS::MPISEQ>
+)
+# MPISEQ is the MPI-1 Fortran 77 linking in MUMPS--avoids symbol clashes
+
 # LINK_INTERFACE_MULTIPLICITY and IMPORTED_LINK_INTERFACE_MULTIPLICITY do not help here.
 # adding INTERFACE to Mumps project didn't help either
 # nor did adding them in mumps.cmake
@@ -34,16 +40,9 @@ if(mpi)
   # test_potential2d has been an intermittent source of link-order issues,
   # where mpi gets linked in the middle instead of at the end.
   # the TARGET_OBJECTS etc in this directory are a careful effort to avoid this problem
-  target_link_libraries(test_potential2d PRIVATE const h5fortran::h5fortran MUMPS::MUMPS SCALAPACK::SCALAPACK LAPACK::LAPACK MPI::MPI_Fortran)
-
   add_test(NAME unit:potential2
     COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${Ncpu} $<TARGET_FILE:test_potential2d> ${_potential_testfile})
 else()
-  target_link_libraries(test_potential2d PRIVATE PDEelliptic const h5fortran::h5fortran
-    MUMPS::MUMPS LAPACK::LAPACK MPI::MPI_Fortran MUMPS::MPISEQ)
-  # the reason for this is the MPI-1 Fortran 77 linking in MUMPS
-  # this seemed to be an easy way to avoid symbol clashes
-
   add_test(NAME unit:potential2
     COMMAND $<TARGET_FILE:test_potential2d> ${_potential_testfile})
 endif()

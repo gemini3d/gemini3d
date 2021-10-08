@@ -83,13 +83,11 @@ RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
 target_link_libraries(gemini.bin PRIVATE
 gemini3d
 hwloc_ifc hwloc_c
+MUMPS::MUMPS
+$<$<BOOL:mpi>:SCALAPACK::SCALAPACK>
+LAPACK::LAPACK MPI::MPI_Fortran
 )
 
-if(mpi)
-  target_link_libraries(gemini.bin PRIVATE MUMPS::MUMPS SCALAPACK::SCALAPACK LAPACK::LAPACK MPI::MPI_Fortran)
-else()
-  target_link_libraries(gemini.bin PRIVATE MUMPS::MUMPS LAPACK::LAPACK MPI::MPI_Fortran)
-endif()
 if(MUMPS_HAVE_Scotch)
   target_link_libraries(gemini.bin PRIVATE Scotch::Scotch)
   target_link_libraries(gemini.bin PRIVATE METIS::METIS)
