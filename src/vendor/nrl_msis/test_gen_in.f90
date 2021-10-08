@@ -6,8 +6,9 @@ use, intrinsic :: iso_fortran_env, only : real32
 use h5fortran, only : hdf5_file
 implicit none (type, external)
 
-integer :: i
+integer :: i, msis_version
 character(1000) :: buf
+character(:), allocatable :: filename
 
 integer, parameter :: doy = 50
 real(real32), parameter :: &
@@ -21,12 +22,18 @@ glon(1,1,1) = 210.0
 
 type(hdf5_file) :: f
 
+if(command_argument_count() /= 2) error stop "please specify: generated_filename msis_version"
+
 call get_command_argument(1, buf, status=i)
 if(i/=0) error stop "please specify file name to generate MSIS test input data"
+filename = trim(buf)
 
-call f%open(trim(buf), action="w")
+call get_command_argument(2, buf, status=i)
+read(buf,'(i2)') msis_version
 
-call f%write("/msis_version", 0)
+call f%open(filename, action="w")
+
+call f%write("/msis_version", msis_version)
 call f%write("/doy", doy)
 call f%write("/Ap", Ap)
 call f%write("/f107", f107)
