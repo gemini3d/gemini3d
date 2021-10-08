@@ -84,7 +84,7 @@ target_link_libraries(gemini.bin PRIVATE
 gemini3d
 hwloc_ifc hwloc_c
 MUMPS::MUMPS
-$<$<BOOL:mpi>:SCALAPACK::SCALAPACK>
+$<$<BOOL:${mpi}>:SCALAPACK::SCALAPACK>
 LAPACK::LAPACK MPI::MPI_Fortran
 )
 

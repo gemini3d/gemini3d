@@ -25,19 +25,20 @@ endif(Python3_FOUND)
 
 endif(BUILD_TESTING)
 
+add_library(ionization OBJECT ionization.f90
+$<IF:$<BOOL:${glow}>,glow_run.F90,glow_dummy.f90>)
 if(glow)
   include(${PROJECT_SOURCE_DIR}/cmake/ext_libs/glow.cmake)
 
   # DATADIR comes from glow project BUILD_INTERFACE COMPILE_DEFINITIONS
   # this does not seem to work with get_target_property()
   # so preprocess instead of configure_file()
-  add_library(ionization OBJECT ionization.f90 glow_run.F90)
-  target_link_libraries(ionization PUBLIC glow::glow)
-else()
-  add_library(ionization OBJECT ionization.f90 glow_dummy.f90)
 endif(glow)
-target_link_libraries(ionization PRIVATE const neutral grid meshobj timeutils fang mpimod
-MPI::MPI_Fortran)
+target_link_libraries(ionization PRIVATE const neutral grid meshobj timeutils fang
+$<$<BOOL:${glow}>:glow::glow>
+mpimod
+MPI::MPI_Fortran
+)
 
 add_library(precipBCs OBJECT boundary_conditions/precipBCs_mod.f90)
 target_compile_options(precipBCs PRIVATE ${gfortran_opts})

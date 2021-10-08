@@ -21,14 +21,12 @@ endif()
 add_compile_options("$<$<AND:$<COMPILE_LANGUAGE:Fortran>,$<CONFIG:Debug>>:-Werror=array-bounds;-fcheck=all>")
   # add_compile_options("$<$<AND:$<COMPILE_LANGUAGE:Fortran>,$<CONFIG:Debug>>:-ffpe-trap=invalid,zero,overflow>")#,underflow)
 
-# Fortran 2018 standard flag is buggy at least through GCC 9, causing fake "Common block" warnings
-
-if(CMAKE_Fortran_COMPILER_VERSION VERSION_EQUAL 9.3.0)
-  # makes a lot of spurious warnngs on alloctable scalar character
-  add_compile_options($<$<COMPILE_LANGUAGE:Fortran>:-Wno-maybe-uninitialized>)
-endif()
+# makes a lot of spurious warnngs on alloctable scalar character
+add_compile_options($<$<Fortran_COMPILER_VERSION:9.3.0>:-Wno-maybe-uninitialized>)
 
 check_compiler_flag(Fortran -fallow-argument-mismatch allow_mismatch_args)
 if(allow_mismatch_args)
   set(gfortran_opts -fallow-argument-mismatch)
 endif()
+
+# Fortran 2018 standard flag is buggy at least through GCC 9, causing fake "Common block" warnings

@@ -11,7 +11,7 @@ on:
       - "**.F90"
       - "**.cmake"
       - "**/CMakeLists.txt"
-      - ".github/workflows/intel-oneapi.yml"
+      - "!cmake/compilers/gnu.cmake"
 # paths ignore starting with "!"
       - "!docs/**"
       - "!scripts/**"

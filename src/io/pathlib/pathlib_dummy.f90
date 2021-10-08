@@ -12,4 +12,4 @@ inquire(file=expanduser(path), exist=exists)
 
 end procedure directory_exists
 
-end submodule directory_exists
+end submodule pathlib_dummy

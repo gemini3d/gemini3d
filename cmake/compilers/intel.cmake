@@ -1,15 +1,28 @@
-add_compile_options(-xHost)  # like -march=native
+add_compile_options(
+$<IF:$<BOOL:${WIN32}>,/QxHost,-xHost>
+"$<$<COMPILE_LANGUAGE:Fortran>:$<IF:$<BOOL:${WIN32}>,/warn:declarations,-implicitnone>>"
+$<$<COMPILE_LANGUAGE:Fortran>:-traceback>
+$<$<COMPILE_LANG_AND_ID:Fortran,Intel>:$<IF:$<BOOL:${WIN32}>,/Qopenmp,-qopenmp>>
+$<$<COMPILE_LANG_AND_ID:C,IntelLLVM>:-fiopenmp>
+$<$<COMPILE_LANG_AND_ID:CXX,IntelLLVM>:-fiopenmp>
+$<$<COMPILE_LANG_AND_ID:Fortran,IntelLLVM>:-fiopenmp>
+$<$<COMPILE_LANGUAGE:Fortran>:-heap-arrays>
+"$<$<COMPILE_LANGUAGE:Fortran>:$<IF:$<BOOL:${WIN32}>,/Qdiag-disable:5268;/Qdiag-disable:7712,-diag-disable 5268;-diag-disable 7712>>"
+)
 
-string(APPEND CMAKE_Fortran_FLAGS " -warn declarations -traceback")  # -warn all or -warn gets mixed with -qopenmp with CMake 3.14.2
 
-string(APPEND CMAKE_Fortran_FLAGS " -qopenmp")  # undefined reference to `omp_get_max_threads'
-string(APPEND CMAKE_C_FLAGS " -fiopenmp")  # undefined reference to `__kmpc_global_thread_num' and more similar
+# -fiopenmp:
+# undefined reference to `omp_get_max_threads'
+# undefined reference to `__kmpc_global_thread_num' and more similar
 
-string(APPEND CMAKE_Fortran_FLAGS " -heap-arrays")  # (is this needed on Linux?) stack overflow avoid
-#string(APPEND CMAKE_Fortran_FLAGS_DEBUG " -check all")
-#string(APPEND CMAKE_Fortran_FLAGS_DEBUG " -debug extended -check all -fpe0 -fp-stack-check")
-string(APPEND CMAKE_Fortran_FLAGS_DEBUG " -check bounds")
-string(APPEND CMAKE_Fortran_FLAGS " -warn nounused -diag-disable 5268 -diag-disable 7712")
+# heap-arrays: avoid stack overflow
 
-# enforce Fortran 2018 standard
-# string(APPEND CMAKE_Fortran_FLAGS " -stand f18")  #  too many false warnings
+add_link_options(-parallel)
+# undefined reference to `__kmpc_begin'
+
+
+add_compile_options("$<$<AND:$<COMPILE_LANGUAGE:Fortran>,$<CONFIG:Debug>>:-check all>")
+add_compile_options("$<$<AND:$<COMPILE_LANGUAGE:Fortran>,$<CONFIG:Debug>>:-debug extended;-check all;-fpe0;-fp-stack-check>")
+# add_compile_options("$<$<AND:$<COMPILE_LANGUAGE:Fortran>,$<CONFIG:Debug>>:-check bounds>")
+
+# Fortran 2018 standard too many false warnings
