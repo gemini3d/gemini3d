@@ -2,29 +2,21 @@ set_directory_properties(PROPERTIES LABELS msis)
 
 # --- MSISE00 and MSIS 2.0 require legacy workaround due to non-standard Fortran code
 
-set(msis_flags)
-set(msis20_flags)
-if(CMAKE_Fortran_COMPILER_ID STREQUAL GNU)
-  # Gfortran >= 8 need -Wno-pedantic to allow mismatched array size inhernet to MSIS.
-  # "-w" doesn't disable pedantic
-  set(msis_flags -w -std=legacy -Wno-pedantic -fno-implicit-none -Wno-error=array-bounds -fcheck=no-all)
-  # msis2.0 will intermittantly fail with -std=legacy with all zero outputs, e.g. GCC 8.5.0
-  set(msis20_flags -w -Wno-error=array-bounds -fcheck=no-all)
-elseif(CMAKE_Fortran_COMPILER_ID MATCHES "^Intel")
-  if(WIN32)
-    set(msis_flags /nowarn)
-    set(msis20_flags /nowarn)
-  else()
-    set(msis_flags -nowarn)
-    set(msis20_flags -nowarn)
-  endif()
-endif()
+# Gfortran >= 8 need -Wno-pedantic to allow mismatched array size inhernet to MSIS.
+# "-w" doesn't disable pedantic
+set(msis00_gnu_flags -w -std=legacy -Wno-pedantic -fno-implicit-none -Wno-error=array-bounds -fcheck=no-all)
+# msis2.0 will intermittantly fail with -std=legacy with all zero outputs, e.g. GCC 8.5.0
+set(msis20_gnu_flags -w -Wno-error=array-bounds -fcheck=no-all)
 
-# We assume MSISE00 is always available, but MSIS 2.0 might not be available.
+set(msis_intel_flags -nowarn)
+
+# --- MSISE00 is always available, but MSIS 2.0 might not be available.
 
 add_library(msis00mod msis00_gfortran.f msise00_data.f)
 # keep msis00 NOT an OBJECT to avoid having to link it explicitly everywhere
-target_compile_options(msis00mod PRIVATE ${msis_flags})
+target_compile_options(msis00mod PRIVATE
+"$<$<Fortran_COMPILER_ID:GNU>:${msis00_gnu_flags}>"
+"$<$<Fortran_COMPILER_ID:Intel,IntelLLVM>:${msis_intel_flags}>")
 
 # --- build abstract MSIS interface
 
@@ -36,7 +28,9 @@ target_link_libraries(msis_ifc PRIVATE msis00mod)
 if(msis20)
   include(${PROJECT_SOURCE_DIR}/cmake/ext_libs/msis2.cmake)
   target_link_libraries(msis_ifc PRIVATE msis2)
-  target_compile_options(msis2 PRIVATE ${msis20_flags})
+  target_compile_options(msis2 PRIVATE
+  "$<$<Fortran_COMPILER_ID:GNU>:${msis20_gnu_flags}>"
+  "$<$<Fortran_COMPILER_ID:Intel,IntelLLVM>:${msis_intel_flags}>")
 
   install(TARGETS msis2
     EXPORT ${PROJECT_NAME}Targets
