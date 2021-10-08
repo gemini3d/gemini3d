@@ -21,7 +21,6 @@ on:
 jobs:
 
   windows_no_mpi:
-    if: ${{ false }}
     # it's tricky to install mpiexec automatically on Windows (see p4est)
     # thus it's convenient to use Windows as a no-MPI, no-hwloc test case
     timeout-minutes: 20
