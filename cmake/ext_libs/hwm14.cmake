@@ -1,11 +1,11 @@
 # this enables CMake imported target HWM14::HWM14
 include(ExternalProject)
 
-find_package(hwm14 CONFIG)
+# find_package(hwm14 CONFIG)
 
-if(hwm14_FOUND)
-  return()
-endif()
+# if(hwm14_FOUND)
+#   return()
+# endif()
 
 if(NOT HWM14_ROOT)
   if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
