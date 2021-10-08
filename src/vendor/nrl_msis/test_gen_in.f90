@@ -26,6 +26,7 @@ if(i/=0) error stop "please specify file name to generate MSIS test input data"
 
 call f%open(trim(buf), action="w")
 
+call f%write("/msis_version", 0)
 call f%write("/doy", doy)
 call f%write("/Ap", Ap)
 call f%write("/f107", f107)

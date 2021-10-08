@@ -26,11 +26,9 @@ infile = trim(buf)
 call get_command_argument(2, buf)
 outfile = trim(buf)
 
-msis_version = 0
-if(command_argument_count() > 2) then
-  call get_command_argument(3, buf)
-  read(buf, '(I3)') msis_version
-endif
+!> select input format
+call input_hdf5(infile, msis_version, doy,sec,f107a,f107,Ap, glat, glon, alt)
+! print '(A,14F8.1)', 'TRACE:MSIS00_bit32: inputs: ', msis_version, doy, sec, alt, glat, glon, f107a, f107, Ap
 
 !> ensure MSIS 2.0 setup OK
 if(msis_version == 20) then
@@ -38,9 +36,6 @@ if(msis_version == 20) then
   if (.not. exists) error stop parmfile // " not found, required by MSIS 2.0"
 endif
 
-!> select input format
-call input_hdf5(infile,doy,sec,f107a,f107,Ap, glat, glon, alt)
-! print '(A,14F8.1)', 'TRACE:MSIS00_bit32: inputs: ',doy, sec, alt, glat, glon, f107a, f107, Ap
 
 !> Run MSIS
 lx1 = size(alt,1)
@@ -72,9 +67,10 @@ call output_hdf5(outfile, alt, glat, glon, Dn, Tn, msis_version)
 contains
 
 
-subroutine input_hdf5(filename,doy,sec,f107a,f107,Ap7, glat, glon, alt)
+subroutine input_hdf5(filename, msis_version, doy,sec,f107a,f107,Ap7, glat, glon, alt)
 !! use binary to reduce file size and read times
 character(*), intent(in) :: filename
+integer, intent(out) :: msis_version
 real(real32), intent(inout) :: doy,sec,f107a,f107,ap7(7)
 !! intent(out)
 real(real32), intent(inout), allocatable :: glat(:,:,:), glon(:,:,:), alt(:,:,:)
@@ -85,6 +81,8 @@ integer(hsize_t), allocatable :: dims(:)
 integer:: lx1,lx2,lx3
 
 call hf%open(filename, action='r')
+
+call hf%read("/msis_version", msis_version)
 
 call hf%read("/doy", doy)
 if(doy < 1 .or. doy > 366) error stop 'msis_driver:input_hdf5: 1 <= doy <= 366'

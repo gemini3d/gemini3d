@@ -7,7 +7,7 @@ use assert, only : assert_isclose
 
 implicit none (type, external)
 
-integer :: argc
+integer :: argc, msis_version_new, msis_version_ref
 character(1000) :: argv
 character(:), allocatable :: fnew, fref
 real(real32) :: Dnew(9), Dref(9), Tnew(2), Tref(2), altnew, altref
@@ -21,25 +21,28 @@ fnew = trim(argv)
 call get_command_argument(2, argv)
 fref = trim(argv)
 
-call reader(fnew, altnew, Dnew, Tnew)
-call reader(fref, altref, Dref, Tref)
+call reader(fnew, msis_version_new, altnew, Dnew, Tnew)
+call reader(fref, msis_version_ref, altref, Dref, Tref)
 
+if(msis_version_new /= msis_version_ref) error stop "msis_version differs"
 call assert_isclose(Tnew, Tref, rtol=1e-5, err_msg='mismatch: Tn')
-
 call assert_isclose(Dnew, Dref, rtol=1e-5, err_msg='mismatch: Dn')
 
 contains
 
 
-subroutine reader(file, alt, Dn, Tn)
+subroutine reader(file, msis_version, alt, Dn, Tn)
 
 character(*), intent(in) :: file
+integer, intent(out) :: msis_version
 real(real32), intent(out) :: alt, Dn(9), Tn(2)
 
 real(real32) :: buf(1,1,1)  !< a priori for test file
 type(hdf5_file) :: hf
 
 call hf%open(file, action="r")
+
+call hf%read("/msis_version", msis_version)
 
 call hf%read("/alt", buf)
 alt = buf(1,1,1)

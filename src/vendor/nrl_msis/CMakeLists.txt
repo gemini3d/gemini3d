@@ -63,7 +63,7 @@ set_tests_properties(unit:msis_generate PROPERTIES
   TIMEOUT 10)
 
 add_test(NAME unit:msis_setup
-  COMMAND $<TARGET_FILE:msis_setup> ${msis_in} ${msis_out} 0)
+  COMMAND $<TARGET_FILE:msis_setup> ${msis_in} ${msis_out})
 set_tests_properties(unit:msis_setup PROPERTIES
   FIXTURES_SETUP msis_fxt
   FIXTURES_REQUIRED msis_gen_fxt
@@ -90,4 +90,4 @@ if(test_dll_path)
     ENVIRONMENT "PATH=${test_dll_path}")
 endif()
 
-endif()
+endif(BUILD_TESTING)
