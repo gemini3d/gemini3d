@@ -24,10 +24,9 @@ set(_testfile_interp3 ${CMAKE_CURRENT_BINARY_DIR}/output3d.h5)
 # --- 2D
 
 add_executable(test_interp2 testinterp2.f90)
-target_link_libraries(test_interp2 PRIVATE interp const h5fortran::h5fortran)
-if(HDF5_HAVE_PARALLEL)
-  target_link_libraries(test_interp2 PRIVATE MPI::MPI_Fortran)
-endif()
+target_link_libraries(test_interp2 PRIVATE interp const h5fortran::h5fortran
+$<$<BOOL:${HDF5_HAVE_PARALLEL}>:MPI::MPI_Fortran>
+)
 
 add_test(NAME unit:interp2
   COMMAND $<TARGET_FILE:test_interp2> ${_testfile_interp2in} ${_testfile_interp2}
@@ -40,10 +39,9 @@ set_tests_properties(unit:interp2 PROPERTIES
 # --- 3D
 
 add_executable(test_interp3 testinterp3.f90)
-target_link_libraries(test_interp3 PRIVATE const interp h5fortran::h5fortran)
-if(HDF5_HAVE_PARALLEL)
-  target_link_libraries(test_interp3 PRIVATE MPI::MPI_Fortran)
-endif()
+target_link_libraries(test_interp3 PRIVATE const interp h5fortran::h5fortran
+$<$<BOOL:${HDF5_HAVE_PARALLEL}>:MPI::MPI_Fortran>
+)
 
 add_test(NAME unit:interp3
   COMMAND $<TARGET_FILE:test_interp3> ${_testfile_interp3in} ${_testfile_interp3}
