@@ -93,14 +93,18 @@ real(wp) :: flagtmp
 if (debug) print *, 'READ electric field data from file:  ',path
 
 call hf%open(path, action='r')
+
 call hf%read('/flagdirich', flagdirich)
+
 call hf%read('/Exit', E0xp)
 call hf%read('/Eyit', E0yp)
 call hf%read('/Vminx1it', Vminx1p)
 call hf%read('/Vmaxx1it', Vmaxx1p)
+
 !! background fields and top/bottom boundary conditions
 call hf%read('/Vminx2ist', Vminx2pslice)
 call hf%read('/Vmaxx2ist', Vmaxx2pslice)
+
 !! these only used for 3D simulations
 call hf%read('/Vminx3ist', Vminx3pslice)
 call hf%read('/Vmaxx3ist', Vmaxx3pslice)

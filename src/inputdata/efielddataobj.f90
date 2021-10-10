@@ -8,6 +8,7 @@ use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
 use phys_consts, only: wp,debug,pi,Re
 use inputdataobj, only: inputdata
 use meshobj, only: curvmesh
+use meshobj_dipole, only: dipolemesh
 use config, only: gemini_cfg
 use reader, only: get_simsize2,get_grid2,get_efield
 !! note that only root uses this data object since this concerns the potential solver
@@ -85,14 +86,22 @@ contains
     self%l3D=l3D
 
     ! coordinate axis sizes for interpolation states
-    self%lc1i=x%lx1;       ! note this dataset has 1D and 2D target interpolation grid 
-    self%lc2i=x%lx2all; self%lc3i=x%lx3all;
+    select type (x)
+      class is (dipolemesh)
+        print*, ' efielddata:  detected dipole mesh'
+        self%lc1i=x%lx1;       ! note this dataset has 1D and 2D target interpolation grid 
+        self%lc2i=x%lx3all; self%lc3i=x%lx2all;    
+        ! dipolemesh mesh permuted ~alt,lat,lon, whereas inputdata organized lon,lat
+      class default
+        self%lc1i=x%lx1;       ! note this dataset has 1D and 2D target interpolation grid 
+        self%lc2i=x%lx2all; self%lc3i=x%lx3all;
+    end select
 
     ! check that the user is trying something sensible
-    !if (self%lc1==1 .and. self%lc1i/=1 .or. self%lc2==1 .and. self%lc2i/=1 &
-    !        .or. self%lc3==1 .and. self%lc3i/=1) then
-    !  error stop 'inputdata:set_sizes() - singleton dimensions must be same for source and destination.'
-    !end if
+    if (self%lc1==1 .and. self%lc1i/=1 .or. self%lc2==1 .and. self%lc2i/=1 &
+            .or. self%lc3==1 .and. self%lc3i/=1) then
+      error stop 'inputdata:set_sizes() - singleton dimensions must be same for source and destination.'
+    end if
 
     ! flag sizes as assigned
     self%flagsizes=.true.
@@ -115,7 +124,7 @@ contains
 
     ! tell our object where its data are and give the dataset a name
     call self%set_source(sourcedir)
-    strname='electron precipitation'
+    strname='electric field boundary conditions'
     call self%set_name(strname)
     self%flagdoinput=cfg%flagE0file/=0
 
@@ -188,6 +197,7 @@ contains
     !self%UTsecref(1)=cfg%UTsec0; self%UTsecref(2)=cfg%UTsec0;
 
     ! prime input data
+    print*, 'Preparing to prime input data arrays...'
     call self%prime_data(cfg,x,dtmodel,ymd,UTsec)
   end subroutine init_efield
 
@@ -204,7 +214,7 @@ contains
     print '(A)', 'READ electric field size from: ' // self%sourcedir
     call get_simsize2(self%sourcedir, llon=self%llon, llat=self%llat)
 
-    print '(A,2I6)', 'Precipitation size: llon,llat:  ',self%llon,self%llat
+    print '(A,2I6)', 'Electric field size: llon,llat:  ',self%llon,self%llat
     if (self%llon < 1 .or. self%llat < 1) then
      print*, '  efielddata grid size must be strictly positive: ' //  self%sourcedir
      error stop
@@ -238,15 +248,20 @@ contains
     class(curvmesh), intent(in) :: x
     integer :: ix2,ix3,iflat,ix1ref,ix2ref,ix3ref
 
+
+    print*, shape(self%coord1i),shape(self%coord2i),shape(self%coord3i)
+
+
     !! reference locations for determining points onto which we are interpolating
-    if (lx2all > 1 .and. lx3all>1) then ! 3D sim
-      ix2ref = lx2all/2      !note integer division
-      ix3ref = lx3all/2
-    else if (lx2all==1 .and. lx3all>1) then
+    !! these are grid specific, not object specific...
+    if (x%lx2all > 1 .and. x%lx3all>1) then ! 3D sim
+      ix2ref = x%lx2all/2      !note integer division
+      ix3ref = x%lx3all/2
+    else if (x%lx2all==1 .and. x%lx3all>1) then
       ix2ref = 1
-      ix3ref=lx3all/2
-    else if (lx2all>1 .and. lx3all==1) then
-      ix2ref=lx2all/2
+      ix3ref=x%lx3all/2
+    else if (x%lx2all>1 .and. x%lx3all==1) then
+      ix2ref=x%lx2all/2
       ix3ref=1
     else
       error stop 'Unable to orient boundary conditions for electric potential'
@@ -262,19 +277,30 @@ contains
         self%coord2iax23(iflat)=x%phiall(ix1ref,ix2,ix3)*180/pi
       end do
     end do
-    if (debug) print '(A,4F7.2)', 'Grid has mlon,mlat range:  ',minval(self%coord2i),maxval(self%coord2i), &
-                                     minval(self%coord3i),maxval(self%coord3i)
+    if (debug) print '(A,4F7.2)', 'Grid has mlon,mlat range:  ',minval(self%coord2iax23),maxval(self%coord2iax23), &
+                                     minval(self%coord3iax23),maxval(self%coord3iax23)
     if (debug) print *, 'Grid has size:  ',iflat
 
-    !! for electric field input data we also have some things that vary along axis 3 only
-    do ix3=1,x%lx3all
-      self%coord3iax3(ix3)=90-x%thetaall(ix1ref,1,ix3)*180/pi     ! default to ix2=1 side of the grid
-    end do
-
-    !! for BCs varing along axis 2 only
-    do ix2=1,x%lx2all
-      self%coord2iax2(ix2)=x%phiall(ix1ref,ix2,1)*180/pi          ! default to ix3=1 side of the grid
-    end do
+    select type (x)
+      class is (dipolemesh)
+        !! for electric field input data we also have some things that vary along axis 3 only
+        do ix2=1,x%lx2all    ! note mangling ix2->ix3
+          self%coord3iax3(ix2)=90-x%thetaall(ix1ref,ix2,1)*180/pi     ! default to ix2=1 side of the grid
+        end do
+        !! for BCs varing along axis 2 only
+        do ix3=1,x%lx3all    ! note mangling ix3->ix2
+          self%coord2iax2(ix3)=x%phiall(ix1ref,1,ix3)*180/pi          ! default to ix3=1 side of the grid
+        end do
+      class default
+        !! for electric field input data we also have some things that vary along axis 3 only
+        do ix3=1,x%lx3all
+          self%coord3iax3(ix3)=90-x%thetaall(ix1ref,1,ix3)*180/pi     ! default to ix2=1 side of the grid
+        end do
+        !! for BCs varing along axis 2 only
+        do ix2=1,x%lx2all
+          self%coord2iax2(ix2)=x%phiall(ix1ref,ix2,1)*180/pi          ! default to ix3=1 side of the grid
+        end do
+    end select
 
     !! mark coordinates as set
     self%flagcoordsi=.true.
@@ -298,6 +324,7 @@ contains
     !! all workers read data out of this file
     print*, '  date and time:  ',ymdtmp,UTsectmp
     print*, '  efield filename:  ',date_filename(self%sourcedir,ymdtmp,UTsectmp)
+
     call get_Efield(date_filename(self%sourcedir, ymdtmp, UTsectmp), &
       flagdirich_int,self%E0xp,self%E0yp,self%Vminx1p,self%Vmaxx1p,&
       self%Vminx2pslice,self%Vmaxx2pslice,self%Vminx3pslice,self%Vmaxx3pslice)
