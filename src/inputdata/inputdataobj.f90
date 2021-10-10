@@ -16,13 +16,13 @@ type, abstract :: inputdata
   character(:), allocatable :: sourcedir    ! source location containing data input files
 
   !! flags to aid error checking
-  logical :: flagdatasize=.false.       ! input data sizes set
-  logical :: flagsizes=.false.          ! all sizes set
-  logical :: flagalloc=.false.          ! space for data allocated
-  logical :: flagprimed=.false.         ! initial setup of input data files (priming)
-  logical :: flagcadence=.false.        ! time cadence of input has been set
-  logical :: flagsource=.false.         ! source directory for data set
-  logical :: flagcoordsi=.false.        ! interpolation sites set
+  logical :: flagdatasize=.false.       ! input data sizes set?
+  logical :: flagsizes=.false.          ! all sizes set?
+  logical :: flagalloc=.false.          ! space for data allocated?
+  logical :: flagprimed=.false.         ! initial setup of input data files (priming)?
+  logical :: flagcadence=.false.        ! time cadence of input has been set?
+  logical :: flagsource=.false.         ! source directory for data set?
+  logical :: flagcoordsi=.false.        ! interpolation sites set?
   logical :: flagforcenative=.false.    ! force all interpolations to be done with native array rank rather than detecting singleton
   logical :: flagallow2D3D=.false.      ! allow a dataset to interpolate 2D to 3D
   logical :: flagdoinput=.false.        ! extensions need to define how they know whether or not they need to do file input
@@ -571,7 +571,7 @@ contains
     !> 3D arrays varying along all axes, check for singleton axes...
     if (self%l3D>0) then
       self%data3Di(:,:,:,:,1)=self%data3Di(:,:,:,:,2)
-      if (lc1>1 .and. lc2>1 .and. lc3>1 .or. self%flagforcenative) then
+      if (lc1>1 .and. lc2>1 .and. lc3>1 .or. self%flagforcenative) then    ! forcenative because sometimes we interp 2D->3D, e.g. for neutral axisymmetric inputs
         allocate(tempdata(self%lc1i*self%lc2i*self%lc3i))
         do iparm=1,self%l3D
           tempdata(:)=interp3(coord1,coord2,coord3,self%data3D(:,:,:,iparm),coord1i,coord2i,coord3i)
