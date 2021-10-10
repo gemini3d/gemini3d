@@ -70,10 +70,10 @@ contains
     self%lc2i=x%lx2; self%lc3i=x%lx3;
 
     ! check that the user is trying something sensible
-    if (self%lc1==1 .and. self%lc1i/=1 .or. self%lc2==1 .and. self%lc2i/=1 &
-            .or. self%lc3==1 .and. self%lc3i/=1) then
-      error stop 'inputdata:set_sizes() - singleton dimensions must be same for source and destination.'
-    end if
+    !if (self%lc1==1 .and. self%lc1i/=1 .or. self%lc2==1 .and. self%lc2i/=1 &
+    !        .or. self%lc3==1 .and. self%lc3i/=1) then
+    !  error stop 'inputdata:set_sizes() - singleton dimensions must be same for source and destination.'
+    !end if
 
     ! flag sizes as assigned
     self%flagsizes=.true.
