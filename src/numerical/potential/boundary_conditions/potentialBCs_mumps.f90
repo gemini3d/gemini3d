@@ -168,6 +168,10 @@ subroutine potentialBCs2D_fileinput(dtmodel,t,ymd,UTsec,cfg,x,Vminx1,Vmaxx1,Vmin
       end if
     end if
   end if
+
+
+  print*, minval(E02all),maxval(E02all),minval(E03all),maxval(E03all)
+  print*, minval(Vminx1),maxval(Vminx1),minval(Vmaxx1),maxval(Vmaxx1)
 end subroutine potentialBCs2D_fileinput
 
 
