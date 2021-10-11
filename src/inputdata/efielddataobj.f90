@@ -273,8 +273,8 @@ contains
     do ix3=1,lx3all
       do ix2=1,lx2all
         iflat=(ix3-1)*lx2all+ix2
-        self%coord3iax23(iflat)=90-x%thetaall(ix1ref,ix2,ix3)*180/pi
         self%coord2iax23(iflat)=x%phiall(ix1ref,ix2,ix3)*180/pi
+        self%coord3iax23(iflat)=90-x%thetaall(ix1ref,ix2,ix3)*180/pi
       end do
     end do
     if (debug) print '(A,4F7.2)', 'Grid has mlon,mlat range:  ',minval(self%coord2iax23),maxval(self%coord2iax23), &

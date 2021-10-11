@@ -330,15 +330,11 @@ contains
       !   two time levels back so when tprev is incremented twice it will be the true tprev corresponding to first time step
       call self%update(cfg,dtmodel,self%tref(2)+self%dt/2,x,ymdtmp,UTsectmp-self%dt)  !abs time arg to be < 0
 
-      print*, 'First prime update done'
-  
       !if (mpi_cfg%myid==0) print*, 'Now loading initial next file for neutral perturbations...'
       !! Now compute perturbations for the present time (zero), this moves the primed variables in next into prev and then
       !  loads up a current state so that we get a proper interpolation for the first time step.
       call self%update(cfg,dtmodel,0._wp,x,ymdtmp,UTsectmp)    !t-dt so we land exactly on start time
 
-      print*, 'Second prime update done'
-  
       self%flagprimed=.true.
     end if
   end subroutine prime_data
