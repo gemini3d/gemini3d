@@ -85,23 +85,24 @@ contains
     self%l2Dax23=l2Dax23; self%l2Dax12=l2Dax12; self%l2Dax13=l2Dax13;
     self%l3D=l3D
 
-    ! coordinate axis sizes for interpolation states
-    select type (x)
-      class is (dipolemesh)
-        print*, ' efielddata:  detected dipole mesh'
-        self%lc1i=x%lx1;       ! note this dataset has 1D and 2D target interpolation grid 
-        self%lc2i=x%lx3all; self%lc3i=x%lx2all;    
-        ! dipolemesh mesh permuted ~alt,lat,lon, whereas inputdata organized lon,lat
-      class default
-        self%lc1i=x%lx1;       ! note this dataset has 1D and 2D target interpolation grid 
+    ! coordinate axis sizes for interpolation states; noting that for a dipole we (internally) permute
+    !   the interpolation sites in the same sense.  
+    !select type (x)
+    !  class is (dipolemesh)
+    !    print*, ' efielddata:  detected dipole mesh'
+    !    self%lc1i=x%lx1;       ! note this dataset has 1D and 2D target interpolation grid 
+    !    self%lc2i=x%lx3all; self%lc3i=x%lx2all;    
+    !    ! dipolemesh mesh permuted ~alt,lat,lon, whereas inputdata organized lon,lat
+    !  class default
+        self%lc1i=x%lx1;       ! note this dataset has 1D and 2D target interpolation grid
         self%lc2i=x%lx2all; self%lc3i=x%lx3all;
-    end select
+    !end select
 
     ! check that the user is trying something sensible
-    if (self%lc1==1 .and. self%lc1i/=1 .or. self%lc2==1 .and. self%lc2i/=1 &
-            .or. self%lc3==1 .and. self%lc3i/=1) then
-      error stop 'inputdata:set_sizes() - singleton dimensions must be same for source and destination.'
-    end if
+    !if (self%lc1==1 .and. self%lc1i/=1 .or. self%lc2==1 .and. self%lc2i/=1 &
+    !        .or. self%lc3==1 .and. self%lc3i/=1) then
+    !  error stop 'inputdata:set_sizes() - singleton dimensions must be same for source and destination.'
+    !end if
 
     ! flag sizes as assigned
     self%flagsizes=.true.
@@ -281,26 +282,25 @@ contains
                                      minval(self%coord3iax23),maxval(self%coord3iax23)
     if (debug) print *, 'Grid has size:  ',iflat
 
-    select type (x)
-      class is (dipolemesh)
-        !! for electric field input data we also have some things that vary along axis 3 only
-        do ix2=1,x%lx2all    ! note mangling ix2->ix3
-          self%coord3iax3(ix2)=90-x%thetaall(ix1ref,ix2,1)*180/pi     ! default to ix2=1 side of the grid
-        end do
-        !! for BCs varing along axis 2 only
-        do ix3=1,x%lx3all    ! note mangling ix3->ix2
-          self%coord2iax2(ix3)=x%phiall(ix1ref,1,ix3)*180/pi          ! default to ix3=1 side of the grid
-        end do
-      class default
-        !! for electric field input data we also have some things that vary along axis 3 only
-        do ix3=1,x%lx3all
-          self%coord3iax3(ix3)=90-x%thetaall(ix1ref,1,ix3)*180/pi     ! default to ix2=1 side of the grid
-        end do
-        !! for BCs varing along axis 2 only
-        do ix2=1,x%lx2all
-          self%coord2iax2(ix2)=x%phiall(ix1ref,ix2,1)*180/pi          ! default to ix3=1 side of the grid
-        end do
-    end select
+    if (self%flagdipmesh) then
+      !! for electric field input data we also have some things that vary along axis 3 only
+      do ix2=1,x%lx2all    ! note mangling ix2->ix3
+        self%coord3iax3(ix2)=90-x%thetaall(ix1ref,ix2,1)*180/pi     ! default to ix2=1 side of the grid
+      end do
+      !! for BCs varing along axis 2 only
+      do ix3=1,x%lx3all    ! note mangling ix3->ix2
+        self%coord2iax2(ix3)=x%phiall(ix1ref,1,ix3)*180/pi          ! default to ix3=1 side of the grid
+      end do
+    else  
+      !! for electric field input data we also have some things that vary along axis 3 only
+      do ix3=1,x%lx3all
+        self%coord3iax3(ix3)=90-x%thetaall(ix1ref,1,ix3)*180/pi     ! default to ix2=1 side of the grid
+      end do
+      !! for BCs varing along axis 2 only
+      do ix2=1,x%lx2all
+        self%coord2iax2(ix2)=x%phiall(ix1ref,ix2,1)*180/pi          ! default to ix3=1 side of the grid
+      end do
+    end if
 
     !! mark coordinates as set
     self%flagcoordsi=.true.

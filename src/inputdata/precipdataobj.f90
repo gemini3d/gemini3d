@@ -68,21 +68,21 @@ contains
 
     ! coordinate axis sizes for interpolation sites
     ! coordinate axis sizes for interpolation states
-    select type (x)
-      class is (dipolemesh)
-        print*, ' precipdata:  detected dipole mesh...'
-        self%lc1i=x%lx1;       ! note this dataset has 1D and 2D target interpolation grid 
-        self%lc2i=x%lx3; self%lc3i=x%lx2;    ! dipolemesh mesh permuted ~alt,lat,lon  more or less...
-      class default
+    !select type (x)
+    !  class is (dipolemesh)
+    !    print*, ' precipdata:  detected dipole mesh...'
+    !    self%lc1i=x%lx1;       ! note this dataset has 1D and 2D target interpolation grid 
+    !    self%lc2i=x%lx3; self%lc3i=x%lx2;    ! dipolemesh mesh permuted ~alt,lat,lon  more or less...
+    !  class default
         self%lc1i=x%lx1;       ! note this dataset has 1D and 2D target interpolation grid 
         self%lc2i=x%lx2; self%lc3i=x%lx3;
-    end select
+    !end select
 
     ! check that the user is trying something sensible
-    if (self%lc1==1 .and. self%lc1i/=1 .or. self%lc2==1 .and. self%lc2i/=1 &
-            .or. self%lc3==1 .and. self%lc3i/=1) then
-      error stop 'inputdata:set_sizes() - singleton dimensions must be same for source and destination.'
-    end if
+    !if (self%lc1==1 .and. self%lc1i/=1 .or. self%lc2==1 .and. self%lc2i/=1 &
+    !        .or. self%lc3==1 .and. self%lc3i/=1) then
+    !  error stop 'inputdata:set_sizes() - singleton dimensions must be same for source and destination.'
+    !end if
 
     ! flag sizes as assigned
     self%flagsizes=.true.
