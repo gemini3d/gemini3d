@@ -3,6 +3,7 @@ module inputdataobj
 use phys_consts, only : wp
 use config, only: gemini_cfg
 use meshobj, only : curvmesh
+use meshobj_dipole, only: dipolemesh
 use interpolation, only : interp1,interp2,interp3
 use timeutils, only : dateinc, date_filename, find_lastdate
 
@@ -27,6 +28,7 @@ type, abstract :: inputdata
   logical :: flagallow2D3D=.false.      ! allow a dataset to interpolate 2D to 3D
   logical :: flagdoinput=.false.        ! extensions need to define how they know whether or not they need to do file input
   logical :: flagfirst=.true.           ! true prior to performing first update
+  logical :: flagdipmesh=.false.        ! are we interpolating to a dipole mesh?
 
   !! here we store data that have already been received but not yet interpolated
   real(wp), dimension(:), pointer :: coord1,coord2,coord3     ! coordinates for the source data (interpolant coords)
@@ -180,6 +182,14 @@ contains
       end if
     end if
 
+    ! check dipole mesh or not
+    select type (x)
+      class is (dipolemesh)
+        self%flagdipmesh=.true.
+      class default
+        self%flagdipmesh=.false.
+    end select
+
     ! flag sizes as assigned
     self%flagsizes=.true.
   end subroutine set_sizes
@@ -222,7 +232,13 @@ contains
     ! interpolation site arrays (note these are flat, i.e. rank 1), if one needed to save space by not allocating unused block
     !   could override this procedure...
     allocate(self%coord1i(lc1i*lc2i*lc3i),self%coord2i(lc1i*lc2i*lc3i),self%coord3i(lc1i*lc2i*lc3i))
-    allocate(self%coord1iax1(lc1i),self%coord2iax2(lc2i),self%coord3iax3(lc3i))
+    ! coordinate sites for singleton axes depend on mangling of data
+    if (self%flagdipmesh) then    ! mangle 2,3 sizes
+      allocate(self%coord1iax1(lc1i),self%coord2iax2(lc3i),self%coord3iax3(lc2i))     
+    else
+      allocate(self%coord1iax1(lc1i),self%coord2iax2(lc2i),self%coord3iax3(lc3i))
+    end if
+
     allocate(self%coord2iax23(lc2i*lc3i),self%coord3iax23(lc2i*lc3i))
     allocate(self%coord1iax13(lc1i*lc3i),self%coord3iax13(lc1i*lc3i))
     allocate(self%coord1iax12(lc1i*lc2i),self%coord2iax12(lc1i*lc2i))
@@ -488,14 +504,14 @@ contains
         end do
         deallocate(tempdata)
       else if (lc2>1 .and. lc3==1) then
-        allocate(tempdata(self%lc2i))
+        allocate(tempdata(self%lc2i*self%lc3i))   ! in case lc2,3i are mangled just allociate using total size...
         do iparm=1,self%l2Dax23
           tempdata(:)=interp1(coord2,self%data2Dax23(:,1,iparm),coord2iax23)
           self%data2Dax23i(:,:,iparm,2)=reshape(tempdata,[lc2i,lc3i])
         end do
         deallocate(tempdata)
       else if (lc2==1 .and. lc3>1) then
-        allocate(tempdata(self%lc3i))
+        allocate(tempdata(self%lc2i*self%lc3i))
         do iparm=1,self%l2Dax23
           tempdata(:)=interp1(coord3,self%data2Dax23(1,:,iparm),coord3iax23)
           self%data2Dax23i(:,:,iparm,2)=reshape(tempdata,[lc2i,lc3i])
@@ -517,14 +533,14 @@ contains
         end do
         deallocate(tempdata)
       else if (lc1>1 .and. lc2==1) then
-        allocate(tempdata(self%lc1i))
+        allocate(tempdata(self%lc1i*self%lc2i))
         do iparm=1,self%l2Dax12
           tempdata(:)=interp1(coord1,self%data2Dax12(:,1,iparm),coord1iax12)
           self%data2Dax12i(:,:,iparm,2)=reshape(tempdata,[lc1i,lc2i])
         end do
         deallocate(tempdata)
       else if (lc1==1 .and. lc2>1) then
-        allocate(tempdata(self%lc2i))
+        allocate(tempdata(self%lc1i*self%lc2i))
         do iparm=1,self%l2Dax12
           tempdata(:)=interp1(coord2,self%data2Dax12(1,:,iparm),coord2iax12)
           self%data2Dax12i(:,:,iparm,2)=reshape(tempdata,[lc1i,lc2i])
@@ -546,14 +562,14 @@ contains
         end do
         deallocate(tempdata)
       else if (lc1>1 .and. lc3==1) then
-        allocate(tempdata(self%lc1i))
+        allocate(tempdata(self%lc1i*self%lc3i))
         do iparm=1,self%l2Dax13
           tempdata(:)=interp1(coord1,self%data2Dax13(:,1,iparm),coord1iax13)
           self%data2Dax13i(:,:,iparm,2)=reshape(tempdata,[lc1i,lc3i])
         end do
         deallocate(tempdata)
       else if (lc1==1 .and. lc3>1) then
-        allocate(tempdata(self%lc3i))
+        allocate(tempdata(self%lc1i*self%lc3i))
         do iparm=1,self%l2Dax13
           tempdata(:)=interp1(coord3,self%data2Dax13(1,:,iparm),coord3iax13)
           self%data2Dax13i(:,:,iparm,2)=reshape(tempdata,[lc1i,lc3i])

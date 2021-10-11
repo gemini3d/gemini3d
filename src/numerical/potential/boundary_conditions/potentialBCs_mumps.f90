@@ -170,8 +170,14 @@ subroutine potentialBCs2D_fileinput(dtmodel,t,ymd,UTsec,cfg,x,Vminx1,Vmaxx1,Vmin
   end if
 
 
-  print*, minval(E02all),maxval(E02all),minval(E03all),maxval(E03all)
-  print*, minval(Vminx1),maxval(Vminx1),minval(Vmaxx1),maxval(Vmaxx1)
+!  print*, minval(E02all),maxval(E02all),minval(E03all),maxval(E03all)
+!  print*, minval(Vminx1),maxval(Vminx1),minval(Vmaxx1),maxval(Vmaxx1)
+!  print*, minval(Vminx2),maxval(Vminx2),minval(Vmaxx2),maxval(Vmaxx2)
+!  print*, minval(Vminx3),maxval(Vminx3),minval(Vmaxx3),maxval(Vmaxx3)
+!
+!  print*, shape(Vminx1),shape(Vmaxx1),shape(Vminx2),shape(Vmaxx2),shape(Vminx3),shape(Vmaxx3)
+!  print*, shape(efield%Vminx1inow),shape(efield%Vmaxx1inow)
+!  print*, shape(efield%Vminx2isnow),shape(efield%Vmaxx2isnow),shape(efield%Vminx3isnow),shape(efield%Vmaxx3isnow)
 end subroutine potentialBCs2D_fileinput
 
 
