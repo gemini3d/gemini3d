@@ -5,7 +5,7 @@
 # cmake -P build_cmake.cmake
 # will install Ninja under the user's home directory.
 
-cmake_minimum_required(VERSION 3.20...3.21)
+cmake_minimum_required(VERSION 3.20...3.22)
 
 if(NOT prefix)
   set(prefix "~")
@@ -79,8 +79,7 @@ endif()
 file(MAKE_DIRECTORY ${src_dir}/build)
 
 execute_process(
-  COMMAND ${CMAKE_COMMAND} .. -DBUILD_TESTING:BOOL=OFF -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX:PATH=${path}
-  WORKING_DIRECTORY ${src_dir}/build
+  COMMAND ${CMAKE_COMMAND} -S${src_dir} -B${src_dir}/build -DBUILD_TESTING:BOOL=OFF -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX:PATH=${path}
   COMMAND_ERROR_IS_FATAL ANY)
 
 execute_process(COMMAND ${CMAKE_COMMAND} --build ${src_dir}/build --parallel
