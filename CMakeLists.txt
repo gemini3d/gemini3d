@@ -1,11 +1,18 @@
-cmake_minimum_required(VERSION 3.20...3.21)
-
-if(NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE Release CACHE STRING "Debug or Release")
-endif()
+cmake_minimum_required(VERSION 3.20...3.22)
 
 file(STRINGS ${CMAKE_CURRENT_SOURCE_DIR}/VERSION PROJECT_VERSION
   REGEX "^([0-9]+\.[0-9]+\.[0-9]+)" LIMIT_INPUT 16 LENGTH_MAXIMUM 16 LIMIT_COUNT 1)
+
+# --- CMAKE_BUILD_TYPE default
+# Normally we shouldn't set a default like this, but the simulations are 10x slower
+# if the user lets it default to Debug.
+# for single config generators, set build type to Release
+
+if(NOT CMAKE_GENERATOR STREQUAL "Ninja Multi-Config" AND NOT (CMAKE_BUILD_TYPE OR DEFINED ENV{CMAKE_BUILD_TYPE}))
+  set(CMAKE_BUILD_TYPE Release CACHE STRING "Release can be 10x faster simulation run time for gemini3d.run vs. Debug")
+endif()
+
+# --- main Gemini3D build
 
 project(gemini3d
   LANGUAGES C Fortran
