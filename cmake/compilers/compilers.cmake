@@ -14,10 +14,7 @@ if(NOT abi_ok)
 endif()
 
 
-
 set(CMAKE_EXPORT_COMPILE_COMMANDS on)
-set(CMAKE_CONFIGURATION_TYPES "Release;RelWithDebInfo;Debug" CACHE STRING "Build type selections")
-
 
 # === check that the compiler has adequate Fortran 2008 support
 # this is to mitigate confusing syntax error messages for new users
