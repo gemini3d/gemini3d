@@ -66,8 +66,6 @@ lx2=x%lx2all    !use full grid sizes
 lx3=x%lx3all
 
 !ZZZ - THESE NEED TO BE CHANGED INTO CIRCULAR/PERIODIC DERIVATIVES FOR THE X3 DIRECTION
-print*, shape(SigH),shape(gradSigH2)
-print*, lx2
 gradSigH2=grad2D1_curv_alt(SigH,x,1,lx2)   !note the alt since we need to use dx2 as differential...  Tricky bug/feature
 gradSigH3=grad2D3_curv_periodic(SigH,x,1,lx3)    !circular difference
 
