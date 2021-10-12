@@ -23,7 +23,6 @@ if(NOT m)
 endif()
 
 string(JSON ref_json SET ${ref_json} system cmake_version \"${CMAKE_VERSION}\")
-string(JSON ref_json SET ${ref_json} system cmake_build_type \"${CMAKE_BUILD_TYPE}\")
 string(JSON ref_json ERROR_VARIABLE e SET ${ref_json} system operating_system \"${CMAKE_HOST_SYSTEM_NAME}\")
 string(JSON ref_json ERROR_VARIABLE e SET ${ref_json} system cpu \"${host_cpu}\")
 string(JSON ref_json ERROR_VARIABLE e SET ${ref_json} system memory_ram_MB ${host_ramMB})
