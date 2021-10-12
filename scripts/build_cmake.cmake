@@ -14,7 +14,7 @@
 # This script can be used to install CMake >= 2.8.12.2 (e.g. for compatibility tests)
 # old CMake versions have broken file(DOWNLOAD)--they just "download" 0-byte files.
 
-cmake_minimum_required(VERSION 3.14...3.21)
+cmake_minimum_required(VERSION 3.14...3.22)
 
 set(CMAKE_TLS_VERIFY true)
 
