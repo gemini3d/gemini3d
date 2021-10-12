@@ -24,6 +24,7 @@ set(CMAKE_REQUIRED_LIBRARIES)
 set(CMAKE_REQUIRED_INCLUDES)
 set(CMAKE_REQUIRED_FLAGS)
 
+if(dev)
 check_source_compiles(Fortran
 "program imp
 implicit none (type, external)
@@ -41,6 +42,7 @@ end program"
 f2018errorstop)
 if(NOT f2018errorstop)
   message(FATAL_ERROR "Compiler does not support Fortran 2018 error stop with character variable: ${CMAKE_Fortran_COMPILER_ID} ${CMAKE_Fortran_COMPILER_VERSION}")
+endif()
 endif()
 
 if(dev)
