@@ -5,7 +5,7 @@ add_compile_options($<$<COMPILE_LANGUAGE:Fortran>:-fimplicit-none>)
 
 # --- IMPORTANT
 add_compile_options("$<$<AND:$<COMPILE_LANGUAGE:Fortran>,$<CONFIG:Debug>>:-Werror=array-bounds;-fcheck=all>")
-# --- IMPORTANT: optionas help trap array indexing/bounds errors at runtime
+# --- IMPORTANT: options help trap array indexing/bounds errors at runtime
 
 
 if(dev)

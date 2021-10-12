@@ -21,8 +21,10 @@ add_link_options(-parallel)
 # undefined reference to `__kmpc_begin'
 
 
+# --- IMPORTANT: bounds checking
 add_compile_options("$<$<AND:$<COMPILE_LANGUAGE:Fortran>,$<CONFIG:Debug>>:-check all>")
+# --- IMPORTANT
+
 add_compile_options("$<$<AND:$<COMPILE_LANGUAGE:Fortran>,$<CONFIG:Debug>>:-debug extended;-fpe0;-fp-stack-check>")
-# add_compile_options("$<$<AND:$<COMPILE_LANGUAGE:Fortran>,$<CONFIG:Debug>>:-check bounds>")
 
 # Fortran 2018 standard too many false warnings
