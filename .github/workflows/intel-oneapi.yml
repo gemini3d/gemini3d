@@ -3,6 +3,8 @@ name: intel-oneapi
 env:
   CMAKE_BUILD_PARALLEL_LEVEL: 3
   CTEST_PARALLEL_LEVEL: 2
+  CC: icx
+  FC: ifort
 
 on:
   push:
@@ -21,9 +23,6 @@ jobs:
   linux-intel-oneapi:
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    env:
-      CC: icx
-      FC: ifort
 
     steps:
     - uses: actions/checkout@v2

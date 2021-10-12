@@ -2,6 +2,12 @@
 add_compile_options(-mtune=native)
 
 add_compile_options($<$<COMPILE_LANGUAGE:Fortran>:-fimplicit-none>)
+
+# --- IMPORTANT
+add_compile_options("$<$<AND:$<COMPILE_LANGUAGE:Fortran>,$<CONFIG:Debug>>:-Werror=array-bounds;-fcheck=all>")
+# --- IMPORTANT: optionas help trap array indexing/bounds errors at runtime
+
+
 if(dev)
   add_compile_options("$<$<COMPILE_LANGUAGE:Fortran>:-Wall;-Wextra>")
   # -Wpedantic makes too many false positives
@@ -18,7 +24,8 @@ if(dosubflag)
   add_compile_options($<$<COMPILE_LANGUAGE:Fortran>:-Wno-do-subscript>)
 endif()
 
-add_compile_options("$<$<AND:$<COMPILE_LANGUAGE:Fortran>,$<CONFIG:Debug>>:-Werror=array-bounds;-fcheck=all>")
+
+
   # add_compile_options("$<$<AND:$<COMPILE_LANGUAGE:Fortran>,$<CONFIG:Debug>>:-ffpe-trap=invalid,zero,overflow>")#,underflow)
 
 # makes a lot of spurious warnngs on alloctable scalar character

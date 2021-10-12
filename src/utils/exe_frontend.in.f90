@@ -1,6 +1,6 @@
 module exe_frontend
 
-use, intrinsic :: iso_fortran_env, only : compiler_version, stderr=>error_unit
+use, intrinsic :: iso_fortran_env, only : compiler_version, stderr=>error_unit, compiler_options
 use config, only : get_compiler_vendor
 use hwloc_ifc, only : get_cpu_count
 use pathlib, only : parent, assert_directory_exists, expanduser
@@ -33,6 +33,8 @@ if(buf(1:1) == '-') then
     print '(A)', get_compiler_vendor()
   case ('-compiler_version')
     print '(A)', compiler_version()
+  case ('-compiler_options')
+    print '(A)', compiler_options()
   case ('-git')
     print '(A)', "@git_rev@"
   case default
@@ -250,11 +252,11 @@ print '(A)', 'GLOW and auroral interfaces by Guy Grubbs'
 print '(A)', 'build system and software engineering by Michael Hirsch'
 print '(A)', 'Compiler vendor: '// get_compiler_vendor()
 print '(A)', 'Compiler version: ' // compiler_version()
-print '(/,A)', 'must specify simulation output directory. Example:'
-print '(/,A,/)', '  mpiexec -np 4 build/gemini.bin /path/to/simulation_outputs'
-print '(A)', '-dryrun    allows quick check of first time step'
-print '(A)', '-manual_grid lx2 lx3    defines the number of MPI processes along x2 and x3.'
-print '(A)', '  If -manual_grid is not specified, the MPI processes are auto-assigned along x2 and x3.'
+print '(/,A,/)', 'the first and only positional argument is simulation output directory.'
+print '(A)', 'Optional arguments:'
+print '(a,t25,a)', '-dryrun', 'allows quick check of first time step'
+print '(a,t25,a)', '-manual_grid lx2 lx3', 'defines the number of MPI processes along x2 and x3.'
+print '(t25,a)', '  If -manual_grid is not specified, the MPI processes are auto-assigned along x2 and x3.'
 stop 'EOF: gemini.bin'
 
 end subroutine help_gemini_bin
@@ -274,16 +276,20 @@ end subroutine help_run
 
 subroutine help_gemini_run()
 
-print '(/,A,/)', 'GEMINI-3D: gemini3d.run ' // "@git_rev@"
-print '(A)', 'Compiler vendor: '// get_compiler_vendor()
-print '(A)', 'Compiler version: ' // compiler_version()
-print '(/,A)', 'must specify simulation output directory. Example:'
-print '(/,A,/)', '  build/gemini3d.run /path/to/simulation_outputs'
-print '(A)', '-plan  print MPI partition x2,x3 for given CPU count'
-print '(A)', '-dryrun    allows quick check of first time step'
-print '(A)', '-n   manually specify number of MPI images (default auto-calculate)'
-print '(A)', '-exe   path to gemini.bin'
-print '(A)', '-mpiexec   path to mpiexec'
+print '(/,a,/)', 'GEMINI-3D: gemini3d.run ' // "@git_rev@"
+print '(a)', 'Compiler vendor: '// get_compiler_vendor()
+print '(a)', 'Compiler version: ' // compiler_version()
+print '(/,a,/)', 'the first and only positional argument is simulation output directory.'
+print '(a)', 'Optional arguments:'
+print '(a,t20,a)', '-plan', 'print MPI partition x2,x3 for given CPU count'
+print '(a,t20,a)', '-dryrun', 'allows quick check of first time step'
+print '(a,t20,a)', '-n', 'manually specify number of MPI images (default: auto-calculate MPI grid partitioning)'
+print '(a,t20,a)', '-exe', 'specify path to gemini.bin (default: same directory as gemini3d.run)'
+print '(a,t20,a)', '-mpiexec', 'specify path to mpiexec'
+print '(a,t20,a)', '-compiler', 'tell the compiler family e.g. GNU, Intel, IntelLLVM.  This allows knowing what compiler was used.'
+print '(a,t20,a)', '-compiler_version', 'like -compiler, and also tell the Fortran compiler version.'
+print '(a,t20,a)', '-git', 'print git revision it was built from. This is not perfect, to be sure use fresh build directory.'
+print '(a,t20,a)', '-compiler_options', 'print compiler flags used to build the executable.'
 stop 'EOF: gemini3d.run'
 
 end subroutine help_gemini_run
@@ -294,19 +300,21 @@ subroutine help_magcalc_bin()
 print '(/,A,/)', 'GEMINI-3D: magcalc.bin ' // "@git_rev@"
 print '(A)', 'Compiler vendor: '// get_compiler_vendor()
 print '(A)', 'Compiler version: ' // compiler_version()
-print '(/,A)', 'must specify input directory and fieldpoint file. Example:'
+print '(/,A)', 'First two positional arguments must be input directory and fieldpoint file. Example:'
 print '(/,A,/)', 'mpiexec -n 4 build/magcalc.bin test2d_fang test2d_fang/fieldpoint'
+print '(A)', 'Optional arguments:'
 print '(A)', '-dryrun option allows quick check of first time step'
 stop 'EOF: magcalc.bin'
 end subroutine help_magcalc_bin
+
 
 subroutine help_magcalc_run()
 
 print '(/,A,/)', 'GEMINI-3D: magcalc.run ' // "@git_rev@"
 print '(A)', 'Compiler vendor: '// get_compiler_vendor()
 print '(A)', 'Compiler version: ' // compiler_version()
-print '(/,A)', 'must specify simulation output directory. Example:'
-print '(/,A,/)', '  build/magcalc.run /path/to/simulation_outputs'
+print '(/,A,/)', 'the first and only positional argument is simulation output directory.'
+print '(A)', 'Optional arguments:'
 print '(A)', '-plan  print MPI partition x2,x3 for given CPU count'
 print '(A)', '-dryrun    allows quick check of first time step'
 print '(A)', '-n   manually specify number of MPI images (default auto-calculate)'

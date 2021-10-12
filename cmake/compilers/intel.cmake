@@ -22,7 +22,7 @@ add_link_options(-parallel)
 
 
 add_compile_options("$<$<AND:$<COMPILE_LANGUAGE:Fortran>,$<CONFIG:Debug>>:-check all>")
-add_compile_options("$<$<AND:$<COMPILE_LANGUAGE:Fortran>,$<CONFIG:Debug>>:-debug extended;-check all;-fpe0;-fp-stack-check>")
+add_compile_options("$<$<AND:$<COMPILE_LANGUAGE:Fortran>,$<CONFIG:Debug>>:-debug extended;-fpe0;-fp-stack-check>")
 # add_compile_options("$<$<AND:$<COMPILE_LANGUAGE:Fortran>,$<CONFIG:Debug>>:-check bounds>")
 
 # Fortran 2018 standard too many false warnings
