@@ -19,7 +19,7 @@ if(NOT version)
 endif()
 
 set(host https://github.com/ninja-build/ninja/archive/)
-set(name v${version}.tar.gz)
+set(name v${version}.zip)
 
 function(checkup ninja)
 
@@ -45,36 +45,18 @@ else()
 endif()
 set(path ${prefix}/ninja-${version})
 
-find_program(ninja NAMES ninja PATHS ${path} PATH_SUFFIXES bin NO_DEFAULT_PATH)
-if(ninja)
-  message(STATUS "Ninja ${version} already at ${ninja}")
-  checkup(${ninja})
-  return()
-endif()
-
 message(STATUS "installing Ninja ${version} to ${path}")
 
 set(archive ${path}/${name})
 
-if(EXISTS ${archive})
-  file(SIZE ${archive} fsize)
-  if(fsize LESS 10000)
-    file(REMOVE ${archive})
-  endif()
-endif()
-
-if(NOT EXISTS ${archive})
-  set(url ${host}${name})
-  message(STATUS "download ${url}")
-  file(DOWNLOAD ${url} ${archive} INACTIVITY_TIMEOUT 15)
-endif()
+set(url ${host}${name})
+message(STATUS "download ${url} to ${archive}")
+file(DOWNLOAD ${url} ${archive} INACTIVITY_TIMEOUT 15)
 
 set(src_dir ${path}/ninja-${version})
 
-if(NOT EXISTS ${src_dir}/ninjaCMakeLists.txt)
-  message(STATUS "extracting ${archive} to ${path}")
-  file(ARCHIVE_EXTRACT INPUT ${archive} DESTINATION ${path})
-endif()
+message(STATUS "extracting ${archive} to ${path}")
+file(ARCHIVE_EXTRACT INPUT ${archive} DESTINATION ${path})
 
 file(MAKE_DIRECTORY ${src_dir}/build)
 
