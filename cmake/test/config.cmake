@@ -1,6 +1,5 @@
 include(${CMAKE_CURRENT_LIST_DIR}/compare.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/system_meta.cmake)
-include(${CMAKE_CURRENT_LIST_DIR}/RefPackage.cmake)
 
 
 function(setup_gemini_test name TIMEOUT)
@@ -83,11 +82,7 @@ set_tests_properties(gemini:netcdf:${name} PROPERTIES
   LABELS core)
 endif(netcdf)
 
-if(package)
-  ref_package(${out_dir} ${ref_json_file} ${name})
-else()
-  compare_gemini_output(${name} ${out_dir} ${ref_dir})
-endif()
+compare_gemini_output(${name} ${out_dir} ${ref_dir})
 
 endfunction(setup_gemini_test)
 
