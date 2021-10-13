@@ -22,9 +22,11 @@ add_link_options(-qopenmp)
 
 
 # --- IMPORTANT: bounds checking
-add_compile_options("$<$<AND:$<COMPILE_LANGUAGE:Fortran>,$<CONFIG:Debug>>:-check all>")
+add_compile_options("$<$<AND:$<COMPILE_LANGUAGE:Fortran>,$<CONFIG:Debug>>:-check>")
+# -check is an alias for -check all
 # --- IMPORTANT
 
-add_compile_options("$<$<AND:$<COMPILE_LANGUAGE:Fortran>,$<CONFIG:Debug>>:-debug extended;-fpe0;-fp-stack-check>")
+add_compile_options("$<$<AND:$<COMPILE_LANGUAGE:Fortran>,$<CONFIG:Debug>>:-debug;-fpe0;-fp-stack-check>")
+# -debug is an alias for -debug all
 
 # Fortran 2018 standard too many false warnings
