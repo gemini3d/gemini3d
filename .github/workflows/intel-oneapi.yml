@@ -54,13 +54,13 @@ jobs:
 #  "build/HDF5-prefix/src/HDF5-build/bin/static/Debug/h5fortran_types.mod":
 
     - name: CMake Configure
-      run: cmake --preset intel
+      run: cmake -B build --preset release
 
     - name: CMake build
-      run: cmake --build --preset intel
+      run: cmake --build build
 
     - name: unit test
-      run: ctest --preset intel -L unit --output-junit test-unit-oneapi.xml
+      run: ctest --test-dir build --preset default -L unit --output-junit test-unit-oneapi.xml
 
     - name: Core test
-      run: ctest --preset intel -LE unit -E 3d --output-junit test-core-oneapi.xml
+      run: ctest --test-dir build --preset default -LE unit -E 3d --output-junit test-core-oneapi.xml

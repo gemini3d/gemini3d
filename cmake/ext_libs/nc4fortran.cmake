@@ -25,7 +25,7 @@ if(netcdf)
   set(nc4fortran_INCLUDE_DIRS ${nc4fortran_ROOT}/include)
   set(nc4fortran_LIBRARIES ${nc4fortran_ROOT}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}nc4fortran${CMAKE_STATIC_LIBRARY_SUFFIX})
 
-  set(nc4fortran_args
+  set(nc4fortran_cmake_args
   -DNetCDF_ROOT:PATH=${NetCDF_ROOT}
   -DCMAKE_INSTALL_PREFIX:PATH=${nc4fortran_ROOT}
   -DBUILD_SHARED_LIBS:BOOL=false
@@ -37,7 +37,8 @@ if(netcdf)
   ExternalProject_Add(NC4FORTRAN
     GIT_REPOSITORY ${nc4fortran_git}
     GIT_TAG ${nc4fortran_tag}
-    CMAKE_ARGS ${nc4fortran_args}
+    CMAKE_ARGS ${nc4fortran_cmake_args}
+    CMAKE_GENERATOR ${EXTPROJ_GENERATOR}
     BUILD_BYPRODUCTS ${nc4fortran_LIBRARIES}
     INACTIVITY_TIMEOUT 15
     CONFIGURE_HANDLED_BY_BUILD ON)

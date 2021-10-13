@@ -36,9 +36,8 @@ if(hdf5)
   set(h5fortran_INCLUDE_DIRS ${h5fortran_ROOT}/include)
   set(h5fortran_LIBRARIES ${h5fortran_ROOT}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}h5fortran${CMAKE_STATIC_LIBRARY_SUFFIX})
 
-  set(h5fortran_args
+  set(h5fortran_cmake_args
   -DZLIB_ROOT:PATH=${ZLIB_ROOT}
-  -DHDF5_ROOT:PATH=${HDF5_ROOT}
   -DCMAKE_INSTALL_PREFIX:PATH=${h5fortran_ROOT}
   -DBUILD_SHARED_LIBS:BOOL=false
   -DCMAKE_BUILD_TYPE=Release
@@ -46,10 +45,15 @@ if(hdf5)
   -Dautobuild:BOOL=false
   )
 
+  if(HDF5_ROOT)
+    list(APPEND h5fortran_cmake_args -DHDF5_ROOT:PATH=${HDF5_ROOT})
+  endif()
+
   ExternalProject_Add(H5FORTRAN
     GIT_REPOSITORY ${h5fortran_git}
     GIT_TAG ${h5fortran_tag}
-    CMAKE_ARGS ${h5fortran_args}
+    CMAKE_ARGS ${h5fortran_cmake_args}
+    CMAKE_GENERATOR ${EXTPROJ_GENERATOR}
     BUILD_BYPRODUCTS ${h5fortran_LIBRARIES}
     INACTIVITY_TIMEOUT 15
     CONFIGURE_HANDLED_BY_BUILD ON

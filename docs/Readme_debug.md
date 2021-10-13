@@ -20,7 +20,7 @@ Changing the build mode in a CMake project (unless using Multi config) requires 
 Debug mode:
 
 ```sh
-cmake --preset debug
+cmake -B build --preset debug
 
 cmake --build build
 ```
@@ -28,7 +28,7 @@ cmake --build build
 Release mode:
 
 ```sh
-cmake --preset default
+cmake -B build --preset release
 
 cmake --build build
 ```
@@ -42,7 +42,7 @@ Ninja is installed simply by "pip install ninja", or "brew install ninja", or by
 Ninja offers a significant build speedup, and allows switching rapidly between "debug" and "release" modes, where "release" is highly optimized for fastest run.
 
 ```sh
-cmake --preset multi
+cmake -B --preset multi
 ```
 
 sets up CMake using

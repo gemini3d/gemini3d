@@ -116,16 +116,16 @@ jobs:
         sudo $(cmake -P scripts/requirements.cmake 2>&1)
 
     - name: Configure release
-      run: cmake --preset default -Dmsis20:BOOL=true
+      run: cmake -B build --preset release -Dmsis20:BOOL=true
 
     - name: Build release
-      run: cmake --build --preset default
+      run: cmake --build build
 
     - name: Release unit test
-      run: ctest --preset default -L unit
+      run: ctest --test-dir build --preset default -L unit
 
     - name: Release core test
-      run: ctest --preset default -LE unit -E 3d
+      run: ctest --test-dir build --preset default -LE unit -E 3d
 
 
   macos:

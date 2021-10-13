@@ -3,27 +3,27 @@
 
 "configurePresets": [
 {
-  "name": "default",
-  "binaryDir": "${sourceDir}/build",
+  "name": "release",
+  "displayName": "Turns on Release flags",
   "cacheVariables": {
-    "CMAKE_BUILD_TYPE": "Release",
-    "package": false
+    "CMAKE_BUILD_TYPE": "Release"
   }
 },
 {
-  "name": "debug", "inherits": "default",
-  "displayName": "Turns on debug flags",
+  "name": "debug",
+  "displayName": "Turns on debug flags, including array bounds check.",
   "cacheVariables": {
     "CMAKE_BUILD_TYPE": "Debug"
     }
 },
 {
-  "name": "multi", "inherits": "default",
+  "name": "multi",
   "displayName": "Ninja Multi config",
-  "generator": "Ninja Multi-Config"
+  "generator": "Ninja Multi-Config",
+  "binaryDir": "${sourceDir}/build"
 },
 {
-  "name": "build", "inherits": "default",
+  "name": "build",
   "displayName": "build all libraries",
   "description": "Build all external libraries (except MPI) without searching for existing libraries.",
   "cacheVariables": {
@@ -34,27 +34,10 @@
   }
 },
 {
-  "name": "intel", "inherits": "default",
-  "displayName": "Intel compiler",
-  "binaryDir": "${sourceDir}/build-intel",
-  "environment": {
-    "CC": "icx",
-    "FC": "ifort"
-  }
-},
-{
-  "name": "regen-package", "inherits": "default",
-  "displayName": "Prepare to regenerate reference data",
-  "cacheVariables": {
-    "package": true
-  }
+  "name": "phony"
 }
 ],
 "buildPresets": [
-  {
-    "name": "default",
-    "configurePreset": "default"
-  },
   {
     "name": "release",
     "configurePreset": "multi",
@@ -66,19 +49,15 @@
     "configuration": "Debug"
   },
   {
-    "name": "intel",
-    "configurePreset": "intel"
-  },
-  {
     "name": "core",
-    "configurePreset": "default",
+    "configurePreset": "phony",
     "targets": ["gemini.bin", "gemini3d.run", "gemini3d.compare"]
   }
 ],
 "testPresets": [
 {
   "name": "default",
-  "configurePreset": "default",
+  "configurePreset": "phony",
   "output": {
     "outputOnFailure": true,
     "verbosity": "default"
@@ -97,18 +76,6 @@
   "name": "debug", "inherits": "default",
   "configurePreset": "multi",
   "configuration": "Debug"
-},
-{
-  "name": "intel", "inherits": "default",
-  "configurePreset": "intel"
-},
-{
-  "name": "regen-package", "inherits": "default",
-  "configurePreset": "regen-package",
-  "description": "Regenerates .zstd reference data, by disabling compare",
-  "filter": {
-    "exclude": {"label": "compare"}
-  }
 }
 ]
 }
