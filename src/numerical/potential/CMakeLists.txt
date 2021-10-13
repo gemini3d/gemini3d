@@ -57,7 +57,7 @@ set_tests_properties(unit:potential2 PROPERTIES TIMEOUT 30
   RESOURCE_LOCK cpu_mpi
   PROCESSORS ${Ncpu}
   LABELS "unit"
-  DEPENDS unit:HWLOC)
+  )
 if(test_dll_path)
   set_tests_properties(unit:potential2 PROPERTIES
     ENVIRONMENT "PATH=${test_dll_path}")
