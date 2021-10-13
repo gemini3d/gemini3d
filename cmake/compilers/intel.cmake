@@ -7,10 +7,11 @@ $<$<COMPILE_LANG_AND_ID:C,IntelLLVM>:$<IF:$<BOOL:${WIN32}>,/Qiopenmp,-fiopenmp>>
 $<$<COMPILE_LANG_AND_ID:CXX,IntelLLVM>:$<IF:$<BOOL:${WIN32}>,/Qiopenmp,-fiopenmp>>
 $<$<COMPILE_LANG_AND_ID:Fortran,IntelLLVM>:$<IF:$<BOOL:${WIN32}>,/Qiopenmp,-fiopenmp>>
 $<$<COMPILE_LANGUAGE:Fortran>:-heap-arrays>
-$<$<COMPILE_LANGUAGE:Fortran>:$<IF:$<BOOL:${WIN32}>,/Qdiag-disable:5268$<COMMA>7712,-diag-disable=5268$<COMMA>7712>>
+$<$<COMPILE_LANGUAGE:Fortran>:$<IF:$<BOOL:${WIN32}>,/Qdiag-disable:5268$<COMMA>7712$<COMMA>10182,-diag-disable=5268$<COMMA>7712$<COMMA>10182>>
 $<$<COMPILE_LANG_AND_ID:Fortran,IntelLLVM>:$<IF:$<BOOL:${WIN32}>,/Qdiag-disable:5415,-diag-disable=5415>>
 )
 # remark #5415: Feature not yet implemented: Some 'check' options temporarily disabled.
+# warning #10182: disabling optimization; runtime debug checks enabled
 
 
 # -fiopenmp:
