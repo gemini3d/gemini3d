@@ -41,7 +41,27 @@ if(NOT EXISTS ${src_dir}/configure.ac)
   file(ARCHIVE_EXTRACT INPUT ${archive} DESTINATION ${install_dir})
 endif()
 
-execute_process(COMMAND ./configure --prefix=${install_dir} --with-device=ch3
+# MPICH uses non-standard Fortran syntax
+if(DEFINED ENV{FC})
+  set(FC $ENV{FC})
+endif()
+
+if(NOT FC)
+  find_program(FC gfortran)
+endif()
+
+if(FC MATCHES gfortran)
+  execute_process(COMMAND ${FC} -dumpversion
+  OUTPUT_VARIABLE FC_VERSION
+  COMMAND_ERROR_IS_FATAL ANY
+  TIMEOUT 5
+  )
+  if(FC_VERSION VERSION_GREATER_EQUAL 10)
+    set(FFLAGS -fallow-argument-mismatch)
+  endif()
+endif()
+
+execute_process(COMMAND ./configure --prefix=${install_dir} --with-device=ch3 FFLAGS=${FFLAGS}
 WORKING_DIRECTORY ${src_dir}
 COMMAND_ERROR_IS_FATAL ANY
 )
