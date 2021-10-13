@@ -25,8 +25,10 @@ add_link_options(-qopenmp)
 
 
 # --- IMPORTANT: bounds checking
-add_compile_options("$<$<AND:$<COMPILE_LANGUAGE:Fortran>,$<CONFIG:Debug>>:-check>")
-# -check is an alias for -check all
+# add_compile_options("$<$<AND:$<COMPILE_LANGUAGE:Fortran>,$<CONFIG:Debug>>:-check>")
+# -check is an alias for -check all. However, MUMPS trips on -check, so we have to use a less stringent check.
+add_compile_options("$<$<AND:$<COMPILE_LANGUAGE:Fortran>,$<CONFIG:Debug>>:-CB>")
+# -CB is an alias for -check bounds.
 # --- IMPORTANT
 
 add_compile_options("$<$<AND:$<COMPILE_LANGUAGE:Fortran>,$<CONFIG:Debug>>:-debug;-fpe0>")
