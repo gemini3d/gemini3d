@@ -1,11 +1,11 @@
 cmake_minimum_required(VERSION 3.20...3.22)
 
 if(WIN32)
-  message(FATAL_ERROR "OpenMPI does not work on Windows. Use MS-MPI or Intel MPI instead.")
+  message(FATAL_ERROR "MPICH does not work on Windows. Use MS-MPI or Intel MPI instead.")
 endif()
 
 if(NOT version)
-  set(version 4.1.1)
+  set(version 3.4.2)
 endif()
 
 if(NOT prefix)
@@ -19,12 +19,10 @@ endif()
 
 set(CMAKE_TLS_VERIFY true)
 
-string(SUBSTRING ${version} 0 3 subver)
+set(stem mpich-${version})
+set(archive ${prefix}/${stem}.tar.gz)
 
-set(stem openmpi-${version})
-set(archive ${prefix}/${stem}.tar.bz2)
-
-set(url https://download.open-mpi.org/release/open-mpi/v${subver}/${stem}.tar.bz2)
+set(url http://www.mpich.org/static/downloads/${version}/${stem}.tar.gz)
 
 set(install_dir ${prefix}/${stem})
 set(src_dir ${install_dir}/${stem})
@@ -43,7 +41,7 @@ if(NOT EXISTS ${src_dir}/configure.ac)
   file(ARCHIVE_EXTRACT INPUT ${archive} DESTINATION ${install_dir})
 endif()
 
-execute_process(COMMAND ./configure --prefix=${install_dir}
+execute_process(COMMAND ./configure --prefix=${install_dir} --with-device=ch3
 WORKING_DIRECTORY ${src_dir}
 COMMAND_ERROR_IS_FATAL ANY
 )
