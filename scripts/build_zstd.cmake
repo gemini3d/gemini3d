@@ -34,7 +34,7 @@ if(NOT IS_DIRECTORY ${src})
   file(ARCHIVE_EXTRACT INPUT ${archive} DESTINATION ${tmpdir})
 endif()
 
-execute_process(COMMAND ${CMAKE_COMMAND} -DCMAKE_INSTALL_PREFIX:PATH=${prefix} -S ${src} -B ${build}
+execute_process(COMMAND ${CMAKE_COMMAND} --install-prefix=${prefix} -S ${src} -B ${build}
 COMMAND_ERROR_IS_FATAL ANY)
 
 execute_process(COMMAND ${CMAKE_COMMAND} --build ${build} --parallel
