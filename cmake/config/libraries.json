@@ -1,7 +1,7 @@
 {
 "glow": {
   "git": "https://github.com/gemini3d/glow.git",
-  "tag": "v0.981.0.9"
+  "tag": "v0.981.0.10"
 },
 
 "h5fortran": {
