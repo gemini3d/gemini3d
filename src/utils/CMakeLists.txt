@@ -48,12 +48,27 @@ set_target_properties(gemini3d.run PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT
 add_test(NAME unit:gemini3d_run_ok COMMAND $<TARGET_FILE:gemini3d.run>)
 set_tests_properties(unit:gemini3d_run_ok PROPERTIES
   PASS_REGULAR_EXPRESSION "EOF: gemini3d.run"
-  DEPENDS unit:HWLOC
+  LABELS unit
+  TIMEOUT 10)
+
+# --- gemini3.run with array bounds checks
+# We use EXCLUDE_FROM_ALL as a workaround to prevent it from being built by default when not in Debug mode
+add_executable(gemini3d.run.debug gemini3d_run.f90 runner.f90 $<TARGET_OBJECTS:exe_frontend>)
+target_link_libraries(gemini3d.run.debug PRIVATE const config timeutils autogrid reader pathlib
+h5fortran::h5fortran nc4fortran::nc4fortran hwloc_ifc hwloc_c
+$<$<BOOL:${HWLOC_FOUND}>:HWLOC::HWLOC>
+$<$<BOOL:${HDF5_HAVE_PARALLEL}>:MPI::MPI_Fortran>
+)
+set_target_properties(gemini3d.run.debug PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
+
+add_test(NAME unit:gemini3d_run_debug_ok COMMAND $<TARGET_FILE:gemini3d.run>)
+set_tests_properties(unit:gemini3d_run_debug_ok PROPERTIES
+  PASS_REGULAR_EXPRESSION "EOF: gemini3d.run"
+  EXCLUDE_FROM_ALL $<NOT:$<CONFIG:Debug>>
   LABELS unit
   TIMEOUT 10)
 
 # --- magcalc.run
-
 add_executable(magcalc.run magcalc_run.f90)
 target_link_libraries(magcalc.run PRIVATE exe_frontend autogrid reader config pathlib const hwloc_ifc hwloc_c
 h5fortran::h5fortran nc4fortran::nc4fortran
@@ -65,17 +80,16 @@ set_target_properties(magcalc.run PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_
 add_test(NAME unit:magcalc_run_ok COMMAND $<TARGET_FILE:magcalc.run>)
 set_tests_properties(unit:magcalc_run_ok PROPERTIES
   PASS_REGULAR_EXPRESSION "EOF: magcalc.run"
-  DEPENDS unit:HWLOC
   LABELS unit
   TIMEOUT 10)
 
+# --- Windows needs DLLs on path
 if(test_dll_path)
-  set_tests_properties(unit:magcalc_exe_ok unit:magcalc_run_ok unit:gemini3d_run_ok PROPERTIES
+  set_tests_properties(unit:magcalc_exe_ok unit:magcalc_run_ok unit:gemini3d_run_ok unit:gemini3d_run_debug_ok PROPERTIES
     ENVIRONMENT "PATH=${test_dll_path}")
 endif()
 
 # --- Gemini compare
-
 add_library(assert OBJECT assert.f90)
 
 add_executable(gemini3d.compare)
@@ -93,6 +107,6 @@ $<$<BOOL:${HDF5_HAVE_PARALLEL}>:MPI::MPI_Fortran>
 set_target_properties(gemini3d.compare PROPERTIES
   RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
 
-
 install(TARGETS magcalc.bin gemini3d.run magcalc.run gemini3d.compare
+  $<$<CONFIG:Debug>:gemini3d.run.debug>
   EXPORT ${PROJECT_NAME}Targets)
