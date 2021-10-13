@@ -17,7 +17,7 @@ $<$<COMPILE_LANGUAGE:Fortran>:-heap-arrays>
 
 # heap-arrays: avoid stack overflow
 
-add_link_options(-parallel)
+add_link_options(-qopenmp)
 # undefined reference to `__kmpc_begin'
 
 
