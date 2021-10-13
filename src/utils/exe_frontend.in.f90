@@ -1,11 +1,15 @@
 module exe_frontend
 
 use, intrinsic :: iso_fortran_env, only : compiler_version, stderr=>error_unit, compiler_options
-use config, only : get_compiler_vendor
+use phys_consts, only : wp
+use config, only : get_compiler_vendor, gemini_cfg, read_configfile
 use hwloc_ifc, only : get_cpu_count
-use pathlib, only : parent, assert_directory_exists, expanduser
+use pathlib, only : parent, assert_directory_exists, expanduser, get_suffix
+use timeutils, only : date_filename,dateinc
 
 implicit none (type, external)
+private
+public :: clean_output, cli_parser, get_Ncpu, help_gemini_bin, help_gemini_run, help_magcalc_bin, help_magcalc_run
 
 contains
 
@@ -323,5 +327,58 @@ print '(A)', '-mpiexec   path to mpiexec'
 stop 'EOF: magcalc.run'
 
 end subroutine help_magcalc_run
+
+
+subroutine clean_output(path)
+
+character(*), intent(in) :: path
+
+type(gemini_cfg) :: cfg
+integer, dimension(3) :: ymd
+real(wp) :: UTsec
+character(:), allocatable :: fn, suffix
+logical :: exists
+
+cfg%outdir = path
+cfg%infile = path // '/inputs/config.nml'
+inquire(file=cfg%infile, exist=exists)
+if(.not.exists) error stop 'gemini3d.run: not a file: ' // cfg%infile
+
+call read_configfile(cfg)
+
+ymd = cfg%ymd0
+UTsec = cfg%UTsec0
+
+suffix = get_suffix(cfg%indatsize)
+fn = date_filename(cfg%outdir, ymd, UTsec) // suffix
+
+do
+  !! new filename, add the 1 if it is the first
+  fn = date_filename(cfg%outdir, ymd, UTsec) // suffix
+
+  inquire(file=fn, exist=exists)
+  if ( .not. exists ) exit
+  !! last output file
+  print *, 'delete: ', fn
+  call unlink(fn)
+
+  !! next time
+  call dateinc(cfg%dtout, ymd,UTsec)
+end do
+
+end subroutine clean_output
+
+
+subroutine unlink(path)
+character(*), intent(in) :: path
+integer :: i
+logical :: e
+
+inquire(file=path, exist=e)
+if (.not.e) return
+
+open(newunit=i, file=path, status='old')
+close(i, status='delete')
+end subroutine unlink
 
 end module exe_frontend

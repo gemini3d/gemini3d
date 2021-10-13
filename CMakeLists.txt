@@ -11,11 +11,6 @@ get_property(is_multi_config GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
 if(NOT is_multi_config AND NOT (CMAKE_BUILD_TYPE OR DEFINED ENV{CMAKE_BUILD_TYPE}))
   set(CMAKE_BUILD_TYPE Release CACHE STRING "Release can be 10x faster simulation run time for gemini3d.run vs. Debug")
 endif()
-if(CMAKE_GENERATOR STREQUAL "Ninja Multi-Config")
-  set(EXTPROJ_GENERATOR "Ninja")
-else()
-  set(EXTPROJ_GENERATOR ${CMAKE_GENERATOR})
-endif()
 
 # --- main Gemini3D build
 
@@ -28,6 +23,12 @@ project(gemini3d
 
 enable_testing()  # keep this so BUILD_TESTING=off doesn't remove all tests
 include(CTest) # for CDash
+
+if(CMAKE_GENERATOR STREQUAL "Ninja Multi-Config")
+  set(EXTPROJ_GENERATOR "Ninja")
+else()
+  set(EXTPROJ_GENERATOR ${CMAKE_GENERATOR})
+endif()
 
 include(cmake/package/git_rev.cmake)
 include(cmake/config/options.cmake)

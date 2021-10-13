@@ -34,10 +34,10 @@ add_subdirectory(hwloc)
 configure_file(exe_frontend.in.f90 exe_frontend.f90 @ONLY)
 
 add_library(exe_frontend OBJECT ${CMAKE_CURRENT_BINARY_DIR}/exe_frontend.f90)
-target_link_libraries(exe_frontend PRIVATE config hwloc_ifc hwloc_c pathlib)
+target_link_libraries(exe_frontend PRIVATE config hwloc_ifc hwloc_c timeutils pathlib const)
 
 # --- gemini3d.run
-add_executable(gemini3d.run gemini3d_run.f90 runner.f90 $<TARGET_OBJECTS:exe_frontend>)
+add_executable(gemini3d.run gemini3d_run.f90 $<TARGET_OBJECTS:exe_frontend>)
 target_link_libraries(gemini3d.run PRIVATE const config timeutils autogrid reader pathlib
 h5fortran::h5fortran nc4fortran::nc4fortran hwloc_ifc hwloc_c
 $<$<BOOL:${HWLOC_FOUND}>:HWLOC::HWLOC>
@@ -53,24 +53,26 @@ set_tests_properties(unit:gemini3d_run_ok PROPERTIES
 
 # --- gemini3.run with array bounds checks
 # We use EXCLUDE_FROM_ALL as a workaround to prevent it from being built by default when not in Debug mode
-add_executable(gemini3d.run.debug gemini3d_run.f90 runner.f90 $<TARGET_OBJECTS:exe_frontend>)
+add_executable(gemini3d.run.debug gemini3d_run.f90 $<TARGET_OBJECTS:exe_frontend>)
 target_link_libraries(gemini3d.run.debug PRIVATE const config timeutils autogrid reader pathlib
 h5fortran::h5fortran nc4fortran::nc4fortran hwloc_ifc hwloc_c
 $<$<BOOL:${HWLOC_FOUND}>:HWLOC::HWLOC>
 $<$<BOOL:${HDF5_HAVE_PARALLEL}>:MPI::MPI_Fortran>
 )
-set_target_properties(gemini3d.run.debug PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
+set_target_properties(gemini3d.run.debug PROPERTIES
+RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
+EXCLUDE_FROM_ALL $<NOT:$<CONFIG:Debug>>
+)
 
-add_test(NAME unit:gemini3d_run_debug_ok COMMAND $<TARGET_FILE:gemini3d.run>)
+add_test(NAME unit:gemini3d_run_debug_ok COMMAND $<TARGET_FILE:gemini3d.run.debug>)
 set_tests_properties(unit:gemini3d_run_debug_ok PROPERTIES
   PASS_REGULAR_EXPRESSION "EOF: gemini3d.run"
-  EXCLUDE_FROM_ALL $<NOT:$<CONFIG:Debug>>
+  DISABLED $<NOT:$<CONFIG:Debug>>
   LABELS unit
   TIMEOUT 10)
-
 # --- magcalc.run
 add_executable(magcalc.run magcalc_run.f90)
-target_link_libraries(magcalc.run PRIVATE exe_frontend autogrid reader config pathlib const hwloc_ifc hwloc_c
+target_link_libraries(magcalc.run PRIVATE exe_frontend autogrid reader config timeutils pathlib const hwloc_ifc hwloc_c
 h5fortran::h5fortran nc4fortran::nc4fortran
 $<$<BOOL:${HWLOC_FOUND}>:HWLOC::HWLOC>
 $<$<BOOL:${HDF5_HAVE_PARALLEL}>:MPI::MPI_Fortran>
@@ -108,5 +110,4 @@ set_target_properties(gemini3d.compare PROPERTIES
   RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
 
 install(TARGETS magcalc.bin gemini3d.run magcalc.run gemini3d.compare
-  $<$<CONFIG:Debug>:gemini3d.run.debug>
   EXPORT ${PROJECT_NAME}Targets)
