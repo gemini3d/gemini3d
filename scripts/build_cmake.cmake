@@ -60,20 +60,12 @@ set(archive ${prefix}/${name})
 
 if(EXISTS ${archive})
   file(SIZE ${archive} fsize)
-  if(fsize LESS 1000000)
-    file(REMOVE ${archive})
-  endif()
 endif()
 
-if(NOT EXISTS ${archive})
+if(NOT EXISTS ${archive} OR "${fsize}" LESS 1000000)
   set(url ${host}${name})
   message(STATUS "download ${url}")
   file(DOWNLOAD ${url} ${archive} INACTIVITY_TIMEOUT 15)
-
-  file(SIZE ${archive} fsize)
-  if(fsize LESS 1000000)
-    message(FATAL_ERROR "failed to download ${url}")
-  endif()
 endif()
 
 if(NOT IS_DIRECTORY ${path})
