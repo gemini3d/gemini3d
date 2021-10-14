@@ -10,20 +10,18 @@ cmake_path(APPEND ref_root ${PROJECT_SOURCE_DIR} test_data)
 cmake_path(APPEND ref_dir ${ref_root} ${name})
 
 add_test(NAME ${name}:download
-  COMMAND ${CMAKE_COMMAND} -Dname=${name} -Doutdir:PATH=${out_dir} -Drefroot:PATH=${ref_root} -P ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/download.cmake)
+  COMMAND ${CMAKE_COMMAND} -Dname=${name} -Doutdir:PATH=${out_dir} -Drefroot:PATH=${ref_root} -P ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/download.cmake
+)
 set_tests_properties(${name}:download PROPERTIES
   FIXTURES_SETUP ${name}:download_fxt
   RESOURCE_LOCK download_lock  # avoid anti-leeching transient failures
   LABELS download
-  TIMEOUT 180)
+  TIMEOUT 180
+)
 
 # construct command
-set(test_cmd $<TARGET_FILE:gemini3d.run> ${out_dir} -exe $<TARGET_FILE:gemini.bin>)
-
-if(mpi)
-  list(APPEND test_cmd -mpiexec ${MPIEXEC_EXECUTABLE})
-endif()
-
+set(test_cmd $<TARGET_FILE:gemini3d.run> ${out_dir} -exe $<TARGET_FILE:gemini.bin>
+$<$<BOOL:${mpi}>:-mpiexec> "$<$<BOOL:${mpi}>:${MPIEXEC_EXECUTABLE}>")
 
 
 if(hdf5)
@@ -97,7 +95,9 @@ add_test(NAME magcalc:${name}:setup
 set_tests_properties(magcalc:${name}:setup PROPERTIES
   FIXTURES_REQUIRED hdf5:${name}:run_fxt
   FIXTURES_SETUP magcalc:${name}:setup
-  TIMEOUT 30)
+  TIMEOUT 30
+  DISABLED $<NOT:$<BOOL:${PYGEMINI_DIR}>>
+)
 
 add_test(NAME magcalc:${name} COMMAND $<TARGET_FILE:magcalc.run> ${out_dir})
 set_tests_properties(magcalc:${name} PROPERTIES
@@ -106,8 +106,7 @@ set_tests_properties(magcalc:${name} PROPERTIES
   LABELS core
   TIMEOUT 60
   ENVIRONMENT $<$<BOOL:${test_dll_path}>:"PATH=${test_dll_path}">
-  )
-
-
+  DISABLED $<NOT:$<BOOL:${PYGEMINI_DIR}>>
+)
 
 endfunction(setup_magcalc_test)

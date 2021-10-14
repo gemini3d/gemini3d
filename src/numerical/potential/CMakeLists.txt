@@ -37,16 +37,14 @@ $<$<NOT:$<BOOL:${mpi}>>:MUMPS::MPISEQ>
 # adding INTERFACE to Mumps project didn't help either
 # nor did adding them in mumps.cmake
 # it seems to have to be right here.
-if(mpi)
-  # test_potential2d has been an intermittent source of link-order issues,
-  # where mpi gets linked in the middle instead of at the end.
-  # the TARGET_OBJECTS etc in this directory are a careful effort to avoid this problem
-  add_test(NAME unit:potential2
-    COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} ${Ncpu} $<TARGET_FILE:test_potential2d> ${_potential_testfile})
-else()
-  add_test(NAME unit:potential2
-    COMMAND $<TARGET_FILE:test_potential2d> ${_potential_testfile})
-endif()
+# test_potential2d has been an intermittent source of link-order issues,
+# where mpi gets linked in the middle instead of at the end.
+# the TARGET_OBJECTS etc in this directory are a careful effort to avoid this problem
+
+add_test(NAME unit:potential2
+  COMMAND "$<$<BOOL:${mpi}>:${MPIEXEC_EXECUTABLE}>" $<$<BOOL:${mpi}>:${MPIEXEC_NUMPROC_FLAG}> $<$<BOOL:${mpi}>:${Ncpu}>
+  $<TARGET_FILE:test_potential2d> ${_potential_testfile}
+)
 
 set_tests_properties(unit:potential2 PROPERTIES TIMEOUT 30
   FIXTURES_SETUP gemini_potential_fxt

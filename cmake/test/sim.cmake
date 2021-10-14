@@ -14,7 +14,7 @@ endif(glow)
 foreach(_s ${_tests})
   setup_gemini_test(${_s} ${sim_timeout})
 
-  if(PYGEMINI_DIR)
+  if(python)
     setup_magcalc_test(${_s})
   endif()
 endforeach()
