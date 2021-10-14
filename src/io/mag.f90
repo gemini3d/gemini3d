@@ -60,7 +60,7 @@ case default
   error stop 'mag:output_magfields: unknown file format' // out_format
 end select
 
-call check_finite_mag(Br, Btheta, Bphi)
+call check_finite_mag(outdir, Br, Btheta, Bphi)
 
 
 end procedure output_magfields

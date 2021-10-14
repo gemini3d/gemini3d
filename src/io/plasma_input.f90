@@ -120,7 +120,7 @@ module procedure input_plasma
     print '(A,2ES11.2)', 'Min/max input electric potential:', minval(Phi(:,:,:)),  maxval(Phi(:,:,:))
     print '(A,2ES11.2)', 'Min/max input electric potential (full grid):', minval(Phiall(:,:,:)),  maxval(Phiall(:,:,:))
 
-    call check_finite_plasma(ns, vs1, Ts)
+    call check_finite_plasma(out_dir, ns, vs1, Ts)
   else
     !! WORKERS RECEIVE THE IC DATA FROM ROOT
     call input_workers_mpi(ns,vs1,Ts,Phi)
@@ -136,9 +136,9 @@ module procedure input_plasma_currents
   if (mpi_cfg%myid==0) then
     !> ROOT FINDS/CALCULATES INITIAL CONDITIONS AND SENDS TO WORKERS
     print *, 'Assembling current density data on root...  '
-    call input_root_currents(outdir,out_format,flagoutput,ymd,UTsec,J1,J2,J3)
+    call input_root_currents(outdir, out_format,flagoutput,ymd,UTsec,J1,J2,J3)
 
-    call check_finite_current(J1, J2, J3)
+    call check_finite_current(outdir, J1, J2, J3)
   else
     !> WORKERS RECEIVE THE IC DATA FROM ROOT
     call input_workers_currents(J1,J2,J3)

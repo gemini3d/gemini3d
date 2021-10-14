@@ -49,7 +49,8 @@ interface ! mag.f90
 end interface
 
 interface ! plasma.f90
-  module subroutine input_plasma(x1,x2,x3all,indatsize,indatfile,ns,vs1,Ts,Phi,Phiall)
+  module subroutine input_plasma(out_dir, x1,x2,x3all,indatsize,indatfile,ns,vs1,Ts,Phi,Phiall)
+    character(*), intent(in) :: out_dir
     real(wp), dimension(-1:), intent(in) :: x1, x2, x3all
     character(*), intent(in) :: indatsize, indatfile
     real(wp), dimension(-1:,-1:,-1:,:), intent(inout) :: ns,vs1,Ts
