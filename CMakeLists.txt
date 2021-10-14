@@ -24,6 +24,10 @@ project(gemini3d
 enable_testing()  # keep this so BUILD_TESTING=off doesn't remove all tests
 include(CTest) # for CDash
 
+if(NOT DEFINED ${PROJECT_NAME}_BUILD_TESTING)
+  set(${PROJECT_NAME}_BUILD_TESTING ${BUILD_TESTING})
+endif()
+
 if(CMAKE_GENERATOR STREQUAL "Ninja Multi-Config")
   set(EXTPROJ_GENERATOR "Ninja")
 else()

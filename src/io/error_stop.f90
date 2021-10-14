@@ -1,5 +1,8 @@
 module errors
 !! cleanup before shutdown on error, preserving data if possible
+!! We use interface error_stop to work with GCC < 10 instead of "select rank".
+!! NOTE: To keep procedures Fortran 2003 TKR-distinct requires
+!! at least one TKR-distinct non-optional variable
 
 use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
 
@@ -9,6 +12,7 @@ use phys_consts, only : wp
 implicit none (type, external)
 
 interface error_stop
+  !! polymorphic error handling
   procedure dump_worker, dump_root, dump_input, dump_mag, dump_J, dump_step
 end interface error_stop
 
@@ -17,23 +21,6 @@ private
 public :: error_stop
 
 contains
-
-! subroutine mpi_stop
-
-! integer :: ierr
-! logical :: is_mpi
-
-! call mpi_initialized(is_mpi, ierr)
-! if (is_mpi) then
-!   call mpi_abort(MPI_COMM_WORLD, 1, ierr)
-!   call mpi_finalize(ierr)
-! endif
-
-! end subroutine mpi_stop
-
-!> GCC >= 10 has select rank. We use interface error_stop to work with older GCC.
-!> NOTE: To keep procedures Fortran 2003 TKR-distinct requires
-!> at least one TKR-distinct non-optional variable
 
 subroutine dump_mag(filename, info, Br, Btheta, Bphi)
 

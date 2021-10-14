@@ -61,8 +61,6 @@ option(python "PyGemini checks")
 # Matlab checks take much longer than Python, and Python covers much more
 option(matlab "Matlab checks")
 
-option(test_shaky "tests that may falsely fail")
-
 set(CMAKE_TLS_VERIFY true)  # for Git and Downloads
 
 # to make Gemini3D more usable by external programs, put all Fortran .mod generated module files in a single directory.

@@ -2,41 +2,58 @@ set_directory_properties(PROPERTIES LABELS io)
 
 add_library(logging OBJECT logging.f90)
 
-# --- error handling -- dump data to disk
-add_library(errors OBJECT error_stop.f90)
-target_link_libraries(errors PRIVATE const h5fortran::h5fortran)
-
-if(f2018assumed_rank)
-  add_library(debug_dump OBJECT debug_dump.f90)
-  target_link_libraries(debug_dump PRIVATE const h5fortran::h5fortran)
-  set_target_properties(debug_dump PROPERTIES EXCLUDE_FROM_ALL true)
-endif()
-
-if(BUILD_TESTING AND test_shaky)
-  # this test sometimes causes a segfault on exit, which breaks CTest WILL_FAIL
-  # this is a long-standing open issue with CMake et al,
-  # so we by default omit this test.
-  add_executable(test_errors test_errors.f90)
-  target_link_libraries(test_errors PRIVATE errors const h5fortran::h5fortran)
-
-  add_test(NAME gemini:stop:zero COMMAND $<TARGET_FILE:test_errors> root)
-  set_tests_properties(gemini:stop:zero PROPERTIES
-    WILL_FAIL true
-    LABELS unit)
-  # FIXME: add a follow-on test using Fixtures that read and verify expected file dump
-endif()
-
 add_library(sanity_check OBJECT sanity_check.f90 $<TARGET_OBJECTS:errors>)
 target_link_libraries(sanity_check PRIVATE const)
 
 add_subdirectory(pathlib)
+
+# --- error handling -- dump data to disk
+add_library(errors OBJECT error_stop.f90)
+target_link_libraries(errors PRIVATE const h5fortran::h5fortran)
+
+if(${PROJECT_NAME}_BUILD_TESTING)
+
+  if(f2018assumed_rank)
+    add_library(debug_dump OBJECT debug_dump.f90)
+    target_link_libraries(debug_dump PRIVATE const h5fortran::h5fortran)
+    set_target_properties(debug_dump PROPERTIES EXCLUDE_FROM_ALL true)
+  endif()
+
+  add_executable(test_dump_write test_dump_write.f90)
+  target_link_libraries(test_dump_write PRIVATE errors const h5fortran::h5fortran)
+
+  add_executable(test_dump_read test_dump_read.f90)
+  target_link_libraries(test_dump_read PRIVATE h5fortran::h5fortran)
+
+  foreach(t root worker input)
+    set(f ${CMAKE_CURRENT_BINARY_DIR}/dump_${t}.h5)
+
+    add_test(NAME gemini:dump:${t} COMMAND $<TARGET_FILE:test_dump_write> ${t} ${f})
+    set_tests_properties(gemini:dump:${t} PROPERTIES
+      FIXTURES_SETUP gemini:dump_fxt
+      WILL_FAIL true
+      LABELS unit
+      TIMEOUT 10
+    )
+
+    add_test(NAME gemini:dump:check:${t} COMMAND $<TARGET_FILE:test_dump_read> testing:${t} ${f})
+    set_tests_properties(gemini:dump:check:${t} PROPERTIES
+      FIXTURES_REQUIRED gemini:dump_fxt
+      REQUIRED_FILES ${f}
+      LABELS unit
+      TIMEOUT 10
+      )
+  endforeach()
+
+endif()
+
 # --- config
 add_library(config OBJECT config.f90 config_nml.f90 config_ini.f90)
 target_link_libraries(config PRIVATE pathlib const)
 
 set(_test_file ${CMAKE_CURRENT_SOURCE_DIR}/../unit_tests/config/config_example.nml)
 
-if(BUILD_TESTING)
+if(${PROJECT_NAME}_BUILD_TESTING)
 
 add_executable(test_namelist test_nml.f90)
 add_test(NAME unit:namelist COMMAND $<TARGET_FILE:test_namelist> ${_test_file})
@@ -61,7 +78,7 @@ ENVIRONMENT test__gem=hello
 LABELS unit
 TIMEOUT 10)
 
-endif(BUILD_TESTING)
+endif()
 
 # --- io
 configure_file(output.in.f90 output.f90 @ONLY)
@@ -79,7 +96,7 @@ target_link_libraries(io PRIVATE calculus config const reader grid mpimod pathli
 add_library(reader OBJECT reader.f90 reader_hdf5.f90 reader_ncdf.f90 reader_raw.f90)
 target_link_libraries(reader PRIVATE const pathlib h5fortran::h5fortran nc4fortran::nc4fortran)
 
-if(netcdf AND BUILD_TESTING)
+if(netcdf AND ${PROJECT_NAME}_BUILD_TESTING)
   add_executable(test_simsize_nc4 test_simsize_nc4.f90)
   target_link_libraries(test_simsize_nc4 PRIVATE nc4fortran::nc4fortran)
   # add_test(NAME unit:simsize_nc4 COMMAND test_simsize_nc4)
