@@ -55,10 +55,10 @@ foreach(t newton_testdriver geomag2geog_testdriver grid_testdriver fullgrid_dipo
 
 endforeach()
 
-if(test_dll_path)
-  set_tests_properties(unit:fullgrid_dipole_testdriver unit:fullgrid_dipole_testdriver_root unit:fullgrid_cartesian_testdriver unit:grid_testdriver unit:newton_testdriver PROPERTIES
-    ENVIRONMENT "PATH=${test_dll_path}")
-endif()
+set_tests_properties(unit:fullgrid_dipole_testdriver unit:fullgrid_dipole_testdriver_root unit:fullgrid_cartesian_testdriver unit:grid_testdriver unit:newton_testdriver PROPERTIES
+ENVIRONMENT $<$<BOOL:${test_dll_path}>:"PATH=${test_dll_path}">
+)
+
 
 if(host_ramGB LESS 8)
   set_tests_properties(unit:fullgrid_cartesian_testdriver unit:fullgrid_dipole_testdriver unit:fullgrid_dipole_testdriver_root PROPERTIES

@@ -86,10 +86,9 @@ set_tests_properties(unit:magcalc_run_ok PROPERTIES
   TIMEOUT 10)
 
 # --- Windows needs DLLs on path
-if(test_dll_path)
-  set_tests_properties(unit:magcalc_exe_ok unit:magcalc_run_ok unit:gemini3d_run_ok unit:gemini3d_run_debug_ok PROPERTIES
-    ENVIRONMENT "PATH=${test_dll_path}")
-endif()
+set_tests_properties(unit:magcalc_exe_ok unit:magcalc_run_ok unit:gemini3d_run_ok unit:gemini3d_run_debug_ok PROPERTIES
+ENVIRONMENT $<$<BOOL:${test_dll_path}>:"PATH=${test_dll_path}">
+)
 
 # --- Gemini compare
 add_library(assert OBJECT assert.f90)

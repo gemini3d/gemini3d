@@ -86,25 +86,19 @@ hwloc_ifc hwloc_c
 MUMPS::MUMPS
 $<$<BOOL:${mpi}>:SCALAPACK::SCALAPACK>
 LAPACK::LAPACK MPI::MPI_Fortran
+"$<$<BOOL:${MUMPS_HAVE_Scotch}>:Scotch::Scotch;METIS::METIS>"
 )
 
-if(MUMPS_HAVE_Scotch)
-  target_link_libraries(gemini.bin PRIVATE Scotch::Scotch)
-  target_link_libraries(gemini.bin PRIVATE METIS::METIS)
-endif()
 # same link logic applied to src/unit_tests/test_mumps
 
 add_test(NAME unit:gemini_exe_ok COMMAND $<TARGET_FILE:gemini.bin>)
 set_tests_properties(unit:gemini_exe_ok PROPERTIES
-  PASS_REGULAR_EXPRESSION "EOF: gemini.bin"
-  FIXTURES_SETUP gemini_exe_fxt
-  FIXTURES_REQUIRED "mumps_fxt;hwloc_fxt"
-  LABELS unit)
-
-if(test_dll_path)
-  set_tests_properties(unit:gemini_exe_ok PROPERTIES
-    ENVIRONMENT "PATH=${test_dll_path}")
-endif()
+PASS_REGULAR_EXPRESSION "EOF: gemini.bin"
+FIXTURES_SETUP gemini_exe_fxt
+FIXTURES_REQUIRED "mumps_fxt;hwloc_fxt"
+LABELS unit
+ENVIRONMENT $<$<BOOL:${test_dll_path}>:"PATH=${test_dll_path}">
+)
 
 install(TARGETS gemini.bin
   EXPORT ${PROJECT_NAME}Targets)
@@ -128,7 +122,9 @@ LINKER_LANGUAGE C
 target_link_libraries(gemini_c.bin PRIVATE
 gemini3d
 hwloc_ifc hwloc_c
-MUMPS::MUMPS SCALAPACK::SCALAPACK LAPACK::LAPACK MPI::MPI_Fortran)
+MUMPS::MUMPS SCALAPACK::SCALAPACK LAPACK::LAPACK MPI::MPI_Fortran
+)
+target_compile_definitions(gemini_c.bin PRIVATE $<$<BOOL:${MSVC}>:_CRT_SECURE_NO_WARNINGS>)
 
 install(FILES gemini3d.h TYPE INCLUDE)
 

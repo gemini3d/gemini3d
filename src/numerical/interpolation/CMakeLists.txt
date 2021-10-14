@@ -34,7 +34,9 @@ add_test(NAME unit:interp2
 set_tests_properties(unit:interp2 PROPERTIES
   TIMEOUT 15
   LABELS unit
-  FIXTURES_SETUP GemInterp2)
+  FIXTURES_SETUP gemini_interp2_fxt
+  ENVIRONMENT $<$<BOOL:${test_dll_path}>:"PATH=${test_dll_path}">
+)
 
 # --- 3D
 
@@ -50,12 +52,10 @@ set_tests_properties(unit:interp3 PROPERTIES
   TIMEOUT 60  # need 60 for slow CPU
   LABELS unit
   RESOURCE_LOCK cpu_ram
-  FIXTURES_SETUP GemInterp3)
+  FIXTURES_SETUP gemini_interp3_fxt
+  ENVIRONMENT $<$<BOOL:${test_dll_path}>:"PATH=${test_dll_path}">
+)
 
-if(test_dll_path)
-  set_tests_properties(unit:interp2 unit:interp3 PROPERTIES
-    ENVIRONMENT "PATH=${test_dll_path}")
-endif()
 
 
 if(python)
@@ -67,7 +67,7 @@ set_tests_properties(unit:interp2:python PROPERTIES
   REQUIRED_FILES "${_testfile_interp2};${_testfile_interp2in}"
   TIMEOUT 30
   LABELS "unit;python"
-  FIXTURES_REQUIRED GemInterp2
+  FIXTURES_REQUIRED gemini_interp2_fxt
   DISABLED $<NOT:$<BOOL:${Python3_FOUND}>>
 )
 
@@ -79,7 +79,7 @@ set_tests_properties(unit:interp3:python PROPERTIES
   TIMEOUT 30
   LABELS "unit;python"
   RESOURCE_LOCK cpu_ram
-  FIXTURES_REQUIRED GemInterp3
+  FIXTURES_REQUIRED gemini_interp3_fxt
   DISABLED $<NOT:$<BOOL:${Python3_FOUND}>>
 )
 

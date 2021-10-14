@@ -29,6 +29,7 @@ target_link_libraries(test_potential2d PRIVATE const h5fortran::h5fortran MUMPS:
 $<$<BOOL:${mpi}>:SCALAPACK::SCALAPACK>
 LAPACK::LAPACK MPI::MPI_Fortran
 $<$<NOT:$<BOOL:${mpi}>>:MUMPS::MPISEQ>
+"$<$<BOOL:${MUMPS_HAVE_Scotch}>:Scotch::Scotch;METIS::METIS>"
 )
 # MPISEQ is the MPI-1 Fortran 77 linking in MUMPS--avoids symbol clashes
 
@@ -47,21 +48,13 @@ else()
     COMMAND $<TARGET_FILE:test_potential2d> ${_potential_testfile})
 endif()
 
-if(MUMPS_HAVE_Scotch)
-  target_link_libraries(test_potential2d PRIVATE Scotch::Scotch)
-  target_link_libraries(test_potential2d PRIVATE METIS::METIS)
-endif()
-
 set_tests_properties(unit:potential2 PROPERTIES TIMEOUT 30
-  FIXTURES_SETUP GemPot
+  FIXTURES_SETUP gemini_potential_fxt
   RESOURCE_LOCK cpu_mpi
   PROCESSORS ${Ncpu}
   LABELS "unit"
-  )
-if(test_dll_path)
-  set_tests_properties(unit:potential2 PROPERTIES
-    ENVIRONMENT "PATH=${test_dll_path}")
-endif()
+  ENVIRONMENT $<$<BOOL:${test_dll_path}>:"PATH=${test_dll_path}">
+)
 
 if(python)
 
@@ -71,7 +64,7 @@ if(python)
     REQUIRED_FILES ${_potential_testfile}
     TIMEOUT 10
     LABELS "unit;python"
-    FIXTURES_REQUIRED GemPot
+    FIXTURES_REQUIRED gemini_potential_fxt
     DISABLED $<NOT:$<BOOL:${Python3_FOUND}>>
     )
 

@@ -79,7 +79,7 @@ set_tests_properties(unit:msis00_generate PROPERTIES
   FIXTURES_SETUP msis00_gen_fxt
   LABELS unit
   TIMEOUT 10
-  )
+)
 
 add_test(NAME unit:msis00_setup
   COMMAND $<TARGET_FILE:msis_setup> ${msis00_in} ${msis00_out})
@@ -89,7 +89,7 @@ set_tests_properties(unit:msis00_setup PROPERTIES
   LABELS unit
   REQUIRED_FILES ${msis00_in}
   TIMEOUT 10
-  )
+)
 
 add_test(NAME unit:msis00_compare
   COMMAND $<TARGET_FILE:msis_compare> ${msis00_out} ${msis00_ref})
@@ -98,13 +98,11 @@ set_tests_properties(unit:msis00_compare PROPERTIES
   LABELS unit
   TIMEOUT 10
   REQUIRED_FILES "${msis00_out};${msis00_ref}"
-  )
+)
 
-if(test_dll_path)
-  set_tests_properties(unit:msis00_setup unit:msis00_compare PROPERTIES
-    ENVIRONMENT "PATH=${test_dll_path}"
-    )
-endif(test_dll_path)
+set_tests_properties(unit:msis00_setup unit:msis00_compare PROPERTIES
+ENVIRONMENT $<$<BOOL:${test_dll_path}>:"PATH=${test_dll_path}">
+)
 
 # --- MSIS 2.0 tests
 if(msis20)
@@ -114,41 +112,40 @@ if(msis20)
   set(msis20_ref ${PROJECT_SOURCE_DIR}/test_data/msis20_test_out.h5)
 
   add_test(NAME unit:msis20_generate
-    COMMAND $<TARGET_FILE:msis_generate> ${msis20_in} 20)
+    COMMAND $<TARGET_FILE:msis_generate> ${msis20_in} 20
+  )
   set_tests_properties(unit:msis20_generate PROPERTIES
     FIXTURES_SETUP msis20_gen_fxt
     LABELS unit
     TIMEOUT 10
-    )
+  )
 
   add_test(NAME unit:msis20_setup
     COMMAND $<TARGET_FILE:msis_setup> ${msis20_in} ${msis20_out}
     WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
-    )
+  )
   set_tests_properties(unit:msis20_setup PROPERTIES
     FIXTURES_SETUP msis20_fxt
     FIXTURES_REQUIRED msis20_gen_fxt
     LABELS unit
     REQUIRED_FILES ${msis20_in}
     TIMEOUT 10
-    )
+  )
 
   add_test(NAME unit:msis20_compare
     COMMAND $<TARGET_FILE:msis_compare> ${msis20_out} ${msis20_ref}
     WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
-    )
+  )
   set_tests_properties(unit:msis20_compare PROPERTIES
     FIXTURES_REQUIRED msis20_fxt
     LABELS unit
     TIMEOUT 10
     REQUIRED_FILES "${msis20_out};${msis20_ref}"
-    )
+  )
 
-  if(test_dll_path)
-    set_tests_properties(unit:msis20_setup unit:msis20_compare PROPERTIES
-      ENVIRONMENT "PATH=${test_dll_path}"
-      )
-  endif(test_dll_path)
+ set_tests_properties(unit:msis20_setup unit:msis20_compare PROPERTIES
+ ENVIRONMENT $<$<BOOL:${test_dll_path}>:"PATH=${test_dll_path}">
+ )
 
 endif(msis20)
 

@@ -71,12 +71,9 @@ RESOURCE_LOCK $<$<BOOL:${WIN32}>:cpu_mpi>
 REQUIRED_FILES "${outdir}/inputs/config.nml;${refdir}/inputs/config.nml"
 LABELS compare
 DISABLED $<NOT:$<TARGET_EXISTS:gemini3d.compare>>
+ENVIRONMENT $<$<BOOL:${test_dll_path}>:"PATH=${test_dll_path}">
 )
 
-if(test_dll_path)
-  set_tests_properties(gemini:compare:hdf5:${name} PROPERTIES
-    ENVIRONMENT "PATH=${test_dll_path}")
-endif()
 
 # resource_lock compare for Windows, which can take 100x longer when run
 # at same time with non-dependent sim runs.
@@ -94,7 +91,8 @@ set_tests_properties(gemini:compare:netcdf:${name} PROPERTIES
 TIMEOUT 60
 FIXTURES_REQUIRED netcdf:${name}:run_fxt
 REQUIRED_FILES "${outdir}/inputs/config.nml;${refdir}/inputs/config.nml"
-LABELS compare)
+LABELS compare
+)
 
 endif(netcdf)
 

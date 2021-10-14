@@ -25,11 +25,9 @@ add_test(NAME unit:diffusion1
 set_tests_properties(unit:diffusion1 PROPERTIES
   TIMEOUT 5
   LABELS unit
-  FIXTURES_SETUP GemDiff)
-if(test_dll_path)
-  set_tests_properties(unit:diffusion1 PROPERTIES
-    ENVIRONMENT "PATH=${test_dll_path}")
-endif()
+  FIXTURES_SETUP gemini_diffusion_fxt
+  ENVIRONMENT $<$<BOOL:${test_dll_path}>:"PATH=${test_dll_path}">
+)
 
 if(python)
   add_test(NAME unit:diffusion1:python
@@ -39,7 +37,7 @@ if(python)
     TIMEOUT 10
     LABELS "unit;python"
     REQUIRED_FILES ${_tmpdifffn}
-    FIXTURES_REQUIRED GemDiff
+    FIXTURES_REQUIRED gemini_diffusion_fxt
     DISABLED $<NOT:$<BOOL:${Python3_FOUND}>>
   )
 endif()

@@ -1,4 +1,6 @@
 # Windows MSVC-based exe's (including Intel compiler on Windows) need DLL's on PATH.
+# NOTE: CMake 3.22 added test property ENVIRONMENT_MODIFICATION that may do this more smoothly:
+# https://cmake.org/cmake/help/git-stage/prop_test/ENVIRONMENT_MODIFICATION.html
 
 if(NOT MSVC)
   return()
