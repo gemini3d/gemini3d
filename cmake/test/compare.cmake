@@ -13,7 +13,9 @@ TIMEOUT 120
 FIXTURES_REQUIRED "hdf5:${name}:run_fxt;netcdf:${name}:run_fxt"
 REQUIRED_FILES "${outdir}/inputs/config.nml;${refdir}/inputs/config.nml"
 ENVIRONMENT "${MATLABPATH}"
-LABELS "compare;matlab")
+LABELS "compare;matlab"
+DISABLED $<NOT:$<BOOL:${MATGEMINI_DIR}>>
+)
 
 endif()
 
@@ -31,7 +33,9 @@ set_tests_properties(gemini:compare:hdf5:${name}:python PROPERTIES
 TIMEOUT 120
 FIXTURES_REQUIRED hdf5:${name}:run_fxt
 REQUIRED_FILES "${outdir}/inputs/config.nml;${refdir}/inputs/config.nml"
-LABELS "compare;python")
+LABELS "compare;python"
+DISABLED $<NOT:$<BOOL:${PYGEMINI_DIR}>>
+)
 
 endif(hdf5)
 
@@ -44,7 +48,10 @@ set_tests_properties(gemini:compare:netcdf:${name}:python PROPERTIES
 TIMEOUT 120
 FIXTURES_REQUIRED netcdf:${name}:run_fxt
 REQUIRED_FILES "${outdir}/inputs/config.nml;${refdir}/inputs/config.nml"
-LABELS "compare;python")
+LABELS "compare;python"
+DISABLED $<NOT:$<BOOL:${PYGEMINI_DIR}>>
+)
+
 endif(netcdf)
 
 endfunction(python_compare)
@@ -62,7 +69,9 @@ TIMEOUT 60
 FIXTURES_REQUIRED hdf5:${name}:run_fxt
 RESOURCE_LOCK $<$<BOOL:${WIN32}>:cpu_mpi>
 REQUIRED_FILES "${outdir}/inputs/config.nml;${refdir}/inputs/config.nml"
-LABELS compare)
+LABELS compare
+DISABLED $<NOT:$<TARGET_EXISTS:gemini3d.compare>>
+)
 
 if(test_dll_path)
   set_tests_properties(gemini:compare:hdf5:${name} PROPERTIES
@@ -94,16 +103,14 @@ endfunction(fortran_compare)
 
 function(compare_gemini_output name outdir refdir)
 
-if(MATGEMINI_DIR)
+if(matlab)
   matlab_compare(${outdir} ${refdir} ${name})
-endif(MATGEMINI_DIR)
-
-if(PYGEMINI_DIR)
-  python_compare(${outdir} ${refdir} ${name})
-endif(PYGEMINI_DIR)
-
-if(TARGET gemini3d.compare)
-  fortran_compare(${outdir} ${refdir} ${name})
 endif()
+
+if(python)
+  python_compare(${outdir} ${refdir} ${name})
+endif()
+
+fortran_compare(${outdir} ${refdir} ${name})
 
 endfunction(compare_gemini_output)
