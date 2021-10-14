@@ -58,23 +58,29 @@ if(test_dll_path)
 endif()
 
 
-if(Python3_FOUND)
+if(python)
 
 add_test(NAME unit:interp2:python
-  COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testinterp.py ${_testfile_interp2})
+  COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testinterp.py ${_testfile_interp2}
+)
 set_tests_properties(unit:interp2:python PROPERTIES
   REQUIRED_FILES "${_testfile_interp2};${_testfile_interp2in}"
   TIMEOUT 30
   LABELS "unit;python"
-  FIXTURES_REQUIRED GemInterp2)
+  FIXTURES_REQUIRED GemInterp2
+  DISABLED $<NOT:$<BOOL:${Python3_FOUND}>>
+)
 
 add_test(NAME unit:interp3:python
-  COMMAND ${Python3_EXECUTABLE}  ${CMAKE_CURRENT_SOURCE_DIR}/testinterp3.py ${_testfile_interp3})
+  COMMAND ${Python3_EXECUTABLE}  ${CMAKE_CURRENT_SOURCE_DIR}/testinterp3.py ${_testfile_interp3}
+)
 set_tests_properties(unit:interp3:python PROPERTIES
   REQUIRED_FILES "${_testfile_interp3};${_testfile_interp3in}"
   TIMEOUT 30
   LABELS "unit;python"
   RESOURCE_LOCK cpu_ram
-  FIXTURES_REQUIRED GemInterp3)
+  FIXTURES_REQUIRED GemInterp3
+  DISABLED $<NOT:$<BOOL:${Python3_FOUND}>>
+)
 
-endif(Python3_FOUND)
+endif()

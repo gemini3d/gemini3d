@@ -63,7 +63,7 @@ if(test_dll_path)
     ENVIRONMENT "PATH=${test_dll_path}")
 endif()
 
-if(Python3_FOUND)
+if(python)
 
   add_test(NAME unit:potential2:python
     COMMAND ${Python3_EXECUTABLE}  ${CMAKE_CURRENT_SOURCE_DIR}/test_potential2d.py ${_potential_testfile})
@@ -71,6 +71,8 @@ if(Python3_FOUND)
     REQUIRED_FILES ${_potential_testfile}
     TIMEOUT 10
     LABELS "unit;python"
-    FIXTURES_REQUIRED GemPot)
+    FIXTURES_REQUIRED GemPot
+    DISABLED $<NOT:$<BOOL:${Python3_FOUND}>>
+    )
 
-endif(Python3_FOUND)
+endif()

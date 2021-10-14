@@ -31,12 +31,15 @@ if(test_dll_path)
     ENVIRONMENT "PATH=${test_dll_path}")
 endif()
 
-if(Python3_FOUND)
+if(python)
   add_test(NAME unit:diffusion1:python
-    COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test_diffusion1D.py ${_tmpdifffn})
+    COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test_diffusion1D.py ${_tmpdifffn}
+  )
   set_tests_properties(unit:diffusion1:python PROPERTIES
     TIMEOUT 10
     LABELS "unit;python"
     REQUIRED_FILES ${_tmpdifffn}
-    FIXTURES_REQUIRED GemDiff)
-endif(Python3_FOUND)
+    FIXTURES_REQUIRED GemDiff
+    DISABLED $<NOT:$<BOOL:${Python3_FOUND}>>
+  )
+endif()
