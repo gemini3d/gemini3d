@@ -8,7 +8,7 @@ implicit none (type, external)
 type(hdf5_file) :: h
 
 character(1000) :: buf
-character(:), allocatable :: filename, mode, mode_r
+character(:), allocatable :: filename, mode
 logical :: exists
 
 if (command_argument_count() /= 2) error stop "please give: filename expected_mode"
@@ -26,7 +26,6 @@ call h%open(filename, action="r")
 call h%read("/info", buf)
 call h%close()
 
-mode_r = buf(:index(buf, c_null_char)-1)
-if (mode_r /= mode) error stop "dump mode mismatch: expected " // mode // " but got " // mode_r
+if (buf /= mode) error stop "dump mode mismatch: expected " // mode // " but got " // trim(buf)
 
 end program
