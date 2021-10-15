@@ -32,7 +32,7 @@ target_link_libraries(multifluid PRIVATE advec calculus collision const diffusio
 add_subdirectory(utils)
 
 # --- Main GEMINI3D library
-install(TARGETS msis00mod nc4fortran mumps_interface
+install(TARGETS nc4fortran mumps_interface
   EXPORT ${PROJECT_NAME}Targets
 )
 

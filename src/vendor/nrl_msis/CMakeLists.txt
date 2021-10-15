@@ -54,7 +54,7 @@ $<$<BOOL:${HDF5_HAVE_PARALLEL}>:MPI::MPI_Fortran>
 )
 set_target_properties(msis_setup PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
 
-install(TARGETS msis_setup EXPORT ${PROJECT_NAME}Targets)
+install(TARGETS msis00mod msis_setup EXPORT ${PROJECT_NAME}Targets)
 
 if(BUILD_TESTING)
 
