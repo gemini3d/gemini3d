@@ -28,7 +28,6 @@ outfile = trim(buf)
 
 !> select input format
 call input_hdf5(infile, msis_version, doy,sec,f107a,f107,Ap, glat, glon, alt)
-! print '(A,14F8.1)', 'TRACE:MSIS00_bit32: inputs: ', msis_version, doy, sec, alt, glat, glon, f107a, f107, Ap
 
 !> ensure MSIS 2.0 setup OK
 if(msis_version == 20) then
@@ -43,7 +42,10 @@ lx2 = size(alt,2)
 lx3 = size(alt,3)
 allocate(Dn(lx1,lx2,lx3, 9), Tn(lx1,lx2,lx3, 2))
 
-if(msis_version == 20) call msisinit(parmfile=parmfile)
+if(msis_version == 20) then
+  ! print *, "TRACE: msis_setup: MSIS 2.0 call msisinit"
+  call msisinit(parmfile=parmfile)
+endif
 
 do i=1,lx1
   do j=1,lx2
@@ -57,6 +59,14 @@ do i=1,lx1
       case default
         error stop 'expected msis_version = {0,20}'
       end select
+
+      !> sanity check N2 density
+      if(Dn(i,j,k,3) < 1e-3) then
+        write(stderr,*) "MSIS",msis_version, "inputs: doy, UTsec, alt, glat, glon, f107a, f107, Ap", &
+          doy, sec, alt(i,j,k), glat(i,j,k), glon(i,j,k), f107a, f107, Ap(1)
+        write(stderr,*) "N2 density < 1e-3 at lat,lon,alt:", glat(i,j,k), glon(i,j,k), alt(i,j,k)
+        error stop "msis_setup failed"
+      endif
 
     end do
   end do
@@ -145,7 +155,6 @@ call hf%write("/nOana", Dn(:,:,:,9))
 
 call hf%write("/Tn", Tn(:,:,:,2))
 call hf%write("/Texo", Tn(:,:,:,1))
-
 
 call hf%close()
 

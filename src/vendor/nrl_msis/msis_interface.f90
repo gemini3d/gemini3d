@@ -138,6 +138,9 @@ select type (doy)
     error stop 'msis_gtd8: doy must be real or integer'
 end select
 
+! print *, "TRACE: MSIS 2.0 64 bit: inputs: doy, UTsec, alt_km, glat, glon, f107a, f107, Ap7", &
+!   dayOfYear, UTsec, alt_km, glat, glon, f107a, f107, Ap7(1)
+
 !> input validation
 if (dayOfYear < 1 .or. dayOfYear > 366) error stop "valid dayOfYear range is 1..366"
 if (UTsec < 0 .or. UTsec > 86400) error stop "valid UTsec range is 0..86400"
@@ -183,6 +186,9 @@ select type (doy)
   class default
     error stop 'msis_gtd8: doy must be real or integer'
 end select
+
+! print *, "TRACE: MSIS 2.0 64 bit: inputs: doy, UTsec, alt_km, glat, glon, f107a, f107, Ap7", &
+!   dayOfYear, UTsec, alt_km, glat, glon, f107a, f107, Ap7(1)
 
 !> input validation
 if (dayOfYear < 1 .or. dayOfYear > 366) error stop "valid dayOfYear range is 1..366"
