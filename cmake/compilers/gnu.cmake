@@ -4,7 +4,7 @@ add_compile_options(-mtune=native)
 add_compile_options($<$<COMPILE_LANGUAGE:Fortran>:-fimplicit-none>)
 
 # --- IMPORTANT
-add_compile_options("$<$<AND:$<COMPILE_LANGUAGE:Fortran>,$<CONFIG:Debug>>:-Werror=array-bounds;-fcheck=all>")
+add_compile_options("$<$<AND:$<COMPILE_LANGUAGE:Fortran>,$<CONFIG:Debug,RelWithDebInfo>>:-Werror=array-bounds;-fcheck=all>")
 # --- IMPORTANT: options help trap array indexing/bounds errors at runtime
 
 
@@ -26,7 +26,7 @@ endif()
 
 
 
-  # add_compile_options("$<$<AND:$<COMPILE_LANGUAGE:Fortran>,$<CONFIG:Debug>>:-ffpe-trap=invalid,zero,overflow>")#,underflow)
+# add_compile_options("$<$<AND:$<COMPILE_LANGUAGE:Fortran>,$<CONFIG:Debug,RelWithDebInfo>>:-ffpe-trap=invalid,zero,overflow>")#,underflow)
 
 # makes a lot of spurious warnngs on alloctable scalar character
 add_compile_options($<$<Fortran_COMPILER_VERSION:9.3.0>:-Wno-maybe-uninitialized>)

@@ -10,6 +10,14 @@
   }
 },
 {
+  "name": "reldebug",
+  "displayName": "Turns on release and debug flags, including array bounds check.",
+  "description": "Runs slower than release",
+  "cacheVariables": {
+    "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+    }
+},
+{
   "name": "debug",
   "displayName": "Turns on debug flags, including array bounds check.",
   "cacheVariables": {
@@ -44,6 +52,11 @@
     "configuration": "Release"
   },
   {
+    "name": "reldebug",
+    "configurePreset": "multi",
+    "configuration": "RelWithDebInfo"
+  },
+  {
     "name": "debug",
     "configurePreset": "multi",
     "configuration": "Debug"
@@ -71,6 +84,11 @@
   "name": "release", "inherits": "default",
   "configurePreset": "multi",
   "configuration": "Release"
+},
+{
+  "name": "reldebug", "inherits": "default",
+  "configurePreset": "multi",
+  "configuration": "RelWithDebInfo"
 },
 {
   "name": "debug", "inherits": "default",

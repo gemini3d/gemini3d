@@ -61,13 +61,13 @@ $<$<BOOL:${HDF5_HAVE_PARALLEL}>:MPI::MPI_Fortran>
 )
 set_target_properties(gemini3d.run.debug PROPERTIES
 RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
-EXCLUDE_FROM_ALL $<NOT:$<CONFIG:Debug>>
+EXCLUDE_FROM_ALL $<NOT:$<CONFIG:Debug,RelWithDebInfo>>
 )
 
 add_test(NAME unit:gemini3d_run_debug_ok COMMAND $<TARGET_FILE:gemini3d.run.debug>)
 set_tests_properties(unit:gemini3d_run_debug_ok PROPERTIES
   PASS_REGULAR_EXPRESSION "EOF: gemini3d.run"
-  DISABLED $<NOT:$<CONFIG:Debug>>
+  DISABLED $<NOT:$<CONFIG:Debug,RelWithDebInfo>>
   LABELS unit
   TIMEOUT 10)
 # --- magcalc.run
