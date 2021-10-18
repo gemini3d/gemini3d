@@ -6,7 +6,7 @@ function(setup_gemini_test name TIMEOUT)
 
 # --- setup test
 cmake_path(APPEND out_dir ${PROJECT_BINARY_DIR} ${name})
-cmake_path(APPEND ref_root ${PROJECT_SOURCE_DIR} test_data)
+cmake_path(APPEND ref_root ${PROJECT_SOURCE_DIR} test_data/compare)
 cmake_path(APPEND ref_dir ${ref_root} ${name})
 
 add_test(NAME ${name}:download

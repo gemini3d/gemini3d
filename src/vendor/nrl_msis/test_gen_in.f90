@@ -1,5 +1,5 @@
 program gen_msis_test_in
-!! Generate test_data/msis_test_in.h5
+!! Generate test_data/msis/msis_test_in.h5
 !! assumes directory to write data into already exists.
 
 use, intrinsic :: iso_fortran_env, only : real32

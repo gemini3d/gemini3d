@@ -71,7 +71,7 @@ $<$<BOOL:${HDF5_HAVE_PARALLEL}>:MPI::MPI_Fortran>
 # --- MSISE00 tests
 set(msis00_in ${CMAKE_CURRENT_BINARY_DIR}/msis00_test_in.h5)
 set(msis00_out ${CMAKE_CURRENT_BINARY_DIR}/msis00_test_out.h5)
-set(msis00_ref ${PROJECT_SOURCE_DIR}/test_data/msis00_test_out.h5)
+set(msis00_ref ${PROJECT_SOURCE_DIR}/test_data/msis/msis00_test_out.h5)
 
 add_test(NAME unit:msis00_generate
   COMMAND $<TARGET_FILE:msis_generate> ${msis00_in} 0)
@@ -109,7 +109,7 @@ if(msis20)
 
   set(msis20_in ${CMAKE_CURRENT_BINARY_DIR}/msis20_test_in.h5)
   set(msis20_out ${CMAKE_CURRENT_BINARY_DIR}/msis20_test_out.h5)
-  set(msis20_ref ${PROJECT_SOURCE_DIR}/test_data/msis20_test_out.h5)
+  set(msis20_ref ${PROJECT_SOURCE_DIR}/test_data/msis/msis20_test_out.h5)
 
   add_test(NAME unit:msis20_generate
     COMMAND $<TARGET_FILE:msis_generate> ${msis20_in} 20
