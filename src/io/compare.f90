@@ -56,9 +56,9 @@ end interface
 
 contains
 
-subroutine plot_diff(new_file, ref_file, name, P)
+subroutine plot_diff(new_file, ref_file, name, only, P)
 !! call MatGemini or PyGemini plotdiff()
-character(*), intent(in) :: new_file, ref_file, name
+character(*), intent(in) :: new_file, ref_file, only, name
 class(params), intent(in) :: P
 
 character(1000) :: cmd
@@ -68,7 +68,15 @@ ierr1 = 0
 ierr2 = 0
 
 if(P%python) then
-  cmd = "python -m gemini3d.compare " // new_file // " " // ref_file // " -plot -name " // name(1:2)
+  cmd = "python -m gemini3d.compare " // new_file // " " // ref_file // " -plot"
+  select case (only)
+  case ("in")
+    cmd = trim(cmd) // " -only in"
+  case ("out")
+    cmd = trim(cmd) // " -only out -name " // name(1:2)
+  case default
+    error stop "plot_diff: unknown -only " // only
+  end select
 elseif(P%matlab) then
   cmd = "matlab -batch " // achar(34) // "gemini3d.plot.plotdiff('" // new_file // "', '" // ref_file // "', '" // name(1:2) // &
     "')" // achar(34)
@@ -76,8 +84,12 @@ else
   return
 endif
 
+print '(/,2a,/)', "plot_diff: ", trim(cmd)
+
 call execute_command_line(cmd, exitstat=ierr1, cmdstat=ierr2)
-if(ierr1 /=0 .or. ierr2 /= 0) then
+if(ierr1 == 0 .and. ierr2 == 0) then
+  print *, "plot_diff: ", only, name, new_file
+else
   if(P%python) then
     write(stderr,'(A,/,A)') "ERROR: failed to plot diff using PyGemini: ", trim(cmd)
   elseif(P%matlab) then

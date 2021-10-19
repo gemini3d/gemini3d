@@ -194,7 +194,7 @@ endif
 bad = 1
 write(stderr,*) "MISMATCH: " // file_name(new_file) // " ", derived_name, maxval(abs(D_ref - D_new))
 
-call plot_diff(new_file, ref_file, derived_name, P)
+call plot_diff(new_file, ref_file, derived_name, "out", P)
 
 end function check_derived
 
@@ -265,7 +265,7 @@ else
 endif
 
 !> optional plotting
-call plot_diff(new_file, ref_file, name, P)
+call plot_diff(new_file, ref_file, name, "out", P)
 
 
 end function check_var

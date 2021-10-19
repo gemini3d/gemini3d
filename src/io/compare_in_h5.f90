@@ -31,7 +31,7 @@ call check_time(new_file, ref_file)
 !> check data
 bad = 0
 
-bad = bad + check_initcond(new_file, ref_file, new_path, ref_path, P%debug)
+bad = bad + check_initcond(new_file, ref_file, new_path, ref_path, P)
 
 if (cfg%flagprecfile == 1) then
   bad = bad + check_precip(new_path, ref_path, cfg, P)
@@ -46,10 +46,10 @@ check_plasma_input_hdf5 = bad == 0
 end procedure check_plasma_input_hdf5
 
 
-integer function check_initcond(new_file, ref_file, new_path, ref_path, debug) result(bad)
+integer function check_initcond(new_file, ref_file, new_path, ref_path, P) result(bad)
 
 character(*), intent(in) :: new_path, ref_path, new_file, ref_file
-logical, intent(in) :: debug
+class(params), intent(in) :: P
 
 character(6), parameter :: var(3) = [character(6) :: "nsall", "Tsall", "vs1all"]
 
@@ -76,7 +76,7 @@ do i = 1,size(var)
   if (.not.all(ieee_is_finite(new4))) error stop "NON-FINITE: " // file_name(new_file) // " " // var(i)
 
   if(all(isclose(ref4, new4, real(rtol), real(atol)))) then
-    if(debug) print '(A)', "OK: input: " // var(i)
+    if(P%debug) print '(A)', "OK: input: " // var(i)
   else
     bad = bad + 1
 
@@ -91,6 +91,8 @@ end do
 
 call hnew%close()
 call href%close()
+
+if(bad /= 0) call plot_diff(new_path, ref_path, "init_cond", "in", P)
 
 end function check_initcond
 
@@ -158,6 +160,7 @@ do while (t <= cfg%tdur)
   t = t + cfg%dtprec
 end do
 
+if(bad /= 0) call plot_diff(new_path, ref_path, "precip", "in", P)
 
 end function check_precip
 
@@ -226,6 +229,7 @@ do while (t <= cfg%tdur)
 
 end do
 
+if(bad /= 0) call plot_diff(new_path, ref_path, "E-field", "in", P)
 
 end function check_Efield
 
