@@ -61,7 +61,7 @@ integer :: i1, k1, i2, k2, i3, k3, i4, k4
 character(:), allocatable :: dump_filename
 character(8) :: wid
 
-write(worker_id, *) wid
+write(wid, '(I0)') worker_id
 
 dump_filename = out_dir // "/dump_nonfinite_output_worker_" // trim(wid) // ".h5"
 
