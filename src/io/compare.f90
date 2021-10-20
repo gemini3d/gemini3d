@@ -87,9 +87,7 @@ endif
 print '(/,2a,/)', "plot_diff: ", trim(cmd)
 
 call execute_command_line(cmd, exitstat=ierr1, cmdstat=ierr2)
-if(ierr1 == 0 .and. ierr2 == 0) then
-  print *, "plot_diff: ", only, name, new_file
-else
+if(ierr1 /= 0 .or. ierr2 /= 0) then
   if(P%python) then
     write(stderr,'(A,/,A)') "ERROR: failed to plot diff using PyGemini: ", trim(cmd)
   elseif(P%matlab) then
