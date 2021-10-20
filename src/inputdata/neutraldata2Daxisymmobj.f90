@@ -106,41 +106,6 @@ contains
           gammarads=acos(gammarads)                     !angle between source location annd field point (in radians)
           self%horzimat(ix1,ix2,ix3)=Re*gammarads    !rho here interpreted as the arc-length defined by angle between epicenter and ``field point''
     
-!          !we need a phi locationi (not spherical phi, but azimuth angle from epicenter), as well, but not for interpolation - just for doing vector rotations
-!          theta3=theta2
-!          phi3=phi1
-!          gamma1=cos(theta2)*cos(theta3)+sin(theta2)*sin(theta3)*cos(phi2-phi3)
-!          if (gamma1 > 1) then     !handles weird precision issues in 2D
-!            gamma1 = 1
-!          else if (gamma1 < -1) then
-!            gamma1 = -1
-!          end if
-!          gamma1=acos(gamma1)
-!    
-!          gamma2=cos(theta1)*cos(theta3)+sin(theta1)*sin(theta3)*cos(phi1-phi3)
-!          if (gamma2 > 1) then     !handles weird precision issues in 2D
-!            gamma2 = 1
-!          else if (gamma2< -1) then
-!            gamma2= -1
-!          end if
-!          gamma2=acos(gamma2)
-!    
-!          xp=Re*gamma1
-!          yp=Re*gamma2     !this will likely always be positive, since we are using center of earth as our origin, so this should be interpreted as distance as opposed to displacement
-!    
-!          !COMPUTE COORDINATES FROM DISTANCES
-!          if (theta3>theta1) then       !place distances in correct quadrant, here field point (theta3=theta2) is is SOUTHward of source point (theta1), whreas yp is distance northward so throw in a negative sign
-!            yp = -yp            !do we want an abs here to be safe
-!          end if
-!          if (phi2<phi3) then     !assume we aren't doing a global grid otherwise need to check for wrapping, here field point (phi2) less than source point (phi3=phi1)
-!            xp = -xp
-!          end if
-!          phip=atan2(yp,xp)
-!    
-!          if(flagcart) then
-!            yimat(ix1,ix2,ix3)=yp
-!          end if
-    
           !PROJECTIONS FROM NEUTURAL GRID VECTORS TO PLASMA GRID VECTORS
           !projection factors for mapping from axisymmetric to dipole (go ahead and compute projections so we don't have to do it repeatedly as sim runs
           ezp=x%er(ix1,ix2,ix3,:)
@@ -155,36 +120,21 @@ contains
           tmpvec=ezp*x%e3(ix1,ix2,ix3,:)
           tmpsca=sum(tmpvec)    !should be zero, but leave it general for now
           self%proj_ezp_e3(ix1,ix2,ix3)=tmpsca
-    
-          !if (flagcart) then
-          !  eyp= -x%etheta(ix1,ix2,ix3,:)
-          !
-          !  tmpvec=eyp*x%e1(ix1,ix2,ix3,:)
-          !  tmpsca=sum(tmpvec)
-          !  proj_eyp_e1(ix1,ix2,ix3)=tmpsca
-          !
-          !  tmpvec=eyp*x%e2(ix1,ix2,ix3,:)
-          !  tmpsca=sum(tmpvec)
-          !  proj_eyp_e2(ix1,ix2,ix3)=tmpsca
-          !
-          !  tmpvec=eyp*x%e3(ix1,ix2,ix3,:)
-          !  tmpsca=sum(tmpvec)
-          !  proj_eyp_e3(ix1,ix2,ix3)=tmpsca
-          !else
-            erhop=cos(phip)*x%e3(ix1,ix2,ix3,:) - sin(phip)*x%etheta(ix1,ix2,ix3,:)     !unit vector for azimuth (referenced from epicenter - not geocenter!!!) in cartesian geocentric-geomagnetic coords.
-    
-            tmpvec=erhop*x%e1(ix1,ix2,ix3,:)
-            tmpsca=sum(tmpvec)
-            self%proj_ehorzp_e1(ix1,ix2,ix3)=tmpsca
-    
-            tmpvec=erhop*x%e2(ix1,ix2,ix3,:)
-            tmpsca=sum(tmpvec)
-            self%proj_ehorzp_e2(ix1,ix2,ix3)=tmpsca
-    
-            tmpvec=erhop*x%e3(ix1,ix2,ix3,:)
-            tmpsca=sum(tmpvec)
-            self%proj_ehorzp_e3(ix1,ix2,ix3)=tmpsca
-          !end if
+
+          erhop=cos(phip)*x%e3(ix1,ix2,ix3,:) - sin(phip)*x%etheta(ix1,ix2,ix3,:)     !unit vector for azimuth (referenced from epicenter - not geocenter!!!) in cartesian geocentric-geomagnetic coords.
+  
+          tmpvec=erhop*x%e1(ix1,ix2,ix3,:)
+          tmpsca=sum(tmpvec)
+          self%proj_ehorzp_e1(ix1,ix2,ix3)=tmpsca
+  
+          tmpvec=erhop*x%e2(ix1,ix2,ix3,:)
+          tmpsca=sum(tmpvec)
+          self%proj_ehorzp_e2(ix1,ix2,ix3)=tmpsca
+  
+          tmpvec=erhop*x%e3(ix1,ix2,ix3,:)
+          tmpsca=sum(tmpvec)
+          self%proj_ehorzp_e3(ix1,ix2,ix3)=tmpsca
+        !end if
         end do
       end do
     end do
