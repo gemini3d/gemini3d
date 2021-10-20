@@ -91,16 +91,6 @@ contains
             phi2=phi1                                    !assume the longitude is the samem as the source in 2D, i.e. assume the source epicenter is in the meridian of the grid
           end if
     
-          !COMPUTE DISTANCES
-          !gammarads=cos(theta1)*cos(theta2)+sin(theta1)*sin(theta2)*cos(phi1-phi2)     !this is actually cos(gamma)
-          !if (gammarads > 1) then     !handles weird precision issues in 2D
-          !  gammarads = 1
-          !else if (gammarads < -1) then
-          !  gammarads= -1
-          !end if
-          !gammarads=acos(gammarads)                     !angle between source location annd field point (in radians)
-          !rhoimat(ix1,ix2,ix3)=Re*gammarads    !rho here interpreted as the arc-length defined by angle between epicenter and ``field point''
-    
           !we need a phi locationi (not spherical phi, but azimuth angle from epicenter), as well, but not for interpolation - just for doing vector rotations
           theta3=theta2
           phi3=phi1
