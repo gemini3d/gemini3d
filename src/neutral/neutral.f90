@@ -147,7 +147,7 @@ contains
 
     ! advance object state
     call atmosperturb%update(cfg,dt,t,x,ymd,UTsec)
-  
+
     !Add interpolated perturbations to module reference atmosphere arrays
     call neutral_update(nn,Tn,vn1,vn2,vn3,v2grid,v3grid)
   end subroutine neutral_perturb
