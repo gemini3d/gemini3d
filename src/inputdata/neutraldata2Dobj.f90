@@ -179,14 +179,12 @@ contains
     allocate(self%data0Di(l0D,2))
     allocate(self%data1Dax1i(lc1i,l1Dax1,2), self%data1Dax2i(lc2i,l1Dax2,2), self%data1Dax3i(lc3i,l1Dax3,2))
     allocate(self%data2Dax23i(lc2i,lc3i,l2Dax23,2), self%data2Dax12i(lc1i,lc2i,l2Dax12,2), self%data2Dax13i(lc1i,lc3i,l2Dax13,2))
-    !allocate(self%data3Di(lc1i,lc2i,lc3i,l3D,2))
     allocate(self%data3Di(lc1i,lc2i,lc3i,l3D+1,2))     ! note extra parameter for three vector components!!!
 
     ! allocate object arrays at interpolation sites for current time.  FIXME: do we even need to store permanently?
     allocate(self%data0Dinow(l0D))
     allocate(self%data1Dax1inow(lc1i,l1Dax1), self%data1Dax2inow(lc2i,l1Dax2), self%data1Dax3inow(lc3i,l1Dax3))
     allocate(self%data2Dax23inow(lc2i,lc3i,l2Dax23), self%data2Dax12inow(lc1i,lc2i,l2Dax12), self%data2Dax13inow(lc1i,lc3i,l2Dax13))
-!    allocate(self%data3Dinow(lc1i,lc2i,lc3i,l3D))
     allocate(self%data3Dinow(lc1i,lc2i,lc3i,l3D+1))    ! +1 because even with 2D input we still need to track 3 comps.
 
     self%flagalloc=.true.
@@ -297,7 +295,8 @@ contains
     call self%rotate_winds()
 
     ! print some diagnostic data once the udpate has occurred
-    if (mpi_cfg%myid==mpi_cfg%lid/2 .and. debug) then
+    !if (mpi_cfg%myid==mpi_cfg%lid/2 .and. debug) then
+    if (debug) then
       print*, ''
       print*, 'neutral data size:  ',mpi_cfg%myid,self%lzn,self%lhorzn,self%lxn
       print*, 'neutral data time:  ',ymd,UTsec
@@ -334,7 +333,7 @@ contains
     !   gets stored in the dvn3i variables.  
     do ix3=1,self%lc3i
       do ix2=1,self%lc2i
-        do ix1=1,self%lc3i
+        do ix1=1,self%lc1i
           vnz=self%dvn1inow(ix1,ix2,ix3)
           vnhorz=self%dvn2inow(ix1,ix2,ix3)
           Tn=self%dvn3inow(ix1,ix2,ix3)    ! need to save because it will get overwritten in rotation
