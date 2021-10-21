@@ -33,10 +33,6 @@ subroutine init_precipinput(dt,t,cfg,ymd,UTsec,x)
   real(wp), intent(in) :: UTsec
   class(curvmesh), intent(in) :: x
   
-  real(wp), dimension(1:x%lx2,1:x%lx3,2) :: W0,PhiWmWm2    ! these are only worker-sized, hardcoded 2 precipitation populations...
-  integer, dimension(3) :: ymdtmp
-  real(wp) :: UTsectmp
-  
   if (cfg%flagprecfile==1) then    !all workers must have this info
     call eprecip%init(cfg,cfg%precdir,x,dt,cfg%dtprec,ymd,UTsec)
   end if
@@ -67,6 +63,9 @@ subroutine precipBCs_fileinput(dtmodel,t,cfg,ymd,UTsec,x,W0,PhiWmWm2)
 
   ! disturbance precipitation from file input
   call eprecip%update(cfg,dtmodel,t,x,ymd,UTsec)
+
+  ! set output arrays; note that this is making a copy of the data stored the precipdata object.  We
+  !   will assume for now that this doesn't incur too much memory overhead
   W0(:,:,2)=eprecip%E0pinow(:,:)
   PhiWmWm2(:,:,2)=eprecip%Qpinow(:,:)
 
