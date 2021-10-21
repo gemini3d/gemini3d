@@ -28,25 +28,11 @@ contains
 
 subroutine init_Efieldinput(dt,t,cfg,ymd,UTsec,x)
   !> Initialize variables to hold electric field input file data, can be called by any worker but only root does anything
-
-  !! FIXME:  This routine was extremely confusing to get right; much of that could probably be alleviated by not having t and ymd,UTsec
-  !   assigned independently...
-
   real(wp), intent(in) :: dt,t
   type(gemini_cfg), intent(in) :: cfg
   integer, dimension(3), intent(in) :: ymd
   real(wp), intent(in) :: UTsec
   class(curvmesh), intent(in) :: x
-
-  !! only root needs to allocate these
-  real(wp), dimension(:,:), allocatable :: Vminx1,Vmaxx1
-  real(wp), dimension(:,:), allocatable :: Vminx2,Vmaxx2
-  real(wp), dimension(:,:), allocatable :: Vminx3,Vmaxx3
-  real(wp), dimension(:,:,:), allocatable :: E01all,E02all,E03all
-  integer :: flagdirich
-  integer, dimension(3) :: ymdtmp
-  real(wp) :: UTsectmp
-
 
   !> initializes the auroral electric field/current and particle inputs to read in a file corresponding to the first time step
   if (mpi_cfg%myid==0 .and. cfg%flagE0file==1) then    !only root needs these...
@@ -60,12 +46,10 @@ subroutine potentialBCs2D_fileinput(dtmodel,t,ymd,UTsec,cfg,x,Vminx1,Vmaxx1,Vmin
   !! A FILE INPUT BASED BOUNDARY CONDITIONS FOR ELECTRIC POTENTIAL OR
   !! FIELD-ALIGNED CURRENT.
   !! NOTE: THIS IS ONLY CALLED BY THE ROOT PROCESS
-
   real(wp), intent(in) :: dtmodel
   real(wp), intent(in) :: t
   integer, dimension(3), intent(in) :: ymd    !date for which we wish to calculate perturbations
   real(wp), intent(in) :: UTsec
-
   type(gemini_cfg), intent(in) :: cfg
   class(curvmesh), intent(in) :: x
 
@@ -95,6 +79,8 @@ subroutine potentialBCs2D_fileinput(dtmodel,t,ymd,UTsec,cfg,x,Vminx1,Vmaxx1,Vmin
   flagdirich=nint(efield%flagdirich)
 
   !! set boundary condition output arguments based on object data
+  !!   Note that we are effectively making copies of object properties; however, additional processing is
+  !!   being done here that is specific to the potential solver so that may be justified extra memory use...
   do ix3=1,lx3all
     do ix2=1,lx2all
       Vminx1(ix2,ix3)=efield%Vminx1inow(ix2,ix3)
@@ -168,16 +154,6 @@ subroutine potentialBCs2D_fileinput(dtmodel,t,ymd,UTsec,cfg,x,Vminx1,Vmaxx1,Vmin
       end if
     end if
   end if
-
-
-!  print*, minval(E02all),maxval(E02all),minval(E03all),maxval(E03all)
-!  print*, minval(Vminx1),maxval(Vminx1),minval(Vmaxx1),maxval(Vmaxx1)
-!  print*, minval(Vminx2),maxval(Vminx2),minval(Vmaxx2),maxval(Vmaxx2)
-!  print*, minval(Vminx3),maxval(Vminx3),minval(Vmaxx3),maxval(Vmaxx3)
-!
-!  print*, shape(Vminx1),shape(Vmaxx1),shape(Vminx2),shape(Vmaxx2),shape(Vminx3),shape(Vmaxx3)
-!  print*, shape(efield%Vminx1inow),shape(efield%Vmaxx1inow)
-!  print*, shape(efield%Vminx2isnow),shape(efield%Vmaxx2isnow),shape(efield%Vminx3isnow),shape(efield%Vmaxx3isnow)
 end subroutine potentialBCs2D_fileinput
 
 

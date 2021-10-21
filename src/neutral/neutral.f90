@@ -296,6 +296,8 @@ contains
     ! stuff allocated at beginning of program
     deallocate(nnmsis,Tnmsis,vn1base,vn2base,vn3base)
     
+    if (allocated(atmosperturb)) deallocate(atmosperturb)
+    
     ! rotations of neutral winds
     if (allocated(proj_ealt_e1)) then
       deallocate(proj_ealt_e1,proj_eglat_e1,proj_eglon_e1)
