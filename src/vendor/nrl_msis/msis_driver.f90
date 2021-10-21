@@ -32,7 +32,10 @@ call input_hdf5(infile, msis_version, doy,sec,f107a,f107,Ap, glat, glon, alt)
 !> ensure MSIS 2.0 setup OK
 if(msis_version == 20) then
   inquire(file=parmfile, exist=exists)
-  if (.not. exists) error stop parmfile // " not found, required by MSIS 2.0"
+  if (.not. exists) then
+    write(stderr,'(a)') parmfile // " not found, required by MSIS 2.0"
+    error stop 20
+  endif
 endif
 
 
