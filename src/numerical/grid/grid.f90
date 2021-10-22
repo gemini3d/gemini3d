@@ -11,7 +11,7 @@ use mpimod, only: mpi_integer, mpi_comm_world, mpi_status_ignore, &
   bcast_recv, bcast_send, bcast_recv3D_ghost, bcast_send3D_ghost, bcast_recv3D_x3i, bcast_send3D_x3i, &
   bcast_send3D_x2i,bcast_recv3D_x2i, bcast_send1D_2, bcast_recv1D_2, bcast_send1D_3, bcast_recv1D_3, &
   gather_send3D_ghost,gather_send3D_x2i,gather_send3D_x3i,gather_recv3D_ghost,gather_recv3D_x2i,gather_recv3D_x3i, &
-  gather_send,gather_recv,ID2grid
+  gather_send,gather_recv,ID2grid,grid2ID
 
 implicit none (type, external)
 private
