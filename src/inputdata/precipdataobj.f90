@@ -7,7 +7,6 @@ use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
 use phys_consts, only: wp,debug,pi
 use inputdataobj, only: inputdata
 use meshobj, only: curvmesh
-use meshobj_dipole, only: dipolemesh
 use config, only: gemini_cfg
 use reader, only: get_simsize2,get_grid2,get_precip
 use mpimod, only: mpi_integer,mpi_comm_world,mpi_status_ignore,mpi_realprec,mpi_cfg,tag=>gemini_mpi

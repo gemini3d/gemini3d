@@ -128,7 +128,7 @@ if (.not.all(ieee_is_finite(Ts(i1:k1, i2:k2, i3:k3, i4:k4)))) &
 if (any(ns(i1:k1, i2:k2, i3:k3, i4:k4) < 0)) &
   call error_stop(dumpfn, 'input:plasma: negative density Ns', ns, vs1, Ts)
 
-if (maxval(ns(i1:k1, i2:k2, i3:k3, i4:k4)) < 1e6) &
+if (maxval(ns(i1:k1, i2:k2, i3:k3, i4:k4)) < 1e3) &
   call error_stop(dumpfn, 'input:plasma: too low maximum density', ns, vs1, Ts)
 
 if (maxval(ns(i1:k1, i2:k2, i3:k3, i4:k4)) > 1e16) &
