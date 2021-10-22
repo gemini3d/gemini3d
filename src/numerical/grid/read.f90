@@ -137,7 +137,6 @@ subroutine gather_ref_meridian(refalt,refglon,refglat)
   lx1=size(refalt,1); lx2=size(refalt,2);
   
   ! loop over all processes, find reference data copy into arrays
-  print*, '??Beginning negotiation for reference profiles??'
   if (mpi_cfg%myid3==0) then
     do iid3=1,mpi_cfg%lid3-1    ! pass data to other members of my row of the process grid
       iid=grid2ID(mpi_cfg%myid2,iid3)
@@ -151,7 +150,6 @@ subroutine gather_ref_meridian(refalt,refglon,refglat)
     call mpi_recv(refglon,lx1*lx2,MPI_REALPREC,iid,tag%refglon,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
     call mpi_recv(refglat,lx1*lx2,MPI_REALPREC,iid,tag%refglat,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
   end if
-  print*, '??Negotiation done??'
 end subroutine gather_ref_meridian
 
 
