@@ -11,6 +11,7 @@ contains
 !   must also set those.
 module procedure read_grid_cart
 ! subroutine read_grid(indatsize,indatgrid,flagperiodic,x)
+  real(wp), dimension(1:lx1,1:lx2) :: refalt,refglat,refglon
 
   call x%set_center(glonctr,glatctr)
 
@@ -47,8 +48,12 @@ module procedure read_grid_cart
                           x%alt,x%Bmag,x%glon)
   end if
 
-  !> Assign periodic or not based on user input
-  call x%set_periodic(flagperiodic)
+  !> Assign periodic or not based on user input -- this needs to be done "outside" object methods
+  if (flagperiodic==1) then
+    refalt=x%alt(:,:,1); refglon=x%glon(:,:,1); refglat=x%glat(:,:,1);
+    call gather_ref_meridian(refalt,refglon,refglat)
+    call x%set_periodic(flagperiodic,refalt,refglon,refglat)
+  end if
 
   !> Set flags for module scope vars.
   gridflag=x%gridflag
@@ -64,6 +69,7 @@ end procedure read_grid_cart
 
 module procedure read_grid_dipole
 ! subroutine read_grid(indatsize,indatgrid,flagperiodic,x)
+  real(wp), dimension(1:lx1,1:lx2) :: refalt,refglat,refglon
 
   !> Create the grid object
   call x%set_coords(x1,x2,x3,x2all,x3all)    ! store coordinate arrays
@@ -98,8 +104,12 @@ module procedure read_grid_dipole
                           x%alt,x%Bmag,x%glon)
   end if
 
-  !> Assign periodic or not based on user input
-  call x%set_periodic(flagperiodic)
+  !> Assign periodic or not based on user input -- this needs to be done "outside" object methods
+  if (flagperiodic==1) then
+    refalt=x%alt(:,:,1); refglon=x%glon(:,:,1); refglat=x%glat(:,:,1);
+    call gather_ref_meridian(refalt,refglon,refglat)
+    call x%set_periodic(flagperiodic,refalt,refglon,refglat)
+  end if
 
   !> Set flags for module scope vars.
   gridflag=x%gridflag
@@ -114,6 +124,35 @@ end procedure read_grid_dipole
 
 !--------------------------------------------------------------------------------------------------
 
+
+!> grab reference meridian data from first column of workers, input ref varables should be prepoluated
+!    with the first x3 slice of alt,lon,lat
+subroutine gather_ref_meridian(refalt,refglon,refglat)
+  real(wp), dimension(:,:), intent(inout) :: refalt,refglon,refglat
+  integer :: iid,iid3
+  integer :: lx1,lx2
+  integer :: ierr
+
+  ! set sizes for convenience
+  lx1=size(refalt,1); lx2=size(refalt,2);
+  
+  ! loop over all processes, find reference data copy into arrays
+  print*, '??Beginning negotiation for reference profiles??'
+  if (mpi_cfg%myid3==0) then
+    do iid3=1,mpi_cfg%lid3-1    ! pass data to other members of my row of the process grid
+      iid=grid2ID(mpi_cfg%myid2,iid3)
+      call mpi_send(refalt,lx1*lx2,MPI_REALPREC,iid,tag%refalt,MPI_COMM_WORLD,ierr)
+      call mpi_send(refglon,lx1*lx2,MPI_REALPREC,iid,tag%refglon,MPI_COMM_WORLD,ierr)
+      call mpi_send(refglat,lx1*lx2,MPI_REALPREC,iid,tag%refglat,MPI_COMM_WORLD,ierr)
+    end do
+  else
+    iid=grid2ID(mpi_cfg%myid2,0)
+    call mpi_recv(refalt,lx1*lx2,MPI_REALPREC,iid,tag%refalt,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+    call mpi_recv(refglon,lx1*lx2,MPI_REALPREC,iid,tag%refglon,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+    call mpi_recv(refglat,lx1*lx2,MPI_REALPREC,iid,tag%refglat,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
+  end if
+  print*, '??Negotiation done??'
+end subroutine gather_ref_meridian
 
 
 !> pull full grid vars. from workers into root arrays

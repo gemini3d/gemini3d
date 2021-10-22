@@ -95,6 +95,8 @@ integer :: lx=105,xn=106,yn=107,zn=108,dvnx=109
 integer :: v2grid=110,v3grid=111
 integer :: pressure=112
 
+integer :: refalt=113,refglon=114,refglat=115
+
 end type gemini_mpi_tags
 
 type(gemini_mpi_tags), protected :: gemini_mpi

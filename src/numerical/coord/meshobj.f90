@@ -225,7 +225,6 @@ end interface
 
 
 contains
-
   subroutine set_coords(self,x1,x2,x3,x2all,x3all)
   !! assign coordinates to internal variables given some set of input arrays.
   !!  Assume that the data passed in include ghost cells
@@ -305,9 +304,11 @@ contains
   end subroutine set_root
 
 
-  subroutine set_periodic(self,flagperiodic)
+  !> assign a reference meridian alt,lat,lon across periodic grid
+  subroutine set_periodic(self,flagperiodic,refalt,refglon,refglat)
     class(curvmesh), intent(inout) :: self
     integer, intent(in) :: flagperiodic
+    real(wp), dimension(:,:), intent(in) :: refalt,refglon,refglat
     integer :: ix3
 
     ! flag appropriately
@@ -317,12 +318,12 @@ contains
       self%flagper=.false.
     end if
 
-    ! force periodicity in geographic locations
-    !do ix3=2,self%lx3
-    !  self%glat(:,:,ix3)=self%glat(:,:,1)
-    !  self%glon(:,:,ix3)=self%glon(:,:,1)
-    !  self%alt(:,:,ix3)=self%alt(:,:,1)
-    !end do
+    ! force periodicity in geographic locations using reference meridian data
+    do ix3=2,self%lx3
+      self%glat(:,:,ix3)=refglat(:,:)
+      self%glon(:,:,ix3)=refglon(:,:)
+      self%alt(:,:,ix3)=refalt(:,:)
+    end do
   end subroutine set_periodic
 
 
@@ -577,8 +578,8 @@ contains
   pure subroutine calc_geographic(self)
     class(curvmesh), intent(inout) :: self
 
-    ! fixme: error checking?
-
+    ! FIXME: error checking?
+    ! do the geographic conversion
     call geomag2geog(self%phi,self%theta,self%glon,self%glat)
     self%alt=r2alt(self%r)
     self%geog_set_status=.true.
@@ -790,9 +791,6 @@ contains
       self%null_alloc_status=.false.
     end if
   end subroutine dissociate_pointers
-
   ! FIXME:  it may make sense to have a procedure to clear unit vectors here to conserve some memory
-
   ! FIXME:  also have some way to clear the fullgrid metric factors once they are dealt with?
-
 end module meshobj

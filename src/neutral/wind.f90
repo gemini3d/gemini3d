@@ -23,15 +23,15 @@ module procedure neutral_winds
   x3: do i3 = 1,lx3
     x2: do i2 = 1,lx2
       x1: do i1 = 1,lx1
-        if (x%flagper) then
-          glonnow=x%glon(i1,i2,1)
-          glatnow=x%glat(i1,i2,1)
-          altnow=x%alt(i1,i2,1)/1.0e3
-        else
+        !if (x%flagper) then
+        !  glonnow=x%glon(i1,i2,1)
+        !  glatnow=x%glat(i1,i2,1)
+        !  altnow=x%alt(i1,i2,1)/1.0e3
+        !else
           glonnow=x%glon(i1,i2,i3)
           glatnow=x%glat(i1,i2,i3)
           altnow=x%alt(i1,i2,i3)/1.0e3
-        end if
+        !end if
         if (altnow<0.0) altnow=1.0
         call hwm_14(dayOfYear, UTsec, &
           alt_km=altnow, glat=glatnow, glon=glonnow, Ap=Ap, &
