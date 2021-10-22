@@ -8,7 +8,6 @@ use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
 use phys_consts, only: wp,debug,pi,Re
 use inputdataobj, only: inputdata
 use meshobj, only: curvmesh
-use meshobj_dipole, only: dipolemesh
 use config, only: gemini_cfg
 use reader, only: get_simsize2,get_grid2,get_efield
 !! note that only root uses this data object since this concerns the potential solver
