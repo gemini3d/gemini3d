@@ -15,6 +15,7 @@ if(mpi)
 
   find_package(HWLOC)  # need here for cmake/summary.cmake scope
 endif()
+
 # --- MUMPS
 
 if(NOT mumps_external AND (MUMPS_ROOT OR (DEFINED ENV{MUMPS_ROOT}) OR (CMAKE_Fortran_COMPILER_ID STREQUAL GNU)))
@@ -46,17 +47,8 @@ endif()
 
 set(mumps_external true CACHE BOOL "build Mumps")
 
-if(NOT TARGET SCALAPACK)
-  # acquired by find_package instead of ExternalProject, so make dummy target
-  add_custom_target(SCALAPACK)
-endif()
-
 if(NOT MUMPS_ROOT)
-  if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-    set(MUMPS_ROOT ${PROJECT_BINARY_DIR} CACHE PATH "default ROOT")
-  else()
-    set(MUMPS_ROOT ${CMAKE_INSTALL_PREFIX})
-  endif()
+  set(MUMPS_ROOT ${CMAKE_INSTALL_PREFIX})
 endif()
 
 set(MUMPS_INCLUDE_DIRS ${MUMPS_ROOT}/include)
@@ -96,7 +88,7 @@ CMAKE_GENERATOR ${EXTPROJ_GENERATOR}
 BUILD_BYPRODUCTS ${MUMPS_LIBRARIES} ${MUMPS_MPISEQ_LIBRARIES}
 INACTIVITY_TIMEOUT 15
 CONFIGURE_HANDLED_BY_BUILD ON
-DEPENDS SCALAPACK
+DEPENDS SCALAPACK::SCALAPACK
 )
 
 file(MAKE_DIRECTORY ${MUMPS_INCLUDE_DIRS})

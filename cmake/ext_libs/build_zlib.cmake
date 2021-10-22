@@ -3,19 +3,12 @@
 
 include(ExternalProject)
 
-if(MSVC OR (zlib_legacy AND WIN32))
-  set(ZLIB_name ${CMAKE_STATIC_LIBRARY_PREFIX}zlibstatic${CMAKE_STATIC_LIBRARY_SUFFIX})
-else()
-  set(ZLIB_name ${CMAKE_STATIC_LIBRARY_PREFIX}z${CMAKE_STATIC_LIBRARY_SUFFIX})
-endif()
+set(zlib_mangle $<OR:$<BOOL:${MSVC}>,$<AND:$<BOOL:${zlib_legacy}>,$<BOOL:${WIN32}>>>)
+set(ZLIB_name ${CMAKE_STATIC_LIBRARY_PREFIX}$<IF:${zlib_mangle},zlibstatic,z>${CMAKE_STATIC_LIBRARY_SUFFIX})
 
 # need to be sure _ROOT isn't empty, defined is not enough
 if(NOT ZLIB_ROOT)
-  if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-    set(ZLIB_ROOT ${PROJECT_BINARY_DIR} CACHE PATH "ZLIB_ROOT")
-  else()
-    set(ZLIB_ROOT ${CMAKE_INSTALL_PREFIX})
-  endif()
+  set(ZLIB_ROOT ${CMAKE_INSTALL_PREFIX})
 endif()
 
 set(ZLIB_INCLUDE_DIR ${ZLIB_ROOT}/include)
@@ -26,7 +19,8 @@ set(zlib_cmake_args
 -DZLIB_ENABLE_TESTS:BOOL=off
 -DBUILD_SHARED_LIBS:BOOL=off
 -DCMAKE_BUILD_TYPE=Release
--DCMAKE_INSTALL_PREFIX:PATH=${ZLIB_ROOT})
+-DCMAKE_INSTALL_PREFIX:PATH=${ZLIB_ROOT}
+)
 
 ExternalProject_Add(ZLIB
 URL ${zlib_url}
@@ -35,7 +29,8 @@ CMAKE_ARGS ${zlib_cmake_args}
 CMAKE_GENERATOR ${EXTPROJ_GENERATOR}
 BUILD_BYPRODUCTS ${ZLIB_LIBRARY}
 CONFIGURE_HANDLED_BY_BUILD ON
-INACTIVITY_TIMEOUT 15)
+INACTIVITY_TIMEOUT 15
+)
 
 # --- imported target
 
