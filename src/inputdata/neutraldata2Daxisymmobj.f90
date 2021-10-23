@@ -71,6 +71,7 @@ contains
 
     ! Space for coordinate sites and projections in neutraldata2D object
     allocate(self%coord1i(x%lx1*x%lx2*x%lx3),self%coord2i(x%lx1*x%lx2*x%lx3))
+    allocate(self%coord3i(0))    ! destructor expects this allocated
     self%zi=>self%coord1i; self%horzi=>self%coord2i;     ! coordinates of interpolation sites
     allocate(self%horzimat(x%lx1,x%lx2,x%lx3),self%zimat(x%lx1,x%lx2,x%lx3))
     allocate(self%proj_ezp_e1(x%lx1,x%lx2,x%lx3),self%proj_ezp_e2(x%lx1,x%lx2,x%lx3),self%proj_ezp_e3(x%lx1,x%lx2,x%lx3))
@@ -210,6 +211,7 @@ contains
     !Everyone must allocate space for the grid of input data
     allocate(self%coord1(self%lzn))    !these are module-scope variables
     allocate(self%coord2(self%lhorzn))    ! FIXME: default to axisymmetric?
+    allocate(self%coord3(0))           ! must be allocated
     self%zn=>self%coord1; self%horzn=>self%coord2;
     self%rhon=>self%coord2
     self%horzn=[ ((real(ihorzn, wp)-1)*dhorzn, ihorzn=1,self%lhorzn) ]
