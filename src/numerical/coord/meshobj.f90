@@ -319,7 +319,7 @@ contains
     end if
 
     ! force periodicity in geographic locations using reference meridian data
-    do ix3=2,self%lx3
+    do ix3=1,self%lx3
       self%glat(:,:,ix3)=refglat(:,:)
       self%glon(:,:,ix3)=refglon(:,:)
       self%alt(:,:,ix3)=refalt(:,:)
