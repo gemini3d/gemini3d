@@ -66,6 +66,7 @@ contains
 
     ! Space for coordinate sites and projections in neutraldata2D object
     allocate(self%coord1i(x%lx1*x%lx2*x%lx3),self%coord2i(x%lx1*x%lx2*x%lx3))
+    allocate(self%coord3i(0))    ! destructor assumes this has been allocated
     self%zi=>self%coord1i; self%horzi=>self%coord2i;     ! coordinates of interpolation sites
     allocate(self%horzimat(x%lx1,x%lx2,x%lx3),self%zimat(x%lx1,x%lx2,x%lx3))
     allocate(self%proj_ezp_e1(x%lx1,x%lx2,x%lx3),self%proj_ezp_e2(x%lx1,x%lx2,x%lx3),self%proj_ezp_e3(x%lx1,x%lx2,x%lx3))
@@ -208,7 +209,7 @@ contains
       if (self%lhorzn < 1 .or. self%lzn < 1) then
         write(stderr,*) 'ERROR: reading ' // self%sourcedir
         error stop 'neutral:gridproj_dneu2D: grid size must be strictly positive'
-      endif
+      end if
       do iid=1,mpi_cfg%lid-1
         call mpi_send(self%lhorzn,1,MPI_INTEGER,iid,tag%lrho,MPI_COMM_WORLD,ierr)
         call mpi_send(self%lzn,1,MPI_INTEGER,iid,tag%lz,MPI_COMM_WORLD,ierr)
@@ -220,8 +221,9 @@ contains
     self%lyn=>self%lhorzn
     
     !Everyone must allocate space for the grid of input data
-    allocate(self%coord1(self%lzn))    !these are module-scope variables
+    allocate(self%coord1(self%lzn))       !these are module-scope variables
     allocate(self%coord2(self%lhorzn))    ! FIXME: default to axisymmetric?
+    allocate(self%coord3(0))              ! destructor assumes this is allocated
     self%zn=>self%coord1; self%horzn=>self%coord2;   
     self%yn=>self%coord2    ! just in case needed
     self%horzn=[ ((real(ihorzn, wp)-1)*dhorzn, ihorzn=1,self%lhorzn) ]
