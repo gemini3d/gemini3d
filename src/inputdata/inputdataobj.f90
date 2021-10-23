@@ -710,24 +710,19 @@ contains
   subroutine dissociate_pointers(self)
     class(inputdata), intent(inout) :: self
 
-    print*, 'input data'
     deallocate(self%data0D)
     deallocate(self%data1Dax1, self%data1Dax2, self%data1Dax3)
     deallocate(self%data2Dax23, self%data2Dax12, self%data2Dax13)
     deallocate(self%data3D)
 
-    print*, ' interpolated data'
     deallocate(self%data0Di)
     deallocate(self%data1Dax1i, self%data1Dax2i, self%data1Dax3i)
     deallocate(self%data2Dax23i, self%data2Dax12i, self%data2Dax13i)
     deallocate(self%data3Di)
 
-    print*, ' coordinates', associated(self%coord1),associated(self%coord2),associated(self%coord3)
     deallocate(self%coord1,self%coord2,self%coord3)
-    print*, ' coordinates 2'
     deallocate(self%coord1i,self%coord2i,self%coord3i)
 
-    print*, ' flags'
     self%flagalloc=.false.
     self%flagprimed=.false.
     self%flagcoordsi=.false.
