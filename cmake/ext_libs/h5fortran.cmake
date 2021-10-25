@@ -19,35 +19,30 @@ if(hdf5)
 
   if(NOT HDF5_FOUND OR hdf5_external)
     include(${CMAKE_CURRENT_LIST_DIR}/build_hdf5.cmake)
-  else()
-    add_custom_target(HDF5)
   endif()
 
   if(NOT h5fortran_ROOT)
-    if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-      set(h5fortran_ROOT ${PROJECT_BINARY_DIR} CACHE PATH "default ROOT")
-    else()
-      set(h5fortran_ROOT ${CMAKE_INSTALL_PREFIX})
-    endif()
+    set(h5fortran_ROOT ${CMAKE_INSTALL_PREFIX})
   endif()
 
   find_package(ZLIB)
 
   set(h5fortran_INCLUDE_DIRS ${h5fortran_ROOT}/include)
-  set(h5fortran_LIBRARIES ${h5fortran_ROOT}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}h5fortran${CMAKE_STATIC_LIBRARY_SUFFIX})
+  if(BUILD_SHARED_LIBS)
+    set(h5fortran_LIBRARIES ${h5fortran_ROOT}/lib/${CMAKE_SHARED_LIBRARY_PREFIX}h5fortran${CMAKE_SHARED_LIBRARY_SUFFIX})
+  else()
+    set(h5fortran_LIBRARIES ${h5fortran_ROOT}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}h5fortran${CMAKE_STATIC_LIBRARY_SUFFIX})
+  endif()
 
   set(h5fortran_cmake_args
   -DZLIB_ROOT:PATH=${ZLIB_ROOT}
   -DCMAKE_INSTALL_PREFIX:PATH=${h5fortran_ROOT}
-  -DBUILD_SHARED_LIBS:BOOL=false
+  -DBUILD_SHARED_LIBS:BOOL=${BUILD_SHARED_LIBS}
   -DCMAKE_BUILD_TYPE=Release
   -DBUILD_TESTING:BOOL=false
   -Dautobuild:BOOL=false
+  -DHDF5_ROOT:PATH=${HDF5_ROOT}
   )
-
-  if(HDF5_ROOT)
-    list(APPEND h5fortran_cmake_args -DHDF5_ROOT:PATH=${HDF5_ROOT})
-  endif()
 
   ExternalProject_Add(H5FORTRAN
     GIT_REPOSITORY ${h5fortran_git}
@@ -57,7 +52,8 @@ if(hdf5)
     BUILD_BYPRODUCTS ${h5fortran_LIBRARIES}
     INACTIVITY_TIMEOUT 15
     CONFIGURE_HANDLED_BY_BUILD ON
-    DEPENDS HDF5)
+    DEPENDS HDF5::HDF5
+  )
 
   file(MAKE_DIRECTORY ${h5fortran_INCLUDE_DIRS})
 
