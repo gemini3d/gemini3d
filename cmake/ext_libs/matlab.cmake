@@ -4,7 +4,9 @@ find_package(Matlab COMPONENTS MAIN_PROGRAM REQUIRED)
 
 FetchContent_Declare(MATGEMINI
 GIT_REPOSITORY ${matgemini_git}
-GIT_TAG ${matgemini_tag})
+GIT_TAG ${matgemini_tag}
+INACTIVITY_TIMEOUT 15
+)
 
 FetchContent_MakeAvailable(MATGEMINI)
 

@@ -3,6 +3,7 @@ include(FetchContent)
 FetchContent_Declare(MSIS2
 URL ${msis2_zip}
 URL_HASH SHA256=${msis2_sha256}
+INACTIVITY_TIMEOUT 15
 )
 
 FetchContent_MakeAvailable(MSIS2)

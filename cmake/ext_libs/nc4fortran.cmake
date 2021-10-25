@@ -10,11 +10,7 @@ if(netcdf)
   find_package(NetCDF REQUIRED COMPONENTS Fortran)
 
   if(NOT nc4fortran_ROOT)
-    if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-      set(nc4fortran_ROOT ${PROJECT_BINARY_DIR} CACHE PATH "default ROOT")
-    else()
-      set(nc4fortran_ROOT ${CMAKE_INSTALL_PREFIX})
-    endif()
+    set(nc4fortran_ROOT ${CMAKE_INSTALL_PREFIX})
   endif()
 
   if(NOT DEFINED NetCDF_ROOT)
@@ -23,12 +19,17 @@ if(netcdf)
   message(VERBOSE "NetCDF_ROOT: ${NetCDF_ROOT}")
 
   set(nc4fortran_INCLUDE_DIRS ${nc4fortran_ROOT}/include)
-  set(nc4fortran_LIBRARIES ${nc4fortran_ROOT}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}nc4fortran${CMAKE_STATIC_LIBRARY_SUFFIX})
+
+  if(BUILD_SHARED_LIBS)
+    set(nc4fortran_LIBRARIES ${nc4fortran_ROOT}/lib/${CMAKE_SHARED_LIBRARY_PREFIX}nc4fortran${CMAKE_SHARED_LIBRARY_SUFFIX})
+  else()
+    set(nc4fortran_LIBRARIES ${nc4fortran_ROOT}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}nc4fortran${CMAKE_STATIC_LIBRARY_SUFFIX})
+  endif()
 
   set(nc4fortran_cmake_args
   -DNetCDF_ROOT:PATH=${NetCDF_ROOT}
   -DCMAKE_INSTALL_PREFIX:PATH=${nc4fortran_ROOT}
-  -DBUILD_SHARED_LIBS:BOOL=false
+  -DBUILD_SHARED_LIBS:BOOL=${BUILD_SHARED_LIBS}
   -DCMAKE_BUILD_TYPE=Release
   -DBUILD_TESTING:BOOL=false
   -Dautobuild:BOOL=false
@@ -41,7 +42,8 @@ if(netcdf)
     CMAKE_GENERATOR ${EXTPROJ_GENERATOR}
     BUILD_BYPRODUCTS ${nc4fortran_LIBRARIES}
     INACTIVITY_TIMEOUT 15
-    CONFIGURE_HANDLED_BY_BUILD ON)
+    CONFIGURE_HANDLED_BY_BUILD ON
+    )
 
   file(MAKE_DIRECTORY ${nc4fortran_INCLUDE_DIRS})
 
