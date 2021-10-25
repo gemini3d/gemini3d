@@ -12,7 +12,7 @@ find_path(ZLIB_DLL_DIR NAMES zlib.dll
   NO_DEFAULT_PATH
   HINTS ${ZLIB_INCLUDE_DIR}/.. ${ZLIB_ROOT} ENV ZLIB_ROOT
   PATH_SUFFIXES bin
-  DOC "MUMPS common header")
+  DOC "DLL PATH")
 
 if(NOT ZLIB_DLL_DIR)
   return()
