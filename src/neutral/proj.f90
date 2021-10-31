@@ -559,15 +559,10 @@ logical :: flagSH
 integer :: ix1
 
 
-!in what hemisphere is our source?
-if (sourcemlat<=0) then
-  flagSH=.true.
-else
-  flagSH=.false.
-end if
+!> in what hemisphere is our source?
+flagSH = sourcemlat <= 0
 
-
-!peel the grid in half (source hemisphere if closed dipole)
+!> peel the grid in half (source hemisphere if closed dipole)
 if (gridflag==0) then    !closed dipole grid
 
   ix1=maxloc(pack(zimat(:,1,1),.true.),1)    !apex is by definition the highest altitude along a given field line
@@ -598,20 +593,27 @@ end if
 
 
 !the min and max x are simply determined by longitude...
-xnrange(1)=minval(xitmp)
-xnrange(2)=maxval(xitmp)
+xnrange(1) = minval(xitmp)
+xnrange(2) = maxval(xitmp)
 
 
-!situation is more complicated for latitude due to dipole grid, need to determine by L-shell
+!> situation is more complicated for latitude due to dipole grid, need to determine by L-shell
 if (flagSH) then
-  ix1=minloc(zitmp(:,1,1)-maxzn,1,zitmp(:,1,1)-maxzn > 0)    !find the min distance from maxzn subject to constraint that it is > 0, just use the first longitude slice since they will all have the same L-shell-field line relations
+  ix1=minloc(zitmp(:,1,1)-maxzn,1,zitmp(:,1,1)-maxzn > 0)
+  !! find the min distance from maxzn subject to constraint that it is > 0,
+  !! just use the first longitude slice since they will all have the same L-shell-field line relations
   ynrange(2)=yitmp(ix1,1,1)
   ix1=minloc(zitmp(:,lx2,1),1,zitmp(:,lx2,1) < 0)
+  ix1=max(ix1,1)
   ynrange(1)=yitmp(ix1,lx2,1)
 else    !things are swapped around in NH
-  ix1=minloc(zitmp(:,1,1)-maxzn,1,zitmp(:,1,1)-maxzn > 0)    !find the min distance from maxzn subject to constraint that it is > 0; this is the southernmost edge of the neutral slab we need
+  ix1=minloc(zitmp(:,1,1)-maxzn,1,zitmp(:,1,1)-maxzn > 0)
+  !! find the min distance from maxzn subject to constraint that it is > 0;
+  !! this is the southernmost edge of the neutral slab we need
   ynrange(1)=yitmp(ix1,1,1)
   ix1=minloc(zitmp(:,lx2,1),1,zitmp(:,lx2,1) < 0)
+  if (ix1==0) ix1=size(yitmp,1)
+  !! this wasn't needed in the original code and I'm not sure how it worked...
   ynrange(2)=yitmp(ix1,lx2,1)
 end if
 
