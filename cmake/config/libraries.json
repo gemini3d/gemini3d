@@ -6,7 +6,7 @@
 
 "h5fortran": {
   "git": "https://github.com/geospace-code/h5fortran.git",
-  "tag": "v4.2.8"
+  "tag": "v4.2.9"
 },
 "nc4fortran": {
   "git": "https://github.com/geospace-code/nc4fortran.git",
@@ -48,7 +48,7 @@
 
 "mumps": {
   "git": "https://github.com/scivision/mumps.git",
-  "tag": "v5.4.1.5"
+  "tag": "v5.4.1.6"
 },
 "scalapack": {
   "git": "https://github.com/scivision/scalapack.git",
