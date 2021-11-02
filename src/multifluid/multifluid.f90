@@ -209,48 +209,6 @@ end if
 call clean_param(x,3,Ts)
 
 
-!DIFFUSION OF ENERGY
-call cpu_time(tstart)
-do isp=1,lsp
-  param=Ts(:,:,:,isp)     !temperature for this species
-  call thermal_conduct(isp,param,ns(:,:,:,isp),nn,J1,lambda,beta)
-
-  call diffusion_prep(isp,x,lambda,beta,ns(:,:,:,isp),param,A,B,C,D,E,Tn,cfg%Teinf)
-  select case (cfg%diffsolvetype)
-    case (1)
-      param=backEuler3D(param,A,B,C,D,E,dt,x)    !1st order method, only use if you are seeing grid-level oscillations in temperatures
-    case (2)
-      param=TRBDF23D(param,A,B,C,D,E,dt,x)       !2nd order method, should be used for most simulations
-    case default
-      print*, 'Unsupported diffusion solver type/mode:  ',cfg%diffsolvetype,'.  Should be either 1 or 2.'
-      error stop
-  end select
-
-  Ts(:,:,:,isp) = param
-  Ts(:,:,:,isp) = max(Ts(:,:,:,isp), 100._wp)
-end do
-
-if (mpi_cfg%myid==0 .and. debug) then
-  call cpu_time(tfin)
-  print *, 'Completed energy diffusion substep for time step:  ',t,' in cpu_time of:  ',tfin-tstart
-end if
-
-!ZZZ - CLEAN TEMPERATURE BEFORE CONVERTING TO INTERNAL ENERGY
-call clean_param(x,3,Ts)
-do isp=1,lsp
-  rhoes(:,:,:,isp)=ns(:,:,:,isp)*kB*Ts(:,:,:,isp)/(gammas(isp) - 1)
-end do
-
-
-!> LOAD ELECTRON PRECIPITATION PATTERN
-if (cfg%flagprecfile==1) then
-  call precipBCs_fileinput(dt,t,cfg,ymd,UTsec,x,W0,PhiWmWm2)
-else
-  !! no file input specified, so just call 'regular' function
-  call precipBCs(t,x,cfg,W0,PhiWmWm2)
-end if
-
-
 !STIFF/BALANCED ENERGY SOURCES
 call cpu_time(tstart)
 Prprecip=0
@@ -325,22 +283,63 @@ Qeprecip = Qeprecip + Qepreciptmp
 
 call srcsEnergy(nn,vn1,vn2,vn3,Tn,ns,vs1,vs2,vs3,Ts,Pr,Lo)
 
+!! Convert rate of spec. int. en. dens. into rate of temperature...
 do isp=1,lsp
-  if (isp==lsp) then
-    Pr(:,:,:,lsp)=Pr(:,:,:,lsp)+Qeprecip
-  end if
-  paramtrim=rhoes(1:lx1,1:lx2,1:lx3,isp)
-  paramtrim=ETD_uncoupled(paramtrim,Pr(:,:,:,isp),Lo(:,:,:,isp),dt)
-  rhoes(1:lx1,1:lx2,1:lx3,isp)=paramtrim
-
-  Ts(:,:,:,isp)=(gammas(isp) - 1)/kB*rhoes(:,:,:,isp)/max(ns(:,:,:,isp),mindensdiv)
-  Ts(:,:,:,isp)=max(Ts(:,:,:,isp), 100._wp)
+  Pr(1:lx1,1:lx2,1:lx3,isp)=Pr(1:lx1,1:lx2,1:lx3,isp)*(gammas(isp)-1)/ns(1:lx1,1:lx2,1:lx3,isp)/kB
 end do
 
 if (mpi_cfg%myid==0 .and. debug) then
   call cpu_time(tfin)
   print *, 'Energy sources substep for time step:  ',t,'done in cpu_time of:  ',tfin-tstart
 end if
+
+
+!DIFFUSION OF ENERGY
+call cpu_time(tstart)
+do isp=1,lsp
+  param=Ts(:,:,:,isp)     !temperature for this species
+  call thermal_conduct(isp,param,ns(:,:,:,isp),nn,J1,lambda,beta)
+
+  ! must also add in electron energy sources
+  if (isp==lsp) then
+    Pr(:,:,:,lsp)=Pr(:,:,:,lsp)+Qeprecip
+  end if
+
+  call diffusion_prep(isp,x,lambda,beta,ns(:,:,:,isp),Pr(:,:,:,isp),Lo(:,:,:,isp),param,A,B,C,D,E,Tn,cfg%Teinf)
+  select case (cfg%diffsolvetype)
+    case (1)
+      param=backEuler3D(param,A,B,C,D,E,dt,x)    !1st order method, only use if you are seeing grid-level oscillations in temperatures
+    case (2)
+      param=TRBDF23D(param,A,B,C,D,E,dt,x)       !2nd order method, should be used for most simulations
+    case default
+      print*, 'Unsupported diffusion solver type/mode:  ',cfg%diffsolvetype,'.  Should be either 1 or 2.'
+      error stop
+  end select
+
+  Ts(:,:,:,isp) = param
+  Ts(:,:,:,isp) = max(Ts(:,:,:,isp), 100._wp)
+end do
+
+if (mpi_cfg%myid==0 .and. debug) then
+  call cpu_time(tfin)
+  print *, 'Completed energy diffusion substep for time step:  ',t,' in cpu_time of:  ',tfin-tstart
+end if
+
+!ZZZ - CLEAN TEMPERATURE BEFORE CONVERTING TO INTERNAL ENERGY
+call clean_param(x,3,Ts)
+do isp=1,lsp
+  rhoes(:,:,:,isp)=ns(:,:,:,isp)*kB*Ts(:,:,:,isp)/(gammas(isp) - 1)
+end do
+
+
+!> LOAD ELECTRON PRECIPITATION PATTERN
+if (cfg%flagprecfile==1) then
+  call precipBCs_fileinput(dt,t,cfg,ymd,UTsec,x,W0,PhiWmWm2)
+else
+  !! no file input specified, so just call 'regular' function
+  call precipBCs(t,x,cfg,W0,PhiWmWm2)
+end if
+
 
 !CLEAN TEMPERATURE
 call clean_param(x,3,Ts)

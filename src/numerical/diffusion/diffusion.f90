@@ -25,7 +25,7 @@ end interface backEuler3D
 contains
 
 
-pure subroutine diffusion_prep(isp,x,lambda,betacoeff,ns,T,A,B,C,D,E,Tn,Teinf)
+pure subroutine diffusion_prep(isp,x,lambda,betacoeff,ns,Pr,Lo,T,A,B,C,D,E,Tn,Teinf)
 !! COMPUTE COEFFICIENTS IN DIFFUSION EQUATIONS AND LOAD UP GHOST CELLS
 !!
 !! Note: done on a per species basis. This is never called over the full grid
@@ -35,6 +35,7 @@ class(curvmesh), intent(in) :: x
 real(wp), dimension(:,:,:), intent(in) :: lambda,betacoeff
 
 real(wp), dimension(-1:,-1:,-1:), intent(in) :: ns
+real(wp), dimension(:,:,:), intent(in) :: Pr,Lo
 real(wp), dimension(-1:,-1:,-1:), intent(inout) :: T
 real(wp), dimension(1:size(ns,1)-4,1:size(ns,2)-4,1:size(ns,3)-4), &
          intent(out) :: A,B,C,D,E
@@ -52,12 +53,12 @@ lx3=size(ns,3)-4
 
 
 !COEFFICIENTS OF PARABOLIC EQUAITON
-A(:,:,:)=0._wp
+A(:,:,:)=Lo(:,:,:)
  C(:,:,:)=(gammas(isp)-1._wp)/kB/max(ns(1:lx1,1:lx2,1:lx3),mindensdiv)/ &
            (x%h1(1:lx1,1:lx2,1:lx3)*x%h2(1:lx1,1:lx2,1:lx3)*x%h3(1:lx1,1:lx2,1:lx3))
 B(:,:,:)=C(:,:,:)*betacoeff/x%h1(1:lx1,1:lx2,1:lx3)    !beta must be set to zero if not electrons!
 D=lambda*x%h2(1:lx1,1:lx2,1:lx3)*x%h3(1:lx1,1:lx2,1:lx3)/x%h1(1:lx1,1:lx2,1:lx3)
-E=0._wp
+E=Pr(:,:,:)
 
 
 !SET THE BOUNDARY CONDITIONS BASED ON GRID TYPE
