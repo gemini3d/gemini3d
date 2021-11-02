@@ -211,6 +211,14 @@ call clean_param(x,3,Ts)
 
 !STIFF/BALANCED ENERGY SOURCES
 call cpu_time(tstart)
+
+!> LOAD ELECTRON PRECIPITATION PATTERN
+if (cfg%flagprecfile==1) then
+  call precipBCs_fileinput(dt,t,cfg,ymd,UTsec,x,W0,PhiWmWm2)
+else
+  !! no file input specified, so just call 'regular' function
+  call precipBCs(t,x,cfg,W0,PhiWmWm2)
+end if
 Prprecip=0
 Qeprecip=0
 Prpreciptmp=0
@@ -330,15 +338,6 @@ call clean_param(x,3,Ts)
 do isp=1,lsp
   rhoes(:,:,:,isp)=ns(:,:,:,isp)*kB*Ts(:,:,:,isp)/(gammas(isp) - 1)
 end do
-
-
-!> LOAD ELECTRON PRECIPITATION PATTERN
-if (cfg%flagprecfile==1) then
-  call precipBCs_fileinput(dt,t,cfg,ymd,UTsec,x,W0,PhiWmWm2)
-else
-  !! no file input specified, so just call 'regular' function
-  call precipBCs(t,x,cfg,W0,PhiWmWm2)
-end if
 
 
 !CLEAN TEMPERATURE
