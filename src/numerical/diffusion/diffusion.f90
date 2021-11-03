@@ -53,7 +53,7 @@ lx3=size(ns,3)-4
 
 
 !COEFFICIENTS OF PARABOLIC EQUAITON
-A(:,:,:)=Lo(:,:,:)
+A(:,:,:)=-1._wp*Lo(:,:,:)
  C(:,:,:)=(gammas(isp)-1._wp)/kB/max(ns(1:lx1,1:lx2,1:lx3),mindensdiv)/ &
            (x%h1(1:lx1,1:lx2,1:lx3)*x%h2(1:lx1,1:lx2,1:lx3)*x%h3(1:lx1,1:lx2,1:lx3))
 B(:,:,:)=C(:,:,:)*betacoeff/x%h1(1:lx1,1:lx2,1:lx3)    !beta must be set to zero if not electrons!
