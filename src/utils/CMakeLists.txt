@@ -109,4 +109,5 @@ set_target_properties(gemini3d.compare PROPERTIES
   RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
 
 install(TARGETS magcalc.bin gemini3d.run magcalc.run gemini3d.compare
-  EXPORT ${PROJECT_NAME}Targets)
+EXPORT ${PROJECT_NAME}-targets
+)

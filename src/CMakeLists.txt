@@ -33,7 +33,7 @@ add_subdirectory(utils)
 
 # --- Main GEMINI3D library
 install(TARGETS nc4fortran mumps_interface
-  EXPORT ${PROJECT_NAME}Targets
+EXPORT ${PROJECT_NAME}-targets
 )
 
 configure_file(gemini_cli.in.f90 gemini_cli.f90 @ONLY)
@@ -58,7 +58,7 @@ foreach(l
   )
 
   install(TARGETS ${l}
-    EXPORT ${PROJECT_NAME}Targets
+  EXPORT ${PROJECT_NAME}-targets
   )
 
   target_link_libraries(gemini3d PUBLIC
@@ -71,8 +71,7 @@ target_link_libraries(gemini3d PRIVATE MPI::MPI_Fortran)
 
 
 
-install(TARGETS gemini3d
-  EXPORT ${PROJECT_NAME}Targets)
+install(TARGETS gemini3d EXPORT ${PROJECT_NAME}-targets)
 
 # --- Gemini.bin minimal main Fortran program
 add_executable(gemini.bin gemini_main.f90
@@ -100,8 +99,7 @@ LABELS unit
 ENVIRONMENT $<$<BOOL:${test_dll_path}>:"PATH=${test_dll_path}">
 )
 
-install(TARGETS gemini.bin
-  EXPORT ${PROJECT_NAME}Targets)
+install(TARGETS gemini.bin EXPORT ${PROJECT_NAME}-targets)
 
 
 # --- Gemini_c.bin

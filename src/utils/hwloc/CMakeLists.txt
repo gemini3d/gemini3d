@@ -9,7 +9,7 @@ target_link_libraries(hwloc_ifc PRIVATE hwloc_c)
 add_library(hwloc_c)
 
 install(TARGETS hwloc_ifc hwloc_c
-  EXPORT ${PROJECT_NAME}Targets
+EXPORT ${PROJECT_NAME}-targets
 )
 
 

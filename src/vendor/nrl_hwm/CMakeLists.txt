@@ -2,7 +2,7 @@ set_directory_properties(PROPERTIES LABELS hwm)
 
 add_library(hwm_ifc)
 
-install(TARGETS hwm_ifc EXPORT ${PROJECT_NAME}Targets)
+install(TARGETS hwm_ifc EXPORT ${PROJECT_NAME}-targets)
 
 if(NOT hwm14)
   target_sources(hwm_ifc PRIVATE dummy.f90)
