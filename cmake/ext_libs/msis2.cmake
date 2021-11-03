@@ -22,7 +22,7 @@ ${_s}/msis_gtd8d.F90)
 
 # MSIS 2.0 needs this parm file.
 file(COPY ${msis2_SOURCE_DIR}/msis20.parm DESTINATION ${PROJECT_BINARY_DIR})
-install(FILES ${msis2_SOURCE_DIR}/msis20.parm DESTINATION bin)
+install(FILES ${msis2_SOURCE_DIR}/msis20.parm TYPE BIN)
 
 if(${PROJECT}_BUILD_TESTING)
   add_executable(msis2test ${msis2_SOURCE_DIR}/msis2.0_test.F90)
