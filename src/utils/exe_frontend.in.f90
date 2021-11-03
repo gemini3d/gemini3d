@@ -41,6 +41,8 @@ if(buf(1:1) == '-') then
     print '(A)', compiler_options()
   case ('-git')
     print '(A)', "@git_rev@"
+  case ('-features')
+    print '(A)', "@gemini_features@"
   case default
     write(stderr,*) "Gemini3D: unknown option: ", trim(buf)
     call help_run()

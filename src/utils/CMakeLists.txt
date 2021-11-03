@@ -31,7 +31,13 @@ set_tests_properties(unit:magcalc_exe_ok PROPERTIES
 # --- gemini3d.run Fortran front end
 add_subdirectory(hwloc)
 
-configure_file(exe_frontend.in.f90 exe_frontend.f90 @ONLY)
+set(gemini_features
+"REALBITS:${realbits} $<$<BOOL:${mpi}>:MPI> $<$<BOOL:${glow}>:GLOW> $<$<BOOL:${msis2}>:MSIS2> $<$<BOOL:${hwm14}>:HWM14> $<$<BOOL:${hdf5}>:HDF5> $<$<BOOL:${netcdf}>:NETCDF4> $<$<BOOL:${scotch}>:SCOTCH> $<$<BOOL:${openmp}>:OPENMP>"
+)
+configure_file(exe_frontend.in.f90 exe_frontend.f90.in @ONLY)
+file(GENERATE OUTPUT exe_frontend.f90
+INPUT ${CMAKE_CURRENT_BINARY_DIR}/exe_frontend.f90.in
+)
 
 add_library(exe_frontend OBJECT ${CMAKE_CURRENT_BINARY_DIR}/exe_frontend.f90)
 target_link_libraries(exe_frontend PRIVATE config hwloc_ifc hwloc_c timeutils pathlib const)
@@ -95,11 +101,12 @@ add_library(assert OBJECT assert.f90)
 
 add_executable(gemini3d.compare)
 target_sources(gemini3d.compare PRIVATE
-  gemini_compare.f90
-  ${CMAKE_CURRENT_SOURCE_DIR}/../io/compare.f90
-  ${CMAKE_CURRENT_SOURCE_DIR}/../io/compare_grid_h5.f90
-  ${CMAKE_CURRENT_SOURCE_DIR}/../io/compare_out_h5.f90
-  ${CMAKE_CURRENT_SOURCE_DIR}/../io/compare_in_h5.f90)
+gemini_compare.f90
+${CMAKE_CURRENT_SOURCE_DIR}/../io/compare.f90
+${CMAKE_CURRENT_SOURCE_DIR}/../io/compare_grid_h5.f90
+${CMAKE_CURRENT_SOURCE_DIR}/../io/compare_out_h5.f90
+${CMAKE_CURRENT_SOURCE_DIR}/../io/compare_in_h5.f90
+)
 target_link_libraries(gemini3d.compare PRIVATE assert config reader pathlib timeutils const
 nc4fortran::nc4fortran h5fortran::h5fortran
 $<$<BOOL:${HDF5_HAVE_PARALLEL}>:MPI::MPI_Fortran>
