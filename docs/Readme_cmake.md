@@ -105,7 +105,7 @@ The neutral atmosphere model MSISE00 is used by default.
 To use the newer MSIS 2.0:
 
 ```sh
-cmake -B build -Dmsis20=on
+cmake -B build -Dmsis2=yes
 ```
 
 Additionally, the simulation config.nml must specify the following to actually use MSIS 2.0:

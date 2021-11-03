@@ -47,7 +47,7 @@ option(mumps_external "build MUMPS instead of finding")
 
 
 option(hwm14 "use HWM14 neutral winds model")
-option(msis20 "use MSIS 2.0 neutral atmosphere model")
+option(msis2 "use MSIS 2.x neutral atmosphere model")
 
 option(hdf5 "use HDF5 file I/O" on)
 option(netcdf "use NetCDF file I/O")

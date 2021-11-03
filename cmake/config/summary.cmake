@@ -77,7 +77,7 @@ add_feature_info(MPI mpi "GEMINI MPI-2 standard parallelization")
 
 add_feature_info(GLOW glow "airglow / aurora model")
 add_feature_info(HWM14 hwm14 "HWM14 neutral winds model")
-add_feature_info(MSIS2.0 msis20 "NRL MSIS 2.0 neutral atmosphere model")
+add_feature_info(MSIS2.0 msis2 "NRL MSIS 2.x neutral atmosphere model")
 
 add_feature_info(NetCDF4 netcdf "file read / write")
 

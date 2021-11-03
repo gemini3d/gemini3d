@@ -6,7 +6,7 @@ set_directory_properties(PROPERTIES LABELS msis)
 # "-w" doesn't disable pedantic
 set(msis00_gnu_flags -w -std=legacy -Wno-pedantic -fno-implicit-none -Wno-error=array-bounds -fcheck=no-all)
 # msis2.0 will intermittantly fail with -std=legacy with all zero outputs, e.g. GCC 8.5.0
-set(msis20_gnu_flags -w -Wno-error=array-bounds -fcheck=no-all)
+set(msis2_gnu_flags -w -Wno-error=array-bounds -fcheck=no-all)
 
 set(msis_intel_flags -nowarn)
 
@@ -25,19 +25,19 @@ target_link_libraries(msis_ifc PRIVATE msis00mod)
 
 # --- optional MSIS 2.0
 
-if(msis20)
+if(msis2)
   include(${PROJECT_SOURCE_DIR}/cmake/ext_libs/msis2.cmake)
   target_link_libraries(msis_ifc PRIVATE msis2)
   target_compile_options(msis2 PRIVATE
-  "$<$<Fortran_COMPILER_ID:GNU>:${msis20_gnu_flags}>"
+  "$<$<Fortran_COMPILER_ID:GNU>:${msis2_gnu_flags}>"
   "$<$<Fortran_COMPILER_ID:Intel,IntelLLVM>:${msis_intel_flags}>")
 
   install(TARGETS msis2
     EXPORT ${PROJECT_NAME}Targets
   )
-else(msis20)
+else(msis2)
   target_sources(msis_ifc PRIVATE msis2_dummy.f90)
-endif(msis20)
+endif(msis2)
 
 # cmake bug? Object library not a good idea for msis 2.0 as have to specify everywhere
 # install(TARGETS msis_ifc msis00mod EXPORT ${PROJECT_NAME}Targets)
@@ -105,48 +105,48 @@ ENVIRONMENT $<$<BOOL:${test_dll_path}>:"PATH=${test_dll_path}">
 )
 
 # --- MSIS 2.0 tests
-if(msis20)
+if(msis2)
 
-  set(msis20_in ${CMAKE_CURRENT_BINARY_DIR}/msis20_test_in.h5)
-  set(msis20_out ${CMAKE_CURRENT_BINARY_DIR}/msis20_test_out.h5)
-  set(msis20_ref ${PROJECT_SOURCE_DIR}/test_data/msis/msis20_test_out.h5)
+  set(msis2_in ${CMAKE_CURRENT_BINARY_DIR}/msis2_test_in.h5)
+  set(msis2_out ${CMAKE_CURRENT_BINARY_DIR}/msis2_test_out.h5)
+  set(msis2_ref ${PROJECT_SOURCE_DIR}/test_data/msis/msis2_test_out.h5)
 
-  add_test(NAME unit:msis20_generate
-    COMMAND $<TARGET_FILE:msis_generate> ${msis20_in} 20
+  add_test(NAME unit:msis2_generate
+    COMMAND $<TARGET_FILE:msis_generate> ${msis2_in} 20
   )
-  set_tests_properties(unit:msis20_generate PROPERTIES
-    FIXTURES_SETUP msis20_gen_fxt
+  set_tests_properties(unit:msis2_generate PROPERTIES
+    FIXTURES_SETUP msis2_gen_fxt
     LABELS unit
     TIMEOUT 10
   )
 
-  add_test(NAME unit:msis20_setup
-    COMMAND $<TARGET_FILE:msis_setup> ${msis20_in} ${msis20_out}
+  add_test(NAME unit:msis2_setup
+    COMMAND $<TARGET_FILE:msis_setup> ${msis2_in} ${msis2_out}
     WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
   )
-  set_tests_properties(unit:msis20_setup PROPERTIES
-    FIXTURES_SETUP msis20_fxt
-    FIXTURES_REQUIRED msis20_gen_fxt
+  set_tests_properties(unit:msis2_setup PROPERTIES
+    FIXTURES_SETUP msis2_fxt
+    FIXTURES_REQUIRED msis2_gen_fxt
     LABELS unit
-    REQUIRED_FILES ${msis20_in}
+    REQUIRED_FILES ${msis2_in}
     TIMEOUT 10
   )
 
-  add_test(NAME unit:msis20_compare
-    COMMAND $<TARGET_FILE:msis_compare> ${msis20_out} ${msis20_ref}
+  add_test(NAME unit:msis2_compare
+    COMMAND $<TARGET_FILE:msis_compare> ${msis2_out} ${msis2_ref}
     WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
   )
-  set_tests_properties(unit:msis20_compare PROPERTIES
-    FIXTURES_REQUIRED msis20_fxt
+  set_tests_properties(unit:msis2_compare PROPERTIES
+    FIXTURES_REQUIRED msis2_fxt
     LABELS unit
     TIMEOUT 10
-    REQUIRED_FILES "${msis20_out};${msis20_ref}"
+    REQUIRED_FILES "${msis2_out};${msis2_ref}"
   )
 
- set_tests_properties(unit:msis20_setup unit:msis20_compare PROPERTIES
+ set_tests_properties(unit:msis2_setup unit:msis2_compare PROPERTIES
  ENVIRONMENT $<$<BOOL:${test_dll_path}>:"PATH=${test_dll_path}">
  )
 
-endif(msis20)
+endif(msis2)
 
 endif(BUILD_TESTING)
