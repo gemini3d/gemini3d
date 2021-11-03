@@ -181,18 +181,6 @@ do i = iarg,argc
   call get_command_argument(i,argv)
 
   select case (argv)
-  case ('-h', '-help')
-    ierr = mpibreakdown()
-    if (mpi_cfg%myid == 0) call help_magcalc_bin()
-    stop
-  case ('-compiler')
-    ierr = mpibreakdown()
-    if (mpi_cfg%myid==0) print '(A)', get_compiler_vendor()
-    stop
-  case ('-git')
-    ierr = mpibreakdown()
-    if (mpi_cfg%myid==0) print '(A)', cfg%git_revision
-    stop
   case ('-d', '-debug')
     debug = .true.
   case ('-dryrun')

@@ -65,8 +65,6 @@ do i = 2, argc
 
   select case (buf)
 
-  case ('-h', '-help')
-    call help_run()
   case ('-n')
     call get_command_argument(i+1, buf)
     read(buf, '(I6)') Ncpu
@@ -309,6 +307,7 @@ print '(/,A,/)', 'mpiexec -n 4 build/magcalc.bin test2d_fang test2d_fang/fieldpo
 print '(A)', 'Optional arguments:'
 print '(A)', '-dryrun option allows quick check of first time step'
 stop 'EOF: magcalc.bin'
+
 end subroutine help_magcalc_bin
 
 
