@@ -130,6 +130,8 @@ real(wp), dimension(:,:,:), allocatable :: E01,E02,E03
 !> Describing Lagrangian grid (if used)
 real(wp) :: v2grid,v3grid
 
+character(*), parameter :: msis2_param_file = "msis20.parm"
+
 !> INITIALIZE MESSING PASSING VARIABLES, IDS ETC.
 call mpisetup()
 
@@ -302,10 +304,11 @@ call init_precipinput(dt,t,cfg,ymd,UTsec,x)
 
 !> Neutral atmosphere setup
 if(cfg%msis_version == 20) then
-  inquire(file='msis20.parm', exist=exists)
-  if(.not.exists) error stop 'could not find MSIS 2.0 msis20.parm. ' // &
-    'This should be at gemini3d/build/msis20.parm and run gemini.bin from same directory'
-  call msisinit(parmfile='msis20.parm')
+  inquire(file=msis2_param_file, exist=exists)
+  if(.not.exists) error stop 'could not find MSIS 2 parameter file ' // msis2_param_file // &
+    ' this file must be in the same directory as gemini.bin, and run from that directory. ' // &
+    'This limitation comes from how MSIS 2.x is coded internally.'
+  call msisinit(parmfile=msis2_param_file)
 end if
 
 if(mpi_cfg%myid==0) print*, 'Computing background and priming neutral perturbation input (if used)'

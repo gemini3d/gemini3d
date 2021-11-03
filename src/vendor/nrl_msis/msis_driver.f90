@@ -33,7 +33,7 @@ call input_hdf5(infile, msis_version, doy,sec,f107a,f107,Ap, glat, glon, alt)
 if(msis_version == 20) then
   inquire(file=parmfile, exist=exists)
   if (.not. exists) then
-    write(stderr,'(a)') parmfile // " not found, required by MSIS 2.0, which requires 'cmake -Dmsis20=yes'"
+    write(stderr,'(a)') parmfile // " not found, required by MSIS 2.x, which requires 'cmake -Dmsis2=yes'"
     error stop 20
   endif
 endif
