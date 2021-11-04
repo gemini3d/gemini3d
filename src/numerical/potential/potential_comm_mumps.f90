@@ -347,7 +347,7 @@ contains
     lx3=size(muP,3)
     lsp=size(muP,4)
   
-  
+ 
     !! FIXME:  Do we really need separate wind mobility or
     !! can we just compute off electrical mobility as done with gravity.
     !! This is necessary because we are not storing the collision frequencies...
@@ -583,8 +583,10 @@ contains
   
     !COMPUTE THE 2 COMPONENT OF THE ELECTRIC FIELD
     J1halo(1:lx1,1:lx2,1:lx3)=-1._wp*Phi
+
     call halo_pot(J1halo,tag%J1,x%flagper,.true.)
-  
+    !call halo_pot(J1halo,tag%J1,x%flagper,.false.)
+
     divtmp=grad3D2(J1halo(0:lx1+1,0:lx2+1,0:lx3+1),x,0,lx1+1,0,lx2+1,0,lx3+1)
     E2=divtmp(1:lx1,1:lx2,1:lx3)
   
@@ -841,7 +843,8 @@ contains
     parmhalo(lx1+1,1:lx2,1:lx3)=parmhalo(lx1,1:lx2,1:lx3)
   
     call halo(parmhalo,1,tagcurrent,flagper)     !this particular type of message passing only needs a single ghost cell
-  
+
+    ! x2 global boundary  
     if (iddown==-1) then
       if (flagdegrade .and. lx2>1) then     !for whatever reason this fails ctest without checking lx2>1
         parmhalo(1:lx1,0,1:lx3)=-1*parmhalo(1:lx1,2,1:lx3)+2*parmhalo(1:lx1,1,1:lx3)
@@ -856,6 +859,8 @@ contains
         parmhalo(1:lx1,lx2+1,1:lx3)=parmhalo(1:lx1,lx2,1:lx3)
       end if
     end if
+
+    ! x3 global boundary
     if (.not. flagper) then
       !! mustn't overwrite ghost cells if perioidc is chosen
       if (idleft==-1) then
