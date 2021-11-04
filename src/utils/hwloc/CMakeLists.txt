@@ -12,14 +12,11 @@ install(TARGETS hwloc_ifc hwloc_c
 EXPORT ${PROJECT_NAME}-targets
 )
 
-
 if(NOT mpi)
   target_sources(hwloc_c PRIVATE dummy_cpu.c)
   return()
 endif()
 
-
-find_package(HWLOC)
 
 if(HWLOC_FOUND)
   target_sources(hwloc_c PRIVATE get_cpu_hwloc.c)

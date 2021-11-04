@@ -31,8 +31,17 @@ set_tests_properties(unit:magcalc_exe_ok PROPERTIES
 # --- gemini3d.run Fortran front end
 add_subdirectory(hwloc)
 
-set(gemini_features
-"REALBITS:${realbits} $<$<BOOL:${mpi}>:MPI> $<$<BOOL:${glow}>:GLOW> $<$<BOOL:${msis2}>:MSIS2> $<$<BOOL:${hwm14}>:HWM14> $<$<BOOL:${hdf5}>:HDF5> $<$<BOOL:${netcdf}>:NETCDF4> $<$<BOOL:${scotch}>:SCOTCH> $<$<BOOL:${openmp}>:OPENMP>"
+string(JOIN " " gemini_features
+REALBITS:${realbits}
+$<$<BOOL:${mpi}>:MPI>
+$<$<BOOL:${glow}>:GLOW>
+$<$<BOOL:${msis2}>:MSIS2>
+$<$<BOOL:${hwm14}>:HWM14>
+$<$<BOOL:${hdf5}>:HDF5>
+$<$<BOOL:${netcdf}>:NETCDF4>
+$<$<BOOL:${scotch}>:SCOTCH>
+$<$<BOOL:${openmp}>:OPENMP>
+$<$<BOOL:${HWLOC_FOUND}>:HWLOC>
 )
 configure_file(exe_frontend.in.f90 exe_frontend.f90.in @ONLY)
 file(GENERATE OUTPUT exe_frontend.f90

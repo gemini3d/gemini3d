@@ -51,6 +51,10 @@ include(cmake/ext_libs/nc4fortran.cmake)
 
 # do these after h5fortran to avoid threads test failure
 include(cmake/compilers/compilers.cmake)
+if(mpi)
+  # here for HWLOC_FOUND directory scope
+  find_package(HWLOC)
+endif()
 # first this to get libs
 include(cmake/ext_libs/mumps.cmake)
 include(cmake/compilers/flags.cmake)
