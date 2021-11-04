@@ -78,7 +78,7 @@ type, abstract :: curvmesh
   real(wp), dimension(:,:,:), pointer :: dl1i,dl2i,dl3i
 
   !> flag for indicating whether or not the grid is periodic
-  logical :: flagper
+  logical :: flagper=.false.
 
   !> flag for indicated type of grid (0 - closed dipole; 1 - open dipole inverted; 2 - non-inverted).
   !! Computed by method in abstract type once coordinate specific quantitaties are computed by extension.
