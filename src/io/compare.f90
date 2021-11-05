@@ -34,24 +34,24 @@ public :: check_plasma_output_hdf5, check_plasma_input_hdf5, &
   params, plot_diff
 
 interface !< compare_out_h5.f90
-module logical function check_plasma_output_hdf5(new_path, ref_path, P)
-character(*), intent(in) :: new_path, ref_path
-class(params), intent(in) :: P
-end function check_plasma_output_hdf5
+  module logical function check_plasma_output_hdf5(new_path, ref_path, P)
+    character(*), intent(in) :: new_path, ref_path
+    class(params), intent(in) :: P
+  end function check_plasma_output_hdf5
 end interface
 
 interface !< compare_in_h5.f90
-module logical function check_plasma_input_hdf5(new_path, ref_path, P)
-character(*), intent(in) :: new_path, ref_path
-class(params), intent(in) :: P
-end function check_plasma_input_hdf5
+  module logical function check_plasma_input_hdf5(new_path, ref_path, P)
+    character(*), intent(in) :: new_path, ref_path
+    class(params), intent(in) :: P
+  end function check_plasma_input_hdf5
 end interface
 
 interface !< compare_grid_h5.f90
-module logical function check_grid(new_path, ref_path, P)
-character(*), intent(in) :: new_path, ref_path
-class(params), intent(in) :: P
-end function check_grid
+  module logical function check_grid(new_path, ref_path, P)
+    character(*), intent(in) :: new_path, ref_path
+    class(params), intent(in) :: P
+  end function check_grid
 end interface
 
 contains
@@ -73,12 +73,13 @@ if(P%python) then
   case ("in")
     cmd = trim(cmd) // " -only in"
   case ("out")
-    cmd = trim(cmd) // " -only out -name " // name(1:2)
+    cmd = trim(cmd) // " -only out -var " // name(1:2)
   case default
     error stop "plot_diff: unknown -only " // only
   end select
 elseif(P%matlab) then
-  cmd = "matlab -batch " // achar(34) // "gemini3d.plot.plotdiff('" // new_file // "', '" // ref_file // "', '" // name(1:2) // &
+  cmd = "matlab -batch " // achar(34) // "gemini3d.plot.plotdiff('" // new_file // &
+    "', '" // ref_file // "', '" // name(1:2) // &
     "')" // achar(34)
 else
   return
