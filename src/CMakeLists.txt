@@ -52,6 +52,7 @@ const
 collision
 diffusion fang interp
 ionization
+inputdata precipdata efielddata
 meshobj meshobj_cart meshobj_dipole spherical newton geomagnetic
 multifluid
 neutral

@@ -500,7 +500,7 @@ if (cfg%flagglow/=0) deallocate(iver)
 call clear_dneu()
 ! now taken care of by an object destructor...
 !call clear_precip_fileinput()
-call clear_potential_fileinput()
+!call clear_potential_fileinput()
 !call clear_BGfield()
 
 end subroutine gemini_main
