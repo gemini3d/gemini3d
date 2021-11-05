@@ -14,6 +14,7 @@ if(SCALAPACK_FOUND OR TARGET SCALAPACK::SCALAPACK)
 endif()
 
 set(scalapack_external true CACHE BOOL "build ScaLapack")
+set(mumps_external true CACHE BOOL "build MUMPS")  # if MUMPS used, it should build using this Scalapack.
 
 if(NOT SCALAPACK_ROOT)
   set(SCALAPACK_ROOT ${CMAKE_INSTALL_PREFIX})

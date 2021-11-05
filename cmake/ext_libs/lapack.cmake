@@ -14,6 +14,8 @@ if(LAPACK_FOUND OR TARGET LAPACK::LAPACK)
 endif()
 
 set(lapack_external true CACHE BOOL "build Lapack")
+set(scalapack_external true CACHE BOOL "build ScaLapack")  # if scalapack used, it should build using this Lapack.
+set(mumps_external true CACHE BOOL "build MUMPS")  # if MUMPS used, it should build using this Lapack and Scalapack.
 
 if(NOT LAPACK_ROOT)
   set(LAPACK_ROOT ${CMAKE_INSTALL_PREFIX})
