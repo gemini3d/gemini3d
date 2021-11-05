@@ -12,22 +12,18 @@
 ! See the License for the specific language governing permissions and
 ! limitations under the License.
 
-module gemini3d
-! top-level module for Gemini3D
-use, intrinsic :: iso_c_binding, only : c_char, c_null_char, c_int, c_bool
+Program Gemini3D
+!! MAIN PROGRAM FOR GEMINI3D
 use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
 
-use gemini_init, only : find_config, check_input_files
 use gemini_cli, only : cli
-use config, only : read_configfile
-use sanity_check, only : check_finite_output, check_finite_pertub
+use sanity_check, only : check_finite_output
 use phys_consts, only : lnchem, lwave, lsp, wp, debug
 use grid, only: grid_size,read_grid,grid_drift, lx1,lx2,lx3,lx2all,lx3all
 use meshobj, only: curvmesh
 use config, only : gemini_cfg
 use io, only : input_plasma,create_outdir,output_plasma,create_outdir_aur,output_aur,find_milestone
-use pathlib, only : expanduser
-use mpimod, only : mpisetup, mpibreakdown, mpi_manualgrid, process_grid_auto, mpi_cfg
+use mpimod, only : mpibreakdown, mpi_manualgrid, process_grid_auto, mpi_cfg
 use multifluid, only : fluid_adv
 
 use msis_interface, only : msisinit
@@ -36,28 +32,11 @@ use neutral, only : neutral_atmos,make_dneu,neutral_perturb,clear_dneu,init_neut
 use potentialBCs_mumps, only: clear_potential_fileinput, init_Efieldinput
 use potential_comm,only : electrodynamics,pot2perpfield,velocities, get_BGEfields
 use collisions, only: conductivities
-use precipBCs_mod, only: clear_precip_fileinput, init_precipinput
+use precipBCs_mod, only: init_precipinput
 use temporal, only : dt_comm
 use timeutils, only: dateinc, find_lastdate
 
 implicit none (type, external)
-
-type, bind(C) :: c_params
-logical(c_bool) :: fortran_cli
-logical(c_bool) :: debug
-logical(c_bool) :: dryrun
-character(kind=c_char) :: out_dir(1000)
-end type c_params
-
-contains
-
-
-subroutine gemini_main(p, lid2in, lid3in)  bind(C)
-!! NOTE: if use_cli=.true., then {out_dir, lid2in, lid3in} are ignored and CLI is used instead.
-
-type(c_params), intent(in) :: p
-!! output directory for Gemini3D to write simulation data to (can be large files GB, TB, ...)
-integer(c_int), intent(inout) :: lid2in, lid3in  !< inout to allow optional CLI
 
 integer :: ierr
 logical :: exists
@@ -110,6 +89,9 @@ real(wp), allocatable :: dl1,dl2,dl3     !these are grid distances in [m] used t
 real(wp) :: tglowout
 !! time for next GLOW output
 
+!> FOR HANDLING OUTPUT
+integer :: lid2in,lid3in
+
 !> TO CONTROL THROTTLING OF TIME STEP
 real(wp), parameter :: dtscale=2
 
@@ -130,38 +112,11 @@ real(wp), dimension(:,:,:), allocatable :: E01,E02,E03
 !> Describing Lagrangian grid (if used)
 real(wp) :: v2grid,v3grid
 
-character(*), parameter :: msis2_param_file = "msis20.parm"
 
-!> INITIALIZE MESSING PASSING VARIABLES, IDS ETC.
-call mpisetup()
+!! MAIN PROGRAM
 
-if(mpi_cfg%lid < 1) error stop 'number of MPI processes must be >= 1. Was MPI initialized properly?'
-
-if(p%fortran_cli) then
-  call cli(cfg, lid2in, lid3in, debug)
-else
-  block
-    character(size(p%out_dir)) :: buf
-    integer :: i
-    buf = "" !< ensure buf has no garbage characters
-
-    do i = 1, len(buf)
-      if (p%out_dir(i) == c_null_char) exit
-      buf(i:i) = p%out_dir(i)
-    enddo
-    cfg%outdir = expanduser(buf)
-
-    cfg%dryrun = p%dryrun
-    debug = p%debug
-  end block
-endif
-
-call find_config(cfg)
-
-call read_configfile(cfg, verbose=.false.)
-
-call check_input_files(cfg)
-
+call cli(cfg, lid2in, lid3in, debug)
+!! initial_config is AFTER mpi_setup
 
 !> CHECK THE GRID SIZE AND ESTABLISH A PROCESS GRID
 call grid_size(cfg%indatsize)
@@ -244,7 +199,7 @@ if ( ttmp > 0 ) then
 
   cfg%tdur=tdur         ! just to insure consistency
 
-  call input_plasma(cfg%outdir, x%x1,x%x2all,x%x3all,cfg%indatsize,filetmp,ns,vs1,Ts,Phi,Phiall)
+  call input_plasma(x%x1,x%x2all,x%x3all,cfg%indatsize,filetmp,ns,vs1,Ts,Phi,Phiall)
 else !! start at the beginning
   UTsec = cfg%UTsec0
   ymd = cfg%ymd0
@@ -252,7 +207,7 @@ else !! start at the beginning
 
   if (tdur <= 1e-6_wp .and. mpi_cfg%myid==0) error stop 'Simulation is of zero time duration'
 
-  call input_plasma(cfg%outdir, x%x1,x%x2all,x%x3all,cfg%indatsize,cfg%indatfile,ns,vs1,Ts,Phi,Phiall)
+  call input_plasma(x%x1,x%x2all,x%x3all,cfg%indatsize,cfg%indatfile,ns,vs1,Ts,Phi,Phiall)
 end if
 
 it = 1
@@ -305,11 +260,10 @@ call init_precipinput(dt,t,cfg,ymd,UTsec,x)
 
 !> Neutral atmosphere setup
 if(cfg%msis_version == 20) then
-  inquire(file=msis2_param_file, exist=exists)
-  if(.not.exists) error stop 'could not find MSIS 2 parameter file ' // msis2_param_file // &
-    ' this file must be in the same directory as gemini.bin, and run from that directory. ' // &
-    'This limitation comes from how MSIS 2.x is coded internally.'
-  call msisinit(parmfile=msis2_param_file)
+  inquire(file='msis20.parm', exist=exists)
+  if(.not.exists) error stop 'could not find MSIS 2.0 msis20.parm. ' // &
+    'This should be at gemini3d/build/msis20.parm and run gemini.bin from same directory'
+  call msisinit(parmfile='msis20.parm')
 end if
 
 if(mpi_cfg%myid==0) print*, 'Computing background and priming neutral perturbation input (if used)'
@@ -389,8 +343,6 @@ main : do while (t < tdur)
   if (cfg%flagdneu==1) then
     call cpu_time(tstart)
     call neutral_perturb(cfg,dt,cfg%dtneu,t,ymd,UTsec,x,v2grid,v3grid,nn,Tn,vn1,vn2,vn3)
-    call check_finite_pertub(cfg%outdir, t, mpi_cfg%myid, nn, Tn, vn1, vn2, vn3)
-
     if (mpi_cfg%myid==0 .and. debug) then
       call cpu_time(tfin)
       print *, 'Neutral perturbations calculated in time:  ',tfin-tstart
@@ -416,7 +368,7 @@ main : do while (t < tdur)
 
   !> Sanity check key variables before advancing
   ! FIXME: for whatever reason, it is just a fact that vs1 has trash in ghost cells after fluid_adv; I don't know why...
-  call check_finite_output(cfg%outdir, t, mpi_cfg%myid, vs2,vs3,ns,vs1,Ts, Phi,J1,J2,J3)
+  call check_finite_output(t, mpi_cfg%myid, vs2,vs3,ns,vs1,Ts, Phi,J1,J2,J3)
 
   !> NOW OUR SOLUTION IS FULLY UPDATED SO UPDATE TIME VARIABLES TO MATCH...
   it = it + 1
@@ -486,7 +438,7 @@ main : do while (t < tdur)
 end do main
 
 
-!> DEALLOCATE module data. We haven't verified it's strictly necessary, but it's been our practice.
+!> DEALLOCATE MAIN PROGRAM DATA
 deallocate(ns,vs1,vs2,vs3,Ts)
 deallocate(E1,E2,E3,J1,J2,J3)
 deallocate(nn,Tn,vn1,vn2,vn3)
@@ -503,7 +455,21 @@ call clear_dneu()
 call clear_potential_fileinput()
 !call clear_BGfield()
 
-end subroutine gemini_main
 
+!> SHUT DOWN MPI
+ierr = mpibreakdown()
 
-end module gemini3d
+if (ierr /= 0) then
+  write(stderr, *) 'GEMINI: abnormal MPI shutdown code', ierr, 'Process #', mpi_cfg%myid,' /',mpi_cfg%lid-1
+  error stop
+endif
+
+block
+  character(8) :: date
+  character(10) :: time
+
+  call date_and_time(date,time)
+  print '(/,A,I0,A,I0,A)', 'GEMINI normal termination, Process # ', mpi_cfg%myid,' / ',mpi_cfg%lid-1, ' at ' // date // 'T' // time
+end block
+
+end program
