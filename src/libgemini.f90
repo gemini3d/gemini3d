@@ -33,10 +33,10 @@ use multifluid, only : fluid_adv
 use msis_interface, only : msisinit
 use neutral, only : neutral_atmos,make_dneu,neutral_perturb,clear_dneu,init_neutrals, neutral_winds
 
-use potentialBCs_mumps, only: clear_potential_fileinput, init_Efieldinput
+use potentialBCs_mumps, only: init_Efieldinput
 use potential_comm,only : electrodynamics,pot2perpfield,velocities, get_BGEfields
 use collisions, only: conductivities
-use precipBCs_mod, only: clear_precip_fileinput, init_precipinput
+use precipBCs_mod, only: init_precipinput
 use temporal, only : dt_comm
 use timeutils, only: dateinc, find_lastdate
 
@@ -373,7 +373,7 @@ main : do while (t < tdur)
     end if
   end if
 
-  !> COMPUTE BACKGROUND NEUTRAL ATMOSPHERE USING MSIS00.
+  !> COMPUTE BACKGROUND NEUTRAL ATMOSPHERE USING MSIS
   if ( it/=1 .and. cfg%flagneuBG .and. t>tneuBG) then     !we dont' throttle for tneuBG so we have to do things this way to not skip over...
     call cpu_time(tstart)
     call neutral_atmos(ymd,UTsec,x%glat,x%glon,x%alt,cfg%activ,nn,Tn,cfg%msis_version)

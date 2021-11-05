@@ -6,6 +6,7 @@ use meshobj, only: curvmesh
 use timeutils, only : find_lastdate
 use mpimod, only: mpi_cfg
 use config, only: gemini_cfg
+use neutraldata3Dobj, only: neutraldata3D
 
 ! also links MSIS from vendor/msis00/
 
@@ -170,9 +171,9 @@ subroutine init_neutrals(dt,t,cfg,ymd,UTsec,x,v2grid,v3grid,nn,Tn,vn1,vn2,vn3)
   end if
 
 
-  !! perform an initialization
+  !! perform an initialization for the perturbation quantities
   if (cfg%flagdneu==1) then
-    !! allocate correct type, FIXME: no shunt to 3D
+    !! allocate correct type, FIXME: eventuallly no shunt to 3D
     select case (cfc%interptype)
     case default
       allocate(neutraldata3D::atmosperturb)
