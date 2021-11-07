@@ -11,6 +11,7 @@ add_subdirectory(vendor/lapack95)  # used by PDEparabolic
 
 # --- GEMINI
 add_subdirectory(ionization)
+
 add_subdirectory(numerical)
 # we use this even with MPI stub
 add_subdirectory(mpimod)
@@ -48,23 +49,24 @@ LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
 foreach(l
   advec calculus config const collision diffusion fang interp ionization gbsv
   meshobj meshobj_cart meshobj_dipole spherical newton geomagnetic
-  msis_ifc multifluid
+  multifluid
   neutral
   pathlib
   PDEparabolic precipBCs reader sanity_check errors sources temporal timeutils
   exe_frontend
   grid io PDEelliptic potential mpimod
   autogrid
+  msis_ifc
   )
 
   install(TARGETS ${l}
   EXPORT ${PROJECT_NAME}-targets
   )
 
-  target_link_libraries(gemini3d PUBLIC
+  target_link_libraries(gemini3d PRIVATE $<TARGET_OBJECTS:${l}>
   # $<BUILD_INTERFACE:${l}>
-  # $<INSTALL_INTERFACE:${l}>
-  ${l}
+  $<INSTALL_INTERFACE:${l}>
+  # ${l}
   )
 endforeach()
 target_link_libraries(gemini3d PRIVATE MPI::MPI_Fortran)
@@ -82,10 +84,16 @@ RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
 target_link_libraries(gemini.bin PRIVATE
 gemini3d
 hwloc_ifc hwloc_c
+msis00mod
 MUMPS::MUMPS
 $<$<BOOL:${mpi}>:SCALAPACK::SCALAPACK>
-LAPACK::LAPACK MPI::MPI_Fortran
+LAPACK::LAPACK
+nc4fortran::nc4fortran
+h5fortran::h5fortran
+MPI::MPI_Fortran
 "$<$<BOOL:${MUMPS_HAVE_Scotch}>:Scotch::Scotch;METIS::METIS>"
+hwm_ifc
+$<$<BOOL:${glow}>:glow::glow>
 )
 
 # same link logic applied to src/unit_tests/test_mumps
@@ -120,7 +128,12 @@ LINKER_LANGUAGE C
 target_link_libraries(gemini_c.bin PRIVATE
 gemini3d
 hwloc_ifc hwloc_c
+nc4fortran::nc4fortran
+h5fortran::h5fortran
 MUMPS::MUMPS SCALAPACK::SCALAPACK LAPACK::LAPACK MPI::MPI_Fortran
+$<$<BOOL:${glow}>:glow::glow>
+hwm_ifc
+msis00mod
 )
 target_compile_definitions(gemini_c.bin PRIVATE $<$<BOOL:${MSVC}>:_CRT_SECURE_NO_WARNINGS>)
 
