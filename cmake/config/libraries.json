@@ -1,16 +1,16 @@
 {
 "glow": {
   "git": "https://github.com/gemini3d/glow.git",
-  "tag": "v0.981.0.10"
+  "tag": "v0.981.0.11"
 },
 
 "h5fortran": {
   "git": "https://github.com/geospace-code/h5fortran.git",
-  "tag": "v4.2.9"
+  "tag": "v4.2.10"
 },
 "nc4fortran": {
   "git": "https://github.com/geospace-code/nc4fortran.git",
-  "tag": "v1.4.5"
+  "tag": "v1.4.6"
 },
 
 "zlib1": {
@@ -39,7 +39,7 @@
 
 "hwm14": {
   "git": "https://github.com/gemini3d/hwm14.git",
-  "tag": "v1.0.0"
+  "tag": "v1.0.1"
 },
 "msis2": {
   "zip": "https://map.nrl.navy.mil/map/pub/nrl/NRLMSIS/NRLMSIS2.0/NRLMSIS2.0.zip",
@@ -48,15 +48,15 @@
 
 "mumps": {
   "git": "https://github.com/scivision/mumps.git",
-  "tag": "v5.4.1.6"
+  "tag": "v5.4.1.7"
 },
 "scalapack": {
   "git": "https://github.com/scivision/scalapack.git",
-  "tag": "v2.1.0.28"
+  "tag": "v2.1.0.29"
 },
 "lapack": {
   "git": "https://github.com/scivision/lapack.git",
-  "tag": "v3.10.0.2"
+  "tag": "v3.10.0.3"
 },
 
 "matgemini": {
