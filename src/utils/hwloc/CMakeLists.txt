@@ -8,10 +8,6 @@ target_link_libraries(hwloc_ifc PRIVATE hwloc_c)
 # separate C lib to avoid compiler warnings from C <-> Fortran add_compile_options etc.
 add_library(hwloc_c OBJECT)
 
-install(TARGETS hwloc_ifc hwloc_c
-EXPORT ${PROJECT_NAME}-targets
-)
-
 if(NOT mpi)
   target_sources(hwloc_c PRIVATE dummy_cpu.c)
   return()

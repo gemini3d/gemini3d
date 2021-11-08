@@ -57,6 +57,8 @@ foreach(l
   grid io PDEelliptic potential mpimod
   autogrid
   msis_ifc
+  hwm_ifc
+  hwloc_ifc hwloc_c
   )
 
   install(TARGETS ${l}
@@ -83,7 +85,6 @@ RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
 )
 target_link_libraries(gemini.bin PRIVATE
 gemini3d
-hwloc_ifc hwloc_c
 msis00mod
 MUMPS::MUMPS
 $<$<BOOL:${mpi}>:SCALAPACK::SCALAPACK>
@@ -92,7 +93,7 @@ nc4fortran::nc4fortran
 h5fortran::h5fortran
 MPI::MPI_Fortran
 "$<$<BOOL:${MUMPS_HAVE_Scotch}>:Scotch::Scotch;METIS::METIS>"
-hwm_ifc
+
 $<$<BOOL:${glow}>:glow::glow>
 )
 
@@ -127,12 +128,13 @@ LINKER_LANGUAGE C
 # LINKER_LANGUAGE needed for Intel compilers
 target_link_libraries(gemini_c.bin PRIVATE
 gemini3d
-hwloc_ifc hwloc_c
 nc4fortran::nc4fortran
 h5fortran::h5fortran
-MUMPS::MUMPS SCALAPACK::SCALAPACK LAPACK::LAPACK MPI::MPI_Fortran
+MUMPS::MUMPS
+$<$<BOOL:${mpi}>:SCALAPACK::SCALAPACK>
+LAPACK::LAPACK
+MPI::MPI_Fortran
 $<$<BOOL:${glow}>:glow::glow>
-hwm_ifc
 msis00mod
 )
 target_compile_definitions(gemini_c.bin PRIVATE $<$<BOOL:${MSVC}>:_CRT_SECURE_NO_WARNINGS>)
