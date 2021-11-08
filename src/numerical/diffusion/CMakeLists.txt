@@ -14,7 +14,9 @@ set(_tmpdifffn ${CMAKE_CURRENT_BINARY_DIR}/test_diffusion1d.h5)
 
 add_executable(test_diffusion1d test_diffusion1D.f90)
 # lapack needed for MacOS
-target_link_libraries(test_diffusion1d PRIVATE PDEparabolic gbsv const LAPACK::LAPACK h5fortran::h5fortran
+target_link_libraries(test_diffusion1d PRIVATE PDEparabolic gbsv const
+LAPACK::LAPACK
+h5fortran::h5fortran
 $<$<BOOL:${HDF5_HAVE_PARALLEL}>:MPI::MPI_Fortran>
 )
 

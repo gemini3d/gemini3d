@@ -33,9 +33,6 @@ target_link_libraries(multifluid PRIVATE advec calculus collision const diffusio
 add_subdirectory(utils)
 
 # --- Main GEMINI3D library
-install(TARGETS nc4fortran mumps_interface
-EXPORT ${PROJECT_NAME}-targets
-)
 
 configure_file(gemini_cli.in.f90 gemini_cli.f90 @ONLY)
 
@@ -47,35 +44,39 @@ ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
 LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
 )
 foreach(l
-  advec calculus config const collision diffusion fang interp ionization gbsv
+  advec
+  calculus config
+  const
+  collision
+  diffusion fang interp
+  ionization
   meshobj meshobj_cart meshobj_dipole spherical newton geomagnetic
   multifluid
   neutral
   pathlib
-  PDEparabolic precipBCs reader sanity_check errors sources temporal timeutils
+  PDEparabolic gbsv
+  precipBCs reader sanity_check errors sources temporal timeutils
   exe_frontend
-  grid io PDEelliptic potential mpimod
+  grid io PDEelliptic potential
+  mpimod
   autogrid
-  msis_ifc
+  msis_ifc msis00mod
   hwm_ifc
   hwloc_ifc hwloc_c
-  )
+)
 
   install(TARGETS ${l}
   EXPORT ${PROJECT_NAME}-targets
   )
 
-  target_link_libraries(gemini3d PRIVATE $<TARGET_OBJECTS:${l}>
+  target_link_libraries(gemini3d
+  PRIVATE $<TARGET_OBJECTS:${l}>
   # $<BUILD_INTERFACE:${l}>
   $<INSTALL_INTERFACE:${l}>
   # ${l}
   )
 endforeach()
-target_link_libraries(gemini3d PRIVATE MPI::MPI_Fortran)
 
-
-
-install(TARGETS gemini3d EXPORT ${PROJECT_NAME}-targets)
 
 # --- Gemini.bin minimal main Fortran program
 add_executable(gemini.bin gemini_main.f90
@@ -85,15 +86,14 @@ RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
 )
 target_link_libraries(gemini.bin PRIVATE
 gemini3d
-msis00mod
 MUMPS::MUMPS
 $<$<BOOL:${mpi}>:SCALAPACK::SCALAPACK>
 LAPACK::LAPACK
 nc4fortran::nc4fortran
 h5fortran::h5fortran
+$<$<BOOL:${HWLOC_FOUND}>:HWLOC::HWLOC>
 MPI::MPI_Fortran
 "$<$<BOOL:${MUMPS_HAVE_Scotch}>:Scotch::Scotch;METIS::METIS>"
-
 $<$<BOOL:${glow}>:glow::glow>
 )
 
@@ -107,8 +107,6 @@ FIXTURES_REQUIRED "mumps_fxt;hwloc_fxt"
 LABELS unit
 ENVIRONMENT $<$<BOOL:${test_dll_path}>:"PATH=${test_dll_path}">
 )
-
-install(TARGETS gemini.bin EXPORT ${PROJECT_NAME}-targets)
 
 
 # --- Gemini_c.bin
@@ -128,18 +126,26 @@ LINKER_LANGUAGE C
 # LINKER_LANGUAGE needed for Intel compilers
 target_link_libraries(gemini_c.bin PRIVATE
 gemini3d
-nc4fortran::nc4fortran
-h5fortran::h5fortran
 MUMPS::MUMPS
 $<$<BOOL:${mpi}>:SCALAPACK::SCALAPACK>
 LAPACK::LAPACK
+nc4fortran::nc4fortran
+h5fortran::h5fortran
+$<$<BOOL:${HWLOC_FOUND}>:HWLOC::HWLOC>
 MPI::MPI_Fortran
+"$<$<BOOL:${MUMPS_HAVE_Scotch}>:Scotch::Scotch;METIS::METIS>"
 $<$<BOOL:${glow}>:glow::glow>
-msis00mod
 )
 target_compile_definitions(gemini_c.bin PRIVATE $<$<BOOL:${MSVC}>:_CRT_SECURE_NO_WARNINGS>)
 
-install(FILES gemini3d.h TYPE INCLUDE)
-
 # NOTE: gemini_c.bin does not yet have unit testing, as we are deciding whether to make it a separate example
 # or even in a separate project. See https://github.com/gemini3d/libgemini
+
+install(TARGETS
+nc4fortran
+mumps_interface
+# gemini3d
+gemini.bin gemini_c.bin
+EXPORT ${PROJECT_NAME}-targets
+)
+install(FILES gemini3d.h TYPE INCLUDE)

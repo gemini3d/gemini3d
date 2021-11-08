@@ -36,14 +36,14 @@ if(netcdf)
   )
 
   ExternalProject_Add(NC4FORTRAN
-    GIT_REPOSITORY ${nc4fortran_git}
-    GIT_TAG ${nc4fortran_tag}
-    CMAKE_ARGS ${nc4fortran_cmake_args}
-    CMAKE_GENERATOR ${EXTPROJ_GENERATOR}
-    BUILD_BYPRODUCTS ${nc4fortran_LIBRARIES}
-    INACTIVITY_TIMEOUT 15
-    CONFIGURE_HANDLED_BY_BUILD ON
-    )
+  GIT_REPOSITORY ${nc4fortran_git}
+  GIT_TAG ${nc4fortran_tag}
+  CMAKE_ARGS ${nc4fortran_cmake_args}
+  CMAKE_GENERATOR ${EXTPROJ_GENERATOR}
+  BUILD_BYPRODUCTS ${nc4fortran_LIBRARIES}
+  INACTIVITY_TIMEOUT 15
+  CONFIGURE_HANDLED_BY_BUILD ON
+  )
 
   file(MAKE_DIRECTORY ${nc4fortran_INCLUDE_DIRS})
 
@@ -57,7 +57,7 @@ if(netcdf)
   target_link_libraries(nc4fortran::nc4fortran INTERFACE NetCDF::NetCDF_Fortran)
 
 else(netcdf)
-  message(VERBOSE " using nc4fortran dummy")
+  message(VERBOSE "using nc4fortran dummy")
 
   add_library(nc4fortran ${CMAKE_CURRENT_SOURCE_DIR}/src/vendor/nc4fortran_dummy.f90)
   add_library(nc4fortran::nc4fortran ALIAS nc4fortran)

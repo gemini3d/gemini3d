@@ -40,7 +40,6 @@ else(msis2)
 endif(msis2)
 
 # cmake bug? Object library not a good idea for msis 2.0 as have to specify everywhere
-# install(TARGETS msis_ifc msis00mod EXPORT ${PROJECT_NAME}-targets)
 
 if(NOT hdf5)
   return()
@@ -54,7 +53,7 @@ $<$<BOOL:${HDF5_HAVE_PARALLEL}>:MPI::MPI_Fortran>
 )
 set_target_properties(msis_setup PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
 
-install(TARGETS msis00mod msis_setup EXPORT ${PROJECT_NAME}-targets)
+install(TARGETS msis_setup EXPORT ${PROJECT_NAME}-targets)
 
 if(BUILD_TESTING)
 

@@ -1,6 +1,5 @@
 module gemini_cli
 
-use mpi, only : mpi_init
 use config, only : gemini_cfg, get_compiler_vendor
 use pathlib, only : expanduser
 use mpimod, only : mpibreakdown, mpi_cfg
