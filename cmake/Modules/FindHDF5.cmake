@@ -92,14 +92,6 @@ endfunction(pop_flag)
 
 function(detect_config)
 
-if(Fortran IN_LIST HDF5_FIND_COMPONENTS AND NOT HDF5_Fortran_FOUND)
-  return()
-endif()
-
-if(CXX IN_LIST HDF5_FIND_COMPONENTS AND NOT HDF5_CXX_FOUND)
-  return()
-endif()
-
 set(CMAKE_REQUIRED_INCLUDES ${HDF5_C_INCLUDE_DIR})
 
 find_file(h5_conf
@@ -238,12 +230,23 @@ if(HDF5_Fortran_HL_stub AND HDF5_Fortran_stub)
   list(APPEND HDF5_Fortran_LIBRARIES ${HDF5_Fortran_HL_stub} ${HDF5_Fortran_stub})
 endif()
 
-find_path(HDF5_Fortran_INCLUDE_DIR
-  NAMES hdf5.mod
-  HINTS ${hdf5_inc_dirs} ${pc_hdf5_INCLUDE_DIRS}
-  PATH_SUFFIXES ${hdf5_msuf}
-  PATHS ${hdf5_binpref}
-  DOC "HDF5 Fortran modules")
+if(HDF5_ROOT OR DEFINED ENV{HDF5_ROOT})
+  find_path(HDF5_Fortran_INCLUDE_DIR
+    NAMES hdf5.mod
+    NO_DEFAULT_PATH
+    HINTS ${HDF5_C_INCLUDE_DIR} ${HDF5_ROOT} ENV HDF5_ROOT
+    PATH_SUFFIXES include
+    DOC "HDF5 Fortran module path"
+  )
+else()
+  find_path(HDF5_Fortran_INCLUDE_DIR
+    NAMES hdf5.mod
+    HINTS ${HDF5_C_INCLUDE_DIR} ${hdf5_inc_dirs} ${pc_hdf5_INCLUDE_DIRS}
+    PATHS ${hdf5_binpref}
+    PATH_SUFFIXES ${hdf5_msuf}
+    DOC "HDF5 Fortran module path"
+  )
+endif()
 
 if(HDF5_Fortran_LIBRARY AND HDF5_Fortran_HL_LIBRARY AND HDF5_Fortran_INCLUDE_DIR)
   set(HDF5_Fortran_LIBRARIES ${HDF5_Fortran_LIBRARIES} PARENT_SCOPE)
@@ -348,13 +351,23 @@ if(NOT parallel IN_LIST HDF5_FIND_COMPONENTS)
   list(PREPEND wrapper_names h5fc h5fc-64)
 endif()
 
-find_program(HDF5_Fortran_COMPILER_EXECUTABLE
-  NAMES ${wrapper_names}
-  NAMES_PER_DIR
-  HINTS ENV HOMEBREW_PREFIX ENV MACPORTS_PREFIX
-  PATHS ${hdf5_binpref}
-  PATH_SUFFIXES ${hdf5_binsuf}
-)
+if(HDF5_ROOT OR DEFINED ENV{HDF5_ROOT})
+  find_program(HDF5_Fortran_COMPILER_EXECUTABLE
+    NAMES ${wrapper_names}
+    NAMES_PER_DIR
+    NO_DEFAULT_PATH
+    HINTS ${HDF5_ROOT} ENV HDF5_ROOT
+    PATH_SUFFIXES ${hdf5_binsuf}
+  )
+else()
+  find_program(HDF5_Fortran_COMPILER_EXECUTABLE
+    NAMES ${wrapper_names}
+    NAMES_PER_DIR
+    HINTS ${HOMEBREW_PREFIX} ENV HOMEBREW_PREFIX ${MACPORTS_PREFIX} ENV MACPORTS_PREFIX
+    PATHS ${hdf5_binpref}
+    PATH_SUFFIXES ${hdf5_binsuf}
+  )
+endif()
 
 if(HDF5_Fortran_COMPILER_EXECUTABLE)
   get_flags(${HDF5_Fortran_COMPILER_EXECUTABLE} f_raw)
@@ -386,13 +399,23 @@ function(hdf5_cxx_wrap lib_var inc_var)
 set(lib_dirs)
 set(inc_dirs)
 
-find_program(HDF5_CXX_COMPILER_EXECUTABLE
-  NAMES h5c++ h5c++-64
-  NAMES_PER_DIR
-  HINTS ENV HOMEBREW_PREFIX ENV MACPORTS_PREFIX
-  PATHS ${hdf5_binpref}
-  PATH_SUFFIXES ${hdf5_binsuf}
-)
+if(HDF5_ROOT OR DEFINED ENV{HDF5_ROOT})
+  find_program(HDF5_CXX_COMPILER_EXECUTABLE
+    NAMES ${wrapper_names}
+    NAMES_PER_DIR
+    NO_DEFAULT_PATH
+    HINTS ${HDF5_ROOT} ENV HDF5_ROOT
+    PATH_SUFFIXES ${hdf5_binsuf}
+  )
+else()
+  find_program(HDF5_CXX_COMPILER_EXECUTABLE
+    NAMES h5c++ h5c++-64
+    NAMES_PER_DIR
+    HINTS ${HOMEBREW_PREFIX} ENV HOMEBREW_PREFIX ${MACPORTS_PREFIX} ENV MACPORTS_PREFIX
+    PATHS ${hdf5_binpref}
+    PATH_SUFFIXES ${hdf5_binsuf}
+  )
+endif()
 
 if(HDF5_CXX_COMPILER_EXECUTABLE)
   get_flags(${HDF5_CXX_COMPILER_EXECUTABLE} cxx_raw)
@@ -423,15 +446,23 @@ if(NOT parallel IN_LIST HDF5_FIND_COMPONENTS)
   list(PREPEND wrapper_names h5cc h5cc-64)
 endif()
 
-# NOTE: NAMES_PER_DIR is important to help override Anaconda's nuisance, broken h5cc
-
-find_program(HDF5_C_COMPILER_EXECUTABLE
-  NAMES ${wrapper_names}
-  NAMES_PER_DIR
-  HINTS ENV HOMEBREW_PREFIX ENV MACPORTS_PREFIX
-  PATHS ${hdf5_binpref}
-  PATH_SUFFIXES ${hdf5_binsuf}
-)
+if(HDF5_ROOT OR DEFINED ENV{HDF5_ROOT})
+  find_program(HDF5_C_COMPILER_EXECUTABLE
+    NAMES ${wrapper_names}
+    NAMES_PER_DIR
+    NO_DEFAULT_PATH
+    HINTS ${HDF5_ROOT} ENV HDF5_ROOT
+    PATH_SUFFIXES ${hdf5_binsuf}
+  )
+else()
+  find_program(HDF5_C_COMPILER_EXECUTABLE
+    NAMES ${wrapper_names}
+    NAMES_PER_DIR
+    HINTS ${HOMEBREW_PREFIX} ENV HOMEBREW_PREFIX ${MACPORTS_PREFIX} ENV MACPORTS_PREFIX
+    PATHS ${hdf5_binpref}
+    PATH_SUFFIXES ${hdf5_binsuf}
+  )
+endif()
 
 if(HDF5_C_COMPILER_EXECUTABLE)
   get_flags(${HDF5_C_COMPILER_EXECUTABLE} c_raw)
@@ -576,6 +607,15 @@ if(NOT HDF5_ROOT AND DEFINED ENV{HDF5_ROOT})
   set(HDF5_ROOT $ENV{HDF5_ROOT})
 endif()
 
+# Conda causes numerous problems with finding HDF5, so exclude from search
+if(DEFINED ENV{CONDA_PREFIX})
+  set(h5_ignore_path
+    $ENV{CONDA_PREFIX}/bin $ENV{CONDA_PREFIX}/lib $ENV{CONDA_PREFIX}/include
+    $ENV{CONDA_PREFIX}/Library/bin $ENV{CONDA_PREFIX}/Library/lib $ENV{CONDA_PREFIX}/Library/include
+  )
+  list(APPEND CMAKE_IGNORE_PATH ${h5_ignore_path})
+endif()
+
 # we don't use pkg-config names because some distros pkg-config for HDF5 is broken
 # however at least the paths are often correct
 find_package(PkgConfig)
@@ -588,13 +628,21 @@ if(NOT HDF5_ROOT AND NOT HDF5_FOUND)
 endif()
 
 set(hdf5_lsuf hdf5)
-if(NOT parallel IN_LIST HDF5_FIND_COMPONENTS)
+if(parallel IN_LIST HDF5_FIND_COMPONENTS)
+  list(PREPEND hdf5_lsuf hdf5/openmpi hdf5/mpich)
+else()
   list(PREPEND hdf5_lsuf hdf5/serial)
 endif()
 
-set(_psuf static)
+if(BUILD_SHARED_LIBS)
+  set(_psuf shared)
+  set(hdf5_msuf shared)
+else()
+  set(_psuf static)
+  set(hdf5_msuf static)
+endif()
 
-set(hdf5_msuf static)
+
 if(CMAKE_Fortran_COMPILER_ID STREQUAL GNU)
   list(APPEND hdf5_msuf gfortran/modules)
   if(NOT HDF5_ROOT AND parallel IN_LIST HDF5_FIND_COMPONENTS)
@@ -616,14 +664,6 @@ endif()
 # find_package(hdf5 CONFIG)
 # message(STATUS "hdf5 found ${hdf5_FOUND}")
 
-if(Fortran IN_LIST HDF5_FIND_COMPONENTS)
-  find_hdf5_fortran()
-endif()
-
-if(CXX IN_LIST HDF5_FIND_COMPONENTS)
-  find_hdf5_cxx()
-endif()
-
 # C is always needed
 find_hdf5_c()
 
@@ -632,12 +672,23 @@ if(HDF5_C_FOUND)
   detect_config()
 endif(HDF5_C_FOUND)
 
+if(HDF5_C_FOUND AND CXX IN_LIST HDF5_FIND_COMPONENTS)
+  find_hdf5_cxx()
+endif()
+
+if(HDF5_C_FOUND AND Fortran IN_LIST HDF5_FIND_COMPONENTS)
+  find_hdf5_fortran()
+endif()
+
 # --- configure time checks
 # these checks avoid messy, confusing errors at build time
 check_hdf5_link()
 
 set(CMAKE_REQUIRED_LIBRARIES)
 set(CMAKE_REQUIRED_INCLUDES)
+
+# pop off ignored paths so rest of script can find Python
+list(REMOVE_ITEM CMAKE_IGNORE_PATH ${h5_ignore_path})
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(HDF5
@@ -654,22 +705,15 @@ if(HDF5_FOUND)
     set_target_properties(HDF5::HDF5 PROPERTIES
       INTERFACE_LINK_LIBRARIES "${HDF5_LIBRARIES}"
       INTERFACE_INCLUDE_DIRECTORIES "${HDF5_INCLUDE_DIRS}")
-    if(hdf5_have_zlib)
-      target_link_libraries(HDF5::HDF5 INTERFACE ZLIB::ZLIB)
-    endif()
-    if(hdf5_have_szip)
-      target_link_libraries(HDF5::HDF5 INTERFACE SZIP::SZIP)
-    endif()
 
-    if(Threads_FOUND)
-      target_link_libraries(HDF5::HDF5 INTERFACE Threads::Threads)
-    endif()
+    target_link_libraries(HDF5::HDF5 INTERFACE
+    $<$<BOOL:${hdf5_have_zlib}>:ZLIB::ZLIB>
+    $<$<BOOL:${hdf5_have_szip}>:SZIP::SZIP>
+    ${CMAKE_THREAD_LIBS_INIT}
+    ${CMAKE_DL_LIBS}
+    $<$<BOOL:${UNIX}>:m>
+    )
 
-    target_link_libraries(HDF5::HDF5 INTERFACE ${CMAKE_DL_LIBS})
-
-    if(UNIX)
-      target_link_libraries(HDF5::HDF5 INTERFACE m)
-    endif(UNIX)
   endif()
 endif(HDF5_FOUND)
 
