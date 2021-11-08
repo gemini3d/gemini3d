@@ -35,7 +35,7 @@ jobs:
         sudo $(cmake -P scripts/requirements.cmake 2>&1)
 
     - name: Configure multi
-      run: cmake --preset multi
+      run: cmake --preset multi -Dautobuild=off
 
     - name: Debug build
       run: cmake --build --preset debug
@@ -61,6 +61,35 @@ jobs:
       if: always()
       with:
         files: build/test-*.xml
+
+  linux-build-most:
+    # build critical libraries like scalapack and mumps, skipping others for time
+    needs: linux
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
+      with:
+        python-version: '3.8'
+
+    - name: Install packages
+      run: |
+        sudo apt update -yq
+        sudo apt install libhwloc-dev libhdf5-dev liblapack-dev libopenmpi-dev openmpi-bin
+
+    - name: Configure build
+      run: cmake -B build
+
+    - name: Build
+      run: cmake --build build
+
+    - name: Unit tests
+      run: ctest --test-dir build -L unit
+
+    - name: core tests
+      run: ctest --test-dir build -LE unit -E 3d
 
 
   linux-gcc7:
@@ -101,6 +130,7 @@ jobs:
 
 
   MSIS-20:
+    needs: linux
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
