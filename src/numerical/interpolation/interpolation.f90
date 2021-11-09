@@ -165,21 +165,19 @@ do ixi=1,lxi
 
   !find the x3 'bin' for this point; i.e. find ix3 s.t. x3i(ix3i) is between x3(ix3-1) and x3(ix3)
   ix30=1
-  ix3=lx3/2
+  ix3 = max(lbound(x3, dim=1)+1, lx3/2)  !< avoid bounds error when lx3==2 in "do while(... x3(ix3-1) ...)"
   ix3fin=lx3
-  if (x3i(ixi)>=x3(1) .and. x3i(ixi)<=x3(lx3)) then    !in bounds
-    do while(.not.(x3i(ixi)>=x3(ix3-1) .and. x3i(ixi)<=x3(ix3)))    !keep going until we are in the interval we want
-      if (x3i(ixi)>=x3(ix30) .and. x3i(ixi)<=x3(ix3)) then    !left half (correct guess)
+  if (x3i(ixi) >= x3(1) .and. x3i(ixi) <= x3(lx3)) then    !in bounds
+    do while(.not.(x3i(ixi) >= x3(ix3-1) .and. x3i(ixi) <= x3(ix3)))    !keep going until we are in the interval we want
+      if (x3i(ixi) >= x3(ix30) .and. x3i(ixi) <= x3(ix3)) then    !left half (correct guess)
         ix3fin=ix3
       else    !wrong take the "right" half (har har)
         ix30=ix3
       end if
       ix3=(ix3fin+ix30)/2
-      if (ix30==ix3) then
-        ix3=lx3
-      end if
+      if (ix30==ix3) ix3=lx3
     end do
-  else if (x3i(ixi)<x3(1)) then
+  else if (x3i(ixi) < x3(1)) then
     ix3=1
   else
     ix3=lx3
