@@ -18,7 +18,8 @@ ${_s}/msis_gfn.F90
 ${_s}/msis_tfn.F90
 ${_s}/msis_dfn.F90
 ${_s}/msis_calc.F90
-${_s}/msis_gtd8d.F90)
+${_s}/msis_gtd8d.F90
+)
 
 # MSIS 2.0 needs this parm file.
 file(COPY ${msis2_SOURCE_DIR}/msis20.parm DESTINATION ${PROJECT_BINARY_DIR})
@@ -29,8 +30,9 @@ if(${PROJECT}_BUILD_TESTING)
   target_link_libraries(msis2test PRIVATE msis2)
 
   add_test(NAME MSIS2
-    COMMAND $<TARGET_FILE:msis2test>
-    WORKING_DIRECTORY ${msis2_SOURCE_DIR})
+  COMMAND $<TARGET_FILE:msis2test>
+  WORKING_DIRECTORY ${msis2_SOURCE_DIR}
+  )
 endif()
 
 # patching API MSIS
@@ -46,28 +48,28 @@ if(WIN32)
   find_program(WSL NAMES wsl REQUIRED)
 
   execute_process(COMMAND ${WSL} wslpath ${msis_orig}
-    TIMEOUT 5
-    OUTPUT_VARIABLE msis_orig_path
-    COMMAND_ERROR_IS_FATAL ANY
-    OUTPUT_STRIP_TRAILING_WHITESPACE
+  TIMEOUT 5
+  OUTPUT_VARIABLE msis_orig_path
+  COMMAND_ERROR_IS_FATAL ANY
+  OUTPUT_STRIP_TRAILING_WHITESPACE
   )
 
   execute_process(COMMAND ${WSL} wslpath ${msis_patch}
-    TIMEOUT 5
-    OUTPUT_VARIABLE msis_patch_path
-    COMMAND_ERROR_IS_FATAL ANY
-    OUTPUT_STRIP_TRAILING_WHITESPACE
+  TIMEOUT 5
+  OUTPUT_VARIABLE msis_patch_path
+  COMMAND_ERROR_IS_FATAL ANY
+  OUTPUT_STRIP_TRAILING_WHITESPACE
   )
 
   execute_process(COMMAND ${WSL} patch ${msis_orig_path} ${msis_patch_path}
-    TIMEOUT 10
-    COMMAND_ERROR_IS_FATAL ANY
+  TIMEOUT 10
+  COMMAND_ERROR_IS_FATAL ANY
   )
 else()
   find_program(PATCH NAMES patch REQUIRED)
   execute_process(COMMAND ${PATCH} ${msis_orig} ${msis_patch}
-    TIMEOUT 10
-    COMMAND_ERROR_IS_FATAL ANY
+  TIMEOUT 10
+  COMMAND_ERROR_IS_FATAL ANY
   )
 endif()
 

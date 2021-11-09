@@ -29,7 +29,8 @@ check_source_compiles(Fortran
 "program imp
 implicit none (type, external)
 end program"
-f2018impnone)
+f2018impnone
+)
 if(NOT f2018impnone)
   message(FATAL_ERROR "Compiler does not support Fortran 2018 IMPLICIT NONE (type, external): ${CMAKE_Fortran_COMPILER_ID} ${CMAKE_Fortran_COMPILER_VERSION}")
 endif()
@@ -39,7 +40,8 @@ check_source_compiles(Fortran
 character :: x
 error stop x
 end program"
-f2018errorstop)
+f2018errorstop
+)
 if(NOT f2018errorstop)
   message(FATAL_ERROR "Compiler does not support Fortran 2018 error stop with character variable: ${CMAKE_Fortran_COMPILER_ID} ${CMAKE_Fortran_COMPILER_VERSION}")
 endif()
@@ -60,5 +62,6 @@ select rank(A)
 end select
 end subroutine ranker
 end program"
-f2018assumed_rank)
+f2018assumed_rank
+)
 endif(dev)

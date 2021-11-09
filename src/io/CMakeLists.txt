@@ -30,19 +30,19 @@ if(${PROJECT_NAME}_BUILD_TESTING)
 
     add_test(NAME gemini:dump:${t} COMMAND $<TARGET_FILE:test_dump_write> ${t} ${f})
     set_tests_properties(gemini:dump:${t} PROPERTIES
-      FIXTURES_SETUP gemini:dump_fxt
-      WILL_FAIL true
-      LABELS unit
-      TIMEOUT 10
+    FIXTURES_SETUP gemini:dump_fxt
+    WILL_FAIL true
+    LABELS unit
+    TIMEOUT 10
     )
 
     add_test(NAME gemini:dump:check:${t} COMMAND $<TARGET_FILE:test_dump_read> testing:${t} ${f})
     set_tests_properties(gemini:dump:check:${t} PROPERTIES
-      FIXTURES_REQUIRED gemini:dump_fxt
-      REQUIRED_FILES ${f}
-      LABELS unit
-      TIMEOUT 10
-      )
+    FIXTURES_REQUIRED gemini:dump_fxt
+    REQUIRED_FILES ${f}
+    LABELS unit
+    TIMEOUT 10
+    )
   endforeach()
 
 endif()
@@ -60,15 +60,19 @@ add_test(NAME unit:namelist COMMAND $<TARGET_FILE:test_namelist> ${_test_file})
 set_tests_properties(unit:namelist PROPERTIES
 REQUIRED_FILES ${_test_file}
 LABELS unit
-TIMEOUT 10)
+TIMEOUT 10
+)
 
 add_executable(test_compiler_vendor test_compiler_vendor.f90)
 target_link_libraries(test_compiler_vendor PRIVATE config pathlib)
-add_test(NAME unit:compiler_vendor COMMAND $<TARGET_FILE:test_compiler_vendor>)
+add_test(NAME unit:compiler_vendor
+COMMAND $<TARGET_FILE:test_compiler_vendor>
+)
 set_tests_properties(unit:compiler_vendor PROPERTIES
 PASS_REGULAR_EXPRESSION ${CMAKE_Fortran_COMPILER_ID}
 LABELS unit
-TIMEOUT 10)
+TIMEOUT 10
+)
 
 add_executable(test_expand_envvar test_expand_envvar.f90)
 target_link_libraries(test_expand_envvar PRIVATE config pathlib)
@@ -76,21 +80,24 @@ add_test(NAME unit:expand_envvar COMMAND $<TARGET_FILE:test_expand_envvar>)
 set_tests_properties(unit:expand_envvar PROPERTIES
 ENVIRONMENT test__gem=hello
 LABELS unit
-TIMEOUT 10)
+TIMEOUT 10
+)
 
 endif()
 
 # --- io
 configure_file(output.in.f90 output.f90 @ONLY)
 add_library(io OBJECT io.f90 ${CMAKE_CURRENT_BINARY_DIR}/output.f90
-  aurora.f90 aurora_raw.f90 aurora_hdf5.f90 aurora_ncdf.f90
-  mag.f90 mag_hdf5.f90 mag_ncdf.f90 mag_raw.f90
-  plasma_input.f90 plasma_input_hdf5.f90 plasma_input_ncdf.f90 plasma_input_raw.f90
-  plasma_output.f90 plasma_output_hdf5.f90 plasma_output_ncdf.f90 plasma_output_raw.f90
-  milestone.f90)
+aurora.f90 aurora_raw.f90 aurora_hdf5.f90 aurora_ncdf.f90
+mag.f90 mag_hdf5.f90 mag_ncdf.f90 mag_raw.f90
+plasma_input.f90 plasma_input_hdf5.f90 plasma_input_ncdf.f90 plasma_input_raw.f90
+plasma_output.f90 plasma_output_hdf5.f90 plasma_output_ncdf.f90 plasma_output_raw.f90
+milestone.f90
+)
 
 target_link_libraries(io PRIVATE calculus config const reader grid mpimod pathlib sanity_check timeutils
-  h5fortran::h5fortran nc4fortran::nc4fortran)
+h5fortran::h5fortran nc4fortran::nc4fortran
+)
 
 # --- reader
 add_library(reader OBJECT reader.f90 reader_hdf5.f90 reader_ncdf.f90 reader_raw.f90)

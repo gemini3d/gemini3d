@@ -10,13 +10,14 @@ endif()
 configure_file(magcalc_cli.in.f90 magcalc_cli.f90 @ONLY)
 add_executable(magcalc.bin)
 target_sources(magcalc.bin PRIVATE magcalc.f90 ${CMAKE_CURRENT_BINARY_DIR}/magcalc_cli.f90
-  $<TARGET_OBJECTS:autogrid> $<TARGET_OBJECTS:grid>
-  $<TARGET_OBJECTS:mpimod>
-  $<TARGET_OBJECTS:meshobj> $<TARGET_OBJECTS:meshobj_cart> $<TARGET_OBJECTS:meshobj_dipole> $<TARGET_OBJECTS:spherical> $<TARGET_OBJECTS:newton> $<TARGET_OBJECTS:geomagnetic>
-  $<TARGET_OBJECTS:reader> $<TARGET_OBJECTS:io>
+$<TARGET_OBJECTS:autogrid> $<TARGET_OBJECTS:grid>
+$<TARGET_OBJECTS:mpimod>
+$<TARGET_OBJECTS:meshobj> $<TARGET_OBJECTS:meshobj_cart> $<TARGET_OBJECTS:meshobj_dipole> $<TARGET_OBJECTS:spherical> $<TARGET_OBJECTS:newton> $<TARGET_OBJECTS:geomagnetic>
+$<TARGET_OBJECTS:reader> $<TARGET_OBJECTS:io>
 )
 target_link_libraries(magcalc.bin PRIVATE exe_frontend
-  pathlib sanity_check errors config timeutils const hwloc_ifc hwloc_c nc4fortran::nc4fortran h5fortran::h5fortran)
+pathlib sanity_check errors config timeutils const hwloc_ifc hwloc_c nc4fortran::nc4fortran h5fortran::h5fortran
+)
 target_link_libraries(magcalc.bin PRIVATE MPI::MPI_Fortran
 $<$<NOT:$<BOOL:${mpi}>>:MUMPS::MPISEQ>
 )
@@ -24,9 +25,10 @@ set_target_properties(magcalc.bin PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_
 
 add_test(NAME unit:magcalc_exe_ok COMMAND $<TARGET_FILE:magcalc.bin>)
 set_tests_properties(unit:magcalc_exe_ok PROPERTIES
-  PASS_REGULAR_EXPRESSION "EOF: magcalc.bin"
-  LABELS unit
-  TIMEOUT 10)
+PASS_REGULAR_EXPRESSION "EOF: magcalc.bin"
+LABELS unit
+TIMEOUT 10
+)
 
 # --- gemini3d.run Fortran front end
 add_subdirectory(hwloc)
@@ -62,9 +64,10 @@ set_target_properties(gemini3d.run PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT
 
 add_test(NAME unit:gemini3d_run_ok COMMAND $<TARGET_FILE:gemini3d.run>)
 set_tests_properties(unit:gemini3d_run_ok PROPERTIES
-  PASS_REGULAR_EXPRESSION "EOF: gemini3d.run"
-  LABELS unit
-  TIMEOUT 10)
+PASS_REGULAR_EXPRESSION "EOF: gemini3d.run"
+LABELS unit
+TIMEOUT 10
+)
 
 # --- gemini3.run with array bounds checks
 # We use EXCLUDE_FROM_ALL as a workaround to prevent it from being built by default when not in Debug mode
@@ -81,10 +84,11 @@ EXCLUDE_FROM_ALL $<NOT:$<CONFIG:Debug,RelWithDebInfo>>
 
 add_test(NAME unit:gemini3d_run_debug_ok COMMAND $<TARGET_FILE:gemini3d.run.debug>)
 set_tests_properties(unit:gemini3d_run_debug_ok PROPERTIES
-  PASS_REGULAR_EXPRESSION "EOF: gemini3d.run"
-  DISABLED $<NOT:$<CONFIG:Debug,RelWithDebInfo>>
-  LABELS unit
-  TIMEOUT 10)
+PASS_REGULAR_EXPRESSION "EOF: gemini3d.run"
+DISABLED $<NOT:$<CONFIG:Debug,RelWithDebInfo>>
+LABELS unit
+TIMEOUT 10
+)
 # --- magcalc.run
 add_executable(magcalc.run magcalc_run.f90)
 target_link_libraries(magcalc.run PRIVATE exe_frontend autogrid reader config timeutils pathlib const hwloc_ifc hwloc_c
@@ -96,9 +100,10 @@ set_target_properties(magcalc.run PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_
 
 add_test(NAME unit:magcalc_run_ok COMMAND $<TARGET_FILE:magcalc.run>)
 set_tests_properties(unit:magcalc_run_ok PROPERTIES
-  PASS_REGULAR_EXPRESSION "EOF: magcalc.run"
-  LABELS unit
-  TIMEOUT 10)
+PASS_REGULAR_EXPRESSION "EOF: magcalc.run"
+LABELS unit
+TIMEOUT 10
+)
 
 # --- Windows needs DLLs on path
 set_tests_properties(unit:magcalc_exe_ok unit:magcalc_run_ok unit:gemini3d_run_ok unit:gemini3d_run_debug_ok PROPERTIES
@@ -122,7 +127,8 @@ $<$<BOOL:${HDF5_HAVE_PARALLEL}>:MPI::MPI_Fortran>
 )
 
 set_target_properties(gemini3d.compare PROPERTIES
-  RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
+RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
+)
 
 install(TARGETS magcalc.bin gemini3d.run magcalc.run gemini3d.compare
 EXPORT ${PROJECT_NAME}-targets

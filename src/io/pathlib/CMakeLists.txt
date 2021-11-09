@@ -13,6 +13,7 @@ if(BUILD_TESTING)
 
   add_test(NAME unit:pathlib COMMAND $<TARGET_FILE:test_pathlib>)
   set_tests_properties(unit:pathlib PROPERTIES
-    LABELS unit
-    TIMEOUT 10)
+  LABELS unit
+  TIMEOUT 10
+  )
 endif()

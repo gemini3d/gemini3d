@@ -19,11 +19,12 @@ set(git_version ${GIT_VERSION_STRING})
 string(SUBSTRING ${git_version} 0 ${_max_len} git_version)
 # git branch --show-current requires Git >= 2.22, June 2019
 execute_process(COMMAND ${GIT_EXECUTABLE} rev-parse --abbrev-ref HEAD
-  WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-  OUTPUT_VARIABLE git_branch
-  OUTPUT_STRIP_TRAILING_WHITESPACE
-  RESULT_VARIABLE _err
-  TIMEOUT 10)
+WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+OUTPUT_VARIABLE git_branch
+OUTPUT_STRIP_TRAILING_WHITESPACE
+RESULT_VARIABLE _err
+TIMEOUT 10
+)
 if(_err EQUAL 0)
   string(SUBSTRING ${git_branch} 0 ${_max_len} git_branch)
 else()
@@ -33,19 +34,21 @@ endif()
 
 # git describe --tags can make CI error fatal: No names found, cannot describe anything.
 execute_process(COMMAND ${GIT_EXECUTABLE} describe --tags
+WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+OUTPUT_VARIABLE git_rev
+OUTPUT_STRIP_TRAILING_WHITESPACE
+RESULT_VARIABLE _err
+TIMEOUT 10
+)
+if(NOT _err EQUAL 0)
+  # old Git
+  execute_process(COMMAND ${GIT_EXECUTABLE} rev-parse --short HEAD
   WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
   OUTPUT_VARIABLE git_rev
   OUTPUT_STRIP_TRAILING_WHITESPACE
   RESULT_VARIABLE _err
-  TIMEOUT 10)
-if(NOT _err EQUAL 0)
-  # old Git
-  execute_process(COMMAND ${GIT_EXECUTABLE} rev-parse --short HEAD
-    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-    OUTPUT_VARIABLE git_rev
-    OUTPUT_STRIP_TRAILING_WHITESPACE
-    RESULT_VARIABLE _err
-    TIMEOUT 10)
+  TIMEOUT 10
+  )
 endif()
 if(_err EQUAL 0)
   string(SUBSTRING ${git_rev} 0 ${_max_len} git_rev)
@@ -56,11 +59,12 @@ string(APPEND git_rev " ${PROJECT_VERSION}")
 
 set(git_porcelain true)
 execute_process(COMMAND ${GIT_EXECUTABLE} status --porcelain
-  WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-  OUTPUT_VARIABLE _porcelain
-  OUTPUT_STRIP_TRAILING_WHITESPACE
-  RESULT_VARIABLE _err
-  TIMEOUT 10)
+WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+OUTPUT_VARIABLE _porcelain
+OUTPUT_STRIP_TRAILING_WHITESPACE
+RESULT_VARIABLE _err
+TIMEOUT 10
+)
 if(_porcelain)
   set(git_porcelain false)
 endif(_porcelain)

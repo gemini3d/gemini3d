@@ -6,8 +6,9 @@ function(check_pygemini)
 
 # Numpy conflicts are a general source of trouble
 execute_process(COMMAND ${Python3_EXECUTABLE} -c "import numpy,sys; print(f'Python {sys.version}  Numpy {numpy.__version__}')"
-  RESULT_VARIABLE _ok
-  TIMEOUT 15)
+RESULT_VARIABLE _ok
+TIMEOUT 15
+)
 
 if(NOT _ok EQUAL 0)
   message(STATUS "Problem with Python Numpy, cannot use PyGemini")
@@ -15,11 +16,12 @@ if(NOT _ok EQUAL 0)
 endif()
 
 execute_process(COMMAND ${Python3_EXECUTABLE} -c "import gemini3d; import gemini3d.run_test; print(gemini3d.__path__[0])"
-  WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}  # help avoid Intel Windows false import error due to hdf5 .dll in build dir
-  OUTPUT_VARIABLE PYGEMINI_DIR
-  OUTPUT_STRIP_TRAILING_WHITESPACE
-  RESULT_VARIABLE _ok
-  TIMEOUT 15)
+WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}  # help avoid Intel Windows false import error due to hdf5 .dll in build dir
+OUTPUT_VARIABLE PYGEMINI_DIR
+OUTPUT_STRIP_TRAILING_WHITESPACE
+RESULT_VARIABLE _ok
+TIMEOUT 15
+)
 
 if(_ok EQUAL 0)
   message(STATUS "PyGemini found: ${PYGEMINI_DIR}")

@@ -22,24 +22,25 @@ $<$<BOOL:${HDF5_HAVE_PARALLEL}>:MPI::MPI_Fortran>
 
 # WORKING_DIRECTORY is needed to write output file to repeatable path.
 add_test(NAME unit:diffusion1
-  COMMAND $<TARGET_FILE:test_diffusion1d> ${_tmpdifffn}
-  WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
+COMMAND $<TARGET_FILE:test_diffusion1d> ${_tmpdifffn}
+WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+)
 set_tests_properties(unit:diffusion1 PROPERTIES
-  TIMEOUT 5
-  LABELS unit
-  FIXTURES_SETUP gemini_diffusion_fxt
-  ENVIRONMENT $<$<BOOL:${test_dll_path}>:"PATH=${test_dll_path}">
+TIMEOUT 5
+LABELS unit
+FIXTURES_SETUP gemini_diffusion_fxt
+ENVIRONMENT $<$<BOOL:${test_dll_path}>:"PATH=${test_dll_path}">
 )
 
 if(python)
   add_test(NAME unit:diffusion1:python
-    COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test_diffusion1D.py ${_tmpdifffn}
+  COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test_diffusion1D.py ${_tmpdifffn}
   )
   set_tests_properties(unit:diffusion1:python PROPERTIES
-    TIMEOUT 10
-    LABELS "unit;python"
-    REQUIRED_FILES ${_tmpdifffn}
-    FIXTURES_REQUIRED gemini_diffusion_fxt
-    DISABLED $<NOT:$<BOOL:${Python3_FOUND}>>
+  TIMEOUT 10
+  LABELS "unit;python"
+  REQUIRED_FILES ${_tmpdifffn}
+  FIXTURES_REQUIRED gemini_diffusion_fxt
+  DISABLED $<NOT:$<BOOL:${Python3_FOUND}>>
   )
 endif()

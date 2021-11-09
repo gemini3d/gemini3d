@@ -15,11 +15,12 @@ endif()
 # --- main Gemini3D build
 
 project(gemini3d
-  LANGUAGES C Fortran
-  # Gemini3D is Fortran, but external libraries use C, and some find_package need C.
-  DESCRIPTION "3-D ionospheric model"
-  HOMEPAGE_URL https://github.com/gemini3d/gemini
-  VERSION ${PROJECT_VERSION})
+LANGUAGES C Fortran
+# Gemini3D is Fortran, but external libraries use C, and some find_package need C.
+DESCRIPTION "3-D ionospheric model"
+HOMEPAGE_URL https://github.com/gemini3d/gemini
+VERSION ${PROJECT_VERSION}
+)
 
 enable_testing()  # keep this so BUILD_TESTING=off doesn't remove all tests
 include(CTest) # for CDash

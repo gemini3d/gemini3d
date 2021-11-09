@@ -45,28 +45,29 @@ $<$<NOT:$<BOOL:${mpi}>>:MUMPS::MPISEQ>
 # the TARGET_OBJECTS etc in this directory are a careful effort to avoid this problem
 
 add_test(NAME unit:potential2
-  COMMAND "$<$<BOOL:${mpi}>:${MPIEXEC_EXECUTABLE}>" $<$<BOOL:${mpi}>:${MPIEXEC_NUMPROC_FLAG}> $<$<BOOL:${mpi}>:${Ncpu}>
-  $<TARGET_FILE:test_potential2d> ${_potential_testfile}
+COMMAND "$<$<BOOL:${mpi}>:${MPIEXEC_EXECUTABLE}>" $<$<BOOL:${mpi}>:${MPIEXEC_NUMPROC_FLAG}> $<$<BOOL:${mpi}>:${Ncpu}>
+$<TARGET_FILE:test_potential2d> ${_potential_testfile}
 )
 
 set_tests_properties(unit:potential2 PROPERTIES TIMEOUT 30
-  FIXTURES_SETUP gemini_potential_fxt
-  RESOURCE_LOCK cpu_mpi
-  PROCESSORS ${Ncpu}
-  LABELS "unit"
-  ENVIRONMENT $<$<BOOL:${test_dll_path}>:"PATH=${test_dll_path}">
+FIXTURES_SETUP gemini_potential_fxt
+RESOURCE_LOCK cpu_mpi
+PROCESSORS ${Ncpu}
+LABELS "unit"
+ENVIRONMENT $<$<BOOL:${test_dll_path}>:"PATH=${test_dll_path}">
 )
 
 if(python)
 
-  add_test(NAME unit:potential2:python
-    COMMAND ${Python3_EXECUTABLE}  ${CMAKE_CURRENT_SOURCE_DIR}/test_potential2d.py ${_potential_testfile})
-  set_tests_properties(unit:potential2:python PROPERTIES
-    REQUIRED_FILES ${_potential_testfile}
-    TIMEOUT 10
-    LABELS "unit;python"
-    FIXTURES_REQUIRED gemini_potential_fxt
-    DISABLED $<NOT:$<BOOL:${Python3_FOUND}>>
-    )
+add_test(NAME unit:potential2:python
+COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test_potential2d.py ${_potential_testfile}
+)
+set_tests_properties(unit:potential2:python PROPERTIES
+REQUIRED_FILES ${_potential_testfile}
+TIMEOUT 10
+LABELS "unit;python"
+FIXTURES_REQUIRED gemini_potential_fxt
+DISABLED $<NOT:$<BOOL:${Python3_FOUND}>>
+)
 
 endif()

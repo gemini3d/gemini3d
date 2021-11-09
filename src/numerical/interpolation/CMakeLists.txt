@@ -12,9 +12,10 @@ add_executable(test_interp1 testinterp1.f90)
 target_link_libraries(test_interp1 PRIVATE const interp)
 add_test(NAME unit:interp1 COMMAND test_interp1 WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 set_tests_properties(unit:interp1 PROPERTIES
-  TIMEOUT 10
-  LABELS unit
-  FIXTURES_SETUP GemInterp1)
+TIMEOUT 10
+LABELS unit
+FIXTURES_SETUP GemInterp1
+)
 
 set(_testfile_interp2in ${CMAKE_CURRENT_BINARY_DIR}/input2d.h5)
 set(_testfile_interp2 ${CMAKE_CURRENT_BINARY_DIR}/output2d.h5)
@@ -29,13 +30,14 @@ $<$<BOOL:${HDF5_HAVE_PARALLEL}>:MPI::MPI_Fortran>
 )
 
 add_test(NAME unit:interp2
-  COMMAND $<TARGET_FILE:test_interp2> ${_testfile_interp2in} ${_testfile_interp2}
-  WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
+COMMAND $<TARGET_FILE:test_interp2> ${_testfile_interp2in} ${_testfile_interp2}
+WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+)
 set_tests_properties(unit:interp2 PROPERTIES
-  TIMEOUT 15
-  LABELS unit
-  FIXTURES_SETUP gemini_interp2_fxt
-  ENVIRONMENT $<$<BOOL:${test_dll_path}>:"PATH=${test_dll_path}">
+TIMEOUT 15
+LABELS unit
+FIXTURES_SETUP gemini_interp2_fxt
+ENVIRONMENT $<$<BOOL:${test_dll_path}>:"PATH=${test_dll_path}">
 )
 
 # --- 3D
@@ -46,14 +48,15 @@ $<$<BOOL:${HDF5_HAVE_PARALLEL}>:MPI::MPI_Fortran>
 )
 
 add_test(NAME unit:interp3
-  COMMAND $<TARGET_FILE:test_interp3> ${_testfile_interp3in} ${_testfile_interp3}
-  WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
+COMMAND $<TARGET_FILE:test_interp3> ${_testfile_interp3in} ${_testfile_interp3}
+WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+)
 set_tests_properties(unit:interp3 PROPERTIES
-  TIMEOUT 60  # need 60 for slow CPU
-  LABELS unit
-  RESOURCE_LOCK cpu_ram
-  FIXTURES_SETUP gemini_interp3_fxt
-  ENVIRONMENT $<$<BOOL:${test_dll_path}>:"PATH=${test_dll_path}">
+TIMEOUT 60  # need 60 for slow CPU
+LABELS unit
+RESOURCE_LOCK cpu_ram
+FIXTURES_SETUP gemini_interp3_fxt
+ENVIRONMENT $<$<BOOL:${test_dll_path}>:"PATH=${test_dll_path}">
 )
 
 
@@ -61,26 +64,26 @@ set_tests_properties(unit:interp3 PROPERTIES
 if(python)
 
 add_test(NAME unit:interp2:python
-  COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testinterp.py ${_testfile_interp2}
+COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testinterp.py ${_testfile_interp2}
 )
 set_tests_properties(unit:interp2:python PROPERTIES
-  REQUIRED_FILES "${_testfile_interp2};${_testfile_interp2in}"
-  TIMEOUT 30
-  LABELS "unit;python"
-  FIXTURES_REQUIRED gemini_interp2_fxt
-  DISABLED $<NOT:$<BOOL:${Python3_FOUND}>>
+REQUIRED_FILES "${_testfile_interp2};${_testfile_interp2in}"
+TIMEOUT 30
+LABELS "unit;python"
+FIXTURES_REQUIRED gemini_interp2_fxt
+DISABLED $<NOT:$<BOOL:${Python3_FOUND}>>
 )
 
 add_test(NAME unit:interp3:python
-  COMMAND ${Python3_EXECUTABLE}  ${CMAKE_CURRENT_SOURCE_DIR}/testinterp3.py ${_testfile_interp3}
+COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/testinterp3.py ${_testfile_interp3}
 )
 set_tests_properties(unit:interp3:python PROPERTIES
-  REQUIRED_FILES "${_testfile_interp3};${_testfile_interp3in}"
-  TIMEOUT 30
-  LABELS "unit;python"
-  RESOURCE_LOCK cpu_ram
-  FIXTURES_REQUIRED gemini_interp3_fxt
-  DISABLED $<NOT:$<BOOL:${Python3_FOUND}>>
+REQUIRED_FILES "${_testfile_interp3};${_testfile_interp3in}"
+TIMEOUT 30
+LABELS "unit;python"
+RESOURCE_LOCK cpu_ram
+FIXTURES_REQUIRED gemini_interp3_fxt
+DISABLED $<NOT:$<BOOL:${Python3_FOUND}>>
 )
 
 endif()

@@ -30,7 +30,8 @@ if(msis2)
   target_link_libraries(msis_ifc PRIVATE msis2)
   target_compile_options(msis2 PRIVATE
   "$<$<Fortran_COMPILER_ID:GNU>:${msis2_gnu_flags}>"
-  "$<$<Fortran_COMPILER_ID:Intel,IntelLLVM>:${msis_intel_flags}>")
+  "$<$<Fortran_COMPILER_ID:Intel,IntelLLVM>:${msis_intel_flags}>"
+  )
 
   install(TARGETS msis2
   EXPORT ${PROJECT_NAME}-targets
@@ -73,30 +74,33 @@ set(msis00_out ${CMAKE_CURRENT_BINARY_DIR}/msis00_test_out.h5)
 set(msis00_ref ${PROJECT_SOURCE_DIR}/test_data/msis/msis00_test_out.h5)
 
 add_test(NAME unit:msis00_generate
-  COMMAND $<TARGET_FILE:msis_generate> ${msis00_in} 0)
+COMMAND $<TARGET_FILE:msis_generate> ${msis00_in} 0
+)
 set_tests_properties(unit:msis00_generate PROPERTIES
-  FIXTURES_SETUP msis00_gen_fxt
-  LABELS unit
-  TIMEOUT 10
+FIXTURES_SETUP msis00_gen_fxt
+LABELS unit
+TIMEOUT 10
 )
 
 add_test(NAME unit:msis00_setup
-  COMMAND $<TARGET_FILE:msis_setup> ${msis00_in} ${msis00_out})
+COMMAND $<TARGET_FILE:msis_setup> ${msis00_in} ${msis00_out}
+)
 set_tests_properties(unit:msis00_setup PROPERTIES
-  FIXTURES_SETUP msis00_fxt
-  FIXTURES_REQUIRED msis00_gen_fxt
-  LABELS unit
-  REQUIRED_FILES ${msis00_in}
-  TIMEOUT 10
+FIXTURES_SETUP msis00_fxt
+FIXTURES_REQUIRED msis00_gen_fxt
+LABELS unit
+REQUIRED_FILES ${msis00_in}
+TIMEOUT 10
 )
 
 add_test(NAME unit:msis00_compare
-  COMMAND $<TARGET_FILE:msis_compare> ${msis00_out} ${msis00_ref})
+COMMAND $<TARGET_FILE:msis_compare> ${msis00_out} ${msis00_ref}
+)
 set_tests_properties(unit:msis00_compare PROPERTIES
-  FIXTURES_REQUIRED msis00_fxt
-  LABELS unit
-  TIMEOUT 10
-  REQUIRED_FILES "${msis00_out};${msis00_ref}"
+FIXTURES_REQUIRED msis00_fxt
+LABELS unit
+TIMEOUT 10
+REQUIRED_FILES "${msis00_out};${msis00_ref}"
 )
 
 set_tests_properties(unit:msis00_setup unit:msis00_compare PROPERTIES
@@ -106,45 +110,45 @@ ENVIRONMENT $<$<BOOL:${test_dll_path}>:"PATH=${test_dll_path}">
 # --- MSIS 2.0 tests
 if(msis2)
 
-  set(msis2_in ${CMAKE_CURRENT_BINARY_DIR}/msis2_test_in.h5)
-  set(msis2_out ${CMAKE_CURRENT_BINARY_DIR}/msis2_test_out.h5)
-  set(msis2_ref ${PROJECT_SOURCE_DIR}/test_data/msis/msis2_test_out.h5)
+set(msis2_in ${CMAKE_CURRENT_BINARY_DIR}/msis2_test_in.h5)
+set(msis2_out ${CMAKE_CURRENT_BINARY_DIR}/msis2_test_out.h5)
+set(msis2_ref ${PROJECT_SOURCE_DIR}/test_data/msis/msis2_test_out.h5)
 
-  add_test(NAME unit:msis2_generate
-    COMMAND $<TARGET_FILE:msis_generate> ${msis2_in} 20
-  )
-  set_tests_properties(unit:msis2_generate PROPERTIES
-    FIXTURES_SETUP msis2_gen_fxt
-    LABELS unit
-    TIMEOUT 10
-  )
+add_test(NAME unit:msis2_generate
+COMMAND $<TARGET_FILE:msis_generate> ${msis2_in} 20
+)
+set_tests_properties(unit:msis2_generate PROPERTIES
+FIXTURES_SETUP msis2_gen_fxt
+LABELS unit
+TIMEOUT 10
+)
 
-  add_test(NAME unit:msis2_setup
-    COMMAND $<TARGET_FILE:msis_setup> ${msis2_in} ${msis2_out}
-    WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
-  )
-  set_tests_properties(unit:msis2_setup PROPERTIES
-    FIXTURES_SETUP msis2_fxt
-    FIXTURES_REQUIRED msis2_gen_fxt
-    LABELS unit
-    REQUIRED_FILES ${msis2_in}
-    TIMEOUT 10
-  )
+add_test(NAME unit:msis2_setup
+COMMAND $<TARGET_FILE:msis_setup> ${msis2_in} ${msis2_out}
+WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+)
+set_tests_properties(unit:msis2_setup PROPERTIES
+FIXTURES_SETUP msis2_fxt
+FIXTURES_REQUIRED msis2_gen_fxt
+LABELS unit
+REQUIRED_FILES ${msis2_in}
+TIMEOUT 10
+)
 
-  add_test(NAME unit:msis2_compare
-    COMMAND $<TARGET_FILE:msis_compare> ${msis2_out} ${msis2_ref}
-    WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
-  )
-  set_tests_properties(unit:msis2_compare PROPERTIES
-    FIXTURES_REQUIRED msis2_fxt
-    LABELS unit
-    TIMEOUT 10
-    REQUIRED_FILES "${msis2_out};${msis2_ref}"
-  )
+add_test(NAME unit:msis2_compare
+COMMAND $<TARGET_FILE:msis_compare> ${msis2_out} ${msis2_ref}
+WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+)
+set_tests_properties(unit:msis2_compare PROPERTIES
+FIXTURES_REQUIRED msis2_fxt
+LABELS unit
+TIMEOUT 10
+REQUIRED_FILES "${msis2_out};${msis2_ref}"
+)
 
- set_tests_properties(unit:msis2_setup unit:msis2_compare PROPERTIES
- ENVIRONMENT $<$<BOOL:${test_dll_path}>:"PATH=${test_dll_path}">
- )
+set_tests_properties(unit:msis2_setup unit:msis2_compare PROPERTIES
+ENVIRONMENT $<$<BOOL:${test_dll_path}>:"PATH=${test_dll_path}">
+)
 
 endif(msis2)
 

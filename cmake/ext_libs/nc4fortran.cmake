@@ -1,9 +1,9 @@
-# Leave nc4fortran as FetchContent as we use wrangle NetCDF library distinctions there
 include(ExternalProject)
 
 if(netcdf)
   find_package(nc4fortran CONFIG)
   if(nc4fortran_FOUND)
+    message(STATUS: "nc4fortran found: ${nc4fortran_DIR}")
     return()
   endif()
 
@@ -14,7 +14,7 @@ if(netcdf)
   endif()
 
   if(NOT DEFINED NetCDF_ROOT)
-    set(NetCDF_ROOT ${NetCDF_C_INCLUDE_DIRS}/..)
+    cmake_path(GET NetCDF_C_INCLUDE_DIRS PARENT_PATH NetCDF_ROOT)
   endif()
   message(VERBOSE "NetCDF_ROOT: ${NetCDF_ROOT}")
 

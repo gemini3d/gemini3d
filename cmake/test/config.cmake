@@ -13,10 +13,10 @@ add_test(NAME ${name}:download
   COMMAND ${CMAKE_COMMAND} -Dname=${name} -Doutdir:PATH=${out_dir} -Drefroot:PATH=${ref_root} -P ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/download.cmake
 )
 set_tests_properties(${name}:download PROPERTIES
-  FIXTURES_SETUP ${name}:download_fxt
-  RESOURCE_LOCK download_lock  # avoid anti-leeching transient failures
-  LABELS download
-  TIMEOUT 180
+FIXTURES_SETUP ${name}:download_fxt
+RESOURCE_LOCK download_lock  # avoid anti-leeching transient failures
+LABELS download
+TIMEOUT 180
 )
 
 # construct command
@@ -32,25 +32,25 @@ add_test(NAME gemini:hdf5:${name}:dryrun
 # otherwise, we have to generate source for msis_interface.f90
 
 set_tests_properties(gemini:hdf5:${name}:dryrun PROPERTIES
-  TIMEOUT 60
-  RESOURCE_LOCK cpu_mpi
-  FIXTURES_REQUIRED "gemini_exe_fxt;${name}:download_fxt"
-  FIXTURES_SETUP hdf5:${name}:dryrun
-  REQUIRED_FILES ${out_dir}/inputs/config.nml
-  LABELS core
-  ENVIRONMENT $<$<BOOL:${test_dll_path}>:"PATH=${test_dll_path}">
+TIMEOUT 60
+RESOURCE_LOCK cpu_mpi
+FIXTURES_REQUIRED "gemini_exe_fxt;${name}:download_fxt"
+FIXTURES_SETUP hdf5:${name}:dryrun
+REQUIRED_FILES ${out_dir}/inputs/config.nml
+LABELS core
+ENVIRONMENT $<$<BOOL:${test_dll_path}>:"PATH=${test_dll_path}">
 )
 
 
 add_test(NAME gemini:hdf5:${name} COMMAND ${test_cmd})
 
 set_tests_properties(gemini:hdf5:${name} PROPERTIES
-  TIMEOUT ${TIMEOUT}
-  RESOURCE_LOCK cpu_mpi
-  FIXTURES_REQUIRED hdf5:${name}:dryrun
-  FIXTURES_SETUP hdf5:${name}:run_fxt
-  LABELS core
-  ENVIRONMENT $<$<BOOL:${test_dll_path}>:"PATH=${test_dll_path}">
+TIMEOUT ${TIMEOUT}
+RESOURCE_LOCK cpu_mpi
+FIXTURES_REQUIRED hdf5:${name}:dryrun
+FIXTURES_SETUP hdf5:${name}:run_fxt
+LABELS core
+ENVIRONMENT $<$<BOOL:${test_dll_path}>:"PATH=${test_dll_path}">
 )
 
 
@@ -60,25 +60,29 @@ endif(hdf5)
 
 if(netcdf)
 add_test(NAME gemini:netcdf:${name}:dryrun
-  COMMAND ${test_cmd} -out_format nc -dryrun)
+COMMAND ${test_cmd} -out_format nc -dryrun
+)
 
 set_tests_properties(gemini:netcdf:${name}:dryrun PROPERTIES
-  TIMEOUT 60
-  RESOURCE_LOCK cpu_mpi
-  FIXTURES_REQUIRED "gemini_exe_fxt;${name}:download_fxt"
-  FIXTURES_SETUP netcdf:${name}:dryrun
-  REQUIRED_FILES ${out_dir}/inputs/config.nml
-  LABELS core)
+TIMEOUT 60
+RESOURCE_LOCK cpu_mpi
+FIXTURES_REQUIRED "gemini_exe_fxt;${name}:download_fxt"
+FIXTURES_SETUP netcdf:${name}:dryrun
+REQUIRED_FILES ${out_dir}/inputs/config.nml
+LABELS core
+)
 
 add_test(NAME gemini:netcdf:${name}
-  COMMAND ${test_cmd} -out_format nc)
+COMMAND ${test_cmd} -out_format nc
+)
 
 set_tests_properties(gemini:netcdf:${name} PROPERTIES
-  TIMEOUT ${TIMEOUT}
-  RESOURCE_LOCK cpu_mpi
-  FIXTURES_REQUIRED netcdf:${name}:dryrun
-  FIXTURES_SETUP netcdf:${name}:run_fxt
-  LABELS core)
+TIMEOUT ${TIMEOUT}
+RESOURCE_LOCK cpu_mpi
+FIXTURES_REQUIRED netcdf:${name}:dryrun
+FIXTURES_SETUP netcdf:${name}:run_fxt
+LABELS core
+)
 endif(netcdf)
 
 compare_gemini_output(${name} ${out_dir} ${ref_dir})
@@ -91,22 +95,23 @@ function(setup_magcalc_test name)
 cmake_path(APPEND out_dir ${PROJECT_BINARY_DIR} ${name})
 
 add_test(NAME magcalc:${name}:setup
-  COMMAND ${Python3_EXECUTABLE} -m gemini3d.magcalc ${out_dir})
+COMMAND ${Python3_EXECUTABLE} -m gemini3d.magcalc ${out_dir}
+)
 set_tests_properties(magcalc:${name}:setup PROPERTIES
-  FIXTURES_REQUIRED hdf5:${name}:run_fxt
-  FIXTURES_SETUP magcalc:${name}:setup
-  TIMEOUT 30
-  DISABLED $<NOT:$<BOOL:${PYGEMINI_DIR}>>
+FIXTURES_REQUIRED hdf5:${name}:run_fxt
+FIXTURES_SETUP magcalc:${name}:setup
+TIMEOUT 30
+DISABLED $<NOT:$<BOOL:${PYGEMINI_DIR}>>
 )
 
 add_test(NAME magcalc:${name} COMMAND $<TARGET_FILE:magcalc.run> ${out_dir})
 set_tests_properties(magcalc:${name} PROPERTIES
-  RESOURCE_LOCK cpu_mpi
-  FIXTURES_REQUIRED magcalc:${name}:setup
-  LABELS core
-  TIMEOUT 60
-  ENVIRONMENT $<$<BOOL:${test_dll_path}>:"PATH=${test_dll_path}">
-  DISABLED $<NOT:$<BOOL:${PYGEMINI_DIR}>>
+RESOURCE_LOCK cpu_mpi
+FIXTURES_REQUIRED magcalc:${name}:setup
+LABELS core
+TIMEOUT 60
+ENVIRONMENT $<$<BOOL:${test_dll_path}>:"PATH=${test_dll_path}">
+DISABLED $<NOT:$<BOOL:${PYGEMINI_DIR}>>
 )
 
 endfunction(setup_magcalc_test)

@@ -12,24 +12,26 @@ add_executable(test_fang test_fang.f90)
 target_link_libraries(test_fang PRIVATE fang fang_run assert const msis_ifc)
 add_test(NAME unit:fangIonize COMMAND $<TARGET_FILE:test_fang>)
 set_tests_properties(unit:fangIonize PROPERTIES
-  TIMEOUT 10
-  LABELS unit)
+TIMEOUT 10
+LABELS unit
+)
 
 if(python)
   add_test(NAME unit:fangIonize:python
-    COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test_fang.py $<TARGET_FILE:test_fang>
+  COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test_fang.py $<TARGET_FILE:test_fang>
   )
   set_tests_properties(unit:fangIonize:python PROPERTIES
-    TIMEOUT 30
-    LABELS "unit;python"
-    DISABLED $<NOT:$<BOOL:${Python3_FOUND}>>
+  TIMEOUT 30
+  LABELS "unit;python"
+  DISABLED $<NOT:$<BOOL:${Python3_FOUND}>>
   )
 endif()
 
 endif(BUILD_TESTING)
 
 add_library(ionization OBJECT ionization.f90
-$<IF:$<BOOL:${glow}>,glow_run.F90,glow_dummy.f90>)
+$<IF:$<BOOL:${glow}>,glow_run.F90,glow_dummy.f90>
+)
 target_link_libraries(ionization PRIVATE const neutral grid meshobj timeutils fang
 $<$<BOOL:${glow}>:glow::glow>
 mpimod
@@ -39,4 +41,5 @@ MPI::MPI_Fortran
 add_library(precipBCs OBJECT boundary_conditions/precipBCs_mod.f90)
 target_compile_options(precipBCs PRIVATE ${gfortran_opts})
 target_link_libraries(precipBCs PRIVATE mpimod reader const grid meshobj interp timeutils config
-MPI::MPI_Fortran)
+MPI::MPI_Fortran
+)
