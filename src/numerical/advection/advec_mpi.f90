@@ -88,9 +88,9 @@ v2i(:,lx2+1,:)=vs2(1:lx1,lx2,1:lx3,isp)
 !    else if (isp==6) then
 !      v1i(lx1+1,:,:)=min(vs1(lx1+1,:,:,isp),10.0*vellim)      !limit outflow
 !      v1i(lx1+1,:,:)=max(v1i(lx1+1,:,:),0.0)                 !limit inflow
-!!        vadvx1(1,:,6)=mean(vadvx1(1,:,6));                          !for eq sims
+!!        vadvx1(1,:,6)=mean(vadvx1(1,:,6))                          !for eq sims
 !    else
-!      v1i(lx1+1,:,:)=2.0*v1i(lx1,:,:)-v1i(lx1-1,:,:);      !cleans up large current situations
+!      v1i(lx1+1,:,:)=2.0*v1i(lx1,:,:)-v1i(lx1-1,:,:)      !cleans up large current situations
 !    end if
 
 
@@ -116,12 +116,12 @@ end do
 
 
 !> FOR X1 MOMENTUM DENSITY
-rhovs1(:,0,:,isp)=rhovs1(:,1,:,isp);
-rhovs1(:,-1,:,isp)=rhovs1(:,1,:,isp);
-rhovs1(:,lx2+1,:,isp)=rhovs1(:,lx2,:,isp);
-rhovs1(:,lx2+2,:,isp)=rhovs1(:,lx2,:,isp);
+rhovs1(:,0,:,isp)=rhovs1(:,1,:,isp)
+rhovs1(:,-1,:,isp)=rhovs1(:,1,:,isp)
+rhovs1(:,lx2+1,:,isp)=rhovs1(:,lx2,:,isp)
+rhovs1(:,lx2+2,:,isp)=rhovs1(:,lx2,:,isp)
 
-rhovs1(0,1:lx2,1:lx3,isp)=2*v1i(1,:,:)-vs1(1,1:lx2,1:lx3,isp);
+rhovs1(0,1:lx2,1:lx3,isp)=2*v1i(1,:,:)-vs1(1,1:lx2,1:lx3,isp)
 !! initially these are velocities.
 !! Also loose definition of 'conformable'.
 !! Also corners never get set, but I suppose they aren't really used anyway.
@@ -136,9 +136,9 @@ rhovs1(0,:,-1,isp)=rhovs1(0,:,1,isp)
 rhovs1(0,:,lx3+1,isp)=rhovs1(0,:,lx3,isp)
 rhovs1(0,:,lx3+2,isp)=rhovs1(0,:,lx3,isp)
 
-rhovs1(-1,:,:,isp)=rhovs1(0,:,:,isp)+rhovs1(0,:,:,isp)-vs1(1,:,:,isp);
-rhovs1(lx1+1,1:lx2,1:lx3,isp)=2*v1i(lx1+1,:,:)-vs1(lx1,1:lx2,1:lx3,isp);
-rhovs1(lx1+2,:,:,isp)=rhovs1(lx1+1,:,:,isp)+rhovs1(lx1+1,:,:,isp)-vs1(lx1,:,:,isp);
+rhovs1(-1,:,:,isp)=rhovs1(0,:,:,isp)+rhovs1(0,:,:,isp)-vs1(1,:,:,isp)
+rhovs1(lx1+1,1:lx2,1:lx3,isp)=2*v1i(lx1+1,:,:)-vs1(lx1,1:lx2,1:lx3,isp)
+rhovs1(lx1+2,:,:,isp)=rhovs1(lx1+1,:,:,isp)+rhovs1(lx1+1,:,:,isp)-vs1(lx1,:,:,isp)
 
 rhovs1(-1:0,:,:,isp)=rhovs1(-1:0,:,:,isp)*ns(-1:0,:,:,isp)*ms(isp)
 !! now convert to momentum density
@@ -146,15 +146,15 @@ rhovs1(lx1+1:lx1+2,:,:,isp)=rhovs1(lx1+1:lx1+2,:,:,isp)*ns(lx1+1:lx1+2,:,:,isp)*
 
 
 !> FOR INTERNAL ENERGY
-rhoes(:,0,:,isp)=rhoes(:,1,:,isp);
-rhoes(:,-1,:,isp)=rhoes(:,1,:,isp);
-rhoes(:,lx2+1,:,isp)=rhoes(:,lx2,:,isp);
-rhoes(:,lx2+2,:,isp)=rhoes(:,lx2,:,isp);
+rhoes(:,0,:,isp)=rhoes(:,1,:,isp)
+rhoes(:,-1,:,isp)=rhoes(:,1,:,isp)
+rhoes(:,lx2+1,:,isp)=rhoes(:,lx2,:,isp)
+rhoes(:,lx2+2,:,isp)=rhoes(:,lx2,:,isp)
 
-rhoes(0,:,:,isp)=rhoes(1,:,:,isp);
-rhoes(-1,:,:,isp)=rhoes(1,:,:,isp);
-rhoes(lx1+1,:,:,isp)=rhoes(lx1,:,:,isp);
-rhoes(lx1+2,:,:,isp)=rhoes(lx1,:,:,isp);
+rhoes(0,:,:,isp)=rhoes(1,:,:,isp)
+rhoes(-1,:,:,isp)=rhoes(1,:,:,isp)
+rhoes(lx1+1,:,:,isp)=rhoes(lx1,:,:,isp)
+rhoes(lx1+2,:,:,isp)=rhoes(lx1,:,:,isp)
 
 
 !> NOW DEAL WITH ADVECTION ALONG X3; FIRST IDENTIFY MY NEIGHBORS
@@ -187,10 +187,10 @@ if (.not. isperiodic) then
 
     ns(:,:,0,isp)=ns(:,:,1,isp)
     ns(:,:,-1,isp)=ns(:,:,1,isp)
-    rhovs1(:,:,0,isp)=rhovs1(:,:,1,isp);
-    rhovs1(:,:,-1,isp)=rhovs1(:,:,1,isp);
-    rhoes(:,:,0,isp)=rhoes(:,:,1,isp);
-    rhoes(:,:,-1,isp)=rhoes(:,:,1,isp);
+    rhovs1(:,:,0,isp)=rhovs1(:,:,1,isp)
+    rhovs1(:,:,-1,isp)=rhovs1(:,:,1,isp)
+    rhoes(:,:,0,isp)=rhoes(:,:,1,isp)
+    rhoes(:,:,-1,isp)=rhoes(:,:,1,isp)
   end if
   if (idright==mpi_cfg%lid) then
     !! my right boundary is the global boundary, assume haloing won't overwrite
@@ -199,10 +199,10 @@ if (.not. isperiodic) then
 
     ns(:,:,lx3+1,isp)=ns(:,:,lx3,isp)
     ns(:,:,lx3+2,isp)=ns(:,:,lx3,isp)
-    rhovs1(:,:,lx3+1,isp)=rhovs1(:,:,lx3,isp);
-    rhovs1(:,:,lx3+2,isp)=rhovs1(:,:,lx3,isp);
-    rhoes(:,:,lx3+1,isp)=rhoes(:,:,lx3,isp);
-    rhoes(:,:,lx3+2,isp)=rhoes(:,:,lx3,isp);
+    rhovs1(:,:,lx3+1,isp)=rhovs1(:,:,lx3,isp)
+    rhovs1(:,:,lx3+2,isp)=rhovs1(:,:,lx3,isp)
+    rhoes(:,:,lx3+1,isp)=rhoes(:,:,lx3,isp)
+    rhoes(:,:,lx3+2,isp)=rhoes(:,:,lx3,isp)
   end if
 end if
 
@@ -277,9 +277,9 @@ end if
 !    else if (isp==6) then
 !      v1i(lx1+1,:,:)=min(vs1(lx1+1,:,:,isp),10.0*vellim)      !limit outflow
 !      v1i(lx1+1,:,:)=max(v1i(lx1+1,:,:),0.0)                 !limit inflow
-!!        vadvx1(1,:,6)=mean(vadvx1(1,:,6));                          !for eq sims
+!!        vadvx1(1,:,6)=mean(vadvx1(1,:,6))                          !for eq sims
 !    else
-!      v1i(lx1+1,:,:)=2.0*v1i(lx1,:,:)-v1i(lx1-1,:,:);      !cleans up large current situations
+!      v1i(lx1+1,:,:)=2.0*v1i(lx1,:,:)-v1i(lx1-1,:,:)      !cleans up large current situations
 !    end if
 
 
@@ -300,11 +300,11 @@ end do
 
 
 !FOR X1 MOMENTUM DENSITY
-rhovs1(0,1:lx2,1:lx3,isp)=2*v1i(1,:,:)-vs1(1,1:lx2,1:lx3,isp);
+rhovs1(0,1:lx2,1:lx3,isp)=2*v1i(1,:,:)-vs1(1,1:lx2,1:lx3,isp)
 !! initially these are velocities.  Also loose definition of 'conformable'.  Also corners never get set, but I suppose they aren't really used anyway.
-rhovs1(-1,:,:,isp)=rhovs1(0,:,:,isp)+rhovs1(0,:,:,isp)-vs1(1,:,:,isp);
-rhovs1(lx1+1,1:lx2,1:lx3,isp)=2*v1i(lx1+1,:,:)-vs1(lx1,1:lx2,1:lx3,isp);
-rhovs1(lx1+2,:,:,isp)=rhovs1(lx1+1,:,:,isp)+rhovs1(lx1+1,:,:,isp)-vs1(lx1,:,:,isp);
+rhovs1(-1,:,:,isp)=rhovs1(0,:,:,isp)+rhovs1(0,:,:,isp)-vs1(1,:,:,isp)
+rhovs1(lx1+1,1:lx2,1:lx3,isp)=2*v1i(lx1+1,:,:)-vs1(lx1,1:lx2,1:lx3,isp)
+rhovs1(lx1+2,:,:,isp)=rhovs1(lx1+1,:,:,isp)+rhovs1(lx1+1,:,:,isp)-vs1(lx1,:,:,isp)
 
 rhovs1(-1:0,:,:,isp)=rhovs1(-1:0,:,:,isp)*ns(-1:0,:,:,isp)*ms(isp)
 !! now convert to momentum density
@@ -312,10 +312,10 @@ rhovs1(lx1+1:lx1+2,:,:,isp)=rhovs1(lx1+1:lx1+2,:,:,isp)*ns(lx1+1:lx1+2,:,:,isp)*
 
 
 !> FOR INTERNAL ENERGY
-rhoes(0,:,:,isp)=rhoes(1,:,:,isp);
-rhoes(-1,:,:,isp)=rhoes(1,:,:,isp);
-rhoes(lx1+1,:,:,isp)=rhoes(lx1,:,:,isp);
-rhoes(lx1+2,:,:,isp)=rhoes(lx1,:,:,isp);
+rhoes(0,:,:,isp)=rhoes(1,:,:,isp)
+rhoes(-1,:,:,isp)=rhoes(1,:,:,isp)
+rhoes(lx1+1,:,:,isp)=rhoes(lx1,:,:,isp)
+rhoes(lx1+2,:,:,isp)=rhoes(lx1,:,:,isp)
 
 
 !MZ - collect the x2 boundary conditions here - these are no longer global
@@ -336,20 +336,20 @@ if (iddown==-1) then
 
   ns(:,0,:,isp)=ns(:,1,:,isp)
   ns(:,-1,:,isp)=ns(:,1,:,isp)
-  rhovs1(:,0,:,isp)=rhovs1(:,1,:,isp);
-  rhovs1(:,-1,:,isp)=rhovs1(:,1,:,isp);
-  rhoes(:,0,:,isp)=rhoes(:,1,:,isp);
-  rhoes(:,-1,:,isp)=rhoes(:,1,:,isp);
+  rhovs1(:,0,:,isp)=rhovs1(:,1,:,isp)
+  rhovs1(:,-1,:,isp)=rhovs1(:,1,:,isp)
+  rhoes(:,0,:,isp)=rhoes(:,1,:,isp)
+  rhoes(:,-1,:,isp)=rhoes(:,1,:,isp)
 end if
 if (idup==mpi_cfg%lid2) then
   vs2(:,lx2+1,:,isp)=vs2(:,lx2,:,isp)
 
   ns(:,lx2+1,:,isp)=ns(:,lx2,:,isp)
   ns(:,lx2+2,:,isp)=ns(:,lx2,:,isp)
-  rhovs1(:,lx2+1,:,isp)=rhovs1(:,lx2,:,isp);
-  rhovs1(:,lx2+2,:,isp)=rhovs1(:,lx2,:,isp);
-  rhoes(:,lx2+1,:,isp)=rhoes(:,lx2,:,isp);
-  rhoes(:,lx2+2,:,isp)=rhoes(:,lx2,:,isp);
+  rhovs1(:,lx2+1,:,isp)=rhovs1(:,lx2,:,isp)
+  rhovs1(:,lx2+2,:,isp)=rhovs1(:,lx2,:,isp)
+  rhoes(:,lx2+1,:,isp)=rhoes(:,lx2,:,isp)
+  rhoes(:,lx2+2,:,isp)=rhoes(:,lx2,:,isp)
 end if
 
 
@@ -387,20 +387,20 @@ if (.not. isperiodic) then
 
     ns(:,:,0,isp)=ns(:,:,1,isp)
     ns(:,:,-1,isp)=ns(:,:,1,isp)
-    rhovs1(:,:,0,isp)=rhovs1(:,:,1,isp);
-    rhovs1(:,:,-1,isp)=rhovs1(:,:,1,isp);
-    rhoes(:,:,0,isp)=rhoes(:,:,1,isp);
-    rhoes(:,:,-1,isp)=rhoes(:,:,1,isp);
+    rhovs1(:,:,0,isp)=rhovs1(:,:,1,isp)
+    rhovs1(:,:,-1,isp)=rhovs1(:,:,1,isp)
+    rhoes(:,:,0,isp)=rhoes(:,:,1,isp)
+    rhoes(:,:,-1,isp)=rhoes(:,:,1,isp)
   end if
   if (idright==mpi_cfg%lid3) then    !my right boundary is the global boundary, assume haloing won't overwrite
     vs3(:,:,lx3+1,isp)=vs3(:,:,lx3,isp)    !copy last cell to first ghost (all that's needed since vs3 not advected)
 
     ns(:,:,lx3+1,isp)=ns(:,:,lx3,isp)
     ns(:,:,lx3+2,isp)=ns(:,:,lx3,isp)
-    rhovs1(:,:,lx3+1,isp)=rhovs1(:,:,lx3,isp);
-    rhovs1(:,:,lx3+2,isp)=rhovs1(:,:,lx3,isp);
-    rhoes(:,:,lx3+1,isp)=rhoes(:,:,lx3,isp);
-    rhoes(:,:,lx3+2,isp)=rhoes(:,:,lx3,isp);
+    rhovs1(:,:,lx3+1,isp)=rhovs1(:,:,lx3,isp)
+    rhovs1(:,:,lx3+2,isp)=rhovs1(:,:,lx3,isp)
+    rhoes(:,:,lx3+1,isp)=rhoes(:,:,lx3,isp)
+    rhoes(:,:,lx3+2,isp)=rhoes(:,:,lx3,isp)
   end if
 end if
 
@@ -481,16 +481,16 @@ end do
 
 
 !copy x1,x2 boundary conditions to partially updated variable for next sweeps
-advec3D_MC_mpi_curv_3(:,-1:0,:)=f(:,-1:0,:);
-advec3D_MC_mpi_curv_3(:,lx2+1:lx2+2,:)=f(:,lx2+1:lx2+2,:);
-advec3D_MC_mpi_curv_3(-1:0,:,:)=f(-1:0,:,:);
-advec3D_MC_mpi_curv_3(lx1+1:lx1+2,:,:)=f(lx1+1:lx1+2,:,:);
+advec3D_MC_mpi_curv_3(:,-1:0,:)=f(:,-1:0,:)
+advec3D_MC_mpi_curv_3(:,lx2+1:lx2+2,:)=f(:,lx2+1:lx2+2,:)
+advec3D_MC_mpi_curv_3(-1:0,:,:)=f(-1:0,:,:)
+advec3D_MC_mpi_curv_3(lx1+1:lx1+2,:,:)=f(lx1+1:lx1+2,:,:)
 
 !x1-sweep
 do ix3=1,lx3
   do ix2=1,lx2
-    fx1slice=advec3D_MC_mpi_curv_3(:,ix2,ix3);
-    v1slice=v1i(:,ix2,ix3);
+    fx1slice=advec3D_MC_mpi_curv_3(:,ix2,ix3)
+    v1slice=v1i(:,ix2,ix3)
     h11x1slice=x%h1(:,ix2,ix3)*x%h2(:,ix2,ix3)*x%h3(:,ix2,ix3)
     h12ix1slice=x%h2x1i(:,ix2,ix3)*x%h3x1i(:,ix2,ix3)
     h1ix1slice=x%h1x1i(:,ix2,ix3)
@@ -603,8 +603,8 @@ end do
 !x1-sweep
 do ix3=1,lx3
   do ix2=1,lx2
-    fx1slice=advec3D_MC_mpi_curv_23(:,ix2,ix3);
-    v1slice=v1i(:,ix2,ix3);
+    fx1slice=advec3D_MC_mpi_curv_23(:,ix2,ix3)
+    v1slice=v1i(:,ix2,ix3)
     h11x1slice=x%h1(:,ix2,ix3)*x%h2(:,ix2,ix3)*x%h3(:,ix2,ix3)
     h12ix1slice=x%h2x1i(:,ix2,ix3)*x%h3x1i(:,ix2,ix3)
     h1ix1slice=x%h1x1i(:,ix2,ix3)
