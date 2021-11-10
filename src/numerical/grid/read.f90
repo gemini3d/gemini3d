@@ -129,13 +129,13 @@ subroutine gather_grid_root(h1,h2,h3, &
                         h1x3iall,h2x3iall,h3x3iall, &
                         rall,thetaall,phiall, &
                         altall,Bmagall,glonall)
-  real(wp), dimension(:,:,:), intent(in) :: h1,h2,h3
+  real(wp), dimension(-1:, -1:, -1:), intent(in) :: h1,h2,h3
   real(wp), dimension(:,:,:), intent(in) :: h1x1i,h2x1i,h3x1i
   real(wp), dimension(:,:,:), intent(in) :: h1x2i,h2x2i,h3x2i
   real(wp), dimension(:,:,:), intent(in) :: h1x3i,h2x3i,h3x3i
   real(wp), dimension(:,:,:), intent(in) :: r,theta,phi
   real(wp), dimension(:,:,:), intent(in) :: alt,Bmag,glon
-  real(wp), dimension(:,:,:), intent(inout) :: h1all,h2all,h3all
+  real(wp), dimension(-1:, -1:, -1:), intent(inout) :: h1all,h2all,h3all
   real(wp), dimension(:,:,:), intent(inout) :: h1x1iall,h2x1iall,h3x1iall
   real(wp), dimension(:,:,:), intent(inout) :: h1x2iall,h2x2iall,h3x2iall
   real(wp), dimension(:,:,:), intent(inout) :: h1x3iall,h2x3iall,h3x3iall
@@ -176,7 +176,7 @@ subroutine gather_grid_workers(h1,h2,h3, &
                         h1x3i,h2x3i,h3x3i, &
                         r,theta,phi, &
                         alt,Bmag,glon)
-  real(wp), dimension(:,:,:), intent(in) :: h1,h2,h3
+  real(wp), dimension(-1:, -1:, -1:), intent(in) :: h1,h2,h3
   real(wp), dimension(:,:,:), intent(in) :: h1x1i,h2x1i,h3x1i
   real(wp), dimension(:,:,:), intent(in) :: h1x2i,h2x2i,h3x2i
   real(wp), dimension(:,:,:), intent(in) :: h1x3i,h2x3i,h3x3i
