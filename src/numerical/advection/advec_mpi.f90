@@ -121,7 +121,7 @@ rhovs1(:,-1,:,isp)=rhovs1(:,1,:,isp)
 rhovs1(:,lx2+1,:,isp)=rhovs1(:,lx2,:,isp)
 rhovs1(:,lx2+2,:,isp)=rhovs1(:,lx2,:,isp)
 
-rhovs1(0,1:lx2,1:lx3,isp)=2*v1i(1,:,:)-vs1(1,1:lx2,1:lx3,isp)
+rhovs1(0, 1:lx2, 1:lx3, isp) = 2*v1i(1, 1:lx2, 1:lx3) - vs1(1, 1:lx2, 1:lx3, isp)
 !! initially these are velocities.
 !! Also loose definition of 'conformable'.
 !! Also corners never get set, but I suppose they aren't really used anyway.
@@ -137,7 +137,7 @@ rhovs1(0,:,lx3+1,isp)=rhovs1(0,:,lx3,isp)
 rhovs1(0,:,lx3+2,isp)=rhovs1(0,:,lx3,isp)
 
 rhovs1(-1,:,:,isp)=rhovs1(0,:,:,isp)+rhovs1(0,:,:,isp)-vs1(1,:,:,isp)
-rhovs1(lx1+1,1:lx2,1:lx3,isp)=2*v1i(lx1+1,:,:)-vs1(lx1,1:lx2,1:lx3,isp)
+rhovs1(lx1+1, 1:lx2, 1:lx3, isp) = 2*v1i(lx1+1, 1:lx2, 1:lx3) - vs1(lx1, 1:lx2, 1:lx3,isp)
 rhovs1(lx1+2,:,:,isp)=rhovs1(lx1+1,:,:,isp)+rhovs1(lx1+1,:,:,isp)-vs1(lx1,:,:,isp)
 
 rhovs1(-1:0,:,:,isp)=rhovs1(-1:0,:,:,isp)*ns(-1:0,:,:,isp)*ms(isp)
