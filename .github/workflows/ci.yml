@@ -146,7 +146,7 @@ jobs:
         sudo $(cmake -P scripts/requirements.cmake 2>&1)
 
     - name: Configure release
-      run: cmake -B build --preset release -Dmsis20:BOOL=true
+      run: cmake -B build --preset release -Dmsis2:BOOL=true
 
     - name: Build release
       run: cmake --build build
