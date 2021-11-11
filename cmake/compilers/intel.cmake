@@ -31,7 +31,8 @@ add_compile_options("$<$<AND:$<COMPILE_LANGUAGE:Fortran>,$<CONFIG:Debug,RelWithD
 # -CB is an alias for -check bounds.
 # --- IMPORTANT
 
-add_compile_options("$<$<AND:$<COMPILE_LANGUAGE:Fortran>,$<CONFIG:Debug,RelWithDebInfo>>:-debug;-fpe0>")
+add_compile_options("$<$<AND:$<COMPILE_LANGUAGE:Fortran>,$<CONFIG:Debug,RelWithDebInfo>>:-debug>")
 # -debug is an alias for -debug all
+# -fpe0 causes MUMPS failures (internal to MUMPS)
 
 # Fortran 2018 standard too many false warnings

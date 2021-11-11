@@ -57,14 +57,14 @@ jobs:
     - name: CMake Configure Ninja Multi-config
       run: cmake --preset multi
 
-    - name: DEBUG build and test
+    - name: DEBUG build
       run: cmake --build --preset debug
     - name: DEBUG unit test
       run: ctest --preset debug -L unit
     - name: DEBUG test core
       run: ctest --preset debug -LE unit -E 3d
 
-    - name: RELEASE build and test
+    - name: RELEASE build
       run: cmake --build --preset release
     - name: RELEASE unit test
       run: ctest --preset release -L unit
