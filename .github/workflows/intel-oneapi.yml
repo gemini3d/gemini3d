@@ -14,6 +14,7 @@ on:
       - "**.cmake"
       - "**/CMakeLists.txt"
       - "!cmake/compilers/gnu.cmake"
+      - ".github/workflows/intel-oneapi.yml"
 # paths ignore starting with "!"
       - "!docs/**"
       - "!scripts/**"
@@ -53,19 +54,19 @@ jobs:
 #  file INSTALL cannot find
 #  "build/HDF5-prefix/src/HDF5-build/bin/static/Debug/h5fortran_types.mod":
 
-    - name: CMake Configure
+    - name: CMake Configure Ninja Multi-config
       run: cmake --preset multi
 
-    # MUMPS makes debug tests fails, even unit:test_mumps
-    # - name: CMake debug build and test
-    #   run: cmake --build --preset debug
-    # - name: debug unit test
-    #   run: ctest --preset debug -L unit
+    - name: DEBUG build and test
+      run: cmake --build --preset debug
+    - name: DEBUG unit test
+      run: ctest --preset debug -L unit
+    - name: DEBUG test core
+      run: ctest --preset debug -LE unit -E 3d
 
-    - name: CMake release build
+    - name: RELEASE build and test
       run: cmake --build --preset release
-    - name: release unit test
+    - name: RELEASE unit test
       run: ctest --preset release -L unit
-
-    - name: test core
+    - name: RELEASE test core
       run: ctest --preset release -LE unit -E 3d
