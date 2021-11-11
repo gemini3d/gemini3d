@@ -27,14 +27,10 @@ target_link_libraries(msis_ifc PRIVATE msis00mod)
 
 if(msis2)
   include(${PROJECT_SOURCE_DIR}/cmake/ext_libs/msis2.cmake)
-  target_link_libraries(msis_ifc PRIVATE msis2)
-  target_compile_options(msis2 PRIVATE
+  target_link_libraries(msis_ifc PRIVATE msis2mod)
+  target_compile_options(msis2mod PRIVATE
   "$<$<Fortran_COMPILER_ID:GNU>:${msis2_gnu_flags}>"
   "$<$<Fortran_COMPILER_ID:Intel,IntelLLVM>:${msis_intel_flags}>"
-  )
-
-  install(TARGETS msis2
-  EXPORT ${PROJECT_NAME}-targets
   )
 else(msis2)
   target_sources(msis_ifc PRIVATE msis2_dummy.f90)

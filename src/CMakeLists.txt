@@ -43,27 +43,32 @@ set_target_properties(gemini3d PROPERTIES
 ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
 LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}
 )
-foreach(l
-  advec
-  calculus config
-  const
-  collision
-  diffusion fang interp
-  ionization
-  meshobj meshobj_cart meshobj_dipole spherical newton geomagnetic
-  multifluid
-  neutral
-  pathlib
-  PDEparabolic gbsv
-  precipBCs reader sanity_check errors sources temporal timeutils
-  exe_frontend
-  grid io PDEelliptic potential
-  mpimod
-  autogrid
-  msis_ifc msis00mod
-  hwm_ifc
-  hwloc_ifc hwloc_c
+
+set(gemini_internal_mods
+advec
+calculus config
+const
+collision
+diffusion fang interp
+ionization
+meshobj meshobj_cart meshobj_dipole spherical newton geomagnetic
+multifluid
+neutral
+pathlib
+PDEparabolic gbsv
+precipBCs reader sanity_check errors sources temporal timeutils
+exe_frontend
+grid io PDEelliptic potential
+mpimod
+autogrid
+msis_ifc msis00mod
+hwm_ifc
+hwloc_ifc hwloc_c
 )
+if(msis2)
+  list(APPEND gemini_internal_mods msis2mod)
+endif()
+foreach(l ${gemini_internal_mods})
 
   install(TARGETS ${l}
   EXPORT ${PROJECT_NAME}-targets

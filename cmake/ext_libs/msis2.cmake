@@ -10,7 +10,7 @@ FetchContent_MakeAvailable(MSIS2)
 
 set(_s ${msis2_SOURCE_DIR})  # convenience
 
-add_library(msis2
+add_library(msis2mod
 ${_s}/alt2gph.F90
 ${_s}/msis_constants.F90
 ${_s}/msis_init.F90
