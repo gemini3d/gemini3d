@@ -63,19 +63,40 @@ contains
 
     !situation is more complicated for latitude due to dipole grid, need to determine by L-shell
     if (flagSH) then
-      ix1=minloc(zitmp(:,1,1)-maxzn,1,zitmp(:,1,1)-maxzn > 0)    !find the min distance from maxzn subject to constraint that it is > 0, just use the first longitude slice since they will all have the same L-shell-field line relations
+      if (any(zitmp(:,1,1)-maxzn>0)) then
+        ix1=minloc(zitmp(:,1,1)-maxzn,1,zitmp(:,1,1)-maxzn > 0)
+      !find the min distance from maxzn subject to constraint that it is > 0, just use the first longitude slice since they will all have the same L-shell-field line relations
+      else
+        ix1=lx1
+      end if
       ynrange(2)=yitmp(ix1,1,1)
-      ix1=minloc(zitmp(:,lx2,1),1,zitmp(:,lx2,1) < 0)
-      ix1=max(ix1,1)
+      if (any(zitmp(:,lx2,1)<0)) then
+        ix1=minloc(zitmp(:,lx2,1),1,zitmp(:,lx2,1) < 0)
+      else
+        ix1=1
+      end if
+      !ix1=max(ix1,1)
       ynrange(1)=yitmp(ix1,lx2,1)
     else    !things are swapped around in NH
-      ix1=minloc(zitmp(:,1,1)-maxzn,1,zitmp(:,1,1)-maxzn > 0)    !find the min distance from maxzn subject to constraint that it is > 0; this is the southernmost edge of the neutral slab we need
+      if (any(zitmp(:,1,1)-maxzn>0)) then
+        ix1=minloc(zitmp(:,1,1)-maxzn,1,zitmp(:,1,1)-maxzn > 0)
+        ! find the min distance from maxzn subject to constraint that it is > 0; this is the southernmost edge of the neutral slab we need
+      else
+        ix1=1    ! default to first grid point
+      end if
       ynrange(1)=yitmp(ix1,1,1)
-      ix1=minloc(zitmp(:,lx2,1),1,zitmp(:,lx2,1) < 0)
-      if (ix1==0) ix1=size(yitmp,1)     ! this wasn't needed in the original code and I'm not sure how it worked...
+      !! an issue here is that the behavior in the case that the mask condition it not met is not well-defined so 
+      !!    we really need to check this separately and have the code do something sensible in this case.  I.e. if there is no
+      !!    zero crossing then we just need to use the entire array.  
+      if (any(zitmp(:,lx2,1)<0)) then
+        ix1=minloc(zitmp(:,lx2,1),1,zitmp(:,lx2,1) < 0)
+        ! northernmost edge is defined by the zero crossing (if any)
+      else 
+        ix1=size(yitmp,1)     ! default in this case to last grid point
+      end if
       ynrange(2)=yitmp(ix1,lx2,1)
     end if
-    
+
     deallocate(xitmp,yitmp,zitmp)
   end procedure slabrange
   
