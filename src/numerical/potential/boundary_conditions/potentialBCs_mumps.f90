@@ -192,7 +192,7 @@ subroutine compute_rootBGEfields(x,E02all,E03all)
 
   !! by default the code uses 300km altitude as a reference location, using the center x2,x3 point
   !! These are the coordinates for inputs varying along axes 2,3
-  ix1ref=minloc(abs(x%rall(:,ix2ref,ix3ref)-Re-300e3_wp),1)
+  ix1ref = minloc(abs(x%rall(:,ix2ref,ix3ref) - Re - 300e3_wp), dim=1)
 
   !! scale electric fields at some reference point into the full grid
   do ix3=1,lx3all
@@ -276,7 +276,7 @@ subroutine potentialBCs2D(UTsec,cfg,x,Vminx1,Vmaxx1,Vminx2,Vmaxx2,Vminx3, &
   !PI's EIA code COMPUTE SOURCE/FORCING TERMS FROM BACKGROUND FIELDS, ETC.
   if (cfg%flagEIA) then
     if (ix1eq<=0) then   !recompute the position of the equator in terms of the x1 variable
-      ix1eq=minloc(abs(x%x1),1)    !equator location is that closest to zero in the x1 (q) variable
+      ix1eq = minloc(abs(x%x1), dim=1)    !equator location is that closest to zero in the x1 (q) variable
       if (debug) print*, 'equator ix1:  ',ix1eq,x%x1(ix1eq)
     end if
 

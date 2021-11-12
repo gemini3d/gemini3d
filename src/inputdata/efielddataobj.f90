@@ -2,7 +2,7 @@ module efielddataobj
 
 ! type extension for file-based electric field data input.  Assumes parallel communication between root/workers for data
 ! distribution.  An interesting aspect of this object is that it is/may never be used by anyone but root who initiates the
-! calls to MUMPS and boundary conditions.   
+! calls to MUMPS and boundary conditions.
 
 use, intrinsic :: ieee_arithmetic, only: ieee_is_finite
 use phys_consts, only: wp,debug,pi,Re
@@ -34,7 +34,7 @@ type, extends(inputdata) :: efielddata
   real(wp), dimension(:,:), pointer :: Vminx1iprev,Vmaxx1iprev
   real(wp), dimension(:), pointer :: Vminx2isprev,Vmaxx2isprev    !only slices because field lines (x1-dimension) are equipotentials
   real(wp), dimension(:), pointer :: Vminx3isprev,Vmaxx3isprev
-  
+
   real(wp), dimension(:,:), pointer :: E0xinext,E0yinext
   real(wp), dimension(:,:), pointer :: Vminx1inext,Vmaxx1inext
   real(wp), dimension(:), pointer :: Vminx2isnext,Vmaxx2isnext    !only slices because field lines (x1-dimension) are equipotentials
@@ -85,12 +85,12 @@ contains
     self%l3D=l3D
 
     ! coordinate axis sizes for interpolation states; noting that for a dipole we (internally) permute
-    !   the interpolation sites in the same sense.  
+    !   the interpolation sites in the same sense.
     !select type (x)
     !  class is (dipolemesh)
     !    print*, ' efielddata:  detected dipole mesh'
-    !    self%lc1i=x%lx1;       ! note this dataset has 1D and 2D target interpolation grid 
-    !    self%lc2i=x%lx3all; self%lc3i=x%lx2all;    
+    !    self%lc1i=x%lx1;       ! note this dataset has 1D and 2D target interpolation grid
+    !    self%lc2i=x%lx3all; self%lc3i=x%lx2all;
     !    ! dipolemesh mesh permuted ~alt,lat,lon, whereas inputdata organized lon,lat
     !  class default
         self%lc1i=x%lx1;       ! note this dataset has 1D and 2D target interpolation grid
@@ -105,8 +105,8 @@ contains
 
     ! flag sizes as assigned
     self%flagsizes=.true.
-  end subroutine set_sizes_efield  
-  
+  end subroutine set_sizes_efield
+
 
   !> set pointers to appropriate data arrays (taking into account dimensionality of the problem) and prime everything
   !    so we are ready to call self%update()
@@ -269,7 +269,7 @@ contains
 
     !! by default the code uses 300km altitude as a reference location, using the center x2,x3 point
     !! These are the coordinates for inputs varying along axes 2,3
-    ix1ref=minloc(abs(x%rall(:,ix2ref,ix3ref)-Re-300e3_wp),1)
+    ix1ref = minloc(abs(x%rall(:,ix2ref,ix3ref) - Re - 300e3_wp), dim=1)
     do ix3=1,lx3all
       do ix2=1,lx2all
         iflat=(ix3-1)*lx2all+ix2
@@ -290,7 +290,7 @@ contains
       do ix3=1,x%lx3all    ! note mangling ix3->ix2
         self%coord2iax2(ix3)=x%phiall(ix1ref,1,ix3)*180/pi          ! default to ix3=1 side of the grid
       end do
-    else  
+    else
       !! for electric field input data we also have some things that vary along axis 3 only
       do ix3=1,x%lx3all
         self%coord3iax3(ix3)=90-x%thetaall(ix1ref,1,ix3)*180/pi     ! default to ix2=1 side of the grid
