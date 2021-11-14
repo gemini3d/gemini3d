@@ -12,30 +12,17 @@ option(scotch "MUMPS scotch")
 option(BUILD_SHARED_LIBS "Build shared libraries")
 option(hdf5_parallel "HDF5 parallel")
 
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+  message(FATAL_ERROR "Specify where to install libraries by adding cmake option like:
+   --install-prefix=/path/to/install")
+endif()
+
 # NOTE: lists must be passed via CMAKE_CACHE_ARGS using -Dvar:STRING=${var}
 # the variable type must be included e.g. STRING
 include(ExternalProject)
 set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY EP_UPDATE_DISCONNECTED true)
 
 include(${PROJECT_SOURCE_DIR}/../cmake/config/libraries.cmake)
-
-if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-
-  if(CMAKE_Fortran_COMPILER_ID STREQUAL GNU)
-    set(prefix ~/lib_gcc)
-  elseif(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
-    set(prefix ~/lib_intel)
-  else()
-    set(prefix ~/lib)
-  endif()
-
-  if(CMAKE_VERSION VERSION_LESS 3.21)
-    get_filename_component(prefix ${prefix} ABSOLUTE)
-  else()
-    file(REAL_PATH ${prefix} prefix EXPAND_TILDE)
-  endif()
-  set(CMAKE_INSTALL_PREFIX ${prefix} CACHE PATH "top-level install path" FORCE)
-endif()
 
 set(HWLOC_ROOT ${CMAKE_INSTALL_PREFIX})
 set(OPENMPI_ROOT ${CMAKE_INSTALL_PREFIX})
