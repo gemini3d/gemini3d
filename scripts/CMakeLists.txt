@@ -11,6 +11,7 @@ set(arith "s;d")
 option(scotch "MUMPS scotch")
 option(BUILD_SHARED_LIBS "Build shared libraries")
 option(hdf5_parallel "HDF5 parallel")
+option(openmpi "build OpenMPI")
 
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
   message(FATAL_ERROR "Specify where to install libraries by adding cmake option like:
@@ -34,9 +35,9 @@ set(HDF5_ROOT ${CMAKE_INSTALL_PREFIX})
 set(H5FORTRAN_ROOT ${CMAKE_INSTALL_PREFIX})
 set(GLOW_ROOT ${CMAKE_INSTALL_PREFIX})
 
-set(roots LAPACK_ROOT SCALAPACK_ROOT MUMPS_ROOT ZLIB_ROOT HDF5_ROOT H5FORTRAN_ROOT GLOW_ROOT)
-if(NOT WIN32)
-  list(APPEND roots HWLOC_ROOT OPENMPI_ROOT)
+set(roots HWLOC_ROOTLAPACK_ROOT SCALAPACK_ROOT MUMPS_ROOT ZLIB_ROOT HDF5_ROOT H5FORTRAN_ROOT GLOW_ROOT)
+if(openmpi)
+  list(APPEND OPENMPI_ROOT)
 endif()
 message(STATUS "Building and installing libraries under ${CMAKE_INSTALL_PREFIX}")
 message(STATUS "please add system environment variables:")
@@ -44,8 +45,7 @@ foreach(p ${roots})
   message(STATUS "   ${p}=${${p}}")
 endforeach()
 
-# --- OpenMPI
-if(NOT WIN32)
+# --- HWLOC
 
 if(BUILD_SHARED_LIBS)
   set(hwloc_args --enable-shared --disable-static)
@@ -68,6 +68,9 @@ TEST_COMMAND ""
 CONFIGURE_HANDLED_BY_BUILD ON
 INACTIVITY_TIMEOUT 15
 )
+
+# --- OpenMPI
+if(openmpi)
 
 set(openmpi_flags
 --prefix=${OPENMPI_ROOT}
@@ -94,7 +97,7 @@ CONFIGURE_HANDLED_BY_BUILD ON
 DEPENDS HWLOC
 )
 
-endif()
+endif(openmpi)
 # --- LAPACK
 set(lapack_cmake_args
 --install-prefix=${LAPACK_ROOT}
@@ -123,7 +126,7 @@ set(scalapack_cmake_args
 )
 
 set(scalapack_deps LAPACK)
-if(NOT WIN32)
+if(openmpi)
   list(APPEND scalapack_deps OPENMPI)
 endif()
 
@@ -222,7 +225,7 @@ set(h5fortran_args
 )
 
 set(h5fortran_deps HDF5)
-if(hdf5_parallel AND NOT WIN32)
+if(hdf5_parallel AND openmpi)
   list(APPEND h5fortran_deps OPENMPI)
 endif()
 
