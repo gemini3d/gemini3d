@@ -37,6 +37,7 @@ if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
   set(CMAKE_INSTALL_PREFIX ${prefix} CACHE PATH "top-level install path" FORCE)
 endif()
 
+set(HWLOC_ROOT ${CMAKE_INSTALL_PREFIX})
 set(OPENMPI_ROOT ${CMAKE_INSTALL_PREFIX})
 set(LAPACK_ROOT ${CMAKE_INSTALL_PREFIX})
 set(SCALAPACK_ROOT ${CMAKE_INSTALL_PREFIX})
@@ -48,7 +49,7 @@ set(GLOW_ROOT ${CMAKE_INSTALL_PREFIX})
 
 set(roots LAPACK_ROOT SCALAPACK_ROOT MUMPS_ROOT ZLIB_ROOT HDF5_ROOT H5FORTRAN_ROOT GLOW_ROOT)
 if(NOT WIN32)
-  list(APPEND roots OPENMPI_ROOT)
+  list(APPEND roots HWLOC_ROOT OPENMPI_ROOT)
 endif()
 message(STATUS "Building and installing libraries under ${CMAKE_INSTALL_PREFIX}")
 message(STATUS "please add system environment variables:")
@@ -59,8 +60,31 @@ endforeach()
 # --- OpenMPI
 if(NOT WIN32)
 
+if(BUILD_SHARED_LIBS)
+  set(hwloc_args --enable-shared --disable-static)
+else()
+  set(hwloc_args --disable-shared --enable-static)
+endif()
+
+find_package(LibXml2)
+if(NOT LibXml2_FOUND)
+  list(APPEND hwloc_args --disable-libxml2)
+endif()
+
+ExternalProject_Add(HWLOC
+URL ${hwloc_url}
+URL_HASH SHA256=${hwloc_sha256}
+CONFIGURE_COMMAND ${PROJECT_BINARY_DIR}/HWLOC-prefix/src/HWLOC/configure --prefix=${HWLOC_ROOT} ${hwloc_args}
+BUILD_COMMAND make -j
+INSTALL_COMMAND make -j install
+TEST_COMMAND ""
+CONFIGURE_HANDLED_BY_BUILD ON
+INACTIVITY_TIMEOUT 15
+)
+
 set(openmpi_flags
 --prefix=${OPENMPI_ROOT}
+--with-hwloc-libdir=${HWLOC_ROOT}/lib
 )
 if(BUILD_SHARED_LIBS)
   list(APPEND openmpi_flags --enable-shared --disable-static)
@@ -80,6 +104,7 @@ INSTALL_COMMAND make -j install
 TEST_COMMAND ""
 INACTIVITY_TIMEOUT 15
 CONFIGURE_HANDLED_BY_BUILD ON
+DEPENDS HWLOC
 )
 
 endif()

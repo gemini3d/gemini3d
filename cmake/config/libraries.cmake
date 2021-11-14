@@ -1,5 +1,5 @@
 set(_names glow hwm14 msis2
-openmpi
+hwloc openmpi
 lapack mumps scalapack
 matgemini
 nc4fortran h5fortran
