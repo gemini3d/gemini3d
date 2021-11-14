@@ -169,9 +169,19 @@ write(wid, '(I0)') worker_id
 dump_filename = out_dir // "/dump_nonfinite_perturb_worker_" // trim(wid) // ".h5"
 
 if (.not.all(ieee_is_finite(nn))) &
-   call error_stop(dump_filename, 'perturb: non-finite Nn', t_elapsed, worker_id, nn, Tn, vn1, vn2, vn3)
+  call error_stop(dump_filename, 'perturb: non-finite Nn', t_elapsed, worker_id, nn, Tn, vn1, vn2, vn3)
 
+if (.not.all(ieee_is_finite(Tn))) &
+  call error_stop(dump_filename, 'perturb: non-finite Tn', t_elapsed, worker_id, nn, Tn, vn1, vn2, vn3)
 
+if (.not.all(ieee_is_finite(vn1))) &
+  call error_stop(dump_filename, 'perturb: non-finite vn1', t_elapsed, worker_id, nn, Tn, vn1, vn2, vn3)
+
+if (.not.all(ieee_is_finite(vn2))) &
+  call error_stop(dump_filename, 'perturb: non-finite vn2', t_elapsed, worker_id, nn, Tn, vn1, vn2, vn3)
+
+if (.not.all(ieee_is_finite(vn3))) &
+  call error_stop(dump_filename, 'perturb: non-finite vn3', t_elapsed, worker_id, nn, Tn, vn1, vn2, vn3)
 
 end subroutine check_finite_pertub
 
