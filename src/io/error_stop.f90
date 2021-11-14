@@ -13,7 +13,7 @@ implicit none (type, external)
 
 interface error_stop
   !! polymorphic error handling
-  procedure dump_worker, dump_root, dump_input, dump_mag, dump_J, dump_step
+  procedure dump_worker, dump_root, dump_input, dump_mag, dump_J, dump_step, dump_perturb
 end interface error_stop
 
 
@@ -58,6 +58,37 @@ call h%close()
 error stop info // " dumped to " // filename
 
 end subroutine dump_J
+
+
+subroutine dump_perturb(filename, info, t_elapsed, worker_id, nn, Tn, vn1, vn2, vn3)
+
+character(*), intent(in) :: filename, info
+real(wp), intent(in) :: t_elapsed
+integer, intent(in) :: worker_id
+
+real(wp), dimension(:,:,:,:), intent(in) :: nn
+real(wp), dimension(:,:,:), intent(in) :: Tn, vn1, vn2, vn3
+
+character(6) :: wid
+
+type (hdf5_file) :: h
+
+call h%open(filename, action="w")
+call h%write("/worker_id", worker_id)
+call h%write("/time/elapsed_seconds", t_elapsed)
+call h%write("/nn", nn)
+call h%write("/Tn", Tn)
+call h%write("/vn1", vn1)
+call h%write("/vn2", vn2)
+call h%write("/vn3", vn3)
+call h%write("/info", info)
+call h%close()
+
+write(wid, "(I0)") worker_id
+
+error stop info // " worker " // trim(wid) // " dumped to " // filename
+
+end subroutine dump_perturb
 
 
 subroutine dump_input(filename, info, ns, vs1, Ts)

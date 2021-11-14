@@ -20,7 +20,7 @@ use, intrinsic :: iso_fortran_env, only : stderr=>error_unit
 use gemini_init, only : find_config, check_input_files
 use gemini_cli, only : cli
 use config, only : read_configfile
-use sanity_check, only : check_finite_output
+use sanity_check, only : check_finite_output, check_finite_pertub
 use phys_consts, only : lnchem, lwave, lsp, wp, debug
 use grid, only: grid_size,read_grid,grid_drift, lx1,lx2,lx3,lx2all,lx3all
 use meshobj, only: curvmesh
@@ -388,6 +388,8 @@ main : do while (t < tdur)
   if (cfg%flagdneu==1) then
     call cpu_time(tstart)
     call neutral_perturb(cfg,dt,cfg%dtneu,t,ymd,UTsec,x,v2grid,v3grid,nn,Tn,vn1,vn2,vn3)
+    call check_finite_pertub(cfg%outdir, t, mpi_cfg%myid, nn, Tn, vn1, vn2, vn3)
+
     if (mpi_cfg%myid==0 .and. debug) then
       call cpu_time(tfin)
       print *, 'Neutral perturbations calculated in time:  ',tfin-tstart

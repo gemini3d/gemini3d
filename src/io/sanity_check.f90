@@ -10,7 +10,7 @@ use errors, only : error_stop
 
 implicit none (type, external)
 private
-public :: check_finite_output, check_finite_plasma, check_finite_current, check_finite_mag
+public :: check_finite_output, check_finite_plasma, check_finite_current, check_finite_mag, check_finite_pertub
 
 contains
 
@@ -151,6 +151,29 @@ if (maxval(Ts(i1:k1, i2:k2, i3:k3, i4:k4)) < 500) &
   call error_stop (dump_filename, 'input:plasma: too cold maximum Ts', ns, vs1, Ts)
 
 end subroutine check_finite_plasma
+
+
+subroutine check_finite_pertub(out_dir, t_elapsed, worker_id, nn, Tn, vn1, vn2, vn3)
+
+character(*), intent(in) :: out_dir
+real(wp), intent(in) :: t_elapsed
+integer, intent(in) :: worker_id
+
+real(wp), dimension(:,:,:,:), intent(in) :: nn
+real(wp), dimension(:,:,:), intent(in) :: Tn, vn1, vn2, vn3
+
+character(:), allocatable :: dump_filename
+character(8) :: wid
+
+write(wid, '(I0)') worker_id
+dump_filename = out_dir // "/dump_nonfinite_perturb_worker_" // trim(wid) // ".h5"
+
+if (.not.all(ieee_is_finite(nn))) &
+   call error_stop(dump_filename, 'perturb: non-finite Nn', t_elapsed, worker_id, nn, Tn, vn1, vn2, vn3)
+
+
+
+end subroutine check_finite_pertub
 
 
 subroutine check_finite_mag(out_dir, Br, Btheta, Bphi)
