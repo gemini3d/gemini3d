@@ -1,6 +1,6 @@
 include(ExternalProject)
 
-find_package(glow CONFIG)
+find_package(glow CONFIG QUIET)
 
 if(glow_FOUND)
   message(STATUS "GLOW found: ${glow_DIR}")
