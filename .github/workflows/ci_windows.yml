@@ -1,5 +1,3 @@
-# FIXME: MUMPS 5.4.0, 5.4.1 need patch requiring WSL. Once MUMPS fixes itself in upstream, reenable this workflow.
-
 name: ci_windows
 
 env:

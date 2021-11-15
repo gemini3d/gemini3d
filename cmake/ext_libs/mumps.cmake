@@ -87,7 +87,7 @@ set(mumps_cmake_args
 -DBUILD_SHARED_LIBS:BOOL=${BUILD_SHARED_LIBS}
 -DCMAKE_BUILD_TYPE=Release
 -DBUILD_TESTING:BOOL=false
--DMUMPS_UPSTREAM_VERSION=5.3.5
+-DMUMPS_UPSTREAM_VERSION=${mumps_upstream_version}
 -Dscotch:BOOL=${scotch}
 -Dopenmp:BOOL=false
 -Dparallel:BOOL=${mpi}

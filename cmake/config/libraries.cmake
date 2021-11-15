@@ -16,6 +16,9 @@ foreach(n ${_names})
   endforeach()
 endforeach()
 
+# --- Mumps
+string(JSON mumps_upstream_version GET ${_libj} mumps upstream_version)
+
 # --- Zlib
 if(zlib_legacy)
   string(JSON zlib_url GET ${_libj} zlib1 url)
