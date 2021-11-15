@@ -85,26 +85,7 @@ contains
     !! allocation neutral module scope variables so there is space to store all the file input and do interpolations
     call make_dneu()
 
-    !! call msis to get an initial neutral background atmosphere
-    if (mpi_cfg%myid == 0) call cpu_time(tstart)
-    call neutral_atmos(cfg%ymd0,cfg%UTsec0,x%glat,x%glon,x%alt,cfg%activ,nn,Tn,cfg%msis_version,x%flagper)
-    if (mpi_cfg%myid == 0) then
-      call cpu_time(tfin)
-      print *, 'Initial neutral density and temperature (from MSIS) at time:  ',ymd,UTsec,' calculated in time:  ',tfin-tstart
-    end if
-
-    !> Horizontal wind model initialization/background
-    if (mpi_cfg%myid == 0) call cpu_time(tstart)
-    call neutral_winds(cfg%ymd0, cfg%UTsec0, Ap=cfg%activ(3), x=x, v2grid=v2grid,v3grid=v3grid,vn1=vn1, vn2=vn2, vn3=vn3)
-    !! we sum the horizontal wind with the background state vector
-    !! if HWM14 is disabled, neutral_winds returns the background state vector unmodified
-    if (mpi_cfg%myid == 0) then
-      call cpu_time(tfin)
-      print *, 'Initial neutral winds (from HWM) at time:  ',ymd,UTsec,' calculated in time:  ',tfin-tstart
-    end if
-
-
-    !! perform an initialization for the perturbation quantities
+        !! perform an initialization for the perturbation quantities
     if (cfg%flagdneu==1) then
       ! set flag denoted neutral perturbations
       flagneuperturb=.true.
@@ -124,6 +105,25 @@ contains
       ! call object init procedure
       call atmosperturb%init(cfg,cfg%sourcedir,x,dt,cfg%dtneu,ymd,UTsec)
     end if
+
+    !! call msis to get an initial neutral background atmosphere
+    if (mpi_cfg%myid == 0) call cpu_time(tstart)
+    call neutral_atmos(cfg%ymd0,cfg%UTsec0,x%glat,x%glon,x%alt,cfg%activ,nn,Tn,cfg%msis_version,x%flagper)
+    if (mpi_cfg%myid == 0) then
+      call cpu_time(tfin)
+      print *, 'Initial neutral density and temperature (from MSIS) at time:  ',ymd,UTsec,' calculated in time:  ',tfin-tstart
+    end if
+
+    !> Horizontal wind model initialization/background
+    if (mpi_cfg%myid == 0) call cpu_time(tstart)
+    call neutral_winds(cfg%ymd0, cfg%UTsec0, Ap=cfg%activ(3), x=x, v2grid=v2grid,v3grid=v3grid,vn1=vn1, vn2=vn2, vn3=vn3)
+    !! we sum the horizontal wind with the background state vector
+    !! if HWM14 is disabled, neutral_winds returns the background state vector unmodified
+    if (mpi_cfg%myid == 0) then
+      call cpu_time(tfin)
+      print *, 'Initial neutral winds (from HWM) at time:  ',ymd,UTsec,' calculated in time:  ',tfin-tstart
+    end if
+
   end subroutine init_neutrals
 
 
