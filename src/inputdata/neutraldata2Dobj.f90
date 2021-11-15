@@ -34,7 +34,7 @@ type, extends(neutraldata), abstract :: neutraldata2D
   real(wp), dimension(:,:,:), pointer :: dnO,dnN2,dnO2,dvnz,dvnhorz,dTn
 
   ! projection factors needed to rotate input data onto grid
-  real(wp), dimension(:,:,:), allocatable :: proj_ezp_e1,proj_ezp_e2,proj_ezp_e3    
+  real(wp), dimension(:,:,:), allocatable :: proj_ezp_e1,proj_ezp_e2,proj_ezp_e3
   real(wp), dimension(:,:,:), allocatable :: proj_ehorzp_e1,proj_ehorzp_e2,proj_ehorzp_e3
   contains
     ! replacement for gridsize and gridload
@@ -75,13 +75,13 @@ contains
     class(curvmesh), intent(in) :: x
     real(wp), intent(in) :: dtmodel,dtdata
     integer, dimension(3), intent(in) :: ymd            ! target date of initiation
-    real(wp), intent(in) :: UTsec                       ! target time of initiation 
+    real(wp), intent(in) :: UTsec                       ! target time of initiation
     integer :: lc1,lc2,lc3
-    character(:), allocatable :: strname    ! allow auto-allocate for strings   
+    character(:), allocatable :: strname    ! allow auto-allocate for strings
 
     ! force 3D interpolation regardless of working subarray size
     !self%flagforcenative=.true.
- 
+
     ! tell our object where its data are and give the dataset a name
     call self%set_source(sourcedir)
     strname='neutral perturbations (2D)'
@@ -94,7 +94,7 @@ contains
     !    source grid points for each worker until you have root compute the entire grid and slice everything up
     allocate(self%lc1,self%lc2,self%lc3)                                     ! these are pointers, even though scalar
     !! this is a bit tricky because the inpudata class wants non-singleton dimension to be the same; here lc1,lc2
-    self%lzn=>self%lc1; self%lhorzn=>self%lc2; 
+    self%lzn=>self%lc1; self%lhorzn=>self%lc2;
     self%lxn=>self%lc3                             ! these referenced while reading size and grid data
     call self%set_coordsi(cfg,x)                   ! since this preceeds init_storage it must do the work of allocating some spaces
     call self%load_sizeandgrid_neu2D(cfg)          ! cfg needed to form source neutral grid
@@ -216,7 +216,7 @@ contains
     real(wp), dimension(:,:,:), allocatable :: paramall
     type(hdf5_file) :: hf
     character(:), allocatable :: fn
-        
+
     ! sizes for convenience
     lhorzn=self%lhorzn; lzn=self%lzn;
 
@@ -236,14 +236,14 @@ contains
         print *, 'Min/max values for dvnz:  ',minval(self%dvnz),maxval(self%dvnz)
         print *, 'Min/max values for dTn:  ',minval(self%dTn),maxval(self%dTn)
       endif
-    
+
       if (.not. all(ieee_is_finite(self%dnO))) error stop 'dnO: non-finite value(s)'
       if (.not. all(ieee_is_finite(self%dnN2))) error stop 'dnN2: non-finite value(s)'
       if (.not. all(ieee_is_finite(self%dnO2))) error stop 'dnO2: non-finite value(s)'
       if (.not. all(ieee_is_finite(self%dvnhorz))) error stop 'dvnhorz: non-finite value(s)'
       if (.not. all(ieee_is_finite(self%dvnz))) error stop 'dvnz: non-finite value(s)'
       if (.not. all(ieee_is_finite(self%dTn))) error stop 'dTn: non-finite value(s)'
-    
+
       !send a full copy of the data to all of the workers
       do iid=1,mpi_cfg%lid-1
         call mpi_send(self%dnO,lhorzn*lzn,mpi_realprec,iid,tag%dnO,MPI_COMM_WORLD,ierr)
@@ -262,7 +262,7 @@ contains
       call mpi_recv(self%dvnhorz,lhorzn*lzn,mpi_realprec,0,tag%dvnrho,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
       call mpi_recv(self%dvnz,lhorzn*lzn,mpi_realprec,0,tag%dvnz,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
     end if
-    
+
     ! print some diagnostics for the input data
     if (mpi_cfg%myid==mpi_cfg%lid/2 .and. debug) then
       print*, 'neutral data size:  ',lhorzn,lzn, mpi_cfg%lid
@@ -320,7 +320,7 @@ contains
   end subroutine update
 
 
-  !> This subroutine takes winds stored in self%dvn?inow and applies a rotational transformation onto the 
+  !> This subroutine takes winds stored in self%dvn?inow and applies a rotational transformation onto the
   !      grid object for this simulation.  Provided that the horizontal projections have been computed
   !      correctly the same rotation can be used for axisymmetric and cartesian.
   subroutine rotate_winds(self)
@@ -330,7 +330,7 @@ contains
 
     ! do rotations one grid point at a time to cut down on temp storage needed.  Note that until this point there
     !   shoudl be only zero data stored in vn3 since this class is for 2D data input, instead temperature
-    !   gets stored in the dvn3i variables.  
+    !   gets stored in the dvn3i variables.
     do ix3=1,self%lc3i
       do ix2=1,self%lc2i
         do ix1=1,self%lc1i

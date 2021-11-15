@@ -35,7 +35,7 @@ contains
     class(curvmesh), intent(in) :: x
     real(wp), intent(in) :: dtmodel,dtdata
     integer, dimension(3), intent(in) :: ymd            ! target date of initiation
-    real(wp), intent(in) :: UTsec                       ! target time of initiation 
+    real(wp), intent(in) :: UTsec                       ! target time of initiation
     character(:), allocatable :: strname
 
     ! need to allow interpolation from 2D to 3D
@@ -56,7 +56,7 @@ contains
   end subroutine init_neu2Daxisymm
 
 
-  !! FIXME:  currently hardcoded for axisymmetric coords.  Needs to be specific to coordinate system.  
+  !! FIXME:  currently hardcoded for axisymmetric coords.  Needs to be specific to coordinate system.
   !> set coordinates for target interpolation points; for neutral inputs we are forced to do some of the property array allocations here
   subroutine set_coordsi_neu2Daxisymm(self,cfg,x)
     class(neutraldata2Daxisymm), intent(inout) :: self
@@ -80,7 +80,7 @@ contains
     !Neutral source locations specified in input file, here referenced by spherical magnetic coordinates.
     phi1=cfg%sourcemlon*pi/180
     theta1=pi/2-cfg%sourcemlat*pi/180
-    
+
     !Convert plasma simulation grid locations to z,rho values to be used in interoplation.  altitude ~ zi; lat/lon --> rhoi.  Also compute unit vectors and projections
     if (mpi_cfg%myid==0) then
       print *, 'Computing alt,radial distance values for plasma grid and completing rotations'
@@ -96,7 +96,7 @@ contains
           else
             phi2=phi1                                    !assume the longitude is the samem as the source in 2D, i.e. assume the source epicenter is in the meridian of the grid
           end if
-    
+
           !COMPUTE DISTANCES
           gammarads=cos(theta1)*cos(theta2)+sin(theta1)*sin(theta2)*cos(phi1-phi2)     !this is actually cos(gamma)
           if (gammarads > 1) then     !handles weird precision issues in 2D
@@ -106,32 +106,32 @@ contains
           end if
           gammarads=acos(gammarads)                     !angle between source location annd field point (in radians)
           self%horzimat(ix1,ix2,ix3)=Re*gammarads    !rho here interpreted as the arc-length defined by angle between epicenter and ``field point''
-    
+
           !PROJECTIONS FROM NEUTURAL GRID VECTORS TO PLASMA GRID VECTORS
           !projection factors for mapping from axisymmetric to dipole (go ahead and compute projections so we don't have to do it repeatedly as sim runs
           ezp=x%er(ix1,ix2,ix3,:)
           tmpvec=ezp*x%e2(ix1,ix2,ix3,:)
           tmpsca=sum(tmpvec)
           self%proj_ezp_e2(ix1,ix2,ix3)=tmpsca
-    
+
           tmpvec=ezp*x%e1(ix1,ix2,ix3,:)
           tmpsca=sum(tmpvec)
           self%proj_ezp_e1(ix1,ix2,ix3)=tmpsca
-    
+
           tmpvec=ezp*x%e3(ix1,ix2,ix3,:)
           tmpsca=sum(tmpvec)    !should be zero, but leave it general for now
           self%proj_ezp_e3(ix1,ix2,ix3)=tmpsca
 
           erhop=cos(phip)*x%e3(ix1,ix2,ix3,:) - sin(phip)*x%etheta(ix1,ix2,ix3,:)     !unit vector for azimuth (referenced from epicenter - not geocenter!!!) in cartesian geocentric-geomagnetic coords.
-  
+
           tmpvec=erhop*x%e1(ix1,ix2,ix3,:)
           tmpsca=sum(tmpvec)
           self%proj_ehorzp_e1(ix1,ix2,ix3)=tmpsca
-  
+
           tmpvec=erhop*x%e2(ix1,ix2,ix3,:)
           tmpsca=sum(tmpvec)
           self%proj_ehorzp_e2(ix1,ix2,ix3)=tmpsca
-  
+
           tmpvec=erhop*x%e3(ix1,ix2,ix3,:)
           tmpsca=sum(tmpvec)
           self%proj_ehorzp_e3(ix1,ix2,ix3)=tmpsca
@@ -141,15 +141,15 @@ contains
     end do
 
     print*, '  Done computing interpolation sites and rotations...'
-    
+
     !Assign values for flat lists of grid points
     self%zi=pack(self%zimat,.true.)     !create a flat list of grid points to be used by interpolation ffunctions
     self%horzi=pack(self%horzimat,.true.)
 
     print*, '  Done packing arrays...'
-    
+
     !call clear_unitvecs(x)
-    
+
     !PRINT OUT SOME BASIC INFO ABOUT THE GRID THAT WE'VE LOADED
     if (mpi_cfg%myid==0 .and. debug) then
       print *, 'Min/max rhoi,zi values',minval(self%horzi),maxval(self%horzi),minval(self%zi),maxval(self%zi)
@@ -163,10 +163,10 @@ contains
 
 
   !! FIXME: may be specific to axisymmetric vs. cartesian
-  !> load source data size and grid information and communicate to worker processes.  
-  !    Note that this routine will allocate sizes for source coordinates grids in constrast 
-  !    with other inputdata type extensions which have separate load_size, allocate, and 
-  !    load_grid procedures.  
+  !> load source data size and grid information and communicate to worker processes.
+  !    Note that this routine will allocate sizes for source coordinates grids in constrast
+  !    with other inputdata type extensions which have separate load_size, allocate, and
+  !    load_grid procedures.
   subroutine load_sizeandgrid_neu2Daxisymm(self,cfg)
     class(neutraldata2Daxisymm), intent(inout) :: self
     type(gemini_cfg), intent(in) :: cfg
@@ -184,15 +184,15 @@ contains
     !horizontal grid spacing
     dhorzn=cfg%drhon
     self%lxn=1     ! treat as a 3D dataset with singleton dimension along x
-    
+
     !Establish the size of the grid based on input file and distribute to workers
     if (mpi_cfg%myid==0) then    !root
       print '(A,/,A)', 'Inputting neutral size from:  ',self%sourcedir
-    
+
     ! bit of a tricky issue here; for neutral input, according to makedneuframes.m, the first integer in the size file is
     !  the horizontal grid point count for the input - which get_simsize3 interprets as lx1...
     call get_simsize3(cfg%sourcedir, lx1=self%lhorzn, lx2all=self%lzn)
-    
+
       print *, 'Neutral data has lhorzn,lz size:  ',self%lhorzn,self%lzn,' with spacing dhorzn,dz',dhorzn,cfg%dzn
       if (self%lhorzn < 1 .or. self%lzn < 1) then
         write(stderr,*) 'ERROR: reading ' // self%sourcedir
@@ -207,7 +207,7 @@ contains
       call mpi_recv(self%lzn,1,MPI_INTEGER,0,tag%lz,MPI_COMM_WORLD,MPI_STATUS_IGNORE,ierr)
     end if
     self%lrhon=>self%lhorzn
-    
+
     !Everyone must allocate space for the grid of input data
     allocate(self%coord1(self%lzn))    !these are module-scope variables
     allocate(self%coord2(self%lhorzn))    ! FIXME: default to axisymmetric?
@@ -216,7 +216,7 @@ contains
     self%rhon=>self%coord2
     self%horzn=[ ((real(ihorzn, wp)-1)*dhorzn, ihorzn=1,self%lhorzn) ]
     self%zn=[ ((real(izn, wp)-1)*cfg%dzn, izn=1,self%lzn) ]
-    
+
     if (mpi_cfg%myid==0) then
       print *, 'Creating neutral grid with rho,z extent:  ',minval(self%horzn),maxval(self%horzn),minval(self%zn),maxval(self%zn)
     end if

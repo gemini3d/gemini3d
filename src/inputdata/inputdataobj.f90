@@ -44,10 +44,10 @@ type, abstract :: inputdata
                                                                      !  second to last axis is for number of datasets of this dimension
   integer :: l0D                                                     ! length/number of scalar datasets
   real(wp), dimension(:,:,:), pointer :: data1Dax1i                  ! array for storing series of 1D data, array varies along non-singleton axis
-  real(wp), dimension(:,:,:), pointer :: data1Dax2i,data1Dax3i       ! 1D data arrays varying along coordinates (axes) 2 and 3 
+  real(wp), dimension(:,:,:), pointer :: data1Dax2i,data1Dax3i       ! 1D data arrays varying along coordinates (axes) 2 and 3
   integer :: l1Dax1,l1Dax2,l1Dax3
   real(wp), dimension(:,:,:,:), pointer :: data2Dax23i               ! array for storing series of 2D data, varies along two non-singleton axes
-  real(wp), dimension(:,:,:,:), pointer :: data2Dax12i,data2dax13i   !2D arrays varying along 1,2 and 1,3 axes 
+  real(wp), dimension(:,:,:,:), pointer :: data2Dax12i,data2dax13i   !2D arrays varying along 1,2 and 1,3 axes
   integer :: l2Dax23,l2Dax12,l2Dax13
   real(wp), dimension(:,:,:,:,:), pointer :: data3Di                 ! array for storing series of 3D data
   integer :: l3D
@@ -63,11 +63,11 @@ type, abstract :: inputdata
   integer :: lc1i,lc2i,lc3i                                              ! dataset length along the 3 coordinate axes
 
   !! these are the input data arrays interpolated in time to the present (presuming we've called update/timeinterp
-  real(wp), dimension(:), pointer :: data0Dinow 
+  real(wp), dimension(:), pointer :: data0Dinow
   real(wp), dimension(:,:), pointer :: data1Dax1inow
   real(wp), dimension(:,:), pointer :: data1Dax2inow,data1Dax3inow
   real(wp), dimension(:,:,:), pointer :: data2Dax23inow
-  real(wp), dimension(:,:,:), pointer :: data2Dax12inow,data2dax13inow  
+  real(wp), dimension(:,:,:), pointer :: data2Dax12inow,data2dax13inow
   real(wp), dimension(:,:,:,:), pointer :: data3Dinow
 
   real(wp), dimension(2) :: tref                                     ! times for two input frames bracketting current time
@@ -141,7 +141,7 @@ end interface
 
 contains
   !> Load/store size variables.  By default this is going to get the sizes for the interpolated data from the grid.  If this
-  !    is not the desired behavior then the type extension should override this procedure.  
+  !    is not the desired behavior then the type extension should override this procedure.
   subroutine set_sizes(self, &
                      l0D, &
                      l1Dax1,l1Dax2,l1Dax3, &
@@ -234,7 +234,7 @@ contains
     allocate(self%coord1i(lc1i*lc2i*lc3i),self%coord2i(lc1i*lc2i*lc3i),self%coord3i(lc1i*lc2i*lc3i))
     ! coordinate sites for singleton axes depend on mangling of data
     if (self%flagdipmesh) then    ! mangle 2,3 sizes
-      allocate(self%coord1iax1(lc1i),self%coord2iax2(lc3i),self%coord3iax3(lc2i))     
+      allocate(self%coord1iax1(lc1i),self%coord2iax2(lc3i),self%coord3iax3(lc2i))
     else
       allocate(self%coord1iax1(lc1i),self%coord2iax2(lc2i),self%coord3iax3(lc3i))
     end if
@@ -309,7 +309,7 @@ contains
 
 
   !> "prime" data at the beginning of the simulation so that proper inputs can be derived/interpolated for the first time step
-  !     Note that we need to separate any activity that isn't directly related to input data (e.g. background states, etc.) from 
+  !     Note that we need to separate any activity that isn't directly related to input data (e.g. background states, etc.) from
   !     this routine so that it purely acts on properties of the inputdata class/type
   subroutine prime_data(self,cfg,x,dtmodel,ymd,UTsec)
     class(inputdata), intent(inout) :: self
@@ -328,12 +328,12 @@ contains
       if (.not. self%flagalloc) error stop 'inputdata:prime_data() - must allocate data arrays prior to priming'
       if (.not. self%flagcadence) error stop 'inputdata:prime_data() - must specify data cadence before priming'
       print*, '  Priming dataset:  ',self%dataname
-  
+
       !! find the last input data preceding the milestone/initial condition that we start with
       !    The arguments here coorespond to start datetime of simulations, time of first step for this run (different
       !    if doing a restart) and then the tmp vars which are the time of the last input file.  dtdata is cadence.
       call find_lastdate(cfg%ymd0,cfg%UTsec0,ymd,UTsec,self%dt,ymdtmp,UTsectmp)
-    
+
       !! Loads the neutral input file corresponding to the "first" time step of the simulation to prevent the first interpolant
       !  from being zero and causing issues with restart simulations.  I.e. make sure the neutral buffers are primed for restart
       !  This requires us to load file input twice, once corresponding to the initial frame and once for the "first, next" frame.
@@ -379,7 +379,7 @@ contains
     class(curvmesh), intent(in) :: x         ! mesh object
     integer, dimension(3), intent(in) :: ymd    ! date for which we wish to calculate perturbations
     real(wp), intent(in) :: UTsec               ! UT seconds for which we compute perturbations
-    
+
     integer :: ix1,ix2,ix3,iid!,irhon,izn
     integer, dimension(3) :: ymdtmp          ! these hold the incremented date following reading of new file
     real(wp) :: UTsectmp
@@ -393,7 +393,7 @@ contains
     !print*, '    ',self%ymdref(:,1),self%UTsecref(1),self%ymdref(:,2),self%UTsecref(2)
 
     !! see if we need to load new data into the buffer; negative time means that we need to load the first frame
-    if (t+dtmodel/2 >= self%tref(2) .or. t < 0) then       
+    if (t+dtmodel/2 >= self%tref(2) .or. t < 0) then
       !IF FIRST LOAD ATTEMPT CREATE A NEUTRAL GRID AND COMPUTE GRID SITES FOR IONOSPHERIC GRID.  Since this needs an input file, I'm leaving it under this condition here
       if (self%flagfirst) then
         !initialize dates
@@ -403,32 +403,32 @@ contains
         self%UTsecref(2)=self%UTsecref(1)
         self%flagfirst=.false.
       end if
-      if (.not. self%flagcoordsi) then     !means this is the first time we've tried to load neutral simulation data, should we check for a previous neutral file to load??? or just assume everything starts at zero?  This needs to somehow check for an existing file under certain conditiosn, maybe if it==1???  Actually we don't even need that we can just check that the neutral grid is allocated (or not)    
+      if (.not. self%flagcoordsi) then     !means this is the first time we've tried to load neutral simulation data, should we check for a previous neutral file to load??? or just assume everything starts at zero?  This needs to somehow check for an existing file under certain conditiosn, maybe if it==1???  Actually we don't even need that we can just check that the neutral grid is allocated (or not)
         !Create a neutral grid, do some allocations and projections
         call self%set_coordsi(cfg,x)    ! cfg needed to convey optional parameters about how the input data are to be
                                        !interpreted
       end if
-   
+
       !Read in neutral data from a file
       call self%load_data(t,dtmodel,ymdtmp,UTsectmp)
-    
+
       !Spatial interpolation for the frame we just read in
       !if (mpi_cfg%myid==0 .and. debug) then
         !print *, 'Spatial interpolation and rotations (if applicable) for dataset:  ', &
         !              self%dataname,' for date:  ',self%ymdref(:,2),' ',self%UTsecref(2)
       !end if
       call self%spaceinterp()
-    
+
       !UPDATE OUR CONCEPT OF PREVIOUS AND NEXT TIMES
       self%tref(1)=self%tref(2)
       self%UTsecref(1)=self%UTsecref(2)
       self%ymdref(:,1)=self%ymdref(:,2)
-    
+
       self%tref(2)=self%tref(1)+self%dt
       self%UTsecref(2)=UTsectmp
       self%ymdref(:,2)=ymdtmp
     end if !done loading frame data...
-    
+
     !Interpolation in time
     call self%timeinterp(t,dtmodel)
   end subroutine update_simple
@@ -614,7 +614,7 @@ contains
       else
         error stop 'inputdata:spaceinterp() - cannot determine type of interpolation for data3D'
       end if
-    end if 
+    end if
   end subroutine spaceinterp
 
 
