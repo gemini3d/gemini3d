@@ -9,7 +9,7 @@ if(NOT lapack_external)
   endif()
 endif()
 
-if(LAPACK_FOUND OR TARGET LAPACK::LAPACK)
+if(LAPACK_FOUND)
   return()
 endif()
 

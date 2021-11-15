@@ -1,10 +1,3 @@
-# Intel MKL-compiled MUMPS requires at the linker for the main executable:
-# mkl_scalapack_lp64 mkl_blacs_intelmpi_lp64 mkl_intel_lp64 mkl_intel_thread mkl_core
-#
-# easily obtain MUMPS without compiling:
-# CentOS 6/7 EPEL: yum install mumps-devel
-# Ubuntu / Debian: apt install libmumps-dev
-
 include(ExternalProject)
 
 # --- prereqs
@@ -39,7 +32,7 @@ if(NOT mumps_external AND (MUMPS_ROOT OR (DEFINED ENV{MUMPS_ROOT}) OR (CMAKE_For
   endif()
 endif()
 
-if(MUMPS_FOUND OR TARGET MUMPS::MUMPS)
+if(MUMPS_FOUND)
   return()
 endif()
 

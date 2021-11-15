@@ -9,7 +9,7 @@ if(NOT scalapack_external)
   endif()
 endif()
 
-if(SCALAPACK_FOUND OR TARGET SCALAPACK::SCALAPACK)
+if(SCALAPACK_FOUND)
   return()
 endif()
 
