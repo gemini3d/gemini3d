@@ -1,5 +1,7 @@
 include(ExternalProject)
 
+add_library(h5fortran::h5fortran INTERFACE IMPORTED)
+
 if(hdf5)
 
   if(NOT hdf5_external)
@@ -58,18 +60,13 @@ if(hdf5)
 
   file(MAKE_DIRECTORY ${h5fortran_INCLUDE_DIRS})
 
-  add_library(h5fortran::h5fortran INTERFACE IMPORTED)
-  target_link_libraries(h5fortran::h5fortran INTERFACE ${h5fortran_LIBRARIES})
+  target_link_libraries(h5fortran::h5fortran INTERFACE ${h5fortran_LIBRARIES} HDF5::HDF5)
   target_include_directories(h5fortran::h5fortran INTERFACE ${h5fortran_INCLUDE_DIRS})
 
   # race condition for linking without this
   add_dependencies(h5fortran::h5fortran H5FORTRAN)
 
-  target_link_libraries(h5fortran::h5fortran INTERFACE HDF5::HDF5)
-
 else(hdf5)
-  message(VERBOSE "using h5fortran dummy")
-
   add_library(h5fortran ${CMAKE_CURRENT_SOURCE_DIR}/src/vendor/h5fortran_dummy.f90)
-  add_library(h5fortran::h5fortran ALIAS h5fortran)
+  target_link_libraries(h5fortran::h5fortran INTERFACE h5fortran)
 endif(hdf5)

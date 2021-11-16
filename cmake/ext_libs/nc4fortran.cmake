@@ -1,7 +1,9 @@
 include(ExternalProject)
 
+add_library(nc4fortran::nc4fortran INTERFACE IMPORTED)
+
 if(netcdf)
-  find_package(nc4fortran CONFIG)
+  find_package(nc4fortran CONFIG QUIET)
   if(nc4fortran_FOUND)
     message(STATUS: "nc4fortran found: ${nc4fortran_DIR}")
     return()
@@ -47,18 +49,13 @@ if(netcdf)
 
   file(MAKE_DIRECTORY ${nc4fortran_INCLUDE_DIRS})
 
-  add_library(nc4fortran::nc4fortran INTERFACE IMPORTED)
-  target_link_libraries(nc4fortran::nc4fortran INTERFACE ${nc4fortran_LIBRARIES})
+  target_link_libraries(nc4fortran::nc4fortran INTERFACE ${nc4fortran_LIBRARIES} NetCDF::NetCDF_Fortran)
   target_include_directories(nc4fortran::nc4fortran INTERFACE ${nc4fortran_INCLUDE_DIRS})
 
   # race condition for linking without this
   add_dependencies(nc4fortran::nc4fortran NC4FORTRAN)
 
-  target_link_libraries(nc4fortran::nc4fortran INTERFACE NetCDF::NetCDF_Fortran)
-
 else(netcdf)
-  message(VERBOSE "using nc4fortran dummy")
-
   add_library(nc4fortran ${CMAKE_CURRENT_SOURCE_DIR}/src/vendor/nc4fortran_dummy.f90)
-  add_library(nc4fortran::nc4fortran ALIAS nc4fortran)
+  target_link_libraries(nc4fortran::nc4fortran INTERFACE nc4fortran)
 endif(netcdf)
