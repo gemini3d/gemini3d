@@ -46,7 +46,14 @@ elseif(WSL)
   OUTPUT_STRIP_TRAILING_WHITESPACE
   )
 
-  execute_process(COMMAND ${WSL} patch ${in_wsl} --input=${patch_wsl} --output=${out_file}
+  execute_process(COMMAND ${WSL} wslpath ${out_file}
+  TIMEOUT 5
+  OUTPUT_VARIABLE out_wsl
+  COMMAND_ERROR_IS_FATAL ANY
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+  )
+
+  execute_process(COMMAND ${WSL} patch ${in_wsl} --input=${patch_wsl} --output=${out_wsl}
   TIMEOUT 15
   COMMAND_ERROR_IS_FATAL ANY
   )
