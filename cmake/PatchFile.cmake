@@ -24,10 +24,10 @@ else()
 endif()
 
 
-function(patch_file in_file patch_file)
+function(patch_file in_file patch_file out_file)
 
 if(PATCH)
-  execute_process(COMMAND ${PATCH} ${in_file} ${patch_file}
+  execute_process(COMMAND ${PATCH} ${in_file} --input=${patch_file} --output=${out_file}
   TIMEOUT 15
   COMMAND_ERROR_IS_FATAL ANY
   )
@@ -46,7 +46,7 @@ elseif(WSL)
   OUTPUT_STRIP_TRAILING_WHITESPACE
   )
 
-  execute_process(COMMAND ${WSL} patch ${in_wsl} ${patch_wsl}
+  execute_process(COMMAND ${WSL} patch ${in_wsl} --input=${patch_wsl} --output=${out_file}
   TIMEOUT 15
   COMMAND_ERROR_IS_FATAL ANY
   )
@@ -54,3 +54,6 @@ else()
   message(FATAL_ERROR "Could not find patch program")
 endif()
 endfunction(patch_file)
+
+
+patch_file(${in_file} ${patch_file} ${out_file})
